@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __AXES_STATIC_H
 #define __AXES_STATIC_H
 

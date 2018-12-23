@@ -1,8 +1,8 @@
 ﻿
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -14,10 +14,9 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _ModelFile_H_
-#define _ModelFile_H_
+#ifndef __MODEL_FILE_H
+#define __MODEL_FILE_H
 
-#define SX_MODEL_VERSION_OLD 6 /*!< Старая версия файла модели (для совместимости) */
 #define SX_MODEL_VERSION 7     /*!< Актуальная версия файла модели */
 #define SX_MODEL_MAGICK 30510779525321540 /*!< Магическая константа для определения файла */
 
@@ -43,6 +42,11 @@ struct vertex_static: public model_vertex
 */
 struct vertex_static_ex: public model_vertex
 {
+	vertex_static_ex(){}
+	vertex_static_ex(float3_t vPos, float2_t vTex, float3_t vNormal, float3_t vTangent, float3_t vBinormal)
+	{
+		Pos = vPos; Tex = vTex; Norm = vNormal; Tangent = vTangent; Binorm = vBinormal;
+	}
 	float3_t Pos;      /*!< Позиция */
 	float2_t Tex;      /*!< Текстурные координаты */
 	float3_t Norm;     /*!< Нормаль */
@@ -107,7 +111,8 @@ enum MODEL_FLAG
 	MODEL_FLAG_HAS_HITBOXES = 0x1000,       /*!< Имеются хитбоксы */
 	MODEL_FLAG_HAS_TANGENT_BINORM = 0x2000, /*!< Используются расширенные типы вертексов */
 	MODEL_FLAG_NEW_STYLE_DEPS = 0x4000,     /*!< Используется новый тип импортированных моделей */
-	MODEL_FLAG_NEW_PACKED_ANIMS = 0x8000    /*!< Сохранено с использованием исправленного размера структуры ModelSequence*/
+	MODEL_FLAG_NEW_PACKED_ANIMS = 0x8000,   /*!< Сохранено с использованием исправленного размера структуры ModelSequence */
+	MODEL_FLAG_NORMALIZED_NORMALS = 0x10000    /*!< Сохранено с использованием исправленного размера структуры ModelSequence */
 };
 
 /*! Типф топологий модели в файле

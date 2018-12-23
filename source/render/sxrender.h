@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -16,57 +16,38 @@ See the license in LICENSE
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxinput_d.lib")
+#pragma comment(lib, "sxgcore_d.lib")
+#pragma comment(lib, "sxgeom_d.lib")
+#pragma comment(lib, "sxgreen_d.lib")
+#pragma comment(lib, "sxlight_d.lib")
+#pragma comment(lib, "sxmtrl_d.lib")
+#pragma comment(lib, "sxparticles_d.lib")
+#pragma comment(lib, "sxpp_d.lib")
+#pragma comment(lib, "sxanim_d.lib")
+#pragma comment(lib, "sxdecals_d.lib")
+#pragma comment(lib, "sxgame_d.lib")
 #else
 #pragma comment(lib, "sxinput.lib")
-#endif
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxgcore_d.lib")
-#else
 #pragma comment(lib, "sxgcore.lib")
-#endif
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxgeom_d.lib")
-#else
 #pragma comment(lib, "sxgeom.lib")
-#endif
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxmtllight_d.lib")
-#else
-#pragma comment(lib, "sxmtllight.lib")
-#endif
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxparticles_d.lib")
-#else
+#pragma comment(lib, "sxgreen.lib")
+#pragma comment(lib, "sxlight.lib")
+#pragma comment(lib, "sxmtrl.lib")
 #pragma comment(lib, "sxparticles.lib")
-#endif
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxpp_d.lib")
-#else
 #pragma comment(lib, "sxpp.lib")
-#endif
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxanim_d.lib")
-#else
 #pragma comment(lib, "sxanim.lib")
+#pragma comment(lib, "sxdecals.lib")
+#pragma comment(lib, "sxgame.lib")
 #endif
 
-#if defined(_DEBUG)
-#pragma comment(lib, "sxdecals_d.lib")
-#else
-#pragma comment(lib, "sxdecals.lib")
-#endif
 
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <gcore/sxgcore.h>
 #include <geom/sxgeom.h>
-#include <mtllight/sxmtllight.h>
+#include <green/sxgreen.h>
+#include <light/sxlight.h>
+#include <mtrl/sxmtrl.h>
 #include <anim/sxanim.h>
 #include <pp/sxpp.h>
 #include <particles/sxparticles.h>
@@ -231,10 +212,10 @@ SX_LIB_API void SRender_SetParentHandleWin3D(HWND hWnd);
 
 
 //! установка текущей камеры
-SX_LIB_API void SRender_SetCamera(ISXCamera *pCamera);
+SX_LIB_API void SRender_SetCamera(ICamera *pCamera);
 
 //! возвращает текущую камеру
-SX_LIB_API ISXCamera* SRender_GetCamera();
+SX_LIB_API ICamera* SRender_GetCamera();
 
 //**************************************************************************
 
@@ -243,8 +224,8 @@ SX_LIB_API ISXCamera* SRender_GetCamera();
  \warning Добавить в симуляционную модель рендера возможно только статическую модель, у которой может быть только одна подгруппа с одной текстурой
 @{*/
 
-//! добавить статическую модель в симуляционноую модель рендера, szName - путь до статической модели относительно папки местонахождения
-SX_LIB_API void SRender_SimModelAdd(const char *szName);
+//! добавить статическую модель в симуляционноую модель рендера, szPath - путь до статической модели относительно папки местонахождения
+SX_LIB_API void SRender_SimModelAddModel(ISXDataStaticModel *pModel);
 
 //! возвращает id материала
 SX_LIB_API ID SRender_SimModelGetIDMtl();
@@ -308,8 +289,8 @@ SX_LIB_API void SRender_UpdateEditorial(DWORD timeDelta);
 
 //##########################################################################
 
-//! обработка потери и восстановление устройства
-SX_LIB_API void SRender_ComDeviceLost();
+//! обработка потери и восстановление устройства, isSetWindowSize - устанавливать ли размеры окна (сделано для редакторов)
+SX_LIB_API void SRender_ComDeviceLost(bool isSetWindowSize);
 
 //! обработка видимости для источников света
 SX_LIB_API void SRender_ComVisibleForLight();
@@ -354,18 +335,15 @@ SX_LIB_API void SRender_ComLighting(DWORD timeDelta);
 //! объединение слоев прозрачности
 SX_LIB_API void SRender_UnionLayers();
 
-//! применение тонмаппинга к рт
-SX_LIB_API void SRender_ApplyToneMapping();
-
-//! просчет тонмаппинга
-SX_LIB_API void SRender_ComToneMapping(DWORD timeDelta);
-
 
 //! отрисовка партиклов (эффектов)
 SX_LIB_API void SRender_RenderParticles(DWORD timeDelta);
 
-//! отрисовка постпроцесса
-SX_LIB_API void SRender_RenderPostProcess(DWORD timeDelta);
+//! отрисовка основного постпроцесса
+SX_LIB_API void SRender_RenderMainPostProcess(DWORD timeDelta);
+
+//! отрисовка финального (после gui) постпроцесса
+SX_LIB_API void SRender_RenderFinalPostProcess(DWORD timeDelta);
 
 //! очистка регистров шейдеров (были случаи когда не инициаилизировав определенный регист в шейдере, шейдер брал то что было установлено до него)
 SX_LIB_API void SRender_ShaderRegisterData();

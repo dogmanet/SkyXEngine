@@ -1,9 +1,15 @@
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include <cstdarg>
 #include <memory>
 
 #include "proptable.h"
 
-#include "SXbaseEntity.h"
+#include "BaseEntity.h"
 
 prop_editor_t _GetEditorCombobox(int start, ...)
 {
@@ -81,7 +87,7 @@ const char * GetEmptyString()
 	return(str);
 }
 
-void output_t::fire(SXbaseEntity *pInflictor, SXbaseEntity *pActivator)
+void output_t::fire(CBaseEntity *pInflictor, CBaseEntity *pActivator)
 {
 	inputdata_t data = {0};
 	data.pActivator = pActivator;

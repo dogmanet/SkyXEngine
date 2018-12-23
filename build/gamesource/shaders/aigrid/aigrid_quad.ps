@@ -6,17 +6,13 @@ aigrid_quad.ps
 
 #include <../struct.h>
 
-sampler2D BaseSampler:register(s0);
+//##########################################################################
 
-struct VS_OUT 
-{
-	half4 Position	:POSITION0;
-	half2 TexUV		:TEXCOORD0;
-	half4 Pos		:TEXCOORD1;
-	half4 Color		:TEXCOORD2;
-};
+sampler2D g_sColor:register(s0);
 
-half4 main(in vs_output_aigrid IN):COLOR0
+//##########################################################################
+
+half4 main(in VSO_AIgrid IN):COLOR0
 {
-	return half4(lerp(tex2D(BaseSampler,IN.TexUV).xyz,IN.Color.xyz,IN.Color.a),1.f);
+	return half4(lerp(tex2D(g_sColor,IN.vTexUV).xyz, IN.vColor.xyz, IN.vColor.a), 1.f);
 }

@@ -6,17 +6,23 @@ sky_box.ps
 
 #include <../struct.h>
 
-samplerCUBE BaseSkyTexture: register(s0);
-samplerCUBE SecondSkyTexture: register(s1);
+//##########################################################################
 
-half BlendFactor;
-half4 Color;
+samplerCUBE g_sCurrent: register(s0);
+samplerCUBE g_sNext: register(s1);
 
-half4 main(vs_out_skybox IN):COLOR0
+//##########################################################################
+
+half g_fBlendFactor;
+half4 g_vColor;
+
+//##########################################################################
+
+half4 main(VSO_SkyBox IN):COLOR0
 {
-	half4 Color1 = texCUBE(BaseSkyTexture, IN.TexUV);
-	half4 Color2 = texCUBE(SecondSkyTexture, IN.TexUV);
-	half4 FinalColor = lerp(Color1,Color2,BlendFactor);
-	FinalColor.rgb = lerp(FinalColor.rgb,Color.rgb,Color.a);
-	return FinalColor;
+	half4 vColor1 = texCUBE(g_sCurrent, IN.vTexUV);
+	half4 vColor2 = texCUBE(g_sNext, IN.vTexUV);
+	half4 vFinalColor = lerp(vColor1, vColor2, g_fBlendFactor);
+	vFinalColor.rgb = lerp(vFinalColor.rgb, g_vColor.rgb, g_vColor.a);
+	return vFinalColor;
 }

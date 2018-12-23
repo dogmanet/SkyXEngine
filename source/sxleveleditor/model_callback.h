@@ -8,7 +8,7 @@ LRESULT SXLevelEditor_EditGeomName_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPA
 
 LRESULT SXLevelEditor_ButtonGeomModel_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-LRESULT SXLevelEditor_ButtonGeomLod1_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT SXLevelEditor_ButtonGeomLod1OrPhysics_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT SXLevelEditor_ButtonGeomFinish_Click(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

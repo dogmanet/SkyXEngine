@@ -1,244 +1,380 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
-#include <SXGUIWinApi\SXGUI.h>
-#include <SXGUIWinApi\SXGUI_base.h>
-#include <SXGUIWinApi\SXGUI_base_wnd.h>
-#include <SXGUIWinApi\SXGUI_static.h>
-#include <SXGUIWinApi\SXGUI_button.h>
-#include <SXGUIWinApi\SXGUI_img_button.h>
-#include <SXGUIWinApi\SXGUI_edit.h>
-#include <SXGUIWinApi\SXGUI_up_down.h>
-#include <SXGUIWinApi\SXGUI_memo.h>
-#include <SXGUIWinApi\SXGUI_combo_box.h>
-#include <SXGUIWinApi\SXGUI_list_box.h>
-#include <SXGUIWinApi\SXGUI_list_view.h>
-#include <SXGUIWinApi\SXGUI_group_box.h>
-#include <SXGUIWinApi\SXGUI_progress_bar.h>
-#include <SXGUIWinApi\SXGUI_radio_button.h>
-#include <SXGUIWinApi\SXGUI_check_box.h>
-#include <SXGUIWinApi\SXGUI_track_bar.h>
-#include <SXGUIWinApi\SXGUI_status_bar.h>
-#include <SXGUIWinApi\SXGUI_hint.h>
-#include <SXGUIWinApi\SXGUI_menu.h>
-#include <SXGUIWinApi\SXGUI_toolbar.h>
+#include "SXGUI.h"
+#include "base.h"
+#include "base_wnd.h"
+#include "static.h"
+#include "button.h"
+#include "img_button.h"
+#include "edit.h"
+#include "updown.h"
+#include "memo.h"
+#include "combobox.h"
+#include "listbox.h"
+#include "listview.h"
+#include "groupbox.h"
+#include "progressbar.h"
+#include "radiobutton.h"
+#include "checkbox.h"
+#include "trackbar.h"
+#include "statusbar.h"
+#include "hint.h"
+#include "menu.h"
+#include "toolbar.h"
 
-ISXGUIBaseWnd* SXGUICrBaseWnd(
-	const char* class_name, const char* caption, const char* menu,
-	WORD id, int x, int y, WORD width, WORD heigth,
-	HICON icon, HCURSOR cursor, HBRUSH brush,
-	DWORD exstyle, DWORD wndstyle, DWORD style,
-	HWND parent, WNDPROC handler
+//##########################################################################
+
+SX_LIB_API void SXGUIinit()
+{
+	WNDCLASS wcButtonImg;
+
+	wcButtonImg.style = CS_HREDRAW | CS_VREDRAW;
+	wcButtonImg.lpfnWndProc = DefWindowProc;
+	wcButtonImg.cbClsExtra = 0;
+	wcButtonImg.cbWndExtra = 0;
+	wcButtonImg.hInstance = GetModuleHandle(0);
+	wcButtonImg.hIcon = 0;
+	wcButtonImg.hCursor = 0;
+	wcButtonImg.hbrBackground = 0;
+	wcButtonImg.lpszMenuName = 0;
+	wcButtonImg.lpszClassName = SXGUI_DEF_BUTTONIMG;
+
+	RegisterClass(&wcButtonImg);
+
+
+	WNDCLASS wcGroupBox;
+
+	wcGroupBox.style = CS_HREDRAW | CS_VREDRAW;
+	wcGroupBox.lpfnWndProc = DefWindowProc;
+	wcGroupBox.cbClsExtra = 0;
+	wcGroupBox.cbWndExtra = 0;
+	wcGroupBox.hInstance = GetModuleHandle(0);
+	wcGroupBox.hIcon = 0;
+	wcGroupBox.hCursor = 0;
+	wcGroupBox.hbrBackground = 0;
+	wcGroupBox.lpszMenuName = 0;
+	wcGroupBox.lpszClassName = SXGUI_DEF_GROUPBOX;
+
+	RegisterClass(&wcGroupBox);
+
+
+	INITCOMMONCONTROLSEX icex;
+
+	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+	icex.dwICC = ICC_BAR_CLASSES;
+	InitCommonControlsEx(&icex);
+
+	DialogOwnSelectDirInit();
+	DialogOwnSelectFileInit();
+}
+
+//##########################################################################
+
+int g_iCountCreateWnd = 0;
+
+SX_LIB_API ISXGUIBaseWnd* SXGUICrBaseWnd(
+	const char *szCaption,
+	int iPosX, int iPosY, int iWidth, int iHeight,
+	DWORD dwExstyle, DWORD dwStyle,
+	HWND hParent, WNDPROC lpfnHandler,
+	ID idObj
 	)
 {
-	return new SXGUIBaseWnd(class_name, caption, menu,
-		id, x, y, width, heigth,
+	char szClassName[64];
+	sprintf(szClassName, "SXGUICrBaseWnd_$d", g_iCountCreateWnd);
+	++g_iCountCreateWnd;
+
+	return new CGUIBaseWnd(szClassName, szCaption,
+		iPosX, iPosY, iWidth, iHeight,
+		0, 0, 0,
+		dwExstyle, CS_HREDRAW | CS_VREDRAW, dwStyle,
+		hParent, (lpfnHandler == 0 ? WndProcAllDefault : lpfnHandler), idObj);
+}
+
+SX_LIB_API ISXGUIBaseWnd* SXGUICrBaseWndEx(
+	const char* class_name, const char *szCaption, 
+	int iPosX, int iPosY, int iWidth, int iHeight,
+	HICON icon, HCURSOR cursor, HBRUSH brush,
+	DWORD dwExstyle, DWORD wndstyle, DWORD dwStyle,
+	HWND hParent, WNDPROC lpfnHandler,
+	ID idObj
+	)
+{
+	return new CGUIBaseWnd(class_name, szCaption, 
+		iPosX, iPosY, iWidth, iHeight,
 		icon, cursor, brush,
-		exstyle, wndstyle, style,
-		parent, (handler == 0 ? WndProcAllDefault : handler));
+		dwExstyle, wndstyle, dwStyle,
+		hParent, (lpfnHandler == 0 ? WndProcAllDefault : lpfnHandler), idObj);
 }
 
+//##########################################################################
 
-ISXGUIStatic* SXGUICrStaticEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUIStatic* SXGUICrStaticEx(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwExstyle, DWORD dwStyle, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIStatic(caption, x, y, width, heigth, parent, handler, id);
+	return new CGUIStatic(szCaption, iPosX, iPosY, iWidth, iHeight, hParent, lpfnHandler, idObj);
 }
 
-ISXGUIStatic* SXGUICrStatic(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUIStatic* SXGUICrStatic(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIStatic(caption, x, y, width, heigth, parent, handler, id);
+	return new CGUIStatic(szCaption, iPosX, iPosY, iWidth, iHeight, hParent, lpfnHandler, idObj);
 }
 
-ISXGUIStatic* SXGUICrStaticLine(WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id, bool vertical)
+SX_LIB_API ISXGUIStatic* SXGUICrStaticLine(int iPosX, int iPosY, int iWidth, int iHeight, HWND hParent, WNDPROC lpfnHandler, ID idObj, bool vertical)
 {
-	return new SXGUIStatic(x, y, width, heigth, parent, handler, id, vertical);
+	return new CGUIStatic(iPosX, iPosY, iWidth, iHeight, hParent, lpfnHandler, idObj, vertical);
 }
 
+//##########################################################################
 
-ISXGUIButton* SXGUICrButtonEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUIButton* SXGUICrButtonEx(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwExstyle, DWORD dwStyle, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIButton(caption, x, y, width, heigth, exstyle, style, parent, handler, id);
-}
-ISXGUIButton* SXGUICrButton(const char* caption, WORD x, WORD y, WORD width, WORD heigth, int image, HWND parent, WNDPROC handler, DWORD id)
-{
-	return new SXGUIButton(caption, x, y, width, heigth, image, parent, handler, id);
+	return new CGUIButton(szCaption, iPosX, iPosY, iWidth, iHeight, dwExstyle, dwStyle, hParent, lpfnHandler, idObj);
 }
 
-
-ISXGUIButtonImg* SXGUICrButtonImgLoad(const char* path, WORD x, WORD y, WORD width, WORD heigth, DWORD alpha_color, DWORD bk_color, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUIButton* SXGUICrButton(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, SXGUI_BUTTON_IMAGE type_image, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIButtonImg(path, x, y, width, heigth, alpha_color, bk_color, parent, handler, id);
+	return new CGUIButton(szCaption, iPosX, iPosY, iWidth, iHeight, type_image, hParent, lpfnHandler, idObj);
 }
 
-ISXGUIButtonImg* SXGUICrButtonImgRes(WORD button, WORD x, WORD y, WORD width, WORD heigth, DWORD alpha_color, DWORD bk_color, HWND parent, WNDPROC handler, DWORD id)
+//##########################################################################
+
+SX_LIB_API ISXGUIButtonImg* SXGUICrButtonImgLoad(const char* path, int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwAlphaColor, DWORD dwBkColor, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIButtonImg(button, x, y, width, heigth, alpha_color, bk_color, parent, handler, id);
+	return new CGUIButtonImg(path, iPosX, iPosY, iWidth, iHeight, dwAlphaColor, dwBkColor, hParent, lpfnHandler, idObj);
 }
 
-ISXGUIEdit* SXGUICrEditEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUIButtonImg* SXGUICrButtonImgRes(UINT uButton, int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwAlphaColor, DWORD dwBkColor, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIEdit(caption, x, y, width, heigth, exstyle, style, parent, handler, id);
+	return new CGUIButtonImg(uButton, iPosX, iPosY, iWidth, iHeight, dwAlphaColor, dwBkColor, hParent, lpfnHandler, idObj);
 }
 
-ISXGUIEdit* SXGUICrEdit(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id)
+//##########################################################################
+
+SX_LIB_API ISXGUIEdit* SXGUICrEditEx(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwExstyle, DWORD dwStyle, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIEdit(caption, x, y, width, heigth, parent, handler, id);
+	return new CGUIEdit(szCaption, iPosX, iPosY, iWidth, iHeight, dwExstyle, dwStyle, hParent, lpfnHandler, idObj);
 }
 
-
-ISXGUIUpDown* SXGUICrUpDownEx(WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id, HWND buddy)
+SX_LIB_API ISXGUIEdit* SXGUICrEdit(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIUpDown(x, y, width, heigth, exstyle, style, parent, handler, id, buddy);
+	return new CGUIEdit(szCaption, iPosX, iPosY, iWidth, iHeight, hParent, lpfnHandler, idObj);
 }
 
-ISXGUIUpDown* SXGUICrUpDown(WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id, HWND buddy, bool align_left)
+//##########################################################################
+
+SX_LIB_API ISXGUIUpDown* SXGUICrUpDownEx(int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwExstyle, DWORD dwStyle, HWND hParent, WNDPROC lpfnHandler, ID idObj, HWND buddy)
 {
-	return new SXGUIUpDown(x, y, width, heigth, parent, handler, id, buddy, align_left);
+	return new CGUIUpDown(iPosX, iPosY, iWidth, iHeight, dwExstyle, dwStyle, hParent, lpfnHandler, idObj, buddy);
 }
 
-
-ISXGUIMemo* SXGUICrMemoEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUIUpDown* SXGUICrUpDown(int iPosX, int iPosY, int iWidth, int iHeight, HWND hParent, WNDPROC lpfnHandler, ID idObj, HWND buddy, bool align_left)
 {
-	return new SXGUIMemo(caption, x, y, width, heigth, exstyle, style, parent, handler, id);
+	return new CGUIUpDown(iPosX, iPosY, iWidth, iHeight, hParent, lpfnHandler, idObj, buddy, align_left);
 }
 
-ISXGUIMemo* SXGUICrMemo(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id)
+//##########################################################################
+
+SX_LIB_API ISXGUIMemo* SXGUICrMemoEx(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwExstyle, DWORD dwStyle, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIMemo(caption, x, y, width, heigth, parent, handler, id);
+	return new CGUIMemo(szCaption, iPosX, iPosY, iWidth, iHeight, dwExstyle, dwStyle, hParent, lpfnHandler, idObj);
 }
 
-
-ISXGUIComboBox* SXGUICrComboBoxEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUIMemo* SXGUICrMemo(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIComboBox(caption, x, y, width, heigth, exstyle, style, parent, handler, id);
+	return new CGUIMemo(szCaption, iPosX, iPosY, iWidth, iHeight, hParent, lpfnHandler, idObj);
 }
 
-//Їыруш: (parent != 0 ? WS_CHILD : 0) | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS
-ISXGUIComboBox* SXGUICrComboBox(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id)
+//##########################################################################
+
+SX_LIB_API ISXGUIComboBox* SXGUICrComboBoxEx(int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwExstyle, DWORD dwStyle, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIComboBox(caption, x, y, width, heigth, parent, handler, id);
+	return new CGUIComboBox(iPosX, iPosY, iWidth, iHeight, dwExstyle, dwStyle, hParent, lpfnHandler, idObj);
 }
 
-
-ISXGUIListBox* SXGUICrListBoxEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
+//Їыруш: (hParent != 0 ? WS_CHILD : 0) | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS
+SX_LIB_API ISXGUIComboBox* SXGUICrComboBox(int iPosX, int iPosY, int iWidth, int iHeight, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIListBox(caption, x, y, width, heigth, exstyle, style, parent, handler, id);
+	return new CGUIComboBox(iPosX, iPosY, iWidth, iHeight, hParent, lpfnHandler, idObj);
 }
 
-ISXGUIListBox* SXGUICrListBox(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id, bool miltiple_sel)
+//##########################################################################
+
+SX_LIB_API ISXGUIListBox* SXGUICrListBoxEx(int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwExstyle, DWORD dwStyle, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIListBox(caption, x, y, width, heigth, parent, handler, id, miltiple_sel);
+	return new CGUIListBox(iPosX, iPosY, iWidth, iHeight, dwExstyle, dwStyle, hParent, lpfnHandler, idObj);
 }
 
-ISXGUIListView* SXGUICrListViewEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUIListBox* SXGUICrListBox(int iPosX, int iPosY, int iWidth, int iHeight, HWND hParent, WNDPROC lpfnHandler, ID idObj, bool miltiple_sel)
 {
-	return new SXGUIListView(caption, x, y, width, heigth, exstyle, style, parent, handler, id);
+	return new CGUIListBox(iPosX, iPosY, iWidth, iHeight, hParent, lpfnHandler, idObj, miltiple_sel);
 }
 
-ISXGUIListView* SXGUICrListView(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id)
+//##########################################################################
+
+SX_LIB_API ISXGUIListView* SXGUICrListViewEx(int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwExstyle, DWORD dwStyle, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIListView(caption, x, y, width, heigth, parent, handler, id);
+	return new CGUIListView(iPosX, iPosY, iWidth, iHeight, dwExstyle, dwStyle, hParent, lpfnHandler, idObj);
 }
 
-
-ISXGUIHint* SXGUICrHint(HWND parent)
+SX_LIB_API ISXGUIListView* SXGUICrListView(int iPosX, int iPosY, int iWidth, int iHeight, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIHint(parent);
+	return new CGUIListView(iPosX, iPosY, iWidth, iHeight, hParent, lpfnHandler, idObj);
 }
 
+//##########################################################################
 
-ISXGUIGroupBox* SXGUICrGroupBoxEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUIHint* SXGUICrHint(HWND hParent)
 {
-	return new SXGUIGroupBox(caption, x, y, width, heigth, exstyle, style, parent, handler, id);
+	return new CGUIHint(hParent);
 }
 
-ISXGUIGroupBox* SXGUICrGroupBox(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUIHint* SXGUICrHintEx(HWND hParent, const char *szText, UINT uInit, UINT uAutopop)
 {
-	return new SXGUIGroupBox(caption, x, y, width, heigth, parent, handler, id);
+	CGUIHint *pHint = new CGUIHint(hParent);
+	pHint->setText(szText);
+	pHint->setDelayTime(uInit, uAutopop);
+
+	return pHint;
 }
 
+//##########################################################################
 
-ISXGUIProgressBar* SXGUICrProgressBarEx(WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUIGroupBox* SXGUICrGroupBoxEx(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwExstyle, DWORD dwStyle, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIProgressBar(x, y, width, heigth, exstyle, style, parent, handler, id);
+	return new CGUIGroupBox(szCaption, iPosX, iPosY, iWidth, iHeight, dwExstyle, dwStyle, hParent, lpfnHandler, idObj);
 }
 
-ISXGUIProgressBar* SXGUICrProgressBar(WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id, bool vertical, bool smooth)
+SX_LIB_API ISXGUIGroupBox* SXGUICrGroupBox(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIProgressBar(x, y, width, heigth, parent, handler, id, vertical, smooth);
+	return new CGUIGroupBox(szCaption, iPosX, iPosY, iWidth, iHeight, hParent, lpfnHandler, idObj);
 }
 
+//##########################################################################
 
-ISXGUIRadioButton* SXGUICrRadioButtonEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUIProgressBar* SXGUICrProgressBarEx(int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwExstyle, DWORD dwStyle, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIRadioButton(caption, x, y, width, heigth, exstyle, style, parent, handler, id);
+	return new CGUIProgressBar(iPosX, iPosY, iWidth, iHeight, dwExstyle, dwStyle, hParent, lpfnHandler, idObj);
 }
 
-ISXGUIRadioButton* SXGUICrRadioButton(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUIProgressBar* SXGUICrProgressBar(int iPosX, int iPosY, int iWidth, int iHeight, HWND hParent, WNDPROC lpfnHandler, ID idObj, bool vertical, bool smooth)
 {
-	return new SXGUIRadioButton(caption, x, y, width, heigth, parent, handler, id);
+	return new CGUIProgressBar(iPosX, iPosY, iWidth, iHeight, hParent, lpfnHandler, idObj, vertical, smooth);
 }
 
+//##########################################################################
 
-ISXGUICheckBox* SXGUICrCheckBoxEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUIRadioButton* SXGUICrRadioButtonEx(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwExstyle, DWORD dwStyle, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUICheckBox(caption, x, y, width, heigth, exstyle, style, parent, handler, id);
+	return new CGUIRadioButton(szCaption, iPosX, iPosY, iWidth, iHeight, dwExstyle, dwStyle, hParent, lpfnHandler, idObj);
 }
 
-ISXGUICheckBox* SXGUICrCheckBox(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id, bool cb_3_state)
+SX_LIB_API ISXGUIRadioButton* SXGUICrRadioButton(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUICheckBox(caption, x, y, width, heigth, parent, handler, id, cb_3_state);
+	return new CGUIRadioButton(szCaption, iPosX, iPosY, iWidth, iHeight, hParent, lpfnHandler, idObj);
 }
 
+//##########################################################################
 
-ISXGUITrackBar* SXGUICrTrackBarEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUICheckBox* SXGUICrCheckBoxEx(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwExstyle, DWORD dwStyle, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUITrackBar(caption, x, y, width, heigth, exstyle, style, parent, handler, id);
+	return new CGUICheckBox(szCaption, iPosX, iPosY, iWidth, iHeight, dwExstyle, dwStyle, hParent, lpfnHandler, idObj);
 }
 
-ISXGUITrackBar* SXGUICrTrackBar(const char* caption, WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUICheckBox* SXGUICrCheckBox(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, HWND hParent, WNDPROC lpfnHandler, ID idObj, bool cb_3_state)
 {
-	return new SXGUITrackBar(caption, x, y, width, heigth, parent, handler, id);
+	return new CGUICheckBox(szCaption, iPosX, iPosY, iWidth, iHeight, hParent, lpfnHandler, idObj, cb_3_state);
 }
 
+//##########################################################################
 
-ISXGUIStatusBar* SXGUICrStatusBarEx(const char* caption, WORD x, WORD y, WORD width, WORD heigth, DWORD exstyle, DWORD style, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUITrackBar* SXGUICrTrackBarEx(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwExstyle, DWORD dwStyle, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIStatusBar(caption, x, y, width, heigth, exstyle, style, parent, handler, id);
+	return new CGUITrackBar(szCaption, iPosX, iPosY, iWidth, iHeight, dwExstyle, dwStyle, hParent, lpfnHandler, idObj);
 }
 
-ISXGUIStatusBar* SXGUICrStatusBar(const char* caption, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUITrackBar* SXGUICrTrackBar(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIStatusBar(caption, parent, handler, id);
+	return new CGUITrackBar(szCaption, iPosX, iPosY, iWidth, iHeight, hParent, lpfnHandler, idObj);
 }
 
+//##########################################################################
 
-ISXGUIMenu* SXGUICrMenu()
+SX_LIB_API ISXGUIStatusBar* SXGUICrStatusBarEx(const char *szCaption, int iPosX, int iPosY, int iWidth, int iHeight, DWORD dwExstyle, DWORD dwStyle, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIMenu();
+	return new CGUIStatusBar(szCaption, iPosX, iPosY, iWidth, iHeight, dwExstyle, dwStyle, hParent, lpfnHandler, idObj);
 }
 
-ISXGUIMenu* SXGUICrMenuEx(WORD menu)
+SX_LIB_API ISXGUIStatusBar* SXGUICrStatusBar(const char *szCaption, HWND hParent, WNDPROC lpfnHandler, ID idObj)
 {
-	return new SXGUIMenu(menu);
+	return new CGUIStatusBar(szCaption, hParent, lpfnHandler, idObj);
 }
 
+//##########################################################################
 
-ISXGUIPopupMenu* SXGUICrPopupMenuEx(WORD menu)
+SX_LIB_API ISXGUIMenuWindow* SXGUICrMenuWindow()
 {
-	return new SXGUIPopupMenu(menu);
+	return new CGUIMenuWindow();
 }
 
-ISXGUIPopupMenu* SXGUICrPopupMenu()
+SX_LIB_API ISXGUIMenuWindow* SXGUICrMenuWindowEx(UINT uResMenu)
 {
-	return new SXGUIPopupMenu();
+	return new CGUIMenuWindow(uResMenu);
 }
 
+//##########################################################################
 
-ISXGUIToolBar* SXGUICrToolBar(WORD x, WORD y, WORD width, WORD heigth, HWND parent, WNDPROC handler, DWORD id)
+SX_LIB_API ISXGUIPopupMenu* SXGUICrPopupMenuEx(UINT uResMenu)
 {
-	return new SXGUIToolBar(0, x, y, width, heigth, 0, 0, parent, handler, id);
+	return new CGUIPopupMenu(uResMenu);
+}
+
+SX_LIB_API ISXGUIPopupMenu* SXGUICrPopupMenu()
+{
+	return new CGUIPopupMenu();
+}
+
+//##########################################################################
+
+SX_LIB_API ISXGUIToolBar* SXGUICrToolBar(int iPosX, int iPosY, int iWidth, int iHeight, HWND hParent, WNDPROC lpfnHandler, ID idObj)
+{
+	return new CGUIToolBar(0, iPosX, iPosY, iWidth, iHeight, 0, 0, hParent, lpfnHandler, idObj);
+}
+
+//##########################################################################
+
+bool gui_func::scrollbar::InitScroolBars(ISXGUIControl *pControl, bool h, bool v)
+{
+	return ShowScrollBar(pControl->getHWND(), SB_HORZ, h ? 1 : 0) && ShowScrollBar(pControl->getHWND(), SB_VERT, v ? 1 : 0);
+}
+
+bool gui_func::scrollbar::existsScrollBar(ISXGUIControl *pControl, SXGUI_SCROLL_TYPE scroll_type)
+{
+	long style = GetWindowLong(pControl->getHWND(), GWL_STYLE);
+	if (scroll_type == SXGUI_SCROLL_TYPE_V && style & WS_VSCROLL)
+		return true;
+	else if (scroll_type == SXGUI_SCROLL_TYPE_H && style & WS_HSCROLL)
+		return true;
+	return false;
+}
+
+bool gui_func::scrollbar::ScrollLine(ISXGUIControl *pControl, SXGUI_SCROLL_TYPE scroll_type, SXGUI_SCROLL_DIR dir, int iCountString)
+{
+	long _scroll = scroll_type == SXGUI_SCROLL_TYPE_V ? WM_VSCROLL : WM_HSCROLL;
+	long _dir = 0;
+	if (_scroll == WM_VSCROLL)
+		_dir = dir == SXGUI_SCROLL_DIR_DOWN ? SB_LINEDOWN : SB_LINEUP /*SB_BOTTOM :SB_TOP*/;
+	else
+		_dir = dir == SXGUI_SCROLL_DIR_RIGTH ? SB_LINERIGHT : SB_LINELEFT /*SB_RIGHT :SB_LEFT*/;
+
+	bool bf = true;
+	for (int i = 0; i<iCountString; i++)
+	{
+		bf = SendMessage(pControl->getHWND(), _scroll, _dir, 0);
+	}
+
+	return bf;//SendMessage(Control->GetHWND(),_scroll,_dir,LPARAM(count)) == 0 ? true : false;
 }

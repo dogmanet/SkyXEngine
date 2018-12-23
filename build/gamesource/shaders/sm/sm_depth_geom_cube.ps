@@ -5,10 +5,20 @@ sm_depth_geom_cube.ps
 */
 
 #include <../struct.h>
+#include <../shadow.h>
 
-sampler2D BaseSampler:register(s0);
+//##########################################################################
 
-half4 main(vs_out_gcommon IN):COLOR0
+sampler2D g_sColor:register(s0);
+
+//##########################################################################
+
+half4 main(VSO_SceneCommon IN):COLOR0
 {
-	return length(IN.Pos);
+	ShadowDepthAlphaTest(tex2D(g_sColor,IN.vTexUV));
+	
+	half fDepth = length(IN.vPos);
+	half fBias = ShadowSlopeBias(fDepth);
+	
+	return fDepth + fBias;
 }

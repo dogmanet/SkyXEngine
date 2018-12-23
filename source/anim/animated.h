@@ -1,5 +1,11 @@
-#ifndef _ANIMATED_H_
-#define _ANIMATED_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __ANIMATED_H
+#define __ANIMATED_H
 
 
 #include "ModelFile.h"
@@ -20,8 +26,6 @@
 
 #include "sxanim.h"
 
-extern report_func reportf;
-
 class Animation;
 class AnimationManager;
 class ISXBound;
@@ -39,7 +43,7 @@ public:
 
 	bool Save(const char * name);
 #ifndef _SERVER
-	void Render(SMMATRIX * mWorld, UINT nSkin, UINT nLod=0, ID idOverrideMaterial=-1);
+	void render(SMMATRIX * mWorld, UINT nSkin, UINT nLod=0, ID idOverrideMaterial=-1, const float3_t *pGlowColor=NULL, bool bUseGlow=false);
 #endif
 
 	void BuildMeshBuffers();
@@ -47,34 +51,33 @@ public:
 	const ModelSequence * GetSequence(UINT id) const;
 	const ModelSequence * GetSequence(const char * name) const;
 	const ModelBoneController * GetController(UINT id) const;
-	UINT GetBoneCount() const;
+	UINT getBoneCount() const;
 	UINT GetSequenceCount() const;
 	UINT GetControllersCount() const;
 
 	UINT GetBoneID(const char * name);
-	void GetBoneName(UINT id, char * name, int len) const;
+	void getBoneName(UINT id, char * name, int len) const;
 
 	ModelMatrial ** m_iMaterials;
 	ModelLoD * m_pLods;
 	//SkyXEngine::Graphics::ThreeD::Bound BoundVol;
 
-	const ModelHitbox * GetHitbox(const char * name) const;
-	const ModelHitbox * GetHitbox(uint32_t id) const;
-	uint32_t GetHitboxCount() const;
+	const ModelHitbox * getHitbox(const char * name) const;
+	const ModelHitbox * getHitbox(uint32_t id) const;
+	uint32_t getHitboxCount() const;
 	void AddHitbox(const ModelHitbox * hb);
 	void DelHitbox(const char * name);
 	void DelHitbox(uint32_t id);
 
 	void LoadParts();
 
-	const ISXBound * GetBound() const;
+	const ISXBound * getBound() const;
 	
 protected:
 
 	MBERR AppendBones(const ModelFile * mdl, char * root=NULL);
 	//void BuildHitboxes();
 	void Load(const char * name);
-	void Load6(const char * name);
 
 	ModelHeader m_hdr;
 	ModelHeader2 m_hdr2;
@@ -127,89 +130,90 @@ public:
 
 	SX_ALIGNED_OP_MEM
 
-	void Advance(unsigned long int dt);
+	void advance(unsigned long int dt);
 
 #ifndef _SERVER
-	void Render();
+	void render();
 #endif
 
-	void SetModel(const char * file);
+	void setModel(const char * file);
 
-	void Play(const char * name, UINT iFadeTime = 0, UINT slot = 0, bool bReplaceActivity = true); // name: Animation name; changeTime: time to fade to this animation from previous
-	void Stop(UINT slot = 0);
-	void Resume(UINT slot = 0);
+	void play(const char * name, UINT iFadeTime = 0, UINT slot = 0, bool bReplaceActivity = true); // name: Animation name; changeTime: time to fade to this animation from previous
+	void stop(UINT slot = 0);
+	void resume(UINT slot = 0);
 
-	void SetProgress(float progress, UINT slot = 0);
-	void SetAdvance(bool set, UINT slot = 0);
+	void setProgress(float progress, UINT slot = 0);
+	void setAdvance(bool set, UINT slot = 0);
 
-	void StartActivity(const char * name, UINT iFadeTime = 0, UINT slot = 0);
+	void startActivity(const char * name, UINT iFadeTime = 0, UINT slot = 0);
 
-	void SetBoneController(const String & name, float value, MODEL_BONE_CTL what);
+	void setBoneController(const String & name, float value, MODEL_BONE_CTL what);
 
-	SMMATRIX GetBoneTransform(UINT id);
-	float3 GetBoneTransformPos(UINT id);
-	SMQuaternion GetBoneTransformRot(UINT id);
-	UINT GetBone(const char * str);
-	UINT GetBoneCount() const;
-	void GetBoneName(UINT id, char * name, int len) const;
+	SMMATRIX getBoneTransform(UINT id, bool bWithScale = false);
+	float3 getBoneTransformPos(UINT id);
+	SMQuaternion getBoneTransformRot(UINT id);
+	UINT getBone(const char * str);
+	UINT getBoneCount() const;
+	void getBoneName(UINT id, char * name, int len) const;
 
-	inline bool PlayingAnimations();
-	inline bool PlayingAnimations(const char* name);
-	void StopAll();
-
-
-	int GetActiveSkin();
-	void SetSkin(int n);
-
-	void SetPos(const float3 & pos);
-	float3 GetPos();
-
-	void SetOrient(const SMQuaternion & pos);
-	SMQuaternion GetOrient();
+	inline bool playingAnimations();
+	inline bool playingAnimations(const char* name);
+	void stopAll();
 
 
-	SMMATRIX GetWorldTM();
+	int getActiveSkin();
+	void setSkin(int n);
 
-	AnimStateCB SetCallback(AnimStateCB cb);
-	AnimProgressCB SetProgressCB(AnimProgressCB cb);
+	void setPos(const float3 & pos);
+	float3 getPos();
 
-	ModelSequence const * GetCurAnim(int slot);
+	void setOrient(const SMQuaternion & pos);
+	SMQuaternion getOrient();
+
+
+	SMMATRIX getWorldTM();
+
+	AnimStateCB setCallback(AnimStateCB cb);
+	void setCallback(CBaseAnimating *pEnt, AnimStateEntCB cb);
+	AnimProgressCB setProgressCB(AnimProgressCB cb);
+
+	ModelSequence const * getCurAnim(int slot);
 
 	ModelFile * m_pMdl;
 
 	void SyncAnims();
 
-	const ModelFile * AddModel(const char * mdl, UINT flags = MI_ALL, char * name = "No name");
-	void AddModel(const ModelFile * mdl, UINT flags = MI_ALL, char * name="No name");
-	int AddModel(ModelPart * mp);
-	void DelModel(ModelPart * mp);
-	void Assembly();
+	const ModelFile * addModel(const char * mdl, UINT flags = MI_ALL, char * name = "No name");
+	void addModel(const ModelFile * mdl, UINT flags = MI_ALL, char * name="No name");
+	int addModel(ModelPart * mp);
+	void delModel(ModelPart * mp);
+	void assembly();
 	ModelPart * GetPart(UINT idx);
 	UINT GetPartCount();
 
-	const ISXBound * GetBound() const;
+	const ISXBound * getBound() const;
 
 	void SwapBoneBuffs();
 
 	void Release();
 
-	void SetScale(float fScale)
+	void setScale(float fScale)
 	{
 		m_fScale = fScale;
 	}
 
-	float GetScale()
+	float getScale()
 	{
 		return(m_fScale);
 	}
 
-	void GetPhysData(
+	void getPhysData(
 		int32_t * piShapeCount,
 		HITBOX_TYPE ** phTypes,
 		float3_t *** pppfData,
 		int32_t ** ppfDataLen);
 
-	void FreePhysData(
+	void freePhysData(
 		int32_t iShapeCount,
 		HITBOX_TYPE * hTypes,
 		float3_t ** ppfData,
@@ -217,13 +221,18 @@ public:
 
 	void RenderSkeleton(int hlBone=-1);
 
-	virtual const ModelHitbox * GetHitbox(uint32_t id) const;
-	virtual uint32_t GetHitboxCount() const;
+	virtual const ModelHitbox * getHitbox(uint32_t id) const;
+	virtual uint32_t getHitboxCount() const;
 
 	virtual void setOverrideMaterial(const char *name);
 	virtual void enable(bool enable);
 
 	virtual void setRagdoll(IAnimRagdoll * pRagdoll);
+
+	virtual bool isVisibleFor(ID id);
+
+	virtual void setGlowColor(const float3_t &vColor);
+	virtual void setGlowEnabled(bool isEnabled);
 
 	//static void AssemblyMdl(ModelFile * pOut, const Array<ModelPart*> & mMdls);
 protected:
@@ -292,6 +301,8 @@ protected:
 	AnimationManager * m_pMgr;
 
 	AnimStateCB m_pfnCallBack;
+	CBaseAnimating *m_pCallbackEnt;
+	AnimStateEntCB m_pfnCallBackEnt;
 	AnimProgressCB m_pfnProgressCB;
 
 
@@ -305,7 +316,13 @@ protected:
 	int m_iCurrentActivity[BLEND_MAX];
 	UINT m_iCurrentActivityFadeTime[BLEND_MAX];
 
+	bool m_isMdlManaged;
+
+	bool m_isGlowEnabled = false;
+	float3_t m_vGlowColor;
+
 private:
+	ISXBound * m_pBoundBox;
 	void AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int> & bone_relink, bool isStatic=false);
 };
 
@@ -314,32 +331,32 @@ class AnimationManager
 public:
 	AnimationManager(IDirect3DDevice9 * dev);
 	~AnimationManager();
-	const ModelFile * LoadModel(const char * name, bool newInst = false);
-	void UnloadModel(const ModelFile * mdl);
+	const ModelFile * loadModel(const char * name, bool newInst = false);
+	void unloadModel(const ModelFile * mdl);
 
-	UINT Register(Animation * pAnim);
-	void UnRegister(UINT id);
+	UINT reg(Animation * pAnim);
+	void unreg(UINT id);
 
-	void Render(ID for_id=-1);
-	void Update(int thread = 0);
-	void Sync();
+	void render(ID for_id=-1);
+	void update(int thread = 0);
+	void sync();
 
-	void SetVertexDeclaration(MODEL_VERTEX_TYPE nDecl);
+	void setVertexDeclaration(MODEL_VERTEX_TYPE nDecl);
 
-	UINT GetMaterial(const char * mat, bool bStatic = false);
+	UINT getMaterial(const char * mat, bool bStatic = false);
 
-	void ComputeVis(const ISXFrustum * frustum, const float3 * viewpos, ID id_arr);
+	void computeVis(const IFrustum * frustum, const float3 * viewpos, ID id_arr);
 
-	ID GetNextVisId();
-	void FreeVisID(ID id);
+	ID getNextVisId();
+	void freeVisID(ID id);
 
-	void SetThreadNum(int num);
+	void setThreadNum(int num);
 
 protected:
 	friend class ModelFile;
 	friend class Animation;
 	AssotiativeArray<String, ModelFile*> m_pModels;
-	void InitVertexDeclarations();
+	void initVertexDeclarations();
 
 	IDirect3DVertexDeclaration9 * pVertexDeclaration[MVT_SIZE];
 

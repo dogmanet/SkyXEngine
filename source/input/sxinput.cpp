@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 #include "sxinput.h"
 #include "input.h"
@@ -19,7 +19,7 @@ SXInput* ObjectInput = 0;
 report_func g_fnReportf = DefReport;
 #endif
 
-#define SI_PRECOND(retval) if(!ObjectInput){g_fnReportf(-1, "%s - sxinput is not init", gen_msg_location); return retval;}
+#define SI_PRECOND(retval) if(!ObjectInput){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxinput is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -45,11 +45,24 @@ void cmd_bind(int argc, const char ** argv)
 	}
 }
 
+void cmd_unbind(int argc, const char ** argv)
+{
+	if(argc == 2)
+	{
+		ObjectInput->Bind(argv[1], "");
+	}
+	else
+	{
+		printf(COLOR_GREEN "Usage:\n    " COLOR_LGREEN "unbind <key>" COLOR_GREEN " - Unbind command from <key>\n" COLOR_RESET);
+	}
+}
+
 void InitIntup(const char* name, HWND hwnd)
 {
 	ObjectInput = new SXInput(name);
 
 	Core_0RegisterConcmdArg("bind", cmd_bind, "Bind command to key");
+	Core_0RegisterConcmdArg("unbind", cmd_unbind, "Unbind command from key");
 
 	ObjectInput->Init(hwnd);
 }
@@ -64,20 +77,26 @@ SX_LIB_API void SSInput_0Create(const char* name, HWND hwnd, bool is_unic)
 						if(GetLastError() == ERROR_ALREADY_EXISTS)
 						{
 							CloseHandle(hMutex);
-							g_fnReportf(-1, "%s - none unic name for system input", gen_msg_location);
+							LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name for system input", GEN_MSG_LOCATION);
 							return;
 						}
 				}
 			InitIntup(name, hwnd);
 		}
 		else
-			g_fnReportf(-1, "%s - not init argument [name] for system sound", gen_msg_location);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name] for system input", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SSInput_Update()
 {
 	SI_PRECOND(_VOID);
 	ObjectInput->Update();
+}
+
+SX_LIB_API void SSInput_SetEnable(bool bEnable)
+{
+	SI_PRECOND(_VOID);
+	ObjectInput->setEnable(bEnable);
 }
 
 SX_LIB_API bool SSInput_GetKeyState(InputCode Key)
@@ -172,4 +191,23 @@ SX_LIB_API void SSInput_GetMouseDelta(int * x, int * y)
 	SI_PRECOND(_VOID);
 
 	ObjectInput->GetMouseDelta(x, y);
+}
+
+SX_LIB_API int SSInput_GetKeymapSize()
+{
+	return(SXI_KEYMAP_SIZE);
+}
+
+SX_LIB_API void SSInput_GetBindEntry(int n, const char **pszKey, const char **pszCmd)
+{
+	SI_PRECOND(_VOID);
+
+	ObjectInput->getBindEntry(n, pszKey, pszCmd);
+}
+
+SX_LIB_API void SSInput_OnNextKeyPress(void(*pfnCallback)(const char *szKey))
+{
+	SI_PRECOND(_VOID);
+
+	ObjectInput->onNextKeyPress(pfnCallback);
 }

@@ -1,5 +1,11 @@
-#ifndef _ColorPrint_H_
-#define _ColorPrint_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __COLOR_PRINT_H
+#define __COLOR_PRINT_H
 
 #include <windows.h> 
 

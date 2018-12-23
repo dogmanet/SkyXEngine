@@ -1,5 +1,11 @@
-#ifndef TabHitboxes_H
-#define TabHitboxes_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __TAB_HITBOXES_H
+#define __TAB_HITBOXES_H
 
 #include "EditorTab.h"
 

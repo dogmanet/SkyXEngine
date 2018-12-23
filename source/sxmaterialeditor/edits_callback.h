@@ -5,7 +5,7 @@
 #include <common/string.h>
 
 #include <sxguiwinapi/sxgui.h>
-#include <mtllight/sxmtllight.h>
+#include <light/sxlight.h>
 #include <render/sxrender.h>
 #include <sxmaterialeditor/resource.h>
 
@@ -13,13 +13,23 @@
 
 LRESULT SXMaterialEditor_EditSkyBox_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+LRESULT SXMaterialEditor_EditLigthColorR_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+LRESULT SXMaterialEditor_EditLigthColorG_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+LRESULT SXMaterialEditor_EditLigthColorB_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 LRESULT SXMaterialEditor_EditTex_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT SXMaterialEditor_EditVS_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 LRESULT SXMaterialEditor_EditPS_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-LRESULT SXMaterialEditor_EditPenetration_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT SXMaterialEditor_EditHitChance_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+LRESULT SXMaterialEditor_EditDurability_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+LRESULT SXMaterialEditor_EditDensity_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
 LRESULT SXMaterialEditor_EditTexLighting_Enter(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

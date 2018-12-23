@@ -1,15 +1,16 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
 Прицелы
 */
 
-#ifndef _BaseScope_H_
-#define _BaseScope_H_
+#ifndef __BASE_SCOPE_H
+#define __BASE_SCOPE_H
 
 #include "BaseWeaponAddon.h"
 

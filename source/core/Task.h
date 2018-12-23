@@ -1,45 +1,47 @@
-#ifndef _CTask_H_
-#define _CTask_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __TASK_H
+#define __TASK_H
 
 #include "sxcore.h"
 #include <memory>
 #define _NTASKMANAGER
 
-// Ѕазовый класс задачи
-class CTask
+class ITask
 {
 public:
-	typedef std::shared_ptr<CTask> TaskPtr;
+	typedef std::shared_ptr<ITask> TaskPtr;
 
-	struct CTaskBeginning
-	{
-		CTaskBeginning(TaskPtr t);
-		TaskPtr m_Task;
-	};
+	ITask(UINT iFlags = CORE_TASK_FLAG_MAINTHREAD_REPEATING);
+	virtual ~ITask(){}
 
-	struct CTaskCompleted
-	{
-		CTaskCompleted(TaskPtr t);
-		TaskPtr m_Task;
-	};
-
-	CTask(THREAD_UPDATE_FUNCTION fnFunc, unsigned int iFlags = CORE_TASK_FLAG_SINGLETHREADED_REPEATING);
-	~CTask();
-
-	void run() {
-		if (m_fnUpdateFunc)
-			(m_fnUpdateFunc)();
-	}; //< функция выполнения задачи, она и вызывается
+	virtual void run() = 0;
 
 	void stopRepeating()
 	{
-		m_iTaskFlags &= ~CORE_TASK_FLAG_REPEATING;
+		m_iFlags &= ~CORE_TASK_FLAG_REPEATING;
 	}
 
-	unsigned int getTaskFlags() const;
+	UINT getFlags() const;
 
 private:
-	unsigned int m_iTaskFlags;
+	UINT m_iFlags;
+};
+
+// Ѕазовый класс задачи
+class CTask: public ITask
+{
+public:
+
+	CTask(THREAD_UPDATE_FUNCTION fnFunc, UINT iFlags = CORE_TASK_FLAG_MAINTHREAD_REPEATING);
+
+	void run();
+
+private:
 	THREAD_UPDATE_FUNCTION m_fnUpdateFunc;
 };
 

@@ -6,20 +6,24 @@ ppe_count_cbg.ps
 
 #include <../struct.h>
 
-half3 Param;
+//##########################################################################
+
+half3 g_vParam;
 //x - contrast;
 //y - gamma;	
 //z - bright;
 
-sampler2D FrameSampler:register(s0);
+//##########################################################################
 
-half4 main(vs_out_pp IN):COLOR0
+sampler2D g_sColor:register(s0);
+
+//##########################################################################
+
+half4 main(VSO_PP IN):COLOR0
 {
-	half4 color = tex2D(FrameSampler,IN.TexUV);
+	half4 vColor = tex2D(g_sColor,IN.vTexUV);
 	
-	color.r = pow(((Param.x * color.r) + Param.z),(1.f/Param.y));
-	color.g = pow(((Param.x * color.g) + Param.z),(1.f/Param.y));
-	color.b = pow(((Param.x * color.b) + Param.z),(1.f/Param.y));
+	vColor.rgb = pow((g_vParam.x * vColor.rgb) + g_vParam.z, 1.0/g_vParam.y);
 
-	return color;
+	return vColor;
 }

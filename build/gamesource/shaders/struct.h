@@ -7,193 +7,224 @@ struct.h
 
 #include <../gdefines.h>
 
-//ПОСТПРОЦЕСС
-//{
-//выходная структура вершинного шейдера, восстановление позиции по глубине
-struct vs_out_res_pos
+/* \name ПОСТПРОЦЕСС
+@{*/
+
+//! выходная структура вершинного шейдера, восстановление позиции по глубине
+struct VSO_ResPos
 {
-	half4 Position	:POSITION0;
-	half2 TexUV		:TEXCOORD0;
+	half4 vPosition	:POSITION0;
+	half2 vTexUV	:TEXCOORD0;
 	
-	half3 EyeRay	:TEXCOORD1;
-	half3 WorldRay	:TEXCOORD2;
+	half3 vEyeRay	:TEXCOORD1;
+	half3 vWorldRay	:TEXCOORD2;
 };
 
-//стандартная структура постпроцесса, на вход врешинному шейдеру
-struct vs_in_pp
+//! стандартная структура постпроцесса, на вход врешинному шейдеру
+struct VSI_PP
 {
-	half4 Position	:POSITION;
-	half2 TexUV	:TEXCOORD0;
+	half4 vPosition	:POSITION;
+	half2 vTexUV	:TEXCOORD0;
 };
 
-//стандартная структура постпроцесса, на выход врешинного шейдера и на вход пиксельному
-struct vs_out_pp
+//! стандартная структура постпроцесса, на выход врешинного шейдера и на вход пиксельному
+struct VSO_PP
 {
-	half4 Position	:POSITION0;
-	half2 TexUV	:TEXCOORD0;
-};
-//}
-
-//UNION ALPHA, структура результата работы объединения полупрозрачных слоев
-//{
-struct ps_out_alpha_union
-{
-	half4 Color		: COLOR0;
-	half4 Depth0	: COLOR1;
-	half4 Depth1	: COLOR2;
-};
-//}
-
-//РАСТИТЕЛЬНОСТЬ
-struct vs_in_green 
-{
-	half3 Position	:POSITION0;
-	half3 Normal	:NORMAL0;
-	half2 TexUV		:TEXCOORD0;
-	half3 InstancePos	:TEXCOORD1;
-	half3 InstanceTrans	:TEXCOORD2;
-	half2 InstanceSinCosRot	:TEXCOORD3;
+	half4 vPosition	:POSITION0;
+	half2 vTexUV	:TEXCOORD0;
 };
 
-//СТАТИЧЕСКАЯ ГЕОМЕТРИЯ
-struct vs_in_geom
-{
-	half3 Position	:POSITION0;
-	half2 TexUV		:TEXCOORD0;
-	half3 Normal	:NORMAL0;
-};
+//!@}
 
-//АНИМАЦИОННАЯ МОДЕЛЬ
-struct vs_in_anim
-{
-	half3 Pos : POSITION0;
-	half2 Tex : TEXCOORD0;
-	half3 Norm : NORMAL0;
-	uint4 Bones : BLENDINDICES0;
-	half4 Weights : BLENDWEIGHT0;
-};
 
-//ВОДА
-struct vs_out_water
+//! union alpha, структура результата работы объединения полупрозрачных слоев
+struct PSO_UnionAlpha
 {
-	half4 Position:	POSITION;
-	half2 Tex2:		TEXCOORD0;			//текстурные координаты для bump карты
-	half2 Tex3:		TEXCOORD1;			//текстурные координаты для du/dv карты
-	half4 Pos:		TEXCOORD2;			//позиция (для расчета координат отражения)
-	half3 ViewDir:	TEXCOORD3;
-	half2 TexUV:	TEXCOORD4;			//нормальные текстурные координаты для текстуры мусора
-	half3 Normal:	TEXCOORD5;
-};
-
-//ОБЩАЯ СТРУКТУРА ВЫДАВАЕМАЯ ВЕРШИННЫМ ШЕЙДЕРОМ (И ПЕРЕДАВАЕМАЯ В ПИКСЕЛЬНЫЙ)
-struct vs_out_gcommon 
-{
-	half4 Position	:POSITION0;
-	half2 TexUV		:TEXCOORD0;
-	half3 Normal	:TEXCOORD1;
-	half4 Pos		:TEXCOORD2;
-};
-
-struct vs_out_refcube 
-{
-	half4 Position	:POSITION0;
-	half2 TexUV		:TEXCOORD0;
-	half3 Normal	:TEXCOORD1;
-	half4 Pos		:TEXCOORD2;
-	half3 CubePPos	:TEXCOORD3;
-};
-
-//СТРУКТУРА ВЫВОДА ВСЕХ ДАННЫХ ДЛЯ ОТЛОЖЕННОГО ОСВЕЩЕНИЯ ПРИ MRT
-struct ps_out_ds_mrt 
-{
-	half4 Color		:COLOR0;
-	half4 Normal	:COLOR1;
-	half4 Param		:COLOR2;
-	half4 Depth		:COLOR3;
-};
-
-//СТРУКТУРА ВЫВОДА БАЗОВОЙ ИНФОМРАЦИИ ПРИ ПРОСЧЕТАХ ОСВЕЩЕНИЯ (ДАННЫЕ ИЗ ps_out_ds_mrt)
-struct ps_out_com_lighting
-{
-	half4 Amdient	:COLOR0;
-	half4 Spec		:COLOR1;
+	half4 vColor	: COLOR0;
+	half4 vDepth0	: COLOR1;
+	half4 vDepth1	: COLOR2;
 };
 
 
-//SKYBOX
-//{
-struct vs_in_skybox
+//! растительность
+struct VSI_Green 
 {
-	half4 Position	:POSITION0;
-	half3 TexUV		:TEXCOORD0;
+	half3 vPosition		:POSITION0;
+	half3 vNormal		:NORMAL0;
+	half2 vTexUV		:TEXCOORD0;
+	half3 vInstPos		:TEXCOORD1;
+	half3 vInstTrans	:TEXCOORD2;
+	half2 vInstSinCosRot:TEXCOORD3;
 };
 
-struct vs_out_skybox
-{
-	half4 Position	:POSITION0;
-	half3 TexUV		:TEXCOORD0;
-};
-//}
 
-//SKYCLOUDS
-//{
-struct vs_in_skyclouds
+//! статическая геометрия
+struct VSI_Geometry
 {
-	half4 Position	:POSITION0;
-	half2 TexUV		:TEXCOORD0;
+	half3 vPosition	:POSITION0;
+	half2 vTexUV	:TEXCOORD0;
+	half3 vNormal	:NORMAL0;
 };
 
-struct vs_out_skyclouds
-{
-	half4 Position	:POSITION;
-	half2 TexUV		:TEXCOORD0;
-};
-//}
 
-//PARTICLES
-//{
-struct vs_in_particles 
+//! анимационная модель
+struct VSI_Animation
 {
-	half3 Position	:POSITION0;
-	half2 TexUV 	:TEXCOORD0;
+	half3 vPosition	: POSITION0;
+	half2 vTexUV	: TEXCOORD0;
+	half3 vNormal	: NORMAL0;
+	half3 vTangent	: TANGENT0;
+	half3 vBinormal	: BINORMAL0;
+	uint4 vBones	: BLENDINDICES0;
+	half4 vWeights	: BLENDWEIGHT0;
+};
+
+
+//! вода
+struct VSO_WaterPlane
+{
+	half4 vPosition:	POSITION;
 	
-	half3 InstancePos	:TEXCOORD1;
-	half4 InstanceTex	:TEXCOORD2;
-	half InstanceSize	:TEXCOORD3;
-	half InstanceAlpha	:TEXCOORD4;
+	//! текстурные координаты для bump карты
+	half2 vTexUV2:		TEXCOORD0;			
 	
-	half2 InstanceRot1	:TEXCOORD5;
-	half InstanceLight	:TEXCOORD6;
+	//! текстурные координаты для du/dv карты
+	half2 vTexUV3:		TEXCOORD1;			
+	
+	//! позиция (для расчета координат отражения)
+	half4 vPos:			TEXCOORD2;			
+	half3 ViewDir:		TEXCOORD3;
+	
+	//! нормальные текстурные координаты
+	half2 vTexUV:		TEXCOORD4;			
+	half3 vNormal:		TEXCOORD5;
 };
 
-struct vs_out_particles 
+
+//! общая структура выдаваемая вершинным шейдером (и передаваемая в пиксельный)
+struct VSO_SceneCommon 
 {
-	half4 Position	:POSITION0;
-	half2 TexUV 	:TEXCOORD0;
+	half4 vPosition	:POSITION0;
+	half2 vTexUV	:TEXCOORD0;
+	half3 vNormal	:TEXCOORD1;
+	half4 vPos		:TEXCOORD2;
+};
+
+
+//! выходная структура с для кубического отражения
+struct VSO_RefCube 
+{
+	half4 vPosition	:POSITION0;
+	half2 vTexUV	:TEXCOORD0;
+	half3 vNormal	:TEXCOORD1;
+	half4 vPos		:TEXCOORD2;
+	half3 vCubePPos	:TEXCOORD3;
+};
+
+
+//! структура вывода всех данных для отложенного освещения при mrt
+struct PSO_Gbuffer 
+{
+	half4 vColor	:COLOR0;
+	half4 vNormal	:COLOR1;
+	half4 vParam	:COLOR2;
+	half4 vDepth	:COLOR3;
+};
+
+
+//! структура вывода базовой инфомрации при просчетах освещения (данные из #PSO_Gbuffer)
+struct PSO_Lbuffer
+{
+	half4 vAmdient	:COLOR0;
+	half4 vSpecular	:COLOR1;
+};
+
+
+/*! \name SkyBox
+@{*/
+
+struct VSI_SkyBox
+{
+	half4 vPosition	:POSITION0;
+	half3 vTexUV	:TEXCOORD0;
+};
+
+struct VSO_SkyBox
+{
+	half4 vPosition	:POSITION0;
+	half3 vTexUV	:TEXCOORD0;
+};
+
+//!@}
+
+
+/*! \name SkyClouds
+@{*/
+
+struct VSI_SkyClouds
+{
+	half4 vPosition	:POSITION0;
+	half2 vTexUV	:TEXCOORD0;
+};
+
+struct VSO_SkyClouds
+{
+	half4 vPosition	:POSITION;
+	half2 vTexUV	:TEXCOORD0;
+};
+
+//!@}
+
+
+/*! \name Particles
+@{*/
+
+struct VSI_Particles 
+{
+	half3 vPosition	:POSITION0;
+	half2 vTexUV 	:TEXCOORD0;
+	
+	half3 vInstPos	:TEXCOORD1;
+	half4 vInstTex	:TEXCOORD2;
+	half vInstSize	:TEXCOORD3;
+	half vInstAlpha	:TEXCOORD4;
+	
+	half2 vInstRot1	:TEXCOORD5;
+	half vInstLight	:TEXCOORD6;
+};
+
+struct VSO_Particles 
+{
+	half4 vPosition	:POSITION0;
+	half2 vTexUV 	:TEXCOORD0;
 	half Alpha		:TEXCOORD1;
-	half4 Pos		:TEXCOORD2;
+	half4 vPos		:TEXCOORD2;
 	half Light		:TEXCOORD3;
-	half2 TexUV2	:TEXCOORD4;
+	half2 vTexUV2	:TEXCOORD4;
 };
-//}
 
-//AIGRID
-//{
-struct vs_input_aigrid 
+//!@}
+
+
+/*! \name AI grid
+@{*/
+
+struct VSI_AIgrid 
 {
-	half3 Position		:POSITION0;
-	half2 TexUV 		:TEXCOORD0;
+	half3 vPosition	:POSITION0;
+	half2 vTexUV 	:TEXCOORD0;
 	
-	half3 InstancePos	:TEXCOORD1;
-	half4 InstanceTex	:TEXCOORD2;
-	half4 InstanceCol	:COLOR0;
+	half3 vInstPos	:TEXCOORD1;
+	half4 vInstTex	:TEXCOORD2;
+	half4 vInstColor:COLOR0;
 };
 
-struct vs_output_aigrid 
+struct VSO_AIgrid 
 {
-	half4 Position	:POSITION0;
-	half2 TexUV		:TEXCOORD0;
-	half4 Pos		:TEXCOORD1;
-	half4 Color		:TEXCOORD2;
+	half4 vPosition	:POSITION0;
+	half2 vTexUV	:TEXCOORD0;
+	half4 vPos		:TEXCOORD1;
+	half4 vColor	:TEXCOORD2;
 };
-//}
+
+//!@}

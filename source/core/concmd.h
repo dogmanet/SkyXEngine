@@ -1,6 +1,11 @@
 
-#ifndef SXCONCMD_H
-#define SXCONCMD_H
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __CONCMD_H
+#define __CONCMD_H
 
 #include "sxcore.h"
 #include <common/AssotiativeArray.h>
@@ -27,7 +32,7 @@ struct ConCmd
 	char * szDesc;
 };
 
-bool ConsoleConnect(bool bNewInstance = false);
+bool ConsoleConnect(const char *szName = 0, bool bNewInstance = false);
 void ConsoleDisconnect();
 void ConsoleRegisterCmds();
 

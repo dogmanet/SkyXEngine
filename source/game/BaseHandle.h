@@ -1,15 +1,16 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
 Ручки
 */
 
-#ifndef _BaseHandle_H_
-#define _BaseHandle_H_
+#ifndef __BASE_HANDLE_H
+#define __BASE_HANDLE_H
 
 #include "BaseWeaponAddon.h"
 

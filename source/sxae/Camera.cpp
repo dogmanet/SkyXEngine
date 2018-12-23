@@ -1,3 +1,9 @@
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "Camera.h"
 
 Camera::Camera():
@@ -85,12 +91,12 @@ void Camera::Strafe(float fDelta)
 	UpdateMatrix();
 }
 
-void Camera::Move(CAMERA_MOVE m, bool state)
+void Camera::move(CAMERA_MOVE m, bool state)
 {
 	bMove[m] = state;
 }
 
-void Camera::Advance()
+void Camera::advance()
 {
 	if(bMove[CAMERA_MOVE_FORWARD])
 	{
@@ -111,7 +117,7 @@ void Camera::Advance()
 	}
 }
 
-float3_t Camera::GetPos()
+float3_t Camera::getPos()
 {
 	return(m_vPosition);
 }

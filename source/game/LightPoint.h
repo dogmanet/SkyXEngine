@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -12,16 +12,16 @@ See the license in LICENSE
 #ifndef __LIGHTPOINT_H
 #define __LIGHTPOINT_H
 
-#include "SXpointEntity.h"
+#include "PointEntity.h"
 
-#define LIGHT_INITIALLY_DARK 0x00010000
+#define LIGHT_INITIALLY_DARK ENT_FLAG_0
 
 /*! Точечный источник света
 \ingroup clight
 */
-class CLightPoint : public SXpointEntity
+class CLightPoint : public CPointEntity
 {
-	DECLARE_CLASS(CLightPoint, SXpointEntity);
+	DECLARE_CLASS(CLightPoint, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();
@@ -38,11 +38,18 @@ public:
 	void setShadowDist(float fShadowDist) { m_fShadowDist = fShadowDist; };
 	float getShadowDist() const { return m_fShadowDist; };
 
+	void setShadowIntensity(float fShadowIntensity) { m_fShadowIntensity = fShadowIntensity; };
+	float getShadowIntensity() const { return m_fShadowIntensity; };
+
 	void setShadowType(int iShadowType) { m_iShadowType = iShadowType; };
 	int getShadowType() const { return m_iShadowType; };
 
 	void setEnable(bool isEnable);
 	bool getEnable() const { return m_isEnable; };
+
+	bool getMainColor(float3_t *pOut); 
+	
+	void updateFlags();
 
 protected:
 	ID m_idLight;
@@ -52,8 +59,9 @@ protected:
 	float m_fShadowDist;
 	int m_iShadowType;
 	bool m_isEnable;
+	float m_fShadowIntensity;
 
-	void OnSync();
+	void onSync();
 
 	void turnOn(inputdata_t * pInputdata);
 	void turnOff(inputdata_t * pInputdata);

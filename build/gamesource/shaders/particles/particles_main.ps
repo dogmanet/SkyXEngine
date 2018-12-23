@@ -5,10 +5,15 @@ particles_main.ps
 */
 
 #include <../struct.h>
+#include <../mtrl.h>
+
+//##########################################################################
 
 sampler2D BaseSampler:register(s0);
 sampler2D DepthSampler:register(s1);
 sampler2D SceneSampler:register(s2);
+
+//##########################################################################
 
 half RefractCoef;
 half SoftCoef;
@@ -16,21 +21,23 @@ half ColorCoef;
 half4 Color;
 half2 NearFar;
 
-half4 main(vs_out_particles IN):COLOR0
+//##########################################################################
+
+half4 main(VSO_Particles IN):COLOR0
 {
-	half4 color = tex2D(BaseSampler,IN.TexUV);
+	half4 color = tex2D(BaseSampler,IN.vTexUV);
 	color.rgb = lerp(color.rgb, Color.rgb, Color.a);
 	color.rgb *= ColorCoef;
 	color.a *= IN.Alpha.x;
 	#if defined(PART_SOFT) || defined(PART_REFRACTION)
-	half2 texuv = IN.Pos.xy / IN.Pos.w;
+	half2 texuv = IN.vPos.xy / IN.vPos.w;
 	texuv.x = texuv.x * 0.5f + 0.5f;
 	texuv.y = texuv.y * (-0.5f) + 0.5f;
 	#endif
 	
 	#if defined(PART_SOFT)
-	half depthmap = tex2D(DepthSampler,texuv);
-	half curdepth = IN.Pos.z / NearFar.y;
+	half depthmap = tex2D(DepthSampler,texuv).r;
+	half curdepth = IN.vPos.z / NearFar.y;
 	
 	color.a *= saturate((depthmap - curdepth)*NearFar.y)*SoftCoef;
 	#endif

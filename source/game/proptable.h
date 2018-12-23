@@ -1,11 +1,34 @@
-#ifndef _PROPTABLE_H_
-#define _PROPTABLE_H_
+
+/***********************************************************
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __PROPTABLE_H
+#define __PROPTABLE_H
 
 #include <common/SXmath.h>
 
-class SXbaseEntity;
+class CBaseEntity;
 
-//! типы полей данных
+#define ENT_FLAG_0 0x00010000
+#define ENT_FLAG_1 0x00020000
+#define ENT_FLAG_2 0x00040000
+#define ENT_FLAG_3 0x00080000
+#define ENT_FLAG_4 0x00100000
+#define ENT_FLAG_5 0x00200000
+#define ENT_FLAG_6 0x00400000
+#define ENT_FLAG_7 0x00800000
+#define ENT_FLAG_8 0x01000000
+#define ENT_FLAG_9 0x02000000
+#define ENT_FLAG_10 0x04000000
+#define ENT_FLAG_11 0x08000000
+#define ENT_FLAG_12 0x10000000
+#define ENT_FLAG_13 0x20000000
+#define ENT_FLAG_14 0x40000000
+#define ENT_FLAG_15 0x80000000
+
+//! С‚РёРїС‹ РїРѕР»РµР№ РґР°РЅРЅС‹С…
 enum PDF_TYPE
 {
 	PDF_NONE,
@@ -24,7 +47,7 @@ enum PDF_TYPE
 	PDF_OUTPUT
 };
 
-//! типы редакторов полей
+//! С‚РёРїС‹ СЂРµРґР°РєС‚РѕСЂРѕРІ РїРѕР»РµР№
 enum PDE_TYPE
 {
 	PDE_NONE = 0,
@@ -37,22 +60,76 @@ enum PDE_TYPE
 enum PDF_FLAG
 {
 	PDFF_NONE       = 0x00,
-	PDFF_NOEXPORT   = 0x01, //!< Не экспортировать поле в файл
-	PDFF_NOEDIT     = 0x02, //!< Не отображать поле в редакторе
-	PDFF_INPUT      = 0x04, //!< Поле входа
-	PDFF_OUTPUT     = 0x08, //!< Поле выхода
+	PDFF_NOEXPORT   = 0x01, //!< РќРµ СЌРєСЃРїРѕСЂС‚РёСЂРѕРІР°С‚СЊ РїРѕР»Рµ РІ С„Р°Р№Р»
+	PDFF_NOEDIT     = 0x02, //!< РќРµ РѕС‚РѕР±СЂР°Р¶Р°С‚СЊ РїРѕР»Рµ РІ СЂРµРґР°РєС‚РѕСЂРµ
+	PDFF_INPUT      = 0x04, //!< РџРѕР»Рµ РІС…РѕРґР°
+	PDFF_OUTPUT     = 0x08, //!< РџРѕР»Рµ РІС‹С…РѕРґР°
+	PDFF_MESSAGE    = 0x10, //!< РџРѕР»Рµ СЃРѕРѕР±С‰РµРЅРёСЏ
 };
 
 enum ENT_FLAG
 {
-	EF_NONE           = 0x0000,
-	EF_EXPORT         = 0x0001,
-	EF_LEVEL          = 0x0002,
+	EF_NONE            = 0x0000,
+	EF_EXPORT          = 0x0001,
+	EF_LEVEL           = 0x0002,
+	EF_REMOVED         = 0x0004,
+	EF_NO_WORLD_LOOKUP = 0x0008,
 
-	EF_LAST           = 0x8000
+	EF_LAST            = 0x8000
 };
 
-typedef int SXbaseEntity::*fieldtype;
+typedef int CBaseEntity::*fieldtype;
+
+typedef void (CBaseEntity::*PFNFIELDSETV3)(const float3&);
+typedef void (CBaseEntity::*PFNFIELDSETF)(float);
+typedef void (CBaseEntity::*PFNFIELDSETSZ)(const char*);
+typedef void (CBaseEntity::*PFNFIELDSETI)(int);
+typedef void (CBaseEntity::*PFNFIELDSETB)(bool);
+typedef void (CBaseEntity::*PFNFIELDSETQ)(const SMQuaternion&);
+typedef void (CBaseEntity::*PFNFIELDSETE)(CBaseEntity*);
+union PFNFIELDSET
+{
+	PFNFIELDSET():
+		__(0)
+	{
+	}
+	PFNFIELDSET(PFNFIELDSETV3 arg):
+		v3(arg)
+	{
+	}
+	PFNFIELDSET(PFNFIELDSETF arg):
+		f(arg)
+	{
+	}
+	PFNFIELDSET(PFNFIELDSETSZ arg):
+		sz(arg)
+	{
+	}
+	PFNFIELDSET(PFNFIELDSETI arg):
+		i(arg)
+	{
+	}
+	PFNFIELDSET(PFNFIELDSETB arg):
+		b(arg)
+	{
+	}
+	PFNFIELDSET(PFNFIELDSETQ arg):
+		q(arg)
+	{
+	}
+	PFNFIELDSET(PFNFIELDSETE arg):
+		e(arg)
+	{
+	}
+	PFNFIELDSETV3 v3;
+	PFNFIELDSETF f;
+	PFNFIELDSETSZ sz;
+	PFNFIELDSETI i;
+	PFNFIELDSETB b;
+	PFNFIELDSETQ q;
+	PFNFIELDSETE e;
+	int __;
+};
 
 struct editor_kv
 {
@@ -69,9 +146,9 @@ struct prop_editor_t
 
 struct inputdata_t
 {
-	SXbaseEntity *pInflictor; //!< Косвенный активатор (вызвавший эту цепочку активаций)
-	SXbaseEntity *pActivator; //!< Непосредственный активатор
-	PDF_TYPE type; //!< Тип аргумента
+	CBaseEntity *pInflictor; //!< РљРѕСЃРІРµРЅРЅС‹Р№ Р°РєС‚РёРІР°С‚РѕСЂ (РІС‹Р·РІР°РІС€РёР№ СЌС‚Сѓ С†РµРїРѕС‡РєСѓ Р°РєС‚РёРІР°С†РёР№)
+	CBaseEntity *pActivator; //!< РќРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРЅС‹Р№ Р°РєС‚РёРІР°С‚РѕСЂ
+	PDF_TYPE type; //!< РўРёРї Р°СЂРіСѓРјРµРЅС‚Р°
 	union
 	{
 		int i;
@@ -83,7 +160,7 @@ struct inputdata_t
 	float3_t v3Parameter;
 };
 
-typedef void(SXbaseEntity::*input_func)(inputdata_t * pInputData);
+typedef void(CBaseEntity::*input_func)(inputdata_t * pInputData);
 
 struct propdata_t
 {
@@ -103,6 +180,15 @@ struct propdata_t
 		szEdName(edname),
 		editor(ed)
 	{}
+	propdata_t(fieldtype f, PDF_TYPE t, int fl, const char *key, const char *edname, PFNFIELDSET _fnSet, prop_editor_t ed):
+		pField(f),
+		type(t),
+		flags(fl),
+		szKey(key),
+		szEdName(edname),
+		editor(ed),
+		fnSet(_fnSet)
+	{}
 	propdata_t(input_func d, PDF_TYPE t, int fl, const char *key, const char *edname, prop_editor_t ed):
 		fnInput(d),
 		type(t),
@@ -121,13 +207,14 @@ struct propdata_t
 	const char * szKey;
 	const char * szEdName;
 	prop_editor_t editor;
+	PFNFIELDSET fnSet;
 };
 
 
 struct input_t
 {
 	input_func fnInput;
-	SXbaseEntity *pTarget;
+	CBaseEntity *pTarget;
 	inputdata_t data;
 };
 
@@ -157,7 +244,7 @@ struct output_t
 		bDirty(false)
 	{
 	}
-	void fire(SXbaseEntity *pInflictor, SXbaseEntity *pActivator);
+	void fire(CBaseEntity *pInflictor, CBaseEntity *pActivator);
 
 	bool bDirty;
 	int iOutCount;
@@ -181,17 +268,17 @@ prop_editor_t _GetEditorFilefield(int start, ...);
 
 #define DECLARE_PROPTABLE() \
 	\
-	friend class EntityFactoryMap; \
-	friend class EntityFactory<ThisClass>; \
+	friend class CEntityFactoryMap; \
+	friend class CEntityFactory<ThisClass>; \
 	static proptable_t m_pPropTable; \
 	\
 protected:\
 	static void InitPropData(); \
-	virtual proptable_t * GetPropTable(); \
+	virtual proptable_t * getPropTable(); \
 	static proptable_t * SGetPropTable(); \
 	static void ReleasePropData();\
 public:\
-	virtual propdata_t * GetField(const char * name);\
+	virtual propdata_t * getField(const char * name);\
 private:
 
 #define _BEGIN_PROPTABLE(cls, bclpt) \
@@ -210,15 +297,15 @@ proptable_t * cls::SGetPropTable()\
 	return(&m_pPropTable);\
 }\
 \
-proptable_t * cls::GetPropTable()\
+proptable_t * cls::getPropTable()\
 {\
 	if(!m_pPropTable.numFields)\
 		InitPropData(); \
 	return(&m_pPropTable); \
 }\
-propdata_t * cls::GetField(const char * name)\
+propdata_t * cls::getField(const char * name)\
 {\
-	proptable_t * pt = GetPropTable();\
+	proptable_t * pt = getPropTable();\
 	while(pt)\
 	{\
 		for(int i = 0; i < pt->numFields; ++i)\
@@ -258,13 +345,15 @@ void cls::InitPropData() \
 	} \
 } 
 
-#define DECLARE_TRIVIAL_CONSTRUCTOR() ThisClass(EntityManager * pMgr):BaseClass(pMgr){}
-#define DECLARE_CONSTRUCTOR() ThisClass(EntityManager * pMgr);
+#define DECLARE_TRIVIAL_CONSTRUCTOR() ThisClass(CEntityManager * pMgr):BaseClass(pMgr){}
+#define DECLARE_CONSTRUCTOR() ThisClass(CEntityManager * pMgr);
 
 const char * GetEmptyString();
 
 #define EDITOR_NONE {PDE_NONE, NULL}}
 #define EDITOR_TEXTFIELD {PDE_TEXTFIELD, NULL}}
+#define EDITOR_TIMEFIELD EDITOR_TEXTFIELD
+#define EDITOR_ANGLES EDITOR_TEXTFIELD
 #define EDITOR_FLAGS {PDE_FLAGS, NULL}}
 
 #define EDITOR_COMBOBOX _GetEditorCombobox(0
@@ -286,8 +375,19 @@ const char * GetEmptyString();
 #define DEFINE_FIELD_PARENT(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_PARENT, flags, keyname, edname, editor
 #define DEFINE_FIELD_FLAGS(field, flags, keyname, edname, editor)  , {(fieldtype)&DataClass::field, PDF_FLAGS,  flags, keyname, edname, editor
 
+#define DEFINE_FIELD_STRINGFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_STRING, flags, keyname, edname, (void(CBaseEntity::*)(const char*))&ThisClass::fn, editor
+#define DEFINE_FIELD_VECTORFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_VECTOR, flags, keyname, edname, (void(CBaseEntity::*)(const float3&))&ThisClass::fn, editor
+#define DEFINE_FIELD_ANGLESFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_ANGLES, flags, keyname, edname, (void(CBaseEntity::*)(const SMQuaternion&))&ThisClass::fn, editor
+#define DEFINE_FIELD_INTFN(field, flags, keyname, edname, fn, editor)    , {(fieldtype)&DataClass::field, PDF_INT,    flags, keyname, edname, (void(CBaseEntity::*)(int))&ThisClass::fn, editor
+#define DEFINE_FIELD_FLOATFN(field, flags, keyname, edname, fn, editor)  , {(fieldtype)&DataClass::field, PDF_FLOAT,  flags, keyname, edname, (void(CBaseEntity::*)(float))&ThisClass::fn, editor
+#define DEFINE_FIELD_BOOLFN(field, flags, keyname, edname, fn, editor)   , {(fieldtype)&DataClass::field, PDF_BOOL,   flags, keyname, edname, (void(CBaseEntity::*)(bool))&ThisClass::fn, editor
+#define DEFINE_FIELD_ENTITYFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_ENTITY, flags, keyname, edname, (void(CBaseEntity::*)(CBaseEntity*))&ThisClass::fn, editor
+//#define DEFINE_FIELD_PARENTFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_PARENT, flags, keyname, edname, fn, editor
+//#define DEFINE_FIELD_FLAGSFN(field, flags, keyname, edname, fn, editor)  , {(fieldtype)&DataClass::field, PDF_FLAGS,  flags, keyname, edname, fn, editor
+
 #define DEFINE_INPUT(method, keyname, edname, argtype) , {(input_func)&DataClass::method, argtype, PDFF_NOEDIT | PDFF_INPUT, keyname, edname, EDITOR_NONE
 #define DEFINE_OUTPUT(field, keyname, edname) , {(fieldtype)&DataClass::field, PDF_OUTPUT, PDFF_NOEDIT | PDFF_OUTPUT, keyname, edname, EDITOR_NONE
+#define DEFINE_MESSAGE(method, keyname, edname, argtype) , {(input_func)&DataClass::method, argtype, PDFF_NOEDIT | PDFF_MESSAGE, keyname, edname, EDITOR_NONE
 
 #define DEFINE_FLAG(value, edname) , {(fieldtype)NULL, PDF_FLAG, value, NULL, edname, {PDE_FLAGS, NULL}}
 

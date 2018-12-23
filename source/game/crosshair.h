@@ -1,5 +1,11 @@
-#ifndef _crosshair_H_
-#define _crosshair_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __CROSSHAIR_H
+#define __CROSSHAIR_H
 
 //#include <gdefines.h>
 #include "sxgame.h"
@@ -10,7 +16,7 @@
 
 static_assert(CROSSHAIR_MINSEGS <= CROSSHAIR_MAXSEGS, "Maxsegs cannot be lesser than minsegs!");
 
-class Crosshair
+class CCrosshair
 {
 public:
 	enum STYLE
@@ -19,25 +25,25 @@ public:
 		SCALED
 	};
 
-	Crosshair();
-	~Crosshair();
+	CCrosshair();
+	~CCrosshair();
 
-	void Update();
-	void Render();
-	void OnSync();
+	void update();
+	void render();
+	void onSync();
 
-	void Enable(bool en = true);
+	void enable(bool en = true);
 
-	void SetNumSegmens(int num);
-	void SetAngle(float a);
-	void SetFixedRadius(float r);
-	void SetStyle(STYLE style);
-	void SetMaxSize(float size);
-	void SetTexture(ID id);
+	void setNumSegmens(int num);
+	void setAngle(float a);
+	void setFixedRadius(float r);
+	void setStyle(STYLE style);
+	void setMaxSize(float size);
+	void setTexture(ID id);
 	
-	void SetSize(float size);
+	void setSize(float size);
 
-	void SetTexInfo(const float2_t & offs, const float2_t & size);
+	void setTexInfo(const float2_t & offs, const float2_t & size);
 
 protected:
 
@@ -46,8 +52,6 @@ protected:
 		float3_t pos;
 		float2_t tex;
 	} Vertex;
-
-	void _BuildBuffer();
 
 	bool m_bDirty;
 	bool m_bBuildBuff;

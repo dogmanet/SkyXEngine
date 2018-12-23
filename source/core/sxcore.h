@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file 
@@ -18,6 +18,7 @@ See the license in LICENSE
 
 #include <fstream>
 #include <gdefines.h>
+#include <chrono>
 
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
@@ -27,7 +28,7 @@ See the license in LICENSE
 #include <tlhelp32.h>
 
 #define SM_D3D_CONVERSIONS
-#include <common\sxmath.h>
+#include <common/sxmath.h>
 
 //! тип функции для обработки в менеджере задач
 typedef void(*THREAD_UPDATE_FUNCTION)();
@@ -35,19 +36,20 @@ typedef void(*THREAD_UPDATE_FUNCTION)();
 //! значения определющие поведение задачи
 enum CORE_TASK_FLAG
 {
-	CORE_TASK_FLAG_NONE			= 0x0,
+	CORE_TASK_FLAG_NONE        = 0x0000,
 
-	CORE_TASK_FLAG_REPEATING	= 0x1 << 0,	//!< Задача будет повторяться, если не указано - выполнится только один раз
-	CORE_TASK_FLAG_THREADSAFE	= 0x1 << 1,	//!< Задача может быть выполнена в любом потоке
-	CORE_TASK_FLAG_FRAME_SYNC	= 0x1 << 2,	//!< Задаче необходима синхронизация по границе кадра
-	CORE_TASK_FLAG_ON_SYNC		= 0x1 << 3,	//!< Это выполняется в момент синхронизации(выполняет необходимые действия для обмена данными во время синхронизации)
+	CORE_TASK_FLAG_REPEATING   = 0x0001, //!< Задача будет повторяться, если не указано - выполнится только один раз
+	CORE_TASK_FLAG_THREADSAFE  = 0x0002, //!< Задача может быть выполнена в любом потоке
+	CORE_TASK_FLAG_FRAME_SYNC  = 0x0004, //!< Задаче необходима синхронизация по границе кадра
+	CORE_TASK_FLAG_ON_SYNC     = 0x0008, //!< Это выполняется в момент синхронизации(выполняет необходимые действия для обмена данными во время синхронизации)
+	CORE_TASK_FLAG_FOR_LOOP = 0x0010, //!< Для внутреннего использования
 
-	CORE_TASK_FLAG_SINGLETHREADED = CORE_TASK_FLAG_NONE,				//!< Задача выполняется в главном потоке, один раз
-	CORE_TASK_FLAG_SINGLETHREADED_REPEATING = CORE_TASK_FLAG_REPEATING, //!< Задача выполняется в главном потоке, повторяется
-	CORE_TASK_FLAG_BACKGROUND = CORE_TASK_FLAG_THREADSAFE,				//!< Задача выполняется в фоне(не ожидает синхронизации) один раз
+	CORE_TASK_FLAG_MAINTHREAD = CORE_TASK_FLAG_NONE, //!< Задача выполняется в главном потоке, один раз
+	CORE_TASK_FLAG_MAINTHREAD_REPEATING = CORE_TASK_FLAG_REPEATING, //!< Задача выполняется в главном потоке, повторяется
+	CORE_TASK_FLAG_BACKGROUND = CORE_TASK_FLAG_THREADSAFE, //!< Задача выполняется в фоне(не ожидает синхронизации) один раз
 	CORE_TASK_FLAG_BACKGROUND_REPEATING = CORE_TASK_FLAG_THREADSAFE | CORE_TASK_FLAG_REPEATING,		//!< Задача выполняется в фоне(не ожидает синхронизации), по завершении повторяется
-	CORE_TASK_FLAG_BACKGROUND_SYNC = CORE_TASK_FLAG_THREADSAFE | CORE_TASK_FLAG_FRAME_SYNC,			//!< Задача может выполняться в любом потоке, ожидает синхронизации, выполняется один раз
-	CORE_TASK_FLAG_BACKGROUND_SYNC_REPEATING = CORE_TASK_FLAG_THREADSAFE | CORE_TASK_FLAG_REPEATING | CORE_TASK_FLAG_FRAME_SYNC,	//!< Задача может выполняться в любом потоке, ожидает синхронизации, выполняется многократно
+	CORE_TASK_FLAG_THREADSAFE_SYNC = CORE_TASK_FLAG_THREADSAFE | CORE_TASK_FLAG_FRAME_SYNC,			//!< Задача может выполняться в любом потоке, ожидает синхронизации, выполняется один раз
+	CORE_TASK_FLAG_THREADSAFE_SYNC_REPEATING = CORE_TASK_FLAG_THREADSAFE | CORE_TASK_FLAG_REPEATING | CORE_TASK_FLAG_FRAME_SYNC,	//!< Задача может выполняться в любом потоке, ожидает синхронизации, выполняется многократно
 
 	CORE_TASK_FLAG_ALL = ~0x0
 };
@@ -56,16 +58,23 @@ enum CORE_TASK_FLAG
 !@{*/
 
 //! возвращает версию ядра
-SX_LIB_API long Core_0GetVersion();	
+SX_LIB_API long Core_0GetVersion();
 
 //! создание нового ядра, name - имя, is_unic - должно ли имя ядра быть уникальным
-SX_LIB_API void Core_0Create(const char *szName, bool isUnic = true); 
+SX_LIB_API void Core_0Create(const char *szName, const char *szNameConsole, bool isUnic = true);
+
+//! Загружает командную строку
+SX_LIB_API void Core_0LoadCommandLine(const char *szCommandLine);
+
+//! Выполняет консольные команды из командной строки
+SX_LIB_API void Core_0ExecCommandLine();
+
+//! Выполняет консольные команды из командной строки
+SX_LIB_API const char *Core_0GetCommandLineArg(const char *szArg, const char *szDefault=NULL);
+
 
 //! установка своего обработчика вывода отладочной информации
 SX_LIB_API void Core_Dbg_Set(report_func rf); 
-
-//! существует ли файл
-SX_LIB_API bool Core_0FileExists(const char *szPath);			
 
 //! копирует строку в буфер обмена
 SX_LIB_API bool Core_0ClipBoardCopy(const char *szStr);		
@@ -83,21 +92,138 @@ SX_LIB_API void Core_AGetName(char *szName);
 
 //##########################################################################
 
-/*! @name Менеджер задач 
- создает потоки по количеству ядер
+/*! @name Менеджер задач
+создает потоки по количеству ядер
 @{*/
 
 //! добавить задачу
-SX_LIB_API void Core_MTaskAdd(	
-								THREAD_UPDATE_FUNCTION func, //!< функция обработки
-								DWORD flag = CORE_TASK_FLAG_SINGLETHREADED_REPEATING //!< флаг из #CoreTaskFlag 
-								); 
+SX_LIB_API void Core_MTaskAdd(
+	THREAD_UPDATE_FUNCTION func, //!< функция обработки
+	DWORD flag //!< флаг из #CoreTaskFlag 
+	);
+
+//! Запретить многопоточный режим
+SX_LIB_API void Core_MForceSinglethreaded();
 
 //! стартовать обрабатывать все задачи
-SX_LIB_API void Core_MTaskStart();	
+SX_LIB_API void Core_MTaskStart();
 
 //! остановить все задачи
-SX_LIB_API void Core_MTaskStop();	
+SX_LIB_API void Core_MTaskStop();
+
+//! получает идентификатор потока
+SX_LIB_API ID Core_MGetThreadID();
+
+//! получить количество потоков
+SX_LIB_API int Core_MGetThreadCount();
+
+
+class IParallelForBody
+{
+public:
+	virtual ~IParallelForBody(){}
+
+	virtual void forLoop(int iStart, int iEnd) const = 0;
+};
+
+//! запускает в параллельную обработку pBody
+SX_LIB_API ID Core_MForLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize = 0);
+
+//! ожидает завершения обработки, начатой Core_MForLoop
+SX_LIB_API void Core_MWaitFor(ID id);
+
+//! @}
+
+//##########################################################################
+
+/*! @name Менеджер производительности
+@{*/
+
+struct CPerfRecord
+{
+	int m_iDepth;
+	std::chrono::system_clock::time_point m_time;
+	ID m_idSection;
+	bool m_isEntry;
+};
+
+enum PERF_SECTION
+{
+	PERF_SECTION_GAME_UPDATE, // 0
+	PERF_SECTION_GAME_SYNC, // 1
+	PERF_SECTION_ANIM_UPDATE, // 2
+	PERF_SECTION_ANIM_SYNC, // 3
+	PERF_SECTION_PHYS_UPDATE, // 4
+	PERF_SECTION_PHYS_SYNC, // 5
+	PERF_SECTION_RENDER_PRESENT, // 6
+	PERF_SECTION_WEATHER_UPDATE, // 7
+	PERF_SECTION_AMBIENT_SND_UPDATE, // 8
+	PERF_SECTION_MATSORT_UPDATE, // 9
+	PERF_SECTION_OC_REPROJECTION, // A
+	PERF_SECTION_VIS_CAMERA, // B
+	PERF_SECTION_RENDER, // C
+	PERF_SECTION_SML_UPDATE, // D
+	PERF_SECTION_SHADOW_UPDATE, // E
+	PERF_SECTION_MRT, // F
+	PERF_SECTION_LIGHTING, // G
+	PERF_SECTION_SKYBOX, // H
+	PERF_SECTION_TONEMAPPING, // I
+	PERF_SECTION_RENDER_PARTICLES, // J
+	PERF_SECTION_RENDER_POSTPROCESS, // K
+	PERF_SECTION_RENDER_HUD, // L
+	PERF_SECTION_RENDER_INFO, // M
+	PERF_SECTION_RENDER_GAME, // N
+	PERF_SECTION_OC_UPDATE, // O
+	PERF_SECTION_VIS_REFLECTION, // P
+	PERF_SECTION_VIS_LIGHT, // Q
+	PERF_SECTION_VIS_PARTICLES, // R
+	PERF_SECTION_AI_PATH, // S
+	PERF_SECTION_CVAR_UPDATE, // T
+
+	PERF_SECTION_COUNT
+};
+
+static const char *g_szPerfSectionName[] = {
+	"Game update",
+	"Game sync",
+	"Anim update",
+	"Anim sync",
+	"Phys update",
+	"Phys sync",
+	"Render present",
+	"Weather update",
+	"Ambient sound update",
+	"Matsort update",
+	"OC reprojection",
+	"Vis camera",
+	"Render overall",
+	"SML update",
+	"Shadow update",
+	"Render MRT",
+	"Render lighting",
+	"Render skybox",
+	"Render tonemapping",
+	"Render particles",
+	"Render postprocess",
+	"Render HUD",
+	"Render INFO",
+	"Render game",
+	"OC update",
+	"Vis reflection",
+	"Vis light",
+	"Vis particles",
+	"AI path",
+	"CVars update"
+};
+
+//! Начало секции измерения
+SX_LIB_API void Core_PStartSection(ID idSection);
+
+//! Конец секции измерения
+SX_LIB_API void Core_PEndSection(ID idSection);
+
+//! Получить данные за предыдущий кадр
+SX_LIB_API const CPerfRecord *Core_PGetRecords(ID idThread, int *piRecordCount);
 
 //! @}
 
@@ -214,7 +340,7 @@ SX_LIB_API int64_t Core_TimeTotalMcsGet(ID id);
 SX_LIB_API int64_t Core_TimeTotalMcsGetU(ID id);					
 
 
-//! возвращает общее время работы таймера в микросекундах (независимо от обновления)
+//! возвращает общее время работы таймера в миллисекундах (независимо от обновления)
 #define Core_TimeTotalMlsGetU(id) Core_TimeTotalMcsGetU(id)/1000	
 
 //! возвращает общее время работы таймера в миллисекундах (независимо от обновления)
@@ -276,6 +402,18 @@ SX_LIB_API IFile* Core_OpFile(const char* szPath, int iType);
 
 //##########################################################################
 
+/*SX_LIB_API void Core_ResPathAdd(const char *szPath);
+SX_LIB_API void Core_ResPathClear();
+
+SX_LIB_API const char* Core_ResPathGetLast(int iRegisterPath=-1);
+
+SX_LIB_API const char* Core_ResPathGetFullPathByRel(const char *szRelPath);
+SX_LIB_API const char* Core_ResPathGetFullPathByRel2(const char *szRelPathPart1, const char *szRelPathPart2);
+SX_LIB_API const char* Core_ResPathGetFullPathByRelIndex(int iRegisterPath, const char *szRelPath);
+SX_LIB_API const char* Core_ResPathGetFullPathByRelIndex2(int iRegisterPath, const char *szRelPathPart1, const char *szRelPathPart2);*/
+
+//##########################################################################
+
 /*! интерфейс для работы с файлами конфигурации (ini) 
  \warning секции и ключи хранятся в виде дерева, и нет гарантии что может быть доступ по порядковому номеру, 
 можно получить общее количество секций/ключей, дальше плясать */
@@ -303,7 +441,7 @@ struct ISXConfig : public IBaseObject
 SX_LIB_API ISXConfig* Core_CrConfig(); 
 
 //! открыть файл конфигов
-SX_LIB_API ISXConfig* Core_OpConfig(const char* path); 
+SX_LIB_API ISXConfig* Core_OpConfig(const char* path);
 
 //!@}
 
@@ -356,7 +494,8 @@ enum CVAR_FLAG
 {
 	FCVAR_NONE     = 0x00, //!< нет
 	FCVAR_CHEAT    = 0x01, //!< Изменение этой переменной с дефолтного значения разрешено только в режиме разработки
-	FCVAR_READONLY = 0x02  //!< Только для чтения
+	FCVAR_READONLY = 0x02,  //!< Только для чтения
+	FCVAR_NOTIFY   = 0x04  //!< Оповещать об изменениях
 };
 
 //! Регистрирует строковую переменную
@@ -428,6 +567,9 @@ SX_LIB_API void Core_0SetCVarFloat(const char * name, float value);
 
 //! Устанавливает новое значение квара. Должен существовать
 SX_LIB_API void Core_0SetCVarBool(const char * name, bool value);
+
+//! Получает значение квара в виде строки
+SX_LIB_API void Core_0GetCVarAsString(const char * name, char * szOut, int iMaxLength);
 
 
 //!@}

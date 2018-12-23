@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 #define CORE_VERSION 1
 
@@ -20,6 +20,14 @@ See the license in LICENSE
 
 #include "Time.h"
 
+#include <shellapi.h>
+
+#include "PerfMon.h"
+
+#include <common/file_utils.h>
+
+#include "GRegisterIndex.h"
+
 //##########################################################################
 
 char g_szCoreName[CORE_NAME_MAX_LEN];
@@ -31,9 +39,10 @@ report_func g_fnReportf = DefReport;
 
 //**************************************************************************
 
-CTaskManager* g_pTaskManager = 0;
+static CTaskManager *g_pTaskManager = 0;
+CPerfMon *g_pPerfMon = 0;
 
-#define SXCORE_PRECOND(retval) if(!g_pTaskManager){g_fnReportf(-1, "%s - sxcore is not init", gen_msg_location); return retval;}
+#define SXCORE_PRECOND(retval) if(!g_pTaskManager){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxcore is not init", GEN_MSG_LOCATION); return retval;}
 
 //**************************************************************************
 
@@ -47,12 +56,12 @@ String g_aGRegistersString[CORE_REGISTRY_SIZE];
 
 #define CORE_REGUSTRY_PRE_COND_ID(id,stdval) \
 if (!(id >= 0 && id < CORE_REGISTRY_SIZE))\
-{g_fnReportf(REPORT_MSG_LEVEL_ERROR, "[CORE] %s - unresolved index '%d' of access for registry", gen_msg_location, id); return stdval; }
+{LibReport(REPORT_MSG_LEVEL_ERROR, "%s: %s - unresolved index '%d' of access for registry", SX_LIB_NAME, GEN_MSG_LOCATION, id); return stdval; }
 
 //**************************************************************************
 
 CTimeManager* g_pTimers = 0;
-#define CORE_TIME_PRECOND(retval) if(!g_pTimers){g_fnReportf(-1, "%s - sxcore is not init", gen_msg_location); return retval;}
+#define CORE_TIME_PRECOND(retval) if(!g_pTimers){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxcore is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -67,38 +76,64 @@ void Core_Dbg_Set(report_func fnReportFunc)
 	g_fnReportf = fnReportFunc;
 }
 
-bool Core_0FileExists(const char* fname)
+/*bool Core_0FileExists(const char *szNameFunc)
 {
 	WIN32_FIND_DATA wfd;
-	HANDLE hFind = ::FindFirstFile(fname, &wfd);
+	HANDLE hFind = ::FindFirstFile(szNameFunc, &wfd);
 		if (INVALID_HANDLE_VALUE != hFind)
 		{
 			::FindClose(hFind);
 			return true;
 		}
 	return false;
-}
+}*/
 
-bool Core_0ClipBoardCopy(const char *str)
+/*SX_LIB_API UINT Core_0GetTimeLastModify(const char *szPath)
+{
+	HANDLE hFile = CreateFile(szPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	
+	if (hFile == INVALID_HANDLE_VALUE)
+		return 0;
+
+	SYSTEMTIME stUTC;
+	FILETIME ftCreate, ftAccess, ftWrite;
+	GetFileTime(hFile, &ftCreate, &ftAccess, &ftWrite);
+	FileTimeToSystemTime(&ftWrite, &stUTC);
+
+	tm tmObj;
+	ZeroMemory(&tmObj, sizeof(tm));
+	tmObj.tm_year = stUTC.wYear - 1900;
+	tmObj.tm_mon = stUTC.wMonth;
+	tmObj.tm_mday = stUTC.wDay;
+	tmObj.tm_hour = stUTC.wHour;
+	tmObj.tm_min = stUTC.wMinute;
+	tmObj.tm_sec = stUTC.wSecond;
+
+	uint32_t tLastModify = mktime(&tmObj);
+
+	return tLastModify;
+}*/
+
+bool Core_0ClipBoardCopy(const char *szStr)
 {
     HGLOBAL hglb;
     char *s;
-    int len = strlen(str) + 1;
+	int len = strlen(szStr) + 1;
  
-		if(!(hglb = GlobalAlloc(GHND, len)))
-			return false;
+	if(!(hglb = GlobalAlloc(GHND, len)))
+		return false;
 
-		if(!(s = (char *)GlobalLock(hglb)))
-			return false;
+	if(!(s = (char *)GlobalLock(hglb)))
+		return false;
 
-	strcpy(s, str);
+	strcpy(s, szStr);
 	GlobalUnlock(hglb);
 
-		if(!OpenClipboard(NULL) || !EmptyClipboard()) 
-		{
-			GlobalFree(hglb);
-			return false;
-		}
+	if(!OpenClipboard(NULL) || !EmptyClipboard()) 
+	{
+		GlobalFree(hglb);
+		return false;
+	}
 	SetClipboardData(CF_TEXT, hglb);
 	CloseClipboard();
 	return true;
@@ -118,7 +153,7 @@ bool Core_0IsProcessRun(const char* process)
 	}
 }
 
-void Core_0Create(const char* name, bool is_unic)
+void Core_0Create(const char* name, const char *szNameConsole, bool is_unic)
 {
 		if(name && strlen(name) > 1)
 		{
@@ -128,18 +163,33 @@ void Core_0Create(const char* name, bool is_unic)
 						if(GetLastError() == ERROR_ALREADY_EXISTS)
 						{
 							CloseHandle(hMutex);
-							g_fnReportf(-1, "%s - none unic name, sgcore", gen_msg_location);
+							LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
 							return;
 						}
 				}
 			strcpy(g_szCoreName, name);
-			ConsoleConnect();
+			ConsoleConnect(szNameConsole);
 			ConsoleRegisterCmds();
-			g_pTaskManager = new CTaskManager();
+
+			g_pPerfMon = new CPerfMon();
+
+			int iThreadNum = 0;
+			if(!sscanf(Core_0GetCommandLineArg("threads", "0"), "%d", &iThreadNum) || iThreadNum < 0)
+			{
+				LibReport(REPORT_MSG_LEVEL_WARNING, "Invalid -threads value! Defaulting to 0\n");
+			}
+
+			g_pTaskManager = new CTaskManager(iThreadNum);
+			if(stricmp(Core_0GetCommandLineArg("no-threads", "no"), "no"))
+			{
+				g_pTaskManager->forceSinglethreaded();
+			}
 			g_pTimers = new CTimeManager();
+
+			//LibReport(REPORT_MSG_LEVEL_NOTICE, "is init\n");
 		}
 		else
-			g_fnReportf(-1, "%s - not init argument [name], sgcore", gen_msg_location);
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
 }
 
 void Core_AKill()
@@ -158,7 +208,7 @@ void Core_AGetName(char* name)
 	if(name)
 		strcpy(name, g_szCoreName);
 	else
-		g_fnReportf(-1, "%s - invalid argument", gen_msg_location);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - invalid argument", GEN_MSG_LOCATION);
 }
 
 //##########################################################################
@@ -176,6 +226,66 @@ IFile* Core_OpFile(const char *szPath, int iType)
 }
 
 
+//##########################################################################
+/*
+Array<String> g_aResourcePathes;
+
+SX_LIB_API void Core_ResPathAdd(const char *szPath)
+{
+	if (szPath)
+		g_aResourcePathes.push_back(String(Core_RStringGet(G_RI_STRING_PATH_EXE)) + szPath + "/");
+}
+
+SX_LIB_API void Core_ResPathClear()
+{
+	g_aResourcePathes.clear();
+}
+
+SX_LIB_API const char* Core_ResPathGetLast(int iRegisterPath)
+{
+	if (g_aResourcePathes.size() > 0)
+	{
+		if (iRegisterPath >= 0)
+			return (g_aResourcePathes[g_aResourcePathes.size() - 1] + Core_RStringGet(iRegisterPath)).c_str();
+		else
+			return g_aResourcePathes[g_aResourcePathes.size() - 1].c_str();
+	}
+
+	return 0;
+}
+
+SX_LIB_API const char* Core_ResPathGetFullPathByRel(const char *szRelPath)
+{
+	for (int i = 0, il = g_aResourcePathes.size(); i < il; ++i)
+	{
+		String sResPath = g_aResourcePathes[(il - 1) - i];
+		String sFullPath = sResPath + szRelPath;
+
+		if (FileExistsFile(sFullPath.c_str()))
+			return sFullPath.c_str();
+	}
+
+	return 0;
+}
+
+SX_LIB_API const char* Core_ResPathGetFullPathByRel2(const char *szRelPathPart1, const char *szRelPathPart2)
+{
+	return Core_ResPathGetFullPathByRel((String(szRelPathPart1) + szRelPathPart2).c_str());
+}
+
+SX_LIB_API const char* Core_ResPathGetFullPathByRelIndex(int iRegisterPath, const char *szRelPath)
+{
+	return Core_ResPathGetFullPathByRel((String(Core_RStringGet(G_RI_STRING_PATH_GS_CONFIGS)) + szRelPath).c_str());
+}
+
+SX_LIB_API const char* Core_ResPathGetFullPathByRelIndex2(int iRegisterPath, const char *szRelPathPart1, const char *szRelPathPart2)
+{
+	return Core_ResPathGetFullPathByRelIndex(G_RI_STRING_PATH_GS_CONFIGS, (String(szRelPathPart1) + szRelPathPart2).c_str());
+}
+*/
+//##########################################################################
+
+
 ISXConfig*  Core_CrConfig()
 {
 	return new CConfig();
@@ -190,22 +300,73 @@ ISXConfig*  Core_OpConfig(const char* path)
 
 //##########################################################################
 
-void Core_MTaskAdd(THREAD_UPDATE_FUNCTION func, DWORD flag)
+SX_LIB_API void Core_MTaskAdd(THREAD_UPDATE_FUNCTION func, DWORD flag)
 {
 	SXCORE_PRECOND(_VOID);
+	assert(!(flag & CORE_TASK_FLAG_FOR_LOOP));
 	g_pTaskManager->add(func, flag);
 }
 
-void Core_MTaskStart()
+SX_LIB_API void Core_MForceSinglethreaded()
+{
+	SXCORE_PRECOND(_VOID);
+	g_pTaskManager->forceSinglethreaded();
+}
+
+SX_LIB_API void Core_MTaskStart()
 {
 	SXCORE_PRECOND(_VOID);
 	g_pTaskManager->start();
 }
 
-void Core_MTaskStop()
+SX_LIB_API void Core_MTaskStop()
 {
 	SXCORE_PRECOND(_VOID);
 	g_pTaskManager->stop();
+}
+
+SX_LIB_API ID Core_MForLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize)
+{
+	SXCORE_PRECOND(-1);
+	return(g_pTaskManager->forLoop(iStart, iEnd, pBody, iMaxChunkSize));
+}
+
+SX_LIB_API void Core_MWaitFor(ID id)
+{
+	SXCORE_PRECOND(_VOID);
+	if(Core_MGetThreadID() != 0)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Core_MWaitFor() must be called from main thread!");
+		return;
+	}
+
+	g_pTaskManager->waitFor(id);
+}
+
+SX_LIB_API int Core_MGetThreadCount()
+{
+	SXCORE_PRECOND(1);
+	return(g_pTaskManager->getThreadCount());
+}
+
+//##########################################################################
+
+void Core_PStartSection(ID idSection)
+{
+	SXCORE_PRECOND(_VOID);
+	g_pPerfMon->startSection(idSection);
+}
+
+void Core_PEndSection(ID idSection)
+{
+	SXCORE_PRECOND(_VOID);
+	g_pPerfMon->endSection(idSection);
+}
+
+const CPerfRecord *Core_PGetRecords(ID idThread, int *piRecordCount)
+{
+	SXCORE_PRECOND(NULL);
+	return(g_pPerfMon->getRecords(idThread, piRecordCount));
 }
 
 //##########################################################################
@@ -373,4 +534,65 @@ int64_t Core_TimeTotalMcsGetU(ID id)
 	CORE_TIME_PRECOND(0);
 
 	return g_pTimers->timeTotalMcsGetU(id);
+}
+
+
+//##########################################################################
+
+static AssotiativeArray<String, String> g_mCommandLine;
+static Array<String> g_aConsoleLine;
+
+void Core_0LoadCommandLine(const char *szCommandLine)
+{
+	StringW wsCmdLine = StringW(String(szCommandLine));
+	int argc;
+	wchar_t **argv = CommandLineToArgvW(wsCmdLine.c_str(), &argc);
+
+
+	const WCHAR * key = NULL;
+	bool isCvar = true;
+	for(int i = 0; i < argc; ++i)
+	{
+		if(argv[i][0] == L'-') ///< startup param
+		{
+			key = &argv[i][1];
+			isCvar = false;
+		}
+		else if(argv[i][0] == L'+') ///< cvar param (or cmd)
+		{
+			key = &argv[i][1];
+			isCvar = true;
+		}
+		else if(key != NULL) ///< arg
+		{
+			if(isCvar)
+			{
+				g_aConsoleLine.push_back(String(StringW(key)) + " " + String(StringW(argv[i])));
+			}
+			else
+			{
+				g_mCommandLine[String(StringW(key))] = String(StringW(argv[i]));
+			}
+			//store val
+			key = NULL;
+		}
+	}
+}
+
+void Core_0ExecCommandLine()
+{
+	for(int i = 0, l = g_aConsoleLine.size(); i < l; ++i)
+	{
+		Core_0ConsoleExecCmd("%s\n", g_aConsoleLine[i].c_str());
+	}
+}
+
+const char *Core_0GetCommandLineArg(const char *szArg, const char *szDefault)
+{
+	const AssotiativeArray<String, String>::Node *pNode;
+	if(g_mCommandLine.KeyExists(szArg, &pNode))
+	{
+		return(pNode->Val->c_str());
+	}
+	return(szDefault);
 }

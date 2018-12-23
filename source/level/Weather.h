@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __WEATHER_H
 #define __WEATHER_H
 
@@ -19,8 +24,6 @@
 #define WEATHER_THUNDERBOLT_WIDTH	100.f	/*!< ширина возможного пространства для молнии */
 #define WEATHER_THUNDERBOLT_LENGTH	10.f	/*!< длина возможного пространства для молнии */
 #define WEATHER_THUNDERBOLT_HEIGHT	100.f	/*!< высота возможного пространства для молнии */
-
-extern report_func g_fnReportf;
 
 //рандомные звуки с 
 class CWeatherRndSnd
@@ -69,10 +72,10 @@ protected:
 #define WEATHER_CONFIG_SECTION_KEY(name_key, key, file, section) \
 { \
 	if (!name_key || strlen(name_key) != 2 || !isdigit(name_key[0]) || !isdigit(name_key[1])) \
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - unresolved name of key '%s' \nfile '%s' \nsection '%s'", gen_msg_location, key, file, section); \
+	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unresolved name of key '%s' \nfile '%s' \nsection '%s'", GEN_MSG_LOCATION, key, file, section); \
 }
-#define WEATHER_CONFIG_LACKS_COMPONENT(component, file, section, key) if(!component) {g_fnReportf(REPORT_MSG_LEVEL_ERROR,"%s - lacks component in key '%s' \nfile '%s' \nsection '%s'",gen_msg_location, key, file, section);}
-#define WEATHER_CONFIG_LACKS_KEY(key, file, section) {g_fnReportf(REPORT_MSG_LEVEL_ERROR,"%s - lacks key '%s' \nfile '%s' \nsection '%s'",gen_msg_location, key, file, section);}
+#define WEATHER_CONFIG_LACKS_COMPONENT(component, file, section, key) if(!component) {LibReport(REPORT_MSG_LEVEL_ERROR,"%s - lacks component in key '%s' \nfile '%s' \nsection '%s'",GEN_MSG_LOCATION, key, file, section);}
+#define WEATHER_CONFIG_LACKS_KEY(key, file, section) {LibReport(REPORT_MSG_LEVEL_ERROR,"%s - lacks key '%s' \nfile '%s' \nsection '%s'",GEN_MSG_LOCATION, key, file, section);}
 
 class CWeather
 {

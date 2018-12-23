@@ -7,18 +7,23 @@ mtrlskin_base.vs
 #include <../struct.h>
 #include <../skin.h>
 
-half4x4	WorldViewProjection;
-half4x4	World;
+//##########################################################################
 
-vs_out_gcommon main(vs_in_anim input)
+half4x4	g_mWVP;
+half4x4	g_mW;
+
+//##########################################################################
+
+VSO_SceneCommon main(VSI_Animation IN)
 {
-	vs_out_gcommon Output = SkinAllTransform(input);
+	// трансформация позиции и нормали вершины
+	VSO_SceneCommon OUT = SkinAllTransform(IN);
 	
-	Output.Position = mul(Output.Position, WorldViewProjection);
-	Output.Normal = mul(Output.Normal, World);
-	Output.TexUV = input.Tex;
+	OUT.vPosition = mul(OUT.vPosition, g_mWVP);
+	OUT.vNormal = mul(OUT.vNormal, g_mW);
+	OUT.vTexUV = IN.vTexUV;
 	
-	Output.Pos = Output.Position;
+	OUT.vPos = OUT.vPosition;
     
-	return(Output);
+	return(OUT);
 }

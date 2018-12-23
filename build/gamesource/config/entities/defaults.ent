@@ -1,3 +1,31 @@
 
 [npc_zombie]
 model = "models/zombie/zombie.dse"
+; model = "models/zombie/zombie_hb.dse"
+; model = "models/stalker_zombi/stalker_zombi_a.dse"
+
+
+[wpn_zombie_hands]
+; model = ""
+reload_time = 0
+max_distance = 2.0
+inv_weight = 1
+ammos = ""
+
+zoomable = 0
+
+fire_modes = "single"
+single_rate = 40; выст/мин
+
+effective_distance = 2
+
+;разброс
+spread_base       	= 10    ;угол (в градусах) базовой дисперсии оружия (оружия, зажатого в тисках)
+
+; звуки
+snd_shoot        = "mobs/zombie/zombie_attack_1.ogg" ; Стрелять
+
+damage = 100
+
+[prop_dynamic]
+is_static = 1

@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -12,14 +12,18 @@ See the license in LICENSE
 #ifndef __LIGHTDIRECTIONAL_H
 #define __LIGHTDIRECTIONAL_H
 
-#include "SXpointEntity.h"
+#include "PointEntity.h"
+
+#ifndef LIGHT_INITIALLY_DARK
+#define LIGHT_INITIALLY_DARK ENT_FLAG_0
+#endif
 
 /*! Направленный свет
 \ingroup clight
 */
-class CLightDirectional: public SXpointEntity
+class CLightDirectional: public CPointEntity
 {
-	DECLARE_CLASS(CLightDirectional, SXpointEntity);
+	DECLARE_CLASS(CLightDirectional, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();
@@ -39,6 +43,9 @@ public:
 	void setShadowType(int iShadowType) { m_iShadowType = iShadowType; };
 	int getShadowType() const { return m_iShadowType; };
 
+	void setShadowIntensity(float fShadowIntensity) { m_fShadowIntensity = fShadowIntensity; };
+	float getShadowIntensity() const { return m_fShadowIntensity; };
+
 	void setEnable(bool isEnable) { m_isEnable = isEnable; };
 	bool getEnable() const { return m_isEnable; };
 
@@ -48,9 +55,13 @@ public:
 	void setRadiusTop(float fRadiusTop) { m_fRadiusTop = fRadiusTop; };
 	float getRadiusTop() const { return m_fRadiusTop; };
 
+	bool getMainColor(float3_t *pOut);
+
+	void updateFlags();
+
 protected:
 
-	void OnSync();
+	void onSync();
 
 	ID m_idLight;
 
@@ -58,6 +69,7 @@ protected:
 	float m_fDist;
 	float m_fShadowDist;
 	int m_iShadowType;
+	float m_fShadowIntensity;
 
 	bool m_isEnable;
 

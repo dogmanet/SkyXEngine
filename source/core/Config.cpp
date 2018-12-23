@@ -1,7 +1,11 @@
 
-#include <common\\AssotiativeArray.h>
-#include <common\\String.cpp>
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "Config.h"
+#include "sxcore.h"
 
 /*
 1. Проверить обработку циклических зависимостей
@@ -90,7 +94,8 @@ int CConfig::parse(const char* file)
 
 	char c;
 	char cn = 0;
-	while(!feof(fp))
+	bool isRunning = true;
+	while(isRunning)
 	{
 		if(cn)
 		{
@@ -100,6 +105,11 @@ int CConfig::parse(const char* file)
 		else
 		{
 			c = fgetc(fp);
+			if(feof(fp))
+			{
+				c = '\n';
+				isRunning = false;
+			}
 		}
 		if(bSectionNameDone)
 		{
@@ -397,7 +407,7 @@ const char* CConfig::getKeyName(const char* section, int key)
 	CConfigString sections(section);
 	if (m_mSections.KeyExists(sections))
 	{
-		if (m_mSections[sections].mValues.Size() > key)
+		if ((int)m_mSections[sections].mValues.Size() > key)
 		{
 			int countiter = 0;
 			AssotiativeArray<CConfigString, CConfig::CValue>::Iterator iter = m_mSections[sections].mValues.begin();
@@ -416,7 +426,7 @@ const char* CConfig::getKeyName(const char* section, int key)
 
 const char* CConfig::getSectionName(int num)
 {
-	if (m_mSections.Size() > num)
+	if((int)m_mSections.Size() > num)
 	{
 		int countiter = 0;
 		AssotiativeArray<CConfigString, CConfig::CSection>::Iterator iter = m_mSections.begin();
@@ -469,45 +479,104 @@ void CConfig::set(const char * sectionp, const char * key, const char * val)
 
 int CConfig::save()
 {
-	int terror = 0;
-	for (AssotiativeArray<CConfigString, CSection>::Iterator i = m_mSections.begin(); i; i++)
+	static const bool *s_pbDebug = GET_PCVAR_BOOL("dbg_config_save");
+	if(*s_pbDebug)
 	{
+		printf(COLOR_GRAY "====== " COLOR_CYAN "CConfig::save() " COLOR_GRAY "======" COLOR_RESET "\n");
+	}
+	int terror = 0;
+	for(AssotiativeArray<CConfigString, CSection>::Iterator i = m_mSections.begin(); i; i++)
+	{
+		if(*s_pbDebug)
+		{
+			printf("Testing section: " COLOR_LGREEN "%s" COLOR_RESET "...", i.first->c_str());
+		}
 		if(i.second->isModified)
 		{
+			if(*s_pbDebug)
+			{
+				printf(COLOR_YELLOW " modified" COLOR_RESET "\n", i.first->c_str());
+			}
 			for(AssotiativeArray<CConfigString, CValue>::Iterator j = i.second->mValues.begin(); j; j++)
 			{
+				if(*s_pbDebug)
+				{
+					printf("  testing key: " COLOR_LGREEN "%s" COLOR_RESET "...", j.first->c_str());
+				}
 				if(j.second->isModified)
 				{
+					if(*s_pbDebug)
+					{
+						printf(COLOR_YELLOW " modified" COLOR_RESET "\n", i.first->c_str());
+					}
 					if(i.second->native) // Write to BaseFile
 					{
+						if(*s_pbDebug)
+						{
+							printf("    writing to base file " COLOR_CYAN "%s" COLOR_RESET "...\n", BaseFile.c_str());
+						}
 						terror = writeFile(BaseFile, *i.first, *j.first, j.second->val);
-							if(terror!=0)
-								return terror;
+						if(terror != 0)
+							goto end;
 					}
 					else // Write to i.second->Include
 					{
+						if(*s_pbDebug)
+						{
+							printf("    writing to include file " COLOR_CYAN "%s" COLOR_RESET "...\n", i.second->Include.c_str());
+						}
 						terror = writeFile(i.second->Include, *i.first, *j.first, j.second->val);
-							if(terror!=0)
-								return terror;
+						if(terror != 0)
+							goto end;
+					}
+				}
+				else
+				{
+					if(*s_pbDebug)
+					{
+						printf(COLOR_GRAY " not modified" COLOR_RESET "\n", i.first->c_str());
 					}
 				}
 			}
 		}
+		else
+		{
+			if(*s_pbDebug)
+			{
+				printf(COLOR_GRAY " not modified" COLOR_RESET "\n", i.first->c_str());
+			}
+		}
 	}
-
-	return 0;
+end:
+	if(*s_pbDebug)
+	{
+		printf(COLOR_GRAY "=============================" COLOR_RESET "\n");
+	}
+	return(terror);
 }
 
 int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfigString key, const CConfigString & val)
 {
+	static const bool *s_pbDebug = GET_PCVAR_BOOL("dbg_config_save");
 	//printf("W: %s\t[%s]: %s = %s\n", name.c_str(), section.c_str(), key.c_str(), val.c_str());
 	FILE * pF = fopen(name.c_str(), "rb");
 	if(pF)
 	{
+		if(*s_pbDebug)
+		{
+			printf("    file opened\n");
+		}
+
 		fseek(pF, 0, SEEK_END);
 		UINT fl = ftell(pF);
 		fseek(pF, 0, SEEK_SET);
-		char * szData = new char[fl];
+		char * szData = new char[fl + 1];
+		if(!szData)
+		{
+			printf(COLOR_LRED "Unable to allocate memory (%d) in CConfig::writeFile()" COLOR_RESET "\n", fl + 1);
+			fclose(pF);
+			return(-1);
+		}
 		fread(szData, 1, fl, pF);
 		szData[fl] = 0;
 		fclose(pF);
@@ -517,12 +586,12 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 		bool kf = false;
 		bool se = false;
 		UINT sp = 0;
-		for(int i = 0; i < fl; ++i)
+		for(UINT i = 0; i < fl; ++i)
 		{
 			if(szData[i] == '[' && ((i > 0 && (szData[i - 1] == '\r' || szData[i - 1] == '\n')) || i == 0))
 			{
 				bool cmp = true;
-				int j;
+				UINT j;
 				for(j = i + 1; j < fl - 1 && j - i - 1 < sl; ++j)
 				{
 					if(szData[j] != section[j - i - 1])
@@ -542,7 +611,7 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 							break;
 						}
 					}
-					while(szData[i] == '\r' || szData[i] == '\n')
+					while(i < fl && (szData[i] == '\r' || szData[i] == '\n'))
 					{
 						++i;
 					}
@@ -557,7 +626,7 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 							se = true;
 							break;
 						}
-						while((szData[i] == ' ' || szData[i] == '\t') && i < fl)
+						while(i < fl && (szData[i] == ' ' || szData[i] == '\t'))
 						{
 							++i;
 						}
@@ -570,7 +639,7 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 								break;
 							}
 						}
-						if (f && (isspace((unsigned char)szData[j]) || szData[j] == '='))//KeyFound!
+						if(f && (isspace((unsigned char)szData[j]) || szData[j] == '='))//KeyFound!
 						{
 							i = j;
 							kf = true;
@@ -611,7 +680,7 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 									break;
 								}
 							}
-							while(szData[i] == '\r' || szData[i] == '\n')
+							while(i < fl && (szData[i] == '\r' || szData[i] == '\n'))
 							{
 								++i;
 							}
@@ -627,10 +696,15 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 		}
 		if(sf && !kf)
 		{
+			if(*s_pbDebug)
+			{
+				printf("    adding key to section(sp=" COLOR_LCYAN "%d" COLOR_RESET ")\n", sp);
+			}
 			FILE * pF = fopen(name.c_str(), "wb");
 			if(!pF)
 			{
 				ErrorFile = name;
+				mem_delete_a(szData);
 				return -1;
 			}
 			fwrite(szData, 1, sp, pF); // First file part
@@ -640,6 +714,7 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 			fwrite("\n", 1, 1, pF);
 			fwrite(&szData[sp], 1, fl - sp, pF);
 			fclose(pF);
+			mem_delete_a(szData);
 			return 0;
 		}
 		if(!sf)//!(Section found) == Add new
@@ -652,6 +727,7 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 			}
 			fwrite((CConfigString("\n[") + section + "]\n" + key + " = " + val + "\n").c_str(), sizeof(char), section.length() + key.length() + val.length() + 8, pF);
 			fclose(pF);
+			mem_delete_a(szData);
 			return 0;
 		}
 	}
@@ -663,11 +739,11 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 			ErrorFile = name;
 			return -1;
 		}
-		fwrite((CConfigString("[")+section+"]\n"+key+" = "+val+"\n").c_str(), sizeof(char), section.length() + key.length() + val.length() + 7, pF);
+		fwrite((CConfigString("[") + section + "]\n" + key + " = " + val + "\n").c_str(), sizeof(char), section.length() + key.length() + val.length() + 7, pF);
 		fclose(pF);
 		return 0;
 	}
-return 0;
+	return 0;
 }
 
 int CConfig::getSectionCount()
@@ -748,7 +824,7 @@ AssotiativeArray<CConfigString, CConfig::CSection> * CConfig::getSections()
 
 CConfigString CConfig::getIncludeName(int i)
 {
-	if(i >= 0 && i < m_vIncludes.size())
+	if(i >= 0 && i < (int)m_vIncludes.size())
 	{
 		return(m_vIncludes[i].name);
 	}

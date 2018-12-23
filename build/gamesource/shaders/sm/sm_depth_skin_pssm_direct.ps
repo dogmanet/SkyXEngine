@@ -5,10 +5,20 @@ sm_depth_skin_pssm_direct.ps
 */
 
 #include <../struct.h>
+#include <../shadow.h>
 
-sampler2D BaseSampler:register(s0);
+//##########################################################################
 
-half4 main(vs_out_gcommon IN) : COLOR0
+sampler2D g_sColor:register(s0);
+
+//##########################################################################
+
+half4 main(VSO_SceneCommon IN) : COLOR0
 {
-	return IN.Pos.z/IN.Pos.w;
+	ShadowDepthAlphaTest(tex2D(g_sColor,IN.vTexUV));
+	
+	half fDepth = IN.vPos.z/IN.vPos.w;
+	half fBias = ShadowSlopeBias(fDepth);
+	
+	return fDepth + fBias;
 }

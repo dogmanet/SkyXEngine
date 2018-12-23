@@ -6,16 +6,21 @@ ppe_black_white.ps
 
 #include <../struct.h>
 
-half CountPassWB;
+//##########################################################################
 
-sampler2D FrameSampler:register(s0);
+half g_fCoef;
 
-half4 main(vs_out_pp IN):COLOR0
+//##########################################################################
+
+sampler2D g_sColor:register(s0);
+
+//##########################################################################
+
+half4 main(VSO_PP IN):COLOR0
 {
-	half4 color = tex2D(FrameSampler,IN.TexUV);
+	half4 vColor = tex2D(g_sColor,IN.vTexUV);
 	
-	half count_color = color.r + color.g + color.b;
-	count_color *= 0.333f;
+	half fCountColor = (vColor.r + vColor.g + vColor.b) / 3.0;
 	
-	return half4(lerp(color.rgb,count_color,CountPassWB),color.a);
+	return half4(lerp(vColor.rgb, fCountColor, g_fCoef), vColor.a);
 }

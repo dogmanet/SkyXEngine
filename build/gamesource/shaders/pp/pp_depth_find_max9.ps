@@ -1,0 +1,51 @@
+
+#include <../struct.h>
+
+//##########################################################################
+
+sampler2D g_sDepth:register(s0);
+
+//##########################################################################
+
+half2 g_vPixelSize;
+
+//##########################################################################
+
+half4 main(VSO_PP IN) : COLOR0
+{
+	half fDepth = max (
+						tex2D(g_sDepth, IN.vTexUV),
+						tex2D(g_sDepth, IN.vTexUV + half2(g_vPixelSize.x, 0.0))
+					);
+	fDepth = max (
+						fDepth,
+						tex2D(g_sDepth, IN.vTexUV + half2(0.0, g_vPixelSize.y))
+					);
+	fDepth = max (
+						fDepth,
+						tex2D(g_sDepth, IN.vTexUV + g_vPixelSize)
+					);
+				
+				
+	fDepth = max (
+						fDepth,
+						tex2D(g_sDepth, IN.vTexUV - g_vPixelSize)
+					);
+	fDepth = max (
+						fDepth,
+						tex2D(g_sDepth, IN.vTexUV + half2(0.0, -g_vPixelSize.y))
+					);
+	fDepth = max (
+						fDepth,
+						tex2D(g_sDepth, IN.vTexUV + half2(g_vPixelSize.x, -g_vPixelSize.y))
+					);
+	fDepth = max (
+						fDepth,
+						tex2D(g_sDepth, IN.vTexUV + half2(-g_vPixelSize.x, 0.0))
+					);
+	fDepth = max (
+						fDepth,
+						tex2D(g_sDepth, IN.vTexUV + half2(-g_vPixelSize.x, g_vPixelSize.y))
+					);
+	return fDepth;
+}

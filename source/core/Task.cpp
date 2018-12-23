@@ -1,24 +1,33 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "task.h"
 
-CTask::CTask(THREAD_UPDATE_FUNCTION func,unsigned int flags) :m_iTaskFlags(flags)
-{
-	m_fnUpdateFunc = func;
-}
-
-CTask::~CTask()
+ITask::ITask(UINT flags):
+	m_iFlags(flags)
 {
 }
 
-unsigned int CTask::getTaskFlags() const
+UINT ITask::getFlags() const
 {
-	return(m_iTaskFlags);
+	return(m_iFlags);
 }
 
-CTask::CTaskBeginning::CTaskBeginning(TaskPtr t):m_Task(t)
+//##########################################################################
+
+CTask::CTask(THREAD_UPDATE_FUNCTION func, UINT flags):
+	ITask(flags),
+	m_fnUpdateFunc(func)
 {
 }
 
-CTask::CTaskCompleted::CTaskCompleted(TaskPtr t):m_Task(t)
+void CTask::run()
 {
+	if(m_fnUpdateFunc)
+	{
+		m_fnUpdateFunc();
+	}
 }

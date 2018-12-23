@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -35,12 +35,12 @@ See the license in LICENSE
 #include <gcore/sxgcore.h>
 
 #if defined(_DEBUG)
-#pragma comment(lib, "sxmtllight_d.lib")
+#pragma comment(lib, "sxlight_d.lib")
 #else
-#pragma comment(lib, "sxmtllight.lib")
+#pragma comment(lib, "sxlight.lib")
 #endif
 
-#include <mtllight/sxmtllight.h>
+#include <light/sxlight.h>
 
 #ifdef SX_DLL
 #undef SX_LIB_API
@@ -56,16 +56,16 @@ See the license in LICENSE
 SX_LIB_API long SPE_0GetVersion();			
 
 //! установить функцию обработки сообщений
-SX_LIB_API void SPE_Dbg_Set(report_func rf);
+SX_LIB_API void SPE_Dbg_Set(report_func fnFunc);
 
 //! инициализция подсистемы
 SX_LIB_API void SPE_0Create(
-	const char* name,			//!< присваиваемое имя
-	bool is_unic = true			//!< должна ли подсистема быть уникальной по имени
+	const char *szName,			//!< присваиваемое имя
+	bool isUnic = true			//!< должна ли подсистема быть уникальной по имени
 	);
 
 //! установка илентификатора render target глубины сцены (для маягких/soft частиц)
-SX_LIB_API void SPE_RTDepthSet(ID id);	
+SX_LIB_API void SPE_RTSetDepth(ID id);
 
 //! уничтожить подсистему
 SX_LIB_API void SPE_AKill();	
@@ -75,10 +75,10 @@ SX_LIB_API void SPE_AKill();
 //**************************************************************************
 
 //! тип функции для определения пересечения, на вход идет предыдущая и будущая позиции цачицы, возвращает true в случае пересечения, иначе false
-typedef bool(*g_particles_phy_collision) (const float3 * lastpos, const float3* nextpos, float3* coll_pos, float3* coll_nrm);
+typedef bool(*g_particles_phy_collision) (const float3 *pLastPos, const float3 *pNextPos, float3 *pResultPos, float3 *pResultNormal);
 
 /*! переназначение g_aiquad_phy_navigate, обязательное действие для работы с сеткой */
-SX_LIB_API void SPE_SetFunc_ParticlesPhyCollision(g_particles_phy_collision func);
+SX_LIB_API void SPE_SetFunc_ParticlesPhyCollision(g_particles_phy_collision fnFunc);
 
 //**************************************************************************
 
@@ -115,49 +115,79 @@ SX_LIB_API void SPE_OnResetDevice();
 //! тип фигуры частицы
 enum PARTICLESTYPE_FIGURE
 {
-	PARTICLESTYPE_FIGURE_QUAD,			//!< обычный квадрат
-	PARTICLESTYPE_FIGURE_BILLBOARD,		//!< билборд (квадрат, лицевая сторона которого всегда направлена на наблюдателя)
-	PARTICLESTYPE_FIGURE_QUAD_COMPOSITE,//!< составной квадрат (фигура из нескольких квадратов)
+	//! обычный квадрат
+	PARTICLESTYPE_FIGURE_QUAD,			
+
+	//! билборд (квадрат, лицевая сторона которого всегда направлена на наблюдателя)
+	PARTICLESTYPE_FIGURE_BILLBOARD,		
+
+	//! составной квадрат (фигура из нескольких квадратов)
+	PARTICLESTYPE_FIGURE_QUAD_COMPOSITE,
 };
 
 //! тип смешивания
 enum PARTICLESTYPE_ALPHABLEND
 {
-	PARTICLESTYPE_ALPHABLEND_ALPHA,	//!< на основе альфа канала
-	PARTICLESTYPE_ALPHABLEND_ADD	//!< аддитивное смешивание
+	//! на основе альфа канала
+	PARTICLESTYPE_ALPHABLEND_ALPHA,	
+
+	//! аддитивное смешивание
+	PARTICLESTYPE_ALPHABLEND_ADD	
 };
 
 //! тип ограничивающего объема
 enum PARTICLESTYPE_BOUND
 {
-	PARTICLESTYPE_BOUND_NONE,	//!< нет объема
-	PARTICLESTYPE_BOUND_SPHERE,	//!< сфера
-	PARTICLESTYPE_BOUND_BOX,	//!< параллелепипед
-	PARTICLESTYPE_BOUND_CONE	//!< конус
+	//! нет объема
+	PARTICLESTYPE_BOUND_NONE,	
+
+	//! сфера
+	PARTICLESTYPE_BOUND_SPHERE,	
+
+	//! параллелепипед
+	PARTICLESTYPE_BOUND_BOX,	
+
+	//! конус
+	PARTICLESTYPE_BOUND_CONE	
 };
 
 //! тип спавна частиц по позиции
 enum PARTICLESTYPE_SPAWNPOS
 {
-	PARTICLESTYPE_SPAWNPOS_STRICTLY,	//!< строгий в указанном месте
-	PARTICLESTYPE_SPAWNPOS_BOUND,		//!< по ограничивающему объему
+	//! строгий в указанном месте
+	PARTICLESTYPE_SPAWNPOS_STRICTLY,	
+
+	//! по ограничивающему объему
+	PARTICLESTYPE_SPAWNPOS_BOUND,		
 };
 
 //! тип поворотов частиц
 enum PARTICLESTYPE_ROT
 {
-	PARTICLESTYPE_ROT_NONE,	//!< нет поворота
-	PARTICLESTYPE_ROT_NORMAL,	//!< обычный поворот
-	PARTICLESTYPE_ROT_RAND,	//!< рандомный поворот
-	PARTICLESTYPE_ROT_EVENLY,	//!< равномерный поворот
+	//! нет поворота
+	PARTICLESTYPE_ROT_NONE,	
+
+	//! обычный поворот
+	PARTICLESTYPE_ROT_NORMAL,	
+
+	//! рандомный поворот
+	PARTICLESTYPE_ROT_RAND,	
+
+	//! равномерный поворот
+	PARTICLESTYPE_ROT_EVENLY,	
 };
 
 //! тип зависимости "чего либо" в частице от времени ее жизни
 enum PARTICLESTYPE_DEPEND
 {
-	PARTICLESTYPE_DEPEND_NONE,		//!< нет зависиомсти
-	PARTICLESTYPE_DEPEND_DIRECT,	//!< прямая зависимость, чем старше тем меньше
-	PARTICLESTYPE_DEPEND_INVERSE,	//!< обратная зависимость, чем старше тем больше
+	//! нет зависиомсти
+	PARTICLESTYPE_DEPEND_NONE,		
+
+	//! прямая зависимость, чем старше тем меньше
+	PARTICLESTYPE_DEPEND_DIRECT,	
+
+	//! обратная зависимость, чем старше тем больше
+	PARTICLESTYPE_DEPEND_INVERSE,	
 };
 
 //! ось
@@ -171,9 +201,14 @@ enum PARTICLES_AXIS
 //! тип отклонения при движении частицы
 enum PARTICLESTYPE_DEVIATION
 {
-	PARTICLESTYPE_DEVIATION_RAND,	//!< случайное
-	PARTICLESTYPE_DEVIATION_ALONG,	//!< вдоль оси
-	PARTICLESTYPE_DEVIATION_WAVE,	//!< волновое
+	//! случайное
+	PARTICLESTYPE_DEVIATION_RAND,	
+
+	//! вдоль оси
+	PARTICLESTYPE_DEVIATION_ALONG,	
+
+	//! волновое
+	PARTICLESTYPE_DEVIATION_WAVE,	
 };
 
 //#############################################################################
@@ -185,13 +220,13 @@ enum PARTICLESTYPE_DEVIATION
  Однако, также существуют данные, действия которых вступят в силу только при создании новых частиц (креационные).
  \note Отрицательная дисперсия (neg) лежит в пределах (-coef_disp*0.5,coef_disp*0.5), Положительная дисперсия (установлена по умолчанию тогда когда разрешена дисперсия) лежит в пределах (0,coef_disp)
 */
-struct ParticlesData
+struct CParticlesData
 {
-	ParticlesData()
+	CParticlesData()
 	{
-		ZeroMemory(this, sizeof(ParticlesData));
-		TransparencyCoef = 1.0;
-		ColorCoef = 1.f;
+		ZeroMemory(this, sizeof(CParticlesData));
+		m_fTransparencyCoef = 1.0;
+		m_fColorCoef = 1.f;
 	}
 
 	SX_ALIGNED_OP_MEM
@@ -203,10 +238,12 @@ struct ParticlesData
 	Sphere: Vector1 x y z – центр сферы, w – радиус \n
 	Cone: Vector1 x y z – нижняя точка конуса, w – радиус нижней точки, Vector2 y координата Y верхней точки конуса, w – радиус верхней точки \n
 	@{*/
-	PARTICLESTYPE_BOUND BoundType;	//!< тип ограничивающего объема, для уничтожения партикла при выходе за пределы
 
-	float4 BoundVec1;
-	float4 BoundVec2;
+	//! тип ограничивающего объема, для уничтожения партикла при выходе за пределы
+	PARTICLESTYPE_BOUND m_typeBound;	
+
+	float4 m_vBoundVec1;
+	float4 m_vBoundVec2;
 
 	//!@}
 
@@ -216,20 +253,41 @@ struct ParticlesData
 	 \note Возможна привязка рандомного создания частиц к осям, для ограничивающих объемов (SpawnBoundBindCreate)
 	 \note Bound volume - ограничивающий объем из #PARTICLESTYPE_BOUND
 	@{*/
-	PARTICLESTYPE_SPAWNPOS SpawnPosType;	//!< тип спавна партиклов
 
-	float3 SpawnOrigin;					//!< точка из которой идут частицы (обязательно должна быть точка откуда идет спавн частиц если нет ограничивающего объема)
-	float SpawnOriginDisp;				//!< дисперсия для #SpawnOrigin
+	//! тип спавна партиклов
+	PARTICLESTYPE_SPAWNPOS m_typeSpawnPos;	
 
-	bool SpawnBoundBindCreateXNeg;		//!< привязка к BV x-
-	bool SpawnBoundBindCreateXPos;		//!< привязка к BV x+
-	bool SpawnBoundBindCreateYNeg;		//!< привязка к BV y-
-	bool SpawnBoundBindCreateYPos;		//!< привязка к BV y+
-	bool SpawnBoundBindCreateZNeg;		//!< привязка к BV z-
-	bool SpawnBoundBindCreateZPos;		//!< привязка к BV z+
+	//! точка из которой идут частицы (обязательно должна быть точка откуда идет спавн частиц если нет ограничивающего объема)
+	float3 m_vSpawnOrigin;					
 
-	UINT SpawnNextTime;					//!< промежуток времени через который будет спавниться следующая частица, если 0 - спавним все сразу
-	UINT SpawnNextTimeDisp;				//!< дисперсия для #SpawnNextTime
+	//! дисперсия для #m_vSpawnOrigin
+	float m_fSpawnOriginDisp;				
+
+
+	//! привязка к BV x-
+	bool m_shouldSpawnBoundBindCreateXNeg;		
+
+	//! привязка к BV x+
+	bool m_shouldSpawnBoundBindCreateXPos;		
+
+	//! привязка к BV y-
+	bool m_shouldSpawnBoundBindCreateYNeg;		
+
+	//! привязка к BV y+
+	bool m_shouldSpawnBoundBindCreateYPos;		
+
+	//! привязка к BV z-
+	bool m_shouldSpawnBoundBindCreateZNeg;		
+
+	//! привязка к BV z+
+	bool m_shouldSpawnBoundBindCreateZPos;		
+
+
+	//! промежуток времени через который будет спавниться следующая частица, если 0 - спавним все сразу
+	UINT m_uiSpawnNextTime;					
+
+	//! дисперсия для #SpawnNextTime
+	UINT m_uiSpawnNextTimeDisp;				
 
 	//!@}
 
@@ -238,13 +296,24 @@ struct ParticlesData
 	/*! \name Анимированная текстура
 	@{*/
 
-	WORD AnimTexCountCadrsX;	//!< количество кадров по оси X
-	WORD AnimTexCountCadrsY;	//!< количество кадров по оси Y
+	//! количество кадров по оси X
+	int m_iAnimTexCountCadrsX;	
 
-	WORD AnimTexRate;			//!< частота обновления в млсек
-	WORD AnimTexRateDisp;		//!< разброс для #AnimTexRate
-	WORD AnimTexStartCadr;		//!< стартовый кадр
-	WORD AnimTexStartCadrDisp;	//!< разброс для #AnimTexStartCadr
+	//! количество кадров по оси Y
+	int m_iAnimTexCountCadrsY;	
+
+
+	//! частота обновления в млсек
+	int m_iAnimTexRate;			
+
+	//! разброс для #m_iAnimTexRate
+	int m_iAnimTexRateDisp;		
+
+	//! стартовый кадр
+	int m_iAnimTexStartCadr;		
+
+	//! разброс для #m_iAnimTexStartCadr
+	int m_iAnimTexStartCadrDisp;	
 
 	//!@}
 
@@ -253,15 +322,25 @@ struct ParticlesData
 	/*! \name Время жизни частицы, временные зависимости, размеры
 	@{*/
 
-	DWORD TimeLife;						//!< время жизни частиц, если time_life == 0 тогда частицы живут все время, иначе это время в млсекундах
-	DWORD TimeLifeDisp;					//!< дисперсия для #TimeLife
+	//! время жизни частиц, если time_life == 0 тогда частицы живут все время, иначе это время в млсекундах
+	UINT m_uiTimeLife;						
 
-	PARTICLESTYPE_DEPEND AlphaDependAge;	//!< зависит ли альфа компонента частицы от ее возраста
+	//! дисперсия для #TimeLife
+	UINT m_uiTimeLifeDisp;					
+
+	//! зависит ли альфа компонента частицы от ее возраста
+	PARTICLESTYPE_DEPEND m_typeAlphaDependAge;	
 	
-	float2_t Size;						//!< размер частиц
-	float SizeDisp;						//!< разброс для размера части
 
-	PARTICLESTYPE_DEPEND SizeDependAge;	//!< зависит ли размер частицы от ее возраста
+	//! размер частиц
+	float2_t m_vSize;						
+
+	//! разброс для размера части
+	float m_fSizeDisp;						
+
+
+	//! зависит ли размер частицы от ее возраста
+	PARTICLESTYPE_DEPEND m_typeSizeDependAge;	
 
 	//!@}
 
@@ -270,12 +349,21 @@ struct ParticlesData
 	/*! \name Скорость
 	@{*/
 
-	float3 Velocity;		//!< скорость (по осям)
-	float VelocityDisp;		//!< дисперсия для #Velocity
+	//! скорость (по осям)
+	float3 m_vVelocity;		
 
-	bool VelocityDispXNeg;	//!< отрицательная дисперсия по оси X
-	bool VelocityDispYNeg;	//!< отрицательная дисперсия по оси Y
-	bool VelocityDispZNeg;	//!< отрицательная дисперсия по оси Z
+	//! дисперсия для #Velocity
+	float m_fVelocityDisp;		
+
+
+	//! отрицательная дисперсия по оси X
+	bool m_shouldVelocityDispXNeg;	
+
+	//! отрицательная дисперсия по оси Y
+	bool m_shouldVelocityDispYNeg;	
+
+	//! отрицательная дисперсия по оси Z
+	bool m_shouldVelocityDispZNeg;	
 
 	//!@}
 
@@ -284,13 +372,21 @@ struct ParticlesData
 	/*! \name Ускорение
 	@{*/
 
-	//ускорение
-	float3 Acceleration;		//!< ускорение (по осям)
-	float AccelerationDisp;		//!< дисперсия для #Acceleration
+	//! ускорение (по осям)
+	float3 m_vAcceleration;		
 
-	bool AccelerationDispXNeg;	//!< отрицательная дисперсия по оси X
-	bool AccelerationDispYNeg;	//!< отрицательная дисперсия по оси Y
-	bool AccelerationDispZNeg;	//!< отрицательная дисперсия по оси Z
+	//! дисперсия для #m_vAcceleration
+	float m_fAccelerationDisp;		
+
+
+	//! отрицательная дисперсия по оси X
+	bool m_shouldAccelerationDispXNeg;	
+
+	//! отрицательная дисперсия по оси Y
+	bool m_shouldAccelerationDispYNeg;	
+
+	//! отрицательная дисперсия по оси Z
+	bool m_shouldAccelerationDispZNeg;	
 
 	//!@}
 
@@ -299,11 +395,20 @@ struct ParticlesData
 	/*! \name Характер: круговое движение
 	@{*/
 
-	bool CharacterCircle;				//!< испольовать ли использовать круговое движение
-	PARTICLES_AXIS CharacterCircleAxis;	//!< ось для кругового движения
-	float CharacterCircleAngle;			//!< угол (в радианах)
-	float CharacterCircleAngleDisp;		//!< дисперсия для #CharacterCircleAngle
-	bool CharacterCircleAngleDispNeg;	//!< разрешено ли использовать отрицательную дисперсию
+	//! испольовать ли использовать круговое движение
+	bool m_useCharacterCircle;				
+
+	//! ось для кругового движения
+	PARTICLES_AXIS m_typeCharacterCircleAxis;	
+
+	//! угол (в радианах)
+	float m_fCharacterCircleAngle;			
+
+	//! дисперсия для #CharacterCircleAngle
+	float m_fCharacterCircleAngleDisp;		
+
+	//! разрешено ли использовать отрицательную дисперсию
+	bool m_useCharacterCircleAngleDispNeg;	
 
 	//!@}
 
@@ -312,10 +417,17 @@ struct ParticlesData
 	/*! \name Характер вращение
 	@{*/
 
-	bool CharacterRotate;				//!< испольовать ли использовать вращение
-	float CharacterRotateAngle;			//!< угол (в радианах)
-	float CharacterRotateAngleDisp;		//!< дисперсия для #CharacterRotateAngle
-	bool CharacterRotateAngleDispNeg;	//!< разрешено ли использовать отрицательную дисперсию
+	//! испольовать ли использовать вращение
+	bool m_useCharacterRotate;				
+
+	//! угол (в радианах)
+	float m_fCharacterRotateAngle;			
+
+	//! дисперсия для #CharacterRotateAngle
+	float m_fCharacterRotateAngleDisp;		
+
+	//! разрешено ли использовать отрицательную дисперсию
+	bool m_useCharacterRotateAngleDispNeg;	
 
 	//!@}
 
@@ -324,56 +436,105 @@ struct ParticlesData
 	/*! \name Характер: отклонения при движении
 	@{*/
 
-	bool CharacterDeviation;						//!< использовать ли отклонения при движении
-	PARTICLESTYPE_DEVIATION CharacterDeviationType;	//!< тип смещения
-	float CharacterDeviationAmplitude;				//!< амплитуда, может быть отрицательна
-	float CharacterDeviationCoefAngle;				//!< коэфициент на который будет умножен угол, только для ParticlesDeviationType::ptd_wave
-	PARTICLES_AXIS CharacterDeviationAxis;			//!< ось на основании которой будет вычислен угол поворота, только для ParticlesDeviationType::ptd_wave
-	DWORD CharacterDeviationCountDelayMls;			//!< время обновления для #ParticlesDeviationType::ptd_rnd и #ParticlesDeviationType::pdt_along
+	//! использовать ли отклонения при движении
+	bool m_useCharacterDeviation;						
 
-	float CharacterDeviationCoefAngleDisp;		//!< коэфициент дисперсии, для #CharacterDeviationCoefAngle если #ParticlesDeviationType::ptd_wave, для #CharacterDeviationAmplitude в других случаях
-	bool CharacterDeviationCoefAngleDispNeg;	//!< возможна ли отрицательная дисперсия
+	//! тип смещения
+	PARTICLESTYPE_DEVIATION m_typeCharacterDeviation;	
 
-	bool CharacterDeviationTapX;	//!< задействовать ли координату X при просчете смещения
-	bool CharacterDeviationTapY;	//!< задействовать ли координату Y при просчете смещения
-	bool CharacterDeviationTapZ;	//!< задействовать ли координату Z при просчете смещения
+	//! амплитуда, может быть отрицательна
+	float m_fCharacterDeviationAmplitude;				
+
+	//! коэфициент на который будет умножен угол, только для #PARTICLESTYPE_DEVIATION_WAVE
+	float m_fCharacterDeviationCoefAngle;				
+
+	//! ось на основании которой будет вычислен угол поворота, только для PARTICLESTYPE_DEVIATION_WAVE
+	PARTICLES_AXIS m_typeCharacterDeviationAxis;			
+
+	//! время обновления для #PARTICLESTYPE_DEVIATION_RAND и #PARTICLESTYPE_DEVIATION_ALONG
+	UINT m_uiCharacterDeviationCountDelayMls;			
+
+	//! коэфициент дисперсии, для #m_fCharacterDeviationCoefAngle если #PARTICLESTYPE_DEVIATION_WAVE, для #m_fCharacterDeviationAmplitude в других случаях
+	float m_fCharacterDeviationCoefAngleDisp;		
+
+	//! возможна ли отрицательная дисперсия
+	bool m_useCharacterDeviationCoefAngleDispNeg;	
+
+	//! задействовать ли координату X при просчете смещения
+	bool m_useCharacterDeviationTapX;	
+
+	//! задействовать ли координату Y при просчете смещения
+	bool m_useCharacterDeviationTapY;	
+
+	//! задействовать ли координату Z при просчете смещения
+	bool m_useCharacterDeviationTapZ;	
 
 	//!@}
 
 	//**************************************************************************
 
-	PARTICLESTYPE_FIGURE FigureType;	//!< тип фигуры партикла
-	int FigureCountQuads;			//!< количество квадаратов в случае ParticlesFigureType::pft_quad_composite
-	bool FigureRotRand;				//!< true - случайно генерировать углы поворотов, false - равномерно поворачивать
-	bool FigureTapX;				//!< поворачивать ли по оси X
-	bool FigureTapY;				//!< поворачивать ли по оси Y
-	bool FigureTapZ;				//!< поворачивать ли по оси Z
+	//! тип фигуры партикла
+	PARTICLESTYPE_FIGURE m_typeFigure;	
+
+	//! количество квадаратов в случае ParticlesFigureType::pft_quad_composite
+	int m_iFigureCountQuads;			
+
+	//! true - случайно генерировать углы поворотов, false - равномерно поворачивать
+	bool m_useFigureRotRand;				
+
+	//! поворачивать ли по оси X
+	bool m_useFigureTapX;				
+
+	//! поворачивать ли по оси Y
+	bool m_useFigureTapY;				
+
+	//! поворачивать ли по оси Z
+	bool m_useFigureTapZ;				
 
 	//**************************************************************************
 
 	//! отрисовка следа от столкновения, только для эмиттеров у которых CollisionDelete == true, рисуется квад и альфа канал уменьшатсья с течением времени 
-	bool Track;
-	float TrackSize;	//!< размер следа, в метрах
-	DWORD TrackTime;	//!< время исчезновения в млсек
+	bool m_useTrack;
+
+	//! размер следа, в метрах
+	float m_fTrackSize;	
+
+	//! время исчезновения в млсек
+	UINT m_uiTrackTime;	
 
 	//**************************************************************************
 
-	PARTICLESTYPE_ALPHABLEND AlphaBlendType;	//!< тип смешивания
-	float ColorCoef;		//!< коэфициент на который будет домножен цвет
-	float4_t Color;
-	int ReCreateCount;		//!< количество создваваемых/пересоздаваемых, 0< - пересоздание в случае нехватки, 0> - единственное создание при запуске
+	//! тип смешивания
+	PARTICLESTYPE_ALPHABLEND m_typeAlphaBlend;	
 
-	bool Soft;				//!< мягкие ли частицы
-	float SoftCoef;			//!< коэфициент для смягчения партиклов [0-1]
+	//! коэфициент на который будет домножен цвет
+	float m_fColorCoef;	
 
-	bool Refraction;		//!< частицы преломляют пространство
-	float RefractionCoef;	//!< коэфициент для преломления партиклов [0-1]
+	float4_t m_vColor;
 
-	float TransparencyCoef;	//!< коэфициент прозрачности [0-1], компонента альфа канала будет домножена на это значение
+	//! количество создваваемых/пересоздаваемых, 0< - пересоздание в случае нехватки, 0> - единственное создание при запуске
+	int m_iReCreateCount;		
 
-	bool Lighting;			//!< освещаемые ли частицы
+	//! мягкие ли частицы
+	bool m_isSoft;				
 
-	bool CollisionDelete;	//!< удалять при столкновении с миром
+	//! коэфициент для смягчения партиклов [0-1]
+	float m_fSoftCoef;			
+
+	//! частицы преломляют пространство
+	bool m_useRefraction;		
+
+	//! коэфициент для преломления партиклов [0-1]
+	float m_fRefractionCoef;	
+
+	//! коэфициент прозрачности [0-1], компонента альфа канала будет домножена на это значение
+	float m_fTransparencyCoef;	
+
+	//! освещаемые ли частицы
+	bool m_isLighting;			
+
+	//! удалять при столкновении с миром
+	bool m_useCollisionDelete;	
 };
 
 //#############################################################################
@@ -386,43 +547,43 @@ struct ParticlesData
 @{*/
 
 //! загрузка информации об эффектах и эмиттерах из файла
-SX_LIB_API void SPE_EffectLoad(const char* path);	
+SX_LIB_API void SPE_EffectLoad(const char *szPath);	
 
 //! сохранение информации об эффектах и эмиттерах в файл
-SX_LIB_API void SPE_EffectSave(const char* path);	
+SX_LIB_API void SPE_EffectSave(const char *szPath);
 
 //! очистка всего списка эффектов и эмиттеров
 SX_LIB_API void SPE_EffectsClear();	
 
 
 //! получить копию эффекта по имени
-SX_LIB_API ID SPE_EffectInstanceByName(const char* name);	
+SX_LIB_API ID SPE_EffectInstanceByName(const char *szName);	
 
 //! получить копию эффекта по его идентификатору
 SX_LIB_API ID SPE_EffectInstanceByID(ID id);				
 
 //!< получить эффект по имени (первый найденый)
-SX_LIB_API ID SPE_EffectGetByName(const char* name);		
+SX_LIB_API ID SPE_EffectGetByName(const char *szName);		
 
 
 //! добавить эффект и установить ему имя
-SX_LIB_API ID SPE_EffectAdd(const char* name);	
+SX_LIB_API ID SPE_EffectAdd(const char *szName);	
 
 //! возвращает количество эффектов
-SX_LIB_API int SPE_EffectCountGet();			
+SX_LIB_API int SPE_EffectGetCount();
 
-//!< возвращает идентификатор эффекта по порядковому номеру key
-SX_LIB_API ID SPE_EffectIdOfKey(ID key);		
+//! возвращает идентификатор эффекта по порядковому номеру key
+SX_LIB_API ID SPE_EffectGetIdOfKey(int iKey);		
 
 
 //! удаляет эффект
 SX_LIB_API void SPE_EffectDelete(ID id);		
 
 //! установка имени 
-SX_LIB_API void SPE_EffectNameSet(ID id, const char* name);	
+SX_LIB_API void SPE_EffectSetName(ID id, const char *szName);
 
 //! в name записывает имя эффекта
-SX_LIB_API void SPE_EffectNameGet(ID id, char* name);		
+SX_LIB_API void SPE_EffectGetName(ID id, char *szName);
 
 
 //! просчет и обновление всех партиклов в эффекте
@@ -449,66 +610,66 @@ SX_LIB_API void SPE_EffectRenderAll(DWORD timeDelta);
 SX_LIB_API bool SPE_EffectAlifeGet(ID id);				
 
 //<! установка состояния жизни (время затухания #SXPARTICLES_DEADTH_TIME)
-SX_LIB_API void SPE_EffectAlifeSet(ID id, bool alife);	
+SX_LIB_API void SPE_EffectSetAlife(ID id, bool isAlife);
 
 
 //! включен ли эффект
-SX_LIB_API bool SPE_EffectEnableGet(ID id);				
+SX_LIB_API bool SPE_EffectGetEnable(ID id);
 
 //! устанавливает состяние включен/выключен для эффекта
-SX_LIB_API void SPE_EffectEnableSet(ID id, bool enable);
+SX_LIB_API void SPE_EffectSetEnable(ID id, bool isEnable);
 
 
 //! воспроизвести эффект используя при этом копию эффекта с идентификатором id
 SX_LIB_API void SPE_EffectPlayByID(
-	ID id,			//!< идентификатор оригинального эффекта
-	float3* pos,	//!< позиция эффекта воспроизведения
-	float3* dir		//!< направление взгляда эффекта
+	ID id,				//!< идентификатор оригинального эффекта
+	const float3 *pPos,	//!< позиция эффекта воспроизведения
+	const float3 *pDir	//!< направление взгляда эффекта
 	);
 
 //! воспроизвести эффект используя при этом копию эффекта с именем name
 SX_LIB_API void SPE_EffectPlayByName(
-	const char* name,	//!< идентификатор оригинального эффекта
-	float3* pos,		//!< позиция эффекта воспроизведения
-	float3* dir			//!< направление взгляда эффекта
+	const char *szName,	//!< идентификатор оригинального эффекта
+	const float3 *pPos,	//!< позиция эффекта воспроизведения
+	const float3 *pDir	//!< направление взгляда эффекта
 	);
 
 
 //! установка позиции эффекту
-SX_LIB_API void SPE_EffectPosSet(ID id, float3* pos);	
+SX_LIB_API void SPE_EffectSetPos(ID id, const float3 *pPos);
 
 //! установка направления взгляда эффекта
-SX_LIB_API void SPE_EffectDirSet(ID id, float3* dir);	
+SX_LIB_API void SPE_EffectSetDir(ID id, const float3 *pDir);
 
 //! установка поворотов эффекта (в радианах)
-SX_LIB_API void SPE_EffectRotSet(ID id, float3* rot);	
+SX_LIB_API void SPE_EffectSetRot(ID id, const float3 *pRot);
 
 //! установка поворотов эффекта
-SX_LIB_API void SPE_EffectRotSetQ(ID id, const SMQuaternion & rot);	
+SX_LIB_API void SPE_EffectSetRotQ(ID id, const SMQuaternion &oRot);
 
 
 //! в pos записывает позицию эффекта
-SX_LIB_API void SPE_EffectPosGet(ID id, float3* pos);	
+SX_LIB_API void SPE_EffectGetPos(ID id, float3 *pPos);
 
 //! в dir записывает  направление взгляда эффекта
-SX_LIB_API void SPE_EffectDirGet(ID id, float3* dir);	
+SX_LIB_API void SPE_EffectGetDir(ID id, float3 *pDir);
 
 //! в rot записывает повороты эффекта (в радианах)
-SX_LIB_API void SPE_EffectRotGet(ID id, float3* rot);	
+SX_LIB_API void SPE_EffectGetRot(ID id, float3 *pRot);
 
 
 //! просчет видимости эффекта для фрустума frustum, и расчет расстояния от позиции наблюдателя view до эффекта, возвращает виден ли фруустуму эффект
-SX_LIB_API bool SPE_EffectVisibleCom(ID id, ISXFrustum* frustum, float3* view);	
+SX_LIB_API bool SPE_EffectVisibleCom(ID id, const IFrustum *pFrustum, const float3 *pView);	
 
 //! просчет видимости всех эффектов для фрустума frustum, и расчет расстояний от позиции наблюдателя view до всех эффектов
-SX_LIB_API void SPE_EffectVisibleComAll(ISXFrustum* frustum, float3* view);
+SX_LIB_API void SPE_EffectVisibleComAll(const IFrustum *pFrustum, const float3 *pView);
 
 
 //! виден ли эффект? по результатам просчетов #SPE_EffectVisibleComAll
-SX_LIB_API bool SPE_EffectVisibleGet(ID id);		
+SX_LIB_API bool SPE_EffectGetVisible(ID id);
 
 //! возвращает расстояние от наблюдателя до эффекта, по результатам просчетов #SPE_EffectVisibleComAll
-SX_LIB_API float SPE_EffectDistToViewGet(ID id);	
+SX_LIB_API float SPE_EffectGetDistToView(ID id);
 
 //!@} sxparticles_eff
 
@@ -519,8 +680,8 @@ SX_LIB_API float SPE_EffectDistToViewGet(ID id);
  \warning Идентификаторы партиклов не являются константными, и являются по сути порядковым номером.
  @{*/
 
-/*! \name Get/Set членов структуры ParticlesData для системы частиц в эффекте
- Так как данные структуры #ParticlesData могут быть как оффлайн так и онлайн изменяемы, а их полное изменение может быть немного громоздким, то для этого сделаны следующие макрофункции.
+/*! \name Get/Set членов структуры CParticlesData для системы частиц в эффекте
+ Так как данные структуры #CParticlesData могут быть как оффлайн так и онлайн изменяемы, а их полное изменение может быть немного громоздким, то для этого сделаны следующие макрофункции.
  \note Аргументы:
  - id_eff - идентификатор эффекта
  - id_part - идентификатор системы частиц
@@ -542,56 +703,56 @@ SX_LIB_API float SPE_EffectDistToViewGet(ID id);
 //**************************************************************************
 
 //! добавляет систему партиклов к эффекту
-SX_LIB_API ID SPE_EmitterAdd(ID id, ParticlesData* data);		
+SX_LIB_API ID SPE_EmitterAdd(ID id, CParticlesData *pData);
 
 //! возвращает количество систем партиклов у эффекта
-SX_LIB_API int SPE_EmitterSCountGet(ID id);						
+SX_LIB_API int SPE_EmitterGetSCount(ID id);
 
-//! удаляет из эффекта id систему частиц id_part
-SX_LIB_API void SPE_EmitterDelete(ID id, ID id_part);			
+//! удаляет из эффекта id систему частиц idPart
+SX_LIB_API void SPE_EmitterDelete(ID id, ID idPart);			
 
 //! возвращает структуру данных системы частиц id_part из эффекта id
-SX_LIB_API ParticlesData* SPE_EmitterGetData(ID id, ID id_part);
+SX_LIB_API CParticlesData* SPE_EmitterGetData(ID id, ID idPart);
 
 
 //! переустановка структуры данных data для системы частиц id_part у эффекта id, в data можно отправить 0 в случае если необходимо обновить состояния оффлайн данных
-SX_LIB_API void SPE_EmitterReInit(ID id, ID id_part, ParticlesData* data);
+SX_LIB_API void SPE_EmitterReInit(ID id, ID idPart, CParticlesData *pData);
 
 //! установка общего количества частиц в эмиттере эффекта
-SX_LIB_API void SPE_EmitterCountSet(ID id, ID id_part, int count);
+SX_LIB_API void SPE_EmitterSetCount(ID id, ID idPart, int iCount);
 
 //! возвращает общее количество частиц в эмиттере эффекта
-SX_LIB_API int SPE_EmitterCountGet(ID id, ID id_part);
+SX_LIB_API int SPE_EmitterGetCount(ID id, ID idPart);
 
 //! возвращает количество живых частиц в эмиттере эффекта
-SX_LIB_API int SPE_EmitterCountLifeGet(ID id, ID id_part);
+SX_LIB_API int SPE_EmitterGetCountLife(ID id, ID idPart);
 
 //! установка состояния воспроизведения (проиграть/остановить) эмиттеру эффекта
-SX_LIB_API void SPE_EmitterEnableSet(ID id, ID id_part, bool enable);
+SX_LIB_API void SPE_EmitterSetEnable(ID id, ID idPart, bool isEnable);
 
 //! возвращает состояние воспроизведения (проиграть/остановить) эмиттера эффекта
-SX_LIB_API bool SPE_EmitterEnableGet(ID id, ID id_part);
+SX_LIB_API bool SPE_EmitterGetEnable(ID id, ID idPart);
 
-//! установка текстуры (идентификатора на нее) системе частиц id_part эффекта id
-SX_LIB_API void SPE_EmitterTextureSet(ID id, ID id_part, const char* tex);
-SX_LIB_API void SPE_EmitterTextureSetID(ID id, ID id_part, ID tex);
-SX_LIB_API ID SPE_EmitterTextureGetID(ID id, ID id_part);
-SX_LIB_API void SPE_EmitterTextureGet(ID id, ID id_part, char* tex);
+//! установка текстуры (идентификатора на нее) системе частиц idPart эффекта id
+SX_LIB_API void SPE_EmitterSetTexture(ID id, ID idPart, const char *szTex);
+SX_LIB_API void SPE_EmitterSetTextureID(ID id, ID idPart, ID idTex);
+SX_LIB_API ID SPE_EmitterGetTextureID(ID id, ID idPart);
+SX_LIB_API void SPE_EmitterGetTexture(ID id, ID idPart, char *szTex);
 
 
-SX_LIB_API void SPE_EmitterTextureTrackSet(ID id, ID id_part, const char* tex);
-SX_LIB_API void SPE_EmitterTextureTrackSetID(ID id, ID id_part, ID tex);
-SX_LIB_API ID SPE_EmitterTextureTrackGetID(ID id, ID id_part);
-SX_LIB_API void SPE_EmitterTextureTrackGet(ID id, ID id_part, char* tex);
+SX_LIB_API void SPE_EmitterSetTextureTrack(ID id, ID idPart, const char *szTex);
+SX_LIB_API void SPE_EmitterSetTextureTrackID(ID id, ID idPart, ID idTex);
+SX_LIB_API ID SPE_EmitterGetTextureTrackID(ID id, ID idPart);
+SX_LIB_API void SPE_EmitterGetTextureTrack(ID id, ID idPart, char *szTex);
 
 //! установка имени системе частиц
-SX_LIB_API void SPE_EmitterNameSet(ID id, ID id_part, const char* name);	
+SX_LIB_API void SPE_EmitterSetName(ID id, ID idPart, const char *szName);
 
 //! в name записывает имя системы частиц
-SX_LIB_API void SPE_EmitterNameGet(ID id, ID id_part, char* name);			
+SX_LIB_API void SPE_EmitterGetName(ID id, ID idPart, char *szName);
 
-SX_LIB_API int SPE_EmitterTrackCountGet(ID id, ID id_part);
-SX_LIB_API int SPE_EmitterTrackPosGet(ID id, ID id_part, float3** arr, int count);
+SX_LIB_API int SPE_EmitterGetTrackCount(ID id, ID idPart);
+SX_LIB_API int SPE_EmitterGetTrackPos(ID id, ID idPart, float3 **ppArr, int iCount);
 
 //!@} sxparticles_part
 

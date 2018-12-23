@@ -1,5 +1,11 @@
-#ifndef TabActivities_H
-#define TabActivities_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __TAB_ACTIVITIES_H
+#define __TAB_ACTIVITIES_H
 
 #include "EditorTab.h"
 #include <anim/animated.h>

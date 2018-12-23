@@ -1,30 +1,46 @@
-#ifndef _GameData_H_
-#define _GameData_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __GAME_DATA_H
+#define __GAME_DATA_H
 
 
-#include "SXplayer.h"
+#include "Player.h"
 #include "crosshair.h"
-#include <mtllight/sxmtllight.h>
+#include <mtrl/sxmtrl.h>
+#include <gui/guimain.h>
+#include "HUDcontroller.h"
+#include "GameStateManager.h"
 
 class GameData
 {
 public:
-	GameData();
+	GameData(HWND hWnd, bool isGame);
 	~GameData();
 
 
-	static SXplayer * m_pPlayer;
-	static SXpointCamera * m_pActiveCamera;
-	static EntityManager * m_pMgr;
+	static CPlayer * m_pPlayer;
+	static CPointCamera * m_pActiveCamera;
+	static CEntityManager * m_pMgr;
+	static gui::IGUI * m_pGUI;
+	static CHUDcontroller * m_pHUDcontroller;
+	static CGameStateManager * m_pGameStateManager;
+	HWND m_hWnd;
 
-	Crosshair * m_pCrosshair;
+	CCrosshair * m_pCrosshair;
 
-	void Update();
-	void Render();
-	void RenderHUD();
-	void Sync();
+	void update();
+	void render();
+	void renderHUD();
+	void sync();
 
 	void playFootstepSound(MTLTYPE_PHYSIC mtl_type, const float3 &f3Pos);
+
+	static gui::dom::IDOMnode *m_pCell;
+	//static gui::IDesktop *m_pStatsUI;
 
 protected:
 
@@ -70,6 +86,15 @@ protected:
 	static void ccmd_switch_firemode();
 
 	static void ccmd_toggleflashlight();
+
+	static void ccmd_game_menu();
+
+	static void ccmd_use_on();
+	static void ccmd_use_off();
+
+	static void ccmd_send_camera();
+
+	bool m_isGame;
 
 };
 

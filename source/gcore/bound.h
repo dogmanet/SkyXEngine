@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __BOUND_H
 #define __BOUND_H
 
@@ -11,7 +16,7 @@ void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh 
 void ComputeBoundingBox(IDirect3DVertexBuffer9* vertex_buffer,ISXBound** bound,DWORD count_vert,DWORD bytepervert);
 void ComputeBoundingBox2(IDirect3DVertexBuffer9* vertex_buffer,ISXBound* bound,DWORD count_vert,DWORD bytepervert);
 
-bool InPosition2D(float3* min,float3* max,float3* pos);
+bool InPosition2D(const float3* min, const float3* max, const float3* pos);
 bool InPositionAbs2D(float3* min,float3* max,float3* pos);
 
 int CountPositionPoints2D(float3* min,float3* max,float3* p1,float3* p2,float3* p3);
@@ -28,20 +33,36 @@ bool InPositionPoints3D(float3* min,float3* max,float3* p1,float3* p2,float3* p3
 void ComputeBoundingBoxArr8(ISXBound* bound,ISXBound** bound_arr);
 void ComputeBoundingBoxArr4(ISXBound* bound,ISXBound** bound_arr);
 
-void CreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh, IDirect3DDevice9* device);
+void CreateBoundingBoxMesh(const float3* min, const float3* max, ID3DXMesh** bbmesh, IDirect3DDevice9* device);
 
 //простой объект с минимальным описанием
 //дл€ корректного использовани€ необходимо сначала установить позицию/поворот/масштаб после чего CalculateWorld
-struct SXTransObject : public virtual ISXTransObject
+class CTransObject : public virtual ITransObject
 {
-	SXTransObject(){};
-	~SXTransObject(){};
+public:
+	CTransObject();
+	~CTransObject(){};
 
 	void Release(){ mem_del(this); };
 
 	SX_ALIGNED_OP_MEM
 
-	float4x4* CalcWorld();
+	const float4x4* calcWorld();
+
+	void setPosition(const float3 *pPos);
+	void setRotation(const float3 *pRot);
+	void setScale(const float3 *pScale);
+
+	const float3* getPosition(float3 *pPos = 0);
+	const float3* getRotation(float3 *pRot = 0);
+	const float3* getScale(float3 *pScale = 0);
+
+protected:
+
+	float3 m_vPosition;	//!< позици€
+	float3 m_vRotation;	//!< повороты
+	float3 m_vScale;	//!< масштабирование
+	float4x4 m_mWorld;	//!< мирова€ матрица на основе поворотов масштабировани€ и позиции
 };
 
 #define TRANSFORM_COORD_SCREEN2(point,sizemapdepth)\
@@ -57,31 +78,47 @@ struct SXTransObject : public virtual ISXTransObject
 //дл€ создан€и минимума и максимума необходимо вызвать CalculateBound
 //SetMinMax, GetMinMax до вызова CalculateWorldAndTrans возвращают нетрансформирвоанные данные
 //конечным этапом построени€ Bound и Object €вл€етс€ CalculateWorldAndTrans
-class SXBound : public SXTransObject, public virtual ISXBound
+class CBound : public CTransObject, public virtual ISXBound
 {
 public:
-	SXBound(){};
-	~SXBound(){};
+	CBound() :CTransObject(){};
+	~CBound(){};
 
 	void Release(){ mem_del(this); };
 
 	SX_ALIGNED_OP_MEM
 
-	void CalcBound(IDirect3DVertexBuffer9* vertex_buffer, DWORD count_vert, DWORD bytepervert);
+	void calcBound(IDirect3DVertexBuffer9 *pVertexBuffer, int iCountVertex, int iBytePerVertex);
+	void calcBoundIndex(IDirect3DVertexBuffer9 *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex);
 
 	//функци€ просчета мировой матрицы и трансформации минимума и максимума
-	float4x4* CalcWorldAndTrans();
+	//float4x4* calcWorldAndTrans();
 
-	void GetPosBBScreen(SXPosBBScreen *res, float3* campos, float3* sizemapdepth, float4x4* mat);
+	void resetTransform();
 
-	void SetMinMax(float3* min, float3* max);
-	void GetMinMax(float3* min, float3* max) const;
+	//void getPosBBScreen(SXPosBBScreen *res, float3* campos, float3* sizemapdepth, float4x4* mat);
 
-	void SetSphere(float3* center, float* radius);
-	void GetSphere(float3* center, float* radius) const;
+	void setMinMax(const float3* min, const float3* max);
+	void getMinMax(float3* min, float3* max) const;
 
-	bool IsPointInSphere(float3* point) const;
-	bool IsPointInBox(float3* point) const;
+	void setSphere(const float3* center, float radius);
+	void getSphere(float3* center, float* radius) const;
+
+	bool isPointInSphere(const float3* point) const;
+	bool isPointInBox(const float3* point) const;
+
+protected:
+	float3 m_vMinTransform;
+	float3 m_vMaxTransform;
+
+	float3 m_vCenterTransform;
+	float m_fRadiusTransform;
+
+	float3 m_vMinOrigin;
+	float3 m_vMaxOrigin;
+
+	float3 m_vCenterOrigin;
+	float m_fRadiusOrigin;
 };
 
 #endif

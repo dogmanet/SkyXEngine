@@ -42,7 +42,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
+    <OutDir>../../../build/bin/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IncludePath>$(IncludePath);$(WindowsSdk_71A_IncludePath);../../../source;../../../sdks/dx9sdk/Include;</IncludePath>
     <LibraryPath>../../../sdks/dx9sdk/Lib;../../../libs;$(LibraryPath)</LibraryPath>
@@ -50,7 +50,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
+    <OutDir>../../../build/bin/</OutDir>
     <IncludePath>$(IncludePath);$(WindowsSdk_71A_IncludePath);../../../source;../../../sdks/dx9sdk/Include;</IncludePath>
     <LibraryPath>../../../sdks/dx9sdk/Lib;../../../libs;$(LibraryPath)</LibraryPath>
     <SourcePath>../../../source;$(SourcePath);../../../sdks/dx9sdk/Include;</SourcePath>
@@ -59,11 +59,12 @@
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level1</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SGCORE_EXPORTS;SX_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SGCORE_EXPORTS;SX_DLL;SX_LIB_NAME="GCORE";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -81,12 +82,13 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SGCORE_EXPORTS;SX_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SGCORE_EXPORTS;SX_DLL;SX_LIB_NAME="GCORE";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -94,7 +96,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
     <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\gcore\bound.cpp" />
     <ClCompile Include="..\..\..\source\gcore\camera.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -104,12 +108,15 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\gcore\gcore_data.cpp" />
+    <ClCompile Include="..\..\..\source\gcore\gcore_utils.cpp" />
     <ClCompile Include="..\..\..\source\gcore\GeomOptimize.cpp" />
     <ClCompile Include="..\..\..\source\gcore\LoaderTextures.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\source\gcore\loader_static.cpp" />
+    <ClCompile Include="..\..\..\source\gcore\oc.cpp" />
     <ClCompile Include="..\..\..\source\gcore\shader.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
@@ -125,14 +132,19 @@
     <ClCompile Include="..\..\..\source\gcore\sxgcore_dll.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\common\file_utils.h" />
     <ClInclude Include="..\..\..\source\common\string.h" />
+    <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\gcore\bound.h" />
     <ClInclude Include="..\..\..\source\gcore\camera.h" />
     <ClInclude Include="..\..\..\source\gcore\creatortextures.h" />
+    <ClInclude Include="..\..\..\source\gcore\gcore_data.h" />
+    <ClInclude Include="..\..\..\source\gcore\gcore_utils.h" />
     <ClInclude Include="..\..\..\source\gcore\GeomOptimize.h" />
     <ClInclude Include="..\..\..\source\gcore\LoaderTextures.h" />
     <ClInclude Include="..\..\..\source\gcore\loader_static.h" />
     <ClInclude Include="..\..\..\source\gcore\ModelFile.h" />
+    <ClInclude Include="..\..\..\source\gcore\oc.h" />
     <ClInclude Include="..\..\..\source\gcore\shader.h" />
     <ClInclude Include="..\..\..\source\gcore\sky.h" />
     <ClInclude Include="..\..\..\source\gcore\sxgcore.h" />

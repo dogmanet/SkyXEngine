@@ -5,50 +5,52 @@ ppgensm_direct.ps
 */
 
 #include <../struct.h>
+#include <../shadow.h>
 #include <../mtrl.h>
+#include <../ps.h>
 
-half3 PosCam;
-half2 NearFar;
-half2 PixelSize;
-half3 SizeMapBias;
+//##########################################################################
 
-sampler2D DepthLinearSampler:register(s0);
-sampler2D DepthSampler1:register(s1);
-sampler2D NoiseSampler:register(s2);
+half3 g_vPosCam;
+half2 g_vPixelSize;
+half3 g_vSizeMapBias;
+half4x4	g_mMatrixTexture;
 
-half4x4	MatrixTexture;
+//##########################################################################
 
-half4 main(vs_out_res_pos IN):COLOR0
+sampler2D g_sDepthView:register(s0);
+sampler2D g_sDepthShadow:register(s1);
+
+//##########################################################################
+
+half4 main(VSO_ResPos IN):COLOR0
 {
-	half ShadowTerm = 0.0f;
+	half fShadow = 0.0f;
 	
-	half tmpdepth = tex2D(DepthLinearSampler,IN.TexUV).r;
-	half4 Position = half4(PosCam + IN.WorldRay * tmpdepth,1.f);
-	half4 TexCoord1	= mul(Position, MatrixTexture);
+	half fDepth = tex2D(g_sDepthView,IN.vTexUV).r;
+	half4 vPixelPos = half4(g_vPosCam + IN.vWorldRay * fDepth,1.f);
+	half4 vTexCoord	= mul(vPixelPos, g_mMatrixTexture);
+	vTexCoord.xyz = vTexCoord.xyz / vTexCoord.w;
 	
-	half3 ShadowTexC;
-	ShadowTexC.xyz = TexCoord1.xyz / TexCoord1.w;
-	
-	[branch]if(!(ShadowTexC.x <= 1.f && ShadowTexC.y <= 1.f && ShadowTexC.x >= 0.f && ShadowTexC.y >= 0.f))
+	[branch]if(!(vTexCoord.x <= 1.f && vTexCoord.y <= 1.f && vTexCoord.x >= 0.f && vTexCoord.y >= 0.f))
 		clip(-1);
-		
-	half2 jitter = ((tex2D(NoiseSampler, ShadowTexC.xy * SHADOWGEN_JITTER_SCALE).xy * 2.0f - 1.0f) * PixelSize);
-	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + jitter).x									+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
-	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(0, PixelSize.y) + jitter).x			+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
-	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(PixelSize.x, 0) + jitter).x			+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
-	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(PixelSize.x, PixelSize.y) + jitter).x	+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
+	
+	fShadow += ShadowCalcShading(tex2D(g_sDepthShadow, vTexCoord.xy).x, vTexCoord.z, g_vSizeMapBias.z);
+	fShadow += ShadowCalcShading(tex2D(g_sDepthShadow, vTexCoord.xy + half2(0, g_vPixelSize.y)).x, vTexCoord.z, g_vSizeMapBias.z);
+	fShadow += ShadowCalcShading(tex2D(g_sDepthShadow, vTexCoord.xy + half2(g_vPixelSize.x, 0)).x, vTexCoord.z, g_vSizeMapBias.z);
+	fShadow += ShadowCalcShading(tex2D(g_sDepthShadow, vTexCoord.xy + half2(g_vPixelSize.x, g_vPixelSize.y)).x, vTexCoord.z, g_vSizeMapBias.z);
 
 	#ifdef GSD_9
-	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(-PixelSize.x, 0.0) + jitter).x				+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
-	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(PixelSize.x, -PixelSize.y) + jitter).x		+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
-	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(-PixelSize.x, PixelSize.y) + jitter).x		+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
-	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(0.0, -PixelSize.y) + jitter).x				+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
-	ShadowTerm += tex2D(DepthSampler1, ShadowTexC.xy + half2(-PixelSize.x, -PixelSize.y) + jitter).x	+ SizeMapBias.z < ShadowTexC.z ? 0.0f : 1.0f;
+	fShadow += ShadowCalcShading(tex2D(g_sDepthShadow, vTexCoord.xy + half2(-g_vPixelSize.x, 0)).x, vTexCoord.z, g_vSizeMapBias.z);
+	fShadow += ShadowCalcShading(tex2D(g_sDepthShadow, vTexCoord.xy + half2(g_vPixelSize.x, -g_vPixelSize.y)).x, vTexCoord.z, g_vSizeMapBias.z);
+	fShadow += ShadowCalcShading(tex2D(g_sDepthShadow, vTexCoord.xy + half2(-g_vPixelSize.x, g_vPixelSize.y)).x, vTexCoord.z, g_vSizeMapBias.z);
+	fShadow += ShadowCalcShading(tex2D(g_sDepthShadow, vTexCoord.xy + half2(0, -g_vPixelSize.y)).x, vTexCoord.z, g_vSizeMapBias.z);
+	fShadow += ShadowCalcShading(tex2D(g_sDepthShadow, vTexCoord.xy + half2(-g_vPixelSize.x, -g_vPixelSize.y)).x, vTexCoord.z, g_vSizeMapBias.z);
 
-	ShadowTerm *= 0.111;
+	fShadow *= 0.111;
 	#else
-	ShadowTerm *= 0.25;
+	fShadow *= 0.25;
 	#endif
 
-	return saturate(ShadowTerm);
+	return saturate(fShadow);
 } 

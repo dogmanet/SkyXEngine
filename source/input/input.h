@@ -1,6 +1,11 @@
 
-#ifndef SX_INPUT_CLASS_H
-#define SX_INPUT_CLASS_H
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __INPUT_H
+#define __INPUT_H
 
 #include <queue>
 
@@ -59,6 +64,12 @@ public:
 
 	void GetMouseDelta(int * x, int * y);
 
+	void setEnable(bool bEnable);
+
+	void getBindEntry(int n, const char **pszKey, const char **pszCmd);
+
+	void onNextKeyPress(void(*pfnCallback)(const char *szKey));
+
 private:
 	char Name[CORE_NAME_MAX_LEN];
 
@@ -78,6 +89,13 @@ private:
 
 	int wheelDelta = 0;
 	int wheelCount = 0;
+
+	bool m_bEnabled = false;
+
+	void(*m_pfnCallback)(const char *szKey);
+	bool m_bDisableOnNextKeyPress;
+
+	void execOnNextKeyPress(const char *szKey);
 };
 
 

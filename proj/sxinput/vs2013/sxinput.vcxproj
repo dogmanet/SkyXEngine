@@ -41,7 +41,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
+    <OutDir>../../../build/bin/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IncludePath>../../../source;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Lib</LibraryPath>
@@ -49,7 +49,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
+    <OutDir>../../../build/bin/</OutDir>
     <IncludePath>../../../source;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Lib</LibraryPath>
     <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Include</SourcePath>
@@ -60,9 +60,10 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SXINPUT_EXPORTS;SX_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SXINPUT_EXPORTS;SX_DLL;SX_LIB_NAME="INPUT";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -80,12 +81,13 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SXINPUT_EXPORTS;SX_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SXINPUT_EXPORTS;SX_DLL;SX_LIB_NAME="INPUT";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>

@@ -6,36 +6,47 @@ sm_depth_green_pssm_direct.vs
 
 #include <../struct.h>
 #include <../green.h>
+#include <../shadow.h>
 
-float4x4 WorldViewProjection;
+//##########################################################################
+
+float4x4 g_mWVP;
 
 #if defined(_GRASS_)
-half2 DistBeginEndLessening : register(GREEN_R_LESSENING);
-half3 ViewPos : register(GREEN_R_VIEWPOS);
-half4 BSphere : register(GREEN_R_BSPHERE);
-half3 BBMax : register(GREEN_R_BBMAX);
-half3 BBMin : register(GREEN_R_BBMIN);
+
+half2 g_vDistLessening	: register(GREEN_R_LESSENING);
+half3 g_vViewPos		: register(GREEN_R_VIEWPOS);
+half4 g_vBoundSphere	: register(GREEN_R_BSPHERE);
+half3 g_vBoundMax		: register(GREEN_R_BBMAX);
+half3 g_vBoundMin		: register(GREEN_R_BBMIN);
+
 #endif
 
-void main(in vs_in_green IN, out vs_out_gcommon OUT) 
+//##########################################################################
+
+VSO_SceneCommon main(in VSI_Green IN) 
 {
-	half multiplier = 1.f;
+	VSO_SceneCommon OUT;
+	
+	half fMultiplier = 1.0;
 	
 	#if defined(_GRASS_)
-	multiplier = GrassComMultiplier(IN.InstancePos,ViewPos,DistBeginEndLessening);
+	fMultiplier = GrassComMultiplier(IN.vInstPos,g_vViewPos,g_vDistLessening);
 	#endif
 	
-	OUT.Position = GreenTransformPos(
-						GreenComRotation(IN.Position,IN.InstanceSinCosRot),
-						IN.InstanceTrans.x,
-						multiplier,
-						IN.InstancePos
+	OUT.vPosition = GreenTransformPos(
+						GreenComRotation(IN.vPosition,IN.vInstSinCosRot),
+						IN.vInstTrans.x,
+						fMultiplier,
+						IN.vInstPos
 					);
 					
-	OUT.Position = mul(OUT.Position, WorldViewProjection);
+	OUT.vPosition = mul(OUT.vPosition, g_mWVP);
 	
-	OUT.Normal = IN.Normal;
-	OUT.Pos = OUT.Position;
+	OUT.vNormal = IN.vNormal;
+	OUT.vPos = OUT.vPosition;
 
-	OUT.TexUV = IN.TexUV;
+	OUT.vTexUV = IN.vTexUV;
+	
+	return OUT;
 }

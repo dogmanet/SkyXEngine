@@ -5,68 +5,78 @@ ppe_ssao.ps
 */
 
 #include <../struct.h>
+#include <../mtrl.h>
 
-sampler2D DepthSampler:register(s0);
-sampler2D NormalSampler:register(s1);
-sampler2D RndSampler:register(s2);
+//##########################################################################
 
-half4 Params;
+sampler2D g_sDepth:register(s0);
+sampler2D g_sNormals:register(s1);
+sampler2D g_sNoise:register(s2);
+
+//##########################################################################
+
+half4 g_vParams;
 //x - радиус
 //y - минимально допустимая разница в глубине между пикселя для просчета затенения
 //z - освещенность пикселя по дефолту (если разница меньше минимальной)
 //w - допустимая разница для сравнения
 
-half2 NearFar;
-half2 Ratio;
-half3 ViewPos;
-half4x4 ViewProj;
+half2 g_vNearFar;
+half3 g_vViewPos;
+half4x4 g_vViewProj;
 
-half3 ArrRndVecSSAO[24];
+half3 g_aRndVectors[24];
 
 #if defined(SSAO_Q_3)
-static int NumSam = 24;
+static int g_fNumSam = 24;
 #elif defined(SSAO_Q_2)
-static int NumSam = 16;
+static int g_fNumSam = 16;
 #else
-static int NumSam = 8;
+static int g_fNumSam = 8;
 #endif
 
-half4 main(vs_out_res_pos IN):COLOR0
+//##########################################################################
+
+half4 main(VSO_ResPos IN):COLOR0
 {
-	half depth = tex2D(DepthSampler, IN.TexUV).r;
+	half fDepth = tex2D(g_sDepth, IN.vTexUV).r;
+	half3 vRndVec = normalize(2.0 * tex2D(g_sNoise, IN.vTexUV).rgb - 1.0);
 	
-	[branch]if(depth >= 1.f)
-		return 1.f;
-	
-	half3 position = half3(ViewPos + (IN.WorldRay) * (depth));
-	half3 normal = normalize(2.f * tex2D(NormalSampler, IN.TexUV).rgb - 1.f);
-	half3 random = normalize(2.f * tex2D(RndSampler, IN.TexUV*Ratio*96.f).rgb - 1.f);
-
-	half occlusion = 0.f;
-		for(int i=0; i < NumSam; i++)
+	[branch]if(fDepth >= 1.0)
+		return half4(1, 1, 1, 1);
+	else
+	{
+		half3 vPosition = half3(g_vViewPos + IN.vWorldRay * fDepth);
+		half3 vNormal = normalize(NormalDecode(tex2Dlod(g_sNormals, half4(IN.vTexUV, 0, 0)).xyz).xyz);
+		//return half4(vNormal /** 0.5 + 0.5*/, 1);
+		half fOcclusion = 0.0;
+		for(int i=0; i < g_fNumSam; i++)
 		{
-			half3 ray = (reflect(ArrRndVecSSAO[i],random));
-			half3 hemi_ray = ray * sign(dot(ray,normal));
-			half4 newpos = half4(position + hemi_ray * Params.x,1);
+			half3 vRay = (reflect(g_aRndVectors[i], vRndVec));
+			half3 vHemiRay = vRay * sign(dot(vRay, vNormal));
+			half4 vNewPos = half4(vPosition + vHemiRay * g_vParams.x, 1);
 
-			newpos = mul(newpos,ViewProj);
-			newpos /= newpos.w;
-			newpos.x = newpos.x * 0.5f + 0.5f;
-			newpos.y = newpos.y * (-0.5f) + 0.5f;
+			vNewPos = mul(vNewPos, g_vViewProj);
+			vNewPos /= vNewPos.w;
+			vNewPos.x = vNewPos.x * 0.5 + 0.5;
+			vNewPos.y = vNewPos.y * (-0.5) + 0.5;
 
-			half newdepth = tex2D(DepthSampler, (newpos.xy)).r;
-				[branch]if(newdepth >= 1.f)
-					occlusion += 1.f;
-			half difference = (newdepth - depth)*NearFar.y;
+			half newdepth = tex2Dlod(g_sDepth, half4(vNewPos.xy, 0, 0)).r;
+				[branch]if(newdepth >= 1.0)
+					fOcclusion += 1.0;
+			half fDifference = (newdepth - fDepth)*g_vNearFar.y;
 			
-			half distanceCheck = min(Params.z, (Params.x/abs(difference)));
-			[branch]if(abs(difference) < Params.y)
-				occlusion += Params.z;
+			half fDistanceCheck = min(g_vParams.z, (g_vParams.x/abs(fDifference)));
+			[branch]if(abs(fDifference) < g_vParams.y)
+				fOcclusion += g_vParams.z;
 			else
-				occlusion += 1-step(difference, Params.w)*distanceCheck;
+				fOcclusion += 1.0-step(fDifference, g_vParams.w) * fDistanceCheck;
 		}
-	occlusion = clamp(saturate(occlusion/NumSam)*1.2f,0.3f,1.f);
-	occlusion *= occlusion;
-	
-	return half4(occlusion,occlusion,occlusion,1.f);
+		fOcclusion = clamp(saturate(fOcclusion/g_fNumSam), 0.2, 1.0);
+		fOcclusion = lerp(1.0, fOcclusion, 0.6);
+		fOcclusion = pow(fOcclusion, 2);
+		fOcclusion = lerp(1.0, fOcclusion, saturate((fDepth * g_vNearFar.y)/PP_SSAO_DIST_EMERSION));
+		
+		return half4(fOcclusion, fOcclusion, fOcclusion, 1);
+	}
 }

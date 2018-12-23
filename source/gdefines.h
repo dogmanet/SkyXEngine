@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*! \page general_info_libs Общая информация о библиотеках
 \tableofcontents
@@ -103,6 +103,12 @@ struct IBaseObject
 #define CONFIG_SECTION_MAX_LEN	64	/*!< максимальная длина секции конфигурационного файла */
 //!@}
 
+/*! звуковой канал самой игры */
+#define SX_SOUND_CHANNEL_GAME	0
+
+/*! звуковой канал главного меню */
+#define SX_SOUND_CHANNEL_MAIN_MENU	1
+
 /*! Пустые дефайны для визуальной идентификации аргументов функций
 @{
 */
@@ -149,17 +155,17 @@ struct IBaseObject
 #define Q4_BTQUAT(xmf) (btQuaternion((xmf).x, (xmf).y, (xmf).z, -(xmf).w))
 #define BTQUAT_Q4(btv) (SMQuaternion((btv).x(), (btv).y(), (btv).z(), -(btv).w()))
 
-#define macro_text_(x) #x
-#define macro_text(x) macro_text_(x)
+#define MACRO_TEXT_(x) #x
+#define MACRO_TEXT(x) MACRO_TEXT_(x)
 
 //! Формирование строки вида file_name:string_num
-#define gen_msg_location __FILE__ ## ": " ## macro_text(__LINE__)
+#define GEN_MSG_LOCATION __FILE__ ## ": " ## MACRO_TEXT(__LINE__)
 
-#define _assert_s(str,...) AllocConsole();freopen("CONOUT$", "wt", stdout); fprintf(stdout, str, ...); exit(1);
-#define _assert(expr) if(!expr) _assert_s(#expr)
+#define ASSERT_S(str,...) AllocConsole();freopen("CONOUT$", "wt", stdout); fprintf(stdout, str, ...); exit(1);
+#define ASSERT(expr) if(!expr) ASSERT_S(#expr)
 
 //! Тип функции вывода отладочной информации
-typedef void(*report_func) (int level, const char* format, ...);
+typedef void(*report_func) (int iLevel, const char *szLibName, const char *szFormat, ...);
 
 #include <cstdio> 
 #if defined(_WINDOWS)
@@ -222,7 +228,7 @@ typedef void(*report_func) (int level, const char* format, ...);
 #define DEFAULT_FUNCTION_REPORT
 
 /*! Дефолтовая функция вывода отладочной информации ВМЕСТО НЕЕ В ЯДРО/ПОДСИСТЕМУ НУЖНО ОТПРАВЛЯТЬ СВОЮ */
-inline void DefReport(int level, const char* format, ...)
+inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, ...)
 {
 #if defined(_WINDOWS)
 	AllocConsole();
@@ -230,13 +236,38 @@ inline void DefReport(int level, const char* format, ...)
 #endif
 	char buf[REPORT_MSG_MAX_LEN];
 	int strl = sizeof(buf);
-	format_str(buf, format);
-	fprintf(stdout, "!!! report function is not init !!! %s\n", buf);
+	format_str(buf, szFormat);
+	fprintf(stdout, "!!! report function is not init !!!\n  LibName: %s\n  message: %s\n", szLibName, buf);
 	fprintf(stdout, "work program will be stopped within 5 seconds ...");
 	Sleep(5000);
 	exit(1);
 }
 
 #endif
+
+
+#ifndef SX_LIB_NAME
+#define SX_LIB_NAME "User"
+#endif
+
+inline void LibReport(int iLevel, const char *szFormat, ...)
+{
+	extern report_func g_fnReportf;
+
+	static char szStr[REPORT_MSG_MAX_LEN];
+	szStr[0] = 0;
+	int iStrLen = sizeof(szStr);
+	//format_str(szStr, szFormat);
+
+	va_list va; 
+	va_start(va, szFormat);
+	vsprintf_s(szStr, sizeof(szStr), szFormat, va);
+	va_end(va);
+
+	g_fnReportf(iLevel, SX_LIB_NAME, szStr);
+}
+
+
+#define SX_MAX_THREAD_COUNT 64
 
 #endif

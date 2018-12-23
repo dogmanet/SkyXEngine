@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -149,8 +149,8 @@ See the license in LICENSE
 @{
 */
 
-#ifndef _SXGAME_H_
-#define _SXGAME_H_
+#ifndef __SXGAME_H
+#define __SXGAME_H
 
 #ifndef SXGAME_EXPORT
 #define SXGAME_EXPORT _declspec(dllimport)
@@ -167,92 +167,108 @@ See the license in LICENSE
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
 
-#include "SXbaseEntity.h"
+#include "BaseEntity.h"
 
 
 /*! Инициализирует библиотеку
 */
-SX_LIB_API void SXGame_0Create();
+SX_LIB_API void SGame_0Create(HWND hWnd, bool isGame);
 
 /*! Деинициализирует библиотеку
 */
-SX_LIB_API void SXGame_AKill();
+SX_LIB_API void SGame_AKill();
 
 /*! Устанавливает функцию сообщений
 */
-SX_LIB_API void SXGame_Dbg_Set(report_func rf);
+SX_LIB_API void SGame_Dbg_Set(report_func rf);
 
 /*! Устанавливает количество потоков обновления
 */
-SX_LIB_API void SXGame_UpdateSetThreadNum(int num);
+SX_LIB_API void SGame_UpdateSetThreadNum(int num);
 
 /*! Выполняет обновление
 @param[in] thread Номер потока, выполняющего обновление
 */
-SX_LIB_API void SXGame_Update(int thread = 0);
+SX_LIB_API void SGame_Update(int thread = 0);
 
 /*! Выполняет синхронизацию. Для многопоточного обновления
 */
-SX_LIB_API void SXGame_Sync();
+SX_LIB_API void SGame_Sync();
 
 /*! Загружает список entity из файла
 */
-SX_LIB_API void SXGame_LoadEnts(const char * file);
+SX_LIB_API void SGame_LoadEnts(const char * file);
 
 /*! Выгрузка игровых объеков уровня */
-SX_LIB_API void SXGame_UnloadObjLevel();
+SX_LIB_API void SGame_UnloadObjLevel();
 
 /*! Сохраняет объекты в файл
 */
-SX_LIB_API void SXGame_SaveEnts(const char * file);
+SX_LIB_API void SGame_SaveEnts(const char * file);
 
 /*! Помещает игрока в мир
 */
-SX_LIB_API void SXGame_PlayerSpawn();
+SX_LIB_API void SGame_PlayerSpawn();
 
-SX_LIB_API void SXGame_Render();
-SX_LIB_API void SXGame_RenderHUD();
+SX_LIB_API void SGame_Render();
+SX_LIB_API void SGame_RenderHUD();
 
-SX_LIB_API void SXGame_EditorRender(ID id, ID id_sel_tex);
+SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderPos=NULL);
 
-SX_LIB_API ISXCamera * SXGame_GetActiveCamera();
+SX_LIB_API ICamera * SGame_GetActiveCamera();
 
 /*! Получает количество зарегистрированных классов entity
 */
-SX_LIB_API int SXGame_EntGetClassListCount();
+SX_LIB_API int SGame_EntGetClassListCount();
 
 /*! Получает список зарегистрированных классов entity.
 	Память под массив const char * должна быть выделена заранее
 */
-SX_LIB_API void SXGame_EntGetClassList(const char ** pszClassList, int count);
+SX_LIB_API void SGame_EntGetClassList(const char ** pszClassList, int count);
 
 /*! Создает entity заданного класса
 */
-SX_LIB_API SXbaseEntity * SXGame_CreateEntity(const char * classname);
+SX_LIB_API CBaseEntity * SGame_CreateEntity(const char * classname);
 
 /*! Уничтожает entity
 */
-SX_LIB_API void SXGame_RemoveEntity(SXbaseEntity * pEnt);
+SX_LIB_API void SGame_RemoveEntity(CBaseEntity * pEnt);
 
 /*! Получает таблицу свойств для заданного класса
 */
-SX_LIB_API proptable_t * SXGame_EntGetProptable(const char * classname);
+SX_LIB_API proptable_t * SGame_EntGetProptable(const char * classname);
 
 /*! Получает значение свойства по умолчанию для заданного класса
 */
-SX_LIB_API const char * SXGame_EntGetDefault(const char * classname, const char * key);
+SX_LIB_API const char * SGame_EntGetDefault(const char * classname, const char * key);
 
 /*! Количество всех entity
 */
-SX_LIB_API int SXGame_EntGetCount();
+SX_LIB_API int SGame_EntGetCount();
 
 /*! Возвращает entity по его id
 */
-SX_LIB_API SXbaseEntity *SXGame_EntGet(ID id);
+SX_LIB_API CBaseEntity *SGame_EntGet(ID id);
 
-SX_LIB_API SXbaseEntity *SXGame_EntGetByName(const char *szName, ID idStart = 0);
+SX_LIB_API CBaseEntity *SGame_EntGetByName(const char *szName, ID idStart = 0);
 
+SX_LIB_API BOOL SGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam);
 
+SX_LIB_API void SGame_OnLostDevice();
+
+SX_LIB_API void SGame_OnResetDevice();
+
+SX_LIB_API void SGame_OnLevelLoad(const char *szName);
+
+SX_LIB_API void SGame_SetDebugText(const char *szText);
+
+/*! Копирует объект, возвращает ID копии
+*/
+SX_LIB_API ID SGame_EntClone(ID idSrc);
+
+/*! Находит объект по пересечению с лучем, в режиме редактора так же находит точечные объекты, в режиме игры - нет
+*/
+SX_LIB_API ID SGame_EntGetByRay(const float3 &vStart, const float3 &vDir, float3 *pHitPos = NULL);
 
 #endif
 

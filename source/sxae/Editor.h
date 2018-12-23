@@ -1,5 +1,11 @@
-#ifndef Editor_H
-#define Editor_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __EDITOR_H
+#define __EDITOR_H
 
 #define MAINWIN_SIZE_X	1320
 #define MAINWIN_SIZE_Y	730
@@ -11,6 +17,8 @@
 #include "resource.h"
 
 #include "TabManager.h"
+
+#include <skyxengine.h>
 
 //#include <anim/ModelFile.h>
 #include <anim/animated.h>
@@ -71,8 +79,8 @@ public:
 	
 	void Update();
 
-	ModelFile * AddModel(const char * mdl, UINT flags = MI_ALL, bool forceImport = false, bool forceLocal = false);
-	void DelModel(UINT id);
+	ModelFile * addModel(const char * mdl, UINT flags = MI_ALL, bool forceImport = false, bool forceLocal = false);
+	void delModel(UINT id);
 
 	void DelHitbox(UINT id);
 
@@ -82,6 +90,8 @@ public:
 		_In_ WPARAM wParam,
 		_In_ LPARAM lParam
 		);
+
+	HWND getRenderHWND();
 
 protected:
 	void InitUI();
@@ -103,7 +113,7 @@ protected:
 
 	ISXGUIStatic* CurAnimName;
 
-	ISXGUIMenu * Menu;
+	ISXGUIMenuWindow * Menu;
 
 	TabManager * m_pTM;
 

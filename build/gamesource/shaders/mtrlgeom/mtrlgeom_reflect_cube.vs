@@ -7,22 +7,26 @@ mtrlgeom_reflect_cube.vs
 #include <../struct.h>
 #include <../mtrl.h>
 
-half4x4	WorldViewProjection;
-half4x4	WorldView;
-half4x4	View;
-half4x4	World;
+//##########################################################################
 
-vs_out_refcube main(vs_in_geom IN)
+half4x4	g_mWVP;
+half4x4	g_mWV;
+half4x4	g_mV;
+half4x4	g_mW;
+
+//##########################################################################
+
+VSO_RefCube main(VSI_Geometry IN)
 {
-	vs_out_refcube OUT;
+	VSO_RefCube OUT;
 
-	OUT.Position = mul(half4(IN.Position,1), WorldViewProjection);
-	OUT.Normal	= mul(IN.Normal, World);
-	OUT.TexUV = IN.TexUV;
-	OUT.Pos = OUT.Position;
+	OUT.vPosition = mul(half4(IN.vPosition,1), g_mWVP);
+	OUT.vNormal	= mul(IN.vNormal, g_mW);
+	OUT.vTexUV = IN.vTexUV;
+	OUT.vPos = OUT.vPosition;
 	
-	half3 viewVec= mul(IN.Position, WorldView);
-	OUT.CubePPos = mul((half3x3)(View),reflect(viewVec, mul(OUT.Normal, (half3x3)(View))));
-	OUT.CubePPos.y = -OUT.CubePPos.y;
+	half3 vView= mul(IN.vPosition, g_mWV);
+	OUT.vCubePPos = mul((half3x3)(g_mV),reflect(vView, mul(OUT.vNormal, (half3x3)(g_mV))));
+	OUT.vCubePPos.y = -OUT.vCubePPos.y;
 	return OUT;
 }

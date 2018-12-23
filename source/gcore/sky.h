@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __SKY_H
 #define __SKY_H
 
@@ -8,126 +13,240 @@
 #include <common/String.h>
 #include "sxgcore.h"
 
-extern report_func g_fnReportf;
-extern IDirect3DDevice9* DXDevice;
-extern D3DPRESENT_PARAMETERS D3DAPP;
+extern IDirect3DDevice9 *g_pDXDevice;
+extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 
-struct SkyBoxVertex
+//##########################################################################
+
+//! структура вершин для скайбокса
+struct CSkyBoxVertex
 {
-	SkyBoxVertex(float x,float y,float z,float u,float v,float w)
+	CSkyBoxVertex(float fX,float fY,float fZ,float fU,float fV,float fW)
 	{
-		_x  = x;  _y  = y;  _z  = z; _u = u; _v = v; _w = w;
+		x = fX;  y = fY;  z = fZ; u = fU; v = fV; w = fW;
 	}
-	float _x, _y, _z;
-	float _u, _v, _w;
+	float x, y, z;
+	float u, v, w;
 };
 
-class SkyBox
+//**************************************************************************
+
+//! скайбокс, куб, на который накалывдается кубическая текстура с изображением неба
+class CSkyBox
 {
 public:
-	SkyBox();
-	~SkyBox();
-	void LoadTextures(const char *texture);
-	bool IsLoadTex();
-	void ChangeTexture(const char *texture);
-	void GetActiveTexture(char *texture);
-	void GetSecondTexture(char *texture);
-	void SetRotation(float angle);
-	float GetRotation();
-	void SetColor(float4_t* color);
-	void GetColor(float4_t* color);
-	void Render(float timeDelta,float3* pos,bool is_shadow);
+	CSkyBox();
+	~CSkyBox();
 
-	
 	SX_ALIGNED_OP_MEM
+
+	//! загрузка текстуры
+	void loadTexture(const char *szTexture);
+
+	//! загружена ли текстура
+	bool isLoadTex();
+
+	//! используется ли?
+	bool getUse();
+
+	//! установить использование
+	void setUse(bool isUse);
+
+	//! замена текстуры
+	void changeTexture(const char *szTexture);
+
+	//! в szTexture запишет имя текущей активной текстуры
+	void getActiveTexture(char *szTexture);
+
+	//! в szTexture запишет имя следующей текстуры
+	void getSecondTexture(char *szTexture);
+
+	//! установить угол поворота
+	void setRotation(float fAngle);
+
+	//! возвращает угол поворота
+	float getRotation();
+
+	//! установить цвет, w компонента это коэффициент цвета [0,1]
+	void setColor(const float4_t *pColor);
+
+	//! в pColor записывает цвет
+	void getColor(float4_t *pColor);
+
+	//! рендер
+	void render(float timeDelta, const float3 *pPos,bool isShadow);
 
 protected:
 
-	IDirect3DVertexDeclaration9* VertexDeclarationSkyBox;
+	//! декларация вершин
+	IDirect3DVertexDeclaration9* m_pVertexDeclarationSkyBox;
 	
-	char TexActive[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	char TexSecond[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
-	float RotaionY;
-	float4x4 MatRotation;
-	float4_t Color;
-	float FactorBlend;
+	//! угол поворота
+	float m_fRotaionY;
 
-	bool BFChange;
-	bool BFChangeMainTex;
+	//! матрица поворота
+	float4x4 m_mMatRotation;
 
-	IDirect3DCubeTexture9*	Tex;
-	IDirect3DCubeTexture9*	Tex2;
-	IDirect3DVertexBuffer9*	Vertices;
-	IDirect3DIndexBuffer9*  Indeces;
+	//! цвет
+	float4_t m_vColor;
 
-	ID VS_RenderSkyBox;
-	ID PS_RenderSkyBox;
+	//! коэфициент смешивания текстур
+	float m_fFactorBlend;
+
+	//! происходит ли смена текстур
+	bool m_isChange;
+
+	//! используется ли?
+	bool m_isUse;
+
+	
+	//bool m_isChangeMainTex;
+
+	//! первая (основная текстура)
+	ID m_idTex1;
+
+	//! вторая (заменяет первую при #changeTexture)
+	ID m_idTex2;
+
+	//! вершинный буфер
+	IDirect3DVertexBuffer9 *m_pVertices;
+
+	//! индексный буфер
+	IDirect3DIndexBuffer9  *m_pIndeces;
+
+	//! вершинный шейдер
+	ID m_idVS;
+
+	//! пиксельный шейдер
+	ID m_idPS;
 };
 
+//##########################################################################
 
-struct SkyCloudsVertex
+//! структура вершин облаков
+struct CSkyCloudsVertex
 {
-	SkyCloudsVertex(float x,float y,float z,float u,float v)
+	CSkyCloudsVertex(float fX,float fY,float fZ,float fU,float fV)
 	{
-	_x  = x;  _y  = y;  _z  = z; _u = u; _v = v;
+		x = fX;  y = fY;  z = fZ; u = fU; v = fV;
 	}
-	float _x, _y, _z;
-	float _u, _v;
+	float x, y, z;
+	float u, v;
 };
 
+//**************************************************************************
 
-class SkyClouds
+//! облака
+class CSkyClouds
 {
 public:
-	SkyClouds();
-	~SkyClouds();
-
-	//установить параметры облаков
-	//если облака отбрасывают тень, то надо шобы облака покрывали почти весь уровень
-	void SetWidthHeightPos(float width,float height,float3* pos);
-	void LoadTextures(const char *texture);
-	bool IsLoadTex();
-	void ChangeTexture(const char *texture);
-
-	void SetRotation(float angle);
-	float GetRotation();
-	void SetAlpha(float alpha);
-	float GetAlpha();
-	void SetColor(float4_t* color);
-	void GetColor(float4_t* color);
-
-	void SetSpeed(float speed);
-	float GetSpeed();
-
-	void Render(DWORD timeDetlta,float3* pos,bool is_shadow);
+	CSkyClouds();
+	~CSkyClouds();
 
 	SX_ALIGNED_OP_MEM
+
+	//! установить параметры облаков
+	void setWidthHeightPos(float iWidth,float iHeight, const float3 *pPos);
+
+	//! загрузка текстуры
+	void loadTexture(const char *szTexture);
+
+	//! загружены ли текстура
+	bool isLoadTex();
+
+	//! используется ли?
+	bool getUse();
+
+	//! установить использование
+	void setUse(bool isUse);
+
+	//! заменить текстуру
+	void changeTexture(const char *szTexture);
+
+	//Установить поворот
+	void setRotation(float fAngle);
+
+	//! возвращает поворот
+	float getRotation();
+
+	//! устанавливает прозрачность
+	void setAlpha(float fAngle);
+
+	//! возвращает прозрачность
+	float getAlpha();
+
+	//! установаить цвет, w компонента это коэффициент цвета [0,1]
+	void setColor(const float4_t *pColor);
+
+	//! в pColor записывает цвет
+	void getColor(float4_t *pColor);
+
+	//! установить скорость движения
+	void setSpeed(float fSpeed);
+
+	//! возвращает скорость движения
+	float getSpeed();
+
+	//! рендер
+	void render(DWORD timeDetlta, const float3 *pPos, bool isShadow);
+
 private:
 
-	IDirect3DVertexDeclaration9* VertexDeclarationClouds;
-	float Alpha;
-	float RotaionY;
-	float4x4 MatRotation;
-	float4_t Color;
+	//! декларация вершин
+	IDirect3DVertexDeclaration9 *m_pVertexDeclarationClouds;
 
-	float FactorBlend;
-	float2_t WidthHeight;
-	bool BFChange;
-	bool BFChangeMainTex;
+	//! коэфициент прозарчности
+	float m_fAlpha;
 
-	float Speed;
-	float Bias;
-	SkyCloudsVertex* Vertices;
-	IDirect3DVertexBuffer9*	SkyCloudsVertices;
-	IDirect3DIndexBuffer9*  SkyCloudsIndeces;
+	//! поворот по оси Y
+	float m_fRotaionY;
 
-	IDirect3DTexture9*	SkyCloudsTex;
-	IDirect3DTexture9*	SkyCloudsTex2;
+	//! матрица поворота
+	float4x4 m_mMatRotation;
 
-	ID VS_RenderSkyClouds;
-	ID PS_RenderSkyClouds;
+	//! используется ли?
+	bool m_isUse;
 
-	ID PS_RenderSkyCloudsShadow;
+	//! цвет облаков
+	float4_t m_vColor;
+
+	//! коэфициент смешивания предыдущей текстуры с новой
+	float m_fFactorBlend;
+
+	//! размеры квада облаков
+	float2_t m_vWidthHeight;
+
+	//! происходит ли сейчас смена текстур
+	bool m_isChange;
+
+	//bool m_isChangeMainTex;
+
+	//! скорость движения облаков
+	float m_fSpeed;
+
+	//! текущее смещение в текстурных координатах
+	float m_fBias;
+
+	//! вершинный буфер
+	IDirect3DVertexBuffer9 *m_pVertices;
+
+	//! индексный буфер
+	IDirect3DIndexBuffer9 *m_pIndeces;
+
+	//! первая (основная текстура)
+	ID m_idTex1;
+
+	//! вторая (заменяет первую при #changeTexture)
+	ID m_idTex2;
+
+	//! вершинный шейдер
+	ID m_idVS;
+
+	//! пиксельный шейдер (отрисовка для камеры)
+	ID m_idPS;
+
+	//! пиксельный шейдер (отрисовка для теней)
+	ID m_idPS_Shadow;
 };
 
 #endif

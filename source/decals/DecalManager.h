@@ -1,5 +1,11 @@
-#ifndef _DecalManager_H_
-#define _DecalManager_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __DECAL_MANAGER_H
+#define __DECAL_MANAGER_H
 
 #include <gdefines.h>
 #include <common/SXMath.h>
@@ -118,25 +124,27 @@ public:
 	DecalManager();
 	~DecalManager();
 
-	int AddDecal(Decal * pDecal);
+	int addDecal(Decal * pDecal);
 
-	void RemoveDecal(UINT iDecal);
+	void removeDecal(UINT iDecal);
 
-	const DecalType * GetDecalType(DECAL_TYPE type);
+	const DecalType * getDecalType(DECAL_TYPE type);
 
-	bool Inside(const float3_t * p, char axis, float coord);
+	bool inside(const float3_t * p, char axis, float coord);
 
-	void Render();
+	void render();
 
-	void Update();
-	void Sync();
+	void clear();
 
-	void Intersect(const float3_t * one, const float3_t * two, float3_t * out, char axis, float coord);
+	void update();
+	void sync();
+
+	void intersect(const float3_t * one, const float3_t * two, float3_t * out, char axis, float coord);
 
 
-	void Clip(const Array<float3_t> & InVerts, Array<float3_t> & OutVerts, char axis, float coord);
+	void clip(const Array<float3_t> & InVerts, Array<float3_t> & OutVerts, char axis, float coord);
 
-	void ComputeBasis(float3 const & surfaceNormal, float3 const * pSAxis, float3 * textureSpaceBasis)
+	void computeBasis(float3 const & surfaceNormal, float3 const * pSAxis, float3 * textureSpaceBasis)
 	{
 		// s, t, textureSpaceNormal (T cross S = textureSpaceNormal(N))
 		//   N     
@@ -175,7 +183,7 @@ public:
 		}
 
 		// floor/ceiling?
-		if(fabs(surfaceNormal.z) > SIN_45_DEGREES)
+		if(fabs(surfaceNormal.y) > SIN_45_DEGREES)
 		{
 			textureSpaceBasis[0].x = 1.0f;
 			textureSpaceBasis[0].y = 0.0f;
@@ -191,8 +199,8 @@ public:
 		else
 		{
 			textureSpaceBasis[1].x = 0.0f;
-			textureSpaceBasis[1].y = 0.0f;
-			textureSpaceBasis[1].z = -1.0f;
+			textureSpaceBasis[1].y = -1.0f;
+			textureSpaceBasis[1].z = 0.0f;
 
 			// S = N cross T
 			textureSpaceBasis[0] = SMVector3Cross(textureSpaceBasis[2], textureSpaceBasis[1]);
@@ -204,9 +212,9 @@ public:
 		textureSpaceBasis[1] = SMVector3Normalize(textureSpaceBasis[1]);
 	}
 
-	void UpdateBuffer();
+	void updateBuffer();
 
-	void ShootDecal(DECAL_TYPE type, const float3 & position, ID iMaterial = -1, int iEnt = 0, const float3 * saxis = NULL, float scale = 1.0f, int flags = 0, const float3 * normal = NULL);
+	void shootDecal(DECAL_TYPE type, const float3 & position, ID iMaterial = -1, int iEnt = 0, const float3 * saxis = NULL, float scale = 1.0f, int flags = 0, const float3 * normal = NULL);
 };
 
 #endif

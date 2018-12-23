@@ -29,5 +29,8 @@
     <ClInclude Include="..\..\..\source\decals\sxdecals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\common\string_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

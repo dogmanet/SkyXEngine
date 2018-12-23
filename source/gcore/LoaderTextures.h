@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __LOADERTEXTURES_H
 #define __LOADERTEXTURES_H
 
@@ -6,80 +11,138 @@
 #include <d3d9.h>
 #include <common/array.h>
 #include <common/String.h>
+#include <common/file_utils.h>
 #include "sxgcore.h"
 
-extern report_func g_fnReportf;
-extern IDirect3DDevice9* DXDevice;
-extern D3DPRESENT_PARAMETERS D3DAPP;
+void LibReport(int iLevel, const char *szFormat, ...);
+extern IDirect3DDevice9 *g_pDXDevice;
+extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 
-class LoaderTextures
+//! загрузчик текстур
+class СLoaderTextures
 {
 public:
-	LoaderTextures();
-	~LoaderTextures();
+	СLoaderTextures();
+	~СLoaderTextures();
 
-	bool FileExists(const char* name);
+	//! существует ли текстура на диске
+	bool fileExists(const char *szName);
 
-	void ClearLoaded();
+	//! удалить все загруженные текстуры
+	void clearLoaded();
 
-	void Delete(ID id);	//удалить текстуру id
+	//! удалить текстуру id
+	void deleteTexture(ID id);	
 
-	ID AddName(const char* name, LoadTexType type, ID* iddir = 0, ID* idname = 0);	//добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
-	ID GetID(const char* name);		//получить id по имени
-	void GetName(ID id, char* name);//получить имя по id
+	//! добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
+	ID addName(const char *szName, LOAD_TEXTURE_TYPE type, ID *pIDdir = 0, ID *pIDname = 0);
 
-	ID Create(const char* name, IDirect3DTexture9* tex);	//создать место для текстуры tex
-	ID Update(const char* name, LoadTexType type);			//перезагрузить текстуру name
-	void Update(ID id);
+	//! получить id по имени
+	ID getID(const char *szName);
 
-	void LoadTextures();	//загрузка всех текстур поставленных в очередь
+	//получить имя по id
+	void getName(ID id, char *szName);
 
-	IDirect3DTexture9* GetTexture(ID id);//получить текстуру по id
+	//! создать место для текстуры tex
+	ID create(const char *szName, IDirect3DTexture9 *pTex);
+
+	//! перезагрузить текстуру name
+	ID update(const char *szName, LOAD_TEXTURE_TYPE type);
+
+	//! перезагрузить текстуру по id
+	void update(ID id);
+
+	//! загрузка всех текстур поставленных в очередь
+	void loadTextures();	
+
+	//! получить текстуру по id
+	IDirect3DTexture9* getTexture2d(ID id);
+
+	//! получить текстуру по id
+	IDirect3DCubeTexture9* getTextureCube(ID id);
+
+	//! загрузить все текстуры из директории szDir (относительно директории текстур) и присвоить им статус константные
+	bool addConstAllInDir(const char *szDir);
 
 private:
 
-	//структура описывающая папку и все текстуры в ней, у каждой свой id для доступа
-	struct TLPath
+	//! структура описывающая папку и все текстуры в ней, у каждой свой id для доступа
+	struct CPath
 	{
-		TLPath(){}
-		~TLPath()
+		CPath(){}
+		~CPath()
 		{
-			for (int i = 0; i < ArrTex.size(); ++i)
+			for (int i = 0; i < m_aTextures.size(); ++i)
 			{
-				mem_delete(ArrTex[i]);
+				mem_delete(m_aTextures[i]);
 			}
+			m_aTextures.clear();
 		}
 
-		String Path;	//имя папки
+		//! имя папки
+		String m_sPath;	
 
-		struct TLTex
+		//! текущее представление текстуры
+		struct CTex
 		{
-			TLTex(){ id = -1; type = LoadTexType::ltt_load; }
-			TLTex(ID _id, const char* _name, LoadTexType _type){ id = _id; name = _name; type = _type; }
+			CTex(){ m_id = -1; m_type = LOAD_TEXTURE_TYPE_LOAD; }
+			CTex(ID id, const char *szNname, LOAD_TEXTURE_TYPE type){ m_id = id; m_sName = szNname; m_type = type; }
 			
-			ID id;
-			String name;
-			LoadTexType type;
+			//! глобальный идентификатор
+			ID m_id;
+
+			//! имя текстуры
+			String m_sName;
+
+			//! тип #LOAD_TEXTURE_TYPE
+			LOAD_TEXTURE_TYPE m_type;
 		};
 		
-		Array<TLTex*> ArrTex;
+		Array<CTex*> m_aTextures;
 	};
 
-	struct TexAndName
+	//! представление текстуры
+	struct CTexture
 	{
-		TexAndName(){ tex = 0; IDDir = -1; }
-		~TexAndName(){ mem_release(tex); }
-		String name;
-		IDirect3DTexture9* tex;
-		ID IDDir;
-		
+		CTexture(){ m_pTex2d = 0; m_pTexCube = 0; m_idDir = -1; }
+		~CTexture(){ mem_release(m_pTex2d); mem_release(m_pTexCube); }
+
+		//! имя
+		String m_sName;
+
+		//! 2д текстура
+		IDirect3DTexture9 *m_pTex2d;
+
+		//! кубическая текстура
+		IDirect3DCubeTexture9 *m_pTexCube;
+
+		//! глобальный id директории
+		ID m_idDir;
 	};
 
-	Array<TLPath*> Arr;
+	//**********************************************************************
+
+	//! массив путей с текстурами
+	Array<CPath*> m_aPathes;
+
 	int CurrFirstFree;
 
-	Array<TexAndName*> ArrTextures;
-	Array<ID> ArrIDsLoad;
+	//! массив текстур, ключ == идентификатор
+	Array<CTexture*> m_aTextures;
+
+	//! массив id текстур на загрузку
+	Array<ID> m_aQueueToLoadIDs;
+
+	//**********************************************************************
+
+	//! загрузка 2d текстуры
+	IDirect3DTexture9* loadTexture2d(const char *szPath);
+
+	//! загрузка кубической текстуры
+	IDirect3DCubeTexture9* loadTextureCube(const char *szPath);
+
+	//! возвращает тип файла текстуры
+	D3DRESOURCETYPE getTypeFileTex(const char *szPath);
 };
 
 #endif

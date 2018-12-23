@@ -1,17 +1,18 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
 Навесы
 */
 
-#ifndef _BaseWeaponAddon_H_
-#define _BaseWeaponAddon_H_
+#ifndef __BASE_WEAPON_ADDON_H
+#define __BASE_WEAPON_ADDON_H
 
-#include "SXbaseItem.h"
+#include "BaseItem.h"
 
 /*! Тип навеса
 \ingroup cbaseitem
@@ -28,9 +29,9 @@ enum WPN_ADDON
 /*! Навесы на оружие
 \ingroup cbaseitem
 */
-class CBaseWeaponAddon: public SXbaseItem
+class CBaseWeaponAddon: public CBaseItem
 {
-	DECLARE_CLASS(CBaseWeaponAddon, SXbaseItem);
+	DECLARE_CLASS(CBaseWeaponAddon, CBaseItem);
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();

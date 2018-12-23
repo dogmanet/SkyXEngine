@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -19,6 +19,7 @@ See the license in LICENSE
 #include <GRegisterIndex.h>
 #include <windows.h>
 #include <common/sxtypes.h>
+#include <common/file_utils.h>
 
 #define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>
@@ -26,7 +27,8 @@ See the license in LICENSE
 #include <render/gdata.h>
 
 #include <geom/sxgeom.h>
-#include <mtllight/sxmtllight.h>
+#include <green/sxgreen.h>
+#include <light/sxlight.h>
 #include <aigrid/sxaigrid.h>
 #include <physics/sxphysics.h>
 #include <game/sxgame.h>
@@ -34,20 +36,26 @@ See the license in LICENSE
 #include <pp/sxpp.h>
 #include <decals/sxdecals.h>
 
-extern report_func g_fnReportf;
+enum REFLECTION_RENDER
+{
+	REFLECTION_RENDER_ONLY_SKY	= 0,
+	REFLECTION_RENDER_GEOM		= 1,
+	REFLECTION_RENDER_GREEN		= 2,
+	REFLECTION_RENDER_ANIM		= 3,
+};
 
 //! пространство имен с орагнизацией рендера
-namespace SXRenderFunc
+namespace rfunc
 {
 	//быстрая реализация фильтрации и адресации
 	//{
 	//индифидуально для регистра
-	inline void SetSamplerFilter(DWORD id, DWORD value);
-	inline void SetSamplerAddress(DWORD id, DWORD value);
+	inline void SetSamplerFilter(DWORD dwId, DWORD dwValue);
+	inline void SetSamplerAddress(DWORD dwId, DWORD dwValue);
 	
 	//для указанного промежутка групп регистров
-	inline void SetSamplerFilter(DWORD begin_id, DWORD end_id, DWORD value);
-	inline void SetSamplerAddress(DWORD begin_id, DWORD end_id, DWORD value);
+	inline void SetSamplerFilter(DWORD dwIdStart, DWORD dwIdFisnish, DWORD dwValue);
+	inline void SetSamplerAddress(DWORD dwIdStart, DWORD dwIdFisnish, DWORD dwValue);
 
 	void SetRenderSceneFilter();
 	void SetRenderSceneFilterUn();
@@ -56,7 +64,7 @@ namespace SXRenderFunc
 	//**********************************************************************
 
 	//! обработка потери и восстановление устройства
-	void ComDeviceLost();
+	void ComDeviceLost(bool isSetWindowSize);
 
 	//! обработка и установка основных матриц, обработка плоскостей отсечения
 	void UpdateView();						
@@ -96,19 +104,15 @@ namespace SXRenderFunc
 	
 	//! объединение слоев прозрачности
 	void UnionLayers();
-
-	//! применение тонмаппинга к рт
-	void ApplyToneMapping();
-
-	//! просчет тонмаппинга
-	void ComToneMapping(DWORD timeDelta);
 	
 
 	//! отрисовка партиклов (эффектов)
 	void RenderParticles(DWORD timeDelta);				
 
-	//! отрисовка постпроцесса
-	void RenderPostProcess(DWORD timeDelta);			
+	//! отрисовка основного постпроцесса
+	void RenderMainPostProcess(DWORD timeDelta);
+
+	void RenderFinalPostProcess(DWORD timeDelta);
 
 	void ShaderRegisterData();
 
@@ -132,29 +136,6 @@ namespace SXRenderFunc
 	void ChangeModeWindow();	
 
 	void FullScreenChangeSizeAbs();
-
-	//! время задержек/ожидания выполнения некоторых функций рендера
-	/*namespace Delay
-	{
-		extern int64_t UpdateVisibleForCamera;
-		extern int64_t UpdateVisibleForLight;
-		extern int64_t UpdateVisibleForReflection;
-
-		extern int64_t UpdateShadow;
-		extern int64_t UpdateParticles;
-		extern int64_t RenderMRT;
-		extern int64_t ComLighting;
-		extern int64_t PostProcess;
-		extern int64_t ComReflection;
-		extern int64_t GeomSortGroup;
-
-		extern int64_t Present;
-
-		extern int64_t FreeVal;
-		extern float FreeValF1;
-		extern float FreeValF2;
-		extern float FreeValF3;
-	};*/
 };
 
 #endif

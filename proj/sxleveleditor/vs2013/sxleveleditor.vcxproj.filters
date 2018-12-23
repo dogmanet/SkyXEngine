@@ -45,6 +45,12 @@
     <ClCompile Include="..\..\..\source\common\string.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\common\file_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\common\string_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\sxleveleditor\SXLevelEditor.rc">
@@ -83,6 +89,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\string.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\file_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\string_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -244,6 +256,12 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\..\..\source\favicon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\reset_update_local_light.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\sxleveleditor\resource\reset_update_local_light.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

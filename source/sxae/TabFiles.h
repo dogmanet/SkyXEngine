@@ -1,5 +1,11 @@
-#ifndef TabFiles_H
-#define TabFiles_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __TAB_FILES_H
+#define __TAB_FILES_H
 
 #include "EditorTab.h"
 

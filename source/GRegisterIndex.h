@@ -1,16 +1,16 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*! 
 \file 
  Зарезервированные (именованые) номера регистров 
 */
 
-#ifndef __G_RI
-#define __G_RI
+#ifndef __G_RI_H
+#define __G_RI_H
 
 /*! \name float4x4 register 
 @{*/
@@ -98,6 +98,8 @@ See the license in LICENSE
 #define G_RI_STRING_PATH_GS_TEXTURES	11	/*!< путь до текстур */
 #define G_RI_STRING_PATH_GS_MTRLS		12	/*!< путь до материалов */
 #define G_RI_STRING_PATH_GS_GUI			13	/*!< путь до gui */
+
+#define G_RI_STRING_PATH_EDITOR_CACHE	14	/*!< путь до кэша редакторов */
 
 //!@}
 

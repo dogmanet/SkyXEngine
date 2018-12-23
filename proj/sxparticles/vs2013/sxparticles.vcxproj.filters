@@ -27,10 +27,16 @@
     <ClCompile Include="..\..\..\source\particles\effect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\particles\PESet.cpp">
+    <ClCompile Include="..\..\..\source\common\string.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\common\string.cpp">
+    <ClCompile Include="..\..\..\source\common\file_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\common\string_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\particles\pe_data.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,10 +50,16 @@
     <ClInclude Include="..\..\..\source\particles\sxparticles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\particles\PESet.h">
+    <ClInclude Include="..\..\..\source\common\string.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\common\string.h">
+    <ClInclude Include="..\..\..\source\common\file_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\string_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\particles\pe_data.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

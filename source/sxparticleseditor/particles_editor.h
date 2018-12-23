@@ -20,7 +20,7 @@
 namespace SXParticlesEditor
 {
 	extern ISXGUIBaseWnd* JobWindow;
-	extern ISXGUIMenu* MainMenu;
+	extern ISXGUIMenuWindow* MainMenu;
 	extern ISXGUIStatusBar* StatusBar1;
 	extern ISXGUIGroupBox* GroupBoxList;
 	extern ISXGUIGroupBox* GroupBoxTabs;

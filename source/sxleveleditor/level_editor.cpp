@@ -1,284 +1,280 @@
 
 #include "level_editor.h"
 
-namespace SXLevelEditor
+namespace level_editor
 {
-	ISXGUIBaseWnd* JobWindow;
-	ISXGUIMenu* MainMenu;
-	ISXGUIBaseWnd* RenderWindow;
+	ISXGUIBaseWnd *pJobWindow;
+	ISXGUIMenuWindow *pMainMenu;
+	ISXGUIBaseWnd *pRenderWindow;
 
-	ISXGUIToolBar* ToolBar1;
-	ISXGUIButton* ButtonTBNew;
-	ISXGUIButton* ButtonTBOpen;
-	ISXGUIButton* ButtonTBSave;
-	ISXGUIButton* ButtonTBSaveAs;
+	ISXGUIToolBar *pToolBar1;
+	ISXGUIButton *pButtonTBNew;
+	ISXGUIButton *pButtonTBOpen;
+	ISXGUIButton *pButtonTBSave;
+	ISXGUIButton *pButtonTBSaveAs;
 
-	ISXGUICheckBox* CheckBoxTBArrow;
-	ISXGUICheckBox* CheckBoxTBPos;
-	ISXGUICheckBox* CheckBoxTBRot;
-	ISXGUICheckBox* CheckBoxTBScale;
+	ISXGUICheckBox *pCheckBoxTBArrow;
+	ISXGUICheckBox *pCheckBoxTBPos;
+	ISXGUICheckBox *pCheckBoxTBRot;
+	ISXGUICheckBox *pCheckBoxTBScale;
 
-	ISXGUICheckBox* CheckBoxTBGrid;
-	ISXGUICheckBox* CheckBoxTBAxes;
+	ISXGUICheckBox *pCheckBoxTBGrid;
+	ISXGUICheckBox *pCheckBoxTBAxes;
 
-	ISXGUICheckBox* CheckBoxTBRColor;
-	ISXGUICheckBox* CheckBoxTBRNormal;
-	ISXGUICheckBox* CheckBoxTBRParam;
-	ISXGUICheckBox* CheckBoxTBRAmDiff;
-	ISXGUICheckBox* CheckBoxTBRSpecular;
-	ISXGUICheckBox* CheckBoxTBRLighting;
+	ISXGUICheckBox *pCheckBoxTBRColor;
+	ISXGUICheckBox *pCheckBoxTBRNormal;
+	ISXGUICheckBox *pCheckBoxTBRParam;
+	ISXGUICheckBox *pCheckBoxTBRAmDiff;
+	ISXGUICheckBox *pCheckBoxTBRSpecular;
+	ISXGUICheckBox *pCheckBoxTBRLighting;
 
-	ISXGUICheckBox* CheckBoxTBSelS;
-	ISXGUICheckBox* CheckBoxTBSelZTest;
-	ISXGUICheckBox* CheckBoxTBSelMesh;
-	ISXGUICheckBox* CheckBoxTBSelCullBack;
+	ISXGUICheckBox *pCheckBoxTBSelS;
+	ISXGUICheckBox *pCheckBoxTBSelZTest;
+	ISXGUICheckBox *pCheckBoxTBSelMesh;
+	ISXGUICheckBox *pCheckBoxTBSelCullBack;
 
-	ISXGUICheckBox* CheckBoxTBAIGBound;
-	ISXGUICheckBox* CheckBoxTBAIGQuad;
-	ISXGUICheckBox* CheckBoxTBAIGGraphPoint;
+	ISXGUICheckBox *pCheckBoxTBAIGBound;
+	ISXGUICheckBox *pCheckBoxTBAIGQuad;
+	ISXGUICheckBox *pCheckBoxTBAIGGraphPoint;
 
-	ISXGUICheckBox* CheckBoxTBLevelType;
-	ISXGUICheckBox* CheckBoxTBGLightEnable;
+	ISXGUICheckBox *pCheckBoxTBLevelType;
+	ISXGUICheckBox *pCheckBoxTBGLightEnable;
 
-	ISXGUIGroupBox* GroupBoxList;
-	ISXGUIGroupBox* GroupBoxData;
-	ISXGUIListBox* ListBoxList;
-	ISXGUIStatic* StaticListTextCount;
-	ISXGUIStatic* StaticListValCount;
+	ISXGUICheckBox *pCheckBoxTBNullingStaticLight;
 
-	ISXGUIButton* ButtonDelete;
+	ISXGUIGroupBox *pGroupBoxList;
+	ISXGUIGroupBox *pGroupBoxData;
+	ISXGUIListBox *pListBoxList;
+	ISXGUIStatic *pStaticListTextCount;
+	ISXGUIStatic *pStaticListValCount;
 
-	ISXGUIButton* ButtonGeometryOpen;
-	ISXGUIButton* ButtonGreenOpen;
-	ISXGUIButton* ButtonGameObjectOpen;
-	ISXGUIButton* ButtonAIGridOpen;
+	ISXGUIButton *pButtonDelete;
+
+	ISXGUIButton *pButtonGeometryOpen;
+	ISXGUIButton *pButtonGreenOpen;
+	ISXGUIButton *pButtonGameObjectOpen;
+	ISXGUIButton *pButtonAIGridOpen;
 
 
 	//model
 	//{{
-	ISXGUIStatic* StaticGeomName;
-	ISXGUIEdit* EditGeomName;
+	ISXGUIStatic *pStaticGeomName;
+	ISXGUIEdit *pEditGeomName;
 
-	ISXGUIStatic* StaticGeomModel;
-	ISXGUIEdit* EditGeomModel;
-	ISXGUIButton* ButtonGeomModel;
+	ISXGUIStatic *pStaticGeomModel;
+	ISXGUIEdit *pEditGeomModel;
+	ISXGUIButton *pButtonGeomModel;
 
-	ISXGUIStatic* StaticGeomLod1;
-	ISXGUIEdit* EditGeomLod1;
-	ISXGUIButton* ButtonGeomLod1;
+	ISXGUIStatic *pStaticGeomLod1;
+	ISXGUIEdit *pEditGeomLod1;
+	ISXGUIButton *pButtonGeomLod1;
+
+	ISXGUIStatic *pStaticGeomPhysics;
+	ISXGUIEdit *pEditGeomPhysics;
+	ISXGUIButton *pButtonGeomPhysics;
+
+	ISXGUICheckBox *pCheckBoxSegmentation;
 	
-	ISXGUIStatic* StaticGeomPos;
-	ISXGUIEdit* EditGeomPosX;
-	ISXGUIEdit* EditGeomPosY;
-	ISXGUIEdit* EditGeomPosZ;
-	ISXGUIRadioButton* RadioButtonGeomPosX;
-	ISXGUIRadioButton* RadioButtonGeomPosY;
-	ISXGUIRadioButton* RadioButtonGeomPosZ;
-	ISXGUIStatic* StaticGeomRot;
-	ISXGUIEdit* EditGeomRotX;
-	ISXGUIEdit* EditGeomRotY;
-	ISXGUIEdit* EditGeomRotZ;
-	ISXGUIRadioButton* RadioButtonGeomRotX;
-	ISXGUIRadioButton* RadioButtonGeomRotY;
-	ISXGUIRadioButton* RadioButtonGeomRotZ;
-	ISXGUIStatic* StaticGeomScale;
-	ISXGUIEdit* EditGeomScaleX;
-	ISXGUIEdit* EditGeomScaleY;
-	ISXGUIEdit* EditGeomScaleZ;
-	ISXGUIRadioButton* RadioButtonGeomScaleX;
-	ISXGUIRadioButton* RadioButtonGeomScaleY;
-	ISXGUIRadioButton* RadioButtonGeomScaleZ;
-	ISXGUIButton* ButtonGeomFinish;
+	ISXGUIStatic *pStaticGeomPos;
+	ISXGUIEdit *pEditGeomPosX;
+	ISXGUIEdit *pEditGeomPosY;
+	ISXGUIEdit *pEditGeomPosZ;
+	ISXGUIRadioButton *pRadioButtonGeomPosX;
+	ISXGUIRadioButton *pRadioButtonGeomPosY;
+	ISXGUIRadioButton *pRadioButtonGeomPosZ;
+	ISXGUIStatic *pStaticGeomRot;
+	ISXGUIEdit *pEditGeomRotX;
+	ISXGUIEdit *pEditGeomRotY;
+	ISXGUIEdit *pEditGeomRotZ;
+	ISXGUIRadioButton *pRadioButtonGeomRotX;
+	ISXGUIRadioButton *pRadioButtonGeomRotY;
+	ISXGUIRadioButton *pRadioButtonGeomRotZ;
+	ISXGUIStatic *pStaticGeomScale;
+	ISXGUIEdit *pEditGeomScaleX;
+	ISXGUIEdit *pEditGeomScaleY;
+	ISXGUIEdit *pEditGeomScaleZ;
+	ISXGUIRadioButton *pRadioButtonGeomScaleX;
+	ISXGUIRadioButton *pRadioButtonGeomScaleY;
+	ISXGUIRadioButton *pRadioButtonGeomScaleZ;
+	ISXGUIButton *pButtonGeomFinish;
 	//}}
 
 	//Green
 	//{{
-	ISXGUIStatic* StaticGreenName;
-	ISXGUIEdit* EditGreenName;
+	ISXGUIStatic *pStaticGreenName;
+	ISXGUIEdit *pEditGreenName;
 
-	ISXGUIStatic* StaticGreenModel;
-	ISXGUIEdit* EditGreenModel;
-	ISXGUIButton* ButtonGreenModel;
+	ISXGUIStatic *pStaticGreenModel;
+	ISXGUIEdit *pEditGreenModel;
+	ISXGUIButton *pButtonGreenModel;
 
-	ISXGUIStatic* StaticGreenLod1;
-	ISXGUIEdit* EditGreenLod1;
-	ISXGUIButton* ButtonGreenLod1;
+	ISXGUIStatic *pStaticGreenLod1;
+	ISXGUIEdit *pEditGreenLod1;
+	ISXGUIButton *pButtonGreenLod1;
 
-	ISXGUIStatic* StaticGreenLod2;
-	ISXGUIEdit* EditGreenLod2;
-	ISXGUIButton* ButtonGreenLod2;
+	ISXGUIStatic *pStaticGreenLod2;
+	ISXGUIEdit *pEditGreenLod2;
+	ISXGUIButton *pButtonGreenLod2;
 
-	ISXGUIStatic* StaticGreenMask;
-	ISXGUIEdit* EditGreenMask;
-	ISXGUIButton* ButtonGreenMask;
+	ISXGUIStatic *pStaticGreenMask;
+	ISXGUIEdit *pEditGreenMask;
+	ISXGUIButton *pButtonGreenMask;
+
+	ISXGUICheckBox *pCheckBoxGreenAveragedRGB;
 	
-	ISXGUIStatic* StaticGreenNav;
-	ISXGUIEdit* EditGreenNav;
-	ISXGUIButton* ButtonGreenNav;
+	ISXGUIStatic *pStaticGreenNav;
+	ISXGUIEdit *pEditGreenNav;
+	ISXGUIButton *pButtonGreenNav;
 
-	ISXGUITrackBar* TrackBarGreenDensity;
-	ISXGUIButton* ButtonGreenGenerate;
-	ISXGUIStatic* StaticGreenDensityText;
-	ISXGUIStatic* StaticGreenDensityVal;
+	ISXGUITrackBar *pTrackBarGreenDensity;
+	ISXGUIButton *pButtonGreenGenerate;
+	ISXGUIStatic *pStaticGreenDensityText;
+	ISXGUIStatic *pStaticGreenDensityVal;
 
-	ISXGUIEdit* EditGreenSelX;
-	ISXGUIEdit* EditGreenSelY;
-	ISXGUIEdit* EditGreenSelZ;
-	ISXGUIRadioButton* RadioButtonGreenSelX;
-	ISXGUIRadioButton* RadioButtonGreenSelY;
-	ISXGUIRadioButton* RadioButtonGreenSelZ;
-	ISXGUIComboBox* ComboBoxGreenSel;
-	ISXGUIStatic* StaticGreenSelX;
-	ISXGUIStatic* StaticGreenSelY;
-	ISXGUIStatic* StaticGreenSelZ;
+	ISXGUIEdit *pEditGreenSelX;
+	ISXGUIEdit *pEditGreenSelY;
+	ISXGUIEdit *pEditGreenSelZ;
+	ISXGUIRadioButton *pRadioButtonGreenSelX;
+	ISXGUIRadioButton *pRadioButtonGreenSelY;
+	ISXGUIRadioButton *pRadioButtonGreenSelZ;
+	ISXGUIComboBox *pComboBoxGreenSel;
+	ISXGUIStatic *pStaticGreenSelX;
+	ISXGUIStatic *pStaticGreenSelY;
+	ISXGUIStatic *pStaticGreenSelZ;
 	//}}
 
 	//game object
 	//{
-	ISXGUIStatic* StaticGameClass;
-	ISXGUIComboBox* ComboBoxGameClass;
-	ISXGUIButton* ButtonGameTab;
+	ISXGUIStatic *pStaticGameClass;
+	ISXGUIComboBox *pComboBoxGameClass;
+	ISXGUIButton *pButtonGameTab;
 	int GameTabVal = 0;
-	ISXGUIListView* ListViewGameClass;
-	ISXGUIComboBox* ComboBoxGameValue;
-	ISXGUIEdit* EditGameValue;
-	ISXGUIButton* ButtonGameValue;
-	ISXGUIStatic* StaticGameHelp;
-	ISXGUIMemo* MemoGameHelp;
-	ISXGUIButton* ButtonGameCreate;
+	ISXGUIListView *pListViewGameClass;
+	ISXGUIComboBox *pComboBoxGameValue;
+	ISXGUIEdit *pEditGameValue;
+	ISXGUIButton *pButtonGameValue;
+	ISXGUIStatic *pStaticGameHelp;
+	ISXGUIMemo *pMemoGameHelp;
+	ISXGUIButton *pButtonGameCreate;
 
-	ISXGUICheckBox* CheckBoxGameFlags[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-	const char* aGameObjectFlags[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	ISXGUICheckBox *pCheckBoxGameFlags[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	const char *aGameObjectFlags[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-	ISXGUIListView* ListViewGameConnections;
-	ISXGUIStatic* StaticGameConnectionsEvent;
-	ISXGUIComboBox* ComboBoxGameConnectionsEvent;
-	ISXGUIStatic* StaticGameConnectionsName;
-	ISXGUIEdit* EditGameConnectionsName;
-	ISXGUIStatic* StaticGameConnectionsAction;
-	ISXGUIComboBox* ComboBoxGameConnectionsAction;
-	ISXGUIStatic* StaticGameConnectionsDelay;
-	ISXGUIEdit* EditGameConnectionsDelay;
-	ISXGUIStatic* StaticGameConnectionsParameter;
-	ISXGUIEdit* EditGameConnectionsParameter;
-	ISXGUIButton* ButtonGameConnectionsCreate;
-	ISXGUIButton* ButtonGameConnectionsDelete;
+	ISXGUIListView *pListViewGameConnections;
+	ISXGUIStatic *pStaticGameConnectionsEvent;
+	ISXGUIComboBox *pComboBoxGameConnectionsEvent;
+	ISXGUIStatic *pStaticGameConnectionsName;
+	ISXGUIEdit *pEditGameConnectionsName;
+	ISXGUIStatic *pStaticGameConnectionsAction;
+	ISXGUIComboBox *pComboBoxGameConnectionsAction;
+	ISXGUIStatic *pStaticGameConnectionsDelay;
+	ISXGUIEdit *pEditGameConnectionsDelay;
+	ISXGUIStatic *pStaticGameConnectionsParameter;
+	ISXGUIEdit *pEditGameConnectionsParameter;
+	ISXGUIButton *pButtonGameConnectionsCreate;
+	ISXGUIButton *pButtonGameConnectionsDelete;
 	//}
 
 	//aigrid
 	//{
-	ISXGUIButton* ButtonAIQuadsDelSel;
-	ISXGUIButton* ButtonAIGridGen;
-	ISXGUIButton* ButtonAIGridClear;
-	ISXGUIButton* ButtonAIClearAll;
-	ISXGUIStatic* StatiAIBBDimensions;
-	ISXGUIStatic* StaticAIBBDimensionsWidth;
-	ISXGUIEdit* EditAIBBDimensionsWidth;
-	ISXGUIStatic* StaticAIBBDimensionsHeight;
-	ISXGUIEdit* EditAIBBDimensionsHeight;
-	ISXGUIStatic* StaticAIBBDimensionsDepth;
-	ISXGUIEdit* EditAIBBDimensionsDepth;
-	ISXGUIStatic* StaticAIBBPos;
-	ISXGUIStatic* StaticAIBBPosX;
-	ISXGUIEdit* EditAIBBPosX;
-	ISXGUIStatic* StaticAIBBPosY;
-	ISXGUIEdit* EditAIBBPosY;
-	ISXGUIStatic* StaticAIBBPosZ;
-	ISXGUIEdit* EditAIBBPosZ;
-	ISXGUIButton* ButtonAIBBFinish;
-	ISXGUIButton* ButtonAIGPGen;
-	ISXGUIButton* ButtonAIGPClear;
-	ISXGUIRadioButton* RadioButtonAIGPAdd;
-	ISXGUIRadioButton* RadioButtonAIGPDel;
-	ISXGUIRadioButton* RadioButtonAIQuadAdd;
-	ISXGUIRadioButton* RadioButtonAIQuadsMSel;
-	ISXGUIRadioButton* RadioButtonAIQuadsSelDel;
-	ISXGUIButton* ButtonAIGridValidation;
-	ISXGUICheckBox* CheckBoxAIGridMarkedSplits;
-	ISXGUIStatic* StaticAIStatistics;
-	ISXGUIStatic* StaticAIStatsCountQuads;
-	ISXGUIStatic* StaticAIStatsCountGP;
-	ISXGUIStatic* StaticAIStatsCountSplits;
-	ISXGUIEdit* EditAIStatsCountQuads;
-	ISXGUIEdit* EditAIStatsCountGP;
-	ISXGUIEdit* EditAIStatsCountSplits;
+	ISXGUIButton *pButtonAIQuadsDelSel;
+	ISXGUIButton *pButtonAIGridGen;
+	ISXGUIButton *pButtonAIGridClear;
+	ISXGUIButton *pButtonAIClearAll;
+	ISXGUIStatic *pStaticAIBBDimensions;
+	ISXGUIStatic *pStaticAIBBDimensionsWidth;
+	ISXGUIEdit *pEditAIBBDimensionsWidth;
+	ISXGUIStatic *pStaticAIBBDimensionsHeight;
+	ISXGUIEdit *pEditAIBBDimensionsHeight;
+	ISXGUIStatic *pStaticAIBBDimensionsDepth;
+	ISXGUIEdit *pEditAIBBDimensionsDepth;
+	ISXGUIStatic *pStaticAIBBPos;
+	ISXGUIStatic *pStaticAIBBPosX;
+	ISXGUIEdit *pEditAIBBPosX;
+	ISXGUIStatic *pStaticAIBBPosY;
+	ISXGUIEdit *pEditAIBBPosY;
+	ISXGUIStatic *pStaticAIBBPosZ;
+	ISXGUIEdit *pEditAIBBPosZ;
+	ISXGUIButton *pButtonAIBBFinish;
+	ISXGUIButton *pButtonAIGPGen;
+	ISXGUIButton *pButtonAIGPClear;
+	ISXGUIRadioButton *pRadioButtonAIGPAdd;
+	ISXGUIRadioButton *pRadioButtonAIGPDel;
+	ISXGUIRadioButton *pRadioButtonAIQuadAdd;
+	ISXGUIRadioButton *pRadioButtonAIQuadsMSel;
+	ISXGUIRadioButton *pRadioButtonAIQuadsSelDel;
+	ISXGUIButton *pButtonAIGridValidation;
+	ISXGUICheckBox *pCheckBoxAIGridMarkedSplits;
+	ISXGUIStatic *pStaticAIStatistics;
+	ISXGUIStatic *pStaticAIStatsCountQuads;
+	ISXGUIStatic *pStaticAIStatsCountGP;
+	ISXGUIStatic *pStaticAIStatsCountSplits;
+	ISXGUIEdit *pEditAIStatsCountQuads;
+	ISXGUIEdit *pEditAIStatsCountGP;
+	ISXGUIEdit *pEditAIStatsCountSplits;
 	//}
 
-	ISXGUIStatusBar* StatusBar1;
+	ISXGUIStatusBar *pStatusBar1;
 
-	void InitAllElements();
-
-	void DeleteAllElements();
-
-	void LevelNew(bool mess);
-	void LevelOpen();
-	void LevelSave();
-	void LevelSaveAs();
-
-	void FinalImageUncheckedMenu();
 	
 
-	void GeomActivateAll(bool bf);
-	void GeomActivateCreate(bool bf);
-	void GeomActivateTrans(bool bf);
-	void GeomSel(int sel);
 
-	void GreenActivateAll(bool bf);
-	void GreenActivateMain(bool bf);
-	void GreenActivateCreate(bool bf);
-	void GreenActivateEdit(bool bf);
-	void GreenSel(int sel);
+	float3 vRayOrigin;
+	float3 vRayDir;
+	float3 vRayDirDirect;
+	POINT oPointMouse;
 
-	void GameActivateAll(bool bf);
-	void GameSel(int sel);
-	void GameUpdatePosRot();
-	void GameVisibleProperties(bool bf);
-	void GameVisibleConnections(bool bf);
+	bool useCopyData = false;
+	ID idCopy = -1;
+	float3 vCopyPos;
 
-	void AIGridActivateAll(bool bf);
-	void AIGridEnableBB(bool bf);
+	ID3DXMesh *pFigureBox = 0;
+	CAxesHelper *pAxesHelper = 0;
 
+	int iActiveGroupType = 0;		//!< —Ç–µ–∫—É—â–∞—è –≤—ã–¥–µ–ª–µ–Ω–Ω–∞—è –≥—Ä—É–ø–ø–∞ –º–∏—Ä–æ–≤—ã—Ö —Å—É—â–Ω–æ—Å—Ç–µ–π EDITORS_LEVEL_GROUPTYPE_
+	ID idActiveGreenSplit = -1;		//!< —Ç–µ–∫—É—â–∏–π –∏–¥–µ–Ω—Ç–∏—Ñ–∏–∫–∞—Ç–æ—Ä —Å–ø–ª–∏—Ç–∞ —Ä–∞—Å—Ç–∏—Ç–µ–ª—å–Ω–æ—Å—Ç—å (–µ—Å–ª–∏ –≤—ã–¥–µ–ª–µ–Ω–∞ —Ä–∞—Å—Ç–∏—Ç–µ–ª—å–Ω–æ—Å—Ç—å)
+	ID idActiveGreenObject = -1;		//!< —Ç–µ–∫—É—â–∏–π –∏–¥–µ–Ω—Ç–∏—Ñ–∏–∫–∞—Ç–æ—Ä –æ–±—ä–µ–∫—Ç–∞ —Ä–∞—Å—Ç–∏—Ç–µ–ª—å–Ω–æ—Å—Ç–∏ (–µ—Å–ª–∏ –≤—ã–¥–µ–ª–µ–Ω–∞ —Ä–∞—Å—Ç–∏—Ç–µ–ª—å–Ω–æ—Å—Ç—å)
 
-	ID3DXMesh* FigureBox = 0;
-	AxesHelper* ObjAxesHelper = 0;
+	ID idActiveElement = -1;			//!< —Ç–µ–∫—É—â–∏–π –∏–¥–µ–Ω—Ç–∏—Ñ–∏–∫–∞—Ç–æ—Ä –≤—ã–¥–µ–ª–µ–Ω–Ω–æ–≥–æ —ç–ª–µ–º–µ–Ω—Ç–∞ –∏–∑ —Å–ø–∏—Å–∫–∞
+	bool canSelSelection = false;		//!< —Ä–∞–∑—Ä–µ—à–µ–Ω–æ –ª–∏ –≤—ã–¥–µ–ª–µ–Ω–∏–µ?
+	bool canSelZTest = false;			//!< –∏—Å–ø–æ–ª—å–∑–æ–≤–∞—Ç—å –ª–∏ z-test –ø—Ä–∏ –≤—ã–¥–µ–ª–µ–Ω–∏–∏?
+	bool canSelMesh = false;			//!< —Ä–∏—Å–æ–≤–∞—Ç—å —Å–µ—Ç–∫–æ–π (true) –∏–ª–∏ —Ü–µ–ª–∏–∫–æ–º –º–æ–¥–µ–ª—å –≤—ã–¥–µ–ª–µ–Ω–∏—è (false)?
+	bool canSelBackFacesCull = false;	//!< –æ—Ç—Å–µ–∫–∞—Ç—å –ª–∏ –∑–∞–¥–Ω–∏–µ –≥—Ä–∞–Ω–∏ –ø—Ä–∏ –≤—ã–¥–µ–ª–µ–Ω–∏–∏?
 
-	int ActiveGroupType = 0;		//!< ÚÂÍÛ˘‡ˇ ‚˚‰ÂÎÂÌÌ‡ˇ „ÛÔÔ‡ ÏËÓ‚˚ı ÒÛ˘ÌÓÒÚÂÈ EDITORS_LEVEL_GROUPTYPE_
-	ID ActiveGreenSplit = -1;		//!< ÚÂÍÛ˘ËÈ Ë‰ÂÌÚËÙËÍ‡ÚÓ ÒÔÎËÚ‡ ‡ÒÚËÚÂÎ¸ÌÓÒÚ¸ (ÂÒÎË ‚˚‰ÂÎÂÌ‡ ‡ÒÚËÚÂÎ¸ÌÓÒÚ¸)
-	ID ActiveGreenObject = -1;		//!< ÚÂÍÛ˘ËÈ Ë‰ÂÌÚËÙËÍ‡ÚÓ Ó·˙ÂÍÚ‡ ‡ÒÚËÚÂÎ¸ÌÓÒÚË (ÂÒÎË ‚˚‰ÂÎÂÌ‡ ‡ÒÚËÚÂÎ¸ÌÓÒÚ¸)
+	bool canAIGBound = true;			//!< –æ—Ç—Ä–∏—Å–æ–≤–∫–∞ –±–æ—É–Ω–¥–∞ ai —Å–µ—Ç–∫–∏
+	bool canAIGQuad = true;			//!< –æ—Ç—Ä–∏—Å–æ–≤–∫–∞ –∫–≤–∞–¥–æ–≤ ai —Å–µ—Ç–∫–∏
+	bool canAIGGraphPoint = true;		//!< –æ—Ç—Ä–∏—Å–æ–≤–∫–∞ –≥—Ä–∞—Ñ–ø–æ–∏–Ω—Ç–æ–≤ ai —Å–µ—Ç–∫–∏
 
-	ID ActiveElement = -1;			//!< ÚÂÍÛ˘ËÈ Ë‰ÂÌÚËÙËÍ‡ÚÓ ‚˚‰ÂÎÂÌÌÓ„Ó ˝ÎÂÏÂÌÚ‡ ËÁ ÒÔËÒÍ‡
-	bool SelSelection = false;		//!< ‡ÁÂ¯ÂÌÓ ÎË ‚˚‰ÂÎÂÌËÂ?
-	bool SelZTest = false;			//!< ËÒÔÓÎ¸ÁÓ‚‡Ú¸ ÎË z-test ÔË ‚˚‰ÂÎÂÌËË?
-	bool SelMesh = false;			//!< ËÒÓ‚‡Ú¸ ÒÂÚÍÓÈ (true) ËÎË ˆÂÎËÍÓÏ ÏÓ‰ÂÎ¸ ‚˚‰ÂÎÂÌËˇ (false)?
-	bool SelBackFacesCull = false;	//!< ÓÚÒÂÍ‡Ú¸ ÎË Á‡‰ÌËÂ „‡ÌË ÔË ‚˚‰ÂÎÂÌËË?
+	//bound box –¥–ª—è –º–∞—Å—Å–æ–≤–æ–≥–æ —Å–æ–∑–¥–∞–Ω–∏—è –æ–±—ä–µ–∫—Ç–æ–≤ —Ä–∞—Å—Ç–∏—Ç–µ–ª—å–Ω–æ—Å—Ç–∏
+	bool canGreenRenderBox = false;	//!< —Ä–∞–∑—Ä–µ—à–µ–Ω–æ –ª–∏ —Ä–∏—Å–æ–≤–∞—Ç—å –±–æ–∫—Å?
+	float3 vGreenBoxPos;				//!< –ø–æ–∑–∏—Ü–∏—è –±–æ–∫—Å–∞
+	float3_t vGreenBoxWHD(1, 1, 1);	//!< —à–∏—Ä–∏–Ω–∞, –≤—ã—Å–æ—Ç–∞, –¥–ª–∏–Ω–∞ –±–æ–∫—Å–∞
 
-	bool AIGBound = true;			//!< ÓÚËÒÓ‚Í‡ ·ÓÛÌ‰‡ ai ÒÂÚÍË
-	bool AIGQuad = true;			//!< ÓÚËÒÓ‚Í‡ Í‚‡‰Ó‚ ai ÒÂÚÍË
-	bool AIGGraphPoint = true;		//!< ÓÚËÒÓ‚Í‡ „‡ÙÔÓËÌÚÓ‚ ai ÒÂÚÍË
-
-	//bound box ‰Îˇ Ï‡ÒÒÓ‚Ó„Ó ÒÓÁ‰‡ÌËˇ Ó·˙ÂÍÚÓ‚ ‡ÒÚËÚÂÎ¸ÌÓÒÚË
-	bool GreenRenderBox = false;	//!< ‡ÁÂ¯ÂÌÓ ÎË ËÒÓ‚‡Ú¸ ·ÓÍÒ?
-	float3 GreenBoxPos;				//!< ÔÓÁËˆËˇ ·ÓÍÒ‡
-	float3_t GreenBoxWHD(1, 1, 1);	//!< ¯ËËÌ‡, ‚˚ÒÓÚ‡, ‰ÎËÌ‡ ·ÓÍÒ‡
-
-
-
-
-	float3 HelperPos;
-	float3 HelperRot;
-	float3 HelperScale;
+	float3 vHelperPos;
+	float3 vHelperRot;
+	float3 vHelperScale;
 
 	bool isAddGameConections = false;
 
-	ID IdMtl = -1;
-	ID MenuWeatherCurrID = -1;
-	int MenuWeatherCount = 0;
-	Array<String> MenuWeatherArr;
+	ID idMtl = -1;
+	ID idMenuWeatherCurr = -1;
+	int iMenuWeatherCount = 0;
+	Array<String> aMenuWeather;
+
+	bool isStartScale = true;
+	float3 vStartScale;
 };
 
-//
+//##########################################################################
 
-void SXLevelEditor::InitAllElements()
+bool level_editor::existsFileStaticGeom(const char *szRelPath)
+{
+	char szPath[1024];
+	sprintf(szPath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_MESHES), szRelPath);
+	return FileExistsFile(szPath);
+}
+
+void level_editor::InitAllElements()
 {
 	INITCOMMONCONTROLSEX icex;
 	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
@@ -290,1762 +286,1866 @@ void SXLevelEditor::InitAllElements()
 	int cx = (wrect.right - MAINWIN_SIZE_X) / 2;
 	int cy = (wrect.bottom - MAINWIN_SIZE_Y) / 2;
 
-	SXLevelEditor::JobWindow = SXGUICrBaseWnd("JobWindow", "SX Level editor", 0, 0, cx, cy, MAINWIN_SIZE_X, MAINWIN_SIZE_Y, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
-	SXLevelEditor::JobWindow->Visible(false);
-	SXGUIBaseHandlers::InitHandlerMsg(SXLevelEditor::JobWindow);
+	level_editor::pJobWindow = SXGUICrBaseWndEx("LevelEditor", (String(SX_LEVEL_EDITOR_NAME) + " | " + SKYXENGINE_VERSION4EDITORS).c_str(), cx, cy, MAINWIN_SIZE_X, MAINWIN_SIZE_Y, 0, 0, CreateSolidBrush(RGB(220, 220, 220)), 0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION, 0, WndProcAllDefault);
+	//level_editor::pJobWindow->setVisible(false);
+	gui_func::base_handlers::InitHandlerMsg(level_editor::pJobWindow);
 
-	SXLevelEditor::JobWindow->AddHandler(ComMenuId, WM_COMMAND);
-	SXLevelEditor::JobWindow->AddHandler(TrueExit, WM_CLOSE, 0, 0, 0, 0, true);
-	SXLevelEditor::JobWindow->AddHandler(MsgEditSize, WM_SIZE);
-	SXLevelEditor::JobWindow->MinSizeX = MAINWIN_SIZE_X;
-	SXLevelEditor::JobWindow->MinSizeY = MAINWIN_SIZE_Y;
-	SXLevelEditor::MainMenu = SXGUICrMenuEx(IDR_MENU1);
-	SXLevelEditor::MainMenu->SetToWindow(SXLevelEditor::JobWindow->GetHWND());
-	
+	level_editor::pJobWindow->addHandler(ComMenuId, WM_COMMAND);
+	level_editor::pJobWindow->addHandler(TrueExit, WM_CLOSE, 0, 0, 0, 0, true);
+	level_editor::pJobWindow->addHandler(MsgEditSize, WM_SIZE);
+	level_editor::pJobWindow->setMixSize(MAINWIN_SIZE_X, MAINWIN_SIZE_Y);
+	level_editor::pMainMenu = SXGUICrMenuWindowEx(IDR_MENU1);
+	level_editor::pMainMenu->setToWindow(level_editor::pJobWindow->getHWND());	
 
-	SXLevelEditor::RenderWindow = SXGUICrBaseWnd("RenderWindow", "RenderWindow", 0, 0, 0, 27, 600, 400, 0, LoadCursor(NULL, IDC_ARROW), CreateSolidBrush(RGB(200, 200, 200)), 0, CS_HREDRAW | CS_VREDRAW, WS_CHILD | WS_VISIBLE | WS_BORDER, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault);
-	SXLevelEditor::RenderWindow->GAlign.left = true;
-	SXLevelEditor::RenderWindow->GAlign.right = true;
-	SXLevelEditor::RenderWindow->GAlign.top = true;
-	SXLevelEditor::RenderWindow->GAlign.bottom = true;
-	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_MouseMove, WM_MOUSEMOVE);
-	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_LDown, WM_LBUTTONDOWN);
-	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_LClick, WM_LBUTTONUP);
-	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_RClick, WM_RBUTTONUP);
-	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_MBUp, WM_MBUTTONUP);
-	SXLevelEditor::RenderWindow->AddHandler(SXLevelEditor_RenderWindow_Delete, WM_KEYDOWN, VK_DELETE, 1, 0, 0, 0);
+	level_editor::pRenderWindow = SXGUICrBaseWndEx("RenderWindow", "RenderWindow", 0, 27, 600, 400, 0, LoadCursor(NULL, IDC_ARROW), CreateSolidBrush(RGB(200, 200, 200)), 0, CS_HREDRAW | CS_VREDRAW, WS_VISIBLE | WS_BORDER, level_editor::pJobWindow->getHWND(), WndProcAllDefault);
+	level_editor::pRenderWindow->setFollowParentSides(true, true, true, true);
+	level_editor::pRenderWindow->addHandler(SXLevelEditor_RenderWindow_MouseMove, WM_MOUSEMOVE);
+	level_editor::pRenderWindow->addHandler(SXLevelEditor_RenderWindow_LDown, WM_LBUTTONDOWN);
+	level_editor::pRenderWindow->addHandler(SXLevelEditor_RenderWindow_LClick, WM_LBUTTONUP);
+	level_editor::pRenderWindow->addHandler(SXLevelEditor_RenderWindow_RClick, WM_RBUTTONUP);
+	level_editor::pRenderWindow->addHandler(SXLevelEditor_RenderWindow_MBUp, WM_MBUTTONUP);
+	level_editor::pRenderWindow->addHandler(SXLevelEditor_RenderWindow_Delete, WM_KEYUP, VK_DELETE, 1, 0, 0, 0);
 
-	SXLevelEditor::ToolBar1 = SXGUICrToolBar(0, 1, 810, 26, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
-	SXLevelEditor::ToolBar1->GAlign.left = true;
-	SXLevelEditor::ToolBar1->GAlign.right = true;
-	SXLevelEditor::ToolBar1->GAlign.top = true;
-	SXLevelEditor::ToolBar1->GAlign.bottom = false;
-	SXLevelEditor::ToolBar1->AddHandler(SXLevelEditor_ToolBar1_CallWmCommand, WM_COMMAND);
+	level_editor::pToolBar1 = SXGUICrToolBar(0, 1, 810, 26, level_editor::pJobWindow->getHWND(), WndProcAllDefault, 0);
+	level_editor::pToolBar1->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pToolBar1->setFollowParentSide(SXGUI_SIDE_RIGHT, true);
+	level_editor::pToolBar1->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pToolBar1->setFollowParentSide(SXGUI_SIDE_BOTTOM, false);
+	level_editor::pToolBar1->addHandler(SXLevelEditor_ToolBar1_CallWmCommand, WM_COMMAND);
 
-	SXLevelEditor::ButtonTBNew = SXGUICrButtonEx("", 2, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonTBNew->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonTBNew->GAlign.left = true;
-	SXLevelEditor::ButtonTBNew->GAlign.top = true;
-	SXLevelEditor::ButtonTBNew->SetBmpInResourse(IDB_BITMAP1);
+	level_editor::pButtonTBNew = SXGUICrButtonEx("", 2, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pButtonTBNew->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonTBNew->setFollowParentSides(true, false, false, true);
+	level_editor::pButtonTBNew->setBmpFromResourse(IDB_BITMAP1);
+	level_editor::pButtonTBNew->setHintText("Create a new level");
 
-	SXLevelEditor::ButtonTBOpen = SXGUICrButtonEx("", 26, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonTBOpen->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonTBOpen->GAlign.left = true;
-	SXLevelEditor::ButtonTBOpen->GAlign.top = true;
-	SXLevelEditor::ButtonTBOpen->SetBmpInResourse(IDB_BITMAP2);
+	level_editor::pButtonTBOpen = SXGUICrButtonEx("", 26, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pButtonTBOpen->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonTBOpen->setFollowParentSides(true, false, false, true);
+	level_editor::pButtonTBOpen->setBmpFromResourse(IDB_BITMAP2);
+	level_editor::pButtonTBOpen->setHintText("Open level");
 
-	SXLevelEditor::ButtonTBSave = SXGUICrButtonEx("", 50, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonTBSave->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonTBSave->GAlign.left = true;
-	SXLevelEditor::ButtonTBSave->GAlign.top = true;
-	SXLevelEditor::ButtonTBSave->SetBmpInResourse(IDB_BITMAP4);
+	level_editor::pButtonTBSave = SXGUICrButtonEx("", 50, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pButtonTBSave->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonTBSave->setFollowParentSides(true, false, false, true);
+	level_editor::pButtonTBSave->setBmpFromResourse(IDB_BITMAP4);
+	level_editor::pButtonTBSave->setHintText("Save level");
 
-	SXLevelEditor::ButtonTBSaveAs = SXGUICrButtonEx("", 74, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonTBSaveAs->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonTBSaveAs->GAlign.left = true;
-	SXLevelEditor::ButtonTBSaveAs->GAlign.top = true;
-	SXLevelEditor::ButtonTBSaveAs->SetBmpInResourse(IDB_BITMAP3);
+	level_editor::pButtonTBSaveAs = SXGUICrButtonEx("", 74, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pButtonTBSaveAs->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonTBSaveAs->setFollowParentSides(true, false, false, true);
+	level_editor::pButtonTBSaveAs->setBmpFromResourse(IDB_BITMAP3);
+	level_editor::pButtonTBSaveAs->setHintText("Save level as ...");
 
-	SXLevelEditor::CheckBoxTBArrow = SXGUICrCheckBoxEx("", 104, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBArrow->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBArrow->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBArrow->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBArrow->SetBmpInResourse(IDB_BITMAP5);
+	level_editor::pCheckBoxTBArrow = SXGUICrCheckBoxEx("", 104, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBArrow->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBArrow->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBArrow->setBmpFromResourse(IDB_BITMAP5);
+	level_editor::pCheckBoxTBArrow->setHintText("Select object");
 
-	SXLevelEditor::CheckBoxTBPos = SXGUICrCheckBoxEx("", 128, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBPos->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBPos->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBPos->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBPos->SetBmpInResourse(IDB_BITMAP6);
+	level_editor::pCheckBoxTBPos = SXGUICrCheckBoxEx("", 128, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBPos->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBPos->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBPos->setBmpFromResourse(IDB_BITMAP6);
+	level_editor::pCheckBoxTBPos->setHintText("Change position (helper)");
 
-	SXLevelEditor::CheckBoxTBRot = SXGUICrCheckBoxEx("", 152, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBRot->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBRot->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBRot->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBRot->SetBmpInResourse(IDB_BITMAP7);
+	level_editor::pCheckBoxTBRot = SXGUICrCheckBoxEx("", 152, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBRot->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBRot->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBRot->setBmpFromResourse(IDB_BITMAP7);
+	level_editor::pCheckBoxTBRot->setHintText("Change rotation (helper)");
 
-	SXLevelEditor::CheckBoxTBScale = SXGUICrCheckBoxEx("", 176, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBScale->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBScale->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBScale->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBScale->SetBmpInResourse(IDB_BITMAP8);
+	level_editor::pCheckBoxTBScale = SXGUICrCheckBoxEx("", 176, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBScale->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBScale->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBScale->setBmpFromResourse(IDB_BITMAP8);
+	level_editor::pCheckBoxTBScale->setHintText("Change scale (helper)");
 
 
-	SXLevelEditor::CheckBoxTBGrid = SXGUICrCheckBoxEx("", 206, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBGrid->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBGrid->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBGrid->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBGrid->SetBmpInResourse(IDB_BITMAP9);
+	level_editor::pCheckBoxTBGrid = SXGUICrCheckBoxEx("", 206, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBGrid->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBGrid->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBGrid->setBmpFromResourse(IDB_BITMAP9);
+	level_editor::pCheckBoxTBGrid->setHintText("Show grid");
 
-	SXLevelEditor::CheckBoxTBAxes = SXGUICrCheckBoxEx("", 230, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBAxes->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBAxes->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBAxes->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBAxes->SetBmpInResourse(IDB_BITMAP10);
+	level_editor::pCheckBoxTBAxes = SXGUICrCheckBoxEx("", 230, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBAxes->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBAxes->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBAxes->setBmpFromResourse(IDB_BITMAP10);
+	level_editor::pCheckBoxTBAxes->setHintText("Show axes");
 
 
-	SXLevelEditor::CheckBoxTBRColor = SXGUICrCheckBoxEx("", 260, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBRColor->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBRColor->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBRColor->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBRColor->SetBmpInResourse(IDB_BITMAP11);
+	level_editor::pCheckBoxTBRColor = SXGUICrCheckBoxEx("", 260, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBRColor->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBRColor->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBRColor->setBmpFromResourse(IDB_BITMAP11);
+	level_editor::pCheckBoxTBRColor->setHintText("Show color of scene");
 
-	SXLevelEditor::CheckBoxTBRNormal = SXGUICrCheckBoxEx("", 284, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBRNormal->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBRNormal->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBRNormal->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBRNormal->SetBmpInResourse(IDB_BITMAP12);
+	level_editor::pCheckBoxTBRNormal = SXGUICrCheckBoxEx("", 284, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBRNormal->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBRNormal->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBRNormal->setBmpFromResourse(IDB_BITMAP12);
+	level_editor::pCheckBoxTBRNormal->setHintText("Show normals of scene");
 
-	SXLevelEditor::CheckBoxTBRParam = SXGUICrCheckBoxEx("", 308, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBRParam->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBRParam->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBRParam->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBRParam->SetBmpInResourse(IDB_BITMAP13);
+	level_editor::pCheckBoxTBRParam = SXGUICrCheckBoxEx("", 308, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBRParam->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBRParam->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBRParam->setBmpFromResourse(IDB_BITMAP13);
+	level_editor::pCheckBoxTBRParam->setHintText("Show parameters lighting of scene");
 
-	SXLevelEditor::CheckBoxTBRAmDiff = SXGUICrCheckBoxEx("", 332, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBRAmDiff->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBRAmDiff->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBRAmDiff->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBRAmDiff->SetBmpInResourse(IDB_BITMAP14);
+	level_editor::pCheckBoxTBRAmDiff = SXGUICrCheckBoxEx("", 332, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBRAmDiff->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBRAmDiff->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBRAmDiff->setBmpFromResourse(IDB_BITMAP14);
+	level_editor::pCheckBoxTBRAmDiff->setHintText("Show ambient/diffuse components of scene");
 
-	SXLevelEditor::CheckBoxTBRSpecular = SXGUICrCheckBoxEx("", 356, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBRSpecular->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBRSpecular->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBRSpecular->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBRSpecular->SetBmpInResourse(IDB_BITMAP15);
+	level_editor::pCheckBoxTBRSpecular = SXGUICrCheckBoxEx("", 356, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBRSpecular->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBRSpecular->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBRSpecular->setBmpFromResourse(IDB_BITMAP15);
+	level_editor::pCheckBoxTBRSpecular->setHintText("Show specular of scene");
 
-	SXLevelEditor::CheckBoxTBRLighting = SXGUICrCheckBoxEx("", 380, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBRLighting->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBRLighting->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBRLighting->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBRLighting->SetBmpInResourse(IDB_BITMAP16);
+	level_editor::pCheckBoxTBRLighting = SXGUICrCheckBoxEx("", 380, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBRLighting->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBRLighting->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBRLighting->setBmpFromResourse(IDB_BITMAP16);
+	level_editor::pCheckBoxTBRLighting->setHintText("Show lighting of scene");
 
 	
-	SXLevelEditor::CheckBoxTBSelS = SXGUICrCheckBoxEx("", 410, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBSelS->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBSelS->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBSelS->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBSelS->SetBmpInResourse(IDB_BITMAP17);
+	level_editor::pCheckBoxTBSelS = SXGUICrCheckBoxEx("", 410, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBSelS->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBSelS->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBSelS->setBmpFromResourse(IDB_BITMAP17);
+	level_editor::pCheckBoxTBSelS->setHintText("Show selected object");
 
-	SXLevelEditor::CheckBoxTBSelZTest = SXGUICrCheckBoxEx("", 434, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBSelZTest->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBSelZTest->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBSelZTest->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBSelZTest->SetBmpInResourse(IDB_BITMAP18);
+	level_editor::pCheckBoxTBSelZTest = SXGUICrCheckBoxEx("", 434, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBSelZTest->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBSelZTest->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBSelZTest->setBmpFromResourse(IDB_BITMAP18);
+	level_editor::pCheckBoxTBSelZTest->setHintText("Use Z-test for show selected object");
 
-	SXLevelEditor::CheckBoxTBSelMesh = SXGUICrCheckBoxEx("", 458, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBSelMesh->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBSelMesh->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBSelMesh->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBSelMesh->SetBmpInResourse(IDB_BITMAP19);
+	level_editor::pCheckBoxTBSelMesh = SXGUICrCheckBoxEx("", 458, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBSelMesh->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBSelMesh->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBSelMesh->setBmpFromResourse(IDB_BITMAP19);
+	level_editor::pCheckBoxTBSelMesh->setHintText("Draw mesh for show selected object");
 
-	SXLevelEditor::CheckBoxTBSelCullBack = SXGUICrCheckBoxEx("", 482, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBSelCullBack->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBSelCullBack->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBSelCullBack->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBSelCullBack->SetBmpInResourse(IDB_BITMAP20);
+	level_editor::pCheckBoxTBSelCullBack = SXGUICrCheckBoxEx("", 482, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBSelCullBack->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBSelCullBack->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBSelCullBack->setBmpFromResourse(IDB_BITMAP20);
+	level_editor::pCheckBoxTBSelCullBack->setHintText("Use cullback edges for show selected object");
 
 
-	SXLevelEditor::CheckBoxTBAIGBound = SXGUICrCheckBoxEx("", 512, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBAIGBound->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBAIGBound->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBAIGBound->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBAIGBound->SetBmpInResourse(IDB_BITMAP22);
+	level_editor::pCheckBoxTBAIGBound = SXGUICrCheckBoxEx("", 512, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBAIGBound->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBAIGBound->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBAIGBound->setBmpFromResourse(IDB_BITMAP22);
+	level_editor::pCheckBoxTBAIGBound->setHintText("Show boxes for AI grid");
 
-	SXLevelEditor::CheckBoxTBAIGQuad = SXGUICrCheckBoxEx("", 536, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBAIGQuad->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBAIGQuad->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBAIGQuad->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBAIGQuad->SetBmpInResourse(IDB_BITMAP23);
+	level_editor::pCheckBoxTBAIGQuad = SXGUICrCheckBoxEx("", 536, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBAIGQuad->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBAIGQuad->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBAIGQuad->setBmpFromResourse(IDB_BITMAP23);
+	level_editor::pCheckBoxTBAIGQuad->setHintText("Show quads for AI grid");
 
-	SXLevelEditor::CheckBoxTBAIGGraphPoint = SXGUICrCheckBoxEx("", 560, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBAIGGraphPoint->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBAIGGraphPoint->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBAIGGraphPoint->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBAIGGraphPoint->SetBmpInResourse(IDB_BITMAP24);
+	level_editor::pCheckBoxTBAIGGraphPoint = SXGUICrCheckBoxEx("", 560, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBAIGGraphPoint->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBAIGGraphPoint->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBAIGGraphPoint->setBmpFromResourse(IDB_BITMAP24);
+	level_editor::pCheckBoxTBAIGGraphPoint->setHintText("Show graphpoints for AI grid");
 
-	SXLevelEditor::CheckBoxTBLevelType = SXGUICrCheckBoxEx("", 588, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBLevelType->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBLevelType->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBLevelType->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBLevelType->SetBmpInResourse(IDB_BITMAP25);
+	level_editor::pCheckBoxTBLevelType = SXGUICrCheckBoxEx("", 588, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBLevelType->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBLevelType->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP25);
+	level_editor::pCheckBoxTBLevelType->setHintText("Indoor/outdoor type of level");
 
-	SXLevelEditor::CheckBoxTBGLightEnable = SXGUICrCheckBoxEx("", 612, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, SXLevelEditor::ToolBar1->GetHWND(), 0, 0);
-	SXLevelEditor::CheckBoxTBGLightEnable->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxTBGLightEnable->GAlign.left = true;
-	SXLevelEditor::CheckBoxTBGLightEnable->GAlign.top = true;
-	SXLevelEditor::CheckBoxTBGLightEnable->SetBmpInResourse(IDB_BITMAP27);
+	level_editor::pCheckBoxTBGLightEnable = SXGUICrCheckBoxEx("", 612, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBGLightEnable->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBGLightEnable->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBGLightEnable->setBmpFromResourse(IDB_BITMAP27);
+	level_editor::pCheckBoxTBGLightEnable->setHintText("Enable/disable global light (sun)");
+
+	level_editor::pCheckBoxTBNullingStaticLight = SXGUICrCheckBoxEx("", 640, 1, 22, 22, 0, WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_PUSHLIKE | BS_BITMAP, level_editor::pToolBar1->getHWND(), 0, 0);
+	level_editor::pCheckBoxTBNullingStaticLight->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxTBNullingStaticLight->setFollowParentSides(true, false, false, true);
+	level_editor::pCheckBoxTBNullingStaticLight->setBmpFromResourse(IDB_BITMAP28);
+	level_editor::pCheckBoxTBNullingStaticLight->setHintText("Reset depth maps for static light (update)");
 
 
 	
-	SXLevelEditor::GroupBoxList = SXGUICrGroupBox("GroupBoxList", 601, 28, 200, 400, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
-	SXGUIBaseHandlers::InitHandlerMsg(SXLevelEditor::GroupBoxList);
-	SXLevelEditor::GroupBoxList->AddHandler(SXLevelEditor_GroupBoxList_CallWmCommand, WM_COMMAND);
-	SXLevelEditor::GroupBoxList->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXLevelEditor::GroupBoxList->SetColorText(0,0,0);
-	SXLevelEditor::GroupBoxList->SetColorTextBk(220,220,220);
-	SXLevelEditor::GroupBoxList->SetTransparentTextBk(true);
-	SXLevelEditor::GroupBoxList->SetColorBrush(220,220,220);
+	level_editor::pGroupBoxList = SXGUICrGroupBox("List of objects", 601, 28, 200, 400, level_editor::pJobWindow->getHWND(), WndProcAllDefault, 0);
+	gui_func::base_handlers::InitHandlerMsg(level_editor::pGroupBoxList);
+	level_editor::pGroupBoxList->addHandler(SXLevelEditor_GroupBoxList_CallWmCommand, WM_COMMAND);
+	level_editor::pGroupBoxList->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	level_editor::pGroupBoxList->setColorText(RGB(0,0,0));
+	level_editor::pGroupBoxList->setColorTextBk(RGB(220,220,220));
+	level_editor::pGroupBoxList->setTransparentTextBk(true);
+	level_editor::pGroupBoxList->setColorBrush(RGB(220, 220, 220));
 
-	SXLevelEditor::GroupBoxList->GAlign.left = false;
-	SXLevelEditor::GroupBoxList->GAlign.right = true;
-	SXLevelEditor::GroupBoxList->GAlign.top = true;
-	SXLevelEditor::GroupBoxList->GAlign.bottom = true;
+	level_editor::pGroupBoxList->setFollowParentSide(SXGUI_SIDE_LEFT, false);
+	level_editor::pGroupBoxList->setFollowParentSide(SXGUI_SIDE_RIGHT, true);
+	level_editor::pGroupBoxList->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pGroupBoxList->setFollowParentSide(SXGUI_SIDE_BOTTOM, true);
 
-	SXLevelEditor::GroupBoxData = SXGUICrGroupBox("", 0, 425, 800, 190, SXLevelEditor::JobWindow->GetHWND(), WndProcAllDefault, 0);
-	SXGUIBaseHandlers::InitHandlerMsg(SXLevelEditor::GroupBoxData);
-	SXLevelEditor::GroupBoxData->AddHandler(SXLevelEditor_GroupBox_CallWmCommand, WM_COMMAND);
-	SXLevelEditor::GroupBoxData->AddHandler(SXLevelEditor_GroupBox_Notify, WM_NOTIFY);
-	SXLevelEditor::GroupBoxData->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXLevelEditor::GroupBoxData->SetColorText(0,0,0);
-	SXLevelEditor::GroupBoxData->SetColorTextBk(220,220,220);
-	SXLevelEditor::GroupBoxData->SetTransparentTextBk(true);
-	SXLevelEditor::GroupBoxData->SetColorBrush(220,220,220);
+	level_editor::pGroupBoxData = SXGUICrGroupBox("", 0, 425, 800, 190, level_editor::pJobWindow->getHWND(), WndProcAllDefault, 0);
+	gui_func::base_handlers::InitHandlerMsg(level_editor::pGroupBoxData);
+	level_editor::pGroupBoxData->addHandler(SXLevelEditor_GroupBox_CallWmCommand, WM_COMMAND);
+	level_editor::pGroupBoxData->addHandler(SXLevelEditor_GroupBox_Notify, WM_NOTIFY);
+	level_editor::pGroupBoxData->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	level_editor::pGroupBoxData->setColorText(RGB(0,0,0));
+	level_editor::pGroupBoxData->setColorTextBk(RGB(220, 220, 220));
+	level_editor::pGroupBoxData->setTransparentTextBk(true);
+	level_editor::pGroupBoxData->setColorBrush(RGB(220, 220, 220));
 
-	SXLevelEditor::GroupBoxData->GAlign.left = true;
-	SXLevelEditor::GroupBoxData->GAlign.right = true;
-	SXLevelEditor::GroupBoxData->GAlign.top = false;
-	SXLevelEditor::GroupBoxData->GAlign.bottom = true;
+	level_editor::pGroupBoxData->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pGroupBoxData->setFollowParentSide(SXGUI_SIDE_RIGHT, true);
+	level_editor::pGroupBoxData->setFollowParentSide(SXGUI_SIDE_TOP, false);
+	level_editor::pGroupBoxData->setFollowParentSide(SXGUI_SIDE_BOTTOM, true);
 
-	SXLevelEditor::ListBoxList = SXGUICrListBox("", 4, 30, 193, 290, SXLevelEditor::GroupBoxList->GetHWND(), 0, 0, false);
-	SXLevelEditor::ListBoxList->GAlign.left = true;
-	SXLevelEditor::ListBoxList->GAlign.top = true;
-	SXLevelEditor::ListBoxList->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXLevelEditor::ListBoxList->SetColorText(0,0,0);
-	SXLevelEditor::ListBoxList->SetColorTextBk(255,255,255);
-	SXLevelEditor::ListBoxList->SetTransparentTextBk(true);
-	SXLevelEditor::ListBoxList->SetColorBrush(255,255,255);
-	//SXLevelEditor::ListBoxList->AddHandler(SXLevelEditor_ListBoxList_Click, WM_LBUTTONUP);
+	level_editor::pListBoxList = SXGUICrListBox(4, 30, 193, 290, level_editor::pGroupBoxList->getHWND(), 0, 0, false);
+	level_editor::pListBoxList->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pListBoxList->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pListBoxList->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	level_editor::pListBoxList->setColorText(RGB(0,0,0));
+	level_editor::pListBoxList->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pListBoxList->setTransparentTextBk(true);
+	level_editor::pListBoxList->setColorBrush(RGB(255, 255, 255));
+	//level_editor::pListBoxList->addHandler(SXLevelEditor_ListBoxList_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::StaticListTextCount = SXGUICrStatic("Count:", 65, 15, 30, 15, SXLevelEditor::GroupBoxList->GetHWND(), 0, 0);
-	SXLevelEditor::StaticListTextCount->GAlign.left = true;
-	SXLevelEditor::StaticListTextCount->GAlign.top = true;
-	SXLevelEditor::StaticListTextCount->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXLevelEditor::StaticListTextCount->SetColorText(0,0,0);
-	SXLevelEditor::StaticListTextCount->SetColorTextBk(255,255,255);
-	SXLevelEditor::StaticListTextCount->SetTransparentTextBk(true);
-	SXLevelEditor::StaticListTextCount->SetColorBrush(220,220,220);
+	level_editor::pStaticListTextCount = SXGUICrStatic("Count:", 65, 15, 30, 15, level_editor::pGroupBoxList->getHWND(), 0);
+	level_editor::pStaticListTextCount->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticListTextCount->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticListTextCount->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	level_editor::pStaticListTextCount->setColorText(RGB(0,0,0));
+	level_editor::pStaticListTextCount->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticListTextCount->setTransparentTextBk(true);
+	level_editor::pStaticListTextCount->setColorBrush(RGB(220, 220, 220));
 
-	SXLevelEditor::StaticListValCount = SXGUICrStatic("0", 100, 15, 50, 15, SXLevelEditor::GroupBoxList->GetHWND(), 0, 0);
-	SXLevelEditor::StaticListValCount->GAlign.left = true;
-	SXLevelEditor::StaticListValCount->GAlign.top = true;
-	SXLevelEditor::StaticListValCount->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXLevelEditor::StaticListValCount->SetColorText(0,0,0);
-	SXLevelEditor::StaticListValCount->SetColorTextBk(255,255,255);
-	SXLevelEditor::StaticListValCount->SetTransparentTextBk(true);
-	SXLevelEditor::StaticListValCount->SetColorBrush(220,220,220);
+	level_editor::pStaticListValCount = SXGUICrStatic("0", 100, 15, 50, 15, level_editor::pGroupBoxList->getHWND(), 0);
+	level_editor::pStaticListValCount->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticListValCount->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticListValCount->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	level_editor::pStaticListValCount->setColorText(RGB(0,0,0));
+	level_editor::pStaticListValCount->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticListValCount->setTransparentTextBk(true);
+	level_editor::pStaticListValCount->setColorBrush(RGB(220, 220, 220));
 
-	SXLevelEditor::ButtonDelete = SXGUICrButton("Delete", 135, 325, 60, 20, 0, SXLevelEditor::GroupBoxList->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonDelete->GAlign.left = true;
-	SXLevelEditor::ButtonDelete->GAlign.top = true;
-	SXLevelEditor::ButtonDelete->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonDelete->AddHandler(SXLevelEditor_ButtonDelete_Click, WM_LBUTTONUP);
+	level_editor::pButtonDelete = SXGUICrButton("Delete", 135, 325, 60, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxList->getHWND(), 0, 0);
+	level_editor::pButtonDelete->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonDelete->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonDelete->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonDelete->addHandler(SXLevelEditor_ButtonDelete_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::ButtonGeometryOpen = SXGUICrButton("Geometry", 5, 350, 60, 20, 0, SXLevelEditor::GroupBoxList->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGeometryOpen->GAlign.left = true;
-	SXLevelEditor::ButtonGeometryOpen->GAlign.top = true;
-	SXLevelEditor::ButtonGeometryOpen->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXLevelEditor::ButtonGeometryOpen->AddHandler(SXLevelEditor_ButtonGeometryOpen_Click, WM_LBUTTONUP);
+	level_editor::pButtonGeometryOpen = SXGUICrButton("Geometry", 5, 350, 60, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxList->getHWND(), 0, 0);
+	level_editor::pButtonGeometryOpen->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGeometryOpen->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGeometryOpen->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	level_editor::pButtonGeometryOpen->addHandler(SXLevelEditor_ButtonGeometryOpen_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::ButtonGreenOpen = SXGUICrButton("Green", 70, 350, 60, 20, 0, SXLevelEditor::GroupBoxList->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGreenOpen->GAlign.left = true;
-	SXLevelEditor::ButtonGreenOpen->GAlign.top = true;
-	SXLevelEditor::ButtonGreenOpen->SetFont("MS Shell Dlg",-11,0,400,0,0,0);
-	SXLevelEditor::ButtonGreenOpen->AddHandler(SXLevelEditor_ButtonGreenOpen_Click, WM_LBUTTONUP);
+	level_editor::pButtonGreenOpen = SXGUICrButton("Green", 70, 350, 60, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxList->getHWND(), 0, 0);
+	level_editor::pButtonGreenOpen->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGreenOpen->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGreenOpen->setFont("MS Shell Dlg",-11,0,400,0,0,0);
+	level_editor::pButtonGreenOpen->addHandler(SXLevelEditor_ButtonGreenOpen_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::ButtonGameObjectOpen = SXGUICrButton("Game", 135, 350, 60, 20, 0, SXLevelEditor::GroupBoxList->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGameObjectOpen->GAlign.left = true;
-	SXLevelEditor::ButtonGameObjectOpen->GAlign.top = true;
-	SXLevelEditor::ButtonGameObjectOpen->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGameObjectOpen->AddHandler(SXLevelEditor_ButtonGameObjectOpen_Click, WM_LBUTTONUP);
+	level_editor::pButtonGameObjectOpen = SXGUICrButton("Game", 135, 350, 60, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxList->getHWND(), 0, 0);
+	level_editor::pButtonGameObjectOpen->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGameObjectOpen->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGameObjectOpen->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGameObjectOpen->addHandler(SXLevelEditor_ButtonGameObjectOpen_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::ButtonAIGridOpen = SXGUICrButton("AI Grid", 5, 375, 60, 20, 0, SXLevelEditor::GroupBoxList->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonAIGridOpen->GAlign.left = true;
-	SXLevelEditor::ButtonAIGridOpen->GAlign.top = true;
-	SXLevelEditor::ButtonAIGridOpen->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonAIGridOpen->AddHandler(SXLevelEditor_ButtonAIGridOpen_Click, WM_LBUTTONUP);
+	level_editor::pButtonAIGridOpen = SXGUICrButton("AI Grid", 5, 375, 60, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxList->getHWND(), 0, 0);
+	level_editor::pButtonAIGridOpen->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonAIGridOpen->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonAIGridOpen->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonAIGridOpen->addHandler(SXLevelEditor_ButtonAIGridOpen_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::StatusBar1 = SXGUICrStatusBar("StatusBar1", SXLevelEditor::JobWindow->GetHWND(), 0, 0);
-	SXLevelEditor::StatusBar1->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStatusBar1 = SXGUICrStatusBar("StatusBar1", level_editor::pJobWindow->getHWND(), 0, 0);
+	level_editor::pStatusBar1->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
 	int arrpart[5];
 	arrpart[0] = 150;
 	arrpart[1] = 300;
 	arrpart[2] = 450;
 	arrpart[3] = 600;
 	arrpart[4] = -1;
-	SXLevelEditor::StatusBar1->SetCountParts(5, arrpart);
-	SXLevelEditor::StatusBar1->SetTextParts(0, "Level poly: ");
-	SXLevelEditor::StatusBar1->SetTextParts(1, "Geom poly: ");
-	SXLevelEditor::StatusBar1->SetTextParts(2, "Green poly: ");
-	SXLevelEditor::StatusBar1->SetTextParts(3, "");
-	SXLevelEditor::StatusBar1->SetTextParts(4, "");
+	level_editor::pStatusBar1->setPartsCount(5, arrpart);
+	level_editor::pStatusBar1->setPartText(0, "Level poly: ");
+	level_editor::pStatusBar1->setPartText(1, "Geom poly: ");
+	level_editor::pStatusBar1->setPartText(2, "Green poly: ");
+	level_editor::pStatusBar1->setPartText(3, "");
+	level_editor::pStatusBar1->setPartText(4, "");
 
 	//Geom
 	//{
-	SXLevelEditor::StaticGeomName = SXGUICrStatic("Name", 5, 20, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGeomName->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGeomName->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGeomName->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGeomName->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGeomName->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGeomName->GAlign.left = true;
-	SXLevelEditor::StaticGeomName->GAlign.top = true;
-	SXLevelEditor::StaticGeomName->Visible(false);
+	level_editor::pStaticGeomName = SXGUICrStatic("Name", 5, 20, 70, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGeomName->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGeomName->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGeomName->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGeomName->setTransparentTextBk(true);
+	level_editor::pStaticGeomName->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGeomName->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGeomName->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGeomName->setVisible(false);
 
-	SXLevelEditor::EditGeomName = SXGUICrEdit("0", 80, 20, 200, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGeomName->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGeomName->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGeomName->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGeomName->SetTransparentTextBk(true);
-	SXLevelEditor::EditGeomName->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGeomName->GAlign.left = true;
-	SXLevelEditor::EditGeomName->GAlign.top = true;
-	SXLevelEditor::EditGeomName->Visible(false);
-	SXLevelEditor::EditGeomName->AddHandler(SXLevelEditor_EditGeomName_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditGeomName->AddHandler(SXLevelEditor_EditGeomName_Enter, WM_KILLFOCUS);
+	level_editor::pEditGeomName = SXGUICrEdit("0", 80, 20, 200, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGeomName->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGeomName->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGeomName->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGeomName->setTransparentTextBk(true);
+	level_editor::pEditGeomName->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGeomName->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGeomName->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGeomName->setVisible(false);
+	level_editor::pEditGeomName->addHandler(SXLevelEditor_EditGeomName_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditGeomName->addHandler(SXLevelEditor_EditGeomName_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::StaticGeomModel = SXGUICrStatic("Model", 5, 40, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGeomModel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGeomModel->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGeomModel->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGeomModel->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGeomModel->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGeomModel->GAlign.left = true;
-	SXLevelEditor::StaticGeomModel->GAlign.top = true;
-	SXLevelEditor::StaticGeomModel->Visible(false);
+	level_editor::pStaticGeomModel = SXGUICrStatic("Model", 5, 40, 70, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGeomModel->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGeomModel->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGeomModel->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGeomModel->setTransparentTextBk(true);
+	level_editor::pStaticGeomModel->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGeomModel->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGeomModel->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGeomModel->setVisible(false);
 
-	SXLevelEditor::EditGeomModel = SXGUICrEdit("0", 80, 40, 200, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGeomModel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGeomModel->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGeomModel->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGeomModel->SetTransparentTextBk(true);
-	SXLevelEditor::EditGeomModel->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGeomModel->GAlign.left = true;
-	SXLevelEditor::EditGeomModel->GAlign.top = true;
-	SXLevelEditor::EditGeomModel->Visible(false);
+	level_editor::pEditGeomModel = SXGUICrEdit("0", 80, 40, 200, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGeomModel->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGeomModel->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGeomModel->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGeomModel->setTransparentTextBk(true);
+	level_editor::pEditGeomModel->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGeomModel->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGeomModel->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGeomModel->setVisible(false);
 
-	SXLevelEditor::ButtonGeomModel = SXGUICrButton("...", 285, 40, 25, 15, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGeomModel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGeomModel->GAlign.left = true;
-	SXLevelEditor::ButtonGeomModel->GAlign.top = true;
-	SXLevelEditor::ButtonGeomModel->Visible(false);
-	SXLevelEditor::ButtonGeomModel->AddHandler(SXLevelEditor_ButtonGeomModel_Click, WM_LBUTTONUP);
+	level_editor::pButtonGeomModel = SXGUICrButton("...", 285, 40, 25, 15, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGeomModel->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGeomModel->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGeomModel->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGeomModel->setVisible(false);
+	level_editor::pButtonGeomModel->addHandler(SXLevelEditor_ButtonGeomModel_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::StaticGeomLod1 = SXGUICrStatic("Lod1", 5, 60, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGeomLod1->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGeomLod1->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGeomLod1->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGeomLod1->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGeomLod1->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGeomLod1->GAlign.left = true;
-	SXLevelEditor::StaticGeomLod1->GAlign.top = true;
-	SXLevelEditor::StaticGeomLod1->Visible(false);
+	level_editor::pStaticGeomLod1 = SXGUICrStatic("Lod1", 5, 60, 70, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGeomLod1->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGeomLod1->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGeomLod1->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGeomLod1->setTransparentTextBk(true);
+	level_editor::pStaticGeomLod1->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGeomLod1->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGeomLod1->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGeomLod1->setVisible(false);
 
-	SXLevelEditor::EditGeomLod1 = SXGUICrEdit("0", 80, 60, 200, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGeomLod1->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGeomLod1->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGeomLod1->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGeomLod1->SetTransparentTextBk(true);
-	SXLevelEditor::EditGeomLod1->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGeomLod1->GAlign.left = true;
-	SXLevelEditor::EditGeomLod1->GAlign.top = true;
-	SXLevelEditor::EditGeomLod1->Visible(false);
+	level_editor::pEditGeomLod1 = SXGUICrEdit("0", 80, 60, 200, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGeomLod1->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGeomLod1->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGeomLod1->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGeomLod1->setTransparentTextBk(true);
+	level_editor::pEditGeomLod1->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGeomLod1->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGeomLod1->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGeomLod1->setVisible(false);
 
-	SXLevelEditor::ButtonGeomLod1 = SXGUICrButton("...", 285, 60, 25, 15, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGeomLod1->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGeomLod1->GAlign.left = true;
-	SXLevelEditor::ButtonGeomLod1->GAlign.top = true;
-	SXLevelEditor::ButtonGeomLod1->Visible(false);
-	SXLevelEditor::ButtonGeomLod1->AddHandler(SXLevelEditor_ButtonGeomLod1_Click, WM_LBUTTONUP);
+	level_editor::pButtonGeomLod1 = SXGUICrButton("...", 285, 60, 25, 15, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGeomLod1->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGeomLod1->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGeomLod1->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGeomLod1->setVisible(false);
+	level_editor::pButtonGeomLod1->addHandler(SXLevelEditor_ButtonGeomLod1OrPhysics_Click, WM_LBUTTONUP);
+
+	level_editor::pStaticGeomPhysics = SXGUICrStatic("Physics", 5, 80, 70, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGeomPhysics->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGeomPhysics->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGeomPhysics->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGeomPhysics->setTransparentTextBk(true);
+	level_editor::pStaticGeomPhysics->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGeomPhysics->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGeomPhysics->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGeomPhysics->setVisible(false);
+
+	level_editor::pEditGeomPhysics = SXGUICrEdit("0", 80, 80, 200, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGeomPhysics->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGeomPhysics->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGeomPhysics->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGeomPhysics->setTransparentTextBk(true);
+	level_editor::pEditGeomPhysics->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGeomPhysics->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGeomPhysics->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGeomPhysics->setVisible(false);
+
+	level_editor::pButtonGeomPhysics = SXGUICrButton("...", 285, 80, 25, 15, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGeomPhysics->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGeomPhysics->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGeomPhysics->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGeomPhysics->setVisible(false);
+	level_editor::pButtonGeomPhysics->addHandler(SXLevelEditor_ButtonGeomLod1OrPhysics_Click, WM_LBUTTONUP);
+
+
+	level_editor::pCheckBoxSegmentation = SXGUICrCheckBox("Segmentation", 80, 100, 100, 20, level_editor::pGroupBoxData->getHWND(), 0, 0, false);
+	level_editor::pCheckBoxSegmentation->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxSegmentation->setColorText(RGB(0, 0, 0));
+	level_editor::pCheckBoxSegmentation->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pCheckBoxSegmentation->setTransparentTextBk(true);
+	level_editor::pCheckBoxSegmentation->setColorBrush(RGB(220, 220, 220));
+	level_editor::pCheckBoxSegmentation->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pCheckBoxSegmentation->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pCheckBoxSegmentation->setVisible(false);
 	
-	SXLevelEditor::StaticGeomPos = SXGUICrStatic("Position:", 320, 35, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGeomPos->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGeomPos->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGeomPos->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGeomPos->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGeomPos->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGeomPos->GAlign.left = true;
-	SXLevelEditor::StaticGeomPos->GAlign.top = true;
-	SXLevelEditor::StaticGeomPos->Visible(false);
+	level_editor::pStaticGeomPos = SXGUICrStatic("Position:", 320, 35, 50, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGeomPos->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGeomPos->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGeomPos->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGeomPos->setTransparentTextBk(true);
+	level_editor::pStaticGeomPos->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGeomPos->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGeomPos->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGeomPos->setVisible(false);
 
-	SXLevelEditor::EditGeomPosX = SXGUICrEdit("0", 370, 15, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGeomPosX->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGeomPosX->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGeomPosX->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGeomPosX->SetTransparentTextBk(true);
-	SXLevelEditor::EditGeomPosX->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGeomPosX->GAlign.left = true;
-	SXLevelEditor::EditGeomPosX->GAlign.top = true;
-	SXLevelEditor::EditGeomPosX->Visible(false);
-	SXLevelEditor::EditGeomPosX->AddHandler(SXLevelEditor_EditTransformPos_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditGeomPosX->AddHandler(SXLevelEditor_EditTransformPos_Enter, WM_KILLFOCUS);
+	level_editor::pEditGeomPosX = SXGUICrEdit("0", 370, 15, 70, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGeomPosX->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGeomPosX->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGeomPosX->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGeomPosX->setTransparentTextBk(true);
+	level_editor::pEditGeomPosX->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGeomPosX->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGeomPosX->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGeomPosX->setVisible(false);
+	level_editor::pEditGeomPosX->addHandler(SXLevelEditor_EditTransformPos_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditGeomPosX->addHandler(SXLevelEditor_EditTransformPos_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::EditGeomPosY = SXGUICrEdit("0", 370, 35, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGeomPosY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGeomPosY->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGeomPosY->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGeomPosY->SetTransparentTextBk(true);
-	SXLevelEditor::EditGeomPosY->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGeomPosY->GAlign.left = true;
-	SXLevelEditor::EditGeomPosY->GAlign.top = true;
-	SXLevelEditor::EditGeomPosY->Visible(false);
-	SXLevelEditor::EditGeomPosY->AddHandler(SXLevelEditor_EditTransformPos_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditGeomPosY->AddHandler(SXLevelEditor_EditTransformPos_Enter, WM_KILLFOCUS);
+	level_editor::pEditGeomPosY = SXGUICrEdit("0", 370, 35, 70, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGeomPosY->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGeomPosY->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGeomPosY->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGeomPosY->setTransparentTextBk(true);
+	level_editor::pEditGeomPosY->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGeomPosY->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGeomPosY->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGeomPosY->setVisible(false);
+	level_editor::pEditGeomPosY->addHandler(SXLevelEditor_EditTransformPos_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditGeomPosY->addHandler(SXLevelEditor_EditTransformPos_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::EditGeomPosZ = SXGUICrEdit("0", 370, 55, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGeomPosZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGeomPosZ->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGeomPosZ->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGeomPosZ->SetTransparentTextBk(true);
-	SXLevelEditor::EditGeomPosZ->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGeomPosZ->GAlign.left = true;
-	SXLevelEditor::EditGeomPosZ->GAlign.top = true;
-	SXLevelEditor::EditGeomPosZ->Visible(false);
-	SXLevelEditor::EditGeomPosZ->AddHandler(SXLevelEditor_EditTransformPos_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditGeomPosZ->AddHandler(SXLevelEditor_EditTransformPos_Enter, WM_KILLFOCUS);
+	level_editor::pEditGeomPosZ = SXGUICrEdit("0", 370, 55, 70, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGeomPosZ->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGeomPosZ->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGeomPosZ->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGeomPosZ->setTransparentTextBk(true);
+	level_editor::pEditGeomPosZ->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGeomPosZ->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGeomPosZ->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGeomPosZ->setVisible(false);
+	level_editor::pEditGeomPosZ->addHandler(SXLevelEditor_EditTransformPos_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditGeomPosZ->addHandler(SXLevelEditor_EditTransformPos_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::RadioButtonGeomPosX = SXGUICrRadioButton("x", 440, 15, 25, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonGeomPosX->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonGeomPosX->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonGeomPosX->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonGeomPosX->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonGeomPosX->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonGeomPosX->GAlign.left = true;
-	SXLevelEditor::RadioButtonGeomPosX->GAlign.top = true;
-	SXLevelEditor::RadioButtonGeomPosX->Visible(false);
+	level_editor::pRadioButtonGeomPosX = SXGUICrRadioButton("x", 440, 15, 25, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonGeomPosX->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonGeomPosX->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonGeomPosX->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonGeomPosX->setTransparentTextBk(true);
+	level_editor::pRadioButtonGeomPosX->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonGeomPosX->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonGeomPosX->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonGeomPosX->setVisible(false);
 
-	SXLevelEditor::RadioButtonGeomPosY = SXGUICrRadioButton("y", 440, 35, 25, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonGeomPosY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonGeomPosY->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonGeomPosY->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonGeomPosY->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonGeomPosY->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonGeomPosY->GAlign.left = true;
-	SXLevelEditor::RadioButtonGeomPosY->GAlign.top = true;
-	SXLevelEditor::RadioButtonGeomPosY->Visible(false);
+	level_editor::pRadioButtonGeomPosY = SXGUICrRadioButton("y", 440, 35, 25, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonGeomPosY->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonGeomPosY->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonGeomPosY->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonGeomPosY->setTransparentTextBk(true);
+	level_editor::pRadioButtonGeomPosY->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonGeomPosY->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonGeomPosY->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonGeomPosY->setVisible(false);
 
-	SXLevelEditor::RadioButtonGeomPosZ = SXGUICrRadioButton("z", 440, 55, 25, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonGeomPosZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonGeomPosZ->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonGeomPosZ->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonGeomPosZ->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonGeomPosZ->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonGeomPosZ->GAlign.left = true;
-	SXLevelEditor::RadioButtonGeomPosZ->GAlign.top = true;
-	SXLevelEditor::RadioButtonGeomPosZ->Visible(false);
+	level_editor::pRadioButtonGeomPosZ = SXGUICrRadioButton("z", 440, 55, 25, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonGeomPosZ->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonGeomPosZ->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonGeomPosZ->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonGeomPosZ->setTransparentTextBk(true);
+	level_editor::pRadioButtonGeomPosZ->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonGeomPosZ->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonGeomPosZ->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonGeomPosZ->setVisible(false);
 
-	SXLevelEditor::StaticGeomRot = SXGUICrStatic("Rotation:", 470, 35, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGeomRot->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGeomRot->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGeomRot->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGeomRot->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGeomRot->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGeomRot->GAlign.left = true;
-	SXLevelEditor::StaticGeomRot->GAlign.top = true;
-	SXLevelEditor::StaticGeomRot->Visible(false);
+	level_editor::pStaticGeomRot = SXGUICrStatic("Rotation:", 470, 35, 50, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGeomRot->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGeomRot->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGeomRot->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGeomRot->setTransparentTextBk(true);
+	level_editor::pStaticGeomRot->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGeomRot->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGeomRot->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGeomRot->setVisible(false);
 
-	SXLevelEditor::EditGeomRotX = SXGUICrEdit("0", 525, 15, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGeomRotX->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGeomRotX->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGeomRotX->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGeomRotX->SetTransparentTextBk(true);
-	SXLevelEditor::EditGeomRotX->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGeomRotX->GAlign.left = true;
-	SXLevelEditor::EditGeomRotX->GAlign.top = true;
-	SXLevelEditor::EditGeomRotX->Visible(false);
-	SXLevelEditor::EditGeomRotX->AddHandler(SXLevelEditor_EditTransformRot_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditGeomRotX->AddHandler(SXLevelEditor_EditTransformRot_Enter, WM_KILLFOCUS);
+	level_editor::pEditGeomRotX = SXGUICrEdit("0", 525, 15, 70, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGeomRotX->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGeomRotX->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGeomRotX->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGeomRotX->setTransparentTextBk(true);
+	level_editor::pEditGeomRotX->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGeomRotX->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGeomRotX->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGeomRotX->setVisible(false);
+	level_editor::pEditGeomRotX->addHandler(SXLevelEditor_EditTransformRot_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditGeomRotX->addHandler(SXLevelEditor_EditTransformRot_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::EditGeomRotY = SXGUICrEdit("0", 525, 35, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGeomRotY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGeomRotY->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGeomRotY->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGeomRotY->SetTransparentTextBk(true);
-	SXLevelEditor::EditGeomRotY->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGeomRotY->GAlign.left = true;
-	SXLevelEditor::EditGeomRotY->GAlign.top = true;
-	SXLevelEditor::EditGeomRotY->Visible(false);
-	SXLevelEditor::EditGeomRotY->AddHandler(SXLevelEditor_EditTransformRot_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditGeomRotY->AddHandler(SXLevelEditor_EditTransformRot_Enter, WM_KILLFOCUS);
+	level_editor::pEditGeomRotY = SXGUICrEdit("0", 525, 35, 70, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGeomRotY->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGeomRotY->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGeomRotY->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGeomRotY->setTransparentTextBk(true);
+	level_editor::pEditGeomRotY->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGeomRotY->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGeomRotY->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGeomRotY->setVisible(false);
+	level_editor::pEditGeomRotY->addHandler(SXLevelEditor_EditTransformRot_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditGeomRotY->addHandler(SXLevelEditor_EditTransformRot_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::EditGeomRotZ = SXGUICrEdit("0", 525, 55, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGeomRotZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGeomRotZ->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGeomRotZ->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGeomRotZ->SetTransparentTextBk(true);
-	SXLevelEditor::EditGeomRotZ->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGeomRotZ->GAlign.left = true;
-	SXLevelEditor::EditGeomRotZ->GAlign.top = true;
-	SXLevelEditor::EditGeomRotZ->Visible(false);
-	SXLevelEditor::EditGeomRotZ->AddHandler(SXLevelEditor_EditTransformRot_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditGeomRotZ->AddHandler(SXLevelEditor_EditTransformRot_Enter, WM_KILLFOCUS);
+	level_editor::pEditGeomRotZ = SXGUICrEdit("0", 525, 55, 70, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGeomRotZ->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGeomRotZ->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGeomRotZ->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGeomRotZ->setTransparentTextBk(true);
+	level_editor::pEditGeomRotZ->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGeomRotZ->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGeomRotZ->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGeomRotZ->setVisible(false);
+	level_editor::pEditGeomRotZ->addHandler(SXLevelEditor_EditTransformRot_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditGeomRotZ->addHandler(SXLevelEditor_EditTransformRot_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::RadioButtonGeomRotX = SXGUICrRadioButton("x", 595, 15, 25, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonGeomRotX->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonGeomRotX->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonGeomRotX->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonGeomRotX->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonGeomRotX->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonGeomRotX->GAlign.left = true;
-	SXLevelEditor::RadioButtonGeomRotX->GAlign.top = true;
-	SXLevelEditor::RadioButtonGeomRotX->Visible(false);
+	level_editor::pRadioButtonGeomRotX = SXGUICrRadioButton("x", 595, 15, 25, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonGeomRotX->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonGeomRotX->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonGeomRotX->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonGeomRotX->setTransparentTextBk(true);
+	level_editor::pRadioButtonGeomRotX->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonGeomRotX->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonGeomRotX->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonGeomRotX->setVisible(false);
 
-	SXLevelEditor::RadioButtonGeomRotY = SXGUICrRadioButton("y", 595, 35, 25, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonGeomRotY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonGeomRotY->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonGeomRotY->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonGeomRotY->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonGeomRotY->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonGeomRotY->GAlign.left = true;
-	SXLevelEditor::RadioButtonGeomRotY->GAlign.top = true;
-	SXLevelEditor::RadioButtonGeomRotY->Visible(false);
+	level_editor::pRadioButtonGeomRotY = SXGUICrRadioButton("y", 595, 35, 25, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonGeomRotY->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonGeomRotY->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonGeomRotY->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonGeomRotY->setTransparentTextBk(true);
+	level_editor::pRadioButtonGeomRotY->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonGeomRotY->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonGeomRotY->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonGeomRotY->setVisible(false);
 
-	SXLevelEditor::RadioButtonGeomRotZ = SXGUICrRadioButton("z", 595, 55, 25, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonGeomRotZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonGeomRotZ->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonGeomRotZ->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonGeomRotZ->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonGeomRotZ->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonGeomRotZ->GAlign.left = true;
-	SXLevelEditor::RadioButtonGeomRotZ->GAlign.top = true;
-	SXLevelEditor::RadioButtonGeomRotZ->Visible(false);
+	level_editor::pRadioButtonGeomRotZ = SXGUICrRadioButton("z", 595, 55, 25, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonGeomRotZ->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonGeomRotZ->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonGeomRotZ->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonGeomRotZ->setTransparentTextBk(true);
+	level_editor::pRadioButtonGeomRotZ->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonGeomRotZ->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonGeomRotZ->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonGeomRotZ->setVisible(false);
 
-	SXLevelEditor::StaticGeomScale = SXGUICrStatic("Scale:", 625, 35, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGeomScale->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGeomScale->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGeomScale->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGeomScale->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGeomScale->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGeomScale->GAlign.left = true;
-	SXLevelEditor::StaticGeomScale->GAlign.top = true;
-	SXLevelEditor::StaticGeomScale->Visible(false);
+	level_editor::pStaticGeomScale = SXGUICrStatic("Scale:", 625, 35, 50, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGeomScale->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGeomScale->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGeomScale->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGeomScale->setTransparentTextBk(true);
+	level_editor::pStaticGeomScale->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGeomScale->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGeomScale->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGeomScale->setVisible(false);
 
-	SXLevelEditor::EditGeomScaleX = SXGUICrEdit("0", 675, 15, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGeomScaleX->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGeomScaleX->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGeomScaleX->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGeomScaleX->SetTransparentTextBk(true);
-	SXLevelEditor::EditGeomScaleX->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGeomScaleX->GAlign.left = true;
-	SXLevelEditor::EditGeomScaleX->GAlign.top = true;
-	SXLevelEditor::EditGeomScaleX->Visible(false);
-	SXLevelEditor::EditGeomScaleX->AddHandler(SXLevelEditor_EditTransformScale_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditGeomScaleX->AddHandler(SXLevelEditor_EditTransformScale_Enter, WM_KILLFOCUS);
+	level_editor::pEditGeomScaleX = SXGUICrEdit("0", 675, 15, 70, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGeomScaleX->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGeomScaleX->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGeomScaleX->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGeomScaleX->setTransparentTextBk(true);
+	level_editor::pEditGeomScaleX->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGeomScaleX->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGeomScaleX->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGeomScaleX->setVisible(false);
+	level_editor::pEditGeomScaleX->addHandler(SXLevelEditor_EditTransformScale_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditGeomScaleX->addHandler(SXLevelEditor_EditTransformScale_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::EditGeomScaleY = SXGUICrEdit("0", 675, 35, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGeomScaleY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGeomScaleY->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGeomScaleY->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGeomScaleY->SetTransparentTextBk(true);
-	SXLevelEditor::EditGeomScaleY->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGeomScaleY->GAlign.left = true;
-	SXLevelEditor::EditGeomScaleY->GAlign.top = true;
-	SXLevelEditor::EditGeomScaleY->Visible(false);
-	SXLevelEditor::EditGeomScaleY->AddHandler(SXLevelEditor_EditTransformScale_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditGeomScaleY->AddHandler(SXLevelEditor_EditTransformScale_Enter, WM_KILLFOCUS);
+	level_editor::pEditGeomScaleY = SXGUICrEdit("0", 675, 35, 70, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGeomScaleY->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGeomScaleY->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGeomScaleY->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGeomScaleY->setTransparentTextBk(true);
+	level_editor::pEditGeomScaleY->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGeomScaleY->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGeomScaleY->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGeomScaleY->setVisible(false);
+	level_editor::pEditGeomScaleY->addHandler(SXLevelEditor_EditTransformScale_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditGeomScaleY->addHandler(SXLevelEditor_EditTransformScale_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::EditGeomScaleZ = SXGUICrEdit("0", 675, 55, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGeomScaleZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGeomScaleZ->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGeomScaleZ->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGeomScaleZ->SetTransparentTextBk(true);
-	SXLevelEditor::EditGeomScaleZ->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGeomScaleZ->GAlign.left = true;
-	SXLevelEditor::EditGeomScaleZ->GAlign.top = true;
-	SXLevelEditor::EditGeomScaleZ->Visible(false);
-	SXLevelEditor::EditGeomScaleZ->AddHandler(SXLevelEditor_EditTransformScale_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditGeomScaleZ->AddHandler(SXLevelEditor_EditTransformScale_Enter, WM_KILLFOCUS);
+	level_editor::pEditGeomScaleZ = SXGUICrEdit("0", 675, 55, 70, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGeomScaleZ->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGeomScaleZ->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGeomScaleZ->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGeomScaleZ->setTransparentTextBk(true);
+	level_editor::pEditGeomScaleZ->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGeomScaleZ->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGeomScaleZ->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGeomScaleZ->setVisible(false);
+	level_editor::pEditGeomScaleZ->addHandler(SXLevelEditor_EditTransformScale_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditGeomScaleZ->addHandler(SXLevelEditor_EditTransformScale_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::RadioButtonGeomScaleX = SXGUICrRadioButton("x", 745, 15, 25, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonGeomScaleX->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonGeomScaleX->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonGeomScaleX->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonGeomScaleX->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonGeomScaleX->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonGeomScaleX->GAlign.left = true;
-	SXLevelEditor::RadioButtonGeomScaleX->GAlign.top = true;
-	SXLevelEditor::RadioButtonGeomScaleX->Visible(false);
+	level_editor::pRadioButtonGeomScaleX = SXGUICrRadioButton("x", 745, 15, 25, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonGeomScaleX->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonGeomScaleX->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonGeomScaleX->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonGeomScaleX->setTransparentTextBk(true);
+	level_editor::pRadioButtonGeomScaleX->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonGeomScaleX->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonGeomScaleX->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonGeomScaleX->setVisible(false);
 
-	SXLevelEditor::RadioButtonGeomScaleY = SXGUICrRadioButton("y", 745, 35, 25, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonGeomScaleY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonGeomScaleY->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonGeomScaleY->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonGeomScaleY->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonGeomScaleY->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonGeomScaleY->GAlign.left = true;
-	SXLevelEditor::RadioButtonGeomScaleY->GAlign.top = true;
-	SXLevelEditor::RadioButtonGeomScaleY->Visible(false);
+	level_editor::pRadioButtonGeomScaleY = SXGUICrRadioButton("y", 745, 35, 25, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonGeomScaleY->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonGeomScaleY->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonGeomScaleY->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonGeomScaleY->setTransparentTextBk(true);
+	level_editor::pRadioButtonGeomScaleY->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonGeomScaleY->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonGeomScaleY->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonGeomScaleY->setVisible(false);
 
-	SXLevelEditor::RadioButtonGeomScaleZ = SXGUICrRadioButton("z", 745, 55, 25, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonGeomScaleZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonGeomScaleZ->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonGeomScaleZ->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonGeomScaleZ->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonGeomScaleZ->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonGeomScaleZ->GAlign.left = true;
-	SXLevelEditor::RadioButtonGeomScaleZ->GAlign.top = true;
-	SXLevelEditor::RadioButtonGeomScaleZ->Visible(false);
+	level_editor::pRadioButtonGeomScaleZ = SXGUICrRadioButton("z", 745, 55, 25, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonGeomScaleZ->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonGeomScaleZ->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonGeomScaleZ->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonGeomScaleZ->setTransparentTextBk(true);
+	level_editor::pRadioButtonGeomScaleZ->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonGeomScaleZ->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonGeomScaleZ->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonGeomScaleZ->setVisible(false);
 
-	SXLevelEditor::ButtonGeomFinish = SXGUICrButton("Finish", 100, 95, 100, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGeomFinish->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGeomFinish->GAlign.left = true;
-	SXLevelEditor::ButtonGeomFinish->GAlign.top = true;
-	SXLevelEditor::ButtonGeomFinish->Visible(false);
-	SXLevelEditor::ButtonGeomFinish->AddHandler(SXLevelEditor_ButtonGeomFinish_Click, WM_LBUTTONUP);
+	level_editor::pButtonGeomFinish = SXGUICrButton("Finish", 100, 135, 100, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGeomFinish->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGeomFinish->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGeomFinish->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGeomFinish->setVisible(false);
+	level_editor::pButtonGeomFinish->addHandler(SXLevelEditor_ButtonGeomFinish_Click, WM_LBUTTONUP);
 	//}
 
 
 	//Green
 	//{
 
-	SXLevelEditor::StaticGreenName = SXGUICrStatic("Name", 5, 20, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGreenName->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGreenName->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGreenName->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGreenName->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGreenName->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGreenName->GAlign.left = true;
-	SXLevelEditor::StaticGreenName->GAlign.top = true;
-	SXLevelEditor::StaticGreenName->Visible(false);
+	level_editor::pStaticGreenName = SXGUICrStatic("Name", 5, 20, 70, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGreenName->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGreenName->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGreenName->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGreenName->setTransparentTextBk(true);
+	level_editor::pStaticGreenName->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGreenName->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGreenName->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGreenName->setVisible(false);
 
-	SXLevelEditor::EditGreenName = SXGUICrEdit("0", 80, 20, 200, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGreenName->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGreenName->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGreenName->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGreenName->SetTransparentTextBk(true);
-	SXLevelEditor::EditGreenName->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGreenName->GAlign.left = true;
-	SXLevelEditor::EditGreenName->GAlign.top = true;
-	SXLevelEditor::EditGreenName->Visible(false);
-	SXLevelEditor::EditGreenName->AddHandler(SXLevelEditor_EditGreenName_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditGreenName->AddHandler(SXLevelEditor_EditGreenName_Enter, WM_KILLFOCUS);
+	level_editor::pEditGreenName = SXGUICrEdit("0", 80, 20, 200, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGreenName->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGreenName->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGreenName->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGreenName->setTransparentTextBk(true);
+	level_editor::pEditGreenName->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGreenName->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGreenName->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGreenName->setVisible(false);
+	level_editor::pEditGreenName->addHandler(SXLevelEditor_EditGreenName_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditGreenName->addHandler(SXLevelEditor_EditGreenName_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::StaticGreenModel = SXGUICrStatic("Model", 5, 40, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGreenModel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGreenModel->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGreenModel->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGreenModel->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGreenModel->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGreenModel->GAlign.left = true;
-	SXLevelEditor::StaticGreenModel->GAlign.top = true;
-	SXLevelEditor::StaticGreenModel->Visible(false);
+	level_editor::pStaticGreenModel = SXGUICrStatic("Model", 5, 40, 70, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGreenModel->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGreenModel->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGreenModel->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGreenModel->setTransparentTextBk(true);
+	level_editor::pStaticGreenModel->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGreenModel->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGreenModel->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGreenModel->setVisible(false);
 
-	SXLevelEditor::EditGreenModel = SXGUICrEdit("0", 80, 40, 200, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGreenModel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGreenModel->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGreenModel->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGreenModel->SetTransparentTextBk(true);
-	SXLevelEditor::EditGreenModel->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGreenModel->GAlign.left = true;
-	SXLevelEditor::EditGreenModel->GAlign.top = true;
-	SXLevelEditor::EditGreenModel->Visible(false);
+	level_editor::pEditGreenModel = SXGUICrEdit("0", 80, 40, 200, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGreenModel->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGreenModel->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGreenModel->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGreenModel->setTransparentTextBk(true);
+	level_editor::pEditGreenModel->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGreenModel->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGreenModel->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGreenModel->setVisible(false);
 
-	SXLevelEditor::ButtonGreenModel = SXGUICrButton("...", 285, 40, 25, 15, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGreenModel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGreenModel->GAlign.left = true;
-	SXLevelEditor::ButtonGreenModel->GAlign.top = true;
-	SXLevelEditor::ButtonGreenModel->Visible(false);
-	SXLevelEditor::ButtonGreenModel->AddHandler(SXLevelEditor_ButtonGreenModel_Click, WM_LBUTTONUP);
+	level_editor::pButtonGreenModel = SXGUICrButton("...", 285, 40, 25, 15, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGreenModel->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGreenModel->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGreenModel->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGreenModel->setVisible(false);
+	level_editor::pButtonGreenModel->addHandler(SXLevelEditor_ButtonGreenModel_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::StaticGreenLod1 = SXGUICrStatic("Lod1", 5, 60, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGreenLod1->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGreenLod1->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGreenLod1->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGreenLod1->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGreenLod1->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGreenLod1->GAlign.left = true;
-	SXLevelEditor::StaticGreenLod1->GAlign.top = true;
-	SXLevelEditor::StaticGreenLod1->Visible(false);
+	level_editor::pStaticGreenLod1 = SXGUICrStatic("Lod1", 5, 60, 70, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGreenLod1->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGreenLod1->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGreenLod1->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGreenLod1->setTransparentTextBk(true);
+	level_editor::pStaticGreenLod1->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGreenLod1->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGreenLod1->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGreenLod1->setVisible(false);
 
-	SXLevelEditor::EditGreenLod1 = SXGUICrEdit("0", 80, 60, 200, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGreenLod1->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGreenLod1->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGreenLod1->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGreenLod1->SetTransparentTextBk(true);
-	SXLevelEditor::EditGreenLod1->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGreenLod1->GAlign.left = true;
-	SXLevelEditor::EditGreenLod1->GAlign.top = true;
-	SXLevelEditor::EditGreenLod1->Visible(false);
+	level_editor::pEditGreenLod1 = SXGUICrEdit("0", 80, 60, 200, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGreenLod1->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGreenLod1->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGreenLod1->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGreenLod1->setTransparentTextBk(true);
+	level_editor::pEditGreenLod1->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGreenLod1->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGreenLod1->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGreenLod1->setVisible(false);
 
-	SXLevelEditor::ButtonGreenLod1 = SXGUICrButton("...", 285, 60, 25, 15, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGreenLod1->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGreenLod1->GAlign.left = true;
-	SXLevelEditor::ButtonGreenLod1->GAlign.top = true;
-	SXLevelEditor::ButtonGreenLod1->Visible(false);
-	SXLevelEditor::ButtonGreenLod1->AddHandler(SXLevelEditor_ButtonGreenLod1_Click, WM_LBUTTONUP);
+	level_editor::pButtonGreenLod1 = SXGUICrButton("...", 285, 60, 25, 15, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGreenLod1->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGreenLod1->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGreenLod1->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGreenLod1->setVisible(false);
+	level_editor::pButtonGreenLod1->addHandler(SXLevelEditor_ButtonGreenLod1_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::StaticGreenLod2 = SXGUICrStatic("Lod2", 5, 80, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGreenLod2->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGreenLod2->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGreenLod2->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGreenLod2->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGreenLod2->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGreenLod2->GAlign.left = true;
-	SXLevelEditor::StaticGreenLod2->GAlign.top = true;
-	SXLevelEditor::StaticGreenLod2->Visible(false);
+	level_editor::pStaticGreenLod2 = SXGUICrStatic("Lod2", 5, 80, 70, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGreenLod2->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGreenLod2->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGreenLod2->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGreenLod2->setTransparentTextBk(true);
+	level_editor::pStaticGreenLod2->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGreenLod2->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGreenLod2->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGreenLod2->setVisible(false);
 
-	SXLevelEditor::EditGreenLod2 = SXGUICrEdit("0", 80, 80, 200, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGreenLod2->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGreenLod2->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGreenLod2->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGreenLod2->SetTransparentTextBk(true);
-	SXLevelEditor::EditGreenLod2->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGreenLod2->GAlign.left = true;
-	SXLevelEditor::EditGreenLod2->GAlign.top = true;
-	SXLevelEditor::EditGreenLod2->Visible(false);
+	level_editor::pEditGreenLod2 = SXGUICrEdit("0", 80, 80, 200, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGreenLod2->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGreenLod2->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGreenLod2->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGreenLod2->setTransparentTextBk(true);
+	level_editor::pEditGreenLod2->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGreenLod2->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGreenLod2->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGreenLod2->setVisible(false);
 
-	SXLevelEditor::ButtonGreenLod2 = SXGUICrButton("...", 285, 80, 25, 15, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGreenLod2->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGreenLod2->GAlign.left = true;
-	SXLevelEditor::ButtonGreenLod2->GAlign.top = true;
-	SXLevelEditor::ButtonGreenLod2->Visible(false);
-	SXLevelEditor::ButtonGreenLod2->AddHandler(SXLevelEditor_ButtonGreenLod2_Click, WM_LBUTTONUP);
+	level_editor::pButtonGreenLod2 = SXGUICrButton("...", 285, 80, 25, 15, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGreenLod2->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGreenLod2->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGreenLod2->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGreenLod2->setVisible(false);
+	level_editor::pButtonGreenLod2->addHandler(SXLevelEditor_ButtonGreenLod2_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::ButtonGreenMask = SXGUICrButton("...", 285, 100, 25, 15, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGreenMask->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGreenMask->GAlign.left = true;
-	SXLevelEditor::ButtonGreenMask->GAlign.top = true;
-	SXLevelEditor::ButtonGreenMask->Visible(false);
-	SXLevelEditor::ButtonGreenMask->AddHandler(SXLevelEditor_ButtonGreenMask_Click, WM_LBUTTONUP);
+	level_editor::pButtonGreenMask = SXGUICrButton("...", 285, 100, 25, 15, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGreenMask->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGreenMask->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGreenMask->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGreenMask->setVisible(false);
+	level_editor::pButtonGreenMask->addHandler(SXLevelEditor_ButtonGreenMask_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::StaticGreenMask = SXGUICrStatic("Mask texture", 5, 100, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGreenMask->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGreenMask->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGreenMask->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGreenMask->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGreenMask->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGreenMask->GAlign.left = true;
-	SXLevelEditor::StaticGreenMask->GAlign.top = true;
-	SXLevelEditor::StaticGreenMask->Visible(false);
+	level_editor::pCheckBoxGreenAveragedRGB = SXGUICrCheckBox("Use averaged RGB (default use alpha-channel)", 5, 120, 250, 20, level_editor::pGroupBoxData->getHWND(), 0, 0, false);
+	level_editor::pCheckBoxGreenAveragedRGB->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxGreenAveragedRGB->setColorText(RGB(0, 0, 0));
+	level_editor::pCheckBoxGreenAveragedRGB->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pCheckBoxGreenAveragedRGB->setTransparentTextBk(true);
+	level_editor::pCheckBoxGreenAveragedRGB->setColorBrush(RGB(220, 220, 220));
+	level_editor::pCheckBoxGreenAveragedRGB->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pCheckBoxGreenAveragedRGB->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pCheckBoxGreenAveragedRGB->setVisible(false);
 
-	SXLevelEditor::EditGreenMask = SXGUICrEdit("0", 80, 100, 200, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGreenMask->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGreenMask->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGreenMask->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGreenMask->SetTransparentTextBk(true);
-	SXLevelEditor::EditGreenMask->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGreenMask->GAlign.left = true;
-	SXLevelEditor::EditGreenMask->GAlign.top = true;
-	SXLevelEditor::EditGreenMask->Visible(false);
+	level_editor::pStaticGreenMask = SXGUICrStatic("Mask texture", 5, 100, 70, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGreenMask->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGreenMask->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGreenMask->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGreenMask->setTransparentTextBk(true);
+	level_editor::pStaticGreenMask->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGreenMask->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGreenMask->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGreenMask->setVisible(false);
 
-	SXLevelEditor::StaticGreenNav = SXGUICrStatic("NavMesh:", 330, 20, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGreenNav->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGreenNav->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGreenNav->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGreenNav->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGreenNav->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGreenNav->GAlign.left = true;
-	SXLevelEditor::StaticGreenNav->GAlign.top = true;
-	SXLevelEditor::StaticGreenNav->Visible(false);
+	level_editor::pEditGreenMask = SXGUICrEdit("0", 80, 100, 200, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGreenMask->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGreenMask->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGreenMask->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGreenMask->setTransparentTextBk(true);
+	level_editor::pEditGreenMask->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGreenMask->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGreenMask->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGreenMask->setVisible(false);
 
-	SXLevelEditor::EditGreenNav = SXGUICrEdit("", 380, 20, 200, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGreenNav->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGreenNav->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGreenNav->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGreenNav->SetTransparentTextBk(true);
-	SXLevelEditor::EditGreenNav->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGreenNav->GAlign.left = true;
-	SXLevelEditor::EditGreenNav->GAlign.top = true;
-	SXLevelEditor::EditGreenNav->Visible(false);
+	level_editor::pStaticGreenNav = SXGUICrStatic("NavMesh:", 330, 20, 50, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGreenNav->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGreenNav->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGreenNav->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGreenNav->setTransparentTextBk(true);
+	level_editor::pStaticGreenNav->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGreenNav->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGreenNav->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGreenNav->setVisible(false);
 
-	SXLevelEditor::ButtonGreenNav = SXGUICrButton("...", 585, 20, 25, 15, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGreenNav->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGreenNav->GAlign.left = true;
-	SXLevelEditor::ButtonGreenNav->GAlign.top = true;
-	SXLevelEditor::ButtonGreenNav->Visible(false);
-	SXLevelEditor::ButtonGreenNav->AddHandler(SXLevelEditor_ButtonGreenNav_Click, WM_LBUTTONUP);
+	level_editor::pEditGreenNav = SXGUICrEdit("", 380, 20, 200, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGreenNav->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGreenNav->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGreenNav->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGreenNav->setTransparentTextBk(true);
+	level_editor::pEditGreenNav->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGreenNav->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGreenNav->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGreenNav->setVisible(false);
 
-	SXLevelEditor::TrackBarGreenDensity = SXGUICrTrackBar("", 330, 65, 280, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::TrackBarGreenDensity->SetMinMax(1, 100);
-	SXLevelEditor::TrackBarGreenDensity->SetTickFrequency(10);
-	SXLevelEditor::TrackBarGreenDensity->AddHandler(SXLevelEditor_TrackBarGreenDensity_MouseMove, WM_MOUSEMOVE);
-	SXLevelEditor::TrackBarGreenDensity->GAlign.left = true;
-	SXLevelEditor::TrackBarGreenDensity->GAlign.top = true;
-	SXLevelEditor::TrackBarGreenDensity->Visible(false);
+	level_editor::pButtonGreenNav = SXGUICrButton("...", 585, 20, 25, 15, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGreenNav->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGreenNav->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGreenNav->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGreenNav->setVisible(false);
+	level_editor::pButtonGreenNav->addHandler(SXLevelEditor_ButtonGreenNav_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::ButtonGreenGenerate = SXGUICrButton("Generate", 420, 87, 100, 30, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGreenGenerate->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGreenGenerate->GAlign.left = true;
-	SXLevelEditor::ButtonGreenGenerate->GAlign.top = true;
-	SXLevelEditor::ButtonGreenGenerate->Visible(false);
-	SXLevelEditor::ButtonGreenGenerate->AddHandler(SXLevelEditor_ButtonGreenGenerate_Click, WM_LBUTTONUP);
+	level_editor::pTrackBarGreenDensity = SXGUICrTrackBar("", 330, 65, 280, 20, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pTrackBarGreenDensity->setMinMax(1, 100);
+	level_editor::pTrackBarGreenDensity->setTickFrequency(10);
+	level_editor::pTrackBarGreenDensity->addHandler(SXLevelEditor_TrackBarGreenDensity_MouseMove, WM_MOUSEMOVE);
+	level_editor::pTrackBarGreenDensity->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pTrackBarGreenDensity->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pTrackBarGreenDensity->setVisible(false);
 
-	SXLevelEditor::StaticGreenDensityText = SXGUICrStatic("Density:", 380, 45, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGreenDensityText->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGreenDensityText->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGreenDensityText->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGreenDensityText->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGreenDensityText->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGreenDensityText->GAlign.left = true;
-	SXLevelEditor::StaticGreenDensityText->GAlign.top = true;
-	SXLevelEditor::StaticGreenDensityText->Visible(false);
+	level_editor::pButtonGreenGenerate = SXGUICrButton("Generate", 420, 87, 100, 30, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGreenGenerate->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGreenGenerate->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGreenGenerate->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGreenGenerate->setVisible(false);
+	level_editor::pButtonGreenGenerate->addHandler(SXLevelEditor_ButtonGreenGenerate_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::StaticGreenDensityVal = SXGUICrStatic("0", 430, 45, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGreenDensityVal->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGreenDensityVal->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGreenDensityVal->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGreenDensityVal->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGreenDensityVal->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGreenDensityVal->GAlign.left = true;
-	SXLevelEditor::StaticGreenDensityVal->GAlign.top = true;
-	SXLevelEditor::StaticGreenDensityVal->Visible(false);
+	level_editor::pStaticGreenDensityText = SXGUICrStatic("Density:", 380, 45, 50, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGreenDensityText->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGreenDensityText->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGreenDensityText->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGreenDensityText->setTransparentTextBk(true);
+	level_editor::pStaticGreenDensityText->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGreenDensityText->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGreenDensityText->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGreenDensityText->setVisible(false);
 
-	SXLevelEditor::RadioButtonGreenSelX = SXGUICrRadioButton("x", 765, 40, 25, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonGreenSelX->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonGreenSelX->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonGreenSelX->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonGreenSelX->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonGreenSelX->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonGreenSelX->GAlign.left = true;
-	SXLevelEditor::RadioButtonGreenSelX->GAlign.top = true;
-	SXLevelEditor::RadioButtonGreenSelX->Visible(false);
+	level_editor::pStaticGreenDensityVal = SXGUICrStatic("0", 430, 45, 50, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGreenDensityVal->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGreenDensityVal->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGreenDensityVal->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGreenDensityVal->setTransparentTextBk(true);
+	level_editor::pStaticGreenDensityVal->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGreenDensityVal->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGreenDensityVal->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGreenDensityVal->setVisible(false);
 
-	SXLevelEditor::RadioButtonGreenSelY = SXGUICrRadioButton("y", 765, 60, 25, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonGreenSelY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonGreenSelY->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonGreenSelY->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonGreenSelY->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonGreenSelY->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonGreenSelY->GAlign.left = true;
-	SXLevelEditor::RadioButtonGreenSelY->GAlign.top = true;
-	SXLevelEditor::RadioButtonGreenSelY->Visible(false);
+	level_editor::pRadioButtonGreenSelX = SXGUICrRadioButton("x", 765, 40, 25, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonGreenSelX->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonGreenSelX->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonGreenSelX->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonGreenSelX->setTransparentTextBk(true);
+	level_editor::pRadioButtonGreenSelX->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonGreenSelX->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonGreenSelX->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonGreenSelX->setVisible(false);
 
-	SXLevelEditor::RadioButtonGreenSelZ = SXGUICrRadioButton("z", 765, 80, 25, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonGreenSelZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonGreenSelZ->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonGreenSelZ->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonGreenSelZ->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonGreenSelZ->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonGreenSelZ->GAlign.left = true;
-	SXLevelEditor::RadioButtonGreenSelZ->GAlign.top = true;
-	SXLevelEditor::RadioButtonGreenSelZ->Visible(false);
+	level_editor::pRadioButtonGreenSelY = SXGUICrRadioButton("y", 765, 60, 25, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonGreenSelY->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonGreenSelY->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonGreenSelY->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonGreenSelY->setTransparentTextBk(true);
+	level_editor::pRadioButtonGreenSelY->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonGreenSelY->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonGreenSelY->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonGreenSelY->setVisible(false);
+
+	level_editor::pRadioButtonGreenSelZ = SXGUICrRadioButton("z", 765, 80, 25, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonGreenSelZ->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonGreenSelZ->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonGreenSelZ->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonGreenSelZ->setTransparentTextBk(true);
+	level_editor::pRadioButtonGreenSelZ->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonGreenSelZ->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonGreenSelZ->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonGreenSelZ->setVisible(false);
 	
-	SXLevelEditor::ComboBoxGreenSel = SXGUICrComboBox("", 620, 20, 150, 100, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ComboBoxGreenSel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ComboBoxGreenSel->SetColorText(0, 0, 0);
-	SXLevelEditor::ComboBoxGreenSel->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::ComboBoxGreenSel->SetTransparentTextBk(true);
-	SXLevelEditor::ComboBoxGreenSel->SetColorBrush(220, 220, 220);
-	SXLevelEditor::ComboBoxGreenSel->AddItem("single select");
-	SXLevelEditor::ComboBoxGreenSel->AddItem("single create");
-	SXLevelEditor::ComboBoxGreenSel->AddItem("multiple create");
-	SXLevelEditor::ComboBoxGreenSel->AddItem("single delete");
-	//SXLevelEditor::ComboBoxGreenSel->AddItem("multiple delete");
-	SXLevelEditor::ComboBoxGreenSel->SetSel(0);
-	SXLevelEditor::ComboBoxGreenSel->GAlign.left = true;
-	SXLevelEditor::ComboBoxGreenSel->GAlign.top = true;
-	SXLevelEditor::ComboBoxGreenSel->Visible(false);
+	level_editor::pComboBoxGreenSel = SXGUICrComboBox(620, 20, 150, 100, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pComboBoxGreenSel->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pComboBoxGreenSel->setColorText(RGB(0, 0, 0));
+	level_editor::pComboBoxGreenSel->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pComboBoxGreenSel->setTransparentTextBk(true);
+	level_editor::pComboBoxGreenSel->setColorBrush(RGB(220, 220, 220));
+	level_editor::pComboBoxGreenSel->addItem("single select");
+	level_editor::pComboBoxGreenSel->addItem("single create");
+	level_editor::pComboBoxGreenSel->addItem("multiple create");
+	level_editor::pComboBoxGreenSel->addItem("single delete");
+	//level_editor::pComboBoxGreenSel->AddItem("multiple delete");
+	level_editor::pComboBoxGreenSel->setSel(0);
+	level_editor::pComboBoxGreenSel->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pComboBoxGreenSel->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pComboBoxGreenSel->setVisible(false);
 	
-	SXLevelEditor::StaticGreenSelX = SXGUICrStatic("Width volume:", 620, 40, 75, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGreenSelX->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGreenSelX->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGreenSelX->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGreenSelX->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGreenSelX->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGreenSelX->GAlign.left = true;
-	SXLevelEditor::StaticGreenSelX->GAlign.top = true;
-	SXLevelEditor::StaticGreenSelX->Visible(false);
+	level_editor::pStaticGreenSelX = SXGUICrStatic("Width volume:", 620, 40, 75, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGreenSelX->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGreenSelX->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGreenSelX->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGreenSelX->setTransparentTextBk(true);
+	level_editor::pStaticGreenSelX->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGreenSelX->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGreenSelX->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGreenSelX->setVisible(false);
 
-	SXLevelEditor::StaticGreenSelY = SXGUICrStatic("Height volume:", 620, 60, 75, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGreenSelY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGreenSelY->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGreenSelY->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGreenSelY->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGreenSelY->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGreenSelY->GAlign.left = true;
-	SXLevelEditor::StaticGreenSelY->GAlign.top = true;
-	SXLevelEditor::StaticGreenSelY->Visible(false);
+	level_editor::pStaticGreenSelY = SXGUICrStatic("Height volume:", 620, 60, 75, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGreenSelY->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGreenSelY->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGreenSelY->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGreenSelY->setTransparentTextBk(true);
+	level_editor::pStaticGreenSelY->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGreenSelY->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGreenSelY->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGreenSelY->setVisible(false);
 
-	SXLevelEditor::StaticGreenSelZ = SXGUICrStatic("Depth volume:", 620, 80, 75, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGreenSelZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGreenSelZ->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGreenSelZ->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGreenSelZ->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGreenSelZ->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGreenSelZ->GAlign.left = true;
-	SXLevelEditor::StaticGreenSelZ->GAlign.top = true;
-	SXLevelEditor::StaticGreenSelZ->Visible(false);
+	level_editor::pStaticGreenSelZ = SXGUICrStatic("Depth volume:", 620, 80, 75, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGreenSelZ->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGreenSelZ->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGreenSelZ->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGreenSelZ->setTransparentTextBk(true);
+	level_editor::pStaticGreenSelZ->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGreenSelZ->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGreenSelZ->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGreenSelZ->setVisible(false);
 
-	SXLevelEditor::EditGreenSelX = SXGUICrEdit("0", 695, 40, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGreenSelX->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGreenSelX->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGreenSelX->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGreenSelX->SetTransparentTextBk(true);
-	SXLevelEditor::EditGreenSelX->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGreenSelX->GAlign.left = true;
-	SXLevelEditor::EditGreenSelX->GAlign.top = true;
-	SXLevelEditor::EditGreenSelX->Visible(false);
+	level_editor::pEditGreenSelX = SXGUICrEdit("0", 695, 40, 70, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGreenSelX->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGreenSelX->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGreenSelX->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGreenSelX->setTransparentTextBk(true);
+	level_editor::pEditGreenSelX->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGreenSelX->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGreenSelX->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGreenSelX->setVisible(false);
 
-	SXLevelEditor::EditGreenSelY = SXGUICrEdit("0", 695, 60, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGreenSelY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGreenSelY->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGreenSelY->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGreenSelY->SetTransparentTextBk(true);
-	SXLevelEditor::EditGreenSelY->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGreenSelY->GAlign.left = true;
-	SXLevelEditor::EditGreenSelY->GAlign.top = true;
-	SXLevelEditor::EditGreenSelY->Visible(false);
+	level_editor::pEditGreenSelY = SXGUICrEdit("0", 695, 60, 70, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGreenSelY->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGreenSelY->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGreenSelY->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGreenSelY->setTransparentTextBk(true);
+	level_editor::pEditGreenSelY->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGreenSelY->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGreenSelY->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGreenSelY->setVisible(false);
 
-	SXLevelEditor::EditGreenSelZ = SXGUICrEdit("0", 695, 80, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGreenSelZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGreenSelZ->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGreenSelZ->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGreenSelZ->SetTransparentTextBk(true);
-	SXLevelEditor::EditGreenSelZ->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGreenSelZ->GAlign.left = true;
-	SXLevelEditor::EditGreenSelZ->GAlign.top = true;
-	SXLevelEditor::EditGreenSelZ->Visible(false);
+	level_editor::pEditGreenSelZ = SXGUICrEdit("0", 695, 80, 70, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGreenSelZ->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGreenSelZ->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGreenSelZ->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGreenSelZ->setTransparentTextBk(true);
+	level_editor::pEditGreenSelZ->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGreenSelZ->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGreenSelZ->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGreenSelZ->setVisible(false);
 	//}
 
 	//Game
 	//{
-	SXLevelEditor::StaticGameClass = SXGUICrStatic("Class:", 415, 15, 35, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGameClass->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGameClass->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGameClass->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGameClass->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGameClass->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGameClass->GAlign.left = true;
-	SXLevelEditor::StaticGameClass->GAlign.top = true;
-	SXLevelEditor::StaticGameClass->Visible(false);
+	level_editor::pStaticGameClass = SXGUICrStatic("Class:", 415, 15, 35, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGameClass->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGameClass->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGameClass->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGameClass->setTransparentTextBk(true);
+	level_editor::pStaticGameClass->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGameClass->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGameClass->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGameClass->setVisible(false);
 
-	SXLevelEditor::ComboBoxGameClass = SXGUICrComboBoxEx("", 455, 15, 230, 180, 0, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ComboBoxGameClass->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ComboBoxGameClass->SetColorText(0, 0, 0);
-	SXLevelEditor::ComboBoxGameClass->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::ComboBoxGameClass->SetTransparentTextBk(true);
-	SXLevelEditor::ComboBoxGameClass->SetColorBrush(255, 255, 255);
-	SXLevelEditor::ComboBoxGameClass->GAlign.left = true;
-	SXLevelEditor::ComboBoxGameClass->GAlign.top = true;
-	SXLevelEditor::ComboBoxGameClass->Visible(false);
-	SXLevelEditor::ComboBoxGameClass->AddItem("");
+	level_editor::pComboBoxGameClass = SXGUICrComboBoxEx(455, 15, 230, 180, 0, WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pComboBoxGameClass->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pComboBoxGameClass->setColorText(RGB(0, 0, 0));
+	level_editor::pComboBoxGameClass->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pComboBoxGameClass->setTransparentTextBk(true);
+	level_editor::pComboBoxGameClass->setColorBrush(RGB(255, 255, 255));
+	level_editor::pComboBoxGameClass->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pComboBoxGameClass->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pComboBoxGameClass->setVisible(false);
+	level_editor::pComboBoxGameClass->addItem("");
 
-	SXLevelEditor::ButtonGameTab = SXGUICrButton("Connections", 695, 15, 100, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGameTab->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGameTab->GAlign.left = true;
-	SXLevelEditor::ButtonGameTab->GAlign.top = true;
-	SXLevelEditor::ButtonGameTab->Visible(false);
-	SXLevelEditor::ButtonGameTab->AddHandler(SXLevelEditor_ButtonGameTab_Click, WM_LBUTTONUP);
-	SXLevelEditor::GameTabVal = 0;
+	level_editor::pButtonGameTab = SXGUICrButton("Connections", 695, 15, 100, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGameTab->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGameTab->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGameTab->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGameTab->setVisible(false);
+	level_editor::pButtonGameTab->addHandler(SXLevelEditor_ButtonGameTab_Click, WM_LBUTTONUP);
+	level_editor::GameTabVal = 0;
 
-	SXLevelEditor::ListViewGameClass = SXGUICrListView("", 5, 5, 400, 180, SXLevelEditor::GroupBoxData->GetHWND(), WndProcAllDefault, 0);
-	SXLevelEditor::ListViewGameClass->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ListViewGameClass->SetColorText(0, 0, 0);
-	SXLevelEditor::ListViewGameClass->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::ListViewGameClass->SetTransparentTextBk(true);
-	SXLevelEditor::ListViewGameClass->SetColorBrush(255, 255, 255);
-	SXLevelEditor::ListViewGameClass->AddColumn("Property Name",199);
-	SXLevelEditor::ListViewGameClass->AddColumn("Value", 199);
-	SXLevelEditor::ListViewGameClass->GAlign.left = true;
-	SXLevelEditor::ListViewGameClass->GAlign.top = true;
-	SXLevelEditor::ListViewGameClass->Visible(false);
+	level_editor::pListViewGameClass = SXGUICrListView(5, 5, 400, 180, level_editor::pGroupBoxData->getHWND(), WndProcAllDefault, 0);
+	level_editor::pListViewGameClass->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pListViewGameClass->setColorText(RGB(0, 0, 0));
+	level_editor::pListViewGameClass->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pListViewGameClass->setTransparentTextBk(true);
+	level_editor::pListViewGameClass->setColorBrush(RGB(255, 255, 255));
+	level_editor::pListViewGameClass->addColumn("Property Name",199);
+	level_editor::pListViewGameClass->addColumn("Value", 199);
+	level_editor::pListViewGameClass->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pListViewGameClass->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pListViewGameClass->setVisible(false);
 
-	SXLevelEditor::ComboBoxGameValue = SXGUICrComboBox("", 415, 45, 270,180, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ComboBoxGameValue->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ComboBoxGameValue->SetColorText(0, 0, 0);
-	SXLevelEditor::ComboBoxGameValue->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::ComboBoxGameValue->SetTransparentTextBk(true);
-	SXLevelEditor::ComboBoxGameValue->SetColorBrush(255, 255, 255);
-	SXLevelEditor::ComboBoxGameValue->GAlign.left = true;
-	SXLevelEditor::ComboBoxGameValue->GAlign.top = true;
-	SXLevelEditor::ComboBoxGameValue->Visible(false);
+	level_editor::pComboBoxGameValue = SXGUICrComboBox(415, 45, 270, 180, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pComboBoxGameValue->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pComboBoxGameValue->setColorText(RGB(0, 0, 0));
+	level_editor::pComboBoxGameValue->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pComboBoxGameValue->setTransparentTextBk(true);
+	level_editor::pComboBoxGameValue->setColorBrush(RGB(255, 255, 255));
+	level_editor::pComboBoxGameValue->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pComboBoxGameValue->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pComboBoxGameValue->setVisible(false);
 
-	SXLevelEditor::EditGameValue = SXGUICrEdit("", 415, 45, 240, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGameValue->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGameValue->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGameValue->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGameValue->SetTransparentTextBk(true);
-	SXLevelEditor::EditGameValue->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGameValue->GAlign.left = true;
-	SXLevelEditor::EditGameValue->GAlign.top = true;
-	SXLevelEditor::EditGameValue->Visible(false);
-	SXLevelEditor::EditGameValue->AddHandler(SXLevelEditor_EditGameValue_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditGameValue->AddHandler(SXLevelEditor_EditGameValue_Enter, WM_KILLFOCUS);
+	level_editor::pEditGameValue = SXGUICrEdit("", 415, 45, 240, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGameValue->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGameValue->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGameValue->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGameValue->setTransparentTextBk(true);
+	level_editor::pEditGameValue->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGameValue->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGameValue->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGameValue->setVisible(false);
+	level_editor::pEditGameValue->addHandler(SXLevelEditor_EditGameValue_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditGameValue->addHandler(SXLevelEditor_EditGameValue_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::ButtonGameValue = SXGUICrButton("...", 660, 45, 25, 15, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGameValue->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGameValue->GAlign.left = true;
-	SXLevelEditor::ButtonGameValue->GAlign.top = true;
-	SXLevelEditor::ButtonGameValue->Visible(false);
-	SXLevelEditor::ButtonGameValue->AddHandler(SXLevelEditor_ButtonGameValue_Click, WM_LBUTTONUP);
+	level_editor::pButtonGameValue = SXGUICrButton("...", 660, 45, 25, 15, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGameValue->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGameValue->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGameValue->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGameValue->setVisible(false);
+	level_editor::pButtonGameValue->addHandler(SXLevelEditor_ButtonGameValue_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::StaticGameHelp = SXGUICrStatic("Help:", 415, 65, 35, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGameHelp->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGameHelp->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGameHelp->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGameHelp->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGameHelp->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGameHelp->GAlign.left = true;
-	SXLevelEditor::StaticGameHelp->GAlign.top = true;
-	SXLevelEditor::StaticGameHelp->Visible(false);
+	level_editor::pStaticGameHelp = SXGUICrStatic("Help:", 415, 65, 35, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGameHelp->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGameHelp->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGameHelp->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGameHelp->setTransparentTextBk(true);
+	level_editor::pStaticGameHelp->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGameHelp->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGameHelp->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGameHelp->setVisible(false);
 
-	SXLevelEditor::MemoGameHelp = SXGUICrMemo("Help", 415, 85, 270, 95, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::MemoGameHelp->ReadOnly(true);
-	SXLevelEditor::MemoGameHelp->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::MemoGameHelp->SetColorText(0, 0, 0);
-	SXLevelEditor::MemoGameHelp->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::MemoGameHelp->SetTransparentTextBk(true);
-	SXLevelEditor::MemoGameHelp->SetColorBrush(220, 220, 220);
-	SXLevelEditor::MemoGameHelp->GAlign.left = true;
-	SXLevelEditor::MemoGameHelp->GAlign.top = true;
-	SXLevelEditor::MemoGameHelp->Visible(false);
+	level_editor::pMemoGameHelp = SXGUICrMemo("Help", 415, 85, 270, 95, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pMemoGameHelp->setReadOnly(true);
+	level_editor::pMemoGameHelp->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pMemoGameHelp->setColorText(RGB(0, 0, 0));
+	level_editor::pMemoGameHelp->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pMemoGameHelp->setTransparentTextBk(true);
+	level_editor::pMemoGameHelp->setColorBrush(RGB(220, 220, 220));
+	level_editor::pMemoGameHelp->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pMemoGameHelp->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pMemoGameHelp->setVisible(false);
 
-	SXLevelEditor::ButtonGameCreate = SXGUICrButton("Create", 695, 165, 100, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGameCreate->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGameCreate->GAlign.left = true;
-	SXLevelEditor::ButtonGameCreate->GAlign.top = true;
-	SXLevelEditor::ButtonGameCreate->Visible(false);
-	SXLevelEditor::ButtonGameCreate->AddHandler(SXLevelEditor_ButtonGameCreate_Click, WM_LBUTTONUP);
+	level_editor::pButtonGameCreate = SXGUICrButton("Create", 695, 165, 100, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGameCreate->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGameCreate->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGameCreate->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGameCreate->setVisible(false);
+	level_editor::pButtonGameCreate->addHandler(SXLevelEditor_ButtonGameCreate_Click, WM_LBUTTONUP);
 
 	for (int i = 0; i < 8; ++i)
 	{
-		SXLevelEditor::CheckBoxGameFlags[i] = SXGUICrCheckBox("", 415, 45 + (15*i), 180, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0, false);
-		SXLevelEditor::CheckBoxGameFlags[i]->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-		SXLevelEditor::CheckBoxGameFlags[i]->SetColorText(0, 0, 0);
-		SXLevelEditor::CheckBoxGameFlags[i]->SetColorTextBk(255, 255, 255);
-		SXLevelEditor::CheckBoxGameFlags[i]->SetTransparentTextBk(true);
-		SXLevelEditor::CheckBoxGameFlags[i]->SetColorBrush(220, 220, 220);
-		SXLevelEditor::CheckBoxGameFlags[i]->GAlign.left = true;
-		SXLevelEditor::CheckBoxGameFlags[i]->GAlign.top = true;
-		SXLevelEditor::CheckBoxGameFlags[i]->Visible(false);
+		level_editor::pCheckBoxGameFlags[i] = SXGUICrCheckBox("", 415, 45 + (15*i), 180, 15, level_editor::pGroupBoxData->getHWND(), 0, 0, false);
+		level_editor::pCheckBoxGameFlags[i]->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+		level_editor::pCheckBoxGameFlags[i]->setColorText(RGB(0, 0, 0));
+		level_editor::pCheckBoxGameFlags[i]->setColorTextBk(RGB(255, 255, 255));
+		level_editor::pCheckBoxGameFlags[i]->setTransparentTextBk(true);
+		level_editor::pCheckBoxGameFlags[i]->setColorBrush(RGB(220, 220, 220));
+		level_editor::pCheckBoxGameFlags[i]->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+		level_editor::pCheckBoxGameFlags[i]->setFollowParentSide(SXGUI_SIDE_TOP, true);
+		level_editor::pCheckBoxGameFlags[i]->setVisible(false);
 	}
 
 	for (int i = 0; i < 8; ++i)
 	{
-		SXLevelEditor::CheckBoxGameFlags[i + 8] = SXGUICrCheckBox("", 600, 45 + (15 * i), 180, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0, false);
-		SXLevelEditor::CheckBoxGameFlags[i + 8]->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-		SXLevelEditor::CheckBoxGameFlags[i + 8]->SetColorText(0, 0, 0);
-		SXLevelEditor::CheckBoxGameFlags[i + 8]->SetColorTextBk(255, 255, 255);
-		SXLevelEditor::CheckBoxGameFlags[i + 8]->SetTransparentTextBk(true);
-		SXLevelEditor::CheckBoxGameFlags[i + 8]->SetColorBrush(220, 220, 220);
-		SXLevelEditor::CheckBoxGameFlags[i + 8]->GAlign.left = true;
-		SXLevelEditor::CheckBoxGameFlags[i + 8]->GAlign.top = true;
-		SXLevelEditor::CheckBoxGameFlags[i + 8]->Visible(false);
+		level_editor::pCheckBoxGameFlags[i + 8] = SXGUICrCheckBox("", 600, 45 + (15 * i), 180, 15, level_editor::pGroupBoxData->getHWND(), 0, 0, false);
+		level_editor::pCheckBoxGameFlags[i + 8]->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+		level_editor::pCheckBoxGameFlags[i + 8]->setColorText(RGB(0, 0, 0));
+		level_editor::pCheckBoxGameFlags[i + 8]->setColorTextBk(RGB(255, 255, 255));
+		level_editor::pCheckBoxGameFlags[i + 8]->setTransparentTextBk(true);
+		level_editor::pCheckBoxGameFlags[i + 8]->setColorBrush(RGB(220, 220, 220));
+		level_editor::pCheckBoxGameFlags[i + 8]->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+		level_editor::pCheckBoxGameFlags[i + 8]->setFollowParentSide(SXGUI_SIDE_TOP, true);
+		level_editor::pCheckBoxGameFlags[i + 8]->setVisible(false);
 	}
 
 
-	SXLevelEditor::ListViewGameConnections = SXGUICrListView("", 5, 5, 550, 180, SXLevelEditor::GroupBoxData->GetHWND(), WndProcAllDefault, 0);
-	SXLevelEditor::ListViewGameConnections->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ListViewGameConnections->SetColorText(0, 0, 0);
-	SXLevelEditor::ListViewGameConnections->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::ListViewGameConnections->SetTransparentTextBk(true);
-	SXLevelEditor::ListViewGameConnections->SetColorBrush(255, 255, 255);
-	SXLevelEditor::ListViewGameConnections->AddColumn("Event", 110);
-	SXLevelEditor::ListViewGameConnections->AddColumn("Name", 110);
-	SXLevelEditor::ListViewGameConnections->AddColumn("Action", 110);
-	SXLevelEditor::ListViewGameConnections->AddColumn("Delay", 110);
-	SXLevelEditor::ListViewGameConnections->AddColumn("Parameter", 110);
-	SXLevelEditor::ListViewGameConnections->GAlign.left = true;
-	SXLevelEditor::ListViewGameConnections->GAlign.top = true;
-	SXLevelEditor::ListViewGameConnections->Visible(false);
+	level_editor::pListViewGameConnections = SXGUICrListView(5, 5, 550, 180, level_editor::pGroupBoxData->getHWND(), WndProcAllDefault, 0);
+	level_editor::pListViewGameConnections->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pListViewGameConnections->setColorText(RGB(0, 0, 0));
+	level_editor::pListViewGameConnections->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pListViewGameConnections->setTransparentTextBk(true);
+	level_editor::pListViewGameConnections->setColorBrush(RGB(255, 255, 255));
+	level_editor::pListViewGameConnections->addColumn("Event", 110);
+	level_editor::pListViewGameConnections->addColumn("Name", 110);
+	level_editor::pListViewGameConnections->addColumn("Action", 110);
+	level_editor::pListViewGameConnections->addColumn("Delay", 110);
+	level_editor::pListViewGameConnections->addColumn("Parameter", 110);
+	level_editor::pListViewGameConnections->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pListViewGameConnections->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pListViewGameConnections->setVisible(false);
 
-	SXLevelEditor::StaticGameConnectionsEvent = SXGUICrStatic("Event:", 560, 50, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGameConnectionsEvent->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGameConnectionsEvent->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGameConnectionsEvent->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGameConnectionsEvent->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGameConnectionsEvent->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGameConnectionsEvent->GAlign.left = true;
-	SXLevelEditor::StaticGameConnectionsEvent->GAlign.top = true;
-	SXLevelEditor::StaticGameConnectionsEvent->Visible(false);
+	level_editor::pStaticGameConnectionsEvent = SXGUICrStatic("Event:", 560, 50, 50, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGameConnectionsEvent->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGameConnectionsEvent->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGameConnectionsEvent->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGameConnectionsEvent->setTransparentTextBk(true);
+	level_editor::pStaticGameConnectionsEvent->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGameConnectionsEvent->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGameConnectionsEvent->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGameConnectionsEvent->setVisible(false);
 
-	SXLevelEditor::ComboBoxGameConnectionsEvent = SXGUICrComboBox("", 610, 50, 185, 180, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ComboBoxGameConnectionsEvent->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ComboBoxGameConnectionsEvent->SetColorText(0, 0, 0);
-	SXLevelEditor::ComboBoxGameConnectionsEvent->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::ComboBoxGameConnectionsEvent->SetTransparentTextBk(true);
-	SXLevelEditor::ComboBoxGameConnectionsEvent->SetColorBrush(255, 255, 255);
-	SXLevelEditor::ComboBoxGameConnectionsEvent->GAlign.left = true;
-	SXLevelEditor::ComboBoxGameConnectionsEvent->GAlign.top = true;
-	SXLevelEditor::ComboBoxGameConnectionsEvent->Visible(false);
+	level_editor::pComboBoxGameConnectionsEvent = SXGUICrComboBox(610, 50, 185, 180, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pComboBoxGameConnectionsEvent->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pComboBoxGameConnectionsEvent->setColorText(RGB(0, 0, 0));
+	level_editor::pComboBoxGameConnectionsEvent->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pComboBoxGameConnectionsEvent->setTransparentTextBk(true);
+	level_editor::pComboBoxGameConnectionsEvent->setColorBrush(RGB(255, 255, 255));
+	level_editor::pComboBoxGameConnectionsEvent->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pComboBoxGameConnectionsEvent->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pComboBoxGameConnectionsEvent->setVisible(false);
 
-	SXLevelEditor::StaticGameConnectionsName = SXGUICrStatic("Name:", 560, 75, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGameConnectionsName->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGameConnectionsName->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGameConnectionsName->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGameConnectionsName->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGameConnectionsName->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGameConnectionsName->GAlign.left = true;
-	SXLevelEditor::StaticGameConnectionsName->GAlign.top = true;
-	SXLevelEditor::StaticGameConnectionsName->Visible(false);
+	level_editor::pStaticGameConnectionsName = SXGUICrStatic("Name:", 560, 75, 50, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGameConnectionsName->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGameConnectionsName->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGameConnectionsName->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGameConnectionsName->setTransparentTextBk(true);
+	level_editor::pStaticGameConnectionsName->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGameConnectionsName->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGameConnectionsName->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGameConnectionsName->setVisible(false);
 
-	SXLevelEditor::EditGameConnectionsName = SXGUICrEdit("", 610, 75, 185, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGameConnectionsName->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGameConnectionsName->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGameConnectionsName->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGameConnectionsName->SetTransparentTextBk(true);
-	SXLevelEditor::EditGameConnectionsName->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGameConnectionsName->GAlign.left = true;
-	SXLevelEditor::EditGameConnectionsName->GAlign.top = true;
-	SXLevelEditor::EditGameConnectionsName->Visible(false);
-	SXLevelEditor::EditGameConnectionsName->AddHandler(SXLevelEditor_EditGameConnectionsName_IN, WM_KEYUP);
-	SXLevelEditor::EditGameConnectionsName->AddHandler(SXLevelEditor_EditGameConnectionsName_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditGameConnectionsName->AddHandler(SXLevelEditor_EditGameConnectionsName_Enter, WM_KILLFOCUS);
+	level_editor::pEditGameConnectionsName = SXGUICrEdit("", 610, 75, 185, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGameConnectionsName->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGameConnectionsName->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGameConnectionsName->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGameConnectionsName->setTransparentTextBk(true);
+	level_editor::pEditGameConnectionsName->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGameConnectionsName->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGameConnectionsName->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGameConnectionsName->setVisible(false);
+	level_editor::pEditGameConnectionsName->addHandler(SXLevelEditor_EditGameConnectionsName_IN, WM_KEYUP);
+	level_editor::pEditGameConnectionsName->addHandler(SXLevelEditor_EditGameConnectionsName_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditGameConnectionsName->addHandler(SXLevelEditor_EditGameConnectionsName_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::StaticGameConnectionsAction = SXGUICrStatic("Action:", 560, 95, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGameConnectionsAction->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGameConnectionsAction->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGameConnectionsAction->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGameConnectionsAction->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGameConnectionsAction->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGameConnectionsAction->GAlign.left = true;
-	SXLevelEditor::StaticGameConnectionsAction->GAlign.top = true;
-	SXLevelEditor::StaticGameConnectionsAction->Visible(false);
+	level_editor::pStaticGameConnectionsAction = SXGUICrStatic("Action:", 560, 95, 50, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGameConnectionsAction->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGameConnectionsAction->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGameConnectionsAction->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGameConnectionsAction->setTransparentTextBk(true);
+	level_editor::pStaticGameConnectionsAction->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGameConnectionsAction->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGameConnectionsAction->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGameConnectionsAction->setVisible(false);
 
-	SXLevelEditor::ComboBoxGameConnectionsAction = SXGUICrComboBox("", 610, 95, 185, 135, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ComboBoxGameConnectionsAction->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ComboBoxGameConnectionsAction->SetColorText(0, 0, 0);
-	SXLevelEditor::ComboBoxGameConnectionsAction->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::ComboBoxGameConnectionsAction->SetTransparentTextBk(true);
-	SXLevelEditor::ComboBoxGameConnectionsAction->SetColorBrush(255, 255, 255);
-	SXLevelEditor::ComboBoxGameConnectionsAction->GAlign.left = true;
-	SXLevelEditor::ComboBoxGameConnectionsAction->GAlign.top = true;
-	SXLevelEditor::ComboBoxGameConnectionsAction->Visible(false);
+	level_editor::pComboBoxGameConnectionsAction = SXGUICrComboBox(610, 95, 185, 135, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pComboBoxGameConnectionsAction->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pComboBoxGameConnectionsAction->setColorText(RGB(0, 0, 0));
+	level_editor::pComboBoxGameConnectionsAction->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pComboBoxGameConnectionsAction->setTransparentTextBk(true);
+	level_editor::pComboBoxGameConnectionsAction->setColorBrush(RGB(255, 255, 255));
+	level_editor::pComboBoxGameConnectionsAction->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pComboBoxGameConnectionsAction->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pComboBoxGameConnectionsAction->setVisible(false);
 
-	SXLevelEditor::StaticGameConnectionsDelay = SXGUICrStatic("Delay:", 560, 120, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGameConnectionsDelay->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGameConnectionsDelay->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGameConnectionsDelay->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGameConnectionsDelay->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGameConnectionsDelay->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGameConnectionsDelay->GAlign.left = true;
-	SXLevelEditor::StaticGameConnectionsDelay->GAlign.top = true;
-	SXLevelEditor::StaticGameConnectionsDelay->Visible(false);
+	level_editor::pStaticGameConnectionsDelay = SXGUICrStatic("Delay:", 560, 120, 50, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGameConnectionsDelay->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGameConnectionsDelay->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGameConnectionsDelay->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGameConnectionsDelay->setTransparentTextBk(true);
+	level_editor::pStaticGameConnectionsDelay->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGameConnectionsDelay->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGameConnectionsDelay->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGameConnectionsDelay->setVisible(false);
 
-	SXLevelEditor::EditGameConnectionsDelay = SXGUICrEdit("", 610, 120, 185, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGameConnectionsDelay->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGameConnectionsDelay->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGameConnectionsDelay->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGameConnectionsDelay->SetTransparentTextBk(true);
-	SXLevelEditor::EditGameConnectionsDelay->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGameConnectionsDelay->GAlign.left = true;
-	SXLevelEditor::EditGameConnectionsDelay->GAlign.top = true;
-	SXLevelEditor::EditGameConnectionsDelay->Visible(false);
-	SXLevelEditor::EditGameConnectionsDelay->AddHandler(SXLevelEditor_EditGameConnections_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditGameConnectionsDelay->AddHandler(SXLevelEditor_EditGameConnections_Enter, WM_KILLFOCUS);
+	level_editor::pEditGameConnectionsDelay = SXGUICrEdit("", 610, 120, 185, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGameConnectionsDelay->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGameConnectionsDelay->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGameConnectionsDelay->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGameConnectionsDelay->setTransparentTextBk(true);
+	level_editor::pEditGameConnectionsDelay->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGameConnectionsDelay->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGameConnectionsDelay->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGameConnectionsDelay->setVisible(false);
+	level_editor::pEditGameConnectionsDelay->addHandler(SXLevelEditor_EditGameConnections_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditGameConnectionsDelay->addHandler(SXLevelEditor_EditGameConnections_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::StaticGameConnectionsParameter = SXGUICrStatic("Parameter:", 560, 140, 50, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticGameConnectionsParameter->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticGameConnectionsParameter->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticGameConnectionsParameter->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticGameConnectionsParameter->SetTransparentTextBk(true);
-	SXLevelEditor::StaticGameConnectionsParameter->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticGameConnectionsParameter->GAlign.left = true;
-	SXLevelEditor::StaticGameConnectionsParameter->GAlign.top = true;
-	SXLevelEditor::StaticGameConnectionsParameter->Visible(false);
+	level_editor::pStaticGameConnectionsParameter = SXGUICrStatic("Parameter:", 560, 140, 50, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticGameConnectionsParameter->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticGameConnectionsParameter->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticGameConnectionsParameter->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticGameConnectionsParameter->setTransparentTextBk(true);
+	level_editor::pStaticGameConnectionsParameter->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticGameConnectionsParameter->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticGameConnectionsParameter->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticGameConnectionsParameter->setVisible(false);
 
-	SXLevelEditor::EditGameConnectionsParameter = SXGUICrEdit("", 610, 140, 185, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditGameConnectionsParameter->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditGameConnectionsParameter->SetColorText(0, 0, 0);
-	SXLevelEditor::EditGameConnectionsParameter->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditGameConnectionsParameter->SetTransparentTextBk(true);
-	SXLevelEditor::EditGameConnectionsParameter->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditGameConnectionsParameter->GAlign.left = true;
-	SXLevelEditor::EditGameConnectionsParameter->GAlign.top = true;
-	SXLevelEditor::EditGameConnectionsParameter->Visible(false);
-	SXLevelEditor::EditGameConnectionsParameter->AddHandler(SXLevelEditor_EditGameConnections_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditGameConnectionsParameter->AddHandler(SXLevelEditor_EditGameConnections_Enter, WM_KILLFOCUS);
+	level_editor::pEditGameConnectionsParameter = SXGUICrEdit("", 610, 140, 185, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditGameConnectionsParameter->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditGameConnectionsParameter->setColorText(RGB(0, 0, 0));
+	level_editor::pEditGameConnectionsParameter->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditGameConnectionsParameter->setTransparentTextBk(true);
+	level_editor::pEditGameConnectionsParameter->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditGameConnectionsParameter->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditGameConnectionsParameter->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditGameConnectionsParameter->setVisible(false);
+	level_editor::pEditGameConnectionsParameter->addHandler(SXLevelEditor_EditGameConnections_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditGameConnectionsParameter->addHandler(SXLevelEditor_EditGameConnections_Enter, WM_KILLFOCUS);
 
 	
-	SXLevelEditor::ButtonGameConnectionsCreate = SXGUICrButton("Create", 565, 160, 100, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGameConnectionsCreate->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGameConnectionsCreate->GAlign.left = true;
-	SXLevelEditor::ButtonGameConnectionsCreate->GAlign.top = true;
-	SXLevelEditor::ButtonGameConnectionsCreate->Visible(false);
-	SXLevelEditor::ButtonGameConnectionsCreate->AddHandler(SXLevelEditor_ButtonGameConnectionsCreate_Click, WM_LBUTTONUP);
-	SXLevelEditor::isAddGameConections = false;
+	level_editor::pButtonGameConnectionsCreate = SXGUICrButton("Create", 565, 160, 100, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGameConnectionsCreate->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGameConnectionsCreate->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGameConnectionsCreate->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGameConnectionsCreate->setVisible(false);
+	level_editor::pButtonGameConnectionsCreate->addHandler(SXLevelEditor_ButtonGameConnectionsCreate_Click, WM_LBUTTONUP);
+	level_editor::isAddGameConections = false;
 
-	SXLevelEditor::ButtonGameConnectionsDelete = SXGUICrButton("Delete", 690, 160, 100, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonGameConnectionsDelete->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonGameConnectionsDelete->GAlign.left = true;
-	SXLevelEditor::ButtonGameConnectionsDelete->GAlign.top = true;
-	SXLevelEditor::ButtonGameConnectionsDelete->Visible(false);
-	SXLevelEditor::ButtonGameConnectionsDelete->AddHandler(SXLevelEditor_ButtonGameConnectionsDelete_Click, WM_LBUTTONUP);
+	level_editor::pButtonGameConnectionsDelete = SXGUICrButton("Delete", 690, 160, 100, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonGameConnectionsDelete->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonGameConnectionsDelete->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonGameConnectionsDelete->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonGameConnectionsDelete->setVisible(false);
+	level_editor::pButtonGameConnectionsDelete->addHandler(SXLevelEditor_ButtonGameConnectionsDelete_Click, WM_LBUTTONUP);
 
 	//}
 
 	//aigrid
 	//{
-	SXLevelEditor::StatiAIBBDimensions = SXGUICrStatic("Bound box dimensions:", 5, 10, 120, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StatiAIBBDimensions->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StatiAIBBDimensions->SetColorText(0, 0, 0);
-	SXLevelEditor::StatiAIBBDimensions->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StatiAIBBDimensions->SetTransparentTextBk(true);
-	SXLevelEditor::StatiAIBBDimensions->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StatiAIBBDimensions->GAlign.left = true;
-	SXLevelEditor::StatiAIBBDimensions->GAlign.top = true;
-	SXLevelEditor::StatiAIBBDimensions->Visible(false);
+	level_editor::pStaticAIBBDimensions = SXGUICrStatic("Bound box dimensions:", 5, 10, 120, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticAIBBDimensions->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticAIBBDimensions->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticAIBBDimensions->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticAIBBDimensions->setTransparentTextBk(true);
+	level_editor::pStaticAIBBDimensions->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticAIBBDimensions->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticAIBBDimensions->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticAIBBDimensions->setVisible(false);
 
-	SXLevelEditor::StaticAIBBDimensionsWidth = SXGUICrStatic("Width:", 5, 30, 40, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticAIBBDimensionsWidth->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticAIBBDimensionsWidth->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticAIBBDimensionsWidth->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticAIBBDimensionsWidth->SetTransparentTextBk(true);
-	SXLevelEditor::StaticAIBBDimensionsWidth->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticAIBBDimensionsWidth->GAlign.left = true;
-	SXLevelEditor::StaticAIBBDimensionsWidth->GAlign.top = true;
-	SXLevelEditor::StaticAIBBDimensionsWidth->Visible(false);
+	level_editor::pStaticAIBBDimensionsWidth = SXGUICrStatic("Width:", 5, 30, 40, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticAIBBDimensionsWidth->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticAIBBDimensionsWidth->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticAIBBDimensionsWidth->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticAIBBDimensionsWidth->setTransparentTextBk(true);
+	level_editor::pStaticAIBBDimensionsWidth->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticAIBBDimensionsWidth->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticAIBBDimensionsWidth->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticAIBBDimensionsWidth->setVisible(false);
 
-	SXLevelEditor::EditAIBBDimensionsWidth = SXGUICrEdit("0", 50, 30, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditAIBBDimensionsWidth->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditAIBBDimensionsWidth->SetColorText(0, 0, 0);
-	SXLevelEditor::EditAIBBDimensionsWidth->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditAIBBDimensionsWidth->SetTransparentTextBk(true);
-	SXLevelEditor::EditAIBBDimensionsWidth->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditAIBBDimensionsWidth->GAlign.left = true;
-	SXLevelEditor::EditAIBBDimensionsWidth->GAlign.top = true;
-	SXLevelEditor::EditAIBBDimensionsWidth->Visible(false);
-	SXLevelEditor::EditAIBBDimensionsWidth->AddHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditAIBBDimensionsWidth->AddHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KILLFOCUS);
+	level_editor::pEditAIBBDimensionsWidth = SXGUICrEdit("0", 50, 30, 70, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditAIBBDimensionsWidth->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditAIBBDimensionsWidth->setColorText(RGB(0, 0, 0));
+	level_editor::pEditAIBBDimensionsWidth->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditAIBBDimensionsWidth->setTransparentTextBk(true);
+	level_editor::pEditAIBBDimensionsWidth->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditAIBBDimensionsWidth->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditAIBBDimensionsWidth->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditAIBBDimensionsWidth->setVisible(false);
+	level_editor::pEditAIBBDimensionsWidth->addHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditAIBBDimensionsWidth->addHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::StaticAIBBDimensionsHeight = SXGUICrStatic("Height:", 5, 50, 40, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticAIBBDimensionsHeight->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticAIBBDimensionsHeight->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticAIBBDimensionsHeight->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticAIBBDimensionsHeight->SetTransparentTextBk(true);
-	SXLevelEditor::StaticAIBBDimensionsHeight->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticAIBBDimensionsHeight->GAlign.left = true;
-	SXLevelEditor::StaticAIBBDimensionsHeight->GAlign.top = true;
-	SXLevelEditor::StaticAIBBDimensionsHeight->Visible(false);
+	level_editor::pStaticAIBBDimensionsHeight = SXGUICrStatic("Height:", 5, 50, 40, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticAIBBDimensionsHeight->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticAIBBDimensionsHeight->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticAIBBDimensionsHeight->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticAIBBDimensionsHeight->setTransparentTextBk(true);
+	level_editor::pStaticAIBBDimensionsHeight->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticAIBBDimensionsHeight->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticAIBBDimensionsHeight->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticAIBBDimensionsHeight->setVisible(false);
 
-	SXLevelEditor::EditAIBBDimensionsHeight = SXGUICrEdit("0", 50, 50, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditAIBBDimensionsHeight->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditAIBBDimensionsHeight->SetColorText(0, 0, 0);
-	SXLevelEditor::EditAIBBDimensionsHeight->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditAIBBDimensionsHeight->SetTransparentTextBk(true);
-	SXLevelEditor::EditAIBBDimensionsHeight->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditAIBBDimensionsHeight->GAlign.left = true;
-	SXLevelEditor::EditAIBBDimensionsHeight->GAlign.top = true;
-	SXLevelEditor::EditAIBBDimensionsHeight->Visible(false);
-	SXLevelEditor::EditAIBBDimensionsHeight->AddHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditAIBBDimensionsHeight->AddHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KILLFOCUS);
+	level_editor::pEditAIBBDimensionsHeight = SXGUICrEdit("0", 50, 50, 70, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditAIBBDimensionsHeight->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditAIBBDimensionsHeight->setColorText(RGB(0, 0, 0));
+	level_editor::pEditAIBBDimensionsHeight->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditAIBBDimensionsHeight->setTransparentTextBk(true);
+	level_editor::pEditAIBBDimensionsHeight->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditAIBBDimensionsHeight->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditAIBBDimensionsHeight->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditAIBBDimensionsHeight->setVisible(false);
+	level_editor::pEditAIBBDimensionsHeight->addHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditAIBBDimensionsHeight->addHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::StaticAIBBDimensionsDepth = SXGUICrStatic("Depth:", 5, 70, 40, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticAIBBDimensionsDepth->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticAIBBDimensionsDepth->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticAIBBDimensionsDepth->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticAIBBDimensionsDepth->SetTransparentTextBk(true);
-	SXLevelEditor::StaticAIBBDimensionsDepth->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticAIBBDimensionsDepth->GAlign.left = true;
-	SXLevelEditor::StaticAIBBDimensionsDepth->GAlign.top = true;
-	SXLevelEditor::StaticAIBBDimensionsDepth->Visible(false);
+	level_editor::pStaticAIBBDimensionsDepth = SXGUICrStatic("Depth:", 5, 70, 40, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticAIBBDimensionsDepth->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticAIBBDimensionsDepth->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticAIBBDimensionsDepth->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticAIBBDimensionsDepth->setTransparentTextBk(true);
+	level_editor::pStaticAIBBDimensionsDepth->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticAIBBDimensionsDepth->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticAIBBDimensionsDepth->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticAIBBDimensionsDepth->setVisible(false);
 
-	SXLevelEditor::EditAIBBDimensionsDepth = SXGUICrEdit("0", 50, 70, 70, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditAIBBDimensionsDepth->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditAIBBDimensionsDepth->SetColorText(0, 0, 0);
-	SXLevelEditor::EditAIBBDimensionsDepth->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditAIBBDimensionsDepth->SetTransparentTextBk(true);
-	SXLevelEditor::EditAIBBDimensionsDepth->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditAIBBDimensionsDepth->GAlign.left = true;
-	SXLevelEditor::EditAIBBDimensionsDepth->GAlign.top = true;
-	SXLevelEditor::EditAIBBDimensionsDepth->Visible(false);
-	SXLevelEditor::EditAIBBDimensionsDepth->AddHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditAIBBDimensionsDepth->AddHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KILLFOCUS);
+	level_editor::pEditAIBBDimensionsDepth = SXGUICrEdit("0", 50, 70, 70, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditAIBBDimensionsDepth->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditAIBBDimensionsDepth->setColorText(RGB(0, 0, 0));
+	level_editor::pEditAIBBDimensionsDepth->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditAIBBDimensionsDepth->setTransparentTextBk(true);
+	level_editor::pEditAIBBDimensionsDepth->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditAIBBDimensionsDepth->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditAIBBDimensionsDepth->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditAIBBDimensionsDepth->setVisible(false);
+	level_editor::pEditAIBBDimensionsDepth->addHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditAIBBDimensionsDepth->addHandler(SXLevelEditor_EditAIBBDimensions_Enter, WM_KILLFOCUS);
 
 
-	SXLevelEditor::StaticAIBBPos = SXGUICrStatic("Bound box position:", 5, 95, 100, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticAIBBPos->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticAIBBPos->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticAIBBPos->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticAIBBPos->SetTransparentTextBk(true);
-	SXLevelEditor::StaticAIBBPos->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticAIBBPos->GAlign.left = true;
-	SXLevelEditor::StaticAIBBPos->GAlign.top = true;
-	SXLevelEditor::StaticAIBBPos->Visible(false);
+	level_editor::pStaticAIBBPos = SXGUICrStatic("Bound box position:", 5, 95, 100, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticAIBBPos->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticAIBBPos->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticAIBBPos->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticAIBBPos->setTransparentTextBk(true);
+	level_editor::pStaticAIBBPos->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticAIBBPos->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticAIBBPos->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticAIBBPos->setVisible(false);
 
-	SXLevelEditor::StaticAIBBPosX = SXGUICrStatic("x:", 5, 115, 10, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticAIBBPosX->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticAIBBPosX->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticAIBBPosX->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticAIBBPosX->SetTransparentTextBk(true);
-	SXLevelEditor::StaticAIBBPosX->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticAIBBPosX->GAlign.left = true;
-	SXLevelEditor::StaticAIBBPosX->GAlign.top = true;
-	SXLevelEditor::StaticAIBBPosX->Visible(false);
+	level_editor::pStaticAIBBPosX = SXGUICrStatic("x:", 5, 115, 10, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticAIBBPosX->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticAIBBPosX->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticAIBBPosX->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticAIBBPosX->setTransparentTextBk(true);
+	level_editor::pStaticAIBBPosX->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticAIBBPosX->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticAIBBPosX->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticAIBBPosX->setVisible(false);
 
-	SXLevelEditor::EditAIBBPosX = SXGUICrEdit("0", 15, 115, 65, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditAIBBPosX->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditAIBBPosX->SetColorText(0, 0, 0);
-	SXLevelEditor::EditAIBBPosX->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditAIBBPosX->SetTransparentTextBk(true);
-	SXLevelEditor::EditAIBBPosX->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditAIBBPosX->GAlign.left = true;
-	SXLevelEditor::EditAIBBPosX->GAlign.top = true;
-	SXLevelEditor::EditAIBBPosX->Visible(false);
-	SXLevelEditor::EditAIBBPosX->AddHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditAIBBPosX->AddHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KILLFOCUS);
+	level_editor::pEditAIBBPosX = SXGUICrEdit("0", 15, 115, 65, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditAIBBPosX->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditAIBBPosX->setColorText(RGB(0, 0, 0));
+	level_editor::pEditAIBBPosX->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditAIBBPosX->setTransparentTextBk(true);
+	level_editor::pEditAIBBPosX->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditAIBBPosX->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditAIBBPosX->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditAIBBPosX->setVisible(false);
+	level_editor::pEditAIBBPosX->addHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditAIBBPosX->addHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::StaticAIBBPosY = SXGUICrStatic("y:", 85, 115, 10, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticAIBBPosY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticAIBBPosY->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticAIBBPosY->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticAIBBPosY->SetTransparentTextBk(true);
-	SXLevelEditor::StaticAIBBPosY->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticAIBBPosY->GAlign.left = true;
-	SXLevelEditor::StaticAIBBPosY->GAlign.top = true;
-	SXLevelEditor::StaticAIBBPosY->Visible(false);
+	level_editor::pStaticAIBBPosY = SXGUICrStatic("y:", 85, 115, 10, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticAIBBPosY->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticAIBBPosY->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticAIBBPosY->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticAIBBPosY->setTransparentTextBk(true);
+	level_editor::pStaticAIBBPosY->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticAIBBPosY->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticAIBBPosY->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticAIBBPosY->setVisible(false);
 
-	SXLevelEditor::EditAIBBPosY = SXGUICrEdit("0", 95, 115, 65, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditAIBBPosY->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditAIBBPosY->SetColorText(0, 0, 0);
-	SXLevelEditor::EditAIBBPosY->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditAIBBPosY->SetTransparentTextBk(true);
-	SXLevelEditor::EditAIBBPosY->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditAIBBPosY->GAlign.left = true;
-	SXLevelEditor::EditAIBBPosY->GAlign.top = true;
-	SXLevelEditor::EditAIBBPosY->Visible(false);
-	SXLevelEditor::EditAIBBPosY->AddHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditAIBBPosY->AddHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KILLFOCUS);
+	level_editor::pEditAIBBPosY = SXGUICrEdit("0", 95, 115, 65, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditAIBBPosY->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditAIBBPosY->setColorText(RGB(0, 0, 0));
+	level_editor::pEditAIBBPosY->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditAIBBPosY->setTransparentTextBk(true);
+	level_editor::pEditAIBBPosY->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditAIBBPosY->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditAIBBPosY->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditAIBBPosY->setVisible(false);
+	level_editor::pEditAIBBPosY->addHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditAIBBPosY->addHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::StaticAIBBPosZ = SXGUICrStatic("z:", 165, 115, 10, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticAIBBPosZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticAIBBPosZ->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticAIBBPosZ->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticAIBBPosZ->SetTransparentTextBk(true);
-	SXLevelEditor::StaticAIBBPosZ->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticAIBBPosZ->GAlign.left = true;
-	SXLevelEditor::StaticAIBBPosZ->GAlign.top = true;
-	SXLevelEditor::StaticAIBBPosZ->Visible(false);
+	level_editor::pStaticAIBBPosZ = SXGUICrStatic("z:", 165, 115, 10, 15, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticAIBBPosZ->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticAIBBPosZ->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticAIBBPosZ->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticAIBBPosZ->setTransparentTextBk(true);
+	level_editor::pStaticAIBBPosZ->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticAIBBPosZ->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticAIBBPosZ->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticAIBBPosZ->setVisible(false);
 
-	SXLevelEditor::EditAIBBPosZ = SXGUICrEdit("0", 175, 115, 65, 15, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditAIBBPosZ->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditAIBBPosZ->SetColorText(0, 0, 0);
-	SXLevelEditor::EditAIBBPosZ->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditAIBBPosZ->SetTransparentTextBk(true);
-	SXLevelEditor::EditAIBBPosZ->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditAIBBPosZ->GAlign.left = true;
-	SXLevelEditor::EditAIBBPosZ->GAlign.top = true;
-	SXLevelEditor::EditAIBBPosZ->Visible(false);
-	SXLevelEditor::EditAIBBPosZ->AddHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
-	SXLevelEditor::EditAIBBPosZ->AddHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KILLFOCUS);
+	level_editor::pEditAIBBPosZ = SXGUICrEdit("0", 175, 115, 65, 15, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditAIBBPosZ->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditAIBBPosZ->setColorText(RGB(0, 0, 0));
+	level_editor::pEditAIBBPosZ->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditAIBBPosZ->setTransparentTextBk(true);
+	level_editor::pEditAIBBPosZ->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditAIBBPosZ->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditAIBBPosZ->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditAIBBPosZ->setVisible(false);
+	level_editor::pEditAIBBPosZ->addHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	level_editor::pEditAIBBPosZ->addHandler(SXLevelEditor_EditAIBBPos_Enter, WM_KILLFOCUS);
 
-	SXLevelEditor::ButtonAIBBFinish = SXGUICrButton("Create bound box", 15, 140, 100, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonAIBBFinish->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonAIBBFinish->GAlign.left = true;
-	SXLevelEditor::ButtonAIBBFinish->GAlign.top = true;
-	SXLevelEditor::ButtonAIBBFinish->Visible(false);
-	SXLevelEditor::ButtonAIBBFinish->AddHandler(SXLevelEditor_ButtonAIBBFinish_Click, WM_LBUTTONUP);
+	level_editor::pButtonAIBBFinish = SXGUICrButton("Create bound box", 15, 140, 100, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonAIBBFinish->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonAIBBFinish->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonAIBBFinish->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonAIBBFinish->setVisible(false);
+	level_editor::pButtonAIBBFinish->addHandler(SXLevelEditor_ButtonAIBBFinish_Click, WM_LBUTTONUP);
 	
 
-	SXLevelEditor::RadioButtonAIQuadAdd = SXGUICrRadioButton("AI quad add", 250, 10, 130, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonAIQuadAdd->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonAIQuadAdd->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonAIQuadAdd->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonAIQuadAdd->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonAIQuadAdd->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonAIQuadAdd->GAlign.left = true;
-	SXLevelEditor::RadioButtonAIQuadAdd->GAlign.top = true;
-	SXLevelEditor::RadioButtonAIQuadAdd->Visible(false);
+	level_editor::pRadioButtonAIQuadAdd = SXGUICrRadioButton("AI quad add", 250, 10, 130, 20, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonAIQuadAdd->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonAIQuadAdd->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonAIQuadAdd->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonAIQuadAdd->setTransparentTextBk(true);
+	level_editor::pRadioButtonAIQuadAdd->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonAIQuadAdd->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonAIQuadAdd->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonAIQuadAdd->setVisible(false);
 
-	SXLevelEditor::RadioButtonAIQuadsMSel = SXGUICrRadioButton("AI quads multi select", 250, 40, 130, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonAIQuadsMSel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonAIQuadsMSel->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonAIQuadsMSel->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonAIQuadsMSel->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonAIQuadsMSel->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonAIQuadsMSel->GAlign.left = true;
-	SXLevelEditor::RadioButtonAIQuadsMSel->GAlign.top = true;
-	SXLevelEditor::RadioButtonAIQuadsMSel->Visible(false);
+	level_editor::pRadioButtonAIQuadsMSel = SXGUICrRadioButton("AI quads multi select", 250, 40, 130, 20, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonAIQuadsMSel->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonAIQuadsMSel->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonAIQuadsMSel->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonAIQuadsMSel->setTransparentTextBk(true);
+	level_editor::pRadioButtonAIQuadsMSel->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonAIQuadsMSel->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonAIQuadsMSel->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonAIQuadsMSel->setVisible(false);
 
-	SXLevelEditor::RadioButtonAIQuadsSelDel = SXGUICrRadioButton("AI quads select->delete", 250, 70, 130, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonAIQuadsSelDel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonAIQuadsSelDel->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonAIQuadsSelDel->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonAIQuadsSelDel->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonAIQuadsSelDel->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonAIQuadsSelDel->GAlign.left = true;
-	SXLevelEditor::RadioButtonAIQuadsSelDel->GAlign.top = true;
-	SXLevelEditor::RadioButtonAIQuadsSelDel->Visible(false);
+	level_editor::pRadioButtonAIQuadsSelDel = SXGUICrRadioButton("AI quads select->delete", 250, 70, 130, 20, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonAIQuadsSelDel->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonAIQuadsSelDel->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonAIQuadsSelDel->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonAIQuadsSelDel->setTransparentTextBk(true);
+	level_editor::pRadioButtonAIQuadsSelDel->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonAIQuadsSelDel->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonAIQuadsSelDel->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonAIQuadsSelDel->setVisible(false);
 
-	SXLevelEditor::ButtonAIQuadsDelSel = SXGUICrButton("AI quads delete selected", 250, 100, 130, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonAIQuadsDelSel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonAIQuadsDelSel->GAlign.left = true;
-	SXLevelEditor::ButtonAIQuadsDelSel->GAlign.top = true;
-	SXLevelEditor::ButtonAIQuadsDelSel->Visible(false);
-	SXLevelEditor::ButtonAIQuadsDelSel->AddHandler(SXLevelEditor_ButtonAIQuadsDelSel_Click, WM_LBUTTONUP);
+	level_editor::pButtonAIQuadsDelSel = SXGUICrButton("AI quads delete selected", 250, 100, 130, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonAIQuadsDelSel->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonAIQuadsDelSel->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonAIQuadsDelSel->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonAIQuadsDelSel->setVisible(false);
+	level_editor::pButtonAIQuadsDelSel->addHandler(SXLevelEditor_ButtonAIQuadsDelSel_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::ButtonAIGridGen = SXGUICrButton("AI grid generation", 250, 130, 130, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonAIGridGen->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonAIGridGen->GAlign.left = true;
-	SXLevelEditor::ButtonAIGridGen->GAlign.top = true;
-	SXLevelEditor::ButtonAIGridGen->Visible(false);
-	SXLevelEditor::ButtonAIGridGen->AddHandler(SXLevelEditor_ButtonAIGridGen_Click, WM_LBUTTONUP);
+	level_editor::pButtonAIGridGen = SXGUICrButton("AI grid generation", 250, 130, 130, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonAIGridGen->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonAIGridGen->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonAIGridGen->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonAIGridGen->setVisible(false);
+	level_editor::pButtonAIGridGen->addHandler(SXLevelEditor_ButtonAIGridGen_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::ButtonAIGridClear = SXGUICrButton("AI grid clear", 250, 160, 130, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonAIGridClear->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonAIGridClear->GAlign.left = true;
-	SXLevelEditor::ButtonAIGridClear->GAlign.top = true;
-	SXLevelEditor::ButtonAIGridClear->Visible(false);
-	SXLevelEditor::ButtonAIGridClear->AddHandler(SXLevelEditor_ButtonAIGridClear_Click, WM_LBUTTONUP);
+	level_editor::pButtonAIGridClear = SXGUICrButton("AI grid clear", 250, 160, 130, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonAIGridClear->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonAIGridClear->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonAIGridClear->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonAIGridClear->setVisible(false);
+	level_editor::pButtonAIGridClear->addHandler(SXLevelEditor_ButtonAIGridClear_Click, WM_LBUTTONUP);
 	
 	
-	SXLevelEditor::RadioButtonAIGPAdd = SXGUICrRadioButton("Graph point add", 390, 10, 110, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonAIGPAdd->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonAIGPAdd->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonAIGPAdd->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonAIGPAdd->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonAIGPAdd->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonAIGPAdd->GAlign.left = true;
-	SXLevelEditor::RadioButtonAIGPAdd->GAlign.top = true;
-	SXLevelEditor::RadioButtonAIGPAdd->Visible(false);
+	level_editor::pRadioButtonAIGPAdd = SXGUICrRadioButton("Graph point add", 390, 10, 110, 20, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonAIGPAdd->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonAIGPAdd->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonAIGPAdd->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonAIGPAdd->setTransparentTextBk(true);
+	level_editor::pRadioButtonAIGPAdd->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonAIGPAdd->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonAIGPAdd->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonAIGPAdd->setVisible(false);
 
-	SXLevelEditor::RadioButtonAIGPDel = SXGUICrRadioButton("Graph point delete", 390, 40, 110, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::RadioButtonAIGPDel->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::RadioButtonAIGPDel->SetColorText(0, 0, 0);
-	SXLevelEditor::RadioButtonAIGPDel->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::RadioButtonAIGPDel->SetTransparentTextBk(true);
-	SXLevelEditor::RadioButtonAIGPDel->SetColorBrush(220, 220, 220);
-	SXLevelEditor::RadioButtonAIGPDel->GAlign.left = true;
-	SXLevelEditor::RadioButtonAIGPDel->GAlign.top = true;
-	SXLevelEditor::RadioButtonAIGPDel->Visible(false);
+	level_editor::pRadioButtonAIGPDel = SXGUICrRadioButton("Graph point delete", 390, 40, 110, 20, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pRadioButtonAIGPDel->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pRadioButtonAIGPDel->setColorText(RGB(0, 0, 0));
+	level_editor::pRadioButtonAIGPDel->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pRadioButtonAIGPDel->setTransparentTextBk(true);
+	level_editor::pRadioButtonAIGPDel->setColorBrush(RGB(220, 220, 220));
+	level_editor::pRadioButtonAIGPDel->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pRadioButtonAIGPDel->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pRadioButtonAIGPDel->setVisible(false);
 
-	SXLevelEditor::ButtonAIGPGen = SXGUICrButton("Graph points generate", 390, 70, 110, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonAIGPGen->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonAIGPGen->GAlign.left = true;
-	SXLevelEditor::ButtonAIGPGen->GAlign.top = true;
-	SXLevelEditor::ButtonAIGPGen->Visible(false);
-	SXLevelEditor::ButtonAIGPGen->AddHandler(SXLevelEditor_ButtonAIGPGen_Click, WM_LBUTTONUP);
+	level_editor::pButtonAIGPGen = SXGUICrButton("Graph points generate", 390, 70, 110, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonAIGPGen->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonAIGPGen->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonAIGPGen->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonAIGPGen->setVisible(false);
+	level_editor::pButtonAIGPGen->addHandler(SXLevelEditor_ButtonAIGPGen_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::ButtonAIGPClear = SXGUICrButton("Graph points clear", 390, 100, 110, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonAIGPClear->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonAIGPClear->GAlign.left = true;
-	SXLevelEditor::ButtonAIGPClear->GAlign.top = true;
-	SXLevelEditor::ButtonAIGPClear->Visible(false);
-	SXLevelEditor::ButtonAIGPClear->AddHandler(SXLevelEditor_ButtonAIGPClear_Click, WM_LBUTTONUP);
+	level_editor::pButtonAIGPClear = SXGUICrButton("Graph points clear", 390, 100, 110, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonAIGPClear->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonAIGPClear->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonAIGPClear->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonAIGPClear->setVisible(false);
+	level_editor::pButtonAIGPClear->addHandler(SXLevelEditor_ButtonAIGPClear_Click, WM_LBUTTONUP);
 
 
-	SXLevelEditor::ButtonAIGridValidation = SXGUICrButton("AI grid validation", 510, 10, 100, 20, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonAIGridValidation->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonAIGridValidation->GAlign.left = true;
-	SXLevelEditor::ButtonAIGridValidation->GAlign.top = true;
-	SXLevelEditor::ButtonAIGridValidation->Visible(false);
-	SXLevelEditor::ButtonAIGridValidation->AddHandler(SXLevelEditor_ButtonAIGridValidation_Click, WM_LBUTTONUP);
+	level_editor::pButtonAIGridValidation = SXGUICrButton("AI grid validation", 510, 10, 100, 20, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonAIGridValidation->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonAIGridValidation->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonAIGridValidation->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonAIGridValidation->setVisible(false);
+	level_editor::pButtonAIGridValidation->addHandler(SXLevelEditor_ButtonAIGridValidation_Click, WM_LBUTTONUP);
 
-	SXLevelEditor::CheckBoxAIGridMarkedSplits = SXGUICrCheckBox("Marked splits", 510, 40, 100, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0, false);
-	SXLevelEditor::CheckBoxAIGridMarkedSplits->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::CheckBoxAIGridMarkedSplits->SetColorText(0, 0, 0);
-	SXLevelEditor::CheckBoxAIGridMarkedSplits->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::CheckBoxAIGridMarkedSplits->SetTransparentTextBk(true);
-	SXLevelEditor::CheckBoxAIGridMarkedSplits->SetColorBrush(220, 220, 220);
-	SXLevelEditor::CheckBoxAIGridMarkedSplits->GAlign.left = true;
-	SXLevelEditor::CheckBoxAIGridMarkedSplits->GAlign.top = true;
-	SXLevelEditor::CheckBoxAIGridMarkedSplits->Visible(false);
+	level_editor::pCheckBoxAIGridMarkedSplits = SXGUICrCheckBox("Marked splits", 510, 40, 100, 20, level_editor::pGroupBoxData->getHWND(), 0, 0, false);
+	level_editor::pCheckBoxAIGridMarkedSplits->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pCheckBoxAIGridMarkedSplits->setColorText(RGB(0, 0, 0));
+	level_editor::pCheckBoxAIGridMarkedSplits->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pCheckBoxAIGridMarkedSplits->setTransparentTextBk(true);
+	level_editor::pCheckBoxAIGridMarkedSplits->setColorBrush(RGB(220, 220, 220));
+	level_editor::pCheckBoxAIGridMarkedSplits->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pCheckBoxAIGridMarkedSplits->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pCheckBoxAIGridMarkedSplits->setVisible(false);
 
-	SXLevelEditor::StaticAIStatistics = SXGUICrStatic("Statistics:", 620, 10, 100, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticAIStatistics->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticAIStatistics->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticAIStatistics->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticAIStatistics->SetTransparentTextBk(true);
-	SXLevelEditor::StaticAIStatistics->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticAIStatistics->GAlign.left = true;
-	SXLevelEditor::StaticAIStatistics->GAlign.top = true;
-	SXLevelEditor::StaticAIStatistics->Visible(false);
+	level_editor::pStaticAIStatistics = SXGUICrStatic("Statistics:", 620, 10, 100, 20, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticAIStatistics->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticAIStatistics->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticAIStatistics->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticAIStatistics->setTransparentTextBk(true);
+	level_editor::pStaticAIStatistics->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticAIStatistics->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticAIStatistics->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticAIStatistics->setVisible(false);
 
-	SXLevelEditor::StaticAIStatsCountQuads = SXGUICrStatic("Count quads:", 620, 40, 100, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticAIStatsCountQuads->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticAIStatsCountQuads->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticAIStatsCountQuads->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticAIStatsCountQuads->SetTransparentTextBk(true);
-	SXLevelEditor::StaticAIStatsCountQuads->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticAIStatsCountQuads->GAlign.left = true;
-	SXLevelEditor::StaticAIStatsCountQuads->GAlign.top = true;
-	SXLevelEditor::StaticAIStatsCountQuads->Visible(false);
+	level_editor::pStaticAIStatsCountQuads = SXGUICrStatic("Count quads:", 620, 40, 100, 20, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticAIStatsCountQuads->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticAIStatsCountQuads->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticAIStatsCountQuads->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticAIStatsCountQuads->setTransparentTextBk(true);
+	level_editor::pStaticAIStatsCountQuads->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticAIStatsCountQuads->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticAIStatsCountQuads->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticAIStatsCountQuads->setVisible(false);
 
-	SXLevelEditor::StaticAIStatsCountGP = SXGUICrStatic("Count graph points:", 620, 70, 100, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticAIStatsCountGP->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticAIStatsCountGP->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticAIStatsCountGP->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticAIStatsCountGP->SetTransparentTextBk(true);
-	SXLevelEditor::StaticAIStatsCountGP->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticAIStatsCountGP->GAlign.left = true;
-	SXLevelEditor::StaticAIStatsCountGP->GAlign.top = true;
-	SXLevelEditor::StaticAIStatsCountGP->Visible(false);
+	level_editor::pStaticAIStatsCountGP = SXGUICrStatic("Count graph points:", 620, 70, 100, 20, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticAIStatsCountGP->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticAIStatsCountGP->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticAIStatsCountGP->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticAIStatsCountGP->setTransparentTextBk(true);
+	level_editor::pStaticAIStatsCountGP->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticAIStatsCountGP->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticAIStatsCountGP->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticAIStatsCountGP->setVisible(false);
 
-	SXLevelEditor::StaticAIStatsCountSplits = SXGUICrStatic("Count splits:", 620, 100, 100, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::StaticAIStatsCountSplits->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::StaticAIStatsCountSplits->SetColorText(0, 0, 0);
-	SXLevelEditor::StaticAIStatsCountSplits->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::StaticAIStatsCountSplits->SetTransparentTextBk(true);
-	SXLevelEditor::StaticAIStatsCountSplits->SetColorBrush(220, 220, 220);
-	SXLevelEditor::StaticAIStatsCountSplits->GAlign.left = true;
-	SXLevelEditor::StaticAIStatsCountSplits->GAlign.top = true;
-	SXLevelEditor::StaticAIStatsCountSplits->Visible(false);
+	level_editor::pStaticAIStatsCountSplits = SXGUICrStatic("Count splits:", 620, 100, 100, 20, level_editor::pGroupBoxData->getHWND(), 0);
+	level_editor::pStaticAIStatsCountSplits->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pStaticAIStatsCountSplits->setColorText(RGB(0, 0, 0));
+	level_editor::pStaticAIStatsCountSplits->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pStaticAIStatsCountSplits->setTransparentTextBk(true);
+	level_editor::pStaticAIStatsCountSplits->setColorBrush(RGB(220, 220, 220));
+	level_editor::pStaticAIStatsCountSplits->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pStaticAIStatsCountSplits->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pStaticAIStatsCountSplits->setVisible(false);
 
-	SXLevelEditor::EditAIStatsCountQuads = SXGUICrEdit("0", 720, 40, 70, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditAIStatsCountQuads->ReadOnly(true);
-	SXLevelEditor::EditAIStatsCountQuads->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditAIStatsCountQuads->SetColorText(0, 0, 0);
-	SXLevelEditor::EditAIStatsCountQuads->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditAIStatsCountQuads->SetTransparentTextBk(true);
-	SXLevelEditor::EditAIStatsCountQuads->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditAIStatsCountQuads->GAlign.left = true;
-	SXLevelEditor::EditAIStatsCountQuads->GAlign.top = true;
-	SXLevelEditor::EditAIStatsCountQuads->Visible(false);
+	level_editor::pEditAIStatsCountQuads = SXGUICrEdit("0", 720, 40, 70, 20, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditAIStatsCountQuads->setReadOnly(true);
+	level_editor::pEditAIStatsCountQuads->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditAIStatsCountQuads->setColorText(RGB(0, 0, 0));
+	level_editor::pEditAIStatsCountQuads->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditAIStatsCountQuads->setTransparentTextBk(true);
+	level_editor::pEditAIStatsCountQuads->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditAIStatsCountQuads->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditAIStatsCountQuads->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditAIStatsCountQuads->setVisible(false);
 
-	SXLevelEditor::EditAIStatsCountGP = SXGUICrEdit("0", 720, 70, 70, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditAIStatsCountGP->ReadOnly(true);
-	SXLevelEditor::EditAIStatsCountGP->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditAIStatsCountGP->SetColorText(0, 0, 0);
-	SXLevelEditor::EditAIStatsCountGP->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditAIStatsCountGP->SetTransparentTextBk(true);
-	SXLevelEditor::EditAIStatsCountGP->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditAIStatsCountGP->GAlign.left = true;
-	SXLevelEditor::EditAIStatsCountGP->GAlign.top = true;
-	SXLevelEditor::EditAIStatsCountGP->Visible(false);
+	level_editor::pEditAIStatsCountGP = SXGUICrEdit("0", 720, 70, 70, 20, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditAIStatsCountGP->setReadOnly(true);
+	level_editor::pEditAIStatsCountGP->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditAIStatsCountGP->setColorText(RGB(0, 0, 0));
+	level_editor::pEditAIStatsCountGP->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditAIStatsCountGP->setTransparentTextBk(true);
+	level_editor::pEditAIStatsCountGP->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditAIStatsCountGP->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditAIStatsCountGP->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditAIStatsCountGP->setVisible(false);
 
-	SXLevelEditor::EditAIStatsCountSplits = SXGUICrEdit("0", 720, 100, 70, 20, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::EditAIStatsCountSplits->ReadOnly(true);
-	SXLevelEditor::EditAIStatsCountSplits->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::EditAIStatsCountSplits->SetColorText(0, 0, 0);
-	SXLevelEditor::EditAIStatsCountSplits->SetColorTextBk(255, 255, 255);
-	SXLevelEditor::EditAIStatsCountSplits->SetTransparentTextBk(true);
-	SXLevelEditor::EditAIStatsCountSplits->SetColorBrush(255, 255, 255);
-	SXLevelEditor::EditAIStatsCountSplits->GAlign.left = true;
-	SXLevelEditor::EditAIStatsCountSplits->GAlign.top = true;
-	SXLevelEditor::EditAIStatsCountSplits->Visible(false);
+	level_editor::pEditAIStatsCountSplits = SXGUICrEdit("0", 720, 100, 70, 20, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pEditAIStatsCountSplits->setReadOnly(true);
+	level_editor::pEditAIStatsCountSplits->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pEditAIStatsCountSplits->setColorText(RGB(0, 0, 0));
+	level_editor::pEditAIStatsCountSplits->setColorTextBk(RGB(255, 255, 255));
+	level_editor::pEditAIStatsCountSplits->setTransparentTextBk(true);
+	level_editor::pEditAIStatsCountSplits->setColorBrush(RGB(255, 255, 255));
+	level_editor::pEditAIStatsCountSplits->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pEditAIStatsCountSplits->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pEditAIStatsCountSplits->setVisible(false);
 
-	SXLevelEditor::ButtonAIClearAll = SXGUICrButton("Clear all", 660, 130, 130, 30, 0, SXLevelEditor::GroupBoxData->GetHWND(), 0, 0);
-	SXLevelEditor::ButtonAIClearAll->SetFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
-	SXLevelEditor::ButtonAIClearAll->GAlign.left = true;
-	SXLevelEditor::ButtonAIClearAll->GAlign.top = true;
-	SXLevelEditor::ButtonAIClearAll->Visible(false);
-	SXLevelEditor::ButtonAIClearAll->AddHandler(SXLevelEditor_ButtonAIClearAll_Click, WM_LBUTTONUP);
+	level_editor::pButtonAIClearAll = SXGUICrButton("Clear all", 660, 130, 130, 30, SXGUI_BUTTON_IMAGE_NONE, level_editor::pGroupBoxData->getHWND(), 0, 0);
+	level_editor::pButtonAIClearAll->setFont("MS Shell Dlg", -11, 0, 400, 0, 0, 0);
+	level_editor::pButtonAIClearAll->setFollowParentSide(SXGUI_SIDE_LEFT, true);
+	level_editor::pButtonAIClearAll->setFollowParentSide(SXGUI_SIDE_TOP, true);
+	level_editor::pButtonAIClearAll->setVisible(false);
+	level_editor::pButtonAIClearAll->addHandler(SXLevelEditor_ButtonAIClearAll_Click, WM_LBUTTONUP);
 	//}
 }
 
-void SXLevelEditor::DeleteAllElements()
+void level_editor::DeleteAllElements()
 {
-	mem_release(JobWindow);
-	mem_release(MainMenu);
-	mem_release(RenderWindow);
+	mem_release(level_editor::pJobWindow);
+	mem_release(level_editor::pMainMenu);
+	mem_release(level_editor::pRenderWindow);
 
-	mem_release(ToolBar1);
-	mem_release(ButtonTBNew);
-	mem_release(ButtonTBOpen);
-	mem_release(ButtonTBSave);
-	mem_release(ButtonTBSaveAs);
+	mem_release(level_editor::pToolBar1);
+	mem_release(level_editor::pButtonTBNew);
+	mem_release(level_editor::pButtonTBOpen);
+	mem_release(level_editor::pButtonTBSave);
+	mem_release(level_editor::pButtonTBSaveAs);
 
-	mem_release(CheckBoxTBArrow);
-	mem_release(CheckBoxTBPos);
-	mem_release(CheckBoxTBRot);
-	mem_release(CheckBoxTBScale);
+	mem_release(level_editor::pCheckBoxTBArrow);
+	mem_release(level_editor::pCheckBoxTBPos);
+	mem_release(level_editor::pCheckBoxTBRot);
+	mem_release(level_editor::pCheckBoxTBScale);
 
-	mem_release(CheckBoxTBGrid);
-	mem_release(CheckBoxTBAxes);
+	mem_release(level_editor::pCheckBoxTBGrid);
+	mem_release(level_editor::pCheckBoxTBAxes);
 
-	mem_release(CheckBoxTBRColor);
-	mem_release(CheckBoxTBRNormal);
-	mem_release(CheckBoxTBRParam);
-	mem_release(CheckBoxTBRAmDiff);
-	mem_release(CheckBoxTBRSpecular);
-	mem_release(CheckBoxTBRLighting);
+	mem_release(level_editor::pCheckBoxTBRColor);
+	mem_release(level_editor::pCheckBoxTBRNormal);
+	mem_release(level_editor::pCheckBoxTBRParam);
+	mem_release(level_editor::pCheckBoxTBRAmDiff);
+	mem_release(level_editor::pCheckBoxTBRSpecular);
+	mem_release(level_editor::pCheckBoxTBRLighting);
 
-	mem_release(CheckBoxTBSelS);
-	mem_release(CheckBoxTBSelZTest);
-	mem_release(CheckBoxTBSelMesh);
-	mem_release(CheckBoxTBSelCullBack);
+	mem_release(level_editor::pCheckBoxTBSelS);
+	mem_release(level_editor::pCheckBoxTBSelZTest);
+	mem_release(level_editor::pCheckBoxTBSelMesh);
+	mem_release(level_editor::pCheckBoxTBSelCullBack);
 
-	mem_release(CheckBoxTBAIGBound);
-	mem_release(CheckBoxTBAIGQuad);
-	mem_release(CheckBoxTBAIGGraphPoint);
+	mem_release(level_editor::pCheckBoxTBAIGBound);
+	mem_release(level_editor::pCheckBoxTBAIGQuad);
+	mem_release(level_editor::pCheckBoxTBAIGGraphPoint);
 
-	mem_release(GroupBoxList);
-	mem_release(GroupBoxData);
-	mem_release(ListBoxList);
-	mem_release(StaticListTextCount);
-	mem_release(StaticListValCount);
+	mem_release(level_editor::pGroupBoxList);
+	mem_release(level_editor::pGroupBoxData);
+	mem_release(level_editor::pListBoxList);
+	mem_release(level_editor::pStaticListTextCount);
+	mem_release(level_editor::pStaticListValCount);
 
-	mem_release(ButtonDelete);
+	mem_release(level_editor::pButtonDelete);
 
-	mem_release(ButtonGeometryOpen);
-	mem_release(ButtonGreenOpen);
-	mem_release(ButtonGameObjectOpen);
-	mem_release(ButtonAIGridOpen);
-	mem_release(StatusBar1);
+	mem_release(level_editor::pButtonGeometryOpen);
+	mem_release(level_editor::pButtonGreenOpen);
+	mem_release(level_editor::pButtonGameObjectOpen);
+	mem_release(level_editor::pButtonAIGridOpen);
+	mem_release(level_editor::pStatusBar1);
 
 	//model
 	//{{
-	mem_release(StaticGeomName);
-	mem_release(StaticGeomModel);
-	mem_release(StaticGeomLod1);
-	mem_release(EditGeomName);
-	mem_release(EditGeomModel);
-	mem_release(EditGeomLod1);
-	mem_release(ButtonGeomLod1);
-	mem_release(ButtonGeomModel);
+	mem_release(level_editor::pStaticGeomName);
+	mem_release(level_editor::pStaticGeomModel);
+	mem_release(level_editor::pStaticGeomLod1);
+	mem_release(level_editor::pEditGeomName);
+	mem_release(level_editor::pEditGeomModel);
+	mem_release(level_editor::pEditGeomLod1);
+	mem_release(level_editor::pButtonGeomLod1);
+	mem_release(level_editor::pStaticGeomPhysics);
+	mem_release(level_editor::pEditGeomPhysics);
+	mem_release(level_editor::pButtonGeomPhysics);
+	mem_release(level_editor::pCheckBoxSegmentation);
+	mem_release(level_editor::pButtonGeomModel);
 	
-	mem_release(StaticGeomPos);
-	mem_release(EditGeomPosX);
-	mem_release(EditGeomPosY);
-	mem_release(EditGeomPosZ);
-	mem_release(RadioButtonGeomPosX);
-	mem_release(RadioButtonGeomPosY);
-	mem_release(RadioButtonGeomPosZ);
-	mem_release(StaticGeomRot);
-	mem_release(EditGeomRotX);
-	mem_release(EditGeomRotY);
-	mem_release(EditGeomRotZ);
-	mem_release(RadioButtonGeomRotX);
-	mem_release(RadioButtonGeomRotY);
-	mem_release(RadioButtonGeomRotZ);
-	mem_release(StaticGeomScale);
-	mem_release(EditGeomScaleX);
-	mem_release(EditGeomScaleY);
-	mem_release(EditGeomScaleZ);
-	mem_release(RadioButtonGeomScaleX);
-	mem_release(RadioButtonGeomScaleY);
-	mem_release(RadioButtonGeomScaleZ);
-	mem_release(ButtonGeomFinish);
+	mem_release(level_editor::pStaticGeomPos);
+	mem_release(level_editor::pEditGeomPosX);
+	mem_release(level_editor::pEditGeomPosY);
+	mem_release(level_editor::pEditGeomPosZ);
+	mem_release(level_editor::pRadioButtonGeomPosX);
+	mem_release(level_editor::pRadioButtonGeomPosY);
+	mem_release(level_editor::pRadioButtonGeomPosZ);
+	mem_release(level_editor::pStaticGeomRot);
+	mem_release(level_editor::pEditGeomRotX);
+	mem_release(level_editor::pEditGeomRotY);
+	mem_release(level_editor::pEditGeomRotZ);
+	mem_release(level_editor::pRadioButtonGeomRotX);
+	mem_release(level_editor::pRadioButtonGeomRotY);
+	mem_release(level_editor::pRadioButtonGeomRotZ);
+	mem_release(level_editor::pStaticGeomScale);
+	mem_release(level_editor::pEditGeomScaleX);
+	mem_release(level_editor::pEditGeomScaleY);
+	mem_release(level_editor::pEditGeomScaleZ);
+	mem_release(level_editor::pRadioButtonGeomScaleX);
+	mem_release(level_editor::pRadioButtonGeomScaleY);
+	mem_release(level_editor::pRadioButtonGeomScaleZ);
+	mem_release(level_editor::pButtonGeomFinish);
 	//}}
 
-	mem_release(StaticGreenName);
-	mem_release(StaticGreenModel);
-	mem_release(StaticGreenLod1);
-	mem_release(StaticGreenLod2);
-	mem_release(EditGreenName);
-	mem_release(EditGreenModel);
-	mem_release(EditGreenLod1);
-	mem_release(EditGreenLod2);
-	mem_release(ButtonGreenLod1);
-	mem_release(ButtonGreenModel);
-	mem_release(ButtonGreenLod2);
-	mem_release(ButtonGreenMask);
-	mem_release(StaticGreenMask);
-	mem_release(EditGreenMask);
-	mem_release(StaticGreenNav);
-	mem_release(EditGreenNav);
-	mem_release(ButtonGreenNav);
+	mem_release(level_editor::pStaticGreenName);
+	mem_release(level_editor::pStaticGreenModel);
+	mem_release(level_editor::pStaticGreenLod1);
+	mem_release(level_editor::pStaticGreenLod2);
+	mem_release(level_editor::pEditGreenName);
+	mem_release(level_editor::pEditGreenModel);
+	mem_release(level_editor::pEditGreenLod1);
+	mem_release(level_editor::pEditGreenLod2);
+	mem_release(level_editor::pButtonGreenLod1);
+	mem_release(level_editor::pButtonGreenModel);
+	mem_release(level_editor::pButtonGreenLod2);
+	mem_release(level_editor::pButtonGreenMask);
+	mem_release(level_editor::pCheckBoxGreenAveragedRGB);
+	mem_release(level_editor::pStaticGreenMask);
+	mem_release(level_editor::pEditGreenMask);
+	mem_release(level_editor::pStaticGreenNav);
+	mem_release(level_editor::pEditGreenNav);
+	mem_release(level_editor::pButtonGreenNav);
 
-	mem_release(TrackBarGreenDensity);
-	mem_release(ButtonGreenGenerate);
-	mem_release(StaticGreenDensityText);
-	mem_release(StaticGreenDensityVal);
+	mem_release(level_editor::pTrackBarGreenDensity);
+	mem_release(level_editor::pButtonGreenGenerate);
+	mem_release(level_editor::pStaticGreenDensityText);
+	mem_release(level_editor::pStaticGreenDensityVal);
 
-	mem_delete(SXLevelEditor::EditGreenSelX);
-	mem_delete(SXLevelEditor::EditGreenSelY);
-	mem_delete(SXLevelEditor::EditGreenSelZ);
-	mem_delete(SXLevelEditor::RadioButtonGreenSelX);
-	mem_delete(SXLevelEditor::RadioButtonGreenSelY);
-	mem_delete(SXLevelEditor::RadioButtonGreenSelZ);
-	//mem_delete(SXLevelEditor::ButtonSingleSelDel);
-	mem_delete(SXLevelEditor::ComboBoxGreenSel);
-	mem_delete(SXLevelEditor::StaticGreenSelX);
-	mem_delete(SXLevelEditor::StaticGreenSelY);
-	mem_delete(SXLevelEditor::StaticGreenSelZ);
-	/*mem_delete(SXLevelEditor::EditMultipleCreateVWidth);
-	mem_delete(SXLevelEditor::EditMultipleCreateVHeight);
-	mem_delete(SXLevelEditor::EditMultipleCreateVDepth);*/
+	mem_delete(level_editor::pEditGreenSelX);
+	mem_delete(level_editor::pEditGreenSelY);
+	mem_delete(level_editor::pEditGreenSelZ);
+	mem_delete(level_editor::pRadioButtonGreenSelX);
+	mem_delete(level_editor::pRadioButtonGreenSelY);
+	mem_delete(level_editor::pRadioButtonGreenSelZ);
+	//mem_delete(level_editor::pButtonSingleSelDel);
+	mem_delete(level_editor::pComboBoxGreenSel);
+	mem_delete(level_editor::pStaticGreenSelX);
+	mem_delete(level_editor::pStaticGreenSelY);
+	mem_delete(level_editor::pStaticGreenSelZ);
+	/*mem_delete(level_editor::pEditMultipleCreateVWidth);
+	mem_delete(level_editor::pEditMultipleCreateVHeight);
+	mem_delete(level_editor::pEditMultipleCreateVDepth);*/
 
 
-	mem_delete(SXLevelEditor::StaticGameClass);
-	mem_delete(SXLevelEditor::ComboBoxGameClass);
-	mem_delete(SXLevelEditor::ListViewGameClass);
-	mem_delete(SXLevelEditor::ComboBoxGameValue);
-	mem_delete(SXLevelEditor::EditGameValue);
-	mem_delete(SXLevelEditor::ButtonGameValue);
-	mem_delete(SXLevelEditor::StaticGameHelp);
-	mem_delete(SXLevelEditor::MemoGameHelp);
-	mem_delete(SXLevelEditor::ButtonGameCreate);
+	mem_delete(level_editor::pStaticGameClass);
+	mem_delete(level_editor::pComboBoxGameClass);
+	mem_delete(level_editor::pListViewGameClass);
+	mem_delete(level_editor::pComboBoxGameValue);
+	mem_delete(level_editor::pEditGameValue);
+	mem_delete(level_editor::pButtonGameValue);
+	mem_delete(level_editor::pStaticGameHelp);
+	mem_delete(level_editor::pMemoGameHelp);
+	mem_delete(level_editor::pButtonGameCreate);
 
-	mem_delete(SXLevelEditor::ButtonAIQuadsDelSel);
-	mem_delete(SXLevelEditor::ButtonAIGridGen);
-	mem_delete(SXLevelEditor::ButtonAIClearAll);
-	mem_delete(SXLevelEditor::StatiAIBBDimensions);
-	mem_delete(SXLevelEditor::StaticAIBBDimensionsWidth);
-	mem_delete(SXLevelEditor::EditAIBBDimensionsWidth);
-	mem_delete(SXLevelEditor::StaticAIBBDimensionsHeight);
-	mem_delete(SXLevelEditor::EditAIBBDimensionsHeight);
-	mem_delete(SXLevelEditor::StaticAIBBDimensionsDepth);
-	mem_delete(SXLevelEditor::EditAIBBDimensionsDepth);
-	mem_delete(SXLevelEditor::StaticAIBBPos);
-	mem_delete(SXLevelEditor::StaticAIBBPosX);
-	mem_delete(SXLevelEditor::EditAIBBPosX);
-	mem_delete(SXLevelEditor::StaticAIBBPosY);
-	mem_delete(SXLevelEditor::EditAIBBPosY);
-	mem_delete(SXLevelEditor::StaticAIBBPosZ);
-	mem_delete(SXLevelEditor::EditAIBBPosZ);
-	mem_delete(SXLevelEditor::ButtonAIBBFinish);
-	mem_delete(SXLevelEditor::ButtonAIGPGen);
-	mem_delete(SXLevelEditor::ButtonAIGPClear);
-	mem_delete(SXLevelEditor::RadioButtonAIGPAdd);
-	mem_delete(SXLevelEditor::RadioButtonAIGPDel);
-	mem_delete(SXLevelEditor::RadioButtonAIQuadAdd);
-	mem_delete(SXLevelEditor::RadioButtonAIQuadsMSel);
-	mem_delete(SXLevelEditor::RadioButtonAIQuadsSelDel);
-	mem_delete(SXLevelEditor::ButtonAIGridValidation);
-	mem_delete(SXLevelEditor::CheckBoxAIGridMarkedSplits);
-	mem_delete(SXLevelEditor::StaticAIStatistics);
-	mem_delete(SXLevelEditor::StaticAIStatsCountQuads);
-	mem_delete(SXLevelEditor::StaticAIStatsCountGP);
-	mem_delete(SXLevelEditor::StaticAIStatsCountSplits);
-	mem_delete(SXLevelEditor::EditAIStatsCountQuads);
-	mem_delete(SXLevelEditor::EditAIStatsCountGP);
-	mem_delete(SXLevelEditor::EditAIStatsCountSplits);
+	mem_delete(level_editor::pButtonAIQuadsDelSel);
+	mem_delete(level_editor::pButtonAIGridGen);
+	mem_delete(level_editor::pButtonAIClearAll);
+	mem_delete(level_editor::pStaticAIBBDimensions);
+	mem_delete(level_editor::pStaticAIBBDimensionsWidth);
+	mem_delete(level_editor::pEditAIBBDimensionsWidth);
+	mem_delete(level_editor::pStaticAIBBDimensionsHeight);
+	mem_delete(level_editor::pEditAIBBDimensionsHeight);
+	mem_delete(level_editor::pStaticAIBBDimensionsDepth);
+	mem_delete(level_editor::pEditAIBBDimensionsDepth);
+	mem_delete(level_editor::pStaticAIBBPos);
+	mem_delete(level_editor::pStaticAIBBPosX);
+	mem_delete(level_editor::pEditAIBBPosX);
+	mem_delete(level_editor::pStaticAIBBPosY);
+	mem_delete(level_editor::pEditAIBBPosY);
+	mem_delete(level_editor::pStaticAIBBPosZ);
+	mem_delete(level_editor::pEditAIBBPosZ);
+	mem_delete(level_editor::pButtonAIBBFinish);
+	mem_delete(level_editor::pButtonAIGPGen);
+	mem_delete(level_editor::pButtonAIGPClear);
+	mem_delete(level_editor::pRadioButtonAIGPAdd);
+	mem_delete(level_editor::pRadioButtonAIGPDel);
+	mem_delete(level_editor::pRadioButtonAIQuadAdd);
+	mem_delete(level_editor::pRadioButtonAIQuadsMSel);
+	mem_delete(level_editor::pRadioButtonAIQuadsSelDel);
+	mem_delete(level_editor::pButtonAIGridValidation);
+	mem_delete(level_editor::pCheckBoxAIGridMarkedSplits);
+	mem_delete(level_editor::pStaticAIStatistics);
+	mem_delete(level_editor::pStaticAIStatsCountQuads);
+	mem_delete(level_editor::pStaticAIStatsCountGP);
+	mem_delete(level_editor::pStaticAIStatsCountSplits);
+	mem_delete(level_editor::pEditAIStatsCountQuads);
+	mem_delete(level_editor::pEditAIStatsCountGP);
+	mem_delete(level_editor::pEditAIStatsCountSplits);
 }
 
 //##########################################################################
 
-void SXLevelEditor::LevelEditorUpdate(DWORD timeDelta)
+void level_editor::LEcreateRenderData()
 {
-	static float3 vCamPos;
-	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
+	level_editor::pAxesHelper = new CAxesHelper();
+	D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &level_editor::pFigureBox, 0);
+}
+
+void level_editor::LEdeleteRenderData()
+{
+	mem_delete(level_editor::pAxesHelper);
+	mem_release(level_editor::pFigureBox);
+}
+
+void level_editor::NullingButtonSelTransform()
+{
+	level_editor::pCheckBoxTBPos->setCheck(false);
+	level_editor::pCheckBoxTBRot->setCheck(false);
+	level_editor::pCheckBoxTBScale->setCheck(false);
+	level_editor::pAxesHelper->setType(CAxesHelper::HANDLER_TYPE_NONE);
+}
+
+void level_editor::LevelEditorUpdate(DWORD timeDelta)
+{
+	static float3 vObserverPos;
+	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vObserverPos);
+
+	level_editor::vRayOrigin = vObserverPos;
+	
+	static float4x4 mObserverView, mObserverProj;
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mObserverView);
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &mObserverProj);
+
+	SMMATRIX mInvObserverView = SMMatrixInverse(0, mObserverView);
+	GetCursorPos(&level_editor::oPointMouse);
+	ScreenToClient(SRender_GetHandleWin3D(), &level_editor::oPointMouse);
+
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+
+	level_editor::vRayDirDirect = float3(
+		(2.0f * (float)level_editor::oPointMouse.x / float(*r_win_width) - 1.0f) / mObserverProj._11,
+		-(2.0f * (float)level_editor::oPointMouse.y / float(*r_win_height) - 1.0f) / mObserverProj._22,
+		1.0f
+		) * mInvObserverView;
+	level_editor::vRayDir = level_editor::vRayDirDirect - vObserverPos;
+	
+	//**********************************************************************
 
 	static const float * r_far = GET_PCVAR_FLOAT("r_far");
 
 	long count_poly_green = 0;
-	for (int i = 0; i < SGeom_GreenGetCount(); ++i)
+	for (int i = 0; i < SGreen_GetCount(); ++i)
 	{
-		count_poly_green += SGeom_GreenMGetCountGen(i) * SGeom_GreenMGetCountPoly(i);
+		count_poly_green += SGreen_MGetCountGen(i) * SGreen_MGetCountPoly(i);
 	}
 
 	long count_poly_geom = 0;
-	for (int i = 0; i < SGeom_ModelsGetCount(); ++i)
+	for (int i = 0; i < SGeom_GetCountModels(); ++i)
 	{
-		count_poly_geom += SGeom_ModelsMGetCountPoly(i);
+		count_poly_geom += SGeom_ModelGetCountPoly(i);
 	}
 
 	char text[256];
 	sprintf(text, "%s%d", "Level poly: ", count_poly_geom + count_poly_green);
-	SXLevelEditor::StatusBar1->SetTextParts(0, text);
+	level_editor::pStatusBar1->setPartText(0, text);
 
 	sprintf(text, "%s%d", "Geom poly: ", count_poly_geom);
-	SXLevelEditor::StatusBar1->SetTextParts(1, text);
+	level_editor::pStatusBar1->setPartText(1, text);
 
 	sprintf(text, "%s%d", "Green poly: ", count_poly_green);
-	SXLevelEditor::StatusBar1->SetTextParts(2, text);
+	level_editor::pStatusBar1->setPartText(2, text);
 
-	sprintf(text, "%s%d", "Count game object: ", SXGame_EntGetCount());
-	SXLevelEditor::StatusBar1->SetTextParts(3, text);
+	int iCountGameObjects = 0;
 
-	if (SXLevelEditor::IdMtl >= 0)
+	for (int i = 0, il = SGame_EntGetCount(); i < il; ++i)
 	{
-		//sprintf(text, "%s", EDITORS_LEVEL_STATUSBAR_GAME_COUNT, SXGame_EntGetCount());
-		SML_MtlGetTexture(SXLevelEditor::IdMtl, text);
-		SXLevelEditor::StatusBar1->SetTextParts(4, text);
+		if (SGame_EntGet(i))
+			++iCountGameObjects;
+	}
+
+	sprintf(text, "%s%d", "Count game object: ", iCountGameObjects);
+	level_editor::pStatusBar1->setPartText(3, text);
+
+	if (level_editor::idMtl >= 0)
+	{
+		//sprintf(text, "%s", EDITORS_LEVEL_STATUSBAR_GAME_COUNT, SGame_EntGetCount());
+		SMtrl_MtlGetTexture(level_editor::idMtl, text);
+		level_editor::pStatusBar1->setPartText(4, text);
 	}
 
 
 
-	if (SXLevelEditor::GreenRenderBox)
+	if (level_editor::canGreenRenderBox)
 	{
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-		float3 tmppos = SXLevelEditor::GreenBoxPos;
-		tmppos.y += SXLevelEditor::GreenBoxWHD.y * 0.5f;
-		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(SXLevelEditor::GreenBoxWHD) * SMMatrixTranslation(tmppos)));
+		float3 tmppos = level_editor::vGreenBoxPos;
+		tmppos.y += level_editor::vGreenBoxWHD.y * 0.5f;
+		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, &(D3DXMATRIX)(SMMatrixScaling(level_editor::vGreenBoxWHD) * SMMatrixTranslation(tmppos)));
 		SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
-		SXLevelEditor::FigureBox->DrawSubset(0);
+		level_editor::pFigureBox->DrawSubset(0);
 
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 	}
 
-	if (SXLevelEditor::SelSelection)
+	if (level_editor::canSelSelection)
 	{
-		if (SXLevelEditor::SelZTest)
+		if (level_editor::canSelZTest)
 		{
 			SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 			SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
@@ -2056,52 +2156,61 @@ void SXLevelEditor::LevelEditorUpdate(DWORD timeDelta)
 			SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 		}
 
-		if (SXLevelEditor::SelMesh)
+		if (level_editor::canSelMesh)
 			SGCore_GetDXDevice()->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
 
-		if (SXLevelEditor::SelBackFacesCull)
+		if (level_editor::canSelBackFacesCull)
 			SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 
 
-		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
 		{
-			if (SXLevelEditor::ActiveElement > -1)
+			if (level_editor::idActiveElement > -1)
 			{
 				SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
-				SGeom_ModelsRenderSingly(timeDelta, SXLevelEditor::ActiveElement, SML_MtlGetStdMtl(MTLTYPE_MODEL_STATIC));
+				SGeom_RenderSingly(timeDelta, level_editor::idActiveElement, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_STATIC));
 			}
 		}
 
-		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
+		if (level_editor::useCopyData && level_editor::idCopy >= 0)
 		{
-			if (SXLevelEditor::ActiveElement > -1)
+			if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+				SGeom_RenderSingly(timeDelta, level_editor::idCopy, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_STATIC), &(level_editor::vCopyPos));
+			else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
+				SGame_EditorRender(level_editor::idCopy, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_SKIN), &(level_editor::vCopyPos));
+		}
+
+		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN)
+		{
+			if (level_editor::idActiveElement > -1)
 			{
-				if (SXLevelEditor::ActiveGreenSplit >= 0 && SXLevelEditor::ActiveGreenObject >= 0)
+				if (level_editor::idActiveGreenSplit >= 0 && level_editor::idActiveGreenObject >= 0)
 				{
 					SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
-					SGeom_GreenRenderObject(timeDelta, &vCamPos, SXLevelEditor::ActiveElement, SXLevelEditor::ActiveGreenSplit, SXLevelEditor::ActiveGreenObject, SML_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
+					SGreen_RenderObject(timeDelta, &vObserverPos, level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
 				}
 				else
 				{
 					SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
-					SGeom_GreenRenderSingly(timeDelta, &vCamPos, SXLevelEditor::ActiveElement, SML_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
+					SGreen_RenderSingly(timeDelta, &vObserverPos, level_editor::idActiveElement, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
 				}
 			}
 		}
 
-		if (SXLevelEditor::ActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
+		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
 		{
-			SXGame_EditorRender(SXLevelEditor::ActiveElement, SRender_EditorGetSelectTex());
+			ID idGameObj = level_editor::pListBoxList->getItemData(level_editor::idActiveElement);
+			SGame_EditorRender(idGameObj, SRender_EditorGetSelectTex());
 		}
 
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 
-		if (SXLevelEditor::SelMesh)
+		if (level_editor::canSelMesh)
 			SGCore_GetDXDevice()->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 
-		if (SXLevelEditor::SelBackFacesCull)
+		if (level_editor::canSelBackFacesCull)
 			SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	}
 
@@ -2111,13 +2220,13 @@ void SXLevelEditor::LevelEditorUpdate(DWORD timeDelta)
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
-	if (SXLevelEditor::AIGQuad)
-		SAIG_RenderQuads(SRender_GetCamera()->ObjFrustum, &vCamPos, *r_far);
+	if (level_editor::canAIGQuad)
+		SAIG_RenderQuads(SRender_GetCamera()->getFrustum(), &vObserverPos, *r_far);
 
-	if (SXLevelEditor::AIGGraphPoint)
-		SAIG_RenderGraphPoints(&vCamPos, *r_far);
+	if (level_editor::canAIGGraphPoint)
+		SAIG_RenderGraphPoints(&vObserverPos, *r_far);
 
-	if (SXLevelEditor::AIGBound)
+	if (level_editor::canAIGBound)
 	{
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
@@ -2132,26 +2241,412 @@ void SXLevelEditor::LevelEditorUpdate(DWORD timeDelta)
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	}
 
-	if (SXLevelEditor::ObjAxesHelper)
+	if (level_editor::pAxesHelper)
 	{
+		level_editor::pAxesHelper->update();
+
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-		SXLevelEditor::ObjAxesHelper->Render();
+		level_editor::pAxesHelper->render();
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	}
+
+	if (!level_editor::useCopyData && SSInput_GetKeyState(SIK_LCONTROL) && SSInput_GetKeyState(SIK_C) && level_editor::pRenderWindow->getFocus())
+	{
+		int iSelected = level_editor::pListBoxList->getSel();
+		if (iSelected < 0)
+			return;
+
+		if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+		{
+			level_editor::useCopyData = true;
+			level_editor::idCopy = iSelected;
+			SGeom_ModelGetPosition(level_editor::idCopy, &(level_editor::vCopyPos));
+		}
+		else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GAME)
+		{
+			level_editor::useCopyData = true;
+			level_editor::idCopy = level_editor::pListBoxList->getItemData(iSelected);
+			CBaseEntity *pEntity = SGame_EntGet(level_editor::idCopy);
+			if (pEntity)
+				level_editor::vCopyPos = pEntity->getPos();
+			else
+			{
+				level_editor::useCopyData = false;
+				level_editor::idCopy = -1;
+			}
+		}
+	}
+
+	//! –µ—Å–ª–∏ –ü–ö–ú –ª–∏–±–æ –¥–∞–Ω–Ω—ã–µ –∫–æ–ø–∏—Ä–æ–≤–∞–Ω–∏—è –Ω–µ –≤–∞–ª–∏–¥–Ω—ã, —Ç–æ –æ–±–Ω—É–ª—è–µ–º –¥–∞–Ω–Ω—ã–µ –∫–æ–ø–∏—Ä–æ–≤–∞–Ω–∏—è
+	if (SSInput_GetKeyState(SIM_RBUTTON) || (level_editor::useCopyData && level_editor::idCopy < 0))
+	{
+		level_editor::useCopyData = false;
+		level_editor::idCopy = -1;
+	}
+
+	if (!SSInput_GetKeyState(SIM_LBUTTON))
+		level_editor::isStartScale = true;
+
+	SXLevelEditor_Transform(10);
+}
+
+//##########################################################################
+
+void level_editor::FinalImageUncheckedMenu()
+{
+	level_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_COLOR, false);
+	level_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_NORMALS, false);
+	level_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_PARAMETERS, false);
+	level_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_AMBIENTDIFFUSE, false);
+	level_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_SPECULAR, false);
+	level_editor::pMainMenu->setCheckItem(ID_FINALIMAGE_LIGHTINGSCENE, false);
+
+	level_editor::pCheckBoxTBRColor->setCheck(false);
+	level_editor::pCheckBoxTBRNormal->setCheck(false);
+	level_editor::pCheckBoxTBRParam->setCheck(false);
+	level_editor::pCheckBoxTBRAmDiff->setCheck(false);
+	level_editor::pCheckBoxTBRSpecular->setCheck(false);
+	level_editor::pCheckBoxTBRLighting->setCheck(false);
+}
+
+//##########################################################################
+
+void level_editor::LevelNew(bool mess)
+{
+	if (mess && (SGeom_GetCountModels() <= 0 || (SGeom_GetCountModels() > 0 && MessageBox(0, "Are you sure you need to create a new level?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDNO)))
+		return;
+
+	SLevel_Clear();
+	char tmpcaption[256];
+	sprintf(tmpcaption, "%s: new level ** | %s", SX_LEVEL_EDITOR_NAME, SKYXENGINE_VERSION4EDITORS);
+	level_editor::pJobWindow->setText(tmpcaption);
+	level_editor::iActiveGroupType = 0;
+	level_editor::idActiveElement = -1;
+	level_editor::idActiveGreenSplit = -1;
+	level_editor::idActiveGreenObject = -1;
+
+	ID gid = SLight_GetGlobal();
+	if (gid >= 0)
+		SLight_DeleteLight(gid);
+
+	level_editor::pCheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP25);
+	level_editor::pCheckBoxTBLevelType->setCheck(false);
+	level_editor::pCheckBoxTBGLightEnable->setCheck(false);
+
+	SXLevelEditor_ButtonGeometryOpen_Click(0,0,0,0);
+}
+
+void level_editor::LevelOpen()
+{
+	if (SGeom_GetCountModels() > 0 && MessageBox(0, "Are you sure that you need to open the level?", 0, MB_YESNO | MB_ICONWARNING | MB_TASKMODAL) == IDNO)
+		return;
+
+	level_editor::LevelNew(false);
+
+	char szSelName[MAX_PATH];
+	char szSelPath[1024];
+	szSelName[0] = szSelPath[0] = 0;
+	gui_func::dialogs::SelectDirOwn(szSelName, szSelPath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Open level", false, false, 0, HandlerGetPreviewLevel);
+
+	if (STR_VALIDATE(szSelPath))
+	{
+		SLevel_Load(szSelName, false);
+		char szCaption[256];
+		sprintf(szCaption, "%s: %s | %s", SX_LEVEL_EDITOR_NAME, szSelName, SKYXENGINE_VERSION4EDITORS);
+		level_editor::pJobWindow->setText(szCaption);
+
+		ID idGlobalLight = SLight_GetGlobal();
+		if (idGlobalLight >= 0)
+		{
+			level_editor::pCheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP26);
+			level_editor::pCheckBoxTBLevelType->setCheck(true);
+			level_editor::pCheckBoxTBGLightEnable->setCheck(true);
+		}
+		else
+		{
+			level_editor::pCheckBoxTBLevelType->setBmpFromResourse(IDB_BITMAP25);
+			level_editor::pCheckBoxTBLevelType->setCheck(false);
+			level_editor::pCheckBoxTBGLightEnable->setCheck(false);
+		}
+	}
+}
+
+void level_editor::LevelSave()
+{
+	if (SLevel_GetName()[0])
+		SLevel_Save(SLevel_GetName());
+	else
+	{
+		if (SGeom_GetCountModels() <= 0)
+			MessageBox(0, "You need to create a level!", 0, 0);
+		else
+			level_editor::LevelSaveAs();
+	}
+}
+
+void level_editor::LevelSaveAs()
+{
+	if (SGeom_GetCountModels() <= 0)
+	{
+		MessageBox(0, "You need to create a level!", 0, 0);
+		return;
+	}
+
+	char szPath[1024];
+	szPath[0] = 0;
+	char szName[1024];
+
+	gui_func::dialogs::SelectDirOwn(szName, szPath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Save level", false, true, 0/*, HandlerPreviewLevel*/);
+	if (STR_VALIDATE(szPath))
+	{
+		SLevel_Save(szName);
+		char szCaption[256];
+		sprintf(szCaption, "%s: %s | %s", SX_LEVEL_EDITOR_NAME, szName, SKYXENGINE_VERSION4EDITORS);
+		level_editor::pJobWindow->setText(szCaption);
 	}
 }
 
 //##########################################################################
 
-void SXLevelEditor::LEcreateData()
+bool HandlerGetPreviewLevel(const char *szPath, char *szBuff)
 {
-	SXLevelEditor::ObjAxesHelper = new AxesHelper();
-	D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &SXLevelEditor::FigureBox, 0);
+	String sPathImg = FileAppendSlash(szPath) + "preview.bmp";
+	if (FileExistsFile(sPathImg.c_str()))
+	{
+		sprintf(szBuff, "%s", sPathImg.c_str());
+		return true;
+	}
+	return false;
 }
 
-void SXLevelEditor::LEdeleteData()
+//##########################################################################
+
+void SXLevelEditor_Transform(DWORD timeDelta)
 {
-	mem_delete(SXLevelEditor::ObjAxesHelper);
-	mem_release(SXLevelEditor::FigureBox);
+	static bool isFirstLBMTransform = false;
+	static bool isFirstRBMTransform = false;
+	static int iNumComponent = -1;
+
+	if (!SSInput_GetKeyState(SIK_LSHIFT))
+		return;
+
+	if (level_editor::pRadioButtonGeomPosX->getCheck() || level_editor::pRadioButtonGeomRotX->getCheck() || level_editor::pRadioButtonGeomScaleX->getCheck() || level_editor::pRadioButtonGreenSelX->getCheck())
+		iNumComponent = 0;
+	else if (level_editor::pRadioButtonGeomPosY->getCheck() || level_editor::pRadioButtonGeomRotY->getCheck() || level_editor::pRadioButtonGeomScaleY->getCheck() || level_editor::pRadioButtonGreenSelY->getCheck())
+		iNumComponent = 1;
+	else if (level_editor::pRadioButtonGeomPosZ->getCheck() || level_editor::pRadioButtonGeomRotZ->getCheck() || level_editor::pRadioButtonGeomScaleZ->getCheck() || level_editor::pRadioButtonGreenSelZ->getCheck())
+		iNumComponent = 2;
+
+	if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GEOM)
+	{
+		if (SGeom_GetCountModels() <= 0)
+			return;
+
+		int iSelected = level_editor::pListBoxList->getSel();
+
+		float3 vTransform;
+		ISXGUIEdit *pEditX = 0, *pEditY = 0, *pEditZ = 0;
+		int iTypeTransform = -1;
+
+		//–µ—Å–ª–∏ –æ—Ç–º–µ—á–µ–Ω–∞ —Ä–∞–¥–∏–æ–∫–Ω–æ–ø–∫–∞ –Ω–∞ –ø–æ–∑–∏—Ü–∏–∏
+		if (level_editor::pRadioButtonGeomPosX->getCheck() || level_editor::pRadioButtonGeomPosY->getCheck() || level_editor::pRadioButtonGeomPosZ->getCheck())
+		{
+			vTransform = *(SGeom_ModelGetPosition(iSelected));
+
+			pEditX = level_editor::pEditGeomPosX;
+			pEditY = level_editor::pEditGeomPosY;
+			pEditZ = level_editor::pEditGeomPosZ;
+			iTypeTransform = 0;
+		}
+		//–µ—Å–ª–∏ –æ—Ç–º–µ—á–µ–Ω–∞ —Ä–∞–¥–∏–æ–∫–Ω–æ–ø–∫–∞ –Ω–∞ –ø–æ–≤–æ—Ä–æ—Ç–∞—Ö
+		else if (level_editor::pRadioButtonGeomRotX->getCheck() || level_editor::pRadioButtonGeomRotY->getCheck() || level_editor::pRadioButtonGeomRotZ->getCheck())
+		{
+			vTransform = *(SGeom_ModelGetRotation(iSelected));
+
+			pEditX = level_editor::pEditGeomRotX;
+			pEditY = level_editor::pEditGeomRotY;
+			pEditZ = level_editor::pEditGeomRotZ;
+			iTypeTransform = 1;
+		}
+		//–µ—Å–ª–∏ –æ—Ç–º–µ—á–µ–Ω–∞ —Ä–∞–¥–∏–æ–∫–Ω–æ–ø–∫–∞ –Ω–∞ –º–∞—Å—à—Ç–∞–±–∏—Ä–æ–≤–∞–Ω–∏–∏
+		else if (level_editor::pRadioButtonGeomScaleX->getCheck() || level_editor::pRadioButtonGeomScaleY->getCheck() || level_editor::pRadioButtonGeomScaleZ->getCheck())
+		{
+			vTransform = *(SGeom_ModelGetScale(iSelected));
+
+			pEditX = level_editor::pEditGeomScaleX;
+			pEditY = level_editor::pEditGeomScaleY;
+			pEditZ = level_editor::pEditGeomScaleZ;
+			iTypeTransform = 2;
+		}
+		else
+			return;
+
+		//—É–ø—Ä–∞–≤–ª–µ–Ω–∏–µ —Å—Ç—Ä–µ–ª–∫–∞–º–∏
+		if (SSInput_GetKeyState(SIK_UP))
+			vTransform[iNumComponent] += timeDelta * 0.001f;
+		if (SSInput_GetKeyState(SIK_DOWN))
+			vTransform[iNumComponent] -= timeDelta * 0.001f;
+
+		//—É–ø—Ä–∞–≤–ª–µ–Ω–∏–µ –º—ã—à—å—é
+		if (SSInput_GetKeyState(SIM_LBUTTON))
+		{
+			if (isFirstRBMTransform)
+			{
+				RECT oRect;
+				GetWindowRect(GetForegroundWindow(), &oRect);
+				long lCenterX = (oRect.right + oRect.left) / 2;
+				long lCenterY = (oRect.bottom + oRect.top) / 2;
+				POINT oPoint;
+				GetCursorPos(&oPoint);
+
+				if (lCenterY != UINT(oPoint.y))
+					vTransform[iNumComponent] += timeDelta * 0.001f * float(-int(oPoint.y - lCenterY));
+			}
+			else
+				isFirstRBMTransform = true;
+			SRender_CentererCursor();
+		}
+		else
+		{
+			isFirstLBMTransform = false;
+			isFirstRBMTransform = false;
+		}
+
+		//–æ–±–Ω–æ–≤–ª—è–µ–º –¥–∞–Ω–Ω—ã–µ –≤ –∏–Ω—Ç–µ—Ä—Ñ–µ–π—Å–µ —Ä–µ–¥–∞–∫—Ç–æ—Ä–∞
+		char szStr[32];
+
+		sprintf(szStr, "%f", vTransform.x);
+		pEditX->setText(szStr);
+
+		sprintf(szStr, "%f", vTransform.y);
+		pEditY->setText(szStr);
+
+		sprintf(szStr, "%f", vTransform.z);
+		pEditZ->setText(szStr);
+
+		//–æ–±–Ω–æ–≤–ª—è–µ–º —Ç—Ä–∞–Ω—Å—Ñ–æ—Ä–º–∞—Ü–∏—é
+		if(iTypeTransform == 0)
+		{
+			SGeom_ModelSetPosition(iSelected, &vTransform);
+			level_editor::pAxesHelper->setPosition(vTransform);
+		}
+		else if(iTypeTransform == 1)
+		{
+			SGeom_ModelSetRotation(iSelected, &vTransform);
+			level_editor::pAxesHelper->setRotation(vTransform);
+		}
+		else if (iTypeTransform == 2)
+			SGeom_ModelSetScale(iSelected, &vTransform);
+	}
+	else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_GREEN &&
+		(
+		(level_editor::pComboBoxGreenSel->getSel() == 0 && level_editor::idActiveElement >= 0 && level_editor::idActiveGreenSplit >= 0 && level_editor::idActiveGreenObject >= 0) ||
+		(level_editor::pComboBoxGreenSel->getSel() == 2)
+		)
+		)
+	{
+		if (SGreen_GetCount() <= 0)
+			return;
+
+		int iSelected = level_editor::pListBoxList->getSel();
+		if (level_editor::pRadioButtonGreenSelX->getCheck() || level_editor::pRadioButtonGreenSelY->getCheck() || level_editor::pRadioButtonGreenSelZ->getCheck())
+		{
+			float3 pos;
+			if (level_editor::pComboBoxGreenSel->getSel() == 2)
+				pos = level_editor::vGreenBoxWHD;
+			else
+			{
+				float3_t pos2;
+				SGreen_GetPosObject(level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject, &pos2);
+				pos = pos2;
+			}
+
+			if (SSInput_GetKeyState(SIK_UP))
+				pos[iNumComponent] += float(timeDelta) * 0.001f;
+			if (SSInput_GetKeyState(SIK_DOWN))
+				pos[iNumComponent] -= float(timeDelta) * 0.001f;
+
+			if (SSInput_GetKeyState(SIM_LBUTTON))
+			{
+				if (isFirstRBMTransform)
+				{
+					RECT rc;
+					GetWindowRect(GetForegroundWindow(), &rc);
+					UINT cx = (rc.right + rc.left) / 2;
+					UINT cy = (rc.bottom + rc.top) / 2;
+					POINT p;
+					GetCursorPos(&p);
+					POINT centr;
+					centr.x = cx; centr.y = cy;
+
+					if (cy != UINT(p.y))
+						pos[iNumComponent] += float(timeDelta) * 0.001f * float(-int(p.y - cy));
+				}
+				else
+					isFirstRBMTransform = true;
+				SRender_CentererCursor();
+			}
+			else
+			{
+				isFirstLBMTransform = false;
+				isFirstRBMTransform = false;
+			}
+
+			char tmpPosX[32];
+			char tmpPosY[32];
+			char tmpPosZ[32];
+
+			sprintf(tmpPosX, "%f", pos.x);
+			sprintf(tmpPosY, "%f", pos.y);
+			sprintf(tmpPosZ, "%f", pos.z);
+
+			level_editor::pEditGreenSelX->setText(tmpPosX);
+			level_editor::pEditGreenSelY->setText(tmpPosY);
+			level_editor::pEditGreenSelZ->setText(tmpPosZ);
+
+			if (level_editor::pComboBoxGreenSel->getSel() == 2)
+				level_editor::vGreenBoxWHD = pos;
+			else
+				SGreen_SetPosObject(level_editor::idActiveElement, &level_editor::idActiveGreenSplit, &level_editor::idActiveGreenObject, &float3_t(pos));
+		}
+	}
+
+	else if (level_editor::iActiveGroupType == EDITORS_LEVEL_GROUPTYPE_AIGRID)
+	{
+		float fBiasY = 0.f;
+
+		if (SSInput_GetKeyState(SIK_UP))
+			fBiasY += float(timeDelta) * 0.001f;
+		if (SSInput_GetKeyState(SIK_DOWN))
+			fBiasY -= float(timeDelta) * 0.001f;
+
+		//—É–ø—Ä–∞–≤–ª–µ–Ω–∏–µ –º—ã—à—å—é
+		if (SSInput_GetKeyState(SIM_LBUTTON))
+		{
+			if (isFirstRBMTransform)
+			{
+				RECT oRect;
+				GetWindowRect(GetForegroundWindow(), &oRect);
+				long lCenterX = (oRect.right + oRect.left) / 2;
+				long lCenterY = (oRect.bottom + oRect.top) / 2;
+				POINT oPoint;
+				GetCursorPos(&oPoint);
+
+				if (lCenterY != UINT(oPoint.y))
+					fBiasY += timeDelta * 0.001f * float(-int(oPoint.y - lCenterY));
+			}
+			else
+				isFirstRBMTransform = true;
+			SRender_CentererCursor();
+		}
+		else
+		{
+			isFirstLBMTransform = false;
+			isFirstRBMTransform = false;
+		}
+
+		SAIG_QuadSelectedAddPosY(fBiasY);
+	}
 }

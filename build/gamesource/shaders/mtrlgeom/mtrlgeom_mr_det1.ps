@@ -1,0 +1,38 @@
+
+/*
+mtrlgeom_mr_det1.ps
+Рендер геометрии с микрорельефом и детальной текстурой
+*/
+
+#include <../struct.h>
+#include <../mtrl.h>
+
+//##########################################################################
+
+sampler2D g_sColor:register(s0);
+sampler2D g_sDetails0:register(s2);
+sampler2D g_sNormals0:register(s6);
+sampler2D g_sParameters:register(s10);
+
+//##########################################################################
+
+half4 g_vParam;
+half4 g_vNearFarLayers;
+
+//##########################################################################
+
+PSO_Gbuffer main(VSO_SceneCommon IN)
+{
+	ClipFar(IN.vPos.z,g_vNearFarLayers.y);
+	IN.vNormal = normalize(IN.vNormal);
+	
+	half3 vNormal = MixNormalMicro(IN.vNormal, Color2Normal(tex2D(g_sNormals0, IN.vTexUV).rgb) * g_vParam.z);
+	
+	return CreateGbuffer(
+		MixColorDetail(tex2D(g_sColor,IN.vTexUV), tex2D(g_sDetails0, IN.vTexUV * g_vParam.x * MTRL_TEXUV_SCALE), GetLerpFactorDetail(IN.vPos.z)), 
+		vNormal, 
+		tex2D(g_sParameters,IN.vTexUV), 
+		IN.vPos, 
+		g_vNearFarLayers
+		);
+}

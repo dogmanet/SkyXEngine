@@ -1,0 +1,38 @@
+<html onkeyup="return_ingame">
+	<head>
+		<link type="text/css" rel="stylesheet" href="settings_menu.css"/>
+		<link type="text/css" rel="stylesheet" href="settings_controls.css"/>
+	</head>
+	<body style="font-name: quick-junky-regular;color: #c6f0fd;">
+		<div id="background">
+			<div id="title">Управление</div>
+			<div id="center_table">
+				<div class="cctable_row header">
+					<div class="cctable_left cctable_cell">Действие</div>
+					<div class="cctable_ctl0 cctable_cell">Кнопка</div>
+					<div class="cctable_ctl1 cctable_cell">Альтернатива</div>
+				</div>
+				<div class="cctable_items" id="cctable_items">
+					<div class="cctable_section">Движение</div>
+					<div class="cctable_row"><div class="cctable_left cctable_cell">Вперед</div><div class="cctable_ctl0 cctable_cell">W</div><div class="cctable_ctl1 cctable_cell">Вверх</div></div>
+					<div class="cctable_row"><div class="cctable_left cctable_cell">Назад</div><div class="cctable_ctl0 cctable_cell">S</div><div class="cctable_ctl1 cctable_cell">Вниз</div></div>
+					<div class="cctable_row"><div class="cctable_left cctable_cell">Шаг влево</div><div class="cctable_ctl0 cctable_cell">A</div><div class="cctable_ctl1 cctable_cell">Влево</div></div>
+					<div class="cctable_row"><div class="cctable_left cctable_cell">Шаг вправо</div><div class="cctable_ctl0 cctable_cell">D</div><div class="cctable_ctl1 cctable_cell">Вправо</div></div>
+					<div class="cctable_row"><div class="cctable_left cctable_cell">Прыжок</div><div class="cctable_ctl0 cctable_cell">Пробел</div><div class="cctable_ctl1 cctable_cell"> </div></div>
+					<div class="cctable_row"><div class="cctable_left cctable_cell">Бег</div><div class="cctable_ctl0 cctable_cell">Левый шифт</div><div class="cctable_ctl1 cctable_cell">Правый шифт</div></div>
+					<div class="cctable_row"><div class="cctable_left cctable_cell">Приседание (нажать)</div><div class="cctable_ctl0 cctable_cell"> </div><div class="cctable_ctl1 cctable_cell"> </div></div>
+					<div class="cctable_row"><div class="cctable_left cctable_cell">Приседание (удерживать)</div><div class="cctable_ctl0 cctable_cell">Левый ctrl</div><div class="cctable_ctl1 cctable_cell">Правый ctrl</div></div>
+					
+				</div>
+			</div>
+				
+			<div id="left_menu" style="bottom: 5%; top: 85%;">
+				<div class="menu-item bottom" onclick="on_cancel">Назад</div>
+			</div>
+			
+			<div id="right_menu">
+				<div class="menu-item bottom" onclick="controls_commit" style="text-align: right;">Применить</div>
+			</div>
+		</div>
+	</body>
+</html>

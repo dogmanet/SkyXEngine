@@ -1,7 +1,12 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "LightDirectional.h"
 
-#include <mtllight/sxmtllight.h>
+#include <light/sxlight.h>
 
 /*! \skydocent light_directional
 Направленный источник света
@@ -14,6 +19,8 @@ BEGIN_PROPTABLE(CLightDirectional)
 	DEFINE_FIELD_FLOAT(m_fDist, 0, "dist", "Distance", EDITOR_TEXTFIELD)
 	//! Дальность дальняя
 	DEFINE_FIELD_FLOAT(m_fShadowDist, 0, "shadow_dist", "Shadow distance", EDITOR_TEXTFIELD)
+	//! Интенсивность теней
+	DEFINE_FIELD_FLOAT(m_fShadowIntensity, 0, "shadow_intensity", "Shadow intensity", EDITOR_TEXTFIELD)
 
 	//! Тип тени
 	DEFINE_FIELD_INT(m_iShadowType, 0, "shadow_type", "Shadow type", EDITOR_COMBOBOX)
@@ -27,11 +34,13 @@ BEGIN_PROPTABLE(CLightDirectional)
 	//! Верхний радиус
 	DEFINE_FIELD_FLOAT(m_fRadiusTop, 0, "radius_top", "Radius top", EDITOR_TEXTFIELD)
 
+	//! Изначально выключена
+	DEFINE_FLAG(LIGHT_INITIALLY_DARK, "Initially dark")
 END_PROPTABLE()
 
 REGISTER_ENTITY(CLightDirectional, light_directional);
 
-CLightDirectional::CLightDirectional(EntityManager *pMgr) :
+CLightDirectional::CLightDirectional(CEntityManager *pMgr) :
 BaseClass(pMgr)
 {
 	m_vColor = float3(1, 1, 1);
@@ -39,9 +48,10 @@ BaseClass(pMgr)
 	m_fDist = 10;
 	m_fShadowDist = m_fDist;
 	m_iShadowType = 1;
+	m_fShadowIntensity = 1;
 	m_fAngle = SM_PI * 0.4f;
 	m_fRadiusTop = 0.01f;
-	m_idLight = SML_LigthsCreateDirection(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, &SMQuaternion(-SM_PI, 'z'), m_fRadiusTop, m_fAngle, true);
+	m_idLight = SLight_CreateDirection(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, &SMQuaternion(-SM_PI, 'z'), m_fRadiusTop, m_fAngle, true);
 	m_isEnable = true;
 
 	float3 f = LIGHTS_DIR_BASE;
@@ -52,52 +62,71 @@ BaseClass(pMgr)
 
 CLightDirectional::~CLightDirectional()
 {
-	SML_LigthsDeleteLight(m_idLight);
+	SLight_DeleteLight(m_idLight);
 }
 
 void CLightDirectional::toggleEnable()
 {
 	m_isEnable = !m_isEnable;
-	SML_LigthsSetEnable(m_idLight, m_isEnable);
+	SLight_SetEnable(m_idLight, m_isEnable);
 }
 
-void CLightDirectional::OnSync()
+void CLightDirectional::onSync()
 {
-	BaseClass::OnSync();
+	BaseClass::onSync();
 
-	if (SML_LigthsGetEnable(m_idLight) != m_isEnable)
-		SML_LigthsSetEnable(m_idLight, m_isEnable);
+	if (SLight_GetEnable(m_idLight) != m_isEnable)
+		SLight_SetEnable(m_idLight, m_isEnable);
 	
 	static float3 vec;
-	SML_LigthsGetPos(m_idLight, &vec, false);
+	SLight_GetPos(m_idLight, &vec, false);
 
 	if (vec.x != m_vPosition.x || vec.y != m_vPosition.y || vec.z != m_vPosition.z)
-		SML_LigthsSetPos(m_idLight, &(float3)m_vPosition, false);
+		SLight_SetPos(m_idLight, &(float3)m_vPosition, false);
 
-	SML_LigthsSetColor(m_idLight, &(float3)m_vColor);
+	SLight_SetColor(m_idLight, &(float3)m_vColor);
 	
-	if (SML_LigthsGetDist(m_idLight) != m_fDist)
+	if (SLight_GetDist(m_idLight) != m_fDist)
 	{
-		SML_LigthsSetDist(m_idLight, m_fDist, true);
+		SLight_SetDist(m_idLight, m_fDist, true);
 		m_fShadowDist = m_fDist;
 	}
 
-	if (SML_LigthsGetShadowLocalFar(m_idLight) != m_fShadowDist)
-		SML_LigthsSetShadowLocalFar(m_idLight, m_fShadowDist);
+	if (SLight_GetShadowLocalFar(m_idLight) != m_fShadowDist)
+		SLight_SetShadowLocalFar(m_idLight, m_fShadowDist);
 
-	if (SML_LigthsGetTypeShadowed(m_idLight) != m_iShadowType)
-		SML_LigthsSetTypeShadowed(m_idLight, (LTYPE_SHADOW)m_iShadowType);
+	if (SLight_GetTypeShadowed(m_idLight) != m_iShadowType)
+		SLight_SetTypeShadowed(m_idLight, (LTYPE_SHADOW)m_iShadowType);
 
+	SLight_SetShadowIntensity(m_idLight, m_fShadowIntensity);
 
 	static SMQuaternion curr_rot;
-	SML_LigthsGetOrient(m_idLight, &curr_rot);
+	SLight_GetOrient(m_idLight, &curr_rot);
 
 	if (curr_rot.x != m_vOrientation.x || curr_rot.y != m_vOrientation.y || curr_rot.z != m_vOrientation.z || curr_rot.w != m_vOrientation.w)
-		SML_LigthsSetOrient(m_idLight, &m_vOrientation);
+		SLight_SetOrient(m_idLight, &m_vOrientation);
 
-	if (SML_LigthsGetAngle(m_idLight) != m_fAngle)
-		SML_LigthsSetAngle(m_idLight, m_fAngle);
+	if (SLight_GetAngle(m_idLight) != m_fAngle)
+		SLight_SetAngle(m_idLight, m_fAngle);
 
-	if (SML_LigthsGetTopRadius(m_idLight) != m_fRadiusTop)
-		SML_LigthsSetTopRadius(m_idLight, m_fRadiusTop);
+	if (SLight_GetTopRadius(m_idLight) != m_fRadiusTop)
+		SLight_SetTopRadius(m_idLight, m_fRadiusTop);
 }
+
+bool CLightDirectional::getMainColor(float3_t *pOut)
+{
+	if(pOut)
+	{
+		*pOut = m_vColor;
+	}
+	return(m_isEnable);
+}
+
+
+void CLightDirectional::updateFlags()
+{
+	BaseClass::updateFlags();
+
+	m_isEnable = !(getFlags() & LIGHT_INITIALLY_DARK);
+}
+

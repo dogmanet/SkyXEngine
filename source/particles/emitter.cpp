@@ -1,223 +1,239 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "Emitter.h"
 
-void Emitter::NullingInit()
+void CEmitter::initNulling()
 {
-	OldTime = 0;
-	TimeNextSpawnParticle = 0;
-	VertexBuff = 0;
-	IndexBuff = 0;
-	VertexBuffQuad = 0;
-	IndexBuffQuad = 0;
-	IDTex = -1;
-	Arr = 0;
-	TransVertBuf = 0;
-	Name[0] = 0;
-	Count = 0;
-	Enable = false;
-	Alife = false;
+	m_dwOldTime = 0;
+	m_dwTimeNextSpawnParticle = 0;
+	m_pVertexBuff = 0;
+	m_pIndexBuff = 0;
+	m_pVertexBuffQuad = 0;
+	m_pIndexBuffQuad = 0;
+	m_isTexInit = false;
+	m_idTex = -1;
+	m_pArr = 0;
+	m_pTransVertBuf = 0;
+	m_szName[0] = 0;
+	m_iCount = 0;
+	m_isEnable = false;
+	m_isAlife = false;
 	GTransparency = 1;
-	TimerDeath = 0;
-	SizeAdd = 0;
+	m_dwTimerDeath = 0;
+	m_fSizeAdd = 0;
 
-	IDTexTrack = -1;
-	OldSize.x = 0;
-	OldSize.y = 0;
+	m_idTexTrack = -1;
+	m_vOldSize.x = 0;
+	m_vOldSize.y = 0;
 }
 
-Emitter::Emitter()
+CEmitter::CEmitter()
 {
-	NullingInit();
+	initNulling();
 }
 
-Emitter::Emitter(Emitter& part)
+CEmitter::CEmitter(CEmitter &oPart)
 {
-	NullingInit();
-	IDTex = part.IDTex;
-	IDTexTrack = part.IDTexTrack;
-	Data = part.Data;
-	CountSet(part.Count);
+	initNulling();
+	m_idTex = oPart.m_idTex;
+	m_idTexTrack = oPart.m_idTexTrack;
+	m_oData = oPart.m_oData;
+	setCount(oPart.m_iCount);
 }
 
-Emitter::~Emitter()
+CEmitter::~CEmitter()
 {
-	mem_delete_a(Arr);
-	mem_release_del(TransVertBuf);
-	mem_release_del(VertexBuff);
-	mem_release_del(IndexBuff);
-	mem_release_del(VertexBuffQuad);
-	mem_release_del(IndexBuffQuad);
+	mem_delete_a(m_pArr);
+	mem_release_del(m_pTransVertBuf);
+	mem_release_del(m_pVertexBuff);
+	mem_release_del(m_pIndexBuff);
+	mem_release_del(m_pVertexBuffQuad);
+	mem_release_del(m_pIndexBuffQuad);
 }
 
-void Emitter::OnLostDevice()
+void CEmitter::onLostDevice()
 {
-	mem_release_del(TransVertBuf);
+	mem_release_del(m_pTransVertBuf);
 }
 
-void Emitter::OnResetDevice()
+void CEmitter::onResetDevice()
 {
-	PESet::DXDevice->CreateVertexBuffer(
-		Count * sizeof(CommonParticleDecl2),
+	pe_data::pDXDevice->CreateVertexBuffer(
+		m_iCount * sizeof(CommonParticleDecl2),
 		D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
 		0,
 		D3DPOOL_DEFAULT,
-		&TransVertBuf,
+		&m_pTransVertBuf,
 		0);
 }
 
-void Emitter::Init(ParticlesData* data)
+void CEmitter::init(const CParticlesData *pData)
 {
-	if (data)
-		memcpy(&Data, data, sizeof(ParticlesData));
+	if (pData)
+		memcpy(&m_oData, pData, sizeof(CParticlesData));
 
-	if (IDTex >= 0)
-		AnimTexDataInit();
+	if (m_idTex >= 0)
+		initAnimTexData();
 
-	GeomDataCreate();
+	createGeomData();
 
-	if (Enable)
+	if (m_isEnable)
 	{
-		EnableSet(false);
-		EnableSet(true);
+		setEnable(false);
+		setEnable(true);
 	}
 }
 
-ParticlesData* Emitter::GetData()
+CParticlesData* CEmitter::getData()
 {
-	return &Data;
+	return &m_oData;
 }
 
-void Emitter::NameSet(const char* name)
+void CEmitter::setName(const char *szName)
 {
-	if (name)
-		strcpy(Name,name);
+	if (szName)
+		strcpy(m_szName, szName);
 }
 
-void Emitter::NameGet(char* name)
+void CEmitter::getName(char *szName)
 {
-	if (name)
-		strcpy(name, Name);
+	if (szName)
+		strcpy(szName, m_szName);
 }
 
-void Emitter::TextureSetID(ID tex)
+void CEmitter::setTextureID(ID idTex)
 {
-	IDTex = tex;
-	AnimTexDataInit();
+	m_idTex = idTex;
+
+	m_isTexInit = false;
+	if (SGCore_LoadTexGetTex(m_idTex))
+		m_isTexInit = true;
+
+	initAnimTexData();
 }
 
-void Emitter::TextureSet(const char* tex)
+void CEmitter::setTexture(const char *szTex)
 {
-	IDTex = SGCore_LoadTexAddName(tex, LoadTexType::ltt_load);
-	SGCore_LoadTexLoadTextures();
-	AnimTexDataInit();
+	m_idTex = SGCore_LoadTexAddName(szTex, LOAD_TEXTURE_TYPE_LOAD);
+	//SGCore_LoadTexLoadTextures();
+	m_isTexInit = false;
+	if (SGCore_LoadTexGetTex(m_idTex))
+		m_isTexInit = true;
+
+	initAnimTexData();
 }
 
-ID Emitter::TextureGetID()
+ID CEmitter::getTextureID()
 {
-	return IDTex;
+	return m_idTex;
 }
 
-void Emitter::TextureGet(char* tex)
+void CEmitter::getTexture(char *szTex)
 {
-	if (IDTex >= 0)
+	if (m_idTex >= 0)
 	{
-		SGCore_LoadTexGetName(IDTex, tex);
-	}
-}
-
-
-void Emitter::TextureTrackSetID(ID tex)
-{
-	IDTexTrack = tex;
-}
-
-void Emitter::TextureTrackSet(const char* tex)
-{
-	IDTexTrack = SGCore_LoadTexAddName(tex, LoadTexType::ltt_load);
-	SGCore_LoadTexLoadTextures();
-}
-
-ID Emitter::TextureTrackGetID()
-{
-	return IDTexTrack;
-}
-
-void Emitter::TextureTrackGet(char* tex)
-{
-	if (IDTexTrack >= 0)
-	{
-		SGCore_LoadTexGetName(IDTexTrack, tex);
+		SGCore_LoadTexGetName(m_idTex, szTex);
 	}
 }
 
 
-void Emitter::AnimTexDataInit()
+void CEmitter::setTextureTrackID(ID idTex)
 {
-	if (Data.AnimTexCountCadrsX != 0 && Data.AnimTexCountCadrsY != 0)
+	m_idTexTrack = idTex;
+}
+
+void CEmitter::setTextureTrack(const char *szTex)
+{
+	m_idTexTrack = SGCore_LoadTexAddName(szTex, LOAD_TEXTURE_TYPE_LOAD);
+	//SGCore_LoadTexLoadTextures();
+}
+
+ID CEmitter::getTextureTrackID()
+{
+	return m_idTexTrack;
+}
+
+void CEmitter::getTextureTrack(char *szTex)
+{
+	if (m_idTexTrack >= 0)
+	{
+		SGCore_LoadTexGetName(m_idTexTrack, szTex);
+	}
+}
+
+
+void CEmitter::initAnimTexData()
+{
+	if (m_isTexInit && m_oData.m_iAnimTexCountCadrsX != 0 && m_oData.m_iAnimTexCountCadrsY != 0)
 	{
 		D3DSURFACE_DESC desc;
-		SGCore_LoadTexGetTex(IDTex)->GetLevelDesc(0, &desc);
+		SGCore_LoadTexGetTex(m_idTex)->GetLevelDesc(0, &desc);
 
-		AnimTexSize.x = desc.Width;
-		AnimTexSize.y = desc.Height;
+		m_vAnimTexSize.x = desc.Width;
+		m_vAnimTexSize.y = desc.Height;
 
-		AnimSizeCadr.x = (AnimTexSize.x / float(Data.AnimTexCountCadrsX));
-		AnimSizeCadr.y = (AnimTexSize.y / float(Data.AnimTexCountCadrsY));
-		AnimSizeCadr.z = AnimSizeCadr.x / AnimTexSize.x;
-		AnimSizeCadr.w = AnimSizeCadr.y / AnimTexSize.y;
+		m_vAnimSizeCadr.x = (m_vAnimTexSize.x / float(m_oData.m_iAnimTexCountCadrsX));
+		m_vAnimSizeCadr.y = (m_vAnimTexSize.y / float(m_oData.m_iAnimTexCountCadrsY));
+		m_vAnimSizeCadr.z = m_vAnimSizeCadr.x / m_vAnimTexSize.x;
+		m_vAnimSizeCadr.w = m_vAnimSizeCadr.y / m_vAnimTexSize.y;
 	}
 }
 
-void Emitter::AlifeSet(bool alife)
+void CEmitter::setAlife(bool isAlife)
 {
-	if (Alife != alife)
+	if (m_isAlife != isAlife)
 	{
 		GTransparency = 1.f;
-		TimerDeath = 0;
+		m_dwTimerDeath = 0;
 	}
 
-	Alife = alife;
-	if (!Enable && Alife)
-		Enable = Alife;
+	m_isAlife = isAlife;
+
+	if (!m_isEnable && m_isAlife)
+		m_isEnable = m_isAlife;
 }
 
-bool Emitter::AlifeGet()
+bool CEmitter::getAlife()
 {
-	return Alife;
+	return m_isAlife;
 }
 
-////////////////////
+//##########################################################################
 
-void Emitter::ComputeLighting()
+void CEmitter::computeLighting()
 {
-	if (!Enable)
+	if (!m_isEnable)
 		return;
 
-	if (CountLifeParticle > 0 && Data.Lighting)
+	if (m_iCountLifeParticle > 0 && m_oData.m_isLighting)
 	{
 		float3 tmpPosition;
 		float3 tmpColor;
-		for (int i = 0; i < Count; ++i)
+		for (int i = 0; i < m_iCount; ++i)
 		{
-			if (Arr[i].IsAlife)
+			if (m_pArr[i].IsAlife)
 			{
-				Arr[i].Ambient.x = Arr[i].Ambient.y = Arr[i].Ambient.z = Arr[i].Ambient.w = 0;
+				m_pArr[i].Ambient.x = m_pArr[i].Ambient.y = m_pArr[i].Ambient.z = m_pArr[i].Ambient.w = 0;
 
-				for (int k = 0; k<SML_LigthsGetCount(); ++k)
+				for (int k = 0; k<SLight_GetCount(); ++k)
 				{
 					//если свет виден фрустуму камеры (это надо было заранее просчитать) и если свет включен
-					if (SML_LigthsGetVisibleForFrustum(k) && SML_LigthsGetEnable(k))
+					if (SLight_GetVisibleForFrustum(k) && SLight_GetEnable(k))
 					{
-						SML_LigthsGetColor(k, &tmpColor);
+						SLight_GetColor(k, &tmpColor);
 
 						float intens = 1;
 
-						if (SML_LigthsGetType(k) != LTYPE_LIGHT_GLOBAL)
+						if (SLight_GetType(k) != LTYPE_LIGHT_GLOBAL)
 						{
-							SML_LigthsGetPos(k, &tmpPosition, true);
+							SLight_GetPos(k, &tmpPosition, true);
 
-							float dist = SMVector3Dot(Arr[i].Pos - float3(tmpPosition.x, tmpPosition.y, tmpPosition.z));
-							float invdist = 1.f - (dist / (SML_LigthsGetDist(k)));
+							float dist = SMVector3Dot(m_pArr[i].Pos - float3(tmpPosition.x, tmpPosition.y, tmpPosition.z));
+							float invdist = 1.f - (dist / (SLight_GetDist(k)));
 							if (invdist > 1.f)
 								invdist = 1.f;
 							else if (invdist < 0.f)
@@ -226,7 +242,7 @@ void Emitter::ComputeLighting()
 							intens = invdist;
 						}
 
-						Arr[i].LightingIntens += intens;
+						m_pArr[i].LightingIntens += intens;
 					}
 				}
 			}
@@ -234,84 +250,84 @@ void Emitter::ComputeLighting()
 	}
 }
 
-void Emitter::CountSet(int count)
+void CEmitter::setCount(int iCount)
 {
-	Count = count;
+	m_iCount = iCount;
 
-	if (Count <= 0)
+	if (m_iCount <= 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - buffer null size", gen_msg_location);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - buffer null size", GEN_MSG_LOCATION);
 		return;
 	}
 
-	mem_delete_a(Arr);
-	mem_release_del(TransVertBuf);
+	mem_delete_a(m_pArr);
+	mem_release_del(m_pTransVertBuf);
 
-	Arr = new CommonParticle[Count];
+	m_pArr = new CommonParticle[m_iCount];
 
-	PESet::DXDevice->CreateVertexBuffer(
-		Count * sizeof(CommonParticleDecl2),
+	pe_data::pDXDevice->CreateVertexBuffer(
+		m_iCount * sizeof(CommonParticleDecl2),
 		D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
 		0,
 		D3DPOOL_DEFAULT,
-		&TransVertBuf,
+		&m_pTransVertBuf,
 		0);
 
-	GeomDataCreate();
+	createGeomData();
 }
 
-int Emitter::CountGet()
+int CEmitter::getCount()
 {
-	return Count;
+	return m_iCount;
 }
 
-int Emitter::CountLifeGet()
+int CEmitter::getCountLife()
 {
-	return CountLifeParticle;
+	return m_iCountLifeParticle;
 }
 
-void Emitter::EnableSet(bool enable)
+void CEmitter::setEnable(bool isEnable)
 {
-	if (!Enable && enable)
+	if (!m_isEnable && isEnable)
 	{
-		CreateParticles();
+		createParticles();
 
-		for (int i = 0; i < Count; ++i)
+		for (int i = 0; i < m_iCount; ++i)
 		{
-			if (Arr[i].IsAlife)
+			if (m_pArr[i].IsAlife)
 			{
-				CurrMax = Arr[i].Pos;
-				CurrMin = Arr[i].Pos;
+				m_vCurrMax = m_pArr[i].Pos;
+				m_vCurrMin = m_pArr[i].Pos;
 				break;
 			}
 		}
 	}
 
-	Alife = enable;
-	OldTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
-	Enable = enable;
+	m_isAlife = isEnable;
+	m_dwOldTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+	m_isEnable = isEnable;
 
-	if (!Enable)
+	if (!m_isEnable)
 	{
-		for (int i = 0; i < Count; ++i)
+		for (int i = 0; i < m_iCount; ++i)
 		{
-			Arr[i].IsAlife = false;
+			m_pArr[i].IsAlife = false;
 		}
 	}
 }
 
-bool Emitter::EnableGet()
+bool CEmitter::getEnable()
 {
-	return Enable;
+	return m_isEnable;
 }
 
-void Emitter::VertexBuffModify()
+void CEmitter::modifyVertexBuff()
 {
-	if (!VertexBuff)
+	if (!m_pVertexBuff)
 		return;
 
-	CommonParticleDecl* vertices;
-	VertexBuff->Lock(0, 0, (void**)&vertices, 0);
+	CommonParticleDecl *pVertices;
+	m_pVertexBuff->Lock(0, 0, (void**)&pVertices, 0);
 
 	float prev_angle_x = 0;
 	float prev_angle_y = 0;
@@ -322,42 +338,42 @@ void Emitter::VertexBuffModify()
 	static float4x4 mat;
 	mat = SMMatrixIdentity();
 
-	float x = Data.Size.x * 0.5f;
-	float y = Data.Size.y * 0.5f;
+	float x = m_oData.m_vSize.x * 0.5f;
+	float y = m_oData.m_vSize.y * 0.5f;
 
-	for (int i = 0; i < Data.FigureCountQuads; ++i)
+	for (int i = 0; i < m_oData.m_iFigureCountQuads; ++i)
 	{
 		float3 v0(-x, -y, 0.f);
 		float3 v1(-x, y, 0.f);
 		float3 v2(x, y, 0.f);
 		float3 v3(x, -y, 0.f);
 
-		if (Data.FigureTapX)
+		if (m_oData.m_useFigureTapX)
 		{
-			if (Data.FigureRotRand)
+			if (m_oData.m_useFigureRotRand)
 				prev_angle_x = randf(0, SM_PI);
 			else
-				prev_angle_x = SM_PI / float(Data.FigureCountQuads) * i;
+				prev_angle_x = SM_PI / float(m_oData.m_iFigureCountQuads) * i;
 
 			mat *= SMMatrixRotationX(prev_angle_x);
 		}
 
-		if (Data.FigureTapY)
+		if (m_oData.m_useFigureTapY)
 		{
-			if (Data.FigureRotRand)
+			if (m_oData.m_useFigureRotRand)
 				prev_angle_y = randf(0, SM_PI);
 			else
-				prev_angle_y = SM_PI / float(Data.FigureCountQuads) * i;
+				prev_angle_y = SM_PI / float(m_oData.m_iFigureCountQuads) * i;
 
 			mat *= SMMatrixRotationY(prev_angle_y);
 		}
 
-		if (Data.FigureTapZ)
+		if (m_oData.m_useFigureTapZ)
 		{
-			if (Data.FigureRotRand)
+			if (m_oData.m_useFigureRotRand)
 				prev_angle_z = randf(0, SM_PI);
 			else
-				prev_angle_z = SM_PI / float(Data.FigureCountQuads) * i;
+				prev_angle_z = SM_PI / float(m_oData.m_iFigureCountQuads) * i;
 
 			mat *= SMMatrixRotationZ(prev_angle_z);
 		}
@@ -367,47 +383,47 @@ void Emitter::VertexBuffModify()
 		v2 = SMVector3Transform(v2, mat);
 		v3 = SMVector3Transform(v3, mat);
 
-		vertices[countvert + 0] = CommonParticleDecl(v0.x, v0.y, v0.z, 0.0f, 1.0f);
-		vertices[countvert + 1] = CommonParticleDecl(v1.x, v1.y, v1.z, 0.0f, 0.0f);
-		vertices[countvert + 2] = CommonParticleDecl(v2.x, v2.y, v2.z, 1.0f, 0.0f);
-		vertices[countvert + 3] = CommonParticleDecl(v3.x, v3.y, v3.z, 1.0f, 1.0f);
+		pVertices[countvert + 0] = CommonParticleDecl(v0.x, v0.y, v0.z, 0.0f, 1.0f);
+		pVertices[countvert + 1] = CommonParticleDecl(v1.x, v1.y, v1.z, 0.0f, 0.0f);
+		pVertices[countvert + 2] = CommonParticleDecl(v2.x, v2.y, v2.z, 1.0f, 0.0f);
+		pVertices[countvert + 3] = CommonParticleDecl(v3.x, v3.y, v3.z, 1.0f, 1.0f);
 
 		countvert += 4;
 	}
 
-	VertexBuff->Unlock();
+	m_pVertexBuff->Unlock();
 }
 
-void Emitter::GeomDataCreate()
+void CEmitter::createGeomData()
 {
-	mem_release_del(VertexBuff);
-	mem_release_del(IndexBuff);
+	mem_release_del(m_pVertexBuff);
+	mem_release_del(m_pIndexBuff);
 
-	PESet::DXDevice->CreateVertexBuffer(
-		4 * Data.FigureCountQuads * sizeof(CommonParticleDecl),
+	pe_data::pDXDevice->CreateVertexBuffer(
+		4 * m_oData.m_iFigureCountQuads * sizeof(CommonParticleDecl),
 		0,
 		0,
 		D3DPOOL_MANAGED,
-		&VertexBuff,
+		&m_pVertexBuff,
 		0);
 
-	PESet::DXDevice->CreateIndexBuffer(
-		6 * Data.FigureCountQuads * sizeof(WORD),
+	pe_data::pDXDevice->CreateIndexBuffer(
+		6 * m_oData.m_iFigureCountQuads * sizeof(WORD),
 		0,
 		D3DFMT_INDEX16,
 		D3DPOOL_MANAGED,
-		&IndexBuff,
+		&m_pIndexBuff,
 		0);
 
-	VertexBuffModify();
+	modifyVertexBuff();
 
 	WORD* indices = 0;
-	IndexBuff->Lock(0, 0, (void**)&indices, 0);
+	m_pIndexBuff->Lock(0, 0, (void**)&indices, 0);
 
 	int countind = 0;
 	int countvert = 0;
 
-	for (int i = 0; i < Data.FigureCountQuads; ++i)
+	for (int i = 0; i < m_oData.m_iFigureCountQuads; ++i)
 	{
 		indices[countind + 0] = countvert + 0; indices[countind + 1] = countvert + 1; indices[countind + 2] = countvert + 2;
 		indices[countind + 3] = countvert + 0; indices[countind + 4] = countvert + 2; indices[countind + 5] = countvert + 3;
@@ -416,382 +432,386 @@ void Emitter::GeomDataCreate()
 		countvert += 4;
 	}
 
-	IndexBuff->Unlock();
+	m_pIndexBuff->Unlock();
 
 
 
-	PESet::DXDevice->CreateVertexBuffer(
+	pe_data::pDXDevice->CreateVertexBuffer(
 		4 * sizeof(CommonParticleDecl),
 		0,
 		0,
 		D3DPOOL_MANAGED,
-		&VertexBuffQuad,
+		&m_pVertexBuffQuad,
 		0);
 
-	PESet::DXDevice->CreateIndexBuffer(
+	pe_data::pDXDevice->CreateIndexBuffer(
 		6  * sizeof(WORD),
 		0,
 		D3DFMT_INDEX16,
 		D3DPOOL_MANAGED,
-		&IndexBuffQuad,
+		&m_pIndexBuffQuad,
 		0);
 
 	CommonParticleDecl* vertices;
-	VertexBuffQuad->Lock(0, 0, (void**)&vertices, 0);
+	m_pVertexBuffQuad->Lock(0, 0, (void**)&vertices, 0);
 
 	vertices[0] = CommonParticleDecl(-0.5, 0, -0.5, 0.0f, 1.0f);
 	vertices[1] = CommonParticleDecl(-0.5, 0,  0.5, 0.0f, 0.0f);
 	vertices[2] = CommonParticleDecl( 0.5, 0,  0.5, 1.0f, 0.0f);
 	vertices[3] = CommonParticleDecl( 0.5, 0,  -0.5, 1.0f, 1.0f);
 
-	VertexBuffQuad->Unlock();
+	m_pVertexBuffQuad->Unlock();
 
 
 	indices = 0;
-	IndexBuffQuad->Lock(0, 0, (void**)&indices, 0);
+	m_pIndexBuffQuad->Lock(0, 0, (void**)&indices, 0);
 
 	indices[0] = 0; indices[1] = 1; indices[2] = 2;
 	indices[3] = 0; indices[4] = 2; indices[5] = 3;
 
-	IndexBuffQuad->Unlock();
+	m_pIndexBuffQuad->Unlock();
 }
 
-void Emitter::CreateParticles()
+void CEmitter::createParticles()
 {
-	CountReCreate2 = 0;
-	CountLifeParticle = 0;
+	m_iCountReCreate2 = 0;
+	m_iCountLifeParticle = 0;
 	
-	for (int i = 0; i<Count; i++)
+	for (int i = 0; i<m_iCount; i++)
 	{
-		if (abs(Data.ReCreateCount) > CountReCreate2 || Data.ReCreateCount == 0)
+		if (abs(m_oData.m_iReCreateCount) > m_iCountReCreate2 || m_oData.m_iReCreateCount == 0)
 		{
-			ReCreateParticles(i);
-			CountReCreate2++;
-			CountLifeParticle++;
+			reCreateParticles(i);
+			m_iCountReCreate2++;
+			m_iCountLifeParticle++;
 		}
 		else
 		{
-			CountReCreate2 = 0;
-			i = Count;
-			if (Data.SpawnNextTime)
-				TimeNextSpawnParticle = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) + Data.SpawnNextTime;//(Data.SpawnNextTime + (Data.SpawnNextTimeDisp > 0 ? rand()%Data.SpawnNextTimeDisp : 0));
+			m_iCountReCreate2 = 0;
+			i = m_iCount;
+			if (m_oData.m_uiSpawnNextTime)
+				m_dwTimeNextSpawnParticle = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) + m_oData.m_uiSpawnNextTime;//(m_oData.SpawnNextTime + (m_oData.SpawnNextTimeDisp > 0 ? rand()%m_oData.SpawnNextTimeDisp : 0));
 		}
 	}
 
 }
 
-void Emitter::ReCreateParticles(WORD id)
+void CEmitter::reCreateParticles(ID id)
 {
 	//если разброс недопустим то спавним только в точке
-	if (Data.SpawnPosType == PARTICLESTYPE_SPAWNPOS_STRICTLY)
+	if (m_oData.m_typeSpawnPos == PARTICLESTYPE_SPAWNPOS_STRICTLY)
 	{
-		Arr[id].Pos = Data.SpawnOrigin;
+		m_pArr[id].Pos = m_oData.m_vSpawnOrigin;
 	}
 	//разрешен рандомный спавн
-	else if (Data.SpawnPosType == PARTICLESTYPE_SPAWNPOS_BOUND)
+	else if (m_oData.m_typeSpawnPos == PARTICLESTYPE_SPAWNPOS_BOUND)
 	{
-		if (Data.BoundType == PARTICLESTYPE_BOUND_CONE)
+		if (m_oData.m_typeBound == PARTICLESTYPE_BOUND_CONE)
 		{
-			if (Data.SpawnBoundBindCreateYNeg && Data.SpawnBoundBindCreateYPos)
-				Arr[id].Pos.y = randf(Data.BoundVec1.y, Data.BoundVec2.y);
-			else if (Data.SpawnBoundBindCreateYNeg)
-				Arr[id].Pos.y = Data.BoundVec1.y;
-			else if (Data.SpawnBoundBindCreateYPos)
-				Arr[id].Pos.y = Data.BoundVec2.y;
+			if (m_oData.m_shouldSpawnBoundBindCreateYNeg && m_oData.m_shouldSpawnBoundBindCreateYPos)
+				m_pArr[id].Pos.y = randf(m_oData.m_vBoundVec1.y, m_oData.m_vBoundVec2.y);
+			else if (m_oData.m_shouldSpawnBoundBindCreateYNeg)
+				m_pArr[id].Pos.y = m_oData.m_vBoundVec1.y;
+			else if (m_oData.m_shouldSpawnBoundBindCreateYPos)
+				m_pArr[id].Pos.y = m_oData.m_vBoundVec2.y;
 			else
-				Arr[id].Pos.y = Data.SpawnOrigin.y;
+				m_pArr[id].Pos.y = m_oData.m_vSpawnOrigin.y;
 
-			float tmplerp = (Data.BoundVec2.y - Arr[id].Pos.y) / (Data.BoundVec2.y - Data.BoundVec1.y);
+			float tmplerp = (m_oData.m_vBoundVec2.y - m_pArr[id].Pos.y) / (m_oData.m_vBoundVec2.y - m_oData.m_vBoundVec1.y);
 
-			float tmpradius = vlerp(Data.BoundVec2.w, Data.BoundVec1.w, tmplerp);
-			float3 tmpcoord = float3(Data.BoundVec1.x, 0,Data.BoundVec1.z);
+			float tmpradius = vlerp(m_oData.m_vBoundVec2.w, m_oData.m_vBoundVec1.w, tmplerp);
+			float3 tmpcoord = float3(m_oData.m_vBoundVec1.x, 0, m_oData.m_vBoundVec1.z);
 
-			if (Data.SpawnBoundBindCreateXNeg && Data.SpawnBoundBindCreateXPos)
-				Arr[id].Pos.x = randf(tmpcoord.x - tmpradius, tmpcoord.x + tmpradius);
-			else if (Data.SpawnBoundBindCreateXNeg)
-				Arr[id].Pos.x = tmpcoord.x - tmpradius;
-			else if (Data.SpawnBoundBindCreateXPos)
-				Arr[id].Pos.x = tmpcoord.x + tmpradius;
+			if (m_oData.m_shouldSpawnBoundBindCreateXNeg && m_oData.m_shouldSpawnBoundBindCreateXPos)
+				m_pArr[id].Pos.x = randf(tmpcoord.x - tmpradius, tmpcoord.x + tmpradius);
+			else if (m_oData.m_shouldSpawnBoundBindCreateXNeg)
+				m_pArr[id].Pos.x = tmpcoord.x - tmpradius;
+			else if (m_oData.m_shouldSpawnBoundBindCreateXPos)
+				m_pArr[id].Pos.x = tmpcoord.x + tmpradius;
 			else
-				Arr[id].Pos.x = Data.SpawnOrigin.x;
+				m_pArr[id].Pos.x = m_oData.m_vSpawnOrigin.x;
 
-			if (Data.SpawnBoundBindCreateZNeg && Data.SpawnBoundBindCreateZPos)
-				Arr[id].Pos.z = randf(tmpcoord.z - tmpradius, tmpcoord.z + tmpradius);
-			else if (Data.SpawnBoundBindCreateZNeg)
-				Arr[id].Pos.z = tmpcoord.z - tmpradius;
-			else if (Data.SpawnBoundBindCreateZPos)
-				Arr[id].Pos.z = tmpcoord.z + tmpradius;
+			if (m_oData.m_shouldSpawnBoundBindCreateZNeg && m_oData.m_shouldSpawnBoundBindCreateZPos)
+				m_pArr[id].Pos.z = randf(tmpcoord.z - tmpradius, tmpcoord.z + tmpradius);
+			else if (m_oData.m_shouldSpawnBoundBindCreateZNeg)
+				m_pArr[id].Pos.z = tmpcoord.z - tmpradius;
+			else if (m_oData.m_shouldSpawnBoundBindCreateZPos)
+				m_pArr[id].Pos.z = tmpcoord.z + tmpradius;
 			else
-				Arr[id].Pos.z = Data.SpawnOrigin.z;
+				m_pArr[id].Pos.z = m_oData.m_vSpawnOrigin.z;
 		}
-		else if (Data.BoundType == PARTICLESTYPE_BOUND_BOX)
+		else if (m_oData.m_typeBound == PARTICLESTYPE_BOUND_BOX)
 		{
-			if (Data.SpawnBoundBindCreateXNeg && Data.SpawnBoundBindCreateXPos)
-				Arr[id].Pos.x = randf(Data.BoundVec1.x, Data.BoundVec2.x);
-			else if (Data.SpawnBoundBindCreateXNeg)
-				Arr[id].Pos.x = Data.BoundVec1.x;
-			else if (Data.SpawnBoundBindCreateXPos)
-				Arr[id].Pos.x = Data.BoundVec2.x;
+			if (m_oData.m_shouldSpawnBoundBindCreateXNeg && m_oData.m_shouldSpawnBoundBindCreateXPos)
+				m_pArr[id].Pos.x = randf(m_oData.m_vBoundVec1.x, m_oData.m_vBoundVec2.x);
+			else if (m_oData.m_shouldSpawnBoundBindCreateXNeg)
+				m_pArr[id].Pos.x = m_oData.m_vBoundVec1.x;
+			else if (m_oData.m_shouldSpawnBoundBindCreateXPos)
+				m_pArr[id].Pos.x = m_oData.m_vBoundVec2.x;
 			else
-				Arr[id].Pos.x = Data.SpawnOrigin.x;
+				m_pArr[id].Pos.x = m_oData.m_vSpawnOrigin.x;
 
-			if (Data.SpawnBoundBindCreateYNeg && Data.SpawnBoundBindCreateYPos)
-				Arr[id].Pos.y = randf(Data.BoundVec1.y, Data.BoundVec2.y);
-			else if (Data.SpawnBoundBindCreateYNeg)
-				Arr[id].Pos.y = Data.BoundVec1.y;
-			else if (Data.SpawnBoundBindCreateYPos)
-				Arr[id].Pos.y = Data.BoundVec2.y;
+			if (m_oData.m_shouldSpawnBoundBindCreateYNeg && m_oData.m_shouldSpawnBoundBindCreateYPos)
+				m_pArr[id].Pos.y = randf(m_oData.m_vBoundVec1.y, m_oData.m_vBoundVec2.y);
+			else if (m_oData.m_shouldSpawnBoundBindCreateYNeg)
+				m_pArr[id].Pos.y = m_oData.m_vBoundVec1.y;
+			else if (m_oData.m_shouldSpawnBoundBindCreateYPos)
+				m_pArr[id].Pos.y = m_oData.m_vBoundVec2.y;
 			else
-				Arr[id].Pos.y = Data.SpawnOrigin.y;
+				m_pArr[id].Pos.y = m_oData.m_vSpawnOrigin.y;
 
-			if (Data.SpawnBoundBindCreateZNeg && Data.SpawnBoundBindCreateZPos)
-				Arr[id].Pos.z = randf(Data.BoundVec1.z, Data.BoundVec2.z);
-			else if (Data.SpawnBoundBindCreateZNeg)
-				Arr[id].Pos.z = Data.BoundVec1.z;
-			else if (Data.SpawnBoundBindCreateZPos)
-				Arr[id].Pos.z = Data.BoundVec2.z;
+			if (m_oData.m_shouldSpawnBoundBindCreateZNeg && m_oData.m_shouldSpawnBoundBindCreateZPos)
+				m_pArr[id].Pos.z = randf(m_oData.m_vBoundVec1.z, m_oData.m_vBoundVec2.z);
+			else if (m_oData.m_shouldSpawnBoundBindCreateZNeg)
+				m_pArr[id].Pos.z = m_oData.m_vBoundVec1.z;
+			else if (m_oData.m_shouldSpawnBoundBindCreateZPos)
+				m_pArr[id].Pos.z = m_oData.m_vBoundVec2.z;
 			else
-				Arr[id].Pos.z = Data.SpawnOrigin.z;
+				m_pArr[id].Pos.z = m_oData.m_vSpawnOrigin.z;
 		}
-		else if (Data.BoundType == PARTICLESTYPE_BOUND_SPHERE)
+		else if (m_oData.m_typeBound == PARTICLESTYPE_BOUND_SPHERE)
 		{
-			if (Data.SpawnBoundBindCreateXNeg && Data.SpawnBoundBindCreateXPos)
-				Arr[id].Pos.x = randf(Data.BoundVec1.x - Data.BoundVec1.w, Data.BoundVec1.x + Data.BoundVec1.w);
-			else if (Data.SpawnBoundBindCreateXNeg)
-				Arr[id].Pos.x = Data.BoundVec1.x - Data.BoundVec1.w;
-			else if (Data.SpawnBoundBindCreateXPos)
-				Arr[id].Pos.x = Data.BoundVec1.x + Data.BoundVec1.w;
+			if (m_oData.m_shouldSpawnBoundBindCreateXNeg && m_oData.m_shouldSpawnBoundBindCreateXPos)
+				m_pArr[id].Pos.x = randf(m_oData.m_vBoundVec1.x - m_oData.m_vBoundVec1.w, m_oData.m_vBoundVec1.x + m_oData.m_vBoundVec1.w);
+			else if (m_oData.m_shouldSpawnBoundBindCreateXNeg)
+				m_pArr[id].Pos.x = m_oData.m_vBoundVec1.x - m_oData.m_vBoundVec1.w;
+			else if (m_oData.m_shouldSpawnBoundBindCreateXPos)
+				m_pArr[id].Pos.x = m_oData.m_vBoundVec1.x + m_oData.m_vBoundVec1.w;
 			else
-				Arr[id].Pos.x = Data.SpawnOrigin.x;
+				m_pArr[id].Pos.x = m_oData.m_vSpawnOrigin.x;
 
-			if (Data.SpawnBoundBindCreateYNeg && Data.SpawnBoundBindCreateYPos)
-				Arr[id].Pos.y = randf(Data.BoundVec1.y - Data.BoundVec1.w, Data.BoundVec1.y + Data.BoundVec1.w);
-			else if (Data.SpawnBoundBindCreateYNeg)
-				Arr[id].Pos.y = Data.BoundVec1.y - Data.BoundVec1.w;
-			else if (Data.SpawnBoundBindCreateYPos)
-				Arr[id].Pos.y = Data.BoundVec1.y + Data.BoundVec1.w;
+			if (m_oData.m_shouldSpawnBoundBindCreateYNeg && m_oData.m_shouldSpawnBoundBindCreateYPos)
+				m_pArr[id].Pos.y = randf(m_oData.m_vBoundVec1.y - m_oData.m_vBoundVec1.w, m_oData.m_vBoundVec1.y + m_oData.m_vBoundVec1.w);
+			else if (m_oData.m_shouldSpawnBoundBindCreateYNeg)
+				m_pArr[id].Pos.y = m_oData.m_vBoundVec1.y - m_oData.m_vBoundVec1.w;
+			else if (m_oData.m_shouldSpawnBoundBindCreateYPos)
+				m_pArr[id].Pos.y = m_oData.m_vBoundVec1.y + m_oData.m_vBoundVec1.w;
 			else
-				Arr[id].Pos.y = Data.SpawnOrigin.y;
+				m_pArr[id].Pos.y = m_oData.m_vSpawnOrigin.y;
 
-			if (Data.SpawnBoundBindCreateZNeg && Data.SpawnBoundBindCreateZPos)
-				Arr[id].Pos.z = randf(Data.BoundVec1.z - Data.BoundVec1.w, Data.BoundVec1.z + Data.BoundVec1.w);
-			else if (Data.SpawnBoundBindCreateZNeg)
-				Arr[id].Pos.z = Data.BoundVec1.z - Data.BoundVec1.w;
-			else if (Data.SpawnBoundBindCreateZPos)
-				Arr[id].Pos.z = Data.BoundVec1.z + Data.BoundVec1.w;
+			if (m_oData.m_shouldSpawnBoundBindCreateZNeg && m_oData.m_shouldSpawnBoundBindCreateZPos)
+				m_pArr[id].Pos.z = randf(m_oData.m_vBoundVec1.z - m_oData.m_vBoundVec1.w, m_oData.m_vBoundVec1.z + m_oData.m_vBoundVec1.w);
+			else if (m_oData.m_shouldSpawnBoundBindCreateZNeg)
+				m_pArr[id].Pos.z = m_oData.m_vBoundVec1.z - m_oData.m_vBoundVec1.w;
+			else if (m_oData.m_shouldSpawnBoundBindCreateZPos)
+				m_pArr[id].Pos.z = m_oData.m_vBoundVec1.z + m_oData.m_vBoundVec1.w;
 			else
-				Arr[id].Pos.z = Data.SpawnOrigin.z;
+				m_pArr[id].Pos.z = m_oData.m_vSpawnOrigin.z;
 		}
-		else if (Data.BoundType == PARTICLESTYPE_BOUND_NONE)
+		else if (m_oData.m_typeBound == PARTICLESTYPE_BOUND_NONE)
 		{
-			if (Data.SpawnOriginDisp != 0.0f)
+			if (m_oData.m_fSpawnOriginDisp != 0.0f)
 			{
-				if (Data.SpawnBoundBindCreateXNeg && Data.SpawnBoundBindCreateXPos)
-					Arr[id].Pos.x = randf(Data.SpawnOrigin.x - Data.SpawnOriginDisp, Data.SpawnOrigin.x + Data.SpawnOriginDisp);
-				else if (Data.SpawnBoundBindCreateXNeg)
-					Arr[id].Pos.x = randf(Data.SpawnOrigin.x - Data.SpawnOriginDisp, Data.SpawnOrigin.x);
-				else if (Data.SpawnBoundBindCreateXPos)
-					Arr[id].Pos.x = randf(Data.SpawnOrigin.x, Data.SpawnOrigin.x + Data.SpawnOriginDisp);
+				if (m_oData.m_shouldSpawnBoundBindCreateXNeg && m_oData.m_shouldSpawnBoundBindCreateXPos)
+					m_pArr[id].Pos.x = randf(m_oData.m_vSpawnOrigin.x - m_oData.m_fSpawnOriginDisp, m_oData.m_vSpawnOrigin.x + m_oData.m_fSpawnOriginDisp);
+				else if (m_oData.m_shouldSpawnBoundBindCreateXNeg)
+					m_pArr[id].Pos.x = randf(m_oData.m_vSpawnOrigin.x - m_oData.m_fSpawnOriginDisp, m_oData.m_vSpawnOrigin.x);
+				else if (m_oData.m_shouldSpawnBoundBindCreateXPos)
+					m_pArr[id].Pos.x = randf(m_oData.m_vSpawnOrigin.x, m_oData.m_vSpawnOrigin.x + m_oData.m_fSpawnOriginDisp);
 				else
-					Arr[id].Pos.x = Data.SpawnOrigin.x;
+					m_pArr[id].Pos.x = m_oData.m_vSpawnOrigin.x;
 
-				if (Data.SpawnBoundBindCreateYNeg && Data.SpawnBoundBindCreateYPos)
-					Arr[id].Pos.y = randf(Data.SpawnOrigin.y - Data.SpawnOriginDisp, Data.SpawnOrigin.y + Data.SpawnOriginDisp);
-				else if (Data.SpawnBoundBindCreateYNeg)
-					Arr[id].Pos.y = randf(Data.SpawnOrigin.y - Data.SpawnOriginDisp, Data.SpawnOrigin.y);
-				else if (Data.SpawnBoundBindCreateYPos)
-					Arr[id].Pos.y = randf(Data.SpawnOrigin.y, Data.SpawnOrigin.y + Data.SpawnOriginDisp);
+				if (m_oData.m_shouldSpawnBoundBindCreateYNeg && m_oData.m_shouldSpawnBoundBindCreateYPos)
+					m_pArr[id].Pos.y = randf(m_oData.m_vSpawnOrigin.y - m_oData.m_fSpawnOriginDisp, m_oData.m_vSpawnOrigin.y + m_oData.m_fSpawnOriginDisp);
+				else if (m_oData.m_shouldSpawnBoundBindCreateYNeg)
+					m_pArr[id].Pos.y = randf(m_oData.m_vSpawnOrigin.y - m_oData.m_fSpawnOriginDisp, m_oData.m_vSpawnOrigin.y);
+				else if (m_oData.m_shouldSpawnBoundBindCreateYPos)
+					m_pArr[id].Pos.y = randf(m_oData.m_vSpawnOrigin.y, m_oData.m_vSpawnOrigin.y + m_oData.m_fSpawnOriginDisp);
 				else
-					Arr[id].Pos.y = Data.SpawnOrigin.y;
+					m_pArr[id].Pos.y = m_oData.m_vSpawnOrigin.y;
 
-				if (Data.SpawnBoundBindCreateZNeg && Data.SpawnBoundBindCreateZPos)
-					Arr[id].Pos.z = randf(Data.SpawnOrigin.z - Data.SpawnOriginDisp, Data.SpawnOrigin.z + Data.SpawnOriginDisp);
-				else if (Data.SpawnBoundBindCreateZNeg)
-					Arr[id].Pos.z = randf(Data.SpawnOrigin.z - Data.SpawnOriginDisp, Data.SpawnOrigin.z);
-				else if (Data.SpawnBoundBindCreateZPos)
-					Arr[id].Pos.z = randf(Data.SpawnOrigin.z, Data.SpawnOrigin.z + Data.SpawnOriginDisp);
+				if (m_oData.m_shouldSpawnBoundBindCreateZNeg && m_oData.m_shouldSpawnBoundBindCreateZPos)
+					m_pArr[id].Pos.z = randf(m_oData.m_vSpawnOrigin.z - m_oData.m_fSpawnOriginDisp, m_oData.m_vSpawnOrigin.z + m_oData.m_fSpawnOriginDisp);
+				else if (m_oData.m_shouldSpawnBoundBindCreateZNeg)
+					m_pArr[id].Pos.z = randf(m_oData.m_vSpawnOrigin.z - m_oData.m_fSpawnOriginDisp, m_oData.m_vSpawnOrigin.z);
+				else if (m_oData.m_shouldSpawnBoundBindCreateZPos)
+					m_pArr[id].Pos.z = randf(m_oData.m_vSpawnOrigin.z, m_oData.m_vSpawnOrigin.z + m_oData.m_fSpawnOriginDisp);
 				else
-					Arr[id].Pos.z = Data.SpawnOrigin.z;
+					m_pArr[id].Pos.z = m_oData.m_vSpawnOrigin.z;
 			}
 		}
 	}
 
-	Arr[id].PosCreate = Arr[id].Pos;
-	Arr[id].IsAlife = true;
-	Arr[id].AlphaAgeDependCoef = 1.f;
-	Arr[id].AlphaDeath = 1.f;
+	m_pArr[id].PosCreate = m_pArr[id].Pos;
+	m_pArr[id].IsAlife = true;
+	m_pArr[id].AlphaAgeDependCoef = 1.f;
+	m_pArr[id].AlphaDeath = 1.f;
 
-	Arr[id].Age = 0;
-	Arr[id].TimeLife = Data.TimeLife + (Data.TimeLifeDisp != 0 ? ((rand() % (Data.TimeLifeDisp / 2)) - (Data.TimeLifeDisp / 2)) : 0);//GetRandomFloat(5000,30000);
+	m_pArr[id].Age = 0;
+	m_pArr[id].TimeLife = m_oData.m_uiTimeLife + (m_oData.m_uiTimeLifeDisp != 0 ? ((rand() % (m_oData.m_uiTimeLifeDisp / 2)) - (m_oData.m_uiTimeLifeDisp / 2)) : 0);//GetRandomFloat(5000,30000);
 
-	if (Data.AnimTexCountCadrsX == 0 || Data.AnimTexCountCadrsY == 0)
+	if (m_oData.m_iAnimTexCountCadrsX == 0 || m_oData.m_iAnimTexCountCadrsY == 0)
 	{
-		Arr[id].AnimTexSizeCadrAndBias.x = Arr[id].AnimTexSizeCadrAndBias.y = 1.f;
-		Arr[id].AnimTexSizeCadrAndBias.z = Arr[id].AnimTexSizeCadrAndBias.w = 0.f;
-		Arr[id].AnimTexRateMls = 0;
+		m_pArr[id].AnimTexSizeCadrAndBias.x = m_pArr[id].AnimTexSizeCadrAndBias.y = 1.f;
+		m_pArr[id].AnimTexSizeCadrAndBias.z = m_pArr[id].AnimTexSizeCadrAndBias.w = 0.f;
+		m_pArr[id].AnimTexRateMls = 0;
 	}
 	else
 	{
-		Arr[id].AnimTexCurrentCadr = Data.AnimTexStartCadr + (Data.AnimTexStartCadrDisp>0 ? ((rand() % (Data.AnimTexStartCadrDisp / 2)) - (Data.AnimTexStartCadrDisp / 2)) : 0);
-		Arr[id].AnimTexCurrentMls = 0;
-		Arr[id].AnimTexRateMls = Data.AnimTexRate + (Data.AnimTexRateDisp>0 ? ((rand() % (Data.AnimTexRateDisp / 2)) - (Data.AnimTexRateDisp / 2)) : 0);
+		m_pArr[id].AnimTexCurrentCadr = m_oData.m_iAnimTexStartCadr + (m_oData.m_iAnimTexStartCadrDisp>0 ? ((rand() % (m_oData.m_iAnimTexStartCadrDisp / 2)) - (m_oData.m_iAnimTexStartCadrDisp / 2)) : 0);
+		m_pArr[id].AnimTexCurrentMls = 0;
+		m_pArr[id].AnimTexRateMls = m_oData.m_iAnimTexRate + (m_oData.m_iAnimTexRateDisp>0 ? ((rand() % (m_oData.m_iAnimTexRateDisp / 2)) - (m_oData.m_iAnimTexRateDisp / 2)) : 0);
 
-		if (Arr[id].AnimTexCurrentCadr < Data.AnimTexCountCadrsX*Data.AnimTexCountCadrsY)
+		if (m_pArr[id].AnimTexCurrentCadr < m_oData.m_iAnimTexCountCadrsX*m_oData.m_iAnimTexCountCadrsY)
 		{
-			Arr[id].AnimTexCurrentCadr++;
+			m_pArr[id].AnimTexCurrentCadr++;
 
-			WORD tmpy = Arr[id].AnimTexCurrentCadr / Data.AnimTexCountCadrsX;
-			WORD tmpx = Arr[id].AnimTexCurrentCadr - (Data.AnimTexCountCadrsX * tmpy);
+			WORD tmpy = m_pArr[id].AnimTexCurrentCadr / m_oData.m_iAnimTexCountCadrsX;
+			WORD tmpx = m_pArr[id].AnimTexCurrentCadr - (m_oData.m_iAnimTexCountCadrsX * tmpy);
 
-			if ((int(Arr[id].AnimTexCurrentCadr) - int(Data.AnimTexCountCadrsX * tmpy)) == 0)
+			if ((int(m_pArr[id].AnimTexCurrentCadr) - int(m_oData.m_iAnimTexCountCadrsX * tmpy)) == 0)
 				tmpy -= 1;
 
 			if (tmpx == 0)
-				tmpx = Data.AnimTexCountCadrsX;
+				tmpx = m_oData.m_iAnimTexCountCadrsX;
 
 			tmpx -= 1;
 
-			Arr[id].AnimTexSizeCadrAndBias.x = AnimSizeCadr.z;
-			Arr[id].AnimTexSizeCadrAndBias.y = AnimSizeCadr.w;
-			Arr[id].AnimTexSizeCadrAndBias.z = (float(tmpx) * AnimSizeCadr.x) / AnimTexSize.x;
-			Arr[id].AnimTexSizeCadrAndBias.w = (float(tmpy) * AnimSizeCadr.y) / AnimTexSize.y;
+			m_pArr[id].AnimTexSizeCadrAndBias.x = m_vAnimSizeCadr.z;
+			m_pArr[id].AnimTexSizeCadrAndBias.y = m_vAnimSizeCadr.w;
+			m_pArr[id].AnimTexSizeCadrAndBias.z = (float(tmpx) * m_vAnimSizeCadr.x) / m_vAnimTexSize.x;
+			m_pArr[id].AnimTexSizeCadrAndBias.w = (float(tmpy) * m_vAnimSizeCadr.y) / m_vAnimTexSize.y;
 		}
 	}
 
-	Arr[id].CharacterRotateAngleZ = 0;
+	m_pArr[id].CharacterRotateAngleZ = 0;
 
-	if (Data.SizeDisp > 0.f)
+	if (m_oData.m_fSizeDisp > 0.f)
 	{
-		float tmprand = randf(0.0, Data.SizeDisp);
-		Arr[id].Size.x = Data.Size.x + tmprand;
-		Arr[id].Size.y = Data.Size.y + tmprand;
+		float tmprand = randf(0.0, m_oData.m_fSizeDisp);
+		m_pArr[id].Size.x = m_oData.m_vSize.x + tmprand;
+		m_pArr[id].Size.y = m_oData.m_vSize.y + tmprand;
 
-		if (Data.SizeDependAge == PARTICLESTYPE_DEPEND_DIRECT)
+		if (m_oData.m_typeSizeDependAge == PARTICLESTYPE_DEPEND_DIRECT)
 		{
-			Arr[id].Size.y = Arr[id].Size.x;
-			Arr[id].Size.x = Data.SizeDisp;
+			m_pArr[id].Size.y = m_pArr[id].Size.x;
+			m_pArr[id].Size.x = m_oData.m_fSizeDisp;
 		}
 	}
 	else
 	{
-		Arr[id].Size.y = Data.Size.x;
-		Arr[id].Size.x = (Data.SizeDependAge == PARTICLESTYPE_DEPEND_DIRECT ? 0 : Data.Size.x);
+		m_pArr[id].Size.y = m_oData.m_vSize.x;
+		m_pArr[id].Size.x = (m_oData.m_typeSizeDependAge == PARTICLESTYPE_DEPEND_DIRECT ? 0 : m_oData.m_vSize.x);
 	}
 
 
-	Arr[id].Velocity.x = Data.Velocity.x;
-	Arr[id].Velocity.y = Data.Velocity.y;
-	Arr[id].Velocity.z = Data.Velocity.z;
+	m_pArr[id].Velocity.x = m_oData.m_vVelocity.x;
+	m_pArr[id].Velocity.y = m_oData.m_vVelocity.y;
+	m_pArr[id].Velocity.z = m_oData.m_vVelocity.z;
 
-	if (Data.VelocityDisp != 0.0f)
+	if (m_oData.m_fVelocityDisp != 0.0f)
 	{
-		if (Arr[id].Velocity.x != 0.f)
+		if (m_pArr[id].Velocity.x != 0.f)
 		{
-			if (Data.VelocityDispXNeg)
-				Arr[id].Velocity.x = Data.Velocity.x + (randf(-Data.VelocityDisp*0.5, Data.VelocityDisp*0.5));
+			if (m_oData.m_shouldVelocityDispXNeg)
+				m_pArr[id].Velocity.x = m_oData.m_vVelocity.x + (randf(-m_oData.m_fVelocityDisp*0.5, m_oData.m_fVelocityDisp*0.5));
 			else
-				Arr[id].Velocity.x = Data.Velocity.x + (randf(0, Data.VelocityDisp));
+				m_pArr[id].Velocity.x = m_oData.m_vVelocity.x + (randf(0, m_oData.m_fVelocityDisp));
 		}
 
-		if (Arr[id].Velocity.y != 0.f)
+		if (m_pArr[id].Velocity.y != 0.f)
 		{
-			if (Data.VelocityDispYNeg)
-				Arr[id].Velocity.y = Data.Velocity.y + (randf(-Data.VelocityDisp*0.5, Data.VelocityDisp*0.5));
+			if (m_oData.m_shouldVelocityDispYNeg)
+				m_pArr[id].Velocity.y = m_oData.m_vVelocity.y + (randf(-m_oData.m_fVelocityDisp*0.5, m_oData.m_fVelocityDisp*0.5));
 			else
-				Arr[id].Velocity.y = Data.Velocity.y + (randf(0, Data.VelocityDisp));
+				m_pArr[id].Velocity.y = m_oData.m_vVelocity.y + (randf(0, m_oData.m_fVelocityDisp));
 		}
 
-		if (Arr[id].Velocity.z != 0.f)
+		if (m_pArr[id].Velocity.z != 0.f)
 		{
-			if (Data.VelocityDispZNeg)
-				Arr[id].Velocity.z = Data.Velocity.z + (randf(-Data.VelocityDisp*0.5, Data.VelocityDisp*0.5));
+			if (m_oData.m_shouldVelocityDispZNeg)
+				m_pArr[id].Velocity.z = m_oData.m_vVelocity.z + (randf(-m_oData.m_fVelocityDisp*0.5, m_oData.m_fVelocityDisp*0.5));
 			else
-				Arr[id].Velocity.z = Data.Velocity.z + (randf(0, Data.VelocityDisp));
+				m_pArr[id].Velocity.z = m_oData.m_vVelocity.z + (randf(0, m_oData.m_fVelocityDisp));
 		}
 	}
 
 
-	if (Data.AccelerationDisp == 0.0f)
+	if (m_oData.m_fAccelerationDisp == 0.0f)
 	{
-		Arr[id].Acceleration.x = Data.Acceleration.x;
-		Arr[id].Acceleration.y = Data.Acceleration.y;
-		Arr[id].Acceleration.z = Data.Acceleration.z;
+		m_pArr[id].Acceleration.x = m_oData.m_vAcceleration.x;
+		m_pArr[id].Acceleration.y = m_oData.m_vAcceleration.y;
+		m_pArr[id].Acceleration.z = m_oData.m_vAcceleration.z;
 	}
-	else if (Data.AccelerationDisp != 0.0f)
+	else if (m_oData.m_fAccelerationDisp != 0.0f)
 	{
-		if (Arr[id].Acceleration.x != 0.f)
+		if (m_pArr[id].Acceleration.x != 0.f)
 		{
-			if (Data.AccelerationDispXNeg)
-				Arr[id].Acceleration.x = Data.Acceleration.x + (randf(-Data.AccelerationDisp*0.5, Data.AccelerationDisp*0.5));
+			if (m_oData.m_shouldAccelerationDispXNeg)
+				m_pArr[id].Acceleration.x = m_oData.m_vAcceleration.x + (randf(-m_oData.m_fAccelerationDisp*0.5, m_oData.m_fAccelerationDisp*0.5));
 			else
-				Arr[id].Acceleration.x = Data.Acceleration.x + (randf(0, Data.AccelerationDisp));
+				m_pArr[id].Acceleration.x = m_oData.m_vAcceleration.x + (randf(0, m_oData.m_fAccelerationDisp));
 		}
 
-		if (Arr[id].Acceleration.y != 0.f)
+		if (m_pArr[id].Acceleration.y != 0.f)
 		{
-			if (Data.AccelerationDispYNeg)
-				Arr[id].Acceleration.y = Data.Acceleration.x + (randf(-Data.AccelerationDisp*0.5, Data.AccelerationDisp*0.5));
+			if (m_oData.m_shouldAccelerationDispYNeg)
+				m_pArr[id].Acceleration.y = m_oData.m_vAcceleration.x + (randf(-m_oData.m_fAccelerationDisp*0.5, m_oData.m_fAccelerationDisp*0.5));
 			else
-				Arr[id].Acceleration.y = Data.Acceleration.x + (randf(0, Data.AccelerationDisp));
+				m_pArr[id].Acceleration.y = m_oData.m_vAcceleration.x + (randf(0, m_oData.m_fAccelerationDisp));
 		}
 
-		if (Arr[id].Acceleration.z != 0.f)
+		if (m_pArr[id].Acceleration.z != 0.f)
 		{
-			if (Data.AccelerationDispZNeg)
-				Arr[id].Acceleration.z = Data.Acceleration.z + (randf(-Data.AccelerationDisp*0.5, Data.AccelerationDisp*0.5));
+			if (m_oData.m_shouldAccelerationDispZNeg)
+				m_pArr[id].Acceleration.z = m_oData.m_vAcceleration.z + (randf(-m_oData.m_fAccelerationDisp*0.5, m_oData.m_fAccelerationDisp*0.5));
 			else
-				Arr[id].Acceleration.z = Data.Acceleration.z + (randf(0, Data.AccelerationDisp));
+				m_pArr[id].Acceleration.z = m_oData.m_vAcceleration.z + (randf(0, m_oData.m_fAccelerationDisp));
 		}
 	}
 }
 
-void Emitter::UpdateAnimTex(WORD idparticle, DWORD tmptime)
+void CEmitter::updateAnimTex(ID idParticle, DWORD dwTime)
 {
+	if (!m_isTexInit)
+		return;
+
 	//если подошло время обновления анимации текстуры
-	if (Arr[idparticle].AnimTexRateMls <= Arr[idparticle].AnimTexCurrentMls)
+	if (m_pArr[idParticle].AnimTexRateMls <= m_pArr[idParticle].AnimTexCurrentMls)
 	{
-		Arr[idparticle].AnimTexCurrentMls = 0;
+		m_pArr[idParticle].AnimTexCurrentMls = 0;
 
 		//если номер текущего кадра меньше чем общее количество кадров, то обрабатываем
-		if (Arr[idparticle].AnimTexCurrentCadr < Data.AnimTexCountCadrsX*Data.AnimTexCountCadrsY)
+		if (m_pArr[idParticle].AnimTexCurrentCadr < m_oData.m_iAnimTexCountCadrsX*m_oData.m_iAnimTexCountCadrsY)
 		{
-			Arr[idparticle].AnimTexCurrentCadr++;
+			m_pArr[idParticle].AnimTexCurrentCadr++;
 
-			WORD tmpy = Arr[idparticle].AnimTexCurrentCadr / Data.AnimTexCountCadrsX;
-			WORD tmpx = Arr[idparticle].AnimTexCurrentCadr - (Data.AnimTexCountCadrsX * tmpy);
+			WORD tmpy = m_pArr[idParticle].AnimTexCurrentCadr / m_oData.m_iAnimTexCountCadrsX;
+			WORD tmpx = m_pArr[idParticle].AnimTexCurrentCadr - (m_oData.m_iAnimTexCountCadrsX * tmpy);
 
-			if ((int(Arr[idparticle].AnimTexCurrentCadr) - int(Data.AnimTexCountCadrsX * tmpy)) == 0)
+			if ((int(m_pArr[idParticle].AnimTexCurrentCadr) - int(m_oData.m_iAnimTexCountCadrsX * tmpy)) == 0)
 				tmpy -= 1;
 
 			if (tmpx == 0)
-				tmpx = Data.AnimTexCountCadrsX;
+				tmpx = m_oData.m_iAnimTexCountCadrsX;
 
 			tmpx -= 1;
 
-			Arr[idparticle].AnimTexSizeCadrAndBias.x = AnimSizeCadr.z;
-			Arr[idparticle].AnimTexSizeCadrAndBias.y = AnimSizeCadr.w;
-			Arr[idparticle].AnimTexSizeCadrAndBias.z = (float(tmpx) * AnimSizeCadr.x) / AnimTexSize.x;
-			Arr[idparticle].AnimTexSizeCadrAndBias.w = (float(tmpy) * AnimSizeCadr.y) / AnimTexSize.y;
+			m_pArr[idParticle].AnimTexSizeCadrAndBias.x = m_vAnimSizeCadr.z;
+			m_pArr[idParticle].AnimTexSizeCadrAndBias.y = m_vAnimSizeCadr.w;
+			m_pArr[idParticle].AnimTexSizeCadrAndBias.z = (float(tmpx) * m_vAnimSizeCadr.x) / m_vAnimTexSize.x;
+			m_pArr[idParticle].AnimTexSizeCadrAndBias.w = (float(tmpy) * m_vAnimSizeCadr.y) / m_vAnimTexSize.y;
 		}
 		else
-			Arr[idparticle].AnimTexCurrentCadr = 0;
+			m_pArr[idParticle].AnimTexCurrentCadr = 0;
 	}
 	else
 	{
-		Arr[idparticle].AnimTexCurrentMls += tmptime - OldTime;
+		m_pArr[idParticle].AnimTexCurrentMls += dwTime - m_dwOldTime;
 	}
 }
 
-bool Emitter::IsPointInCone(float3* point)
+bool CEmitter::isPointInCone(const float3 *pPoint)
 {
-	if (point->y >= Data.BoundVec1.y && point->y <= Data.BoundVec2.y)
+	if (pPoint->y >= m_oData.m_vBoundVec1.y && pPoint->y <= m_oData.m_vBoundVec2.y)
 	{
-		float tmplerp = (Data.BoundVec2.y - point->y) / (Data.BoundVec2.y - Data.BoundVec1.y);
-		float tmpradius = vlerp(Data.BoundVec2.w, Data.BoundVec1.w, tmplerp);
-		float3 tmpcoord = float3(Data.BoundVec1.x, 0, Data.BoundVec1.z);
+		float fLerp = (m_oData.m_vBoundVec2.y - pPoint->y) / (m_oData.m_vBoundVec2.y - m_oData.m_vBoundVec1.y);
+		float fRadius = vlerp(m_oData.m_vBoundVec2.w, m_oData.m_vBoundVec1.w, fLerp);
+		float3 vCoord = float3(m_oData.m_vBoundVec1.x, 0, m_oData.m_vBoundVec1.z);
+
 		if (
-			tmpcoord.x + tmpradius >= point->x && tmpcoord.x - tmpradius <= point->x &&
-			tmpcoord.z + tmpradius >= point->z && tmpcoord.z - tmpradius <= point->z
+			vCoord.x + fRadius >= pPoint->x && vCoord.x - fRadius <= pPoint->x &&
+			vCoord.z + fRadius >= pPoint->z && vCoord.z - fRadius <= pPoint->z
 			)
 			return true;
 	}
@@ -799,69 +819,66 @@ bool Emitter::IsPointInCone(float3* point)
 	return false;
 }
 
-bool Emitter::IsPointInSphere(float3* point)
+bool CEmitter::isPointInSphere(const float3 *pPoint)
 {
-	float distsqr = SMVector3Dot(Data.BoundVec1 - *point);
-	if (distsqr <= Data.BoundVec1.w*Data.BoundVec1.w)
+	float fDistSqr = SMVector3Dot(m_oData.m_vBoundVec1 - *pPoint);
+	if (fDistSqr <= m_oData.m_vBoundVec1.w*m_oData.m_vBoundVec1.w)
 		return true;
 	else
 		return false;
 }
 
-bool Emitter::IsPointInBox(float3* point)
+bool CEmitter::isPointInBox(const float3 *pPoint)
 {
-	if (point->x >= Data.BoundVec1.x && point->y >= Data.BoundVec1.y && point->z >= Data.BoundVec1.z && point->x <= Data.BoundVec2.x && point->y <= Data.BoundVec2.y && point->z <= Data.BoundVec2.z)
-		return true;
-	else
-		return false;
+	return (pPoint->x >= m_oData.m_vBoundVec1.x && pPoint->y >= m_oData.m_vBoundVec1.y && pPoint->z >= m_oData.m_vBoundVec1.z && pPoint->x <= m_oData.m_vBoundVec2.x && pPoint->y <= m_oData.m_vBoundVec2.y && pPoint->z <= m_oData.m_vBoundVec2.z);
 }
 
-void Emitter::Compute(const float4x4 * mat)
+void CEmitter::compute(const float4x4 *pMat)
 {
-	if (!Enable)
+	if (!m_isEnable)
 		return;
 
-	SizeAdd = (Data.Size.x > Data.Size.y ? Data.Size.x : Data.Size.y) + Data.SizeDisp;
+	m_fSizeAdd = (m_oData.m_vSize.x > m_oData.m_vSize.y ? m_oData.m_vSize.x : m_oData.m_vSize.y) + m_oData.m_fSizeDisp;
 
-	CountReCreate2 = 0;
-	if (Alife && OldTime > 0 && Data.ReCreateCount > 0 && Data.ReCreateCount <= Count - CountLifeParticle)
+	m_iCountReCreate2 = 0;
+	if (m_isAlife && m_dwOldTime > 0 && m_oData.m_iReCreateCount > 0 && m_oData.m_iReCreateCount <= m_iCount - m_iCountLifeParticle)
 	{
-		if (TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) > TimeNextSpawnParticle)
+		if (TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) > m_dwTimeNextSpawnParticle)
 		{
-			for (int i = 0; i<Count; i++)
+			for (int i = 0; i<m_iCount; i++)
 			{
-				if (!(Arr[i].IsAlife) && Data.ReCreateCount > CountReCreate2)
+				if (!(m_pArr[i].IsAlife) && m_oData.m_iReCreateCount > m_iCountReCreate2)
 				{
-					ReCreateParticles(i);
-					CountReCreate2++;
+					reCreateParticles(i);
+					m_iCountReCreate2++;
 				}
-				else if (Data.ReCreateCount <= CountReCreate2)
+				else if (m_oData.m_iReCreateCount <= m_iCountReCreate2)
 				{
-					CountReCreate2 = 0;
-					i = Count;
-					if (Data.SpawnNextTime)
-						TimeNextSpawnParticle = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) + (Data.SpawnNextTime + (Data.SpawnNextTimeDisp > 0 ? rand() % Data.SpawnNextTimeDisp : 0));
+					m_iCountReCreate2 = 0;
+					i = m_iCount;
+					if (m_oData.m_uiSpawnNextTime)
+						m_dwTimeNextSpawnParticle = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) + (m_oData.m_uiSpawnNextTime + (m_oData.m_uiSpawnNextTimeDisp > 0 ? rand() % m_oData.m_uiSpawnNextTimeDisp : 0));
 				}
 			}
 		}
 	}
 
-	if (!Alife)
+	if (!m_isAlife)
 	{
-		TimeNextSpawnParticle = 0;
-		if (TimerDeath == 0)
-			TimerDeath = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+		m_dwTimeNextSpawnParticle = 0;
+		if (m_dwTimerDeath == 0)
+			m_dwTimerDeath = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		else
 		{
-			GTransparency = 1.f - float(TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - TimerDeath) / float(SXPARTICLES_DEADTH_TIME);
-			if (TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - TimerDeath > SXPARTICLES_DEADTH_TIME)
+			GTransparency = 1.f - float(TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - m_dwTimerDeath) / float(SXPARTICLES_DEADTH_TIME);
+			if (TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - m_dwTimerDeath > SXPARTICLES_DEADTH_TIME)
 			{
-				Enable = false;
+				m_isEnable = false;
 				GTransparency = 1.f;
-				TimerDeath = 0;
-				for (int i = 0; i < Count; ++i)
+				m_dwTimerDeath = 0;
+				for (int i = 0; i < m_iCount; ++i)
 				{
-					Arr[i].IsAlife = false;
+					m_pArr[i].IsAlife = false;
 				}
 				return;
 			}
@@ -870,305 +887,305 @@ void Emitter::Compute(const float4x4 * mat)
 
 
 	DWORD tmptime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
-	CountLifeParticle = 0;
+	m_iCountLifeParticle = 0;
 
 	float3 tmpoldpos,tmpnewpos;
 
-	for (int i = 0; i<Count && OldTime != 0; i++)
+	for (int i = 0; i<m_iCount && m_dwOldTime != 0; i++)
 	{
 		//если время жизни частицы больше либо равно назначенному то значит она уже умерла
-		if (Arr[i].IsAlife && Arr[i].TimeLife > 0 && Arr[i].Age >= Arr[i].TimeLife)
-			Arr[i].IsAlife = false;
+		if (m_pArr[i].IsAlife && m_pArr[i].TimeLife > 0 && m_pArr[i].Age >= m_pArr[i].TimeLife)
+			m_pArr[i].IsAlife = false;
 
 		//иначе инкремент общего количества живых частиц
-		else if (Arr[i].IsAlife)
+		else if (m_pArr[i].IsAlife)
 		{
 			//если установлен ограничивающий объем то проверяем не выходит ли частица за его пределы, если выходит то значит она умерла
 
-			if (Data.BoundType == PARTICLESTYPE_BOUND_SPHERE && IsPointInSphere(&Arr[i].Pos))
-				CountLifeParticle++;
-			else if (Data.BoundType == PARTICLESTYPE_BOUND_BOX && IsPointInBox(&Arr[i].Pos))
-				CountLifeParticle++;
-			else if (Data.BoundType == PARTICLESTYPE_BOUND_CONE && IsPointInCone(&(Arr[i].Pos)))
-				CountLifeParticle++;
-			else if (Data.BoundType != PARTICLESTYPE_BOUND_NONE)
-				Arr[i].IsAlife = false;
-			else if (Data.BoundType == PARTICLESTYPE_BOUND_NONE)
-				CountLifeParticle++;
+			if (m_oData.m_typeBound == PARTICLESTYPE_BOUND_SPHERE && isPointInSphere(&m_pArr[i].Pos))
+				m_iCountLifeParticle++;
+			else if (m_oData.m_typeBound == PARTICLESTYPE_BOUND_BOX && isPointInBox(&m_pArr[i].Pos))
+				m_iCountLifeParticle++;
+			else if (m_oData.m_typeBound == PARTICLESTYPE_BOUND_CONE && isPointInCone(&(m_pArr[i].Pos)))
+				m_iCountLifeParticle++;
+			else if (m_oData.m_typeBound != PARTICLESTYPE_BOUND_NONE)
+				m_pArr[i].IsAlife = false;
+			else if (m_oData.m_typeBound == PARTICLESTYPE_BOUND_NONE)
+				m_iCountLifeParticle++;
 		}
 
 		
 		//если частица жива то обрабатываем поведение
-		if (Arr[i].IsAlife)
+		if (m_pArr[i].IsAlife)
 		{
-			tmpoldpos = Arr[i].Pos;
+			tmpoldpos = m_pArr[i].Pos;
 			//обрабокта возраста
-			Arr[i].Age += tmptime - OldTime;
+			m_pArr[i].Age += tmptime - m_dwOldTime;
 
 			//обработка зависимости прозрачности от возраста
-			if (Data.AlphaDependAge == PARTICLESTYPE_DEPEND_DIRECT)
-				Arr[i].AlphaAgeDependCoef = 1.f - (float(Arr[i].Age) / float(Arr[i].TimeLife));
-			else if (Data.AlphaDependAge == PARTICLESTYPE_DEPEND_INVERSE)
-				Arr[i].AlphaAgeDependCoef = (float(Arr[i].Age) / float(Arr[i].TimeLife));
+			if (m_oData.m_typeAlphaDependAge == PARTICLESTYPE_DEPEND_DIRECT)
+				m_pArr[i].AlphaAgeDependCoef = 1.f - (float(m_pArr[i].Age) / float(m_pArr[i].TimeLife));
+			else if (m_oData.m_typeAlphaDependAge == PARTICLESTYPE_DEPEND_INVERSE)
+				m_pArr[i].AlphaAgeDependCoef = (float(m_pArr[i].Age) / float(m_pArr[i].TimeLife));
 			else
-				Arr[i].AlphaAgeDependCoef = 1;
+				m_pArr[i].AlphaAgeDependCoef = 1;
 
-			if (Arr[i].AlphaAgeDependCoef > 1.f)
-				Arr[i].AlphaAgeDependCoef = 1.f;
-			else if (Arr[i].AlphaAgeDependCoef < 0.f)
-				Arr[i].AlphaAgeDependCoef = 0.f;
+			if (m_pArr[i].AlphaAgeDependCoef > 1.f)
+				m_pArr[i].AlphaAgeDependCoef = 1.f;
+			else if (m_pArr[i].AlphaAgeDependCoef < 0.f)
+				m_pArr[i].AlphaAgeDependCoef = 0.f;
 
-			if (!Alife)
-				Arr[i].AlphaDeath = GTransparency;
+			if (!m_isAlife)
+				m_pArr[i].AlphaDeath = GTransparency;
 
 			//обработка зависимости размера от возвраста
-			if (Data.SizeDependAge == PARTICLESTYPE_DEPEND_DIRECT)
+			if (m_oData.m_typeSizeDependAge == PARTICLESTYPE_DEPEND_DIRECT)
 			{
-				Arr[i].Size.x = Arr[i].Size.y * (float(Arr[i].Age) / float(Arr[i].TimeLife));
+				m_pArr[i].Size.x = m_pArr[i].Size.y * (float(m_pArr[i].Age) / float(m_pArr[i].TimeLife));
 			}
-			else if (Data.SizeDependAge == PARTICLESTYPE_DEPEND_INVERSE)
+			else if (m_oData.m_typeSizeDependAge == PARTICLESTYPE_DEPEND_INVERSE)
 			{
-				Arr[i].Size.x = Arr[i].Size.y * (1.f - (float(Arr[i].Age) / float(Arr[i].TimeLife)));
+				m_pArr[i].Size.x = m_pArr[i].Size.y * (1.f - (float(m_pArr[i].Age) / float(m_pArr[i].TimeLife)));
 			}
 
-			float tmpcountsec = float(tmptime - OldTime) * 0.001f;
+			float tmpcountsec = float(tmptime - m_dwOldTime) * 0.001f;
 			//обработка скорости и ускорения
-			Arr[i].Pos += Arr[i].Velocity * tmpcountsec + Arr[i].Acceleration*(float(Arr[i].Age) * tmpcountsec);
+			m_pArr[i].Pos += m_pArr[i].Velocity * tmpcountsec + m_pArr[i].Acceleration*(float(m_pArr[i].Age) * tmpcountsec);
 
 			//если назначена анимация текстуры то обрабатываем
-			if (Arr[i].AnimTexRateMls > 0)
-				UpdateAnimTex(i, tmptime);
-			/*else if (Data.AnimTexRate > 0 && Data.AnimTexCountCadrsX > 0 && Data.AnimTexCountCadrsY > 0)
+			if (m_pArr[i].AnimTexRateMls > 0)
+				updateAnimTex(i, tmptime);
+			/*else if (m_oData.AnimTexRate > 0 && m_oData.AnimTexCountCadrsX > 0 && m_oData.AnimTexCountCadrsY > 0)
 			{
-				Arr[i].AnimTexRateMls = Data.AnimTexRate + (Data.AnimTexRateDisp>0 ? ((rand() % (Data.AnimTexRateDisp / 2)) - (Data.AnimTexRateDisp / 2)) : 0);
+				m_pArr[i].AnimTexRateMls = m_oData.AnimTexRate + (m_oData.AnimTexRateDisp>0 ? ((rand() % (m_oData.AnimTexRateDisp / 2)) - (m_oData.AnimTexRateDisp / 2)) : 0);
 			}*/
 
 			//CHARACTER
 
 			//движение по кругу
-			if (Data.CharacterCircle)
+			if (m_oData.m_useCharacterCircle)
 			{
 				float tmpangle = 0;
 
 				//если возможна дисперсия
-				if (Data.CharacterCircleAngleDisp != 0.0f)
+				if (m_oData.m_fCharacterCircleAngleDisp != 0.0f)
 				{
 					//если возможно брать отрицательные значения
-					if (Data.CharacterCircleAngleDispNeg)
-						tmpangle = randf(-Data.CharacterCircleAngleDisp*0.5, Data.CharacterCircleAngleDisp*0.5);
+					if (m_oData.m_useCharacterCircleAngleDispNeg)
+						tmpangle = randf(-m_oData.m_fCharacterCircleAngleDisp*0.5, m_oData.m_fCharacterCircleAngleDisp*0.5);
 					else
-						tmpangle = randf(0.f, Data.CharacterCircleAngleDisp);
+						tmpangle = randf(0.f, m_oData.m_fCharacterCircleAngleDisp);
 				}
 
-				tmpangle += Data.CharacterCircleAngle;
+				tmpangle += m_oData.m_fCharacterCircleAngle;
 
 				static float4x4 matrot;
 
-				if (Data.CharacterCircleAxis == PARTICLES_AXIS_X)
+				if (m_oData.m_typeCharacterCircleAxis == PARTICLES_AXIS_X)
 					matrot = SMMatrixRotationX(tmpangle);
-				else if (Data.CharacterCircleAxis == PARTICLES_AXIS_Y)
+				else if (m_oData.m_typeCharacterCircleAxis == PARTICLES_AXIS_Y)
 					matrot = SMMatrixRotationY(tmpangle);
-				else if (Data.CharacterCircleAxis == PARTICLES_AXIS_Z)
+				else if (m_oData.m_typeCharacterCircleAxis == PARTICLES_AXIS_Z)
 					matrot = SMMatrixRotationZ(tmpangle);
 
-				Arr[i].Pos = SMVector3Transform(Arr[i].Pos, matrot);
+				m_pArr[i].Pos = SMVector3Transform(m_pArr[i].Pos, matrot);
 			}
 
 			//если есть хараткер поворота
-			if (Data.CharacterRotate)
+			if (m_oData.m_useCharacterRotate)
 			{
 				float tmpangle = 0;
 
 				//если возможна дисперсия
-				if (Data.CharacterRotateAngleDisp != 0.0f)
+				if (m_oData.m_fCharacterRotateAngleDisp != 0.0f)
 				{
 					//если возможно брать отрицательные значения
-					if (Data.CharacterRotateAngleDispNeg)
-						tmpangle = randf(-Data.CharacterRotateAngleDisp*0.5, Data.CharacterRotateAngleDisp*0.5);
+					if (m_oData.m_useCharacterRotateAngleDispNeg)
+						tmpangle = randf(-m_oData.m_fCharacterRotateAngleDisp*0.5, m_oData.m_fCharacterRotateAngleDisp*0.5);
 					else
-						tmpangle = randf(0.f, Data.CharacterRotateAngleDisp);
+						tmpangle = randf(0.f, m_oData.m_fCharacterRotateAngleDisp);
 				}
 
-				Arr[i].CharacterRotateAngleZ += Data.CharacterRotateAngle + tmpangle;
+				m_pArr[i].CharacterRotateAngleZ += m_oData.m_fCharacterRotateAngle + tmpangle;
 
-				if (Arr[i].CharacterRotateAngleZ >= SM_2PI)
-					Arr[i].CharacterRotateAngleZ = Arr[i].CharacterRotateAngleZ - SM_2PI;
+				if (m_pArr[i].CharacterRotateAngleZ >= SM_2PI)
+					m_pArr[i].CharacterRotateAngleZ = m_pArr[i].CharacterRotateAngleZ - SM_2PI;
 
-				Arr[i].rot_1.x = sinf(Arr[i].CharacterRotateAngleZ);
-				Arr[i].rot_1.y = cosf(Arr[i].CharacterRotateAngleZ);
+				m_pArr[i].rot_1.x = sinf(m_pArr[i].CharacterRotateAngleZ);
+				m_pArr[i].rot_1.y = cosf(m_pArr[i].CharacterRotateAngleZ);
 			}
 
 			//если определен характер движения
-			if (Data.CharacterDeviation)
+			if (m_oData.m_useCharacterDeviation)
 			{
 				//если определен волновой тип движения
-				if (Data.CharacterDeviationType == PARTICLESTYPE_DEVIATION_WAVE)
+				if (m_oData.m_typeCharacterDeviation == PARTICLESTYPE_DEVIATION_WAVE)
 				{
 					float tmpdist = 0;
 
 					//определяем ось для волны
-					if (Data.CharacterDeviationAxis == PARTICLES_AXIS_X)
-						tmpdist = Arr[i].Pos.x;
-					else if (Data.CharacterDeviationAxis == PARTICLES_AXIS_Y)
-						tmpdist = Arr[i].Pos.y;
-					else if (Data.CharacterDeviationAxis == PARTICLES_AXIS_Z)
-						tmpdist = Arr[i].Pos.z;
+					if (m_oData.m_typeCharacterDeviationAxis == PARTICLES_AXIS_X)
+						tmpdist = m_pArr[i].Pos.x;
+					else if (m_oData.m_typeCharacterDeviationAxis == PARTICLES_AXIS_Y)
+						tmpdist = m_pArr[i].Pos.y;
+					else if (m_oData.m_typeCharacterDeviationAxis == PARTICLES_AXIS_Z)
+						tmpdist = m_pArr[i].Pos.z;
 
 					//если разрешена дисперсия
-					if (Data.CharacterDeviationCoefAngleDisp != 0.0f)
+					if (m_oData.m_fCharacterDeviationCoefAngleDisp != 0.0f)
 					{
-						if (Data.CharacterDeviationCoefAngleDispNeg)
+						if (m_oData.m_useCharacterDeviationCoefAngleDispNeg)
 						{
-							tmpdist += randf(-Data.CharacterDeviationCoefAngleDisp*0.5, Data.CharacterDeviationCoefAngleDisp*0.5);
+							tmpdist += randf(-m_oData.m_fCharacterDeviationCoefAngleDisp*0.5, m_oData.m_fCharacterDeviationCoefAngleDisp*0.5);
 						}
 						else
 						{
 							//если амплитуда отрицательная, значит и рандомное значение тоже
-							if (Data.CharacterDeviationAmplitude < 0)
-								tmpdist += randf(Data.CharacterDeviationCoefAngleDisp, 0);
+							if (m_oData.m_fCharacterDeviationAmplitude < 0)
+								tmpdist += randf(m_oData.m_fCharacterDeviationCoefAngleDisp, 0);
 							else
-								tmpdist += randf(0, Data.CharacterDeviationCoefAngleDisp);
+								tmpdist += randf(0, m_oData.m_fCharacterDeviationCoefAngleDisp);
 						}
 						
 					}
 
 					//домножаем на коэфициент
-					tmpdist *= Data.CharacterDeviationCoefAngle;
+					tmpdist *= m_oData.m_fCharacterDeviationCoefAngle;
 
-					if (Data.CharacterDeviationTapX)
-						Arr[i].DeviationVector.x = Data.CharacterDeviationAmplitude * sinf(tmpdist);
+					if (m_oData.m_useCharacterDeviationTapX)
+						m_pArr[i].DeviationVector.x = m_oData.m_fCharacterDeviationAmplitude * sinf(tmpdist);
 
-					if (Data.CharacterDeviationTapY)
-						Arr[i].DeviationVector.y = Data.CharacterDeviationAmplitude * sinf(tmpdist);
+					if (m_oData.m_useCharacterDeviationTapY)
+						m_pArr[i].DeviationVector.y = m_oData.m_fCharacterDeviationAmplitude * sinf(tmpdist);
 
-					if (Data.CharacterDeviationTapZ)
-						Arr[i].DeviationVector.z = Data.CharacterDeviationAmplitude * sinf(tmpdist);
+					if (m_oData.m_useCharacterDeviationTapZ)
+						m_pArr[i].DeviationVector.z = m_oData.m_fCharacterDeviationAmplitude * sinf(tmpdist);
 
-					Arr[i].Pos += Arr[i].DeviationVector;
+					m_pArr[i].Pos += m_pArr[i].DeviationVector;
 				}
 
 
 				//если пришло время обновления
-				else if (Arr[i].CharacterDeviationCountDelayMls2 >= Data.CharacterDeviationCountDelayMls)
+				else if (m_pArr[i].CharacterDeviationCountDelayMls2 >= m_oData.m_uiCharacterDeviationCountDelayMls)
 				{
 					//обнуляем вектор отклонения
-					Arr[i].DeviationVector.x = Arr[i].DeviationVector.y = Arr[i].DeviationVector.z = 0;
+					m_pArr[i].DeviationVector.x = m_pArr[i].DeviationVector.y = m_pArr[i].DeviationVector.z = 0;
 
 					//если простое смещение
-					if (Data.CharacterDeviationType == PARTICLESTYPE_DEVIATION_RAND)
+					if (m_oData.m_typeCharacterDeviation == PARTICLESTYPE_DEVIATION_RAND)
 					{
 						//если разрешена дисперсия то генерируем
-						if (Data.CharacterDeviationCoefAngleDisp != 0.0f)
+						if (m_oData.m_fCharacterDeviationCoefAngleDisp != 0.0f)
 						{
-							if (Data.CharacterDeviationTapX)
-								Arr[i].DeviationVector.x = randf(0, Data.CharacterDeviationAmplitude) - (Data.CharacterDeviationCoefAngleDispNeg ? Data.CharacterDeviationAmplitude*0.5f : 0);
+							if (m_oData.m_useCharacterDeviationTapX)
+								m_pArr[i].DeviationVector.x = randf(0, m_oData.m_fCharacterDeviationAmplitude) - (m_oData.m_useCharacterDeviationCoefAngleDispNeg ? m_oData.m_fCharacterDeviationAmplitude*0.5f : 0);
 
-							if (Data.CharacterDeviationTapY)
-								Arr[i].DeviationVector.y = randf(0, Data.CharacterDeviationAmplitude) - (Data.CharacterDeviationCoefAngleDispNeg ? Data.CharacterDeviationAmplitude*0.5f : 0);
+							if (m_oData.m_useCharacterDeviationTapY)
+								m_pArr[i].DeviationVector.y = randf(0, m_oData.m_fCharacterDeviationAmplitude) - (m_oData.m_useCharacterDeviationCoefAngleDispNeg ? m_oData.m_fCharacterDeviationAmplitude*0.5f : 0);
 
-							if (Data.CharacterDeviationTapZ)
-								Arr[i].DeviationVector.z = randf(0, Data.CharacterDeviationAmplitude) - (Data.CharacterDeviationCoefAngleDispNeg ? Data.CharacterDeviationAmplitude*0.5f : 0);
+							if (m_oData.m_useCharacterDeviationTapZ)
+								m_pArr[i].DeviationVector.z = randf(0, m_oData.m_fCharacterDeviationAmplitude) - (m_oData.m_useCharacterDeviationCoefAngleDispNeg ? m_oData.m_fCharacterDeviationAmplitude*0.5f : 0);
 						}
 						else
 						{
-							if (Data.CharacterDeviationTapX)
-								Arr[i].DeviationVector.x = Data.CharacterDeviationAmplitude;
+							if (m_oData.m_useCharacterDeviationTapX)
+								m_pArr[i].DeviationVector.x = m_oData.m_fCharacterDeviationAmplitude;
 
-							if (Data.CharacterDeviationTapY)
-								Arr[i].DeviationVector.y = Data.CharacterDeviationAmplitude;
+							if (m_oData.m_useCharacterDeviationTapY)
+								m_pArr[i].DeviationVector.y = m_oData.m_fCharacterDeviationAmplitude;
 
-							if (Data.CharacterDeviationTapZ)
-								Arr[i].DeviationVector.z = Data.CharacterDeviationAmplitude;
+							if (m_oData.m_useCharacterDeviationTapZ)
+								m_pArr[i].DeviationVector.z = m_oData.m_fCharacterDeviationAmplitude;
 						}
 					}
 					//иначе если равномерное смещение вдоль
-					else if (Data.CharacterDeviationType == PARTICLESTYPE_DEVIATION_ALONG)
+					else if (m_oData.m_typeCharacterDeviation == PARTICLESTYPE_DEVIATION_ALONG)
 					{
-						Data.CharacterDeviationAmplitude = -Data.CharacterDeviationAmplitude;
+						m_oData.m_fCharacterDeviationAmplitude = -m_oData.m_fCharacterDeviationAmplitude;
 
-						if (Data.CharacterDeviationTapX)
-							Arr[i].DeviationVector.x = Data.CharacterDeviationAmplitude;
+						if (m_oData.m_useCharacterDeviationTapX)
+							m_pArr[i].DeviationVector.x = m_oData.m_fCharacterDeviationAmplitude;
 
-						if (Data.CharacterDeviationTapY)
-							Arr[i].DeviationVector.y = Data.CharacterDeviationAmplitude;
+						if (m_oData.m_useCharacterDeviationTapY)
+							m_pArr[i].DeviationVector.y = m_oData.m_fCharacterDeviationAmplitude;
 
-						if (Data.CharacterDeviationTapZ)
-							Arr[i].DeviationVector.z = Data.CharacterDeviationAmplitude;
+						if (m_oData.m_useCharacterDeviationTapZ)
+							m_pArr[i].DeviationVector.z = m_oData.m_fCharacterDeviationAmplitude;
 					}
 
-					Arr[i].CharacterDeviationCountDelayMls2 = 0;
+					m_pArr[i].CharacterDeviationCountDelayMls2 = 0;
 				}
 				else
 				{
-					Arr[i].Pos += Arr[i].DeviationVector * (float(Arr[i].CharacterDeviationCountDelayMls2) / float(Data.CharacterDeviationCountDelayMls));
+					m_pArr[i].Pos += m_pArr[i].DeviationVector * (float(m_pArr[i].CharacterDeviationCountDelayMls2) / float(m_oData.m_uiCharacterDeviationCountDelayMls));
 				}
-				Arr[i].CharacterDeviationCountDelayMls2 += tmptime - OldTime;
+				m_pArr[i].CharacterDeviationCountDelayMls2 += tmptime - m_dwOldTime;
 			}
 
-			if (Data.CollisionDelete)
+			if (m_oData.m_useCollisionDelete)
 			{
-				tmpoldpos = SMVector3Transform(tmpoldpos, *mat);
-				tmpnewpos = SMVector3Transform(Arr[i].Pos, *mat);
+				tmpoldpos = SMVector3Transform(tmpoldpos, *pMat);
+				tmpnewpos = SMVector3Transform(m_pArr[i].Pos, *pMat);
 
-				if (GParticlesPhyCollision(&tmpoldpos, &tmpnewpos, &Arr[i].TrackPos, &Arr[i].TrackNormal /*(!Arr[i].Track ? &Arr[i].TrackPos : 0), (!Arr[i].Track ? &Arr[i].TrackNormal : 0)*/))
+				if (g_fnParticlesPhyCollision(&tmpoldpos, &tmpnewpos, &m_pArr[i].TrackPos, &m_pArr[i].TrackNormal /*(!m_pArr[i].Track ? &m_pArr[i].TrackPos : 0), (!m_pArr[i].Track ? &m_pArr[i].TrackNormal : 0)*/))
 				{
-					Arr[i].IsAlife = false;
+					m_pArr[i].IsAlife = false;
 
-					if (Data.Track)
+					if (m_oData.m_useTrack)
 					{
-						Arr[i].TrackPos += Arr[i].TrackNormal * SXPARTICLES_TRACK_ADD;
+						m_pArr[i].TrackPos += m_pArr[i].TrackNormal * SXPARTICLES_TRACK_ADD;
 						float3 f = SXPARTICLES_TRACK_BASE_DIR;
-						float3 a = SMVector3Cross(f, Arr[i].TrackNormal);
-						float ang = acosf(SMVector3Dot(f, Arr[i].TrackNormal));
+						float3 a = SMVector3Cross(f, m_pArr[i].TrackNormal);
+						float ang = acosf(SMVector3Dot(f, m_pArr[i].TrackNormal));
 
 						SMQuaternion q(a, ang);
-						Arr[i].TrackNormal.x = q.x;
-						Arr[i].TrackNormal.y = q.y;
-						Arr[i].TrackNormal.z = q.z;
-						Arr[i].TrackNormal.w = q.w;
-						Arr[i].Track = true;
-						Arr[i].TrackTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+						m_pArr[i].TrackNormal.x = q.x;
+						m_pArr[i].TrackNormal.y = q.y;
+						m_pArr[i].TrackNormal.z = q.z;
+						m_pArr[i].TrackNormal.w = q.w;
+						m_pArr[i].Track = true;
+						m_pArr[i].TrackTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 					}
 				}
 			}
 
-			if (!(Arr[i].IsAlife))
+			if (!(m_pArr[i].IsAlife))
 				continue;
 
 			//считаем ограничивающий объем
-			float tmpmaxedge = Arr[i].Size.x;
-			if (Arr[i].Size.x < Arr[i].Size.y)
-				tmpmaxedge = Arr[i].Size.y;
+			float tmpmaxedge = m_pArr[i].Size.x;
+			if (m_pArr[i].Size.x < m_pArr[i].Size.y)
+				tmpmaxedge = m_pArr[i].Size.y;
 
-			if (CountLifeParticle == 1)
+			if (m_iCountLifeParticle == 1)
 			{
-				CurrMax.x = Arr[i].Pos.x + tmpmaxedge;
-				CurrMax.y = Arr[i].Pos.y + tmpmaxedge;
-				CurrMax.z = Arr[i].Pos.z + tmpmaxedge;
+				m_vCurrMax.x = m_pArr[i].Pos.x + tmpmaxedge;
+				m_vCurrMax.y = m_pArr[i].Pos.y + tmpmaxedge;
+				m_vCurrMax.z = m_pArr[i].Pos.z + tmpmaxedge;
 
-				CurrMin.x = Arr[i].Pos.x - tmpmaxedge;
-				CurrMin.y = Arr[i].Pos.y - tmpmaxedge;
-				CurrMin.z = Arr[i].Pos.z - tmpmaxedge;
+				m_vCurrMin.x = m_pArr[i].Pos.x - tmpmaxedge;
+				m_vCurrMin.y = m_pArr[i].Pos.y - tmpmaxedge;
+				m_vCurrMin.z = m_pArr[i].Pos.z - tmpmaxedge;
 			}
 			else
 			{
-			if (Arr[i].Pos.x + tmpmaxedge > CurrMax.x)
-					CurrMax.x = Arr[i].Pos.x + tmpmaxedge;
+			if (m_pArr[i].Pos.x + tmpmaxedge > m_vCurrMax.x)
+					m_vCurrMax.x = m_pArr[i].Pos.x + tmpmaxedge;
 
-				if (Arr[i].Pos.x - tmpmaxedge < CurrMin.x)
-					CurrMin.x = Arr[i].Pos.x - tmpmaxedge;
+				if (m_pArr[i].Pos.x - tmpmaxedge < m_vCurrMin.x)
+					m_vCurrMin.x = m_pArr[i].Pos.x - tmpmaxedge;
 
-			if (Arr[i].Pos.y + tmpmaxedge > CurrMax.y)
-					CurrMax.y = Arr[i].Pos.y + tmpmaxedge;
+			if (m_pArr[i].Pos.y + tmpmaxedge > m_vCurrMax.y)
+					m_vCurrMax.y = m_pArr[i].Pos.y + tmpmaxedge;
 
-				if (Arr[i].Pos.y - tmpmaxedge < CurrMin.y)
-					CurrMin.y = Arr[i].Pos.y - tmpmaxedge;
+				if (m_pArr[i].Pos.y - tmpmaxedge < m_vCurrMin.y)
+					m_vCurrMin.y = m_pArr[i].Pos.y - tmpmaxedge;
 
-			if (Arr[i].Pos.z + tmpmaxedge > CurrMax.z)
-					CurrMax.z = Arr[i].Pos.z + tmpmaxedge;
+			if (m_pArr[i].Pos.z + tmpmaxedge > m_vCurrMax.z)
+					m_vCurrMax.z = m_pArr[i].Pos.z + tmpmaxedge;
 
-				if (Arr[i].Pos.z - tmpmaxedge < CurrMin.z)
-					CurrMin.z = Arr[i].Pos.z - tmpmaxedge;
+				if (m_pArr[i].Pos.z - tmpmaxedge < m_vCurrMin.z)
+					m_vCurrMin.z = m_pArr[i].Pos.z - tmpmaxedge;
 			}
 		}
 		else
@@ -1178,71 +1195,80 @@ void Emitter::Compute(const float4x4 * mat)
 	}
 
 	//все частицы отыграли свое и будущего спавна нет
-	if (OldTime != 0 && CountLifeParticle == 0 && TimeNextSpawnParticle == 0)
-		Enable = false;
+	if (m_dwOldTime != 0 && m_iCountLifeParticle == 0 && m_dwTimeNextSpawnParticle == 0)
+		m_isEnable = false;
 
-	if (!Enable)
-		Alife = Enable;
+	if (!m_isEnable)
+		m_isAlife = m_isEnable;
 
-	OldTime = tmptime;
+	m_dwOldTime = tmptime;
 
-	/*CurrMin.x -= SizeAdd;
-	CurrMin.y -= SizeAdd;
-	CurrMin.z -= SizeAdd;
+	/*m_vCurrMin.x -= m_fSizeAdd;
+	m_vCurrMin.y -= m_fSizeAdd;
+	m_vCurrMin.z -= m_fSizeAdd;
 
-	CurrMax.x += SizeAdd;
-	CurrMax.y += SizeAdd;
-	CurrMax.z += SizeAdd;*/
+	m_vCurrMax.x += m_fSizeAdd;
+	m_vCurrMax.y += m_fSizeAdd;
+	m_vCurrMax.z += m_fSizeAdd;*/
 }
 
 
 
-void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
+void CEmitter::render(DWORD timeDelta, const float4x4 *mRot, const float4x4 *mPos)
 {
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
-	if (!Enable)
+	if (!m_isEnable)
 		return;
 
-	if (CountLifeParticle > 0)
+	if (!m_isTexInit)
+	{
+		if (SGCore_LoadTexGetTex(m_idTex))
+		{
+			m_isTexInit = true;
+			initAnimTexData();
+		}
+	}
+
+	if (m_iCountLifeParticle > 0)
 	{
 		//если размер частиц изменился то меняем данные в вершинном буфере на новые
-		if (Data.Size.x != OldSize.x || Data.Size.y != OldSize.y)
+		if (m_oData.m_vSize.x != m_vOldSize.x || m_oData.m_vSize.y != m_vOldSize.y)
 		{
-			OldSize = Data.Size;
-			VertexBuffModify();
+			m_vOldSize = m_oData.m_vSize;
+			modifyVertexBuff();
 		}
 
 		CommonParticleDecl2* RTGPUArrVerteces;
-		TransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
+		m_pTransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
 		DWORD tmpcount = 0;
-		for (DWORD i = 0; i<Count; i++)
+		for (int i = 0; i < m_iCount; ++i)
 		{
-			if (Arr[i].IsAlife)
+			if (m_pArr[i].IsAlife)
 			{
-				RTGPUArrVerteces[tmpcount].pos = Arr[i].Pos;
-				RTGPUArrVerteces[tmpcount].tex = Arr[i].AnimTexSizeCadrAndBias;
-				RTGPUArrVerteces[tmpcount].alpha = Arr[i].AlphaAgeDependCoef * Arr[i].AlphaDeath * Data.TransparencyCoef;
-				RTGPUArrVerteces[tmpcount].size = Arr[i].Size.x;
-				RTGPUArrVerteces[tmpcount].lighting = Arr[i].LightingIntens;
+				RTGPUArrVerteces[tmpcount].pos = m_pArr[i].Pos;
+				RTGPUArrVerteces[tmpcount].tex = m_pArr[i].AnimTexSizeCadrAndBias;
+				RTGPUArrVerteces[tmpcount].alpha = m_pArr[i].AlphaAgeDependCoef * m_pArr[i].AlphaDeath * m_oData.m_fTransparencyCoef;
+				RTGPUArrVerteces[tmpcount].size = m_pArr[i].Size.x;
+				RTGPUArrVerteces[tmpcount].lighting = m_pArr[i].LightingIntens;
 
-				RTGPUArrVerteces[tmpcount].rot_1 = Arr[i].rot_1;
+				RTGPUArrVerteces[tmpcount].rot_1 = m_pArr[i].rot_1;
 				tmpcount++;
 			}
 		}
 
-		TransVertBuf->Unlock();
+		m_pTransVertBuf->Unlock();
 
-		PESet::DXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | tmpcount));
+		pe_data::pDXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | tmpcount));
 
-		PESet::DXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
-		PESet::DXDevice->SetStreamSource(1, TransVertBuf, 0, sizeof(CommonParticleDecl2));
+		pe_data::pDXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
+		pe_data::pDXDevice->SetStreamSource(1, m_pTransVertBuf, 0, sizeof(CommonParticleDecl2));
 
-		PESet::DXDevice->SetVertexDeclaration(PESet::VertexDeclarationParticles);
+		pe_data::pDXDevice->SetVertexDeclaration(pe_data::pVertexDeclarationParticles);
 
-		PESet::DXDevice->SetStreamSource(0, VertexBuff, 0, sizeof(CommonParticleDecl));
-		PESet::DXDevice->SetIndices(IndexBuff);
+		pe_data::pDXDevice->SetStreamSource(0, m_pVertexBuff, 0, sizeof(CommonParticleDecl));
+		pe_data::pDXDevice->SetIndices(m_pIndexBuff);
 
 		static float4x4 MCamView;
 		static float4x4 MCamProj;
@@ -1258,9 +1284,9 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		float4x4 cammat = SMMatrixIdentity();
 
 		static float4x4 tmpmatrot = SMMatrixIdentity();
-		tmpmatrot = (matrot ? (*matrot) : SMMatrixIdentity());
+		tmpmatrot = (mRot ? (*mRot) : SMMatrixIdentity());
 
-		if (Data.FigureType == PARTICLESTYPE_FIGURE_BILLBOARD)
+		if (m_oData.m_typeFigure == PARTICLESTYPE_FIGURE_BILLBOARD)
 		{
 			float determ = 0;
 			cammat = SMMatrixInverse(&determ, tmpmatrot * MCamView);
@@ -1272,126 +1298,126 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		tmpmatrot = SMMatrixRotationY(tmpangle);*/
 
 		static float4x4 tmpmatpos = SMMatrixIdentity();
-		tmpmatpos = (matpos ? (*matpos) : SMMatrixIdentity());
+		tmpmatpos = (mPos ? (*mPos) : SMMatrixIdentity());
 		
 		float4x4 worldmat = tmpmatrot * tmpmatpos;
 
 		float4x4 vp = MCamView * MCamProj;
-		PESet::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(IDTex));
-		if (Data.Soft)
+		pe_data::pDXDevice->SetTexture(0, SGCore_LoadTexGetTex(m_idTex));
+		if (m_oData.m_isSoft)
 		{
-			if (PESet::IDsRenderTargets::DepthScene >= 0)
-				PESet::DXDevice->SetTexture(1, SGCore_RTGetTexture(PESet::IDsRenderTargets::DepthScene));
+			if (pe_data::rt_id::idDepthScene >= 0)
+				pe_data::pDXDevice->SetTexture(1, SGCore_RTGetTexture(pe_data::rt_id::idDepthScene));
 			else
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "sxparticles - not init depth map\n");
+				LibReport(REPORT_MSG_LEVEL_WARNING, "sxparticles - not init depth map\n");
 		}
 
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticles);
 
 		static ID psid = -1;
 
-		if (Data.Soft && !Data.Refraction && !Data.Lighting)
+		if (m_oData.m_isSoft && !m_oData.m_useRefraction && !m_oData.m_isLighting)
 		{
-			psid = PESet::IDsShaders::PS::ParticlesSoft;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoft);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoft, "SoftCoef", &Data.SoftCoef);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoft, "NearFar", &NearFar);
+			psid = pe_data::shader_id::ps::idParticlesSoft;
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoft);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoft, "SoftCoef", &m_oData.m_fSoftCoef);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoft, "NearFar", &NearFar);
 		}
-		else if (Data.Soft && Data.Refraction && !Data.Lighting)
+		else if (m_oData.m_isSoft && m_oData.m_useRefraction && !m_oData.m_isLighting)
 		{
-			psid = PESet::IDsShaders::PS::ParticlesSoftRefraction;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefraction);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefraction, "SoftCoef", &Data.SoftCoef);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefraction, "NearFar", &NearFar);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefraction, "RefractCoef", &Data.RefractionCoef);
+			psid = pe_data::shader_id::ps::idParticlesSoftRefraction;
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefraction);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefraction, "SoftCoef", &m_oData.m_fSoftCoef);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefraction, "NearFar", &NearFar);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefraction, "RefractCoef", &m_oData.m_fRefractionCoef);
 		}
-		else if (Data.Soft && Data.Refraction && Data.Lighting)
+		else if (m_oData.m_isSoft && m_oData.m_useRefraction && m_oData.m_isLighting)
 		{
-			psid = PESet::IDsShaders::PS::ParticlesSoftRefractionLight;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefractionLight);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefractionLight, "SoftCoef", &Data.SoftCoef);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefractionLight, "NearFar", &NearFar);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftRefractionLight, "RefractCoef", &Data.RefractionCoef);
+			psid = pe_data::shader_id::ps::idParticlesSoftRefractionLight;
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefractionLight);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefractionLight, "SoftCoef", &m_oData.m_fSoftCoef);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefractionLight, "NearFar", &NearFar);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefractionLight, "RefractCoef", &m_oData.m_fRefractionCoef);
 		}
-		else if (Data.Soft && !Data.Refraction && Data.Lighting)
+		else if (m_oData.m_isSoft && !m_oData.m_useRefraction && m_oData.m_isLighting)
 		{
-			psid = PESet::IDsShaders::PS::ParticlesSoftLight;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftLight);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftLight, "SoftCoef", &Data.SoftCoef);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftLight, "NearFar", &NearFar);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesSoftLight, "RefractCoef", &Data.RefractionCoef);
+			psid = pe_data::shader_id::ps::idParticlesSoftLight;
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftLight);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftLight, "SoftCoef", &m_oData.m_fSoftCoef);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftLight, "NearFar", &NearFar);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftLight, "RefractCoef", &m_oData.m_fRefractionCoef);
 		}
-		else if (!Data.Soft && Data.Refraction && Data.Lighting)
+		else if (!m_oData.m_isSoft && m_oData.m_useRefraction && m_oData.m_isLighting)
 		{
-			psid = PESet::IDsShaders::PS::ParticlesRefractionLight;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesRefractionLight);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesRefractionLight, "RefractCoef", &Data.RefractionCoef);
+			psid = pe_data::shader_id::ps::idParticlesRefractionLight;
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesRefractionLight);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesRefractionLight, "RefractCoef", &m_oData.m_fRefractionCoef);
 		}
-		else if (!Data.Soft && !Data.Refraction && Data.Lighting)
+		else if (!m_oData.m_isSoft && !m_oData.m_useRefraction && m_oData.m_isLighting)
 		{
-			psid = PESet::IDsShaders::PS::ParticlesLight;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesLight);
+			psid = pe_data::shader_id::ps::idParticlesLight;
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesLight);
 		}
-		else if (!Data.Soft && Data.Refraction && !Data.Lighting)
+		else if (!m_oData.m_isSoft && m_oData.m_useRefraction && !m_oData.m_isLighting)
 		{
-			psid = PESet::IDsShaders::PS::ParticlesRefraction;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesRefraction);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesRefraction, "RefractCoef", &Data.RefractionCoef);
+			psid = pe_data::shader_id::ps::idParticlesRefraction;
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesRefraction);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesRefraction, "RefractCoef", &m_oData.m_fRefractionCoef);
 		}
 		else
 		{
-			psid = PESet::IDsShaders::PS::Particles;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::Particles);
+			psid = pe_data::shader_id::ps::idParticles;
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticles);
 		}
 
-		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles, "ViewProjection", &SMMatrixTranspose(vp));
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles, "WorldViewProjection", &SMMatrixTranspose(worldmat * vp));
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles, "CamRot", &SMMatrixTranspose(cammat));
-		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles, "World", &SMMatrixTranspose(world));
-		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles, "MatRot", &SMMatrixTranspose(tmpmatrot));
-		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles, "MatPos", &SMMatrixTranspose(tmpmatpos));
-		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::Particles, "PosCam", &ConstCamPos);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, psid, "ColorCoef", &Data.ColorCoef);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, psid, "Color", &Data.Color);
+		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticles, "ViewProjection", &SMMatrixTranspose(vp));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticles, "WorldViewProjection", &SMMatrixTranspose(worldmat * vp));
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticles, "CamRot", &SMMatrixTranspose(cammat));
+		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticles, "World", &SMMatrixTranspose(world));
+		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticles, "MatRot", &SMMatrixTranspose(tmpmatrot));
+		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticles, "MatPos", &SMMatrixTranspose(tmpmatpos));
+		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticles, "PosCam", &ConstCamPos);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, psid, "ColorCoef", &m_oData.m_fColorCoef);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, psid, "Color", &m_oData.m_vColor);
 
-		PESet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		pe_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
-		if (Data.AlphaBlendType == PARTICLESTYPE_ALPHABLEND_ALPHA)
+		if (m_oData.m_typeAlphaBlend == PARTICLESTYPE_ALPHABLEND_ALPHA)
 		{
-			PESet::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-			PESet::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+			pe_data::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+			pe_data::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 
-			PESet::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-			PESet::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+			pe_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+			pe_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 		}
-		else if (Data.AlphaBlendType == PARTICLESTYPE_ALPHABLEND_ADD)
+		else if (m_oData.m_typeAlphaBlend == PARTICLESTYPE_ALPHABLEND_ADD)
 		{
-			PESet::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-			PESet::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-			PESet::DXDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+			pe_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+			pe_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+			pe_data::pDXDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 		}
 
-		if (Data.FigureType == PARTICLESTYPE_FIGURE_QUAD_COMPOSITE)
-			PESet::DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4 * Data.FigureCountQuads, 0, 2 * Data.FigureCountQuads);
+		if (m_oData.m_typeFigure == PARTICLESTYPE_FIGURE_QUAD_COMPOSITE)
+			pe_data::pDXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4 * m_oData.m_iFigureCountQuads, 0, 2 * m_oData.m_iFigureCountQuads);
 		else
-			PESet::DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
+			pe_data::pDXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
 
-		PESet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+		pe_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
 		SGCore_ShaderUnBind();
 
-		PESet::DXDevice->SetStreamSourceFreq(0, 1);
-		PESet::DXDevice->SetStreamSourceFreq(1, 1);
+		pe_data::pDXDevice->SetStreamSourceFreq(0, 1);
+		pe_data::pDXDevice->SetStreamSourceFreq(1, 1);
 	}
 
-	if (!Data.Track)
+	if (!m_oData.m_useTrack)
 		return;
 
 	bool exists_track = false;
 
-	for (int i = 0; i < Count; ++i)
+	for (int i = 0; i < m_iCount; ++i)
 	{
-		if (Arr[i].Track)
+		if (m_pArr[i].Track)
 		{
 			exists_track = true;
 			break;
@@ -1401,49 +1427,49 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 	if (exists_track)
 	{
 		CommonParticleDecl2* RTGPUArrVerteces;
-		TransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
+		m_pTransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
 		int tmpcount = 0;
-		for (int i = 0; i<Count; ++i)
+		for (int i = 0; i<m_iCount; ++i)
 		{
-			if (TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - Arr[i].TrackTime > Data.TrackTime)
-				Arr[i].Track = false;
+			if (TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - m_pArr[i].TrackTime > m_oData.m_uiTrackTime)
+				m_pArr[i].Track = false;
 
-			if (Arr[i].Track)
+			if (m_pArr[i].Track)
 			{
-				RTGPUArrVerteces[tmpcount].pos = Arr[i].TrackPos;
-				RTGPUArrVerteces[tmpcount].tex = (float4_t)Arr[i].TrackNormal;
-				RTGPUArrVerteces[tmpcount].alpha = 1.f - (float(TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - Arr[i].TrackTime) / float(Data.TrackTime));
-				RTGPUArrVerteces[tmpcount].size = Data.TrackSize;
+				RTGPUArrVerteces[tmpcount].pos = m_pArr[i].TrackPos;
+				RTGPUArrVerteces[tmpcount].tex = (float4_t)m_pArr[i].TrackNormal;
+				RTGPUArrVerteces[tmpcount].alpha = 1.f - (float(TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - m_pArr[i].TrackTime) / float(m_oData.m_uiTrackTime));
+				RTGPUArrVerteces[tmpcount].size = m_oData.m_fTrackSize;
 				++tmpcount;
 			}
 		}
 
-		TransVertBuf->Unlock();
+		m_pTransVertBuf->Unlock();
 
 
 		if (tmpcount <= 0)
 			return;
 
-		PESet::DXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | tmpcount));
+		pe_data::pDXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | tmpcount));
 
-		PESet::DXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
-		PESet::DXDevice->SetStreamSource(1, TransVertBuf, 0, sizeof(CommonParticleDecl2));
+		pe_data::pDXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
+		pe_data::pDXDevice->SetStreamSource(1, m_pTransVertBuf, 0, sizeof(CommonParticleDecl2));
 
-		PESet::DXDevice->SetVertexDeclaration(PESet::VertexDeclarationParticles);
+		pe_data::pDXDevice->SetVertexDeclaration(pe_data::pVertexDeclarationParticles);
 
-		PESet::DXDevice->SetStreamSource(0, VertexBuffQuad, 0, sizeof(CommonParticleDecl));
-		PESet::DXDevice->SetIndices(IndexBuffQuad);
+		pe_data::pDXDevice->SetStreamSource(0, m_pVertexBuffQuad, 0, sizeof(CommonParticleDecl));
+		pe_data::pDXDevice->SetIndices(m_pIndexBuffQuad);
 
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::ParticlesTrack);
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesTrack);
+		SGCore_ShaderBind(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticlesTrack);
+		SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesTrack);
 
-		PESet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		pe_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
-		PESet::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-		PESet::DXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+		pe_data::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+		pe_data::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 
-		PESet::DXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-		PESet::DXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+		pe_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+		pe_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
 		static float4x4 MCamView;
 		static float4x4 MCamProj;
@@ -1451,57 +1477,57 @@ void Emitter::Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos)
 		Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &MCamProj);
 
 		float4x4 vp = MCamView * MCamProj;
-		PESet::DXDevice->SetTexture(0, SGCore_LoadTexGetTex(IDTexTrack));
+		pe_data::pDXDevice->SetTexture(0, SGCore_LoadTexGetTex(m_idTexTrack));
 
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, PESet::IDsShaders::VS::ParticlesTrack, "WorldViewProjection", &SMMatrixTranspose(vp));
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesTrack, "Color", &Data.Color);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, PESet::IDsShaders::PS::ParticlesTrack, "ColorCoef", &Data.ColorCoef);
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticlesTrack, "WorldViewProjection", &SMMatrixTranspose(vp));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesTrack, "Color", &m_oData.m_vColor);
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesTrack, "ColorCoef", &m_oData.m_fColorCoef);
 
-		PESet::DXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
+		pe_data::pDXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
 
-		PESet::DXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+		pe_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
 		SGCore_ShaderUnBind();
 
-		PESet::DXDevice->SetStreamSourceFreq(0, 1);
-		PESet::DXDevice->SetStreamSourceFreq(1, 1);
+		pe_data::pDXDevice->SetStreamSourceFreq(0, 1);
+		pe_data::pDXDevice->SetStreamSourceFreq(1, 1);
 	}
 }
 
-int Emitter::TrackCountGet()
+int CEmitter::getTrackCount()
 {
-	if (!Enable || !Data.Track || !Data.CollisionDelete)
+	if (!m_isEnable || !m_oData.m_useTrack || !m_oData.m_useCollisionDelete)
 		return 0;
 
-	int count_track = 0;
+	int iCountTrack = 0;
 
-	for (int i = 0; i < Count; ++i)
+	for (int i = 0; i < m_iCount; ++i)
 	{
-		if (Arr[i].Track)
-			++count_track;
+		if (m_pArr[i].Track)
+			++iCountTrack;
 	}
 
-	return count_track;
+	return iCountTrack;
 }
 
-int Emitter::TrackPosGet(float3** arr, int count)
+int CEmitter::getTrackPos(float3 **pArr, int iCount)
 {
-	if (!arr || !Enable || !Data.Track || !Data.CollisionDelete)
+	if (!pArr || !m_isEnable || !m_oData.m_useTrack || !m_oData.m_useCollisionDelete)
 		return 0;
 
-	int count_track = 0;
+	int iCountTrack = 0;
 
-	for (int i = 0; i < Count; ++i)
+	for (int i = 0; i < m_iCount; ++i)
 	{
-		if (Arr[i].Track)
+		if (m_pArr[i].Track)
 		{
-			if (count_track >= count)
+			if (iCountTrack >= iCount)
 				break;
 
-			(*arr)[count_track] = Arr[i].TrackPos;
-			++count_track;
+			(*pArr)[iCountTrack] = m_pArr[i].TrackPos;
+			++iCountTrack;
 		}
 	}
 
-	return count_track;
+	return iCountTrack;
 }

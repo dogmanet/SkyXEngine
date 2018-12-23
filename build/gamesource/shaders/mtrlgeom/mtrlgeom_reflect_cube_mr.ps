@@ -1,0 +1,39 @@
+
+/*
+mtrlgeom_reflect_cube_mr.vs
+Рендер геометрии с объемным (кубическим) отражением и микрорельефом
+*/
+
+#include <../struct.h>
+#include <../mtrl.h>
+
+//##########################################################################
+
+sampler2D g_sColor:register(s0);
+sampler2D g_sNormals0:register(s6);
+
+sampler2D g_sParameters:register(s10);
+samplerCUBE g_sReflection:register(s12);
+
+//##########################################################################
+
+half4 g_vParam;
+half4 g_vNearFarLayers;
+
+//##########################################################################
+
+PSO_Gbuffer main(VSO_RefCube IN)
+{
+	IN.vNormal = normalize(IN.vNormal);
+	
+	half4 vColor = tex2D(g_sColor,IN.vTexUV);
+	half4 vParam = tex2D(g_sParameters,IN.vTexUV);
+	
+	half fLod = GetTexLod4Ref(saturate(vParam.r));
+	half4 vReflection = texCUBElod(g_sReflection, half4(IN.vCubePPos, fLod));
+	vColor.xyz = lerp(vColor.xyz, vReflection.xyz, vParam.y);
+	
+	half3 vNormal = MixNormalMicro(IN.vNormal, Color2Normal(tex2D(g_sNormals0, IN.vTexUV).rgb) * g_vParam.z);
+	
+	return CreateGbuffer(vColor, vNormal, vParam, IN.vPos, g_vNearFarLayers);
+}

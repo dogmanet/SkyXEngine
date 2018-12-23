@@ -1,10 +1,14 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
 
 #include "crosshair.h"
 #include <common/SXMath.h>
 #include "GameData.h"
 
-Crosshair::Crosshair():
+CCrosshair::CCrosshair():
 	m_bDirty(true),
 	m_bBuildBuff(false),
 	m_fSize(0),
@@ -33,16 +37,16 @@ Crosshair::Crosshair():
 	m_pVertices[1] = (Vertex*)&m_pMemoryBlob[(sizeof(Vertex)* iVC + sizeof(UINT)* iIC)];
 	m_pIndices[1] = (UINT*)&m_pMemoryBlob[sizeof(Vertex)* iVC + (sizeof(Vertex)* iVC + sizeof(UINT)* iIC)];
 
-	m_pDev->CreateVertexBuffer(sizeof(Vertex)* iVC, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, NULL);
-	m_pDev->CreateIndexBuffer(sizeof(UINT)* iIC, D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_MANAGED, &m_pIndexBuffer, NULL);
+	DX_CALL(m_pDev->CreateVertexBuffer(sizeof(Vertex)* iVC, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, NULL));
+	DX_CALL(m_pDev->CreateIndexBuffer(sizeof(UINT)* iIC, D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_MANAGED, &m_pIndexBuffer, NULL));
 }
 
-Crosshair::~Crosshair()
+CCrosshair::~CCrosshair()
 {
 	mem_delete_a(m_pMemoryBlob);
 }
 
-void Crosshair::SetTexInfo(const float2_t & offs, const float2_t & size)
+void CCrosshair::setTexInfo(const float2_t & offs, const float2_t & size)
 {
 	m_bDirty = true;
 	m_f2TexOffs = offs;
@@ -50,7 +54,7 @@ void Crosshair::SetTexInfo(const float2_t & offs, const float2_t & size)
 }
 
 
-void Crosshair::Update()
+void CCrosshair::update()
 {
 	if(m_bDirty && m_idTexture >= 0)
 	{
@@ -67,8 +71,8 @@ void Crosshair::Update()
 		static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
 		//build new buffer
-		float fScreenWidth = *r_win_width;
-		float fScreenHeight = *r_win_height;
+		float fScreenWidth = (float)*r_win_width;
+		float fScreenHeight = (float)*r_win_height;
 		float fTexWidth = m_f2TexSize.x;
 		float fTexHeight = m_f2TexSize.y;
 		float fXradius = fTexWidth / fScreenWidth * 0.5f;
@@ -325,7 +329,7 @@ void Crosshair::Update()
 		m_iIndexCount[m_u8ActiveBuffer ? 0 : 1] = iCurIdx;
 	}
 }
-void Crosshair::Render()
+void CCrosshair::render()
 {
 	if(m_bHidden || !m_pTexture)
 	{
@@ -352,13 +356,22 @@ void Crosshair::Render()
 	m_pDev->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&SMMatrixIdentity());
 	m_pDev->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&SMMatrixIdentity());
 	m_pDev->SetRenderState(D3DRS_ZENABLE, FALSE);
-	m_pDev->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(Vertex));
-	m_pDev->SetIndices(m_pIndexBuffer);
+	DX_CALL(m_pDev->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(Vertex)));
+	DX_CALL(m_pDev->SetIndices(m_pIndexBuffer));
 	m_pDev->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
 	m_pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	SGCore_ShaderUnBind();
 	m_pDev->SetTexture(0, m_pTexture);
 	m_pDev->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+
+	// Использовать альфа-канал в качестве источника альфа-компонент
+	m_pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+	m_pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+
+	// Устанавливаем коэффициенты смешивания таким образом,
+	// чтобы альфа-компонента определяла прозрачность
+	m_pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	m_pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 	
 	//m_pDev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC);
 	//m_pDev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC);
@@ -368,7 +381,7 @@ void Crosshair::Render()
 	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_iVertexCount[m_u8ActiveBuffer], 0, m_iIndexCount[m_u8ActiveBuffer] / 3);
 	//render
 }
-void Crosshair::OnSync()
+void CCrosshair::onSync()
 {
 	if(m_bDirty)
 	{
@@ -381,12 +394,12 @@ void Crosshair::OnSync()
 	}
 }
 
-void Crosshair::Enable(bool en)
+void CCrosshair::enable(bool en)
 {
 	m_bHidden = !en;
 }
 
-void Crosshair::SetNumSegmens(int num)
+void CCrosshair::setNumSegmens(int num)
 {
 	if(num < 1)
 	{
@@ -402,7 +415,7 @@ void Crosshair::SetNumSegmens(int num)
 		m_iNumSegs = num;
 	}
 }
-void Crosshair::SetAngle(float a)
+void CCrosshair::setAngle(float a)
 {
 	if(m_fAngle != a)
 	{
@@ -410,7 +423,7 @@ void Crosshair::SetAngle(float a)
 		m_fAngle = a;
 	}
 }
-void Crosshair::SetFixedRadius(float r)
+void CCrosshair::setFixedRadius(float r)
 {
 	if(m_fFixedRadius != r)
 	{
@@ -418,7 +431,7 @@ void Crosshair::SetFixedRadius(float r)
 		m_fFixedRadius = r;
 	}
 }
-void Crosshair::SetStyle(STYLE style)
+void CCrosshair::setStyle(STYLE style)
 {
 	if(m_style != style)
 	{
@@ -426,12 +439,12 @@ void Crosshair::SetStyle(STYLE style)
 		m_style = style;
 	}
 }
-void Crosshair::SetMaxSize(float size)
+void CCrosshair::setMaxSize(float size)
 {
 	m_bDirty = true;
 	m_fMaxSize = size;
 }
-void Crosshair::SetTexture(ID id)
+void CCrosshair::setTexture(ID id)
 {
 	if(m_idTexture != id)
 	{
@@ -448,7 +461,7 @@ void Crosshair::SetTexture(ID id)
 	}
 }
 
-void Crosshair::SetSize(float size)
+void CCrosshair::setSize(float size)
 {
 	if(m_fSize != size)
 	{

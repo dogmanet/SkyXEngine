@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "sxrender.h"
 
 #include <render/camera_update.h>
@@ -13,7 +18,7 @@
 report_func g_fnReportf = DefReport;
 #endif
 
-#define SR_PRECOND(retval) if(!GData::DXDevice){g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxrender is not init", gen_msg_location); return retval;}
+#define SR_PRECOND(retval) if(!gdata::pDXDevice){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxrender is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -37,45 +42,45 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxparticles", gen_msg_location);
+				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
 				return;
 			}
 		}
 		
-		GData::Handle3D = hWnd3D;
-		GData::HandleParent3D = hWndParent3D;
+		gdata::hHandle3D = hWnd3D;
+		gdata::hHandleParent3D = hWndParent3D;
 
-		GData::DXDevice = SGCore_GetDXDevice();
+		gdata::pDXDevice = SGCore_GetDXDevice();
 
-		GData::ObjCamera = SGCore_CrCamera();
-		GData::ObjCamera->SetFOV(GData::ProjFov);
+		gdata::pCamera = SGCore_CrCamera();
+		gdata::pCamera->setFOV(gdata::fProjFov);
 
-		GData::InitAllMatrix();
+		gdata::InitAllMatrix();
 
-		GData::IDsShaders::InitAllShaders();
+		gdata::shaders_id::InitAllShaders();
 
 		//**********************
 
-		GData::Editors::SimModel = new ModelSim();
+		gdata::Editors::pSimModel = new CSimulationModel();
 
-		GData::Editors::ObjGrid = new CGrid();
-		GData::Editors::ObjGrid->create(100, 100, D3DCOLOR_ARGB(255, 200, 200, 200));
+		gdata::Editors::pGrid = new CGrid();
+		gdata::Editors::pGrid->create(100, 100, D3DCOLOR_ARGB(255, 200, 200, 200));
 
-		GData::Editors::ObjAxesStatic = new CAxesStatic();
-		GData::Editors::ObjAxesStatic->create(1);
+		gdata::Editors::pAxesStatic = new CAxesStatic();
+		gdata::Editors::pAxesStatic->create(1);
 
-		GData::Editors::RenderGrid = GData::Editors::RenderAxesStatic = false;
+		gdata::Editors::canRenderGrid = gdata::Editors::canRenderAxesStatic = false;
 
-		/*GData::Editors::RenderBoundBox = GData::Editors::RenderBoundSphere = GData::Editors::RenderBoundCone = false;
+		/*gdata::Editors::RenderBoundBox = gdata::Editors::RenderBoundSphere = gdata::Editors::RenderBoundCone = false;
 
-		D3DXCreateBox(GData::DXDevice, 1, 1, 1, &GData::Editors::FigureBox, 0);
-		D3DXCreateSphere(GData::DXDevice, 1, 20, 20, &GData::Editors::FigureSphere, 0);
+		D3DXCreateBox(gdata::pDXDevice, 1, 1, 1, &gdata::Editors::FigureBox, 0);
+		D3DXCreateSphere(gdata::pDXDevice, 1, 20, 20, &gdata::Editors::FigureSphere, 0);
 
-		GData::Editors::vFigureConeParam.x = 1;
-		GData::Editors::vFigureConeParam.y = 0.1;
-		GData::Editors::vFigureConeParam.z = 1;
+		gdata::Editors::vFigureConeParam.x = 1;
+		gdata::Editors::vFigureConeParam.y = 0.1;
+		gdata::Editors::vFigureConeParam.z = 1;
 
-		SGCore_FCreateCone(GData::Editors::vFigureConeParam.x, GData::Editors::vFigureConeParam.y, GData::Editors::vFigureConeParam.z, &GData::Editors::FigureCone, 20);
+		SGCore_FCreateCone(gdata::Editors::vFigureConeParam.x, gdata::Editors::vFigureConeParam.y, gdata::Editors::vFigureConeParam.z, &gdata::Editors::FigureCone, 20);
 		*/
 		//***********************
 
@@ -91,119 +96,114 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 
 		SelectMaterial->UnlockRect(0);
 
-		SGCore_LoadTexLoadTextures();
-		GData::IDSelectTex = SGCore_LoadTexCreate("select_material__", SelectMaterial);
+		//SGCore_LoadTexLoadTextures();
+		gdata::idSelectTex = SGCore_LoadTexCreate("select_material__", SelectMaterial);
 
-		SGCore_LoadTexLoadTextures();
+		//SGCore_LoadTexLoadTextures();
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxparticles", gen_msg_location);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SRender_AKill()
 {
 	SR_PRECOND(_VOID);
 
-	/*mem_delete(GData::Editors::SimModel);
+	/*mem_delete(gdata::Editors::SimModel);
 
-	mem_delete(GData::Editors::ObjGrid);
-	mem_delete(GData::Editors::ObjAxesStatic);
-	mem_release(GData::Editors::FigureBox);
-	mem_release(GData::Editors::FigureSphere);
-	mem_release(GData::Editors::FigureCone);
-	mem_delete(GData::Editors::ObjAxesHelper);*/
+	mem_delete(gdata::Editors::ObjGrid);
+	mem_delete(gdata::Editors::ObjAxesStatic);
+	mem_release(gdata::Editors::FigureBox);
+	mem_release(gdata::Editors::FigureSphere);
+	mem_release(gdata::Editors::FigureCone);
+	mem_delete(gdata::Editors::ObjAxesHelper);*/
 
-	mem_release(GData::ObjCamera);
+	mem_release(gdata::pCamera);
 }
 
 //##########################################################################
 
 SX_LIB_API HWND SRender_GetHandleWin3D()
 {
-	return GData::Handle3D;
+	return gdata::hHandle3D;
 }
 
 SX_LIB_API HWND SRender_GetParentHandleWin3D()
 {
-	return GData::HandleParent3D;
+	return gdata::hHandleParent3D;
 }
 
 
 SX_LIB_API void SRender_SetHandleWin3D(HWND hWnd)
 {
-	GData::Handle3D = hWnd;
+	gdata::hHandle3D = hWnd;
 }
 
 SX_LIB_API void SRender_SetParentHandleWin3D(HWND hWnd)
 {
-	GData::HandleParent3D = hWnd;
+	gdata::hHandleParent3D = hWnd;
 }
 
-SX_LIB_API void SRender_SetCamera(ISXCamera *pCamera)
+SX_LIB_API void SRender_SetCamera(ICamera *pCamera)
 {
-	GData::ObjCamera = pCamera;
+	gdata::pCamera = pCamera;
 }
 
-SX_LIB_API ISXCamera* SRender_GetCamera()
+SX_LIB_API ICamera* SRender_GetCamera()
 {
-	return GData::ObjCamera;
+	return gdata::pCamera;
 }
 
 SX_LIB_API void SRender_EditorCameraSetMove(bool canMove)
 {
-	GData::Editors::MoveCamera = canMove;
+	gdata::Editors::canMoveCamera = canMove;
 }
 
 SX_LIB_API bool SRender_EditorCameraGetMove()
 {
-	return GData::Editors::MoveCamera;
+	return gdata::Editors::canMoveCamera;
 }
 
 //**************************************************************************
 
-/*SX_LIB_API void SRender_SimModelSetPosition(const float3 *pPos)
+SX_LIB_API void SRender_SimModelAddModel(ISXDataStaticModel *pModel)
 {
-
-}*/
-
-SX_LIB_API void SRender_SimModelAdd(const char *szName)
-{
-	GData::Editors::SimModel->Add(szName);
+	gdata::Editors::pSimModel->add(pModel);
 }
 
 SX_LIB_API ID SRender_SimModelGetIDMtl()
 {
-	return GData::Editors::SimModel->GetIDMtl();
+	return gdata::Editors::pSimModel->getIdMtl();
 }
 
 SX_LIB_API MTLTYPE_MODEL SRender_SimModelGetType()
 {
-	return GData::Editors::SimModel->TypeModel;
+	return gdata::Editors::pSimModel->m_typeModel;
 }
 
 SX_LIB_API void SRender_SimModelSetType(MTLTYPE_MODEL type)
 {
-	GData::Editors::SimModel->TypeModel = type;
+	gdata::Editors::pSimModel->m_typeModel = type;
 }
 
 SX_LIB_API void SRender_SimModelSetNumCurrModel(int iCurrNumModel)
 {
-	GData::Editors::SimModel->CurrRenderModel = iCurrNumModel;
+	gdata::Editors::pSimModel->m_iCurrRenderModel = iCurrNumModel;
 }
 
 SX_LIB_API int SRender_SimModelGetNumCurrModel()
 {
-	return GData::Editors::SimModel->CurrRenderModel;
+	return gdata::Editors::pSimModel->m_iCurrRenderModel;
 }
 
 SX_LIB_API void SRender_SimModelSetRotationY(float Rotation)
 {
-	GData::Editors::SimModel->Rotation.y = Rotation;
+	gdata::Editors::pSimModel->m_vRotation.y = Rotation;
 }
 
 SX_LIB_API float SRender_SimModelGetRotationY()
 {
-	return GData::Editors::SimModel->Rotation.y;
+	return gdata::Editors::pSimModel->m_vRotation.y;
 }
 
 //##########################################################################
@@ -222,134 +222,129 @@ SX_LIB_API void SRender_UpdateEditorial(DWORD timeDelta)
 
 SX_LIB_API void SRender_EditorSetRenderGrid(bool canRender)
 {
-	GData::Editors::RenderGrid = canRender;
+	gdata::Editors::canRenderGrid = canRender;
 }
 
 SX_LIB_API bool SRender_EditorGetRenderGrid()
 {
-	return GData::Editors::RenderGrid;
+	return gdata::Editors::canRenderGrid;
 }
 
 
 SX_LIB_API void SRender_EditorSetRenderAxesStatic(bool canRender)
 {
-	GData::Editors::RenderAxesStatic = canRender;
+	gdata::Editors::canRenderAxesStatic = canRender;
 }
 
 SX_LIB_API bool SRender_EditorGetRenderAxesStatic()
 {
-	return GData::Editors::RenderAxesStatic;
+	return gdata::Editors::canRenderAxesStatic;
 }
 
 SX_LIB_API ID SRender_EditorGetSelectTex()
 {
-	return GData::IDSelectTex;
+	return gdata::idSelectTex;
 }
 
 //##########################################################################
 
 
-SX_LIB_API void SRender_ComDeviceLost()
+SX_LIB_API void SRender_ComDeviceLost(bool isSetWindowSize)
 {
-	SXRenderFunc::ComDeviceLost();
+	rfunc::ComDeviceLost(isSetWindowSize);
 }
 
 SX_LIB_API void SRender_ComVisibleForLight()
 {
-	SXRenderFunc::ComVisibleForLight();
+	rfunc::ComVisibleForLight();
 }
 
 SX_LIB_API void SRender_ComVisibleForCamera()
 {
-	SXRenderFunc::ComVisibleForCamera();
+	rfunc::ComVisibleForCamera();
 }
 
 SX_LIB_API void SRender_ComVisibleReflection()
 {
-	SXRenderFunc::ComVisibleReflection();
+	rfunc::ComVisibleReflection();
 }
 
 
 SX_LIB_API void SRender_UpdateView()
 {
-	SXRenderFunc::UpdateView();
+	rfunc::UpdateView();
 }
 
 SX_LIB_API int SRender_OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char *szStr)
 {
-	return SXRenderFunc::OutputDebugInfo(timeDelta, needGameTime, szStr);
+	return rfunc::OutputDebugInfo(timeDelta, needGameTime, szStr);
 }
 
 
 SX_LIB_API void SRender_BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 {
-	SXRenderFunc::BuildMRT(timeDelta, isRenderSimulation);
+	rfunc::BuildMRT(timeDelta, isRenderSimulation);
 }
 
 SX_LIB_API void SRender_UpdateShadow(DWORD timeDelta)
 {
-	SXRenderFunc::UpdateShadow(timeDelta);
+	rfunc::UpdateShadow(timeDelta);
 }
 
 SX_LIB_API void SRender_UpdateReflection(DWORD timeDelta, bool isRenderSimulation)
 {
-	SXRenderFunc::UpdateReflection(timeDelta, isRenderSimulation);
+	rfunc::UpdateReflection(timeDelta, isRenderSimulation);
 }
 
 SX_LIB_API void SRender_UpdateReflectionScene(DWORD timeDelta)
 {
-	SXRenderFunc::UpdateReflectionScene(timeDelta);
+	rfunc::UpdateReflectionScene(timeDelta);
 }
 
 SX_LIB_API void SRender_UpdateReflectionSimModel(DWORD timeDelta)
 {
-	SXRenderFunc::UpdateReflectionSimModel(timeDelta);
+	rfunc::UpdateReflectionSimModel(timeDelta);
 }
 
 SX_LIB_API void SRender_RenderSky(DWORD timeDelta)
 {
-	SXRenderFunc::RenderSky(timeDelta);
+	rfunc::RenderSky(timeDelta);
 }
 
 SX_LIB_API void SRender_ComLighting(DWORD timeDelta)
 {
-	SXRenderFunc::ComLighting(timeDelta);
+	rfunc::ComLighting(timeDelta);
 }
 
 SX_LIB_API void SRender_UnionLayers()
 {
-	SXRenderFunc::UnionLayers();
-}
-
-SX_LIB_API void SRender_ApplyToneMapping()
-{
-	SXRenderFunc::ApplyToneMapping();
-}
-
-SX_LIB_API void SRender_ComToneMapping(DWORD timeDelta)
-{
-	SXRenderFunc::ComToneMapping(timeDelta);
+	rfunc::UnionLayers();
 }
 
 
 SX_LIB_API void SRender_RenderParticles(DWORD timeDelta)
 {
-	SXRenderFunc::RenderParticles(timeDelta);
+	rfunc::RenderParticles(timeDelta);
 }
 
-SX_LIB_API void SRender_RenderPostProcess(DWORD timeDelta)
+SX_LIB_API void SRender_RenderMainPostProcess(DWORD timeDelta)
 {
-	SXRenderFunc::RenderPostProcess(timeDelta);
+	rfunc::RenderMainPostProcess(timeDelta);
+}
+
+SX_LIB_API void SRender_RenderFinalPostProcess(DWORD timeDelta)
+{
+	rfunc::RenderFinalPostProcess(timeDelta);
 }
 
 SX_LIB_API void SRender_ShaderRegisterData()
 {
-	SXRenderFunc::ShaderRegisterData();
+	rfunc::ShaderRegisterData();
 }
 
 SX_LIB_API void SRender_RenderEditorMain()
 {
-	SXRenderFunc::RenderEditorMain();
+	rfunc::RenderEditorMain();
 }
 
 //##########################################################################
@@ -357,20 +352,22 @@ SX_LIB_API void SRender_RenderEditorMain()
 
 SX_LIB_API void SRender_SaveScreenShot()
 {
-	SXRenderFunc::SaveScreenShot();
+	rfunc::SaveScreenShot();
 }
 
 SX_LIB_API void SRender_SaveWorkTex()
 {
-	SXRenderFunc::SaveWorkTex();
+	rfunc::SaveWorkTex();
 }
 
 SX_LIB_API void SRender_ChangeModeWindow()
 {
-	SXRenderFunc::ChangeModeWindow();
+	//LibReport(REPORT_MSG_LEVEL_NOTICE, "SRender_ChangeModeWindow\n");
+	rfunc::ChangeModeWindow();
+	//LibReport(REPORT_MSG_LEVEL_NOTICE, "SRender_ChangeModeWindow --\n");
 }
 
 SX_LIB_API void SRender_FullScreenChangeSizeAbs()
 {
-	SXRenderFunc::FullScreenChangeSizeAbs();
+	rfunc::FullScreenChangeSizeAbs();
 }

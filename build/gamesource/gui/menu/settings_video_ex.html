@@ -1,0 +1,71 @@
+<html onkeyup="return_ingame">
+	<head>
+		<link type="text/css" rel="stylesheet" href="settings_menu.css"/>
+		<link type="text/css" rel="stylesheet" href="settings_menu_video_ex.css"/>
+		<link type="text/css" rel="stylesheet" href="settings_menu_800x600.css" max-width="800" />
+	</head>
+	<body style="font-name: quick-junky-regular;color: #c6f0fd;">
+		<div id="background">
+			<div id="title">Расширенные</div>
+			<div id="left_menu">	
+				<div class="menu-item">Фильтрация текстур</div>	
+				<div class="menu-item">Эффект bloom</div>			
+				<div class="menu-item">Эффект lensflare</div>				
+				<div class="menu-item">Эффект SSAO</div>			
+				<div class="menu-item">Глобальные тени</div>			
+				<div class="menu-item">Локальные тени</div>				
+				<div class="menu-item">Размытие теней</div>		
+				<div class="menu-item">Размытие в движении</div>			
+				
+				<div class="menu-item bottom" onclick="on_cancel">Назад</div>
+			</div>
+			<div id="center_menu">
+				<select class="set_item" cvar="r_texfilter_type|r_texfilter_max_anisotropy">
+					<option value="0|1">Точечная</option>
+					<option value="1|1">Линейная</option>
+					<option value="2|1">Анизотропная 1X</option>
+					<option value="2|2">Анизотропная 2X</option>
+					<option value="2|4">Анизотропная 4X</option>
+					<option value="2|8">Анизотропная 8X</option>
+					<option value="2|16">Анизотропная 16X</option>
+				</select>
+				<select class="set_item" cvar="pp_bloom">
+					<option value="1">Включить</option>
+					<option value="0">Выключить</option>
+				</select>
+				<select class="set_item" cvar="pp_lensflare">
+					<option value="1">Включить</option>
+					<option value="0">Выключить</option>
+				</select>
+				<select class="set_item" cvar="pp_ssao">
+					<option value="1">Включить</option>
+					<option value="0">Выключить</option>
+				</select>
+				<select class="set_item" cvar="r_pssm_shadowed|r_pssm_quality">
+					<option value="0|0.500000">Нет</option>
+					<option value="1|0.500000">Низкое</option>
+					<option value="1|1.000000">Среднее</option>
+					<option value="1|2.000000">Высокое</option>
+					<option value="1|4.000000">Очень высокое</option>
+				</select>
+				<select class="set_item" cvar="r_lsm_quality">
+					<option value="0.500000">Низкое</option>
+					<option value="1.000000">Среднее</option>
+					<option value="2.000000">Высокое</option>
+					<option value="4.000000">Очень высокое</option>
+				</select>
+				<select class="set_item" cvar="r_shadow_soft">
+					<option value="0">Нет</option>
+					<option value="1">1 проход</option>
+					<option value="2">2 прохода</option>
+				</select>
+				<select class="set_item" cvar="pp_motionblur">
+					<option value="1">Включить</option>
+					<option value="0">Выключить</option>
+				</select>
+				
+				<div class="menu-item bottom" onclick="settings_commit" style="text-align: right;">Применить</div>
+			</div>
+		</div>
+	</body>
+</html>

@@ -40,8 +40,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>../../../build/bin/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <SourcePath>$(VC_SourcePath);../../../source;../../../sdks/dx9sdk/Include</SourcePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);../../../libs;../../../sdks/dx9sdk/Lib</LibraryPath>
@@ -49,7 +49,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
+    <OutDir>../../../build/bin/</OutDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src;../../../sdks/dx9sdk/Include</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);../../../libs;../../../sdks/dx9sdk/Lib</LibraryPath>
     <SourcePath>$(VC_SourcePath);../../../source;../../../sdks/dx9sdk/Include</SourcePath>
@@ -60,15 +60,18 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;_USRDLL;SXRENDER_EXPORTS;SX_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;SX_DLL;_DEBUG;_WINDOWS;_USRDLL;SXRENDER_EXPORTS;%(PreprocessorDefinitions);SX_LIB_NAME="RENDER"</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -79,12 +82,13 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;SXRENDER_EXPORTS;SX_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;SXRENDER_EXPORTS;SX_DLL;%(PreprocessorDefinitions);SX_LIB_NAME="RENDER"</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
@@ -92,21 +96,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\common\file_utils.h" />
+    <ClInclude Include="..\..\..\source\common\string.h" />
+    <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\render\camera_update.h" />
     <ClInclude Include="..\..\..\source\render\editor\axes_static.h" />
     <ClInclude Include="..\..\..\source\render\editor\grid.h" />
     <ClInclude Include="..\..\..\source\render\gdata.h" />
-    <ClInclude Include="..\..\..\source\render\model_sim.h" />
     <ClInclude Include="..\..\..\source\render\render_func.h" />
+    <ClInclude Include="..\..\..\source\render\simulation_model.h" />
     <ClInclude Include="..\..\..\source\render\sxrender.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
+    <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\render\camera_update.cpp" />
     <ClCompile Include="..\..\..\source\render\editor\axes_static.cpp" />
     <ClCompile Include="..\..\..\source\render\editor\grid.cpp" />
     <ClCompile Include="..\..\..\source\render\gdata.cpp" />
-    <ClCompile Include="..\..\..\source\render\model_sim.cpp" />
     <ClCompile Include="..\..\..\source\render\render_func.cpp" />
+    <ClCompile Include="..\..\..\source\render\simulation_model.cpp" />
     <ClCompile Include="..\..\..\source\render\sxrender.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

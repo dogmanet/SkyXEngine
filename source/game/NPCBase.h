@@ -1,7 +1,8 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -12,10 +13,10 @@ See the license in LICENSE
 @{
 */
 
-#ifndef __NPCBASE_H_
-#define __NPCBASE_H_
+#ifndef __NPCBASE_H
+#define __NPCBASE_H
 
-#include "SXbaseAnimating.h"
+#include "BaseCharacter.h"
 #include <aigrid/sxaigrid.h>
 
 //! базовое направление для нпс
@@ -29,23 +30,6 @@ See the license in LICENSE
 #define NPC_QUAD_DIST_NOTBEYOND	AIGRID_QUAD_SIZE
 #define NPC_QUAD_DIST_BEYOND	AIGRID_QUAD_SIZE*2.f
 
-//! состяния движения
-enum NPC_STATE_MOVE
-{
-	NPC_STATE_MOVE_IDLE_START = 0,	//!< остановился
-	NPC_STATE_MOVE_IDLE = 1,		//!< стоит
-	NPC_STATE_MOVE_WALK = 2,		//!< идет
-	NPC_STATE_MOVE_RUN = 4,			//!< бежит
-};
-
-//! состояния опасности
-enum NPC_STATE_DANGER
-{
-	NPC_STATE_DANGER_CALM		= 0,	//!< спокоен
-	NPC_STATE_DANGER_UNVISIBLE	= 1,	//!< беспокоен, но не знает где опасность
-	NPC_STATE_DANGER_VISIBLE	= 2,	//!< беспокоен и знает где опасность
-};
-
 //! состояния пути
 enum NPC_STATE_PATH
 {
@@ -57,67 +41,106 @@ enum NPC_STATE_PATH
 };
 
 //! Базовый класс npc
-class CNPCBase: public SXbaseAnimating
+class CNPCBase: public CBaseCharacter
 {
-	DECLARE_CLASS(CNPCBase, SXbaseAnimating);
+	DECLARE_CLASS(CNPCBase, CBaseCharacter);
 	DECLARE_PROPTABLE();
 
 public:
 
 	SX_ALIGNED_OP_MEM
 
-	CNPCBase(EntityManager * pMgr);
+	CNPCBase(CEntityManager * pMgr);
 	~CNPCBase();
 
 	ID getAIQuad();	//!< id квада аи сетки на котором стоит нпс
 
 	//! установка позиции сопровождается ориентацией на аи сетке
-	void SetPos(const float3 &pos);
-	bool SetKV(const char *name, const char *value);
-	void OnSync();
+	void setPos(const float3 &pos);
+
+
+	//! Остановить моторику!
+	void stopMotion(bool runIdleAnim=true);
+
+	void onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor);
+
+	//! Степень видимости объекта pOther. 0 - не виден, 1 - полностью виден
+	float canSee(CBaseEntity *pOther);
+	float canSee(CBaseCharacter *pOther);
+
+	void setModel(const char * mdl);
+
+	void orientAtPoint(const float3 &vPoint);
+	void stopOrientAt();
 
 protected:
+	void onSync();
 
-	virtual void InitPhysics();
+	//void think(float fDelta);
 
-	btPairCachingGhostObject * m_pGhostObject;
-	btKinematicCharacterController * m_pCharacter;
+	//! процедура проверки найденности пути
+	void findPathThinker(float fDelta);
+	ID m_idFindPathInterval;
 
-	bool pathFind(ID endq);	//!< поиск пути от текущего (на котором стоит нпс) до endq
-	void pathWalk();		//!< хождение по пути
-	void gridCheckBeyond();	//!< проверка на выход за пределы сетки, и если так то установка соответсвующего состояния
+	//! процедура ориентации
+	void orientAtThinker(float fDelta);
+	ID m_idOrientAtInterval;
+	SMQuaternion m_qOldOrient;
+	float m_fOrientAtDelta;
+
+	//! процедура движения по имеющемуся пути
+	void pathFollowThinker(float fDelta);
+	ID m_idPathFollowInterval;
+
+	SMQuaternion m_qOrientTo;
+	float3 m_vLastFramePos;
+	int m_iStuckCount;
+
+	void goTo(ID idQuad, bool bRun=false);
+	void goTo(const float3 &vPos, bool bRun = false);
+
+	//bool pathFind(ID endq);	//!< поиск пути от текущего (на котором стоит нпс) до endq
+	//void pathWalk();		//!< хождение по пути
+	//void gridCheckBeyond();	//!< проверка на выход за пределы сетки, и если так то установка соответсвующего состояния
 
 	//! ориентаци нпс на точку pos, ttime время в млсек за которое нпс будет повернут в/на точку
-	void orientAtPoint(const float3 *pos, DWORD ttime);	
-	void updateOrientLerp();//!< плавная интерполяция поворотов
-
-	float m_fHealth;	//!< здоровье [0,1]
-
+	//void orientAtPoint(const float3 &pos, DWORD ttime);	
+	//void updateOrientLerp();//!< плавная интерполяция поворотов
+	
 	float m_fSpeedWalk;	//!< скорость движения при ходьбе
 	float m_fSpeedRun;	//!< скорость движения при беге
 
-	ID m_idCurrAiQuad;			//!< текущий id квада на котором находится нпс
-
 	Array<ID> m_aPathQuads;		//!< массив с идентификаторами квадов пути на аи сетке
-	ID m_idCurrQuaidInPath;		//!< номер текущего квада из m_arr_path
-	
-	float3 m_vLastPathPos;		//!< последняя позиция нпс на пути
+	int m_iCurrQuaidInPath;		//!< номер текущего квада из m_arr_path
 
-	float3 m_vPosQuadInPathLast;	//!< позиция последнего квада на котором был нпс
-	float3 m_vPosQuadInPathNext;	//!< следующая позици квада на которую стремится нпс
+	ID m_idQueueFindPath;       //!< номер запроса на поиск пути
+
+	ID m_idQuadGoingTo;         //!< номер квада, к которому идем
 	
-	float m_fAngleYLast;		//!< предыдущий угол поворота
-	float m_fAngleYNext;		//!< следующий угол поворота
-	DWORD m_ulTimeAllRot;		//!< общее время текущей ориентации
-	DWORD m_ulTimeRot;			//!< время за которое должен быть ориентирован 
+	float3_t m_vLastPathPos;		//!< последняя позиция нпс на пути
+
+	//float3_t m_vPosQuadInPathLast;	//!< позиция последнего квада на котором был нпс
+	//float3_t m_vPosQuadInPathNext;	//!< следующая позици квада на которую стремится нпс
+	
+	//float m_fAngleYLast;		//!< предыдущий угол поворота
+	//float m_fAngleYNext;		//!< следующий угол поворота
+	//DWORD m_ulTimeAllRot;		//!< общее время текущей ориентации
+	//DWORD m_ulTimeRot;			//!< время за которое должен быть ориентирован 
 
 	float m_fStepHeight;		//!< высота шага
-	bool m_canJump;				//!< прыгать ли сейчас
-	NPC_STATE_MOVE m_stateMove;	//!< состояние движения
+	//bool m_canJump;				//!< прыгать ли сейчас
 	NPC_STATE_PATH m_statePath;	//!< состояние пути
 	DWORD m_ulColor;				//!< случайный (скорее всего уникальный) цвет нпс для метки квадов сетки
-	DWORD m_ulTimeReturnInGrid;		//!< за сколько млсек нпс должен вернуться на аи сетку
-	DWORD m_ulTimeAllReturnInGrid;	//!< общее время возвращения нпс на аи сетку
+	//DWORD m_ulTimeReturnInGrid;		//!< за сколько млсек нпс должен вернуться на аи сетку
+	//DWORD m_ulTimeAllReturnInGrid;	//!< общее время возвращения нпс на аи сетку
+
+	bool m_isGoing;
+	bool m_isPathInterrupted;
+
+	float m_fViewConeAngle;      //!< Половина угла конуса видимости, в радианах
+	float m_fViewDistance;      //!< Максимальное расстояние видимости 
+
+	bool m_bRunMode; //! < перемещение бегом или нет
 };
 
 #endif

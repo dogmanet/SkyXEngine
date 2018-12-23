@@ -1,15 +1,16 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
 Магазины
 */
 
-#ifndef _BaseMag_H_
-#define _BaseMag_H_
+#ifndef __BASE_MAG_H
+#define __BASE_MAG_H
 
 #include "BaseWeaponAddon.h"
 

@@ -1,69 +1,107 @@
-#ifndef _CAMERA_H_
-#define _CAMERA_H_
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __CAMERA_H
+#define __CAMERA_H
 
 #include "sxgcore.h"
 
 //класс описывающий фрустум
-class Frustum : public virtual ISXFrustum
+class CFrustum : public virtual IFrustum
 {
 public:
-	Frustum();
-	~Frustum();
+	CFrustum();
+	~CFrustum();
 	void Release(){ mem_del(this); }
 	SX_ALIGNED_OP_MEM
 
-	void Update(const float4x4* view,const float4x4* proj);
+	void update(const float4x4 *pView,const float4x4 *pProj);
 
-	bool PointInFrustum(const float3 *point);
-	bool PolyInFrustum(const float3* p1,const float3* p2,const float3* p3);
-	bool PolyInFrustumAbs(const float3* p1,const float3* p2,const float3* p3);
+	bool pointInFrustum(const float3 *pPoint) const;
+	bool polyInFrustum(const float3 *pPount1, const float3 *pPount2, const float3 *pPount3) const;
+	bool polyInFrustumAbs(const float3 *pPount1, const float3 *pPount2, const float3 *pPount3) const;
 	
-	bool SphereInFrustum(const float3 *point, float radius) const;
+	bool sphereInFrustum(const float3 *pPount, float fRadius) const;
 
-	bool SphereInFrustumAbs(const float3 *point, float radius);
-	bool BoxInFrustum(float3* min,float3* max);
+	bool sphereInFrustumAbs(const float3 *pPount, float fRadius) const;
+	bool boxInFrustum(float3 *pMin, float3 *pMax) const;
 
+
+	float3 getPoint(int iNumPoint) const;
+	float3 getCenter() const;
+
+	void setPoint(int iNumPoint, const float3 *pPoint);
+	void setCenter(const float3 *pCenter);
+
+private:
+
+	CFrustumPlane m_aFrustumPlanes[6];
+
+	float3 m_aPoints[8];
+	float3 m_vCenter;
 };
 
-/////////////////////
-class Camera : public virtual ISXCamera
+//**************************************************************************
+
+class CCamera : public virtual ICamera
 {
 public:
-	Camera	();
-	~Camera	();
+	CCamera	();
+	~CCamera	();
 	void Release(){ mem_del(this); }
 	SX_ALIGNED_OP_MEM
 
-	void PosLeftRight(float units);	//влево/вправо
-	void PosUpDown(float units);	//вверх/вниз
-	void PosFrontBack(float units);	//вперед/назад
+	void posLeftRight(float fUnits);//влево/вправо
+	void posUpDown(float fUnits);	//вверх/вниз
+	void posFrontBack(float fUnits);//вперед/назад
 	
-	void RotUpDown(float angle);	//вращение вверх/вниз
-	void RotRightLeft(float angle);	//вращение вправо/влево
-	void Roll(float angle);	//крен
-	void SetOrientation(const SMQuaternion & q);
+	void rotUpDown(float fAngle);	//вращение вверх/вниз
+	void rotRightLeft(float fAngle);//вращение вправо/влево
+	void roll(float fAngle);		//крен
+	void setOrientation(const SMQuaternion *pQuaternion);
 
-	void GetViewMatrix(float4x4* view_matrix);//получаем матрицу вида
+	void getViewMatrix(float4x4 *pMatrix);//получаем матрицу вида
 	
-	void GetPosition(float3* pos);
-	void SetPosition(float3* pos);
+	void getPosition(float3 *pPos) const;
+	void setPosition(const float3 *pPos);
 
-	void GetDirection(float3* dir);
-	void SetDirection(float3* dir);
+	void getDirection(float3 *pDir) const;
+	//void setDirection(const float3 *pDir);
 	
-	void GetRight(float3* right);
-	void GetUp(float3* up);
-	void GetLook(float3* look);
-	void GetRotation(float3* rot);
+	void getRight(float3 *pRight) const;
+	void getUp(float3 *pUp) const;
+	void getLook(float3 *pLook) const;
+	void getRotation(float3 *pRot) const;
 
-	float GetRotationX();
-	float GetRotationY();
-	float GetRotationZ();
+	float getRotationX() const;
+	float getRotationY() const;
+	float getRotationZ() const;
 
-	void SetFOV(float fov);
-	float GetFOV();
+	void setFOV(float fFOV);
+	float getFOV() const;
 
-	void UpdateView();
+	void updateView();
+
+	void updateFrustum(const float4x4 *pmProjection);
+	const IFrustum* getFrustum();
+
+protected:
+	CFrustum m_oFrustum;	//!< фрустум этой камеры
+
+	float3 m_vRight;
+	float3 m_vUp;
+	float3 m_vLook;
+
+	float3 m_vPosition;
+
+	float3_t m_vPitchYawRoll;
+
+	float4x4 m_mView;
+
+	float m_fFOV;
 };
 
 #endif

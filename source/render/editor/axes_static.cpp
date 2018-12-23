@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "grid.h"
 
 CAxesStatic::CAxesStatic()
@@ -14,7 +19,7 @@ CAxesStatic::CAxesStatic()
 		D3DDECL_END()
 	};
 
-	GData::DXDevice->CreateVertexDeclaration(DeclGrid, &m_pVertexDeclaration);
+	gdata::pDXDevice->CreateVertexDeclaration(DeclGrid, &m_pVertexDeclaration);
 }
 
 CAxesStatic::~CAxesStatic()
@@ -25,7 +30,7 @@ CAxesStatic::~CAxesStatic()
 
 void CAxesStatic::create(float len)
 {
-	GData::DXDevice->CreateVertexBuffer(
+	gdata::pDXDevice->CreateVertexBuffer(
 		3 * 2 * sizeof(CVertex),
 		D3DUSAGE_WRITEONLY,
 		0,
@@ -59,11 +64,11 @@ void CAxesStatic::create(float len)
 
 void CAxesStatic::render()
 {
-	GData::DXDevice->SetTexture(0, 0);
-	//GData::DXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	gdata::pDXDevice->SetTexture(0, 0);
+	//gdata::pDXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 	SGCore_ShaderUnBind();
-	GData::DXDevice->SetVertexDeclaration(m_pVertexDeclaration);
-	//GData::DXDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-	GData::DXDevice->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(CVertex));
-	GData::DXDevice->DrawPrimitive(D3DPT_LINELIST, 0, 3);
+	gdata::pDXDevice->SetVertexDeclaration(m_pVertexDeclaration);
+	//gdata::pDXDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+	gdata::pDXDevice->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(CVertex));
+	gdata::pDXDevice->DrawPrimitive(D3DPT_LINELIST, 0, 3);
 }

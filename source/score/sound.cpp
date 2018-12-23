@@ -1,21 +1,27 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "sound.h"
 
-size_t ogg_read(void *ptr, size_t size, size_t nmemb, void *datasource)
+//############################################################################
+
+size_t OggCallbackRead(void *ptr, size_t size, size_t nmemb, void *datasource)
 {
 	FILE* f = (FILE*)datasource;
 	return fread(ptr, 1, size * nmemb, f);
 }
 
-int ogg_close(void* datasource)
+int OggCallbackClose(void* datasource)
 {
 	FILE* f = (FILE*)datasource;
 	fclose(f);
 	return 0;
 }
 
-//позиционирование
-int ogg_seek(void *datasource, ogg_int64_t offset, int whence)
+int OggCallbackSeek(void *datasource, ogg_int64_t offset, int whence)
 {
 	FILE* f = (FILE*)datasource;
 	switch (whence)
@@ -28,8 +34,7 @@ int ogg_seek(void *datasource, ogg_int64_t offset, int whence)
 	return 1;
 }
 
-//размер файла
-long ogg_tell(void* datasource)
+long OggCallbackTell(void* datasource)
 {
 	FILE* f = (FILE*)datasource;
 	return ftell(f);
@@ -37,57 +42,444 @@ long ogg_tell(void* datasource)
 
 //############################################################################
 
-MainSound::MainSound()
+CSoundManager::CSoundManager()
 {
-	DeviceSound = 0;
-	DSPrimary = 0;
+	m_pDeviceSound = 0;
+	m_pPrimaryBuffer = 0;
+
+	for (int i = 0; i < SOUND_CHANNELS_COUNT; ++i)
+		m_aChannels[i] = SOUND_CHANNEL_NONE;
 }
 
-MainSound::~MainSound()
+CSoundManager::~CSoundManager()
 {
-	Clear();
-	mem_release_del(DSPrimary);
-	mem_release_del(DeviceSound);
+	clear();
+	mem_release_del(m_pPrimaryBuffer);
+	mem_release_del(m_pDeviceSound);
 }
 
-void MainSound::Clear()
+void CSoundManager::clear()
 {
-	for(UINT i = 0; i < ArrSounds.size(); ++i)
+	for(UINT i = 0; i < m_aSounds.size(); ++i)
 	{
-		mem_delete(ArrSounds[i]);
+		mem_delete(m_aSounds[i]);
 	}
 }
 
-MainSound::Sound::Sound()
+CSoundManager::CSound::CSound()
 {
-	ZeroMemory(this, sizeof(MainSound::Sound));
-	Id = -1;
+	ZeroMemory(this, sizeof(CSoundManager::CSound));
+	m_id = SOUND_FAIL_ID;
+	m_fVolume = 1.f;
 }
 
-MainSound::Sound::~Sound()
+CSoundManager::CSound::~CSound()
 {
-	if (StreamFile)
-		fclose(StreamFile);
+	if (m_pStream)
+		fclose(m_pStream);
 
-	mem_release_del(DSBuffer);
-	if (VorbisFile)
+	//mem_release_del(m_pSoundBuffer);
+	if (m_pVorbisFile)
 	{
-		ov_clear(VorbisFile);
-		mem_delete(VorbisFile);
+		ov_clear(m_pVorbisFile);
+		mem_delete(m_pVorbisFile);
 	}
 }
 
-void MainSound::Init(HWND hwnd)
+//##########################################################################
+
+CSoundManager::СSoundKit::СSoundKit()
+{ 
+	m_szName[0] = 0; 
+	m_idChannel = SOUND_FAIL_ID; 
+	m_is3D = false;
+	m_fDistAudible = SOUND_DIST_AUDIBLE_DEFAULT;
+}
+
+CSoundManager::СSoundKit::~СSoundKit()
 {
-	if (FAILED(DirectSoundCreate8(NULL, &DeviceSound, NULL)))
+	
+}
+
+ID CSoundManager::sndkitCreate(const char *szName, ID idChannel, bool is3D, float fDistAudible)
+{
+	// список звуков подлежащаих загрузке
+	СSoundKit *pSndKit = new СSoundKit();
+	pSndKit->m_idChannel = idChannel;
+	pSndKit->m_is3D = is3D;
+	pSndKit->m_fDistAudible = fDistAudible;
+	sprintf(pSndKit->m_szName, "%s", szName);
+
+	m_aSoundKits.push_back(pSndKit);
+
+	return m_aSoundKits.size() - 1;
+}
+
+ID CSoundManager::sndkitCreateFromList(const char *szName, ID idChannel, Array<String> aStrings, bool is3D, float fDistAudible, float fVolume)
+{
+	СSoundKit *pSndKit = new СSoundKit();
+	pSndKit->m_idChannel = idChannel;
+	pSndKit->m_is3D = is3D;
+	pSndKit->m_fDistAudible = fDistAudible;
+	sprintf(pSndKit->m_szName, "%s", szName);
+	m_aSoundKits.push_back(pSndKit);
+	ID idSndKit = m_aSoundKits.size() - 1;
+
+	String sFileData;
+	float fDistAudibleData = -2.f;
+	float fVolumeData = -2.f;
+	Array<UINT> aDelaysData;
+
+	for (int i = 0, il = aStrings.size(); i < il; ++i)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - could not create sound device", gen_msg_location);
+		aDelaysData.clearFast();
+		fDistAudibleData = -2.f;
+		fVolumeData = -2.f;
+
+		if (SndGetDataFromStr(aStrings[i].c_str(), sFileData, fDistAudibleData, fVolumeData, aDelaysData))
+		{
+			if (fDistAudibleData == -2.f)
+				fDistAudibleData = -1.f;
+
+			if (fVolumeData == -2.f)
+				fVolumeData = fVolume;
+
+			sndkitAddSound(idSndKit, sFileData.c_str(), fDistAudibleData, fVolumeData, (aDelaysData.size() > 0 ? &(aDelaysData[0]) : 0), aDelaysData.size());
+		}
+		else
+			sndkitAddSound(idSndKit, StrTrim(aStrings[i].c_str()).c_str(), pSndKit->m_fDistAudible, fVolume);
+	}
+
+	return idSndKit;
+}
+
+void CSoundManager::sndkitAddSound(ID idSndKit, const char *szFile, float fDistAudible, float fVolume, UINT *pArrDelay, int iSizeArrDelay)
+{
+	SOUND_SNDKIT_PRECOND(idSndKit, _VOID);
+
+	СSoundKit *pSndKit = m_aSoundKits[idSndKit];
+
+	ID idSnd = SOUND_FAIL_ID;
+
+	if (pSndKit->m_is3D)
+		idSnd = soundCreate3dInst(szFile, pSndKit->m_idChannel, (fDistAudible > 0 ? fDistAudible : pSndKit->m_fDistAudible));
+	else
+		idSnd = soundCreate2dInst(szFile, pSndKit->m_idChannel);
+
+	СSoundKit::CSoundKitObject oSndKitObj;
+	oSndKitObj.m_id = idSnd;
+	oSndKitObj.m_fVolume = fVolume;
+
+	for (int i = 0, il = iSizeArrDelay; i < il; ++i)
+	{
+		oSndKitObj.m_aDelays.push_back(pArrDelay[i]);
+	}
+
+	pSndKit->m_aSounds.push_back(oSndKitObj);
+}
+
+
+ID CSoundManager::sndkitGetID(const char *szName)
+{
+	for (int i = 0, il = m_aSoundKits.size(); i < il; ++i)
+	{
+		if (stricmp(m_aSoundKits[i]->m_szName, szName) == 0)
+			return i;
+	}
+
+	return SOUND_FAIL_ID;
+}
+
+ID CSoundManager::sndkitGetChannel(ID idSndKit)
+{
+	SOUND_SNDKIT_PRECOND(idSndKit, SOUND_FAIL_ID);
+
+	return m_aSoundKits[idSndKit]->m_idChannel;
+}
+
+
+void CSoundManager::sndkitGetName(ID idSndKit, char *szName)
+{
+	SOUND_SNDKIT_PRECOND(idSndKit, _VOID);
+
+	strcpy(szName, m_aSoundKits[idSndKit]->m_szName);
+}
+
+
+void CSoundManager::sndkitDelete(ID idSndKit)
+{
+	SOUND_SNDKIT_PRECOND(idSndKit, _VOID);
+
+	СSoundKit *pSndKit = m_aSoundKits[idSndKit];
+
+	for (int i = 0, il = pSndKit->m_aSounds.size(); i < il; ++i)
+	{
+		soundDelete(pSndKit->m_aSounds[i].m_id);
+	}
+
+	mem_delete(m_aSoundKits[idSndKit]);
+}
+
+
+void CSoundManager::sndkitDeleteAll()
+{
+	for (int i = 0, il = m_aSoundKits.size(); i < il; ++i)
+	{
+		sndkitDelete(i);
+	}
+}
+
+
+uint64_t CSoundManager::sndkitPlay(ID idSndKit, uint64_t id2, const float3 *pPos, float fVolume, float fPan)
+{
+	SOUND_SNDKIT_PRECOND(idSndKit, SOUND_FAIL_ID);
+
+	СSoundKit *pSndKit = m_aSoundKits[idSndKit];
+
+	// если канал проигрывается
+	SOUND_CHANNEL_PLAYING(pSndKit->m_idChannel, ((id2 != SOUND_SNDKIT_INSTANCE_BLOCK && id2 != SOUND_SNDKIT_INSTANCE_NOTBLOCK) ? id2 : SOUND_FAIL_ID));
+
+	// если id2 валиден и инстанс проигрывается
+	if ((id2 != SOUND_SNDKIT_INSTANCE_BLOCK && id2 != SOUND_SNDKIT_INSTANCE_NOTBLOCK) && soundInstancePlaying(pSndKit->m_aSounds[SOUND_DECODE2ID_HI(id2)].m_id, SOUND_DECODE2ID_LO(id2)))
+		return id2;
+
+	// если id2 валиден то освобождаем инстанс
+	if (id2 != SOUND_SNDKIT_INSTANCE_BLOCK && id2 != SOUND_SNDKIT_INSTANCE_NOTBLOCK)
+		soundInstanceFree(pSndKit->m_aSounds[SOUND_DECODE2ID_HI(id2)].m_id, SOUND_DECODE2ID_LO(id2));
+
+	ID idRand = rand() % (pSndKit->m_aSounds.size());
+	ID idSndInstance = -1;
+
+	UINT *pArr = 0;
+	int iSizeArr = pSndKit->m_aSounds[idRand].m_aDelays.size();
+
+	if (iSizeArr > 0)
+		pArr = &(pSndKit->m_aSounds[idRand].m_aDelays[0]);
+
+	if (pSndKit->m_is3D)
+	{
+		if (!pPos)
+		{
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unresolved call function playing 3d sound without position", GEN_MSG_LOCATION);
+			return SOUND_FAIL_ID;
+		}
+
+		idSndInstance = soundInstancePlay(pSndKit->m_aSounds[idRand].m_id, id2 != SOUND_SNDKIT_INSTANCE_NOTBLOCK, false, pArr, iSizeArr, pPos, (fVolume < 0 ? pSndKit->m_aSounds[idRand].m_fVolume : fVolume));
+	}
+	else
+		idSndInstance = soundInstancePlay(pSndKit->m_aSounds[idRand].m_id, id2 != SOUND_SNDKIT_INSTANCE_NOTBLOCK, false, pArr, iSizeArr, 0, (fVolume < 0 ? pSndKit->m_aSounds[idRand].m_fVolume : fVolume), fPan);
+	
+	/*if (idSndInstance > 0)
+	{
+		CSound* snd = m_aSounds[pSndKit->m_aSounds[SOUND_DECODE2ID_HI(id2)].m_id];
+		SOUND_SNDINSTANCE_BUSY busy = snd->m_aInstances[SOUND_DECODE2ID_LO(id2)].m_busy;
+		int qwerty = 0;
+	}*/
+	
+	//ibReport(REPORT_MSG_LEVEL_NOTICE, "idSndInstance = %d\n", idSndInstance);
+	return SOUND_ENCODE2ID(idRand, idSndInstance);
+}
+
+
+void CSoundManager::sndkitStop(ID idSndKit, uint64_t id2)
+{
+	SOUND_SNDKIT_PRECOND(idSndKit, _VOID);
+
+	if (id2 == SOUND_SNDKIT_INSTANCE_BLOCK)
+		return;
+
+	СSoundKit *pSndKit = m_aSoundKits[idSndKit];
+
+	soundInstanceStop(pSndKit->m_aSounds[SOUND_DECODE2ID_HI(id2)].m_id, SOUND_DECODE2ID_LO(id2));
+}
+
+//##########################################################################
+
+void CSoundManager::channelAdd(ID idChannel, bool isPlaying)
+{
+	SOUND_CHANNEL_PRECOND(idChannel, _VOID);
+		
+	if (m_aChannels[idChannel] == SOUND_CHANNEL_NONE)
+		m_aChannels[idChannel] = isPlaying;
+}
+
+bool CSoundManager::channelExists(ID idChannel)
+{
+	SOUND_CHANNEL_PRECOND(idChannel, false);
+
+	return (m_aChannels[idChannel] != SOUND_CHANNEL_NONE);
+}
+
+int CSoundManager::channelGetSndCount(ID idChannel)
+{
+	SOUND_CHANNEL_PRECOND(idChannel, SOUND_CHANNEL_NONE);
+
+	int iCount = 0;
+	for (int i = 0, il = m_aSounds.size(); i < il; ++i)
+	{
+		if (m_aSounds[i]->m_idChannel == idChannel)
+			++iCount;
+	}
+
+	return iCount;
+}
+
+void CSoundManager::channelPlay(ID idChannel)
+{
+	SOUND_CHANNEL_PRECOND(idChannel, _VOID);
+
+	for (int i = 0, il = m_aSounds.size(); i < il; ++i)
+	{
+		if (m_aSounds[i] && m_aSounds[i]->m_idChannel == idChannel)
+		{
+			channelSndPlay(idChannel, i);
+		}
+	}
+
+	m_aChannels[idChannel] = SOUND_CHANNEL_PLAY;
+}
+
+bool CSoundManager::channelPlaying(ID idChannel)
+{
+	SOUND_CHANNEL_PRECOND(idChannel, false);
+
+	return m_aChannels[idChannel];
+}
+
+void CSoundManager::channelStop(ID idChannel)
+{
+	SOUND_CHANNEL_PRECOND(idChannel, _VOID);
+
+	for (int i = 0, il = m_aSounds.size(); i < il; ++i)
+	{
+		if (m_aSounds[i] && m_aSounds[i]->m_idChannel == idChannel)
+		{
+			channelSndStop(idChannel, i);
+		}
+	}
+
+	m_aChannels[idChannel] = SOUND_CHANNEL_STOP;
+}
+
+void CSoundManager::channelPlayOnly(ID idChannel)
+{
+	SOUND_CHANNEL_PRECOND(idChannel, _VOID);
+
+	for (int i = 0, il = m_aSounds.size(); i < il; ++i)
+	{
+		if (m_aSounds[i])
+		{
+			if (m_aSounds[i]->m_idChannel == idChannel)
+			{
+				channelSndPlay(idChannel, i);
+			}
+			else
+			{
+				channelSndStop(idChannel, i);
+			}
+		}
+	}
+}
+
+void CSoundManager::soundResumePlayDelay(CSoundBase *pSndBase)
+{
+	if (!pSndBase || !(pSndBase->m_isPlayDelay))
+		return;
+
+	//если ключ валиден
+	if (pSndBase->oPlayDelay.m_iCurrPlayDelay >= 0 && pSndBase->oPlayDelay.m_aPlayDelay.size() > pSndBase->oPlayDelay.m_iCurrPlayDelay)
+	{
+		//если текущее значение задержка
+		if (pSndBase->oPlayDelay.m_aPlayDelay[pSndBase->oPlayDelay.m_iCurrPlayDelay].m_isDelay)
+			pSndBase->oPlayDelay.m_uiPlayDelayStart = GetTickCount() - pSndBase->oPlayDelay.m_uiPlayDelayStart;
+		else
+			pSndBase->m_pSoundBuffer->Play(0, 0, 0);
+	}
+	//иначе ключ невалиден, просто доигрываем
+	else
+		pSndBase->m_pSoundBuffer->Play(0, 0, 0);
+}
+
+void CSoundManager::channelSndPlay(ID idChannel, ID idSound)
+{
+	if (idSound < m_aSounds.size() && idSound >= 0 && m_aSounds[idSound] && m_aSounds[idSound]->m_idChannel == idChannel)
+	{
+		CSound *pSnd = m_aSounds[idSound];
+		DWORD dwStatus = 0;
+
+		if (!(pSnd->m_isPlayDelay) && SUCCEEDED(pSnd->m_pSoundBuffer->GetStatus(&dwStatus)) && !(dwStatus & DSBSTATUS_PLAYING) && pSnd->m_state == SOUND_OBJSTATE_PLAY)
+			pSnd->m_pSoundBuffer->Play(0, 0, (pSnd->m_uiStreamSize || pSnd->m_isLooping ? DSBPLAY_LOOPING : 0));
+		//если воспроизведение с задержками
+		else if (pSnd->m_isPlayDelay && pSnd->m_state == SOUND_OBJSTATE_PLAY)			
+			soundResumePlayDelay(pSnd);
+			
+
+		for (int k = 0, kl = pSnd->m_aInstances.size(); k < kl; ++k)
+		{
+			//TODO: доделать восстановление проигрывания с задержками для инстансов
+
+			if (pSnd->m_aInstances[k].m_state == SOUND_OBJSTATE_PAUSE)
+			{
+				pSnd->m_aInstances[k].m_state = SOUND_OBJSTATE_PLAY;
+				
+				if (!(pSnd->m_isPlayDelay))
+					pSnd->m_aInstances[k].m_pSoundBuffer->Play(0, 0, (pSnd->m_aInstances[k].m_isLooping ? DSBPLAY_LOOPING : 0));
+				else
+					soundResumePlayDelay(&(pSnd->m_aInstances[k]));
+			}
+		}
+	}
+}
+
+void CSoundManager::channelSndStop(ID idChannel, ID idSound)
+{
+	if (idSound < m_aSounds.size() && idSound >= 0 && m_aSounds[idSound] && m_aSounds[idSound]->m_idChannel == idChannel)
+	{
+		CSound *pSnd = m_aSounds[idSound];
+
+		if (pSnd->m_isPlayDelay)
+		{
+			if (pSnd->oPlayDelay.m_iCurrPlayDelay >= 0 && pSnd->oPlayDelay.m_aPlayDelay.size() > pSnd->oPlayDelay.m_iCurrPlayDelay && pSnd->oPlayDelay.m_aPlayDelay[pSnd->oPlayDelay.m_iCurrPlayDelay].m_isDelay)
+				pSnd->oPlayDelay.m_uiPlayDelayStart = GetTickCount() - pSnd->oPlayDelay.m_uiPlayDelayStart;
+		}
+
+		pSnd->m_pSoundBuffer->Stop();
+		DWORD dwStatus = 0;
+		CSoundInstance *pSndInst = 0;
+
+		for (int k = 0, kl = pSnd->m_aInstances.size(); k < kl; ++k)
+		{
+			pSndInst = &(pSnd->m_aInstances[k]);
+			dwStatus = 0;
+
+			if (pSndInst->m_state == SOUND_OBJSTATE_PLAY && SUCCEEDED(pSndInst->m_pSoundBuffer->GetStatus(&dwStatus)) && (dwStatus & DSBSTATUS_PLAYING))
+			{
+				pSndInst->m_pSoundBuffer->Stop();
+				pSndInst->m_state = SOUND_OBJSTATE_PAUSE;
+			}
+
+			if (pSndInst->m_isPlayDelay)
+			{
+				if (pSndInst->oPlayDelay.m_iCurrPlayDelay >= 0 && pSndInst->oPlayDelay.m_aPlayDelay.size() > pSndInst->oPlayDelay.m_iCurrPlayDelay && pSndInst->oPlayDelay.m_aPlayDelay[pSndInst->oPlayDelay.m_iCurrPlayDelay].m_isDelay)
+					pSndInst->oPlayDelay.m_uiPlayDelayStart = GetTickCount() - pSndInst->oPlayDelay.m_uiPlayDelayStart;
+			}
+		}
+	}
+}
+
+//##########################################################################
+
+void CSoundManager::init(HWND hwnd)
+{
+	if (FAILED(DirectSoundCreate8(NULL, &m_pDeviceSound, NULL)))
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - could not create sound device", GEN_MSG_LOCATION);
 		return;// SOUND_INIT_ERR_INIT;
 	}
 
-	if (FAILED(DeviceSound->SetCooperativeLevel(hwnd, DSSCL_EXCLUSIVE)))
+	if (FAILED(m_pDeviceSound->SetCooperativeLevel(hwnd, DSSCL_EXCLUSIVE)))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - could not create cooperative level", gen_msg_location);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - could not create cooperative level", GEN_MSG_LOCATION);
 		return;// SOUND_INIT_ERR_CL;
 	}
 
@@ -99,9 +491,9 @@ void MainSound::Init(HWND hwnd)
 	dsbd.dwBufferBytes = 0;
 	dsbd.lpwfxFormat = 0;
 
-	if (FAILED(DeviceSound->CreateSoundBuffer(&dsbd, &DSPrimary, NULL)))
+	if (FAILED(m_pDeviceSound->CreateSoundBuffer(&dsbd, &m_pPrimaryBuffer, NULL)))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - could not create primary buffer", gen_msg_location);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - could not create primary buffer", GEN_MSG_LOCATION);
 		return;// SOUND_INIT_ERR_PRIM_BUF;
 	}
 
@@ -115,28 +507,28 @@ void MainSound::Init(HWND hwnd)
 	wfex.nBlockAlign = (wfex.wBitsPerSample / 8) * wfex.nChannels;
 	wfex.nAvgBytesPerSec = wfex.nSamplesPerSec * wfex.nBlockAlign;
 
-	if (FAILED(DSPrimary->SetFormat(&wfex)))
+	if (FAILED(m_pPrimaryBuffer->SetFormat(&wfex)))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - could not init format", gen_msg_location);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - could not init format", GEN_MSG_LOCATION);
 		return;// SOUND_INIT_ERR_SET_FORMAT;
 	}
 
-	DSPrimary->SetVolume(0);
-	DSPrimary->Play(0, 0, DSBPLAY_LOOPING);
+	m_pPrimaryBuffer->SetVolume(0);
+	m_pPrimaryBuffer->Play(0, 0, DSBPLAY_LOOPING);
 }
 
 //
 
-SOUND_FILEFORMAT MainSound::FileFormat(const char* file)
+SOUND_FILEFORMAT CSoundManager::fileFormat(const char* file)
 {
 	FILE *fp;
 
 	if (!(fp = fopen(file, "rb")))
 		return SOUND_FILEFORMAT_UNKNOWN;
 
-	SoundWaveHeader Hdr;
+	CSoundWaveHeader Hdr;
 	fseek(fp, 0, SEEK_SET);
-	fread(&Hdr, 1, sizeof(SoundWaveHeader), fp);
+	fread(&Hdr, 1, sizeof(CSoundWaveHeader), fp);
 
 	if (memcmp(Hdr.RiffSig, "RIFF", 4) == 0 || memcmp(Hdr.Sig, "WAVE", 4) == 0 || memcmp(Hdr.FormatSig, "fmt ", 4) == 0)
 	{
@@ -155,78 +547,83 @@ SOUND_FILEFORMAT MainSound::FileFormat(const char* file)
 	return SOUND_FILEFORMAT_UNKNOWN;
 }
 
-//#############################################################################
-
-void MainSound::Load(Sound* snd, const char* fpath, SOUND_FILEFORMAT fmt)
+void CSoundManager::setMainVolume(float fVolume)
 {
-	if (fmt == SOUND_FILEFORMAT_OGG)
-		LoadOGG(snd, fpath);
-	else if (fmt == SOUND_FILEFORMAT_WAV)
-		LoadWAV(snd, fpath);
+	m_pPrimaryBuffer->SetVolume(lerpf(-10000, 0, fVolume));
 }
 
-void MainSound::LoadWAV(Sound* snd, const char* fpath)
+//#############################################################################
+
+void CSoundManager::load(CSound* snd, const char* fpath, SOUND_FILEFORMAT fmt)
 {
-	SoundWaveHeader Hdr;
-	snd->StreamFile = fopen(fpath, "rb");
+	if (fmt == SOUND_FILEFORMAT_OGG)
+		loadOGG(snd, fpath);
+	else if (fmt == SOUND_FILEFORMAT_WAV)
+		loadWAV(snd, fpath);
+}
 
-	fseek(snd->StreamFile, 0, SEEK_SET);
-	fread(&Hdr, 1, sizeof(SoundWaveHeader), snd->StreamFile);
+void CSoundManager::loadWAV(CSound* snd, const char* fpath)
+{
+	CSoundWaveHeader Hdr;
+	snd->m_pStream = fopen(fpath, "rb");
 
-	snd->SizeFull = (Hdr.ChunkSize + (sizeof(char)* 4 + sizeof(int32_t))) - sizeof(SoundWaveHeader);
+	fseek(snd->m_pStream, 0, SEEK_SET);
+	fread(&Hdr, 1, sizeof(CSoundWaveHeader), snd->m_pStream);
 
-	if (snd->StreamSize == 0)
-		Hdr.DataSize = snd->SizeFull;
+	snd->m_uiSizeFull = (Hdr.ChunkSize + (sizeof(char)* 4 + sizeof(int32_t))) - sizeof(CSoundWaveHeader);
+
+	if (snd->m_uiStreamSize == 0)
+		Hdr.DataSize = snd->m_uiSizeFull;
 	else
-		Hdr.DataSize = snd->StreamSize;
+		Hdr.DataSize = snd->m_uiStreamSize;
 	
-	if (!(snd->DSBuffer = SoundBufferCreate(&Hdr)))
+	if (!(snd->m_pSoundBuffer = soundBufferCreate(&Hdr)))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - could not create sound buffer [%s]", gen_msg_location, snd->RPath);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - could not create sound buffer [%s]", GEN_MSG_LOCATION, snd->m_szRPath);
 		return;
 	}
 
-	fseek(snd->StreamFile, sizeof(SoundWaveHeader), SEEK_SET);
+	fseek(snd->m_pStream, sizeof(CSoundWaveHeader), SEEK_SET);
 
-	SoundDataWAVLoad(snd->DSBuffer, 0, snd->StreamFile, Hdr.DataSize, 0);
+	soundDataWAVLoad(snd->m_pSoundBuffer, 0, snd->m_pStream, Hdr.DataSize, 0);
 
-	snd->LengthSec = snd->StreamSize / (Hdr.BytesPerSec);
-	snd->ChannelsCount = Hdr.Channels;
-	snd->RateSample = Hdr.SampleRate;
-	snd->BitsPerSample = Hdr.BitsPerSample;
-	snd->BytesPerSec = ((snd->BitsPerSample / 8) * snd->ChannelsCount) * snd->RateSample;
+	snd->m_iLengthSec = snd->m_uiStreamSize / (Hdr.BytesPerSec);
+	snd->m_iChannelsCount = Hdr.Channels;
+	snd->m_iSampleRate = Hdr.SampleRate;
+	snd->m_iBitsPerSample = Hdr.BitsPerSample;
+	snd->m_uiBytesPerSec = ((snd->m_iBitsPerSample / 8) * snd->m_iChannelsCount) * snd->m_iSampleRate;
 
-	if (snd->StreamSize == 0)
+	if (snd->m_uiStreamSize == 0)
 	{
-		fclose(snd->StreamFile);
+		fclose(snd->m_pStream);
 	}
 	else
 	{
-		snd->Split1Size = snd->StreamSize / 4;
-		snd->Split2Size = snd->Split1Size * 2;
-		snd->Split3Size = snd->Split1Size * 3;
+		snd->m_uiSplit1Size = snd->m_uiStreamSize / 4;
+		snd->m_uiSplit2Size = snd->m_uiSplit1Size * 2;
+		snd->m_uiSplit3Size = snd->m_uiSplit1Size * 3;
 
-		snd->BF1 = false;
-		snd->BF2 = false;
-		snd->BF3 = false;
-		snd->BF4 = false;
+		snd->m_isWork1 = false;
+		snd->m_isWork2 = false;
+		snd->m_isWork3 = false;
+		snd->m_isWork4 = false;
 
-		snd->IsStarting = true;
+		snd->m_isStarting = true;
 
-		snd->RePlayCount = 0;
-		double tmpCRPE = double(snd->SizeFull) / double(snd->StreamSize);
+		snd->m_iRePlayCount = 0;
+		double tmpCRPE = double(snd->m_uiSizeFull) / double(snd->m_uiStreamSize);
 		float Count = 0;
 
 		while (1)
 		{
 			if (tmpCRPE > Count && tmpCRPE < Count + 1)
 			{
-				snd->RePlayEndCount = Count + 1;
+				snd->m_iRePlayEndCount = Count + 1;
 				break;
 			}
 			else if (tmpCRPE == Count)
 			{
-				snd->RePlayEndCount = Count;
+				snd->m_iRePlayEndCount = Count;
 				break;
 			}
 			Count++;
@@ -234,10 +631,10 @@ void MainSound::LoadWAV(Sound* snd, const char* fpath)
 	}
 }
 
-IDirectSoundBuffer8* MainSound::SoundBufferCreate(SoundWaveHeader* hdr)
+IDirectSoundBuffer8* CSoundManager::soundBufferCreate(CSoundWaveHeader* hdr)
 {
 	IDirectSoundBuffer  *DSB;
-	IDirectSoundBuffer8 *DSBuffer;
+	IDirectSoundBuffer8 *m_pSoundBuffer;
 	DSBUFFERDESC dsbd;
 	WAVEFORMATEX wfex;
 
@@ -256,19 +653,19 @@ IDirectSoundBuffer8* MainSound::SoundBufferCreate(SoundWaveHeader* hdr)
 	dsbd.dwFlags = DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPAN | DSBCAPS_CTRLFREQUENCY | DSBCAPS_LOCSOFTWARE;
 	dsbd.dwBufferBytes = hdr->DataSize;
 	dsbd.lpwfxFormat = &wfex;
-	if (FAILED(DeviceSound->CreateSoundBuffer(&dsbd, &DSB, NULL)))
+	if (FAILED(m_pDeviceSound->CreateSoundBuffer(&dsbd, &DSB, NULL)))
 		return NULL;
 
-	if (FAILED(DSB->QueryInterface(IID_IDirectSoundBuffer8, (void**)&DSBuffer)))
+	if (FAILED(DSB->QueryInterface(IID_IDirectSoundBuffer8, (void**)&m_pSoundBuffer)))
 	{
 		DSB->Release();
 		return NULL;
 	}
 
-	return DSBuffer;
+	return m_pSoundBuffer;
 }
 
-void MainSound::SoundDataWAVLoad(IDirectSoundBuffer8* DSBuffer, long LockPos, FILE* data, long Size, DWORD flag)
+void CSoundManager::soundDataWAVLoad(IDirectSoundBuffer8* m_pSoundBuffer, int LockPos, FILE* data, int Size, UINT flag)
 {
 	BYTE  *Ptr1, *Ptr2;
 	DWORD Size1, Size2;
@@ -276,113 +673,113 @@ void MainSound::SoundDataWAVLoad(IDirectSoundBuffer8* DSBuffer, long LockPos, FI
 	if (!Size)
 		return;
 
-	if (FAILED(DSBuffer->Lock(LockPos, Size, (void**)&Ptr1, &Size1, (void**)&Ptr2, &Size2, flag)))
+	if (FAILED(m_pSoundBuffer->Lock(LockPos, Size, (void**)&Ptr1, &Size1, (void**)&Ptr2, &Size2, flag)))
 		return;
 
 	fread(Ptr1, 1, Size1, data);
 	if (Ptr2)
 		fread(Ptr2, 1, Size2, data);
 
-	DSBuffer->Unlock(Ptr1, Size1, Ptr2, Size2);
+	m_pSoundBuffer->Unlock(Ptr1, Size1, Ptr2, Size2);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void MainSound::LoadOGG(Sound* snd, const char* fpath)
+void CSoundManager::loadOGG(CSound* snd, const char* fpath)
 {
 	OggVorbis_File ogg;
 
-	snd->StreamFile = fopen(fpath, "rb");
+	snd->m_pStream = fopen(fpath, "rb");
 
-	if (snd->StreamFile == NULL)
+	if (snd->m_pStream == NULL)
 		return;
 
 	if (ov_fopen(fpath, &ogg))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - error reading [%s]", gen_msg_location, snd->RPath);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error reading [%s]", GEN_MSG_LOCATION, snd->m_szRPath);
 		return;
 	}
 
-	snd->VorbisFile = new OggVorbis_File;
+	snd->m_pVorbisFile = new OggVorbis_File;
 
 	ov_callbacks cb;
-	cb.close_func = ogg_close;
-	cb.read_func = ogg_read;
-	cb.seek_func = ogg_seek;
-	cb.tell_func = ogg_tell;
+	cb.close_func = OggCallbackClose;
+	cb.read_func = OggCallbackRead;
+	cb.seek_func = OggCallbackSeek;
+	cb.tell_func = OggCallbackTell;
 
-	ov_open_callbacks(snd->StreamFile, snd->VorbisFile, 0, 0, cb);
+	ov_open_callbacks(snd->m_pStream, snd->m_pVorbisFile, 0, 0, cb);
 
 	vorbis_info *vi = ov_info(&ogg, -1);
 
 	if (!vi)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - error reading (info) [%s]", gen_msg_location, snd->RPath);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error reading (info) [%s]", GEN_MSG_LOCATION, snd->m_szRPath);
 		return;
 	}
 
-	snd->LengthSec = float(ov_pcm_total(snd->VorbisFile, -1)) / float(vi->rate);
-	snd->ChannelsCount = vi->channels;
-	snd->RateSample = vi->rate;
-	snd->BitsPerSample = SOUND_OGG_BITS_PER_SAMPLE;
-	snd->BytesPerSec = ((snd->BitsPerSample / 8) * snd->ChannelsCount) * snd->RateSample;
-	snd->SizeFull = ov_pcm_total(snd->VorbisFile, -1) * 2 * vi->channels;
+	snd->m_iLengthSec = float(ov_pcm_total(snd->m_pVorbisFile, -1)) / float(vi->rate);
+	snd->m_iChannelsCount = vi->channels;
+	snd->m_iSampleRate = vi->rate;
+	snd->m_iBitsPerSample = SOUND_OGG_BITS_PER_SAMPLE;
+	snd->m_uiBytesPerSec = ((snd->m_iBitsPerSample / 8) * snd->m_iChannelsCount) * snd->m_iSampleRate;
+	snd->m_uiSizeFull = ov_pcm_total(snd->m_pVorbisFile, -1) * 2 * vi->channels;
 
-	SoundWaveHeader hdr;
+	CSoundWaveHeader hdr;
 	hdr.Channels = vi->channels;
 	hdr.SampleRate = vi->rate;
 	hdr.BitsPerSample = SOUND_OGG_BITS_PER_SAMPLE;
 
-	if (snd->StreamSize == 0)
-		hdr.DataSize = snd->SizeFull;
+	if (snd->m_uiStreamSize == 0)
+		hdr.DataSize = snd->m_uiSizeFull;
 	else
-		hdr.DataSize = snd->StreamSize;
+		hdr.DataSize = snd->m_uiStreamSize;
 
-	snd->DSBuffer = SoundBufferCreate(&hdr);
+	snd->m_pSoundBuffer = soundBufferCreate(&hdr);
 
-	if (!snd->DSBuffer)
+	if (!snd->m_pSoundBuffer)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - could not create sound buffer [%s]", gen_msg_location, snd->RPath);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - could not create sound buffer [%s]", GEN_MSG_LOCATION, snd->m_szRPath);
 		return;
 	}
 
-	SoundDataOGGLoad(snd->VorbisFile, snd->DSBuffer, 0, hdr.DataSize, 0);
+	soundDataOGGLoad(snd->m_pVorbisFile, snd->m_pSoundBuffer, 0, hdr.DataSize, 0);
 
-	if (snd->StreamSize == 0)
+	if (snd->m_uiStreamSize == 0)
 	{
-		fclose(snd->StreamFile);
+		fclose(snd->m_pStream);
 		ov_clear(&ogg);
-		ov_clear(snd->VorbisFile);
-		mem_delete(snd->VorbisFile);
-		snd->VorbisFile = 0;
+		ov_clear(snd->m_pVorbisFile);
+		mem_delete(snd->m_pVorbisFile);
+		snd->m_pVorbisFile = 0;
 	}
 	else
 	{
-		snd->Split1Size = snd->StreamSize / 4;
-		snd->Split2Size = snd->Split1Size * 2;
-		snd->Split3Size = snd->Split1Size * 3;
+		snd->m_uiSplit1Size = snd->m_uiStreamSize / 4;
+		snd->m_uiSplit2Size = snd->m_uiSplit1Size * 2;
+		snd->m_uiSplit3Size = snd->m_uiSplit1Size * 3;
 
-		snd->BF1 = false;
-		snd->BF2 = false;
-		snd->BF3 = false;
-		snd->BF4 = false;
+		snd->m_isWork1 = false;
+		snd->m_isWork2 = false;
+		snd->m_isWork3 = false;
+		snd->m_isWork4 = false;
 
-		snd->IsStarting = true;
+		snd->m_isStarting = true;
 
-		snd->RePlayCount = 0;
-		double tmpCRPE = double(snd->SizeFull) / double(snd->StreamSize);
+		snd->m_iRePlayCount = 0;
+		double tmpCRPE = double(snd->m_uiSizeFull) / double(snd->m_uiStreamSize);
 		float Count = 0;
 
 		while (1)
 		{
 			if (tmpCRPE > Count && tmpCRPE < Count + 1)
 			{
-				snd->RePlayEndCount = Count + 1;
+				snd->m_iRePlayEndCount = Count + 1;
 				break;
 			}
 			else if (tmpCRPE == Count)
 			{
-				snd->RePlayEndCount = Count;
+				snd->m_iRePlayEndCount = Count;
 				break;
 			}
 			Count++;
@@ -391,7 +788,7 @@ void MainSound::LoadOGG(Sound* snd, const char* fpath)
 	//return SOUND_OK;
 }
 
-void MainSound::SoundDataOGGLoad(OggVorbis_File* VorbisFile, IDirectSoundBuffer8 *DSBuffer, long LockPos, long Size, DWORD flag)
+void CSoundManager::soundDataOGGLoad(OggVorbis_File* VorbisFile, IDirectSoundBuffer8 *m_pSoundBuffer, int LockPos, int Size, UINT flag)
 {
 	char  *Ptr1, *Ptr2;
 	DWORD Size1, Size2;
@@ -399,7 +796,7 @@ void MainSound::SoundDataOGGLoad(OggVorbis_File* VorbisFile, IDirectSoundBuffer8
 	if (!Size)
 		return;
 
-	if (FAILED(DSBuffer->Lock(LockPos, Size, (void**)&Ptr1, &Size1, (void**)&Ptr2, &Size2, flag)))
+	if (FAILED(m_pSoundBuffer->Lock(LockPos, Size, (void**)&Ptr1, &Size1, (void**)&Ptr2, &Size2, flag)))
 		return;
 
 	DWORD total_read = 0;
@@ -421,7 +818,7 @@ void MainSound::SoundDataOGGLoad(OggVorbis_File* VorbisFile, IDirectSoundBuffer8
 		else if (bites_read == OV_EINVAL)
 		{
 			//ошибка при декодировании, нужно поставить заглушку
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING,"OV_EINVAL");
+			LibReport(REPORT_MSG_LEVEL_WARNING,"OV_EINVAL");
 		}
 		else
 			break;
@@ -445,362 +842,497 @@ void MainSound::SoundDataOGGLoad(OggVorbis_File* VorbisFile, IDirectSoundBuffer8
 			else if (bites_read == OV_EINVAL)
 			{
 				//ошибка при декодировании, нужно поставить заглушку
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "OV_EINVAL");
+				LibReport(REPORT_MSG_LEVEL_WARNING, "OV_EINVAL");
 			}
 			else
 				break;
 		}
 	}
 
-	DSBuffer->Unlock(Ptr1, Size1, Ptr2, Size2);
+	m_pSoundBuffer->Unlock(Ptr1, Size1, Ptr2, Size2);
 }
 
 //#############################################################################
 
-ID MainSound::SoundCreate2d(const char *file, bool looping, DWORD size_stream)
+ID CSoundManager::soundCreate2d(const char *szFile, ID idChannel, UINT uiSizeStream)
 {
-	if (!file)
-		return -1;
+	if (!szFile)
+		return SOUND_FAIL_ID;
+
+	String sFileData = szFile;
+	float fDistAudibleData = -1.f;
+	float fVolumeData = -1.f;
+	Array<UINT> aDelaysData;
+
+	SndGetDataFromStr(szFile, sFileData, fDistAudibleData, fVolumeData, aDelaysData);
 
 	char fullpath[SOUND_MAX_SIZE_STDPATH + SOUND_MAX_SIZE_PATH];
-	sprintf(fullpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SOUNDS), file);
+	sprintf(fullpath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SOUNDS), sFileData.c_str());
 
-	if (!Core_0FileExists(fullpath))
+	if (!FileExistsFile(fullpath))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - file not found [%s]", gen_msg_location, fullpath);
-		return -1;
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - file not found [%s]", GEN_MSG_LOCATION, fullpath);
+		return SOUND_FAIL_ID;
 	}
 
-	SOUND_FILEFORMAT fmt = FileFormat(fullpath);
+	SOUND_FILEFORMAT fmt = fileFormat(fullpath);
 
 	if (fmt == SOUND_FILEFORMAT_UNKNOWN)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - unknown format [%s]", gen_msg_location, file);
-		return -1;
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unknown format [%s]", GEN_MSG_LOCATION, sFileData.c_str());
+		return SOUND_FAIL_ID;
 	}
 
-	Sound* snd = new Sound();
-	strcpy(snd->RPath, file);
-	snd->Format = fmt;
-	snd->IsLooping = looping;
+	channelAdd(idChannel);
 
-	snd->StreamSize = 0;
-	if (size_stream > 0)
+	CSound *pSnd = new CSound();
+
+	if (fDistAudibleData > 0.f)
+		pSnd->m_fDistAudible = fDistAudibleData;
+
+	if (fVolumeData > -1.f)
+		pSnd->m_fVolume = fVolumeData;
+
+	strcpy(pSnd->m_szRPath, szFile);
+	pSnd->m_format = fmt;
+
+	pSnd->m_uiStreamSize = 0;
+	if (uiSizeStream > 0)
 	{
-		if (size_stream < SOUND_MIN_SIZE_STREAM)
-			snd->StreamSize = SOUND_MIN_SIZE_STREAM;
+		if (uiSizeStream < SOUND_MIN_SIZE_STREAM)
+			pSnd->m_uiStreamSize = SOUND_MIN_SIZE_STREAM;
 		else
-			snd->StreamSize = size_stream;
+			pSnd->m_uiStreamSize = uiSizeStream;
 	}
-
-	Load(snd, fullpath, fmt);
-
-	snd->DSBuffer->GetFrequency(&snd->FrecOrigin);
-	snd->Id = AddSound(snd);
-	return snd->Id;
-}
-
-ID MainSound::SoundCreate3d(const char *file, bool looping, DWORD size_stream, float dist, float shift_pan)
-{
-	ID sndid = SoundCreate2d(file, looping, size_stream);
-	Sound* snd = 0;
-
-	if (sndid < 0)
-		return sndid;
-
-	snd = ArrSounds[sndid];
-	snd->DistAudible = dist;
-	snd->Is3d = true;
-	snd->ShiftPan = shift_pan;
 	
-	return sndid;
+	if (uiSizeStream == 0 && aDelaysData.size() > 0)
+	{
+		soundInitPlayDelay(pSnd, &(aDelaysData[0]), aDelaysData.size());
+	}
+
+	load(pSnd, fullpath, fmt);
+
+	DWORD dwFrec;
+	pSnd->m_pSoundBuffer->GetFrequency(&dwFrec);
+	pSnd->m_uiFrecOrigin = dwFrec;
+	pSnd->m_id = addSound(pSnd);
+	pSnd->m_idChannel = idChannel;
+	pSnd->m_iCountLoad = 1;
+
+	return pSnd->m_id;
 }
 
-ID MainSound::SoundCreate2dInst(const char *file, bool looping, DWORD size_stream)
+ID CSoundManager::soundCreate3d(const char *file, ID idChannel, UINT size_stream, float dist)
 {
-	ID idsnd = SoundFind2dInst(file);
-	if (idsnd >= 0)
-		return idsnd;
-	idsnd = SoundCreate2d(file, looping, size_stream);
-	AArr2dInst[file] = idsnd;
-	ArrSounds[idsnd]->IsInst = true;
-	return idsnd;
+	ID idSnd = soundCreate2d(file, idChannel, size_stream);
+	CSound* snd = 0;
+
+	if (idSnd < 0)
+		return idSnd;
+
+	snd = m_aSounds[idSnd];
+
+	if (snd->m_fDistAudible <= 0.f)
+		snd->m_fDistAudible = dist;
+
+	snd->m_is3d = true;
+	snd->m_fShiftPan = SOUND_SHIFTPAN_3D;
+	snd->m_idChannel = idChannel;
+	
+	return idSnd;
 }
 
-ID MainSound::SoundCreate3dInst(const char *file, bool looping, DWORD size_stream, float dist, float shift_pan)
+ID CSoundManager::soundCreate2dInst(const char *file, ID idChannel)
 {
-	ID idsnd = SoundFind2dInst(file);
-	if (idsnd >= 0)
-		return idsnd;
-	idsnd = SoundCreate3d(file, looping, size_stream, dist, shift_pan);
-	AArr3dInst[file] = idsnd;
-	ArrSounds[idsnd]->IsInst = true;
-	return idsnd;
+	ID idSnd = soundFind2dInst(file, idChannel);
+
+	if (idSnd >= 0)
+	{
+		++(m_aSounds[idSnd]->m_iCountLoad);
+		return idSnd;
+	}
+
+	idSnd = soundCreate2d(file, idChannel);
+
+	char szStr[SOUND_MAX_SIZE_FULLPATH];
+	szStr[0] = 0;
+	SOUND_CREATE_NAME(szStr, idChannel, file);
+
+	m_a2dInst[szStr] = idSnd;
+	m_aSounds[idSnd]->m_isInst = true;
+	m_aSounds[idSnd]->m_idChannel = idChannel;
+	return idSnd;
 }
 
-ID MainSound::SoundFind2dInst(const char * file)
+ID CSoundManager::soundCreate3dInst(const char *file, ID idChannel, float dist)
 {
-	ID id = -1;
+	ID idSnd = soundFind3dInst(file, idChannel);
+
+	if (idSnd >= 0)
+	{
+		++(m_aSounds[idSnd]->m_iCountLoad);
+		return idSnd;
+	}
+
+	idSnd = soundCreate3d(file, idChannel, 0, dist);
+
+	char szStr[SOUND_MAX_SIZE_FULLPATH];
+	szStr[0] = 0;
+	SOUND_CREATE_NAME(szStr, idChannel, file);
+
+	m_a3dInst[szStr] = idSnd;
+	m_aSounds[idSnd]->m_isInst = true;
+	m_aSounds[idSnd]->m_idChannel = idChannel;
+
+	return idSnd;
+}
+
+ID CSoundManager::soundFind2dInst(const char *file, ID idChannel)
+{
+	char szStr[SOUND_MAX_SIZE_FULLPATH];
+	szStr[0] = 0;
+	SOUND_CREATE_NAME(szStr, idChannel, file);
+
+	ID id = SOUND_FAIL_ID;
 	const AssotiativeArray<AAStringNR, ID, false, 16>::Node* pNode = 0;
-	if (AArr2dInst.KeyExists(file, &pNode))
+	if (m_a2dInst.KeyExists(szStr, &pNode))
 		id = *(pNode->Val);
 
 	return id;
 }
 
-ID MainSound::SoundFind3dInst(const char * file)
+ID CSoundManager::soundFind3dInst(const char *file, ID idChannel)
 {
-	ID id = -1;
+	char szStr[SOUND_MAX_SIZE_FULLPATH];
+	szStr[0] = 0;
+	SOUND_CREATE_NAME(szStr, idChannel, file);
+
+	ID id = SOUND_FAIL_ID;
 	const AssotiativeArray<AAStringNR, ID, false, 16>::Node* pNode = 0;
-	if (AArr3dInst.KeyExists(file, &pNode))
+	if (m_a3dInst.KeyExists(szStr, &pNode))
 		id = *(pNode->Val);
 
 	return id;
 }
 
-void MainSound::SoundInstancePlay2d(ID id, int volume, int pan)
+ID CSoundManager::soundInstancePlay(ID idSound, bool isBlocked, bool isLooping, UINT *pArrDelay, int iSizeArrDelay, const float3 *pPos, float fVolume, float fPan)
 {
-	SOUND_PRECOND(id, _VOID);
+	SOUND_PRECOND(idSound, SOUND_FAIL_ID);
 
-	Sound* snd = ArrSounds[id];
+	CSound *pSnd = m_aSounds[idSound];
 
-	if (snd->StreamSize > 0)
+	SOUND_CHANNEL_PLAYING(pSnd->m_idChannel, SOUND_FAIL_ID);
+
+	if (pSnd->m_uiStreamSize > 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - can not create sound instance for streaming [%s]", gen_msg_location, snd->RPath);
-		return;
+		LibReport(REPORT_MSG_LEVEL_WARNING, "%s - can not create sound instance for streaming [%s]", GEN_MSG_LOCATION, pSnd->m_szRPath);
+		return SOUND_FAIL_ID;
 	}
 
-	if (snd->Is3d)
+	if (pSnd->m_is3d && !pPos)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - can not create 2d sound instance by 3d [%s]", gen_msg_location, snd->RPath);
-		return;
+		LibReport(REPORT_MSG_LEVEL_WARNING, "%s - not send position for 3d sound instance [%s]", GEN_MSG_LOCATION, pSnd->m_szRPath);
+		return SOUND_FAIL_ID;
 	}
 
-	ID id_instance = -1;
-	for (UINT i = 0; i < snd->DataInstances.size(); ++i)
+	if (!(pSnd->m_is3d) && pPos)
 	{
-		if (!snd->DataInstances[i].busy)
+		LibReport(REPORT_MSG_LEVEL_WARNING, "%s - uresolved send position for 2d sound instance [%s]", GEN_MSG_LOCATION, pSnd->m_szRPath);
+		return SOUND_FAIL_ID;
+	}
+
+	ID idInstance = -1;
+	for (int i = 0; i < pSnd->m_aInstances.size(); ++i)
+	{
+		if (pSnd->m_aInstances[i].m_busy == SOUND_SNDINSTANCE_BUSY_FREE)
 		{
-			id_instance = i;
+			idInstance = i;
 			break;
 		}
 	}
 
-	if (id_instance < 0)
+	if (idInstance < 0)
 	{
 		IDirectSoundBuffer* tsb;
 		IDirectSoundBuffer8* tsb8;
-		DeviceSound->DuplicateSoundBuffer(snd->DSBuffer, &tsb);
+		m_pDeviceSound->DuplicateSoundBuffer(pSnd->m_pSoundBuffer, &tsb);
 		if (!tsb)
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - can not create sound instance [%s], this is big problem", gen_msg_location, snd->RPath);
-			return;
+			LibReport(REPORT_MSG_LEVEL_WARNING, "%s - can not create sound instance [%s], this is big problem", GEN_MSG_LOCATION, pSnd->m_szRPath);
+			return SOUND_FAIL_ID;
 		}
 		tsb->QueryInterface(IID_IDirectSoundBuffer8, (void**)&tsb8);
-		snd->DataInstances.push_back(Sound::SIData(tsb8, 0, true));
-		id_instance = snd->DataInstances.size() - 1;
+		pSnd->m_aInstances.push_back(CSoundInstance(tsb8, pSnd->m_uiBytesPerSec, (pPos ? &float3_t(*pPos) : 0), SOUND_SNDINSTANCE_BUSY_TEMP));
+		idInstance = pSnd->m_aInstances.size() - 1;
 	}
 
-	if (id_instance >= 0)
+	if (idInstance >= 0)
 	{
-		long tvol;
-		snd->DSBuffer->GetVolume(&tvol);
-		snd->DataInstances[id_instance].busy = true;
-		//IDirectSoundBuffer8* tsb = snd->DataInstances[id_instance].sbuffer;
-		snd->DataInstances[id_instance].sbuffer->SetVolume((tvol > -5000 ? tvol - 5000 : tvol + 5000));
-		snd->DataInstances[id_instance].sbuffer->SetCurrentPosition(0);
-		snd->DataInstances[id_instance].sbuffer->SetVolume(-10000 + (volume * 100));
-		snd->DataInstances[id_instance].sbuffer->SetPan((pan > 0) ? (10000 - (pan * 100)) - 10000 : 10000 - (10000 + (pan * 100)));
-		snd->DataInstances[id_instance].sbuffer->Play(0, 0, 0);
+		if (isBlocked || isLooping)
+			pSnd->m_aInstances[idInstance].m_busy = SOUND_SNDINSTANCE_BUSY_LOCKED;
+		else
+			pSnd->m_aInstances[idInstance].m_busy = SOUND_SNDINSTANCE_BUSY_TEMP;
+
+		//если установлены задержки воспроизведения
+		if (pArrDelay && iSizeArrDelay > 0 || iSizeArrDelay < 0)
+			soundInitPlayDelay(&(pSnd->m_aInstances[idInstance]), pArrDelay, iSizeArrDelay);
+
+		pSnd->m_aInstances[idInstance].m_fVolume = saturatef(fVolume);
+		
+		//если 3д звук
+		if (pSnd->m_is3d && pPos)
+		{
+			pSnd->m_aInstances[idInstance].m_pSoundBuffer->SetVolume(lerpf(-10000, 0, pSnd->m_aInstances[idInstance].m_fVolume * Snd3dComVolume((*pPos), m_vOldViewPos, pSnd->m_fDistAudible)));
+			pSnd->m_aInstances[idInstance].m_pSoundBuffer->SetPan(Snd3dComPan((*pPos), m_vOldViewPos, m_vOldViewDir, pSnd->m_fDistAudible, pSnd->m_fShiftPan));
+		}
+		//иначе фоновый
+		else
+		{
+			pSnd->m_aInstances[idInstance].m_pSoundBuffer->SetVolume(lerpf(-10000, 0, pSnd->m_aInstances[idInstance].m_fVolume));
+			pSnd->m_aInstances[idInstance].m_pSoundBuffer->SetPan((fPan > 0) ? (10000 - (fPan * 100)) - 10000 : 10000 - (10000 + (fPan * 100)));
+		}
+		
+		pSnd->m_aInstances[idInstance].m_pSoundBuffer->SetCurrentPosition(0);
+		pSnd->m_aInstances[idInstance].m_isLooping = isLooping;
+		
+		if (!(pArrDelay && iSizeArrDelay > 0))
+			pSnd->m_aInstances[idInstance].m_pSoundBuffer->Play(0, 0, ((pSnd->m_aInstances[idInstance].m_isLooping) ? DSBPLAY_LOOPING : 0));
+		
+		pSnd->m_aInstances[idInstance].m_state = SOUND_OBJSTATE_PLAY;
+
+		return idInstance;
+	}
+
+	return SOUND_FAIL_ID;
+}
+
+bool CSoundManager::soundInstancePlaying(ID idSound, ID idInstance)
+{
+	SOUND_PRECOND(idSound, false);
+
+	CSound* snd = m_aSounds[idSound];
+
+	if (idInstance >= 0)
+	{
+		/*DWORD dwStatus;
+		snd->m_aInstances[idInstance].m_pSoundBuffer->GetStatus(&dwStatus);
+		return (dwStatus & DSBSTATUS_PLAYING);*/
+		return (snd->m_aInstances[idInstance].m_state != SOUND_OBJSTATE_STOP);
+	}
+
+	return false;
+}
+
+void CSoundManager::soundInstanceStop(ID idSound, ID idInstance)
+{
+	SOUND_PRECOND(idSound, _VOID);
+
+	CSound* snd = m_aSounds[idSound];
+
+	if (idInstance >= 0)
+	{
+		snd->m_aInstances[idInstance].m_isLooping = false;
+		snd->m_aInstances[idInstance].m_pSoundBuffer->Stop();
+		snd->m_aInstances[idInstance].m_state = SOUND_OBJSTATE_STOP;
 	}
 }
 
-void MainSound::SoundInstancePlay3d(ID id, const float3* pos)
+void CSoundManager::soundInstanceFree(ID idSound, ID idInstance)
 {
-	SOUND_PRECOND(id, _VOID);
+	SOUND_PRECOND(idSound, _VOID);
 
-	if (!pos)
-		return;
+	CSound* snd = m_aSounds[idSound];
 
-	Sound* snd = ArrSounds[id];
-
-	if (snd->StreamSize > 0)
+	if (idInstance >= 0)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - can not create sound instance for streaming [%s]", gen_msg_location, snd->RPath);
-		return;
-	}
-
-	if (!snd->Is3d)
-	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - can not create 3d sound instance by 2d[%s]", gen_msg_location, snd->RPath);
-		return;
-	}
-
-	ID id_instance = -1;
-	for(UINT i = 0; i < snd->DataInstances.size(); ++i)
-	{
-		if(!snd->DataInstances[i].busy)
-		{
-			id_instance = i;
-			break;
-		}
-	}
-
-	if (id_instance < 0)
-	{
-		IDirectSoundBuffer* tsb;
-		IDirectSoundBuffer8* tsb8;
-		DeviceSound->DuplicateSoundBuffer(snd->DSBuffer, &tsb);
-		if (!tsb)
-		{
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "%s - can not create sound instance [%s], this is big problem", gen_msg_location, snd->RPath);
-			return;
-		}
-		tsb->QueryInterface(IID_IDirectSoundBuffer8, (void**)&tsb8);
-		snd->DataInstances.push_back(Sound::SIData(tsb8, &float3_t(*pos), true));
-		id_instance = snd->DataInstances.size() - 1;
-	}
-
-	if (id_instance >= 0)
-	{
-		long tvol;
-		snd->DSBuffer->GetVolume(&tvol);
-		snd->DataInstances[id_instance].sbuffer->SetVolume((tvol > -5000 ? tvol - 5000 : tvol + 5000));
-
-		snd->DataInstances[id_instance].sbuffer->SetVolume(SOUND_3D_COM_VOLUME((*pos), OldViewPos, snd->DistAudible));
-		snd->DataInstances[id_instance].sbuffer->SetPan(SOUND_3D_COM_PAN((*pos), OldViewPos, OldViewDir, snd->DistAudible,snd->ShiftPan));
-		snd->DataInstances[id_instance].sbuffer->SetCurrentPosition(0);
-		snd->DataInstances[id_instance].sbuffer->Play(0, 0, 0);
+		if (snd->m_aInstances[idInstance].m_busy == SOUND_SNDINSTANCE_BUSY_LOCKED)
+			snd->m_aInstances[idInstance].m_busy = SOUND_SNDINSTANCE_BUSY_TEMP;
 	}
 }
 
-ID MainSound::AddSound(Sound* snd)
+ID CSoundManager::addSound(CSound* snd)
 {
-	for (int i = 0, l = ArrSounds.size(); i < l; ++i)
+	for (int i = 0, l = m_aSounds.size(); i < l; ++i)
 	{
-		if (ArrSounds[i] == 0)
+		if (m_aSounds[i] == 0)
 		{
-			ArrSounds[i] = snd;
+			m_aSounds[i] = snd;
 			return i;
 		}
 	}
 
-	ArrSounds.push_back(snd);
-	return ArrSounds.size() - 1;
+	m_aSounds.push_back(snd);
+
+	return m_aSounds.size() - 1;
 }
 
-bool MainSound::SoundIsInit(ID id)
+bool CSoundManager::soundIsInit(ID id)
 {
-	return ((ID)ArrSounds.size() > id && ArrSounds[id] != 0);
+	return ((ID)m_aSounds.size() > id && m_aSounds[id] != 0);
 }
 
-void MainSound::SoundDelete(ID id)
+void CSoundManager::soundDelete(ID id)
 {
 	SOUND_PRECOND(id, _VOID);
-	Sound* snd = ArrSounds[id];
-	if (snd->IsInst)
+
+	CSound* snd = m_aSounds[id];
+	--(snd->m_iCountLoad);
+
+	if (snd->m_iCountLoad > 0)
+		return;
+
+	if (snd->m_isInst)
 	{
-		if (snd->Is3d)
-			AArr3dInst.erase(snd->RPath);
+		char szStr[SOUND_MAX_SIZE_FULLPATH];
+		szStr[0] = 0;
+		SOUND_CREATE_NAME(szStr, snd->m_idChannel, snd->m_szRPath);
+
+		if (snd->m_is3d)
+			m_a3dInst.erase(szStr);
 		else
-			AArr2dInst.erase(snd->RPath);
+			m_a2dInst.erase(szStr);
 	}
-	mem_delete(snd);
+	mem_delete(m_aSounds[id]);
 }
 
 //#############################################################################
 
-void MainSound::SoundPlay(ID id, int looping)
+void CSoundManager::soundPlay(ID id, bool isLooping, UINT *pArrDelay, int iSizeArrDelay)
 {
 	SOUND_PRECOND(id, _VOID);
 
-	Sound* snd = ArrSounds[id];
+	CSound *pSnd = m_aSounds[id];
 
-	if (looping >= 0)
-		snd->IsLooping = looping != 0;
-
-	if (snd->DSBuffer)
+	if (pSnd->m_uiStreamSize != 0 && pArrDelay && iSizeArrDelay > 0)
 	{
-		snd->DSBuffer->Play(0, 0, (snd->StreamSize || snd->IsLooping ? DSBPLAY_LOOPING : 0));
-		snd->State = SOUND_OBJSTATE_PLAY;
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unresolved play delay for streming playing, file %s", GEN_MSG_LOCATION, pSnd->m_szRPath);
+		return;
+	}
+
+	if (!m_aChannels[pSnd->m_idChannel])
+		return;
+
+	if (pArrDelay && iSizeArrDelay > 0 || iSizeArrDelay < 0)
+		soundInitPlayDelay(pSnd, pArrDelay, iSizeArrDelay);
+
+	pSnd->m_isLooping = isLooping;
+
+	if (pSnd->m_pSoundBuffer)
+	{
+		if (pArrDelay && iSizeArrDelay > 0)
+			pSnd->m_pSoundBuffer->SetCurrentPosition(0);
+		else
+			pSnd->m_pSoundBuffer->Play(0, 0, (pSnd->m_uiStreamSize || pSnd->m_isLooping ? DSBPLAY_LOOPING : 0));
+
+		pSnd->m_state = SOUND_OBJSTATE_PLAY;
 	}
 }
 
-void MainSound::SoundPause(ID id)
+void CSoundManager::soundInitPlayDelay(CSoundBase *pSndbase, UINT *pArrDelay, int iSizeArrDelay)
+{
+	if (!pSndbase)
+		return;
+
+	if (iSizeArrDelay < 0)
+	{
+		if (pSndbase->oPlayDelay.m_aPlayDelay.size() <= 0)
+		{
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - previous delay data not init", GEN_MSG_LOCATION);
+		}
+
+		pSndbase->oPlayDelay.m_iCurrPlayDelay = 0;
+		pSndbase->m_isPlayDelay = true;
+		return;
+	}
+
+	if (pArrDelay == 0 || iSizeArrDelay == 0)
+		return;
+
+	pSndbase->oPlayDelay.m_aPlayDelay.clearFast();
+	pSndbase->oPlayDelay.m_iCurrPlayDelay = 0;
+	pSndbase->m_isPlayDelay = true;
+	pSndbase->oPlayDelay.m_uiPlayDelayStart = GetTickCount();
+
+	bool isEven = true;
+	for (int i = 0, il = iSizeArrDelay; i < il; ++i)
+	{
+		pSndbase->oPlayDelay.m_aPlayDelay.push_back(CPlayDelay::CTimeDelay(pArrDelay[i], isEven));
+		isEven = !isEven;
+	}
+}
+
+void CSoundManager::soundPause(ID id)
 {
 	SOUND_PRECOND(id, _VOID);
 
-	Sound* snd = ArrSounds[id];
+	CSound* snd = m_aSounds[id];
 
-	if (snd->DSBuffer)
+	if (!m_aChannels[snd->m_idChannel])
+		return;
+
+	if (snd->m_pSoundBuffer)
 	{
-		snd->DSBuffer->Stop();
-		snd->State = SOUND_OBJSTATE_PAUSE;
+		snd->m_pSoundBuffer->Stop();
+		snd->m_state = SOUND_OBJSTATE_PAUSE;
 	}
 }
 
-void MainSound::SoundStop(ID id)
+void CSoundManager::soundStop(ID id)
 {
 	SOUND_PRECOND(id, _VOID);
 
-	Sound* snd = ArrSounds[id];
+	CSound* snd = m_aSounds[id];
 
-	if (snd->DSBuffer)
+	if (!m_aChannels[snd->m_idChannel])
+		return;
+
+	if (snd->m_pSoundBuffer)
 	{
-		snd->DSBuffer->Stop();
-		snd->DSBuffer->SetCurrentPosition(0);
-		snd->State = SOUND_OBJSTATE_STOP;
+		snd->m_pSoundBuffer->Stop();
+		snd->m_pSoundBuffer->SetCurrentPosition(0);
+		snd->m_state = SOUND_OBJSTATE_STOP;
+		snd->m_isLooping = false;
+		snd->m_isPlayDelay = false;
 	}
 }
 
-void MainSound::SoundStateSet(ID id, SOUND_OBJSTATE state)
+void CSoundManager::soundSetState(ID id, SOUND_OBJSTATE state)
 {
 	SOUND_PRECOND(id, _VOID);
 
 	if (state == SOUND_OBJSTATE_PLAY)
-		SoundPlay(id);
+		soundPlay(id);
 	else if (state == SOUND_OBJSTATE_PAUSE)
-		SoundPause(id);
+		soundPause(id);
 	else if (state == SOUND_OBJSTATE_STOP)
-		SoundStop(id);
+		soundStop(id);
 }
 
-SOUND_OBJSTATE MainSound::SoundStateGet(ID id)
+SOUND_OBJSTATE CSoundManager::soundGetState(ID id)
 {
 	SOUND_PRECOND(id, SOUND_OBJSTATE_STOP);
 
-	Sound* snd = ArrSounds[id];
-	return snd->State;
+	CSound* snd = m_aSounds[id];
+	return snd->m_state;
 }
 
-void MainSound::SoundPosCurrSet(ID id, DWORD pos, int type)
+void CSoundManager::soundSetPosPlay(ID id, UINT pos)
 {
 	SOUND_PRECOND(id, _VOID);
 
-	Sound* snd = ArrSounds[id];
+	CSound* snd = m_aSounds[id];
 
 	DWORD PosInBytes = 0;
-	if (snd->DSBuffer)
+	if (snd->m_pSoundBuffer)
 	{
-		if (type == SOUND_POS_BYTES)
-		{
-			PosInBytes = pos;
-		}
-		else if (type == SOUND_POS_SEC)
-		{
-			PosInBytes = pos * snd->BytesPerSec;
-		}
-		else if (type == SOUND_POS_MLS)
-		{
-			PosInBytes = pos * (snd->BytesPerSec / 1000);
-		}
+		PosInBytes = pos * (snd->m_uiBytesPerSec / 1000);
 
-		if (snd->StreamSize)
+		if (snd->m_uiStreamSize)
 		{
 			WORD HowCountRePlay = 0;
-			for (WORD i = 0; i <= snd->RePlayEndCount; i++)
+			for (WORD i = 0; i <= snd->m_iRePlayEndCount; i++)
 			{
-				if ((i * snd->StreamSize <= PosInBytes && (i + 1) * snd->StreamSize >= PosInBytes) || i * snd->StreamSize == PosInBytes)
+				if ((i * snd->m_uiStreamSize <= PosInBytes && (i + 1) * snd->m_uiStreamSize >= PosInBytes) || i * snd->m_uiStreamSize == PosInBytes)
 				{
 					HowCountRePlay = i;
 					break;
@@ -808,392 +1340,463 @@ void MainSound::SoundPosCurrSet(ID id, DWORD pos, int type)
 			}
 
 			//wav
-			if (snd->Format == SOUND_FILEFORMAT_WAV)
-				fseek(snd->StreamFile, sizeof(SoundWaveHeader)+(HowCountRePlay  * snd->StreamSize), SEEK_SET);
+			if (snd->m_format == SOUND_FILEFORMAT_WAV)
+				fseek(snd->m_pStream, sizeof(CSoundWaveHeader)+(HowCountRePlay  * snd->m_uiStreamSize), SEEK_SET);
 			//ogg
-			else if (snd->Format == SOUND_FILEFORMAT_OGG)
-				ov_pcm_seek(snd->VorbisFile, (HowCountRePlay  * snd->StreamSize) / (2 * snd->ChannelsCount));
+			else if (snd->m_format == SOUND_FILEFORMAT_OGG)
+				ov_pcm_seek(snd->m_pVorbisFile, (HowCountRePlay  * snd->m_uiStreamSize) / (2 * snd->m_iChannelsCount));
 
-			DWORD SizeCountRePlay = PosInBytes - (snd->StreamSize * HowCountRePlay);
+			DWORD SizeCountRePlay = PosInBytes - (snd->m_uiStreamSize * HowCountRePlay);
 
-			ReLoadSplit(id, 0, snd->StreamSize);
+			reLoadSplit(id, 0, snd->m_uiStreamSize);
 
-			snd->RePlayCount = HowCountRePlay;
-			snd->DSBuffer->SetCurrentPosition(SizeCountRePlay);
+			snd->m_iRePlayCount = HowCountRePlay;
+			snd->m_pSoundBuffer->SetCurrentPosition(SizeCountRePlay);
 
 			for (WORD i = 0; i<4; i++)
 			{
-				if (SizeCountRePlay >= snd->Split1Size * i && SizeCountRePlay < snd->Split1Size * (i + 1))
+				if (SizeCountRePlay >= snd->m_uiSplit1Size * i && SizeCountRePlay < snd->m_uiSplit1Size * (i + 1))
 				{
-					snd->SplitActive = i + 1;
+					snd->m_iSplitActive = i + 1;
 					break;
 				}
 			}
 
-			if (snd->SplitActive > 1)
-				snd->IsStarting = false;
+			if (snd->m_iSplitActive > 1)
+				snd->m_isStarting = false;
 			else
-				snd->IsStarting = true;
+				snd->m_isStarting = true;
 
-			if (snd->SplitActive - 2 > 0 && snd->SplitActive - 2 < 5)
+			if (snd->m_iSplitActive - 2 > 0 && snd->m_iSplitActive - 2 < 5)
 			{
-				for (WORD i = 0; i<snd->SplitActive - 2; i++)
-					ReLoadSplit(id, snd->Split1Size*i, snd->Split1Size);
+				for (WORD i = 0; i<snd->m_iSplitActive - 2; i++)
+					reLoadSplit(id, snd->m_uiSplit1Size*i, snd->m_uiSplit1Size);
 			}
 
-			snd->BF1 = snd->BF2 = snd->BF3 = snd->BF4 = false;
+			snd->m_isWork1 = snd->m_isWork2 = snd->m_isWork3 = snd->m_isWork4 = false;
 		}
 		else
-			snd->DSBuffer->SetCurrentPosition(PosInBytes);
+			snd->m_pSoundBuffer->SetCurrentPosition(PosInBytes);
 	}
 }
 
-DWORD MainSound::SoundPosCurrGet(ID id, int type)
+UINT CSoundManager::soundGetPosPlay(ID id)
 {
 	SOUND_PRECOND(id, 0);
 
-	Sound* snd = ArrSounds[id];
-	DWORD posinduff, Bytes, Pos = 0;
-	if (snd->DSBuffer)
+	CSound* snd = m_aSounds[id];
+	DWORD dwPosBuff, dwBytes, dwPos = 0;
+	if (snd->m_pSoundBuffer)
 	{
-		snd->DSBuffer->GetCurrentPosition(&posinduff, 0);
+		snd->m_pSoundBuffer->GetCurrentPosition(&dwPosBuff, 0);
 
-		if (snd->StreamSize)
-			Bytes = snd->RePlayCount * snd->StreamSize + posinduff;
+		if (snd->m_uiStreamSize)
+			dwBytes = snd->m_iRePlayCount * snd->m_uiStreamSize + dwPosBuff;
 		else
-			Bytes = posinduff;
+			dwBytes = dwPosBuff;
 
-		if (type == SOUND_POS_BYTES)
-			Pos = Bytes;
-		else if (type == SOUND_POS_SEC)
-			Pos = Bytes / snd->BytesPerSec;
-		else if (type == SOUND_POS_MLS)
-			Pos = Bytes / (snd->BytesPerSec / 1000);
+		dwPos = dwBytes / (snd->m_uiBytesPerSec / 1000);
 	}
-	return Pos;
+	return dwPos;
 }
 
-void MainSound::SoundVolumeSet(ID id, long volume, int type)
+void CSoundManager::soundSetVolume(ID id, float fVolume)
 {
 	SOUND_PRECOND(id, _VOID);
 
-	Sound* snd = ArrSounds[id];
-	if (snd->DSBuffer)
-	{
-		if (type == SOUND_VOL_DB)
-			snd->Volume = volume;
-		else if (type == SOUND_VOL_PCT)
-			snd->Volume = -10000 + (volume * 100);
+	CSound *pSnd = m_aSounds[id];
+	pSnd->m_fVolume = saturatef(fVolume);
 
-		if (!snd->Is3d)
-			snd->DSBuffer->SetVolume(snd->Volume);
+	if (pSnd->m_pSoundBuffer)
+	{
+		int iVolume = -10000 + (pSnd->m_fVolume * 10000);
+
+		if (!pSnd->m_is3d)
+			pSnd->m_pSoundBuffer->SetVolume(iVolume);
 	}
 }
 
-long MainSound::SoundVolumeGet(ID id, int type)
+float CSoundManager::soundGetVolume(ID id)
 {
 	SOUND_PRECOND(id, 0);
 
-	Sound* snd = ArrSounds[id];
-	static long volume = 0;
-	if (snd->DSBuffer)
-	{
-		if (type == SOUND_VOL_DB)
-		{
-			if (snd->Is3d)
-				volume = snd->Volume;
-			else
-				snd->DSBuffer->GetVolume(&volume);
-		}
-		else if (type == SOUND_VOL_PCT)
-		{
-			if (snd->Is3d)
-			{
-				double one_percent = 100.0 / (-10000.0);
-				volume = double(snd->Volume) * one_percent;
-			}
-			else
-			{
-				double one_percent = 100.0 / (-10000.0);
-				snd->DSBuffer->GetVolume(&volume);
-				volume = double(volume) * one_percent;
-			}
-		}
-	}
-	return volume;
+	CSound *pSnd = m_aSounds[id];
+	return pSnd->m_fVolume;
 }
 
 
-void MainSound::SoundPanSet(ID id, long value, int type)
+void CSoundManager::soundSetPan(ID id, float fPan)
 {
 	SOUND_PRECOND(id, _VOID);
 
-	Sound* snd = ArrSounds[id];
-	static long Value = 0;
-	if (snd->DSBuffer)
-	{
-		if (type == SOUND_VOL_DB || value == 0)
-			Value = value;
-		else if (type == SOUND_VOL_PCT && value != 0)
-			Value = (value > 0) ? (10000 - (value * 100)) - 10000 : 10000 - (10000 + (value * 100));
+	CSound *pSnd = m_aSounds[id];
 
-		snd->DSBuffer->SetPan(Value);
+	if (pSnd->m_is3d)
+		return;
+
+	pSnd->m_fPan = clampf(fPan,-1.f,1.f);
+
+	if (pSnd->m_pSoundBuffer)
+	{
+		long lValue = (pSnd->m_fPan > 0) ? (10000 - (pSnd->m_fPan * 100)) - 10000 : 10000 - (10000 + (pSnd->m_fPan * 100));
+
+		pSnd->m_pSoundBuffer->SetPan(lValue);
 	}
 }
 
-long MainSound::SoundPanGet(ID id, int type)
+float CSoundManager::soundGetPan(ID id)
 {
 	SOUND_PRECOND(id, 0);
 
-	Sound* snd = ArrSounds[id];
-	static long Value = 0;
-	if (snd->DSBuffer)
-	{
-		if (type == SOUND_VOL_DB)
-			snd->DSBuffer->GetPan(&Value);
-		else
-		{
-			double coef_percent = 100.0 / (10000.0);
-			snd->DSBuffer->GetPan(&Value);
-			Value = double(Value) * coef_percent;
-		}
-	}
-	return Value;
+	CSound *pSnd = m_aSounds[id];
+
+	if (pSnd->m_is3d)
+		return 0;
+
+	return pSnd->m_fPan;
 }
 
 
-void MainSound::SoundFreqCurrSet(ID id, DWORD value)
+void CSoundManager::soundSetFreqCurr(ID id, UINT value)
 {
 	SOUND_PRECOND(id, _VOID);
 
-	Sound* snd = ArrSounds[id];
-	if (snd->DSBuffer)
-		snd->DSBuffer->SetFrequency(value);
+	CSound* snd = m_aSounds[id];
+	if (snd->m_pSoundBuffer)
+		snd->m_pSoundBuffer->SetFrequency(value);
 }
 
-DWORD MainSound::SoundFreqCurrGet(ID id)
+UINT CSoundManager::soundGetFreqCurr(ID id)
 {
 	SOUND_PRECOND(id, 0);
 
-	Sound* snd = ArrSounds[id];
+	CSound* snd = m_aSounds[id];
 	static DWORD Value = 0;
-	if (snd->DSBuffer)
-		snd->DSBuffer->GetFrequency(&Value);
+	if (snd->m_pSoundBuffer)
+		snd->m_pSoundBuffer->GetFrequency(&Value);
 	return Value;
 }
 
-DWORD MainSound::SoundFreqOriginGet(ID id)
+UINT CSoundManager::soundGetFreqOrigin(ID id)
 {
 	SOUND_PRECOND(id, 0);
 
-	Sound* snd = ArrSounds[id];
-	if (snd->DSBuffer)
-		return snd->FrecOrigin;
+	CSound* snd = m_aSounds[id];
+	if (snd->m_pSoundBuffer)
+		return snd->m_uiFrecOrigin;
 
 	return 0;
 }
 
-void MainSound::SoundPosWSet(ID id, const float3* pos)
+void CSoundManager::soundSetPosWorld(ID id, const float3* pos)
 {
 	SOUND_PRECOND(id, _VOID);
 	if (pos)
-		ArrSounds[id]->Position = *pos;
+		m_aSounds[id]->m_vPosition = *pos;
 }
 
-void MainSound::SoundPosWGet(ID id, float3* pos)
+void CSoundManager::soundGetPosWorld(ID id, float3* pos)
 {
 	SOUND_PRECOND(id, _VOID);
 	if (pos)
-		*pos = ArrSounds[id]->Position;
+		*pos = m_aSounds[id]->m_vPosition;
 }
 
-int MainSound::SoundLengthSecGet(ID id)
+int CSoundManager::soundGetLengthSec(ID id)
 {
 	SOUND_PRECOND(id, 0);
 
-	return ArrSounds[id]->LengthSec;
+	return m_aSounds[id]->m_iLengthSec;
 }
 
-DWORD MainSound::SoundBytesPerSecGet(ID id)
+UINT CSoundManager::soundGetBytesPerSec(ID id)
 {
 	SOUND_PRECOND(id, 0);
 
-	return ArrSounds[id]->BytesPerSec;
+	return m_aSounds[id]->m_uiBytesPerSec;
 }
 
-DWORD MainSound::SoundSizeGet(ID id)
+UINT CSoundManager::soundGetSize(ID id)
 {
 	SOUND_PRECOND(id, 0);
 
-	return ArrSounds[id]->SizeFull;
+	return m_aSounds[id]->m_uiSizeFull;
 }
 
-void MainSound::SoundFileGet(ID id, char* path)
+void CSoundManager::soundGetFile(ID id, char* path)
 {
 	SOUND_PRECOND(id, _VOID);
 
 	if(path)
-		strcpy(path,ArrSounds[id]->RPath);
+		strcpy(path,m_aSounds[id]->m_szRPath);
 }
 
 
-float MainSound::SoundDistAudibleGet(ID id)
+float CSoundManager::soundGetDistAudible(ID id)
 {
 	SOUND_PRECOND(id, 0);
 
-	return ArrSounds[id]->DistAudible;
+	return m_aSounds[id]->m_fDistAudible;
 }
 
-void MainSound::SoundDistAudibleSet(ID id, float value)
+void CSoundManager::soundSetDistAudible(ID id, float value)
 {
 	SOUND_PRECOND(id, _VOID);
 
-	ArrSounds[id]->DistAudible = value;
+	m_aSounds[id]->m_fDistAudible = value;
 }
 
 //#############################################################################
 
-void MainSound::ReLoadSplit(ID id, DWORD Pos, DWORD Size)
+void CSoundManager::reLoadSplit(ID id, UINT Pos, UINT Size)
 {
 	SOUND_PRECOND(id, _VOID);
 
-	Sound* snd = ArrSounds[id];
-	if (snd->DSBuffer)
+	CSound* snd = m_aSounds[id];
+	if (snd->m_pSoundBuffer)
 	{
 		//wav
-		if (snd->Format == SOUND_FILEFORMAT_WAV)
-			SoundDataWAVLoad(snd->DSBuffer, Pos, snd->StreamFile, Size, 0);
+		if (snd->m_format == SOUND_FILEFORMAT_WAV)
+			soundDataWAVLoad(snd->m_pSoundBuffer, Pos, snd->m_pStream, Size, 0);
 		//ogg
-		else if (snd->Format == SOUND_FILEFORMAT_OGG)
+		else if (snd->m_format == SOUND_FILEFORMAT_OGG)
 		{
-			SoundDataOGGLoad(snd->VorbisFile, snd->DSBuffer, Pos, Size, 0);
+			soundDataOGGLoad(snd->m_pVorbisFile, snd->m_pSoundBuffer, Pos, Size, 0);
 		}
 	}
 }
 
-void MainSound::Update(const float3* viewpos, const float3* viewdir)
+void CSoundManager::UpdatePlayDelay(CSoundBase *pSndBase)
+{
+	if (!pSndBase)
+		return;
+
+	DWORD dwStatus = 0;
+
+	//если вопроизведение с задержками
+	if (pSndBase->m_isPlayDelay)
+	{
+		if (pSndBase->m_state == SOUND_OBJSTATE_PLAY && pSndBase->m_isLooping && pSndBase->oPlayDelay.m_iCurrPlayDelay == -1 && SUCCEEDED(pSndBase->m_pSoundBuffer->GetStatus(&dwStatus)) && !(dwStatus & DSBSTATUS_PLAYING))
+		{
+			pSndBase->oPlayDelay.m_iCurrPlayDelay = 0;
+			pSndBase->oPlayDelay.m_uiPlayDelayStart = 0;
+			pSndBase->m_pSoundBuffer->SetCurrentPosition(0);
+			pSndBase->m_pSoundBuffer->Play(0, 0, 0);
+		}
+
+		dwStatus = 0;
+
+		DWORD dwCurrPos = 0;
+
+		pSndBase->m_pSoundBuffer->GetCurrentPosition(&dwCurrPos, 0);
+		dwCurrPos = dwCurrPos / (pSndBase->m_uiBytesPerSec / 1000);
+
+		//если текущий ключ в массиве задержек валиден
+		if (pSndBase->oPlayDelay.m_iCurrPlayDelay >= 0 && pSndBase->oPlayDelay.m_aPlayDelay.size() > pSndBase->oPlayDelay.m_iCurrPlayDelay)
+		{
+			if (
+				//если текущий ключ в массиве это не задержка и текущая время воспроизведения больше либо равно установленному
+				(!(pSndBase->oPlayDelay.m_aPlayDelay[pSndBase->oPlayDelay.m_iCurrPlayDelay].m_isDelay) && dwCurrPos >= pSndBase->oPlayDelay.m_aPlayDelay[pSndBase->oPlayDelay.m_iCurrPlayDelay].m_uiTime) ||
+
+				//если текущий ключ в массиве это задержка и время с засечки уже превысило установленное значение либо равно ему
+				(pSndBase->oPlayDelay.m_aPlayDelay[pSndBase->oPlayDelay.m_iCurrPlayDelay].m_isDelay && (GetTickCount() - pSndBase->oPlayDelay.m_uiPlayDelayStart) >= pSndBase->oPlayDelay.m_aPlayDelay[pSndBase->oPlayDelay.m_iCurrPlayDelay].m_uiTime)
+				)
+			{
+				//инкрементируем текущий ключ
+				++(pSndBase->oPlayDelay.m_iCurrPlayDelay);
+
+				//если следующий ключ валиден
+				if (pSndBase->oPlayDelay.m_aPlayDelay.size() > pSndBase->oPlayDelay.m_iCurrPlayDelay)
+				{
+					//если задержка
+					if (pSndBase->oPlayDelay.m_aPlayDelay[pSndBase->oPlayDelay.m_iCurrPlayDelay].m_isDelay)
+					{
+						//естанавливаем и засекаем время
+						pSndBase->m_pSoundBuffer->Stop();
+						pSndBase->oPlayDelay.m_uiPlayDelayStart = GetTickCount();
+					}
+					else
+					{
+						//воспроизводим и обнуляем засечку
+						pSndBase->m_pSoundBuffer->Play(0, 0, 0);
+						pSndBase->oPlayDelay.m_uiPlayDelayStart = 0;
+					}
+				}
+				//иначе ключ в массиве задержек невалиден
+				else
+				{
+					//воспроизводим остаток и обнуляем данные настроек
+					pSndBase->m_pSoundBuffer->Play(0, 0, 0);
+
+					if (!(pSndBase->m_isLooping))
+						pSndBase->m_isPlayDelay = false;
+
+					pSndBase->oPlayDelay.m_iCurrPlayDelay = -1;
+					pSndBase->oPlayDelay.m_uiPlayDelayStart = 0;
+				}
+			}
+		}
+	}
+}
+
+void CSoundManager::update(const float3* viewpos, const float3* viewdir)
 {
 	int tmpSoundsPlayCount = 0;
 	int tmpSoundsLoadCount = 0;
 
-	Sound* snd;
-	DWORD status = 0;
-	for(UINT i = 0; i < ArrSounds.size(); ++i)
+	CSound *pSnd = 0;
+	DWORD dwStatus = 0;
+	for(UINT i = 0; i < m_aSounds.size(); ++i)
 	{
-		snd = ArrSounds[i];
-		if(snd)
+		pSnd = m_aSounds[i];
+
+		//если есть звук и его канал вопроизводится
+		if (pSnd && m_aChannels[pSnd->m_idChannel])
 		{
-			status = 0;
-			snd->DSBuffer->GetStatus(&status);
-			if(!(status & DSBSTATUS_PLAYING) && snd->State == SOUND_OBJSTATE_PLAY)
-				SoundStateSet(i, SOUND_OBJSTATE_STOP);
+			//если вопроизведение с задержками
+			if (pSnd->m_state == SOUND_OBJSTATE_PLAY && pSnd->m_uiStreamSize == 0 && pSnd->m_isPlayDelay)
+			{
+				UpdatePlayDelay((CSoundBase*)pSnd);
+			}
+
+			dwStatus = 0;
+			
+			//если звук воспроизводится без задержек и буфер уже не прогирывается а состояние звука "проигрывается" тогда выключаем звук
+			if (!pSnd->m_isPlayDelay && SUCCEEDED(pSnd->m_pSoundBuffer->GetStatus(&dwStatus)) && !(dwStatus & DSBSTATUS_PLAYING) && pSnd->m_state == SOUND_OBJSTATE_PLAY)
+				soundSetState(i, SOUND_OBJSTATE_STOP);
 
 			++tmpSoundsLoadCount;
-			if(snd->State == SOUND_OBJSTATE_PLAY)
+			if(pSnd->m_state == SOUND_OBJSTATE_PLAY)
 				++tmpSoundsPlayCount;
-			if(snd->Is3d && snd->DSBuffer && viewpos && viewdir)
-			{
-				snd->DSBuffer->SetVolume(SOUND_3D_COM_VOLUME(snd->Position, (*viewpos), snd->DistAudible));
-				snd->DSBuffer->SetPan(SOUND_3D_COM_PAN(snd->Position, (*viewpos), (*viewdir), snd->DistAudible, snd->ShiftPan));
 
-				if(snd->DataInstances.size() > 0)
+			//если анализируемый звук 3d
+			if(pSnd->m_is3d && pSnd->m_pSoundBuffer && viewpos && viewdir)
+			{
+				//устанавливаем ему параметры воспроизведения
+				pSnd->m_pSoundBuffer->SetVolume(lerpf(-10000, 0, pSnd->m_fVolume * Snd3dComVolume(pSnd->m_vPosition, (*viewpos), pSnd->m_fDistAudible)));
+				pSnd->m_pSoundBuffer->SetPan(Snd3dComPan(pSnd->m_vPosition, (*viewpos), (*viewdir), pSnd->m_fDistAudible, pSnd->m_fShiftPan));
+
+				//если есть инстансы
+				if(pSnd->m_aInstances.size() > 0)
 				{
-					for(int k = 0, l = snd->DataInstances.size(); k < l; ++k)
+					//проходимся по всему массиву инстансов и устанавливаем параметры воспроизведения
+					for(int k = 0, l = pSnd->m_aInstances.size(); k < l; ++k)
 					{
-						snd->DSBuffer->SetVolume(SOUND_3D_COM_VOLUME(snd->DataInstances[k].pos, (*viewpos), snd->DistAudible));
-						snd->DSBuffer->SetPan(SOUND_3D_COM_PAN(snd->DataInstances[k].pos, (*viewpos), (*viewdir), snd->DistAudible, snd->ShiftPan));
+						pSnd->m_pSoundBuffer->SetVolume(lerpf(-10000, 0, pSnd->m_fVolume * Snd3dComVolume(pSnd->m_aInstances[k].m_vPos, (*viewpos), pSnd->m_fDistAudible)));
+						pSnd->m_pSoundBuffer->SetPan(Snd3dComPan(pSnd->m_aInstances[k].m_vPos, (*viewpos), (*viewdir), pSnd->m_fDistAudible, pSnd->m_fShiftPan));
 					}
 				}
 			}
 
-			for(int k = 0, l = snd->DataInstances.size(); k < l; ++k)
+			for(int k = 0, kl = pSnd->m_aInstances.size(); k < kl; ++k)
 			{
-				status = 0;
-				if(SUCCEEDED(snd->DataInstances[k].sbuffer->GetStatus(&status)) && !(status & DSBSTATUS_PLAYING))
-					snd->DataInstances[k].busy = false;
+				//нужно ли это здесь?
+				/*if (pSnd->m_aInstances[k].m_state != SOUND_OBJSTATE_PLAY)
+					continue;*/
+
+				//если вопроизведение с задержками
+				if (pSnd->m_aInstances[k].m_isPlayDelay)
+				{
+					if (pSnd->m_aInstances[k].m_state == SOUND_OBJSTATE_PLAY)
+						UpdatePlayDelay(&(pSnd->m_aInstances[k]));
+				}
+				//иначе не установлено что звук воспроизводится с задержками
+				else
+				{
+					//обрабатываем состояния
+					dwStatus = 0;
+
+					//если буфер не проигрывается и состояние инстанса "временно блокирован", тогда освобождаем инстанс
+					if (SUCCEEDED(pSnd->m_aInstances[k].m_pSoundBuffer->GetStatus(&dwStatus)) && !(dwStatus & DSBSTATUS_PLAYING) && pSnd->m_aInstances[k].m_busy != SOUND_SNDINSTANCE_BUSY_LOCKED)
+						pSnd->m_aInstances[k].m_busy = SOUND_SNDINSTANCE_BUSY_FREE;
+
+					//если буфер инстанса не проигрывается а состояние инстанса "проигрывается", тогда устанавливаем состояние "непроигрывается"
+					if (pSnd->m_aInstances[k].m_state == SOUND_OBJSTATE_PLAY && !(dwStatus & DSBSTATUS_PLAYING))
+						pSnd->m_aInstances[k].m_state = SOUND_OBJSTATE_STOP;
+				}
 			}
 
-			if(snd->StreamSize && snd->DSBuffer != 0)
+			if(pSnd->m_uiStreamSize && pSnd->m_pSoundBuffer != 0)
 			{
 				DWORD pos;
-				snd->DSBuffer->GetCurrentPosition(&pos, 0);
+				pSnd->m_pSoundBuffer->GetCurrentPosition(&pos, 0);
 
-				if(pos >= snd->Split1Size && pos < snd->Split2Size && !snd->BF2)
+				if (pos >= pSnd->m_uiSplit1Size && pos < pSnd->m_uiSplit2Size && !pSnd->m_isWork2)
 				{
-					ReLoadSplit(i, 0, snd->Split1Size);
-					snd->BF2 = true;
-					snd->BF1 = false; snd->BF3 = false; snd->BF4 = false;
-					snd->SplitActive = 2;
+					reLoadSplit(i, 0, pSnd->m_uiSplit1Size);
+					pSnd->m_isWork2 = true;
+					pSnd->m_isWork1 = false; pSnd->m_isWork3 = false; pSnd->m_isWork4 = false;
+					pSnd->m_iSplitActive = 2;
 				}
-				else if(pos >= snd->Split2Size && pos < snd->Split3Size && !snd->BF3)
+				else if (pos >= pSnd->m_uiSplit2Size && pos < pSnd->m_uiSplit3Size && !pSnd->m_isWork3)
 				{
-					snd->BF3 = true;
-					snd->BF1 = false; snd->BF2 = false; snd->BF4 = false;
-					ReLoadSplit(i, snd->Split1Size, snd->Split1Size);
-					snd->SplitActive = 3;
+					pSnd->m_isWork3 = true;
+					pSnd->m_isWork1 = false; pSnd->m_isWork2 = false; pSnd->m_isWork4 = false;
+					reLoadSplit(i, pSnd->m_uiSplit1Size, pSnd->m_uiSplit1Size);
+					pSnd->m_iSplitActive = 3;
 				}
-				else if(pos >= snd->Split3Size && pos < snd->StreamSize && !snd->BF4)
+				else if (pos >= pSnd->m_uiSplit3Size && pos < pSnd->m_uiStreamSize && !pSnd->m_isWork4)
 				{
-					snd->BF4 = true;
-					snd->BF1 = false; snd->BF2 = false; snd->BF3 = false;
-					ReLoadSplit(i, snd->Split2Size, snd->Split1Size);
-					snd->SplitActive = 4;
+					pSnd->m_isWork4 = true;
+					pSnd->m_isWork1 = false; pSnd->m_isWork2 = false; pSnd->m_isWork3 = false;
+					reLoadSplit(i, pSnd->m_uiSplit2Size, pSnd->m_uiSplit1Size);
+					pSnd->m_iSplitActive = 4;
 				}
-				else if(pos < snd->Split1Size && !snd->BF1)
+				else if (pos < pSnd->m_uiSplit1Size && !pSnd->m_isWork1)
 				{
-					snd->BF1 = true;
-					snd->BF2 = false; snd->BF3 = false; snd->BF4 = false;
-					if(!snd->IsStarting)
+					pSnd->m_isWork1 = true;
+					pSnd->m_isWork2 = false; pSnd->m_isWork3 = false; pSnd->m_isWork4 = false;
+					if(!pSnd->m_isStarting)
 					{
-						ReLoadSplit(i, snd->Split3Size, snd->Split1Size);
-						snd->RePlayCount++;
+						reLoadSplit(i, pSnd->m_uiSplit3Size, pSnd->m_uiSplit1Size);
+						pSnd->m_iRePlayCount++;
 					}
-					snd->SplitActive = 1;
-					snd->IsStarting = false;
+					pSnd->m_iSplitActive = 1;
+					pSnd->m_isStarting = false;
 				}
 
 
-				if(snd->RePlayCount + 1 == snd->RePlayEndCount)
+				if(pSnd->m_iRePlayCount + 1 == pSnd->m_iRePlayEndCount)
 				{
-					if(snd->SizeFull <= (snd->StreamSize * snd->RePlayCount + pos))
+					if(pSnd->m_uiSizeFull <= (pSnd->m_uiStreamSize * pSnd->m_iRePlayCount + pos))
 					{
-						if(!snd->IsLooping)
-							SoundStop(i);
+						if(!pSnd->m_isLooping)
+							soundStop(i);
 
 						//wav
-						if(snd->Format == SOUND_FILEFORMAT_WAV)
-							fseek(snd->StreamFile, sizeof(SoundWaveHeader), SEEK_SET);
+						if(pSnd->m_format == SOUND_FILEFORMAT_WAV)
+							fseek(pSnd->m_pStream, sizeof(CSoundWaveHeader), SEEK_SET);
 						//ogg
-						else if(snd->Format == SOUND_FILEFORMAT_OGG)
-							ov_pcm_seek(snd->VorbisFile, 0);
+						else if(pSnd->m_format == SOUND_FILEFORMAT_OGG)
+							ov_pcm_seek(pSnd->m_pVorbisFile, 0);
 
-						ReLoadSplit(i, 0, snd->StreamSize);
+						reLoadSplit(i, 0, pSnd->m_uiStreamSize);
 
-						snd->DSBuffer->SetCurrentPosition(0);
+						pSnd->m_pSoundBuffer->SetCurrentPosition(0);
 
-						snd->RePlayCount = 0;
-						snd->IsStarting = true;
+						pSnd->m_iRePlayCount = 0;
+						pSnd->m_isStarting = true;
 
-						snd->BF1 = false; snd->BF2 = false; snd->BF3 = false; snd->BF4 = false;
+						pSnd->m_isWork1 = false; pSnd->m_isWork2 = false; pSnd->m_isWork3 = false; pSnd->m_isWork4 = false;
 					}
 				}
 			}
 		}
 	}
 
-	SoundsPlayCount = tmpSoundsPlayCount;
-	SoundsLoadCount = tmpSoundsLoadCount;
+	m_iSoundsPlayCount = tmpSoundsPlayCount;
+	m_iSoundsLoadCount = tmpSoundsLoadCount;
 
-	OldViewPos = *viewpos;
-	OldViewDir = *viewdir;
+	m_vOldViewPos = *viewpos;
+	m_vOldViewDir = *viewdir;
 }
 
-int MainSound::SoundsPlayCountGet()
+int CSoundManager::soundsGetPlayCount()
 {
-	return SoundsPlayCount;
+	return m_iSoundsPlayCount;
 }
 
-int MainSound::SoundsLoadCountGet()
+int CSoundManager::soundsGetLoadCount()
 {
-	return SoundsLoadCount;
+	return m_iSoundsLoadCount;
 }

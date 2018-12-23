@@ -1,16 +1,19 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "cvars.h"
 
 AssotiativeArray<String, CVar> g_mCVars;
 AssotiativeArray<String, CVarPtr> g_mCVarPtrs;
 
-extern report_func g_fnReportf;
-
 SX_LIB_API void Core_0RegisterCVarString(const char * name, const char * value, const char * desc, int flags)
 {
 	if(g_mCVars.KeyExists(name))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
 		return;
 	}
 
@@ -39,7 +42,7 @@ SX_LIB_API void Core_0RegisterCVarInt(const char * name, int value, const char *
 {
 	if(g_mCVars.KeyExists(name))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
 		return;
 	}
 
@@ -65,7 +68,7 @@ SX_LIB_API void Core_0RegisterCVarFloat(const char * name, float value, const ch
 {
 	if(g_mCVars.KeyExists(name))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
 		return;
 	}
 
@@ -90,7 +93,7 @@ SX_LIB_API void Core_0RegisterCVarBool(const char * name, bool value, const char
 {
 	if(g_mCVars.KeyExists(name))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
 		return;
 	}
 
@@ -116,7 +119,7 @@ SX_LIB_API void Core_0RegisterCVarPointer(const char * name, UINT_PTR value)
 {
 	if(g_mCVarPtrs.KeyExists(name))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CVar '%s' already registered. Skipping.\n", name);
 		return;
 	}
 
@@ -183,7 +186,7 @@ SX_LIB_API UINT_PTR * Core_0GetPCVarPointer(const char * name)
 SX_LIB_API void Core_0SetCVarString(const char * name, const char * value)
 {
 	const AssotiativeArray<String, CVar>::Node * pNode;
-	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_STRING)
+	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_STRING && !(pNode->Val->flags & FCVAR_READONLY))
 	{
 		CVar * cv = pNode->Val;
 		size_t len = strlen(value);
@@ -193,40 +196,78 @@ SX_LIB_API void Core_0SetCVarString(const char * name, const char * value)
 			cv->value.c = new char[len + 1];
 		}
 		strcpy((char*)cv->value.c, value);
-		Core_0ConsoleExecCmd("on_%s_change", name);
+		if(pNode->Val->flags & FCVAR_NOTIFY)
+		{
+			Core_0ConsoleExecCmd("on_%s_change", name);
+		}
 	}
 }
 
 SX_LIB_API void Core_0SetCVarInt(const char * name, int value)
 {
 	const AssotiativeArray<String, CVar>::Node * pNode;
-	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_INT)
+	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_INT && !(pNode->Val->flags & FCVAR_READONLY))
 	{
 		CVar * cv = pNode->Val;
 		cv->value.i = value;
-		Core_0ConsoleExecCmd("on_%s_change", name);
+		if(pNode->Val->flags & FCVAR_NOTIFY)
+		{
+			Core_0ConsoleExecCmd("on_%s_change", name);
+		}
 	}
 }
 
 SX_LIB_API void Core_0SetCVarFloat(const char * name, float value)
 {
 	const AssotiativeArray<String, CVar>::Node * pNode;
-	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_FLOAT)
+	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_FLOAT && !(pNode->Val->flags & FCVAR_READONLY))
 	{
 		CVar * cv = pNode->Val;
 		cv->value.f = value;
-		Core_0ConsoleExecCmd("on_%s_change", name);
+		if(pNode->Val->flags & FCVAR_NOTIFY)
+		{
+			Core_0ConsoleExecCmd("on_%s_change", name);
+		}
 	}
 }
 
 SX_LIB_API void Core_0SetCVarBool(const char * name, bool value)
 {
 	const AssotiativeArray<String, CVar>::Node * pNode;
-	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_BOOL)
+	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_BOOL && !(pNode->Val->flags & FCVAR_READONLY))
 	{
 		CVar * cv = pNode->Val;
 		cv->value.b = value;
-		Core_0ConsoleExecCmd("on_%s_change", name);
+		if(pNode->Val->flags & FCVAR_NOTIFY)
+		{
+			Core_0ConsoleExecCmd("on_%s_change", name);
+		}
+	}
+}
+
+SX_LIB_API void Core_0GetCVarAsString(const char * name, char * szOut, int iMaxLength)
+{
+	const AssotiativeArray<String, CVar>::Node * pNode;
+	if(!g_mCVars.KeyExists(name, &pNode))
+	{
+		sprintf_s(szOut, iMaxLength, "");
+		return;
+	}
+
+	switch(pNode->Val->type)
+	{
+	case CVAR_STRING:
+		sprintf_s(szOut, iMaxLength, "%s", pNode->Val->value.c);
+		break;
+	case CVAR_INT:
+		sprintf_s(szOut, iMaxLength, "%d", pNode->Val->value.i);
+		break;
+	case CVAR_FLOAT:
+		sprintf_s(szOut, iMaxLength, "%f", pNode->Val->value.f);
+		break;
+	case CVAR_BOOL:
+		sprintf_s(szOut, iMaxLength, "%s", pNode->Val->value.b ? "1" : "0");
+		break;
 	}
 }
 

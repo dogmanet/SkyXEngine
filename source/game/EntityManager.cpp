@@ -1,30 +1,36 @@
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "EntityManager.h"
 
-#include "SXbaseEntity.h"
+#include "BaseEntity.h"
 
 #include <core/sxcore.h>
 
 #include <mutex>
 
-EntityManager::EntityManager():
+CEntityManager::CEntityManager():
 	m_iThreadNum(1),
 	m_pDefaultsConf(NULL),
 	m_pDynClassConf(NULL)
 {
-	LoadDefaults();
-	LoadDynClasses();
+	loadDefaults();
+	loadDynClasses();
 
-	Core_0RegisterConcmdClsArg("ent_dump", this, (SXCONCMDCLSARG)&EntityManager::DumpList);
-	Core_0RegisterConcmdClsArg("ent_kv", this, (SXCONCMDCLSARG)&EntityManager::EntKV);
+	Core_0RegisterConcmdClsArg("ent_dump", this, (SXCONCMDCLSARG)&CEntityManager::dumpList);
+	Core_0RegisterConcmdClsArg("ent_kv", this, (SXCONCMDCLSARG)&CEntityManager::entKV);
 }
 
-EntityManager::~EntityManager()
+CEntityManager::~CEntityManager()
 {
 	mem_release(m_pDynClassConf);
 	mem_release(m_pDefaultsConf);
 }
 
-void EntityManager::Update(int thread)
+void CEntityManager::update(int thread)
 {
 	time_point tNow = std::chrono::high_resolution_clock::now();
 	timeout_t * t;
@@ -38,28 +44,37 @@ void EntityManager::Update(int thread)
 		{
 			//mksdt = std::chrono::duration_cast<std::chrono::microseconds>(tNow - t->fStartTime).count();
 			//(t->pEnt->*(t->func))((float)mksdt / 1000000.0f);
+			to->status = TS_DONE;
 			for(int j = 0; j < to->pOutput->iOutCount; ++j)
 			{
+				if(!to->pOutput->pOutputs[j].pTarget)
+				{
+					continue;
+				}
 				to->data.parameter = to->pOutput->pOutputs[j].data.parameter;
 				to->data.type = to->pOutput->pOutputs[j].data.type;
 				to->data.v3Parameter = to->pOutput->pOutputs[j].data.v3Parameter;
 
 				(to->pOutput->pOutputs[j].pTarget->*(to->pOutput->pOutputs[j].fnInput))(&to->data);
+
+				// Update pointer. Array can be reallocated during previous function call
+				to = &m_vOutputTimeout[i];
 			}
-			to->status = TS_DONE;
 		}
 	}
 
 	for(int i = thread, l = m_vTimeout.size(); i < l; i += m_iThreadNum)
 	{
-			t = &m_vTimeout[i];
+		t = &m_vTimeout[i];
 		if(t->status == TS_WAIT && t->fNextTime < tNow)
-			{
-				mksdt = std::chrono::duration_cast<std::chrono::microseconds>(tNow - t->fStartTime).count();
-				(t->pEnt->*(t->func))((float)mksdt / 1000000.0f);
+		{
+			mksdt = std::chrono::duration_cast<std::chrono::microseconds>(tNow - t->fStartTime).count();
 			t->status = TS_DONE;
-			}
+
+			// m_vTimeout array can be reallocated during this function call
+			(t->pEnt->*(t->func))((float)mksdt / 1000000.0f);
 		}
+	}
 
 	for(int i = thread, l = m_vInterval.size(); i < l; i += m_iThreadNum)
 	{
@@ -69,12 +84,14 @@ void EntityManager::Update(int thread)
 			mksdt = std::chrono::duration_cast<std::chrono::microseconds>(tNow - t->fStartTime).count();
 			t->fNextTime = t->fNextTime - t->fStartTime + tNow;
 			t->fStartTime = tNow;
+
+			// m_vInterval array can be reallocated during this function call
 			(t->pEnt->*(t->func))((float)mksdt / 1000000.0f);
 		}
 	}
 }
 
-void EntityManager::SetThreadNum(int num)
+void CEntityManager::setThreadNum(int num)
 {
 	if(num > 0)
 	{
@@ -82,9 +99,22 @@ void EntityManager::SetThreadNum(int num)
 	}
 }
 
-void EntityManager::Sync()
+void CEntityManager::sync()
 {
-	SXbaseEntity * pEnt;
+	CBaseEntity * pEnt;
+
+	// do not store m_vEntRemoveList.size()! It can change during iteration
+	for(int i = 0; i < (int)m_vEntRemoveList.size(); ++i)
+	{
+		pEnt = m_vEntRemoveList[i];
+		if(pEnt)
+		{
+			pEnt->_cleanup();
+			delete pEnt;
+		}
+	}
+	m_vEntRemoveList.clearFast();
+
 	for(int i = 0, l = m_vTimeout.size(); i < l; ++i)
 	{
 		if(m_vTimeout[i].status == TS_DONE)
@@ -118,28 +148,37 @@ void EntityManager::Sync()
 		pEnt = m_vEntList[i];
 		if(pEnt)
 		{
+			pEnt->m_bSynced = false;
+		}
+	}
+	
+	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
+	{
+		pEnt = m_vEntList[i];
+		if(pEnt && !pEnt->m_bSynced)
+		{
 			//pEnt->updateDiscreteLinearVelocity(0, dt);
-			pEnt->OnSync();
+			pEnt->onSync();
 			//pEnt->updateDiscreteLinearVelocity(1, dt);
 		}
 	}
 	//tOld = std::chrono::high_resolution_clock::now();
 }
 
-void EntityManager::unloadObjLevel()
+void CEntityManager::unloadObjLevel()
 {
-	SXbaseEntity * pEnt;
+	CBaseEntity * pEnt;
 	for (int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
 		pEnt = m_vEntList[i];
-		if (pEnt && (pEnt->GetFlags() & EF_LEVEL))
+		if (pEnt && (pEnt->getFlags() & EF_LEVEL))
 		{
 			REMOVE_ENTITY(pEnt);
 		}
 	}
 }
 
-ID EntityManager::Register(SXbaseEntity * pEnt)
+ID CEntityManager::reg(CBaseEntity * pEnt)
 {
 	ID ent;
 	if(!pEnt)
@@ -159,18 +198,58 @@ ID EntityManager::Register(SXbaseEntity * pEnt)
 	}
 	return(ent);
 }
-void EntityManager::Unregister(ID ent)
+void CEntityManager::unreg(ID ent)
 {
-	//@TODO: Clear all sheduled timeouts and outputs
+	//@TODO: Clear all outputs
 	if(m_vEntList.size() <= (UINT)ent || ent < 0)
 	{
 		return;
 	}
+
+	timeout_t * t;
+	timeout_output_t * to;
+
+	CBaseEntity * pEnt = m_vEntList[ent];
+
+	for(int i = 0, l = m_vOutputTimeout.size(); i < l; ++i)
+	{
+		to = &m_vOutputTimeout[i];
+		if(to->status == TS_WAIT)
+		{
+			to->status = TS_DONE;
+			for(int j = 0; j < to->pOutput->iOutCount; ++j)
+			{
+				if(to->pOutput->pOutputs[j].pTarget == pEnt)
+				{
+					to->pOutput->pOutputs[j].pTarget = NULL;
+				}
+			}
+		}
+	}
+
+	for(int i = 0, l = m_vTimeout.size(); i < l; ++i)
+	{
+		t = &m_vTimeout[i];
+		if(t->status == TS_WAIT && t->pEnt == pEnt)
+		{
+			t->status = TS_DONE;
+		}
+	}
+
+	for(int i = 0, l = m_vInterval.size(); i < l; ++i)
+	{
+		t = &m_vInterval[i];
+		if(t->status == TS_WAIT && t->pEnt == pEnt)
+		{
+			t->status = TS_DONE;
+		}
+	}
+
 	m_vEntList[ent] = NULL;
 	m_vFreeIDs.push_back(ent);
 }
 
-ID EntityManager::SetTimeout(void(SXbaseEntity::*func)(float dt), SXbaseEntity * pEnt, float delay)
+ID CEntityManager::setTimeout(void(CBaseEntity::*func)(float dt), CBaseEntity * pEnt, float delay)
 {
 	timeout_t t;
 	t.status = TS_WAIT;
@@ -198,7 +277,7 @@ ID EntityManager::SetTimeout(void(SXbaseEntity::*func)(float dt), SXbaseEntity *
 	return(id);
 }
 
-ID EntityManager::SetInterval(void(SXbaseEntity::*func)(float dt), SXbaseEntity * pEnt, float delay)
+ID CEntityManager::setInterval(void(CBaseEntity::*func)(float dt), CBaseEntity * pEnt, float delay)
 {
 	timeout_t t;
 	t.status = TS_WAIT;
@@ -226,7 +305,7 @@ ID EntityManager::SetInterval(void(SXbaseEntity::*func)(float dt), SXbaseEntity 
 	return(id);
 }
 
-void EntityManager::ClearInterval(ID id)
+void CEntityManager::clearInterval(ID id)
 {
 	if(id < 0 || (UINT)id >= m_vInterval.size())
 	{
@@ -237,7 +316,7 @@ void EntityManager::ClearInterval(ID id)
 		m_vInterval[id].status = TS_DONE;
 	}
 }
-void EntityManager::ClearTimeout(ID id)
+void CEntityManager::clearTimeout(ID id)
 {
 	if(id < 0 || (UINT)id >= m_vTimeout.size())
 	{
@@ -249,12 +328,12 @@ void EntityManager::ClearTimeout(ID id)
 	}
 }
 
-bool EntityManager::Export(const char * file)
+bool CEntityManager::exportList(const char * file)
 {
 	ISXConfig * conf = Core_CrConfig();
 	conf->New(file);
 	char buf[4096], sect[32];
-	SXbaseEntity * pEnt;
+	CBaseEntity * pEnt;
 	proptable_t * pTbl;
 	int ic = 0;
 
@@ -263,22 +342,26 @@ bool EntityManager::Export(const char * file)
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
 		pEnt = m_vEntList[i];
+		if(!pEnt)
+		{
+			continue;
+		}
 		sprintf(sect, "ent_%d", ic);
 
-		if(!(pEnt->GetFlags() & EF_EXPORT))
+		if(!(pEnt->getFlags() & EF_EXPORT))
 		{
 			continue;
 		}
 
-		conf->set(sect, "classname", pEnt->GetClassName());
-		pTbl = EntityFactoryMap::GetInstance()->GetPropTable(pEnt->GetClassName());
+		conf->set(sect, "classname", pEnt->getClassName());
+		pTbl = CEntityFactoryMap::GetInstance()->getPropTable(pEnt->getClassName());
 		do
 		{
 			for(int j = 0; j < pTbl->numFields; ++j)
 			{
-				if(pTbl->pData[j].szKey && !conf->keyExists(sect, pTbl->pData[j].szKey))
+				if(pTbl->pData[j].szKey && !(pTbl->pData[j].flags & (PDFF_INPUT | PDFF_NOEXPORT)) && !conf->keyExists(sect, pTbl->pData[j].szKey))
 				{
-					pEnt->GetKV(pTbl->pData[j].szKey, buf, sizeof(buf));
+					pEnt->getKV(pTbl->pData[j].szKey, buf, sizeof(buf));
 					conf->set(sect, pTbl->pData[j].szKey, buf);
 				}
 			}
@@ -295,12 +378,12 @@ bool EntityManager::Export(const char * file)
 	return(ret);
 }
 
-bool EntityManager::Import(const char * file)
+bool CEntityManager::import(const char * file)
 {
 	ISXConfig * conf = Core_CrConfig();
 	char sect[32];
-	SXbaseEntity * pEnt = NULL;
-	Array<SXbaseEntity*> tmpList;
+	CBaseEntity * pEnt = NULL;
+	Array<CBaseEntity*> tmpList;
 	if(conf->open(file))
 	{
 		goto err;
@@ -336,17 +419,17 @@ bool EntityManager::Import(const char * file)
 		}
 		if(conf->keyExists(sect, "name"))
 		{
-			pEnt->SetKV("name", conf->getKey(sect, "name"));
+			pEnt->setKV("name", conf->getKey(sect, "name"));
 		}
 		if(conf->keyExists(sect, "origin"))
 		{
-			pEnt->SetKV("origin", conf->getKey(sect, "origin"));
+			pEnt->setKV("origin", conf->getKey(sect, "origin"));
 		}
 		if(conf->keyExists(sect, "rotation"))
 		{
-			pEnt->SetKV("rotation", conf->getKey(sect, "rotation"));
+			pEnt->setKV("rotation", conf->getKey(sect, "rotation"));
 		}
-		pEnt->SetFlags(pEnt->GetFlags() | EF_EXPORT | EF_LEVEL);
+		pEnt->setFlags(pEnt->getFlags() | EF_EXPORT | EF_LEVEL);
 		tmpList[i] = pEnt;
 	}
 
@@ -364,10 +447,10 @@ bool EntityManager::Import(const char * file)
 			key = conf->getKeyName(sect, j);
  			if(strcmp(key, "classname") && strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
 			{
-				pEnt->SetKV(key, conf->getKey(sect, key));
+				pEnt->setKV(key, conf->getKey(sect, key));
 			}
 		}
-		pEnt->OnPostLoad();
+		pEnt->onPostLoad();
 	}
 
 	mem_release(conf);
@@ -379,20 +462,24 @@ err:
 }
 
 
-SXbaseEntity * EntityManager::FindEntityByName(const char * name, SXbaseEntity * pStart)
+CBaseEntity * CEntityManager::findEntityByName(const char * name, CBaseEntity * pStart)
 {
 	if(!name[0])
 	{
 		return(NULL);
 	}
 	bool bFound = !pStart;
-	SXbaseEntity * pEnt;
+	CBaseEntity * pEnt;
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
 		pEnt = m_vEntList[i];
+		if(!pEnt)
+		{
+			continue;
+		}
 		if(bFound)
 		{
-			if(!strcmp(pEnt->GetName(), name))
+			if(!strcmp(pEnt->getName(), name))
 			{
 				return(pEnt);
 			}
@@ -408,7 +495,7 @@ SXbaseEntity * EntityManager::FindEntityByName(const char * name, SXbaseEntity *
 	return(NULL);
 }
 
-int EntityManager::CountEntityByName(const char * name)
+int CEntityManager::countEntityByName(const char * name)
 {
 	if(!name[0])
 	{
@@ -417,7 +504,7 @@ int EntityManager::CountEntityByName(const char * name)
 	int c = 0;
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
-		if(!strcmp(m_vEntList[i]->GetName(), name))
+		if(m_vEntList[i] && !strcmp(m_vEntList[i]->getName(), name))
 		{
 			++c;
 		}
@@ -425,16 +512,20 @@ int EntityManager::CountEntityByName(const char * name)
 	return(c);
 }
 
-SXbaseEntity * EntityManager::FindEntityByClass(const char * name, SXbaseEntity * pStart)
+CBaseEntity * CEntityManager::findEntityByClass(const char * name, CBaseEntity * pStart)
 {
 	bool bFound = !pStart;
-	SXbaseEntity * pEnt;
+	CBaseEntity * pEnt;
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
 		pEnt = m_vEntList[i];
+		if(!pEnt)
+		{
+			continue;
+		}
 		if(bFound)
 		{
-			if(!strcmp(pEnt->GetClassName(), name))
+			if(!strcmp(pEnt->getClassName(), name))
 			{
 				return(pEnt);
 			}
@@ -450,7 +541,36 @@ SXbaseEntity * EntityManager::FindEntityByClass(const char * name, SXbaseEntity 
 	return(NULL);
 }
 
-void EntityManager::LoadDefaults()
+CBaseEntity * CEntityManager::findEntityInSphere(const float3 &f3Origin, float fRadius, CBaseEntity * pStart)
+{
+	bool bFound = !pStart;
+	CBaseEntity * pEnt;
+	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
+	{
+		pEnt = m_vEntList[i];
+		if(!pEnt)
+		{
+			continue;
+		}
+		if(bFound)
+		{
+			if(SMVector3Length2(pEnt->getPos() - f3Origin) < fRadius * fRadius)
+			{
+				return(pEnt);
+			}
+		}
+		else
+		{
+			if(pEnt == pStart)
+			{
+				bFound = true;
+			}
+		}
+	}
+	return(NULL);
+}
+
+void CEntityManager::loadDefaults()
 {
 	m_pDefaultsConf = Core_CrConfig();
 	if(m_pDefaultsConf->open("config/entities/defaults.ent") < 0)
@@ -465,7 +585,7 @@ void EntityManager::LoadDefaults()
 	for(int i = 0, l = m_pDefaultsConf->getSectionCount(); i < l; ++i)
 	{
 		sect = m_pDefaultsConf->getSectionName(i);
-		if(!(defs = EntityFactoryMap::GetInstance()->GetDefaults(sect)))
+		if(!(defs = CEntityFactoryMap::GetInstance()->getDefaults(sect)))
 		{
 			continue;
 		}
@@ -477,7 +597,7 @@ void EntityManager::LoadDefaults()
 	}
 }
 
-void EntityManager::LoadDynClasses()
+void CEntityManager::loadDynClasses()
 {
 	m_pDynClassConf = Core_CrConfig();
 	if(m_pDynClassConf->open("config/entities/classes.ent") < 0)
@@ -498,7 +618,7 @@ void EntityManager::LoadDynClasses()
 			printf(COLOR_LRED "Couldn't create entity class '%s': Unknown base class\n" COLOR_RESET, newClass);
 			continue;
 		}
-		IEntityFactory * pOldFactory = EntityFactoryMap::GetInstance()->GetFactory(baseClass);
+		IEntityFactory * pOldFactory = CEntityFactoryMap::GetInstance()->getFactory(baseClass);
 		if(!pOldFactory)
 		{
 			printf(COLOR_LRED "Couldn't create entity class '%s': Base class '%s' is undefined\n" COLOR_RESET, newClass, baseClass);
@@ -508,14 +628,14 @@ void EntityManager::LoadDynClasses()
 		{
 			bShow = strcmp(key, "0") && strcmp(key, "false");
 		}
-		IEntityFactory * newFactory = pOldFactory->Copy(newClass, bShow);
-		EntityFactoryMap::GetInstance()->AddFactory(newFactory, newClass);
+		IEntityFactory * newFactory = pOldFactory->copy(newClass, bShow);
+		CEntityFactoryMap::GetInstance()->addFactory(newFactory, newClass);
 
-		if(!(defs = EntityFactoryMap::GetInstance()->GetDefaults(newClass)))
+		if(!(defs = CEntityFactoryMap::GetInstance()->getDefaults(newClass)))
 		{
 			continue;
 		}
-		if((baseDefs = EntityFactoryMap::GetInstance()->GetDefaults(baseClass)))
+		if((baseDefs = CEntityFactoryMap::GetInstance()->getDefaults(baseClass)))
 		{
 			for(EntDefaultsMap::Iterator i = baseDefs->begin(); i; i++)
 			{
@@ -530,7 +650,7 @@ void EntityManager::LoadDynClasses()
 	}
 }
 
-void EntityManager::DumpList(int argc, const char ** argv)
+void CEntityManager::dumpList(int argc, const char ** argv)
 {
 	const char * filter = "";
 	if(argc > 1)
@@ -548,21 +668,21 @@ void EntityManager::DumpList(int argc, const char ** argv)
 
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
-		SXbaseEntity * pEnt = m_vEntList[i];
+		CBaseEntity * pEnt = m_vEntList[i];
 		if(!pEnt)
 		{
 			continue;
 		}
-		if(!filter[0] || strstr(pEnt->GetClassName(), filter))
+		if(!filter[0] || strstr(pEnt->getClassName(), filter))
 		{
-			printf(" " COLOR_LGREEN "%4d" COLOR_GREEN " | " COLOR_LGREEN "%24s" COLOR_GREEN " | " COLOR_LGREEN "%16s" COLOR_GREEN " |\n", i, pEnt->GetClassName(), pEnt->GetName());
+			printf(" " COLOR_LGREEN "%4d" COLOR_GREEN " | " COLOR_LGREEN "%24s" COLOR_GREEN " | " COLOR_LGREEN "%16s" COLOR_GREEN " |\n", i, pEnt->getClassName(), pEnt->getName());
 		}
 	}
 
 	printf("-----------------------------------------------------\n" COLOR_RESET);
 }
 
-void EntityManager::EntKV(int argc, const char ** argv)
+void CEntityManager::entKV(int argc, const char ** argv)
 {
 	int id = 0;
 	if(argc == 1)
@@ -575,7 +695,7 @@ void EntityManager::EntKV(int argc, const char ** argv)
 		printf("Usage: \n    ent_kv <entid> [keyname [new_value]]\n");
 		return;
 	}
-	SXbaseEntity * pEnt;
+	CBaseEntity * pEnt;
 	if(id < 0 || (UINT)id >= m_vEntList.size() || !(pEnt = m_vEntList[id]))
 	{
 		printf(COLOR_LRED "Invalid entity id\n" COLOR_RESET);
@@ -586,14 +706,14 @@ void EntityManager::EntKV(int argc, const char ** argv)
 	{
 	case 2: // dump all KVs
 		{
-			proptable_t * pt = EntityFactoryMap::GetInstance()->GetPropTable(pEnt->GetClassName());
+			proptable_t * pt = CEntityFactoryMap::GetInstance()->getPropTable(pEnt->getClassName());
 			while(pt)
 			{
 				for(int i = 0; i < pt->numFields; ++i)
 				{
 					if(pt->pData[i].szKey)
 					{
-						pEnt->GetKV(pt->pData[i].szKey, buf, sizeof(buf));
+						pEnt->getKV(pt->pData[i].szKey, buf, sizeof(buf));
 						printf("%s = %s\n", pt->pData[i].szKey, buf);
 					}
 				}
@@ -602,31 +722,75 @@ void EntityManager::EntKV(int argc, const char ** argv)
 		}
 		break;
 	case 3: // show KV
-		pEnt->GetKV(argv[2], buf, sizeof(buf));
+		pEnt->getKV(argv[2], buf, sizeof(buf));
 		printf("%s = %s\n", argv[2], buf);
 		break;
 
 	case 4: // set new KV
-		pEnt->SetKV(argv[2], argv[3]);
+		pEnt->setKV(argv[2], argv[3]);
 		break;
 	}
 }
 
-int EntityManager::GetCount()
+int CEntityManager::getCount()
 {
 	return(m_vEntList.size());
 }
 
-SXbaseEntity * EntityManager::GetById(ID id)
+CBaseEntity * CEntityManager::getById(ID id)
 {
 	if(id < 0 || (UINT)id >= m_vEntList.size())
 	{
 		return(NULL);
 	}
-	return(m_vEntList[id]);
+	CBaseEntity *pEnt = m_vEntList[id];
+	return(pEnt ? (pEnt->getFlags() & EF_REMOVED ? NULL : pEnt) : NULL);
 }
 
-void EntityManager::setOutputTimeout(named_output_t * pOutput, inputdata_t * pData)
+CBaseEntity * CEntityManager::cloneEntity(CBaseEntity *pOther)
+{
+	if(!pOther)
+	{
+		return(NULL);
+	}
+	CBaseEntity *pEnt = CREATE_ENTITY_NOPOST(pOther->getClassName(), this);
+
+	pEnt->setKV("name", pOther->getName());
+	pEnt->setPos(pOther->getPos());
+	pEnt->setOrient(pOther->getOrient());
+	pEnt->setParent(pOther->getParent());
+	pEnt->setOwner(pOther->getOwner());
+	char buf[4096];
+
+	proptable_t *pTbl = CEntityFactoryMap::GetInstance()->getPropTable(pOther->getClassName());
+	do
+	{
+		for(int j = 0; j < pTbl->numFields; ++j)
+		{
+			if(pTbl->pData[j].szKey && !(pTbl->pData[j].flags & PDFF_INPUT))
+			{
+				if(fstrcmp(pTbl->pData[j].szKey, "origin") 
+					&& fstrcmp(pTbl->pData[j].szKey, "name") 
+					&& fstrcmp(pTbl->pData[j].szKey, "rotation") 
+					&& fstrcmp(pTbl->pData[j].szKey, "parent") 
+					&& fstrcmp(pTbl->pData[j].szKey, "owner"))
+				{
+					pOther->getKV(pTbl->pData[j].szKey, buf, sizeof(buf));
+					pEnt->setKV(pTbl->pData[j].szKey, buf);
+				}
+			}
+		}
+	}
+	while((pTbl = pTbl->pBaseProptable));
+
+	pEnt->setFlags(pOther->getFlags());
+
+	pEnt->onPostLoad();
+
+	return(pEnt);
+}
+
+void CEntityManager::setOutputTimeout(named_output_t * pOutput, inputdata_t * pData)
 {
 	timeout_output_t t;
 	t.status = TS_WAIT;
@@ -637,4 +801,46 @@ void EntityManager::setOutputTimeout(named_output_t * pOutput, inputdata_t * pDa
 	t.fNextTime += std::chrono::microseconds((long long)(pOutput->fDelay * 1000000.0f));
 
 	m_vOutputTimeout.push_back(t);
+}
+
+void CEntityManager::sheduleDestroy(CBaseEntity *pEnt)
+{
+	pEnt->setFlags(pEnt->getFlags() | EF_REMOVED);
+	m_vEntRemoveList.push_back(pEnt);
+
+	if(m_isEditorMode)
+	{
+		pEnt->_releaseEditorBoxes();
+	}
+}
+
+void CEntityManager::setEditorMode(bool isEditor)
+{
+	if(m_isEditorMode == isEditor)
+	{
+		return;
+	}
+	m_isEditorMode = isEditor;
+
+	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
+	{
+		CBaseEntity * pEnt = m_vEntList[i];
+		if(!pEnt)
+		{
+			continue;
+		}
+		if(isEditor)
+		{
+			pEnt->_initEditorBoxes();
+		}
+		else
+		{
+			pEnt->_releaseEditorBoxes();
+		}
+	}
+}
+
+bool CEntityManager::isEditorMode()
+{
+	return(m_isEditorMode);
 }

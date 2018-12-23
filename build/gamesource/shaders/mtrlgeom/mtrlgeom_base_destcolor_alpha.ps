@@ -1,0 +1,31 @@
+
+/*
+mtrlgeom_base.ps
+Базовый рендер геометрии
+*/
+
+#include <../struct.h>
+#include <../mtrl.h>
+
+//##########################################################################
+
+sampler2D g_sColor:register(s0);
+sampler2D g_sParameters:register(s10);
+
+//##########################################################################
+
+half4 g_vDestColor;
+half4 g_vNearFarLayers;
+
+//##########################################################################
+
+PSO_Gbuffer main(VSO_SceneCommon IN)
+{
+	ClipFar(IN.vPos.z, g_vNearFarLayers.y);
+	IN.vNormal = normalize(IN.vNormal);
+	
+	half4 vColor = tex2D(g_sColor,IN.vTexUV);
+	vColor.rgb = lerp(g_vDestColor.rgb, vColor.rgb, vColor.a);
+	
+	return CreateGbuffer(vColor, IN.vNormal, tex2D(g_sParameters,IN.vTexUV), IN.vPos, g_vNearFarLayers);
+}

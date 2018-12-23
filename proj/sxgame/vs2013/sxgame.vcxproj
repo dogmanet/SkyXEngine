@@ -20,14 +20,14 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120_xp</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -41,14 +41,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
+    <OutDir>../../../build/bin/</OutDir>
     <IncludePath>../../../source;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);;../../../sdks/dx9sdk/Include;</IncludePath>
     <LibraryPath>../../../libs;$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);;../../../sdks/dx9sdk/Lib;</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
+    <OutDir>../../../build/bin/</OutDir>
     <IncludePath>../../../source;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);;../../../sdks/dx9sdk/Include;</IncludePath>
     <LibraryPath>../../../libs;$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);;../../../sdks/dx9sdk/Lib;</LibraryPath>
   </PropertyGroup>
@@ -58,9 +58,11 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>SXGAME_EXPORT=_declspec(dllexport);SX_DLL;WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;_USRDLL;SXGAME_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SXGAME_EXPORT=_declspec(dllexport);SX_DLL;WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;_USRDLL;SXGAME_EXPORTS;SX_LIB_NAME="GAME";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -78,8 +80,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>SXGAME_EXPORT=_declspec(dllexport);SX_DLL;WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;SXGAME_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SXGAME_EXPORT=_declspec(dllexport);SX_DLL;WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;SXGAME_EXPORTS;SX_LIB_NAME="GAME";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -87,52 +90,84 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
     <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseHandle.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseMag.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseScope.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseSilencer.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseWeaponAddon.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseTrigger.cpp" />
+    <ClCompile Include="..\..\..\source\game\BaseCharacter.cpp" />
+    <ClCompile Include="..\..\..\source\game\CharacterInventory.cpp" />
     <ClCompile Include="..\..\..\source\game\crosshair.cpp" />
     <ClCompile Include="..\..\..\source\game\CrosshairManager.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityFactory.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityManager.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncTrain.cpp" />
     <ClCompile Include="..\..\..\source\game\GameData.cpp" />
+    <ClCompile Include="..\..\..\source\game\GameStateManager.cpp" />
+    <ClCompile Include="..\..\..\source\game\GameStates.cpp" />
+    <ClCompile Include="..\..\..\source\game\HUDcontroller.cpp" />
     <ClCompile Include="..\..\..\source\game\LightDirectional.cpp" />
     <ClCompile Include="..\..\..\source\game\LightPoint.cpp" />
+    <ClCompile Include="..\..\..\source\game\LogicRelay.cpp" />
     <ClCompile Include="..\..\..\source\game\NPCBase.cpp" />
     <ClCompile Include="..\..\..\source\game\NPCZombie.cpp" />
     <ClCompile Include="..\..\..\source\game\PathCorner.cpp" />
+    <ClCompile Include="..\..\..\source\game\PropBreakable.cpp" />
+    <ClCompile Include="..\..\..\source\game\PropButton.cpp" />
+    <ClCompile Include="..\..\..\source\game\PropDebris.cpp" />
+    <ClCompile Include="..\..\..\source\game\PropDoor.cpp" />
+    <ClCompile Include="..\..\..\source\game\PropDynamic.cpp" />
     <ClCompile Include="..\..\..\source\game\proptable.cpp" />
     <ClCompile Include="..\..\..\source\game\Ragdoll.cpp" />
-    <ClCompile Include="..\..\..\source\game\SXbaseAmmo.cpp" />
-    <ClCompile Include="..\..\..\source\game\SXbaseAmmoBox.cpp" />
-    <ClCompile Include="..\..\..\source\game\SXbaseAnimating.cpp" />
-    <ClCompile Include="..\..\..\source\game\SXbaseEntity.cpp" />
-    <ClCompile Include="..\..\..\source\game\SXbaseItem.cpp" />
-    <ClCompile Include="..\..\..\source\game\SXbaseRiffle.cpp" />
-    <ClCompile Include="..\..\..\source\game\SXbaseSupply.cpp" />
-    <ClCompile Include="..\..\..\source\game\SXbaseTool.cpp" />
-    <ClCompile Include="..\..\..\source\game\SXbaseWeapon.cpp" />
+    <ClCompile Include="..\..\..\source\game\BaseAmmo.cpp" />
+    <ClCompile Include="..\..\..\source\game\BaseAmmoBox.cpp" />
+    <ClCompile Include="..\..\..\source\game\BaseAnimating.cpp" />
+    <ClCompile Include="..\..\..\source\game\BaseEntity.cpp" />
+    <ClCompile Include="..\..\..\source\game\BaseItem.cpp" />
+    <ClCompile Include="..\..\..\source\game\BaseRiffle.cpp" />
+    <ClCompile Include="..\..\..\source\game\BaseSupply.cpp" />
+    <ClCompile Include="..\..\..\source\game\BaseTool.cpp" />
+    <ClCompile Include="..\..\..\source\game\BaseWeapon.cpp" />
+    <ClCompile Include="..\..\..\source\game\SettingsWriter.cpp" />
     <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp" />
-    <ClCompile Include="..\..\..\source\game\SXplayer.cpp" />
-    <ClCompile Include="..\..\..\source\game\SXplayerSpawn.cpp" />
-    <ClCompile Include="..\..\..\source\game\SXpointCamera.cpp" />
-    <ClCompile Include="..\..\..\source\game\SXpointEntity.cpp" />
+    <ClCompile Include="..\..\..\source\game\Player.cpp" />
+    <ClCompile Include="..\..\..\source\game\PlayerSpawn.cpp" />
+    <ClCompile Include="..\..\..\source\game\PointCamera.cpp" />
+    <ClCompile Include="..\..\..\source\game\PointEntity.cpp" />
+    <ClCompile Include="..\..\..\source\game\Tracer.cpp" />
+    <ClCompile Include="..\..\..\source\game\ZombieHands.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\common\AAString.h" />
+    <ClInclude Include="..\..\..\source\common\file_utils.h" />
+    <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\game\BaseHandle.h" />
     <ClInclude Include="..\..\..\source\game\BaseMag.h" />
     <ClInclude Include="..\..\..\source\game\BaseScope.h" />
     <ClInclude Include="..\..\..\source\game\BaseSilencer.h" />
     <ClInclude Include="..\..\..\source\game\BaseWeaponAddon.h" />
     <ClInclude Include="..\..\..\source\game\BaseTrigger.h" />
+    <ClInclude Include="..\..\..\source\game\BaseCharacter.h" />
+    <ClInclude Include="..\..\..\source\game\GameStateManager.h" />
+    <ClInclude Include="..\..\..\source\game\CharacterInventory.h" />
+    <ClInclude Include="..\..\..\source\game\GameStates.h" />
+    <ClInclude Include="..\..\..\source\game\HUDcontroller.h" />
+    <ClInclude Include="..\..\..\source\game\IGameState.h" />
+    <ClInclude Include="..\..\..\source\game\LogicRelay.h" />
+    <ClInclude Include="..\..\..\source\game\PropBreakable.h" />
+    <ClInclude Include="..\..\..\source\game\PropButton.h" />
+    <ClInclude Include="..\..\..\source\game\PropDebris.h" />
+    <ClInclude Include="..\..\..\source\game\PropDoor.h" />
+    <ClInclude Include="..\..\..\source\game\PropDynamic.h" />
+    <ClInclude Include="..\..\..\source\game\Random.h" />
     <ClInclude Include="..\..\..\source\game\crosshair.h" />
     <ClInclude Include="..\..\..\source\game\CrosshairManager.h" />
     <ClInclude Include="..\..\..\source\game\EntityFactory.h" />
@@ -146,22 +181,26 @@
     <ClInclude Include="..\..\..\source\game\PathCorner.h" />
     <ClInclude Include="..\..\..\source\game\proptable.h" />
     <ClInclude Include="..\..\..\source\game\Ragdoll.h" />
-    <ClInclude Include="..\..\..\source\game\SXbaseAmmo.h" />
-    <ClInclude Include="..\..\..\source\game\SXbaseAmmoBox.h" />
-    <ClInclude Include="..\..\..\source\game\SXbaseAnimating.h" />
-    <ClInclude Include="..\..\..\source\game\SXbaseEntity.h" />
-    <ClInclude Include="..\..\..\source\game\SXbaseItem.h" />
-    <ClInclude Include="..\..\..\source\game\SXbasePistol.h" />
-    <ClInclude Include="..\..\..\source\game\SXbaseRiffle.h" />
-    <ClInclude Include="..\..\..\source\game\SXbaseSnipe.h" />
-    <ClInclude Include="..\..\..\source\game\SXbaseSupply.h" />
-    <ClInclude Include="..\..\..\source\game\SXbaseTool.h" />
-    <ClInclude Include="..\..\..\source\game\SXbaseWeapon.h" />
+    <ClInclude Include="..\..\..\source\game\BaseAmmo.h" />
+    <ClInclude Include="..\..\..\source\game\BaseAmmoBox.h" />
+    <ClInclude Include="..\..\..\source\game\BaseAnimating.h" />
+    <ClInclude Include="..\..\..\source\game\BaseEntity.h" />
+    <ClInclude Include="..\..\..\source\game\BaseItem.h" />
+    <ClInclude Include="..\..\..\source\game\BasePistol.h" />
+    <ClInclude Include="..\..\..\source\game\BaseRiffle.h" />
+    <ClInclude Include="..\..\..\source\game\BaseSnipe.h" />
+    <ClInclude Include="..\..\..\source\game\BaseSupply.h" />
+    <ClInclude Include="..\..\..\source\game\BaseTool.h" />
+    <ClInclude Include="..\..\..\source\game\BaseWeapon.h" />
+    <ClInclude Include="..\..\..\source\game\SettingsWriter.h" />
     <ClInclude Include="..\..\..\source\game\sxgame.h" />
-    <ClInclude Include="..\..\..\source\game\SXplayer.h" />
-    <ClInclude Include="..\..\..\source\game\SXplayerSpawn.h" />
-    <ClInclude Include="..\..\..\source\game\SXpointCamera.h" />
-    <ClInclude Include="..\..\..\source\game\SXpointEntity.h" />
+    <ClInclude Include="..\..\..\source\game\Player.h" />
+    <ClInclude Include="..\..\..\source\game\PlayerSpawn.h" />
+    <ClInclude Include="..\..\..\source\game\PointCamera.h" />
+    <ClInclude Include="..\..\..\source\game\PointEntity.h" />
+    <ClInclude Include="..\..\..\source\game\TakeDamageInfo.h" />
+    <ClInclude Include="..\..\..\source\game\Tracer.h" />
+    <ClInclude Include="..\..\..\source\game\ZombieHands.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

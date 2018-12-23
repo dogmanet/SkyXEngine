@@ -7,18 +7,16 @@ mtrlgeom_light.ps
 #include <../struct.h>
 #include <../mtrl.h>
 
-half4 Param;	//цвет света
-half4 NearFarIsUnlit;
+//##########################################################################
 
-ps_out_ds_mrt main(vs_out_gcommon IN)
+//! цвет света
+half4 g_vParam;	
+half4 g_vNearFarLayers;
+
+//##########################################################################
+
+PSO_Gbuffer main(VSO_SceneCommon IN)
 {
-	ClipFar(IN.Pos.z,NearFarIsUnlit.y);
-	ps_out_ds_mrt OUT; 
-	OUT.Color = Param;
-	OUT.Color.a = 1.f;
-	OUT.Normal = half4(0.f, 0.f, 0.f, NearFarIsUnlit.z);
-	OUT.Param = half4(0.f, 0.f, 0.f, NearFarIsUnlit.w);
-	
-	OUT.Depth = GetDepthW(IN.Pos, NearFarIsUnlit.xy);
-	return OUT;
+	ClipFar(IN.vPos.z,g_vNearFarLayers.y);
+	return CreateGbuffer(g_vParam, normalize(IN.vNormal), half4(0.0, 0.0, 0.0, 1.0), IN.vPos, g_vNearFarLayers);
 }

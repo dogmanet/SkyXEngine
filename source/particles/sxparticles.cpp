@@ -1,8 +1,14 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "sxparticles.h"
 #include "emitter.h"
 #include "effect.h"
-#include "PESet.h"
+#include "pe_data.h"
+
 #define SXPARTICLES_VERSION 1
 
 #if !defined(DEF_STD_REPORT)
@@ -15,19 +21,19 @@ bool ParticlesPhyCollision(const float3 * lastpos, const float3* nextpos, float3
 	return false;
 }
 
-g_particles_phy_collision GParticlesPhyCollision = ParticlesPhyCollision;
+g_particles_phy_collision g_fnParticlesPhyCollision = ParticlesPhyCollision;
 
 //##########################################################################
 
-Effects* ArrEffects = 0;
+CEffects *g_pEffects = 0;
 
-#define PE_PRECOND(retval) if(!ArrEffects){g_fnReportf(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles is not init", gen_msg_location); return retval;}
+#define PE_PRECOND(retval) if(!g_pEffects){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxparticles is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
-SX_LIB_API void SPE_SetFunc_ParticlesPhyCollision(g_particles_phy_collision func)
+SX_LIB_API void SPE_SetFunc_ParticlesPhyCollision(g_particles_phy_collision fnFunc)
 {
-	GParticlesPhyCollision = func;
+	g_fnParticlesPhyCollision = fnFunc;
 }
 
 SX_LIB_API long SPE_0GetVersion()
@@ -35,150 +41,150 @@ SX_LIB_API long SPE_0GetVersion()
 	return SXPARTICLES_VERSION;
 }
 
-SX_LIB_API void SPE_Dbg_Set(report_func rf)
+SX_LIB_API void SPE_Dbg_Set(report_func fnFunc)
 {
-	g_fnReportf = rf;
+	g_fnReportf = fnFunc;
 }
 
-SX_LIB_API void SPE_0Create(const char* name, bool is_unic)
+SX_LIB_API void SPE_0Create(const char *szName, bool isUnic)
 {
-	if (name && strlen(name) > 1)
+	if (szName && strlen(szName) > 1)
 	{
-		if (is_unic)
+		if (isUnic)
 		{
-			HANDLE hMutex = CreateMutex(NULL, FALSE, name);
+			HANDLE hMutex = CreateMutex(NULL, FALSE, szName);
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxparticles", gen_msg_location);
+				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
 			}
 			else
 			{
-				PESet::Init();
-				ArrEffects = new Effects();
+				pe_data::Init();
+				g_pEffects = new CEffects();
 			}
 		}
 		else
 		{
-			PESet::Init();
-			ArrEffects = new Effects();
+			pe_data::Init();
+			g_pEffects = new CEffects();
 		}
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxparticles", gen_msg_location);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
 }
 
-SX_LIB_API void SPE_RTDepthSet(ID id)
+SX_LIB_API void SPE_RTSetDepth(ID id)
 {
-	PESet::IDsRenderTargets::DepthScene = id;
+	pe_data::rt_id::idDepthScene = id;
 }
 
 SX_LIB_API void SPE_AKill()
 {
 	PE_PRECOND(_VOID);
 
-	mem_delete(ArrEffects);
-	mem_release(PESet::VertexDeclarationParticles);
+	mem_delete(g_pEffects);
+	mem_release(pe_data::pVertexDeclarationParticles);
 }
 
 SX_LIB_API void SPE_OnLostDevice()
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->OnLostDevice();
+	g_pEffects->onLostDevice();
 }
 
 SX_LIB_API void SPE_OnResetDevice()
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->OnResetDevice();
+	g_pEffects->onResetDevice();
 }
 
 //**************************************************************************
 
-SX_LIB_API void SPE_EffectLoad(const char* path)
+SX_LIB_API void SPE_EffectLoad(const char *szPath)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->Load(path);
+	g_pEffects->load(szPath);
 }
 
-SX_LIB_API void SPE_EffectSave(const char* path)
+SX_LIB_API void SPE_EffectSave(const char *szPath)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->Save(path);
+	g_pEffects->save(szPath);
 }
 
 SX_LIB_API void SPE_EffectsClear()
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->Clear();
+	g_pEffects->clear();
 }
 
-SX_LIB_API ID SPE_EffectInstanceByName(const char* name)
+SX_LIB_API ID SPE_EffectInstanceByName(const char *szName)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EffectInstanceByName(name);
+	return g_pEffects->effectInstanceByName(szName);
 }
 
 SX_LIB_API ID SPE_EffectInstanceByID(ID id)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EffectInstanceByID(id);
+	return g_pEffects->effectInstanceByID(id);
 }
 
-SX_LIB_API ID SPE_EffectGetByName(const char* name)
+SX_LIB_API ID SPE_EffectGetByName(const char *szName)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EffectGetByName(name);
+	return g_pEffects->effectGetByName(szName);
 }
 
-SX_LIB_API ID SPE_EffectAdd(const char* name)
+SX_LIB_API ID SPE_EffectAdd(const char *szName)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EffectAdd(name);
+	return g_pEffects->effectAdd(szName);
 }
 
-SX_LIB_API int SPE_EffectCountGet()
+SX_LIB_API int SPE_EffectGetCount()
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->EffectCountGet();
+	return g_pEffects->effectGetCount();
 }
 
-SX_LIB_API ID SPE_EffectIdOfKey(ID key)
+SX_LIB_API ID SPE_EffectGetIdOfKey(int iKey)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EffectIdOfKey(key);
+	return g_pEffects->effectGetIdOfKey(iKey);
 }
 
 SX_LIB_API void SPE_EffectDelete(ID id)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectDelete(id);
+	g_pEffects->effectDelete(id);
 }
 
-SX_LIB_API void SPE_EffectNameSet(ID id, const char* name)
+SX_LIB_API void SPE_EffectSetName(ID id, const char *szName)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectNameSet(id, name);
+	g_pEffects->effectSetName(id, szName);
 }
 
-SX_LIB_API void SPE_EffectNameGet(ID id, char* name)
+SX_LIB_API void SPE_EffectGetName(ID id, char *szName)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectNameGet(id, name);
+	g_pEffects->effectGetName(id, szName);
 }
 
 
@@ -186,21 +192,21 @@ SX_LIB_API void SPE_EffectCompute(ID id)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectCompute(id);
+	g_pEffects->effectCompute(id);
 }
 
 SX_LIB_API void SPE_EffectComputeLighting(ID id)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectComputeLighting(id);
+	g_pEffects->effectComputeLighting(id);
 }
 
 SX_LIB_API void SPE_EffectRender(ID id, DWORD timeDelta)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectRender(id, timeDelta);
+	g_pEffects->effectRender(id, timeDelta);
 }
 
 
@@ -208,304 +214,304 @@ SX_LIB_API void SPE_EffectComputeAll()
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectComputeAll();
+	g_pEffects->effectComputeAll();
 }
 
 SX_LIB_API void SPE_EffectComputeLightingAll()
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectComputeLightingAll();
+	g_pEffects->effectComputeLightingAll();
 }
 
 SX_LIB_API void SPE_EffectRenderAll(DWORD timeDelta)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectRenderAll(timeDelta);
+	g_pEffects->effectRenderAll(timeDelta);
 }
 
 
-SX_LIB_API bool SPE_EffectAlifeGet(ID id)
+SX_LIB_API bool SPE_EffectGetAlife(ID id)
 {
 	PE_PRECOND(false);
 
-	return ArrEffects->EffectAlifeGet(id);
+	return g_pEffects->effectGetAlife(id);
 }
 
-SX_LIB_API void SPE_EffectAlifeSet(ID id, bool alife)
+SX_LIB_API void SPE_EffectSetAlife(ID id, bool isAlife)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectAlifeSet(id,alife);
+	g_pEffects->effectSetAlife(id, isAlife);
 }
 
 
-SX_LIB_API bool SPE_EffectEnableGet(ID id)
+SX_LIB_API bool SPE_EffectGetEnable(ID id)
 {
 	PE_PRECOND(false);
 
-	return ArrEffects->EffectEnableGet(id);
+	return g_pEffects->effectGetEnable(id);
 }
 
-SX_LIB_API void SPE_EffectEnableSet(ID id, bool isenable)
+SX_LIB_API void SPE_EffectSetEnable(ID id, bool isEnable)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectEnableSet(id, isenable);
+	g_pEffects->effectSetEnable(id, isEnable);
 }
 
-SX_LIB_API void SPE_EffectPlayByID(ID id, float3* pos, float3* dir)
+SX_LIB_API void SPE_EffectPlayByID(ID id, const float3 *pPos, const float3 *pDir)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectPlayByID(id, pos, dir);
+	g_pEffects->effectPlayByID(id, pPos, pDir);
 }
 
-SX_LIB_API void SPE_EffectPlayByName(const char* name, float3* pos, float3* dir)
+SX_LIB_API void SPE_EffectPlayByName(const char *szName, const float3 *pPos, const float3 *pDir)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectPlayByName(name, pos, dir);
+	g_pEffects->effectPlayByName(szName, pPos, pDir);
 }
 
 
-SX_LIB_API void SPE_EffectPosSet(ID id, float3* pos)
+SX_LIB_API void SPE_EffectSetPos(ID id, const float3 *pPos)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectPosSet(id, pos);
+	g_pEffects->effectSetPos(id, pPos);
 }
 
-SX_LIB_API void SPE_EffectDirSet(ID id, float3* dir)
+SX_LIB_API void SPE_EffectSetDir(ID id, const float3 *pDir)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectDirSet(id, dir);
+	g_pEffects->effectSetDir(id, pDir);
 }
 
-SX_LIB_API void SPE_EffectRotSet(ID id, float3* rot)
+SX_LIB_API void SPE_EffectSetRotf(ID id, const float3 *pRot)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectRotSet(id, rot);
+	g_pEffects->effectSetRot(id, pRot);
 }
 
-SX_LIB_API void SPE_EffectRotSetQ(ID id, const SMQuaternion & rot)
+SX_LIB_API void SPE_EffectSetRotQ(ID id, const SMQuaternion &qRot)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectRotSet(id, rot);
+	g_pEffects->effectSetRot(id, qRot);
 }
 
 
-SX_LIB_API void SPE_EffectPosGet(ID id, float3* pos)
+SX_LIB_API void SPE_EffectGetPos(ID id, float3 *pPos)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectPosGet(id, pos);
+	g_pEffects->effectGetPos(id, pPos);
 }
 
-SX_LIB_API void SPE_EffectDirGet(ID id, float3* dir)
+SX_LIB_API void SPE_EffectGetDir(ID id, float3 *pDir)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectDirGet(id, dir);
+	g_pEffects->effectGetDir(id, pDir);
 }
 
-SX_LIB_API void SPE_EffectRotGet(ID id, float3* rot)
+SX_LIB_API void SPE_EffectGetRot(ID id, float3 *pRot)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectRotGet(id, rot);
+	g_pEffects->effectGetRot(id, pRot);
 }
 
 
-SX_LIB_API bool SPE_EffectVisibleCom(ID id, ISXFrustum* frustum, float3* view)
+SX_LIB_API bool SPE_EffectVisibleCom(ID id, const IFrustum *pFrustum, const float3 *pView)
 {
 	PE_PRECOND(false);
 
-	return ArrEffects->EffectVisibleCom(id, frustum, view);
+	return g_pEffects->effectVisibleCom(id, pFrustum, pView);
 }
 
-SX_LIB_API void SPE_EffectVisibleComAll(ISXFrustum* frustum, float3* view)
+SX_LIB_API void SPE_EffectVisibleComAll(const IFrustum *pFrustum, const float3 *pView)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EffectVisibleComAll(frustum, view);
+	g_pEffects->effectVisibleComAll(pFrustum, pView);
 }
 
-SX_LIB_API bool SPE_EffectVisibleGet(ID id)
+SX_LIB_API bool SPE_EffectGetVisible(ID id)
 {
 	PE_PRECOND(false);
 
-	return ArrEffects->EffectVisibleGet(id);
+	return g_pEffects->effectGetVisible(id);
 }
 
 SX_LIB_API float SPE_EffectDistToViewGet(ID id)
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->EffectDistToViewGet(id);
+	return g_pEffects->effectGetDistToView(id);
 }
 
 //##########################################################################
 
-SX_LIB_API ID SPE_EmitterAdd(ID id, ParticlesData* data)
+SX_LIB_API ID SPE_EmitterAdd(ID id, CParticlesData *pData)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EmitterAdd(id, data);
+	return g_pEffects->emitterAdd(id, pData);
 }
 
-SX_LIB_API int SPE_EmitterSCountGet(ID id)
+SX_LIB_API int SPE_EmitterGetSCount(ID id)
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->EmitterGetCount(id);
+	return g_pEffects->emitterGetCount(id);
 }
 
-SX_LIB_API void SPE_EmitterDelete(ID id, ID id_part)
+SX_LIB_API void SPE_EmitterDelete(ID id, ID idPart)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterDelete(id, id_part);
+	g_pEffects->emitterDelete(id, idPart);
 }
 
-SX_LIB_API ParticlesData* SPE_EmitterGetData(ID id, ID id_part)
+SX_LIB_API CParticlesData* SPE_EmitterGetData(ID id, ID idPart)
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->EmitterGetData(id, id_part);
+	return g_pEffects->emitterGetData(id, idPart);
 }
 
-SX_LIB_API void SPE_EmitterReInit(ID id, ID id_part, ParticlesData* data)
+SX_LIB_API void SPE_EmitterReInit(ID id, ID idPart, CParticlesData *pData)
 {
 	PE_PRECOND(_VOID);
 
-	return ArrEffects->EmitterReInit(id, id_part, data);
+	return g_pEffects->emitterReInit(id, idPart, pData);
 }
 
-SX_LIB_API void SPE_EmitterCountSet(ID id, ID id_part, int count)
+SX_LIB_API void SPE_EmitterSetCount(ID id, ID idPart, int iCount)
 {
 	PE_PRECOND(_VOID);
 
-	return ArrEffects->EmitterCountSet(id, id_part, count);
+	return g_pEffects->emitterSetCount(id, idPart, iCount);
 }
 
-SX_LIB_API int SPE_EmitterCountGet(ID id, ID id_part)
+SX_LIB_API int SPE_EmitterGetCount(ID id, ID idPart)
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->EmitterCountGet(id, id_part);
+	return g_pEffects->emitterGetCount(id, idPart);
 }
 
-SX_LIB_API int SPE_EmitterCountLifeGet(ID id, ID id_part)
+SX_LIB_API int SPE_EmitterGetCountLife(ID id, ID idPart)
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->EmitterCountLifeGet(id, id_part);
+	return g_pEffects->emitterGetCountLife(id, idPart);
 }
 
-SX_LIB_API void SPE_EmitterEnableSet(ID id, ID id_part, bool enable)
+SX_LIB_API void SPE_EmitterSetEnable(ID id, ID idPart, bool isEnable)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterEnableSet(id, id_part, enable);
+	g_pEffects->emitterSetEnable(id, idPart, isEnable);
 }
 
-SX_LIB_API bool SPE_EmitterEnableGet(ID id, ID id_part)
+SX_LIB_API bool SPE_EmitterGetEnable(ID id, ID idPart)
 {
 	PE_PRECOND(false);
 
-	return ArrEffects->EmitterEnableGet(id, id_part);
+	return g_pEffects->emitterGetEnable(id, idPart);
 }
 
 
-SX_LIB_API void SPE_EmitterTextureSet(ID id, ID id_part, const char* tex)
+SX_LIB_API void SPE_EmitterSetTexture(ID id, ID idPart, const char *szTex)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterTextureSet(id, id_part, tex);
+	g_pEffects->emitterSetTexture(id, idPart, szTex);
 }
 
-SX_LIB_API void SPE_EmitterTextureSetID(ID id, ID id_part, ID tex)
+SX_LIB_API void SPE_EmitterSetTextureID(ID id, ID idPart, ID idTex)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterTextureSetID(id, id_part, tex);
+	g_pEffects->emitterSetTextureID(id, idPart, idTex);
 }
 
-SX_LIB_API ID SPE_EmitterTextureGetID(ID id, ID id_part)
+SX_LIB_API ID SPE_EmitterGetTextureID(ID id, ID idPart)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EmitterTextureGetID(id, id_part);
+	return g_pEffects->emitterGetTextureID(id, idPart);
 }
 
-SX_LIB_API void SPE_EmitterTextureGet(ID id, ID id_part, char* tex)
+SX_LIB_API void SPE_EmitterGetTexture(ID id, ID idPart, char *szTex)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterTextureGet(id, id_part, tex);
+	g_pEffects->emitterGetTexture(id, idPart, szTex);
 }
 
 
-SX_LIB_API void SPE_EmitterTextureTrackSet(ID id, ID id_part, const char* tex)
+SX_LIB_API void SPE_EmitterSetTextureTrack(ID id, ID idPart, const char *idTex)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterTextureTrackSet(id, id_part, tex);
+	g_pEffects->emitterSetTextureTrack(id, idPart, idTex);
 }
 
-SX_LIB_API void SPE_EmitterTextureTrackSetID(ID id, ID id_part, ID tex)
+SX_LIB_API void SPE_EmitterSetTextureTrackID(ID id, ID idPart, ID idTex)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterTextureTrackSetID(id, id_part, tex);
+	g_pEffects->emitterSetTextureTrackID(id, idPart, idTex);
 }
 
-SX_LIB_API ID SPE_EmitterTextureTrackGetID(ID id, ID id_part)
+SX_LIB_API ID SPE_EmitterGetTextureTrackID(ID id, ID idPart)
 {
 	PE_PRECOND(-1);
 
-	return ArrEffects->EmitterTextureTrackGetID(id, id_part);
+	return g_pEffects->emitterGetTextureTrackID(id, idPart);
 }
 
-SX_LIB_API void SPE_EmitterTextureTrackGet(ID id, ID id_part, char* tex)
+SX_LIB_API void SPE_EmitterGetTextureTrack(ID id, ID idPart, char *szTex)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterTextureTrackGet(id, id_part, tex);
+	g_pEffects->emitterGetTextureTrack(id, idPart, szTex);
 }
 
 
 
-SX_LIB_API void SPE_EmitterNameSet(ID id, ID id_part, const char* name)
+SX_LIB_API void SPE_EmitterSetName(ID id, ID idPart, const char *szName)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterNameSet(id, id_part, name);
+	g_pEffects->emitterSetName(id, idPart, szName);
 }
 
-SX_LIB_API void SPE_EmitterNameGet(ID id, ID id_part, char* name)
+SX_LIB_API void SPE_EmitterGetName(ID id, ID idPart, char *szName)
 {
 	PE_PRECOND(_VOID);
 
-	ArrEffects->EmitterNameGet(id, id_part, name);
+	g_pEffects->emitterGetName(id, idPart, szName);
 }
 
 
-SX_LIB_API int SPE_EmitterTrackCountGet(ID id, ID id_part)
+SX_LIB_API int SPE_EmitterGetTrackCount(ID id, ID idPart)
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->EmitterTrackCountGet(id, id_part);
+	return g_pEffects->emitterGetTrackCount(id, idPart);
 }
 
-SX_LIB_API int SPE_EmitterTrackPosGet(ID id, ID id_part, float3** arr, int count)
+SX_LIB_API int SPE_EmitterGetTrackPos(ID id, ID idPart, float3** ppArr, int iCount)
 {
 	PE_PRECOND(0);
 
-	return ArrEffects->EmitterTrackPosGet(id, id_part, arr, count);
+	return g_pEffects->emitterGetTrackPos(id, idPart, ppArr, iCount);
 }

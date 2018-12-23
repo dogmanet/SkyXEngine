@@ -1,161 +1,207 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "camera.h"
 
-Frustum::Frustum()
+CFrustum::CFrustum()
 {
-	
+	m_aPoints[0] = float3(0, 0, 0);
+	m_aPoints[1] = float3(0, 0, 0);
+	m_aPoints[2] = float3(0, 0, 0);
+	m_aPoints[3] = float3(0, 0, 0);
+	m_aPoints[4] = float3(0, 0, 0);
+	m_aPoints[5] = float3(0, 0, 0);
+	m_aPoints[6] = float3(0, 0, 0);
+	m_aPoints[7] = float3(0, 0, 0);
+
+	m_vCenter = float3(0, 0, 0);
 }
 
-Frustum::~Frustum()
+CFrustum::~CFrustum()
 {
 
 }
 
-void Frustum::Update(const float4x4* view,const float4x4* proj)
+void CFrustum::update(const float4x4* view,const float4x4* proj)
 {
 	float4x4 matComb = SMMatrixMultiply(*view, *proj);
 	
-	ArrFrustumPlane[0].Normal.x = matComb._14 - matComb._11; 
-	ArrFrustumPlane[0].Normal.y = matComb._24 - matComb._21; 
-	ArrFrustumPlane[0].Normal.z = matComb._34 - matComb._31; 
-	ArrFrustumPlane[0].Distance = matComb._44 - matComb._41;
+	m_aFrustumPlanes[0].m_vNormal.x = matComb._14 - matComb._11; 
+	m_aFrustumPlanes[0].m_vNormal.y = matComb._24 - matComb._21; 
+	m_aFrustumPlanes[0].m_vNormal.z = matComb._34 - matComb._31; 
+	m_aFrustumPlanes[0].m_fDistance = matComb._44 - matComb._41;
 	
-	ArrFrustumPlane[1].Normal.x = matComb._14 + matComb._11; 
-	ArrFrustumPlane[1].Normal.y = matComb._24 + matComb._21; 
-	ArrFrustumPlane[1].Normal.z = matComb._34 + matComb._31; 
-	ArrFrustumPlane[1].Distance = matComb._44 + matComb._41;
+	m_aFrustumPlanes[1].m_vNormal.x = matComb._14 + matComb._11; 
+	m_aFrustumPlanes[1].m_vNormal.y = matComb._24 + matComb._21; 
+	m_aFrustumPlanes[1].m_vNormal.z = matComb._34 + matComb._31; 
+	m_aFrustumPlanes[1].m_fDistance = matComb._44 + matComb._41;
 
-	ArrFrustumPlane[2].Normal.x = matComb._14 + matComb._12; 
-	ArrFrustumPlane[2].Normal.y = matComb._24 + matComb._22; 
-	ArrFrustumPlane[2].Normal.z = matComb._34 + matComb._32; 
-	ArrFrustumPlane[2].Distance = matComb._44 + matComb._42;
+	m_aFrustumPlanes[2].m_vNormal.x = matComb._14 + matComb._12; 
+	m_aFrustumPlanes[2].m_vNormal.y = matComb._24 + matComb._22; 
+	m_aFrustumPlanes[2].m_vNormal.z = matComb._34 + matComb._32; 
+	m_aFrustumPlanes[2].m_fDistance = matComb._44 + matComb._42;
 
-	ArrFrustumPlane[3].Normal.x = matComb._14 - matComb._12; 
-	ArrFrustumPlane[3].Normal.y = matComb._24 - matComb._22; 
-	ArrFrustumPlane[3].Normal.z = matComb._34 - matComb._32; 
-	ArrFrustumPlane[3].Distance = matComb._44 - matComb._42;
+	m_aFrustumPlanes[3].m_vNormal.x = matComb._14 - matComb._12; 
+	m_aFrustumPlanes[3].m_vNormal.y = matComb._24 - matComb._22; 
+	m_aFrustumPlanes[3].m_vNormal.z = matComb._34 - matComb._32; 
+	m_aFrustumPlanes[3].m_fDistance = matComb._44 - matComb._42;
 
-	ArrFrustumPlane[4].Normal.x = matComb._14 - matComb._13; 
-	ArrFrustumPlane[4].Normal.y = matComb._24 - matComb._23; 
-	ArrFrustumPlane[4].Normal.z = matComb._34 - matComb._33; 
-	ArrFrustumPlane[4].Distance = matComb._44 - matComb._43;
+	m_aFrustumPlanes[4].m_vNormal.x = matComb._14 - matComb._13; 
+	m_aFrustumPlanes[4].m_vNormal.y = matComb._24 - matComb._23; 
+	m_aFrustumPlanes[4].m_vNormal.z = matComb._34 - matComb._33; 
+	m_aFrustumPlanes[4].m_fDistance = matComb._44 - matComb._43;
 
-	ArrFrustumPlane[5].Normal.x = matComb._14 + matComb._13; 
-	ArrFrustumPlane[5].Normal.y = matComb._24 + matComb._23; 
-	ArrFrustumPlane[5].Normal.z = matComb._34 + matComb._33; 
-	ArrFrustumPlane[5].Distance = matComb._44 + matComb._43;
+	m_aFrustumPlanes[5].m_vNormal.x = matComb._14 + matComb._13; 
+	m_aFrustumPlanes[5].m_vNormal.y = matComb._24 + matComb._23; 
+	m_aFrustumPlanes[5].m_vNormal.z = matComb._34 + matComb._33; 
+	m_aFrustumPlanes[5].m_fDistance = matComb._44 + matComb._43;
 
 		//Нормализация плоскостей
 		for (int i = 0; i < 6; ++i)
-			ArrFrustumPlane[i].Normalize();
+			m_aFrustumPlanes[i].normalize();
 }
 
-bool Frustum::PointInFrustum(const float3 *point)
+bool CFrustum::pointInFrustum(const float3 *point) const
 {
-		for (int i=0; i<6; i++)
+	for (int i=0; i<6; ++i)
+	{
+		float tmp = m_aFrustumPlanes[i].m_vNormal.x*(point->x) + m_aFrustumPlanes[i].m_vNormal.y*(point->y) +  m_aFrustumPlanes[i].m_vNormal.z*(point->z) + m_aFrustumPlanes[i].m_fDistance;
+		if(int(tmp * 1000.0f) <= 0)
 		{
-			float tmp = ArrFrustumPlane[i].Normal.x*(point->x) + ArrFrustumPlane[i].Normal.y*(point->y) +  ArrFrustumPlane[i].Normal.z*(point->z) + ArrFrustumPlane[i].Distance;
-				if(long(tmp * 1000.0f) <= long(0 * 1000.0f))
-				{
-					return false;
-				}
+			return false;
 		}
+	}
     return true;
 }
 
-bool Frustum::PolyInFrustum(const float3* p1,const float3* p2,const float3* p3)
+bool CFrustum::polyInFrustum(const float3* p1, const float3* p2, const float3* p3) const
 {
-		if(PointInFrustum(p1) || PointInFrustum(p2) || PointInFrustum(p3))
-			return true;
+	/*if(pointInFrustum(p1) || pointInFrustum(p2) || pointInFrustum(p3))
+		return true;*/
 
-	return false;
+	for (int i = 0; i<6; i++)
+	{
+		if (int((m_aFrustumPlanes[i].m_vNormal.x * (p1->x) + m_aFrustumPlanes[i].m_vNormal.y * (p1->y) + m_aFrustumPlanes[i].m_vNormal.z * (p1->z) + m_aFrustumPlanes[i].m_fDistance) * 1000.f) > 0) continue;
+		if (int((m_aFrustumPlanes[i].m_vNormal.x * (p2->x) + m_aFrustumPlanes[i].m_vNormal.y * (p2->y) + m_aFrustumPlanes[i].m_vNormal.z * (p2->z) + m_aFrustumPlanes[i].m_fDistance) * 1000.f) > 0) continue;
+		if (int((m_aFrustumPlanes[i].m_vNormal.x * (p3->x) + m_aFrustumPlanes[i].m_vNormal.y * (p3->y) + m_aFrustumPlanes[i].m_vNormal.z * (p3->z) + m_aFrustumPlanes[i].m_fDistance) * 1000.f) > 0) continue;
+		return false;
+	}
+	return true;
 }
 
-bool Frustum::PolyInFrustumAbs(const float3* p1,const float3* p2,const float3* p3)
+bool CFrustum::polyInFrustumAbs(const float3* p1, const float3* p2, const float3* p3) const
 {
-		if(PointInFrustum(p1) && PointInFrustum(p2) && PointInFrustum(p3))
+		if(pointInFrustum(p1) && pointInFrustum(p2) && pointInFrustum(p3))
 			return true;
 
 	return false;
 }
 			
-bool Frustum::SphereInFrustum(const float3 *point, float radius) const
+bool CFrustum::sphereInFrustum(const float3 *point, float radius) const
 {
 		for (int i=0; i<6; ++i)
 		{
-				if (ArrFrustumPlane[i].Normal.x*point->x + ArrFrustumPlane[i].Normal.y*point->y + ArrFrustumPlane[i].Normal.z*point->z + ArrFrustumPlane[i].Distance <= -radius)
+				if (m_aFrustumPlanes[i].m_vNormal.x*point->x + m_aFrustumPlanes[i].m_vNormal.y*point->y + m_aFrustumPlanes[i].m_vNormal.z*point->z + m_aFrustumPlanes[i].m_fDistance <= -radius)
 					return false;
 		}
 	return true;
 }
 
-bool Frustum::SphereInFrustumAbs(const float3 *point, float radius)
+bool CFrustum::sphereInFrustumAbs(const float3 *point, float radius) const
 {
 		for (int i=0; i<6; i++)
 		{
-				if (ArrFrustumPlane[i].Normal.x*point->x + ArrFrustumPlane[i].Normal.y*point->y + ArrFrustumPlane[i].Normal.z*point->z + ArrFrustumPlane[i].Distance > -radius)
-					return false;
+			if (m_aFrustumPlanes[i].m_vNormal.x*point->x + m_aFrustumPlanes[i].m_vNormal.y*point->y + m_aFrustumPlanes[i].m_vNormal.z*point->z + m_aFrustumPlanes[i].m_fDistance > -radius)
+				return false;
 		}
 	return true;
 }
 
-bool Frustum::BoxInFrustum(float3* min,float3* max)
+bool CFrustum::boxInFrustum(float3* min, float3* max) const
 {
 		for ( register int p = 0; p < 6; p++ )
 		{
-			if( ArrFrustumPlane[p].Normal.x * (min->x) + ArrFrustumPlane[p].Normal.y * (min->y) + ArrFrustumPlane[p].Normal.z * (min->z) + ArrFrustumPlane[p].Distance > 0 ) continue;
+			if( m_aFrustumPlanes[p].m_vNormal.x * (min->x) + m_aFrustumPlanes[p].m_vNormal.y * (min->y) + m_aFrustumPlanes[p].m_vNormal.z * (min->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
 
-			if( ArrFrustumPlane[p].Normal.x * (min->x) + ArrFrustumPlane[p].Normal.y * (min->y) + ArrFrustumPlane[p].Normal.z * (max->z) + ArrFrustumPlane[p].Distance > 0 ) continue;
-			if( ArrFrustumPlane[p].Normal.x * (min->x) + ArrFrustumPlane[p].Normal.y * (max->y) + ArrFrustumPlane[p].Normal.z * (max->z) + ArrFrustumPlane[p].Distance > 0 ) continue;
-			if( ArrFrustumPlane[p].Normal.x * (max->x) + ArrFrustumPlane[p].Normal.y * (max->y) + ArrFrustumPlane[p].Normal.z * (max->z) + ArrFrustumPlane[p].Distance > 0 ) continue;
-			if( ArrFrustumPlane[p].Normal.x * (max->x) + ArrFrustumPlane[p].Normal.y * (min->y) + ArrFrustumPlane[p].Normal.z * (min->z) + ArrFrustumPlane[p].Distance > 0 ) continue;
-			if( ArrFrustumPlane[p].Normal.x * (max->x) + ArrFrustumPlane[p].Normal.y * (max->y) + ArrFrustumPlane[p].Normal.z * (min->z) + ArrFrustumPlane[p].Distance > 0 ) continue;
-			if( ArrFrustumPlane[p].Normal.x * (max->x) + ArrFrustumPlane[p].Normal.y * (min->y) + ArrFrustumPlane[p].Normal.z * (max->z) + ArrFrustumPlane[p].Distance > 0 ) continue;
-			if( ArrFrustumPlane[p].Normal.x * (min->x) + ArrFrustumPlane[p].Normal.y * (max->y) + ArrFrustumPlane[p].Normal.z * (min->z) + ArrFrustumPlane[p].Distance > 0 ) continue;
+			if( m_aFrustumPlanes[p].m_vNormal.x * (min->x) + m_aFrustumPlanes[p].m_vNormal.y * (min->y) + m_aFrustumPlanes[p].m_vNormal.z * (max->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
+			if( m_aFrustumPlanes[p].m_vNormal.x * (min->x) + m_aFrustumPlanes[p].m_vNormal.y * (max->y) + m_aFrustumPlanes[p].m_vNormal.z * (max->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
+			if( m_aFrustumPlanes[p].m_vNormal.x * (max->x) + m_aFrustumPlanes[p].m_vNormal.y * (max->y) + m_aFrustumPlanes[p].m_vNormal.z * (max->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
+			if( m_aFrustumPlanes[p].m_vNormal.x * (max->x) + m_aFrustumPlanes[p].m_vNormal.y * (min->y) + m_aFrustumPlanes[p].m_vNormal.z * (min->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
+			if( m_aFrustumPlanes[p].m_vNormal.x * (max->x) + m_aFrustumPlanes[p].m_vNormal.y * (max->y) + m_aFrustumPlanes[p].m_vNormal.z * (min->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
+			if( m_aFrustumPlanes[p].m_vNormal.x * (max->x) + m_aFrustumPlanes[p].m_vNormal.y * (min->y) + m_aFrustumPlanes[p].m_vNormal.z * (max->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
+			if( m_aFrustumPlanes[p].m_vNormal.x * (min->x) + m_aFrustumPlanes[p].m_vNormal.y * (max->y) + m_aFrustumPlanes[p].m_vNormal.z * (min->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
 			return false;
 		}
 
 	return true;
 }
 
-/////////////////////////
 
-Camera::Camera()
+float3 CFrustum::getPoint(int iNumPoint) const
 {
-	Position = float3(0.0f, 0.0f, 0.0f);
-	Right = float3(1.0f, 0.0f, 0.0f);
-	Up = float3(0.0f, 1.0f, 0.0f);
-	Look = float3(0.0f, 0.0f, 1.0f);
+	if (iNumPoint >= 0 && iNumPoint < 8)
+		return m_aPoints[iNumPoint];
 
-	ObjFrustum = new Frustum();
+	return float3(0, 0, 0);
+}
+
+float3 CFrustum::getCenter() const
+{
+	return m_vCenter;
+}
+
+void CFrustum::setPoint(int iNumPoint, const float3 *pPoint)
+{
+	if (iNumPoint >= 0 && iNumPoint < 8)
+		m_aPoints[iNumPoint] = *pPoint;
+}
+
+void CFrustum::setCenter(const float3 *pCenter)
+{
+	m_vCenter = *pCenter;
+}
+
+//##########################################################################
+
+CCamera::CCamera()
+{
+	m_vPosition = float3(0.0f, 0.0f, 0.0f);
+	m_vRight = float3(1.0f, 0.0f, 0.0f);
+	m_vUp = float3(0.0f, 1.0f, 0.0f);
+	m_vLook = float3(0.0f, 0.0f, 1.0f);
+
+	m_oFrustum = CFrustum();
 
 	m_vPitchYawRoll = float3_t(0, 0, 0);
 }
 
-Camera::~Camera	()
+CCamera::~CCamera	()
 {
-	mem_delete(ObjFrustum);
+	
 }
 
-inline void Camera::PosLeftRight(float units)
+void CCamera::posLeftRight(float units)
 {
-	Position += float3(Right.x, 0.0f, Right.z) * units;
-	LastVal.x = units;
+	m_vPosition += float3(m_vRight.x, 0.0f, m_vRight.z) * units;
+	//LastVal.x = units;
 }
 
-inline void Camera::PosUpDown(float units)
+void CCamera::posUpDown(float units)
 {
-	Position.y += Up.y * units;
+	m_vPosition.y += m_vUp.y * units;
 }
 
-inline void Camera::PosFrontBack(float units)
+void CCamera::posFrontBack(float units)
 {
-	Position += float3(Look.x, 0.0f, Look.z) * units;
-	LastVal.z = units;
+	m_vPosition += float3(m_vLook.x, 0.0f, m_vLook.z) * units;
+	//LastVal.z = units;
 }
 
 			
-inline void Camera::RotUpDown(float angle)
+void CCamera::rotUpDown(float angle)
 {
 	m_vPitchYawRoll.x -= angle;
 	if(m_vPitchYawRoll.x > SM_PIDIV2)
@@ -167,10 +213,10 @@ inline void Camera::RotUpDown(float angle)
 		m_vPitchYawRoll.x = -SM_PIDIV2;
 	}
 
-	UpdateView();
+	updateView();
 }
 
-inline void Camera::RotRightLeft(float angle)
+void CCamera::rotRightLeft(float angle)
 {
 	m_vPitchYawRoll.y -= angle;
 	while(m_vPitchYawRoll.y < 0.0f)
@@ -182,105 +228,116 @@ inline void Camera::RotRightLeft(float angle)
 		m_vPitchYawRoll.y -= SM_2PI;
 	}
 
-	UpdateView();
+	updateView();
 }
 
-inline void Camera::Roll(float angle)
+void CCamera::roll(float angle)
 {
 	m_vPitchYawRoll.z -= angle;
-	UpdateView();
+	updateView();
 }
 
-inline void Camera::UpdateView()
+void CCamera::updateView()
 {
 	SMQuaternion q = SMQuaternion(m_vPitchYawRoll.x, 'x')
 		* SMQuaternion(m_vPitchYawRoll.y, 'y')
 		* SMQuaternion(m_vPitchYawRoll.z, 'z');
 
-	Right = q * float3(1.0f, 0.0f, 0.0f);
-	Up = q * float3(0.0f, 1.0f, 0.0f);
-	Look = q * float3(0.0f, 0.0f, 1.0f);
+	m_vRight = q * float3(1.0f, 0.0f, 0.0f);
+	m_vUp = q * float3(0.0f, 1.0f, 0.0f);
+	m_vLook = q * float3(0.0f, 0.0f, 1.0f);
 }
 
-inline void Camera::SetOrientation(const SMQuaternion & q)
+void CCamera::setOrientation(const SMQuaternion *q)
 {
-	m_vPitchYawRoll = SMMatrixToEuler(q.GetMatrix());
+	m_vPitchYawRoll = SMMatrixToEuler(q->GetMatrix());
 
-	Right = q * float3(1.0f, 0.0f, 0.0f);
-	Up = q * float3(0.0f, 1.0f, 0.0f);
-	Look = q * float3(0.0f, 0.0f, 1.0f);
+	m_vRight = (*q) * float3(1.0f, 0.0f, 0.0f);
+	m_vUp = (*q) * float3(0.0f, 1.0f, 0.0f);
+	m_vLook = (*q) * float3(0.0f, 0.0f, 1.0f);
 }
 
 
-inline void Camera::GetViewMatrix(float4x4* view_matrix)
+void CCamera::getViewMatrix(float4x4* view_matrix)
 {
-	*view_matrix = SMMatrixLookToLH(Position, Look, Up);
+	m_mView = SMMatrixLookToLH(m_vPosition, m_vLook, m_vUp);
+	*view_matrix = m_mView;// SMMatrixLookToLH(m_vPosition, m_vLook, m_vUp);
 }
 
 			
-inline void Camera::GetPosition(float3* pos)
+void CCamera::getPosition(float3* pos) const
 {
-	*pos = Position;
+	*pos = m_vPosition;
 }
 
-inline void Camera::SetPosition(float3* pos)
+void CCamera::setPosition(const float3* pos)
 {
-	Position = *pos;
+	m_vPosition = *pos;
 }
 
 
-inline void Camera::GetDirection(float3* dir)
+void CCamera::getDirection(float3* dir) const
 {
-
+	*dir = m_vLook;
 }
 
-inline void Camera::SetDirection(float3* dir)
+/*void CCamera::setDirection(const float3* dir)
 {
-
-}
+	m_vLook = *dir;
+}*/
 
 			
-inline void Camera::GetRight(float3* right)
+void CCamera::getRight(float3* right) const
 {
-	*right = Right;
+	*right = m_vRight;
 }
 
-inline void Camera::GetUp(float3* up)
+void CCamera::getUp(float3* up) const
 {
-	*up = Up;
+	*up = m_vUp;
 }
 
-inline void Camera::GetLook(float3* look)
+void CCamera::getLook(float3* look) const
 {
-	*look = Look;
+	*look = m_vLook;
 }
 
-inline void Camera::GetRotation(float3* rot)
+void CCamera::getRotation(float3* rot) const
 {
 	*rot = m_vPitchYawRoll;
 }
 
-inline float Camera::GetRotationX()
+float CCamera::getRotationX() const
 {
 	return m_vPitchYawRoll.x;
 }
 
-inline float Camera::GetRotationY()
+float CCamera::getRotationY() const
 {
 	return m_vPitchYawRoll.y;
 }
 
-inline float Camera::GetRotationZ()
+float CCamera::getRotationZ() const
 {
 	return m_vPitchYawRoll.z;
 }
 
-inline void Camera::SetFOV(float fov)
+void CCamera::setFOV(float fov)
 {
 	m_fFOV = fov;
 }
 
-inline float Camera::GetFOV()
+float CCamera::getFOV() const
 {
 	return(m_fFOV);
+}
+
+void CCamera::updateFrustum(const float4x4 *pProjection)
+{
+	m_oFrustum.update(&m_mView, pProjection);
+}
+
+const IFrustum* CCamera::getFrustum()
+{
+	return &m_oFrustum;
 }

@@ -1,3 +1,9 @@
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -332,6 +338,42 @@ void WriteColored(char ** _buf)
 			done = true;
 		}
 	}
+	int len = strlen(buf);
+
+#define IS_UTF8_HEAD0(chr) ((unsigned char)(chr) < 128)
+#define IS_UTF8_TAIL(chr) ((unsigned char)(chr) >= 128 && (unsigned char)(chr) <= 191)
+#define IS_UTF8_HEAD2(chr) ((unsigned char)(chr) >= 192 && (unsigned char)(chr) <= 223)
+#define IS_UTF8_HEAD3(chr) ((unsigned char)(chr) >= 224 && (unsigned char)(chr) <= 239)
+#define IS_UTF8_HEAD4(chr) ((unsigned char)(chr) >= 240 && (unsigned char)(chr) <= 247)
+#define IS_UTF8_HEAD5(chr) ((unsigned char)(chr) >= 248 && (unsigned char)(chr) <= 251)
+
+
+	int i = len - 1;
+	while(len >= 0 && IS_UTF8_TAIL(buf[i]))
+	{
+		--i;
+	}
+
+	if(IS_UTF8_HEAD0(buf[i])
+		|| (IS_UTF8_HEAD2(buf[i]) && i + 1 < len)
+		|| (IS_UTF8_HEAD3(buf[i]) && i + 2 < len)
+		|| (IS_UTF8_HEAD4(buf[i]) && i + 3 < len)
+		|| (IS_UTF8_HEAD5(buf[i]) && i + 4 < len)
+		)
+	{
+		goto good;
+	}
+	
+	char chr = buf[i];
+	buf[i] = 0;
+	printf("%s", buf);
+	buf[i] = chr;
+
+	*_buf = &buf[i];
+
+	goto end;
+
+good:
 	printf("%s", buf);
 	*_buf = NULL;
 
@@ -604,6 +646,8 @@ void InitCommandChannel(void*)
 	//WriteOutput("\n");
 	//SetColor(g_pColor->getDefaultFG());
 	// Accept a client socket
+	
+	int iScreenWidth, iScreenHeight;
 
 	int offset = 0;
 	while(g_bRunning)
@@ -621,9 +665,29 @@ void InitCommandChannel(void*)
 		//WriteOutput("Connected!\n");
 		//SetColor(g_pColor->getDefaultFG());
 
+		iScreenWidth = iScreenHeight = 0;
+
 		while(g_bConnected)
 		{
-			Sleep(1000);
+			CONSOLE_SCREEN_BUFFER_INFO csbi;
+			GetConsoleScreenBufferInfo(g_hStdOut, &csbi);
+			int iWidth = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+			int iHeight = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+			if(iWidth != iScreenWidth)
+			{
+				char buf[64];
+				sprintf(buf, "con_width %d\n", iWidth);
+				send(ClientSocket, buf, strlen(buf), 0);
+				iScreenWidth = iWidth;
+			}
+			if(iHeight != iScreenHeight)
+			{
+				char buf[64];
+				sprintf(buf, "con_height %d\n", iHeight);
+				send(ClientSocket, buf, strlen(buf), 0);
+				iScreenHeight = iHeight;
+			}
+			Sleep(10);
 		}
 
 		/*do
@@ -719,11 +783,21 @@ int main(int argc, char ** argv)
 	g_iHistoryPointer = 0;
 	g_vHistory.push_back({NULL, NULL});
 
-	if(argc == 2)
+	char szTitle[64];
+
+	if (argc >= 2)
 	{
-		g_bExitOnDisconnect = true;
-		sscanf(argv[1], "%d", &g_iServerPort);
+		int iPort = 0;
+		sscanf(argv[1], "%d", &iPort);
+		if (iPort > 0)
+		{
+			g_bExitOnDisconnect = true;
+			g_iServerPort = iPort;
+		}
 	}
+	sprintf(szTitle, "sxconsole - %s", argc >= 3 ? argv[2] : "");
+	SetConsoleTitleA(szTitle);
+
 	sprintf(g_szServerPort, "%d", g_iServerPort);
 	sprintf(g_szClientPort, "%d", g_iServerPort + 1);
 	
@@ -740,7 +814,7 @@ int main(int argc, char ** argv)
 	//strcpy(str, "Some " COLOR_RED "red " COLOR_RESET "text\n");
 	//WriteColored(str);
 
-	SetConsoleTitle(L"sxconsole");
+	//SetConsoleTitle(L"sxconsole");
 
 	while(1)
 	{

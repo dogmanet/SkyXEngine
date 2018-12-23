@@ -16,9 +16,6 @@
     <ClCompile Include="..\..\..\source\core\time.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\core\file.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\core\Task.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -26,6 +23,21 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\Config.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\common\string.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\common\file_utils.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\file.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\common\string_utils.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\PerfMon.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,25 +68,25 @@
     <ClInclude Include="..\..\..\source\core\time.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\core\concurrent_queue.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\eventbridge.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\eventchannel.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\eventhandler.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\eventhandlerqueue.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\core\File.h">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\Config.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\string.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\file_utils.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\string_utils.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\common\ConcurrentQueue.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\PerfMon.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

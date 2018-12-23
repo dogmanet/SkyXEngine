@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -11,11 +11,14 @@ See the license in LICENSE
 #include "PhyWorld.h"
 
 #include <core/sxcore.h>
+#include <BulletCollision/CollisionShapes/btShapeHull.h>
 
 #if defined(_DEBUG)
 #	pragma comment(lib, "sxcore_d.lib")
 #	pragma comment(lib, "sxgeom_d.lib")
-#	pragma comment(lib, "sxmtllight_d.lib")
+#	pragma comment(lib, "sxgreen_d.lib")
+#	pragma comment(lib, "sxlight_d.lib")
+#	pragma comment(lib, "sxmtrl_d.lib")
 #	pragma comment(lib, "BulletDynamics_vs2010_debug.lib")
 #	pragma comment(lib, "BulletCollision_vs2010_debug.lib")
 #	pragma comment(lib, "LinearMath_vs2010_debug.lib")
@@ -23,7 +26,9 @@ See the license in LICENSE
 #else
 #	pragma comment(lib, "sxcore.lib")
 #	pragma comment(lib, "sxgeom.lib")
-#	pragma comment(lib, "sxmtllight.lib")
+#	pragma comment(lib, "sxgreen.lib")
+#	pragma comment(lib, "sxlight.lib")
+#	pragma comment(lib, "sxmtrl.lib")
 #	pragma comment(lib, "BulletDynamics_vs2010.lib")
 #	pragma comment(lib, "BulletCollision_vs2010.lib")
 #	pragma comment(lib, "LinearMath_vs2010.lib")
@@ -32,12 +37,12 @@ See the license in LICENSE
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
-report_func reportf = DefReport;
+report_func g_fnReportf = DefReport;
 #endif
 
-PhyWorld * g_pWorld = NULL;
+CPhyWorld * g_pWorld = NULL;
 
-#define SP_PRECOND(ret) if(!g_pWorld){reportf(-1, "%s - sxphysics is not init", gen_msg_location);return ret;}
+#define SP_PRECOND(ret) if(!g_pWorld){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxphysics is not init", GEN_MSG_LOCATION);return ret;}
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -55,95 +60,144 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	return TRUE;
 }
 
-SX_LIB_API void SXPhysics_0Create()
+SX_LIB_API void SPhysics_DumpStats()
+{
+	CProfileManager::dumpAll();
+}
+
+SX_LIB_API void SPhysics_0Create()
 {
 	if(g_pWorld)
 	{
-		reportf(-1, "%s - sxphysics double init", gen_msg_location);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxphysics double init", GEN_MSG_LOCATION);
 		return;
 	}
 	Core_SetOutPtr();
 
-	g_pWorld = new PhyWorld();
+	g_pWorld = new CPhyWorld();
+
+	Core_0RegisterConcmd("perf_physics", SPhysics_DumpStats);
 }
-SX_LIB_API void SXPhysics_AKill()
+SX_LIB_API void SPhysics_AKill()
 {
 	SP_PRECOND(_VOID);
 	mem_delete(g_pWorld);
 }
 
-SX_LIB_API void SXPhysics_Update(int thread)
+SX_LIB_API void SPhysics_Update(int thread)
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->Update(thread);
+	g_pWorld->update(thread);
 }
-SX_LIB_API void SXPhysics_UpdateSetThreadNum(int num)
+SX_LIB_API void SPhysics_UpdateSetThreadNum(int num)
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->SetThreadNum(num);
+	g_pWorld->setThreadNum(num);
 }
-SX_LIB_API void SXPhysics_Sync()
+SX_LIB_API void SPhysics_Sync()
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->Sync();
+	g_pWorld->sync();
 }
 
-SX_LIB_API void SXPhysics_Dbg_Set(report_func rf)
+SX_LIB_API void SPhysics_Dbg_Set(report_func rf)
 {
-	reportf = rf;
+	g_fnReportf = rf;
 }
 
-SX_LIB_API void SXPhysics_LoadGeom(const char * file)
-{
-	SP_PRECOND(_VOID);
-	g_pWorld->LoadGeom(file);
-}
-
-SX_LIB_API void SXPhysics_UnloadGeom()
+SX_LIB_API void SPhysics_LoadGeom(const char * file)
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->UnloadGeom();
+	g_pWorld->loadGeom(file);
 }
 
-SX_LIB_API void SXPhysics_DebugRender()
+SX_LIB_API void SPhysics_UnloadGeom()
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->Render();
+	g_pWorld->unloadGeom();
 }
 
-SX_LIB_API void SXPhysics_AddShape(btRigidBody * pBody)
+SX_LIB_API void SPhysics_DebugRender()
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->AddShape(pBody);
+	g_pWorld->render();
 }
 
-SX_LIB_API void SXPhysics_RemoveShape(btRigidBody * pBody)
+SX_LIB_API void SPhysics_AddShape(btRigidBody * pBody)
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->RemoveShape(pBody);
+	g_pWorld->addShape(pBody);
 }
 
-SX_LIB_API btDiscreteDynamicsWorld * SXPhysics_GetDynWorld()
+SX_LIB_API void SPhysics_AddShapeEx(btRigidBody * pBody, int group, int mask)
+{
+	SP_PRECOND(_VOID);
+	g_pWorld->addShape(pBody, group, mask);
+}
+
+SX_LIB_API void SPhysics_RemoveShape(btRigidBody * pBody)
+{
+	SP_PRECOND(_VOID);
+	g_pWorld->removeShape(pBody);
+}
+
+SX_LIB_API btDiscreteDynamicsWorldMt * SPhysics_GetDynWorld()
 {
 	SP_PRECOND(NULL);
-	return(g_pWorld->GetBtWorld());
+	return(g_pWorld->getBtWorld());
 }
 
-SX_LIB_API bool SXPhysics_ImportGeom(const char * file)
+SX_LIB_API bool SPhysics_ImportGeom(const char * file)
 {
 	SP_PRECOND(false);
-	return(g_pWorld->ImportGeom(file));
+	return(g_pWorld->importGeom(file));
 }
 
-SX_LIB_API bool SXPhysics_ExportGeom(const char * file)
+SX_LIB_API bool SPhysics_ExportGeom(const char * file)
 {
 	SP_PRECOND(false);
-	return(g_pWorld->ExportGeom(file));
+	return(g_pWorld->exportGeom(file));
 }
 
-SX_LIB_API int SXPhysics_GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
+SX_LIB_API int SPhysics_GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
 {
 	SP_PRECOND(MTLTYPE_PHYSIC_DEFAULT);
 
-	return(g_pWorld->GetMtlType(pBody, pShapeInfo));
+	return(g_pWorld->getMtlType(pBody, pShapeInfo));
+}
+
+SX_LIB_API ID SPhysics_GetMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
+{
+	SP_PRECOND(-1);
+
+	return(g_pWorld->getMtlID(pBody, pShapeInfo));
+}
+
+SX_LIB_API void SPhysics_EnableSimulation()
+{
+	SP_PRECOND(_VOID);
+
+	g_pWorld->enableSimulation();
+}
+
+SX_LIB_API void SPhysics_DisableSimulation()
+{
+	SP_PRECOND(_VOID);
+
+	g_pWorld->disableSimulation();
+}
+
+SX_LIB_API void SPhysics_BuildHull(btConvexHullShape *pIn, btVector3 **ppOut, int *pNumVertices)
+{
+	btShapeHull tmpHull(pIn);
+	tmpHull.buildHull(0);
+	*pNumVertices = tmpHull.numVertices();
+	*ppOut = new btVector3[*pNumVertices];
+	memcpy(*ppOut, tmpHull.getVertexPointer(), sizeof(btVector3)* *pNumVertices);
+	//return(new btConvexHullShape((const btScalar*)tmpHull.getVertexPointer(), tmpHull.numVertices(), sizeof(btVector3)));
+}
+
+SX_LIB_API void SPhysics_ReleaseHull(btVector3 *pData, int iNumVertices)
+{
+	mem_delete_a(pData);
 }

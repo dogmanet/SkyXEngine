@@ -1,15 +1,16 @@
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
 Глушители
 */
 
-#ifndef _BaseSilencer_H_
-#define _BaseSilencer_H_
+#ifndef __BASE_SILENCER_H
+#define __BASE_SILENCER_H
 
 #include "BaseWeaponAddon.h"
 

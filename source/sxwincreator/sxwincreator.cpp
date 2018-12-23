@@ -1,52 +1,6 @@
 
-#define SX_EXE
 
-//разобраться с кнопкой создания меню
-//при нажатии говорит что она не нажата если обрабатывать lduttonup
-//если ментить самому то все в норме
-#include <windows.h>
-#include <gdefines.h>
-
-#include <Shlwapi.h>
-#include <Shellapi.h>
-#pragma comment(lib, "Shlwapi.lib")
-#pragma comment(lib, "Comctl32.lib")
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxcore_d.lib")
-#else
-#pragma comment(lib, "sxcore.lib")
-#endif
-#include <core/sxcore.h>
-
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxguiwinapi_d.lib")
-#else
-#pragma comment(lib, "sxguiwinapi.lib")
-#endif
-#include <SXGUIWinApi/sxgui.h>
-
-#include <common/Array.h>
-#include <SXWinCreator/resource.h>
-
-
-#define SX_SAFE_DELETE_A
-#define SX_SAFE_DELETE
-
-#define SX_WINCREATOR_COUNT_ELEMENT 17
-
-#define SX_WINCREATOR_STAT_CUR_TEXT "Statistic for cursor:"
-#define SX_WINCREATOR_STAT_CUR_G "desktop:\t"
-#define SX_WINCREATOR_STAT_CUR_PARENT "parent:\t\t"
-#define SX_WINCREATOR_STAT_CUR_CLIENT "element:\t"
-
-#define SX_WINCREATOR_STAT_ALL_ELEM_TEXT "Statistic for all elements:"
-#define SX_WINCREATOR_STAT_ALL_ELEM_COUNT_CREATE "Create:\t"
-#define SX_WINCREATOR_STAT_ALL_ELEM_COUNT_DELETE "Delete:\t"
-#define SX_WINCREATOR_STAT_ALL_ELEM_COUNT_CURRENT "Current:\t"
-
-#define SXWINCREATORVERSION "0.9.0"
+#include "sxwincreator.h"
 
 namespace SXEngine
 {
@@ -54,20 +8,6 @@ namespace SXEngine
 	HINSTANCE			Hinstance = 0;
 };
 
-struct SXElement
-{
-	ISXGUIButtonImg* Object;
-	char Name[256];
-};
-
-struct SXCreateElement
-{
-	SXCreateElement(){ Object = 0; Name[0] = SysClassName[0] = SXClassName[0] = 0; }
-	ISXGUIComponent* Object;
-	char Name[256];
-	char SysClassName[64];
-	char SXClassName[64];
-};
 
 namespace SXMainWndElem
 {
@@ -225,9 +165,9 @@ namespace SXMainWndElem
 	//текущее количество элементов
 	int CountCurrentElem = 0;
 
-	ISXGUIMenu* MainMenu;
+	ISXGUIMenuWindow* MainMenu;
 
-	ISXGUIMenu* MenuWindow;
+	ISXGUIMenuWindow* MenuWindow;
 
 	HCURSOR CurRePos, CurSW, CurSE, CurE, CurS, CurNS, CurWE;
 
@@ -244,10 +184,6 @@ namespace SXMainWndElem
 	bool IsLoadedEl;
 };
 
-#include <sxwincreator\about_sxwincreator.cpp>
-#include <sxwincreator\windowoutput.cpp>
-#include <sxwincreator\sx_param_wnd_data.cpp>
-
 void InLog(const char* format, ...)
 {
 	va_list va;
@@ -258,17 +194,27 @@ void InLog(const char* format, ...)
 
 	if (SXMainWndElem::ListBoxLog)
 	{
-		SXMainWndElem::ListBoxLog->AddItem(buf);
-		SXMainWndElem::ListBoxLog->ScrollLine(SXGUI_SCROLL_TYPE_VERT, SXGUI_SCROLL_DIR_DOWN, SXMainWndElem::ListBoxLog->GetCountItem());
+		SXMainWndElem::ListBoxLog->addItem(buf);
+		gui_func::scrollbar::ScrollLine(SXMainWndElem::ListBoxLog, SXGUI_SCROLL_TYPE_V, SXGUI_SCROLL_DIR_DOWN, SXMainWndElem::ListBoxLog->getItemCount());
 	}
+}
+
+void CreateCursor()
+{
+	SXMainWndElem::CurSE = LoadCursor(0, IDC_SIZENWSE);
+	SXMainWndElem::CurSW = LoadCursor(0, IDC_SIZENESW);
+	SXMainWndElem::CurRePos = LoadCursor(0, IDC_SIZEALL);
+
+	SXMainWndElem::CurNS = LoadCursor(0, IDC_SIZENS);
+	SXMainWndElem::CurWE = LoadCursor(0, IDC_SIZEWE);
 }
 
 bool Render()
 {
 	RECT rect_main_wnd;
-	GetClientRect(SXMainWndElem::MainWnd->GetHWND(), &rect_main_wnd);
+	GetClientRect(SXMainWndElem::MainWnd->getHWND(), &rect_main_wnd);
 
-	GetClientRect(SXMainWndElem::MainWnd->GetHWND(), SXMainWndElem::MainWndOldRect);
+	GetClientRect(SXMainWndElem::MainWnd->getHWND(), SXMainWndElem::MainWndOldRect);
 
 	//если нажата кнопка delete и есть активный элемент то удаляем его
 	//и ставим порядковый номер активного элемента -1
@@ -276,11 +222,11 @@ bool Render()
 	{
 		InLog("%s%s%s", "Deletion of the elements [", SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Name, "] ...");
 		SXMainWndElem::CountDeleteElem++;
-		SXMainWndElem::ListBoxAllElements->DeleteItem(SXMainWndElem::NumActiveElement);
-		for (int i = SXMainWndElem::NumActiveElement; i<SXMainWndElem::ListBoxAllElements->GetCountItem(); i++)
+		SXMainWndElem::ListBoxAllElements->deleteItem(SXMainWndElem::NumActiveElement);
+		for (int i = SXMainWndElem::NumActiveElement; i<SXMainWndElem::ListBoxAllElements->getItemCount(); i++)
 		{
-			int ud = SXMainWndElem::ListBoxAllElements->GetItemData(i);
-			SXMainWndElem::ListBoxAllElements->SetItemData(i, (LPARAM)(ud - 1));
+			int ud = SXMainWndElem::ListBoxAllElements->getItemData(i);
+			SXMainWndElem::ListBoxAllElements->setItemData(i, (LPARAM)(ud - 1));
 		}
 		if (strcmp(SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->SXClassName, "SXGUIBaseWnd") == 0)
 		{
@@ -306,34 +252,34 @@ bool Render()
 	//SXMainWndElem::StaticStatisticMouseGlobal->GetText(CurPos,256);
 	sprintf(CurPos, "%s%d%s%d", SX_WINCREATOR_STAT_CUR_G, global_pos_cursor.x, " | ", global_pos_cursor.y);
 	//InLog("%s",CurPos);
-	SXMainWndElem::StaticStatisticMouseGlobal->SetText(CurPos);
-	MapWindowPoints(0, SXMainWndElem::JobMainWnd->GetHWND(), &global_pos_cursor, 1);
+	SXMainWndElem::StaticStatisticMouseGlobal->setText(CurPos);
+	MapWindowPoints(0, SXMainWndElem::JobMainWnd->getHWND(), &global_pos_cursor, 1);
 	sprintf(CurPos, "%s%d%s%d", SX_WINCREATOR_STAT_CUR_PARENT, global_pos_cursor.x, " | ", global_pos_cursor.y);
-	SXMainWndElem::StaticStatisticMouseParent->SetText(CurPos);
+	SXMainWndElem::StaticStatisticMouseParent->setText(CurPos);
 	if (SXMainWndElem::NumActiveElement != -1)
 	{
-		MapWindowPoints(SXMainWndElem::JobMainWnd->GetHWND(), SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->GetHWND(), &global_pos_cursor, 1);
+		MapWindowPoints(SXMainWndElem::JobMainWnd->getHWND(), SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Object->getHWND(), &global_pos_cursor, 1);
 		sprintf(CurPos, "%s%d%s%d", SX_WINCREATOR_STAT_CUR_CLIENT, global_pos_cursor.x, " | ", global_pos_cursor.y);
-		SXMainWndElem::StaticStatisticMouseClient->SetText(CurPos);
+		SXMainWndElem::StaticStatisticMouseClient->setText(CurPos);
 	}
 	else
 	{
 		sprintf(CurPos, "%s%d%s%d", SX_WINCREATOR_STAT_CUR_CLIENT, -1, " | ", -1);
-		SXMainWndElem::StaticStatisticMouseClient->SetText(CurPos);
+		SXMainWndElem::StaticStatisticMouseClient->setText(CurPos);
 	}
 	//SXMainWndElem::GlobalCurPos = global_pos_cursor;
 	//}
 
 	char ElemStat[256];
 	sprintf(ElemStat, "%s%d", SX_WINCREATOR_STAT_ALL_ELEM_COUNT_CREATE, SXMainWndElem::CountCreateNewElem);
-	SXMainWndElem::StaticStatisticElemCreate->SetText(ElemStat);
+	SXMainWndElem::StaticStatisticElemCreate->setText(ElemStat);
 
 	sprintf(ElemStat, "%s%d", SX_WINCREATOR_STAT_ALL_ELEM_COUNT_DELETE, SXMainWndElem::CountDeleteElem);
-	SXMainWndElem::StaticStatisticElemDelete->SetText(ElemStat);
+	SXMainWndElem::StaticStatisticElemDelete->setText(ElemStat);
 
 	SXMainWndElem::CountCurrentElem = SXMainWndElem::CreateElements.size();
 	sprintf(ElemStat, "%s%d", SX_WINCREATOR_STAT_ALL_ELEM_COUNT_CURRENT, SXMainWndElem::CountCurrentElem);
-	SXMainWndElem::StaticStatisticElemCurrent->SetText(ElemStat);
+	SXMainWndElem::StaticStatisticElemCurrent->setText(ElemStat);
 
 
 	//вывод всех окон на передний план
@@ -371,9 +317,6 @@ bool Render()
 };
 
 
-#include <sxwincreator\callbacks.cpp>
-#include <sxwincreator\create_current_gui.cpp>
-
 int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE prevInstance, PSTR cmdLine, int showCmd)
 {
 	SXEngine::Hinstance = hinstance;
@@ -384,476 +327,450 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE prevInstance, PSTR cmdLine, in
 
 	CreateCursor();
 
-	SXGUIRegClass::RegButtonImg();
-	SXGUIRegClass::RegGroupBox();
-
-	INITCOMMONCONTROLSEX icex;
-
-	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
-	icex.dwICC = ICC_BAR_CLASSES;
-	InitCommonControlsEx(&icex);
+	SXGUIinit();
 
 	RECT wrect;
 	SystemParametersInfo(SPI_GETWORKAREA, 0, &wrect, 0);
 
-	SXMainWndElem::MainWnd = SXGUICrBaseWnd(
-		"SkyX Windows Creator", "SkyX Windows Creator", 0,
-		0,
+	SXMainWndElem::MainWnd = SXGUICrBaseWndEx(
+		"SkyX Windows Creator", "SkyX Windows Creator",
 		wrect.left, wrect.top, wrect.right, 150,
 		0, 0, CreateSolidBrush(RGB(220, 220, 220)),
 		0, CS_HREDRAW | CS_VREDRAW, WS_DLGFRAME | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION,
 		0, WndProcAllDefault);
+	SXMainWndElem::MainWnd->setVisible(true);
+	gui_func::base_handlers::InitHandlerMsg(SXMainWndElem::MainWnd);
+	SXMainWndElem::MainWnd->addHandler(ComMenuId, WM_COMMAND);
+	SXMainWndElem::MainWnd->addHandler(TrueExit, WM_CLOSE, 0, 0, 0, 0, true);
 
-	SXGUIBaseHandlers::InitHandlerMsg(SXMainWndElem::MainWnd);
-	SXMainWndElem::MainWnd->AddHandler(ComMenuId, WM_COMMAND);
-	SXMainWndElem::MainWnd->AddHandler(TrueExit, WM_CLOSE, 0, 0, 0, 0, true);
+	SXMainWndElem::MainWnd->setMixSize(wrect.right, 150);
 
-	SXMainWndElem::MainWnd->MinSizeX = wrect.right;
-	SXMainWndElem::MainWnd->MinSizeY = 150;
+	SXMainWndElem::MainWnd->setStretchSides(true, true, true, true);
 
-	SXMainWndElem::MainWnd->BFSizingChangeLeft = true;
-	SXMainWndElem::MainWnd->BFSizingChangeTop = true;
+	SXMainWndElem::MainMenu = SXGUICrMenuWindowEx(IDR_MENU1);
+	SXMainWndElem::MainMenu->setToWindow(SXMainWndElem::MainWnd->getHWND());
 
-	SXMainWndElem::MainWnd->BFSizingChangeRight = true;
-	SXMainWndElem::MainWnd->BFSizingChangeBottom = true;
+	SXMainWndElem::MenuWindow = SXGUICrMenuWindowEx(IDR_MENU2);
 
-	SXMainWndElem::MainMenu = SXGUICrMenuEx(IDR_MENU1);
-	SXMainWndElem::MainMenu->SetToWindow(SXMainWndElem::MainWnd->GetHWND());
-
-	SXMainWndElem::MenuWindow = SXGUICrMenuEx(IDR_MENU2);
-
-	SXMainWndElem::ParamWnd = SXGUICrBaseWnd(
-		"ParamWnd", "ParamWnd", 0,
-		0, wrect.right - 256, wrect.top + 160, 256, wrect.bottom - 160,
+	SXMainWndElem::ParamWnd = SXGUICrBaseWndEx(
+		"ParamWnd", "ParamWnd", 
+		wrect.right - 256, wrect.top + 160, 256, wrect.bottom - 160,
 		0, 0, CreateSolidBrush(RGB(220, 220, 220)),
 		WS_EX_TOOLWINDOW, CS_HREDRAW | CS_VREDRAW, WS_CAPTION | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_SYSMENU | WS_OVERLAPPED,
 		0, WndProcAllDefault);
+	SXMainWndElem::ParamWnd->setVisible(true);
+	gui_func::base_handlers::InitHandlerMsg(SXMainWndElem::ParamWnd);
+	SXMainWndElem::ParamWnd->addHandler(MinimuzeWinInsteadClose, WM_CLOSE, 0, 0, 0, 0, true);
+	SXMainWndElem::ParamWnd->addHandler(CallWmCommand, WM_COMMAND, 0, 0, 0, 0, true);
 
-	SXGUIBaseHandlers::InitHandlerMsg(SXMainWndElem::ParamWnd);
-	SXMainWndElem::ParamWnd->AddHandler(MinimuzeWinInsteadClose, WM_CLOSE, 0, 0, 0, 0, true);
-	SXMainWndElem::ParamWnd->AddHandler(CallWmCommand, WM_COMMAND, 0, 0, 0, 0, true);
-
-	SXMainWndElem::ListBoxAllElements = SXGUICrListBox("ListBoxAllElements", 5, 5, 240, 150, SXMainWndElem::ParamWnd->GetHWND(), 0, 0, false);
-	SXMainWndElem::ListBoxAllElements->AddHandler(ListBoxAllElementsDBLClick, WM_LBUTTONDBLCLK);
+	SXMainWndElem::ListBoxAllElements = SXGUICrListBox(5, 5, 240, 150, SXMainWndElem::ParamWnd->getHWND(), 0, 0, false);
+	SXMainWndElem::ListBoxAllElements->addHandler(ListBoxAllElementsDBLClick, WM_LBUTTONDBLCLK);
 
 
 	RECT rect_main_wnd;
-	GetClientRect(SXMainWndElem::MainWnd->GetHWND(), &rect_main_wnd);
+	GetClientRect(SXMainWndElem::MainWnd->getHWND(), &rect_main_wnd);
 
 	SXMainWndElem::MainWndOldRect = new RECT;
-	GetClientRect(SXMainWndElem::MainWnd->GetHWND(), SXMainWndElem::MainWndOldRect);
+	GetClientRect(SXMainWndElem::MainWnd->getHWND(), SXMainWndElem::MainWndOldRect);
 
-	SXMainWndElem::SettingsPanel = SXGUICrToolBar(0, 0, SXMainWndElem::MainWndOldRect->right, 26, SXMainWndElem::MainWnd->GetHWND(), 0, 123);
-	SXMainWndElem::SettingsPanel->GAlign.top = true;
-	SXMainWndElem::SettingsPanel->GAlign.left = true;
-	SXMainWndElem::SettingsPanel->GAlign.bottom = false;
-	SXMainWndElem::SettingsPanel->GAlign.right = true;
+	SXMainWndElem::SettingsPanel = SXGUICrToolBar(0, 0, SXMainWndElem::MainWndOldRect->right, 26, SXMainWndElem::MainWnd->getHWND(), 0, 123);
+	SXMainWndElem::SettingsPanel->setFollowParentSides(true, false, true, true);
 
-	ISXGUIButtonImg* ImgNew = SXGUICrButtonImgRes(IDB_BITMAP1, 3, 1, 20, 20, RGB(255, 0, 110), RGB(220, 220, 220), SXMainWndElem::SettingsPanel->GetHWND(), 0, 0);
-	ImgNew->InitCallBack();
-	ImgNew->AddHandler(CallImgNew, WM_LBUTTONUP);
+	ISXGUIButtonImg* ImgNew = SXGUICrButtonImgRes(IDB_BITMAP1, 3, 1, 20, 20, RGB(255, 0, 110), RGB(220, 220, 220), SXMainWndElem::SettingsPanel->getHWND(), 0, 0);
+	ImgNew->initCallBack();
+	ImgNew->addHandler(CallImgNew, WM_LBUTTONUP);
 	//ImgNew->ShowHint(true);
-	//ImgNew->SetHintText(SXMainWndElem::NameElements[i]);
+	//ImgNew->setHintText(SXMainWndElem::NameElements[i]);
 
-	ISXGUIButtonImg* ImgLoad = SXGUICrButtonImgRes(IDB_BITMAP2, 30, 1, 20, 20, RGB(255, 0, 110), RGB(220, 220, 220), SXMainWndElem::SettingsPanel->GetHWND(), 0, 0);
-	ImgLoad->InitCallBack();
-	ImgLoad->AddHandler(CallImgLoad, WM_LBUTTONUP);
+	ISXGUIButtonImg* ImgLoad = SXGUICrButtonImgRes(IDB_BITMAP2, 30, 1, 20, 20, RGB(255, 0, 110), RGB(220, 220, 220), SXMainWndElem::SettingsPanel->getHWND(), 0, 0);
+	ImgLoad->initCallBack();
+	ImgLoad->addHandler(CallImgLoad, WM_LBUTTONUP);
 
 	//ImgNew->ShowHint(true);
-	//ImgNew->SetHintText(SXMainWndElem::NameElements[i]);
+	//ImgNew->setHintText(SXMainWndElem::NameElements[i]);
 
-	ISXGUIButtonImg* ImgSave = SXGUICrButtonImgRes(IDB_BITMAP4, 57, 1, 20, 20, RGB(255, 0, 110), RGB(220, 220, 220), SXMainWndElem::SettingsPanel->GetHWND(), 0, 0);
-	ImgSave->InitCallBack();
-	ImgSave->AddHandler(CallImgSave, WM_LBUTTONUP);
-
-	//ImgNew->ShowHint(true);
-	//ImgNew->SetHintText(SXMainWndElem::NameElements[i]);
-
-	ISXGUIButtonImg* ImgBuild = SXGUICrButtonImgRes(IDB_BITMAP3, 84, 1, 20, 20, RGB(255, 0, 110), RGB(220, 220, 220), SXMainWndElem::SettingsPanel->GetHWND(), 0, 0);
-	ImgBuild->InitCallBack();
-	ImgBuild->AddHandler(CallImgBuild, WM_LBUTTONUP);
+	ISXGUIButtonImg* ImgSave = SXGUICrButtonImgRes(IDB_BITMAP4, 57, 1, 20, 20, RGB(255, 0, 110), RGB(220, 220, 220), SXMainWndElem::SettingsPanel->getHWND(), 0, 0);
+	ImgSave->initCallBack();
+	ImgSave->addHandler(CallImgSave, WM_LBUTTONUP);
 
 	//ImgNew->ShowHint(true);
-	//ImgNew->SetHintText(SXMainWndElem::NameElements[i]);
+	//ImgNew->setHintText(SXMainWndElem::NameElements[i]);
+
+	ISXGUIButtonImg* ImgBuild = SXGUICrButtonImgRes(IDB_BITMAP3, 84, 1, 20, 20, RGB(255, 0, 110), RGB(220, 220, 220), SXMainWndElem::SettingsPanel->getHWND(), 0, 0);
+	ImgBuild->initCallBack();
+	ImgBuild->addHandler(CallImgBuild, WM_LBUTTONUP);
+
+	//ImgNew->ShowHint(true);
+	//ImgNew->setHintText(SXMainWndElem::NameElements[i]);
 
 
-	SXMainWndElem::ToolsPanel = SXGUICrToolBar(0, 25, SXMainWndElem::MainWndOldRect->right, 31, SXMainWndElem::MainWnd->GetHWND(), 0, 123);
-	SXMainWndElem::ToolsPanel->GAlign.top = true;
-	SXMainWndElem::ToolsPanel->GAlign.left = true;
-	SXMainWndElem::ToolsPanel->GAlign.bottom = false;
-	SXMainWndElem::ToolsPanel->GAlign.right = true;
+	SXMainWndElem::ToolsPanel = SXGUICrToolBar(0, 25, SXMainWndElem::MainWndOldRect->right, 31, SXMainWndElem::MainWnd->getHWND(), 0, 123);
+	SXMainWndElem::ToolsPanel->setFollowParentSides(true, false, true, true);
 
 	int tmpX, tmpY, tmpAddition;
 	tmpX = 30;
 	tmpY = 1;
 	tmpAddition = 27;
 
-	SXMainWndElem::ButtonArrow = SXGUICrButtonImgRes(IDB_BITMAP5, 3, tmpY, 24, 24, RGB(0, 0, 0), RGB(0, 0, 0), SXMainWndElem::ToolsPanel->GetHWND(), 0, 0);
-	SXMainWndElem::ButtonArrow->SetColorFrame(100, 100, 100);
-	SXMainWndElem::ButtonArrow->InitCallBack();
+	SXMainWndElem::ButtonArrow = SXGUICrButtonImgRes(IDB_BITMAP5, 3, tmpY, 24, 24, RGB(0, 0, 0), RGB(0, 0, 0), SXMainWndElem::ToolsPanel->getHWND(), 0, 0);
+	SXMainWndElem::ButtonArrow->setColorFrame(RGB(100, 100, 100));
+	SXMainWndElem::ButtonArrow->initCallBack();
 
-	SXMainWndElem::ButtonArrow->GAlign.top = true;
-	SXMainWndElem::ButtonArrow->GAlign.left = true;
-	SXMainWndElem::ButtonArrow->GAlign.bottom = false;
-	SXMainWndElem::ButtonArrow->GAlign.right = false;
+	SXMainWndElem::ButtonArrow->setFollowParentSides(true, false, false, true);
 
-	SXMainWndElem::ButtonArrow->SetEnableActive(true);
-	SXMainWndElem::ButtonArrow->SetParentGroup(true);
+	SXMainWndElem::ButtonArrow->setActive(true);
+	SXMainWndElem::ButtonArrow->setParentGroup(true);
 
 	for (int i = 0; i<SX_WINCREATOR_COUNT_ELEMENT; i++)
 	{
 		sprintf(SXMainWndElem::Elements[i].Name, "%s", SXMainWndElem::NameElements[i]);
-		SXMainWndElem::Elements[i].Object = SXGUICrButtonImgRes(SXMainWndElem::ArrNumResource[i], tmpX, tmpY, 24, 24, RGB(0, 0, 0), RGB(0, 0, 0), SXMainWndElem::ToolsPanel->GetHWND(), 0, 0);
+		SXMainWndElem::Elements[i].Object = SXGUICrButtonImgRes(SXMainWndElem::ArrNumResource[i], tmpX, tmpY, 24, 24, RGB(0, 0, 0), RGB(0, 0, 0), SXMainWndElem::ToolsPanel->getHWND(), 0, 0);
 
-		SXMainWndElem::Elements[i].Object->InitCallBack();
+		SXMainWndElem::Elements[i].Object->initCallBack();
 
-		SXMainWndElem::Elements[i].Object->SetColorFrame(100, 100, 100);
-		SXMainWndElem::Elements[i].Object->GAlign.top = true;
-		SXMainWndElem::Elements[i].Object->GAlign.left = true;
-		SXMainWndElem::Elements[i].Object->GAlign.bottom = false;
-		SXMainWndElem::Elements[i].Object->GAlign.right = false;
+		SXMainWndElem::Elements[i].Object->setColorFrame(RGB(100, 100, 100));
+		SXMainWndElem::Elements[i].Object->setFollowParentSides(true, false, false, true);
 
-		ISXGUIButtonImg* tmptmp = dynamic_cast<ISXGUIButtonImg*>(SXMainWndElem::Elements[i].Object);
-		tmptmp->GAlign.top;
+		SXMainWndElem::Elements[i].Object->setShowHint(true);
+		SXMainWndElem::Elements[i].Object->setHintText(SXMainWndElem::NameElements[i]);
 
-		SXMainWndElem::Elements[i].Object->ShowHint(true);
-		SXMainWndElem::Elements[i].Object->SetHintText(SXMainWndElem::NameElements[i]);
-
-		SXMainWndElem::Elements[i].Object->SetEnableActive(true);
-		SXMainWndElem::Elements[i].Object->SetParentGroup(true);
+		SXMainWndElem::Elements[i].Object->setActive(true);
+		SXMainWndElem::Elements[i].Object->setParentGroup(true);
 		tmpX += tmpAddition;
 	}
 
 
 	sprintf(SXMainWndElem::NameJobWnd, "%s", "JobWindow");
-	SXMainWndElem::JobMainWnd = SXGUICrBaseWnd(
-		SXMainWndElem::NameJobWnd, SXMainWndElem::NameJobWnd, 0,
-		0, 100, 250, wrect.right - 456, wrect.bottom - 350,
+	SXMainWndElem::JobMainWnd = SXGUICrBaseWndEx(
+		SXMainWndElem::NameJobWnd, SXMainWndElem::NameJobWnd, 
+		100, 250, wrect.right - 456, wrect.bottom - 350,
 		0, 0, CreateSolidBrush(RGB(220, 220, 220)),
 		0, CS_HREDRAW | CS_VREDRAW, WS_THICKFRAME | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_CAPTION,
 		0, WndProcAllDefault);
-	SXGUIBaseHandlers::InitHandlerMsg(SXMainWndElem::JobMainWnd);
-	SXMainWndElem::JobMainWnd->AddHandler(AddElement, WM_LBUTTONUP);
-	SXMainWndElem::JobMainWnd->AddHandler(MouseMove, WM_MOUSEMOVE);
-	SXMainWndElem::JobMainWnd->AddHandler(RButtonUp, WM_RBUTTONUP);
-	SXMainWndElem::JobMainWnd->AddHandler(MinimuzeWinInsteadClose, WM_CLOSE, 0, 0, 0, 0, true);
+	SXMainWndElem::JobMainWnd->setVisible(true);
+	gui_func::base_handlers::InitHandlerMsg(SXMainWndElem::JobMainWnd);
+	SXMainWndElem::JobMainWnd->addHandler(AddElement, WM_LBUTTONUP);
+	SXMainWndElem::JobMainWnd->addHandler(MouseMove, WM_MOUSEMOVE);
+	SXMainWndElem::JobMainWnd->addHandler(RButtonUp, WM_RBUTTONUP);
+	SXMainWndElem::JobMainWnd->addHandler(MinimuzeWinInsteadClose, WM_CLOSE, 0, 0, 0, 0, true);
 
-	//ISXGUIButton* tmpbutton = SXGUICrButton("NameElem", 100, 100, 100, 20, 0, SXMainWndElem::JobMainWnd->GetHWND(), WndProcChildJob, 0);
-	//int cerr = SetWindowLong(tmpbutton->GetHWND(), GWL_USERDATA, (LONG)dynamic_cast<ISXGUIButton*>(tmpbutton));
-	//SXMainWndElem::JobMainWnd->AddHandler(LButtonDown,WM_LBUTTONDOWN);
-	//SXMainWndElem::JobMainWnd->AddHandler(ActivateAllWindows,WM_ACTIVATE/*,0,false,0,false,true*/);
+	//ISXGUIButton* tmpbutton = SXGUICrButton("NameElem", 100, 100, 100, 20, 0, SXMainWndElem::JobMainWnd->getHWND(), WndProcChildJob, 0);
+	//int cerr = SetWindowLong(tmpbutton->getHWND(), GWL_USERDATA, (LONG)dynamic_cast<ISXGUIButton*>(tmpbutton));
+	//SXMainWndElem::JobMainWnd->addHandler(LButtonDown,WM_LBUTTONDOWN);
+	//SXMainWndElem::JobMainWnd->addHandler(ActivateAllWindows,WM_ACTIVATE/*,0,false,0,false,true*/);
 
 
 	//установка статистики курсора
-	SXMainWndElem::StaticStatisticMouseText = SXGUICrStatic(SX_WINCREATOR_STAT_CUR_TEXT, 10, 73, 110, 15, SXMainWndElem::MainWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticStatisticMouseText->SetColorBrush(220, 220, 220);
-	SXMainWndElem::StaticStatisticMouseText->SetFont(0, 14, 0, 0, 0, 0, 0);
-	SXMainWndElem::StaticStatisticMouseGlobal = SXGUICrStatic("", 120, 58, 150, 15, SXMainWndElem::MainWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticStatisticMouseGlobal->SetColorBrush(220, 220, 220);
-	SXMainWndElem::StaticStatisticMouseGlobal->SetFont(0, 14, 0, 0, 0, 0, 0);
-	SXMainWndElem::StaticStatisticMouseParent = SXGUICrStatic("", 120, 73, 150, 15, SXMainWndElem::MainWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticStatisticMouseParent->SetColorBrush(220, 220, 220);
-	SXMainWndElem::StaticStatisticMouseParent->SetFont(0, 14, 0, 0, 0, 0, 0);
-	SXMainWndElem::StaticStatisticMouseClient = SXGUICrStatic("", 120, 88, 150, 15, SXMainWndElem::MainWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticStatisticMouseClient->SetColorBrush(220, 220, 220);
-	SXMainWndElem::StaticStatisticMouseClient->SetFont(0, 14, 0, 0, 0, 0, 0);
+	SXMainWndElem::StaticStatisticMouseText = SXGUICrStatic(SX_WINCREATOR_STAT_CUR_TEXT, 10, 73, 110, 15, SXMainWndElem::MainWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticStatisticMouseText->setColorBrush(RGB(220, 220, 220));
+	SXMainWndElem::StaticStatisticMouseText->setFont(0, 14, 0, 0, 0, 0, 0);
+	SXMainWndElem::StaticStatisticMouseGlobal = SXGUICrStatic("", 120, 58, 150, 15, SXMainWndElem::MainWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticStatisticMouseGlobal->setColorBrush(RGB(220, 220, 220));
+	SXMainWndElem::StaticStatisticMouseGlobal->setFont(0, 14, 0, 0, 0, 0, 0);
+	SXMainWndElem::StaticStatisticMouseParent = SXGUICrStatic("", 120, 73, 150, 15, SXMainWndElem::MainWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticStatisticMouseParent->setColorBrush(RGB(220, 220, 220));
+	SXMainWndElem::StaticStatisticMouseParent->setFont(0, 14, 0, 0, 0, 0, 0);
+	SXMainWndElem::StaticStatisticMouseClient = SXGUICrStatic("", 120, 88, 150, 15, SXMainWndElem::MainWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticStatisticMouseClient->setColorBrush(RGB(220, 220, 220));
+	SXMainWndElem::StaticStatisticMouseClient->setFont(0, 14, 0, 0, 0, 0, 0);
 
 	//установка статистики элементов
-	SXMainWndElem::StaticStatisticElemText = SXGUICrStatic(SX_WINCREATOR_STAT_ALL_ELEM_TEXT, 280, 73, 130, 15, SXMainWndElem::MainWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticStatisticElemText->SetColorBrush(220, 220, 220);
-	SXMainWndElem::StaticStatisticElemText->SetFont(0, 14, 0, 0, 0, 0, 0);
-	SXMainWndElem::StaticStatisticElemCreate = SXGUICrStatic("", 410, 58, 250, 15, SXMainWndElem::MainWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticStatisticElemCreate->SetColorBrush(220, 220, 220);
-	SXMainWndElem::StaticStatisticElemCreate->SetFont(0, 14, 0, 0, 0, 0, 0);
-	SXMainWndElem::StaticStatisticElemDelete = SXGUICrStatic("", 410, 73, 250, 15, SXMainWndElem::MainWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticStatisticElemDelete->SetColorBrush(220, 220, 220);
-	SXMainWndElem::StaticStatisticElemDelete->SetFont(0, 14, 0, 0, 0, 0, 0);
-	SXMainWndElem::StaticStatisticElemCurrent = SXGUICrStatic("", 410, 88, 250, 15, SXMainWndElem::MainWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticStatisticElemCurrent->SetColorBrush(220, 220, 220);
-	SXMainWndElem::StaticStatisticElemCurrent->SetFont(0, 14, 0, 0, 0, 0, 0);
+	SXMainWndElem::StaticStatisticElemText = SXGUICrStatic(SX_WINCREATOR_STAT_ALL_ELEM_TEXT, 280, 73, 130, 15, SXMainWndElem::MainWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticStatisticElemText->setColorBrush(RGB(220, 220, 220));
+	SXMainWndElem::StaticStatisticElemText->setFont(0, 14, 0, 0, 0, 0, 0);
+	SXMainWndElem::StaticStatisticElemCreate = SXGUICrStatic("", 410, 58, 250, 15, SXMainWndElem::MainWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticStatisticElemCreate->setColorBrush(RGB(220, 220, 220));
+	SXMainWndElem::StaticStatisticElemCreate->setFont(0, 14, 0, 0, 0, 0, 0);
+	SXMainWndElem::StaticStatisticElemDelete = SXGUICrStatic("", 410, 73, 250, 15, SXMainWndElem::MainWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticStatisticElemDelete->setColorBrush(RGB(220, 220, 220));
+	SXMainWndElem::StaticStatisticElemDelete->setFont(0, 14, 0, 0, 0, 0, 0);
+	SXMainWndElem::StaticStatisticElemCurrent = SXGUICrStatic("", 410, 88, 250, 15, SXMainWndElem::MainWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticStatisticElemCurrent->setColorBrush(RGB(220, 220, 220));
+	SXMainWndElem::StaticStatisticElemCurrent->setFont(0, 14, 0, 0, 0, 0, 0);
 
 
 	int tmpPosX = 5;
 	int tmpPosY = 160;
 
 	//установка статиков для отображения параметров
-	SXMainWndElem::StaticParamPosX = SXGUICrStatic("PosX:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamPosX->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamPosX = SXGUICrStatic("PosX:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamPosX->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamPosX->Font(0,15,0,0,0,0);
 
-	SXMainWndElem::EditParamPosX = SXGUICrEdit("PosX:", 90, tmpPosY, 155, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamPosX = SXGUICrEdit("PosX:", 90, tmpPosY, 155, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamPosX->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamPosX->ModifyStyle(ES_NUMBER, 0);
-	SXMainWndElem::EditParamPosX->AddHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamPosX->modifyStyle(ES_NUMBER, 0);
+	SXMainWndElem::EditParamPosX->addHandler(InputInfoEdit, WM_KEYDOWN);
 
 	tmpPosY += 20;
 
 
-	SXMainWndElem::StaticParamPosY = SXGUICrStatic("PosY:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamPosY->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamPosY = SXGUICrStatic("PosY:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamPosY->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamPosY->Font(0,15,0,0,0,0);
 
-	SXMainWndElem::EditParamPosY = SXGUICrEdit("PosY:", 90, tmpPosY, 155, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamPosY = SXGUICrEdit("PosY:", 90, tmpPosY, 155, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamPosY->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamPosY->ModifyStyle(ES_NUMBER, 0);
-	SXMainWndElem::EditParamPosY->AddHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamPosY->modifyStyle(ES_NUMBER, 0);
+	SXMainWndElem::EditParamPosY->addHandler(InputInfoEdit, WM_KEYDOWN);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamWidth = SXGUICrStatic("Width:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamWidth->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamWidth = SXGUICrStatic("Width:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamWidth->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamWidth->Font(0,15,0,0,0,0);
 
-	SXMainWndElem::EditParamWidth = SXGUICrEdit("Width:", 90, tmpPosY, 155, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamWidth = SXGUICrEdit("Width:", 90, tmpPosY, 155, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamWidth->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamWidth->ModifyStyle(ES_NUMBER, 0);
-	SXMainWndElem::EditParamWidth->AddHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamWidth->modifyStyle(ES_NUMBER, 0);
+	SXMainWndElem::EditParamWidth->addHandler(InputInfoEdit, WM_KEYDOWN);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamHeight = SXGUICrStatic("Height:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamHeight->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamHeight = SXGUICrStatic("Height:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamHeight->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamHeight->Font(0,15,0,0,0,0);
 
-	SXMainWndElem::EditParamHeight = SXGUICrEdit("Height:", 90, tmpPosY, 155, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamHeight = SXGUICrEdit("Height:", 90, tmpPosY, 155, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamHeight->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamHeight->ModifyStyle(ES_NUMBER, 0);
-	SXMainWndElem::EditParamHeight->AddHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamHeight->modifyStyle(ES_NUMBER, 0);
+	SXMainWndElem::EditParamHeight->addHandler(InputInfoEdit, WM_KEYDOWN);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamCaption = SXGUICrStatic("Caption:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamCaption->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamCaption = SXGUICrStatic("Caption:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamCaption->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamCaption->Font(0,15,0,0,0,0);
 
-	SXMainWndElem::EditParamCaption = SXGUICrEdit("Caption:", 90, tmpPosY, 155, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamCaption = SXGUICrEdit("Caption:", 90, tmpPosY, 155, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamCaption->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamCaption->AddHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamCaption->addHandler(InputInfoEdit, WM_KEYDOWN);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamVarName = SXGUICrStatic("Variable name:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamVarName->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamVarName = SXGUICrStatic("Variable name:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamVarName->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamCaption->Font(0,15,0,0,0,0);
 
-	SXMainWndElem::EditParamVarName = SXGUICrEdit("name", 90, tmpPosY, 155, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamVarName = SXGUICrEdit("name", 90, tmpPosY, 155, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamCaption->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamVarName->AddHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamVarName->addHandler(InputInfoEdit, WM_KEYDOWN);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamColorText = SXGUICrStatic("Color text:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamColorText->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamColorText = SXGUICrStatic("Color text:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamColorText->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamColorText->Font(0,15,0,0,0,0);
 
-	SXMainWndElem::EditParamColorTextR = SXGUICrEdit("0", 90, tmpPosY, 45, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamColorTextR = SXGUICrEdit("0", 90, tmpPosY, 45, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamColorTextR->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamColorTextR->ModifyStyle(ES_NUMBER, 0);
-	SXMainWndElem::EditParamColorTextR->AddHandler(InputInfoEdit, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorTextR->AddHandler(InitColorText, WM_LBUTTONDBLCLK);
-	SXMainWndElem::EditParamColorTextR->AddHandler(InputToEditColor, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorTextR->AddHandler(InputToEditColor, WM_KEYUP);
+	SXMainWndElem::EditParamColorTextR->modifyStyle(ES_NUMBER, 0);
+	SXMainWndElem::EditParamColorTextR->addHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorTextR->addHandler(InitColorText, WM_LBUTTONDBLCLK);
+	SXMainWndElem::EditParamColorTextR->addHandler(InputToEditColor, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorTextR->addHandler(InputToEditColor, WM_KEYUP);
 
-	SXMainWndElem::EditParamColorTextG = SXGUICrEdit("0", 145, tmpPosY, 45, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamColorTextG = SXGUICrEdit("0", 145, tmpPosY, 45, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamColorTextG->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamColorTextG->ModifyStyle(ES_NUMBER, 0);
-	SXMainWndElem::EditParamColorTextG->AddHandler(InputInfoEdit, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorTextG->AddHandler(InitColorText, WM_LBUTTONDBLCLK);
-	SXMainWndElem::EditParamColorTextG->AddHandler(InputToEditColor, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorTextG->AddHandler(InputToEditColor, WM_KEYUP);
+	SXMainWndElem::EditParamColorTextG->modifyStyle(ES_NUMBER, 0);
+	SXMainWndElem::EditParamColorTextG->addHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorTextG->addHandler(InitColorText, WM_LBUTTONDBLCLK);
+	SXMainWndElem::EditParamColorTextG->addHandler(InputToEditColor, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorTextG->addHandler(InputToEditColor, WM_KEYUP);
 
-	SXMainWndElem::EditParamColorTextB = SXGUICrEdit("0", 200, tmpPosY, 45, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamColorTextB = SXGUICrEdit("0", 200, tmpPosY, 45, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamColorTextB->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamColorTextB->ModifyStyle(ES_NUMBER, 0);
-	SXMainWndElem::EditParamColorTextB->AddHandler(InputInfoEdit, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorTextB->AddHandler(InitColorText, WM_LBUTTONDBLCLK);
-	SXMainWndElem::EditParamColorTextB->AddHandler(InputToEditColor, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorTextB->AddHandler(InputToEditColor, WM_KEYUP);
+	SXMainWndElem::EditParamColorTextB->modifyStyle(ES_NUMBER, 0);
+	SXMainWndElem::EditParamColorTextB->addHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorTextB->addHandler(InitColorText, WM_LBUTTONDBLCLK);
+	SXMainWndElem::EditParamColorTextB->addHandler(InputToEditColor, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorTextB->addHandler(InputToEditColor, WM_KEYUP);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamColorBKText = SXGUICrStatic("Color bk text:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamColorBKText->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamColorBKText = SXGUICrStatic("Color bk text:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamColorBKText->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamColorBKText->Font(0,15,0,0,0,0);
 
-	SXMainWndElem::EditParamColorTextBKR = SXGUICrEdit("0", 90, tmpPosY, 45, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamColorTextBKR = SXGUICrEdit("0", 90, tmpPosY, 45, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamColorTextBKR->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamColorTextBKR->ModifyStyle(ES_NUMBER, 0);
-	SXMainWndElem::EditParamColorTextBKR->AddHandler(InputInfoEdit, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorTextBKR->AddHandler(InitColorText, WM_LBUTTONDBLCLK);
-	SXMainWndElem::EditParamColorTextBKR->AddHandler(InputToEditColor, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorTextBKR->AddHandler(InputToEditColor, WM_KEYUP);
+	SXMainWndElem::EditParamColorTextBKR->modifyStyle(ES_NUMBER, 0);
+	SXMainWndElem::EditParamColorTextBKR->addHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorTextBKR->addHandler(InitColorText, WM_LBUTTONDBLCLK);
+	SXMainWndElem::EditParamColorTextBKR->addHandler(InputToEditColor, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorTextBKR->addHandler(InputToEditColor, WM_KEYUP);
 
-	SXMainWndElem::EditParamColorTextBKG = SXGUICrEdit("0", 145, tmpPosY, 45, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamColorTextBKG = SXGUICrEdit("0", 145, tmpPosY, 45, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamColorTextBKG->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamColorTextBKG->ModifyStyle(ES_NUMBER, 0);
-	SXMainWndElem::EditParamColorTextBKG->AddHandler(InputInfoEdit, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorTextBKG->AddHandler(InitColorText, WM_LBUTTONDBLCLK);
-	SXMainWndElem::EditParamColorTextBKG->AddHandler(InputToEditColor, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorTextBKG->AddHandler(InputToEditColor, WM_KEYUP);
+	SXMainWndElem::EditParamColorTextBKG->modifyStyle(ES_NUMBER, 0);
+	SXMainWndElem::EditParamColorTextBKG->addHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorTextBKG->addHandler(InitColorText, WM_LBUTTONDBLCLK);
+	SXMainWndElem::EditParamColorTextBKG->addHandler(InputToEditColor, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorTextBKG->addHandler(InputToEditColor, WM_KEYUP);
 
-	SXMainWndElem::EditParamColorTextBKB = SXGUICrEdit("0", 200, tmpPosY, 45, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamColorTextBKB = SXGUICrEdit("0", 200, tmpPosY, 45, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamColorTextBKB->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamColorTextBKB->ModifyStyle(ES_NUMBER, 0);
-	SXMainWndElem::EditParamColorTextBKB->AddHandler(InputInfoEdit, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorTextBKB->AddHandler(InitColorText, WM_LBUTTONDBLCLK);
-	SXMainWndElem::EditParamColorTextBKB->AddHandler(InputToEditColor, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorTextBKB->AddHandler(InputToEditColor, WM_KEYUP);
+	SXMainWndElem::EditParamColorTextBKB->modifyStyle(ES_NUMBER, 0);
+	SXMainWndElem::EditParamColorTextBKB->addHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorTextBKB->addHandler(InitColorText, WM_LBUTTONDBLCLK);
+	SXMainWndElem::EditParamColorTextBKB->addHandler(InputToEditColor, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorTextBKB->addHandler(InputToEditColor, WM_KEYUP);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamTransparentText = SXGUICrStatic("Alpha bk text:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamTransparentText->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamTransparentText = SXGUICrStatic("Alpha bk text:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamTransparentText->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamTransparentText->Font(0,15,0,0,0,0);
 
-	SXMainWndElem::ComboBoxParamTransparentText = SXGUICrComboBox("ComboBoxParamTransparentText", 90, tmpPosY - 2, 155, 70, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::ComboBoxParamTransparentText = SXGUICrComboBox(90, tmpPosY - 2, 155, 70, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::ComboBoxParamTransparentText->Font(0,15,0,0,0,0);
-	SendMessage(SXMainWndElem::ComboBoxParamTransparentText->GetHWND(), CB_SETITEMHEIGHT, -1, 14);
-	SXMainWndElem::ComboBoxParamTransparentText->AddItem("true");
-	SXMainWndElem::ComboBoxParamTransparentText->AddItem("false");
-	SXMainWndElem::ComboBoxParamTransparentText->SetSel(1);
-	//SXMainWndElem::ComboBoxParamTransparentText->AddHandler(InputInfoComboBox,WM_LBUTTONUP);
-	SXMainWndElem::ComboBoxParamTransparentText->AddHandler(InputInfoComboBox, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SendMessage(SXMainWndElem::ComboBoxParamTransparentText->getHWND(), CB_SETITEMHEIGHT, -1, 14);
+	SXMainWndElem::ComboBoxParamTransparentText->addItem("true");
+	SXMainWndElem::ComboBoxParamTransparentText->addItem("false");
+	SXMainWndElem::ComboBoxParamTransparentText->setSel(1);
+	//SXMainWndElem::ComboBoxParamTransparentText->addHandler(InputInfoComboBox,WM_LBUTTONUP);
+	SXMainWndElem::ComboBoxParamTransparentText->addHandler(InputInfoComboBox, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamColorBK = SXGUICrStatic("Color bk:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamColorBK->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamColorBK = SXGUICrStatic("Color bk:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamColorBK->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamColorBK->Font(0,15,0,0,0,0);
 
-	SXMainWndElem::EditParamColorBKR = SXGUICrEdit("0", 90, tmpPosY + 1, 45, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamColorBKR = SXGUICrEdit("0", 90, tmpPosY + 1, 45, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamColorBKR->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamColorBKR->ModifyStyle(ES_NUMBER, 0);
-	SXMainWndElem::EditParamColorBKR->AddHandler(InputInfoEdit, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorBKR->AddHandler(InitColorText, WM_LBUTTONDBLCLK);
-	SXMainWndElem::EditParamColorBKR->AddHandler(InputToEditColor, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorBKR->AddHandler(InputToEditColor, WM_KEYUP);
+	SXMainWndElem::EditParamColorBKR->modifyStyle(ES_NUMBER, 0);
+	SXMainWndElem::EditParamColorBKR->addHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorBKR->addHandler(InitColorText, WM_LBUTTONDBLCLK);
+	SXMainWndElem::EditParamColorBKR->addHandler(InputToEditColor, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorBKR->addHandler(InputToEditColor, WM_KEYUP);
 
-	SXMainWndElem::EditParamColorBKG = SXGUICrEdit("0", 145, tmpPosY + 1, 45, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamColorBKG = SXGUICrEdit("0", 145, tmpPosY + 1, 45, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamColorBKG->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamColorBKG->ModifyStyle(ES_NUMBER, 0);
-	SXMainWndElem::EditParamColorBKG->AddHandler(InputInfoEdit, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorBKG->AddHandler(InitColorText, WM_LBUTTONDBLCLK);
-	SXMainWndElem::EditParamColorBKG->AddHandler(InputToEditColor, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorBKG->AddHandler(InputToEditColor, WM_KEYUP);
+	SXMainWndElem::EditParamColorBKG->modifyStyle(ES_NUMBER, 0);
+	SXMainWndElem::EditParamColorBKG->addHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorBKG->addHandler(InitColorText, WM_LBUTTONDBLCLK);
+	SXMainWndElem::EditParamColorBKG->addHandler(InputToEditColor, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorBKG->addHandler(InputToEditColor, WM_KEYUP);
 
-	SXMainWndElem::EditParamColorBKB = SXGUICrEdit("0", 200, tmpPosY + 1, 45, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamColorBKB = SXGUICrEdit("0", 200, tmpPosY + 1, 45, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamColorBKB->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamColorBKB->ModifyStyle(ES_NUMBER, 0);
-	SXMainWndElem::EditParamColorBKB->AddHandler(InputInfoEdit, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorBKB->AddHandler(InitColorText, WM_LBUTTONDBLCLK);
-	SXMainWndElem::EditParamColorBKB->AddHandler(InputToEditColor, WM_KEYDOWN);
-	SXMainWndElem::EditParamColorBKB->AddHandler(InputToEditColor, WM_KEYUP);
+	SXMainWndElem::EditParamColorBKB->modifyStyle(ES_NUMBER, 0);
+	SXMainWndElem::EditParamColorBKB->addHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorBKB->addHandler(InitColorText, WM_LBUTTONDBLCLK);
+	SXMainWndElem::EditParamColorBKB->addHandler(InputToEditColor, WM_KEYDOWN);
+	SXMainWndElem::EditParamColorBKB->addHandler(InputToEditColor, WM_KEYUP);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamFont = SXGUICrStatic("Font:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamFont->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamFont = SXGUICrStatic("Font:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamFont->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamFont->Font(0,15,0,0,0,0);
-	SXMainWndElem::ButtonParamSelectFont = SXGUICrButton("View font", 90, tmpPosY, 155, 15, SXGUI_BUTTON_IMAGE_NONE, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::ButtonParamSelectFont = SXGUICrButton("View font", 90, tmpPosY, 155, 15, SXGUI_BUTTON_IMAGE_NONE, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::ButtonParamSelectFont->Font(0,13,0,0,0,0);
-	SXMainWndElem::ButtonParamSelectFont->AddHandler(InitFont, WM_LBUTTONUP);
+	SXMainWndElem::ButtonParamSelectFont->addHandler(InitFont, WM_LBUTTONUP);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamFontParent = SXGUICrStatic("Regulation Font:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamFontParent->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamFontParent = SXGUICrStatic("Regulation Font:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamFontParent->setColorBrush(RGB(220, 220, 220));
 
-	SXMainWndElem::ComboBoxParamParentFont = SXGUICrComboBox("Parent", 90, tmpPosY - 1, 155, 70, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SendMessage(SXMainWndElem::ComboBoxParamParentFont->GetHWND(), CB_SETITEMHEIGHT, -1, 15);
-	SXMainWndElem::ComboBoxParamParentFont->AddItem("Parent");
-	SXMainWndElem::ComboBoxParamParentFont->AddItem("Default gui");
-	SXMainWndElem::ComboBoxParamParentFont->AddItem("User selected");
-	SXMainWndElem::ComboBoxParamParentFont->SetSel(1);
-	SXMainWndElem::ComboBoxParamParentFont->AddHandler(InputInfoComboBox, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMainWndElem::ComboBoxParamParentFont = SXGUICrComboBox(90, tmpPosY - 1, 155, 70, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SendMessage(SXMainWndElem::ComboBoxParamParentFont->getHWND(), CB_SETITEMHEIGHT, -1, 15);
+	SXMainWndElem::ComboBoxParamParentFont->addItem("Parent");
+	SXMainWndElem::ComboBoxParamParentFont->addItem("Default gui");
+	SXMainWndElem::ComboBoxParamParentFont->addItem("User selected");
+	SXMainWndElem::ComboBoxParamParentFont->setSel(1);
+	SXMainWndElem::ComboBoxParamParentFont->addHandler(InputInfoComboBox, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamHintText = SXGUICrStatic("Hint text:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamHintText->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamHintText = SXGUICrStatic("Hint text:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamHintText->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamHintText->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamHintText = SXGUICrEdit("", 90, tmpPosY + 2, 155, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::EditParamHintText = SXGUICrEdit("", 90, tmpPosY + 2, 155, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::EditParamHintText->Font(0,15,0,0,0,0);
-	SXMainWndElem::EditParamHintText->AddHandler(InputInfoEdit, WM_KEYDOWN);
+	SXMainWndElem::EditParamHintText->addHandler(InputInfoEdit, WM_KEYDOWN);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamHintVisible = SXGUICrStatic("Hint visible:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamHintVisible->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamHintVisible = SXGUICrStatic("Hint visible:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamHintVisible->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamHintVisible->Font(0,15,0,0,0,0);
 
-	SXMainWndElem::ComboBoxParamHintVisible = SXGUICrComboBox("ComboBoxParamHintVisible", 90, tmpPosY, 155, 70, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::ComboBoxParamHintVisible = SXGUICrComboBox(90, tmpPosY, 155, 70, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::ComboBoxParamHintVisible->Font(0,15,0,0,0,0);
-	SendMessage(SXMainWndElem::ComboBoxParamHintVisible->GetHWND(), CB_SETITEMHEIGHT, -1, 15);
-	SXMainWndElem::ComboBoxParamHintVisible->AddItem("true");
-	SXMainWndElem::ComboBoxParamHintVisible->AddItem("false");
-	SXMainWndElem::ComboBoxParamHintVisible->SetSel(1);
-	SXMainWndElem::ComboBoxParamHintVisible->AddHandler(InputInfoComboBox, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SendMessage(SXMainWndElem::ComboBoxParamHintVisible->getHWND(), CB_SETITEMHEIGHT, -1, 15);
+	SXMainWndElem::ComboBoxParamHintVisible->addItem("true");
+	SXMainWndElem::ComboBoxParamHintVisible->addItem("false");
+	SXMainWndElem::ComboBoxParamHintVisible->setSel(1);
+	SXMainWndElem::ComboBoxParamHintVisible->addHandler(InputInfoComboBox, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamVisible = SXGUICrStatic("Visible:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamVisible->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamVisible = SXGUICrStatic("Visible:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamVisible->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamVisible->Font(0,15,0,0,0,0);
-	SXMainWndElem::ComboBoxParamVisible = SXGUICrComboBox("ComboBoxParamVisible", 90, tmpPosY, 155, 70, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::ComboBoxParamVisible = SXGUICrComboBox(90, tmpPosY, 155, 70, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::ComboBoxParamVisible->Font(0,15,0,0,0,0);
-	SendMessage(SXMainWndElem::ComboBoxParamVisible->GetHWND(), CB_SETITEMHEIGHT, -1, 15);
-	SXMainWndElem::ComboBoxParamVisible->AddItem("true");
-	SXMainWndElem::ComboBoxParamVisible->AddItem("false");
-	SXMainWndElem::ComboBoxParamVisible->SetSel(0);
-	SXMainWndElem::ComboBoxParamVisible->AddHandler(InputInfoComboBox, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SendMessage(SXMainWndElem::ComboBoxParamVisible->getHWND(), CB_SETITEMHEIGHT, -1, 15);
+	SXMainWndElem::ComboBoxParamVisible->addItem("true");
+	SXMainWndElem::ComboBoxParamVisible->addItem("false");
+	SXMainWndElem::ComboBoxParamVisible->setSel(0);
+	SXMainWndElem::ComboBoxParamVisible->addHandler(InputInfoComboBox, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamEnabled = SXGUICrStatic("Enabled:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamEnabled->SetColorBrush(220, 220, 220);
+	SXMainWndElem::StaticParamEnabled = SXGUICrStatic("Enabled:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamEnabled->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamEnabled->Font(0,15,0,0,0,0);
-	SXMainWndElem::ComboBoxParamEnabled = SXGUICrComboBox("ComboBoxParamEnabled", 90, tmpPosY, 155, 70, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
+	SXMainWndElem::ComboBoxParamEnabled = SXGUICrComboBox(90, tmpPosY, 155, 70, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	//SXMainWndElem::ComboBoxParamEnabled->Font(0,15,0,0,0,0);
-	SXMainWndElem::ComboBoxParamEnabled->AddItem("true");
-	SXMainWndElem::ComboBoxParamEnabled->AddItem("false");
-	SXMainWndElem::ComboBoxParamEnabled->SetSel(0);
-	SXMainWndElem::ComboBoxParamEnabled->AddHandler(InputInfoComboBox, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
+	SXMainWndElem::ComboBoxParamEnabled->addItem("true");
+	SXMainWndElem::ComboBoxParamEnabled->addItem("false");
+	SXMainWndElem::ComboBoxParamEnabled->setSel(0);
+	SXMainWndElem::ComboBoxParamEnabled->addHandler(InputInfoComboBox, WM_KEYDOWN, VK_RETURN, 1, 0, 0, 0);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamImgBLoadImg = SXGUICrStatic("Image:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamImgBLoadImg->SetColorBrush(220, 220, 220);
-	SXMainWndElem::ButtomParamImgBLoadImg = SXGUICrButton("LoadImg", 90, tmpPosY, 155, 15, SXGUI_BUTTON_IMAGE_NONE, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::ButtomParamImgBLoadImg->AddHandler(InitImageForButtonImg, WM_LBUTTONUP);
+	SXMainWndElem::StaticParamImgBLoadImg = SXGUICrStatic("Image:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamImgBLoadImg->setColorBrush(RGB(220, 220, 220));
+	SXMainWndElem::ButtomParamImgBLoadImg = SXGUICrButton("LoadImg", 90, tmpPosY, 155, 15, SXGUI_BUTTON_IMAGE_NONE, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::ButtomParamImgBLoadImg->addHandler(InitImageForButtonImg, WM_LBUTTONUP);
 
 	tmpPosY += 20;
 
-	SXMainWndElem::StaticParamWinMenu = SXGUICrStatic("Menu window:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0);
-	SXMainWndElem::StaticParamWinMenu->SetColorBrush(220, 220, 220);
-	SXMainWndElem::CheckBoxParamWinMenu = SXGUICrCheckBox("Enable", 90, tmpPosY, 155, 15, SXMainWndElem::ParamWnd->GetHWND(), 0, 0, false);
-	SXMainWndElem::CheckBoxParamWinMenu->SetColorBrush(220, 220, 220);
-	//SXMainWndElem::CheckBoxParamWinMenu->AddHandler(InitWindowMenu,WM_LBUTTONUP);
+	SXMainWndElem::StaticParamWinMenu = SXGUICrStatic("Menu window:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
+	SXMainWndElem::StaticParamWinMenu->setColorBrush(RGB(220, 220, 220));
+	SXMainWndElem::CheckBoxParamWinMenu = SXGUICrCheckBox("Enable", 90, tmpPosY, 155, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0, false);
+	SXMainWndElem::CheckBoxParamWinMenu->setColorBrush(RGB(220, 220, 220));
+	//SXMainWndElem::CheckBoxParamWinMenu->addHandler(InitWindowMenu,WM_LBUTTONUP);
 
-	SXMainWndElem::WndLog = SXGUICrBaseWnd(
-		"WndLog", "WndLog", 0,
-		0, 0, wrect.bottom - 220, 500, 220,
+	SXMainWndElem::WndLog = SXGUICrBaseWndEx(
+		"WndLog", "WndLog",  
+		0, wrect.bottom - 220, 500, 220,
 		0, 0, CreateSolidBrush(RGB(220, 220, 220)),
 		WS_EX_TOOLWINDOW, CS_HREDRAW | CS_VREDRAW, WS_CAPTION | WS_MINIMIZEBOX | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_SYSMENU | WS_OVERLAPPED,
 		0, WndProcAllDefault);
-	SXMainWndElem::WndLog->AddHandler(MinimuzeWinInsteadClose, WM_CLOSE, 0, 0, 0, 0, true);
+	SXMainWndElem::WndLog->setVisible(true);
+	SXMainWndElem::WndLog->addHandler(MinimuzeWinInsteadClose, WM_CLOSE, 0, 0, 0, 0, true);
 	RECT crWndLog;
-	GetClientRect(SXMainWndElem::WndLog->GetHWND(), &crWndLog);
-	SXMainWndElem::ListBoxLog = SXGUICrListBox("ListBoxLog", crWndLog.left, crWndLog.top, crWndLog.right, crWndLog.bottom, SXMainWndElem::WndLog->GetHWND(), 0, 0, false);
+	GetClientRect(SXMainWndElem::WndLog->getHWND(), &crWndLog);
+	SXMainWndElem::ListBoxLog = SXGUICrListBox( crWndLog.left, crWndLog.top, crWndLog.right, crWndLog.bottom, SXMainWndElem::WndLog->getHWND(), 0, 0, false);
 	//SXMainWndElem::ListBoxLog->Font(0,14,0,0,0,0);
 	InLog("%s", "Log created, run cycle ...");
 
-	//SXMainWndElem::JobMainWnd->GetHWND();
+	//SXMainWndElem::JobMainWnd->getHWND();
 
-	SXMainWndElem::ArrMainWnd[0] = SXMainWndElem::MainWnd->GetHWND();
-	SXMainWndElem::ArrMainWnd[1] = SXMainWndElem::JobMainWnd->GetHWND();
-	SXMainWndElem::ArrMainWnd[2] = SXMainWndElem::ParamWnd->GetHWND();
-	SXMainWndElem::ArrMainWnd[3] = SXMainWndElem::WndLog->GetHWND();
+	SXMainWndElem::ArrMainWnd[0] = SXMainWndElem::MainWnd->getHWND();
+	SXMainWndElem::ArrMainWnd[1] = SXMainWndElem::JobMainWnd->getHWND();
+	SXMainWndElem::ArrMainWnd[2] = SXMainWndElem::ParamWnd->getHWND();
+	SXMainWndElem::ArrMainWnd[3] = SXMainWndElem::WndLog->getHWND();
 
 	SXNameSapce::InitAllElements();
-	SXNameSapce::OutputGUIInFile->Visible(false);
+	SXNameSapce::OutputGUIInFile->setVisible(false);
 	AboutSXWinCreator::InitAllElements();
-	AboutSXWinCreator::JobWindow->Visible(false);
+	AboutSXWinCreator::JobWindow->setVisible(false);
 
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));

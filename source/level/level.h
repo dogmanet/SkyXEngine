@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -18,6 +18,7 @@ See the license in LICENSE
 
 #include <gdefines.h>
 #include <common/string.h>
+#include <common/file_utils.h>
 #include <level/sxlevel.h>
 
 #include "ambientsounds.h"
@@ -99,7 +100,9 @@ public:
 protected:
 
 	//! текущее имя уровня
-	char m_szName[OBJECT_NAME_MAX_LEN];	
+	char m_szName[OBJECT_NAME_MAX_LEN];
+
+	String m_sLocalName;
 
 	String m_sAmbientSounds;
 	String m_sWeather;

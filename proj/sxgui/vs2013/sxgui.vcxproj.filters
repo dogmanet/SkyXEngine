@@ -1,0 +1,342 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\DOM">
+      <UniqueIdentifier>{e060fc1c-628c-4fa3-8814-b865401eddbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\DOM\elements">
+      <UniqueIdentifier>{e7d6876f-dab3-4fcf-ae89-fc7967fb6829}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DOM">
+      <UniqueIdentifier>{6b1e5fdc-4a6a-42b4-b182-76234d992c4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DOM\elements">
+      <UniqueIdentifier>{626f3712-ca2a-4516-8024-c465fc6e6e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\DOM\elements\system">
+      <UniqueIdentifier>{8633a9db-1c44-40a4-ada7-8a2ea718495f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DOM\elements\system">
+      <UniqueIdentifier>{f62f33bf-47a7-4c99-9491-222f9820ca2c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\gui\SXGUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\GUIbase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\ICSS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IDOMRECT.h">
+      <Filter>Header Files\DOM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IDIV.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IHTML.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IHEAD.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IBODY.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IP.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\ILINK.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\ISPAN.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IBUTTON.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IINPUT.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\ISELECT.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IOPTION.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\ITABLE.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\ITR.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\ITH.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IBR.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IIMG.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IWINDOW.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\ILABEL.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\ITEXTAREA.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\ITD.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IDOMdocument.h">
+      <Filter>Header Files\DOM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IDOM.h">
+      <Filter>Header Files\DOM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IHTMLparser.h">
+      <Filter>Header Files\DOM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\HTMLels.h">
+      <Filter>Header Files\DOM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\ITEXT.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IRenderFrame.h">
+      <Filter>Header Files\DOM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IRenderBorder.h">
+      <Filter>Header Files\DOM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IVIDEO.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IDesktop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\keymap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\ICHECKBOX.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IRADIO.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IScrollBar.h">
+      <Filter>Header Files\DOM\elements\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\guimain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\ICSSstyle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\VideoRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\Font.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\Desktop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\CSSstyle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\DOMdocument.h">
+      <Filter>Header Files\DOM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\DOM.h">
+      <Filter>Header Files\DOM</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\ScrollBarSimple.h">
+      <Filter>Header Files\DOM\elements\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IRANGE_BAR.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IRANGE_DRAG.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IRANGE_METER.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IRANGE_TEXT.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IRANGE.h">
+      <Filter>Header Files\DOM\elements</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\gui\SXGUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IDIV.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IBODY.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IBR.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IBUTTON.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IHEAD.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IHTML.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IIMG.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IINPUT.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\ILABEL.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\ILINK.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IOPTION.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IP.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\ISELECT.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\ISPAN.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\ITABLE.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\ITD.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\ITEXTAREA.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\ITH.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\ITR.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IWINDOW.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IHTMLparser.cpp">
+      <Filter>Source Files\DOM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\HTMLels.cpp">
+      <Filter>Source Files\DOM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\ITEXT.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\ICSS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IRenderFrame.cpp">
+      <Filter>Source Files\DOM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IRenderBorder.cpp">
+      <Filter>Source Files\DOM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IVIDEO.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\keymap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\ICHECKBOX.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IRADIO.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IScrollBar.cpp">
+      <Filter>Source Files\DOM\elements\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\Font.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\Desktop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\DOMdocument.cpp">
+      <Filter>Source Files\DOM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\DOM.cpp">
+      <Filter>Source Files\DOM</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\ScrollBarSimple.cpp">
+      <Filter>Source Files\DOM\elements\system</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\VideoRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\common\string.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\ICSSstyle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\CSSstyle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IRANGE_BAR.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IRANGE_DRAG.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IRANGE_METER.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IRANGE_TEXT.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\IRANGE.cpp">
+      <Filter>Source Files\DOM\elements</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

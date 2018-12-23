@@ -1,10 +1,14 @@
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include <core/sxcore.h>
 #include <gcore/sxgcore.h>
 #include <physics/sxphysics.h>
 
 #include "DecalManager.h"
-
-extern report_func reportf;
 
 // Array<float3_t> g_dbgDraw;
 // float4 spherePos;
@@ -35,12 +39,12 @@ DecalManager::DecalManager():
 		{
 			if(id < 0 || id >= DECAL_TYPE_LAST)
 			{
-				reportf(REPORT_MSG_LEVEL_WARNING, "Incorrect decal type id '%s'\n", sect);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "Incorrect decal type id '%s'\n", sect);
 			}
 		}
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read decal id '%s'\n", sect);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "Unable to read decal id '%s'\n", sect);
 			continue;
 		}
 		const char * tex;
@@ -50,14 +54,14 @@ DecalManager::DecalManager():
 		}
 		else
 		{
-			reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read decal tex '%s'\n", sect);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "Unable to read decal tex '%s'\n", sect);
 			continue;
 		}
 		if(config->keyExists(sect, "base_scale"))
 		{
 			if(!sscanf(config->getKey(sect, "base_scale"), "%f", &m_DecalTypes[id].m_fBaseScale))
 			{
-				reportf(REPORT_MSG_LEVEL_WARNING, "Unable to read decal base_scale '%s'\n", sect);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "Unable to read decal base_scale '%s'\n", sect);
 				m_DecalTypes[id].m_fBaseScale = 1.0f;
 			}
 		}
@@ -89,22 +93,23 @@ DecalManager::DecalManager():
 
 DecalManager::~DecalManager()
 {
-
+	clear();
+	mem_release(m_pVertexBuffer);
 }
 
-int DecalManager::AddDecal(Decal * pDecal)
+int DecalManager::addDecal(Decal * pDecal)
 {
 	static const int * MAX_DECALS = GET_PCVAR_INT("r_maxdecals");
 	static const int * DECAL_MAX_OVERLAPPED = GET_PCVAR_INT("r_max_overlapped_decals");
 	int numdecal = 0;
-	//printf("AddDecal(); bgn; c = %d\n", m_vDecals.size());
+	//printf("addDecal(); bgn; c = %d\n", m_vDecals.size());
 	if(m_vDecals.size() >= (UINT)*MAX_DECALS)
 	{
 		for(UINT i = 0, l = m_vDecals.size(); i < l; ++i)
 		{
 			if(!(m_vDecals[i]->m_flags & DECAL_PERMANENT))
 			{
-				RemoveDecal(i);
+				removeDecal(i);
 				break;
 			}
 		}
@@ -112,7 +117,7 @@ int DecalManager::AddDecal(Decal * pDecal)
 
 	numdecal = m_vDecals.size();
 	m_vDecals.push_back(pDecal);
-	//ArrPerSound[numdecal]->Render();
+	//ArrPerSound[numdecal]->render();
 	static UINT iDecalId = 0;
 	_DecalMatItem dmi;
 	dmi.m_pDecal = pDecal;
@@ -131,22 +136,22 @@ int DecalManager::AddDecal(Decal * pDecal)
 			iOverlappedCount++;
 			if(iOverlappedCount > (UINT)*DECAL_MAX_OVERLAPPED)
 			{
-				//printf("AddDecal(); rmv\n");
-				RemoveDecal(iFirstOverlpd);
+				//printf("addDecal(); rmv\n");
+				removeDecal(iFirstOverlpd);
 				break;
 			}
 		}
 	}
 	//pDecal->iMatSortId = m_MaterialSort[pDecal->m_material].size();
 	m_MaterialSort[pDecal->m_material].push_back(dmi);
-	//printf("AddDecal(); end; c = %d\n", m_vDecals.size());
+	//printf("addDecal(); end; c = %d\n", m_vDecals.size());
 	m_bNeedUpdate = true;
 	return numdecal;
 }
 
-void DecalManager::RemoveDecal(UINT iDecal)
+void DecalManager::removeDecal(UINT iDecal)
 {
-	//printf("RemoveDecal(); bgn; c = %d\n", m_vDecals.size());
+	//printf("removeDecal(); bgn; c = %d\n", m_vDecals.size());
 	if(iDecal >= m_vDecals.size())
 	{
 		return;
@@ -164,10 +169,26 @@ void DecalManager::RemoveDecal(UINT iDecal)
 	m_aDecals.Delete(m_vDecals[iDecal]);
 	m_vDecals.erase(iDecal);
 	m_bNeedUpdate = true;
-	//printf("RemoveDecal(); end; c = %d\n", m_vDecals.size());
+	//printf("removeDecal(); end; c = %d\n", m_vDecals.size());
 }
 
-bool DecalManager::Inside(const float3_t * p, char axis, float coord)
+void DecalManager::clear()
+{
+	for(AssotiativeArray<ID, Array<_DecalMatItem>>::Iterator i = m_MaterialSort.begin(); i; i++)
+	{
+		for(int j = 0, lj = i.second->size(); j < lj; ++j)
+		{
+			mem_delete_a(i.second[0][j].m_pDecal->m_pVerts);
+		}
+	}
+
+	m_aDecals.clear();
+	m_vDecals.clearFast();
+	m_MaterialSort.clear();
+	m_bNeedUpdate = true;
+}
+
+bool DecalManager::inside(const float3_t * p, char axis, float coord)
 {
 	switch(axis)
 	{
@@ -179,7 +200,7 @@ bool DecalManager::Inside(const float3_t * p, char axis, float coord)
 	return(false);
 }
 
-void DecalManager::Intersect(const float3_t * one, const float3_t * two, float3_t * out, char axis, float coord)
+void DecalManager::intersect(const float3_t * one, const float3_t * two, float3_t * out, char axis, float coord)
 {
 	float t;
 	switch(axis)
@@ -195,7 +216,7 @@ void DecalManager::Intersect(const float3_t * one, const float3_t * two, float3_
 	*out = (float3)SMVectorLerp(*two, *one, t);
 }
 
-void DecalManager::Clip(const Array<float3_t> & InVerts, Array<float3_t> & OutVerts, char axis, float coord)
+void DecalManager::clip(const Array<float3_t> & InVerts, Array<float3_t> & OutVerts, char axis, float coord)
 {
 	OutVerts.clear();
 	if(!InVerts.size())
@@ -214,16 +235,16 @@ void DecalManager::Clip(const Array<float3_t> & InVerts, Array<float3_t> & OutVe
 	for(j = 0; j < vertCount; j++)
 	{
 		p = &InVerts[j];
-		if(Inside(p, axis, coord))
+		if(inside(p, axis, coord))
 		{
-			if(Inside(s, axis, coord))
+			if(inside(s, axis, coord))
 			{
 				OutVerts.push_back(*p);
 				outCount++;
 			}
 			else
 			{
-				Intersect(s, p, &out, axis, coord);
+				intersect(s, p, &out, axis, coord);
 				OutVerts.push_back(out);
 				outCount++;
 
@@ -233,9 +254,9 @@ void DecalManager::Clip(const Array<float3_t> & InVerts, Array<float3_t> & OutVe
 		}
 		else
 		{
-			if(Inside(s, axis, coord))
+			if(inside(s, axis, coord))
 			{
-				Intersect(p, s, &out, axis, coord);
+				intersect(p, s, &out, axis, coord);
 				OutVerts.push_back(out);
 				outCount++;
 			}
@@ -246,7 +267,7 @@ void DecalManager::Clip(const Array<float3_t> & InVerts, Array<float3_t> & OutVe
 	//return outCount;
 }
 
-const DecalType * DecalManager::GetDecalType(DECAL_TYPE type)
+const DecalType * DecalManager::getDecalType(DECAL_TYPE type)
 {
 	if(type < 0 || type >= DECAL_TYPE_LAST)
 	{
@@ -256,7 +277,7 @@ const DecalType * DecalManager::GetDecalType(DECAL_TYPE type)
 	return(&m_DecalTypes[type]);
 }
 
-void DecalManager::ShootDecal(DECAL_TYPE type, const float3 & position, ID iMaterial, int iEnt, const float3 * saxis, float scale, int flags, const float3 * _normal)
+void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMaterial, int iEnt, const float3 * saxis, float scale, int flags, const float3 * _normal)
 {
 	// g_dbgDraw.clear();
 	//m_dbgRender.push_back(position);
@@ -303,7 +324,7 @@ void DecalManager::ShootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 	}
 	else
 	{
-		dt = GetDecalType(type);
+		dt = getDecalType(type);
 		if(!dt)
 		{
 			return;
@@ -316,7 +337,7 @@ void DecalManager::ShootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 		return;
 	}
 
-	pTex = SGCore_LoadTexGetTex(SML_MtlGetTextureID(pMat));
+	pTex = SGCore_LoadTexGetTex(SMtrl_MtlGetTextureID(pMat));
 	if(!pTex)
 	{
 		return;
@@ -382,12 +403,12 @@ void DecalManager::ShootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 	float r = sqrtf(decal->m_Size = ((sBound.x - sBound.y) * (sBound.x - sBound.y) + (tBound.x - tBound.y) * (tBound.x - tBound.y)));
 
 	{
-		struct	AllConvexResultCallback: public btDiscreteDynamicsWorld::ConvexResultCallback
+		struct	AllConvexResultCallback: public btDiscreteDynamicsWorldMt::ConvexResultCallback
 		{
 			struct part
 			{
 				const btCollisionObject * m_hitCollisionObject;
-				btDiscreteDynamicsWorld::LocalShapeInfo si;
+				btDiscreteDynamicsWorldMt::LocalShapeInfo si;
 			};
 
 			AllConvexResultCallback(const btVector3&	rayFromWorld, const btVector3&	rayToWorld)
@@ -401,7 +422,7 @@ void DecalManager::ShootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 			btVector3	m_rayFromWorld;//used to calculate hitPointWorld from hitFraction
 			btVector3	m_rayToWorld;
 			
-			virtual	btScalar addSingleResult(btDiscreteDynamicsWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
+			virtual	btScalar addSingleResult(btDiscreteDynamicsWorldMt::LocalConvexResult& convexResult, bool normalInWorldSpace)
 			{
 				if(convexResult.m_localShapeInfo)
 				{
@@ -430,7 +451,7 @@ void DecalManager::ShootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 		btTransform xForm2;
 		xForm2.setOrigin(vec + offs);
 		xForm2.getBasis().setIdentity();
-		SXPhysics_GetDynWorld()->convexSweepTest(&sphere, xForm, xForm2, cb);
+		SPhysics_GetDynWorld()->convexSweepTest(&sphere, xForm, xForm2, cb);
 		AllConvexResultCallback::part * part;
 		if(cb.hasHit())
 		{
@@ -442,7 +463,7 @@ void DecalManager::ShootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 					btTriangleMeshShape * shape = (btTriangleMeshShape*)part->m_hitCollisionObject->getCollisionShape();
 					btStridingMeshInterface * iface = shape->getMeshInterface();
 
-					float3_t * verices;
+					float3 * verices;
 					int numverts;
 					PHY_ScalarType type = PHY_INTEGER;
 					int stride = 0;
@@ -475,7 +496,7 @@ void DecalManager::ShootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 							}
 						}
 
-						ComputeBasis(n, (di.m_Flags & DECAL_USESAXIS) ? &(float3)di.m_SAxis : NULL, tsBasis);
+						computeBasis(n, (di.m_Flags & DECAL_USESAXIS) ? &(float3)di.m_SAxis : NULL, tsBasis);
 
 						mBasis.r[0] = float4(float3(tsBasis[0]), 0.0f);
 						mBasis.r[1] = float4(float3(tsBasis[1]), 0.0f);
@@ -497,10 +518,10 @@ void DecalManager::ShootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 						float nn = vClippedVerts[0].z + 0.002f;
 
 						//Clip decal by triangle in {S, T} plane
-						Clip(vClippedVerts, vClippedVerts2, 's', sBound.y);
-						Clip(vClippedVerts2, vClippedVerts, 's', sBound.x);
-						Clip(vClippedVerts, vClippedVerts2, 't', tBound.y);
-						Clip(vClippedVerts2, vClippedVerts, 't', tBound.x);
+						clip(vClippedVerts, vClippedVerts2, 's', sBound.y);
+						clip(vClippedVerts2, vClippedVerts, 's', sBound.x);
+						clip(vClippedVerts, vClippedVerts2, 't', tBound.y);
+						clip(vClippedVerts2, vClippedVerts, 't', tBound.x);
 
 						/*for(int ijk = 0; ijk < 3; ijk++)
 						{
@@ -522,6 +543,7 @@ void DecalManager::ShootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 							vClippedVerts[ii + 1].z = nn; // fix normal
 							//Transform to World
 							vDecalVerts.push_back(vert0);
+							//m_dbgRender.push_back(vert0.pos);
 
 							vert.pos = mBasis * vClippedVerts[ii];
 							vert.normal = n;
@@ -529,11 +551,14 @@ void DecalManager::ShootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 							vert.tex = (float2)(vert.tex * float2((float)(rng.xmax - rng.xmin) / (float)_info.Width, (float)(rng.ymax - rng.ymin) / (float)_info.Height) + float2((float)rng.xmin / (float)_info.Width, (float)rng.ymin / (float)_info.Height));
 
 							vDecalVerts.push_back(vert);
+							//m_dbgRender.push_back(vert.pos);
 
 							vert.pos = mBasis * vClippedVerts[ii + 1];
 							vert.tex = float2((vClippedVerts[ii + 1].x - sBound.x) / (sBound.y - sBound.x), (vClippedVerts[ii + 1].y - tBound.x) / (tBound.y - tBound.x));
 							vert.tex = (float2)(vert.tex * float2((float)(rng.xmax - rng.xmin) / (float)_info.Width, (float)(rng.ymax - rng.ymin) / (float)_info.Height) + float2((float)rng.xmin / (float)_info.Width, (float)rng.ymin / (float)_info.Height));
 							vDecalVerts.push_back(vert);
+							//m_dbgRender.push_back(vert.pos);
+
 							//m_dbgRender.push_back(mBasis * vClippedVerts[ii]);
 							//m_dbgRender.push_back(mBasis * vClippedVerts[(ii + 1) % len]);
 
@@ -550,29 +575,26 @@ void DecalManager::ShootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 		decal->m_pVerts = new DecalVertex[decal->iVertCount];
 		memcpy(decal->m_pVerts, &vDecalVerts[0], sizeof(DecalVertex) * vDecalVerts.size());
 
-		int numdecal = AddDecal(decal);
+		int numdecal = addDecal(decal);
 	}
 }
 
-void DecalManager::Render()
+void DecalManager::render()
 {
-	/*for(int i = 0, l = g_dbgDraw.size(); i < l; i += 3)
+	/*for(int i = 0, l = m_dbgRender.size(); i < l; i += 3)
 	{
-		SXPhysics_GetDynWorld()->getDebugDrawer()->drawTriangle(F3_BTVEC(g_dbgDraw[i]), F3_BTVEC(g_dbgDraw[i + 1]), F3_BTVEC(g_dbgDraw[i + 2]), btVector3(1.0f, 1.0f, 1.0f), 1.0f);
-	}
-	SXPhysics_GetDynWorld()->getDebugDrawer()->drawSphere(F3_BTVEC(spherePos), spherePos.w, btVector3(1, 1, 1));
-	*/
-	UpdateBuffer();
+		SPhysics_GetDynWorld()->getDebugDrawer()->drawTriangle(F3_BTVEC(m_dbgRender[i]), F3_BTVEC(m_dbgRender[i + 1]), F3_BTVEC(m_dbgRender[i + 2]), btVector3(1.0f, 1.0f, 1.0f), 1.0f);
+	}*/
+	//SPhysics_GetDynWorld()->getDebugDrawer()->drawSphere(F3_BTVEC(spherePos), spherePos.w, btVector3(1, 1, 1));
+	
+	updateBuffer();
 
 	if(!m_pVertexBuffer)
 	{
 		return;
 	}
 
-
 	dev->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1);
-	
-	//SkyXEngine::Core::Data::Device->SetTexture(0, SkyXEngine::Core::Data::LoadedTextures->GetTexture(3));
 
 	dev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
@@ -593,17 +615,17 @@ void DecalManager::Render()
 		SkyXEngine::Core::Data::MaterialsManager->Render(m_vDecals[i]->m_material, &SMMatrixIdentity(), 0);
 		SkyXEngine::Core::Data::Device->DrawPrimitiveUP(D3DPT_TRIANGLELIST, m_vDecals[i]->iVertCount / 3, m_vDecals[i]->m_pVerts, sizeof(DecalVertex));
 	}*/
-	dev->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(DecalVertex));
+	DX_CALL(dev->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(DecalVertex)));
 	for(UINT i = 0; i < m_iRngs.size(); i++)
 	{
 		SGCore_MtlSet(m_iRngs[i].iMaterialId, &SMMatrixIdentity());
-		dev->DrawPrimitive(D3DPT_TRIANGLELIST, m_iRngs[i].iStartVertex, m_iRngs[i].iVertexCount / 3);
+		DX_CALL(dev->DrawPrimitive(D3DPT_TRIANGLELIST, m_iRngs[i].iStartVertex, m_iRngs[i].iVertexCount / 3));
 	}
 
 	dev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
-void DecalManager::UpdateBuffer()
+void DecalManager::updateBuffer()
 {
 	if(!m_bNeedUpdate)
 	{
@@ -633,21 +655,17 @@ void DecalManager::UpdateBuffer()
 	}
 
 	
-
-	if(m_pVertexBuffer)
-	{
-		m_pVertexBuffer->Release();
-		m_pVertexBuffer = NULL;
-	}
+	mem_release(m_pVertexBuffer);
 
 	if(iVC == 0)
 	{
+		m_bNeedUpdate = false;
 		return;
 	}
 
-	dev->CreateVertexBuffer(sizeof(DecalVertex)* iVC, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, 0);
+	DX_CALL(dev->CreateVertexBuffer(sizeof(DecalVertex)* iVC, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, 0));
 	DecalVertex * pData;
-	if(!FAILED(m_pVertexBuffer->Lock(0, sizeof(DecalVertex) * iVC, (void**)&pData, 0)))
+	if(!FAILED(DX_CALL(m_pVertexBuffer->Lock(0, sizeof(DecalVertex)* iVC, (void**)&pData, 0))))
 	{
 		iVC = 0;
 		for(AssotiativeArray<ID, Array<_DecalMatItem>>::Iterator i = m_MaterialSort.begin(); i; i++)
@@ -669,12 +687,12 @@ void DecalManager::UpdateBuffer()
 }
 
 
-void DecalManager::Update()
+void DecalManager::update()
 {
 	//empty
 }
 
-void DecalManager::Sync()
+void DecalManager::sync()
 {
 	//empty
 }

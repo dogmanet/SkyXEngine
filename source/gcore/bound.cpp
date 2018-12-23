@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "Bound.h"
 
 void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh ** ppMesh, IDirect3DDevice9 * pDevice,UINT iSideCount)
@@ -80,6 +85,8 @@ void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh 
 	mem_delete(pVertices);
 }
 
+//##########################################################################
+
 void ComputeBoundingBox(IDirect3DVertexBuffer9* vertex_buffer,ISXBound** bound,DWORD count_vert,DWORD bytepervert)
 {
 	float3_t *V = 0;
@@ -119,7 +126,7 @@ void ComputeBoundingBox(IDirect3DVertexBuffer9* vertex_buffer,ISXBound** bound,D
 			vertex_buffer->Unlock();
 		}
 
-	(*bound)->SetMinMax(&float3(Min),&float3(Max));
+	(*bound)->setMinMax(&float3(Min),&float3(Max));
 }
 
 void ComputeBoundingBox2(IDirect3DVertexBuffer9* vertex_buffer,ISXBound* bound,DWORD count_vert,DWORD bytepervert)
@@ -169,13 +176,255 @@ void ComputeBoundingBox2(IDirect3DVertexBuffer9* vertex_buffer,ISXBound* bound,D
 	Max.y /= 100.f;
 	Max.z /= 100.f;
 
-	bound->SetMinMax(&float3(Min),&float3(Max));
+	bound->setMinMax(&float3(Min),&float3(Max));
 }
 
+void ComputeBoundingBoxArr8(ISXBound* bound, ISXBound** bound_arr)
+{
+	float3 tmpMin2, tmpMax2;
+	float3 tmpMin, tmpMax;
+	bound->getMinMax(&tmpMin2, &tmpMax2);
+	bound->getMinMax(&tmpMin, &tmpMax);
 
-//////////////////////////////////
+	float x = (tmpMax.x + tmpMin.x) * 0.5;
+	float y = (tmpMax.y + tmpMin.y) * 0.5;
+	float z = (tmpMax.z + tmpMin.z) * 0.5;
 
-bool InPosition2D(float3* min,float3* max,float3* pos)
+	float dist_x = (tmpMax.x - tmpMin.x) * 0.25;
+	float dist_y = (tmpMax.y - tmpMin.y) * 0.25;
+	float dist_z = (tmpMax.z - tmpMin.z) * 0.25;
+
+
+	tmpMin2.x = -dist_x;
+	tmpMin2.y = -dist_y;
+	tmpMin2.z = -dist_z;
+
+	tmpMax2.x = dist_x;
+	tmpMax2.y = dist_y;
+	tmpMax2.z = dist_z;
+
+	tmpMin2 += float3(x, y, z);
+	tmpMin2 += float3(dist_x, dist_y, dist_z);
+
+	tmpMax2 += float3(x, y, z);
+	tmpMax2 += float3(dist_x, dist_y, dist_z);
+
+	(bound_arr[0])->setMinMax(&tmpMin2, &tmpMax2);
+
+
+	tmpMin2.x = -dist_x;
+	tmpMin2.y = -dist_y;
+	tmpMin2.z = -dist_z;
+
+	tmpMax2.x = dist_x;
+	tmpMax2.y = dist_y;
+	tmpMax2.z = dist_z;
+
+	tmpMin2 += float3(x, y, z);
+	tmpMin2 += float3(-dist_x, dist_y, dist_z);
+
+	tmpMax2 += float3(x, y, z);
+	tmpMax2 += float3(-dist_x, dist_y, dist_z);
+
+	(bound_arr[1])->setMinMax(&tmpMin2, &tmpMax2);
+
+
+	tmpMin2.x = -dist_x;
+	tmpMin2.y = -dist_y;
+	tmpMin2.z = -dist_z;
+
+	tmpMax2.x = dist_x;
+	tmpMax2.y = dist_y;
+	tmpMax2.z = dist_z;
+	//bound->GetMinMax(&tmpMin2,&tmpMax2);
+
+	tmpMin2 += float3(x, y, z);
+	tmpMin2 += float3(dist_x, dist_y, -dist_z);
+
+	tmpMax2 += float3(x, y, z);
+	tmpMax2 += float3(dist_x, dist_y, -dist_z);
+
+	(bound_arr[2])->setMinMax(&tmpMin2, &tmpMax2);
+
+
+	tmpMin2.x = -dist_x;
+	tmpMin2.y = -dist_y;
+	tmpMin2.z = -dist_z;
+
+	tmpMax2.x = dist_x;
+	tmpMax2.y = dist_y;
+	tmpMax2.z = dist_z;
+	//bound->GetMinMax(&tmpMin2,&tmpMax2);
+
+	tmpMin2 += float3(x, y, z);
+	tmpMin2 += float3(-dist_x, dist_y, -dist_z);
+
+	tmpMax2 += float3(x, y, z);
+	tmpMax2 += float3(-dist_x, dist_y, -dist_z);
+
+	(bound_arr[3])->setMinMax(&tmpMin2, &tmpMax2);
+
+
+
+	tmpMin2.x = -dist_x;
+	tmpMin2.y = -dist_y;
+	tmpMin2.z = -dist_z;
+
+	tmpMax2.x = dist_x;
+	tmpMax2.y = dist_y;
+	tmpMax2.z = dist_z;
+
+	tmpMin2 += float3(x, y, z);
+	tmpMin2 += float3(dist_x, -dist_y, dist_z);
+
+	tmpMax2 += float3(x, y, z);
+	tmpMax2 += float3(dist_x, -dist_y, dist_z);
+
+	(bound_arr[4])->setMinMax(&tmpMin2, &tmpMax2);
+
+
+	tmpMin2.x = -dist_x;
+	tmpMin2.y = -dist_y;
+	tmpMin2.z = -dist_z;
+
+	tmpMax2.x = dist_x;
+	tmpMax2.y = dist_y;
+	tmpMax2.z = dist_z;
+
+	tmpMin2 += float3(x, y, z);
+	tmpMin2 += float3(-dist_x, -dist_y, dist_z);
+
+	tmpMax2 += float3(x, y, z);
+	tmpMax2 += float3(-dist_x, -dist_y, dist_z);
+
+	(bound_arr[5])->setMinMax(&tmpMin2, &tmpMax2);
+
+
+	tmpMin2.x = -dist_x;
+	tmpMin2.y = -dist_y;
+	tmpMin2.z = -dist_z;
+
+	tmpMax2.x = dist_x;
+	tmpMax2.y = dist_y;
+	tmpMax2.z = dist_z;
+	//bound->GetMinMax(&tmpMin2,&tmpMax2);
+
+	tmpMin2 += float3(x, y, z);
+	tmpMin2 += float3(dist_x, -dist_y, -dist_z);
+
+	tmpMax2 += float3(x, y, z);
+	tmpMax2 += float3(dist_x, -dist_y, -dist_z);
+
+	(bound_arr[6])->setMinMax(&tmpMin2, &tmpMax2);
+
+
+	tmpMin2.x = -dist_x;
+	tmpMin2.y = -dist_y;
+	tmpMin2.z = -dist_z;
+
+	tmpMax2.x = dist_x;
+	tmpMax2.y = dist_y;
+	tmpMax2.z = dist_z;
+	//bound->GetMinMax(&tmpMin2,&tmpMax2);
+
+	tmpMin2 += float3(x, y, z);
+	tmpMin2 += float3(-dist_x, -dist_y, -dist_z);
+
+	tmpMax2 += float3(x, y, z);
+	tmpMax2 += float3(-dist_x, -dist_y, -dist_z);
+
+	(bound_arr[7])->setMinMax(&tmpMin2, &tmpMax2);
+}
+
+void ComputeBoundingBoxArr4(ISXBound* bound, ISXBound** bound_arr)
+{
+	float3 tmpMin2, tmpMax2;
+	float3 tmpMin, tmpMax;
+	bound->getMinMax(&tmpMin2, &tmpMax2);
+	bound->getMinMax(&tmpMin, &tmpMax);
+
+	float x = (tmpMax.x + tmpMin.x) * 0.5;
+	float y = (tmpMax.y + tmpMin.y) * 0.5;
+	float z = (tmpMax.z + tmpMin.z) * 0.5;
+
+	float dist_x = (tmpMax.x - tmpMin.x) * 0.25;
+	float dist_y = (tmpMax.y - tmpMin.y) * 0.5;
+	float dist_z = (tmpMax.z - tmpMin.z) * 0.25;
+
+
+	tmpMin2.x = -dist_x;
+	tmpMin2.y = -dist_y;
+	tmpMin2.z = -dist_z;
+
+	tmpMax2.x = dist_x;
+	tmpMax2.y = dist_y;
+	tmpMax2.z = dist_z;
+
+	tmpMin2 += float3(x, y, z);
+	tmpMin2 += float3(dist_x, 0, dist_z);
+
+	tmpMax2 += float3(x, y, z);
+	tmpMax2 += float3(dist_x, 0, dist_z);
+
+	(bound_arr[0])->setMinMax(&tmpMin2, &tmpMax2);
+
+
+	tmpMin2.x = -dist_x;
+	tmpMin2.y = -dist_y;
+	tmpMin2.z = -dist_z;
+
+	tmpMax2.x = dist_x;
+	tmpMax2.y = dist_y;
+	tmpMax2.z = dist_z;
+
+	tmpMin2 += float3(x, y, z);
+	tmpMin2 += float3(-dist_x, 0, dist_z);
+
+	tmpMax2 += float3(x, y, z);
+	tmpMax2 += float3(-dist_x, 0, dist_z);
+
+	(bound_arr[1])->setMinMax(&tmpMin2, &tmpMax2);
+
+
+	tmpMin2.x = -dist_x;
+	tmpMin2.y = -dist_y;
+	tmpMin2.z = -dist_z;
+
+	tmpMax2.x = dist_x;
+	tmpMax2.y = dist_y;
+	tmpMax2.z = dist_z;
+	//bound->GetMinMax(&tmpMin2,&tmpMax2);
+
+	tmpMin2 += float3(x, y, z);
+	tmpMin2 += float3(dist_x, 0, -dist_z);
+
+	tmpMax2 += float3(x, y, z);
+	tmpMax2 += float3(dist_x, 0, -dist_z);
+
+	(bound_arr[2])->setMinMax(&tmpMin2, &tmpMax2);
+
+
+	tmpMin2.x = -dist_x;
+	tmpMin2.y = -dist_y;
+	tmpMin2.z = -dist_z;
+
+	tmpMax2.x = dist_x;
+	tmpMax2.y = dist_y;
+	tmpMax2.z = dist_z;
+	//bound->GetMinMax(&tmpMin2,&tmpMax2);
+
+	tmpMin2 += float3(x, y, z);
+	tmpMin2 += float3(-dist_x, 0, -dist_z);
+
+	tmpMax2 += float3(x, y, z);
+	tmpMax2 += float3(-dist_x, 0, -dist_z);
+
+	(bound_arr[3])->setMinMax(&tmpMin2, &tmpMax2);
+}
+
+//##########################################################################
+
+bool InPosition2D(const float3* min, const float3* max, const float3* pos)
 {
 		if((max->x >= pos->x && min->x <= pos->x) && (max->z >= pos->z && min->z <= pos->z))
 			return true;
@@ -237,7 +486,7 @@ bool InPositionPoints2D(float3* min,float3* max,float3* p1,float3* p2,float3* p3
 			return false;
 }
 
-///////////////////////////////////
+//**************************************************************************
 
 bool InPosition3D(float3* min,float3* max,float3* pos)
 {
@@ -303,255 +552,9 @@ bool InPositionPoints3D(float3* min,float3* max,float3* p1,float3* p2,float3* p3
 			return false;
 }
 
-////////////////////
+//##########################################################################
 
-void ComputeBoundingBoxArr8(ISXBound* bound,ISXBound** bound_arr)
-{
-	float3 tmpMin2,tmpMax2;
-	float3 tmpMin,tmpMax;
-	bound->GetMinMax(&tmpMin2,&tmpMax2);
-	bound->GetMinMax(&tmpMin,&tmpMax);
-
-	float x = (tmpMax.x + tmpMin.x) * 0.5;
-	float y = (tmpMax.y + tmpMin.y) * 0.5;
-	float z = (tmpMax.z + tmpMin.z) * 0.5;
-
-	float dist_x = (tmpMax.x - tmpMin.x) * 0.25;
-	float dist_y = (tmpMax.y - tmpMin.y) * 0.25;
-	float dist_z = (tmpMax.z - tmpMin.z) * 0.25;
-
-
-	tmpMin2.x = -dist_x;
-	tmpMin2.y = -dist_y;
-	tmpMin2.z = -dist_z;
-
-	tmpMax2.x = dist_x;
-	tmpMax2.y = dist_y;
-	tmpMax2.z = dist_z;
-
-	tmpMin2 += float3(x,y,z);
-	tmpMin2 += float3(dist_x,dist_y,dist_z);
-
-	tmpMax2 += float3(x,y,z);
-	tmpMax2 += float3(dist_x,dist_y,dist_z);
-
-	(bound_arr[0])->SetMinMax(&tmpMin2,&tmpMax2);
-
-
-	tmpMin2.x = -dist_x;
-	tmpMin2.y = -dist_y;
-	tmpMin2.z = -dist_z;
-
-	tmpMax2.x = dist_x;
-	tmpMax2.y = dist_y;
-	tmpMax2.z = dist_z;
-
-	tmpMin2 += float3(x,y,z);
-	tmpMin2 += float3(-dist_x,dist_y,dist_z);
-
-	tmpMax2 += float3(x,y,z);
-	tmpMax2 += float3(-dist_x,dist_y,dist_z);
-
-	(bound_arr[1])->SetMinMax(&tmpMin2, &tmpMax2);
-
-
-	tmpMin2.x = -dist_x;
-	tmpMin2.y = -dist_y;
-	tmpMin2.z = -dist_z;
-
-	tmpMax2.x = dist_x;
-	tmpMax2.y = dist_y;
-	tmpMax2.z = dist_z;
-	//bound->GetMinMax(&tmpMin2,&tmpMax2);
-
-	tmpMin2 += float3(x,y,z);
-	tmpMin2 += float3(dist_x,dist_y,-dist_z);
-
-	tmpMax2 += float3(x,y,z);
-	tmpMax2 += float3(dist_x,dist_y,-dist_z);
-
-	(bound_arr[2])->SetMinMax(&tmpMin2, &tmpMax2);
-
-
-	tmpMin2.x = -dist_x;
-	tmpMin2.y = -dist_y;
-	tmpMin2.z = -dist_z;
-
-	tmpMax2.x = dist_x;
-	tmpMax2.y = dist_y;
-	tmpMax2.z = dist_z;
-	//bound->GetMinMax(&tmpMin2,&tmpMax2);
-
-	tmpMin2 += float3(x,y,z);
-	tmpMin2 += float3(-dist_x,dist_y,-dist_z);
-
-	tmpMax2 += float3(x,y,z);
-	tmpMax2 += float3(-dist_x,dist_y,-dist_z);
-
-	(bound_arr[3])->SetMinMax(&tmpMin2, &tmpMax2);
-
-
-	
-	tmpMin2.x = -dist_x;
-	tmpMin2.y = -dist_y;
-	tmpMin2.z = -dist_z;
-
-	tmpMax2.x = dist_x;
-	tmpMax2.y = dist_y;
-	tmpMax2.z = dist_z;
-
-	tmpMin2 += float3(x,y,z);
-	tmpMin2 += float3(dist_x,-dist_y,dist_z);
-
-	tmpMax2 += float3(x,y,z);
-	tmpMax2 += float3(dist_x,-dist_y,dist_z);
-
-	(bound_arr[4])->SetMinMax(&tmpMin2, &tmpMax2);
-
-
-	tmpMin2.x = -dist_x;
-	tmpMin2.y = -dist_y;
-	tmpMin2.z = -dist_z;
-
-	tmpMax2.x = dist_x;
-	tmpMax2.y = dist_y;
-	tmpMax2.z = dist_z;
-
-	tmpMin2 += float3(x,y,z);
-	tmpMin2 += float3(-dist_x,-dist_y,dist_z);
-
-	tmpMax2 += float3(x,y,z);
-	tmpMax2 += float3(-dist_x,-dist_y,dist_z);
-
-	(bound_arr[5])->SetMinMax(&tmpMin2, &tmpMax2);
-
-
-	tmpMin2.x = -dist_x;
-	tmpMin2.y = -dist_y;
-	tmpMin2.z = -dist_z;
-
-	tmpMax2.x = dist_x;
-	tmpMax2.y = dist_y;
-	tmpMax2.z = dist_z;
-	//bound->GetMinMax(&tmpMin2,&tmpMax2);
-
-	tmpMin2 += float3(x,y,z);
-	tmpMin2 += float3(dist_x,-dist_y,-dist_z);
-
-	tmpMax2 += float3(x,y,z);
-	tmpMax2 += float3(dist_x,-dist_y,-dist_z);
-
-	(bound_arr[6])->SetMinMax(&tmpMin2, &tmpMax2);
-
-
-	tmpMin2.x = -dist_x;
-	tmpMin2.y = -dist_y;
-	tmpMin2.z = -dist_z;
-
-	tmpMax2.x = dist_x;
-	tmpMax2.y = dist_y;
-	tmpMax2.z = dist_z;
-	//bound->GetMinMax(&tmpMin2,&tmpMax2);
-
-	tmpMin2 += float3(x,y,z);
-	tmpMin2 += float3(-dist_x,-dist_y,-dist_z);
-
-	tmpMax2 += float3(x,y,z);
-	tmpMax2 += float3(-dist_x,-dist_y,-dist_z);
-
-	(bound_arr[7])->SetMinMax(&tmpMin2, &tmpMax2);
-}
-
-void ComputeBoundingBoxArr4(ISXBound* bound,ISXBound** bound_arr)
-{
-	float3 tmpMin2,tmpMax2;
-	float3 tmpMin,tmpMax;
-	bound->GetMinMax(&tmpMin2,&tmpMax2);
-	bound->GetMinMax(&tmpMin,&tmpMax);
-
-	float x = (tmpMax.x + tmpMin.x) * 0.5;
-	float y = (tmpMax.y + tmpMin.y) * 0.5;
-	float z = (tmpMax.z + tmpMin.z) * 0.5;
-
-	float dist_x = (tmpMax.x - tmpMin.x) * 0.25;
-	float dist_y = (tmpMax.y - tmpMin.y) * 0.5;
-	float dist_z = (tmpMax.z - tmpMin.z) * 0.25;
-
-
-	tmpMin2.x = -dist_x;
-	tmpMin2.y = -dist_y;
-	tmpMin2.z = -dist_z;
-
-	tmpMax2.x = dist_x;
-	tmpMax2.y = dist_y;
-	tmpMax2.z = dist_z;
-
-	tmpMin2 += float3(x,y,z);
-	tmpMin2 += float3(dist_x,0,dist_z);
-
-	tmpMax2 += float3(x,y,z);
-	tmpMax2 += float3(dist_x,0,dist_z);
-
-	(bound_arr[0])->SetMinMax(&tmpMin2,&tmpMax2);
-
-
-	tmpMin2.x = -dist_x;
-	tmpMin2.y = -dist_y;
-	tmpMin2.z = -dist_z;
-
-	tmpMax2.x = dist_x;
-	tmpMax2.y = dist_y;
-	tmpMax2.z = dist_z;
-
-	tmpMin2 += float3(x,y,z);
-	tmpMin2 += float3(-dist_x,0,dist_z);
-
-	tmpMax2 += float3(x,y,z);
-	tmpMax2 += float3(-dist_x,0,dist_z);
-
-	(bound_arr[1])->SetMinMax(&tmpMin2, &tmpMax2);
-
-
-	tmpMin2.x = -dist_x;
-	tmpMin2.y = -dist_y;
-	tmpMin2.z = -dist_z;
-
-	tmpMax2.x = dist_x;
-	tmpMax2.y = dist_y;
-	tmpMax2.z = dist_z;
-	//bound->GetMinMax(&tmpMin2,&tmpMax2);
-
-	tmpMin2 += float3(x,y,z);
-	tmpMin2 += float3(dist_x,0,-dist_z);
-
-	tmpMax2 += float3(x,y,z);
-	tmpMax2 += float3(dist_x,0,-dist_z);
-
-	(bound_arr[2])->SetMinMax(&tmpMin2, &tmpMax2);
-
-
-	tmpMin2.x = -dist_x;
-	tmpMin2.y = -dist_y;
-	tmpMin2.z = -dist_z;
-
-	tmpMax2.x = dist_x;
-	tmpMax2.y = dist_y;
-	tmpMax2.z = dist_z;
-	//bound->GetMinMax(&tmpMin2,&tmpMax2);
-
-	tmpMin2 += float3(x,y,z);
-	tmpMin2 += float3(-dist_x,0,-dist_z);
-
-	tmpMax2 += float3(x,y,z);
-	tmpMax2 += float3(-dist_x,0,-dist_z);
-
-	(bound_arr[3])->SetMinMax(&tmpMin2, &tmpMax2);
-}
-
-////////////////////
-
-
-void CreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh, IDirect3DDevice9* device)
+void CreateBoundingBoxMesh(const float3* min, const float3* max, ID3DXMesh** bbmesh, IDirect3DDevice9* device)
 {
 	float dist_x = abs(max->x - min->x);
 	float dist_y = abs(max->y - min->y);
@@ -581,76 +584,238 @@ void CreateBoundingBoxMesh(float3* min, float3* max, ID3DXMesh** bbmesh, IDirect
 	(*bbmesh)->UnlockVertexBuffer();
 }
 
+//##########################################################################
 
-
-
-float4x4* SXTransObject::CalcWorld()
+CTransObject::CTransObject()
 {
-	World = SMMatrixScaling(Scale) * /*Rotation.GetMatrix()*/SMMatrixRotationX(Rotation.x) * SMMatrixRotationY(Rotation.y) * SMMatrixRotationZ(Rotation.z) * SMMatrixTranslation(Position);
-	return &World;
+	m_vPosition = float3(0, 0, 0);
+	m_vRotation = float3(0, 0, 0);
+	m_vScale = float3(1, 1, 1);
 }
 
-////
-
-void SXBound::CalcBound(IDirect3DVertexBuffer9* vertex_buffer, DWORD count_vert, DWORD bytepervert)
+const float4x4* CTransObject::calcWorld()
 {
-	BYTE *V = 0;
-	HRESULT hr = 0;
+	m_mWorld = SMMatrixScaling(m_vScale) * SMMatrixRotationX(m_vRotation.x) * SMMatrixRotationY(m_vRotation.y) * SMMatrixRotationZ(m_vRotation.z) * SMMatrixTranslation(m_vPosition);
+	return &m_mWorld;
+}
+
+void CTransObject::setPosition(const float3 *pPos)
+{
+	if (pPos)
+		m_vPosition = *pPos;
+}
+
+void CTransObject::setRotation(const float3 *pRot)
+{
+	if (pRot)
+		m_vRotation = *pRot;
+}
+
+void CTransObject::setScale(const float3 *pScale)
+{
+	if (pScale)
+		m_vScale = *pScale;
+}
+
+
+const float3* CTransObject::getPosition(float3 *pPos)
+{
+	if (pPos)
+		*pPos = m_vPosition;
+
+	return &m_vPosition;
+}
+
+const float3* CTransObject::getRotation(float3 *pRot)
+{
+	if (pRot)
+		*pRot = m_vRotation;
+
+	return &m_vRotation;
+}
+
+const float3* CTransObject::getScale(float3 *pScale)
+{
+	if (pScale)
+		*pScale = m_vScale;
+
+	return &m_vScale;
+}
+
+
+//##########################################################################
+
+void CBound::calcBound(IDirect3DVertexBuffer9 *pVertexBuffer, int iCountVertex, int iBytePerVertex)
+{
+	BYTE *pVertex = 0;
+
+	calcWorld();
 	
-		if (vertex_buffer && SUCCEEDED(vertex_buffer->Lock(0, 0, (void **)&V, 0)))
+	if (pVertexBuffer && SUCCEEDED(pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0)))
+	{
+		float3_t vPos = *(float3_t*)((char*)(pVertex)+iBytePerVertex * 0);
+		m_vMaxOrigin = vPos;
+		m_vMinOrigin = vPos;
+
+		vPos = SMVector3Transform(vPos, m_mWorld);
+
+		m_vMaxTransform = vPos;
+		m_vMinTransform = vPos;
+
+		for (int i = 0; i<iCountVertex; ++i)
 		{
-			float3_t tmppos = *(float3_t*)((char*)(V) + bytepervert * 0);
-			Max = tmppos;
-			Min = tmppos;
+			vPos = *(float3_t*)((char*)(pVertex)+iBytePerVertex * i);
+			
+			if (vPos.x > m_vMaxOrigin.x)
+				m_vMaxOrigin.x = vPos.x;
 
-				for(DWORD i=0;i<count_vert;i++)
-				{
-					float3_t pos = *(float3_t*)((char*)(V) + bytepervert * i);
+			if (vPos.y > m_vMaxOrigin.y)
+				m_vMaxOrigin.y = vPos.y;
 
-						if(pos.x > Max.x)
-							Max.x = pos.x;
-
-						if(pos.y > Max.y)
-							Max.y = pos.y;
-
-						if(pos.z > Max.z)
-							Max.z = pos.z;
+			if (vPos.z > m_vMaxOrigin.z)
+				m_vMaxOrigin.z = vPos.z;
 
 
-						if(pos.x < Min.x)
-							Min.x = pos.x;
+			if (vPos.x < m_vMinOrigin.x)
+				m_vMinOrigin.x = vPos.x;
 
-						if(pos.y < Min.y)
-							Min.y = pos.y;
+			if (vPos.y < m_vMinOrigin.y)
+				m_vMinOrigin.y = vPos.y;
 
-						if(pos.z < Min.z)
-							Min.z = pos.z;
-				}
-			vertex_buffer->Unlock();
+			if (vPos.z < m_vMinOrigin.z)
+				m_vMinOrigin.z = vPos.z;
+
+			vPos = SMVector3Transform(vPos, m_mWorld);
+
+			if (vPos.x > m_vMaxTransform.x)
+				m_vMaxTransform.x = vPos.x;
+
+			if (vPos.y > m_vMaxTransform.y)
+				m_vMaxTransform.y = vPos.y;
+
+			if (vPos.z > m_vMaxTransform.z)
+				m_vMaxTransform.z = vPos.z;
+
+
+			if (vPos.x < m_vMinTransform.x)
+				m_vMinTransform.x = vPos.x;
+
+			if (vPos.y < m_vMinTransform.y)
+				m_vMinTransform.y = vPos.y;
+
+			if (vPos.z < m_vMinTransform.z)
+				m_vMinTransform.z = vPos.z;
 		}
+		pVertexBuffer->Unlock();
+	}
 
-	Center = (Min + Max) * 0.5f;
-	Radius = SMVector3Length(Center-Max);
+	m_vCenterOrigin = (m_vMinOrigin + m_vMaxOrigin) * 0.5f;
+	m_fRadiusOrigin = SMVector3Length(m_vCenterOrigin - m_vMaxOrigin);
+
+	m_vCenterTransform = (m_vMinTransform + m_vMaxTransform) * 0.5f;
+	m_fRadiusTransform = SMVector3Length(m_vCenterTransform - m_vMaxTransform);
 }
 
-float4x4* SXBound::CalcWorldAndTrans()
+void CBound::calcBoundIndex(IDirect3DVertexBuffer9 *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex)
 {
-	CalcWorld();
+	if (!ppArrIndex || pCountIndex || iCountSubset <= 0)
+		return;
 
-	Max = SMVector3Transform(Max, World);
-	Min = SMVector3Transform(Min, World);
+	BYTE *pVertex = 0;
 
-	Center = (Min + Max) * 0.5f;
+	calcWorld();
+	
+	if (pVertexBuffer && SUCCEEDED(pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0)))
+	{
+		float3_t vPos = *(float3_t*)((BYTE*)(pVertex)+iBytePerVertex * ppArrIndex[0][0]);
+		m_vMaxOrigin = vPos;
+		m_vMinOrigin = vPos;
 
-	Radius = SMVector3Length(Center - Max);
-	return &World;
+		for (int i = 0; i<iCountSubset; ++i)
+		{
+			for (int k = 0; k<pCountIndex[i]; ++k)
+			{
+				vPos = *(float3_t*)((BYTE*)(pVertex)+iBytePerVertex * ppArrIndex[i][k]);
+
+				if (vPos.x > m_vMaxOrigin.x)
+					m_vMaxOrigin.x = vPos.x;
+
+				if (vPos.y > m_vMaxOrigin.y)
+					m_vMaxOrigin.y = vPos.y;
+
+				if (vPos.z > m_vMaxOrigin.z)
+					m_vMaxOrigin.z = vPos.z;
+
+
+				if (vPos.x < m_vMinOrigin.x)
+					m_vMinOrigin.x = vPos.x;
+
+				if (vPos.y < m_vMinOrigin.y)
+					m_vMinOrigin.y = vPos.y;
+
+				if (vPos.z < m_vMinOrigin.z)
+					m_vMinOrigin.z = vPos.z;
+
+				vPos = SMVector3Transform(vPos, m_mWorld);
+
+				if (vPos.x > m_vMaxTransform.x)
+					m_vMaxTransform.x = vPos.x;
+
+				if (vPos.y > m_vMaxTransform.y)
+					m_vMaxTransform.y = vPos.y;
+
+				if (vPos.z > m_vMaxTransform.z)
+					m_vMaxTransform.z = vPos.z;
+
+
+				if (vPos.x < m_vMinTransform.x)
+					m_vMinTransform.x = vPos.x;
+
+				if (vPos.y < m_vMinTransform.y)
+					m_vMinTransform.y = vPos.y;
+
+				if (vPos.z < m_vMinTransform.z)
+					m_vMinTransform.z = vPos.z;
+		}
+	}
+		pVertexBuffer->Unlock();
+	}
+
+	m_vCenterOrigin = (m_vMinOrigin + m_vMaxOrigin) * 0.5f;
+	m_fRadiusOrigin = SMVector3Length(m_vCenterOrigin - m_vMaxOrigin);
+
+	m_vCenterTransform = (m_vMinTransform + m_vMaxTransform) * 0.5f;
+	m_fRadiusTransform = SMVector3Length(m_vCenterTransform - m_vMaxTransform);
+
 }
 
-void SXBound::GetPosBBScreen(SXPosBBScreen *res, float3* campos, float3* sizemapdepth, float4x4* mat)
+/*float4x4* CBound::calcWorldAndTrans()
+{
+	calcWorld();
+
+	m_vMaxTransform = SMVector3Transform(m_vMaxOrigin, m_mWorld);
+	m_vMinTransform = SMVector3Transform(m_vMinOrigin, m_mWorld);
+
+	m_vCenterTransform = (m_vMinOrigin + m_vMaxOrigin) * 0.5f;
+
+	m_fRadiusTransform = SMVector3Length(m_vCenterOrigin - m_vMaxOrigin);
+	return &m_mWorld;
+}*/
+
+void CBound::resetTransform()
+{
+	m_vMinTransform = m_vMinOrigin;
+	m_vMaxTransform = m_vMaxOrigin;
+
+	m_vCenterTransform = m_vCenterOrigin;
+	m_fRadiusTransform = m_fRadiusOrigin;
+}
+
+/*void CBound::getPosBBScreen(SXPosBBScreen *res, float3* campos, float3* sizemapdepth, float4x4* mat)
 {
 	float3 max,min;
-	max = Max;
-	min = Min;
+	max = m_vMax;
+	min = m_vMin;
 
 	float2 mins,maxs,minmaxdepth;
 
@@ -823,54 +988,81 @@ void SXBound::GetPosBBScreen(SXPosBBScreen *res, float3* campos, float3* sizemap
 
 	res->IsVisible = true;
 
-		/*if(campos->x > Min.x && campos->y > Min.y && campos->z > Min.z   &&   campos->x < Max.x && campos->y < Max.y && campos->z < Max.z)
-			res->IsIn = true;*/
-}
+		//if(campos->x > Min.x && campos->y > Min.y && campos->z > Min.z   &&   campos->x < Max.x && campos->y < Max.y && campos->z < Max.z)
+			//res->IsIn = true;
+}*/
 
-void SXBound::SetMinMax(float3* min, float3* max)
+void CBound::setMinMax(const float3* min, const float3* max)
 {
-	Min = *min;
-	Max = *max;
+	m_vMinOrigin = *min;
+	m_vMaxOrigin = *max;
 
 	/*float3 vec = (Max - Min) * 0.5f;
 	Radius = sqrt(vec.x * vec.x + vec.y * vec.y + vec.x * vec.z);*/
 
-	Center = (Min + Max) * 0.5f;
-	Radius = SMVector3Length(Center - Max);
+	m_vCenterOrigin = (m_vMinOrigin + m_vMaxOrigin) * 0.5f;
+	m_fRadiusOrigin = SMVector3Length(m_vCenterOrigin - m_vMaxOrigin);
+
+
+	m_vMinTransform = m_vMinOrigin;
+	m_vMaxTransform = m_vMaxOrigin;
+
+	m_vCenterTransform = m_vCenterOrigin;
+	m_fRadiusTransform = m_fRadiusOrigin;
 };
 
-void SXBound::GetMinMax(float3* min, float3* max) const
+void CBound::getMinMax(float3* min, float3* max) const
 {
-	*min = Min; *max = Max;
+	if(min)
+	{
+		*min = m_vMinTransform;
+	}
+	if(max)
+	{
+		*max = m_vMaxTransform;
+	}
 };
 
-void SXBound::SetSphere(float3* center, float* radius)
+void CBound::setSphere(const float3* center, float radius)
 {
-	Center = *center;
-	Radius = *radius;
+	m_vCenterOrigin = *center;
+	m_fRadiusOrigin = radius;
 
-	Min = Center - float3(Radius, Radius, Radius);
-	Max = Center + float3(Radius, Radius, Radius);
+	m_vMinOrigin = m_vCenterOrigin - float3(m_fRadiusOrigin, m_fRadiusOrigin, m_fRadiusOrigin);
+	m_vMaxOrigin = m_vCenterOrigin + float3(m_fRadiusOrigin, m_fRadiusOrigin, m_fRadiusOrigin);
+
+
+	m_vMinTransform = m_vMinOrigin;
+	m_vMaxTransform = m_vMaxOrigin;
+
+	m_vCenterTransform = m_vCenterOrigin;
+	m_fRadiusTransform = m_fRadiusOrigin;
 };
 
-void SXBound::GetSphere(float3* center, float* radius) const
+void CBound::getSphere(float3* center, float* radius) const
 {
-	*center = Center;
-	*radius = Radius;
+	if(center)
+	{
+		*center = m_vCenterTransform;
+	}
+	if(radius)
+	{
+		*radius = m_fRadiusTransform;
+	}
 };
 
-bool SXBound::IsPointInSphere(float3* point) const
+bool CBound::isPointInSphere(const float3* point) const
 {
-	float distsqr = SMVector3Dot(Center - *point);
-	if (distsqr <= Radius*Radius)
+	float distsqr = SMVector3Dot(m_vCenterTransform - *point);
+	if (distsqr <= m_fRadiusTransform*m_fRadiusTransform)
 		return true;
 	else
 		return false;
 }
 
-bool SXBound::IsPointInBox(float3* point) const
+bool CBound::isPointInBox(const float3* point) const
 {
-	if (point->x >= Min.x && point->y >= Min.y && point->z >= Min.z && point->x <= Max.x && point->y <= Max.y && point->z <= Max.z)
+	if (point->x >= m_vMinTransform.x && point->y >= m_vMinTransform.y && point->z >= m_vMinTransform.z && point->x <= m_vMaxTransform.x && point->y <= m_vMaxTransform.y && point->z <= m_vMaxTransform.z)
 		return true;
 	else
 		return false;

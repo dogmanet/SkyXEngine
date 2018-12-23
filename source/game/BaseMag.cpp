@@ -1,3 +1,9 @@
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "BaseMag.h"
 
 /*! \skydocent base_mag
@@ -13,7 +19,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseMag, base_mag);
 
-CBaseMag::CBaseMag(EntityManager * pMgr):
+CBaseMag::CBaseMag(CEntityManager * pMgr):
 	BaseClass(pMgr),
 	m_iCapacity(0),
 	m_iCurrentLoad(0)
@@ -34,4 +40,8 @@ int CBaseMag::getCapacity()
 void CBaseMag::load(int count)
 {
 	m_iCurrentLoad += count;
+	if(m_iCurrentLoad > m_iCapacity)
+	{
+		m_iCurrentLoad = m_iCapacity;
+	}
 }

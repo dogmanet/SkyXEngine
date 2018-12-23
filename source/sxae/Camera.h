@@ -1,5 +1,11 @@
-#ifndef CAMERA_H
-#define CAMERA_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __CAMERA_H
+#define __CAMERA_H
 
 #include <common/SXMath.h>
 
@@ -40,10 +46,10 @@ public:
 	void Forward(float fDelta);
 	void Strafe(float fDelta);
 
-	void Move(CAMERA_MOVE m, bool state);
-	void Advance();
+	void move(CAMERA_MOVE m, bool state);
+	void advance();
 
-	float3_t GetPos();
+	float3_t getPos();
 
 	float3_t GetViewDir();
 };

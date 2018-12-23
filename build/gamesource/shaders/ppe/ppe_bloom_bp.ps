@@ -5,23 +5,34 @@ ppe_bloom_bp.ps
 */
 
 #include <../struct.h>
+#include <../mtrl.h>
 
-half3 Param;
+//##########################################################################
+
+half3 g_vParam;
 //x - во сколько раз увеличиваем цвет пикселя
 //y - минимальное значение цвета
 //z - во сколько раз увеличиваем цвет пикселя если он прошел тест 
 
-sampler2D BaseSampler:register(s0);
+//##########################################################################
 
-half4 main(vs_out_pp IN) : COLOR0
+sampler2D g_sColor:register(s0);
+sampler2D g_sNormals:register(s1);
+
+//##########################################################################
+
+half4 main(VSO_PP IN) : COLOR0
 {
-	half4 color = tex2D(BaseSampler, IN.TexUV);
-	color.rgb *= Param.x;
-	color.a = 1.f;
-	[branch]if (color.r >= Param.y && color.g >= Param.y && color.b >= Param.y)
+	half4 vColor = tex2D(g_sColor, IN.vTexUV);
+	vColor.rgb *= g_vParam.x;
+	vColor.a = 1.f;
+	half4 vNormals = tex2D(g_sNormals, IN.vTexUV);
+	half2 vLayerType = LayerDecode(vNormals.w);
+	
+	[branch]if (vLayerType.y == MTLTYPE_UNLIT || vColor.r >= g_vParam.y || vColor.g >= g_vParam.y || vColor.b >= g_vParam.y)
 	{
-		color.rgb *= Param.z;
-		return color;
+		vColor.rgb *= g_vParam.z;
+		return vColor;
 	}
 	else
 		return half4(0.0, 0.0, 0.0, 0.0);

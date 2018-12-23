@@ -1,17 +1,21 @@
 
-#ifndef __particles_h
-#define __particles_h
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __EMITTER_H
+#define __EMITTER_H
 
 #include <gdefines.h>
 
 #define SM_D3D_CONVERSIONS
-#include <common\SXMath.h>
+#include <common/SXMath.h>
 
 #include "sxparticles.h"
-#include "PESet.h"
+#include "pe_data.h"
 
-extern report_func g_fnReportf;
-extern g_particles_phy_collision GParticlesPhyCollision;
+extern g_particles_phy_collision g_fnParticlesPhyCollision;
 
 //структура описывающая партикл
 struct CommonParticle
@@ -114,106 +118,119 @@ struct CommonParticleDecl2
 
 //#############################################################################
 
-class Emitter
+class CEmitter
 {
 public:
 
-	Emitter();
-	Emitter(Emitter& part);
-	~Emitter();
+	CEmitter();
+	CEmitter(CEmitter &oPart);
+	~CEmitter();
 
 	SX_ALIGNED_OP_MEM
 
-	void OnLostDevice();
-	void OnResetDevice();
+	void onLostDevice();
+	void onResetDevice();
 
-	void Init(ParticlesData* data);
-	ParticlesData* GetData();
+	void init(const CParticlesData *pData);
+	CParticlesData* getData();
 
-	void NameSet(const char* name);
-	void NameGet(char* name);
+	void setName(const char *szName);
+	void getName(char *szName);
 
-	void CountSet(int count);
-	int CountGet();
-	int CountLifeGet();
+	void setCount(int iCount);
+	int getCount();
+	int getCountLife();
 
-	void EnableSet(bool enable);
-	bool EnableGet();
+	void setEnable(bool isEnable);
+	bool getEnable();
 
-	void GeomDataCreate();
+	void createGeomData();
 	
-	void Compute(const float4x4 * mat);
-	void ComputeLighting();
-	void Render(DWORD timeDelta, float4x4* matrot, float4x4* matpos);
+	void compute(const float4x4 *pMat);
+	void computeLighting();
+	void render(DWORD timeDelta, const float4x4 *mRot, const float4x4 *mPos);
 
-	void TextureSet(const char* tex);
-	void TextureSetID(ID tex);
-	ID TextureGetID();
-	void TextureGet(char* tex);
+	void setTexture(const char *szTex);
+	void setTextureID(ID idTex);
+	ID getTextureID();
+	void getTexture(char *szTex);
 
-	void TextureTrackSet(const char* tex);
-	void TextureTrackSetID(ID tex);
-	ID TextureTrackGetID();
-	void TextureTrackGet(char* tex);
+	void setTextureTrack(const char *szTex);
+	void setTextureTrackID(ID idTex);
+	ID getTextureTrackID();
+	void getTextureTrack(char *szTex);
 
-	void AnimTexDataInit();
+	void initAnimTexData();
 
-	void AlifeSet(bool alife);
-	bool AlifeGet();
+	void setAlife(bool isAlife);
+	bool getAlife();
 
-	int TrackCountGet();
-	int TrackPosGet(float3** arr, int count);
+	int getTrackCount();
+	int getTrackPos(float3 **ppArr, int iCount);
 
-	float3_t CurrMin;
-	float3_t CurrMax;
-	float SizeAdd;
+	float3_t m_vCurrMin;
+	float3_t m_vCurrMax;
+	float m_fSizeAdd;
 
 protected:
 
-	void NullingInit();
+	void initNulling();
 
-	char Name[OBJECT_NAME_MAX_LEN];
+	char m_szName[OBJECT_NAME_MAX_LEN];
 
-	bool IsPointInCone(float3* point);
-	bool IsPointInSphere(float3* point);
-	bool IsPointInBox(float3* point);
+	bool isPointInCone(const float3 *pPoint);
+	bool isPointInSphere(const float3 *pPoint);
+	bool isPointInBox(const float3 *pPoint);
 
-	void CreateParticles();
-	void ReCreateParticles(WORD id);
+	void createParticles();
+	void reCreateParticles(ID id);
 
-	void VertexBuffModify();
+	void modifyVertexBuff();
 
-	void UpdateAnimTex(WORD idparticle, DWORD tmptime);
-	float2_t AnimTexSize;	//размер текстуры
-	float4 AnimSizeCadr;//размер одного кадра, xy - в пикселях, zw - в процентном соотношении к размеру текстуры
+	void updateAnimTex(ID idParticle, DWORD dwTime);
 
-	ID IDTex;			//id текстуры, общей на все партиклы текущего организатора
-	ID IDTexTrack;		//id текстуры следа, общей на все партиклы текущего организатора
-	DWORD OldTime;		//прошлое время с которого началось обработка
-	DWORD TimeNextSpawnParticle;	//время спавна будущего партикла
+	//размер текстуры
+	float2_t m_vAnimTexSize;	
+
+	//размер одного кадра, xy - в пикселях, zw - в процентном соотношении к размеру текстуры
+	float4 m_vAnimSizeCadr;
+
+	bool m_isTexInit;
+
+	//! id текстуры, общей на все партиклы текущего организатора
+	ID m_idTex;			
+
+	ID m_idTexTrack;		//id текстуры следа, общей на все партиклы текущего организатора
+
+	DWORD m_dwOldTime;		//прошлое время с которого началось обработка
+	DWORD m_dwTimeNextSpawnParticle;	//время спавна будущего партикла
 	
-	long CountReCreate2;//сколько переродили
+	//сколько переродили
+	int m_iCountReCreate2;
 
-	int CountLifeParticle;	//количество живых частиц
-	bool Alife;					//живо ли сие? если false то все партиклы умерли
+	//количество живых частиц
+	int m_iCountLifeParticle;	
+
+	//живо ли сие? если false то все партиклы умерли
+	bool m_isAlife;					
 	float GTransparency;
-	DWORD TimerDeath;
-	bool Enable;
+	DWORD m_dwTimerDeath;
+	bool m_isEnable;
 
-	CommonParticle* Arr;
-	int Count;
+	CommonParticle *m_pArr;
+	int m_iCount;
 
-	IDirect3DVertexBuffer9* TransVertBuf;
+	IDirect3DVertexBuffer9 *m_pTransVertBuf;
 
-	IDirect3DVertexBuffer9* VertexBuff;
-	IDirect3DIndexBuffer9* IndexBuff;
+	IDirect3DVertexBuffer9 *m_pVertexBuff;
+	IDirect3DIndexBuffer9 *m_pIndexBuff;
 
-	IDirect3DVertexBuffer9* VertexBuffQuad;
-	IDirect3DIndexBuffer9* IndexBuffQuad;
+	IDirect3DVertexBuffer9 *m_pVertexBuffQuad;
+	IDirect3DIndexBuffer9 *m_pIndexBuffQuad;
 
-	ParticlesData Data;
+	CParticlesData m_oData;
 
-	float2_t OldSize;
+	float2_t m_vOldSize;
 };
 
 #endif

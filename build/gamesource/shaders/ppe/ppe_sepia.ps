@@ -6,25 +6,31 @@ ppe_sepia.ps
 
 #include <../struct.h>
 
-half3 LightColor;
-half3 DarkColor;;
-half3 LumWeights;
+//##########################################################################
 
-half CountSepia;
+half3 g_vLightColor;
+half3 g_vDarkColor;;
+half3 g_vLumWeights;
 
-sampler2D FrameSampler:register(s0);
+half g_vCountSepia;
 
-half4 main(vs_out_pp IN):COLOR0
+//##########################################################################
+
+sampler2D g_sColor:register(s0);
+
+//##########################################################################
+
+half4 main(VSO_PP IN):COLOR0
 {
-	half4 color = tex2D(FrameSampler,IN.TexUV);
+	half4 vColor = tex2D(g_sColor, IN.vTexUV);
 	
-	half lum = dot(LumWeights,color);
-	half4 tmp_color = color;
-	tmp_color.rgb = DarkColor*(1.f-lum) + LightColor*lum;
-	tmp_color.rgb *= CountSepia * 2.f;
-	color.rgb *= 1.f + (1.f - (CountSepia * 2.f));
-	color += tmp_color;
-	color /= 2.f;
+	half fLum = dot(g_vLumWeights, vColor);
+	half4 vColor2 = vColor;
+	vColor2.rgb = g_vDarkColor * (1.0 - fLum) + g_vLightColor * fLum;
+	vColor2.rgb *= g_vCountSepia * 2.0;
+	vColor.rgb *= 1.0 + (1.0 - (g_vCountSepia * 2.0));
+	vColor += vColor2;
+	vColor *= 0.5;
 	
-	return color;
+	return vColor;
 }

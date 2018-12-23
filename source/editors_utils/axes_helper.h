@@ -1,6 +1,11 @@
 
-#ifndef axes_helper_h
-#define axes_helper_h
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __AXES_HELPER_H
+#define __AXES_HELPER_H
 
 #include <windows.h>
 #include <common/sxtypes.h>
@@ -33,60 +38,66 @@ inline bool line_intersect_triangle(const float3 &t1, const float3 &t2, const fl
 #define AXES_HELPER_SCALE_LENGTH 1.f		/*!< */
 #define AXES_HELPER_SCALE_ASIZE 0.05f		/*!< */
 #define AXES_HELPER_SCALE_A2SIZE 0.15f		/*!< */
-#define AXES_HELPER_SCALE_SPEED 1.f			/*!< */
+//#define AXES_HELPER_SCALE_SPEED 1.f			/*!< */
 
-class AxesHelper
+class CAxesHelper
 {
 public:
-	AxesHelper();
-	~AxesHelper();
+	CAxesHelper();
+	~CAxesHelper();
 
 	SX_ALIGNED_OP_MEM
 
 	enum HANDLER_TYPE
 	{
-		HT_NONE,
-		HT_MOVE,
-		HT_ROTATE,
-		HT_SCALE
+		HANDLER_TYPE_NONE,
+		HANDLER_TYPE_MOVE,
+		HANDLER_TYPE_ROTATE,
+		HANDLER_TYPE_SCALE
 	};
 
-	void SetType(HANDLER_TYPE type);
-	HANDLER_TYPE GetType();
+	void setType(HANDLER_TYPE type);
+	HANDLER_TYPE getType();
 
-	void Render();
+	void render();
 
-	void SetPosition(const float3 & pos);
-	void SetRotation(const float3 & rot);
-	void SetRotation(const SMQuaternion & rot);
-	void SetScale(const float3 & scale);
+	void setPosition(const float3 & pos);
+	void setRotation(const float3 & rot);
+	void setRotation(const SMQuaternion & rot);
+	//void setScale(const float3 & scale);
 
-	const float3 & GetPosition();
-	const float3 & GetRotation();
-	const float3 & GetScale();
-	const SMQuaternion & GetRotationQ();
+	const float3 & getPosition();
+	const float3 & getRotation();
+	const float3 & getScale();
+	const SMQuaternion & getRotationQ();
 
-	void OnMouseMove(int x, int y);
+	void update();
 
-	bool m_bIsDragging;
-	bool m_bIsDraggingStart;
-	bool m_bIsDraggingStop;
+	bool isDragging()
+	{
+		return(m_bIsDragging);
+	}
 
 private:
 
-	float3 Position;
-	float3 Rotation;
-	SMQuaternion QRotation;
-	float3 Scale, ScaleOld;
+	float3 m_vPosition;
+	float3 m_vRotation;
+	SMQuaternion m_qRotation;
+	float3 m_vScale, m_vScaleOld;
+	bool m_bIsDragging;
+	SMPLANE m_movementPlane;
+	float3 m_vMovementLinePos;
+	float3 m_vMovementLineDir;
+	float3 m_vTransOffset;
 
-	void DrawMove();
-	void DrawCylinder(float3_t lwh, DWORD color = 0xFFFFFFFF);
-	void DrawRotate();
-	void DrawScale();
+	void drawMove();
+	void drawCylinder(float3_t lwh, DWORD color = 0xFFFFFFFF);
+	void drawRotate();
+	void drawScale();
 
-	void IntersectMove(const float3 & start, const float3 & dir);
-	void IntersectRotate(const float3 & start, const float3 & dir);
-	void IntersectScale(const float3 & start, const float3 & dir);
+	void intersectMove(const float3 & start, const float3 & dir);
+	void intersectRotate(const float3 & start, const float3 & dir);
+	void intersectScale(const float3 & start, const float3 & dir);
 
 	struct vert
 	{
@@ -96,26 +107,21 @@ private:
 
 	enum HANDLER_AXE
 	{
-		HA_NONE = 0x00,
-		HA_X = 0x01,
-		HA_Y = 0x02,
-		HA_XY = 0x03,
-		HA_Z = 0x04,
-		HA_XZ = 0x05,
-		HA_YZ = 0x06,
-		HA_XYZ = 0x07
+		HANDLER_AXE_NONE = 0x00,
+		HANDLER_AXE_X = 0x01,
+		HANDLER_AXE_Y = 0x02,
+		HANDLER_AXE_XY = 0x03,
+		HANDLER_AXE_Z = 0x04,
+		HANDLER_AXE_XZ = 0x05,
+		HANDLER_AXE_YZ = 0x06,
+		HANDLER_AXE_XYZ = 0x07
 	};
 
 	HANDLER_AXE m_currentAxe;
 	HANDLER_TYPE m_htype;
 	
-	float3 m_fStartDragPos;
-	SMMATRIX m_mHelperMat;
-	SMMATRIX m_mOldHelperMat;
+	//float3 m_fStartDragPos;
 	SMMATRIX m_mHelperMatScale2;
-	float dist;
-	SMMATRIX m_mOldDragMat;
-	SMMATRIX m_mOldDragMatPos;
 };
 
 #endif

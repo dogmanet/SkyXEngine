@@ -2,68 +2,75 @@
 /*
 ppe_nfaa.ps
 Normal Filter Anti Aliasing
-—„Î‡ÊË‚‡ÌËÂ ÔÓ ÌÓÏ‡ÎË
+–°–≥–ª–∞–∂–∏–≤–∞–Ω–∏–µ –ø–æ –Ω–æ—Ä–º–∞–ª–∏
 */
 
 #include <../struct.h>
+#include <../ps.h>
 
-half3 Param;
+//##########################################################################
+
+half3 g_vParam;
 //half Param.x - Strength;
 //half Param.y - Scale;
 //bool Param.z - IsNotmalMap
 
-half2 PixelSize;
+half2 g_vPixelSize;
 
-sampler2D FrameSampler:register(s0);
-sampler2D EdgeDetectedSampler:register(s1);
+//##########################################################################
 
-half2 GetNormal(half2 texuv) 
+sampler2D g_sColor:register(s0);
+
+//##########################################################################
+
+half2 GetNormal(half2 vTexUV) 
 {
-	half2 upOffset = half2(0, PixelSize.y) * Param.y;
-	half2 rightOffset = half2(PixelSize.x, 0) * Param.y;
-	half3 topHeight = saturate(tex2Dlod(FrameSampler, half4(texuv + upOffset, 0, 0)).rgb);
-	half3 bottomHeight = saturate(tex2Dlod(FrameSampler, half4(texuv - upOffset, 0, 0)).rgb);
-	half3 rightHeight = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset, 0, 0)).rgb);
-	half3 leftHeight = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset, 0, 0)).rgb);
-	half3 leftTopHeight = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset + upOffset, 0, 0)).rgb);
-	half3 leftBottomHeight = saturate(tex2Dlod(FrameSampler, half4(texuv - rightOffset - upOffset, 0, 0)).rgb);
-	half3 rightBottomHeight = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset + upOffset, 0, 0)).rgb);
-	half3 rightTopHeight = saturate(tex2Dlod(FrameSampler, half4(texuv + rightOffset - upOffset, 0, 0)).rgb);
+	half2 vUpOffset = half2(0, g_vPixelSize.y) * g_vParam.y;
+	half2 vRightOffset = half2(g_vPixelSize.x, 0) * g_vParam.y;
+	
+	half3 vTopHeight = tex2Dlod2(g_sColor, vTexUV + vUpOffset, 0).rgb;
+	half3 vBottomHeight = tex2Dlod2(g_sColor, vTexUV - vUpOffset, 0).rgb;
+	half3 vRightHeight = tex2Dlod2(g_sColor, vTexUV + vRightOffset, 0).rgb;
+	half3 vLeftHeight = tex2Dlod2(g_sColor, vTexUV - vRightOffset, 0).rgb;
+	
+	half3 vLeftTopHeight = tex2Dlod2(g_sColor, vTexUV - vRightOffset + vUpOffset, 0).rgb;
+	half3 vLeftBottomHeight = tex2Dlod2(g_sColor, vTexUV - vRightOffset - vUpOffset, 0).rgb;
+	half3 vRightBottomHeight = tex2Dlod2(g_sColor, vTexUV + vRightOffset + vUpOffset, 0).rgb;
+	half3 vRightTopHeight = tex2Dlod2(g_sColor, vTexUV + vRightOffset - vUpOffset, 0).rgb;
 
-	half3 sum0 = rightTopHeight + bottomHeight + leftTopHeight;
-	half3 sum1 = leftBottomHeight + topHeight + rightBottomHeight;
-	half3 sum2 = leftTopHeight + rightHeight + leftBottomHeight;
-	half3 sum3 = rightBottomHeight + leftHeight + rightTopHeight;
+	half3 vSum0 = vRightTopHeight + vBottomHeight + vLeftTopHeight;
+	half3 vSum1 = vLeftBottomHeight + vTopHeight + vRightBottomHeight;
+	half3 vSum2 = vLeftTopHeight + vRightHeight + vLeftBottomHeight;
+	half3 vSum3 = vRightBottomHeight + vLeftHeight + vRightTopHeight;
 
-	half vec1 = length(sum0 - sum1) * Param.x;
-	half vec2 = length(sum3 - sum2) * Param.x;
-	half2 Vectors = half2(vec1,vec2);
-	return  Vectors;
+	half2 vVectors;
+	vVectors.x = length(vSum0 - vSum1) * g_vParam.x;
+	vVectors.y = length(vSum3 - vSum2) * g_vParam.x;
+
+	return vVectors;
 }
 
-half4 main(vs_out_pp IN) : COLOR0 
+//##########################################################################
+
+half4 main(VSO_PP IN) : COLOR0 
 {
-	half4 Scene0 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy, 0, 0));
-	half fEdgeDetected = tex2Dlod(EdgeDetectedSampler, half4(IN.TexUV,0.f,0.f));
+	half4 vColor0= tex2Dlod2(g_sColor, IN.vTexUV.xy, 0);
+
+	half2 vNormal = GetNormal(IN.vTexUV.xy);			
 	
-	[branch]if(fEdgeDetected.x == 0.f)
-		return Scene0;
+	vNormal = clamp(vNormal, -1, 1) * g_vPixelSize;
 
-	half2 Normal = GetNormal(IN.TexUV.xy);			
-	
-	Normal = clamp(Normal, -1, 1) * PixelSize;
+	half4 vColor1 = tex2Dlod2(g_sColor, IN.vTexUV.xy + vNormal.xy, 0);
+	half4 vColor2 = tex2Dlod2(g_sColor, IN.vTexUV.xy - vNormal.xy, 0);
+	half4 vColor3 = tex2Dlod2(g_sColor, IN.vTexUV.xy + half2(vNormal.x, -vNormal.y), 0);
+	half4 vColor4 = tex2Dlod2(g_sColor, IN.vTexUV.xy - half2(vNormal.x, -vNormal.y), 0);
+	half4 vColor5 = tex2Dlod2(g_sColor, IN.vTexUV.xy + half2(-vNormal.x, vNormal.y), 0);
+	half4 vColor6 = tex2Dlod2(g_sColor, IN.vTexUV.xy - half2(-vNormal.x, vNormal.y), 0);
 
-	half4 Scene1 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy + Normal.xy, 0, 0));
-	half4 Scene2 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy - Normal.xy, 0, 0));
-	half4 Scene3 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy + half2(Normal.x, -Normal.y), 0, 0));
-	half4 Scene4 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy - half2(Normal.x, -Normal.y), 0, 0));
-	half4 Scene5 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy + half2(-Normal.x, Normal.y), 0, 0));
-	half4 Scene6 = tex2Dlod(FrameSampler, half4(IN.TexUV.xy - half2(-Normal.x, Normal.y), 0, 0));
+	half4 vCountColor = (vColor0 + vColor1 + vColor2 + vColor3 + vColor4 + vColor5 + vColor6) / 7.0;
 
-	half4 CountColor = (Scene0 + Scene1 + Scene2 + Scene3 + Scene4 + Scene5 + Scene6) / 7.f;
+	/*[branch]if (g_vParam.z) 
+		vCountColor.xyz = normalize(half3(vNormal.xy, 1) * 0.1 + 0.1);*/
 
-		[branch]if (Param.z) 
-			CountColor.xyz = normalize(half3(Normal.xy, 1) * 0.1 + 0.1);
-
-	return CountColor;
+	return vCountColor;
 }

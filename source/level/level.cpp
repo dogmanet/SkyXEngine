@@ -1,11 +1,18 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "level.h"
+#include <decals/sxdecals.h>
 
 CLevel::CLevel()
 {
 	m_sAmbientSounds = "";
 	m_sWeather = "";
 	m_szName[0] = 0;
+	m_sLocalName = "";
 
 	loadParticles();
 	m_pWeather = new CWeather();
@@ -23,209 +30,270 @@ CLevel::~CLevel()
 void CLevel::clear()
 {
 	m_szName[0] = 0;
+	m_sLocalName = "";
 	m_sWeather = "";
 	m_sAmbientSounds = "";
 
-	SGeom_ModelsClear();
-	SGeom_GreenClear();
+	SGeom_Clear();
+	SGreen_Clear();
+
+	SLight_ClearIDArr();
 	
-	SXGame_UnloadObjLevel();
-	SXPhysics_UnloadGeom();
+	//SGame_UnloadObjLevel();
+	Core_0ConsoleExecCmd("ent_unload_level");
+	SPhysics_UnloadGeom();
 	SAIG_Clear();
+	SXDecals_Clear();
 }
 
 void CLevel::load(const char *szName, bool isGame)
 {
+	clear();
+
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "load level '%s' ...\n", szName);
 	sprintf(m_szName, "%s", szName);
-	char tmppathlevel[1024];
-	sprintf(tmppathlevel, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
-	if (!Core_0FileExists(tmppathlevel))
+
+	char szFullPathEntity[1024];
+	szFullPathEntity[0] = 0;
+	
+	char szFullPath[1024];
+	sprintf(szFullPath, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
+	if (!FileExistsFile(szFullPath))
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_WARNING, "not found file of level '%s'", tmppathlevel);
+		LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of level '%s'", szFullPath);
 		return;
 	}
 
-	ISXConfig* config = Core_OpConfig(tmppathlevel);
-	if (config->keyExists("level", "geometry"))
+	ISXConfig *pConfig = Core_OpConfig(szFullPath);
+
+	if (pConfig->keyExists("level", "local_name"))
+		m_sLocalName = pConfig->getKey("level", "local_name");
+
+	if (pConfig->keyExists("level", "geometry"))
 	{
-		char tmppath[1024];
-		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "geometry"));
-		if (Core_0FileExists(tmppath))
-			SGeom_ModelsLoad(tmppath);
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load geometry\n");
+		sprintf(szFullPath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, pConfig->getKey("level", "geometry"));
+		if (FileExistsFile(szFullPath))
+			SGeom_Load(szFullPath);
 		else
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "not found file of geometry '%s'", tmppath);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of geometry '%s'", szFullPath);
 		}
 	}
 
-	if (config->keyExists("level", "green"))
+	if (pConfig->keyExists("level", "green"))
 	{
-		char tmppath[1024];
-		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "green"));
-		if (Core_0FileExists(tmppath))
-			SGeom_GreenLoad(tmppath);
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load green\n");
+		sprintf(szFullPath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, pConfig->getKey("level", "green"));
+		if (FileExistsFile(szFullPath))
+			SGreen_Load(szFullPath);
 		else
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "not found file of green '%s'", tmppath);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of green '%s'", szFullPath);
+		}
+	}
+	
+	if (pConfig->keyExists("level", "entity"))
+	{
+		//LibReport(REPORT_MSG_LEVEL_NOTICE, "  load entity\n");
+		sprintf(szFullPathEntity, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, pConfig->getKey("level", "entity"));
+		FileCanonizePath(szFullPathEntity);
+		if (FileExistsFile(szFullPathEntity))
+		{
+			//SGame_LoadEnts(szFullPathEntity);
+		}
+		else
+		{
+			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of entity '%s'", szFullPathEntity);
 		}
 	}
 
-	if (config->keyExists("level", "entity"))
+	if (pConfig->keyExists("level", "physic"))
 	{
-		char tmppath[1024];
-		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "entity"));
-		if (Core_0FileExists(tmppath))
-			SXGame_LoadEnts(tmppath);
-		else
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load physic\n");
+		
+		sprintf(szFullPath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, pConfig->getKey("level", "physic"));
+		if (FileExistsFile(szFullPath))
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "not found file of entity '%s'", tmppath);
-		}
-	}
-
-	if (config->keyExists("level", "physic"))
-	{
-		char tmppath[1024];
-		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "physic"));
-		if (Core_0FileExists(tmppath))
-		{
-			SXPhysics_ImportGeom(tmppath);
+			SPhysics_ImportGeom(szFullPath);
 		}
 		else
 		{
 			if (isGame)
 			{
-				SXPhysics_LoadGeom(tmppath);
-				//SXPhysics_ExportGeom(tmppath);
+				SPhysics_LoadGeom(szFullPath);
+				//SPhysics_ExportGeom(tmppath);
 			}
 		}
 	}
 	else
 	{
 		if (isGame)
-			SXPhysics_LoadGeom();
+			SPhysics_LoadGeom();
 	}
 
-	if (config->keyExists("level", "aigrid"))
+	if (pConfig->keyExists("level", "aigrid"))
 	{
-		char tmppath[1024];
-		sprintf(tmppath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, config->getKey("level", "aigrid"));
-		if (Core_0FileExists(tmppath))
-			SAIG_GridLoad(tmppath);
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load aigrid\n");
+		
+		sprintf(szFullPath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, pConfig->getKey("level", "aigrid"));
+		if (FileExistsFile(szFullPath))
+			SAIG_GridLoad(szFullPath);
 		else
 		{
-			g_fnReportf(REPORT_MSG_LEVEL_WARNING, "not found file of aigrid '%s'", tmppath);
+			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of aigrid '%s'", szFullPath);
 		}
 	}
 
-	SGCore_LoadTexLoadTextures();
-
-	if (config->keyExists("level", "ambient_sounds"))
+	if (pConfig->keyExists("level", "ambient_sounds"))
 	{
-		m_sAmbientSounds = config->getKey("level", "ambient_sounds");
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load ambient_sounds\n");
+		m_sAmbientSounds = pConfig->getKey("level", "ambient_sounds");
 
 		if (isGame)
 		{
 			m_pAmbientSounds->clear();
-			char tmpallpath[4096];
-			sprintf(tmpallpath, "%s", m_sAmbientSounds.c_str());
-			char* tmppath = strtok(tmpallpath, " ,|");
-			if (tmppath)
-				m_pAmbientSounds->add(tmppath);
-			while (tmppath != NULL)
-			{
-				tmppath = strtok(NULL, " ,|");
+			char szFullStr[4096];
+			sprintf(szFullStr, "%s", m_sAmbientSounds.c_str());
+			char *szStr = strtok(szFullStr, " ,|");
 
-				if (tmppath)
-					m_pAmbientSounds->add(tmppath);
+			if (szStr)
+				m_pAmbientSounds->add(szStr);
+
+			while (szStr != NULL)
+			{
+				szStr = strtok(NULL, " ,|");
+
+				if (szStr)
+					m_pAmbientSounds->add(szStr);
 			}
 		}
 	}
 
-	if (config->keyExists("level", "weather"))
+	if (pConfig->keyExists("level", "weather"))
 	{
-		m_sWeather = config->getKey("level", "weather");
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load weather\n");
+		m_sWeather = pConfig->getKey("level", "weather");
 		if (isGame)
 		{
-			char tmppath[1024];
-			sprintf(tmppath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_CONFIGS), m_sWeather.c_str());
+			sprintf(szFullPath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_CONFIGS), m_sWeather.c_str());
 
-			if (Core_0FileExists(tmppath))
-				m_pWeather->load(tmppath);
+			if (FileExistsFile(szFullPath))
+				m_pWeather->load(szFullPath);
 			else
 			{
-				g_fnReportf(REPORT_MSG_LEVEL_WARNING, "not found file of weather '%s'", tmppath);
+				LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of weather '%s'", szFullPath);
 			}
 		}
 	}
 
-	if (config->keyExists("level", "type"))
+	if (pConfig->keyExists("level", "type"))
 	{
-		String str = config->getKey("level", "type");
-		if (stricmp(str.c_str(), "outdoor") == 0)
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  init type\n");
+		String sStr = pConfig->getKey("level", "type");
+		if (stricmp(sStr.c_str(), "outdoor") == 0)
 		{
-			ID gid = SML_LigthsCreatePoint(
+			SGCore_SkyBoxCr();
+			SGCore_SkyCloudsCr();
+
+			SGCore_SkyBoxSetUse(true);
+			SGCore_SkyCloudsSetUse(true);
+
+			float3 vMin, vMax;
+			SGeom_GetMinMax(&vMin, &vMax);
+			float fWidth = (vMax.x - vMin.x) * 2.f;
+			float fHeight = (vMax.z - vMin.z) * 2.f;
+			fWidth = (fWidth >= SXGC_SKYCLOUDS_MIN_SIZE ? fWidth : SXGC_SKYCLOUDS_MIN_SIZE);
+			fHeight = (fHeight >= SXGC_SKYCLOUDS_MIN_SIZE ? fHeight : SXGC_SKYCLOUDS_MIN_SIZE);
+			SGCore_SkyCloudsSetWidthHeightPos(fWidth, fHeight, &float3((vMax + vMin) * 0.5));
+
+			ID gid = SLight_CreatePoint(
 				&float3(60, 60, 0),
 				0,
 				&float3(1, 1, 1),
 				true,
 				true);
-			SML_LigthsSetEnable(gid, true);
-			SML_LigthsSetName(gid, "sun");
+			SLight_SetEnable(gid, true);
+			SLight_SetName(gid, "sun");
+		}
+		else
+		{
+			SGCore_SkyBoxSetUse(false);
+			SGCore_SkyCloudsSetUse(false);
 		}
 	}
 
-	mem_release(config);
+	Core_0ConsoleExecCmd("ent_load_level \"%s\" \"%s\"", szFullPathEntity, szName);
+
+	//SGame_OnLevelLoad(szName);
+
+	mem_release(pConfig);
+
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "level '%s' loaded!\n", szName);
 }
 
 void CLevel::save(const char *szName)
 {
 	sprintf(m_szName, "%s", szName);
-	char tmppathlevel[1024];
-	sprintf(tmppathlevel, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
+	char szPathLevel[1024], szPathDirLevel[1024];
+	sprintf(szPathDirLevel, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName);
+	sprintf(szPathLevel, "%s%s.lvl", szPathDirLevel, szName);
+
+	if (!FileExistsDir(szPathDirLevel))
+		FileCreateDir(szPathDirLevel);
+
+	char szFullPath[1024];
 
 	FILE* file = 0;
-	file = fopen(tmppathlevel, "w");
+	file = fopen(szPathLevel, "w");
 
 	fprintf(file, "%s", "[level]\n");
 
-	if (SGeom_ModelsGetCount() > 0)
+	if (m_sLocalName.length() > 0)
+		fprintf(file, "local_name = %s\n", m_sLocalName.c_str());
+
+	if (SGeom_GetCountModels() > 0)
 	{
 		fprintf(file, "geometry = %s.geom\n", szName);
 
-		sprintf(tmppathlevel, "%s%s/%s.geom", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
-		SGeom_ModelsSave(tmppathlevel);
+		sprintf(szFullPath, "%s%s/%s.geom", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
+		SGeom_Save(szFullPath);
 	}
 
-	if (SGeom_GreenGetCount() > 0)
+	if (SGreen_GetCount() > 0)
 	{
 		fprintf(file, "green = %s.green\n", szName);
-		sprintf(tmppathlevel, "%s%s/%s.green", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
-		SGeom_GreenSave(tmppathlevel);
+		sprintf(szFullPath, "%s%s/%s.green", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
+		SGreen_Save(szFullPath);
 	}
 
-	if (SML_LigthsGetGlobal() > 0)
+	if (SLight_GetGlobal() > 0)
 		fprintf(file, "type = outdoor\n");
 	else
 		fprintf(file, "type = indoor\n");
 
-	if (SXGame_EntGetCount() > 0)
+	
+
+	//if (SGame_EntGetCount() > 0)
 	{
-		sprintf(tmppathlevel, "%s%s/%s.ent", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
+		sprintf(szFullPath, "%s%s/%s.ent", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
 		fprintf(file, "entity = %s.ent\n", szName);
-		SXGame_SaveEnts(tmppathlevel);
+		FileCanonizePath(szFullPath);
+		Core_0ConsoleExecCmd("ent_save_level \"%s\"", szFullPath);
+		//SGame_SaveEnts(tmppathlevel);
 	}
 
 	if (SAIG_GridGetCountSplits() > 0)
 	{
-		sprintf(tmppathlevel, "%s%s/%s.aigrid", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
+		sprintf(szFullPath, "%s%s/%s.aigrid", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
 		fprintf(file, "aigrid = %s.aigrid\n", szName);
-		SAIG_GridSave(tmppathlevel);
+		SAIG_GridSave(szFullPath);
 	}
 
-	SXPhysics_LoadGeom();
-	sprintf(tmppathlevel, "%s%s/%s.phy", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
+	SPhysics_LoadGeom();
+	sprintf(szFullPath, "%s%s/%s.phy", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
 	fprintf(file, "physic = %s.phy\n", szName);
-	SXPhysics_ExportGeom(tmppathlevel);
+	SPhysics_ExportGeom(szFullPath);
 
 	if (m_sAmbientSounds[0])
 	{

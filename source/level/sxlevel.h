@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 /*!
 \file
@@ -19,65 +19,54 @@ See the license in LICENSE
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
+#pragma comment(lib, "sxscore_d.lib")
+#pragma comment(lib, "sxgeom_d.lib")
+#pragma comment(lib, "sxgreen_d.lib")
+#pragma comment(lib, "sxaigrid_d.lib")
+#pragma comment(lib, "sxparticles_d.lib")
+#pragma comment(lib, "sxpp_d.lib")
+#pragma comment(lib, "sxphysics_d.lib")
+#pragma comment(lib, "sxdecals_d.lib")
 #else
 #pragma comment(lib, "sxgcore.lib")
-#endif
-#include <gcore/sxgcore.h>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxscore_d.lib")
-#else
 #pragma comment(lib, "sxscore.lib")
-#endif
-#include <score/sxscore.h>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxgeom_d.lib")
-#else
 #pragma comment(lib, "sxgeom.lib")
-#endif
-#include <geom/sxgeom.h>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxaigrid_d.lib")
-#else
+#pragma comment(lib, "sxgreen.lib")
 #pragma comment(lib, "sxaigrid.lib")
-#endif
-#include <aigrid/sxaigrid.h>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxparticles_d.lib")
-#else
 #pragma comment(lib, "sxparticles.lib")
-#endif
-#include <particles/sxparticles.h>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxpp_d.lib")
-#else
 #pragma comment(lib, "sxpp.lib")
-#endif
-#include <pp/sxpp.h>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxphysics_d.lib")
-#else
 #pragma comment(lib, "sxphysics.lib")
+#pragma comment(lib, "sxdecals.lib")
 #endif
+
+#include <gcore/sxgcore.h>
+#include <score/sxscore.h>
+#include <geom/sxgeom.h>
+#include <green/sxgreen.h>
+#include <aigrid/sxaigrid.h>
+#include <particles/sxparticles.h>
+#include <pp/sxpp.h>
 #include <physics/sxphysics.h>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxgame_d.lib")
-#else
-#pragma comment(lib, "sxgame.lib")
-#endif
-#include <game/sxgame.h>
-
 
 #ifdef SX_DLL
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
+
+//#############################################################################
+
+#define MAX_LEVEL_STRING 128
+struct CLevelInfo
+{
+	char m_szName[MAX_LEVEL_STRING]; //!< имя папки уровня
+	char m_szLocalName[MAX_LEVEL_STRING]; //!< Отображаемое имя уровня
+	bool m_bHasPreview;
+
+	HANDLE m_hFind; //!< для внутреннего использования
+};
+
+//! Возвращает информацию об следующем уровне
+SX_LIB_API BOOL SLevel_EnumLevels(CLevelInfo *pInfo);
 
 //#############################################################################
 
@@ -88,7 +77,7 @@ See the license in LICENSE
 SX_LIB_API long SLevel_0GetVersion();
 
 //! установка функции вывода сообщений
-SX_LIB_API void SLevel_Dbg_Set(report_func rf);
+SX_LIB_API void SLevel_Dbg_Set(report_func fnFunc);
 
 //! инициализация подсистемы
 SX_LIB_API void SLevel_0Create(
@@ -130,13 +119,13 @@ SX_LIB_API void SLevel_SaveParticles();
 */
 
 //! добавить звук
-SX_LIB_API void SLevel_AmbientSndAdd(const char* path);
+SX_LIB_API void SLevel_AmbientSndAdd(const char *szPath);
 
 //! возвращает общее количество загруженных звуков
 SX_LIB_API UINT SLevel_AmbientSndGetCount();
 
 //! в path записывает путь до звука по его id
-SX_LIB_API void SLevel_AmbientSndGet(ID id, char* path);
+SX_LIB_API void SLevel_AmbientSndGet(ID id, char *szPath);
 
 //! очистка списка звуков
 SX_LIB_API void SLevel_AmbientSndClear();

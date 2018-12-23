@@ -1,8 +1,8 @@
 
-/******************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
-******************************************************/
+***********************************************************/
 
 #define SXSCORE_VERSION 1
 
@@ -14,9 +14,9 @@ See the license in LICENSE
 report_func g_fnReportf = DefReport;
 #endif
 
-MainSound* MSound = 0;
+CSoundManager *g_pManagerSound = 0;
 
-#define SCORE_PRECOND(retval) if(!MSound){g_fnReportf(-1, "%s - sxsound is not init", gen_msg_location); return retval;}
+#define SCORE_PRECOND(retval) if(!g_pManagerSound){LibReport(-1, "%s - sxsound is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -30,37 +30,37 @@ SX_LIB_API void SSCore_Dbg_Set(report_func rf)
 	g_fnReportf = rf;
 }
 
-SX_LIB_API void SSCore_0Create(const char* name, HWND hwnd, bool is_unic)
+SX_LIB_API void SSCore_0Create(const char *szName, HWND hWnd, bool isUnic)
 {
-	if (name && strlen(name) > 1)
+	if (szName && strlen(szName) > 1)
 	{
-		if (is_unic)
+		if (isUnic)
 		{
-			HANDLE hMutex = CreateMutex(NULL, FALSE, name);
+			HANDLE hMutex = CreateMutex(NULL, FALSE, szName);
 			if (GetLastError() == ERROR_ALREADY_EXISTS)
 			{
 				CloseHandle(hMutex);
-				g_fnReportf(-1, "%s - none unic name, sxsound", gen_msg_location);
+				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
 			}
 			else
 			{
-				MSound = new MainSound();
-				MSound->Init(hwnd);
+				g_pManagerSound = new CSoundManager();
+				g_pManagerSound->init(hWnd);
 			}
 		}
 		else
 		{
-			MSound = new MainSound();
-			MSound->Init(hwnd);
+			g_pManagerSound = new CSoundManager();
+			g_pManagerSound->init(hWnd);
 		}
 	}
 	else
-		g_fnReportf(-1, "%s - not init argument [name], sxsound", gen_msg_location);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
 }
 
 SX_LIB_API void SSCore_AKill()
 {
-	mem_delete(MSound);
+	mem_delete(g_pManagerSound);
 }
 
 //#############################################################################
@@ -69,259 +69,480 @@ SX_LIB_API void SSCore_Clear()
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->Clear();
+	g_pManagerSound->clear();
 }
 
 
-SX_LIB_API void SSCore_Update(const float3* viewpos, const float3* viewdir)
+SX_LIB_API void SSCore_Update(const float3 *pViewPos, const float3 *pViewDir)
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->Update(viewpos, viewdir);
+	g_pManagerSound->update(pViewPos, pViewDir);
 }
 
-SX_LIB_API int SSCore_SndsPlayCountGet()
+SX_LIB_API void SSCore_SetMainVolume(float fVolume)
+{
+	SCORE_PRECOND(_VOID);
+
+	g_pManagerSound->setMainVolume(fVolume);
+}
+
+SX_LIB_API int SSCore_SndsGetCountPlay()
 {
 	SCORE_PRECOND(0);
 
-	return MSound->SoundsPlayCountGet();
+	return g_pManagerSound->soundsGetPlayCount();
 }
 
-SX_LIB_API int SSCore_SndsLoadCountGet()
+SX_LIB_API int SSCore_SndsGetCountLoad()
 {
 	SCORE_PRECOND(0);
 
-	return MSound->SoundsLoadCountGet();
+	return g_pManagerSound->soundsGetLoadCount();
 }
 
-SX_LIB_API ID SSCore_SndCreate2d(const char *file, bool looping, DWORD size_stream)
-{
-	SCORE_PRECOND(-1);
+//##########################################################################
 
-	return MSound->SoundCreate2d(file, looping, size_stream);
-}
-
-SX_LIB_API ID SSCore_SndCreate3d(const char *file, bool looping, DWORD size_stream, float dist, float shift_pan)
-{
-	SCORE_PRECOND(-1);
-
-	return MSound->SoundCreate3d(file, looping, size_stream, dist, shift_pan);
-}
-
-SX_LIB_API ID SSCore_SndCreate2dInst(const char *file, bool looping, DWORD size_stream)
-{
-	SCORE_PRECOND(-1);
-
-	return  MSound->SoundCreate2dInst(file, looping, size_stream);
-}
-
-SX_LIB_API ID SSCore_SndCreate3dInst(const char *file, bool looping, DWORD size_stream, float dist, float shift_pan)
-{
-	SCORE_PRECOND(-1);
-
-	return  MSound->SoundCreate3dInst(file, looping, size_stream, dist, shift_pan);
-}
-
-SX_LIB_API ID SSCore_SndFind2dInst(const char *file)
-{
-	SCORE_PRECOND(-1);
-
-	return MSound->SoundFind2dInst(file);
-}
-
-SX_LIB_API ID SSCore_SndFind3dInst(const char *file)
-{
-	SCORE_PRECOND(-1);
-
-	return MSound->SoundFind3dInst(file);
-}
-
-SX_LIB_API void SSCore_SndInstancePlay2d(ID id, int volume, int pan)
+SX_LIB_API void SSCore_ChannelAdd(ID idChannel, bool isPlaying)
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->SoundInstancePlay2d(id, volume, pan);
+	g_pManagerSound->channelAdd(idChannel, isPlaying);
 }
 
-SX_LIB_API void SSCore_SndInstancePlay3d(ID id, const float3* pos)
-{
-	SCORE_PRECOND(_VOID);
-
-	MSound->SoundInstancePlay3d(id, pos);
-}
-
-
-SX_LIB_API bool SSCore_SndIsInit(ID id)
+SX_LIB_API bool SSCore_ChannelExists(ID idChannel)
 {
 	SCORE_PRECOND(false);
 
-	return MSound->SoundIsInit(id);
+	return g_pManagerSound->channelExists(idChannel);
 }
 
-SX_LIB_API void SSCore_SndDelete(ID id)
+SX_LIB_API int SSCore_ChannelGetSndCount(ID idChannel)
+{
+	SCORE_PRECOND(-1);
+
+	return g_pManagerSound->channelGetSndCount(idChannel);
+}
+
+SX_LIB_API void SSCore_ChannelPlay(ID idChannel)
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->SoundDelete(id);
+	g_pManagerSound->channelPlay(idChannel);
 }
 
-
-SX_LIB_API void SSCore_SndPlay(ID id, int looping)
+SX_LIB_API void SSCore_ChannelPlayOnly(ID idChannel)
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->SoundPlay(id, looping);
+	g_pManagerSound->channelPlayOnly(idChannel);
 }
 
-SX_LIB_API void SSCore_SndPause(ID id)
+SX_LIB_API bool SSCore_ChannelPlaying(ID idChannel)
+{
+	SCORE_PRECOND(false);
+
+	return g_pManagerSound->channelPlaying(idChannel);
+}
+
+SX_LIB_API void SSCore_ChannelStop(ID idChannel)
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->SoundPause(id);
+	g_pManagerSound->channelStop(idChannel);
 }
 
-SX_LIB_API void SSCore_SndStop(ID id)
+//##########################################################################
+
+SX_LIB_API ID SSCore_SndCreate2d(const char *szFile, ID idChannel, UINT uiSizeStream)
+{
+	SCORE_PRECOND(-1);
+
+	return g_pManagerSound->soundCreate2d(szFile, idChannel, uiSizeStream);
+}
+
+SX_LIB_API ID SSCore_SndCreate3d(const char *szFile, ID idChannel, UINT uiSizeStream, float fDist)
+{
+	SCORE_PRECOND(-1);
+
+	return g_pManagerSound->soundCreate3d(szFile, idChannel, uiSizeStream, fDist);
+}
+
+SX_LIB_API ID SSCore_SndCreate2dInst(const char *szFile, ID idChannel)
+{
+	SCORE_PRECOND(-1);
+
+	return  g_pManagerSound->soundCreate2dInst(szFile, idChannel);
+}
+
+SX_LIB_API ID SSCore_SndCreate3dInst(const char *szFile, ID idChannel, float fDist)
+{
+	SCORE_PRECOND(-1);
+
+	return  g_pManagerSound->soundCreate3dInst(szFile, idChannel, fDist);
+}
+
+SX_LIB_API ID SSCore_SndFind2dInst(const char *szFile, ID idChannel)
+{
+	SCORE_PRECOND(-1);
+
+	return g_pManagerSound->soundFind2dInst(szFile, idChannel);
+}
+
+SX_LIB_API ID SSCore_SndFind3dInst(const char *szFile, ID idChannel)
+{
+	SCORE_PRECOND(-1);
+
+	return g_pManagerSound->soundFind3dInst(szFile, idChannel);
+}
+
+
+SX_LIB_API ID SSCore_SndInstancePlay(ID idSound, bool isBlocked, bool isLooping, UINT *pArrDelay, int iSizeArrDelay, const float3 *pPos, float fVolume, float fPan)
+{
+	SCORE_PRECOND(-1);
+
+	return g_pManagerSound->soundInstancePlay(idSound, isBlocked, isLooping, pArrDelay, iSizeArrDelay, pPos, fVolume, fPan);
+}
+
+/*SX_LIB_API ID SSCore_SndInstancePlay2d(ID idSound, bool isBlocked, bool isLooping, int iVolume, int iPan)
+{
+	SCORE_PRECOND(-1);
+
+	return g_pManagerSound->soundInstancePlay(idSound, isBlocked, isLooping, 0, 0, 0, iVolume, iPan);
+}
+
+SX_LIB_API ID SSCore_SndInstancePlayDelay2d(ID idSound, bool isBlocked, bool isLooping, UINT *pArrDelay, int iSizeArrDelay, int iVolume, int iPan)
+{
+	SCORE_PRECOND(-1);
+
+	return g_pManagerSound->soundInstancePlay(idSound, isBlocked, isLooping, pArrDelay, iSizeArrDelay, 0, iVolume, iPan);
+}
+
+SX_LIB_API ID SSCore_SndInstancePlay3d(ID idSound, bool isBlocked, bool isLooping, const float3 *pPos)
+{
+	SCORE_PRECOND(-1);
+
+	return g_pManagerSound->soundInstancePlay(idSound, isBlocked, isLooping, 0, 0, pPos);
+}
+
+SX_LIB_API ID SSCore_SndInstancePlayDelay3d(ID idSound, bool isBlocked, bool isLooping, UINT *pArrDelay, int iSizeArrDelay, const float3 *pPos)
+{
+	SCORE_PRECOND(-1);
+
+	return g_pManagerSound->soundInstancePlay(idSound, isBlocked, isLooping, pArrDelay, iSizeArrDelay, pPos);
+}*/
+
+
+SX_LIB_API bool SSCore_SndInstancePlaying(ID idSound, ID idInstance)
+{
+	SCORE_PRECOND(false);
+
+	return g_pManagerSound->soundInstancePlaying(idSound, idInstance);
+}
+
+SX_LIB_API void SSCore_SndInstanceStop(ID idSound, ID idInstance)
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->SoundStop(id);
+	g_pManagerSound->soundInstanceStop(idSound, idInstance);
 }
 
-
-SX_LIB_API void SSCore_SndStateSet(ID id, SOUND_OBJSTATE state)
+SX_LIB_API void SSCore_SndInstanceFree(ID idSound, ID idInstance)
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->SoundStateSet(id, state);
+	g_pManagerSound->soundInstanceStop(idSound, idInstance);
 }
 
-SX_LIB_API SOUND_OBJSTATE SSCore_SndStateGet(ID id)
+
+SX_LIB_API bool SSCore_SndIsInit(ID idSound)
+{
+	SCORE_PRECOND(false);
+
+	return g_pManagerSound->soundIsInit(idSound);
+}
+
+SX_LIB_API void SSCore_SndDelete(ID idSound)
+{
+	SCORE_PRECOND(_VOID);
+
+	g_pManagerSound->soundDelete(idSound);
+}
+
+
+SX_LIB_API void SSCore_SndPlay(ID idSound, bool isLooping, UINT *pArrDelay, int iSizeArrDelay)
+{
+	SCORE_PRECOND(_VOID);
+
+	g_pManagerSound->soundPlay(idSound, isLooping, pArrDelay, iSizeArrDelay);
+}
+
+/*SX_LIB_API void SSCore_SndPlayDelay(ID idSound, bool isLooping, UINT *pArrDelay, int iSizeArrDelay)
+{
+	SCORE_PRECOND(_VOID);*/
+
+	/*Array<UINT> aValues;
+	
+	UINT uiCurrVal = 0;
+	va_list va;
+	va_start(va, isLooping);
+
+	uiCurrVal = va_arg(va, UINT);
+	while (uiCurrVal > 0)
+	{
+		aValues.push_back(uiCurrVal);
+		uiCurrVal = va_arg(va, UINT);
+	}
+
+	va_end(va);*/
+
+	/*g_pManagerSound->soundPlayDelay(idSound, isLooping, pArrDelay, iSizeArrDelay);
+}*/
+
+SX_LIB_API void SSCore_SndPause(ID idSound)
+{
+	SCORE_PRECOND(_VOID);
+
+	g_pManagerSound->soundPause(idSound);
+}
+
+SX_LIB_API void SSCore_SndStop(ID idSound)
+{
+	SCORE_PRECOND(_VOID);
+
+	g_pManagerSound->soundStop(idSound);
+}
+
+
+SX_LIB_API void SSCore_SndSetState(ID idSound, SOUND_OBJSTATE state)
+{
+	SCORE_PRECOND(_VOID);
+
+	g_pManagerSound->soundSetState(idSound, state);
+}
+
+SX_LIB_API SOUND_OBJSTATE SSCore_SndGetState(ID idSound)
 {
 	SCORE_PRECOND(SOUND_OBJSTATE_STOP);
 
-	return MSound->SoundStateGet(id);
+	return g_pManagerSound->soundGetState(idSound);
 }
 
-SX_LIB_API void SSCore_SndPosCurrSet(ID id, DWORD pos, int type)
+SX_LIB_API void SSCore_SndSetPosPlay(ID idSound, UINT uiPosMls)
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->SoundPosCurrSet(id, pos, type);
+	g_pManagerSound->soundSetPosPlay(idSound, uiPosMls);
 }
 
-SX_LIB_API DWORD SSCore_SndPosCurrGet(ID id, int type)
+SX_LIB_API UINT SSCore_SndGetPosPlay(ID idSound)
 {
 	SCORE_PRECOND(0);
 
-	return MSound->SoundPosCurrGet(id, type);
+	return g_pManagerSound->soundGetPosPlay(idSound);
 }
 
 
-SX_LIB_API void SSCore_SndVolumeSet(ID id, long volume, int type)
+SX_LIB_API void SSCore_SndSetVolume(ID idSound, float fVolume)
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->SoundVolumeSet(id, volume, type);
+	g_pManagerSound->soundSetVolume(idSound, fVolume);
 }
 
-SX_LIB_API long SSCore_SndVolumeGet(ID id, int type)
+SX_LIB_API float SSCore_SndGetVolume(ID idSound)
 {
 	SCORE_PRECOND(0);
 
-	return MSound->SoundVolumeGet(id, type);
+	return g_pManagerSound->soundGetVolume(idSound);
 }
 
 
-SX_LIB_API void SSCore_SndPanSet(ID id, long value, int type)
+SX_LIB_API void SSCore_SndSetPan(ID idSound, float fValue)
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->SoundPanSet(id, value, type);
+	g_pManagerSound->soundSetPan(idSound, fValue);
 }
 
-SX_LIB_API long SSCore_SndPanGet(ID id, int type)
+SX_LIB_API float SSCore_SndGetPan(ID idSound)
 {
 	SCORE_PRECOND(0);
 
-	return MSound->SoundPanGet(id, type);
+	return g_pManagerSound->soundGetPan(idSound);
 }
 
 
-SX_LIB_API void SSCore_SndFreqCurrSet(ID id, DWORD value)
+SX_LIB_API void SSCore_SndSetCurrFreq(ID idSound, UINT fValue)
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->SoundFreqCurrSet(id, value);
+	g_pManagerSound->soundSetFreqCurr(idSound, fValue);
 }
 
-SX_LIB_API DWORD SSCore_SndFreqCurrGet(ID id)
+SX_LIB_API UINT SSCore_SndGetCurrFreq(ID idSound)
 {
 	SCORE_PRECOND(0);
 
-	return MSound->SoundFreqCurrGet(id);
+	return g_pManagerSound->soundGetFreqCurr(idSound);
 }
 
-SX_LIB_API DWORD SSCore_SndFreqOriginGet(ID id)
+SX_LIB_API UINT SSCore_SndGetOriginFreq(ID idSound)
 {
 	SCORE_PRECOND(0);
 
-	return MSound->SoundFreqOriginGet(id);
+	return g_pManagerSound->soundGetFreqOrigin(idSound);
 }
 
-SX_LIB_API void SSCore_SndPosWSet(ID id, const float3* pos)
+SX_LIB_API void SSCore_SndSetPosWorld(ID idSound, const float3 *pPos)
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->SoundPosWSet(id, pos);
+	g_pManagerSound->soundSetPosWorld(idSound, pPos);
 }
 
-SX_LIB_API void SSCore_SndPosWGet(ID id, float3* pos)
+SX_LIB_API void SSCore_SndGetPosWorld(ID idSound, float3 *pPos)
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->SoundPosWGet(id, pos);
+	g_pManagerSound->soundGetPosWorld(idSound, pPos);
 }
 
 
-SX_LIB_API int SSCore_SndLengthSecGet(ID id)
+SX_LIB_API int SSCore_SndGetLengthSec(ID idSound)
 {
 	SCORE_PRECOND(0);
 
-	return MSound->SoundLengthSecGet(id);
+	return g_pManagerSound->soundGetLengthSec(idSound);
 }
 
-SX_LIB_API DWORD SSCore_SndBytesPerSecGet(ID id)
+SX_LIB_API UINT SSCore_SndGetBytesPerSec(ID idSound)
 {
 	SCORE_PRECOND(0);
 
-	return MSound->SoundBytesPerSecGet(id);
+	return g_pManagerSound->soundGetBytesPerSec(idSound);
 }
 
-SX_LIB_API DWORD SSCore_SndSizeGet(ID id)
+SX_LIB_API UINT SSCore_SndGetSize(ID idSound)
 {
 	SCORE_PRECOND(0);
 
-	return MSound->SoundSizeGet(id);
+	return g_pManagerSound->soundGetSize(idSound);
 }
 
-SX_LIB_API void SSCore_SndFileGet(ID id, char* path)
+SX_LIB_API void SSCore_SndGetFile(ID idSound, char *szPath)
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->SoundFileGet(id, path);
+	g_pManagerSound->soundGetFile(idSound, szPath);
 }
 
 
-SX_LIB_API float SSCore_SndDistAudibleGet(ID id)
+SX_LIB_API float SSCore_SndGetDistAudible(ID idSound)
 {
 	SCORE_PRECOND(0);
 
-	return MSound->SoundDistAudibleGet(id);
+	return g_pManagerSound->soundGetDistAudible(idSound);
 }
 
-SX_LIB_API void SSCore_SndDistAudibleSet(ID id, float value)
+SX_LIB_API void SSCore_SndSetDistAudible(ID idSound, float fValue)
 {
 	SCORE_PRECOND(_VOID);
 
-	MSound->SoundDistAudibleSet(id, value);
+	g_pManagerSound->soundSetDistAudible(idSound, fValue);
+}
+
+//##########################################################################
+
+SX_LIB_API ID SSCore_SndkitCreate(const char *szName, ID idChannel, bool is3D, float fDistAudible)
+{
+	SCORE_PRECOND(-1);
+
+	return g_pManagerSound->sndkitCreate(szName, idChannel, is3D, fDistAudible);
+}
+
+SX_LIB_API ID SSCore_SndkitCreateFromList(const char *szName, ID idChannel, bool is3D, float fDistAudible, float fVolume, const char *szFileOrList, ...)
+{
+	SCORE_PRECOND(-1);
+
+	Array<String> aStrings;
+	// если в первой строке есть запятые тогда будем парсить строку
+	if (strstr(szFileOrList, ","))
+	{
+		aStrings = StrExplode(szFileOrList, ",");
+	}
+	// иначе считываем все строчные аргументы
+	else if (szFileOrList)
+	{
+		const char *szStrCurr = 0;
+		va_list va;
+		va_start(va, szFileOrList);
+
+		szStrCurr = szFileOrList;
+		while (szStrCurr)
+		{
+			aStrings.push_back(szStrCurr);
+			szStrCurr = va_arg(va, const char *);
+		}
+
+		va_end(va);
+	}
+
+	return g_pManagerSound->sndkitCreateFromList(szName, idChannel, aStrings, is3D, fDistAudible, fVolume);
+}
+
+SX_LIB_API void SSCore_SndkitAddSound(ID idSndKit, const char *szFile, float fDistAudible, float fVolume, UINT *pArrDelay, int iSizeArrDelay)
+{
+	SCORE_PRECOND(_VOID);
+
+	g_pManagerSound->sndkitAddSound(idSndKit, szFile, fDistAudible, fVolume, pArrDelay, iSizeArrDelay);
+}
+
+SX_LIB_API uint64_t SSCore_SndkitPlay(ID idSndKit, uint64_t id2, const float3 *pPos, float fVolume, float fPan)
+{
+	SCORE_PRECOND(-1);
+
+	return g_pManagerSound->sndkitPlay(idSndKit, id2, pPos, fVolume, fPan);
+}
+
+SX_LIB_API void SSCore_SndkitStop(ID idSndKit, uint64_t id2)
+{
+	SCORE_PRECOND(_VOID);
+
+	g_pManagerSound->sndkitStop(idSndKit, id2);
+}
+
+SX_LIB_API ID SSCore_SndkitGetID(const char *szName)
+{
+	SCORE_PRECOND(-1);
+
+	return g_pManagerSound->sndkitGetID(szName);
+}
+
+SX_LIB_API ID SSCore_SndkitGetChannel(ID idSndKit)
+{
+	SCORE_PRECOND(-1);
+
+	return g_pManagerSound->sndkitGetChannel(idSndKit);
+}
+
+SX_LIB_API void SSCore_SndkitGetName(ID idSndKit, char *szName)
+{
+	SCORE_PRECOND(_VOID);
+
+	g_pManagerSound->sndkitGetName(idSndKit, szName);
+}
+
+SX_LIB_API void SSCore_SndkitDelete(ID idSndKit)
+{
+	SCORE_PRECOND(_VOID);
+
+	g_pManagerSound->sndkitDelete(idSndKit);
+}
+
+SX_LIB_API void SSCore_SndkitDeleteAll()
+{
+	SCORE_PRECOND(_VOID);
+
+	g_pManagerSound->sndkitDeleteAll();
 }

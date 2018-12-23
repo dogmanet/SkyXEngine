@@ -1,3 +1,9 @@
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "Ragdoll.h"
 
 CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
@@ -7,7 +13,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 	HITBOX_TYPE * phTypes;
 	float3_t ** ppfData;
 	int32_t * pDataLen;
-	pAnimPlayer->GetPhysData(&iShapeCount, &phTypes, &ppfData, &pDataLen);
+	pAnimPlayer->getPhysData(&iShapeCount, &phTypes, &ppfData, &pDataLen);
 */
 
 	enum JointType
@@ -69,13 +75,13 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		{"bip01_neck", 1, 0, JOINT_CONETWIST, float3_t(SM_PIDIV4, SM_PIDIV4, SM_PIDIV2)}
 	};
 	btTransform offset; offset.setIdentity();
-	offset.setOrigin(F3_BTVEC(pAnimPlayer->GetPos()));
+	offset.setOrigin(F3_BTVEC(pAnimPlayer->getPos()));
 
 	m_shapes = new btCollisionShape*[m_iBodiesCount];
 	m_bodies = new btRigidBody*[m_iBodiesCount];
 
-	m_pidBones = new ID[pAnimPlayer->GetBoneCount()];
-	for(int i = 0, l = pAnimPlayer->GetBoneCount(); i < l; ++i)
+	m_pidBones = new ID[pAnimPlayer->getBoneCount()];
+	for(int i = 0, l = pAnimPlayer->getBoneCount(); i < l; ++i)
 	{
 		m_pidBones[i] = -1;
 	}
@@ -84,7 +90,7 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 	{
 		if(bones[i].szBone[0])
 		{
-			m_pidBones[pAnimPlayer->GetBone(bones[i].szBone)] = i;
+			m_pidBones[pAnimPlayer->getBone(bones[i].szBone)] = i;
 		}
 
 		m_shapes[i] = new btCapsuleShape(bones[i].fCapsRadius * 0.5f, (bones[i].fCapsLength + bones[i].fCapsRadius) * 0.5f);
@@ -104,11 +110,11 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 	m_ppJoints = new btTypedConstraint*[m_iJointsCount];
 
 	/*const ModelHitbox * hb;
-	uint32_t iHitboxes = pAnimPlayer->GetHitboxCount();
-	float fScale = pAnimPlayer->GetScale();
+	uint32_t iHitboxes = pAnimPlayer->getHitboxCount();
+	float fScale = pAnimPlayer->getScale();
 	for(uint32_t i = 0; i < iHitboxes; ++i)
 	{
-		hb = pAnimPlayer->GetHitbox(i);
+		hb = pAnimPlayer->getHitbox(i);
 		switch(hb->type)
 		{
 		case HT_BOX:
@@ -156,12 +162,12 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 	}
 	//m_bodies[1]->setAngularFactor(0.0f);
 	//m_bodies[1]->setLinearFactor(btVector3(0.0f, 0.0f, 0.0f));
-	//UINT bone = pAnimPlayer->GetBone("bip01_head");
+	//UINT bone = pAnimPlayer->getBone("bip01_head");
 	{
 		btTransform localA, localB;
 		btConeTwistConstraint * pCTC;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_neck"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_neck"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setEulerZYX(SM_PIDIV2, 0, SM_PIDIV2);
@@ -175,13 +181,13 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		pCTC->setLimit(SM_PIDIV4, SM_PIDIV4, SM_PIDIV2);
 
 		m_ppJoints[0] = pCTC;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[0], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[0], true);
 	}
 	{
 		btTransform localA, localB;
 		btConeTwistConstraint * pCTC;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_l_upperarm"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_l_upperarm"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();
@@ -196,13 +202,13 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		pCTC->setLimit(SM_PIDIV2, SM_PIDIV2, 0);
 
 		m_ppJoints[1] = pCTC;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[1], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[1], true);
 	}
 	{
 		btTransform localA, localB;
 		btConeTwistConstraint * pCTC;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_r_upperarm"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_r_upperarm"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();
@@ -217,14 +223,14 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		pCTC->setLimit(SM_PIDIV2, SM_PIDIV2, 0);
 
 		m_ppJoints[2] = pCTC;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[2], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[2], true);
 	}
 
 	{
 		btTransform localA, localB;
 		btHingeConstraint * pHinge;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_l_forearm"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_l_forearm"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();
@@ -241,13 +247,13 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		//pHinge->setAngularOnly(true);
 
 		m_ppJoints[3] = pHinge;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[3], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[3], true);
 	}
 	{
 		btTransform localA, localB;
 		btHingeConstraint * pHinge;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_r_forearm"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_r_forearm"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();
@@ -264,13 +270,13 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		//pHinge->setAngularOnly(true);
 
 		m_ppJoints[4] = pHinge;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[4], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[4], true);
 	}
 	{
 		btTransform localA, localB;
 		btFixedConstraint * joint6DOF;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_spine1"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_spine1"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();
@@ -287,13 +293,13 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		//joint6DOF->setAngularUpperLimit(btVector3(SIMD_PI*0.2, SIMD_EPSILON, SIMD_PI*0.6));
 
 		m_ppJoints[5] = joint6DOF;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[5], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[5], true);
 	}
 	{
 		btTransform localA, localB;
 		btGeneric6DofConstraint * joint6DOF;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_spine1"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_spine1"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();
@@ -310,14 +316,14 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		joint6DOF->setAngularUpperLimit(btVector3(SIMD_PI*0.2, SIMD_EPSILON, SIMD_PI*0.6));
 
 		m_ppJoints[6] = joint6DOF;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[6], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[6], true);
 	}
 
 	{
 		btTransform localA, localB;
 		btConeTwistConstraint * pCTC;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_l_thigh"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_l_thigh"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		//localA.getBasis().setIdentity();
@@ -332,13 +338,13 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		pCTC->setLimit(SM_PIDIV4, SM_PIDIV4, 0);
 
 		m_ppJoints[7] = pCTC;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[7], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[7], true);
 	}
 	{
 		btTransform localA, localB;
 		btConeTwistConstraint * pCTC;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_r_thigh"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_r_thigh"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		//localA.getBasis().setIdentity();
@@ -353,13 +359,13 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		pCTC->setLimit(SM_PIDIV4, SM_PIDIV4, 0);
 
 		m_ppJoints[8] = pCTC;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[8], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[8], true);
 	}
 	{
 		btTransform localA, localB;
 		btHingeConstraint * pHinge;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_l_calf"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_l_calf"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();
@@ -376,13 +382,13 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		//pHinge->setAngularOnly(true);
 
 		m_ppJoints[9] = pHinge;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[9], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[9], true);
 	}
 	{
 		btTransform localA, localB;
 		btHingeConstraint * pHinge;
 
-		float3 pos = pAnimPlayer->GetBoneTransformPos(pAnimPlayer->GetBone("bip01_r_calf"));
+		float3 pos = pAnimPlayer->getBoneTransformPos(pAnimPlayer->getBone("bip01_r_calf"));
 
 		localA.setOrigin(F3_BTVEC(pos));
 		localA.getBasis().setIdentity();
@@ -399,13 +405,13 @@ CRagdoll::CRagdoll(IAnimPlayer *pAnimPlayer)
 		//pHinge->setAngularOnly(true);
 
 		m_ppJoints[10] = pHinge;
-		SXPhysics_GetDynWorld()->addConstraint(m_ppJoints[10], true);
+		SPhysics_GetDynWorld()->addConstraint(m_ppJoints[10], true);
 	}
 
 
 
-	/*SXPhysics_GetDynWorld()->getDebugDrawer()->setDebugMode(
-		SXPhysics_GetDynWorld()->getDebugDrawer()->getDebugMode()
+	/*SPhysics_GetDynWorld()->getDebugDrawer()->setDebugMode(
+		SPhysics_GetDynWorld()->getDebugDrawer()->getDebugMode()
 		| btIDebugDraw::DBG_DrawConstraintLimits | btIDebugDraw::DBG_DrawConstraints
 	);*/
 
@@ -420,7 +426,7 @@ CRagdoll::~CRagdoll()
 	// Remove all constraints
 	for(i = 0; i < m_iJointsCount; ++i)
 	{
-		SXPhysics_GetDynWorld()->removeConstraint(m_ppJoints[i]);
+		SPhysics_GetDynWorld()->removeConstraint(m_ppJoints[i]);
 		mem_delete(m_ppJoints[i]);
 	}
 	mem_delete_a(m_ppJoints);
@@ -428,7 +434,7 @@ CRagdoll::~CRagdoll()
 	// Remove all bodies and shapes
 	for(i = 0; i < m_iBodiesCount; ++i)
 	{
-		SXPhysics_GetDynWorld()->removeRigidBody(m_bodies[i]);
+		SPhysics_GetDynWorld()->removeRigidBody(m_bodies[i]);
 
 		delete m_bodies[i]->getMotionState();
 
@@ -471,7 +477,7 @@ btRigidBody *CRagdoll::localCreateRigidBody(btScalar mass, const btTransform& st
 	rbInfo.m_additionalDamping = true;
 	btRigidBody* body = new btRigidBody(rbInfo);
 
-	SXPhysics_GetDynWorld()->addRigidBody(body);
+	SPhysics_GetDynWorld()->addRigidBody(body);
 
 	return body;
 }

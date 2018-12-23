@@ -1,26 +1,37 @@
-#ifndef SXPHYWORLD_H
-#define SXPHYWORLD_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __PHY_WORLD_H
+#define __PHY_WORLD_H
 
 
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
+#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorldMt.h>
+#include <BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolverMt.h>
+#include <BulletCollision/CollisionDispatch/btCollisionDispatcherMt.h>
 
 #include <common/AssotiativeArray.h>
 #include <common/Array.h>
+#include <common/file_utils.h>
 
 #include <gdefines.h>
 
 #include <common/SXMath.h>
-#include <mtllight/sxmtllight.h>
+#include <mtrl/sxmtrl.h>
 
-#define PHY_MAT_FILE_MAGICK 8386069164979148883
+#define PHY_MAT_FILE_MAGICK 3630267958475905107
 
 #pragma pack(push,1)
 struct PhyMatFile
 {
 	int64_t i64Magick;
 	uint32_t uiGeomFaceCount;
+	uint32_t uiMatCount;
 	//uint32_t uiGreenObjCount;
 
 	PhyMatFile():
@@ -30,37 +41,42 @@ struct PhyMatFile
 };
 #pragma pack(pop)
 
-extern report_func reportf;
-
-class PhyWorld
+class CPhyWorld
 {
 public:
-	PhyWorld();
-	~PhyWorld();
+	CPhyWorld();
+	~CPhyWorld();
 
-	void SetThreadNum(int tnum);
-	void Update(int thread = 0);
-	void Sync();
+	void setThreadNum(int tnum);
+	void update(int thread = 0);
+	void sync();
 
-	void AddShape(btRigidBody * pBody);
-	void RemoveShape(btRigidBody * pBody);
+	void addShape(btRigidBody * pBody);
+	void addShape(btRigidBody * pBody, int group, int mask);
+	void removeShape(btRigidBody * pBody);
 
-	void LoadGeom(const char * file=NULL);
-	void UnloadGeom();
 
-	bool ImportGeom(const char * file);
-	bool ExportGeom(const char * file);
+	void loadGeom(const char * file=NULL);
+	void unloadGeom();
 
-	void Render();
+	bool importGeom(const char * file);
+	bool exportGeom(const char * file);
 
-	MTLTYPE_PHYSIC GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
+	void disableSimulation();
+	void enableSimulation();
 
-	btDiscreteDynamicsWorld * GetBtWorld()
+	void render();
+
+	MTLTYPE_PHYSIC getMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
+	
+	ID getMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
+
+	btDiscreteDynamicsWorldMt * getBtWorld()
 	{
 		return(m_pDynamicsWorld);
 	}
 
-	class DebugDrawer: public btIDebugDraw
+	class CDebugDrawer: public btIDebugDraw
 	{
 		struct render_point
 		{
@@ -69,7 +85,14 @@ public:
 		};
 		int m_iDebugMode;
 		Array<render_point, 16384> m_vDrawData;
+
+		bool m_bExpectObject;
 	public:
+		CDebugDrawer():
+			m_bExpectObject(false)
+		{
+		}
+
 		void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
 
 		void drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, btScalar distance, int lifeTime, const btVector3& color);
@@ -82,25 +105,26 @@ public:
 
 		int getDebugMode() const;
 
-		void Render();
+		void render();
 	};
 
 protected:
 	btDefaultCollisionConfiguration * m_pCollisionConfiguration;
-	btCollisionDispatcher * m_pDispatcher;
+	btCollisionDispatcherMt * m_pDispatcher;
 	btBroadphaseInterface * m_pBroadphase;
-	btSequentialImpulseConstraintSolver * m_pSolver;
-	btDiscreteDynamicsWorld * m_pDynamicsWorld;
+	btSequentialImpulseConstraintSolverMt * m_pSolver;
+	btDiscreteDynamicsWorldMt * m_pDynamicsWorld;
 	btGhostPairCallback * m_pGHostPairCallback;
 
 	const bool * m_bDebugDraw;
-	DebugDrawer * m_pDebugDrawer;
+	CDebugDrawer * m_pDebugDrawer;
 
 	// физические формы для статической геометрии уровня
 	btTriangleMesh * m_pGeomStaticCollideMesh;
 	btCollisionShape * m_pGeomStaticCollideShape;
 	btRigidBody * m_pGeomStaticRigidBody;
-	MTLTYPE_PHYSIC *m_pGeomMtlTypes;
+	//MTLTYPE_PHYSIC *m_pGeomMtlTypes;
+	ID *m_pGeomMtlIDs;
 	int m_iGeomFacesCount;
 	int m_iGeomModelCount;
 
@@ -108,6 +132,9 @@ protected:
 	btRigidBody *** m_pppGreenStaticRigidBody;
 	int m_iGreenShapes;
 	int * m_piGreenTotal;
+
+	bool m_isRunning;
+	int m_iSkipFrames = 3;
 };
 
 #endif

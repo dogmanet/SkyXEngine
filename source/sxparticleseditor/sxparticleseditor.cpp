@@ -238,8 +238,7 @@ Cone: Vector1 x y z – нижняя точка конуса, w – радиус
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 	SkyXEngine_PreviewCreate();
-	SXGUIRegClass::RegGroupBox();
-	SXGUIRegClass::RegButtonImg();
+	SXGUIinit();
 	srand((unsigned int)time(0));
 
 	SXParticlesEditor::InitAllElements();
@@ -253,15 +252,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	GData::WinSize.x = winrndrect.right;
 	GData::WinSize.y = winrndrect.bottom;*/
 
-	SkyXEngine_Init(SXParticlesEditor::WindowRender->GetHWND(), SXParticlesEditor::JobWindow->GetHWND());
+	SkyXEngine_Init(SXParticlesEditor::WindowRender->getHWND(), SXParticlesEditor::JobWindow->getHWND());
+	SkyXEngine_RunGenPreview();
 	Core_0SetCVarInt("r_final_image",DS_RT_COLOR);
-	SRender_GetCamera()->SetPosition(&float3(0, 0.5, -2));
-	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_GRID, true);
-	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_AXES, true);
-	SXParticlesEditor::MainMenu->CheckItem(ID_VIEW_BOUND, true);
-	SXParticlesEditor::CheckBoxTBGrid->SetCheck(true);
-	SXParticlesEditor::CheckBoxTBAxes->SetCheck(true);
-	SXParticlesEditor::CheckBoxTBBound->SetCheck(true);
+	SRender_GetCamera()->setPosition(&float3(0, 0.5, -2));
+	SXParticlesEditor::MainMenu->setCheckItem(ID_VIEW_GRID, true);
+	SXParticlesEditor::MainMenu->setCheckItem(ID_VIEW_AXES, true);
+	SXParticlesEditor::MainMenu->setCheckItem(ID_VIEW_BOUND, true);
+	SXParticlesEditor::CheckBoxTBGrid->setCheck(true);
+	SXParticlesEditor::CheckBoxTBAxes->setCheck(true);
+	SXParticlesEditor::CheckBoxTBBound->setCheck(true);
 	SRender_EditorSetRenderGrid(true);
 	SRender_EditorSetRenderAxesStatic(true);
 	SXParticlesEditor::canRenderBound = true;
@@ -269,12 +269,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	SXParticlesEditor::PEcreateData();
 
-	SGCore_LoadTexLoadTextures();
+	SGCore_LoadTexAllLoad();
 
 	SXParticlesEditor::EffInitList();
 
 	SkyXEngine_PreviewKill();
-	SXParticlesEditor::JobWindow->Visible(true);
+	SXParticlesEditor::JobWindow->setVisible(true);
 	int result = SkyXEngine_CycleMain();
 	SkyXEngine_Kill();
 

@@ -1,19 +1,19 @@
 
 #include "paraml_kit.h"
 
-ParamLKit::ParamLKit()
+CParamLigthKit::CParamLigthKit()
 {
 
 }
 
-ParamLKit::~ParamLKit()
+CParamLigthKit::~CParamLigthKit()
 {
 
 }
 
-void ParamLKit::Load(const char* path)
+void CParamLigthKit::load(const char *szPath)
 {
-	ISXConfig* config = Core_OpConfig(path);
+	ISXConfig* config = Core_OpConfig(szPath);
 
 	if (!config)
 		return;
@@ -28,7 +28,7 @@ void ParamLKit::Load(const char* path)
 		return;
 	}
 
-	int count = String(config->getKey("paraml_kit", "count")).ToInt();
+	int count = String(config->getKey("paraml_kit", "count")).toInt();
 	char section_name[CONFIG_SECTION_MAX_LEN];
 
 	for (int i = 0; i < count; ++i)
@@ -43,58 +43,58 @@ void ParamLKit::Load(const char* path)
 		if (!(config->keyExists(section_name, "name") && config->keyExists(section_name, "thickness") && config->keyExists(section_name, "roughness") && config->keyExists(section_name, "f0")))
 			continue;
 
-		paraml* tmpparaml = new paraml();
-		tmpparaml->name = config->getKey(section_name, "name");
-		tmpparaml->thickness = String(config->getKey(section_name, "thickness")).ToDouble();
-		tmpparaml->roughness = String(config->getKey(section_name, "roughness")).ToDouble();
-		tmpparaml->f0 = String(config->getKey(section_name, "f0")).ToDouble();
+		CParamLigth* tmpparaml = new CParamLigth();
+		tmpparaml->m_sName = config->getKey(section_name, "name");
+		tmpparaml->m_fThickness = String(config->getKey(section_name, "thickness")).toDouble();
+		tmpparaml->m_fRoughness = String(config->getKey(section_name, "roughness")).toDouble();
+		tmpparaml->m_fF0 = String(config->getKey(section_name, "f0")).toDouble();
 
-		Arr.push_back(tmpparaml);
+		m_aParameters.push_back(tmpparaml);
 	}
 }
 
-UINT ParamLKit::GetCount() const
+UINT CParamLigthKit::getCount() const
 {
-	return Arr.size();
+	return m_aParameters.size();
 }
 
-const char* ParamLKit::GetName(ID id) const
+const char* CParamLigthKit::getName(ID id) const
 {
-	if (id >= 0 && Arr.size() > id && Arr[id])
-		return Arr[id]->name.c_str();
+	if (id >= 0 && m_aParameters.size() > id && m_aParameters[id])
+		return m_aParameters[id]->m_sName.c_str();
 
 	return 0;
 }
 
-float ParamLKit::GetThickness(ID id) const
+float CParamLigthKit::getThickness(ID id) const
 {
-	if (id >= 0 && Arr.size() > id && Arr[id])
-		return Arr[id]->thickness;
+	if (id >= 0 && m_aParameters.size() > id && m_aParameters[id])
+		return m_aParameters[id]->m_fThickness;
 	
 	return 0;
 }
 
-float ParamLKit::GetRoughness(ID id) const
+float CParamLigthKit::getRoughness(ID id) const
 {
-	if (id >= 0 && Arr.size() > id && Arr[id])
-		return Arr[id]->roughness;
+	if (id >= 0 && m_aParameters.size() > id && m_aParameters[id])
+		return m_aParameters[id]->m_fRoughness;
 	
 	return 0;
 }
 
-float ParamLKit::GetF0(ID id) const
+float CParamLigthKit::getF0(ID id) const
 {
-	if (id >= 0 && Arr.size() > id && Arr[id])
-		return Arr[id]->f0;
+	if (id >= 0 && m_aParameters.size() > id && m_aParameters[id])
+		return m_aParameters[id]->m_fF0;
 
 	return 0;
 }
 
-ID ParamLKit::Find(float thickness, float roughness, float f0) const
+ID CParamLigthKit::find(float fThickness, float fRoughness, float fF0) const
 {
-	for (int i = 0, il = Arr.size(); i < il; ++i)
+	for (int i = 0, il = m_aParameters.size(); i < il; ++i)
 	{
-		if (thickness == Arr[i]->thickness && roughness == Arr[i]->roughness && f0 == Arr[i]->f0)
+		if (fThickness == m_aParameters[i]->m_fThickness && fRoughness == m_aParameters[i]->m_fRoughness && fF0 == m_aParameters[i]->m_fF0)
 			return i;
 	}
 

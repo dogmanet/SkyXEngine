@@ -1,34 +1,40 @@
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "EntityFactory.h"
-#include "SXbaseEntity.h"
+#include "BaseEntity.h"
 
 
-EntityFactoryMap::EntityFactoryMap():
+CEntityFactoryMap::CEntityFactoryMap():
 	m_iShowInListCount(0)
 {
 
 }
 
-void EntityFactoryMap::AddFactory(IEntityFactory * pFactory, const char * szName)
+void CEntityFactoryMap::addFactory(IEntityFactory * pFactory, const char * szName)
 {
-	if(!pFactory->IsEditorHidden())
+	if(!pFactory->isEditorHidden())
 	{
 		++m_iShowInListCount;
 	}
 	m_mFactories[AAString(szName)] = pFactory;
 }
-SXbaseEntity * EntityFactoryMap::Create(const char * szName, EntityManager * pWorld, bool bDelayPostLoad)
+CBaseEntity * CEntityFactoryMap::create(const char * szName, CEntityManager * pWorld, bool bDelayPostLoad)
 {
-	IEntityFactory * pFactory = GetFactory(szName);
+	IEntityFactory * pFactory = getFactory(szName);
 	if(pFactory)
 	{
-		EntDefaultsMap * defs = pFactory->GetDefaults();
-		SXbaseEntity * pEnt = pFactory->Create(pWorld);
-		pEnt->SetDefaults();
-		pEnt->SetClassName(pFactory->GetClassName());
+		EntDefaultsMap * defs = pFactory->getDefaults();
+		CBaseEntity * pEnt = pFactory->create(pWorld);
+		pEnt->setDefaults();
+		pEnt->setClassName(pFactory->getClassName());
 
 		if(defs->Size() > 0)
 		{
-			proptable_t * pt = pFactory->GetPropTable();
+			proptable_t * pt = pFactory->getPropTable();
 			const char * key;
 			const EntDefaultsMap::Node * pNode;
 			while(pt)
@@ -38,7 +44,7 @@ SXbaseEntity * EntityFactoryMap::Create(const char * szName, EntityManager * pWo
 					key = pt->pData[i].szKey;
 					if(defs->KeyExists(AAString(key), &pNode))
 					{
-						pEnt->SetKV(key, *(pNode->Val));
+						pEnt->setKV(key, *(pNode->Val));
 					}
 				}
 
@@ -47,25 +53,29 @@ SXbaseEntity * EntityFactoryMap::Create(const char * szName, EntityManager * pWo
 		}
 		if(!bDelayPostLoad)
 		{
-			pEnt->OnPostLoad();
+			pEnt->onPostLoad();
+		}
+		if(pWorld->isEditorMode())
+		{
+			pEnt->_initEditorBoxes();
 		}
 		return(pEnt);
 	}
 	return(NULL);
 }
-void EntityFactoryMap::Destroy(SXbaseEntity * pEnt)
+void CEntityFactoryMap::destroy(CBaseEntity * pEnt)
 {
 	if(pEnt)
 	{
-		IEntityFactory * pFactory = GetFactory(pEnt->GetClassName());
+		IEntityFactory * pFactory = getFactory(pEnt->getClassName());
 		if(pFactory)
 		{
-			return(pFactory->Destroy(pEnt));
+			return(pFactory->destroy(pEnt));
 		}
 	}
 }
 
-IEntityFactory * EntityFactoryMap::GetFactory(const char * szName)
+IEntityFactory * CEntityFactoryMap::getFactory(const char * szName)
 {
 	AAString key(szName);
 	if(m_mFactories.KeyExists(key))
@@ -75,33 +85,33 @@ IEntityFactory * EntityFactoryMap::GetFactory(const char * szName)
 	return(NULL);
 }
 
-EntityFactoryMap * EntityFactoryMap::GetInstance()
+CEntityFactoryMap * CEntityFactoryMap::GetInstance()
 {
-	static EntityFactoryMap map;
+	static CEntityFactoryMap map;
 	return(&map);
 }
 
-proptable_t * EntityFactoryMap::GetPropTable(const char * szClass)
+proptable_t * CEntityFactoryMap::getPropTable(const char * szClass)
 {
-	return(GetFactory(szClass)->GetPropTable());
+	return(getFactory(szClass)->getPropTable());
 }
 
-bool EntityFactoryMap::IsEditorHidden(const char * szClass)
+bool CEntityFactoryMap::isEditorHidden(const char * szClass)
 {
-	return(GetFactory(szClass)->IsEditorHidden());
+	return(getFactory(szClass)->isEditorHidden());
 }
 
-EntDefaultsMap * EntityFactoryMap::GetDefaults(const char * szClass)
+EntDefaultsMap * CEntityFactoryMap::getDefaults(const char * szClass)
 {
-	return(GetFactory(szClass)->GetDefaults());
+	return(getFactory(szClass)->getDefaults());
 }
 
-int EntityFactoryMap::GetListCount()
+int CEntityFactoryMap::getListCount()
 {
 	return(m_iShowInListCount);
 }
 
-void EntityFactoryMap::GetListing(const char ** pszOut, int size)
+void CEntityFactoryMap::getListing(const char ** pszOut, int size)
 {
 	int j = 0;
 	if(size > m_iShowInListCount)
@@ -110,9 +120,9 @@ void EntityFactoryMap::GetListing(const char ** pszOut, int size)
 	}
 	for(AssotiativeArray<AAString, IEntityFactory*>::Iterator i = m_mFactories.begin(); i && j < size; i++)
 	{
-		if(!(*i.second)->IsEditorHidden())
+		if(!(*i.second)->isEditorHidden())
 		{
-			pszOut[j++] = i.first->GetName();
+			pszOut[j++] = i.first->getName();
 		}
 	}
 }

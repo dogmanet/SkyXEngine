@@ -1,4 +1,9 @@
 
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
 #include "sxinput.h"
 #include "input.h"
 
@@ -10,13 +15,10 @@
 #	pragma comment(lib, "sxcore.lib")
 #endif
 
-#pragma once
-
-extern report_func g_fnReportf;
-
 SXInput::SXInput(const char* name):
 	mdelta({0, 0}),
-	mdeltaOld({0, 0})
+	mdeltaOld({0, 0}),
+	m_pfnCallback(NULL)
 {
 	sprintf(Name, "%s", name);
 }
@@ -35,7 +37,7 @@ long SXInput::Init(HWND hwnd)
 
 	if(RegisterRawInputDevices(Rid, sizeof(Rid) / sizeof(RAWINPUTDEVICE), sizeof(Rid[0])) == FALSE)
 	{
-		g_fnReportf(REPORT_MSG_LEVEL_ERROR, "Registering RAW Input failed");
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Registering RAW Input failed");
 		return(-1);
 	}
 #endif
@@ -103,6 +105,11 @@ void SXInput::Update()
 
 			if(key < SXI_KEYMAP_SIZE && !m_vKeyMap[key].state)
 			{
+				if(m_pfnCallback)
+				{
+					continue;
+				}
+
 				m_vKeyMap[key].state = TRUE;
 				m_vKeyMap[key].changed = TRUE;
 
@@ -149,6 +156,12 @@ void SXInput::Update()
 			if(!key)
 				key = pikd->scanCode + (pikd->isExtended ? 128 : 0);
 
+			if(m_pfnCallback && key < SXI_KEYMAP_SIZE)
+			{
+				execOnNextKeyPress(m_vKeyMap[key].bind);
+				return;
+			}
+
 			if(key < SXI_KEYMAP_SIZE && m_vKeyMap[key].state)
 			{
 				m_vKeyMap[key].state = FALSE;
@@ -192,6 +205,11 @@ void SXInput::Update()
 			if(wheelCount)
 			{
 				key = wheelCount > 0 ? SIM_MWHEELUP : SIM_MWHEELDOWN;
+				if(m_pfnCallback)
+				{
+					execOnNextKeyPress(m_vKeyMap[key].bind);
+					return;
+				}
 				if(m_vKeyMap[key].cmd != 0)
 				{
 					Core_0ConsoleExecCmd("%s", m_vKeyMap[key].cmd);
@@ -232,6 +250,19 @@ void SXInput::GetMouseDelta(int * x, int * y)
 	{
 		*y = mdeltaOld.y;
 	}
+}
+
+void SXInput::setEnable(bool bEnable)
+{
+	if(!bEnable)
+	{
+		IMSG msg;
+		msg.message = WM_KILLFOCUS;
+		msg.lParam = msg.wParam = 0;
+		QueueMsg(msg);
+	}
+
+	m_bEnabled = bEnable;
 }
 
 bool SXInput::GetKeyState(InputCode Key)
@@ -317,11 +348,14 @@ void SXInput::InitKeymap()
 	SXI_BIND_KM(SIK_LSHIFT, "lshift");
 	SXI_BIND_KM(SIK_LCONTROL, "lctrl");
 	SXI_BIND_KM(SIK_LALT, "lalt");
+	SXI_BIND_KM(SIK_LWIN, "lwin");
 	SXI_BIND_KM(SIK_RSHIFT, "rshift");
 	SXI_BIND_KM(SIK_RCONTROL, "rctrl");
 	SXI_BIND_KM(SIK_RALT, "ralt");
+	SXI_BIND_KM(SIK_RWIN, "rwin");
 
 	SXI_BIND_KM(SIK_APPS, "menu");
+	
 
 	SXI_BIND_KM(SIK_PAUSE, "pause");
 	SXI_BIND_KM(SIK_CAPSLOCK, "capslock");
@@ -427,7 +461,7 @@ void SXInput::Bind(const char * key, const char * cmd)
 {
 	for(int i = 0; i < SXI_KEYMAP_SIZE; ++i)
 	{
-		if(!strcmp(m_vKeyMap[i].bind, key))
+		if(!fstrcmp(m_vKeyMap[i].bind, key))
 		{
 			int len = strlen(cmd);
 			if(!m_vKeyMap[i].cmd)
@@ -465,6 +499,10 @@ void SXInput::Bind(const char * key, const char * cmd)
 
 void SXInput::QueueMsg(const IMSG & msg)
 {
+	if(!m_bEnabled)
+	{
+		return;
+	}
 	switch(msg.message)
 	{
 	case WM_INPUT:
@@ -483,4 +521,37 @@ void SXInput::QueueMsg(const IMSG & msg)
 	}
 
 	m_qMsgs.push(msg);
+}
+
+void SXInput::getBindEntry(int n, const char **pszKey, const char **pszCmd)
+{
+	assert(n >= 0 && n < SXI_KEYMAP_SIZE);
+	if(pszKey)
+	{
+		*pszKey = m_vKeyMap[n].bind;
+	}
+	if(pszCmd)
+	{
+		*pszCmd = m_vKeyMap[n].cmd;
+	}
+}
+
+void SXInput::onNextKeyPress(void(*pfnCallback)(const char *szKey))
+{
+	m_pfnCallback = pfnCallback;
+	m_bDisableOnNextKeyPress = !m_bEnabled;
+	if(!m_bEnabled)
+	{
+		setEnable(true);
+	}
+}
+
+void SXInput::execOnNextKeyPress(const char *szKey)
+{
+	m_pfnCallback(szKey);
+	m_pfnCallback = NULL;
+	if(m_bDisableOnNextKeyPress)
+	{
+		setEnable(false);
+	}
 }

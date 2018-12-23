@@ -1,15 +1,21 @@
-#ifndef _CROSSHAIRMANAGER_H
-#define _CROSSHAIRMANAGER_H
+
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+See the license in LICENSE
+***********************************************************/
+
+#ifndef __CROSSHAIRMANAGER_H
+#define __CROSSHAIRMANAGER_H
 
 #include "sxgame.h"
 #include <common/AssotiativeArray.h>
 #include <common/AAString.h>
 #include "crosshair.h"
 
-class CrosshairManager
+class CCrosshairManager
 {
 public:
-	static void loadCrosshair(ID id, Crosshair * pCrosshair);
+	static void loadCrosshair(ID id, CCrosshair * pCrosshair);
 	static void loadConfig(const char * szFile);
 	static ID getCrosshairID(const char * szName);
 
@@ -19,7 +25,7 @@ protected:
 		float fAngle;
 		float fRadius;
 		int iNumSegments;
-		Crosshair::STYLE style;
+		CCrosshair::STYLE style;
 		float2_t f2TexOffset;
 		float2_t f2TexSize;
 		ID idTexture;
