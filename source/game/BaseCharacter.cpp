@@ -97,6 +97,7 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	m_pCharacter->setFallSpeed(300.0f);
 	//m_pCharacter->setFallSpeed(30.0f);
 	m_pCharacter->setMaxPenetrationDepth(0.1f);
+	m_pGhostObject->setWorldTransform(startTransform);
 
 	SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
 
