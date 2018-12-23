@@ -45,6 +45,8 @@ public:
 	//! Получает предыдущую точку на пути
 	CPathCorner * GetPrev();
 
+	void setPos(const float3 & pos);
+
 protected:
 	//! Пересчитывает путь
 	void RecalcPath(float t);

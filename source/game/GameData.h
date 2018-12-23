@@ -92,6 +92,8 @@ protected:
 	static void ccmd_use_on();
 	static void ccmd_use_off();
 
+	static void ccmd_send_camera();
+
 	bool m_isGame;
 
 };

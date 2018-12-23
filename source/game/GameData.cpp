@@ -22,6 +22,7 @@ See the license in LICENSE
 #include "BaseWeapon.h"
 #include "BaseAmmo.h"
 #include "BaseMag.h"
+#include "FuncTrain.h"
 
 CPlayer * GameData::m_pPlayer;
 CPointCamera * GameData::m_pActiveCamera;
@@ -143,6 +144,28 @@ GameData::GameData(HWND hWnd, bool isGame):
 	Core_0RegisterConcmd("flashlight", ccmd_toggleflashlight);
 	Core_0RegisterConcmd("+use", ccmd_use_on);
 	Core_0RegisterConcmd("-use", ccmd_use_off);
+	Core_0RegisterConcmdArg("send_camera", [](int argc, const char ** argv){
+		if (argc < 2)
+		{
+			printf("cmd send_camera requires one argument");
+			return;
+		}
+
+		CBaseEntity *pEnt = m_pMgr->findEntityByName(argv[1]);
+		if (pEnt)
+		{
+			CFuncTrain *pTrain = (CFuncTrain*)pEnt->getParent();
+			if (pTrain)
+			{
+				m_pActiveCamera = (CPointCamera*)pEnt;
+				pTrain->start();
+			}
+			else
+				printf("cmd send_camera of found parent for camera '%s'", argv[1]);
+		}
+		else
+			printf("cmd send_camera not found '%s' camera", argv[1]);
+	});
 
 	Core_0RegisterConcmdArg("gui_load", [](int argc, const char ** argv){
 		if(argc != 3)

@@ -233,7 +233,7 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 		{
 			len += pCur->GetLength();
 			++count;
-			SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixTranslation(SMMatrixScaling(vBoxSize) * pCur->getPos()));
+			SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixScaling(vBoxSize) * pEnt->getOrient().GetMatrix() * SMMatrixTranslation(pCur->getPos())));
 
 			if (id == pCur->getId())
 				SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(id_sel_tex));

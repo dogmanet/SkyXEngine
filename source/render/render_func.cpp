@@ -687,6 +687,8 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 		if (SGreen_GetCount() > 0)
 			SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_ALL);
 
+		SXDecals_Render();
+
 		SGCore_ShaderUnBind();
 	}
 
@@ -825,7 +827,7 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 			gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 		}
 
-		SXDecals_Render();
+		//SXDecals_Render();
 	}
 	else
 	{
@@ -1454,7 +1456,7 @@ void rfunc::RenderMainPostProcess(DWORD timeDelta)
 
 	static const bool * pp_bloom = GET_PCVAR_BOOL("pp_bloom");
 	if (pp_bloom && (*pp_bloom))
-		SPP_RenderBloom(&float3_t(1, 0.7, 1.2));
+		SPP_RenderBloom(&float3_t(1, 0.85, 1.4));
 
 	//**********************************************************************
 

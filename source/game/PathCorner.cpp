@@ -80,27 +80,32 @@ void CPathCorner::RecalcPath(float t)
 	}
 
 	pCur = m_pNextStop; // 1
-	pCur->m_fDelta = (float3)(-pCur->m_fLength / (2.0f * (m_fLength + pCur->m_fLength)));
-	pCur->m_fLambda = (float3)(1.5f * float3(pCur->m_fH - m_fH) / (m_fLength + pCur->m_fLength));
-	pCur = pCur->m_pNextStop; // 2
 
-	while(pCur->m_pNextStop)
+	if (pCur)
 	{
-		pNext = pCur->m_pNextStop;
+		pCur->m_fDelta = (float3)(-pCur->m_fLength / (2.0f * (m_fLength + pCur->m_fLength)));
+		pCur->m_fLambda = (float3)(1.5f * float3(pCur->m_fH - m_fH) / (m_fLength + pCur->m_fLength));
+		pCur = pCur->m_pNextStop; // 2
 
-		pCur->m_fDelta = (float3)(-float3(pCur->m_fLength) / (float3(2.0f * pCur->m_pPrevStop->m_fLength + 2.0f * pCur->m_fLength) + pCur->m_pPrevStop->m_fLength * pCur->m_pPrevStop->m_fDelta));
-		pCur->m_fLambda = (float3)((3.0f * pCur->m_fH - 3.0f * pCur->m_pPrevStop->m_fH - pCur->m_pPrevStop->m_fLength * pCur->m_pPrevStop->m_fLambda) /
-			(float3(2.0f * pCur->m_pPrevStop->m_fLength + 2.0f * pCur->m_fLength) + pCur->m_pPrevStop->m_fLength * pCur->m_pPrevStop->m_fDelta));
+		if (pCur)
+		{
+			while (pCur->m_pNextStop)
+			{
+				pNext = pCur->m_pNextStop;
 
-		pCur = pNext;
-	}
+				pCur->m_fDelta = (float3)(-float3(pCur->m_fLength) / (float3(2.0f * pCur->m_pPrevStop->m_fLength + 2.0f * pCur->m_fLength) + pCur->m_pPrevStop->m_fLength * pCur->m_pPrevStop->m_fDelta));
+				pCur->m_fLambda = (float3)((3.0f * pCur->m_fH - 3.0f * pCur->m_pPrevStop->m_fH - pCur->m_pPrevStop->m_fLength * pCur->m_pPrevStop->m_fLambda) /
+					(float3(2.0f * pCur->m_pPrevStop->m_fLength + 2.0f * pCur->m_fLength) + pCur->m_pPrevStop->m_fLength * pCur->m_pPrevStop->m_fDelta));
 
+				pCur = pNext;
+			}
 
-	
-	while(pCur->m_pPrevStop)
-	{
-		pCur->m_pPrevStop->m_fCoeffsC = (float3)(pCur->m_fDelta * pCur->m_fCoeffsC + pCur->m_fLambda);
-		pCur = pCur->m_pPrevStop;
+			while (pCur->m_pPrevStop)
+			{
+				pCur->m_pPrevStop->m_fCoeffsC = (float3)(pCur->m_fDelta * pCur->m_fCoeffsC + pCur->m_fLambda);
+				pCur = pCur->m_pPrevStop;
+			}
+		}
 	}
 	
 	/*pCur = pCur->m_pPrevStop;
@@ -212,4 +217,11 @@ CPathCorner * CPathCorner::GetNext()
 CPathCorner * CPathCorner::GetPrev()
 {
 	return(m_pPrevStop);
+}
+
+void CPathCorner::setPos(const float3 & pos)
+{
+	CBaseEntity::setPos(pos);
+
+	RecalcPath(0);
 }

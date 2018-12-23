@@ -1032,7 +1032,7 @@ void CAIGrid::initGraphics()
 
 	m_pDXDevice->CreateVertexDeclaration(InstanceCAIquad, &m_pDecl);
 
-	m_idTex = SGCore_LoadTexAddName("decal_aigrid1.dds", LOAD_TEXTURE_TYPE_CONST);
+	m_idTex = SGCore_LoadTexAddName("decal_aigrid.dds", LOAD_TEXTURE_TYPE_CONST);
 
 	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "aigrid_quad.vs", "aigrid_quad.vs", SHADER_CHECKDOUBLE_PATH);
 	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "aigrid_quad.ps", "aigrid_quad.ps", SHADER_CHECKDOUBLE_PATH);

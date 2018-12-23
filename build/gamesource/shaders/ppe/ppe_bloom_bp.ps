@@ -5,6 +5,7 @@ ppe_bloom_bp.ps
 */
 
 #include <../struct.h>
+#include <../mtrl.h>
 
 //##########################################################################
 
@@ -16,6 +17,7 @@ half3 g_vParam;
 //##########################################################################
 
 sampler2D g_sColor:register(s0);
+sampler2D g_sNormals:register(s1);
 
 //##########################################################################
 
@@ -24,7 +26,10 @@ half4 main(VSO_PP IN) : COLOR0
 	half4 vColor = tex2D(g_sColor, IN.vTexUV);
 	vColor.rgb *= g_vParam.x;
 	vColor.a = 1.f;
-	[branch]if (vColor.r >= g_vParam.y && vColor.g >= g_vParam.y && vColor.b >= g_vParam.y)
+	half4 vNormals = tex2D(g_sNormals, IN.vTexUV);
+	half2 vLayerType = LayerDecode(vNormals.w);
+	
+	[branch]if (vLayerType.y == MTLTYPE_UNLIT || vColor.r >= g_vParam.y || vColor.g >= g_vParam.y || vColor.b >= g_vParam.y)
 	{
 		vColor.rgb *= g_vParam.z;
 		return vColor;

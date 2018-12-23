@@ -368,6 +368,10 @@ ID CLights::createPoint(ID id, const float3* center, float dist, const float3* c
 			tmplight->m_pShadowCube->setNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, tmplight->m_fDist));
 			
 		}
+		else
+		{
+			int qwerty = 0;
+		}
 
 		if (is_shadow)
 			tmplight->m_typeShadowed = LTYPE_SHADOW_DYNAMIC;
@@ -1184,37 +1188,53 @@ void CLights::setLightTypeShadowed(ID id, LTYPE_SHADOW type)
 
 	m_aLights[id]->m_typeShadowed = type;
 
-	if (m_aLights[id]->m_typeLight == LTYPE_LIGHT_DIR)
+	if (type != LTYPE_SHADOW::LTYPE_SHADOW_NONE)
 	{
-		if (!m_aLights[id]->m_pShadowSM)
+		if (m_aLights[id]->m_typeLight == LTYPE_LIGHT_DIR)
 		{
-			m_aLights[id]->m_pShadowSM = new ShadowMapTech();
-			m_aLights[id]->m_pShadowSM->init();
-			m_aLights[id]->m_pShadowSM->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
-			m_aLights[id]->m_pShadowSM->setDirection(&(m_aLights[id]->m_qQuaternion * LIGHTS_DIR_BASE));
-			m_aLights[id]->m_pShadowSM->setAngleNearFar(&float3(m_aLights[id]->m_fAngle, 0.1, m_aLights[id]->m_fDist));
-		}
-	}
-	else if (m_aLights[id]->m_typeLight == LTYPE_LIGHT_GLOBAL)
-	{
-		if (m_aLights[id]->m_isGlobal)
-		{
-			if (!m_aLights[id]->m_pShadowPSSM)
+			if (!m_aLights[id]->m_pShadowSM)
 			{
-				m_aLights[id]->m_pShadowPSSM = new PSSM();
-				m_aLights[id]->m_pShadowPSSM->init();
-				m_aLights[id]->m_pShadowPSSM->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
+				m_aLights[id]->m_pShadowSM = new ShadowMapTech();
+				m_aLights[id]->m_pShadowSM->init();
+				m_aLights[id]->m_pShadowSM->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
+				m_aLights[id]->m_pShadowSM->setDirection(&(m_aLights[id]->m_qQuaternion * LIGHTS_DIR_BASE));
+				m_aLights[id]->m_pShadowSM->setAngleNearFar(&float3(m_aLights[id]->m_fAngle, 0.1, m_aLights[id]->m_fDist));
+			}
+		}
+		else if (m_aLights[id]->m_typeLight == LTYPE_LIGHT_GLOBAL)
+		{
+			if (m_aLights[id]->m_isGlobal)
+			{
+				if (!m_aLights[id]->m_pShadowPSSM)
+				{
+					m_aLights[id]->m_pShadowPSSM = new PSSM();
+					m_aLights[id]->m_pShadowPSSM->init();
+					m_aLights[id]->m_pShadowPSSM->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
+				}
+			}
+		}
+		else if (m_aLights[id]->m_typeLight == LTYPE_LIGHT_POINT)
+		{
+			if (!m_aLights[id]->m_pShadowCube)
+			{
+				m_aLights[id]->m_pShadowCube = new ShadowMapCubeTech();
+				m_aLights[id]->m_pShadowCube->init();
+				m_aLights[id]->m_pShadowCube->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
+				m_aLights[id]->m_pShadowCube->setNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, m_aLights[id]->m_fDist));
 			}
 		}
 	}
-	else if (m_aLights[id]->m_typeLight == LTYPE_LIGHT_POINT)
+	else
 	{
-		if (!m_aLights[id]->m_pShadowCube)
+		int qwerty = 0;
+
+		if (m_aLights[id]->m_pShadowSM)
 		{
-			m_aLights[id]->m_pShadowCube = new ShadowMapCubeTech();
-			m_aLights[id]->m_pShadowCube->init();
-			m_aLights[id]->m_pShadowCube->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
-			m_aLights[id]->m_pShadowCube->setNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, m_aLights[id]->m_fDist));
+			mem_delete(m_aLights[id]->m_pShadowSM);
+		}
+		else if (m_aLights[id]->m_pShadowCube)
+		{
+			mem_delete(m_aLights[id]->m_pShadowCube);
 		}
 	}
 

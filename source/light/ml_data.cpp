@@ -107,11 +107,11 @@ void light_data::ReCalcSize()
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-	vSizeTexDepthGlobal.x = float(*r_win_width) * fCoefSizeDepthMapForGlobal;
-	vSizeTexDepthGlobal.y = float(*r_win_height) * fCoefSizeDepthMapForGlobal;
+	vSizeTexDepthGlobal.x = float(*r_win_width) * light_data::fCoefSizeDepthMapForGlobal;
+	vSizeTexDepthGlobal.y = float(*r_win_height) * light_data::fCoefSizeDepthMapForGlobal;
 
-	vSizeTexDepthLocal.x = float(*r_win_width) * fCoefSizeDepthMapForLocal;
-	vSizeTexDepthLocal.y = float(*r_win_height) * fCoefSizeDepthMapForLocal;
+	vSizeTexDepthLocal.x = float(*r_win_width) * light_data::fCoefSizeDepthMapForLocal;
+	vSizeTexDepthLocal.y = float(*r_win_height) * light_data::fCoefSizeDepthMapForLocal;
 }
 
 void light_data::Init()

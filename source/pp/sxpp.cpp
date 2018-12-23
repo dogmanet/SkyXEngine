@@ -959,6 +959,7 @@ SX_LIB_API void SPP_RenderBloom(const float3_t *pParam)
 	SGCore_SetSamplerAddress(0, D3DTADDRESS_MIRROR);
 
 	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
+	pp_data::pDXDevice->SetTexture(1, SGCore_RTGetTexture(pp_data::rt_id::idNormal));
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idBloomBP, "g_vParam", (void*)pParam);
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
@@ -971,9 +972,9 @@ SX_LIB_API void SPP_RenderBloom(const float3_t *pParam)
 	//pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
 	mem_release(RenderSurf);
 
-	/*if (GetKeyState('N'))
+	/*if (GetAsyncKeyState('N'))
 	{
-		D3DXSaveTextureToFile("C:\\1\\sbp.png", D3DXIFF_PNG, SGCore_RTGetTexture(pp_data::rt_id::Bright), NULL);
+		D3DXSaveTextureToFile("C:\\1\\sbp.png", D3DXIFF_PNG, SGCore_RTGetTexture(pp_data::rt_id::idBright), NULL);
 	}*/
 
 

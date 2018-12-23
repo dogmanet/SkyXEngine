@@ -858,7 +858,17 @@ void ShadowMapCubeTech::onLostDevice()
 
 void ShadowMapCubeTech::onResetDevice()
 {
-	D3DXCreateCubeTexture(light_data::pDXDevice, light_data::vSizeTexDepthLocal.x, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &DepthMap);
+	HRESULT hr = D3DXCreateCubeTexture(light_data::pDXDevice, light_data::vSizeTexDepthLocal.x, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &DepthMap);
+
+	if (hr == D3DERR_INVALIDCALL)
+		int qwert = 0;
+	else if (hr == D3DERR_NOTAVAILABLE)
+		int qwert = 0;
+	else if (hr == D3DERR_OUTOFVIDEOMEMORY)
+		int qwert = 0;
+	else if (hr == E_OUTOFMEMORY)
+		int qwert = 0;
+
 	light_data::pDXDevice->CreateDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.x, D3DFMT_D24X8,D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
 }
 
@@ -997,7 +1007,17 @@ void ShadowMapCubeTech::init()
 	DepthSurface[4] = 0;
 	DepthSurface[5] = 0;
 
-	D3DXCreateCubeTexture(light_data::pDXDevice, light_data::vSizeTexDepthLocal.x, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &DepthMap);
+	HRESULT hr = D3DXCreateCubeTexture(light_data::pDXDevice, light_data::vSizeTexDepthLocal.x, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &DepthMap);
+
+	if (hr == D3DERR_INVALIDCALL)
+		int qwert = 0;
+	else if (hr == D3DERR_NOTAVAILABLE)
+		int qwert = 0;
+	else if (hr == D3DERR_OUTOFVIDEOMEMORY)
+		int qwert = 0;
+	else if (hr == E_OUTOFMEMORY)
+		int qwert = 0;
+
 	light_data::pDXDevice->CreateDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.x, D3DFMT_D24X8,D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
 }
 
