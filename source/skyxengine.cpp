@@ -1057,9 +1057,9 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SAIG_RenderQuads(SRender_GetCamera()->getFrustum(), &vCamPos, *r_far);
 #endif
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	SPhysics_DebugRender();
-#endif
+//#endif
 
 	
 #if defined(SX_GAME) || defined(SX_LEVEL_EDITOR)
