@@ -1300,7 +1300,7 @@ namespace gui
 				}
 				GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILREF, lvl);
 				GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
-				GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&m_pBackgroundColor, 1);
+				DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&m_pBackgroundColor, 1));
 
 				GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC);
 
@@ -1309,13 +1309,13 @@ namespace gui
 				{
 					CTextureManager::bindShader(shText);
 					CTextureManager::bindTexture(texWhite);
-					GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, m_iTCBackground, &m_pVBackground, sizeof(pointtex));
+					DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, m_iTCBackground, &m_pVBackground, sizeof(pointtex)));
 				}
 				if(m_bHasBackgroundImage)
 				{
 					CTextureManager::unbindShader();
 					CTextureManager::bindTexture(m_pBackgroundImage);
-					GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, m_iTCBackground, &m_pVBackground, sizeof(pointtex));
+					DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, m_iTCBackground, &m_pVBackground, sizeof(pointtex)));
 				}
 				CTranslationManager::popMatrix();
 				
@@ -1766,7 +1766,7 @@ namespace gui
 					{
 						GetGUI()->getDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
 						GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_DECR);
-						GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point));
+						DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
 						GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
 						GetGUI()->getDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, 0x0F);
 						if(lvl == 0)
@@ -2037,7 +2037,7 @@ namespace gui
 					{
 						GetGUI()->getDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
 						GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_DECR);
-						GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point));
+						DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
 						GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
 						GetGUI()->getDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, 0x0F);
 						if(lvl == 0)
@@ -2207,9 +2207,9 @@ namespace gui
 				//SMMATRIX m = SMMatrixTranslation(m_pParent->GetLeftOffset(), m_pParent->GetTopOffset(), 0.0f);
 				//GetGUI()->getDevice()->SetTransform(D3DTS_WORLD, reinterpret_cast<D3DMATRIX*>(&m));
 				CTextureManager::bindTexture(pFont->getTexture(0));
-				GetGUI()->getDevice()->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(CFont::vertex));
-				GetGUI()->getDevice()->SetIndices(m_pIndexBuffer);
-				GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, m_iVertexCount, 0, m_iIndexBaseCount / 3);
+				DX_CALL(GetGUI()->getDevice()->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(CFont::vertex)));
+				DX_CALL(GetGUI()->getDevice()->SetIndices(m_pIndexBuffer));
+				DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, m_iVertexCount, 0, m_iIndexBaseCount / 3));
 
 				CTextureManager::bindTexture(texWhite);
 
@@ -2337,7 +2337,7 @@ namespace gui
 				float4_t vColor = m_pStyle->color->getColor();
 				float4_t vShadowColor = m_pStyle->text_shadow_color->isSet() ? m_pStyle->text_shadow_color->getColor() : vColor;
 
-				GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&vColor, 1);
+				DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&vColor, 1));
 				for(UINT i = 0; i < m_pRenderElems.size(); i++)
 				{
 					CRenderElement * el = &m_pRenderElems[i];
@@ -2348,24 +2348,24 @@ namespace gui
 					{
 						CTranslationManager::pushMatrix(SMMatrixTranslation(el->m_pNextREl->m_iLeftOffset, el->m_pNextREl->m_iTopOffset, 0.0f));
 						CTextureManager::bindTexture(pShadowFont->getTexture(0));
-						GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&vShadowColor, 1);
+						DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&vShadowColor, 1));
 
-						GetGUI()->getDevice()->SetStreamSource(0, el->m_pNextREl->m_pVertexBuffer, 0, sizeof(CFont::vertex));
-						GetGUI()->getDevice()->SetIndices(el->m_pNextREl->m_pIndexBuffer);
-						GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, el->m_pNextREl->m_iVertexCount, 0, el->m_pNextREl->m_iIndexBaseCount / 3);
+						DX_CALL(GetGUI()->getDevice()->SetStreamSource(0, el->m_pNextREl->m_pVertexBuffer, 0, sizeof(CFont::vertex)));
+						DX_CALL(GetGUI()->getDevice()->SetIndices(el->m_pNextREl->m_pIndexBuffer));
+						DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, el->m_pNextREl->m_iVertexCount, 0, el->m_pNextREl->m_iIndexBaseCount / 3));
 
-						GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&vColor, 1);
+						DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&vColor, 1));
 						CTranslationManager::popMatrix();
 					}
 
 					CTextureManager::bindTexture(pFont->getTexture(0));
-					GetGUI()->getDevice()->SetStreamSource(0, el->m_pVertexBuffer, 0, sizeof(CFont::vertex));
-					GetGUI()->getDevice()->SetIndices(el->m_pIndexBuffer);
-					GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, el->m_iVertexCount, 0, el->m_iIndexBaseCount / 3);
+					DX_CALL(GetGUI()->getDevice()->SetStreamSource(0, el->m_pVertexBuffer, 0, sizeof(CFont::vertex)));
+					DX_CALL(GetGUI()->getDevice()->SetIndices(el->m_pIndexBuffer));
+					DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, el->m_iVertexCount, 0, el->m_iIndexBaseCount / 3));
 					if(el->m_iIndexAddCount)
 					{
 						CTextureManager::bindTexture(texWhite);
-						GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, el->m_iVertexCount, el->m_iIndexBaseCount, el->m_iIndexAddCount / 3);
+						DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, el->m_iVertexCount, el->m_iIndexBaseCount, el->m_iIndexAddCount / 3));
 					}
 
 					CTranslationManager::popMatrix();
@@ -2773,9 +2773,9 @@ namespace gui
 					float op = sinf((float)GetTickCount() * 0.003f);
 					op *= op;
 					color.w = op;
-					GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&color, 1);
+					DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&color, 1));
 					CTranslationManager::pushMatrix(SMMatrixTranslation(_x - 1.0f, _y, 0.0f));
-					GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point));
+					DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
 					CTranslationManager::popMatrix();
 
 					int _w = m_pParent->getInnerWidth();
@@ -2925,7 +2925,7 @@ namespace gui
 						selEnd = m_vCharRects.size();
 					}
 
-					GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&color, 1);
+					DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&color, 1));
 
 					for(UINT i = selStart; i < selEnd; i++)
 					{

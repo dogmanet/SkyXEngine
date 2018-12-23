@@ -615,11 +615,11 @@ void DecalManager::render()
 		SkyXEngine::Core::Data::MaterialsManager->Render(m_vDecals[i]->m_material, &SMMatrixIdentity(), 0);
 		SkyXEngine::Core::Data::Device->DrawPrimitiveUP(D3DPT_TRIANGLELIST, m_vDecals[i]->iVertCount / 3, m_vDecals[i]->m_pVerts, sizeof(DecalVertex));
 	}*/
-	dev->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(DecalVertex));
+	DX_CALL(dev->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(DecalVertex)));
 	for(UINT i = 0; i < m_iRngs.size(); i++)
 	{
 		SGCore_MtlSet(m_iRngs[i].iMaterialId, &SMMatrixIdentity());
-		dev->DrawPrimitive(D3DPT_TRIANGLELIST, m_iRngs[i].iStartVertex, m_iRngs[i].iVertexCount / 3);
+		DX_CALL(dev->DrawPrimitive(D3DPT_TRIANGLELIST, m_iRngs[i].iStartVertex, m_iRngs[i].iVertexCount / 3));
 	}
 
 	dev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
@@ -663,9 +663,9 @@ void DecalManager::updateBuffer()
 		return;
 	}
 
-	dev->CreateVertexBuffer(sizeof(DecalVertex)* iVC, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, 0);
+	DX_CALL(dev->CreateVertexBuffer(sizeof(DecalVertex)* iVC, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, 0));
 	DecalVertex * pData;
-	if(!FAILED(m_pVertexBuffer->Lock(0, sizeof(DecalVertex) * iVC, (void**)&pData, 0)))
+	if(!FAILED(DX_CALL(m_pVertexBuffer->Lock(0, sizeof(DecalVertex)* iVC, (void**)&pData, 0))))
 	{
 		iVC = 0;
 		for(AssotiativeArray<ID, Array<_DecalMatItem>>::Iterator i = m_MaterialSort.begin(); i; i++)

@@ -52,7 +52,7 @@ COcclusionCulling *g_pOC = 0;
 void StdDrawIndexedPrimitive(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)
 {
 	Core_RIntSet(G_RI_INT_COUNT_DIP, Core_RIntGet(G_RI_INT_COUNT_DIP) + 1);
-	g_pDXDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type_primitive, base_vertexIndex, min_vertex_index, num_vertices, start_index, prim_count);
+	DX_CALL(g_pDXDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type_primitive, base_vertexIndex, min_vertex_index, num_vertices, start_index, prim_count));
 }
 
 void StdMtlSet(ID id, const float4x4 *pWorld, const float4 *pColor)
@@ -191,6 +191,7 @@ SX_LIB_API void SGCore_Dbg_Set(report_func rf)
 
 SX_LIB_API void SGCore_0Create(const char *szName, HWND hWnd, int iWidth, int iHeigth, bool isWindowed, DWORD dwFlags, bool isUnic)
 {
+	Core_SetOutPtr();
 	if (szName && strlen(szName) > 1)
 	{
 		if (isUnic)
@@ -217,6 +218,15 @@ SX_LIB_API const DEVMODE* SGCore_GetModes(int *pCount)
 		*pCount = g_aModes.size();
 
 	return &(g_aModes[0]);
+}
+
+SX_LIB_API HRESULT SGCore_DXcallCheck(HRESULT hr, const char *callStr)
+{
+	if(FAILED(hr))
+	{
+		printf(COLOR_LRED "DirectX call failed: %s\n%s, %s\n", callStr, DXGetErrorString9(hr), DXGetErrorDescription9(hr));
+	}
+	return(hr);
 }
 
 SX_LIB_API HWND SGCore_GetHWND()

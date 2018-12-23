@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <d3d9.h>
 #include <d3dx9.h>
+#include <gcore/sxgcore.h>
 
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "d3d9.lib")
@@ -11,6 +12,12 @@
 #	pragma comment(lib, "d3dx9d.lib")
 #else
 #	pragma comment(lib, "d3dx9.lib")
+#endif
+
+#if defined(_DEBUG)
+#	pragma comment(lib, "sxgcore_d.lib")
+#else
+#	pragma comment(lib, "sxgcore.lib")
 #endif
 
 #if defined(_WINDOWS)

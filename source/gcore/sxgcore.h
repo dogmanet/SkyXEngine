@@ -20,6 +20,7 @@ See the license in LICENSE
 
 #include <d3d9.h>
 #include <d3dx9.h>
+#include <dxerr9.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxcore_d.lib")
@@ -61,6 +62,8 @@ See the license in LICENSE
 
 class IFrustum;
 
+
+
 //! \name Базовые функции библиотеки 
 //!@{
 
@@ -92,6 +95,10 @@ SX_LIB_API IDirect3DDevice9* SGCore_GetDXDevice();
 
 //! возвращает массив всех доступных разрешений монитора, в iCount записывает размер массива
 SX_LIB_API const DEVMODE* SGCore_GetModes(int *iCount);
+
+//! Проверяет успешность вызова по HRESULT, выводит сообщение об ошибке
+SX_LIB_API HRESULT SGCore_DXcallCheck(HRESULT hr, const char *callStr);
+#define DX_CALL(call) SGCore_DXcallCheck((call), #call)
 
 //!@}
 

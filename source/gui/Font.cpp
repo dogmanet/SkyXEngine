@@ -1212,15 +1212,15 @@ namespace gui
 		}
 
 		VOID * pData;
-		GetGUI()->getDevice()->CreateVertexBuffer(sizeof(vertex) * iVertexCount, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, ppVertexBuffer, 0);
-		if(!FAILED((*ppVertexBuffer)->Lock(0, sizeof(vertex) * iVertexCount, (void**)&pData, 0)))
+		DX_CALL(GetGUI()->getDevice()->CreateVertexBuffer(sizeof(vertex)* iVertexCount, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, ppVertexBuffer, 0));
+		if(!FAILED(DX_CALL((*ppVertexBuffer)->Lock(0, sizeof(vertex)* iVertexCount, (void**)&pData, 0))))
 		{
 			memcpy(pData, pVB, sizeof(vertex) * iVertexCount);
 			(*ppVertexBuffer)->Unlock();
 		}
 
-		GetGUI()->getDevice()->CreateIndexBuffer(sizeof(UINT) * iIndexCount, D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_MANAGED, ppIndexBuffer, 0);
-		if(!FAILED((*ppIndexBuffer)->Lock(0, sizeof(UINT) * iIndexCount, (void**)&pData, 0)))
+		DX_CALL(GetGUI()->getDevice()->CreateIndexBuffer(sizeof(UINT)* iIndexCount, D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_MANAGED, ppIndexBuffer, 0));
+		if(!FAILED(DX_CALL((*ppIndexBuffer)->Lock(0, sizeof(UINT)* iIndexCount, (void**)&pData, 0))))
 		{
 			memcpy(pData, pIB, sizeof(UINT) * iIndexCount);
 			(*ppIndexBuffer)->Unlock();

@@ -121,7 +121,7 @@ SX_LIB_API void SGame_0Create(HWND hWnd, bool isGame)
 	g_pGameData = new GameData(hWnd, isGame);
 
 	//g_pPlayer->spawn();
-	D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &g_pFigureBox, 0);
+	DX_CALL(D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &g_pFigureBox, 0));
 
 	Core_0RegisterConcmd("add_corner", ccmd_cam_pt);
 	Core_0RegisterConcmdArg("ent_save", ccmd_save_as);
@@ -272,7 +272,7 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 
 		SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ);
 		SGCore_GetDXDevice()->SetTexture(0, 0);
-		SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, npoints, &(pts[0]), sizeof(float3_t));
+		DX_CALL(SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, npoints, &(pts[0]), sizeof(float3_t)));
 	}
 	else
 	{
@@ -284,8 +284,8 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 		SGCore_GetDXDevice()->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&mProj);
 		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixScaling(vBoxSize) * pEnt->getOrient().GetMatrix() * SMMatrixTranslation(pvRenderPos ? *pvRenderPos : pEnt->getPos()))/*bEnt->getWorldTM()*/);
 
-		SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(id_sel_tex));
-		g_pFigureBox->DrawSubset(0);
+		DX_CALL(SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(id_sel_tex)));
+		DX_CALL(g_pFigureBox->DrawSubset(0));
 	}
 }
 
@@ -377,6 +377,18 @@ SX_LIB_API BOOL SGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam)
 	if(!GameData::m_pGUI)
 	{
 		return(TRUE);
+	}
+
+	static const bool *s_pisWindowed = GET_PCVAR_BOOL("r_win_windowed");
+	if(!*s_pisWindowed && message >= WM_MOUSEFIRST && message <= WM_MOUSELAST)
+	{
+		POINT pt;
+		if(GetCursorPos(&pt))
+		{
+			short x = (short)pt.x;
+			short y = (short)pt.y;
+			lParam = (*((unsigned short*)&x)) | (*((unsigned short*)&y) << 16);
+		}
 	}
 
 	return(GameData::m_pGUI->putMessage(message, wParam, lParam));

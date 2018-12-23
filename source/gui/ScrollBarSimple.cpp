@@ -26,7 +26,7 @@ namespace gui
 				CTextureManager::bindShader(shText);
 				CTextureManager::bindTexture(texWhite);
 				float4_t asd(1, 1, 1, 0.5);
-				GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&asd, 1);
+				DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&asd, 1));
 
 				updateData();
 				if(m_iScrollMax == 0)
@@ -68,7 +68,7 @@ namespace gui
 					}
 				}
 
-				GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point));
+				DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
 			}
 
 			void CScrollBarSimple::dispatchEvent(IEvent & ev)
