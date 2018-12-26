@@ -47,6 +47,8 @@ public:
 
 	void setPos(const float3 & pos);
 
+	void setNextPoint(CBaseEntity *pEnt);
+
 protected:
 	//! Пересчитывает путь
 	void RecalcPath(float t);

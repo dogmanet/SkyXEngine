@@ -21,7 +21,7 @@ BEGIN_PROPTABLE(CPathCorner)
 	DEFINE_FIELD_FLOAT(m_fNewSpeed, 0, "speed", "New speed", EDITOR_TEXTFIELD)
 
 	//! Следующая точка пути
-	DEFINE_FIELD_ENTITY(m_pNextStop, 0, "next", "Next stop", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_ENTITYFN(m_pNextStop, 0, "next", "Next stop", setNextPoint, EDITOR_TEXTFIELD)
 
 END_PROPTABLE()
 
@@ -37,13 +37,22 @@ CPathCorner::CPathCorner(CEntityManager * pMgr):
 {
 }
 
+void CPathCorner::setNextPoint(CBaseEntity *pEnt)
+{
+	m_pNextStop = (CPathCorner*)pEnt;
+	if(m_pNextStop)
+	{
+		m_pNextStop->m_pPrevStop = this;
+	}
+}
+
 void CPathCorner::onPostLoad()
 {
 	BaseClass::onPostLoad();
 
 	if(m_pNextStop)
 	{
-		((CPathCorner*)m_pNextStop)->m_pPrevStop = this;
+		m_pNextStop->m_pPrevStop = this;
 	}
 
 	if(!m_pPrevStop)
