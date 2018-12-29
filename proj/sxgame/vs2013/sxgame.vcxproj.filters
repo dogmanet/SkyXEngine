@@ -73,6 +73,12 @@
     <Filter Include="Source Files\ents\props">
       <UniqueIdentifier>{f33fe13e-64ab-4a37-8f3e-3ae63c99cc9d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ents\light">
+      <UniqueIdentifier>{b5a83aed-5c19-491c-b998-3f46262e9b4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents\light">
+      <UniqueIdentifier>{3dda0cb3-d81b-45fc-8363-50ac9baa15bc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp">
@@ -98,12 +104,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\GameData.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\game\LightDirectional.cpp">
-      <Filter>Source Files\ents</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\game\LightPoint.cpp">
-      <Filter>Source Files\ents</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\crosshair.cpp">
       <Filter>Source Files</Filter>
@@ -225,6 +225,15 @@
     <ClCompile Include="..\..\..\source\game\PropDoor.cpp">
       <Filter>Source Files\ents\props</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\BaseLight.cpp">
+      <Filter>Source Files\ents\light</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\LightPoint.cpp">
+      <Filter>Source Files\ents\light</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\LightDirectional.cpp">
+      <Filter>Source Files\ents\light</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -250,12 +259,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\AAString.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\game\LightDirectional.h">
-      <Filter>Header Files\ents</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\game\LightPoint.h">
-      <Filter>Header Files\ents</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\crosshair.h">
       <Filter>Header Files</Filter>
@@ -391,6 +394,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\PropDoor.h">
       <Filter>Header Files\ents\props</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\BaseLight.h">
+      <Filter>Header Files\ents\light</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\LightPoint.h">
+      <Filter>Header Files\ents\light</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\LightDirectional.h">
+      <Filter>Header Files\ents\light</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

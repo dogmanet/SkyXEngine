@@ -98,6 +98,7 @@
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseHandle.cpp" />
+    <ClCompile Include="..\..\..\source\game\BaseLight.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseMag.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseScope.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseSilencer.cpp" />
@@ -150,6 +151,7 @@
     <ClInclude Include="..\..\..\source\common\file_utils.h" />
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\game\BaseHandle.h" />
+    <ClInclude Include="..\..\..\source\game\BaseLight.h" />
     <ClInclude Include="..\..\..\source\game\BaseMag.h" />
     <ClInclude Include="..\..\..\source\game\BaseScope.h" />
     <ClInclude Include="..\..\..\source\game\BaseSilencer.h" />
