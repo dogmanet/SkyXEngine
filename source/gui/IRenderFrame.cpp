@@ -1288,11 +1288,11 @@ namespace gui
 					m._32 = (float)((m_bBackgroundScrolling ? m_iScrollTop : 0) + m_iBackgroundOffsetY + pt) / m_fBackgroundImageSize.y;
 					
 					
-					GetGUI()->getDevice()->SetTransform(D3DTS_TEXTURE0, (D3DMATRIX*)&m);
-					GetGUI()->getDevice()->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT2);
-					GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_ADDRESSU, m_bBackgroundRepeatX ? D3DTADDRESS_WRAP : D3DTADDRESS_BORDER);
-					GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_ADDRESSV, m_bBackgroundRepeatY ? D3DTADDRESS_WRAP : D3DTADDRESS_BORDER);
-					GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_BORDERCOLOR, m_iBackgroundColor);
+					DX_CALL(GetGUI()->getDevice()->SetTransform(D3DTS_TEXTURE0, (D3DMATRIX*)&m));
+					DX_CALL(GetGUI()->getDevice()->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT2));
+					DX_CALL(GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_ADDRESSU, m_bBackgroundRepeatX ? D3DTADDRESS_WRAP : D3DTADDRESS_BORDER));
+					DX_CALL(GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_ADDRESSV, m_bBackgroundRepeatY ? D3DTADDRESS_WRAP : D3DTADDRESS_BORDER));
+					DX_CALL(GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_BORDERCOLOR, m_iBackgroundColor));
 				}
 				else
 				{
@@ -1305,13 +1305,13 @@ namespace gui
 				GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC);
 
 				CTranslationManager::pushMatrix(SMMatrixTranslation(getInnerLeft(), getInnerTop(), 0.0f));
-				if(m_bHasBackground)
+				if(m_bHasBackground && m_iTCBackground > 0)
 				{
 					CTextureManager::bindShader(shText);
 					CTextureManager::bindTexture(texWhite);
 					DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, m_iTCBackground, &m_pVBackground, sizeof(pointtex)));
 				}
-				if(m_bHasBackgroundImage)
+				if(m_bHasBackgroundImage && m_iTCBackground > 0)
 				{
 					CTextureManager::unbindShader();
 					CTextureManager::bindTexture(m_pBackgroundImage);
@@ -2361,7 +2361,10 @@ namespace gui
 					CTextureManager::bindTexture(pFont->getTexture(0));
 					DX_CALL(GetGUI()->getDevice()->SetStreamSource(0, el->m_pVertexBuffer, 0, sizeof(CFont::vertex)));
 					DX_CALL(GetGUI()->getDevice()->SetIndices(el->m_pIndexBuffer));
-					DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, el->m_iVertexCount, 0, el->m_iIndexBaseCount / 3));
+					if(el->m_iIndexBaseCount)
+					{
+						DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, el->m_iVertexCount, 0, el->m_iIndexBaseCount / 3));
+					}
 					if(el->m_iIndexAddCount)
 					{
 						CTextureManager::bindTexture(texWhite);
