@@ -1461,6 +1461,8 @@ bool SkyXEngine_CycleMainIteration()
 {
 	MSG msg = {0};
 
+
+	Core_PStartSection(PERF_SECTION_WMSG_PROC);
 	while(::PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 	{
 
@@ -1476,11 +1478,16 @@ bool SkyXEngine_CycleMainIteration()
 #endif
 		::DispatchMessage(&msg);
 	}
+	Core_PEndSection(PERF_SECTION_WMSG_PROC);
 	//@TODO: здесь не должно быть else
 	//else
 	{
+		Core_PStartSection(PERF_SECTION_PREFRAME);
+
+		Core_PStartSection(PERF_SECTION_PF_W);
 		SGCore_ShaderAllLoad();
 		SGCore_LoadTexAllLoad();
+		Core_PEndSection(PERF_SECTION_PF_W);
 
 		/*if (SSInput_GetKeyState(SIK_BACKSPACE))
 		SSCore_ChannelPlay(SX_SOUND_CHANNEL_GAME);
@@ -1501,13 +1508,21 @@ bool SkyXEngine_CycleMainIteration()
 		SSCore_SndkitStop(0, id2);*/
 
 
+		Core_PStartSection(PERF_SECTION_PF_X);
 		Core_TimesUpdate();
 		Core_0ConsoleUpdate();
+		Core_PEndSection(PERF_SECTION_PF_X);
+
+		Core_PStartSection(PERF_SECTION_PF_Y);
 		SSInput_Update();
+		Core_PEndSection(PERF_SECTION_PF_Y);
+
+		Core_PStartSection(PERF_SECTION_PF_Z);
 		static float3 vCamPos, vCamDir;
 		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
 		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_DIRECTION, &vCamDir);
 		SSCore_Update(&vCamPos, &vCamDir);
+		Core_PEndSection(PERF_SECTION_PF_Z);
 
 		static DWORD lastTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		DWORD currTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
@@ -1536,6 +1551,7 @@ bool SkyXEngine_CycleMainIteration()
 			Core_TimeSpeedSet(Core_RIntGet(G_RI_INT_TIMER_GAME), g_time_speed_old);
 		}
 
+		Core_PEndSection(PERF_SECTION_PREFRAME);
 
 		if(Core_TimeWorkingGet(Core_RIntGet(G_RI_INT_TIMER_RENDER)) &&
 			(GetForegroundWindow() == SRender_GetHandleWin3D() || GetForegroundWindow() == (HWND)SRender_GetParentHandleWin3D() || GetForegroundWindow() == FindWindow(NULL, "sxconsole"))

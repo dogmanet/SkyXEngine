@@ -54,6 +54,7 @@ public:
 	{
 		return(m_iNumThreads);
 	}
+
 	
 private:
 	void workerMain();
@@ -61,6 +62,7 @@ private:
 	void execute(TaskPtr task);
 	void synchronize();
 	void sheduleNextBunch();
+	//void notifyWorkers();
 
 	Array<std::thread*> m_aThreads;
 	unsigned int m_iNumThreads;
@@ -81,6 +83,8 @@ private:
 	mutable std::mutex m_mutexSync;
 	mutable std::mutex m_mutexFor;
 	Condition m_Condition;
+	//mutable std::mutex m_mutexWorker[8];
+	//Condition m_ConditionWorker[8];
 	Condition m_ConditionFor;
 	int m_iNumTasksToWaitFor;
 

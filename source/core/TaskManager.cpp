@@ -124,6 +124,7 @@ void CTaskManager::addTask(TaskPtr task)
 			m_TaskList[m_iWriteList].push(task);
 		}
 	}
+	//notifyWorkers();
 }
 
 void CTaskManager::add(THREAD_UPDATE_FUNCTION fnFunc, DWORD dwFlag)
@@ -203,6 +204,7 @@ void CTaskManager::synchronize()
 		m_BackgroundTasks.push(m_OnSyncTasks.pop());
 		++m_iNumTasksToWaitFor;
 	}
+	//notifyWorkers();
 }
 
 void CTaskManager::sheduleNextBunch()
@@ -221,6 +223,7 @@ void CTaskManager::sheduleNextBunch()
 		m_BackgroundTasks.push(m_SyncTasks.pop());
 		++m_iNumTasksToWaitFor;
 	}
+	//notifyWorkers();
 }
 
 void CTaskManager::stop()
@@ -289,6 +292,10 @@ void CTaskManager::worker(bool bOneRun)
 				return;
 			}
 
+			//{
+			//	std::unique_lock<std::mutex> lock(m_mutexWorker[Core_MGetThreadID()]);
+			//	m_ConditionWorker[Core_MGetThreadID()].wait(lock);
+			//}
 			std::this_thread::yield();
 			//std::this_thread::sleep_for(std::chrono::microseconds(166));
 			
@@ -338,6 +345,14 @@ void CTaskManager::waitFor(ID id)
 		m_ConditionFor.wait(lock);
 	}
 }
+
+//void CTaskManager::notifyWorkers()
+//{
+//	for(int i = 0; i < m_iNumThreads; ++i)
+//	{
+//		m_ConditionWorker[i].notify_one();
+//	}
+//}
 
 //##########################################################################
 

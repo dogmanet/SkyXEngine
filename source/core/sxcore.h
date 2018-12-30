@@ -179,6 +179,13 @@ enum PERF_SECTION
 	PERF_SECTION_VIS_PARTICLES, // R
 	PERF_SECTION_AI_PATH, // S
 	PERF_SECTION_CVAR_UPDATE, // T
+	PERF_SECTION_WMSG_PROC, // U
+	PERF_SECTION_PREFRAME, // V
+
+	PERF_SECTION_PF_W, // W
+	PERF_SECTION_PF_X, // X
+	PERF_SECTION_PF_Y, // Y
+	PERF_SECTION_PF_Z, // Z
 
 	PERF_SECTION_COUNT
 };
@@ -213,7 +220,13 @@ static const char *g_szPerfSectionName[] = {
 	"Vis light",
 	"Vis particles",
 	"AI path",
-	"CVars update"
+	"CVars update",
+	"WMsg process",
+	"Pre frame",
+	"Pre frame shaders/texs",
+	"Pre frame times/console",
+	"Pre frame input",
+	"Pre frame sound"
 };
 
 //! Начало секции измерения
