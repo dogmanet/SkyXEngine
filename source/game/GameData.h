@@ -30,7 +30,7 @@ public:
 	static CGameStateManager * m_pGameStateManager;
 	HWND m_hWnd;
 
-	CCrosshair * m_pCrosshair;
+	CCrosshair * m_pCrosshair = NULL;
 
 	void update();
 	void render();

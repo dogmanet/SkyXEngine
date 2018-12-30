@@ -154,8 +154,14 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	char szConsoleName[64];
 
-	if (hWnd3D == 0)
-		sprintf(szConsoleName, "build");
+	if(hWnd3D == 0)
+	{
+#ifndef SX_SERVER
+		sprintf(szConsoleName, "build - %s", SKYXENGINE_VERSION);
+#else
+		sprintf(szConsoleName, "server - %s", SKYXENGINE_VERSION);
+#endif
+	}
 	else
 	{
 		GetWindowText(hWndParent3D, szConsoleName, 64);
@@ -193,12 +199,13 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	
 
+
 	static int *r_win_width = (int*)GET_PCVAR_INT("r_win_width");
 	static int *r_win_height = (int*)GET_PCVAR_INT("r_win_height");
 	static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
 
 	HWND hWnd3DCurr = 0;
-
+#ifndef SX_SERVER
 	if (hWnd3D == 0)
 		hWnd3DCurr = SkyXEngine_CreateWindow("SkyXEngine", "SkyXEngine", *r_win_width, *r_win_height);
 	else
@@ -211,6 +218,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 		*r_win_width = rect.right;
 		*r_win_height = rect.bottom;
 	}
+
 
 		
 	SSInput_0Create("sxinput", hWnd3DCurr, false);
@@ -247,17 +255,16 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, FALSE);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB gcore initialized\n");
-
+#endif
 
 	//D3DXCreateBox(SGCore_GetDXDevice(), 2, 2, 2, &g_pMeshBound, 0);
-
+#ifndef SX_SERVER
 	SGeom_0Create("sxgeom", false);
 	SGeom_Dbg_Set(SkyXEngine_PrintfLog);
 
 	SGreen_0Create("sxgreen", false);
 	SGreen_Dbg_Set(SkyXEngine_PrintfLog);
 	SGreen_SetFuncIntersect(SkyXEngine_RFuncGreenIntersect);
-
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB geom initialized\n");
 
 	SLight_0Create("sxml", false);
@@ -270,14 +277,16 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SMtrl_Dbg_Set(SkyXEngine_PrintfLog);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB mtrl initialized\n");
+#endif
 
-
+#ifndef SX_SERVER
 	SPE_0Create("sxparticles", false);
 	SPE_Dbg_Set(SkyXEngine_PrintfLog);
 	SPE_SetFunc_ParticlesPhyCollision(SkyXEngine_RFuncParticlesPhyCollision);
 	SPE_RTSetDepth(SGCore_GbufferGetRT_ID(DS_RT_DEPTH));
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB particles initialized\n");
+
 
 	SPP_0Create("sxpp", false);
 	SPP_Dbg_Set(SkyXEngine_PrintfLog);
@@ -292,38 +301,48 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SPP_RTSetNormal(SGCore_GbufferGetRT_ID(DS_RT_NORMAL));
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB pp initialized\n");
-
+#endif
+#ifndef _SERVER
 	SXAnim_0Create();
 	SXAnim_Dbg_Set(SkyXEngine_PrintfLog);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB anim initialized\n");
+#endif
 
 	SPhysics_0Create();
 	SPhysics_Dbg_Set(SkyXEngine_PrintfLog);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB physics initialized\n");
 
+#ifndef SX_SERVER
 	SXDecals_0Create();
 	SXDecals_Dbg_Set(SkyXEngine_PrintfLog);
-
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB decals initialized\n");
+#endif
 
 #if defined(SX_LEVEL_EDITOR)
 	SAIG_0Create("sxaigrid", true, false);
 	SAIG_BBCreate(&float3(0, 0, 0), &float3(10, 10, 10));
 #else
-	SAIG_0Create("sxaigrid", true, false);
+	SAIG_0Create("sxaigrid", 
+#ifndef SX_SERVER
+		true
+#else 
+		false
+#endif
+		, false);
 #endif
 	SAIG_Dbg_Set(SkyXEngine_PrintfLog);
 	SAIG_SetFunc_QuadPhyNavigate(SkyXEngine_RFuncAIQuadPhyNavigate);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB aigrid initialized\n");
 
-
+#ifndef SX_SERVER
 	SLevel_0Create("sxlevel", false);
 	SLevel_Dbg_Set(SkyXEngine_PrintfLog);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB level initialized\n");
+#endif
 
 
 #ifndef SX_PARTICLES_EDITOR
@@ -339,13 +358,15 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB game initialized\n");
 
+#ifndef SX_SERVER
 	SRender_0Create("sxrender", hWnd3DCurr, hWndParent3D, false);
 	SRender_Dbg_Set(SkyXEngine_PrintfLog);
+#endif
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB render initialized\n");
 
 
-#ifndef SX_GAME
+#if !defined(SX_GAME) && !defined(SX_SERVER)
 	ICamera *pCamera = SGCore_CrCamera();
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 	pCamera->setFOV(*r_default_fov);
@@ -358,14 +379,13 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 #endif
 
 
-#if defined(SX_GAME)
 	Core_0ConsoleExecCmd("exec ../config_sys.cfg");
+#if defined(SX_GAME)
 	Core_0ConsoleExecCmd("exec ../config_game.cfg");
 	Core_0ConsoleExecCmd("exec ../config_game_user.cfg");
-#endif
-
-#if !defined(SX_GAME)
-	Core_0ConsoleExecCmd("exec ../config_sys.cfg");
+#elif defined(SX_SERVER)
+	Core_0ConsoleExecCmd("exec ../config_server.cfg");
+#else
 	Core_0ConsoleExecCmd("exec ../config_editor.cfg");
 #endif
 
@@ -423,8 +443,9 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 		Core_PEndSection(PERF_SECTION_PHYS_SYNC);
 	}, CORE_TASK_FLAG_ON_SYNC | CORE_TASK_FLAG_REPEATING);
 */
-
+#ifndef _SERVER
 	SXAnim_UpdateSetThreadNum(Core_MGetThreadCount());
+#endif
 
 #ifndef SX_PARTICLES_EDITOR
 	SGame_UpdateSetThreadNum(Core_MGetThreadCount());
@@ -504,6 +525,7 @@ void SkyXEngine_InitPaths()
 void SkyXEngine_CreateLoadCVar()
 {
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "CVar init ...\n");
+#ifndef SX_SERVER
 	Core_0RegisterCVarInt("r_win_width", 800, "Размер окна по горизонтали (в пикселях)");
 	Core_0RegisterCVarInt("r_win_height", 600, "Размер окна по вертикали (в пикселях)");
 	Core_0RegisterCVarBool("r_win_windowed", true, "Режим рендера true - оконный, false - полноэкранный");
@@ -512,7 +534,6 @@ void SkyXEngine_CreateLoadCVar()
 	Core_0RegisterCVarFloat("r_far", 800, "Дальняя плоскость отсечения (дальность видимости)");
 
 	Core_0RegisterCVarInt("r_final_image", DS_RT_SCENELIGHT, "Тип финального (выводимого в окно рендера) изображения из перечисления DS_RT");
-
 	Core_0RegisterCVarInt("r_resize", RENDER_RESIZE_NONE, "Тип изменения размеров окан рендера из перечисления RENDER_RESIZE");
 
 
@@ -557,7 +578,8 @@ void SkyXEngine_CreateLoadCVar()
 	Core_0RegisterCVarFloat("pp_contrast", 0.5, "Коэфициент контраста [0,1]");
 	Core_0RegisterCVarFloat("pp_gamma", 0.5, "Коэфициент гаммы [0,1]");
 	Core_0RegisterCVarFloat("pp_bright", 0, "Коэфициент освещенности (простая сумма с итоговым изображением) [0,1]");
-	
+#endif
+
 	Core_0RegisterCVarBool("g_time_run", true, "Запущено ли игрвоое время?");
 	Core_0RegisterCVarFloat("g_time_speed", 1.f, "Скорость/соотношение течения игрового времени");
 
@@ -571,9 +593,11 @@ void SkyXEngine_CreateLoadCVar()
 
 	Core_0RegisterCVarString("engine_version", SKYXENGINE_VERSION, "Текущая версия движка", FCVAR_READONLY);
 
+#ifndef SX_SERVER
 	Core_0RegisterConcmd("screenshot", SRender_SaveScreenShot);
 	Core_0RegisterConcmd("save_worktex", SRender_SaveWorkTex);
 	Core_0RegisterConcmd("shader_reload", SGCore_ShaderReloadAll);
+#endif
 
 #if defined(SX_GAME)
 	Core_0RegisterConcmd("change_mode_window", SRender_ChangeModeWindow);
@@ -681,6 +705,7 @@ HWND SkyXEngine_CreateWindow(const char *szName, const char *szCaption, int iWid
 
 static void FlushCommandBuffer()
 {
+#ifndef _SERVER
 	static IDirect3DDevice9 *pDXDevice = SGCore_GetDXDevice();
 
 	IDirect3DQuery9* pQuery;
@@ -690,6 +715,7 @@ static void FlushCommandBuffer()
 	pQuery->GetData(NULL, 0, D3DGETDATA_FLUSH);
 
 	pQuery->Release();
+#endif
 }
 
 
@@ -719,6 +745,7 @@ protected:
 
 void SkyXEngine_Frame(DWORD timeDelta)
 {
+#ifndef SX_SERVER
 	static IDirect3DDevice9 *pDXDevice = SGCore_GetDXDevice();
 	static float3 vCamPos, vCamDir;
 	static float4x4 mView, mProjLight;
@@ -731,7 +758,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
-
+#endif
 	static bool isSimulationRender = false;
 
 	static uint64_t DelayGeomSortGroup = 0;
@@ -761,13 +788,16 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	isSimulationRender = true;
 #endif
 
+#ifndef SX_SERVER
 	if (!pDXDevice)
 	{
 		SkyXEngine_PrintfLog(REPORT_MSG_LEVEL_ERROR, "SkyXEngine_Frame", "dxdevice not found ...");
 		return;
 	}
+#endif
 
 	int64_t ttime;
+#ifndef SX_SERVER
 	//потеряно ли устройство или произошло изменение размеров?
 	if (pDXDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET || *r_resize)
 	{
@@ -782,8 +812,9 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		}
 		return;
 	}
+#endif
 
-#if !defined(SX_GAME) //&& !defined(SX_MATERIAL_EDITOR)
+#if !defined(SX_GAME) && !defined(SX_SERVER) //&& !defined(SX_MATERIAL_EDITOR)
 #if defined(SX_MATERIAL_EDITOR)
 	if (SRender_EditorCameraGetMove())
 #endif
@@ -801,6 +832,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_PEndSection(PERF_SECTION_GAME_UPDATE);
 	DelayLibUpdateGame += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
+#ifndef SX_SERVER
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_WEATHER_UPDATE);
 	SLevel_WeatherUpdate();
@@ -810,9 +842,11 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SLevel_AmbientSndUpdate();
 	Core_PEndSection(PERF_SECTION_AMBIENT_SND_UPDATE);
 	DelayLibUpdateLevel += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+#endif
 
 #endif
 
+#ifndef SX_SERVER
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_ANIM_UPDATE);
 	CLibUpdate updateAnim(SXAnim_Update, PERF_SECTION_ANIM_UPDATE);
@@ -820,7 +854,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	//SXAnim_Update();
 	Core_PEndSection(PERF_SECTION_ANIM_UPDATE);
 	DelayLibUpdateAnim += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
-	
+#endif
 #ifndef SX_PARTICLES_EDITOR
 	Core_MWaitFor(idUpdateGame);
 #endif
@@ -832,14 +866,16 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	DelayLibUpdatePhysic += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 
-
+#ifndef SX_SERVER
 	Core_MWaitFor(idUpdateAnim);
+
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_ANIM_SYNC);
 	SXAnim_Sync();
 	Core_PEndSection(PERF_SECTION_ANIM_SYNC);
 	DelayLibSyncAnim += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+#endif
 
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_PHYS_SYNC);
@@ -856,6 +892,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	DelayLibSyncGame += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
 
+#ifndef SX_SERVER
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_MATSORT_UPDATE);
 	SGeom_SortTransparent(&vCamPos);
@@ -1195,6 +1232,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SPE_EffectComputeLightingAll();
 	Core_PEndSection(PERF_SECTION_VIS_PARTICLES);
 	DelayUpdateParticles += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
+#endif
 
 	Core_PStartSection(PERF_SECTION_AI_PATH);
 	SAIG_GridQueryFindPathUpdate(3);
@@ -1206,23 +1244,28 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	//Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
 	DelayPresent += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	
+#ifndef SX_SERVER
 	Core_PEndSection(PERF_SECTION_RENDER);
+#endif
 
 	Core_PStartSection(PERF_SECTION_CVAR_UPDATE);
 	SkyXEngind_UpdateDataCVar();
 	Core_PEndSection(PERF_SECTION_CVAR_UPDATE);
 
+#ifndef SX_SERVER
 	SGCore_OC_UpdateEnsureDone();
+#endif
 }
 
 void SkyXEngind_UpdateDataCVar()
 {
+#ifndef SX_SERVER
 	ID idGlobalLight = SLight_GetGlobal();
 	static const bool * r_pssm_4or3 = GET_PCVAR_BOOL("r_pssm_4or3");
 	static bool r_pssm_4or3_old = true;
 
 	//проверяем не изменилось ли значение квара, если изменилось то меняем и количество сплитов
-	if (r_pssm_4or3 && r_pssm_4or3_old != (*r_pssm_4or3) && idGlobalLight >= 0)
+	if(r_pssm_4or3 && r_pssm_4or3_old != (*r_pssm_4or3) && idGlobalLight >= 0)
 	{
 		r_pssm_4or3_old = (*r_pssm_4or3);
 		SLight_Set4Or3SplitsG(idGlobalLight, r_pssm_4or3_old);
@@ -1230,7 +1273,7 @@ void SkyXEngind_UpdateDataCVar()
 
 	static const bool * r_pssm_shadowed = GET_PCVAR_BOOL("r_pssm_shadowed");
 
-	if (r_pssm_shadowed && idGlobalLight >= 0)
+	if(r_pssm_shadowed && idGlobalLight >= 0)
 	{
 		SLight_SetTypeShadowed(idGlobalLight, ((*r_pssm_shadowed) ? LTYPE_SHADOW_DYNAMIC : LTYPE_SHADOW_NONE));
 	}
@@ -1238,15 +1281,15 @@ void SkyXEngind_UpdateDataCVar()
 	static const float * r_pssm_quality = GET_PCVAR_FLOAT("r_pssm_quality");
 	static float r_pssm_quality_old = 1;
 
-	if (r_pssm_quality && r_pssm_quality_old != (*r_pssm_quality))
+	if(r_pssm_quality && r_pssm_quality_old != (*r_pssm_quality))
 	{
 		r_pssm_quality_old = (*r_pssm_quality);
-		if (r_pssm_quality_old < 0.5f)
+		if(r_pssm_quality_old < 0.5f)
 		{
 			r_pssm_quality_old = 0.5f;
 			Core_0SetCVarFloat("r_pssm_quality", r_pssm_quality_old);
 		}
-		else if (r_pssm_quality_old > 4.f)
+		else if(r_pssm_quality_old > 4.f)
 		{
 			r_pssm_quality_old = 4.f;
 			Core_0SetCVarFloat("r_pssm_quality", r_pssm_quality_old);
@@ -1257,15 +1300,15 @@ void SkyXEngind_UpdateDataCVar()
 	static const float * r_lsm_quality = GET_PCVAR_FLOAT("r_lsm_quality");
 	static float r_lsm_quality_old = 1;
 
-	if (r_lsm_quality && r_lsm_quality_old != (*r_lsm_quality))
+	if(r_lsm_quality && r_lsm_quality_old != (*r_lsm_quality))
 	{
 		r_lsm_quality_old = (*r_lsm_quality);
-		if (r_lsm_quality_old < 0.5f)
+		if(r_lsm_quality_old < 0.5f)
 		{
 			r_lsm_quality_old = 0.5f;
 			Core_0SetCVarFloat("r_lsm_quality", r_lsm_quality_old);
 		}
-		else if (r_lsm_quality_old > 4.f)
+		else if(r_lsm_quality_old > 4.f)
 		{
 			r_lsm_quality_old = 4.f;
 			Core_0SetCVarFloat("r_lsm_quality", r_lsm_quality_old);
@@ -1276,15 +1319,15 @@ void SkyXEngind_UpdateDataCVar()
 	static const int * r_grass_freq = GET_PCVAR_INT("r_grass_freq");
 	static int r_grass_freq_old = 1;
 
-	if (r_grass_freq && r_grass_freq_old != (*r_grass_freq))
+	if(r_grass_freq && r_grass_freq_old != (*r_grass_freq))
 	{
 		r_grass_freq_old = (*r_grass_freq);
-		if (r_grass_freq_old <= 0)
+		if(r_grass_freq_old <= 0)
 		{
 			r_grass_freq_old = 1;
 			Core_0SetCVarInt("r_grass_freq", r_grass_freq_old);
 		}
-		else if (r_grass_freq_old > 100)
+		else if(r_grass_freq_old > 100)
 		{
 			r_grass_freq_old = 100;
 			Core_0SetCVarInt("r_grass_freq", r_grass_freq_old);
@@ -1295,15 +1338,15 @@ void SkyXEngind_UpdateDataCVar()
 	static const float * r_green_lod0 = GET_PCVAR_FLOAT("r_green_lod0");
 	static float r_green_lod0_old = 50;
 
-	if (r_green_lod0 && r_green_lod0_old != (*r_green_lod0))
+	if(r_green_lod0 && r_green_lod0_old != (*r_green_lod0))
 	{
 		r_green_lod0_old = (*r_green_lod0);
-		if (r_green_lod0_old <= 20)
+		if(r_green_lod0_old <= 20)
 		{
 			r_green_lod0_old = 20;
 			Core_0SetCVarFloat("r_green_lod0", r_green_lod0_old);
 		}
-		else if (r_green_lod0_old > 100)
+		else if(r_green_lod0_old > 100)
 		{
 			r_green_lod0_old = 100;
 			Core_0SetCVarFloat("r_green_lod0", r_green_lod0_old);
@@ -1314,15 +1357,15 @@ void SkyXEngind_UpdateDataCVar()
 	static const float * r_green_lod1 = GET_PCVAR_FLOAT("r_green_lod1");
 	static float r_green_lod1_old = 50;
 
-	if (r_green_lod1 && r_green_lod1_old != (*r_green_lod1))
+	if(r_green_lod1 && r_green_lod1_old != (*r_green_lod1))
 	{
 		r_green_lod1_old = (*r_green_lod1);
-		if (r_green_lod1_old <= 50)
+		if(r_green_lod1_old <= 50)
 		{
 			r_green_lod1_old = 50;
 			Core_0SetCVarFloat("r_green_lod1", r_green_lod1_old);
 		}
-		else if (r_green_lod1_old > 150)
+		else if(r_green_lod1_old > 150)
 		{
 			r_green_lod1_old = 150;
 			Core_0SetCVarFloat("r_green_lod1", r_green_lod1_old);
@@ -1333,15 +1376,15 @@ void SkyXEngind_UpdateDataCVar()
 	static const float * r_green_less = GET_PCVAR_FLOAT("r_green_less");
 	static float r_green_less_old = 10;
 
-	if (r_green_less && r_green_less_old != (*r_green_less))
+	if(r_green_less && r_green_less_old != (*r_green_less))
 	{
 		r_green_less_old = (*r_green_less);
-		if (r_green_less_old <= 10)
+		if(r_green_less_old <= 10)
 		{
 			r_green_less_old = 10;
 			Core_0SetCVarFloat("r_green_less", r_green_less_old);
 		}
-		else if (r_green_less_old > 90)
+		else if(r_green_less_old > 90)
 		{
 			r_green_less_old = 90;
 			Core_0SetCVarFloat("r_green_less", r_green_less_old);
@@ -1354,7 +1397,7 @@ void SkyXEngind_UpdateDataCVar()
 	static int * r_win_height = (int*)GET_PCVAR_INT("r_win_height");
 
 
-	if (r_win_width && r_win_height)
+	if(r_win_width && r_win_height)
 	{
 
 #ifdef SX_GAME
@@ -1373,14 +1416,14 @@ void SkyXEngind_UpdateDataCVar()
 				isValid = true;
 			else
 			{
-			for (int i = 0; i < iCountModes; ++i)
-			{
-				if (aModes[i].dmPelsWidth == (*r_win_width) && aModes[i].dmPelsHeight == (*r_win_height))
+				for (int i = 0; i < iCountModes; ++i)
 				{
-					isValid = true;
-					break;
+					if (aModes[i].dmPelsWidth == (*r_win_width) && aModes[i].dmPelsHeight == (*r_win_height))
+					{
+						isValid = true;
+						break;
+					}
 				}
-			}
 			}
 
 			if (isValid)
@@ -1413,7 +1456,7 @@ void SkyXEngind_UpdateDataCVar()
 			}
 		}
 
-		
+
 
 		if (r_win_windowed)
 		{
@@ -1438,7 +1481,8 @@ void SkyXEngind_UpdateDataCVar()
 	{
 		old_snd_main_volume = *snd_main_volume;
 		SSCore_SetMainVolume(*snd_main_volume);
-}
+	}
+#endif
 }
 
 //#############################################################################
@@ -1484,10 +1528,12 @@ bool SkyXEngine_CycleMainIteration()
 	{
 		Core_PStartSection(PERF_SECTION_PREFRAME);
 
+#ifndef SX_SERVER
 		Core_PStartSection(PERF_SECTION_PF_W);
 		SGCore_ShaderAllLoad();
 		SGCore_LoadTexAllLoad();
 		Core_PEndSection(PERF_SECTION_PF_W);
+#endif
 
 		/*if (SSInput_GetKeyState(SIK_BACKSPACE))
 		SSCore_ChannelPlay(SX_SOUND_CHANNEL_GAME);
@@ -1513,6 +1559,7 @@ bool SkyXEngine_CycleMainIteration()
 		Core_0ConsoleUpdate();
 		Core_PEndSection(PERF_SECTION_PF_X);
 
+#ifndef SX_SERVER
 		Core_PStartSection(PERF_SECTION_PF_Y);
 		SSInput_Update();
 		Core_PEndSection(PERF_SECTION_PF_Y);
@@ -1523,6 +1570,7 @@ bool SkyXEngine_CycleMainIteration()
 		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_DIRECTION, &vCamDir);
 		SSCore_Update(&vCamPos, &vCamDir);
 		Core_PEndSection(PERF_SECTION_PF_Z);
+#endif
 
 		static DWORD lastTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		DWORD currTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
@@ -1553,13 +1601,17 @@ bool SkyXEngine_CycleMainIteration()
 
 		Core_PEndSection(PERF_SECTION_PREFRAME);
 
+#ifndef SX_SERVER
 		if(Core_TimeWorkingGet(Core_RIntGet(G_RI_INT_TIMER_RENDER)) &&
 			(GetForegroundWindow() == SRender_GetHandleWin3D() || GetForegroundWindow() == (HWND)SRender_GetParentHandleWin3D() || GetForegroundWindow() == FindWindow(NULL, "sxconsole"))
 			)
 		{
+#endif
 			SkyXEngine_Frame(timeDelta);
+#ifndef SX_SERVER
 		}
-#ifndef SX_GAME
+#endif
+#if !defined(SX_GAME) && !defined(SX_SERVER)
 		else
 		{
 			Sleep(10);
@@ -1569,7 +1621,11 @@ bool SkyXEngine_CycleMainIteration()
 		lastTime = currTime;
 	}
 
-	return(msg.message != WM_QUIT && IsWindow(SRender_GetHandleWin3D()));
+	return(msg.message != WM_QUIT 
+#ifndef SX_SERVER
+		&& IsWindow(SRender_GetHandleWin3D())
+#endif
+		);
 }
 
 //#############################################################################
@@ -1579,15 +1635,19 @@ void SkyXEngine_Kill()
 #if !defined(SX_PARTICLES_EDITOR)
 	SGame_AKill();
 #endif
+#ifndef SX_SERVER
 	SPE_AKill();
 	SXDecals_AKill();
+#endif
 	SPhysics_AKill();
+#ifndef _SERVER
 	SXAnim_AKill();
 
 	SGeom_AKill();
 	SLight_AKill();
 	SSCore_AKill();
 	SGCore_AKill();
+#endif
 	Core_AKill();
 
 	mem_delete(g_pPreviewBuffer);
@@ -1696,6 +1756,7 @@ void SkyXEngine_RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min_ve
 
 void SkyXEngine_RFuncMtlSet(ID id, const float4x4 *pWorld, const float4 *pColor)
 {
+#ifndef SX_SERVER
 	switch (Core_RIntGet(G_RI_INT_RENDERSTATE))
 	{
 	case RENDER_STATE_SHADOW:
@@ -1714,6 +1775,7 @@ void SkyXEngine_RFuncMtlSet(ID id, const float4x4 *pWorld, const float4 *pColor)
 		SMtrl_MtlRender(id, pWorld, pColor);
 		break;
 	}
+#endif
 }
 
 ID SkyXEngine_RFuncMtlLoad(const char* name, int mtl_type)

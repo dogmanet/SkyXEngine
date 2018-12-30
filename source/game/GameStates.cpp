@@ -92,3 +92,20 @@ void CEditorState::deactivate()
 	SSInput_SetEnable(false);
 }
 
+
+//##########################################################################
+
+void CServerState::activate()
+{
+	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
+	Core_TimeWorkingSet(idTimerRender, true);
+	SPhysics_EnableSimulation();
+}
+
+void CServerState::deactivate()
+{
+	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
+	Core_TimeWorkingSet(idTimerRender, false);
+	SPhysics_DisableSimulation();
+}
+

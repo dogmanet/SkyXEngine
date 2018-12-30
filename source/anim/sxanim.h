@@ -41,7 +41,7 @@ See the license in LICENSE
 #endif
 
 #ifdef _SERVER
-#	define IDirect3DDevice9 void
+//#	define IDirect3DDevice9 void
 #else
 #	define D3D_DEBUG_INFO
 #	include <d3d9.h>

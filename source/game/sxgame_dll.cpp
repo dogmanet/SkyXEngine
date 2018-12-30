@@ -121,7 +121,10 @@ SX_LIB_API void SGame_0Create(HWND hWnd, bool isGame)
 	g_pGameData = new GameData(hWnd, isGame);
 
 	//g_pPlayer->spawn();
-	DX_CALL(D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &g_pFigureBox, 0));
+	if(hWnd)
+	{
+		DX_CALL(D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &g_pFigureBox, 0));
+	}
 
 	Core_0RegisterConcmd("add_corner", ccmd_cam_pt);
 	Core_0RegisterConcmdArg("ent_save", ccmd_save_as);

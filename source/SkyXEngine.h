@@ -338,12 +338,14 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #endif
 #include <score/sxscore.h>
 
+#ifndef _SERVER
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
 #else
 #pragma comment(lib, "sxgcore.lib")
 #endif
 #include <gcore/sxgcore.h>
+#endif
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgeom_d.lib")
@@ -352,12 +354,14 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #endif
 #include <geom/sxgeom.h>
 
+#ifndef _SERVER
 #if defined(_DEBUG)
 #pragma comment(lib, "sxlight_d.lib")
 #else
 #pragma comment(lib, "sxlight.lib")
 #endif
 #include <light/sxlight.h>
+#endif
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxmtrl_d.lib")
@@ -366,19 +370,23 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #endif
 #include <mtrl/sxmtrl.h>
 
+#ifndef _SERVER
 #if defined(_DEBUG)
 #pragma comment(lib, "sxparticles_d.lib")
 #else
 #pragma comment(lib, "sxparticles.lib")
 #endif
 #include <particles/sxparticles.h>
+#endif
 
+#ifndef _SERVER
 #if defined(_DEBUG)
 #pragma comment(lib, "sxpp_d.lib")
 #else
 #pragma comment(lib, "sxpp.lib")
 #endif
 #include <pp/sxpp.h>
+#endif
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxanim_d.lib")
@@ -401,12 +409,14 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #endif
 #include <aigrid/sxaigrid.h>
 
+#ifndef _SERVER
 #if defined(_DEBUG)
 #pragma comment(lib, "sxdecals_d.lib")
 #else
 #pragma comment(lib, "sxdecals.lib")
 #endif
 #include <decals/sxdecals.h>
+#endif
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxlevel_d.lib")
@@ -431,12 +441,14 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <sxguiwinapi/sxgui.h>
 #endif
 
+#ifndef _SERVER
 #if defined(_DEBUG)
 #pragma comment(lib, "sxrender_d.lib")
 #else
 #pragma comment(lib, "sxrender.lib")
 #endif
 #include <render/sxrender.h>
+#endif
 
 //}
 
@@ -444,6 +456,10 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 
 #if defined(SX_GAME)
 #include <SkyXEngine_Build/resource.h>
+#endif
+
+#ifdef SX_SERVER
+#include <sxserver/resource.h>
 #endif
 
 #if defined(SX_LEVEL_EDITOR)
