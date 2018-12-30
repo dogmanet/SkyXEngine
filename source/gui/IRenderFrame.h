@@ -272,8 +272,8 @@ namespace gui
 				int m_iScrollSpeedX;
 				int m_iScrollSpeedY;
 
-				bool m_bBackgroundRepeatX;
-				bool m_bBackgroundRepeatY;
+				bool m_bBackgroundRepeatX = true;
+				bool m_bBackgroundRepeatY = true;
 
 				bool m_bBackgroundScrolling;
 				bool m_bBackgroundFixed;
