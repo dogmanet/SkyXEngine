@@ -209,7 +209,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	level_editor::InitAllElements();
 
-	SkyXEngine_Init(level_editor::pRenderWindow->getHWND(), level_editor::pJobWindow->getHWND());
+	SkyXEngine_Init(level_editor::pRenderWindow->getHWND(), level_editor::pJobWindow->getHWND(), lpCmdLine);
 
 	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
 	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");

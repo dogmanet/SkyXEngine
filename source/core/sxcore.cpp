@@ -555,11 +555,33 @@ void Core_0LoadCommandLine(const char *szCommandLine)
 	{
 		if(argv[i][0] == L'-') ///< startup param
 		{
+			if(key)
+			{
+				if(isCvar)
+				{
+					g_aConsoleLine.push_back(String(StringW(key)));
+				}
+				else
+				{
+					g_mCommandLine[String(StringW(key))] = "";
+				}
+			}
 			key = &argv[i][1];
 			isCvar = false;
 		}
 		else if(argv[i][0] == L'+') ///< cvar param (or cmd)
 		{
+			if(key)
+			{
+				if(isCvar)
+				{
+					g_aConsoleLine.push_back(String(StringW(key)));
+				}
+				else
+				{
+					g_mCommandLine[String(StringW(key))] = "";
+				}
+			}
 			key = &argv[i][1];
 			isCvar = true;
 		}
@@ -575,6 +597,17 @@ void Core_0LoadCommandLine(const char *szCommandLine)
 			}
 			//store val
 			key = NULL;
+		}
+	}
+	if(key != NULL) ///< arg
+	{
+		if(isCvar)
+		{
+			g_aConsoleLine.push_back(String(StringW(key)));
+		}
+		else
+		{
+			g_mCommandLine[String(StringW(key))] = "";
 		}
 	}
 }

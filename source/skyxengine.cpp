@@ -1559,6 +1559,12 @@ bool SkyXEngine_CycleMainIteration()
 		{
 			SkyXEngine_Frame(timeDelta);
 		}
+#ifndef SX_GAME
+		else
+		{
+			Sleep(10);
+		}
+#endif
 
 		lastTime = currTime;
 	}
