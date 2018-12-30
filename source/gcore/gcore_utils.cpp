@@ -18,6 +18,7 @@ void InitDevice(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFla
 
 	D3DCAPS9 caps;
 	g_pD3D9->GetDeviceCaps(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &caps);
+	
 
 	memset(&g_oD3DAPP, 0, sizeof(g_oD3DAPP));
 	g_oD3DAPP.BackBufferWidth = iWidth;
@@ -40,6 +41,7 @@ void InitDevice(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFla
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed initialized d3d", GEN_MSG_LOCATION);
 		return;
 	}
+	g_pDXDevice->GetDeviceCaps(&g_dxCaps);
 }
 
 void InitFPStext()

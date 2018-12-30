@@ -32,6 +32,7 @@ report_func g_fnReportf = DefReport;
 
 
 IDirect3DDevice9 *g_pDXDevice = 0;
+D3DCAPS9 g_dxCaps;
 D3DPRESENT_PARAMETERS g_oD3DAPP;
 IDirect3D9 *g_pD3D9 = 0;
 ID3DXFont *g_pFPStext = 0;
@@ -880,9 +881,65 @@ SX_LIB_API void SGCore_SetSamplerFilter(DWORD id, DWORD value)
 {
 	SG_PRECOND(_VOID);
 
-	g_pDXDevice->SetSamplerState(id, D3DSAMP_MAGFILTER, value);
-	g_pDXDevice->SetSamplerState(id, D3DSAMP_MINFILTER, value);
-	g_pDXDevice->SetSamplerState(id, D3DSAMP_MIPFILTER, value);
+	DWORD dwMagFilter = value;
+	DWORD dwMinFilter = value;
+	DWORD dwMipFilter = value;
+	switch(value)
+	{
+	case D3DTEXF_ANISOTROPIC:
+		if(!(g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC))
+		{
+			if((g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFLINEAR))
+			{
+				dwMagFilter = D3DTEXF_LINEAR;
+			}
+			else
+			{
+				dwMagFilter = D3DTEXF_POINT;
+			}
+		}
+		if(!(g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFANISOTROPIC))
+		{
+			if((g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR))
+			{
+				dwMinFilter = D3DTEXF_LINEAR;
+			}
+			else
+			{
+				dwMinFilter = D3DTEXF_POINT;
+			}
+		}
+		if((g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MIPFLINEAR))
+		{
+			dwMipFilter = D3DTEXF_LINEAR;
+		}
+		else
+		{
+			dwMipFilter = D3DTEXF_POINT;
+		}
+		break;
+	case D3DTEXF_LINEAR:
+		if(!(g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFLINEAR))
+		{
+			dwMagFilter = D3DTEXF_POINT;
+		}
+		if(!(g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR))
+		{
+			dwMinFilter = D3DTEXF_POINT;
+		}
+		if(!(g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MIPFLINEAR))
+		{
+			dwMipFilter = D3DTEXF_POINT;
+		}
+		break;
+	case D3DTEXF_NONE:
+		dwMagFilter = D3DTEXF_POINT;
+		dwMinFilter = D3DTEXF_POINT;
+		break;
+	}
+	DX_CALL(g_pDXDevice->SetSamplerState(id, D3DSAMP_MAGFILTER, dwMagFilter));
+	DX_CALL(g_pDXDevice->SetSamplerState(id, D3DSAMP_MINFILTER, dwMinFilter));
+	DX_CALL(g_pDXDevice->SetSamplerState(id, D3DSAMP_MIPFILTER, dwMipFilter));
 }
 
 SX_LIB_API void SGCore_SetSamplerFilter2(DWORD begin_id, DWORD end_id, DWORD value)

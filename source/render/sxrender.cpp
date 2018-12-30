@@ -51,6 +51,7 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 		gdata::hHandleParent3D = hWndParent3D;
 
 		gdata::pDXDevice = SGCore_GetDXDevice();
+		gdata::pDXDevice->GetDeviceCaps(&gdata::dxDeviceCaps);
 
 		gdata::pCamera = SGCore_CrCamera();
 		gdata::pCamera->setFOV(gdata::fProjFov);

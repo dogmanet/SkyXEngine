@@ -8,23 +8,79 @@ See the license in LICENSE
 
 inline void rfunc::SetSamplerFilter(DWORD dwId, DWORD dwValue)
 {
-	gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_MAGFILTER, dwValue);
-	gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_MINFILTER, dwValue);
-	gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_MIPFILTER, dwValue);
+	DWORD dwMagFilter = dwValue;
+	DWORD dwMinFilter = dwValue;
+	DWORD dwMipFilter = dwValue;
+	switch(dwValue)
+	{
+	case D3DTEXF_ANISOTROPIC:
+		if(!(gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC))
+		{
+			if((gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFLINEAR))
+			{
+				dwMagFilter = D3DTEXF_LINEAR;
+			}
+			else
+			{
+				dwMagFilter = D3DTEXF_POINT;
+			}
+		}
+		if(!(gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFANISOTROPIC))
+		{
+			if((gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR))
+			{
+				dwMinFilter = D3DTEXF_LINEAR;
+			}
+			else
+			{
+				dwMinFilter = D3DTEXF_POINT;
+			}
+		}
+		if((gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MIPFLINEAR))
+		{
+			dwMipFilter = D3DTEXF_LINEAR;
+		}
+		else
+		{
+			dwMipFilter = D3DTEXF_POINT;
+		}
+		break;
+	case D3DTEXF_LINEAR:
+		if(!(gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFLINEAR))
+		{
+			dwMagFilter = D3DTEXF_POINT;
+		}
+		if(!(gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR))
+		{
+			dwMinFilter = D3DTEXF_POINT;
+		}
+		if(!(gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MIPFLINEAR))
+		{
+			dwMipFilter = D3DTEXF_POINT;
+		}
+		break;
+	case D3DTEXF_NONE:
+		dwMagFilter = D3DTEXF_POINT;
+		dwMinFilter = D3DTEXF_POINT;
+		break;
+	}
+	DX_CALL(gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_MAGFILTER, dwMagFilter));
+	DX_CALL(gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_MINFILTER, dwMinFilter));
+	DX_CALL(gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_MIPFILTER, dwMipFilter));
 }
 
 inline void rfunc::SetSamplerAddress(DWORD dwId, DWORD dwValue)
 {
-	gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_ADDRESSU, dwValue);
-	gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_ADDRESSV, dwValue);
-	gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_ADDRESSW, dwValue);
+	DX_CALL(gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_ADDRESSU, dwValue));
+	DX_CALL(gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_ADDRESSV, dwValue));
+	DX_CALL(gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_ADDRESSW, dwValue));
 }
 
 inline void rfunc::SetSamplerFilter(DWORD dwStartId, DWORD dwFinishEnd, DWORD dwValue)
 {
 	if (dwStartId >= 0 && dwFinishEnd <= 16)
 	{
-		for (DWORD i = dwStartId; i <= dwFinishEnd; ++i)
+		for (DWORD i = dwStartId; i < dwFinishEnd; ++i)
 			rfunc::SetSamplerFilter(i, dwValue);
 	}
 }
@@ -33,7 +89,7 @@ inline void rfunc::SetSamplerAddress(DWORD dwStartId, DWORD dwFinishEnd, DWORD d
 {
 	if (dwStartId >= 0 && dwFinishEnd <= 16)
 	{
-		for (DWORD i = dwStartId; i <= dwFinishEnd; ++i)
+		for (DWORD i = dwStartId; i < dwFinishEnd; ++i)
 			rfunc::SetSamplerAddress(i, dwValue);
 	}
 }
@@ -701,8 +757,8 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 	gdata::pDXDevice->SetRenderTarget(3, 0);
 
 	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+	rfunc::SetSamplerFilter(0, D3DTEXF_NONE);
+	rfunc::SetSamplerAddress(0, D3DTADDRESS_CLAMP);
 	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
@@ -1157,7 +1213,7 @@ void rfunc::ComLighting(DWORD timeDelta)
 				//генерация теней для текущего света
 				//{{
 				//так как нам нужно провести очистку рт то убираем оба рт
-				gdata::pDXDevice->SetRenderTarget(0, 0);
+				gdata::pDXDevice->SetRenderTarget(0, pBackBuf);
 				gdata::pDXDevice->SetRenderTarget(1, 0);
 
 				//отключаем смешивание, нам не нужен хлам в рт
@@ -1354,8 +1410,8 @@ void rfunc::UnionLayers()
 
 		SGCore_ScreenQuadDraw();
 
-		gdata::pDXDevice->SetRenderTarget(1, 0);
-		gdata::pDXDevice->SetRenderTarget(2, 0);
+		DX_CALL(gdata::pDXDevice->SetRenderTarget(1, 0));
+		DX_CALL(gdata::pDXDevice->SetRenderTarget(2, 0));
 		mem_release(pColorSurf);
 		mem_release(pDepthSurf);
 		mem_release(pColor2Surf);
@@ -1378,7 +1434,7 @@ void rfunc::UnionLayers()
 
 		SGCore_ScreenQuadDraw();
 
-		gdata::pDXDevice->SetRenderTarget(0, 0);
+		DX_CALL(gdata::pDXDevice->SetRenderTarget(0, pBackBuf));
 		mem_release(pDepthSurf1);
 	}
 
@@ -1539,8 +1595,8 @@ void rfunc::ShaderRegisterData()
 {
 	static float4_t aNull[256];
 	memset(aNull, 0, sizeof(float4_t)* 256);
-	gdata::pDXDevice->SetVertexShaderConstantF(0, (float*)&aNull, 256);
-	gdata::pDXDevice->SetPixelShaderConstantF(0, (float*)&aNull, 256);
+	DX_CALL(gdata::pDXDevice->SetVertexShaderConstantF(0, (float*)&aNull, 256));
+	DX_CALL(gdata::pDXDevice->SetPixelShaderConstantF(0, (float*)&aNull, 32));
 }
 
 

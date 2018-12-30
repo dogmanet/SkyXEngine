@@ -31,6 +31,7 @@ See the license in LICENSE
 #define GEOM_COPY_POSTFIX "-copy"
 
 extern IDirect3DDevice9 *g_pDXDevice;
+extern D3DCAPS9 g_dxCaps;
 
 //##########################################################################
 

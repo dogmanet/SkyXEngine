@@ -9,6 +9,7 @@ See the license in LICENSE
 namespace gdata
 {
 	IDirect3DDevice9 *pDXDevice = 0;
+	D3DCAPS9 dxDeviceCaps;
 
 	HWND hHandleParent3D = 0;
 	HWND hHandle3D = 0;	

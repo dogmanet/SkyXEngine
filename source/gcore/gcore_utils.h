@@ -18,6 +18,7 @@ See the license in LICENSE
 //##########################################################################
 
 extern IDirect3DDevice9 *g_pDXDevice;
+extern D3DCAPS9 g_dxCaps;
 extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 extern IDirect3D9 *g_pD3D9;
 extern ID3DXFont *g_pFPStext;

@@ -221,7 +221,7 @@ namespace gui
 				{
 					float3_t Pos;
 					float2_t Tex;
-					DWORD color;
+					//DWORD color;
 				};
 
 				bool m_bFreezed;

@@ -68,7 +68,7 @@ CSimulationModel::CSimulationModel()
 	m_oGreen.m_vSinCosRot.y = cosf(m_oGreen.m_vTexCoord.y);
 
 	CGreenDataVertex* RTGPUArrVerteces = 0;
-	m_pTransVertBufGreen->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
+	m_pTransVertBufGreen->Lock(0, 0, (void**)&RTGPUArrVerteces, 0);
 	memcpy(RTGPUArrVerteces, &m_oGreen, sizeof(CGreenDataVertex));
 	m_pTransVertBufGreen->Unlock();
 }

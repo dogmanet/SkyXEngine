@@ -79,7 +79,7 @@ namespace gui
 		{
 			float3_t Pos;
 			float2_t Tex;
-			DWORD color;
+			//DWORD color;
 		};
 
 		struct char_rects

@@ -1298,11 +1298,12 @@ namespace gui
 				{
 					
 				}
-				GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILREF, lvl);
-				GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
+				DX_CALL(GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILREF, lvl));
+				DX_CALL(GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1));
 				DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&m_pBackgroundColor, 1));
 
-				GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC);
+				SGCore_SetSamplerFilter(0, D3DTEXF_ANISOTROPIC);
+				//DX_CALL(GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC));
 
 				CTranslationManager::pushMatrix(SMMatrixTranslation(getInnerLeft(), getInnerTop(), 0.0f));
 				if(m_bHasBackground && m_iTCBackground > 0)
@@ -1694,13 +1695,19 @@ namespace gui
 
 				if(m_pNode->getStyle()->visibility->getInt() != css::ICSSproperty::VISIBILITY_HIDDEN)
 				{
-					
+
 					struct point
 					{
 						float x;
 						float y;
 						float z;
 						DWORD rc;
+					};
+					struct point2
+					{
+						float x;
+						float y;
+						float z;
 					};
 					point a[6] = {
 						{0, 0, 0, rc},
@@ -1709,6 +1716,14 @@ namespace gui
 						{0, (float)(m_iHeight), 0, rc},
 						{m_iWidth, 0, 0, rc},
 						{m_iWidth, (float)(m_iHeight), 0, rc}
+					};
+					point2 apdx8[6] = {
+						{0, 0, 0},
+						{m_iWidth, 0, 0},
+						{0, (float)(m_iHeight), 0},
+						{0, (float)(m_iHeight), 0},
+						{m_iWidth, 0, 0},
+						{m_iWidth, (float)(m_iHeight), 0}
 					};
 					
 
@@ -1766,7 +1781,8 @@ namespace gui
 					{
 						GetGUI()->getDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
 						GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_DECR);
-						DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
+						GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ);
+						DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &apdx8, sizeof(point2)));
 						GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
 						GetGUI()->getDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, 0x0F);
 						if(lvl == 0)
@@ -2731,18 +2747,15 @@ namespace gui
 						float x;
 						float y;
 						float z;
-						DWORD rc;
 					};
 
-					DWORD rc = 0xFF00FF00;
-
 					point a[6] = {
-						{0, 0, 0, rc},
-						{1.0f, 0, 0, rc},
-						{0, (float)(iTextSize), 0, rc},
-						{0, (float)(iTextSize), 0, rc},
-						{1.0f, 0, 0, rc},
-						{1.0f, (float)(iTextSize), 0, rc}
+						{0, 0, 0},
+						{1.0f, 0, 0},
+						{0, (float)(iTextSize), 0},
+						{0, (float)(iTextSize), 0},
+						{1.0f, 0, 0},
+						{1.0f, (float)(iTextSize), 0}
 					};
 
 					/*m_iCaretPos = 40;*/
@@ -2778,6 +2791,7 @@ namespace gui
 					color.w = op;
 					DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&color, 1));
 					CTranslationManager::pushMatrix(SMMatrixTranslation(_x - 1.0f, _y, 0.0f));
+					DX_CALL(GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ));
 					DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
 					CTranslationManager::popMatrix();
 
@@ -2906,18 +2920,16 @@ namespace gui
 						float x;
 						float y;
 						float z;
-						DWORD rc;
 					};
 
-					DWORD rc = 0xFF00FF00;
 
 					point a[6] = {
-						{0, 0, 0, rc},
-						{1.0f, 0, 0, rc},
-						{0, (float)(iTextSize), 0, rc},
-						{0, (float)(iTextSize), 0, rc},
-						{1.0f, 0, 0, rc},
-						{1.0f, (float)(iTextSize), 0, rc}
+						{0, 0, 0},
+						{1.0f, 0, 0},
+						{0, (float)(iTextSize), 0},
+						{0, (float)(iTextSize), 0},
+						{1.0f, 0, 0},
+						{1.0f, (float)(iTextSize), 0}
 					};
 
 					UINT selStart = min(m_iSelectionEnd, m_iSelectionStart);
@@ -2929,6 +2941,7 @@ namespace gui
 					}
 
 					DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&color, 1));
+					DX_CALL(GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ));
 
 					for(UINT i = selStart; i < selEnd; i++)
 					{
@@ -2946,7 +2959,7 @@ namespace gui
 						a[4].y = a[0].y;
 						a[5].y = a[2].y;
 
-						GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point));
+						DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
 					}
 				}
 			}

@@ -15,6 +15,7 @@ See the license in LICENSE
 #include "sxgcore.h"
 
 extern IDirect3DDevice9 *g_pDXDevice;
+extern D3DCAPS9 g_dxCaps;
 extern D3DPRESENT_PARAMETERS D3DAPP;
 extern IDirect3DVertexDeclaration9 *g_pStaticVertexDecl;
 

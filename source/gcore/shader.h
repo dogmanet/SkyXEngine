@@ -20,6 +20,7 @@ See the license in LICENSE
 #include "sxgcore.h"
 
 extern IDirect3DDevice9 *g_pDXDevice;
+extern D3DCAPS9 g_dxCaps;
 extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 
 //! используется ли в данный момент кэш шейдеров?

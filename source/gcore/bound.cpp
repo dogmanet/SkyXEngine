@@ -73,11 +73,11 @@ void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh 
 
 	D3DXCreateMeshFVF(iIC / 3, iVC, D3DXMESH_32BIT | D3DXMESH_MANAGED, D3DFVF_XYZ, pDevice, ppMesh);
 	VOID * pData;
-	(*ppMesh)->LockVertexBuffer(D3DLOCK_DISCARD, &pData);
+	(*ppMesh)->LockVertexBuffer(0, &pData);
 	memcpy(pData, pVertices, sizeof(float3_t) * iVC);
 	(*ppMesh)->UnlockVertexBuffer();
 
-	(*ppMesh)->LockIndexBuffer(D3DLOCK_DISCARD, &pData);
+	(*ppMesh)->LockIndexBuffer(0, &pData);
 	memcpy(pData, pIndices, sizeof(UINT) * iIC);
 	(*ppMesh)->UnlockIndexBuffer();
 	
