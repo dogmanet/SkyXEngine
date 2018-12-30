@@ -221,7 +221,7 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 			return;
 
 		CPathCorner * pCur = pStartPoint;
-		while ((pCur = pCur->GetPrev()))
+		while ((pCur = pCur->getPrev()))
 		{
 			pStartPoint = pCur;
 		}
@@ -231,7 +231,7 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 		pCur = pStartPoint;
 		do
 		{
-			len += pCur->GetLength();
+			len += pCur->getLength();
 			++count;
 			SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixScaling(vBoxSize) * pEnt->getOrient().GetMatrix() * SMMatrixTranslation(pCur->getPos())));
 
@@ -241,7 +241,7 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 				SGCore_GetDXDevice()->SetTexture(0, 0);
 
 			g_pFigureBox->DrawSubset(0);
-		} while ((pCur = pCur->GetNext()));
+		} while ((pCur = pCur->getNext()));
 
 
 		int npoints = count * 10;

@@ -12,10 +12,10 @@ See the license in LICENSE
 
 BEGIN_PROPTABLE(CPathCorner)
 	//! Тип сглаживания пути
-	DEFINE_FIELD_INT(m_type, 0, "type", "Type", EDITOR_COMBOBOX)
-		COMBO_OPTION("Corner", "0") //!< Нет сглаживания
-		COMBO_OPTION("Spline", "1") //!< Сплайном
-	EDITOR_COMBO_END()
+	//DEFINE_FIELD_INT(m_type, 0, "type", "Type", EDITOR_COMBOBOX)
+	//	COMBO_OPTION("Corner", "0") //!< Нет сглаживания
+	//	COMBO_OPTION("Spline", "1") //!< Сплайном
+	//EDITOR_COMBO_END()
 
 	//! Новая скорость для поезда
 	DEFINE_FIELD_FLOAT(m_fNewSpeed, 0, "speed", "New speed", EDITOR_TEXTFIELD)
@@ -29,7 +29,7 @@ REGISTER_ENTITY(CPathCorner, path_corner);
 
 CPathCorner::CPathCorner(CEntityManager * pMgr):
 	BaseClass(pMgr),
-	m_type(PCT_CORNER),
+	m_type(PCT_SPLINE),
 	m_fNewSpeed(0.0f),
 	m_pNextStop(NULL),
 	m_pPrevStop(NULL),
@@ -37,13 +37,39 @@ CPathCorner::CPathCorner(CEntityManager * pMgr):
 {
 }
 
+CPathCorner::~CPathCorner()
+{
+	setNextPoint(NULL);
+	if(m_pPrevStop)
+	{
+		m_pPrevStop->setNextPoint(NULL);
+	}
+}
+
 void CPathCorner::setNextPoint(CBaseEntity *pEnt)
 {
+	CPathCorner *pCur = (CPathCorner*)pEnt;
+	while(pCur && pCur != this)
+	{
+		pCur = pCur->m_pNextStop;
+	}
+	if(pCur == this)
+	{
+		printf(COLOR_LRED "path_corner cycle detected! ent: '%s'" COLOR_RESET "\n", getName());
+		return;
+	}
+
+	if(m_pNextStop)
+	{
+		m_pNextStop->m_pPrevStop = NULL;
+		m_pNextStop->recalcPath(0);
+	}
 	m_pNextStop = (CPathCorner*)pEnt;
 	if(m_pNextStop)
 	{
 		m_pNextStop->m_pPrevStop = this;
 	}
+	recalcPath(0);
 }
 
 void CPathCorner::onPostLoad()
@@ -57,11 +83,11 @@ void CPathCorner::onPostLoad()
 
 	if(!m_pPrevStop)
 	{
-		SET_TIMEOUT(RecalcPath, 0);
+		SET_TIMEOUT(recalcPath, 0);
 	}
 }
 
-void CPathCorner::RecalcPath(float t)
+void CPathCorner::recalcPath(float t)
 {
 	CPathCorner * pNext;
 	CPathCorner * pCur = this;
@@ -71,7 +97,7 @@ void CPathCorner::RecalcPath(float t)
 		{
 			pCur = pCur->m_pPrevStop;
 		}
-		pCur->RecalcPath(t);
+		pCur->recalcPath(t);
 		return;
 	}
 
@@ -151,7 +177,7 @@ void CPathCorner::RecalcPath(float t)
 	int a = 0;
 }
 
-float CPathCorner::GetLength()
+float CPathCorner::getLength()
 {
 	return(m_fLength);
 }
@@ -218,12 +244,12 @@ SMQuaternion CPathCorner::getRot(float dist)
 	}
 }
 
-CPathCorner * CPathCorner::GetNext()
+CPathCorner * CPathCorner::getNext()
 {
 	return(m_pNextStop);
 }
 
-CPathCorner * CPathCorner::GetPrev()
+CPathCorner * CPathCorner::getPrev()
 {
 	return(m_pPrevStop);
 }
@@ -232,5 +258,10 @@ void CPathCorner::setPos(const float3 & pos)
 {
 	CBaseEntity::setPos(pos);
 
-	RecalcPath(0);
+	recalcPath(0);
+}
+
+float CPathCorner::getNewSpeed()
+{
+	return(m_fNewSpeed);
 }
