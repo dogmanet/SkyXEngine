@@ -85,7 +85,7 @@ public:
 	void updateFlags();
 
 protected:
-	ID m_idLight;
+	ID m_idLight = -1;
 
 	float3_t m_vColor;
 	float m_fDist;

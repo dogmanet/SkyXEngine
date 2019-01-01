@@ -34,9 +34,12 @@ SX_LIB_API void SGeom_Dbg_Set(report_func rf)
 	g_fnReportf = rf;
 }
 
-SX_LIB_API void SGeom_0Create(const char *szName, bool isUnic)
+SX_LIB_API void SGeom_0Create(const char *szName, bool isUnic, bool isServerMode)
 {
-	g_pDXDevice = SGCore_GetDXDevice();
+	if(!isServerMode)
+	{
+		g_pDXDevice = SGCore_GetDXDevice();
+	}
 
 	if (szName && strlen(szName) > 1)
 	{
@@ -47,16 +50,10 @@ SX_LIB_API void SGeom_0Create(const char *szName, bool isUnic)
 			{
 				CloseHandle(hMutex);
 				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
-			}
-			else
-			{
-				g_pModels = new CModels();
+				return;
 			}
 		}
-		else
-		{
-			g_pModels = new CModels();
-		}
+		g_pModels = new CModels(isServerMode);
 	}
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
@@ -65,6 +62,20 @@ SX_LIB_API void SGeom_0Create(const char *szName, bool isUnic)
 SX_LIB_API void SGeom_AKill()
 {
 	mem_delete(g_pModels);
+}
+
+SX_LIB_API void SGeom_OnLostDevice()
+{
+	GEOM_PRECOND(_VOID);
+
+	g_pModels->onLostDevice();
+}
+
+SX_LIB_API void SGeom_OnResetDevice()
+{
+	GEOM_PRECOND(_VOID);
+
+	g_pModels->onResetDevice();
 }
 
 //##########################################################################

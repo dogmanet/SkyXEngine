@@ -33,7 +33,7 @@ SX_LIB_API void SLevel_Dbg_Set(report_func fnFunc)
 	g_fnReportf = fnFunc;
 }
 
-SX_LIB_API void SLevel_0Create(const char *szName, bool isUnic)
+SX_LIB_API void SLevel_0Create(const char *szName, bool isUnic, bool isServerMode)
 {
 	if (szName && strlen(szName) > 1)
 	{
@@ -44,16 +44,10 @@ SX_LIB_API void SLevel_0Create(const char *szName, bool isUnic)
 			{
 				CloseHandle(hMutex);
 				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
-			}
-			else
-			{
-				g_pLevel = new CLevel();
+				return;
 			}
 		}
-		else
-		{
-			g_pLevel = new CLevel();
-		}
+		g_pLevel = new CLevel(isServerMode);
 	}
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);

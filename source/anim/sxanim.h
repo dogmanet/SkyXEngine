@@ -308,7 +308,7 @@ public:
 
 /*! Инициализирует библиотеку
 */
-SX_LIB_API void SXAnim_0Create();
+SX_LIB_API void SXAnim_0Create(bool m_isServerMode = false);
 
 /*! Деинициализирует библиотеку
 */

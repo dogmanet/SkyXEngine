@@ -45,7 +45,8 @@ SX_LIB_API void SMtrl_Dbg_Set(report_func rf);
 //! инициализция подсистемы
 SX_LIB_API void SMtrl_0Create(
 	const char *szName,				//!< присваиваемое имя
-	bool isUnic = true				//!< должна ли подсистема быть уникальной по имени
+	bool isUnic = true,				//!< должна ли подсистема быть уникальной по имени
+	bool isServerMode = false		//!< серверный режим (без графики)
 	);
 
 //! уничтожить подсистему

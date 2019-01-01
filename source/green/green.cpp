@@ -8,6 +8,8 @@ See the license in LICENSE
 
 CGreen::CGreen()
 {
+	if(CGreen::m_pDXDevice)
+	{
 	D3DVERTEXELEMENT9 oInstanceGreen[] =
 	{
 		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
@@ -32,6 +34,7 @@ CGreen::CGreen()
 	m_aVisCaclObj.push_back(pVisCaclObj2);
 
 	m_iCurrCountDrawObj = 0;
+}
 }
 
 CGreen::~CGreen()
@@ -367,7 +370,7 @@ void CGreen::segmentation(CSegment *pSplit, CModel *pGreen)
 		}
 
 		pSplit->m_aSplits[i]->m_isFinite = false;
-	}
+		}
 
 	mem_delete_a(pSplit->m_pArrIDs);
 	mem_delete_a(aBusyObj);
@@ -1203,7 +1206,7 @@ ID CGreen::addObject(ID id, float3 *pPos, CGreenDataVertex *pGreenData, ID *pIdS
 	aIDs[iOldLen] = idGlobalNew;
 	mem_delete_a(pCurrSegment->m_pArrIDs);
 	pCurrSegment->m_pArrIDs = aIDs;
-	
+
 	++(pCurrSegment->m_iCountObj);
 
 	alignBound(pCurrModel, pCurrSegment);
@@ -1212,10 +1215,10 @@ ID CGreen::addObject(ID id, float3 *pPos, CGreenDataVertex *pGreenData, ID *pIdS
 		*pIdSplit = idSplit;
 
 	return iOldLen;
-}
+	}
 
 ID CGreen::addNewObject2Global(CModel *pGreen, CGreenDataVertex *pObject)
-{
+	{
 	//определяем новую позицию объекта в глобальном массиве текущей растительности, если есть объекты к удалению, то берем самый последний, иначе выбираем новую позицию
 	ID idGlobalNew = -1;
 	if (pGreen->m_aDeleteObj.size() > 0)
@@ -1236,7 +1239,7 @@ ID CGreen::addNewObject2Global(CModel *pGreen, CGreenDataVertex *pObject)
 	pGreen->m_aTransW[idGlobalNew] = oBB;
 
 	++(pGreen->m_uiCountObj);
-
+	
 	return idGlobalNew;
 }
 
@@ -1877,7 +1880,7 @@ void CGreen::deleteVisCaclObj(ID idVisCaclObj)
 void CGreen::addModelInVisCaclObj(ID idGreen)
 {
 	GREEN_PRECOND_IDGREEN_ERR(idGreen);
-
+	
 	CModel *Green = m_aGreens[idGreen];
 	
 	for (int i = 0; i < m_aVisCaclObj.size(); ++i)

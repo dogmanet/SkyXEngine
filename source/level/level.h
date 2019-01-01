@@ -27,7 +27,7 @@ See the license in LICENSE
 class CLevel
 {
 public:
-	CLevel();
+	CLevel(bool isServerMode=false);
 	~CLevel();
 
 	//! очистка уровня
@@ -107,8 +107,10 @@ protected:
 	String m_sAmbientSounds;
 	String m_sWeather;
 
-	CWeather* m_pWeather;
-	CAmbientSounds* m_pAmbientSounds;
+	CWeather* m_pWeather = NULL;
+	CAmbientSounds* m_pAmbientSounds = NULL;
+
+	bool m_isServerMode = false;
 };
 
 #endif
