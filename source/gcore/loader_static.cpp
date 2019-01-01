@@ -399,27 +399,30 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	}
 
 	(*data)->m_uiAllVertexCount = iStartVertex;
-	g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &(*data)->m_pVertexBuffer, 0);
-	//(*data)->ArrVertBuf = new vertex_static_ex[iStartVertex];
-	vertex_static_ex * pData;
-	if(!FAILED((*data)->m_pVertexBuffer->Lock(0, sizeof(vertex_static_ex)* iStartVertex, (void**)&pData, 0)))
-	{
-		memcpy(pData, pVertices, sizeof(vertex_static_ex)* iStartVertex);
-		//memcpy((*data)->ArrVertBuf, pVertices, sizeof(vertex_static_ex)* iStartVertex);
+	(*data)->m_pVertices = pVertices;
+	//g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &(*data)->m_pVertexBuffer, 0);
+	////(*data)->ArrVertBuf = new vertex_static_ex[iStartVertex];
+	//vertex_static_ex * pData;
+	//if(!FAILED((*data)->m_pVertexBuffer->Lock(0, sizeof(vertex_static_ex)* iStartVertex, (void**)&pData, 0)))
+	//{
+	//	memcpy(pData, pVertices, sizeof(vertex_static_ex)* iStartVertex);
+	//	//memcpy((*data)->ArrVertBuf, pVertices, sizeof(vertex_static_ex)* iStartVertex);
 
-		(*data)->m_pVertexBuffer->Unlock();
-	}
+	//	(*data)->m_pVertexBuffer->Unlock();
+	//}
 
 	(*data)->m_uiAllIndexCount = iStartIndex;
-	g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(*data)->m_pIndexBuffer, 0);
-	//(*data)->ArrIndBuf = new UINT[iStartIndex];
-	if(!FAILED((*data)->m_pIndexBuffer->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0)))
-	{
-		memcpy(pData, pIndices, sizeof(UINT)* iStartIndex);
-		//memcpy((*data)->ArrIndBuf, pIndices, sizeof(UINT)* iStartIndex);
-		(*data)->m_pIndexBuffer->Unlock();
-	}
+	(*data)->m_pIndices = pIndices;
+	//g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(*data)->m_pIndexBuffer, 0);
+	////(*data)->ArrIndBuf = new UINT[iStartIndex];
+	//if(!FAILED((*data)->m_pIndexBuffer->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0)))
+	//{
+	//	memcpy(pData, pIndices, sizeof(UINT)* iStartIndex);
+	//	//memcpy((*data)->ArrIndBuf, pIndices, sizeof(UINT)* iStartIndex);
+	//	(*data)->m_pIndexBuffer->Unlock();
+	//}
 
+	//(*data)->syncBuffers();
 
 	for(int i = 0; i < header.iLODcount; i++)
 	{
@@ -432,8 +435,8 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	}
 	mem_delete(m_pLods);
 
-	mem_delete_a(pVertices);
-	mem_delete_a(pIndices);
+	//mem_delete_a(pVertices);
+	//mem_delete_a(pIndices);
 
 	fclose(pf);
 
@@ -460,10 +463,11 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 
 	vertex_static_ex* pVert;
 	UINT* pInd;
+	pVert = (*data)->m_pVertices;
+	//(*data)->m_pVertexBuffer->Lock(0, 0, (void**)&pVert, 0);
 
-	(*data)->m_pVertexBuffer->Lock(0, 0, (void**)&pVert, 0);
-
-	(*data)->m_pIndexBuffer->Lock(0, 0, (void**)&pInd, 0);
+	pInd = (*data)->m_pIndices;
+	//(*data)->m_pIndexBuffer->Lock(0, 0, (void**)&pInd, 0);
 
 	for(long i = 0; i < (*data)->m_uiSubsetCount; ++i)
 	{
@@ -515,27 +519,28 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 		++tmpmodel->m_uiSubsetCount;
 	}
 
-	(*data)->m_pVertexBuffer->Unlock();
-	(*data)->m_pIndexBuffer->Unlock();
+	//(*data)->m_pVertexBuffer->Unlock();
+	//(*data)->m_pIndexBuffer->Unlock();
 
 	tmpmodel->m_uiAllIndexCount = countindex;
 	tmpmodel->m_uiAllVertexCount = countvertex;
 
-	g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* countvertex, NULL, NULL, D3DPOOL_MANAGED, &tmpmodel->m_pVertexBuffer, 0);
+	tmpmodel->m_pVertices = new vertex_static_ex[countvertex];
+	//g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* countvertex, NULL, NULL, D3DPOOL_MANAGED, &tmpmodel->m_pVertexBuffer, 0);
 
 	//vertex_static_ex * pData;
-	if(!FAILED(tmpmodel->m_pVertexBuffer->Lock(0, sizeof(vertex_static_ex)* countvertex, (void**)&pData, 0)))
+	//if(!FAILED(tmpmodel->m_pVertexBuffer->Lock(0, sizeof(vertex_static_ex)* countvertex, (void**)&pData, 0)))
 	{
-		memcpy(pData, ArrVertBuf, sizeof(vertex_static_ex)* countvertex);
+		memcpy(tmpmodel->m_pVertices, ArrVertBuf, sizeof(vertex_static_ex)* countvertex);
 
-		float3_t tmppos = pData[0].Pos;
+		float3_t tmppos = tmpmodel->m_pVertices[0].Pos;
 		tmpmodel->m_vBBMax = tmppos;
 		tmpmodel->m_vBBMin = tmppos;
 		float3_t pos;
 
 		for(long i = 0; i<countvertex; i++)
 		{
-			pos = pData[i].Pos;
+			pos = tmpmodel->m_pVertices[i].Pos;
 
 			if(pos.x > tmpmodel->m_vBBMax.x)
 				tmpmodel->m_vBBMax.x = pos.x;
@@ -563,20 +568,23 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 		tmpmodel->m_vBSphere.z = Center.z;
 		tmpmodel->m_vBSphere.w = SMVector3Length(Center - tmpmodel->m_vBBMax);
 
-		tmpmodel->m_pVertexBuffer->Unlock();
+		//tmpmodel->m_pVertexBuffer->Unlock();
 	}
 
-	g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* countindex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &tmpmodel->m_pIndexBuffer, 0);
+	tmpmodel->m_pIndices = ArrIndBuf;
+	//g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* countindex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &tmpmodel->m_pIndexBuffer, 0);
 
-	if(!FAILED(tmpmodel->m_pIndexBuffer->Lock(0, sizeof(UINT)* countindex, (void**)&pData, 0)))
+	/*if(!FAILED(tmpmodel->m_pIndexBuffer->Lock(0, sizeof(UINT)* countindex, (void**)&pData, 0)))
 	{
 		memcpy(pData, ArrIndBuf, sizeof(UINT)* countindex);
 		tmpmodel->m_pIndexBuffer->Unlock();
-	}
+	}*/
 
 	mem_release_del((*data));
 	mem_delete_a(ArrVertBuf);
-	mem_delete_a(ArrIndBuf);
+	//mem_delete_a(ArrIndBuf);
+
+	tmpmodel->syncBuffers();
 
 	(*data) = tmpmodel;
 	//}

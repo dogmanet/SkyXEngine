@@ -258,26 +258,43 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 #endif
 
 	//D3DXCreateBox(SGCore_GetDXDevice(), 2, 2, 2, &g_pMeshBound, 0);
-#ifndef SX_SERVER
-	SGeom_0Create("sxgeom", false);
+
+	SGeom_0Create("sxgeom", false,
+#ifdef SX_SERVER
+		true
+#else
+		false
+#endif
+		);
 	SGeom_Dbg_Set(SkyXEngine_PrintfLog);
 
-	SGreen_0Create("sxgreen", false);
+	SGreen_0Create("sxgreen", false,
+#ifdef SX_SERVER
+		true
+#else
+		false
+#endif
+		);
 	SGreen_Dbg_Set(SkyXEngine_PrintfLog);
 	SGreen_SetFuncIntersect(SkyXEngine_RFuncGreenIntersect);
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB geom initialized\n");
 
+#ifndef SX_SERVER
 	SLight_0Create("sxml", false);
 	SLight_Dbg_Set(SkyXEngine_PrintfLog);
-
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB light initialized\n");
-
-
-	SMtrl_0Create("sxml", false);
-	SMtrl_Dbg_Set(SkyXEngine_PrintfLog);
-
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB mtrl initialized\n");
 #endif
+
+	SMtrl_0Create("sxml", false,
+#ifdef SX_SERVER
+		true
+#else
+		false
+#endif
+		);
+	SMtrl_Dbg_Set(SkyXEngine_PrintfLog);
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB mtrl initialized\n");
+
 
 #ifndef SX_SERVER
 	SPE_0Create("sxparticles", false);
@@ -302,12 +319,17 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB pp initialized\n");
 #endif
-#ifndef _SERVER
-	SXAnim_0Create();
-	SXAnim_Dbg_Set(SkyXEngine_PrintfLog);
 
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB anim initialized\n");
+	SXAnim_0Create(
+#ifdef SX_SERVER
+		true
+#else
+		false
 #endif
+		);
+	SXAnim_Dbg_Set(SkyXEngine_PrintfLog);
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB anim initialized\n");
+
 
 	SPhysics_0Create();
 	SPhysics_Dbg_Set(SkyXEngine_PrintfLog);
@@ -337,12 +359,18 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB aigrid initialized\n");
 
-#ifndef SX_SERVER
-	SLevel_0Create("sxlevel", false);
+
+	SLevel_0Create("sxlevel", false,
+#ifdef SX_SERVER
+		true
+#else 
+		false
+#endif
+		);
 	SLevel_Dbg_Set(SkyXEngine_PrintfLog);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB level initialized\n");
-#endif
+
 
 
 #ifndef SX_PARTICLES_EDITOR
@@ -403,49 +431,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	SkyXEngind_UpdateDataCVar();
 
-
-	/*Core_MTaskAdd([](){
-		Core_PStartSection(PERF_SECTION_ANIM_UPDATE);
-		SXAnim_Update();
-		Core_PEndSection(PERF_SECTION_ANIM_UPDATE);
-	}, CORE_TASK_FLAG_THREADSAFE_SYNC_REPEATING);
-
-#ifndef SX_PARTICLES_EDITOR
-	Core_MTaskAdd([](){
-		Core_PStartSection(PERF_SECTION_GAME_UPDATE);
-		SGame_Update();
-		Core_PEndSection(PERF_SECTION_GAME_UPDATE);
-	}, CORE_TASK_FLAG_THREADSAFE_SYNC_REPEATING);
-#endif
-
-	Core_MTaskAdd([](){
-		Core_PStartSection(PERF_SECTION_PHYS_UPDATE);
-		SPhysics_Update();
-		Core_PEndSection(PERF_SECTION_PHYS_UPDATE);
-	}, CORE_TASK_FLAG_THREADSAFE_SYNC_REPEATING);
-
-	Core_MTaskAdd([](){
-		Core_PStartSection(PERF_SECTION_ANIM_SYNC);
-		SXAnim_Sync();
-		Core_PEndSection(PERF_SECTION_ANIM_SYNC);
-	}, CORE_TASK_FLAG_ON_SYNC | CORE_TASK_FLAG_REPEATING);
-#ifndef SX_PARTICLES_EDITOR
-	Core_MTaskAdd([](){
-		Core_PStartSection(PERF_SECTION_GAME_SYNC);
-		SGame_Sync();
-		Core_PEndSection(PERF_SECTION_GAME_SYNC);
-	}, CORE_TASK_FLAG_ON_SYNC | CORE_TASK_FLAG_REPEATING);
-#endif
-	Core_MTaskAdd([]()
-	{
-		Core_PStartSection(PERF_SECTION_PHYS_SYNC);
-		SPhysics_Sync();
-		Core_PEndSection(PERF_SECTION_PHYS_SYNC);
-	}, CORE_TASK_FLAG_ON_SYNC | CORE_TASK_FLAG_REPEATING);
-*/
-#ifndef _SERVER
 	SXAnim_UpdateSetThreadNum(Core_MGetThreadCount());
-#endif
 
 #ifndef SX_PARTICLES_EDITOR
 	SGame_UpdateSetThreadNum(Core_MGetThreadCount());
@@ -1640,10 +1626,11 @@ void SkyXEngine_Kill()
 	SXDecals_AKill();
 #endif
 	SPhysics_AKill();
-#ifndef _SERVER
+
 	SXAnim_AKill();
 
 	SGeom_AKill();
+#ifndef _SERVER
 	SLight_AKill();
 	SSCore_AKill();
 	SGCore_AKill();

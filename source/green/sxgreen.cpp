@@ -38,7 +38,7 @@ SX_LIB_API void SGreen_Dbg_Set(report_func rf)
 	g_fnReportf = rf;
 }
 
-SX_LIB_API void SGreen_0Create(const char *szName, bool isUnic)
+SX_LIB_API void SGreen_0Create(const char *szName, bool isUnic, bool isServerMode)
 {
 	if (szName && strlen(szName) > 1)
 	{
@@ -49,18 +49,14 @@ SX_LIB_API void SGreen_0Create(const char *szName, bool isUnic)
 			{
 				CloseHandle(hMutex);
 				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
-			}
-			else
-			{
-				CGreen::m_pDXDevice = SGCore_GetDXDevice();
-				g_pGreen = new CGreen();
+				return;
 			}
 		}
-		else
+		if(!isServerMode)
 		{
 			CGreen::m_pDXDevice = SGCore_GetDXDevice();
-			g_pGreen = new CGreen();
 		}
+		g_pGreen = new CGreen();
 	}
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);

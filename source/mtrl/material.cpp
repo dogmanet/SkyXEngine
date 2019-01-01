@@ -12,18 +12,20 @@ CMaterials::CMaterials()
 	m_uiCountTimeDelta = 0;
 	m_uiCurrTimeDelta = 0;
 	m_useForceblyAlphaTest = false;
-	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs", "mtrlgeom_base.vs", SHADER_CHECKDOUBLE_PATH);
-	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps", "mtrlgeom_base.ps", SHADER_CHECKDOUBLE_PATH);
+	if(mtrl_data::pDXDevice)
+	{
+		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs", "mtrlgeom_base.vs", SHADER_CHECKDOUBLE_PATH);
+		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps", "mtrlgeom_base.ps", SHADER_CHECKDOUBLE_PATH);
 
-	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs", "mtrlgreen_tree_base.vs", SHADER_CHECKDOUBLE_PATH);
-	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs", "mtrlgreen_grass_base.vs", SHADER_CHECKDOUBLE_PATH);
-	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps", "mtrlgreen_base.ps", SHADER_CHECKDOUBLE_PATH);
+		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs", "mtrlgreen_tree_base.vs", SHADER_CHECKDOUBLE_PATH);
+		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs", "mtrlgreen_grass_base.vs", SHADER_CHECKDOUBLE_PATH);
+		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps", "mtrlgreen_base.ps", SHADER_CHECKDOUBLE_PATH);
 
-	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps", "mtrlgeom_light.ps", SHADER_CHECKDOUBLE_PATH);
+		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps", "mtrlgeom_light.ps", SHADER_CHECKDOUBLE_PATH);
 
-	SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlskin_base.vs", "mtrlskin_base.vs", SHADER_CHECKDOUBLE_PATH);
-	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlskin_base.ps", "mtrlskin_base.ps", SHADER_CHECKDOUBLE_PATH);
-
+		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlskin_base.vs", "mtrlskin_base.vs", SHADER_CHECKDOUBLE_PATH);
+		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlskin_base.ps", "mtrlskin_base.ps", SHADER_CHECKDOUBLE_PATH);
+	}
 	m_useCountSurface = false;
 	m_idCurrIdSurface = 0;
 
@@ -32,8 +34,11 @@ CMaterials::CMaterials()
 	addMaterial(tmpMtlDefaultLight);
 	tmpumtl->m_pMtrl = tmpMtlDefaultLight;
 	tmpMtlDefaultLight->m_sName = String(MTL_VIRTUAL_DIR_STD_MTL) + "_light";
-	tmpMtlDefaultLight->m_oMainGraphics.m_idShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
-	tmpMtlDefaultLight->m_oMainGraphics.m_idShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps");
+	if(mtrl_data::pDXDevice)
+	{
+		tmpMtlDefaultLight->m_oMainGraphics.m_idShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
+		tmpMtlDefaultLight->m_oMainGraphics.m_idShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps");
+	}
 
 	tmpMtlDefaultLight->m_oMainGraphics.m_idMainTexture = -1;
 	tmpMtlDefaultLight->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
@@ -42,7 +47,10 @@ CMaterials::CMaterials()
 	tmpMtlDefaultLight->m_oMainGraphics.m_isUnlit = true;
 	tmpMtlDefaultLight->m_oLightParam.m_idTexParam = -1;
 	tmpMtlDefaultLight->m_oLightParam.m_isTextureParam = false;
-	tmpMtlDefaultLight->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
+	if(mtrl_data::pDXDevice)
+	{
+		tmpMtlDefaultLight->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
+	}
 
 	m_idMtrlDefLight = addUnitMaterial(tmpumtl);
 	addName(tmpMtlDefaultLight->m_sName.c_str(), m_idMtrlDefLight);
@@ -54,8 +62,11 @@ CMaterials::CMaterials()
 	addMaterial(tmpMtlDefaultLight);
 	tmpumtl->m_pMtrl = tmpMtlDefaultLight;
 	tmpMtlDefaultLight->m_sName = String(MTL_VIRTUAL_DIR_STD_MTL) + "_base";
-	tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
-	tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");
+	if(mtrl_data::pDXDevice)
+	{
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");
+	}
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld = true;
 
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
@@ -64,7 +75,10 @@ CMaterials::CMaterials()
 
 	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParam = -1;
 	tmpumtl->m_pMtrl->m_oLightParam.m_isTextureParam = false;
-	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
+	if(mtrl_data::pDXDevice)
+	{
+		tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
+	}
 
 	m_idMtrlDefStatic = addUnitMaterial(tmpumtl);
 	addName(tmpumtl->m_pMtrl->m_sName.c_str(), m_idMtrlDefStatic);
@@ -75,15 +89,21 @@ CMaterials::CMaterials()
 	addMaterial(tmpMtlDefaultLight);
 	tmpumtl->m_pMtrl = tmpMtlDefaultLight;
 	tmpMtlDefaultLight->m_sName = String(MTL_VIRTUAL_DIR_STD_MTL) + "_tree";
-	tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs");
-	tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
+	if(mtrl_data::pDXDevice)
+	{
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs");
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
+	}
 
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
 
 	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParam = -1;
 	tmpumtl->m_pMtrl->m_oLightParam.m_isTextureParam = false;
-	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
+	if(mtrl_data::pDXDevice)
+	{
+		tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
+	}
 
 	m_idMtrlDefTree = addUnitMaterial(tmpumtl);
 	addName(tmpumtl->m_pMtrl->m_sName.c_str(), m_idMtrlDefTree);
@@ -94,15 +114,21 @@ CMaterials::CMaterials()
 	addMaterial(tmpMtlDefaultLight);
 	tmpumtl->m_pMtrl = tmpMtlDefaultLight;
 	tmpMtlDefaultLight->m_sName = String(MTL_VIRTUAL_DIR_STD_MTL) + "_grass";
-	tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs");
-	tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
+	if(mtrl_data::pDXDevice)
+	{
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs");
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
+	}
 
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
 
 	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParam = -1;
 	tmpumtl->m_pMtrl->m_oLightParam.m_isTextureParam = false;
-	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
+	if(mtrl_data::pDXDevice)
+	{
+		tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
+	}
 
 	m_idMtrlDefGrass = addUnitMaterial(tmpumtl);
 	addName(tmpumtl->m_pMtrl->m_sName.c_str(), m_idMtrlDefGrass);
@@ -114,8 +140,11 @@ CMaterials::CMaterials()
 	addMaterial(tmpMtlDefaultLight);
 	tmpumtl->m_pMtrl = tmpMtlDefaultLight;
 	tmpMtlDefaultLight->m_sName = String(MTL_VIRTUAL_DIR_STD_MTL) + "_skin";
-	tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlskin_base.vs");
-	tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlskin_base.ps");
+	if(mtrl_data::pDXDevice)
+	{
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderGetID(SHADER_TYPE_VERTEX, "mtrlskin_base.vs");
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderGetID(SHADER_TYPE_PIXEL, "mtrlskin_base.ps");
+	}
 
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
@@ -123,7 +152,10 @@ CMaterials::CMaterials()
 
 	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParam = -1;
 	tmpumtl->m_pMtrl->m_oLightParam.m_isTextureParam = false;
-	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
+	if(mtrl_data::pDXDevice)
+	{
+		tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
+	}
 
 	m_idMtrlDefSkin = addUnitMaterial(tmpumtl);
 	addName(tmpumtl->m_pMtrl->m_sName.c_str(), m_idMtrlDefSkin);

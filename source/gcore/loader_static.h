@@ -69,27 +69,64 @@ struct DataStaticModel : public ISXDataStaticModel
 		pModelCopy->m_pVertexCount = new UINT[m_uiSubsetCount];
 		memcpy(pModelCopy->m_pVertexCount, m_pVertexCount, sizeof(UINT)*m_uiSubsetCount);
 
-		g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, NULL, NULL, D3DPOOL_MANAGED, &pModelCopy->m_pVertexBuffer, 0);
-		BYTE *pDestData, *pSrcData;
-		pModelCopy->m_pVertexBuffer->Lock(0, 0, (void**)&pDestData, 0);
-		m_pVertexBuffer->Lock(0, 0, (void**)&pSrcData, 0);
+		//g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, NULL, NULL, D3DPOOL_MANAGED, &pModelCopy->m_pVertexBuffer, 0);
+		pModelCopy->m_pVertices = new vertex_static_ex[m_uiAllVertexCount];
+		vertex_static_ex *pDestData = pModelCopy->m_pVertices, *pSrcData = m_pVertices;
+		//pModelCopy->m_pVertexBuffer->Lock(0, 0, (void**)&pDestData, 0);
+		//m_pVertexBuffer->Lock(0, 0, (void**)&pSrcData, 0);
 
 		memcpy(pDestData, pSrcData, sizeof(vertex_static_ex)* m_uiAllVertexCount);
 
-		pModelCopy->m_pVertexBuffer->Unlock();
-		m_pVertexBuffer->Unlock();
+		//pModelCopy->m_pVertexBuffer->Unlock();
+		//m_pVertexBuffer->Unlock();
 
+		pModelCopy->m_pIndices = new UINT[m_uiAllIndexCount];
+		UINT *pSrcIdx = m_pIndices, *pDstIdx = pModelCopy->m_pIndices;
+		//g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &pModelCopy->m_pIndexBuffer, 0);
+		//pModelCopy->m_pIndexBuffer->Lock(0, 0, (void**)&pDestData, 0);
+		//m_pIndexBuffer->Lock(0, 0, (void**)&pSrcData, 0);
 
-		g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &pModelCopy->m_pIndexBuffer, 0);
-		pModelCopy->m_pIndexBuffer->Lock(0, 0, (void**)&pDestData, 0);
-		m_pIndexBuffer->Lock(0, 0, (void**)&pSrcData, 0);
+		memcpy(pDstIdx, pSrcIdx, sizeof(UINT)* m_uiAllIndexCount);
 
-		memcpy(pDestData, pSrcData, sizeof(UINT)* m_uiAllIndexCount);
+		pModelCopy->syncBuffers();
 
-		pModelCopy->m_pIndexBuffer->Unlock();
-		m_pIndexBuffer->Unlock();
+		//pModelCopy->m_pIndexBuffer->Unlock();
+		//m_pIndexBuffer->Unlock();
 
 		return pModelCopy;
+	}
+
+	void syncBuffers(bool bRecreate = false)
+	{
+		if(bRecreate)
+		{
+			mem_release_del(m_pVertexBuffer);
+			mem_release_del(m_pIndexBuffer);
+		}
+
+		if(!m_pVertexBuffer)
+		{
+			DX_CALL(g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_DEFAULT, &m_pVertexBuffer, 0));
+		}
+
+		vertex_static_ex *pVertex;
+		if(SUCCEEDED(DX_CALL(m_pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0))))
+		{
+			memcpy(pVertex, m_pVertices, sizeof(vertex_static_ex)* m_uiAllVertexCount);
+			m_pVertexBuffer->Unlock();
+		}
+
+		if(!m_pIndexBuffer)
+		{
+			DX_CALL(g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_DEFAULT, &m_pIndexBuffer, 0));
+		}
+
+		UINT *pIndex;
+		if(SUCCEEDED(DX_CALL(m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0))))
+		{
+			memcpy(pIndex, m_pIndices, sizeof(uint32_t)* m_uiAllIndexCount);
+			m_pIndexBuffer->Unlock();
+		}
 	}
 
 	DataStaticModel::~DataStaticModel()
@@ -110,6 +147,9 @@ struct DataStaticModel : public ISXDataStaticModel
 		mem_delete_a(m_pIndexCount);
 		mem_delete_a(m_pStartVertex);
 		mem_delete_a(m_pVertexCount);
+
+		mem_delete_a(m_pVertices);
+		mem_delete_a(m_pIndices);
 	}
 };
 

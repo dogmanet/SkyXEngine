@@ -686,9 +686,13 @@ struct ISXDataStaticModel : public IBaseObject
 	virtual ~ISXDataStaticModel(){};
 
 	virtual ISXDataStaticModel* getCopy()=0;//!< получить абсолютную копию модели
+
+	virtual void syncBuffers(bool bRecreate = false)=0;
 	
 	IDirect3DVertexBuffer9 *m_pVertexBuffer;//!< вершиный буфер
 	IDirect3DIndexBuffer9 *m_pIndexBuffer;	//!< индексный буфер
+	vertex_static_ex *m_pVertices = NULL;
+	UINT *m_pIndices = NULL;
 
 	uint32_t m_uiSubsetCount;		//!< количество подгрупп
 	char **m_ppTextures;			//!< массив имен текстур без расширения
@@ -845,8 +849,22 @@ public:
 		int iBytePerVertex		//!< количество байт в вершине
 		) = 0;
 
+	/*! Просчет ограничивающего объема по вершинному буферу*/
+	virtual void calcBound(
+		vertex_static_ex *pVertex, //!< вершинный буфер (незаблокированный), в вершинах которого первым элементом идет позиция float3_t вектор  
+		int iCountVertex,		//!< количество вершин
+		int iBytePerVertex		//!< количество байт в вершине
+		) = 0;
+
 	virtual void calcBoundIndex(
 		IDirect3DVertexBuffer9 *pVertexBuffer,
+		uint32_t **ppArrIndex, 
+		uint32_t *pCountIndex,
+		int iCountSubset,
+		int iBytePerVertex
+		) = 0;
+	virtual void calcBoundIndex(
+		vertex_static_ex *pVertexBuffer,
 		uint32_t **ppArrIndex, 
 		uint32_t *pCountIndex,
 		int iCountSubset,

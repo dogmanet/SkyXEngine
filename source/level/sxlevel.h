@@ -82,7 +82,8 @@ SX_LIB_API void SLevel_Dbg_Set(report_func fnFunc);
 //! инициализация подсистемы
 SX_LIB_API void SLevel_0Create(
 	const char *szName,			//!< передваваемое имя подсистемы
-	bool isUnic = true			//!< должна ли подсистема быть уникальной на основе имени
+	bool isUnic = true,			//!< должна ли подсистема быть уникальной на основе имени
+	bool isServerMode = false	//!< серверный режим (без графики)
 	);
 
 //! уничтожение либы

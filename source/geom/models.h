@@ -71,7 +71,7 @@ if(!(idModel >= 0 &&idModel < (int)m_aTransparency.size() && m_aTransparency[idM
 class CModels
 {
 public:
-	CModels();
+	CModels(bool isServerMode);
 	~CModels();
 
 	//! класс физической модели, формат модели стандартный
@@ -195,6 +195,8 @@ public:
 		CTransparencyModel();
 		~CTransparencyModel();
 
+		void syncBuffers(bool bRecreate = false);
+
 		SX_ALIGNED_OP_MEM2();
 
 		//! id модели к которой принадлжеит данная ппп
@@ -223,9 +225,11 @@ public:
 
 		//! вершинный буфер
 		IDirect3DVertexBuffer9 *m_pVertexBuffer;
+		vertex_static_ex *m_pVertices;
 
 		//! индексный буфер
 		IDirect3DIndexBuffer9 *m_pIndexBuffer;
+		UINT *m_pIndices;
 
 		//! ограничивающий объем
 		ISXBound *m_pBoundVolume;
@@ -458,6 +462,9 @@ public:
 	//! рендер моделей
 	void render(DWORD timeDelta, GEOM_RENDER_TYPE type, ID idVisCalcObj = SX_GEOM_DEFAULT_VISCALCOBJ);
 
+	void onResetDevice();
+	void onLostDevice();
+
 	//**********************************************************************
 
 	//! записыает физические данные всех моделей
@@ -480,6 +487,8 @@ protected:
 
 	//! массив объектов расчетов видимости
 	Array<CVisInfo*> m_aVisInfo;
+
+	bool m_isServerMode = false;
 
 	//**********************************************************************
 

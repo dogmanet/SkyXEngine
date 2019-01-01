@@ -7,16 +7,20 @@ See the license in LICENSE
 #include "level.h"
 #include <decals/sxdecals.h>
 
-CLevel::CLevel()
+CLevel::CLevel(bool isServerMode)
 {
 	m_sAmbientSounds = "";
 	m_sWeather = "";
 	m_szName[0] = 0;
 	m_sLocalName = "";
+	m_isServerMode = isServerMode;
 
-	loadParticles();
-	m_pWeather = new CWeather();
-	m_pAmbientSounds = new CAmbientSounds();
+	if(!isServerMode)
+	{
+		loadParticles();
+		m_pWeather = new CWeather();
+		m_pAmbientSounds = new CAmbientSounds();
+	}
 }
 
 CLevel::~CLevel()
@@ -37,13 +41,19 @@ void CLevel::clear()
 	SGeom_Clear();
 	SGreen_Clear();
 
-	SLight_ClearIDArr();
+	if(!m_isServerMode)
+	{
+		SLight_ClearIDArr();
+	}
 	
 	//SGame_UnloadObjLevel();
 	Core_0ConsoleExecCmd("ent_unload_level");
 	SPhysics_UnloadGeom();
 	SAIG_Clear();
-	SXDecals_Clear();
+	if(!m_isServerMode)
+	{
+		SXDecals_Clear();
+	}
 }
 
 void CLevel::load(const char *szName, bool isGame)
@@ -145,7 +155,7 @@ void CLevel::load(const char *szName, bool isGame)
 		}
 	}
 
-	if (pConfig->keyExists("level", "ambient_sounds"))
+	if(!m_isServerMode && pConfig->keyExists("level", "ambient_sounds"))
 	{
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load ambient_sounds\n");
 		m_sAmbientSounds = pConfig->getKey("level", "ambient_sounds");
@@ -170,7 +180,7 @@ void CLevel::load(const char *szName, bool isGame)
 		}
 	}
 
-	if (pConfig->keyExists("level", "weather"))
+	if(!m_isServerMode && pConfig->keyExists("level", "weather"))
 	{
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load weather\n");
 		m_sWeather = pConfig->getKey("level", "weather");
@@ -187,7 +197,7 @@ void CLevel::load(const char *szName, bool isGame)
 		}
 	}
 
-	if (pConfig->keyExists("level", "type"))
+	if(!m_isServerMode && pConfig->keyExists("level", "type"))
 	{
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  init type\n");
 		String sStr = pConfig->getKey("level", "type");

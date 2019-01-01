@@ -645,13 +645,11 @@ const float3* CTransObject::getScale(float3 *pScale)
 
 //##########################################################################
 
-void CBound::calcBound(IDirect3DVertexBuffer9 *pVertexBuffer, int iCountVertex, int iBytePerVertex)
+void CBound::calcBound(vertex_static_ex *pVertex, int iCountVertex, int iBytePerVertex)
 {
-	BYTE *pVertex = 0;
-
 	calcWorld();
-	
-	if (pVertexBuffer && SUCCEEDED(pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0)))
+
+	if(pVertex)
 	{
 		float3_t vPos = *(float3_t*)((char*)(pVertex)+iBytePerVertex * 0);
 		m_vMaxOrigin = vPos;
@@ -662,51 +660,50 @@ void CBound::calcBound(IDirect3DVertexBuffer9 *pVertexBuffer, int iCountVertex, 
 		m_vMaxTransform = vPos;
 		m_vMinTransform = vPos;
 
-		for (int i = 0; i<iCountVertex; ++i)
+		for(int i = 0; i<iCountVertex; ++i)
 		{
 			vPos = *(float3_t*)((char*)(pVertex)+iBytePerVertex * i);
-			
-			if (vPos.x > m_vMaxOrigin.x)
+
+			if(vPos.x > m_vMaxOrigin.x)
 				m_vMaxOrigin.x = vPos.x;
 
-			if (vPos.y > m_vMaxOrigin.y)
+			if(vPos.y > m_vMaxOrigin.y)
 				m_vMaxOrigin.y = vPos.y;
 
-			if (vPos.z > m_vMaxOrigin.z)
+			if(vPos.z > m_vMaxOrigin.z)
 				m_vMaxOrigin.z = vPos.z;
 
 
-			if (vPos.x < m_vMinOrigin.x)
+			if(vPos.x < m_vMinOrigin.x)
 				m_vMinOrigin.x = vPos.x;
 
-			if (vPos.y < m_vMinOrigin.y)
+			if(vPos.y < m_vMinOrigin.y)
 				m_vMinOrigin.y = vPos.y;
 
-			if (vPos.z < m_vMinOrigin.z)
+			if(vPos.z < m_vMinOrigin.z)
 				m_vMinOrigin.z = vPos.z;
 
 			vPos = SMVector3Transform(vPos, m_mWorld);
 
-			if (vPos.x > m_vMaxTransform.x)
+			if(vPos.x > m_vMaxTransform.x)
 				m_vMaxTransform.x = vPos.x;
 
-			if (vPos.y > m_vMaxTransform.y)
+			if(vPos.y > m_vMaxTransform.y)
 				m_vMaxTransform.y = vPos.y;
 
-			if (vPos.z > m_vMaxTransform.z)
+			if(vPos.z > m_vMaxTransform.z)
 				m_vMaxTransform.z = vPos.z;
 
 
-			if (vPos.x < m_vMinTransform.x)
+			if(vPos.x < m_vMinTransform.x)
 				m_vMinTransform.x = vPos.x;
 
-			if (vPos.y < m_vMinTransform.y)
+			if(vPos.y < m_vMinTransform.y)
 				m_vMinTransform.y = vPos.y;
 
-			if (vPos.z < m_vMinTransform.z)
+			if(vPos.z < m_vMinTransform.z)
 				m_vMinTransform.z = vPos.z;
 		}
-		pVertexBuffer->Unlock();
 	}
 
 	m_vCenterOrigin = (m_vMinOrigin + m_vMaxOrigin) * 0.5f;
@@ -716,68 +713,99 @@ void CBound::calcBound(IDirect3DVertexBuffer9 *pVertexBuffer, int iCountVertex, 
 	m_fRadiusTransform = SMVector3Length(m_vCenterTransform - m_vMaxTransform);
 }
 
-void CBound::calcBoundIndex(IDirect3DVertexBuffer9 *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex)
+void CBound::calcBound(IDirect3DVertexBuffer9 *pVertexBuffer, int iCountVertex, int iBytePerVertex)
 {
-	if (!ppArrIndex || pCountIndex || iCountSubset <= 0)
-		return;
-
 	BYTE *pVertex = 0;
 
 	calcWorld();
 	
 	if (pVertexBuffer && SUCCEEDED(pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0)))
 	{
+		calcBound((vertex_static_ex*)pVertex, iCountVertex, iBytePerVertex);
+		pVertexBuffer->Unlock();
+	}
+}
+
+void CBound::calcBoundIndex(vertex_static_ex *pVertex, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex)
+{
+	if(!ppArrIndex || pCountIndex || iCountSubset <= 0)
+		return;
+	
+	calcWorld();
+
+	if(pVertex)
+	{
 		float3_t vPos = *(float3_t*)((BYTE*)(pVertex)+iBytePerVertex * ppArrIndex[0][0]);
 		m_vMaxOrigin = vPos;
 		m_vMinOrigin = vPos;
 
-		for (int i = 0; i<iCountSubset; ++i)
+		for(int i = 0; i<iCountSubset; ++i)
 		{
-			for (int k = 0; k<pCountIndex[i]; ++k)
+			for(int k = 0; k<pCountIndex[i]; ++k)
 			{
 				vPos = *(float3_t*)((BYTE*)(pVertex)+iBytePerVertex * ppArrIndex[i][k]);
 
-				if (vPos.x > m_vMaxOrigin.x)
+				if(vPos.x > m_vMaxOrigin.x)
 					m_vMaxOrigin.x = vPos.x;
 
-				if (vPos.y > m_vMaxOrigin.y)
+				if(vPos.y > m_vMaxOrigin.y)
 					m_vMaxOrigin.y = vPos.y;
 
-				if (vPos.z > m_vMaxOrigin.z)
+				if(vPos.z > m_vMaxOrigin.z)
 					m_vMaxOrigin.z = vPos.z;
 
 
-				if (vPos.x < m_vMinOrigin.x)
+				if(vPos.x < m_vMinOrigin.x)
 					m_vMinOrigin.x = vPos.x;
 
-				if (vPos.y < m_vMinOrigin.y)
+				if(vPos.y < m_vMinOrigin.y)
 					m_vMinOrigin.y = vPos.y;
 
-				if (vPos.z < m_vMinOrigin.z)
+				if(vPos.z < m_vMinOrigin.z)
 					m_vMinOrigin.z = vPos.z;
 
 				vPos = SMVector3Transform(vPos, m_mWorld);
 
-				if (vPos.x > m_vMaxTransform.x)
+				if(vPos.x > m_vMaxTransform.x)
 					m_vMaxTransform.x = vPos.x;
 
-				if (vPos.y > m_vMaxTransform.y)
+				if(vPos.y > m_vMaxTransform.y)
 					m_vMaxTransform.y = vPos.y;
 
-				if (vPos.z > m_vMaxTransform.z)
+				if(vPos.z > m_vMaxTransform.z)
 					m_vMaxTransform.z = vPos.z;
 
 
-				if (vPos.x < m_vMinTransform.x)
+				if(vPos.x < m_vMinTransform.x)
 					m_vMinTransform.x = vPos.x;
 
-				if (vPos.y < m_vMinTransform.y)
+				if(vPos.y < m_vMinTransform.y)
 					m_vMinTransform.y = vPos.y;
 
-				if (vPos.z < m_vMinTransform.z)
+				if(vPos.z < m_vMinTransform.z)
 					m_vMinTransform.z = vPos.z;
+			}
 		}
 	}
+
+	m_vCenterOrigin = (m_vMinOrigin + m_vMaxOrigin) * 0.5f;
+	m_fRadiusOrigin = SMVector3Length(m_vCenterOrigin - m_vMaxOrigin);
+
+	m_vCenterTransform = (m_vMinTransform + m_vMaxTransform) * 0.5f;
+	m_fRadiusTransform = SMVector3Length(m_vCenterTransform - m_vMaxTransform);
+
+}
+
+void CBound::calcBoundIndex(IDirect3DVertexBuffer9 *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex)
+{
+	if (!ppArrIndex || pCountIndex || iCountSubset <= 0)
+		return;
+
+	vertex_static_ex *pVertex = 0;
+
+	if (pVertexBuffer && SUCCEEDED(DX_CALL(pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0))))
+	{
+		calcBoundIndex(pVertex, ppArrIndex, pCountIndex, iCountSubset, iBytePerVertex);
 		pVertexBuffer->Unlock();
 	}
 

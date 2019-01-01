@@ -86,10 +86,12 @@ public:
 
 	void Release(){ mem_del(this); };
 
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM;
 
+	void calcBound(vertex_static_ex *pVertexBuffer, int iCountVertex, int iBytePerVertex);
 	void calcBound(IDirect3DVertexBuffer9 *pVertexBuffer, int iCountVertex, int iBytePerVertex);
 	void calcBoundIndex(IDirect3DVertexBuffer9 *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex);
+	void calcBoundIndex(vertex_static_ex *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex);
 
 	//функция просчета мировой матрицы и трансформации минимума и максимума
 	//float4x4* calcWorldAndTrans();

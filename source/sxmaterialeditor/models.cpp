@@ -1631,21 +1631,13 @@ ISXDataStaticModel* CreateModelSphere()
 
 	InitDefaultData(pModel);
 
-	IDirect3DDevice9 *pDXDevice = SGCore_GetDXDevice();
+	pModel->m_pVertices = new vertex_static_ex[pModel->m_uiAllVertexCount];
+	pModel->m_pIndices = new UINT[pModel->m_uiAllIndexCount];
 
-	pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* pModel->m_uiAllVertexCount, NULL, NULL, D3DPOOL_MANAGED, &(pModel->m_pVertexBuffer), 0);
-	pDXDevice->CreateIndexBuffer(sizeof(UINT)* pModel->m_uiAllIndexCount, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(pModel->m_pIndexBuffer), 0);
+	memcpy(pModel->m_pVertices, g_aModelsSphereVertex, sizeof(g_aModelsSphereVertex));
+	memcpy(pModel->m_pIndices, g_aModelsSphereIndex, sizeof(g_aModelsSphereIndex));
 
-	UINT *pIndex;
-	pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0);
-	vertex_static_ex *pVertex;
-	pModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0);
-
-	memcpy(pVertex, g_aModelsSphereVertex, sizeof(g_aModelsSphereVertex));
-	memcpy(pIndex, g_aModelsSphereIndex, sizeof(g_aModelsSphereIndex));
-
-	pModel->m_pVertexBuffer->Unlock();
-	pModel->m_pIndexBuffer->Unlock();
+	pModel->syncBuffers();
 
 	return pModel;
 }
@@ -1659,21 +1651,13 @@ ISXDataStaticModel* CreateModelCube()
 
 	InitDefaultData(pModel);
 
-	IDirect3DDevice9 *pDXDevice = SGCore_GetDXDevice();
+	pModel->m_pVertices = new vertex_static_ex[pModel->m_uiAllVertexCount];
+	pModel->m_pIndices = new UINT[pModel->m_uiAllIndexCount];
 
-	pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* pModel->m_uiAllVertexCount, NULL, NULL, D3DPOOL_MANAGED, &(pModel->m_pVertexBuffer), 0);
-	pDXDevice->CreateIndexBuffer(sizeof(UINT)* pModel->m_uiAllIndexCount, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(pModel->m_pIndexBuffer), 0);
+	memcpy(pModel->m_pVertices, g_aModelsCubeVertex, sizeof(g_aModelsCubeVertex));
+	memcpy(pModel->m_pIndices, g_aModelsCubeIndex, sizeof(g_aModelsCubeIndex));
 
-	UINT *pIndex;
-	pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0);
-	vertex_static_ex *pVertex;
-	pModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0);
-
-	memcpy(pVertex, g_aModelsCubeVertex, sizeof(g_aModelsCubeVertex));
-	memcpy(pIndex, g_aModelsCubeIndex, sizeof(g_aModelsCubeIndex));
-
-	pModel->m_pVertexBuffer->Unlock();
-	pModel->m_pIndexBuffer->Unlock();
+	pModel->syncBuffers();
 
 	return pModel;
 }
@@ -1686,22 +1670,14 @@ ISXDataStaticModel* CreateModelPlane()
 	pModel->m_uiAllIndexCount = sizeof(g_aModelsPlaneIndex) / sizeof(UINT);
 
 	InitDefaultData(pModel);
+	
+	pModel->m_pVertices = new vertex_static_ex[pModel->m_uiAllVertexCount];
+	pModel->m_pIndices = new UINT[pModel->m_uiAllIndexCount];
 
-	IDirect3DDevice9 *pDXDevice = SGCore_GetDXDevice();
+	memcpy(pModel->m_pVertices, g_aModelsPlaneVertex, sizeof(g_aModelsPlaneVertex));
+	memcpy(pModel->m_pIndices, g_aModelsPlaneIndex, sizeof(g_aModelsPlaneIndex));
 
-	pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* pModel->m_uiAllVertexCount, NULL, NULL, D3DPOOL_MANAGED, &(pModel->m_pVertexBuffer), 0);
-	pDXDevice->CreateIndexBuffer(sizeof(UINT)* pModel->m_uiAllIndexCount, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(pModel->m_pIndexBuffer), 0);
-
-	UINT *pIndex;
-	pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0);
-	vertex_static_ex *pVertex;
-	pModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0);
-
-	memcpy(pVertex, g_aModelsPlaneVertex, sizeof(g_aModelsPlaneVertex));
-	memcpy(pIndex, g_aModelsPlaneIndex, sizeof(g_aModelsPlaneIndex));
-
-	pModel->m_pVertexBuffer->Unlock();
-	pModel->m_pIndexBuffer->Unlock();
+	pModel->syncBuffers();
 
 	return pModel;
 }

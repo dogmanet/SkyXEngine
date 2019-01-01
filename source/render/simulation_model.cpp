@@ -95,8 +95,8 @@ void CSimulationModel::add(ISXDataStaticModel *pModel)
 	sprintf(szFullPath, "%s.dds", pModel->m_ppTextures[0]);
 	m_idMtrl = SGCore_MtlLoad(szFullPath, MTL_TYPE_GEOM);
 
-	vertex_static_ex *pVertexStatic;
-	pModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertexStatic, 0);
+	vertex_static_ex *pVertexStatic = pModel->m_pVertices;
+	//pModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertexStatic, 0);
 
 	float3_t vPos = pVertexStatic[pModel->m_pStartVertex[0]].Pos;
 	float3 vMax = vPos;
@@ -125,16 +125,16 @@ void CSimulationModel::add(ISXDataStaticModel *pModel)
 			vMin.z = vPos.z;
 	}
 
-	UINT *pIndex;
-	pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0);
+	UINT *pIndex = pModel->m_pIndices;
+	//pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0);
 
 	D3DXPLANE oPlane;
 	D3DXPlaneFromPoints(&oPlane,
 		&D3DXVECTOR3(pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 0]].Pos.x, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 0]].Pos.y, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 0]].Pos.z),
 		&D3DXVECTOR3(pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 1]].Pos.x, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 1]].Pos.y, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 1]].Pos.z),
 		&D3DXVECTOR3(pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 2]].Pos.x, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 2]].Pos.y, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 2]].Pos.z));
-	pModel->m_pVertexBuffer->Unlock();
-	pModel->m_pIndexBuffer->Unlock();
+	//pModel->m_pVertexBuffer->Unlock();
+	//pModel->m_pIndexBuffer->Unlock();
 
 	float3_t vCenter = (float3_t)((vMax + vMin) * 0.5);
 
@@ -142,17 +142,17 @@ void CSimulationModel::add(ISXDataStaticModel *pModel)
 
 
 	IDirect3DVertexBuffer9 *pVertexBufferAnim;
-	gdata::pDXDevice->CreateVertexBuffer(
+	DX_CALL(gdata::pDXDevice->CreateVertexBuffer(
 		pModel->m_uiAllVertexCount * sizeof(vertex_animated_ex),
 		D3DUSAGE_WRITEONLY,
 		0,
 		D3DPOOL_MANAGED,
 		&pVertexBufferAnim,
-		0);
+		0));
 
 	vertex_animated_ex *pVertexAnim;
-	pVertexBufferAnim->Lock(0, 0, (void**)&pVertexAnim, 0);
-	pModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertexStatic, 0);
+	DX_CALL(pVertexBufferAnim->Lock(0, 0, (void**)&pVertexAnim, 0));
+	//DX_CALL(pModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertexStatic, 0));
 	
 	for (UINT i = 0; i < pModel->m_uiAllVertexCount; ++i)
 	{
@@ -167,7 +167,7 @@ void CSimulationModel::add(ISXDataStaticModel *pModel)
 	}
 
 	pVertexBufferAnim->Unlock();
-	pModel->m_pVertexBuffer->Unlock();
+	//pModel->m_pVertexBuffer->Unlock();
 
 	m_aModels[m_aModels.size() - 1]->m_pAnim = pVertexBufferAnim;
 }

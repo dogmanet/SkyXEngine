@@ -497,6 +497,11 @@ void cmd_perf_dump()
 	char *buf = (char*)alloca(sizeof(char) * (iMeterWidth + 1));
 
 	Array<float> afTimes;
+	afTimes.resize(PERF_SECTION_COUNT);
+	for(int i = 0; i < PERF_SECTION_COUNT; ++i)
+	{
+		afTimes[i] = 0;
+	}
 
 	for(int i = 0, l = aaRecords.size(); i < l; ++i)
 	{

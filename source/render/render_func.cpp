@@ -163,6 +163,7 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 	//сбрасываем все что необходимо для восстановления устройства
 	SGCore_OnLostDevice();
 	SGreen_OnLostDevice();
+	SGeom_OnLostDevice();
 	SLight_OnLostDevice();
 	SMtrl_OnLostDevice();
 	SPE_OnLostDevice();
@@ -183,6 +184,7 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 		gdata::InitAllMatrix();
 		*r_resize = RENDER_RESIZE_NONE;
 		SGCore_OnResetDevice();
+		SGeom_OnResetDevice();
 		SLight_OnResetDevice();
 		SMtrl_OnResetDevice();
 		SGreen_OnResetDevice();

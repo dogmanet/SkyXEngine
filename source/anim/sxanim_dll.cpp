@@ -36,7 +36,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 
 AnimationManager * g_mgr = NULL;
 
-SX_LIB_API void SXAnim_0Create()
+SX_LIB_API void SXAnim_0Create(bool m_isServerMode)
 {
 	if(g_mgr)
 	{
@@ -44,7 +44,7 @@ SX_LIB_API void SXAnim_0Create()
 		return;
 	}
 	Core_SetOutPtr();
-	g_mgr = new AnimationManager(SGCore_GetDXDevice());
+	g_mgr = new AnimationManager(m_isServerMode ? NULL : SGCore_GetDXDevice());
 }
 SX_LIB_API void SXAnim_AKill()
 {

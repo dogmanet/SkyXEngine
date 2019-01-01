@@ -8,28 +8,31 @@ See the license in LICENSE
 
 CGreen::CGreen()
 {
-	D3DVERTEXELEMENT9 oInstanceGreen[] =
+	if(CGreen::m_pDXDevice)
 	{
-		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
-		{ 1, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
-		{ 1, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
-		{ 1, 24, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 3 },
-		D3DDECL_END()
-	};
+		D3DVERTEXELEMENT9 oInstanceGreen[] =
+		{
+			{0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
+			{0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
+			{0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
+			{1, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1},
+			{1, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2},
+			{1, 24, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 3},
+			D3DDECL_END()
+		};
 
-	CGreen::m_pDXDevice->CreateVertexDeclaration(oInstanceGreen, &m_pVertexDeclarationGreen);
+		CGreen::m_pDXDevice->CreateVertexDeclaration(oInstanceGreen, &m_pVertexDeclarationGreen);
 
-	createInstVB();
+		createInstVB();
 
-	CVisCaclObj *pVisCaclObj1 = new CVisCaclObj();
-	m_aVisCaclObj.push_back(pVisCaclObj1);
+		CVisCaclObj *pVisCaclObj1 = new CVisCaclObj();
+		m_aVisCaclObj.push_back(pVisCaclObj1);
 
-	CVisCaclObj *pVisCaclObj2 = new CVisCaclObj();
-	m_aVisCaclObj.push_back(pVisCaclObj2);
+		CVisCaclObj *pVisCaclObj2 = new CVisCaclObj();
+		m_aVisCaclObj.push_back(pVisCaclObj2);
 
-	m_iCurrCountDrawObj = 0;
+		m_iCurrCountDrawObj = 0;
+	}
 }
 
 CGreen::~CGreen()
