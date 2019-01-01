@@ -70,7 +70,7 @@ class CEntityManager
 {
 	friend class CBaseEntity;
 public:
-	CEntityManager();
+	CEntityManager(bool isServerMode);
 	~CEntityManager();
 
 	void update(int thread);
@@ -110,6 +110,7 @@ public:
 
 	void setEditorMode(bool isEditor = true);
 	bool isEditorMode();
+	bool isServerMode();
 
 protected:
 	ID reg(CBaseEntity * pEnt);
@@ -132,6 +133,7 @@ protected:
 	ISXConfig * m_pDynClassConf;
 
 	bool m_isEditorMode = false;
+	bool m_isServerMode = false;
 };
 
 #endif

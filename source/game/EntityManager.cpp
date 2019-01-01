@@ -12,10 +12,11 @@ See the license in LICENSE
 
 #include <mutex>
 
-CEntityManager::CEntityManager():
+CEntityManager::CEntityManager(bool isServerMode):
 	m_iThreadNum(1),
 	m_pDefaultsConf(NULL),
-	m_pDynClassConf(NULL)
+	m_pDynClassConf(NULL),
+	m_isServerMode(isServerMode)
 {
 	loadDefaults();
 	loadDynClasses();
@@ -843,4 +844,9 @@ void CEntityManager::setEditorMode(bool isEditor)
 bool CEntityManager::isEditorMode()
 {
 	return(m_isEditorMode);
+}
+
+bool CEntityManager::isServerMode()
+{
+	return(m_isServerMode);
 }

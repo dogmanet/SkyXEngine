@@ -43,7 +43,10 @@ CHUDcontroller::~CHUDcontroller()
 
 void CHUDcontroller::activate()
 {
-	GameData::m_pGUI->setActiveDesktop(m_pDesktop);
+	if(GameData::m_pGUI)
+	{
+		GameData::m_pGUI->setActiveDesktop(m_pDesktop);
+	}
 }
 
 void CHUDcontroller::setPlayerPos(const float3 & vPosition)

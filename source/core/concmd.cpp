@@ -492,6 +492,11 @@ void cmd_perf_dump()
 	float llPreSyncTime = (float)std::chrono::duration_cast<std::chrono::microseconds>(tSync - tStart).count();
 	float llPostSyncTime = (float)std::chrono::duration_cast<std::chrono::microseconds>(tEnd - tSync).count();
 
+	if(llOverallTime == 0.0f)
+	{
+		llOverallTime = 1.0f;
+	}
+
 	int iSyncPos = (int)((llPreSyncTime / llOverallTime) * (float)iMeterWidth);
 
 	char *buf = (char*)alloca(sizeof(char) * (iMeterWidth + 1));

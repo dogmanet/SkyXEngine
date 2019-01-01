@@ -25,7 +25,10 @@ CLightDirectional::CLightDirectional(CEntityManager *pMgr):BaseClass(pMgr)
 {
 	m_fAngle = SM_PI * 0.4f;
 	m_fRadiusTop = 0.01f;
-	m_idLight = SLight_CreateDirection(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, &SMQuaternion(-SM_PI, 'z'), m_fRadiusTop, m_fAngle, true);
+	if(!m_pMgr->isServerMode())
+	{
+		m_idLight = SLight_CreateDirection(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, &SMQuaternion(-SM_PI, 'z'), m_fRadiusTop, m_fAngle, true);
+	}
 
 	//@FIXME: Что это??
 	//float3 f = LIGHTS_DIR_BASE;
@@ -36,7 +39,10 @@ CLightDirectional::CLightDirectional(CEntityManager *pMgr):BaseClass(pMgr)
 
 CLightDirectional::~CLightDirectional()
 {
-	SLight_DeleteLight(m_idLight);
+	if(ID_VALID(m_idLight))
+	{
+		SLight_DeleteLight(m_idLight);
+	}
 }
 
 void CLightDirectional::onSync()
@@ -44,15 +50,18 @@ void CLightDirectional::onSync()
 	BaseClass::onSync();
 
 	SMQuaternion curr_rot;
-	SLight_GetOrient(m_idLight, &curr_rot);
+	if(ID_VALID(m_idLight))
+	{
+		SLight_GetOrient(m_idLight, &curr_rot);
 
-	if (curr_rot.x != m_vOrientation.x || curr_rot.y != m_vOrientation.y || curr_rot.z != m_vOrientation.z || curr_rot.w != m_vOrientation.w)
-		SLight_SetOrient(m_idLight, &m_vOrientation);
+		if(curr_rot.x != m_vOrientation.x || curr_rot.y != m_vOrientation.y || curr_rot.z != m_vOrientation.z || curr_rot.w != m_vOrientation.w)
+			SLight_SetOrient(m_idLight, &m_vOrientation);
 
-	if (SLight_GetAngle(m_idLight) != m_fAngle)
-		SLight_SetAngle(m_idLight, m_fAngle);
+		if(SLight_GetAngle(m_idLight) != m_fAngle)
+			SLight_SetAngle(m_idLight, m_fAngle);
 
-	if (SLight_GetTopRadius(m_idLight) != m_fRadiusTop)
-		SLight_SetTopRadius(m_idLight, m_fRadiusTop);
+		if(SLight_GetTopRadius(m_idLight) != m_fRadiusTop)
+			SLight_SetTopRadius(m_idLight, m_fRadiusTop);
+	}
 }
 

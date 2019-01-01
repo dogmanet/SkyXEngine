@@ -33,7 +33,7 @@ public:
 	ICamera * getCamera();
 
 protected:
-	ICamera * m_pSXC;
+	ICamera * m_pSXC = NULL;
 
 	void onSync();
 };

@@ -74,30 +74,33 @@ void CBaseLight::onSync()
 {
 	BaseClass::onSync();
 
-	if(SLight_GetEnable(m_idLight) != m_isEnable)
-		SLight_SetEnable(m_idLight, m_isEnable);
-
-	float3 vec;
-	SLight_GetPos(m_idLight, &vec, false);
-
-	if(vec.x != m_vPosition.x || vec.y != m_vPosition.y || vec.z != m_vPosition.z)
-		SLight_SetPos(m_idLight, &(float3)m_vPosition, false);
-
-	SLight_SetColor(m_idLight, &(float3)m_vColor);
-
-	if(SLight_GetDist(m_idLight) != m_fDist)
+	if(ID_VALID(m_idLight))
 	{
-		SLight_SetDist(m_idLight, m_fDist, true);
-		m_fShadowDist = m_fDist;
+		if(SLight_GetEnable(m_idLight) != m_isEnable)
+			SLight_SetEnable(m_idLight, m_isEnable);
+
+		float3 vec;
+		SLight_GetPos(m_idLight, &vec, false);
+
+		if(vec.x != m_vPosition.x || vec.y != m_vPosition.y || vec.z != m_vPosition.z)
+			SLight_SetPos(m_idLight, &(float3)m_vPosition, false);
+
+		SLight_SetColor(m_idLight, &(float3)m_vColor);
+
+		if(SLight_GetDist(m_idLight) != m_fDist)
+		{
+			SLight_SetDist(m_idLight, m_fDist, true);
+			m_fShadowDist = m_fDist;
+		}
+
+		SLight_SetShadowIntensity(m_idLight, m_fShadowIntensity);
+
+		if(SLight_GetShadowLocalFar(m_idLight) != m_fShadowDist)
+			SLight_SetShadowLocalFar(m_idLight, m_fShadowDist);
+
+		if(SLight_GetTypeShadowed(m_idLight) != m_iShadowType)
+			SLight_SetTypeShadowed(m_idLight, (LTYPE_SHADOW)m_iShadowType);
 	}
-
-	SLight_SetShadowIntensity(m_idLight, m_fShadowIntensity);
-
-	if(SLight_GetShadowLocalFar(m_idLight) != m_fShadowDist)
-		SLight_SetShadowLocalFar(m_idLight, m_fShadowDist);
-
-	if(SLight_GetTypeShadowed(m_idLight) != m_iShadowType)
-		SLight_SetTypeShadowed(m_idLight, (LTYPE_SHADOW)m_iShadowType);
 }
 
 

@@ -136,8 +136,7 @@ void ModelFile::Load(const char * name)
 			for(uint32_t i = 0; i < m_hdr.iMaterialCount; i++)
 			{
 				fread(m_iMaterials[j][i].szName, 1, MODEL_MAX_NAME, fp);
-
-				m_iMaterials[j][i].iMat = m_pMgr->getMaterial(m_iMaterials[j][i].szName, (m_hdr.iFlags & MODEL_FLAG_STATIC) != 0); //3
+				m_iMaterials[j][i].iMat = m_pMgr->m_pd3dDevice ? m_pMgr->getMaterial(m_iMaterials[j][i].szName, (m_hdr.iFlags & MODEL_FLAG_STATIC) != 0) : -1; //3
 
 			}
 		}
@@ -657,28 +656,30 @@ void ModelFile::BuildMeshBuffers()
 			memcpy(pIndices + m_pLods[j].pSubLODmeshes[i].iStartIndex, m_pLods[j].pSubLODmeshes[i].pIndices, sizeof(UINT) * m_pLods[j].pSubLODmeshes[i].iIndexCount);
 			memcpy((byte*)pVertices + m_pLods[j].pSubLODmeshes[i].iStartVertex * vsize, m_pLods[j].pSubLODmeshes[i].pVertices, vsize * m_pLods[j].pSubLODmeshes[i].iVectexCount);
 		}
-
-		DX_CALL(m_pMgr->m_pd3dDevice->CreateVertexBuffer(vsize * iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &m_ppVertexBuffer[j], 0));
-		VOID * pData;
-		if(!FAILED(DX_CALL(m_ppVertexBuffer[j]->Lock(0, vsize * iStartVertex, (void**)&pData, 0))))
+		if(m_pMgr->m_pd3dDevice)
 		{
-			memcpy(pData, pVertices, vsize * iStartVertex);
-			m_ppVertexBuffer[j]->Unlock();
+			DX_CALL(m_pMgr->m_pd3dDevice->CreateVertexBuffer(vsize * iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &m_ppVertexBuffer[j], 0));
+			VOID * pData;
+			if(!FAILED(DX_CALL(m_ppVertexBuffer[j]->Lock(0, vsize * iStartVertex, (void**)&pData, 0))))
+			{
+				memcpy(pData, pVertices, vsize * iStartVertex);
+				m_ppVertexBuffer[j]->Unlock();
+			}
+
+			DX_CALL(m_pMgr->m_pd3dDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &m_ppIndexBuffer[j], 0));
+			if(!FAILED(DX_CALL(m_ppIndexBuffer[j]->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0))))
+			{
+				memcpy(pData, pIndices, sizeof(UINT)* iStartIndex);
+				m_ppIndexBuffer[j]->Unlock();
+			}
 		}
-
-		DX_CALL(m_pMgr->m_pd3dDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &m_ppIndexBuffer[j], 0));
-		if(!FAILED(DX_CALL(m_ppIndexBuffer[j]->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0))))
+		if(j == 0)
 		{
-			memcpy(pData, pIndices, sizeof(UINT) * iStartIndex);
-			m_ppIndexBuffer[j]->Unlock();
+			m_pBoundBox->calcBound((vertex_static_ex*)pVertices, iStartVertex, vsize);
 		}
 		mem_delete_a(pVertices);
 		mem_delete_a(pIndices);
 
-		if(j == 0)
-		{
-			m_pBoundBox->calcBound(m_ppVertexBuffer[0], iStartVertex, vsize);
-		}
 	}
 
 }
@@ -2297,6 +2298,7 @@ void AnimationManager::initVertexDeclarations()
 {
 	if(!m_pd3dDevice)
 	{
+		memset(pVertexDeclaration, 0, sizeof(pVertexDeclaration[0]) * MVT_SIZE);
 		return;
 	}
 	D3DVERTEXELEMENT9 layoutStatic[] =

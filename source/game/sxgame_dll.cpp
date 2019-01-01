@@ -415,7 +415,10 @@ SX_LIB_API void SGame_OnResetDevice()
 
 SX_LIB_API void SGame_OnLevelLoad(const char *szName)
 {
-	GameData::m_pHUDcontroller->loadMap(szName);
+	if(GameData::m_pHUDcontroller)
+	{
+		GameData::m_pHUDcontroller->loadMap(szName);
+	}
 }
 
 SX_LIB_API void SGame_SetDebugText(const char *szText)

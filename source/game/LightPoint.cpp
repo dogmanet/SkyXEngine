@@ -20,11 +20,17 @@ REGISTER_ENTITY(CLightPoint, light_point);
 
 CLightPoint::CLightPoint(CEntityManager * pMgr):BaseClass(pMgr)
 {
-	m_idLight = SLight_CreatePoint(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, false, true);
+	if(!m_pMgr->isServerMode())
+	{
+		m_idLight = SLight_CreatePoint(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, false, true);
+	}
 }
 
 CLightPoint::~CLightPoint()
 {
-	SLight_DeleteLight(m_idLight);
+	if(ID_VALID(m_idLight))
+	{
+		SLight_DeleteLight(m_idLight);
+	}
 }
 

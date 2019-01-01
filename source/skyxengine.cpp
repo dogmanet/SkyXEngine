@@ -13,6 +13,8 @@ FILE *g_pFileOutLog = 0;
 
 report_func g_fnReportf = SkyXEngine_PrintfLog;
 
+int g_iCurrentFPS = 0;
+
 //ID3DXMesh *g_pMeshBound = 0;
 
 BOOL CALLBACK SkyXEngine_EnumWindowsProc(HWND hwnd, LPARAM lParam)
@@ -41,10 +43,10 @@ void SkyXEngine_HandlerError(const char *szFormat, ...)
 
 void SkyXEngine_InitOutLog()
 {
-	AllocConsole();
-	freopen("CONOUT$", "wt", stdout);
-	freopen("CONOUT$", "wt", stderr);
-	freopen("CONIN$", "rt", stdin);
+	//AllocConsole();
+	//freopen("CONOUT$", "wt", stdout);
+	//freopen("CONOUT$", "wt", stderr);
+	//freopen("CONIN$", "rt", stdin);
 
 	char path[256];
 	char PathForExe[1024];
@@ -592,6 +594,11 @@ void SkyXEngine_CreateLoadCVar()
 
 	Core_0RegisterCVarBool("dbg_config_save", false, "Отладочный вывод процесса сохранения конфига");
 
+	Core_0RegisterConcmd("fps", []()
+	{
+		printf("FPS: " COLOR_CYAN "%d" COLOR_RESET "\n", g_iCurrentFPS);
+	}, "Show current fps");
+
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "CVar initialized\n");
 }
 
@@ -1097,6 +1104,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	int FrameCount = 0;
 	if ((FrameCount = SRender_OutputDebugInfo(timeDelta, needGameTime, debugstr)) > 0)
 	{
+		g_iCurrentFPS = FrameCount;
 		debugstr[0] = 0;
 		
 		sprintf(debugstr + strlen(debugstr), "\nCount poly: %d\n", Core_RIntGet(G_RI_INT_COUNT_POLY) / FrameCount);
@@ -1240,6 +1248,19 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 #ifndef SX_SERVER
 	SGCore_OC_UpdateEnsureDone();
+#endif
+
+#ifdef SX_SERVER
+	static int s_iFrameCount = 0;
+	static int64_t s_i64FrameTime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+	++s_iFrameCount;
+	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+	if(ttime - s_i64FrameTime > 1000000)
+	{
+		g_iCurrentFPS = (int)((float)s_iFrameCount / ((float)(ttime - s_i64FrameTime) / 1000000.0f));
+		s_i64FrameTime = ttime;
+		s_iFrameCount = 0;
+	}
 #endif
 }
 

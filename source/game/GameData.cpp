@@ -127,7 +127,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 	
 		m_pHUDcontroller = new CHUDcontroller();
 	}
-	m_pMgr = new CEntityManager();
+	m_pMgr = new CEntityManager(hWnd == NULL);
 
 	Core_0RegisterConcmd("+forward", ccmd_forward_on);
 	Core_0RegisterConcmd("-forward", ccmd_forward_off);
@@ -259,14 +259,21 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 		//GameData::m_pGameStateManager->activate("ingame");
 
-		Core_0ConsoleExecCmd("gmode ingame");
-		Core_0ConsoleExecCmd("spawn");
-
-		for(int i = 0; i < 0; ++i)
+		if(m_pMgr->isServerMode())
 		{
-			CBaseEntity* bEnt = SGame_CreateEntity("npc_zombie");
-			bEnt->setFlags(bEnt->getFlags() | EF_EXPORT | EF_LEVEL);
-			bEnt->setKV("origin", "0 1 0");
+			Core_0ConsoleExecCmd("gmode server");
+		}
+		else
+		{
+			Core_0ConsoleExecCmd("gmode ingame");
+			Core_0ConsoleExecCmd("spawn");
+
+			for(int i = 0; i < 0; ++i)
+			{
+				CBaseEntity* bEnt = SGame_CreateEntity("npc_zombie");
+				bEnt->setFlags(bEnt->getFlags() | EF_EXPORT | EF_LEVEL);
+				bEnt->setKV("origin", "0 1 0");
+			}
 		}
 	});
 
