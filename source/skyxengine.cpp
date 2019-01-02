@@ -1618,8 +1618,10 @@ bool SkyXEngine_CycleMainIteration()
 #ifndef SX_SERVER
 		}
 #endif
-#if !defined(SX_GAME) && !defined(SX_SERVER)
+#if !defined(SX_GAME)/* && !defined(SX_SERVER)*/
+#if !defined(SX_SERVER)
 		else
+#endif
 		{
 			Sleep(10);
 		}
