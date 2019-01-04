@@ -391,10 +391,22 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 #ifndef SX_SERVER
 	SRender_0Create("sxrender", hWnd3DCurr, hWndParent3D, false);
 	SRender_Dbg_Set(SkyXEngine_PrintfLog);
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB render initialized\n");
 #endif
 
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB render initialized\n");
+#if defined(SX_GAME) || defined(SX_SERVER)
+	SNetwork_0Create();
+	SNetwork_Dbg_Set(SkyXEngine_PrintfLog);
 
+#ifdef SX_SERVER
+	unsigned short usPort;
+	if(!sscanf(Core_0GetCommandLineArg("port", "7527"), "%hu", &usPort))
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Bad port number\n");
+	}
+	SNetwork_InitServer(usPort, Core_0GetCommandLineArg("ip", "0.0.0.0"));
+#endif
+#endif
 
 #if !defined(SX_GAME) && !defined(SX_SERVER)
 	ICamera *pCamera = SGCore_CrCamera();
@@ -884,7 +896,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_PEndSection(PERF_SECTION_GAME_SYNC);
 	DelayLibSyncGame += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
-
+	
 #ifndef SX_SERVER
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_MATSORT_UPDATE);
@@ -1566,6 +1578,11 @@ bool SkyXEngine_CycleMainIteration()
 		Core_0ConsoleUpdate();
 		Core_PEndSection(PERF_SECTION_PF_X);
 
+
+#if defined(SX_GAME) || defined(SX_SERVER)
+		SNetwork_Update();
+#endif
+
 #ifndef SX_SERVER
 		Core_PStartSection(PERF_SECTION_PF_Y);
 		SSInput_Update();
@@ -1641,6 +1658,13 @@ bool SkyXEngine_CycleMainIteration()
 
 void SkyXEngine_Kill()
 {
+#if defined(SX_GAME) || defined(SX_SERVER)
+#ifdef SX_SERVER
+	SNetwork_FinishServer();
+#endif
+	SNetwork_AKill();
+#endif
+
 #if !defined(SX_PARTICLES_EDITOR)
 	SGame_AKill();
 #endif

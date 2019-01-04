@@ -27,7 +27,9 @@ See the license in LICENSE
 #include <fcntl.h>
 #include <tlhelp32.h>
 
+#ifndef FORCE_NO_SMATH_D3D
 #define SM_D3D_CONVERSIONS
+#endif
 #include <common/sxmath.h>
 
 //! тип функции для обработки в менеджере задач
