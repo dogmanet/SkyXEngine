@@ -121,6 +121,12 @@ void CServer::update()
 									{
 										//@TODO: setup required data for pNetUser
 										printf("Client connected\n");
+										CNETbuff buf;
+										buf.writeString("someString1\n");
+										pNetUser->sendMessage(&buf, true);
+										buf.reset();
+										buf.writeString("someString2\n");
+										pNetUser->sendMessage(&buf, false);
 									}
 									else
 									{

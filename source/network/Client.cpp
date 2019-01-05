@@ -56,8 +56,9 @@ void CClient::update()
 	m_pNetChannel->update();
 	CNETbuff buf;
 	CNetPeer netPeer;
+	CNetUser *pNetUser;
 	bool isRaw = false;
-	while(m_pNetChannel->readPacket(&buf, NULL, &netPeer, &isRaw))
+	while(m_pNetChannel->readPacket(&buf, &pNetUser, &netPeer, &isRaw))
 	{
 		if(isRaw)
 		{
@@ -75,8 +76,9 @@ void CClient::update()
 					break;
 
 				case CS_CHALLENGE_SENT:
-					m_u8SPort = buf.readUInt8();
+					byte u8SPort = buf.readUInt8();
 					m_connState = CS_CHALLENGE_READY;
+					m_pNetChannel->acceptClient(&netPeer, &m_pNetUser, u8SPort);
 					printf("Connection ready\n");
 					break;
 				}
@@ -86,8 +88,14 @@ void CClient::update()
 		else
 		{
 			//@TODO: process messages from packet
+			printf("%s", buf.getPointer());
 		}
 	}
+
+	/*if(m_connState == CS_CHALLENGE_READY)
+	{
+		m_pNetUser->sendMessage((byte*)"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 16);
+	}*/
 }
 
 void CClient::connect(const char *szIp, unsigned short usPort)

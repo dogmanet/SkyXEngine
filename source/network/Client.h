@@ -44,8 +44,7 @@ protected:
 	bool m_isConnected = false;
 	CONN_STATE m_connState = CS_DISCONNECTED;
 	uint32_t m_uChallenge = 0;
-
-	uint8_t m_u8SPort = 0;
+	CNetUser *m_pNetUser = NULL;
 };
 
 #endif

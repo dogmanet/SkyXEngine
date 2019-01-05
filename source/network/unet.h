@@ -25,8 +25,19 @@
 #	define EWOULDBLOCK WSAEWOULDBLOCK
 #endif
 
+
+#pragma pack(push, 1)
+struct msg_header_s
+{
+	uint16_t usSeq;
+	uint16_t usAck;
+	byte i8SPort;
+	byte isReliable : 1;
+};
+#pragma pack(pop)
+
 #define PACKET_MAX_SIZE 508
-#define PACKET_HDR_SIZE 10
+#define PACKET_HDR_SIZE sizeof(msg_header_s)
 
 
 #endif
