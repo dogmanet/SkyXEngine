@@ -22,7 +22,7 @@ struct CSentPacket
 #define NET_LOSS_COUNT_FRAMES 16
 #define NET_PACKET_BUFFER_SIZE 64
 
-class CNetUser
+class CNetUser: public INetUser
 {
 	friend class CNetChannel;
 
@@ -34,12 +34,15 @@ public:
 	}
 
 	void sendMessage(byte *pData, int iLength, bool isReliable = false);
-	void sendMessage(CNETbuff *pNetBuff, bool isReliable = false);
+	void sendMessage(INETbuff *pNetBuff, bool isReliable = false);
+
+	void kick(const char *szReason);
 
 protected:
 	CNetPeer m_netPeer;
 	ID m_id = -1;
 	uint8_t m_u8SourcePort;
+	bool m_bDoDisconnect = false;
 
 	uint16_t m_uSeq = 0; //!< Last outgoing sequence
 	uint16_t m_uAck = 0; //!< Last received ack (will be sent back to peer)
@@ -79,6 +82,8 @@ public:
 	bool readPacket(INETbuff *pBuf, CNetUser **ppFrom, CNetPeer *pNetPeer, bool *pIsRaw);
 
 	ID acceptClient(CNetPeer *pNetPeer, CNetUser **ppNetUser = NULL, int iForceSourcePort=-1);
+
+	const Array<CNetUser*> &getClients();
 
 protected:
 	int m_iSocket;

@@ -28,6 +28,8 @@ public:
 
 	void update();
 
+	void registerMessage(CLIENT_COMMAND msgid, PFNMESSAGEHANDLER fnHandler);
+
 protected:
 	int m_iListener;
 	CNetChannel *m_pNetChannel;
@@ -39,6 +41,8 @@ protected:
 	void sendQueryInfo(CNetPeer *pPeer);
 
 	bool validateTicket(CNetPeer *pPeer, byte *pData, int iLen);
+
+	PFNMESSAGEHANDLER m_vMsgHandlers[CLC_LAST];
 };
 
 #endif

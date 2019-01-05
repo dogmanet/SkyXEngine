@@ -32,6 +32,8 @@ See the license in LICENSE
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
 
+#include "protocol.h"
+
 //#############################################################################
 
 /*! \defgroup sxlevel sxnetwork - библиотека сетевого взаимодействия

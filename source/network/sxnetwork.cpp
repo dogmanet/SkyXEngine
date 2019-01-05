@@ -113,6 +113,11 @@ SX_LIB_API void SNetwork_InitServer(unsigned short usPort, const char *szIp)
 	}
 
 	g_pServer = new CServer(szIp, usPort);
+	g_pServer->registerMessage(CLC_DROP, [](INETbuff *pData, INetUser *pNetUser){
+		// drop client
+		printf("Client sent drop\n");
+		pNetUser->kick("Client sent drop");
+	});
 }
 
 SX_LIB_API void SNetwork_FinishServer()
@@ -128,6 +133,11 @@ SX_LIB_API void SNetwork_Connect(const char *szIp, unsigned short usPort)
 	assert(!g_pClient);
 
 	g_pClient = new CClient();
+	g_pClient->registerMessage(SVC_DISCONNECT, [](INETbuff *pData, INetUser *pNetUser){
+		char buf[128];
+		pData->readString(buf, sizeof(buf));
+		printf("Kicked: %s\n", buf);
+	});
 	g_pClient->connect(szIp, usPort);
 }
 

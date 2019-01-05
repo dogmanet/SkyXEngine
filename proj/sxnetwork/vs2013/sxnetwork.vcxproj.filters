@@ -51,6 +51,9 @@
     <ClInclude Include="..\..\..\source\network\Client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\network\protocol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\network\NETbuff.cpp">

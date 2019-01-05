@@ -48,11 +48,24 @@ CServer::CServer(const char *szIp, unsigned short usPort)
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "Ready for incoming connections\n");
 
 	m_pNetChannel = new CNetChannel(m_iListener);
+
+	memset(m_vMsgHandlers, 0, sizeof(m_vMsgHandlers));
 }
 
 CServer::~CServer()
 {
-	//@TODO: kick all clients
+	// kick all clients
+	const Array<CNetUser*> &apUsers = m_pNetChannel->getClients();
+
+	for(int i = 0, l = apUsers.size(); i < l; ++i)
+	{
+		if(apUsers[i])
+		{
+			apUsers[i]->kick("Server shutdown");
+		}
+	}
+	m_pNetChannel->update();
+
 	mem_delete(m_pNetChannel);
 	closesocket(m_iListener);
 }
@@ -121,12 +134,6 @@ void CServer::update()
 									{
 										//@TODO: setup required data for pNetUser
 										printf("Client connected\n");
-										CNETbuff buf;
-										buf.writeString("someString1\n");
-										pNetUser->sendMessage(&buf, true);
-										buf.reset();
-										buf.writeString("someString2\n");
-										pNetUser->sendMessage(&buf, false);
 									}
 									else
 									{
@@ -143,7 +150,26 @@ void CServer::update()
 		}
 		else
 		{
-			//@TODO: process messages from packet
+			// process messages from packet
+			while(!buf.isEnd())
+			{
+				byte cmd = buf.readUInt8();
+				if(cmd == CLC_NOP)
+				{
+					continue;
+				}
+
+				if(cmd < CLC_LAST && m_vMsgHandlers[cmd])
+				{
+					m_vMsgHandlers[cmd](&buf, pNetUser);
+				}
+				else
+				{
+					LibReport(REPORT_MSG_LEVEL_WARNING, "Bad CLC(%hhu)\n", cmd);
+					pNetUser->kick("Protocol violation!");
+					break;
+				}
+			}
 		}
 	}
 }
@@ -191,4 +217,9 @@ bool CServer::isChallengeValid(uint32_t uIP, uint32_t uChallenge)
 bool CServer::validateTicket(CNetPeer *pPeer, byte *pData, int iLen)
 {
 	return(true);
+}
+
+void CServer::registerMessage(CLIENT_COMMAND msgid, PFNMESSAGEHANDLER fnHandler)
+{
+	m_vMsgHandlers[msgid] = fnHandler;
 }

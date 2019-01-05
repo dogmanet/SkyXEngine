@@ -103,6 +103,7 @@
     <ClInclude Include="..\..\..\source\network\NET.h" />
     <ClInclude Include="..\..\..\source\network\NETbuff.h" />
     <ClInclude Include="..\..\..\source\network\NetChannel.h" />
+    <ClInclude Include="..\..\..\source\network\protocol.h" />
     <ClInclude Include="..\..\..\source\network\Server.h" />
     <ClInclude Include="..\..\..\source\network\sxnetwork.h" />
     <ClInclude Include="..\..\..\source\network\unet.h" />

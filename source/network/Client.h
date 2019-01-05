@@ -37,6 +37,8 @@ public:
 		CS_CHALLENGE_READY,
 	};
 
+	void registerMessage(SERVER_COMMAND msgid, PFNMESSAGEHANDLER fnHandler);
+
 protected:
 	int m_iListener;
 	CNetChannel *m_pNetChannel;
@@ -45,6 +47,9 @@ protected:
 	CONN_STATE m_connState = CS_DISCONNECTED;
 	uint32_t m_uChallenge = 0;
 	CNetUser *m_pNetUser = NULL;
+
+	PFNMESSAGEHANDLER m_vMsgHandlers[SVC_LAST];
+
 };
 
 #endif

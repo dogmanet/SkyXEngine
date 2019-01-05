@@ -2,7 +2,7 @@
 
 CClient::CClient()
 {
-
+	memset(m_vMsgHandlers, 0, sizeof(m_vMsgHandlers));
 }
 
 CClient::~CClient()
@@ -87,19 +87,36 @@ void CClient::update()
 		}
 		else
 		{
-			//@TODO: process messages from packet
-			printf("%s", buf.getPointer());
+			// process messages from packet
+			while(!buf.isEnd())
+			{
+				byte cmd = buf.readUInt8();
+				if(cmd == SVC_NOP)
+				{
+					continue;
+				}
+
+				if(cmd < SVC_LAST && m_vMsgHandlers[cmd])
+				{
+					m_vMsgHandlers[cmd](&buf, pNetUser);
+				}
+				else
+				{
+					LibReport(REPORT_MSG_LEVEL_WARNING, "Bad SVC(%hhu)\n", cmd);
+					SNetwork_Disconnect();
+					return;
+				}
+			}
 		}
 	}
-
-	/*if(m_connState == CS_CHALLENGE_READY)
-	{
-		m_pNetUser->sendMessage((byte*)"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 16);
-	}*/
 }
 
 void CClient::connect(const char *szIp, unsigned short usPort)
 {
+	if(m_isConnected)
+	{
+		disconnect();
+	}
 #if defined(_WINDOWS)
 	WSADATA wsaData;
 	if(WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
@@ -146,6 +163,18 @@ void CClient::connect(const char *szIp, unsigned short usPort)
 
 void CClient::disconnect()
 {
+	if(!m_isConnected)
+	{
+		return;
+	}
+
+	if(m_pNetUser)
+	{
+		byte msg = CLC_DROP;
+		m_pNetUser->sendMessage(&msg, 1);
+		m_pNetChannel->update();
+	}
+
 	mem_delete(m_pNetChannel);
 	closesocket(m_iListener);
 	m_isConnected = false;
@@ -171,4 +200,9 @@ void CClient::getAuthTicket(byte **ppOut, uint16_t *pusLength)
 void CClient::freeAuthTicket(byte *pData, uint16_t usLength)
 {
 	mem_delete(pData);
+}
+
+void CClient::registerMessage(SERVER_COMMAND msgid, PFNMESSAGEHANDLER fnHandler)
+{
+	m_vMsgHandlers[msgid] = fnHandler;
 }

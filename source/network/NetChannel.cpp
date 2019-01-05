@@ -14,9 +14,18 @@ void CNetUser::sendMessage(byte *pData, int iLength, bool isReliable)
 		m_bufOut.addBuf(pData, iLength);
 	}
 }
-void CNetUser::sendMessage(CNETbuff *pNetBuff, bool isReliable)
+void CNetUser::sendMessage(INETbuff *pNetBuff, bool isReliable)
 {
 	sendMessage((byte*)pNetBuff->getPointer(), pNetBuff->getSize(), isReliable);
+}
+
+void CNetUser::kick(const char *szReason)
+{
+	CNETbuff buf;
+	buf.writeUInt8(SVC_DISCONNECT);
+	buf.writeString(szReason);
+	sendMessage(&buf);
+	m_bDoDisconnect = true;
 }
 
 //##########################################################################
@@ -29,6 +38,17 @@ CNetChannel::CNetChannel(int iSocket):
 void CNetChannel::update()
 {
 	sendMessages();
+
+	for(int i = 0, l = m_apUsers.size(); i < l; ++i)
+	{
+		CNetUser *pNetUser = m_apUsers[i];
+		if(pNetUser && pNetUser->m_bDoDisconnect)
+		{
+			printf("Client %d disconnected\n", i);
+			mem_delete(pNetUser);
+			m_apUsers[i] = NULL;
+		}
+	}
 }
 
 void CNetChannel::sendRaw(CNetPeer *pNetPeer, byte *pData, int iSize)
@@ -105,6 +125,7 @@ bool CNetChannel::readPacket(INETbuff *pBuf, CNetUser **ppFrom, CNetPeer *pNetPe
 		{
 			continue;
 		}
+		pNetUser->m_netPeer.m_uPort = pNetPeer->m_uPort;
 		if(ppFrom)
 		{
 			*ppFrom = pNetUser;
@@ -388,4 +409,9 @@ CNetUser *CNetChannel::findUser(CNetPeer *pNetPeer, uint8_t u8SourcePort)
 		}
 	}
 	return(NULL);
+}
+
+const Array<CNetUser*> &CNetChannel::getClients()
+{
+	return(m_apUsers);
 }
