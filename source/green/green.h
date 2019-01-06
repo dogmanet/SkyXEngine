@@ -21,16 +21,16 @@ extern g_phy_intersect g_fnIntersect;
 
 //##########################################################################
 
-#define GREEN_PRECOND_IDVISCALCOBJ_ERR(id_arr) \
-if (!(id_arr < (ID)m_aVisCaclObj.size()))\
+#define GREEN_PRECOND_IDVISCALCOBJ_ERR(idVisCalcObj) \
+if (!(idVisCalcObj < (ID)m_aVisCaclObj.size()))\
 {\
-	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of compute visible", GEN_MSG_LOCATION, id_arr); \
+	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for VisCalcObj", GEN_MSG_LOCATION, idVisCalcObj); \
 }
 
-#define GREEN_PRECOND_IDGREEN_ERR(id_model) \
-if(!(id_model < (ID)m_aGreens.size() && m_aGreens[id_model]))\
+#define GREEN_PRECOND_IDGREEN_ERR(idGreen) \
+if (!(idGreen < (ID)m_aGreens.size() && m_aGreens[idGreen]))\
 {\
-	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of models", GEN_MSG_LOCATION, id_model); \
+	LibReport(REPORT_MSG_LEVEL_ERROR, "%s - green: unresolved id '%d' for array of models", GEN_MSG_LOCATION, idGreen); \
 }
 
 //##########################################################################
@@ -41,8 +41,11 @@ if(!(id_model < (ID)m_aGreens.size() && m_aGreens[id_model]))\
 //! количество лодов растительноси
 #define GREEN_COUNT_LOD 3
 
-#define GREEN_DEFAULT_RESERVE_GEN 1024
-#define GREEN_DEFAULT_RESERVE_COM 1024
+//! резервация количества элементов при расчетах генерации
+#define GREEN_DEFAULT_RESERVE_GEN 512
+
+//! резервация количества элементов при расчетах видимости
+#define GREEN_DEFAULT_RESERVE_COM 128
 
 //##########################################################################
 
@@ -106,9 +109,9 @@ public:
 	void save(const char *szPath);
 	bool load(const char *szPath);
 	void clear();
-	void comArrIndeces(const IFrustum *pFrustum, const float3 *pViewPos, ID idArr = 0);
-	void render(DWORD timeDelta, const float3 *pViewPos, GREEN_TYPE type, ID idArr = 0);
-	void renderSingly(DWORD timeDelta, const float3 *pViewPos, ID id, ID idTexture, ID idArr = 0);
+	void comArrIndeces(const IFrustum *pFrustum, const float3 *pViewPos, ID idVisCaclObj = 0);
+	void render(DWORD timeDelta, const float3 *pViewPos, GREEN_TYPE type, ID idVisCaclObj = 0);
+	void renderSingly(DWORD timeDelta, const float3 *pViewPos, ID id, ID idTexture, ID idVisCaclObj = 0);
 	void renderObject(DWORD timeDelta, const float3 *pViewPos, ID id, ID idSplit, ID idObj, ID idTexture);
 
 	ID getCountGreen();
@@ -142,9 +145,6 @@ public:
 		//! массив из 4 частей данного участка
 		CSegment *m_aSplits[GREEN_COUNT_TYPE_SEGMENTATION]; 
 
-		//! массив данных трансформаций каждого элемента данного куска
-		CGreenDataVertex *m_pObjData;
-
 		ID *m_pArrIDs;
 
 		//! количество элементов
@@ -162,8 +162,8 @@ public:
 		//! идентификатор куска
 		ID m_id;	
 
-		//! имеет ли кусок куски внутри себя?
-		bool m_idNonEnd;
+		//! является ли сегмент конечным (то есть не содержит внутри себя других сегментов)?
+		bool m_isFinite;
 
 		//ID3DXMesh* BoundBox;	//ограничивающий параллелепипед (меш)
 	};
@@ -227,7 +227,9 @@ public:
 		//! имя текстуры маски
 		String m_szMaskName;
 
-		//! сколько всего сгенерировано объектов
+		/*! сколько всего объектов в данной растительности
+		 \note Массивы #m_pAllTrans и #m_aTransW содержат информацию обо всех объектах, в том числе и для тех, которые подготовлены к удалению
+		*/
 		uint32_t m_uiCountObj;
 
 		//! имя объекта растительности
@@ -236,6 +238,7 @@ public:
 		//! физическая модель
 		CPhysMesh *m_pPhysMesh;
 
+		//! данные нулевого лода для определения столкновений на стороне либы для воспроизвденеие звуков листвы и определения пересечений
 		CPhysMesh *m_pDataLod0;
 
 		//! начальный/главный сплит пространства
@@ -274,10 +277,10 @@ public:
 		//! массив хранящий в себе указатели на сегменты
 		CSegment **m_ppSegments;
 
-		//! размер m_ppSegments 
+		//! размер #m_ppSegments 
 		int m_iCount;
 
-		//! сколько сегментов записано в #m_ppSegments
+		//! сколько сегментов записано в #m_ppSegments (записывается каждый раз при расчетах)
 		int m_iCountCom;
 
 		//! виден ли объект (дерево/куст)
@@ -310,6 +313,9 @@ protected:
 	//! установка физической оболочки виду растительности
 	void setGreenNav2(CModel *pGreen, const char *szPathName);
 
+	//! доабвить новый объект растительности pObject в pGreen
+	ID addNewObject2Global(CModel *pGreen, CGreenDataVertex *pObject);
+
 	
 	void initGreenDataLod0(CModel *pGreen);
 
@@ -336,7 +342,7 @@ protected:
 	void getPartBeam(const float3 *pPos, const float3 *pDir, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, int iCountCom);
 	void getPartBB(const float3 *pMin, const float3 *pMax, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, ID idCurrSplitRender);
 
-	void comRecArrIndeces(ID idGreen, ID idArr, const IFrustum *pFrustum, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, const float3 *pViewPos, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> *pQueue, int iAllCount);
+	void comRecArrIndeces(ID idGreen, ID idVisCaclObj, const IFrustum *pFrustum, CSegment **ppArrSplits, int *pCount, CSegment *pSegment, const float3 *pViewPos, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> *pQueue, int iAllCount);
 
 	void addModelInVisCaclObj(ID idModel);
 	void deleteModelInVisCaclObj(ID idModel);
@@ -348,9 +354,6 @@ protected:
 	//! установка id сплитам
 	void setSplitID(CModel *pModel);
 	void setSplitID2(CModel *pModel, CSegment *pSplit, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> *pQueue);
-
-
-	void computeBBtrans(ID idGreen);
 
 	//! расчет ограничивающего бокса объекта на основании данных его трансформации
 	void computeBB(const CGreenDataVertex &oTrans, CBoundBox &oBox);
