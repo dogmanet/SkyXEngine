@@ -66,7 +66,13 @@ CPlayer::CPlayer(CEntityManager * pMgr):
 
 	m_idQuadCurr = -1;
 
-	m_pCrosshair = new CCrosshair();
+	if(!m_pMgr->isServerMode())
+	{
+		m_pCrosshair = new CCrosshair();
+	}
+
+	SPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
+	SPhysics_GetDynWorld()->removeAction(m_pCharacter);
 
 	//m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 }
@@ -82,18 +88,18 @@ void CPlayer::updateInput(float dt)
 {
 	int x, y;
 	static const float * sense = GET_PCVAR_FLOAT("cl_mousesense");
-	static const bool * editor_mode = GET_PCVAR_BOOL("cl_mode_editor");
+	//static const bool * editor_mode = GET_PCVAR_BOOL("cl_mode_editor");
 	static const bool * grab_cursor = GET_PCVAR_BOOL("cl_grab_cursor");
 
-	if(*editor_mode && !SSInput_GetKeyState(SIK_LCONTROL))
+	/*if(*editor_mode && !SSInput_GetKeyState(SIK_LCONTROL))
 	{
 		m_pCharacter->setWalkDirection(btVector3(0.0f, 0.0f, 0.0f));
 		return;
-	}
+	}*/
 
 	m_vWpnShakeAngles = (float3)(m_vWpnShakeAngles * 0.4f);
 
-	if(!*editor_mode || SSInput_GetKeyState(SIM_LBUTTON))
+	if(1/*!*editor_mode || SSInput_GetKeyState(SIM_LBUTTON)*/)
 	{
 		SSInput_GetMouseDelta(&x, &y);
 
@@ -133,7 +139,10 @@ void CPlayer::updateInput(float dt)
 			setOrient(SMQuaternion(m_vPitchYawRoll.y, 'y'));
 			m_pHeadEnt->setOffsetOrient(SMQuaternion(m_vPitchYawRoll.x, 'x') * SMQuaternion(m_vPitchYawRoll.z, 'z'));
 			
-			GameData::m_pHUDcontroller->setPlayerRot(m_vPitchYawRoll);
+			if(getHUDcontroller())
+			{
+				getHUDcontroller()->setPlayerRot(m_vPitchYawRoll);
+			}
 		}
 
 	}
@@ -296,12 +305,15 @@ void CPlayer::updateInput(float dt)
 			m_vWpnShakeAngles.x = clampf(m_vWpnShakeAngles.x, -fMaxAng, fMaxAng);
 		}
 
-		GameData::m_pHUDcontroller->setPlayerPos(m_vPosition);
+		if(getHUDcontroller())
+		{
+			getHUDcontroller()->setPlayerPos(m_vPosition);
+		}
 
 	}
 
 #ifndef _SERVER
-	if(*grab_cursor && (!*editor_mode || SSInput_GetKeyState(SIM_LBUTTON)))
+	if(*grab_cursor/* && (!*editor_mode || SSInput_GetKeyState(SIM_LBUTTON))*/)
 	{
 		RECT rc;
 		GetWindowRect(GetForegroundWindow(), &rc);
@@ -348,8 +360,13 @@ void CPlayer::onSync()
 void CPlayer::observe()
 {
 	m_uMoveDir |= PM_OBSERVER;
-	m_pCrosshair->enable(false);
+	if(m_pCrosshair)
+	{
+		m_pCrosshair->enable(false);
+	}
 
+	SPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
+	SPhysics_GetDynWorld()->removeAction(m_pCharacter);
 
 	if(ID_VALID(m_idQuadCurr))
 	{
@@ -365,14 +382,23 @@ void CPlayer::spawn()
 	{
 		//if(CanSpawn(pEnt))
 		{
+			SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
+			SPhysics_GetDynWorld()->addAction(m_pCharacter);
+
 			setPos(pEnt->getPos());
 			setOrient(pEnt->getOrient());
 			m_uMoveDir &= ~PM_OBSERVER;
-			m_pCrosshair->enable();
+			if(m_pCrosshair)
+			{
+				m_pCrosshair->enable();
+			}
 
-			GameData::m_pHUDcontroller->setPlayerRot(m_vPitchYawRoll);
-			GameData::m_pHUDcontroller->setPlayerPos(m_vPosition);
-			GameData::m_pHUDcontroller->setPlayerHealth(m_fHealth);
+			if(getHUDcontroller())
+			{
+				getHUDcontroller()->setPlayerRot(m_vPitchYawRoll);
+				getHUDcontroller()->setPlayerPos(m_vPosition);
+				getHUDcontroller()->setPlayerHealth(m_fHealth);
+			}
 			return;
 		}
 	}
@@ -436,8 +462,11 @@ CHUDcontroller * CPlayer::getHUDcontroller()
 void CPlayer::dispatchDamage(CTakeDamageInfo &takeDamageInfo)
 {
 	BaseClass::dispatchDamage(takeDamageInfo);
-	getHUDcontroller()->setPlayerHealth(m_fHealth);
-	getHUDcontroller()->fadeScreenDmg();
+	if(getHUDcontroller())
+	{
+		getHUDcontroller()->setPlayerHealth(m_fHealth);
+		getHUDcontroller()->fadeScreenDmg();
+	}
 }
 
 void CPlayer::attack(BOOL state)
@@ -456,8 +485,8 @@ void CPlayer::respawn()
 	{
 		m_fHealth = 100.0f;
 
-		SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
-		SPhysics_GetDynWorld()->addAction(m_pCharacter);
+		//SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
+		//SPhysics_GetDynWorld()->addAction(m_pCharacter);
 		spawn();
 	}
 }

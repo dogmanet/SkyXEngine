@@ -676,7 +676,7 @@ void CEntityManager::dumpList(int argc, const char ** argv)
 		}
 		if(!filter[0] || strstr(pEnt->getClassName(), filter))
 		{
-			printf(" " COLOR_LGREEN "%4d" COLOR_GREEN " | " COLOR_LGREEN "%24s" COLOR_GREEN " | " COLOR_LGREEN "%16s" COLOR_GREEN " |\n", i, pEnt->getClassName(), pEnt->getName());
+			printf(" " COLOR_LGREEN "%-4d" COLOR_GREEN " | " COLOR_LGREEN "%-24s" COLOR_GREEN " | " COLOR_LGREEN "%-16s" COLOR_GREEN " |\n", i, pEnt->getClassName(), pEnt->getName());
 		}
 	}
 
@@ -700,6 +700,7 @@ void CEntityManager::entKV(int argc, const char ** argv)
 	if(id < 0 || (UINT)id >= m_vEntList.size() || !(pEnt = m_vEntList[id]))
 	{
 		printf(COLOR_LRED "Invalid entity id\n" COLOR_RESET);
+		return;
 	}
 	char buf[128];
 	buf[0] = 0;
@@ -714,8 +715,10 @@ void CEntityManager::entKV(int argc, const char ** argv)
 				{
 					if(pt->pData[i].szKey)
 					{
-						pEnt->getKV(pt->pData[i].szKey, buf, sizeof(buf));
-						printf("%s = %s\n", pt->pData[i].szKey, buf);
+						if(pEnt->getKV(pt->pData[i].szKey, buf, sizeof(buf)))
+						{
+							printf("%s = %s\n", pt->pData[i].szKey, buf);
+						}
 					}
 				}
 				pt = pt->pBaseProptable;
@@ -723,8 +726,10 @@ void CEntityManager::entKV(int argc, const char ** argv)
 		}
 		break;
 	case 3: // show KV
-		pEnt->getKV(argv[2], buf, sizeof(buf));
-		printf("%s = %s\n", argv[2], buf);
+		if(pEnt->getKV(argv[2], buf, sizeof(buf)))
+		{
+			printf("%s = %s\n", argv[2], buf);
+		}
 		break;
 
 	case 4: // set new KV
@@ -849,4 +854,14 @@ bool CEntityManager::isEditorMode()
 bool CEntityManager::isServerMode()
 {
 	return(m_isServerMode);
+}
+
+ISXConfig *CEntityManager::getDefaultsConfig()
+{
+	return(m_pDefaultsConf);
+}
+
+ISXConfig *CEntityManager::getDynClassConfig()
+{
+	return(m_pDynClassConf);
 }

@@ -130,6 +130,8 @@ CBaseCharacter::~CBaseCharacter()
 	REMOVE_ENTITY(m_flashlight);
 	mem_delete(m_pInventory);
 
+	SPhysics_GetDynWorld()->removeAction(m_pCharacter);
+	SPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
 	mem_delete(m_pCharacter);
 	mem_delete(m_pGhostObject);
 	mem_delete(m_pCollideShape);

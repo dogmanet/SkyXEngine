@@ -94,7 +94,7 @@ protected:
 	int m_iDSM;
 
 	//! Перекрестие
-	CCrosshair * m_pCrosshair;
+	CCrosshair * m_pCrosshair = NULL;
 
 	//! Обновляет разброса значение
 	virtual void updateSpread(float dt);

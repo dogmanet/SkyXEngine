@@ -138,6 +138,46 @@ SX_LIB_API void SNetwork_Connect(const char *szIp, unsigned short usPort)
 		pData->readString(buf, sizeof(buf));
 		printf("Kicked: %s\n", buf);
 	});
+	g_pClient->registerMessage(SVC_NEWLEVEL, [](INETbuff *pData, INetUser *pNetUser){
+		char buf[128];
+		pData->readString(buf, sizeof(buf));
+		Core_0ConsoleExecCmd("map %s", buf);
+	});
+	g_pClient->registerMessage(SVC_ENDLEVEL, [](INETbuff *pData, INetUser *pNetUser){
+		Core_0ConsoleExecCmd("endmap");
+	});
+	g_pClient->registerMessage(SVC_ENTCONFIG, [](INETbuff *pData, INetUser *pNetUser){
+		printf("Received entconfig\n");
+		char szClass[256], szKey[256], szValue[256];
+
+		//@TODO: Use that data!
+
+		// dynclasses
+		uint32_t uEntCount = pData->readUInt32();
+		for(uint32_t i = 0; i < uEntCount; ++i)
+		{
+			pData->readString(szClass, sizeof(szClass));
+			uint16_t usKeyCount = pData->readUInt16();
+			for(uint16_t j = 0; j < usKeyCount; ++j)
+			{
+				pData->readString(szKey, sizeof(szKey));
+				pData->readString(szValue, sizeof(szValue));
+			}
+		}
+
+		// defaults
+		uEntCount = pData->readUInt32();
+		for(uint32_t i = 0; i < uEntCount; ++i)
+		{
+			pData->readString(szClass, sizeof(szClass));
+			uint16_t usKeyCount = pData->readUInt16();
+			for(uint16_t j = 0; j < usKeyCount; ++j)
+			{
+				pData->readString(szKey, sizeof(szKey));
+				pData->readString(szValue, sizeof(szValue));
+			}
+		}
+	});
 	g_pClient->connect(szIp, usPort);
 }
 
@@ -152,4 +192,46 @@ SX_LIB_API void SNetwork_Disconnect()
 SX_LIB_API bool SNetwork_IsConnected()
 {
 	return(g_pClient != NULL);
+}
+
+SX_LIB_API void SNetwork_BroadcastMessage(byte *pData, int iLength, bool isReliable)
+{
+	if(g_pServer)
+	{
+		g_pServer->sendMessage(pData, iLength, isReliable);
+	}
+}
+
+SX_LIB_API void SNetwork_BroadcastMessageBuf(INETbuff *pNetBuff, bool isReliable)
+{
+	if(g_pServer)
+	{
+		g_pServer->sendMessage(pNetBuff, isReliable);
+	}
+}
+
+SX_LIB_API INETbuff *SNetwork_CreateBuffer()
+{
+	return(new CNETbuff());
+}
+
+SX_LIB_API void SNetwork_FreeBuffer(INETbuff *pBuf)
+{
+	mem_delete(pBuf);
+}
+
+SX_LIB_API void SNetwork_OnClientConnected(PFNCLIENTHANDLER fnHandler)
+{
+	if(g_pServer)
+	{
+		g_pServer->onClientConnected(fnHandler);
+	}
+}
+
+SX_LIB_API void SNetwork_OnClientDisconnected(PFNCLIENTHANDLER fnHandler)
+{
+	if(g_pServer)
+	{
+		g_pServer->onClientDisconnected(fnHandler);
+	}
 }

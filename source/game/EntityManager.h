@@ -112,6 +112,9 @@ public:
 	bool isEditorMode();
 	bool isServerMode();
 
+	ISXConfig *getDefaultsConfig();
+	ISXConfig *getDynClassConfig();
+
 protected:
 	ID reg(CBaseEntity * pEnt);
 	void unreg(ID ent);

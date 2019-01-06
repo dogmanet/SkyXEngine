@@ -12,6 +12,7 @@ See the license in LICENSE
 #include "crosshair.h"
 #include <mtrl/sxmtrl.h>
 #include <gui/guimain.h>
+#include <network/sxnetwork.h>
 #include "HUDcontroller.h"
 #include "GameStateManager.h"
 
@@ -41,6 +42,8 @@ public:
 
 	static gui::dom::IDOMnode *m_pCell;
 	//static gui::IDesktop *m_pStatsUI;
+
+	static void fillSvcEntconfigBuffer(INETbuff *pBuf);
 
 protected:
 

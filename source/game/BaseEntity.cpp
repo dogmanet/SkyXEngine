@@ -397,7 +397,7 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 bool CBaseEntity::getKV(const char * name, char * out, int bufsize)
 {
 	propdata_t * field = getField(name);
-	if(!field)
+	if(!field || (field->flags & PDFF_INPUT))
 	{
 		return(false);
 	}

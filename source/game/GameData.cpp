@@ -262,6 +262,12 @@ GameData::GameData(HWND hWnd, bool isGame):
 		if(m_pMgr->isServerMode())
 		{
 			Core_0ConsoleExecCmd("gmode server");
+
+			INETbuff *pBuf = SNetwork_CreateBuffer();
+			pBuf->writeUInt8(SVC_NEWLEVEL);
+			pBuf->writeString(argv[1]);
+			SNetwork_BroadcastMessageBuf(pBuf, true);
+			SNetwork_FreeBuffer(pBuf);
 		}
 		else
 		{
@@ -276,6 +282,23 @@ GameData::GameData(HWND hWnd, bool isGame):
 			}
 		}
 	});
+	Core_0RegisterConcmd("endmap", [](){
+		GameData::m_pGameStateManager->activate("main_menu");
+		if(GameData::m_pPlayer)
+		{
+			GameData::m_pPlayer->observe();
+		}
+		SLevel_Clear();
+
+		if(m_pMgr->isServerMode())
+		{
+			INETbuff *pBuf = SNetwork_CreateBuffer();
+			pBuf->writeUInt8(SVC_ENDLEVEL);
+			SNetwork_BroadcastMessageBuf(pBuf, true);
+			SNetwork_FreeBuffer(pBuf);
+		}
+	});
+
 
 	Core_0RegisterConcmdArg("gmode", [](int argc, const char ** argv)
 	{
@@ -332,6 +355,36 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 	Core_0RegisterConcmdClsArg("+debug_slot_move", m_pPlayer, (SXCONCMDCLSARG)&CPlayer::_ccmd_slot_on);
 	Core_0RegisterConcmdCls("-debug_slot_move", m_pPlayer, (SXCONCMDCLS)&CPlayer::_ccmd_slot_off);
+
+	if(!hWnd)
+	{
+		SNetwork_OnClientConnected([](INetUser *pNetUser){
+			// create entity for this player
+			// send SVC_ENTCONFIG
+			INETbuff *pBuf = SNetwork_CreateBuffer();
+			pBuf->writeUInt8(SVC_ENTCONFIG);
+			GameData::fillSvcEntconfigBuffer(pBuf);
+			pNetUser->sendMessage(pBuf, true);
+			SNetwork_FreeBuffer(pBuf);
+
+			// send entity list and states
+
+			CPlayer *pPlayer = (CPlayer*)CREATE_ENTITY("player", m_pMgr);
+			char szName[32];
+			sprintf(szName, "player#%d", pNetUser->getID());
+			pPlayer->setKV("name", szName);
+		});
+		SNetwork_OnClientDisconnected([](INetUser *pNetUser){
+			// remove entity for this player
+			char szName[32];
+			sprintf(szName, "player#%d", pNetUser->getID());
+			CBaseEntity *pEnt = m_pMgr->findEntityByName(szName);
+			if(pEnt)
+			{
+				REMOVE_ENTITY(pEnt);
+			}
+		});
+	}
 
 	g_pTracer = new CTracer(5000);
 	g_pTracer2 = new CTracer(5000);
@@ -1094,4 +1147,48 @@ void GameData::ccmd_use_on()
 void GameData::ccmd_use_off()
 {
 	m_pPlayer->use(FALSE);
+}
+
+void GameData::fillSvcEntconfigBuffer(INETbuff *pBuf)
+{
+	const char * newClass, *key;
+
+	ISXConfig *pDynClassConf = GameData::m_pMgr->getDynClassConfig();
+	int l = pDynClassConf->getSectionCount();
+	pBuf->writeUInt32(l);
+
+	for(int i = 0; i < l; ++i)
+	{
+		newClass = pDynClassConf->getSectionName(i);
+		pBuf->writeString(newClass);
+		
+		int jl = pDynClassConf->getKeyCount(newClass);
+		pBuf->writeUInt16(jl);
+		for(int j = 0; j < jl; ++j)
+		{
+			key = pDynClassConf->getKeyName(newClass, j);
+			pBuf->writeString(key);
+			pBuf->writeString(pDynClassConf->getKey(newClass, key));
+		}
+	}
+
+
+	ISXConfig *m_pDefaultsConf = GameData::m_pMgr->getDefaultsConfig();
+	l = m_pDefaultsConf->getSectionCount();
+	pBuf->writeUInt32(l);
+
+	for(int i = 0; i < l; ++i)
+	{
+		newClass = m_pDefaultsConf->getSectionName(i);
+		pBuf->writeString(newClass);
+
+		int jl = m_pDefaultsConf->getKeyCount(newClass);
+		pBuf->writeUInt16(jl);
+		for(int j = 0; j < jl; ++j)
+		{
+			key = m_pDefaultsConf->getKeyName(newClass, j);
+			pBuf->writeString(key);
+			pBuf->writeString(m_pDefaultsConf->getKey(newClass, key));
+		}
+	}
 }

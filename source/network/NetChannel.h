@@ -38,11 +38,14 @@ public:
 
 	void kick(const char *szReason);
 
+	ID getID();
+
 protected:
 	CNetPeer m_netPeer;
 	ID m_id = -1;
 	uint8_t m_u8SourcePort;
 	bool m_bDoDisconnect = false;
+	bool m_bDoSendData = true;
 
 	uint16_t m_uSeq = 0; //!< Last outgoing sequence
 	uint16_t m_uAck = 0; //!< Last received ack (will be sent back to peer)
@@ -85,6 +88,8 @@ public:
 
 	const Array<CNetUser*> &getClients();
 
+	void onClientDisconnected(PFNCLIENTHANDLER fnHandler);
+
 protected:
 	int m_iSocket;
 
@@ -94,6 +99,8 @@ protected:
 	CNetUser *findUser(CNetPeer *pNetPeer, uint8_t u8SourcePort);
 	bool isSequenceGreater(UINT uFirst, UINT uSecond);
 	UINT getSequenceDelta(UINT uFirst, UINT uSecond);
+
+	PFNCLIENTHANDLER m_fnOnClientDisconnected = NULL;
 };
 
 #endif

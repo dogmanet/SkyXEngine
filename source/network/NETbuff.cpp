@@ -52,14 +52,11 @@ void CNETbuff::setBuf(const BYTE * data, UINT size)
 {
 	m_uBufPos = 0;
 	//m_aBuf.reserve(size);
+	m_aBuf.clearFast();
 	if(size != 0)
 	{
 		m_aBuf[size - 1] = 0;
 		memcpy(&(m_aBuf[0]), data, size);
-	}
-	else
-	{
-		m_aBuf.clearFast();
 	}
 }
 void CNETbuff::addBuf(const BYTE * data, UINT size)
@@ -88,7 +85,7 @@ void CNETbuff::readString(char *pBuf, UINT iBufSize)
 	}
 
 	strncpy(pBuf, (const char*)&(m_aBuf[m_uBufPos]), iBufSize);
-	pBuf[iBufSize] = 0;
+	pBuf[iBufSize - 1] = 0;
 	
 	while(!isEnd() && readInt8())
 	{

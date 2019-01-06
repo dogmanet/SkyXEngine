@@ -134,6 +134,10 @@ void CServer::update()
 									{
 										//@TODO: setup required data for pNetUser
 										printf("Client connected\n");
+										if(m_fnOnClientConnected)
+										{
+											m_fnOnClientConnected(pNetUser);
+										}
 									}
 									else
 									{
@@ -222,4 +226,31 @@ bool CServer::validateTicket(CNetPeer *pPeer, byte *pData, int iLen)
 void CServer::registerMessage(CLIENT_COMMAND msgid, PFNMESSAGEHANDLER fnHandler)
 {
 	m_vMsgHandlers[msgid] = fnHandler;
+}
+
+void CServer::sendMessage(byte *pData, int iLength, bool isReliable)
+{
+	const Array<CNetUser*> &apUsers = m_pNetChannel->getClients();
+	for(int i = 0, l = apUsers.size(); i < l; ++i)
+	{
+		if(apUsers[i])
+		{
+			apUsers[i]->sendMessage(pData, iLength, isReliable);
+		}
+	}
+}
+
+void CServer::sendMessage(INETbuff *pNetBuff, bool isReliable)
+{
+	sendMessage((byte*)pNetBuff->getPointer(), pNetBuff->getSize(), isReliable);
+}
+
+void CServer::onClientConnected(PFNCLIENTHANDLER fnHandler)
+{
+	m_fnOnClientConnected = fnHandler;
+}
+
+void CServer::onClientDisconnected(PFNCLIENTHANDLER fnHandler)
+{
+	m_pNetChannel->onClientDisconnected(fnHandler);
 }

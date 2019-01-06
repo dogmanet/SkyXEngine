@@ -30,6 +30,12 @@ public:
 
 	void registerMessage(CLIENT_COMMAND msgid, PFNMESSAGEHANDLER fnHandler);
 
+	void sendMessage(byte *pData, int iLength, bool isReliable = false);
+	void sendMessage(INETbuff *pNetBuff, bool isReliable = false);
+
+	void onClientConnected(PFNCLIENTHANDLER fnHandler);
+	void onClientDisconnected(PFNCLIENTHANDLER fnHandler);
+
 protected:
 	int m_iListener;
 	CNetChannel *m_pNetChannel;
@@ -43,6 +49,8 @@ protected:
 	bool validateTicket(CNetPeer *pPeer, byte *pData, int iLen);
 
 	PFNMESSAGEHANDLER m_vMsgHandlers[CLC_LAST];
+
+	PFNCLIENTHANDLER m_fnOnClientConnected = NULL;
 };
 
 #endif

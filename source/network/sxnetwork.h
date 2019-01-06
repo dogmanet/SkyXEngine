@@ -36,7 +36,7 @@ See the license in LICENSE
 
 //#############################################################################
 
-/*! \defgroup sxlevel sxnetwork - библиотека сетевого взаимодействия
+/*! \defgroup sxnetwork sxnetwork - библиотека сетевого взаимодействия
 @{*/
 
 #define SXNET_MAX_CLIENTS 256
@@ -49,6 +49,9 @@ SX_LIB_API void SNetwork_0Create();
 
 //! уничтожение либы
 SX_LIB_API void SNetwork_AKill();
+
+SX_LIB_API INETbuff *SNetwork_CreateBuffer();
+SX_LIB_API void SNetwork_FreeBuffer(INETbuff *pBuf);
 
 //#############################################################################
 
@@ -63,6 +66,14 @@ SX_LIB_API void SNetwork_Connect(const char *szIp, unsigned short usPort = 7527)
 SX_LIB_API void SNetwork_Disconnect();
 SX_LIB_API bool SNetwork_IsConnected();
 
-//!@} sxlevel
+SX_LIB_API void SNetwork_OnClientConnected(PFNCLIENTHANDLER fnHandler);
+SX_LIB_API void SNetwork_OnClientDisconnected(PFNCLIENTHANDLER fnHandler);
+
+//#############################################################################
+
+SX_LIB_API void SNetwork_BroadcastMessage(byte *pData, int iLength, bool isReliable = false);
+SX_LIB_API void SNetwork_BroadcastMessageBuf(INETbuff *pNetBuff, bool isReliable = false);
+
+//!@} sxnetwork
 
 #endif

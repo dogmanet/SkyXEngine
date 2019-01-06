@@ -374,26 +374,6 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB level initialized\n");
 
 
-
-#ifndef SX_PARTICLES_EDITOR
-	SGame_0Create(hWnd3DCurr, 
-#ifdef SX_GAME
-		true
-#else
-		false
-#endif
-		);
-	SGame_Dbg_Set(SkyXEngine_PrintfLog);
-#endif
-	
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB game initialized\n");
-
-#ifndef SX_SERVER
-	SRender_0Create("sxrender", hWnd3DCurr, hWndParent3D, false);
-	SRender_Dbg_Set(SkyXEngine_PrintfLog);
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB render initialized\n");
-#endif
-
 #if defined(SX_GAME) || defined(SX_SERVER)
 	SNetwork_0Create();
 	SNetwork_Dbg_Set(SkyXEngine_PrintfLog);
@@ -405,8 +385,29 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 		LibReport(REPORT_MSG_LEVEL_ERROR, "Bad port number\n");
 	}
 	SNetwork_InitServer(usPort, Core_0GetCommandLineArg("ip", "0.0.0.0"));
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB network initialized\n");
 #endif
 #endif
+
+#ifndef SX_PARTICLES_EDITOR
+	SGame_0Create(hWnd3DCurr, 
+#ifdef SX_GAME
+		true
+#else
+		false
+#endif
+		);
+	SGame_Dbg_Set(SkyXEngine_PrintfLog);
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB game initialized\n");
+#endif
+	
+
+#ifndef SX_SERVER
+	SRender_0Create("sxrender", hWnd3DCurr, hWndParent3D, false);
+	SRender_Dbg_Set(SkyXEngine_PrintfLog);
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB render initialized\n");
+#endif
+
 
 #if !defined(SX_GAME) && !defined(SX_SERVER)
 	ICamera *pCamera = SGCore_CrCamera();

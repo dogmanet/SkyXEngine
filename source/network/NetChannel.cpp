@@ -28,6 +28,11 @@ void CNetUser::kick(const char *szReason)
 	m_bDoDisconnect = true;
 }
 
+ID CNetUser::getID()
+{
+	return(m_id);
+}
+
 //##########################################################################
 
 CNetChannel::CNetChannel(int iSocket):
@@ -45,6 +50,10 @@ void CNetChannel::update()
 		if(pNetUser && pNetUser->m_bDoDisconnect)
 		{
 			printf("Client %d disconnected\n", i);
+			if(m_fnOnClientDisconnected)
+			{
+				m_fnOnClientDisconnected(pNetUser);
+			}
 			mem_delete(pNetUser);
 			m_apUsers[i] = NULL;
 		}
@@ -126,6 +135,7 @@ bool CNetChannel::readPacket(INETbuff *pBuf, CNetUser **ppFrom, CNetPeer *pNetPe
 			continue;
 		}
 		pNetUser->m_netPeer.m_uPort = pNetPeer->m_uPort;
+		pNetUser->m_bDoSendData = true;
 		if(ppFrom)
 		{
 			*ppFrom = pNetUser;
@@ -151,7 +161,7 @@ bool CNetChannel::readPacket(INETbuff *pBuf, CNetUser **ppFrom, CNetPeer *pNetPe
 				{
 					/* if packet received */
 					const UINT c_uDataSize = PACKET_MAX_SIZE - PACKET_HDR_SIZE;
-					if((pHeader->usSeq * c_uDataSize + rb - sizeof(msg_header_s)) >= pNetUser->m_bufInRel.getSize() &&
+					if((pHeader->usSeq * c_uDataSize + rb - sizeof(msg_header_s)) <= pNetUser->m_bufInRel.getSize() &&
 						!memcmp(pInBuff + sizeof(msg_header_s), (byte*)pNetUser->m_bufInRel.getPointer() + pHeader->usSeq * c_uDataSize, rb - sizeof(msg_header_s)))
 					{
 						msg_header_s hdr;
@@ -161,6 +171,7 @@ bool CNetChannel::readPacket(INETbuff *pBuf, CNetUser **ppFrom, CNetPeer *pNetPe
 						hdr.isReliable = true;
 						hdr.i8SPort = pNetUser->m_u8SourcePort;
 						sendRaw(pNetPeer, (byte*)&hdr, sizeof(hdr));
+						continue;
 					}
 					else if(pHeader->usSeq == 0) // Begin of reliable sequence
 					{
@@ -279,49 +290,54 @@ void CNetChannel::sendMessages()
 			pNetUser->m_bufOut.reset();
 			outBuf.reset();
 
-			const UINT c_uDataSize = PACKET_MAX_SIZE - PACKET_HDR_SIZE;
-			if(pNetUser->m_isAllReliableSent)
+			if(pNetUser->m_bDoSendData)
 			{
-				if(pNetUser->m_bufOutRel.getSize() > 0)
+				pNetUser->m_bDoSendData = false;
+				const UINT c_uDataSize = PACKET_MAX_SIZE - PACKET_HDR_SIZE;
+				if(pNetUser->m_isAllReliableSent)
 				{
-					// split to packets
-					pNetUser->m_uReliableCount = pNetUser->m_bufOutRel.getSize() / c_uDataSize + (pNetUser->m_bufOutRel.getSize() % c_uDataSize ? 1 : 0);
+					if(pNetUser->m_bufOutRel.getSize() > 0)
+					{
+						// split to packets
+						pNetUser->m_uReliableCount = pNetUser->m_bufOutRel.getSize() / c_uDataSize + (pNetUser->m_bufOutRel.getSize() % c_uDataSize ? 1 : 0);
+						hdrMsg.usAck = pNetUser->m_uReliableCount;
+						hdrMsg.isReliable = 1;
+						pNetUser->m_uSeqRel = 0;
+						for(UINT j = 0; j < pNetUser->m_uReliableCount; ++j)
+						{
+							UINT uChunkSize = (j == pNetUser->m_uReliableCount - 1) ? (pNetUser->m_bufOutRel.getSize() % c_uDataSize) : c_uDataSize;
+							pNetUser->m_aabOutgoindRels[j].clearFast();
+							pNetUser->m_aabOutgoindRels[j][uChunkSize - 1] = 0;
+							memcpy(&(pNetUser->m_aabOutgoindRels[j][0]), (byte*)pNetUser->m_bufOutRel.getPointer() + c_uDataSize * j, uChunkSize);
+
+							hdrMsg.usSeq = j;
+
+							outBuf.writeBytes((byte*)&hdrMsg, sizeof(hdrMsg));
+							outBuf.writeBytes(&(pNetUser->m_aabOutgoindRels[j][0]), uChunkSize);
+							sendRaw(&pNetUser->m_netPeer, (byte*)outBuf.getPointer(), outBuf.getSize());
+							outBuf.reset();
+						}
+
+
+
+						pNetUser->m_isAllReliableSent = false;
+						pNetUser->m_bufOutRel.reset();
+					}
+				}
+				else
+				{
+					// send again
 					hdrMsg.usAck = pNetUser->m_uReliableCount;
 					hdrMsg.isReliable = 1;
-					pNetUser->m_uSeqRel = 0;
-					for(UINT j = 0; j < pNetUser->m_uReliableCount; ++j)
+					for(UINT j = pNetUser->m_uSeqRel; j < pNetUser->m_uReliableCount; ++j)
 					{
-						UINT uChunkSize = (j == pNetUser->m_uReliableCount - 1) ? c_uDataSize : (pNetUser->m_bufOutRel.getSize() % c_uDataSize);
-						pNetUser->m_aabOutgoindRels[j][uChunkSize - 1] = 0;
-						memcpy(&(pNetUser->m_aabOutgoindRels[j][0]), (byte*)pNetUser->m_bufOutRel.getPointer() + c_uDataSize * j, uChunkSize);
-
 						hdrMsg.usSeq = j;
 
 						outBuf.writeBytes((byte*)&hdrMsg, sizeof(hdrMsg));
-						outBuf.writeBytes(&(pNetUser->m_aabOutgoindRels[j][0]), uChunkSize);
+						outBuf.writeBytes(&(pNetUser->m_aabOutgoindRels[j][0]), pNetUser->m_aabOutgoindRels[j].size());
 						sendRaw(&pNetUser->m_netPeer, (byte*)outBuf.getPointer(), outBuf.getSize());
 						outBuf.reset();
 					}
-					
-
-
-					pNetUser->m_isAllReliableSent = false;
-					pNetUser->m_bufOutRel.reset();
-				}
-			}
-			else
-			{
-				// send again
-				hdrMsg.usAck = pNetUser->m_uReliableCount;
-				hdrMsg.isReliable = 1;
-				for(UINT j = pNetUser->m_uSeqRel; j < pNetUser->m_uReliableCount; ++j)
-				{
-					hdrMsg.usSeq = j;
-
-					outBuf.writeBytes((byte*)&hdrMsg, sizeof(hdrMsg));
-					outBuf.writeBytes(&(pNetUser->m_aabOutgoindRels[j][0]), pNetUser->m_aabOutgoindRels[j].size());
-					sendRaw(&pNetUser->m_netPeer, (byte*)outBuf.getPointer(), outBuf.getSize());
-					outBuf.reset();
 				}
 			}
 		}
@@ -414,4 +430,9 @@ CNetUser *CNetChannel::findUser(CNetPeer *pNetPeer, uint8_t u8SourcePort)
 const Array<CNetUser*> &CNetChannel::getClients()
 {
 	return(m_apUsers);
+}
+
+void CNetChannel::onClientDisconnected(PFNCLIENTHANDLER fnHandler)
+{
+	m_fnOnClientDisconnected = fnHandler;
 }
