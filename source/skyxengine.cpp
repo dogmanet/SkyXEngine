@@ -333,7 +333,13 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB anim initialized\n");
 
 
-	SPhysics_0Create();
+	SPhysics_0Create(
+#ifdef SX_SERVER
+		true
+#else 
+		false
+#endif
+		);
 	SPhysics_Dbg_Set(SkyXEngine_PrintfLog);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB physics initialized\n");
@@ -446,10 +452,10 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	SkyXEngind_UpdateDataCVar();
 
-	SXAnim_UpdateSetThreadNum(Core_MGetThreadCount());
+	SXAnim_UpdateSetThreadNum(max(1, Core_MGetThreadCount()));
 
 #ifndef SX_PARTICLES_EDITOR
-	SGame_UpdateSetThreadNum(Core_MGetThreadCount());
+	SGame_UpdateSetThreadNum(max(1, Core_MGetThreadCount()));
 #endif
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "Engine initialized!\n");
@@ -833,7 +839,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_GAME_UPDATE);
 	CLibUpdate updateGame(SGame_Update, PERF_SECTION_GAME_UPDATE);
-	ID idUpdateGame = Core_MForLoop(0, Core_MGetThreadCount(), &updateGame, 1);
+	ID idUpdateGame = Core_MForLoop(0, max(1, Core_MGetThreadCount()), &updateGame, 1);
 	//SGame_Update();
 	Core_PEndSection(PERF_SECTION_GAME_UPDATE);
 	DelayLibUpdateGame += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
@@ -856,7 +862,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_ANIM_UPDATE);
 	CLibUpdate updateAnim(SXAnim_Update, PERF_SECTION_ANIM_UPDATE);
-	ID idUpdateAnim = Core_MForLoop(0, Core_MGetThreadCount(), &updateAnim, 1);
+	ID idUpdateAnim = Core_MForLoop(0, max(1, Core_MGetThreadCount()), &updateAnim, 1);
 	//SXAnim_Update();
 	Core_PEndSection(PERF_SECTION_ANIM_UPDATE);
 	DelayLibUpdateAnim += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
@@ -1099,10 +1105,11 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	//static const float * r_far = GET_PCVAR_FLOAT("r_far");
 	SAIG_RenderQuads(SRender_GetCamera()->getFrustum(), &vCamPos, *r_far);
 #endif
-
+#endif
 //#ifdef _DEBUG
 	SPhysics_DebugRender();
 //#endif
+#ifndef SX_SERVER
 
 	
 #if defined(SX_GAME) || defined(SX_LEVEL_EDITOR)

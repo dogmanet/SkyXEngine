@@ -404,5 +404,8 @@
     <ClInclude Include="..\..\..\source\game\LightDirectional.h">
       <Filter>Header Files\ents\light</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\game\Baseline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -73,13 +73,15 @@ public:
 	void onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor);
 
 	void respawn();
+
+	void dispatchUserCmd(CUserCmd *pUserCmd);
 	
 protected:
 	//! Камера
 	CPointCamera * m_pCamera;
 
 	//! ID интервала обновления
-	ID m_iUpdIval;
+	ID m_iUpdIval = -1;
 
 	//! Может ли прыгать
 	bool m_canJump;
@@ -100,6 +102,10 @@ protected:
 	virtual void updateSpread(float dt);
 
 	bool m_bCanRespawn;
+
+	CUserCmd m_userCmd;
+	CUserCmd m_userCmdBackup[MAX_BACKUP_COMMANDS];
+	byte m_u8UserCmdIndex = 0;
 };
 
 #endif

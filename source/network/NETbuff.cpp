@@ -129,6 +129,7 @@ void CNETbuff::readBytes(BYTE *pBuf, UINT iBufSize)
 	}
 
 	memcpy(pBuf, &(m_aBuf[m_uBufPos]), iBufSize);
+	m_uBufPos += iBufSize;
 }
 int32_t CNETbuff::readInt32()
 {

@@ -8,7 +8,10 @@ See the license in LICENSE
 
 #include "BaseEntity.h"
 
+#include "Baseline.h"
+
 #include <core/sxcore.h>
+#include <network/sxnetwork.h>
 
 #include <mutex>
 
@@ -29,6 +32,11 @@ CEntityManager::~CEntityManager()
 {
 	mem_release(m_pDynClassConf);
 	mem_release(m_pDefaultsConf);
+
+	for(int i = 0, l = m_aBaselines.size(); i < l; ++i)
+	{
+		mem_delete(m_aBaselines[i]);
+	}
 }
 
 void CEntityManager::update(int thread)
@@ -100,10 +108,9 @@ void CEntityManager::setThreadNum(int num)
 	}
 }
 
-void CEntityManager::sync()
+void CEntityManager::finalRemove()
 {
 	CBaseEntity * pEnt;
-
 	// do not store m_vEntRemoveList.size()! It can change during iteration
 	for(int i = 0; i < (int)m_vEntRemoveList.size(); ++i)
 	{
@@ -115,6 +122,13 @@ void CEntityManager::sync()
 		}
 	}
 	m_vEntRemoveList.clearFast();
+}
+
+void CEntityManager::sync()
+{
+	CBaseEntity * pEnt;
+
+	finalRemove();
 
 	for(int i = 0, l = m_vTimeout.size(); i < l; ++i)
 	{
@@ -846,6 +860,11 @@ void CEntityManager::setEditorMode(bool isEditor)
 	}
 }
 
+void CEntityManager::setClientMode(bool isClient)
+{
+	m_isClientMode = isClient;
+}
+
 bool CEntityManager::isEditorMode()
 {
 	return(m_isEditorMode);
@@ -856,6 +875,11 @@ bool CEntityManager::isServerMode()
 	return(m_isServerMode);
 }
 
+bool CEntityManager::isClientMode()
+{
+	return(m_isClientMode);
+}
+
 ISXConfig *CEntityManager::getDefaultsConfig()
 {
 	return(m_pDefaultsConf);
@@ -864,4 +888,260 @@ ISXConfig *CEntityManager::getDefaultsConfig()
 ISXConfig *CEntityManager::getDynClassConfig()
 {
 	return(m_pDynClassConf);
+}
+
+void CEntityManager::setLevelLoaded(bool isLevelLoaded)
+{
+	m_isLevelLoaded = isLevelLoaded;
+}
+
+bool CEntityManager::isLevelLoaded()
+{
+	return(m_isLevelLoaded);
+}
+
+const String &CEntityManager::getLevelName()
+{
+	return(m_sLevelName);
+}
+
+void CEntityManager::setLevelName(const char *szLevelName)
+{
+	m_sLevelName = szLevelName;
+}
+
+CBaseline *CEntityManager::createBaseline(ID id)
+{
+	if(!ID_VALID(id))
+	{
+		id = m_aBaselines.size();
+	}
+	else
+	{
+		if(id < m_aBaselines.size())
+		{
+			mem_delete(m_aBaselines[id]);
+		}
+		else
+		{
+			m_aBaselines.reserve(id + 1);
+			for(int i = m_aBaselines.size(); i < id + 1; ++i)
+			{
+				m_aBaselines[i] = 0;
+			}
+		}
+		
+	}
+	CBaseline *pBaseline = m_aBaselines[id] = new CBaseline(id);
+
+	CBaseEntity *pEnt;
+	proptable_t * pTbl;
+	char buf[4096];
+	EntDefaultsMap *pDefaults;
+	const EntDefaultsMap::Node *pNode;
+
+	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
+	{
+		pEnt = m_vEntList[i];
+		if(pEnt && (pEnt->getFlags() & EF_LEVEL) && !(pEnt->getFlags() & EF_REMOVED))
+		{
+			CBaseline::ent_record_s record;
+			record.m_id = pEnt->getId();
+			record.m_sClassname = pEnt->getClassName();
+
+			pDefaults = CEntityFactoryMap::GetInstance()->getDefaults(pEnt->getClassName());
+			pTbl = CEntityFactoryMap::GetInstance()->getPropTable(pEnt->getClassName());
+			do
+			{
+				for(int j = 0; j < pTbl->numFields; ++j)
+				{
+					if(pTbl->pData[j].szKey && !(pTbl->pData[j].flags & PDFF_INPUT) && !record.m_mProps.KeyExists(pTbl->pData[j].szKey))
+					{
+						pEnt->getKV(pTbl->pData[j].szKey, buf, sizeof(buf));
+						//test defaults
+						if(!pDefaults->KeyExists(pTbl->pData[j].szKey, &pNode) || strcmp(*(pNode->Val), buf))
+						{
+							record.m_mProps[pTbl->pData[j].szKey] = buf;
+						}
+					}
+				}
+			}
+			while((pTbl = pTbl->pBaseProptable));
+
+			pBaseline->m_aRecords.push_back(record);
+		}
+	}
+	return(pBaseline);
+}
+
+CBaseline *CEntityManager::getBaseline(ID id)
+{
+	if(!ID_VALID(id) || id >= m_aBaselines.size())
+	{
+		return(NULL);
+	}
+
+	return(m_aBaselines[id]);
+}
+
+void CEntityManager::dispatchBaseline(CBaseline *pBaseline)
+{
+	CBaseEntity * pEnt;
+	unloadObjLevel();
+	finalRemove();
+	//m_vFreeIDs.clearFast();
+	//m_vEntList.resize(RESERVED_SLOTS);
+
+	if(!pBaseline->m_aRecords.size())
+	{
+		return;
+	}
+
+	ID idMax = pBaseline->m_aRecords[pBaseline->m_aRecords.size() - 1].m_id;
+	m_vEntList.reserve(idMax + 1);
+
+	const AssotiativeArray<String, String>::Node *pNode;
+	for(int i = 0, l = pBaseline->m_aRecords.size(); i < l; ++i)
+	{
+		CBaseline::ent_record_s *pRecord = &pBaseline->m_aRecords[i];
+
+		if(!(pEnt = CREATE_ENTITY_NOPOST(pRecord->m_sClassname.c_str(), this)))
+		{
+			printf(COLOR_LRED "Unable to load entity #%d, classname '%s' undefined\n" COLOR_RESET, i, pRecord->m_sClassname.c_str());
+			continue;
+		}
+
+		if(pEnt->getId() != pRecord->m_id)
+		{
+			m_vEntList[pEnt->getId()] = NULL;
+			m_vFreeIDs.push_back(pEnt->getId());
+
+			for(int j = m_vEntList.size(); j < pRecord->m_id; ++j)
+			{
+				m_vEntList[j] = NULL;
+				m_vFreeIDs.push_back(j);
+			}
+			if(pRecord->m_id < m_vEntList.size() && m_vEntList[pRecord->m_id])
+			{
+				ID newId = m_vEntList.size();
+				if(m_vFreeIDs.size())
+				{
+					newId = m_vFreeIDs[m_vFreeIDs.size() - 1];
+					m_vFreeIDs.erase(m_vFreeIDs.size() - 1);
+				}
+				m_vEntList[newId] = m_vEntList[pRecord->m_id];
+				m_vEntList[newId]->m_iId = newId;
+			}
+			m_vEntList[pRecord->m_id] = pEnt;
+			pEnt->m_iId = pRecord->m_id;
+		}
+
+		if(pRecord->m_mProps.KeyExists("name", &pNode))
+		{
+			pEnt->setKV("name", pNode->Val->c_str());
+		}
+		if(pRecord->m_mProps.KeyExists("origin", &pNode))
+		{
+			pEnt->setKV("origin", pNode->Val->c_str());
+		}
+		if(pRecord->m_mProps.KeyExists("rotation", &pNode))
+		{
+			pEnt->setKV("rotation", pNode->Val->c_str());
+		}
+		
+		pEnt->setFlags(pEnt->getFlags() | EF_LEVEL);
+	}
+
+	const char *key;
+	for(int i = 0, l = pBaseline->m_aRecords.size(); i < l; ++i)
+	{
+		CBaseline::ent_record_s *pRecord = &pBaseline->m_aRecords[i];
+		
+		pEnt = m_vEntList[pRecord->m_id];
+		for(AssotiativeArray<String, String>::Iterator it = pRecord->m_mProps.begin(); it; it++)
+		{
+			key = it.first->c_str();
+
+			if(strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
+			{
+				pEnt->setKV(key, it.second->c_str());
+			}
+		}		
+	}
+
+	for(int i = 1, l = m_vEntList.size(); i < l; ++i)
+	{
+		pEnt = m_vEntList[i];
+		if(pEnt)
+		{
+			pEnt->onPostLoad();
+		}
+	}
+}
+
+void CEntityManager::serializeBaseline(CBaseline *pBaseline, INETbuff *pBuf)
+{
+	CBaseline::ent_record_s *pRecord;
+	const char *key;
+
+	pBuf->writeChar(pBaseline->m_aRecords.size());
+	for(int i = 0, l = pBaseline->m_aRecords.size(); i < l; ++i)
+	{
+		pRecord = &pBaseline->m_aRecords[i];
+		pBuf->writeChar(pRecord->m_id);
+		pBuf->writeString(pRecord->m_sClassname.c_str());
+
+		pBuf->writeChar(pRecord->m_mProps.Size());
+		for(AssotiativeArray<String, String>::Iterator it = pRecord->m_mProps.begin(); it; it++)
+		{
+			pBuf->writeString(it.first->c_str());
+			pBuf->writeString(it.second->c_str());
+		}
+	}
+}
+
+CBaseline *CEntityManager::deserializeBaseline(ID id, INETbuff *pBuf)
+{
+	assert(ID_VALID(id));
+
+	if(id < m_aBaselines.size())
+	{
+		mem_delete(m_aBaselines[id]);
+	}
+	else
+	{
+		m_aBaselines.reserve(id + 1);
+		for(int i = m_aBaselines.size(); i < id + 1; ++i)
+		{
+			m_aBaselines[i] = 0;
+		}
+	}
+	CBaseline *pBaseline = m_aBaselines[id] = new CBaseline(id);
+
+	UINT uCount = pBuf->readChar();
+	char buf[4096], buf2[32];
+
+	for(UINT i = 0; i < uCount; ++i)
+	{
+		CBaseline::ent_record_s record;
+		record.m_id = pBuf->readChar();
+		pBuf->readString(buf, sizeof(buf));
+		record.m_sClassname = buf;
+
+		//printf("Ent: %s\n", buf);
+
+		UINT uPropCount = pBuf->readChar();
+		for(UINT j = 0; j < uPropCount; ++j)
+		{
+			pBuf->readString(buf2, sizeof(buf2));
+			pBuf->readString(buf, sizeof(buf));
+			//printf("    %s: \"%s\"\n", buf2, buf);
+			record.m_mProps[buf2] = buf;
+		}
+		//printf("\n");
+
+		pBaseline->m_aRecords.push_back(record);
+	}
+
+	return(pBaseline);
 }

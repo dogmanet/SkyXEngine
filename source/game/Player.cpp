@@ -43,7 +43,10 @@ CPlayer::CPlayer(CEntityManager * pMgr):
 	m_pCamera->setPos(m_pHeadEnt->getPos());
 	m_pCamera->setParent(m_pHeadEnt);
 
-	m_iUpdIval = SET_INTERVAL(updateInput, 0);
+	if(!m_pMgr->isServerMode())
+	{
+		m_iUpdIval = SET_INTERVAL(updateInput, 0);
+	}
 
 	/*m_pActiveTool = (CBaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
 	m_pActiveTool->setOwner(this);
@@ -74,13 +77,19 @@ CPlayer::CPlayer(CEntityManager * pMgr):
 	SPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
 	SPhysics_GetDynWorld()->removeAction(m_pCharacter);
 
+	memset(&m_userCmd, 0, sizeof(m_userCmd));
+	memset(m_userCmdBackup, 0, sizeof(m_userCmdBackup));
+
 	//m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 }
 
 CPlayer::~CPlayer()
 {
 	mem_delete(m_pCrosshair);
-	CLEAR_INTERVAL(m_iUpdIval);
+	if(ID_VALID(m_iUpdIval))
+	{
+		CLEAR_INTERVAL(m_iUpdIval);
+	}
 	REMOVE_ENTITY(m_pCamera);
 }
 
@@ -96,6 +105,8 @@ void CPlayer::updateInput(float dt)
 		m_pCharacter->setWalkDirection(btVector3(0.0f, 0.0f, 0.0f));
 		return;
 	}*/
+
+	float fOrigDT = dt;
 
 	m_vWpnShakeAngles = (float3)(m_vWpnShakeAngles * 0.4f);
 
@@ -116,6 +127,8 @@ void CPlayer::updateInput(float dt)
 		else
 		{
 			//printf("%f %f : ", dx, dy);
+			m_userCmd.m_fAngleY = m_vPitchYawRoll.y;
+			m_userCmd.m_fAngleUpDown = m_vPitchYawRoll.x;
 			m_vPitchYawRoll.y -= dx;
 			m_vPitchYawRoll.x -= dy;
 			//printf(" %f %f\n", m_vPitchYawRoll.x, m_vPitchYawRoll.y);
@@ -133,6 +146,9 @@ void CPlayer::updateInput(float dt)
 			const float fMaxAng = SM_PI * 0.1f;
 			m_vWpnShakeAngles.y = clampf(m_vWpnShakeAngles.y, -fMaxAng, fMaxAng);
 
+			m_userCmd.m_fAngleY = m_vPitchYawRoll.y - m_userCmd.m_fAngleY;
+			m_userCmd.m_fAngleUpDown = m_vPitchYawRoll.x - m_userCmd.m_fAngleUpDown;
+
 			//m_vOrientation = SMQuaternion(m_vPitchYawRoll.x, 'x')
 			//	* SMQuaternion(m_vPitchYawRoll.y, 'y')
 			//	* SMQuaternion(m_vPitchYawRoll.z, 'z');
@@ -147,6 +163,8 @@ void CPlayer::updateInput(float dt)
 
 	}
 
+	m_userCmd.m_inCrouch = m_uMoveDir & PM_CROUCH;
+	m_userCmd.m_inJump = m_uMoveDir & PM_JUMP;
 	{
 		if(m_uMoveDir & PM_RUN)
 		{
@@ -181,7 +199,7 @@ void CPlayer::updateInput(float dt)
 
 		if(m_uMoveDir & PM_CROUCH || (m_fCurrentHeight < 1.0f && !m_pCharacter->canStandUp((m_fCapsHeight - m_fCapsRadius * 2.0f) * (1.0f - m_fCurrentHeight))))
 		{
-			m_fCurrentHeight -= dt;
+			m_fCurrentHeight -= fOrigDT * 10.0f;
 			float fMinHeight = (m_fCapsHeightCrouch - m_fCapsRadius * 2.0f) / (m_fCapsHeight - m_fCapsRadius * 2.0f);
 			if(m_fCurrentHeight < fMinHeight)
 			{
@@ -190,7 +208,7 @@ void CPlayer::updateInput(float dt)
 		}
 		else
 		{
-			m_fCurrentHeight += dt;
+			m_fCurrentHeight += fOrigDT * 10.0f;
 			if(m_fCurrentHeight > 1.0f)
 			{
 				m_fCurrentHeight = 1.0f;
@@ -204,12 +222,15 @@ void CPlayer::updateInput(float dt)
 		}
 		else
 		{
-			dir = SMQuaternion(m_vPitchYawRoll.y, 'y') * (SMVector3Normalize(dir) * dt);
+			dir = SMVector3Normalize(dir) * dt;
 			dir *= 0.5f;
 			if(m_uMoveDir & PM_RUN)
 			{
 				dir *= 0.5f;
 			}
+			m_userCmd.m_fMoveForward = dir.z;
+			m_userCmd.m_fMoveSide = dir.x;
+			dir = SMQuaternion(m_vPitchYawRoll.y, 'y') * dir;
 			if((m_uMoveDir & PM_JUMP))
 			{
 				if(m_pCharacter->canJump())
@@ -284,11 +305,11 @@ void CPlayer::updateInput(float dt)
 					}
 					m_fViewbobStep *= 0.7f;
 				}
-				float sin = cosf(m_fViewbobStep * 2.0f);
+				float sin = sinf(m_fViewbobStep * 2.0f);
 				float sin2 = sinf(m_fViewbobStep);
 				float3 vec(1.0f, 0.0f, 0.0f);
 				vec = m_vOrientation * vec;
-				m_fViewbobY = (sin * ((m_uMoveDir & PM_RUN) ? *cl_bob_run_y : *cl_bob_walk_y));
+				m_fViewbobY = -(sin * ((m_uMoveDir & PM_RUN) ? *cl_bob_run_y : *cl_bob_walk_y));
 				m_fViewbobStrafe = (float3)(vec * sin2 * ((m_uMoveDir & PM_RUN) ? *cl_bob_run_x : *cl_bob_walk_x));
 				//m_vOrientation = SMQuaternion(SMToRadian(10) * sinf(m_fViewbobStep), 'z') * m_vOrientation;
 			}
@@ -311,6 +332,39 @@ void CPlayer::updateInput(float dt)
 		}
 
 	}
+
+
+	INetUser *pServer = SNetwork_GetServerINetUser();
+
+	if(pServer)
+	{
+		byte u8NumBackup = pServer->getAverageLoss();
+		if(u8NumBackup > MAX_BACKUP_COMMANDS)
+		{
+			u8NumBackup = MAX_BACKUP_COMMANDS;
+		}
+
+		m_userCmd.m_fLerpTime = fOrigDT;
+
+		INETbuff *pBuf = SNetwork_CreateBuffer();
+		pBuf->writeUInt8(CLC_MOVE);
+		pBuf->writeBytes((byte*)&m_userCmd, sizeof(m_userCmd));
+		pBuf->writeUInt8(u8NumBackup);
+		for(byte i = 0; i < u8NumBackup; ++i)
+		{
+			pBuf->writeBytes((byte*)&m_userCmdBackup[(m_u8UserCmdIndex - 1 - (u8NumBackup - i - 1)) % MAX_BACKUP_COMMANDS], sizeof(m_userCmd));
+		}
+		SNetwork_MessageToServerBuf(pBuf);
+		SNetwork_FreeBuffer(pBuf);
+
+		m_userCmdBackup[m_u8UserCmdIndex++ % MAX_BACKUP_COMMANDS] = m_userCmd;
+	}
+	if(!(m_uMoveDir & PM_OBSERVER))
+	{
+		m_pCharacter->updateAction(SPhysics_GetDynWorld(), fOrigDT);
+	}
+
+	//printf("%.2f %.2f %.2f\n", m_vPosition.x, m_vPosition.y, m_vPosition.z);
 
 #ifndef _SERVER
 	if(*grab_cursor/* && (!*editor_mode || SSInput_GetKeyState(SIM_LBUTTON))*/)
@@ -366,7 +420,7 @@ void CPlayer::observe()
 	}
 
 	SPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
-	SPhysics_GetDynWorld()->removeAction(m_pCharacter);
+	//SPhysics_GetDynWorld()->removeAction(m_pCharacter);
 
 	if(ID_VALID(m_idQuadCurr))
 	{
@@ -383,7 +437,7 @@ void CPlayer::spawn()
 		//if(CanSpawn(pEnt))
 		{
 			SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
-			SPhysics_GetDynWorld()->addAction(m_pCharacter);
+			//SPhysics_GetDynWorld()->addAction(m_pCharacter);
 
 			setPos(pEnt->getPos());
 			setOrient(pEnt->getOrient());
@@ -498,4 +552,78 @@ void CPlayer::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 	observe();
 
 	m_bCanRespawn = true;
+}
+
+void CPlayer::dispatchUserCmd(CUserCmd *pUserCmd)
+{
+	float fOrigDT = clampf(pUserCmd->m_fLerpTime, 0.0f, 1.0f / 30.0f);
+	
+	m_vPitchYawRoll.y += pUserCmd->m_fAngleY;
+	m_vPitchYawRoll.x += pUserCmd->m_fAngleUpDown;
+
+	m_vPitchYawRoll.x = clampf(m_vPitchYawRoll.x, -SM_PIDIV2, SM_PIDIV2);
+	while(m_vPitchYawRoll.y < 0.0f)
+	{
+		m_vPitchYawRoll.y += SM_2PI;
+	}
+	while(m_vPitchYawRoll.y > SM_2PI)
+	{
+		m_vPitchYawRoll.y -= SM_2PI;
+	}
+
+	setOrient(SMQuaternion(m_vPitchYawRoll.y, 'y'));
+	m_pHeadEnt->setOffsetOrient(SMQuaternion(m_vPitchYawRoll.x, 'x') * SMQuaternion(m_vPitchYawRoll.z, 'z'));
+
+	float3 dir(pUserCmd->m_fMoveSide, 0.0f, pUserCmd->m_fMoveForward);
+	dir = SMQuaternion(m_vPitchYawRoll.y, 'y') * dir;
+	m_pCharacter->setWalkDirection(F3_BTVEC(dir));
+
+	if(pUserCmd->m_inCrouch || (m_fCurrentHeight < 1.0f && !m_pCharacter->canStandUp((m_fCapsHeight - m_fCapsRadius * 2.0f) * (1.0f - m_fCurrentHeight))))
+	{
+		m_fCurrentHeight -= fOrigDT * 10.0f;
+		float fMinHeight = (m_fCapsHeightCrouch - m_fCapsRadius * 2.0f) / (m_fCapsHeight - m_fCapsRadius * 2.0f);
+		if(m_fCurrentHeight < fMinHeight)
+		{
+			m_fCurrentHeight = fMinHeight;
+		}
+	}
+	else
+	{
+		m_fCurrentHeight += fOrigDT * 10.0f;
+		if(m_fCurrentHeight > 1.0f)
+		{
+			m_fCurrentHeight = 1.0f;
+		}
+	}
+	m_pCollideShape->setLocalScaling(btVector3(1.0f, m_fCurrentHeight, 1.0f));
+
+	if(!(m_uMoveDir & PM_OBSERVER))
+	{
+		if(m_pCharacter->canJump())
+		{
+			if(pUserCmd->m_inJump)
+			{
+				if(m_pCharacter->canJump())
+				{
+					if(m_canJump)
+					{
+						playFootstepsSound();
+						m_pCharacter->jump();
+						m_canJump = false;
+					}
+				}
+				else
+				{
+					m_canJump = false;
+				}
+			}
+			else
+			{
+				m_canJump = true;
+			}
+		}
+		m_pCharacter->updateAction(SPhysics_GetDynWorld(), fOrigDT);
+	}
+
+	//printf("%.2f %.2f %.2f\n", m_vPosition.x, m_vPosition.y, m_vPosition.z);
 }

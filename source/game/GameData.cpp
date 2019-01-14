@@ -39,7 +39,12 @@ IAnimPlayer * pl;
 CTracer *g_pTracer;
 CTracer *g_pTracer2;
 
-
+struct render_point
+{
+	float3_t pos;
+	DWORD clr;
+};
+Array<render_point> g_vDrawData;
 
 //##########################################################################
 
@@ -85,7 +90,7 @@ static void UpdateSettingsDesktop()
 //##########################################################################
 
 GameData::GameData(HWND hWnd, bool isGame):
-	m_hWnd(hWnd)
+m_hWnd(hWnd)
 {
 	if(hWnd)
 	{
@@ -98,7 +103,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 	}
 
 	m_isGame = isGame;
-	
+
 	if(hWnd)
 	{
 		HMODULE hDLL = LoadLibrary("sxgui"
@@ -124,7 +129,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		}
 
 		m_pGUI = pfnGUIInit(SGCore_GetDXDevice(), "./gui/", hWnd);
-	
+
 		m_pHUDcontroller = new CHUDcontroller();
 	}
 	m_pMgr = new CEntityManager(hWnd == NULL);
@@ -154,18 +159,19 @@ GameData::GameData(HWND hWnd, bool isGame):
 	Core_0RegisterConcmd("flashlight", ccmd_toggleflashlight);
 	Core_0RegisterConcmd("+use", ccmd_use_on);
 	Core_0RegisterConcmd("-use", ccmd_use_off);
-	Core_0RegisterConcmdArg("send_camera", [](int argc, const char ** argv){
-		if (argc < 2)
+	Core_0RegisterConcmdArg("send_camera", [](int argc, const char ** argv)
+	{
+		if(argc < 2)
 		{
 			printf("cmd send_camera requires one argument");
 			return;
 		}
 
 		CBaseEntity *pEnt = m_pMgr->findEntityByName(argv[1]);
-		if (pEnt)
+		if(pEnt)
 		{
 			CFuncTrain *pTrain = (CFuncTrain*)pEnt->getParent();
-			if (pTrain)
+			if(pTrain)
 			{
 				m_pActiveCamera = (CPointCamera*)pEnt;
 				pTrain->start();
@@ -177,7 +183,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 			printf("cmd send_camera not found '%s' camera", argv[1]);
 	});
 
-	Core_0RegisterConcmdArg("gui_load", [](int argc, const char ** argv){
+	Core_0RegisterConcmdArg("gui_load", [](int argc, const char ** argv)
+	{
 		if(argc != 3)
 		{
 			printf("Usage: gui_load <desktop_name> <file>");
@@ -188,7 +195,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 			GameData::m_pGUI->createDesktopA(argv[1], argv[2]);
 		}
 	});
-	Core_0RegisterConcmdArg("gui_push", [](int argc, const char ** argv){
+	Core_0RegisterConcmdArg("gui_push", [](int argc, const char ** argv)
+	{
 		if(argc != 2)
 		{
 			printf("Usage: gui_push <desktop_name>");
@@ -201,8 +209,9 @@ GameData::GameData(HWND hWnd, bool isGame):
 			return;
 		}
 		GameData::m_pGUI->pushDesktop(dp);
-	}); 
-	Core_0RegisterConcmd("gui_pop", [](){
+	});
+	Core_0RegisterConcmd("gui_pop", []()
+	{
 		GameData::m_pGUI->popDesktop();
 	});
 	Core_0RegisterConcmd("gui_settings_init", []()
@@ -210,20 +219,39 @@ GameData::GameData(HWND hWnd, bool isGame):
 		UpdateSettingsDesktop();
 	});
 
-	Core_0RegisterConcmdArg("ent_load_level", [](int argc, const char ** argv){
+	Core_0RegisterConcmdArg("ent_load_level", [](int argc, const char ** argv)
+	{
 		if(argc != 3)
 		{
 			printf("Usage: ent_load_file <entfile> <levelname>");
 			return;
 		}
-		LibReport(REPORT_MSG_LEVEL_NOTICE, "load entity\n");
-		SGame_LoadEnts(argv[1]);
+		if(!m_pMgr->isClientMode())
+		{
+			LibReport(REPORT_MSG_LEVEL_NOTICE, "load entity\n");
+			SGame_LoadEnts(argv[1]);
+			CBaseline * pBaseline = m_pMgr->createBaseline(0);
+
+			INETbuff *pBuf = SNetwork_CreateBuffer();
+			pBuf->writeUInt8(SVC_NEWBASELINE);
+			pBuf->writeUInt8(1); // count of baselines
+			pBuf->writeUInt8(0); // baseline index
+			m_pMgr->serializeBaseline(pBaseline, pBuf);
+
+			pBuf->writeUInt8(SVC_SPAWNBASELINE);
+			pBuf->writeUInt8(0);
+
+			SNetwork_BroadcastMessageBuf(pBuf, true);
+			SNetwork_FreeBuffer(pBuf);
+		}
 		SGame_OnLevelLoad(argv[2]);
 	});
-	Core_0RegisterConcmd("ent_unload_level", [](){
+	Core_0RegisterConcmd("ent_unload_level", []()
+	{
 		SGame_UnloadObjLevel();
 	});
-	Core_0RegisterConcmdArg("ent_save_level", [](int argc, const char ** argv){
+	Core_0RegisterConcmdArg("ent_save_level", [](int argc, const char ** argv)
+	{
 		if(argc != 2)
 		{
 			printf("Usage: ent_save_level <entfile>");
@@ -246,7 +274,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 			LibReport(REPORT_MSG_LEVEL_WARNING, "Ent: id:%d; cls:'%s'; name:'%s'\n", pEnt->getId(), pEnt->getClassName(), pEnt->getName());
 		}
 	});
-	
+
 	Core_0RegisterConcmdArg("map", [](int argc, const char ** argv)
 	{
 		if(argc != 2)
@@ -254,7 +282,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 			printf("Usage: map <levelname>");
 			return;
 		}
-		
+
 		SLevel_Load(argv[1], true);
 
 		//GameData::m_pGameStateManager->activate("ingame");
@@ -262,6 +290,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		if(m_pMgr->isServerMode())
 		{
 			Core_0ConsoleExecCmd("gmode server");
+			m_pMgr->setLevelName(argv[1]);
 
 			INETbuff *pBuf = SNetwork_CreateBuffer();
 			pBuf->writeUInt8(SVC_NEWLEVEL);
@@ -282,8 +311,17 @@ GameData::GameData(HWND hWnd, bool isGame):
 			}
 		}
 	});
-	Core_0RegisterConcmd("endmap", [](){
-		GameData::m_pGameStateManager->activate("main_menu");
+	Core_0RegisterConcmd("endmap", []()
+	{
+		if(m_pMgr->isServerMode())
+		{
+			GameData::m_pGameStateManager->activate("intermission");
+		}
+		else
+		{
+			GameData::m_pGameStateManager->activate("main_menu");
+		}
+
 		if(GameData::m_pPlayer)
 		{
 			GameData::m_pPlayer->observe();
@@ -319,7 +357,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 	//Core_0RegisterCVarFloat("r_default_fov", 45.0f, "Default FOV value");
 	Core_0RegisterCVarBool("cl_mode_editor", false, "Editor control mode");
 	Core_0RegisterCVarBool("cl_grab_cursor", true, "Grab cursor on move");
-	
+
 
 	Core_0RegisterCVarBool("cl_bob", true, "View bobbing");
 	Core_0RegisterCVarFloat("cl_bob_walk_y", 0.1f, "View bobbing walk y amplitude");
@@ -358,12 +396,29 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 	if(!hWnd)
 	{
-		SNetwork_OnClientConnected([](INetUser *pNetUser){
+		SNetwork_OnClientConnected([](INetUser *pNetUser)
+		{
 			// create entity for this player
 			// send SVC_ENTCONFIG
 			INETbuff *pBuf = SNetwork_CreateBuffer();
+
 			pBuf->writeUInt8(SVC_ENTCONFIG);
 			GameData::fillSvcEntconfigBuffer(pBuf);
+
+			if(m_pMgr->isLevelLoaded())
+			{
+				pBuf->writeUInt8(SVC_NEWLEVEL);
+				pBuf->writeString(m_pMgr->getLevelName().c_str());
+
+				pBuf->writeUInt8(SVC_NEWBASELINE);
+				pBuf->writeUInt8(1); // count of baselines
+				pBuf->writeUInt8(0); // baseline index
+				m_pMgr->serializeBaseline(m_pMgr->getBaseline(0), pBuf);
+
+				pBuf->writeUInt8(SVC_SPAWNBASELINE);
+				pBuf->writeUInt8(0);
+			}
+
 			pNetUser->sendMessage(pBuf, true);
 			SNetwork_FreeBuffer(pBuf);
 
@@ -373,16 +428,67 @@ GameData::GameData(HWND hWnd, bool isGame):
 			char szName[32];
 			sprintf(szName, "player#%d", pNetUser->getID());
 			pPlayer->setKV("name", szName);
+
+			pNetUser->setUserPointer(pPlayer);
+
+			pPlayer->spawn();
 		});
-		SNetwork_OnClientDisconnected([](INetUser *pNetUser){
+		SNetwork_OnClientDisconnected([](INetUser *pNetUser)
+		{
 			// remove entity for this player
-			char szName[32];
-			sprintf(szName, "player#%d", pNetUser->getID());
-			CBaseEntity *pEnt = m_pMgr->findEntityByName(szName);
+			CBaseEntity *pEnt = (CBaseEntity*)pNetUser->getUserPointer();
 			if(pEnt)
 			{
 				REMOVE_ENTITY(pEnt);
 			}
+		});
+		SNetwork_OnClientMove([](INetUser *pNetUser, CUserCmd *pUserCmd)
+		{
+			// remove entity for this player
+			CPlayer *pEnt = (CPlayer*)pNetUser->getUserPointer();
+			if(pEnt)
+			{
+				pEnt->dispatchUserCmd(pUserCmd);
+			}
+		});
+	}
+	else
+	{
+		SNetwork_OnConnectedToServer([](INetUser *pNetUser)
+		{
+			m_pMgr->setClientMode(true);
+
+			SNetwork_ClientRegisterMessage(SVC_DRAWPHYSICS, [](INETbuff *pData, INetUser *pNetUser)
+			{
+				UINT uSize = pData->readUInt32();
+				g_vDrawData[uSize - 1].clr = 0;
+				pData->readBytes((byte*)&g_vDrawData[0], uSize * sizeof(g_vDrawData[0]));
+			});
+
+			SNetwork_ClientRegisterMessage(SVC_NEWBASELINE, [](INETbuff *pData, INetUser *pNetUser)
+			{
+				byte u8Count = pData->readUInt8();
+				for(byte i = 0; i < u8Count; ++i)
+				{
+					ID id = pData->readUInt8();
+
+					m_pMgr->deserializeBaseline(id, pData);
+				}
+			});
+
+			SNetwork_ClientRegisterMessage(SVC_SPAWNBASELINE, [](INETbuff *pData, INetUser *pNetUser)
+			{
+				ID id = pData->readUInt8();
+				CBaseline *pBaseline = m_pMgr->getBaseline(id);
+				assert(pBaseline);
+				
+				m_pMgr->dispatchBaseline(pBaseline);
+			});
+		});
+		SNetwork_OnDisconnected([](INetUser *pNetUser)
+		{
+			m_pMgr->setClientMode(false);
+			Core_0ConsoleExecCmd("endmap");
 		});
 	}
 
@@ -398,6 +504,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 	else
 	{
 		m_pGameStateManager->addState(new CServerState(), "server");
+		m_pGameStateManager->addState(new CServerIntermissionState(), "intermission");
 	}
 	m_pGameStateManager->addState(new CIngameGameState(), "ingame");
 	m_pGameStateManager->addState(new CEditorState(), "editor");
@@ -412,24 +519,28 @@ GameData::GameData(HWND hWnd, bool isGame):
 	}
 	else
 	{
-		m_pGameStateManager->activate("server");
+		m_pGameStateManager->activate("intermission");
 	}
 
 	if(m_pGUI)
 	{
-		m_pGUI->registerCallback("on_exit", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("on_exit", [](gui::IEvent * ev)
+		{
 			PostQuitMessage(0);
 		});
-		m_pGUI->registerCallback("on_cancel", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("on_cancel", [](gui::IEvent * ev)
+		{
 			GameData::m_pGUI->popDesktop();
 		});
-		m_pGUI->registerCallback("exit_prompt", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("exit_prompt", [](gui::IEvent * ev)
+		{
 			if(ev->key == KEY_ESCAPE || ev->key == KEY_LBUTTON)
 			{
 				GameData::m_pGUI->messageBox(StringW(String("Вы действительно хотите выйти?")).c_str(), L"", StringW(String("Да")).c_str(), L"on_exit", StringW(String("Нет")).c_str(), L"on_cancel", NULL);
 			}
 		});
-		m_pGUI->registerCallback("dial_loadlevel", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("dial_loadlevel", [](gui::IEvent * ev)
+		{
 			static gui::IDesktop * pLoadLevelDesktop = GameData::m_pGUI->createDesktopA("menu_loadlevel", "menu/loadlevel.html");
 			GameData::m_pGUI->pushDesktop(pLoadLevelDesktop);
 
@@ -461,7 +572,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 			}
 		});
-		m_pGUI->registerCallback("loadlevel_select", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("loadlevel_select", [](gui::IEvent * ev)
+		{
 			gui::dom::IDOMdocument * doc = GameData::m_pGUI->getActiveDesktop()->getDocument();
 			doc->getElementsByTag(L"body")[0][0]->addPseudoclass(0x00010);
 
@@ -491,24 +603,28 @@ GameData::GameData(HWND hWnd, bool isGame):
 			}
 
 		});
-		m_pGUI->registerCallback("loadlevel_go", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("loadlevel_go", [](gui::IEvent * ev)
+		{
 			StringW sLevelName = ev->target->getAttribute(L"level_name");
 
 			Core_0ConsoleExecCmd("map %s", String(sLevelName).c_str());
 		});
-		m_pGUI->registerCallback("return_ingame", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("return_ingame", [](gui::IEvent * ev)
+		{
 			if(ev->key == KEY_ESCAPE || ev->key == KEY_LBUTTON)
 			{
 				GameData::m_pGameStateManager->activate("ingame");
 			}
 		});
-		m_pGUI->registerCallback("mainmenu_prompt", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("mainmenu_prompt", [](gui::IEvent * ev)
+		{
 			if(ev->key == KEY_ESCAPE || ev->key == KEY_LBUTTON)
 			{
 				GameData::m_pGUI->messageBox(StringW(String("Вы действительно хотите выйти в главное меню?")).c_str(), StringW(String("Весь несохраненный прогресс будет утерян.")).c_str(), StringW(String("Да")).c_str(), L"to_mainmenu", StringW(String("Нет")).c_str(), L"on_cancel", NULL);
 			}
 		});
-		m_pGUI->registerCallback("to_mainmenu", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("to_mainmenu", [](gui::IEvent * ev)
+		{
 			GameData::m_pGameStateManager->activate("main_menu");
 
 			//Core_0ConsoleExecCmd("observe");
@@ -516,14 +632,17 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 			SLevel_Clear();
 		});
-		m_pGUI->registerCallback("dial_settings", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("dial_settings", [](gui::IEvent * ev)
+		{
 			static gui::IDesktop * pSettingsDesktop = GameData::m_pGUI->createDesktopA("menu_settings", "menu/settings.html");
 			GameData::m_pGUI->pushDesktop(pSettingsDesktop);
 		});
-		m_pGUI->registerCallback("engine_command", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("engine_command", [](gui::IEvent * ev)
+		{
 			Core_0ConsoleExecCmd("%s", String(ev->target->getAttribute(L"args")).c_str());
 		});
-		m_pGUI->registerCallback("dial_settings_video", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("dial_settings_video", [](gui::IEvent * ev)
+		{
 			static gui::IDesktop * pLoadLevelDesktop = GameData::m_pGUI->createDesktopA("menu_settings_video", "menu/settings_video.html");
 			GameData::m_pGUI->pushDesktop(pLoadLevelDesktop);
 
@@ -534,7 +653,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 			{
 				pNode->removeChild((*(pNode->getChilds()))[1]);
 			}
-		
+
 			int iModesCount = 0;
 			const DEVMODE * pModes = SGCore_GetModes(&iModesCount);
 
@@ -553,7 +672,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 			UpdateSettingsDesktop();
 		});
 
-		m_pGUI->registerCallback("settings_commit", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("settings_commit", [](gui::IEvent * ev)
+		{
 
 			CSettingsWriter settingsWriter;
 			settingsWriter.loadFile("../config_game_user_auto.cfg");
@@ -594,7 +714,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 			GameData::m_pGUI->popDesktop();
 		});
-		m_pGUI->registerCallback("controls_commit", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("controls_commit", [](gui::IEvent * ev)
+		{
 
 			CSettingsWriter settingsWriter;
 			settingsWriter.loadFile("../config_game_user_auto.cfg");
@@ -647,7 +768,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 			GameData::m_pGUI->popDesktop();
 		});
 
-		m_pGUI->registerCallback("dial_settings_controls", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("dial_settings_controls", [](gui::IEvent * ev)
+		{
 			static gui::IDesktop * pControlsDesktop = GameData::m_pGUI->createDesktopA("menu_settings_controls", "menu/settings_controls.html");
 			GameData::m_pGUI->pushDesktop(pControlsDesktop);
 
@@ -730,7 +852,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 			mem_release(pConfig);
 		});
 
-		m_pGUI->registerCallback("bind_del", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("bind_del", [](gui::IEvent * ev)
+		{
 			if(ev->key == KEY_LBUTTON)
 			{
 				StringW wsKey;
@@ -745,21 +868,23 @@ GameData::GameData(HWND hWnd, bool isGame):
 			}
 		});
 
-		m_pGUI->registerCallback("bind_cancel", [](gui::IEvent * ev){
+		m_pGUI->registerCallback("bind_cancel", [](gui::IEvent * ev)
+		{
 			if(ev->key == KEY_LBUTTON)
 			{
 				GameData::m_pCell = NULL;
 				GameData::m_pGUI->popDesktop();
 			}
 		});
-	
-		m_pGUI->registerCallback("settings_ctl_key", [](gui::IEvent * ev){
+
+		m_pGUI->registerCallback("settings_ctl_key", [](gui::IEvent * ev)
+		{
 			if(ev->key != KEY_LBUTTON)
 			{
 				return;
 			}
 			GameData::m_pGUI->messageBox(
-				StringW(String("Переназначить")).c_str(), 
+				StringW(String("Переназначить")).c_str(),
 				StringW(String("Нажмите клавишу, которую вы хотите назначить для данного действия."
 				"Для отмены нажмите ESC")).c_str(),
 				StringW(String("Удалить")).c_str(),
@@ -767,11 +892,12 @@ GameData::GameData(HWND hWnd, bool isGame):
 				StringW(String("Отмена")).c_str(),
 				L"bind_cancel",
 				NULL
-			);
+				);
 
 			GameData::m_pCell = ev->target;
 
-			SSInput_OnNextKeyPress([](const char *szKey){
+			SSInput_OnNextKeyPress([](const char *szKey)
+			{
 				if(!GameData::m_pCell || !fstrcmp(szKey, "escape"))
 				{
 					return;
@@ -838,27 +964,34 @@ GameData::GameData(HWND hWnd, bool isGame):
 	//pl->setRagdoll(g_pRagdoll);
 
 	//m_pStatsUI = m_pGUI->createDesktopA("stats", "sys/stats.html");
+	if(!hWnd)
+	{
+		m_isGame = true;
+	}
 
 	if(m_isGame)
 	{
-		CBaseTool *pTool = (CBaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
-		pTool->setOwner(m_pPlayer);
-		pTool->attachHands();
-		pTool->playAnimation("idle");
-		pTool->setPos(m_pPlayer->getHead()->getPos() + float3(1.0f, 0.0f, 1.0f));
-		pTool->setOrient(m_pPlayer->getHead()->getOrient());
-		pTool->setParent(m_pPlayer->getHead());
+		if(m_pPlayer)
+		{
+			/*CBaseTool *pTool = (CBaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
+			pTool->setOwner(m_pPlayer);
+			pTool->attachHands();
+			pTool->playAnimation("idle");
+			pTool->setPos(m_pPlayer->getHead()->getPos() + float3(1.0f, 0.0f, 1.0f));
+			pTool->setOrient(m_pPlayer->getHead()->getOrient());
+			pTool->setParent(m_pPlayer->getHead());
 
-		CBaseAmmo *pAmmo = (CBaseAmmo*)CREATE_ENTITY("ammo_5.45x39ps", m_pMgr);
-		pTool->chargeAmmo(pAmmo);
+			CBaseAmmo *pAmmo = (CBaseAmmo*)CREATE_ENTITY("ammo_5.45x39ps", m_pMgr);
+			pTool->chargeAmmo(pAmmo);
 
-		m_pPlayer->getInventory()->putItems("ammo_5.45x39ps", 60);
+			m_pPlayer->getInventory()->putItems("ammo_5.45x39ps", 60);
 
-		CBaseMag *pMag = (CBaseMag*)CREATE_ENTITY("mag_ak74_30", m_pMgr);
-		pMag->load(30);
-		((CBaseWeapon*)pTool)->attachMag(pMag);
+			CBaseMag *pMag = (CBaseMag*)CREATE_ENTITY("mag_ak74_30", m_pMgr);
+			pMag->load(30);
+			((CBaseWeapon*)pTool)->attachMag(pMag);
 
-		m_pPlayer->setActiveTool(pTool);
+			m_pPlayer->setActiveTool(pTool);*/
+		}
 	}
 	else
 	{
@@ -937,6 +1070,32 @@ void GameData::render()
 		m_pGUI->render();
 	}
 	//m_pStatsUI->render(0.1f);
+
+
+
+	if(!g_vDrawData.size())
+	{
+		return;
+	}
+	SGCore_ShaderUnBind();
+
+	SMMATRIX mView, mProj;
+	Core_RMatrixGet(G_RI_MATRIX_VIEW, &mView);
+	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mProj);
+
+	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixIdentity());
+	SGCore_GetDXDevice()->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&mView);
+	SGCore_GetDXDevice()->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&mProj);
+
+	SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+	//SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, FALSE);
+	//SGCore_GetDXDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, 0xFF);
+
+	SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+
+	SGCore_GetDXDevice()->SetTexture(0, 0);
+
+	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, g_vDrawData.size() / 2, &(g_vDrawData[0]), sizeof(render_point));
 }
 void GameData::renderHUD()
 {

@@ -38,7 +38,15 @@ public:
 
 	void kick(const char *szReason);
 
+	int getAverageLoss();
+	int getLastFrameLoss();
+
+	int getLatency();
+
 	ID getID();
+
+	void setUserPointer(void *ptr);
+	void *getUserPointer();
 
 protected:
 	CNetPeer m_netPeer;
@@ -52,6 +60,7 @@ protected:
 
 	uint16_t m_uSeqRel = 0; //!< Last outgoing sequence
 	uint16_t m_uAckRel = 0; //!< Last received ack (will be sent back to peer)
+	uint8_t m_u8RelSeqNum = 0;
 	UINT m_uReliableCount = 0;
 	bool m_isAllReliableSent = true;
 	Array<Array<byte>, 4> m_aabOutgoindRels;
@@ -63,12 +72,15 @@ protected:
 	byte m_pbLoss[NET_LOSS_COUNT_FRAMES];
 	byte m_u8LossIdx = 0;
 	byte m_iLoss = 0;
+	byte m_iLastFrameLoss = 0;
 	int m_iLatency = 0; // ms
 
 	CNETbuff m_bufOut;
 	CNETbuff m_bufOutRel;
 
 	CSentPacket m_pSentPackets[NET_PACKET_BUFFER_SIZE];
+
+	void *m_pUser = NULL;
 };
 
 

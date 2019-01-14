@@ -33,6 +33,7 @@ CLevel::~CLevel()
 
 void CLevel::clear()
 {
+	bool isUnloaded = !m_szName[0];
 	m_szName[0] = 0;
 	m_sLocalName = "";
 	m_sWeather = "";
@@ -47,7 +48,10 @@ void CLevel::clear()
 	}
 	
 	//SGame_UnloadObjLevel();
-	Core_0ConsoleExecCmd("ent_unload_level");
+	if(!isUnloaded)
+	{
+		Core_0ConsoleExecCmd("ent_unload_level");
+	}
 	SPhysics_UnloadGeom();
 	SAIG_Clear();
 	if(!m_isServerMode)

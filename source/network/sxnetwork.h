@@ -50,29 +50,47 @@ SX_LIB_API void SNetwork_0Create();
 //! уничтожение либы
 SX_LIB_API void SNetwork_AKill();
 
+//! обновление либы
+SX_LIB_API void SNetwork_Update();
+
 SX_LIB_API INETbuff *SNetwork_CreateBuffer();
 SX_LIB_API void SNetwork_FreeBuffer(INETbuff *pBuf);
 
 //#############################################################################
 
-//! обновление либы
-SX_LIB_API void SNetwork_Update();
-
 //! 
 SX_LIB_API void SNetwork_InitServer(unsigned short usPort = 7527, const char *szIp = NULL);
 SX_LIB_API void SNetwork_FinishServer();
+
+SX_LIB_API void SNetwork_OnClientConnected(PFNCLIENTHANDLER fnHandler);
+SX_LIB_API void SNetwork_OnClientDisconnected(PFNCLIENTHANDLER fnHandler);
+SX_LIB_API void SNetwork_OnClientMove(PFNCLIENTMOVE fnHandler);
+
+SX_LIB_API void SNetwork_ServerRegisterMessage(CLIENT_COMMAND cmd, PFNMESSAGEHANDLER fnHandler);
+
+SX_LIB_API void SNetwork_BroadcastMessage(byte *pData, int iLength, bool isReliable = false);
+SX_LIB_API void SNetwork_BroadcastMessageBuf(INETbuff *pNetBuff, bool isReliable = false);
+
+//#############################################################################
+
 //! 
 SX_LIB_API void SNetwork_Connect(const char *szIp, unsigned short usPort = 7527);
 SX_LIB_API void SNetwork_Disconnect();
 SX_LIB_API bool SNetwork_IsConnected();
 
-SX_LIB_API void SNetwork_OnClientConnected(PFNCLIENTHANDLER fnHandler);
-SX_LIB_API void SNetwork_OnClientDisconnected(PFNCLIENTHANDLER fnHandler);
+SX_LIB_API void SNetwork_OnConnectedToServer(PFNCLIENTHANDLER fnHandler);
+SX_LIB_API void SNetwork_OnDisconnected(PFNCLIENTHANDLER fnHandler);
+
+SX_LIB_API void SNetwork_ClientRegisterMessage(SERVER_COMMAND cmd, PFNMESSAGEHANDLER fnHandler);
+
+SX_LIB_API void SNetwork_MessageToServer(byte *pData, int iLength, bool isReliable = false);
+SX_LIB_API void SNetwork_MessageToServerBuf(INETbuff *pNetBuff, bool isReliable = false);
+
+SX_LIB_API INetUser *SNetwork_GetServerINetUser();
 
 //#############################################################################
 
-SX_LIB_API void SNetwork_BroadcastMessage(byte *pData, int iLength, bool isReliable = false);
-SX_LIB_API void SNetwork_BroadcastMessageBuf(INETbuff *pNetBuff, bool isReliable = false);
+
 
 //!@} sxnetwork
 

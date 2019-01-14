@@ -22,6 +22,7 @@ See the license in LICENSE
 #include <common/SXMath.h>
 #include <physics/sxphysics.h>
 #include <score/sxscore.h>
+#include <network/sxnetwork.h>
 
 #include "EntityFactory.h"
 #include "EntityManager.h"

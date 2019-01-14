@@ -40,6 +40,13 @@ public:
 	void deactivate();
 };
 
+class CServerIntermissionState: public IGameState
+{
+public:
+	void activate();
+	void deactivate();
+};
+
 class CServerState: public IGameState
 {
 public:

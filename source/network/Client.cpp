@@ -99,6 +99,10 @@ void CClient::update()
 				if(cmd < SVC_LAST && m_vMsgHandlers[cmd])
 				{
 					m_vMsgHandlers[cmd](&buf, pNetUser);
+					if(cmd == SVC_DISCONNECT)
+					{
+						return;
+					}
 				}
 				else
 				{
@@ -205,4 +209,22 @@ void CClient::freeAuthTicket(byte *pData, uint16_t usLength)
 void CClient::registerMessage(SERVER_COMMAND msgid, PFNMESSAGEHANDLER fnHandler)
 {
 	m_vMsgHandlers[msgid] = fnHandler;
+}
+
+void CClient::sendMessage(byte *pData, int iLength, bool isReliable)
+{
+	if(m_pNetUser)
+	{
+		m_pNetUser->sendMessage(pData, iLength, isReliable);
+	}
+}
+
+void CClient::sendMessage(INETbuff *pNetBuff, bool isReliable)
+{
+	sendMessage((byte*)pNetBuff->getPointer(), pNetBuff->getSize(), isReliable);
+}
+
+INetUser *CClient::getServerINetUser()
+{
+	return(m_pNetUser);
 }

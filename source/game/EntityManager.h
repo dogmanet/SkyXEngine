@@ -11,6 +11,7 @@ See the license in LICENSE
 
 #include <gdefines.h>
 #include <common/array.h>
+#include <common/string.h>
 #include <chrono>
 
 #include "proptable.h"
@@ -66,6 +67,9 @@ struct timeout_output_t
 	inputdata_t data;
 };
 
+class CBaseline;
+class INETbuff;
+
 class CEntityManager
 {
 	friend class CBaseEntity;
@@ -109,11 +113,25 @@ public:
 	void sheduleDestroy(CBaseEntity *pEnt);
 
 	void setEditorMode(bool isEditor = true);
+	void setClientMode(bool isClient = true);
+	void setLevelLoaded(bool isLevelLoaded = true);
 	bool isEditorMode();
 	bool isServerMode();
+	bool isClientMode();
+
+	bool isLevelLoaded();
+	void setLevelName(const char *szLevelName);
+	const String &getLevelName();
 
 	ISXConfig *getDefaultsConfig();
 	ISXConfig *getDynClassConfig();
+
+	CBaseline *createBaseline(ID forceId = -1);
+	CBaseline *getBaseline(ID id);
+	void dispatchBaseline(CBaseline *pBaseline);
+
+	void serializeBaseline(CBaseline *pBaseline, INETbuff *pBuf);
+	CBaseline *deserializeBaseline(ID id, INETbuff *pBuf);
 
 protected:
 	ID reg(CBaseEntity * pEnt);
@@ -137,6 +155,14 @@ protected:
 
 	bool m_isEditorMode = false;
 	bool m_isServerMode = false;
+	bool m_isClientMode = false;
+	bool m_isLevelLoaded = false;
+	String m_sLevelName;
+	
+	Array<CBaseline*> m_aBaselines;
+
+private:
+	void finalRemove();
 };
 
 #endif

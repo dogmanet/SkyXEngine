@@ -13,6 +13,8 @@ See the license in LICENSE
 
 #include "sxphysics.h"
 
+#include <network/sxnetwork.h>
+
 //#include <BulletDynamics/MLCPSolvers/btDantzigSolver.h>
 //#include <BulletDynamics/MLCPSolvers/btMLCPSolver.h>
 
@@ -24,8 +26,8 @@ public:
 	CTaskScheduler(): btITaskScheduler("SkyXEngine parallel")
 	{
 	}
-	virtual int getMaxNumThreads() const BT_OVERRIDE{return(Core_MGetThreadCount()); }
-	virtual int getNumThreads() const BT_OVERRIDE{return(Core_MGetThreadCount()); }
+	virtual int getMaxNumThreads() const BT_OVERRIDE{return(max(1, Core_MGetThreadCount())); }
+	virtual int getNumThreads() const BT_OVERRIDE{return(max(1, Core_MGetThreadCount())); }
 	virtual void setNumThreads(int numThreads) BT_OVERRIDE{}
 
 	class CBody: public IParallelForBody
@@ -67,7 +69,7 @@ public:
 	}
 };
 
-CPhyWorld::CPhyWorld():
+CPhyWorld::CPhyWorld(bool isServerMode):
 	m_pGeomStaticCollideMesh(NULL),
 	m_pGeomStaticCollideShape(NULL),
 	m_pGeomStaticRigidBody(NULL),
@@ -78,7 +80,8 @@ CPhyWorld::CPhyWorld():
 	m_pppGreenStaticRigidBody(NULL),
 	m_iGreenShapes(0),
 	m_piGreenTotal(NULL),
-	m_isRunning(false)
+	m_isRunning(false),
+	m_isServerMode(isServerMode)
 {
 	printf("Initializing physics engine...   ");
 	m_pBroadphase = new btDbvtBroadphase();
@@ -109,7 +112,14 @@ CPhyWorld::CPhyWorld():
 	Core_0RegisterCVarString("phy_world_gravity", "0 -10 0", "World gravity (x y z)");
 	m_pDynamicsWorld->setGravity(btVector3(0, -10, 0));
 			
-	m_pDebugDrawer = new CDebugDrawer();
+	if(m_isServerMode)
+	{
+		m_pDebugDrawer = new CRemoteDebugDrawer();
+	}
+	else
+	{
+		m_pDebugDrawer = new CDebugDrawer();
+	}
 	m_pDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe | btIDebugDraw::DBG_DrawConstraints | btIDebugDraw::DBG_DrawConstraintLimits);
 	//m_pDebugDrawer->setDebugMode(btIDebugDraw::DBG_FastWireframe);
 	m_pDynamicsWorld->setDebugDrawer(m_pDebugDrawer);
@@ -140,7 +150,16 @@ void CPhyWorld::render()
 	if(*m_bDebugDraw)
 	{
 		m_pDynamicsWorld->debugDrawWorld();
-		((CDebugDrawer*)(m_pDynamicsWorld->getDebugDrawer()))->render();
+
+		if(m_isServerMode)
+		{
+			((CRemoteDebugDrawer*)(m_pDynamicsWorld->getDebugDrawer()))->render();
+			*(bool*)m_bDebugDraw = false;
+		}
+		else
+		{
+			((CDebugDrawer*)(m_pDynamicsWorld->getDebugDrawer()))->render();
+		}
 	}
 }
 
@@ -581,72 +600,76 @@ bool CPhyWorld::importGeom(const char * file)
 			}
 		}
 
-		FILE *pF = fopen(name, "rb");
-		if(pF)
+		if(!m_isServerMode)
 		{
-			PhyMatFile pmf;
-			if(fread(&pmf, sizeof(pmf), 1, pF))
+
+			FILE *pF = fopen(name, "rb");
+			if(pF)
 			{
-				if(pmf.i64Magick == PHY_MAT_FILE_MAGICK)
+				PhyMatFile pmf;
+				if(fread(&pmf, sizeof(pmf), 1, pF))
 				{
-					m_iGeomFacesCount = pmf.uiGeomFaceCount;
-
-					char szTmp[1024];
-
-					AssotiativeArray<String, ID> mMatMap;
-					const AssotiativeArray<String, ID>::Node *pMatMapNode;
-					int iMatCount = SMtrl_MtlGetCount();
-					for(int i = 0; i < iMatCount; ++i)
+					if(pmf.i64Magick == PHY_MAT_FILE_MAGICK)
 					{
-						szTmp[0] = 0;
-						SMtrl_MtlGetTexture(i, szTmp);
-						mMatMap[szTmp] = i;
-					}
+						m_iGeomFacesCount = pmf.uiGeomFaceCount;
 
-					ID *aidMatMap = (ID*)alloca(sizeof(ID) * pmf.uiMatCount);
-					memset(aidMatMap, 0, sizeof(ID)* pmf.uiMatCount);
+						char szTmp[1024];
 
-					uint16_t ui16NameLen;
-					for(uint32_t i = 0; i < pmf.uiMatCount; ++i)
-					{
-						fread(&ui16NameLen, sizeof(uint16_t), 1, pF);
-						if(ui16NameLen)
+						AssotiativeArray<String, ID> mMatMap;
+						const AssotiativeArray<String, ID>::Node *pMatMapNode;
+						int iMatCount = SMtrl_MtlGetCount();
+						for(int i = 0; i < iMatCount; ++i)
 						{
-							fread(szTmp, sizeof(char), ui16NameLen, pF);
-							szTmp[ui16NameLen] = 0;
+							szTmp[0] = 0;
+							SMtrl_MtlGetTexture(i, szTmp);
+							mMatMap[szTmp] = i;
+						}
 
-							if(mMatMap.KeyExists(szTmp, &pMatMapNode))
+						ID *aidMatMap = (ID*)alloca(sizeof(ID) * pmf.uiMatCount);
+						memset(aidMatMap, 0, sizeof(ID)* pmf.uiMatCount);
+
+						uint16_t ui16NameLen;
+						for(uint32_t i = 0; i < pmf.uiMatCount; ++i)
+						{
+							fread(&ui16NameLen, sizeof(uint16_t), 1, pF);
+							if(ui16NameLen)
 							{
-								aidMatMap[i] = *pMatMapNode->Val;
-							}
-							else
-							{
-								ret = false;
+								fread(szTmp, sizeof(char), ui16NameLen, pF);
+								szTmp[ui16NameLen] = 0;
+
+								if(mMatMap.KeyExists(szTmp, &pMatMapNode))
+								{
+									aidMatMap[i] = *pMatMapNode->Val;
+								}
+								else
+								{
+									ret = false;
+								}
 							}
 						}
-					}
 
-					m_pGeomMtlIDs = new ID[m_iGeomFacesCount];
-					fread(m_pGeomMtlIDs, sizeof(ID), m_iGeomFacesCount, pF);
-					for(int i = 0; i < m_iGeomFacesCount; ++i)
+						m_pGeomMtlIDs = new ID[m_iGeomFacesCount];
+						fread(m_pGeomMtlIDs, sizeof(ID), m_iGeomFacesCount, pF);
+						for(int i = 0; i < m_iGeomFacesCount; ++i)
+						{
+							m_pGeomMtlIDs[i] = aidMatMap[m_pGeomMtlIDs[i]];
+						}
+					}
+					else
 					{
-						m_pGeomMtlIDs[i] = aidMatMap[m_pGeomMtlIDs[i]];
+						ret = false;
 					}
 				}
 				else
 				{
 					ret = false;
 				}
+				fclose(pF);
 			}
 			else
 			{
 				ret = false;
 			}
-			fclose(pF);
-		}
-		else
-		{
-			ret = false;
 		}
 	}
 	mem_delete(importer);
@@ -925,5 +948,22 @@ void CPhyWorld::CDebugDrawer::render()
 	
 	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, m_vDrawData.size() / 2, &(m_vDrawData[0]), sizeof(render_point));
 
-	m_vDrawData.clear();
+	m_vDrawData.clearFast();
+}
+
+void CPhyWorld::CRemoteDebugDrawer::render()
+{
+	if(!m_vDrawData.size())
+	{
+		return;
+	}
+
+	INETbuff *pBuf = SNetwork_CreateBuffer();
+	pBuf->writeUInt8(SVC_DRAWPHYSICS);
+	pBuf->writeUInt32(m_vDrawData.size());
+	pBuf->writeBytes((byte*)&(m_vDrawData[0]), m_vDrawData.size() * sizeof(m_vDrawData[0]));
+	SNetwork_BroadcastMessageBuf(pBuf, true);
+	SNetwork_FreeBuffer(pBuf);
+
+	m_vDrawData.clearFast();
 }

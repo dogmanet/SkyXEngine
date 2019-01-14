@@ -44,7 +44,7 @@ struct PhyMatFile
 class CPhyWorld
 {
 public:
-	CPhyWorld();
+	CPhyWorld(bool isServerMode);
 	~CPhyWorld();
 
 	void setThreadNum(int tnum);
@@ -78,6 +78,7 @@ public:
 
 	class CDebugDrawer: public btIDebugDraw
 	{
+	protected:
 		struct render_point
 		{
 			float3_t pos;
@@ -105,6 +106,12 @@ public:
 
 		int getDebugMode() const;
 
+		virtual void render();
+	};
+
+	class CRemoteDebugDrawer: public CDebugDrawer
+	{
+	public:
 		void render();
 	};
 
@@ -135,6 +142,8 @@ protected:
 
 	bool m_isRunning;
 	int m_iSkipFrames = 3;
+
+	bool m_isServerMode = false;
 };
 
 #endif

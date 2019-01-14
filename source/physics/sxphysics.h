@@ -71,7 +71,7 @@ struct SurfaceInfo
 
 /*! Инициализирует библиотеку
 */
-SX_LIB_API void SPhysics_0Create();
+SX_LIB_API void SPhysics_0Create(bool isServerMode);
 
 /*! Деинициализирует библиотеку
 */

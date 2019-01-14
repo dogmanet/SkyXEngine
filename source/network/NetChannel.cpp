@@ -7,6 +7,10 @@ void CNetUser::sendMessage(byte *pData, int iLength, bool isReliable)
 {
 	if(isReliable)
 	{
+		if(m_bufOutRel.getSize() == 0)
+		{
+			m_bufOutRel.writeUInt8(m_u8RelSeqNum++);
+		}
 		m_bufOutRel.addBuf(pData, iLength);
 	}
 	else
@@ -28,9 +32,34 @@ void CNetUser::kick(const char *szReason)
 	m_bDoDisconnect = true;
 }
 
+int CNetUser::getAverageLoss()
+{
+	return(m_iLoss);
+}
+
+int CNetUser::getLastFrameLoss()
+{
+	return(m_iLastFrameLoss);
+}
+
+int CNetUser::getLatency()
+{
+	return(m_iLatency);
+}
+
 ID CNetUser::getID()
 {
 	return(m_id);
+}
+
+void CNetUser::setUserPointer(void *ptr)
+{
+	m_pUser = ptr;
+}
+
+void *CNetUser::getUserPointer()
+{
+	return(m_pUser);
 }
 
 //##########################################################################
@@ -206,7 +235,7 @@ bool CNetChannel::readPacket(INETbuff *pBuf, CNetUser **ppFrom, CNetPeer *pNetPe
 				if(pNetUser->m_uReliableExpected == pNetUser->m_uAckRel + 1)
 				{
 					pNetUser->m_uReliableExpected = 0;
-					pBuf->setBuf((byte*)pNetUser->m_bufInRel.getPointer(), pNetUser->m_bufInRel.getSize());
+					pBuf->setBuf((byte*)pNetUser->m_bufInRel.getPointer() + 1, pNetUser->m_bufInRel.getSize() - 1);
 					return(true);
 				}
 			}
@@ -219,7 +248,7 @@ bool CNetChannel::readPacket(INETbuff *pBuf, CNetUser **ppFrom, CNetPeer *pNetPe
 				continue;
 			}
 
-			pNetUser->m_pbLoss[pNetUser->m_u8LossIdx % NET_LOSS_COUNT_FRAMES] = getSequenceDelta(pHeader->usSeq, pNetUser->m_uAck) - 1;
+			pNetUser->m_pbLoss[pNetUser->m_u8LossIdx % NET_LOSS_COUNT_FRAMES] = pNetUser->m_iLastFrameLoss = getSequenceDelta(pHeader->usSeq, pNetUser->m_uAck) - 1;
 			++pNetUser->m_u8LossIdx;
 			if((pNetUser->m_u8LossIdx & 0xF) == 0)
 			{
@@ -296,7 +325,7 @@ void CNetChannel::sendMessages()
 				const UINT c_uDataSize = PACKET_MAX_SIZE - PACKET_HDR_SIZE;
 				if(pNetUser->m_isAllReliableSent)
 				{
-					if(pNetUser->m_bufOutRel.getSize() > 0)
+					if(pNetUser->m_bufOutRel.getSize() > 1)
 					{
 						// split to packets
 						pNetUser->m_uReliableCount = pNetUser->m_bufOutRel.getSize() / c_uDataSize + (pNetUser->m_bufOutRel.getSize() % c_uDataSize ? 1 : 0);

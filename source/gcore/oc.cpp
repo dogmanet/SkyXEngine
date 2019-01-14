@@ -341,7 +341,7 @@ void COcclusionCulling::reprojection()
 
 	mem_delete(m_pReprojectionCycle);
 	m_pReprojectionCycle = new COCReprojection(m_pArrWorldPos, &mViewProj, *r_near, *r_far, m_iWidth, m_iHeight, m_iCountPixels, m_pArrDepthBufferReProjection, m_pArrDepthBufferRasterize, m_pArrDepthBufferMutex);
-	m_idReprojectionCycle = Core_MForLoop(0, m_iCountPixels, m_pReprojectionCycle, m_iCountPixels / (Core_MGetThreadCount() * 3));
+	m_idReprojectionCycle = Core_MForLoop(0, m_iCountPixels, m_pReprojectionCycle, m_iCountPixels / (max(1, Core_MGetThreadCount()) * 3));
 	
 	/*float2 vNewPos2;
 

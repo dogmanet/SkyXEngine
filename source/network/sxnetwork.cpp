@@ -15,6 +15,10 @@ report_func g_fnReportf = DefReport;
 
 CServer *g_pServer = NULL;
 CClient *g_pClient = NULL;
+PFNCLIENTMOVE g_fnMove = NULL;
+
+PFNCLIENTHANDLER g_fnConnected = NULL;
+PFNCLIENTHANDLER g_fnDisconnected = NULL;
 
 //##########################################################################
 
@@ -86,7 +90,14 @@ SX_LIB_API void SNetwork_AKill()
 {
 	//SN_PRECOND(_VOID);
 
-	//mem_delete(g_pNet);
+	if(g_pServer)
+	{
+		mem_delete(g_pServer);
+	}
+	if(g_pClient)
+	{
+		mem_delete(g_pClient);
+	}
 }
 
 SX_LIB_API void SNetwork_Update()
@@ -118,6 +129,38 @@ SX_LIB_API void SNetwork_InitServer(unsigned short usPort, const char *szIp)
 		printf("Client sent drop\n");
 		pNetUser->kick("Client sent drop");
 	});
+	g_pServer->registerMessage(CLC_MOVE, [](INETbuff *pData, INetUser *pNetUser){
+		CUserCmd userCmd;
+		pData->readBytes((byte*)&userCmd, sizeof(userCmd));
+		//printf("CLC_MOVE: f: %.2f; s: %.2f; ay: %.2f; ud: %.2f\n", userCmd.m_fMoveForward, userCmd.m_fMoveSide, userCmd.m_fAngleY, userCmd.m_fAngleUpDown);
+		byte u8NumBackups = pData->readUInt8();
+		byte u8NumLostPackets = pNetUser->getLastFrameLoss();
+
+		CUserCmd userCmdBackup;
+		for(byte i = 0; i < u8NumBackups; ++i)
+		{
+			pData->readBytes((byte*)&userCmdBackup, sizeof(userCmdBackup));
+			// u8NumBackups = 8
+			// u8NumLostPackets = 4
+			// i: 0 1 2 3 4 5 6 7
+			// c: 0 0 0 0 1 1 1 1
+			// u8NumBackups - i:
+			//    8 7 6 5 4 3 2 1
+			if(u8NumBackups - i <= u8NumLostPackets)
+			{
+				// apply movement userCmdBackup
+				if(g_fnMove)
+				{
+					g_fnMove(pNetUser, &userCmdBackup);
+				}
+			}
+		}
+		// apply movement userCmd
+		if(g_fnMove)
+		{
+			g_fnMove(pNetUser, &userCmd);
+		}
+	});
 }
 
 SX_LIB_API void SNetwork_FinishServer()
@@ -137,6 +180,7 @@ SX_LIB_API void SNetwork_Connect(const char *szIp, unsigned short usPort)
 		char buf[128];
 		pData->readString(buf, sizeof(buf));
 		printf("Kicked: %s\n", buf);
+		SNetwork_Disconnect();
 	});
 	g_pClient->registerMessage(SVC_NEWLEVEL, [](INETbuff *pData, INetUser *pNetUser){
 		char buf[128];
@@ -148,6 +192,12 @@ SX_LIB_API void SNetwork_Connect(const char *szIp, unsigned short usPort)
 	});
 	g_pClient->registerMessage(SVC_ENTCONFIG, [](INETbuff *pData, INetUser *pNetUser){
 		printf("Received entconfig\n");
+
+		if(g_fnConnected)
+		{
+			g_fnConnected(g_pClient->getServerINetUser());
+		}
+
 		char szClass[256], szKey[256], szValue[256];
 
 		//@TODO: Use that data!
@@ -184,6 +234,11 @@ SX_LIB_API void SNetwork_Connect(const char *szIp, unsigned short usPort)
 SX_LIB_API void SNetwork_Disconnect()
 {
 	assert(g_pClient);
+
+	if(g_fnDisconnected)
+	{
+		g_fnDisconnected(g_pClient->getServerINetUser());
+	}
 
 	g_pClient->disconnect();
 	mem_delete(g_pClient);
@@ -234,4 +289,60 @@ SX_LIB_API void SNetwork_OnClientDisconnected(PFNCLIENTHANDLER fnHandler)
 	{
 		g_pServer->onClientDisconnected(fnHandler);
 	}
+}
+
+SX_LIB_API void SNetwork_OnClientMove(PFNCLIENTMOVE fnHandler)
+{
+	g_fnMove = fnHandler;
+}
+
+SX_LIB_API void SNetwork_MessageToServer(byte *pData, int iLength, bool isReliable)
+{
+	if(g_pClient)
+	{
+		g_pClient->sendMessage(pData, iLength, isReliable);
+	}
+}
+
+SX_LIB_API void SNetwork_MessageToServerBuf(INETbuff *pNetBuff, bool isReliable)
+{
+	if(g_pClient)
+	{
+		g_pClient->sendMessage(pNetBuff, isReliable);
+	}
+}
+
+SX_LIB_API INetUser *SNetwork_GetServerINetUser()
+{
+	if(g_pClient)
+	{
+		return(g_pClient->getServerINetUser());
+	}
+	return(0);
+}
+
+SX_LIB_API void SNetwork_ClientRegisterMessage(SERVER_COMMAND cmd, PFNMESSAGEHANDLER fnHandler)
+{
+	if(g_pClient)
+	{
+		return(g_pClient->registerMessage(cmd, fnHandler));
+	}
+}
+
+SX_LIB_API void SNetwork_ServerRegisterMessage(CLIENT_COMMAND cmd, PFNMESSAGEHANDLER fnHandler)
+{
+	if(g_pServer)
+	{
+		return(g_pServer->registerMessage(cmd, fnHandler));
+	}
+}
+
+SX_LIB_API void SNetwork_OnConnectedToServer(PFNCLIENTHANDLER fnHandler)
+{
+	g_fnConnected = fnHandler;
+}
+
+SX_LIB_API void SNetwork_OnDisconnected(PFNCLIENTHANDLER fnHandler)
+{
+	g_fnDisconnected = fnHandler;
 }

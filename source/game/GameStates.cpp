@@ -95,11 +95,29 @@ void CEditorState::deactivate()
 
 //##########################################################################
 
+void CServerIntermissionState::activate()
+{
+	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
+	Core_TimeWorkingSet(idTimerRender, true);
+	//SPhysics_EnableSimulation();
+}
+
+void CServerIntermissionState::deactivate()
+{
+	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
+	Core_TimeWorkingSet(idTimerRender, false);
+	//SPhysics_DisableSimulation();
+}
+
+
+//##########################################################################
+
 void CServerState::activate()
 {
 	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
 	Core_TimeWorkingSet(idTimerRender, true);
 	SPhysics_EnableSimulation();
+	GameData::m_pMgr->setLevelLoaded(true);
 }
 
 void CServerState::deactivate()
@@ -107,5 +125,6 @@ void CServerState::deactivate()
 	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
 	Core_TimeWorkingSet(idTimerRender, false);
 	SPhysics_DisableSimulation();
+	GameData::m_pMgr->setLevelLoaded(false);
 }
 

@@ -19,6 +19,7 @@ See the license in LICENSE
 #	pragma comment(lib, "sxgreen_d.lib")
 #	pragma comment(lib, "sxlight_d.lib")
 #	pragma comment(lib, "sxmtrl_d.lib")
+#	pragma comment(lib, "sxnetwork_d.lib")
 #	pragma comment(lib, "BulletDynamics_vs2010_debug.lib")
 #	pragma comment(lib, "BulletCollision_vs2010_debug.lib")
 #	pragma comment(lib, "LinearMath_vs2010_debug.lib")
@@ -29,6 +30,7 @@ See the license in LICENSE
 #	pragma comment(lib, "sxgreen.lib")
 #	pragma comment(lib, "sxlight.lib")
 #	pragma comment(lib, "sxmtrl.lib")
+#	pragma comment(lib, "sxnetwork.lib")
 #	pragma comment(lib, "BulletDynamics_vs2010.lib")
 #	pragma comment(lib, "BulletCollision_vs2010.lib")
 #	pragma comment(lib, "LinearMath_vs2010.lib")
@@ -65,7 +67,7 @@ SX_LIB_API void SPhysics_DumpStats()
 	CProfileManager::dumpAll();
 }
 
-SX_LIB_API void SPhysics_0Create()
+SX_LIB_API void SPhysics_0Create(bool isServerMode)
 {
 	if(g_pWorld)
 	{
@@ -74,7 +76,7 @@ SX_LIB_API void SPhysics_0Create()
 	}
 	Core_SetOutPtr();
 
-	g_pWorld = new CPhyWorld();
+	g_pWorld = new CPhyWorld(isServerMode);
 
 	Core_0RegisterConcmd("perf_physics", SPhysics_DumpStats);
 }

@@ -26,6 +26,9 @@ public:
 	void getAuthTicket(byte **ppOut, uint16_t *pusLength);
 	void freeAuthTicket(byte *pData, uint16_t usLength);
 
+	void sendMessage(byte *pData, int iLength, bool isReliable = false);
+	void sendMessage(INETbuff *pNetBuff, bool isReliable = false);
+
 	enum CONN_STATE
 	{
 		CS_DISCONNECTED = 0,
@@ -38,6 +41,8 @@ public:
 	};
 
 	void registerMessage(SERVER_COMMAND msgid, PFNMESSAGEHANDLER fnHandler);
+
+	INetUser *getServerINetUser();
 
 protected:
 	int m_iListener;
