@@ -414,21 +414,10 @@ void ModelFile::render(SMMATRIX * mWorld, UINT nSkin, UINT nLod, ID idOverrideMa
 	{
 		return;
 	}
-
-	static UINT iVertSize[] = {
-		sizeof(vertex_static),
-		sizeof(vertex_static_ex),
-		sizeof(vertex_animated),
-		sizeof(vertex_animated_ex)
-	};
-
-	MODEL_VERTEX_TYPE vtype = (m_hdr.iFlags & MODEL_FLAG_STATIC) ? MVT_STATIC_EX : MVT_DYNAMIC_EX;
-
-	DX_CALL(m_pMgr->m_pd3dDevice->SetIndices(m_ppIndexBuffer[nLod]));
-	DX_CALL(m_pMgr->m_pd3dDevice->SetStreamSource(0, m_ppVertexBuffer[nLod], 0, iVertSize[vtype]));
-
-	m_pMgr->setVertexDeclaration(vtype);
-
+	
+	m_pMgr->m_pd3dDevice->setIndexBuffer(m_ppIndexBuffer[nLod]);
+	m_pMgr->m_pd3dDevice->setRenderBuffer(m_ppRenderBuffer[nLod]);
+	
 	ID idMat;
 	for(UINT i = 0; i < m_pLods[nLod].iSubMeshCount; i++)
 	{
@@ -447,7 +436,7 @@ void ModelFile::render(SMMATRIX * mWorld, UINT nSkin, UINT nLod, ID idOverrideMa
 		}
 		SGCore_MtlSet(idMat, mWorld, pGlowColor ? &float4(*pGlowColor, 1.0f) : 0);
 		SGCore_DIP(
-			D3DPT_TRIANGLELIST,
+			GXPT_TRIANGLELIST,
 			m_pLods[nLod].pSubLODmeshes[i].iStartVertex,
 			0,
 			m_pLods[nLod].pSubLODmeshes[i].iVectexCount,
@@ -605,24 +594,29 @@ MBERR ModelFile::AppendBones(const ModelFile * mdl, char * root)
 void ModelFile::BuildMeshBuffers()
 {
 	UINT m_iLodCount = m_hdr.iLODcount;
-	if(m_ppIndexBuffer && m_ppVertexBuffer)
+	if(m_ppIndexBuffer && m_ppVertexBuffer && m_ppRenderBuffer)
 	{
 		for(UINT j = 0; j < m_iLodCount; j++)
 		{
 			mem_release(m_ppIndexBuffer[j]);
 			mem_release(m_ppVertexBuffer[j]);
+			mem_release(m_ppRenderBuffer[j]);
 		}
 	}
 	mem_delete_a(m_ppIndexBuffer);
 	mem_delete_a(m_ppVertexBuffer);
+	mem_delete_a(m_ppRenderBuffer);
 
 	mem_release(m_pBoundBox);
 
-	m_ppIndexBuffer = new IDirect3DIndexBuffer9 *[m_iLodCount];
-	m_ppVertexBuffer = new IDirect3DVertexBuffer9 *[m_iLodCount];
+	m_ppIndexBuffer = new IGXIndexBuffer *[m_iLodCount];
+	m_ppVertexBuffer = new IGXVertexBuffer *[m_iLodCount];
+	m_ppRenderBuffer = new IGXRenderBuffer *[m_iLodCount];
 
 	m_pBoundBox = SGCore_CrBound();
 	DWORD tmpCountVert = 0;
+	MODEL_VERTEX_TYPE vtype = (m_hdr.iFlags & MODEL_FLAG_STATIC) ? MVT_STATIC_EX : MVT_DYNAMIC_EX;
+
 	for(UINT j = 0; j < m_iLodCount; ++j)
 	{
 		UINT iStartIndex = 0;
@@ -658,27 +652,18 @@ void ModelFile::BuildMeshBuffers()
 			memcpy((byte*)pVertices + m_pLods[j].pSubLODmeshes[i].iStartVertex * vsize, m_pLods[j].pSubLODmeshes[i].pVertices, vsize * m_pLods[j].pSubLODmeshes[i].iVectexCount);
 		}
 
-		DX_CALL(m_pMgr->m_pd3dDevice->CreateVertexBuffer(vsize * iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &m_ppVertexBuffer[j], 0));
-		VOID * pData;
-		if(!FAILED(DX_CALL(m_ppVertexBuffer[j]->Lock(0, vsize * iStartVertex, (void**)&pData, 0))))
-		{
-			memcpy(pData, pVertices, vsize * iStartVertex);
-			m_ppVertexBuffer[j]->Unlock();
-		}
-
-		DX_CALL(m_pMgr->m_pd3dDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &m_ppIndexBuffer[j], 0));
-		if(!FAILED(DX_CALL(m_ppIndexBuffer[j]->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0))))
-		{
-			memcpy(pData, pIndices, sizeof(UINT) * iStartIndex);
-			m_ppIndexBuffer[j]->Unlock();
-		}
-		mem_delete_a(pVertices);
-		mem_delete_a(pIndices);
+		m_ppVertexBuffer[j] = m_pMgr->m_pd3dDevice->createVertexBuffer(vsize * iStartVertex, GX_BUFFER_USAGE_STATIC, pVertices);
+		m_ppIndexBuffer[j] = m_pMgr->m_pd3dDevice->createIndexBuffer(sizeof(UINT)* iStartIndex, GX_BUFFER_USAGE_STATIC, GXIT_UINT, pIndices);
+		
+		m_ppRenderBuffer[j] = m_pMgr->m_pd3dDevice->createRenderBuffer(1, &m_ppVertexBuffer[j], m_pMgr->getVertexDeclaration(vtype));
 
 		if(j == 0)
 		{
-			m_pBoundBox->calcBound(m_ppVertexBuffer[0], iStartVertex, vsize);
+			m_pBoundBox->calcBound((vertex_static_ex*)pVertices, iStartVertex, vsize);
 		}
+
+		mem_delete_a(pVertices);
+		mem_delete_a(pIndices);
 	}
 
 }
@@ -2277,10 +2262,10 @@ void AnimationManager::unloadModel(const ModelFile * mdl)
 	}
 }
 
-AnimationManager::AnimationManager(IDirect3DDevice9*dev):
-m_pd3dDevice(dev),
-m_iVisID(0),
-m_iThreadNum(1)
+AnimationManager::AnimationManager(IGXContext *dev):
+	m_pd3dDevice(dev),
+	m_iVisID(0),
+	m_iThreadNum(1)
 {
 	initVertexDeclarations();
 }
@@ -2299,59 +2284,59 @@ void AnimationManager::initVertexDeclarations()
 	{
 		return;
 	}
-	D3DVERTEXELEMENT9 layoutStatic[] =
+	GXVERTEXELEMENT layoutStatic[] =
 	{
-		{0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
-		{0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
-		{0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
-		D3DDECL_END()
+		{0, 0,	GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
+		GXDECL_END()
 	};
-	DX_CALL(m_pd3dDevice->CreateVertexDeclaration(layoutStatic, &pVertexDeclaration[MVT_STATIC]));
+	pVertexDeclaration[MVT_STATIC] = m_pd3dDevice->createVertexDeclaration(layoutStatic);
 
-	D3DVERTEXELEMENT9 layoutStaticEx[] =
+	GXVERTEXELEMENT layoutStaticEx[] =
 	{
-		{0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
-		{0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
-		{0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
-		{0, 32, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0},
-		{0, 44, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BINORMAL, 0},
-		D3DDECL_END()
+		{0, 0,  GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
+		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT},
+		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL},
+		GXDECL_END()
 	};
-	DX_CALL(m_pd3dDevice->CreateVertexDeclaration(layoutStaticEx, &pVertexDeclaration[MVT_STATIC_EX]));
+	pVertexDeclaration[MVT_STATIC_EX] = m_pd3dDevice->createVertexDeclaration(layoutStaticEx);
 
-	D3DVERTEXELEMENT9 layoutDynamic[] =
+	GXVERTEXELEMENT layoutDynamic[] =
 	{
-		{0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
-		{0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
-		{0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
-		{0, 32, D3DDECLTYPE_UBYTE4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0},
-		{0, 36, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0},
-		D3DDECL_END()
+		{0, 0,  GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
+		{0, 32, GXDECLTYPE_UBYTE4, GXDECLUSAGE_BLENDINDICES},
+		{0, 36, GXDECLTYPE_FLOAT4, GXDECLUSAGE_BLENDWEIGHT},
+		GXDECL_END()
 	};
-	DX_CALL(m_pd3dDevice->CreateVertexDeclaration(layoutDynamic, &pVertexDeclaration[MVT_DYNAMIC]));
+	pVertexDeclaration[MVT_DYNAMIC] = m_pd3dDevice->createVertexDeclaration(layoutDynamic);
 
-	D3DVERTEXELEMENT9 layoutDynamicEx[] =
+	GXVERTEXELEMENT layoutDynamicEx[] =
 	{
-		{0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
-		{0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0},
-		{0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
-		{0, 32, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0},
-		{0, 44, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BINORMAL, 0},
-		{0, 56, D3DDECLTYPE_UBYTE4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDINDICES, 0},
-		{0, 60, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BLENDWEIGHT, 0},
-		D3DDECL_END()
+		{0, 0,  GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
+		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT},
+		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL},
+		{0, 56, GXDECLTYPE_UBYTE4, GXDECLUSAGE_BLENDINDICES},
+		{0, 60, GXDECLTYPE_FLOAT4, GXDECLUSAGE_BLENDWEIGHT},
+		GXDECL_END()
 	};
-	DX_CALL(m_pd3dDevice->CreateVertexDeclaration(layoutDynamicEx, &pVertexDeclaration[MVT_DYNAMIC_EX]));
+	pVertexDeclaration[MVT_DYNAMIC_EX] = m_pd3dDevice->createVertexDeclaration(layoutDynamicEx);
 }
 
-void AnimationManager::setVertexDeclaration(MODEL_VERTEX_TYPE nDecl)
+IGXVertexDeclaration *AnimationManager::getVertexDeclaration(MODEL_VERTEX_TYPE nDecl)
 {
 	if(nDecl >= MVT_SIZE)
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "Unknown vertex declaration %d in AnimationManager::setVertexDeclaration()\n", nDecl);
 		return;
 	}
-	m_pd3dDevice->SetVertexDeclaration(pVertexDeclaration[nDecl]);
+	return(pVertexDeclaration[nDecl]);
 }
 
 UINT AnimationManager::reg(Animation * pAnim)

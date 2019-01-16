@@ -10,7 +10,7 @@ See the license in LICENSE
 #include <windows.h>
 #include <common/sxtypes.h>
 
-#define SM_D3D_CONVERSIONS
+//#define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>
 #include <common/array.h>
 #include <gcore/sxgcore.h>

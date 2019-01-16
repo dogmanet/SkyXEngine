@@ -6,7 +6,7 @@ See the license in LICENSE
 
 #include "Bound.h"
 
-void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh ** ppMesh, IDirect3DDevice9 * pDevice,UINT iSideCount)
+void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh ** ppMesh, IGXContext * pDevice,UINT iSideCount)
 {
 	UINT iVC = iSideCount * 2;
 	UINT iIC = (iSideCount - 2) * 6 + iSideCount * 6;
@@ -87,86 +87,86 @@ void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh 
 
 //##########################################################################
 
-void ComputeBoundingBox(IDirect3DVertexBuffer9* vertex_buffer,ISXBound** bound,DWORD count_vert,DWORD bytepervert)
+void ComputeBoundingBox(IGXVertexBuffer* vertex_buffer, ISXBound** bound, DWORD count_vert, DWORD bytepervert)
 {
 	float3_t *V = 0;
 	HRESULT hr = 0;
 	float3_t Max;
 	float3_t Min;
-	
-		if(SUCCEEDED(vertex_buffer->Lock(0,0, (void **)&V,0)))
+
+	if(vertex_buffer->lock((void **)&V, GXBL_READ))
+	{
+		float3_t tmppos = *(float3_t*)((char*)(V)+bytepervert * 0);
+		Max = tmppos;
+		Min = tmppos;
+
+		for(DWORD i = 0; i < count_vert; i++)
 		{
-			float3_t tmppos = *(float3_t*)((char*)(V) + bytepervert * 0);
-			Max = tmppos;
-			Min = tmppos;
+			float3_t pos = *(float3*)((char*)(V)+bytepervert * i);
 
-				for(DWORD i=0;i<count_vert;i++)
-				{
-					float3_t pos = *(float3*)((char*)(V) + bytepervert * i);
+			if(pos.x > Max.x)
+				Max.x = pos.x;
 
-						if(pos.x > Max.x)
-							Max.x = pos.x;
+			if(pos.y > Max.y)
+				Max.y = pos.y;
 
-						if(pos.y > Max.y)
-							Max.y = pos.y;
-
-						if(pos.z > Max.z)
-							Max.z = pos.z;
+			if(pos.z > Max.z)
+				Max.z = pos.z;
 
 
-						if(pos.x < Min.x)
-							Min.x = pos.x;
+			if(pos.x < Min.x)
+				Min.x = pos.x;
 
-						if(pos.y < Min.y)
-							Min.y = pos.y;
+			if(pos.y < Min.y)
+				Min.y = pos.y;
 
-						if(pos.z < Min.z)
-							Min.z = pos.z;
-				}
-			vertex_buffer->Unlock();
+			if(pos.z < Min.z)
+				Min.z = pos.z;
 		}
+		vertex_buffer->unlock();
+	}
 
-	(*bound)->setMinMax(&float3(Min),&float3(Max));
+	(*bound)->setMinMax(&float3(Min), &float3(Max));
 }
 
-void ComputeBoundingBox2(IDirect3DVertexBuffer9* vertex_buffer,ISXBound* bound,DWORD count_vert,DWORD bytepervert)
+void ComputeBoundingBox2(IGXVertexBuffer* vertex_buffer, ISXBound* bound, DWORD count_vert, DWORD bytepervert)
 {
 	float3_t *V = 0;
 	HRESULT hr = 0;
 	float3_t Max;
 	float3_t Min;
-	
-		if(SUCCEEDED(vertex_buffer->Lock(0,0, (void **)&V,0)))
+
+	if(vertex_buffer->lock((void **)&V, GXBL_READ))
+	{
+		float3_t tmppos = *(float3*)((char*)(V)+bytepervert * 0);
+		Max = tmppos;
+		Min = tmppos;
+
+		for(DWORD i = 0; i < count_vert; i++)
 		{
-			float3_t tmppos = *(float3*)((char*)(V) + bytepervert * 0);
-			Max = tmppos;
-			Min = tmppos;
+			float3_t pos = *(float3*)((char*)(V)+bytepervert * i);
 
-				for(DWORD i=0;i<count_vert;i++)
-				{
-					float3_t pos = *(float3*)((char*)(V) + bytepervert * i);
+			if(pos.x > Max.x)
+				Max.x = pos.x;
 
-						if(pos.x > Max.x)
-							Max.x = pos.x;
+			if(pos.y > Max.y)
+				Max.y = pos.y;
 
-						if(pos.y > Max.y)
-							Max.y = pos.y;
-
-						if(pos.z > Max.z)
-							Max.z = pos.z;
+			if(pos.z > Max.z)
+				Max.z = pos.z;
 
 
-						if(pos.x < Min.x)
-							Min.x = pos.x;
+			if(pos.x < Min.x)
+				Min.x = pos.x;
 
-						if(pos.y < Min.y)
-							Min.y = pos.y;
+			if(pos.y < Min.y)
+				Min.y = pos.y;
 
-						if(pos.z < Min.z)
-							Min.z = pos.z;
-				}
-			vertex_buffer->Unlock();
+			if(pos.z < Min.z)
+				Min.z = pos.z;
 		}
+		vertex_buffer->unlock();
+	}
 
 	Min.x /= 100.f;
 	Min.y /= 100.f;
@@ -176,7 +176,7 @@ void ComputeBoundingBox2(IDirect3DVertexBuffer9* vertex_buffer,ISXBound* bound,D
 	Max.y /= 100.f;
 	Max.z /= 100.f;
 
-	bound->setMinMax(&float3(Min),&float3(Max));
+	bound->setMinMax(&float3(Min), &float3(Max));
 }
 
 void ComputeBoundingBoxArr8(ISXBound* bound, ISXBound** bound_arr)
@@ -554,7 +554,7 @@ bool InPositionPoints3D(float3* min,float3* max,float3* p1,float3* p2,float3* p3
 
 //##########################################################################
 
-void CreateBoundingBoxMesh(const float3* min, const float3* max, ID3DXMesh** bbmesh, IDirect3DDevice9* device)
+void CreateBoundingBoxMesh(const float3* min, const float3* max, ID3DXMesh** bbmesh, IGXContext* device)
 {
 	float dist_x = abs(max->x - min->x);
 	float dist_y = abs(max->y - min->y);
@@ -713,16 +713,16 @@ void CBound::calcBound(vertex_static_ex *pVertex, int iCountVertex, int iBytePer
 	m_fRadiusTransform = SMVector3Length(m_vCenterTransform - m_vMaxTransform);
 }
 
-void CBound::calcBound(IDirect3DVertexBuffer9 *pVertexBuffer, int iCountVertex, int iBytePerVertex)
+void CBound::calcBound(IGXVertexBuffer *pVertexBuffer, int iCountVertex, int iBytePerVertex)
 {
 	BYTE *pVertex = 0;
 
 	calcWorld();
 	
-	if (pVertexBuffer && SUCCEEDED(pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0)))
+	if (pVertexBuffer && pVertexBuffer->lock((void **)&pVertex, GXBL_READ))
 	{
 		calcBound((vertex_static_ex*)pVertex, iCountVertex, iBytePerVertex);
-		pVertexBuffer->Unlock();
+		pVertexBuffer->unlock();
 	}
 }
 
@@ -796,17 +796,17 @@ void CBound::calcBoundIndex(vertex_static_ex *pVertex, uint32_t **ppArrIndex, ui
 
 }
 
-void CBound::calcBoundIndex(IDirect3DVertexBuffer9 *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex)
+void CBound::calcBoundIndex(IGXVertexBuffer *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex)
 {
 	if (!ppArrIndex || pCountIndex || iCountSubset <= 0)
 		return;
 
 	vertex_static_ex *pVertex = 0;
 
-	if (pVertexBuffer && SUCCEEDED(DX_CALL(pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0))))
+	if (pVertexBuffer && pVertexBuffer->lock((void **)&pVertex, GXBL_READ))
 	{
 		calcBoundIndex(pVertex, ppArrIndex, pCountIndex, iCountSubset, iBytePerVertex);
-		pVertexBuffer->Unlock();
+		pVertexBuffer->unlock();
 	}
 
 	m_vCenterOrigin = (m_vMinOrigin + m_vMaxOrigin) * 0.5f;

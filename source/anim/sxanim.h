@@ -43,10 +43,7 @@ See the license in LICENSE
 #ifdef _SERVER
 #	define IDirect3DDevice9 void
 #else
-#	define D3D_DEBUG_INFO
-#	include <d3d9.h>
-#	include <d3dx9.h>
-#	pragma comment(lib, "d3dx9.lib")
+#	include <graphix/graphix.h>
 #endif
 
 #if defined(_DEBUG)

@@ -972,7 +972,8 @@ void CLights::shadowNull()
 	light_data::pDXDevice->GetRenderTarget(0, &BackBuf);
 	light_data::pDXDevice->SetRenderTarget(0, RenderSurf);
 
-	light_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	light_data::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
+	light_data::pDXDevice->clearTarget();
 
 	light_data::pDXDevice->SetVertexShader(0);
 	light_data::pDXDevice->SetPixelShader(0);

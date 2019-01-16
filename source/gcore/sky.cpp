@@ -8,14 +8,14 @@ See the license in LICENSE
 
 CSkyBox::CSkyBox()
 {
-	D3DVERTEXELEMENT9 layoutskybox[] =
+	GXVERTEXELEMENT layoutskybox[] =
 	{
-		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-		D3DDECL_END()
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD},
+		GXDECL_END()
 	};
 
-	g_pDXDevice->CreateVertexDeclaration(layoutskybox, &m_pVertexDeclarationSkyBox);
+	m_pVertexDeclarationSkyBox = g_pDXDevice->createVertexDeclaration(layoutskybox);
 
 	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_box.vs", "sky_box.vs", SHADER_CHECKDOUBLE_NAME);
 	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_box.ps", "sky_box.ps", SHADER_CHECKDOUBLE_NAME);
@@ -23,55 +23,42 @@ CSkyBox::CSkyBox()
 	m_vColor = float4(0, 0, 0, 0);
 	m_fRotaionY = 0.f;
 	m_mMatRotation = SMMatrixIdentity();
-	g_pDXDevice->CreateVertexBuffer(
-								8 * sizeof(CSkyBoxVertex),
-								0,
-								0,
-								D3DPOOL_MANAGED,
-								&m_pVertices,
-								0
-								);
+	m_pVertices = g_pDXDevice->createVertexBuffer(8 * sizeof(CSkyBoxVertex), GX_BUFFER_USAGE_STATIC);
 
-	g_pDXDevice->CreateIndexBuffer(
-               36 * sizeof(WORD),
-               0,
-               D3DFMT_INDEX16,
-               D3DPOOL_MANAGED,
-			   &m_pIndeces,
-               0);
-
+	
 	float X = SXGC_SKYBOX_SIZE * 0.5;
 	float Y = SXGC_SKYBOX_SIZE * 0.5;
 	float Z = SXGC_SKYBOX_SIZE * 0.5;
 	//float tmpy = 45;
 
 	CSkyBoxVertex* tmpVertices;
-	m_pVertices->Lock(0, 0, (void**)&tmpVertices, 0);
+	if(m_pVertices->lock((void**)&tmpVertices, GXBL_WRITE))
+	{
 
-	/*tmpVertices[0] = CSkyBoxVertex( X,  Y-tmpy, Z, 1.0f, 1.0f, 1.0f);
-	tmpVertices[1] = CSkyBoxVertex(-X,  Y-tmpy, Z,-1.0f, 1.0f, 1.0f);
-	tmpVertices[2] = CSkyBoxVertex( X, -tmpy, Z, 1.0f,-1.0f, 1.0f);
+		/*tmpVertices[0] = CSkyBoxVertex( X,  Y-tmpy, Z, 1.0f, 1.0f, 1.0f);
+		tmpVertices[1] = CSkyBoxVertex(-X,  Y-tmpy, Z,-1.0f, 1.0f, 1.0f);
+		tmpVertices[2] = CSkyBoxVertex( X, -tmpy, Z, 1.0f,-1.0f, 1.0f);
 
-	tmpVertices[3] = CSkyBoxVertex( X,  Y-tmpy,-Z, 1.0f, 1.0f,-1.0f);
-	tmpVertices[4] = CSkyBoxVertex(-X, -tmpy, Z,-1.0f,-1.0f, 1.0f);
-	tmpVertices[5] = CSkyBoxVertex( X, -tmpy,-Z, 1.0f,-1.0f,-1.0f);
+		tmpVertices[3] = CSkyBoxVertex( X,  Y-tmpy,-Z, 1.0f, 1.0f,-1.0f);
+		tmpVertices[4] = CSkyBoxVertex(-X, -tmpy, Z,-1.0f,-1.0f, 1.0f);
+		tmpVertices[5] = CSkyBoxVertex( X, -tmpy,-Z, 1.0f,-1.0f,-1.0f);
 
-	tmpVertices[6] = CSkyBoxVertex(-X,  Y-tmpy,-Z,-1.0f, 1.0f,-1.0f);
-	tmpVertices[7] = CSkyBoxVertex(-X, -tmpy,-Z,-1.0f,-1.0f,-1.0f);*/
+		tmpVertices[6] = CSkyBoxVertex(-X,  Y-tmpy,-Z,-1.0f, 1.0f,-1.0f);
+		tmpVertices[7] = CSkyBoxVertex(-X, -tmpy,-Z,-1.0f,-1.0f,-1.0f);*/
 
-	tmpVertices[0] = CSkyBoxVertex( X,  Y,  Z, 1.0f, 1.0f, 1.0f);
-	tmpVertices[1] = CSkyBoxVertex(-X,  Y,  Z, -1.0f, 1.0f, 1.0f);
-	tmpVertices[2] = CSkyBoxVertex( X, -Y,  Z, 1.0f, -1.0f, 1.0f);
+		tmpVertices[0] = CSkyBoxVertex(X, Y, Z, 1.0f, 1.0f, 1.0f);
+		tmpVertices[1] = CSkyBoxVertex(-X, Y, Z, -1.0f, 1.0f, 1.0f);
+		tmpVertices[2] = CSkyBoxVertex(X, -Y, Z, 1.0f, -1.0f, 1.0f);
 
-	tmpVertices[3] = CSkyBoxVertex( X,  Y, -Z, 1.0f, 1.0f, -1.0f);
-	tmpVertices[4] = CSkyBoxVertex(-X, -Y,  Z, -1.0f, -1.0f, 1.0f);
-	tmpVertices[5] = CSkyBoxVertex( X, -Y, -Z, 1.0f, -1.0f, -1.0f);
+		tmpVertices[3] = CSkyBoxVertex(X, Y, -Z, 1.0f, 1.0f, -1.0f);
+		tmpVertices[4] = CSkyBoxVertex(-X, -Y, Z, -1.0f, -1.0f, 1.0f);
+		tmpVertices[5] = CSkyBoxVertex(X, -Y, -Z, 1.0f, -1.0f, -1.0f);
 
-	tmpVertices[6] = CSkyBoxVertex(-X,  Y, -Z, -1.0f, 1.0f, -1.0f);
-	tmpVertices[7] = CSkyBoxVertex(-X, -Y, -Z, -1.0f, -1.0f, -1.0f);
+		tmpVertices[6] = CSkyBoxVertex(-X, Y, -Z, -1.0f, 1.0f, -1.0f);
+		tmpVertices[7] = CSkyBoxVertex(-X, -Y, -Z, -1.0f, -1.0f, -1.0f);
 
-	m_pVertices->Unlock();
-
+		m_pVertices->unlock();
+	}
 
 	WORD indices_tmp[] =
     {
@@ -94,13 +81,10 @@ CSkyBox::CSkyBox()
 		5,7,2,
     };
 
-	WORD* indices = 0;
-	m_pIndeces->Lock(0, 0, (void**)&indices, 0);
+	m_pIndeces = g_pDXDevice->createIndexBuffer(36 * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_USHORT, indices_tmp);
 
-	memcpy(indices,indices_tmp,36 * sizeof(WORD));
-
-	m_pIndeces->Unlock();
-
+	m_pRenderBuffer = g_pDXDevice->createRenderBuffer(1, &m_pVertices, m_pVertexDeclarationSkyBox);
+	
 	m_idTex1 = -1;
 	m_idTex2 = -1;
 
@@ -113,10 +97,11 @@ CSkyBox::CSkyBox()
 
 CSkyBox::~CSkyBox()
 {
-	mem_release_del(m_pVertices);
-	mem_release_del(m_pIndeces);
+	mem_release(m_pVertices);
+	mem_release(m_pIndeces);
+	mem_release(m_pRenderBuffer);
 
-	mem_release_del(m_pVertexDeclarationSkyBox);
+	mem_release(m_pVertexDeclarationSkyBox);
 }
 
 void CSkyBox::loadTexture(const char *texture)
@@ -248,10 +233,10 @@ void CSkyBox::render(float timeDelta, const float3* pos,bool is_shadow)
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_idVS);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_idPS);
 
-	g_pDXDevice->SetStreamSource(0, m_pVertices, 0, sizeof(CSkyBoxVertex));
-	g_pDXDevice->SetIndices(m_pIndeces);
-	g_pDXDevice->SetVertexDeclaration(m_pVertexDeclarationSkyBox);
-	g_pDXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 8, 0, 12);
+	g_pDXDevice->setIndexBuffer(m_pIndeces);
+	g_pDXDevice->setRenderBuffer(m_pRenderBuffer);
+	g_pDXDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	g_pDXDevice->drawIndexed(8, 12, 0, 0);
 
 	SGCore_ShaderUnBind();
 };
@@ -260,14 +245,14 @@ void CSkyBox::render(float timeDelta, const float3* pos,bool is_shadow)
 
 CSkyClouds::CSkyClouds()
 {
-	D3DVERTEXELEMENT9 layoutclouds[] =
+	GXVERTEXELEMENT layoutclouds[] =
 	{
-		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-		D3DDECL_END()
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		GXDECL_END()
 	};
 
-	g_pDXDevice->CreateVertexDeclaration(layoutclouds, &m_pVertexDeclarationClouds);
+	m_pVertexDeclarationClouds = g_pDXDevice->createVertexDeclaration(layoutclouds);
 
 	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_clouds.vs", "sky_clouds.vs", SHADER_CHECKDOUBLE_NAME);
 	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds.ps", SHADER_CHECKDOUBLE_NAME);
@@ -279,52 +264,32 @@ CSkyClouds::CSkyClouds()
 	m_fAlpha = 1.f;
 	m_vColor = float4_t(0, 0, 0, 0);
 	m_mMatRotation = SMMatrixIdentity();
-	g_pDXDevice->CreateVertexBuffer(
-								4 * sizeof(CSkyCloudsVertex),
-								0,
-								0,
-								D3DPOOL_MANAGED,
-								&m_pVertices,
-								0
-								);
-
-	g_pDXDevice->CreateIndexBuffer(
-               6 * sizeof(WORD),
-               0,
-               D3DFMT_INDEX16,
-               D3DPOOL_MANAGED,
-			   &m_pIndeces,
-               0);
-
+	m_pVertices = g_pDXDevice->createVertexBuffer(4 * sizeof(CSkyCloudsVertex), GX_BUFFER_USAGE_STATIC);
+	
 	float X = 800;
 	float Y = 0;
 	float Z = 800;
 
 	CSkyCloudsVertex *pVertices;
-	m_pVertices->Lock(0, 0, (void**)&pVertices, 0);
+	if(m_pVertices->lock((void**)&pVertices, GXBL_WRITE))
+	{
+		pVertices[3] = CSkyCloudsVertex(-X, Y, -Z, 0.0f, 2.0f);
+		pVertices[2] = CSkyCloudsVertex(-X, Y, Z, 0.0f, 0.0f);
+		pVertices[1] = CSkyCloudsVertex(X, Y, Z, 2.0f, 0.0f);
+		pVertices[0] = CSkyCloudsVertex(X, Y, -Z, 2.0f, 2.0f);
 
-	pVertices[3] = CSkyCloudsVertex(-X, Y, -Z, 0.0f, 2.0f);
-	pVertices[2] = CSkyCloudsVertex(-X, Y, Z, 0.0f, 0.0f);
-	pVertices[1] = CSkyCloudsVertex(X, Y, Z, 2.0f, 0.0f);
-	pVertices[0] = CSkyCloudsVertex(X, Y, -Z, 2.0f, 2.0f);
-
-	m_pVertices->Unlock();
-
+		m_pVertices->unlock();
+	}
 
 	WORD indices_tmp[] =
     {
         0,1,2,
         0,2,3
     };
+	m_pIndeces = g_pDXDevice->createIndexBuffer(6 * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_USHORT, indices_tmp);
 
-
-	WORD* indices = 0;
-	m_pIndeces->Lock(0, 0, (void**)&indices, 0);
-
-	memcpy(indices,indices_tmp,6 * sizeof(WORD));
-
-	m_pIndeces->Unlock();
-
+	m_pRenderBuffer = g_pDXDevice->createRenderBuffer(1, &m_pVertices, m_pVertexDeclarationClouds);
+	
 	m_fBias = 0.f;
 	m_fSpeed = 0.01f;
 
@@ -340,10 +305,11 @@ CSkyClouds::CSkyClouds()
 
 CSkyClouds::~CSkyClouds()
 {
-	mem_release_del(m_pVertices);
-	mem_release_del(m_pIndeces);
+	mem_release(m_pVertices);
+	mem_release(m_pIndeces);
+	mem_release(m_pRenderBuffer);
 
-	mem_release_del(m_pVertexDeclarationClouds);
+	mem_release(m_pVertexDeclarationClouds);
 }
 
 bool CSkyClouds::getUse()
@@ -379,23 +345,24 @@ void CSkyClouds::changeTexture(const char *texture)
 void CSkyClouds::setWidthHeightPos(float width,float height, const float3* pos)
 {
 	CSkyCloudsVertex *pVertices;
-	m_pVertices->Lock(0, 0, (void**)&pVertices, 0);
+	if(m_pVertices->lock((void**)&pVertices, GXBL_WRITE))
+	{
+		float X = pos->x + (width*0.5f);
+		float Y = pos->y;
+		float Z = pos->z + (height*0.5f);
 
-	float X = pos->x + (width*0.5f);
-	float Y = pos->y;
-	float Z = pos->z + (height*0.5f);
+		m_vWidthHeight.x = width;
+		m_vWidthHeight.y = height;
 
-	m_vWidthHeight.x = width;
-	m_vWidthHeight.y = height;
+		//float2_t tmpwh = float2_t(width*0.5f,height*0.5f);
 
-	//float2_t tmpwh = float2_t(width*0.5f,height*0.5f);
+		pVertices[3] = CSkyCloudsVertex(-X, Y, -Z, 0.0f, 2.0f);
+		pVertices[2] = CSkyCloudsVertex(-X, Y, Z, 0.0f, 0.0f);
+		pVertices[1] = CSkyCloudsVertex(X, Y, Z, 2.0f, 0.0f);
+		pVertices[0] = CSkyCloudsVertex(X, Y, -Z, 2.0f, 2.0f);
 
-	pVertices[3] = CSkyCloudsVertex(-X, Y, -Z, 0.0f, 2.0f);
-	pVertices[2] = CSkyCloudsVertex(-X, Y, Z, 0.0f, 0.0f);
-	pVertices[1] = CSkyCloudsVertex(X, Y, Z, 2.0f, 0.0f);
-	pVertices[0] = CSkyCloudsVertex(X, Y, -Z, 2.0f, 2.0f);
-
-	m_pVertices->Unlock();
+		m_pVertices->unlock();
+	}
 }
 
 void CSkyClouds::setRotation(float angle)
@@ -528,11 +495,11 @@ void CSkyClouds::render(DWORD timeDelta, const float3* pos,bool is_shadow)
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_idPS_Shadow);
 	}
 	
-	g_pDXDevice->SetStreamSource(0, m_pVertices, 0, sizeof(CSkyCloudsVertex));
-	g_pDXDevice->SetIndices(m_pIndeces);
-	g_pDXDevice->SetVertexDeclaration(m_pVertexDeclarationClouds);
+	g_pDXDevice->setIndexBuffer(m_pIndeces);
+	g_pDXDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	g_pDXDevice->setRenderBuffer(m_pRenderBuffer);
 
-	g_pDXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
+	g_pDXDevice->drawIndexed(4, 2, 0, 0);
 
 	SGCore_ShaderUnBind();
 }

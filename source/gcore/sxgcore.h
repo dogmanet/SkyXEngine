@@ -18,9 +18,10 @@ See the license in LICENSE
 
 #include <GRegisterIndex.h>
 
-#include <d3d9.h>
-#include <d3dx9.h>
-#include <dxerr9.h>
+//#include <d3d9.h>
+//#include <d3dx9.h>
+//#include <dxerr9.h>
+#include <graphix/graphix.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxcore_d.lib")
@@ -39,9 +40,9 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
-#pragma comment(lib, "d3d9.lib")
-#pragma comment(lib, "DxErr9.lib")
-#pragma comment(lib, "d3dx9.lib")
+//#pragma comment(lib, "d3d9.lib")
+//#pragma comment(lib, "DxErr9.lib")
+//#pragma comment(lib, "d3dx9.lib")
 
 #include <gcore/ModelFile.h>
 
@@ -91,7 +92,7 @@ SX_LIB_API HWND SGCore_GetHWND();
 SX_LIB_API void SGCore_AKill();	
 
 //! возвращает dx устройство
-SX_LIB_API IDirect3DDevice9* SGCore_GetDXDevice();	
+SX_LIB_API IGXContext* SGCore_GetDXDevice();	
 
 //! возвращает массив всех доступных разрешений монитора, в iCount записывает размер массива
 SX_LIB_API const DEVMODE* SGCore_GetModes(int *iCount);
@@ -689,8 +690,9 @@ struct ISXDataStaticModel : public IBaseObject
 
 	virtual void syncBuffers(bool bRecreate = false)=0;
 	
-	IDirect3DVertexBuffer9 *m_pVertexBuffer;//!< вершиный буфер
-	IDirect3DIndexBuffer9 *m_pIndexBuffer;	//!< индексный буфер
+	IGXVertexBuffer *m_pVertexBuffer;//!< вершиный буфер
+	IGXIndexBuffer *m_pIndexBuffer;	//!< индексный буфер
+	IGXRenderBuffer *m_pRenderBuffer;
 	vertex_static_ex *m_pVertices = NULL;
 	UINT *m_pIndices = NULL;
 
@@ -779,7 +781,7 @@ SX_LIB_API void SGCore_StaticModelLoad(const char *szFile, ISXDataStaticModel **
 //SX_LIB_API void SGCore_StaticModelSave(const char *szFile, ISXDataStaticModel **pData);
 
 //! возвращает декларацию вершин статической модели
-SX_LIB_API IDirect3DVertexDeclaration9* SGCore_StaticModelGetDecl();	
+SX_LIB_API IGXVertexDeclaration* SGCore_StaticModelGetDecl();	
 
 //!@} sxgcore_dse_static
 
@@ -844,7 +846,7 @@ public:
 
 	/*! Просчет ограничивающего объема по вершинному буферу*/
 	virtual void calcBound(
-		IDirect3DVertexBuffer9 *pVertexBuffer, //!< вершинный буфер (незаблокированный), в вершинах которого первым элементом идет позиция float3_t вектор  
+		IGXVertexBuffer *pVertexBuffer, //!< вершинный буфер (незаблокированный), в вершинах которого первым элементом идет позиция float3_t вектор  
 		int iCountVertex,		//!< количество вершин
 		int iBytePerVertex		//!< количество байт в вершине
 		) = 0;
@@ -857,7 +859,7 @@ public:
 		) = 0;
 
 	virtual void calcBoundIndex(
-		IDirect3DVertexBuffer9 *pVertexBuffer,
+		IGXVertexBuffer *pVertexBuffer,
 		uint32_t **ppArrIndex, 
 		uint32_t *pCountIndex,
 		int iCountSubset,
@@ -923,7 +925,7 @@ SX_LIB_API void SGCore_FCreateCone(
 
 //! просчет ограничивающего объема по вершинному буфер
 SX_LIB_API void SGCore_FCompBoundBox(
-	IDirect3DVertexBuffer9* vertex_buffer, //!< вершинный буфер (незаблокированный), в вершинах которого первым элементом идет позиция float3_t вектор
+	IGXVertexBuffer* vertex_buffer, //!< вершинный буфер (незаблокированный), в вершинах которого первым элементом идет позиция float3_t вектор
 	ISXBound** bound,	//!< инициализированный ISXBound
 	DWORD count_vert,	//!< количество вершин
 	DWORD bytepervert	//!< количество байт в вершине

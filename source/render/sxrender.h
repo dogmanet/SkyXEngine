@@ -128,7 +128,7 @@ enum RENDER_RESIZE
 };
 
 //! цвет очистки цветового буфера сцены по умолчанию
-#define RENDER_DEFAUL_BACKGROUND_COLOR D3DCOLOR_ARGB(0,128,128,128)
+#define RENDER_DEFAUL_BACKGROUND_COLOR float4_t(0.5f, 0.5f, 0.5f, 0.0f)
 
 /*! дальняя плоскость отсечения наблюдателя для света */
 #define G_DATA_LIGHT_FAR 100000 

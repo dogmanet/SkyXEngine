@@ -18,10 +18,7 @@ See the license in LICENSE
 #ifdef _SERVER
 #	define IDirect3DDevice9 void
 #else
-#	define D3D_DEBUG_INFO
-#	include <d3d9.h>
-#	include <d3dx9.h>
-#	pragma comment(lib, "d3dx9.lib")
+#	include <graphix/graphix.h>
 #endif
 
 #include "sxanim.h"
@@ -82,8 +79,9 @@ protected:
 	ModelHeader m_hdr;
 	ModelHeader2 m_hdr2;
 #ifndef _SERVER
-	IDirect3DIndexBuffer9 ** m_ppIndexBuffer;
-	IDirect3DVertexBuffer9 ** m_ppVertexBuffer;
+	IGXIndexBuffer ** m_ppIndexBuffer;
+	IGXVertexBuffer ** m_ppVertexBuffer;
+	IGXRenderBuffer ** m_ppRenderBuffer = NULL;
 #endif
 
 	const ModelFile ** m_pDeps;
@@ -329,7 +327,7 @@ private:
 class AnimationManager
 {
 public:
-	AnimationManager(IDirect3DDevice9 * dev);
+	AnimationManager(IGXContext * dev);
 	~AnimationManager();
 	const ModelFile * loadModel(const char * name, bool newInst = false);
 	void unloadModel(const ModelFile * mdl);
@@ -341,7 +339,7 @@ public:
 	void update(int thread = 0);
 	void sync();
 
-	void setVertexDeclaration(MODEL_VERTEX_TYPE nDecl);
+	IGXVertexDeclaration *getVertexDeclaration(MODEL_VERTEX_TYPE nDecl);
 
 	UINT getMaterial(const char * mat, bool bStatic = false);
 
@@ -358,11 +356,11 @@ protected:
 	AssotiativeArray<String, ModelFile*> m_pModels;
 	void initVertexDeclarations();
 
-	IDirect3DVertexDeclaration9 * pVertexDeclaration[MVT_SIZE];
+	IGXVertexDeclaration * pVertexDeclaration[MVT_SIZE];
 
 	Array<Animation*> m_pAnimatedList;
 
-	IDirect3DDevice9 * m_pd3dDevice;
+	IGXContext * m_pd3dDevice;
 
 	Array<ID> m_vFreeVisIDs;
 	ID m_iVisID;

@@ -72,10 +72,12 @@ protected:
 	int m_iVertexCount[2];
 	int m_iIndexCount[2];
 
-	IDirect3DVertexBuffer9 * m_pVertexBuffer;
-	IDirect3DIndexBuffer9 * m_pIndexBuffer;
+	IGXVertexBuffer *m_pVertexBuffer;
+	IGXIndexBuffer *m_pIndexBuffer;
+	IGXVertexDeclaration *m_pVertexDeclaration;
+	IGXRenderBuffer *m_pRenderBuffer;
 
-	IDirect3DDevice9 * m_pDev;
+	IGXContext * m_pDev;
 	IDirect3DTexture9 * m_pTexture;
 
 	float2_t m_f2TexOffs;

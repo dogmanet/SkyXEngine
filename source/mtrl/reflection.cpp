@@ -239,7 +239,9 @@ void CReflection::preRenderRefPlane(const D3DXPLANE* plane)
 	mem_release_del(m_pSurface);
 	m_pTexWork->GetSurfaceLevel(0, &m_pSurface);
 	mtrl_data::pDXDevice->SetRenderTarget(0, m_pSurface);
-	mtrl_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0L);
+	mtrl_data::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
+	mtrl_data::pDXDevice->clearTarget();
+	mtrl_data::pDXDevice->clearDepth();
 }
 
 void CReflection::postRenderRefPlane()
@@ -352,7 +354,9 @@ void CReflection::preRenderRefCube(ID idFace, const float4x4 *pWorld)
 	m_pTexWork->GetSurfaceLevel(0, &m_pSurface);
 	mtrl_data::pDXDevice->SetRenderTarget(0, m_pSurface);
 
-	mtrl_data::pDXDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(0, 0, 0, 0), 1, 0);
+	mtrl_data::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
+	mtrl_data::pDXDevice->clearTarget();
+	mtrl_data::pDXDevice->clearDepth();
 }
 
 void CReflection::postRenderRefCube(ID idFace)

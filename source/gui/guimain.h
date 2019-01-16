@@ -1,7 +1,7 @@
 #ifndef _GUIMAIN_H_
 #define _GUIMAIN_H_
 
-#include <d3d9.h>
+#include <graphix/graphix.h>
 #include <Windows.h>
 #include <common/array.h>
 #include <common/MemAlloc.h>

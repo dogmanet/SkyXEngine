@@ -2,7 +2,7 @@
 #define _SXGUI_H_
 
 #include <Windows.h>
-#include <d3d9.h>
+#include <graphix/graphix.h>
 
 #if 0
 #ifndef SXGUI_LIB
@@ -58,7 +58,7 @@ namespace gui
 		void showCursor(BOOL bShow);
 
 		WCHAR * getResourceDir();
-		IDirect3DDevice9 * getDevice();
+		IGXContext * getDevice();
 
 		UINT getScreenWidth();
 		UINT getScreenHeight();
@@ -73,7 +73,7 @@ namespace gui
 		void execCallback(const StringW cmd, IEvent * ev);
 	protected:
 
-		IDirect3DDevice9 * m_pDevice;
+		IGXContext * m_pDevice;
 		WCHAR * m_szResourceDir;
 
 		UINT m_iScreenWidth;

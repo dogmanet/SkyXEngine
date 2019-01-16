@@ -723,7 +723,7 @@ protected:
 void SkyXEngine_Frame(DWORD timeDelta)
 {
 #ifndef SX_SERVER
-	static IDirect3DDevice9 *pDXDevice = SGCore_GetDXDevice();
+	static IGXContext *pDXDevice = SGCore_GetDXDevice();
 	static float3 vCamPos, vCamDir;
 	static float4x4 mView, mProjLight;
 
@@ -920,11 +920,12 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_PStartSection(PERF_SECTION_RENDER);
 
 	Core_PStartSection(PERF_SECTION_RENDER_PRESENT);
-	pDXDevice->Present(0, 0, 0, 0);
+	pDXDevice->swapBuffers();
 	Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
 
-	pDXDevice->BeginScene();
-	pDXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	pDXDevice->beginFrame();
+	pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
+	pDXDevice->clearTarget();
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SRender_UpdateReflection(timeDelta, isSimulationRender);
 	DelayComReflection += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;

@@ -21,7 +21,7 @@ namespace gui
 		}
 		void setGUI(CGUI * pGui);
 		void release();
-		IDirect3DTexture9 * getAPItexture() const;
+		IGXTexture2D * getAPItexture() const;
 
 		void loadFromFile(const StringW & pName);
 		void loadFromMem(byte * pData);
@@ -36,7 +36,7 @@ namespace gui
 		}
 
 	protected:
-		IDirect3DTexture9 * m_pTexture;
+		IGXTexture2D * m_pTexture;
 
 		UINT m_iWidth;
 		UINT m_iHeight;

@@ -18,7 +18,7 @@ See the license in LICENSE
 
 #include <common/array.h>
 
-#define SM_D3D_CONVERSIONS
+//#define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>
 #include <geom/sxgeom.h>
 #include <green/sxgreen.h>
@@ -89,7 +89,7 @@ protected:
 		ISXDataStaticModel *m_pModel;
 
 		//! врешинный буфер для анимацонной модели
-		IDirect3DVertexBuffer9 *m_pAnim;
+		IGXVertexBuffer *m_pAnim;
 		
 		//! минимум и максимум модели
 		float3_t m_vMin, m_vMax;
@@ -104,20 +104,20 @@ protected:
 	//**********************************************************************
 
 	//! вершинная декларация для статической модели
-	IDirect3DVertexDeclaration9 *m_pVertexDeclarationStatic;
+	IGXVertexDeclaration *m_pVertexDeclarationStatic;
 
 	//! вершинная декларация для растительности
-	IDirect3DVertexDeclaration9 *m_pVertexDeclarationGreen;
+	IGXVertexDeclaration *m_pVertexDeclarationGreen;
 
 	//! вершинная декларация для анимационное модели
-	IDirect3DVertexDeclaration9 *m_pVertexDeclarationSkin;
+	IGXVertexDeclaration *m_pVertexDeclarationSkin;
 
 
 	//! массив моделей
 	Array<CModel*> m_aModels;
 
 	//! вершинный буфер с трансформациями для растительности (всего одна вершина)
-	IDirect3DVertexBuffer9 *m_pTransVertBufGreen;
+	IGXVertexBuffer *m_pTransVertBufGreen;
 
 	//! данные о орастительности
 	CGreenDataVertex m_oGreen;

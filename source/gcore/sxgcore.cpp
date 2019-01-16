@@ -31,14 +31,13 @@ report_func g_fnReportf = DefReport;
 #define SXGCORE_VERSION 1
 
 
-IDirect3DDevice9 *g_pDXDevice = 0;
+IGXContext *g_pDXDevice = 0;
 D3DCAPS9 g_dxCaps;
-D3DPRESENT_PARAMETERS g_oD3DAPP;
-IDirect3D9 *g_pD3D9 = 0;
+HMODULE m_hLibGXAPI = NULL;
 ID3DXFont *g_pFPStext = 0;
 Array<DEVMODE> g_aModes;
 
-IDirect3DVertexDeclaration9 *g_pStaticVertexDecl = 0;
+IGXVertexDeclaration *g_pStaticVertexDecl = 0;
 
 CShaderManager *g_pManagerShaders = 0;
 CreatorTextures *g_pManagerRenderTargets = 0;
@@ -53,7 +52,8 @@ COcclusionCulling *g_pOC = 0;
 void StdDrawIndexedPrimitive(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)
 {
 	Core_RIntSet(G_RI_INT_COUNT_DIP, Core_RIntGet(G_RI_INT_COUNT_DIP) + 1);
-	DX_CALL(g_pDXDevice->DrawIndexedPrimitive((D3DPRIMITIVETYPE)type_primitive, base_vertexIndex, min_vertex_index, num_vertices, start_index, prim_count));
+	g_pDXDevice->setPrimitiveTopology((GXPT)type_primitive);
+	g_pDXDevice->drawIndexed(num_vertices, prim_count, start_index, base_vertexIndex);
 }
 
 void StdMtlSet(ID id, const float4x4 *pWorld, const float4 *pColor)
@@ -108,19 +108,19 @@ void GCoreInit(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlag
 	g_pManagerRenderTargets = new CreatorTextures();
 	g_pManagerTextures = new ÑLoaderTextures();
 	g_pOC = new COcclusionCulling();
-	g_pOC->init(g_oD3DAPP.BackBufferWidth, g_oD3DAPP.BackBufferHeight);
+	g_pOC->init(iWidth, iHeight);
 
-	D3DVERTEXELEMENT9 oLayoutStatic[] =
+	GXVERTEXELEMENT oLayoutStatic[] =
 	{
-		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-		{ 0, 20, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0 },
-		{ 0, 32, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TANGENT, 0 },
-		{ 0, 44, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BINORMAL, 0 },
-		D3DDECL_END()
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
+		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT},
+		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL},
+		GXDECL_END()
 	};
 
-	g_pDXDevice->CreateVertexDeclaration(oLayoutStatic, &g_pStaticVertexDecl);
+	g_pStaticVertexDecl = g_pDXDevice->createVertexDeclaration(oLayoutStatic);
 
 	InitArrModes();
 	InitRT4Gbuffer();
@@ -162,7 +162,7 @@ SX_LIB_API ID SGCore_GbufferGetRT_ID(DS_RT type)
 	return -1;
 }
 
-SX_LIB_API IDirect3DTexture9* SGCore_GbufferGetRT(DS_RT type)
+SX_LIB_API IGXTexture2D* SGCore_GbufferGetRT(DS_RT type)
 {
 	SG_PRECOND(0);
 
@@ -250,11 +250,20 @@ SX_LIB_API void SGCore_AKill()
 	mem_delete(g_pSkyClouds);
 
 	mem_release(g_pFPStext);
-	mem_release(g_pDXDevice);
-	mem_release(g_pD3D9);
+
+	if(m_hLibGXAPI)
+	{
+		void(*libGXRemoveInstance)(IGXContext*);
+		libGXRemoveInstance = (void(*)(IGXContext*))GetProcAddress(m_hLibGXAPI, "RemoveInstance");
+		if(libGXRemoveInstance)
+		{
+			libGXRemoveInstance(g_pDXDevice);
+		}
+	}
+	g_pDXDevice = NULL;
 }
 
-SX_LIB_API IDirect3DDevice9* SGCore_GetDXDevice()
+SX_LIB_API IGXContext* SGCore_GetDXDevice()
 {
 	SG_PRECOND(0);
 	return g_pDXDevice;
@@ -710,14 +719,14 @@ SX_LIB_API ID SGCore_RTGetId(const char *szName)
 	return g_pManagerRenderTargets->GetNum(szName);
 }
 
-SX_LIB_API IDirect3DTexture9* SGCore_RTGetTextureN(const char *szName)
+SX_LIB_API IGXTexture2D* SGCore_RTGetTextureN(const char *szName)
 {
 	SG_PRECOND(0);
 
 	return g_pManagerRenderTargets->GetTexture(szName);
 }
 
-SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(ID id)
+SX_LIB_API IGXTexture2D* SGCore_RTGetTexture(ID id)
 {
 	SG_PRECOND(0);
 
@@ -733,14 +742,14 @@ SX_LIB_API void SGCore_FCreateCone(float fTopRadius, float fBottomRadius, float 
 	CreateCone(fTopRadius, fBottomRadius, fHeight, ppMesh, g_pDXDevice, iSideCount);
 }
 
-SX_LIB_API void SGCore_FCompBoundBox(IDirect3DVertexBuffer9 *pVertexBuffer, ISXBound **ppBound, DWORD dwCountVertices, DWORD dwBytesPerVertex)
+SX_LIB_API void SGCore_FCompBoundBox(IGXVertexBuffer *pVertexBuffer, ISXBound **ppBound, DWORD dwCountVertices, DWORD dwBytesPerVertex)
 {
 	SG_PRECOND(_VOID);
 
 	ComputeBoundingBox(pVertexBuffer, ppBound, dwCountVertices, dwBytesPerVertex);
 }
 
-SX_LIB_API void SGCore_FCompBoundBox2(IDirect3DVertexBuffer9 *pVertexBuffer, ISXBound *pBound, DWORD dwCountVertices, DWORD dwBytesPerVertex)
+SX_LIB_API void SGCore_FCompBoundBox2(IGXVertexBuffer *pVertexBuffer, ISXBound *pBound, DWORD dwCountVertices, DWORD dwBytesPerVertex)
 {
 	SG_PRECOND(_VOID);
 

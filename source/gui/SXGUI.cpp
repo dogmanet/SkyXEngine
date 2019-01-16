@@ -286,7 +286,8 @@ namespace gui
 		//	g_pVid.Update();
 		CVideoUpdateManager::update();
 
-		m_pDevice->Clear(0, NULL, D3DCLEAR_STENCIL, 0, 1.0f, 0);
+		m_pDevice->clearStencil();
+
 
 		//pDevice->SetRenderState(D3DRS_STENCILENABLE, true);
 
@@ -574,7 +575,7 @@ namespace gui
 		return(m_szResourceDir);
 	}
 
-	IDirect3DDevice9 * CGUI::getDevice()
+	IGXContext * CGUI::getDevice()
 	{
 		return(m_pDevice);
 	}

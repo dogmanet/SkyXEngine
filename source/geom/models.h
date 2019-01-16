@@ -30,7 +30,7 @@ See the license in LICENSE
 
 #define GEOM_COPY_POSTFIX "-copy"
 
-extern IDirect3DDevice9 *g_pDXDevice;
+extern IGXContext *g_pDXDevice;
 extern D3DCAPS9 g_dxCaps;
 
 //##########################################################################
@@ -224,11 +224,12 @@ public:
 		int32_t m_iCountIndex;
 
 		//! вершинный буфер
-		IDirect3DVertexBuffer9 *m_pVertexBuffer;
+		IGXVertexBuffer *m_pVertexBuffer;
 		vertex_static_ex *m_pVertices;
+		IGXRenderBuffer *m_pRenderBuffer;
 
 		//! индексный буфер
-		IDirect3DIndexBuffer9 *m_pIndexBuffer;
+		IGXIndexBuffer *m_pIndexBuffer;
 		UINT *m_pIndices;
 
 		//! ограничивающий объем
@@ -292,7 +293,7 @@ public:
 		UINT **m_pVisibleIndeces;
 
 		//! буфер индексов, заполняется в real-time
-		IDirect3DIndexBuffer9 *m_pVisibleIndexBuffer;
+		IGXIndexBuffer *m_pVisibleIndexBuffer;
 	};
 
 	//######################################################################

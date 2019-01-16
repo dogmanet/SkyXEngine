@@ -3,7 +3,7 @@
 #define __GCORE_DATA
 
 #include <gdefines.h>
-#include <d3d9.h>
+#include <graphix/graphix.h>
 #include <common/array.h>
 #include <common/SXMath.h>
 

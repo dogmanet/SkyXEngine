@@ -11,7 +11,7 @@ ISXDataStaticModel* SGCore_StaticModelCr()
 	return new DataStaticModel();
 }
 
-IDirect3DVertexDeclaration9* SGCore_StaticModelGetDecl()
+IGXVertexDeclaration* SGCore_StaticModelGetDecl()
 {
 	return g_pStaticVertexDecl;
 }

@@ -37,12 +37,26 @@ CCrosshair::CCrosshair():
 	m_pVertices[1] = (Vertex*)&m_pMemoryBlob[(sizeof(Vertex)* iVC + sizeof(UINT)* iIC)];
 	m_pIndices[1] = (UINT*)&m_pMemoryBlob[sizeof(Vertex)* iVC + (sizeof(Vertex)* iVC + sizeof(UINT)* iIC)];
 
-	DX_CALL(m_pDev->CreateVertexBuffer(sizeof(Vertex)* iVC, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, NULL));
-	DX_CALL(m_pDev->CreateIndexBuffer(sizeof(UINT)* iIC, D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_MANAGED, &m_pIndexBuffer, NULL));
+	GXVERTEXELEMENT vel[] = {
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		GXDECL_END()
+	};
+
+	m_pVertexDeclaration = m_pDev->createVertexDeclaration(vel);
+	//@TODO: Change to GX_BUFFER_USAGE_STREAM (can be lost in DX9)
+	m_pVertexBuffer = m_pDev->createVertexBuffer(sizeof(Vertex)* iVC, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
+	m_pIndexBuffer = m_pDev->createIndexBuffer(sizeof(UINT)* iIC, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_UINT);
+	m_pRenderBuffer = m_pDev->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
 }
 
 CCrosshair::~CCrosshair()
 {
+	mem_release(m_pVertexBuffer);
+	mem_release(m_pIndexBuffer);
+	mem_release(m_pRenderBuffer);
+	mem_release(m_pVertexDeclaration);
+
 	mem_delete_a(m_pMemoryBlob);
 }
 
@@ -340,25 +354,24 @@ void CCrosshair::render()
 		m_bBuildBuff = false;
 		//update buffer
 		void * pData;
-		if(!FAILED(m_pVertexBuffer->Lock(0, sizeof(Vertex) * m_iVertexCount[m_u8ActiveBuffer], &pData, 0)))
+		if(m_pVertexBuffer->lock(&pData, GXBL_WRITE))
 		{
 			memcpy(pData, m_pVertices[m_u8ActiveBuffer], sizeof(Vertex)* m_iVertexCount[m_u8ActiveBuffer]);
-			m_pVertexBuffer->Unlock();
+			m_pVertexBuffer->unlock();
 		}
 
-		if(!FAILED(m_pIndexBuffer->Lock(0, sizeof(UINT) * m_iIndexCount[m_u8ActiveBuffer], &pData, 0)))
+		if(m_pIndexBuffer->lock(&pData, GXBL_WRITE))
 		{
 			memcpy(pData, m_pIndices[m_u8ActiveBuffer], sizeof(UINT)* m_iIndexCount[m_u8ActiveBuffer]);
-			m_pIndexBuffer->Unlock();
+			m_pIndexBuffer->unlock();
 		}
 	}
 	m_pDev->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixIdentity());
 	m_pDev->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&SMMatrixIdentity());
 	m_pDev->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&SMMatrixIdentity());
 	m_pDev->SetRenderState(D3DRS_ZENABLE, FALSE);
-	DX_CALL(m_pDev->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(Vertex)));
-	DX_CALL(m_pDev->SetIndices(m_pIndexBuffer));
-	m_pDev->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
+	m_pDev->setIndexBuffer(m_pIndexBuffer);
+	m_pDev->setRenderBuffer(m_pRenderBuffer);
 	m_pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	SGCore_ShaderUnBind();
 	m_pDev->SetTexture(0, m_pTexture);
@@ -378,7 +391,7 @@ void CCrosshair::render()
 	//m_pDev->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_ANISOTROPIC);
 	
 	//SGCore_ScreenQuadDraw();
-	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_iVertexCount[m_u8ActiveBuffer], 0, m_iIndexCount[m_u8ActiveBuffer] / 3);
+	SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, m_iVertexCount[m_u8ActiveBuffer], 0, m_iIndexCount[m_u8ActiveBuffer] / 3);
 	//render
 }
 void CCrosshair::onSync()

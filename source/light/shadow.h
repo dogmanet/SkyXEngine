@@ -9,10 +9,10 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
-#define SM_D3D_CONVERSIONS
+//#define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>
 #include <common/Array.h>
-#include <d3d9.h>
+#include <graphix/graphix.h>
 #include <gcore/sxgcore.h>
 #include "sxlight.h"
 #include "ml_data.h"
@@ -108,7 +108,7 @@ public:
 	void begin();
 	void end();
 
-	void genShadow(IDirect3DTexture9* shadowmap);
+	void genShadow(IGXTexture2D* shadowmap);
 
 	void setPosition(const float3* pos);
 	void getPosition(float3* pos);
@@ -147,15 +147,15 @@ private:
 	float3 Direction;
 	float3 AngleNearFar;
 
-	IDirect3DTexture9*	DepthMap;
-	IDirect3DSurface9*	DepthSurface;
-	IDirect3DSurface9*	DepthStencilSurface;
+	IGXTexture2D*	DepthMap;
+	IGXSurface*	DepthSurface;
+	IGXSurface*	DepthStencilSurface;
 	
 	float4x4 OldView,OldProj,OldViewProj;
 	float4x4 ScaleBiasMat;
 
-	IDirect3DSurface9* OldDepthStencilSurface;
-	IDirect3DSurface9*  OldColorSurface;
+	IGXDepthStencilSurface* OldDepthStencilSurface;
+	IGXDepthStencilSurface*  OldColorSurface;
 };
 
 //##########################################################################
@@ -212,9 +212,9 @@ private:
 	Array<long*> IDArr;
 	float Bias;
 	float BlurPixel;
-	IDirect3DCubeTexture9*	DepthMap;
-	IDirect3DSurface9*	DepthSurface[6];
-	IDirect3DSurface9*	DepthStencilSurface;
+	IGXTextureCube*	DepthMap;
+	IGXSurface*	DepthSurface[6];
+	IGXDepthStencilSurface*	DepthStencilSurface;
 	float4x4 View[6];
 	float4x4 Proj[6];
 
@@ -223,8 +223,8 @@ private:
 
 	float4x4 OldView,OldProj,OldViewProj;
 
-	IDirect3DSurface9* OldDepthStencilSurface;
-	IDirect3DSurface9*  OldColorSurface;
+	IGXDepthStencilSurface* OldDepthStencilSurface;
+	IGXSurface*  OldColorSurface;
 
 	float3 Position;
 	float2 m_vNearFar;

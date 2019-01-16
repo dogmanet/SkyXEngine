@@ -11,7 +11,7 @@ See the license in LICENSE
 #include <common/SXMath.h>
 #include <common/Array.h>
 #include <common/AssotiativeArray.h>
-#include <d3d9.h>
+#include <graphix/graphix.h>
 #include "sxdecals.h"
 
 
@@ -114,11 +114,14 @@ class DecalManager
 	Array<_DecalTexRange> m_iRngs;
 
 	//static IDirect3DIndexBuffer9 * m_pIndexBuffer;
-	IDirect3DVertexBuffer9 * m_pVertexBuffer;
+	IGXVertexBuffer *m_pVertexBuffer;
+	IGXRenderBuffer *m_pRenderBuffer;
+
+	IGXVertexDeclaration *m_pVertexDeclaration;
 
 	MemAlloc<Decal, 64> m_aDecals;
 
-	IDirect3DDevice9 * dev;
+	IGXContext *dev;
 public:
 
 	DecalManager();

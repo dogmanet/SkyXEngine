@@ -343,7 +343,10 @@ void PSSM::preRender(int split)
 	
 	light_data::pDXDevice->SetRenderTarget(0, DepthSurfaces[split]);
 	
-	light_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(255,255,255,255), 1.0f, 0);
+
+	light_data::pDXDevice->setClearColor(float4_t(1.0f, 1.0f, 1.0f, 1.0f));
+	light_data::pDXDevice->clearTarget();
+	light_data::pDXDevice->clearDepth();
 }
 
 void PSSM::begin()
@@ -518,7 +521,9 @@ void PSSM::genShadowAll(IDirect3DTexture9* shadowmap)
 	light_data::pDXDevice->GetRenderTarget(0, &BackBuf);
 	light_data::pDXDevice->SetRenderTarget(0, RenderSurf);
 
-	light_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+
+	light_data::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
+	light_data::pDXDevice->clearTarget();
 
 	light_data::pDXDevice->SetRenderTarget(0, BackBuf);
 
@@ -731,7 +736,10 @@ void ShadowMapTech::begin()
 	
 	light_data::pDXDevice->SetRenderTarget(0, DepthSurface);
 	
-	light_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(255,255,255,255), 1.0f, 0);
+
+	light_data::pDXDevice->setClearColor(float4_t(1.0f, 1.0f, 1.0f, 1.0f));
+	light_data::pDXDevice->clearTarget();
+	light_data::pDXDevice->clearDepth();
 }
 
 void ShadowMapTech::end()
@@ -751,7 +759,7 @@ void ShadowMapTech::end()
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &OldViewProj);
 }
 
-void ShadowMapTech::genShadow(IDirect3DTexture9* shadowmap)
+void ShadowMapTech::genShadow(IGXTexture2D* shadowmap)
 {
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
@@ -761,10 +769,10 @@ void ShadowMapTech::genShadow(IDirect3DTexture9* shadowmap)
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
-	shadowmap->GetSurfaceLevel(0, &RenderSurf);
-	light_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	light_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	IGXSurface *RenderSurf, *BackBuf;
+	RenderSurf = shadowmap->getMipmap(0);
+	BackBuf = light_data::pDXDevice->getColorTarget();
+	light_data::pDXDevice->setColorTarget(RenderSurf);
 
 	//light_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 0, 0, 0), 1.0f, 0);
 
@@ -775,13 +783,13 @@ void ShadowMapTech::genShadow(IDirect3DTexture9* shadowmap)
 	SGCore_SetSamplerFilter(2, D3DTEXF_POINT);
 	SGCore_SetSamplerAddress(2, D3DTADDRESS_WRAP);
 
-	light_data::pDXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_DEPTH));
+	light_data::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH));
 
 	float4x4 MatrixTexture;
 
-	light_data::pDXDevice->SetTexture(1, DepthMap);
+	light_data::pDXDevice->setTexture(DepthMap, 1);
 
-	light_data::pDXDevice->SetTexture(2, SGCore_LoadTexGetTex(light_data::texture_id::idNoiseTex));
+	light_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(light_data::texture_id::idNoiseTex), 2);
 	MatrixTexture = View * Proj * ScaleBiasMat;
 	MatrixTexture = SMMatrixTranspose(MatrixTexture);
 
@@ -829,10 +837,10 @@ void ShadowMapTech::genShadow(IDirect3DTexture9* shadowmap)
 
 	SGCore_ScreenQuadDraw();
 
-	light_data::pDXDevice->SetVertexShader(0);
-	light_data::pDXDevice->SetPixelShader(0);
+	light_data::pDXDevice->setVertexShader(NULL);
+	light_data::pDXDevice->setPixelShader(NULL);
 
-	light_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	light_data::pDXDevice->setColorTarget(BackBuf);
 
 	mem_release_del(RenderSurf);
 	mem_release_del(BackBuf);
@@ -1023,9 +1031,9 @@ void ShadowMapCubeTech::init()
 
 void ShadowMapCubeTech::begin()
 {
-	light_data::pDXDevice->GetDepthStencilSurface(&OldDepthStencilSurface);
-	light_data::pDXDevice->SetDepthStencilSurface(DepthStencilSurface);
-	light_data::pDXDevice->GetRenderTarget(0, &OldColorSurface);
+	OldDepthStencilSurface = light_data::pDXDevice->getDepthStencilSurface();
+	light_data::pDXDevice->setDepthStencilSurface(DepthStencilSurface);
+	OldColorSurface = light_data::pDXDevice->getColorTarget();
 
 	/*light_data::pDXDevice->GetTransform(D3DTS_VIEW,&OldView);
 	light_data::pDXDevice->GetTransform(D3DTS_PROJECTION,&OldProj);
@@ -1045,10 +1053,12 @@ void ShadowMapCubeTech::pre(int cube)
 			EnableEdgeNulled[cube] = true;
 			mem_release_del(DepthSurface[cube]);
 
-			DepthMap->GetCubeMapSurface((D3DCUBEMAP_FACES)cube, 0, &DepthSurface[cube]);
-			light_data::pDXDevice->SetRenderTarget(0, DepthSurface[cube]);
+			DepthSurface[cube] = DepthMap->getMipmap((GXCUBEMAP_FACES)cube, 0);
+			light_data::pDXDevice->setColorTarget(DepthSurface[cube]);
 
-			light_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(255, 255, 255, 255), 1.0f, 0);
+			light_data::pDXDevice->setClearColor(float4_t(1.0f, 1.0f, 1.0f, 1.0f));
+			light_data::pDXDevice->clearTarget();
+			light_data::pDXDevice->clearDepth();
 		}
 		return;
 	}
@@ -1074,10 +1084,12 @@ void ShadowMapCubeTech::pre(int cube)
 
 	mem_release_del(DepthSurface[cube]);
 	
-    DepthMap->GetCubeMapSurface( ( D3DCUBEMAP_FACES ) cube, 0, &DepthSurface[cube] );
-	light_data::pDXDevice->SetRenderTarget( 0, DepthSurface[cube] );
+	DepthSurface[cube] = DepthMap->getMipmap((GXCUBEMAP_FACES)cube, 0);
+	light_data::pDXDevice->setColorTarget(DepthSurface[cube]);
 	
-	light_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(255,255,255,255), 1.0f, 0);
+	light_data::pDXDevice->setClearColor(float4_t(1.0f, 1.0f, 1.0f, 1.0f));
+	light_data::pDXDevice->clearTarget();
+	light_data::pDXDevice->clearDepth();
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomCube);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGeomCube);
@@ -1099,10 +1111,10 @@ void ShadowMapCubeTech::post(int cube)
 
 void ShadowMapCubeTech::end()
 {
-	light_data::pDXDevice->SetDepthStencilSurface(OldDepthStencilSurface);
-	light_data::pDXDevice->SetRenderTarget(0, OldColorSurface);
-	mem_release_del(OldDepthStencilSurface);
-	mem_release_del(OldColorSurface);
+	light_data::pDXDevice->setDepthStencilSurface(OldDepthStencilSurface);
+	light_data::pDXDevice->setColorTarget(OldColorSurface);
+	//mem_release_del(OldDepthStencilSurface);
+	//mem_release_del(OldColorSurface);
 
 	/*light_data::pDXDevice->SetTransform(D3DTS_VIEW,&OldView);
 	light_data::pDXDevice->SetTransform(D3DTS_PROJECTION,&OldProj);
@@ -1113,7 +1125,7 @@ void ShadowMapCubeTech::end()
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &OldViewProj);
 }
 
-void ShadowMapCubeTech::genShadow(IDirect3DTexture9* shadowmap)
+void ShadowMapCubeTech::genShadow(IGXTexture2D* shadowmap)
 {
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
@@ -1123,11 +1135,11 @@ void ShadowMapCubeTech::genShadow(IDirect3DTexture9* shadowmap)
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
+	IGXSurface *RenderSurf, *BackBuf;
 
-	shadowmap->GetSurfaceLevel(0, &RenderSurf);
-	light_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	light_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	RenderSurf = shadowmap->getMipmap(0);
+	BackBuf = light_data::pDXDevice->getColorTarget();
+	light_data::pDXDevice->setColorTarget(RenderSurf);
 
 	//light_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 255, 0, 0), 1.0f, 0);
 
@@ -1138,10 +1150,10 @@ void ShadowMapCubeTech::genShadow(IDirect3DTexture9* shadowmap)
 	SGCore_SetSamplerFilter(2, D3DTEXF_POINT);
 	SGCore_SetSamplerAddress(2, D3DTADDRESS_WRAP);
 
-	light_data::pDXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_DEPTH));
+	light_data::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH));
 
-	light_data::pDXDevice->SetTexture(1, DepthMap);
-	light_data::pDXDevice->SetTexture(2, SGCore_LoadTexGetTex(light_data::texture_id::idNoiseTex));
+	light_data::pDXDevice->setTexture(DepthMap, 1);
+	light_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(light_data::texture_id::idNoiseTex), 2);
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idResPosDepth);
 	if (light_data::isHalfGenPCFShadowLocal)
@@ -1186,9 +1198,9 @@ void ShadowMapCubeTech::genShadow(IDirect3DTexture9* shadowmap)
 
 	SGCore_ShaderUnBind();
 
-	light_data::pDXDevice->SetRenderTarget(0, BackBuf);
-	mem_release_del(RenderSurf);
-	mem_release_del(BackBuf);
+	light_data::pDXDevice->setColorTarget(BackBuf);
+	//mem_release_del(RenderSurf);
+	//mem_release_del(BackBuf);
 }
 
 void ShadowMapCubeTech::setIDArr(long id, int split, long idarr)

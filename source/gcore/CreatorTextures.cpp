@@ -23,7 +23,7 @@ CreatorTextures::~CreatorTextures()
 	}
 }
 
-ID CreatorTextures::Add(UINT width, UINT height, UINT levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen)
+ID CreatorTextures::Add(UINT width, UINT height, UINT levels, DWORD usage, GXFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen)
 {
 	IDirect3DTexture9* objtex;
 	g_pDXDevice->CreateTexture(width, height, levels, usage, format, pool, &objtex, NULL);
@@ -132,7 +132,7 @@ void CreatorTextures::OnResetDevice()
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "reset render targets success\n");
 }
 
-IDirect3DTexture9* CreatorTextures::GetTexture(const char* text)
+IGXTexture2D* CreatorTextures::GetTexture(const char* text)
 {
 	for(int i=0;i<Arr.size();i++)
 	{
@@ -144,11 +144,11 @@ IDirect3DTexture9* CreatorTextures::GetTexture(const char* text)
 	return(NULL);
 }
 
-IDirect3DTexture9* CreatorTextures::GetTexture(ID num)
+IGXTexture2D* CreatorTextures::GetTexture(ID num)
 {
 	if (num < Arr.size())
 	{
-		IDirect3DTexture9* tmptex = Arr[num]->Texture;
+		IGXTexture2D* tmptex = Arr[num]->Texture;
 		return Arr[num]->Texture;
 	}
 	else

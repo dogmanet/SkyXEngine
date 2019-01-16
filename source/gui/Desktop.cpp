@@ -59,7 +59,7 @@ namespace gui
 	void CDesktop::createRenderTarget()
 	{
 		DX_CALL(GetGUI()->getDevice()->CreateRenderTarget(m_iWidth, m_iHeight, D3DFMT_A8R8G8B8, D3DMULTISAMPLE_4_SAMPLES, 0, FALSE, &m_pRenderSurface, NULL));
-		DX_CALL(GetGUI()->getDevice()->CreateDepthStencilSurface(m_iWidth, m_iHeight, D3DFMT_D24S8, D3DMULTISAMPLE_4_SAMPLES, 0, FALSE, &m_pDepthStencilSurface, NULL));
+		m_pDepthStencilSurface = GetGUI()->getDevice()->createDepthStencilSurface(m_iWidth, m_iHeight, GXFMT_D24S8, GXMULTISAMPLE_4_SAMPLES);
 
 		
 		m_txFinal = CTextureManager::createTexture(StringW(L"@") + m_sName, m_iWidth, m_iHeight, 32, true);
@@ -99,10 +99,13 @@ namespace gui
 			IDirect3DSurface9 *pOldDS;
 			DX_CALL(GetGUI()->getDevice()->GetRenderTarget(0, &pOldRT));
 			DX_CALL(GetGUI()->getDevice()->SetRenderTarget(0, m_pRenderSurface));
-			DX_CALL(GetGUI()->getDevice()->GetDepthStencilSurface(&pOldDS));
-			DX_CALL(GetGUI()->getDevice()->SetDepthStencilSurface(m_pDepthStencilSurface));
+			pOldDS = GetGUI()->getDevice()->getDepthStencilSurface();
+			pOldDS = GetGUI()->getDevice()->setDepthStencilSurface(m_pDepthStencilSurface);
 
-			DX_CALL(GetGUI()->getDevice()->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_STENCIL, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0));
+
+			GetGUI()->getDevice()->setClearColor(float4_t(0, 0, 0, 0));
+			GetGUI()->getDevice()->clearTarget();
+			GetGUI()->getDevice()->clearStencil();
 
 			//GetGUI()->getDevice()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 			//GetGUI()->getDevice()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
@@ -115,9 +118,9 @@ namespace gui
 			GetGUI()->getDevice()->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, FALSE);
 
 			DX_CALL(GetGUI()->getDevice()->SetRenderTarget(0, pOldRT));
-			DX_CALL(GetGUI()->getDevice()->SetDepthStencilSurface(pOldDS));
+			GetGUI()->getDevice()->setDepthStencilSurface(pOldDS);
 			pOldRT->Release();
-			pOldDS->Release();
+			//pOldDS->Release();
 
 			//D3DXSaveSurfaceToFileA("../screenshots/gui.png", D3DXIFF_PNG, m_pRenderSurface, NULL, NULL);
 			

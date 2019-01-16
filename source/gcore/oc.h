@@ -8,13 +8,13 @@ See the license in LICENSE
 #define __OC_H
 
 #include <gdefines.h>
-#include <d3d9.h>
+#include <graphix/graphix.h>
 #include <common/SXMath.h>
 #include <mutex>
 
 #include <gcore/sxgcore.h>
 
-extern IDirect3DDevice9 *g_pDXDevice;
+extern IGXContext *g_pDXDevice;
 extern D3DCAPS9 g_dxCaps;
 extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 

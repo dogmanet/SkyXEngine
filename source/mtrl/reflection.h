@@ -9,10 +9,10 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
-#define SM_D3D_CONVERSIONS
+//#define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>
 #include <common/Array.h>
-#include <d3d9.h>
+#include <graphix/graphix.h>
 
 #include "sxmtrl.h"
 #include "ml_data.h"

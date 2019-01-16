@@ -60,7 +60,7 @@ UINT CreatePreviewTextures()
 UINT CreatePreviewModels()
 {
 	UINT uStartTime = GetTickCount();
-	static IDirect3DDevice9 *pDXDevice = SGCore_GetDXDevice();
+	static IGXContext *pDXDevice = SGCore_GetDXDevice();
 
 	if (!pDXDevice)
 		return 1;
@@ -218,13 +218,15 @@ UINT CreatePreviewModels()
 		pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)mView));
 		pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)mProjection));
 
-		pDXDevice->BeginScene();
-		pDXDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+		pDXDevice->beginFrame();
+		pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
+		pDXDevice->clearTarget();
+		pDXDevice->clearDepth(1.0f);
 
 		SXAnim_Render();
 
-		pDXDevice->EndScene();
-		pDXDevice->Present(0, 0, 0, 0);
+		pDXDevice->endFrame();
+		pDXDevice->swapBuffers();
 
 		IDirect3DSurface9 *pBackBuf;
 		pDXDevice->GetRenderTarget(0, &pBackBuf);

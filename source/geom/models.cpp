@@ -33,14 +33,8 @@ void CModels::onResetDevice()
 {
 	for(int i = 0, l = m_aModels.size(); i < l; ++i)
 	{
-		g_pDXDevice->CreateIndexBuffer(
-			m_aModels[i]->m_pModel->m_uiAllIndexCount * sizeof(UINT),
-			D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
-			D3DFMT_INDEX32,
-			D3DPOOL_DEFAULT,
-			&(m_aModels[i]->m_pVisibleIndexBuffer),
-			0);
-
+		m_aModels[i]->m_pVisibleIndexBuffer = g_pDXDevice->createIndexBuffer(m_aModels[i]->m_pModel->m_uiAllIndexCount * sizeof(UINT), GX_BUFFER_USAGE_STREAM, GXIT_UINT);
+		
 		m_aModels[i]->m_pModel->syncBuffers();
 	}
 	for(int i = 0, l = m_aTransparency.size(); i < l; ++i)
@@ -155,6 +149,7 @@ CModels::CTransparencyModel::CTransparencyModel()
 CModels::CTransparencyModel::~CTransparencyModel()
 {
 	mem_release(m_pVertexBuffer);
+	mem_release(m_pRenderBuffer);
 	mem_release(m_pIndexBuffer);
 	mem_release(m_pBoundVolume);
 	mem_delete_a(m_pIndices);
@@ -165,32 +160,34 @@ void CModels::CTransparencyModel::syncBuffers(bool bRecreate)
 {
 	if(bRecreate)
 	{
-		mem_release_del(m_pVertexBuffer);
-		mem_release_del(m_pIndexBuffer);
+		mem_release(m_pVertexBuffer);
+		mem_release(m_pIndexBuffer);
+		mem_release(m_pRenderBuffer);
 	}
 
 	if(!m_pVertexBuffer)
 	{
-		DX_CALL(g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* m_iCountVertex, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_DEFAULT, &m_pVertexBuffer, 0));
+		m_pVertexBuffer = g_pDXDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_iCountVertex, GX_BUFFER_POOL_DEFAULT | GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
+		m_pRenderBuffer = g_pDXDevice->createRenderBuffer(1, &m_pVertexBuffer, SGCore_StaticModelGetDecl());
 	}
 
 	vertex_static_ex *pVertex;
-	if(SUCCEEDED(DX_CALL(m_pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0))))
+	if(m_pVertexBuffer->lock((void **)&pVertex, GXBL_WRITE))
 	{
 		memcpy(pVertex, m_pVertices, sizeof(vertex_static_ex)* m_iCountVertex);
-		m_pVertexBuffer->Unlock();
+		m_pVertexBuffer->unlock();
 	}
 
 	if(!m_pIndexBuffer)
 	{
-		DX_CALL(g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* m_iCountIndex, D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_DEFAULT, &m_pIndexBuffer, 0));
+		m_pIndexBuffer = g_pDXDevice->createIndexBuffer(sizeof(UINT)* m_iCountIndex, GX_BUFFER_POOL_DEFAULT | GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_UINT);
 	}
 
 	UINT *pIndex;
-	if(SUCCEEDED(DX_CALL(m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0))))
+	if(m_pIndexBuffer->lock((void **)&pIndex, GXBL_WRITE))
 	{
 		memcpy(pIndex, m_pIndices, sizeof(uint32_t)* m_iCountIndex);
-		m_pIndexBuffer->Unlock();
+		m_pIndexBuffer->unlock();
 	}
 }
 
@@ -2105,13 +2102,7 @@ void CModels::createExternalData4SegmentModel(CModel *pModel)
 		pModel->m_pVisibleIndeces[i] = new UINT[pModel->m_pModel->m_pIndexCount[i]];
 	}
 
-	g_pDXDevice->CreateIndexBuffer(
-		pModel->m_pModel->m_uiAllIndexCount * sizeof(UINT),
-		D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
-		D3DFMT_INDEX32,
-		D3DPOOL_DEFAULT,
-		&(pModel->m_pVisibleIndexBuffer),
-		0);
+	pModel->m_pVisibleIndexBuffer = g_pDXDevice->createIndexBuffer(pModel->m_pModel->m_uiAllIndexCount * sizeof(UINT), GX_BUFFER_USAGE_STREAM, GXIT_UINT);
 }
 
 void CModels::segmentation(CModel *pModel)
@@ -2940,11 +2931,8 @@ void CModels::renderLod(DWORD timeDelta, ID idModel, ID idTex, const float3 *pPo
 {
 	STATIC_PRECOND_MODEL_ID(idModel, _VOID);
 
-	g_pDXDevice->SetStreamSource(0, m_aModels[idModel]->m_pLod->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
-
-	g_pDXDevice->SetIndices(m_aModels[idModel]->m_pLod->m_pModel->m_pIndexBuffer);
-	g_pDXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
-
+	g_pDXDevice->setIndexBuffer(m_aModels[idModel]->m_pLod->m_pModel->m_pIndexBuffer);
+	g_pDXDevice->setRenderBuffer(m_aModels[idModel]->m_pLod->m_pModel->m_pRenderBuffer);
 	int iCountIndex = 0;
 
 	float4x4 mWorld;
@@ -2962,7 +2950,7 @@ void CModels::renderLod(DWORD timeDelta, ID idModel, ID idTex, const float3 *pPo
 	{
 		SGCore_MtlSet((idTex > 0 ? idTex : m_aModels[idModel]->m_pLod->m_aIDsTextures[g]), &mWorld);
 
-		SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_aModels[idModel]->m_pLod->m_pModel->m_pVertexCount[g], iCountIndex, m_aModels[idModel]->m_pLod->m_pModel->m_pIndexCount[g] / 3);
+		SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, m_aModels[idModel]->m_pLod->m_pModel->m_pVertexCount[g], iCountIndex, m_aModels[idModel]->m_pLod->m_pModel->m_pIndexCount[g] / 3);
 		Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((m_aModels[idModel]->m_pLod->m_pModel->m_pIndexCount[g] / 3)));
 		iCountIndex += m_aModels[idModel]->m_pLod->m_pModel->m_pIndexCount[g];
 	}
@@ -2976,11 +2964,9 @@ void CModels::renderObject(DWORD timeDelta, ID idModel, ID idTex, const float3 *
 	if (m_aModels[idModel]->m_pModel->m_uiSubsetCount == 0)
 		return;
 
-	g_pDXDevice->SetStreamSource(0, m_aModels[idModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
-
-	g_pDXDevice->SetIndices(m_aModels[idModel]->m_pModel->m_pIndexBuffer);
-	g_pDXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
-
+	g_pDXDevice->setIndexBuffer(m_aModels[idModel]->m_pModel->m_pIndexBuffer);
+	g_pDXDevice->setRenderBuffer(m_aModels[idModel]->m_pModel->m_pRenderBuffer);
+	
 	int iCountIndex = 0;
 
 	float4x4 mWorld;
@@ -2998,7 +2984,7 @@ void CModels::renderObject(DWORD timeDelta, ID idModel, ID idTex, const float3 *
 	{
 		SGCore_MtlSet((idTex >= 0 ? idTex : m_aModels[idModel]->m_aIDsTextures[g]), &mWorld);
 
-		SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_aModels[idModel]->m_pModel->m_pVertexCount[g], iCountIndex, m_aModels[idModel]->m_pModel->m_pIndexCount[g] / 3);
+		SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, m_aModels[idModel]->m_pModel->m_pVertexCount[g], iCountIndex, m_aModels[idModel]->m_pModel->m_pIndexCount[g] / 3);
 		Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((m_aModels[idModel]->m_pModel->m_pIndexCount[g] / 3)));
 		iCountIndex += m_aModels[idModel]->m_pModel->m_pIndexCount[g];
 	}
@@ -3047,24 +3033,25 @@ void CModels::renderSegmets(DWORD timeDelta, ID idModel, ID idTex, ID idVisCalcO
 	//{
 	UINT *pIndices;
 	int iCountCopyPoly = 0;
-	pModel->m_pVisibleIndexBuffer->Lock(0, 0, (void**)&(pIndices), D3DLOCK_DISCARD);
-	
-	for (int i = 0; i<pModel->m_pModel->m_uiSubsetCount; ++i)
+	if(pModel->m_pVisibleIndexBuffer->lock((void**)&(pIndices), GXBL_WRITE))
 	{
-		if (pModel->m_pCountDrawPoly[i] > 0)
-		{
-			memcpy(pIndices + iCountCopyPoly, pModel->m_pVisibleIndeces[i], pModel->m_pCountDrawPoly[i] * 3 * sizeof(UINT));
-			iCountCopyPoly += pModel->m_pCountDrawPoly[i] * 3;
-		}
-	}
 
-	pModel->m_pVisibleIndexBuffer->Unlock();
+		for(int i = 0; i < pModel->m_pModel->m_uiSubsetCount; ++i)
+		{
+			if(pModel->m_pCountDrawPoly[i] > 0)
+			{
+				memcpy(pIndices + iCountCopyPoly, pModel->m_pVisibleIndeces[i], pModel->m_pCountDrawPoly[i] * 3 * sizeof(UINT));
+				iCountCopyPoly += pModel->m_pCountDrawPoly[i] * 3;
+			}
+		}
+
+		pModel->m_pVisibleIndexBuffer->unlock();
+	}
 	//}
 
-	g_pDXDevice->SetStreamSource(0, pModel->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
-	g_pDXDevice->SetIndices(pModel->m_pVisibleIndexBuffer);
-	g_pDXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
-
+	g_pDXDevice->setIndexBuffer(pModel->m_pVisibleIndexBuffer);
+	g_pDXDevice->setRenderBuffer(pModel->m_pModel->m_pRenderBuffer);
+	
 	int iCountIndex = 0;
 
 	for (int g = 0; g < pModel->m_pModel->m_uiSubsetCount; g++)
@@ -3073,7 +3060,7 @@ void CModels::renderSegmets(DWORD timeDelta, ID idModel, ID idTex, ID idVisCalcO
 		{
 			SGCore_MtlSet((idTex > 0 ? idTex : pModel->m_aIDsTextures[g]), (float4x4*)pModel->m_pBoundVolume->calcWorld());
 
-			SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, pModel->m_pModel->m_pVertexCount[g], iCountIndex, pModel->m_pCountDrawPoly[g]);
+			SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, pModel->m_pModel->m_pVertexCount[g], iCountIndex, pModel->m_pCountDrawPoly[g]);
 			Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + (pModel->m_pCountDrawPoly[g]));
 			iCountIndex += pModel->m_pCountDrawPoly[g] * 3;
 		}
@@ -3085,14 +3072,12 @@ void CModels::renderTransparency(DWORD timeDelta, CTransparencyModel *pTranspare
 	if (!pTransparencyModel)
 		return;
 
-	g_pDXDevice->SetStreamSource(0, pTransparencyModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
-
-	g_pDXDevice->SetIndices(pTransparencyModel->m_pIndexBuffer);
-	g_pDXDevice->SetVertexDeclaration(SGCore_StaticModelGetDecl());
-
+	g_pDXDevice->setIndexBuffer(pTransparencyModel->m_pIndexBuffer);
+	g_pDXDevice->setRenderBuffer(pTransparencyModel->m_pRenderBuffer);
+	
 	SGCore_MtlSet(pTransparencyModel->m_idTex, (float4x4*)pTransparencyModel->m_pBoundVolume->calcWorld());
 
-	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, pTransparencyModel->m_iCountVertex, 0, pTransparencyModel->m_iCountIndex / 3);
+	SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, pTransparencyModel->m_iCountVertex, 0, pTransparencyModel->m_iCountIndex / 3);
 	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((pTransparencyModel->m_iCountIndex / 3)));
 }
 

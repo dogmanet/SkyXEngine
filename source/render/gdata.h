@@ -35,7 +35,7 @@ class CGrid;
 namespace gdata
 {
 	//! dx устройство
-	extern IDirect3DDevice9* pDXDevice;
+	extern IGXContext* pDXDevice;
 	//! Способности устройства
 	extern D3DCAPS9 dxDeviceCaps;
 

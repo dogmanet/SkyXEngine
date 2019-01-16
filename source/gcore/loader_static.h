@@ -9,15 +9,13 @@ See the license in LICENSE
 
 #include <gdefines.h>
 #include <stdio.h>
-#include <d3d9.h>
+#include <graphix/graphix.h>
 #include <common/String.h>
 #include <common/Array.h>
 #include "sxgcore.h"
 
-extern IDirect3DDevice9 *g_pDXDevice;
-extern D3DCAPS9 g_dxCaps;
-extern D3DPRESENT_PARAMETERS D3DAPP;
-extern IDirect3DVertexDeclaration9 *g_pStaticVertexDecl;
+extern IGXContext *g_pDXDevice;
+extern IGXVertexDeclaration *g_pStaticVertexDecl;
 
 struct DataStaticModel : public ISXDataStaticModel
 {
@@ -100,32 +98,34 @@ struct DataStaticModel : public ISXDataStaticModel
 	{
 		if(bRecreate)
 		{
-			mem_release_del(m_pVertexBuffer);
-			mem_release_del(m_pIndexBuffer);
+			mem_release(m_pVertexBuffer);
+			mem_release(m_pIndexBuffer);
+			mem_release(m_pRenderBuffer);
 		}
 
 		if(!m_pVertexBuffer)
 		{
-			DX_CALL(g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_DEFAULT, &m_pVertexBuffer, 0));
+			m_pVertexBuffer = g_pDXDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, NULL, true);
+			m_pRenderBuffer = g_pDXDevice->createRenderBuffer(1, &m_pVertexBuffer, SGCore_StaticModelGetDecl());
 		}
 
 		vertex_static_ex *pVertex;
-		if(SUCCEEDED(DX_CALL(m_pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0))))
+		if(m_pVertexBuffer->lock((void **)&pVertex, GXBL_WRITE))
 		{
 			memcpy(pVertex, m_pVertices, sizeof(vertex_static_ex)* m_uiAllVertexCount);
-			m_pVertexBuffer->Unlock();
+			m_pVertexBuffer->unlock();
 		}
 
 		if(!m_pIndexBuffer)
 		{
-			DX_CALL(g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_DEFAULT, &m_pIndexBuffer, 0));
+			m_pIndexBuffer = g_pDXDevice->createIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_UINT, NULL, true);
 		}
 
 		UINT *pIndex;
-		if(SUCCEEDED(DX_CALL(m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0))))
+		if(m_pIndexBuffer->lock((void **)&pIndex, GXBL_WRITE))
 		{
 			memcpy(pIndex, m_pIndices, sizeof(uint32_t)* m_uiAllIndexCount);
-			m_pIndexBuffer->Unlock();
+			m_pIndexBuffer->unlock();
 		}
 	}
 

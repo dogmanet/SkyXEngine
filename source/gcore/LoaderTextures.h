@@ -8,14 +8,14 @@ See the license in LICENSE
 #define __LOADERTEXTURES_H
 
 #include <gdefines.h>
-#include <d3d9.h>
+#include <graphix/graphix.h>
 #include <common/array.h>
 #include <common/String.h>
 #include <common/file_utils.h>
 #include "sxgcore.h"
 
 void LibReport(int iLevel, const char *szFormat, ...);
-extern IDirect3DDevice9 *g_pDXDevice;
+extern IGXContext *g_pDXDevice;
 extern D3DCAPS9 g_dxCaps;
 extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 

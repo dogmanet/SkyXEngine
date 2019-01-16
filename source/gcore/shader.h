@@ -13,13 +13,13 @@ See the license in LICENSE
 #include <stdio.h>
 #include <time.h>
 #include <direct.h>
-#include <d3d9.h>
+#include <graphix/graphix.h>
 #include <common/array.h>
 #include <common/String.h>
 #include <common/file_utils.h>
 #include "sxgcore.h"
 
-extern IDirect3DDevice9 *g_pDXDevice;
+extern IGXContext *g_pDXDevice;
 extern D3DCAPS9 g_dxCaps;
 extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 
@@ -72,7 +72,7 @@ struct CShaderVS : public CShader
 	CShaderVS(){ m_pVertexShader = 0; };
 	~CShaderVS(){ mem_release(m_pVertexShader); };
 
-	IDirect3DVertexShader9 *m_pVertexShader;
+	IGXVertexShader *m_pVertexShader;
 };
 
 //! пиксельный шейдер
@@ -81,7 +81,7 @@ struct CShaderPS : public CShader
 	CShaderPS(){ m_pPixelShader = 0; };
 	~CShaderPS(){ mem_release(m_pPixelShader); };
 
-	IDirect3DPixelShader9 *m_pPixelShader;
+	IGXPixelShader *m_pPixelShader;
 };
 
 //! кэшированный шейдер

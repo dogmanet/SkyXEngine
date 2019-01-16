@@ -1,5 +1,4 @@
 #include "Texture.h"
-#include <d3dx9tex.h>
 
 namespace gui
 {
@@ -191,16 +190,15 @@ namespace gui
 	
 	void CTexture::loadFromMem(byte * pData)
 	{
-		IDirect3DTexture9 * tex = NULL;
 		if(!pData)
 		{
 			return;
 		}
-		D3DLOCKED_RECT lr;
-		if(!FAILED(DX_CALL(m_pTexture->LockRect(0, &lr, NULL, NULL))))
+		void *pTexData;
+		if(!m_pTexture->lock(&pTexData, GXTL_WRITE))
 		{
-			memcpy(lr.pBits, pData, m_iWidth * m_iHeight * 4);
-			m_pTexture->UnlockRect(0);
+			memcpy(pTexData, pData, m_iWidth * m_iHeight * 4);
+			m_pTexture->unlock();
 		}
 		/*if(!FAILED(GetGUI()->GetDevice()->CreateTexture(m_iWidth, m_iHeight, 0, NULL, D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM, &tex, NULL)))
 		{
@@ -223,9 +221,9 @@ namespace gui
 	void CTexture::loadFromFile(const StringW & pName)
 	{
 		StringW path = StringW(GetGUI()->getResourceDir()) + L"/textures/" + pName;
-		D3DXIMAGE_INFO info;
-		if(FAILED(DX_CALL(D3DXCreateTextureFromFileExW(GetGUI()->getDevice(), path.c_str(), D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT, 0, D3DFMT_FROM_FILE, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &m_pTexture))))
-			//if(FAILED(D3DXCreateTextureFromFileW(GetGUI()->GetDevice(), path.c_str(), &m_pTexture)))
+		m_pTexture = GetGUI()->getDevice()->createTexture2DFromFile(String(path).c_str(), true);
+		//if(FAILED(DX_CALL(D3DXCreateTextureFromFileExW(GetGUI()->getDevice(), path.c_str(), D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT, 0, D3DFMT_FROM_FILE, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &m_pTexture))))
+		if(!m_pTexture)
 		{
 			printf("Unable to load texture \"%s\"\n", String(path).c_str());
 			m_iWidth = m_iHeight = 0;
@@ -233,14 +231,12 @@ namespace gui
 		}
 		else
 		{
-			D3DSURFACE_DESC _info;
-			DX_CALL(m_pTexture->GetLevelDesc(0, &_info));
-			m_iWidth = info.Width;
-			m_iHeight = info.Height;
+			m_iWidth = m_pTexture->getWidth();
+			m_iHeight = m_pTexture->getHeight();
 		}
 	}
 
-	IDirect3DTexture9 * CTexture::getAPItexture() const
+	IGXTexture2D * CTexture::getAPItexture() const
 	{
 		return(m_pTexture);
 	}

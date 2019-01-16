@@ -10,7 +10,7 @@ See the license in LICENSE
 #include <windows.h>
 #include <common/sxtypes.h>
 
-#define SM_D3D_CONVERSIONS
+//#define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>
 #include <render/gdata.h>
 
@@ -19,7 +19,7 @@ class CAxesStatic
 	struct CVertex
 	{
 		float3_t m_vPos;
-		D3DCOLOR m_dwColor;
+		GXCOLOR m_dwColor;
 	};
 public:
 	CAxesStatic();
@@ -30,8 +30,9 @@ public:
 
 protected:
 
-	IDirect3DVertexBuffer9 *m_pVertexBuffer;
-	IDirect3DVertexDeclaration9 *m_pVertexDeclaration;
+	IGXVertexBuffer *m_pVertexBuffer;
+	IGXRenderBuffer *m_pRenderBuffer = NULL;
+	IGXVertexDeclaration *m_pVertexDeclaration;
 };
 
 #endif

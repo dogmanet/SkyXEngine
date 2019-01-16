@@ -11,15 +11,15 @@ CGrid::CGrid()
 	m_pVertexBuffer = 0;
 	m_pVertexDeclaration = 0;
 
-	D3DVERTEXELEMENT9 DeclGrid[] =
+	GXVERTEXELEMENT DeclGrid[] =
 	{
-		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, 12, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 },
+		{ 0, 0,  GXDECLTYPE_FLOAT3,   GXDECLUSAGE_POSITION},
+		{ 0, 12, GXDECLTYPE_GXCOLOR,  GXDECLUSAGE_COLOR},
 
-		D3DDECL_END()
+		GXDECL_END()
 	};
 
-	gdata::pDXDevice->CreateVertexDeclaration(DeclGrid, &m_pVertexDeclaration);
+	m_pVertexDeclaration = gdata::pDXDevice->createVertexDeclaration(DeclGrid);
 }
 
 CGrid::~CGrid()
@@ -30,42 +30,40 @@ CGrid::~CGrid()
 
 void CGrid::create(int width, int depth, DWORD color)
 {
-	gdata::pDXDevice->CreateVertexBuffer(
-		width * depth * 2 * sizeof(CVertex),
-		D3DUSAGE_WRITEONLY,
-		0,
-		D3DPOOL_MANAGED,
-		&m_pVertexBuffer,
-		0);
+	m_pVertexBuffer = gdata::pDXDevice->createVertexBuffer(width * depth * 2 * sizeof(CVertex), GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
 
 	CVertex *pVertices;
-	m_pVertexBuffer->Lock(0, 0, (void**)&pVertices, 0);
-
-	int oCountVert = 0;
-
-	for (int x = -(width/2); x < (width/2) + 1; ++x)
+	if(m_pVertexBuffer->lock((void**)&pVertices, GXBL_WRITE))
 	{
-		pVertices[oCountVert].m_vPos = float3_t((float)x, 0.0f, (float)(-(depth / 2)));
-		pVertices[oCountVert].m_dwColor = color;
-		++oCountVert;
-		pVertices[oCountVert].m_vPos = float3_t((float)x, 0.0f, (float)(depth / 2));
-		pVertices[oCountVert].m_dwColor = color;
-		++oCountVert;
+
+		int oCountVert = 0;
+
+		for(int x = -(width / 2); x < (width / 2) + 1; ++x)
+		{
+			pVertices[oCountVert].m_vPos = float3_t((float)x, 0.0f, (float)(-(depth / 2)));
+			pVertices[oCountVert].m_dwColor = color;
+			++oCountVert;
+			pVertices[oCountVert].m_vPos = float3_t((float)x, 0.0f, (float)(depth / 2));
+			pVertices[oCountVert].m_dwColor = color;
+			++oCountVert;
+		}
+
+		for(int y = -(depth / 2); y < (depth / 2) + 1; ++y)
+		{
+			pVertices[oCountVert].m_vPos = float3_t((float)(-(width / 2)), 0.0f, (float)y);
+			pVertices[oCountVert].m_dwColor = color;
+			++oCountVert;
+			pVertices[oCountVert].m_vPos = float3_t((float)(width / 2), 0.0f, (float)y);
+			pVertices[oCountVert].m_dwColor = color;
+			++oCountVert;
+		}
+
+		m_pVertexBuffer->unlock();
+		m_iCountPoly = oCountVert / 2;
 	}
 
-	for (int y = -(depth / 2); y < (depth/2) + 1; ++y)
-	{
-		pVertices[oCountVert].m_vPos = float3_t((float)(-(width / 2)), 0.0f, (float)y);
-		pVertices[oCountVert].m_dwColor = color;
-		++oCountVert;
-		pVertices[oCountVert].m_vPos = float3_t((float)(width / 2), 0.0f, (float)y);
-		pVertices[oCountVert].m_dwColor = color;
-		++oCountVert;
-	}
+	m_pRenderBuffer = gdata::pDXDevice->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
 
-	m_pVertexBuffer->Unlock();
-
-	m_iCountPoly = oCountVert / 2;
 }
 
 void CGrid::render()
@@ -73,8 +71,9 @@ void CGrid::render()
 	gdata::pDXDevice->SetTexture(0, 0);
 
 	SGCore_ShaderUnBind();
-	gdata::pDXDevice->SetVertexDeclaration(m_pVertexDeclaration);
+	gdata::pDXDevice->setRenderBuffer(m_pRenderBuffer);
 
-	gdata::pDXDevice->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(CVertex));
-	gdata::pDXDevice->DrawPrimitive(D3DPT_LINELIST, 0, m_iCountPoly);
+	gdata::pDXDevice->setPrimitiveTopology(GXPT_LINELIST);
+
+	gdata::pDXDevice->drawPrimitive(0, m_iCountPoly);
 }

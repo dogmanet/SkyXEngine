@@ -8,12 +8,12 @@ See the license in LICENSE
 #define __SKY_H
 
 #include <gdefines.h>
-#include <d3d9.h>
+#include <graphix/graphix.h>
 #include <common/array.h>
 #include <common/String.h>
 #include "sxgcore.h"
 
-extern IDirect3DDevice9 *g_pDXDevice;
+extern IGXContext *g_pDXDevice;
 extern D3DCAPS9 g_dxCaps;
 extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 
@@ -80,7 +80,7 @@ public:
 protected:
 
 	//! декларация вершин
-	IDirect3DVertexDeclaration9* m_pVertexDeclarationSkyBox;
+	IGXVertexDeclaration* m_pVertexDeclarationSkyBox;
 	
 	//! угол поворота
 	float m_fRotaionY;
@@ -110,10 +110,12 @@ protected:
 	ID m_idTex2;
 
 	//! вершинный буфер
-	IDirect3DVertexBuffer9 *m_pVertices;
+	IGXVertexBuffer *m_pVertices;
 
 	//! индексный буфер
-	IDirect3DIndexBuffer9  *m_pIndeces;
+	IGXIndexBuffer  *m_pIndeces;
+
+	IGXRenderBuffer *m_pRenderBuffer;
 
 	//! вершинный шейдер
 	ID m_idVS;
@@ -194,7 +196,7 @@ public:
 private:
 
 	//! декларация вершин
-	IDirect3DVertexDeclaration9 *m_pVertexDeclarationClouds;
+	IGXVertexDeclaration *m_pVertexDeclarationClouds;
 
 	//! коэфициент прозарчности
 	float m_fAlpha;
@@ -229,10 +231,12 @@ private:
 	float m_fBias;
 
 	//! вершинный буфер
-	IDirect3DVertexBuffer9 *m_pVertices;
+	IGXVertexBuffer *m_pVertices;
 
 	//! индексный буфер
-	IDirect3DIndexBuffer9 *m_pIndeces;
+	IGXIndexBuffer *m_pIndeces;
+
+	IGXRenderBuffer *m_pRenderBuffer;
 
 	//! первая (основная текстура)
 	ID m_idTex1;

@@ -11,15 +11,15 @@ CAxesStatic::CAxesStatic()
 	m_pVertexBuffer = 0;
 	m_pVertexDeclaration = 0;
 
-	D3DVERTEXELEMENT9 DeclGrid[] =
+	GXVERTEXELEMENT DeclGrid[] =
 	{
-		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, 12, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 },
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_GXCOLOR, GXDECLUSAGE_COLOR},
 
-		D3DDECL_END()
+		GXDECL_END()
 	};
 
-	gdata::pDXDevice->CreateVertexDeclaration(DeclGrid, &m_pVertexDeclaration);
+	m_pVertexDeclaration = gdata::pDXDevice->createVertexDeclaration(DeclGrid);
 }
 
 CAxesStatic::~CAxesStatic()
@@ -30,36 +30,35 @@ CAxesStatic::~CAxesStatic()
 
 void CAxesStatic::create(float len)
 {
-	gdata::pDXDevice->CreateVertexBuffer(
-		3 * 2 * sizeof(CVertex),
-		D3DUSAGE_WRITEONLY,
-		0,
-		D3DPOOL_MANAGED,
-		&m_pVertexBuffer,
-		0);
+	m_pVertexBuffer = gdata::pDXDevice->createVertexBuffer(3 * 2 * sizeof(CVertex), GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
 
 	CVertex *pVertices;
-	m_pVertexBuffer->Lock(0, 0, (void**)&pVertices, 0);
 
-	pVertices[0].m_vPos = float3_t(0, 0.001f, 0);
-	pVertices[0].m_dwColor = D3DCOLOR_ARGB(255, 255, 0, 0);
+	if(m_pVertexBuffer->lock((void**)&pVertices, GXBL_WRITE))
+	{
 
-	pVertices[1].m_vPos = float3_t(len, 0.001f, 0);
-	pVertices[1].m_dwColor = D3DCOLOR_ARGB(255, 255, 0, 0);
+		pVertices[0].m_vPos = float3_t(0, 0.001f, 0);
+		pVertices[0].m_dwColor = D3DCOLOR_ARGB(255, 255, 0, 0);
 
-	pVertices[2].m_vPos = float3_t(0, 0.001f, 0);
-	pVertices[2].m_dwColor = D3DCOLOR_ARGB(255, 0, 255, 0);
+		pVertices[1].m_vPos = float3_t(len, 0.001f, 0);
+		pVertices[1].m_dwColor = D3DCOLOR_ARGB(255, 255, 0, 0);
 
-	pVertices[3].m_vPos = float3_t(0, len, 0);
-	pVertices[3].m_dwColor = D3DCOLOR_ARGB(255, 0, 255, 0);
+		pVertices[2].m_vPos = float3_t(0, 0.001f, 0);
+		pVertices[2].m_dwColor = D3DCOLOR_ARGB(255, 0, 255, 0);
 
-	pVertices[4].m_vPos = float3_t(0, 0.001f, 0);
-	pVertices[4].m_dwColor = D3DCOLOR_ARGB(255, 0, 0, 255);
+		pVertices[3].m_vPos = float3_t(0, len, 0);
+		pVertices[3].m_dwColor = D3DCOLOR_ARGB(255, 0, 255, 0);
 
-	pVertices[5].m_vPos = float3_t(0, 0.001f, len);
-	pVertices[5].m_dwColor = D3DCOLOR_ARGB(255, 0, 0, 255);
+		pVertices[4].m_vPos = float3_t(0, 0.001f, 0);
+		pVertices[4].m_dwColor = D3DCOLOR_ARGB(255, 0, 0, 255);
 
-	m_pVertexBuffer->Unlock();
+		pVertices[5].m_vPos = float3_t(0, 0.001f, len);
+		pVertices[5].m_dwColor = D3DCOLOR_ARGB(255, 0, 0, 255);
+
+		m_pVertexBuffer->unlock();
+	}
+
+	m_pRenderBuffer = gdata::pDXDevice->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
 }
 
 void CAxesStatic::render()
@@ -67,8 +66,8 @@ void CAxesStatic::render()
 	gdata::pDXDevice->SetTexture(0, 0);
 	//gdata::pDXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 	SGCore_ShaderUnBind();
-	gdata::pDXDevice->SetVertexDeclaration(m_pVertexDeclaration);
-	//gdata::pDXDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-	gdata::pDXDevice->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(CVertex));
-	gdata::pDXDevice->DrawPrimitive(D3DPT_LINELIST, 0, 3);
+	gdata::pDXDevice->setRenderBuffer(m_pRenderBuffer);
+	gdata::pDXDevice->setPrimitiveTopology(GXPT_LINELIST);
+
+	gdata::pDXDevice->drawPrimitive(0, 3);
 }

@@ -713,18 +713,23 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 	//очищаем рт глубины  максимальным значением
 	//чтобы там где нет окружения к примеру был скайбокс, а значит в рт глубины было максимальное значение - максимальная отдаленность
 	gdata::pDXDevice->SetRenderTarget(3, DepthMapLinearSurf);
-	gdata::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 255, 255, 255), 1.0f, 0);
+	gdata::pDXDevice->setClearColor(float4_t(1.0f, 1.0f, 1.0f, 1.0f));
+	gdata::pDXDevice->clearTarget();
 	gdata::pDXDevice->SetRenderTarget(3, 0);	//убираем рт глубины
 
 	gdata::pDXDevice->SetRenderTarget(1, NormalSurf);
 	gdata::pDXDevice->SetRenderTarget(2, ParamSurf);
-	gdata::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	gdata::pDXDevice->setClearColor(float4_t(0.0f, 0.0f, 0.0f, 0.0f));
+	gdata::pDXDevice->clearTarget();
 	gdata::pDXDevice->SetRenderTarget(1, 0);
 	gdata::pDXDevice->SetRenderTarget(2, 0);
 
 	gdata::pDXDevice->GetRenderTarget(0, &BackBuf);
 	gdata::pDXDevice->SetRenderTarget(0, ColorSurf);
-	gdata::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, RENDER_DEFAUL_BACKGROUND_COLOR/*D3DCOLOR_ARGB(0, 0, 0, 0)*/, 1.0f, 0);
+
+	gdata::pDXDevice->setClearColor(RENDER_DEFAUL_BACKGROUND_COLOR);
+	gdata::pDXDevice->clearTarget();
+	gdata::pDXDevice->clearDepth(1.0f);
 
 	gdata::pDXDevice->SetRenderTarget(1, NormalSurf);
 	gdata::pDXDevice->SetRenderTarget(2, ParamSurf);
@@ -806,7 +811,7 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 
 			gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 			gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
-			gdata::pDXDevice->Clear(0, 0, D3DCLEAR_STENCIL, 0, 1.0f, 0);
+			gdata::pDXDevice->clearStencil(0);
 
 			gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 			gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
@@ -967,7 +972,10 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 					if (SGCore_SkyCloudsIsLoadTex())
 						SGCore_SkyCloudsRender(timeDelta, &float3(gdata::vConstCurrCamPos.x, gdata::vConstCurrCamPos.y + 150, gdata::vConstCurrCamPos.z), true);
 					else
-						gdata::pDXDevice->Clear(0, 0, D3DCLEAR_TARGET, 0, 1.0f, 0);
+					{
+						gdata::pDXDevice->setClearColor(float4_t(0.0f, 0.0f, 0.0f, 0.0f));
+						gdata::pDXDevice->clearTarget();
+					}
 
 					SetSamplerAddress(0, D3DTADDRESS_WRAP);
 					SetSamplerAddress(1, D3DTADDRESS_WRAP);
@@ -1054,7 +1062,8 @@ void rfunc::RenderSky(DWORD timeDelta)
 	gdata::pDXDevice->GetRenderTarget(0, &BackBuf);
 	gdata::pDXDevice->SetRenderTarget(0, ColorSurf);
 
-	gdata::pDXDevice->Clear(0, 0, D3DCLEAR_TARGET, RENDER_DEFAUL_BACKGROUND_COLOR, 1.0f, 0);
+	gdata::pDXDevice->setClearColor(RENDER_DEFAUL_BACKGROUND_COLOR);
+	gdata::pDXDevice->clearTarget();
 
 	SetSamplerFilter(0, 2, D3DTEXF_ANISOTROPIC);
 
@@ -1118,7 +1127,9 @@ void rfunc::ComLighting(DWORD timeDelta)
 	gdata::pDXDevice->SetRenderTarget(1, pSpecDiffSurf);
 
 	//очищаем рт и стенсил
-	gdata::pDXDevice->Clear(0, 0, D3DCLEAR_TARGET | D3DCLEAR_STENCIL, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	gdata::pDXDevice->setClearColor(float4_t(0,0,0,0));
+	gdata::pDXDevice->clearTarget();
+	gdata::pDXDevice->clearStencil();
 
 	//устанавка аддитивного смешивания
 	//когда к уже записанному будет прибавляться то что хотим записать
@@ -1357,7 +1368,8 @@ void rfunc::ComLighting(DWORD timeDelta)
 	gdata::pDXDevice->SetRenderTarget(0, pComLightSurf);
 
 	//очищаем рт (в старой версии было многопроходное смешивание)
-	gdata::pDXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	gdata::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
+	gdata::pDXDevice->clearTarget();
 
 	gdata::pDXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_COLOR));
 	gdata::pDXDevice->SetTexture(1, SGCore_GbufferGetRT(DS_RT_AMBIENTDIFF));
@@ -1399,7 +1411,8 @@ void rfunc::UnionLayers()
 		gdata::pDXDevice->SetRenderTarget(1, pDepthSurf);
 		SGCore_GbufferGetRT(DS_RT_DEPTH1)->GetSurfaceLevel(0, &pColor2Surf);
 		gdata::pDXDevice->SetRenderTarget(2, pColor2Surf);
-		gdata::pDXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+		gdata::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
+		gdata::pDXDevice->clearTarget();
 		gdata::pDXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_COLOR));
 		gdata::pDXDevice->SetTexture(1, SGCore_GbufferGetRT(DS_RT_SCENELIGHT));
 		gdata::pDXDevice->SetTexture(2, SGCore_GbufferGetRT(DS_RT_DEPTH));
@@ -1427,7 +1440,8 @@ void rfunc::UnionLayers()
 		SGCore_GbufferGetRT(DS_RT_DEPTH1)->GetSurfaceLevel(0, &pDepthSurf1);
 		gdata::pDXDevice->SetRenderTarget(0, pDepthSurf1);
 
-		gdata::pDXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+		gdata::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
+		gdata::pDXDevice->clearTarget();
 
 		gdata::pDXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_DEPTH));
 

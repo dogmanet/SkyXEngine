@@ -21,7 +21,7 @@ See the license in LICENSE
 #include <common/sxtypes.h>
 #include <common/file_utils.h>
 
-#define SM_D3D_CONVERSIONS
+//#define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>
 
 #include <render/gdata.h>

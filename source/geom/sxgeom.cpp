@@ -11,7 +11,7 @@ See the license in LICENSE
 
 //##########################################################################
 
-IDirect3DDevice9 *g_pDXDevice = 0;
+IGXContext *g_pDXDevice = 0;
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT

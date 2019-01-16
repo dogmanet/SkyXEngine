@@ -8,8 +8,8 @@ See the license in LICENSE
 
 namespace pe_data
 {
-	IDirect3DDevice9 *pDXDevice = 0;
-	IDirect3DVertexDeclaration9 *pVertexDeclarationParticles = 0;
+	IGXContext *pDXDevice = 0;
+	IGXVertexDeclaration *pVertexDeclarationParticles = 0;
 
 	void Init(IDirect3DDevice9 *pDevice);
 
@@ -45,22 +45,22 @@ void pe_data::Init()
 {
 	pe_data::pDXDevice = SGCore_GetDXDevice();
 
-	D3DVERTEXELEMENT9 oInstanceParticles[] =
+	GXVERTEXELEMENT oInstanceParticles[] =
 	{
-		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-
-		{ 1, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
-		{ 1, 12, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
-		{ 1, 28, D3DDECLTYPE_FLOAT1, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 3 },
-		{ 1, 32, D3DDECLTYPE_FLOAT1, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 4 },
-
-		{ 1, 36, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 5 },
-		{ 1, 44, D3DDECLTYPE_FLOAT1, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 6 },
-		D3DDECL_END()
+		{ 0, 0,  GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{ 0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+				 					
+		{ 1, 0,  GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1},
+		{ 1, 12, GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD2},
+		{ 1, 28, GXDECLTYPE_FLOAT1, GXDECLUSAGE_TEXCOORD3},
+		{ 1, 32, GXDECLTYPE_FLOAT1, GXDECLUSAGE_TEXCOORD4},
+				 					
+		{ 1, 36, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD5},
+		{ 1, 44, GXDECLTYPE_FLOAT1, GXDECLUSAGE_TEXCOORD6},
+		GXDECL_END()
 	};
 
-	pe_data::pDXDevice->CreateVertexDeclaration(oInstanceParticles, &pe_data::pVertexDeclarationParticles);
+	pe_data::pVertexDeclarationParticles = pe_data::pDXDevice->createVertexDeclaration(oInstanceParticles);
 
 	pe_data::shader_id::vs::idParticlesTrack = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "particles_track.vs", "particles_track.vs", SHADER_CHECKDOUBLE_PATH);
 	pe_data::shader_id::ps::idParticlesTrack = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_track.ps", "particles_track.ps", SHADER_CHECKDOUBLE_PATH);

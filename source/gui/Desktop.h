@@ -59,7 +59,7 @@ namespace gui
 		//dom::IDOMnodeCollection m_cTmpNodes;
 
 		IDirect3DSurface9 * m_pRenderSurface;
-		IDirect3DSurface9 * m_pDepthStencilSurface;
+		IGXDepthStencilSurface * m_pDepthStencilSurface;
 
 		StringW m_sName;
 

@@ -89,12 +89,23 @@ DecalManager::DecalManager():
 	}
 	
 	mem_release(config);
+
+	GXVERTEXELEMENT vel[] = {
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
+		{0, 24, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		GXDECL_END()
+	};
+
+	m_pVertexDeclaration = dev->createVertexDeclaration(vel);
 }
 
 DecalManager::~DecalManager()
 {
 	clear();
+	mem_release(m_pRenderBuffer);
 	mem_release(m_pVertexBuffer);
+	mem_release(m_pVertexDeclaration);
 }
 
 int DecalManager::addDecal(Decal * pDecal)
@@ -594,7 +605,7 @@ void DecalManager::render()
 		return;
 	}
 
-	dev->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1);
+	// set shaders
 
 	dev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
@@ -615,11 +626,13 @@ void DecalManager::render()
 		SkyXEngine::Core::Data::MaterialsManager->Render(m_vDecals[i]->m_material, &SMMatrixIdentity(), 0);
 		SkyXEngine::Core::Data::Device->DrawPrimitiveUP(D3DPT_TRIANGLELIST, m_vDecals[i]->iVertCount / 3, m_vDecals[i]->m_pVerts, sizeof(DecalVertex));
 	}*/
-	DX_CALL(dev->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(DecalVertex)));
+	dev->setRenderBuffer(m_pRenderBuffer);
+	dev->setPrimitiveTopology(GXPT_TRIANGLELIST);
+
 	for(UINT i = 0; i < m_iRngs.size(); i++)
 	{
 		SGCore_MtlSet(m_iRngs[i].iMaterialId, &SMMatrixIdentity());
-		DX_CALL(dev->DrawPrimitive(D3DPT_TRIANGLELIST, m_iRngs[i].iStartVertex, m_iRngs[i].iVertexCount / 3));
+		dev->drawIndexed(m_iRngs[i].iStartVertex, m_iRngs[i].iVertexCount / 3);
 	}
 
 	dev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
@@ -655,6 +668,7 @@ void DecalManager::updateBuffer()
 	}
 
 	
+	mem_release(m_pRenderBuffer);
 	mem_release(m_pVertexBuffer);
 
 	if(iVC == 0)
@@ -663,9 +677,11 @@ void DecalManager::updateBuffer()
 		return;
 	}
 
-	DX_CALL(dev->CreateVertexBuffer(sizeof(DecalVertex)* iVC, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, 0));
+	m_pVertexBuffer = dev->createVertexBuffer(sizeof(DecalVertex) * iVC, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
+
+	
 	DecalVertex * pData;
-	if(!FAILED(DX_CALL(m_pVertexBuffer->Lock(0, sizeof(DecalVertex)* iVC, (void**)&pData, 0))))
+	if(m_pVertexBuffer->lock((void**)&pData, GXBL_WRITE))
 	{
 		iVC = 0;
 		for(AssotiativeArray<ID, Array<_DecalMatItem>>::Iterator i = m_MaterialSort.begin(); i; i++)
@@ -679,9 +695,10 @@ void DecalManager::updateBuffer()
 				iVC += i.second[0][j].m_pDecal->iVertCount;
 			}
 		}
-		m_pVertexBuffer->Unlock();
+		m_pVertexBuffer->unlock();
 	}
-	//m_pVertexBuffer
+
+	m_pRenderBuffer = dev->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
 
 	m_bNeedUpdate = false;
 }

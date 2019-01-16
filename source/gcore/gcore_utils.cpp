@@ -8,40 +8,36 @@ See the license in LICENSE
 
 void InitDevice(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlags)
 {
-	g_pD3D9 = Direct3DCreate9(D3D_SDK_VERSION);
-
-	if (!g_pD3D9)
+	m_hLibGXAPI;
+	char szModuleName[64];
+	sprintf_s(szModuleName, "gxgapi%s.dll", Core_0GetCommandLineArg("gapi", "dx9"));
+	m_hLibGXAPI = LoadLibrary(szModuleName);
+	if(!m_hLibGXAPI)
 	{
-		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none detected d3d", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unable to load GX: %s", GEN_MSG_LOCATION, szModuleName);
 		return;
 	}
 
-	D3DCAPS9 caps;
-	g_pD3D9->GetDeviceCaps(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &caps);
-	
-
-	memset(&g_oD3DAPP, 0, sizeof(g_oD3DAPP));
-	g_oD3DAPP.BackBufferWidth = iWidth;
-	g_oD3DAPP.BackBufferHeight = iHeight;
-	g_oD3DAPP.BackBufferFormat = D3DFMT_A8R8G8B8;
-	g_oD3DAPP.BackBufferCount = 1;
-	g_oD3DAPP.MultiSampleType = D3DMULTISAMPLE_NONE;
-	g_oD3DAPP.MultiSampleQuality = 0;
-	g_oD3DAPP.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	g_oD3DAPP.hDeviceWindow = hWnd;
-	g_oD3DAPP.Windowed = isWindowed;
-	g_oD3DAPP.EnableAutoDepthStencil = true;
-	g_oD3DAPP.AutoDepthStencilFormat = D3DFMT_D24S8;
-	g_oD3DAPP.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | dwFlags;
-	g_oD3DAPP.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-	g_oD3DAPP.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-
-	if (FAILED(g_pD3D9->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING | dwFlags | D3DCREATE_MULTITHREADED, &g_oD3DAPP, &g_pDXDevice)))
+	IGXContext * (*libGXGetInstance)();
+	libGXGetInstance = (IGXContext*(*)())GetProcAddress(m_hLibGXAPI, "GetInstance");
+	if(!libGXGetInstance)
 	{
-		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed initialized d3d", GEN_MSG_LOCATION);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - %s: Not a GX module!", GEN_MSG_LOCATION, szModuleName);
 		return;
 	}
-	g_pDXDevice->GetDeviceCaps(&g_dxCaps);
+
+	g_pDXDevice = libGXGetInstance();
+	if(!g_pDXDevice)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - %s: Cannot spawn GX context!", GEN_MSG_LOCATION, szModuleName);
+		return;
+	}
+
+	if(!g_pDXDevice->initContext(hWnd, iWidth, iHeight, isWindowed))
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - %s: Cannot init GX context!", GEN_MSG_LOCATION, szModuleName);
+		return;
+	}
 }
 
 void InitFPStext()
@@ -60,11 +56,11 @@ void InitFPStext()
 
 void InitFullScreenQuad()
 {
-	D3DVERTEXELEMENT9 oLayoutQuad[] =
+	GXVERTEXELEMENT oLayoutQuad[] =
 	{
-		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, 12, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
-		D3DDECL_END()
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD},
+		GXDECL_END()
 	};
 
 	D3DXCreateMesh(2, 4, D3DXMESH_MANAGED, oLayoutQuad, g_pDXDevice, &g_pScreenTexture);

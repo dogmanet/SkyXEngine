@@ -13,7 +13,7 @@ See the license in LICENSE
 #include <common/SXMath.h>
 #include <common/string_utils.h>
 
-#include <d3d9.h>
+#include <graphix/graphix.h>
 #include <gcore/sxgcore.h>
 #include "sxgreen.h"
 
@@ -67,7 +67,7 @@ public:
 	static bool m_isUseSortFrontToBackSplits;
 
 	//! direct3d device
-	static IDirect3DDevice9* m_pDXDevice;
+	static IGXContext* m_pDXDevice;
 
 	//######################################################################
 

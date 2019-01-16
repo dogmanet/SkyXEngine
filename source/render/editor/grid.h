@@ -10,7 +10,7 @@ See the license in LICENSE
 #include <windows.h>
 #include <common/sxtypes.h>
 
-#define SM_D3D_CONVERSIONS
+//#define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>
 #include <render/gdata.h>
 
@@ -19,7 +19,7 @@ class CGrid
 	struct CVertex
 	{
 		float3_t m_vPos;
-		D3DCOLOR m_dwColor;
+		GXCOLOR m_dwColor;
 	};
 public:
 
@@ -31,9 +31,10 @@ public:
 
 protected:
 
-	int m_iCountPoly;
-	IDirect3DVertexBuffer9 *m_pVertexBuffer;
-	IDirect3DVertexDeclaration9 *m_pVertexDeclaration;
+	int m_iCountPoly = 0;
+	IGXVertexBuffer *m_pVertexBuffer;
+	IGXRenderBuffer *m_pRenderBuffer = NULL;
+	IGXVertexDeclaration *m_pVertexDeclaration;
 };
 
 #endif

@@ -8,13 +8,12 @@ See the license in LICENSE
 #define __BOUND_H
 
 #include <common/SXMath.h>
-#include <d3dx9.h>
 #include "sxgcore.h"
 
-void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh ** ppMesh, IDirect3DDevice9 * pDevice,UINT iSideCount);
+void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh ** ppMesh, IGXContext * pDevice,UINT iSideCount);
 
-void ComputeBoundingBox(IDirect3DVertexBuffer9* vertex_buffer,ISXBound** bound,DWORD count_vert,DWORD bytepervert);
-void ComputeBoundingBox2(IDirect3DVertexBuffer9* vertex_buffer,ISXBound* bound,DWORD count_vert,DWORD bytepervert);
+void ComputeBoundingBox(IGXVertexBuffer* vertex_buffer,ISXBound** bound,DWORD count_vert,DWORD bytepervert);
+void ComputeBoundingBox2(IGXVertexBuffer* vertex_buffer, ISXBound* bound, DWORD count_vert, DWORD bytepervert);
 
 bool InPosition2D(const float3* min, const float3* max, const float3* pos);
 bool InPositionAbs2D(float3* min,float3* max,float3* pos);
@@ -33,7 +32,7 @@ bool InPositionPoints3D(float3* min,float3* max,float3* p1,float3* p2,float3* p3
 void ComputeBoundingBoxArr8(ISXBound* bound,ISXBound** bound_arr);
 void ComputeBoundingBoxArr4(ISXBound* bound,ISXBound** bound_arr);
 
-void CreateBoundingBoxMesh(const float3* min, const float3* max, ID3DXMesh** bbmesh, IDirect3DDevice9* device);
+void CreateBoundingBoxMesh(const float3* min, const float3* max, ID3DXMesh** bbmesh, IGXContext* device);
 
 //простой объект с минимальным описанием
 //для корректного использования необходимо сначала установить позицию/поворот/масштаб после чего CalculateWorld
@@ -89,8 +88,8 @@ public:
 	SX_ALIGNED_OP_MEM;
 
 	void calcBound(vertex_static_ex *pVertexBuffer, int iCountVertex, int iBytePerVertex);
-	void calcBound(IDirect3DVertexBuffer9 *pVertexBuffer, int iCountVertex, int iBytePerVertex);
-	void calcBoundIndex(IDirect3DVertexBuffer9 *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex);
+	void calcBound(IGXVertexBuffer *pVertexBuffer, int iCountVertex, int iBytePerVertex);
+	void calcBoundIndex(IGXVertexBuffer *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex);
 	void calcBoundIndex(vertex_static_ex *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex);
 
 	//функция просчета мировой матрицы и трансформации минимума и максимума

@@ -8,7 +8,7 @@ See the license in LICENSE
 #define __PE_DATA_H
 
 #include <gdefines.h>
-#include <d3d9.h>
+#include <graphix/graphix.h>
 #include <gcore/sxgcore.h>
 
 namespace pe_data

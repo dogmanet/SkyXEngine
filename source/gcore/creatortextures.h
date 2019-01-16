@@ -9,10 +9,10 @@ See the license in LICENSE
 
 #include <gdefines.h>
 #include <stdio.h>
-#include <d3d9.h>
+#include <graphix/graphix.h>
 #include <common/array.h>
 
-extern IDirect3DDevice9 *g_pDXDevice;
+extern IGXContext *g_pDXDevice;
 extern D3DCAPS9 g_dxCaps;
 extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 
@@ -20,7 +20,7 @@ extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 struct CreatedTexture
 {
 	char Name[64];	//имя
-	IDirect3DTexture9* Texture;	//текстура
+	IGXTexture2D* Texture;	//текстура
 	D3DSURFACE_DESC Desc;		//описание текстуры, для восстановления
 	UINT Level;
 	float CoefFullScreen;		//если меньше 0 то брать размер из Desc, иначе это коэфициент умножение размера экрана на это число
@@ -32,7 +32,7 @@ public:
 	CreatorTextures();
 	~CreatorTextures();
 
-	ID Add(UINT width, UINT height, UINT levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen);
+	ID Add(UINT width, UINT height, UINT levels, DWORD usage, GXFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen);
 
 	void Delete(const char* text);
 	void Delete(ID num);
@@ -42,8 +42,8 @@ public:
 	void OnLostDevice();
 	void OnResetDevice();
 
-	IDirect3DTexture9* GetTexture(const char* text);
-	IDirect3DTexture9* GetTexture(ID num);
+	IGXTexture2D* GetTexture(const char* text);
+	IGXTexture2D* GetTexture(ID num);
 private:
 	Array<CreatedTexture*> Arr;
 };

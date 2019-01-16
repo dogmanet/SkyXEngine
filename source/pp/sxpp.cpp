@@ -17,7 +17,7 @@ void SPP_ComEdgeDetected();
 
 namespace pp_data
 {
-	IDirect3DDevice9 *pDXDevice = 0;
+	IGXContext *pDXDevice = 0;
 	float3 vConstCurrCamPos;
 	float3 vConstCurrCamDir;
 	float2_t vWinSize = float2_t(640, 480);
@@ -459,7 +459,8 @@ SX_LIB_API void SPP_RenderSSAO(const float4_t *pParam, int iQuality)
 	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
 	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
 
-	pp_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	pp_data::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
+	pp_data::pDXDevice->clearTarget();
 
 	
 	SGCore_SetSamplerFilter2(0, 3, D3DTEXF_LINEAR);
@@ -880,8 +881,11 @@ SX_LIB_API void SPP_RenderLensFlare(const float3_t *pParam, const float4_t *pSun
 
 	if (pp_data::existsSun && pp_data::vSunPos.w < PP_MAX_ANGLE_VISIBLE_SUN && pSunColor->w > 0.3)
 	{
-		if (!useBloom)
-			pp_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+		if(!useBloom)
+		{
+			pp_data::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
+			pp_data::pDXDevice->clearTarget();
+		}
 
 		SGCore_SetSamplerFilter(0, D3DTADDRESS_MIRROR);
 		pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::idDepth0));
@@ -905,8 +909,11 @@ SX_LIB_API void SPP_RenderLensFlare(const float3_t *pParam, const float4_t *pSun
 	}
 	else
 	{
-		if (!useBloom)
-			pp_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+		if(!useBloom)
+		{
+			pp_data::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
+			pp_data::pDXDevice->clearTarget();
+		}
 	}
 
 	pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
@@ -1134,7 +1141,7 @@ void SPP_ComEdgeDetected()
 	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	pp_data::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
 
-	pp_data::pDXDevice->Clear(0, 0, D3DCLEAR_STENCIL, 0, 1.0f, 0);
+	pp_data::pDXDevice->clearStencil(0);
 
 	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, TRUE);
 
@@ -1181,7 +1188,8 @@ SX_LIB_API void SPP_RenderNFAA(const float3_t *pParam)
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 	SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->GetSurfaceLevel(0, &RenderSurf);
 
-	pp_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	pp_data::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
+	pp_data::pDXDevice->clearTarget();
 
 	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
 	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
@@ -1227,7 +1235,8 @@ SX_LIB_API void SPP_RenderDLAA()
 	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
 	SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->GetSurfaceLevel(0, &RenderSurf);
 
-	pp_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	pp_data::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
+	pp_data::pDXDevice->clearTarget();
 
 	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
 	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);

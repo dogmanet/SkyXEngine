@@ -9,7 +9,7 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
-#define SM_D3D_CONVERSIONS
+//#define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>
 #include <common/array.h>
 
@@ -23,7 +23,7 @@ namespace light_data
 
 	void ReCalcSize();
 
-	extern IDirect3DDevice9 *pDXDevice;
+	extern IGXContext *pDXDevice;
 	
 	//размер текстуры глубины дл¤ локальных источников света
 	extern float2_t vSizeTexDepthGlobal;

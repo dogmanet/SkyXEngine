@@ -15,7 +15,7 @@ int CGreen::m_iRenderFreqGrass = 100;
 float2_t CGreen::m_vDistLods = float2_t(50, 100);
 float CGreen::m_fDistGrassLessening = 30;
 bool CGreen::m_isUseSortFrontToBackSplits = false;
-IDirect3DDevice9* CGreen::m_pDXDevice = 0;
+IGXContext* CGreen::m_pDXDevice = 0;
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
