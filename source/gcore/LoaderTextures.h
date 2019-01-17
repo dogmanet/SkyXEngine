@@ -45,7 +45,7 @@ public:
 	void getName(ID id, char *szName);
 
 	//! создать место для текстуры tex
-	ID create(const char *szName, IDirect3DTexture9 *pTex);
+	ID create(const char *szName, IGXTexture2D *pTex);
 
 	//! перезагрузить текстуру name
 	ID update(const char *szName, LOAD_TEXTURE_TYPE type);
@@ -57,10 +57,10 @@ public:
 	void loadTextures();	
 
 	//! получить текстуру по id
-	IDirect3DTexture9* getTexture2d(ID id);
+	IGXTexture2D* getTexture2d(ID id);
 
 	//! получить текстуру по id
-	IDirect3DCubeTexture9* getTextureCube(ID id);
+	IGXTextureCube* getTextureCube(ID id);
 
 	//! загрузить все текстуры из директории szDir (относительно директории текстур) и присвоить им статус константные
 	bool addConstAllInDir(const char *szDir);
@@ -112,10 +112,10 @@ private:
 		String m_sName;
 
 		//! 2д текстура
-		IDirect3DTexture9 *m_pTex2d;
+		IGXTexture2D *m_pTex2d;
 
 		//! кубическая текстура
-		IDirect3DCubeTexture9 *m_pTexCube;
+		IGXTextureCube *m_pTexCube;
 
 		//! глобальный id директории
 		ID m_idDir;
@@ -137,13 +137,13 @@ private:
 	//**********************************************************************
 
 	//! загрузка 2d текстуры
-	IDirect3DTexture9* loadTexture2d(const char *szPath);
+	IGXTexture2D* loadTexture2d(const char *szPath);
 
 	//! загрузка кубической текстуры
-	IDirect3DCubeTexture9* loadTextureCube(const char *szPath);
+	IGXTextureCube* loadTextureCube(const char *szPath);
 
 	//! возвращает тип файла текстуры
-	D3DRESOURCETYPE getTypeFileTex(const char *szPath);
+	IGXSurface *getTypeFileTex(const char *szPath);
 };
 
 #endif

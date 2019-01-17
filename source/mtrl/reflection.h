@@ -61,7 +61,7 @@ public:
 	void postRenderRefPlane();
 
 	//! возвращает текстуру с плоским отражением
-	IDirect3DTexture9* getRefPlaneTex();
+	IGXTexture2D* getRefPlaneTex();
 
 	//**********************************************************************
 
@@ -79,7 +79,7 @@ public:
 	
 
 	//! возвращает кубическую текстуру с отражением
-	IDirect3DCubeTexture9* getRefCubeTex();
+	IGXTextureCube* getRefCubeTex();
 
 	//! установить экстремумы
 	void setMinMax(const float3_t *pMin, const float3_t *pMax);
@@ -120,19 +120,19 @@ protected:
 	float4x4 m_mOldMatProj, m_mOldMatView, m_mOldMatViewProj;
 
 	//! указатель на бэк буфер
-	IDirect3DSurface9 *m_pBackBuffer;
+	IGXSurface *m_pBackBuffer;
 
 	//! текстура плоских отражений
-	IDirect3DTexture9 *m_pTexPlaneRef;
+	IGXTexture2D *m_pTexPlaneRef;
 
 	//! рабочий сюрфейс
-	IDirect3DSurface9 *m_pSurface;
+	IGXSurface *m_pSurface;
 
 	//! рабочая текстура
-	IDirect3DTexture9 *m_pTexWork;
+	IGXTexture2D *m_pTexWork;
 
 	//! текстура кубических отражений
-	IDirect3DCubeTexture9 *m_pTexCubeRef;
+	IGXTextureCube *m_pTexCubeRef;
 };
 
 #endif

@@ -421,6 +421,13 @@ typedef struct _GXSAMPLER_DESC
 	float fMaxLOD;
 } GXSAMPLER_DESC;
 
+typedef struct _GXMACRO
+{
+	const char *szName;
+	const char *szDefinition;
+
+} GXMACRO;
+
 //##########################################################################
 
 class IGXBaseInterface
@@ -579,13 +586,21 @@ public:
 	virtual void drawIndexed(UINT uVertexCount, UINT uPrimitiveCount, UINT uStartIndexLocation, int iBaseVertexLocation) = 0;
 	virtual void drawPrimitive(UINT uStartVertex, UINT uPrimitiveCount) = 0;
 
-	virtual IGXVertexShader * createVertexShader(const char * szFile) = 0;
+	// https://github.com/LukasBanana/XShaderCompiler/releases
+	// https://github.com/Thekla/hlslparser/tree/master/src
+	virtual IGXVertexShader * createVertexShader(const char * szFile, GXMACRO *pDefs = NULL) = 0;
 	virtual IGXVertexShader * createVertexShader(void *pData, UINT uSize) = 0;
 	virtual void destroyVertexShader(IGXVertexShader * pSH) = 0;
+	virtual void setVertexShaderConstantF(UINT uStartRegister, const float *pConstantData, UINT uVector4fCount) = 0;
+	virtual void setVertexShaderConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount) = 0;
+	virtual UINT getVertexShaderConstantLocation(const char *szConstName) = 0;
 
-	virtual IGXPixelShader * createPixelShader(const char * szFile) = 0;
+	virtual IGXPixelShader * createPixelShader(const char * szFile, GXMACRO *pDefs = NULL) = 0;
 	virtual IGXPixelShader * createPixelShader(void *pData, UINT uSize) = 0;
 	virtual void destroyPixelShader(IGXPixelShader * pSH) = 0;
+	virtual void setPixelShaderConstantF(UINT uStartRegister, const float *pConstantData, UINT uVector4fCount) = 0;
+	virtual void setPixelShaderConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount) = 0;
+	virtual UINT getPixelShaderConstantLocation(const char *szConstName) = 0;
 
 	// virtual void setVertexShader(IGXVertexShader * pSH) = 0;
 	// virtual void setPixelShader(IGXPixelShader * pSH) = 0;

@@ -27,7 +27,7 @@ extern ID3DXMesh *g_pScreenTexture;
 //##########################################################################
 
 //! инициализация устройства
-void InitDevice(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlags);
+void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlags);
 
 //! инициализация отладочной инфы
 void InitFPStext();

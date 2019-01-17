@@ -450,7 +450,7 @@ SX_LIB_API void SLight_ShadowNull();
 SX_LIB_API void SLight_ShadowGen(ID id);		
 
 //! возвращает текстуру с тенями (если вызывались функции сглаживания) то вренутся сглаженная
-SX_LIB_API IDirect3DTexture9* SLight_GetShadow();
+SX_LIB_API IGXTexture2D* SLight_GetShadow();
 
 //! сглаживание текущей тени
 SX_LIB_API void SLight_ShadowSoft(

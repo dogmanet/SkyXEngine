@@ -24,7 +24,7 @@ namespace gcore_data
 		extern ID idLightSpecular;
 
 		extern Array<ID> aToneMaps;
-		extern Array<LPDIRECT3DSURFACE9> aSurfToneMap;
+		extern Array<IGXSurface*> aSurfToneMap;
 		extern int iCountArrToneMaps;
 
 		//**

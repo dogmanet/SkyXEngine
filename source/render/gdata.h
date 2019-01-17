@@ -40,10 +40,10 @@ namespace gdata
 	extern D3DCAPS9 dxDeviceCaps;
 
 	//! хэндл окна родителя окна рендера, на случай редакторов
-	extern HWND hHandleParent3D;	
+	extern SXWINDOW hHandleParent3D;	
 
 	//! хэндл окна рендера
-	extern HWND hHandle3D;		
+	extern SXWINDOW hHandle3D;
 	
 	//!< финальное изображение
 	extern DS_RT typeFinalImage;

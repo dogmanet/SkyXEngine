@@ -467,7 +467,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 @{*/
 
 //! инициализация движка
-void SkyXEngine_Init(HWND hWnd3D = 0, HWND hWndParent3D = 0, const char * szCmdLine = NULL);
+void SkyXEngine_Init(SXWINDOW hWnd3D = 0, SXWINDOW hWndParent3D = 0, const char * szCmdLine = NULL);
 
 //! инициализация путей в регистрах
 void SkyXEngine_InitPaths();
@@ -561,10 +561,10 @@ bool SkyXEngine_RFuncGreenIntersect(const float3 *pStart, const float3 *pFinish,
 @{*/
 
 //! загружает текстуру по указанному пути как превью изображение и возвращает
-IDirect3DTexture9* SkyXEngine_LoadAsPreviewData(const char *szPath);
+IGXTexture2D* SkyXEngine_LoadAsPreviewData(const char *szPath);
 
 //! возвращает загруженную текстуру с превью, в szPath путь до оригинала
-IDirect3DTexture9* SkyXEngine_GetPreviewData(const char *szPath);
+IGXTexture2D* SkyXEngine_GetPreviewData(const char *szPath);
 
 //! запускает генератор создания превью для игровых ресурсов
 void SkyXEngine_RunGenPreview();

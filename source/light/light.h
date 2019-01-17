@@ -131,7 +131,7 @@ public:
 
 	//-----------------------------------------------------------------------------
 
-	IDirect3DTexture9* getShadow2();
+	IGXTexture2D* getShadow2();
 
 	void shadowRenderBegin(ID id);
 	void shadowRenderEnd(ID id);

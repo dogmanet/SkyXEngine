@@ -156,7 +156,7 @@ public:
 	void mtlRefPreRenderPlane(ID id, D3DXPLANE *pPlane);
 	const IFrustum* mtlRefGetfrustum(ID id, int iCube);
 	void mtlRefPostRenderPlane(ID id);
-	IDirect3DTexture9* mtlRefPlaneGetTex(ID id);
+	IGXTexture2D* mtlRefPlaneGetTex(ID id);
 
 	void mtlRefSetMinMax(ID id, const float3_t *pMin, const float3_t *pMax);
 	bool mtlRefIsAllowedRender(ID id);
@@ -167,7 +167,7 @@ public:
 	void mtlRefCubeEndRender(ID id, const float3_t *pViewPos);
 	bool mtlRefUpdateCountUpdate(ID id, const float3_t *pViewPos);
 	void mtlRefNullingCountUpdate(ID id);
-	IDirect3DCubeTexture9* refCubeGetTex(ID id);
+	IGXTextureCube* refCubeGetTex(ID id);
 
 	//######################################################################
 

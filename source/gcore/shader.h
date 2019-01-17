@@ -36,7 +36,7 @@ struct CShader
 		m_iCountVar = 0;
 
 		ZeroMemory(m_aVarDesc, sizeof(D3DXCONSTANT_DESC)* SXGC_SHADER_VAR_MAX_COUNT);
-		ZeroMemory(m_aMacros, sizeof(D3DXMACRO)* SXGC_SHADER_COUNT_MACRO);
+		ZeroMemory(m_aMacros, sizeof(GXMACRO)* SXGC_SHADER_COUNT_MACRO);
 	}
 
 	~CShader()
@@ -60,7 +60,7 @@ struct CShader
 	D3DXCONSTANT_DESC m_aVarDesc[SXGC_SHADER_VAR_MAX_COUNT];
 
 	//! массив макросов (данные последнего макроса должны быть NULL)
-	D3DXMACRO m_aMacros[SXGC_SHADER_COUNT_MACRO];
+	GXMACRO m_aMacros[SXGC_SHADER_COUNT_MACRO];
 
 	//! буфер с бинарным кодом шейдера
 	ID3DXBuffer *m_pCode;
@@ -95,7 +95,7 @@ struct CShaderFileCache : public CShader
 		m_iCountVar = 0;
 		m_pCode = 0; 
 		ZeroMemory(m_aVarDesc, sizeof(D3DXCONSTANT_DESC)* SXGC_SHADER_VAR_MAX_COUNT);
-		ZeroMemory(m_aMacros, sizeof(D3DXMACRO)* SXGC_SHADER_COUNT_MACRO); 
+		ZeroMemory(m_aMacros, sizeof(GXMACRO)* SXGC_SHADER_COUNT_MACRO);
 		int qwert = 0;
 	}
 
@@ -148,14 +148,14 @@ uint32_t GetTimeShaderFileCache(const char *szPath);
 int LoadVertexShader(
 	const char *szPath,		//!< абсолютный путь до файла шейдера
 	CShaderVS *pShader,		//!< инициализированная структура CShaderVS
-	D3DXMACRO *aMacro = 0	//!< массив дефайнов
+	GXMACRO *aMacro = 0	//!< массив дефайнов
 	);
 
 //загрузка пиксельного шейдера
 int LoadPixelShader(
 	const char *szPath,		//!< абсолютный путь до файла шейдера
 	CShaderPS *pShader,		//!< инициализированная структура CShaderPS
-	D3DXMACRO *aMacro = 0	//!< массив дефайнов
+	GXMACRO *aMacro = 0	//!< массив дефайнов
 	);
 
 //**************************************************************************
@@ -171,7 +171,7 @@ public:
 	bool existsFile(const char *szPath);
 
 	//! добавление шейдера в очередь
-	ID preLoad(SHADER_TYPE type, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, D3DXMACRO *aMacros = 0);
+	ID preLoad(SHADER_TYPE type, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, GXMACRO *aMacros = 0);
 
 	//! загрузка всех шейдеров
 	void allLoad();

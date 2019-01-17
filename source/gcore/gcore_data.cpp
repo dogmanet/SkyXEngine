@@ -18,7 +18,7 @@ namespace gcore_data
 		ID idLightSpecular = -1;
 
 		Array<ID> aToneMaps;
-		Array<LPDIRECT3DSURFACE9> aSurfToneMap;
+		Array<IGXSurface*> aSurfToneMap;
 		int iCountArrToneMaps = 0;
 
 		//**

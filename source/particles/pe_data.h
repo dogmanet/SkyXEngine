@@ -13,8 +13,8 @@ See the license in LICENSE
 
 namespace pe_data
 {
-	extern IDirect3DDevice9 *pDXDevice;
-	extern IDirect3DVertexDeclaration9 *pVertexDeclarationParticles;
+	extern IGXContext *pDXDevice;
+	extern IGXVertexDeclaration *pVertexDeclarationParticles;
 
 	void Init();
 

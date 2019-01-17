@@ -1048,7 +1048,7 @@ void CShaderManager::setValueRegisterF(SHADER_TYPE type_shader, const char *szNa
 		}
 
 		if (num_shader != -1 && num_var != -1)
-			g_pDXDevice->SetPixelShaderConstantF(m_aPS[num_shader]->m_aVarDesc[num_var].RegisterIndex, (float*)pData, (iCountFloat4 == 0 ? m_aPS[num_shader]->m_aVarDesc[num_var].RegisterCount : iCountFloat4));
+			g_pDXDevice->setPixelShaderConstantF(m_aPS[num_shader]->m_aVarDesc[num_var].RegisterIndex, (float*)pData, (iCountFloat4 == 0 ? m_aPS[num_shader]->m_aVarDesc[num_var].RegisterCount : iCountFloat4));
 		else
 		{
 			if (num_shader == -1)

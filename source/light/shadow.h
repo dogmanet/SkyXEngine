@@ -36,8 +36,8 @@ public:
 	void begin();
 	void end();
 
-	void genShadow(IDirect3DTexture9 *pShadowMap);
-	void genShadowAll(IDirect3DTexture9 *pShadowMap);
+	void genShadow(IGXTexture2D *pShadowMap);
+	void genShadowAll(IGXTexture2D *pShadowMap);
 	
 	void setPosition(const float3 *pPos);
 	void getPosition(float3 *pPos);
@@ -56,7 +56,7 @@ public:
 
 	int m_aIsUpdate[5];
 	float2 m_aNearFar[5];
-	IDirect3DTexture9 *m_aDepthMaps[5];
+	IGXTexture2D *m_aDepthMaps[5];
 
 protected:
 
@@ -72,16 +72,16 @@ protected:
 	//генерация теней для 4 сплитов, иначе для 3
 	bool Generating4Slits;
 	
-	IDirect3DSurface9*	DepthSurfaces[5];
-	IDirect3DSurface9*	DepthStencilSurface;
+	IGXSurface*	DepthSurfaces[5];
+	IGXDepthStencilSurface*	DepthStencilSurface;
 	float4x4 Views[5];
 	float4x4 Projs[5];
 	float4x4 ViewProj[5];
 	float4x4 OldView,OldProj,OldViewProj;
 	float4x4 ScaleBiasMat;
 	
-	IDirect3DSurface9* OldDepthStencilSurface;
-	IDirect3DSurface9* OldColorSurface;
+	IGXDepthStencilSurface* OldDepthStencilSurface;
+	IGXSurface* OldColorSurface;
 };
 
 //##########################################################################
@@ -199,7 +199,7 @@ public:
 	void post(int cube);
 	void end();
 
-	void genShadow(IDirect3DTexture9* shadowmap);
+	void genShadow(IGXTexture2D* shadowmap);
 
 	void setIDArr(long id, int split, long idarr);
 	long getCountIDArrs();

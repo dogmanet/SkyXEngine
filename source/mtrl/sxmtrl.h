@@ -542,7 +542,7 @@ SX_LIB_API void SMtrl_RefPreRenderPlane(
 SX_LIB_API void SMtrl_RefPostRenderPlane(ID id);			
 
 //! возвращает текстуру с плоским отражением (если оно есть, иначе 0)
-SX_LIB_API IDirect3DTexture9* SMtrl_RefGetTexPlane(ID id);	
+SX_LIB_API IGXTexture2D* SMtrl_RefGetTexPlane(ID id);	
 
 //!@}
 
@@ -583,7 +583,7 @@ SX_LIB_API void SMtrl_RefCubeEndRender(
 	);	
 
 //! возвращает cube текстуру отражением (если оно есть, иначе 0)
-SX_LIB_API IDirect3DCubeTexture9* SMtrl_RefCubeGetTex(ID id);	
+SX_LIB_API IGXTextureCube* SMtrl_RefCubeGetTex(ID id);	
 
 //!@}
 

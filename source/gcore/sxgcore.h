@@ -77,7 +77,7 @@ SX_LIB_API void SGCore_Dbg_Set(report_func fnReport);
 //! инициализация подсистемы
 SX_LIB_API void SGCore_0Create(
 	const char *szName,			//!< передваваемое имя подсистемы
-	HWND hWnd,					//!< дескриптор окна в которое будет осуществляться рендер
+	SXWINDOW hWnd,					//!< дескриптор окна в которое будет осуществляться рендер
 	int iWidth,					//!< ширина области рендера
 	int iHeigth,				//!< высота области рендера
 	bool isWindowed,			//!< оконный режим использовать ли? иначе полноэкранный
@@ -86,7 +86,7 @@ SX_LIB_API void SGCore_0Create(
 	);
 
 //! возвращает HWND окна рендера
-SX_LIB_API HWND SGCore_GetHWND();
+SX_LIB_API SXWINDOW SGCore_GetHWND();
 
 //! уничтожение либы
 SX_LIB_API void SGCore_AKill();	
@@ -277,7 +277,7 @@ enum DS_RT
 SX_LIB_API ID SGCore_GbufferGetRT_ID(DS_RT type);
 
 //! текстура render target по его типу
-SX_LIB_API IDirect3DTexture9* SGCore_GbufferGetRT(DS_RT type);
+SX_LIB_API IGXTexture2D* SGCore_GbufferGetRT(DS_RT type);
 
 SX_LIB_API void SGCore_ToneMappingCom(DWORD timeDelta, float factor_adapted);
 
@@ -418,7 +418,7 @@ SX_LIB_API ID SGCore_ShaderLoad(
 	const char *szPath,				//!< имя файла шейдера с расширением
 	const char *szName,				//!< имя шейдера которое присвоится при загрузке
 	SHADER_CHECKDOUBLE check_double,//!< проверять ли на уникальность
-	D3DXMACRO *pMacro = 0			//!< макросы
+	GXMACRO *pMacro = 0			//!< макросы
 	);
 
 //! существует ли файл name в папке с шейдерами
@@ -611,7 +611,7 @@ SX_LIB_API void SGCore_LoadTexGetName(ID idTexture, char *szName);
 /*! создать место для текстуры tex и присвоить ей имя name, возвращает id
  \warning создавать текстур необходимо в managed pool (D3DPOOL_MANAGED) ибо обработка потери и восстановления устройства сюда не приходит
 */
-SX_LIB_API ID SGCore_LoadTexCreate(const char *szName, IDirect3DTexture9 *pTexture);
+SX_LIB_API ID SGCore_LoadTexCreate(const char *szName, IGXTexture2D *pTexture);
 
 /*! обновить/перезагрузить текстуру name, если текстуры не было в списке то добавляет.
 Если текстуру надо обновить, но тип у нее заранее не известен, но она точно уже загружена  
@@ -623,10 +623,10 @@ SX_LIB_API ID SGCore_LoadTexUpdateN(const char *szName, LOAD_TEXTURE_TYPE type);
 SX_LIB_API void SGCore_LoadTexUpdate(ID idTexture);
 
 //! возвращает текстуру по id
-SX_LIB_API IDirect3DTexture9* SGCore_LoadTexGetTex(ID idTexture);
+SX_LIB_API IGXTexture2D* SGCore_LoadTexGetTex(ID idTexture);
 
 //! возвращает текстуру по id
-SX_LIB_API IDirect3DCubeTexture9* SGCore_LoadTexGetTexCube(ID idTexture);
+SX_LIB_API IGXTextureCube* SGCore_LoadTexGetTexCube(ID idTexture);
 
 //! загрузка всех текстур поставленных в очередь, если есть очередь
 SX_LIB_API void SGCore_LoadTexAllLoad();	
@@ -646,7 +646,7 @@ SX_LIB_API ID SGCore_RTAdd(
 	UINT iHeight,			//!< высота
 	UINT iLevels,			//!< количество mip-map уровней
 	DWORD dwUsage,			//!< признак применения, возможные значения из D3DUSAGE_
-	D3DFORMAT format,		//!< формат из D3DFORMAT
+	GXFORMAT format,		//!< формат из D3DFORMAT
 	D3DPOOL pool,			//!< где будет размещена текстура, из D3DPOOL
 	const char *szName,		//!< имя rt
 	/*! коэфициент размеров rt относительно области рендера 
