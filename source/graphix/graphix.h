@@ -255,6 +255,172 @@ typedef enum _GXCUBEMAP_FACES
 	GXCUBEMAP_FACE_FORCE_DWORD = 0x7fffffff
 } GXCUBEMAP_FACES;
 
+
+typedef enum _GXBLEND
+{
+	GXBLEND_ZERO = 1,
+	GXBLEND_ONE = 2,
+	GXBLEND_SRC_COLOR = 3,
+	GXBLEND_INV_SRC_COLOR = 4,
+	GXBLEND_SRC_ALPHA = 5,
+	GXBLEND_INV_SRC_ALPHA = 6,
+	GXBLEND_DEST_ALPHA = 7,
+	GXBLEND_INV_DEST_ALPHA = 8,
+	GXBLEND_DEST_COLOR = 9,
+	GXBLEND_INV_DEST_COLOR = 10,
+	GXBLEND_SRC_ALPHA_SAT = 11,
+	GXBLEND_BLEND_FACTOR = 14,
+	GXBLEND_INV_BLEND_FACTOR = 15,
+	GXBLEND_SRC1_COLOR = 16,
+	GXBLEND_INV_SRC1_COLOR = 17,
+	GXBLEND_SRC1_ALPHA = 18,
+	GXBLEND_INV_SRC1_ALPHA = 19
+} 	GXBLEND;
+
+typedef enum _GXBLEND_OP
+{
+	GXBLEND_OP_ADD = 1,
+	GXBLEND_OP_SUBTRACT = 2,
+	GXBLEND_OP_REV_SUBTRACT = 3,
+	GXBLEND_OP_MIN = 4,
+	GXBLEND_OP_MAX = 5
+} 	GXBLEND_OP;
+
+typedef enum _GXCOLOR_WRITE_ENABLE
+{
+	GXCOLOR_WRITE_ENABLE_RED = 1,
+	GXCOLOR_WRITE_ENABLE_GREEN = 2,
+	GXCOLOR_WRITE_ENABLE_BLUE = 4,
+	GXCOLOR_WRITE_ENABLE_ALPHA = 8,
+	GXCOLOR_WRITE_ENABLE_ALL = (((GXCOLOR_WRITE_ENABLE_RED | GXCOLOR_WRITE_ENABLE_GREEN) | GXCOLOR_WRITE_ENABLE_BLUE) | GXCOLOR_WRITE_ENABLE_ALPHA)
+} 	GXCOLOR_WRITE_ENABLE;
+
+
+// SetTextureStageState
+typedef struct _GXBLEND_DESC
+{
+	BOOL bAlphaToCoverageEnable;
+	BOOL bIndependentBlendEnabled;
+	struct GXBLEND_RT_DESC
+	{
+		BOOL bBlendEnable;
+		GXBLEND srcBlend;
+		GXBLEND destBlend;
+		GXBLEND_OP blendOp;
+		GXBLEND srcBlendAlpha;
+		GXBLEND destBlendAlpha;
+		GXBLEND_OP blendOpAlpha;
+		byte u8RenderTargetWriteMask;
+	} renderTarget[8];
+} GXBLEND_DESC;
+
+typedef enum _GXCOMPARISON_FUNC
+{
+	GXCOMPARISON_NEVER,
+	GXCOMPARISON_LESS,
+	GXCOMPARISON_EQUAL,
+	GXCOMPARISON_LESS_EQUAL,
+	GXCOMPARISON_GREATER,
+	GXCOMPARISON_NOT_EQUAL,
+	GXCOMPARISON_GREATER_EQUAL,
+	GXCOMPARISON_ALWAYS
+} GXCOMPARISON_FUNC;
+
+typedef enum _GXSTENCIL_OP
+{
+	GXSTENCIL_OP_KEEP,
+	GXSTENCIL_OP_ZERO,
+	GXSTENCIL_OP_REPLACE,
+	GXSTENCIL_OP_INCR_SAT,
+	GXSTENCIL_OP_DECR_SAT,
+	GXSTENCIL_OP_INVERT,
+	GXSTENCIL_OP_INCR,
+	GXSTENCIL_OP_DECR
+} GXSTENCIL_OP;
+
+typedef struct _GXDEPTH_STENCILOP_DESC
+{
+	GXSTENCIL_OP stencilFailOp;
+	GXSTENCIL_OP stencilDepthFailOp;
+	GXSTENCIL_OP stencilPassOp;
+	GXCOMPARISON_FUNC stencilFunc;
+} GXDEPTH_STENCILOP_DESC;
+
+typedef struct _GXDEPTH_STENCIL_DESC
+{
+	BOOL bDepthEnable;
+	BOOL bEnableDepthWrite;
+	GXCOMPARISON_FUNC depthFunc;
+	BOOL bStencilEnable;
+	byte u8StencilReadMask;
+	byte u8StencilWriteMask;
+	GXDEPTH_STENCILOP_DESC frontFace;
+	GXDEPTH_STENCILOP_DESC backFace;
+} GXDEPTH_STENCIL_DESC;
+
+typedef enum _GXFILL_MODE
+{
+	GXFILL_WIREFRAME,
+	GXFILL_SOLID
+} GXFILL_MODE;
+
+typedef enum _GXCULL_MODE
+{
+	GXCULL_NONE,  // Always draw all triangles.
+	GXCULL_FRONT, // Do not draw triangles that are front - facing
+	GXCULL_BACK	  // Do not draw triangles that are back - facing.
+} GXCULL_MODE;
+
+typedef struct _GXRASTERIZER_DESC
+{
+	GXFILL_MODE fillMode;
+	GXCULL_MODE cullMode;
+	BOOL bFrontCounterClockwise;
+	int iDepthBias;
+	float fDepthBiasClamp;
+	float fSlopeScaledDepthBias;
+	BOOL bDepthClipEnable;
+	BOOL bScissorEnable;
+	BOOL bMultisampleEnable;
+	BOOL bAntialiasedLineEnable;
+} GXRASTERIZER_DESC;
+
+typedef enum _GXFILTER
+{
+	GXFILTER_MIN_MAG_MIP_POINT,
+	GXFILTER_MIN_MAG_POINT_MIP_LINEAR,
+	GXFILTER_MIN_POINT_MAG_LINEAR_MIP_POINT,
+	GXFILTER_MIN_POINT_MAG_MIP_LINEAR,
+	GXFILTER_MIN_LINEAR_MAG_MIP_POINT,
+	GXFILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR,
+	GXFILTER_MIN_MAG_LINEAR_MIP_POINT,
+	GXFILTER_MIN_MAG_MIP_LINEAR,
+	GXFILTER_ANISOTROPIC
+} GXFILTER;
+
+typedef enum _GXTEXTURE_ADDRESS_MODE
+{
+	GXTEXTURE_ADDRESS_WRAP,
+	GXTEXTURE_ADDRESS_MIRROR,
+	GXTEXTURE_ADDRESS_CLAMP,
+	GXTEXTURE_ADDRESS_BORDER,
+	GXTEXTURE_ADDRESS_MIRROR_ONCE
+} GXTEXTURE_ADDRESS_MODE;
+
+typedef struct _GXSAMPLER_DESC
+{
+	GXFILTER filter;
+	GXTEXTURE_ADDRESS_MODE addressU;
+	GXTEXTURE_ADDRESS_MODE addressV;
+	GXTEXTURE_ADDRESS_MODE addressW;
+	float fMipLODBias;
+	UINT uMaxAnisotropy;
+	GXCOMPARISON_FUNC comparisonFunc;
+	float fBorderColor[4];
+	float fMinLOD;
+	float fMaxLOD;
+} GXSAMPLER_DESC;
+
 //##########################################################################
 
 class IGXBaseInterface
@@ -294,6 +460,15 @@ class IGXPixelShader: public IGXBaseInterface
 {
 };
 
+class IGXShader: public IGXBaseInterface
+{
+	virtual IGXPixelShader *getPixelShader() = 0;
+	virtual IGXVertexShader *getVertexShader() = 0;
+
+	virtual void setPixelShader(IGXPixelShader *pShader) = 0;
+	virtual void setVertexShader(IGXVertexShader *pShader) = 0;
+};
+
 class IGXDepthStencilSurface: public IGXBaseInterface
 {
 };
@@ -315,7 +490,7 @@ public:
 class IGXTexture2D: public IGXBaseTexture
 {
 public:
-	virtual IGXSurface *getMipmap(UINT i = 0);
+	virtual IGXSurface *getMipmap(UINT i = 0) = 0;
 
 	virtual UINT getWidth() = 0;
 	virtual UINT getHeight() = 0;
@@ -327,12 +502,28 @@ public:
 class IGXTextureCube: public IGXBaseTexture
 {
 public:
-	virtual IGXSurface *getMipmap(GXCUBEMAP_FACES face, UINT i = 0);
+	virtual IGXSurface *getMipmap(GXCUBEMAP_FACES face, UINT i = 0) = 0;
 
 	virtual UINT getSize() = 0;
 
 	virtual bool lock(void **ppData, GXCUBEMAP_FACES face, GXTEXLOCK mode) = 0;
 	virtual void unlock() = 0;
+};
+
+class IGXBlendState: public IGXBaseInterface
+{
+};
+
+class IGXDepthStencilState: public IGXBaseInterface
+{
+};
+
+class IGXRasterizerState: public IGXBaseInterface
+{
+};
+
+class IGXSamplerState: public IGXBaseInterface
+{
 };
 
 //class IGXRenderTarget
@@ -396,12 +587,13 @@ public:
 	virtual IGXPixelShader * createPixelShader(void *pData, UINT uSize) = 0;
 	virtual void destroyPixelShader(IGXPixelShader * pSH) = 0;
 
-	virtual void setVertexShader(IGXVertexShader * pSH) = 0;
-	virtual void setPixelShader(IGXPixelShader * pSH) = 0;
+	// virtual void setVertexShader(IGXVertexShader * pSH) = 0;
+	// virtual void setPixelShader(IGXPixelShader * pSH) = 0;
 
-	//virtual IGXShader * createShader(const char * pName, UINT flags = 0) = 0;
-	//virtual void destroyShader(IGXShader * pSH) = 0;
-	//virtual void setShader(IGXShader * pSH) = 0;
+	virtual IGXShader *createShader(IGXVertexShader *pVS = NULL, IGXPixelShader *pPS = NULL) = 0;
+	virtual void destroyShader(IGXShader *pSH) = 0;
+	virtual void setShader(IGXShader *pSH) = 0;
+	virtual IGXShader *getShader() = 0;
 
 	virtual IGXRenderBuffer * createRenderBuffer(UINT countSlots, IGXVertexBuffer ** ppBuff, IGXVertexDeclaration * pDecl) = 0;
 	virtual void destroyRenderBuffer(IGXRenderBuffer * pDecl) = 0;
@@ -425,8 +617,29 @@ public:
 	virtual void setTexture(IGXBaseTexture *pTexture, UINT uStage = 0) = 0;
 	virtual IGXBaseTexture *getTexture(UINT uStage = 0) = 0;
 
+	virtual IGXBlendState *createBlendState(GXBLEND_DESC *pBlendDesc) = 0;
+	virtual void destroyBlendState(IGXBlendState *pState) = 0;
+	virtual void setBlendState(IGXBlendState *pState) = 0;
+	virtual IGXBlendState *getBlendState() = 0;
+
+	virtual IGXDepthStencilState *createDepthStencilState(GXDEPTH_STENCIL_DESC *pDSDesc) = 0;
+	virtual void destroyDepthStencilState(IGXDepthStencilState *pState) = 0;
+	virtual void setDepthStencilState(IGXDepthStencilState *pState) = 0;
+	virtual IGXDepthStencilState *getDepthStencilState() = 0;
+
+	virtual IGXRasterizerState *createRasterizerState(GXRASTERIZER_DESC *pDSDesc) = 0;
+	virtual void destroyRasterizerState(IGXRasterizerState *pState) = 0;
+	virtual void setRasterizerState(IGXRasterizerState *pState) = 0;
+	virtual IGXRasterizerState *getRasterizerState() = 0;
+
+	virtual IGXSamplerState *createSamplerState(GXSAMPLER_DESC *pSamplerDesc) = 0;
+	virtual void destroySamplerState(IGXSamplerState *pState) = 0;
+	virtual void setSamplerState(IGXSamplerState *pState) = 0;
+	virtual IGXSamplerState *getSamplerState() = 0;
+
+
 	// http://www.gamedev.ru/terms/StencilBuffer
-	virtual void setStencilTest(bool isEnable) = 0;
+	// virtual void setStencilTest(bool isEnable) = 0;
 
 	//https://docs.microsoft.com/ru-ru/windows/desktop/direct3d10/d3d10-graphics-programming-guide-api-features-deprecated
 };
