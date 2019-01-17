@@ -424,6 +424,11 @@ public:
 
 	virtual void setTexture(IGXBaseTexture *pTexture, UINT uStage = 0) = 0;
 	virtual IGXBaseTexture *getTexture(UINT uStage = 0) = 0;
+
+	// http://www.gamedev.ru/terms/StencilBuffer
+	virtual void setStencilTest(bool isEnable) = 0;
+
+	//https://docs.microsoft.com/ru-ru/windows/desktop/direct3d10/d3d10-graphics-programming-guide-api-features-deprecated
 };
 
 #endif
