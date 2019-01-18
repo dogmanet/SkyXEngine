@@ -3284,11 +3284,8 @@ void CModels::modelGenGroupInfo(CModel *pModel)
 		}
 
 		pModel->m_aGroupInfo[i] = new CGroupInfo();
-		D3DXPlaneFromPoints(&(pModel->m_aGroupInfo[i]->m_oPlane),
-			&D3DXVECTOR3(pVertex[pIndex[pModel->m_pModel->m_pStartIndex[i] + 0]].Pos.x, pVertex[pIndex[pModel->m_pModel->m_pStartIndex[i] + 0]].Pos.y, pVertex[pIndex[pModel->m_pModel->m_pStartIndex[i] + 0]].Pos.z),
-			&D3DXVECTOR3(pVertex[pIndex[pModel->m_pModel->m_pStartIndex[i] + 1]].Pos.x, pVertex[pIndex[pModel->m_pModel->m_pStartIndex[i] + 1]].Pos.y, pVertex[pIndex[pModel->m_pModel->m_pStartIndex[i] + 1]].Pos.z),
-			&D3DXVECTOR3(pVertex[pIndex[pModel->m_pModel->m_pStartIndex[i] + 2]].Pos.x, pVertex[pIndex[pModel->m_pModel->m_pStartIndex[i] + 2]].Pos.y, pVertex[pIndex[pModel->m_pModel->m_pStartIndex[i] + 2]].Pos.z));
-
+		pModel->m_aGroupInfo[i]->m_oPlane = SMPLANE(pVertex[pIndex[pModel->m_pModel->m_pStartIndex[i] + 0]].Pos, pVertex[pIndex[pModel->m_pModel->m_pStartIndex[i] + 1]].Pos, pVertex[pIndex[pModel->m_pModel->m_pStartIndex[i] + 2]].Pos);
+		
 		pModel->m_aGroupInfo[i]->m_vCenter = (float3_t)((vMax + vMin) * 0.5);
 		pModel->m_aGroupInfo[i]->m_vMin = vMin;
 		pModel->m_aGroupInfo[i]->m_vMax = vMax;
@@ -3336,10 +3333,7 @@ void CModels::modelGenGroupInfo4Transparency(CTransparencyModel *pModel)
 			vMin.z = vPos.z;
 	}
 
-	D3DXPlaneFromPoints(&(pModel->m_oGroupInfo.m_oPlane),
-		&D3DXVECTOR3(pVertex[pIndex[0]].Pos.x, pVertex[pIndex[0]].Pos.y, pVertex[pIndex[0]].Pos.z),
-		&D3DXVECTOR3(pVertex[pIndex[1]].Pos.x, pVertex[pIndex[1]].Pos.y, pVertex[pIndex[1]].Pos.z),
-		&D3DXVECTOR3(pVertex[pIndex[2]].Pos.x, pVertex[pIndex[2]].Pos.y, pVertex[pIndex[2]].Pos.z));
+	pModel->m_oGroupInfo.m_oPlane = SMPLANE(pVertex[pIndex[0]].Pos, pVertex[pIndex[1]].Pos, pVertex[pIndex[2]].Pos);
 
 	pModel->m_oGroupInfo.m_vCenter = (float3_t)((vMax + vMin) * 0.5);
 	pModel->m_oGroupInfo.m_vMin = vMin;
@@ -3496,7 +3490,7 @@ void CModels::modelGetGroupMinMax(ID idModel, ID idGroup, float3_t *pMin, float3
 	}
 }
 
-void CModels::modelGetGroupPlane(ID idModel, ID idGroup, D3DXPLANE *pPlane)
+void CModels::modelGetGroupPlane(ID idModel, ID idGroup, SMPLANE *pPlane)
 {
 	STATIC_PRECOND_MODEL_ID(idModel, _VOID);
 

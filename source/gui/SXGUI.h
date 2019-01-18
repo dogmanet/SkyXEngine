@@ -21,7 +21,7 @@ namespace gui
 	class CGUI: public IGUI
 	{
 	public:
-		CGUI(IDirect3DDevice9 * pDev, const char * szResPath, HWND hWnd);
+		CGUI(IGXContext * pDev, const char * szResPath, HWND hWnd);
 
 		BOOL putMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 		void update();
@@ -82,8 +82,8 @@ namespace gui
 		HWND m_hWnd;
 
 
-		IDirect3DSurface9 * m_pOldDepthStencilSurface;
-		IDirect3DSurface9 * m_pDepthStencilSurface;
+		IGXDepthStencilSurface * m_pOldDepthStencilSurface;
+		IGXSurface * m_pDepthStencilSurface;
 
 		IDesktop * m_pActiveDesktop;
 		Array<IDesktop*> m_mDesktopStack;

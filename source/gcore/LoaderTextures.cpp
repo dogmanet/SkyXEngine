@@ -261,7 +261,7 @@ void ÑLoaderTextures::getName(ID id, char* name)
 		}
 }
 
-ID ÑLoaderTextures::create(const char* name, IDirect3DTexture9* tex)
+ID ÑLoaderTextures::create(const char* name, IGXTexture2D* tex)
 {
 	ID tmpkey, tmpKeyName;
 	ID id = addName(name, LOAD_TEXTURE_TYPE_CUSTOM, &tmpkey, &tmpKeyName);
@@ -289,7 +289,7 @@ ID ÑLoaderTextures::update(const char* name, LOAD_TEXTURE_TYPE type)
 
 	if (getTypeFileTex(tmpPath) == D3DRTYPE_TEXTURE)
 	{
-		IDirect3DTexture9 *pTex = loadTexture2d(tmpPath);
+		IGXTexture2D *pTex = loadTexture2d(tmpPath);
 
 		if (pTex == 0)
 			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not found texture [%s]", GEN_MSG_LOCATION, tmpPath);
@@ -298,7 +298,7 @@ ID ÑLoaderTextures::update(const char* name, LOAD_TEXTURE_TYPE type)
 	}
 	else if (getTypeFileTex(tmpPath) == D3DRTYPE_CUBETEXTURE)
 	{
-		IDirect3DCubeTexture9 *pTex = loadTextureCube(tmpPath);
+		IGXTextureCube *pTex = loadTextureCube(tmpPath);
 
 		if (pTex == 0)
 			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not found texture [%s]", GEN_MSG_LOCATION, tmpPath);
@@ -330,7 +330,7 @@ void ÑLoaderTextures::loadTextures()
 		
 		if (getTypeFileTex(tmpPath) == D3DRTYPE_TEXTURE)
 		{
-			IDirect3DTexture9 *pTex = loadTexture2d(tmpPath);
+			IGXTexture2D *pTex = loadTexture2d(tmpPath);
 
 			if (pTex == 0)
 			{
@@ -346,7 +346,7 @@ void ÑLoaderTextures::loadTextures()
 		}
 		else if (getTypeFileTex(tmpPath) == D3DRTYPE_CUBETEXTURE)
 		{
-			IDirect3DCubeTexture9 *pTex = loadTextureCube(tmpPath);
+			IGXTextureCube *pTex = loadTextureCube(tmpPath);
 
 			if (pTex == 0)
 			{
@@ -370,7 +370,7 @@ void ÑLoaderTextures::loadTextures()
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "all loaded textures [%d]\n", m_aTextures.size());
 }
 
-IDirect3DTexture9* ÑLoaderTextures::getTexture2d(ID id)
+IGXTexture2D* ÑLoaderTextures::getTexture2d(ID id)
 {
 		if(id < m_aTextures.size())
 		{
@@ -380,7 +380,7 @@ IDirect3DTexture9* ÑLoaderTextures::getTexture2d(ID id)
 			return 0;
 }
 
-IDirect3DCubeTexture9* ÑLoaderTextures::getTextureCube(ID id)
+IGXTextureCube* ÑLoaderTextures::getTextureCube(ID id)
 {
 	if (id < m_aTextures.size())
 	{
@@ -404,39 +404,18 @@ bool ÑLoaderTextures::addConstAllInDir(const char *szDir)
 
 //##########################################################################
 
-IDirect3DTexture9* ÑLoaderTextures::loadTexture2d(const char *szPath)
+IGXTexture2D* ÑLoaderTextures::loadTexture2d(const char *szPath)
 {
-	IDirect3DTexture9 *pTex = 0;
-	D3DXCreateTextureFromFileEx(
-		g_pDXDevice,
-		szPath,
-		D3DX_DEFAULT,
-		D3DX_DEFAULT,
-		SXGC_LOADTEX_COUNT_MIPMAP,
-		0,
-		SXGC_LOADTEX_FORMAT_TEX,
-		D3DPOOL_MANAGED,
-		D3DX_FILTER_BOX,
-		D3DX_FILTER_BOX, 0, 0, 0, &pTex
-		);
+	//@TODO: use SXGC_LOADTEX_COUNT_MIPMAP
+	IGXTexture2D *pTex = g_pDXDevice->createTexture2DFromFile(szPath, 0);
 
 	return pTex;
 }
 
-IDirect3DCubeTexture9* ÑLoaderTextures::loadTextureCube(const char *szPath)
+IGXTextureCube* ÑLoaderTextures::loadTextureCube(const char *szPath)
 {
-	IDirect3DCubeTexture9 *pTex = 0;
-	D3DXCreateCubeTextureFromFileEx(
-		g_pDXDevice,
-		szPath,
-		D3DX_DEFAULT,
-		SXGC_LOADTEX_COUNT_MIPMAP,
-		0,
-		SXGC_LOADTEX_FORMAT_TEX,
-		D3DPOOL_MANAGED,
-		D3DX_FILTER_BOX,
-		D3DX_FILTER_BOX, 0, 0, 0, &pTex
-		);
+	//@TODO: use SXGC_LOADTEX_COUNT_MIPMAP
+	IGXTextureCube *pTex = g_pDXDevice->createTextureCubeFromFile(szPath, 0);
 
 	return pTex;
 }

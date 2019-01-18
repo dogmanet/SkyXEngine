@@ -32,9 +32,7 @@ report_func g_fnReportf = DefReport;
 
 
 IGXContext *g_pDXDevice = 0;
-D3DCAPS9 g_dxCaps;
 HMODULE m_hLibGXAPI = NULL;
-ID3DXFont *g_pFPStext = 0;
 Array<DEVMODE> g_aModes;
 
 IGXVertexDeclaration *g_pStaticVertexDecl = 0;
@@ -42,7 +40,7 @@ IGXVertexDeclaration *g_pStaticVertexDecl = 0;
 CShaderManager *g_pManagerShaders = 0;
 CreatorTextures *g_pManagerRenderTargets = 0;
 ÑLoaderTextures *g_pManagerTextures = 0;
-ID3DXMesh *g_pScreenTexture = 0;
+IMesh *g_pScreenTexture = 0;
 CSkyBox *g_pSkyBox = 0;
 CSkyClouds *g_pSkyClouds = 0;
 COcclusionCulling *g_pOC = 0;
@@ -59,7 +57,7 @@ void StdDrawIndexedPrimitive(UINT type_primitive, long base_vertexIndex, UINT mi
 void StdMtlSet(ID id, const float4x4 *pWorld, const float4 *pColor)
 {
 
-	g_pDXDevice->SetTexture(0, SGCore_LoadTexGetTex(id));
+	g_pDXDevice->setTexture(SGCore_LoadTexGetTex(id));
 }
 
 ID StdMtlLoad(const char *szName, int iMtlType)
@@ -345,7 +343,7 @@ SX_LIB_API void SGCore_OnResetDevice()
 SX_LIB_API void SGCore_ScreenQuadDraw()
 {
 	SG_PRECOND(_VOID);
-	g_pScreenTexture->DrawSubset(0);
+	g_pScreenTexture->drawSubset();
 }
 
 //##########################################################################
@@ -647,7 +645,7 @@ SX_LIB_API void SGCore_LoadTexGetName(ID id, char *szName)
 	return g_pManagerTextures->getName(id, szName);
 }
 
-SX_LIB_API ID SGCore_LoadTexCreate(const char *szName, IDirect3DTexture9 *pTex)
+SX_LIB_API ID SGCore_LoadTexCreate(const char *szName, IGXTexture2D *pTex)
 {
 	SG_PRECOND(-1);
 
@@ -691,11 +689,11 @@ SX_LIB_API void SGCore_LoadTexAllLoad()
 
 //##########################################################################
 
-SX_LIB_API ID SGCore_RTAdd(UINT uiWidth, UINT uiHeight, UINT uiLevels, DWORD dwUsage, D3DFORMAT format, D3DPOOL pool, const char *szName, float fCoefFullScreen)
+SX_LIB_API ID SGCore_RTAdd(UINT uiWidth, UINT uiHeight, UINT uiLevels, DWORD dwUsage, GXFORMAT format, const char *szName)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerRenderTargets->Add(uiWidth, uiHeight, uiLevels, dwUsage, format, pool, szName, fCoefFullScreen);
+	return g_pManagerRenderTargets->Add(uiWidth, uiHeight, uiLevels, dwUsage, format, szName);
 }
 
 SX_LIB_API void SGCore_RTDeleteN(const char *szName)
@@ -735,7 +733,7 @@ SX_LIB_API IGXTexture2D* SGCore_RTGetTexture(ID id)
 
 //##########################################################################
 
-SX_LIB_API void SGCore_FCreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh ** ppMesh, UINT iSideCount)
+SX_LIB_API void SGCore_FCreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** ppMesh, UINT iSideCount)
 {
 	SG_PRECOND(_VOID);
 
@@ -756,7 +754,7 @@ SX_LIB_API void SGCore_FCompBoundBox2(IGXVertexBuffer *pVertexBuffer, ISXBound *
 	ComputeBoundingBox2(pVertexBuffer, pBound, dwCountVertices, dwBytesPerVertex);
 }
 
-SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3 *pMin, const float3 *pMax, ID3DXMesh **ppBBmesh)
+SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3 *pMin, const float3 *pMax, IMesh **ppBBmesh)
 {
 	SG_PRECOND(_VOID);
 

@@ -57,7 +57,8 @@ namespace gui
 		struct shader
 		{
 			//IDirect3DVertexShader9 * vs;
-			IDirect3DPixelShader9 * ps;
+			IGXPixelShader * ps;
+			IGXShader *pShader;
 			//IDirect3DVertexDeclaration9 * vertexLayout;
 		};
 

@@ -23,10 +23,9 @@ CreatorTextures::~CreatorTextures()
 	}
 }
 
-ID CreatorTextures::Add(UINT width, UINT height, UINT levels, DWORD usage, GXFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen)
+ID CreatorTextures::Add(UINT width, UINT height, UINT levels, DWORD usage, GXFORMAT format, const char* name, float coeffullscreen)
 {
-	IDirect3DTexture9* objtex;
-	g_pDXDevice->CreateTexture(width, height, levels, usage, format, pool, &objtex, NULL);
+	IGXTexture2D* objtex = g_pDXDevice->createTexture2D(width,height, levels, usage | (coeffullscreen < 0 ? 0 : GX_TEXUSAGE_AUTORESIZE), format);
 
 	ID id = -1;
 	bool isadd = true;
@@ -37,9 +36,7 @@ ID CreatorTextures::Add(UINT width, UINT height, UINT levels, DWORD usage, GXFOR
 				{
 					Arr[i]->Texture = objtex;
 					sprintf(Arr[i]->Name,"%s",name);
-					Arr[i]->CoefFullScreen = coeffullscreen;
 					Arr[i]->Level = levels;
-					Arr[i]->Texture->GetLevelDesc(0,&(Arr[i]->Desc));
 					isadd = false;
 					id = i;
 				}
@@ -52,8 +49,6 @@ ID CreatorTextures::Add(UINT width, UINT height, UINT levels, DWORD usage, GXFOR
 			tmpCT->Texture = objtex;
 			tmpCT->Level = levels;
 			sprintf(tmpCT->Name,"%s",name);
-			tmpCT->CoefFullScreen = coeffullscreen;
-			tmpCT->Texture->GetLevelDesc(0,&(tmpCT->Desc));
 			Arr.push_back(tmpCT);
 			isadd = false;
 		}
@@ -104,24 +99,24 @@ ID CreatorTextures::GetNum(const char* text)
 
 void CreatorTextures::OnLostDevice()
 {
-	LibReport(REPORT_MSG_LEVEL_WARNING, "release render targets ...\n");
+	/*LibReport(REPORT_MSG_LEVEL_WARNING, "release render targets ...\n");
 	for(DWORD i=0;i<Arr.size();i++)
 	{
 		CreatedTexture* tmpct = Arr[i];
-		if(Arr[i] /*&& Arr[i]->Name[0] != 0*/)
+		if(Arr[i] /*&& Arr[i]->Name[0] != 0* /)
 		{
 			mem_release_del(Arr[i]->Texture);
 		}
 	}
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "release render targets success\n");
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "release render targets success\n");*/
 }
 
 void CreatorTextures::OnResetDevice()
 {
-	LibReport(REPORT_MSG_LEVEL_WARNING, "reset render targets ...\n");
+	/*LibReport(REPORT_MSG_LEVEL_WARNING, "reset render targets ...\n");
 	for(int i=0;i<Arr.size();i++)
 	{
-		if(Arr[i]/*->Name[0] != 0*/)
+		if(Arr[i]/*->Name[0] != 0* /)
 		{
 			if(Arr[i]->CoefFullScreen > 0.001f)
 				g_pDXDevice->CreateTexture(g_oD3DAPP.BackBufferWidth * Arr[i]->CoefFullScreen, g_oD3DAPP.BackBufferHeight * Arr[i]->CoefFullScreen, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
@@ -129,7 +124,7 @@ void CreatorTextures::OnResetDevice()
 				g_pDXDevice->CreateTexture(Arr[i]->Desc.Width, Arr[i]->Desc.Height, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
 		}
 	}
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "reset render targets success\n");
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "reset render targets success\n");*/
 }
 
 IGXTexture2D* CreatorTextures::GetTexture(const char* text)

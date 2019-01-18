@@ -31,7 +31,6 @@ See the license in LICENSE
 #define GEOM_COPY_POSTFIX "-copy"
 
 extern IGXContext *g_pDXDevice;
-extern D3DCAPS9 g_dxCaps;
 
 //##########################################################################
 
@@ -186,7 +185,7 @@ public:
 		float3 m_vCenter;
 
 		//! плоскость
-		D3DXPLANE m_oPlane;
+		SMPLANE m_oPlane;
 	};
 
 	//! полупрозрачная модель
@@ -442,7 +441,7 @@ public:
 	void modelGetGroupMinMax(ID idModel, ID idGroup, float3_t *pMin, float3_t *pMax);
 
 	//! записывает плоскость подгруппы модели
-	void modelGetGroupPlane(ID idModel, ID idGroup, D3DXPLANE *pPlane);
+	void modelGetGroupPlane(ID idModel, ID idGroup, SMPLANE *pPlane);
 
 	//! записывает точку центра подгруппы модели
 	void modelGetGroupCenter(ID idModel, ID idGroup, float3_t *pCenter);

@@ -122,23 +122,20 @@ void InitRT4Gbuffer()
 {
 	const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	const int *r_win_height = GET_PCVAR_INT("r_win_height");
-
-	float tmpcoefsizert = 1;
-	float2_t tmp_sizert = float2_t(float(*r_win_width) * tmpcoefsizert, (*r_win_height) * tmpcoefsizert);
-
+	
 	//цвет (текстуры)
-	gcore_data::rt_id::idColorScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_color", tmpcoefsizert);
+	gcore_data::rt_id::idColorScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "ds_color");
 	//номрали + микрорельеф
-	gcore_data::rt_id::idNormalScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A8R8G8B8/*D3DFMT_A2R10G10B10*/, D3DPOOL_DEFAULT, "ds_normal", tmpcoefsizert);
+	gcore_data::rt_id::idNormalScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8/*D3DFMT_A2R10G10B10*/, "ds_normal");
 	//параметры освещени¤
-	gcore_data::rt_id::idParamsScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_param", tmpcoefsizert);
+	gcore_data::rt_id::idParamsScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "ds_param");
 
-	gcore_data::rt_id::idDepthScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R32F, D3DPOOL_DEFAULT, "ds_depth", tmpcoefsizert);
-	gcore_data::rt_id::idDepthScene0 = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R32F, D3DPOOL_DEFAULT, "ds_depth_0", tmpcoefsizert);
-	gcore_data::rt_id::idDepthScene1 = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R32F, D3DPOOL_DEFAULT, "ds_depth_1", tmpcoefsizert);
+	gcore_data::rt_id::idDepthScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F, "ds_depth");
+	gcore_data::rt_id::idDepthScene0 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F, "ds_depth_0");
+	gcore_data::rt_id::idDepthScene1 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F, "ds_depth_1");
 
-	gcore_data::rt_id::idLightAmbientDiff = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_ambient", tmpcoefsizert);
-	gcore_data::rt_id::idLightSpecular = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R16F, D3DPOOL_DEFAULT, "ds_specdiff", tmpcoefsizert);
+	gcore_data::rt_id::idLightAmbientDiff = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_ambient");
+	gcore_data::rt_id::idLightSpecular = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R16F, "ds_specdiff");
 
 
 	gcore_data::rt_id::aToneMaps.clear();
@@ -153,20 +150,20 @@ void InitRT4Gbuffer()
 			break;
 
 		sprintf(szNameRT, "tone_map_%dx%d", tmpsize, tmpsize);
-		gcore_data::rt_id::aToneMaps[tmpcount] = SGCore_RTAdd(tmpsize, tmpsize, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R16F, D3DPOOL_DEFAULT, szNameRT, 0);
+		gcore_data::rt_id::aToneMaps[tmpcount] = SGCore_RTAdd(tmpsize, tmpsize, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R16F, szNameRT);
 		gcore_data::rt_id::aSurfToneMap[tmpcount] = 0;
 		++tmpcount;
 	}
 	gcore_data::rt_id::iCountArrToneMaps = tmpcount;
 
-	gcore_data::rt_id::idAdaptLumCurr = SGCore_RTAdd(1, 1, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R16F, D3DPOOL_DEFAULT, "adapted_lum_curr", 0);
-	gcore_data::rt_id::idAdaptLumLast = SGCore_RTAdd(1, 1, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R16F, D3DPOOL_DEFAULT, "adapted_lum_last", 0);
+	gcore_data::rt_id::idAdaptLumCurr = SGCore_RTAdd(1, 1, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R16F, "adapted_lum_curr");
+	gcore_data::rt_id::idAdaptLumLast = SGCore_RTAdd(1, 1, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R16F, "adapted_lum_last");
 
-	gcore_data::rt_id::idLigthCom = SGCore_RTAdd(*r_win_width, *r_win_height, 1,  GX_TEXUSAGE_RENDERTARGET, GXFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom", 1);
-	gcore_data::rt_id::idLigthCom2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom2", 1);
-	gcore_data::rt_id::idLigthCom3 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcom3", 1);
+	gcore_data::rt_id::idLigthCom = SGCore_RTAdd(*r_win_width, *r_win_height, 1,  GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcom");
+	gcore_data::rt_id::idLigthCom2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcom2");
+	gcore_data::rt_id::idLigthCom3 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "ds_lightcom3");
 
-	gcore_data::rt_id::idLigthComScaled = SGCore_RTAdd(float(*r_win_width)*0.25f, float(*r_win_height)*0.25f, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcomscaled", 0.25);
+	gcore_data::rt_id::idLigthComScaled = SGCore_RTAdd(*r_win_width / 4, *r_win_height . 4, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcomscaled");
 
 
 	gcore_data::ps_id::idCalcAdaptedLum = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_calc_adapted_lum.ps", "pptm_calc_adapted_lum.ps", SHADER_CHECKDOUBLE_PATH);
@@ -225,7 +222,7 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 
 	SGCore_ShaderUnBind();
 
-	mem_release(SurfSceneScale);
+	// mem_release(SurfSceneScale);
 
 	g_pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
 	int CurrTexture = gcore_data::rt_id::iCountArrToneMaps - 1;
@@ -233,17 +230,14 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 	for (int i = 0; i < gcore_data::rt_id::iCountArrToneMaps; i++)
 	{
 		IGXTexture2D* tmptex = SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[i]);
-		IGXSurface* tmpsurf = gcore_data::rt_id::aSurfToneMap[i];
-		SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[i])->GetSurfaceLevel(0, &gcore_data::rt_id::aSurfToneMap[i]);
-		int qwert = 0;
+		gcore_data::rt_id::aSurfToneMap[i] = tmptex->getMipmap();
 	}
 
-	D3DSURFACE_DESC desc;
-	SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[CurrTexture])->GetLevelDesc(0, &desc);
+	IGXTexture2D* tmptex = SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[CurrTexture]);
 
-	ToneMappingGetArrDownScale4x4(desc.Width, desc.Height, gcore_data::rt_id::aHDRSampleOffsets);
+	ToneMappingGetArrDownScale4x4(tmptex->getWidth(), tmptex->getHeight(); , gcore_data::rt_id::aHDRSampleOffsets);
 
-	g_pDXDevice->SetRenderTarget(0, gcore_data::rt_id::aSurfToneMap[CurrTexture]);
+	g_pDXDevice->setColorTarget(gcore_data::rt_id::aSurfToneMap[CurrTexture]);
 	g_pDXDevice->setTexture(SGCore_RTGetTexture(gcore_data::rt_id::idLigthComScaled));
 	g_pDXDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
 	g_pDXDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
@@ -262,44 +256,49 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 	--CurrTexture;
 
 
+	IGXTexture2D *pTex;
 
-	while (CurrTexture >= 0)
+	g_pDXDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+	g_pDXDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+
+	SGCore_ShaderBind(SHADER_TYPE_VERTEX, gcore_data::vs_id::idScreenOut);
+	SGCore_ShaderBind(SHADER_TYPE_PIXEL, gcore_data::ps_id::idSampleLumIterative);
+
+	while(CurrTexture >= 0)
 	{
-		SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[CurrTexture + 1])->GetLevelDesc(0, &desc);
-		ToneMappingGetArrDownScale4x4(desc.Width, desc.Height, gcore_data::rt_id::aHDRSampleOffsets);
+		IGXTexture2D *pTex = SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[CurrTexture + 1]);
+		ToneMappingGetArrDownScale4x4(pTex->getWidth(), pTex->getHeight(), gcore_data::rt_id::aHDRSampleOffsets);
 
-		g_pDXDevice->setRenderTarget(gcore_data::rt_id::aSurfToneMap[CurrTexture]);
-		g_pDXDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-		g_pDXDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, gcore_data::vs_id::idScreenOut);
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, gcore_data::ps_id::idSampleLumIterative);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, gcore_data::ps_id::idSampleLumIterative, "g_aOffsets", &(gcore_data::rt_id::aHDRSampleOffsets));
 
-		g_pDXDevice->setTexture(SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[CurrTexture + 1]));
+		g_pDXDevice->setColorTarget(gcore_data::rt_id::aSurfToneMap[CurrTexture]);
+
+		g_pDXDevice->setTexture(pTex);
 		SGCore_ScreenQuadDraw();
 
-		SGCore_ShaderUnBind();
 		CurrTexture--;
 	}
 
-	IGXTexture2D* tmptex = SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[3]);
+	SGCore_ShaderUnBind();
 
-	for (int i = 0; i < gcore_data::rt_id::iCountArrToneMaps - 1; i++)
+	// char *a = (char*)malloc(sizeof(char) * 5);
+
+	//IGXTexture2D* tmptex = SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[3]);
+
+	/*for (int i = 0; i < gcore_data::rt_id::iCountArrToneMaps - 1; i++)
 	{
 		IGXSurface* tmpsurf = gcore_data::rt_id::aSurfToneMap[i];
 		mem_release(gcore_data::rt_id::aSurfToneMap[i]);
-	}
+	}*/
 
 	tmptex = SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[3]);
 
 	gcore_data::rt_id::IncrAdaptedLum();
-	LPDIRECT3DSURFACE9 SurfAdaptedLum = NULL;
-	SGCore_RTGetTexture(gcore_data::rt_id::GetCurrAdaptedLum())->GetSurfaceLevel(0, &SurfAdaptedLum);
+	IGXSurface *SurfAdaptedLum = SGCore_RTGetTexture(gcore_data::rt_id::GetCurrAdaptedLum())->getMipmap();
 
-	g_pDXDevice->SetRenderTarget(0, SurfAdaptedLum);
-	g_pDXDevice->SetTexture(0, SGCore_RTGetTexture(gcore_data::rt_id::GetLastAdaptedLum()));
-	g_pDXDevice->SetTexture(1, SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[0]));
+	g_pDXDevice->setColorTarget(SurfAdaptedLum);
+	g_pDXDevice->setTexture(SGCore_RTGetTexture(gcore_data::rt_id::GetLastAdaptedLum()));
+	g_pDXDevice->setTexture(SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[0]), 1);
 	g_pDXDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
 	g_pDXDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
 	g_pDXDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
@@ -314,10 +313,10 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
-	mem_release(SurfAdaptedLum);
+	//mem_release(SurfAdaptedLum);
 
-	g_pDXDevice->SetRenderTarget(0, BackBuf);
-	mem_release(BackBuf);
+	g_pDXDevice->setColorTarget(BackBuf);
+	//mem_release(BackBuf);
 
 	g_pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 

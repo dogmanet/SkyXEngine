@@ -13,17 +13,14 @@ See the license in LICENSE
 #include <common/array.h>
 
 extern IGXContext *g_pDXDevice;
-extern D3DCAPS9 g_dxCaps;
-extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 
 //структура описывающая движковые текстуры
 struct CreatedTexture
 {
 	char Name[64];	//имя
 	IGXTexture2D* Texture;	//текстура
-	D3DSURFACE_DESC Desc;		//описание текстуры, для восстановления
 	UINT Level;
-	float CoefFullScreen;		//если меньше 0 то брать размер из Desc, иначе это коэфициент умножение размера экрана на это число
+	//float CoefFullScreen;		//если меньше 0 то брать размер из Desc, иначе это коэфициент умножение размера экрана на это число
 };
 
 class CreatorTextures
@@ -32,7 +29,7 @@ public:
 	CreatorTextures();
 	~CreatorTextures();
 
-	ID Add(UINT width, UINT height, UINT levels, DWORD usage, GXFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen);
+	ID Add(UINT width, UINT height, UINT levels, DWORD usage, GXFORMAT format, const char* name);
 
 	void Delete(const char* text);
 	void Delete(ID num);

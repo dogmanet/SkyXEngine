@@ -23,7 +23,8 @@ enum
 	GX_BUFFER_USAGE_STATIC = 0x01, // данные будут очень редко обновляться
 	GX_BUFFER_USAGE_DYNAMIC = 0x02, // данные будут обновляться, но не каждый кадр
 	GX_BUFFER_USAGE_STREAM = 0x04, // данные будут обновляться каждый кадр
-	GX_BUFFER_WRITEONLY = 0x08
+	GX_BUFFER_WRITEONLY = 0x08,
+	GX_BUFFER_ALLOWDISCARD = 0x10
 };
 
 
@@ -120,6 +121,7 @@ typedef struct _GXVERTEXELEMENT
 #define GX_TEXUSAGE_RENDERTARGET 0x00000001
 #define GX_TEXUSAGE_AUTOGENMIPMAPS 0x00000002
 #define GX_TEXUSAGE_AUTORESIZE 0x00000004
+#define GX_TEXUSAGE_ALLOWDISCARD 0x00000008 /* разрешено потерять данные, например при потере/восстановлении устройства в dx9 */
 
 enum GXPT
 {
@@ -599,8 +601,8 @@ public:
 	virtual void clearDepth(float val = 1.0f) = 0;
 	virtual void clearStencil(UINT val = 0) = 0;
 
-	virtual IGXVertexBuffer * createVertexBuffer(size_t size, UINT flags, void * pInitData = NULL, bool bAllowDiscard = false) = 0;
-	virtual IGXIndexBuffer * createIndexBuffer(size_t size, UINT flags, GXINDEXTYPE it, void * pInitData = NULL, bool bAllowDiscard = false) = 0;
+	virtual IGXVertexBuffer * createVertexBuffer(size_t size, UINT flags, void * pInitData = NULL) = 0;
+	virtual IGXIndexBuffer * createIndexBuffer(size_t size, UINT flags, GXINDEXTYPE it, void * pInitData = NULL) = 0;
 
 
 	virtual void destroyIndexBuffer(IGXIndexBuffer * pBuff) = 0;
@@ -650,13 +652,13 @@ public:
 	virtual void setColorTarget(IGXSurface *pSurf, UINT idx = 0) = 0;
 	virtual IGXSurface *getColorTarget(UINT idx = 0) = 0;
 
-	virtual IGXTexture2D *createTexture2D(UINT uWidth, UINT uHeight, UINT uMipLevels, UINT uTexUsageFlags, GXFORMAT format, void * pInitData = NULL, bool bAllowDiscard = false) = 0;
-	virtual IGXTextureCube *createTextureCube(UINT uSize, UINT uMipLevels, UINT uTexUsageFlags, GXFORMAT format, void * pInitData = NULL, bool bAllowDiscard = false) = 0;
+	virtual IGXTexture2D *createTexture2D(UINT uWidth, UINT uHeight, UINT uMipLevels, UINT uTexUsageFlags, GXFORMAT format, void * pInitData = NULL) = 0;
+	virtual IGXTextureCube *createTextureCube(UINT uSize, UINT uMipLevels, UINT uTexUsageFlags, GXFORMAT format, void * pInitData = NULL) = 0;
 	virtual void destroyTexture2D(IGXTexture2D * pTexture) = 0;
 	virtual void destroyTextureCube(IGXTextureCube * pTexture) = 0;
 
-	virtual IGXTexture2D *createTexture2DFromFile(const char *szFileName, bool bAllowNonPowerOf2 = false, bool bAllowDiscard = false) = 0;
-	virtual IGXTextureCube *createTextureCubeFromFile(const char *szFileName, bool bAllowNonPowerOf2 = false, bool bAllowDiscard = false) = 0;
+	virtual IGXTexture2D *createTexture2DFromFile(const char *szFileName, UINT uTexUsageFlags, bool bAllowNonPowerOf2 = false) = 0;
+	virtual IGXTextureCube *createTextureCubeFromFile(const char *szFileName, UINT uTexUsageFlags, bool bAllowNonPowerOf2 = false) = 0;
 
 	virtual void setTexture(IGXBaseTexture *pTexture, UINT uStage = 0) = 0;
 	virtual IGXBaseTexture *getTexture(UINT uStage = 0) = 0;

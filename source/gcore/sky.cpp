@@ -218,13 +218,13 @@ void CSkyBox::render(float timeDelta, const float3* pos,bool is_shadow)
 
 	if (/*m_isChangeMainTex*/m_isChange)
 	{
-		g_pDXDevice->SetTexture(0, SGCore_LoadTexGetTexCube(m_idTex2));
-		g_pDXDevice->SetTexture(1, SGCore_LoadTexGetTexCube(m_idTex1));
+		g_pDXDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex2));
+		g_pDXDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex1), 1);
 	}
 	else
 	{
-		g_pDXDevice->SetTexture(0, SGCore_LoadTexGetTexCube(m_idTex1));
-		g_pDXDevice->SetTexture(1, SGCore_LoadTexGetTexCube(m_idTex2));
+		g_pDXDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex1));
+		g_pDXDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex2), 1);
 	}
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &WVP);
@@ -257,7 +257,7 @@ CSkyClouds::CSkyClouds()
 	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_clouds.vs", "sky_clouds.vs", SHADER_CHECKDOUBLE_NAME);
 	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds.ps", SHADER_CHECKDOUBLE_NAME);
 
-	D3DXMACRO Defines_SHADOW[] = { { "SHADOW", "" }, { 0, 0 } };
+	GXMACRO Defines_SHADOW[] = { { "SHADOW", "" }, { 0, 0 } };
 	m_idPS_Shadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds_shadow.ps", SHADER_CHECKDOUBLE_NAME, Defines_SHADOW);
 
 	m_fRotaionY = 0;
@@ -452,13 +452,13 @@ void CSkyClouds::render(DWORD timeDelta, const float3* pos,bool is_shadow)
 
 	if (/*m_isChangeMainTex*/m_isChange)
 	{
-		g_pDXDevice->SetTexture(0, SGCore_LoadTexGetTex(m_idTex2));
-		g_pDXDevice->SetTexture(1, SGCore_LoadTexGetTex(m_idTex1));
+		g_pDXDevice->setTexture(SGCore_LoadTexGetTex(m_idTex2));
+		g_pDXDevice->setTexture(SGCore_LoadTexGetTex(m_idTex1), 1);
 	}
 	else
 	{
-		g_pDXDevice->SetTexture(0, SGCore_LoadTexGetTex(m_idTex1));
-		g_pDXDevice->SetTexture(1, SGCore_LoadTexGetTex(m_idTex2));
+		g_pDXDevice->setTexture(SGCore_LoadTexGetTex(m_idTex1));
+		g_pDXDevice->setTexture(SGCore_LoadTexGetTex(m_idTex2), 1);
 	}
 
 	if(!is_shadow)

@@ -12,14 +12,14 @@ CGreen::CGreen()
 	{
 	GXVERTEXELEMENT oInstanceGreen[] =
 	{
-		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
-		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
-		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
-		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT},
-		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL},
-		{1, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1},
-		{1, 12, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD2},
-		{1, 24, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD3},
+		{0,  0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION,  GXDECLSPEC_PER_VERTEX_DATA},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD,  GXDECLSPEC_PER_VERTEX_DATA},
+		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL,    GXDECLSPEC_PER_VERTEX_DATA},
+		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT,   GXDECLSPEC_PER_VERTEX_DATA},
+		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL,  GXDECLSPEC_PER_VERTEX_DATA},
+		{1,  0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1, GXDECLSPEC_PER_INSTANCE_DATA},
+		{1, 12, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD2, GXDECLSPEC_PER_INSTANCE_DATA},
+		{1, 24, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD3, GXDECLSPEC_PER_INSTANCE_DATA},
 		GXDECL_END()
 	};
 
@@ -180,13 +180,7 @@ void CGreen::onResetDevice()
 
 void CGreen::createInstVB()
 {
-	CGreen::m_pDXDevice->CreateVertexBuffer(
-		GREEN_MAX_ELEM_IN_DIP * sizeof(CGreenDataVertex),
-		D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
-		0,
-		D3DPOOL_DEFAULT,
-		&m_pTransVertBuf,
-		0);
+	m_pTransVertBuf = CGreen::m_pDXDevice->createVertexBuffer(GREEN_MAX_ELEM_IN_DIP * sizeof(CGreenDataVertex), GX_BUFFER_USAGE_STREAM | GX_BUFFER_ALLOWDISCARD);
 }
 
 //##########################################################################
@@ -1004,112 +998,114 @@ bool CGreen::genByTex(CModel *pGreen, ID idMask, bool shouldAveragedRGB, float3 
 	float fWidthLand = vLeveMax.x - vLeveMin.x;
 	float fHeightLand = vLeveMax.z - vLeveMin.z;
 
-	D3DSURFACE_DESC desc;
-	SGCore_LoadTexGetTex(idMask)->GetLevelDesc(0, &desc);
+	IGXTexture2D *pTex = SGCore_LoadTexGetTex(idMask);
 
-	if (desc.Format != D3DFMT_A8R8G8B8)
+	if (pTex->getFormat() != GXFMT_A8R8G8B8)
 	{
 		LibReport(REPORT_MSG_LEVEL_WARNING, "unresolved format of mask!!!");
 		return false;
 	}
 
-	D3DLOCKED_RECT oLockedRect;
-
-	SGCore_LoadTexGetTex(idMask)->LockRect(0, &oLockedRect, 0, 0);
-	DWORD *pColor = (DWORD*)oLockedRect.pBits;
-	DWORD dwColor;
-
-	// количество неуданчых генераций
-	int iCountFailGreen = 0;
-
 	// массив сгенерированных позиций
 	Array<float3_t, GREEN_DEFAULT_RESERVE_GEN> aPos;
 
-	DWORD MaxAlpha = 0;
-	DWORD dwAlpha;
-	float fAlpha;
-	float fPosInLandX;
-	float fPosInLandY;
-
-	//сколько метров на уровне занимает один пиксель из маски
-	float fPixelInLandX = fWidthLand / float(desc.Width);
-	float fPixelInLandY = fHeightLand / float(desc.Height);
-
-	float3 vGenPos;
-	bool isIntersect = false;
-
-	for (int x = 0; x < desc.Width; ++x)
+	DWORD *pColor;
+	if(pTex->lock((void**)&pColor, GXTL_READ))
 	{
-		for (int y = 0; y < desc.Height; ++y)
+		DWORD dwColor;
+
+		// количество неуданчых генераций
+		int iCountFailGreen = 0;
+
+
+		DWORD MaxAlpha = 0;
+		DWORD dwAlpha;
+		float fAlpha;
+		float fPosInLandX;
+		float fPosInLandY;
+
+		//сколько метров на уровне занимает один пиксель из маски
+		float fPixelInLandX = fWidthLand / float(pTex->getWidth());
+		float fPixelInLandY = fHeightLand / float(pTex->getHeight());
+
+		float3 vGenPos;
+		bool isIntersect = false;
+
+		for (int x = 0, w = pTex->getWidth(); x < w; ++x)
 		{
-			dwColor = pColor[y*desc.Width + x];
-			if (shouldAveragedRGB)
-				dwAlpha = (GetRValue(dwColor) + GetGValue(dwColor) + GetBValue(dwColor)) / 3;
-			else
-				dwAlpha = (dwColor >> 24);
-
-			fAlpha = 1.f / 255.f * (float)dwAlpha;
-			if (dwAlpha > 0)
+			for (int y = 0, h = pTex->getHeight(); y < h; ++y)
 			{
-				//позиция пикселя на ландшафте
-				fPosInLandX = lerpf(vLeveMin.x, vLeveMax.x, float(x + 1) / float(desc.Width));
-				fPosInLandY = lerpf(vLeveMax.z, vLeveMin.z, float(y + 1) / float(desc.Height));
+				dwColor = pColor[y*w + x];
+				if (shouldAveragedRGB)
+					dwAlpha = (GetRValue(dwColor) + GetGValue(dwColor) + GetBValue(dwColor)) / 3;
+				else
+					dwAlpha = (dwColor >> 24);
 
-				//расчет позиций объектов на квадратный метр
-				int iCount = int(floor(float(float(dwAlpha)*fDensity) / 255.f)) * fPixelInLandX * fPixelInLandY;
-				for (int i = 0; i<iCount; ++i)
+				fAlpha = 1.f / 255.f * (float)dwAlpha;
+				if (dwAlpha > 0)
 				{
-					isIntersect = true;
+					//позиция пикселя на ландшафте
+					fPosInLandX = lerpf(vLeveMin.x, vLeveMax.x, float(x + 1) / float(desc.Width));
+					fPosInLandY = lerpf(vLeveMax.z, vLeveMin.z, float(y + 1) / float(desc.Height));
 
-					vGenPos.x = (fPosInLandX - fPixelInLandX * 0.5f) + randf(0.0, fPixelInLandX);
-					vGenPos.z = (fPosInLandY - fPixelInLandY * 0.5f) + randf(0.0, fPixelInLandY);
-					vGenPos.y = vLeveMax.y;
-
-					// если тип "дерево"
-					if (pGreen->m_typeGreen == GREEN_TYPE_TREE)
+					//расчет позиций объектов на квадратный метр
+					int iCount = int(floor(float(float(dwAlpha)*fDensity) / 255.f)) * fPixelInLandX * fPixelInLandY;
+					for (int i = 0; i<iCount; ++i)
 					{
-						// проходим по всему массиву сгенерированных объектов и ищем пересечения с текущей позицией, если есть значит запрещаем генерировать в этом месте
-						for (int k = 0; k < aPos.size(); ++k)
+						isIntersect = true;
+
+						vGenPos.x = (fPosInLandX - fPixelInLandX * 0.5f) + randf(0.0, fPixelInLandX);
+						vGenPos.z = (fPosInLandY - fPixelInLandY * 0.5f) + randf(0.0, fPixelInLandY);
+						vGenPos.y = vLeveMax.y;
+
+						// если тип "дерево"
+						if (pGreen->m_typeGreen == GREEN_TYPE_TREE)
 						{
-							if (SMVector3Length2(vGenPos - float3(aPos[k].x, vGenPos.y, aPos[k].z)) < r2d*r2d)
+							// проходим по всему массиву сгенерированных объектов и ищем пересечения с текущей позицией, если есть значит запрещаем генерировать в этом месте
+							for (int k = 0; k < aPos.size(); ++k)
 							{
-								dwAlpha = 0;
-								isIntersect = false;
-								break;
+								if (SMVector3Length2(vGenPos - float3(aPos[k].x, vGenPos.y, aPos[k].z)) < r2d*r2d)
+								{
+									dwAlpha = 0;
+									isIntersect = false;
+									break;
+								}
 							}
 						}
-					}
 
-					// если разрешено определение пересечения - определяем
-					if (isIntersect)
-					{
-						vPosMax.x = vPosMin.x = vGenPos.x;
-						vPosMax.z = vPosMin.z = vGenPos.z;
-						isIntersect = g_fnIntersect(&vPosMax, &vPosMin, &vGenPos);
-					}
+						// если разрешено определение пересечения - определяем
+						if (isIntersect)
+						{
+							vPosMax.x = vPosMin.x = vGenPos.x;
+							vPosMax.z = vPosMin.z = vGenPos.z;
+							isIntersect = g_fnIntersect(&vPosMax, &vPosMin, &vGenPos);
+						}
 
-					// если есть пересечение
-					if (isIntersect)
-					{
-						aPos.push_back(vGenPos);
+						// если есть пересечение
+						if (isIntersect)
+						{
+							aPos.push_back(vGenPos);
 
-						//если тип дерево, то на пиксель генерируем только одно дерево
-						if (pGreen->m_typeGreen == GREEN_TYPE_TREE)
-							break;
-					}
-					else
-					{
-						++iCountFailGreen;
+							//если тип дерево, то на пиксель генерируем только одно дерево
+							if (pGreen->m_typeGreen == GREEN_TYPE_TREE)
+								break;
+						}
+						else
+						{
+							++iCountFailGreen;
+						}
 					}
 				}
 			}
 		}
+
+		pTex->unlock();
+
 	}
 
-	SGCore_LoadTexGetTex(idMask)->UnlockRect(0);
-
-	if (aPos.size() <= 0)
+	if(aPos.size() <= 0)
 		return false;
+
 
 	CGreenDataVertex oGreenData;
 	pGreen->m_uiCountObj = 0;

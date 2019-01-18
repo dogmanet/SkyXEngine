@@ -15,8 +15,6 @@ See the license in LICENSE
 #include <gcore/sxgcore.h>
 
 extern IGXContext *g_pDXDevice;
-extern D3DCAPS9 g_dxCaps;
-extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 
 //! коэффициент размера буфера глубины occlusion culling
 #define OC_SIZE_COEF 0.25f

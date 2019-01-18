@@ -372,10 +372,10 @@ protected:
 	Array<CModel*> m_aGreens;
 
 	//! буфер вершин с трансформациями растительности
-	IDirect3DVertexBuffer9 *m_pTransVertBuf;
+	IGXVertexBuffer *m_pTransVertBuf;
 
 	//! декларация вершин
-	IDirect3DVertexDeclaration9 *m_pVertexDeclarationGreen;
+	IGXVertexDeclaration *m_pVertexDeclarationGreen;
 };
 
 

@@ -647,13 +647,7 @@ SX_LIB_API ID SGCore_RTAdd(
 	UINT iLevels,			//!< количество mip-map уровней
 	DWORD dwUsage,			//!< признак применения, возможные значения из D3DUSAGE_
 	GXFORMAT format,		//!< формат из D3DFORMAT
-	D3DPOOL pool,			//!< где будет размещена текстура, из D3DPOOL
-	const char *szName,		//!< имя rt
-	/*! коэфициент размеров rt относительно области рендера 
-	(если rt и размер области одинаковы то 1, если rt меньша на 0.5 то 0.5) 
-	если указаны фиксированные значения то ставить 0, это нужно для устновления размеров при восстановлении устройства
-	*/
-	float fCoefFullScreen
+	const char *szName		//!< имя rt
 	);
 
 //! удалить rt по имени
@@ -914,12 +908,28 @@ SX_LIB_API ISXBound* SGCore_CrBound();
 
 //#############################################################################
 
+/*! Меш
+*/
+struct IMesh: public IBaseObject
+{
+	virtual ~IMesh() {};
+public:
+	void draw();
+	IGXVertexBuffer *getVertexBuffer();
+	IGXIndexBuffer *getIndexBuffer();
+};
+
+//! создать IMesh
+SX_LIB_API IMesh* SGCore_CrMesh(UINT uVertexCount, UINT uIndexCount);
+
+//#############################################################################
+
 //! создание меша (ID3DXMesh) конуса 
 SX_LIB_API void SGCore_FCreateCone(
 	float fTopRadius,		//!< верхний радиус
 	float fBottomRadius,	//!< нижний радиус
 	float fHeight,			//!< длина
-	ID3DXMesh ** ppMesh,	//!< выходной меш
+	IMesh ** ppMesh,	//!< выходной меш
 	UINT iSideCount			//!< количество частей??
 	);
 

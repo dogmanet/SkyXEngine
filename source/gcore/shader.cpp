@@ -17,7 +17,7 @@ CShaderFileCache* CreateShaderFileCacheFormShader(CShader *pShader)
 	pSFC->m_pCode = pShader->m_pCode;
 	pSFC->m_pCode->AddRef();
 	memcpy(pSFC->m_aVarDesc, pShader->m_aVarDesc, sizeof(D3DXCONSTANT_DESC) * SXGC_SHADER_VAR_MAX_COUNT);
-	memcpy(pSFC->m_aMacros, pShader->m_aMacros, sizeof(D3DXMACRO) * SXGC_SHADER_COUNT_MACRO);
+	memcpy(pSFC->m_aMacros, pShader->m_aMacros, sizeof(GXMACRO) * SXGC_SHADER_COUNT_MACRO);
 
 	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
 	char szDir[SXGC_SHADER_MAX_SIZE_DIR];
@@ -96,7 +96,7 @@ void SaveShaderFileCache(CShaderFileCache *pShaderFileCache)
 	uint32_t iCountMacros = 0;
 	for (int i = 0; i < SXGC_SHADER_COUNT_MACRO; ++i)
 	{
-		if ((pShaderFileCache->m_aMacros[i].Name && strlen(pShaderFileCache->m_aMacros[i].Name) > 0))
+		if ((pShaderFileCache->m_aMacros[i].szName && strlen(pShaderFileCache->m_aMacros[i].szName) > 0))
 			++iCountMacros;
 	}
 
@@ -106,16 +106,16 @@ void SaveShaderFileCache(CShaderFileCache *pShaderFileCache)
 	{
 		for (int i = 0; i < iCountMacros; ++i)
 		{
-			if (!(pShaderFileCache->m_aMacros[i].Name && strlen(pShaderFileCache->m_aMacros[i].Name) > 0))
+			if (!(pShaderFileCache->m_aMacros[i].szName && strlen(pShaderFileCache->m_aMacros[i].szName) > 0))
 				break;
 
-			uint32_t iLen = strlen(pShaderFileCache->m_aMacros[i].Name);
+			uint32_t iLen = strlen(pShaderFileCache->m_aMacros[i].szName);
 			fwrite(&(iLen), sizeof(uint32_t), 1, pFile);
-			fwrite((pShaderFileCache->m_aMacros[i].Name), sizeof(char)* iLen, 1, pFile);
+			fwrite((pShaderFileCache->m_aMacros[i].szName), sizeof(char)* iLen, 1, pFile);
 
-			iLen = strlen(pShaderFileCache->m_aMacros[i].Definition);
+			iLen = strlen(pShaderFileCache->m_aMacros[i].szDefinition);
 			fwrite(&(iLen), sizeof(uint32_t), 1, pFile);
-			fwrite((pShaderFileCache->m_aMacros[i].Definition), sizeof(char)* iLen, 1, pFile);
+			fwrite((pShaderFileCache->m_aMacros[i].szDefinition), sizeof(char)* iLen, 1, pFile);
 		}
 	}
 
@@ -168,19 +168,19 @@ CShaderFileCache* CreateShaderFileCacheFormFile(const char *szPath)
 		uint32_t iLen = 0;
 		fread(&(iLen), sizeof(uint32_t), 1, pFile);
 
-		pSFC->m_aMacros[i].Name = new const char[iLen + 1];
-		ZeroMemory((void*)(pSFC->m_aMacros[i].Name), iLen + 1);
+		pSFC->m_aMacros[i].szName = new const char[iLen + 1];
+		ZeroMemory((void*)(pSFC->m_aMacros[i].szName), iLen + 1);
 
-		fread((void*)(pSFC->m_aMacros[i].Name), sizeof(char)* iLen, 1, pFile);
+		fread((void*)(pSFC->m_aMacros[i].szName), sizeof(char)* iLen, 1, pFile);
 
 
 		iLen = 0;
 		fread(&(iLen), sizeof(uint32_t), 1, pFile);
 
-		pSFC->m_aMacros[i].Definition = new const char[iLen + 1];
-		ZeroMemory((void*)(pSFC->m_aMacros[i].Definition), iLen + 1);
+		pSFC->m_aMacros[i].szDefinition = new const char[iLen + 1];
+		ZeroMemory((void*)(pSFC->m_aMacros[i].szDefinition), iLen + 1);
 
-		fread((void*)(pSFC->m_aMacros[i].Definition), sizeof(char)* iLen, 1, pFile);
+		fread((void*)(pSFC->m_aMacros[i].szDefinition), sizeof(char)* iLen, 1, pFile);
 	}
 
 	uint32_t iSizeBinCode;
@@ -210,7 +210,7 @@ uint32_t GetTimeShaderFileCache(const char *szPath)
 
 //**************************************************************************
 
-int LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
+int LoadVertexShader(const char *szPath, CShaderVS *pShader, GXMACRO *aMacro)
 {
 	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
 	char szFullPathCache[SXGC_SHADER_MAX_SIZE_FULLPATH];
@@ -336,7 +336,7 @@ int LoadVertexShader(const char *szPath, CShaderVS *pShader, D3DXMACRO *aMacro)
 	return LOAD_SHADER_COMPLETE;
 }
 
-int LoadPixelShader(const char *szPath, CShaderPS *pShader,D3DXMACRO *aMacro)
+int LoadPixelShader(const char *szPath, CShaderPS *pShader,GXMACRO *aMacro)
 {
 	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
 	char szFullPathCache[SXGC_SHADER_MAX_SIZE_FULLPATH];
@@ -774,8 +774,8 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szN
 			pShader->m_aMacros[i] = aMacros[i];
 		}
 
-		pShader->m_aMacros[iCountMacros].Name = 0;
-		pShader->m_aMacros[iCountMacros].Definition = 0;
+		pShader->m_aMacros[iCountMacros].szName = 0;
+		pShader->m_aMacros[iCountMacros].szDefinition = 0;
 	}
 
 	return id;
@@ -980,8 +980,7 @@ void CShaderManager::bind(SHADER_TYPE type_shader, ID idShader)
 
 void CShaderManager::unbind()
 {
-	g_pDXDevice->SetVertexShader(0);
-	g_pDXDevice->SetPixelShader(0);
+	g_pDXDevice->setShader(NULL);
 }
 
 

@@ -18,11 +18,9 @@ See the license in LICENSE
 //##########################################################################
 
 extern IGXContext *g_pDXDevice;
-extern D3DCAPS9 g_dxCaps;
 extern HMODULE m_hLibGXAPI;
-extern ID3DXFont *g_pFPStext;
 extern Array<DEVMODE> g_aModes;
-extern ID3DXMesh *g_pScreenTexture;
+extern IMesh *g_pScreenTexture;
 
 //##########################################################################
 
