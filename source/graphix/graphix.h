@@ -20,14 +20,14 @@ enum GXTEXLOCK
 
 enum
 {
-	GX_BUFFER_USAGE_STATIC = 0x01, // данные будут очень редко обновляться
-	GX_BUFFER_USAGE_DYNAMIC = 0x02, // данные будут обновляться, но не каждый кадр
-	GX_BUFFER_USAGE_STREAM = 0x04, // данные будут обновляться каждый кадр
+	GX_BUFFER_USAGE_STATIC = 0x01, // РґР°РЅРЅС‹Рµ Р±СѓРґСѓС‚ РѕС‡РµРЅСЊ СЂРµРґРєРѕ РѕР±РЅРѕРІР»СЏС‚СЊСЃСЏ
+	GX_BUFFER_USAGE_DYNAMIC = 0x02, // РґР°РЅРЅС‹Рµ Р±СѓРґСѓС‚ РѕР±РЅРѕРІР»СЏС‚СЊСЃСЏ, РЅРѕ РЅРµ РєР°Р¶РґС‹Р№ РєР°РґСЂ
+	GX_BUFFER_USAGE_STREAM = 0x04, // РґР°РЅРЅС‹Рµ Р±СѓРґСѓС‚ РѕР±РЅРѕРІР»СЏС‚СЊСЃСЏ РєР°Р¶РґС‹Р№ РєР°РґСЂ
 	GX_BUFFER_WRITEONLY = 0x08
 };
 
 
-#define GXDECL_END() {0xFF,0,GXDECLTYPE_UNUSED,(GXDECLUSAGE)0}
+#define GXDECL_END() {0xFF,0,GXDECLTYPE_UNUSED,(GXDECLUSAGE)0, GXDECLSPEC_PER_VERTEX_DATA}
 
 
 typedef enum _GXDECLTYPE
@@ -56,6 +56,14 @@ typedef enum _GXDECLTYPE
 	GXDECLTYPE_FLOAT16_4 = 16,  // Four 16-bit floating point values
 	GXDECLTYPE_UNUSED = 17,  // When the type field in a decl is unused.
 } GXDECLTYPE;
+
+
+
+typedef enum _GXDECLSPEC
+{
+	GXDECLSPEC_PER_VERTEX_DATA = 0,	 // Input data is per-vertex data.
+	GXDECLSPEC_PER_INSTANCE_DATA // Input data is per-instance data.
+} GXDECLSPEC;
 
 // Vertex element semantics
 //
@@ -100,16 +108,18 @@ typedef enum _GXDECLUSAGE
 
 typedef struct _GXVERTEXELEMENT
 {
-	WORD    Stream;     // Stream index
-	WORD    Offset;     // Offset in the stream in bytes
-	GXDECLTYPE    Type;       // Data type
-	GXDECLUSAGE    Usage;      // Semantics
+	WORD Stream;     // Stream index
+	WORD Offset;     // Offset in the stream in bytes
+	GXDECLTYPE Type;       // Data type
+	GXDECLUSAGE Usage;      // Semantics
+	GXDECLSPEC spec; // attribute instancing spec
 } GXVERTEXELEMENT;
 
 #define MAXGXVSTREAM 16
 
 #define GX_TEXUSAGE_RENDERTARGET 0x00000001
 #define GX_TEXUSAGE_AUTOGENMIPMAPS 0x00000002
+#define GX_TEXUSAGE_AUTORESIZE 0x00000004
 
 enum GXPT
 {
@@ -118,8 +128,8 @@ enum GXPT
 	GXPT_LINELIST = 2,
 	GXPT_LINESTRIP = 3,
 	GXPT_TRIANGLELIST = 4,
-	GXPT_TRIANGLESTRIP = 5,
-	GXPT_TRIANGLEFAN = 6
+	GXPT_TRIANGLESTRIP = 5/*,
+	GXPT_TRIANGLEFAN = 6*/
 };
 
 enum GXINDEXTYPE
@@ -133,6 +143,19 @@ enum GXINDEXTYPE
                 ((DWORD)(BYTE)(ch0) | ((DWORD)(BYTE)(ch1) << 8) |   \
                 ((DWORD)(BYTE)(ch2) << 16) | ((DWORD)(BYTE)(ch3) << 24 ))
 #endif
+
+// maps unsigned 8 bits/channel to D3DCOLOR
+#define GXCOLOR_ARGB(a,r,g,b) \
+    ((GXCOLOR)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
+#define GXCOLOR_RGBA(r,g,b,a) GXCOLOR_ARGB(a,r,g,b)
+#define GXCOLOR_XRGB(r,g,b)   GXCOLOR_ARGB(0xff,r,g,b)
+							  
+#define GXCOLOR_XYUV(y,u,v)   GXCOLOR_ARGB(0xff,y,u,v)
+#define GXCOLOR_AYUV(a,y,u,v) GXCOLOR_ARGB(a,y,u,v)
+
+// maps floating point channels (0.f to 1.f range) to D3DCOLOR
+#define GXCOLOR_COLORVALUE(r,g,b,a) \
+    GXCOLOR_RGBA((DWORD)((r)*255.f),(DWORD)((g)*255.f),(DWORD)((b)*255.f),(DWORD)((a)*255.f))
 
 typedef enum _GXFORMAT
 {
@@ -295,8 +318,6 @@ typedef enum _GXCOLOR_WRITE_ENABLE
 	GXCOLOR_WRITE_ENABLE_ALL = (((GXCOLOR_WRITE_ENABLE_RED | GXCOLOR_WRITE_ENABLE_GREEN) | GXCOLOR_WRITE_ENABLE_BLUE) | GXCOLOR_WRITE_ENABLE_ALPHA)
 } 	GXCOLOR_WRITE_ENABLE;
 
-
-// SetTextureStageState
 typedef struct _GXBLEND_DESC
 {
 	BOOL bAlphaToCoverageEnable;
@@ -428,10 +449,12 @@ typedef struct _GXMACRO
 
 } GXMACRO;
 
+
 //##########################################################################
 
 class IGXBaseInterface
 {
+protected:
 	virtual ~IGXBaseInterface(){}
 public:
 	virtual void Release() = 0;
@@ -461,10 +484,18 @@ class IGXRenderBuffer: public IGXBaseInterface
 
 class IGXVertexShader: public IGXBaseInterface
 {
+public:
+	virtual void setConstantF(UINT uStartRegister, const float *pConstantData, UINT uVector4fCount) = 0;
+	virtual void setConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount) = 0;
+	virtual UINT getConstantLocation(const char *szConstName) = 0;
 };
 
 class IGXPixelShader: public IGXBaseInterface
 {
+public:
+	virtual void setConstantF(UINT uStartRegister, const float *pConstantData, UINT uVector4fCount) = 0;
+	virtual void setConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount) = 0;
+	virtual UINT getConstantLocation(const char *szConstName) = 0;
 };
 
 class IGXShader: public IGXBaseInterface
@@ -545,7 +576,7 @@ class IGXSamplerState: public IGXBaseInterface
 
 //##########################################################################
 
-#define bAllowDiscard bAllowDiscard /* данные могут быть потеряны, например при потере/восстановлении устройства в dx9 */
+#define bAllowDiscard bAllowDiscard /* РґР°РЅРЅС‹Рµ РјРѕРіСѓС‚ Р±С‹С‚СЊ РїРѕС‚РµСЂСЏРЅС‹, РЅР°РїСЂРёРјРµСЂ РїСЂРё РїРѕС‚РµСЂРµ/РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРё СѓСЃС‚СЂРѕР№СЃС‚РІР° РІ dx9 */
 class IGXContext
 {
 public:
@@ -554,12 +585,14 @@ public:
 	{
 	};
 
+	virtual void resize(int iWidth, int iHeight, bool isWindowed) = 0;
+
 	virtual void swapBuffers() = 0;
 
 	virtual void beginFrame() = 0;
 	virtual void endFrame() = 0;
 	
-	virtual bool wasDiscard() = 0; // могли ли быть утеряны данные в буферах и текстурах, для которых это допустимо?
+	virtual bool wasReset() = 0; // РјРѕРіР»Рё Р»Рё Р±С‹С‚СЊ СѓС‚РµСЂСЏРЅС‹ РґР°РЅРЅС‹Рµ РІ Р±СѓС„РµСЂР°С… Рё С‚РµРєСЃС‚СѓСЂР°С…, РґР»СЏ РєРѕС‚РѕСЂС‹С… СЌС‚Рѕ РґРѕРїСѓСЃС‚РёРјРѕ?
 
 	virtual void setClearColor(const float4_t & color) = 0;
 	virtual void clearTarget() = 0;
@@ -584,23 +617,19 @@ public:
 	virtual void setPrimitiveTopology(GXPT pt) = 0;
 
 	virtual void drawIndexed(UINT uVertexCount, UINT uPrimitiveCount, UINT uStartIndexLocation, int iBaseVertexLocation) = 0;
+	virtual void drawIndexedInstanced(UINT uInstanceCount, UINT uVertexCount, UINT uPrimitiveCount, UINT uStartIndexLocation, int iBaseVertexLocation) = 0;
 	virtual void drawPrimitive(UINT uStartVertex, UINT uPrimitiveCount) = 0;
-
+	virtual void drawPrimitiveInstanced(UINT uInstanceCount, UINT uStartVertex, UINT uPrimitiveCount) = 0;
+	
 	// https://github.com/LukasBanana/XShaderCompiler/releases
 	// https://github.com/Thekla/hlslparser/tree/master/src
 	virtual IGXVertexShader * createVertexShader(const char * szFile, GXMACRO *pDefs = NULL) = 0;
 	virtual IGXVertexShader * createVertexShader(void *pData, UINT uSize) = 0;
 	virtual void destroyVertexShader(IGXVertexShader * pSH) = 0;
-	virtual void setVertexShaderConstantF(UINT uStartRegister, const float *pConstantData, UINT uVector4fCount) = 0;
-	virtual void setVertexShaderConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount) = 0;
-	virtual UINT getVertexShaderConstantLocation(const char *szConstName) = 0;
 
 	virtual IGXPixelShader * createPixelShader(const char * szFile, GXMACRO *pDefs = NULL) = 0;
 	virtual IGXPixelShader * createPixelShader(void *pData, UINT uSize) = 0;
 	virtual void destroyPixelShader(IGXPixelShader * pSH) = 0;
-	virtual void setPixelShaderConstantF(UINT uStartRegister, const float *pConstantData, UINT uVector4fCount) = 0;
-	virtual void setPixelShaderConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount) = 0;
-	virtual UINT getPixelShaderConstantLocation(const char *szConstName) = 0;
 
 	// virtual void setVertexShader(IGXVertexShader * pSH) = 0;
 	// virtual void setPixelShader(IGXPixelShader * pSH) = 0;

@@ -13,8 +13,8 @@ CLights::CLights()
 	const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-	m_idShadowMap = SGCore_RTAdd(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap", 1);
-	m_idShadowMap2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap2", 1);
+	m_idShadowMap = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GXUSAGE_RENDERTARGET, GXFMT_R16F, D3DPOOL_DEFAULT, "shadowmap", 1);
+	m_idShadowMap2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GXUSAGE_RENDERTARGET, GXFMT_R16F, D3DPOOL_DEFAULT, "shadowmap2", 1);
 
 	m_idGlobalLight = -1;
 	m_isCastGlobalShadow = false;
@@ -41,7 +41,7 @@ ID CLights::createCopy(ID id)
 		CLight* tmplight2 = new CLight();
 		tmplight2->m_fAngle = tmplight->m_fAngle;
 		tmplight2->m_pBoundVolume = SGCore_CrBound();
-		IDirect3DVertexBuffer9* vertexbuf;
+		IGXVertexBuffer* vertexbuf;
 		tmplight->m_pMesh->GetVertexBuffer(&vertexbuf);
 		tmplight->m_pBoundVolume->calcBound(vertexbuf, tmplight->m_pMesh->GetNumVertices(), tmplight->m_pMesh->GetNumBytesPerVertex());
 		mem_release(vertexbuf);
@@ -388,7 +388,7 @@ ID CLights::createPoint(ID id, const float3* center, float dist, const float3* c
 	tmplight->m_vColor = *color;
 	tmplight->m_isEnable = true;
 	tmplight->m_pBoundVolume = SGCore_CrBound();
-	IDirect3DVertexBuffer9* vertexbuf;
+	IGXVertexBuffer* vertexbuf;
 	tmplight->m_pMesh->GetVertexBuffer(&vertexbuf);
 	tmplight->m_pBoundVolume->calcBound(vertexbuf, tmplight->m_pMesh->GetNumVertices(), tmplight->m_pMesh->GetNumBytesPerVertex());
 	mem_release(vertexbuf);
@@ -456,7 +456,7 @@ ID CLights::createDirection(ID id, const float3* pos, float dist, const float3* 
 		tmplight->m_typeShadowed = LTYPE_SHADOW_NONE;
 
 	tmplight->m_pBoundVolume = SGCore_CrBound();
-	IDirect3DVertexBuffer9* vertexbuf;
+	IGXVertexBuffer* vertexbuf;
 	tmplight->m_pMesh->GetVertexBuffer(&vertexbuf);
 	tmplight->m_pBoundVolume->calcBound(vertexbuf, tmplight->m_pMesh->GetNumVertices(), tmplight->m_pMesh->GetNumBytesPerVertex());
 	mem_release(vertexbuf);
@@ -579,7 +579,7 @@ void CLights::setLightDist(ID id, float radius_height, bool is_create)
 
 	if (m_aLights[id]->m_pMesh)
 	{
-		IDirect3DVertexBuffer9* vertexbuf;
+		IGXVertexBuffer* vertexbuf;
 		m_aLights[id]->m_pMesh->GetVertexBuffer(&vertexbuf);
 		m_aLights[id]->m_pBoundVolume->calcBound(vertexbuf, m_aLights[id]->m_pMesh->GetNumVertices(), m_aLights[id]->m_pMesh->GetNumBytesPerVertex());
 		mem_release_del(vertexbuf);
@@ -762,7 +762,7 @@ float CLights::getDistFor(ID id)
 	return m_aLights[id]->m_fDistFor;
 }
 
-IDirect3DTexture9* CLights::getShadow2()
+IGXTexture2D* CLights::getShadow2()
 {
 	return SGCore_RTGetTexture((m_iHowShadow == 1 ? m_idShadowMap2 : m_idShadowMap));
 }
@@ -966,22 +966,21 @@ void CLights::shadowGen2(ID id)
 
 void CLights::shadowNull()
 {
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
+	IGXSurface *RenderSurf, *BackBuf;
 
-	SGCore_RTGetTexture(m_idShadowMap)->GetSurfaceLevel(0, &RenderSurf);
-	light_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	light_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	RenderSurf = SGCore_RTGetTexture(m_idShadowMap)->getMipMap(0);
+	BackBuf = light_data::pDXDevice->getColorTarget();
+	light_data::pDXDevice->setColorTarget(RenderSurf);
 
 	light_data::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
 	light_data::pDXDevice->clearTarget();
 
-	light_data::pDXDevice->SetVertexShader(0);
-	light_data::pDXDevice->SetPixelShader(0);
+	light_data::pDXDevice->setShader(NULL);
 
-	light_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	light_data::pDXDevice->setColorTarget(BackBuf);
 
-	mem_release_del(RenderSurf);
-	mem_release_del(BackBuf);
+	//mem_release_del(RenderSurf);
+	//mem_release_del(BackBuf);
 
 	m_iHowShadow = 0;
 }
@@ -1001,7 +1000,7 @@ void CLights::setLightAngle(ID id, float angle, bool is_create)
 
 		if (m_aLights[id]->m_pMesh)
 		{
-			IDirect3DVertexBuffer9* vertexbuf;
+			IGXVertexBuffer* vertexbuf;
 			m_aLights[id]->m_pMesh->GetVertexBuffer(&vertexbuf);
 			m_aLights[id]->m_pBoundVolume->calcBound(vertexbuf, m_aLights[id]->m_pMesh->GetNumVertices(), m_aLights[id]->m_pMesh->GetNumBytesPerVertex());
 			mem_release(vertexbuf);
@@ -1026,7 +1025,7 @@ void CLights::setLightTopRadius(ID id, float top_radius)
 
 		if (m_aLights[id]->m_pMesh)
 		{
-			IDirect3DVertexBuffer9* vertexbuf;
+			IGXVertexBuffer* vertexbuf;
 			m_aLights[id]->m_pMesh->GetVertexBuffer(&vertexbuf);
 			m_aLights[id]->m_pBoundVolume->calcBound(vertexbuf, m_aLights[id]->m_pMesh->GetNumVertices(), m_aLights[id]->m_pMesh->GetNumBytesPerVertex());
 			mem_release_del(vertexbuf);
@@ -1367,27 +1366,27 @@ void CLights::shadowSoft(bool randomsam, float size, bool isfirst)
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
-	LPDIRECT3DSURFACE9 RenderSurf,BackBuf;
+	IGXSurface *RenderSurf,*BackBuf;
 
-		if(m_iHowShadow == 0)
-			SGCore_RTGetTexture(m_idShadowMap2)->GetSurfaceLevel(0, &RenderSurf);
-		else
-			SGCore_RTGetTexture(m_idShadowMap)->GetSurfaceLevel(0, &RenderSurf);
+	if(m_iHowShadow == 0)
+		RenderSurf = SGCore_RTGetTexture(m_idShadowMap2)->getMipmap();
+	else
+		RenderSurf = SGCore_RTGetTexture(m_idShadowMap)->getMipmap();
 
-	light_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	light_data::pDXDevice->SetRenderTarget(0,RenderSurf);
+	BackBuf = light_data::pDXDevice->getColorTarget();
+	light_data::pDXDevice->setColorTarget(RenderSurf);
 
 	SGCore_SetSamplerFilter(0, D3DTEXF_POINT);
 	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
 	SGCore_SetSamplerFilter(1, D3DTEXF_POINT);
 	SGCore_SetSamplerAddress(1, D3DTADDRESS_CLAMP);
 
-	light_data::pDXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_DEPTH));
+	light_data::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH));
 	
 		if(m_iHowShadow == 0)
-			light_data::pDXDevice->SetTexture(1, SGCore_RTGetTexture(m_idShadowMap));
+			light_data::pDXDevice->setTexture(SGCore_RTGetTexture(m_idShadowMap), 1);
 		else
-			light_data::pDXDevice->SetTexture(1, SGCore_RTGetTexture(m_idShadowMap2));
+			light_data::pDXDevice->setTexture(SGCore_RTGetTexture(m_idShadowMap2), 1);
 	
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idScreenOut);
 
@@ -1395,7 +1394,7 @@ void CLights::shadowSoft(bool randomsam, float size, bool isfirst)
 		{
 			SGCore_SetSamplerFilter(2, D3DTEXF_POINT);
 			SGCore_SetSamplerAddress(2, D3DTADDRESS_WRAP);
-			light_data::pDXDevice->SetTexture(2, SGCore_LoadTexGetTex(light_data::texture_id::idNoiseTex));
+			light_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(light_data::texture_id::idNoiseTex), 2);
 			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idPPBlurDepthBasedNoise);
 		}
 		else
@@ -1415,12 +1414,11 @@ void CLights::shadowSoft(bool randomsam, float size, bool isfirst)
 	
 	SGCore_ScreenQuadDraw();
 
-	light_data::pDXDevice->SetVertexShader(0);
-	light_data::pDXDevice->SetPixelShader(0);
+	light_data::pDXDevice->setShader(NULL);
 
-	light_data::pDXDevice->SetRenderTarget(0,BackBuf);
-	mem_release_del(RenderSurf);
-	mem_release_del(BackBuf);
+	light_data::pDXDevice->setColorTarget(BackBuf);
+	//mem_release_del(RenderSurf);
+	//mem_release_del(BackBuf);
 
 		if(m_iHowShadow == 1)
 			m_iHowShadow = 0;

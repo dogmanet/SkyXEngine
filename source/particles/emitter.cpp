@@ -53,6 +53,13 @@ CEmitter::~CEmitter()
 	mem_release_del(m_pIndexBuff);
 	mem_release_del(m_pVertexBuffQuad);
 	mem_release_del(m_pIndexBuffQuad);
+	mem_release_del(m_pRenderBuff);
+	mem_release_del(m_pRenderBuffQuad);
+
+	for(int i = 0; i < PARTICLESTYPE_ALPLABLEND__SIZE; ++i)
+	{
+		mem_release_del(m_pBlendStates[i]);
+	}
 }
 
 void CEmitter::onLostDevice()
@@ -62,13 +69,13 @@ void CEmitter::onLostDevice()
 
 void CEmitter::onResetDevice()
 {
-	pe_data::pDXDevice->CreateVertexBuffer(
-		m_iCount * sizeof(CommonParticleDecl2),
-		D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
-		0,
-		D3DPOOL_DEFAULT,
-		&m_pTransVertBuf,
-		0);
+	//pe_data::pDXDevice->CreateVertexBuffer(
+	//	m_iCount * sizeof(CommonParticleDecl2),
+	//	D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
+	//	0,
+	//	D3DPOOL_DEFAULT,
+	//	&m_pTransVertBuf,
+	//	0);
 }
 
 void CEmitter::init(const CParticlesData *pData)
@@ -80,6 +87,32 @@ void CEmitter::init(const CParticlesData *pData)
 		initAnimTexData();
 
 	createGeomData();
+
+
+	//@TODO: Check these states
+	GXBLEND_DESC blendDesc;
+	memset(&blendDesc, 0, sizeof(blendDesc));
+	blendDesc.renderTarget[0].bBlendEnable = TRUE;
+	blendDesc.renderTarget[0].blendOp = GXBLEND_OP_ADD;
+	blendDesc.renderTarget[0].blendOpAlpha = GXBLEND_OP_ADD;
+	blendDesc.renderTarget[0].destBlend = GXBLEND_INV_SRC_ALPHA;
+	blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_ZERO;
+	blendDesc.renderTarget[0].srcBlend = GXBLEND_SRC_ALPHA;
+	blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_ONE;
+	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_ALL;
+	
+	m_pBlendStates[PARTICLESTYPE_ALPHABLEND_ALPHA] = pe_data::pDXDevice->createBlendState(&blendDesc);
+
+	blendDesc.renderTarget[0].bBlendEnable = TRUE;
+	blendDesc.renderTarget[0].blendOp = GXBLEND_OP_ADD;
+	blendDesc.renderTarget[0].blendOpAlpha = GXBLEND_OP_ADD;
+	blendDesc.renderTarget[0].destBlend = GXBLEND_ONE;
+	blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_ZERO;
+	blendDesc.renderTarget[0].srcBlend = GXBLEND_ONE;
+	blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_ONE;
+	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_ALL;
+
+	m_pBlendStates[PARTICLESTYPE_ALPHABLEND_ADD] = pe_data::pDXDevice->createBlendState(&blendDesc);
 
 	if (m_isEnable)
 	{
@@ -170,11 +203,10 @@ void CEmitter::initAnimTexData()
 {
 	if (m_isTexInit && m_oData.m_iAnimTexCountCadrsX != 0 && m_oData.m_iAnimTexCountCadrsY != 0)
 	{
-		D3DSURFACE_DESC desc;
-		SGCore_LoadTexGetTex(m_idTex)->GetLevelDesc(0, &desc);
+		IGXTexture2D *pTex = SGCore_LoadTexGetTex(m_idTex);
 
-		m_vAnimTexSize.x = desc.Width;
-		m_vAnimTexSize.y = desc.Height;
+		m_vAnimTexSize.x = pTex->getWidth();
+		m_vAnimTexSize.y = pTex->getHeight();
 
 		m_vAnimSizeCadr.x = (m_vAnimTexSize.x / float(m_oData.m_iAnimTexCountCadrsX));
 		m_vAnimSizeCadr.y = (m_vAnimTexSize.y / float(m_oData.m_iAnimTexCountCadrsY));
@@ -261,17 +293,13 @@ void CEmitter::setCount(int iCount)
 	}
 
 	mem_delete_a(m_pArr);
-	mem_release_del(m_pTransVertBuf);
+	mem_release(m_pTransVertBuf);
+	mem_release(m_pRenderBuff);
+	mem_release(m_pRenderBuffQuad);
 
 	m_pArr = new CommonParticle[m_iCount];
 
-	pe_data::pDXDevice->CreateVertexBuffer(
-		m_iCount * sizeof(CommonParticleDecl2),
-		D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY,
-		0,
-		D3DPOOL_DEFAULT,
-		&m_pTransVertBuf,
-		0);
+	m_pTransVertBuf = pe_data::pDXDevice->createVertexBuffer(m_iCount * sizeof(CommonParticleDecl2), GX_BUFFER_USAGE_STREAM, NULL, true);
 
 	createGeomData();
 }
@@ -327,149 +355,136 @@ void CEmitter::modifyVertexBuff()
 		return;
 
 	CommonParticleDecl *pVertices;
-	m_pVertexBuff->Lock(0, 0, (void**)&pVertices, 0);
-
-	float prev_angle_x = 0;
-	float prev_angle_y = 0;
-	float prev_angle_z = 0;
-
-	int countvert = 0;
-
-	static float4x4 mat;
-	mat = SMMatrixIdentity();
-
-	float x = m_oData.m_vSize.x * 0.5f;
-	float y = m_oData.m_vSize.y * 0.5f;
-
-	for (int i = 0; i < m_oData.m_iFigureCountQuads; ++i)
+	if(m_pVertexBuff->lock((void**)&pVertices, GXBL_WRITE))
 	{
-		float3 v0(-x, -y, 0.f);
-		float3 v1(-x, y, 0.f);
-		float3 v2(x, y, 0.f);
-		float3 v3(x, -y, 0.f);
 
-		if (m_oData.m_useFigureTapX)
+		float prev_angle_x = 0;
+		float prev_angle_y = 0;
+		float prev_angle_z = 0;
+
+		int countvert = 0;
+
+		static float4x4 mat;
+		mat = SMMatrixIdentity();
+
+		float x = m_oData.m_vSize.x * 0.5f;
+		float y = m_oData.m_vSize.y * 0.5f;
+
+		for(int i = 0; i < m_oData.m_iFigureCountQuads; ++i)
 		{
-			if (m_oData.m_useFigureRotRand)
-				prev_angle_x = randf(0, SM_PI);
-			else
-				prev_angle_x = SM_PI / float(m_oData.m_iFigureCountQuads) * i;
+			float3 v0(-x, -y, 0.f);
+			float3 v1(-x, y, 0.f);
+			float3 v2(x, y, 0.f);
+			float3 v3(x, -y, 0.f);
 
-			mat *= SMMatrixRotationX(prev_angle_x);
+			if(m_oData.m_useFigureTapX)
+			{
+				if(m_oData.m_useFigureRotRand)
+					prev_angle_x = randf(0, SM_PI);
+				else
+					prev_angle_x = SM_PI / float(m_oData.m_iFigureCountQuads) * i;
+
+				mat *= SMMatrixRotationX(prev_angle_x);
+			}
+
+			if(m_oData.m_useFigureTapY)
+			{
+				if(m_oData.m_useFigureRotRand)
+					prev_angle_y = randf(0, SM_PI);
+				else
+					prev_angle_y = SM_PI / float(m_oData.m_iFigureCountQuads) * i;
+
+				mat *= SMMatrixRotationY(prev_angle_y);
+			}
+
+			if(m_oData.m_useFigureTapZ)
+			{
+				if(m_oData.m_useFigureRotRand)
+					prev_angle_z = randf(0, SM_PI);
+				else
+					prev_angle_z = SM_PI / float(m_oData.m_iFigureCountQuads) * i;
+
+				mat *= SMMatrixRotationZ(prev_angle_z);
+			}
+
+			v0 = SMVector3Transform(v0, mat);
+			v1 = SMVector3Transform(v1, mat);
+			v2 = SMVector3Transform(v2, mat);
+			v3 = SMVector3Transform(v3, mat);
+
+			pVertices[countvert + 0] = CommonParticleDecl(v0.x, v0.y, v0.z, 0.0f, 1.0f);
+			pVertices[countvert + 1] = CommonParticleDecl(v1.x, v1.y, v1.z, 0.0f, 0.0f);
+			pVertices[countvert + 2] = CommonParticleDecl(v2.x, v2.y, v2.z, 1.0f, 0.0f);
+			pVertices[countvert + 3] = CommonParticleDecl(v3.x, v3.y, v3.z, 1.0f, 1.0f);
+
+			countvert += 4;
 		}
 
-		if (m_oData.m_useFigureTapY)
-		{
-			if (m_oData.m_useFigureRotRand)
-				prev_angle_y = randf(0, SM_PI);
-			else
-				prev_angle_y = SM_PI / float(m_oData.m_iFigureCountQuads) * i;
-
-			mat *= SMMatrixRotationY(prev_angle_y);
-		}
-
-		if (m_oData.m_useFigureTapZ)
-		{
-			if (m_oData.m_useFigureRotRand)
-				prev_angle_z = randf(0, SM_PI);
-			else
-				prev_angle_z = SM_PI / float(m_oData.m_iFigureCountQuads) * i;
-
-			mat *= SMMatrixRotationZ(prev_angle_z);
-		}
-
-		v0 = SMVector3Transform(v0, mat);
-		v1 = SMVector3Transform(v1, mat);
-		v2 = SMVector3Transform(v2, mat);
-		v3 = SMVector3Transform(v3, mat);
-
-		pVertices[countvert + 0] = CommonParticleDecl(v0.x, v0.y, v0.z, 0.0f, 1.0f);
-		pVertices[countvert + 1] = CommonParticleDecl(v1.x, v1.y, v1.z, 0.0f, 0.0f);
-		pVertices[countvert + 2] = CommonParticleDecl(v2.x, v2.y, v2.z, 1.0f, 0.0f);
-		pVertices[countvert + 3] = CommonParticleDecl(v3.x, v3.y, v3.z, 1.0f, 1.0f);
-
-		countvert += 4;
+		m_pVertexBuff->unlock();
 	}
-
-	m_pVertexBuff->Unlock();
 }
 
 void CEmitter::createGeomData()
 {
-	mem_release_del(m_pVertexBuff);
-	mem_release_del(m_pIndexBuff);
+	mem_release(m_pVertexBuff);
+	mem_release(m_pIndexBuff);
+	mem_release(m_pRenderBuff);
+	mem_release(m_pVertexBuffQuad);
+	mem_release(m_pIndexBuffQuad);
+	mem_release(m_pRenderBuffQuad);
 
-	pe_data::pDXDevice->CreateVertexBuffer(
-		4 * m_oData.m_iFigureCountQuads * sizeof(CommonParticleDecl),
-		0,
-		0,
-		D3DPOOL_MANAGED,
-		&m_pVertexBuff,
-		0);
 
-	pe_data::pDXDevice->CreateIndexBuffer(
-		6 * m_oData.m_iFigureCountQuads * sizeof(WORD),
-		0,
-		D3DFMT_INDEX16,
-		D3DPOOL_MANAGED,
-		&m_pIndexBuff,
-		0);
+	m_pVertexBuff = pe_data::pDXDevice->createVertexBuffer(4 * m_oData.m_iFigureCountQuads * sizeof(CommonParticleDecl), GX_BUFFER_USAGE_STATIC);
+	m_pIndexBuff = pe_data::pDXDevice->createIndexBuffer(6 * m_oData.m_iFigureCountQuads * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_USHORT);
+	IGXVertexBuffer *pvb[] = {m_pVertexBuff, m_pTransVertBuf};
+	m_pRenderBuff = pe_data::pDXDevice->createRenderBuffer(2, pvb, pe_data::pVertexDeclarationParticles);
 
 	modifyVertexBuff();
 
 	WORD* indices = 0;
-	m_pIndexBuff->Lock(0, 0, (void**)&indices, 0);
-
-	int countind = 0;
-	int countvert = 0;
-
-	for (int i = 0; i < m_oData.m_iFigureCountQuads; ++i)
+	if(m_pIndexBuff->lock((void**)&indices, GXBL_WRITE))
 	{
-		indices[countind + 0] = countvert + 0; indices[countind + 1] = countvert + 1; indices[countind + 2] = countvert + 2;
-		indices[countind + 3] = countvert + 0; indices[countind + 4] = countvert + 2; indices[countind + 5] = countvert + 3;
 
-		countind += 6;
-		countvert += 4;
+		int countind = 0;
+		int countvert = 0;
+
+		for(int i = 0; i < m_oData.m_iFigureCountQuads; ++i)
+		{
+			indices[countind + 0] = countvert + 0; indices[countind + 1] = countvert + 1; indices[countind + 2] = countvert + 2;
+			indices[countind + 3] = countvert + 0; indices[countind + 4] = countvert + 2; indices[countind + 5] = countvert + 3;
+
+			countind += 6;
+			countvert += 4;
+		}
+
+		m_pIndexBuff->unlock();
 	}
 
-	m_pIndexBuff->Unlock();
-
-
-
-	pe_data::pDXDevice->CreateVertexBuffer(
-		4 * sizeof(CommonParticleDecl),
-		0,
-		0,
-		D3DPOOL_MANAGED,
-		&m_pVertexBuffQuad,
-		0);
-
-	pe_data::pDXDevice->CreateIndexBuffer(
-		6  * sizeof(WORD),
-		0,
-		D3DFMT_INDEX16,
-		D3DPOOL_MANAGED,
-		&m_pIndexBuffQuad,
-		0);
+	m_pVertexBuffQuad = pe_data::pDXDevice->createVertexBuffer(4 * sizeof(CommonParticleDecl), GX_BUFFER_USAGE_STATIC);
+	m_pIndexBuffQuad = pe_data::pDXDevice->createIndexBuffer(6 * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_USHORT);
+	IGXVertexBuffer *pvbq[] = {m_pVertexBuffQuad, m_pTransVertBuf};
+	m_pRenderBuffQuad = pe_data::pDXDevice->createRenderBuffer(2, pvbq, pe_data::pVertexDeclarationParticles);
 
 	CommonParticleDecl* vertices;
-	m_pVertexBuffQuad->Lock(0, 0, (void**)&vertices, 0);
+	if(m_pVertexBuffQuad->lock((void**)&vertices, GXBL_WRITE))
+	{
+		vertices[0] = CommonParticleDecl(-0.5, 0, -0.5, 0.0f, 1.0f);
+		vertices[1] = CommonParticleDecl(-0.5, 0, 0.5, 0.0f, 0.0f);
+		vertices[2] = CommonParticleDecl(0.5, 0, 0.5, 1.0f, 0.0f);
+		vertices[3] = CommonParticleDecl(0.5, 0, -0.5, 1.0f, 1.0f);
 
-	vertices[0] = CommonParticleDecl(-0.5, 0, -0.5, 0.0f, 1.0f);
-	vertices[1] = CommonParticleDecl(-0.5, 0,  0.5, 0.0f, 0.0f);
-	vertices[2] = CommonParticleDecl( 0.5, 0,  0.5, 1.0f, 0.0f);
-	vertices[3] = CommonParticleDecl( 0.5, 0,  -0.5, 1.0f, 1.0f);
-
-	m_pVertexBuffQuad->Unlock();
-
+		m_pVertexBuffQuad->unlock();
+	}
 
 	indices = 0;
-	m_pIndexBuffQuad->Lock(0, 0, (void**)&indices, 0);
+	if(m_pIndexBuffQuad->lock((void**)&indices, GXBL_WRITE))
+	{
 
-	indices[0] = 0; indices[1] = 1; indices[2] = 2;
-	indices[3] = 0; indices[4] = 2; indices[5] = 3;
+		indices[0] = 0; indices[1] = 1; indices[2] = 2;
+		indices[3] = 0; indices[4] = 2; indices[5] = 3;
 
-	m_pIndexBuffQuad->Unlock();
+		m_pIndexBuffQuad->unlock();
+	}
 }
 
 void CEmitter::createParticles()
@@ -1241,34 +1256,29 @@ void CEmitter::render(DWORD timeDelta, const float4x4 *mRot, const float4x4 *mPo
 		}
 
 		CommonParticleDecl2* RTGPUArrVerteces;
-		m_pTransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
 		DWORD tmpcount = 0;
-		for (int i = 0; i < m_iCount; ++i)
+		if(m_pTransVertBuf->lock((void**)&RTGPUArrVerteces, GXBL_WRITE))
 		{
-			if (m_pArr[i].IsAlife)
+			for(int i = 0; i < m_iCount; ++i)
 			{
-				RTGPUArrVerteces[tmpcount].pos = m_pArr[i].Pos;
-				RTGPUArrVerteces[tmpcount].tex = m_pArr[i].AnimTexSizeCadrAndBias;
-				RTGPUArrVerteces[tmpcount].alpha = m_pArr[i].AlphaAgeDependCoef * m_pArr[i].AlphaDeath * m_oData.m_fTransparencyCoef;
-				RTGPUArrVerteces[tmpcount].size = m_pArr[i].Size.x;
-				RTGPUArrVerteces[tmpcount].lighting = m_pArr[i].LightingIntens;
+				if(m_pArr[i].IsAlife)
+				{
+					RTGPUArrVerteces[tmpcount].pos = m_pArr[i].Pos;
+					RTGPUArrVerteces[tmpcount].tex = m_pArr[i].AnimTexSizeCadrAndBias;
+					RTGPUArrVerteces[tmpcount].alpha = m_pArr[i].AlphaAgeDependCoef * m_pArr[i].AlphaDeath * m_oData.m_fTransparencyCoef;
+					RTGPUArrVerteces[tmpcount].size = m_pArr[i].Size.x;
+					RTGPUArrVerteces[tmpcount].lighting = m_pArr[i].LightingIntens;
 
-				RTGPUArrVerteces[tmpcount].rot_1 = m_pArr[i].rot_1;
-				tmpcount++;
+					RTGPUArrVerteces[tmpcount].rot_1 = m_pArr[i].rot_1;
+					tmpcount++;
+				}
 			}
+
+			m_pTransVertBuf->unlock();
 		}
 
-		m_pTransVertBuf->Unlock();
-
-		pe_data::pDXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | tmpcount));
-
-		pe_data::pDXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
-		pe_data::pDXDevice->SetStreamSource(1, m_pTransVertBuf, 0, sizeof(CommonParticleDecl2));
-
-		pe_data::pDXDevice->SetVertexDeclaration(pe_data::pVertexDeclarationParticles);
-
-		pe_data::pDXDevice->SetStreamSource(0, m_pVertexBuff, 0, sizeof(CommonParticleDecl));
-		pe_data::pDXDevice->SetIndices(m_pIndexBuff);
+		pe_data::pDXDevice->setRenderBuffer(m_pRenderBuff);
+		pe_data::pDXDevice->setIndexBuffer(m_pIndexBuff);
 
 		static float4x4 MCamView;
 		static float4x4 MCamProj;
@@ -1303,11 +1313,11 @@ void CEmitter::render(DWORD timeDelta, const float4x4 *mRot, const float4x4 *mPo
 		float4x4 worldmat = tmpmatrot * tmpmatpos;
 
 		float4x4 vp = MCamView * MCamProj;
-		pe_data::pDXDevice->SetTexture(0, SGCore_LoadTexGetTex(m_idTex));
+		pe_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(m_idTex));
 		if (m_oData.m_isSoft)
 		{
 			if (pe_data::rt_id::idDepthScene >= 0)
-				pe_data::pDXDevice->SetTexture(1, SGCore_RTGetTexture(pe_data::rt_id::idDepthScene));
+				pe_data::pDXDevice->setTexture(SGCore_RTGetTexture(pe_data::rt_id::idDepthScene), 1);
 			else
 				LibReport(REPORT_MSG_LEVEL_WARNING, "sxparticles - not init depth map\n");
 		}
@@ -1380,7 +1390,7 @@ void CEmitter::render(DWORD timeDelta, const float4x4 *mRot, const float4x4 *mPo
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, psid, "ColorCoef", &m_oData.m_fColorCoef);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, psid, "Color", &m_oData.m_vColor);
 
-		pe_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		/*pe_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
 		if (m_oData.m_typeAlphaBlend == PARTICLESTYPE_ALPHABLEND_ALPHA)
 		{
@@ -1395,19 +1405,21 @@ void CEmitter::render(DWORD timeDelta, const float4x4 *mRot, const float4x4 *mPo
 			pe_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 			pe_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
 			pe_data::pDXDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-		}
+		}*/
 
-		if (m_oData.m_typeFigure == PARTICLESTYPE_FIGURE_QUAD_COMPOSITE)
-			pe_data::pDXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4 * m_oData.m_iFigureCountQuads, 0, 2 * m_oData.m_iFigureCountQuads);
+		pe_data::pDXDevice->setBlendState(m_pBlendStates[m_oData.m_typeAlphaBlend]);
+
+		pe_data::pDXDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+
+		if(m_oData.m_typeFigure == PARTICLESTYPE_FIGURE_QUAD_COMPOSITE)
+			pe_data::pDXDevice->drawIndexedInstanced(tmpcount, 4 * m_oData.m_iFigureCountQuads, 2 * m_oData.m_iFigureCountQuads, 0, 0);
 		else
-			pe_data::pDXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
+			pe_data::pDXDevice->drawIndexedInstanced(tmpcount, 4, 2, 0, 0);
 
-		pe_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+		pe_data::pDXDevice->setBlendState(NULL);
+		//pe_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
 		SGCore_ShaderUnBind();
-
-		pe_data::pDXDevice->SetStreamSourceFreq(0, 1);
-		pe_data::pDXDevice->SetStreamSourceFreq(1, 1);
 	}
 
 	if (!m_oData.m_useTrack)
@@ -1427,49 +1439,45 @@ void CEmitter::render(DWORD timeDelta, const float4x4 *mRot, const float4x4 *mPo
 	if (exists_track)
 	{
 		CommonParticleDecl2* RTGPUArrVerteces;
-		m_pTransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
 		int tmpcount = 0;
-		for (int i = 0; i<m_iCount; ++i)
+		if(m_pTransVertBuf->lock((void**)&RTGPUArrVerteces, GXBL_WRITE))
 		{
-			if (TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - m_pArr[i].TrackTime > m_oData.m_uiTrackTime)
-				m_pArr[i].Track = false;
-
-			if (m_pArr[i].Track)
+			for(int i = 0; i<m_iCount; ++i)
 			{
-				RTGPUArrVerteces[tmpcount].pos = m_pArr[i].TrackPos;
-				RTGPUArrVerteces[tmpcount].tex = (float4_t)m_pArr[i].TrackNormal;
-				RTGPUArrVerteces[tmpcount].alpha = 1.f - (float(TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - m_pArr[i].TrackTime) / float(m_oData.m_uiTrackTime));
-				RTGPUArrVerteces[tmpcount].size = m_oData.m_fTrackSize;
-				++tmpcount;
+				if(TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - m_pArr[i].TrackTime > m_oData.m_uiTrackTime)
+					m_pArr[i].Track = false;
+
+				if(m_pArr[i].Track)
+				{
+					RTGPUArrVerteces[tmpcount].pos = m_pArr[i].TrackPos;
+					RTGPUArrVerteces[tmpcount].tex = (float4_t)m_pArr[i].TrackNormal;
+					RTGPUArrVerteces[tmpcount].alpha = 1.f - (float(TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - m_pArr[i].TrackTime) / float(m_oData.m_uiTrackTime));
+					RTGPUArrVerteces[tmpcount].size = m_oData.m_fTrackSize;
+					++tmpcount;
+				}
 			}
+
+			m_pTransVertBuf->unlock();
 		}
-
-		m_pTransVertBuf->Unlock();
-
 
 		if (tmpcount <= 0)
 			return;
 
-		pe_data::pDXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | tmpcount));
-
-		pe_data::pDXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
-		pe_data::pDXDevice->SetStreamSource(1, m_pTransVertBuf, 0, sizeof(CommonParticleDecl2));
-
-		pe_data::pDXDevice->SetVertexDeclaration(pe_data::pVertexDeclarationParticles);
-
-		pe_data::pDXDevice->SetStreamSource(0, m_pVertexBuffQuad, 0, sizeof(CommonParticleDecl));
-		pe_data::pDXDevice->SetIndices(m_pIndexBuffQuad);
-
+		pe_data::pDXDevice->setRenderBuffer(m_pRenderBuffQuad);
+		pe_data::pDXDevice->setIndexBuffer(m_pIndexBuffQuad);
+		
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticlesTrack);
 		SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesTrack);
 
-		pe_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		/*pe_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
 		pe_data::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 		pe_data::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 
 		pe_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-		pe_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+		pe_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);*/
+
+		pe_data::pDXDevice->setBlendState(m_pBlendStates[PARTICLESTYPE_ALPHABLEND_ALPHA]);
 
 		static float4x4 MCamView;
 		static float4x4 MCamProj;
@@ -1477,20 +1485,20 @@ void CEmitter::render(DWORD timeDelta, const float4x4 *mRot, const float4x4 *mPo
 		Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &MCamProj);
 
 		float4x4 vp = MCamView * MCamProj;
-		pe_data::pDXDevice->SetTexture(0, SGCore_LoadTexGetTex(m_idTexTrack));
+		pe_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(m_idTexTrack));
 
 		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticlesTrack, "WorldViewProjection", &SMMatrixTranspose(vp));
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesTrack, "Color", &m_oData.m_vColor);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesTrack, "ColorCoef", &m_oData.m_fColorCoef);
 
-		pe_data::pDXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
 
-		pe_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+		pe_data::pDXDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+		pe_data::pDXDevice->drawIndexedInstanced(tmpcount, 4, 2, 0, 0);
+
+		pe_data::pDXDevice->setBlendState(NULL);
+		//pe_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
 		SGCore_ShaderUnBind();
-
-		pe_data::pDXDevice->SetStreamSourceFreq(0, 1);
-		pe_data::pDXDevice->SetStreamSourceFreq(1, 1);
 	}
 }
 

@@ -220,13 +220,17 @@ protected:
 	CommonParticle *m_pArr;
 	int m_iCount;
 
-	IDirect3DVertexBuffer9 *m_pTransVertBuf;
+	IGXVertexBuffer *m_pTransVertBuf;
 
-	IDirect3DVertexBuffer9 *m_pVertexBuff;
-	IDirect3DIndexBuffer9 *m_pIndexBuff;
+	IGXVertexBuffer *m_pVertexBuff;
+	IGXIndexBuffer *m_pIndexBuff;
+	IGXRenderBuffer *m_pRenderBuff = NULL;
 
-	IDirect3DVertexBuffer9 *m_pVertexBuffQuad;
-	IDirect3DIndexBuffer9 *m_pIndexBuffQuad;
+	IGXVertexBuffer *m_pVertexBuffQuad;
+	IGXIndexBuffer *m_pIndexBuffQuad;
+	IGXRenderBuffer *m_pRenderBuffQuad = NULL;
+
+	IGXBlendState *m_pBlendStates[PARTICLESTYPE_ALPLABLEND__SIZE];
 
 	CParticlesData m_oData;
 

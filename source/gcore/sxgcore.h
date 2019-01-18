@@ -666,10 +666,10 @@ SX_LIB_API void SGCore_RTDelete(ID id);
 SX_LIB_API ID SGCore_RTGetId(const char *szName);
 
 //! возвращает текстуру по имени
-SX_LIB_API IDirect3DTexture9* SGCore_RTGetTextureN(const char *szName);
+SX_LIB_API IGXTexture2D* SGCore_RTGetTextureN(const char *szName);
 
 //! возвращает текстуру по id
-SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(ID id);				
+SX_LIB_API IGXTexture2D* SGCore_RTGetTexture(ID id);				
 
 //!@} sxgcore_rt
 

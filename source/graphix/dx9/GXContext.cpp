@@ -255,6 +255,32 @@ void CGXContext::drawPrimitive(UINT uStartVertex, UINT uPrimitiveCount)
 	m_pDevice->DrawPrimitive(m_drawPT, uStartVertex, uPrimitiveCount);
 }
 
+void CGXContext::drawIndexedInstanced(UINT uInstanceCount, UINT uVertexCount, UINT uPrimitiveCount, UINT uStartIndexLocation, int iBaseVertexLocation)
+{
+	syncronize();
+	// get from current vertex declaration numbers of vertex and instance stages
+
+	m_pDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | uInstanceCount)); // mesh data
+	m_pDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1)); // instance data
+
+	m_pDevice->DrawIndexedPrimitive(m_drawPT, iBaseVertexLocation, 0, uVertexCount, uStartIndexLocation, uPrimitiveCount);
+
+	m_pDevice->SetStreamSourceFreq(0, 1);
+	m_pDevice->SetStreamSourceFreq(1, 1);
+}
+void CGXContext::drawPrimitiveInstanced(UINT uInstanceCount, UINT uStartVertex, UINT uPrimitiveCount)
+{
+	syncronize();
+
+	m_pDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | uInstanceCount)); // mesh data
+	m_pDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1)); // instance data
+
+	m_pDevice->DrawPrimitive(m_drawPT, uStartVertex, uPrimitiveCount);
+
+	m_pDevice->SetStreamSourceFreq(0, 1);
+	m_pDevice->SetStreamSourceFreq(1, 1);
+}
+
 void CGXContext::syncronize()
 {
 	if(m_sync_state.bRenderBuffer)

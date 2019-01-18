@@ -49,7 +49,9 @@ public:
 	//void setInputLayout(IDSGvertexDeclaration * pDecl);
 
 	void drawIndexed(UINT uVertexCount, UINT uPrimitiveCount, UINT uStartIndexLocation, int iBaseVertexLocation);
+	void drawIndexedInstanced(UINT uInstanceCount, UINT uVertexCount, UINT uPrimitiveCount, UINT uStartIndexLocation, int iBaseVertexLocation);
 	void drawPrimitive(UINT uStartVertex, UINT uPrimitiveCount);
+	void drawPrimitiveInstanced(UINT uInstanceCount, UINT uStartVertex, UINT uPrimitiveCount);
 
 	void setPrimitiveTopology(GXPT pt);
 

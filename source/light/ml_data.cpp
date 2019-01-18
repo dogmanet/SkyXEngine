@@ -117,25 +117,14 @@ void light_data::ReCalcSize()
 void light_data::Init()
 {
 	light_data::pDXDevice = SGCore_GetDXDevice();
-
-	const int *r_win_width = GET_PCVAR_INT("r_win_width");
-	const int *r_win_height = GET_PCVAR_INT("r_win_height");
-
-	const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
-
-	D3DLOCKED_RECT LockedRect;
-	uint32_t* tmpOldColor;
-	IDirect3DTexture9 *pRnsSampler;
-	light_data::pDXDevice->CreateTexture(4, 4, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &pRnsSampler, NULL);
-	
+		
 	uint32_t aRndColors[16];// = D3DCOLOR_ARGB(0, 250, 2, 255);
 
 	for (int i = 0; i < 16; ++i)
-		aRndColors[i] = D3DCOLOR_ARGB(255, rand() % 255, rand() % 255, rand() % 255);
+		aRndColors[i] = GXCOLOR_ARGB(255, rand() % 255, rand() % 255, rand() % 255);
 
-	pRnsSampler->LockRect(0, &LockedRect, 0, 0);
-	memcpy(LockedRect.pBits, aRndColors, sizeof(uint32_t));
-	pRnsSampler->UnlockRect(0);
+	IGXTexture2D *pRnsSampler = light_data::pDXDevice->createTexture2D(4, 4, 1, 0, GXFMT_A8R8G8B8, aRndColors);
+
 
 	//SGCore_LoadTexLoadTextures();
 	light_data::texture_id::idNoiseTex = SGCore_LoadTexCreate("noise_rottex__", pRnsSampler);
@@ -156,7 +145,7 @@ void light_data::Init()
 	
 	light_data::shader_id::vs::idSMDepthTreePSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_green_pssm_direct.vs", "sm_depth_tree_pssm_direct.vs", SHADER_CHECKDOUBLE_NAME);
 	
-	D3DXMACRO Defines_GRASS[] = { { "_GRASS_", "" }, { 0, 0 } };
+	GXMACRO Defines_GRASS[] = { { "_GRASS_", "" }, { 0, 0 } };
 	light_data::shader_id::vs::idSMDepthGrassPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_green_pssm_direct.vs", "sm_depth_grass_pssm_direct.vs", SHADER_CHECKDOUBLE_NAME, Defines_GRASS);
 
 	light_data::shader_id::ps::idSMDepthGreenPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_green_pssm_direct.ps", "sm_depth_green_pssm_direct.ps", SHADER_CHECKDOUBLE_PATH);
@@ -172,14 +161,14 @@ void light_data::Init()
 
 	light_data::shader_id::ps::idPSSM4 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_pssm.ps", "ppgensm_pssm.ps", SHADER_CHECKDOUBLE_NAME);
 
-	D3DXMACRO Defines_SPLITS3[] = { { "SPLITS3", "" }, { 0, 0 } };
+	GXMACRO Defines_SPLITS3[] = { { "SPLITS3", "" }, { 0, 0 } };
 	light_data::shader_id::ps::idPSSM3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_pssm.ps", "ppgensm_pssm3split.ps", SHADER_CHECKDOUBLE_NAME, Defines_SPLITS3);
 
 	light_data::shader_id::ps::idGenShadowDirect4 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_direct.ps", "ppgensm_direct.ps", SHADER_CHECKDOUBLE_NAME);
-	D3DXMACRO Defines_GSD_9[] = { { "GSD_9", "" }, { 0, 0 } };
+	GXMACRO Defines_GSD_9[] = { { "GSD_9", "" }, { 0, 0 } };
 	light_data::shader_id::ps::idGenShadowDirect9 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_direct.ps", "ppgensm_direct_9.ps", SHADER_CHECKDOUBLE_NAME, Defines_GSD_9);
 	light_data::shader_id::ps::idGenShadowCube1 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_point.ps", "ppgensm_point.ps", SHADER_CHECKDOUBLE_NAME);
-	D3DXMACRO Defines_GSC_6[] = { { "GSC_6", "" }, { 0, 0 } };
+	GXMACRO Defines_GSC_6[] = { { "GSC_6", "" }, { 0, 0 } };
 	light_data::shader_id::ps::idGenShadowCube6 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_point.ps", "ppgensm_point_6.ps", SHADER_CHECKDOUBLE_NAME, Defines_GSC_6);
 
 	light_data::shader_id::ps::idPPBlurDepthBased = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_blur_depth_based.ps", "pp_blur_depth_based.ps", SHADER_CHECKDOUBLE_PATH);
@@ -191,7 +180,7 @@ void light_data::Init()
 	light_data::shader_id::vs::idStdGeom = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_geom.vs", "stdr_geom.vs", SHADER_CHECKDOUBLE_NAME);
 	light_data::shader_id::ps::idStdGeom = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_geom.ps", "stdr_geom.ps", SHADER_CHECKDOUBLE_NAME);
 
-	D3DXMACRO Defines_CP[] = { { "_CLIP_PLANE_", "" }, { 0, 0 } };
+	GXMACRO Defines_CP[] = { { "_CLIP_PLANE_", "" }, { 0, 0 } };
 	light_data::shader_id::ps::idStdGeomCP = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_geom.ps", "stdr_geom_cp.ps", SHADER_CHECKDOUBLE_NAME, Defines_CP);
 
 	//D3DXMACRO Defines_GRASS[] = { { "_GRASS_", "" }, { 0, 0 } };
