@@ -10,42 +10,92 @@ See the license in LICENSE
 #include <gdefines.h>
 #include <stdio.h>
 #include <d3d9.h>
+#include <common/string.h>
 #include <common/array.h>
+#include <gcore/sxgcore.h>
+
+//##########################################################################
 
 extern IDirect3DDevice9 *g_pDXDevice;
 extern D3DCAPS9 g_dxCaps;
 extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 
-//структура описывающая движковые текстуры
-struct CreatedTexture
+//##########################################################################
+
+//! структура описывающая render target
+struct CRenderTarget
 {
-	char Name[64];	//имя
-	IDirect3DTexture9* Texture;	//текстура
-	D3DSURFACE_DESC Desc;		//описание текстуры, для восстановления
-	UINT Level;
-	float CoefFullScreen;		//если меньше 0 то брать размер из Desc, иначе это коэфициент умножение размера экрана на это число
+	CRenderTarget(){ m_sName = ""; m_pTexture = 0; m_pSurface = 0; m_pTextureCube = 0; m_uiLevel = 0; m_fSizeFactor = 0; }
+
+	//! имя
+	String m_sName;
+
+	//! тип
+	RT_TYPE m_type;
+
+	//! текстура
+	IDirect3DTexture9 *m_pTexture;
+
+	IDirect3DCubeTexture9 *m_pTextureCube;
+
+	//! 
+	IDirect3DSurface9 *m_pSurface;
+
+	//! описание текстуры, для восстановления
+	D3DSURFACE_DESC m_oDesc;
+
+	//! 
+	UINT m_uiLevel;
+
+	//! если меньше 0 то брать размер из #m_oDesc, иначе это коэфициент умножение размера экрана на это число
+	float m_fSizeFactor;		
 };
 
-class CreatorTextures
+//##########################################################################
+
+class CManagerRenderTarget
 {
 public:
-	CreatorTextures();
-	~CreatorTextures();
+	CManagerRenderTarget();
+	~CManagerRenderTarget();
 
-	ID Add(UINT width, UINT height, UINT levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen);
+	void onLostDevice();
 
-	void Delete(const char* text);
-	void Delete(ID num);
+	void onResetDevice();
 
-	ID GetNum(const char* text);
 
-	void OnLostDevice();
-	void OnResetDevice();
+	ID add(RT_TYPE type, UINT uiWidth, UINT uiHeight, UINT uiLevels, DWORD dwUsage, D3DFORMAT format, D3DPOOL pool, const char *szName, float fSizeFactor);
 
-	IDirect3DTexture9* GetTexture(const char* text);
-	IDirect3DTexture9* GetTexture(ID num);
+	void reCreate(ID id, UINT uiWidth, UINT uiHeight, UINT uiLevels, DWORD dwUsage, D3DFORMAT format, D3DPOOL pool, const char *szName = 0, float fSizeFactor = -1);
+
+	void deleteByName(const char *szName);
+	void deleteById(ID id);
+
+	ID getId(const char *szName);
+
+	
+
+
+	IDirect3DTexture9* getTextureByName(const char *szName);
+	IDirect3DTexture9* getTextureById(ID id);
+
+	IDirect3DCubeTexture9* getTextureCubeByName(const char *szName);
+	IDirect3DCubeTexture9* getTextureCubeById(ID id);
+
+	IDirect3DSurface9* getSurfaceByName(const char *szName);
+	IDirect3DSurface9* getSurfaceById(ID id);
+
 private:
-	Array<CreatedTexture*> Arr;
+
+	void deleteGraphicsData(CRenderTarget *pRenderTarget);
+
+	CRenderTarget* getRenderTargetById(ID id);
+
+	CRenderTarget* getRenderTargetByName(const char *szName);
+
+	void createRenderTarget(CRenderTarget *pRT, RT_TYPE type, UINT uiWidth, UINT uiHeight, UINT uiLevels, DWORD dwUsage, D3DFORMAT format, D3DPOOL pool, const char *szName, float fSizeFactor);
+
+	Array<CRenderTarget*> m_aRenderTargets;
 };
 
 #endif

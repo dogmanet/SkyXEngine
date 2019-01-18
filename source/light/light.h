@@ -18,6 +18,10 @@ See the license in LICENSE
 #include "sxlight.h"
 #include "ml_data.h"
 
+#include "shadow.h"
+
+//##########################################################################
+
 #define LIGHTS_PRE_COND_ID(id,stdval) \
 if (!(id >= 0 && id < m_aLights.size()))\
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved index of access '%d'", GEN_MSG_LOCATION, id); return stdval; }\
@@ -28,8 +32,7 @@ if (!(id >= 0 && id < m_aLights.size()))\
 if (!(key >= 0 && key < m_aDelLights.size()))\
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved key of access '%d'", GEN_MSG_LOCATION, key); return stdval; }
 
-#include "shadow.h"
-
+//##########################################################################
 
 class CLights
 {
@@ -219,14 +222,14 @@ public:
 		float m_fShadowIntensity;
 
 		ISXBound *m_pBoundVolume;
-		float4x4 m_mWorldMat;
+		float4x4 m_mWorld;
 		
 		bool m_isVisibleFor;
 		float m_fDistFor;
 
-		PSSM *m_pShadowPSSM;
-		ShadowMapTech *m_pShadowSM;
-		ShadowMapCubeTech *m_pShadowCube;
+		CShadowGlobal *m_pShadowPSSM;
+		CShadowMap *m_pShadowSM;
+		CShadowMapCube *m_pShadowCube;
 	};
 
 protected:

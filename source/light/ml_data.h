@@ -42,8 +42,6 @@ namespace light_data
 
 	extern float2_t vSizeTexReflection;
 
-	extern bool isHalfGenPCFShadowLocal;
-
 	//ориентаци¤ и верхний вектор дл¤ рендера в кубическую текстуру
 	extern float3 vOrientedCube[6];
 	extern float3 vUpVectorsCube[6];
@@ -59,16 +57,20 @@ namespace light_data
 			
 			extern ID idScreenOut;
 
-			extern ID idSMDepthGeomPSSMDirect;
+			extern ID idSMDepthGeomPSSM;
+			extern ID idSMDepthGeomDirect;
 			extern ID idSMDepthGeomCube;
 
-			extern ID idSMDepthGrassPSSMDirect;
+			extern ID idSMDepthGrassPSSM;
+			extern ID idSMDepthGrassDirect;
 			extern ID idSMDepthGrassCube;
 
-			extern ID idSMDepthTreePSSMDirect;
+			extern ID idSMDepthTreePSSM;
+			extern ID idSMDepthTreeDirect;
 			extern ID idSMDepthTreeCube;
 
-			extern ID idSMDepthSkinPSSMDirect;
+			extern ID idSMDepthSkinPSSM;
+			extern ID idSMDepthSkinDirect;
 			extern ID idSMDepthSkinCube;
 
 			extern ID idStdGeom;
@@ -79,24 +81,25 @@ namespace light_data
 
 		namespace ps
 		{
-			extern ID idSMDepthGeomPSSMDirect;
+			extern ID idSMDepthGeomPSSM;
+			extern ID idSMDepthGeomDirect;
 			extern ID idSMDepthGeomCube;
 
-			extern ID idSMDepthGreenPSSMDirect;
+			extern ID idSMDepthGreenPSSM;
+			extern ID idSMDepthGreenDirect;
 			extern ID idSMDepthGreenCube;
 
-			extern ID idSMDepthSkinPSSMDirect;
+			extern ID idSMDepthSkinPSSM;
+			extern ID idSMDepthSkinDirect;
 			extern ID idSMDepthSkinCube;
 
 			extern ID idPPBlurDepthBasedNoise;
 			extern ID idPSSM4;
 			extern	ID idPSSM3;
 			extern ID idPPBlurDepthBased;
-			extern ID idGenShadowDirect4;
-			extern ID idGenShadowDirect9;
-			
-			extern ID idGenShadowCube1;
-			extern ID idGenShadowCube6;
+
+			extern ID idGenShadowDirect;
+			extern ID idGenShadowCube;
 
 			extern ID idScreenOut;
 
@@ -112,6 +115,9 @@ namespace light_data
 	namespace texture_id
 	{
 		extern ID idNoiseTex;
+		extern ID idSurfaceDepthGlobalShadow;
+		extern ID idSurfaceDepthPointShadow;
+		extern ID idSurfaceDepthDirShadow;
 	};
 };
 

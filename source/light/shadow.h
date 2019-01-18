@@ -12,17 +12,20 @@ See the license in LICENSE
 #define SM_D3D_CONVERSIONS
 #include <common/SXMath.h>
 #include <common/Array.h>
+#include <common/string.h>
 #include <d3d9.h>
 #include <gcore/sxgcore.h>
 #include "sxlight.h"
 #include "ml_data.h"
 
-class PSSM
+//##########################################################################
+
+class CShadowGlobal
 {
 public:
 
-	PSSM();
-	~PSSM();
+	CShadowGlobal();
+	~CShadowGlobal();
 
 	void onLostDevice();
 	void onResetDevice();
@@ -32,6 +35,7 @@ public:
 	void init();
 
 	void updateFrustums(int iSplit, const float3 *pPosCam, const float3 *pDirCam);
+	
 	void preRender(int iSplit);
 	void begin();
 	void end();
@@ -48,49 +52,48 @@ public:
 	void set4Or3Splits(bool is4);
 	bool get4Or3Splits();
 
-	void setIDArr(ID id, int iSplit, ID idArr);
-	long getCountIDArrs();
-	ID getIDArr(ID id, int iSplit);
+	void setIdVisCalcObj(ID id, int iSplit, ID idVisCalcObj);
+	int getCountVisCalcObj();
+	ID getIdVisCalcObj(ID id, int iSplit);
 
 	IFrustum *m_aFrustums[5];
 
 	int m_aIsUpdate[5];
 	float2 m_aNearFar[5];
-	IDirect3DTexture9 *m_aDepthMaps[5];
+	ID m_aIdDepthMap[5];
 
 protected:
 
-	Array<ID*> IDArr;
-	float3 Position;
+	Array<ID*> m_aVisCalcObjs;
+	float3 m_vPosition;
 
-	void flickering(float4x4 *matLVP,float size_x,float size_y);
+	void flickering(float4x4 *mLVP, float fSizeX, float fSizeY);
 
-	float BlurPixel;
+	float m_fBlurPixel;
 	
-	float2 FovRatio;
+	float2 m_vFovRatio;
 
 	//генерация теней для 4 сплитов, иначе для 3
-	bool Generating4Slits;
+	bool m_useGenerating4Slits;
 	
-	IDirect3DSurface9*	DepthSurfaces[5];
-	IDirect3DSurface9*	DepthStencilSurface;
-	float4x4 Views[5];
-	float4x4 Projs[5];
-	float4x4 ViewProj[5];
-	float4x4 OldView,OldProj,OldViewProj;
+	IDirect3DSurface9 *m_pDepthSurface;
+	float4x4 m_aViews[5];
+	float4x4 m_aProjections[5];
+	float4x4 m_aViewProj[5];
+	float4x4 m_mOldView, m_mOldProj, m_mOldViewProj;
 	float4x4 ScaleBiasMat;
 	
-	IDirect3DSurface9* OldDepthStencilSurface;
-	IDirect3DSurface9* OldColorSurface;
+	IDirect3DSurface9 *m_pOldDepthStencilSurface;
+	IDirect3DSurface9 *m_pOldColorSurface;
 };
 
 //##########################################################################
 
-class ShadowMapTech
+class CShadowMap
 {
 public:
-	ShadowMapTech();
-	~ShadowMapTech();
+	CShadowMap();
+	~CShadowMap();
 
 	void onLostDevice();
 	void onResetDevice();
@@ -108,15 +111,15 @@ public:
 	void begin();
 	void end();
 
-	void genShadow(IDirect3DTexture9* shadowmap);
+	void genShadow(IDirect3DTexture9 *pTexture);
 
-	void setPosition(const float3* pos);
-	void getPosition(float3* pos);
+	void setPosition(const float3 *pPos);
+	void getPosition(float3 *pPos);
 
-	void setDirection(const float3* dir);
-	void getDirection(float3* dir);
+	void setDirection(const float3 *pDir);
+	void getDirection(float3 *pDir);
 
-	void setAngleNearFar(const float3* anf);
+	void setAngleNearFar(const float3 * anf);
 	void getAngleNearFar(float3* anf);
 
 	void setFar(float sfar);
@@ -128,51 +131,51 @@ public:
 	void setAngle(float sangle);
 	float getAngle();
 
-	void setIDArr(long id, long idarr);
-	long getCountIDArrs();
-	long getIDArr(long id);
+	void setIdVisCalcObj(ID id, ID idVisCalcObj);
+	int getCountVisCalcObj();
+	ID getIdVisCalcObj(ID id);
 
-	IFrustum* Frustum;
 
-	float4x4 View;
-	float4x4 Proj;
+	IFrustum *m_pFrustum;
+
+	float4x4 m_mView;
+	float4x4 m_mProjection;
 
 private:
 
-	Array<long> IDArr;
-	float Bias;
-	float BlurPixel;
+	Array<ID> m_aVisCalcObjs;
+	float m_fBias;
+	float m_fBlurPixel;
 
-	float3 Position;
-	float3 Direction;
-	float3 AngleNearFar;
+	float3 m_vPosition;
+	float3 m_vDirection;
+	float3 m_vAngleNearFar;
 
-	IDirect3DTexture9*	DepthMap;
-	IDirect3DSurface9*	DepthSurface;
-	IDirect3DSurface9*	DepthStencilSurface;
+	ID m_idDepth;
+	IDirect3DSurface9 *m_pDepthSurface;
 	
-	float4x4 OldView,OldProj,OldViewProj;
-	float4x4 ScaleBiasMat;
+	float4x4 m_mOldView, m_mOldProj, m_mOldViewProj;
+	float4x4 m_mScaleBiasMat;
 
-	IDirect3DSurface9* OldDepthStencilSurface;
-	IDirect3DSurface9*  OldColorSurface;
+	IDirect3DSurface9 *m_pOldDepthStencilSurface;
+	IDirect3DSurface9 *m_pOldColorSurface;
 };
 
 //##########################################################################
 
-class ShadowMapCubeTech
+class CShadowMapCube
 {
 public:
-	ShadowMapCubeTech();
-	~ShadowMapCubeTech();
+	CShadowMapCube();
+	~CShadowMapCube();
 
 	void onLostDevice();
 	void onResetDevice();
 
 	SX_ALIGNED_OP_MEM
 
-	void setEnableCubeEdge(int edge,bool enable);
-	bool getEnableCubeEdge(int edge);
+	void setEnableCubeEdge(int iEdge, bool isEnable);
+	bool getEnableCubeEdge(int iEdge);
 
 	void setBias(float bias);
 	float getBias();
@@ -182,51 +185,50 @@ public:
 
 	void init();
 
-	void setPosition(float3* pos);
-	void getPosition(float3* pos);
+	void setPosition(const float3 *pPos);
+	void getPosition(float3 *pPos);
 
-	void setNearFar(float2* nf);
-	void getNearFar(float2* nf);
+	void setNearFar(const float2 *pNearFar);
+	void getNearFar(float2 *pNearFar);
 
-	void setNear(float val);
+	void setNear(float fNear);
 	float getNear();
 
-	void setFar(float val);
+	void setFar(float fFar);
 	float getFar();
 	
 	void begin();
-	void pre(int cube);
-	void post(int cube);
+	void pre(int iCube);
+	void post(int iCube);
 	void end();
 
-	void genShadow(IDirect3DTexture9* shadowmap);
+	void genShadow(IDirect3DTexture9 *pTexture);
 
-	void setIDArr(long id, int split, long idarr);
-	long getCountIDArrs();
-	long getIDArr(long id, int split);
+	void setIdVisCalcObj(ID id, int iSplit, ID idVisCalcObj);
+	int getCountVisCalcObj();
+	ID getIdVisCalcObj(ID id, int iSplit);
 
 	IFrustum *m_aFrustums[6];
 
 private:
 
-	Array<long*> IDArr;
-	float Bias;
-	float BlurPixel;
-	IDirect3DCubeTexture9*	DepthMap;
-	IDirect3DSurface9*	DepthSurface[6];
-	IDirect3DSurface9*	DepthStencilSurface;
-	float4x4 View[6];
-	float4x4 Proj[6];
+	Array<ID*> m_aVisCalcObjs;
+	float m_fBias;
+	float m_fBlurPixel;
+	ID m_idDepthCubeMap;
+	IDirect3DSurface9 *m_pDepthSurface;
+	float4x4 m_aViews[6];
+	float4x4 m_aProjections[6];
 
 	bool EnableEdge[6];
 	bool EnableEdgeNulled[6];
 
-	float4x4 OldView,OldProj,OldViewProj;
+	float4x4 m_mOldView, m_mOldProj, m_mOldViewProj;
 
-	IDirect3DSurface9* OldDepthStencilSurface;
-	IDirect3DSurface9*  OldColorSurface;
+	IDirect3DSurface9 *m_pOldDepthStencilSurface;
+	IDirect3DSurface9 *m_pOldColorSurface;
 
-	float3 Position;
+	float3 m_vPosition;
 	float2 m_vNearFar;
 };
 

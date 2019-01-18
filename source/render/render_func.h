@@ -86,9 +86,8 @@ namespace rfunc
 	void BuildMRT(DWORD timeDelta, bool isRenderSimulation);		
 
 
-	//! обновление информации о тенях (рендер всего того что отбрасывает тени в буферы глубин источников света)
-	void UpdateShadow(DWORD timeDelta);		
-	
+	//! генерация теней для источника света
+	void GenDepth4Shadow(DWORD timeDelta, ID idLight);
 
 	//! обработка/обновление отражений
 	void UpdateReflection(DWORD timeDelta, bool isRenderSimulation);	

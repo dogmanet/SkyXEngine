@@ -24,7 +24,7 @@ namespace light_data
 	float4_t vDistForPSSM = float4_t(10.f, 40.f, 100.f, 200.f);
 
 	//коэфициент размера текстур дл¤ карт глубин локальных источников света
-	float fCoefSizeDepthMapForLocal = 2;
+	float fCoefSizeDepthMapForLocal = 1;
 
 	//коэфициент размера текстур дл¤ карт глубин глобального источника света
 	float fCoefSizeDepthMapForGlobal = 1;
@@ -46,16 +46,20 @@ namespace light_data
 			
 			ID idScreenOut;
 
-			ID idSMDepthGeomPSSMDirect;
+			ID idSMDepthGeomPSSM;
+			ID idSMDepthGeomDirect;
 			ID idSMDepthGeomCube;
 
-			ID idSMDepthGrassPSSMDirect;
+			ID idSMDepthGrassPSSM;
+			ID idSMDepthGrassDirect;
 			ID idSMDepthGrassCube;
 
-			ID idSMDepthTreePSSMDirect;
+			ID idSMDepthTreePSSM;
+			ID idSMDepthTreeDirect;
 			ID idSMDepthTreeCube;
 
-			ID idSMDepthSkinPSSMDirect;
+			ID idSMDepthSkinPSSM;
+			ID idSMDepthSkinDirect;
 			ID idSMDepthSkinCube;
 
 			ID idStdGeom;
@@ -66,24 +70,25 @@ namespace light_data
 
 		namespace ps
 		{
-			ID idSMDepthGeomPSSMDirect;
+			ID idSMDepthGeomPSSM;
+			ID idSMDepthGeomDirect;
 			ID idSMDepthGeomCube;
 
-			ID idSMDepthGreenPSSMDirect;
+			ID idSMDepthGreenPSSM;
+			ID idSMDepthGreenDirect;
 			ID idSMDepthGreenCube;
 
-			ID idSMDepthSkinPSSMDirect;
+			ID idSMDepthSkinPSSM;
+			ID idSMDepthSkinDirect;
 			ID idSMDepthSkinCube;
 
 			ID idPPBlurDepthBasedNoise;
 			ID idPSSM4;
 			ID idPSSM3;
 			ID idPPBlurDepthBased;
-			ID idGenShadowDirect4;
-			ID idGenShadowDirect9;
 
-			ID idGenShadowCube1;
-			ID idGenShadowCube6;
+			ID idGenShadowDirect;
+			ID idGenShadowCube;
 
 			ID idScreenOut;
 
@@ -99,6 +104,9 @@ namespace light_data
 	namespace texture_id
 	{
 		ID idNoiseTex;
+		ID idSurfaceDepthGlobalShadow;
+		ID idSurfaceDepthPointShadow;
+		ID idSurfaceDepthDirShadow;
 	};
 };
 
@@ -140,26 +148,39 @@ void light_data::Init()
 	//SGCore_LoadTexLoadTextures();
 	light_data::texture_id::idNoiseTex = SGCore_LoadTexCreate("noise_rottex__", pRnsSampler);
 
-	light_data::shader_id::vs::idSMDepthSkinPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_skin_pssm_direct.vs", "sm_depth_skin_pssm_direct.vs", SHADER_CHECKDOUBLE_PATH);
-	light_data::shader_id::ps::idSMDepthSkinPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_skin_pssm_direct.ps", "sm_depth_skin_pssm_direct.ps", SHADER_CHECKDOUBLE_PATH);
+	
 
-	light_data::shader_id::vs::idSMDepthGeomPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_geom_pssm_direct.vs", "sm_depth_geom_pssm_direct.vs", SHADER_CHECKDOUBLE_PATH);
-	light_data::shader_id::ps::idSMDepthGeomPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_geom_pssm_direct.ps", "sm_depth_geom_pssm_direct.ps", SHADER_CHECKDOUBLE_PATH);
 
+	light_data::shader_id::vs::idSMDepthGeomPSSM = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_geom_pssm.vs", "sm_depth_geom_pssm.vs", SHADER_CHECKDOUBLE_PATH);
+	light_data::shader_id::ps::idSMDepthGeomPSSM = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_geom_pssm.ps", "sm_depth_geom_pssm.ps", SHADER_CHECKDOUBLE_PATH);
+
+	light_data::shader_id::vs::idSMDepthGeomDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_geom_direct.vs", "sm_depth_geom_direct.vs", SHADER_CHECKDOUBLE_PATH);
+	light_data::shader_id::ps::idSMDepthGeomDirect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_geom_direct.ps", "sm_depth_geom_direct.ps", SHADER_CHECKDOUBLE_PATH);
 
 	light_data::shader_id::vs::idSMDepthGeomCube = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_geom_cube.vs", "sm_depth_geom_cube.vs", SHADER_CHECKDOUBLE_PATH);
 	light_data::shader_id::ps::idSMDepthGeomCube = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_geom_cube.ps", "sm_depth_geom_cube.ps", SHADER_CHECKDOUBLE_PATH);
 
+
+	light_data::shader_id::vs::idSMDepthSkinPSSM = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_skin_pssm.vs", "sm_depth_skin_pssm.vs", SHADER_CHECKDOUBLE_PATH);
+	light_data::shader_id::ps::idSMDepthSkinPSSM = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_skin_pssm.ps", "sm_depth_skin_pssm.ps", SHADER_CHECKDOUBLE_PATH);
+
+	light_data::shader_id::vs::idSMDepthSkinDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_skin_direct.vs", "sm_depth_skin_direct.vs", SHADER_CHECKDOUBLE_PATH);
+	light_data::shader_id::ps::idSMDepthSkinDirect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_skin_direct.ps", "sm_depth_skin_direct.ps", SHADER_CHECKDOUBLE_PATH);
+
 	light_data::shader_id::vs::idSMDepthSkinCube = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_skin_cube.vs", "sm_depth_skin_cube.vs", SHADER_CHECKDOUBLE_PATH);
 	light_data::shader_id::ps::idSMDepthSkinCube = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_skin_cube.ps", "sm_depth_skin_cube.ps", SHADER_CHECKDOUBLE_PATH);
 
-	
-	light_data::shader_id::vs::idSMDepthTreePSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_green_pssm_direct.vs", "sm_depth_tree_pssm_direct.vs", SHADER_CHECKDOUBLE_NAME);
+
+
+	light_data::shader_id::vs::idSMDepthTreePSSM = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_green_pssm.vs", "sm_depth_tree_pssm.vs", SHADER_CHECKDOUBLE_NAME);
+	light_data::shader_id::vs::idSMDepthTreeDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_green_direct.vs", "sm_depth_tree_direct.vs", SHADER_CHECKDOUBLE_NAME);
 	
 	D3DXMACRO Defines_GRASS[] = { { "_GRASS_", "" }, { 0, 0 } };
-	light_data::shader_id::vs::idSMDepthGrassPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_green_pssm_direct.vs", "sm_depth_grass_pssm_direct.vs", SHADER_CHECKDOUBLE_NAME, Defines_GRASS);
+	light_data::shader_id::vs::idSMDepthGrassPSSM = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_green_pssm.vs", "sm_depth_grass_pssm.vs", SHADER_CHECKDOUBLE_NAME, Defines_GRASS);
+	light_data::shader_id::vs::idSMDepthGrassDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_green_direct.vs", "sm_depth_grass_direct.vs", SHADER_CHECKDOUBLE_NAME, Defines_GRASS);
 
-	light_data::shader_id::ps::idSMDepthGreenPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_green_pssm_direct.ps", "sm_depth_green_pssm_direct.ps", SHADER_CHECKDOUBLE_PATH);
+	light_data::shader_id::ps::idSMDepthGreenPSSM = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_green_pssm.ps", "sm_depth_green_pssm.ps", SHADER_CHECKDOUBLE_PATH);
+	light_data::shader_id::ps::idSMDepthGreenDirect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_green_direct.ps", "sm_depth_green_direct.ps", SHADER_CHECKDOUBLE_PATH);
 
 
 	light_data::shader_id::vs::idSMDepthTreeCube = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_green_cube.vs", "sm_depth_tree_cube.vs", SHADER_CHECKDOUBLE_NAME);
@@ -175,13 +196,10 @@ void light_data::Init()
 	D3DXMACRO Defines_SPLITS3[] = { { "SPLITS3", "" }, { 0, 0 } };
 	light_data::shader_id::ps::idPSSM3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_pssm.ps", "ppgensm_pssm3split.ps", SHADER_CHECKDOUBLE_NAME, Defines_SPLITS3);
 
-	light_data::shader_id::ps::idGenShadowDirect4 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_direct.ps", "ppgensm_direct.ps", SHADER_CHECKDOUBLE_NAME);
-	D3DXMACRO Defines_GSD_9[] = { { "GSD_9", "" }, { 0, 0 } };
-	light_data::shader_id::ps::idGenShadowDirect9 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_direct.ps", "ppgensm_direct_9.ps", SHADER_CHECKDOUBLE_NAME, Defines_GSD_9);
-	light_data::shader_id::ps::idGenShadowCube1 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_point.ps", "ppgensm_point.ps", SHADER_CHECKDOUBLE_NAME);
-	D3DXMACRO Defines_GSC_6[] = { { "GSC_6", "" }, { 0, 0 } };
-	light_data::shader_id::ps::idGenShadowCube6 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_point.ps", "ppgensm_point_6.ps", SHADER_CHECKDOUBLE_NAME, Defines_GSC_6);
-
+	light_data::shader_id::ps::idGenShadowDirect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_direct.ps", "ppgensm_direct.ps", SHADER_CHECKDOUBLE_NAME);
+	
+	light_data::shader_id::ps::idGenShadowCube = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_point.ps", "ppgensm_point.ps", SHADER_CHECKDOUBLE_NAME);
+	
 	light_data::shader_id::ps::idPPBlurDepthBased = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_blur_depth_based.ps", "pp_blur_depth_based.ps", SHADER_CHECKDOUBLE_PATH);
 	light_data::shader_id::ps::idPPBlurDepthBasedNoise = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_blur_depth_based_noise.ps", "pp_blur_depth_based_noise.ps", SHADER_CHECKDOUBLE_PATH);
 
@@ -205,4 +223,8 @@ void light_data::Init()
 	light_data::shader_id::ps::idStdSkin = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_skin.ps", "stdr_skin.ps", SHADER_CHECKDOUBLE_NAME);
 
 	light_data::shader_id::ps::idStdSkinCP = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_skin.ps", "stdr_skin_cp.ps", SHADER_CHECKDOUBLE_NAME, Defines_CP);
+
+	light_data::texture_id::idSurfaceDepthGlobalShadow = SGCore_RTcreateSurfaceDepth(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, D3DFMT_D24X8, "shadow_globa_depth_stencill", -1);
+	light_data::texture_id::idSurfaceDepthPointShadow = SGCore_RTcreateSurfaceDepth(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthLocal.x, D3DFMT_D24X8, "shadow_point_depth_stencil", -1);
+	light_data::texture_id::idSurfaceDepthDirShadow = SGCore_RTcreateSurfaceDepth(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, D3DFMT_D24X8, "shadow_dir_depth_stencil", -1);
 }

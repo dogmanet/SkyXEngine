@@ -6,151 +6,277 @@ See the license in LICENSE
 
 #include "creatortextures.h"
 
-CreatorTextures::CreatorTextures()
+CManagerRenderTarget::CManagerRenderTarget()
 {
 
 }
 
-CreatorTextures::~CreatorTextures()
+CManagerRenderTarget::~CManagerRenderTarget()
 {
-	for (DWORD i = 0; i<Arr.size(); i++)
+	for (int i = 0, il = m_aRenderTargets.size(); i<il; ++i)
 	{
-		if (Arr[i])
+		CRenderTarget *pRenderTarget = m_aRenderTargets[i];
+
+		if (pRenderTarget)
 		{
-			mem_release(Arr[i]->Texture);
+			mem_release(pRenderTarget->m_pTexture);
+			mem_release(pRenderTarget->m_pSurface);
+			mem_release(pRenderTarget->m_pTextureCube);
 		}
-		mem_delete(Arr[i]);
+		mem_delete(pRenderTarget);
+	}
+
+	m_aRenderTargets.clear();
+}
+
+void CManagerRenderTarget::deleteGraphicsData(CRenderTarget *pRenderTarget)
+{
+	if (pRenderTarget)
+	{
+		mem_release(pRenderTarget->m_pTexture);
+		mem_release(pRenderTarget->m_pSurface);
+		mem_release(pRenderTarget->m_pTextureCube);
 	}
 }
 
-ID CreatorTextures::Add(UINT width, UINT height, UINT levels, DWORD usage, D3DFORMAT format, D3DPOOL pool, const char* name, float coeffullscreen)
+void CManagerRenderTarget::createRenderTarget(CRenderTarget *pRT, RT_TYPE type, UINT uiWidth, UINT uiHeight, UINT uiLevels, DWORD dwUsage, D3DFORMAT format, D3DPOOL pool, const char *szName, float fSizeFactor)
 {
-	IDirect3DTexture9* objtex;
-	g_pDXDevice->CreateTexture(width, height, levels, usage, format, pool, &objtex, NULL);
+	deleteGraphicsData(pRT);
 
+	if (type == RT_TYPE::RT_TYPE_TEXTURE)
+		DX_CALL(g_pDXDevice->CreateTexture(uiWidth, uiHeight, uiLevels, dwUsage, format, pool, &(pRT->m_pTexture), NULL));
+	else if (type == RT_TYPE::RT_TYPE_TEXTURE_CUBE)
+		DX_CALL(g_pDXDevice->CreateCubeTexture(uiWidth, uiLevels, dwUsage, format, pool, &(pRT->m_pTextureCube), NULL));
+	else if (type == RT_TYPE::RT_TYPE_SURFACE)
+		DX_CALL(g_pDXDevice->CreateRenderTarget(uiWidth, uiHeight, format, D3DMULTISAMPLE_NONE, 0, FALSE, &(pRT->m_pSurface), NULL));
+	else if (type == RT_TYPE::RT_TYPE_SURFACE_DEPTH)
+		DX_CALL(g_pDXDevice->CreateDepthStencilSurface(uiWidth, uiHeight, format, D3DMULTISAMPLE_NONE, 0, FALSE, &(pRT->m_pSurface), NULL));
+	else if (type == RT_TYPE::RT_TYPE_OFF_SCREEN)
+		DX_CALL(g_pDXDevice->CreateOffscreenPlainSurface(uiWidth, uiHeight, format, pool, &(pRT->m_pSurface), NULL));
+
+	pRT->m_uiLevel = uiLevels;
+
+	if (szName)
+		pRT->m_sName = szName;
+
+	if (fSizeFactor > 0.0001f)
+		pRT->m_fSizeFactor = fSizeFactor;
+
+	pRT->m_type = type;
+
+	if (pRT->m_pTexture)
+		pRT->m_pTexture->GetLevelDesc(0, &(pRT->m_oDesc));
+	else if (pRT->m_pSurface)
+		pRT->m_pSurface->GetDesc(&(pRT->m_oDesc));
+	else if (pRT->m_pTextureCube)
+		pRT->m_pTextureCube->GetLevelDesc(0, &(pRT->m_oDesc));
+}
+
+ID CManagerRenderTarget::add(RT_TYPE type, UINT uiWidth, UINT uiHeight, UINT uiLevels, DWORD dwUsage, D3DFORMAT format, D3DPOOL pool, const char *szName, float fSizeFactor)
+{
 	ID id = -1;
-	bool isadd = true;
 
-		for(int i=0;i<Arr.size();i++)
+	for (int i = 0, il = m_aRenderTargets.size(); i<il; ++i)
+	{
+		if (m_aRenderTargets[i] == 0)
 		{
-				if(Arr[i] == 0)
-				{
-					Arr[i]->Texture = objtex;
-					sprintf(Arr[i]->Name,"%s",name);
-					Arr[i]->CoefFullScreen = coeffullscreen;
-					Arr[i]->Level = levels;
-					Arr[i]->Texture->GetLevelDesc(0,&(Arr[i]->Desc));
-					isadd = false;
-					id = i;
-				}
+			id = i;
+			break;
 		}
+	}
 
-		if(isadd)
-		{
-			id = Arr.size();
-			CreatedTexture* tmpCT = new CreatedTexture();
-			tmpCT->Texture = objtex;
-			tmpCT->Level = levels;
-			sprintf(tmpCT->Name,"%s",name);
-			tmpCT->CoefFullScreen = coeffullscreen;
-			tmpCT->Texture->GetLevelDesc(0,&(tmpCT->Desc));
-			Arr.push_back(tmpCT);
-			isadd = false;
-		}
+	CRenderTarget *pRenderTarget;
 
-		/*if(!isadd)
-			LibReport(REPORT_MSG_LEVEL_NOTICE, "render target[%s] is created, id = %d\n", name, id);*/
-
-		if (isadd)
-			LibReport(REPORT_MSG_LEVEL_NOTICE, "render target[%s] is not created\n", name);
+	if (id < 0)
+	{
+		id = m_aRenderTargets.size();
+		pRenderTarget = new CRenderTarget();
+		m_aRenderTargets[id] = pRenderTarget;
+	}
+	else
+		pRenderTarget = m_aRenderTargets[id];
+	
+	createRenderTarget(pRenderTarget, type, uiWidth, uiHeight, uiLevels, dwUsage, format, pool, szName, (fSizeFactor > 0 ? fSizeFactor : 0));
 
 	return id;
 }
 
-void CreatorTextures::Delete(const char* text)
+void CManagerRenderTarget::reCreate(ID id, UINT uiWidth, UINT uiHeight, UINT uiLevels, DWORD dwUsage, D3DFORMAT format, D3DPOOL pool, const char *szName, float fSizeFactor)
 {
-	for (int i = 0; i<Arr.size(); i++)
+	CRenderTarget *pRenderTarget = getRenderTargetById(id);
+
+	if (!pRenderTarget)
+		return;
+
+	createRenderTarget(pRenderTarget, pRenderTarget->m_type, uiWidth, uiHeight, uiLevels, dwUsage, format, pool, szName, fSizeFactor);
+}
+
+CRenderTarget* CManagerRenderTarget::getRenderTargetById(ID id)
+{
+	if (id >= 0 && m_aRenderTargets.size() > id)
+		return m_aRenderTargets[id];
+
+	return 0;
+}
+
+void CManagerRenderTarget::deleteByName(const char *szName)
+{
+	for (int i = 0, il = m_aRenderTargets.size(); i<il; ++i)
 	{
-		if (strcmp(text, Arr[i]->Name) == 0)
+		CRenderTarget *pRenderTarget = m_aRenderTargets[i];
+
+		if (strcmp(szName, pRenderTarget->m_sName.c_str()) == 0)
 		{
-			Arr[i]->Texture->Release();
-			Arr[i]->Texture = 0;
-			sprintf(Arr[i]->Name, "%s", "");
+			deleteById(i);
+			return;
 		}
 	}
 }
 
-void CreatorTextures::Delete(ID num)
+void CManagerRenderTarget::deleteById(ID id)
 {
-	if (num < Arr.size())
+	if (id >= 0 && id < m_aRenderTargets.size() && m_aRenderTargets[id])
 	{
-		Arr[num]->Texture->Release();
-		Arr[num]->Texture = 0;
-		sprintf(Arr[num]->Name, "%s", "");
+		CRenderTarget *pRenderTarget = m_aRenderTargets[id];
+
+		deleteGraphicsData(pRenderTarget);
 	}
 }
 
-ID CreatorTextures::GetNum(const char* text)
+ID CManagerRenderTarget::getId(const char *szName)
 {
-	for (DWORD i = 0; i<Arr.size(); i++)
+	for (int i = 0, il = m_aRenderTargets.size(); i<il; ++i)
 	{
-		if (strcmp(text, Arr[i]->Name) == 0)
-		{
+		CRenderTarget *pRenderTarget = m_aRenderTargets[i];
+
+		if (strcmp(szName, pRenderTarget->m_sName.c_str()) == 0)
 			return i;
-		}
 	}
+
 	return(-1);
 }
 
-void CreatorTextures::OnLostDevice()
+void CManagerRenderTarget::onLostDevice()
 {
 	LibReport(REPORT_MSG_LEVEL_WARNING, "release render targets ...\n");
-	for(DWORD i=0;i<Arr.size();i++)
+
+	for (int i = 0, il = m_aRenderTargets.size(); i<il; ++i)
 	{
-		CreatedTexture* tmpct = Arr[i];
-		if(Arr[i] /*&& Arr[i]->Name[0] != 0*/)
+		CRenderTarget *pRenderTarget = m_aRenderTargets[i];
+
+		if (pRenderTarget)
 		{
-			mem_release_del(Arr[i]->Texture);
+			deleteGraphicsData(pRenderTarget);
 		}
 	}
+
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "release render targets success\n");
 }
 
-void CreatorTextures::OnResetDevice()
+void CManagerRenderTarget::onResetDevice()
 {
 	LibReport(REPORT_MSG_LEVEL_WARNING, "reset render targets ...\n");
-	for(int i=0;i<Arr.size();i++)
+	
+	for (int i = 0, il = m_aRenderTargets.size(); i<il; ++i)
 	{
-		if(Arr[i]/*->Name[0] != 0*/)
+		CRenderTarget *pRenderTarget = m_aRenderTargets[i];
+
+		if (pRenderTarget)
 		{
-			if(Arr[i]->CoefFullScreen > 0.001f)
-				g_pDXDevice->CreateTexture(g_oD3DAPP.BackBufferWidth * Arr[i]->CoefFullScreen, g_oD3DAPP.BackBufferHeight * Arr[i]->CoefFullScreen, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
+			if (pRenderTarget->m_fSizeFactor > 0.001f)
+				createRenderTarget(pRenderTarget, pRenderTarget->m_type, g_oD3DAPP.BackBufferWidth * pRenderTarget->m_fSizeFactor, g_oD3DAPP.BackBufferHeight * pRenderTarget->m_fSizeFactor, pRenderTarget->m_uiLevel, pRenderTarget->m_oDesc.Usage, pRenderTarget->m_oDesc.Format, pRenderTarget->m_oDesc.Pool, pRenderTarget->m_sName.c_str(), -1);
 			else
-				g_pDXDevice->CreateTexture(Arr[i]->Desc.Width, Arr[i]->Desc.Height, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
+				createRenderTarget(pRenderTarget, pRenderTarget->m_type, pRenderTarget->m_oDesc.Width, pRenderTarget->m_oDesc.Height, pRenderTarget->m_uiLevel, pRenderTarget->m_oDesc.Usage, pRenderTarget->m_oDesc.Format, pRenderTarget->m_oDesc.Pool, pRenderTarget->m_sName.c_str(), -1);
 		}
 	}
+
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "reset render targets success\n");
 }
 
-IDirect3DTexture9* CreatorTextures::GetTexture(const char* text)
+CRenderTarget* CManagerRenderTarget::getRenderTargetByName(const char *szName)
 {
-	for(int i=0;i<Arr.size();i++)
+	for (int i = 0, il = m_aRenderTargets.size(); i<il; ++i)
 	{
-		if(strcmp(text,Arr[i]->Name) == 0)
-		{
-			return Arr[i]->Texture;
-		}
+		CRenderTarget *pRenderTarget = m_aRenderTargets[i];
+
+		if (strcmp(szName, pRenderTarget->m_sName.c_str()) == 0)
+			return pRenderTarget;
 	}
+
 	return(NULL);
 }
 
-IDirect3DTexture9* CreatorTextures::GetTexture(ID num)
+IDirect3DTexture9* CManagerRenderTarget::getTextureByName(const char *szName)
 {
-	if (num < Arr.size())
+	CRenderTarget *pRenderTarget = getRenderTargetByName(szName);
+
+	if (pRenderTarget && pRenderTarget->m_pTexture)
+		return pRenderTarget->m_pTexture;
+	else
 	{
-		IDirect3DTexture9* tmptex = Arr[num]->Texture;
-		return Arr[num]->Texture;
+		dbg_break;
+		return 0;
 	}
+}
+
+IDirect3DTexture9* CManagerRenderTarget::getTextureById(ID id)
+{
+	CRenderTarget *pRenderTarget = getRenderTargetById(id);
+
+	if (pRenderTarget && pRenderTarget->m_pTexture)
+		return pRenderTarget->m_pTexture;
+	else
+	{
+		dbg_break;
+		return 0;
+	}
+}
+
+IDirect3DCubeTexture9* CManagerRenderTarget::getTextureCubeByName(const char *szName)
+{
+	CRenderTarget *pRenderTarget = getRenderTargetByName(szName);
+
+	if (pRenderTarget && pRenderTarget->m_pTextureCube)
+		return pRenderTarget->m_pTextureCube;
+	else
+	{
+		dbg_break;
+		return 0;
+	}
+}
+
+IDirect3DCubeTexture9* CManagerRenderTarget::getTextureCubeById(ID id)
+{
+	CRenderTarget *pRenderTarget = getRenderTargetById(id);
+	
+	if (pRenderTarget && pRenderTarget->m_pTextureCube)
+		return pRenderTarget->m_pTextureCube;
+	else
+	{
+		dbg_break;
+		return 0;
+	}
+}
+
+IDirect3DSurface9* CManagerRenderTarget::getSurfaceByName(const char *szName)
+{
+	CRenderTarget *pRenderTarget = getRenderTargetByName(szName);
+
+	if (pRenderTarget && pRenderTarget->m_pSurface)
+		return pRenderTarget->m_pSurface;
+	else
+	{
+		dbg_break;
+		return 0;
+	}
+}
+
+IDirect3DSurface9* CManagerRenderTarget::getSurfaceById(ID id)
+{
+	CRenderTarget *pRenderTarget = getRenderTargetById(id);
+
+	if (pRenderTarget && pRenderTarget->m_pSurface)
+		return pRenderTarget->m_pSurface;
 	else
 	{
 		dbg_break;

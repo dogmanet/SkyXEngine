@@ -41,7 +41,7 @@ Array<DEVMODE> g_aModes;
 IDirect3DVertexDeclaration9 *g_pStaticVertexDecl = 0;
 
 CShaderManager *g_pManagerShaders = 0;
-CreatorTextures *g_pManagerRenderTargets = 0;
+CManagerRenderTarget *g_pManagerRenderTargets = 0;
 ÑLoaderTextures *g_pManagerTextures = 0;
 ID3DXMesh *g_pScreenTexture = 0;
 CSkyBox *g_pSkyBox = 0;
@@ -105,7 +105,7 @@ void GCoreInit(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlag
 	InitFullScreenQuad();
 
 	g_pManagerShaders = new CShaderManager();
-	g_pManagerRenderTargets = new CreatorTextures();
+	g_pManagerRenderTargets = new CManagerRenderTarget();
 	g_pManagerTextures = new ÑLoaderTextures();
 	g_pOC = new COcclusionCulling();
 	g_pOC->init(g_oD3DAPP.BackBufferWidth, g_oD3DAPP.BackBufferHeight);
@@ -286,7 +286,7 @@ SX_LIB_API void SGCore_OnLostDevice()
 	SG_PRECOND(_VOID);
 
 	g_pFPStext->OnLostDevice();
-	g_pManagerRenderTargets->OnLostDevice();
+	g_pManagerRenderTargets->onLostDevice();
 
 	g_pOC->onLostDevice();
 }
@@ -307,7 +307,7 @@ SX_LIB_API void SGCore_OnResetDevice()
 	SG_PRECOND(_VOID);
 
 	g_pFPStext->OnResetDevice();
-	g_pManagerRenderTargets->OnResetDevice();
+	g_pManagerRenderTargets->onResetDevice();
 	g_pOC->onResetDevice(g_oD3DAPP.BackBufferWidth, g_oD3DAPP.BackBufferHeight);
 	
 	struct  VERTEX_SCREEN_TEXTURE { float x, y, z, tx, ty, tz; };
@@ -682,46 +682,84 @@ SX_LIB_API void SGCore_LoadTexAllLoad()
 
 //##########################################################################
 
-SX_LIB_API ID SGCore_RTAdd(UINT uiWidth, UINT uiHeight, UINT uiLevels, DWORD dwUsage, D3DFORMAT format, D3DPOOL pool, const char *szName, float fCoefFullScreen)
+SX_LIB_API ID SGCore_RTAdd(RT_TYPE type, UINT uiWidth, UINT uiHeight, UINT uiLevels, DWORD dwUsage, D3DFORMAT format, D3DPOOL pool, const char *szName, float fCoefFullScreen)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerRenderTargets->Add(uiWidth, uiHeight, uiLevels, dwUsage, format, pool, szName, fCoefFullScreen);
+	return g_pManagerRenderTargets->add(type, uiWidth, uiHeight, uiLevels, dwUsage, format, pool, szName, fCoefFullScreen);
+}
+
+SX_LIB_API void SGCore_RTreCreate(ID id, UINT uiWidth, UINT uiHeight, UINT uiLevels, DWORD dwUsage, D3DFORMAT format, D3DPOOL pool, const char *szName, float fCoefFullScreen)
+{
+	SG_PRECOND(_VOID);
+
+	g_pManagerRenderTargets->reCreate(id, uiWidth, uiHeight, uiLevels, dwUsage, format, pool, szName, fCoefFullScreen);
 }
 
 SX_LIB_API void SGCore_RTDeleteN(const char *szName)
 {
 	SG_PRECOND(_VOID);
 
-	return g_pManagerRenderTargets->Delete(szName);
+	return g_pManagerRenderTargets->deleteByName(szName);
 }
 
 SX_LIB_API void SGCore_RTDelete(ID id)
 {
 	SG_PRECOND(_VOID);
 
-	return g_pManagerRenderTargets->Delete(id);
+	return g_pManagerRenderTargets->deleteById(id);
 }
 
 SX_LIB_API ID SGCore_RTGetId(const char *szName)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerRenderTargets->GetNum(szName);
+	return g_pManagerRenderTargets->getId(szName);
 }
 
 SX_LIB_API IDirect3DTexture9* SGCore_RTGetTextureN(const char *szName)
 {
 	SG_PRECOND(0);
 
-	return g_pManagerRenderTargets->GetTexture(szName);
+	return g_pManagerRenderTargets->getTextureByName(szName);
 }
 
 SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(ID id)
 {
 	SG_PRECOND(0);
 
-	return g_pManagerRenderTargets->GetTexture(id);
+	return g_pManagerRenderTargets->getTextureById(id);
+}
+
+SX_LIB_API IDirect3DCubeTexture9* SGCore_RTGetTextureCubeN(const char *szName)
+{
+	SG_PRECOND(0);
+
+	return g_pManagerRenderTargets->getTextureCubeByName(szName);
+}
+
+SX_LIB_API IDirect3DCubeTexture9* SGCore_RTGetTextureCube(ID id)
+{
+	SG_PRECOND(0);
+
+	return g_pManagerRenderTargets->getTextureCubeById(id);
+}
+
+
+//! âîçâðàùàåò òåêñòóðó ïî èìåíè
+SX_LIB_API IDirect3DSurface9* SGCore_RTGetSurfaceN(const char *szName)
+{
+	SG_PRECOND(0);
+
+	return g_pManagerRenderTargets->getSurfaceByName(szName);
+}
+
+//! âîçâðàùàåò òåêñòóðó ïî id
+SX_LIB_API IDirect3DSurface9* SGCore_RTGetSurface(ID id)
+{
+	SG_PRECOND(0);
+
+	return g_pManagerRenderTargets->getSurfaceById(id);
 }
 
 //##########################################################################

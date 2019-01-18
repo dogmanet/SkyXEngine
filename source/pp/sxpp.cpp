@@ -197,18 +197,18 @@ void pp_data::Init()
 		pp_data::aRndVecSSAO[i].z *= scale;
 	}
 
-	pp_data::rt_id::idDepthD2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5f, pp_data::vWinSize.y * 0.5f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "pp_depth_d2", 0.5);
-	pp_data::rt_id::idEdgeDetected = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R5G6B5, D3DPOOL_DEFAULT, "pp_edge_detected", 1);
-	pp_data::rt_id::idEdgeDetected2 = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R5G6B5, D3DPOOL_DEFAULT, "pp_edge_detected2", 1);
+	pp_data::rt_id::idDepthD2 = SGCore_RTcreateTexture(pp_data::vWinSize.x * 0.5f, pp_data::vWinSize.y * 0.5f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "pp_depth_d2", 0.5);
+	pp_data::rt_id::idEdgeDetected = SGCore_RTcreateTexture(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R5G6B5, D3DPOOL_DEFAULT, "pp_edge_detected", 1);
+	pp_data::rt_id::idEdgeDetected2 = SGCore_RTcreateTexture(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R5G6B5, D3DPOOL_DEFAULT, "pp_edge_detected2", 1);
 
-	pp_data::rt_id::idIntermediateWinSize = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_intermidiatews", 1);
-	pp_data::rt_id::idIntermediateWinSize2 = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_intermidiatews2", 1);
+	pp_data::rt_id::idIntermediateWinSize = SGCore_RTcreateTexture(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_intermidiatews", 1);
+	pp_data::rt_id::idIntermediateWinSize2 = SGCore_RTcreateTexture(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_intermidiatews2", 1);
 
-	//pp_data::rt_id::IntermediateWinSizeD2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_intermidiatews_d2", 0.5);
-	//pp_data::rt_id::IntermediateWinSize2D2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_intermidiatews2_d2", 0.5);
+	//pp_data::rt_id::IntermediateWinSizeD2 = SGCore_RTcreateTexture(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_intermidiatews_d2", 0.5);
+	//pp_data::rt_id::IntermediateWinSize2D2 = SGCore_RTcreateTexture(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_intermidiatews2_d2", 0.5);
 
-	pp_data::rt_id::idBright = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_bright", 0.5);
-	pp_data::rt_id::idBright2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_bright2", 0.5);
+	pp_data::rt_id::idBright = SGCore_RTcreateTexture(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_bright", 0.5);
+	pp_data::rt_id::idBright2 = SGCore_RTcreateTexture(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_bright2", 0.5);
 }
 
 void pp_data::InitNoiseTex()

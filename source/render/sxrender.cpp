@@ -289,7 +289,7 @@ SX_LIB_API void SRender_BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 
 SX_LIB_API void SRender_UpdateShadow(DWORD timeDelta)
 {
-	rfunc::UpdateShadow(timeDelta);
+	//rfunc::UpdateShadow(timeDelta);
 }
 
 SX_LIB_API void SRender_UpdateReflection(DWORD timeDelta, bool isRenderSimulation)

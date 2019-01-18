@@ -248,7 +248,8 @@ protected:
 	void ensureReprojectionDone();
 
 	//! массив surfaces для обработки
-	IDirect3DSurface9 *m_pSurfDepthBuffer[3];
+	//IDirect3DSurface9 *m_pSurfDepthBuffer[3];
+	ID m_pSurfDepthBufferID[3];
 
 	//! массив глубины
 	float *m_pArrDepthBuffer = 0;

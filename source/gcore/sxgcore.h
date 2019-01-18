@@ -639,8 +639,43 @@ SX_LIB_API void SGCore_LoadTexAllLoad();
  \note Cброс и восстановление устройства сюда приходят
 @{*/
 
+//**************************************************************************
+
+//! фактор размера рендер таргета, при котором его размеры не будут скалироваться
+#define RT_SIZEFACTOR_NONE 0
+
+//! минимальный фактор размера рендер таргетов
+#define RT_SIZEFACTOR_MIN 0.001
+
+//! значение фактора размера рендер таргета, при котором он игнорируется и используется предыдущее установленное значение
+#define RT_SIZEFACTOR_IGNORE -1
+
+//**************************************************************************
+
+//! типы рендер таргетов
+enum RT_TYPE
+{
+	//! текстура
+	RT_TYPE_TEXTURE = 0,
+
+	//! кубическая текстура
+	RT_TYPE_TEXTURE_CUBE,
+
+	//! поверхность
+	RT_TYPE_SURFACE,
+
+	//! поверхность глубины
+	RT_TYPE_SURFACE_DEPTH,
+
+	//! поверхность вне экрана
+	RT_TYPE_OFF_SCREEN
+};
+
+//**************************************************************************
+
 //! добавить новый render target
 SX_LIB_API ID SGCore_RTAdd(
+	RT_TYPE type,
 	UINT iWidth,			//!< ширина
 	UINT iHeight,			//!< высота
 	UINT iLevels,			//!< количество mip-map уровней
@@ -652,8 +687,53 @@ SX_LIB_API ID SGCore_RTAdd(
 	(если rt и размер области одинаковы то 1, если rt меньша на 0.5 то 0.5) 
 	если указаны фиксированные значения то ставить 0, это нужно для устновления размеров при восстановлении устройства
 	*/
-	float fCoefFullScreen
+	float fCoefFullScreen = RT_SIZEFACTOR_MIN
 	);
+
+//**************************************************************************
+
+//! создать текстуру
+#define SGCore_RTcreateTexture(iWidth, iHeight, iLevels, dwUsage, format, pool, szName, fCoefFullScreen) (SGCore_RTAdd(RT_TYPE_TEXTURE, iWidth, iHeight, iLevels, dwUsage, format, pool, szName, fCoefFullScreen))
+
+//! пересоздать текстуру
+#define SGCore_RTreCreateTexture(idRT, iWidth, iHeight, iLevels, dwUsage, format, pool, szName, fCoefFullScreen) (SGCore_RTreCreate(idRT, iWidth, iHeight, iLevels, dwUsage, format, pool, szName, fCoefFullScreen))
+
+//**************************************************************************
+
+//! создать кубическую текстуру
+#define SGCore_RTcreateTextureCube(iSize, iLevels, dwUsage, format, pool, szName, fCoefFullScreen) (SGCore_RTAdd(RT_TYPE_TEXTURE_CUBE, iSize, iSize, iLevels, dwUsage, format, pool, szName, fCoefFullScreen))
+
+//! пересоздать текстуру
+#define SGCore_RTreCreateTextureCube(idRT, iSize, iLevels, dwUsage, format, pool, szName, fCoefFullScreen) (SGCore_RTreCreate(idRT, iSize, iSize, iLevels, dwUsage, format, pool, szName, fCoefFullScreen))
+
+//**************************************************************************
+
+//! создание поверхности
+#define SGCore_RTcreateSurface(iWidth, iHeight, iLevels, dwUsage, format, pool, szName, fCoefFullScreen) (SGCore_RTAdd(RT_TYPE_SURFACE, iWidth, iHeight, iLevels, dwUsage, format, pool, szName, fCoefFullScreen))
+
+//! пересоздание поверхности
+#define SGCore_RTreCreateSurface(idRT, iWidth, iHeight, iLevels, dwUsage, format, pool, szName, fCoefFullScreen) (SGCore_RTreCreate(idRT, iWidth, iHeight, iLevels, dwUsage, format, pool, szName, fCoefFullScreen))
+
+//**************************************************************************
+
+//! создать поверхность глубины
+#define SGCore_RTcreateSurfaceDepth(iWidth, iHeight, format, szName, fCoefFullScreen) (SGCore_RTAdd(RT_TYPE_SURFACE_DEPTH, iWidth, iHeight, 1, D3DUSAGE_RENDERTARGET, format, D3DPOOL_DEFAULT, szName, fCoefFullScreen))
+
+//! пересоздать поверхность глубины
+#define SGCore_RTreCreateSurfaceDepth(idRT, iWidth, iHeight, format, szName, fCoefFullScreen) (SGCore_RTreCreate(idRT, iWidth, iHeight, 1, D3DUSAGE_RENDERTARGET, format, D3DPOOL_DEFAULT, szName, fCoefFullScreen))
+
+//**************************************************************************
+
+//! создать поверхность вне экрана
+#define SGCore_RTcreateSurfaceOffScreenPlain(iWidth, iHeight, format, szName, fCoefFullScreen) (SGCore_RTAdd(RT_TYPE_OFF_SCREEN, iWidth, iHeight, 1, D3DUSAGE_RENDERTARGET, format, D3DPOOL_SYSTEMMEM, szName, fCoefFullScreen))
+
+//! пересоздать поверхность вне экрана
+#define SGCore_RTreCreateSurfaceOffScreenPlain(idRT, iWidth, iHeight, format, szName, fCoefFullScreen) (SGCore_RTreCreate(idRT, iWidth, iHeight, 1, D3DUSAGE_RENDERTARGET, format, D3DPOOL_SYSTEMMEM, szName, fCoefFullScreen))
+
+//**************************************************************************
+
+//! пересоздать render target
+SX_LIB_API void SGCore_RTreCreate(ID id, UINT iWidth, UINT iHeight, UINT iLevels, DWORD dwUsage, D3DFORMAT format, D3DPOOL pool, const char *szName=0, float fCoefFullScreen=-1);
 
 //! удалить rt по имени
 SX_LIB_API void SGCore_RTDeleteN(const char *szName);	
@@ -668,7 +748,21 @@ SX_LIB_API ID SGCore_RTGetId(const char *szName);
 SX_LIB_API IDirect3DTexture9* SGCore_RTGetTextureN(const char *szName);
 
 //! возвращает текстуру по id
-SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(ID id);				
+SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(ID id);
+
+
+//! возвращает текстуру по имени
+SX_LIB_API IDirect3DCubeTexture9* SGCore_RTGetTextureCubeN(const char *szName);
+
+//! возвращает текстуру по id
+SX_LIB_API IDirect3DCubeTexture9* SGCore_RTGetTextureCube(ID id);
+
+
+//! возвращает текстуру по имени
+SX_LIB_API IDirect3DSurface9* SGCore_RTGetSurfaceN(const char *szName);
+
+//! возвращает текстуру по id
+SX_LIB_API IDirect3DSurface9* SGCore_RTGetSurface(ID id);
 
 //!@} sxgcore_rt
 

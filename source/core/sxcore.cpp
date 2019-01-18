@@ -386,12 +386,13 @@ bool Core_RBoolGet(int id)
 void Core_RIntSet(int id, int32_t val)
 {
 	CORE_REGUSTRY_PRE_COND_ID(id, _VOID);
+
 	g_aGRegistersInt[id] = val;
 }
 
 int32_t Core_RIntGet(int id)
 {
-	CORE_REGUSTRY_PRE_COND_ID(id,0);
+	CORE_REGUSTRY_PRE_COND_ID(id, 0);
 	return g_aGRegistersInt[id];
 }
 
@@ -403,7 +404,7 @@ void Core_RFloatSet(int id, float32_t val)
 
 float32_t Core_RFloatGet(int id)
 {
-	CORE_REGUSTRY_PRE_COND_ID(id,0);
+	CORE_REGUSTRY_PRE_COND_ID(id, 0);
 	return g_aGRegistersFloat[id];
 }
 
@@ -470,11 +471,11 @@ void Core_TimesUpdate()
 }
 
 
-void Core_TimeSpeedSet(ID id, float speed)
+void Core_TimeSpeedSet(ID id, float fSpeed)
 {
 	CORE_TIME_PRECOND(_VOID);
 
-	g_pTimers->timeSpeedSet(id, speed);
+	g_pTimers->timeSpeedSet(id, fSpeed);
 }
 
 float Core_TimeSpeedGet(ID id)
@@ -485,11 +486,11 @@ float Core_TimeSpeedGet(ID id)
 }
 
 
-void Core_TimeWorkingSet(ID id, bool working)
+void Core_TimeWorkingSet(ID id, bool isWorking)
 {
 	CORE_TIME_PRECOND(_VOID);
 
-	g_pTimers->timeWorkingSet(id, working);
+	g_pTimers->timeWorkingSet(id, isWorking);
 }
 
 bool Core_TimeWorkingGet(ID id)
@@ -500,11 +501,11 @@ bool Core_TimeWorkingGet(ID id)
 }
 
 
-void Core_TimeUnixStartSet(ID id, int64_t start_time)
+void Core_TimeUnixStartSet(ID id, int64_t i64StartTime)
 {
 	CORE_TIME_PRECOND(_VOID);
 
-	g_pTimers->timeUnixStartSet(id, start_time);
+	g_pTimers->timeUnixStartSet(id, i64StartTime);
 }
 
 int64_t Core_TimeUnixStartGet(ID id)

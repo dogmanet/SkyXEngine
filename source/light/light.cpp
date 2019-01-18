@@ -13,8 +13,8 @@ CLights::CLights()
 	const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-	m_idShadowMap = SGCore_RTAdd(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap", 1);
-	m_idShadowMap2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap2", 1);
+	m_idShadowMap = SGCore_RTcreateTexture(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap", 1);
+	m_idShadowMap2 = SGCore_RTcreateTexture(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "shadowmap2", 1);
 
 	m_idGlobalLight = -1;
 	m_isCastGlobalShadow = false;
@@ -37,85 +37,87 @@ ID CLights::createCopy(ID id)
 {
 	LIGHTS_PRE_COND_ID(id,-1);
 	
-		CLight* tmplight = m_aLights[id];
-		CLight* tmplight2 = new CLight();
-		tmplight2->m_fAngle = tmplight->m_fAngle;
-		tmplight2->m_pBoundVolume = SGCore_CrBound();
-		IDirect3DVertexBuffer9* vertexbuf;
-		tmplight->m_pMesh->GetVertexBuffer(&vertexbuf);
-		tmplight->m_pBoundVolume->calcBound(vertexbuf, tmplight->m_pMesh->GetNumVertices(), tmplight->m_pMesh->GetNumBytesPerVertex());
-		mem_release(vertexbuf);
-		tmplight2->m_fPower = tmplight->m_fPower;
-		tmplight2->m_fDist = tmplight->m_fDist;
-		tmplight2->m_vColor = tmplight->m_vColor;
-		tmplight2->m_fDistFor = -1;
-		tmplight2->m_fGAngleX = tmplight->m_fGAngleX;
-		tmplight2->m_fGAngleY = tmplight->m_fGAngleY;
-		tmplight2->m_isEnable = tmplight->m_isEnable;
-		tmplight2->m_isGlobal = tmplight->m_isGlobal;
-		tmplight2->m_isVisible = tmplight->m_isVisible;
-		tmplight2->m_isVisibleFor = false;
-		sprintf(tmplight2->m_szName, "%s", tmplight->m_szName);
-		tmplight2->m_vPosition = tmplight->m_vPosition;
-		tmplight2->m_qQuaternion = tmplight->m_qQuaternion;
-		tmplight2->m_vTopBottomRadius = tmplight->m_vTopBottomRadius;
-		tmplight2->m_typeLight = tmplight->m_typeLight;
-		tmplight2->m_mWorldMat = tmplight->m_mWorldMat;
+	CLight *pLight = m_aLights[id];
+	CLight *pLight2 = new CLight();
+	pLight2->m_fAngle = pLight->m_fAngle;
+	pLight2->m_pBoundVolume = SGCore_CrBound();
 
-		tmplight2->m_typeShadowed = tmplight->m_typeShadowed;
-		tmplight2->m_iCountUpdate = tmplight->m_iCountUpdate;
-		
-		if (tmplight->m_pShadowPSSM)
+	IDirect3DVertexBuffer9 *pVertex;
+	pLight->m_pMesh->GetVertexBuffer(&pVertex);
+	pLight->m_pBoundVolume->calcBound(pVertex, pLight->m_pMesh->GetNumVertices(), pLight->m_pMesh->GetNumBytesPerVertex());
+	mem_release(pVertex);
+
+	pLight2->m_fPower = pLight->m_fPower;
+	pLight2->m_fDist = pLight->m_fDist;
+	pLight2->m_vColor = pLight->m_vColor;
+	pLight2->m_fDistFor = -1;
+	pLight2->m_fGAngleX = pLight->m_fGAngleX;
+	pLight2->m_fGAngleY = pLight->m_fGAngleY;
+	pLight2->m_isEnable = pLight->m_isEnable;
+	pLight2->m_isGlobal = pLight->m_isGlobal;
+	pLight2->m_isVisible = pLight->m_isVisible;
+	pLight2->m_isVisibleFor = false;
+	sprintf(pLight2->m_szName, "%s", pLight->m_szName);
+	pLight2->m_vPosition = pLight->m_vPosition;
+	pLight2->m_qQuaternion = pLight->m_qQuaternion;
+	pLight2->m_vTopBottomRadius = pLight->m_vTopBottomRadius;
+	pLight2->m_typeLight = pLight->m_typeLight;
+	pLight2->m_mWorld = pLight->m_mWorld;
+
+	pLight2->m_typeShadowed = pLight->m_typeShadowed;
+	pLight2->m_iCountUpdate = pLight->m_iCountUpdate;
+
+	if (pLight->m_pShadowPSSM)
+	{
+		pLight2->m_pShadowPSSM = new CShadowGlobal();
+		pLight2->m_pShadowPSSM->init();
+		pLight2->m_fGAngleX = pLight->m_fGAngleX;
+		pLight2->m_fGAngleY = pLight->m_fGAngleY;
+		pLight2->m_pShadowPSSM->setPosition(&float3(pLight->m_vPosition.x, pLight->m_vPosition.y, pLight->m_vPosition.z));
+		memcpy((pLight2->m_pShadowPSSM->m_aNearFar), (pLight->m_pShadowPSSM->m_aNearFar), sizeof(float2)* 5);
+		memcpy((pLight2->m_pShadowPSSM->m_aIsUpdate), (pLight->m_pShadowPSSM->m_aIsUpdate), sizeof(int)* 5);
+	}
+	else
+		pLight2->m_pShadowPSSM = 0;
+
+	if (pLight->m_pShadowSM)
+	{
+		pLight2->m_pShadowSM = new CShadowMap();
+		pLight2->m_pShadowSM->init();
+		pLight2->m_pShadowSM->setPosition(&float3(pLight->m_vPosition.x, pLight->m_vPosition.y, pLight->m_vPosition.z));
+		pLight2->m_pShadowSM->setDirection(&(pLight->m_qQuaternion * LIGHTS_DIR_BASE));
+
+		pLight2->m_pShadowSM->setBias(pLight->m_pShadowSM->getBias());
+		pLight2->m_pShadowSM->setBlurPixel(pLight->m_pShadowSM->getBlurPixel());
+		float3 anf;
+		pLight2->m_pShadowSM->getAngleNearFar(&anf);
+		pLight2->m_pShadowSM->setAngleNearFar(&anf);
+	}
+	else
+		pLight2->m_pShadowSM = 0;
+
+	if (pLight->m_pShadowCube)
+	{
+		pLight2->m_pShadowCube = new CShadowMapCube();
+		pLight2->m_pShadowCube->init();
+		pLight2->m_pShadowCube->setPosition(&float3(pLight->m_vPosition.x, pLight->m_vPosition.y, pLight->m_vPosition.z));
+		pLight2->m_pShadowCube->setNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, pLight->m_fDist));
+		pLight2->m_pShadowCube->setNear(pLight2->m_pShadowCube->getNear());
+		pLight2->m_pShadowCube->setFar(pLight2->m_pShadowCube->getFar());
+		pLight2->m_pShadowCube->setBias(pLight->m_pShadowCube->getBias());
+		pLight2->m_pShadowCube->setBlurPixel(pLight->m_pShadowCube->getBlurPixel());
+
+		for (int i = 0; i < 6; ++i)
 		{
-			tmplight2->m_pShadowPSSM = new PSSM();
-			tmplight2->m_pShadowPSSM->init();
-			tmplight2->m_fGAngleX = tmplight->m_fGAngleX;
-			tmplight2->m_fGAngleY = tmplight->m_fGAngleY;
-			tmplight2->m_pShadowPSSM->setPosition(&float3(tmplight->m_vPosition.x, tmplight->m_vPosition.y, tmplight->m_vPosition.z));
-			memcpy((tmplight2->m_pShadowPSSM->m_aNearFar), (tmplight->m_pShadowPSSM->m_aNearFar), sizeof(float2)* 5);
-			memcpy((tmplight2->m_pShadowPSSM->m_aIsUpdate), (tmplight->m_pShadowPSSM->m_aIsUpdate), sizeof(int)* 5);
+			pLight2->m_pShadowCube->setEnableCubeEdge(i, pLight2->m_pShadowCube->getEnableCubeEdge(i));
 		}
-		else
-			tmplight2->m_pShadowPSSM = 0;
+	}
+	else
+		pLight2->m_pShadowCube = 0;
 
-		if (tmplight->m_pShadowSM)
-		{
-			tmplight2->m_pShadowSM = new ShadowMapTech();
-			tmplight2->m_pShadowSM->init();
-			tmplight2->m_pShadowSM->setPosition(&float3(tmplight->m_vPosition.x, tmplight->m_vPosition.y, tmplight->m_vPosition.z));
-			tmplight2->m_pShadowSM->setDirection(&(tmplight->m_qQuaternion * LIGHTS_DIR_BASE));
-			
-			tmplight2->m_pShadowSM->setBias(tmplight->m_pShadowSM->getBias());
-			tmplight2->m_pShadowSM->setBlurPixel(tmplight->m_pShadowSM->getBlurPixel());
-			float3 anf;
-			tmplight2->m_pShadowSM->getAngleNearFar(&anf);
-			tmplight2->m_pShadowSM->setAngleNearFar(&anf);
-		}
-		else
-			tmplight2->m_pShadowSM = 0;
+	pLight->m_pMesh->CloneMeshFVF(pLight->m_pMesh->GetOptions(), pLight->m_pMesh->GetFVF(), light_data::pDXDevice, &(pLight2->m_pMesh));
 
-		if (tmplight->m_pShadowCube)
-		{
-			tmplight2->m_pShadowCube = new ShadowMapCubeTech();
-			tmplight2->m_pShadowCube->init();
-			tmplight2->m_pShadowCube->setPosition(&float3(tmplight->m_vPosition.x, tmplight->m_vPosition.y, tmplight->m_vPosition.z));
-			tmplight2->m_pShadowCube->setNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, tmplight->m_fDist));
-			tmplight2->m_pShadowCube->setNear(tmplight2->m_pShadowCube->getNear());
-			tmplight2->m_pShadowCube->setFar(tmplight2->m_pShadowCube->getFar());
-			tmplight2->m_pShadowCube->setBias(tmplight->m_pShadowCube->getBias());
-			tmplight2->m_pShadowCube->setBlurPixel(tmplight->m_pShadowCube->getBlurPixel());
-
-			for (int i = 0; i < 6; ++i)
-			{
-				tmplight2->m_pShadowCube->setEnableCubeEdge(i, tmplight2->m_pShadowCube->getEnableCubeEdge(i));
-			}
-		}
-		else
-			tmplight2->m_pShadowCube = 0;
-
-		tmplight->m_pMesh->CloneMeshFVF(tmplight->m_pMesh->GetOptions(), tmplight->m_pMesh->GetFVF(), light_data::pDXDevice, &(tmplight2->m_pMesh));
-
-	return addLight(tmplight);
+	return addLight(pLight);
 }
 
 CLights::CLight::CLight()
@@ -163,15 +165,17 @@ void CLights::onLostDevice()
 {
 	for (int i = 0; i < m_aLights.size(); ++i)
 	{
-		if (!(m_aLights[i]))
+		CLight *pLight = m_aLights[i];
+
+		if (!pLight)
 			continue;
 
-		if (m_aLights[i]->m_pShadowSM)
-			m_aLights[i]->m_pShadowSM->onLostDevice();
-		else if (m_aLights[i]->m_pShadowCube)
-			m_aLights[i]->m_pShadowCube->onLostDevice();
-		else if (m_aLights[i]->m_pShadowPSSM)
-			m_aLights[i]->m_pShadowPSSM->onLostDevice();
+		if (pLight->m_pShadowSM)
+			pLight->m_pShadowSM->onLostDevice();
+		else if (pLight->m_pShadowCube)
+			pLight->m_pShadowCube->onLostDevice();
+		else if (pLight->m_pShadowPSSM)
+			pLight->m_pShadowPSSM->onLostDevice();
 	}
 }
 
@@ -179,15 +183,16 @@ void CLights::onResetDevice()
 {
 	for (int i = 0; i < m_aLights.size(); ++i)
 	{
-		if (!(m_aLights[i]))
+		CLight *pLight = m_aLights[i];
+		if (!pLight)
 			continue;
 
-		if (m_aLights[i]->m_pShadowSM)
-			m_aLights[i]->m_pShadowSM->onResetDevice();
-		else if (m_aLights[i]->m_pShadowCube)
-			m_aLights[i]->m_pShadowCube->onResetDevice();
-		else if (m_aLights[i]->m_pShadowPSSM)
-			m_aLights[i]->m_pShadowPSSM->onResetDevice();
+		if (pLight->m_pShadowSM)
+			pLight->m_pShadowSM->onResetDevice();
+		else if (pLight->m_pShadowCube)
+			pLight->m_pShadowCube->onResetDevice();
+		else if (pLight->m_pShadowPSSM)
+			pLight->m_pShadowPSSM->onResetDevice();
 
 		lightCountUpdateNull(i);
 	}
@@ -243,37 +248,39 @@ void CLights::clearIDArr()
 {
 	for (int i = 0; i < m_aLights.size(); ++i)
 	{
-		if (!m_aLights[i])
+		CLight *pLight = m_aLights[i];
+
+		if (!pLight)
 			continue;
 
-		if (m_aLights[i]->m_pShadowSM)
+		if (pLight->m_pShadowSM)
 		{
-			for (int k = 0; k < m_aLights[i]->m_pShadowSM->getCountIDArrs(); ++k)
+			for (int k = 0; k < pLight->m_pShadowSM->getCountVisCalcObj(); ++k)
 			{
-				m_aLights[i]->m_pShadowSM->setIDArr(k, -1);
+				pLight->m_pShadowSM->setIdVisCalcObj(k, -1);
 			}
 		}
-		else if (m_aLights[i]->m_pShadowCube)
+		else if (pLight->m_pShadowCube)
 		{
-			for (int k = 0; k < m_aLights[i]->m_pShadowCube->getCountIDArrs(); ++k)
+			for (int k = 0; k < pLight->m_pShadowCube->getCountVisCalcObj(); ++k)
 			{
-				m_aLights[i]->m_pShadowCube->setIDArr(k, 0, -1);
-				m_aLights[i]->m_pShadowCube->setIDArr(k, 1, -1);
-				m_aLights[i]->m_pShadowCube->setIDArr(k, 2, -1);
-				m_aLights[i]->m_pShadowCube->setIDArr(k, 3, -1);
-				m_aLights[i]->m_pShadowCube->setIDArr(k, 4, -1);
-				m_aLights[i]->m_pShadowCube->setIDArr(k, 5, -1);
+				pLight->m_pShadowCube->setIdVisCalcObj(k, 0, -1);
+				pLight->m_pShadowCube->setIdVisCalcObj(k, 1, -1);
+				pLight->m_pShadowCube->setIdVisCalcObj(k, 2, -1);
+				pLight->m_pShadowCube->setIdVisCalcObj(k, 3, -1);
+				pLight->m_pShadowCube->setIdVisCalcObj(k, 4, -1);
+				pLight->m_pShadowCube->setIdVisCalcObj(k, 5, -1);
 			}
 		}
-		else if (m_aLights[i]->m_pShadowPSSM)
+		else if (pLight->m_pShadowPSSM)
 		{
-			for (int k = 0; k < m_aLights[i]->m_pShadowPSSM->getCountIDArrs(); ++k)
+			for (int k = 0; k < pLight->m_pShadowPSSM->getCountVisCalcObj(); ++k)
 			{
-				m_aLights[i]->m_pShadowPSSM->setIDArr(k, 0, -1);
-				m_aLights[i]->m_pShadowPSSM->setIDArr(k, 1, -1);
-				m_aLights[i]->m_pShadowPSSM->setIDArr(k, 2, -1);
-				m_aLights[i]->m_pShadowPSSM->setIDArr(k, 3, -1);
-				m_aLights[i]->m_pShadowPSSM->setIDArr(k, 4, -1);
+				pLight->m_pShadowPSSM->setIdVisCalcObj(k, 0, -1);
+				pLight->m_pShadowPSSM->setIdVisCalcObj(k, 1, -1);
+				pLight->m_pShadowPSSM->setIdVisCalcObj(k, 2, -1);
+				pLight->m_pShadowPSSM->setIdVisCalcObj(k, 3, -1);
+				pLight->m_pShadowPSSM->setIdVisCalcObj(k, 4, -1);
 			}
 		}
 	}
@@ -288,13 +295,14 @@ void CLights::deleteLight(ID id)
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
-	if (m_aLights[id]->m_isGlobal)
+	CLight *pLight = m_aLights[id];
+
+	if (pLight->m_isGlobal)
 		m_idGlobalLight = -1;
 
-
-	m_aLights[id]->m_isEnable = false;
-	m_aDelLights.push_back(m_aLights[id]);
-	m_aLights[id] = 0;
+	pLight->m_isEnable = false;
+	m_aDelLights.push_back(pLight);
+	pLight = 0;
 	m_aFreeIDs.push_back(id);
 }
 
@@ -304,179 +312,178 @@ char* CLights::getLightName(ID id)
 	return m_aLights[id]->m_szName;
 }
 
-void CLights::setLightName(ID id, const char* name)
+void CLights::setLightName(ID id, const char *szName)
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
-	sprintf(m_aLights[id]->m_szName, "%s", name);
+	sprintf(m_aLights[id]->m_szName, "%s", szName);
 }
 
-ID CLights::createPoint(ID id, const float3* center, float dist, const float3* color, bool isglobal, bool is_shadow/*, const char* bound_volume*/)
+ID CLights::createPoint(ID id, const float3 *pCenter, float fDist, const float3 *pColor, bool isGlobal, bool isShadow/*, const char* bound_volume*/)
 {
-	if (m_idGlobalLight != -1 && isglobal)
+	if (m_idGlobalLight != -1 && isGlobal)
 	{
-		setLightPos(m_idGlobalLight, center);
-		setLightColor(m_idGlobalLight, color);
-		setLightTypeShadowed(m_idGlobalLight, (is_shadow ? LTYPE_SHADOW_DYNAMIC : LTYPE_SHADOW_NONE));
+		setLightPos(m_idGlobalLight, pCenter);
+		setLightColor(m_idGlobalLight, pColor);
+		setLightTypeShadowed(m_idGlobalLight, (isShadow ? LTYPE_SHADOW_DYNAMIC : LTYPE_SHADOW_NONE));
 		LibReport(REPORT_MSG_LEVEL_WARNING, "%s - light: global light exists, you can not create 2 global light sources\n", GEN_MSG_LOCATION);
 		return m_idGlobalLight;
 	}
 
-	CLight* tmplight = 0;// new CLight();
+	CLight *pLight = 0;
 
 	if (id < 0)
-		tmplight = new CLight();
+		pLight = new CLight();
 	else
 	{
-		tmplight = new CLight();
-		tmplight->m_id = m_aLights[id]->m_id;
+		pLight = new CLight();
+		pLight->m_id = m_aLights[id]->m_id;
 		mem_delete(m_aLights[id]);
-		m_aLights[id] = tmplight;
+		m_aLights[id] = pLight;
 	}
 
-	tmplight->m_isGlobal = isglobal;
+	pLight->m_isGlobal = isGlobal;
 
-	if (isglobal)
+	if (isGlobal)
+		pLight->m_fDist = LIGHTS_GLOBAL_STD_RADIUS;
+	else
+		pLight->m_fDist = fDist;
+
+	pLight->m_typeLight = (isGlobal ? LTYPE_LIGHT_GLOBAL : LTYPE_LIGHT_POINT);
+
+	/*if(StrValidate(bound_volume))
 	{
-		tmplight->m_fDist = LIGHTS_GLOBAL_STD_RADIUS;
+			
+	}
+	else
+	{*/
+	D3DXCreateSphere(light_data::pDXDevice, pLight->m_fDist, 20, 20, &pLight->m_pMesh, 0);
+	//}
+
+	if (isGlobal && isShadow)
+	{
+		pLight->m_pShadowPSSM = new CShadowGlobal();
+		pLight->m_pShadowPSSM->init();
+		pLight->m_pShadowPSSM->setPosition(pCenter);
+	}
+	else if (isShadow)
+	{
+		pLight->m_pShadowCube = new CShadowMapCube();
+		pLight->m_pShadowCube->init();
+		pLight->m_pShadowCube->setPosition(pCenter);
+		pLight->m_pShadowCube->setNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, pLight->m_fDist));
 	}
 	else
 	{
-		tmplight->m_fDist = dist;
+		int qwerty = 0;
 	}
 
-	tmplight->m_typeLight = (isglobal ? LTYPE_LIGHT_GLOBAL : LTYPE_LIGHT_POINT);
-		/*if(StrValidate(bound_volume))
-		{
-			
-		}
-		else
-		{*/
-			D3DXCreateSphere(light_data::pDXDevice, tmplight->m_fDist, 20, 20, &tmplight->m_pMesh, 0);
-		//}
-
-		if (isglobal && is_shadow)
-		{
-			tmplight->m_pShadowPSSM = new PSSM();
-			tmplight->m_pShadowPSSM->init();
-			tmplight->m_pShadowPSSM->setPosition(&float3(center->x, center->y, center->z));
-		}
-		else if (is_shadow)
-		{
-			tmplight->m_pShadowCube = new ShadowMapCubeTech();
-			tmplight->m_pShadowCube->init();
-			tmplight->m_pShadowCube->setPosition(&float3(center->x, center->y, center->z));
-			tmplight->m_pShadowCube->setNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, tmplight->m_fDist));
-			
-		}
-		else
-		{
-			int qwerty = 0;
-		}
-
-		if (is_shadow)
-			tmplight->m_typeShadowed = LTYPE_SHADOW_DYNAMIC;
-		else
-			tmplight->m_typeShadowed = LTYPE_SHADOW_NONE;
+	if (isShadow)
+		pLight->m_typeShadowed = LTYPE_SHADOW_DYNAMIC;
+	else
+		pLight->m_typeShadowed = LTYPE_SHADOW_NONE;
 		
-	ID tmpid = id;
+	ID idLight = id;
 
 	if (id == -1)
-		tmpid = addLight(tmplight);
+		idLight = addLight(pLight);
 
-	setLightPos(tmpid, &float3(center->x, center->y, center->z));
+	setLightPos(idLight, pCenter);
 
-	tmplight->m_vColor = *color;
-	tmplight->m_isEnable = true;
-	tmplight->m_pBoundVolume = SGCore_CrBound();
-	IDirect3DVertexBuffer9* vertexbuf;
-	tmplight->m_pMesh->GetVertexBuffer(&vertexbuf);
-	tmplight->m_pBoundVolume->calcBound(vertexbuf, tmplight->m_pMesh->GetNumVertices(), tmplight->m_pMesh->GetNumBytesPerVertex());
-	mem_release(vertexbuf);
+	pLight->m_vColor = *pColor;
+	pLight->m_isEnable = true;
+	pLight->m_pBoundVolume = SGCore_CrBound();
 
-	if (tmplight->m_isGlobal)
-		m_idGlobalLight = tmpid;
+	IDirect3DVertexBuffer9 *pVertex;
+	pLight->m_pMesh->GetVertexBuffer(&pVertex);
+	pLight->m_pBoundVolume->calcBound(pVertex, pLight->m_pMesh->GetNumVertices(), pLight->m_pMesh->GetNumBytesPerVertex());
+	mem_release(pVertex);
 
-	return tmpid;
+	if (pLight->m_isGlobal)
+		m_idGlobalLight = idLight;
+
+	return idLight;
 }
 
-ID CLights::createDirection(ID id, const float3* pos, float dist, const float3* color, const SMQuaternion* orient, float top_radius, float angle, bool is_shadow/*, const char* bound_volume*/)
+ID CLights::createDirection(ID id, const float3 *pPos, float fDist, const float3 *pColor, const SMQuaternion *pQ, float fTopRadius, float fAngle, bool isShadow/*, const char* bound_volume*/)
 {
-	CLight* tmplight = 0;
+	CLight *pLight = 0;
 
 	if (id < 0)
-		tmplight = new CLight();
+		pLight = new CLight();
 	else
 	{
-		tmplight = new CLight();
-		tmplight->m_id = m_aLights[id]->m_id;
+		pLight = new CLight();
+		pLight->m_id = m_aLights[id]->m_id;
 		mem_delete(m_aLights[id]);
-		m_aLights[id] = tmplight;
+		m_aLights[id] = pLight;
 	}
 
-	tmplight->m_isGlobal = false;
-	tmplight->m_typeLight = LTYPE_LIGHT_DIR;
-	tmplight->m_fAngle = angle;
-	float bottom_radius = top_radius + dist * tanf(angle / 2.f);
-	tmplight->m_vTopBottomRadius.x = top_radius;
-	tmplight->m_vTopBottomRadius.y = bottom_radius;
+	pLight->m_isGlobal = false;
+	pLight->m_typeLight = LTYPE_LIGHT_DIR;
+	pLight->m_fAngle = fAngle;
+	float bottom_radius = fTopRadius + fDist * tanf(fAngle / 2.f);
+	pLight->m_vTopBottomRadius.x = fTopRadius;
+	pLight->m_vTopBottomRadius.y = bottom_radius;
 
 	/*if (StrValidate(bound_volume))
 	{
 		
 	}
 	else*/
-		SGCore_FCreateCone(top_radius, bottom_radius, dist, &tmplight->m_pMesh, 32);
+	SGCore_FCreateCone(fTopRadius, bottom_radius, fDist, &pLight->m_pMesh, 32);
 
-	tmplight->m_vTopBottomRadius = float2_t(top_radius, bottom_radius);
-	tmplight->m_vColor = *color;
+	pLight->m_vTopBottomRadius = float2_t(fTopRadius, bottom_radius);
+	pLight->m_vColor = *pColor;
 	
-	if (orient)
-		tmplight->m_qQuaternion = *orient;
+	if (pQ)
+		pLight->m_qQuaternion = *pQ;
 
-	tmplight->m_fDist = dist;
+	pLight->m_fDist = fDist;
 
-	tmplight->m_isEnable = true;
-	float4x4 mpos = SMMatrixTranslation(*pos);
-	tmplight->m_mWorldMat = tmplight->m_qQuaternion.GetMatrix() * mpos;
+	pLight->m_isEnable = true;
+	float4x4 mpos = SMMatrixTranslation(*pPos);
+	pLight->m_mWorld = pLight->m_qQuaternion.GetMatrix() * mpos;
 
-	tmplight->m_vPosition = float3(pos->x, pos->y, pos->z);
+	pLight->m_vPosition = *pPos;
 	
-	if (is_shadow)
+	if (isShadow)
 	{
-		tmplight->m_pShadowSM = new ShadowMapTech();
-		tmplight->m_pShadowSM->init();
-		tmplight->m_pShadowSM->setPosition(&float3(pos->x, pos->y, pos->z));
-		tmplight->m_pShadowSM->setDirection(&(tmplight->m_qQuaternion * LIGHTS_DIR_BASE));
-		tmplight->m_pShadowSM->setAngleNearFar(&float3(angle, LIGHTS_LOCAL_STD_NEAR, dist));
+		pLight->m_pShadowSM = new CShadowMap();
+		pLight->m_pShadowSM->init();
+		pLight->m_pShadowSM->setPosition(pPos);
+		pLight->m_pShadowSM->setDirection(&(pLight->m_qQuaternion * LIGHTS_DIR_BASE));
+		pLight->m_pShadowSM->setAngleNearFar(&float3(fAngle, LIGHTS_LOCAL_STD_NEAR, fDist));
 	}
 	
-	if (is_shadow)
-		tmplight->m_typeShadowed = LTYPE_SHADOW_DYNAMIC;
+	if (isShadow)
+		pLight->m_typeShadowed = LTYPE_SHADOW_DYNAMIC;
 	else
-		tmplight->m_typeShadowed = LTYPE_SHADOW_NONE;
+		pLight->m_typeShadowed = LTYPE_SHADOW_NONE;
 
-	tmplight->m_pBoundVolume = SGCore_CrBound();
-	IDirect3DVertexBuffer9* vertexbuf;
-	tmplight->m_pMesh->GetVertexBuffer(&vertexbuf);
-	tmplight->m_pBoundVolume->calcBound(vertexbuf, tmplight->m_pMesh->GetNumVertices(), tmplight->m_pMesh->GetNumBytesPerVertex());
-	mem_release(vertexbuf);
+	pLight->m_pBoundVolume = SGCore_CrBound();
+	
+	IDirect3DVertexBuffer9 *pVertex;
+	pLight->m_pMesh->GetVertexBuffer(&pVertex);
+	pLight->m_pBoundVolume->calcBound(pVertex, pLight->m_pMesh->GetNumVertices(), pLight->m_pMesh->GetNumBytesPerVertex());
+	mem_release(pVertex);
 
-	ID tmpid = id;
+	ID idLight = id;
 
 	if (id == -1)
-		tmpid = addLight(tmplight);
+		idLight = addLight(pLight);
 	
-	return tmpid;
+	return idLight;
 }
 
 void CLights::render(ID id, DWORD timeDelta)
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
-	float4x4 tmpwmat = m_aLights[id]->m_mWorldMat;
-	light_data::pDXDevice->SetTransform(D3DTS_WORLD, &(m_aLights[id]->m_mWorldMat.operator D3DXMATRIX()));
-	m_aLights[id]->m_pMesh->DrawSubset(0);
-	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + (m_aLights[id]->m_pMesh->GetNumFaces() / 3));
+	CLight *pLight = m_aLights[id];
+
+	light_data::pDXDevice->SetTransform(D3DTS_WORLD, &(pLight->m_mWorld.operator D3DXMATRIX()));
+	pLight->m_pMesh->DrawSubset(0);
+	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + (pLight->m_pMesh->GetNumFaces() / 3));
 }
 
 ID CLights::getLightGlobal() const
@@ -494,35 +501,35 @@ void CLights::setCastGlobalShadow(bool isShadowed)
 	m_isCastGlobalShadow = isShadowed;
 }
 
-void CLights::getLightColor(ID id, float3* vec) const
+void CLights::getLightColor(ID id, float3 *pPos) const
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
-	(*vec) = m_aLights[id]->m_vColor;
+	(*pPos) = m_aLights[id]->m_vColor;
 }
 
-void CLights::setLightColor(ID id, const float3* vec)
+void CLights::setLightColor(ID id, const float3 *pPos)
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
-	m_aLights[id]->m_vColor = *vec;
+	m_aLights[id]->m_vColor = *pPos;
 }
 
-void CLights::getLightPos(ID id, float3* vec, bool greal) const
+void CLights::getLightPos(ID id, float3 *pPos, bool isReal) const
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
-	if (m_aLights[id]->m_isGlobal && !greal)
+	if (m_aLights[id]->m_isGlobal && !isReal)
 	{
-		vec->x = m_aLights[id]->m_fGAngleX;
-		vec->y = m_aLights[id]->m_fGAngleY;
-		vec->z = 0;
+		pPos->x = m_aLights[id]->m_fGAngleX;
+		pPos->y = m_aLights[id]->m_fGAngleY;
+		pPos->z = 0;
 	}
 	else
 	{
-		vec->x = m_aLights[id]->m_vPosition.x;
-		vec->y = m_aLights[id]->m_vPosition.y;
-		vec->z = m_aLights[id]->m_vPosition.z;	
+		pPos->x = m_aLights[id]->m_vPosition.x;
+		pPos->y = m_aLights[id]->m_vPosition.y;
+		pPos->z = m_aLights[id]->m_vPosition.z;
 	}
 }
 
@@ -553,25 +560,25 @@ float CLights::getLightDist(ID id) const
 	return m_aLights[id]->m_fDist;
 }
 
-void CLights::setLightDist(ID id, float radius_height, bool is_create)
+void CLights::setLightDist(ID id, float fRadiusHeight, bool isCreate)
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
-	m_aLights[id]->m_fDist = radius_height;
-	if (m_aLights[id]->m_typeLight == LTYPE_LIGHT_DIR && is_create)
+	m_aLights[id]->m_fDist = fRadiusHeight;
+	if (m_aLights[id]->m_typeLight == LTYPE_LIGHT_DIR && isCreate)
 	{
-		m_aLights[id]->m_vTopBottomRadius.y = m_aLights[id]->m_vTopBottomRadius.x + radius_height * tanf(m_aLights[id]->m_fAngle / 2.f);
+		m_aLights[id]->m_vTopBottomRadius.y = m_aLights[id]->m_vTopBottomRadius.x + fRadiusHeight * tanf(m_aLights[id]->m_fAngle / 2.f);
 		mem_release_del(m_aLights[id]->m_pMesh);
-		SGCore_FCreateCone(m_aLights[id]->m_vTopBottomRadius.x, m_aLights[id]->m_vTopBottomRadius.y, radius_height, &m_aLights[id]->m_pMesh, 32);
+		SGCore_FCreateCone(m_aLights[id]->m_vTopBottomRadius.x, m_aLights[id]->m_vTopBottomRadius.y, fRadiusHeight, &m_aLights[id]->m_pMesh, 32);
 	}
 
 	if (m_aLights[id]->m_pShadowSM)
 		m_aLights[id]->m_pShadowSM->setAngleNearFar(&float3(m_aLights[id]->m_fAngle, 0.1, m_aLights[id]->m_fDist));
 
-	if (m_aLights[id]->m_typeLight == LTYPE_LIGHT_POINT && is_create)
+	if (m_aLights[id]->m_typeLight == LTYPE_LIGHT_POINT && isCreate)
 	{
 		mem_release_del(m_aLights[id]->m_pMesh);
-		D3DXCreateSphere(light_data::pDXDevice, radius_height, 20, 20, &m_aLights[id]->m_pMesh, 0);
+		D3DXCreateSphere(light_data::pDXDevice, fRadiusHeight, 20, 20, &m_aLights[id]->m_pMesh, 0);
 	}
 
 	if (m_aLights[id]->m_pShadowCube)
@@ -599,90 +606,88 @@ float CLights::getLightShadowIntensity(ID id)
 	return m_aLights[id]->m_fShadowIntensity;
 }
 
-void CLights::setLightPos(ID id, const float3* vec, bool greal)
+void CLights::setLightPos(ID id, const float3 *pPos, bool isReal)
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 	if (m_aLights[id]->m_isGlobal)
 	{
-		CLight* tmplight = m_aLights[id];
-		tmplight->m_fGAngleX = vec->x;
-		tmplight->m_fGAngleY = vec->y;
+		CLight *pLight = m_aLights[id];
+		pLight->m_fGAngleX = pPos->x;
+		pLight->m_fGAngleY = pPos->y;
 
-		if (tmplight->m_fGAngleX > 360 || tmplight->m_fGAngleX < 0)
-			tmplight->m_fGAngleX = 0;
+		if (pLight->m_fGAngleX > 360 || pLight->m_fGAngleX < 0)
+			pLight->m_fGAngleX = 0;
 
-		if (tmplight->m_fGAngleY > 360 || tmplight->m_fGAngleY < 0)
-			tmplight->m_fGAngleY = 0;
+		if (pLight->m_fGAngleY > 360 || pLight->m_fGAngleY < 0)
+			pLight->m_fGAngleY = 0;
 
+		float4x4 mat = SMMatrixRotationZ(-D3DXToRadian(pLight->m_fGAngleX)) * SMMatrixRotationY(D3DXToRadian(pLight->m_fGAngleY));
+		pLight->m_vPosition = SMVector3Transform(float3(-1, 0, 0), mat);
 
-		float4x4 mat = SMMatrixRotationZ(-D3DXToRadian(tmplight->m_fGAngleX)) * SMMatrixRotationY(D3DXToRadian(tmplight->m_fGAngleY));
-		tmplight->m_vPosition = SMVector3Transform(float3(-1, 0, 0), mat);
+		pLight->m_vPosition.x *= LIGHTS_POS_G_MAX;
+		pLight->m_vPosition.y *= LIGHTS_POS_G_MAX;
+		pLight->m_vPosition.z *= LIGHTS_POS_G_MAX;
 
-
-		tmplight->m_vPosition.x *= LIGHTS_POS_G_MAX;
-		tmplight->m_vPosition.y *= LIGHTS_POS_G_MAX;
-		tmplight->m_vPosition.z *= LIGHTS_POS_G_MAX;
-
-		tmplight->m_mWorldMat = SMMatrixTranslation(tmplight->m_vPosition.x, tmplight->m_vPosition.y, tmplight->m_vPosition.z);
-		if (tmplight->m_pShadowPSSM)
-			tmplight->m_pShadowPSSM->setPosition(&float3(tmplight->m_vPosition.x, tmplight->m_vPosition.y, tmplight->m_vPosition.z));
+		pLight->m_mWorld = SMMatrixTranslation(pLight->m_vPosition.x, pLight->m_vPosition.y, pLight->m_vPosition.z);
+		if (pLight->m_pShadowPSSM)
+			pLight->m_pShadowPSSM->setPosition(&float3(pLight->m_vPosition.x, pLight->m_vPosition.y, pLight->m_vPosition.z));
 	}
 	else
 	{
-				m_aLights[id]->m_vPosition.x = (*vec).x;
-				m_aLights[id]->m_vPosition.y = (*vec).y;
-				m_aLights[id]->m_vPosition.z = (*vec).z;
+		m_aLights[id]->m_vPosition.x = (*pPos).x;
+		m_aLights[id]->m_vPosition.y = (*pPos).y;
+		m_aLights[id]->m_vPosition.z = (*pPos).z;
 
-				float4x4 mpos = SMMatrixTranslation(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z);
-				m_aLights[id]->m_mWorldMat = m_aLights[id]->m_qQuaternion.GetMatrix() * mpos;
+		float4x4 mTranslation = SMMatrixTranslation(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z);
+		m_aLights[id]->m_mWorld = m_aLights[id]->m_qQuaternion.GetMatrix() * mTranslation;
 
-			if (m_aLights[id]->m_pShadowSM)
-			{
-				m_aLights[id]->m_pShadowSM->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
-			}
+		if (m_aLights[id]->m_pShadowSM)
+		{
+			m_aLights[id]->m_pShadowSM->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
+		}
 
-			if (m_aLights[id]->m_pShadowCube)
-			{
-				m_aLights[id]->m_mWorldMat = SMMatrixTranslation(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z);
-				m_aLights[id]->m_pShadowCube->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
-			}
+		if (m_aLights[id]->m_pShadowCube)
+		{
+			m_aLights[id]->m_mWorld = SMMatrixTranslation(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z);
+			m_aLights[id]->m_pShadowCube->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
+		}
 	}
 
 	lightCountUpdateNull(id);
 }
 
-void CLights::getLightOrient(ID id, SMQuaternion* q) const
+void CLights::getLightOrient(ID id, SMQuaternion *pQ) const
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
-	*q = m_aLights[id]->m_qQuaternion;
+	*pQ = m_aLights[id]->m_qQuaternion;
 }
 
-void CLights::setLightOrient(ID id, const SMQuaternion* q)
+void CLights::setLightOrient(ID id, const SMQuaternion *pQ)
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
-	m_aLights[id]->m_qQuaternion = *q;
+	m_aLights[id]->m_qQuaternion = *pQ;
 
 	if (m_aLights[id]->m_pShadowSM)
 	{
-		float4x4 mpos = SMMatrixTranslation(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z);
-		m_aLights[id]->m_mWorldMat = m_aLights[id]->m_qQuaternion.GetMatrix() * mpos;
+		float4x4 mTranslate = SMMatrixTranslation(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z);
+		m_aLights[id]->m_mWorld = m_aLights[id]->m_qQuaternion.GetMatrix() * mTranslate;
 		m_aLights[id]->m_pShadowSM->setDirection(&(m_aLights[id]->m_qQuaternion * LIGHTS_DIR_BASE));
 	}
 
 	lightCountUpdateNull(id);
 }
 
-void CLights::setShadowBias(ID id, float val)
+void CLights::setShadowBias(ID id, float fBias)
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 		if (m_aLights[id]->m_pShadowSM)
-			m_aLights[id]->m_pShadowSM->setBias(val);
+			m_aLights[id]->m_pShadowSM->setBias(fBias);
 		else if (m_aLights[id]->m_pShadowCube)
-			m_aLights[id]->m_pShadowCube->setBias(val);
+			m_aLights[id]->m_pShadowCube->setBias(fBias);
 
 		lightCountUpdateNull(id);
 }
@@ -717,16 +722,16 @@ float CLights::getLightAngle(ID id) const
 }
 
 
-bool CLights::comVisibleForFrustum(ID id, const IFrustum* frustum)
+bool CLights::comVisibleForFrustum(ID id, const IFrustum *pFrustum)
 {
 	LIGHTS_PRE_COND_ID(id, false);
 
-	float3 tmpcenter;
-	float tmpradius;
-	m_aLights[id]->m_pBoundVolume->getSphere(&tmpcenter, &tmpradius);
-	tmpcenter = SMVector3Transform(tmpcenter, m_aLights[id]->m_mWorldMat);
+	float3 vCenter;
+	float fRadius;
+	m_aLights[id]->m_pBoundVolume->getSphere(&vCenter, &fRadius);
+	vCenter = SMVector3Transform(vCenter, m_aLights[id]->m_mWorld);
 
-	return frustum->sphereInFrustum(&tmpcenter, tmpradius);
+	return pFrustum->sphereInFrustum(&vCenter, fRadius);
 }
 
 bool CLights::getVisibleForFrustum(ID id)
@@ -736,21 +741,21 @@ bool CLights::getVisibleForFrustum(ID id)
 	return m_aLights[id]->m_isVisibleFor;
 }
 
-float CLights::comDistFor(ID id, const float3* vec)
+float CLights::comDistFor(ID id, const float3 *pPos)
 {
 	LIGHTS_PRE_COND_ID(id, -1);
 
-	return SMVector3Distance((float3)m_aLights[id]->m_vPosition, *vec);
+	return SMVector3Distance((float3)m_aLights[id]->m_vPosition, *pPos);
 }
 
-void CLights::comVisibleFrustumDistFor(const IFrustum* frustum, const float3* vec)
+void CLights::comVisibleFrustumDistFor(const IFrustum *pFrustum, const float3 *pPos)
 {
 	for (int i = 0; i < m_aLights.size(); ++i)
 	{
 		if (m_aLights[i])
 		{
-			m_aLights[i]->m_fDistFor = SMVector3Distance((float3)m_aLights[i]->m_vPosition, *vec);
-			m_aLights[i]->m_isVisibleFor = comVisibleForFrustum(m_aLights[i]->m_id, frustum);
+			m_aLights[i]->m_fDistFor = SMVector3Distance((float3)m_aLights[i]->m_vPosition, *pPos);
+			m_aLights[i]->m_isVisibleFor = comVisibleForFrustum(m_aLights[i]->m_id, pFrustum);
 		}
 	}
 }
@@ -792,7 +797,9 @@ bool CLights::getLightShadowed(ID id) const
 LTYPE_LIGHT CLights::getLightType(ID id) const
 {
 	LIGHTS_PRE_COND_ID(id, LTYPE_LIGHT_NONE);
-	return m_aLights[id]->m_typeLight;
+	
+	CLight *pLight = m_aLights[id];
+	return pLight->m_typeLight;
 }
 
 void CLights::shadowRenderBegin(ID id)
@@ -819,90 +826,128 @@ void CLights::shadowRenderEnd(ID id)
 		m_aLights[id]->m_pShadowPSSM->end();
 }
 
-void CLights::shadowRenderPre(ID id, int cube)
+void CLights::shadowRenderPre(ID id, int iCube)
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 	if (m_aLights[id]->m_pShadowCube)
-		m_aLights[id]->m_pShadowCube->pre(cube);
-	else if (m_aLights[id]->m_pShadowPSSM && cube >= 0 && cube < 5)
-		m_aLights[id]->m_pShadowPSSM->preRender(cube);
+		m_aLights[id]->m_pShadowCube->pre(iCube);
+	else if (m_aLights[id]->m_pShadowPSSM && iCube >= 0 && iCube < 5)
+		m_aLights[id]->m_pShadowPSSM->preRender(iCube);
 }
 
-void CLights::shadowRenderPost(ID id, int cube)
+void CLights::shadowRenderPost(ID id, int iCube)
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 	if (m_aLights[id]->m_pShadowCube)
-		m_aLights[id]->m_pShadowCube->post(cube);
+		m_aLights[id]->m_pShadowCube->post(iCube);
 }
 
-void CLights::initShaderOfTypeMaterial(ID id, int typemat, const float4x4* wmat)
+void CLights::initShaderOfTypeMaterial(ID id, int iTypeMaterial, const float4x4 *pWorld)
 {
-	float4x4 mWorld = (wmat ? (*wmat) : SMMatrixIdentity());
+	float4x4 mWorld = (pWorld ? (*pWorld) : SMMatrixIdentity());
 	
-	float4x4 tmpmat;
-	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &tmpmat);
-	tmpmat = SMMatrixTranspose(mWorld * tmpmat);
-	float4x4 tmpwmat = SMMatrixTranspose(mWorld);
-	if (m_aLights[id]->m_pShadowSM || m_aLights[id]->m_pShadowPSSM)
+	float4x4 mWVP;
+	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mWVP);
+	mWVP = SMMatrixTranspose(mWorld * mWVP);
+	float4x4 mW = SMMatrixTranspose(mWorld);
+
+	float4_t vPos = m_aLights[id]->m_vPosition;
+	vPos.w = m_aLights[id]->m_fDist;
+
+	if (m_aLights[id]->m_pShadowSM)
 	{
-		if (typemat == MTL_TYPE_GEOM)
+		if (iTypeMaterial == MTL_TYPE_GEOM)
 		{
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomPSSMDirect, "g_mWVP", &tmpmat);
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomPSSMDirect);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGeomPSSMDirect);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomDirect, "g_mWVP", &mWVP);
+			//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGeomDirect, "g_vLightPos", &vPos);
+
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomDirect);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGeomDirect);
 		}
-		else if (typemat == MTL_TYPE_GRASS)
+		else if (iTypeMaterial == MTL_TYPE_GRASS)
 		{
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassPSSMDirect, "g_mWVP", &tmpmat);
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassPSSMDirect);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGreenPSSMDirect);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassDirect, "g_mWVP", &mWVP);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassDirect);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGreenDirect);
 		}
-		else if (typemat == MTL_TYPE_TREE)
+		else if (iTypeMaterial == MTL_TYPE_TREE)
 		{
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreePSSMDirect, "g_mWVP", &tmpmat);
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreePSSMDirect);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGreenPSSMDirect);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreeDirect, "g_mWVP", &mWVP);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreeDirect);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGreenDirect);
 		}
-		else if (typemat == MTL_TYPE_SKIN)
+		else if (iTypeMaterial == MTL_TYPE_SKIN)
 		{
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinPSSMDirect, "g_mWVP", &tmpmat);
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinPSSMDirect);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthSkinPSSMDirect);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinDirect, "g_mWVP", &mWVP);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinDirect);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthSkinDirect);
+		}
+	}
+	else if (m_aLights[id]->m_pShadowPSSM)
+	{
+		if (iTypeMaterial == MTL_TYPE_GEOM)
+		{
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomPSSM, "g_mWVP", &mWVP);
+			//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGeomPSSM, "g_vLightPos", &vPos);
+
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomPSSM);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGeomPSSM);
+		}
+		else if (iTypeMaterial == MTL_TYPE_GRASS)
+		{
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassPSSM, "g_mWVP", &mWVP);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassPSSM);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGreenPSSM);
+		}
+		else if (iTypeMaterial == MTL_TYPE_TREE)
+		{
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreePSSM, "g_mWVP", &mWVP);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreePSSM);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGreenPSSM);
+		}
+		else if (iTypeMaterial == MTL_TYPE_SKIN)
+		{
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinPSSM, "g_mWVP", &mWVP);
+			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinPSSM);
+			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthSkinPSSM);
 		}
 	}
 	else if (m_aLights[id]->m_pShadowCube)
 	{
-		if (typemat == MTL_TYPE_GEOM)
+		if (iTypeMaterial == MTL_TYPE_GEOM)
 		{
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomCube, "g_mWVP", &tmpmat);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomCube, "g_mW", &tmpwmat);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomCube, "g_vLightPos", &m_aLights[id]->m_vPosition);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomCube, "g_mWVP", &mWVP);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomCube, "g_mW", &mW);
+			
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGeomCube, "g_vLightPos", &vPos);
+			
 			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomCube);
 			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGeomCube);
 		}
-		else if (typemat == MTL_TYPE_GRASS)
+		else if (iTypeMaterial == MTL_TYPE_GRASS)
 		{
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassCube, "g_mWVP", &tmpmat);
-			//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassCube, "g_mW", &tmpwmat);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassCube, "g_vLightPos", &m_aLights[id]->m_vPosition);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassCube, "g_mWVP", &mWVP);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassCube, "g_vLightPos", &vPos);
+			
 			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassCube);
 			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGreenCube);
 		}
-		else if (typemat == MTL_TYPE_TREE)
+		else if (iTypeMaterial == MTL_TYPE_TREE)
 		{
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreeCube, "g_mWVP", &tmpmat);
-			//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreeCube, "g_mW", &tmpwmat);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreeCube, "g_vLightPos", &m_aLights[id]->m_vPosition);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreeCube, "g_mWVP", &mWVP);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreeCube, "g_vLightPos", &vPos);
+			
 			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreeCube);
 			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGreenCube);
 		}
-		else if (typemat == MTL_TYPE_SKIN)
+		else if (iTypeMaterial == MTL_TYPE_SKIN)
 		{
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinCube, "g_mWVP", &tmpmat);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinCube, "g_mW", &tmpwmat);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinCube, "g_vLightPos", &m_aLights[id]->m_vPosition);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinCube, "g_mWVP", &mWVP);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinCube, "g_mW", &mW);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinCube, "g_vLightPos", &vPos);
+			
 			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinCube);
 			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthSkinCube);
 		}
@@ -916,7 +961,7 @@ IFrustum* CLights::getLightFrustum(ID id, int how) const
 		if (m_aLights[id]->m_pShadowSM)
 		{
 			if (how == 0)
-				return m_aLights[id]->m_pShadowSM->Frustum;
+				return m_aLights[id]->m_pShadowSM->m_pFrustum;
 		}
 		else if (m_aLights[id]->m_pShadowCube)
 		{
@@ -1143,17 +1188,17 @@ ID CLights::getLightIDArr(ID id, ID inid, int how)
 		if (m_aLights[id]->m_pShadowSM)
 		{
 			if (how == 0)
-				return m_aLights[id]->m_pShadowSM->getIDArr(inid);
+				return m_aLights[id]->m_pShadowSM->getIdVisCalcObj(inid);
 		}
 		else if (m_aLights[id]->m_pShadowCube)
 		{
 			if (how >= 0 && how < 6)
-				return m_aLights[id]->m_pShadowCube->getIDArr(inid, how);
+				return m_aLights[id]->m_pShadowCube->getIdVisCalcObj(inid, how);
 		}
 		else if (m_aLights[id]->m_pShadowPSSM)
 		{
 			if (how >= 0 && how < 5)
-				return m_aLights[id]->m_pShadowPSSM->getIDArr(inid, how);
+				return m_aLights[id]->m_pShadowPSSM->getIdVisCalcObj(inid, how);
 		}
 	return(-1);
 }
@@ -1165,17 +1210,17 @@ void CLights::setLightIDArr(ID id, ID inid, int how, ID id_arr)
 		if (m_aLights[id]->m_pShadowSM)
 		{
 			if (how == 0)
-				m_aLights[id]->m_pShadowSM->setIDArr(inid, id_arr);
+				m_aLights[id]->m_pShadowSM->setIdVisCalcObj(inid, id_arr);
 		}
 		else if (m_aLights[id]->m_pShadowCube)
 		{
 			if (how >= 0 && how < 6)
-				m_aLights[id]->m_pShadowCube->setIDArr(inid, how, id_arr);
+				m_aLights[id]->m_pShadowCube->setIdVisCalcObj(inid, how, id_arr);
 		}
 		else if (m_aLights[id]->m_pShadowPSSM)
 		{
 			if (how >= 0 && how < 5)
-				m_aLights[id]->m_pShadowPSSM->setIDArr(inid, how, id_arr);
+				m_aLights[id]->m_pShadowPSSM->setIdVisCalcObj(inid, how, id_arr);
 		}
 }
 
@@ -1194,7 +1239,7 @@ void CLights::setLightTypeShadowed(ID id, LTYPE_SHADOW type)
 		{
 			if (!m_aLights[id]->m_pShadowSM)
 			{
-				m_aLights[id]->m_pShadowSM = new ShadowMapTech();
+				m_aLights[id]->m_pShadowSM = new CShadowMap();
 				m_aLights[id]->m_pShadowSM->init();
 				m_aLights[id]->m_pShadowSM->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
 				m_aLights[id]->m_pShadowSM->setDirection(&(m_aLights[id]->m_qQuaternion * LIGHTS_DIR_BASE));
@@ -1207,7 +1252,7 @@ void CLights::setLightTypeShadowed(ID id, LTYPE_SHADOW type)
 			{
 				if (!m_aLights[id]->m_pShadowPSSM)
 				{
-					m_aLights[id]->m_pShadowPSSM = new PSSM();
+					m_aLights[id]->m_pShadowPSSM = new CShadowGlobal();
 					m_aLights[id]->m_pShadowPSSM->init();
 					m_aLights[id]->m_pShadowPSSM->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
 				}
@@ -1217,7 +1262,7 @@ void CLights::setLightTypeShadowed(ID id, LTYPE_SHADOW type)
 		{
 			if (!m_aLights[id]->m_pShadowCube)
 			{
-				m_aLights[id]->m_pShadowCube = new ShadowMapCubeTech();
+				m_aLights[id]->m_pShadowCube = new CShadowMapCube();
 				m_aLights[id]->m_pShadowCube->init();
 				m_aLights[id]->m_pShadowCube->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
 				m_aLights[id]->m_pShadowCube->setNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, m_aLights[id]->m_fDist));
@@ -1472,17 +1517,17 @@ ID CLights::delGetIDArr(ID key, ID inid, int how)
 	if (m_aDelLights[key]->m_pShadowSM)
 	{
 		if (how == 0)
-			return m_aDelLights[key]->m_pShadowSM->getIDArr(inid);
+			return m_aDelLights[key]->m_pShadowSM->getIdVisCalcObj(inid);
 	}
 	else if (m_aDelLights[key]->m_pShadowCube)
 	{
 		if (how >= 0 && how < 6)
-			return m_aDelLights[key]->m_pShadowCube->getIDArr(inid, how);
+			return m_aDelLights[key]->m_pShadowCube->getIdVisCalcObj(inid, how);
 	}
 	else if (m_aDelLights[key]->m_pShadowPSSM)
 	{
 		if (how >= 0 && how < 5)
-			return m_aDelLights[key]->m_pShadowPSSM->getIDArr(inid, how);
+			return m_aDelLights[key]->m_pShadowPSSM->getIdVisCalcObj(inid, how);
 	}
 	return(-1);
 }

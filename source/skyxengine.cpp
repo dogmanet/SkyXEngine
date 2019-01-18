@@ -515,6 +515,7 @@ void SkyXEngine_CreateLoadCVar()
 
 	Core_0RegisterCVarInt("r_resize", RENDER_RESIZE_NONE, "Тип изменения размеров окан рендера из перечисления RENDER_RESIZE");
 
+	Core_0RegisterCVarBool("r_shader_sendfail_info", true, "Выдача сообщений в консоль в случае неудачной пересылки данных");
 
 	Core_0RegisterCVarBool("r_pssm_4or3", true, "Для глобальных теней использовать 4 (true) или 3 (false) сплита?");
 	Core_0RegisterCVarBool("r_pssm_shadowed", true, "Глобальный источник отбрасывает тени?");

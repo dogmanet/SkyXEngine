@@ -79,6 +79,10 @@ SX_LIB_API void SLight_OnResetDevice()
 
 	light_data::ReCalcSize();
 	ArrLights->onResetDevice();
+
+	SGCore_RTreCreateSurfaceDepth(light_data::texture_id::idSurfaceDepthGlobalShadow, light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, D3DFMT_D24X8, "shadow_globa_depth_stencill", -1);
+	SGCore_RTreCreateSurfaceDepth(light_data::texture_id::idSurfaceDepthPointShadow, light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.x, D3DFMT_D24X8, "shadow_point_depth_stencil", -1);
+	SGCore_RTreCreateSurfaceDepth(light_data::texture_id::idSurfaceDepthDirShadow, light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, D3DFMT_D24X8, "shadow_dir_depth_stencil", -1);
 }
 
 

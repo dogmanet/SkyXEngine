@@ -210,12 +210,6 @@ public:
 	//! передача int значений в шейдер по ID
 	void setValueRegisterI(SHADER_TYPE type, ID idShader, const char *szNameVar, void *data, int iCountInt4 = 0);
 
-	//! передача bool значений в шейдер по имени
-	void setValueRegisterB(SHADER_TYPE type, const char *szNameShader, const char *szNameVar, void *pData, int iCountBool4 = 0);
-
-	//! передача bool значений в шейдер по ID
-	void setValueRegisterB(SHADER_TYPE type, ID idShader, const char *szNameVar, void *data, int iCountBool4 = 0);
-
 
 	//! существует ли шейдер с именем файла и расширением name, если да то возвращает id
 	ID existsPath(SHADER_TYPE type, const char *szPath);
@@ -240,6 +234,10 @@ protected:
 
 	Array<CShaderVS*> m_aVS;	//!< массивы vs шейдеров
 	Array<CShaderPS*> m_aPS;	//!< массивы ps шейдеров
+
+	bool m_canInfo4FailSend;
+
+	void updateDataInfo4FailSend();
 
 	//! массив всех инклюдов
 	Array<CShaderInclude> m_aIncludes;

@@ -906,143 +906,130 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 }
 
 
-void rfunc::UpdateShadow(DWORD timeDelta)
+void rfunc::GenDepth4Shadow(DWORD timeDelta, ID idLight)
 {
 	Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_SHADOW);
-	SLight_ComVisibleFrustumDistFor(gdata::pCamera->getFrustum(), &gdata::vConstCurrCamPos);
-	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
 	SetSamplerFilter(0, D3DTEXF_LINEAR);
 	SetSamplerAddress(0, D3DTADDRESS_WRAP);
 
-	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
+	if (!SLight_GetExists(idLight))
+		return;
 
-	for (int i = 0; i<SLight_GetCount(); i++)
+	Core_RIntSet(G_RI_INT_CURRIDLIGHT, idLight);
+	if (!(SLight_GetShadowed(idLight) && (SLight_ComVisibleForFrustum(idLight, gdata::pCamera->getFrustum()) && SLight_GetEnable(idLight))))
+		return;
+
+	if (SLight_GetType(idLight) == LTYPE_LIGHT_GLOBAL)
 	{
-		if (!SLight_GetExists(i))
-			continue;
-
-		Core_RIntSet(G_RI_INT_CURRIDLIGHT, i);
-		if (SLight_GetShadowed(i) && (SLight_ComVisibleForFrustum(i, gdata::pCamera->getFrustum()) && SLight_GetEnable(i)) /*|| (Data::Level::LightManager->Arr[i]->ShadowCube && Data::Level::LightManager->Arr[i]->ShadowCube->GetStatic() && !Data::Level::LightManager->Arr[i]->ShadowCube->GetUpdate())*/)
+		SLight_ShadowRenderBegin(idLight);
+		int countsplits = (SLight_Get4Or3SplitsG(idLight) ? 4 : 3);
+		for (int k = 0; k<countsplits; k++)
 		{
-			if (SLight_GetType(i) == LTYPE_LIGHT_GLOBAL)
+			if (SLight_CountUpdateAllowed(idLight, k))
 			{
-				SLight_ShadowRenderBegin(i);
-				int countsplits = (SLight_Get4Or3SplitsG(i) ? 4 : 3);
-				for (int k = 0; k<countsplits; k++)
-				{
-					if (SLight_CountUpdateAllowed(i, k))
-					{
-						SLight_ShadowRenderPre(i, k);
+				SLight_ShadowRenderPre(idLight, k);
 
-						if (SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k) > -1)
-							SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k));
+				if (SLight_GetIDArr(idLight, RENDER_IDARRCOM_GEOM, k) > -1)
+					SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, SLight_GetIDArr(idLight, RENDER_IDARRCOM_GEOM, k));
 
-						if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k) > -1)
-							SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k));
+				if (SLight_GetIDArr(idLight, RENDER_IDARRCOM_GREEN, k) > -1)
+					SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, SLight_GetIDArr(idLight, RENDER_IDARRCOM_GREEN, k));
 
-						SXAnim_Render();
-					}
-				}
-
-				//КОГДА ИСТОЧНИК БЛИЗОК К ГОРИЗОНТУ ИЗ-ЗА ОБЛАКОВ ВОЗНИКАЕТ БАГ С ТЕНЯМИ В ВИДЕ ФЕЙКОВЫХ ТЕНЕЙ
-				if (SGCore_SkyCloudsIsCr())
-				{
-					SLight_UpdateGFrustums(i, 4, &gdata::vConstCurrCamPos, &gdata::vConstCurrCamDir);
-					SLight_ShadowRenderPre(i, 4);
-					gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
-					gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-					SetSamplerFilter(0, D3DTEXF_LINEAR);
-					SetSamplerFilter(1, D3DTEXF_LINEAR);
-					SetSamplerAddress(0, D3DTADDRESS_MIRROR);
-					SetSamplerAddress(1, D3DTADDRESS_MIRROR);
-
-					if (SGCore_SkyCloudsIsLoadTex())
-						SGCore_SkyCloudsRender(timeDelta, &float3(gdata::vConstCurrCamPos.x, gdata::vConstCurrCamPos.y + 150, gdata::vConstCurrCamPos.z), true);
-					else
-						gdata::pDXDevice->Clear(0, 0, D3DCLEAR_TARGET, 0, 1.0f, 0);
-
-					SetSamplerAddress(0, D3DTADDRESS_WRAP);
-					SetSamplerAddress(1, D3DTADDRESS_WRAP);
-				}
-				SLight_ShadowRenderEnd(i);
+				SXAnim_Render();
 			}
-			else if (SLight_GetType(i) == LTYPE_LIGHT_DIR)
+		}
+
+		//КОГДА ИСТОЧНИК БЛИЗОК К ГОРИЗОНТУ ИЗ-ЗА ОБЛАКОВ ВОЗНИКАЕТ БАГ С ТЕНЯМИ В ВИДЕ ФЕЙКОВЫХ ТЕНЕЙ
+		if (SGCore_SkyCloudsIsCr())
+		{
+			SLight_UpdateGFrustums(idLight, 4, &gdata::vConstCurrCamPos, &gdata::vConstCurrCamDir);
+			SLight_ShadowRenderPre(idLight, 4);
+			gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+			gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+			SetSamplerFilter(0, D3DTEXF_LINEAR);
+			SetSamplerFilter(1, D3DTEXF_LINEAR);
+			SetSamplerAddress(0, D3DTADDRESS_MIRROR);
+			SetSamplerAddress(1, D3DTADDRESS_MIRROR);
+
+			if (SGCore_SkyCloudsIsLoadTex())
+				SGCore_SkyCloudsRender(timeDelta, &float3(gdata::vConstCurrCamPos.x, gdata::vConstCurrCamPos.y + 150, gdata::vConstCurrCamPos.z), true);
+			else
+				gdata::pDXDevice->Clear(0, 0, D3DCLEAR_TARGET, 0, 1.0f, 0);
+
+			SetSamplerAddress(0, D3DTADDRESS_WRAP);
+			SetSamplerAddress(1, D3DTADDRESS_WRAP);
+		}
+		SLight_ShadowRenderEnd(idLight);
+	}
+	else if (SLight_GetType(idLight) == LTYPE_LIGHT_DIR)
+	{
+		gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+		if (SLight_CountUpdateUpdate(idLight, &gdata::vConstCurrCamPos))
+		{
+			SLight_ShadowRenderBegin(idLight);
+
+			if (SLight_GetTypeShadowed(idLight) == LTYPE_SHADOW_DYNAMIC)
 			{
-				gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-				if (SLight_CountUpdateUpdate(i, &gdata::vConstCurrCamPos))
+				if (SLight_GetIDArr(idLight, RENDER_IDARRCOM_GEOM, 0) > -1)
+					SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, SLight_GetIDArr(idLight, RENDER_IDARRCOM_GEOM, 0));
+
+				if (SLight_GetIDArr(idLight, RENDER_IDARRCOM_GREEN, 0) > -1)
+					SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, SLight_GetIDArr(idLight, RENDER_IDARRCOM_GREEN, 0));
+
+				SXAnim_Render();
+			}
+			else
+			{
+				SGeom_ComVisible(SLight_GetFrustum(idLight, 0), &gdata::vConstCurrCamPos, gdata::idDefaultGeomArr);
+				SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, gdata::idDefaultGeomArr);
+				SGreen_ComVisible(SLight_GetFrustum(idLight, 0), &gdata::vConstCurrCamPos, gdata::idDefaultGreenArr);
+				SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, gdata::idDefaultGreenArr);
+			}
+
+			SLight_ShadowRenderEnd(idLight);
+		}
+	}
+	else if (SLight_GetType(idLight) == LTYPE_LIGHT_POINT)
+	{
+		gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+		if (SLight_GetTypeShadowed(idLight) != LTYPE_SHADOW_NONE && SLight_CountUpdateUpdate(idLight, &gdata::vConstCurrCamPos))
+		{
+			SLight_ShadowRenderBegin(idLight);
+
+			for (int k = 0; k < 6; k++)
+			{
+				if (SLight_GetCubeEdgeEnable(idLight, k))
 				{
-					SLight_ShadowRenderBegin(i);
+					SLight_ShadowRenderPre(idLight, k);
 
-					if (SLight_GetTypeShadowed(i) == LTYPE_SHADOW_DYNAMIC)
+					if (SLight_GetTypeShadowed(idLight) == LTYPE_SHADOW_DYNAMIC)
 					{
-						if (SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, 0) > -1)
-							SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, 0));
+						if (SLight_GetIDArr(idLight, RENDER_IDARRCOM_GEOM, k) > -1)
+							SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, SLight_GetIDArr(idLight, RENDER_IDARRCOM_GEOM, k));
 
-						if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, 0) > -1)
-							SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, 0));
+						if (SLight_GetIDArr(idLight, RENDER_IDARRCOM_GREEN, k) > -1)
+							SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, SLight_GetIDArr(idLight, RENDER_IDARRCOM_GREEN, k));
 
 						SXAnim_Render();
 					}
 					else
 					{
-						SGeom_ComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, gdata::idDefaultGeomArr);
+						SGeom_ComVisible(SLight_GetFrustum(idLight, k), &gdata::vConstCurrCamPos, gdata::idDefaultGeomArr);
 						SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, gdata::idDefaultGeomArr);
-						SGreen_ComVisible(SLight_GetFrustum(i, 0), &gdata::vConstCurrCamPos, gdata::idDefaultGreenArr);
+						SGreen_ComVisible(SLight_GetFrustum(idLight, k), &gdata::vConstCurrCamPos, gdata::idDefaultGreenArr);
 						SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, gdata::idDefaultGreenArr);
 					}
 
-					SLight_ShadowRenderEnd(i);
+					SLight_ShadowRenderPost(idLight, k);
 				}
 			}
-			else if (SLight_GetType(i) == LTYPE_LIGHT_POINT)
-			{
-				gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-				if (SLight_GetTypeShadowed(i) != LTYPE_SHADOW_NONE && SLight_CountUpdateUpdate(i, &gdata::vConstCurrCamPos))
-				{
-					SLight_ShadowRenderBegin(i);
 
-					for (int k = 0; k < 6; k++)
-					{
-						if (SLight_GetCubeEdgeEnable(i, k))
-						{
-							SLight_ShadowRenderPre(i, k);
-
-							if (SLight_GetTypeShadowed(i) == LTYPE_SHADOW_DYNAMIC)
-							{
-								if (SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k) > -1)
-									SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, SLight_GetIDArr(i, RENDER_IDARRCOM_GEOM, k));
-
-								if (SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k) > -1)
-									SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, SLight_GetIDArr(i, RENDER_IDARRCOM_GREEN, k));
-
-								SXAnim_Render();
-							}
-							else
-							{
-								SGeom_ComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, gdata::idDefaultGeomArr);
-								SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE, gdata::idDefaultGeomArr);
-								SGreen_ComVisible(SLight_GetFrustum(i, k), &gdata::vConstCurrCamPos, gdata::idDefaultGreenArr);
-								SGreen_Render(timeDelta, &gdata::vConstCurrCamPos, GREEN_TYPE_TREE, gdata::idDefaultGreenArr);
-							}
-
-							SLight_ShadowRenderPost(i, k);
-						}
-					}
-
-					SLight_ShadowRenderEnd(i);
-				}
-			}
+			SLight_ShadowRenderEnd(idLight);
 		}
 	}
+	
 	Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_FREE);
-	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
-	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
 }
 
 void rfunc::RenderSky(DWORD timeDelta)
@@ -1105,6 +1092,8 @@ void rfunc::ComLighting(DWORD timeDelta)
 	static int *r_win_height = (int*)GET_PCVAR_INT("r_win_height");
 
 	SGCore_ShaderUnBind();
+
+	SLight_ComVisibleFrustumDistFor(gdata::pCamera->getFrustum(), &gdata::vConstCurrCamPos);
 
 	LPDIRECT3DSURFACE9 pAmbientSurf, pSpecDiffSurf, pBackBuf;
 	SGCore_GbufferGetRT(DS_RT_AMBIENTDIFF)->GetSurfaceLevel(0, &pAmbientSurf);
@@ -1220,6 +1209,17 @@ void rfunc::ComLighting(DWORD timeDelta)
 				gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 				gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 				gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
+
+				gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+				gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+				gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+
+				GenDepth4Shadow(timeDelta, i);
+
+				//отключаем тест глубины ибо будем теперь пост процессом обрабатывать полученные данные
+				gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+				gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+				gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 				SLight_ShadowNull();	//очищаем рт генерации теней
 				SLight_ShadowGen(i);	//генерируем тень для света

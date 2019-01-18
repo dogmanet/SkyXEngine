@@ -131,18 +131,18 @@ void InitRT4Gbuffer()
 	float2_t tmp_sizert = float2_t(float(*r_win_width) * tmpcoefsizert, (*r_win_height) * tmpcoefsizert);
 
 	//цвет (текстуры)
-	gcore_data::rt_id::idColorScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_color", tmpcoefsizert);
+	gcore_data::rt_id::idColorScene = SGCore_RTcreateTexture(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_color", tmpcoefsizert);
 	//номрали + микрорельеф
-	gcore_data::rt_id::idNormalScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8/*D3DFMT_A2R10G10B10*/, D3DPOOL_DEFAULT, "ds_normal", tmpcoefsizert);
+	gcore_data::rt_id::idNormalScene = SGCore_RTcreateTexture(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8/*D3DFMT_A2R10G10B10*/, D3DPOOL_DEFAULT, "ds_normal", tmpcoefsizert);
 	//параметры освещени¤
-	gcore_data::rt_id::idParamsScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_param", tmpcoefsizert);
+	gcore_data::rt_id::idParamsScene = SGCore_RTcreateTexture(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_param", tmpcoefsizert);
 
-	gcore_data::rt_id::idDepthScene = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "ds_depth", tmpcoefsizert);
-	gcore_data::rt_id::idDepthScene0 = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "ds_depth_0", tmpcoefsizert);
-	gcore_data::rt_id::idDepthScene1 = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "ds_depth_1", tmpcoefsizert);
+	gcore_data::rt_id::idDepthScene = SGCore_RTcreateTexture(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "ds_depth", tmpcoefsizert);
+	gcore_data::rt_id::idDepthScene0 = SGCore_RTcreateTexture(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "ds_depth_0", tmpcoefsizert);
+	gcore_data::rt_id::idDepthScene1 = SGCore_RTcreateTexture(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "ds_depth_1", tmpcoefsizert);
 
-	gcore_data::rt_id::idLightAmbientDiff = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_ambient", tmpcoefsizert);
-	gcore_data::rt_id::idLightSpecular = SGCore_RTAdd(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "ds_specdiff", tmpcoefsizert);
+	gcore_data::rt_id::idLightAmbientDiff = SGCore_RTcreateTexture(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_ambient", tmpcoefsizert);
+	gcore_data::rt_id::idLightSpecular = SGCore_RTcreateTexture(tmp_sizert.x, tmp_sizert.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "ds_specdiff", tmpcoefsizert);
 
 
 	gcore_data::rt_id::aToneMaps.clear();
@@ -157,20 +157,20 @@ void InitRT4Gbuffer()
 			break;
 
 		sprintf(szNameRT, "tone_map_%dx%d", tmpsize, tmpsize);
-		gcore_data::rt_id::aToneMaps[tmpcount] = SGCore_RTAdd(tmpsize, tmpsize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, szNameRT, 0);
+		gcore_data::rt_id::aToneMaps[tmpcount] = SGCore_RTcreateTexture(tmpsize, tmpsize, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, szNameRT, 0);
 		gcore_data::rt_id::aSurfToneMap[tmpcount] = 0;
 		++tmpcount;
 	}
 	gcore_data::rt_id::iCountArrToneMaps = tmpcount;
 
-	gcore_data::rt_id::idAdaptLumCurr = SGCore_RTAdd(1, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "adapted_lum_curr", 0);
-	gcore_data::rt_id::idAdaptLumLast = SGCore_RTAdd(1, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "adapted_lum_last", 0);
+	gcore_data::rt_id::idAdaptLumCurr = SGCore_RTcreateTexture(1, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "adapted_lum_curr", 0);
+	gcore_data::rt_id::idAdaptLumLast = SGCore_RTcreateTexture(1, 1, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R16F, D3DPOOL_DEFAULT, "adapted_lum_last", 0);
 
-	gcore_data::rt_id::idLigthCom = SGCore_RTAdd(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom", 1);
-	gcore_data::rt_id::idLigthCom2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom2", 1);
-	gcore_data::rt_id::idLigthCom3 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcom3", 1);
+	gcore_data::rt_id::idLigthCom = SGCore_RTcreateTexture(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom", 1);
+	gcore_data::rt_id::idLigthCom2 = SGCore_RTcreateTexture(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcom2", 1);
+	gcore_data::rt_id::idLigthCom3 = SGCore_RTcreateTexture(*r_win_width, *r_win_height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "ds_lightcom3", 1);
 
-	gcore_data::rt_id::idLigthComScaled = SGCore_RTAdd(float(*r_win_width)*0.25f, float(*r_win_height)*0.25f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcomscaled", 0.25);
+	gcore_data::rt_id::idLigthComScaled = SGCore_RTcreateTexture(float(*r_win_width)*0.25f, float(*r_win_height)*0.25f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, "ds_lightcomscaled", 0.25);
 
 
 	gcore_data::ps_id::idCalcAdaptedLum = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_calc_adapted_lum.ps", "pptm_calc_adapted_lum.ps", SHADER_CHECKDOUBLE_PATH);
