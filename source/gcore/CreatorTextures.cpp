@@ -23,9 +23,9 @@ CreatorTextures::~CreatorTextures()
 	}
 }
 
-ID CreatorTextures::Add(UINT width, UINT height, UINT levels, DWORD usage, GXFORMAT format, const char* name, float coeffullscreen)
+ID CreatorTextures::Add(UINT width, UINT height, UINT levels, DWORD usage, GXFORMAT format, const char* name)
 {
-	IGXTexture2D* objtex = g_pDXDevice->createTexture2D(width,height, levels, usage | (coeffullscreen < 0 ? 0 : GX_TEXUSAGE_AUTORESIZE), format);
+	IGXTexture2D* objtex = g_pDXDevice->createTexture2D(width,height, levels, usage, format);
 
 	ID id = -1;
 	bool isadd = true;

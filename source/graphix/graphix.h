@@ -439,7 +439,7 @@ typedef struct _GXSAMPLER_DESC
 	float fMipLODBias;
 	UINT uMaxAnisotropy;
 	GXCOMPARISON_FUNC comparisonFunc;
-	float fBorderColor[4];
+	float4_t f4BorderColor;
 	float fMinLOD;
 	float fMaxLOD;
 } GXSAMPLER_DESC;
@@ -467,6 +467,8 @@ class IGXIndexBuffer: public IGXBaseInterface
 public:
 	virtual bool lock(void **ppData, GXBUFFERLOCK mode) = 0;
 	virtual void unlock() = 0;
+
+	virtual bool wasReset() = 0;
 };
 
 class IGXVertexBuffer: public IGXBaseInterface
@@ -474,6 +476,8 @@ class IGXVertexBuffer: public IGXBaseInterface
 public:
 	virtual bool lock(void **ppData, GXBUFFERLOCK mode) = 0;
 	virtual void unlock() = 0;
+
+	virtual bool wasReset() = 0;
 };
 
 class IGXVertexDeclaration: public IGXBaseInterface
@@ -525,6 +529,7 @@ class IGXBaseTexture: public IGXBaseInterface
 {
 public:
 	virtual GXFORMAT getFormat() = 0;
+	virtual bool wasReset() = 0;
 };
 
 class IGXTexture2D: public IGXBaseTexture

@@ -6,12 +6,12 @@ See the license in LICENSE
 
 #include "Bound.h"
 
-void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh ** ppMesh, IGXContext * pDevice,UINT iSideCount)
+void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** ppMesh, IGXContext * pDevice,UINT iSideCount)
 {
 	UINT iVC = iSideCount * 2;
 	UINT iIC = (iSideCount - 2) * 6 + iSideCount * 6;
 	float3_t * pVertices = new float3_t[iVC];
-	UINT * pIndices = new UINT[iIC];
+	USHORT * pIndices = new USHORT[iIC];
 
 	//top
 	UINT iCurV = 0;
@@ -71,18 +71,26 @@ void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, ID3DXMesh 
 		iCurI++;
 	}
 
-	D3DXCreateMeshFVF(iIC / 3, iVC, D3DXMESH_32BIT | D3DXMESH_MANAGED, D3DFVF_XYZ, pDevice, ppMesh);
-	VOID * pData;
-	(*ppMesh)->LockVertexBuffer(0, &pData);
-	memcpy(pData, pVertices, sizeof(float3_t) * iVC);
-	(*ppMesh)->UnlockVertexBuffer();
+	IMesh *pMesh = SGCore_CrMesh(iIC, iVC);
+	
 
-	(*ppMesh)->LockIndexBuffer(0, &pData);
-	memcpy(pData, pIndices, sizeof(UINT) * iIC);
-	(*ppMesh)->UnlockIndexBuffer();
+	VOID * pData;
+	if(pMesh->getVertexBuffer()->lock(&pData, GXBL_WRITE))
+	{
+		memcpy(pData, pVertices, sizeof(float3_t) * iVC);
+		pMesh->getVertexBuffer()->unlock();
+	}
+
+	if(pMesh->getIndexBuffer()->lock(&pData, GXBL_WRITE))
+	{
+		memcpy(pData, pIndices, sizeof(USHORT) * iIC);
+		pMesh->getIndexBuffer()->unlock();
+	}
 	
 	mem_delete(pIndices);
 	mem_delete(pVertices);
+
+	(*ppMesh) = pMesh;
 }
 
 //##########################################################################
@@ -554,34 +562,49 @@ bool InPositionPoints3D(float3* min,float3* max,float3* p1,float3* p2,float3* p3
 
 //##########################################################################
 
-void CreateBoundingBoxMesh(const float3* min, const float3* max, ID3DXMesh** bbmesh, IGXContext* device)
+void CreateBoundingBoxMesh(const float3* min, const float3* max, IMesh** bbmesh, IGXContext* device)
 {
 	float dist_x = abs(max->x - min->x);
 	float dist_y = abs(max->y - min->y);
 	float dist_z = abs(max->z - min->z);
 
-	//ID3DXMesh* BoundMesh = 0;
-	HRESULT hr = 0;
+	UINT iVC = 8;
+	UINT iIC = 36;
+	float3_t pVertices[] = {
+		float3_t(min->x, min->y, min->z),
+		float3_t(min->x, min->y, max->z),
+		float3_t(min->x, max->y, min->z),
+		float3_t(min->x, max->y, max->z),
+		float3_t(max->x, min->y, min->z),
+		float3_t(max->x, min->y, max->z),
+		float3_t(max->x, max->y, min->z),
+		float3_t(max->x, max->y, max->z),
+	};
+	USHORT pIndices[] = {
+		0, 3, 1, 0, 2, 3,
+		0, 4, 6, 0, 6, 2,
+		0, 1, 5, 0, 5, 4,
+		4, 5, 7, 4, 7, 6,
+		6, 7, 3, 6, 3, 2,
+		3, 7, 5, 3, 5, 1
+	};
 
-	hr = D3DXCreateBox(
-						device,
-						dist_x,
-						dist_y,
-						dist_z,
-						bbmesh,
-						0);
+	IMesh *pMesh = SGCore_CrMesh(iIC, iVC);
 
-	void* Vetx = 0;
-	int VertexBytes =  (*bbmesh)->GetNumBytesPerVertex();
-	D3DXVECTOR3 dv = D3DXVECTOR3((max->x + min->x)*0.5f,(max->y + min->y)*0.5f,(max->z + min->z)*0.5f);
+	VOID * pData;
+	if(pMesh->getVertexBuffer()->lock(&pData, GXBL_WRITE))
+	{
+		memcpy(pData, pVertices, sizeof(float3_t) * iVC);
+		pMesh->getVertexBuffer()->unlock();
+	}
 
-	(*bbmesh)->LockVertexBuffer(0,&Vetx);
-		for(int i=0; i<(*bbmesh)->GetNumVertices(); i++)
-		{
-			D3DXVECTOR3* v = (D3DXVECTOR3*)((char*)(Vetx) + VertexBytes * i);
-			*v += dv;
-		}
-	(*bbmesh)->UnlockVertexBuffer();
+	if(pMesh->getIndexBuffer()->lock(&pData, GXBL_WRITE))
+	{
+		memcpy(pData, pIndices, sizeof(USHORT) * iIC);
+		pMesh->getIndexBuffer()->unlock();
+	}
+
+	*bbmesh = pMesh;
 }
 
 //##########################################################################

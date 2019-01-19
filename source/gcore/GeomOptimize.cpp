@@ -8,6 +8,8 @@ See the license in LICENSE
 
 void OptimizeIndecesInSubsetUint16(uint16_t* ib, uint16_t numFaces, uint16_t numVerts)
 {
+	//@TODO: Implement me!
+	/*
 	uint16_t* pdwRemap = new uint16_t[numFaces];
 	D3DXOptimizeFaces(ib, numFaces, numVerts, FALSE, (DWORD*)pdwRemap);
 
@@ -25,10 +27,13 @@ void OptimizeIndecesInSubsetUint16(uint16_t* ib, uint16_t numFaces, uint16_t num
 
 	mem_delete_a(pCopyIB);
 	mem_delete_a(pdwRemap);
+	*/
 }
 
 void OptimizeIndecesInSubsetUint32(uint32_t* ib, uint32_t numFaces, uint32_t numVerts)
 {
+	//@TODO: Implement me!
+	/*
 	uint32_t* pdwRemap = new uint32_t[numFaces];
 	D3DXOptimizeFaces(ib, numFaces, numVerts, TRUE, (DWORD*)pdwRemap);
 
@@ -46,4 +51,5 @@ void OptimizeIndecesInSubsetUint32(uint32_t* ib, uint32_t numFaces, uint32_t num
 
 	mem_delete_a(pCopyIB);
 	mem_delete_a(pdwRemap);
+	*/
 }

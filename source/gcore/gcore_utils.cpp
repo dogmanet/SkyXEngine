@@ -42,6 +42,7 @@ void InitDevice(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFla
 
 void InitFPStext()
 {
+	/*
 	D3DXFONT_DESC LF;
 	ZeroMemory(&LF, sizeof(D3DXFONT_DESC));
 	LF.Height = 14;
@@ -52,6 +53,7 @@ void InitFPStext()
 	sprintf(LF.FaceName, "Courier New");
 
 	D3DXCreateFontIndirect(g_pDXDevice, &LF, &g_pFPStext);
+	*/
 }
 
 void InitFullScreenQuad()
@@ -163,7 +165,7 @@ void InitRT4Gbuffer()
 	gcore_data::rt_id::idLigthCom2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcom2");
 	gcore_data::rt_id::idLigthCom3 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "ds_lightcom3");
 
-	gcore_data::rt_id::idLigthComScaled = SGCore_RTAdd(*r_win_width / 4, *r_win_height . 4, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcomscaled");
+	gcore_data::rt_id::idLigthComScaled = SGCore_RTAdd(*r_win_width / 4, *r_win_height / 4, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcomscaled");
 
 
 	gcore_data::ps_id::idCalcAdaptedLum = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_calc_adapted_lum.ps", "pptm_calc_adapted_lum.ps", SHADER_CHECKDOUBLE_PATH);

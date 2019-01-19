@@ -942,7 +942,7 @@ SX_LIB_API void SGCore_FCompBoundBox(
 	);
 
 //! создание меша (ID3DXMesh) ограничивающего объема
-SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3* min, const float3* max, ID3DXMesh** bbmesh);
+SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3* min, const float3* max, IMesh** bbmesh);
 
 /*! \name Оптимизация индексных буферов
 @{*/
