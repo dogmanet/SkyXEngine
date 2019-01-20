@@ -1,8 +1,7 @@
-#ifndef _IDSRindexBufferOgl_H_
-#define _IDSRindexBufferOgl_H_
+#ifndef _IDSRindexBuffer_H_
+#define _IDSRindexBuffer_H_
 
 #include "GXContext.h"
-
 
 class CGXIndexBuffer: public IGXIndexBuffer
 {
@@ -18,11 +17,21 @@ class CGXIndexBuffer: public IGXIndexBuffer
 	D3DFORMAT m_format;
 	UINT m_uSize;
 	UINT m_uLockFlagsWrite = 0;
+	bool m_wasReset = true;
+	bool m_isResettable = false;
+
+	UINT m_uFlags;
+
+	void onDevLost();
+	void onDevRst();
+
 public:
 	void Release();
 
 	bool lock(void **ppData, GXBUFFERLOCK mode);
 	void unlock();
+
+	bool wasReset();
 };
 
 #endif

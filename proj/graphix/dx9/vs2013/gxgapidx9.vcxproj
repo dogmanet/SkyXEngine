@@ -11,19 +11,33 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXBlendState.h" />
     <ClInclude Include="..\..\..\..\source\graphix\dx9\GXContext.h" />
+    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXDepthStencilState.h" />
+    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXDepthStencilSurface.h" />
     <ClInclude Include="..\..\..\..\source\graphix\dx9\GXIndexBuffer.h" />
+    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXRasterizerState.h" />
     <ClInclude Include="..\..\..\..\source\graphix\dx9\GXRenderBuffer.h" />
+    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXSamplerState.h" />
     <ClInclude Include="..\..\..\..\source\graphix\dx9\GXShader.h" />
+    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXSurface.h" />
+    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXTexture.h" />
     <ClInclude Include="..\..\..\..\source\graphix\dx9\GXVertexBuffer.h" />
     <ClInclude Include="..\..\..\..\source\graphix\dx9\GXVertexDeclaration.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\source\graphix\dx9\dllmain.cpp" />
+    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXBlendState.cpp" />
     <ClCompile Include="..\..\..\..\source\graphix\dx9\GXContext.cpp" />
+    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXDepthStencilState.cpp" />
+    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXDepthStencilSurface.cpp" />
     <ClCompile Include="..\..\..\..\source\graphix\dx9\GXIndexBuffer.cpp" />
+    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXRasterizerState.cpp" />
     <ClCompile Include="..\..\..\..\source\graphix\dx9\GXRenderBuffer.cpp" />
+    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXSamplerState.cpp" />
     <ClCompile Include="..\..\..\..\source\graphix\dx9\GXShader.cpp" />
+    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXSurface.cpp" />
+    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXTexture.cpp" />
     <ClCompile Include="..\..\..\..\source\graphix\dx9\GXVertexBuffer.cpp" />
     <ClCompile Include="..\..\..\..\source\graphix\dx9\GXVertexDeclaration.cpp" />
   </ItemGroup>

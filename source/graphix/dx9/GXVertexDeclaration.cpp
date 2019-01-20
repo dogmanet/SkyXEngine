@@ -12,6 +12,25 @@ CGXVertexDeclaration::CGXVertexDeclaration(IDirect3DDevice9 *pDevice, CGXContext
 	while(pDecl[uDeclCount++].Type != GXDECLTYPE_UNUSED);
 	--uDeclCount;
 
+	for(UINT i = 0; i < MAXGXVSTREAM; ++i)
+	{
+		m_u8SpecSpec[i] = (GXDECLSPEC)-1;
+	}
+
+	for(UINT i = 0; i < uDeclCount; ++i)
+	{
+		if(pDecl[i].Stream >= MAXGXVSTREAM)
+		{
+			CGXContext::debugMessage(GX_LOG_ERROR, "Unable to create vertex declaration: Stream >= MAXGXVSTREAM!");
+			return;
+		}
+		if(m_u8SpecSpec[pDecl[i].Stream] != (GXDECLSPEC)-1 && m_u8SpecSpec[pDecl[i].Stream] != pDecl[i].spec)
+		{
+			CGXContext::debugMessage(GX_LOG_ERROR, "Unable to create vertex declaration: vertex instance specs in a stream must be the same!");
+			return;
+		}
+	}
+
 	D3DVERTEXELEMENT9 *pEls = (D3DVERTEXELEMENT9*)alloca(sizeof(D3DVERTEXELEMENT9) * uDeclCount);
 
 	memset(m_u8StreamStride, 0, sizeof(m_u8StreamStride));
@@ -139,7 +158,7 @@ CGXVertexDeclaration::CGXVertexDeclaration(IDirect3DDevice9 *pDevice, CGXContext
 		}
 	}
 
-	pDevice->CreateVertexDeclaration(pEls, &m_pDeclaration);
+	DX_CALL(pDevice->CreateVertexDeclaration(pEls, &m_pDeclaration));
 };
 
 CGXVertexDeclaration::~CGXVertexDeclaration()
