@@ -968,19 +968,18 @@ void CLights::shadowNull()
 {
 	IGXSurface *RenderSurf, *BackBuf;
 
-	RenderSurf = SGCore_RTGetTexture(m_idShadowMap)->getMipMap(0);
+	RenderSurf = SGCore_RTGetTexture(m_idShadowMap)->getMipmap(0);
 	BackBuf = light_data::pDXDevice->getColorTarget();
 	light_data::pDXDevice->setColorTarget(RenderSurf);
 
-	light_data::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
-	light_data::pDXDevice->clearTarget();
+	light_data::pDXDevice->clear(GXCLEAR_COLOR);
 
 	light_data::pDXDevice->setShader(NULL);
 
 	light_data::pDXDevice->setColorTarget(BackBuf);
 
-	//mem_release_del(RenderSurf);
-	//mem_release_del(BackBuf);
+	mem_release_del(RenderSurf);
+	mem_release_del(BackBuf);
 
 	m_iHowShadow = 0;
 }
@@ -1417,8 +1416,8 @@ void CLights::shadowSoft(bool randomsam, float size, bool isfirst)
 	light_data::pDXDevice->setShader(NULL);
 
 	light_data::pDXDevice->setColorTarget(BackBuf);
-	//mem_release_del(RenderSurf);
-	//mem_release_del(BackBuf);
+	mem_release_del(RenderSurf);
+	mem_release_del(BackBuf);
 
 		if(m_iHowShadow == 1)
 			m_iHowShadow = 0;

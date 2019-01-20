@@ -223,7 +223,7 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 
 	SGCore_ShaderUnBind();
 
-	// mem_release(SurfSceneScale);
+	mem_release(SurfSceneScale);
 
 	g_pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
 	int CurrTexture = gcore_data::rt_id::iCountArrToneMaps - 1;
@@ -236,7 +236,7 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 
 	IGXTexture2D* tmptex = SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[CurrTexture]);
 
-	ToneMappingGetArrDownScale4x4(tmptex->getWidth(), tmptex->getHeight(); , gcore_data::rt_id::aHDRSampleOffsets);
+	ToneMappingGetArrDownScale4x4(tmptex->getWidth(), tmptex->getHeight(), gcore_data::rt_id::aHDRSampleOffsets);
 
 	g_pDXDevice->setColorTarget(gcore_data::rt_id::aSurfToneMap[CurrTexture]);
 	g_pDXDevice->setTexture(SGCore_RTGetTexture(gcore_data::rt_id::idLigthComScaled));
@@ -286,11 +286,11 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 
 	//IGXTexture2D* tmptex = SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[3]);
 
-	/*for (int i = 0; i < gcore_data::rt_id::iCountArrToneMaps - 1; i++)
+	for (int i = 0; i < gcore_data::rt_id::iCountArrToneMaps - 1; i++)
 	{
 		IGXSurface* tmpsurf = gcore_data::rt_id::aSurfToneMap[i];
 		mem_release(gcore_data::rt_id::aSurfToneMap[i]);
-	}*/
+	}
 
 	tmptex = SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[3]);
 
@@ -314,10 +314,10 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
-	//mem_release(SurfAdaptedLum);
+	mem_release(SurfAdaptedLum);
 
 	g_pDXDevice->setColorTarget(BackBuf);
-	//mem_release(BackBuf);
+	mem_release(BackBuf);
 
 	g_pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 

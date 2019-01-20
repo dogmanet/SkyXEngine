@@ -1087,9 +1087,7 @@ void ShadowMapCubeTech::pre(int cube)
 	DepthSurface[cube] = DepthMap->getMipmap((GXCUBEMAP_FACES)cube, 0);
 	light_data::pDXDevice->setColorTarget(DepthSurface[cube]);
 	
-	light_data::pDXDevice->setClearColor(float4_t(1.0f, 1.0f, 1.0f, 1.0f));
-	light_data::pDXDevice->clearTarget();
-	light_data::pDXDevice->clearDepth();
+	light_data::pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH, GXCOLOR_ARGB(255,255,255,255));
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomCube);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGeomCube);
@@ -1113,8 +1111,8 @@ void ShadowMapCubeTech::end()
 {
 	light_data::pDXDevice->setDepthStencilSurface(OldDepthStencilSurface);
 	light_data::pDXDevice->setColorTarget(OldColorSurface);
-	//mem_release_del(OldDepthStencilSurface);
-	//mem_release_del(OldColorSurface);
+	mem_release_del(OldDepthStencilSurface);
+	mem_release_del(OldColorSurface);
 
 	/*light_data::pDXDevice->SetTransform(D3DTS_VIEW,&OldView);
 	light_data::pDXDevice->SetTransform(D3DTS_PROJECTION,&OldProj);
@@ -1199,8 +1197,8 @@ void ShadowMapCubeTech::genShadow(IGXTexture2D* shadowmap)
 	SGCore_ShaderUnBind();
 
 	light_data::pDXDevice->setColorTarget(BackBuf);
-	//mem_release_del(RenderSurf);
-	//mem_release_del(BackBuf);
+	mem_release_del(RenderSurf);
+	mem_release_del(BackBuf);
 }
 
 void ShadowMapCubeTech::setIDArr(long id, int split, long idarr)

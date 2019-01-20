@@ -100,12 +100,9 @@ namespace gui
 			DX_CALL(GetGUI()->getDevice()->GetRenderTarget(0, &pOldRT));
 			DX_CALL(GetGUI()->getDevice()->SetRenderTarget(0, m_pRenderSurface));
 			pOldDS = GetGUI()->getDevice()->getDepthStencilSurface();
-			pOldDS = GetGUI()->getDevice()->setDepthStencilSurface(m_pDepthStencilSurface);
+			GetGUI()->getDevice()->setDepthStencilSurface(m_pDepthStencilSurface);
 
-
-			GetGUI()->getDevice()->setClearColor(float4_t(0, 0, 0, 0));
-			GetGUI()->getDevice()->clearTarget();
-			GetGUI()->getDevice()->clearStencil();
+			GetGUI()->getDevice()->clear(GXCLEAR_COLOR | GXCLEAR_STENCIL);
 
 			//GetGUI()->getDevice()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 			//GetGUI()->getDevice()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
@@ -120,7 +117,7 @@ namespace gui
 			DX_CALL(GetGUI()->getDevice()->SetRenderTarget(0, pOldRT));
 			GetGUI()->getDevice()->setDepthStencilSurface(pOldDS);
 			pOldRT->Release();
-			//pOldDS->Release();
+			pOldDS->Release();
 
 			//D3DXSaveSurfaceToFileA("../screenshots/gui.png", D3DXIFF_PNG, m_pRenderSurface, NULL, NULL);
 			

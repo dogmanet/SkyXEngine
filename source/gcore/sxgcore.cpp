@@ -247,18 +247,9 @@ SX_LIB_API void SGCore_AKill()
 	mem_delete(g_pSkyBox);
 	mem_delete(g_pSkyClouds);
 
-	mem_release(g_pFPStext);
+	//mem_release(g_pFPStext);
 
-	if(m_hLibGXAPI)
-	{
-		void(*libGXRemoveInstance)(IGXContext*);
-		libGXRemoveInstance = (void(*)(IGXContext*))GetProcAddress(m_hLibGXAPI, "RemoveInstance");
-		if(libGXRemoveInstance)
-		{
-			libGXRemoveInstance(g_pDXDevice);
-		}
-	}
-	g_pDXDevice = NULL;
+	mem_release(g_pDXDevice);
 }
 
 SX_LIB_API IGXContext* SGCore_GetDXDevice()
@@ -343,7 +334,7 @@ SX_LIB_API void SGCore_OnResetDevice()
 SX_LIB_API void SGCore_ScreenQuadDraw()
 {
 	SG_PRECOND(_VOID);
-	g_pScreenTexture->drawSubset();
+	g_pScreenTexture->draw();
 }
 
 //##########################################################################
@@ -459,7 +450,7 @@ SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin)
 
 //##########################################################################
 
-SX_LIB_API ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, D3DXMACRO *pMacro)
+SX_LIB_API ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, GXMACRO *pMacro)
 {
 	SG_PRECOND(-1);
 
@@ -666,14 +657,14 @@ SX_LIB_API void SGCore_LoadTexUpdate(ID id)
 	return g_pManagerTextures->update(id);
 }
 
-SX_LIB_API IDirect3DTexture9* SGCore_LoadTexGetTex(ID idTexture)
+SX_LIB_API IGXTexture2D* SGCore_LoadTexGetTex(ID idTexture)
 {
 	SG_PRECOND(0);
 
 	return g_pManagerTextures->getTexture2d(idTexture);
 }
 
-SX_LIB_API IDirect3DCubeTexture9* SGCore_LoadTexGetTexCube(ID idTexture)
+SX_LIB_API IGXTextureCube* SGCore_LoadTexGetTexCube(ID idTexture)
 {
 	SG_PRECOND(0);
 
