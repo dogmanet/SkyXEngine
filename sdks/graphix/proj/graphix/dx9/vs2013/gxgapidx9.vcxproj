@@ -11,35 +11,35 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXBlendState.h" />
-    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXContext.h" />
-    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXDepthStencilState.h" />
-    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXDepthStencilSurface.h" />
-    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXIndexBuffer.h" />
-    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXRasterizerState.h" />
-    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXRenderBuffer.h" />
-    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXSamplerState.h" />
-    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXShader.h" />
-    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXSurface.h" />
-    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXTexture.h" />
-    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXVertexBuffer.h" />
-    <ClInclude Include="..\..\..\..\source\graphix\dx9\GXVertexDeclaration.h" />
+    <ClInclude Include="..\..\..\..\source\dx9\GXBlendState.h" />
+    <ClInclude Include="..\..\..\..\source\dx9\GXContext.h" />
+    <ClInclude Include="..\..\..\..\source\dx9\GXDepthStencilState.h" />
+    <ClInclude Include="..\..\..\..\source\dx9\GXDepthStencilSurface.h" />
+    <ClInclude Include="..\..\..\..\source\dx9\GXIndexBuffer.h" />
+    <ClInclude Include="..\..\..\..\source\dx9\GXRasterizerState.h" />
+    <ClInclude Include="..\..\..\..\source\dx9\GXRenderBuffer.h" />
+    <ClInclude Include="..\..\..\..\source\dx9\GXSamplerState.h" />
+    <ClInclude Include="..\..\..\..\source\dx9\GXShader.h" />
+    <ClInclude Include="..\..\..\..\source\dx9\GXSurface.h" />
+    <ClInclude Include="..\..\..\..\source\dx9\GXTexture.h" />
+    <ClInclude Include="..\..\..\..\source\dx9\GXVertexBuffer.h" />
+    <ClInclude Include="..\..\..\..\source\dx9\GXVertexDeclaration.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\source\graphix\dx9\dllmain.cpp" />
-    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXBlendState.cpp" />
-    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXContext.cpp" />
-    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXDepthStencilState.cpp" />
-    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXDepthStencilSurface.cpp" />
-    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXIndexBuffer.cpp" />
-    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXRasterizerState.cpp" />
-    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXRenderBuffer.cpp" />
-    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXSamplerState.cpp" />
-    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXShader.cpp" />
-    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXSurface.cpp" />
-    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXTexture.cpp" />
-    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXVertexBuffer.cpp" />
-    <ClCompile Include="..\..\..\..\source\graphix\dx9\GXVertexDeclaration.cpp" />
+    <ClCompile Include="..\..\..\..\source\dx9\dllmain.cpp" />
+    <ClCompile Include="..\..\..\..\source\dx9\GXBlendState.cpp" />
+    <ClCompile Include="..\..\..\..\source\dx9\GXContext.cpp" />
+    <ClCompile Include="..\..\..\..\source\dx9\GXDepthStencilState.cpp" />
+    <ClCompile Include="..\..\..\..\source\dx9\GXDepthStencilSurface.cpp" />
+    <ClCompile Include="..\..\..\..\source\dx9\GXIndexBuffer.cpp" />
+    <ClCompile Include="..\..\..\..\source\dx9\GXRasterizerState.cpp" />
+    <ClCompile Include="..\..\..\..\source\dx9\GXRenderBuffer.cpp" />
+    <ClCompile Include="..\..\..\..\source\dx9\GXSamplerState.cpp" />
+    <ClCompile Include="..\..\..\..\source\dx9\GXShader.cpp" />
+    <ClCompile Include="..\..\..\..\source\dx9\GXSurface.cpp" />
+    <ClCompile Include="..\..\..\..\source\dx9\GXTexture.cpp" />
+    <ClCompile Include="..\..\..\..\source\dx9\GXVertexBuffer.cpp" />
+    <ClCompile Include="..\..\..\..\source\dx9\GXVertexDeclaration.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{15AD3AF2-47B1-4836-9777-F1249EB299A7}</ProjectGuid>
@@ -73,15 +73,15 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>../../../../build/bin/</OutDir>
-    <IncludePath>../../../../source/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../../sdks/dx9sdk/Include;</IncludePath>
-    <LibraryPath>../../../../sdks/dx9sdk/Lib;../../../../libs/;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+    <OutDir>../../../../../../build/bin/</OutDir>
+    <IncludePath>../../../../../../source/;../../../../../;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../../../dx9sdk/Include;</IncludePath>
+    <LibraryPath>../../../../../dx9sdk/Lib;../../../../../../libs/;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../../build/bin/</OutDir>
-    <IncludePath>../../../../source/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../../sdks/dx9sdk/Include;</IncludePath>
-    <LibraryPath>../../../../sdks/dx9sdk/Lib;../../../../libs/;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+    <OutDir>../../../../../../build/bin/</OutDir>
+    <IncludePath>../../../../../../source/;../../../../../;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../../../dx9sdk/Include;</IncludePath>
+    <LibraryPath>../../../../../dx9sdk/Lib;../../../../../../libs/;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -97,7 +97,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ImportLibrary>../../../../libs/$(TargetName)_d.lib</ImportLibrary>
+      <ImportLibrary>../../../../../../libs/$(TargetName)_d.lib</ImportLibrary>
       <AdditionalDependencies>Crypt32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -118,7 +118,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <ImportLibrary>../../../../libs/$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>../../../../../../libs/$(TargetName).lib</ImportLibrary>
       <AdditionalDependencies>Crypt32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

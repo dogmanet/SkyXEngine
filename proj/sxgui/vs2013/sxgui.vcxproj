@@ -41,14 +41,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\..\..\sdks\freetype-2.6\include;../../../source/;..\..\..\sdks\dx9sdk\Include;</IncludePath>
-    <LibraryPath>..\..\..\libs;..\..\..\sdks\dx9sdk\Lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);..\..\..\sdks\freetype-2.6\objs\vc2010\Win32;</LibraryPath>
+    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);..\..\..\sdks\freetype-2.6\include;../../../source/;</IncludePath>
+    <LibraryPath>..\..\..\libs;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);..\..\..\sdks\freetype-2.6\objs\vc2010\Win32;</LibraryPath>
     <OutDir>../../../build/bin/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\..\..\sdks\freetype-2.6\include;../../../source/;..\..\..\sdks\dx9sdk\Include;</IncludePath>
-    <LibraryPath>..\..\..\libs;..\..\..\sdks\dx9sdk\Lib;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);..\..\..\sdks\freetype-2.6\objs\vc2010\Win32;</LibraryPath>
+    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);..\..\..\sdks\freetype-2.6\include;../../../source/;</IncludePath>
+    <LibraryPath>..\..\..\libs;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);..\..\..\sdks\freetype-2.6\objs\vc2010\Win32;</LibraryPath>
     <OutDir>../../../build/bin/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

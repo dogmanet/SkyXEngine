@@ -70,31 +70,31 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>../../../source;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include;../../../sdks/ogg/libvorbis/include/;../../../sdks/ogg/libogg/include/;</IncludePath>
-    <LibraryPath>../../../libs;$(LibraryPath);../../../sdks/dx9sdk/Lib</LibraryPath>
-    <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Include</SourcePath>
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/ogg/libvorbis/include/;../../../sdks/ogg/libogg/include/;</IncludePath>
+    <LibraryPath>../../../libs;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Singlethreaded|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/</OutDir>
     <TargetName>$(ProjectName)_STd</TargetName>
-    <IncludePath>../../../source;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include;../../../sdks/ogg/libvorbis/include/;../../../sdks/ogg/libogg/include/;</IncludePath>
-    <LibraryPath>../../../libs;$(LibraryPath);../../../sdks/dx9sdk/Lib</LibraryPath>
-    <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Include</SourcePath>
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/ogg/libvorbis/include/;../../../sdks/ogg/libogg/include/;</IncludePath>
+    <LibraryPath>../../../libs;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/</OutDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src;../../../sdks/dx9sdk/Include</IncludePath>
-    <LibraryPath>$(LibraryPath);../../../libs;../../../sdks/dx9sdk/Lib</LibraryPath>
-    <SourcePath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../source;../../../sdks/dx9sdk/Include</SourcePath>
+    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
+    <LibraryPath>$(LibraryPath);../../../libs</LibraryPath>
+    <SourcePath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../source</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Singlethreaded|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/</OutDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src;../../../sdks/dx9sdk/Include</IncludePath>
-    <LibraryPath>$(LibraryPath);../../../libs;../../../sdks/dx9sdk/Lib</LibraryPath>
-    <SourcePath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../source;../../../sdks/dx9sdk/Include</SourcePath>
+    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
+    <LibraryPath>$(LibraryPath);../../../libs</LibraryPath>
+    <SourcePath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../source</SourcePath>
     <TargetName>$(ProjectName)_ST</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

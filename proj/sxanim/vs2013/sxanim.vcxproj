@@ -44,16 +44,16 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>$(IncludePath);$(WindowsSdk_71A_IncludePath);../../../source;../../../sdks/dx9sdk/Include;</IncludePath>
-    <LibraryPath>../../../sdks/dx9sdk/Lib;../../../libs;$(LibraryPath)</LibraryPath>
-    <SourcePath>../../../source;$(SourcePath);../../../sdks/dx9sdk/Include;</SourcePath>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_71A_IncludePath);../../../source;</IncludePath>
+    <LibraryPath>;../../../libs;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/</OutDir>
-    <IncludePath>$(IncludePath);$(WindowsSdk_71A_IncludePath);../../../source;../../../sdks/dx9sdk/Include;</IncludePath>
-    <LibraryPath>../../../sdks/dx9sdk/Lib;../../../libs;$(LibraryPath)</LibraryPath>
-    <SourcePath>../../../source;$(SourcePath);../../../sdks/dx9sdk/Include;</SourcePath>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_71A_IncludePath);../../../source;</IncludePath>
+    <LibraryPath>;../../../libs;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

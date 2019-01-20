@@ -9,54 +9,54 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\source\graphix\ogl\GLPFN.h">
+    <ClInclude Include="..\..\..\..\source\ogl\GLPFN.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\source\graphix\ogl\GXContext.h">
+    <ClInclude Include="..\..\..\..\source\ogl\GXContext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\source\graphix\ogl\GXIndexBuffer.h">
+    <ClInclude Include="..\..\..\..\source\ogl\GXIndexBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\source\graphix\ogl\GXRenderBuffer.h">
+    <ClInclude Include="..\..\..\..\source\ogl\GXRenderBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\source\graphix\ogl\GXShader.h">
+    <ClInclude Include="..\..\..\..\source\ogl\GXShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\source\graphix\ogl\GXVertexBuffer.h">
+    <ClInclude Include="..\..\..\..\source\ogl\GXVertexBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\source\graphix\ogl\GXVertexDeclaration.h">
+    <ClInclude Include="..\..\..\..\source\ogl\GXVertexDeclaration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\source\graphix\graphix.h">
+    <ClInclude Include="..\..\..\..\source\graphix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\source\graphix\ogl\dllmain.cpp">
+    <ClCompile Include="..\..\..\..\source\ogl\dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\source\graphix\ogl\GLPFN.cpp">
+    <ClCompile Include="..\..\..\..\source\ogl\GLPFN.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\source\graphix\ogl\GXContext.cpp">
+    <ClCompile Include="..\..\..\..\source\ogl\GXContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\source\graphix\ogl\GXIndexBuffer.cpp">
+    <ClCompile Include="..\..\..\..\source\ogl\GXIndexBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\source\graphix\ogl\GXRenderBuffer.cpp">
+    <ClCompile Include="..\..\..\..\source\ogl\GXRenderBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\source\graphix\ogl\GXShader.cpp">
+    <ClCompile Include="..\..\..\..\source\ogl\GXShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\source\graphix\ogl\GXVertexBuffer.cpp">
+    <ClCompile Include="..\..\..\..\source\ogl\GXVertexBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\source\graphix\ogl\GXVertexDeclaration.cpp">
+    <ClCompile Include="..\..\..\..\source\ogl\GXVertexDeclaration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
