@@ -119,6 +119,8 @@ class DecalManager
 
 	IGXVertexDeclaration *m_pVertexDeclaration;
 
+	IGXBlendState *m_pBlendState = NULL;
+
 	MemAlloc<Decal, 64> m_aDecals;
 
 	IGXContext *dev;

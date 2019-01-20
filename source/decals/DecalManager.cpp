@@ -98,11 +98,25 @@ DecalManager::DecalManager():
 	};
 
 	m_pVertexDeclaration = dev->createVertexDeclaration(vel);
+
+	GXBLEND_DESC blendDesc;
+	memset(&blendDesc, 0, sizeof(blendDesc));
+	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_ALL;
+	blendDesc.renderTarget[0].srcBlend = GXBLEND_DEST_COLOR;
+	blendDesc.renderTarget[0].destBlend = GXBLEND_SRC_COLOR;
+	blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_DEST_COLOR;
+	blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_SRC_COLOR;
+	blendDesc.renderTarget[0].blendOp = GXBLEND_OP_ADD;
+	blendDesc.renderTarget[0].blendOpAlpha = GXBLEND_OP_ADD;
+	blendDesc.renderTarget[0].bBlendEnable = TRUE;
+
+	m_pBlendState = dev->createBlendState(&blendDesc);
 }
 
 DecalManager::~DecalManager()
 {
 	clear();
+	mem_release(m_pBlendState);
 	mem_release(m_pRenderBuffer);
 	mem_release(m_pVertexBuffer);
 	mem_release(m_pVertexDeclaration);
@@ -327,7 +341,7 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 	di.m_Flags = flags;
 	
 	ID pMat = -1;
-	IDirect3DTexture9 * pTex = NULL;
+	IGXTexture2D * pTex = NULL;
 	const DecalType * dt = NULL;
 	if(type == DECAL_TYPE_CUSTOM)
 	{
@@ -354,13 +368,13 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 		return;
 	}
 
-	D3DSURFACE_DESC _info;
-	pTex->GetLevelDesc(0, &_info);
+	UINT uTexWidth = pTex->getWidth();
+	UINT uTexHeight = pTex->getHeight();
 
-	di.m_Size = (float)(_info.Width >> 1);
-	if((int)(_info.Height >> 1) > di.m_Size)
+	di.m_Size = (float)(uTexWidth >> 1);
+	if((int)(uTexHeight >> 1) > di.m_Size)
 	{
-		di.m_Size = (float)(_info.Height >> 1);
+		di.m_Size = (float)(uTexHeight >> 1);
 	}
 
 	scale *= 0.0008f;
@@ -368,7 +382,7 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 	di.m_scale = 1.0f / scale;
 	di.m_Size *= scale;
 
-	DecalTexRange rng = {0, 0, _info.Width, _info.Height};
+	DecalTexRange rng = {0, 0, uTexWidth, uTexHeight};
 
 	//Get random decal from atlas
 	if(dt)
@@ -547,7 +561,7 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 						vert0.pos = mBasis * vClippedVerts[0];
 						vert0.normal = n;
 						vert0.tex = float2((vClippedVerts[0].x - sBound.x) / (sBound.y - sBound.x), (vClippedVerts[0].y - tBound.x) / (tBound.y - tBound.x));
-						vert0.tex = (float2)(vert0.tex * float2((float)(rng.xmax - rng.xmin) / (float)_info.Width, (float)(rng.ymax - rng.ymin) / (float)_info.Height) + float2((float)rng.xmin / (float)_info.Width, (float)rng.ymin / (float)_info.Height));
+						vert0.tex = (float2)(vert0.tex * float2((float)(rng.xmax - rng.xmin) / (float)uTexWidth, (float)(rng.ymax - rng.ymin) / (float)uTexHeight) + float2((float)rng.xmin / (float)uTexWidth, (float)rng.ymin / (float)uTexHeight));
 						for(int ii = 1; ii < len - 1; ii++)
 						{
 							vClippedVerts[ii].z = nn; // fix normal
@@ -559,14 +573,14 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 							vert.pos = mBasis * vClippedVerts[ii];
 							vert.normal = n;
 							vert.tex = float2((vClippedVerts[ii].x - sBound.x) / (sBound.y - sBound.x), (vClippedVerts[ii].y - tBound.x) / (tBound.y - tBound.x));
-							vert.tex = (float2)(vert.tex * float2((float)(rng.xmax - rng.xmin) / (float)_info.Width, (float)(rng.ymax - rng.ymin) / (float)_info.Height) + float2((float)rng.xmin / (float)_info.Width, (float)rng.ymin / (float)_info.Height));
+							vert.tex = (float2)(vert.tex * float2((float)(rng.xmax - rng.xmin) / (float)uTexWidth, (float)(rng.ymax - rng.ymin) / (float)uTexHeight) + float2((float)rng.xmin / (float)uTexWidth, (float)rng.ymin / (float)uTexHeight));
 
 							vDecalVerts.push_back(vert);
 							//m_dbgRender.push_back(vert.pos);
 
 							vert.pos = mBasis * vClippedVerts[ii + 1];
 							vert.tex = float2((vClippedVerts[ii + 1].x - sBound.x) / (sBound.y - sBound.x), (vClippedVerts[ii + 1].y - tBound.x) / (tBound.y - tBound.x));
-							vert.tex = (float2)(vert.tex * float2((float)(rng.xmax - rng.xmin) / (float)_info.Width, (float)(rng.ymax - rng.ymin) / (float)_info.Height) + float2((float)rng.xmin / (float)_info.Width, (float)rng.ymin / (float)_info.Height));
+							vert.tex = (float2)(vert.tex * float2((float)(rng.xmax - rng.xmin) / (float)uTexWidth, (float)(rng.ymax - rng.ymin) / (float)uTexHeight) + float2((float)rng.xmin / (float)uTexWidth, (float)rng.ymin / (float)uTexHeight));
 							vDecalVerts.push_back(vert);
 							//m_dbgRender.push_back(vert.pos);
 
@@ -606,11 +620,12 @@ void DecalManager::render()
 	}
 
 	// set shaders
+	IGXBlendState *pOldBlendState = dev->getBlendState();
+	dev->setBlendState(m_pBlendState);
+	//dev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
-	dev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-
-	dev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
-	dev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCCOLOR);
+	//dev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
+	//dev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCCOLOR);
 
 
 //	SkyXEngine::Core::Data::Device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
@@ -632,10 +647,13 @@ void DecalManager::render()
 	for(UINT i = 0; i < m_iRngs.size(); i++)
 	{
 		SGCore_MtlSet(m_iRngs[i].iMaterialId, &SMMatrixIdentity());
-		dev->drawIndexed(m_iRngs[i].iStartVertex, m_iRngs[i].iVertexCount / 3);
+		dev->drawIndexed(m_iRngs[i].iVertexCount, m_iRngs[i].iVertexCount / 3, 0, m_iRngs[i].iStartVertex);
 	}
 
-	dev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	dev->setBlendState(pOldBlendState);
+	mem_release(pOldBlendState);
+
+	//dev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
 void DecalManager::updateBuffer()
