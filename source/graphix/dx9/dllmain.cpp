@@ -40,7 +40,3 @@ C GXGAPI IGXContext * GetInstance()
 	return(new CGXContext());
 }
 
-C GXGAPI void RemoveInstance(IGXContext * rb)
-{
-	delete rb;
-}

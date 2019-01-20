@@ -2,7 +2,11 @@
 
 void CGXSamplerState::Release()
 {
-	m_pRender->destroySamplerState(this);
+	--m_uRefCount;
+	if(!m_uRefCount)
+	{
+		m_pRender->destroySamplerState(this);
+	}
 }
 
 DWORD CGXSamplerState::getD3DTADDRESS(GXTEXTURE_ADDRESS_MODE mode)

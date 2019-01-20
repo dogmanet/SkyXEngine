@@ -468,13 +468,24 @@ typedef struct _GXMACRO
 
 } GXMACRO;
 
+typedef enum _GXTEXTURE_TYPE
+{
+	GXTEXTURE_TYPE_2D,
+	GXTEXTURE_TYPE_CUBE,
+} GXTEXTURE_TYPE;
+
 //##########################################################################
 
 class IGXBaseInterface
 {
 protected:
 	virtual ~IGXBaseInterface(){}
+	UINT m_uRefCount = 1;
 public:
+	void AddRef()
+	{
+		++m_uRefCount;
+	}
 	virtual void Release() = 0;
 };
 
@@ -510,6 +521,7 @@ public:
 	virtual void setConstantF(UINT uStartRegister, const float *pConstantData, UINT uVector4fCount) = 0;
 	virtual void setConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount) = 0;
 	virtual UINT getConstantLocation(const char *szConstName) = 0;
+	virtual void getData(void *pData, UINT *pSize) = 0;
 };
 
 class IGXPixelShader: public IGXBaseInterface
@@ -518,6 +530,7 @@ public:
 	virtual void setConstantF(UINT uStartRegister, const float *pConstantData, UINT uVector4fCount) = 0;
 	virtual void setConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount) = 0;
 	virtual UINT getConstantLocation(const char *szConstName) = 0;
+	virtual void getData(void *pData, UINT *pSize) = 0;
 };
 
 class IGXShader: public IGXBaseInterface
@@ -547,6 +560,8 @@ class IGXBaseTexture: public IGXBaseInterface
 public:
 	virtual GXFORMAT getFormat() = 0;
 	virtual bool wasReset() = 0;
+
+	virtual GXTEXTURE_TYPE getType() = 0;
 };
 
 class IGXTexture2D: public IGXBaseTexture
@@ -603,11 +618,13 @@ class IGXSamplerState: public IGXBaseInterface
 #define bAllowDiscard bAllowDiscard /* данные могут быть потеряны, например при потере/восстановлении устройства в dx9 */
 class IGXContext
 {
-public:
-	virtual BOOL initContext(SXWINDOW wnd, int iWidth, int iHeight, bool isWindowed) = 0;
+protected:
 	virtual ~IGXContext()
 	{
-	};
+	}
+public:
+	virtual BOOL initContext(SXWINDOW wnd, int iWidth, int iHeight, bool isWindowed) = 0;
+	virtual void Release() = 0;
 
 	virtual void resize(int iWidth, int iHeight, bool isWindowed) = 0;
 

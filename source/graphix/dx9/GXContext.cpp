@@ -26,6 +26,11 @@ CGXContext::CGXContext():
 	memset(&m_pTextures, 0, sizeof(m_pTextures));
 }
 
+void CGXContext::Release()
+{
+	delete this;
+}
+
 bool CGXContext::beginFrame()
 {
 	if(!canBeginFrame())
@@ -420,7 +425,12 @@ void CGXContext::destroyVertexDeclaration(IGXVertexDeclaration * pDecl)
 
 void CGXContext::setIndexBuffer(IGXIndexBuffer * pBuff)
 {
+	mem_release(m_pCurIndexBuffer);
 	m_pCurIndexBuffer = pBuff;
+	if(pBuff)
+	{
+		pBuff->AddRef();
+	}
 	m_sync_state.bIndexBuffer = TRUE;
 }
 
@@ -658,11 +668,22 @@ void CGXContext::syncronize()
 	{
 		if(m_sync_state.bTexture[i])
 		{
-			CGXBaseTexture *pTexture = dynamic_cast<CGXBaseTexture*>(m_pTextures[i]);
-			if(pTexture)
+			if(m_pTextures[i])
 			{
-				DX_CALL(m_pDevice->SetTexture(i, pTexture->getDXTexture()));
+				IDirect3DBaseTexture9 *pTex = NULL;
+				switch(m_pTextures[i]->getType())
+				{
+				case GXTEXTURE_TYPE_2D:
+					pTex = ((CGXTexture2D*)m_pTextures[i])->getDXTexture();
+					break;
+				case GXTEXTURE_TYPE_CUBE:
+					pTex = ((CGXTextureCube*)m_pTextures[i])->getDXTexture();
+					break;
+				}
+
+				DX_CALL(m_pDevice->SetTexture(i, pTex));
 			}
+			else
 			{
 				DX_CALL(m_pDevice->SetTexture(i, NULL));
 			}
@@ -958,10 +979,48 @@ IGXVertexShader * CGXContext::createVertexShaderFromString(const char * szCode, 
 
 	return(pShader);
 }
-IGXVertexShader * CGXContext::createVertexShader(void *pData, UINT uSize)
+IGXVertexShader * CGXContext::createVertexShader(void *_pData, UINT uSize)
 {
-	assert(!"Not imlemented");
-	return(NULL);
+	CGXVertexShader *pShader = new CGXVertexShader(this);
+
+	byte *pData = (byte*)_pData;
+	UINT uConstCount = *((UINT*)pData);
+	pData += sizeof(UINT);
+	for(UINT i = 0; i < uConstCount; ++i)
+	{
+		AAString name;
+		name.setName((char*)pData);
+		pData += strlen(name.getName()) + 1;
+		pShader->m_mConstLocations[name] = *((D3DXCONSTANT_DESC*)pData);
+		pData += sizeof(D3DXCONSTANT_DESC);
+	}
+	pShader->m_uConstBuffRegCountF = *((UINT*)pData);
+	pData += sizeof(UINT);
+	pShader->m_uConstBuffRegCountI = *((UINT*)pData);
+	pData += sizeof(UINT);
+
+	if(pShader->m_uConstBuffRegCountF)
+	{
+		pShader->m_pConstBufferF = new float[pShader->m_uConstBuffRegCountF * 4];
+		memset(pShader->m_pConstBufferF, 0, sizeof(float) * pShader->m_uConstBuffRegCountF * 4);
+	}
+	if(pShader->m_uConstBuffRegCountI)
+	{
+		pShader->m_pConstBufferI = new int[pShader->m_uConstBuffRegCountI * 4];
+		memset(pShader->m_pConstBufferI, 0, sizeof(int) * pShader->m_uConstBuffRegCountI * 4);
+	}
+	UINT uProgramSize = *((UINT*)pData);
+	pData += sizeof(UINT);
+
+	ID3DXBuffer *pShaderBlob;
+	DX_CALL(D3DXCreateBuffer(uProgramSize, &pShaderBlob));
+	memcpy(pShaderBlob->GetBufferPointer(), pData, uProgramSize);
+
+	DX_CALL(m_pDevice->CreateVertexShader((DWORD*)pShaderBlob->GetBufferPointer(), &(pShader->m_pShader)));
+
+	mem_release(pShaderBlob);
+
+	return(pShader);
 }
 void CGXContext::destroyVertexShader(IGXVertexShader * pSH)
 {
@@ -1000,10 +1059,48 @@ IGXPixelShader * CGXContext::createPixelShader(const char * szFile, GXMACRO *pDe
 
 	return(pShader);
 }
-IGXPixelShader * CGXContext::createPixelShader(void *pData, UINT uSize)
+IGXPixelShader * CGXContext::createPixelShader(void *_pData, UINT uSize)
 {
-	assert(!"Not imlemented");
-	return(NULL);
+	CGXPixelShader *pShader = new CGXPixelShader(this);
+
+	byte *pData = (byte*)_pData;
+	UINT uConstCount = *((UINT*)pData);
+	pData += sizeof(UINT);
+	for(UINT i = 0; i < uConstCount; ++i)
+	{
+		AAString name;
+		name.setName((char*)pData);
+		pData += strlen(name.getName()) + 1;
+		pShader->m_mConstLocations[name] = *((D3DXCONSTANT_DESC*)pData);
+		pData += sizeof(D3DXCONSTANT_DESC);
+	}
+	pShader->m_uConstBuffRegCountF = *((UINT*)pData);
+	pData += sizeof(UINT);
+	pShader->m_uConstBuffRegCountI = *((UINT*)pData);
+	pData += sizeof(UINT);
+
+	if(pShader->m_uConstBuffRegCountF)
+	{
+		pShader->m_pConstBufferF = new float[pShader->m_uConstBuffRegCountF * 4];
+		memset(pShader->m_pConstBufferF, 0, sizeof(float) * pShader->m_uConstBuffRegCountF * 4);
+	}
+	if(pShader->m_uConstBuffRegCountI)
+	{
+		pShader->m_pConstBufferI = new int[pShader->m_uConstBuffRegCountI * 4];
+		memset(pShader->m_pConstBufferI, 0, sizeof(int) * pShader->m_uConstBuffRegCountI * 4);
+	}
+	UINT uProgramSize = *((UINT*)pData);
+	pData += sizeof(UINT);
+
+	ID3DXBuffer *pShaderBlob;
+	DX_CALL(D3DXCreateBuffer(uProgramSize, &pShaderBlob));
+	memcpy(pShaderBlob->GetBufferPointer(), pData, uProgramSize);
+
+	DX_CALL(m_pDevice->CreatePixelShader((DWORD*)pShaderBlob->GetBufferPointer(), &(pShader->m_pShader)));
+
+	mem_release(pShaderBlob);
+
+	return(pShader);
 }
 IGXPixelShader * CGXContext::createPixelShaderFromString(const char * szCode, GXMACRO *pDefs)
 {
@@ -1057,43 +1154,62 @@ void CGXContext::destroyShader(IGXShader *pSH)
 }
 void CGXContext::setShader(IGXShader *pSH)
 {
+	if(m_pShader == pSH)
+	{
+		return;
+	}
+	mem_release(m_pShader);
 	m_pShader = pSH;
+	pSH->AddRef();
 	m_sync_state.bShader = TRUE;
 }
 IGXShader *CGXContext::getShader()
 {
+	if(m_pShader)
+	{
+		m_pShader->AddRef();
+	}
 	return(m_pShader);
 }
 
 IGXRenderBuffer * CGXContext::createRenderBuffer(UINT countSlots, IGXVertexBuffer ** pBuff, IGXVertexDeclaration * pDecl)
 {
 	CGXRenderBuffer * pRB = new CGXRenderBuffer(this, countSlots, pBuff, pDecl);
-	for(UINT i = 0; i < countSlots; ++i)
+	/*for(UINT i = 0; i < countSlots; ++i)
 	{
 		((CGXVertexBuffer*)pBuff[i])->m_pBuffer->AddRef();
 	}
 	((CGXVertexDeclaration*)pDecl)->m_pDeclaration->AddRef();
-
+*/
 	return(pRB);
 }
 void CGXContext::destroyRenderBuffer(IGXRenderBuffer * pBuff)
 {
 	if(pBuff)
 	{
-		CGXRenderBuffer *pBuf = (CGXRenderBuffer*)pBuff;
+		//CGXRenderBuffer *pBuf = (CGXRenderBuffer*)pBuff;
 
-		for(UINT i = 0; i < pBuf->m_uStreamCount; ++i)
+		/*for(UINT i = 0; i < pBuf->m_uStreamCount; ++i)
 		{
 			mem_release(((CGXVertexBuffer*)pBuf->m_ppVertexBuffers[i])->m_pBuffer);
 		}
-		mem_release(((CGXVertexDeclaration*)pBuf->m_pVertexDeclaration)->m_pDeclaration);
+		mem_release(((CGXVertexDeclaration*)pBuf->m_pVertexDeclaration)->m_pDeclaration);*/
 	}
 	mem_delete(pBuff);
 }
 
 void CGXContext::setRenderBuffer(IGXRenderBuffer * pBuff)
 {
+	if(m_pCurRenderBuffer == pBuff)
+	{
+		return;
+	}
+	mem_release(m_pCurRenderBuffer);
 	m_pCurRenderBuffer = pBuff;
+	if(pBuff)
+	{
+		pBuff->AddRef();
+	}
 	m_sync_state.bRenderBuffer = TRUE;
 }
 
@@ -1166,12 +1282,25 @@ void CGXContext::setSamplerState(IGXSamplerState *pState, UINT uSlot)
 		debugMessage(GX_LOG_ERROR, "Unable to set sampler state: uSlot >= MAX_GXSAMPLERS!");
 		return;
 	}
+	if(m_pSamplerState[uSlot] == pState)
+	{
+		return;
+	}
+	mem_release(m_pSamplerState[uSlot]);
 	m_pSamplerState[uSlot] = pState;
+	if(pState)
+	{
+		pState->AddRef();
+	}
 	m_sync_state.bSamplerState[uSlot] = TRUE;
 }
 IGXSamplerState *CGXContext::getSamplerState(UINT uSlot)
 {
 	assert(uSlot < MAX_GXSAMPLERS);
+	if(m_pSamplerState[uSlot])
+	{
+		m_pSamplerState[uSlot]->AddRef();
+	}
 	return(m_pSamplerState[uSlot]);
 }
 
@@ -1224,11 +1353,24 @@ void CGXContext::destroyRasterizerState(IGXRasterizerState *pState)
 }
 void CGXContext::setRasterizerState(IGXRasterizerState *pState)
 {
+	if(m_pRasterizerState == pState)
+	{
+		return;
+	}
+	mem_release(m_pRasterizerState);
 	m_pRasterizerState = pState;
+	if(pState)
+	{
+		pState->AddRef();
+	}
 	m_sync_state.bRasterizerState = TRUE;
 }
 IGXRasterizerState *CGXContext::getRasterizerState()
 {
+	if(m_pRasterizerState)
+	{
+		m_pRasterizerState->AddRef();
+	}
 	return(m_pRasterizerState);
 }
 
@@ -1264,11 +1406,24 @@ void CGXContext::destroyDepthStencilState(IGXDepthStencilState *pState)
 }
 void CGXContext::setDepthStencilState(IGXDepthStencilState *pState)
 {
+	if(m_pDepthStencilState == pState)
+	{
+		return;
+	}
+	mem_release(m_pDepthStencilState);
 	m_pDepthStencilState = pState;
+	if(pState)
+	{
+		pState->AddRef();
+	}
 	m_sync_state.bDepthStencilState = TRUE;
 }
 IGXDepthStencilState *CGXContext::getDepthStencilState()
 {
+	if(m_pDepthStencilState)
+	{
+		m_pDepthStencilState->AddRef();
+	}
 	return(m_pDepthStencilState);
 }
 void CGXContext::setStencilRef(UINT uVal)
@@ -1327,11 +1482,24 @@ void CGXContext::destroyBlendState(IGXBlendState *pState)
 }
 void CGXContext::setBlendState(IGXBlendState *pState)
 {
+	if(m_pBlendState == pState)
+	{
+		return;
+	}
+	mem_release(m_pBlendState);
 	m_pBlendState = pState;
+	if(pState)
+	{
+		pState->AddRef();
+	}
 	m_sync_state.bBlendState = TRUE;
 }
 IGXBlendState *CGXContext::getBlendState()
 {
+	if(m_pBlendState)
+	{
+		m_pBlendState->AddRef();
+	}
 	return(m_pBlendState);
 }
 
@@ -1388,37 +1556,75 @@ void CGXContext::destroyDepthStencilSurface(IGXDepthStencilSurface *pSurface)
 }
 void CGXContext::setDepthStencilSurface(IGXDepthStencilSurface *pSurface)
 {
+	if(m_pDepthStencilSurface == pSurface)
+	{
+		return;
+	}
+	mem_release(m_pDepthStencilSurface);
 	m_pDepthStencilSurface = pSurface;
+	if(pSurface)
+	{
+		pSurface->AddRef();
+	}
 	m_sync_state.bDepthStencilSurface = TRUE;
 }
 IGXDepthStencilSurface *CGXContext::getDepthStencilSurface()
 {
+	if(m_pDepthStencilSurface)
+	{
+		m_pDepthStencilSurface->AddRef();
+	}
 	return(m_pDepthStencilSurface);
 }
 
 void CGXContext::setColorTarget(IGXSurface *pSurf, UINT idx)
 {
 	assert(idx < MAXGXCOLORTARGETS);
+	if(m_pColorTarget[idx] == pSurf)
+	{
+		return;
+	}
+	mem_release(m_pColorTarget[idx]);
 	m_pColorTarget[idx] = pSurf;
+	if(pSurf)
+	{
+		pSurf->AddRef();
+	}
 	m_sync_state.bColorTarget[idx] = TRUE;
 }
 
 IGXSurface *CGXContext::getColorTarget(UINT idx)
 {
 	assert(idx < MAXGXCOLORTARGETS);
-
+	if(m_pColorTarget[idx])
+	{
+		m_pColorTarget[idx]->AddRef();
+	}
 	return(m_pColorTarget[idx]);
 }
 
 void CGXContext::setTexture(IGXBaseTexture *pTexture, UINT uStage)
 {
 	assert(uStage < MAXGXTEXTURES);
+	if(m_pTextures[uStage] == pTexture)
+	{
+		return;
+	}
+	mem_release(m_pTextures[uStage]);
 	m_pTextures[uStage] = pTexture;
+	if(pTexture)
+	{
+		pTexture->AddRef();
+	}
 	m_sync_state.bTexture[uStage] = TRUE;
 }
 IGXBaseTexture *CGXContext::getTexture(UINT uStage)
 {
 	assert(uStage < MAXGXTEXTURES);
+	if(m_pTextures[uStage])
+	{
+		m_pTextures[uStage]->AddRef();
+	}
 	return(m_pTextures[uStage]);
 }
 

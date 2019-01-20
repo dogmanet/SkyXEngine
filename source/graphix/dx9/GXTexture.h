@@ -3,34 +3,19 @@
 
 #include "GXContext.h"
 
-class CGXBaseTexture: public virtual IGXBaseTexture
-{					  
-	friend class CGXContext;
-
-protected:
-	CGXBaseTexture(CGXContext * pRender):
-		m_pRender(pRender)
-	{
-	};
-
-	CGXContext * m_pRender;
-	GXFORMAT m_format;
-	bool m_bWasReset;
-	bool m_bAutoResize = false;
-	
-public:
-	virtual IDirect3DBaseTexture9 *getDXTexture() = 0;
-};
-
-class CGXTexture2D: public virtual CGXBaseTexture, public virtual IGXTexture2D
+class CGXTexture2D: public IGXTexture2D
 {
 	friend class CGXContext;
 
 protected:
-	CGXTexture2D(CGXContext * pRender): CGXBaseTexture(pRender)
+	CGXContext * m_pRender;
+	CGXTexture2D(CGXContext * pRender): m_pRender(pRender)
 	{
 	}
 	~CGXTexture2D();
+	GXFORMAT m_format;
+	bool m_bWasReset;
+	bool m_bAutoResize = false;
 
 	UINT m_uWidth;
 	UINT m_uHeight;
@@ -58,17 +43,23 @@ public:
 	bool wasReset();
 
 	IDirect3DBaseTexture9 *getDXTexture();
+
+	GXTEXTURE_TYPE getType();
 };
 
-class CGXTextureCube: public virtual CGXBaseTexture, public virtual IGXTextureCube
+class CGXTextureCube: public IGXTextureCube
 {
 	friend class CGXContext;
 
 protected:
-	CGXTextureCube(CGXContext * pRender): CGXBaseTexture(pRender)
+	CGXContext * m_pRender;
+	CGXTextureCube(CGXContext * pRender): m_pRender(pRender)
 	{
 	}
 	~CGXTextureCube();
+	GXFORMAT m_format;
+	bool m_bWasReset;
+	bool m_bAutoResize = false;
 
 	UINT m_uSize;
 	IDirect3DCubeTexture9 *m_pTexture;
@@ -94,6 +85,8 @@ public:
 	bool wasReset();
 
 	IDirect3DBaseTexture9 *getDXTexture();
+
+	GXTEXTURE_TYPE getType();
 };
 
 #endif

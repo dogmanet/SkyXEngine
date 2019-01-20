@@ -2,7 +2,11 @@
 
 void CGXDepthStencilState::Release()
 {
-	m_pRender->destroyDepthStencilState(this);
+	--m_uRefCount;
+	if(!m_uRefCount)
+	{
+		m_pRender->destroyDepthStencilState(this);
+	}
 }
 
 CGXDepthStencilState::~CGXDepthStencilState()

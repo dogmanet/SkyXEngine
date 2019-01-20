@@ -2,7 +2,11 @@
 
 void CGXRasterizerState::Release()
 {
-	m_pRender->destroyRasterizerState(this);
+	--m_uRefCount;
+	if(!m_uRefCount)
+	{
+		m_pRender->destroyRasterizerState(this);
+	}
 }
 
 CGXRasterizerState::~CGXRasterizerState()

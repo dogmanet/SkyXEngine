@@ -27,10 +27,12 @@ enum GX_LOG
 
 class CGXContext: public IGXContext
 {
+protected:
+	~CGXContext();
 public:
 	BOOL initContext(SXWINDOW wnd, int iWidth, int iHeight, bool isWindowed);
 	CGXContext();
-	~CGXContext();
+	void Release();
 
 	void resize(int iWidth, int iHeight, bool isWindowed);
 

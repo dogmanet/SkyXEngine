@@ -2,7 +2,11 @@
 
 void CGXVertexDeclaration::Release()
 {
-	m_pRender->destroyVertexDeclaration(this);
+	--m_uRefCount;
+	if(!m_uRefCount)
+	{
+		m_pRender->destroyVertexDeclaration(this);
+	}
 }
 
 CGXVertexDeclaration::CGXVertexDeclaration(IDirect3DDevice9 *pDevice, CGXContext * pRender, const GXVERTEXELEMENT * pDecl):

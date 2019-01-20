@@ -8,7 +8,6 @@ See the license in LICENSE
 
 void InitDevice(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlags)
 {
-	m_hLibGXAPI;
 	char szModuleName[64];
 	sprintf_s(szModuleName, "gxgapi%s.dll", Core_0GetCommandLineArg("gapi", "dx9"));
 	m_hLibGXAPI = LoadLibrary(szModuleName);

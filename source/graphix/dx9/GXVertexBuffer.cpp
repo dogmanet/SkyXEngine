@@ -2,7 +2,11 @@
 
 void CGXVertexBuffer::Release()
 {
-	m_pRender->destroyVertexBuffer(this);
+	--m_uRefCount;
+	if(!m_uRefCount)
+	{
+		m_pRender->destroyVertexBuffer(this);
+	}
 }
 
 bool CGXVertexBuffer::lock(void **ppData, GXBUFFERLOCK mode)

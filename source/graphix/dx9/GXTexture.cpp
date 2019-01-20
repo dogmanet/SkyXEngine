@@ -28,7 +28,11 @@ UINT CGXTexture2D::getHeight()
 
 void CGXTexture2D::Release()
 {
-	m_pRender->destroyTexture2D(this);
+	--m_uRefCount;
+	if(!m_uRefCount)
+	{
+		m_pRender->destroyTexture2D(this);
+	}
 }
 
 IGXSurface *CGXTexture2D::getMipmap(UINT i)
@@ -75,6 +79,11 @@ void CGXTexture2D::onDevRst(UINT uScreenWidth, UINT uScreenHeight)
 	DX_CALL(m_pRender->getDXDevice()->CreateTexture(m_uWidth, m_uHeight, m_uMipLevels, m_uUsage, m_pRender->getDXFormat(m_format), D3DPOOL_DEFAULT, &m_pTexture, NULL));
 }
 
+GXTEXTURE_TYPE CGXTexture2D::getType()
+{
+	return(GXTEXTURE_TYPE_2D);
+}
+
 //##########################################################################
 
 CGXTextureCube::~CGXTextureCube()
@@ -84,7 +93,11 @@ CGXTextureCube::~CGXTextureCube()
 
 void CGXTextureCube::Release()
 {
-	m_pRender->destroyTextureCube(this);
+	--m_uRefCount;
+	if(!m_uRefCount)
+	{
+		m_pRender->destroyTextureCube(this);
+	}
 }
 
 IGXSurface *CGXTextureCube::getMipmap(GXCUBEMAP_FACES face, UINT i)
@@ -142,4 +155,9 @@ void CGXTextureCube::onDevRst(UINT uScreenHeight)
 	}
 	m_bWasReset = true;
 	DX_CALL(m_pRender->getDXDevice()->CreateCubeTexture(m_uSize, m_uMipLevels, m_uUsage, m_pRender->getDXFormat(m_format), D3DPOOL_DEFAULT, &m_pTexture, NULL));
+}
+
+GXTEXTURE_TYPE CGXTextureCube::getType()
+{
+	return(GXTEXTURE_TYPE_CUBE);
 }

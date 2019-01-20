@@ -2,7 +2,11 @@
 
 void CGXDepthStencilSurface::Release()
 {
-	m_pRender->destroyDepthStencilSurface(this);
+	--m_uRefCount;
+	if(!m_uRefCount)
+	{
+		m_pRender->destroyDepthStencilSurface(this);
+	}
 }
 
 CGXDepthStencilSurface::~CGXDepthStencilSurface()

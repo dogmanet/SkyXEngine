@@ -30,6 +30,7 @@ public:
 	void setConstantF(UINT uStartRegister, const float *pConstantData, UINT uVector4fCount);
 	void setConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount);
 	UINT getConstantLocation(const char *szConstName);
+	void getData(void *pData, UINT *pSize);
 };
 
 class CGXPixelShader: public IGXPixelShader
@@ -57,6 +58,7 @@ public:
 	void setConstantF(UINT uStartRegister, const float *pConstantData, UINT uVector4fCount);
 	void setConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount);
 	UINT getConstantLocation(const char *szConstName);
+	void getData(void *pData, UINT *pSize);
 };
 
 
@@ -69,6 +71,14 @@ class CGXShader: public IGXShader
 		m_pVShader(pVS),
 		m_pPShader(pPS)
 	{
+		if(pVS)
+		{
+			pVS->AddRef();
+		}
+		if(pPS)
+		{
+			pPS->AddRef();
+		}
 	}
 
 	CGXContext * m_pRender;
@@ -77,25 +87,49 @@ class CGXShader: public IGXShader
 public:
 	void Release()
 	{
-		m_pRender->destroyShader(this);
+		--m_uRefCount;
+		if(!m_uRefCount)
+		{
+			mem_release(m_pVShader);
+			mem_release(m_pPShader);
+			m_pRender->destroyShader(this);
+		}
 	}
 
 	IGXPixelShader *getPixelShader()
 	{
+		if(m_pPShader)
+		{
+			m_pPShader->AddRef();
+		}
 		return(m_pPShader);
 	}
 	IGXVertexShader *getVertexShader()
 	{
+		if(m_pVShader)
+		{
+			m_pVShader->AddRef();
+		}
 		return(m_pVShader);
 	}
 
 	void setPixelShader(IGXPixelShader *pShader)
 	{
+		mem_release(m_pPShader);
 		m_pPShader = pShader;
+		if(pShader)
+		{
+			pShader->AddRef();
+		}
 	}
 	void setVertexShader(IGXVertexShader *pShader)
 	{
+		mem_release(m_pVShader);
 		m_pVShader = pShader;
+		if(pShader)
+		{
+			pShader->AddRef();
+		}
 	}
 };
 

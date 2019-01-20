@@ -2,7 +2,11 @@
 
 void CGXVertexShader::Release()
 {
-	m_pRender->destroyVertexShader(this);
+	--m_uRefCount;
+	if(!m_uRefCount)
+	{
+		m_pRender->destroyVertexShader(this);
+	}
 }
 
 CGXVertexShader::~CGXVertexShader()
@@ -44,6 +48,8 @@ void CGXVertexShader::parseConstantTable(ID3DXConstantTable *pConstTable)
 
 		AAString sName;
 		sName.setName(constantDesc.Name);
+		constantDesc.Name = NULL;
+		constantDesc.DefaultValue = NULL;
 		m_mConstLocations[sName] = constantDesc;
 	}
 
@@ -53,10 +59,12 @@ void CGXVertexShader::parseConstantTable(ID3DXConstantTable *pConstTable)
 	if(m_uConstBuffRegCountF)
 	{
 		m_pConstBufferF = new float[m_uConstBuffRegCountF * 4];
+		memset(m_pConstBufferF, 0, sizeof(float) * m_uConstBuffRegCountF * 4);
 	}
 	if(m_uConstBuffRegCountI)
 	{
 		m_pConstBufferI = new int[m_uConstBuffRegCountI * 4];
+		memset(m_pConstBufferI, 0, sizeof(int) * m_uConstBuffRegCountI * 4);
 	}
 }
 
@@ -84,11 +92,59 @@ UINT CGXVertexShader::getConstantLocation(const char *szConstName)
 	return(~0);
 }
 
+void CGXVertexShader::getData(void *_pData, UINT *pSize)
+{
+	byte *pData = (byte*)_pData;
+	if(pData)
+	{
+		*((UINT*)pData) = m_mConstLocations.Size();
+		pData += sizeof(UINT);
+		for(AssotiativeArray<AAString, D3DXCONSTANT_DESC>::Iterator i = m_mConstLocations.begin(); i; i++)
+		{
+			strcpy((char*)pData, i.first->getName());
+			pData += strlen(i.first->getName()) + 1;
+			*((D3DXCONSTANT_DESC*)pData) = *(i.second);
+			pData += sizeof(D3DXCONSTANT_DESC);
+		}
+		*((UINT*)pData) = m_uConstBuffRegCountF;
+		pData += sizeof(UINT);
+		*((UINT*)pData) = m_uConstBuffRegCountI;
+		pData += sizeof(UINT);
+
+		UINT uFunctionSize = 0;
+		m_pShader->GetFunction(NULL, &uFunctionSize);
+		*((UINT*)pData) = uFunctionSize;
+		pData += sizeof(UINT);
+		*pSize = pData - _pData + uFunctionSize;
+		m_pShader->GetFunction(pData, &uFunctionSize);
+	}
+	else
+	{
+		UINT uSize = sizeof(UINT); // constant count
+		for(AssotiativeArray<AAString, D3DXCONSTANT_DESC>::Iterator i = m_mConstLocations.begin(); i; i++)
+		{
+			uSize += strlen(i.first->getName()) + 1;
+			uSize += sizeof(D3DXCONSTANT_DESC);
+		}
+		uSize += sizeof(UINT);
+		uSize += sizeof(UINT);
+		uSize += sizeof(UINT);
+		UINT uFunctionSize = 0;
+		m_pShader->GetFunction(NULL, &uFunctionSize);
+		uSize += uFunctionSize;
+		*pSize = uSize;
+	}
+}
+
 //##########################################################################
 
 void CGXPixelShader::Release()
 {
-	m_pRender->destroyPixelShader(this);
+	--m_uRefCount;
+	if(!m_uRefCount)
+	{
+		m_pRender->destroyPixelShader(this);
+	}
 }
 
 CGXPixelShader::~CGXPixelShader()
@@ -139,10 +195,12 @@ void CGXPixelShader::parseConstantTable(ID3DXConstantTable *pConstTable)
 	if(m_uConstBuffRegCountF)
 	{
 		m_pConstBufferF = new float[m_uConstBuffRegCountF * 4];
+		memset(m_pConstBufferF, 0, sizeof(float) * m_uConstBuffRegCountF * 4);
 	}
 	if(m_uConstBuffRegCountI)
 	{
 		m_pConstBufferI = new int[m_uConstBuffRegCountI * 4];
+		memset(m_pConstBufferI, 0, sizeof(int) * m_uConstBuffRegCountI * 4);
 	}
 }
 
@@ -168,4 +226,48 @@ UINT CGXPixelShader::getConstantLocation(const char *szConstName)
 		return(pNode->Val->RegisterIndex);
 	}
 	return(~0);
+}
+
+void CGXPixelShader::getData(void *_pData, UINT *pSize)
+{
+	byte *pData = (byte*)_pData;
+	if(pData)
+	{
+		*((UINT*)pData) = m_mConstLocations.Size();
+		pData += sizeof(UINT);
+		for(AssotiativeArray<AAString, D3DXCONSTANT_DESC>::Iterator i = m_mConstLocations.begin(); i; i++)
+		{
+			strcpy((char*)pData, i.first->getName());
+			pData += strlen(i.first->getName()) + 1;
+			*((D3DXCONSTANT_DESC*)pData) = *(i.second);
+			pData += sizeof(D3DXCONSTANT_DESC);
+		}
+		*((UINT*)pData) = m_uConstBuffRegCountF;
+		pData += sizeof(UINT);
+		*((UINT*)pData) = m_uConstBuffRegCountI;
+		pData += sizeof(UINT);
+
+		UINT uFunctionSize = 0;
+		m_pShader->GetFunction(NULL, &uFunctionSize);
+		*((UINT*)pData) = uFunctionSize;
+		pData += sizeof(UINT);
+		*pSize = pData - _pData + uFunctionSize;
+		m_pShader->GetFunction(pData, &uFunctionSize);
+	}
+	else
+	{
+		UINT uSize = sizeof(UINT); // constant count
+		for(AssotiativeArray<AAString, D3DXCONSTANT_DESC>::Iterator i = m_mConstLocations.begin(); i; i++)
+		{
+			uSize += strlen(i.first->getName()) + 1;
+			uSize += sizeof(D3DXCONSTANT_DESC);
+		}
+		uSize += sizeof(UINT);
+		uSize += sizeof(UINT);
+		uSize += sizeof(UINT);
+		UINT uFunctionSize = 0;
+		m_pShader->GetFunction(NULL, &uFunctionSize);
+		uSize += uFunctionSize;
+		*pSize = uSize;
+	}
 }

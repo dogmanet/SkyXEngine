@@ -2,7 +2,11 @@
 
 void CGXIndexBuffer::Release()
 {
-	m_pRender->destroyIndexBuffer(this);
+	--m_uRefCount;
+	if(!m_uRefCount)
+	{
+		m_pRender->destroyIndexBuffer(this);
+	}
 }
 
 bool CGXIndexBuffer::lock(void **ppData, GXBUFFERLOCK mode)

@@ -2,7 +2,11 @@
 
 void CGXSurface::Release()
 {
-	delete this;
+	--m_uRefCount;
+	if(!m_uRefCount)
+	{
+		delete this;
+	}
 }
 
 CGXSurface::~CGXSurface()

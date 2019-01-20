@@ -2,10 +2,18 @@
 
 void CGXBlendState::Release()
 {
-	m_pRender->destroyBlendState(this);
+	--m_uRefCount;
+	if(!m_uRefCount)
+	{
+		m_pRender->destroyBlendState(this);
+	}
 }
 
 CGXBlendState::~CGXBlendState()
 {
-	mem_release(m_pStateBlock);
+	--m_uRefCount;
+	if(!m_uRefCount)
+	{
+		mem_release(m_pStateBlock);
+	}
 }
