@@ -34,16 +34,20 @@ report_func g_fnReportf = DefReport;
 IGXContext *g_pDXDevice = 0;
 HMODULE m_hLibGXAPI = NULL;
 Array<DEVMODE> g_aModes;
+HWND g_hWnd = NULL;
 
 IGXVertexDeclaration *g_pStaticVertexDecl = 0;
 
 CShaderManager *g_pManagerShaders = 0;
 CreatorTextures *g_pManagerRenderTargets = 0;
 ÑLoaderTextures *g_pManagerTextures = 0;
-IMesh *g_pScreenTexture = 0;
+IGXRenderBuffer *g_pScreenTextureRB = 0;
 CSkyBox *g_pSkyBox = 0;
 CSkyClouds *g_pSkyClouds = 0;
 COcclusionCulling *g_pOC = 0;
+IGXBlendState *g_pToneMappingBS = NULL;
+IGXSamplerState *g_pSamplerFilterPoint = NULL;
+IGXSamplerState *g_pSamplerFilterLinear = NULL;
 
 //##########################################################################
 
@@ -96,9 +100,9 @@ g_func_mtl_group_render_is_singly g_fnMtlGroupRenderIsSingly = StdMtlGroupIsSyng
 
 //##########################################################################
 
-void GCoreInit(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlags)
+void GCoreInit(HWND hWnd, int iWidth, int iHeight, bool isWindowed)
 {
-	InitDevice(hWnd, iWidth, iHeight, isWindowed, dwFlags);
+	InitDevice(hWnd, iWidth, iHeight, isWindowed);
 	InitFPStext();
 	InitFullScreenQuad();
 
@@ -107,6 +111,7 @@ void GCoreInit(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlag
 	g_pManagerTextures = new ÑLoaderTextures();
 	g_pOC = new COcclusionCulling();
 	g_pOC->init(iWidth, iHeight);
+	InitToneMappingStates();
 
 	GXVERTEXELEMENT oLayoutStatic[] =
 	{
@@ -188,7 +193,7 @@ SX_LIB_API void SGCore_Dbg_Set(report_func rf)
 	g_fnReportf = rf;
 }
 
-SX_LIB_API void SGCore_0Create(const char *szName, HWND hWnd, int iWidth, int iHeigth, bool isWindowed, DWORD dwFlags, bool isUnic)
+SX_LIB_API void SGCore_0Create(const char *szName, SXWINDOW hWnd, int iWidth, int iHeigth, bool isWindowed, bool isUnic)
 {
 	Core_SetOutPtr();
 	if (szName && strlen(szName) > 1)
@@ -203,7 +208,8 @@ SX_LIB_API void SGCore_0Create(const char *szName, HWND hWnd, int iWidth, int iH
 				return;
 			}
 		}
-		GCoreInit(hWnd, iWidth, iHeigth, isWindowed, dwFlags);
+		g_hWnd = hWnd;
+		GCoreInit(hWnd, iWidth, iHeigth, isWindowed);
 	}
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name], sxgcore", GEN_MSG_LOCATION);
@@ -219,18 +225,9 @@ SX_LIB_API const DEVMODE* SGCore_GetModes(int *pCount)
 	return &(g_aModes[0]);
 }
 
-SX_LIB_API HRESULT SGCore_DXcallCheck(HRESULT hr, const char *callStr)
+SX_LIB_API SXWINDOW SGCore_GetHWND()
 {
-	if(FAILED(hr))
-	{
-		printf(COLOR_LRED "DirectX call failed: %s\n%s, %s\n", callStr, DXGetErrorString9(hr), DXGetErrorDescription9(hr));
-	}
-	return(hr);
-}
-
-SX_LIB_API HWND SGCore_GetHWND()
-{
-	return g_oD3DAPP.hDeviceWindow;
+	return(g_hWnd);
 }
 
 SX_LIB_API void SGCore_AKill()
@@ -243,9 +240,12 @@ SX_LIB_API void SGCore_AKill()
 	mem_delete(g_pManagerRenderTargets);
 	mem_delete(g_pManagerTextures);
 
-	mem_release(g_pScreenTexture);
+	mem_release(g_pScreenTextureRB);
 	mem_delete(g_pSkyBox);
 	mem_delete(g_pSkyClouds);
+
+	mem_release(g_pSamplerFilterLinear);
+	mem_release(g_pSamplerFilterPoint);
 
 	//mem_release(g_pFPStext);
 
@@ -271,19 +271,19 @@ SX_LIB_API void SGCore_DbgMsg(const char *szFormat, ...)
 	RECT rect;
 	rect.top = 10;
 	rect.left = 10;
-	rect.right = g_oD3DAPP.BackBufferWidth - 10;
-	rect.bottom = g_oD3DAPP.BackBufferHeight - 10;
-	g_pFPStext->DrawText(0, buf, -1, &rect, 0, 0xff000000);
+	//rect.right = g_oD3DAPP.BackBufferWidth - 10;
+	//rect.bottom = g_oD3DAPP.BackBufferHeight - 10;
+	//g_pFPStext->DrawText(0, buf, -1, &rect, 0, 0xff000000);
 	--rect.top;
 	--rect.left;
-	g_pFPStext->DrawText(0, buf, -1, &rect, 0, 0xffffffff);
+	//g_pFPStext->DrawText(0, buf, -1, &rect, 0, 0xffffffff);
 }
 
 SX_LIB_API void SGCore_OnLostDevice()
 {
 	SG_PRECOND(_VOID);
 
-	g_pFPStext->OnLostDevice();
+	//g_pFPStext->OnLostDevice();
 	g_pManagerRenderTargets->OnLostDevice();
 
 	g_pOC->onLostDevice();
@@ -293,48 +293,28 @@ SX_LIB_API bool SGCore_OnDeviceReset(int iWidth, int iHeight, bool isWindowed)
 {
 	SG_PRECOND(false);
 
-	g_oD3DAPP.BackBufferWidth = iWidth;
-	g_oD3DAPP.BackBufferHeight = iHeight;
-	g_oD3DAPP.Windowed = isWindowed;
+	g_pDXDevice->resize(iWidth, iHeight, isWindowed);
 
-	return (FAILED(g_pDXDevice->Reset(&g_oD3DAPP)));
+	return(true);
 }
 
 SX_LIB_API void SGCore_OnResetDevice()
 {
 	SG_PRECOND(_VOID);
 
-	g_pFPStext->OnResetDevice();
+	//g_pFPStext->OnResetDevice();
 	g_pManagerRenderTargets->OnResetDevice();
-	g_pOC->onResetDevice(g_oD3DAPP.BackBufferWidth, g_oD3DAPP.BackBufferHeight);
+	g_pOC->onResetDevice(0/*g_oD3DAPP.BackBufferWidth*/, 9/*g_oD3DAPP.BackBufferHeight*/);
 	
-	struct  VERTEX_SCREEN_TEXTURE { float x, y, z, tx, ty, tz; };
-
-	const float fOffsetPixelX = 1.0f / float(g_oD3DAPP.BackBufferWidth);
-	const float fOffsetPixelY = 1.0f / float(g_oD3DAPP.BackBufferHeight);
-
-	VERTEX_SCREEN_TEXTURE aVertices[] =
-	{
-		{ -1.0f - fOffsetPixelX, -1.0f + fOffsetPixelY, 1.0f, 0.0f, 1.0f, 0 },
-		{ -1.0f - fOffsetPixelX,  1.0f + fOffsetPixelY, 1.0f, 0.0f, 0.0f, 1 },
-		{  1.0f - fOffsetPixelX,  1.0f + fOffsetPixelY, 1.0f, 1.0f, 0.0f, 2 },
-		{  1.0f - fOffsetPixelX, -1.0f + fOffsetPixelY, 1.0f, 1.0f, 1.0f, 3 },
-	};
-
-	void * pVertices;
-	if (!FAILED(g_pScreenTexture->LockVertexBuffer(0, (void**)&pVertices)))
-	{
-		memcpy(pVertices, aVertices, sizeof(aVertices));
-		g_pScreenTexture->UnlockVertexBuffer();
-	}
-
 	gcore_data::rt_id::iHowAdaptedLum = 0;
 }
 
 SX_LIB_API void SGCore_ScreenQuadDraw()
 {
 	SG_PRECOND(_VOID);
-	g_pScreenTexture->draw();
+	g_pDXDevice->setRenderBuffer(g_pScreenTextureRB);
+	g_pDXDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	g_pDXDevice->drawPrimitive(0, 2);
 }
 
 //##########################################################################
@@ -873,103 +853,6 @@ SX_LIB_API ISXBound* SGCore_CrBound()
 	return new CBound();
 }
 
-//##########################################################################
-
-SX_LIB_API void SGCore_SetSamplerFilter(DWORD id, DWORD value)
-{
-	SG_PRECOND(_VOID);
-
-	DWORD dwMagFilter = value;
-	DWORD dwMinFilter = value;
-	DWORD dwMipFilter = value;
-	switch(value)
-	{
-	case D3DTEXF_ANISOTROPIC:
-		if(!(g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC))
-		{
-			if((g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFLINEAR))
-			{
-				dwMagFilter = D3DTEXF_LINEAR;
-			}
-			else
-			{
-				dwMagFilter = D3DTEXF_POINT;
-			}
-		}
-		if(!(g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFANISOTROPIC))
-		{
-			if((g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR))
-			{
-				dwMinFilter = D3DTEXF_LINEAR;
-			}
-			else
-			{
-				dwMinFilter = D3DTEXF_POINT;
-			}
-		}
-		if((g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MIPFLINEAR))
-		{
-			dwMipFilter = D3DTEXF_LINEAR;
-		}
-		else
-		{
-			dwMipFilter = D3DTEXF_POINT;
-		}
-		break;
-	case D3DTEXF_LINEAR:
-		if(!(g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFLINEAR))
-		{
-			dwMagFilter = D3DTEXF_POINT;
-		}
-		if(!(g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR))
-		{
-			dwMinFilter = D3DTEXF_POINT;
-		}
-		if(!(g_dxCaps.TextureFilterCaps & D3DPTFILTERCAPS_MIPFLINEAR))
-		{
-			dwMipFilter = D3DTEXF_POINT;
-		}
-		break;
-	case D3DTEXF_NONE:
-		dwMagFilter = D3DTEXF_POINT;
-		dwMinFilter = D3DTEXF_POINT;
-		break;
-	}
-	DX_CALL(g_pDXDevice->SetSamplerState(id, D3DSAMP_MAGFILTER, dwMagFilter));
-	DX_CALL(g_pDXDevice->SetSamplerState(id, D3DSAMP_MINFILTER, dwMinFilter));
-	DX_CALL(g_pDXDevice->SetSamplerState(id, D3DSAMP_MIPFILTER, dwMipFilter));
-}
-
-SX_LIB_API void SGCore_SetSamplerFilter2(DWORD begin_id, DWORD end_id, DWORD value)
-{
-	SG_PRECOND(_VOID);
-
-	if (begin_id >= 0 && end_id <= 16)
-	{
-		for (DWORD i = begin_id; i<end_id; i++)
-			SGCore_SetSamplerFilter(i, value);
-	}
-}
-
-SX_LIB_API void SGCore_SetSamplerAddress(DWORD id, DWORD value)
-{
-	SG_PRECOND(_VOID);
-
-	g_pDXDevice->SetSamplerState(id, D3DSAMP_ADDRESSU, value);
-	g_pDXDevice->SetSamplerState(id, D3DSAMP_ADDRESSV, value);
-	g_pDXDevice->SetSamplerState(id, D3DSAMP_ADDRESSW, value);
-}
-
-SX_LIB_API void SGCore_SetSamplerAddress2(DWORD begin_id, DWORD end_id, DWORD value)
-{
-	SG_PRECOND(_VOID);
-
-	if (begin_id >= 0 && end_id <= 16)
-	{
-		for (DWORD i = begin_id; i<end_id; i++)
-			SGCore_SetSamplerAddress(i, value);
-	}
-}
 
 //##########################################################################
 

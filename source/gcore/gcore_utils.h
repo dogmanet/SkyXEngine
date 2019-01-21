@@ -20,12 +20,15 @@ See the license in LICENSE
 extern IGXContext *g_pDXDevice;
 extern HMODULE m_hLibGXAPI;
 extern Array<DEVMODE> g_aModes;
-extern IMesh *g_pScreenTexture;
+extern IGXRenderBuffer *g_pScreenTextureRB;
+extern IGXBlendState *g_pToneMappingBS;
+extern IGXSamplerState *g_pSamplerFilterPoint;
+extern IGXSamplerState *g_pSamplerFilterLinear;
 
 //##########################################################################
 
 //! инициализация устройства
-void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlags);
+void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed);
 
 //! инициализация отладочной инфы
 void InitFPStext();
@@ -41,6 +44,8 @@ void InitRT4Gbuffer();
 
 //! загрузка шейдеров
 void LoadShaders();
+
+void InitToneMappingStates();
 
 //! заполнение массива для tone mapping
 void ToneMappingGetArrDownScale4x4(int iWidth, int iHeight, float2 aDS[]);

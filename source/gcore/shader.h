@@ -20,8 +20,6 @@ See the license in LICENSE
 #include "sxgcore.h"
 
 extern IGXContext *g_pDXDevice;
-extern D3DCAPS9 g_dxCaps;
-extern D3DPRESENT_PARAMETERS g_oD3DAPP;
 
 //! используется ли в данный момент кэш шейдеров?
 extern bool g_useCache;
@@ -35,13 +33,12 @@ struct CShader
 		m_szPath[0] = 0; 
 		m_iCountVar = 0;
 
-		ZeroMemory(m_aVarDesc, sizeof(D3DXCONSTANT_DESC)* SXGC_SHADER_VAR_MAX_COUNT);
 		ZeroMemory(m_aMacros, sizeof(GXMACRO)* SXGC_SHADER_COUNT_MACRO);
 	}
 
 	~CShader()
 	{
-		mem_release(m_pCode);
+		
 	}
 
 	//! имя шейдера
@@ -56,14 +53,8 @@ struct CShader
 	//! количество переменных
 	int m_iCountVar;
 
-	//! описание переменных
-	D3DXCONSTANT_DESC m_aVarDesc[SXGC_SHADER_VAR_MAX_COUNT];
-
 	//! массив макросов (данные последнего макроса должны быть NULL)
 	GXMACRO m_aMacros[SXGC_SHADER_COUNT_MACRO];
-
-	//! буфер с бинарным кодом шейдера
-	ID3DXBuffer *m_pCode;
 };
 
 //! вершинный шейдер
@@ -93,15 +84,12 @@ struct CShaderFileCache : public CShader
 		m_szPath[0] = 0; 
 		m_uiDate = 0; 
 		m_iCountVar = 0;
-		m_pCode = 0; 
-		ZeroMemory(m_aVarDesc, sizeof(D3DXCONSTANT_DESC)* SXGC_SHADER_VAR_MAX_COUNT);
 		ZeroMemory(m_aMacros, sizeof(GXMACRO)* SXGC_SHADER_COUNT_MACRO);
 		int qwert = 0;
 	}
 
 	~CShaderFileCache()
 	{
-		mem_release(m_pCode);
 	}
 
 	//! время последнего изменения оригинального шейдера

@@ -95,7 +95,7 @@ void COcclusionCulling::init(int iWidth, int iHeight)
 	m_iWidth = float(iWidth * OC_SIZE_COEF);
 	m_iHeight = float(iHeight * OC_SIZE_COEF);
 	m_iCountPixels = m_iWidth * m_iHeight;
-
+	/*
 	g_pDXDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[0], 0);
 	g_pDXDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[1], 0);
 	g_pDXDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[2], 0);
@@ -112,18 +112,19 @@ void COcclusionCulling::init(int iWidth, int iHeight)
 	m_idVS_ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
 	m_idPS_ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
 	m_idPS_FindMax9 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_depth_find_max9.ps", "pp_depth_find_max9.ps", SHADER_CHECKDOUBLE_NAME);
+	*/
 }
 
 void COcclusionCulling::onLostDevice()
 {
-	mem_release(m_pSurfDepthBuffer[0]);
+	/*mem_release(m_pSurfDepthBuffer[0]);
 	mem_release(m_pSurfDepthBuffer[1]);
 	mem_release(m_pSurfDepthBuffer[2]);
 
 	mem_delete_a(m_pArrDepthBuffer);
 	mem_delete_a(m_pArrDepthBufferReProjection);
 	mem_delete_a(m_pArrWorldPos);
-	mem_delete_a(m_pArrDepthBufferRasterize);
+	mem_delete_a(m_pArrDepthBufferRasterize);*/
 }
 
 void COcclusionCulling::onResetDevice(int iWidth, int iHeight)
@@ -131,7 +132,7 @@ void COcclusionCulling::onResetDevice(int iWidth, int iHeight)
 	m_iWidth = float(iWidth * OC_SIZE_COEF);
 	m_iHeight = float(iHeight * OC_SIZE_COEF);
 	m_iCountPixels = m_iWidth * m_iHeight;
-
+	/*
 	g_pDXDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[0], 0);
 	g_pDXDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[1], 0);
 	g_pDXDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[2], 0);
@@ -139,7 +140,7 @@ void COcclusionCulling::onResetDevice(int iWidth, int iHeight)
 	m_pArrDepthBuffer = new float[m_iCountPixels + 1];
 	m_pArrWorldPos = new float4[m_iCountPixels + 1];
 	m_pArrDepthBufferReProjection = new float[m_iCountPixels + 1];
-	m_pArrDepthBufferRasterize = new float[m_iCountPixels + 1];
+	m_pArrDepthBufferRasterize = new float[m_iCountPixels + 1];*/
 }
 
 
@@ -182,7 +183,7 @@ void COcclusionCulling::update(ID idDepthMap, const IFrustum *pFrustum)
 	}
 
 	m_fBiasDepth = 1.f / (*r_far);
-
+	/*
 	IDirect3DTexture9 *pTexDepth = SGCore_RTGetTexture(idDepthMap);
 	IDirect3DTexture9 *pTexDepthOC = SGCore_RTGetTexture(m_aRTdepth[m_iCurrRTdepth]);
 
@@ -273,7 +274,7 @@ void COcclusionCulling::update(ID idDepthMap, const IFrustum *pFrustum)
 
 	mem_delete(m_pUpdateCycle);
 	m_pUpdateCycle = new COCUpdate(aWorldRays, m_iWidth, m_iHeight, &vObserverPos, m_pArrWorldPos, m_pArrDepthBuffer); 
-	m_idUpdateCycle = Core_MForLoop(0, m_iWidth, m_pUpdateCycle/*, m_iCountPixels / (Core_MGetThreadCount() * 3)*/);
+	m_idUpdateCycle = Core_MForLoop(0, m_iWidth, m_pUpdateCycle/*, m_iCountPixels / (Core_MGetThreadCount() * 3)* /);
 	/*for (int x = 0; x < m_iWidth; ++x)
 	{
 		vWorldRay0 = SMVectorLerp(aWorldRays[0], aWorldRays[1], float(x) / m_iWidth);
@@ -286,7 +287,7 @@ void COcclusionCulling::update(ID idDepthMap, const IFrustum *pFrustum)
 			vWorldPos.w = 1.f;
 			m_pArrWorldPos[iPosPixel] = vWorldPos;
 		}
-	}*/
+	}* /
 
 	m_mOldView = mView;
 	m_mOldProj = mProjection;
@@ -305,7 +306,8 @@ void COcclusionCulling::update(ID idDepthMap, const IFrustum *pFrustum)
 		m_pSurfDepthBuffer[2]->UnlockRect();
 
 		D3DXSaveSurfaceToFile("C:/1/m_pSurfDepthBuffer.jpg", D3DXIFF_JPG, m_pSurfDepthBuffer[2], NULL, NULL);
-	}*/
+	}* /
+	*/
 }
 
 void COcclusionCulling::reprojection()

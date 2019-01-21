@@ -81,7 +81,6 @@ SX_LIB_API void SGCore_0Create(
 	int iWidth,					//!< ширина области рендера
 	int iHeigth,				//!< высота области рендера
 	bool isWindowed,			//!< оконный режим использовать ли? иначе полноэкранный
-	DWORD dwFlags,				//!< флаги создания устрайства (стандартные dx)
 	bool isUnic = true			//!< должна ли подсистема быть уникальной на основе имени
 	);
 
@@ -140,28 +139,6 @@ SX_LIB_API void SGCore_OnResetDevice();
 
 //! отрисовка full screen quad (уже смещенного как надо чтобы не было размытия)
 SX_LIB_API void SGCore_ScreenQuadDraw();
-
-//!@}
-
-//#############################################################################
-
-/*! \name Базовые функции установки настроек выборки из текстуры 
-id - идентификатор текстурного слота
-value - для Filter D3DTEXTUREFILTERTYPE, для Address D3DTEXTUREADDRESS
-@{*/
-
-//! установка фильтрации для конкретного слота
-SX_LIB_API void SGCore_SetSamplerFilter(DWORD dwNum, DWORD dwValue);	
-
-//! установка фильтрации для набора слотов от begin_id до end_id
-SX_LIB_API void SGCore_SetSamplerFilter2(DWORD dwNumStart, DWORD dwCount, DWORD dwValue);
-
-
-//! установка адресации для конкретного слота
-SX_LIB_API void SGCore_SetSamplerAddress(DWORD dwNum, DWORD dwValue);
-
-//! установка адресации для набора слотов от begin_id до end_id
-SX_LIB_API void SGCore_SetSamplerAddress2(DWORD dwNumStart, DWORD dwCount, DWORD dwValue);
 
 //!@}
 

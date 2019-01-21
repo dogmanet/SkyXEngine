@@ -709,7 +709,7 @@ bool CShaderManager::existsFile(const char *szPath)
 	return FileExistsFile(tmppath);
 }
 
-ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, D3DXMACRO *aMacros)
+ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, GXMACRO *aMacros)
 {
 	if (!isValidateTypeName(type, szName))
 	{
@@ -762,7 +762,7 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szN
 		int iCountMacros = 0;
 		for (int i = 0; i < SXGC_SHADER_COUNT_MACRO; i++)
 		{
-			if (aMacros[i].Name == 0)
+			if (aMacros[i].szName == 0)
 			{
 				iCountMacros = i;
 				break;
