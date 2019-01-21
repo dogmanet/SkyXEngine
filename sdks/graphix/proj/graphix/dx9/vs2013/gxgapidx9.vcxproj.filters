@@ -48,6 +48,9 @@
     <ClInclude Include="..\..\..\..\source\dx9\GXTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\graphix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\source\dx9\GXContext.cpp">

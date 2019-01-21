@@ -141,7 +141,7 @@ private:
 	IGXTextureCube* loadTextureCube(const char *szPath);
 
 	//! возвращает тип файла текстуры
-	IGXSurface *getTypeFileTex(const char *szPath);
+	D3DRESOURCETYPE *getTypeFileTex(const char *szPath);
 };
 
 #endif

@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\graphix.h" />
     <ClInclude Include="..\..\..\..\source\dx9\GXBlendState.h" />
     <ClInclude Include="..\..\..\..\source\dx9\GXContext.h" />
     <ClInclude Include="..\..\..\..\source\dx9\GXDepthStencilState.h" />

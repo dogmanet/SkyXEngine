@@ -199,18 +199,14 @@ void ToneMappingGetArrDownScale4x4(int iWidth, int iHeight, float2 aDS[])
 void InitToneMappingStates()
 {
 	GXBLEND_DESC blendDesc;
-	memset(&blendDesc, 0, sizeof(GXBLEND_DESC));
 	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_RED;
 	g_pToneMappingBS = g_pDXDevice->createBlendState(&blendDesc);
 
 	GXSAMPLER_DESC samplerDesc;
-	memset(&samplerDesc, 0, sizeof(GXSAMPLER_DESC));
 	samplerDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
-
 	g_pSamplerFilterLinear = g_pDXDevice->createSamplerState(&samplerDesc);
 
 	samplerDesc.filter = GXFILTER_MIN_MAG_MIP_POINT;
-
 	g_pSamplerFilterPoint = g_pDXDevice->createSamplerState(&samplerDesc);
 }
 

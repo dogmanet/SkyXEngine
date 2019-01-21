@@ -1669,6 +1669,7 @@ IGXTexture2D *CGXContext::createTexture2D(UINT uWidth, UINT uHeight, UINT uMipLe
 
 	if(pool == D3DPOOL_DEFAULT)
 	{
+		pTex->m_isResettable = true;
 		m_aResettableTextures2D.push_back(pTex);
 	}
 
@@ -1745,6 +1746,7 @@ IGXTextureCube *CGXContext::createTextureCube(UINT uSize, UINT uMipLevels, UINT 
 
 	if(pool == D3DPOOL_DEFAULT)
 	{
+		pTex->m_isResettable = true;
 		m_aResettableTexturesCube.push_back(pTex);
 	}
 
@@ -1763,6 +1765,18 @@ void CGXContext::destroyTexture2D(IGXTexture2D * pTexture)
 				setTexture(NULL, i);
 			}
 		}
+
+		if(((CGXTexture2D*)pTexture)->m_isResettable)
+		{
+			for(UINT i = 0, l = m_aResettableTextures2D.size(); i < l; ++i)
+			{
+				if(m_aResettableTextures2D[i] == pTexture)
+				{
+					m_aResettableTextures2D.erase(i);
+					break;
+				}
+			}
+		}
 	}
 	mem_delete(pTexture);
 }
@@ -1775,6 +1789,18 @@ void CGXContext::destroyTextureCube(IGXTextureCube * pTexture)
 			if(pTexture == m_pTextures[i])
 			{
 				setTexture(NULL, i);
+			}
+		}
+
+		if(((CGXTextureCube*)pTexture)->m_isResettable)
+		{
+			for(UINT i = 0, l = m_aResettableTexturesCube.size(); i < l; ++i)
+			{
+				if(m_aResettableTexturesCube[i] == pTexture)
+				{
+					m_aResettableTexturesCube.erase(i);
+					break;
+				}
 			}
 		}
 	}
@@ -1873,6 +1899,7 @@ IGXTexture2D *CGXContext::createTexture2DFromFile(const char *szFileName, UINT u
 
 	if(uTexUsageFlags & GX_TEXUSAGE_ALLOWDISCARD)
 	{
+		pTex->m_isResettable = true;
 		m_aResettableTextures2D.push_back(pTex);
 	}
 
@@ -1898,6 +1925,7 @@ IGXTextureCube *CGXContext::createTextureCubeFromFile(const char *szFileName, UI
 
 	if(uTexUsageFlags & GX_TEXUSAGE_ALLOWDISCARD)
 	{
+		pTex->m_isResettable = true;
 		m_aResettableTexturesCube.push_back(pTex);
 	}
 

@@ -100,7 +100,7 @@ g_func_mtl_group_render_is_singly g_fnMtlGroupRenderIsSingly = StdMtlGroupIsSyng
 
 //##########################################################################
 
-void GCoreInit(HWND hWnd, int iWidth, int iHeight, bool isWindowed)
+void GCoreInit(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 {
 	InitDevice(hWnd, iWidth, iHeight, isWindowed);
 	InitFPStext();
@@ -208,7 +208,7 @@ SX_LIB_API void SGCore_0Create(const char *szName, SXWINDOW hWnd, int iWidth, in
 				return;
 			}
 		}
-		g_hWnd = hWnd;
+		g_hWnd = (HWND)hWnd;
 		GCoreInit(hWnd, iWidth, iHeigth, isWindowed);
 	}
 	else

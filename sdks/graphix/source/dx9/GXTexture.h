@@ -15,6 +15,7 @@ protected:
 	~CGXTexture2D();
 	GXFORMAT m_format;
 	bool m_bWasReset;
+	bool m_isResettable = false;
 	bool m_bAutoResize = false;
 
 	UINT m_uWidth;
@@ -59,6 +60,7 @@ protected:
 	~CGXTextureCube();
 	GXFORMAT m_format;
 	bool m_bWasReset;
+	bool m_isResettable = false;
 	bool m_bAutoResize = false;
 
 	UINT m_uSize;

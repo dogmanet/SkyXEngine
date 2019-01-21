@@ -342,18 +342,18 @@ typedef enum _GXCOLOR_WRITE_ENABLE
 
 typedef struct _GXBLEND_DESC
 {
-	BOOL bAlphaToCoverageEnable;
-	BOOL bIndependentBlendEnabled;
+	BOOL bAlphaToCoverageEnable = 0;
+	BOOL bIndependentBlendEnabled = 0;
 	struct GXBLEND_RT_DESC
 	{
-		BOOL bBlendEnable;
-		GXBLEND srcBlend;
-		GXBLEND destBlend;
-		GXBLEND_OP blendOp;
-		GXBLEND srcBlendAlpha;
-		GXBLEND destBlendAlpha;
-		GXBLEND_OP blendOpAlpha;
-		byte u8RenderTargetWriteMask;
+		BOOL bBlendEnable = 0;
+		GXBLEND srcBlend = GXBLEND_ONE;
+		GXBLEND destBlend = GXBLEND_ZERO;
+		GXBLEND_OP blendOp = GXBLEND_OP_ADD;
+		GXBLEND srcBlendAlpha = GXBLEND_ONE;
+		GXBLEND destBlendAlpha = GXBLEND_ZERO;
+		GXBLEND_OP blendOpAlpha = GXBLEND_OP_ADD;
+		byte u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_ALL;
 	} renderTarget[8];
 } GXBLEND_DESC;
 
@@ -387,16 +387,16 @@ typedef enum _GXSTENCIL_OP
 
 typedef struct _GXDEPTH_STENCIL_DESC
 {
-	BOOL bDepthEnable;
-	BOOL bEnableDepthWrite;
-	GXCOMPARISON_FUNC depthFunc;
-	BOOL bStencilEnable;
-	byte u8StencilReadMask;
-	byte u8StencilWriteMask;
-	GXSTENCIL_OP stencilFailOp;
-	GXSTENCIL_OP stencilDepthFailOp;
-	GXSTENCIL_OP stencilPassOp;
-	GXCOMPARISON_FUNC stencilFunc;
+	BOOL bDepthEnable = 1;
+	BOOL bEnableDepthWrite = 1;
+	GXCOMPARISON_FUNC depthFunc = GXCOMPARISON_LESS_EQUAL;
+	BOOL bStencilEnable = 0;
+	byte u8StencilReadMask = 0xFF;
+	byte u8StencilWriteMask = 0xFF;
+	GXSTENCIL_OP stencilFailOp = GXSTENCIL_OP_KEEP;
+	GXSTENCIL_OP stencilDepthFailOp = GXSTENCIL_OP_KEEP;
+	GXSTENCIL_OP stencilPassOp = GXSTENCIL_OP_KEEP;
+	GXCOMPARISON_FUNC stencilFunc = GXCOMPARISON_ALWAYS;
 } GXDEPTH_STENCIL_DESC;
 
 typedef enum _GXFILL_MODE
@@ -414,15 +414,15 @@ typedef enum _GXCULL_MODE
 
 typedef struct _GXRASTERIZER_DESC
 {
-	GXFILL_MODE fillMode;
-	GXCULL_MODE cullMode;
-	int iDepthBias;
-	float fDepthBiasClamp;
-	float fSlopeScaledDepthBias;
-	BOOL bDepthClipEnable;
-	BOOL bScissorEnable;
-	BOOL bMultisampleEnable;
-	BOOL bAntialiasedLineEnable;
+	GXFILL_MODE fillMode = GXFILL_SOLID;
+	GXCULL_MODE cullMode = GXCULL_BACK;
+	int iDepthBias = 0;
+	float fDepthBiasClamp = 0.0f;
+	float fSlopeScaledDepthBias = 0.0f;
+	BOOL bDepthClipEnable = 1;
+	BOOL bScissorEnable = 0;
+	BOOL bMultisampleEnable = 0;
+	BOOL bAntialiasedLineEnable = 0;
 } GXRASTERIZER_DESC;
 
 typedef enum _GXFILTER
@@ -449,16 +449,16 @@ typedef enum _GXTEXTURE_ADDRESS_MODE
 
 typedef struct _GXSAMPLER_DESC
 {
-	GXFILTER filter;
-	GXTEXTURE_ADDRESS_MODE addressU;
-	GXTEXTURE_ADDRESS_MODE addressV;
-	GXTEXTURE_ADDRESS_MODE addressW;
-	float fMipLODBias;
-	UINT uMaxAnisotropy;
-	GXCOMPARISON_FUNC comparisonFunc;
+	GXFILTER filter = GXFILTER_MIN_MAG_MIP_POINT;
+	GXTEXTURE_ADDRESS_MODE addressU = GXTEXTURE_ADDRESS_WRAP;
+	GXTEXTURE_ADDRESS_MODE addressV = GXTEXTURE_ADDRESS_WRAP;
+	GXTEXTURE_ADDRESS_MODE addressW = GXTEXTURE_ADDRESS_WRAP;
+	float fMipLODBias = 0.0f;
+	UINT uMaxAnisotropy = 1;
+	GXCOMPARISON_FUNC comparisonFunc = GXCOMPARISON_NEVER;
 	float4_t f4BorderColor;
-	float fMinLOD;
-	float fMaxLOD;
+	float fMinLOD = 0;
+	float fMaxLOD = FLT_MAX;
 } GXSAMPLER_DESC;
 
 typedef struct _GXMACRO
@@ -472,6 +472,8 @@ typedef enum _GXTEXTURE_TYPE
 {
 	GXTEXTURE_TYPE_2D,
 	GXTEXTURE_TYPE_CUBE,
+
+	GXTEXTURE_TYPE_UNKNOWN
 } GXTEXTURE_TYPE;
 
 //##########################################################################
