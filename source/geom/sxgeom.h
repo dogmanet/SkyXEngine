@@ -312,7 +312,7 @@ SX_LIB_API ID SGeom_ModelGetGroupMtrlID(ID idModel, ID idGroup);
 SX_LIB_API void SGeom_ModelGetGroupCenter(ID idModel, ID idGroup, float3_t *pCenter);
 
 //! записывает в pPlane плоскость подгруппы idGroup
-SX_LIB_API void SGeom_ModelGetGroupPlane(ID idModel, ID idGroup, D3DXPLANE *pPlane);
+SX_LIB_API void SGeom_ModelGetGroupPlane(ID idModel, ID idGroup, SMPLANE *pPlane);
 
 //! записывает максимум и минимум подгруппы idGroup
 SX_LIB_API void SGeom_ModelGetGroupMinMax(ID idModel, ID idGroup, float3_t *pMin, float3_t *pMax);

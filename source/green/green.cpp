@@ -693,9 +693,6 @@ void CGreen::render2(DWORD timeDelta, const float3 *pViewPos, ID idGreen, int iL
 	//если есть что к отрисовке
 	if (m_iCurrCountDrawObj)
 	{
-		CGreen::m_pDXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | m_iCurrCountDrawObj));
-
-		CGreen::m_pDXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
 		CGreen::m_pDXDevice->SetStreamSource(1, m_pTransVertBuf, 0, sizeof(CGreenDataVertex));
 
 		CGreen::m_pDXDevice->SetStreamSource(0, pLod->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
@@ -717,13 +714,13 @@ void CGreen::render2(DWORD timeDelta, const float3 *pViewPos, ID idGreen, int iL
 			CGreen::m_pDXDevice->SetVertexShaderConstantF(62, (float*)&(pLod->m_pModel->m_vBBMax), 1);
 			CGreen::m_pDXDevice->SetVertexShaderConstantF(63, (float*)&(pLod->m_pModel->m_vBBMin), 1);
 
-			SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, pLod->m_pModel->m_pVertexCount[i], iCountIndex, pLod->m_pModel->m_pIndexCount[i] / 3);
+			CGreen::m_pDXDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+			CGreen::m_pDXDevice->drawIndexedInstanced(m_iCurrCountDrawObj, pLod->m_pModel->m_pVertexCount[i], pLod->m_pModel->m_pIndexCount[i] / 3, iCountIndex, 0);
+
+			//SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, pLod->m_pModel->m_pVertexCount[i], iCountIndex, pLod->m_pModel->m_pIndexCount[i] / 3);
 			Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((pLod->m_pModel->m_pIndexCount[i] / 3) * m_iCurrCountDrawObj));
 			iCountIndex += pLod->m_pModel->m_pIndexCount[i];
 		}
-
-		CGreen::m_pDXDevice->SetStreamSourceFreq(0, 1);
-		CGreen::m_pDXDevice->SetStreamSourceFreq(1, 1);
 	}
 }
 
@@ -2036,12 +2033,11 @@ void CGreen::setGreenNav2(CModel *pGreen, const char *szPathName)
 	//pGreen->m_pPhysMesh->m_pArrVertex = new float3_t[pStatiModel->m_uiAllVertexCount];
 	pGreen->m_pPhysMesh->m_aVertex.resize(pStatiModel->m_uiAllVertexCount);
 	vertex_static_ex *pVert;
-	pStatiModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVert, 0);
+	
 	for (int i = 0; i < pStatiModel->m_uiAllVertexCount; ++i)
 	{
-		pGreen->m_pPhysMesh->m_aVertex[i] = pVert[i].Pos;
+		pGreen->m_pPhysMesh->m_aVertex[i] = pStatiModel->m_pVertices[i].Pos;
 	}
-	pStatiModel->m_pVertexBuffer->Unlock();
 
 	//pGreen->m_pPhysMesh->m_pArrIndex = new uint32_t[pStatiModel->m_uiAllIndexCount];
 	//pGreen->m_pPhysMesh->m_pArrMtl = new ID[pStatiModel->m_uiAllIndexCount];
@@ -2049,8 +2045,6 @@ void CGreen::setGreenNav2(CModel *pGreen, const char *szPathName)
 	pGreen->m_pPhysMesh->m_aIndex.resize(pStatiModel->m_uiAllIndexCount);
 	pGreen->m_pPhysMesh->m_aMtrl.resize(pStatiModel->m_uiAllIndexCount);
 
-	UINT *pInd;
-	pStatiModel->m_pIndexBuffer->Lock(0, 0, (void **)&pInd, 0);
 	
 	UINT uiPrebias = 0;
 	int iCountIndex = 0;
@@ -2061,13 +2055,12 @@ void CGreen::setGreenNav2(CModel *pGreen, const char *szPathName)
 		ID idMtrl = SGCore_MtlLoad(szTexName, MTL_TYPE_TREE);
 		for (int k = 0; k < pStatiModel->m_pIndexCount[i]; ++k)
 		{
-			pGreen->m_pPhysMesh->m_aIndex[iCountIndex] = pInd[pStatiModel->m_pStartIndex[i] + k] /*+ uiPrebias*/;
+			pGreen->m_pPhysMesh->m_aIndex[iCountIndex] = pStatiModel->m_pIndices[pStatiModel->m_pStartIndex[i] + k] /*+ uiPrebias*/;
 			pGreen->m_pPhysMesh->m_aMtrl[iCountIndex] = idMtrl;
 			++iCountIndex;
 		}
 		uiPrebias += pStatiModel->m_pIndexCount[i];
 	}
-	pStatiModel->m_pIndexBuffer->Unlock();
 	mem_release_del(pStatiModel);
 }
 
@@ -2078,21 +2071,15 @@ void CGreen::initGreenDataLod0(CModel *pGreen)
 	pGreen->m_pDataLod0->m_sPathName = "";
 
 	pGreen->m_pDataLod0->m_aVertex.resize(pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount);
-	vertex_static_ex *pVert;
-	pGreen->m_aLods[0]->m_pModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVert, 0);
 	for (int i = 0; i < pGreen->m_aLods[0]->m_pModel->m_uiAllVertexCount; ++i)
 	{
-		pGreen->m_pDataLod0->m_aVertex[i] = pVert[i].Pos;
+		pGreen->m_pDataLod0->m_aVertex[i] = pGreen->m_aLods[0]->m_pModel->m_pVertices[i].Pos;
 	}
-	pGreen->m_aLods[0]->m_pModel->m_pVertexBuffer->Unlock();
 
 	pGreen->m_pDataLod0->m_aIndex.resize(pGreen->m_aLods[0]->m_pModel->m_uiAllIndexCount);
 	pGreen->m_pDataLod0->m_aMtrl.resize(pGreen->m_aLods[0]->m_pModel->m_uiSubsetCount);
 	pGreen->m_pDataLod0->m_aIndexCount.resize(pGreen->m_aLods[0]->m_pModel->m_uiSubsetCount);
-
-	UINT *pInd;
-	pGreen->m_aLods[0]->m_pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pInd, 0);
-
+	
 	UINT uiPrebias = 0;
 	int iCountIndex = 0;
 	char szTexName[SXGC_LOADTEX_MAX_SIZE_DIRNAME];
@@ -2104,12 +2091,11 @@ void CGreen::initGreenDataLod0(CModel *pGreen)
 		pGreen->m_pDataLod0->m_aIndexCount[i] = pGreen->m_aLods[0]->m_pModel->m_pIndexCount[i];
 		for (int k = 0; k < pGreen->m_aLods[0]->m_pModel->m_pIndexCount[i]; ++k)
 		{
-			pGreen->m_pDataLod0->m_aIndex[iCountIndex] = pInd[pGreen->m_aLods[0]->m_pModel->m_pStartIndex[i] + k] /*+ uiPrebias*/;
+			pGreen->m_pDataLod0->m_aIndex[iCountIndex] = pGreen->m_aLods[0]->m_pModel->m_pIndices[pGreen->m_aLods[0]->m_pModel->m_pStartIndex[i] + k] /*+ uiPrebias*/;
 			++iCountIndex;
 		}
 		uiPrebias += pGreen->m_aLods[0]->m_pModel->m_pIndexCount[i];
 	}
-	pGreen->m_aLods[0]->m_pModel->m_pIndexBuffer->Unlock();
 }
 
 void CGreen::setGreenNav(ID idGreen, const char *szPathName)

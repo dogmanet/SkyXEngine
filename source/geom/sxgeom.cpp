@@ -288,7 +288,7 @@ SX_LIB_API void SGeom_ModelGetGroupCenter(ID idModel, ID idGroup, float3_t *pCen
 	g_pModels->modelGetGroupCenter(idModel, idGroup, pCenter);
 }
 
-SX_LIB_API void SGeom_ModelGetGroupPlane(ID idModel, ID idGroup, D3DXPLANE *pPlane)
+SX_LIB_API void SGeom_ModelGetGroupPlane(ID idModel, ID idGroup, SMPLANE *pPlane)
 {
 	GEOM_PRECOND(_VOID);
 	g_pModels->modelGetGroupPlane(idModel, idGroup, pPlane);
