@@ -125,10 +125,12 @@ typedef struct _GXVERTEXELEMENT
 #define MAX_GXSAMPLERS 16
 #define MAXGXTEXTURES 16
 
+#define GX_TEXUSAGE_DEFAULT 0x00000000
 #define GX_TEXUSAGE_RENDERTARGET 0x00000001
 #define GX_TEXUSAGE_AUTOGENMIPMAPS 0x00000002
 #define GX_TEXUSAGE_AUTORESIZE 0x00000004
 #define GX_TEXUSAGE_ALLOWDISCARD 0x00000008 /* разрешено потерять данные, например при потере/восстановлении устройства в dx9 */
+
 
 enum GXPT
 {
@@ -725,7 +727,7 @@ public:
 	virtual void setSamplerState(IGXSamplerState *pState, UINT uSlot) = 0;
 	virtual IGXSamplerState *getSamplerState(UINT uSlot) = 0;
 
-
+	virtual GXTEXTURE_TYPE getTextureTypeFromFile(const char *szFile) = 0;
 	// http://www.gamedev.ru/terms/StencilBuffer
 	// virtual void setStencilTest(bool isEnable) = 0;
 

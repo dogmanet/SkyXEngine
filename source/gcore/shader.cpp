@@ -995,64 +995,57 @@ void CShaderManager::setValueRegisterF(SHADER_TYPE type_shader, const char *szNa
 	if (type_shader == SHADER_TYPE_VERTEX)
 	{
 		int num_shader = -1;
-		int num_var = -1;
-
+		UINT uLocation = ~0;
 		for (int i = 0; i<m_aVS.size(); i++)
 		{
 			if (strcmp(m_aVS[i]->m_szName, szNameShader) == 0)
 			{
+				uLocation = m_aVS[i]->m_pVertexShader->getConstantLocation(szNameVar);
 				num_shader = i;
-				i = m_aVS.size();
-				for (int k = 0; k<m_aVS[num_shader]->m_iCountVar; k++)
-				{
-					if (strcmp(m_aVS[num_shader]->m_aVarDesc[k].Name, szNameVar) == 0)
-					{
-						num_var = k;
-						k = m_aVS[num_shader]->m_iCountVar;
-					}
-				}
+				break;
 			}
 		}
 
-		if (num_shader != -1 && num_var != -1)
-			g_pDXDevice->SetVertexShaderConstantF(m_aVS[num_shader]->m_aVarDesc[num_var].RegisterIndex, (float*)pData, (iCountFloat4 == 0 ? m_aVS[num_shader]->m_aVarDesc[num_var].RegisterCount : iCountFloat4));
+		if(num_shader != -1 && uLocation != ~0)
+		{
+			assert(iCountFloat4);
+
+			m_aVS[num_shader]->m_pVertexShader->setConstantF(uLocation, (float*)pData, iCountFloat4);
+		}
 		else
 		{
 			if (num_shader == -1)
 				LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", szNameVar, type_shader, szNameShader);
-			else if (num_var == -1)
+			else if(uLocation == ~0)
 				LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", szNameVar, type_shader, szNameShader);
 		}
 	}
 	else if (type_shader == SHADER_TYPE_PIXEL)
 	{
 		int num_shader = -1;
-		int num_var = -1;
+		UINT uLocation = ~0;
 
-		for (int i = 0; i<m_aPS.size(); i++)
+		for(int i = 0; i < m_aPS.size(); i++)
 		{
-			if (strcmp(m_aPS[i]->m_szName, szNameShader) == 0)
+			if(strcmp(m_aPS[i]->m_szName, szNameShader) == 0)
 			{
 				num_shader = i;
-				i = m_aPS.size();
-				for (int k = 0; k<m_aPS[num_shader]->m_iCountVar; k++)
-				{
-					if (strcmp(m_aPS[num_shader]->m_aVarDesc[k].Name, szNameVar) == 0)
-					{
-						num_var = k;
-						k = m_aPS[num_shader]->m_iCountVar;
-					}
-				}
+				m_aPS[num_shader]->m_pPixelShader->getConstantLocation(szNameVar);
+				break;
 			}
 		}
 
-		if (num_shader != -1 && num_var != -1)
-			g_pDXDevice->setPixelShaderConstantF(m_aPS[num_shader]->m_aVarDesc[num_var].RegisterIndex, (float*)pData, (iCountFloat4 == 0 ? m_aPS[num_shader]->m_aVarDesc[num_var].RegisterCount : iCountFloat4));
+		if(num_shader != -1 && uLocation != ~0)
+		{
+			assert(iCountFloat4);
+
+			m_aPS[num_shader]->m_pPixelShader->setConstantF(uLocation, (float*)pData, iCountFloat4);
+		}
 		else
 		{
 			if (num_shader == -1)
 				LibReport(REPORT_MSG_LEVEL_WARNING, "set pixel shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", szNameVar, type_shader, szNameShader);
-			else if (num_var == -1)
+			else if(uLocation == ~0)
 				LibReport(REPORT_MSG_LEVEL_WARNING, "set pixel shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", szNameVar, type_shader, szNameShader);
 		}
 	}
@@ -1064,38 +1057,28 @@ void CShaderManager::setValueRegisterF(SHADER_TYPE type_shader, ID idShader, con
 	{
 		if (type_shader == SHADER_TYPE_VERTEX)
 		{
-			int num_var = -1;
-
-			for (int k = 0; k<m_aVS[idShader]->m_iCountVar; k++)
+			UINT uLocation = m_aVS[idShader]->m_pVertexShader->getConstantLocation(szNameVar);
+			
+			if(idShader != -1 && uLocation != ~0)
 			{
-				if (strcmp(m_aVS[idShader]->m_aVarDesc[k].Name, szNameVar) == 0)
-				{
-					num_var = k;
-					k = m_aVS[idShader]->m_iCountVar;
-				}
-			}
+				assert(iCountFloat4);
 
-			if (idShader != -1 && num_var != -1)
-				g_pDXDevice->SetVertexShaderConstantF(m_aVS[idShader]->m_aVarDesc[num_var].RegisterIndex, (float*)pData, (iCountFloat4 == 0 ? m_aVS[idShader]->m_aVarDesc[num_var].RegisterCount : iCountFloat4));
-			else if (num_var == -1)
+				m_aVS[idShader]->m_pVertexShader->setConstantF(uLocation, (float*)pData, iCountFloat4);
+			}
+			else if(uLocation == ~0)
 				LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", szNameVar, type_shader, idShader);
 		}
 		else if (type_shader == SHADER_TYPE_PIXEL)
 		{
-			int num_var = -1;
+			UINT uLocation = m_aPS[idShader]->m_pPixelShader->getConstantLocation(szNameVar);
 
-			for (int k = 0; k<m_aPS[idShader]->m_iCountVar; k++)
+			if(idShader != -1 && uLocation != ~0)
 			{
-				if (strcmp(m_aPS[idShader]->m_aVarDesc[k].Name, szNameVar) == 0)
-				{
-					num_var = k;
-					k = m_aPS[idShader]->m_iCountVar;
-				}
-			}
+				assert(iCountFloat4);
 
-			if (idShader != -1 && num_var != -1)
-				g_pDXDevice->SetPixelShaderConstantF(m_aPS[idShader]->m_aVarDesc[num_var].RegisterIndex, (float*)pData, (iCountFloat4 == 0 ? m_aPS[idShader]->m_aVarDesc[num_var].RegisterCount : iCountFloat4));
-			else if (num_var == -1)
+				m_aPS[idShader]->m_pPixelShader->setConstantF(uLocation, (float*)pData, iCountFloat4);
+			}
+			else if(uLocation == ~0)
 				LibReport(REPORT_MSG_LEVEL_WARNING, "set pixel shader constant [%s] is failed, constant not found, type [%d], name [%s]\n", szNameVar, type_shader, m_aPS[idShader]->m_szPath);
 		}
 	}
@@ -1105,73 +1088,67 @@ void CShaderManager::setValueRegisterF(SHADER_TYPE type_shader, ID idShader, con
 
 void CShaderManager::setValueRegisterI(SHADER_TYPE type_shader, const char *szNameShader, const char *szNameVar, void *pData, int iCountInt4)
 {
-	if (!isValidateTypeName(type_shader, szNameShader))
+	if(!isValidateTypeName(type_shader, szNameShader))
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - name of shader [%s] is invalid", GEN_MSG_LOCATION, szNameShader);
 		return;
 	}
 
-	if (type_shader == SHADER_TYPE_VERTEX)
+	if(type_shader == SHADER_TYPE_VERTEX)
 	{
 		int num_shader = -1;
-		int num_var = -1;
+		UINT uLocation = ~0;
 
-		for (int i = 0; i<m_aVS.size(); i++)
+		for(int i = 0; i < m_aVS.size(); i++)
 		{
-			if (strcmp(m_aVS[i]->m_szName, szNameShader) == 0)
+			if(strcmp(m_aVS[i]->m_szName, szNameShader) == 0)
 			{
+				uLocation = m_aVS[i]->m_pVertexShader->getConstantLocation(szNameVar);
 				num_shader = i;
-				i = m_aVS.size();
-				for (int k = 0; k<m_aVS[num_shader]->m_iCountVar; k++)
-				{
-					if (strcmp(m_aVS[num_shader]->m_aVarDesc[k].Name, szNameVar) == 0)
-					{
-						num_var = k;
-						k = m_aVS[num_shader]->m_iCountVar;
-					}
-				}
+				break;
 			}
 		}
 
-		if (num_shader != -1 && num_var != -1)
-			g_pDXDevice->SetVertexShaderConstantI(m_aVS[num_shader]->m_aVarDesc[num_var].RegisterIndex, (int*)pData, (iCountInt4 == 0 ? m_aVS[num_shader]->m_aVarDesc[num_var].RegisterCount : iCountInt4));
+		if(num_shader != -1 && uLocation != ~0)
+		{
+			assert(iCountInt4);
+
+			m_aVS[num_shader]->m_pVertexShader->setConstantI(uLocation, (int*)pData, iCountInt4);
+		}
 		else
 		{
-			if (num_shader == -1)
+			if(num_shader == -1)
 				LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", szNameVar, type_shader, szNameShader);
-			else if (num_var == -1)
+			else if(uLocation == ~0)
 				LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", szNameVar, type_shader, szNameShader);
 		}
 	}
-	else if (type_shader == SHADER_TYPE_PIXEL)
+	else if(type_shader == SHADER_TYPE_PIXEL)
 	{
 		int num_shader = -1;
-		int num_var = -1;
+		UINT uLocation = ~0;
 
-		for (int i = 0; i<m_aPS.size(); i++)
+		for(int i = 0; i < m_aPS.size(); i++)
 		{
-			if (strcmp(m_aPS[i]->m_szName, szNameShader) == 0)
+			if(strcmp(m_aPS[i]->m_szName, szNameShader) == 0)
 			{
 				num_shader = i;
-				i = m_aPS.size();
-				for (int k = 0; k<m_aPS[num_shader]->m_iCountVar; k++)
-				{
-					if (strcmp(m_aPS[num_shader]->m_aVarDesc[k].Name, szNameVar) == 0)
-					{
-						num_var = k;
-						k = m_aPS[num_shader]->m_iCountVar;
-					}
-				}
+				m_aPS[num_shader]->m_pPixelShader->getConstantLocation(szNameVar);
+				break;
 			}
 		}
 
-		if (num_shader != -1 && num_var != -1)
-			g_pDXDevice->SetPixelShaderConstantI(m_aPS[num_shader]->m_aVarDesc[num_var].RegisterIndex, (int*)pData, (iCountInt4 == 0 ? m_aPS[num_shader]->m_aVarDesc[num_var].RegisterCount : iCountInt4));
+		if(num_shader != -1 && uLocation != ~0)
+		{
+			assert(iCountInt4);
+
+			m_aPS[num_shader]->m_pPixelShader->setConstantI(uLocation, (int*)pData, iCountInt4);
+		}
 		else
 		{
-			if (num_shader == -1)
+			if(num_shader == -1)
 				LibReport(REPORT_MSG_LEVEL_WARNING, "set pixel shader constant [%s] is failed, shader not found, type [%d], id [%d]\n", szNameVar, type_shader, szNameShader);
-			else if (num_var == -1)
+			else if(uLocation == ~0)
 				LibReport(REPORT_MSG_LEVEL_WARNING, "set pixel shader constant [%s] is failed, constant not found, shader info: type [%d], id [%d], name [%s]\n", szNameVar, type_shader, szNameShader);
 		}
 	}
@@ -1183,38 +1160,28 @@ void CShaderManager::setValueRegisterI(SHADER_TYPE type_shader, ID idShader, con
 	{
 		if (type_shader == SHADER_TYPE_VERTEX)
 		{
-			int num_var = -1;
+			UINT uLocation = m_aVS[idShader]->m_pVertexShader->getConstantLocation(szNameVar);
 
-			for (int k = 0; k<m_aVS[idShader]->m_iCountVar; k++)
+			if(idShader != -1 && uLocation != ~0)
 			{
-				if (strcmp(m_aVS[idShader]->m_aVarDesc[k].Name, szNameVar) == 0)
-				{
-					num_var = k;
-					k = m_aVS[idShader]->m_iCountVar;
-				}
-			}
+				assert(iCountInt4);
 
-			if (idShader != -1 && num_var != -1)
-				g_pDXDevice->SetVertexShaderConstantI(m_aVS[idShader]->m_aVarDesc[num_var].RegisterIndex, (int*)pData, (iCountInt4 == 0 ? m_aVS[idShader]->m_aVarDesc[num_var].RegisterCount : iCountInt4));
-			else if (num_var == -1)
+				m_aVS[idShader]->m_pVertexShader->setConstantI(uLocation, (int*)pData, iCountInt4);
+			}
+			else if(uLocation == ~0)
 				LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", szNameVar, type_shader, idShader);
 		}
 		else if (type_shader == SHADER_TYPE_PIXEL)
 		{
-			int num_var = -1;
+			UINT uLocation = m_aPS[idShader]->m_pPixelShader->getConstantLocation(szNameVar);
 
-			for (int k = 0; k<m_aPS[idShader]->m_iCountVar; k++)
+			if(idShader != -1 && uLocation != ~0)
 			{
-				if (strcmp(m_aPS[idShader]->m_aVarDesc[k].Name, szNameVar) == 0)
-				{
-					num_var = k;
-					k = m_aPS[idShader]->m_iCountVar;
-				}
-			}
+				assert(iCountInt4);
 
-			if (idShader != -1 && num_var != -1)
-				g_pDXDevice->SetPixelShaderConstantI(m_aPS[idShader]->m_aVarDesc[num_var].RegisterIndex, (int*)pData, (iCountInt4 == 0 ? m_aPS[idShader]->m_aVarDesc[num_var].RegisterCount : iCountInt4));
-			else if (num_var == -1)
+				m_aPS[idShader]->m_pPixelShader->setConstantI(uLocation, (int*)pData, iCountInt4);
+			}
+			else if(uLocation == ~0)
 				LibReport(REPORT_MSG_LEVEL_WARNING, "set pixel shader constant [%s] is failed, constant not found, type [%d], name [%s]\n", szNameVar, type_shader, m_aPS[idShader]->m_szPath);
 		}
 	}

@@ -51,7 +51,7 @@ struct CShader
 	//char m_szFrom[SXGC_SHADER_MAX_SIZE_FULLPATH];
 
 	//! количество переменных
-	int m_iCountVar;
+	//int m_iCountVar;
 
 	//! массив макросов (данные последнего макроса должны быть NULL)
 	GXMACRO m_aMacros[SXGC_SHADER_COUNT_MACRO];

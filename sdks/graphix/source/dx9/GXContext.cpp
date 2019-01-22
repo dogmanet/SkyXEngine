@@ -1954,3 +1954,22 @@ IDirect3DDevice9 *CGXContext::getDXDevice()
 {
 	return(m_pDevice);
 }
+
+GXTEXTURE_TYPE CGXContext::getTextureTypeFromFile(const char *szFile)
+{
+	D3DXIMAGE_INFO oTexInfo;
+	memset(&oTexInfo, 0, sizeof(D3DXIMAGE_INFO));
+
+	if(!FAILED(DX_CALL(D3DXGetImageInfoFromFileA(szFile, &oTexInfo))))
+	{
+		switch(oTexInfo.ResourceType)
+		{
+		case D3DRTYPE_TEXTURE:
+			return(GXTEXTURE_TYPE_2D);
+		case D3DRTYPE_CUBETEXTURE:
+			return(GXTEXTURE_TYPE_CUBE);
+		}
+	}
+
+	return(GXTEXTURE_TYPE_UNKNOWN);
+}

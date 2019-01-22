@@ -146,6 +146,8 @@ public:
 
 	UINT getTextureDataSize(UINT uPitch, UINT uHeight, GXFORMAT format);
 	UINT getBitsPerPixel(GXFORMAT format);
+
+	GXTEXTURE_TYPE getTextureTypeFromFile(const char *szFile);
 protected:
 	
 	IDirect3D9 *m_pD3D = NULL;
