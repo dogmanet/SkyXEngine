@@ -72,14 +72,14 @@ void CGXVertexShader::setConstantF(UINT uStartRegister, const float *pConstantDa
 {
 	assert(uStartRegister + uVector4fCount <= m_uConstBuffRegCountF);
 
-	memcpy(m_pConstBufferF, pConstantData, sizeof(float) * 4 * uVector4fCount);
+	memcpy(m_pConstBufferF + uStartRegister * 4, pConstantData, sizeof(float) * 4 * uVector4fCount);
 }
 
 void CGXVertexShader::setConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount)
 {
 	assert(uStartRegister + uVector4iCount <= m_uConstBuffRegCountI);
 
-	memcpy(m_pConstBufferI, pConstantData, sizeof(int) * 4 * uVector4iCount);
+	memcpy(m_pConstBufferI + uStartRegister * 4, pConstantData, sizeof(int) * 4 * uVector4iCount);
 }
 
 UINT CGXVertexShader::getConstantLocation(const char *szConstName)
@@ -208,14 +208,14 @@ void CGXPixelShader::setConstantF(UINT uStartRegister, const float *pConstantDat
 {
 	assert(uStartRegister + uVector4fCount <= m_uConstBuffRegCountF);
 
-	memcpy(m_pConstBufferF, pConstantData, sizeof(float) * 4 * uVector4fCount);
+	memcpy(m_pConstBufferF + uStartRegister * 4, pConstantData, sizeof(float) * 4 * uVector4fCount);
 }
 
 void CGXPixelShader::setConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount)
 {
 	assert(uStartRegister + uVector4iCount <= m_uConstBuffRegCountI);
 
-	memcpy(m_pConstBufferI, pConstantData, sizeof(int) * 4 * uVector4iCount);
+	memcpy(m_pConstBufferI + uStartRegister * 4, pConstantData, sizeof(int) * 4 * uVector4iCount);
 }
 
 UINT CGXPixelShader::getConstantLocation(const char *szConstName)
