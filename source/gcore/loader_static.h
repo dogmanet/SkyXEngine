@@ -14,7 +14,7 @@ See the license in LICENSE
 #include <common/Array.h>
 #include "sxgcore.h"
 
-extern IGXContext *g_pDXDevice;
+extern IGXContext *g_pDevice;
 extern IGXVertexDeclaration *g_pStaticVertexDecl;
 
 struct DataStaticModel : public ISXDataStaticModel
@@ -67,7 +67,7 @@ struct DataStaticModel : public ISXDataStaticModel
 		pModelCopy->m_pVertexCount = new UINT[m_uiSubsetCount];
 		memcpy(pModelCopy->m_pVertexCount, m_pVertexCount, sizeof(UINT)*m_uiSubsetCount);
 
-		//g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, NULL, NULL, D3DPOOL_MANAGED, &pModelCopy->m_pVertexBuffer, 0);
+		//g_pDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, NULL, NULL, D3DPOOL_MANAGED, &pModelCopy->m_pVertexBuffer, 0);
 		pModelCopy->m_pVertices = new vertex_static_ex[m_uiAllVertexCount];
 		vertex_static_ex *pDestData = pModelCopy->m_pVertices, *pSrcData = m_pVertices;
 		//pModelCopy->m_pVertexBuffer->Lock(0, 0, (void**)&pDestData, 0);
@@ -80,7 +80,7 @@ struct DataStaticModel : public ISXDataStaticModel
 
 		pModelCopy->m_pIndices = new UINT[m_uiAllIndexCount];
 		UINT *pSrcIdx = m_pIndices, *pDstIdx = pModelCopy->m_pIndices;
-		//g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &pModelCopy->m_pIndexBuffer, 0);
+		//g_pDevice->CreateIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &pModelCopy->m_pIndexBuffer, 0);
 		//pModelCopy->m_pIndexBuffer->Lock(0, 0, (void**)&pDestData, 0);
 		//m_pIndexBuffer->Lock(0, 0, (void**)&pSrcData, 0);
 
@@ -105,8 +105,8 @@ struct DataStaticModel : public ISXDataStaticModel
 
 		if(!m_pVertexBuffer)
 		{
-			m_pVertexBuffer = g_pDXDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY | GX_BUFFER_ALLOWDISCARD, NULL);
-			m_pRenderBuffer = g_pDXDevice->createRenderBuffer(1, &m_pVertexBuffer, SGCore_StaticModelGetDecl());
+			m_pVertexBuffer = g_pDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY | GX_BUFFER_ALLOWDISCARD, NULL);
+			m_pRenderBuffer = g_pDevice->createRenderBuffer(1, &m_pVertexBuffer, SGCore_StaticModelGetDecl());
 		}
 
 		vertex_static_ex *pVertex;
@@ -118,7 +118,7 @@ struct DataStaticModel : public ISXDataStaticModel
 
 		if(!m_pIndexBuffer)
 		{
-			m_pIndexBuffer = g_pDXDevice->createIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY | GX_BUFFER_ALLOWDISCARD, GXIT_UINT, NULL);
+			m_pIndexBuffer = g_pDevice->createIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY | GX_BUFFER_ALLOWDISCARD, GXIT_UINT, NULL);
 		}
 
 		UINT *pIndex;

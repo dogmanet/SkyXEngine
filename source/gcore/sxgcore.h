@@ -427,14 +427,11 @@ SX_LIB_API void SGCore_ShaderUpdate(SHADER_TYPE type_shader, ID idShader);
 SX_LIB_API void SGCore_ShaderReloadAll();	
 
 
-//! получить идентификатор шейдера по имени
-SX_LIB_API ID SGCore_ShaderGetID(SHADER_TYPE type_shader, const char *szName);
-
-//! бинд шейдера по имени
-SX_LIB_API void SGCore_ShaderBindN(SHADER_TYPE type_shader, const char *szName);
+//! создание набора шейдеров (вершиный и пиксельный)
+SX_LIB_API ID SGCore_ShaderCreateKit(ID idVertexShader, ID idPixelShader);
 
 //! бинд шейдера по id
-SX_LIB_API void SGCore_ShaderBind(SHADER_TYPE type_shader, ID idShader);
+SX_LIB_API void SGCore_ShaderBind(ID idShaderKit);
 
 
 //! обнуление биндов шейдеров
@@ -891,9 +888,10 @@ struct IMesh: public IBaseObject
 {
 	virtual ~IMesh() {};
 public:
-	void draw();
-	IGXVertexBuffer *getVertexBuffer();
-	IGXIndexBuffer *getIndexBuffer();
+	virtual void draw() = 0;
+	virtual IGXVertexBuffer *getVertexBuffer() = 0;
+	virtual IGXIndexBuffer *getIndexBuffer() = 0;
+	virtual void Release() = 0;
 };
 
 //! создать IMesh

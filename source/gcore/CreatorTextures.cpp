@@ -25,7 +25,7 @@ CreatorTextures::~CreatorTextures()
 
 ID CreatorTextures::Add(UINT width, UINT height, UINT levels, DWORD usage, GXFORMAT format, const char* name)
 {
-	IGXTexture2D* objtex = g_pDXDevice->createTexture2D(width,height, levels, usage, format);
+	IGXTexture2D* objtex = g_pDevice->createTexture2D(width,height, levels, usage, format);
 
 	ID id = -1;
 	bool isadd = true;
@@ -119,9 +119,9 @@ void CreatorTextures::OnResetDevice()
 		if(Arr[i]/*->Name[0] != 0* /)
 		{
 			if(Arr[i]->CoefFullScreen > 0.001f)
-				g_pDXDevice->CreateTexture(g_oD3DAPP.BackBufferWidth * Arr[i]->CoefFullScreen, g_oD3DAPP.BackBufferHeight * Arr[i]->CoefFullScreen, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
+				g_pDevice->CreateTexture(g_oD3DAPP.BackBufferWidth * Arr[i]->CoefFullScreen, g_oD3DAPP.BackBufferHeight * Arr[i]->CoefFullScreen, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
 			else
-				g_pDXDevice->CreateTexture(Arr[i]->Desc.Width, Arr[i]->Desc.Height, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
+				g_pDevice->CreateTexture(Arr[i]->Desc.Width, Arr[i]->Desc.Height, Arr[i]->Level, Arr[i]->Desc.Usage, Arr[i]->Desc.Format, Arr[i]->Desc.Pool, &(Arr[i]->Texture), NULL);
 		}
 	}
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "reset render targets success\n");*/

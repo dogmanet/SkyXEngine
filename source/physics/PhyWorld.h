@@ -21,7 +21,7 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
-#include <common/SXMath.h>
+#include <common/Math.h>
 #include <mtrl/sxmtrl.h>
 
 #define PHY_MAT_FILE_MAGICK 3630267958475905107

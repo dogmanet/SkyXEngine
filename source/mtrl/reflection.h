@@ -10,7 +10,7 @@ See the license in LICENSE
 #include <gdefines.h>
 
 //#define SM_D3D_CONVERSIONS
-#include <common/SXMath.h>
+#include <common/Math.h>
 #include <common/Array.h>
 #include <graphix/graphix.h>
 
@@ -55,7 +55,7 @@ public:
 	//**********************************************************************
 
 	//! подготовка в рендеру плоских отражений, pPlane - плоскость отражения (обязательно)
-	void preRenderRefPlane(const D3DXPLANE *pPlane);
+	void preRenderRefPlane(const SMPLANE *pPlane);
 
 	//! окончание рендера плоских отражений
 	void postRenderRefPlane();

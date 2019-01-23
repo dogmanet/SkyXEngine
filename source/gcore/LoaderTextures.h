@@ -15,7 +15,7 @@ See the license in LICENSE
 #include "sxgcore.h"
 
 void LibReport(int iLevel, const char *szFormat, ...);
-extern IGXContext *g_pDXDevice;
+extern IGXContext *g_pDevice;
 
 //! загрузчик текстур
 class СLoaderTextures

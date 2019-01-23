@@ -8,7 +8,7 @@ See the license in LICENSE
 #define __DECAL_MANAGER_H
 
 #include <gdefines.h>
-#include <common/SXMath.h>
+#include <common/Math.h>
 #include <common/Array.h>
 #include <common/AssotiativeArray.h>
 #include <graphix/graphix.h>

@@ -31,7 +31,7 @@ report_func g_fnReportf = DefReport;
 #define SXGCORE_VERSION 1
 
 
-IGXContext *g_pDXDevice = 0;
+IGXContext *g_pDevice = 0;
 HMODULE m_hLibGXAPI = NULL;
 Array<DEVMODE> g_aModes;
 HWND g_hWnd = NULL;
@@ -54,14 +54,14 @@ IGXSamplerState *g_pSamplerFilterLinear = NULL;
 void StdDrawIndexedPrimitive(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)
 {
 	Core_RIntSet(G_RI_INT_COUNT_DIP, Core_RIntGet(G_RI_INT_COUNT_DIP) + 1);
-	g_pDXDevice->setPrimitiveTopology((GXPT)type_primitive);
-	g_pDXDevice->drawIndexed(num_vertices, prim_count, start_index, base_vertexIndex);
+	g_pDevice->setPrimitiveTopology((GXPT)type_primitive);
+	g_pDevice->drawIndexed(num_vertices, prim_count, start_index, base_vertexIndex);
 }
 
 void StdMtlSet(ID id, const float4x4 *pWorld, const float4 *pColor)
 {
 
-	g_pDXDevice->setTexture(SGCore_LoadTexGetTex(id));
+	g_pDevice->setTexture(SGCore_LoadTexGetTex(id));
 }
 
 ID StdMtlLoad(const char *szName, int iMtlType)
@@ -93,7 +93,7 @@ g_func_mtl_group_render_is_singly g_fnMtlGroupRenderIsSingly = StdMtlGroupIsSyng
 
 //##########################################################################
 
-#define SG_PRECOND(retval) if(!g_pDXDevice){ LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxgcore is not init", GEN_MSG_LOCATION); return retval;}
+#define SG_PRECOND(retval) if(!g_pDevice){ LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxgcore is not init", GEN_MSG_LOCATION); return retval;}
 #define SG_PRECOND_SKY_BOX(retval) SG_PRECOND(retval _VOID); if(!g_pSkyBox){ LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sky_box is not init", GEN_MSG_LOCATION); return retval;}
 #define SG_PRECOND_SKY_CLOUDS(retval) SG_PRECOND(retval _VOID); if(!g_pSkyClouds){ LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sky_clouds is not init", GEN_MSG_LOCATION); return retval;}
 #define SG_PRECOND_SKY_OC(retval) SG_PRECOND(retval _VOID); if(!g_pOC){ LibReport(REPORT_MSG_LEVEL_ERROR, "%s - occlusion culling is not init", GEN_MSG_LOCATION); return retval;}
@@ -123,7 +123,7 @@ void GCoreInit(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 		GXDECL_END()
 	};
 
-	g_pStaticVertexDecl = g_pDXDevice->createVertexDeclaration(oLayoutStatic);
+	g_pStaticVertexDecl = g_pDevice->createVertexDeclaration(oLayoutStatic);
 
 	InitArrModes();
 	InitRT4Gbuffer();
@@ -249,13 +249,13 @@ SX_LIB_API void SGCore_AKill()
 
 	//mem_release(g_pFPStext);
 
-	mem_release(g_pDXDevice);
+	mem_release(g_pDevice);
 }
 
 SX_LIB_API IGXContext* SGCore_GetDXDevice()
 {
 	SG_PRECOND(0);
-	return g_pDXDevice;
+	return g_pDevice;
 }
 
 SX_LIB_API void SGCore_DbgMsg(const char *szFormat, ...)
@@ -293,7 +293,7 @@ SX_LIB_API bool SGCore_OnDeviceReset(int iWidth, int iHeight, bool isWindowed)
 {
 	SG_PRECOND(false);
 
-	g_pDXDevice->resize(iWidth, iHeight, isWindowed);
+	g_pDevice->resize(iWidth, iHeight, isWindowed);
 
 	return(true);
 }
@@ -312,9 +312,9 @@ SX_LIB_API void SGCore_OnResetDevice()
 SX_LIB_API void SGCore_ScreenQuadDraw()
 {
 	SG_PRECOND(_VOID);
-	g_pDXDevice->setRenderBuffer(g_pScreenTextureRB);
-	g_pDXDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
-	g_pDXDevice->drawPrimitive(0, 2);
+	g_pDevice->setRenderBuffer(g_pScreenTextureRB);
+	g_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	g_pDevice->drawPrimitive(0, 2);
 }
 
 //##########################################################################
@@ -465,25 +465,18 @@ SX_LIB_API void SGCore_ShaderReloadAll()
 	g_pManagerShaders->reloadAll();
 }
 
-SX_LIB_API ID SGCore_ShaderGetID(SHADER_TYPE type_shader, const char *szNameShader)
+SX_LIB_API ID SGCore_ShaderCreateKit(ID idVertexShader, ID idPixelShader)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerShaders->getID(type_shader, szNameShader);
+	return g_pManagerShaders->createKit(idVertexShader, idPixelShader);
 }
 
-SX_LIB_API void SGCore_ShaderBindN(SHADER_TYPE type_shader, const char *szNameShader)
+SX_LIB_API void SGCore_ShaderBind(ID idShaderKit)
 {
 	SG_PRECOND(_VOID);
 
-	return g_pManagerShaders->bind(type_shader, szNameShader);
-}
-
-SX_LIB_API void SGCore_ShaderBind(SHADER_TYPE type_shader, ID idShader)
-{
-	SG_PRECOND(_VOID);
-
-	return g_pManagerShaders->bind(type_shader, idShader);
+	g_pManagerShaders->bind(idShaderKit);
 }
 
 
@@ -708,7 +701,7 @@ SX_LIB_API void SGCore_FCreateCone(float fTopRadius, float fBottomRadius, float 
 {
 	SG_PRECOND(_VOID);
 
-	CreateCone(fTopRadius, fBottomRadius, fHeight, ppMesh, g_pDXDevice, iSideCount);
+	CreateCone(fTopRadius, fBottomRadius, fHeight, ppMesh, g_pDevice, iSideCount);
 }
 
 SX_LIB_API void SGCore_FCompBoundBox(IGXVertexBuffer *pVertexBuffer, ISXBound **ppBound, DWORD dwCountVertices, DWORD dwBytesPerVertex)
@@ -729,7 +722,7 @@ SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3 *pMin, const float3 *
 {
 	SG_PRECOND(_VOID);
 
-	CreateBoundingBoxMesh(pMin, pMax, ppBBmesh, g_pDXDevice);
+	CreateBoundingBoxMesh(pMin, pMax, ppBBmesh, g_pDevice);
 }
 
 SX_LIB_API void SGCore_OptimizeIndecesInSubsetUint16(uint16_t *pIndecesBuffer, uint16_t numFaces, uint16_t numVerts)
@@ -1052,4 +1045,65 @@ SX_LIB_API void SGCore_SkyCloudsRender(DWORD timeDetlta, const float3* pos, bool
 {
 	SG_PRECOND_SKY_CLOUDS(_VOID);
 	g_pSkyClouds->render(timeDetlta, pos, is_shadow);
+}
+
+//##########################################################################
+
+struct CMesh: public IMesh
+{
+public:
+	CMesh(UINT uVertexCount, UINT uIndexCount):
+		m_uVertexCount(uVertexCount),
+		m_uIndexCount(uIndexCount)
+	{
+		GXVERTEXELEMENT oLayout[] =
+		{
+			{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+			GXDECL_END()
+		};
+
+		IGXVertexDeclaration *pVD = g_pDevice->createVertexDeclaration(oLayout);
+
+		m_pIB = g_pDevice->createIndexBuffer(sizeof(USHORT) * uIndexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_USHORT);
+		m_pVB = g_pDevice->createVertexBuffer(sizeof(float) * 3 * uVertexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
+		m_pRB = g_pDevice->createRenderBuffer(1, &m_pVB, pVD);
+
+		mem_release(pVD);
+	}
+	~CMesh()
+	{
+		mem_release(m_pIB);
+		mem_release(m_pVB);
+		mem_release(m_pRB);
+	}
+	void draw()
+	{
+		g_pDevice->setRenderBuffer(m_pRB);
+		g_pDevice->setIndexBuffer(m_pIB);
+		g_pDevice->drawIndexed(m_uVertexCount, m_uIndexCount, 0, 0);
+	}
+	IGXVertexBuffer *getVertexBuffer()
+	{
+		return(m_pVB);
+	}
+	IGXIndexBuffer *getIndexBuffer()
+	{
+		return(m_pIB);
+	}
+	void Release()
+	{
+		delete this;
+	}
+
+protected:
+	IGXVertexBuffer *m_pVB;
+	IGXRenderBuffer *m_pRB;
+	IGXIndexBuffer *m_pIB;
+	UINT m_uVertexCount;
+	UINT m_uIndexCount;
+};
+
+SX_LIB_API IMesh* SGCore_CrMesh(UINT uVertexCount, UINT uIndexCount)
+{
+	return(new CMesh(uVertexCount, uIndexCount));
 }

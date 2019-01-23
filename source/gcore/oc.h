@@ -9,12 +9,12 @@ See the license in LICENSE
 
 #include <gdefines.h>
 #include <graphix/graphix.h>
-#include <common/SXMath.h>
+#include <common/Math.h>
 #include <mutex>
 
 #include <gcore/sxgcore.h>
 
-extern IGXContext *g_pDXDevice;
+extern IGXContext *g_pDevice;
 
 //! коэффициент размера буфера глубины occlusion culling
 #define OC_SIZE_COEF 0.25f

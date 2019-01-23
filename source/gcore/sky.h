@@ -13,7 +13,7 @@ See the license in LICENSE
 #include <common/String.h>
 #include "sxgcore.h"
 
-extern IGXContext *g_pDXDevice;
+extern IGXContext *g_pDevice;
 
 //##########################################################################
 

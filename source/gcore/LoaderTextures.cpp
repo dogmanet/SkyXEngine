@@ -287,7 +287,7 @@ ID ÑLoaderTextures::update(const char* name, LOAD_TEXTURE_TYPE type)
 	char tmpPath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
 	sprintf(tmpPath, "%s%s%s%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), m_aPathes[tmpkey]->m_sPath.c_str(), "\\", m_aPathes[tmpkey]->m_sPath.c_str(), "_", m_aPathes[tmpkey]->m_aTextures[tmpKeyName]->m_sName.c_str());
 
-	GXTEXTURE_TYPE texType = g_pDXDevice->getTextureTypeFromFile(tmpPath);
+	GXTEXTURE_TYPE texType = g_pDevice->getTextureTypeFromFile(tmpPath);
 
 	if(texType == GXTEXTURE_TYPE_2D)
 	{
@@ -330,7 +330,7 @@ void ÑLoaderTextures::loadTextures()
 		CPath* tmpdir = m_aPathes[tmpiddir];
 		sprintf(tmpPath, "%s%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES), m_aPathes[tmpiddir]->m_sPath.c_str(), "\\", m_aTextures[m_aQueueToLoadIDs[i]]->m_sName.c_str());
 		
-		GXTEXTURE_TYPE texType = g_pDXDevice->getTextureTypeFromFile(tmpPath);
+		GXTEXTURE_TYPE texType = g_pDevice->getTextureTypeFromFile(tmpPath);
 
 		if(texType == GXTEXTURE_TYPE_2D)
 		{
@@ -411,7 +411,7 @@ bool ÑLoaderTextures::addConstAllInDir(const char *szDir)
 IGXTexture2D* ÑLoaderTextures::loadTexture2d(const char *szPath)
 {
 	//@TODO: use SXGC_LOADTEX_COUNT_MIPMAP
-	IGXTexture2D *pTex = g_pDXDevice->createTexture2DFromFile(szPath, GX_TEXUSAGE_DEFAULT);
+	IGXTexture2D *pTex = g_pDevice->createTexture2DFromFile(szPath, GX_TEXUSAGE_DEFAULT);
 
 	return pTex;
 }
@@ -419,7 +419,7 @@ IGXTexture2D* ÑLoaderTextures::loadTexture2d(const char *szPath)
 IGXTextureCube* ÑLoaderTextures::loadTextureCube(const char *szPath)
 {
 	//@TODO: use SXGC_LOADTEX_COUNT_MIPMAP
-	IGXTextureCube *pTex = g_pDXDevice->createTextureCubeFromFile(szPath, GX_TEXUSAGE_DEFAULT);
+	IGXTextureCube *pTex = g_pDevice->createTextureCubeFromFile(szPath, GX_TEXUSAGE_DEFAULT);
 
 	return pTex;
 }

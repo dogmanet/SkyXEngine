@@ -153,7 +153,7 @@ public:
 	void mtlRefSetIDArr(ID id, ID idOwner, int iCube, ID idArr);
 	ID mtlRefGetIDArr(ID id, ID idOwner, int iCube);
 
-	void mtlRefPreRenderPlane(ID id, D3DXPLANE *pPlane);
+	void mtlRefPreRenderPlane(ID id, SMPLANE *pPlane);
 	const IFrustum* mtlRefGetfrustum(ID id, int iCube);
 	void mtlRefPostRenderPlane(ID id);
 	IGXTexture2D* mtlRefPlaneGetTex(ID id);

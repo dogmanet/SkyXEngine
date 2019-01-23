@@ -18,7 +18,7 @@ See the license in LICENSE
 #define __SXDECALS_H
 
 #include <gdefines.h>
-#include <common/SXMath.h>
+#include <common/Math.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxmtrl_d.lib")

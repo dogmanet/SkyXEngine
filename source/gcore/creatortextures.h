@@ -12,7 +12,7 @@ See the license in LICENSE
 #include <graphix/graphix.h>
 #include <common/array.h>
 
-extern IGXContext *g_pDXDevice;
+extern IGXContext *g_pDevice;
 
 //структура описывающа€ движковые текстуры
 struct CreatedTexture

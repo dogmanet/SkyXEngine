@@ -28,7 +28,7 @@ See the license in LICENSE
 #include <tlhelp32.h>
 
 //#define SM_D3D_CONVERSIONS
-#include <common/sxmath.h>
+#include <common/Math.h>
 
 //! тип функции для обработки в менеджере задач
 typedef void(*THREAD_UPDATE_FUNCTION)();

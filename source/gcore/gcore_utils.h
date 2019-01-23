@@ -10,14 +10,14 @@ See the license in LICENSE
 #include <gdefines.h>
 #include <graphix/graphix.h>
 #include <common/array.h>
-#include <common/SXMath.h>
+#include <common/Math.h>
 
 #include <gcore/sxgcore.h>
 #include <gcore/gcore_data.h>
 
 //##########################################################################
 
-extern IGXContext *g_pDXDevice;
+extern IGXContext *g_pDevice;
 extern HMODULE m_hLibGXAPI;
 extern Array<DEVMODE> g_aModes;
 extern IGXRenderBuffer *g_pScreenTextureRB;

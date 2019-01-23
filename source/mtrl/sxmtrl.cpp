@@ -289,7 +289,7 @@ SX_LIB_API void SMtrl_RefSetMinMax(ID id, const float3_t *pMin, const float3_t *
 	ArrMaterials->mtlRefSetMinMax(id, pMin, pMax);
 }
 
-SX_LIB_API void SMtrl_RefPreRenderPlane(ID id, D3DXPLANE *pPlane)
+SX_LIB_API void SMtrl_RefPreRenderPlane(ID id, SMPLANE *pPlane)
 {
 	ML_PRECOND(_VOID);
 	ArrMaterials->mtlRefPreRenderPlane(id, pPlane);
@@ -313,7 +313,7 @@ SX_LIB_API void SMtrl_RefPostRenderPlane(ID id)
 	ArrMaterials->mtlRefPostRenderPlane(id);
 }
 
-SX_LIB_API IDirect3DTexture9* SMtrl_RefGetTexPlane(ID id)
+SX_LIB_API IGXTexture2D* SMtrl_RefGetTexPlane(ID id)
 {
 	ML_PRECOND(0);
 	return ArrMaterials->mtlRefPlaneGetTex(id);
@@ -357,7 +357,7 @@ SX_LIB_API void SMtrl_RefNullingCountUpdate(ID id)
 	ArrMaterials->mtlRefNullingCountUpdate(id);
 }
 
-SX_LIB_API IDirect3DCubeTexture9* SMtrl_RefCubeGetTex(ID id)
+SX_LIB_API IGXTextureCube* SMtrl_RefCubeGetTex(ID id)
 {
 	ML_PRECOND(0);
 	return ArrMaterials->refCubeGetTex(id);

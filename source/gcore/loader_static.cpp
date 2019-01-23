@@ -400,7 +400,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 
 	(*data)->m_uiAllVertexCount = iStartVertex;
 	(*data)->m_pVertices = pVertices;
-	//g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &(*data)->m_pVertexBuffer, 0);
+	//g_pDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* iStartVertex, NULL, NULL, D3DPOOL_MANAGED, &(*data)->m_pVertexBuffer, 0);
 	////(*data)->ArrVertBuf = new vertex_static_ex[iStartVertex];
 	//vertex_static_ex * pData;
 	//if(!FAILED((*data)->m_pVertexBuffer->Lock(0, sizeof(vertex_static_ex)* iStartVertex, (void**)&pData, 0)))
@@ -413,7 +413,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 
 	(*data)->m_uiAllIndexCount = iStartIndex;
 	(*data)->m_pIndices = pIndices;
-	//g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(*data)->m_pIndexBuffer, 0);
+	//g_pDevice->CreateIndexBuffer(sizeof(UINT)* iStartIndex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &(*data)->m_pIndexBuffer, 0);
 	////(*data)->ArrIndBuf = new UINT[iStartIndex];
 	//if(!FAILED((*data)->m_pIndexBuffer->Lock(0, sizeof(UINT)* iStartIndex, (void**)&pData, 0)))
 	//{
@@ -526,7 +526,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	tmpmodel->m_uiAllVertexCount = countvertex;
 
 	tmpmodel->m_pVertices = new vertex_static_ex[countvertex];
-	//g_pDXDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* countvertex, NULL, NULL, D3DPOOL_MANAGED, &tmpmodel->m_pVertexBuffer, 0);
+	//g_pDevice->CreateVertexBuffer(sizeof(vertex_static_ex)* countvertex, NULL, NULL, D3DPOOL_MANAGED, &tmpmodel->m_pVertexBuffer, 0);
 
 	//vertex_static_ex * pData;
 	//if(!FAILED(tmpmodel->m_pVertexBuffer->Lock(0, sizeof(vertex_static_ex)* countvertex, (void**)&pData, 0)))
@@ -572,7 +572,7 @@ void SGCore_StaticModelLoad(const char * file, ISXDataStaticModel** data)
 	}
 
 	tmpmodel->m_pIndices = ArrIndBuf;
-	//g_pDXDevice->CreateIndexBuffer(sizeof(UINT)* countindex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &tmpmodel->m_pIndexBuffer, 0);
+	//g_pDevice->CreateIndexBuffer(sizeof(UINT)* countindex, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &tmpmodel->m_pIndexBuffer, 0);
 
 	/*if(!FAILED(tmpmodel->m_pIndexBuffer->Lock(0, sizeof(UINT)* countindex, (void**)&pData, 0)))
 	{

@@ -7,7 +7,7 @@ See the license in LICENSE
 #ifndef __BOUND_H
 #define __BOUND_H
 
-#include <common/SXMath.h>
+#include <common/Math.h>
 #include "sxgcore.h"
 
 void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** ppMesh, IGXContext * pDevice,UINT iSideCount);

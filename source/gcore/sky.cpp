@@ -15,7 +15,7 @@ CSkyBox::CSkyBox()
 		GXDECL_END()
 	};
 
-	m_pVertexDeclarationSkyBox = g_pDXDevice->createVertexDeclaration(layoutskybox);
+	m_pVertexDeclarationSkyBox = g_pDevice->createVertexDeclaration(layoutskybox);
 
 	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_box.vs", "sky_box.vs", SHADER_CHECKDOUBLE_NAME);
 	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_box.ps", "sky_box.ps", SHADER_CHECKDOUBLE_NAME);
@@ -23,7 +23,7 @@ CSkyBox::CSkyBox()
 	m_vColor = float4(0, 0, 0, 0);
 	m_fRotaionY = 0.f;
 	m_mMatRotation = SMMatrixIdentity();
-	m_pVertices = g_pDXDevice->createVertexBuffer(8 * sizeof(CSkyBoxVertex), GX_BUFFER_USAGE_STATIC);
+	m_pVertices = g_pDevice->createVertexBuffer(8 * sizeof(CSkyBoxVertex), GX_BUFFER_USAGE_STATIC);
 
 	
 	float X = SXGC_SKYBOX_SIZE * 0.5;
@@ -81,9 +81,9 @@ CSkyBox::CSkyBox()
 		5,7,2,
     };
 
-	m_pIndeces = g_pDXDevice->createIndexBuffer(36 * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_USHORT, indices_tmp);
+	m_pIndeces = g_pDevice->createIndexBuffer(36 * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_USHORT, indices_tmp);
 
-	m_pRenderBuffer = g_pDXDevice->createRenderBuffer(1, &m_pVertices, m_pVertexDeclarationSkyBox);
+	m_pRenderBuffer = g_pDevice->createRenderBuffer(1, &m_pVertices, m_pVertexDeclarationSkyBox);
 	
 	m_idTex1 = -1;
 	m_idTex2 = -1;
@@ -218,25 +218,26 @@ void CSkyBox::render(float timeDelta, const float3* pos,bool is_shadow)
 
 	if (/*m_isChangeMainTex*/m_isChange)
 	{
-		g_pDXDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex2));
-		g_pDXDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex1), 1);
+		g_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex2));
+		g_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex1), 1);
 	}
 	else
 	{
-		g_pDXDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex1));
-		g_pDXDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex2), 1);
+		g_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex1));
+		g_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex2), 1);
 	}
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &WVP);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vColor", &m_vColor);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_fBlendFactor", &m_fFactorBlend);
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_idVS);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_idPS);
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_fBlendFactor", &m_fFactorBlend); 
+	
+	static ID s_idShader = SGCore_ShaderCreateKit(m_idVS, m_idPS);
+	SGCore_ShaderBind(s_idShader);
 
-	g_pDXDevice->setIndexBuffer(m_pIndeces);
-	g_pDXDevice->setRenderBuffer(m_pRenderBuffer);
-	g_pDXDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
-	g_pDXDevice->drawIndexed(8, 12, 0, 0);
+	g_pDevice->setIndexBuffer(m_pIndeces);
+	g_pDevice->setRenderBuffer(m_pRenderBuffer);
+	g_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	g_pDevice->drawIndexed(8, 12, 0, 0);
 
 	SGCore_ShaderUnBind();
 };
@@ -252,7 +253,7 @@ CSkyClouds::CSkyClouds()
 		GXDECL_END()
 	};
 
-	m_pVertexDeclarationClouds = g_pDXDevice->createVertexDeclaration(layoutclouds);
+	m_pVertexDeclarationClouds = g_pDevice->createVertexDeclaration(layoutclouds);
 
 	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_clouds.vs", "sky_clouds.vs", SHADER_CHECKDOUBLE_NAME);
 	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds.ps", SHADER_CHECKDOUBLE_NAME);
@@ -264,7 +265,7 @@ CSkyClouds::CSkyClouds()
 	m_fAlpha = 1.f;
 	m_vColor = float4_t(0, 0, 0, 0);
 	m_mMatRotation = SMMatrixIdentity();
-	m_pVertices = g_pDXDevice->createVertexBuffer(4 * sizeof(CSkyCloudsVertex), GX_BUFFER_USAGE_STATIC);
+	m_pVertices = g_pDevice->createVertexBuffer(4 * sizeof(CSkyCloudsVertex), GX_BUFFER_USAGE_STATIC);
 	
 	float X = 800;
 	float Y = 0;
@@ -286,9 +287,9 @@ CSkyClouds::CSkyClouds()
         0,1,2,
         0,2,3
     };
-	m_pIndeces = g_pDXDevice->createIndexBuffer(6 * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_USHORT, indices_tmp);
+	m_pIndeces = g_pDevice->createIndexBuffer(6 * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_USHORT, indices_tmp);
 
-	m_pRenderBuffer = g_pDXDevice->createRenderBuffer(1, &m_pVertices, m_pVertexDeclarationClouds);
+	m_pRenderBuffer = g_pDevice->createRenderBuffer(1, &m_pVertices, m_pVertexDeclarationClouds);
 	
 	m_fBias = 0.f;
 	m_fSpeed = 0.01f;
@@ -452,13 +453,13 @@ void CSkyClouds::render(DWORD timeDelta, const float3* pos,bool is_shadow)
 
 	if (/*m_isChangeMainTex*/m_isChange)
 	{
-		g_pDXDevice->setTexture(SGCore_LoadTexGetTex(m_idTex2));
-		g_pDXDevice->setTexture(SGCore_LoadTexGetTex(m_idTex1), 1);
+		g_pDevice->setTexture(SGCore_LoadTexGetTex(m_idTex2));
+		g_pDevice->setTexture(SGCore_LoadTexGetTex(m_idTex1), 1);
 	}
 	else
 	{
-		g_pDXDevice->setTexture(SGCore_LoadTexGetTex(m_idTex1));
-		g_pDXDevice->setTexture(SGCore_LoadTexGetTex(m_idTex2), 1);
+		g_pDevice->setTexture(SGCore_LoadTexGetTex(m_idTex1));
+		g_pDevice->setTexture(SGCore_LoadTexGetTex(m_idTex2), 1);
 	}
 
 	if(!is_shadow)
@@ -477,8 +478,10 @@ void CSkyClouds::render(DWORD timeDelta, const float3* pos,bool is_shadow)
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vBlendFactorBias", &float2(m_fFactorBlend, m_fBias));
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vColor", &m_vColor);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_fAlpha", &m_fAlpha);
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_idVS);
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_idPS);
+
+		static ID s_idShader = SGCore_ShaderCreateKit(m_idVS, m_idPS);
+
+		SGCore_ShaderBind(s_idShader);
 	}
 	else
 	{
@@ -491,15 +494,16 @@ void CSkyClouds::render(DWORD timeDelta, const float3* pos,bool is_shadow)
 		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &WVP);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS_Shadow, "g_vBlendFactorBias", &float2(m_fFactorBlend, m_fBias));
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS_Shadow, "g_fAlpha", &m_fAlpha);
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_idVS);
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_idPS_Shadow);
+
+		static ID s_idShader = SGCore_ShaderCreateKit(m_idVS, m_idPS_Shadow);
+		SGCore_ShaderBind(s_idShader);
 	}
 	
-	g_pDXDevice->setIndexBuffer(m_pIndeces);
-	g_pDXDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
-	g_pDXDevice->setRenderBuffer(m_pRenderBuffer);
+	g_pDevice->setIndexBuffer(m_pIndeces);
+	g_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	g_pDevice->setRenderBuffer(m_pRenderBuffer);
 
-	g_pDXDevice->drawIndexed(4, 2, 0, 0);
+	g_pDevice->drawIndexed(4, 2, 0, 0);
 
 	SGCore_ShaderUnBind();
 }

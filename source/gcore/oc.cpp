@@ -96,9 +96,9 @@ void COcclusionCulling::init(int iWidth, int iHeight)
 	m_iHeight = float(iHeight * OC_SIZE_COEF);
 	m_iCountPixels = m_iWidth * m_iHeight;
 	/*
-	g_pDXDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[0], 0);
-	g_pDXDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[1], 0);
-	g_pDXDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[2], 0);
+	g_pDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[0], 0);
+	g_pDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[1], 0);
+	g_pDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[2], 0);
 
 	m_pArrDepthBuffer = new float[m_iCountPixels + 1];
 	m_pArrWorldPos = new float4[m_iCountPixels + 1];
@@ -133,9 +133,9 @@ void COcclusionCulling::onResetDevice(int iWidth, int iHeight)
 	m_iHeight = float(iHeight * OC_SIZE_COEF);
 	m_iCountPixels = m_iWidth * m_iHeight;
 	/*
-	g_pDXDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[0], 0);
-	g_pDXDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[1], 0);
-	g_pDXDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[2], 0);
+	g_pDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[0], 0);
+	g_pDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[1], 0);
+	g_pDevice->CreateOffscreenPlainSurface(m_iWidth, m_iHeight, D3DFMT_R32F, D3DPOOL_SYSTEMMEM, &m_pSurfDepthBuffer[2], 0);
 
 	m_pArrDepthBuffer = new float[m_iCountPixels + 1];
 	m_pArrWorldPos = new float4[m_iCountPixels + 1];
@@ -188,20 +188,20 @@ void COcclusionCulling::update(ID idDepthMap, const IFrustum *pFrustum)
 	IDirect3DTexture9 *pTexDepthOC = SGCore_RTGetTexture(m_aRTdepth[m_iCurrRTdepth]);
 
 	//рисуем глубину с максимальной выборкой в уменьшенный буфер
-	g_pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	g_pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-	g_pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	g_pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	g_pDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+	g_pDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+	g_pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	g_pDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	LPDIRECT3DSURFACE9 RenderSurf2, BackBuf2;
 
 	pTexDepthOC->GetSurfaceLevel(0, &RenderSurf2);
-	g_pDXDevice->GetRenderTarget(0, &BackBuf2);
-	g_pDXDevice->SetRenderTarget(0, RenderSurf2);
+	g_pDevice->GetRenderTarget(0, &BackBuf2);
+	g_pDevice->SetRenderTarget(0, RenderSurf2);
 
 	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
 	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
 
-	g_pDXDevice->SetTexture(0, pTexDepth);
+	g_pDevice->SetTexture(0, pTexDepth);
 
 	SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_idVS_ScreenOut);
 	SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_idPS_FindMax9);
@@ -212,7 +212,7 @@ void COcclusionCulling::update(ID idDepthMap, const IFrustum *pFrustum)
 
 	SGCore_ShaderUnBind();
 
-	g_pDXDevice->SetRenderTarget(0, BackBuf2);
+	g_pDevice->SetRenderTarget(0, BackBuf2);
 
 	mem_release(RenderSurf2);
 	mem_release(BackBuf2);
@@ -227,7 +227,7 @@ void COcclusionCulling::update(ID idDepthMap, const IFrustum *pFrustum)
 	pTexDepthOC = SGCore_RTGetTexture(m_aRTdepth[m_iCurrRTdepth]);
 
 	pTexDepthOC->GetSurfaceLevel(0, &pDepthSurf);
-	g_pDXDevice->GetRenderTargetData(pDepthSurf, m_pSurfDepthBuffer[m_iCurrRTdepth]);
+	g_pDevice->GetRenderTargetData(pDepthSurf, m_pSurfDepthBuffer[m_iCurrRTdepth]);
 
 	D3DLOCKED_RECT  srect;
 	m_pSurfDepthBuffer[iCurrOld]->LockRect(&srect, 0, D3DLOCK_READONLY | D3DLOCK_DONOTWAIT);

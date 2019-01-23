@@ -6,7 +6,7 @@ See the license in LICENSE
 
 #include "gcore_utils.h"
 
-void InitDevice(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlags)
+void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 {
 	char szModuleName[64];
 	sprintf_s(szModuleName, "gxgapi%s.dll", Core_0GetCommandLineArg("gapi", "dx9"));
@@ -25,14 +25,14 @@ void InitDevice(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFla
 		return;
 	}
 
-	g_pDXDevice = libGXGetInstance();
-	if(!g_pDXDevice)
+	g_pDevice = libGXGetInstance();
+	if(!g_pDevice)
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - %s: Cannot spawn GX context!", GEN_MSG_LOCATION, szModuleName);
 		return;
 	}
 
-	if(!g_pDXDevice->initContext(hWnd, iWidth, iHeight, isWindowed))
+	if(!g_pDevice->initContext(hWnd, iWidth, iHeight, isWindowed))
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - %s: Cannot init GX context!", GEN_MSG_LOCATION, szModuleName);
 		return;
@@ -51,7 +51,7 @@ void InitFPStext()
 	LF.CharSet = DEFAULT_CHARSET;
 	sprintf(LF.FaceName, "Courier New");
 
-	D3DXCreateFontIndirect(g_pDXDevice, &LF, &g_pFPStext);
+	D3DXCreateFontIndirect(g_pDevice, &LF, &g_pFPStext);
 	*/
 }
 
@@ -64,7 +64,7 @@ void InitFullScreenQuad()
 		GXDECL_END()
 	};
 
-	IGXVertexDeclaration *pVD = g_pDXDevice->createVertexDeclaration(oLayoutQuad);
+	IGXVertexDeclaration *pVD = g_pDevice->createVertexDeclaration(oLayoutQuad);
 
 	struct VERTEX_SCREEN_TEXTURE { float x, y, z, tx, ty, tz; };
 
@@ -83,8 +83,8 @@ void InitFullScreenQuad()
 	};
 
 
-	IGXVertexBuffer *pVB = g_pDXDevice->createVertexBuffer(sizeof(VERTEX_SCREEN_TEXTURE)* 6, GX_BUFFER_USAGE_STATIC, aVertices);
-	g_pScreenTextureRB = g_pDXDevice->createRenderBuffer(1, &pVB, pVD);
+	IGXVertexBuffer *pVB = g_pDevice->createVertexBuffer(sizeof(VERTEX_SCREEN_TEXTURE)* 6, GX_BUFFER_USAGE_STATIC, aVertices);
+	g_pScreenTextureRB = g_pDevice->createRenderBuffer(1, &pVB, pVD);
 	mem_release(pVD);
 	mem_release(pVB);
 }
@@ -200,14 +200,14 @@ void InitToneMappingStates()
 {
 	GXBLEND_DESC blendDesc;
 	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_RED;
-	g_pToneMappingBS = g_pDXDevice->createBlendState(&blendDesc);
+	g_pToneMappingBS = g_pDevice->createBlendState(&blendDesc);
 
 	GXSAMPLER_DESC samplerDesc;
 	samplerDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
-	g_pSamplerFilterLinear = g_pDXDevice->createSamplerState(&samplerDesc);
+	g_pSamplerFilterLinear = g_pDevice->createSamplerState(&samplerDesc);
 
 	samplerDesc.filter = GXFILTER_MIN_MAG_MIP_POINT;
-	g_pSamplerFilterPoint = g_pDXDevice->createSamplerState(&samplerDesc);
+	g_pSamplerFilterPoint = g_pDevice->createSamplerState(&samplerDesc);
 }
 
 void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
@@ -221,14 +221,15 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 
 	SurfSceneScale = SGCore_RTGetTexture(gcore_data::rt_id::idLigthComScaled)->getMipmap();
 
-	BackBuf = g_pDXDevice->getColorTarget();
-	g_pDXDevice->setColorTarget(SurfSceneScale);
+	BackBuf = g_pDevice->getColorTarget();
+	g_pDevice->setColorTarget(SurfSceneScale);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, gcore_data::vs_id::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, gcore_data::ps_id::idSampleLumIterative);
+	static ID s_idShader1 = SGCore_ShaderCreateKit(gcore_data::vs_id::idScreenOut, gcore_data::ps_id::idSampleLumIterative);
+
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, gcore_data::ps_id::idSampleLumIterative, "g_aOffsets", &(gcore_data::rt_id::aHDRSampleOffsets));
+	SGCore_ShaderBind(s_idShader1);
 
-	g_pDXDevice->setTexture(SGCore_RTGetTexture(gcore_data::rt_id::idLigthCom));
+	g_pDevice->setTexture(SGCore_RTGetTexture(gcore_data::rt_id::idLigthCom));
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
@@ -247,22 +248,22 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 
 	ToneMappingGetArrDownScale4x4(tmptex->getWidth(), tmptex->getHeight(), gcore_data::rt_id::aHDRSampleOffsets);
 
-	g_pDXDevice->setColorTarget(gcore_data::rt_id::aSurfToneMap[CurrTexture]);
-	g_pDXDevice->setTexture(SGCore_RTGetTexture(gcore_data::rt_id::idLigthComScaled));
+	g_pDevice->setColorTarget(gcore_data::rt_id::aSurfToneMap[CurrTexture]);
+	g_pDevice->setTexture(SGCore_RTGetTexture(gcore_data::rt_id::idLigthComScaled));
 
-	g_pDXDevice->setBlendState(g_pToneMappingBS);
-	//g_pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
-	//g_pDXDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-	//g_pDXDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-	//g_pDXDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-	//g_pDXDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-	g_pDXDevice->setSamplerState(g_pSamplerFilterLinear, 0);
-	g_pDXDevice->setSamplerState(g_pSamplerFilterLinear, 1);
+	g_pDevice->setBlendState(g_pToneMappingBS);
+	//g_pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
+	//g_pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+	//g_pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+	//g_pDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+	//g_pDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+	g_pDevice->setSamplerState(g_pSamplerFilterLinear, 0);
+	g_pDevice->setSamplerState(g_pSamplerFilterLinear, 1);
 
+	static ID s_idShader2 = SGCore_ShaderCreateKit(gcore_data::vs_id::idScreenOut, gcore_data::ps_id::idSampleLumInit);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, gcore_data::vs_id::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, gcore_data::ps_id::idSampleLumInit);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, gcore_data::ps_id::idSampleLumInit, "g_aOffsets", &(gcore_data::rt_id::aHDRSampleOffsets));
+	SGCore_ShaderBind(s_idShader2);
 
 	SGCore_ScreenQuadDraw();
 
@@ -274,12 +275,11 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 
 	IGXTexture2D *pTex;
 
-	g_pDXDevice->setSamplerState(g_pSamplerFilterPoint, 0);
-	//g_pDXDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-	//g_pDXDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+	g_pDevice->setSamplerState(g_pSamplerFilterPoint, 0);
+	//g_pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+	//g_pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, gcore_data::vs_id::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, gcore_data::ps_id::idSampleLumIterative);
+	SGCore_ShaderBind(s_idShader1);
 
 	while(CurrTexture >= 0)
 	{
@@ -288,9 +288,9 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, gcore_data::ps_id::idSampleLumIterative, "g_aOffsets", &(gcore_data::rt_id::aHDRSampleOffsets));
 
-		g_pDXDevice->setColorTarget(gcore_data::rt_id::aSurfToneMap[CurrTexture]);
+		g_pDevice->setColorTarget(gcore_data::rt_id::aSurfToneMap[CurrTexture]);
 
-		g_pDXDevice->setTexture(pTex);
+		g_pDevice->setTexture(pTex);
 		SGCore_ScreenQuadDraw();
 
 		CurrTexture--;
@@ -313,19 +313,20 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 	gcore_data::rt_id::IncrAdaptedLum();
 	IGXSurface *SurfAdaptedLum = SGCore_RTGetTexture(gcore_data::rt_id::GetCurrAdaptedLum())->getMipmap();
 
-	g_pDXDevice->setColorTarget(SurfAdaptedLum);
-	g_pDXDevice->setTexture(SGCore_RTGetTexture(gcore_data::rt_id::GetLastAdaptedLum()));
-	g_pDXDevice->setTexture(SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[0]), 1);
+	g_pDevice->setColorTarget(SurfAdaptedLum);
+	g_pDevice->setTexture(SGCore_RTGetTexture(gcore_data::rt_id::GetLastAdaptedLum()));
+	g_pDevice->setTexture(SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[0]), 1);
 
-	//g_pDXDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-	//g_pDXDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-	//g_pDXDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
-	//g_pDXDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_POINT);
-	g_pDXDevice->setSamplerState(g_pSamplerFilterPoint, 0);
-	g_pDXDevice->setSamplerState(g_pSamplerFilterPoint, 1);
+	//g_pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+	//g_pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+	//g_pDevice->SetSamplerState(1, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+	//g_pDevice->SetSamplerState(1, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+	g_pDevice->setSamplerState(g_pSamplerFilterPoint, 0);
+	g_pDevice->setSamplerState(g_pSamplerFilterPoint, 1);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, gcore_data::vs_id::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, gcore_data::ps_id::idCalcAdaptedLum);
+	static ID s_idShader3 = SGCore_ShaderCreateKit(gcore_data::vs_id::idScreenOut, gcore_data::ps_id::idCalcAdaptedLum);
+
+	SGCore_ShaderBind(s_idShader3);
 
 	float ElapsedTime = float(timeDelta) * 0.001f * (fFactorAdapted * 1000.f);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, gcore_data::ps_id::idCalcAdaptedLum, "g_fElapsedTime", &(ElapsedTime));
@@ -335,10 +336,10 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 	SGCore_ShaderUnBind();
 	mem_release(SurfAdaptedLum);
 
-	g_pDXDevice->setColorTarget(BackBuf);
+	g_pDevice->setColorTarget(BackBuf);
 	mem_release(BackBuf);
 
-	g_pDXDevice->setBlendState(NULL);
-	//g_pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+	g_pDevice->setBlendState(NULL);
+	//g_pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 
 }

@@ -10,7 +10,7 @@ See the license in LICENSE
 #include <gdefines.h>
 #include <common/string.h>
 #include <common/array.h>
-#include <common/SXMath.h>
+#include <common/Math.h>
 #include <common/string_utils.h>
 
 #include <graphix/graphix.h>

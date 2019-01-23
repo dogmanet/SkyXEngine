@@ -1,81 +1,162 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
-#ifndef __SHADER_H
-#define __SHADER_H
+/*
+РґРѕР±Р°РІРёС‚СЊ РґРµС„Р°Р№РЅ ~0 РґР»СЏ СЃСЂР°РІРЅРµРЅРёСЏ
+РґРѕР±Р°РІРёС‚СЊ РїРµСЂРµРґРµР»С‹РІР°РЅРёРµ РЅР°Р±РѕСЂРѕРІ С€РµР№РґРµСЂРѕРІ РІ СЃР»СѓС‡Р°Рµ РїРµСЂРµР·Р°РіСЂСѓР·РєРё С€РµР№РґРµСЂРѕРІ
+*/
+
+#ifndef __SHADERS_H
+#define __SHADERS_H
 
 #define SHADERS_CACHE_PATH "cache/"
 
 #include <gdefines.h>
 #include <stdio.h>
 #include <time.h>
-#include <direct.h>
+//#include <direct.h>
 #include <graphix/graphix.h>
 #include <common/array.h>
 #include <common/String.h>
 #include <common/file_utils.h>
 #include "sxgcore.h"
 
-extern IGXContext *g_pDXDevice;
+extern IGXContext *g_pDevice;
 
-//! используется ли в данный момент кэш шейдеров?
+//! РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ Р»Рё РІ РґР°РЅРЅС‹Р№ РјРѕРјРµРЅС‚ РєСЌС€ С€РµР№РґРµСЂРѕРІ?
 extern bool g_useCache;
 
-//! базовый класс шейдера
+//! Р±Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ С€РµР№РґРµСЂР°
 struct CShader
 {
 	CShader()
 	{ 
 		m_szName[0] = 0; 
 		m_szPath[0] = 0; 
-		m_iCountVar = 0;
 
 		ZeroMemory(m_aMacros, sizeof(GXMACRO)* SXGC_SHADER_COUNT_MACRO);
 	}
 
 	~CShader()
 	{
-		
+		mem_delete(m_pCode);
 	}
 
-	//! имя шейдера
+	//! РёРјСЏ С€РµР№РґРµСЂР°
 	char m_szName[SXGC_SHADER_MAX_SIZE_NAME];
 
-	//! имя файла шейдера
+	//! РёРјСЏ С„Р°Р№Р»Р° С€РµР№РґРµСЂР°
 	char m_szPath[SXGC_SHADER_MAX_SIZE_DIR];
 
-	//! где был загружен этот шейдер (впервые)
-	//char m_szFrom[SXGC_SHADER_MAX_SIZE_FULLPATH];
-
-	//! количество переменных
-	//int m_iCountVar;
-
-	//! массив макросов (данные последнего макроса должны быть NULL)
+	//! РјР°СЃСЃРёРІ РјР°РєСЂРѕСЃРѕРІ (РґР°РЅРЅС‹Рµ РїРѕСЃР»РµРґРЅРµРіРѕ РјР°РєСЂРѕСЃР° РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ NULL)
 	GXMACRO m_aMacros[SXGC_SHADER_COUNT_MACRO];
+
+	//! Р±СѓС„РµСЂ СЃ Р±РёРЅР°СЂРЅС‹Рј РєРѕРґРѕРј С€РµР№РґРµСЂР°
+	BYTE *m_pCode;
+	UINT m_uiCodeSize;
 };
 
-//! вершинный шейдер
+//! РІРµСЂС€РёРЅРЅС‹Р№ С€РµР№РґРµСЂ
 struct CShaderVS : public CShader
 {
-	CShaderVS(){ m_pVertexShader = 0; };
+	CShaderVS()
+	{
+		m_pVertexShader = 0;
+	};
+	CShaderVS(const CShaderVS &pOther):
+		m_pVertexShader(pOther.m_pVertexShader)
+	{
+		if(m_pVertexShader)
+		{
+			m_pVertexShader->AddRef();
+		}
+	};
 	~CShaderVS(){ mem_release(m_pVertexShader); };
+	CShaderVS &operator=(const CShaderVS &pOther)
+	{
+		m_pVertexShader = pOther.m_pVertexShader;
+		if(m_pVertexShader)
+		{
+			m_pVertexShader->AddRef();
+		}
+	}
 
 	IGXVertexShader *m_pVertexShader;
 };
 
-//! пиксельный шейдер
+//! РїРёРєСЃРµР»СЊРЅС‹Р№ С€РµР№РґРµСЂ
 struct CShaderPS : public CShader
 {
-	CShaderPS(){ m_pPixelShader = 0; };
+	CShaderPS()
+	{
+		m_pPixelShader = 0;
+	};
+	CShaderPS(const CShaderPS &pOther):
+		m_pPixelShader(pOther.m_pPixelShader)
+	{
+		if(m_pPixelShader)
+		{
+			m_pPixelShader->AddRef();
+		}
+	};
 	~CShaderPS(){ mem_release(m_pPixelShader); };
+	CShaderPS &operator=(const CShaderPS &pOther)
+	{
+		m_pPixelShader = pOther.m_pPixelShader;
+		if(m_pPixelShader)
+		{
+			m_pPixelShader->AddRef();
+		}
+	}
 
 	IGXPixelShader *m_pPixelShader;
 };
 
-//! кэшированный шейдер
+struct CShaderKit
+{
+	CShaderKit(){ m_idVertexShader = m_idPixelShader = -1; m_pShaderKit = 0; }
+	CShaderKit(ID idVertexShader, ID idPixelShader, IGXShader *pShaderKit)
+	{
+		m_idVertexShader = idVertexShader;
+		m_idPixelShader = idPixelShader; 
+		m_pShaderKit = pShaderKit;
+	}
+	CShaderKit(const CShaderKit &pOther):
+		m_idVertexShader(pOther.m_idVertexShader),
+		m_idPixelShader(pOther.m_idPixelShader),
+		m_pShaderKit(pOther.m_pShaderKit)
+	{
+		if(m_pShaderKit)
+		{
+			m_pShaderKit->AddRef();
+		}
+	}
+	~CShaderKit()
+	{
+		mem_release(m_pShaderKit);
+	}
+	
+	CShaderKit &operator=(const CShaderKit &pOther)
+	{
+		m_idVertexShader = pOther.m_idVertexShader;
+		m_idPixelShader = pOther.m_idPixelShader;
+		m_pShaderKit = pOther.m_pShaderKit;
+		if(m_pShaderKit)
+		{
+			m_pShaderKit->AddRef();
+		}
+		return(*this);
+	}
+
+	ID m_idVertexShader;
+	ID m_idPixelShader;
+	IGXShader *m_pShaderKit;
+};
+
+//! РєСЌС€РёСЂРѕРІР°РЅРЅС‹Р№ С€РµР№РґРµСЂ
 struct CShaderFileCache : public CShader
 {
 	CShaderFileCache()
@@ -83,20 +164,21 @@ struct CShaderFileCache : public CShader
 		m_szName[0] = 0;
 		m_szPath[0] = 0; 
 		m_uiDate = 0; 
-		m_iCountVar = 0;
+		m_pCode = 0; 
 		ZeroMemory(m_aMacros, sizeof(GXMACRO)* SXGC_SHADER_COUNT_MACRO);
 		int qwert = 0;
 	}
 
 	~CShaderFileCache()
 	{
+		mem_delete(m_pCode);
 	}
 
-	//! время последнего изменения оригинального шейдера
+	//! РІСЂРµРјСЏ РїРѕСЃР»РµРґРЅРµРіРѕ РёР·РјРµРЅРµРЅРёСЏ РѕСЂРёРіРёРЅР°Р»СЊРЅРѕРіРѕ С€РµР№РґРµСЂР°
 	uint32_t m_uiDate;
 };
 
-//! представление инлюда шейдеров
+//! РїСЂРµРґСЃС‚Р°РІР»РµРЅРёРµ РёРЅР»СЋРґР° С€РµР№РґРµСЂРѕРІ
 struct CShaderInclude
 {
 	CShaderInclude()
@@ -105,25 +187,25 @@ struct CShaderInclude
 		m_uiDate = 0;
 	}
 
-	//! имя файла
+	//! РёРјСЏ С„Р°Р№Р»Р°
 	char m_szFile[SXGC_SHADER_MAX_SIZE_DIRNAME];
 
-	//! время последнего изменения
+	//! РІСЂРµРјСЏ РїРѕСЃР»РµРґРЅРµРіРѕ РёР·РјРµРЅРµРЅРёСЏ
 	uint32_t m_uiDate;
 };
 
 //**************************************************************************
 
-//! создать кэш шейдера
+//! СЃРѕР·РґР°С‚СЊ РєСЌС€ С€РµР№РґРµСЂР°
 CShaderFileCache* CreateShaderFileCacheFormShader(CShader *pShader);
 
-//! сохранить кэшированный шейдер
+//! СЃРѕС…СЂР°РЅРёС‚СЊ РєСЌС€РёСЂРѕРІР°РЅРЅС‹Р№ С€РµР№РґРµСЂ
 void SaveShaderFileCache(CShaderFileCache *pShaderFileCache);
 
-//! создать кэшированный шейдер из файла
+//! СЃРѕР·РґР°С‚СЊ РєСЌС€РёСЂРѕРІР°РЅРЅС‹Р№ С€РµР№РґРµСЂ РёР· С„Р°Р№Р»Р°
 CShaderFileCache* CreateShaderFileCacheFormFile(const char *szPath);
 
-//! возвращает время последнего изменения оригинального шейдера на основании данных в его кэше
+//! РІРѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РїРѕСЃР»РµРґРЅРµРіРѕ РёР·РјРµРЅРµРЅРёСЏ РѕСЂРёРіРёРЅР°Р»СЊРЅРѕРіРѕ С€РµР№РґРµСЂР° РЅР° РѕСЃРЅРѕРІР°РЅРёРё РґР°РЅРЅС‹С… РІ РµРіРѕ РєСЌС€Рµ
 uint32_t GetTimeShaderFileCache(const char *szPath);
 
 //**************************************************************************
@@ -132,124 +214,123 @@ uint32_t GetTimeShaderFileCache(const char *szPath);
 #define LOAD_SHADER_COMPLETE 1
 #define LOAD_SHADER_CACHE 2
 
-//! загрузка вершинного шейдера
+//! Р·Р°РіСЂСѓР·РєР° РІРµСЂС€РёРЅРЅРѕРіРѕ С€РµР№РґРµСЂР°
 int LoadVertexShader(
-	const char *szPath,		//!< абсолютный путь до файла шейдера
-	CShaderVS *pShader,		//!< инициализированная структура CShaderVS
-	GXMACRO *aMacro = 0	//!< массив дефайнов
+	const char *szPath,		//!< Р°Р±СЃРѕР»СЋС‚РЅС‹Р№ РїСѓС‚СЊ РґРѕ С„Р°Р№Р»Р° С€РµР№РґРµСЂР°
+	CShaderVS *pShader,		//!< РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅРЅР°СЏ СЃС‚СЂСѓРєС‚СѓСЂР° CShaderVS
+	GXMACRO *aMacro = 0	//!< РјР°СЃСЃРёРІ РґРµС„Р°Р№РЅРѕРІ
 	);
 
-//загрузка пиксельного шейдера
+//Р·Р°РіСЂСѓР·РєР° РїРёРєСЃРµР»СЊРЅРѕРіРѕ С€РµР№РґРµСЂР°
 int LoadPixelShader(
-	const char *szPath,		//!< абсолютный путь до файла шейдера
-	CShaderPS *pShader,		//!< инициализированная структура CShaderPS
-	GXMACRO *aMacro = 0	//!< массив дефайнов
+	const char *szPath,		//!< Р°Р±СЃРѕР»СЋС‚РЅС‹Р№ РїСѓС‚СЊ РґРѕ С„Р°Р№Р»Р° С€РµР№РґРµСЂР°
+	CShaderPS *pShader,		//!< РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅРЅР°СЏ СЃС‚СЂСѓРєС‚СѓСЂР° CShaderPS
+	GXMACRO *aMacro = 0	//!< РјР°СЃСЃРёРІ РґРµС„Р°Р№РЅРѕРІ
 	);
 
 //**************************************************************************
 
-//! менеджер шейдеров
+//! РјРµРЅРµРґР¶РµСЂ С€РµР№РґРµСЂРѕРІ
 class CShaderManager
 {
 public:
 	CShaderManager();
 	~CShaderManager();
 
-	//! существует ли файл name в папке с шейдерами
+	//! СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё С„Р°Р№Р» name РІ РїР°РїРєРµ СЃ С€РµР№РґРµСЂР°РјРё
 	bool existsFile(const char *szPath);
 
-	//! добавление шейдера в очередь
+	//! РґРѕР±Р°РІР»РµРЅРёРµ С€РµР№РґРµСЂР° РІ РѕС‡РµСЂРµРґСЊ
 	ID preLoad(SHADER_TYPE type, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, GXMACRO *aMacros = 0);
 
-	//! загрузка всех шейдеров
+	//! Р·Р°РіСЂСѓР·РєР° РІСЃРµС… С€РµР№РґРµСЂРѕРІ
 	void allLoad();
 
-	//! обновление шейдера по имени
+	//! РѕР±РЅРѕРІР»РµРЅРёРµ С€РµР№РґРµСЂР° РїРѕ РёРјРµРЅРё
 	void update(SHADER_TYPE type, const char *szName);
 
-	//! обновление шейдера по id
+	//! РѕР±РЅРѕРІР»РµРЅРёРµ С€РµР№РґРµСЂР° РїРѕ id
 	void update(SHADER_TYPE type, ID id);
 
-	//! перезагрузить все шейдеры, с учетом макросов
+	//! РїРµСЂРµР·Р°РіСЂСѓР·РёС‚СЊ РІСЃРµ С€РµР№РґРµСЂС‹, СЃ СѓС‡РµС‚РѕРј РјР°РєСЂРѕСЃРѕРІ
 	void reloadAll();
 
-	//! получить идентификатор шейдера по имени
+	//! РїРѕР»СѓС‡РёС‚СЊ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ С€РµР№РґРµСЂР° РїРѕ РёРјРµРЅРё
 	ID getID(SHADER_TYPE type, const char *szName);
 
-	//! бинд шейдера по имени
-	void bind(SHADER_TYPE type, const char *szName);
+	ID createKit(ID idVertexShader, ID idPixelShader);
 
-	//! бинд шейдера по id
-	void bind(SHADER_TYPE type, ID idShader);
+	//! Р±РёРЅРґ С€РµР№РґРµСЂРѕРІ РїРѕ id
+	void bind(ID idShaderKit);
 
-	//! обнуление биндов шейдеров
+	//! РѕР±РЅСѓР»РµРЅРёРµ Р±РёРЅРґРѕРІ С€РµР№РґРµСЂРѕРІ
 	void unbind();
 
 
-	//! передача float значений в шейдер по имени
+	//! РїРµСЂРµРґР°С‡Р° float Р·РЅР°С‡РµРЅРёР№ РІ С€РµР№РґРµСЂ РїРѕ РёРјРµРЅРё
 	void setValueRegisterF(SHADER_TYPE type, const char *szNameShader, const char *szNameVar, void *pData, int iCountFloat4 = 0);
 
-	//! передача float значений в шейдер по ID
+	//! РїРµСЂРµРґР°С‡Р° float Р·РЅР°С‡РµРЅРёР№ РІ С€РµР№РґРµСЂ РїРѕ ID
 	void setValueRegisterF(SHADER_TYPE type, ID idShader, const char *szNameVar, void *data, int iCountFloat4 = 0);
 
-	//! передача int значений в шейдер по имени
+	//! РїРµСЂРµРґР°С‡Р° int Р·РЅР°С‡РµРЅРёР№ РІ С€РµР№РґРµСЂ РїРѕ РёРјРµРЅРё
 	void setValueRegisterI(SHADER_TYPE type, const char *szNameShader, const char *szNameVar, void *pData, int iCountInt4 = 0);
 
-	//! передача int значений в шейдер по ID
+	//! РїРµСЂРµРґР°С‡Р° int Р·РЅР°С‡РµРЅРёР№ РІ С€РµР№РґРµСЂ РїРѕ ID
 	void setValueRegisterI(SHADER_TYPE type, ID idShader, const char *szNameVar, void *data, int iCountInt4 = 0);
 
-	//! передача bool значений в шейдер по имени
-	void setValueRegisterB(SHADER_TYPE type, const char *szNameShader, const char *szNameVar, void *pData, int iCountBool4 = 0);
 
-	//! передача bool значений в шейдер по ID
-	void setValueRegisterB(SHADER_TYPE type, ID idShader, const char *szNameVar, void *data, int iCountBool4 = 0);
-
-
-	//! существует ли шейдер с именем файла и расширением name, если да то возвращает id
+	//! СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё С€РµР№РґРµСЂ СЃ РёРјРµРЅРµРј С„Р°Р№Р»Р° Рё СЂР°СЃС€РёСЂРµРЅРёРµРј name, РµСЃР»Рё РґР° С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ id
 	ID existsPath(SHADER_TYPE type, const char *szPath);
 
-	//! существует ли шейдер с пользовательским именем name, если да то возвращает id
+	//! СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё С€РµР№РґРµСЂ СЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёРј РёРјРµРЅРµРј name, РµСЃР»Рё РґР° С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ id
 	ID existsName(SHADER_TYPE type, const char *szName);
 
-	//! загружен ли шейдер с данным id
+	//! Р·Р°РіСЂСѓР¶РµРЅ Р»Рё С€РµР№РґРµСЂ СЃ РґР°РЅРЅС‹Рј id
 	bool isValidated(SHADER_TYPE type, ID id);
 
-	//! валидное ли имя у шейдера (расширение должно совпадать с типом)
+	//! РІР°Р»РёРґРЅРѕРµ Р»Рё РёРјСЏ Сѓ С€РµР№РґРµСЂР° (СЂР°СЃС€РёСЂРµРЅРёРµ РґРѕР»Р¶РЅРѕ СЃРѕРІРїР°РґР°С‚СЊ СЃ С‚РёРїРѕРј)
 	bool isValidateTypeName(SHADER_TYPE type, const char *szName);
 
 
-	//! записывает имя шейдер с расширением в path
+	//! Р·Р°РїРёСЃС‹РІР°РµС‚ РёРјСЏ С€РµР№РґРµСЂ СЃ СЂР°СЃС€РёСЂРµРЅРёРµРј РІ path
 	void getPath(SHADER_TYPE type, ID idShader, char *szPath);
 
-	//! записывает пользовательское имя шейдера в name
+	//! Р·Р°РїРёСЃС‹РІР°РµС‚ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕРµ РёРјСЏ С€РµР№РґРµСЂР° РІ name
 	void getName(SHADER_TYPE type, ID idShader, char *szName);
 
 protected:
 
-	Array<CShaderVS*> m_aVS;	//!< массивы vs шейдеров
-	Array<CShaderPS*> m_aPS;	//!< массивы ps шейдеров
+	Array<CShaderVS*> m_aVS;	//!< РјР°СЃСЃРёРІС‹ vs С€РµР№РґРµСЂРѕРІ
+	Array<CShaderPS*> m_aPS;	//!< РјР°СЃСЃРёРІС‹ ps С€РµР№РґРµСЂРѕРІ
 
-	//! массив всех инклюдов
+	Array<CShaderKit> m_aShaderKit;
+
+	bool m_canInfo4FailSend;
+
+	void updateDataInfo4FailSend();
+
+	//! РјР°СЃСЃРёРІ РІСЃРµС… РёРЅРєР»СЋРґРѕРІ
 	Array<CShaderInclude> m_aIncludes;
 
 	String getTextResultLoad(int iResult);
 
-	//! проверка директории кэша, если не существует то создаст
+	//! РїСЂРѕРІРµСЂРєР° РґРёСЂРµРєС‚РѕСЂРёРё РєСЌС€Р°, РµСЃР»Рё РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚ С‚Рѕ СЃРѕР·РґР°СЃС‚
 	void testDirCache();
 
-	//! загрузка и проверка кэша инклюдов
+	//! Р·Р°РіСЂСѓР·РєР° Рё РїСЂРѕРІРµСЂРєР° РєСЌС€Р° РёРЅРєР»СЋРґРѕРІ
 	void testIncludeCache(bool hasReport=true);
 
-	//! загрузить текущий кэш инклюдов
+	//! Р·Р°РіСЂСѓР·РёС‚СЊ С‚РµРєСѓС‰РёР№ РєСЌС€ РёРЅРєР»СЋРґРѕРІ
 	void loadCacheInclude();
 
-	//! сохранить текущий кэш инклюдов
+	//! СЃРѕС…СЂР°РЅРёС‚СЊ С‚РµРєСѓС‰РёР№ РєСЌС€ РёРЅРєР»СЋРґРѕРІ
 	void saveCacheInclude();
 
 	//bool m_useCache;
 
-	int m_iLastAllLoadVS;		//! общее количество загруженных vs шейдеров, с прошлого раза
-	int m_iLastAllLoadPS;		//! общее количество загруженных ps шейдеров, с прошлого раза
+	int m_iLastAllLoadVS;		//! РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ Р·Р°РіСЂСѓР¶РµРЅРЅС‹С… vs С€РµР№РґРµСЂРѕРІ, СЃ РїСЂРѕС€Р»РѕРіРѕ СЂР°Р·Р°
+	int m_iLastAllLoadPS;		//! РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ Р·Р°РіСЂСѓР¶РµРЅРЅС‹С… ps С€РµР№РґРµСЂРѕРІ, СЃ РїСЂРѕС€Р»РѕРіРѕ СЂР°Р·Р°
 };
 
 #endif

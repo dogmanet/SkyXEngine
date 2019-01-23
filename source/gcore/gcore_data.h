@@ -5,7 +5,7 @@
 #include <gdefines.h>
 #include <graphix/graphix.h>
 #include <common/array.h>
-#include <common/SXMath.h>
+#include <common/Math.h>
 
 namespace gcore_data
 {
