@@ -4,3 +4,6 @@
 [submodule "source/common"]
 	path = source/common
 	url = https://root@dev.ds-servers.com/sip/common.git
+[submodule "sdks/graphix"]
+	path = sdks/graphix
+	url = https://root@dev.ds-servers.com/sip/graphix.git
