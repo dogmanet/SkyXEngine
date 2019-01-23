@@ -14,6 +14,15 @@
 #include "GXTexture.h"
 #include <cstdio>
 
+//флаги компиляции шейдеров
+
+
+#ifdef _DEBUG
+#	define SHADER_FLAGS (D3DXSHADER_DEBUG | D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY | D3DXSHADER_AVOID_FLOW_CONTROL | D3DXSHADER_SKIPOPTIMIZATION)
+#else
+#	define SHADER_FLAGS (D3DXSHADER_OPTIMIZATION_LEVEL3 | D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY | D3DXSHADER_PARTIALPRECISION | D3DXSHADER_PREFER_FLOW_CONTROL)
+#endif
+
 CGXContext::CGXContext():
 	m_pCurIndexBuffer(NULL),
 	m_drawPT(D3DPT_TRIANGLELIST),
@@ -235,7 +244,7 @@ void CGXContext::swapBuffers()
 
 void CGXContext::clear(UINT what, GXCOLOR color, float fDepth, UINT uStencil)
 {
-	syncronize();
+	syncronize(GX_SYNCFLAG_NO_SHADER);
 	DX_CALL(m_pDevice->Clear(0, 0, what, color, fDepth, uStencil));
 }
 
@@ -493,7 +502,7 @@ void CGXContext::drawPrimitiveInstanced(UINT uInstanceCount, UINT uStartVertex, 
 	_endInstancing();
 }
 
-void CGXContext::syncronize()
+void CGXContext::syncronize(UINT flags)
 {
 	if(m_sync_state.bRenderBuffer)
 	{
@@ -617,7 +626,9 @@ void CGXContext::syncronize()
 		}
 	}
 
-	if(m_sync_state.bShader)
+	//@TODO: Handle a case shader constant changed but the shader wasn't rebound
+
+	if(m_sync_state.bShader && !(flags & GX_SYNCFLAG_NO_SHADER))
 	{
 		if(!m_pShader)
 		{
@@ -921,7 +932,7 @@ IGXVertexShader * CGXContext::createVertexShader(const char * szFile, GXMACRO *p
 	ID3DXBuffer *pErrorBlob;
 	ID3DXConstantTable *pConstTable;
 
-	if(FAILED(DX_CALL(D3DXCompileShaderFromFileA(szFile, (D3DXMACRO*)pDefs, NULL, "main", "vs_3_0", D3DXSHADER_OPTIMIZATION_LEVEL3, &pShaderBlob, &pErrorBlob, &pConstTable))))
+	if(FAILED(DX_CALL(D3DXCompileShaderFromFileA(szFile, (D3DXMACRO*)pDefs, NULL, "main", "vs_3_0", SHADER_FLAGS, &pShaderBlob, &pErrorBlob, &pConstTable))))
 	{
 		if(pErrorBlob)
 		{
@@ -953,7 +964,7 @@ IGXVertexShader * CGXContext::createVertexShaderFromString(const char * szCode, 
 	ID3DXBuffer *pErrorBlob;
 	ID3DXConstantTable *pConstTable;
 
-	if(FAILED(DX_CALL(D3DXCompileShader(szCode, strlen(szCode), (D3DXMACRO*)pDefs, NULL, "main", "vs_3_0", D3DXSHADER_OPTIMIZATION_LEVEL3, &pShaderBlob, &pErrorBlob, &pConstTable))))
+	if(FAILED(DX_CALL(D3DXCompileShader(szCode, strlen(szCode), (D3DXMACRO*)pDefs, NULL, "main", "vs_3_0", SHADER_FLAGS, &pShaderBlob, &pErrorBlob, &pConstTable))))
 	{
 		if(pErrorBlob)
 		{
@@ -1015,7 +1026,7 @@ IGXVertexShader * CGXContext::createVertexShader(void *_pData, UINT uSize)
 	ID3DXBuffer *pShaderBlob;
 	DX_CALL(D3DXCreateBuffer(uProgramSize, &pShaderBlob));
 	memcpy(pShaderBlob->GetBufferPointer(), pData, uProgramSize);
-
+	
 	DX_CALL(m_pDevice->CreateVertexShader((DWORD*)pShaderBlob->GetBufferPointer(), &(pShader->m_pShader)));
 
 	mem_release(pShaderBlob);
@@ -1033,7 +1044,7 @@ IGXPixelShader * CGXContext::createPixelShader(const char * szFile, GXMACRO *pDe
 	ID3DXBuffer *pErrorBlob;
 	ID3DXConstantTable *pConstTable;
 
-	if(FAILED(DX_CALL(D3DXCompileShaderFromFileA(szFile, (D3DXMACRO*)pDefs, NULL, "main", "ps_3_0", D3DXSHADER_OPTIMIZATION_LEVEL3, &pShaderBlob, &pErrorBlob, &pConstTable))))
+	if(FAILED(DX_CALL(D3DXCompileShaderFromFileA(szFile, (D3DXMACRO*)pDefs, NULL, "main", "ps_3_0", SHADER_FLAGS, &pShaderBlob, &pErrorBlob, &pConstTable))))
 	{
 		if(pErrorBlob)
 		{
@@ -1095,7 +1106,7 @@ IGXPixelShader * CGXContext::createPixelShader(void *_pData, UINT uSize)
 	ID3DXBuffer *pShaderBlob;
 	DX_CALL(D3DXCreateBuffer(uProgramSize, &pShaderBlob));
 	memcpy(pShaderBlob->GetBufferPointer(), pData, uProgramSize);
-
+	
 	DX_CALL(m_pDevice->CreatePixelShader((DWORD*)pShaderBlob->GetBufferPointer(), &(pShader->m_pShader)));
 
 	mem_release(pShaderBlob);
@@ -1108,7 +1119,7 @@ IGXPixelShader * CGXContext::createPixelShaderFromString(const char * szCode, GX
 	ID3DXBuffer *pErrorBlob;
 	ID3DXConstantTable *pConstTable;
 
-	if(FAILED(DX_CALL(D3DXCompileShader(szCode, strlen(szCode), (D3DXMACRO*)pDefs, NULL, "main", "ps_3_0", D3DXSHADER_OPTIMIZATION_LEVEL3, &pShaderBlob, &pErrorBlob, &pConstTable))))
+	if(FAILED(DX_CALL(D3DXCompileShader(szCode, strlen(szCode), (D3DXMACRO*)pDefs, NULL, "main", "ps_3_0", SHADER_FLAGS, &pShaderBlob, &pErrorBlob, &pConstTable))))
 	{
 		if(pErrorBlob)
 		{
@@ -1160,7 +1171,10 @@ void CGXContext::setShader(IGXShader *pSH)
 	}
 	mem_release(m_pShader);
 	m_pShader = pSH;
-	pSH->AddRef();
+	if(pSH)
+	{
+		pSH->AddRef();
+	}
 	m_sync_state.bShader = TRUE;
 }
 IGXShader *CGXContext::getShader()
@@ -1174,6 +1188,10 @@ IGXShader *CGXContext::getShader()
 
 IGXRenderBuffer * CGXContext::createRenderBuffer(UINT countSlots, IGXVertexBuffer ** pBuff, IGXVertexDeclaration * pDecl)
 {
+	assert(countSlots);
+	assert(pBuff);
+	assert(pDecl);
+
 	CGXRenderBuffer * pRB = new CGXRenderBuffer(this, countSlots, pBuff, pDecl);
 	/*for(UINT i = 0; i < countSlots; ++i)
 	{

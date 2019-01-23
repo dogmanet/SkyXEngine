@@ -1,8 +1,8 @@
 #ifndef _GRAPHIX_H_
 #define _GRAPHIX_H_
 
-#include <common/sxtypes.h>
-#include <common/SXMath.h>
+#include <common/types.h>
+#include <common/Math.h>
 
 typedef DWORD GXCOLOR;
 
@@ -131,6 +131,7 @@ typedef struct _GXVERTEXELEMENT
 #define GX_TEXUSAGE_AUTORESIZE 0x00000004
 #define GX_TEXUSAGE_ALLOWDISCARD 0x00000008 /* разрешено потерять данные, например при потере/восстановлении устройства в dx9 */
 
+#define GX_SHADER_CONSTANT_FAIL ~0
 
 enum GXPT
 {
@@ -524,7 +525,9 @@ class IGXVertexShader: public IGXBaseInterface
 public:
 	virtual void setConstantF(UINT uStartRegister, const float *pConstantData, UINT uVector4fCount) = 0;
 	virtual void setConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount) = 0;
+	virtual UINT getConstantCount() = 0;
 	virtual UINT getConstantLocation(const char *szConstName) = 0;
+	virtual UINT getConstantSizeV4(const char *szConstName) = 0;
 	virtual void getData(void *pData, UINT *pSize) = 0;
 };
 
@@ -533,7 +536,9 @@ class IGXPixelShader: public IGXBaseInterface
 public:
 	virtual void setConstantF(UINT uStartRegister, const float *pConstantData, UINT uVector4fCount) = 0;
 	virtual void setConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount) = 0;
+	virtual UINT getConstantCount() = 0;
 	virtual UINT getConstantLocation(const char *szConstName) = 0;
+	virtual UINT getConstantSizeV4(const char *szConstName) = 0;
 	virtual void getData(void *pData, UINT *pSize) = 0;
 };
 

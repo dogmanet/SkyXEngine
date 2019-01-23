@@ -72,14 +72,19 @@ void CGXVertexShader::setConstantF(UINT uStartRegister, const float *pConstantDa
 {
 	assert(uStartRegister + uVector4fCount <= m_uConstBuffRegCountF);
 
-	memcpy(m_pConstBufferF + uStartRegister * 4, pConstantData, sizeof(float) * 4 * uVector4fCount);
+	memcpy(m_pConstBufferF + uStartRegister * 4, pConstantData, sizeof(float)* 4 * uVector4fCount);
 }
 
 void CGXVertexShader::setConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount)
 {
 	assert(uStartRegister + uVector4iCount <= m_uConstBuffRegCountI);
 
-	memcpy(m_pConstBufferI + uStartRegister * 4, pConstantData, sizeof(int) * 4 * uVector4iCount);
+	memcpy(m_pConstBufferI + uStartRegister * 4, pConstantData, sizeof(int)* 4 * uVector4iCount);
+}
+
+UINT CGXVertexShader::getConstantCount()
+{
+	return m_mConstLocations.Size();
 }
 
 UINT CGXVertexShader::getConstantLocation(const char *szConstName)
@@ -89,7 +94,17 @@ UINT CGXVertexShader::getConstantLocation(const char *szConstName)
 	{
 		return(pNode->Val->RegisterIndex);
 	}
-	return(~0);
+	return(GX_SHADER_CONSTANT_FAIL);
+}
+
+UINT CGXVertexShader::getConstantSizeV4(const char *szConstName)
+{
+	const AssotiativeArray<AAString, D3DXCONSTANT_DESC>::Node *pNode;
+	if(m_mConstLocations.KeyExists(AAString(szConstName), &pNode))
+	{
+		return(pNode->Val->RegisterCount);
+	}
+	return(GX_SHADER_CONSTANT_FAIL);
 }
 
 void CGXVertexShader::getData(void *_pData, UINT *pSize)
@@ -208,14 +223,19 @@ void CGXPixelShader::setConstantF(UINT uStartRegister, const float *pConstantDat
 {
 	assert(uStartRegister + uVector4fCount <= m_uConstBuffRegCountF);
 
-	memcpy(m_pConstBufferF + uStartRegister * 4, pConstantData, sizeof(float) * 4 * uVector4fCount);
+	memcpy(m_pConstBufferF + uStartRegister * 4, pConstantData, sizeof(float)* 4 * uVector4fCount);
 }
 
 void CGXPixelShader::setConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount)
 {
 	assert(uStartRegister + uVector4iCount <= m_uConstBuffRegCountI);
 
-	memcpy(m_pConstBufferI + uStartRegister * 4, pConstantData, sizeof(int) * 4 * uVector4iCount);
+	memcpy(m_pConstBufferI + uStartRegister * 4, pConstantData, sizeof(int)* 4 * uVector4iCount);
+}
+
+UINT CGXPixelShader::getConstantCount()
+{
+	return m_mConstLocations.Size();
 }
 
 UINT CGXPixelShader::getConstantLocation(const char *szConstName)
@@ -225,7 +245,17 @@ UINT CGXPixelShader::getConstantLocation(const char *szConstName)
 	{
 		return(pNode->Val->RegisterIndex);
 	}
-	return(~0);
+	return(GX_SHADER_CONSTANT_FAIL);
+}
+
+UINT CGXPixelShader::getConstantSizeV4(const char *szConstName)
+{
+	const AssotiativeArray<AAString, D3DXCONSTANT_DESC>::Node *pNode;
+	if(m_mConstLocations.KeyExists(AAString(szConstName), &pNode))
+	{
+		return(pNode->Val->RegisterCount);
+	}
+	return(GX_SHADER_CONSTANT_FAIL);
 }
 
 void CGXPixelShader::getData(void *_pData, UINT *pSize)

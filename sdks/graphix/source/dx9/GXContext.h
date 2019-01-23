@@ -23,6 +23,8 @@ enum GX_LOG
 	GX_LOG_ERROR
 };
 
+#define GX_SYNCFLAG_NO_SHADER 0x00000001
+
 #define DX_CALL(code) ([](HRESULT hr, const char *szCode){if(FAILED(hr)){CGXContext::logDXcall(szCode, hr);}return(hr);})((code), #code)
 
 class CGXContext: public IGXContext
@@ -216,7 +218,7 @@ protected:
 
 	_sync_state m_sync_state;
 
-	void syncronize();
+	void syncronize(UINT flags=0);
 	UINT getPTcount(UINT idxCount);
 	UINT getIndexSize(D3DFORMAT idx);
 

@@ -35,9 +35,16 @@ CGXVertexDeclaration::CGXVertexDeclaration(IDirect3DDevice9 *pDevice, CGXContext
 		}
 	}
 
-	D3DVERTEXELEMENT9 *pEls = (D3DVERTEXELEMENT9*)alloca(sizeof(D3DVERTEXELEMENT9) * uDeclCount);
+	D3DVERTEXELEMENT9 *pEls = (D3DVERTEXELEMENT9*)alloca(sizeof(D3DVERTEXELEMENT9) * (uDeclCount + 1));
 
 	memset(m_u8StreamStride, 0, sizeof(m_u8StreamStride));
+
+	pEls[uDeclCount].Stream = 0xFF;
+	pEls[uDeclCount].Offset = 0;
+	pEls[uDeclCount].Type = D3DDECLTYPE_UNUSED;
+	pEls[uDeclCount].Method = 0;
+	pEls[uDeclCount].Usage = 0;
+	pEls[uDeclCount].UsageIndex = 0;
 
 	UINT stride = 0;
 	m_u8StreamCount = 0;

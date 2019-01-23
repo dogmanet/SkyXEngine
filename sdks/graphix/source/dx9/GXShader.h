@@ -29,7 +29,9 @@ public:
 
 	void setConstantF(UINT uStartRegister, const float *pConstantData, UINT uVector4fCount);
 	void setConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount);
+	UINT getConstantCount();
 	UINT getConstantLocation(const char *szConstName);
+	UINT getConstantSizeV4(const char *szConstName);
 	void getData(void *pData, UINT *pSize);
 };
 
@@ -57,7 +59,9 @@ public:
 
 	void setConstantF(UINT uStartRegister, const float *pConstantData, UINT uVector4fCount);
 	void setConstantI(UINT uStartRegister, const int *pConstantData, UINT uVector4iCount);
+	UINT getConstantCount();
 	UINT getConstantLocation(const char *szConstName);
+	UINT getConstantSizeV4(const char *szConstName);
 	void getData(void *pData, UINT *pSize);
 };
 
