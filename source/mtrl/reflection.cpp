@@ -18,20 +18,27 @@ CReflection::CReflection()
 	{
 		m_aFrustums[i] = 0;
 	}
+
+	GXDEPTH_STENCIL_DESC dsDesc;
+	dsDesc.bDepthEnable = false;
+	dsDesc.bEnableDepthWrite = false;
+	m_pDSState = mtrl_data::pDXDevice->createDepthStencilState(&dsDesc);
 }
 
 CReflection::~CReflection()
 {
 	for (int i = 0; i < 6; ++i)
 	{
-		mem_release_del(m_aFrustums[i]);
+		mem_release(m_aFrustums[i]);
 	}
 
-	mem_release_del(m_pBackBuffer);
-	mem_release_del(m_pTexPlaneRef);
-	mem_release_del(m_pSurface);
+	mem_release(m_pDSState);
 
-	mem_release_del(m_pTexCubeRef);
+	mem_release(m_pBackBuffer);
+	mem_release(m_pTexPlaneRef);
+	mem_release(m_pSurface);
+
+	mem_release(m_pTexCubeRef);
 }
 
 void CReflection::setIDvisCalcObj(ID id, ID idFace, ID idArr)
@@ -77,17 +84,22 @@ void CReflection::onLostDevice()
 
 void CReflection::onResetDevice()
 {
-	D3DXCreateTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexWork);
+#if 0
+	m_pTexWork = mtrl_data::pDXDevice->createTexture2D(mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A8R8G8B8);
 
 	if (typeReflection == MTLTYPE_REFLECT_PLANE)
 	{
-		D3DXCreateTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexPlaneRef);
+		m_pTexPlaneRef = mtrl_data::pDXDevice->createTexture2D(mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 0, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTOGENMIPMAPS, GXFMT_A8R8G8B8);
+		//D3DXCreateTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexPlaneRef);
 	}
 	else if (typeReflection == MTLTYPE_REFLECT_CUBE_STATIC || typeReflection == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 	{
-		D3DXCreateCubeTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexCubeRef);
-		m_pTexCubeRef->SetAutoGenFilterType(D3DTEXF_LINEAR);
+		m_pTexCubeRef = mtrl_data::pDXDevice->createTextureCube(mtrl_data::vSizeTexReflection.x, 0, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTOGENMIPMAPS, GXFMT_A8R8G8B8);
+		//D3DXCreateCubeTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexCubeRef);
+		//@FIXME: no such api!
+		//m_pTexCubeRef->SetAutoGenFilterType(D3DTEXF_LINEAR);
 	}
+#endif
 
 	m_iCountUpdate = 0;
 }
@@ -96,7 +108,8 @@ void CReflection::init(MTLTYPE_REFLECT howref)
 {
 	typeReflection = howref;
 
-	D3DXCreateTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexWork);
+	m_pTexWork = mtrl_data::pDXDevice->createTexture2D(mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A8R8G8B8);
+	//D3DXCreateTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexWork);
 
 	if (typeReflection == MTLTYPE_REFLECT_PLANE)
 	{
@@ -104,7 +117,8 @@ void CReflection::init(MTLTYPE_REFLECT howref)
 			m_aFrustums[0] = SGCore_CrFrustum();
 
 		if (!m_pTexPlaneRef)
-			D3DXCreateTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexPlaneRef);
+			m_pTexPlaneRef = mtrl_data::pDXDevice->createTexture2D(mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 0, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTOGENMIPMAPS, GXFMT_A8R8G8B8);
+			//D3DXCreateTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexPlaneRef);
 	}
 	else if (typeReflection == MTLTYPE_REFLECT_CUBE_STATIC || typeReflection == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 	{
@@ -115,7 +129,8 @@ void CReflection::init(MTLTYPE_REFLECT howref)
 		}
 
 		if (!m_pTexCubeRef)
-			D3DXCreateCubeTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R5G6B5, D3DPOOL_DEFAULT, &m_pTexCubeRef);
+			m_pTexCubeRef = mtrl_data::pDXDevice->createTextureCube(mtrl_data::vSizeTexReflection.x, 0, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTOGENMIPMAPS, GXFMT_A8R8G8B8);
+			//D3DXCreateCubeTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R5G6B5, D3DPOOL_DEFAULT, &m_pTexCubeRef);
 	}
 	else
 	{
@@ -252,32 +267,36 @@ void CReflection::postRenderRefPlane()
 
 	DWORD alphablend, alphatest, zenable, zwriteenable;
 
-	mtrl_data::pDXDevice->GetRenderState(D3DRS_ALPHABLENDENABLE, &alphablend);
+/*	mtrl_data::pDXDevice->GetRenderState(D3DRS_ALPHABLENDENABLE, &alphablend);
 	mtrl_data::pDXDevice->GetRenderState(D3DRS_ALPHATESTENABLE, &alphatest);
 	mtrl_data::pDXDevice->GetRenderState(D3DRS_ZENABLE, &zenable);
 	mtrl_data::pDXDevice->GetRenderState(D3DRS_ZWRITEENABLE, &zwriteenable);
+*/
+	mtrl_data::pDXDevice->setDepthStencilState(m_pDSState);
+	mtrl_data::pDXDevice->setBlendState(NULL);
 
-	mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+/*	mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	mtrl_data::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	mtrl_data::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-
+*/
 	m_pSurface = m_pTexPlaneRef->getMipmap();
 	mtrl_data::pDXDevice->setColorTarget(m_pSurface);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, mtrl_data::shader_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idScreenOut);
+	static ID s_idShader = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idScreenOut, mtrl_data::shader_id::ps::idScreenOut);
+
+	SGCore_ShaderBind(s_idShader);
 
 	mtrl_data::pDXDevice->setTexture(m_pTexWork);
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
-	mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, alphablend);
+/*	mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, alphablend);
 	mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, alphatest);
 	mtrl_data::pDXDevice->SetRenderState(D3DRS_ZENABLE, zenable);
 	mtrl_data::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, zwriteenable);
-
+*/
 	mem_release(m_pSurface);
 
 	mtrl_data::pDXDevice->setColorTarget(m_pBackBuffer);
@@ -361,32 +380,34 @@ void CReflection::postRenderRefCube(ID idFace)
 
 	DWORD alphablend, alphatest, zenable, zwriteenable;
 
-	mtrl_data::pDXDevice->GetRenderState(D3DRS_ALPHABLENDENABLE, &alphablend);
+/*	mtrl_data::pDXDevice->GetRenderState(D3DRS_ALPHABLENDENABLE, &alphablend);
 	mtrl_data::pDXDevice->GetRenderState(D3DRS_ALPHATESTENABLE, &alphatest);
 	mtrl_data::pDXDevice->GetRenderState(D3DRS_ZENABLE, &zenable);
 	mtrl_data::pDXDevice->GetRenderState(D3DRS_ZWRITEENABLE, &zwriteenable);
-
-	mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	mtrl_data::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	mtrl_data::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+*/
+	mtrl_data::pDXDevice->setDepthStencilState(m_pDSState);
+	mtrl_data::pDXDevice->setBlendState(NULL);
+	//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	//mtrl_data::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+	//mtrl_data::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
 	m_pSurface = m_pTexCubeRef->getMipmap((GXCUBEMAP_FACES)idFace);
 	mtrl_data::pDXDevice->setColorTarget(m_pSurface);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, mtrl_data::shader_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idScreenOut);
+	static ID s_idShader = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idScreenOut, mtrl_data::shader_id::ps::idScreenOut);
+	SGCore_ShaderBind(s_idShader);
 
 	mtrl_data::pDXDevice->setTexture(m_pTexWork);
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
-	mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, alphablend);
+/*	mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, alphablend);
 	mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, alphatest);
 	mtrl_data::pDXDevice->SetRenderState(D3DRS_ZENABLE, zenable);
 	mtrl_data::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, zwriteenable);
-
+*/
 	/*if(GetAsyncKeyState(VK_NUMPAD5))
 	{
 		char tmpstr[1024];

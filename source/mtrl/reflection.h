@@ -133,6 +133,8 @@ protected:
 
 	//! текстура кубических отражений
 	IGXTextureCube *m_pTexCubeRef;
+
+	IGXDepthStencilState *m_pDSState = NULL;
 };
 
 #endif
