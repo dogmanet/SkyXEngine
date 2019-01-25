@@ -160,6 +160,8 @@ CMaterials::CMaterials()
 	m_idMtrlDefSkin = addUnitMaterial(tmpumtl);
 	addName(tmpumtl->m_pMtrl->m_sName.c_str(), m_idMtrlDefSkin);
 
+	tmpumtl->m_pMtrl->m_oMainGraphics.updateShaderKit(true);
+
 	m_idBeginNonDef = m_aUnitMtrls.size();
 }
 
@@ -202,6 +204,7 @@ void CMaterials::CMaterial::nulling()
 	m_oMainGraphics.m_idMainTexture = -1;
 	m_oMainGraphics.m_idShaderVS = -1;
 	m_oMainGraphics.m_idShaderPS = -1;
+	m_oMainGraphics.m_idShaderKit = -1;
 	m_oMainGraphics.m_useDestColor = false;
 	
 	m_oMicroDetail = CMaskDetailMicroRelief();
@@ -257,6 +260,18 @@ CMaterials::CMaterial::CMainGraphics::~CMainGraphics()
 {
 
 };
+
+void CMaterials::CMaterial::CMainGraphics::updateShaderKit(bool bComplete)
+{
+	if(ID_VALID(m_idShaderPS) && ID_VALID(m_idShaderVS))
+	{
+		m_idShaderKit = SGCore_ShaderCreateKit(m_idShaderVS, m_idShaderPS);
+	}
+	else if(bComplete)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid shader in CMainGraphics::updateShaderKit();");
+	}
+}
 
 //**************************************************************************
 
@@ -538,6 +553,8 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
 			pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, sPS.c_str(), sPS.c_str(), SHADER_CHECKDOUBLE_PATH);
 		else
 			pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExistsName(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");
+
+		pMtrl->m_oMainGraphics.updateShaderKit(true);
 
 		if (pConfig->keyExists(sName.c_str(), "microrelief_r"))
 			sNormal = pConfig->getKey(sName.c_str(), "microrelief_r");
@@ -870,6 +887,7 @@ void CMaterials::createMtl(const char* name, CMaterial** mtl, MTLTYPE_MODEL type
 	}
 
 	pMtrl->m_sName = tmp_name;
+	pMtrl->m_oMainGraphics.updateShaderKit(true);
 }
 
 ID CMaterials::mtlLoad(const char* name, MTLTYPE_MODEL type)
@@ -1435,6 +1453,7 @@ void CMaterials::mtlSetVS(ID id, const char* path_vs)
 {
 	MTL_PRE_COND_ID(id, _VOID);
 	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, path_vs, path_vs, SHADER_CHECKDOUBLE_PATH);
+	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.updateShaderKit(false);
 }
 
 void CMaterials::mtlGetVS(ID id, char* name)
@@ -1447,6 +1466,7 @@ void CMaterials::mtlSetPS(ID id, const char* path_ps)
 {
 	MTL_PRE_COND_ID(id, _VOID);
 	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, path_ps, path_ps, SHADER_CHECKDOUBLE_PATH);
+	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.updateShaderKit(false);
 }
 
 void CMaterials::mtlGetPS(ID id, char* name)
@@ -1854,7 +1874,7 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 	//из-за этого может быть необъяснимое поводенеие и как результат непонятные артефакты в самой текстуре в которую сейчас рисуем
 	//поэтому нужно обнулить слот в котором возможно была текстура
 	//такое явление может быть в случае когда в кадре только один материал который отражает
-	mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_REFLECTION, 0);
+	mtrl_data::pDXDevice->setTexture(NULL, MTL_TEX_R_REFLECTION);
 
 	if (idMtl >= 0 && idMtl < m_aUnitMtrls.size())
 		setMainTexture(idSlot, idMtl);
@@ -1889,6 +1909,12 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 	}
 	else if (type == MTLTYPE_MODEL_GRASS || type == MTLTYPE_MODEL_TREE)
 	{
+		static ID s_idShaderKitGrassGreen = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdGrass, mtrl_data::shader_id::ps::idStdGreen);
+		static ID s_idShaderKitGrassGreenCP = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdGrass, mtrl_data::shader_id::ps::idStdGreenCP);
+
+		static ID s_idShaderKitTreeGreen = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdTree, mtrl_data::shader_id::ps::idStdGreen);
+		static ID s_idShaderKitTreeGreenCP = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdTree, mtrl_data::shader_id::ps::idStdGreenCP);
+
 		ID tmpvs = (type == MTLTYPE_MODEL_GRASS ? mtrl_data::shader_id::vs::idStdGrass : mtrl_data::shader_id::vs::idStdTree);
 		SGCore_ShaderBind(SHADER_TYPE_VERTEX, tmpvs);
 
@@ -1903,7 +1929,7 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 
 		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
 		{
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGreenCP);
+			SGCore_ShaderBind((type == MTLTYPE_MODEL_GRASS ? s_idShaderKitGrassGreenCP : s_idShaderKitTreeGreenCP));
 
 			float3 tmpnormal, tmppoint;
 
@@ -1914,7 +1940,7 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGreenCP, "g_vPlanePoint", &tmppoint);
 		}
 		else
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGreen);
+			SGCore_ShaderBind((type == MTLTYPE_MODEL_GRASS ? s_idShaderKitGrassGreen : s_idShaderKitTreeGreen));
 	}
 	else if (type == MTLTYPE_MODEL_SKIN)
 	{
@@ -1961,21 +1987,21 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 	CMaterial *pMtrl = m_aUnitMtrls[id]->m_pMtrl;
 
 	//если есть то устанавливаем текстуру материала
-	if (pMtrl->m_oMainGraphics.m_idMainTexture != -1)
-		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_MAIN, SGCore_LoadTexGetTex(pMtrl->m_oMainGraphics.m_idMainTexture));
+	if (ID_VALID(pMtrl->m_oMainGraphics.m_idMainTexture))
+		mtrl_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(pMtrl->m_oMainGraphics.m_idMainTexture), MTL_TEX_R_MAIN);
 
 	//если нет отражени¤ то отправл¤ем 0
 	if (pMtrl->m_oLightParam.m_typeReflect == 0)
-		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_REFLECTION, 0);
+		mtrl_data::pDXDevice->setTexture(NULL, MTL_TEX_R_REFLECTION);
 	else
 	{
 		if (m_aUnitMtrls[id]->m_pReflect->getTypeReflect() == MTLTYPE_REFLECT_PLANE)
-			mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_REFLECTION, m_aUnitMtrls[id]->m_pReflect->getRefPlaneTex());
+			mtrl_data::pDXDevice->setTexture(m_aUnitMtrls[id]->m_pReflect->getRefPlaneTex(), MTL_TEX_R_REFLECTION);
 		else if (m_aUnitMtrls[id]->m_pReflect->getTypeReflect() == MTLTYPE_REFLECT_CUBE_STATIC || m_aUnitMtrls[id]->m_pReflect->getTypeReflect() == MTLTYPE_REFLECT_CUBE_DYNAMIC)
-			mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_REFLECTION, m_aUnitMtrls[id]->m_pReflect->getRefCubeTex());
+			mtrl_data::pDXDevice->setTexture(m_aUnitMtrls[id]->m_pReflect->getRefCubeTex(), MTL_TEX_R_REFLECTION);
 	}
 
-	mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_CURR_DEPTH, SGCore_GbufferGetRT(DS_RT_DEPTH0));
+	mtrl_data::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH0), MTL_TEX_R_CURR_DEPTH);
 
 	//если есть рефаркци¤, а она идет вторым проходом, то отправл¤ем, иначе посылаем 0
 	/*if (pMtrl->m_oLightParam.m_type_transparency)
@@ -1983,26 +2009,26 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 	else
 		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_REFRACTION, 0);*/
 
-	if (pMtrl->m_oMicroDetail.m_idMask != -1)
-		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_MASK, SGCore_LoadTexGetTex(pMtrl->m_oMicroDetail.m_idMask));
+	if (ID_VALID(pMtrl->m_oMicroDetail.m_idMask))
+		mtrl_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(pMtrl->m_oMicroDetail.m_idMask), MTL_TEX_R_MASK);
 
 	for (int k = 0; k<4; k++)
 	{
-		if (pMtrl->m_oMicroDetail.m_aDetail[k] != -1)
-			mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_DETAIL + k, SGCore_LoadTexGetTex(pMtrl->m_oMicroDetail.m_aDetail[k]));
+		if (ID_VALID(pMtrl->m_oMicroDetail.m_aDetail[k]))
+			mtrl_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(pMtrl->m_oMicroDetail.m_aDetail[k]), MTL_TEX_R_DETAIL + k);
 		else
-			mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_DETAIL + k, 0);
+			mtrl_data::pDXDevice->setTexture(NULL, MTL_TEX_R_DETAIL + k);
 
-		if (pMtrl->m_oMicroDetail.m_aMicroRelief[k] != -1)
-			mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_MICRO + k, SGCore_LoadTexGetTex(pMtrl->m_oMicroDetail.m_aMicroRelief[k]));
+		if (ID_VALID(pMtrl->m_oMicroDetail.m_aMicroRelief[k]))
+			mtrl_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(pMtrl->m_oMicroDetail.m_aMicroRelief[k]), MTL_TEX_R_MICRO + k);
 		else
-			mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_MICRO + k, 0);
+			mtrl_data::pDXDevice->setTexture(NULL, MTL_TEX_R_MICRO + k);
 	}
 
-	//если есть текстура с параметрами освещени¤ и установлено что берем параметры из текстуры, то отправл¤ем текстуру с параметрами
+	//если есть текстура с параметрами освещения и установлено что берем параметры из текстуры, то отправляем текстуру с параметрами
 	if (pMtrl->m_oLightParam.m_idTexParam != -1 && pMtrl->m_oLightParam.m_isTextureParam)
 	{
-		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParam));
+		mtrl_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParam), MTL_TEX_R_PARAM_LIGHT);
 	}
 	//иначе если берем параметры из ... редактора
 	else //if (!pMtrl->m_oLightParam.m_isTextureParam)
@@ -2010,30 +2036,29 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 		if (pMtrl->m_oLightParam.m_fOldRoughness != pMtrl->m_oLightParam.m_fRoughness || pMtrl->m_oLightParam.m_fOldF0 != pMtrl->m_oLightParam.m_fF0 || pMtrl->m_oLightParam.m_fOldThickness != pMtrl->m_oLightParam.m_fThickness)
 		{
 			//блокируем текстуру 1х1 котора¤ есть параметры освещени¤, и запсиываем туда то что настроили
-			D3DLOCKED_RECT LockedRect;
-			IDirect3DTexture9* ParamLightModelTex = SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParamHand);
-			ParamLightModelTex->LockRect(0, &LockedRect, 0, 0);
-			DWORD *param = (DWORD*)LockedRect.pBits;
-			//DWORD param = D3DCOLOR_ARGB(0,0,0,0);
-			param[0] = D3DCOLOR_ARGB(255, DWORD(pMtrl->m_oLightParam.m_fRoughness*255.f), DWORD(pMtrl->m_oLightParam.m_fF0*255.f), DWORD(pMtrl->m_oLightParam.m_fThickness*255.f));
-			ParamLightModelTex->UnlockRect(0);
+			IGXTexture2D* ParamLightModelTex = SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParamHand);
+			DWORD *param;
+			if(ParamLightModelTex->lock((void**)&param, GXTL_WRITE))
+			{
+				param[0] = GXCOLOR_ARGB(255, DWORD(pMtrl->m_oLightParam.m_fRoughness*255.f), DWORD(pMtrl->m_oLightParam.m_fF0*255.f), DWORD(pMtrl->m_oLightParam.m_fThickness*255.f));
+				ParamLightModelTex->unlock();
+			}
 
 			pMtrl->m_oLightParam.m_fOldRoughness = pMtrl->m_oLightParam.m_fRoughness;
 			pMtrl->m_oLightParam.m_fOldF0 = pMtrl->m_oLightParam.m_fF0;
 			pMtrl->m_oLightParam.m_fOldThickness = pMtrl->m_oLightParam.m_fThickness;
 		}
 
-		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParamHand));
+		mtrl_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParamHand), MTL_TEX_R_PARAM_LIGHT);
 	}
 	/*else
 		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(mtrl_data::IDsTexs::NullMaterial));*/
 
 
-	if (pMtrl->m_oMainGraphics.m_idShaderVS != -1)
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, pMtrl->m_oMainGraphics.m_idShaderVS);
-
-	if (pMtrl->m_oMainGraphics.m_idShaderPS != -1)
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS);
+	if(ID_VALID(pMtrl->m_oMainGraphics.m_idShaderKit))
+		SGCore_ShaderBind(pMtrl->m_oMainGraphics.m_idShaderKit);
+	else
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unvalid shader kit");
 
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorld || pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldView || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorldView || pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorldViewProjection)
 		m_mWorldTrans = SMMatrixTranspose(m_mWorld);

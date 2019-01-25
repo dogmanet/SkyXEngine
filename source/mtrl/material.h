@@ -196,6 +196,8 @@ public:
 			CMainGraphics();
 			~CMainGraphics();
 
+			void updateShaderKit(bool bComplete);
+
 			//! основная текстура
 			ID m_idMainTexture;
 
@@ -204,6 +206,9 @@ public:
 
 			//! пиксельный шейдер
 			ID m_idShaderPS;
+
+			//! набор шейдеров
+			ID m_idShaderKit = -1;
 
 			//! неосвещаемый материал
 			bool m_isUnlit;
