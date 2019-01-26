@@ -75,11 +75,11 @@ ID CReflection::getIDvisCalcObj(ID id, ID idFace)
 
 void CReflection::onLostDevice()
 {
-	mem_release_del(m_pTexWork);
-	mem_release_del(m_pTexPlaneRef);
-	mem_release_del(m_pTexCubeRef);
+	//mem_release_del(m_pTexWork);
+	//mem_release_del(m_pTexPlaneRef);
+	//mem_release_del(m_pTexCubeRef);
 
-	mem_release_del(m_pSurface);
+	//mem_release_del(m_pSurface);
 }
 
 void CReflection::onResetDevice()
@@ -230,8 +230,8 @@ void CReflection::preRenderRefPlane(const SMPLANE* plane)
 	float4x4 viewmat;
 	Core_RMatrixGet(G_RI_MATRIX_VIEW, &viewmat);
 
-	D3DXMATRIX matReflect, matView;
-	D3DXMatrixReflect(&matReflect, plane);
+	SMMATRIX matReflect, matView;
+	matReflect = SMMatrixReflect(*plane);
 	
 	viewmat = float4x4(matReflect) * viewmat;
 	viewmat._12 = -viewmat._12;

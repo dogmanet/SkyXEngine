@@ -10,7 +10,7 @@ See the license in LICENSE
 #include <gdefines.h>
 
 //#define SM_D3D_CONVERSIONS
-#include <common/SXMath.h>
+#include <common/Math.h>
 #include <common/Array.h>
 #include <common/String.h>
 #include <graphix/graphix.h>
@@ -204,7 +204,7 @@ public:
 		LTYPE_SHADOW m_typeShadowed;
 		int m_iCountUpdate;
 		
-		ID3DXMesh *m_pMesh;
+		IMesh *m_pMesh;
 
 		float3 m_vPosition;
 		float m_fPower;

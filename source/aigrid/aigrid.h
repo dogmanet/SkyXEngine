@@ -12,7 +12,7 @@ See the license in LICENSE
 #include <common/memalloc.h>
 
 //#define SM_D3D_CONVERSIONS
-#include <common/SXMath.h>
+#include <common/Math.h>
 #include "sxaigrid.h"
 #include <math.h>
 
@@ -547,7 +547,7 @@ protected:
 	IGXVertexBuffer *m_pTransVertBuf;
 
 	//! меш главного ограничивающего объема
-	ID3DXMesh *m_pBoundBox;
+	IMesh *m_pBoundBox;
 
 	//! значения ограничивающего объема
 	float3_t m_vMax, m_vMin;

@@ -344,9 +344,7 @@ void PSSM::preRender(int split)
 	light_data::pDXDevice->SetRenderTarget(0, DepthSurfaces[split]);
 	
 
-	light_data::pDXDevice->setClearColor(float4_t(1.0f, 1.0f, 1.0f, 1.0f));
-	light_data::pDXDevice->clearTarget();
-	light_data::pDXDevice->clearDepth();
+	light_data::pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH, GXCOLOR_ARGB(255, 255, 255, 255));
 }
 
 void PSSM::begin()
@@ -522,8 +520,7 @@ void PSSM::genShadowAll(IDirect3DTexture9* shadowmap)
 	light_data::pDXDevice->SetRenderTarget(0, RenderSurf);
 
 
-	light_data::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
-	light_data::pDXDevice->clearTarget();
+		light_data::pDXDevice->clear(GXCLEAR_COLOR);
 
 	light_data::pDXDevice->SetRenderTarget(0, BackBuf);
 
@@ -1056,9 +1053,7 @@ void ShadowMapCubeTech::pre(int cube)
 			DepthSurface[cube] = DepthMap->getMipmap((GXCUBEMAP_FACES)cube, 0);
 			light_data::pDXDevice->setColorTarget(DepthSurface[cube]);
 
-			light_data::pDXDevice->setClearColor(float4_t(1.0f, 1.0f, 1.0f, 1.0f));
-			light_data::pDXDevice->clearTarget();
-			light_data::pDXDevice->clearDepth();
+			light_data::pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH, GXCOLOR_ARGB(255, 255, 255, 255));
 		}
 		return;
 	}

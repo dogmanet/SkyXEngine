@@ -17,8 +17,8 @@ See the license in LICENSE
 #ifndef __MODELFILE_H
 #define __MODELFILE_H
 
-#include <common/sxtypes.h>
-#include <common/SXMath.h>
+#include <common/types.h>
+#include <common/Math.h>
 
 #include <gcore/ModelFile.h>
 

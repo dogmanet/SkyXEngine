@@ -318,7 +318,7 @@ SX_LIB_API void SLight_Set4Or3SplitsG(ID id, bool is4or3)
 	ArrLights->set4Or3Splits(id, is4or3);
 }
 
-SX_LIB_API IDirect3DTexture9* SLight_GetShadow()
+SX_LIB_API IGXTexture2D* SLight_GetShadow()
 {
 	ML_PRECOND(0);
 	return ArrLights->getShadow2();

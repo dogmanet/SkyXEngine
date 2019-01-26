@@ -34,7 +34,7 @@ __forceinline int _log2(int n)
 	return(log);
 }
 
-#include <common/SXMath.h>
+#include <common/Math.h>
 #include <gdefines.h>
 #include <common/array.h>
 #include <common/MemAlloc.h>

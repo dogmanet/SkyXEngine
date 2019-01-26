@@ -7,7 +7,7 @@ See the license in LICENSE
 #include "animated.h"
 #include <cstdlib>
 #include <cstdio>
-#include <common/sxtypes.h>
+#include <common/types.h>
 #include <gcore/sxgcore.h>
 #include <mtrl/sxmtrl.h>
 
@@ -2334,7 +2334,7 @@ IGXVertexDeclaration *AnimationManager::getVertexDeclaration(MODEL_VERTEX_TYPE n
 	if(nDecl >= MVT_SIZE)
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "Unknown vertex declaration %d in AnimationManager::setVertexDeclaration()\n", nDecl);
-		return;
+		return(NULL);
 	}
 	return(pVertexDeclaration[nDecl]);
 }

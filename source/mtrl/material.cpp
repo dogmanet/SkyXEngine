@@ -1262,8 +1262,9 @@ int CMaterials::getCount()
 void CMaterials::setForceblyAlphaTest(bool isat)
 {
 	m_useForceblyAlphaTest = isat;
-	if (!isat)
-		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	//if (!isat)
+		//@FIXME: Reimplement this states!
+		//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 }
 
 bool CMaterials::getForceblyAlphaTest()
@@ -1876,13 +1877,14 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 	//такое явление может быть в случае когда в кадре только один материал который отражает
 	mtrl_data::pDXDevice->setTexture(NULL, MTL_TEX_R_REFLECTION);
 
+	static ID s_idShaderKitGeom = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdGeom, mtrl_data::shader_id::ps::idStdGeom);
+	static ID s_idShaderKitGeomCP = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdGeom, mtrl_data::shader_id::ps::idStdGeomCP);
+
 	if (idMtl >= 0 && idMtl < m_aUnitMtrls.size())
 		setMainTexture(idSlot, idMtl);
 
 	if (type == MTLTYPE_MODEL_STATIC)
 	{
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, mtrl_data::shader_id::vs::idStdGeom);
-
 		float4x4 wmat = (pWorld ? (*pWorld) : SMMatrixIdentity());
 		float4x4 wvpmat;
 		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &wvpmat);
@@ -1894,7 +1896,7 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 
 		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
 		{
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGeomCP);
+			SGCore_ShaderBind(s_idShaderKitGeomCP);
 
 			float3 tmpnormal, tmppoint;
 
@@ -1905,7 +1907,7 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGeomCP, "g_vPlanePoint", &tmppoint);
 		}
 		else
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGeom);
+			SGCore_ShaderBind(s_idShaderKitGeom);
 	}
 	else if (type == MTLTYPE_MODEL_GRASS || type == MTLTYPE_MODEL_TREE)
 	{
@@ -1916,7 +1918,6 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 		static ID s_idShaderKitTreeGreenCP = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdTree, mtrl_data::shader_id::ps::idStdGreenCP);
 
 		ID tmpvs = (type == MTLTYPE_MODEL_GRASS ? mtrl_data::shader_id::vs::idStdGrass : mtrl_data::shader_id::vs::idStdTree);
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, tmpvs);
 
 		float4x4 wmat = (pWorld ? (*pWorld) : SMMatrixIdentity());
 		float4x4 wvpmat;
@@ -1944,8 +1945,9 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 	}
 	else if (type == MTLTYPE_MODEL_SKIN)
 	{
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, mtrl_data::shader_id::vs::idStdSkin);
-
+		static ID s_idShaderKitSkin = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdSkin, mtrl_data::shader_id::ps::idStdSkin);
+		static ID s_idShaderKitSkinCP = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdSkin, mtrl_data::shader_id::ps::idStdSkinCP);
+		
 		float4x4 wmat = (pWorld ? (*pWorld) : SMMatrixIdentity());
 		float4x4 wvpmat;
 		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &wvpmat);
@@ -1957,7 +1959,7 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 
 		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
 		{
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdSkinCP);
+			SGCore_ShaderBind(s_idShaderKitSkinCP);
 
 			float3 tmpnormal, tmppoint;
 
@@ -1968,7 +1970,7 @@ void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdSkinCP, "g_vPlanePoint", &tmppoint);
 		}
 		else
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdSkin);
+			SGCore_ShaderBind(s_idShaderKitSkin);
 	}
 }
 
@@ -2159,21 +2161,24 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 	//если материалом назначен альфа тест и не включен принудительный
 	if (pMtrl->m_oMainGraphics.m_useAlphaTest && !m_useForceblyAlphaTest)
 	{
-		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
-		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAREF, MTL_ALPHATEST_FREE_VALUE);
-		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+		//@FIXME: Reimplement this states!
+		//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+		//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAREF, MTL_ALPHATEST_FREE_VALUE);
+		//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 	}
 	//если не включен принудительный альфа тест
 	else if (!m_useForceblyAlphaTest)
 	{
-		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+		//@FIXME: Reimplement this states!
+		//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	}
 	//иначе включен принудительный альфа тест
 	else
 	{
-		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
-		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAREF, MTL_ALPHATEST_FORCEBLY_VALUE);
-		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+		//@FIXME: Reimplement this states!
+		//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+		//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAREF, MTL_ALPHATEST_FORCEBLY_VALUE);
+		//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 	}
 
 	/*if (pMtrl->m_oLightParam.m_fThickness < 1.f)

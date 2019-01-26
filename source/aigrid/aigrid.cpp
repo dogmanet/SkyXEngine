@@ -2478,7 +2478,7 @@ void CAIGrid::gridTestValidation()
 
 	for (int i = 0; i < m_uiCountSplits; ++i)
 	{
-		m_aSplitsColor[i] = D3DCOLOR_ARGB(200, rand() % 255, rand() % 255, rand() % 255);
+		m_aSplitsColor[i] = GXCOLOR_ARGB(200, rand() % 255, rand() % 255, rand() % 255);
 	}
 	//}
 
@@ -2505,9 +2505,9 @@ void CAIGrid::renderBB()
 	if (!m_useGraphics)
 		return;
 
-	m_pDXDevice->SetTexture(0, SGCore_LoadTexGetTex(m_idTexBB));
+	m_pDXDevice->setTexture(SGCore_LoadTexGetTex(m_idTexBB));
 	if (m_pBoundBox)
-		m_pBoundBox->DrawSubset(0);
+		m_pBoundBox->draw();
 }
 
 void CAIGrid::renderQuads(const IFrustum * frustum, const float3 * viewpos, float dist)
@@ -2598,7 +2598,7 @@ void CAIGrid::renderQuads(const IFrustum * frustum, const float3 * viewpos, floa
 					else
 					{
 						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(1, 1, 0, 0);
-						RTGPUArrVerteces[tmpkey].m_uiColor = D3DCOLOR_ARGB(255, 255, 0, 0);
+						RTGPUArrVerteces[tmpkey].m_uiColor = GXCOLOR_ARGB(255, 255, 0, 0);
 					}
 
 					++tmpkey;
@@ -2698,7 +2698,7 @@ void CAIGrid::renderGraphPoints(const float3 * viewpos, float dist)
 				else
 					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(1, 1, 0, 0);
 
-				RTGPUArrVerteces[tmpkey].m_uiColor = D3DCOLOR_ARGB(200, 0, 0, 255);
+				RTGPUArrVerteces[tmpkey].m_uiColor = GXCOLOR_ARGB(200, 0, 0, 255);
 				++tmpkey;
 			}
 		}
