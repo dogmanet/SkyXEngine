@@ -97,7 +97,7 @@ namespace gui
 
 		void getStringMetrics(const StringW & str, UINT * width, UINT * height, UINT * vertexCount, UINT * indexCount, UINT * strCount, char_rects * pcr = NULL);
 
-		void buildString(const StringW & str, UINT decoration, TEXT_ALIGN textAlign, IDirect3DVertexBuffer9 ** ppVertexBuffer, IDirect3DIndexBuffer9 ** ppIndexBuffer, UINT * vertexCount, UINT * indexCount, UINT * lineIndexCount, UINT iAreaWidth = 0, UINT iFirstShift = 0, UINT * pStrWidth = NULL);
+		void buildString(const StringW & str, UINT decoration, TEXT_ALIGN textAlign, IGXRenderBuffer ** ppVertexBuffer, IGXIndexBuffer ** ppIndexBuffer, UINT * vertexCount, UINT * indexCount, UINT * lineIndexCount, UINT iAreaWidth = 0, UINT iFirstShift = 0, UINT * pStrWidth = NULL);
 	protected:
 
 		struct SXFheader
@@ -191,6 +191,7 @@ namespace gui
 		static FT_Library requestFT();
 
 		static void release();
+		
 
 	protected:
 		static AssotiativeArray<StringW, CFont> m_mFonts;

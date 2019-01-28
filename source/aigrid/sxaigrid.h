@@ -134,13 +134,13 @@ SX_LIB_API void SAIG_AKill();
 
 
 /*! цвет главного ограничивающего объема */
-#define AIGRID_COLOR_GBBOX				D3DCOLOR_ARGB(128, 0, 255, 0)		
+#define AIGRID_COLOR_GBBOX				GXCOLOR_ARGB(128, 0, 255, 0)		
 
 /*! цвет выделенного квада */
-#define AIGRID_COLOR_SEL_MAIN			D3DCOLOR_ARGB(220, 255, 255, 255)	
+#define AIGRID_COLOR_SEL_MAIN			GXCOLOR_ARGB(220, 255, 255, 255)	
 
 /*! цвет соседей (прямых) выделенного квада */
-#define AIGRID_COLOR_SEL_ADD			D3DCOLOR_ARGB(100, 255, 255, 255)	
+#define AIGRID_COLOR_SEL_ADD			GXCOLOR_ARGB(100, 255, 255, 255)	
 
 //! состояния занятости квада
 enum AIQUAD_STATE

@@ -1,9 +1,9 @@
 [submodule "sdks/bullet3"]
 	path = sdks/bullet3
-	url = https://root@dev.ds-servers.com/sip/bullet3.git
+	url = https://dev.ds-servers.com/sip/bullet3.git
 [submodule "source/common"]
 	path = source/common
-	url = https://root@dev.ds-servers.com/sip/common.git
+	url = https://dev.ds-servers.com/sip/common.git
 [submodule "sdks/graphix"]
 	path = sdks/graphix
-	url = https://root@dev.ds-servers.com/sip/graphix.git
+	url = https://dev.ds-servers.com/sip/graphix.git

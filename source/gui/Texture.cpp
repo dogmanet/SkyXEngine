@@ -3,7 +3,6 @@
 namespace gui
 {
 	AssotiativeArray<StringW, CTexture> CTextureManager::m_mTextures;
-	AssotiativeArray<StringW, CTextureManager::shader> CTextureManager::m_mShaders;
 
 	CPITexture CTextureManager::getTexture(const StringW & szTexture)
 	{
@@ -36,10 +35,13 @@ namespace gui
 	CTexture * CTextureManager::createTexture(const StringW & szTexture, int w, int h, int bpp, bool isRT)
 	{
 		CTexture bt;
-		if(FAILED(DX_CALL(GetGUI()->getDevice()->CreateTexture(w, h, isRT ? 1 : 0, isRT ? D3DUSAGE_RENDERTARGET : 0, D3DFMT_A8R8G8B8, isRT ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED, &bt.m_pTexture, NULL))))
+
+		if(!(bt.m_pTexture = GetGUI()->getDevice()->createTexture2D(w, h, isRT ? 1 : 0, isRT ? GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE : 0, GXFMT_A8R8G8B8)))
 		{
 			return(NULL);
 		}
+
+		
 		bt.m_iHeight = h;
 		bt.m_iWidth = w;
 		bt.m_szName = szTexture;
@@ -70,115 +72,39 @@ namespace gui
 		if(!tex)
 		{
 			//FIXME: Set fallback texture
-			DX_CALL(GetGUI()->getDevice()->SetTexture(0, NULL));
+			GetGUI()->getDevice()->setTexture(NULL);
 			m_pCurrentTex = NULL;
 			return;
 		}
 		if(m_pCurrentTex != tex)
 		{
 			m_pCurrentTex = tex;
-			DX_CALL(GetGUI()->getDevice()->SetTexture(0, m_pCurrentTex->m_pTexture));
+			GetGUI()->getDevice()->setTexture(m_pCurrentTex->m_pTexture);
 		}
 
 
-	}
-
-	void CTextureManager::compileShaderFromFile(const WCHAR * szFileName, ID3DXBuffer ** ppBlobOut)
-	{
-		DWORD dwShaderFlags = 0;
-#ifdef _DEBUG
-		dwShaderFlags |= D3DXSHADER_DEBUG | D3DXSHADER_AVOID_FLOW_CONTROL | D3DXSHADER_SKIPOPTIMIZATION;
-#else
-		dwShaderFlags |= D3DXSHADER_OPTIMIZATION_LEVEL3;
-#endif
-		ID3DXBuffer * pErrorBlob;
-		HRESULT hr = D3DXCompileShaderFromFileW(szFileName, NULL, NULL, "main", "ps_2_0", dwShaderFlags, ppBlobOut, &pErrorBlob, NULL);
-		//SHOW_ERROR;
-		if(FAILED(hr))
-		{
-			if(pErrorBlob != NULL)
-			{
-				char * pBuff = (char*)pErrorBlob->GetBufferPointer();
-				int s = strlen(pBuff);
-				WCHAR * szErr = new WCHAR[s + 1];
-				mbstowcs(szErr, pBuff, s);
-				wprintf(L"[Error]: %s\n", szErr);
-				mem_delete_a(szErr);
-			}
-			mem_release(pErrorBlob);
-			return;
-		}
-		//multi
-		mem_release(pErrorBlob);
-	}
-
-	CSHADER CTextureManager::loadShader(const StringW & name)
-	{
-		if(!m_mShaders.KeyExists(name))
-		{
-			shader sh;
-			StringW path = StringW(GetGUI()->getResourceDir()) + L"/shaders/" + name + L".";
-			FILE * pF;
-			_wfopen_s(&pF, (path + L"cps").c_str(), L"rb");
-			ID3DXBuffer * pShader = NULL;
-			if(pF)
-			{
-				UINT size = 0;
-				fseek(pF, 0, SEEK_END);
-				size = ftell(pF);
-				fseek(pF, 0, SEEK_SET);
-				D3DXCreateBuffer(size, &pShader);
-				fread(pShader->GetBufferPointer(), size, 1, pF);
-				fclose(pF);
-			}
-			else
-			{
-				pShader = NULL;
-				compileShaderFromFile((path + L"ps").c_str(), &pShader);
-				if(pShader)
-				{
-					_wfopen_s(&pF, (path + L"cps").c_str(), L"wb");
-					fwrite(pShader->GetBufferPointer(), pShader->GetBufferSize(), 1, pF);
-					fclose(pF);
-				}
-			}
-			DX_CALL(GetGUI()->getDevice()->CreatePixelShader((DWORD *)pShader->GetBufferPointer(), &sh.ps));
-			mem_release(pShader);
-			m_mShaders[name] = sh;
-		}
-		return(&m_mShaders[name]);
-	}
-
-	void CTextureManager::bindShader(CSHADER sh)
-	{
-		GetGUI()->getDevice()->SetPixelShader(sh->ps);
-	}
-
-	void CTextureManager::unbindShader()
-	{
-		GetGUI()->getDevice()->SetPixelShader(NULL);
 	}
 
 	void CTextureManager::onLostDevice()
 	{
-		for(AssotiativeArray<StringW, CTexture>::Iterator i = m_mTextures.begin(); i != m_mTextures.end(); i++)
+		/*for(AssotiativeArray<StringW, CTexture>::Iterator i = m_mTextures.begin(); i != m_mTextures.end(); i++)
 		{
 			if(i.second->m_isRT)
 			{
 				i.second->m_pTexture->Release();
 			}
-		}
+		}*/
 	}
 
 	void CTextureManager::onResetDevice()
 	{
-		for(AssotiativeArray<StringW, CTexture>::Iterator i = m_mTextures.begin(); i != m_mTextures.end(); i++)
+		/*for(AssotiativeArray<StringW, CTexture>::Iterator i = m_mTextures.begin(); i != m_mTextures.end(); i++)
 		{
 			if(i.second->m_isRT)
 			{
 				DX_CALL(GetGUI()->getDevice()->CreateTexture(i.second->m_iWidth, i.second->m_iHeight, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &(i.second->m_pTexture), NULL));
 			}
-		}
+		}*/
 	}
 
 	//##########################################################################
@@ -195,7 +121,7 @@ namespace gui
 			return;
 		}
 		void *pTexData;
-		if(!m_pTexture->lock(&pTexData, GXTL_WRITE))
+		if(m_pTexture->lock(&pTexData, GXTL_WRITE))
 		{
 			memcpy(pTexData, pData, m_iWidth * m_iHeight * 4);
 			m_pTexture->unlock();

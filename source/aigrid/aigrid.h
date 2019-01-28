@@ -458,6 +458,8 @@ protected:
 	//! пиксельный шейдер
 	ID m_idPS;
 
+	ID m_idShaderKit;
+
 	//! текстура для ограничивающих объемов
 	ID m_idTexBB;
 
@@ -545,6 +547,9 @@ protected:
 
 	//! вершинный буфер с данными трансформаций
 	IGXVertexBuffer *m_pTransVertBuf;
+
+	//! 
+	IGXRenderBuffer *m_pRenderBuffer = NULL;
 
 	//! меш главного ограничивающего объема
 	IMesh *m_pBoundBox;

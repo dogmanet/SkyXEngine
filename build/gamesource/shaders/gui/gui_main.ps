@@ -1,0 +1,24 @@
+
+/*
+gui_main.ps
+*/
+
+#include <../struct.h>
+
+//##########################################################################
+
+sampler2D g_sDiffuse: register(s0);
+
+//##########################################################################
+
+half4 g_vColor;
+
+//##########################################################################
+
+half4 main(VSO_GUITextured IN):COLOR0
+{
+	half4 vFinalColor = tex2D(g_sDiffuse, IN.vTexUV);
+	vFinalColor *= g_vColor;
+	
+	return(vFinalColor);
+}

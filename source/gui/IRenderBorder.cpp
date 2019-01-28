@@ -26,6 +26,7 @@ namespace gui
 			IRenderBorder::~IRenderBorder()
 			{
 				mem_release(m_pIndexBuffer);
+				mem_release(m_pRenderBuffer);
 				mem_release(m_pVertexBuffer);
 			}
 
@@ -99,20 +100,17 @@ namespace gui
 					return;
 				}
 				static CPITexture texWhite = NULL;
-				static CSHADER shText = NULL;
-				if(!shText)
-				{
-					shText = CTextureManager::loadShader(L"text");
-				}
 				if(!texWhite)
 				{
 					texWhite = CTextureManager::getTexture(TEX_WHITE);
 				}
 
-				GetGUI()->getDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+			//	GetGUI()->getDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 				CTextureManager::bindTexture(texWhite);
-				CTextureManager::bindShader(shText);
+			//	CTextureManager::bindShader(shText);
+				auto shader = GetGUI()->getShaders()->m_baseColored;
+				SGCore_ShaderBind(shader.m_idShaderKit);
 				bool need = false;
 				for(UINT i = 0; i < 4; i++)
 				{
@@ -123,9 +121,9 @@ namespace gui
 				}
 				if(need)
 				{
-					GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ);
-					DX_CALL(GetGUI()->getDevice()->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(float3_t)));
-					DX_CALL(GetGUI()->getDevice()->SetIndices(m_pIndexBuffer));
+				//	GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ);
+					GetGUI()->getDevice()->setRenderBuffer(m_pRenderBuffer);
+					GetGUI()->getDevice()->setIndexBuffer(m_pIndexBuffer);
 				}
 
 				//	UINT iVC = 0;
@@ -134,8 +132,10 @@ namespace gui
 				{
 					if(m_iWidth[i] != 0)
 					{
-						DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&m_pColor[i], 1));
-						DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, m_iVertexStart[i], 0, m_iVertexCount[i], m_iIndexStart[i], m_iIndexCount[i] / 3));
+						SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&m_pColor[i], 1);
+					//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&m_pColor[i], 1));
+					//	DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, m_iVertexStart[i], 0, m_iVertexCount[i], m_iIndexStart[i], m_iIndexCount[i] / 3));
+						GetGUI()->getDevice()->drawIndexed(m_iVertexCount[i], m_iIndexCount[i] / 3, m_iIndexStart[i], m_iVertexStart[i]);
 					}
 					//		iVC += m_iVertexCount[i];
 					//		iIC += m_iIndexCount[i];
@@ -145,16 +145,20 @@ namespace gui
 					//		GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(0.0f, 1.0f, 0.0f, 0.4f), 1);
 					//		GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, iVC, iIC, m_iFillIndexCount / 3);
 				}
-				DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(0.0f, 0.0f, 0.0f, 0.0f), 1));
+				SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&float4_t(0.0f, 0.0f, 0.0f, 0.0f), 1);
+			//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(0.0f, 0.0f, 0.0f, 0.0f), 1));
 			}
 
 			void IRenderBorder::renderInnerFill()
 			{
-				GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ);
-				DX_CALL(GetGUI()->getDevice()->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(float3_t)));
-				DX_CALL(GetGUI()->getDevice()->SetIndices(m_pIndexBuffer));
+			//	GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ);
+				GetGUI()->getDevice()->setRenderBuffer(m_pRenderBuffer);
+				GetGUI()->getDevice()->setIndexBuffer(m_pIndexBuffer);
 
-				static CSHADER shText = CTextureManager::loadShader(L"text");
+				auto shader = GetGUI()->getShaders()->m_baseColored;
+				SGCore_ShaderBind(shader.m_idShaderKit);
+
+			//	static CSHADER shText = CTextureManager::loadShader(L"text");
 
 				UINT iVC = 0;
 				UINT iIC = 0;
@@ -164,15 +168,18 @@ namespace gui
 					iIC += m_iIndexCount[i];
 				}
 
-				CTextureManager::bindShader(shText);
-				DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1));
-				DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, iVC, iIC, m_iFillIndexCount / 3));
+			//	CTextureManager::bindShader(shText);
+				SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1);
+			//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1));
+			//	DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, iVC, iIC, m_iFillIndexCount / 3));
+				GetGUI()->getDevice()->drawIndexed(iVC, m_iFillIndexCount / 3, iIC, 0);
 			}
 
 			void IRenderBorder::build()
 			{
 				mem_release(m_pIndexBuffer);
 				mem_release(m_pVertexBuffer);
+				mem_release(m_pRenderBuffer);
 
 				float w = m_iInnerWidth;
 				float h = m_iInnerHeight;
@@ -381,8 +388,8 @@ namespace gui
 				UINT iCV = 0;
 				UINT iCI = 0;
 				VOID * pData;
-				DX_CALL(GetGUI()->getDevice()->CreateVertexBuffer(sizeof(float3_t)* iVertexCount, NULL, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, 0));
-				if(!FAILED(DX_CALL(m_pVertexBuffer->Lock(0, sizeof(float3_t)* iVertexCount, (void**)&pData, 0))))
+				m_pVertexBuffer = GetGUI()->getDevice()->createVertexBuffer(sizeof(float3_t)* iVertexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
+				if(m_pVertexBuffer->lock((void**)&pData, GXBL_WRITE))
 				{
 					memcpy((float3_t*)pData + iCV, t->vb[0], sizeof(float3_t) * t->iVC[0]);
 					iCV += t->iVC[0];
@@ -393,11 +400,13 @@ namespace gui
 					memcpy((float3_t*)pData + iCV, l->vb[0], sizeof(float3_t) * l->iVC[0]);
 					iCV += l->iVC[0];
 
-					m_pVertexBuffer->Unlock();
+					m_pVertexBuffer->unlock();
 				}
 
-				DX_CALL(GetGUI()->getDevice()->CreateIndexBuffer(sizeof(UINT)* iIndexCount, NULL, D3DFMT_INDEX32, D3DPOOL_MANAGED, &m_pIndexBuffer, 0));
-				if(!FAILED(DX_CALL(m_pIndexBuffer->Lock(0, sizeof(UINT)* iIndexCount, (void**)&pData, 0))))
+				m_pRenderBuffer = GetGUI()->getDevice()->createRenderBuffer(1, &m_pVertexBuffer, GetGUI()->getVertexDeclarations()->m_pXYZ);
+
+				m_pIndexBuffer = GetGUI()->getDevice()->createIndexBuffer(sizeof(UINT)* iIndexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_UINT);
+				if(m_pIndexBuffer->lock((void**)&pData, GXBL_WRITE))
 				{
 					memcpy((UINT*)pData + iCI, t->ib[0], sizeof(UINT) * t->iIC[0]);
 					iCI += t->iIC[0];
@@ -408,7 +417,7 @@ namespace gui
 					memcpy((UINT*)pData + iCI, l->ib[0], sizeof(UINT) * l->iIC[0]);
 					iCI += l->iIC[0];
 					memcpy((UINT*)pData + iCI, pIndices, sizeof(UINT) * IndexCount);
-					m_pIndexBuffer->Unlock();
+					m_pIndexBuffer->unlock();
 				}
 
 			}

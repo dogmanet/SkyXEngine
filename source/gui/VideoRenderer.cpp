@@ -94,14 +94,11 @@ namespace gui
 
 		m_pAviFrame = AVIStreamGetFrameOpen(m_pAviStream, PBITMAPINFOHEADER(AVIGETFRAMEF_BESTDISPLAYFMT));
 
-		if(FAILED(DX_CALL(GetGUI()->getDevice()->CreateTexture(m_iWidth, m_iHeight, 0, NULL, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &m_texture.m_pTexture, NULL))))
-		{
-			return;
-		}
+		m_texture.m_pTexture = GetGUI()->getDevice()->createTexture2D(m_iWidth, m_iHeight, 0, NULL, GXFMT_A8R8G8B8, m_pImageData);
+		
 		m_texture.m_iHeight = m_iHeight;
 		m_texture.m_iWidth = m_iWidth;
 		m_texture.m_szName = L"";
-		m_texture.loadFromMem((byte*)m_pImageData);
 
 		m_bLoaded = true;
 	}

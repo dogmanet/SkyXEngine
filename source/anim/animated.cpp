@@ -1479,8 +1479,9 @@ void Animation::RenderSkeleton(int hlBone)
 		verts[i * 2 + 1].pos = pos;
 		verts[i * 2].color = verts[i * 2 + 1].color = hlBone == i ? 0xFFFF00FF : 0xFF0000FF;
 	}
-
+#ifdef _GRAPHIX_API
 	DX_CALL(m_pMgr->m_pd3dDevice->DrawPrimitiveUP(D3DPT_LINELIST, m_iBoneCount - 1, verts + 2, sizeof(verts[0])));
+#endif
 
 	mem_delete_a(verts);
 }
@@ -1686,7 +1687,9 @@ void Animation::render()
 	}
 	if(!(m_pMdl->m_hdr.iFlags & MODEL_FLAG_STATIC))
 	{
+#ifdef _GRAPHIX_API
 		DX_CALL(m_pMgr->m_pd3dDevice->SetVertexShaderConstantF(16, (float*)m_pBoneMatrixRender, sizeof(ModelBoneShader)* m_iBoneCount / sizeof(float) / 4));
+#endif
 	}
 
 	m_pMdl->render(&(getWorldTM()), m_iCurrentSkin, 0, m_idOverrideMaterial, &m_vGlowColor, m_isGlowEnabled);

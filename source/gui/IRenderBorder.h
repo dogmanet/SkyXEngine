@@ -65,8 +65,9 @@ namespace gui
 				UINT m_iRadius[4];
 				CORNER_METHOD m_method[4];
 
-				IDirect3DIndexBuffer9 * m_pIndexBuffer;
-				IDirect3DVertexBuffer9 * m_pVertexBuffer;
+				IGXIndexBuffer * m_pIndexBuffer;
+				IGXVertexBuffer * m_pVertexBuffer;
+				IGXRenderBuffer *m_pRenderBuffer = NULL;
 
 				UINT m_iVertexCount[4];
 				UINT m_iVertexStart[4];

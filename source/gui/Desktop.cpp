@@ -58,24 +58,37 @@ namespace gui
 
 	void CDesktop::createRenderTarget()
 	{
-		DX_CALL(GetGUI()->getDevice()->CreateRenderTarget(m_iWidth, m_iHeight, D3DFMT_A8R8G8B8, D3DMULTISAMPLE_4_SAMPLES, 0, FALSE, &m_pRenderSurface, NULL));
+		m_pRenderSurface = GetGUI()->getDevice()->createColorTarget(m_iWidth, m_iHeight, GXFMT_A8R8G8B8, GXMULTISAMPLE_4_SAMPLES);
 		m_pDepthStencilSurface = GetGUI()->getDevice()->createDepthStencilSurface(m_iWidth, m_iHeight, GXFMT_D24S8, GXMULTISAMPLE_4_SAMPLES);
 
-		
 		m_txFinal = CTextureManager::createTexture(StringW(L"@") + m_sName, m_iWidth, m_iHeight, 32, true);
+
+		struct point
+		{
+			float x;
+			float y;
+			float z;
+			float tx;
+			float ty;
+		};
+
+		point a[] = {
+			{0, 0, 0, 0.0f, 0.0f},
+			{m_iWidth, 0, 0, 1.0f, 0.0f},
+			{m_iWidth, m_iHeight, 0, 1.0f, 1.0f},
+			{0, m_iHeight, 0, 0.0f, 1.0f}
+		};
+
+		m_pVertices = GetGUI()->getDevice()->createVertexBuffer(sizeof(point) * 4, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, a);
+		m_pRenderBuffer = GetGUI()->getDevice()->createRenderBuffer(1, &m_pVertices, GetGUI()->getVertexDeclarations()->m_pXYZTex);
 	}
 	void CDesktop::releaseRenderTarget()
 	{
-		if(m_pRenderSurface)
-		{
-			m_pRenderSurface->Release();
-			m_pRenderSurface = NULL;
-		}
-		if(m_pDepthStencilSurface)
-		{
-			m_pDepthStencilSurface->Release();
-			m_pDepthStencilSurface = NULL;
-		}
+		mem_release(m_pRenderBuffer);
+		mem_release(m_pVertices);
+
+		mem_release(m_pRenderSurface);
+		mem_release(m_pDepthStencilSurface);
 		if(m_txFinal)
 		{
 			CTextureManager::unloadTexture(m_txFinal);
@@ -95,10 +108,10 @@ namespace gui
 		if(m_pDoc->isDirty())
 		{
 			CTextureManager::bindTexture(NULL);
-			IDirect3DSurface9 *pOldRT;
-			IDirect3DSurface9 *pOldDS;
-			DX_CALL(GetGUI()->getDevice()->GetRenderTarget(0, &pOldRT));
-			DX_CALL(GetGUI()->getDevice()->SetRenderTarget(0, m_pRenderSurface));
+			IGXSurface *pOldRT;
+			IGXDepthStencilSurface *pOldDS;
+			pOldRT = GetGUI()->getDevice()->getColorTarget();
+			GetGUI()->getDevice()->setColorTarget(m_pRenderSurface);
 			pOldDS = GetGUI()->getDevice()->getDepthStencilSurface();
 			GetGUI()->getDevice()->setDepthStencilSurface(m_pDepthStencilSurface);
 
@@ -106,28 +119,28 @@ namespace gui
 
 			//GetGUI()->getDevice()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 			//GetGUI()->getDevice()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
-			GetGUI()->getDevice()->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
-			GetGUI()->getDevice()->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
-			GetGUI()->getDevice()->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
-			GetGUI()->getDevice()->SetRenderState(D3DRS_BLENDOPALPHA, D3DBLENDOP_MAX);
+		//	GetGUI()->getDevice()->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
+		//	GetGUI()->getDevice()->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
+		//	GetGUI()->getDevice()->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
+		//	GetGUI()->getDevice()->SetRenderState(D3DRS_BLENDOPALPHA, D3DBLENDOP_MAX);
+			GetGUI()->getDevice()->setBlendState(GetGUI()->getBlendStates()->m_pDesktop);
 			
 			m_pDoc->render();
-			GetGUI()->getDevice()->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, FALSE);
 
-			DX_CALL(GetGUI()->getDevice()->SetRenderTarget(0, pOldRT));
+			GetGUI()->getDevice()->setBlendState(GetGUI()->getBlendStates()->m_pDefault);
+		//	GetGUI()->getDevice()->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, FALSE);
+
+			GetGUI()->getDevice()->setColorTarget(pOldRT);
 			GetGUI()->getDevice()->setDepthStencilSurface(pOldDS);
-			pOldRT->Release();
-			pOldDS->Release();
+			mem_release(pOldRT);
+			mem_release(pOldDS);
 
 			//D3DXSaveSurfaceToFileA("../screenshots/gui.png", D3DXIFF_PNG, m_pRenderSurface, NULL, NULL);
 			
 			
-			IDirect3DSurface9 *pNewSurface;
-			DX_CALL(m_txFinal->getAPItexture()->GetSurfaceLevel(0, &pNewSurface));
-
-			DX_CALL(GetGUI()->getDevice()->StretchRect(m_pRenderSurface, NULL, pNewSurface, NULL, D3DTEXF_NONE));
-
-			pNewSurface->Release();
+			IGXSurface *pNewSurface = m_txFinal->getAPItexture()->getMipmap();
+			GetGUI()->getDevice()->downsampleColorTarget(m_pRenderSurface, pNewSurface);
+			mem_release(pNewSurface);
 
 			/*if(GetAsyncKeyState('K'))
 			{
@@ -149,56 +162,69 @@ namespace gui
 			//CTextureManager::bindTexture(def_w);
 			
 			SMMATRIX mi = SMMatrixIdentity();
-			GetGUI()->getDevice()->SetTransform(D3DTS_WORLD, reinterpret_cast<D3DMATRIX*>(&mi));
-			SMMATRIX mOldView, mOldProj;
-			GetGUI()->getDevice()->GetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mOldView));
-			GetGUI()->getDevice()->GetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&mOldProj));
-			GetGUI()->getDevice()->SetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mi));
-
-			GetGUI()->getDevice()->SetVertexShader(NULL);
-			GetGUI()->getDevice()->SetPixelShader(NULL);
-
+			GetGUI()->setTransformWorld(mi);
+		//	GetGUI()->getDevice()->SetTransform(D3DTS_WORLD, reinterpret_cast<D3DMATRIX*>(&mi));
+			SMMATRIX mOldViewProj/*, mOldProj*/;
+			mOldViewProj = GetGUI()->getTransformViewProj();
+		//	GetGUI()->getDevice()->GetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mOldView));
+		//	GetGUI()->getDevice()->GetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&mOldProj));
+		//	GetGUI()->getDevice()->SetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mi));
+			
 			SMMATRIX m(
 				2.0f / (float)m_iWidth, 0.0f, 0.0f, 0.0f,
 				0.0f, -2.0f / (float)m_iHeight, 0.0f, 0.0f,
 				0.0f, 0.0f, 0.5f, 0.0f,
 				-1.0f, 1.0f, 0.5f, 1.0f);
 			m = SMMatrixTranslation(-0.5f, -0.5f, 0.0f) * m;
-			GetGUI()->getDevice()->SetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&m));
+		//	GetGUI()->getDevice()->SetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&m));
 
-			struct point
+			GetGUI()->setTransformViewProj(mi * m);
+
+		/*	struct point
 			{
 				float x;
 				float y;
 				float z;
 				float tx;
 				float ty;
-			};
+			};*/
 
 
-			point a[6] = {
+		/*	point a[6] = {
 				{0, 0, 0, 0.0f, 0.0f},
 				{m_iWidth, 0, 0, 1.0f, 0.0f},
 				{0, m_iHeight, 0, 0.0f, 1.0f},
 				{0, m_iHeight, 0, 0.0f, 1.0f},
 				{m_iWidth, 0, 0, 1.0f, 0.0f},
 				{m_iWidth, m_iHeight, 0, 1.0f, 1.0f}
-			};
+			};*/
 
-			static CSHADER def_sh = CTextureManager::loadShader(L"text");
+			auto shader = GetGUI()->getShaders()->m_baseTexturedColored;
+			SGCore_ShaderBind(shader.m_idShaderKit);
+
+		//	static CSHADER def_sh = CTextureManager::loadShader(L"text");
 
 			//GetGUI()->getDevice()->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 			//GetGUI()->getDevice()->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 
 			//GetGUI()->getDevice()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 
-			GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
-			CTextureManager::bindShader(def_sh);
-			DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1));
-			DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
+		//	GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
+		//	CTextureManager::bindShader(def_sh);
 
-			GetGUI()->getDevice()->SetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mOldView));
-			GetGUI()->getDevice()->SetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&mOldProj));
+			GetGUI()->getDevice()->setRenderBuffer(m_pRenderBuffer);
+			GetGUI()->getDevice()->setIndexBuffer(GetGUI()->getQuadIndexBuffer());
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1);
+		//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1));
+
+			GetGUI()->updateTransformShader();
+
+			GetGUI()->getDevice()->drawIndexed(4, 2, 0, 0);
+		//	DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
+
+		//	GetGUI()->getDevice()->SetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mOldView));
+		//	GetGUI()->getDevice()->SetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&mOldProj));
+			GetGUI()->setTransformViewProj(mOldViewProj);
 		}
 	}
 

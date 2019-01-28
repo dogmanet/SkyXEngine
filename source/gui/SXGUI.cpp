@@ -25,10 +25,9 @@ typedef std::chrono::system_clock::time_point time_point;
 namespace gui
 {
 	CPITexture def_w;
-	CSHADER def_sh;
 	CGUI * g_pGUI;
 
-	CGUI::CGUI(IDirect3DDevice9 * pDev, const char * szResPath, HWND hWnd):
+	CGUI::CGUI(IGXContext * pDev, const char * szResPath, HWND hWnd):
 		m_pDevice(pDev),
 		m_szResourceDir(NULL),
 		m_iScreenWidth(0),
@@ -49,7 +48,106 @@ namespace gui
 		memcpy(m_szResourceDir, srp.c_str(), sizeof(WCHAR)* (srp.length() + 1));
 
 		def_w = CTextureManager::getTexture(L"/dev/white.png");
-		def_sh = CTextureManager::loadShader(L"text");
+
+		m_shaders.m_baseTexturedColored.m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_main.vs", "gui_main.vs", SHADER_CHECKDOUBLE_NAME);
+		m_shaders.m_baseTexturedColored.m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_main.ps", "gui_main.ps", SHADER_CHECKDOUBLE_NAME);
+		m_shaders.m_baseTexturedColored.m_idShaderKit = SGCore_ShaderCreateKit(m_shaders.m_baseTexturedColored.m_idVS, m_shaders.m_baseTexturedColored.m_idPS);
+
+		m_shaders.m_baseColored.m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_simple.vs", "gui_simple.vs", SHADER_CHECKDOUBLE_NAME);
+		m_shaders.m_baseColored.m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_simple.ps", "gui_simple.ps", SHADER_CHECKDOUBLE_NAME);
+		m_shaders.m_baseColored.m_idShaderKit = SGCore_ShaderCreateKit(m_shaders.m_baseColored.m_idVS, m_shaders.m_baseColored.m_idPS);
+
+		m_shaders.m_baseTexturedTextransformColored.m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_main_textransform.vs", "gui_main_textransform.vs", SHADER_CHECKDOUBLE_NAME);
+		m_shaders.m_baseTexturedTextransformColored.m_idPS = m_shaders.m_baseTexturedColored.m_idPS;
+		m_shaders.m_baseTexturedTextransformColored.m_idShaderKit = SGCore_ShaderCreateKit(m_shaders.m_baseTexturedTextransformColored.m_idVS, m_shaders.m_baseTexturedTextransformColored.m_idPS);
+
+		//@TODO: Release this
+		GXDEPTH_STENCIL_DESC depthStencilDesc;
+		depthStencilDesc.bDepthEnable = false;
+		depthStencilDesc.bEnableDepthWrite = false;
+		m_depthStencilStates.m_pDefault = m_pDevice->createDepthStencilState(&depthStencilDesc);
+
+		depthStencilDesc.bStencilEnable = true;
+		depthStencilDesc.stencilFunc = GXCOMPARISON_EQUAL;
+		depthStencilDesc.stencilPassOp = GXSTENCIL_OP_INCR;
+		m_depthStencilStates.m_pStencilIncr = m_pDevice->createDepthStencilState(&depthStencilDesc);
+
+		depthStencilDesc.stencilPassOp = GXSTENCIL_OP_KEEP;
+		m_depthStencilStates.m_pStencilKeep = m_pDevice->createDepthStencilState(&depthStencilDesc);
+
+		depthStencilDesc.stencilPassOp = GXSTENCIL_OP_DECR;
+		m_depthStencilStates.m_pStencilDecr = m_pDevice->createDepthStencilState(&depthStencilDesc);
+
+		GXBLEND_DESC blendDesc;
+		blendDesc.renderTarget[0].bBlendEnable = true;
+		blendDesc.renderTarget[0].srcBlendAlpha = blendDesc.renderTarget[0].srcBlend = GXBLEND_SRC_ALPHA;
+		blendDesc.renderTarget[0].destBlendAlpha = blendDesc.renderTarget[0].destBlend = GXBLEND_INV_SRC_ALPHA;
+		m_blendStates.m_pDefault = m_pDevice->createBlendState(&blendDesc);
+
+		blendDesc.renderTarget[0].u8RenderTargetWriteMask = 0;
+		m_blendStates.m_pNoColorWrite = m_pDevice->createBlendState(&blendDesc);
+
+		blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_ALL;
+		blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_ONE;
+		blendDesc.renderTarget[0].blendOpAlpha = GXBLEND_OP_MAX;
+		m_blendStates.m_pDesktop = m_pDevice->createBlendState(&blendDesc);
+
+		GXRASTERIZER_DESC rasterizerDesc;
+		rasterizerDesc.bMultisampleEnable = true;
+		rasterizerDesc.bAntialiasedLineEnable = true;
+		rasterizerDesc.cullMode = GXCULL_NONE;
+		m_pDefaultRState = m_pDevice->createRasterizerState(&rasterizerDesc);
+
+		GXVERTEXELEMENT aVertexElementsXYZTex[] =
+		{
+			{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
+			{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD, GXDECLSPEC_PER_VERTEX_DATA},
+			GXDECL_END()
+		};
+		m_vertexDeclarations.m_pXYZTex = m_pDevice->createVertexDeclaration(aVertexElementsXYZTex);
+
+		GXVERTEXELEMENT aVertexElementsXYZ[] =
+		{
+			{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
+			GXDECL_END()
+		};
+		m_vertexDeclarations.m_pXYZ = m_pDevice->createVertexDeclaration(aVertexElementsXYZ);
+
+		USHORT pIdxQuad[] = {
+			0, 1, 2, 0, 2, 3
+		};
+		m_pQuadIndexes = m_pDevice->createIndexBuffer(sizeof(USHORT) * 6, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_USHORT, pIdxQuad);
+
+		m_pQuadVerticesXYZ = m_pDevice->createVertexBuffer(sizeof(float) * 3 * 4, GX_BUFFER_USAGE_STREAM);
+		m_pQuadVerticesXYZTex16 = m_pDevice->createVertexBuffer(sizeof(float) * 5 * 16, GX_BUFFER_USAGE_STREAM);
+
+		m_pQuadRenderXYZ = m_pDevice->createRenderBuffer(1, &m_pQuadVerticesXYZ, m_vertexDeclarations.m_pXYZ);
+		m_pQuadRenderXYZTex16 = m_pDevice->createRenderBuffer(1, &m_pQuadVerticesXYZTex16, m_vertexDeclarations.m_pXYZTex);
+
+		GXSAMPLER_DESC samplerDesc;
+		samplerDesc.filter = GXFILTER_ANISOTROPIC;
+		m_pDefaultSamplerState = m_pDevice->createSamplerState(&samplerDesc);
+	}
+
+	IGXRenderBuffer *CGUI::getQuadRenderBufferXYZ(float3_t *pVertices)
+	{
+		void *pData;
+		if(m_pQuadVerticesXYZ->lock(&pData, GXBL_WRITE))
+		{
+			memcpy(pData, pVertices, sizeof(float3_t) * 4);
+			m_pQuadVerticesXYZ->unlock();
+		}
+		return(m_pQuadRenderXYZ);
+	}
+	IGXRenderBuffer *CGUI::getQuadRenderBufferXYZTex16(float *pVertices)
+	{
+		void *pData;
+		if(m_pQuadVerticesXYZTex16->lock(&pData, GXBL_WRITE))
+		{
+			memcpy(pData, pVertices, sizeof(float) * 5 * 16);
+			m_pQuadVerticesXYZTex16->unlock();
+		}
+		return(m_pQuadRenderXYZTex16);
 	}
 
 	BOOL CGUI::putMessage(UINT message, WPARAM wParam, LPARAM lParam)
@@ -278,51 +376,43 @@ namespace gui
 
 		float fTimeDelta = (float)mksdt / 1000000.0f;
 
-		//pDevice->GetS
-
-		//		pDevice->GetDepthStencilSurface(&pOldDepthStencilSurface);
-		//		pDevice->SetDepthStencilSurface(pDepthStencilSurface);
-
-		//	g_pVid.Update();
 		CVideoUpdateManager::update();
 
-		m_pDevice->clearStencil();
+		m_pDevice->clear(GXCLEAR_STENCIL);
 
+		m_pDevice->setRasterizerState(m_pDefaultRState);
 
-		//pDevice->SetRenderState(D3DRS_STENCILENABLE, true);
+		m_pDevice->setSamplerState(m_pDefaultSamplerState, 0);
 
-		m_pDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL);
-		m_pDevice->SetRenderState(D3DRS_STENCILMASK, 0xFF);
-		m_pDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_INCR);
+		m_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
 
-		//		pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_NONE);
-		//		pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_NONE);
-		//		pDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
-
-		//m_pDevice->BeginScene();
-		m_pDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-		m_pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-		m_pDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
-		m_pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-		m_pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-		m_pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-		m_pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	//	m_pDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL);
+	//	m_pDevice->SetRenderState(D3DRS_STENCILMASK, 0xFF);
+	//	m_pDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_INCR);
+		m_pDevice->setDepthStencilState(m_depthStencilStates.m_pDefault);
+	//	m_pDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+	//	m_pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	//	m_pDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
+	//	m_pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+		m_pDevice->setBlendState(m_blendStates.m_pDefault);
+	//	m_pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	//	m_pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	//	m_pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 		CTextureManager::bindTexture(def_w);
-
+		/*
 		SMMATRIX mi = SMMatrixIdentity();
 		m_pDevice->SetTransform(D3DTS_WORLD, reinterpret_cast<D3DMATRIX*>(&mi));
 		m_pDevice->SetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mi));
-
-		m_pDevice->SetVertexShader(NULL);
-		m_pDevice->SetPixelShader(NULL);
-
+		*/
+		SGCore_ShaderBind(m_shaders.m_baseTexturedColored.m_idShaderKit);
+/*
 		SMMATRIX m(
 			2.0f / (float)m_iScreenWidth, 0.0f, 0.0f, 0.0f,
 			0.0f, -2.0f / (float)m_iScreenHeight, 0.0f, 0.0f,
 			0.0f, 0.0f, 0.5f, 0.0f,
 			-1.0f, 1.0f, 0.5f, 1.0f);
 		m = SMMatrixTranslation(-0.5f, -0.5f, 0.0f) * m;
-
+		*/
 
 		////
 
@@ -352,18 +442,20 @@ namespace gui
 
 		float fParallaxFactor = m_pActiveDesktop->getParallaxFactor();
 
-		m = SMMatrixPerspectiveFovLH(fAngleFOV, (float)m_iScreenWidth / (float)m_iScreenHeight, -1.0f, 1.0f);
-		mi = SMMatrixLookAtLH(
+		SMMATRIX m = SMMatrixPerspectiveFovLH(fAngleFOV, (float)m_iScreenWidth / (float)m_iScreenHeight, -1.0f, 1.0f);
+		SMMATRIX mi = SMMatrixLookAtLH(
 			float3(fParallaxFactor * ((float)pt.x / (float)m_iScreenWidth), fParallaxFactor * ((float)pt.y / (float)m_iScreenHeight), 0.0f) +
 			float3((float)m_iScreenWidth * 0.5f + 0.5f, (float)m_iScreenHeight * 0.5f + 0.5f, (float)m_iScreenHeight * tanf(fAngleFOV * 0.5f) * 0.5f),
 
 			float3((float)m_iScreenWidth * 0.5f + 0.5f, (float)m_iScreenHeight * 0.5f + 0.5f, 0.0f),
 			float3(0.0f, -1.0f, 0.0f)
 		);
-		m_pDevice->SetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mi));
+
+		setTransformViewProj(mi * m);
+	//	m_pDevice->SetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mi));
 		////
 
-		m_pDevice->SetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&m));
+	//	m_pDevice->SetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&m));
 		//doc->Render();
 		for(UINT i = 0, l = m_mDesktopStack.size(); i < l; ++i)
 		{
@@ -696,8 +788,11 @@ namespace gui
 
 	void CGUI::pushDesktop(IDesktop * dp)
 	{
-		m_mDesktopStack.push_back(m_pActiveDesktop);
-		m_pActiveDesktop->getDocument()->getElementsByTag(L"body")[0][0]->addPseudoclass(css::ICSSrule::PSEUDOCLASS_DISABLED);
+		if(m_pActiveDesktop)
+		{
+			m_mDesktopStack.push_back(m_pActiveDesktop);
+			m_pActiveDesktop->getDocument()->getElementsByTag(L"body")[0][0]->addPseudoclass(css::ICSSrule::PSEUDOCLASS_DISABLED);
+		}
 		setActiveDesktop(dp, FALSE);
 	}
 	IDesktop * CGUI::popDesktop()
@@ -736,7 +831,7 @@ namespace gui
 };
 
 
-gui::IGUI * InitInstance(IDirect3DDevice9 * pDev, const char * szResPath, HWND hWnd)
+gui::IGUI * InitInstance(IGXContext * pDev, const char * szResPath, HWND hWnd)
 {
 	Core_SetOutPtr();
 
@@ -745,6 +840,16 @@ gui::IGUI * InitInstance(IDirect3DDevice9 * pDev, const char * szResPath, HWND h
 	return(pGui);
 }
 
+#ifdef SX_STATIC_BUILD
+gui::IGUI * GUI_InitInstance(IGXContext * pDev, const char * szResPath, HWND hWnd)
+{
+	gui::CKeyMap::init();
+	gui::dom::HTMLelsInit();
+
+	return(InitInstance(pDev, szResPath, hWnd));
+}
+
+#else
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -770,3 +875,5 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	}
 	return TRUE;
 }
+
+#endif

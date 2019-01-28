@@ -5,10 +5,12 @@
 #include <graphix/graphix.h>
 #include <gcore/sxgcore.h>
 
+#ifndef SX_STATIC_BUILD
 #if defined(_DEBUG)
 #	pragma comment(lib, "sxgcore_d.lib")
 #else
 #	pragma comment(lib, "sxgcore.lib")
+#endif
 #endif
 
 #if defined(_WINDOWS)

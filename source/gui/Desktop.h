@@ -58,12 +58,15 @@ namespace gui
 
 		//dom::IDOMnodeCollection m_cTmpNodes;
 
-		IDirect3DSurface9 * m_pRenderSurface;
+		IGXSurface * m_pRenderSurface;
 		IGXDepthStencilSurface * m_pDepthStencilSurface;
 
 		StringW m_sName;
 
 		float m_fParallaxFactor;
+
+		IGXVertexBuffer *m_pVertices = NULL;
+		IGXRenderBuffer *m_pRenderBuffer = NULL;
 	};
 };
 

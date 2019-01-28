@@ -46,8 +46,9 @@ namespace gui
 					{
 					}
 					StringW m_szStr;
-					IDirect3DVertexBuffer9 * m_pVertexBuffer;
-					IDirect3DIndexBuffer9 * m_pIndexBuffer;
+				//	IGXVertexBuffer * m_pVertexBuffer;
+					IGXRenderBuffer *m_pRenderBuffer;
+					IGXIndexBuffer * m_pIndexBuffer;
 					UINT m_iVertexCount;
 					UINT m_iIndexBaseCount;
 					UINT m_iIndexAddCount;
@@ -226,7 +227,7 @@ namespace gui
 
 				bool m_bFreezed;
 
-				pointtex m_pVBackground[15];
+				pointtex m_pVBackground[16];
 				int m_iTCBackground;
 
 				void updateBorder();
@@ -294,6 +295,9 @@ namespace gui
 
 				UINT m_iTextIdx;
 				Array<Array<CRenderElement*>> m_mTextRELs;
+				
+				GXSAMPLER_DESC m_samplerDesc;
+				IGXSamplerState *m_pSamplerState = NULL;
 			};
 
 			class IRenderBlock: public IRenderFrame

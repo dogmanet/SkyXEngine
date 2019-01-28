@@ -971,7 +971,7 @@ namespace gui
 		}
 	}
 
-	void CFont::buildString(const StringW & str, UINT decoration, TEXT_ALIGN textAlign, IDirect3DVertexBuffer9 ** ppVertexBuffer, IDirect3DIndexBuffer9 ** ppIndexBuffer, UINT * vertexCount, UINT * indexCount, UINT * lineIndexCount, UINT iAreaWidth, UINT iFirstShift, UINT * pStrWidth)
+	void CFont::buildString(const StringW & str, UINT decoration, TEXT_ALIGN textAlign, IGXRenderBuffer ** ppVertexBuffer, IGXIndexBuffer ** ppIndexBuffer, UINT * vertexCount, UINT * indexCount, UINT * lineIndexCount, UINT iAreaWidth, UINT iFirstShift, UINT * pStrWidth)
 	{
 		UINT iIndexCount;
 		UINT iVertexCount;
@@ -1210,21 +1210,12 @@ namespace gui
 				pVB[i].Pos = (float3)(pVB[i].Pos + offs);
 			}
 		}
+		
+		IGXVertexBuffer *pVertBuffer = GetGUI()->getDevice()->createVertexBuffer(sizeof(vertex)* iVertexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, pVB);
+		*ppVertexBuffer = GetGUI()->getDevice()->createRenderBuffer(1, &pVertBuffer, GetGUI()->getVertexDeclarations()->m_pXYZTex);
+		mem_release(pVertBuffer);
 
-		VOID * pData;
-		DX_CALL(GetGUI()->getDevice()->CreateVertexBuffer(sizeof(vertex)* iVertexCount, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, ppVertexBuffer, 0));
-		if(!FAILED(DX_CALL((*ppVertexBuffer)->Lock(0, sizeof(vertex)* iVertexCount, (void**)&pData, 0))))
-		{
-			memcpy(pData, pVB, sizeof(vertex) * iVertexCount);
-			(*ppVertexBuffer)->Unlock();
-		}
-
-		DX_CALL(GetGUI()->getDevice()->CreateIndexBuffer(sizeof(UINT)* iIndexCount, D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_MANAGED, ppIndexBuffer, 0));
-		if(!FAILED(DX_CALL((*ppIndexBuffer)->Lock(0, sizeof(UINT)* iIndexCount, (void**)&pData, 0))))
-		{
-			memcpy(pData, pIB, sizeof(UINT) * iIndexCount);
-			(*ppIndexBuffer)->Unlock();
-		}
+		*ppIndexBuffer = GetGUI()->getDevice()->createIndexBuffer(sizeof(UINT)* iIndexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_UINT, pIB);
 
 		mem_delete_a(pVB);
 		mem_delete_a(pIB);
@@ -1280,4 +1271,4 @@ namespace gui
 			m_pFT = NULL;
 		}
 	}
-};
+}

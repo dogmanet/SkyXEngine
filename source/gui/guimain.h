@@ -8,7 +8,7 @@
 #include <common/stack.h>
 #include <common/assotiativearray.h>
 #include <common/string.h>
-#include <common/SXMath.h>
+#include <common/Math.h>
 
 #ifndef GUI_DLL
 #	include "IDesktop.h"
@@ -102,7 +102,11 @@ namespace gui
 		virtual IDesktop * popDesktop() = 0;
 	};
 
-	typedef IGUI*(*PFNINITINSTANCE)(IDirect3DDevice9*, const char*, HWND);
+	typedef IGUI*(*PFNINITINSTANCE)(IGXContext*, const char*, HWND);
 };
+
+#ifdef SX_STATIC_BUILD
+gui::IGUI * GUI_InitInstance(IGXContext * pDev, const char * szResPath, HWND hWnd);
+#endif
 
 #endif
