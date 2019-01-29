@@ -873,6 +873,8 @@ public:
 
 	//! находится ли точка point в пределах параллелепипеда
 	virtual bool isPointInBox(const float3 *pPoint) const = 0;		
+
+	virtual void cloneFrom(ISXBound *pFrom);
 };
 
 //! создать ISXBound
@@ -892,10 +894,14 @@ public:
 	virtual IGXVertexBuffer *getVertexBuffer() = 0;
 	virtual IGXIndexBuffer *getIndexBuffer() = 0;
 	virtual void Release() = 0;
+	virtual ISXBound *getBound() = 0;
+//	virtual UINT getVertexCount() = 0;
+//	virtual UINT getVertexSize() = 0;
 };
 
 //! создать IMesh
 SX_LIB_API IMesh* SGCore_CrMesh(UINT uVertexCount, UINT uIndexCount);
+//SX_LIB_API IMesh* SGCore_CloneMesh(IMesh *pOther);
 
 //#############################################################################
 

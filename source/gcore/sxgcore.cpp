@@ -1069,9 +1069,12 @@ public:
 		m_pRB = g_pDevice->createRenderBuffer(1, &m_pVB, pVD);
 
 		mem_release(pVD);
+
+		m_pBound = SGCore_CrBound();
 	}
 	~CMesh()
 	{
+		mem_release(m_pBound);
 		mem_release(m_pIB);
 		mem_release(m_pVB);
 		mem_release(m_pRB);
@@ -1094,6 +1097,10 @@ public:
 	{
 		delete this;
 	}
+	ISXBound *getBound()
+	{
+		return(m_pBound);
+	}
 
 protected:
 	IGXVertexBuffer *m_pVB;
@@ -1101,6 +1108,7 @@ protected:
 	IGXIndexBuffer *m_pIB;
 	UINT m_uVertexCount;
 	UINT m_uIndexCount;
+	ISXBound *m_pBound;
 };
 
 SX_LIB_API IMesh* SGCore_CrMesh(UINT uVertexCount, UINT uIndexCount)

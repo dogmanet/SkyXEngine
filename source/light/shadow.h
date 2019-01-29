@@ -149,13 +149,13 @@ private:
 
 	IGXTexture2D*	DepthMap;
 	IGXSurface*	DepthSurface;
-	IGXSurface*	DepthStencilSurface;
+	IGXDepthStencilSurface *DepthStencilSurface;
 	
 	float4x4 OldView,OldProj,OldViewProj;
 	float4x4 ScaleBiasMat;
 
 	IGXDepthStencilSurface* OldDepthStencilSurface;
-	IGXDepthStencilSurface*  OldColorSurface;
+	IGXSurface* OldColorSurface;
 };
 
 //##########################################################################

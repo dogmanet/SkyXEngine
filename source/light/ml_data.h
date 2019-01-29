@@ -51,6 +51,10 @@ namespace light_data
 	extern float4x4 mRefProjPlane;
 	extern float4x4 mRefProjCube;
 
+	extern IGXSamplerState *pSamplerPointClamp;
+	extern IGXSamplerState *pSamplerLinearClamp;
+	extern IGXSamplerState *pSamplerPointWrap;
+
 	namespace shader_id
 	{
 		namespace vs
@@ -90,7 +94,7 @@ namespace light_data
 
 			extern ID idPPBlurDepthBasedNoise;
 			extern ID idPSSM4;
-			extern	ID idPSSM3;
+			extern ID idPSSM3;
 			extern ID idPPBlurDepthBased;
 			extern ID idGenShadowDirect4;
 			extern ID idGenShadowDirect9;
@@ -106,6 +110,26 @@ namespace light_data
 			extern ID idStdGreenCP;
 			extern ID idStdSkin;
 			extern ID idStdSkinCP;
+		};
+
+		namespace kit
+		{
+			extern ID idSMDepthGeomPSSMDirect;
+			extern ID idResPosDepthPSSM3;
+			extern ID idResPosDepthPSSM4;
+			extern ID idResPosDepthGenShadowDirect4;
+			extern ID idResPosDepthGenShadowDirect9;
+			extern ID idSMDepthGeomCube;
+			extern ID idResPosDepthGenShadowCube1;
+			extern ID idResPosDepthGenShadowCube6;
+			extern ID idSMDepthSkinPSSMDirect;
+			extern ID idSMDepthTreePSSMDirect;
+			extern ID idSMDepthGrassPSSMDirect;
+			extern ID idSMDepthGrassCube;
+			extern ID idSMDepthTreeCube;
+			extern ID idSMDepthSkinCube;
+			extern ID idPPBlurDepthBasedNoise;
+			extern ID idPPBlurDepthBased;
 		};
 	};
 

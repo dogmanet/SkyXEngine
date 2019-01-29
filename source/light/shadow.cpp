@@ -110,11 +110,11 @@ void PSSM::onLostDevice()
 {
 		for(int i=0;i<5;i++)
 		{
-			mem_release_del(m_aDepthMaps[i]);
-			mem_release_del(DepthSurfaces[i]);
+	//		mem_release_del(m_aDepthMaps[i]);
+	//		mem_release_del(DepthSurfaces[i]);
 		}
 
-	mem_release_del(DepthStencilSurface);
+//	mem_release_del(DepthStencilSurface);
 }
 
 void PSSM::onResetDevice()
@@ -124,19 +124,17 @@ void PSSM::onResetDevice()
 
 	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 
-		for(int i=0;i<5;i++)
-		{
-			m_aIsUpdate[i] = 0;
+	for(int i = 0; i < 5; i++)
+	{
+		m_aIsUpdate[i] = 0;
 
-			HRESULT hr = light_data::pDXDevice->CreateTexture(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &(m_aDepthMaps[i]), NULL);
+	//	light_data::pDXDevice->CreateTexture(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &(m_aDepthMaps[i]), NULL);
+	//	m_aDepthMaps[i] = light_data::pDXDevice->createTexture2D(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R32F);
+		
+		DepthSurfaces[i] = 0;
+	}
 
-				/*if(FAILED(hr))
-					LibReport(REPORT_MSG_LEVEL_ERROR,"Ќе удалось создать текстуру глубины PSSM");*/
-			
-			DepthSurfaces[i] = 0;
-		}
-
-	light_data::pDXDevice->CreateDepthStencilSurface(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
+//	light_data::pDXDevice->CreateDepthStencilSurface(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
 	
 	FovRatio.x = *r_default_fov;
 	FovRatio.y = float(*r_win_width) / float(*r_win_height);
@@ -163,16 +161,17 @@ void PSSM::init()
 	FovRatio.x = *r_default_fov;
 	FovRatio.y = float(*r_win_width) / float(*r_win_height);
 
-		for(int i=0;i<5;i++)
-		{
-			m_aIsUpdate[i] = 0;
+	for(int i = 0; i < 5; i++)
+	{
+		m_aIsUpdate[i] = 0;
 
-			light_data::pDXDevice->CreateTexture(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &(m_aDepthMaps[i]), NULL);
+	//	light_data::pDXDevice->CreateTexture(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &(m_aDepthMaps[i]), NULL);
+		m_aDepthMaps[i] = light_data::pDXDevice->createTexture2D(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R32F);
 
-			DepthSurfaces[i] = 0;
+		DepthSurfaces[i] = 0;
 
-			m_aFrustums[i] = SGCore_CrFrustum();
-		}
+		m_aFrustums[i] = SGCore_CrFrustum();
+	}
 
 		//m_aMask[]
 
@@ -192,7 +191,8 @@ void PSSM::init()
 	m_aNearFar[4].x = *r_near;
 	m_aNearFar[4].y = *r_far;
 
-	light_data::pDXDevice->CreateDepthStencilSurface(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
+//	light_data::pDXDevice->CreateDepthStencilSurface(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
+	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, GXFMT_D24X8, GXMULTISAMPLE_NONE);
 	
 	float2 fOffset = float2(0.5,0.5) + (float2(0.5f,0.5)/light_data::vSizeTexDepthGlobal);
 	float range = 1.0f;
@@ -315,9 +315,10 @@ void PSSM::updateFrustums(int split, const float3* poscam, const float3* dircam)
 	OrtMax.y = floor(OrtMax.y);
 	OrtMax *= WorldUnitsPerTexel;
 
-	D3DXMATRIX tmpproj;
-	D3DXMatrixOrthoOffCenterLH(&tmpproj, OrtMin.x, OrtMax.x, OrtMin.y, OrtMax.y, minZ, maxZ);
-	Projs[split] = float4x4(tmpproj);
+//	D3DXMATRIX tmpproj;
+//	D3DXMatrixOrthoOffCenterLH(&tmpproj, OrtMin.x, OrtMax.x, OrtMin.y, OrtMax.y, minZ, maxZ);
+	Projs[split] = SMMatrixOrthographicLH(OrtMax.x - OrtMin.x, OrtMax.y - OrtMin.y, minZ, maxZ);
+//	Projs[split] = float4x4(tmpproj);
 
 	ViewProj[split] = Views[split] * Projs[split];
 	flickering(&ViewProj[split], light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y);
@@ -335,13 +336,12 @@ void PSSM::preRender(int split)
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomPSSMDirect, "g_mWVP", &SMMatrixTranspose(ViewProj[split]));
 	//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomPSSMDirect, "g_vLigthPos", &Position);
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomPSSMDirect);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGeomPSSMDirect);
+	SGCore_ShaderBind(light_data::shader_id::kit::idSMDepthGeomPSSMDirect);
 
-	mem_release_del(DepthSurfaces[split]);
-	m_aDepthMaps[split]->GetSurfaceLevel(0, &(DepthSurfaces[split]));
+	mem_release(DepthSurfaces[split]);
+	DepthSurfaces[split] = m_aDepthMaps[split]->getMipmap();
 	
-	light_data::pDXDevice->SetRenderTarget(0, DepthSurfaces[split]);
+	light_data::pDXDevice->setColorTarget(DepthSurfaces[split]);
 	
 
 	light_data::pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH, GXCOLOR_ARGB(255, 255, 255, 255));
@@ -349,9 +349,9 @@ void PSSM::preRender(int split)
 
 void PSSM::begin()
 {
-	light_data::pDXDevice->GetDepthStencilSurface(&OldDepthStencilSurface);
-	light_data::pDXDevice->SetDepthStencilSurface(DepthStencilSurface);
-	light_data::pDXDevice->GetRenderTarget(0, &OldColorSurface);
+	OldDepthStencilSurface = light_data::pDXDevice->getDepthStencilSurface();
+	light_data::pDXDevice->setDepthStencilSurface(DepthStencilSurface);
+	OldColorSurface = light_data::pDXDevice->getColorTarget();
 
 	/*light_data::pDXDevice->GetTransform(D3DTS_VIEW,&OldView);
 	light_data::pDXDevice->GetTransform(D3DTS_PROJECTION,&OldProj);
@@ -364,8 +364,8 @@ void PSSM::begin()
 
 void PSSM::end()
 {
-	light_data::pDXDevice->SetDepthStencilSurface(OldDepthStencilSurface);
-	light_data::pDXDevice->SetRenderTarget(0, OldColorSurface);
+	light_data::pDXDevice->setDepthStencilSurface(OldDepthStencilSurface);
+	light_data::pDXDevice->setColorTarget(OldColorSurface);
 
 	mem_release_del(OldDepthStencilSurface);
 	mem_release_del(OldColorSurface);
@@ -422,7 +422,7 @@ void PSSM::flickering(float4x4 *matLVP,float size_x,float size_y)
 	*matLVP = SMMatrixMultiply(*matLVP,xRounding);
 }
 
-void PSSM::genShadow(IDirect3DTexture9* shadowmap)
+void PSSM::genShadow(IGXTexture2D* shadowmap)
 {
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
@@ -432,21 +432,27 @@ void PSSM::genShadow(IDirect3DTexture9* shadowmap)
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
+	IGXSurface *RenderSurf, *BackBuf;
 
-	shadowmap->GetSurfaceLevel(0, &RenderSurf);
-	light_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	light_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	RenderSurf = shadowmap->getMipmap();
+	BackBuf = light_data::pDXDevice->getColorTarget();
+	light_data::pDXDevice->setColorTarget(RenderSurf);
 
 	//light_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
-	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
-	SGCore_SetSamplerFilter2(1, 6, D3DTEXF_LINEAR);
-	SGCore_SetSamplerAddress2(1, 6, D3DTADDRESS_CLAMP);
+	light_data::pDXDevice->setSamplerState(light_data::pSamplerPointClamp, 0);
+	for(UINT i = 1; i <= 6; ++i)
+	{
+		light_data::pDXDevice->setSamplerState(light_data::pSamplerLinearClamp, i);
+	}
 
-	light_data::pDXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_DEPTH));
-	light_data::pDXDevice->SetTexture(6, SGCore_GbufferGetRT(DS_RT_NORMAL));
+//	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
+//	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+//	SGCore_SetSamplerFilter2(1, 6, D3DTEXF_LINEAR);
+//	SGCore_SetSamplerAddress2(1, 6, D3DTADDRESS_CLAMP);
+
+	light_data::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH));
+	light_data::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_NORMAL), 6);
 
 	float4x4 aMatrixTexture[5];
 
@@ -454,19 +460,22 @@ void PSSM::genShadow(IDirect3DTexture9* shadowmap)
 	//char mattex[16];
 	for (int i = 0; i<5; i++)
 	{
-		light_data::pDXDevice->SetTexture(1 + i, m_aDepthMaps[i]);
+		light_data::pDXDevice->setTexture(m_aDepthMaps[i], 1 + i);
 		MatrixTexture = ViewProj[i] * ScaleBiasMat;
 		MatrixTexture = SMMatrixTranspose(MatrixTexture);
 		aMatrixTexture[i] = MatrixTexture;
 	}
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idPSSM4, "g_aMatrixTexture", &aMatrixTexture);
-
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idResPosDepth);
-	if (Generating4Slits)
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idPSSM4);
+	if(Generating4Slits)
+	{
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idPSSM4, "g_aMatrixTexture", &aMatrixTexture);
+		SGCore_ShaderBind(light_data::shader_id::kit::idResPosDepthPSSM4);
+	}
 	else
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idPSSM3);
+	{
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idPSSM3, "g_aMatrixTexture", &aMatrixTexture);
+		SGCore_ShaderBind(light_data::shader_id::kit::idResPosDepthPSSM3);
+	}
 
 	float4x4 camview, mProjection;
 	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &camview);
@@ -497,32 +506,33 @@ void PSSM::genShadow(IDirect3DTexture9* shadowmap)
 
 	SGCore_ScreenQuadDraw();
 
-	light_data::pDXDevice->SetVertexShader(0);
-	light_data::pDXDevice->SetPixelShader(0);
+	SGCore_ShaderUnBind();
 
-	light_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	light_data::pDXDevice->setColorTarget(BackBuf);
 
-	mem_release_del(RenderSurf);
-	mem_release_del(BackBuf);
+	mem_release(RenderSurf);
+	mem_release(BackBuf);
 
+#ifdef _GRAPHIX_API
 	if (GetAsyncKeyState(VK_NUMPAD1))
 	{
 		D3DXSaveTextureToFile("C:\\1\\pssm.png", D3DXIFF_PNG, shadowmap, NULL);
 	}
+#endif
 }
 
-void PSSM::genShadowAll(IDirect3DTexture9* shadowmap)
+void PSSM::genShadowAll(IGXTexture2D* shadowmap)
 {
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
+	IGXSurface *RenderSurf, *BackBuf;
 
-	shadowmap->GetSurfaceLevel(0, &RenderSurf);
-	light_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	light_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	RenderSurf = shadowmap->getMipmap();
+	BackBuf = light_data::pDXDevice->getColorTarget();
+	light_data::pDXDevice->setColorTarget(RenderSurf);
 
 
-		light_data::pDXDevice->clear(GXCLEAR_COLOR);
+	light_data::pDXDevice->clear(GXCLEAR_COLOR);
 
-	light_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	light_data::pDXDevice->setColorTarget(BackBuf);
 
 	mem_release_del(RenderSurf);
 	mem_release_del(BackBuf);
@@ -532,15 +542,15 @@ void PSSM::genShadowAll(IDirect3DTexture9* shadowmap)
 
 void ShadowMapTech::onLostDevice()
 {
-	mem_release_del(DepthMap);
-	mem_release_del(DepthStencilSurface);
+//	mem_release_del(DepthMap);
+//	mem_release_del(DepthStencilSurface);
 	mem_release_del(DepthSurface);
 }
 
 void ShadowMapTech::onResetDevice()
 {
-	light_data::pDXDevice->CreateTexture(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &(DepthMap), NULL);
-	light_data::pDXDevice->CreateDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, D3DFMT_D24X8,D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
+//	light_data::pDXDevice->CreateTexture(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &(DepthMap), NULL);
+//	light_data::pDXDevice->CreateDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, D3DFMT_D24X8,D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
 }
 
 ShadowMapTech::ShadowMapTech()
@@ -629,8 +639,8 @@ void ShadowMapTech::init()
 	Frustum = SGCore_CrFrustum();
 	
 	DepthSurface = 0;
-	light_data::pDXDevice->CreateTexture(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F,D3DPOOL_DEFAULT, &(DepthMap), NULL);
-	light_data::pDXDevice->CreateDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, D3DFMT_D24X8,D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
+	DepthMap = light_data::pDXDevice->createTexture2D(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R32F);
+	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, GXFMT_D24X8, GXMULTISAMPLE_NONE);
 
 	float fOffset = 0.5f + (0.5f/light_data::vSizeTexDepthLocal.x);
 	float range = 1.0f;
@@ -694,9 +704,9 @@ long ShadowMapTech::getIDArr(long id)
 
 void ShadowMapTech::begin()
 {
-	light_data::pDXDevice->GetDepthStencilSurface(&OldDepthStencilSurface);
-	light_data::pDXDevice->SetDepthStencilSurface(DepthStencilSurface);
-	light_data::pDXDevice->GetRenderTarget(0, &OldColorSurface);
+	OldDepthStencilSurface = light_data::pDXDevice->getDepthStencilSurface();
+	light_data::pDXDevice->setDepthStencilSurface(DepthStencilSurface);
+	OldColorSurface = light_data::pDXDevice->getColorTarget();
 
 	/*light_data::pDXDevice->GetTransform(D3DTS_VIEW,&OldView);
 	light_data::pDXDevice->GetTransform(D3DTS_PROJECTION,&OldProj);
@@ -725,24 +735,20 @@ void ShadowMapTech::begin()
 	Frustum->update(&(View),&(Proj));
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomPSSMDirect, "g_mWVP", &SMMatrixTranspose(View * Proj));
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomPSSMDirect);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGeomPSSMDirect);
+	SGCore_ShaderBind(light_data::shader_id::kit::idSMDepthGeomPSSMDirect);
 
 	mem_release_del(DepthSurface);
-	DepthMap->GetSurfaceLevel(0, &(DepthSurface));
+	DepthSurface = DepthMap->getMipmap();
 	
-	light_data::pDXDevice->SetRenderTarget(0, DepthSurface);
+	light_data::pDXDevice->setColorTarget(DepthSurface);
 	
-
-	light_data::pDXDevice->setClearColor(float4_t(1.0f, 1.0f, 1.0f, 1.0f));
-	light_data::pDXDevice->clearTarget();
-	light_data::pDXDevice->clearDepth();
+	light_data::pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH, GXCOLOR_ARGB(255,255,255,255));
 }
 
 void ShadowMapTech::end()
 {
-	light_data::pDXDevice->SetDepthStencilSurface(OldDepthStencilSurface);
-	light_data::pDXDevice->SetRenderTarget(0, OldColorSurface);
+	light_data::pDXDevice->setDepthStencilSurface(OldDepthStencilSurface);
+	light_data::pDXDevice->setColorTarget(OldColorSurface);
 
 	mem_release_del(OldDepthStencilSurface);
 	mem_release_del(OldColorSurface);
@@ -773,12 +779,16 @@ void ShadowMapTech::genShadow(IGXTexture2D* shadowmap)
 
 	//light_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 0, 0, 0), 1.0f, 0);
 
-	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
-	SGCore_SetSamplerFilter(1, D3DTEXF_LINEAR);
-	SGCore_SetSamplerAddress(1, D3DTADDRESS_CLAMP);
-	SGCore_SetSamplerFilter(2, D3DTEXF_POINT);
-	SGCore_SetSamplerAddress(2, D3DTADDRESS_WRAP);
+	light_data::pDXDevice->setSamplerState(light_data::pSamplerPointClamp, 0);
+	light_data::pDXDevice->setSamplerState(light_data::pSamplerLinearClamp, 1);
+	light_data::pDXDevice->setSamplerState(light_data::pSamplerPointWrap, 2);
+
+//	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
+//	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+//	SGCore_SetSamplerFilter(1, D3DTEXF_LINEAR);
+//	SGCore_SetSamplerAddress(1, D3DTADDRESS_CLAMP);
+//	SGCore_SetSamplerFilter(2, D3DTEXF_POINT);
+//	SGCore_SetSamplerAddress(2, D3DTADDRESS_WRAP);
 
 	light_data::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH));
 
@@ -790,17 +800,17 @@ void ShadowMapTech::genShadow(IGXTexture2D* shadowmap)
 	MatrixTexture = View * Proj * ScaleBiasMat;
 	MatrixTexture = SMMatrixTranspose(MatrixTexture);
 
-	if (light_data::isHalfGenPCFShadowLocal)
+	
+	if(light_data::isHalfGenPCFShadowLocal)
+	{
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idGenShadowDirect4, "g_mMatrixTexture", &MatrixTexture);
+		SGCore_ShaderBind(light_data::shader_id::kit::idResPosDepthGenShadowDirect4);
+	}
 	else
+	{
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idGenShadowDirect9, "g_mMatrixTexture", &MatrixTexture);
-
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idResPosDepth);
-
-	if (light_data::isHalfGenPCFShadowLocal)
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idGenShadowDirect4);
-	else
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idGenShadowDirect9);
+		SGCore_ShaderBind(light_data::shader_id::kit::idResPosDepthGenShadowDirect9);
+	}
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idResPosDepth, "g_vParamProj", &float3_t((float)*r_win_width, (float)*r_win_height, (float)*r_default_fov));
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idResPosDepth, "g_vNearFar", &float2_t(*r_near, *r_far));
@@ -834,8 +844,7 @@ void ShadowMapTech::genShadow(IGXTexture2D* shadowmap)
 
 	SGCore_ScreenQuadDraw();
 
-	light_data::pDXDevice->setVertexShader(NULL);
-	light_data::pDXDevice->setPixelShader(NULL);
+	SGCore_ShaderUnBind();
 
 	light_data::pDXDevice->setColorTarget(BackBuf);
 
@@ -847,8 +856,8 @@ void ShadowMapTech::genShadow(IGXTexture2D* shadowmap)
 
 void ShadowMapCubeTech::onLostDevice()
 {
-	mem_release_del(DepthMap);
-	mem_release_del(DepthStencilSurface);
+//	mem_release_del(DepthMap);
+//	mem_release_del(DepthStencilSurface);
 
 	mem_release_del(DepthSurface[0]);
 	mem_release_del(DepthSurface[1]);
@@ -863,7 +872,7 @@ void ShadowMapCubeTech::onLostDevice()
 
 void ShadowMapCubeTech::onResetDevice()
 {
-	HRESULT hr = D3DXCreateCubeTexture(light_data::pDXDevice, light_data::vSizeTexDepthLocal.x, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &DepthMap);
+/*	HRESULT hr = D3DXCreateCubeTexture(light_data::pDXDevice, light_data::vSizeTexDepthLocal.x, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &DepthMap);
 
 	if (hr == D3DERR_INVALIDCALL)
 		int qwert = 0;
@@ -875,6 +884,7 @@ void ShadowMapCubeTech::onResetDevice()
 		int qwert = 0;
 
 	light_data::pDXDevice->CreateDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.x, D3DFMT_D24X8,D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
+	*/
 }
 
 ShadowMapCubeTech::~ShadowMapCubeTech()
@@ -1012,7 +1022,8 @@ void ShadowMapCubeTech::init()
 	DepthSurface[4] = 0;
 	DepthSurface[5] = 0;
 
-	HRESULT hr = D3DXCreateCubeTexture(light_data::pDXDevice, light_data::vSizeTexDepthLocal.x, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &DepthMap);
+	DepthMap = light_data::pDXDevice->createTextureCube(light_data::vSizeTexDepthLocal.x, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R32F);
+	/*HRESULT hr = D3DXCreateCubeTexture(light_data::pDXDevice, light_data::vSizeTexDepthLocal.x, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &);
 
 	if (hr == D3DERR_INVALIDCALL)
 		int qwert = 0;
@@ -1022,8 +1033,8 @@ void ShadowMapCubeTech::init()
 		int qwert = 0;
 	else if (hr == E_OUTOFMEMORY)
 		int qwert = 0;
-
-	light_data::pDXDevice->CreateDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.x, D3DFMT_D24X8,D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
+		*/
+	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.x, GXFMT_D24X8, GXMULTISAMPLE_NONE);
 }
 
 void ShadowMapCubeTech::begin()
@@ -1084,8 +1095,7 @@ void ShadowMapCubeTech::pre(int cube)
 	
 	light_data::pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH, GXCOLOR_ARGB(255,255,255,255));
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomCube);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGeomCube);
+	SGCore_ShaderBind(light_data::shader_id::kit::idSMDepthGeomCube);
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomCube, "g_vLightPos", &Position);
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomCube, "g_mWVP", &vp);
@@ -1093,12 +1103,14 @@ void ShadowMapCubeTech::pre(int cube)
 
 void ShadowMapCubeTech::post(int cube)
 {
+#ifdef _GRAPHIX_API
 		if(GetAsyncKeyState(VK_NUMPAD5))
 		{
 			char tmpstr[1024];
 			sprintf(tmpstr,"C:\\1\\shadowcube_%d.bmp",cube);
 			D3DXSaveSurfaceToFile(tmpstr, D3DXIFF_PNG, DepthSurface[cube], NULL,0);
 		}
+#endif
 	mem_release_del(DepthSurface[cube]);
 }
 
@@ -1136,23 +1148,25 @@ void ShadowMapCubeTech::genShadow(IGXTexture2D* shadowmap)
 
 	//light_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 255, 0, 0), 1.0f, 0);
 
-	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
-	SGCore_SetSamplerFilter(1, D3DTEXF_LINEAR);
-	SGCore_SetSamplerAddress(1, D3DTADDRESS_CLAMP);
-	SGCore_SetSamplerFilter(2, D3DTEXF_POINT);
-	SGCore_SetSamplerAddress(2, D3DTADDRESS_WRAP);
+	light_data::pDXDevice->setSamplerState(light_data::pSamplerPointClamp, 0);
+	light_data::pDXDevice->setSamplerState(light_data::pSamplerLinearClamp, 1);
+	light_data::pDXDevice->setSamplerState(light_data::pSamplerPointWrap, 2);
+//	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
+//	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+//	SGCore_SetSamplerFilter(1, D3DTEXF_LINEAR);
+//	SGCore_SetSamplerAddress(1, D3DTADDRESS_CLAMP);
+//	SGCore_SetSamplerFilter(2, D3DTEXF_POINT);
+//	SGCore_SetSamplerAddress(2, D3DTADDRESS_WRAP);
 
 	light_data::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH));
 
 	light_data::pDXDevice->setTexture(DepthMap, 1);
 	light_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(light_data::texture_id::idNoiseTex), 2);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idResPosDepth);
 	if (light_data::isHalfGenPCFShadowLocal)
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idGenShadowCube1);
+		SGCore_ShaderBind(light_data::shader_id::kit::idResPosDepthGenShadowCube1);
 	else
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idGenShadowCube6);
+		SGCore_ShaderBind(light_data::shader_id::kit::idResPosDepthGenShadowCube6);
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idResPosDepth, "g_vParamProj", &float3_t((float)(float)*r_win_width, *r_win_height, (float)*r_default_fov));
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idResPosDepth, "g_vNearFar", &float2_t(*r_near, *r_far));

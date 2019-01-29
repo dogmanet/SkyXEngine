@@ -6,7 +6,7 @@ See the license in LICENSE
 
 #include "Bound.h"
 
-void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** ppMesh, IGXContext * pDevice,UINT iSideCount)
+void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** ppMesh, IGXContext * pDevice, UINT iSideCount)
 {
 	UINT iVC = iSideCount * 2;
 	UINT iIC = (iSideCount - 2) * 6 + iSideCount * 6;
@@ -80,6 +80,7 @@ void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** p
 		memcpy(pData, pVertices, sizeof(float3_t) * iVC);
 		pMesh->getVertexBuffer()->unlock();
 	}
+	pMesh->getBound()->calcBound((vertex_static_ex*)pVertices, iVC, sizeof(float3_t));
 
 	if(pMesh->getIndexBuffer()->lock(&pData, GXBL_WRITE))
 	{
@@ -91,6 +92,11 @@ void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** p
 	mem_delete(pVertices);
 
 	(*ppMesh) = pMesh;
+}
+
+void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppMesh, IGXContext * pDevice)
+{
+
 }
 
 //##########################################################################
@@ -597,6 +603,7 @@ void CreateBoundingBoxMesh(const float3* min, const float3* max, IMesh** bbmesh,
 		memcpy(pData, pVertices, sizeof(float3_t) * iVC);
 		pMesh->getVertexBuffer()->unlock();
 	}
+	pMesh->getBound()->calcBound((vertex_static_ex*)pVertices, iVC, sizeof(float3_t));
 
 	if(pMesh->getIndexBuffer()->lock(&pData, GXBL_WRITE))
 	{

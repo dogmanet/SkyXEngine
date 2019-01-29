@@ -13,8 +13,8 @@ CLights::CLights()
 	const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-	m_idShadowMap = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GXUSAGE_RENDERTARGET, GXFMT_R16F, D3DPOOL_DEFAULT, "shadowmap", 1);
-	m_idShadowMap2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GXUSAGE_RENDERTARGET, GXFMT_R16F, D3DPOOL_DEFAULT, "shadowmap2", 1);
+	m_idShadowMap = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R16F, "shadowmap");
+	m_idShadowMap2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R16F, "shadowmap2");
 
 	m_idGlobalLight = -1;
 	m_isCastGlobalShadow = false;
@@ -388,10 +388,7 @@ ID CLights::createPoint(ID id, const float3* center, float dist, const float3* c
 	tmplight->m_vColor = *color;
 	tmplight->m_isEnable = true;
 	tmplight->m_pBoundVolume = SGCore_CrBound();
-	IGXVertexBuffer* vertexbuf;
-	tmplight->m_pMesh->GetVertexBuffer(&vertexbuf);
-	tmplight->m_pBoundVolume->calcBound(vertexbuf, tmplight->m_pMesh->GetNumVertices(), tmplight->m_pMesh->GetNumBytesPerVertex());
-	mem_release(vertexbuf);
+	tmplight->m_pBoundVolume->cloneFrom(tmplight->m_pMesh->getBound());
 
 	if (tmplight->m_isGlobal)
 		m_idGlobalLight = tmpid;
@@ -456,10 +453,7 @@ ID CLights::createDirection(ID id, const float3* pos, float dist, const float3* 
 		tmplight->m_typeShadowed = LTYPE_SHADOW_NONE;
 
 	tmplight->m_pBoundVolume = SGCore_CrBound();
-	IGXVertexBuffer* vertexbuf;
-	tmplight->m_pMesh->GetVertexBuffer(&vertexbuf);
-	tmplight->m_pBoundVolume->calcBound(vertexbuf, tmplight->m_pMesh->GetNumVertices(), tmplight->m_pMesh->GetNumBytesPerVertex());
-	mem_release(vertexbuf);
+	tmplight->m_pBoundVolume->cloneFrom(tmplight->m_pMesh->getBound());
 
 	ID tmpid = id;
 
@@ -579,10 +573,7 @@ void CLights::setLightDist(ID id, float radius_height, bool is_create)
 
 	if (m_aLights[id]->m_pMesh)
 	{
-		IGXVertexBuffer* vertexbuf;
-		m_aLights[id]->m_pMesh->GetVertexBuffer(&vertexbuf);
-		m_aLights[id]->m_pBoundVolume->calcBound(vertexbuf, m_aLights[id]->m_pMesh->GetNumVertices(), m_aLights[id]->m_pMesh->GetNumBytesPerVertex());
-		mem_release_del(vertexbuf);
+		m_aLights[id]->m_pBoundVolume->cloneFrom(m_aLights[id]->m_pMesh->getBound());
 	}
 
 	lightCountUpdateNull(id);
@@ -616,7 +607,7 @@ void CLights::setLightPos(ID id, const float3* vec, bool greal)
 			tmplight->m_fGAngleY = 0;
 
 
-		float4x4 mat = SMMatrixRotationZ(-D3DXToRadian(tmplight->m_fGAngleX)) * SMMatrixRotationY(D3DXToRadian(tmplight->m_fGAngleY));
+		float4x4 mat = SMMatrixRotationZ(-SMToRadian(tmplight->m_fGAngleX)) * SMMatrixRotationY(SMToRadian(tmplight->m_fGAngleY));
 		tmplight->m_vPosition = SMVector3Transform(float3(-1, 0, 0), mat);
 
 
@@ -850,26 +841,22 @@ void CLights::initShaderOfTypeMaterial(ID id, int typemat, const float4x4* wmat)
 		if (typemat == MTL_TYPE_GEOM)
 		{
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomPSSMDirect, "g_mWVP", &tmpmat);
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomPSSMDirect);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGeomPSSMDirect);
+			SGCore_ShaderBind(light_data::shader_id::kit::idSMDepthGeomPSSMDirect);
 		}
 		else if (typemat == MTL_TYPE_GRASS)
 		{
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassPSSMDirect, "g_mWVP", &tmpmat);
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassPSSMDirect);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGreenPSSMDirect);
+			SGCore_ShaderBind(light_data::shader_id::kit::idSMDepthGrassPSSMDirect);
 		}
 		else if (typemat == MTL_TYPE_TREE)
 		{
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreePSSMDirect, "g_mWVP", &tmpmat);
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreePSSMDirect);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGreenPSSMDirect);
+			SGCore_ShaderBind(light_data::shader_id::kit::idSMDepthTreePSSMDirect);
 		}
 		else if (typemat == MTL_TYPE_SKIN)
 		{
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinPSSMDirect, "g_mWVP", &tmpmat);
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinPSSMDirect);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthSkinPSSMDirect);
+			SGCore_ShaderBind(light_data::shader_id::kit::idSMDepthSkinPSSMDirect);
 		}
 	}
 	else if (m_aLights[id]->m_pShadowCube)
@@ -879,32 +866,28 @@ void CLights::initShaderOfTypeMaterial(ID id, int typemat, const float4x4* wmat)
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomCube, "g_mWVP", &tmpmat);
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomCube, "g_mW", &tmpwmat);
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomCube, "g_vLightPos", &m_aLights[id]->m_vPosition);
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomCube);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGeomCube);
+			SGCore_ShaderBind(light_data::shader_id::kit::idSMDepthGeomCube);
 		}
 		else if (typemat == MTL_TYPE_GRASS)
 		{
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassCube, "g_mWVP", &tmpmat);
 			//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassCube, "g_mW", &tmpwmat);
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassCube, "g_vLightPos", &m_aLights[id]->m_vPosition);
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGrassCube);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGreenCube);
+			SGCore_ShaderBind(light_data::shader_id::kit::idSMDepthGrassCube);
 		}
 		else if (typemat == MTL_TYPE_TREE)
 		{
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreeCube, "g_mWVP", &tmpmat);
 			//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreeCube, "g_mW", &tmpwmat);
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreeCube, "g_vLightPos", &m_aLights[id]->m_vPosition);
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthTreeCube);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthGreenCube);
+			SGCore_ShaderBind(light_data::shader_id::kit::idSMDepthTreeCube);
 		}
 		else if (typemat == MTL_TYPE_SKIN)
 		{
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinCube, "g_mWVP", &tmpmat);
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinCube, "g_mW", &tmpwmat);
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinCube, "g_vLightPos", &m_aLights[id]->m_vPosition);
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthSkinCube);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idSMDepthSkinCube);
+			SGCore_ShaderBind(light_data::shader_id::kit::idSMDepthSkinCube);
 		}
 	}
 }
@@ -999,10 +982,7 @@ void CLights::setLightAngle(ID id, float angle, bool is_create)
 
 		if (m_aLights[id]->m_pMesh)
 		{
-			IGXVertexBuffer* vertexbuf;
-			m_aLights[id]->m_pMesh->GetVertexBuffer(&vertexbuf);
-			m_aLights[id]->m_pBoundVolume->calcBound(vertexbuf, m_aLights[id]->m_pMesh->GetNumVertices(), m_aLights[id]->m_pMesh->GetNumBytesPerVertex());
-			mem_release(vertexbuf);
+			m_aLights[id]->m_pBoundVolume->cloneFrom(m_aLights[id]->m_pMesh->getBound());
 		}
 
 		if (m_aLights[id]->m_typeLight == LTYPE_LIGHT_DIR && m_aLights[id]->m_pShadowSM)
@@ -1024,10 +1004,7 @@ void CLights::setLightTopRadius(ID id, float top_radius)
 
 		if (m_aLights[id]->m_pMesh)
 		{
-			IGXVertexBuffer* vertexbuf;
-			m_aLights[id]->m_pMesh->GetVertexBuffer(&vertexbuf);
-			m_aLights[id]->m_pBoundVolume->calcBound(vertexbuf, m_aLights[id]->m_pMesh->GetNumVertices(), m_aLights[id]->m_pMesh->GetNumBytesPerVertex());
-			mem_release_del(vertexbuf);
+			m_aLights[id]->m_pBoundVolume->cloneFrom(m_aLights[id]->m_pMesh->getBound());
 		}
 
 		lightCountUpdateNull(id);
@@ -1375,10 +1352,12 @@ void CLights::shadowSoft(bool randomsam, float size, bool isfirst)
 	BackBuf = light_data::pDXDevice->getColorTarget();
 	light_data::pDXDevice->setColorTarget(RenderSurf);
 
-	SGCore_SetSamplerFilter(0, D3DTEXF_POINT);
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
-	SGCore_SetSamplerFilter(1, D3DTEXF_POINT);
-	SGCore_SetSamplerAddress(1, D3DTADDRESS_CLAMP);
+	light_data::pDXDevice->setSamplerState(light_data::pSamplerPointClamp, 0);
+	light_data::pDXDevice->setSamplerState(light_data::pSamplerPointClamp, 1);
+//	SGCore_SetSamplerFilter(0, D3DTEXF_POINT);
+//	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+//	SGCore_SetSamplerFilter(1, D3DTEXF_POINT);
+//	SGCore_SetSamplerAddress(1, D3DTADDRESS_CLAMP);
 
 	light_data::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH));
 	
@@ -1387,17 +1366,18 @@ void CLights::shadowSoft(bool randomsam, float size, bool isfirst)
 		else
 			light_data::pDXDevice->setTexture(SGCore_RTGetTexture(m_idShadowMap2), 1);
 	
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idScreenOut);
-
 		if(randomsam)
 		{
-			SGCore_SetSamplerFilter(2, D3DTEXF_POINT);
-			SGCore_SetSamplerAddress(2, D3DTADDRESS_WRAP);
+			light_data::pDXDevice->setSamplerState(light_data::pSamplerPointWrap, 2);
+		//	SGCore_SetSamplerFilter(2, D3DTEXF_POINT);
+		//	SGCore_SetSamplerAddress(2, D3DTADDRESS_WRAP);
 			light_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(light_data::texture_id::idNoiseTex), 2);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idPPBlurDepthBasedNoise);
+			SGCore_ShaderBind(light_data::shader_id::kit::idPPBlurDepthBasedNoise);
 		}
 		else
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, light_data::shader_id::ps::idPPBlurDepthBased);
+		{
+			SGCore_ShaderBind(light_data::shader_id::kit::idPPBlurDepthBased);
+		}
 	
 		if(randomsam)
 		{
@@ -1416,8 +1396,8 @@ void CLights::shadowSoft(bool randomsam, float size, bool isfirst)
 	light_data::pDXDevice->setShader(NULL);
 
 	light_data::pDXDevice->setColorTarget(BackBuf);
-	mem_release_del(RenderSurf);
-	mem_release_del(BackBuf);
+	mem_release(RenderSurf);
+	mem_release(BackBuf);
 
 		if(m_iHowShadow == 1)
 			m_iHowShadow = 0;
