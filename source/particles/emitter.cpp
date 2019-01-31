@@ -299,7 +299,7 @@ void CEmitter::setCount(int iCount)
 
 	m_pArr = new CommonParticle[m_iCount];
 
-	m_pTransVertBuf = pe_data::pDXDevice->createVertexBuffer(m_iCount * sizeof(CommonParticleDecl2), GX_BUFFER_USAGE_STREAM, NULL, true);
+	m_pTransVertBuf = pe_data::pDXDevice->createVertexBuffer(m_iCount * sizeof(CommonParticleDecl2), GX_BUFFER_USAGE_STREAM | GX_BUFFER_ALLOWDISCARD);
 
 	createGeomData();
 }
@@ -1322,21 +1322,21 @@ void CEmitter::render(DWORD timeDelta, const float4x4 *mRot, const float4x4 *mPo
 				LibReport(REPORT_MSG_LEVEL_WARNING, "sxparticles - not init depth map\n");
 		}
 
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticles);
+	//	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticles);
 
 		static ID psid = -1;
 
 		if (m_oData.m_isSoft && !m_oData.m_useRefraction && !m_oData.m_isLighting)
 		{
 			psid = pe_data::shader_id::ps::idParticlesSoft;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoft);
+			SGCore_ShaderBind(pe_data::shader_id::kit::idParticlesSoft);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoft, "SoftCoef", &m_oData.m_fSoftCoef);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoft, "NearFar", &NearFar);
 		}
 		else if (m_oData.m_isSoft && m_oData.m_useRefraction && !m_oData.m_isLighting)
 		{
 			psid = pe_data::shader_id::ps::idParticlesSoftRefraction;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefraction);
+			SGCore_ShaderBind(pe_data::shader_id::kit::idParticlesSoftRefraction);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefraction, "SoftCoef", &m_oData.m_fSoftCoef);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefraction, "NearFar", &NearFar);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefraction, "RefractCoef", &m_oData.m_fRefractionCoef);
@@ -1344,7 +1344,7 @@ void CEmitter::render(DWORD timeDelta, const float4x4 *mRot, const float4x4 *mPo
 		else if (m_oData.m_isSoft && m_oData.m_useRefraction && m_oData.m_isLighting)
 		{
 			psid = pe_data::shader_id::ps::idParticlesSoftRefractionLight;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefractionLight);
+			SGCore_ShaderBind(pe_data::shader_id::kit::idParticlesSoftRefractionLight);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefractionLight, "SoftCoef", &m_oData.m_fSoftCoef);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefractionLight, "NearFar", &NearFar);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftRefractionLight, "RefractCoef", &m_oData.m_fRefractionCoef);
@@ -1352,7 +1352,7 @@ void CEmitter::render(DWORD timeDelta, const float4x4 *mRot, const float4x4 *mPo
 		else if (m_oData.m_isSoft && !m_oData.m_useRefraction && m_oData.m_isLighting)
 		{
 			psid = pe_data::shader_id::ps::idParticlesSoftLight;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftLight);
+			SGCore_ShaderBind(pe_data::shader_id::kit::idParticlesSoftLight);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftLight, "SoftCoef", &m_oData.m_fSoftCoef);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftLight, "NearFar", &NearFar);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesSoftLight, "RefractCoef", &m_oData.m_fRefractionCoef);
@@ -1360,24 +1360,24 @@ void CEmitter::render(DWORD timeDelta, const float4x4 *mRot, const float4x4 *mPo
 		else if (!m_oData.m_isSoft && m_oData.m_useRefraction && m_oData.m_isLighting)
 		{
 			psid = pe_data::shader_id::ps::idParticlesRefractionLight;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesRefractionLight);
+			SGCore_ShaderBind(pe_data::shader_id::kit::idParticlesRefractionLight);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesRefractionLight, "RefractCoef", &m_oData.m_fRefractionCoef);
 		}
 		else if (!m_oData.m_isSoft && !m_oData.m_useRefraction && m_oData.m_isLighting)
 		{
 			psid = pe_data::shader_id::ps::idParticlesLight;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesLight);
+			SGCore_ShaderBind(pe_data::shader_id::kit::idParticlesLight);
 		}
 		else if (!m_oData.m_isSoft && m_oData.m_useRefraction && !m_oData.m_isLighting)
 		{
 			psid = pe_data::shader_id::ps::idParticlesRefraction;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesRefraction);
+			SGCore_ShaderBind(pe_data::shader_id::kit::idParticlesRefraction);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesRefraction, "RefractCoef", &m_oData.m_fRefractionCoef);
 		}
 		else
 		{
 			psid = pe_data::shader_id::ps::idParticles;
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticles);
+			SGCore_ShaderBind(pe_data::shader_id::kit::idParticles);
 		}
 
 		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticles, "ViewProjection", &SMMatrixTranspose(vp));
@@ -1466,8 +1466,7 @@ void CEmitter::render(DWORD timeDelta, const float4x4 *mRot, const float4x4 *mPo
 		pe_data::pDXDevice->setRenderBuffer(m_pRenderBuffQuad);
 		pe_data::pDXDevice->setIndexBuffer(m_pIndexBuffQuad);
 		
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, pe_data::shader_id::vs::idParticlesTrack);
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, pe_data::shader_id::ps::idParticlesTrack);
+		SGCore_ShaderBind(pe_data::shader_id::kit::idParticlesTrack);
 
 		/*pe_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 

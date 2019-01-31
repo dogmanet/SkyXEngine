@@ -79,6 +79,8 @@ namespace light_data
 			extern ID idStdTree;
 			extern ID idStdGrass;
 			extern ID idStdSkin;
+
+			extern ID idLightBound;
 		};
 
 		namespace ps
@@ -110,6 +112,8 @@ namespace light_data
 			extern ID idStdGreenCP;
 			extern ID idStdSkin;
 			extern ID idStdSkinCP;
+
+			extern ID idLightBound;
 		};
 
 		namespace kit
@@ -130,6 +134,8 @@ namespace light_data
 			extern ID idSMDepthSkinCube;
 			extern ID idPPBlurDepthBasedNoise;
 			extern ID idPPBlurDepthBased;
+
+			extern ID idLightBound;
 		};
 	};
 

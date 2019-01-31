@@ -19,7 +19,7 @@ See the license in LICENSE
 #define __BASE_ENTITY_H
 
 #include <gdefines.h>
-#include <common/SXMath.h>
+#include <common/Math.h>
 #include <physics/sxphysics.h>
 #include <score/sxscore.h>
 

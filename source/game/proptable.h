@@ -7,7 +7,7 @@ See the license in LICENSE
 #ifndef __PROPTABLE_H
 #define __PROPTABLE_H
 
-#include <common/SXmath.h>
+#include <common/Math.h>
 
 class CBaseEntity;
 

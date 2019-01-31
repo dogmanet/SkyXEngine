@@ -910,7 +910,7 @@ void CPhyWorld::CDebugDrawer::render()
 	SMMATRIX mView, mProj;
 	Core_RMatrixGet(G_RI_MATRIX_VIEW, &mView);
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mProj);
-
+#ifdef _GRAPHIX_API
 	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixIdentity());
 	SGCore_GetDXDevice()->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&mView);
 	SGCore_GetDXDevice()->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&mProj);
@@ -924,6 +924,7 @@ void CPhyWorld::CDebugDrawer::render()
 	SGCore_GetDXDevice()->SetTexture(0, 0);
 	
 	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, m_vDrawData.size() / 2, &(m_vDrawData[0]), sizeof(render_point));
+#endif
 
 	m_vDrawData.clear();
 }

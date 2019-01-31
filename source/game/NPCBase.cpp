@@ -72,7 +72,7 @@ CNPCBase::CNPCBase(CEntityManager * pMgr):
 	m_ulTimeRot = 0;
 	m_canJump = false;*/
 	m_fStepHeight = 0.4f;
-	m_ulColor = D3DCOLOR_ARGB(128, rand() % 255, rand() % 255, rand() % 255);
+	m_ulColor = GXCOLOR_ARGB(128, rand() % 255, rand() % 255, rand() % 255);
 	//m_ulTimeReturnInGrid = m_ulTimeAllReturnInGrid = 0;
 
 	m_uMoveDir &= ~PM_OBSERVER;

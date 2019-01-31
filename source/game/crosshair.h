@@ -78,7 +78,7 @@ protected:
 	IGXRenderBuffer *m_pRenderBuffer;
 
 	IGXContext * m_pDev;
-	IDirect3DTexture9 * m_pTexture;
+	IGXTexture2D * m_pTexture;
 
 	float2_t m_f2TexOffs;
 	float2_t m_f2TexSize;

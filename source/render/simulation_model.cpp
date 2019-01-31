@@ -26,14 +26,14 @@ CSimulationModel::CSimulationModel()
 
 	GXVERTEXELEMENT InstanceGreen[] =
 	{
-		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
-		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
-		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
-		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT},
-		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL},
-		{1, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1},
-		{1, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD2},
-		{1, 24, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD3},
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD, GXDECLSPEC_PER_VERTEX_DATA},
+		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL, GXDECLSPEC_PER_VERTEX_DATA},
+		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT, GXDECLSPEC_PER_VERTEX_DATA},
+		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL, GXDECLSPEC_PER_VERTEX_DATA},
+		{1, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1, GXDECLSPEC_PER_INSTANCE_DATA},
+		{1, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD2, GXDECLSPEC_PER_INSTANCE_DATA},
+		{1, 24, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD3, GXDECLSPEC_PER_INSTANCE_DATA},
 		GXDECL_END()
 	};
 
@@ -52,13 +52,13 @@ CSimulationModel::CSimulationModel()
 	};
 	m_pVertexDeclarationSkin = gdata::pDXDevice->createVertexDeclaration(layoutDynamic);
 
-	gdata::pDXDevice->CreateVertexBuffer(
-		1 * sizeof(CGreenDataVertex),
-		D3DUSAGE_WRITEONLY,
-		0,
-		D3DPOOL_MANAGED,
-		&m_pTransVertBufGreen,
-		0);
+//	gdata::pDXDevice->CreateVertexBuffer(
+//		1 * sizeof(CGreenDataVertex),
+//		D3DUSAGE_WRITEONLY,
+//		0,
+//		D3DPOOL_MANAGED,
+//		&m_pTransVertBufGreen,
+//		0);
 
 	m_oGreen.m_vPosition = float3_t(0, 0, 0);
 	m_oGreen.m_vTexCoord.x = 1.0f;
@@ -67,10 +67,12 @@ CSimulationModel::CSimulationModel()
 	m_oGreen.m_vSinCosRot.x = sinf(m_oGreen.m_vTexCoord.y);
 	m_oGreen.m_vSinCosRot.y = cosf(m_oGreen.m_vTexCoord.y);
 
-	CGreenDataVertex* RTGPUArrVerteces = 0;
-	m_pTransVertBufGreen->Lock(0, 0, (void**)&RTGPUArrVerteces, 0);
-	memcpy(RTGPUArrVerteces, &m_oGreen, sizeof(CGreenDataVertex));
-	m_pTransVertBufGreen->Unlock();
+//	CGreenDataVertex* RTGPUArrVerteces = 0;
+//	m_pTransVertBufGreen->Lock(0, 0, (void**)&RTGPUArrVerteces, 0);
+//	memcpy(RTGPUArrVerteces, &m_oGreen, sizeof(CGreenDataVertex));
+//	m_pTransVertBufGreen->Unlock();
+	m_pTransVertBufGreen = gdata::pDXDevice->createVertexBuffer(sizeof(CGreenDataVertex), GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY, &m_oGreen);
+
 }
 
 CSimulationModel::~CSimulationModel()
@@ -177,7 +179,7 @@ ID CSimulationModel::getIdMtl()
 	return m_idMtrl;
 }
 
-void CSimulationModel::getPlane(D3DXPLANE* plane)
+void CSimulationModel::getPlane(SMPLANE* plane)
 {
 	if (m_typeModel == MTLTYPE_MODEL_STATIC || m_typeModel == MTLTYPE_MODEL_TREE || m_typeModel == MTLTYPE_MODEL_GRASS)
 		D3DXPlaneTransform(plane, &m_aModels[m_iCurrRenderModel]->m_oPlane, &((D3DXMATRIX)m_mWorld));

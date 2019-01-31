@@ -56,7 +56,7 @@ report_func g_fnReportf = DefReport;
 
 
 GameData * g_pGameData = NULL;
-ID3DXMesh* g_pFigureBox = 0;
+IMesh* g_pFigureBox = 0;
 
 #define SG_PRECOND(ret) if(!g_pGameData){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxgame is not init", GEN_MSG_LOCATION);return ret;}
 
@@ -121,7 +121,8 @@ SX_LIB_API void SGame_0Create(HWND hWnd, bool isGame)
 	g_pGameData = new GameData(hWnd, isGame);
 
 	//g_pPlayer->spawn();
-	DX_CALL(D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &g_pFigureBox, 0));
+	SGCore_FCreateBoundingBoxMesh(&float3(-0.5f, -0.5f, -0.5f), &float3(0.5f, 0.5f, 0.5f), &g_pFigureBox);
+	//DX_CALL(D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &g_pFigureBox, 0));
 
 	Core_0RegisterConcmd("add_corner", ccmd_cam_pt);
 	Core_0RegisterConcmdArg("ent_save", ccmd_save_as);
@@ -200,7 +201,7 @@ SX_LIB_API void SGame_PlayerSpawn()
 SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderPos)
 {
 	SG_PRECOND(_VOID);
-
+#ifdef _GRAPHIX_API
 	CBaseEntity* pEnt = SGame_EntGet(id);
 	if (!pEnt)
 		return;
@@ -236,11 +237,11 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 			SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixScaling(vBoxSize) * pEnt->getOrient().GetMatrix() * SMMatrixTranslation(pCur->getPos())));
 
 			if (id == pCur->getId())
-				SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(id_sel_tex));
+				SGCore_GetDXDevice()->setTexture(SGCore_LoadTexGetTex(id_sel_tex));
 			else
-				SGCore_GetDXDevice()->SetTexture(0, 0);
+				SGCore_GetDXDevice()->setTexture(NULL);
 
-			g_pFigureBox->DrawSubset(0);
+			g_pFigureBox->draw();
 		} while ((pCur = pCur->getNext()));
 
 
@@ -271,7 +272,7 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixIdentity());
 
 		SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ);
-		SGCore_GetDXDevice()->SetTexture(0, 0);
+		SGCore_GetDXDevice()->setTexture(NULL);
 		DX_CALL(SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, npoints, &(pts[0]), sizeof(float3_t)));
 	}
 	else
@@ -287,6 +288,7 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 		DX_CALL(SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(id_sel_tex)));
 		DX_CALL(g_pFigureBox->DrawSubset(0));
 	}
+#endif
 }
 
 SX_LIB_API int SGame_EntGetClassListCount()

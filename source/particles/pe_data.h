@@ -43,6 +43,19 @@ namespace pe_data
 			extern ID idParticlesSoftRefractionLight;
 			extern ID idParticlesTrack;
 		};
+
+		namespace kit
+		{
+			extern ID idParticles;
+			extern ID idParticlesSoft;
+			extern ID idParticlesRefraction;
+			extern ID idParticlesLight;
+			extern ID idParticlesSoftRefraction;
+			extern ID idParticlesSoftLight;
+			extern ID idParticlesRefractionLight;
+			extern ID idParticlesSoftRefractionLight;
+			extern ID idParticlesTrack;
+		};
 	};
 };
 

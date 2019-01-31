@@ -38,6 +38,19 @@ namespace pe_data
 			ID idParticlesSoftRefractionLight;
 			ID idParticlesTrack;
 		};
+
+		namespace kit
+		{
+			ID idParticles;
+			ID idParticlesSoft;
+			ID idParticlesRefraction;
+			ID idParticlesLight;
+			ID idParticlesSoftRefraction;
+			ID idParticlesSoftLight;
+			ID idParticlesRefractionLight;
+			ID idParticlesSoftRefractionLight;
+			ID idParticlesTrack;
+		};
 	};
 };
 
@@ -88,4 +101,15 @@ void pe_data::Init()
 
 	GXMACRO Defines_PART_SOFT_REFRACTION_LIGHT[] = { { "PART_SOFT", "" }, { "PART_REFRACTION", "" }, { "PART_LIGHT", "" }, { 0, 0 } };
 	pe_data::shader_id::ps::idParticlesSoftRefractionLight = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_soft_refraction_light.ps", SHADER_CHECKDOUBLE_NAME, Defines_PART_SOFT_REFRACTION_LIGHT);
+
+
+	pe_data::shader_id::kit::idParticles = SGCore_ShaderCreateKit(pe_data::shader_id::vs::idParticles, pe_data::shader_id::ps::idParticles);
+	pe_data::shader_id::kit::idParticlesSoft = SGCore_ShaderCreateKit(pe_data::shader_id::vs::idParticles, pe_data::shader_id::ps::idParticlesSoft);
+	pe_data::shader_id::kit::idParticlesRefraction = SGCore_ShaderCreateKit(pe_data::shader_id::vs::idParticles, pe_data::shader_id::ps::idParticlesRefraction);
+	pe_data::shader_id::kit::idParticlesLight = SGCore_ShaderCreateKit(pe_data::shader_id::vs::idParticles, pe_data::shader_id::ps::idParticlesLight);
+	pe_data::shader_id::kit::idParticlesSoftRefraction = SGCore_ShaderCreateKit(pe_data::shader_id::vs::idParticles, pe_data::shader_id::ps::idParticlesSoftRefraction);
+	pe_data::shader_id::kit::idParticlesSoftLight = SGCore_ShaderCreateKit(pe_data::shader_id::vs::idParticles, pe_data::shader_id::ps::idParticlesSoftLight);
+	pe_data::shader_id::kit::idParticlesRefractionLight = SGCore_ShaderCreateKit(pe_data::shader_id::vs::idParticles, pe_data::shader_id::ps::idParticlesRefractionLight);
+	pe_data::shader_id::kit::idParticlesSoftRefractionLight = SGCore_ShaderCreateKit(pe_data::shader_id::vs::idParticles, pe_data::shader_id::ps::idParticlesSoftRefractionLight);
+	pe_data::shader_id::kit::idParticlesTrack = SGCore_ShaderCreateKit(pe_data::shader_id::vs::idParticlesTrack, pe_data::shader_id::ps::idParticlesTrack);
 }

@@ -96,7 +96,81 @@ void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** p
 
 void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppMesh, IGXContext * pDevice)
 {
+	UINT iVC = (iStackCount - 1) * iSideCount + 2;
+	UINT iIC = (iStackCount - 1) * iSideCount * 6;
+	float3_t * pVertices = new float3_t[iVC];
+	USHORT * pIndices = new USHORT[iIC];
 
+
+	UINT iCurV = 0;
+	UINT iCurI = 0;
+	pVertices[iCurV++] = float3_t(0.0f, fRadius, 0.0f);
+	UINT uPrevBaseVtx;
+	for(UINT i = 0; i < iStackCount; ++i)
+	{
+		float A = (float)(i + 1) / (float)iStackCount * SM_2PI;
+		float fCurrentRadius = sinf(A) * fRadius;
+		float fCurrentY = cosf(A) * fRadius;
+		for(UINT j = 0; j < iSideCount; ++i)
+		{
+			A = (float)j / (float)iSideCount * SM_2PI;
+			float x = fCurrentRadius * cosf(A);
+			float z = -fCurrentRadius * sinf(A);
+			// north pole
+			UINT uBaseVtx = iCurV;
+			if(i == 0)
+			{
+				pVertices[iCurV++] = float3_t(x, fCurrentY, z);
+				pIndices[iCurI++] = 0;
+				pIndices[iCurI++] = uBaseVtx + (j + 1) % 6;
+				pIndices[iCurI++] = uBaseVtx + j;
+			}
+			// south pole
+			else if(i == iStackCount - 1)
+			{
+				pIndices[iCurI++] = uPrevBaseVtx + j;
+				pIndices[iCurI++] = uPrevBaseVtx + (j + 1) % 6;
+				pIndices[iCurI++] = uBaseVtx;
+			}
+			else
+			{
+				pVertices[iCurV++] = float3_t(x, fCurrentY, z);
+				pIndices[iCurI++] = uPrevBaseVtx + j;
+				pIndices[iCurI++] = uBaseVtx + (j + 1) % 6;
+				pIndices[iCurI++] = uPrevBaseVtx + (j + 1) % 6;
+
+				pIndices[iCurI++] = uPrevBaseVtx + j;
+				pIndices[iCurI++] = uBaseVtx + j;
+				pIndices[iCurI++] = uBaseVtx + (j + 1) % 6;
+			}
+			uPrevBaseVtx = uBaseVtx;
+		}
+	}
+	pVertices[iCurV++] = float3_t(0.0f, -fRadius, 0.0f);
+
+	assert(iCurI == iIC);
+	assert(iCurV == iVC);
+
+	IMesh *pMesh = SGCore_CrMesh(iIC, iVC);
+
+	VOID * pData;
+	if(pMesh->getVertexBuffer()->lock(&pData, GXBL_WRITE))
+	{
+		memcpy(pData, pVertices, sizeof(float3_t) * iVC);
+		pMesh->getVertexBuffer()->unlock();
+	}
+	pMesh->getBound()->calcBound((vertex_static_ex*)pVertices, iVC, sizeof(float3_t));
+
+	if(pMesh->getIndexBuffer()->lock(&pData, GXBL_WRITE))
+	{
+		memcpy(pData, pIndices, sizeof(USHORT) * iIC);
+		pMesh->getIndexBuffer()->unlock();
+	}
+
+	mem_delete(pIndices);
+	mem_delete(pVertices);
+
+	(*ppMesh) = pMesh;
 }
 
 //##########################################################################
@@ -1124,4 +1198,9 @@ bool CBound::isPointInBox(const float3* point) const
 		return true;
 	else
 		return false;
+}
+
+void CBound::cloneFrom(ISXBound *pFrom)
+{
+	*this = *(dynamic_cast<CBound*>(pFrom));
 }

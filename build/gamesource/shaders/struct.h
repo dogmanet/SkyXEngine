@@ -228,3 +228,18 @@ struct VSO_AIgrid
 };
 
 //!@}
+
+/*! \name LightBound
+@{*/
+
+struct VSI_LightBound
+{
+	half4 vPosition	:POSITION0;
+};
+
+struct VSO_LightBound
+{
+	half4 vPosition	:POSITION;
+};
+
+//!@}

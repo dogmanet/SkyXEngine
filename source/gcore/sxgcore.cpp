@@ -704,6 +704,13 @@ SX_LIB_API void SGCore_FCreateCone(float fTopRadius, float fBottomRadius, float 
 	CreateCone(fTopRadius, fBottomRadius, fHeight, ppMesh, g_pDevice, iSideCount);
 }
 
+SX_LIB_API void SGCore_FCreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppMesh)
+{
+	SG_PRECOND(_VOID);
+
+	CreateSphere(fRadius, iSideCount, iStackCount, ppMesh, g_pDevice);
+}
+
 SX_LIB_API void SGCore_FCompBoundBox(IGXVertexBuffer *pVertexBuffer, ISXBound **ppBound, DWORD dwCountVertices, DWORD dwBytesPerVertex)
 {
 	SG_PRECOND(_VOID);
@@ -1095,11 +1102,18 @@ public:
 	}
 	void Release()
 	{
-		delete this;
+		if(!--m_uRefCount)
+		{
+			delete this;
+		}
 	}
 	ISXBound *getBound()
 	{
 		return(m_pBound);
+	}
+	void AddRef()
+	{
+		++m_uRefCount;
 	}
 
 protected:
@@ -1109,6 +1123,7 @@ protected:
 	UINT m_uVertexCount;
 	UINT m_uIndexCount;
 	ISXBound *m_pBound;
+	UINT m_uRefCount = 1;
 };
 
 SX_LIB_API IMesh* SGCore_CrMesh(UINT uVertexCount, UINT uIndexCount)

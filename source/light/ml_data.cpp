@@ -66,6 +66,8 @@ namespace light_data
 			ID idStdTree;
 			ID idStdGrass;
 			ID idStdSkin;
+
+			ID idLightBound;
 		};
 
 		namespace ps
@@ -97,6 +99,8 @@ namespace light_data
 			ID idStdGreenCP;
 			ID idStdSkin;
 			ID idStdSkinCP;
+
+			ID idLightBound;
 		};
 
 		namespace kit
@@ -117,6 +121,8 @@ namespace light_data
 			ID idSMDepthSkinCube;
 			ID idPPBlurDepthBasedNoise;
 			ID idPPBlurDepthBased;
+
+			ID idLightBound;
 		};
 	};
 
@@ -255,4 +261,8 @@ void light_data::Init()
 	shader_id::ps::idStdSkin = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_skin.ps", "stdr_skin.ps", SHADER_CHECKDOUBLE_NAME);
 
 	shader_id::ps::idStdSkinCP = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_skin.ps", "stdr_skin_cp.ps", SHADER_CHECKDOUBLE_NAME, Defines_CP);
+
+	shader_id::vs::idLightBound = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "lighting_bound.vs", "lighting_bound.vs", SHADER_CHECKDOUBLE_PATH);
+	shader_id::ps::idLightBound = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_bound.ps", "lighting_bound.ps", SHADER_CHECKDOUBLE_PATH);
+	shader_id::kit::idLightBound = SGCore_ShaderCreateKit(shader_id::vs::idLightBound, shader_id::ps::idLightBound);
 }

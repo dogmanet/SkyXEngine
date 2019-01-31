@@ -68,7 +68,7 @@ void CGrid::create(int width, int depth, DWORD color)
 
 void CGrid::render()
 {
-	gdata::pDXDevice->SetTexture(0, 0);
+	gdata::pDXDevice->setTexture(NULL);
 
 	SGCore_ShaderUnBind();
 	gdata::pDXDevice->setRenderBuffer(m_pRenderBuffer);

@@ -874,7 +874,7 @@ public:
 	//! находится ли точка point в пределах параллелепипеда
 	virtual bool isPointInBox(const float3 *pPoint) const = 0;		
 
-	virtual void cloneFrom(ISXBound *pFrom);
+	virtual void cloneFrom(ISXBound *pFrom) = 0;
 };
 
 //! создать ISXBound
@@ -890,6 +890,7 @@ struct IMesh: public IBaseObject
 {
 	virtual ~IMesh() {};
 public:
+	virtual void AddRef() = 0;
 	virtual void draw() = 0;
 	virtual IGXVertexBuffer *getVertexBuffer() = 0;
 	virtual IGXIndexBuffer *getIndexBuffer() = 0;
@@ -907,11 +908,19 @@ SX_LIB_API IMesh* SGCore_CrMesh(UINT uVertexCount, UINT uIndexCount);
 
 //! создание меша (ID3DXMesh) конуса 
 SX_LIB_API void SGCore_FCreateCone(
-	float fTopRadius,		//!< верхний радиус
-	float fBottomRadius,	//!< нижний радиус
-	float fHeight,			//!< длина
-	IMesh ** ppMesh,	//!< выходной меш
-	UINT iSideCount			//!< количество частей??
+	float fTopRadius,       //!< верхний радиус
+	float fBottomRadius,    //!< нижний радиус
+	float fHeight,          //!< длина
+	IMesh ** ppMesh,        //!< выходной меш
+	UINT iSideCount         //!< количество боковых сторон
+	);
+
+//! создание меша (ID3DXMesh) сферы 
+SX_LIB_API void SGCore_FCreateSphere(
+	float fRadius,      //!< радиус
+	UINT iSideCount,    //!< количество боковых сторон
+	UINT iStackCount,   //!< количество горизонтальных слоев
+	IMesh ** ppMesh     //!< выходной меш
 	);
 
 //! просчет ограничивающего объема по вершинному буфер

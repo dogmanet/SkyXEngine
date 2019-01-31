@@ -37,7 +37,7 @@ namespace gdata
 	//! dx устройство
 	extern IGXContext* pDXDevice;
 	//! Способности устройства
-	extern D3DCAPS9 dxDeviceCaps;
+//	extern D3DCAPS9 dxDeviceCaps;
 
 	//! хэндл окна родителя окна рендера, на случай редакторов
 	extern HWND hHandleParent3D;	

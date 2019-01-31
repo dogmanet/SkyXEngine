@@ -1,7 +1,7 @@
 #ifndef _TRACER_H_
 #define _TRACER_H_
 
-#include <common/sxmath.h>
+#include <common/Math.h>
 #include <common/Array.h>
 
 //! Рендерит трейсы в пространстве, для дебага

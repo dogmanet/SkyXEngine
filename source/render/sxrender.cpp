@@ -51,7 +51,7 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 		gdata::hHandleParent3D = hWndParent3D;
 
 		gdata::pDXDevice = SGCore_GetDXDevice();
-		gdata::pDXDevice->GetDeviceCaps(&gdata::dxDeviceCaps);
+//		gdata::pDXDevice->GetDeviceCaps(&gdata::dxDeviceCaps);
 
 		gdata::pCamera = SGCore_CrCamera();
 		gdata::pCamera->setFOV(gdata::fProjFov);
@@ -65,7 +65,7 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 		gdata::Editors::pSimModel = new CSimulationModel();
 
 		gdata::Editors::pGrid = new CGrid();
-		gdata::Editors::pGrid->create(100, 100, D3DCOLOR_ARGB(255, 200, 200, 200));
+		gdata::Editors::pGrid->create(100, 100, GXCOLOR_ARGB(255, 200, 200, 200));
 
 		gdata::Editors::pAxesStatic = new CAxesStatic();
 		gdata::Editors::pAxesStatic->create(1);
@@ -85,18 +85,10 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 		*/
 		//***********************
 
-		IDirect3DTexture9* SelectMaterial;
-		SGCore_GetDXDevice()->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &SelectMaterial, NULL);
-		D3DLOCKED_RECT LockedRect;
-		uint32_t tmpColor = D3DCOLOR_ARGB(255, 255, 0, 255);
+		uint32_t tmpColor = GXCOLOR_ARGB(255, 255, 0, 255);
 
-		SelectMaterial->LockRect(0, &LockedRect, 0, 0);
-
-		uint32_t* tmpOldColor = (uint32_t*)LockedRect.pBits + 0 * LockedRect.Pitch + 0 * sizeof(uint32_t);
-		memcpy(tmpOldColor, &tmpColor, sizeof(uint32_t));
-
-		SelectMaterial->UnlockRect(0);
-
+		IGXTexture2D* SelectMaterial = SGCore_GetDXDevice()->createTexture2D(1, 1, 1, 0, GXFMT_A8R8G8B8, &tmpColor);
+		
 		//SGCore_LoadTexLoadTextures();
 		gdata::idSelectTex = SGCore_LoadTexCreate("select_material__", SelectMaterial);
 

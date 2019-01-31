@@ -5,7 +5,7 @@ See the license in LICENSE
 ***********************************************************/
 
 #include "crosshair.h"
-#include <common/SXMath.h>
+#include <common/Math.h>
 #include "GameData.h"
 
 CCrosshair::CCrosshair():
@@ -45,8 +45,8 @@ CCrosshair::CCrosshair():
 
 	m_pVertexDeclaration = m_pDev->createVertexDeclaration(vel);
 	//@TODO: Change to GX_BUFFER_USAGE_STREAM (can be lost in DX9)
-	m_pVertexBuffer = m_pDev->createVertexBuffer(sizeof(Vertex)* iVC, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
-	m_pIndexBuffer = m_pDev->createIndexBuffer(sizeof(UINT)* iIC, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_UINT);
+	m_pVertexBuffer = m_pDev->createVertexBuffer(sizeof(Vertex)* iVC, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
+	m_pIndexBuffer = m_pDev->createIndexBuffer(sizeof(UINT)* iIC, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY, GXIT_UINT);
 	m_pRenderBuffer = m_pDev->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
 }
 
@@ -102,10 +102,8 @@ void CCrosshair::update()
 		float fTexLeft = m_f2TexOffs.x;
 		float fTexTop = m_f2TexOffs.y;
 
-		D3DSURFACE_DESC _info;
-		m_pTexture->GetLevelDesc(0, &_info);
-		float fTexFullWidth = (float)_info.Width;
-		float fTexFullHeight = (float)_info.Height;
+		float fTexFullWidth = (float)m_pTexture->getWidth();
+		float fTexFullHeight = (float)m_pTexture->getHeight();
 
 		float fTexFRX = m_fFixedRadius / fTexWidth * 2.0f;
 		float fTexFRY = m_fFixedRadius / fTexHeight * 2.0f;
@@ -366,6 +364,7 @@ void CCrosshair::render()
 			m_pIndexBuffer->unlock();
 		}
 	}
+#ifdef _GRAPHIX_API
 	m_pDev->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixIdentity());
 	m_pDev->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&SMMatrixIdentity());
 	m_pDev->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&SMMatrixIdentity());
@@ -374,12 +373,14 @@ void CCrosshair::render()
 	m_pDev->setRenderBuffer(m_pRenderBuffer);
 	m_pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	SGCore_ShaderUnBind();
-	m_pDev->SetTexture(0, m_pTexture);
+	m_pDev->setTexture(m_pTexture);
 	m_pDev->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
 	// Использовать альфа-канал в качестве источника альфа-компонент
+#ifdef _GRAPHIX_API
 	m_pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 	m_pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+#endif
 
 	// Устанавливаем коэффициенты смешивания таким образом,
 	// чтобы альфа-компонента определяла прозрачность
@@ -393,6 +394,7 @@ void CCrosshair::render()
 	//SGCore_ScreenQuadDraw();
 	SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, m_iVertexCount[m_u8ActiveBuffer], 0, m_iIndexCount[m_u8ActiveBuffer] / 3);
 	//render
+#endif
 }
 void CCrosshair::onSync()
 {

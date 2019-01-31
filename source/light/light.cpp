@@ -41,10 +41,7 @@ ID CLights::createCopy(ID id)
 		CLight* tmplight2 = new CLight();
 		tmplight2->m_fAngle = tmplight->m_fAngle;
 		tmplight2->m_pBoundVolume = SGCore_CrBound();
-		IGXVertexBuffer* vertexbuf;
-		tmplight->m_pMesh->GetVertexBuffer(&vertexbuf);
-		tmplight->m_pBoundVolume->calcBound(vertexbuf, tmplight->m_pMesh->GetNumVertices(), tmplight->m_pMesh->GetNumBytesPerVertex());
-		mem_release(vertexbuf);
+		tmplight->m_pBoundVolume->cloneFrom(tmplight->m_pMesh->getBound());
 		tmplight2->m_fPower = tmplight->m_fPower;
 		tmplight2->m_fDist = tmplight->m_fDist;
 		tmplight2->m_vColor = tmplight->m_vColor;
@@ -113,7 +110,8 @@ ID CLights::createCopy(ID id)
 		else
 			tmplight2->m_pShadowCube = 0;
 
-		tmplight->m_pMesh->CloneMeshFVF(tmplight->m_pMesh->GetOptions(), tmplight->m_pMesh->GetFVF(), light_data::pDXDevice, &(tmplight2->m_pMesh));
+		tmplight2->m_pMesh = tmplight->m_pMesh;
+		tmplight2->m_pMesh->AddRef();
 
 	return addLight(tmplight);
 }
@@ -351,7 +349,7 @@ ID CLights::createPoint(ID id, const float3* center, float dist, const float3* c
 		}
 		else
 		{*/
-			D3DXCreateSphere(light_data::pDXDevice, tmplight->m_fDist, 20, 20, &tmplight->m_pMesh, 0);
+			SGCore_FCreateSphere(tmplight->m_fDist, 20, 20, &tmplight->m_pMesh);
 		//}
 
 		if (isglobal && is_shadow)
@@ -468,9 +466,15 @@ void CLights::render(ID id, DWORD timeDelta)
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 	float4x4 tmpwmat = m_aLights[id]->m_mWorldMat;
-	light_data::pDXDevice->SetTransform(D3DTS_WORLD, &(m_aLights[id]->m_mWorldMat.operator D3DXMATRIX()));
-	m_aLights[id]->m_pMesh->DrawSubset(0);
+
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idLightBound, "g_mWVP", &SMMatrixTranspose(m_aLights[id]->m_mWorldMat));
+	SGCore_ShaderBind(light_data::shader_id::kit::idLightBound);
+
+//	light_data::pDXDevice->SetTransform(D3DTS_WORLD, &(m_aLights[id]->m_mWorldMat.operator D3DXMATRIX()));
+	m_aLights[id]->m_pMesh->draw();
+#ifdef _GRAPHIX_API
 	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + (m_aLights[id]->m_pMesh->GetNumFaces() / 3));
+#endif
 }
 
 ID CLights::getLightGlobal() const
@@ -555,7 +559,7 @@ void CLights::setLightDist(ID id, float radius_height, bool is_create)
 	if (m_aLights[id]->m_typeLight == LTYPE_LIGHT_DIR && is_create)
 	{
 		m_aLights[id]->m_vTopBottomRadius.y = m_aLights[id]->m_vTopBottomRadius.x + radius_height * tanf(m_aLights[id]->m_fAngle / 2.f);
-		mem_release_del(m_aLights[id]->m_pMesh);
+		mem_release(m_aLights[id]->m_pMesh);
 		SGCore_FCreateCone(m_aLights[id]->m_vTopBottomRadius.x, m_aLights[id]->m_vTopBottomRadius.y, radius_height, &m_aLights[id]->m_pMesh, 32);
 	}
 
@@ -564,8 +568,8 @@ void CLights::setLightDist(ID id, float radius_height, bool is_create)
 
 	if (m_aLights[id]->m_typeLight == LTYPE_LIGHT_POINT && is_create)
 	{
-		mem_release_del(m_aLights[id]->m_pMesh);
-		D3DXCreateSphere(light_data::pDXDevice, radius_height, 20, 20, &m_aLights[id]->m_pMesh, 0);
+		mem_release(m_aLights[id]->m_pMesh);
+		SGCore_FCreateSphere(radius_height, 20, 20, &m_aLights[id]->m_pMesh);
 	}
 
 	if (m_aLights[id]->m_pShadowCube)

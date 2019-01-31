@@ -19,7 +19,7 @@ See the license in LICENSE
 #include <common/array.h>
 
 //#define SM_D3D_CONVERSIONS
-#include <common/SXMath.h>
+#include <common/Math.h>
 #include <geom/sxgeom.h>
 #include <green/sxgreen.h>
 #include <mtrl/sxmtrl.h>
@@ -45,7 +45,7 @@ public:
 	ID getIdMtl();
 
 	//! записывает плоскость (на основании первого треугольника модели)
-	void getPlane(D3DXPLANE *pPlane);
+	void getPlane(SMPLANE *pPlane);
 
 	//! записывает центр
 	void getCenter(float3_t *pCenter);
@@ -80,7 +80,7 @@ protected:
 	struct CModel
 	{
 		CModel(){ m_pModel = 0; }
-		CModel(ISXDataStaticModel *pModel, float3_t *pCenter, float3_t *pMax, float3_t *pMin, D3DXPLANE *pPlane)
+		CModel(ISXDataStaticModel *pModel, float3_t *pCenter, float3_t *pMax, float3_t *pMin, SMPLANE *pPlane)
 		{
 			m_pModel = pModel; m_vCenter = *pCenter; m_vMax = *pMax; m_vMin = *pMin; m_oPlane = *pPlane;
 		}
@@ -98,7 +98,7 @@ protected:
 		float3_t m_vCenter;
 
 		//! плоскость (на основании первого треугольника модели)
-		D3DXPLANE m_oPlane;
+		SMPLANE m_oPlane;
 	};
 
 	//**********************************************************************

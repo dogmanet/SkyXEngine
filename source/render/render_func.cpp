@@ -6,94 +6,6 @@ See the license in LICENSE
 
 #include "render_func.h"
 
-inline void rfunc::SetSamplerFilter(DWORD dwId, DWORD dwValue)
-{
-	DWORD dwMagFilter = dwValue;
-	DWORD dwMinFilter = dwValue;
-	DWORD dwMipFilter = dwValue;
-	switch(dwValue)
-	{
-	case D3DTEXF_ANISOTROPIC:
-		if(!(gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC))
-		{
-			if((gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFLINEAR))
-			{
-				dwMagFilter = D3DTEXF_LINEAR;
-			}
-			else
-			{
-				dwMagFilter = D3DTEXF_POINT;
-			}
-		}
-		if(!(gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFANISOTROPIC))
-		{
-			if((gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR))
-			{
-				dwMinFilter = D3DTEXF_LINEAR;
-			}
-			else
-			{
-				dwMinFilter = D3DTEXF_POINT;
-			}
-		}
-		if((gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MIPFLINEAR))
-		{
-			dwMipFilter = D3DTEXF_LINEAR;
-		}
-		else
-		{
-			dwMipFilter = D3DTEXF_POINT;
-		}
-		break;
-	case D3DTEXF_LINEAR:
-		if(!(gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFLINEAR))
-		{
-			dwMagFilter = D3DTEXF_POINT;
-		}
-		if(!(gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR))
-		{
-			dwMinFilter = D3DTEXF_POINT;
-		}
-		if(!(gdata::dxDeviceCaps.TextureFilterCaps & D3DPTFILTERCAPS_MIPFLINEAR))
-		{
-			dwMipFilter = D3DTEXF_POINT;
-		}
-		break;
-	case D3DTEXF_NONE:
-		dwMagFilter = D3DTEXF_POINT;
-		dwMinFilter = D3DTEXF_POINT;
-		break;
-	}
-	DX_CALL(gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_MAGFILTER, dwMagFilter));
-	DX_CALL(gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_MINFILTER, dwMinFilter));
-	DX_CALL(gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_MIPFILTER, dwMipFilter));
-}
-
-inline void rfunc::SetSamplerAddress(DWORD dwId, DWORD dwValue)
-{
-	DX_CALL(gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_ADDRESSU, dwValue));
-	DX_CALL(gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_ADDRESSV, dwValue));
-	DX_CALL(gdata::pDXDevice->SetSamplerState(dwId, D3DSAMP_ADDRESSW, dwValue));
-}
-
-inline void rfunc::SetSamplerFilter(DWORD dwStartId, DWORD dwFinishEnd, DWORD dwValue)
-{
-	if (dwStartId >= 0 && dwFinishEnd <= 16)
-	{
-		for (DWORD i = dwStartId; i < dwFinishEnd; ++i)
-			rfunc::SetSamplerFilter(i, dwValue);
-	}
-}
-
-inline void rfunc::SetSamplerAddress(DWORD dwStartId, DWORD dwFinishEnd, DWORD dwValue)
-{
-	if (dwStartId >= 0 && dwFinishEnd <= 16)
-	{
-		for (DWORD i = dwStartId; i < dwFinishEnd; ++i)
-			rfunc::SetSamplerAddress(i, dwValue);
-	}
-}
-
 void rfunc::SetRenderSceneFilter()
 {
 	static const int *r_texfilter_type = GET_PCVAR_INT("r_texfilter_type");
@@ -191,8 +103,9 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 		SPE_OnResetDevice();
 		SGame_OnResetDevice();
 		SPP_OnDeviceReset();
-
+#ifdef _GRAPHIX_API
 		gdata::pDXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+#endif
 	}
 }
 
@@ -443,14 +356,17 @@ void rfunc::SaveScreenShot()
 		sprintf(tmppath, "%sscreen_skyxengine_build_%d.jpg", Core_RStringGet(G_RI_STRING_PATH_SCREENSHOTS), numscreen);
 	} while (FileExistsFile(tmppath));
 
+#ifdef _GRAPHIX_API
 	LPDIRECT3DSURFACE9 BackBuf;
 	gdata::pDXDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &BackBuf);
 	D3DXSaveSurfaceToFile(tmppath, D3DXIFF_JPG, BackBuf, NULL, NULL);
 	mem_release(BackBuf);
+#endif
 }
 
 void rfunc::SaveWorkTex()
 {
+#ifdef _GRAPHIX_API
 	char tmppath[1024];
 	sprintf(tmppath, "%scolor.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
 	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SGCore_GbufferGetRT(DS_RT_COLOR), NULL);
@@ -479,6 +395,7 @@ void rfunc::SaveWorkTex()
 
 	sprintf(tmppath, "%slight_com_2.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
 	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SGCore_GbufferGetRT(DS_RT_SCENELIGHT2), NULL);
+#endif
 }
 
 void rfunc::InitModeWindow()
@@ -624,10 +541,12 @@ void rfunc::UpdateView()
 
 int rfunc::OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char *szStr)
 {
+#ifdef _GRAPHIX_API
 	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+#endif
 
 	static int FrameCount = 0;
 	static int FrameCount2 = 0;
@@ -1609,10 +1528,12 @@ void rfunc::RenderFinalPostProcess(DWORD timeDelta)
 
 void rfunc::ShaderRegisterData()
 {
+#ifdef _GRAPHIX_API
 	static float4_t aNull[256];
 	memset(aNull, 0, sizeof(float4_t)* 256);
 	DX_CALL(gdata::pDXDevice->SetVertexShaderConstantF(0, (float*)&aNull, 256));
 	DX_CALL(gdata::pDXDevice->SetPixelShaderConstantF(0, (float*)&aNull, 32));
+#endif
 }
 
 
@@ -1629,7 +1550,7 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 		{
 			ID idMat = SGeom_ModelGetGroupMtrlID(i, k);
 			MTLTYPE_REFLECT typeReflection = SMtrl_MtlGetTypeReflection(SGeom_ModelGetGroupMtrlID(i, k));
-			D3DXPLANE oPlane;
+			SMPLANE oPlane;
 			float3_t vCenter;
 
 			if (typeReflection == MTLTYPE_REFLECT_PLANE)

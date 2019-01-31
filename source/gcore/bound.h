@@ -10,7 +10,8 @@ See the license in LICENSE
 #include <common/Math.h>
 #include "sxgcore.h"
 
-void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** ppMesh, IGXContext * pDevice,UINT iSideCount);
+void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** ppMesh, IGXContext * pDevice, UINT iSideCount);
+void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppMesh, IGXContext * pDevice);
 
 void ComputeBoundingBox(IGXVertexBuffer* vertex_buffer,ISXBound** bound,DWORD count_vert,DWORD bytepervert);
 void ComputeBoundingBox2(IGXVertexBuffer* vertex_buffer, ISXBound* bound, DWORD count_vert, DWORD bytepervert);
@@ -107,6 +108,8 @@ public:
 
 	bool isPointInSphere(const float3* point) const;
 	bool isPointInBox(const float3* point) const;
+
+	void cloneFrom(ISXBound *pFrom);
 
 protected:
 	float3 m_vMinTransform;

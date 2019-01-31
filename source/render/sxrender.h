@@ -187,8 +187,8 @@ SX_LIB_API void SRender_Dbg_Set(report_func rf);
 //! инициализция подсистемы
 SX_LIB_API void SRender_0Create(
 	const char *szName,			//!< присваиваемое имя
-	SXWINDOW hWnd3D,				//!< хэндл окна рендера
-	SXWINDOW hWndParent3D,			//!< хэндл родительского окна рендера (на случай если у нас редактор)
+	HWND hWnd3D,				//!< хэндл окна рендера
+	HWND hWndParent3D,			//!< хэндл родительского окна рендера (на случай если у нас редактор)
 	bool isUnic = true			//!< должна ли подсистема быть уникальной по имени
 	);
 
@@ -198,17 +198,17 @@ SX_LIB_API void SRender_AKill();
 //##########################################################################
 
 //! возвращает хэндл окна рендера
-SX_LIB_API SXWINDOW SRender_GetHandleWin3D();
+SX_LIB_API HWND SRender_GetHandleWin3D();
 
 //! возвращает хэндл родительского окна рендера
-SX_LIB_API SXWINDOW SRender_GetParentHandleWin3D();
+SX_LIB_API HWND SRender_GetParentHandleWin3D();
 
 
 //! установка хэндла окна рендера
-SX_LIB_API void SRender_SetHandleWin3D(SXWINDOW hWnd);
+SX_LIB_API void SRender_SetHandleWin3D(HWND hWnd);
 
 //! установка хэндла родительского окна рендера
-SX_LIB_API void SRender_SetParentHandleWin3D(SXWINDOW hWnd);
+SX_LIB_API void SRender_SetParentHandleWin3D(HWND hWnd);
 
 
 //! установка текущей камеры

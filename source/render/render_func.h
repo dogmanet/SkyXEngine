@@ -18,11 +18,11 @@ See the license in LICENSE
 
 #include <GRegisterIndex.h>
 #include <windows.h>
-#include <common/sxtypes.h>
+#include <common/types.h>
 #include <common/file_utils.h>
 
 //#define SM_D3D_CONVERSIONS
-#include <common/SXMath.h>
+#include <common/Math.h>
 
 #include <render/gdata.h>
 
@@ -47,20 +47,6 @@ enum REFLECTION_RENDER
 //! пространство имен с орагнизацией рендера
 namespace rfunc
 {
-	//быстрая реализация фильтрации и адресации
-	//{
-	//индифидуально для регистра
-	inline void SetSamplerFilter(DWORD dwId, DWORD dwValue);
-	inline void SetSamplerAddress(DWORD dwId, DWORD dwValue);
-	
-	//для указанного промежутка групп регистров
-	inline void SetSamplerFilter(DWORD dwIdStart, DWORD dwIdFisnish, DWORD dwValue);
-	inline void SetSamplerAddress(DWORD dwIdStart, DWORD dwIdFisnish, DWORD dwValue);
-
-	void SetRenderSceneFilter();
-	void SetRenderSceneFilterUn();
-	//}
-
 	//**********************************************************************
 
 	//! обработка потери и восстановление устройства

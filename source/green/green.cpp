@@ -170,12 +170,12 @@ CGreen::CVisCaclObj::~CVisCaclObj()
 
 void CGreen::onLostDevice()
 {
-	mem_release_del(m_pTransVertBuf);
+//	mem_release_del(m_pTransVertBuf);
 }
 
 void CGreen::onResetDevice()
 {
-	createInstVB();
+//	createInstVB();
 }
 
 void CGreen::createInstVB()
@@ -693,17 +693,28 @@ void CGreen::render2(DWORD timeDelta, const float3 *pViewPos, ID idGreen, int iL
 	//если есть что к отрисовке
 	if (m_iCurrCountDrawObj)
 	{
-		CGreen::m_pDXDevice->SetStreamSource(1, m_pTransVertBuf, 0, sizeof(CGreenDataVertex));
+		if(!pLod->m_pModel->m_pRenderBuffer)
+		{
+			IGXVertexBuffer *bfs[] = {pLod->m_pModel->m_pVertexBuffer, m_pTransVertBuf};
+			pLod->m_pModel->m_pRenderBuffer = CGreen::m_pDXDevice->createRenderBuffer(2, bfs, m_pVertexDeclarationGreen);
+		}
 
-		CGreen::m_pDXDevice->SetStreamSource(0, pLod->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
-		CGreen::m_pDXDevice->SetIndices(pLod->m_pModel->m_pIndexBuffer);
-		CGreen::m_pDXDevice->SetVertexDeclaration(m_pVertexDeclarationGreen);
+	//	CGreen::m_pDXDevice->SetStreamSource(1, m_pTransVertBuf, 0, sizeof(CGreenDataVertex));
+
+	//	CGreen::m_pDXDevice->SetStreamSource(0, pLod->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
+	//	CGreen::m_pDXDevice->SetIndices(pLod->m_pModel->m_pIndexBuffer);
+	//	CGreen::m_pDXDevice->SetVertexDeclaration(m_pVertexDeclarationGreen);
+
+		CGreen::m_pDXDevice->setRenderBuffer(pLod->m_pModel->m_pRenderBuffer);
+		CGreen::m_pDXDevice->setIndexBuffer(pLod->m_pModel->m_pIndexBuffer);
+
 
 		int iCountIndex = 0;
 		for (int i = 0; i < pLod->m_pModel->m_uiSubsetCount; i++)
 		{
 			SGCore_MtlSet((idTex > 0 ? idTex : pLod->m_aIDsTextures[i]), 0);
 
+#ifdef _GRAPHIX_API
 			if (m_aGreens[idGreen]->m_typeGreen == GREEN_TYPE_GRASS)
 				CGreen::m_pDXDevice->SetVertexShaderConstantF(59, (float*)&float2_t(CGreen::m_fDistGrassLessening, CGreen::m_vDistLods.x), 1);
 			else
@@ -713,6 +724,7 @@ void CGreen::render2(DWORD timeDelta, const float3 *pViewPos, ID idGreen, int iL
 			CGreen::m_pDXDevice->SetVertexShaderConstantF(61, (float*)&(pLod->m_pModel->m_vBSphere), 1);
 			CGreen::m_pDXDevice->SetVertexShaderConstantF(62, (float*)&(pLod->m_pModel->m_vBBMax), 1);
 			CGreen::m_pDXDevice->SetVertexShaderConstantF(63, (float*)&(pLod->m_pModel->m_vBBMin), 1);
+#endif
 
 			CGreen::m_pDXDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
 			CGreen::m_pDXDevice->drawIndexedInstanced(m_iCurrCountDrawObj, pLod->m_pModel->m_pVertexCount[i], pLod->m_pModel->m_pIndexCount[i] / 3, iCountIndex, 0);
@@ -764,7 +776,7 @@ void CGreen::renderSingly(DWORD timeDelta, const float3 *pViewPos, ID idGreen, I
 		if (pGreen->m_aLods[iLod])
 		{
 			CGreenDataVertex *pVerteces = 0;
-			m_pTransVertBuf->Lock(0, 0, (void**)&pVerteces, D3DLOCK_DISCARD);
+			m_pTransVertBuf->lock((void**)&pVerteces, GXBL_WRITE);
 
 			// количество объектов к отрисовке
 			m_iCurrCountDrawObj = 0;
@@ -777,9 +789,9 @@ void CGreen::renderSingly(DWORD timeDelta, const float3 *pViewPos, ID idGreen, I
 				// если количество объектов для отрисовки превысело лимит (либо превысит при текущей итерации), значит рисуем, а потом опять считаем
 				if (m_iCurrCountDrawObj + pCurrSegment->m_iCountObj >= GREEN_MAX_ELEM_IN_DIP)
 				{
-					m_pTransVertBuf->Unlock();
+					m_pTransVertBuf->unlock();
 					render2(timeDelta, pViewPos, idGreen, iLod, idTex);
-					m_pTransVertBuf->Lock(0, 0, (void**)&pVerteces, D3DLOCK_DISCARD);
+					m_pTransVertBuf->lock((void**)&pVerteces, GXBL_WRITE);
 					m_iCurrCountDrawObj = 0;
 				}
 
@@ -842,7 +854,7 @@ void CGreen::renderSingly(DWORD timeDelta, const float3 *pViewPos, ID idGreen, I
 				}
 			}
 
-			m_pTransVertBuf->Unlock();
+			m_pTransVertBuf->unlock();
 
 			render2(timeDelta, pViewPos, idGreen, iLod, idTex);
 		}
@@ -855,9 +867,11 @@ void CGreen::renderObject(DWORD timeDelta, const float3 *pViewPos, ID idGreen, I
 		return;
 
 	CGreenDataVertex *pVerteces = 0;
-	m_pTransVertBuf->Lock(0, 0, (void**)&pVerteces, D3DLOCK_DISCARD);
-	pVerteces[0] = m_aGreens[idGreen]->m_pAllTrans[m_aGreens[idGreen]->m_aSplitsArr[idSplit]->m_pArrIDs[idObj]];
-	m_pTransVertBuf->Unlock();
+	if(m_pTransVertBuf->lock((void**)&pVerteces, GXBL_WRITE))
+	{
+		pVerteces[0] = m_aGreens[idGreen]->m_pAllTrans[m_aGreens[idGreen]->m_aSplitsArr[idSplit]->m_pArrIDs[idObj]];
+		m_pTransVertBuf->unlock();
+	}
 	m_iCurrCountDrawObj = 1;
 
 	render2(timeDelta, pViewPos, idGreen, 0, idTex);
@@ -1042,8 +1056,8 @@ bool CGreen::genByTex(CModel *pGreen, ID idMask, bool shouldAveragedRGB, float3 
 				if (dwAlpha > 0)
 				{
 					//позиция пикселя на ландшафте
-					fPosInLandX = lerpf(vLeveMin.x, vLeveMax.x, float(x + 1) / float(desc.Width));
-					fPosInLandY = lerpf(vLeveMax.z, vLeveMin.z, float(y + 1) / float(desc.Height));
+					fPosInLandX = lerpf(vLeveMin.x, vLeveMax.x, float(x + 1) / float(pTex->getWidth()));
+					fPosInLandY = lerpf(vLeveMax.z, vLeveMin.z, float(y + 1) / float(pTex->getHeight()));
 
 					//расчет позиций объектов на квадратный метр
 					int iCount = int(floor(float(float(dwAlpha)*fDensity) / 255.f)) * fPixelInLandX * fPixelInLandY;
