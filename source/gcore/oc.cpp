@@ -76,6 +76,8 @@ COcclusionCulling::COcclusionCulling()
 	m_fBiasDepth = 0.0001f;
 
 	m_iCurrRTdepth = 0;
+
+	memset(m_pSurfDepthBuffer, 0, sizeof(m_pSurfDepthBuffer));
 }
 
 COcclusionCulling::~COcclusionCulling()

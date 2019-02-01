@@ -33,7 +33,7 @@ void CModels::onResetDevice()
 {
 	for(int i = 0, l = m_aModels.size(); i < l; ++i)
 	{
-		m_aModels[i]->m_pVisibleIndexBuffer = g_pDXDevice->createIndexBuffer(m_aModels[i]->m_pModel->m_uiAllIndexCount * sizeof(UINT), GX_BUFFER_USAGE_STREAM, GXIT_UINT);
+//		m_aModels[i]->m_pVisibleIndexBuffer = g_pDXDevice->createIndexBuffer(m_aModels[i]->m_pModel->m_uiAllIndexCount * sizeof(UINT), GX_BUFFER_USAGE_STREAM, GXIT_UINT);
 		
 		m_aModels[i]->m_pModel->syncBuffers();
 	}
@@ -45,18 +45,18 @@ void CModels::onResetDevice()
 
 void CModels::onLostDevice()
 {
-	for(int i = 0, l = m_aModels.size(); i < l; ++i)
-	{
-		mem_release_del(m_aModels[i]->m_pVisibleIndexBuffer);
-
-		mem_release_del(m_aModels[i]->m_pModel->m_pIndexBuffer);
-		mem_release_del(m_aModels[i]->m_pModel->m_pVertexBuffer);
-	}
-	for(int i = 0, l = m_aTransparency.size(); i < l; ++i)
-	{
-		mem_release_del(m_aTransparency[i]->m_pIndexBuffer);
-		mem_release_del(m_aTransparency[i]->m_pVertexBuffer);
-	}
+//	for(int i = 0, l = m_aModels.size(); i < l; ++i)
+//	{
+//		mem_release_del(m_aModels[i]->m_pVisibleIndexBuffer);
+//
+//		mem_release_del(m_aModels[i]->m_pModel->m_pIndexBuffer);
+//		mem_release_del(m_aModels[i]->m_pModel->m_pVertexBuffer);
+//	}
+//	for(int i = 0, l = m_aTransparency.size(); i < l; ++i)
+//	{
+//		mem_release_del(m_aTransparency[i]->m_pIndexBuffer);
+//		mem_release_del(m_aTransparency[i]->m_pVertexBuffer);
+//	}
 }
 
 //**************************************************************************

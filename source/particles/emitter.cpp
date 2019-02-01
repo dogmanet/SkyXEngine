@@ -29,6 +29,11 @@ void CEmitter::initNulling()
 	m_idTexTrack = -1;
 	m_vOldSize.x = 0;
 	m_vOldSize.y = 0;
+
+	for(int i = 0; i < PARTICLESTYPE_ALPLABLEND__SIZE; ++i)
+	{
+		m_pBlendStates[i] = 0;
+	}
 }
 
 CEmitter::CEmitter()
@@ -64,7 +69,7 @@ CEmitter::~CEmitter()
 
 void CEmitter::onLostDevice()
 {
-	mem_release_del(m_pTransVertBuf);
+//	mem_release_del(m_pTransVertBuf);
 }
 
 void CEmitter::onResetDevice()
@@ -433,6 +438,10 @@ void CEmitter::createGeomData()
 	mem_release(m_pIndexBuffQuad);
 	mem_release(m_pRenderBuffQuad);
 
+	if(!m_iCount)
+	{
+		return;
+	}
 
 	m_pVertexBuff = pe_data::pDXDevice->createVertexBuffer(4 * m_oData.m_iFigureCountQuads * sizeof(CommonParticleDecl), GX_BUFFER_USAGE_STATIC);
 	m_pIndexBuff = pe_data::pDXDevice->createIndexBuffer(6 * m_oData.m_iFigureCountQuads * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_USHORT);

@@ -130,6 +130,48 @@ namespace gdata
 			extern ID idStencilStrColumn;
 			extern ID idUnionAlpha;
 		};
+
+		namespace kit
+		{
+			extern ID idScreenOut;
+			extern ID idStencilStr;
+			extern ID idStencilColumn;
+			extern ID idStencilStrColumn;
+			extern ID idBlendAmbientSpecDiffColor;
+			extern ID idUnionAlpha;
+			extern ID idComLightingNonShadow;
+			extern ID idComLightingShadow;
+		};
+	};
+
+	namespace rstates
+	{
+		extern IGXDepthStencilState *pDepthStencilStateNoZ;
+		extern IGXDepthStencilState *pDepthStencilStateMrtStage0;
+		extern IGXDepthStencilState *pDepthStencilStateMrtStage1;
+		extern IGXDepthStencilState *pDepthStencilStateLightBound;
+		extern IGXDepthStencilState *pDepthStencilStateLightClear;
+		extern IGXDepthStencilState *pDepthStencilStateLightShadowNonGlobal;
+		extern IGXDepthStencilState *pDepthStencilStateLightShadowGlobal;
+		extern IGXDepthStencilState *pDepthStencilStateParticles;
+
+		extern IGXSamplerState *pSamplerPointClamp;
+		extern IGXSamplerState *pSamplerLinearWrap;
+		extern IGXSamplerState *pSamplerLinearMirror;
+		extern IGXSamplerState *pSamplerLinearClamp;
+		extern IGXSamplerState *pSamplerAnisotopicClamp;
+		extern IGXSamplerState *pSamplerAnisotopicMirror;
+
+		extern IGXSamplerState *pSamplerScene;
+
+		extern IGXBlendState *pBlendNoColor;
+		extern IGXBlendState *pBlendRed;
+		extern IGXBlendState *pBlendAlpha;
+		extern IGXBlendState *pBlendAlphaOneOne;
+		extern IGXBlendState *pBlendAlphaSky;
+
+		extern IGXRasterizerState *pRasterizerCullFront;
+		extern IGXRasterizerState *pRasterizerCullNone;
 	};
 
 	namespace Editors

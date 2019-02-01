@@ -130,11 +130,11 @@ void CSimulationModel::add(ISXDataStaticModel *pModel)
 	UINT *pIndex = pModel->m_pIndices;
 	//pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0);
 
-	D3DXPLANE oPlane;
-	D3DXPlaneFromPoints(&oPlane,
-		&D3DXVECTOR3(pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 0]].Pos.x, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 0]].Pos.y, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 0]].Pos.z),
-		&D3DXVECTOR3(pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 1]].Pos.x, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 1]].Pos.y, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 1]].Pos.z),
-		&D3DXVECTOR3(pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 2]].Pos.x, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 2]].Pos.y, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 2]].Pos.z));
+	SMPLANE oPlane(pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 0]].Pos, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 1]].Pos, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 2]].Pos);
+//	D3DXPlaneFromPoints(&oPlane,
+//		&D3DXVECTOR3(pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 0]].Pos.x, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 0]].Pos.y, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 0]].Pos.z),
+//		&D3DXVECTOR3(pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 1]].Pos.x, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 1]].Pos.y, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 1]].Pos.z),
+//		&D3DXVECTOR3(pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 2]].Pos.x, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 2]].Pos.y, pVertexStatic[pIndex[pModel->m_pStartIndex[0] + 2]].Pos.z));
 	//pModel->m_pVertexBuffer->Unlock();
 	//pModel->m_pIndexBuffer->Unlock();
 
@@ -142,33 +142,34 @@ void CSimulationModel::add(ISXDataStaticModel *pModel)
 
 	m_aModels.push_back(new CModel(pModel, &vCenter, &float3_t(vMax), &float3_t(vMin), &oPlane));
 
-
-	IDirect3DVertexBuffer9 *pVertexBufferAnim;
-	DX_CALL(gdata::pDXDevice->CreateVertexBuffer(
-		pModel->m_uiAllVertexCount * sizeof(vertex_animated_ex),
-		D3DUSAGE_WRITEONLY,
-		0,
-		D3DPOOL_MANAGED,
-		&pVertexBufferAnim,
-		0));
+	IGXVertexBuffer *pVertexBufferAnim = gdata::pDXDevice->createVertexBuffer(pModel->m_uiAllVertexCount * sizeof(vertex_animated_ex), GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
+//	DX_CALL(gdata::pDXDevice->CreateVertexBuffer(
+//		pModel->m_uiAllVertexCount * sizeof(vertex_animated_ex),
+//		D3DUSAGE_WRITEONLY,
+//		0,
+//		D3DPOOL_MANAGED,
+//		&pVertexBufferAnim,
+//		0));
 
 	vertex_animated_ex *pVertexAnim;
-	DX_CALL(pVertexBufferAnim->Lock(0, 0, (void**)&pVertexAnim, 0));
-	//DX_CALL(pModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertexStatic, 0));
-	
-	for (UINT i = 0; i < pModel->m_uiAllVertexCount; ++i)
+	if(pVertexBufferAnim->lock((void**)&pVertexAnim, GXBL_WRITE))
 	{
-		pVertexAnim[i].Pos = pVertexStatic[i].Pos;
-		pVertexAnim[i].Norm = pVertexStatic[i].Norm;
-		pVertexAnim[i].Tex = pVertexStatic[i].Tex;
-		pVertexAnim[i].Tangent = pVertexStatic[i].Tangent;
-		pVertexAnim[i].Binorm = pVertexStatic[i].Binorm;
-		pVertexAnim[i].BoneIndices[0] = pVertexAnim[i].BoneIndices[1] = pVertexAnim[i].BoneIndices[2] = pVertexAnim[i].BoneIndices[3] = 0;
-		pVertexAnim[i].BoneWeights.x = 1;
-		pVertexAnim[i].BoneWeights.y = pVertexAnim[i].BoneWeights.z = pVertexAnim[i].BoneWeights.w = 0;
-	}
+		//DX_CALL(pModel->m_pVertexBuffer->Lock(0, 0, (void**)&pVertexStatic, 0));
 
-	pVertexBufferAnim->Unlock();
+		for(UINT i = 0; i < pModel->m_uiAllVertexCount; ++i)
+		{
+			pVertexAnim[i].Pos = pVertexStatic[i].Pos;
+			pVertexAnim[i].Norm = pVertexStatic[i].Norm;
+			pVertexAnim[i].Tex = pVertexStatic[i].Tex;
+			pVertexAnim[i].Tangent = pVertexStatic[i].Tangent;
+			pVertexAnim[i].Binorm = pVertexStatic[i].Binorm;
+			pVertexAnim[i].BoneIndices[0] = pVertexAnim[i].BoneIndices[1] = pVertexAnim[i].BoneIndices[2] = pVertexAnim[i].BoneIndices[3] = 0;
+			pVertexAnim[i].BoneWeights.x = 1;
+			pVertexAnim[i].BoneWeights.y = pVertexAnim[i].BoneWeights.z = pVertexAnim[i].BoneWeights.w = 0;
+		}
+
+		pVertexBufferAnim->unlock();
+	}
 	//pModel->m_pVertexBuffer->Unlock();
 
 	m_aModels[m_aModels.size() - 1]->m_pAnim = pVertexBufferAnim;
@@ -181,8 +182,17 @@ ID CSimulationModel::getIdMtl()
 
 void CSimulationModel::getPlane(SMPLANE* plane)
 {
-	if (m_typeModel == MTLTYPE_MODEL_STATIC || m_typeModel == MTLTYPE_MODEL_TREE || m_typeModel == MTLTYPE_MODEL_GRASS)
+	if(m_typeModel == MTLTYPE_MODEL_STATIC || m_typeModel == MTLTYPE_MODEL_TREE || m_typeModel == MTLTYPE_MODEL_GRASS)
+	{
+#ifdef _GRAPHIX_API
 		D3DXPlaneTransform(plane, &m_aModels[m_iCurrRenderModel]->m_oPlane, &((D3DXMATRIX)m_mWorld));
+#else
+		// p' = transpose(inverse(M))*p
+		*plane = SMVector4Transform(m_aModels[m_iCurrRenderModel]->m_oPlane, m_mWorld);
+		// *plane = SMVector4Transform(m_aModels[m_iCurrRenderModel]->m_oPlane, SMMatrixTranspose(SMMatrixInverse(NULL, m_mWorld))); // ?
+#endif
+	}
+	
 }
 
 void CSimulationModel::getCenter(float3_t* center)
@@ -206,9 +216,11 @@ void CSimulationModel::render(DWORD timeDelta)
 		m_oGreen.m_vSinCosRot.y = cosf(m_oGreen.m_vTexCoord.y);
 
 		CGreenDataVertex *pVertex = 0;
-		m_pTransVertBufGreen->Lock(0, 0, (void**)&pVertex, D3DLOCK_DISCARD);
-		memcpy(pVertex, &m_oGreen, sizeof(CGreenDataVertex));
-		m_pTransVertBufGreen->Unlock();
+		if(m_pTransVertBufGreen->lock((void**)&pVertex, GXBL_WRITE))
+		{
+			memcpy(pVertex, &m_oGreen, sizeof(CGreenDataVertex));
+			m_pTransVertBufGreen->unlock();
+		}
 
 		renderGreen(timeDelta);
 	}
@@ -218,6 +230,7 @@ void CSimulationModel::render(DWORD timeDelta)
 
 void CSimulationModel::renderStatic(DWORD timeDelta)
 {
+#ifdef _GRAPHIX_API
 	gdata::pDXDevice->SetStreamSource(0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexBuffer, 0, sizeof(vertex_static_ex));
 	gdata::pDXDevice->SetIndices(m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexBuffer);
 	gdata::pDXDevice->SetVertexDeclaration(m_pVertexDeclarationStatic);
@@ -225,10 +238,12 @@ void CSimulationModel::renderStatic(DWORD timeDelta)
 	SGCore_MtlSet(m_idMtrl, &m_mWorld);
 	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexCount[0], 0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0] / 3);
 	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0] / 3);
+#endif
 }
 
 void CSimulationModel::renderGreen(DWORD timeDelta)
 {
+#ifdef _GRAPHIX_API
 	gdata::pDXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | 1));
 
 	gdata::pDXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
@@ -248,10 +263,12 @@ void CSimulationModel::renderGreen(DWORD timeDelta)
 
 	gdata::pDXDevice->SetStreamSourceFreq(0, 1);
 	gdata::pDXDevice->SetStreamSourceFreq(1, 1);
+#endif
 }
 
 void CSimulationModel::renderSkin(DWORD timeDelta)
 {
+#ifdef _GRAPHIX_API
 	ModelBoneShader oModelBoneShader;
 	oModelBoneShader.position = float4(0, 0, 0, 1);
 	oModelBoneShader.orient = SMQuaternion();
@@ -264,4 +281,5 @@ void CSimulationModel::renderSkin(DWORD timeDelta)
 	gdata::pDXDevice->SetVertexShaderConstantF(16, (float*)&oModelBoneShader, 2);
 	SGCore_DIP(D3DPT_TRIANGLELIST, 0, 0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pVertexCount[0], 0, m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0] / 3);
 	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + m_aModels[m_iCurrRenderModel]->m_pModel->m_pIndexCount[0] / 3);
+#endif
 }

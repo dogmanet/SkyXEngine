@@ -304,7 +304,7 @@ protected:
 	Array<CShaderVS*> m_aVS;	//!< массивы vs шейдеров
 	Array<CShaderPS*> m_aPS;	//!< массивы ps шейдеров
 
-	Array<CShaderKit> m_aShaderKit;
+	Array<CShaderKit*> m_aShaderKit;
 
 	bool m_canInfo4FailSend;
 

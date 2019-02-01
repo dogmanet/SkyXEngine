@@ -12,44 +12,65 @@ void rfunc::SetRenderSceneFilter()
 	static const int *r_texfilter_max_anisotropy = GET_PCVAR_INT("r_texfilter_max_anisotropy");
 	static const int *r_texfilter_max_miplevel = GET_PCVAR_INT("r_texfilter_max_miplevel");
 
-	static int r_texfilter_type2 = 1;
-	static int r_texfilter_max_anisotropy2 = 0;
-	static int r_texfilter_max_miplevel2 = 0;
+	static int r_texfilter_type2 = r_texfilter_type ? *r_texfilter_type : 1;
+	static int r_texfilter_max_anisotropy2 = r_texfilter_max_anisotropy ? *r_texfilter_max_anisotropy : 1;
+	static int r_texfilter_max_miplevel2 = r_texfilter_max_miplevel ? *r_texfilter_max_miplevel : 1;
 
-	if (r_texfilter_type)
-		r_texfilter_type2 = (*r_texfilter_type);
-	else
-		r_texfilter_type2 = 1;
+	bool bChanged = false;
 
-	if (r_texfilter_max_anisotropy)
-		r_texfilter_max_anisotropy2 = (*r_texfilter_max_anisotropy);
-	else
-		r_texfilter_max_anisotropy2 = 1;
-
-	if (r_texfilter_max_miplevel)
-		r_texfilter_max_miplevel2 = (*r_texfilter_max_miplevel);
-	else
-		r_texfilter_max_miplevel2 = 1;
-
-	if (r_texfilter_type2 == 0)
-		SetSamplerFilter(0, 16, D3DTEXF_POINT);
-	else if (r_texfilter_type2 == 2)
+	if(r_texfilter_type && *r_texfilter_type != r_texfilter_type2)
 	{
-		for (int i = 0; i<16; ++i)
-			gdata::pDXDevice->SetSamplerState(i, D3DSAMP_MAXANISOTROPY, r_texfilter_max_anisotropy2);
-		SetSamplerFilter(0, 16, D3DTEXF_ANISOTROPIC);
+		r_texfilter_type2 = (*r_texfilter_type);
+		bChanged = true;
 	}
-	else
-		SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 
-	gdata::pDXDevice->SetSamplerState(0, D3DSAMP_MAXMIPLEVEL, r_texfilter_max_miplevel2);
+	if(r_texfilter_max_anisotropy && *r_texfilter_max_anisotropy != r_texfilter_max_anisotropy2)
+	{
+		r_texfilter_max_anisotropy2 = (*r_texfilter_max_anisotropy);
+		bChanged = true;
+	}
 
-	SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
+	if(r_texfilter_max_miplevel && *r_texfilter_max_miplevel != r_texfilter_max_miplevel2)
+	{
+		r_texfilter_max_miplevel2 = (*r_texfilter_max_miplevel);
+		bChanged = true;
+	}
+
+	if(bChanged)
+	{
+		mem_release(gdata::rstates::pSamplerScene);
+	}
+
+	if(!gdata::rstates::pSamplerScene)
+	{
+		GXSAMPLER_DESC samplerDesc;
+		samplerDesc.uMaxAnisotropy = r_texfilter_max_anisotropy2;
+		switch(r_texfilter_type2)
+		{
+		case 1:
+			samplerDesc.filter = GXFILTER_MIN_MAG_MIP_POINT;
+			break;
+		case 2:
+			samplerDesc.filter = GXFILTER_ANISOTROPIC;
+			break;
+		default:
+			samplerDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
+			break;
+		}
+		samplerDesc.fMinLOD = r_texfilter_max_miplevel2;
+		gdata::rstates::pSamplerScene = gdata::pDXDevice->createSamplerState(&samplerDesc);
+	}
+
+	for(UINT i = 0; i < 16; ++i)
+	{
+		gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerScene, i);
+	}
 }
 
 void rfunc::SetRenderSceneFilterUn()
 {
-	gdata::pDXDevice->SetSamplerState(0, D3DSAMP_MAXMIPLEVEL, 0);
+	gdata::pDXDevice->setSamplerState(NULL, 0);
+//	gdata::pDXDevice->SetSamplerState(0, D3DSAMP_MAXMIPLEVEL, 0);
 }
 
 //##########################################################################
@@ -614,45 +635,45 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 
 	Core_RMatrixGet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 
-	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	gdata::pDXDevice->setRasterizerState(NULL);
+	gdata::pDXDevice->setDepthStencilState(NULL);
+	gdata::pDXDevice->setBlendState(NULL);
+
+//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 	rfunc::SetRenderSceneFilter();
 
-	LPDIRECT3DSURFACE9 BackBuf, ColorSurf, NormalSurf, ParamSurf, DepthMapLinearSurf;
+	IGXSurface *BackBuf, *ColorSurf, *NormalSurf, *ParamSurf, *DepthMapLinearSurf;
 
-	SGCore_GbufferGetRT(DS_RT_COLOR)->GetSurfaceLevel(0, &ColorSurf);
-	SGCore_GbufferGetRT(DS_RT_NORMAL)->GetSurfaceLevel(0, &NormalSurf);
-	SGCore_GbufferGetRT(DS_RT_PARAM)->GetSurfaceLevel(0, &ParamSurf);
-	SGCore_GbufferGetRT(DS_RT_DEPTH)->GetSurfaceLevel(0, &DepthMapLinearSurf);
+	ColorSurf = SGCore_GbufferGetRT(DS_RT_COLOR)->getMipmap();
+	NormalSurf = SGCore_GbufferGetRT(DS_RT_NORMAL)->getMipmap();
+	ParamSurf = SGCore_GbufferGetRT(DS_RT_PARAM)->getMipmap();
+	DepthMapLinearSurf = SGCore_GbufferGetRT(DS_RT_DEPTH)->getMipmap();
 
 	//очищаем рт глубины  максимальным значением
 	//чтобы там где нет окружения к примеру был скайбокс, а значит в рт глубины было максимальное значение - максимальная отдаленность
-	gdata::pDXDevice->SetRenderTarget(3, DepthMapLinearSurf);
-	gdata::pDXDevice->setClearColor(float4_t(1.0f, 1.0f, 1.0f, 1.0f));
-	gdata::pDXDevice->clearTarget();
-	gdata::pDXDevice->SetRenderTarget(3, 0);	//убираем рт глубины
+	gdata::pDXDevice->setColorTarget(DepthMapLinearSurf, 3);
+	gdata::pDXDevice->clear(GXCLEAR_COLOR, GXCOLOR_ARGB(255, 255, 255, 255));
+	gdata::pDXDevice->setColorTarget(NULL, 3);	//убираем рт глубины
 
-	gdata::pDXDevice->SetRenderTarget(1, NormalSurf);
-	gdata::pDXDevice->SetRenderTarget(2, ParamSurf);
-	gdata::pDXDevice->setClearColor(float4_t(0.0f, 0.0f, 0.0f, 0.0f));
-	gdata::pDXDevice->clearTarget();
-	gdata::pDXDevice->SetRenderTarget(1, 0);
-	gdata::pDXDevice->SetRenderTarget(2, 0);
+	gdata::pDXDevice->setColorTarget(NormalSurf, 1);
+	gdata::pDXDevice->setColorTarget(ParamSurf, 2);
+	gdata::pDXDevice->clear(GXCLEAR_COLOR);
+	gdata::pDXDevice->setColorTarget(NULL, 1);
+	gdata::pDXDevice->setColorTarget(NULL, 2);
 
-	gdata::pDXDevice->GetRenderTarget(0, &BackBuf);
-	gdata::pDXDevice->SetRenderTarget(0, ColorSurf);
+	BackBuf = gdata::pDXDevice->getColorTarget();
+	gdata::pDXDevice->setColorTarget(ColorSurf);
 
-	gdata::pDXDevice->setClearColor(RENDER_DEFAUL_BACKGROUND_COLOR);
-	gdata::pDXDevice->clearTarget();
-	gdata::pDXDevice->clearDepth(1.0f);
+	gdata::pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH, RENDER_DEFAUL_BACKGROUND_COLOR);
 
-	gdata::pDXDevice->SetRenderTarget(1, NormalSurf);
-	gdata::pDXDevice->SetRenderTarget(2, ParamSurf);
-	gdata::pDXDevice->SetRenderTarget(3, DepthMapLinearSurf);	//ставим рт глубины
+	gdata::pDXDevice->setColorTarget(NormalSurf, 1);
+	gdata::pDXDevice->setColorTarget(ParamSurf, 2);
+	gdata::pDXDevice->setColorTarget(DepthMapLinearSurf, 3);	//ставим рт глубины
 
 	SMtrl_MtlNullingCurrCountSurf();
 	SMtrl_MtlSetCurrCountSurf(RENDER_LAYER_UNTRANSPARENT);
@@ -678,38 +699,40 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 	//{
 	//mem_release_del(DepthMapLinearSurf);
 	//gdata::pDXDevice->SetRenderTarget(0, BackBuf);
-	gdata::pDXDevice->SetRenderTarget(1, 0);
-	gdata::pDXDevice->SetRenderTarget(2, 0);
-	gdata::pDXDevice->SetRenderTarget(3, 0);
+	gdata::pDXDevice->setColorTarget(NULL, 1);
+	gdata::pDXDevice->setColorTarget(NULL, 2);
+	gdata::pDXDevice->setColorTarget(NULL, 3);
 
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	rfunc::SetSamplerFilter(0, D3DTEXF_NONE);
-	rfunc::SetSamplerAddress(0, D3DTADDRESS_CLAMP);
-	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerPointClamp, 0);
+//	rfunc::SetSamplerFilter(0, D3DTEXF_NONE);
+//	rfunc::SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+	gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateNoZ);
 
-	LPDIRECT3DSURFACE9 DepthSurf2;
-	SGCore_GbufferGetRT(DS_RT_DEPTH0)->GetSurfaceLevel(0, &DepthSurf2);
+	IGXSurface *DepthSurf2;
+	DepthSurf2 = SGCore_GbufferGetRT(DS_RT_DEPTH0)->getMipmap();
 
-	gdata::pDXDevice->SetRenderTarget(0, DepthSurf2);
+	gdata::pDXDevice->setColorTarget(DepthSurf2);
 
-	gdata::pDXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_DEPTH));
+	gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH));
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, gdata::shaders_id::ps::idScreenOut);
+	SGCore_ShaderBind(gdata::shaders_id::kit::idScreenOut);
 
 	SGCore_ScreenQuadDraw();
 
 
 	rfunc::SetRenderSceneFilter();
 	//SGCore_GbufferGetRT(DS_RT_DEPTH)->GetSurfaceLevel(0, &DepthMapLinearSurf);
-	gdata::pDXDevice->SetRenderTarget(0, ColorSurf);
-	gdata::pDXDevice->SetRenderTarget(1, NormalSurf);
-	gdata::pDXDevice->SetRenderTarget(2, ParamSurf);
-	gdata::pDXDevice->SetRenderTarget(3, DepthMapLinearSurf);
+	gdata::pDXDevice->setColorTarget(ColorSurf);
+	gdata::pDXDevice->setColorTarget(NormalSurf, 1);
+	gdata::pDXDevice->setColorTarget(ParamSurf, 2);
+	gdata::pDXDevice->setColorTarget(DepthMapLinearSurf, 3);
 
-	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	gdata::pDXDevice->setDepthStencilState(NULL);
 
 	mem_release_del(DepthSurf2);
 	//}}
@@ -728,65 +751,70 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 			//второй случай логичнее, однако на двух дальних плоскостях иногда наблюдается переход одной плоскости на передний план, что слегка заметно
 			//пересмотреть этот момент как будет время, а пока оставить второй вариант как наиболее логичный
 
-			gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-			gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
-			gdata::pDXDevice->clearStencil(0);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+			gdata::pDXDevice->setBlendState(gdata::rstates::pBlendNoColor);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
+			gdata::pDXDevice->clear(GXCLEAR_STENCIL);
 
-			gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-			gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+			gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateMrtStage0);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, TRUE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, TRUE);
 
-			gdata::pDXDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS);
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP);
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_REPLACE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_REPLACE);
 
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILREF, 1);
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILMASK, 0xFFFFFFFF);
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILWRITEMASK, 0xFFFFFFFF);
+			gdata::pDXDevice->setStencilRef(1);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILREF, 1);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILMASK, 0xFFFFFFFF);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILWRITEMASK, 0xFFFFFFFF);
 
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idScreenOut);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, gdata::shaders_id::ps::idStencilStr);
+			SGCore_ShaderBind(gdata::shaders_id::kit::idStencilStr);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, gdata::shaders_id::ps::idStencilStr, "g_vWinSize", &vWinSize);
 
 			SGCore_ScreenQuadDraw();
 
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_REPLACE);
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILREF, 2);
+			gdata::pDXDevice->setStencilRef(2);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_REPLACE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILREF, 2);
 
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idScreenOut);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, gdata::shaders_id::ps::idStencilColumn);
+			SGCore_ShaderBind(gdata::shaders_id::kit::idStencilColumn);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, gdata::shaders_id::ps::idStencilColumn, "g_vWinSize", &vWinSize);
 
 			SGCore_ScreenQuadDraw();
 
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_REPLACE);
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILREF, 3);
+			gdata::pDXDevice->setStencilRef(3);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_REPLACE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILREF, 3);
 
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idScreenOut);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, gdata::shaders_id::ps::idStencilStrColumn);
+			SGCore_ShaderBind(gdata::shaders_id::kit::idStencilStrColumn);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, gdata::shaders_id::ps::idStencilStrColumn, "g_vWinSize", &vWinSize);
 
 			SGCore_ScreenQuadDraw();
 
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP);
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILFAIL, D3DSTENCILOP_KEEP);
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILFAIL, D3DSTENCILOP_KEEP);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
 
-			gdata::pDXDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
-			gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-			gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+			gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateMrtStage1);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
-			gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+			gdata::pDXDevice->setBlendState(NULL);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 
 			SGCore_ShaderUnBind();
 
 			SMtrl_MtlSetForceblyAlphaTest(true);
 
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILREF, 0);
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_NOTEQUAL);
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_DECR);
+			gdata::pDXDevice->setStencilRef(0);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILREF, 0);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_NOTEQUAL);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_DECR);
 
 
 			SMtrl_MtlSetIsIncrCountSurf(true);
@@ -801,12 +829,15 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 			}
 
 			SMtrl_MtlSetForceblyAlphaTest(false);
-			gdata::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+
+			gdata::pDXDevice->setDepthStencilState(NULL);
+
+		//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 
 			SGCore_ShaderUnBind();
 
-			gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-			gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 		}
 
 		//SXDecals_Render();
@@ -816,10 +847,10 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 		gdata::Editors::pSimModel->render(timeDelta);
 	}
 
-	gdata::pDXDevice->SetRenderTarget(0, BackBuf);
-	gdata::pDXDevice->SetRenderTarget(1, 0);
-	gdata::pDXDevice->SetRenderTarget(2, 0);
-	gdata::pDXDevice->SetRenderTarget(3, 0);
+	gdata::pDXDevice->setColorTarget(BackBuf);
+	gdata::pDXDevice->setColorTarget(NULL, 1);
+	gdata::pDXDevice->setColorTarget(NULL, 2);
+	gdata::pDXDevice->setColorTarget(NULL, 3);
 
 	mem_release(BackBuf);
 
@@ -836,17 +867,22 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 {
 	Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_SHADOW);
 	SLight_ComVisibleFrustumDistFor(gdata::pCamera->getFrustum(), &gdata::vConstCurrCamPos);
-	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
-	SetSamplerFilter(0, D3DTEXF_LINEAR);
-	SetSamplerAddress(0, D3DTADDRESS_WRAP);
+	gdata::pDXDevice->setDepthStencilState(NULL);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
-	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
+//	SetSamplerFilter(0, D3DTEXF_LINEAR);
+//	SetSamplerAddress(0, D3DTADDRESS_WRAP);
+	gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearWrap, 0);
+
+//	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
+
+	gdata::pDXDevice->setBlendState(gdata::rstates::pBlendRed);
 
 	for (int i = 0; i<SLight_GetCount(); i++)
 	{
@@ -881,29 +917,36 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 				{
 					SLight_UpdateGFrustums(i, 4, &gdata::vConstCurrCamPos, &gdata::vConstCurrCamDir);
 					SLight_ShadowRenderPre(i, 4);
-					gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
-					gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-					SetSamplerFilter(0, D3DTEXF_LINEAR);
-					SetSamplerFilter(1, D3DTEXF_LINEAR);
-					SetSamplerAddress(0, D3DTADDRESS_MIRROR);
-					SetSamplerAddress(1, D3DTADDRESS_MIRROR);
+
+					gdata::pDXDevice->setRasterizerState(gdata::rstates::pRasterizerCullFront);
+				//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+				//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+				//	SetSamplerFilter(0, D3DTEXF_LINEAR);
+				//	SetSamplerFilter(1, D3DTEXF_LINEAR);
+				//	SetSamplerAddress(0, D3DTADDRESS_MIRROR);
+				//	SetSamplerAddress(1, D3DTADDRESS_MIRROR);
+
+					gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearMirror, 0);
+					gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearMirror, 1);
 
 					if (SGCore_SkyCloudsIsLoadTex())
 						SGCore_SkyCloudsRender(timeDelta, &float3(gdata::vConstCurrCamPos.x, gdata::vConstCurrCamPos.y + 150, gdata::vConstCurrCamPos.z), true);
 					else
 					{
-						gdata::pDXDevice->setClearColor(float4_t(0.0f, 0.0f, 0.0f, 0.0f));
-						gdata::pDXDevice->clearTarget();
+						gdata::pDXDevice->clear(GXCLEAR_COLOR);
 					}
 
-					SetSamplerAddress(0, D3DTADDRESS_WRAP);
-					SetSamplerAddress(1, D3DTADDRESS_WRAP);
+					gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearWrap, 0);
+					gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearWrap, 1);
+				//	SetSamplerAddress(0, D3DTADDRESS_WRAP);
+				//	SetSamplerAddress(1, D3DTADDRESS_WRAP);
 				}
 				SLight_ShadowRenderEnd(i);
 			}
 			else if (SLight_GetType(i) == LTYPE_LIGHT_DIR)
 			{
-				gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+				gdata::pDXDevice->setRasterizerState(NULL);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 				if (SLight_CountUpdateUpdate(i, &gdata::vConstCurrCamPos))
 				{
 					SLight_ShadowRenderBegin(i);
@@ -931,7 +974,8 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 			}
 			else if (SLight_GetType(i) == LTYPE_LIGHT_POINT)
 			{
-				gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+				gdata::pDXDevice->setRasterizerState(NULL);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 				if (SLight_GetTypeShadowed(i) != LTYPE_SHADOW_NONE && SLight_CountUpdateUpdate(i, &gdata::vConstCurrCamPos))
 				{
 					SLight_ShadowRenderBegin(i);
@@ -970,52 +1014,65 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 		}
 	}
 	Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_FREE);
-	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
-	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+	gdata::pDXDevice->setBlendState(NULL);
+//	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
 }
 
 void rfunc::RenderSky(DWORD timeDelta)
 {
-	LPDIRECT3DSURFACE9 ColorSurf, BackBuf;
-	SGCore_GbufferGetRT(DS_RT_SCENELIGHT)->GetSurfaceLevel(0, &ColorSurf);
-	gdata::pDXDevice->GetRenderTarget(0, &BackBuf);
-	gdata::pDXDevice->SetRenderTarget(0, ColorSurf);
+	IGXSurface *ColorSurf, *BackBuf;
+	ColorSurf = SGCore_GbufferGetRT(DS_RT_SCENELIGHT)->getMipmap();
+	BackBuf = gdata::pDXDevice->getColorTarget();
+	gdata::pDXDevice->setColorTarget(ColorSurf);
 
-	gdata::pDXDevice->setClearColor(RENDER_DEFAUL_BACKGROUND_COLOR);
-	gdata::pDXDevice->clearTarget();
+	gdata::pDXDevice->clear(GXCLEAR_COLOR, RENDER_DEFAUL_BACKGROUND_COLOR);
 
-	SetSamplerFilter(0, 2, D3DTEXF_ANISOTROPIC);
+//	SetSamplerFilter(0, 2, D3DTEXF_ANISOTROPIC);
+	gdata::pDXDevice->setRasterizerState(NULL);
+	for(UINT i = 0; i <= 2; ++i)
+	{
+		gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerAnisotopicClamp, i);
+	}
 
 	if (SGCore_SkyBoxIsCr() && SGCore_SkyBoxGetUse() && SGCore_SkyBoxIsLoadTex())
 	{
-		gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-		SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
+	//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	//	SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
 		SGCore_SkyBoxRender(timeDelta, &float3(gdata::vConstCurrCamPos.x, gdata::vConstCurrCamPos.y + (SXGC_SKYBOX_SIZE * 0.5 - 10), gdata::vConstCurrCamPos.z));
 	}
 
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 
+#ifdef _GRAPHIX_API
 	gdata::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 	gdata::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+#endif
 
-	gdata::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	gdata::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+//	gdata::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+//	gdata::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	gdata::pDXDevice->setBlendState(gdata::rstates::pBlendAlphaSky);
 
-	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 	if (SGCore_SkyCloudsIsCr() && SGCore_SkyCloudsGetUse() && SGCore_SkyCloudsIsLoadTex())
 	{
-		SetSamplerAddress(0, 2, D3DTADDRESS_MIRROR);
+		for(UINT i = 0; i <= 2; ++i)
+		{
+			gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerAnisotopicMirror, i);
+		}
+	//	SetSamplerAddress(0, 2, D3DTADDRESS_MIRROR);
+		gdata::pDXDevice->setRasterizerState(gdata::rstates::pRasterizerCullNone);
 		SGCore_SkyCloudsRender(timeDelta, &float3(gdata::vConstCurrCamPos.x, gdata::vConstCurrCamPos.y + 150, gdata::vConstCurrCamPos.z), false);
+		gdata::pDXDevice->setRasterizerState(NULL);
 	}
 
-	gdata::pDXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_SCENELIGHT2));
+	gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_SCENELIGHT2));
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, gdata::shaders_id::ps::idScreenOut);
+	SGCore_ShaderBind(gdata::shaders_id::kit::idScreenOut);
 
-	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 	SGCore_ScreenQuadDraw();
 
@@ -1023,10 +1080,11 @@ void rfunc::RenderSky(DWORD timeDelta)
 
 	mem_release(ColorSurf);
 
-	gdata::pDXDevice->SetRenderTarget(0, BackBuf);
+	gdata::pDXDevice->setColorTarget(BackBuf);
 	mem_release(BackBuf);
 
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	gdata::pDXDevice->setBlendState(NULL);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
 void rfunc::ComLighting(DWORD timeDelta)
@@ -1036,30 +1094,28 @@ void rfunc::ComLighting(DWORD timeDelta)
 
 	SGCore_ShaderUnBind();
 
-	LPDIRECT3DSURFACE9 pAmbientSurf, pSpecDiffSurf, pBackBuf;
-	SGCore_GbufferGetRT(DS_RT_AMBIENTDIFF)->GetSurfaceLevel(0, &pAmbientSurf);
-	SGCore_GbufferGetRT(DS_RT_SPECULAR)->GetSurfaceLevel(0, &pSpecDiffSurf);
+	IGXSurface *pAmbientSurf, *pSpecDiffSurf, *pBackBuf;
+	pAmbientSurf = SGCore_GbufferGetRT(DS_RT_AMBIENTDIFF)->getMipmap();
+	pSpecDiffSurf = SGCore_GbufferGetRT(DS_RT_SPECULAR)->getMipmap();
 
-	gdata::pDXDevice->GetRenderTarget(0, &pBackBuf);
+	pBackBuf = gdata::pDXDevice->getColorTarget();
 
-	gdata::pDXDevice->SetRenderTarget(0, pAmbientSurf);
-	gdata::pDXDevice->SetRenderTarget(1, pSpecDiffSurf);
+	gdata::pDXDevice->setColorTarget(pAmbientSurf);
+	gdata::pDXDevice->setColorTarget(pSpecDiffSurf, 1);
 
 	//очищаем рт и стенсил
-	gdata::pDXDevice->setClearColor(float4_t(0,0,0,0));
-	gdata::pDXDevice->clearTarget();
-	gdata::pDXDevice->clearStencil();
+	gdata::pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_STENCIL);
 
 	//устанавка аддитивного смешивания
 	//когда к уже записанному будет прибавляться то что хотим записать
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	gdata::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-	gdata::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-	gdata::pDXDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 
-	gdata::pDXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
-	gdata::pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)gdata::mCamView));
-	gdata::pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)gdata::mLightProj));
+//	gdata::pDXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
+//	gdata::pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)gdata::mCamView));
+//	gdata::pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)gdata::mLightProj));
 
 	//проходимся циклом по всем источникам света
 	for (int i = 0; i<SLight_GetCount(); i++)
@@ -1072,6 +1128,7 @@ void rfunc::ComLighting(DWORD timeDelta)
 		{
 			//пока что назначаем шейдер без теней
 			ID idshader = gdata::shaders_id::ps::idComLightingNonShadow;
+			ID idshaderkit = gdata::shaders_id::kit::idComLightingNonShadow;
 
 			//если не глобальный источник
 			if (SLight_GetType(i) != LTYPE_LIGHT_GLOBAL)
@@ -1079,65 +1136,74 @@ void rfunc::ComLighting(DWORD timeDelta)
 				//помечаем в стенсил буфере пиксели  которые входят в ограничивающий объем света, чтобы их осветить
 
 				//отключаем вывод цвета
-				gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE); 
 
 				//установка стенсил теста, причем и двухстороннего тоже
-				gdata::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, TRUE);
-				gdata::pDXDevice->SetRenderState(D3DRS_TWOSIDEDSTENCILMODE, TRUE);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, TRUE);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_TWOSIDEDSTENCILMODE, TRUE);
 
 				//вклчить тест глубины, но запись выключить, установить стандартную функцию проверки глубины
-				gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-				gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-				gdata::pDXDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 
 				//стенсил тест проходит всегда удачно, при провале теста глубины инкрементируем значение в стенсиле
-				gdata::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS);
-				gdata::pDXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_INCR);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_INCR);
 				//при удачно проходе, игнорируем
-				gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
 
 				//стенсил тест для обратной глубины проходит всегда удачно, при провале теста глубины декрементируем значение в стенсиле
-				gdata::pDXDevice->SetRenderState(D3DRS_CCW_STENCILFUNC, D3DCMP_ALWAYS);
-				gdata::pDXDevice->SetRenderState(D3DRS_CCW_STENCILZFAIL, D3DSTENCILOP_DECR);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_CCW_STENCILFUNC, D3DCMP_ALWAYS);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_CCW_STENCILZFAIL, D3DSTENCILOP_DECR);
 				//при удачно проходе, игнорируем
-				gdata::pDXDevice->SetRenderState(D3DRS_CCW_STENCILPASS, D3DSTENCILOP_KEEP);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_CCW_STENCILPASS, D3DSTENCILOP_KEEP);
 
 				//установка значений для записи
-				gdata::pDXDevice->SetRenderState(D3DRS_STENCILREF, 0x0);
-				gdata::pDXDevice->SetRenderState(D3DRS_STENCILMASK, 0xFFFFFFFF);
-				gdata::pDXDevice->SetRenderState(D3DRS_STENCILWRITEMASK, 0xFFFFFFFF);
-				gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	//включение двухсторонней отрисовки
+			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILREF, 0x0);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILMASK, 0xFFFFFFFF);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILWRITEMASK, 0xFFFFFFFF);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	//включение двухсторонней отрисовки
 
-				gdata::pDXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
-				gdata::pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)gdata::mCamView));
-				gdata::pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)gdata::mLightProj));
+			//	gdata::pDXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
+			//	gdata::pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)gdata::mCamView));
+			//	gdata::pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)gdata::mLightProj));
 
+
+				gdata::pDXDevice->setRasterizerState(gdata::rstates::pRasterizerCullNone);
+				gdata::pDXDevice->setStencilRef(0);
+				gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateLightBound);
+				gdata::pDXDevice->setBlendState(gdata::rstates::pBlendNoColor);
 				//отрисовка ограничивающего объема
 				SLight_Render(i, 0);
 
 				//
-				gdata::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL);
-				gdata::pDXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_ZERO);
-				gdata::pDXDevice->SetRenderState(D3DRS_STENCILFAIL, D3DSTENCILOP_ZERO);
-				gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_ZERO);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILFAIL, D3DSTENCILOP_ZERO);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
 
-				gdata::pDXDevice->SetRenderState(D3DRS_STENCILREF, 255);
-
+			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILREF, 255);
+				gdata::pDXDevice->setStencilRef(255);
+				gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateLightShadowNonGlobal);
 				//включаем вывод цвета
-				gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+				gdata::pDXDevice->setBlendState(gdata::rstates::pBlendAlphaOneOne);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 			}
 			else
 			{
 				//иначе это глобальный источник, отключаем стенсил тест
-				gdata::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
-				gdata::pDXDevice->SetRenderState(D3DRS_TWOSIDEDSTENCILMODE, FALSE);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_TWOSIDEDSTENCILMODE, FALSE);
+				gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateLightShadowGlobal);
 			}
 
 			//отключаем тест глубины ибо будем теперь пост процессом обрабатывать полученные данные
-			gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-			gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
-			gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+			gdata::pDXDevice->setRasterizerState(NULL);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 			//если свет отбрасывает тени
 			if (SLight_GetShadowed(i))
@@ -1145,13 +1211,14 @@ void rfunc::ComLighting(DWORD timeDelta)
 				//генерация теней для текущего света
 				//{{
 				//так как нам нужно провести очистку рт то убираем оба рт
-				gdata::pDXDevice->SetRenderTarget(0, pBackBuf);
-				gdata::pDXDevice->SetRenderTarget(1, 0);
+				gdata::pDXDevice->setColorTarget(pBackBuf);
+				gdata::pDXDevice->setColorTarget(NULL, 1);
 
 				//отключаем смешивание, нам не нужен хлам в рт
-				gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-				gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-				gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED); 
+				gdata::pDXDevice->setBlendState(gdata::rstates::pBlendRed);
 
 				SLight_ShadowNull();	//очищаем рт генерации теней
 				SLight_ShadowGen(i);	//генерируем тень для света
@@ -1169,19 +1236,21 @@ void rfunc::ComLighting(DWORD timeDelta)
 					}
 				}
 
-				gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+				gdata::pDXDevice->setBlendState(gdata::rstates::pBlendAlphaOneOne);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 				//}}
 
 				//включаем смешивание для освещения
-				gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+			//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
 				//опять назначаем второй рт
-				gdata::pDXDevice->SetRenderTarget(0, pAmbientSurf);
-				gdata::pDXDevice->SetRenderTarget(1, pSpecDiffSurf);
+				gdata::pDXDevice->setColorTarget(pAmbientSurf);
+				gdata::pDXDevice->setColorTarget(pSpecDiffSurf, 1);
 
 				//устанавливаем текстуру с тенями и переназначаем шейдер, теперь уже с тенями
-				gdata::pDXDevice->SetTexture(4, SLight_GetShadow());
+				gdata::pDXDevice->setTexture(SLight_GetShadow(), 4);
 				idshader = gdata::shaders_id::ps::idComLightingShadow;
+				idshaderkit = gdata::shaders_id::kit::idComLightingShadow;
 
 				//if (GetAsyncKeyState('Q'))
 					//D3DXSaveTextureToFile((String("C:/1/SLight_GetShadow") + String(i) + ".jpg").c_str(), D3DXIFF_JPG, SLight_GetShadow(), NULL);
@@ -1194,8 +1263,11 @@ void rfunc::ComLighting(DWORD timeDelta)
 
 			//теперь когда будем считать освещение надо сбросить значения в стенсил буфере, чтобы каждый кадр не чистить
 			//если стенсил тест прошел успешно, устанавливаем значнеие в нуль
-			if (SLight_GetType(i) != LTYPE_LIGHT_GLOBAL)
-				gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_ZERO);
+			if(SLight_GetType(i) != LTYPE_LIGHT_GLOBAL)
+			{
+			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_ZERO);
+				gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateLightClear);
+			}
 
 			float determ = 0;
 			float4x4 ViewInv = SMMatrixInverse(&determ, gdata::mCamView);
@@ -1238,17 +1310,20 @@ void rfunc::ComLighting(DWORD timeDelta)
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vLightColor", &tmpColor);
 			//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "vNearFar", &gdata::vNearFar);
 
-			SGCore_ShaderBind(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idResPos);
-			SGCore_ShaderBind(SHADER_TYPE_PIXEL, idshader);
+			SGCore_ShaderBind(idshaderkit);
 
-			SetSamplerFilter(0, 5, D3DTEXF_NONE);
-			SetSamplerAddress(0, 5, D3DTADDRESS_CLAMP);
+			for(UINT i = 0; i <= 5; ++i)
+			{
+				gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerPointClamp, i);
+			}
+		//	SetSamplerFilter(0, 5, D3DTEXF_NONE);
+		//	SetSamplerAddress(0, 5, D3DTADDRESS_CLAMP);
 
-			gdata::pDXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_COLOR));
-			gdata::pDXDevice->SetTexture(1, SGCore_GbufferGetRT(DS_RT_NORMAL));
-			gdata::pDXDevice->SetTexture(2, SGCore_GbufferGetRT(DS_RT_PARAM));
-			gdata::pDXDevice->SetTexture(3, SGCore_GbufferGetRT(DS_RT_DEPTH));
-			gdata::pDXDevice->SetTexture(5, SGCore_GbufferGetRT(DS_RT_ADAPTEDLUM));
+			gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_COLOR));
+			gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_NORMAL), 1);
+			gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_PARAM), 2);
+			gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH), 3);
+			gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_ADAPTEDLUM), 5);
 
 			SGCore_ScreenQuadDraw();
 
@@ -1256,13 +1331,16 @@ void rfunc::ComLighting(DWORD timeDelta)
 		}
 	}
 
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	gdata::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
-	gdata::pDXDevice->SetRenderState(D3DRS_TWOSIDEDSTENCILMODE, FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_TWOSIDEDSTENCILMODE, FALSE);
+	gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateNoZ);
+	gdata::pDXDevice->setRasterizerState(NULL);
+	gdata::pDXDevice->setBlendState(NULL);
 
-	gdata::pDXDevice->SetRenderTarget(0, pBackBuf);
-	gdata::pDXDevice->SetRenderTarget(1, 0);
+	gdata::pDXDevice->setColorTarget(pBackBuf);
+	gdata::pDXDevice->setColorTarget(NULL, 1);
 
 	mem_release(pBackBuf);
 
@@ -1271,34 +1349,36 @@ void rfunc::ComLighting(DWORD timeDelta)
 
 	//-------------------------------
 
-	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 
 	//теперь необходимо все смешать чтобы получить итоговую освещенную картинку
 	//{{
-	SetSamplerFilter(0, 5, D3DTEXF_NONE);
-	SetSamplerAddress(0, 5, D3DTADDRESS_CLAMP);
-	LPDIRECT3DSURFACE9 pComLightSurf;
+//	SetSamplerFilter(0, 5, D3DTEXF_NONE);
+//	SetSamplerAddress(0, 5, D3DTADDRESS_CLAMP);
+	for(UINT i = 0; i <= 5; ++i)
+	{
+		gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerPointClamp, i);
+	}
+	IGXSurface *pComLightSurf;
 
-	SGCore_GbufferGetRT(DS_RT_SCENELIGHT)->GetSurfaceLevel(0, &pComLightSurf);
+	pComLightSurf = SGCore_GbufferGetRT(DS_RT_SCENELIGHT)->getMipmap();
 
-	gdata::pDXDevice->GetRenderTarget(0, &pBackBuf);
-	gdata::pDXDevice->SetRenderTarget(0, pComLightSurf);
+	pBackBuf = gdata::pDXDevice->getColorTarget();
+	gdata::pDXDevice->setColorTarget(pComLightSurf);
 
 	//очищаем рт (в старой версии было многопроходное смешивание)
-	gdata::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
-	gdata::pDXDevice->clearTarget();
+	gdata::pDXDevice->clear(GXCLEAR_COLOR);
 
-	gdata::pDXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_COLOR));
-	gdata::pDXDevice->SetTexture(1, SGCore_GbufferGetRT(DS_RT_AMBIENTDIFF));
-	gdata::pDXDevice->SetTexture(2, SGCore_GbufferGetRT(DS_RT_SPECULAR));
-	gdata::pDXDevice->SetTexture(3, SGCore_GbufferGetRT(DS_RT_NORMAL));
-	gdata::pDXDevice->SetTexture(4, SGCore_GbufferGetRT(DS_RT_ADAPTEDLUM));
-	gdata::pDXDevice->SetTexture(5, SGCore_GbufferGetRT(DS_RT_PARAM));
+	gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_COLOR));
+	gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_AMBIENTDIFF), 1);
+	gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_SPECULAR), 2);
+	gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_NORMAL), 3);
+	gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_ADAPTEDLUM), 4);
+	gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_PARAM), 5);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, gdata::shaders_id::ps::idBlendAmbientSpecDiffColor);
+	SGCore_ShaderBind(gdata::shaders_id::kit::idBlendAmbientSpecDiffColor);
 
 	SGCore_ScreenQuadDraw();
 
@@ -1307,7 +1387,7 @@ void rfunc::ComLighting(DWORD timeDelta)
 
 	SGCore_ShaderUnBind();
 
-	gdata::pDXDevice->SetRenderTarget(0, pBackBuf);
+	gdata::pDXDevice->setColorTarget(pBackBuf);
 	mem_release(pBackBuf);
 }
 
@@ -1316,36 +1396,34 @@ void rfunc::UnionLayers()
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-	LPDIRECT3DSURFACE9 pBackBuf, pComLightSurf;
-	gdata::pDXDevice->GetRenderTarget(0, &pBackBuf);
+	IGXSurface *pBackBuf, *pComLightSurf;
+	pBackBuf = gdata::pDXDevice->getColorTarget();
 
 	int iCurrCountTransparencySurf = SMtrl_MtlGetCurrCountSurf();
 
 	if (iCurrCountTransparencySurf >= RENDER_LAYER_TRANSPARENT)
 	{
-		LPDIRECT3DSURFACE9 pColorSurf, pColor2Surf, pDepthSurf;
-		SGCore_GbufferGetRT(DS_RT_SCENELIGHT2)->GetSurfaceLevel(0, &pColorSurf);
-		gdata::pDXDevice->SetRenderTarget(0, pColorSurf);
-		SGCore_GbufferGetRT(DS_RT_DEPTH0)->GetSurfaceLevel(0, &pDepthSurf);
-		gdata::pDXDevice->SetRenderTarget(1, pDepthSurf);
-		SGCore_GbufferGetRT(DS_RT_DEPTH1)->GetSurfaceLevel(0, &pColor2Surf);
-		gdata::pDXDevice->SetRenderTarget(2, pColor2Surf);
-		gdata::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
-		gdata::pDXDevice->clearTarget();
-		gdata::pDXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_COLOR));
-		gdata::pDXDevice->SetTexture(1, SGCore_GbufferGetRT(DS_RT_SCENELIGHT));
-		gdata::pDXDevice->SetTexture(2, SGCore_GbufferGetRT(DS_RT_DEPTH));
-		gdata::pDXDevice->SetTexture(3, SGCore_GbufferGetRT(DS_RT_NORMAL));
-		gdata::pDXDevice->SetTexture(4, SGCore_GbufferGetRT(DS_RT_PARAM));
+		IGXSurface *pColorSurf, *pColor2Surf, *pDepthSurf;
+		pColorSurf = SGCore_GbufferGetRT(DS_RT_SCENELIGHT2)->getMipmap();
+		gdata::pDXDevice->setColorTarget(pColorSurf);
+		pDepthSurf = SGCore_GbufferGetRT(DS_RT_DEPTH0)->getMipmap();
+		gdata::pDXDevice->setColorTarget(pDepthSurf, 1);
+		pColor2Surf = SGCore_GbufferGetRT(DS_RT_DEPTH1)->getMipmap();
+		gdata::pDXDevice->setColorTarget(pColor2Surf, 2);
+		gdata::pDXDevice->clear(GXCLEAR_COLOR);
+		gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_COLOR));
+		gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_SCENELIGHT), 1);
+		gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH), 2);
+		gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_NORMAL), 3);
+		gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_PARAM), 4);
 
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idScreenOut);
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, gdata::shaders_id::ps::idUnionAlpha);
+		SGCore_ShaderBind(gdata::shaders_id::kit::idUnionAlpha);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, gdata::shaders_id::ps::idUnionAlpha, "g_vWinSize", &float4_t(*r_win_width, *r_win_height, 1.f / float(*r_win_width), 1.f / float(*r_win_height)));
 
 		SGCore_ScreenQuadDraw();
 
-		DX_CALL(gdata::pDXDevice->SetRenderTarget(1, 0));
-		DX_CALL(gdata::pDXDevice->SetRenderTarget(2, 0));
+		gdata::pDXDevice->setColorTarget(NULL, 1);
+		gdata::pDXDevice->setColorTarget(NULL, 2);
 		mem_release(pColorSurf);
 		mem_release(pDepthSurf);
 		mem_release(pColor2Surf);
@@ -1354,33 +1432,30 @@ void rfunc::UnionLayers()
 	{
 		//копируем значения только для ds_rt_depth1, а ds_rt_depth0 уже заполнен
 
-		LPDIRECT3DSURFACE9 pDepthSurf1;
+		IGXSurface *pDepthSurf1;
 
-		SGCore_GbufferGetRT(DS_RT_DEPTH1)->GetSurfaceLevel(0, &pDepthSurf1);
-		gdata::pDXDevice->SetRenderTarget(0, pDepthSurf1);
+		pDepthSurf1 = SGCore_GbufferGetRT(DS_RT_DEPTH1)->getMipmap();
+		gdata::pDXDevice->setColorTarget(pDepthSurf1);
 
-		gdata::pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
-		gdata::pDXDevice->clearTarget();
+		gdata::pDXDevice->clear(GXCLEAR_COLOR);
 
-		gdata::pDXDevice->SetTexture(0, SGCore_GbufferGetRT(DS_RT_DEPTH));
+		gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH));
 
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idScreenOut);
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, gdata::shaders_id::ps::idScreenOut);
+		SGCore_ShaderBind(gdata::shaders_id::kit::idScreenOut);
 
 		SGCore_ScreenQuadDraw();
 
-		DX_CALL(gdata::pDXDevice->SetRenderTarget(0, pBackBuf));
+		gdata::pDXDevice->setColorTarget(pBackBuf);
 		mem_release(pDepthSurf1);
 	}
 
 	//копируем итоговую сцену
-	SGCore_GbufferGetRT((iCurrCountTransparencySurf >= RENDER_LAYER_TRANSPARENT ? DS_RT_SCENELIGHT : DS_RT_SCENELIGHT2))->GetSurfaceLevel(0, &pComLightSurf);
-	gdata::pDXDevice->SetRenderTarget(0, pComLightSurf);
-	gdata::pDXDevice->Clear(0, 0, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0, 0);
-	gdata::pDXDevice->SetTexture(0, SGCore_GbufferGetRT((iCurrCountTransparencySurf >= RENDER_LAYER_TRANSPARENT ? DS_RT_SCENELIGHT2 : DS_RT_SCENELIGHT)));
+	pComLightSurf = SGCore_GbufferGetRT((iCurrCountTransparencySurf >= RENDER_LAYER_TRANSPARENT ? DS_RT_SCENELIGHT : DS_RT_SCENELIGHT2))->getMipmap();
+	gdata::pDXDevice->setColorTarget(pComLightSurf);
+	gdata::pDXDevice->clear(GXCLEAR_COLOR);
+	gdata::pDXDevice->setTexture(SGCore_GbufferGetRT((iCurrCountTransparencySurf >= RENDER_LAYER_TRANSPARENT ? DS_RT_SCENELIGHT2 : DS_RT_SCENELIGHT)));
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, gdata::shaders_id::ps::idScreenOut);
+	SGCore_ShaderBind(gdata::shaders_id::kit::idScreenOut);
 
 	SGCore_ScreenQuadDraw();
 
@@ -1388,29 +1463,38 @@ void rfunc::UnionLayers()
 
 	SGCore_ShaderUnBind();
 
-	gdata::pDXDevice->SetRenderTarget(0, pBackBuf);
+	gdata::pDXDevice->setColorTarget(pBackBuf);
 	mem_release(pBackBuf);
 }
 
 void rfunc::RenderParticles(DWORD timeDelta)
 {
-	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-
+	gdata::pDXDevice->setRasterizerState(gdata::rstates::pRasterizerCullNone);
+//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+#ifdef _GRAPHIX_API
 	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
 	gdata::pDXDevice->SetRenderState(D3DRS_ALPHAREF, RENDER_PARTICLES_ALPHATEST_VALUE);
 	gdata::pDXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+#endif
 
-	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+	gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateParticles);
 
-	SetSamplerFilter(0, 3, D3DTEXF_LINEAR);
-	SetSamplerAddress(0, 3, D3DTADDRESS_WRAP);
+	for(UINT i = 0; i <= 3; ++i)
+	{
+		gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearWrap, i);
+	}
+//	SetSamplerFilter(0, 3, D3DTEXF_LINEAR);
+//	SetSamplerAddress(0, 3, D3DTADDRESS_WRAP);
 
 	SPE_EffectRenderAll(timeDelta);
 
-	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	gdata::pDXDevice->setRasterizerState(NULL);
+//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	gdata::pDXDevice->setDepthStencilState(NULL);
 }
 
 void rfunc::RenderMainPostProcess(DWORD timeDelta)
@@ -1544,6 +1628,8 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 	float3 vObserverPos;
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vObserverPos);
 
+	gdata::pDXDevice->setRasterizerState(NULL);
+
 	for (int i = 0; i < SGeom_GetCountModels(); ++i)
 	{
 		for (int k = 0; k < SGeom_ModelGetCountGroups(i); ++k)
@@ -1564,12 +1650,16 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 				SGeom_ModelGetGroupPlane(i, k, &oPlane);
 				SGeom_ModelGetGroupCenter(i, k, &vCenter);
 				SMtrl_RefPreRenderPlane(idMat, &oPlane);
-				SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
-				SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
+			//	SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
+			//	SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
+				for(UINT i = 0; i < 16; ++i)
+				{
+					gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearWrap, i);
+				}
 
 				Core_RBoolSet(G_RI_BOOL_CLIPPLANE0, true);
 
-				Core_RFloat3Set(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &float3(oPlane.a, oPlane.b, oPlane.c));
+				Core_RFloat3Set(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &float3(oPlane));
 				Core_RFloat3Set(G_RI_FLOAT3_CLIPPLANE0_POINT, &float3(vCenter));
 
 				if (r_reflection_render && (*r_reflection_render) >= REFLECTION_RENDER_GEOM)
@@ -1593,24 +1683,33 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 
 				if (SGCore_SkyBoxIsCr() && SGCore_SkyBoxGetUse())
 				{
-					gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+				//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
+#ifdef _GRAPHIX_API
 					gdata::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 					gdata::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+#endif
+					gdata::pDXDevice->setBlendState(gdata::rstates::pBlendAlpha);
+				//	gdata::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA);
+				//	gdata::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
 
-					gdata::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA);
-					gdata::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
+				//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+					for(UINT i = 0; i <= 2; ++i)
+					{
+						gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearClamp, i);
+					}
+				//	SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
 
-					gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-					SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
-
-					gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-					gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+					gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateNoZ);
+				//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+				//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 					Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &gdata::mRefPlaneSkyProj);
 					SGCore_SkyBoxRender(timeDelta, &float3(vCenter));
-					gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-					gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-					gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+					gdata::pDXDevice->setDepthStencilState(NULL);
+				//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+				//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+				//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+					gdata::pDXDevice->setBlendState(NULL);
 				}
 
 				SMtrl_RefPostRenderPlane(idMat);
@@ -1635,8 +1734,12 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 					Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 
 					SMtrl_RefCubePreRender(idMat, j, &(SMMatrixIdentity()));
-					SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
-					SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
+				//	SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
+				//	SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
+					for(UINT i = 0; i < 16; ++i)
+					{
+						gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearWrap, i);
+					}
 
 					if (r_reflection_render && (*r_reflection_render) != 0)
 					{
@@ -1679,29 +1782,38 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 
 					if (SGCore_SkyBoxIsCr() && SGCore_SkyBoxGetUse())
 					{
-						gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+					//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
+#ifdef _GRAPHIX_API
 						gdata::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 						gdata::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+#endif
+						gdata::pDXDevice->setBlendState(gdata::rstates::pBlendAlpha);
+					//	gdata::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA);
+					//	gdata::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
 
-						gdata::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_INVDESTALPHA);
-						gdata::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
+						gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateNoZ);
+					//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+					//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
-						gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-						gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-
-						gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-						SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
+					//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+					//	SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
+						for(UINT i = 0; i <= 2; ++i)
+						{
+							gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearClamp, i);
+						}
 
 						Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &gdata::mRefCubeSkyProj);
 
 						SGCore_SkyBoxRender(timeDelta, &float3(vCenter));
-						gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+						gdata::pDXDevice->setBlendState(NULL);
+					//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
 						SMtrl_RefCubePostRender(idMat, j);
 
-						gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-						gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+						gdata::pDXDevice->setDepthStencilState(NULL);
+					//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+					//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 					}
 				}
 				SMtrl_RefCubeEndRender(idMat, &((float3_t)gdata::vConstCurrCamPos));
@@ -1714,26 +1826,33 @@ void rfunc::UpdateReflectionSimModel(DWORD timeDelta)
 {
 	ID idMat = gdata::Editors::pSimModel->getIdMtl();
 	MTLTYPE_REFLECT typeReflection = SMtrl_MtlGetTypeReflection(idMat);
-	D3DXPLANE oPlane;
+	SMPLANE oPlane;
 	float3_t vCenter;
 	gdata::Editors::pSimModel->getCenter(&vCenter);
 	SGCore_ShaderUnBind();
+
+	gdata::pDXDevice->setBlendState(NULL);
+	gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateNoZ);
 
 	if (typeReflection == MTLTYPE_REFLECT_PLANE)
 	{
 		gdata::Editors::pSimModel->getPlane(&oPlane);
 		SMtrl_RefPreRenderPlane(idMat, &oPlane);
-		SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
-		SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
+		for(UINT i = 0; i < 16; ++i)
+		{
+			gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearWrap, i);
+		}
+	//	SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
+	//	SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
 
-		gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
-		gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-		gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+	//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+	//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 		Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &gdata::mRefPlaneSkyProj);
 		SGCore_SkyBoxRender(timeDelta, &float3(vCenter));
-		gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-		gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+	//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 
 		SMtrl_RefPostRenderPlane(idMat);
 	}
@@ -1747,22 +1866,24 @@ void rfunc::UpdateReflectionSimModel(DWORD timeDelta)
 
 			SMtrl_RefCubePreRender(idMat, j, &(SMMatrixIdentity()));
 
-			gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
-			gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-			gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 			Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &gdata::mRefCubeSkyProj);
 			SGCore_SkyBoxRender(timeDelta, &float3(vCenter));
 
-			gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-			gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-			gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 			SMtrl_RefCubePostRender(idMat, j);
-			gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-			gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+		//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 		}
 		SMtrl_RefCubeEndRender(idMat, &((float3_t)gdata::vConstCurrCamPos));
 	}
+
+	gdata::pDXDevice->setDepthStencilState(NULL);
 }
 
 void rfunc::UpdateReflection(DWORD timeDelta, bool isRenderSimulation)
@@ -1771,9 +1892,10 @@ void rfunc::UpdateReflection(DWORD timeDelta, bool isRenderSimulation)
 	Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 	Core_RMatrixSet(G_RI_MATRIX_VIEW, &gdata::mCamView);
 
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	gdata::pDXDevice->setDepthStencilState(NULL);
 
 	if (!isRenderSimulation)
 		rfunc::UpdateReflectionScene(timeDelta);
@@ -1786,17 +1908,19 @@ void rfunc::UpdateReflection(DWORD timeDelta, bool isRenderSimulation)
 
 void rfunc::RenderEditorMain()
 {
+	gdata::pDXDevice->setDepthStencilState(NULL);
+
 	if (gdata::Editors::pGrid && gdata::Editors::canRenderGrid)
 	{
-		gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-		gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+	//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 		gdata::Editors::pGrid->render();
 	}
 
 	if (gdata::Editors::pAxesStatic && gdata::Editors::canRenderAxesStatic)
 	{
-		gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-		gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+	//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 		gdata::Editors::pAxesStatic->render();
 	}
 }

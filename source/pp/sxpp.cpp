@@ -1055,8 +1055,8 @@ SX_LIB_API void SPP_RenderLensFlare(const float3_t *pParam, const float4_t *pSun
 	}
 
 	pp_data::pDXDevice->setColorTarget(BackBuf);
-	RenderSurf->Release();
-	BackBuf->Release();
+	mem_release(RenderSurf);
+	mem_release(BackBuf);
 
 	/*if (GetKeyState('N'))
 	{
@@ -1086,8 +1086,8 @@ SX_LIB_API void SPP_RenderLensFlare(const float3_t *pParam, const float4_t *pSun
 	SGCore_ShaderUnBind();
 
 	pp_data::pDXDevice->setColorTarget(BackBuf);
-	RenderSurf->Release();
-	BackBuf->Release();
+	mem_release(RenderSurf);
+	mem_release(BackBuf);
 
 //	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	pp_data::pDXDevice->setBlendState(NULL);

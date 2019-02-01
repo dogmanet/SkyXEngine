@@ -85,6 +85,8 @@ protected:
 			m_pModel = pModel; m_vCenter = *pCenter; m_vMax = *pMax; m_vMin = *pMin; m_oPlane = *pPlane;
 		}
 
+		SX_ALIGNED_OP_MEM2();
+
 		//! указатель на статическую модель
 		ISXDataStaticModel *m_pModel;
 

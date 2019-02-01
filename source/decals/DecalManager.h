@@ -115,7 +115,7 @@ class DecalManager
 
 	//static IDirect3DIndexBuffer9 * m_pIndexBuffer;
 	IGXVertexBuffer *m_pVertexBuffer;
-	IGXRenderBuffer *m_pRenderBuffer;
+	IGXRenderBuffer *m_pRenderBuffer = NULL;
 
 	IGXVertexDeclaration *m_pVertexDeclaration;
 

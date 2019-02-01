@@ -28,7 +28,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_ShaderAllLoad();
 	SGCore_LoadTexAllLoad();
 
-	SetWindowPos(SGCore_GetHWND(), HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+	SetWindowPos((HWND)SGCore_GetHWND(), HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 
 	SLevel_AmbientSndPlay();
 	SLevel_WeatherSndPlay();

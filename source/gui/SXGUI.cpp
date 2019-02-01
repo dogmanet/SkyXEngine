@@ -509,7 +509,7 @@ namespace gui
 
 		for(auto i = m_mDesktops.begin(); i; i++)
 		{
-			((CDesktop*)(*i.second))->createRenderTarget();
+		//	((CDesktop*)(*i.second))->createRenderTarget();
 			((CDesktop*)(*i.second))->setDirty();
 		}
 
@@ -526,7 +526,7 @@ namespace gui
 
 		for(auto i = m_mDesktops.begin(); i; i++)
 		{
-			((CDesktop*)(*i.second))->releaseRenderTarget();
+		//	((CDesktop*)(*i.second))->releaseRenderTarget();
 		}
 	}
 

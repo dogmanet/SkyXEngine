@@ -476,7 +476,10 @@ void CShaderManager::reloadAll()
 
 	for (int i = 0, il = m_aShaderKit.size(); i < il; ++i)
 	{
-		mem_release(m_aShaderKit[i].m_pShaderKit);
+		if (m_aShaderKit[i])
+		{
+			mem_release(m_aShaderKit[i]->m_pShaderKit);
+		}
 	}
 
 	testIncludeCache();
@@ -501,10 +504,13 @@ void CShaderManager::reloadAll()
 
 	for (int i = 0, il = m_aShaderKit.size(); i < il; ++i)
 	{
-		ID idVS = m_aShaderKit[i].m_idVertexShader;
-		ID idPS = m_aShaderKit[i].m_idPixelShader;
+		if (m_aShaderKit[i])
+		{
+			ID idVS = m_aShaderKit[i]->m_idVertexShader;
+			ID idPS = m_aShaderKit[i]->m_idPixelShader;
 
-		m_aShaderKit[i].m_pShaderKit = g_pDevice->createShader(m_aVS[idVS]->m_pVertexShader, m_aPS[idPS]->m_pPixelShader);
+			m_aShaderKit[i]->m_pShaderKit = g_pDevice->createShader(m_aVS[idVS]->m_pVertexShader, m_aPS[idPS]->m_pPixelShader);
+		}
 	}
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "all reloaded shaders\n");
@@ -668,6 +674,8 @@ void CShaderManager::allLoad()
 	for (int i = 0, il = m_aVS.size(); i < il; ++i)
 	{
 		CShaderVS *pShader = m_aVS[i];
+		if (pShader->m_pVertexShader)
+			continue;
 		sResult = getTextResultLoad(LoadVertexShader(pShader->m_szPath, pShader, pShader->m_aMacros));
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  VS id [%d], file [%s], name [%s], result [%s] \n", i, pShader->m_szPath, pShader->m_szName, sResult.c_str());
 	}
@@ -677,12 +685,25 @@ void CShaderManager::allLoad()
 	for (int i = 0, il = m_aPS.size(); i < il; ++i)
 	{
 		CShaderPS *pShader = m_aPS[i];
+		if (pShader->m_pPixelShader)
+			continue;
 		sResult = getTextResultLoad(LoadPixelShader(pShader->m_szPath, pShader, pShader->m_aMacros));
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  PS id [%d], file[%s], name[%s], result [%s] \n", i, pShader->m_szPath, pShader->m_szName, sResult.c_str());
 	}
 
 	m_iLastAllLoadVS = m_aVS.size();
 	m_iLastAllLoadPS = m_aPS.size();
+
+	for (int i = 0, il = m_aShaderKit.size(); i < il; ++i)
+	{
+		if (m_aShaderKit[i] && !(m_aShaderKit[i]->m_pShaderKit))
+		{
+			ID idVS = m_aShaderKit[i]->m_idVertexShader;
+			ID idPS = m_aShaderKit[i]->m_idPixelShader;
+
+			m_aShaderKit[i]->m_pShaderKit = g_pDevice->createShader(m_aVS[idVS]->m_pVertexShader, m_aPS[idPS]->m_pPixelShader);
+		}
+	}
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "all loaded shaders, time %d\n", GetTickCount() - dwTime);
 }
@@ -799,7 +820,7 @@ ID CShaderManager::createKit(ID idVertexShader, ID idPixelShader)
 
 	for (int i = 0, il = m_aShaderKit.size(); i < il; ++i)
 	{
-		if (m_aShaderKit[i].m_idVertexShader == idVertexShader && m_aShaderKit[i].m_idPixelShader == idPixelShader)
+		if (m_aShaderKit[i] && m_aShaderKit[i]->m_idVertexShader == idVertexShader && m_aShaderKit[i]->m_idPixelShader == idPixelShader)
 		{
 			idShaderKit = i;
 			break;
@@ -808,12 +829,14 @@ ID CShaderManager::createKit(ID idVertexShader, ID idPixelShader)
 
 	if (idShaderKit == -1)
 	{
-		CShaderKit oShaderKit = CShaderKit();
-		oShaderKit.m_idVertexShader = idVertexShader;
-		oShaderKit.m_idPixelShader = idPixelShader;
-		oShaderKit.m_pShaderKit = g_pDevice->createShader(m_aVS[idVertexShader]->m_pVertexShader, m_aPS[idPixelShader]->m_pPixelShader);
+		CShaderKit *pShaderKit = new CShaderKit();
+		pShaderKit->m_idVertexShader = idVertexShader;
+		pShaderKit->m_idPixelShader = idPixelShader;
 
-		m_aShaderKit.push_back(oShaderKit);
+		if (m_aVS[idVertexShader]->m_pVertexShader && m_aPS[idPixelShader]->m_pPixelShader)
+			pShaderKit->m_pShaderKit = g_pDevice->createShader(m_aVS[idVertexShader]->m_pVertexShader, m_aPS[idPixelShader]->m_pPixelShader);
+
+		m_aShaderKit.push_back(pShaderKit);
 		idShaderKit = m_aShaderKit.size() - 1;
 	}
 
@@ -822,13 +845,13 @@ ID CShaderManager::createKit(ID idVertexShader, ID idPixelShader)
 
 void CShaderManager::bind(ID idShaderKit)
 {
-	if (!(idShaderKit >= 0 && idShaderKit < m_aShaderKit.size()))
+	if (!(idShaderKit >= 0 && idShaderKit < m_aShaderKit.size() && m_aShaderKit[idShaderKit]))
 	{
 		LibReport(REPORT_MSG_LEVEL_WARNING, "shader kit not bind, id [%d]\n", idShaderKit);
 		return;
 	}
 
-	g_pDevice->setShader(m_aShaderKit[idShaderKit].m_pShaderKit);
+	g_pDevice->setShader(m_aShaderKit[idShaderKit]->m_pShaderKit);
 }
 
 void CShaderManager::unbind()
@@ -864,15 +887,16 @@ void CShaderManager::setValueRegisterF(SHADER_TYPE type_shader, const char *szNa
 		if (idShader >= 0)
 		{
 			IGXVertexShader *pVertexShader = m_aVS[idShader]->m_pVertexShader;
+			UINT uConstantLocation = pVertexShader->getConstantLocation(szNameVar);
 			
-			if (pVertexShader->getConstantLocation(szNameVar) == GX_SHADER_CONSTANT_FAIL)
+			if (uConstantLocation == GX_SHADER_CONSTANT_FAIL)
 			{
 				if (m_canInfo4FailSend)
 					LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", szNameVar, type_shader, idShader);
 			}
 			else
 			{
-				pVertexShader->setConstantF(pVertexShader->getConstantLocation(szNameVar), (float*)pData, (iCountFloat4 == 0 ? pVertexShader->getConstantSizeV4(szNameVar) : iCountFloat4));
+				pVertexShader->setConstantF(uConstantLocation, (float*)pData, (iCountFloat4 == 0 ? pVertexShader->getConstantSizeV4(szNameVar) : iCountFloat4));
 			}
 		}
 		else
@@ -900,15 +924,16 @@ void CShaderManager::setValueRegisterF(SHADER_TYPE type_shader, const char *szNa
 		if (idShader != -1)
 		{
 			IGXPixelShader *pPixelShader = m_aPS[idShader]->m_pPixelShader;
+			UINT uConstantLocation = pPixelShader->getConstantLocation(szNameVar);
 
-			if (pPixelShader->getConstantLocation(szNameVar) == GX_SHADER_CONSTANT_FAIL)
+			if (uConstantLocation == GX_SHADER_CONSTANT_FAIL)
 			{
 				if (m_canInfo4FailSend)
 					LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", szNameVar, type_shader, idShader);
 			}
 			else
 			{
-				pPixelShader->setConstantF(pPixelShader->getConstantLocation(szNameVar), (float*)pData, (iCountFloat4 == 0 ? pPixelShader->getConstantSizeV4(szNameVar) : iCountFloat4));
+				pPixelShader->setConstantF(uConstantLocation, (float*)pData, (iCountFloat4 == 0 ? pPixelShader->getConstantSizeV4(szNameVar) : iCountFloat4));
 			}
 		}
 		else
@@ -931,29 +956,31 @@ void CShaderManager::setValueRegisterF(SHADER_TYPE type_shader, ID idShader, con
 		if (type_shader == SHADER_TYPE_VERTEX)
 		{
 			IGXVertexShader *pVertexShader = m_aVS[idShader]->m_pVertexShader;
+			UINT uConstantLocation = pVertexShader->getConstantLocation(szNameVar);
 
-			if (pVertexShader->getConstantLocation(szNameVar) == GX_SHADER_CONSTANT_FAIL)
+			if (uConstantLocation == GX_SHADER_CONSTANT_FAIL)
 			{
 				if (m_canInfo4FailSend)
 					LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", szNameVar, type_shader, idShader);
 			}
 			else
 			{
-				pVertexShader->setConstantF(pVertexShader->getConstantLocation(szNameVar), (float*)pData, (iCountFloat4 == 0 ? pVertexShader->getConstantSizeV4(szNameVar) : iCountFloat4));
+				pVertexShader->setConstantF(uConstantLocation, (float*)pData, (iCountFloat4 == 0 ? pVertexShader->getConstantSizeV4(szNameVar) : iCountFloat4));
 			}
 		}
 		else if (type_shader == SHADER_TYPE_PIXEL)
 		{
 			IGXPixelShader *pPixelShader = m_aPS[idShader]->m_pPixelShader;
+			UINT uConstantLocation = pPixelShader->getConstantLocation(szNameVar);
 
-			if (pPixelShader->getConstantLocation(szNameVar) == GX_SHADER_CONSTANT_FAIL)
+			if (uConstantLocation == GX_SHADER_CONSTANT_FAIL)
 			{
 				if (m_canInfo4FailSend)
 					LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", szNameVar, type_shader, idShader);
 			}
 			else
 			{
-				pPixelShader->setConstantF(pPixelShader->getConstantLocation(szNameVar), (float*)pData, (iCountFloat4 == 0 ? pPixelShader->getConstantSizeV4(szNameVar) : iCountFloat4));
+				pPixelShader->setConstantF(uConstantLocation, (float*)pData, (iCountFloat4 == 0 ? pPixelShader->getConstantSizeV4(szNameVar) : iCountFloat4));
 			}
 		}
 	}
@@ -1058,29 +1085,31 @@ void CShaderManager::setValueRegisterI(SHADER_TYPE type_shader, ID idShader, con
 		if (type_shader == SHADER_TYPE_VERTEX)
 		{
 			IGXVertexShader *pVertexShader = m_aVS[idShader]->m_pVertexShader;
+			UINT uConstantLocation = pVertexShader->getConstantLocation(szNameVar);
 
-			if (pVertexShader->getConstantLocation(szNameVar) == GX_SHADER_CONSTANT_FAIL)
+			if (uConstantLocation == GX_SHADER_CONSTANT_FAIL)
 			{
 				if (m_canInfo4FailSend)
 					LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", szNameVar, type_shader, idShader);
 			}
 			else
 			{
-				pVertexShader->setConstantI(pVertexShader->getConstantLocation(szNameVar), (int*)pData, (iCountInt4 == 0 ? pVertexShader->getConstantSizeV4(szNameVar) : iCountInt4));
+				pVertexShader->setConstantI(uConstantLocation, (int*)pData, (iCountInt4 == 0 ? pVertexShader->getConstantSizeV4(szNameVar) : iCountInt4));
 			}
 		}
 		else if (type_shader == SHADER_TYPE_PIXEL)
 		{
 			IGXPixelShader *pPixelShader = m_aPS[idShader]->m_pPixelShader;
+			UINT uConstantLocation = pPixelShader->getConstantLocation(szNameVar);
 
-			if (pPixelShader->getConstantLocation(szNameVar) == GX_SHADER_CONSTANT_FAIL)
+			if (uConstantLocation == GX_SHADER_CONSTANT_FAIL)
 			{
 				if (m_canInfo4FailSend)
 					LibReport(REPORT_MSG_LEVEL_WARNING, "set vertex shader constant [%s] is failed, constant not found, type [%d], id [%d]\n", szNameVar, type_shader, idShader);
 			}
 			else
 			{
-				pPixelShader->setConstantI(pPixelShader->getConstantLocation(szNameVar), (int*)pData, (iCountInt4 == 0 ? pPixelShader->getConstantSizeV4(szNameVar) : iCountInt4));
+				pPixelShader->setConstantI(uConstantLocation, (int*)pData, (iCountInt4 == 0 ? pPixelShader->getConstantSizeV4(szNameVar) : iCountInt4));
 			}
 		}
 	}

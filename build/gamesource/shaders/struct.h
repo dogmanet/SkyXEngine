@@ -243,3 +243,30 @@ struct VSO_LightBound
 };
 
 //!@}
+
+/*! \name GUI
+@{*/
+
+struct VSI_GUITextured
+{
+	half4 vPosition	:POSITION0;
+	half2 vTexUV	:TEXCOORD0;
+};
+
+struct VSO_GUITextured
+{
+	half4 vPosition	:POSITION;
+	half2 vTexUV	:TEXCOORD0;
+};
+
+struct VSI_GUISimple
+{
+	half4 vPosition	:POSITION0;
+};
+
+struct VSO_GUISimple
+{
+	half4 vPosition	:POSITION;
+};
+
+//!@}

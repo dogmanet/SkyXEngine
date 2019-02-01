@@ -660,7 +660,7 @@ struct ISXDataStaticModel : public IBaseObject
 	
 	IGXVertexBuffer *m_pVertexBuffer;//!< вершиный буфер
 	IGXIndexBuffer *m_pIndexBuffer;	//!< индексный буфер
-	IGXRenderBuffer *m_pRenderBuffer;
+	IGXRenderBuffer *m_pRenderBuffer = NULL;
 	vertex_static_ex *m_pVertices = NULL;
 	UINT *m_pIndices = NULL;
 

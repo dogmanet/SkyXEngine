@@ -71,7 +71,7 @@ void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** p
 		iCurI++;
 	}
 
-	IMesh *pMesh = SGCore_CrMesh(iIC, iVC);
+	IMesh *pMesh = SGCore_CrMesh(iVC, iIC);
 	
 
 	VOID * pData;
@@ -111,7 +111,7 @@ void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppM
 		float A = (float)(i + 1) / (float)iStackCount * SM_2PI;
 		float fCurrentRadius = sinf(A) * fRadius;
 		float fCurrentY = cosf(A) * fRadius;
-		for(UINT j = 0; j < iSideCount; ++i)
+		for(UINT j = 0; j < iSideCount; ++j)
 		{
 			A = (float)j / (float)iSideCount * SM_2PI;
 			float x = fCurrentRadius * cosf(A);
@@ -151,7 +151,7 @@ void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppM
 	assert(iCurI == iIC);
 	assert(iCurV == iVC);
 
-	IMesh *pMesh = SGCore_CrMesh(iIC, iVC);
+	IMesh *pMesh = SGCore_CrMesh(iVC, iIC);
 
 	VOID * pData;
 	if(pMesh->getVertexBuffer()->lock(&pData, GXBL_WRITE))
@@ -669,7 +669,7 @@ void CreateBoundingBoxMesh(const float3* min, const float3* max, IMesh** bbmesh,
 		3, 7, 5, 3, 5, 1
 	};
 
-	IMesh *pMesh = SGCore_CrMesh(iIC, iVC);
+	IMesh *pMesh = SGCore_CrMesh(iVC, iIC);
 
 	VOID * pData;
 	if(pMesh->getVertexBuffer()->lock(&pData, GXBL_WRITE))

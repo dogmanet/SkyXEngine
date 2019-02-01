@@ -68,8 +68,7 @@ void CreatorTextures::Delete(const char* text)
 	{
 		if (strcmp(text, Arr[i]->Name) == 0)
 		{
-			Arr[i]->Texture->Release();
-			Arr[i]->Texture = 0;
+			mem_release(Arr[i]->Texture);
 			sprintf(Arr[i]->Name, "%s", "");
 		}
 	}
@@ -79,8 +78,7 @@ void CreatorTextures::Delete(ID num)
 {
 	if (num < Arr.size())
 	{
-		Arr[num]->Texture->Release();
-		Arr[num]->Texture = 0;
+		mem_release(Arr[num]->Texture);
 		sprintf(Arr[num]->Name, "%s", "");
 	}
 }

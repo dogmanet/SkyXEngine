@@ -13,6 +13,9 @@ FILE *g_pFileOutLog = 0;
 
 report_func g_fnReportf = SkyXEngine_PrintfLog;
 
+IGXDepthStencilState *g_pDSNoZ;
+ID g_idShaderScreenOut;
+
 //ID3DXMesh *g_pMeshBound = 0;
 
 BOOL CALLBACK SkyXEngine_EnumWindowsProc(HWND hwnd, LPARAM lParam)
@@ -225,7 +228,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB sound initialized\n");
 
-	SGCore_0Create("sxgcore", hWnd3DCurr, *r_win_width, *r_win_height, *r_win_windowed, 0, false);
+	SGCore_0Create("sxgcore", hWnd3DCurr, *r_win_width, *r_win_height, *r_win_windowed, false);
 	SGCore_Dbg_Set(SkyXEngine_PrintfLog);
 
 	SGCore_SetFunc_MtlSet(SkyXEngine_RFuncMtlSet);
@@ -244,7 +247,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SGCore_OC_SetEnable(false);
 //#endif
 
-	SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, FALSE);
+//	SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, FALSE);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB gcore initialized\n");
 
@@ -428,6 +431,16 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 #ifndef SX_PARTICLES_EDITOR
 	SGame_UpdateSetThreadNum(Core_MGetThreadCount());
 #endif
+
+	GXDEPTH_STENCIL_DESC dsDesc;
+	dsDesc.bDepthEnable = FALSE;
+	dsDesc.bEnableDepthWrite = FALSE;
+	g_pDSNoZ = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
+
+	ID idScreenOutVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
+	ID idScreenOutPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
+	g_idShaderScreenOut = SGCore_ShaderCreateKit(idScreenOutVS, idScreenOutPS);
+
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "Engine initialized!\n");
 }
@@ -684,6 +697,7 @@ HWND SkyXEngine_CreateWindow(const char *szName, const char *szCaption, int iWid
 
 static void FlushCommandBuffer()
 {
+#ifdef _GRAPHIX_API
 	static IDirect3DDevice9 *pDXDevice = SGCore_GetDXDevice();
 
 	IDirect3DQuery9* pQuery;
@@ -693,6 +707,7 @@ static void FlushCommandBuffer()
 	pQuery->GetData(NULL, 0, D3DGETDATA_FLUSH);
 
 	pQuery->Release();
+#endif
 }
 
 
@@ -776,19 +791,31 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	int64_t ttime;
 #ifndef SX_SERVER
 	//потеряно ли устройство или произошло изменение размеров?
-	if (pDXDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET || *r_resize)
+	if(!pDXDevice->canBeginFrame())
 	{
-		//если не свернуто окно
-		if (!IsIconic(SRender_GetHandleWin3D()) && ((SRender_GetParentHandleWin3D() != 0 && !IsIconic(SRender_GetParentHandleWin3D())) || SRender_GetParentHandleWin3D() == 0))
-		{
-#if defined(SX_GAME)
-			SRender_ComDeviceLost(false);	//пытаемся восстановить
-#else
-			SRender_ComDeviceLost(true);	//пытаемся восстановить
-#endif
-		}
 		return;
 	}
+	if(pDXDevice->wasReset())
+	{
+#if defined(SX_GAME)
+		SRender_ComDeviceLost(false);	//пытаемся восстановить
+#else
+		SRender_ComDeviceLost(true);	//пытаемся восстановить
+#endif
+	}
+//	if (pDXDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET || *r_resize)
+//	{
+//		//если не свернуто окно
+//		if (!IsIconic(SRender_GetHandleWin3D()) && ((SRender_GetParentHandleWin3D() != 0 && !IsIconic(SRender_GetParentHandleWin3D())) || SRender_GetParentHandleWin3D() == 0))
+//		{
+//#if defined(SX_GAME)
+//			SRender_ComDeviceLost(false);	//пытаемся восстановить
+//#else
+//			SRender_ComDeviceLost(true);	//пытаемся восстановить
+//#endif
+//		}
+//		return;
+//	}
 #endif
 
 #if !defined(SX_GAME) && !defined(SX_SERVER) //&& !defined(SX_MATERIAL_EDITOR)
@@ -924,8 +951,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
 
 	pDXDevice->beginFrame();
-	pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
-	pDXDevice->clearTarget();
+	pDXDevice->clear(GXCLEAR_COLOR);
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SRender_UpdateReflection(timeDelta, isSimulationRender);
 	DelayComReflection += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
@@ -980,11 +1006,13 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	SGCore_ShaderUnBind();
 
-	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-	pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+//	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+//	pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+//	pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+//	pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+//	pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+	pDXDevice->setDepthStencilState(g_pDSNoZ);
+	pDXDevice->setBlendState(NULL);
 
 #if defined(SX_GAME)
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
@@ -1001,11 +1029,11 @@ void SkyXEngine_Frame(DWORD timeDelta)
 #endif
 
 	
-	LPDIRECT3DSURFACE9 pRenderSurf, pBackBuf;
-	SGCore_RTGetTexture(SPP_RTGetCurrSend())->GetSurfaceLevel(0, &pRenderSurf);
+	IGXSurface *pRenderSurf, *pBackBuf;
+	pRenderSurf = SGCore_RTGetTexture(SPP_RTGetCurrSend())->getMipmap();
 
-	pDXDevice->GetRenderTarget(0, &pBackBuf);
-	pDXDevice->SetRenderTarget(0, pRenderSurf);
+	pBackBuf = pDXDevice->getColorTarget();
+	pDXDevice->setColorTarget(pRenderSurf);
 
 	Core_PStartSection(PERF_SECTION_RENDER_PARTICLES);
 	SRender_RenderParticles(timeDelta);
@@ -1027,16 +1055,17 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	SGCore_ShaderUnBind();
 
-	pDXDevice->SetRenderTarget(0, pBackBuf);
+	pDXDevice->setColorTarget(pBackBuf);
 	mem_release(pRenderSurf);
 	mem_release(pBackBuf);
 
-
-	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-	pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+//	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+//	pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+//	pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+//	pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+//	pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+	pDXDevice->setDepthStencilState(g_pDSNoZ);
+	pDXDevice->setBlendState(NULL);
 
 #if defined(SX_GAME)
 	if (!SSInput_GetKeyState(SIK_P))
@@ -1045,25 +1074,27 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	FlushCommandBuffer();
 
-	SGCore_ShaderBindN(SHADER_TYPE_VERTEX, "pp_quad_render.vs");
-	SGCore_ShaderBindN(SHADER_TYPE_PIXEL, "pp_quad_render.ps");
+	
+	SGCore_ShaderBind(g_idShaderScreenOut);
 
-	pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	pDXDevice->setRasterizerState(NULL);
+//	pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 #if !defined(SX_GAME)
-	pDXDevice->SetTexture(0, SGCore_GbufferGetRT((DS_RT)*r_final_image));
+	pDXDevice->setTexture(SGCore_GbufferGetRT((DS_RT)*r_final_image));
 #else
-	pDXDevice->SetTexture(0, SGCore_RTGetTexture(SPP_RTGetCurrSend()));
+	pDXDevice->setTexture(SGCore_RTGetTexture(SPP_RTGetCurrSend()));
 #endif
 
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
-
+#ifdef _GRAPHIX_API
 	pDXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
 	pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)mView));
 	pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)mProjLight));
+#endif
 	SRender_RenderEditorMain();
 
 #if defined(SX_GAME) && defined(SX_AIGRID_RENDER)
@@ -1185,7 +1216,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	DelayUpdateOC += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	
 
-	pDXDevice->EndScene();
+	pDXDevice->endFrame();
 
 	//@@@
 	
@@ -1866,8 +1897,9 @@ bool SkyXEngine_RFuncGreenIntersect(const float3 *pStart, const float3 *pFinish,
 
 //##########################################################################
 
-IDirect3DTexture9* SkyXEngine_LoadAsPreviewData(const char *szPath)
+IGXTexture2D* SkyXEngine_LoadAsPreviewData(const char *szPath)
 {
+#ifdef _GRAPHIX_API
 	D3DXIMAGE_INFO imageinfo;
 	memset(&imageinfo, 0, sizeof(D3DXIMAGE_INFO));
 
@@ -1903,9 +1935,12 @@ IDirect3DTexture9* SkyXEngine_LoadAsPreviewData(const char *szPath)
 	}
 
 	return pTexture;
+#else
+	return(NULL);
+#endif
 }
 
-IDirect3DTexture9* SkyXEngine_GetPreviewData(const char *szPath)
+IGXTexture2D* SkyXEngine_GetPreviewData(const char *szPath)
 {
 	String sPath = szPath;
 	sPath.replace(SKYXENGINE_RELPATH_GAMESOURCE, SKYXENGINE_RELPATH_EDITOR_CACHE, 0);
@@ -1947,6 +1982,7 @@ BYTE *g_pPreviewBuffer = new BYTE[SKYXENGINE_PREVIEWBUF_SIZE];
 
 bool SkyXEngine_EditorHandlerGetPreviewData(const char *szPath, void **pBuf, int *pSizeBuf, int *pWidth, int *pHeight)
 {
+#ifdef _GRAPHIX_API
 	if (!pBuf || !pSizeBuf || !pWidth || !pHeight)
 		return false;
 
@@ -1973,10 +2009,14 @@ bool SkyXEngine_EditorHandlerGetPreviewData(const char *szPath, void **pBuf, int
 	*pHeight = desc.Height;
 
 	return true;
+#else
+	return(false);
+#endif
 }
 
 bool SkyXEngine_EditorHandlerGetTextureInfo(const char *szPath, char *szBuf)
 {
+#ifdef _GRAPHIX_API
 	D3DXIMAGE_INFO imageinfo;
 	memset(&imageinfo, 0, sizeof(D3DXIMAGE_INFO));
 
@@ -1985,6 +2025,9 @@ bool SkyXEngine_EditorHandlerGetTextureInfo(const char *szPath, char *szBuf)
 
 	sprintf(szBuf, "Width: %d\nHeight: %d\nSize: %d kb", imageinfo.Width, imageinfo.Height, (FileGetSizeFile(szPath) / 1024));
 	return true;
+#else
+	return(false);
+#endif
 }
 
 bool SkyXEngine_EditorHandlerGetDSEinfo(const char *szPath, char *szBuf)

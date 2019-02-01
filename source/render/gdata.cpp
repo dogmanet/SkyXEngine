@@ -71,6 +71,48 @@ namespace gdata
 			ID idStencilStrColumn;
 			ID idUnionAlpha;
 		};
+
+		namespace kit
+		{
+			ID idScreenOut;
+			ID idStencilStr;
+			ID idStencilColumn;
+			ID idStencilStrColumn;
+			ID idBlendAmbientSpecDiffColor;
+			ID idUnionAlpha;
+			ID idComLightingNonShadow;
+			ID idComLightingShadow;
+		};
+	};
+
+	namespace rstates
+	{
+		IGXDepthStencilState *pDepthStencilStateNoZ;
+		IGXDepthStencilState *pDepthStencilStateMrtStage0;
+		IGXDepthStencilState *pDepthStencilStateMrtStage1;
+		IGXDepthStencilState *pDepthStencilStateLightBound;
+		IGXDepthStencilState *pDepthStencilStateLightClear;
+		IGXDepthStencilState *pDepthStencilStateLightShadowNonGlobal;
+		IGXDepthStencilState *pDepthStencilStateLightShadowGlobal;
+		IGXDepthStencilState *pDepthStencilStateParticles;
+
+		IGXSamplerState *pSamplerPointClamp;
+		IGXSamplerState *pSamplerLinearWrap;
+		IGXSamplerState *pSamplerLinearMirror;
+		IGXSamplerState *pSamplerLinearClamp;
+		IGXSamplerState *pSamplerAnisotopicClamp;
+		IGXSamplerState *pSamplerAnisotopicMirror;
+
+		IGXSamplerState *pSamplerScene = NULL;
+
+		IGXBlendState *pBlendNoColor;
+		IGXBlendState *pBlendRed;
+		IGXBlendState *pBlendAlpha;
+		IGXBlendState *pBlendAlphaOneOne;
+		IGXBlendState *pBlendAlphaSky;
+
+		IGXRasterizerState *pRasterizerCullFront;
+		IGXRasterizerState *pRasterizerCullNone;
 	};
 
 	namespace Editors
@@ -138,4 +180,113 @@ void gdata::shaders_id::InitAllShaders()
 	gdata::shaders_id::ps::idStencilColumn = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_column.ps", SHADER_CHECKDOUBLE_NAME, Defines_COLUMN);
 	GXMACRO Defines_COLUMN_STR[] = { { "_COLUMN_STR_", "" }, { 0, 0 } };
 	gdata::shaders_id::ps::idStencilStrColumn = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_str_column.ps", SHADER_CHECKDOUBLE_NAME, Defines_COLUMN_STR);
+
+	gdata::shaders_id::kit::idScreenOut = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idScreenOut);
+	gdata::shaders_id::kit::idStencilStr = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idStencilStr);
+	gdata::shaders_id::kit::idStencilColumn = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idStencilColumn);
+	gdata::shaders_id::kit::idStencilStrColumn = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idStencilStrColumn);
+	gdata::shaders_id::kit::idBlendAmbientSpecDiffColor = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idBlendAmbientSpecDiffColor);
+	gdata::shaders_id::kit::idUnionAlpha = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idUnionAlpha);
+	gdata::shaders_id::kit::idComLightingNonShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingNonShadow);
+	gdata::shaders_id::kit::idComLightingShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingShadow);
+
+
+	GXDEPTH_STENCIL_DESC dsDesc;
+
+	dsDesc.bDepthEnable = FALSE;
+	dsDesc.bEnableDepthWrite = FALSE;
+	gdata::rstates::pDepthStencilStateNoZ = gdata::pDXDevice->createDepthStencilState(&dsDesc);
+
+	dsDesc.bStencilEnable = TRUE;
+	dsDesc.depthFunc = GXCOMPARISON_ALWAYS;
+	dsDesc.stencilPassOp = GXSTENCIL_OP_REPLACE;
+	gdata::rstates::pDepthStencilStateMrtStage0 = gdata::pDXDevice->createDepthStencilState(&dsDesc);
+
+	dsDesc.bDepthEnable = TRUE;
+	dsDesc.depthFunc = GXCOMPARISON_LESS_EQUAL;
+	dsDesc.stencilFunc = GXCOMPARISON_NOT_EQUAL;
+	dsDesc.stencilPassOp = GXSTENCIL_OP_DECR;
+	gdata::rstates::pDepthStencilStateMrtStage1 = gdata::pDXDevice->createDepthStencilState(&dsDesc);
+
+	dsDesc.bEnableDepthWrite = FALSE;
+	dsDesc.stencilFunc = GXCOMPARISON_ALWAYS;
+	dsDesc.stencilDepthFailOp = GXSTENCIL_OP_INCR;
+	dsDesc.stencilPassOp = GXSTENCIL_OP_KEEP;
+	dsDesc.stencilBackDepthFailOp = GXSTENCIL_OP_DECR;
+	gdata::rstates::pDepthStencilStateLightBound = gdata::pDXDevice->createDepthStencilState(&dsDesc);
+
+	dsDesc.bDepthEnable = FALSE;
+	dsDesc.bEnableDepthWrite = FALSE;
+	dsDesc.stencilFunc = GXCOMPARISON_EQUAL;
+	dsDesc.stencilDepthFailOp = GXSTENCIL_OP_ZERO;
+	dsDesc.stencilFailOp = GXSTENCIL_OP_ZERO;
+	dsDesc.stencilPassOp = GXSTENCIL_OP_KEEP;
+	gdata::rstates::pDepthStencilStateLightShadowNonGlobal = gdata::pDXDevice->createDepthStencilState(&dsDesc);
+
+	dsDesc.stencilPassOp = GXSTENCIL_OP_ZERO;
+	gdata::rstates::pDepthStencilStateLightClear = gdata::pDXDevice->createDepthStencilState(&dsDesc);
+
+	dsDesc.bStencilEnable = FALSE;
+	gdata::rstates::pDepthStencilStateLightShadowGlobal = gdata::pDXDevice->createDepthStencilState(&dsDesc);
+
+	dsDesc.bDepthEnable = TRUE;
+	dsDesc.bEnableDepthWrite = FALSE;
+	gdata::rstates::pDepthStencilStateParticles = gdata::pDXDevice->createDepthStencilState(&dsDesc);
+
+	
+
+	GXSAMPLER_DESC samplerDesc;
+
+	samplerDesc.addressU = samplerDesc.addressV = samplerDesc.addressW = GXTEXTURE_ADDRESS_CLAMP;
+	gdata::rstates::pSamplerPointClamp = gdata::pDXDevice->createSamplerState(&samplerDesc);
+
+	samplerDesc.addressU = samplerDesc.addressV = samplerDesc.addressW = GXTEXTURE_ADDRESS_WRAP;
+	samplerDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
+	gdata::rstates::pSamplerLinearWrap = gdata::pDXDevice->createSamplerState(&samplerDesc);
+
+	samplerDesc.addressU = samplerDesc.addressV = samplerDesc.addressW = GXTEXTURE_ADDRESS_MIRROR;
+	gdata::rstates::pSamplerLinearMirror = gdata::pDXDevice->createSamplerState(&samplerDesc);
+
+	samplerDesc.addressU = samplerDesc.addressV = samplerDesc.addressW = GXTEXTURE_ADDRESS_CLAMP;
+	gdata::rstates::pSamplerLinearClamp = gdata::pDXDevice->createSamplerState(&samplerDesc);
+
+	samplerDesc.filter = GXFILTER_ANISOTROPIC;
+	gdata::rstates::pSamplerAnisotopicClamp = gdata::pDXDevice->createSamplerState(&samplerDesc);
+
+	samplerDesc.addressU = samplerDesc.addressV = samplerDesc.addressW = GXTEXTURE_ADDRESS_MIRROR;
+	gdata::rstates::pSamplerAnisotopicMirror = gdata::pDXDevice->createSamplerState(&samplerDesc);
+
+	
+
+	GXBLEND_DESC blendDesc;
+
+	blendDesc.renderTarget[0].u8RenderTargetWriteMask = 0;
+	gdata::rstates::pBlendNoColor = gdata::pDXDevice->createBlendState(&blendDesc);
+
+	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_RED;
+	gdata::rstates::pBlendRed = gdata::pDXDevice->createBlendState(&blendDesc);
+
+	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_ALL;
+	blendDesc.renderTarget[0].bBlendEnable = TRUE;
+	blendDesc.renderTarget[0].srcBlend = blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_INV_DEST_ALPHA;
+	blendDesc.renderTarget[0].destBlend = blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_DEST_ALPHA;
+	gdata::rstates::pBlendAlpha = gdata::pDXDevice->createBlendState(&blendDesc);
+
+	blendDesc.renderTarget[0].srcBlend = blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_ONE;
+	blendDesc.renderTarget[0].destBlend = blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_ONE;
+	gdata::rstates::pBlendAlphaOneOne = gdata::pDXDevice->createBlendState(&blendDesc);
+
+	blendDesc.renderTarget[0].srcBlend = blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_SRC_ALPHA;
+	blendDesc.renderTarget[0].destBlend = blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_INV_SRC_ALPHA;
+	gdata::rstates::pBlendAlphaSky = gdata::pDXDevice->createBlendState(&blendDesc);
+	
+
+
+	GXRASTERIZER_DESC rasterizerDesc;
+
+	rasterizerDesc.cullMode = GXCULL_FRONT;
+	gdata::rstates::pRasterizerCullFront = gdata::pDXDevice->createRasterizerState(&rasterizerDesc);
+
+	rasterizerDesc.cullMode = GXCULL_NONE;
+	gdata::rstates::pRasterizerCullNone = gdata::pDXDevice->createRasterizerState(&rasterizerDesc);
 }
