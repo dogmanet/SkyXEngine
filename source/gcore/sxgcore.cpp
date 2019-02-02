@@ -1090,7 +1090,7 @@ public:
 	{
 		g_pDevice->setRenderBuffer(m_pRB);
 		g_pDevice->setIndexBuffer(m_pIB);
-		g_pDevice->drawIndexed(m_uVertexCount, m_uIndexCount, 0, 0);
+		g_pDevice->drawIndexed(m_uVertexCount, m_uIndexCount / 3, 0, 0);
 	}
 	IGXVertexBuffer *getVertexBuffer()
 	{

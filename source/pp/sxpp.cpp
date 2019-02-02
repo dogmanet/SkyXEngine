@@ -161,6 +161,7 @@ namespace pp_data
 
 		IGXDepthStencilState *pDepthStencilEdgeDetect;
 		IGXDepthStencilState *pDepthStencilDLAA;
+		IGXDepthStencilState *pDepthStencilNoZ;
 	};
 }
 
@@ -321,6 +322,9 @@ void pp_data::Init()
 
 
 	GXDEPTH_STENCIL_DESC dsDesc;
+	dsDesc.bDepthEnable = FALSE;
+	rstates::pDepthStencilNoZ = pDXDevice->createDepthStencilState(&dsDesc);
+
 	dsDesc.bStencilEnable = true;
 	dsDesc.stencilPassOp = GXSTENCIL_OP_REPLACE;
 	rstates::pDepthStencilEdgeDetect = pDXDevice->createDepthStencilState(&dsDesc);
@@ -649,6 +653,12 @@ SX_LIB_API void SPP_RenderSSAO(const float4_t *pParam, int iQuality)
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
+
+	if(GetKeyState('N'))
+	{
+		pp_data::pDXDevice->saveTextureToFile("c:/1/ppssaof.png", SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT()));
+		pp_data::pDXDevice->saveTextureToFile("c:/1/ppssao0.png", SGCore_RTGetTexture(pp_data::rt_id::idIntermediateWinSize));
+	}
 
 	pp_data::pDXDevice->setColorTarget(BackBuf);
 
@@ -1104,7 +1114,7 @@ SX_LIB_API void SPP_RenderBloom(const float3_t *pParam)
 	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
 //	SGCore_SetSamplerAddress(0, D3DTADDRESS_MIRROR);
-	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointMirror, 0);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerLinearMirror, 0);
 
 	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idNormal), 1);
@@ -1189,7 +1199,7 @@ SX_LIB_API void SPP_RenderBloom(const float3_t *pParam)
 	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
 //	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
-	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointClamp, 0);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerLinearClamp, 0);
 
 	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idBright));
 
@@ -1298,7 +1308,7 @@ void SPP_ComEdgeDetected()
 
 	
 
-	SGCore_ShaderBind(pp_data::shaders_id::ps::idClip);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idClip);
 
 	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected2));
 //	SGCore_SetSamplerFilter(0, D3DTEXF_LINEAR);
@@ -1311,15 +1321,13 @@ void SPP_ComEdgeDetected()
 	SGCore_ShaderUnBind();
 
 //	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
-	pp_data::pDXDevice->setDepthStencilState(NULL);
+	pp_data::pDXDevice->setDepthStencilState(pp_data::rstates::pDepthStencilNoZ);
 
-#ifdef _GRAPHIX_API
 	if (GetAsyncKeyState('N'))
 	{
-		D3DXSaveTextureToFile("C:\\1\\EdgeDetected.jpg", D3DXIFF_JPG, SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected), NULL);
-		D3DXSaveTextureToFile("C:\\1\\EdgeDetected2.jpg", D3DXIFF_JPG, SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected2), NULL);
+		pp_data::pDXDevice->saveTextureToFile("C:\\1\\EdgeDetected.jpg", SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected));
+		pp_data::pDXDevice->saveTextureToFile("C:\\1\\EdgeDetected2.jpg", SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected2));
 	}
-#endif
 }
 
 SX_LIB_API void SPP_RenderNFAA(const float3_t *pParam)
@@ -1365,7 +1373,7 @@ SX_LIB_API void SPP_RenderNFAA(const float3_t *pParam)
 	pp_data::rt_id::IncrRT();
 
 //	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
-	pp_data::pDXDevice->setDepthStencilState(NULL);
+	pp_data::pDXDevice->setDepthStencilState(pp_data::rstates::pDepthStencilNoZ);
 }
 
 SX_LIB_API void SPP_RenderDLAA()
@@ -1435,7 +1443,7 @@ SX_LIB_API void SPP_RenderDLAA()
 	mem_release(BackBuf);
 
 	//pp_data::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
-	pp_data::pDXDevice->setDepthStencilState(NULL);
+	pp_data::pDXDevice->setDepthStencilState(pp_data::rstates::pDepthStencilNoZ);
 }
 
 //##########################################################################

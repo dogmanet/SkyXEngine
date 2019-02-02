@@ -101,7 +101,7 @@ namespace gdata
 		IGXSamplerState *pSamplerLinearMirror;
 		IGXSamplerState *pSamplerLinearClamp;
 		IGXSamplerState *pSamplerAnisotopicClamp;
-		IGXSamplerState *pSamplerAnisotopicMirror;
+		IGXSamplerState *pSamplerAnisotopicWrap;
 
 		IGXSamplerState *pSamplerScene = NULL;
 
@@ -253,8 +253,8 @@ void gdata::shaders_id::InitAllShaders()
 	samplerDesc.filter = GXFILTER_ANISOTROPIC;
 	gdata::rstates::pSamplerAnisotopicClamp = gdata::pDXDevice->createSamplerState(&samplerDesc);
 
-	samplerDesc.addressU = samplerDesc.addressV = samplerDesc.addressW = GXTEXTURE_ADDRESS_MIRROR;
-	gdata::rstates::pSamplerAnisotopicMirror = gdata::pDXDevice->createSamplerState(&samplerDesc);
+	samplerDesc.addressU = samplerDesc.addressV = samplerDesc.addressW = GXTEXTURE_ADDRESS_WRAP;
+	gdata::rstates::pSamplerAnisotopicWrap = gdata::pDXDevice->createSamplerState(&samplerDesc);
 
 	
 

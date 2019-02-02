@@ -11,6 +11,8 @@ See the license in LICENSE
 #include <graphix/graphix.h>
 #include <gcore/sxgcore.h>
 
+#include "sxparticles.h"
+
 namespace pe_data
 {
 	extern IGXContext *pDXDevice;
@@ -57,6 +59,8 @@ namespace pe_data
 			extern ID idParticlesTrack;
 		};
 	};
+
+	extern IGXBlendState *pBlendStates[PARTICLESTYPE_ALPLABLEND__SIZE];
 };
 
 #endif

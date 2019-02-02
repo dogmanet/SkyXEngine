@@ -618,16 +618,22 @@ SX_LIB_API bool SMtrl_MtlGetUseDestColor(ID id);
 @{*/
 
 //! установка вершинного шейдера
-SX_LIB_API void SMtrl_MtlSetVS(ID id, const char *szPathVS);	
+SX_LIB_API void SMtrl_MtlSetVS(ID id, const char *szPathVS);
 
 //! в name записывает имя текущего вершинного шейдера
-SX_LIB_API void SMtrl_MtlGetVS(ID id, char *szName);			
+SX_LIB_API void SMtrl_MtlGetVS(ID id, char *szName);
+
+//! Получает ID вершинного шейдера
+SX_LIB_API ID SMtrl_MtlGetVSID(ID id);
 
 //! установка пиксельного шейдера
-SX_LIB_API void SMtrl_MtlSetPS(ID id, const char *szPathPS);	
+SX_LIB_API void SMtrl_MtlSetPS(ID id, const char *szPathPS);
 
 //! в name записывает имя текущего пикельного шейдера
-SX_LIB_API void SMtrl_MtlGetPS(ID id, char *szName);			
+SX_LIB_API void SMtrl_MtlGetPS(ID id, char *szName);
+
+//! Получает ID пикельного шейдера
+SX_LIB_API ID SMtrl_MtlGetPSID(ID id);
 
 //!@}
 

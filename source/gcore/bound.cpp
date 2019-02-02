@@ -108,43 +108,43 @@ void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppM
 	UINT uPrevBaseVtx;
 	for(UINT i = 0; i < iStackCount; ++i)
 	{
-		float A = (float)(i + 1) / (float)iStackCount * SM_2PI;
+		float A = (float)(i + 1) / (float)iStackCount * SM_PI;
 		float fCurrentRadius = sinf(A) * fRadius;
 		float fCurrentY = cosf(A) * fRadius;
+		UINT uBaseVtx = iCurV;
 		for(UINT j = 0; j < iSideCount; ++j)
 		{
 			A = (float)j / (float)iSideCount * SM_2PI;
 			float x = fCurrentRadius * cosf(A);
 			float z = -fCurrentRadius * sinf(A);
 			// north pole
-			UINT uBaseVtx = iCurV;
 			if(i == 0)
 			{
 				pVertices[iCurV++] = float3_t(x, fCurrentY, z);
 				pIndices[iCurI++] = 0;
-				pIndices[iCurI++] = uBaseVtx + (j + 1) % 6;
 				pIndices[iCurI++] = uBaseVtx + j;
+				pIndices[iCurI++] = uBaseVtx + (j + 1) % iSideCount;
 			}
 			// south pole
 			else if(i == iStackCount - 1)
 			{
+				pIndices[iCurI++] = uPrevBaseVtx + (j + 1) % iSideCount;
 				pIndices[iCurI++] = uPrevBaseVtx + j;
-				pIndices[iCurI++] = uPrevBaseVtx + (j + 1) % 6;
 				pIndices[iCurI++] = uBaseVtx;
 			}
 			else
 			{
 				pVertices[iCurV++] = float3_t(x, fCurrentY, z);
 				pIndices[iCurI++] = uPrevBaseVtx + j;
-				pIndices[iCurI++] = uBaseVtx + (j + 1) % 6;
-				pIndices[iCurI++] = uPrevBaseVtx + (j + 1) % 6;
+				pIndices[iCurI++] = uBaseVtx + (j + 1) % iSideCount;
+				pIndices[iCurI++] = uPrevBaseVtx + (j + 1) % iSideCount;
 
 				pIndices[iCurI++] = uPrevBaseVtx + j;
 				pIndices[iCurI++] = uBaseVtx + j;
-				pIndices[iCurI++] = uBaseVtx + (j + 1) % 6;
+				pIndices[iCurI++] = uBaseVtx + (j + 1) % iSideCount;
 			}
-			uPrevBaseVtx = uBaseVtx;
 		}
+		uPrevBaseVtx = uBaseVtx;
 	}
 	pVertices[iCurV++] = float3_t(0.0f, -fRadius, 0.0f);
 

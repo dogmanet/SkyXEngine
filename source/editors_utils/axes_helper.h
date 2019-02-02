@@ -8,10 +8,10 @@ See the license in LICENSE
 #define __AXES_HELPER_H
 
 #include <windows.h>
-#include <common/sxtypes.h>
+#include <common/types.h>
 
 //#define SM_D3D_CONVERSIONS
-#include <common/SXMath.h>
+#include <common/Math.h>
 #include <common/array.h>
 #include <gcore/sxgcore.h>
 

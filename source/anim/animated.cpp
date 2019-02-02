@@ -1687,11 +1687,10 @@ void Animation::render()
 	}
 	if(!(m_pMdl->m_hdr.iFlags & MODEL_FLAG_STATIC))
 	{
-#ifdef _GRAPHIX_API
-		DX_CALL(m_pMgr->m_pd3dDevice->SetVertexShaderConstantF(16, (float*)m_pBoneMatrixRender, sizeof(ModelBoneShader)* m_iBoneCount / sizeof(float) / 4));
-#endif
+		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, SMtrl_MtlGetVSID(m_pMdl->m_iMaterials[0]->iMat), "g_BufferBoneWorld", m_pBoneMatrixRender, sizeof(ModelBoneShader)* m_iBoneCount / sizeof(float) / 4);
+	//	DX_CALL(m_pMgr->m_pd3dDevice->SetVertexShaderConstantF(16, (float*)m_pBoneMatrixRender, sizeof(ModelBoneShader)* m_iBoneCount / sizeof(float) / 4));
 	}
-
+	
 	m_pMdl->render(&(getWorldTM()), m_iCurrentSkin, 0, m_idOverrideMaterial, &m_vGlowColor, m_isGlowEnabled);
 }
 

@@ -31,6 +31,8 @@ static const half2 g_vTexUVcenter = half2(0.5, 0.5);
 //! количество лодов текстур для сцены
 #define SCENE_COUNT_TEXTURE_LOD	10
 
+/*! минимальное значение для альфа теста */
+#define RENDER_PARTICLES_ALPHATEST_VALUE (16.0 / 255.0)
 
 /*
 С параметрами устранения shadow acne пришлось долго возиться подбирая наиболее оптимальные, надо иметь ввиду при правках

@@ -68,7 +68,7 @@ protected:
 
 	byte m_u8ActiveBuffer;
 	Vertex * m_pVertices[2];
-	UINT * m_pIndices[2];
+	USHORT * m_pIndices[2];
 	int m_iVertexCount[2];
 	int m_iIndexCount[2];
 
@@ -82,6 +82,13 @@ protected:
 
 	float2_t m_f2TexOffs;
 	float2_t m_f2TexSize;
+
+	ID m_idVS = -1;
+	ID m_idPS = -1;
+	ID m_idShaderKit = -1;
+
+	IGXBlendState *m_pBlendState = NULL;
+	IGXDepthStencilState *m_pDepthState = NULL;
 };
 
 #endif

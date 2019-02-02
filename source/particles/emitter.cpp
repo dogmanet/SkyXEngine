@@ -29,11 +29,6 @@ void CEmitter::initNulling()
 	m_idTexTrack = -1;
 	m_vOldSize.x = 0;
 	m_vOldSize.y = 0;
-
-	for(int i = 0; i < PARTICLESTYPE_ALPLABLEND__SIZE; ++i)
-	{
-		m_pBlendStates[i] = 0;
-	}
 }
 
 CEmitter::CEmitter()
@@ -60,11 +55,6 @@ CEmitter::~CEmitter()
 	mem_release_del(m_pIndexBuffQuad);
 	mem_release_del(m_pRenderBuff);
 	mem_release_del(m_pRenderBuffQuad);
-
-	for(int i = 0; i < PARTICLESTYPE_ALPLABLEND__SIZE; ++i)
-	{
-		mem_release_del(m_pBlendStates[i]);
-	}
 }
 
 void CEmitter::onLostDevice()
@@ -92,32 +82,6 @@ void CEmitter::init(const CParticlesData *pData)
 		initAnimTexData();
 
 	createGeomData();
-
-
-	//@TODO: Check these states
-	GXBLEND_DESC blendDesc;
-	memset(&blendDesc, 0, sizeof(blendDesc));
-	blendDesc.renderTarget[0].bBlendEnable = TRUE;
-	blendDesc.renderTarget[0].blendOp = GXBLEND_OP_ADD;
-	blendDesc.renderTarget[0].blendOpAlpha = GXBLEND_OP_ADD;
-	blendDesc.renderTarget[0].destBlend = GXBLEND_INV_SRC_ALPHA;
-	blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_ZERO;
-	blendDesc.renderTarget[0].srcBlend = GXBLEND_SRC_ALPHA;
-	blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_ONE;
-	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_ALL;
-	
-	m_pBlendStates[PARTICLESTYPE_ALPHABLEND_ALPHA] = pe_data::pDXDevice->createBlendState(&blendDesc);
-
-	blendDesc.renderTarget[0].bBlendEnable = TRUE;
-	blendDesc.renderTarget[0].blendOp = GXBLEND_OP_ADD;
-	blendDesc.renderTarget[0].blendOpAlpha = GXBLEND_OP_ADD;
-	blendDesc.renderTarget[0].destBlend = GXBLEND_ONE;
-	blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_ZERO;
-	blendDesc.renderTarget[0].srcBlend = GXBLEND_ONE;
-	blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_ONE;
-	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_ALL;
-
-	m_pBlendStates[PARTICLESTYPE_ALPHABLEND_ADD] = pe_data::pDXDevice->createBlendState(&blendDesc);
 
 	if (m_isEnable)
 	{
@@ -1416,7 +1380,7 @@ void CEmitter::render(DWORD timeDelta, const float4x4 *mRot, const float4x4 *mPo
 			pe_data::pDXDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 		}*/
 
-		pe_data::pDXDevice->setBlendState(m_pBlendStates[m_oData.m_typeAlphaBlend]);
+		pe_data::pDXDevice->setBlendState(pe_data::pBlendStates[m_oData.m_typeAlphaBlend]);
 
 		pe_data::pDXDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
 
@@ -1485,7 +1449,7 @@ void CEmitter::render(DWORD timeDelta, const float4x4 *mRot, const float4x4 *mPo
 		pe_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 		pe_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);*/
 
-		pe_data::pDXDevice->setBlendState(m_pBlendStates[PARTICLESTYPE_ALPHABLEND_ALPHA]);
+		pe_data::pDXDevice->setBlendState(pe_data::pBlendStates[PARTICLESTYPE_ALPHABLEND_ALPHA]);
 
 		static float4x4 MCamView;
 		static float4x4 MCamProj;

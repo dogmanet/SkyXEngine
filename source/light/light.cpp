@@ -466,10 +466,11 @@ void CLights::render(ID id, DWORD timeDelta)
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
 	float4x4 tmpwmat = m_aLights[id]->m_mWorldMat;
-	float4x4 mVP;
-	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mVP);
+	float4x4 mV, mP;
+	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mV);
+	Core_RMatrixGet(G_RI_MATRIX_LIGHT_PROJ, &mP);
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idLightBound, "g_mWVP", &SMMatrixTranspose(mVP * m_aLights[id]->m_mWorldMat));
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idLightBound, "g_mWVP", &SMMatrixTranspose(m_aLights[id]->m_mWorldMat * mV * mP));
 	SGCore_ShaderBind(light_data::shader_id::kit::idLightBound);
 
 //	light_data::pDXDevice->SetTransform(D3DTS_WORLD, &(m_aLights[id]->m_mWorldMat.operator D3DXMATRIX()));

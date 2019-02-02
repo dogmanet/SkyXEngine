@@ -230,8 +230,6 @@ protected:
 	IGXIndexBuffer *m_pIndexBuffQuad;
 	IGXRenderBuffer *m_pRenderBuffQuad = NULL;
 
-	IGXBlendState *m_pBlendStates[PARTICLESTYPE_ALPLABLEND__SIZE];
-
 	CParticlesData m_oData;
 
 	float2_t m_vOldSize;

@@ -180,7 +180,7 @@ void CGreen::onResetDevice()
 
 void CGreen::createInstVB()
 {
-	m_pTransVertBuf = CGreen::m_pDXDevice->createVertexBuffer(GREEN_MAX_ELEM_IN_DIP * sizeof(CGreenDataVertex), GX_BUFFER_USAGE_STREAM | GX_BUFFER_ALLOWDISCARD);
+	m_pTransVertBuf = CGreen::m_pDXDevice->createVertexBuffer(GREEN_MAX_ELEM_IN_DIP * sizeof(CGreenDataVertex), GX_BUFFER_USAGE_STREAM);
 }
 
 //##########################################################################

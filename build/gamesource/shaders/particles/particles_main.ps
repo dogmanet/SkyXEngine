@@ -55,6 +55,6 @@ half4 main(VSO_Particles IN):COLOR0
 	#if defined(PART_LIGHT)
 	color *= IN.Light;
 	#endif
-	
+	clip(color.a - RENDER_PARTICLES_ALPHATEST_VALUE);
 	return color;
 }

@@ -85,8 +85,10 @@ public:
 	ID mtlGetTextureID(ID id);
 	void mtlSetVS(ID id, const char *szNameVS);
 	void mtlGetVS(ID id, char *szNamePS);
+	ID mtlGetVSID(ID id);
 	void mtlSetPS(ID id, const char *szNamePS);
 	void mtlGetPS(ID id, char *szNamePS);
+	ID mtlGetPSID(ID id);
 
 
 	void mtlSetLighting(ID id, bool isLighting);

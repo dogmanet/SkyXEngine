@@ -449,7 +449,7 @@ namespace level_editor
 
 	//**********************************************************************
 
-	extern ID3DXMesh *pFigureBox;
+	extern IMesh *pFigureBox;
 
 	//! рендер хелпера трансформаций
 	extern CAxesHelper *pAxesHelper;	

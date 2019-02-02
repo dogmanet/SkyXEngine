@@ -6,6 +6,9 @@ See the license in LICENSE
 
 #include "gcore_utils.h"
 
+static int g_iWidth;
+static int g_iHeight;
+
 void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 {
 	char szModuleName[64];
@@ -37,6 +40,9 @@ void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - %s: Cannot init GX context!", GEN_MSG_LOCATION, szModuleName);
 		return;
 	}
+
+	g_iWidth = iWidth;
+	g_iHeight = iHeight;
 }
 
 void InitFPStext()
@@ -82,8 +88,14 @@ void InitFullScreenQuad()
 		{1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 3},
 	};
 
+	for(UINT i = 0; i < 6; ++i)
+	{
+		aVertices[i].x -= 1.0f / (float)g_iWidth;
+		aVertices[i].y += 1.0f / (float)g_iHeight;
+	}
 
-	IGXVertexBuffer *pVB = g_pDevice->createVertexBuffer(sizeof(VERTEX_SCREEN_TEXTURE)* 6, GX_BUFFER_USAGE_STATIC, aVertices);
+
+	IGXVertexBuffer *pVB = g_pDevice->createVertexBuffer(sizeof(VERTEX_SCREEN_TEXTURE)* 6, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, aVertices);
 	g_pScreenTextureRB = g_pDevice->createRenderBuffer(1, &pVB, pVD);
 	mem_release(pVD);
 	mem_release(pVB);

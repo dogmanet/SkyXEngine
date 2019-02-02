@@ -87,8 +87,8 @@ void CAxesHelper::render()
 
 	static float3 vCamPos;
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
-	SGCore_GetDXDevice()->SetTexture(0, 0);
-	SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+	SGCore_GetDXDevice()->setTexture(NULL);
+//	SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 	SGCore_ShaderUnBind();
 
 	if(!m_bIsDragging)
@@ -108,6 +108,7 @@ void CAxesHelper::render()
 
 void CAxesHelper::drawMove()
 {
+#ifdef _GRAPHIX_API
 	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMatScale2 * SMMatrixTranslation(m_vPosition)));
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, 0);
 	SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
@@ -116,6 +117,7 @@ void CAxesHelper::drawMove()
 
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+#endif
 
 	DWORD color_act = 0xFFFFFF00;
 	DWORD color_act2 = 0x1FFFFF00;
@@ -144,7 +146,9 @@ void CAxesHelper::drawMove()
 		{ float3_t(0, 0, len * 0.5f), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act : 0xFF0000FF },
 		{ float3_t(len * 0.5f, 0, len * 0.5f), (m_currentAxe & HANDLER_AXE_XZ) == HANDLER_AXE_XZ ? color_act : 0x3F0000FF },
 	};
+#ifdef _GRAPHIX_API
 	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, sizeof(l) / sizeof(vert) / 2, l, sizeof(vert));
+#endif
 
 	float asize = 0.1f;
 	float a2size = 0.3f;
@@ -257,9 +261,11 @@ void CAxesHelper::drawMove()
 		{ float3_t(0, len * 0.5f, 0), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FF00 },
 		{ float3_t(0, len * 0.5f, len * 0.5f), (m_currentAxe & HANDLER_AXE_YZ) == HANDLER_AXE_YZ ? color_act2 : 0x1F00FFFF },
 	};
+#ifdef _GRAPHIX_API
 	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, sizeof(l2) / sizeof(vert) / 3, l2, sizeof(vert));
 
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_ALPHABLENDENABLE, 0);
+#endif
 }
 
 void CAxesHelper::drawCylinder(float3_t lwh, DWORD color)
@@ -284,11 +290,14 @@ void CAxesHelper::drawCylinder(float3_t lwh, DWORD color)
 		l.push_back({ lwh * float3_t(sinf(deg1), -1.0f, cosf(deg1)), color });
 		l.push_back({ lwh * float3_t(sinf(deg2), -1.0f, cosf(deg2)), color });
 	}
+#ifdef _GRAPHIX_API
 	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, l.size() / 2, &l[0], sizeof(vert));
+#endif
 }
 
 void CAxesHelper::drawRotate()
 {
+#ifdef _GRAPHIX_API
 	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMatScale2 * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition)));
 	DWORD color_act = 0xFFFFFF00;
 
@@ -303,10 +312,12 @@ void CAxesHelper::drawRotate()
 
 
 	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&mOld);
+#endif
 }
 
 void CAxesHelper::drawScale()
 {
+#ifdef _GRAPHIX_API
 	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(m_mHelperMatScale2 * SMMatrixScaling(m_vScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition)));
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, 0);
 	SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
@@ -469,6 +480,7 @@ void CAxesHelper::drawScale()
 	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, sizeof(l2) / sizeof(vert) / 3, l2, sizeof(vert));
 
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_ALPHABLENDENABLE, 0);
+#endif
 }
 
 void CAxesHelper::update()
@@ -545,7 +557,7 @@ void CAxesHelper::update()
 
 	POINT pt;
 	GetCursorPos(&pt);
-	ScreenToClient(SGCore_GetHWND(), &pt);
+	ScreenToClient((HWND)SGCore_GetHWND(), &pt);
 	int x = pt.x;
 	int y = pt.y;
 
@@ -557,11 +569,11 @@ void CAxesHelper::update()
 	SMMATRIX mat = SMMatrixInverse(&det, m_mHelperMatScale2 * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition) * mCamView * mCamProj);
 	SMMATRIX mat2 = SMMatrixInverse(&det, m_mHelperMatScale2 * SMMatrixTranslation(m_vPosition) * mCamView * mCamProj);
 	SMMATRIX matw = SMMatrixInverse(&det, mCamView * mCamProj);
-	D3DVIEWPORT9 vp;
-	SGCore_GetDXDevice()->GetViewport(&vp);
+	static int * r_win_width = (int*)GET_PCVAR_INT("r_win_width");
+	static int * r_win_height = (int*)GET_PCVAR_INT("r_win_height");
 
-	float px = (((2.0f*x) / vp.Width) - 1.0f);
-	float py = (((-2.0f*y) / vp.Height) + 1.0f);
+	float px = (((2.0f*x) / *r_win_width) - 1.0f);
+	float py = (((-2.0f*y) / *r_win_height) + 1.0f);
 
 	// В пространстве геометрии хелпера
 	float3 pos(px, py, -1);

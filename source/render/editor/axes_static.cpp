@@ -68,6 +68,7 @@ void CAxesStatic::render()
 	SGCore_ShaderUnBind();
 	gdata::pDXDevice->setRenderBuffer(m_pRenderBuffer);
 	gdata::pDXDevice->setPrimitiveTopology(GXPT_LINELIST);
-
+#ifdef _GRAPHIX_API
 	gdata::pDXDevice->drawPrimitive(0, 3);
+#endif
 }

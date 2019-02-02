@@ -111,6 +111,10 @@ DecalManager::DecalManager():
 	blendDesc.renderTarget[0].bBlendEnable = TRUE;
 
 	m_pBlendState = dev->createBlendState(&blendDesc);
+
+//	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "decal_base.vs", "decal_base.vs", SHADER_CHECKDOUBLE_PATH);
+//	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "decal_base.ps", "decal_base.ps", SHADER_CHECKDOUBLE_PATH);
+//	m_idShaderKit = SGCore_ShaderCreateKit(m_idVS, m_idPS);
 }
 
 DecalManager::~DecalManager()
@@ -643,11 +647,17 @@ void DecalManager::render()
 	}*/
 	dev->setRenderBuffer(m_pRenderBuffer);
 	dev->setPrimitiveTopology(GXPT_TRIANGLELIST);
+//	SGCore_ShaderBind(m_idShaderKit);
+//	SMMATRIX mV, mP;
+//	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mV);
+//	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &mP);
+//	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mVP", &SMMatrixTranspose(mV * mP), 4);
 
 	for(UINT i = 0; i < m_iRngs.size(); i++)
 	{
 		SGCore_MtlSet(m_iRngs[i].iMaterialId, &SMMatrixIdentity());
-		dev->drawIndexed(m_iRngs[i].iVertexCount, m_iRngs[i].iVertexCount / 3, 0, m_iRngs[i].iStartVertex);
+		dev->drawPrimitive(m_iRngs[i].iStartVertex, m_iRngs[i].iVertexCount / 3);
+		//dev->drawIndexed(m_iRngs[i].iVertexCount, m_iRngs[i].iVertexCount / 3, 0, m_iRngs[i].iStartVertex);
 	}
 
 	dev->setBlendState(pOldBlendState);

@@ -107,13 +107,13 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 	bool bf = SGCore_OnDeviceReset(*r_win_width, *r_win_height, *r_win_windowed);
 	LibReport(REPORT_MSG_LEVEL_WARNING, "r_win_width %d, r_win_height %d, r_win_windowed %d \n", *r_win_width, *r_win_height, *r_win_windowed);
 
-	if (bf)
+	/*if (bf)
 	{
 		//если все-таки функция зашла сюда значит что-то было неосвобождено
 		LibReport(REPORT_MSG_LEVEL_ERROR, "reset device is failed ... \n");
 	}
 	else
-	{
+	{*/
 		gdata::InitAllMatrix();
 		*r_resize = RENDER_RESIZE_NONE;
 		SGCore_OnResetDevice();
@@ -124,10 +124,8 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 		SPE_OnResetDevice();
 		SGame_OnResetDevice();
 		SPP_OnDeviceReset();
-#ifdef _GRAPHIX_API
-		gdata::pDXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-#endif
-	}
+	//	gdata::pDXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	// }
 }
 
 void rfunc::ComVisibleForLight()
@@ -387,36 +385,34 @@ void rfunc::SaveScreenShot()
 
 void rfunc::SaveWorkTex()
 {
-#ifdef _GRAPHIX_API
 	char tmppath[1024];
 	sprintf(tmppath, "%scolor.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SGCore_GbufferGetRT(DS_RT_COLOR), NULL);
+	gdata::pDXDevice->saveTextureToFile(tmppath, SGCore_GbufferGetRT(DS_RT_COLOR));
 
 	sprintf(tmppath, "%snormal.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SGCore_GbufferGetRT(DS_RT_NORMAL), NULL);
+	gdata::pDXDevice->saveTextureToFile(tmppath, SGCore_GbufferGetRT(DS_RT_NORMAL));
 
 	sprintf(tmppath, "%sdepth.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SGCore_GbufferGetRT(DS_RT_DEPTH), NULL);
+	gdata::pDXDevice->saveTextureToFile(tmppath, SGCore_GbufferGetRT(DS_RT_DEPTH));
 
 	sprintf(tmppath, "%sdepth0.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SGCore_GbufferGetRT(DS_RT_DEPTH0), NULL);
+	gdata::pDXDevice->saveTextureToFile(tmppath, SGCore_GbufferGetRT(DS_RT_DEPTH0));
 
 	sprintf(tmppath, "%sparam.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SGCore_GbufferGetRT(DS_RT_PARAM), NULL);
+	gdata::pDXDevice->saveTextureToFile(tmppath, SGCore_GbufferGetRT(DS_RT_PARAM));
 
 	sprintf(tmppath, "%sambient_diff.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SGCore_GbufferGetRT(DS_RT_AMBIENTDIFF), NULL);
+	gdata::pDXDevice->saveTextureToFile(tmppath, SGCore_GbufferGetRT(DS_RT_AMBIENTDIFF));
 
 	sprintf(tmppath, "%sspecular.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SGCore_GbufferGetRT(DS_RT_SPECULAR), NULL);
+	gdata::pDXDevice->saveTextureToFile(tmppath, SGCore_GbufferGetRT(DS_RT_SPECULAR));
 
 
 	sprintf(tmppath, "%slight_com_1.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SGCore_GbufferGetRT(DS_RT_SCENELIGHT), NULL);
+	gdata::pDXDevice->saveTextureToFile(tmppath, SGCore_GbufferGetRT(DS_RT_SCENELIGHT));
 
 	sprintf(tmppath, "%slight_com_2.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
-	D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SGCore_GbufferGetRT(DS_RT_SCENELIGHT2), NULL);
-#endif
+	gdata::pDXDevice->saveTextureToFile(tmppath, SGCore_GbufferGetRT(DS_RT_SCENELIGHT2));
 }
 
 void rfunc::InitModeWindow()
@@ -1060,7 +1056,7 @@ void rfunc::RenderSky(DWORD timeDelta)
 	{
 		for(UINT i = 0; i <= 2; ++i)
 		{
-			gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerAnisotopicMirror, i);
+			gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerAnisotopicWrap, i);
 		}
 	//	SetSamplerAddress(0, 2, D3DTADDRESS_MIRROR);
 		gdata::pDXDevice->setRasterizerState(gdata::rstates::pRasterizerCullNone);
@@ -1168,8 +1164,7 @@ void rfunc::ComLighting(DWORD timeDelta)
 			//	gdata::pDXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
 			//	gdata::pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)gdata::mCamView));
 			//	gdata::pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)gdata::mLightProj));
-
-
+				
 				gdata::pDXDevice->setRasterizerState(gdata::rstates::pRasterizerCullNone);
 				gdata::pDXDevice->setStencilRef(0);
 				gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateLightBound);
@@ -1471,11 +1466,11 @@ void rfunc::RenderParticles(DWORD timeDelta)
 {
 	gdata::pDXDevice->setRasterizerState(gdata::rstates::pRasterizerCullNone);
 //	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-#ifdef _GRAPHIX_API
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHAREF, RENDER_PARTICLES_ALPHATEST_VALUE);
-	gdata::pDXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-#endif
+//#ifdef _GRAPHIX_API
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHAREF, RENDER_PARTICLES_ALPHATEST_VALUE);
+//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+//#endif
 
 //	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 //	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);

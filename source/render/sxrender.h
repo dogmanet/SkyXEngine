@@ -96,8 +96,8 @@ See the license in LICENSE
 //!@}
 
 
-/*! минимальное значение для альфа теста */
-#define RENDER_PARTICLES_ALPHATEST_VALUE 16	
+// /*! минимальное значение для альфа теста */
+// #define RENDER_PARTICLES_ALPHATEST_VALUE 16	
 
 
 /*! \name Идентификаторы для определяния типа просчетов видимости

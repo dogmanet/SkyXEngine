@@ -192,7 +192,7 @@ void PSSM::init()
 	m_aNearFar[4].y = *r_far;
 
 //	light_data::pDXDevice->CreateDepthStencilSurface(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, D3DFMT_D24X8, D3DMULTISAMPLE_NONE, 0, TRUE, &DepthStencilSurface, NULL);
-	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, GXFMT_D24X8, GXMULTISAMPLE_NONE);
+	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, GXFMT_D24X8, GXMULTISAMPLE_NONE, true);
 	
 	float2 fOffset = float2(0.5,0.5) + (float2(0.5f,0.5)/light_data::vSizeTexDepthGlobal);
 	float range = 1.0f;
@@ -513,12 +513,10 @@ void PSSM::genShadow(IGXTexture2D* shadowmap)
 	mem_release(RenderSurf);
 	mem_release(BackBuf);
 
-#ifdef _GRAPHIX_API
-	if (GetAsyncKeyState(VK_NUMPAD1))
+	if(GetAsyncKeyState(VK_NUMPAD1))
 	{
-		D3DXSaveTextureToFile("C:\\1\\pssm.png", D3DXIFF_PNG, shadowmap, NULL);
+		light_data::pDXDevice->saveTextureToFile("C:\\1\\pssm.png", shadowmap);
 	}
-#endif
 }
 
 void PSSM::genShadowAll(IGXTexture2D* shadowmap)
@@ -639,8 +637,8 @@ void ShadowMapTech::init()
 	Frustum = SGCore_CrFrustum();
 	
 	DepthSurface = 0;
-	DepthMap = light_data::pDXDevice->createTexture2D(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R32F);
-	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, GXFMT_D24X8, GXMULTISAMPLE_NONE);
+	DepthMap = light_data::pDXDevice->createTexture2D(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F);
+	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, GXFMT_D24X8, GXMULTISAMPLE_NONE, true);
 
 	float fOffset = 0.5f + (0.5f/light_data::vSizeTexDepthLocal.x);
 	float range = 1.0f;
@@ -1022,7 +1020,7 @@ void ShadowMapCubeTech::init()
 	DepthSurface[4] = 0;
 	DepthSurface[5] = 0;
 
-	DepthMap = light_data::pDXDevice->createTextureCube(light_data::vSizeTexDepthLocal.x, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R32F);
+	DepthMap = light_data::pDXDevice->createTextureCube(light_data::vSizeTexDepthLocal.x, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F);
 	/*HRESULT hr = D3DXCreateCubeTexture(light_data::pDXDevice, light_data::vSizeTexDepthLocal.x, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &);
 
 	if (hr == D3DERR_INVALIDCALL)
@@ -1034,7 +1032,7 @@ void ShadowMapCubeTech::init()
 	else if (hr == E_OUTOFMEMORY)
 		int qwert = 0;
 		*/
-	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.x, GXFMT_D24X8, GXMULTISAMPLE_NONE);
+	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.x, GXFMT_D24X8, GXMULTISAMPLE_NONE, true);
 }
 
 void ShadowMapCubeTech::begin()

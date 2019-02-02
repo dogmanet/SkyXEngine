@@ -74,6 +74,7 @@ void CGrid::render()
 	gdata::pDXDevice->setRenderBuffer(m_pRenderBuffer);
 
 	gdata::pDXDevice->setPrimitiveTopology(GXPT_LINELIST);
-
+#ifdef _GRAPHIX_API
 	gdata::pDXDevice->drawPrimitive(0, m_iCountPoly);
+#endif
 }

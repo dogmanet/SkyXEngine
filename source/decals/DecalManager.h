@@ -124,6 +124,10 @@ class DecalManager
 	MemAlloc<Decal, 64> m_aDecals;
 
 	IGXContext *dev;
+
+//	ID m_idVS = -1;
+//	ID m_idPS = -1;
+//	ID m_idShaderKit = -1;
 public:
 
 	DecalManager();

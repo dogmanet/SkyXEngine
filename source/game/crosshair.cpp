@@ -31,11 +31,11 @@ CCrosshair::CCrosshair():
 	}
 	int iVC = (iNumSegs + segs + iNumSegs) * 2 + segs;
 	int iIC = (segs - 2) * 3 + segs * 6;
-	m_pMemoryBlob = new byte[(sizeof(Vertex) * iVC + sizeof(UINT) * iIC) * 2];
+	m_pMemoryBlob = new byte[(sizeof(Vertex) * iVC + sizeof(USHORT) * iIC) * 2];
 	m_pVertices[0] = (Vertex*)&m_pMemoryBlob[0];
-	m_pIndices[0] = (UINT*)&m_pMemoryBlob[sizeof(Vertex)* iVC];
-	m_pVertices[1] = (Vertex*)&m_pMemoryBlob[(sizeof(Vertex)* iVC + sizeof(UINT)* iIC)];
-	m_pIndices[1] = (UINT*)&m_pMemoryBlob[sizeof(Vertex)* iVC + (sizeof(Vertex)* iVC + sizeof(UINT)* iIC)];
+	m_pIndices[0] = (USHORT*)&m_pMemoryBlob[sizeof(Vertex)* iVC];
+	m_pVertices[1] = (Vertex*)&m_pMemoryBlob[(sizeof(Vertex)* iVC + sizeof(USHORT)* iIC)];
+	m_pIndices[1] = (USHORT*)&m_pMemoryBlob[sizeof(Vertex)* iVC + (sizeof(Vertex)* iVC + sizeof(USHORT)* iIC)];
 
 	GXVERTEXELEMENT vel[] = {
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
@@ -46,12 +46,28 @@ CCrosshair::CCrosshair():
 	m_pVertexDeclaration = m_pDev->createVertexDeclaration(vel);
 	//@TODO: Change to GX_BUFFER_USAGE_STREAM (can be lost in DX9)
 	m_pVertexBuffer = m_pDev->createVertexBuffer(sizeof(Vertex)* iVC, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
-	m_pIndexBuffer = m_pDev->createIndexBuffer(sizeof(UINT)* iIC, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY, GXIT_UINT);
+	m_pIndexBuffer = m_pDev->createIndexBuffer(sizeof(USHORT)* iIC, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY, GXIT_USHORT);
 	m_pRenderBuffer = m_pDev->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
+
+	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
+	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
+	m_idShaderKit = SGCore_ShaderCreateKit(m_idVS, m_idPS);
+
+	GXBLEND_DESC blendDesc;
+	blendDesc.renderTarget[0].srcBlend = blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_SRC_ALPHA;
+	blendDesc.renderTarget[0].destBlend = blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_INV_SRC_ALPHA;
+	blendDesc.renderTarget[0].bBlendEnable = TRUE;
+	m_pBlendState = m_pDev->createBlendState(&blendDesc);
+
+	GXDEPTH_STENCIL_DESC dsDesc;
+	dsDesc.bDepthEnable = FALSE;
+	dsDesc.bEnableDepthWrite = FALSE;
+	m_pDepthState = m_pDev->createDepthStencilState(&dsDesc);
 }
 
 CCrosshair::~CCrosshair()
 {
+	mem_release(m_pBlendState);
 	mem_release(m_pVertexBuffer);
 	mem_release(m_pIndexBuffer);
 	mem_release(m_pRenderBuffer);
@@ -120,7 +136,7 @@ void CCrosshair::update()
 		}
 
 		Vertex * pVertices = m_pVertices[m_u8ActiveBuffer ? 0 : 1];
-		UINT * pIndices = m_pIndices[m_u8ActiveBuffer ? 0 : 1];
+		USHORT * pIndices = m_pIndices[m_u8ActiveBuffer ? 0 : 1];
 		int iCurVtx = 0,
 			iCurIdx = 0,
 			iStopIdx = 0;
@@ -360,41 +376,18 @@ void CCrosshair::render()
 
 		if(m_pIndexBuffer->lock(&pData, GXBL_WRITE))
 		{
-			memcpy(pData, m_pIndices[m_u8ActiveBuffer], sizeof(UINT)* m_iIndexCount[m_u8ActiveBuffer]);
+			memcpy(pData, m_pIndices[m_u8ActiveBuffer], sizeof(USHORT)* m_iIndexCount[m_u8ActiveBuffer]);
 			m_pIndexBuffer->unlock();
 		}
 	}
-#ifdef _GRAPHIX_API
-	m_pDev->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixIdentity());
-	m_pDev->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&SMMatrixIdentity());
-	m_pDev->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&SMMatrixIdentity());
-	m_pDev->SetRenderState(D3DRS_ZENABLE, FALSE);
+	SGCore_ShaderBind(m_idShaderKit);
+	m_pDev->setBlendState(m_pBlendState);
 	m_pDev->setIndexBuffer(m_pIndexBuffer);
 	m_pDev->setRenderBuffer(m_pRenderBuffer);
-	m_pDev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	SGCore_ShaderUnBind();
 	m_pDev->setTexture(m_pTexture);
-	m_pDev->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-
-	// Использовать альфа-канал в качестве источника альфа-компонент
-#ifdef _GRAPHIX_API
-	m_pDev->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-	m_pDev->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-#endif
-
-	// Устанавливаем коэффициенты смешивания таким образом,
-	// чтобы альфа-компонента определяла прозрачность
-	m_pDev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	m_pDev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	
-	//m_pDev->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC);
-	//m_pDev->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC);
-	//m_pDev->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_ANISOTROPIC);
-	
-	//SGCore_ScreenQuadDraw();
+	m_pDev->setDepthStencilState(m_pDepthState);
 	SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, m_iVertexCount[m_u8ActiveBuffer], 0, m_iIndexCount[m_u8ActiveBuffer] / 3);
-	//render
-#endif
+
 }
 void CCrosshair::onSync()
 {

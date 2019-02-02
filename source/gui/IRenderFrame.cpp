@@ -1335,13 +1335,11 @@ namespace gui
 
 					SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, shader.m_idVS, "g_vTxTransform", (float*)&vTexTransform, 1);
 
-#ifdef _GRAPHIX_API
 				//	DX_CALL(GetGUI()->getDevice()->SetTransform(D3DTS_TEXTURE0, (D3DMATRIX*)&m));
 				//	DX_CALL(GetGUI()->getDevice()->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT2));
 				//	DX_CALL(GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_ADDRESSU, m_bBackgroundRepeatX ? D3DTADDRESS_WRAP : D3DTADDRESS_BORDER));
 				//	DX_CALL(GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_ADDRESSV, m_bBackgroundRepeatY ? D3DTADDRESS_WRAP : D3DTADDRESS_BORDER));
 				//	DX_CALL(GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_BORDERCOLOR, m_iBackgroundColor));
-#endif
 				}
 				else
 				{
@@ -1355,9 +1353,7 @@ namespace gui
 				SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&m_pBackgroundColor, 1);
 			//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&m_pBackgroundColor, 1));
 
-#ifdef _GRAPHIX_API
 			//	SGCore_SetSamplerFilter(0, D3DTEXF_ANISOTROPIC);
-#endif
 				//DX_CALL(GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC));
 				
 				IGXRenderBuffer *pRB = GetGUI()->getQuadRenderBufferXYZTex16((float*)m_pVBackground);
@@ -1392,10 +1388,8 @@ namespace gui
 				if(m_bHasBackgroundImage)
 				{
 					GetGUI()->getDevice()->setSamplerState(pOldSampler, 0);
-#ifdef _GRAPHIX_API
 				//	GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_BORDERCOLOR, 0xFFFFFFFF);
-					GetGUI()->getDevice()->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
-#endif
+				//	GetGUI()->getDevice()->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
 				}
 			}
 

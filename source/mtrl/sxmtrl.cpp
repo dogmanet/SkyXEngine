@@ -421,6 +421,12 @@ SX_LIB_API void SMtrl_MtlGetVS(ID id, char *szName)
 	ArrMaterials->mtlGetVS(id, szName);
 }
 
+SX_LIB_API ID SMtrl_MtlGetVSID(ID id)
+{
+	ML_PRECOND(-1);
+	return(ArrMaterials->mtlGetVSID(id));
+}
+
 SX_LIB_API void SMtrl_MtlSetPS(ID id, const char *szPath)
 {
 	ML_PRECOND(_VOID);
@@ -431,6 +437,12 @@ SX_LIB_API void SMtrl_MtlGetPS(ID id, char *szName)
 {
 	ML_PRECOND(_VOID);
 	ArrMaterials->mtlGetPS(id, szName);
+}
+
+SX_LIB_API ID SMtrl_MtlGetPSID(ID id)
+{
+	ML_PRECOND(-1);
+	return(ArrMaterials->mtlGetPSID(id));
 }
 
 SX_LIB_API float SMtrl_MtlGetDurability(ID id)

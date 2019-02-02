@@ -1463,6 +1463,12 @@ void CMaterials::mtlGetVS(ID id, char* name)
 	SGCore_ShaderGetPath(SHADER_TYPE_VERTEX, m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idShaderVS, name);
 }
 
+ID CMaterials::mtlGetVSID(ID id)
+{
+	MTL_PRE_COND_ID(id, -1);
+	return(m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idShaderVS);
+}
+
 void CMaterials::mtlSetPS(ID id, const char* path_ps)
 {
 	MTL_PRE_COND_ID(id, _VOID);
@@ -1474,6 +1480,12 @@ void CMaterials::mtlGetPS(ID id, char* name)
 {
 	MTL_PRE_COND_ID(id, _VOID);
 	SGCore_ShaderGetPath(SHADER_TYPE_PIXEL, m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idShaderPS, name);
+}
+
+ID CMaterials::mtlGetPSID(ID id)
+{
+	MTL_PRE_COND_ID(id, -1);
+	return(m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idShaderPS);
 }
 
 
@@ -2161,24 +2173,30 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 	//если материалом назначен альфа тест и не включен принудительный
 	if (pMtrl->m_oMainGraphics.m_useAlphaTest && !m_useForceblyAlphaTest)
 	{
+#ifdef _GRAPHIX_API
 		//@FIXME: Reimplement this states!
 		//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
 		//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAREF, MTL_ALPHATEST_FREE_VALUE);
 		//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+#endif
 	}
 	//если не включен принудительный альфа тест
 	else if (!m_useForceblyAlphaTest)
 	{
+#ifdef _GRAPHIX_API
 		//@FIXME: Reimplement this states!
 		//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+#endif
 	}
 	//иначе включен принудительный альфа тест
 	else
 	{
+#ifdef _GRAPHIX_API
 		//@FIXME: Reimplement this states!
 		//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
 		//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAREF, MTL_ALPHATEST_FORCEBLY_VALUE);
 		//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+#endif
 	}
 
 	/*if (pMtrl->m_oLightParam.m_fThickness < 1.f)

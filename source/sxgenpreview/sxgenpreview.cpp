@@ -40,14 +40,14 @@ UINT CreatePreviewTextures()
 		{
 			String sFullPathFile = sGameTextures + aDirs[i] + "/" + aFiles[k];
 			String sFullPathFileSave = sPreviewTextures + aDirs[i] + "/" + aFiles[k];
-			sFullPathFileSave = FileSetStrExt(sFullPathFileSave.c_str(), "jpg");
+			sFullPathFileSave = FileSetStrExt(sFullPathFileSave.c_str(), "png");
 
 			if (FileGetTimeLastModify(sFullPathFile.c_str()) >= FileGetTimeLastModify(sFullPathFileSave.c_str()))
 			{
-				IDirect3DTexture9 *pTexture = SkyXEngine_LoadAsPreviewData(sFullPathFile.c_str());
+				IGXTexture2D *pTexture = SkyXEngine_LoadAsPreviewData(sFullPathFile.c_str());
 
 				if (pTexture)
-					D3DXSaveTextureToFile(sFullPathFileSave.c_str(), D3DXIFF_JPG, pTexture, 0);
+					SGCore_GetDXDevice()->saveTextureToFile(sFullPathFileSave.c_str(), pTexture);
 				
 				mem_release(pTexture);
 			}
@@ -64,7 +64,7 @@ UINT CreatePreviewModels()
 
 	if (!pDXDevice)
 		return 1;
-
+#ifdef _GRAPHIX_API
 	pDXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 
 	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
@@ -81,6 +81,7 @@ UINT CreatePreviewModels()
 	pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
 	pDXDevice->SetRenderState(D3DRS_ALPHAREF, 16);
 	pDXDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+#endif
 
 	float4x4 mView;
 	float4x4 mProjection = SMMatrixPerspectiveFovLH(SM_PIDIV2, 1.f, 0.025f, 100000.f);
@@ -213,24 +214,25 @@ UINT CreatePreviewModels()
 
 		pCamera->getViewMatrix(&mView);
 		pCamera->updateFrustum(&mProjection);
-
+#ifdef _GRAPHIX_API
 		pDXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
 		pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)mView));
 		pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)mProjection));
+#endif
 
 		pDXDevice->beginFrame();
-		pDXDevice->setClearColor(float4_t(0, 0, 0, 0));
-		pDXDevice->clearTarget();
-		pDXDevice->clearDepth(1.0f);
+		pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH);
 
 		SXAnim_Render();
 
 		pDXDevice->endFrame();
 		pDXDevice->swapBuffers();
 
-		IDirect3DSurface9 *pBackBuf;
-		pDXDevice->GetRenderTarget(0, &pBackBuf);
+		IGXSurface *pBackBuf;
+		pBackBuf = pDXDevice->getColorTarget();
+#ifdef _GRAPHIX_API
 		D3DXSaveSurfaceToFile(sPreview.c_str(), D3DXIFF_JPG, pBackBuf, NULL, NULL);
+#endif
 
 		mem_release(pBackBuf);
 		mem_release(pModel);
@@ -272,7 +274,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SSInput_0Create("sxinput", hWnd, false);
 	SSInput_Dbg_Set(SkyXEngine_PrintfLog);
 
-	SGCore_0Create("sxgcore", hWnd, SKYXENGINE_PREVIEW_SIZE, SKYXENGINE_PREVIEW_SIZE, true, 0, false);
+	SGCore_0Create("sxgcore", hWnd, SKYXENGINE_PREVIEW_SIZE, SKYXENGINE_PREVIEW_SIZE, true, false);
 	SGCore_Dbg_Set(SkyXEngine_PrintfLog);
 
 	SXAnim_0Create();

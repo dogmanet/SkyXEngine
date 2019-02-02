@@ -744,6 +744,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	static const int *r_final_image = GET_PCVAR_INT("r_final_image");
 	static const int *r_resize = GET_PCVAR_INT("r_resize");
+	static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
+	
 
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
@@ -793,6 +795,12 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	//потеряно ли устройство или произошло изменение размеров?
 	if(!pDXDevice->canBeginFrame())
 	{
+		return;
+	}
+	if(*r_resize)
+	{
+		pDXDevice->resize(*r_win_width, *r_win_height, *r_win_windowed);
+		*(int*)r_resize = 0;
 		return;
 	}
 	if(pDXDevice->wasReset())
@@ -1024,10 +1032,14 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 		FlushCommandBuffer();
 	}
+	pDXDevice->setDepthStencilState(g_pDSNoZ);
 
 	DelayPostProcess += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
-
+	if(SSInput_GetKeyState(SIK_NUMPAD1))
+	{
+		pDXDevice->saveTextureToFile("c:/1/pp.png", SGCore_RTGetTexture(SPP_RTGetCurrSend()));
+	}
 	
 	IGXSurface *pRenderSurf, *pBackBuf;
 	pRenderSurf = SGCore_RTGetTexture(SPP_RTGetCurrSend())->getMipmap();
