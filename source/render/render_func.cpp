@@ -114,6 +114,7 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 	}
 	else
 	{*/
+
 		gdata::InitAllMatrix();
 		*r_resize = RENDER_RESIZE_NONE;
 		SGCore_OnResetDevice();
@@ -1647,7 +1648,7 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 				SMtrl_RefPreRenderPlane(idMat, &oPlane);
 			//	SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 			//	SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
-				for(UINT i = 0; i < 16; ++i)
+				for(UINT ii = 0; ii < 16; ++ii)
 				{
 					gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearWrap, i);
 				}
@@ -1689,7 +1690,7 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 				//	gdata::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_DESTALPHA);
 
 				//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-					for(UINT i = 0; i <= 2; ++i)
+					for(UINT ii = 0; ii <= 2; ++ii)
 					{
 						gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearClamp, i);
 					}
@@ -1731,7 +1732,7 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 					SMtrl_RefCubePreRender(idMat, j, &(SMMatrixIdentity()));
 				//	SetSamplerFilter(0, 16, D3DTEXF_LINEAR);
 				//	SetSamplerAddress(0, 16, D3DTADDRESS_WRAP);
-					for(UINT i = 0; i < 16; ++i)
+					for(UINT ii = 0; ii < 16; ++ii)
 					{
 						gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearWrap, i);
 					}
@@ -1793,7 +1794,7 @@ void rfunc::UpdateReflectionScene(DWORD timeDelta)
 
 					//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 					//	SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
-						for(UINT i = 0; i <= 2; ++i)
+						for(UINT ii = 0; ii <= 2; ++ii)
 						{
 							gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearClamp, i);
 						}

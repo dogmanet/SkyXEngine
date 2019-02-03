@@ -6,9 +6,6 @@ See the license in LICENSE
 
 #include "gcore_utils.h"
 
-static int g_iWidth;
-static int g_iHeight;
-
 void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 {
 	char szModuleName[64];
@@ -40,9 +37,6 @@ void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - %s: Cannot init GX context!", GEN_MSG_LOCATION, szModuleName);
 		return;
 	}
-
-	g_iWidth = iWidth;
-	g_iHeight = iHeight;
 }
 
 void InitFPStext()
@@ -63,6 +57,7 @@ void InitFPStext()
 
 void InitFullScreenQuad()
 {
+	mem_release(g_pScreenTextureRB);
 	GXVERTEXELEMENT oLayoutQuad[] =
 	{
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
@@ -72,27 +67,27 @@ void InitFullScreenQuad()
 
 	IGXVertexDeclaration *pVD = g_pDevice->createVertexDeclaration(oLayoutQuad);
 
-	struct VERTEX_SCREEN_TEXTURE { float x, y, z, tx, ty, tz; };
+	struct VERTEX_SCREEN_TEXTURE
+	{
+		float x, y, z, tx, ty, tz;
+	};
 
-	// const float fOffsetPixelX = 1.0f / float(g_oD3DAPP.BackBufferWidth);
-	// const float fOffsetPixelY = 1.0f / float(g_oD3DAPP.BackBufferHeight);
+	static int * r_win_width = (int*)GET_PCVAR_INT("r_win_width");
+	static int * r_win_height = (int*)GET_PCVAR_INT("r_win_height");
+
+	const float fOffsetPixelX = 1.0f / float(*r_win_width);
+	const float fOffsetPixelY = 1.0f / float(*r_win_height);
 
 	VERTEX_SCREEN_TEXTURE aVertices[] =
 	{
-		{-1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0},
-		{-1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1},
-		{1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 2},
+		{-1.0f - fOffsetPixelX, -1.0f + fOffsetPixelY, 1.0f, 0.0f, 1.0f, 0},
+		{-1.0f - fOffsetPixelX, 1.0f + fOffsetPixelY, 1.0f, 0.0f, 0.0f, 1},
+		{1.0f - fOffsetPixelX, 1.0f + fOffsetPixelY, 1.0f, 1.0f, 0.0f, 2},
 
-		{-1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 0},
-		{1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 2},
-		{1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 3},
+		{-1.0f - fOffsetPixelX, -1.0f + fOffsetPixelY, 1.0f, 0.0f, 1.0f, 0},
+		{1.0f - fOffsetPixelX, 1.0f + fOffsetPixelY, 1.0f, 1.0f, 0.0f, 2},
+		{1.0f - fOffsetPixelX, -1.0f + fOffsetPixelY, 1.0f, 1.0f, 1.0f, 3},
 	};
-
-	for(UINT i = 0; i < 6; ++i)
-	{
-		aVertices[i].x -= 1.0f / (float)g_iWidth;
-		aVertices[i].y += 1.0f / (float)g_iHeight;
-	}
 
 
 	IGXVertexBuffer *pVB = g_pDevice->createVertexBuffer(sizeof(VERTEX_SCREEN_TEXTURE)* 6, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, aVertices);
