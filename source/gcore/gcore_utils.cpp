@@ -315,7 +315,8 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 		mem_release(gcore_data::rt_id::aSurfToneMap[i]);
 	}
 
-	tmptex = SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[3]);
+//	tmptex = SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[3]);
+	tmptex = SGCore_RTGetTexture(gcore_data::rt_id::aToneMaps[gcore_data::rt_id::iCountArrToneMaps - 1]);
 
 	gcore_data::rt_id::IncrAdaptedLum();
 	IGXSurface *SurfAdaptedLum = SGCore_RTGetTexture(gcore_data::rt_id::GetCurrAdaptedLum())->getMipmap();

@@ -305,6 +305,12 @@ void CTaskManager::worker(bool bOneRun)
 
 ID CTaskManager::forLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize)
 {
+	if(m_isSingleThreaded)
+	{
+		pBody->forLoop(iStart, iEnd);
+		m_aiNumWaitFor[0] = 0;
+		return(0);
+	}
 	int iTotal = iEnd - iStart;
 	int iChunkSize = (int)(ceilf((float)iTotal / (float)m_iNumThreads) + 0.5f);
 	if(iMaxChunkSize > 0 && iChunkSize > iMaxChunkSize)

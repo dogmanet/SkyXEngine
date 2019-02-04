@@ -14,9 +14,28 @@ FILE *g_pFileOutLog = 0;
 report_func g_fnReportf = SkyXEngine_PrintfLog;
 
 IGXDepthStencilState *g_pDSNoZ;
+IGXRasterizerState *g_pRSWireframe;
 ID g_idShaderScreenOut;
 
+HACCEL g_hAccelTable = NULL;
+
+#ifdef SX_TERRAX
+#include <terrax/terrax.h>
+
+IGXSwapChain *g_pTopRightSwapChain = NULL;
+IGXSwapChain *g_pBottomLeftSwapChain = NULL;
+IGXSwapChain *g_pBottomRightSwapChain = NULL;
+IGXDepthStencilSurface *g_pTopRightDepthStencilSurface = NULL;
+IGXDepthStencilSurface *g_pBottomLeftDepthStencilSurface = NULL;
+IGXDepthStencilSurface *g_BottomRightDepthStencilSurface = NULL;
+float g_fTopRightScale = 1.0f;
+float g_fBottomLeftScale = 1.0f;
+float g_fBottomRightScale = 1.0f;
+#endif
+
 //ID3DXMesh *g_pMeshBound = 0;
+
+void SkyXEngine_InitViewports();
 
 BOOL CALLBACK SkyXEngine_EnumWindowsProc(HWND hwnd, LPARAM lParam)
 {
@@ -437,10 +456,17 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	dsDesc.bEnableDepthWrite = FALSE;
 	g_pDSNoZ = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
 
+	GXRASTERIZER_DESC rsDesc;
+	rsDesc.fillMode = GXFILL_WIREFRAME;
+	g_pRSWireframe = SGCore_GetDXDevice()->createRasterizerState(&rsDesc);
+
 	ID idScreenOutVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
 	ID idScreenOutPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
 	g_idShaderScreenOut = SGCore_ShaderCreateKit(idScreenOutVS, idScreenOutPS);
 
+#ifdef SX_TERRAX
+	SkyXEngine_InitViewports();
+#endif
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "Engine initialized!\n");
 }
@@ -693,6 +719,35 @@ HWND SkyXEngine_CreateWindow(const char *szName, const char *szCaption, int iWid
 }
 
 //#############################################################################
+#ifdef SX_TERRAX
+void SkyXEngine_InitViewports()
+{
+	IGXContext *pContext = SGCore_GetDXDevice();
+	RECT rc;
+	GetClientRect(g_hTopRightWnd, &rc);
+	g_pTopRightSwapChain = pContext->createSwapChain(rc.right - rc.left, rc.bottom - rc.top, g_hTopRightWnd);
+	g_pTopRightDepthStencilSurface = pContext->createDepthStencilSurface(rc.right - rc.left, rc.bottom - rc.top, GXFMT_D24S8, GXMULTISAMPLE_NONE);
+
+	GetClientRect(g_hBottomLeftWnd, &rc);
+	g_pBottomLeftSwapChain = pContext->createSwapChain(rc.right - rc.left, rc.bottom - rc.top, g_hBottomLeftWnd);
+	g_pBottomLeftDepthStencilSurface = pContext->createDepthStencilSurface(rc.right - rc.left, rc.bottom - rc.top, GXFMT_D24S8, GXMULTISAMPLE_NONE);
+
+	GetClientRect(g_hBottomRightWnd, &rc);
+	g_pBottomRightSwapChain = pContext->createSwapChain(rc.right - rc.left, rc.bottom - rc.top, g_hBottomRightWnd);
+	g_BottomRightDepthStencilSurface = pContext->createDepthStencilSurface(rc.right - rc.left, rc.bottom - rc.top, GXFMT_D24S8, GXMULTISAMPLE_NONE);
+}
+
+void SkyXEngine_ReleaseViewports()
+{
+	mem_release(g_pTopRightSwapChain);
+	mem_release(g_pBottomLeftSwapChain);
+	mem_release(g_pBottomRightSwapChain);
+	mem_release(g_pTopRightDepthStencilSurface);
+	mem_release(g_pBottomLeftDepthStencilSurface);
+	mem_release(g_BottomRightDepthStencilSurface);
+}
+#endif
+//#############################################################################
 
 
 static void FlushCommandBuffer()
@@ -755,28 +810,6 @@ void SkyXEngine_Frame(DWORD timeDelta)
 #endif
 	static bool isSimulationRender = false;
 
-	static uint64_t DelayGeomSortGroup = 0;
-	static uint64_t DelayComReflection = 0;
-	static uint64_t DelayUpdateShadow = 0;
-	static uint64_t DelayRenderMRT = 0;
-	static uint64_t DelayComLighting = 0;
-	static uint64_t DelayPostProcess = 0;
-	static uint64_t DelayUpdateOC = 0;
-	static uint64_t DelayUpdateVisibleForCamera = 0;
-	static uint64_t DelayUpdateVisibleForReflection = 0;
-	static uint64_t DelayUpdateVisibleForLight = 0;
-	static uint64_t DelayUpdateParticles = 0;
-
-	static uint64_t DelayLibUpdateGame = 0;
-	static uint64_t DelayLibUpdateLevel = 0;
-	static uint64_t DelayLibUpdatePhysic = 0;
-	static uint64_t DelayLibUpdateAnim = 0;
-
-	static uint64_t DelayLibSyncGame = 0;
-	static uint64_t DelayLibSyncPhysic = 0;
-	static uint64_t DelayLibSyncAnim = 0;
-
-	static uint64_t DelayPresent = 0;
 
 #if defined(SX_MATERIAL_EDITOR)
 	isSimulationRender = true;
@@ -790,7 +823,6 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	}
 #endif
 
-	int64_t ttime;
 #ifndef SX_SERVER
 	//потеряно ли устройство или произошло изменение размеров?
 	if(!pDXDevice->canBeginFrame())
@@ -799,34 +831,34 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	}
 	if(*r_resize)
 	{
+#ifdef SX_TERRAX
+		SkyXEngine_ReleaseViewports();
+#endif
 		pDXDevice->resize(*r_win_width, *r_win_height, *r_win_windowed);
 		*(int*)r_resize = 0;
 		return;
 	}
 	if(pDXDevice->wasReset())
 	{
+		if(!
 #if defined(SX_GAME)
-		SRender_ComDeviceLost(false);	//пытаемся восстановить
+		SRender_ComDeviceLost(false)	//пытаемся восстановить
 #else
-		SRender_ComDeviceLost(true);	//пытаемся восстановить
+		SRender_ComDeviceLost(true)	//пытаемся восстановить
+#endif
+		)
+		{
+			return;
+		}
+
+#ifdef SX_TERRAX
+		SkyXEngine_InitViewports();
 #endif
 	}
-//	if (pDXDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET || *r_resize)
-//	{
-//		//если не свернуто окно
-//		if (!IsIconic(SRender_GetHandleWin3D()) && ((SRender_GetParentHandleWin3D() != 0 && !IsIconic(SRender_GetParentHandleWin3D())) || SRender_GetParentHandleWin3D() == 0))
-//		{
-//#if defined(SX_GAME)
-//			SRender_ComDeviceLost(false);	//пытаемся восстановить
-//#else
-//			SRender_ComDeviceLost(true);	//пытаемся восстановить
-//#endif
-//		}
-//		return;
-//	}
+
 #endif
 
-#if !defined(SX_GAME) && !defined(SX_SERVER) //&& !defined(SX_MATERIAL_EDITOR)
+#if !defined(SX_GAME) && !defined(SX_SERVER) && !defined(SX_TERRAX)//&& !defined(SX_MATERIAL_EDITOR)
 #if defined(SX_MATERIAL_EDITOR)
 	if (SRender_EditorCameraGetMove())
 #endif
@@ -836,16 +868,13 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 #ifndef SX_PARTICLES_EDITOR
 
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_GAME_UPDATE);
 	CLibUpdate updateGame(SGame_Update, PERF_SECTION_GAME_UPDATE);
 	ID idUpdateGame = Core_MForLoop(0, Core_MGetThreadCount(), &updateGame, 1);
 	//SGame_Update();
 	Core_PEndSection(PERF_SECTION_GAME_UPDATE);
-	DelayLibUpdateGame += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 #ifndef SX_SERVER
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_WEATHER_UPDATE);
 	SLevel_WeatherUpdate();
 	Core_PEndSection(PERF_SECTION_WEATHER_UPDATE);
@@ -853,81 +882,157 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_PStartSection(PERF_SECTION_AMBIENT_SND_UPDATE);
 	SLevel_AmbientSndUpdate();
 	Core_PEndSection(PERF_SECTION_AMBIENT_SND_UPDATE);
-	DelayLibUpdateLevel += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
 
 #endif
 
 #ifndef SX_SERVER
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_ANIM_UPDATE);
 	CLibUpdate updateAnim(SXAnim_Update, PERF_SECTION_ANIM_UPDATE);
 	ID idUpdateAnim = Core_MForLoop(0, Core_MGetThreadCount(), &updateAnim, 1);
 	//SXAnim_Update();
 	Core_PEndSection(PERF_SECTION_ANIM_UPDATE);
-	DelayLibUpdateAnim += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
 #ifndef SX_PARTICLES_EDITOR
 	Core_MWaitFor(idUpdateGame);
 #endif
 
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_PHYS_UPDATE);
 	SPhysics_Update();
 	Core_PEndSection(PERF_SECTION_PHYS_UPDATE);
-	DelayLibUpdatePhysic += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 
 #ifndef SX_SERVER
 	Core_MWaitFor(idUpdateAnim);
 
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_ANIM_SYNC);
 	SXAnim_Sync();
 	Core_PEndSection(PERF_SECTION_ANIM_SYNC);
-	DelayLibSyncAnim += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
 
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_PHYS_SYNC);
 	SPhysics_Sync();
 	Core_PEndSection(PERF_SECTION_PHYS_SYNC);
-	DelayLibSyncPhysic += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 #ifndef SX_PARTICLES_EDITOR
 
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_GAME_SYNC);
 	SGame_Sync();
 	Core_PEndSection(PERF_SECTION_GAME_SYNC);
-	DelayLibSyncGame += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
 
 #ifndef SX_SERVER
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+
+#ifdef SX_TERRAX 
+	if(g_is3DRotating || g_is3DPanning)
+	{
+		int x, y;
+		SSInput_GetMouseDelta(&x, &y);
+		static const float * sense = GET_PCVAR_FLOAT("cl_mousesense");
+		float dx = (float)x * *sense * 10.0f;
+		float dy = (float)y * *sense * 10.0f;
+		ICamera *pCamera = SRender_GetCamera();
+
+		if(g_is3DRotating)
+		{
+			static float3 m_vPitchYawRoll;
+			m_vPitchYawRoll.y -= dx;
+			m_vPitchYawRoll.x -= dy;
+			m_vPitchYawRoll.x = clampf(m_vPitchYawRoll.x, -SM_PIDIV2, SM_PIDIV2);
+			while(m_vPitchYawRoll.y < 0.0f)
+			{
+				m_vPitchYawRoll.y += SM_2PI;
+			}
+			while(m_vPitchYawRoll.y > SM_2PI)
+			{
+				m_vPitchYawRoll.y -= SM_2PI;
+			}
+
+			pCamera->setOrientation(&(SMQuaternion(m_vPitchYawRoll.x, 'x') * SMQuaternion(m_vPitchYawRoll.z, 'z') * SMQuaternion(m_vPitchYawRoll.y, 'y')));
+		}
+		else if(g_is3DPanning)
+		{
+			float3 vPos, vUp, vRight;
+			pCamera->getPosition(&vPos);
+			pCamera->getUp(&vUp);
+			pCamera->getRight(&vRight);
+			vPos += vUp * -dy * 10.0f + vRight * dx * 10.0f;
+			pCamera->setPosition(&vPos);
+		}
+
+		float3 dir;
+		static float s_fSpeed = 0;
+		float fMaxSpeed = 10.0f; //@TODO: CVar this!
+		float fMaxSpeedBoost = 40.0f; //@TODO: CVar this!
+		float fAccelTime = 0.5f; //@TODO: CVar this!
+		if(GetAsyncKeyState(VK_SHIFT))
+		{
+			fMaxSpeed = fMaxSpeedBoost;
+		}
+		float fAccel = fMaxSpeed / fAccelTime;
+		bool mov = false;
+		float dt = (float)timeDelta * 0.001f;
+		if(GetAsyncKeyState('W'))
+		{
+			dir.z += 1.0f;
+			mov = true;
+		}
+		if(GetAsyncKeyState('S'))
+		{
+			dir.z -= 1.0f;
+			mov = true;
+		}
+		if(GetAsyncKeyState('A'))
+		{
+			dir.x -= 1.0f;
+			mov = true;
+		}
+		if(GetAsyncKeyState('D'))
+		{
+			dir.x += 1.0f;
+			mov = true;
+		}
+
+		if(mov)
+		{
+			s_fSpeed += fAccel * dt;
+			if(s_fSpeed > fMaxSpeed)
+			{
+				s_fSpeed = fMaxSpeed;
+			}
+			float3 vPos, vDir, vRight;
+			pCamera->getPosition(&vPos);
+			pCamera->getLook(&vDir);
+			pCamera->getRight(&vRight);
+			dir = SMVector3Normalize(dir) * dt * s_fSpeed;
+			vPos += vDir * dir.z + vRight * dir.x;
+			pCamera->setPosition(&vPos);
+		}
+		else
+		{
+			s_fSpeed = 0;
+		}
+	}
+#endif
+
 	Core_PStartSection(PERF_SECTION_MATSORT_UPDATE);
 	SGeom_SortTransparent(&vCamPos);
 	Core_PEndSection(PERF_SECTION_MATSORT_UPDATE);
-	DelayGeomSortGroup += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	SGreen_GetOccurencessLeafGrass(&float3(vCamPos - float3(0.25, 1.8, 0.25)), &float3(vCamPos + float3(0.25, 0, 0.25)), MTLTYPE_PHYSIC_LEAF_GRASS);
 
 	SRender_UpdateView();
 
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_OC_REPROJECTION);
 	SGCore_OC_Reprojection();
 	Core_PEndSection(PERF_SECTION_OC_REPROJECTION);
-	DelayUpdateOC += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	if (!GetAsyncKeyState('R'))
 	{
-		ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		Core_PStartSection(PERF_SECTION_VIS_CAMERA);
 		SRender_ComVisibleForCamera();
 		// parallelle that
 		Core_PEndSection(PERF_SECTION_VIS_CAMERA);
-		DelayUpdateVisibleForCamera += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	}
 
 
@@ -956,40 +1061,38 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	Core_PStartSection(PERF_SECTION_RENDER_PRESENT);
 	pDXDevice->swapBuffers();
+#ifdef SX_TERRAX
+	g_pTopRightSwapChain->swapBuffers();
+	g_pBottomLeftSwapChain->swapBuffers();
+	g_pBottomRightSwapChain->swapBuffers();
+#endif
 	Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
 
 	pDXDevice->beginFrame();
 	pDXDevice->clear(GXCLEAR_COLOR);
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	SRender_UpdateReflection(timeDelta, isSimulationRender);
-	DelayComReflection += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	if (*r_final_image == DS_RT_AMBIENTDIFF || *r_final_image == DS_RT_SPECULAR || *r_final_image == DS_RT_SCENELIGHT)
 	{
 		//рендерим глубину от света
-		ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		Core_PStartSection(PERF_SECTION_SHADOW_UPDATE);
 		SRender_UpdateShadow(timeDelta);
 		Core_PEndSection(PERF_SECTION_SHADOW_UPDATE);
-		DelayUpdateShadow += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 		FlushCommandBuffer();
 	}
 
 	//рисуем сцену и заполняем mrt данными
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_MRT);
 
 	SRender_BuildMRT(timeDelta, isSimulationRender);
 	FlushCommandBuffer();
 	Core_PEndSection(PERF_SECTION_MRT);
-	DelayRenderMRT += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 	
 	if (*r_final_image == DS_RT_AMBIENTDIFF || *r_final_image == DS_RT_SPECULAR || *r_final_image == DS_RT_SCENELIGHT)
 	{
 		//освещаем сцену
-		ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 		Core_PStartSection(PERF_SECTION_LIGHTING);
 		SRender_ComLighting(timeDelta);
 		SRender_UnionLayers();
@@ -1007,7 +1110,6 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		Core_PEndSection(PERF_SECTION_TONEMAPPING);
 
 		Core_PEndSection(PERF_SECTION_LIGHTING);
-		DelayComLighting += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
 		FlushCommandBuffer();
 	}
@@ -1023,7 +1125,6 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	pDXDevice->setBlendState(NULL);
 
 #if defined(SX_GAME)
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	if(!SSInput_GetKeyState(SIK_P))
 	{
 		Core_PStartSection(PERF_SECTION_RENDER_POSTPROCESS);
@@ -1033,8 +1134,6 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		FlushCommandBuffer();
 	}
 	pDXDevice->setDepthStencilState(g_pDSNoZ);
-
-	DelayPostProcess += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
 	if(SSInput_GetKeyState(SIK_NUMPAD1))
 	{
@@ -1118,6 +1217,57 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SPhysics_DebugRender();
 //#endif
 
+#ifdef SX_TERRAX 
+	//#############################################################################
+	HWND hWnds[] = {g_hTopRightWnd, g_hBottomLeftWnd, g_hBottomRightWnd};
+	IGXSwapChain *p2DSwapChains[] = {g_pTopRightSwapChain, g_pBottomLeftSwapChain, g_pBottomRightSwapChain};
+	IGXDepthStencilSurface *p2DDepthStencilSurfaces[] = {g_pTopRightDepthStencilSurface, g_pBottomLeftDepthStencilSurface, g_BottomRightDepthStencilSurface};
+//	float3 pv2DEyePoses[] = {float3(0.0f, 100.0f, 0.0f), float3(100.0f, 0.0f, 0.0f), float3(0.0f, 0.0f, 100.0f)};
+//	float3 pv2DEyeDirs[] = {float3(0.0f, -1.0f, 0.0f), float3(-1.0f, 0.0f, 0.0f), float3(0.0f, 0.0f, -1.0f)};
+//	float3 pv2DUPs[] = {float3(0.0f, 0.0f, 1.0f), float3(0.0f, 1.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)};
+	ICamera *pCameras[] = {g_pTopRightCamera, g_pBottomLeftCamera, g_pBottomRightCamera};
+	float fScales[] = {g_fTopRightScale, g_fBottomLeftScale, g_fBottomRightScale};
+	ICamera *p3DCamera = SRender_GetCamera();
+	//#############################################################################
+
+	for(int i = 0; i < 3; ++i)
+	{
+		if(!IsWindowVisible(hWnds[i]))
+		{
+			continue;
+		}
+		SRender_SetCamera(pCameras[i]);
+		IGXSurface *pBackBuffer = p2DSwapChains[i]->getColorTarget();
+		pDXDevice->setColorTarget(pBackBuffer);
+		pDXDevice->setDepthStencilSurface(p2DDepthStencilSurfaces[i]);
+		pDXDevice->clear(GXCLEAR_COLOR);
+
+		pDXDevice->setRasterizerState(g_pRSWireframe);
+		pDXDevice->setDepthStencilState(g_pDSNoZ);
+		pDXDevice->setBlendState(NULL);
+		SMMATRIX mProj = SMMatrixOrthographicLH((float)pBackBuffer->getWidth() * fScales[i], (float)pBackBuffer->getHeight() * fScales[i], -1000.0f, 1000.0f);
+		SMMATRIX mView;
+		pCameras[i]->getViewMatrix(&mView);
+		Core_RMatrixSet(G_RI_MATRIX_OBSERVER_VIEW, &mView);
+		Core_RMatrixSet(G_RI_MATRIX_OBSERVER_PROJ, &mProj);
+		Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(mView * mProj));
+
+		Core_RMatrixGet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
+		Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_FREE);
+
+
+
+		if(SGeom_GetCountModels() > 0)
+			SGeom_Render(timeDelta, GEOM_RENDER_TYPE_ALL);
+
+		mem_release(pBackBuffer);
+	}
+
+	//#############################################################################
+	SRender_SetCamera(p3DCamera);
+	pDXDevice->setColorTarget(NULL);
+	pDXDevice->setDepthStencilSurface(NULL);
+#endif
 	
 #if defined(SX_GAME) || defined(SX_LEVEL_EDITOR)
 	static bool needGameTime = true;
@@ -1140,24 +1290,24 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		sprintf(debugstr + strlen(debugstr), "Dir camera: [ %.2f, %.2f, %.2f ]\n", vCamDir.x, vCamDir.y, vCamDir.z);
 
 		sprintf(debugstr + strlen(debugstr), "\nDelay:\n");
-		sprintf(debugstr + strlen(debugstr), " OC update.......: %.3f\n", float(DelayUpdateOC) / float(FrameCount) * 0.001f);
-		sprintf(debugstr + strlen(debugstr), " Update shadow...: %.3f\n", float(DelayUpdateShadow) / float(FrameCount) * 0.001f);
-		sprintf(debugstr + strlen(debugstr), " Build G-buffer..: %.3f\n", float(DelayRenderMRT) / float(FrameCount) * 0.001f);
-		sprintf(debugstr + strlen(debugstr), " Lighting........: %.3f\n", float(DelayComLighting) / float(FrameCount) * 0.001f);
-		sprintf(debugstr + strlen(debugstr), " Postprocess.....: %.3f\n", float(DelayPostProcess) / float(FrameCount) * 0.001f);
-		sprintf(debugstr + strlen(debugstr), " Com reflection..: %.3f\n", float(DelayComReflection) / float(FrameCount) * 0.001f);
-		sprintf(debugstr + strlen(debugstr), " Geom sort group.: %.3f\n", float(DelayGeomSortGroup) / float(FrameCount) * 0.001f);
-		sprintf(debugstr + strlen(debugstr), " Update particles: %.3f\n", float(DelayUpdateParticles) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " OC update.......: %.3f\n", float(0) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " Update shadow...: %.3f\n", float(0) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " Build G-buffer..: %.3f\n", float(0) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " Lighting........: %.3f\n", float(0) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " Postprocess.....: %.3f\n", float(0) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " Com reflection..: %.3f\n", float(0) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " Geom sort group.: %.3f\n", float(0) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " Update particles: %.3f\n", float(0) / float(FrameCount) * 0.001f);
 
 		sprintf(debugstr + strlen(debugstr), "\n UpdateVisibleFor\n");
-		sprintf(debugstr + strlen(debugstr), "  Camera........: %.3f\n", float(DelayUpdateVisibleForCamera) / float(FrameCount) * 0.001f);
-		sprintf(debugstr + strlen(debugstr), "  Light.........: %.3f\n", float(DelayUpdateVisibleForLight) / float(FrameCount) * 0.001f);
-		sprintf(debugstr + strlen(debugstr), "  Reflection...: %.3f\n", float(DelayUpdateVisibleForReflection) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), "  Camera........: %.3f\n", float(0) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), "  Light.........: %.3f\n", float(0) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), "  Reflection...: %.3f\n", float(0) / float(FrameCount) * 0.001f);
 
-		sprintf(debugstr + strlen(debugstr), "\n LibUpdate. Game: %.3f, Level: %.3f, Physic: %.3f, Anim: %.3f\n", float(DelayLibUpdateGame) / float(FrameCount) * 0.001f, float(DelayLibUpdateLevel) / float(FrameCount) * 0.001f, float(DelayLibUpdatePhysic) / float(FrameCount) * 0.001f, float(DelayLibUpdateAnim) / float(FrameCount) * 0.001f);
-		sprintf(debugstr + strlen(debugstr), " LibSync... Game: %.3f, Physic: %.3f, Anim: %.3f\n", float(DelayLibSyncGame) / float(FrameCount) * 0.001f, float(DelayLibSyncPhysic) / float(FrameCount) * 0.001f, float(DelayLibSyncAnim) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), "\n LibUpdate. Game: %.3f, Level: %.3f, Physic: %.3f, Anim: %.3f\n", float(0) / float(FrameCount) * 0.001f, float(0) / float(FrameCount) * 0.001f, float(0) / float(FrameCount) * 0.001f, float(0) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), " LibSync... Game: %.3f, Physic: %.3f, Anim: %.3f\n", float(0) / float(FrameCount) * 0.001f, float(0) / float(FrameCount) * 0.001f, float(0) / float(FrameCount) * 0.001f);
 
-		sprintf(debugstr + strlen(debugstr), "\n Present.........: %.3f\n", float(DelayPresent) / float(FrameCount) * 0.001f);
+		sprintf(debugstr + strlen(debugstr), "\n Present.........: %.3f\n", float(0) / float(FrameCount) * 0.001f);
 
 		sprintf(debugstr + strlen(debugstr), "\n### Engine version %s\n", SKYXENGINE_VERSION);
 
@@ -1165,28 +1315,13 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 		Core_RIntSet(G_RI_INT_COUNT_POLY, 0);
 		Core_RIntSet(G_RI_INT_COUNT_DIP, 0);
-
-		DelayUpdateOC = 0;
-		DelayUpdateShadow = 0;
-		DelayRenderMRT = 0;
-		DelayComLighting = 0;
-		DelayPostProcess = 0;
-		DelayComReflection = 0;
-		DelayGeomSortGroup = 0;
-		DelayUpdateVisibleForCamera = 0;
-		DelayUpdateVisibleForLight = 0;
-		DelayUpdateVisibleForReflection = 0;
-		DelayUpdateParticles = 0;
-		DelayLibUpdateGame = DelayLibUpdateLevel = DelayLibUpdatePhysic = DelayLibUpdateAnim = 0;
-		DelayLibSyncGame = DelayLibSyncPhysic = DelayLibSyncAnim = 0;
-		DelayPresent = 0;
 	}
 	Core_PEndSection(PERF_SECTION_RENDER_INFO);
 
 
 
 #if defined(SX_LEVEL_EDITOR)
-	level_editor::LevelEditorUpdate(timeDelta);
+//	level_editor::LevelEditorUpdate(timeDelta);
 #endif
 
 #if defined(SX_MATERIAL_EDITOR)
@@ -1221,48 +1356,37 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	}*/
 
 
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_OC_UPDATE);
 	SGCore_OC_Update(SGCore_GbufferGetRT_ID(DS_RT_DEPTH0), SRender_GetCamera()->getFrustum());
 	Core_PEndSection(PERF_SECTION_OC_UPDATE);
-	DelayUpdateOC += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	
-
 	pDXDevice->endFrame();
 
 	//@@@
 	
 
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_VIS_REFLECTION);
 	SRender_ComVisibleReflection();
 	Core_PEndSection(PERF_SECTION_VIS_REFLECTION);
-	DelayUpdateVisibleForReflection += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_VIS_LIGHT);
 	SRender_ComVisibleForLight();
 	Core_PEndSection(PERF_SECTION_VIS_LIGHT);
-	DelayUpdateVisibleForLight += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	Core_PStartSection(PERF_SECTION_VIS_PARTICLES);
 	SPE_EffectVisibleComAll(SRender_GetCamera()->getFrustum(), &vCamPos);
 	SPE_EffectComputeAll();
 	SPE_EffectComputeLightingAll();
 	Core_PEndSection(PERF_SECTION_VIS_PARTICLES);
-	DelayUpdateParticles += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 #endif
 
 	Core_PStartSection(PERF_SECTION_AI_PATH);
 	SAIG_GridQueryFindPathUpdate(3);
 	Core_PEndSection(PERF_SECTION_AI_PATH);
 	
-	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	//Core_PStartSection(PERF_SECTION_RENDER_PRESENT);
 	//pDXDevice->Present(0, 0, 0, 0);
 	//Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
-	DelayPresent += TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	
 #ifndef SX_SERVER
 	Core_PEndSection(PERF_SECTION_RENDER);
@@ -1529,7 +1653,10 @@ bool SkyXEngine_CycleMainIteration()
 	Core_PStartSection(PERF_SECTION_WMSG_PROC);
 	while(::PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 	{
-
+		if(g_hAccelTable && TranslateAccelerator(GetParent((HWND)SGCore_GetHWND()), g_hAccelTable, &msg))
+		{
+			continue;
+		}
 		::TranslateMessage(&msg);
 
 #if !defined(SX_GAME)

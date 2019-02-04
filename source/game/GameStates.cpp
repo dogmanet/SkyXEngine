@@ -81,7 +81,7 @@ void CEditorState::activate()
 	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
 	Core_TimeWorkingSet(idTimerRender, true);
 	//SSCore_ChannelPlay(SX_SOUND_CHANNEL_GAME);
-	SSInput_SetEnable(true);
+//	SSInput_SetEnable(true);
 }
 
 void CEditorState::deactivate()
@@ -89,6 +89,6 @@ void CEditorState::deactivate()
 	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
 	Core_TimeWorkingSet(idTimerRender, false);
 	//SSCore_ChannelStop(SX_SOUND_CHANNEL_GAME);
-	SSInput_SetEnable(false);
+//	SSInput_SetEnable(false);
 }
 

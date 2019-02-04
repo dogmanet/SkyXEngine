@@ -242,9 +242,9 @@ SX_LIB_API ID SRender_EditorGetSelectTex()
 //##########################################################################
 
 
-SX_LIB_API void SRender_ComDeviceLost(bool isSetWindowSize)
+SX_LIB_API bool SRender_ComDeviceLost(bool isSetWindowSize)
 {
-	rfunc::ComDeviceLost(isSetWindowSize);
+	return(rfunc::ComDeviceLost(isSetWindowSize));
 }
 
 SX_LIB_API void SRender_ComVisibleForLight()

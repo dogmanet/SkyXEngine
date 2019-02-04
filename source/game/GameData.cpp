@@ -249,8 +249,11 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 		//GameData::m_pGameStateManager->activate("ingame");
 
-		Core_0ConsoleExecCmd("gmode ingame");
-		Core_0ConsoleExecCmd("spawn");
+		if(!m_pMgr->isEditorMode())
+		{
+			Core_0ConsoleExecCmd("gmode ingame");
+			Core_0ConsoleExecCmd("spawn");
+		}
 
 		for(int i = 0; i < 0; ++i)
 		{

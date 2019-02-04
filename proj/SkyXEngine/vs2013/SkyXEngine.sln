@@ -31,6 +31,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxgcore", "..\..\sxgcore\vs2013\sxgcore.vcxproj", "{AEECC2DB-C7C7-4089-9262-A69794DF834D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{C1C1F046-C839-4602-AF70-923CDD237C1B} = {C1C1F046-C839-4602-AF70-923CDD237C1B}
+		{15AD3AF2-47B1-4836-9777-F1249EB299A7} = {15AD3AF2-47B1-4836-9777-F1249EB299A7}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxgeom", "..\..\sxgeom\vs2013\sxgeom.vcxproj", "{0C7E3DB7-005F-41E9-A570-868BCF959E91}"
@@ -328,6 +329,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gxgapidx9", "..\..\..\sdks\graphix\proj\graphix\dx9\vs2013\gxgapidx9.vcxproj", "{15AD3AF2-47B1-4836-9777-F1249EB299A7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gxgapidx11", "..\..\..\sdks\graphix\proj\graphix\dx11\vs2013\gxgapidx11.vcxproj", "{DAFA20F5-5162-4F21-99AF-DB8084D3C557}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "terrax", "..\..\terrax\vs2013\terrax.vcxproj", "{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64}"
+	ProjectSection(ProjectDependencies) = postProject
+		{97D8EE94-0A6D-47F2-BE01-63F7C89715BC} = {97D8EE94-0A6D-47F2-BE01-63F7C89715BC}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -885,6 +891,18 @@ Global
 		{DAFA20F5-5162-4F21-99AF-DB8084D3C557}.Release Singlethreaded|x64.ActiveCfg = Release|Win32
 		{DAFA20F5-5162-4F21-99AF-DB8084D3C557}.Release|Win32.ActiveCfg = Release|Win32
 		{DAFA20F5-5162-4F21-99AF-DB8084D3C557}.Release|x64.ActiveCfg = Release|Win32
+		{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64}.Debug Singlethreaded|Win32.ActiveCfg = Debug|Win32
+		{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64}.Debug Singlethreaded|Win32.Build.0 = Debug|Win32
+		{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64}.Debug Singlethreaded|x64.ActiveCfg = Debug|Win32
+		{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64}.Debug|Win32.Build.0 = Debug|Win32
+		{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64}.Debug|x64.ActiveCfg = Debug|Win32
+		{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64}.Release Singlethreaded|Win32.ActiveCfg = Release|Win32
+		{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64}.Release Singlethreaded|Win32.Build.0 = Release|Win32
+		{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64}.Release Singlethreaded|x64.ActiveCfg = Release|Win32
+		{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64}.Release|Win32.ActiveCfg = Release|Win32
+		{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64}.Release|Win32.Build.0 = Release|Win32
+		{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -936,5 +954,6 @@ Global
 		{9117FCDB-957B-4FF8-8AD4-90965159B721} = {8C9E1225-F0B3-403E-AB88-3372E67DE173}
 		{15AD3AF2-47B1-4836-9777-F1249EB299A7} = {8C9E1225-F0B3-403E-AB88-3372E67DE173}
 		{DAFA20F5-5162-4F21-99AF-DB8084D3C557} = {8C9E1225-F0B3-403E-AB88-3372E67DE173}
+		{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64} = {5128FBE9-1706-4255-B422-4A652320085E}
 	EndGlobalSection
 EndGlobal

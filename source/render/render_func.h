@@ -56,7 +56,7 @@ namespace rfunc
 	//**********************************************************************
 
 	//! обработка потери и восстановление устройства
-	void ComDeviceLost(bool isSetWindowSize);
+	bool ComDeviceLost(bool isSetWindowSize);
 
 	//! обработка и установка основных матриц, обработка плоскостей отсечения
 	void UpdateView();						

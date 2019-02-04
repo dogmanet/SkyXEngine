@@ -1,0 +1,185 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>terrax</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>$(ProjectName)_d</TargetName>
+    <IncludePath>../../../sdks/bullet3/src;../../../sdks/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../libs</LibraryPath>
+    <SourcePath>$(VC_SourcePath);../../../source</SourcePath>
+    <OutDir>../../../build/bin/</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>../../../build/bin/</OutDir>
+    <IncludePath>../../../sdks/bullet3/src;../../../sdks/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../libs</LibraryPath>
+    <SourcePath>$(VC_SourcePath);../../../source</SourcePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;SX_TERRAX;_DEBUG;_WINDOWS;SX_LEVEL_EDITOR;%(PreprocessorDefinitions);SX_LIB_NAME="LEd"</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level1</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;SX_TERRAX;NDEBUG;_WINDOWS;SX_LEVEL_EDITOR;%(PreprocessorDefinitions);SX_LIB_NAME="LEd"</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
+    <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
+    <ClCompile Include="..\..\..\source\editors_utils\axes_helper.cpp" />
+    <ClCompile Include="..\..\..\source\skyxengine.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\mainWindow.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\terrax.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\source\terrax\terrax.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\common\file_utils.h" />
+    <ClInclude Include="..\..\..\source\common\string.h" />
+    <ClInclude Include="..\..\..\source\common\string_utils.h" />
+    <ClInclude Include="..\..\..\source\editors_utils\axes_helper.h" />
+    <ClInclude Include="..\..\..\source\gdefines.h" />
+    <ClInclude Include="..\..\..\source\SkyXEngine.h" />
+    <ClInclude Include="..\..\..\source\terrax\resource.h" />
+    <ClInclude Include="..\..\..\source\terrax\terrax.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\source\favicon.ico" />
+    <Image Include="..\..\..\source\SkyXEngine_preview.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\ab_arrow.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\ab_arrow.png" />
+    <Image Include="..\..\..\source\terrax\resource\ab_camera.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\aigrid_bound.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\aigrid_graphpoint.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\aigrid_quad.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\arrow.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\axes.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\bitmap29.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\bitmap31.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\grid.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\lvl_in.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\lvl_out.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\new.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\open.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\pos.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\reset_update_local_light.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\rot.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\r_ad.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\r_c.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\r_l.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\r_n.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\r_p.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\r_s.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\save.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\save_as.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\scale.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\sel_cb.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\sel_m.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\sel_s.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\sel_z.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\sun.bmp" />
+    <Image Include="resource\ab_arrow.bmp" />
+    <Image Include="resource\ab_arrow.png" />
+    <Image Include="resource\ab_camera.bmp" />
+    <Image Include="resource\aigrid_bound.bmp" />
+    <Image Include="resource\aigrid_graphpoint.bmp" />
+    <Image Include="resource\aigrid_quad.bmp" />
+    <Image Include="resource\arrow.bmp" />
+    <Image Include="resource\axes.bmp" />
+    <Image Include="resource\grid.bmp" />
+    <Image Include="resource\lvl_in.bmp" />
+    <Image Include="resource\lvl_out.bmp" />
+    <Image Include="resource\open.bmp" />
+    <Image Include="resource\pos.bmp" />
+    <Image Include="resource\reset_update_local_light.bmp" />
+    <Image Include="resource\rot.bmp" />
+    <Image Include="resource\r_ad.bmp" />
+    <Image Include="resource\r_c.bmp" />
+    <Image Include="resource\r_l.bmp" />
+    <Image Include="resource\r_n.bmp" />
+    <Image Include="resource\r_p.bmp" />
+    <Image Include="resource\r_s.bmp" />
+    <Image Include="resource\save.bmp" />
+    <Image Include="resource\save_as.bmp" />
+    <Image Include="resource\scale.bmp" />
+    <Image Include="resource\sel_cb.bmp" />
+    <Image Include="resource\sel_m.bmp" />
+    <Image Include="resource\sel_s.bmp" />
+    <Image Include="resource\sel_z.bmp" />
+    <Image Include="resource\sun.bmp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

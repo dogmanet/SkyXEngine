@@ -79,6 +79,9 @@ See the license in LICENSE
 /*! простая отрисовка (не материальная) */
 #define RENDER_STATE_FREE		2	
 
+/*! отрисовка контуров, для редактора */
+#define RENDER_STATE_WIRE		3	
+
 //!@}
 
 /*! \name Идентификаторы для определяния типа просчетов видимости
@@ -290,7 +293,7 @@ SX_LIB_API void SRender_UpdateEditorial(DWORD timeDelta);
 //##########################################################################
 
 //! обработка потери и восстановление устройства, isSetWindowSize - устанавливать ли размеры окна (сделано для редакторов)
-SX_LIB_API void SRender_ComDeviceLost(bool isSetWindowSize);
+SX_LIB_API bool SRender_ComDeviceLost(bool isSetWindowSize);
 
 //! обработка видимости для источников света
 SX_LIB_API void SRender_ComVisibleForLight();

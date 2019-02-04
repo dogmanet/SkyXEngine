@@ -75,7 +75,7 @@ void rfunc::SetRenderSceneFilterUn()
 
 //##########################################################################
 
-void rfunc::ComDeviceLost(bool isSetWindowSize)
+bool rfunc::ComDeviceLost(bool isSetWindowSize)
 {
 	static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
 
@@ -83,7 +83,7 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 	static int *r_win_height = (int*)GET_PCVAR_INT("r_win_height");
 	static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
 
-	if (isSetWindowSize && *r_resize != RENDER_RESIZE_CHANGE)
+	if(isSetWindowSize && *r_resize != RENDER_RESIZE_CHANGE)
 	{
 		//получаем текущий размер окна в которое рисовали
 		RECT rect_scene;
@@ -91,6 +91,10 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 
 		*r_win_width = rect_scene.right;
 		*r_win_height = rect_scene.bottom;
+		if(!*r_win_width || !*r_win_height)
+		{
+			return(false);
+		}
 	}
 
 	//сбрасываем все что необходимо для восстановления устройства
@@ -109,24 +113,25 @@ void rfunc::ComDeviceLost(bool isSetWindowSize)
 
 	/*if (bf)
 	{
-		//если все-таки функция зашла сюда значит что-то было неосвобождено
-		LibReport(REPORT_MSG_LEVEL_ERROR, "reset device is failed ... \n");
+	//если все-таки функция зашла сюда значит что-то было неосвобождено
+	LibReport(REPORT_MSG_LEVEL_ERROR, "reset device is failed ... \n");
 	}
 	else
 	{*/
 
-		gdata::InitAllMatrix();
-		*r_resize = RENDER_RESIZE_NONE;
-		SGCore_OnResetDevice();
-		SGeom_OnResetDevice();
-		SLight_OnResetDevice();
-		SMtrl_OnResetDevice();
-		SGreen_OnResetDevice();
-		SPE_OnResetDevice();
-		SGame_OnResetDevice();
-		SPP_OnDeviceReset();
+	gdata::InitAllMatrix();
+	*r_resize = RENDER_RESIZE_NONE;
+	SGCore_OnResetDevice();
+	SGeom_OnResetDevice();
+	SLight_OnResetDevice();
+	SMtrl_OnResetDevice();
+	SGreen_OnResetDevice();
+	SPE_OnResetDevice();
+	SGame_OnResetDevice();
+	SPP_OnDeviceReset();
 	//	gdata::pDXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 	// }
+	return(true);
 }
 
 void rfunc::ComVisibleForLight()
