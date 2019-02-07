@@ -98,6 +98,7 @@
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\editors_utils\axes_helper.cpp" />
     <ClCompile Include="..\..\..\source\skyxengine.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\Grid.cpp" />
     <ClCompile Include="..\..\..\source\terrax\mainWindow.cpp" />
     <ClCompile Include="..\..\..\source\terrax\terrax.cpp" />
   </ItemGroup>
@@ -111,6 +112,7 @@
     <ClInclude Include="..\..\..\source\editors_utils\axes_helper.h" />
     <ClInclude Include="..\..\..\source\gdefines.h" />
     <ClInclude Include="..\..\..\source\SkyXEngine.h" />
+    <ClInclude Include="..\..\..\source\terrax\Grid.h" />
     <ClInclude Include="..\..\..\source\terrax\resource.h" />
     <ClInclude Include="..\..\..\source\terrax\terrax.h" />
   </ItemGroup>
@@ -149,6 +151,7 @@
     <Image Include="..\..\..\source\terrax\resource\sel_s.bmp" />
     <Image Include="..\..\..\source\terrax\resource\sel_z.bmp" />
     <Image Include="..\..\..\source\terrax\resource\sun.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\toolbar1.bmp" />
     <Image Include="resource\ab_arrow.bmp" />
     <Image Include="resource\ab_arrow.png" />
     <Image Include="resource\ab_camera.bmp" />

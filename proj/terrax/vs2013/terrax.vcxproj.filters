@@ -36,6 +36,9 @@
     <ClCompile Include="..\..\..\source\terrax\mainWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\Grid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\terrax\terrax.rc">
@@ -65,6 +68,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\terrax\terrax.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\Grid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -256,6 +262,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\..\..\source\terrax\resource\ab_camera.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\terrax\resource\toolbar1.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -28,9 +28,7 @@ IGXSwapChain *g_pBottomRightSwapChain = NULL;
 IGXDepthStencilSurface *g_pTopRightDepthStencilSurface = NULL;
 IGXDepthStencilSurface *g_pBottomLeftDepthStencilSurface = NULL;
 IGXDepthStencilSurface *g_BottomRightDepthStencilSurface = NULL;
-float g_fTopRightScale = 1.0f;
-float g_fBottomLeftScale = 1.0f;
-float g_fBottomRightScale = 1.0f;
+
 #endif
 
 //ID3DXMesh *g_pMeshBound = 0;
@@ -1225,8 +1223,9 @@ void SkyXEngine_Frame(DWORD timeDelta)
 //	float3 pv2DEyePoses[] = {float3(0.0f, 100.0f, 0.0f), float3(100.0f, 0.0f, 0.0f), float3(0.0f, 0.0f, 100.0f)};
 //	float3 pv2DEyeDirs[] = {float3(0.0f, -1.0f, 0.0f), float3(-1.0f, 0.0f, 0.0f), float3(0.0f, 0.0f, -1.0f)};
 //	float3 pv2DUPs[] = {float3(0.0f, 0.0f, 1.0f), float3(0.0f, 1.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)};
-	ICamera *pCameras[] = {g_pTopRightCamera, g_pBottomLeftCamera, g_pBottomRightCamera};
-	float fScales[] = {g_fTopRightScale, g_fBottomLeftScale, g_fBottomRightScale};
+	ICamera *pCameras[] = {g_xConfig.m_pTopRightCamera, g_xConfig.m_pBottomLeftCamera, g_xConfig.m_pBottomRightCamera};
+	float fScales[] = {g_xConfig.m_fTopRightScale, g_xConfig.m_fBottomLeftScale, g_xConfig.m_fBottomRightScale};
+	X_2D_VIEW views[] = {g_xConfig.m_x2DTopRightView, g_xConfig.m_x2DBottomLeftView, g_xConfig.m_x2DBottomRightView};
 	ICamera *p3DCamera = SRender_GetCamera();
 	//#############################################################################
 
@@ -1240,7 +1239,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		IGXSurface *pBackBuffer = p2DSwapChains[i]->getColorTarget();
 		pDXDevice->setColorTarget(pBackBuffer);
 		pDXDevice->setDepthStencilSurface(p2DDepthStencilSurfaces[i]);
-		pDXDevice->clear(GXCLEAR_COLOR);
+		pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_STENCIL);
 
 		pDXDevice->setRasterizerState(g_pRSWireframe);
 		pDXDevice->setDepthStencilState(g_pDSNoZ);
@@ -1252,10 +1251,10 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		Core_RMatrixSet(G_RI_MATRIX_OBSERVER_PROJ, &mProj);
 		Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(mView * mProj));
 
-		Core_RMatrixGet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
+		Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 		Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_FREE);
 
-
+		XRender2D(views[i], fScales[i]);
 
 		if(SGeom_GetCountModels() > 0)
 			SGeom_Render(timeDelta, GEOM_RENDER_TYPE_ALL);

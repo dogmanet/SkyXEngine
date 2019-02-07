@@ -635,7 +635,7 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 
 	Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
 
-	Core_RMatrixGet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
+//	Core_RMatrixGet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 
 	gdata::pDXDevice->setRasterizerState(NULL);
 	gdata::pDXDevice->setDepthStencilState(NULL);
@@ -1863,7 +1863,7 @@ void rfunc::UpdateReflectionSimModel(DWORD timeDelta)
 
 		for (int j = 0; j<6; ++j)
 		{
-			Core_RMatrixGet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
+		//	Core_RMatrixGet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 
 			SMtrl_RefCubePreRender(idMat, j, &(SMMatrixIdentity()));
 

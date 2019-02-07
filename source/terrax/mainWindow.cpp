@@ -23,11 +23,11 @@ HWND g_hTopLeftWnd = NULL;
 HWND g_hBottomRightWnd = NULL;
 HWND g_hBottomLeftWnd = NULL;
 HWND g_hStatusWnd = NULL;
+HWND g_hObjectTreeWnd = NULL;
 
 HWND g_hABArrowButton = NULL;
 HWND g_hABCameraButton = NULL;
 
-X_VIEWPORT_LAYOUT g_xviewportLayout = XVIEW_2X2;
 BOOL g_isXResizeable = TRUE;
 BOOL g_isYResizeable = TRUE;
 
@@ -36,26 +36,17 @@ BOOL g_is3DPanning = FALSE;
 
 extern HACCEL g_hAccelTable;
 
-extern float g_fTopRightScale;
-extern float g_fBottomLeftScale;
-extern float g_fBottomRightScale;
-
 HMENU g_hMenu = NULL;
 
-ICamera *g_pTopRightCamera = NULL;
-ICamera *g_pBottomLeftCamera = NULL;
-ICamera *g_pBottomRightCamera = NULL;
-
-X_2D_VIEW g_x2DTopRightView = X2D_TOP;
-X_2D_VIEW g_x2DBottomLeftView = X2D_SIDE;
-X_2D_VIEW g_x2DBottomRightView = X2D_FRONT;
+CTerraXConfig g_xConfig;
 
 // Forward declarations of functions included in this code module:
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK RenderWndProc(HWND, UINT, WPARAM, LPARAM);
 void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheckItem = -1);
 void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
-
+BOOL XCheckMenuItem(HMENU hMenu, UINT uIDCheckItem, bool bCheck);
+void XUpdateStatusGrid();
 
 ATOM XRegisterClass(HINSTANCE hInstance)
 {
@@ -130,10 +121,72 @@ BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	g_hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR1));
 
+	XCheckMenuItem(g_hMenu, ID_VIEW_GRID, g_xConfig.m_bShowGrid);
+
 	return TRUE;
 }
 
+WNDPROC g_pfnTreeOldWndproc;
+LRESULT CALLBACK TreeViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	if(message == WM_MOUSEWHEEL)
+	{
+		RECT rc;
+		GetClientRect(hWnd, &rc);
+		POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+		if(pt.x < rc.left || pt.x > rc.right || pt.y < rc.top || pt.y > rc.bottom)
+		{
+			SendMessage(g_hWndMain, message, wParam, lParam);
+			return(0);
+		}
+	}
+	return(CallWindowProc(g_pfnTreeOldWndproc, hWnd, message, wParam, lParam));
+}
 
+WNDPROC g_pfnStatusBarOldWndproc;
+LRESULT CALLBACK StatusBarWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	if(message == WM_SIZE)
+	{
+		// 200 100 100 150
+		// selection, world position, lwh, zoom, grid
+
+		RECT rcClient;
+		int iParts = 5;
+
+		// Get the coordinates of the parent window's client area.
+		GetClientRect(GetParent(hWnd), &rcClient);
+
+		// Allocate an array for holding the right edge coordinates.
+		HLOCAL hloc = LocalAlloc(LHND, sizeof(int) * iParts);
+		int *paParts = (int*)LocalLock(hloc);
+
+		// Calculate the right edge coordinate for each part, and
+		// copy the coordinates to the array.
+		paParts[0] = 0;
+		paParts[1] = 200;
+		paParts[2] = 100;
+		paParts[3] = 100;
+		paParts[4] = 150;
+		int iTotal = 0;
+		for(int i = 0; i < iParts; ++i)
+		{
+			iTotal += paParts[i];
+		}
+		paParts[0] = rcClient.right - iTotal;
+		for(int i = 1; i < iParts; ++i)
+		{
+			paParts[i] += paParts[i - 1];
+		}
+
+		// Tell the status bar to create the window parts.
+		SendMessage(hWnd, SB_SETPARTS, (WPARAM)iParts, (LPARAM)paParts);
+		// Free the array, and return.
+		LocalUnlock(hloc);
+		LocalFree(hloc);
+	}
+	return(CallWindowProc(g_pfnStatusBarOldWndproc, hWnd, message, wParam, lParam));
+}
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -217,8 +270,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			//	UpdateWindow(g_hTopLeftWnd);
 		}
 
-		g_hStatusWnd = CreateWindowEx(0, STATUSCLASSNAME, (PCTSTR)"For help, press F1", SBARS_SIZEGRIP | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hWnd, (HMENU)IDC_STATUSBAR, hInst, NULL);                   // no window creation data
-
+		g_hStatusWnd = CreateWindowEx(0, STATUSCLASSNAME, "For help, press F1", SBARS_SIZEGRIP | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hWnd, (HMENU)IDC_STATUSBAR, hInst, NULL);                   // no window creation data
+		{
+			g_pfnStatusBarOldWndproc = (WNDPROC)GetWindowLongPtr(g_hStatusWnd, GWLP_WNDPROC);
+			SetWindowLongPtr(g_hStatusWnd, GWLP_WNDPROC, (LONG)StatusBarWndProc);
+			SendMessage(g_hStatusWnd, WM_SIZE, 0, 0);
+			XUpdateStatusGrid();
+		}
 
 		g_hABArrowButton = CreateWindow("Button", "", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON | BS_BITMAP | BS_PUSHLIKE | BS_CHECKBOX, rect.left - MARGIN_LEFT, rect.top, MARGIN_LEFT, AB_BUTTON_HEIGHT, hWnd, (HMENU)IDC_AB_ARROW, hInst, NULL);
 		{
@@ -230,6 +288,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			HBITMAP hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP31));
 			SendMessage(g_hABCameraButton, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
+		}
+
+		g_hObjectTreeWnd = CreateWindowExA(0, WC_TREEVIEW, "", WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_CHECKBOXES | TVS_NOHSCROLL, rect.right, rect.top, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, 0, hInst, NULL);
+		{
+			g_pfnTreeOldWndproc = (WNDPROC)GetWindowLongPtr(g_hObjectTreeWnd, GWLP_WNDPROC);
+			SetWindowLongPtr(g_hObjectTreeWnd, GWLP_WNDPROC, (LONG)TreeViewWndProc);
+		}
+		
+		
+		{
+			TV_INSERTSTRUCT tvis;
+			memset(&tvis, 0, sizeof(tvis));
+			tvis.hParent = TVI_ROOT;
+			tvis.hInsertAfter = TVI_LAST;
+			tvis.item.mask = TVIF_TEXT;
+			tvis.item.pszText = "Test item";
+			tvis.item.cchTextMax = lstrlen(tvis.item.pszText);
+			HTREEITEM hItem = TreeView_InsertItem(g_hObjectTreeWnd, &tvis);
+
+			tvis.hParent = hItem;
+			tvis.item.pszText = "Object 1";
+			tvis.item.cchTextMax = lstrlen(tvis.item.pszText);
+			TreeView_InsertItem(g_hObjectTreeWnd, &tvis);
+			tvis.item.pszText = "Object 2";
+			tvis.item.cchTextMax = lstrlen(tvis.item.pszText);
+			TreeView_InsertItem(g_hObjectTreeWnd, &tvis);
 		}
 		return FALSE;
 		break;
@@ -279,6 +363,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		MoveWindow(g_hBottomLeftWnd, rect.left, rect.top + iTopHeight + SPLITTER_BAR_WIDTH, iLeftWidth, rect.bottom - rect.top - SPLITTER_BAR_WIDTH - iTopHeight, FALSE);
 		MoveWindow(g_hTopRightWnd, rect.left + iLeftWidth + SPLITTER_BAR_WIDTH, rect.top, rect.right - rect.left - iLeftWidth - SPLITTER_BAR_WIDTH, iTopHeight, FALSE);
 		MoveWindow(g_hBottomRightWnd, rect.left + iLeftWidth + SPLITTER_BAR_WIDTH, rect.top + iTopHeight + SPLITTER_BAR_WIDTH, rect.right - rect.left - iLeftWidth - SPLITTER_BAR_WIDTH, rect.bottom - rect.top - SPLITTER_BAR_WIDTH - iTopHeight, FALSE);
+		MoveWindow(g_hObjectTreeWnd, rect.right, rect.top, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, FALSE);
 
 		InvalidateRect(hWnd, &rect, TRUE);
 
@@ -351,10 +436,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			CheckDlgButton(hWnd, IDC_AB_ARROW, TRUE);
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, FALSE);
 			break;
-
 		case IDC_AB_CAMERA:
 			CheckDlgButton(hWnd, IDC_AB_ARROW, FALSE);
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, TRUE);
+			break;
+
+		case ID_GRIDSIZE_SMALLER:
+			if(g_xConfig.m_gridStep > GRID_STEP_MINIMAL)
+			{
+				g_xConfig.m_gridStep = (GRID_STEP)(g_xConfig.m_gridStep - 1);
+				XUpdateStatusGrid();
+			}
+			break;
+		case ID_GRIDSIZE_BIGGER:
+			if(g_xConfig.m_gridStep < GRID_STEP_MAXIMAL)
+			{
+				g_xConfig.m_gridStep = (GRID_STEP)(g_xConfig.m_gridStep + 1);
+				XUpdateStatusGrid();
+			}
+			break;
+		case ID_VIEW_GRID:
+			g_xConfig.m_bShowGrid = !g_xConfig.m_bShowGrid;
+			XCheckMenuItem(g_hMenu, ID_VIEW_GRID, g_xConfig.m_bShowGrid);
 			break;
 		}
 		break;
@@ -615,27 +718,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			else
 			{
-				pCamera = g_pBottomLeftCamera;
-				x2dView = g_x2DBottomLeftView;
+				pCamera = g_xConfig.m_pBottomLeftCamera;
+				x2dView = g_xConfig.m_x2DBottomLeftView;
 				hTargetWnd = g_hBottomLeftWnd;
-				pfOldScale = &g_fBottomLeftScale;
+				pfOldScale = &g_xConfig.m_fBottomLeftScale;
 			}
 		}
 		else
 		{
 			if(isTop)
 			{
-				pCamera = g_pTopRightCamera;
-				x2dView = g_x2DTopRightView;
+				pCamera = g_xConfig.m_pTopRightCamera;
+				x2dView = g_xConfig.m_x2DTopRightView;
 				hTargetWnd = g_hTopRightWnd;
-				pfOldScale = &g_fTopRightScale;
+				pfOldScale = &g_xConfig.m_fTopRightScale;
 			}
 			else
 			{
-				pCamera = g_pBottomRightCamera;
-				x2dView = g_x2DBottomRightView;
+				pCamera = g_xConfig.m_pBottomRightCamera;
+				x2dView = g_xConfig.m_x2DBottomRightView;
 				hTargetWnd = g_hBottomRightWnd;
-				pfOldScale = &g_fBottomRightScale;
+				pfOldScale = &g_xConfig.m_fBottomRightScale;
 			}
 		}
 		if(pCamera)
@@ -660,7 +763,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			case X2D_SIDE:
 				vWorldPt = float2(vCamPos.z, vCamPos.y);
-				vDelta.x *= -1;
+			//	vDelta.x *= -1;
 				break;
 			}
 			vWorldPt += vDelta * (*pfOldScale - fNewScale);
@@ -768,15 +871,15 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			{
 				if(hWnd == g_hTopRightWnd)
 				{
-					x2dView = g_x2DTopRightView;
+					x2dView = g_xConfig.m_x2DTopRightView;
 				}
 				else if(hWnd == g_hBottomLeftWnd)
 				{
-					x2dView = g_x2DBottomLeftView;
+					x2dView = g_xConfig.m_x2DBottomLeftView;
 				}
 				else if(hWnd == g_hBottomRightWnd)
 				{
-					x2dView = g_x2DBottomRightView;
+					x2dView = g_xConfig.m_x2DBottomRightView;
 				}
 				switch(x2dView)
 				{
@@ -871,18 +974,18 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			X_2D_VIEW *pX2DView = NULL;
 			if(hWnd == g_hTopRightWnd)
 			{
-				pTargetCam = g_pTopRightCamera;
-				pX2DView = &g_x2DTopRightView;
+				pTargetCam = g_xConfig.m_pTopRightCamera;
+				pX2DView = &g_xConfig.m_x2DTopRightView;
 			}
 			else if(hWnd == g_hBottomLeftWnd)
 			{
-				pTargetCam = g_pBottomLeftCamera;
-				pX2DView = &g_x2DBottomLeftView;
+				pTargetCam = g_xConfig.m_pBottomLeftCamera;
+				pX2DView = &g_xConfig.m_x2DBottomLeftView;
 			}
 			else if(hWnd == g_hBottomRightWnd)
 			{
-				pTargetCam = g_pBottomRightCamera;
-				pX2DView = &g_x2DBottomRightView;
+				pTargetCam = g_xConfig.m_pBottomRightCamera;
+				pX2DView = &g_xConfig.m_x2DBottomRightView;
 			}
 			switch(LOWORD(wParam))
 			{
@@ -1002,6 +1105,70 @@ void XInitViewportLayout(X_VIEWPORT_LAYOUT layout)
 	
 	SendMessage(g_hWndMain, WM_COMMAND, MAKEWPARAM(ID_VIEW_AUTOSIZEVIEWS, 0), 0);
 
-	g_xviewportLayout = layout;
+	g_xConfig.m_xViewportLayout = layout;
 	SetMenuItemInfoA(g_hMenu, uMenuId, FALSE, &mii);
+}
+
+BOOL XCheckMenuItem(HMENU hMenu, UINT uIDCheckItem, bool bCheck)
+{
+	MENUITEMINFOA mii;
+	memset(&mii, 0, sizeof(mii));
+	mii.cbSize = sizeof(mii);
+	mii.fMask = MIIM_STATE;
+	mii.fState = bCheck ? MFS_CHECKED : MFS_UNCHECKED;
+	return(SetMenuItemInfoA(hMenu, uIDCheckItem, FALSE, &mii));
+}
+
+void XUpdateStatusGrid()
+{
+	char szMsg[64];
+	const char *szGrid = "";
+	switch(g_xConfig.m_gridStep)
+	{
+	case GRID_STEP_1CM:
+		szGrid = "1cm";
+		break;
+	case GRID_STEP_2CM:
+		szGrid = "2cm";
+		break;
+	case GRID_STEP_5CM:
+		szGrid = "5cm";
+		break;
+	case GRID_STEP_10CM:
+		szGrid = "10cm";
+		break;
+	case GRID_STEP_20CM:
+		szGrid = "20cm";
+		break;
+	case GRID_STEP_50CM:
+		szGrid = "50cm";
+		break;
+	case GRID_STEP_1M:
+		szGrid = "1m";
+		break;
+	case GRID_STEP_2M:
+		szGrid = "2m";
+		break;
+	case GRID_STEP_5M:
+		szGrid = "5m";
+		break;
+	case GRID_STEP_10M:
+		szGrid = "10m";
+		break;
+	case GRID_STEP_20M:
+		szGrid = "20m";
+		break;
+	case GRID_STEP_50M:
+		szGrid = "50m";
+		break;
+	case GRID_STEP_100M:
+		szGrid = "100m";
+		break;
+	case GRID_STEP_AXES:
+		szGrid = "axes";
+		break;
+	}
+
+	sprintf_s(szMsg, "Snap: %s; Grid: %s", g_xConfig.m_bSnapGrid ? "on" : "off", szGrid);
+	SendMessage(g_hStatusWnd, SB_SETTEXT, MAKEWPARAM(4, 0), (LPARAM)szMsg);
 }

@@ -270,3 +270,18 @@ struct VSO_GUISimple
 };
 
 //!@}
+
+/*! \name TerraX editor
+@{*/
+
+struct VSI_TXGrid
+{
+	half4 vPosition	:POSITION0;
+};
+
+struct VSO_TXGrid
+{
+	half4 vPosition	:POSITION;
+};
+
+//!@}
