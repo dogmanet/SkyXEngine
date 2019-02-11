@@ -13,6 +13,12 @@
       <UniqueIdentifier>{206B0F8E-9358-439E-A1F4-F12097CE8CC4}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\obj">
+      <UniqueIdentifier>{f55bc6d9-5b3d-4b46-b587-6af6b777dfe5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\obj">
+      <UniqueIdentifier>{1f7cb921-c97d-4b33-9c29-5eab4ff99c01}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\terrax\terrax.cpp">
@@ -38,6 +44,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\terrax\Grid.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\XObject.cpp">
+      <Filter>Source Files\obj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\XStaticGeomObject.cpp">
+      <Filter>Source Files\obj</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -72,6 +84,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\terrax\Grid.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\XObject.h">
+      <Filter>Header Files\obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\XStaticGeomObject.h">
+      <Filter>Header Files\obj</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

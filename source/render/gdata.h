@@ -53,6 +53,8 @@ namespace gdata
 
 	//! id текстуры с цветмо выделения (для редакторов)
 	extern ID idSelectTex;
+	extern ID idWhiteTex;
+	extern ID idDashedTex;
 	
 
 	//! значение дальней и ближней плоскостей отсечения

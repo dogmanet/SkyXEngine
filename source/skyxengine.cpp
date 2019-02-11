@@ -14,7 +14,6 @@ FILE *g_pFileOutLog = 0;
 report_func g_fnReportf = SkyXEngine_PrintfLog;
 
 IGXDepthStencilState *g_pDSNoZ;
-IGXRasterizerState *g_pRSWireframe;
 ID g_idShaderScreenOut;
 
 HACCEL g_hAccelTable = NULL;
@@ -453,10 +452,6 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	dsDesc.bDepthEnable = FALSE;
 	dsDesc.bEnableDepthWrite = FALSE;
 	g_pDSNoZ = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
-
-	GXRASTERIZER_DESC rsDesc;
-	rsDesc.fillMode = GXFILL_WIREFRAME;
-	g_pRSWireframe = SGCore_GetDXDevice()->createRasterizerState(&rsDesc);
 
 	ID idScreenOutVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
 	ID idScreenOutPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
@@ -1216,6 +1211,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 //#endif
 
 #ifdef SX_TERRAX 
+	XRender3D();
+
 	//#############################################################################
 	HWND hWnds[] = {g_hTopRightWnd, g_hBottomLeftWnd, g_hBottomRightWnd};
 	IGXSwapChain *p2DSwapChains[] = {g_pTopRightSwapChain, g_pBottomLeftSwapChain, g_pBottomRightSwapChain};
@@ -1241,10 +1238,10 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		pDXDevice->setDepthStencilSurface(p2DDepthStencilSurfaces[i]);
 		pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_STENCIL);
 
-		pDXDevice->setRasterizerState(g_pRSWireframe);
+		pDXDevice->setRasterizerState(g_xRenderStates.pRSWireframe);
 		pDXDevice->setDepthStencilState(g_pDSNoZ);
 		pDXDevice->setBlendState(NULL);
-		SMMATRIX mProj = SMMatrixOrthographicLH((float)pBackBuffer->getWidth() * fScales[i], (float)pBackBuffer->getHeight() * fScales[i], -1000.0f, 1000.0f);
+		SMMATRIX mProj = SMMatrixOrthographicLH((float)pBackBuffer->getWidth() * fScales[i], (float)pBackBuffer->getHeight() * fScales[i], 1.0f, 2000.0f);
 		SMMATRIX mView;
 		pCameras[i]->getViewMatrix(&mView);
 		Core_RMatrixSet(G_RI_MATRIX_OBSERVER_VIEW, &mView);
@@ -1254,11 +1251,13 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 		Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_FREE);
 
-		XRender2D(views[i], fScales[i]);
+		XRender2D(views[i], fScales[i], true);
 
 		if(SGeom_GetCountModels() > 0)
 			SGeom_Render(timeDelta, GEOM_RENDER_TYPE_ALL);
 
+		Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
+		XRender2D(views[i], fScales[i], false);
 		mem_release(pBackBuffer);
 	}
 

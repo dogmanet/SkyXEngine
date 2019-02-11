@@ -278,6 +278,12 @@ SX_LIB_API bool SRender_EditorGetRenderAxesStatic();
 //! возвращает id текстуры которая содержит цвет выделения
 SX_LIB_API ID SRender_EditorGetSelectTex();
 
+//! возвращает id текстуры которая содержит белый цвет 
+SX_LIB_API ID SRender_EditorGetWhiteTex();
+
+//! возвращает id текстуры которая содержит полосы
+SX_LIB_API ID SRender_EditorGetDashedTex();
+
 //! установка возможности управления камерой
 SX_LIB_API void SRender_EditorCameraSetMove(bool canMove);
 

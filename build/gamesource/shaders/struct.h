@@ -284,4 +284,16 @@ struct VSO_TXGrid
 	half4 vPosition	:POSITION;
 };
 
+struct VSI_TXTextured
+{
+	half4 vPosition	:POSITION0;
+	half2 vTexUV	:TEXCOORD0;
+};
+
+struct VSO_TXTextured
+{
+	half4 vPosition	:POSITION;
+	half2 vTexUV	:TEXCOORD0;
+};
+
 //!@}

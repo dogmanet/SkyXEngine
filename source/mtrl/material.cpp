@@ -52,6 +52,7 @@ CMaterials::CMaterials()
 		tmpMtlDefaultLight->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
 	}
 
+	tmpumtl->m_pMtrl->m_oMainGraphics.updateShaderKit(true);
 	m_idMtrlDefLight = addUnitMaterial(tmpumtl);
 	addName(tmpMtlDefaultLight->m_sName.c_str(), m_idMtrlDefLight);
 
@@ -80,6 +81,7 @@ CMaterials::CMaterials()
 		tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
 	}
 
+	tmpumtl->m_pMtrl->m_oMainGraphics.updateShaderKit(true);
 	m_idMtrlDefStatic = addUnitMaterial(tmpumtl);
 	addName(tmpumtl->m_pMtrl->m_sName.c_str(), m_idMtrlDefStatic);
 
@@ -105,6 +107,7 @@ CMaterials::CMaterials()
 		tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
 	}
 
+	tmpumtl->m_pMtrl->m_oMainGraphics.updateShaderKit(true);
 	m_idMtrlDefTree = addUnitMaterial(tmpumtl);
 	addName(tmpumtl->m_pMtrl->m_sName.c_str(), m_idMtrlDefTree);
 
@@ -130,6 +133,7 @@ CMaterials::CMaterials()
 		tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
 	}
 
+	tmpumtl->m_pMtrl->m_oMainGraphics.updateShaderKit(true);
 	m_idMtrlDefGrass = addUnitMaterial(tmpumtl);
 	addName(tmpumtl->m_pMtrl->m_sName.c_str(), m_idMtrlDefGrass);
 
@@ -157,10 +161,10 @@ CMaterials::CMaterials()
 		tmpumtl->m_pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(MTL_LIGHTING_DEFAULT_ROUGHNESS, MTL_LIGHTING_DEFAULT_F0, MTL_LIGHTING_DEFAULT_THICKNESS);
 	}
 
+	tmpumtl->m_pMtrl->m_oMainGraphics.updateShaderKit(true);
 	m_idMtrlDefSkin = addUnitMaterial(tmpumtl);
 	addName(tmpumtl->m_pMtrl->m_sName.c_str(), m_idMtrlDefSkin);
 
-	tmpumtl->m_pMtrl->m_oMainGraphics.updateShaderKit(true);
 
 	m_idBeginNonDef = m_aUnitMtrls.size();
 }

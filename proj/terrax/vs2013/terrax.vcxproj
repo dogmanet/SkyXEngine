@@ -101,6 +101,8 @@
     <ClCompile Include="..\..\..\source\terrax\Grid.cpp" />
     <ClCompile Include="..\..\..\source\terrax\mainWindow.cpp" />
     <ClCompile Include="..\..\..\source\terrax\terrax.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\XObject.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\XStaticGeomObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\terrax\terrax.rc" />
@@ -112,9 +114,11 @@
     <ClInclude Include="..\..\..\source\editors_utils\axes_helper.h" />
     <ClInclude Include="..\..\..\source\gdefines.h" />
     <ClInclude Include="..\..\..\source\SkyXEngine.h" />
+    <ClInclude Include="..\..\..\source\terrax\XObject.h" />
     <ClInclude Include="..\..\..\source\terrax\Grid.h" />
     <ClInclude Include="..\..\..\source\terrax\resource.h" />
     <ClInclude Include="..\..\..\source\terrax\terrax.h" />
+    <ClInclude Include="..\..\..\source\terrax\XStaticGeomObject.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\source\favicon.ico" />

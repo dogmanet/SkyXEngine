@@ -368,6 +368,9 @@ void CGrid::render(GRID_STEP step)
 	{
 		m_pDevice->setDepthStencilState(pOldDepthStencilState);
 	}
+
+	SGCore_ShaderUnBind();
+
 	mem_release(pOldBlendState);
 	mem_release(pOldDepthStencilState);
 }

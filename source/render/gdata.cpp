@@ -16,6 +16,8 @@ namespace gdata
 	DS_RT FinalImage = DS_RT_SCENELIGHT;
 	ICamera *pCamera = 0;
 	ID idSelectTex = -1;
+	ID idWhiteTex = -1;
+	ID idDashedTex = -1;
 	
 	float2_t vNearFar = float2_t(0.025, 400);
 	float fProjFov = SM_PIDIV4;	

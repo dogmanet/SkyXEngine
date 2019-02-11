@@ -8,12 +8,18 @@
 #include <commctrl.h>
 #include <combaseapi.h>
 
+#include <skyxengine.h>
 #include <core/sxcore.h>
 #include <gcore/sxgcore.h>
 #include <render/sxrender.h>
 #include <input/sxinput.h>
+#include <sxguiwinapi/sxgui.h>
+#include <level/sxlevel.h>
 
 #include "terrax.h"
+#include "XObject.h"
+
+extern Array<CXObject*> g_pLevelObjects;
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
@@ -39,6 +45,7 @@ extern HACCEL g_hAccelTable;
 HMENU g_hMenu = NULL;
 
 CTerraXConfig g_xConfig;
+CTerraXState g_xState;
 
 // Forward declarations of functions included in this code module:
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -47,6 +54,7 @@ void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheck
 void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
 BOOL XCheckMenuItem(HMENU hMenu, UINT uIDCheckItem, bool bCheck);
 void XUpdateStatusGrid();
+void XUpdateStatusMPos();
 
 ATOM XRegisterClass(HINSTANCE hInstance)
 {
@@ -106,7 +114,7 @@ BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
 	UINT nx_pos = (nx_size - WINDOW_WIDTH) / 2;
 	UINT ny_pos = (ny_size - WINDOW_HEIGHT) / 2;
 
-	g_hWndMain = CreateWindowA(MAIN_WINDOW_CLASS, "TerraX", WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_OVERLAPPEDWINDOW, nx_pos, ny_pos, WINDOW_WIDTH, WINDOW_HEIGHT, NULL, g_hMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_MENU1)), hInstance, NULL);
+	g_hWndMain = CreateWindowA(MAIN_WINDOW_CLASS, MAIN_WINDOW_TITLE " | " SKYXENGINE_VERSION4EDITORS, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_OVERLAPPEDWINDOW, nx_pos, ny_pos, WINDOW_WIDTH, WINDOW_HEIGHT, NULL, g_hMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_MENU1)), hInstance, NULL);
 
 	if(!g_hWndMain)
 	{
@@ -117,12 +125,13 @@ BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
 	}
 
 	ShowWindow(g_hWndMain, nCmdShow);
+//	ShowWindow(g_hWndMain, SW_MAXIMIZE);
 	UpdateWindow(g_hWndMain);
 
 	g_hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR1));
 
 	XCheckMenuItem(g_hMenu, ID_VIEW_GRID, g_xConfig.m_bShowGrid);
-
+	
 	return TRUE;
 }
 
@@ -218,13 +227,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch(message)
 	{
 	case WM_CREATE:
+	{
 		hcSizeEW = LoadCursor(NULL, IDC_SIZEWE);
 		hcSizeNS = LoadCursor(NULL, IDC_SIZENS);
 		hcSizeNESW = LoadCursor(NULL, IDC_SIZEALL);
 
-	//	g_hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU1));
-	//	SetMenu(g_hWndMain, g_hMenu); 
-	//	DrawMenuBar(g_hWndMain);
+		//	g_hMenu = LoadMenu(hInst, MAKEINTRESOURCE(IDR_MENU1));
+		//	SetMenu(g_hWndMain, g_hMenu); 
+		//	DrawMenuBar(g_hWndMain);
 
 
 		GetClientRect(hWnd, &rect);
@@ -295,8 +305,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			g_pfnTreeOldWndproc = (WNDPROC)GetWindowLongPtr(g_hObjectTreeWnd, GWLP_WNDPROC);
 			SetWindowLongPtr(g_hObjectTreeWnd, GWLP_WNDPROC, (LONG)TreeViewWndProc);
 		}
-		
-		
+
+
 		{
 			TV_INSERTSTRUCT tvis;
 			memset(&tvis, 0, sizeof(tvis));
@@ -316,9 +326,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			TreeView_InsertItem(g_hObjectTreeWnd, &tvis);
 		}
 		return FALSE;
+	}
 		break;
 
 	case WM_ENTERSIZEMOVE:
+	{
 		GetClientRect(hWnd, &rect);
 
 		rect.top += MARGIN_TOP;
@@ -328,10 +340,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		fCoeffWidth = (float)iLeftWidth / (float)(rect.right - rect.left);
 		fCoeffHeight = (float)iTopHeight / (float)(rect.bottom - rect.top);
+	}
 		break;
 
 	case WM_SIZE:
-
+	{
 		GetClientRect(hWnd, &rect);
 
 		rect.top += MARGIN_TOP;
@@ -379,14 +392,67 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 
 		SendMessage(g_hStatusWnd, WM_SIZE, wParam, lParam);
+	}
 		break;
 
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
 		{
 		case ID_FILE_OPEN:
-			//MessageBox(NULL, "Open", "", MB_OK);
+		{
+			const char *szLevelName = SLevel_GetName();
+			char szPrompt[128];
+			if(szLevelName[0])
+			{
+				sprintf_s(szPrompt, "Save changes to %s?", szLevelName);
+			}
+			UINT mb = MessageBoxA(hWnd, szLevelName[0] ? szPrompt : "Save changes?", MAIN_WINDOW_TITLE, MB_YESNOCANCEL);
+			if(mb == IDYES)
+			{
+				if(!XSaveLevel())
+				{
+					break;
+				}
+			}
+			else if(mb == IDCANCEL)
+			{
+				break;
+			}
+			char szSelName[MAX_PATH];
+			char szSelPath[1024];
+			szSelName[0] = szSelPath[0] = 0;
+			//XLoadLevel("ant");
+			XLoadLevel("bunker");
+			/*if(gui_func::dialogs::SelectDirOwn(szSelName, szSelPath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Open level", false, false))
+			{
+				XLoadLevel(szSelName);
+			}*/
 			break;
+		}
+		case ID_FILE_NEW:
+		{
+			const char *szLevelName = SLevel_GetName();
+			char szPrompt[128];
+			if(szLevelName[0])
+			{
+				sprintf_s(szPrompt, "Save changes to %s?", szLevelName);
+			}
+			UINT mb = MessageBoxA(hWnd, szLevelName[0] ? szPrompt : "Save changes?", MAIN_WINDOW_TITLE, MB_YESNOCANCEL);
+			if(mb == IDYES)
+			{
+				if(!XSaveLevel())
+				{
+					break;
+				}
+			}
+			else if(mb == IDCANCEL)
+			{
+				break;
+			}
+
+			XResetLevel();
+			break;
+		}
 
 		case ID_VIEW_AUTOSIZEVIEWS:
 
@@ -759,7 +825,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			case X2D_FRONT:
 				vWorldPt = float2(vCamPos.x, vCamPos.y);
-				vDelta.x *= -1;
 				break;
 			case X2D_SIDE:
 				vWorldPt = float2(vCamPos.z, vCamPos.y);
@@ -836,6 +901,58 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			ReleaseCapture();
 			break;
 		}
+		if(g_xState.isFrameSelect)
+		{
+			g_xState.isFrameSelect = false;
+			ReleaseCapture();
+
+			X_2D_VIEW xCurView;
+			switch(g_xState.activeWindow)
+			{
+			case XWP_TOP_RIGHT:
+				xCurView = g_xConfig.m_x2DTopRightView;
+				break;
+			case XWP_BOTTOM_LEFT:
+				xCurView = g_xConfig.m_x2DBottomLeftView;
+				break;
+			case XWP_BOTTOM_RIGHT:
+				xCurView = g_xConfig.m_x2DBottomRightView;
+				break;
+			}
+
+			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+			{
+				CXObject *pObj = g_pLevelObjects[i];
+				float3_t vPos = pObj->getPos();
+				bool sel = false;
+				switch(xCurView)
+				{
+				case X2D_TOP:
+					sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
+						&& ((vPos.z > g_xState.vWorldMousePos.y && vPos.z <= g_xState.vFrameSelectStart.y) || (vPos.z < g_xState.vWorldMousePos.y && vPos.z >= g_xState.vFrameSelectStart.y));
+					break;
+				case X2D_FRONT:
+					sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
+						&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
+					break;
+				case X2D_SIDE:
+					sel = ((vPos.z > g_xState.vWorldMousePos.x && vPos.z <= g_xState.vFrameSelectStart.x) || (vPos.z < g_xState.vWorldMousePos.x && vPos.z >= g_xState.vFrameSelectStart.x))
+						&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
+					break;
+				}
+				if(wParam & MK_CONTROL)
+				{
+					if(sel)
+					{
+						pObj->setSelected(true);
+					}
+				}
+				else
+				{
+					pObj->setSelected(sel);
+				}
+			}
+		}
 		POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 		GetClientRect(hWnd, &rect);
 		if(pt.x > rect.left && pt.x < rect.left + 20
@@ -901,15 +1018,84 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 	case WM_LBUTTONDOWN:
 	{
-		if(hWnd != g_hTopLeftWnd || g_is3DPanning)
-		{
-			break;
-		}
-
 		POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 		GetClientRect(hWnd, &rect);
 		if(pt.x > rect.left && pt.x < rect.left + 20
 			&& pt.y > rect.top && pt.y < rect.top + 20)
+		{
+			break;
+		}
+
+		if(hWnd != g_hTopLeftWnd)
+		{
+			if(Button_GetCheck(g_hABArrowButton))
+			{
+				X_2D_VIEW xCurView;
+				float fViewScale;
+				switch(g_xState.activeWindow)
+				{
+				case XWP_TOP_RIGHT:
+					xCurView = g_xConfig.m_x2DTopRightView;
+					fViewScale = g_xConfig.m_fTopRightScale;
+					break;
+				case XWP_BOTTOM_LEFT:
+					xCurView = g_xConfig.m_x2DBottomLeftView;
+					fViewScale = g_xConfig.m_fBottomLeftScale;
+					break;
+				case XWP_BOTTOM_RIGHT:
+					xCurView = g_xConfig.m_x2DBottomRightView;
+					fViewScale = g_xConfig.m_fBottomRightScale;
+					break;
+				}
+
+				const float fWorldSize = 3.5f * fViewScale;
+
+				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+				{
+					CXObject *pObj = g_pLevelObjects[i];
+					float3_t vPos = pObj->getPos();
+					bool sel = false;
+					switch(xCurView)
+					{
+					case X2D_TOP:
+						sel = fabsf(vPos.x - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.z - g_xState.vWorldMousePos.y) < fWorldSize;
+						break;
+					case X2D_FRONT:
+						sel = fabsf(vPos.x - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.y - g_xState.vWorldMousePos.y) < fWorldSize;
+						break;
+					case X2D_SIDE:
+						sel = fabsf(vPos.z - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.y - g_xState.vWorldMousePos.y) < fWorldSize;
+						break;
+					}
+					if(wParam & MK_CONTROL)
+					{
+						if(sel)
+						{
+							pObj->setSelected(!pObj->isSelected());
+						}
+					}
+					else
+					{
+						pObj->setSelected(sel);
+					}
+				}
+
+
+
+				// if mouse in selected object
+				// start transform
+				// else
+				{ // start frame select
+					g_xState.isFrameSelect = true;
+					SetCapture(hWnd);
+					g_xState.vFrameSelectStart = g_xState.vWorldMousePos;
+				}
+			}
+
+			break;
+		}
+
+		if(g_is3DPanning)
 		{
 			break;
 		}
@@ -919,6 +1105,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			SetCapture(hWnd);
 			SSInput_SetEnable(true);
 		}
+		else
 		break;
 	}
 
@@ -940,6 +1127,71 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 	case WM_MOUSEMOVE:
 		if(!g_is3DRotating && !g_is3DPanning)
 		{
+			if(hWnd == g_hTopRightWnd)
+			{
+				g_xState.activeWindow = XWP_TOP_RIGHT;
+			}
+			else if(hWnd == g_hBottomLeftWnd)
+			{
+				g_xState.activeWindow = XWP_BOTTOM_LEFT;
+			}
+			else if(hWnd == g_hBottomRightWnd)
+			{
+				g_xState.activeWindow = XWP_BOTTOM_RIGHT;
+			}
+			else
+			{
+				g_xState.activeWindow = XWP_TOP_LEFT;
+			}
+
+			g_xState.vMousePos = {(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam)};
+
+			if(g_xState.activeWindow != XWP_TOP_LEFT)
+			{
+				ICamera *pCamera;
+				X_2D_VIEW xCurView;
+				float fViewScale;
+				switch(g_xState.activeWindow)
+				{
+				case XWP_TOP_RIGHT:
+					pCamera = g_xConfig.m_pTopRightCamera;
+					xCurView = g_xConfig.m_x2DTopRightView;
+					fViewScale = g_xConfig.m_fTopRightScale;
+					break;
+				case XWP_BOTTOM_LEFT:
+					pCamera = g_xConfig.m_pBottomLeftCamera;
+					xCurView = g_xConfig.m_x2DBottomLeftView;
+					fViewScale = g_xConfig.m_fBottomLeftScale;
+					break;
+				case XWP_BOTTOM_RIGHT:
+					pCamera = g_xConfig.m_pBottomRightCamera;
+					xCurView = g_xConfig.m_x2DBottomRightView;
+					fViewScale = g_xConfig.m_fBottomRightScale;
+					break;
+				}
+				float3 fCamWorld;
+				pCamera->getPosition(&fCamWorld);
+				switch(xCurView)
+				{
+				case X2D_TOP:
+					fCamWorld = float3(fCamWorld.x, fCamWorld.z, 0.0f);
+					break;
+				case X2D_FRONT:
+					fCamWorld = float3(fCamWorld.x, fCamWorld.y, 0.0f);
+					break;
+				case X2D_SIDE:
+					fCamWorld = float3(fCamWorld.z, fCamWorld.y, 0.0f);
+					break;
+				}
+
+				RECT rc;
+				GetClientRect(hWnd, &rc);
+				float2 vCenter((float)(rc.left + rc.right) * 0.5f, (float)(rc.top + rc.bottom) * 0.5f);
+				float2 vDelta = (g_xState.vMousePos - vCenter) * float2(1.0f, -1.0f);
+
+				g_xState.vWorldMousePos = (float2)(fCamWorld + vDelta * fViewScale);
+			}
+			XUpdateStatusMPos();
 			return(TRUE);
 		}
 		break;
@@ -1171,4 +1423,18 @@ void XUpdateStatusGrid()
 
 	sprintf_s(szMsg, "Snap: %s; Grid: %s", g_xConfig.m_bSnapGrid ? "on" : "off", szGrid);
 	SendMessage(g_hStatusWnd, SB_SETTEXT, MAKEWPARAM(4, 0), (LPARAM)szMsg);
+}
+
+void XUpdateStatusMPos()
+{
+	if(g_xState.activeWindow == XWP_TOP_LEFT)
+	{
+		SendMessage(g_hStatusWnd, SB_SETTEXT, MAKEWPARAM(2, 0), (LPARAM)"");
+	}
+	else
+	{
+		char szMsg[32];
+		sprintf_s(szMsg, "@%.2f, %.2f", g_xState.vWorldMousePos.x, g_xState.vWorldMousePos.y);
+		SendMessage(g_hStatusWnd, SB_SETTEXT, MAKEWPARAM(2, 0), (LPARAM)szMsg);
+	}
 }

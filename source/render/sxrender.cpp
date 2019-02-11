@@ -85,14 +85,30 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 		*/
 		//***********************
 
-		uint32_t tmpColor = GXCOLOR_ARGB(255, 255, 0, 255);
+		uint32_t tmpColor = GXCOLOR_ARGB(255, 255, 255, 0);
 
 		IGXTexture2D* SelectMaterial = SGCore_GetDXDevice()->createTexture2D(1, 1, 1, 0, GXFMT_A8R8G8B8, &tmpColor);
 		
 		//SGCore_LoadTexLoadTextures();
 		gdata::idSelectTex = SGCore_LoadTexCreate("select_material__", SelectMaterial);
 
+		tmpColor = GXCOLOR_ARGB(255, 255, 255, 255);
+		IGXTexture2D* pWhiteMaterial = SGCore_GetDXDevice()->createTexture2D(1, 1, 1, 0, GXFMT_A8R8G8B8, &tmpColor);
+		gdata::idWhiteTex = SGCore_LoadTexCreate("white_material__", pWhiteMaterial);
 		//SGCore_LoadTexLoadTextures();
+
+		GXCOLOR w = GXCOLOR_ARGB(255, 255, 255, 255);
+		GXCOLOR t = GXCOLOR_ARGB(0, 255, 255, 255);
+		GXCOLOR colorData[] = {
+			t, t, t, w, w, w,
+			w, t, t, t, w, w,
+			w, w, t, t, t, w,
+			w, w, w, t, t, t,
+			t, w, w, w, t, t,
+			t, t, w, w, w, t
+		};
+		IGXTexture2D* pDashedMaterial = SGCore_GetDXDevice()->createTexture2D(6, 6, 1, 0, GXFMT_A8R8G8B8, colorData);
+		gdata::idDashedTex = SGCore_LoadTexCreate("dashed_material__", pDashedMaterial);
 	}
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
@@ -237,6 +253,16 @@ SX_LIB_API bool SRender_EditorGetRenderAxesStatic()
 SX_LIB_API ID SRender_EditorGetSelectTex()
 {
 	return gdata::idSelectTex;
+}
+
+SX_LIB_API ID SRender_EditorGetWhiteTex()
+{
+	return gdata::idWhiteTex;
+}
+
+SX_LIB_API ID SRender_EditorGetDashedTex()
+{
+	return gdata::idDashedTex;
 }
 
 //##########################################################################
