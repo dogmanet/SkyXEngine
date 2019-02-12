@@ -60,6 +60,9 @@
     <ClCompile Include="..\..\..\source\terrax\UndoManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\CommandSelect.cpp">
+      <Filter>Source Files\cmd</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\terrax\terrax.rc">
@@ -105,6 +108,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\terrax\UndoManager.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\CommandSelect.h">
+      <Filter>Header Files\cmd</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
