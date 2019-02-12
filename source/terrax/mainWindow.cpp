@@ -18,6 +18,7 @@
 
 #include "terrax.h"
 #include "XObject.h"
+#include "UndoManager.h"
 
 extern Array<CXObject*> g_pLevelObjects;
 
@@ -47,6 +48,8 @@ HMENU g_hMenu = NULL;
 CTerraXConfig g_xConfig;
 CTerraXState g_xState;
 
+extern CUndoManager *g_pUndoManager;
+
 // Forward declarations of functions included in this code module:
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK RenderWndProc(HWND, UINT, WPARAM, LPARAM);
@@ -55,6 +58,7 @@ void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
 BOOL XCheckMenuItem(HMENU hMenu, UINT uIDCheckItem, bool bCheck);
 void XUpdateStatusGrid();
 void XUpdateStatusMPos();
+void XUpdateUndoRedo();
 
 ATOM XRegisterClass(HINSTANCE hInstance)
 {
@@ -131,7 +135,8 @@ BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
 	g_hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR1));
 
 	XCheckMenuItem(g_hMenu, ID_VIEW_GRID, g_xConfig.m_bShowGrid);
-	
+	XUpdateUndoRedo();
+
 	return TRUE;
 }
 
@@ -524,6 +529,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case ID_VIEW_GRID:
 			g_xConfig.m_bShowGrid = !g_xConfig.m_bShowGrid;
 			XCheckMenuItem(g_hMenu, ID_VIEW_GRID, g_xConfig.m_bShowGrid);
+			break;
+
+		case ID_EDIT_UNDO:
+			if(g_pUndoManager->undo())
+			{
+				XUpdateUndoRedo();
+			}
+			break;
+
+		case ID_EDIT_REDO:
+			if(g_pUndoManager->redo())
+			{
+				XUpdateUndoRedo();
+			}
 			break;
 		}
 		break;
@@ -1367,4 +1386,36 @@ void XUpdateStatusMPos()
 		sprintf_s(szMsg, "@%.2f, %.2f", g_xState.vWorldMousePos.x, g_xState.vWorldMousePos.y);
 		SendMessage(g_hStatusWnd, SB_SETTEXT, MAKEWPARAM(2, 0), (LPARAM)szMsg);
 	}
+}
+
+void XUpdateUndoRedo()
+{
+	MENUITEMINFOA mii;
+	memset(&mii, 0, sizeof(mii));
+	mii.cbSize = sizeof(mii);
+	mii.fMask = MIIM_STATE | MIIM_STRING;
+	char str[64]; 
+	mii.dwTypeData = str;
+
+	mii.fState = g_pUndoManager->canUndo() ? MFS_ENABLED : MFS_DISABLED;
+	if(g_pUndoManager->canUndo())
+	{
+		mii.cch = sprintf(str, "Undo %s\tCtrl+Z", g_pUndoManager->getUndoText());
+	}
+	else
+	{
+		mii.cch = sprintf(str, "Can't undo\tCtrl + Z");
+	}
+	SetMenuItemInfoA(g_hMenu, ID_EDIT_UNDO, FALSE, &mii);
+
+	mii.fState = g_pUndoManager->canRedo() ? MFS_ENABLED : MFS_DISABLED;
+	if(g_pUndoManager->canRedo())
+	{
+		mii.cch = sprintf(str, "Redo %s\tCtrl+Y", g_pUndoManager->getRedoText());
+	}
+	else
+	{
+		mii.cch = sprintf(str, "Can't redo\tCtrl+Y");
+	}
+	SetMenuItemInfoA(g_hMenu, ID_EDIT_REDO, FALSE, &mii);
 }

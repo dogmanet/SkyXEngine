@@ -14,6 +14,7 @@ See the license in LICENSE
 #include "Grid.h"
 
 #include "XStaticGeomObject.h"
+#include "UndoManager.h"
 
 extern HWND g_hWndMain;
 CGrid *g_pGrid = NULL;
@@ -28,6 +29,8 @@ Array<CXObject*> g_pLevelObjects;
 static IGXVertexBuffer *g_pBorderVertexBuffer;
 static IGXRenderBuffer *g_pBorderRenderBuffer;
 
+CUndoManager *g_pUndoManager = NULL;
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 //	SkyXEngine_PreviewCreate();
@@ -40,8 +43,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	InitCommonControlsEx(&icex);
 
 	XRegisterClass(hInstance);
+	g_pUndoManager = new CUndoManager();
 
-	// Perform application initialization:
 	if(!XInitInstance(hInstance, nCmdShow))
 	{
 		return(1);
@@ -65,6 +68,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT] = SGCore_CrCamera();
 	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT]->setPosition(&X2D_FRONT_POS);
 	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT]->setOrientation(&X2D_FRONT_ROT);
+
 
 //	SkyXEngine_RunGenPreview();
 //	Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
@@ -119,8 +123,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	g_pBorderRenderBuffer = pDevice->createRenderBuffer(1, &g_pBorderVertexBuffer, pVD);
 	mem_release(pVD);
 
+	
+
 	int result = SkyXEngine_CycleMain();
 	mem_delete(g_pGrid);
+	mem_delete(g_pUndoManager);
 	SkyXEngine_Kill();
 	return result;
 }
@@ -351,3 +358,15 @@ void XDrawBorder(GXCOLOR color, const float3_t &vA, const float3_t &vB, const fl
 	pDevice->setBlendState(pOldBlendState);
 	mem_release(pOldBlendState);
 }
+
+void XUpdateUndoRedo();
+bool XExecCommand(CCommand *pCommand)
+{
+	if(g_pUndoManager->execCommand(pCommand))
+	{
+		XUpdateUndoRedo();
+		return(true);
+	}
+	return(false);
+}
+

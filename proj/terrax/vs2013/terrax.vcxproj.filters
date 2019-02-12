@@ -19,6 +19,12 @@
     <Filter Include="Source Files\obj">
       <UniqueIdentifier>{1f7cb921-c97d-4b33-9c29-5eab4ff99c01}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\cmd">
+      <UniqueIdentifier>{a6b35e57-dc5d-4be0-8024-c946d51ba575}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\cmd">
+      <UniqueIdentifier>{7c73fd69-765c-4c62-8114-ecc0ce332288}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\terrax\terrax.cpp">
@@ -50,6 +56,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\terrax\XStaticGeomObject.cpp">
       <Filter>Source Files\obj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\UndoManager.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -90,6 +99,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\terrax\XStaticGeomObject.h">
       <Filter>Header Files\obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\Command.h">
+      <Filter>Header Files\cmd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\UndoManager.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
