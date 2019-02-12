@@ -54,16 +54,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	SGCore_SkyBoxSetUse(false);
 	SGCore_SkyCloudsSetUse(false);
 
-	g_xConfig.m_pTopRightCamera = SGCore_CrCamera();
-	g_xConfig.m_pTopRightCamera->setPosition(&X2D_TOP_POS);
-	g_xConfig.m_pTopRightCamera->setOrientation(&X2D_TOP_ROT);
-	//g_xConfig.m_pTopRightCamera
-	g_xConfig.m_pBottomLeftCamera = SGCore_CrCamera();
-	g_xConfig.m_pBottomLeftCamera->setPosition(&X2D_SIDE_POS);
-	g_xConfig.m_pBottomLeftCamera->setOrientation(&X2D_SIDE_ROT);
-	g_xConfig.m_pBottomRightCamera = SGCore_CrCamera();
-	g_xConfig.m_pBottomRightCamera->setPosition(&X2D_FRONT_POS);
-	g_xConfig.m_pBottomRightCamera->setOrientation(&X2D_FRONT_ROT);
+	g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT] = SGCore_CrCamera();
+	g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT]->setPosition(&X2D_TOP_POS);
+	g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT]->setOrientation(&X2D_TOP_ROT);
+
+	g_xConfig.m_pViewportCamera[XWP_BOTTOM_LEFT] = SGCore_CrCamera();
+	g_xConfig.m_pViewportCamera[XWP_BOTTOM_LEFT]->setPosition(&X2D_SIDE_POS);
+	g_xConfig.m_pViewportCamera[XWP_BOTTOM_LEFT]->setOrientation(&X2D_SIDE_ROT);
+
+	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT] = SGCore_CrCamera();
+	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT]->setPosition(&X2D_FRONT_POS);
+	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT]->setOrientation(&X2D_FRONT_ROT);
 
 //	SkyXEngine_RunGenPreview();
 //	Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
@@ -136,19 +137,7 @@ void XRender3D()
 
 	if(g_xState.isFrameSelect)
 	{
-		X_2D_VIEW xCurView;
-		switch(g_xState.activeWindow)
-		{
-		case XWP_TOP_RIGHT:
-			xCurView = g_xConfig.m_x2DTopRightView;
-			break;
-		case XWP_BOTTOM_LEFT:
-			xCurView = g_xConfig.m_x2DBottomLeftView;
-			break;
-		case XWP_BOTTOM_RIGHT:
-			xCurView = g_xConfig.m_x2DBottomRightView;
-			break;
-		}
+		X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
 
 		float3_t va, vb, vc, vd;
 
@@ -219,20 +208,8 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 
 		if(g_xState.isFrameSelect)
 		{
-			X_2D_VIEW xCurView;
-			switch(g_xState.activeWindow)
-			{
-			case XWP_TOP_RIGHT:
-				xCurView = g_xConfig.m_x2DTopRightView;
-				break;
-			case XWP_BOTTOM_LEFT:
-				xCurView = g_xConfig.m_x2DBottomLeftView;
-				break;
-			case XWP_BOTTOM_RIGHT:
-				xCurView = g_xConfig.m_x2DBottomRightView;
-				break;
-			}
-
+			X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+			
 			float3_t va, vb, vc, vd;
 
 			switch(xCurView)

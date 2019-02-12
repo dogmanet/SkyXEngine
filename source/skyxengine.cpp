@@ -1220,9 +1220,10 @@ void SkyXEngine_Frame(DWORD timeDelta)
 //	float3 pv2DEyePoses[] = {float3(0.0f, 100.0f, 0.0f), float3(100.0f, 0.0f, 0.0f), float3(0.0f, 0.0f, 100.0f)};
 //	float3 pv2DEyeDirs[] = {float3(0.0f, -1.0f, 0.0f), float3(-1.0f, 0.0f, 0.0f), float3(0.0f, 0.0f, -1.0f)};
 //	float3 pv2DUPs[] = {float3(0.0f, 0.0f, 1.0f), float3(0.0f, 1.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)};
-	ICamera *pCameras[] = {g_xConfig.m_pTopRightCamera, g_xConfig.m_pBottomLeftCamera, g_xConfig.m_pBottomRightCamera};
-	float fScales[] = {g_xConfig.m_fTopRightScale, g_xConfig.m_fBottomLeftScale, g_xConfig.m_fBottomRightScale};
-	X_2D_VIEW views[] = {g_xConfig.m_x2DTopRightView, g_xConfig.m_x2DBottomLeftView, g_xConfig.m_x2DBottomRightView};
+	
+	ICamera **pCameras = g_xConfig.m_pViewportCamera + 1;
+	float *fScales = g_xConfig.m_fViewportScale + 1;
+	X_2D_VIEW *views = g_xConfig.m_x2DView + 1;
 	ICamera *p3DCamera = SRender_GetCamera();
 	//#############################################################################
 

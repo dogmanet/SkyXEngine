@@ -784,27 +784,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			else
 			{
-				pCamera = g_xConfig.m_pBottomLeftCamera;
-				x2dView = g_xConfig.m_x2DBottomLeftView;
+				pCamera = g_xConfig.m_pViewportCamera[XWP_BOTTOM_LEFT];
+				x2dView = g_xConfig.m_x2DView[XWP_BOTTOM_LEFT];
 				hTargetWnd = g_hBottomLeftWnd;
-				pfOldScale = &g_xConfig.m_fBottomLeftScale;
+				pfOldScale = &g_xConfig.m_fViewportScale[XWP_BOTTOM_LEFT];
 			}
 		}
 		else
 		{
 			if(isTop)
 			{
-				pCamera = g_xConfig.m_pTopRightCamera;
-				x2dView = g_xConfig.m_x2DTopRightView;
+				pCamera = g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT];
+				x2dView = g_xConfig.m_x2DView[XWP_TOP_RIGHT];
 				hTargetWnd = g_hTopRightWnd;
-				pfOldScale = &g_xConfig.m_fTopRightScale;
+				pfOldScale = &g_xConfig.m_fViewportScale[XWP_TOP_RIGHT];
 			}
 			else
 			{
-				pCamera = g_xConfig.m_pBottomRightCamera;
-				x2dView = g_xConfig.m_x2DBottomRightView;
+				pCamera = g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT];
+				x2dView = g_xConfig.m_x2DView[XWP_BOTTOM_RIGHT];
 				hTargetWnd = g_hBottomRightWnd;
-				pfOldScale = &g_xConfig.m_fBottomRightScale;
+				pfOldScale = &g_xConfig.m_fViewportScale[XWP_BOTTOM_RIGHT];
 			}
 		}
 		if(pCamera)
@@ -906,19 +906,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			g_xState.isFrameSelect = false;
 			ReleaseCapture();
 
-			X_2D_VIEW xCurView;
-			switch(g_xState.activeWindow)
-			{
-			case XWP_TOP_RIGHT:
-				xCurView = g_xConfig.m_x2DTopRightView;
-				break;
-			case XWP_BOTTOM_LEFT:
-				xCurView = g_xConfig.m_x2DBottomLeftView;
-				break;
-			case XWP_BOTTOM_RIGHT:
-				xCurView = g_xConfig.m_x2DBottomRightView;
-				break;
-			}
+			X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
 
 			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 			{
@@ -959,7 +947,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			&& pt.y > rect.top && pt.y < rect.top + 20)
 		{
 			int iActiveMenu = -1;
-			X_2D_VIEW x2dView;
+			X_2D_VIEW x2dView = g_xConfig.m_x2DView[g_xState.activeWindow];
 			if(hWnd == g_hTopLeftWnd)
 			{
 				switch(*r_final_image)
@@ -986,18 +974,6 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			}
 			else
 			{
-				if(hWnd == g_hTopRightWnd)
-				{
-					x2dView = g_xConfig.m_x2DTopRightView;
-				}
-				else if(hWnd == g_hBottomLeftWnd)
-				{
-					x2dView = g_xConfig.m_x2DBottomLeftView;
-				}
-				else if(hWnd == g_hBottomRightWnd)
-				{
-					x2dView = g_xConfig.m_x2DBottomRightView;
-				}
 				switch(x2dView)
 				{
 				case X2D_TOP:
@@ -1030,24 +1006,9 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		{
 			if(Button_GetCheck(g_hABArrowButton))
 			{
-				X_2D_VIEW xCurView;
-				float fViewScale;
-				switch(g_xState.activeWindow)
-				{
-				case XWP_TOP_RIGHT:
-					xCurView = g_xConfig.m_x2DTopRightView;
-					fViewScale = g_xConfig.m_fTopRightScale;
-					break;
-				case XWP_BOTTOM_LEFT:
-					xCurView = g_xConfig.m_x2DBottomLeftView;
-					fViewScale = g_xConfig.m_fBottomLeftScale;
-					break;
-				case XWP_BOTTOM_RIGHT:
-					xCurView = g_xConfig.m_x2DBottomRightView;
-					fViewScale = g_xConfig.m_fBottomRightScale;
-					break;
-				}
-
+				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+				float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
+				
 				const float fWorldSize = 3.5f * fViewScale;
 
 				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
@@ -1148,27 +1109,10 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 			if(g_xState.activeWindow != XWP_TOP_LEFT)
 			{
-				ICamera *pCamera;
-				X_2D_VIEW xCurView;
-				float fViewScale;
-				switch(g_xState.activeWindow)
-				{
-				case XWP_TOP_RIGHT:
-					pCamera = g_xConfig.m_pTopRightCamera;
-					xCurView = g_xConfig.m_x2DTopRightView;
-					fViewScale = g_xConfig.m_fTopRightScale;
-					break;
-				case XWP_BOTTOM_LEFT:
-					pCamera = g_xConfig.m_pBottomLeftCamera;
-					xCurView = g_xConfig.m_x2DBottomLeftView;
-					fViewScale = g_xConfig.m_fBottomLeftScale;
-					break;
-				case XWP_BOTTOM_RIGHT:
-					pCamera = g_xConfig.m_pBottomRightCamera;
-					xCurView = g_xConfig.m_x2DBottomRightView;
-					fViewScale = g_xConfig.m_fBottomRightScale;
-					break;
-				}
+				ICamera *pCamera = g_xConfig.m_pViewportCamera[g_xState.activeWindow];
+				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+				float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
+				
 				float3 fCamWorld;
 				pCamera->getPosition(&fCamWorld);
 				switch(xCurView)
@@ -1222,23 +1166,9 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		case ID_2D_FRONT:
 		case ID_2D_SIDE:
 		{
-			ICamera *pTargetCam = NULL;
-			X_2D_VIEW *pX2DView = NULL;
-			if(hWnd == g_hTopRightWnd)
-			{
-				pTargetCam = g_xConfig.m_pTopRightCamera;
-				pX2DView = &g_xConfig.m_x2DTopRightView;
-			}
-			else if(hWnd == g_hBottomLeftWnd)
-			{
-				pTargetCam = g_xConfig.m_pBottomLeftCamera;
-				pX2DView = &g_xConfig.m_x2DBottomLeftView;
-			}
-			else if(hWnd == g_hBottomRightWnd)
-			{
-				pTargetCam = g_xConfig.m_pBottomRightCamera;
-				pX2DView = &g_xConfig.m_x2DBottomRightView;
-			}
+			ICamera *pTargetCam = g_xConfig.m_pViewportCamera[g_xState.activeWindow];
+			X_2D_VIEW *pX2DView = &g_xConfig.m_x2DView[g_xState.activeWindow];
+			
 			switch(LOWORD(wParam))
 			{
 			case ID_2D_TOP:

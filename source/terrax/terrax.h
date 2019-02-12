@@ -36,6 +36,7 @@ extern HWND g_hBottomLeftWnd;
 
 enum X_2D_VIEW
 {
+	X2D_NONE = -1,
 	X2D_TOP,   // x/z
 	X2D_FRONT, // x/y
 	X2D_SIDE   // z/y
@@ -51,17 +52,24 @@ enum X_WINDOW_POS
 
 struct CTerraXConfig
 {
-	X_2D_VIEW m_x2DTopRightView = X2D_TOP;;
-	X_2D_VIEW m_x2DBottomLeftView = X2D_SIDE;
-	X_2D_VIEW m_x2DBottomRightView = X2D_FRONT;
+	CTerraXConfig()
+	{
+		m_x2DView[0] = X2D_NONE;
+		m_x2DView[1] = X2D_TOP;
+		m_x2DView[2] = X2D_SIDE;
+		m_x2DView[3] = X2D_FRONT;
 
-	float m_fTopRightScale = 1.0f;
-	float m_fBottomLeftScale = 1.0f;
-	float m_fBottomRightScale = 1.0f;
+		m_fViewportScale[0] = 
+			m_fViewportScale[1] = 
+			m_fViewportScale[2] = 
+			m_fViewportScale[3] = 1.0f;
 
-	ICamera *m_pTopRightCamera = NULL;
-	ICamera *m_pBottomLeftCamera = NULL;
-	ICamera *m_pBottomRightCamera = NULL;
+		memset(m_pViewportCamera, 0, sizeof(m_pViewportCamera));
+	};
+
+	X_2D_VIEW m_x2DView[4];
+	float m_fViewportScale[4];
+	ICamera *m_pViewportCamera[4];
 
 	GRID_STEP m_gridStep = GRID_STEP_1M;
 	bool m_bShowGrid = true;
