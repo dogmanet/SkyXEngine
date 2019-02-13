@@ -1404,7 +1404,7 @@ void XUpdateUndoRedo()
 	}
 	else
 	{
-		mii.cch = sprintf(str, "Can't undo\tCtrl + Z");
+		mii.cch = sprintf(str, "Can't undo\tCtrl+Z");
 	}
 	SetMenuItemInfoA(g_hMenu, ID_EDIT_UNDO, FALSE, &mii);
 

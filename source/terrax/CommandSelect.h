@@ -18,6 +18,6 @@ public:
 protected:
 	Array<ID> m_aidSelected;
 	Array<ID> m_aidDeselected;
-}
+};
 
 #endif
