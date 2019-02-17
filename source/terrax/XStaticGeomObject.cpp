@@ -46,3 +46,8 @@ void CXStatixGeomObject::renderSelection(bool is3D)
 	mem_release(pOldBlendState);
 	mem_release(pOldRS);
 }
+
+bool CXStatixGeomObject::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl)
+{
+	return(SGeom_TraceBeamId(m_idModel, &vStart, &vEnd, pvOut, pidMtrl));
+}

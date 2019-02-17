@@ -146,4 +146,6 @@ bool XExecCommand(CCommand *pCommand);
 
 void XUpdateSelectionBound();
 
+bool XRayCast(X_WINDOW_POS wnd);
+
 #endif

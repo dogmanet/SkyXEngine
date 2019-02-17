@@ -21,6 +21,8 @@ public:
 
 	virtual void renderSelection(bool is3D) = 0;
 
+	virtual bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl) = 0;
+
 protected:
 	bool m_isSelected = false;
 

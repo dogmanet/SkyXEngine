@@ -21,6 +21,7 @@
 #include "UndoManager.h"
 
 #include "CommandSelect.h"
+#include "CommandMove.h"
 
 extern Array<CXObject*> g_pLevelObjects;
 
@@ -878,6 +879,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		DestroyMenu(g_hMenu);
 		DeleteObject(hcSizeEW);
 		DeleteObject(hcSizeNS);
+		DeleteObject(hcSizeNESW);
 		PostQuitMessage(0);
 		break;
 
@@ -891,17 +893,20 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 {
 	PAINTSTRUCT ps;
 	HDC hdc;
-	RECT rect;
+	RECT rect; 
+	static HCURSOR	hcPtr = NULL;
 	static const int *r_final_image = GET_PCVAR_INT("r_final_image");
 	if(!r_final_image)
 	{
 		r_final_image = GET_PCVAR_INT("r_final_image");
 	}
 
+	static CCommandMove *s_pMoveCmd = NULL;
+
 	switch(message)
 	{
 	case WM_CREATE:
-
+		hcPtr = LoadCursor(NULL, IDC_CROSS);
 		break;
 
 	case WM_RBUTTONUP:
@@ -982,6 +987,12 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				XExecCommand(pCmd);
 			}
 		}
+		if(s_pMoveCmd)
+		{
+			XExecCommand(s_pMoveCmd);
+			s_pMoveCmd = NULL;
+		}
+
 		POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 		GetClientRect(hWnd, &rect);
 		if(pt.x > rect.left && pt.x < rect.left + 20
@@ -1052,63 +1063,91 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				
 				const float fWorldSize = 3.5f * fViewScale;
 
-				CCommandSelect *pCmd = new CCommandSelect();
-				bool bUse = false;
-				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+				if(!XRayCast(g_xState.activeWindow))
 				{
-					CXObject *pObj = g_pLevelObjects[i];
-					float3_t vPos = pObj->getPos();
-					bool sel = false;
-					switch(xCurView)
+					CCommandSelect *pCmd = new CCommandSelect();
+					bool bUse = false;
+					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 					{
-					case X2D_TOP:
-						sel = fabsf(vPos.x - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.z - g_xState.vWorldMousePos.y) < fWorldSize;
-						break;
-					case X2D_FRONT:
-						sel = fabsf(vPos.x - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.y - g_xState.vWorldMousePos.y) < fWorldSize;
-						break;
-					case X2D_SIDE:
-						sel = fabsf(vPos.z - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.y - g_xState.vWorldMousePos.y) < fWorldSize;
-						break;
-					}
-					if(wParam & MK_CONTROL)
-					{
-						if(sel)
+						CXObject *pObj = g_pLevelObjects[i];
+						float3_t vPos = pObj->getPos();
+						bool sel = false;
+						switch(xCurView)
 						{
-							if(pObj->isSelected())
+						case X2D_TOP:
+							sel = fabsf(vPos.x - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.z - g_xState.vWorldMousePos.y) < fWorldSize;
+							break;
+						case X2D_FRONT:
+							sel = fabsf(vPos.x - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.y - g_xState.vWorldMousePos.y) < fWorldSize;
+							break;
+						case X2D_SIDE:
+							sel = fabsf(vPos.z - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.y - g_xState.vWorldMousePos.y) < fWorldSize;
+							break;
+						}
+						if(wParam & MK_CONTROL)
+						{
+							if(sel)
+							{
+								if(pObj->isSelected())
+								{
+									pCmd->addDeselected(i);
+								}
+								else
+								{
+									pCmd->addSelected(i);
+								}
+								bUse = true;
+							}
+						}
+						else
+						{
+							if(pObj->isSelected() && !sel)
 							{
 								pCmd->addDeselected(i);
 							}
-							else
+							else if(!pObj->isSelected() && sel)
 							{
 								pCmd->addSelected(i);
 							}
 							bUse = true;
 						}
 					}
-					else
+
+					if(bUse)
 					{
-						if(pObj->isSelected() && !sel)
-						{
-							pCmd->addDeselected(i);
-						}
-						else if(!pObj->isSelected() && sel)
-						{
-							pCmd->addSelected(i);
-						}
-						bUse = true;
+						XExecCommand(pCmd);
 					}
 				}
 
-				if(bUse)
+				if(XRayCast(g_xState.activeWindow))
 				{
-					XExecCommand(pCmd);
+					SetCursor(hcPtr);
+					s_pMoveCmd = new CCommandMove();
+					float3 vStartPos;
+					switch(xCurView)
+					{
+					case X2D_TOP:
+						vStartPos = float3(g_xState.vWorldMousePos.x, 0.0f, g_xState.vWorldMousePos.y);
+						break;
+					case X2D_FRONT:
+						vStartPos = float3(g_xState.vWorldMousePos.x, g_xState.vWorldMousePos.y, 0.0f);
+						break;
+					case X2D_SIDE:
+						vStartPos = float3(0.0f, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
+						break;
+					}
+					s_pMoveCmd->setStartPos(vStartPos);
+					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+					{
+						if(g_pLevelObjects[i]->isSelected())
+						{
+							s_pMoveCmd->addObject(i);
+						}
+					}
+					// if mouse in selected object
+					// start move
 				}
-
-
-				// if mouse in selected object
-				// start move
-				// else
+				else
 				{ // start frame select
 					g_xState.isFrameSelect = true;
 					SetCapture(hWnd);
@@ -1197,8 +1236,34 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				float2 vDelta = (g_xState.vMousePos - vCenter) * float2(1.0f, -1.0f);
 
 				g_xState.vWorldMousePos = (float2)(fCamWorld + vDelta * fViewScale);
+
+				if(s_pMoveCmd)
+				{
+					float3 vCurPos;
+					switch(xCurView)
+					{
+					case X2D_TOP:
+						vCurPos = float3(g_xState.vWorldMousePos.x, 0.0f, g_xState.vWorldMousePos.y);
+						break;
+					case X2D_FRONT:
+						vCurPos = float3(g_xState.vWorldMousePos.x, g_xState.vWorldMousePos.y, 0.0f);
+						break;
+					case X2D_SIDE:
+						vCurPos = float3(0.0f, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
+						break;
+					}
+					s_pMoveCmd->setCurrentPos(vCurPos);
+				}
 			}
 			XUpdateStatusMPos();
+
+			if(Button_GetCheck(g_hABArrowButton))
+			{
+				if(XRayCast(g_xState.activeWindow))
+				{
+					SetCursor(hcPtr);
+				}
+			}
 			return(TRUE);
 		}
 		break;
@@ -1252,6 +1317,10 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			}
 		}
 		}
+		break;
+
+	case WM_DESTROY:
+		DeleteObject(hcPtr);
 		break;
 
 	default:

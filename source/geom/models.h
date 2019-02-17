@@ -479,6 +479,7 @@ public:
 
 	//трассировка луча
 	bool traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResult, ID * idModel, ID * idMtrl);
+	bool traceBeamId(ID id, const float3 *pStart, const float3 *pEnd, float3 *pResult, ID * idMtrl);
 
 protected:
 

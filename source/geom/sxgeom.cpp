@@ -340,5 +340,11 @@ SX_LIB_API void SGeom_ClearArrBuffsGeom(float3_t **ppArrVertex, int32_t *pArrCou
 SX_LIB_API bool SGeom_TraceBeam(const float3 *pStart, const float3 *pDir, float3 *pResult, ID *pIDmodel, ID *pIDmtl)
 {
 	GEOM_PRECOND(false);
-	return g_pModels->traceBeam(pStart, pDir, pResult, pIDmodel, pIDmtl);
+	return(g_pModels->traceBeam(pStart, pDir, pResult, pIDmodel, pIDmtl));
+}
+
+SX_LIB_API bool SGeom_TraceBeamId(ID idModel, const float3 *pStart, const float3 *pEnd, float3 *pResult, ID *pIDmtrl)
+{
+	GEOM_PRECOND(false);
+	return(g_pModels->traceBeamId(idModel, pStart, pEnd, pResult, pIDmtrl));
 }

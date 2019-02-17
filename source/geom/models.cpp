@@ -3870,3 +3870,133 @@ bool CModels::traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResul
 
 	return isFound;
 }
+
+bool CModels::traceBeamId(ID id, const float3 *pStart, const float3 *pEnd, float3 *pResult, ID * idMtrl)
+{
+	if(m_aModels.size() <= 0 || !ID_VALID(id))
+		return(false);
+
+	CTriangle oTriangle;
+	bool tmpiscom = true;
+	float3 ip;
+	float3 vResult;
+	float3 il = *pEnd;
+	vResult = il;
+	bool isFound = false;
+	float3 vDir = *pEnd - *pStart;
+
+	float3 vMin, vMax;
+
+
+	CModel *pModel = m_aModels[id];
+	pModel->m_pBoundVolume->getMinMax(&vMin, &vMax);
+
+	if(!SMBoxRayIntersection(vMin, vMax, *pStart, vDir))
+		return(false);
+
+	float4x4 mWorld = *(pModel->m_pBoundVolume->calcWorld());
+	if(pModel->m_pArrSplits)
+	{
+		getPartBeam(id, SX_GEOM_TRACEBEAM_VISCALCOBJ, pStart, &vDir);
+
+		vertex_static_ex* pVertex = pModel->m_pModel->m_pVertices;
+		UINT *pIndex = pModel->m_pModel->m_pIndices;
+
+		for(int k = 0; k < m_aVisInfo[1]->m_aVisible4Model[id]->m_iCountCom; ++k)
+		{
+			for(int g = 0; g < m_aVisInfo[1]->m_aVisible4Model[id]->m_ppSegments[k]->m_uiCountSubSet; ++g)
+			{
+				ID idGroup = m_aVisInfo[1]->m_aVisible4Model[id]->m_ppSegments[k]->m_pNumberGroup[g];
+
+				for(int p = 0; p<m_aVisInfo[1]->m_aVisible4Model[id]->m_ppSegments[k]->m_pCountPoly[g] * 3; p += 3)
+				{
+					oTriangle.m_vA = SMVector3Transform(pVertex[m_aVisInfo[1]->m_aVisible4Model[id]->m_ppSegments[k]->m_ppArrPoly[g][p]].Pos, mWorld);
+					oTriangle.m_vB = SMVector3Transform(pVertex[m_aVisInfo[1]->m_aVisible4Model[id]->m_ppSegments[k]->m_ppArrPoly[g][p + 1]].Pos, mWorld);
+					oTriangle.m_vC = SMVector3Transform(pVertex[m_aVisInfo[1]->m_aVisible4Model[id]->m_ppSegments[k]->m_ppArrPoly[g][p + 2]].Pos, mWorld);
+
+					if(oTriangle.IntersectLine((*pStart), il, &ip))
+					{
+						if(SMVector3Length2((*pStart) - vResult) > SMVector3Length2((*pStart) - ip))
+						{
+							vResult = ip;
+							isFound = true;
+
+							if(idMtrl)
+							{
+								*idMtrl = pModel->m_aIDsTextures[idGroup];
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		vertex_static_ex* pVertex = pModel->m_pModel->m_pVertices;
+		UINT *pIndex = pModel->m_pModel->m_pIndices;
+
+		for(int g = 0; g < pModel->m_pModel->m_uiSubsetCount; ++g)
+		{
+			for(int k = 0; k<pModel->m_pModel->m_pIndexCount[g]; k += 3)
+			{
+				oTriangle.m_vA = SMVector3Transform(pVertex[pIndex[pModel->m_pModel->m_pStartIndex[g] + k]].Pos, mWorld);
+				oTriangle.m_vB = SMVector3Transform(pVertex[pIndex[pModel->m_pModel->m_pStartIndex[g] + k + 1]].Pos, mWorld);
+				oTriangle.m_vC = SMVector3Transform(pVertex[pIndex[pModel->m_pModel->m_pStartIndex[g] + k + 2]].Pos, mWorld);
+
+				if(oTriangle.IntersectLine((*pStart), il, &ip))
+				{
+					if(SMVector3Length2((*pStart) - vResult) > SMVector3Length2((*pStart) - ip))
+					{
+						vResult = ip;
+						isFound = true;
+
+						if(idMtrl)
+						{
+							*idMtrl = m_aModels[id]->m_aIDsTextures[g];
+						}
+					}
+				}
+			}
+		}
+	}
+
+	vertex_static_ex* pVertex = 0;
+	UINT *pIndex = 0;
+
+	for(int i = 0; i < pModel->m_aTransparency.size(); ++i)
+	{
+		CTransparencyModel *pTransparencyModel = m_aTransparency[pModel->m_aTransparency[i]];
+
+		pVertex = pTransparencyModel->m_pVertices;
+		pIndex = pTransparencyModel->m_pIndices;
+
+		for(int k = 0; k<pTransparencyModel->m_iCountIndex; k += 3)
+		{
+			oTriangle.m_vA = pVertex[pIndex[k]].Pos;
+			oTriangle.m_vB = pVertex[pIndex[k + 1]].Pos;
+			oTriangle.m_vC = pVertex[pIndex[k + 2]].Pos;
+
+			if(oTriangle.IntersectLine((*pStart), il, &ip))
+			{
+				if(SMVector3Length2((*pStart) - vResult) > SMVector3Length2((*pStart) - ip))
+				{
+					vResult = ip;
+					isFound = true;
+
+					if(idMtrl)
+					{
+						*idMtrl = pTransparencyModel->m_idTex;
+					}
+				}
+			}
+		}
+	}
+
+	if(isFound && pResult)
+	{
+		*pResult = vResult;
+	}
+
+	return (isFound);
+}

@@ -16,6 +16,8 @@ public:
 
 	void renderSelection(bool is3D);
 
+	bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl);
+
 protected:
 	ID m_idModel;
 };

@@ -98,6 +98,7 @@
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\editors_utils\axes_helper.cpp" />
     <ClCompile Include="..\..\..\source\skyxengine.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\CommandMove.cpp" />
     <ClCompile Include="..\..\..\source\terrax\CommandSelect.cpp" />
     <ClCompile Include="..\..\..\source\terrax\Grid.cpp" />
     <ClCompile Include="..\..\..\source\terrax\mainWindow.cpp" />
@@ -117,6 +118,7 @@
     <ClInclude Include="..\..\..\source\gdefines.h" />
     <ClInclude Include="..\..\..\source\SkyXEngine.h" />
     <ClInclude Include="..\..\..\source\terrax\Command.h" />
+    <ClInclude Include="..\..\..\source\terrax\CommandMove.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandSelect.h" />
     <ClInclude Include="..\..\..\source\terrax\UndoManager.h" />
     <ClInclude Include="..\..\..\source\terrax\XObject.h" />

@@ -417,3 +417,39 @@ void XUpdateSelectionBound()
 		}
 	}
 }
+
+bool XRayCast(X_WINDOW_POS wnd)
+{
+	float3 vStart, vEnd, vPos, vCamPos;
+	if(!g_xConfig.m_pViewportCamera[wnd])
+	{
+		return(false);
+	}
+	g_xConfig.m_pViewportCamera[wnd]->getPosition(&vCamPos);
+	switch(g_xConfig.m_x2DView[wnd])
+	{
+	case X2D_NONE:
+		return(false);
+	case X2D_TOP:
+		vStart = float3(g_xState.vWorldMousePos.x, vCamPos.y, g_xState.vWorldMousePos.y);
+		vEnd = float3(0.0f, -2000.0f, 0.0f);
+		break;
+	case X2D_FRONT:
+		vStart = float3(g_xState.vWorldMousePos.x, g_xState.vWorldMousePos.y, vCamPos.z);
+		vEnd = float3(0.0f, 0.0f, 2000.0f);
+		break;
+	case X2D_SIDE:
+		vStart = float3(vCamPos.x, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
+		vEnd = float3(-2000.0f, 0.0f, 0.0f);
+		break;
+	}
+	vEnd += vStart;
+	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+	{
+		if(g_pLevelObjects[i]->isSelected() && g_pLevelObjects[i]->rayTest(vStart, vEnd, &vPos, NULL))
+		{
+			return(true);
+		}
+	}
+	return(false);
+}

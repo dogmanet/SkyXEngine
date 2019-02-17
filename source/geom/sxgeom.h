@@ -356,6 +356,15 @@ SX_LIB_API bool SGeom_TraceBeam(
 	ID *pIDmtrl				//!< если есть пересечение запишет id материала
 	);
 
+//! трассировка луча, из pStart в pEnd, в случае пересечения возвращает true, иначе false, в pRes записывает координаты пересечения если есть
+SX_LIB_API bool SGeom_TraceBeamId(
+	ID idModel,             //!< id модели для проверки
+	const float3 *pStart,	//!< стартовая точка луча
+	const float3 *pEnd,		//!< направление луча
+	float3 *pResult,		//!< если есть пересечение запишет координаты
+	ID *pIDmtrl				//!< если есть пересечение запишет id материала
+	);
+
 //!@} sxgeom_models
 
 #endif
