@@ -20,6 +20,8 @@
 #include "XObject.h"
 #include "UndoManager.h"
 
+#include "CommandSelect.h"
+
 extern Array<CXObject*> g_pLevelObjects;
 
 // Global Variables:
@@ -927,6 +929,8 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 			X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
 
+			CCommandSelect *pCmd = new CCommandSelect();
+			bool bUse = false;
 			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 			{
 				CXObject *pObj = g_pLevelObjects[i];
@@ -949,15 +953,33 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				}
 				if(wParam & MK_CONTROL)
 				{
-					if(sel)
+					if(sel && !pObj->isSelected())
 					{
-						pObj->setSelected(true);
+						//pObj->setSelected(true);
+						bUse = true;
+						pCmd->addSelected(i);
 					}
 				}
 				else
 				{
-					pObj->setSelected(sel);
+					if(!pObj->isSelected() && sel)
+					{
+						bUse = true;
+						pCmd->addSelected(i);
+						//pObj->setSelected(sel);
+					}
+					else if(pObj->isSelected() && !sel)
+					{
+						bUse = true;
+						pCmd->addDeselected(i);
+						//pObj->setSelected(sel);
+					}
 				}
+			}
+
+			if(bUse)
+			{
+				XExecCommand(pCmd);
 			}
 		}
 		POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
@@ -1030,6 +1052,8 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				
 				const float fWorldSize = 3.5f * fViewScale;
 
+				CCommandSelect *pCmd = new CCommandSelect();
+				bool bUse = false;
 				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 				{
 					CXObject *pObj = g_pLevelObjects[i];
@@ -1051,19 +1075,39 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					{
 						if(sel)
 						{
-							pObj->setSelected(!pObj->isSelected());
+							if(pObj->isSelected())
+							{
+								pCmd->addDeselected(i);
+							}
+							else
+							{
+								pCmd->addSelected(i);
+							}
+							bUse = true;
 						}
 					}
 					else
 					{
-						pObj->setSelected(sel);
+						if(pObj->isSelected() && !sel)
+						{
+							pCmd->addDeselected(i);
+						}
+						else if(!pObj->isSelected() && sel)
+						{
+							pCmd->addSelected(i);
+						}
+						bUse = true;
 					}
 				}
 
+				if(bUse)
+				{
+					XExecCommand(pCmd);
+				}
 
 
 				// if mouse in selected object
-				// start transform
+				// start move
 				// else
 				{ // start frame select
 					g_xState.isFrameSelect = true;

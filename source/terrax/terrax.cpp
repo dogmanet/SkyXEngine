@@ -216,9 +216,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 		if(g_xState.isFrameSelect)
 		{
 			X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
-			
 			float3_t va, vb, vc, vd;
-
 			switch(xCurView)
 			{
 			case X2D_TOP:
@@ -240,8 +238,33 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 				vd = float3_t(0.0f, g_xState.vWorldMousePos.y, g_xState.vFrameSelectStart.x);
 				break;
 			}
-
 			XDrawBorder(GXCOLOR_ARGB(255, 255, 255, 0), va, vb, vc, vd, fScale);
+		}
+		if(g_xState.bHasSelection)
+		{
+			float3_t va, vb, vc, vd;
+			switch(view)
+			{
+			case X2D_TOP:
+				va = float3_t(g_xState.vSelectionBoundMin.x, 0.0f, g_xState.vSelectionBoundMin.z);
+				vb = float3_t(g_xState.vSelectionBoundMax.x, 0.0f, g_xState.vSelectionBoundMin.z);
+				vc = float3_t(g_xState.vSelectionBoundMax.x, 0.0f, g_xState.vSelectionBoundMax.z);
+				vd = float3_t(g_xState.vSelectionBoundMin.x, 0.0f, g_xState.vSelectionBoundMax.z);
+				break;
+			case X2D_FRONT:
+				va = float3_t(g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMin.y, 0.0f);
+				vb = float3_t(g_xState.vSelectionBoundMax.x, g_xState.vSelectionBoundMin.y, 0.0f);
+				vc = float3_t(g_xState.vSelectionBoundMax.x, g_xState.vSelectionBoundMax.y, 0.0f);
+				vd = float3_t(g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMax.y, 0.0f);
+				break;
+			case X2D_SIDE:
+				va = float3_t(0.0f, g_xState.vSelectionBoundMin.y, g_xState.vSelectionBoundMin.z);
+				vb = float3_t(0.0f, g_xState.vSelectionBoundMin.y, g_xState.vSelectionBoundMax.z);
+				vc = float3_t(0.0f, g_xState.vSelectionBoundMax.y, g_xState.vSelectionBoundMax.z);
+				vd = float3_t(0.0f, g_xState.vSelectionBoundMax.y, g_xState.vSelectionBoundMin.z);
+				break;
+			}
+			XDrawBorder(GXCOLOR_ARGB(255, 255, 0, 0), va, vb, vc, vd, fScale);
 		}
 	}
 }
@@ -370,3 +393,27 @@ bool XExecCommand(CCommand *pCommand)
 	return(false);
 }
 
+void XUpdateSelectionBound()
+{
+	g_xState.bHasSelection = false;
+	float3 vMin, vMax;
+
+	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+	{
+		if(g_pLevelObjects[i]->isSelected())
+		{
+			g_pLevelObjects[i]->getBound(&vMin, &vMax);
+			if(!g_xState.bHasSelection)
+			{
+				g_xState.bHasSelection = true;
+				g_xState.vSelectionBoundMax = vMax;
+				g_xState.vSelectionBoundMin = vMin;
+			}
+			else
+			{
+				g_xState.vSelectionBoundMax = (float3)SMVectorMax(g_xState.vSelectionBoundMax, vMax);
+				g_xState.vSelectionBoundMin = (float3)SMVectorMin(g_xState.vSelectionBoundMin, vMin);
+			}
+		}
+	}
+}

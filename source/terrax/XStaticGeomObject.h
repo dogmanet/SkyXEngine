@@ -12,6 +12,8 @@ public:
 
 	void setPos(const float3_t &pos);
 
+	void getBound(float3 *pvMin, float3 *pvMax);
+
 	void renderSelection(bool is3D);
 
 protected:

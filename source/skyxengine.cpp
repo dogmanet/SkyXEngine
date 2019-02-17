@@ -1227,6 +1227,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	ICamera *p3DCamera = SRender_GetCamera();
 	//#############################################################################
 
+	XUpdateSelectionBound();
+
 	for(int i = 0; i < 3; ++i)
 	{
 		if(!IsWindowVisible(hWnds[i]))

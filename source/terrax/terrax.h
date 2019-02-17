@@ -1,3 +1,5 @@
+#ifndef _TERRAX_H_
+#define _TERRAX_H_
 
 // "/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'" 
 #include <gcore/sxgcore.h>
@@ -90,6 +92,10 @@ struct CTerraXState
 
 	bool isFrameSelect = false;
 	float2_t vFrameSelectStart;
+
+	bool bHasSelection = false;
+	float3_t vSelectionBoundMin;
+	float3_t vSelectionBoundMax;
 };
 
 struct CTerraXRenderStates
@@ -135,3 +141,9 @@ struct XBorderVertex
 extern Array<CXObject*> g_pLevelObjects;
 
 void XDrawBorder(GXCOLOR color, const float3_t &vA, const float3_t &vB, const float3_t &vC, const float3_t &vD, float fViewportScale = 0.01f);
+
+bool XExecCommand(CCommand *pCommand);
+
+void XUpdateSelectionBound();
+
+#endif

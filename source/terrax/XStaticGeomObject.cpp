@@ -17,6 +17,11 @@ void CXStatixGeomObject::setPos(const float3_t &pos)
 	BaseClass::setPos(pos);
 }
 
+void CXStatixGeomObject::getBound(float3 *pvMin, float3 *pvMax)
+{
+	SGeom_ModelGetMinMax(m_idModel, pvMin, pvMax);
+}
+
 void CXStatixGeomObject::renderSelection(bool is3D)
 {
 	IGXContext *pDevice = SGCore_GetDXDevice();

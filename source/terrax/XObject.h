@@ -14,6 +14,8 @@ public:
 	virtual float3_t getPos();
 	virtual void setPos(const float3_t &pos);
 
+	virtual void getBound(float3 *pvMin, float3 *pvMax) = 0;
+
 	bool isSelected();
 	void setSelected(bool set);
 
