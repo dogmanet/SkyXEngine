@@ -1,6 +1,6 @@
 
 /*
-terrax_grid.ps
+terrax_colored.ps
 */
 
 #include <../struct.h>
@@ -11,7 +11,7 @@ half4 g_vColor;
 
 //##########################################################################
 
-half4 main(VSO_TXGrid IN):COLOR0
+half4 main(VSO_TXColored IN):COLOR0
 {
 	return(g_vColor);
 }

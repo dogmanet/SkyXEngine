@@ -89,6 +89,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	}
 	mem_delete_a(listgc);
 
+	g_xRenderStates.idColoredShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "terrax_colored.ps", "terrax_colored.ps", SHADER_CHECKDOUBLE_PATH);
 
 //	SkyXEngine_PreviewKill();
 	IGXContext *pDevice = SGCore_GetDXDevice();
@@ -123,7 +124,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	g_pBorderRenderBuffer = pDevice->createRenderBuffer(1, &g_pBorderVertexBuffer, pVD);
 	mem_release(pVD);
 
-	
+	// Handlers
+	GXVERTEXELEMENT oLayoutHandler[] =
+	{
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
+		{1, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD, GXDECLSPEC_PER_INSTANCE_DATA},
+		GXDECL_END()
+	};
+	pVD = pDevice->createVertexDeclaration(oLayoutHandler);
+	g_xRenderStates.pHandlerVB = pDevice->createVertexBuffer(sizeof(float3_t) * 8, GX_BUFFER_USAGE_STREAM | GX_BUFFER_WRITEONLY);
+	g_xRenderStates.pHandlerInstanceVB = pDevice->createVertexBuffer(sizeof(float3_t) * X_MAX_HANDLERS_PER_DIP, GX_BUFFER_USAGE_STREAM | GX_BUFFER_WRITEONLY);
+	IGXVertexBuffer *ppVB[] = {g_xRenderStates.pHandlerVB, g_xRenderStates.pHandlerInstanceVB};
+	g_xRenderStates.pHandlerRB = pDevice->createRenderBuffer(2, ppVB, pVD);
+	mem_release(pVD);
+	g_xRenderStates.idHandlerShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_handler.vs", "terrax_handler.vs", SHADER_CHECKDOUBLE_PATH);
+	g_xRenderStates.idHandlerShaderKit = SGCore_ShaderCreateKit(g_xRenderStates.idHandlerShaderVS, g_xRenderStates.idColoredShaderPS);
+	USHORT pHandlerIndices[] = {0, 1, 2, 3, 4, 5, 6, 7};
+	g_xRenderStates.pHandlerIB = pDevice->createIndexBuffer(sizeof(USHORT)* 8, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_USHORT, pHandlerIndices);
 
 	int result = SkyXEngine_CycleMain();
 	mem_delete(g_pGrid);
@@ -176,6 +193,8 @@ void XRender3D()
 
 void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 {
+	IGXContext *pDevice = SGCore_GetDXDevice();
+
 	if(preScene)
 	{
 		if(g_xConfig.m_bShowGrid)
@@ -211,6 +230,84 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			{
 				g_pLevelObjects[i]->renderSelection(false);
 			}
+		}
+
+		// Draw handlers
+		if(g_pLevelObjects.size())
+		{
+			SMMATRIX mViewProj;
+			Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, g_xRenderStates.idHandlerShaderVS, "g_mVP", &SMMatrixTranspose(mViewProj), 4);
+			pDevice->setPrimitiveTopology(GXPT_LINELIST);
+			SGCore_ShaderBind(g_xRenderStates.idHandlerShaderKit);
+			pDevice->setIndexBuffer(g_xRenderStates.pHandlerIB);
+
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, g_xRenderStates.idColoredShaderPS, "g_vColor", &float4(0.0f, 1.0f, 0.0f, 1.0f), 1);
+
+			float3_t *pvData;
+			float fPtSize = 3.5f * fScale;
+			if(g_xRenderStates.pHandlerVB->lock((void**)&pvData, GXBL_WRITE))
+			{
+				pvData[0] = float3_t(fPtSize, fPtSize, fPtSize);
+				pvData[1] = (float3)(pvData[0] * -1.0f);
+
+				pvData[2] = float3_t(fPtSize, fPtSize, -fPtSize);
+				pvData[3] = (float3)(pvData[2] * -1.0f);
+
+				pvData[4] = float3_t(fPtSize, -fPtSize, fPtSize);
+				pvData[5] = (float3)(pvData[4] * -1.0f);
+
+				pvData[6] = float3_t(-fPtSize, fPtSize, fPtSize);
+				pvData[7] = (float3)(pvData[6] * -1.0f);
+
+				g_xRenderStates.pHandlerVB->unlock();
+			}
+			pDevice->setRenderBuffer(g_xRenderStates.pHandlerRB);
+
+			for(bool isSelected = false;; isSelected = true)
+			{
+				UINT uHandlerCount = 0;
+				pvData = NULL;
+				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+				{
+					if(0) // not visible
+					{
+						continue;
+					}
+					if(isSelected != g_pLevelObjects[i]->isSelected())
+					{
+						continue;
+					}
+					if(!pvData && !g_xRenderStates.pHandlerInstanceVB->lock((void**)&pvData, GXBL_WRITE))
+					{
+						break;
+					}
+
+					pvData[uHandlerCount++] = g_pLevelObjects[i]->getPos();
+					if(uHandlerCount == X_MAX_HANDLERS_PER_DIP)
+					{
+						g_xRenderStates.pHandlerInstanceVB->unlock();
+						pDevice->drawIndexedInstanced(uHandlerCount, 8, 4, 0, 0);
+						pvData = NULL;
+						uHandlerCount = 0;
+					}
+				}
+				if(pvData)
+				{
+					g_xRenderStates.pHandlerInstanceVB->unlock();
+				}
+				if(uHandlerCount)
+				{
+					pDevice->drawIndexedInstanced(uHandlerCount, 8, 4, 0, 0);
+				}
+				if(isSelected)
+				{
+					break;
+				}
+				SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, g_xRenderStates.idColoredShaderPS, "g_vColor", &float4(1.0f, 0.0f, 0.0f, 1.0f), 1);
+			}
+
+			SGCore_ShaderUnBind();
 		}
 
 		if(g_xState.isFrameSelect)

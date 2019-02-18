@@ -932,59 +932,62 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			g_xState.isFrameSelect = false;
 			ReleaseCapture();
 
-			X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
-
-			CCommandSelect *pCmd = new CCommandSelect();
-			bool bUse = false;
-			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+			if(memcmp(&g_xState.vWorldMousePos, &g_xState.vFrameSelectStart, sizeof(float2_t)))
 			{
-				CXObject *pObj = g_pLevelObjects[i];
-				float3_t vPos = pObj->getPos();
-				bool sel = false;
-				switch(xCurView)
-				{
-				case X2D_TOP:
-					sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
-						&& ((vPos.z > g_xState.vWorldMousePos.y && vPos.z <= g_xState.vFrameSelectStart.y) || (vPos.z < g_xState.vWorldMousePos.y && vPos.z >= g_xState.vFrameSelectStart.y));
-					break;
-				case X2D_FRONT:
-					sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
-						&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
-					break;
-				case X2D_SIDE:
-					sel = ((vPos.z > g_xState.vWorldMousePos.x && vPos.z <= g_xState.vFrameSelectStart.x) || (vPos.z < g_xState.vWorldMousePos.x && vPos.z >= g_xState.vFrameSelectStart.x))
-						&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
-					break;
-				}
-				if(wParam & MK_CONTROL)
-				{
-					if(sel && !pObj->isSelected())
-					{
-						//pObj->setSelected(true);
-						bUse = true;
-						pCmd->addSelected(i);
-					}
-				}
-				else
-				{
-					if(!pObj->isSelected() && sel)
-					{
-						bUse = true;
-						pCmd->addSelected(i);
-						//pObj->setSelected(sel);
-					}
-					else if(pObj->isSelected() && !sel)
-					{
-						bUse = true;
-						pCmd->addDeselected(i);
-						//pObj->setSelected(sel);
-					}
-				}
-			}
+				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
 
-			if(bUse)
-			{
-				XExecCommand(pCmd);
+				CCommandSelect *pCmd = new CCommandSelect();
+				bool bUse = false;
+				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+				{
+					CXObject *pObj = g_pLevelObjects[i];
+					float3_t vPos = pObj->getPos();
+					bool sel = false;
+					switch(xCurView)
+					{
+					case X2D_TOP:
+						sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
+							&& ((vPos.z > g_xState.vWorldMousePos.y && vPos.z <= g_xState.vFrameSelectStart.y) || (vPos.z < g_xState.vWorldMousePos.y && vPos.z >= g_xState.vFrameSelectStart.y));
+						break;
+					case X2D_FRONT:
+						sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
+							&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
+						break;
+					case X2D_SIDE:
+						sel = ((vPos.z > g_xState.vWorldMousePos.x && vPos.z <= g_xState.vFrameSelectStart.x) || (vPos.z < g_xState.vWorldMousePos.x && vPos.z >= g_xState.vFrameSelectStart.x))
+							&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
+						break;
+					}
+					if(wParam & MK_CONTROL)
+					{
+						if(sel && !pObj->isSelected())
+						{
+							//pObj->setSelected(true);
+							bUse = true;
+							pCmd->addSelected(i);
+						}
+					}
+					else
+					{
+						if(!pObj->isSelected() && sel)
+						{
+							bUse = true;
+							pCmd->addSelected(i);
+							//pObj->setSelected(sel);
+						}
+						else if(pObj->isSelected() && !sel)
+						{
+							bUse = true;
+							pCmd->addDeselected(i);
+							//pObj->setSelected(sel);
+						}
+					}
+				}
+
+				if(bUse)
+				{
+					XExecCommand(pCmd);
+				}
 			}
 		}
 		if(s_pMoveCmd)

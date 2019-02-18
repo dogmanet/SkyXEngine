@@ -98,6 +98,8 @@ struct CTerraXState
 	float3_t vSelectionBoundMax;
 };
 
+#define X_MAX_HANDLERS_PER_DIP 512
+
 struct CTerraXRenderStates
 {
 	IGXBlendState *pBlendColorFactor = NULL;
@@ -108,6 +110,15 @@ struct CTerraXRenderStates
 	ID idTexturedShaderVS = -1;
 	ID idTexturedShaderPS = -1;
 	ID idTexturedShaderKit = -1;
+
+	ID idColoredShaderPS = -1;
+
+	IGXVertexBuffer *pHandlerVB;
+	IGXIndexBuffer *pHandlerIB;
+	IGXVertexBuffer *pHandlerInstanceVB;
+	IGXRenderBuffer *pHandlerRB;
+	ID idHandlerShaderVS = -1;
+	ID idHandlerShaderKit = -1;
 };
 extern CTerraXRenderStates g_xRenderStates;
 
