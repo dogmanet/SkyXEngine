@@ -89,6 +89,7 @@ struct CTerraXState
 	X_WINDOW_POS activeWindow = XWP_TOP_LEFT;
 	float2_t vMousePos;
 	float2_t vWorldMousePos;
+	float4_t m_vViewportBorders[4];
 
 	bool isFrameSelect = false;
 	float2_t vFrameSelectStart;
@@ -111,7 +112,9 @@ struct CTerraXRenderStates
 	ID idTexturedShaderPS = -1;
 	ID idTexturedShaderKit = -1;
 
+	ID idColoredShaderVS = -1;
 	ID idColoredShaderPS = -1;
+	ID idColoredShaderKit = -1;
 
 	IGXVertexBuffer *pHandlerVB;
 	IGXIndexBuffer *pHandlerIB;
@@ -119,6 +122,11 @@ struct CTerraXRenderStates
 	IGXRenderBuffer *pHandlerRB;
 	ID idHandlerShaderVS = -1;
 	ID idHandlerShaderKit = -1;
+
+	IGXVertexBuffer *pTransformHandlerVB;
+	IGXRenderBuffer *pTransformHandlerRB;
+	IGXIndexBuffer *pTransformHandlerIB;
+
 };
 extern CTerraXRenderStates g_xRenderStates;
 

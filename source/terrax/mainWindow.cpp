@@ -1067,7 +1067,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				
 				const float fWorldSize = 3.5f * fViewScale;
 
-				if(!XRayCast(g_xState.activeWindow))
+				if(!XRayCast(g_xState.activeWindow) || (wParam & MK_CONTROL))
 				{
 					CCommandSelect *pCmd = new CCommandSelect();
 					bool bUse = false;
@@ -1237,8 +1237,15 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 				RECT rc;
 				GetClientRect(hWnd, &rc);
+				
 				float2 vCenter((float)(rc.left + rc.right) * 0.5f, (float)(rc.top + rc.bottom) * 0.5f);
 				float2 vDelta = (g_xState.vMousePos - vCenter) * float2(1.0f, -1.0f);
+
+				float2 vSize((float)(rc.right - rc.left), (float)(rc.bottom - rc.top));
+				vSize *= 0.5f * fViewScale;
+				float2 vTopLeft = fCamWorld - vSize;
+				float2 vBottomRight = fCamWorld + vSize;
+				g_xState.m_vViewportBorders[g_xState.activeWindow] = float4(vTopLeft.x, vTopLeft.y, vBottomRight.x, vBottomRight.y);
 
 				g_xState.vWorldMousePos = (float2)(fCamWorld + vDelta * fViewScale);
 

@@ -296,6 +296,11 @@ struct VSO_TXTextured
 	half2 vTexUV	:TEXCOORD0;
 };
 
+struct VSI_TXColored
+{
+	half4 vPosition	:POSITION0;
+};
+
 struct VSO_TXColored
 {
 	half4 vPosition	:POSITION;
