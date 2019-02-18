@@ -3,12 +3,14 @@
 bool CCommandMove::exec()
 {
 	_move_obj *pObj;
+	bool moved = false;
 	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
 	{
 		pObj = &m_aObjects[i];
 		g_pLevelObjects[pObj->idObject]->setPos(pObj->vEndPos);
+		moved = moved || memcmp(&pObj->vEndPos, &pObj->vStartPos, sizeof(pObj->vStartPos));
 	}
-	return(true);
+	return(moved);
 }
 bool CCommandMove::undo()
 {

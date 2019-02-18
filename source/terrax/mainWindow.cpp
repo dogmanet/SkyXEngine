@@ -989,6 +989,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		}
 		if(s_pMoveCmd)
 		{
+			ReleaseCapture();
 			XExecCommand(s_pMoveCmd);
 			s_pMoveCmd = NULL;
 		}
@@ -1121,6 +1122,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 				if(XRayCast(g_xState.activeWindow))
 				{
+					SetCapture(hWnd);
 					SetCursor(hcPtr);
 					s_pMoveCmd = new CCommandMove();
 					float3 vStartPos;
@@ -1257,12 +1259,16 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			}
 			XUpdateStatusMPos();
 
-			if(Button_GetCheck(g_hABArrowButton))
+			if(Button_GetCheck(g_hABArrowButton) && !s_pMoveCmd)
 			{
 				if(XRayCast(g_xState.activeWindow))
 				{
 					SetCursor(hcPtr);
 				}
+			}
+			if(s_pMoveCmd)
+			{
+				SetCursor(hcPtr);
 			}
 			return(TRUE);
 		}
