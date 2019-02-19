@@ -1067,7 +1067,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				
 				const float fWorldSize = 3.5f * fViewScale;
 
-				if(!XRayCast(g_xState.activeWindow) || (wParam & MK_CONTROL))
+				if(!XIsMouseInSelection(g_xState.activeWindow) || (wParam & MK_CONTROL))
 				{
 					CCommandSelect *pCmd = new CCommandSelect();
 					bool bUse = false;
@@ -1120,10 +1120,11 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					if(bUse)
 					{
 						XExecCommand(pCmd);
+						XUpdateSelectionBound();
 					}
 				}
 
-				if(XRayCast(g_xState.activeWindow))
+				if(XIsMouseInSelection(g_xState.activeWindow))
 				{
 					SetCapture(hWnd);
 					SetCursor(hcPtr);
@@ -1271,7 +1272,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 			if(Button_GetCheck(g_hABArrowButton) && !s_pMoveCmd)
 			{
-				if(XRayCast(g_xState.activeWindow))
+				if(XIsMouseInSelection(g_xState.activeWindow))
 				{
 					SetCursor(hcPtr);
 				}

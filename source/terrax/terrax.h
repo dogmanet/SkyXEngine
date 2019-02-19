@@ -107,6 +107,7 @@ struct CTerraXRenderStates
 	IGXBlendState *pBlendAlpha = NULL;
 
 	IGXRasterizerState *pRSWireframe = NULL;
+	IGXRasterizerState *pRSSolidNoCull = NULL;
 
 	ID idTexturedShaderVS = -1;
 	ID idTexturedShaderPS = -1;
@@ -166,5 +167,6 @@ bool XExecCommand(CCommand *pCommand);
 void XUpdateSelectionBound();
 
 bool XRayCast(X_WINDOW_POS wnd);
+bool XIsMouseInSelection(X_WINDOW_POS wnd);
 
 #endif

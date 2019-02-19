@@ -105,9 +105,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	blendDesc.renderTarget[0].destBlend = blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_INV_SRC_ALPHA;
 	g_xRenderStates.pBlendAlpha = pDevice->createBlendState(&blendDesc);
 
-	GXRASTERIZER_DESC rsDesc;
-	rsDesc.fillMode = GXFILL_WIREFRAME;
+	GXRASTERIZER_DESC rsDesc; 
 	rsDesc.cullMode = GXCULL_NONE;
+	g_xRenderStates.pRSSolidNoCull = SGCore_GetDXDevice()->createRasterizerState(&rsDesc);
+
+	rsDesc.fillMode = GXFILL_WIREFRAME;
 	g_xRenderStates.pRSWireframe = SGCore_GetDXDevice()->createRasterizerState(&rsDesc);
 
 	g_xRenderStates.idTexturedShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_textured.vs", "terrax_textured.vs", SHADER_CHECKDOUBLE_PATH);
@@ -472,6 +474,8 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 				mWorld = SMMatrixRotationY(-SM_PIDIV2) * SMMatrixRotationZ(-SM_PIDIV2);
 				break;
 			}
+			IGXRasterizerState *pOldRS = pDevice->getRasterizerState();
+			pDevice->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
 			Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, g_xRenderStates.idColoredShaderVS, "g_mWVP", &SMMatrixTranspose(mWorld * mViewProj), 4);
 			pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
@@ -481,6 +485,8 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, g_xRenderStates.idColoredShaderPS, "g_vColor", &float4(1.0f, 1.0f, 1.0f, 1.0f), 1);
 			pDevice->drawIndexed(32, 16, 0, 0);
 			SGCore_ShaderUnBind();
+			pDevice->setRasterizerState(pOldRS);
+			mem_release(pOldRS);
 		}
 	}
 }
@@ -666,6 +672,30 @@ bool XRayCast(X_WINDOW_POS wnd)
 		{
 			return(true);
 		}
+	}
+	return(false);
+}
+
+bool XIsMouseInSelection(X_WINDOW_POS wnd)
+{
+	if(!g_xConfig.m_pViewportCamera[wnd])
+	{
+		return(false);
+	}
+	const float2_t &fMPos = g_xState.vWorldMousePos;
+	switch(g_xConfig.m_x2DView[wnd])
+	{
+	case X2D_TOP:
+		return(fMPos.x >= g_xState.vSelectionBoundMin.x && fMPos.x <= g_xState.vSelectionBoundMax.x && 
+			fMPos.y >= g_xState.vSelectionBoundMin.z && fMPos.y <= g_xState.vSelectionBoundMax.z);
+
+	case X2D_FRONT:
+		return(fMPos.x >= g_xState.vSelectionBoundMin.x && fMPos.x <= g_xState.vSelectionBoundMax.x &&
+			fMPos.y >= g_xState.vSelectionBoundMin.y && fMPos.y <= g_xState.vSelectionBoundMax.y);
+
+	case X2D_SIDE:
+		return(fMPos.x >= g_xState.vSelectionBoundMin.z && fMPos.x <= g_xState.vSelectionBoundMax.z &&
+			fMPos.y >= g_xState.vSelectionBoundMin.y && fMPos.y <= g_xState.vSelectionBoundMax.y);
 	}
 	return(false);
 }
