@@ -370,7 +370,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 		{
 			float3_t va, vb, vc, vd;
 			float4 vBorder;
-			float2 vViewportCenter;
+			float2 vSelectionCenter;
 			switch(view)
 			{
 			case X2D_TOP:
@@ -380,7 +380,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 				vd = float3_t(g_xState.vSelectionBoundMin.x, 0.0f, g_xState.vSelectionBoundMax.z);
 				vBorder = float4(g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMin.z,
 					g_xState.vSelectionBoundMax.x, g_xState.vSelectionBoundMax.z);
-				vViewportCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
+				vSelectionCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
 					g_xState.vSelectionBoundMin.z + g_xState.vSelectionBoundMax.z) * 0.5f;
 				break;
 			case X2D_FRONT:
@@ -390,7 +390,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 				vd = float3_t(g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMax.y, 0.0f);
 				vBorder = float4(g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMin.y,
 					g_xState.vSelectionBoundMax.x, g_xState.vSelectionBoundMax.y);
-				vViewportCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
+				vSelectionCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
 					g_xState.vSelectionBoundMin.y + g_xState.vSelectionBoundMax.y) * 0.5f;
 				break;
 			case X2D_SIDE:
@@ -400,7 +400,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 				vd = float3_t(0.0f, g_xState.vSelectionBoundMax.y, g_xState.vSelectionBoundMin.z);
 				vBorder = float4(g_xState.vSelectionBoundMin.z, g_xState.vSelectionBoundMin.y,
 					g_xState.vSelectionBoundMax.z, g_xState.vSelectionBoundMax.y);
-				vViewportCenter = float2(g_xState.vSelectionBoundMin.z + g_xState.vSelectionBoundMax.z,
+				vSelectionCenter = float2(g_xState.vSelectionBoundMin.z + g_xState.vSelectionBoundMax.z,
 					g_xState.vSelectionBoundMin.y + g_xState.vSelectionBoundMax.y) * 0.5f;
 				break;
 			}
@@ -412,25 +412,25 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			if(g_xRenderStates.pTransformHandlerVB->lock((void**)&pvData, GXBL_WRITE))
 			{
 				UINT uCV = 0;
-				float3 vCenter(vViewportCenter.x, 0.0f, vBorder.y - fPtMargin);
+				float3 vCenter(vSelectionCenter.x, 0.0f, vBorder.y - fPtMargin);
 				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
 				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
 				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
 				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
 
-				vCenter = float3(vBorder.z + fPtMargin, 0.0f, vViewportCenter.y);
+				vCenter = float3(vBorder.z + fPtMargin, 0.0f, vSelectionCenter.y);
 				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
 				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
 				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
 				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
 
-				vCenter = float3(vViewportCenter.x, 0.0f, vBorder.w + fPtMargin);
+				vCenter = float3(vSelectionCenter.x, 0.0f, vBorder.w + fPtMargin);
 				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
 				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
 				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
 				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
 
-				vCenter = float3(vBorder.x - fPtMargin, 0.0f, vViewportCenter.y);
+				vCenter = float3(vBorder.x - fPtMargin, 0.0f, vSelectionCenter.y);
 				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
 				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
 				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
@@ -678,7 +678,7 @@ bool XRayCast(X_WINDOW_POS wnd)
 
 bool XIsMouseInSelection(X_WINDOW_POS wnd)
 {
-	if(!g_xConfig.m_pViewportCamera[wnd])
+	if(!g_xConfig.m_pViewportCamera[wnd] || !g_xState.bHasSelection)
 	{
 		return(false);
 	}

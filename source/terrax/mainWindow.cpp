@@ -1276,6 +1276,58 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				{
 					SetCursor(hcPtr);
 				}
+				else if(g_xState.bHasSelection)
+				{
+					float fScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
+					float fPtSize = 3.0f * fScale;
+					float fPtMargin = 7.0f * fScale;
+					float2 vSelectionCenter;
+					float4 vBorder;
+
+					const float2_t &fMPos = g_xState.vWorldMousePos;
+
+					switch(g_xConfig.m_x2DView[g_xState.activeWindow])
+					{
+					case X2D_TOP:
+						vBorder = float4(g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMin.z,
+							g_xState.vSelectionBoundMax.x, g_xState.vSelectionBoundMax.z);
+						vSelectionCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
+							g_xState.vSelectionBoundMin.z + g_xState.vSelectionBoundMax.z) * 0.5f;
+						break;
+					case X2D_FRONT:
+						vBorder = float4(g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMin.y,
+							g_xState.vSelectionBoundMax.x, g_xState.vSelectionBoundMax.y);
+						vSelectionCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
+							g_xState.vSelectionBoundMin.y + g_xState.vSelectionBoundMax.y) * 0.5f;
+						break;
+					case X2D_SIDE:
+						vBorder = float4(g_xState.vSelectionBoundMin.z, g_xState.vSelectionBoundMin.y,
+							g_xState.vSelectionBoundMax.z, g_xState.vSelectionBoundMax.y);
+						vSelectionCenter = float2(g_xState.vSelectionBoundMin.z + g_xState.vSelectionBoundMax.z,
+							g_xState.vSelectionBoundMin.y + g_xState.vSelectionBoundMax.y) * 0.5f;
+						break;
+					}
+
+					// bottom center
+					float2_t vCenters[] = {
+						{vSelectionCenter.x, vBorder.y - fPtMargin},
+						{vBorder.z + fPtMargin, vSelectionCenter.y},
+						{vSelectionCenter.x, vBorder.w + fPtMargin},
+						{vBorder.x - fPtMargin, vSelectionCenter.y},
+						{vBorder.x - fPtMargin, vBorder.y - fPtMargin},
+						{vBorder.z + fPtMargin, vBorder.y - fPtMargin},
+						{vBorder.z + fPtMargin, vBorder.w + fPtMargin},
+						{vBorder.x - fPtMargin, vBorder.w + fPtMargin}
+					};
+					for(int i = 0; i < 8; ++i)
+					{
+						if(fabsf(fMPos.x - vCenters[i].x) <= fPtSize && fabsf(fMPos.y - vCenters[i].y) <= fPtSize)
+						{
+							SetCursor(hcPtr);
+							break;
+						}
+					}
+				}
 			}
 			if(s_pMoveCmd)
 			{
