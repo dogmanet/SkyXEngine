@@ -466,10 +466,10 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			switch(view)
 			{
 			case X2D_FRONT:
-				mWorld = SMMatrixRotationX(SM_PIDIV2);
+				mWorld = SMMatrixRotationX(-SM_PIDIV2);
 				break;
 			case X2D_SIDE:
-				mWorld = SMMatrixRotationZ(SM_PIDIV2);
+				mWorld = SMMatrixRotationY(-SM_PIDIV2) * SMMatrixRotationZ(-SM_PIDIV2);
 				break;
 			}
 			Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
