@@ -1,5 +1,5 @@
-#ifndef _COMMAND_MVOE_H_
-#define _COMMAND_MVOE_H_
+#ifndef _COMMAND_MOVE_H_
+#define _COMMAND_MOVE_H_
 
 #include "Command.h"
 #include "terrax.h"

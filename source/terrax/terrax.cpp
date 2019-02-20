@@ -161,12 +161,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 			4, 5, 6, 4, 6, 7,
 			8, 9, 10, 8, 10, 11,
 			12, 13, 14, 12, 14, 15,
+
 			16, 17, 18, 16, 18, 19,
 			20, 21, 22, 20, 22, 23,
 			24, 25, 26, 24, 26, 27,
 			28, 29, 30, 28, 30, 31
 		};
-		g_xRenderStates.pTransformHandlerIB = pDevice->createIndexBuffer(sizeof(USHORT)* 48, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_USHORT, pHandlerIndices);
+		g_xRenderStates.pTransformHandlerScaleIB = pDevice->createIndexBuffer(sizeof(USHORT)* 48, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_USHORT, pHandlerIndices);
+		
+		USHORT pHandlerRotateIndices[] = {
+			0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 5, 0, 5, 6, 0, 6, 7,
+			8, 9, 10, 8, 10, 11, 8, 11, 12, 8, 12, 13, 8, 13, 14, 8, 14, 15,
+			16, 17, 18, 16, 18, 19, 16, 19, 20, 16, 20, 21, 16, 21, 22, 16, 22, 23,
+			24, 25, 26, 24, 26, 27, 24, 27, 28, 24, 28, 29, 24, 29, 30, 24, 30, 31
+		};
+		g_xRenderStates.pTransformHandlerRotateIB = pDevice->createIndexBuffer(sizeof(USHORT)* 72, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_USHORT, pHandlerRotateIndices);
 
 	}
 	int result = SkyXEngine_CycleMain();
@@ -412,53 +421,101 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			if(g_xRenderStates.pTransformHandlerVB->lock((void**)&pvData, GXBL_WRITE))
 			{
 				UINT uCV = 0;
-				float3 vCenter(vSelectionCenter.x, 0.0f, vBorder.y - fPtMargin);
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
 
-				vCenter = float3(vBorder.z + fPtMargin, 0.0f, vSelectionCenter.y);
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
+				if(g_xState.xformType == X2DXF_SCALE)
+				{
+					float3 vCenter(vSelectionCenter.x, 0.0f, vBorder.y - fPtMargin);
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
 
-				vCenter = float3(vSelectionCenter.x, 0.0f, vBorder.w + fPtMargin);
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
+					vCenter = float3(vBorder.z + fPtMargin, 0.0f, vSelectionCenter.y);
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
 
-				vCenter = float3(vBorder.x - fPtMargin, 0.0f, vSelectionCenter.y);
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
+					vCenter = float3(vSelectionCenter.x, 0.0f, vBorder.w + fPtMargin);
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
 
-				vCenter = float3(vBorder.x - fPtMargin, 0.0f, vBorder.y - fPtMargin);
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
+					vCenter = float3(vBorder.x - fPtMargin, 0.0f, vSelectionCenter.y);
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
 
-				vCenter = float3(vBorder.z + fPtMargin, 0.0f, vBorder.y - fPtMargin);
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
+					vCenter = float3(vBorder.x - fPtMargin, 0.0f, vBorder.y - fPtMargin);
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
 
-				vCenter = float3(vBorder.z + fPtMargin, 0.0f, vBorder.w + fPtMargin);
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
+					vCenter = float3(vBorder.z + fPtMargin, 0.0f, vBorder.y - fPtMargin);
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
 
-				vCenter = float3(vBorder.x - fPtMargin, 0.0f, vBorder.w + fPtMargin);
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
-				pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
+					vCenter = float3(vBorder.z + fPtMargin, 0.0f, vBorder.w + fPtMargin);
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
+
+					vCenter = float3(vBorder.x - fPtMargin, 0.0f, vBorder.w + fPtMargin);
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, fPtSize));
+				}
+				else if(g_xState.xformType == X2DXF_ROTATE)
+				{
+					float fPtSize2 = fPtSize * sqrtf(2.0f) * 0.5f;
+
+					float3 vCenter = float3(vBorder.x - fPtMargin, 0.0f, vBorder.y - fPtMargin);
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, 0.0f));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize2, 0.0f, -fPtSize2));
+					pvData[uCV++] = (float3)(vCenter + float3(0.0f, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize2, 0.0f, -fPtSize2));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, 0.0f));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize2, 0.0f, fPtSize2));
+					pvData[uCV++] = (float3)(vCenter + float3(0.0f, 0.0f, fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize2, 0.0f, fPtSize2));
+
+					vCenter = float3(vBorder.z + fPtMargin, 0.0f, vBorder.y - fPtMargin);
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, 0.0f));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize2, 0.0f, -fPtSize2));
+					pvData[uCV++] = (float3)(vCenter + float3(0.0f, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize2, 0.0f, -fPtSize2));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, 0.0f));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize2, 0.0f, fPtSize2));
+					pvData[uCV++] = (float3)(vCenter + float3(0.0f, 0.0f, fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize2, 0.0f, fPtSize2));
+
+					vCenter = float3(vBorder.z + fPtMargin, 0.0f, vBorder.w + fPtMargin);
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, 0.0f));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize2, 0.0f, -fPtSize2));
+					pvData[uCV++] = (float3)(vCenter + float3(0.0f, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize2, 0.0f, -fPtSize2));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, 0.0f));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize2, 0.0f, fPtSize2));
+					pvData[uCV++] = (float3)(vCenter + float3(0.0f, 0.0f, fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize2, 0.0f, fPtSize2));
+
+					vCenter = float3(vBorder.x - fPtMargin, 0.0f, vBorder.w + fPtMargin);
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, 0.0f));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize2, 0.0f, -fPtSize2));
+					pvData[uCV++] = (float3)(vCenter + float3(0.0f, 0.0f, -fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize2, 0.0f, -fPtSize2));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize, 0.0f, 0.0f));
+					pvData[uCV++] = (float3)(vCenter + float3(fPtSize2, 0.0f, fPtSize2));
+					pvData[uCV++] = (float3)(vCenter + float3(0.0f, 0.0f, fPtSize));
+					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize2, 0.0f, fPtSize2));
+				}
 
 				g_xRenderStates.pTransformHandlerVB->unlock();
 			}
@@ -480,10 +537,18 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, g_xRenderStates.idColoredShaderVS, "g_mWVP", &SMMatrixTranspose(mWorld * mViewProj), 4);
 			pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
 			SGCore_ShaderBind(g_xRenderStates.idColoredShaderKit);
-			pDevice->setIndexBuffer(g_xRenderStates.pTransformHandlerIB);
 			pDevice->setRenderBuffer(g_xRenderStates.pTransformHandlerRB);
 			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, g_xRenderStates.idColoredShaderPS, "g_vColor", &float4(1.0f, 1.0f, 1.0f, 1.0f), 1);
-			pDevice->drawIndexed(32, 16, 0, 0);
+			if(g_xState.xformType == X2DXF_SCALE)
+			{
+				pDevice->setIndexBuffer(g_xRenderStates.pTransformHandlerScaleIB);
+				pDevice->drawIndexed(32, 16, 0, 0);
+			}
+			else if(g_xState.xformType == X2DXF_ROTATE)
+			{
+				pDevice->setIndexBuffer(g_xRenderStates.pTransformHandlerRotateIB);
+				pDevice->drawIndexed(32, 24, 0, 0);
+			}
 			SGCore_ShaderUnBind();
 			pDevice->setRasterizerState(pOldRS);
 			mem_release(pOldRS);

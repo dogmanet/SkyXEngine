@@ -118,6 +118,9 @@
     <ClInclude Include="..\..\..\source\terrax\CommandMove.h">
       <Filter>Header Files\cmd</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\CommandScale.h">
+      <Filter>Header Files\cmd</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\source\terrax\resource\new.bmp">
@@ -312,5 +315,16 @@
     <Image Include="..\..\..\source\terrax\resource\toolbar1.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\Users\admin\AppData\Local\VirtualStore\Program Files\1023.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resource\rotate.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\source\terrax\resource\rotate.cur">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

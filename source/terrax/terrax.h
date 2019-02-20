@@ -54,6 +54,16 @@ enum X_WINDOW_POS
 	XWP_BOTTOM_RIGHT
 };
 
+
+enum X_2DXFORM_TYPE
+{
+	X2DXF_SCALE = 0,
+	X2DXF_ROTATE,
+
+
+	X2DXF__LAST
+};
+
 struct CTerraXConfig
 {
 	CTerraXConfig()
@@ -97,6 +107,8 @@ struct CTerraXState
 	bool bHasSelection = false;
 	float3_t vSelectionBoundMin;
 	float3_t vSelectionBoundMax;
+
+	X_2DXFORM_TYPE xformType = X2DXF_SCALE;
 };
 
 #define X_MAX_HANDLERS_PER_DIP 512
@@ -126,7 +138,8 @@ struct CTerraXRenderStates
 
 	IGXVertexBuffer *pTransformHandlerVB;
 	IGXRenderBuffer *pTransformHandlerRB;
-	IGXIndexBuffer *pTransformHandlerIB;
+	IGXIndexBuffer *pTransformHandlerScaleIB;
+	IGXIndexBuffer *pTransformHandlerRotateIB;
 
 };
 extern CTerraXRenderStates g_xRenderStates;

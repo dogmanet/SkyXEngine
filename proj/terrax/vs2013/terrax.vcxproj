@@ -119,6 +119,7 @@
     <ClInclude Include="..\..\..\source\SkyXEngine.h" />
     <ClInclude Include="..\..\..\source\terrax\Command.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandMove.h" />
+    <ClInclude Include="..\..\..\source\terrax\CommandScale.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandSelect.h" />
     <ClInclude Include="..\..\..\source\terrax\UndoManager.h" />
     <ClInclude Include="..\..\..\source\terrax\XObject.h" />
@@ -192,6 +193,11 @@
     <Image Include="resource\sel_s.bmp" />
     <Image Include="resource\sel_z.bmp" />
     <Image Include="resource\sun.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\Users\admin\AppData\Local\VirtualStore\Program Files\1023.cur" />
+    <None Include="..\..\..\source\terrax\resource\rotate.cur" />
+    <None Include="resource\rotate.cur" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

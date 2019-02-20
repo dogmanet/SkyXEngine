@@ -22,6 +22,7 @@
 
 #include "CommandSelect.h"
 #include "CommandMove.h"
+#include "CommandScale.h"
 
 extern Array<CXObject*> g_pLevelObjects;
 
@@ -894,7 +895,13 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 	PAINTSTRUCT ps;
 	HDC hdc;
 	RECT rect; 
-	static HCURSOR	hcPtr = NULL;
+	static HCURSOR hcPtr = NULL;
+	static HCURSOR hcSizeNS = NULL;
+	static HCURSOR hcSizeWE = NULL;
+	static HCURSOR hcSizeNESW = NULL;
+	static HCURSOR hcSizeNWSE = NULL;
+	static HCURSOR hcRotate = NULL;
+
 	static const int *r_final_image = GET_PCVAR_INT("r_final_image");
 	if(!r_final_image)
 	{
@@ -902,11 +909,17 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 	}
 
 	static CCommandMove *s_pMoveCmd = NULL;
+	static CCommandScale *s_pScaleCmd = NULL;
 
 	switch(message)
 	{
 	case WM_CREATE:
 		hcPtr = LoadCursor(NULL, IDC_CROSS);
+		hcSizeNS = LoadCursor(NULL, IDC_SIZENS);
+		hcSizeWE = LoadCursor(NULL, IDC_SIZEWE);
+		hcSizeNWSE = LoadCursor(NULL, IDC_SIZENWSE);
+		hcSizeNESW = LoadCursor(NULL, IDC_SIZENESW); 
+		hcRotate = LoadCursor(hInst, MAKEINTRESOURCE(IDC_CURSOR1));
 		break;
 
 	case WM_RBUTTONUP:
@@ -986,15 +999,28 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 				if(bUse)
 				{
+					if(!g_xState.bHasSelection)
+					{
+						g_xState.xformType = X2DXF_SCALE;
+					}
 					XExecCommand(pCmd);
 				}
 			}
 		}
-		if(s_pMoveCmd)
+		else if(s_pMoveCmd)
 		{
 			ReleaseCapture();
-			XExecCommand(s_pMoveCmd);
+			if(!XExecCommand(s_pMoveCmd) && g_xState.bHasSelection)
+			{
+				g_xState.xformType = (X_2DXFORM_TYPE)((g_xState.xformType + 1) % X2DXF__LAST);
+			}
 			s_pMoveCmd = NULL;
+		}
+		else if(s_pScaleCmd)
+		{
+			ReleaseCapture();
+			XExecCommand(s_pScaleCmd);
+			s_pScaleCmd = NULL;
 		}
 
 		POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
@@ -1066,6 +1092,77 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
 				
 				const float fWorldSize = 3.5f * fViewScale;
+
+				if(g_xState.bHasSelection)
+				{
+					float fScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
+					float fPtSize = 3.0f * fScale;
+					float fPtMargin = 7.0f * fScale;
+					float2 vSelectionCenter;
+					float4 vBorder;
+
+					const float2_t &fMPos = g_xState.vWorldMousePos;
+
+					switch(g_xConfig.m_x2DView[g_xState.activeWindow])
+					{
+					case X2D_TOP:
+						vBorder = float4(g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMin.z,
+							g_xState.vSelectionBoundMax.x, g_xState.vSelectionBoundMax.z);
+						vSelectionCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
+							g_xState.vSelectionBoundMin.z + g_xState.vSelectionBoundMax.z) * 0.5f;
+						break;
+					case X2D_FRONT:
+						vBorder = float4(g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMin.y,
+							g_xState.vSelectionBoundMax.x, g_xState.vSelectionBoundMax.y);
+						vSelectionCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
+							g_xState.vSelectionBoundMin.y + g_xState.vSelectionBoundMax.y) * 0.5f;
+						break;
+					case X2D_SIDE:
+						vBorder = float4(g_xState.vSelectionBoundMin.z, g_xState.vSelectionBoundMin.y,
+							g_xState.vSelectionBoundMax.z, g_xState.vSelectionBoundMax.y);
+						vSelectionCenter = float2(g_xState.vSelectionBoundMin.z + g_xState.vSelectionBoundMax.z,
+							g_xState.vSelectionBoundMin.y + g_xState.vSelectionBoundMax.y) * 0.5f;
+						break;
+					}
+
+					// bottom center
+					float2_t vCenters[] = {
+						{vSelectionCenter.x, vBorder.y - fPtMargin}, // bottom center
+						{vBorder.z + fPtMargin, vSelectionCenter.y}, // center right
+						{vSelectionCenter.x, vBorder.w + fPtMargin}, // top center
+						{vBorder.x - fPtMargin, vSelectionCenter.y}, // center left
+						{vBorder.x - fPtMargin, vBorder.y - fPtMargin}, // bottom left
+						{vBorder.z + fPtMargin, vBorder.y - fPtMargin}, // bottom right
+						{vBorder.z + fPtMargin, vBorder.w + fPtMargin}, // top right
+						{vBorder.x - fPtMargin, vBorder.w + fPtMargin} // top left
+					};
+					bool bHandled = false;
+					HCURSOR hcs[] = {hcSizeNS, hcSizeWE, hcSizeNS, hcSizeWE, hcSizeNESW, hcSizeNWSE, hcSizeNESW, hcSizeNWSE};
+					for(int i = 0; i < 8; ++i)
+					{
+						if(fabsf(fMPos.x - vCenters[i].x) <= fPtSize && fabsf(fMPos.y - vCenters[i].y) <= fPtSize)
+						{
+							SetCapture(hWnd);
+
+							// create scale command
+							s_pScaleCmd = new CCommandScale();
+							s_pScaleCmd->setStartAABB(g_xState.vSelectionBoundMin, g_xState.vSelectionBoundMax);
+							for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+							{
+								if(g_pLevelObjects[i]->isSelected())
+								{
+									s_pScaleCmd->addObject(i);
+								}
+							}
+							bHandled = true;
+							break;
+						}
+					}
+					if(bHandled)
+					{
+						break;
+					}
+				}
 
 				if(!XIsMouseInSelection(g_xState.activeWindow) || (wParam & MK_CONTROL))
 				{
@@ -1267,10 +1364,14 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					}
 					s_pMoveCmd->setCurrentPos(vCurPos);
 				}
+				if(s_pScaleCmd)
+				{
+					//@TODO:s_pScaleCmd->setCurrentAABB();
+				}
 			}
 			XUpdateStatusMPos();
 
-			if(Button_GetCheck(g_hABArrowButton) && !s_pMoveCmd)
+			if(Button_GetCheck(g_hABArrowButton) && !s_pMoveCmd && !s_pScaleCmd)
 			{
 				if(XIsMouseInSelection(g_xState.activeWindow))
 				{
@@ -1310,20 +1411,29 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 					// bottom center
 					float2_t vCenters[] = {
-						{vSelectionCenter.x, vBorder.y - fPtMargin},
-						{vBorder.z + fPtMargin, vSelectionCenter.y},
-						{vSelectionCenter.x, vBorder.w + fPtMargin},
-						{vBorder.x - fPtMargin, vSelectionCenter.y},
-						{vBorder.x - fPtMargin, vBorder.y - fPtMargin},
-						{vBorder.z + fPtMargin, vBorder.y - fPtMargin},
-						{vBorder.z + fPtMargin, vBorder.w + fPtMargin},
-						{vBorder.x - fPtMargin, vBorder.w + fPtMargin}
+						{vSelectionCenter.x, vBorder.y - fPtMargin}, // bottom center
+						{vBorder.z + fPtMargin, vSelectionCenter.y}, // center right
+						{vSelectionCenter.x, vBorder.w + fPtMargin}, // top center
+						{vBorder.x - fPtMargin, vSelectionCenter.y}, // center left
+
+						{vBorder.x - fPtMargin, vBorder.y - fPtMargin}, // bottom left
+						{vBorder.z + fPtMargin, vBorder.y - fPtMargin}, // bottom right
+						{vBorder.z + fPtMargin, vBorder.w + fPtMargin}, // top right
+						{vBorder.x - fPtMargin, vBorder.w + fPtMargin} // top left
 					};
-					for(int i = 0; i < 8; ++i)
+					HCURSOR hcs[] = {hcSizeNS, hcSizeWE, hcSizeNS, hcSizeWE, hcSizeNESW, hcSizeNWSE, hcSizeNESW, hcSizeNWSE};
+					for(int i = (g_xState.xformType == X2DXF_SCALE) ? 0 : 4; i < 8; ++i)
 					{
 						if(fabsf(fMPos.x - vCenters[i].x) <= fPtSize && fabsf(fMPos.y - vCenters[i].y) <= fPtSize)
 						{
-							SetCursor(hcPtr);
+							if(g_xState.xformType == X2DXF_SCALE)
+							{
+								SetCursor(hcs[i]);
+							}
+							else if(g_xState.xformType == X2DXF_ROTATE)
+							{
+								SetCursor(hcRotate);
+							}
 							break;
 						}
 					}
@@ -1332,6 +1442,10 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			if(s_pMoveCmd)
 			{
 				SetCursor(hcPtr);
+			}
+			if(s_pScaleCmd)
+			{
+				//@TODO:SetCursor(???);
 			}
 			return(TRUE);
 		}
@@ -1390,6 +1504,11 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 	case WM_DESTROY:
 		DeleteObject(hcPtr);
+		DeleteObject(hcSizeNS);
+		DeleteObject(hcSizeWE);
+		DeleteObject(hcSizeNWSE);
+		DeleteObject(hcSizeNESW);
+		DeleteObject(hcRotate);
 		break;
 
 	default:
