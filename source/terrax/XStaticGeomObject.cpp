@@ -17,6 +17,26 @@ void CXStatixGeomObject::setPos(const float3_t &pos)
 	BaseClass::setPos(pos);
 }
 
+float3_t CXStatixGeomObject::getScale()
+{
+	return(*SGeom_ModelGetScale(m_idModel));
+}
+void CXStatixGeomObject::setScale(const float3_t &pos)
+{
+	SGeom_ModelSetScale(m_idModel, &float3(pos));
+}
+
+SMQuaternion CXStatixGeomObject::getOrient()
+{
+	const float3 *rot = SGeom_ModelGetRotation(m_idModel);
+	
+	return(SMQuaternion(rot->x, 'x') * SMQuaternion(rot->y, 'y') * SMQuaternion(rot->z, 'z'));
+}
+void CXStatixGeomObject::setOrient(const SMQuaternion &orient)
+{
+	SGeom_ModelSetRotation(m_idModel, &SMMatrixToEuler(orient.GetMatrix()));
+}
+
 void CXStatixGeomObject::getBound(float3 *pvMin, float3 *pvMax)
 {
 	SGeom_ModelGetMinMax(m_idModel, pvMin, pvMax);

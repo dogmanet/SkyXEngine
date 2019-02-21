@@ -12,6 +12,12 @@ public:
 
 	void setPos(const float3_t &pos);
 
+	SMQuaternion getOrient();
+	void setOrient(const SMQuaternion &orient);
+
+	float3_t getScale();
+	void setScale(const float3_t &pos);
+
 	void getBound(float3 *pvMin, float3 *pvMax);
 
 	void renderSelection(bool is3D);

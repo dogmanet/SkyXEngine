@@ -1102,6 +1102,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					float4 vBorder;
 
 					const float2_t &fMPos = g_xState.vWorldMousePos;
+					float3 vStartPos;
 
 					switch(g_xConfig.m_x2DView[g_xState.activeWindow])
 					{
@@ -1110,18 +1111,21 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 							g_xState.vSelectionBoundMax.x, g_xState.vSelectionBoundMax.z);
 						vSelectionCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
 							g_xState.vSelectionBoundMin.z + g_xState.vSelectionBoundMax.z) * 0.5f;
+						vStartPos = float3(fMPos.x, 0.0f, fMPos.y);
 						break;
 					case X2D_FRONT:
 						vBorder = float4(g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMin.y,
 							g_xState.vSelectionBoundMax.x, g_xState.vSelectionBoundMax.y);
 						vSelectionCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
 							g_xState.vSelectionBoundMin.y + g_xState.vSelectionBoundMax.y) * 0.5f;
+						vStartPos = float3(fMPos.x, fMPos.y, 0.0f);
 						break;
 					case X2D_SIDE:
 						vBorder = float4(g_xState.vSelectionBoundMin.z, g_xState.vSelectionBoundMin.y,
 							g_xState.vSelectionBoundMax.z, g_xState.vSelectionBoundMax.y);
 						vSelectionCenter = float2(g_xState.vSelectionBoundMin.z + g_xState.vSelectionBoundMax.z,
 							g_xState.vSelectionBoundMin.y + g_xState.vSelectionBoundMax.y) * 0.5f;
+						vStartPos = float3(0.0f, fMPos.y, fMPos.x);
 						break;
 					}
 
@@ -1138,6 +1142,14 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					};
 					bool bHandled = false;
 					HCURSOR hcs[] = {hcSizeNS, hcSizeWE, hcSizeNS, hcSizeWE, hcSizeNESW, hcSizeNWSE, hcSizeNESW, hcSizeNWSE};
+					X_DIR dirs[][8] = {
+						// X2D_TOP (x/z)
+						{XDIR_Z_NEG, XDIR_X_POS, XDIR_Z_POS, XDIR_X_NEG, XDIR_Z_NEG | XDIR_X_NEG, XDIR_Z_NEG | XDIR_X_POS, XDIR_Z_POS | XDIR_X_POS, XDIR_Z_POS | XDIR_X_NEG},
+						// X2D_FRONT (x/y)
+						{XDIR_Y_NEG, XDIR_X_POS, XDIR_Y_POS, XDIR_X_NEG, XDIR_Y_NEG | XDIR_X_NEG, XDIR_Y_NEG | XDIR_X_POS, XDIR_Y_POS | XDIR_X_POS, XDIR_Y_POS | XDIR_X_NEG},
+						// X2D_SIDE (z/y)
+						{XDIR_Y_NEG, XDIR_Z_POS, XDIR_Y_POS, XDIR_Z_NEG, XDIR_Y_NEG | XDIR_Z_NEG, XDIR_Y_NEG | XDIR_Z_POS, XDIR_Y_POS | XDIR_Z_POS, XDIR_Y_POS | XDIR_Z_NEG}
+					};
 					for(int i = 0; i < 8; ++i)
 					{
 						if(fabsf(fMPos.x - vCenters[i].x) <= fPtSize && fabsf(fMPos.y - vCenters[i].y) <= fPtSize)
@@ -1147,6 +1159,8 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 							// create scale command
 							s_pScaleCmd = new CCommandScale();
 							s_pScaleCmd->setStartAABB(g_xState.vSelectionBoundMin, g_xState.vSelectionBoundMax);
+							s_pScaleCmd->setTransformDir(dirs[g_xConfig.m_x2DView[g_xState.activeWindow]][i]);
+							s_pScaleCmd->setStartPos(vStartPos);
 							for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 							{
 								if(g_pLevelObjects[i]->isSelected())
@@ -1317,7 +1331,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				ICamera *pCamera = g_xConfig.m_pViewportCamera[g_xState.activeWindow];
 				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
 				float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
-				
+
 				float3 fCamWorld;
 				pCamera->getPosition(&fCamWorld);
 				switch(xCurView)
@@ -1335,7 +1349,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 				RECT rc;
 				GetClientRect(hWnd, &rc);
-				
+
 				float2 vCenter((float)(rc.left + rc.right) * 0.5f, (float)(rc.top + rc.bottom) * 0.5f);
 				float2 vDelta = (g_xState.vMousePos - vCenter) * float2(1.0f, -1.0f);
 
@@ -1347,7 +1361,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 				g_xState.vWorldMousePos = (float2)(fCamWorld + vDelta * fViewScale);
 
-				if(s_pMoveCmd)
+				if(s_pMoveCmd || s_pScaleCmd)
 				{
 					float3 vCurPos;
 					switch(xCurView)
@@ -1362,11 +1376,15 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						vCurPos = float3(0.0f, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
 						break;
 					}
-					s_pMoveCmd->setCurrentPos(vCurPos);
-				}
-				if(s_pScaleCmd)
-				{
-					//@TODO:s_pScaleCmd->setCurrentAABB();
+
+					if(s_pMoveCmd)
+					{
+						s_pMoveCmd->setCurrentPos(vCurPos);
+					}
+					if(s_pScaleCmd)
+					{
+						s_pScaleCmd->setCurrentPos(vCurPos);
+					}
 				}
 			}
 			XUpdateStatusMPos();
