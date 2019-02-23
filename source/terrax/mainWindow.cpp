@@ -24,6 +24,7 @@
 #include "CommandMove.h"
 #include "CommandScale.h"
 #include "CommandRotate.h"
+#include "CommandDelete.h"
 
 extern Array<CXObject*> g_pLevelObjects;
 
@@ -549,6 +550,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				XUpdateUndoRedo();
 			}
 			break;
+
+		case ID_EDIT_DELETE:
+		{
+			CCommandDelete *pDelCmd = new CCommandDelete();
+			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+			{
+				if(g_pLevelObjects[i]->isSelected())
+				{
+					pDelCmd->addObject(i);
+				}
+			}
+			XExecCommand(pDelCmd);
+			break;
+		}
 		}
 		break;
 

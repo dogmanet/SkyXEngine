@@ -3,12 +3,16 @@
 
 #include "XObject.h"
 #include <geom/sxgeom.h>
+#include <common/array.h>
+#include <common/string.h>
 
 class CXStatixGeomObject: public CXObject
 {
 	DECLARE_CLASS(CXStatixGeomObject, CXObject);
 public:
+	CXStatixGeomObject();
 	CXStatixGeomObject(ID idModel);
+	~CXStatixGeomObject();
 
 	void setPos(const float3_t &pos);
 
@@ -24,8 +28,23 @@ public:
 
 	bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl);
 
+	void remove();
+	void preCreate();
+	void postCreate();
+
+	void setKV(const char *szKey, const char *szValue);
+	const char *getKV(const char *szKey);
+	const char *getPropertyKey(UINT uKey);
+	UINT getProperyCount();
+
 protected:
-	ID m_idModel;
+	ID m_idModel = -1;
+	String m_sModelName;
+	String m_sName;
+	bool m_bSegmentation = false;
+	char m_szSegmentation[2];
+
+	static Array<CXStatixGeomObject*> ms_aObjects;
 };
 
 

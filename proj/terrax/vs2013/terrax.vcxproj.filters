@@ -72,6 +72,9 @@
     <ClCompile Include="..\..\..\source\terrax\CommandRotate.cpp">
       <Filter>Source Files\cmd</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\CommandDelete.cpp">
+      <Filter>Source Files\cmd</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\terrax\terrax.rc">
@@ -128,6 +131,9 @@
       <Filter>Header Files\cmd</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\terrax\CommandRotate.h">
+      <Filter>Header Files\cmd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\CommandDelete.h">
       <Filter>Header Files\cmd</Filter>
     </ClInclude>
   </ItemGroup>
