@@ -141,7 +141,20 @@ void CCommandScale::setCurrentPos(const float3 &_vPos)
 		pObj = &m_aObjects[i];
 		pObj->vEndPos = (float3)(vPosOrigin + (pObj->vStartPos - vPosOrigin) * vPosCoeff);
 		SMQuaternion quat = g_pLevelObjects[pObj->idObject]->getOrient().Conjugate();
-		pObj->vEndScale = (float3)(pObj->vStartScale * (quat * vPosCoeff));
+		float3 pc = (quat * vPosCoeff);
+		if(pc.x < 0.0f)
+		{
+			pc.x = -1.0f * pc.x;
+		}
+		if(pc.y < 0.0f)
+		{
+			pc.y = -1.0f * pc.y;
+		}
+		if(pc.z < 0.0f)
+		{
+			pc.z = -1.0f * pc.z;
+		}
+		pObj->vEndScale = (float3)(pObj->vStartScale * pc);
 
 		g_pLevelObjects[pObj->idObject]->setPos(pObj->vEndPos);
 		g_pLevelObjects[pObj->idObject]->setScale(pObj->vEndScale);

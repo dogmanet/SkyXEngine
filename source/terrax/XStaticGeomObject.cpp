@@ -30,11 +30,14 @@ SMQuaternion CXStatixGeomObject::getOrient()
 {
 	const float3 *rot = SGeom_ModelGetRotation(m_idModel);
 	
-	return(SMQuaternion(rot->x, 'x') * SMQuaternion(rot->y, 'y') * SMQuaternion(rot->z, 'z'));
+	return(SMQuaternion(-rot->x, 'x') * SMQuaternion(-rot->y, 'y') * SMQuaternion(-rot->z, 'z'));
 }
 void CXStatixGeomObject::setOrient(const SMQuaternion &orient)
 {
-	SGeom_ModelSetRotation(m_idModel, &SMMatrixToEuler(orient.GetMatrix()));
+	float3 vRotation = SMMatrixToEuler(orient.GetMatrix());
+	vRotation.x *= -1.0f;
+	vRotation.z *= -1.0f;
+	SGeom_ModelSetRotation(m_idModel, &vRotation);
 }
 
 void CXStatixGeomObject::getBound(float3 *pvMin, float3 *pvMax)

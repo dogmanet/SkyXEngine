@@ -23,6 +23,7 @@
 #include "CommandSelect.h"
 #include "CommandMove.h"
 #include "CommandScale.h"
+#include "CommandRotate.h"
 
 extern Array<CXObject*> g_pLevelObjects;
 
@@ -910,6 +911,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 	static CCommandMove *s_pMoveCmd = NULL;
 	static CCommandScale *s_pScaleCmd = NULL;
+	static CCommandRotate *s_pRotateCmd = NULL;
 
 	switch(message)
 	{
@@ -1022,6 +1024,12 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			XExecCommand(s_pScaleCmd);
 			s_pScaleCmd = NULL;
 		}
+		else if(s_pRotateCmd)
+		{
+			ReleaseCapture();
+			XExecCommand(s_pRotateCmd);
+			s_pRotateCmd = NULL;
+		}
 
 		POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 		GetClientRect(hWnd, &rect);
@@ -1103,6 +1111,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 					const float2_t &fMPos = g_xState.vWorldMousePos;
 					float3 vStartPos;
+					float3 vMask;
 
 					switch(g_xConfig.m_x2DView[g_xState.activeWindow])
 					{
@@ -1112,6 +1121,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						vSelectionCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
 							g_xState.vSelectionBoundMin.z + g_xState.vSelectionBoundMax.z) * 0.5f;
 						vStartPos = float3(fMPos.x, 0.0f, fMPos.y);
+						vMask = float3(1.0f, 0.0f, 1.0f);
 						break;
 					case X2D_FRONT:
 						vBorder = float4(g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMin.y,
@@ -1119,6 +1129,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						vSelectionCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
 							g_xState.vSelectionBoundMin.y + g_xState.vSelectionBoundMax.y) * 0.5f;
 						vStartPos = float3(fMPos.x, fMPos.y, 0.0f);
+						vMask = float3(1.0f, 1.0f, 0.0f);
 						break;
 					case X2D_SIDE:
 						vBorder = float4(g_xState.vSelectionBoundMin.z, g_xState.vSelectionBoundMin.y,
@@ -1126,6 +1137,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						vSelectionCenter = float2(g_xState.vSelectionBoundMin.z + g_xState.vSelectionBoundMax.z,
 							g_xState.vSelectionBoundMin.y + g_xState.vSelectionBoundMax.y) * 0.5f;
 						vStartPos = float3(0.0f, fMPos.y, fMPos.x);
+						vMask = float3(0.0f, 1.0f, 1.0f);
 						break;
 					}
 
@@ -1150,22 +1162,39 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						// X2D_SIDE (z/y)
 						{XDIR_Y_NEG, XDIR_Z_POS, XDIR_Y_POS, XDIR_Z_NEG, XDIR_Y_NEG | XDIR_Z_NEG, XDIR_Y_NEG | XDIR_Z_POS, XDIR_Y_POS | XDIR_Z_POS, XDIR_Y_POS | XDIR_Z_NEG}
 					};
-					for(int i = 0; i < 8; ++i)
+					for(int i = g_xState.xformType == X2DXF_SCALE ? 0 : 4; i < 8; ++i)
 					{
 						if(fabsf(fMPos.x - vCenters[i].x) <= fPtSize && fabsf(fMPos.y - vCenters[i].y) <= fPtSize)
 						{
 							SetCapture(hWnd);
 
-							// create scale command
-							s_pScaleCmd = new CCommandScale();
-							s_pScaleCmd->setStartAABB(g_xState.vSelectionBoundMin, g_xState.vSelectionBoundMax);
-							s_pScaleCmd->setTransformDir(dirs[g_xConfig.m_x2DView[g_xState.activeWindow]][i]);
-							s_pScaleCmd->setStartPos(vStartPos);
-							for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+							if(g_xState.xformType == X2DXF_SCALE)
 							{
-								if(g_pLevelObjects[i]->isSelected())
+								// create scale command
+								s_pScaleCmd = new CCommandScale();
+								s_pScaleCmd->setStartAABB(g_xState.vSelectionBoundMin, g_xState.vSelectionBoundMax);
+								s_pScaleCmd->setTransformDir(dirs[g_xConfig.m_x2DView[g_xState.activeWindow]][i]);
+								s_pScaleCmd->setStartPos(vStartPos);
+								for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 								{
-									s_pScaleCmd->addObject(i);
+									if(g_pLevelObjects[i]->isSelected())
+									{
+										s_pScaleCmd->addObject(i);
+									}
+								}
+							}
+							else if(g_xState.xformType == X2DXF_ROTATE)
+							{
+								// create rotate command
+								s_pRotateCmd = new CCommandRotate();
+								s_pRotateCmd->setStartOrigin((g_xState.vSelectionBoundMax + g_xState.vSelectionBoundMin) * 0.5f * vMask);
+								s_pRotateCmd->setStartPos(vStartPos);
+								for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+								{
+									if(g_pLevelObjects[i]->isSelected())
+									{
+										s_pRotateCmd->addObject(i);
+									}
 								}
 							}
 							bHandled = true;
@@ -1361,7 +1390,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 				g_xState.vWorldMousePos = (float2)(fCamWorld + vDelta * fViewScale);
 
-				if(s_pMoveCmd || s_pScaleCmd)
+				if(s_pMoveCmd || s_pScaleCmd || s_pRotateCmd)
 				{
 					float3 vCurPos;
 					switch(xCurView)
@@ -1385,11 +1414,15 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					{
 						s_pScaleCmd->setCurrentPos(vCurPos);
 					}
+					if(s_pRotateCmd)
+					{
+						s_pRotateCmd->setCurrentPos(vCurPos);
+					}
 				}
 			}
 			XUpdateStatusMPos();
 
-			if(Button_GetCheck(g_hABArrowButton) && !s_pMoveCmd && !s_pScaleCmd)
+			if(Button_GetCheck(g_hABArrowButton) && !s_pMoveCmd && !s_pScaleCmd && !s_pRotateCmd)
 			{
 				if(XIsMouseInSelection(g_xState.activeWindow))
 				{
@@ -1464,6 +1497,10 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			if(s_pScaleCmd)
 			{
 				//@TODO:SetCursor(???);
+			}
+			if(s_pRotateCmd)
+			{
+				SetCursor(hcRotate);
 			}
 			return(TRUE);
 		}

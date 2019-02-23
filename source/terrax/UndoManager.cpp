@@ -65,6 +65,7 @@ bool CUndoManager::execCommand(CCommand *pCommand)
 		m_stackUndo.push_back(pCommand);
 		return(true);
 	}
+	mem_delete(pCommand);
 	return(false);
 }
 bool CUndoManager::undo()
