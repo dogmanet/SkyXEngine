@@ -14,7 +14,7 @@ CAxesStatic::CAxesStatic()
 	GXVERTEXELEMENT DeclGrid[] =
 	{
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
-		{0, 12, GXDECLTYPE_GXCOLOR, GXDECLUSAGE_COLOR},
+		{0, 12, GXDECLTYPE_FLOAT4, GXDECLUSAGE_COLOR},
 
 		GXDECL_END()
 	};
@@ -38,22 +38,22 @@ void CAxesStatic::create(float len)
 	{
 
 		pVertices[0].m_vPos = float3_t(0, 0.001f, 0);
-		pVertices[0].m_dwColor = GXCOLOR_ARGB(255, 255, 0, 0);
+		pVertices[0].m_vColor = GXCOLOR_COLORVECTOR_ARGB(GXCOLOR_ARGB(255, 255, 0, 0));
 
 		pVertices[1].m_vPos = float3_t(len, 0.001f, 0);
-		pVertices[1].m_dwColor = GXCOLOR_ARGB(255, 255, 0, 0);
+		pVertices[1].m_vColor = GXCOLOR_COLORVECTOR_ARGB(GXCOLOR_ARGB(255, 255, 0, 0));
 
 		pVertices[2].m_vPos = float3_t(0, 0.001f, 0);
-		pVertices[2].m_dwColor = GXCOLOR_ARGB(255, 0, 255, 0);
+		pVertices[2].m_vColor = GXCOLOR_COLORVECTOR_ARGB(GXCOLOR_ARGB(255, 0, 255, 0));
 
 		pVertices[3].m_vPos = float3_t(0, len, 0);
-		pVertices[3].m_dwColor = GXCOLOR_ARGB(255, 0, 255, 0);
+		pVertices[3].m_vColor = GXCOLOR_COLORVECTOR_ARGB(GXCOLOR_ARGB(255, 0, 255, 0));
 
 		pVertices[4].m_vPos = float3_t(0, 0.001f, 0);
-		pVertices[4].m_dwColor = GXCOLOR_ARGB(255, 0, 0, 255);
+		pVertices[4].m_vColor = GXCOLOR_COLORVECTOR_ARGB(GXCOLOR_ARGB(255, 0, 0, 255));
 
 		pVertices[5].m_vPos = float3_t(0, 0.001f, len);
-		pVertices[5].m_dwColor = GXCOLOR_ARGB(255, 0, 0, 255);
+		pVertices[5].m_vColor = GXCOLOR_COLORVECTOR_ARGB(GXCOLOR_ARGB(255, 0, 0, 255));
 
 		m_pVertexBuffer->unlock();
 	}

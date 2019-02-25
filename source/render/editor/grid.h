@@ -19,7 +19,7 @@ class CGrid
 	struct CVertex
 	{
 		float3_t m_vPos;
-		GXCOLOR m_dwColor;
+		float4_t m_vColor;
 	};
 public:
 

@@ -14,7 +14,7 @@ CGrid::CGrid()
 	GXVERTEXELEMENT DeclGrid[] =
 	{
 		{ 0, 0,  GXDECLTYPE_FLOAT3,   GXDECLUSAGE_POSITION},
-		{ 0, 12, GXDECLTYPE_GXCOLOR,  GXDECLUSAGE_COLOR},
+		{ 0, 12, GXDECLTYPE_FLOAT4,  GXDECLUSAGE_COLOR},
 
 		GXDECL_END()
 	};
@@ -41,20 +41,20 @@ void CGrid::create(int width, int depth, DWORD color)
 		for(int x = -(width / 2); x < (width / 2) + 1; ++x)
 		{
 			pVertices[oCountVert].m_vPos = float3_t((float)x, 0.0f, (float)(-(depth / 2)));
-			pVertices[oCountVert].m_dwColor = color;
+			pVertices[oCountVert].m_vColor = GXCOLOR_COLORVECTOR_ARGB(color);
 			++oCountVert;
 			pVertices[oCountVert].m_vPos = float3_t((float)x, 0.0f, (float)(depth / 2));
-			pVertices[oCountVert].m_dwColor = color;
+			pVertices[oCountVert].m_vColor = GXCOLOR_COLORVECTOR_ARGB(color);
 			++oCountVert;
 		}
 
 		for(int y = -(depth / 2); y < (depth / 2) + 1; ++y)
 		{
 			pVertices[oCountVert].m_vPos = float3_t((float)(-(width / 2)), 0.0f, (float)y);
-			pVertices[oCountVert].m_dwColor = color;
+			pVertices[oCountVert].m_vColor = GXCOLOR_COLORVECTOR_ARGB(color);
 			++oCountVert;
 			pVertices[oCountVert].m_vPos = float3_t((float)(width / 2), 0.0f, (float)y);
-			pVertices[oCountVert].m_dwColor = color;
+			pVertices[oCountVert].m_vColor = GXCOLOR_COLORVECTOR_ARGB(color);
 			++oCountVert;
 		}
 

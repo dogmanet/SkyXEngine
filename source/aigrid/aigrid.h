@@ -201,7 +201,7 @@ struct CAIQuadVertexDataInst
 	float4_t m_vTC;
 
 	//! цвет
-	uint32_t m_uiColor;
+	float4_t m_vColor;
 };
 
 //##########################################################################
