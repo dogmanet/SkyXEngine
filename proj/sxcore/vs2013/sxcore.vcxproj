@@ -57,6 +57,7 @@
     <ClInclude Include="..\..\..\source\core\Config.h" />
     <ClInclude Include="..\..\..\source\core\cvars.h" />
     <ClInclude Include="..\..\..\source\core\File.h" />
+    <ClInclude Include="..\..\..\source\core\IFileSystem.h" />
     <ClInclude Include="..\..\..\source\core\PerfMon.h" />
     <ClInclude Include="..\..\..\source\core\sxcore.h" />
     <ClInclude Include="..\..\..\source\core\Task.h" />

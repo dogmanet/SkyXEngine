@@ -89,5 +89,8 @@
     <ClInclude Include="..\..\..\source\core\PerfMon.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\core\IFileSystem.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

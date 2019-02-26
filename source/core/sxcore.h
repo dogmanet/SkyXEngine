@@ -30,6 +30,8 @@ See the license in LICENSE
 //#define SM_D3D_CONVERSIONS
 #include <common/Math.h>
 
+#include "IFileSystem.h"
+
 //! тип функции для обработки в менеджере задач
 typedef void(*THREAD_UPDATE_FUNCTION)();
 
