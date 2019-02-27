@@ -31,15 +31,6 @@ public:
 		}
 	}
 
-	X_PLUGIN_TYPE getType()
-	{
-		return(XPLUGIN_LOADER_MODEL);
-	}
-	virtual IXModelLoader *getIXModelLoader()
-	{
-		return(NULL);
-	}
-
 	void startup(IXCore *pCore)
 	{
 	}

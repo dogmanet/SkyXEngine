@@ -30,7 +30,7 @@ See the license in LICENSE
 
 #include "PluginManager.h"
 
-//#include <dseplugin/ITest.h>
+// #include <dseplugin/ITest.h>
 
 //##########################################################################
 
@@ -208,8 +208,8 @@ void Core_0Create(const char* name, const char *szNameConsole, bool is_unic)
 				}
 			}
 			g_pPluginManager->invokeStartup(NULL);
-			/*
-			ITest *pTest = (ITest*)g_pPluginManager->getInterface(ITEST_GUID);
+			
+			/*ITest *pTest = (ITest*)g_pPluginManager->getInterface(ITEST_GUID);
 			if(pTest)
 			{
 				pTest->Foo();
