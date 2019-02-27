@@ -142,7 +142,8 @@ void CSimulationModel::add(ISXDataStaticModel *pModel)
 
 	m_aModels.push_back(new CModel(pModel, &vCenter, &float3_t(vMax), &float3_t(vMin), &oPlane));
 
-	IGXVertexBuffer *pVertexBufferAnim = gdata::pDXDevice->createVertexBuffer(pModel->m_uiAllVertexCount * sizeof(vertex_animated_ex), GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
+	//@FIXME: Consider to make it static
+	IGXVertexBuffer *pVertexBufferAnim = gdata::pDXDevice->createVertexBuffer(pModel->m_uiAllVertexCount * sizeof(vertex_animated_ex), GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
 //	DX_CALL(gdata::pDXDevice->CreateVertexBuffer(
 //		pModel->m_uiAllVertexCount * sizeof(vertex_animated_ex),
 //		D3DUSAGE_WRITEONLY,

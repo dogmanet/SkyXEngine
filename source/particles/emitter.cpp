@@ -407,8 +407,9 @@ void CEmitter::createGeomData()
 		return;
 	}
 
-	m_pVertexBuff = pe_data::pDXDevice->createVertexBuffer(4 * m_oData.m_iFigureCountQuads * sizeof(CommonParticleDecl), GX_BUFFER_USAGE_STATIC);
-	m_pIndexBuff = pe_data::pDXDevice->createIndexBuffer(6 * m_oData.m_iFigureCountQuads * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_USHORT);
+	//@FIXME: Consider to make it static
+	m_pVertexBuff = pe_data::pDXDevice->createVertexBuffer(4 * m_oData.m_iFigureCountQuads * sizeof(CommonParticleDecl), GX_BUFFER_USAGE_DYNAMIC);
+	m_pIndexBuff = pe_data::pDXDevice->createIndexBuffer(6 * m_oData.m_iFigureCountQuads * sizeof(WORD), GX_BUFFER_USAGE_DYNAMIC, GXIT_USHORT);
 	IGXVertexBuffer *pvb[] = {m_pVertexBuff, m_pTransVertBuf};
 	m_pRenderBuff = pe_data::pDXDevice->createRenderBuffer(2, pvb, pe_data::pVertexDeclarationParticles);
 
@@ -433,8 +434,9 @@ void CEmitter::createGeomData()
 		m_pIndexBuff->unlock();
 	}
 
-	m_pVertexBuffQuad = pe_data::pDXDevice->createVertexBuffer(4 * sizeof(CommonParticleDecl), GX_BUFFER_USAGE_STATIC);
-	m_pIndexBuffQuad = pe_data::pDXDevice->createIndexBuffer(6 * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_USHORT);
+	//@FIXME: Consider to make it static
+	m_pVertexBuffQuad = pe_data::pDXDevice->createVertexBuffer(4 * sizeof(CommonParticleDecl), GX_BUFFER_USAGE_DYNAMIC);
+	m_pIndexBuffQuad = pe_data::pDXDevice->createIndexBuffer(6 * sizeof(WORD), GX_BUFFER_USAGE_DYNAMIC, GXIT_USHORT);
 	IGXVertexBuffer *pvbq[] = {m_pVertexBuffQuad, m_pTransVertBuf};
 	m_pRenderBuffQuad = pe_data::pDXDevice->createRenderBuffer(2, pvbq, pe_data::pVertexDeclarationParticles);
 

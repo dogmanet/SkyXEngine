@@ -23,7 +23,8 @@ CSkyBox::CSkyBox()
 	m_vColor = float4(0, 0, 0, 0);
 	m_fRotaionY = 0.f;
 	m_mMatRotation = SMMatrixIdentity();
-	m_pVertices = g_pDevice->createVertexBuffer(8 * sizeof(CSkyBoxVertex), GX_BUFFER_USAGE_STATIC);
+	//@FIXME: Consider to make it static
+	m_pVertices = g_pDevice->createVertexBuffer(8 * sizeof(CSkyBoxVertex), GX_BUFFER_USAGE_DYNAMIC);
 
 	
 	float X = SXGC_SKYBOX_SIZE * 0.5;
@@ -265,7 +266,8 @@ CSkyClouds::CSkyClouds()
 	m_fAlpha = 1.f;
 	m_vColor = float4_t(0, 0, 0, 0);
 	m_mMatRotation = SMMatrixIdentity();
-	m_pVertices = g_pDevice->createVertexBuffer(4 * sizeof(CSkyCloudsVertex), GX_BUFFER_USAGE_STATIC);
+	//@FIXME: Consider to make it static
+	m_pVertices = g_pDevice->createVertexBuffer(4 * sizeof(CSkyCloudsVertex), GX_BUFFER_USAGE_DYNAMIC);
 	
 	float X = 800;
 	float Y = 0;

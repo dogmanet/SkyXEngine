@@ -388,7 +388,8 @@ namespace gui
 				UINT iCV = 0;
 				UINT iCI = 0;
 				VOID * pData;
-				m_pVertexBuffer = GetGUI()->getDevice()->createVertexBuffer(sizeof(float3_t)* iVertexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
+				//@FIXME: Consider to make it static
+				m_pVertexBuffer = GetGUI()->getDevice()->createVertexBuffer(sizeof(float3_t)* iVertexCount, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
 				if(m_pVertexBuffer->lock((void**)&pData, GXBL_WRITE))
 				{
 					memcpy((float3_t*)pData + iCV, t->vb[0], sizeof(float3_t) * t->iVC[0]);
@@ -405,7 +406,8 @@ namespace gui
 
 				m_pRenderBuffer = GetGUI()->getDevice()->createRenderBuffer(1, &m_pVertexBuffer, GetGUI()->getVertexDeclarations()->m_pXYZ);
 
-				m_pIndexBuffer = GetGUI()->getDevice()->createIndexBuffer(sizeof(UINT)* iIndexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_UINT);
+				//@FIXME: Consider to make it static
+				m_pIndexBuffer = GetGUI()->getDevice()->createIndexBuffer(sizeof(UINT)* iIndexCount, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY, GXIT_UINT);
 				if(m_pIndexBuffer->lock((void**)&pData, GXBL_WRITE))
 				{
 					memcpy((UINT*)pData + iCI, t->ib[0], sizeof(UINT) * t->iIC[0]);

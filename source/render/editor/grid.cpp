@@ -30,7 +30,8 @@ CGrid::~CGrid()
 
 void CGrid::create(int width, int depth, DWORD color)
 {
-	m_pVertexBuffer = gdata::pDXDevice->createVertexBuffer(width * depth * 2 * sizeof(CVertex), GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
+	//@FIXME: Consider to make it static
+	m_pVertexBuffer = gdata::pDXDevice->createVertexBuffer(width * depth * 2 * sizeof(CVertex), GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
 
 	CVertex *pVertices;
 	if(m_pVertexBuffer->lock((void**)&pVertices, GXBL_WRITE))

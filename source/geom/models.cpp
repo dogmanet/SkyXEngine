@@ -167,7 +167,8 @@ void CModels::CTransparencyModel::syncBuffers(bool bRecreate)
 
 	if(!m_pVertexBuffer)
 	{
-		m_pVertexBuffer = g_pDXDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_iCountVertex, GX_BUFFER_ALLOWDISCARD | GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
+		//@FIXME: Consider to make it static
+		m_pVertexBuffer = g_pDXDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_iCountVertex, GX_BUFFER_ALLOWDISCARD | GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
 		m_pRenderBuffer = g_pDXDevice->createRenderBuffer(1, &m_pVertexBuffer, SGCore_StaticModelGetDecl());
 	}
 
@@ -180,7 +181,8 @@ void CModels::CTransparencyModel::syncBuffers(bool bRecreate)
 
 	if(!m_pIndexBuffer)
 	{
-		m_pIndexBuffer = g_pDXDevice->createIndexBuffer(sizeof(UINT)* m_iCountIndex, GX_BUFFER_ALLOWDISCARD | GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_UINT);
+		//@FIXME: Consider to make it static
+		m_pIndexBuffer = g_pDXDevice->createIndexBuffer(sizeof(UINT)* m_iCountIndex, GX_BUFFER_ALLOWDISCARD | GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY, GXIT_UINT);
 	}
 
 	UINT *pIndex;

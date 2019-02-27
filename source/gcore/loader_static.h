@@ -105,7 +105,8 @@ struct DataStaticModel : public ISXDataStaticModel
 
 		if(!m_pVertexBuffer)
 		{
-			m_pVertexBuffer = g_pDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY | GX_BUFFER_ALLOWDISCARD, NULL);
+			//@FIXME: Consider to make it static
+			m_pVertexBuffer = g_pDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY | GX_BUFFER_ALLOWDISCARD, NULL);
 			m_pRenderBuffer = g_pDevice->createRenderBuffer(1, &m_pVertexBuffer, SGCore_StaticModelGetDecl());
 		}
 
@@ -118,7 +119,8 @@ struct DataStaticModel : public ISXDataStaticModel
 
 		if(!m_pIndexBuffer)
 		{
-			m_pIndexBuffer = g_pDevice->createIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY | GX_BUFFER_ALLOWDISCARD, GXIT_UINT, NULL);
+			//@FIXME: Consider to make it static
+			m_pIndexBuffer = g_pDevice->createIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY | GX_BUFFER_ALLOWDISCARD, GXIT_UINT, NULL);
 		}
 
 		UINT *pIndex;

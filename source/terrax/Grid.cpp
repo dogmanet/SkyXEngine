@@ -9,7 +9,8 @@ CGrid::CGrid(UINT uSize)
 
 	float fSize = (float)uSize * 0.5f;
 	UINT uVC = (uSize * 100 + 1) * 4;
-	IGXVertexBuffer *pVB = m_pDevice->createVertexBuffer(sizeof(vertex) * uVC, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
+	//@FIXME: Consider to make it static
+	IGXVertexBuffer *pVB = m_pDevice->createVertexBuffer(sizeof(vertex) * uVC, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
 	vertex *pVertices;
 	UINT uCurV = 0;
 	if(pVB->lock((void**)&pVertices, GXBL_WRITE))

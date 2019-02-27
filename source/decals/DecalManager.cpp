@@ -705,7 +705,8 @@ void DecalManager::updateBuffer()
 		return;
 	}
 
-	m_pVertexBuffer = dev->createVertexBuffer(sizeof(DecalVertex) * iVC, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
+	//@FIXME: Consider to make it static
+	m_pVertexBuffer = dev->createVertexBuffer(sizeof(DecalVertex) * iVC, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
 
 	
 	DecalVertex * pData;

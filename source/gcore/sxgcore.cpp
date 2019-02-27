@@ -1072,8 +1072,9 @@ public:
 
 		IGXVertexDeclaration *pVD = g_pDevice->createVertexDeclaration(oLayout);
 
-		m_pIB = g_pDevice->createIndexBuffer(sizeof(USHORT) * uIndexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_USHORT);
-		m_pVB = g_pDevice->createVertexBuffer(sizeof(float) * 3 * uVertexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
+		//@FIXME: Consider to make it static
+		m_pIB = g_pDevice->createIndexBuffer(sizeof(USHORT) * uIndexCount, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY, GXIT_USHORT);
+		m_pVB = g_pDevice->createVertexBuffer(sizeof(float) * 3 * uVertexCount, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
 		m_pRB = g_pDevice->createRenderBuffer(1, &m_pVB, pVD);
 
 		mem_release(pVD);

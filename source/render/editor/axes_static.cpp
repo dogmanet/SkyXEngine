@@ -30,7 +30,8 @@ CAxesStatic::~CAxesStatic()
 
 void CAxesStatic::create(float len)
 {
-	m_pVertexBuffer = gdata::pDXDevice->createVertexBuffer(3 * 2 * sizeof(CVertex), GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY);
+	//@FIXME: Consider to make it static
+	m_pVertexBuffer = gdata::pDXDevice->createVertexBuffer(3 * 2 * sizeof(CVertex), GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
 
 	CVertex *pVertices;
 
