@@ -40,6 +40,9 @@
     <ClCompile Include="..\..\..\source\core\PerfMon.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\core\PluginManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -47,6 +50,9 @@
     </Filter>
     <Filter Include="Header">
       <UniqueIdentifier>{1aa4f2a9-fb4e-4db2-9c07-3aec1d9541d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header\xcommon">
+      <UniqueIdentifier>{b6ba7904-f9bb-4d17-b1f2-333d42a52b50}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -90,6 +96,30 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\IFileSystem.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\IPluginManager.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IXPlugin.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IXRenderable.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IXTextureLoader.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IXUpdatable.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IXModelLoader.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\IXCore.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\PluginManager.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

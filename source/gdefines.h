@@ -142,9 +142,72 @@ struct IBaseObject
 	virtual void Release()=0;
 };
 
+
+
 #endif
 
 #include <common/types.h>
+
+class IXUnknown
+{
+protected:
+	virtual ~IXUnknown()
+	{
+	}
+	UINT m_uRefCount = 1;
+public:
+	void AddRef()
+	{
+		++m_uRefCount;
+	}
+	virtual void Release() = 0;
+
+	virtual UINT getVersion()
+	{
+		return(0);
+	}
+};
+
+
+typedef struct _XGUID
+{
+	_XGUID()
+	{
+		memset(this, 0, sizeof(*this));
+	}
+	_XGUID(unsigned long l, unsigned short w1, unsigned short w2,
+		unsigned char b1, unsigned char b2, unsigned char b3, unsigned char b4,
+		unsigned char b5, unsigned char b6, unsigned char b7, unsigned char b8):
+		Data1(l), Data2(w1), Data3(w2)
+	{
+		Data4[0] = b1;
+		Data4[1] = b2;
+		Data4[2] = b3;
+		Data4[3] = b4;
+		Data4[4] = b5;
+		Data4[5] = b6;
+		Data4[6] = b7;
+		Data4[7] = b8;
+	}
+	unsigned long  Data1;
+	unsigned short Data2;
+	unsigned short Data3;
+	unsigned char  Data4[8];
+} XGUID;
+
+#define DEFINE_XGUID(l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
+    XGUID(l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8)
+
+
+inline bool operator<(const XGUID &a, const XGUID &b)
+{
+	return(memcmp(&a, &b, sizeof(XGUID)) < 0);
+}
+
+inline bool operator==(const XGUID &a, const XGUID &b)
+{
+	return(memcmp(&a, &b, sizeof(XGUID)) == 0);
+}
 
 //! Считывание неопределенного количества аргументов при форматированнии строки в buf на основании format
 #define format_str(buf,format) va_list va; va_start(va, format); vsprintf_s(buf, sizeof(buf), format, va); va_end(va);

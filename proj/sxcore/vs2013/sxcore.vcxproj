@@ -37,6 +37,7 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\file.cpp" />
     <ClCompile Include="..\..\..\source\core\PerfMon.cpp" />
+    <ClCompile Include="..\..\..\source\core\PluginManager.cpp" />
     <ClCompile Include="..\..\..\source\core\sxcore.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Singlethreaded|Win32'">false</ExcludedFromBuild>
@@ -58,11 +59,19 @@
     <ClInclude Include="..\..\..\source\core\cvars.h" />
     <ClInclude Include="..\..\..\source\core\File.h" />
     <ClInclude Include="..\..\..\source\core\IFileSystem.h" />
+    <ClInclude Include="..\..\..\source\core\IPluginManager.h" />
+    <ClInclude Include="..\..\..\source\core\IXCore.h" />
     <ClInclude Include="..\..\..\source\core\PerfMon.h" />
+    <ClInclude Include="..\..\..\source\core\PluginManager.h" />
     <ClInclude Include="..\..\..\source\core\sxcore.h" />
     <ClInclude Include="..\..\..\source\core\Task.h" />
     <ClInclude Include="..\..\..\source\core\TaskManager.h" />
     <ClInclude Include="..\..\..\source\core\time.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXModelLoader.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXPlugin.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXRenderable.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXTextureLoader.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXUpdatable.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C1C1F046-C839-4602-AF70-923CDD237C1B}</ProjectGuid>

@@ -1373,6 +1373,10 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			if(g_xState.activeWindow != XWP_TOP_LEFT)
 			{
 				ICamera *pCamera = g_xConfig.m_pViewportCamera[g_xState.activeWindow];
+				if(!pCamera)
+				{
+					break;
+				}
 				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
 				float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
 

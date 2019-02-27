@@ -385,8 +385,9 @@ SX_LIB_API int64_t Core_TimeTotalMcsGetU(ID id);
 /*! Интерфейс для записи/чтения файлов
  \note аргумент iType - режим отрытия файла
 */
-struct IFile : public IBaseObject
+class IFile : public IBaseObject
 {
+public:
 	virtual ~IFile(){};
 	
 	virtual int open(const char *szPath, int iType = CORE_FILE_TEXT) = 0;	//!< открыть файл

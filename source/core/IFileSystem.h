@@ -1,3 +1,5 @@
+#ifndef __IFILESYSTEM_H
+#define __IFILESYSTEM_H
 
 #include <gdefines.h>
 #include <common/array.h>
@@ -9,16 +11,16 @@
 #define FILE_NOT_FOUND ((size_t)-1)
 
 //! типы списков для #getFileList
-enum FILE_LIST_TYPE
+enum FILE_TYPE
 {
 	//! файлы
-	FILE_LIST_TYPE_FILES,
+	FILE_TYPE_FILE,
 
 	//! директории
-	FILE_LIST_TYPE_DIRS,
+	FILE_TYPE_DIR,
 
 	//! все
-	FILE_LIST_TYPE_ALL,
+	FILE_TYPE_ALL,
 };
 
 enum FILE_OPEN_MODE
@@ -44,6 +46,9 @@ public:
 	*/
 	virtual void setWritableRoot(UINT id) = 0;
 
+	//! Находит полный путь в файловой системе для заданного файла
+	virtual bool resolvePath(const char *szPath, char *szOut, int iOutMax) = 0;
+
 	//! Проверяет наличие файла или каталога по указанному пути
 	virtual bool fileExists(const char *szPath) = 0;
 	//! Получает размер файла в байтах, либо FILE_NOT_FOUND в случае, если файл не существует, либо не является файлом
@@ -59,15 +64,15 @@ public:
 	szPath может быть не канонизирован и необязательно должен заканчиваться слэшем,
 	szPath уже может содержать фильтр (к примеру C:/*), но если его нет, тогда функция подставит сама
 	*/
-	virtual Array<String> getFileList(const char *szPath, FILE_LIST_TYPE type) = 0;
+	virtual Array<String> getFileList(const char *szPath, FILE_TYPE type) = 0;
 
 	/*! возвращает список всех файлов или папок (в зависимости от type),
 	szPath не должен содержать фильтров, может быть не канонизирован и без последнего слэша,
 	szExt - расширение файла без точки
 	*/
-	virtual Array<String> getFileListRecursive(const char *szPath, FILE_LIST_TYPE type, const char *szExt = 0) = 0;
+	virtual Array<String> getFileListRecursive(const char *szPath, FILE_TYPE type, const char *szExt = 0) = 0;
 	//! То же, что предыдущая, только позволяет использовать массив расширений для поиска. Последний элемент массива NULL
-	virtual Array<String> getFileListRecursive(const char *szPath, FILE_LIST_TYPE type, const char **szExts) = 0;
+	virtual Array<String> getFileListRecursive(const char *szPath, FILE_TYPE type, const char **szExts) = 0;
 
 	//! Создает директорию по указанному пути, рекурсивно
 	virtual bool createDirectory(const char *szPath) = 0;
@@ -76,3 +81,5 @@ public:
 	virtual IFile *openFileText(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ) = 0;
 	virtual IFile *openFileBin(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ) = 0;
 };
+
+#endif

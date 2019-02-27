@@ -60,7 +60,7 @@ void SkyXEngine_HandlerError(const char *szFormat, ...)
 
 void SkyXEngine_InitOutLog()
 {
-	AllocConsole();
+	// AllocConsole();
 	freopen("CONOUT$", "wt", stdout);
 	freopen("CONOUT$", "wt", stderr);
 	freopen("CONIN$", "rt", stdin);
@@ -173,8 +173,10 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	char szConsoleName[64];
 
-	if (hWnd3D == 0)
+	if(hWnd3D == 0)
+	{
 		sprintf(szConsoleName, "build");
+	}
 	else
 	{
 		GetWindowText(hWndParent3D, szConsoleName, 64);
