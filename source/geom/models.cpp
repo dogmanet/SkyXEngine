@@ -158,39 +158,14 @@ CModels::CTransparencyModel::~CTransparencyModel()
 
 void CModels::CTransparencyModel::syncBuffers(bool bRecreate)
 {
-	if(bRecreate)
-	{
-		mem_release(m_pVertexBuffer);
-		mem_release(m_pIndexBuffer);
-		mem_release(m_pRenderBuffer);
-	}
+	mem_release(m_pVertexBuffer);
+	mem_release(m_pIndexBuffer);
+	mem_release(m_pRenderBuffer);
 
-	if(!m_pVertexBuffer)
-	{
-		//@FIXME: Consider to make it static
-		m_pVertexBuffer = g_pDXDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_iCountVertex, GX_BUFFER_ALLOWDISCARD | GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
-		m_pRenderBuffer = g_pDXDevice->createRenderBuffer(1, &m_pVertexBuffer, SGCore_StaticModelGetDecl());
-	}
+	m_pVertexBuffer = g_pDXDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_iCountVertex, GX_BUFFER_ALLOWDISCARD | GX_BUFFER_USAGE_STATIC, m_pVertices);
+	m_pRenderBuffer = g_pDXDevice->createRenderBuffer(1, &m_pVertexBuffer, SGCore_StaticModelGetDecl());
 
-	vertex_static_ex *pVertex;
-	if(m_pVertexBuffer->lock((void **)&pVertex, GXBL_WRITE))
-	{
-		memcpy(pVertex, m_pVertices, sizeof(vertex_static_ex)* m_iCountVertex);
-		m_pVertexBuffer->unlock();
-	}
-
-	if(!m_pIndexBuffer)
-	{
-		//@FIXME: Consider to make it static
-		m_pIndexBuffer = g_pDXDevice->createIndexBuffer(sizeof(UINT)* m_iCountIndex, GX_BUFFER_ALLOWDISCARD | GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY, GXIT_UINT);
-	}
-
-	UINT *pIndex;
-	if(m_pIndexBuffer->lock((void **)&pIndex, GXBL_WRITE))
-	{
-		memcpy(pIndex, m_pIndices, sizeof(uint32_t)* m_iCountIndex);
-		m_pIndexBuffer->unlock();
-	}
+	m_pIndexBuffer = g_pDXDevice->createIndexBuffer(sizeof(UINT)* m_iCountIndex, GX_BUFFER_ALLOWDISCARD | GX_BUFFER_USAGE_STATIC, GXIT_UINT, m_pIndices);
 }
 
 //**************************************************************************

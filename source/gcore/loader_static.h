@@ -96,39 +96,14 @@ struct DataStaticModel : public ISXDataStaticModel
 
 	void syncBuffers(bool bRecreate = false)
 	{
-		if(bRecreate)
-		{
-			mem_release(m_pVertexBuffer);
-			mem_release(m_pIndexBuffer);
-			mem_release(m_pRenderBuffer);
-		}
+		mem_release(m_pVertexBuffer);
+		mem_release(m_pIndexBuffer);
+		mem_release(m_pRenderBuffer);
 
-		if(!m_pVertexBuffer)
-		{
-			//@FIXME: Consider to make it static
-			m_pVertexBuffer = g_pDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY | GX_BUFFER_ALLOWDISCARD, NULL);
-			m_pRenderBuffer = g_pDevice->createRenderBuffer(1, &m_pVertexBuffer, SGCore_StaticModelGetDecl());
-		}
+		m_pVertexBuffer = g_pDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_ALLOWDISCARD, m_pVertices);
+		m_pRenderBuffer = g_pDevice->createRenderBuffer(1, &m_pVertexBuffer, SGCore_StaticModelGetDecl());
 
-		vertex_static_ex *pVertex;
-		if(m_pVertexBuffer->lock((void **)&pVertex, GXBL_WRITE))
-		{
-			memcpy(pVertex, m_pVertices, sizeof(vertex_static_ex)* m_uiAllVertexCount);
-			m_pVertexBuffer->unlock();
-		}
-
-		if(!m_pIndexBuffer)
-		{
-			//@FIXME: Consider to make it static
-			m_pIndexBuffer = g_pDevice->createIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY | GX_BUFFER_ALLOWDISCARD, GXIT_UINT, NULL);
-		}
-
-		UINT *pIndex;
-		if(m_pIndexBuffer->lock((void **)&pIndex, GXBL_WRITE))
-		{
-			memcpy(pIndex, m_pIndices, sizeof(uint32_t)* m_uiAllIndexCount);
-			m_pIndexBuffer->unlock();
-		}
+		m_pIndexBuffer = g_pDevice->createIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_ALLOWDISCARD, GXIT_UINT, m_pIndices);
 	}
 
 	DataStaticModel::~DataStaticModel()

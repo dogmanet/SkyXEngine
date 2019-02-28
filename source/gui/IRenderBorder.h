@@ -10,7 +10,7 @@ namespace gui
 		namespace render
 		{
 
-#define IRB_PARAM float t, float l, float r, float3_t *** pppVertices, UINT *** pppIndexes, UINT * iVertexCount, UINT * iIndexCount, float3_t * pBrd, int * c, UINT *** ppFillIDx, UINT ** pFillIdxCount
+#define IRB_PARAM float t, float l, float r, float3_t *** pppVertices, SHORT *** pppIndexes, SHORT * iVertexCount, SHORT * iIndexCount, float3_t * pBrd, int * c, SHORT *** ppFillIDx, SHORT ** pFillIdxCount
 			class IRenderBorder
 			{
 			public:
@@ -69,10 +69,10 @@ namespace gui
 				IGXVertexBuffer * m_pVertexBuffer;
 				IGXRenderBuffer *m_pRenderBuffer = NULL;
 
-				UINT m_iVertexCount[4];
-				UINT m_iVertexStart[4];
-				UINT m_iIndexStart[4];
-				UINT m_iIndexCount[4];
+				SHORT m_iVertexCount[4];
+				SHORT m_iVertexStart[4];
+				SHORT m_iIndexStart[4];
+				SHORT m_iIndexCount[4];
 
 				int m_iSideCount[4];
 
@@ -89,22 +89,22 @@ namespace gui
 				struct buff_t
 				{
 					float3_t ** vb;
-					UINT ** ib;
+					SHORT ** ib;
 					float3_t br[4];
-					UINT iIC[2];
-					UINT iVC[2];
+					SHORT iIC[2];
+					SHORT iVC[2];
 				};
 
 				static void buildRadius(IRB_PARAM);
 				static void buildCut(IRB_PARAM);
 
-				void concatBuffers(buff_t * pOut, const buff_t * b1, UINT idx1, const buff_t * b2, UINT idx2, float3_t * br);
+				void concatBuffers(buff_t * pOut, const buff_t * b1, SHORT idx1, const buff_t * b2, SHORT idx2, float3_t * br);
 
-				void createAPIbuffers(buff_t * t, buff_t * r, buff_t * b, buff_t * l, UINT * pIndices, UINT IndexCount);
+				void createAPIbuffers(buff_t * t, buff_t * r, buff_t * b, buff_t * l, SHORT * pIndices, SHORT IndexCount);
 
 				void releaseBuffer(buff_t * pIn);
 
-				void createFill(buff_t * t, buff_t * r, buff_t * b, buff_t * l, UINT ** ppIndices, UINT * pIndexCount, UINT ** ppFillIDx[4], UINT * pFillIdxCount[4]);
+				void createFill(buff_t * t, buff_t * r, buff_t * b, buff_t * l, SHORT ** ppIndices, SHORT * pIndexCount, SHORT ** ppFillIDx[4], SHORT * pFillIdxCount[4]);
 			};
 		};
 	};

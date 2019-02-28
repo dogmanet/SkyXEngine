@@ -901,7 +901,7 @@ public:
 };
 
 //! создать IMesh
-SX_LIB_API IMesh* SGCore_CrMesh(UINT uVertexCount, UINT uIndexCount);
+SX_LIB_API IMesh* SGCore_CrMesh(UINT uVertexCount, UINT uIndexCount, float3_t *pVertices, USHORT *pIndices);
 //SX_LIB_API IMesh* SGCore_CloneMesh(IMesh *pOther);
 
 //#############################################################################

@@ -71,23 +71,9 @@ void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** p
 		iCurI++;
 	}
 
-	IMesh *pMesh = SGCore_CrMesh(iVC, iIC);
-	
-
-	VOID * pData;
-	if(pMesh->getVertexBuffer()->lock(&pData, GXBL_WRITE))
-	{
-		memcpy(pData, pVertices, sizeof(float3_t) * iVC);
-		pMesh->getVertexBuffer()->unlock();
-	}
+	IMesh *pMesh = SGCore_CrMesh(iVC, iIC, pVertices, pIndices);
 	pMesh->getBound()->calcBound((vertex_static_ex*)pVertices, iVC, sizeof(float3_t));
 
-	if(pMesh->getIndexBuffer()->lock(&pData, GXBL_WRITE))
-	{
-		memcpy(pData, pIndices, sizeof(USHORT) * iIC);
-		pMesh->getIndexBuffer()->unlock();
-	}
-	
 	mem_delete(pIndices);
 	mem_delete(pVertices);
 
@@ -100,8 +86,7 @@ void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppM
 	UINT iIC = (iStackCount - 1) * iSideCount * 6;
 	float3_t * pVertices = new float3_t[iVC];
 	USHORT * pIndices = new USHORT[iIC];
-
-
+	
 	UINT iCurV = 0;
 	UINT iCurI = 0;
 	pVertices[iCurV++] = float3_t(0.0f, fRadius, 0.0f);
@@ -151,21 +136,8 @@ void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppM
 	assert(iCurI == iIC);
 	assert(iCurV == iVC);
 
-	IMesh *pMesh = SGCore_CrMesh(iVC, iIC);
-
-	VOID * pData;
-	if(pMesh->getVertexBuffer()->lock(&pData, GXBL_WRITE))
-	{
-		memcpy(pData, pVertices, sizeof(float3_t) * iVC);
-		pMesh->getVertexBuffer()->unlock();
-	}
+	IMesh *pMesh = SGCore_CrMesh(iVC, iIC, pVertices, pIndices);
 	pMesh->getBound()->calcBound((vertex_static_ex*)pVertices, iVC, sizeof(float3_t));
-
-	if(pMesh->getIndexBuffer()->lock(&pData, GXBL_WRITE))
-	{
-		memcpy(pData, pIndices, sizeof(USHORT) * iIC);
-		pMesh->getIndexBuffer()->unlock();
-	}
 
 	mem_delete(pIndices);
 	mem_delete(pVertices);
@@ -669,21 +641,8 @@ void CreateBoundingBoxMesh(const float3* min, const float3* max, IMesh** bbmesh,
 		3, 7, 5, 3, 5, 1
 	};
 
-	IMesh *pMesh = SGCore_CrMesh(iVC, iIC);
-
-	VOID * pData;
-	if(pMesh->getVertexBuffer()->lock(&pData, GXBL_WRITE))
-	{
-		memcpy(pData, pVertices, sizeof(float3_t) * iVC);
-		pMesh->getVertexBuffer()->unlock();
-	}
+	IMesh *pMesh = SGCore_CrMesh(iVC, iIC, pVertices, pIndices);
 	pMesh->getBound()->calcBound((vertex_static_ex*)pVertices, iVC, sizeof(float3_t));
-
-	if(pMesh->getIndexBuffer()->lock(&pData, GXBL_WRITE))
-	{
-		memcpy(pData, pIndices, sizeof(USHORT) * iIC);
-		pMesh->getIndexBuffer()->unlock();
-	}
 
 	*bbmesh = pMesh;
 }

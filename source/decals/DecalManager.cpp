@@ -704,28 +704,23 @@ void DecalManager::updateBuffer()
 		m_bNeedUpdate = false;
 		return;
 	}
-
-	//@FIXME: Consider to make it static
-	m_pVertexBuffer = dev->createVertexBuffer(sizeof(DecalVertex) * iVC, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
-
+		
+	DecalVertex * pData = (DecalVertex*)alloca(sizeof(DecalVertex) * iVC);
 	
-	DecalVertex * pData;
-	if(m_pVertexBuffer->lock((void**)&pData, GXBL_WRITE))
+	iVC = 0;
+	for(AssotiativeArray<ID, Array<_DecalMatItem>>::Iterator i = m_MaterialSort.begin(); i; i++)
 	{
-		iVC = 0;
-		for(AssotiativeArray<ID, Array<_DecalMatItem>>::Iterator i = m_MaterialSort.begin(); i; i++)
+		for(UINT j = 0, l = i.second->size(); j < l; ++j)
 		{
-			for(UINT j = 0, l = i.second->size(); j < l; ++j)
-			{
-				//iVC += i.second[0][j].m_pDecal->iVertCount;
-				//iCC += i.second[0][j].m_pDecal->iVertCount;
+			//iVC += i.second[0][j].m_pDecal->iVertCount;
+			//iCC += i.second[0][j].m_pDecal->iVertCount;
 
-				memcpy(pData + iVC, i.second[0][j].m_pDecal->m_pVerts, sizeof(DecalVertex) * i.second[0][j].m_pDecal->iVertCount);
-				iVC += i.second[0][j].m_pDecal->iVertCount;
-			}
+			memcpy(pData + iVC, i.second[0][j].m_pDecal->m_pVerts, sizeof(DecalVertex) * i.second[0][j].m_pDecal->iVertCount);
+			iVC += i.second[0][j].m_pDecal->iVertCount;
 		}
-		m_pVertexBuffer->unlock();
 	}
+
+	m_pVertexBuffer = dev->createVertexBuffer(sizeof(DecalVertex) * iVC, GX_BUFFER_USAGE_STATIC, pData);
 
 	m_pRenderBuffer = dev->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
 

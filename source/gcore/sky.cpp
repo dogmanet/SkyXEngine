@@ -23,8 +23,6 @@ CSkyBox::CSkyBox()
 	m_vColor = float4(0, 0, 0, 0);
 	m_fRotaionY = 0.f;
 	m_mMatRotation = SMMatrixIdentity();
-	//@FIXME: Consider to make it static
-	m_pVertices = g_pDevice->createVertexBuffer(8 * sizeof(CSkyBoxVertex), GX_BUFFER_USAGE_DYNAMIC);
 
 	
 	float X = SXGC_SKYBOX_SIZE * 0.5;
@@ -32,34 +30,20 @@ CSkyBox::CSkyBox()
 	float Z = SXGC_SKYBOX_SIZE * 0.5;
 	//float tmpy = 45;
 
-	CSkyBoxVertex* tmpVertices;
-	if(m_pVertices->lock((void**)&tmpVertices, GXBL_WRITE))
-	{
+	CSkyBoxVertex tmpVertices[] = {
+		CSkyBoxVertex(X, Y, Z, 1.0f, 1.0f, 1.0f),
+		CSkyBoxVertex(-X, Y, Z, -1.0f, 1.0f, 1.0f),
+		CSkyBoxVertex(X, -Y, Z, 1.0f, -1.0f, 1.0f),
 
-		/*tmpVertices[0] = CSkyBoxVertex( X,  Y-tmpy, Z, 1.0f, 1.0f, 1.0f);
-		tmpVertices[1] = CSkyBoxVertex(-X,  Y-tmpy, Z,-1.0f, 1.0f, 1.0f);
-		tmpVertices[2] = CSkyBoxVertex( X, -tmpy, Z, 1.0f,-1.0f, 1.0f);
+		CSkyBoxVertex(X, Y, -Z, 1.0f, 1.0f, -1.0f),
+		CSkyBoxVertex(-X, -Y, Z, -1.0f, -1.0f, 1.0f),
+		CSkyBoxVertex(X, -Y, -Z, 1.0f, -1.0f, -1.0f),
 
-		tmpVertices[3] = CSkyBoxVertex( X,  Y-tmpy,-Z, 1.0f, 1.0f,-1.0f);
-		tmpVertices[4] = CSkyBoxVertex(-X, -tmpy, Z,-1.0f,-1.0f, 1.0f);
-		tmpVertices[5] = CSkyBoxVertex( X, -tmpy,-Z, 1.0f,-1.0f,-1.0f);
+		CSkyBoxVertex(-X, Y, -Z, -1.0f, 1.0f, -1.0f),
+		CSkyBoxVertex(-X, -Y, -Z, -1.0f, -1.0f, -1.0f)
+	};
 
-		tmpVertices[6] = CSkyBoxVertex(-X,  Y-tmpy,-Z,-1.0f, 1.0f,-1.0f);
-		tmpVertices[7] = CSkyBoxVertex(-X, -tmpy,-Z,-1.0f,-1.0f,-1.0f);*/
-
-		tmpVertices[0] = CSkyBoxVertex(X, Y, Z, 1.0f, 1.0f, 1.0f);
-		tmpVertices[1] = CSkyBoxVertex(-X, Y, Z, -1.0f, 1.0f, 1.0f);
-		tmpVertices[2] = CSkyBoxVertex(X, -Y, Z, 1.0f, -1.0f, 1.0f);
-
-		tmpVertices[3] = CSkyBoxVertex(X, Y, -Z, 1.0f, 1.0f, -1.0f);
-		tmpVertices[4] = CSkyBoxVertex(-X, -Y, Z, -1.0f, -1.0f, 1.0f);
-		tmpVertices[5] = CSkyBoxVertex(X, -Y, -Z, 1.0f, -1.0f, -1.0f);
-
-		tmpVertices[6] = CSkyBoxVertex(-X, Y, -Z, -1.0f, 1.0f, -1.0f);
-		tmpVertices[7] = CSkyBoxVertex(-X, -Y, -Z, -1.0f, -1.0f, -1.0f);
-
-		m_pVertices->unlock();
-	}
+	m_pVertices = g_pDevice->createVertexBuffer(8 * sizeof(CSkyBoxVertex), GX_BUFFER_USAGE_STATIC, tmpVertices);
 
 	WORD indices_tmp[] =
     {

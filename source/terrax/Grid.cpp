@@ -9,202 +9,199 @@ CGrid::CGrid(UINT uSize)
 
 	float fSize = (float)uSize * 0.5f;
 	UINT uVC = (uSize * 100 + 1) * 4;
-	//@FIXME: Consider to make it static
-	IGXVertexBuffer *pVB = m_pDevice->createVertexBuffer(sizeof(vertex) * uVC, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
-	vertex *pVertices;
+	vertex *pVertices = new vertex[uVC];
 	UINT uCurV = 0;
-	if(pVB->lock((void**)&pVertices, GXBL_WRITE))
+
+	pVertices[uCurV++] = {float3_t(-fSize, 0.0f, 0.0f)};
+	pVertices[uCurV++] = {float3_t(fSize, 0.0f, 0.0f)};
+	pVertices[uCurV++] = {float3_t(0.0f, 0.0f, -fSize)};
+	pVertices[uCurV++] = {float3_t(0.0f, 0.0f, fSize)};
+	m_uVertexPerStep[GRID_STEP_AXES] = {0, uCurV};
+
+	for(UINT i = 0; i <= uSize; i += 100)
 	{
-		pVertices[uCurV++] = {float3_t(-fSize, 0.0f, 0.0f)};
-		pVertices[uCurV++] = {float3_t(fSize, 0.0f, 0.0f)};
-		pVertices[uCurV++] = {float3_t(0.0f, 0.0f, -fSize)};
-		pVertices[uCurV++] = {float3_t(0.0f, 0.0f, fSize)};
-		m_uVertexPerStep[GRID_STEP_AXES] = {0, uCurV};
-
-		for(UINT i = 0; i <= uSize; i += 100)
+		if(i * 2 == uSize)
 		{
-			if(i * 2 == uSize)
-			{
-				continue;
-			}
-			float f = (float)i - fSize;
-			pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
+			continue;
 		}
-		m_uVertexPerStep[GRID_STEP_100M] = {m_uVertexPerStep[GRID_STEP_100M + 1].m_uEndVertex, uCurV};
-
-		for(UINT i = 0; i < uSize; i += 50)
-		{
-			if(i % 100 == 0)
-			{
-				continue;
-			}
-			float f = (float)i - fSize;
-			pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
-		}
-		m_uVertexPerStep[GRID_STEP_50M] = {m_uVertexPerStep[GRID_STEP_50M + 1].m_uEndVertex, uCurV};
-
-		for(UINT i = 0; i < uSize; i += 20)
-		{
-			if(i % 50 == 0)
-			{
-				continue;
-			}
-			float f = (float)i - fSize;
-			pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
-		}
-		m_uVertexPerStep[GRID_STEP_20M] = {m_uVertexPerStep[GRID_STEP_20M + 1].m_uEndVertex, uCurV};
-
-		for(UINT i = 0; i < uSize; i += 10)
-		{
-			if(i % 20 == 0 || i % 50 == 0)
-			{
-				continue;
-			}
-			float f = (float)i - fSize;
-			pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
-		}
-		m_uVertexPerStep[GRID_STEP_10M] = {m_uVertexPerStep[GRID_STEP_10M + 1].m_uEndVertex, uCurV};
-
-		for(UINT i = 0; i < uSize; i += 5)
-		{
-			if(i % 10 == 0)
-			{
-				continue;
-			}
-			float f = (float)i - fSize;
-			pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
-		}
-		m_uVertexPerStep[GRID_STEP_5M] = {m_uVertexPerStep[GRID_STEP_5M + 1].m_uEndVertex, uCurV};
-
-		for(UINT i = 0; i < uSize; i += 2)
-		{
-			if(i % 5 == 0)
-			{
-				continue;
-			}
-			float f = (float)i - fSize;
-			pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
-		}
-		m_uVertexPerStep[GRID_STEP_2M] = {m_uVertexPerStep[GRID_STEP_2M + 1].m_uEndVertex, uCurV};
-
-		for(UINT i = 0; i < uSize; ++i)
-		{
-			if(i % 2 == 0 || i % 5 == 0)
-			{
-				continue;
-			}
-			float f = (float)i - fSize;
-			pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
-		}
-		m_uVertexPerStep[GRID_STEP_1M] = {m_uVertexPerStep[GRID_STEP_1M + 1].m_uEndVertex, uCurV};
-
-		for(UINT i = 0; i < uSize * 2; ++i)
-		{
-			if(i % 2 == 0)
-			{
-				continue;
-			}
-			float f = (float)i * 0.5f - fSize;
-			pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
-		}
-		m_uVertexPerStep[GRID_STEP_50CM] = {m_uVertexPerStep[GRID_STEP_50CM + 1].m_uEndVertex, uCurV};
-
-		for(UINT i = 0; i < uSize * 5; ++i)
-		{
-			if(i % 5 == 0)
-			{
-				continue;
-			}
-			float f = (float)i * 0.2f - fSize;
-			pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
-		}
-		m_uVertexPerStep[GRID_STEP_20CM] = {m_uVertexPerStep[GRID_STEP_20CM + 1].m_uEndVertex, uCurV};
-
-		for(UINT i = 0; i < uSize * 10; ++i)
-		{
-			if(i % 2 == 0 || i % 5 == 0)
-			{
-				continue;
-			}
-			float f = (float)i * 0.1f - fSize;
-			pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
-		}
-		m_uVertexPerStep[GRID_STEP_10CM] = {m_uVertexPerStep[GRID_STEP_10CM + 1].m_uEndVertex, uCurV};
-
-		for(UINT i = 0; i < uSize * 20; ++i)
-		{
-			if(i % 2 == 0)
-			{
-				continue;
-			}
-			float f = (float)i * 0.05f - fSize;
-			pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
-		}
-		m_uVertexPerStep[GRID_STEP_5CM] = {m_uVertexPerStep[GRID_STEP_5CM + 1].m_uEndVertex, uCurV};
-
-		for(UINT i = 0; i < uSize * 50; ++i)
-		{
-			if(i % 5 == 0)
-			{
-				continue;
-			}
-			float f = (float)i * 0.02f - fSize;
-			pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
-		}
-		m_uVertexPerStep[GRID_STEP_2CM] = {m_uVertexPerStep[GRID_STEP_2CM + 1].m_uEndVertex, uCurV};
-
-		for(UINT i = 0; i < uSize * 100; ++i)
-		{
-			if(i % 2 == 0 || i % 5 == 0)
-			{
-				continue;
-			}
-			float f = (float)i * 0.01f - fSize;
-			pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
-			pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
-		}
-		m_uVertexPerStep[GRID_STEP_1CM] = {m_uVertexPerStep[GRID_STEP_1CM + 1].m_uEndVertex, uCurV};
-
-		pVB->unlock();
+		float f = (float)i - fSize;
+		pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
 	}
+	m_uVertexPerStep[GRID_STEP_100M] = {m_uVertexPerStep[GRID_STEP_100M + 1].m_uEndVertex, uCurV};
+
+	for(UINT i = 0; i < uSize; i += 50)
+	{
+		if(i % 100 == 0)
+		{
+			continue;
+		}
+		float f = (float)i - fSize;
+		pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
+	}
+	m_uVertexPerStep[GRID_STEP_50M] = {m_uVertexPerStep[GRID_STEP_50M + 1].m_uEndVertex, uCurV};
+
+	for(UINT i = 0; i < uSize; i += 20)
+	{
+		if(i % 50 == 0)
+		{
+			continue;
+		}
+		float f = (float)i - fSize;
+		pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
+	}
+	m_uVertexPerStep[GRID_STEP_20M] = {m_uVertexPerStep[GRID_STEP_20M + 1].m_uEndVertex, uCurV};
+
+	for(UINT i = 0; i < uSize; i += 10)
+	{
+		if(i % 20 == 0 || i % 50 == 0)
+		{
+			continue;
+		}
+		float f = (float)i - fSize;
+		pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
+	}
+	m_uVertexPerStep[GRID_STEP_10M] = {m_uVertexPerStep[GRID_STEP_10M + 1].m_uEndVertex, uCurV};
+
+	for(UINT i = 0; i < uSize; i += 5)
+	{
+		if(i % 10 == 0)
+		{
+			continue;
+		}
+		float f = (float)i - fSize;
+		pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
+	}
+	m_uVertexPerStep[GRID_STEP_5M] = {m_uVertexPerStep[GRID_STEP_5M + 1].m_uEndVertex, uCurV};
+
+	for(UINT i = 0; i < uSize; i += 2)
+	{
+		if(i % 5 == 0)
+		{
+			continue;
+		}
+		float f = (float)i - fSize;
+		pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
+	}
+	m_uVertexPerStep[GRID_STEP_2M] = {m_uVertexPerStep[GRID_STEP_2M + 1].m_uEndVertex, uCurV};
+
+	for(UINT i = 0; i < uSize; ++i)
+	{
+		if(i % 2 == 0 || i % 5 == 0)
+		{
+			continue;
+		}
+		float f = (float)i - fSize;
+		pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
+	}
+	m_uVertexPerStep[GRID_STEP_1M] = {m_uVertexPerStep[GRID_STEP_1M + 1].m_uEndVertex, uCurV};
+
+	for(UINT i = 0; i < uSize * 2; ++i)
+	{
+		if(i % 2 == 0)
+		{
+			continue;
+		}
+		float f = (float)i * 0.5f - fSize;
+		pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
+	}
+	m_uVertexPerStep[GRID_STEP_50CM] = {m_uVertexPerStep[GRID_STEP_50CM + 1].m_uEndVertex, uCurV};
+
+	for(UINT i = 0; i < uSize * 5; ++i)
+	{
+		if(i % 5 == 0)
+		{
+			continue;
+		}
+		float f = (float)i * 0.2f - fSize;
+		pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
+	}
+	m_uVertexPerStep[GRID_STEP_20CM] = {m_uVertexPerStep[GRID_STEP_20CM + 1].m_uEndVertex, uCurV};
+
+	for(UINT i = 0; i < uSize * 10; ++i)
+	{
+		if(i % 2 == 0 || i % 5 == 0)
+		{
+			continue;
+		}
+		float f = (float)i * 0.1f - fSize;
+		pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
+	}
+	m_uVertexPerStep[GRID_STEP_10CM] = {m_uVertexPerStep[GRID_STEP_10CM + 1].m_uEndVertex, uCurV};
+
+	for(UINT i = 0; i < uSize * 20; ++i)
+	{
+		if(i % 2 == 0)
+		{
+			continue;
+		}
+		float f = (float)i * 0.05f - fSize;
+		pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
+	}
+	m_uVertexPerStep[GRID_STEP_5CM] = {m_uVertexPerStep[GRID_STEP_5CM + 1].m_uEndVertex, uCurV};
+
+	for(UINT i = 0; i < uSize * 50; ++i)
+	{
+		if(i % 5 == 0)
+		{
+			continue;
+		}
+		float f = (float)i * 0.02f - fSize;
+		pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
+	}
+	m_uVertexPerStep[GRID_STEP_2CM] = {m_uVertexPerStep[GRID_STEP_2CM + 1].m_uEndVertex, uCurV};
+
+	for(UINT i = 0; i < uSize * 100; ++i)
+	{
+		if(i % 2 == 0 || i % 5 == 0)
+		{
+			continue;
+		}
+		float f = (float)i * 0.01f - fSize;
+		pVertices[uCurV++] = {float3_t(-fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(fSize, 0.0f, f)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, -fSize)};
+		pVertices[uCurV++] = {float3_t(f, 0.0f, fSize)};
+	}
+	m_uVertexPerStep[GRID_STEP_1CM] = {m_uVertexPerStep[GRID_STEP_1CM + 1].m_uEndVertex, uCurV};
+
+	IGXVertexBuffer *pVB = m_pDevice->createVertexBuffer(sizeof(vertex) * uVC, GX_BUFFER_USAGE_STATIC, pVertices);
+	mem_delete_a(pVertices);
 
 	GXVERTEXELEMENT vertexDecl[] =
 	{

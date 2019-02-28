@@ -1060,7 +1060,7 @@ SX_LIB_API void SGCore_SkyCloudsRender(DWORD timeDetlta, const float3* pos, bool
 struct CMesh: public IMesh
 {
 public:
-	CMesh(UINT uVertexCount, UINT uIndexCount):
+	CMesh(UINT uVertexCount, UINT uIndexCount, float3_t *pVertices, USHORT *pIndices):
 		m_uVertexCount(uVertexCount),
 		m_uIndexCount(uIndexCount)
 	{
@@ -1072,9 +1072,8 @@ public:
 
 		IGXVertexDeclaration *pVD = g_pDevice->createVertexDeclaration(oLayout);
 
-		//@FIXME: Consider to make it static
-		m_pIB = g_pDevice->createIndexBuffer(sizeof(USHORT) * uIndexCount, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY, GXIT_USHORT);
-		m_pVB = g_pDevice->createVertexBuffer(sizeof(float) * 3 * uVertexCount, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
+		m_pIB = g_pDevice->createIndexBuffer(sizeof(USHORT) * uIndexCount, GX_BUFFER_USAGE_STATIC, GXIT_USHORT, pIndices);
+		m_pVB = g_pDevice->createVertexBuffer(sizeof(float) * 3 * uVertexCount, GX_BUFFER_USAGE_STATIC, pVertices);
 		m_pRB = g_pDevice->createRenderBuffer(1, &m_pVB, pVD);
 
 		mem_release(pVD);
@@ -1128,7 +1127,7 @@ protected:
 	UINT m_uRefCount = 1;
 };
 
-SX_LIB_API IMesh* SGCore_CrMesh(UINT uVertexCount, UINT uIndexCount)
+SX_LIB_API IMesh* SGCore_CrMesh(UINT uVertexCount, UINT uIndexCount, float3_t *pVertices, USHORT *pIndices)
 {
-	return(new CMesh(uVertexCount, uIndexCount));
+	return(new CMesh(uVertexCount, uIndexCount, pVertices, pIndices));
 }

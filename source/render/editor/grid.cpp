@@ -29,39 +29,33 @@ CGrid::~CGrid()
 }
 
 void CGrid::create(int width, int depth, DWORD color)
-{
-	//@FIXME: Consider to make it static
-	m_pVertexBuffer = gdata::pDXDevice->createVertexBuffer(width * depth * 2 * sizeof(CVertex), GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
+{	
+	CVertex *pVertices = new CVertex[width * depth * 2];
+	int oCountVert = 0;
 
-	CVertex *pVertices;
-	if(m_pVertexBuffer->lock((void**)&pVertices, GXBL_WRITE))
+	for(int x = -(width / 2); x < (width / 2) + 1; ++x)
 	{
-
-		int oCountVert = 0;
-
-		for(int x = -(width / 2); x < (width / 2) + 1; ++x)
-		{
-			pVertices[oCountVert].m_vPos = float3_t((float)x, 0.0f, (float)(-(depth / 2)));
-			pVertices[oCountVert].m_vColor = GXCOLOR_COLORVECTOR_ARGB(color);
-			++oCountVert;
-			pVertices[oCountVert].m_vPos = float3_t((float)x, 0.0f, (float)(depth / 2));
-			pVertices[oCountVert].m_vColor = GXCOLOR_COLORVECTOR_ARGB(color);
-			++oCountVert;
-		}
-
-		for(int y = -(depth / 2); y < (depth / 2) + 1; ++y)
-		{
-			pVertices[oCountVert].m_vPos = float3_t((float)(-(width / 2)), 0.0f, (float)y);
-			pVertices[oCountVert].m_vColor = GXCOLOR_COLORVECTOR_ARGB(color);
-			++oCountVert;
-			pVertices[oCountVert].m_vPos = float3_t((float)(width / 2), 0.0f, (float)y);
-			pVertices[oCountVert].m_vColor = GXCOLOR_COLORVECTOR_ARGB(color);
-			++oCountVert;
-		}
-
-		m_pVertexBuffer->unlock();
-		m_iCountPoly = oCountVert / 2;
+		pVertices[oCountVert].m_vPos = float3_t((float)x, 0.0f, (float)(-(depth / 2)));
+		pVertices[oCountVert].m_vColor = GXCOLOR_COLORVECTOR_ARGB(color);
+		++oCountVert;
+		pVertices[oCountVert].m_vPos = float3_t((float)x, 0.0f, (float)(depth / 2));
+		pVertices[oCountVert].m_vColor = GXCOLOR_COLORVECTOR_ARGB(color);
+		++oCountVert;
 	}
+
+	for(int y = -(depth / 2); y < (depth / 2) + 1; ++y)
+	{
+		pVertices[oCountVert].m_vPos = float3_t((float)(-(width / 2)), 0.0f, (float)y);
+		pVertices[oCountVert].m_vColor = GXCOLOR_COLORVECTOR_ARGB(color);
+		++oCountVert;
+		pVertices[oCountVert].m_vPos = float3_t((float)(width / 2), 0.0f, (float)y);
+		pVertices[oCountVert].m_vColor = GXCOLOR_COLORVECTOR_ARGB(color);
+		++oCountVert;
+	}
+
+	m_iCountPoly = oCountVert / 2;
+	m_pVertexBuffer = gdata::pDXDevice->createVertexBuffer(width * depth * 2 * sizeof(CVertex), GX_BUFFER_USAGE_STATIC, pVertices);
+	mem_delete_a(pVertices);
 
 	m_pRenderBuffer = gdata::pDXDevice->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
 
