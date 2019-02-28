@@ -66,12 +66,12 @@ int CFile::add(const char *szPath, int iType)
 
 size_t CFile::readBin(void *pDest, size_t iSize)
 {
-	return(fread(pDest, iSize, 1, m_pFile));
+	return(fread(pDest, 1, iSize, m_pFile));
 }
 
 size_t CFile::writeBin(const void *pSrc, size_t iSize)
 {
-	return(fwrite(pSrc, iSize, 1, m_pFile));
+	return(fwrite(pSrc, 1, iSize, m_pFile));
 }
 
 size_t CFile::readText(const char *szFormat, ...)

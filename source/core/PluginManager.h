@@ -1,18 +1,16 @@
 #ifndef __PLUGINMANAGER_H
 #define __PLUGINMANAGER_H
 
-#include "IPluginManager.h"
+#include <xcommon/IPluginManager.h>
 #include <common/assotiativearray.h>
 
-// Интерфейс для работы с плагинами движка
+// РРЅС‚РµСЂС„РµР№СЃ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РїР»Р°РіРёРЅР°РјРё РґРІРёР¶РєР°
 
 
 class CPluginManager: public IPluginManager
 {
 public:
 	~CPluginManager();
-
-	void Release();
 
 	IXPlugin *loadPlugin(const char *szPath);
 

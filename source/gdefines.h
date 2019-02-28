@@ -160,7 +160,14 @@ public:
 	{
 		++m_uRefCount;
 	}
-	virtual void Release() = 0;
+	virtual void Release()
+	{
+		--m_uRefCount;
+		if(!m_uRefCount)
+		{
+			delete this;
+		}
+	}
 
 	virtual UINT getVersion()
 	{

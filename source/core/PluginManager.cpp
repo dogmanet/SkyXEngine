@@ -4,15 +4,6 @@
 #	include <dlfcn.h>
 #endif
 
-void CPluginManager::Release()
-{
-	--m_uRefCount;
-	if(!m_uRefCount)
-	{
-		delete this;
-	}
-}
-
 CPluginManager::~CPluginManager()
 {
 	for(UINT i = 0, l = m_aPlugins.size(); i < l; ++i)

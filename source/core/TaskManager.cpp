@@ -60,8 +60,8 @@ protected:
 };
 
 CTaskManager::CTaskManager(unsigned int numThreads):
-	m_isSingleThreaded(false),
-	m_isRunning(false)
+m_isSingleThreaded(false),
+m_isRunning(false)
 {
 	m_iNumThreads = numThreads;
 	if(!numThreads)
@@ -81,10 +81,7 @@ CTaskManager::CTaskManager(unsigned int numThreads):
 
 CTaskManager::~CTaskManager()
 {
-	for(int i = 0, l = m_aThreads.size(); i < l; ++i)
-	{
-		m_aThreads[i]->join();
-	}
+	stop();
 }
 
 void CTaskManager::forceSinglethreaded()
@@ -101,7 +98,7 @@ void CTaskManager::forceSinglethreaded()
 void CTaskManager::addTask(TaskPtr task)
 {
 	unsigned int flags = task->getFlags();
-	
+
 	if(flags & CORE_TASK_FLAG_ON_SYNC)
 	{
 		m_OnSyncTasks.push(task);
@@ -125,6 +122,13 @@ void CTaskManager::addTask(TaskPtr task)
 		}
 	}
 	//notifyWorkers();
+}
+
+void CTaskManager::addTaskIO(TaskPtr task)
+{
+	task->stopRepeating();
+	m_aIOTasks.push(task);
+	m_ConditionIOThread.notify_one();
 }
 
 void CTaskManager::add(THREAD_UPDATE_FUNCTION fnFunc, DWORD dwFlag)
@@ -151,6 +155,11 @@ void CTaskManager::start()
 #endif
 		m_aThreads.push_back(t);
 	}
+	m_pIOThread = new std::thread(std::bind(&CTaskManager::workerIOMain, this)); 
+#if defined(_WINDOWS)
+	sprintf(name, "Worker IO");
+	SetThreadName(GetThreadId(m_pIOThread->native_handle()), name);
+#endif
 
 	sheduleNextBunch();
 
@@ -198,7 +207,7 @@ void CTaskManager::synchronize()
 	}
 
 	g_pPerfMon->syncBegin();
-	
+
 	while(!m_OnSyncTasks.empty())
 	{
 		m_BackgroundTasks.push(m_OnSyncTasks.pop());
@@ -229,12 +238,19 @@ void CTaskManager::sheduleNextBunch()
 void CTaskManager::stop()
 {
 	m_isRunning = false;
+	m_ConditionIOThread.notify_all();
+
 	for(int i = 0, l = m_aThreads.size(); i < l; ++i)
 	{
 		m_aThreads[i]->join();
 		delete m_aThreads[i];
 	}
 	m_aThreads.clear();
+	if(m_pIOThread)
+	{
+		m_pIOThread->join();
+		mem_delete(m_pIOThread);
+	}
 }
 
 void CTaskManager::execute(TaskPtr t)
@@ -251,6 +267,12 @@ void CTaskManager::workerMain()
 {
 	srand((UINT)time(0));
 	worker(false);
+}
+
+void CTaskManager::workerIOMain()
+{
+	srand((UINT)time(0));
+	workerIO();
 }
 
 void CTaskManager::worker(bool bOneRun)
@@ -298,7 +320,25 @@ void CTaskManager::worker(bool bOneRun)
 			//}
 			std::this_thread::yield();
 			//std::this_thread::sleep_for(std::chrono::microseconds(166));
-			
+
+		}
+	}
+}
+
+void CTaskManager::workerIO()
+{
+	TaskPtr task;
+
+	while(m_isRunning)
+	{
+		if(m_aIOTasks.tryPop(task))
+		{
+			execute(task);
+		}
+		else
+		{
+			std::unique_lock<std::mutex> lock(m_mutexIOThread);
+			m_ConditionIOThread.wait(lock);
 		}
 	}
 }

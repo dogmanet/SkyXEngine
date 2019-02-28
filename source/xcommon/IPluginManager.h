@@ -2,7 +2,7 @@
 #define __IPLUGINMANAGER_H
 
 #include <gdefines.h>
-#include <xcommon/IXPlugin.h>
+#include "IXPlugin.h"
 
 // Интерфейс для работы с плагинами движка
 

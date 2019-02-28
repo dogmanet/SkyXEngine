@@ -43,6 +43,15 @@
     <ClCompile Include="..\..\..\source\core\PluginManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\core\Core.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\AsyncFileReader.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\FileInMemory.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -95,12 +104,6 @@
     <ClInclude Include="..\..\..\source\core\PerfMon.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\core\IFileSystem.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\IPluginManager.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IXPlugin.h">
       <Filter>Header\xcommon</Filter>
     </ClInclude>
@@ -116,10 +119,31 @@
     <ClInclude Include="..\..\..\source\xcommon\IXModelLoader.h">
       <Filter>Header\xcommon</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\core\IXCore.h">
+    <ClInclude Include="..\..\..\source\core\PluginManager.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\core\PluginManager.h">
+    <ClInclude Include="..\..\..\source\xcommon\IAsyncFileReader.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IAsyncTaskRunner.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IPluginManager.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IXCore.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IFileSystem.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\Core.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\AsyncFileReader.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\FileInMemory.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

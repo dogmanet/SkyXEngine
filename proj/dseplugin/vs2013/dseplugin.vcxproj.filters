@@ -21,9 +21,12 @@
     <ClCompile Include="..\..\..\source\dseplugin\plugin_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\dseplugin\ModelLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\source\dseplugin\ITest.h">
+    <ClInclude Include="..\..\..\source\dseplugin\ModelLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

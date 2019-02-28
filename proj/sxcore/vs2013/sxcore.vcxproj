@@ -22,6 +22,7 @@
     <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
+    <ClCompile Include="..\..\..\source\core\AsyncFileReader.cpp" />
     <ClCompile Include="..\..\..\source\core\concmd.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Singlethreaded|Win32'">false</ExcludedFromBuild>
@@ -29,6 +30,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Singlethreaded|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\Config.cpp" />
+    <ClCompile Include="..\..\..\source\core\Core.cpp" />
     <ClCompile Include="..\..\..\source\core\cvars.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Singlethreaded|Win32'">false</ExcludedFromBuild>
@@ -36,6 +38,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Singlethreaded|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\file.cpp" />
+    <ClCompile Include="..\..\..\source\core\FileInMemory.cpp" />
     <ClCompile Include="..\..\..\source\core\PerfMon.cpp" />
     <ClCompile Include="..\..\..\source\core\PluginManager.cpp" />
     <ClCompile Include="..\..\..\source\core\sxcore.cpp">
@@ -54,19 +57,24 @@
     <ClInclude Include="..\..\..\source\common\file_utils.h" />
     <ClInclude Include="..\..\..\source\common\string.h" />
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
+    <ClInclude Include="..\..\..\source\core\AsyncFileReader.h" />
+    <ClInclude Include="..\..\..\source\core\FileInMemory.h" />
     <ClInclude Include="..\..\..\source\core\concmd.h" />
     <ClInclude Include="..\..\..\source\core\Config.h" />
+    <ClInclude Include="..\..\..\source\core\Core.h" />
     <ClInclude Include="..\..\..\source\core\cvars.h" />
     <ClInclude Include="..\..\..\source\core\File.h" />
-    <ClInclude Include="..\..\..\source\core\IFileSystem.h" />
-    <ClInclude Include="..\..\..\source\core\IPluginManager.h" />
-    <ClInclude Include="..\..\..\source\core\IXCore.h" />
     <ClInclude Include="..\..\..\source\core\PerfMon.h" />
     <ClInclude Include="..\..\..\source\core\PluginManager.h" />
     <ClInclude Include="..\..\..\source\core\sxcore.h" />
     <ClInclude Include="..\..\..\source\core\Task.h" />
     <ClInclude Include="..\..\..\source\core\TaskManager.h" />
     <ClInclude Include="..\..\..\source\core\time.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IAsyncFileReader.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IAsyncTaskRunner.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IFileSystem.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IPluginManager.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXCore.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXModelLoader.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXPlugin.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXRenderable.h" />

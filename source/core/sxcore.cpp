@@ -28,9 +28,7 @@ See the license in LICENSE
 
 #include "GRegisterIndex.h"
 
-#include "PluginManager.h"
-
-// #include <dseplugin/ITest.h>
+#include "Core.h"
 
 //##########################################################################
 
@@ -43,7 +41,7 @@ report_func g_fnReportf = DefReport;
 
 //**************************************************************************
 
-static CTaskManager *g_pTaskManager = 0;
+CTaskManager *g_pTaskManager = 0;
 CPerfMon *g_pPerfMon = 0;
 
 #define SXCORE_PRECOND(retval) if(!g_pTaskManager){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxcore is not init", GEN_MSG_LOCATION); return retval;}
@@ -65,7 +63,7 @@ if (!(id >= 0 && id < CORE_REGISTRY_SIZE))\
 //**************************************************************************
 
 CTimeManager* g_pTimers = 0;
-CPluginManager *g_pPluginManager = NULL;
+CCore *g_pCore = NULL;
 #define CORE_TIME_PRECOND(retval) if(!g_pTimers){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxcore is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
@@ -172,6 +170,7 @@ void Core_0Create(const char* name, const char *szNameConsole, bool is_unic)
 							return;
 						}
 				}
+			g_pCore = new CCore();
 			strcpy(g_szCoreName, name);
 			ConsoleConnect(szNameConsole);
 			ConsoleRegisterCmds();
@@ -191,30 +190,7 @@ void Core_0Create(const char* name, const char *szNameConsole, bool is_unic)
 			}
 			g_pTimers = new CTimeManager();
 
-			g_pPluginManager = new CPluginManager();
-			auto list = FileGetListFiles("../bin/plugins/*.dll");
-			IXPlugin *pPlugin = NULL;
-			for(UINT i = 0, l = list.size(); i < l; ++i)
-			{
-				printf("Loading plugin '%s'... ", list[i].c_str());
-				pPlugin = g_pPluginManager->loadPlugin((String("../bin/plugins/") + list[i]).c_str());
-				if(pPlugin)
-				{
-					printf(COLOR_GREEN "DONE!" COLOR_RESET "\n", list[i].c_str());
-				}
-				else
-				{
-					printf(COLOR_LRED "ERROR!" COLOR_RESET "\n", list[i].c_str());
-				}
-			}
-			g_pPluginManager->invokeStartup(NULL);
-			
-			/*ITest *pTest = (ITest*)g_pPluginManager->getInterface(ITEST_GUID);
-			if(pTest)
-			{
-				pTest->Foo();
-			}*/
-			//LibReport(REPORT_MSG_LEVEL_NOTICE, "is init\n");
+			g_pCore->loadPlugins();
 		}
 		else
 			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
@@ -222,7 +198,7 @@ void Core_0Create(const char* name, const char *szNameConsole, bool is_unic)
 
 void Core_AKill()
 {
-	mem_delete(g_pPluginManager);
+	mem_delete(g_pCore);
 
 	SXCORE_PRECOND(_VOID);
 

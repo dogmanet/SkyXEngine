@@ -1,36 +1,10 @@
 #include <xcommon/IXPlugin.h>
-#include "ITest.h"
+#include "ModelLoader.h"
 
-class CTest: public ITest
-{
-public:
-	void Release()
-	{
-		--m_uRefCount;
-		if(!m_uRefCount)
-		{
-			delete this;
-		}
-	}
-
-	void Foo()
-	{
-		MessageBox(NULL, "Foo called!", "", MB_OK);
-	}
-};
 
 class CDSEPlugin: public IXPlugin
 {
 public:
-	void Release()
-	{
-		--m_uRefCount;
-		if(!m_uRefCount)
-		{
-			delete this;
-		}
-	}
-
 	void startup(IXCore *pCore)
 	{
 	}
@@ -45,7 +19,7 @@ public:
 		switch(id)
 		{
 		case 0:
-			s_guid = ITEST_GUID;
+			s_guid = XMODELLOADER_GUID;
 			break;
 		default:
 			return(NULL);
@@ -54,15 +28,12 @@ public:
 	}
 	IXUnknown *getInterface(const XGUID &guid)
 	{
-		if(guid == ITEST_GUID)
+		if(guid == XMODELLOADER_GUID)
 		{
-			return(new CTest());
+			return(new CModelLoader());
 		}
 		return(NULL);
 	}
 };
 
-X_PLUGIN_API IXPlugin *X_PLUGIN_ENTRYPOINT()
-{
-	return(new CDSEPlugin());
-}
+DECLARE_XPLUGIN(CDSEPlugin);

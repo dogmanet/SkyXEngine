@@ -40,6 +40,7 @@ public:
 	~CTaskManager();
 
 	void addTask(TaskPtr task); //< Добавляет задачу в планировщик
+	void addTaskIO(TaskPtr task); //< Добавляет задачу ввода/вывода
 	void add(THREAD_UPDATE_FUNCTION fnFunc, DWORD dwFlag = CORE_TASK_FLAG_MAINTHREAD_REPEATING); //< Добавляет задачу в планировщик
 
 	void forceSinglethreaded();
@@ -58,13 +59,16 @@ public:
 	
 private:
 	void workerMain();
+	void workerIOMain();
 	void worker(bool bOneRun);
+	void workerIO();
 	void execute(TaskPtr task);
 	void synchronize();
 	void sheduleNextBunch();
 	//void notifyWorkers();
 
 	Array<std::thread*> m_aThreads;
+	std::thread* m_pIOThread;
 	unsigned int m_iNumThreads;
 
 	bool m_isRunning;
@@ -73,6 +77,7 @@ private:
 	TaskList m_BackgroundTasks; //!< Фоновые задачи
 	TaskList m_SyncTasks; //!< Синхронные задачи
 	TaskList m_OnSyncTasks; //!< Задачи синхронизации
+	TaskList m_aIOTasks; //!< Задачи ввода/вывода
 
 	unsigned int m_iReadList;
 	unsigned int m_iWriteList;
@@ -82,7 +87,9 @@ private:
 
 	mutable std::mutex m_mutexSync;
 	mutable std::mutex m_mutexFor;
+	mutable std::mutex m_mutexIOThread;
 	Condition m_Condition;
+	Condition m_ConditionIOThread;
 	//mutable std::mutex m_mutexWorker[8];
 	//Condition m_ConditionWorker[8];
 	Condition m_ConditionFor;
