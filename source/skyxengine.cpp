@@ -1067,7 +1067,9 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	pDXDevice->beginFrame();
 	//pDXDevice->clear(GXCLEAR_COLOR);
+#if 0
 	SRender_UpdateReflection(timeDelta, isSimulationRender);
+#endif
 
 	//рисуем сцену и заполняем mrt данными
 	Core_PStartSection(PERF_SECTION_MRT);

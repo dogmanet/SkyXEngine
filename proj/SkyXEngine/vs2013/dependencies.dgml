@@ -1,1 +1,261 @@
-﻿<?xml version="1.0" encoding="utf-8"?><DirectedGraph xmlns="http://schemas.microsoft.com/vs/2009/dgml"><Nodes><Node Id="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\Bullet3Collision_vs2010_debug.lib" Label="Bullet3Collision_vs2010_debug.lib" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\Bullet3Collision.vcxproj" Group="Expanded" Label="Bullet3Collision" Category="CppProject" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\Bullet3Common_vs2010_debug.lib" Label="Bullet3Common_vs2010_debug.lib" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\Bullet3Common.vcxproj" Group="Expanded" Label="Bullet3Common" Category="CppProject" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\Bullet3Dynamics_vs2010_debug.lib" Label="Bullet3Dynamics_vs2010_debug.lib" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\Bullet3Dynamics.vcxproj" Group="Expanded" Label="Bullet3Dynamics" Category="CppProject" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\Bullet3Geometry_vs2010_debug.lib" Label="Bullet3Geometry_vs2010_debug.lib" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\Bullet3Geometry.vcxproj" Group="Expanded" Label="Bullet3Geometry" Category="CppProject" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\BulletCollision_vs2010_debug.lib" Label="BulletCollision_vs2010_debug.lib" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\BulletCollision.vcxproj" Group="Expanded" Label="BulletCollision" Category="CppProject" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\BulletDynamics_vs2010_debug.lib" Label="BulletDynamics_vs2010_debug.lib" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\BulletDynamics.vcxproj" Group="Expanded" Label="BulletDynamics" Category="CppProject" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\BulletFileLoader_vs2010_debug.lib" Label="BulletFileLoader_vs2010_debug.lib" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\BulletFileLoader.vcxproj" Group="Expanded" Label="BulletFileLoader" Category="CppProject" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\BulletWorldImporter_vs2010_debug.lib" Label="BulletWorldImporter_vs2010_debug.lib" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\BulletWorldImporter.vcxproj" Group="Expanded" Label="BulletWorldImporter" Category="CppProject" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\LinearMath_vs2010_debug.lib" Label="LinearMath_vs2010_debug.lib" /><Node Id="E:\engine\sdks\bullet3\build3\vs2010\LinearMath.vcxproj" Group="Expanded" Label="LinearMath" Category="CppProject" /><Node Id="E:\engine\sdks\freetype-2.6\builds\windows\vc2013\.\..\..\..\objs\vc2010\Win32\freetype26d.lib" Label="freetype26d.lib" /><Node Id="E:\engine\sdks\freetype-2.6\builds\windows\vc2013\freetype.vcxproj" Group="Expanded" Label="freetype" Category="CppProject" /><Node Id="E:\engine\sdks\graphix\proj\graphix\dx11\vs2013\../../../../../../build/bin/gxgapidx11.dll" Label="gxgapidx11.dll" /><Node Id="E:\engine\sdks\graphix\proj\graphix\dx11\vs2013\gxgapidx11.vcxproj" Group="Expanded" Label="gxgapidx11" Category="CppProject" /><Node Id="E:\engine\sdks\graphix\proj\graphix\dx9\vs2013\../../../../../../build/bin/gxgapidx9.dll" Label="gxgapidx9.dll" /><Node Id="E:\engine\sdks\graphix\proj\graphix\dx9\vs2013\gxgapidx9.vcxproj" Group="Expanded" Label="gxgapidx9" Category="CppProject" /><Node Id="E:\engine\sdks\graphix\proj\graphix\ogl\vs2013\../../../../../../build/bin/gxgapiogl.dll" Label="gxgapiogl.dll" /><Node Id="E:\engine\sdks\graphix\proj\graphix\ogl\vs2013\gxgapiogl.vcxproj" Group="Expanded" Label="gxgapiogl" Category="CppProject" /><Node Id="E:\engine\sdks\ogg\libogg\win32\VS2010\../../../../../libs/libogg_static.lib" Label="libogg_static.lib" /><Node Id="E:\engine\sdks\ogg\libogg\win32\VS2010\libogg_static.vcxproj" Group="Expanded" Label="libogg_static" Category="CppProject" /><Node Id="E:\engine\sdks\ogg\libvorbis\win32\VS2010\libvorbisfile\../../../../../../libs/libvorbisfile.lib" Label="libvorbisfile.lib" /><Node Id="E:\engine\sdks\ogg\libvorbis\win32\VS2010\libvorbisfile\libvorbisfile_static.vcxproj" Group="Expanded" Label="libvorbisfile" Category="CppProject" /><Node Id="E:\engine\sdks\ogg\libvorbis\win32\VS2010\libvorbis\../../../../../../libs/libvorbis_static.lib" Label="libvorbis_static.lib" /><Node Id="E:\engine\sdks\ogg\libvorbis\win32\VS2010\libvorbis\libvorbis_static.vcxproj" Group="Expanded" Label="libvorbis_static" Category="CppProject" /><Node Id="E:\engine\proj\dseplugin\vs2013\../../../build/bin/plugins/dseplugin_d.dll" Label="dseplugin_d.dll" /><Node Id="E:\engine\proj\dseplugin\vs2013\dseplugin.vcxproj" Group="Expanded" Label="dseplugin" Category="CppProject" /><Node Id="E:\engine\proj\sxae\vs2013\../../../build/bin/sxae.exe" Label="sxae.exe" /><Node Id="E:\engine\proj\sxae\vs2013\sxae.vcxproj" Group="Expanded" Label="sxae" Category="CppProject" /><Node Id="E:\engine\proj\sxaigrid\vs2013\../../../build/bin/sxaigrid_d.dll" Label="sxaigrid_d.dll" /><Node Id="E:\engine\proj\sxaigrid\vs2013\sxaigrid.vcxproj" Group="Expanded" Label="sxaigrid" Category="CppProject" /><Node Id="E:\engine\proj\sxanim\vs2013\../../../build/bin/sxanim_d.dll" Label="sxanim_d.dll" /><Node Id="E:\engine\proj\sxanim\vs2013\sxanim.vcxproj" Group="Expanded" Label="sxanim" Category="CppProject" /><Node Id="E:\engine\proj\sxconsole\vs2013\../../../build/bin/sxconsole.exe" Label="sxconsole.exe" /><Node Id="E:\engine\proj\sxconsole\vs2013\sxconsole.vcxproj" Group="Expanded" Label="sxconsole" Category="CppProject" /><Node Id="E:\engine\proj\sxcore\vs2013\../../../build/bin/sxcore_d.dll" Label="sxcore_d.dll" /><Node Id="E:\engine\proj\sxcore\vs2013\sxcore.vcxproj" Group="Expanded" Label="sxcore" Category="CppProject" /><Node Id="E:\engine\proj\sxdecals\vs2013\../../../build/bin/sxdecals_d.dll" Label="sxdecals_d.dll" /><Node Id="E:\engine\proj\sxdecals\vs2013\sxdecals.vcxproj" Group="Expanded" Label="sxdecals" Category="CppProject" /><Node Id="E:\engine\proj\sxgame\vs2013\../../../build/bin/sxgame_d.dll" Label="sxgame_d.dll" /><Node Id="E:\engine\proj\sxgame\vs2013\sxgame.vcxproj" Group="Expanded" Label="sxgame" Category="CppProject" /><Node Id="E:\engine\proj\sxgcore\vs2013\../../../build/bin/sxgcore_d.dll" Label="sxgcore_d.dll" /><Node Id="E:\engine\proj\sxgcore\vs2013\sxgcore.vcxproj" Group="Expanded" Label="sxgcore" Category="CppProject" /><Node Id="E:\engine\proj\sxgenpreview\vs2013\../../../build/bin/sxgenpreview.exe" Label="sxgenpreview.exe" /><Node Id="E:\engine\proj\sxgenpreview\vs2013\sxgenpreview.vcxproj" Group="Expanded" Label="sxgenpreview" Category="CppProject" /><Node Id="E:\engine\proj\sxgeom\vs2013\../../../build/bin/sxgeom_d.dll" Label="sxgeom_d.dll" /><Node Id="E:\engine\proj\sxgeom\vs2013\sxgeom.vcxproj" Group="Expanded" Label="sxgeom" Category="CppProject" /><Node Id="E:\engine\proj\sxgreen\sxgreen\../../../build/bin/sxgreen_d.dll" Label="sxgreen_d.dll" /><Node Id="E:\engine\proj\sxgreen\sxgreen\sxgreen.vcxproj" Group="Expanded" Label="sxgreen" Category="CppProject" /><Node Id="E:\engine\proj\sxguiwinapi\vs2013\../../../build/bin/sxguiwinapi_d.dll" Label="sxguiwinapi_d.dll" /><Node Id="E:\engine\proj\sxguiwinapi\vs2013\sxguiwinapi.vcxproj" Group="Expanded" Label="sxguiwinapi" Category="CppProject" /><Node Id="E:\engine\proj\sxgui\vs2013\../../../build/bin/sxgui_d.dll" Label="sxgui_d.dll" /><Node Id="E:\engine\proj\sxgui\vs2013\sxgui.vcxproj" Group="Expanded" Label="sxgui" Category="CppProject" /><Node Id="E:\engine\proj\sxinput\vs2013\../../../build/bin/sxinput_d.dll" Label="sxinput_d.dll" /><Node Id="E:\engine\proj\sxinput\vs2013\sxinput.vcxproj" Group="Expanded" Label="sxinput" Category="CppProject" /><Node Id="E:\engine\proj\sxleveleditor\vs2013\../../../build/bin/sxleveleditor_d.exe" Label="sxleveleditor_d.exe" /><Node Id="E:\engine\proj\sxleveleditor\vs2013\sxleveleditor.vcxproj" Group="Expanded" Label="sxleveleditor" Category="CppProject" /><Node Id="E:\engine\proj\sxlevel\vs2013\../../../build/bin/sxlevel_d.dll" Label="sxlevel_d.dll" /><Node Id="E:\engine\proj\sxlevel\vs2013\sxlevel.vcxproj" Group="Expanded" Label="sxlevel" Category="CppProject" /><Node Id="E:\engine\proj\sxlight\vs2013\../../../build/bin/sxlight_d.dll" Label="sxlight_d.dll" /><Node Id="E:\engine\proj\sxlight\vs2013\sxlight.vcxproj" Group="Expanded" Label="sxlight" Category="CppProject" /><Node Id="E:\engine\proj\sxmaterialeditor\vs2013\../../../build/bin/sxmaterialeditor_d.exe" Label="sxmaterialeditor_d.exe" /><Node Id="E:\engine\proj\sxmaterialeditor\vs2013\sxmaterialeditor.vcxproj" Group="Expanded" Label="sxmaterialeditor" Category="CppProject" /><Node Id="E:\engine\proj\sxmtrl\vs2013\../../../build/bin/sxmtrl_d.dll" Label="sxmtrl_d.dll" /><Node Id="E:\engine\proj\sxmtrl\vs2013\sxmtrl.vcxproj" Group="Expanded" Label="sxmtrl" Category="CppProject" /><Node Id="E:\engine\proj\sxparticleseditor\vs2013\../../../build/bin/sxparticleseditor_d.exe" Label="sxparticleseditor_d.exe" /><Node Id="E:\engine\proj\sxparticleseditor\vs2013\sxparticleseditor.vcxproj" Group="Expanded" Label="sxparticleseditor" Category="CppProject" /><Node Id="E:\engine\proj\sxparticles\vs2013\../../../build/bin/sxparticles_d.dll" Label="sxparticles_d.dll" /><Node Id="E:\engine\proj\sxparticles\vs2013\sxparticles.vcxproj" Group="Expanded" Label="sxparticles" Category="CppProject" /><Node Id="E:\engine\proj\sxphysics\vs2013\../../../build/bin/sxphysics_d.dll" Label="sxphysics_d.dll" /><Node Id="E:\engine\proj\sxphysics\vs2013\sxphysics.vcxproj" Group="Expanded" Label="sxphysics" Category="CppProject" /><Node Id="E:\engine\proj\sxpp\vs2013\../../../build/bin/sxpp_d.dll" Label="sxpp_d.dll" /><Node Id="E:\engine\proj\sxpp\vs2013\sxpp.vcxproj" Group="Expanded" Label="sxpp" Category="CppProject" /><Node Id="E:\engine\proj\sxrender\vs2013\../../../build/bin/sxrender_d.dll" Label="sxrender_d.dll" /><Node Id="E:\engine\proj\sxrender\vs2013\sxrender.vcxproj" Group="Expanded" Label="sxrender" Category="CppProject" /><Node Id="E:\engine\proj\sxscore\vs2013\../../../build/bin/sxscore_d.dll" Label="sxscore_d.dll" /><Node Id="E:\engine\proj\sxscore\vs2013\sxscore.vcxproj" Group="Expanded" Label="sxscore" Category="CppProject" /><Node Id="E:\engine\proj\sxwincreator\vs2013\../../../build/bin/sxwincreator_d.exe" Label="sxwincreator_d.exe" /><Node Id="E:\engine\proj\sxwincreator\vs2013\sxwincreator.vcxproj" Group="Expanded" Label="sxwincreator" Category="CppProject" /><Node Id="E:\engine\proj\terrax\vs2013\../../../build/bin/terrax_d.exe" Label="terrax_d.exe" /><Node Id="E:\engine\proj\terrax\vs2013\terrax.vcxproj" Group="Expanded" Label="terrax" Category="CppProject" /><Node Id="E:\engine\proj\SkyXEngine\vs2013\../../../build/bin/SkyXEngine_d.exe" Label="SkyXEngine_d.exe" /><Node Id="E:\engine\proj\SkyXEngine\vs2013\SkyXEngine.vcxproj" Group="Expanded" Label="SkyXEngine" Category="CppProject" /></Nodes><Links><Link Category="Contains" Source="E:\engine\sdks\bullet3\build3\vs2010\Bullet3Collision.vcxproj" Target="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\Bullet3Collision_vs2010_debug.lib" /><Link Category="Contains" Source="E:\engine\sdks\bullet3\build3\vs2010\Bullet3Common.vcxproj" Target="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\Bullet3Common_vs2010_debug.lib" /><Link Category="Contains" Source="E:\engine\sdks\bullet3\build3\vs2010\Bullet3Dynamics.vcxproj" Target="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\Bullet3Dynamics_vs2010_debug.lib" /><Link Category="Contains" Source="E:\engine\sdks\bullet3\build3\vs2010\Bullet3Geometry.vcxproj" Target="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\Bullet3Geometry_vs2010_debug.lib" /><Link Category="Contains" Source="E:\engine\sdks\bullet3\build3\vs2010\BulletCollision.vcxproj" Target="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\BulletCollision_vs2010_debug.lib" /><Link Category="Contains" Source="E:\engine\sdks\bullet3\build3\vs2010\BulletDynamics.vcxproj" Target="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\BulletDynamics_vs2010_debug.lib" /><Link Category="Contains" Source="E:\engine\sdks\bullet3\build3\vs2010\BulletFileLoader.vcxproj" Target="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\BulletFileLoader_vs2010_debug.lib" /><Link Category="Contains" Source="E:\engine\sdks\bullet3\build3\vs2010\BulletWorldImporter.vcxproj" Target="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\BulletWorldImporter_vs2010_debug.lib" /><Link Category="Contains" Source="E:\engine\sdks\bullet3\build3\vs2010\LinearMath.vcxproj" Target="E:\engine\sdks\bullet3\build3\vs2010\..\..\bin\LinearMath_vs2010_debug.lib" /><Link Category="Contains" Source="E:\engine\sdks\freetype-2.6\builds\windows\vc2013\freetype.vcxproj" Target="E:\engine\sdks\freetype-2.6\builds\windows\vc2013\.\..\..\..\objs\vc2010\Win32\freetype26d.lib" /><Link Category="Contains" Source="E:\engine\sdks\graphix\proj\graphix\dx11\vs2013\gxgapidx11.vcxproj" Target="E:\engine\sdks\graphix\proj\graphix\dx11\vs2013\../../../../../../build/bin/gxgapidx11.dll" /><Link Category="Contains" Source="E:\engine\sdks\graphix\proj\graphix\dx9\vs2013\gxgapidx9.vcxproj" Target="E:\engine\sdks\graphix\proj\graphix\dx9\vs2013\../../../../../../build/bin/gxgapidx9.dll" /><Link Category="Contains" Source="E:\engine\sdks\graphix\proj\graphix\ogl\vs2013\gxgapiogl.vcxproj" Target="E:\engine\sdks\graphix\proj\graphix\ogl\vs2013\../../../../../../build/bin/gxgapiogl.dll" /><Link Category="Contains" Source="E:\engine\sdks\ogg\libogg\win32\VS2010\libogg_static.vcxproj" Target="E:\engine\sdks\ogg\libogg\win32\VS2010\../../../../../libs/libogg_static.lib" /><Link Category="Contains" Source="E:\engine\sdks\ogg\libvorbis\win32\VS2010\libvorbisfile\libvorbisfile_static.vcxproj" Target="E:\engine\sdks\ogg\libvorbis\win32\VS2010\libvorbisfile\../../../../../../libs/libvorbisfile.lib" /><Link Source="E:\engine\sdks\ogg\libvorbis\win32\VS2010\libvorbisfile\libvorbisfile_static.vcxproj" Target="E:\engine\sdks\ogg\libvorbis\win32\VS2010\libvorbis\libvorbis_static.vcxproj" /><Link Category="Contains" Source="E:\engine\sdks\ogg\libvorbis\win32\VS2010\libvorbis\libvorbis_static.vcxproj" Target="E:\engine\sdks\ogg\libvorbis\win32\VS2010\libvorbis\../../../../../../libs/libvorbis_static.lib" /><Link Category="Contains" Source="E:\engine\proj\dseplugin\vs2013\dseplugin.vcxproj" Target="E:\engine\proj\dseplugin\vs2013\../../../build/bin/plugins/dseplugin_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxae\vs2013\sxae.vcxproj" Target="E:\engine\proj\sxae\vs2013\../../../build/bin/sxae.exe" /><Link Category="Contains" Source="E:\engine\proj\sxaigrid\vs2013\sxaigrid.vcxproj" Target="E:\engine\proj\sxaigrid\vs2013\../../../build/bin/sxaigrid_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxanim\vs2013\sxanim.vcxproj" Target="E:\engine\proj\sxanim\vs2013\../../../build/bin/sxanim_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxconsole\vs2013\sxconsole.vcxproj" Target="E:\engine\proj\sxconsole\vs2013\../../../build/bin/sxconsole.exe" /><Link Category="Contains" Source="E:\engine\proj\sxcore\vs2013\sxcore.vcxproj" Target="E:\engine\proj\sxcore\vs2013\../../../build/bin/sxcore_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxdecals\vs2013\sxdecals.vcxproj" Target="E:\engine\proj\sxdecals\vs2013\../../../build/bin/sxdecals_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxgame\vs2013\sxgame.vcxproj" Target="E:\engine\proj\sxgame\vs2013\../../../build/bin/sxgame_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxgcore\vs2013\sxgcore.vcxproj" Target="E:\engine\proj\sxgcore\vs2013\../../../build/bin/sxgcore_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxgenpreview\vs2013\sxgenpreview.vcxproj" Target="E:\engine\proj\sxgenpreview\vs2013\../../../build/bin/sxgenpreview.exe" /><Link Category="Contains" Source="E:\engine\proj\sxgeom\vs2013\sxgeom.vcxproj" Target="E:\engine\proj\sxgeom\vs2013\../../../build/bin/sxgeom_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxgreen\sxgreen\sxgreen.vcxproj" Target="E:\engine\proj\sxgreen\sxgreen\../../../build/bin/sxgreen_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxguiwinapi\vs2013\sxguiwinapi.vcxproj" Target="E:\engine\proj\sxguiwinapi\vs2013\../../../build/bin/sxguiwinapi_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxgui\vs2013\sxgui.vcxproj" Target="E:\engine\proj\sxgui\vs2013\../../../build/bin/sxgui_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxinput\vs2013\sxinput.vcxproj" Target="E:\engine\proj\sxinput\vs2013\../../../build/bin/sxinput_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxleveleditor\vs2013\sxleveleditor.vcxproj" Target="E:\engine\proj\sxleveleditor\vs2013\../../../build/bin/sxleveleditor_d.exe" /><Link Category="Contains" Source="E:\engine\proj\sxlevel\vs2013\sxlevel.vcxproj" Target="E:\engine\proj\sxlevel\vs2013\../../../build/bin/sxlevel_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxlight\vs2013\sxlight.vcxproj" Target="E:\engine\proj\sxlight\vs2013\../../../build/bin/sxlight_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxmaterialeditor\vs2013\sxmaterialeditor.vcxproj" Target="E:\engine\proj\sxmaterialeditor\vs2013\../../../build/bin/sxmaterialeditor_d.exe" /><Link Category="Contains" Source="E:\engine\proj\sxmtrl\vs2013\sxmtrl.vcxproj" Target="E:\engine\proj\sxmtrl\vs2013\../../../build/bin/sxmtrl_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxparticleseditor\vs2013\sxparticleseditor.vcxproj" Target="E:\engine\proj\sxparticleseditor\vs2013\../../../build/bin/sxparticleseditor_d.exe" /><Link Category="Contains" Source="E:\engine\proj\sxparticles\vs2013\sxparticles.vcxproj" Target="E:\engine\proj\sxparticles\vs2013\../../../build/bin/sxparticles_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxphysics\vs2013\sxphysics.vcxproj" Target="E:\engine\proj\sxphysics\vs2013\../../../build/bin/sxphysics_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxpp\vs2013\sxpp.vcxproj" Target="E:\engine\proj\sxpp\vs2013\../../../build/bin/sxpp_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxrender\vs2013\sxrender.vcxproj" Target="E:\engine\proj\sxrender\vs2013\../../../build/bin/sxrender_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxscore\vs2013\sxscore.vcxproj" Target="E:\engine\proj\sxscore\vs2013\../../../build/bin/sxscore_d.dll" /><Link Category="Contains" Source="E:\engine\proj\sxwincreator\vs2013\sxwincreator.vcxproj" Target="E:\engine\proj\sxwincreator\vs2013\../../../build/bin/sxwincreator_d.exe" /><Link Category="Contains" Source="E:\engine\proj\terrax\vs2013\terrax.vcxproj" Target="E:\engine\proj\terrax\vs2013\../../../build/bin/terrax_d.exe" /><Link Category="Contains" Source="E:\engine\proj\SkyXEngine\vs2013\SkyXEngine.vcxproj" Target="E:\engine\proj\SkyXEngine\vs2013\../../../build/bin/SkyXEngine_d.exe" /></Links><Categories><Category Id="CppProject" Foreground="#FFFFFF" Background="#A0519C" /><Category Id="CSProject" Background="#3A8F35" /><Category Id="VBProject" Background="#0056A1" /></Categories></DirectedGraph>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph DataVirtualized="True" Layout="Sugiyama" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="SkyXEnging" Bounds="407.283391955116,44.5346385707685,81.1199999999999,25.96" Label="SkyXEngine" UseManualLocation="True" />
+    <Node Id="Sxaigrid" Bounds="137.366599112767,153.675918887759,60.8024306133333,25.94943168" Label="sxaigrid" UseManualLocation="True" />
+    <Node Id="Sxanim" Bounds="534.411102876209,392.215083618164,56.74,25.96" Label="sxanim" UseManualLocation="True" />
+    <Node Id="Sxcore" Bounds="214.276765715857,512.775468570656,53.6233333333334,25.96" Label="sxcore" UseManualLocation="True" />
+    <Node Id="Sxdecals" Bounds="440.817769542876,392.611621365613,63.5933333333332,25.96" Label="sxdecals" UseManualLocation="True" />
+    <Node Id="Sxgame" Bounds="495.006522957643,266.378366013279,60.3866666666668,25.96" Label="sxgame" UseManualLocation="True" />
+    <Node Id="Sxgcore" Bounds="558.030516486036,507.558992066975,60.6900000000001,25.96" Label="sxgcore" UseManualLocation="True" />
+    <Node Id="Sxgeom" Bounds="258.324436209542,390.472255249023,61.3099999999999,25.96" Label="sxgeom" UseManualLocation="True" />
+    <Node Id="Sxgreen" Bounds="349.634436209542,392.611621365613,61.1833333333334,25.96" Label="sxgreen" UseManualLocation="True" />
+    <Node Id="Sxgui" Bounds="139.747077545899,41.7995916061587,49.980008,25.94943168" Label="sxgui" UseManualLocation="True" />
+    <Node Id="Sxinput" Bounds="137.992790317132,209.614082528559,58.1834576533336,25.94943168" Label="sxinput" UseManualLocation="True" />
+    <Node Id="Sxlevel" Bounds="635.687453853962,256.227294439009,54.7133333333334,25.96" Label="sxlevel" UseManualLocation="True" />
+    <Node Id="Sxlight" Bounds="621.151102876209,392.982478637695,54.3366666666666,25.96" Label="sxlight" UseManualLocation="True" />
+    <Node Id="Sxmtrl" Bounds="383.345415586612,514.083194857614,52.0833333333333,25.96" Label="sxmtrl" UseManualLocation="True" />
+    <Node Id="Sxparticles" Bounds="705.487769542876,392.091319580078,74.7266666666667,25.96" Label="sxparticles" UseManualLocation="True" />
+    <Node Id="Sxphysics" Bounds="124.20455485026,265.65638347168,68.8866666666668,25.96" Label="sxphysics" UseManualLocation="True" />
+    <Node Id="Sxpp" Bounds="810.214436209542,389.704783935547,50,25.96" Label="sxpp" UseManualLocation="True" />
+    <Node Id="Sxrender" Bounds="375.472977895872,254.333520828219,65.3566666666666,25.96" Label="sxrender" UseManualLocation="True" />
+    <Node Id="Sxscore" Bounds="132.964280088412,97.7377552469587,58.6932577333334,25.94943168" Label="sxscore" UseManualLocation="True" />
+  </Nodes>
+  <Links>
+    <Link Source="SkyXEnging" Target="Sxaigrid" Bounds="206.04470481283,70.4946385707685,208.489863322356,81.2456915487057" />
+    <Link Source="SkyXEnging" Target="Sxanim" Bounds="455.589599609375,70.4946365356445,109.419311523438,312.722648620605" />
+    <Link Source="SkyXEnging" Target="Sxcore" Bounds="258.680877685547,70.4946365356445,183.368499755859,435.56160736084" />
+    <Link Source="SkyXEnging" Target="Sxdecals" Bounds="448.76711909111,70.4946385707685,22.2847169616811,313.139686917836" />
+    <Link Source="SkyXEnging" Target="Sxgame" Bounds="452.369492010569,70.4946385707685,65.3409695145561,187.385557965539" />
+    <Link Source="SkyXEnging" Target="Sxgcore" Bounds="450.175842285156,70.4946365356445,122.125122070313,430.050102233887" />
+    <Link Source="SkyXEnging" Target="Sxgeom" Bounds="298.696137828961,70.4946385707685,143.18648534542,311.798804508306" />
+    <Link Source="SkyXEnging" Target="Sxgreen" Bounds="369.48095703125,70.4946365356445,72.5684204101563,313.157707214355" />
+    <Link Source="SkyXEnging" Target="Sxinput" Bounds="196.907840105002,70.4946385707685,228.861389766571,134.574568580558" />
+    <Link Source="SkyXEnging" Target="Sxlevel" Bounds="461.038490506475,70.4946385707685,182.3944900795,179.421204928255" />
+    <Link Source="SkyXEnging" Target="Sxlight" Bounds="455.311307537324,70.4946385707685,181.051978735909,314.68683036416" />
+    <Link Source="SkyXEnging" Target="Sxmtrl" Bounds="413.608367919922,70.4946365356445,36.5328369140625,434.752464294434" />
+    <Link Source="SkyXEnging" Target="Sxparticles" Bounds="458.3564453125,70.4946365356445,267.179260253906,314.829765319824" />
+    <Link Source="SkyXEnging" Target="Sxphysics" Bounds="182.773416724452,70.4946385707685,248.093998306113,189.695126962391" />
+    <Link Source="SkyXEnging" Target="Sxpp" Bounds="465.328826904297,70.4946365356445,352.967926025391,312.363822937012" />
+    <Link Source="SkyXEnging" Target="Sxrender" Bounds="412.280052973567,70.4946385707685,33.1076385398752,174.995753128036" />
+    <Link Source="SkyXEnging" Target="Sxscore" Bounds="200.505318939,65.0706039038666,206.778073016116,38.5209060984863" />
+    <Link Source="Sxaigrid" Target="Sxgcore" Bounds="176.663009643555,179.63102722168,373.524978637695,325.930374145508" />
+    <Link Source="Sxanim" Target="Sxgcore" Bounds="565.661319899573,418.175083618164,17.8843324567831,80.5976193481251" />
+    <Link Source="Sxanim" Target="Sxmtrl" Bounds="432.7716244503,418.175083618164,113.671698448556,90.3096166007599" />
+    <Link Source="Sxdecals" Target="Sxcore" Bounds="273.807718552927,418.571621365613,173.797469038379,90.2022760681095" />
+    <Link Source="Sxdecals" Target="Sxgcore" Bounds="485.686321306355,418.571621365613,83.2309430599756,82.6458948282784" />
+    <Link Source="Sxdecals" Target="Sxmtrl" Bounds="420.29871059763,418.571621365613,45.5594860180756,87.5282944456382" />
+    <Link Source="Sxdecals" Target="Sxphysics" Bounds="198.971924251136,294.941775316722,243.038964188049,98.2750223232019" />
+    <Link Source="Sxgame" Target="Sxaigrid" Bounds="206.752453650746,178.948581719326,288.254069306897,90.8895116775656" />
+    <Link Source="Sxgame" Target="Sxanim" Bounds="529.076344727428,292.338366013279,27.2528143990781,91.2530855435408" />
+    <Link Source="Sxgame" Target="Sxcore" Bounds="270.289001464844,292.33837890625,244.191528320313,215.784942626953" />
+    <Link Source="Sxgame" Target="Sxdecals" Bounds="481.482437748408,292.338366013279,38.310295429472,91.9652880605082" />
+    <Link Source="Sxgame" Target="Sxgcore" Bounds="524.939819335938,292.33837890625,50.1424560546875,207.65576171875" />
+    <Link Source="Sxgame" Target="Sxgeom" Bounds="321.655167564862,292.338366013279,178.836453118862,93.948317410471" />
+    <Link Source="Sxgame" Target="Sxgreen" Bounds="401.920631812784,292.338366013279,108.372223038109,94.3631394072474" />
+    <Link Source="Sxgame" Target="Sxgui" Bounds="193.19876034811,72.4914712818453,311.169467803753,193.886894731434" />
+    <Link Source="Sxgame" Target="Sxinput" Bounds="205.151779174805,225.419036865234,293.288619995117,40.9593200683594" />
+    <Link Source="Sxgame" Target="Sxlevel" Category="Wrong" Bounds="555.39318962431,271.882867522165,71.318569298642,5.25201324531662" />
+    <Link Source="Sxgame" Target="Sxlight" Bounds="537.822606960095,292.338366013279,91.5995282181829,94.1919798179023" />
+    <Link Source="Sxgame" Target="Sxmtrl" Bounds="411.142883300781,292.33837890625,100.934875488281,212.773468017578" />
+    <Link Source="Sxgame" Target="Sxparticles" Bounds="547.672585636049,292.338366013279,164.912364828423,95.2515585714692" />
+    <Link Source="Sxgame" Target="Sxphysics" Bounds="202.090408325195,279.221038818359,292.916122436523,2.16232299804688" />
+    <Link Source="Sxgame" Target="Sxscore" Bounds="197.930827908806,127.261040421103,299.471935502207,139.178707820187" />
+    <Link Source="Sxgcore" Target="Sxcore" Bounds="276.833984375,526.984069824219,281.196533203125,17.8721923828125" />
+    <Link Source="Sxgeom" Target="Sxgcore" Bounds="319.049526326478,415.21195739463,231.116889510061,90.3843577085492" />
+    <Link Source="Sxgeom" Target="Sxmtrl" Category="Weak" Bounds="301.623068323306,416.432255249023,88.8405031742295,91.2039927155253" />
+    <Link Source="Sxgreen" Target="Sxgcore" Bounds="403.730593428454,418.571621365613,153.261936008429,84.636589972779" />
+    <Link Source="Sxgreen" Target="Sxgeom" Bounds="328.631963519296,404.381947000652,21.002472690246,0.492423231220698" />
+    <Link Source="Sxgui" Target="Sxcore" Bounds="179.376693725586,67.7319717407227,59.7436676025391,436.079490661621" />
+    <Link Source="Sxgui" Target="Sxgcore" Bounds="174.645294189453,67.7319717407227,383.666107177734,435.294609069824" />
+    <Link Source="Sxinput" Target="Sxcore" Bounds="181.351379394531,235.58056640625,56.6719207763672,268.281829833984" />
+    <Link Source="Sxlevel" Target="Sxaigrid" Bounds="206.982090904856,174.775952707398,428.705362949106,88.7669220455118" />
+    <Link Source="Sxlevel" Target="Sxdecals" Category="Wrong" Bounds="498.055049426623,282.187294439009,146.865454120861,105.183948508376" />
+    <Link Source="Sxlevel" Target="Sxgcore" Bounds="593.907409667969,282.187286376953,64.0982666015625,216.650604248047" />
+    <Link Source="Sxlevel" Target="Sxgeom" Category="Wrong" Bounds="327.946209519867,279.025100820071,307.741244334095,110.442693517943" />
+    <Link Source="Sxlevel" Target="Sxgreen" Category="Wrong" Bounds="415.249153800849,281.724703442037,221.837814017138,106.977628948788" />
+    <Link Source="Sxlevel" Target="Sxparticles" Bounds="670.668615893115,282.187294439009,59.9996078092141,102.143797237252" />
+    <Link Source="Sxlevel" Target="Sxphysics" Category="Wrong" Bounds="202.075119018555,278.755920410156,433.612319946289,18.3095092773438" />
+    <Link Source="Sxlevel" Target="Sxpp" Bounds="679.786799050704,282.187294439009,131.572133291096,102.003170344017" />
+    <Link Source="Sxlevel" Target="Sxscore" Bounds="200.23793840147,122.712089035562,435.449515452492,137.835812643963" />
+    <Link Source="Sxlight" Target="Sxgcore" Bounds="599.338478975167,418.942478637695,42.1901058223066,80.6419608298766" />
+    <Link Source="Sxmtrl" Target="Sxgcore" Bounds="435.428748919945,521.972915948765,113.607740462453,4.14104933953149" />
+    <Link Source="Sxparticles" Target="Sxgcore" Bounds="612.949194744118,418.051319580078,112.53693429864,84.1192979158128" />
+    <Link Source="Sxparticles" Target="Sxlight" Bounds="684.487369653939,405.423547294841,21.0003998889373,0.197972777107509" />
+    <Link Source="Sxphysics" Target="Sxcore" Bounds="162.978101138508,291.61638347168,70.9319692027267,212.621635434013" />
+    <Link Source="Sxphysics" Target="Sxgeom" Bounds="172.20148092214,291.61638347168,96.7243465387733,92.6309386958803" />
+    <Link Source="Sxphysics" Target="Sxgreen" Bounds="181.302213238799,291.61638347168,168.460529777943,96.5209809247983" />
+    <Link Source="Sxphysics" Target="Sxlight" Bounds="193.091221516927,287.592458529572,419.349528587406,109.040719641555" />
+    <Link Source="Sxphysics" Target="Sxmtrl" Bounds="166.50471496582,291.616394042969,214.42512512207,217.705383300781" />
+    <Link Source="Sxpp" Target="Sxgcore" Bounds="627.250732421875,415.664794921875,206.820190429688,91.8231506347656" />
+    <Link Source="Sxpp" Target="Sxgcore" Index="1" Bounds="616.314208984375,415.664794921875,202.488098144531,89.1468200683594" />
+    <Link Source="Sxrender" Target="Sxanim" Bounds="422.707968805214,280.293520828219,118.79913799526,105.931791218333" />
+    <Link Source="Sxrender" Target="Sxdecals" Bounds="414.202387711982,280.293520828219,48.558232003778,104.160946106547" />
+    <Link Source="Sxrender" Target="Sxgame" Bounds="440.829644562539,270.676274852185,45.224155444777,4.65377805994905" />
+    <Link Source="Sxrender" Target="Sxgcore" Bounds="418.250152587891,280.293518066406,158.940032958984,219.329010009766" />
+    <Link Source="Sxrender" Target="Sxgeom" Bounds="306.269712980842,280.293520828219,90.5192850585411,103.406788778917" />
+    <Link Source="Sxrender" Target="Sxgreen" Bounds="384.628988672241,280.293520828219,20.9010166306232,103.496197501886" />
+    <Link Source="Sxrender" Target="Sxinput" Bounds="205.025354086169,229.642266885483,170.447623809703,31.6108084401531" />
+    <Link Source="Sxrender" Target="Sxlight" Bounds="430.635304700895,280.293520828219,187.405738330573,108.189254128443" />
+    <Link Source="Sxrender" Target="Sxmtrl" Bounds="408.637268066406,280.293518066406,4.82586669921875,224.818328857422" />
+    <Link Source="Sxrender" Target="Sxparticles" Bounds="439.053613542683,280.032480472983,263.938330862389,108.633361517565" />
+    <Link Source="Sxrender" Target="Sxpp" Bounds="440.806599318487,277.66465474076,360.82853547911,114.376099821832" />
+    <Link Source="Sxscore" Target="Sxcore" Bounds="180.481628417969,123.681503295898,58.7242126464844,380.126907348633" />
+  </Links>
+  <Categories>
+    <Category Id="Weak" Label="Weak" Background="#FF00FF00" IsTag="True" Stroke="#FF00FF00" />
+    <Category Id="Wrong" Label="Wrong" Background="#FFFF1111" IsTag="True" Stroke="#FFFF1111" />
+  </Categories>
+  <Properties>
+    <Property Id="Background" Label="Background" Description="The background color" DataType="System.Windows.Media.Brush" />
+    <Property Id="Bounds" DataType="System.Windows.Rect" />
+    <Property Id="DataVirtualized" Label="Data Virtualized" Description="If true, the graph can contain nodes and links that represent data for virtualized nodes/links (i.e. not actually created in the graph)." DataType="System.Boolean" />
+    <Property Id="Expression" DataType="System.String" />
+    <Property Id="GroupLabel" DataType="System.String" />
+    <Property Id="IsEnabled" DataType="System.Boolean" />
+    <Property Id="IsTag" DataType="System.Boolean" />
+    <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />
+    <Property Id="Layout" DataType="System.String" />
+    <Property Id="Stroke" DataType="System.Windows.Media.Brush" />
+    <Property Id="TargetType" DataType="System.Type" />
+    <Property Id="UseManualLocation" DataType="System.Boolean" />
+    <Property Id="Value" DataType="System.String" />
+    <Property Id="ValueLabel" DataType="System.String" />
+    <Property Id="Visibility" Label="Visibility" Description="Defines whether a node in the graph is visible or not" DataType="System.Windows.Visibility" />
+  </Properties>
+  <Styles>
+    <Style TargetType="Node" GroupLabel="Results" ValueLabel="True">
+      <Condition Expression="HasCategory('QueryResult')" />
+      <Setter Property="Background" Value="#FFBCFFBE" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Assembly" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Assembly')" />
+      <Setter Property="Background" Value="#FF094167" />
+      <Setter Property="Stroke" Value="#FF094167" />
+      <Setter Property="Icon" Value="CodeSchema_Assembly" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Namespace" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Namespace')" />
+      <Setter Property="Background" Value="#FF0E619A" />
+      <Setter Property="Stroke" Value="#FF0E619A" />
+      <Setter Property="Icon" Value="CodeSchema_Namespace" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Interface" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Interface')" />
+      <Setter Property="Background" Value="#FF1382CE" />
+      <Setter Property="Stroke" Value="#FF1382CE" />
+      <Setter Property="Icon" Value="CodeSchema_Interface" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Struct" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Struct')" />
+      <Setter Property="Background" Value="#FF1382CE" />
+      <Setter Property="Stroke" Value="#FF1382CE" />
+      <Setter Property="Icon" Value="CodeSchema_Struct" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Enumeration" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Enum')" />
+      <Setter Property="Background" Value="#FF1382CE" />
+      <Setter Property="Stroke" Value="#FF1382CE" />
+      <Setter Property="Icon" Value="CodeSchema_Enum" />
+      <Setter Property="LayoutSettings" Value="List" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Delegate" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Delegate')" />
+      <Setter Property="Background" Value="#FF1382CE" />
+      <Setter Property="Stroke" Value="#FF1382CE" />
+      <Setter Property="Icon" Value="CodeSchema_Delegate" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Class" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Type')" />
+      <Setter Property="Background" Value="#FF1382CE" />
+      <Setter Property="Stroke" Value="#FF1382CE" />
+      <Setter Property="Icon" Value="CodeSchema_Class" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Property" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Property')" />
+      <Setter Property="Background" Value="#FFE0E0E0" />
+      <Setter Property="Stroke" Value="#FFE0E0E0" />
+      <Setter Property="Icon" Value="CodeSchema_Property" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Method" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Method') Or HasCategory('CodeSchema_CallStackUnresolvedMethod')" />
+      <Setter Property="Background" Value="#FFE0E0E0" />
+      <Setter Property="Stroke" Value="#FFE0E0E0" />
+      <Setter Property="Icon" Value="CodeSchema_Method" />
+      <Setter Property="LayoutSettings" Value="List" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Event" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Event')" />
+      <Setter Property="Background" Value="#FFE0E0E0" />
+      <Setter Property="Stroke" Value="#FFE0E0E0" />
+      <Setter Property="Icon" Value="CodeSchema_Event" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Field" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Field')" />
+      <Setter Property="Background" Value="#FFE0E0E0" />
+      <Setter Property="Stroke" Value="#FFE0E0E0" />
+      <Setter Property="Icon" Value="CodeSchema_Field" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Out Parameter" ValueLabel="True">
+      <Condition Expression="CodeSchemaProperty_IsOut = 'True'" />
+      <Setter Property="Icon" Value="CodeSchema_OutParameter" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Parameter" ValueLabel="True">
+      <Condition Expression="HasCategory('CodeSchema_Parameter')" />
+      <Setter Property="Icon" Value="CodeSchema_Parameter" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Local Variable" ValueLabel="True">
+      <Condition Expression="HasCategory('CodeSchema_LocalExpression')" />
+      <Setter Property="Icon" Value="CodeSchema_LocalExpression" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Externals" ValueLabel="Has category">
+      <Condition Expression="HasCategory('Externals')" />
+      <Setter Property="Background" Value="#FF424242" />
+      <Setter Property="Stroke" Value="#FF424242" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Inherits From" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="HasCategory('InheritsFrom') And Target.HasCategory('CodeSchema_Class')" />
+      <Setter Property="TargetDecorator" Value="OpenArrow" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Implements" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="HasCategory('Implements') And Target.HasCategory('CodeSchema_Interface')" />
+      <Setter Property="TargetDecorator" Value="OpenArrow" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Field Read" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="Target.HasCategory('CodeSchema_Field') And HasCategory('CodeSchema_FieldRead')" />
+      <Setter Property="StrokeDashArray" Value="2 2" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Comment Link" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="Source.HasCategory('Comment')" />
+      <Setter Property="Stroke" Value="#FFE5C365" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Cursor Location Changed" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="IsCursorLocation" />
+      <Setter Property="IndicatorWest" Value="WestIndicator" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Disabled Breakpoint Location Changed" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="DisabledBreakpointCount" />
+      <Setter Property="IndicatorWest" Value="WestIndicator" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Enabled Breakpoint Location Changed" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="EnabledBreakpointCount" />
+      <Setter Property="IndicatorWest" Value="WestIndicator" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Instruction Pointer Location Changed" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="IsInstructionPointerLocation" />
+      <Setter Property="IndicatorWest" Value="WestIndicator" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Current Callstack Changed" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="IsCurrentCallstackFrame" />
+      <Setter Property="IndicatorWest" Value="WestIndicator" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Comment" ValueLabel="Has comment">
+      <Condition Expression="HasCategory('Comment')" />
+      <Setter Property="Background" Value="#FFFFFACD" />
+      <Setter Property="Stroke" Value="#FFE5C365" />
+      <Setter Property="StrokeThickness" Value="1" />
+      <Setter Property="NodeRadius" Value="2" />
+      <Setter Property="MaxWidth" Value="250" />
+    </Style>
+  </Styles>
+</DirectedGraph>

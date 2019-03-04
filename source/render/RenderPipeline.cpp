@@ -8,7 +8,7 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 	// load renderables
 	IXCore *pCore = Core_GetIXCore();
 	IPluginManager *pPluginManager = pCore->getPluginManager();
-	IXMaterialSystem *pMaterialSystem = NULL;
+	IXMaterialSystem *pMaterialSystem = (IXMaterialSystem*)pPluginManager->getInterface(IXMATERIALSYSTEM_GUID);
 
 	IXRenderable *pRenderable;
 	UINT ic = 0;

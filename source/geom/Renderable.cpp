@@ -50,3 +50,8 @@ void CRenderable::newVisData(IXRenderableVisibility **ppVisibility)
 {
 	*ppVisibility = NULL;
 }
+
+IXMaterialSystem *CRenderable::getMaterialSystem()
+{
+	return(m_pMaterialSystem);
+}

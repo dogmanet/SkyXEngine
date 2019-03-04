@@ -94,3 +94,8 @@ ID CMaterial::getId()
 {
 	return(m_id);
 }
+
+bool CMaterial::isTransparent()
+{
+	return(SMtrl_MtlGetTransparency(m_id));
+}

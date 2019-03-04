@@ -6,6 +6,9 @@ See the license in LICENSE
 
 #include "models.h"
 
+#include "Renderable.h"
+extern CRenderable *g_pRenderable;
+
 CModels::CModels(bool isServerMode)
 {
 	//объект расчетов видимости для наблюдателя
@@ -138,7 +141,6 @@ CModels::CTransparencyModel::CTransparencyModel()
 	m_isVisible4Observer = false;
 	m_fDist4Observer = 0;
 	m_sTex = "";
-	m_idTex = -1;
 	m_iCountVertex = 0;
 	m_iCountIndex = 0;
 	m_pVertexBuffer = 0;
@@ -705,7 +707,16 @@ void CModels::load(const char *szPath)
 				szStr[iStrLen] = 0;
 				strcpy(pModel->m_pModel->m_ppTextures[k], szStr);
 				sprintf(szStr, "%s.dds", pModel->m_pModel->m_ppTextures[k]);
-				pModel->m_aIDsTextures.push_back(m_isServerMode ? -1 : SGCore_MtlLoad(szStr, MTL_TYPE_GEOM));
+
+				IXMaterial *pMaterial = NULL;
+				if(!m_isServerMode)
+				{
+					XSHADER_DEFAULT_DESC shaderDesc;
+					shaderDesc.szFileVS = "mtrlgeom_base.vs";
+					shaderDesc.szFilePS = "mtrlgeom_base.ps";
+					g_pRenderable->getMaterialSystem()->loadMaterial(szStr, &pMaterial, &shaderDesc);
+				}
+				pModel->m_aIDsTextures.push_back(pMaterial);
 			}
 
 			fread(pModel->m_pModel->m_pStartIndex, sizeof(uint32_t), pModel->m_pModel->m_uiSubsetCount, pFile);
@@ -979,7 +990,14 @@ void CModels::load(const char *szPath)
 		szStr[iStrLen] = 0;
 		pTransparency->m_sTex = szStr;
 		pTransparency->m_sTex += ".dds";
-		pTransparency->m_idTex = SGCore_MtlLoad((pTransparency->m_sTex + ".dds").c_str(), MTL_TYPE_GEOM);
+
+		if(!m_isServerMode)
+		{
+			XSHADER_DEFAULT_DESC shaderDesc;
+			shaderDesc.szFileVS = "mtrlgeom_base.vs";
+			shaderDesc.szFilePS = "mtrlgeom_base.ps";
+			g_pRenderable->getMaterialSystem()->loadMaterial((pTransparency->m_sTex + ".dds").c_str(), &pTransparency->m_idTex, &shaderDesc);
+		}
 
 		fread(&(pTransparency->m_iCountVertex), sizeof(int32_t), 1, pFile);
 		fread(&(pTransparency->m_iCountIndex), sizeof(int32_t), 1, pFile);
@@ -1018,7 +1036,7 @@ void CModels::load(const char *szPath)
 
 //##########################################################################
 
-ID CModels::createTransparencyModel(ID idTex, const char *szTex, const vertex_static_ex *pArrVertex, int iCountVertex, const UINT *pArrIndex, int iCountIndex)
+ID CModels::createTransparencyModel(IXMaterial *idTex, const char *szTex, const vertex_static_ex *pArrVertex, int iCountVertex, const UINT *pArrIndex, int iCountIndex)
 {
 	CTransparencyModel *pTransparency = new CTransparencyModel();
 	pTransparency->m_iCountVertex = iCountVertex;
@@ -1089,7 +1107,16 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 	for (int i = 0; i < pModel->m_pModel->m_uiSubsetCount; ++i)
 	{
 		sFullPath = String(pModel->m_pModel->m_ppTextures[i]) + ".dds";
-		pModel->m_aIDsTextures[i] = SGCore_MtlLoad(sFullPath.c_str(), MTL_TYPE_GEOM);
+
+		IXMaterial *pMaterial = NULL;
+		if(!m_isServerMode)
+		{
+			XSHADER_DEFAULT_DESC shaderDesc;
+			shaderDesc.szFileVS = "mtrlgeom_base.vs";
+			shaderDesc.szFilePS = "mtrlgeom_base.ps";
+			g_pRenderable->getMaterialSystem()->loadMaterial(sFullPath.c_str(), &pMaterial, &shaderDesc);
+		}
+		pModel->m_aIDsTextures[i] = pMaterial;
 	}
 
 
@@ -1108,7 +1135,8 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 	for (int g = 0; g < pModel->m_pModel->m_uiSubsetCount; ++g)
 	{
 		//если подгруппа не полупрозрачная то пропускаем
-		if (!SGCore_MtlIsTransparency(pModel->m_aIDsTextures[g]))
+		
+		if(!pModel->m_aIDsTextures[g]->isTransparent())
 		{
 			++iCountSubsetNew;
 			iCountIndexNew += pModel->m_pModel->m_pIndexCount[g];
@@ -1250,7 +1278,7 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 		UINT *pIndexCount = 0;
 		UINT *pStartVertex = 0;
 		UINT *pVertexCount = 0;
-		Array<ID> aIDsTextures;
+		Array<IXMaterial*> aIDsTextures;
 		//IDirect3DVertexBuffer9 *pVertexBuffer = 0;
 		//IDirect3DIndexBuffer9 *pIndexBuffer = 0;
 		UINT *pIndexNew = 0;
@@ -1286,7 +1314,7 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 			for (int g = 0; g < pModel->m_pModel->m_uiSubsetCount; ++g)
 			{
 				//если подгруппа полупрозрачная то пропускаем
-				if (SGCore_MtlIsTransparency(pModel->m_aIDsTextures[g]))
+				if(pModel->m_aIDsTextures[g]->isTransparent())
 				{
 					iCountIndexMinus += pModel->m_pModel->m_pIndexCount[g];
 					iCountVertexMinus += pModel->m_pModel->m_pVertexCount[g];
@@ -2959,7 +2987,14 @@ void CModels::renderObject(DWORD timeDelta, ID idModel, ID idTex, const float3 *
 
 	for (int g = 0; g < m_aModels[idModel]->m_pModel->m_uiSubsetCount; g++)
 	{
-		SGCore_MtlSet((idTex >= 0 ? idTex : m_aModels[idModel]->m_aIDsTextures[g]), &mWorld);
+		if(ID_VALID(idTex))
+		{
+			SGCore_MtlSet(idTex, &mWorld);
+		}
+		else
+		{
+			g_pRenderable->getMaterialSystem()->bindMaterial(m_aModels[idModel]->m_aIDsTextures[g], &mWorld);
+		}
 
 		SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, m_aModels[idModel]->m_pModel->m_pVertexCount[g], iCountIndex, m_aModels[idModel]->m_pModel->m_pIndexCount[g] / 3);
 		Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((m_aModels[idModel]->m_pModel->m_pIndexCount[g] / 3)));
@@ -3035,7 +3070,14 @@ void CModels::renderSegmets(DWORD timeDelta, ID idModel, ID idTex, ID idVisCalcO
 	{
 		if (pModel->m_pCountDrawPoly[g] > 0)
 		{
-			SGCore_MtlSet((idTex > 0 ? idTex : pModel->m_aIDsTextures[g]), (float4x4*)pModel->m_pBoundVolume->calcWorld());
+			if(ID_VALID(idTex))
+			{
+				g_pRenderable->getMaterialSystem()->bindMaterial(pModel->m_aIDsTextures[g], pModel->m_pBoundVolume->calcWorld());
+			}
+			else
+			{
+				SGCore_MtlSet(idTex, (float4x4*)pModel->m_pBoundVolume->calcWorld());
+			}
 
 			SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, pModel->m_pModel->m_pVertexCount[g], iCountIndex, pModel->m_pCountDrawPoly[g]);
 			Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + (pModel->m_pCountDrawPoly[g]));
@@ -3052,7 +3094,7 @@ void CModels::renderTransparency(DWORD timeDelta, CTransparencyModel *pTranspare
 	g_pDXDevice->setIndexBuffer(pTransparencyModel->m_pIndexBuffer);
 	g_pDXDevice->setRenderBuffer(pTransparencyModel->m_pRenderBuffer);
 	
-	SGCore_MtlSet(pTransparencyModel->m_idTex, (float4x4*)pTransparencyModel->m_pBoundVolume->calcWorld());
+	g_pRenderable->getMaterialSystem()->bindMaterial(pTransparencyModel->m_idTex, pTransparencyModel->m_pBoundVolume->calcWorld());
 
 	SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, pTransparencyModel->m_iCountVertex, 0, pTransparencyModel->m_iCountIndex / 3);
 	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((pTransparencyModel->m_iCountIndex / 3)));
@@ -3425,13 +3467,19 @@ ID CModels::modelGetGroupMtrlID(ID idModel, ID idGroup)
 	if (idGroup >= 0)
 	{
 		//если номер подгруппы в пределах количества подгрупп самой модели
-		if (m_aModels[idModel]->m_aIDsTextures.size() > idGroup)
-			return m_aModels[idModel]->m_aIDsTextures[idGroup];
+		if(m_aModels[idModel]->m_aIDsTextures.size() > idGroup)
+		{
+			//@FIXME: Reimplement this!
+			// return m_aModels[idModel]->m_aIDsTextures[idGroup];
+			return(-1);
+		}
 		//если номер подгруппы в пределах суммы количества подгрупп модели и всех ее пп моделей
 		else if (m_aModels[idModel]->m_aIDsTextures.size() + m_aModels[idModel]->m_aTransparency.size() > idGroup)
 		{
 			int iKey = idGroup - m_aModels[idModel]->m_aIDsTextures.size();
-			return m_aTransparency[m_aModels[idModel]->m_aTransparency[iKey]]->m_idTex;
+			//@FIXME: Reimplement this!
+			//return m_aTransparency[m_aModels[idModel]->m_aTransparency[iKey]]->m_idTex;
+			return(-1);
 		}
 		else
 		{
@@ -3599,7 +3647,8 @@ void CModels::getArrBuffsGeom(float3_t ***pppArrVertex, int32_t	**ppArrCountVert
 				for (int k = 0; k < m_aModels[i]->m_pModel->m_pIndexCount[g]; ++k)
 				{
 					(*pppArrIndex)[i][iCurrIndex] = pIndex[m_aModels[i]->m_pModel->m_pStartIndex[g] + k];
-					(*pppArrMtl)[i][iCurrIndex] = m_aModels[i]->m_aIDsTextures[g];
+					//@FIXME: Reimplement this!
+					//(*pppArrMtl)[i][iCurrIndex] = m_aModels[i]->m_aIDsTextures[g];
 					++iCurrIndex;
 				}
 			}
@@ -3634,7 +3683,8 @@ void CModels::getArrBuffsGeom(float3_t ***pppArrVertex, int32_t	**ppArrCountVert
 				{
 					//текущий индекс рассчитывается как индекс ппп + количество вершин основной модели
 					(*pppArrIndex)[i][iCurrIndex] = pIndex[j] + iCurrVertex2;
-					(*pppArrMtl)[i][iCurrIndex] = m_aTransparency[m_aModels[i]->m_aTransparency[k]]->m_idTex;
+					//@FIXME: Reimplement!
+					//(*pppArrMtl)[i][iCurrIndex] = m_aTransparency[m_aModels[i]->m_aTransparency[k]]->m_idTex;
 					++iCurrIndex;
 				}
 
@@ -3756,8 +3806,9 @@ bool CModels::traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResul
 								if (idModel)
 									*idModel = id;
 
-								if (idMtrl)
-									*idMtrl = pModel->m_aIDsTextures[idGroup];
+								//@FIXME: Reimplement!
+								//if (idMtrl)
+								//	*idMtrl = pModel->m_aIDsTextures[idGroup];
 							}
 						}
 					}
@@ -3793,8 +3844,9 @@ bool CModels::traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResul
 							if (idModel)
 								*idModel = id;
 
-							if (idMtrl)
-								*idMtrl = m_aModels[id]->m_aIDsTextures[g];
+							//@FIXME: Reimplement!
+							//if (idMtrl)
+							//	*idMtrl = m_aModels[id]->m_aIDsTextures[g];
 						}
 					}
 				}
@@ -3832,8 +3884,9 @@ bool CModels::traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResul
 						if (idModel)
 							*idModel = id;
 
-						if (idMtrl)
-							*idMtrl = pTransparencyModel->m_idTex;
+						//@FIXME: Reimplement!
+						//if (idMtrl)
+						//	*idMtrl = pTransparencyModel->m_idTex;
 					}
 				}
 			}
@@ -3899,10 +3952,11 @@ bool CModels::traceBeamId(ID id, const float3 *pStart, const float3 *pEnd, float
 							vResult = ip;
 							isFound = true;
 
-							if(idMtrl)
-							{
-								*idMtrl = pModel->m_aIDsTextures[idGroup];
-							}
+							//@FIXME: Reimplement!
+							//if(idMtrl)
+							//{
+							//	*idMtrl = pModel->m_aIDsTextures[idGroup];
+							//}
 						}
 					}
 				}
@@ -3931,7 +3985,8 @@ bool CModels::traceBeamId(ID id, const float3 *pStart, const float3 *pEnd, float
 
 						if(idMtrl)
 						{
-							*idMtrl = m_aModels[id]->m_aIDsTextures[g];
+							//@FIXME: Reimplement!
+							//*idMtrl = m_aModels[id]->m_aIDsTextures[g];
 						}
 					}
 				}
@@ -3964,7 +4019,8 @@ bool CModels::traceBeamId(ID id, const float3 *pStart, const float3 *pEnd, float
 
 					if(idMtrl)
 					{
-						*idMtrl = pTransparencyModel->m_idTex;
+						//@FIXME: Reimplement this!
+						//*idMtrl = pTransparencyModel->m_idTex;
 					}
 				}
 			}

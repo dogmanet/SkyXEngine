@@ -16,6 +16,8 @@ See the license in LICENSE
 
 IGXContext *g_pDXDevice = 0;
 
+CRenderable *g_pRenderable = 0;
+
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
 report_func g_fnReportf = DefReport;
@@ -58,8 +60,10 @@ SX_LIB_API void SGeom_0Create(const char *szName, bool isUnic, bool isServerMode
 		}
 		g_pModels = new CModels(isServerMode);
 
+		g_pRenderable = new CRenderable();
+
 		Core_GetIXCore()->getPluginManager()->registerInterface(IXEDITABLE_GUID, new CEditable(Core_GetIXCore()));
-		Core_GetIXCore()->getPluginManager()->registerInterface(IXRENDERABLE_GUID, new CRenderable());
+		Core_GetIXCore()->getPluginManager()->registerInterface(IXRENDERABLE_GUID, g_pRenderable);
 	}
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);

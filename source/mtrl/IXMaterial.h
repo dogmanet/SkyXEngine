@@ -8,6 +8,8 @@ class IXMaterial: public IXUnknown
 {
 public:
 	virtual void getMainTexture(IXTexture **ppTexture) = 0;
+
+	virtual bool isTransparent() = 0;
 };
 
 #endif

@@ -19,6 +19,7 @@ public:
 	CMaterial(ID id);
 	void getMainTexture(IXTexture **ppTexture);
 	ID getId();
+	bool isTransparent();
 protected:
 	ID m_id = -1;
 };

@@ -178,28 +178,27 @@ public:
 
 typedef struct _XGUID
 {
-	_XGUID()
+	constexpr _XGUID()
 	{
-		memset(this, 0, sizeof(*this));
 	}
-	_XGUID(unsigned long l, unsigned short w1, unsigned short w2,
+	constexpr _XGUID(unsigned long l, unsigned short w1, unsigned short w2,
 		unsigned char b1, unsigned char b2, unsigned char b3, unsigned char b4,
 		unsigned char b5, unsigned char b6, unsigned char b7, unsigned char b8):
-		Data1(l), Data2(w1), Data3(w2)
+		Data1(l), Data2(w1), Data3(w2), Data40(b1), Data41(b2), Data43(b3), Data44(b4),
+		Data45(b5), Data46(b6), Data47(b7)
 	{
-		Data4[0] = b1;
-		Data4[1] = b2;
-		Data4[2] = b3;
-		Data4[3] = b4;
-		Data4[4] = b5;
-		Data4[5] = b6;
-		Data4[6] = b7;
-		Data4[7] = b8;
 	}
-	unsigned long  Data1;
-	unsigned short Data2;
-	unsigned short Data3;
-	unsigned char  Data4[8];
+	const unsigned long  Data1 = 0;
+	unsigned short Data2 = 0;
+	unsigned short Data3 = 0;
+	unsigned char  Data40 = 0;
+	unsigned char  Data41 = 0;
+	unsigned char  Data42 = 0;
+	unsigned char  Data43 = 0;
+	unsigned char  Data44 = 0;
+	unsigned char  Data45 = 0;
+	unsigned char  Data46 = 0;
+	unsigned char  Data47 = 0;
 } XGUID;
 
 #define DEFINE_XGUID(l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
@@ -211,9 +210,22 @@ inline bool operator<(const XGUID &a, const XGUID &b)
 	return(memcmp(&a, &b, sizeof(XGUID)) < 0);
 }
 
-inline bool operator==(const XGUID &a, const XGUID &b)
+constexpr inline bool operator==(const XGUID &a, const XGUID &b)
 {
-	return(memcmp(&a, &b, sizeof(XGUID)) == 0);
+	return(
+		a.Data1 == b.Data1
+		&& a.Data2 == b.Data2
+		&& a.Data3 == b.Data3
+		&& a.Data40 == b.Data40
+		&& a.Data41 == b.Data41
+		&& a.Data42 == b.Data42
+		&& a.Data43 == b.Data43
+		&& a.Data44 == b.Data44
+		&& a.Data45 == b.Data45
+		&& a.Data46 == b.Data46
+		&& a.Data47 == b.Data47
+		);
+	//return(memcmp(&a, &b, sizeof(XGUID)) == 0);
 }
 
 //! Считывание неопределенного количества аргументов при форматированнии строки в buf на основании format

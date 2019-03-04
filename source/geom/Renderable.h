@@ -23,6 +23,7 @@ public:
 	//! Создает новый объект просчета видимости для системы
 	void newVisData(IXRenderableVisibility **ppVisibility);
 
+	IXMaterialSystem *getMaterialSystem();
 protected:
 	IGXContext *m_pDevice = NULL;
 	IXMaterialSystem *m_pMaterialSystem = NULL;

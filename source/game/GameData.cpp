@@ -24,6 +24,8 @@ See the license in LICENSE
 #include "BaseMag.h"
 #include "FuncTrain.h"
 
+#include <xcommon/XEvents.h>
+
 CPlayer * GameData::m_pPlayer;
 CPointCamera * GameData::m_pActiveCamera;
 gui::IGUI * GameData::m_pGUI = NULL;
@@ -245,6 +247,15 @@ GameData::GameData(HWND hWnd, bool isGame):
 			return;
 		}
 		
+		constexpr XGUID guid = XGUID(0xdcc97efb, 0x5254, 0x48e2, 0xb3, 0xc3, 0xd9, 0xc0, 0x33, 0x92, 0xff, 0xda);
+		
+		
+		
+		constexpr bool a = guid.Data1 == guid.Data1;
+		std::enable_if<(guid == guid)>::type;
+
+		IEventBinder<EVENT_LEVEL_LOAD_GUID>::XEventAddListener(NULL);
+
 		SLevel_Load(argv[1], true);
 
 		//GameData::m_pGameStateManager->activate("ingame");
