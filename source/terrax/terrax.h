@@ -4,7 +4,7 @@
 // "/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'" 
 #include <gcore/sxgcore.h>
 #include "Command.h"
-#include "XObject.h"
+#include <xcommon/editor/IXEditorObject.h>
 
 #define MAIN_WINDOW_TITLE      "TerraX"
 #define MAIN_WINDOW_CLASS      "X Main Window"
@@ -182,7 +182,7 @@ struct XBorderVertex
 	float2_t vTex;
 };
 
-extern Array<CXObject*> g_pLevelObjects;
+extern Array<IXEditorObject*> g_pLevelObjects;
 
 void XDrawBorder(GXCOLOR color, const float3_t &vA, const float3_t &vB, const float3_t &vC, const float3_t &vD, float fViewportScale = 0.01f);
 

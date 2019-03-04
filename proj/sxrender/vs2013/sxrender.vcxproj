@@ -103,6 +103,7 @@
     <ClInclude Include="..\..\..\source\render\editor\axes_static.h" />
     <ClInclude Include="..\..\..\source\render\editor\grid.h" />
     <ClInclude Include="..\..\..\source\render\gdata.h" />
+    <ClInclude Include="..\..\..\source\render\RenderPipeline.h" />
     <ClInclude Include="..\..\..\source\render\render_func.h" />
     <ClInclude Include="..\..\..\source\render\simulation_model.h" />
     <ClInclude Include="..\..\..\source\render\sxrender.h" />
@@ -115,6 +116,7 @@
     <ClCompile Include="..\..\..\source\render\editor\axes_static.cpp" />
     <ClCompile Include="..\..\..\source\render\editor\grid.cpp" />
     <ClCompile Include="..\..\..\source\render\gdata.cpp" />
+    <ClCompile Include="..\..\..\source\render\RenderPipeline.cpp" />
     <ClCompile Include="..\..\..\source\render\render_func.cpp" />
     <ClCompile Include="..\..\..\source\render\simulation_model.cpp" />
     <ClCompile Include="..\..\..\source\render\sxrender.cpp" />

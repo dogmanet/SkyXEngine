@@ -1,11 +1,14 @@
-#include "XStaticGeomObject.h"
-#include <render/sxrender.h>
+#include "EditorObject.h"
+
+//#include <render/sxrender.h>
 #include <mtrl/sxmtrl.h>
-#include "terrax.h"
 
-Array<CXStatixGeomObject*> CXStatixGeomObject::ms_aObjects;
+#include "Editable.h"
 
-CXStatixGeomObject::CXStatixGeomObject(ID idModel)
+Array<CEditorObject*> CEditorObject::ms_aObjects;
+
+CEditorObject::CEditorObject(CEditable *pEditable, ID idModel):
+	m_pEditable(pEditable)
 {
 	assert(ID_VALID(idModel));
 
@@ -18,12 +21,13 @@ CXStatixGeomObject::CXStatixGeomObject(ID idModel)
 	ms_aObjects.push_back(this);
 }
 
-CXStatixGeomObject::CXStatixGeomObject()
+CEditorObject::CEditorObject(CEditable *pEditable):
+	m_pEditable(pEditable)
 {
 	ms_aObjects.push_back(this);
 }
 
-CXStatixGeomObject::~CXStatixGeomObject()
+CEditorObject::~CEditorObject()
 {
 	for(UINT i = 0, l = ms_aObjects.size(); i < l; ++i)
 	{
@@ -35,28 +39,28 @@ CXStatixGeomObject::~CXStatixGeomObject()
 	}
 }
 
-void CXStatixGeomObject::setPos(const float3_t &pos)
+void CEditorObject::setPos(const float3_t &pos)
 {
 	SGeom_ModelSetPosition(m_idModel, &float3(pos));
 	BaseClass::setPos(pos);
 }
 
-float3_t CXStatixGeomObject::getScale()
+float3_t CEditorObject::getScale()
 {
 	return(*SGeom_ModelGetScale(m_idModel));
 }
-void CXStatixGeomObject::setScale(const float3_t &pos)
+void CEditorObject::setScale(const float3_t &pos)
 {
 	SGeom_ModelSetScale(m_idModel, &float3(pos));
 }
 
-SMQuaternion CXStatixGeomObject::getOrient()
+SMQuaternion CEditorObject::getOrient()
 {
 	const float3 *rot = SGeom_ModelGetRotation(m_idModel);
-	
+
 	return(SMQuaternion(-rot->x, 'x') * SMQuaternion(-rot->y, 'y') * SMQuaternion(-rot->z, 'z'));
 }
-void CXStatixGeomObject::setOrient(const SMQuaternion &orient)
+void CEditorObject::setOrient(const SMQuaternion &orient)
 {
 	float3 vRotation = SMMatrixToEuler(orient.GetMatrix());
 	vRotation.x *= -1.0f;
@@ -64,19 +68,20 @@ void CXStatixGeomObject::setOrient(const SMQuaternion &orient)
 	SGeom_ModelSetRotation(m_idModel, &vRotation);
 }
 
-void CXStatixGeomObject::getBound(float3 *pvMin, float3 *pvMax)
+void CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 {
 	SGeom_ModelGetMinMax(m_idModel, pvMin, pvMax);
 }
 
-void CXStatixGeomObject::renderSelection(bool is3D)
+void CEditorObject::renderSelection(bool is3D)
 {
 	IGXContext *pDevice = SGCore_GetDXDevice();
 	IGXBlendState *pOldBlendState = pDevice->getBlendState();
 	IGXRasterizerState *pOldRS = pDevice->getRasterizerState();
-
-	pDevice->setTexture(SGCore_LoadTexGetTex(SRender_EditorGetWhiteTex()));
-	pDevice->setBlendState(g_xRenderStates.pBlendColorFactor);
+	
+	m_pEditable->m_pMaterialSystem->bindTexture(m_pEditable->m_pWhiteTexture);
+	//pDevice->setTexture(m_pEditable->m_pWhiteTexture);
+	pDevice->setBlendState(m_pEditable->m_pBlendColorFactor);
 
 	if(is3D)
 	{
@@ -84,7 +89,7 @@ void CXStatixGeomObject::renderSelection(bool is3D)
 		SGeom_RenderSingly(0, m_idModel, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_STATIC));
 	}
 
-	pDevice->setRasterizerState(g_xRenderStates.pRSWireframe);
+	pDevice->setRasterizerState(m_pEditable->m_pRSWireframe);
 	pDevice->setBlendFactor(GXCOLOR_ARGB(255, 255, 255, 0));
 	SGeom_RenderSingly(0, m_idModel, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_STATIC));
 
@@ -94,12 +99,12 @@ void CXStatixGeomObject::renderSelection(bool is3D)
 	mem_release(pOldRS);
 }
 
-bool CXStatixGeomObject::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl)
+bool CEditorObject::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl)
 {
 	return(SGeom_TraceBeamId(m_idModel, &vStart, &vEnd, pvOut, pidMtrl));
 }
 
-void CXStatixGeomObject::remove()
+void CEditorObject::remove()
 {
 	SGeom_ModelDelete(m_idModel);
 
@@ -113,15 +118,15 @@ void CXStatixGeomObject::remove()
 
 	m_idModel = -1;
 }
-void CXStatixGeomObject::preCreate()
+void CEditorObject::preCreate()
 {
 }
-void CXStatixGeomObject::postCreate()
+void CEditorObject::postCreate()
 {
 	m_idModel = SGeom_ModelAdd(m_sModelName.c_str(), m_sName.c_str(), NULL, NULL, m_bSegmentation);
 }
 
-void CXStatixGeomObject::setKV(const char *szKey, const char *szValue)
+void CEditorObject::setKV(const char *szKey, const char *szValue)
 {
 	if(!strcmp(szKey, "model"))
 	{
@@ -148,7 +153,7 @@ void CXStatixGeomObject::setKV(const char *szKey, const char *szValue)
 		}
 	}
 }
-const char *CXStatixGeomObject::getKV(const char *szKey)
+const char *CEditorObject::getKV(const char *szKey)
 {
 	if(!strcmp(szKey, "model"))
 	{
@@ -166,7 +171,7 @@ const char *CXStatixGeomObject::getKV(const char *szKey)
 	}
 	return(NULL);
 }
-const char *CXStatixGeomObject::getPropertyKey(UINT uKey)
+const char *CEditorObject::getPropertyKey(UINT uKey)
 {
 	static const char *s_szKeys[] = {
 		"model",
@@ -179,7 +184,7 @@ const char *CXStatixGeomObject::getPropertyKey(UINT uKey)
 	}
 	return(s_szKeys[uKey]);
 }
-UINT CXStatixGeomObject::getProperyCount()
+UINT CEditorObject::getProperyCount()
 {
 	return(3);
 }

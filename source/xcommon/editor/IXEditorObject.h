@@ -1,29 +1,47 @@
-#ifndef XOBJECT_H_
-#define XOBJECT_H_
+#ifndef XEDITOROBJECT_H_
+#define XEDITOROBJECT_H_
 
 #include <gdefines.h>
 #include <common/math.h>
 
-class CXObject
+class IXEditorObject: public IXUnknown
 {
 public:
-	virtual ~CXObject()
+	virtual float3_t getPos()
+	{
+		return(m_vPos);
+	}
+	virtual void setPos(const float3_t &pos)
+	{
+		m_vPos = pos;
+	}
+
+	virtual SMQuaternion getOrient()
+	{
+		return(SMQuaternion());
+	}
+	virtual void setOrient(const SMQuaternion &orient)
 	{
 	}
 
-	virtual float3_t getPos();
-	virtual void setPos(const float3_t &pos);
-
-	virtual SMQuaternion getOrient();
-	virtual void setOrient(const SMQuaternion &orient);
-
-	virtual float3_t getScale();
-	virtual void setScale(const float3_t &pos);
+	virtual float3_t getScale()
+	{
+		return(float3_t(1.0f, 1.0f, 1.0f));
+	}
+	virtual void setScale(const float3_t &pos)
+	{
+	}
 
 	virtual void getBound(float3 *pvMin, float3 *pvMax) = 0;
 
-	bool isSelected();
-	void setSelected(bool set);
+	bool isSelected()
+	{
+		return(m_isSelected);
+	}
+	void setSelected(bool set)
+	{
+		m_isSelected = set;
+	}
 
 	virtual void renderSelection(bool is3D) = 0;
 

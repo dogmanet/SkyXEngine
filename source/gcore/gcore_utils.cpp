@@ -128,12 +128,16 @@ void InitRT4Gbuffer()
 	const int *r_win_height = GET_PCVAR_INT("r_win_height");
 	
 	//цвет (текстуры)
+	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
 	gcore_data::rt_id::idColorScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "ds_color");
 	//номрали + микрорельеф
+	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
 	gcore_data::rt_id::idNormalScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8/*D3DFMT_A2R10G10B10*/, "ds_normal");
 	//параметры освещени¤
+	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
 	gcore_data::rt_id::idParamsScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "ds_param");
 
+	//GXFMT_G32R32F; // 64bpp; GXFMT_R32F
 	gcore_data::rt_id::idDepthScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F, "ds_depth");
 	gcore_data::rt_id::idDepthScene0 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F, "ds_depth_0");
 	gcore_data::rt_id::idDepthScene1 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F, "ds_depth_1");

@@ -33,6 +33,8 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
+#include <mtrl/IXMaterialSystem.h>
+
 /*! \name Базовые функции библиотеки
 @{*/
 
@@ -346,6 +348,11 @@ enum MTL_SHADERSTD
 SX_LIB_API ID SMtrl_MtlLoad(
 	const char *szName,								//!< имя_материала.расширение
 	MTLTYPE_MODEL mtl_type = MTLTYPE_MODEL_STATIC	//!< тип модели материала на случай если материал не будет загружен/найден
+	);
+
+SX_LIB_API ID SMtrl_MtlLoad2(
+	const char *szName,								//!< имя_материала.расширение
+	XSHADER_DEFAULT_DESC *pDefaultShaders
 	);
 
 //! перезагрузка материала

@@ -64,6 +64,7 @@ namespace gdata
 		{
 			ID idScreenOut;
 			ID idComLightingNonShadow;
+			ID idComLightingGI;
 			ID idComLightingShadow;
 
 			ID idBlendAmbientSpecDiffColor;
@@ -84,6 +85,7 @@ namespace gdata
 			ID idUnionAlpha;
 			ID idComLightingNonShadow;
 			ID idComLightingShadow;
+			ID idComLightingGI;
 		};
 	};
 
@@ -291,4 +293,9 @@ void gdata::shaders_id::InitAllShaders()
 
 	rasterizerDesc.cullMode = GXCULL_NONE;
 	gdata::rstates::pRasterizerCullNone = gdata::pDXDevice->createRasterizerState(&rasterizerDesc);
+
+
+
+	gdata::shaders_id::ps::idComLightingGI = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_gi.ps", "lighting_gi.ps", SHADER_CHECKDOUBLE_NAME);
+	gdata::shaders_id::kit::idComLightingGI = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingGI);
 }

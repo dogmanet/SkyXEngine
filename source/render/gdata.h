@@ -122,6 +122,7 @@ namespace gdata
 		{
 			extern ID idScreenOut;
 			extern ID idComLightingNonShadow;
+			extern ID idComLightingGI;
 			extern ID idComLightingShadow;
 
 			extern ID idBlendAmbientSpecDiffColor;
@@ -143,6 +144,7 @@ namespace gdata
 			extern ID idUnionAlpha;
 			extern ID idComLightingNonShadow;
 			extern ID idComLightingShadow;
+			extern ID idComLightingGI;
 		};
 	};
 

@@ -11,12 +11,15 @@ See the license in LICENSE
 
 #include "material.h"
 
+#include "MaterialSystem.h"
+
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
 report_func g_fnReportf = DefReport;
 #endif
 
 CMaterials* ArrMaterials = 0;
+CMaterialSystem *g_pMaterialSystem = NULL;
 
 #define ML_PRECOND(retval) if(!ArrMaterials){LibReport(-1, "%s - sxmtrl is not init", GEN_MSG_LOCATION); return retval;}
 
@@ -51,6 +54,8 @@ SX_LIB_API void SMtrl_0Create(const char *szName, bool isUnic, bool isServerMode
 			mtrl_data::Init();
 		}
 		ArrMaterials = new CMaterials();
+		g_pMaterialSystem = new CMaterialSystem();
+		Core_GetIXCore()->getPluginManager()->registerInterface(IXMATERIALSYSTEM_GUID, g_pMaterialSystem);
 	}
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
@@ -58,6 +63,7 @@ SX_LIB_API void SMtrl_0Create(const char *szName, bool isUnic, bool isServerMode
 
 SX_LIB_API void SMtrl_AKill()
 {
+	mem_delete(g_pMaterialSystem);
 	mem_delete(ArrMaterials);
 }
 
@@ -102,6 +108,13 @@ SX_LIB_API ID SMtrl_MtlLoad(const char *szName, MTLTYPE_MODEL mtl_type)
 	ML_PRECOND(-1);
 
 	return ArrMaterials->mtlLoad(szName, mtl_type);
+}
+
+SX_LIB_API ID SMtrl_MtlLoad2(const char *szName, XSHADER_DEFAULT_DESC *pDefaultShaders)
+{
+	ML_PRECOND(-1);
+
+	return ArrMaterials->mtlLoad(szName, pDefaultShaders);
 }
 
 SX_LIB_API void SMtrl_MtlSave(ID id)

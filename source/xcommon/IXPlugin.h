@@ -3,11 +3,6 @@
 
 #include "IXCore.h"
 
-#include "IXRenderable.h"
-#include "IXModelLoader.h"
-#include "IXTextureLoader.h"
-#include "IXUpdatable.h"
-
 #define X_PLUGIN_ENTRYPOINT XPluginMain
 #define X_PLUGIN_API extern "C" __declspec(dllexport)
 #define IXPLUGIN_VERSION 1
@@ -16,9 +11,9 @@
 class IXPlugin: public IXUnknown
 {
 public:
-	virtual UINT getInterfaceCount();
-	virtual const XGUID *getInterfaceGUID(UINT id);
-	virtual IXUnknown *getInterface(const XGUID &guid);
+	virtual UINT getInterfaceCount() = 0;
+	virtual const XGUID *getInterfaceGUID(UINT id) = 0;
+	virtual IXUnknown *getInterface(const XGUID &guid) = 0;
 
 	virtual void startup(IXCore *pCore)
 	{

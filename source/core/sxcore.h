@@ -29,6 +29,8 @@ See the license in LICENSE
 
 //#define SM_D3D_CONVERSIONS
 #include <common/Math.h>
+#include <xcommon/IXCore.h>
+#include <xcommon/IPluginManager.h>
 
 #include <xcommon/IFileSystem.h>
 
@@ -72,7 +74,9 @@ SX_LIB_API void Core_0LoadCommandLine(const char *szCommandLine);
 SX_LIB_API void Core_0ExecCommandLine();
 
 //! Выполняет консольные команды из командной строки
-SX_LIB_API const char *Core_0GetCommandLineArg(const char *szArg, const char *szDefault=NULL);
+SX_LIB_API const char *Core_0GetCommandLineArg(const char *szArg, const char *szDefault = NULL);
+
+SX_LIB_API IXCore *Core_GetIXCore();
 
 
 //! установка своего обработчика вывода отладочной информации

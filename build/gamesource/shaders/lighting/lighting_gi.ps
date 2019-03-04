@@ -1,0 +1,98 @@
+
+/*
+lighting_gi.ps
+
+*/
+
+#include <../struct.h>
+#include <../mtrl.h>
+
+//##########################################################################
+
+half4 g_vViewPos;
+
+//##########################################################################
+
+sampler2D g_sNormals:register(s1);
+sampler2D g_sLightVolume:register(s2);
+sampler2D g_sDepth:register(s3);
+sampler2D g_sAdaptedLum:register(s5);
+
+//#############################################################################
+
+PSO_Lbuffer main(VSO_ResPos IN)
+{
+	PSO_Lbuffer OUT;
+
+	half4 vNormals = tex2D(g_sNormals, IN.vTexUV);
+	half2 vLayerType = LayerDecode(vNormals.w);
+	
+	[branch]if(vLayerType.y == MTLTYPE_UNLIT)
+	{
+		OUT.vAmdient.xyz = 0;
+		OUT.vAmdient.w = 0;
+		OUT.vSpecular = 0;
+		return OUT;
+	}
+	
+	half fDepth = tex2D(g_sDepth,IN.vTexUV).r;
+	
+	// xy_ - размеры пикселя текстуры, __z - размер сетки в мировых
+	// half3 vTexSize = half3(1.0/64.0, 1.0/4096.0, 4.0); 
+	// half3 vTexSize = half3(1.0/64.0, 1.0/4096.0, 8.0); 
+	half3 vTexSize = half3(1.0/64.0, 1.0/4096.0, 32.0); 
+	half3 vOrigin = half3(0, 0, 0); // Центр сетки
+	// half3 vOrigin = floor(g_vViewPos * 4) / 4; // Центр сетки
+	half4 vPosition = half4(g_vViewPos.xyz + IN.vWorldRay * fDepth, 1.0); // Мировая позиция пиксела
+	
+	half3 vLocalPos = (vPosition - vOrigin);
+		
+	clip(vTexSize.z - abs(vLocalPos.x));
+	clip(vTexSize.z - abs(vLocalPos.y));
+	clip(vTexSize.z - abs(vLocalPos.z));
+		
+	vLocalPos /= vTexSize.z * 2.0;
+	vLocalPos += 0.5;
+	
+	half fRoundY = floor(vLocalPos.y * 64.0) * vTexSize.x;
+	
+	half2 vTexPos = half2(vLocalPos.x, vLocalPos.z * vTexSize.x + fRoundY);
+	half4 vColorY0 = tex2D(g_sLightVolume, vTexPos);
+	half4 vColorY1 = tex2D(g_sLightVolume, vTexPos + half2(0.0, vTexSize.x));
+	
+	
+	half4 vLightColor = lerp(vColorY0, vColorY1, (vLocalPos.y - fRoundY) / vTexSize.x);
+	
+	OUT.vAmdient.xyz = vLightColor;
+	// OUT.vAmdient.xyz = vColorX0Y0Z0;
+	// OUT.vAmdient.xyz = fLerp;
+	// OUT.vAmdient.xyz = saturate(half3(vTexPos, 0.0));
+	// OUT.vAmdient.xyz = saturate(vLocalPos);
+	// OUT.vAmdient.xyz = half3(vTexPos.r, 0, 0);
+	OUT.vAmdient.w = 1;
+	
+	OUT.vSpecular = 0;
+	
+	return OUT;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

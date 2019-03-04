@@ -19,7 +19,6 @@ void CCore::Release()
 
 IPluginManager *CCore::getPluginManager()
 {
-	m_pPluginManager->AddRef();
 	return(m_pPluginManager);
 }
 IFileSystem *CCore::getFileSystem()

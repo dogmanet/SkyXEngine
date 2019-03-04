@@ -14,6 +14,18 @@
     <ClCompile Include="..\..\..\source\common\string_utils.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\geom\plugin_main.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\geom\EditorObject.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\geom\Editable.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\geom\Renderable.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -34,6 +46,15 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\string_utils.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\geom\EditorObject.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\geom\Editable.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\geom\Renderable.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

@@ -24,7 +24,7 @@ protected:
 	struct _del_obj
 	{
 		ID idObject;
-		CXObject *pObject;
+		IXEditorObject *pObject;
 		AssotiativeArray<String, String> mKeyValues;
 
 		float3_t vPos;

@@ -1063,9 +1063,18 @@ void SkyXEngine_Frame(DWORD timeDelta)
 #endif
 	Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
 
+	//#############################################################################
+
 	pDXDevice->beginFrame();
-	pDXDevice->clear(GXCLEAR_COLOR);
+	//pDXDevice->clear(GXCLEAR_COLOR);
 	SRender_UpdateReflection(timeDelta, isSimulationRender);
+
+	//рисуем сцену и заполняем mrt данными
+	Core_PStartSection(PERF_SECTION_MRT);
+
+	SRender_BuildMRT(timeDelta, isSimulationRender);
+	FlushCommandBuffer();
+	Core_PEndSection(PERF_SECTION_MRT);
 
 	if (*r_final_image == DS_RT_AMBIENTDIFF || *r_final_image == DS_RT_SPECULAR || *r_final_image == DS_RT_SCENELIGHT)
 	{
@@ -1077,12 +1086,6 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		FlushCommandBuffer();
 	}
 
-	//рисуем сцену и заполняем mrt данными
-	Core_PStartSection(PERF_SECTION_MRT);
-
-	SRender_BuildMRT(timeDelta, isSimulationRender);
-	FlushCommandBuffer();
-	Core_PEndSection(PERF_SECTION_MRT);
 
 	
 	if (*r_final_image == DS_RT_AMBIENTDIFF || *r_final_image == DS_RT_SPECULAR || *r_final_image == DS_RT_SCENELIGHT)
@@ -1119,7 +1122,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	pDXDevice->setDepthStencilState(g_pDSNoZ);
 	pDXDevice->setBlendState(NULL);
 
-#if defined(SX_GAME)
+//#if defined(SX_GAME)
 	if(!SSInput_GetKeyState(SIK_P))
 	{
 		Core_PStartSection(PERF_SECTION_RENDER_POSTPROCESS);
@@ -1129,7 +1132,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		FlushCommandBuffer();
 	}
 	pDXDevice->setDepthStencilState(g_pDSNoZ);
-#endif
+//#endif
 	if(SSInput_GetKeyState(SIK_NUMPAD1))
 	{
 		pDXDevice->saveTextureToFile("c:/1/pp.png", SGCore_RTGetTexture(SPP_RTGetCurrSend()));
@@ -1173,10 +1176,10 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	pDXDevice->setDepthStencilState(g_pDSNoZ);
 	pDXDevice->setBlendState(NULL);
 
-#if defined(SX_GAME)
+//#if defined(SX_GAME)
 	if (!SSInput_GetKeyState(SIK_P))
 		SRender_RenderFinalPostProcess(timeDelta);
-#endif
+//#endif
 
 	FlushCommandBuffer();
 
@@ -1200,8 +1203,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	pDXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
 	pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)mView));
 	pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)mProjLight));
-#endif
 	SRender_RenderEditorMain();
+#endif
 
 #if defined(SX_GAME) && defined(SX_AIGRID_RENDER)
 	//static const float * r_far = GET_PCVAR_FLOAT("r_far");
@@ -1227,6 +1230,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	float *fScales = g_xConfig.m_fViewportScale + 1;
 	X_2D_VIEW *views = g_xConfig.m_x2DView + 1;
 	ICamera *p3DCamera = SRender_GetCamera();
+	pDXDevice->setSamplerState(NULL, 0);
 	//#############################################################################
 
 	XUpdateSelectionBound();
@@ -1241,7 +1245,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		IGXSurface *pBackBuffer = p2DSwapChains[i]->getColorTarget();
 		pDXDevice->setColorTarget(pBackBuffer);
 		pDXDevice->setDepthStencilSurface(p2DDepthStencilSurfaces[i]);
-		pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_STENCIL);
+		pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH | GXCLEAR_STENCIL);
 
 		pDXDevice->setRasterizerState(g_xRenderStates.pRSWireframe);
 		pDXDevice->setDepthStencilState(g_pDSNoZ);
@@ -1335,7 +1339,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SXParticlesEditor::ParticlesEditorUpdate(timeDelta);
 #endif
 
-	SRender_ShaderRegisterData();
+	//SRender_ShaderRegisterData();
 
 	/*if (SGCore_OC_IsVisible(&float3(1, 1, 1), &float3(-1, -1, -1)))
 	{

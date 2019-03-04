@@ -48,8 +48,6 @@ IXPlugin *CPluginManager::loadPlugin(const char *szPath)
 		{
 			if(pPlugin->getVersion() == IXPLUGIN_VERSION)
 			{
-				IXUnknown *pIFace;
-				
 				UINT uIFaceCount = pPlugin->getInterfaceCount();
 				_iface iface;
 				iface.pPlugin = pPlugin;

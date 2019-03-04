@@ -9,6 +9,9 @@ See the license in LICENSE
 #include "sxgeom.h"
 #include "models.h"
 
+#include "Editable.h"
+#include "Renderable.h"
+
 //##########################################################################
 
 IGXContext *g_pDXDevice = 0;
@@ -54,6 +57,9 @@ SX_LIB_API void SGeom_0Create(const char *szName, bool isUnic, bool isServerMode
 			}
 		}
 		g_pModels = new CModels(isServerMode);
+
+		Core_GetIXCore()->getPluginManager()->registerInterface(IXEDITABLE_GUID, new CEditable(Core_GetIXCore()));
+		Core_GetIXCore()->getPluginManager()->registerInterface(IXRENDERABLE_GUID, new CRenderable());
 	}
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);

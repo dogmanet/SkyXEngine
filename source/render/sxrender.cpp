@@ -9,6 +9,8 @@ See the license in LICENSE
 #include <render/camera_update.h>
 #include <render/render_func.h>
 
+#include "RenderPipeline.h"
+
 #define SXRENDER_VERSION 1
 
 //#########################################################################
@@ -19,6 +21,8 @@ report_func g_fnReportf = DefReport;
 #endif
 
 #define SR_PRECOND(retval) if(!gdata::pDXDevice){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxrender is not init", GEN_MSG_LOCATION); return retval;}
+
+CRenderPipeline *g_pPipeline = NULL;
 
 //##########################################################################
 
@@ -109,6 +113,8 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 		};
 		IGXTexture2D* pDashedMaterial = SGCore_GetDXDevice()->createTexture2D(6, 6, 1, 0, GXFMT_A8R8G8B8, colorData);
 		gdata::idDashedTex = SGCore_LoadTexCreate("dashed_material__", pDashedMaterial);
+
+		g_pPipeline = new CRenderPipeline(SGCore_GetDXDevice());
 	}
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
@@ -117,6 +123,8 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 SX_LIB_API void SRender_AKill()
 {
 	SR_PRECOND(_VOID);
+
+	mem_delete(g_pPipeline);
 
 	/*mem_delete(gdata::Editors::SimModel);
 

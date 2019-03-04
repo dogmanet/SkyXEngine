@@ -195,7 +195,7 @@ int LoadVertexShader(const char *szPath, CShaderVS *pShader, GXMACRO *aMacro)
 		sprintf(szFullPathCache, "%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, pShader->m_szName);
 	}
 
-#ifndef _DEBUG
+#if !defined(_DEBUG) && 0 
 	if (
 		//если юзаем кэш и файл кэша существует
 		(g_useCache && FileExistsFile(szFullPathCache)) && 
@@ -238,7 +238,7 @@ int LoadVertexShader(const char *szPath, CShaderVS *pShader, GXMACRO *aMacro)
 
 		pShader->m_pVertexShader = pVertexShader;
 
-#ifndef _DEBUG
+#if !defined(_DEBUG) && 0 
 		CShaderFileCache *pSFC = CreateShaderFileCacheFormShader(pShader);
 		SaveShaderFileCache(pSFC);
 		mem_delete(pSFC);
@@ -267,7 +267,7 @@ int LoadPixelShader(const char *szPath, CShaderPS *pShader,GXMACRO *aMacro)
 		sprintf(szFullPathCache, "%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, pShader->m_szName);
 	}
 
-#ifndef _DEBUG
+#if !defined(_DEBUG) && 0 
 	UINT uiTimeFileCahce = GetTimeShaderFileCache(szFullPathCache);
 	UINT uiTimeFileSahder = FileGetTimeLastModify(szFullPath);
 	if (
@@ -311,7 +311,7 @@ int LoadPixelShader(const char *szPath, CShaderPS *pShader,GXMACRO *aMacro)
 
 		pShader->m_pPixelShader = pPixelShader;
 
-#ifndef _DEBUG
+#if !defined(_DEBUG) && 0 
 		CShaderFileCache *pSFC = CreateShaderFileCacheFormShader(pShader);
 		SaveShaderFileCache(pSFC);
 		mem_delete(pSFC);

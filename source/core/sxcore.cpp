@@ -217,6 +217,11 @@ void Core_AGetName(char* name)
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - invalid argument", GEN_MSG_LOCATION);
 }
 
+SX_LIB_API IXCore *Core_GetIXCore()
+{
+	return(g_pCore);
+}
+
 //##########################################################################
 
 IFile* Core_CrFile()

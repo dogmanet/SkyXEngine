@@ -55,6 +55,7 @@ public:
 	void setCurrCountSurf(int iCount);
 
 	ID mtlLoad(const char *szName, MTLTYPE_MODEL type = MTLTYPE_MODEL_STATIC);
+	ID mtlLoad(const char *szName, XSHADER_DEFAULT_DESC *pDefaultShaders);
 	void mtlReLoad(ID id, const char *szName = 0);
 	void mtlSave(ID id);
 
@@ -379,6 +380,7 @@ protected:
 
 	bool loadMtl(const char *szName, CMaterial **ppMtrl);
 	void createMtl(const char *szName, CMaterial **ppMtrl, MTLTYPE_MODEL type);
+	void createMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT_DESC *pDefaultShaders);
 	ID createTexParamLighting(float fRoughness, float fF0, float fThickness);
 
 	void addName(const char *szName, ID id);

@@ -17,7 +17,7 @@
 #include <level/sxlevel.h>
 
 #include "terrax.h"
-#include "XObject.h"
+#include <xcommon/editor/IXEditorObject.h>
 #include "UndoManager.h"
 
 #include "CommandSelect.h"
@@ -26,7 +26,7 @@
 #include "CommandRotate.h"
 #include "CommandDelete.h"
 
-extern Array<CXObject*> g_pLevelObjects;
+extern Array<IXEditorObject*> g_pLevelObjects;
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
@@ -970,7 +970,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				bool bUse = false;
 				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 				{
-					CXObject *pObj = g_pLevelObjects[i];
+					IXEditorObject *pObj = g_pLevelObjects[i];
 					float3_t vPos = pObj->getPos();
 					bool sel = false;
 					switch(xCurView)
@@ -1228,7 +1228,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					bool bUse = false;
 					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 					{
-						CXObject *pObj = g_pLevelObjects[i];
+						IXEditorObject *pObj = g_pLevelObjects[i];
 						float3_t vPos = pObj->getPos();
 						bool sel = false;
 						switch(xCurView)

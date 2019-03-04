@@ -3062,6 +3062,7 @@ void CModels::renderTransparency(DWORD timeDelta, CTransparencyModel *pTranspare
 
 bool SortTransparencyCompareFunc(CModels::CTransparencyModel *pM1, CModels::CTransparencyModel *pM2)
 {
+	//@FIXME: Fix this bug!
 	return (pM1->m_fDist4Observer < pM1->m_fDist4Observer);
 }
 

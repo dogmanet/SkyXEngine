@@ -107,8 +107,6 @@
     <ClCompile Include="..\..\..\source\terrax\mainWindow.cpp" />
     <ClCompile Include="..\..\..\source\terrax\terrax.cpp" />
     <ClCompile Include="..\..\..\source\terrax\UndoManager.cpp" />
-    <ClCompile Include="..\..\..\source\terrax\XObject.cpp" />
-    <ClCompile Include="..\..\..\source\terrax\XStaticGeomObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\terrax\terrax.rc" />
@@ -127,11 +125,11 @@
     <ClInclude Include="..\..\..\source\terrax\CommandScale.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandSelect.h" />
     <ClInclude Include="..\..\..\source\terrax\UndoManager.h" />
-    <ClInclude Include="..\..\..\source\terrax\XObject.h" />
     <ClInclude Include="..\..\..\source\terrax\Grid.h" />
     <ClInclude Include="..\..\..\source\terrax\resource.h" />
     <ClInclude Include="..\..\..\source\terrax\terrax.h" />
-    <ClInclude Include="..\..\..\source\terrax\XStaticGeomObject.h" />
+    <ClInclude Include="..\..\..\source\xcommon\editor\IXEditable.h" />
+    <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorObject.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\source\favicon.ico" />

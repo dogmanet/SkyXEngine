@@ -894,11 +894,54 @@ void CMaterials::createMtl(const char* name, CMaterial** mtl, MTLTYPE_MODEL type
 	pMtrl->m_oMainGraphics.updateShaderKit(true);
 }
 
+void CMaterials::createMtl(const char* name, CMaterial** mtl, XSHADER_DEFAULT_DESC *pDefaultShaders)
+{
+	CMaterial* pMtrl = *mtl;
+	new(pMtrl)CMaterial*;
+	//если такого материала не существует, то мы должны были задать примерный тип материала
+	pMtrl->m_oMainGraphics.m_typeModel = MTLTYPE_MODEL_STATIC;
+
+	pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, pDefaultShaders->szFileVS, pDefaultShaders->szFileVS, SHADER_CHECKDOUBLE_NAME);
+	pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, pDefaultShaders->szFilePS, pDefaultShaders->szFilePS, SHADER_CHECKDOUBLE_NAME);
+	pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld = true;
+	
+	
+
+	pMtrl->m_oMainGraphics.m_idMainTexture = SGCore_LoadTexAddName(name, LOAD_TEXTURE_TYPE_LOAD);
+	pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
+
+	pMtrl->m_oLightParam.m_fRoughness = MTL_LIGHTING_DEFAULT_ROUGHNESS;
+	pMtrl->m_oLightParam.m_fF0 = MTL_LIGHTING_DEFAULT_F0;
+	pMtrl->m_oLightParam.m_fThickness = MTL_LIGHTING_DEFAULT_THICKNESS;
+
+	pMtrl->m_oLightParam.m_idTexParam = -1;
+	pMtrl->m_oLightParam.m_isTextureParam = false;
+	pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(pMtrl->m_oLightParam.m_fRoughness, pMtrl->m_oLightParam.m_fF0, pMtrl->m_oLightParam.m_fThickness);
+
+	//char path[1024];
+	char tmp_name[256];
+	bool IsTruePath = false;
+
+	for(DWORD k = 0; k<strlen(name); k++)
+	{
+		if(name[k] == '.')
+		{
+			sprintf(tmp_name, "%s", name);
+			tmp_name[k] = 0;
+			IsTruePath = true;
+			break;
+		}
+	}
+
+	pMtrl->m_sName = tmp_name;
+	pMtrl->m_oMainGraphics.updateShaderKit(true);
+}
+
 ID CMaterials::mtlLoad(const char* name, MTLTYPE_MODEL type)
 {
 	ID IsLoad = exists(name);
 
-	if (IsLoad >= 0)
+	if (ID_VALID(IsLoad))
 	{
 		CUnitMaterial* tmpumtl = new CUnitMaterial();
 		tmpumtl->m_pMtrl = m_aUnitMtrls[IsLoad]->m_pMtrl;
@@ -923,6 +966,49 @@ ID CMaterials::mtlLoad(const char* name, MTLTYPE_MODEL type)
 		else
 		{
 			if (tmpumtl->m_pMtrl->m_oLightParam.m_typeReflect != MTLTYPE_REFLECT_NONE)
+			{
+				tmpumtl->m_pReflect = new CReflection();
+				tmpumtl->m_pReflect->init(tmpumtl->m_pMtrl->m_oLightParam.m_typeReflect);
+			}
+		}
+
+		ID tmpid = addUnitMaterial(tmpumtl);
+
+		addName(name, tmpid);
+		return tmpid;
+	}
+}
+
+ID CMaterials::mtlLoad(const char *name, XSHADER_DEFAULT_DESC *pDefaultShaders)
+{
+	ID IsLoad = exists(name);
+
+	if(ID_VALID(IsLoad))
+	{
+		CUnitMaterial* tmpumtl = new CUnitMaterial();
+		tmpumtl->m_pMtrl = m_aUnitMtrls[IsLoad]->m_pMtrl;
+
+		if(m_aUnitMtrls[IsLoad]->m_pReflect)
+		{
+			CUnitMaterial* tmpmtl = m_aUnitMtrls[IsLoad];
+			tmpumtl->m_pReflect = new CReflection();
+			tmpumtl->m_pReflect->init(m_aUnitMtrls[IsLoad]->m_pReflect->getTypeReflect());
+		}
+
+		return addUnitMaterial(tmpumtl);
+	}
+	else
+	{
+		CUnitMaterial* tmpumtl = new CUnitMaterial();
+		tmpumtl->m_pMtrl = new CMaterial();
+		addMaterial(tmpumtl->m_pMtrl);
+		if(!loadMtl(name, &(tmpumtl->m_pMtrl)))
+		{
+			createMtl(name, &(tmpumtl->m_pMtrl), pDefaultShaders);
+		}
+		else
+		{
+			if(tmpumtl->m_pMtrl->m_oLightParam.m_typeReflect != MTLTYPE_REFLECT_NONE)
 			{
 				tmpumtl->m_pReflect = new CReflection();
 				tmpumtl->m_pReflect->init(tmpumtl->m_pMtrl->m_oLightParam.m_typeReflect);

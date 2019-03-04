@@ -6,6 +6,12 @@ See the license in LICENSE
 
 #include "render_func.h"
 
+#include "RenderPipeline.h"
+
+extern CRenderPipeline *g_pPipeline;
+
+//##########################################################################
+
 void rfunc::SetRenderSceneFilter()
 {
 	static const int *r_texfilter_type = GET_PCVAR_INT("r_texfilter_type");
@@ -683,9 +689,11 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 
 	if (!isRenderSimulation)
 	{
+		g_pPipeline->renderGBuffer();
+
 		//SXDecals_Render();
-		if (SGeom_GetCountModels() > 0)
-			SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE);
+		//if (SGeom_GetCountModels() > 0)
+			//SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE);
 
 		SXAnim_Render();
 
@@ -1110,14 +1118,13 @@ void rfunc::ComLighting(DWORD timeDelta)
 
 	//устанавка аддитивного смешивания
 	//когда к уже записанному будет прибавляться то что хотим записать
-//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-//	gdata::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-//	gdata::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-//	gdata::pDXDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+	
+	float4x4 ViewInv = SMMatrixInverse(NULL, gdata::mCamView);
+	ViewInv = SMMatrixTranspose(ViewInv);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idResPos, "g_mViewInv", &ViewInv);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idResPos, "g_vNearFar", &gdata::vNearFar);
+	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idResPos, "g_vParamProj", &float3_t(*r_win_width, *r_win_height, gdata::fProjFov));
 
-//	gdata::pDXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
-//	gdata::pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)gdata::mCamView));
-//	gdata::pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)gdata::mLightProj));
 
 	//проходимся циклом по всем источникам света
 	for (int i = 0; i<SLight_GetCount(); i++)
@@ -1136,41 +1143,6 @@ void rfunc::ComLighting(DWORD timeDelta)
 			if (SLight_GetType(i) != LTYPE_LIGHT_GLOBAL)
 			{
 				//помечаем в стенсил буфере пиксели  которые входят в ограничивающий объем света, чтобы их осветить
-
-				//отключаем вывод цвета
-			//	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE); 
-
-				//установка стенсил теста, причем и двухстороннего тоже
-			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, TRUE);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_TWOSIDEDSTENCILMODE, TRUE);
-
-				//вклчить тест глубины, но запись выключить, установить стандартную функцию проверки глубины
-			//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
-
-				//стенсил тест проходит всегда удачно, при провале теста глубины инкрементируем значение в стенсиле
-			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_INCR);
-				//при удачно проходе, игнорируем
-			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
-
-				//стенсил тест для обратной глубины проходит всегда удачно, при провале теста глубины декрементируем значение в стенсиле
-			//	gdata::pDXDevice->SetRenderState(D3DRS_CCW_STENCILFUNC, D3DCMP_ALWAYS);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_CCW_STENCILZFAIL, D3DSTENCILOP_DECR);
-				//при удачно проходе, игнорируем
-			//	gdata::pDXDevice->SetRenderState(D3DRS_CCW_STENCILPASS, D3DSTENCILOP_KEEP);
-
-				//установка значений для записи
-			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILREF, 0x0);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILMASK, 0xFFFFFFFF);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILWRITEMASK, 0xFFFFFFFF);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);	//включение двухсторонней отрисовки
-
-			//	gdata::pDXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
-			//	gdata::pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)gdata::mCamView));
-			//	gdata::pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)gdata::mLightProj));
-				
 				gdata::pDXDevice->setRasterizerState(gdata::rstates::pRasterizerCullNone);
 				gdata::pDXDevice->setStencilRef(0);
 				gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateLightBound);
@@ -1178,33 +1150,19 @@ void rfunc::ComLighting(DWORD timeDelta)
 				//отрисовка ограничивающего объема
 				SLight_Render(i, 0);
 
-				//
-			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_ZERO);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILFAIL, D3DSTENCILOP_ZERO);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
-
-			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILREF, 255);
 				gdata::pDXDevice->setStencilRef(255);
 				gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateLightShadowNonGlobal);
 				//включаем вывод цвета
 				gdata::pDXDevice->setBlendState(gdata::rstates::pBlendAlphaOneOne);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 			}
 			else
 			{
 				//иначе это глобальный источник, отключаем стенсил тест
-			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_TWOSIDEDSTENCILMODE, FALSE);
 				gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateLightShadowGlobal);
 			}
 
 			//отключаем тест глубины ибо будем теперь пост процессом обрабатывать полученные данные
-		//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-		//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-
 			gdata::pDXDevice->setRasterizerState(NULL);
-		//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 			//если свет отбрасывает тени
 			if (SLight_GetShadowed(i))
@@ -1216,9 +1174,6 @@ void rfunc::ComLighting(DWORD timeDelta)
 				gdata::pDXDevice->setColorTarget(NULL, 1);
 
 				//отключаем смешивание, нам не нужен хлам в рт
-			//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED); 
 				gdata::pDXDevice->setBlendState(gdata::rstates::pBlendRed);
 
 				SLight_ShadowNull();	//очищаем рт генерации теней
@@ -1237,12 +1192,10 @@ void rfunc::ComLighting(DWORD timeDelta)
 					}
 				}
 
+				//включаем смешивание для освещения
 				gdata::pDXDevice->setBlendState(gdata::rstates::pBlendAlphaOneOne);
-			//	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 				//}}
 
-				//включаем смешивание для освещения
-			//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
 				//опять назначаем второй рт
 				gdata::pDXDevice->setColorTarget(pAmbientSurf);
@@ -1266,17 +1219,16 @@ void rfunc::ComLighting(DWORD timeDelta)
 			//если стенсил тест прошел успешно, устанавливаем значнеие в нуль
 			if(SLight_GetType(i) != LTYPE_LIGHT_GLOBAL)
 			{
-			//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_ZERO);
 				gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateLightClear);
 			}
 
-			float determ = 0;
-			float4x4 ViewInv = SMMatrixInverse(&determ, gdata::mCamView);
-			ViewInv = SMMatrixTranspose(ViewInv);
+			//float determ = 0;
+			//float4x4 ViewInv = SMMatrixInverse(&determ, gdata::mCamView);
+			//ViewInv = SMMatrixTranspose(ViewInv);
 
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idResPos, "g_mViewInv", &ViewInv);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idResPos, "g_vNearFar", &gdata::vNearFar);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idResPos, "g_vParamProj", &float3_t(*r_win_width, *r_win_height, gdata::fProjFov));
+			//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idResPos, "g_mViewInv", &ViewInv);
+			//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idResPos, "g_vNearFar", &gdata::vNearFar);
+			//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, gdata::shaders_id::vs::idResPos, "g_vParamProj", &float3_t(*r_win_width, *r_win_height, gdata::fProjFov));
 
 			float3 tmpPosition;
 			float3 tmpPowerDistShadow;
@@ -1332,10 +1284,50 @@ void rfunc::ComLighting(DWORD timeDelta)
 		}
 	}
 
-//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-//	gdata::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
-//	gdata::pDXDevice->SetRenderState(D3DRS_TWOSIDEDSTENCILMODE, FALSE);
+	static IGXTexture2D *s_pTex = NULL;
+	if(!s_pTex)
+	{
+		GXCOLOR *pData = new GXCOLOR[64 * 64 * 64];
+		for(UINT i = 0; i < 64 * 64 * 64; ++i)
+		{
+			pData[i] = GXCOLOR_ARGB(255, rand() % 255, rand() % 255, rand() % 255);
+		}
+		s_pTex = gdata::pDXDevice->createTexture2D(64, 64 * 64, 1, GX_TEXUSAGE_DEFAULT, GXFMT_A8R8G8B8, pData);
+		mem_delete_a(pData);
+	}
+	
+	{
+		//gdata::pDXDevice->setRasterizerState(NULL);
+		gdata::pDXDevice->setRasterizerState(gdata::rstates::pRasterizerCullNone);
+		gdata::pDXDevice->setBlendState(gdata::rstates::pBlendAlphaOneOne);
+		gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateLightShadowGlobal);
+
+		
+		ID idshader = gdata::shaders_id::ps::idComLightingGI;
+		ID idshaderkit = gdata::shaders_id::kit::idComLightingGI;
+
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vViewPos", &gdata::vConstCurrCamPos);
+		
+		SGCore_ShaderBind(idshaderkit);
+
+		for(UINT i = 0; i <= 5; ++i)
+		{
+			gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerPointClamp, i);
+		}
+		gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearClamp, 2);
+
+		gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_COLOR));
+		gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_NORMAL), 1);
+		gdata::pDXDevice->setTexture(s_pTex, 2);
+		gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH), 3);
+		gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_ADAPTEDLUM), 5);
+
+		SGCore_ScreenQuadDraw();
+
+		SGCore_ShaderUnBind();
+	}
+
+
 	gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateNoZ);
 	gdata::pDXDevice->setRasterizerState(NULL);
 	gdata::pDXDevice->setBlendState(NULL);
@@ -1350,14 +1342,8 @@ void rfunc::ComLighting(DWORD timeDelta)
 
 	//-------------------------------
 
-//	gdata::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-//	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-
 	//теперь необходимо все смешать чтобы получить итоговую освещенную картинку
 	//{{
-//	SetSamplerFilter(0, 5, D3DTEXF_NONE);
-//	SetSamplerAddress(0, 5, D3DTADDRESS_CLAMP);
 	for(UINT i = 0; i <= 5; ++i)
 	{
 		gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerPointClamp, i);

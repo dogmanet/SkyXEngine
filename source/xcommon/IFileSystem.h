@@ -36,7 +36,7 @@ enum FILE_OPEN_MODE
 DEFINE_ENUM_FLAG_OPERATORS(FILE_OPEN_MODE);
 
 class IFile;
-class IFileSystem: public IBaseObject
+class IFileSystem: public IXUnknown
 {
 public:
 	/*! Добавить корневой путь (позволяется как абсолютнй путь, так и относительно каталога build)

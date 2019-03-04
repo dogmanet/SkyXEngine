@@ -13,7 +13,9 @@ See the license in LICENSE
 #include "terrax.h"
 #include "Grid.h"
 
-#include "XStaticGeomObject.h"
+#include <xcommon/editor/IXEditorObject.h>
+#include <xcommon/editor/IXEditable.h>
+#include <mtrl/IXMaterialSystem.h>
 #include "UndoManager.h"
 
 extern HWND g_hWndMain;
@@ -23,7 +25,8 @@ CTerraXRenderStates g_xRenderStates;
 ATOM XRegisterClass(HINSTANCE hInstance);
 BOOL XInitInstance(HINSTANCE, int);
 
-Array<CXObject*> g_pLevelObjects;
+Array<IXEditable*> g_pEditableSystems;
+Array<IXEditorObject*> g_pLevelObjects;
 //SGeom_GetCountModels()
 
 static IGXVertexBuffer *g_pBorderVertexBuffer;
@@ -51,6 +54,40 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	}
 
 	SkyXEngine_Init(g_hTopLeftWnd, g_hWndMain, lpCmdLine);
+
+	IPluginManager *pPluginManager = Core_GetIXCore()->getPluginManager();
+
+	IXMaterialSystem *pMaterialSystem = (IXMaterialSystem*)pPluginManager->getInterface(IXMATERIALSYSTEM_GUID);
+
+	GXCOLOR w = GXCOLOR_ARGB(255, 255, 255, 255);
+	GXCOLOR t = GXCOLOR_ARGB(0, 255, 255, 255);
+	GXCOLOR colorData[] = {
+		t, t, t, w, w, w,
+		w, t, t, t, w, w,
+		w, w, t, t, t, w,
+		w, w, w, t, t, t,
+		t, w, w, w, t, t,
+		t, t, w, w, w, t
+	};
+	IGXTexture2D* pDashedMaterial = SGCore_GetDXDevice()->createTexture2D(6, 6, 1, 0, GXFMT_A8R8G8B8, colorData);
+	pMaterialSystem->addTexture("dev_dashed", pDashedMaterial);
+	mem_release(pDashedMaterial);
+
+	GXCOLOR tmpColor = GXCOLOR_ARGB(255, 255, 255, 255);
+	IGXTexture2D* pWhiteMaterial = SGCore_GetDXDevice()->createTexture2D(1, 1, 1, 0, GXFMT_A8R8G8B8, &tmpColor);
+	pMaterialSystem->addTexture("dev_white", pWhiteMaterial);
+	mem_release(pDashedMaterial);
+
+	UINT ic = 0;
+	IXEditable *pEditable;
+	while((pEditable = (IXEditable*)pPluginManager->getInterface(IXEDITABLE_GUID, ic++)))
+	{
+		if(pEditable->getVersion() == IXEDITABLE_VERSION)
+		{
+			g_pEditableSystems.push_back(pEditable);
+			pEditable->startup(SGCore_GetDXDevice());
+		}
+	}
 	
 	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
 	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
@@ -179,6 +216,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	}
 	int result = SkyXEngine_CycleMain();
+
+	for(UINT ic = 0, il = g_pEditableSystems.size(); ic < il; ++ic)
+	{
+		g_pEditableSystems[ic]->shutdown();
+	}
+
 	mem_delete(g_pGrid);
 	mem_delete(g_pUndoManager);
 	SkyXEngine_Kill();
@@ -565,11 +608,16 @@ void XLoadLevel(const char *szName)
 	sprintf(szCaption, "%s - [%s] | %s", MAIN_WINDOW_TITLE, szName, SKYXENGINE_VERSION4EDITORS);
 	SetWindowText(g_hWndMain, szCaption);
 
-	for(ID i = 0, l = SGeom_GetCountModels(); i < l; ++i)
+	for(UINT ic = 0, il = g_pEditableSystems.size(); ic < il; ++ic)
 	{
-		g_pLevelObjects.push_back(new CXStatixGeomObject(i));
-	//	g_pLevelObjects[i]->setSelected(true);
+		IXEditable *pEditable = g_pEditableSystems[ic];
+		for(ID i = 0, l = pEditable->getObjectCount(); i < l; ++i)
+		{
+			g_pLevelObjects.push_back(pEditable->getObject(i));
+		}
 	}
+
+	
 }
 
 void XResetLevel()
@@ -585,7 +633,7 @@ void XResetLevel()
 
 	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 	{
-		mem_delete(g_pLevelObjects[i]);
+		mem_release(g_pLevelObjects[i]);
 	}
 	g_pLevelObjects.clear();
 }

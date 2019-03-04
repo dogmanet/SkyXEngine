@@ -1,18 +1,19 @@
-#ifndef XSTATICGEOMOBJECT_H_
-#define XSTATICGEOMOBJECT_H_
+#ifndef __EDITOROBJECT_H
+#define __EDITOROBJECT_H
 
-#include "XObject.h"
-#include <geom/sxgeom.h>
-#include <common/array.h>
+#include <xcommon/editor/IXEditorObject.h>
+#include "sxgeom.h"
 #include <common/string.h>
+#include <common/array.h>
 
-class CXStatixGeomObject: public CXObject
+class CEditable;
+class CEditorObject: public IXEditorObject
 {
-	DECLARE_CLASS(CXStatixGeomObject, CXObject);
+	DECLARE_CLASS(CEditorObject, IXEditorObject);
 public:
-	CXStatixGeomObject();
-	CXStatixGeomObject(ID idModel);
-	~CXStatixGeomObject();
+	CEditorObject(CEditable *pEditable);
+	CEditorObject(CEditable *pEditable, ID idModel);
+	~CEditorObject();
 
 	void setPos(const float3_t &pos);
 
@@ -44,8 +45,9 @@ protected:
 	bool m_bSegmentation = false;
 	char m_szSegmentation[2];
 
-	static Array<CXStatixGeomObject*> ms_aObjects;
-};
+	static Array<CEditorObject*> ms_aObjects;
 
+	CEditable *m_pEditable;
+};
 
 #endif
