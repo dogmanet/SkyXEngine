@@ -10,7 +10,6 @@ See the license in LICENSE
 #include "Ragdoll.h"
 
 #include <score/sxscore.h>
-#include <level/sxlevel.h>
 #include <input/sxinput.h>
 
 
@@ -23,6 +22,8 @@ See the license in LICENSE
 #include "BaseAmmo.h"
 #include "BaseMag.h"
 #include "FuncTrain.h"
+
+#include <common/file_utils.h>
 
 #include <xcommon/XEvents.h>
 
@@ -41,7 +42,7 @@ IAnimPlayer * pl;
 CTracer *g_pTracer;
 CTracer *g_pTracer2;
 
-
+IEventChannel<XEventLevel> *g_pLevelChannel;
 
 //##########################################################################
 
@@ -83,6 +84,87 @@ static void UpdateSettingsDesktop()
 	}
 }
 
+#define MAX_LEVEL_STRING 128
+struct CLevelInfo
+{
+	char m_szName[MAX_LEVEL_STRING]; //!< имя папки уровня
+	char m_szLocalName[MAX_LEVEL_STRING]; //!< Отображаемое имя уровня
+	bool m_bHasPreview;
+
+	HANDLE m_hFind; //!< для внутреннего использования
+};
+
+BOOL EnumLevels(CLevelInfo *pInfo)
+{
+	WIN32_FIND_DATA fd;
+	bool bFound = false;
+	if(!pInfo->m_hFind)
+	{
+		if((pInfo->m_hFind = ::FindFirstFile((String(Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS)) + "*").c_str(), &fd)) != INVALID_HANDLE_VALUE)
+		{
+			bFound = true;
+		}
+	}
+	else
+	{
+		if(::FindNextFile(pInfo->m_hFind, &fd))
+		{
+			bFound = true;
+		}
+	}
+
+	if(bFound)
+	{
+		while(!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || (!strcmp(fd.cFileName, ".") || !strcmp(fd.cFileName, "..")))
+		{
+			bFound = false;
+			if(::FindNextFile(pInfo->m_hFind, &fd))
+			{
+				if((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && strcmp(fd.cFileName, ".") && strcmp(fd.cFileName, ".."))
+				{
+					bFound = true;
+					break;
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+
+	if(!bFound)
+	{
+		if(INVALID_HANDLE_VALUE != pInfo->m_hFind)
+		{
+			::FindClose(pInfo->m_hFind);
+		}
+		return(FALSE);
+	}
+
+	strncpy(pInfo->m_szName, fd.cFileName, MAX_LEVEL_STRING - 1);
+
+	{
+		char szFullPath[1024];
+		sprintf(szFullPath, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pInfo->m_szName, pInfo->m_szName);
+
+		ISXConfig *pConfig = Core_OpConfig(szFullPath);
+		if(pConfig->keyExists("level", "local_name"))
+		{
+			strncpy(pInfo->m_szLocalName, pConfig->getKey("level", "local_name"), MAX_LEVEL_STRING - 1);
+		}
+		else
+		{
+			strncpy(pInfo->m_szLocalName, fd.cFileName, MAX_LEVEL_STRING - 1);
+		}
+		mem_release(pConfig);
+
+		sprintf(szFullPath, "%s%s/preview.bmp", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pInfo->m_szName);
+		pInfo->m_bHasPreview = FileExistsFile(szFullPath);
+	}
+
+	return(TRUE);
+}
 
 //##########################################################################
 
@@ -120,6 +202,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 	m_pHUDcontroller = new CHUDcontroller();
 
 	m_pMgr = new CEntityManager();
+
+	g_pLevelChannel = Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID);
 
 	Core_0RegisterConcmd("+forward", ccmd_forward_on);
 	Core_0RegisterConcmd("-forward", ccmd_forward_off);
@@ -246,17 +330,12 @@ GameData::GameData(HWND hWnd, bool isGame):
 			printf("Usage: map <levelname>");
 			return;
 		}
-		
-		constexpr XGUID guid = XGUID(0xdcc97efb, 0x5254, 0x48e2, 0xb3, 0xc3, 0xd9, 0xc0, 0x33, 0x92, 0xff, 0xda);
-		
-		
-		
-		constexpr bool a = guid.Data1 == guid.Data1;
-		std::enable_if<(guid == guid)>::type;
+		XEventLevel evLevel;
+		evLevel.type = XEventLevel::TYPE_LOAD;
+		evLevel.szLevelName = argv[1];
+		g_pLevelChannel->broadcastEvent(&evLevel);
 
-		IEventBinder<EVENT_LEVEL_LOAD_GUID>::XEventAddListener(NULL);
-
-		SLevel_Load(argv[1], true);
+		//SLevel_Load(argv[1], true);
 
 		//GameData::m_pGameStateManager->activate("ingame");
 
@@ -376,7 +455,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 		CLevelInfo levelInfo;
 		memset(&levelInfo, 0, sizeof(CLevelInfo));
-		while(SLevel_EnumLevels(&levelInfo))
+		while(EnumLevels(&levelInfo))
 		{
 			LibReport(REPORT_MSG_LEVEL_NOTICE, "Level: %s, dir: %s\n", levelInfo.m_szLocalName, levelInfo.m_szName);
 
@@ -443,7 +522,10 @@ GameData::GameData(HWND hWnd, bool isGame):
 		//Core_0ConsoleExecCmd("observe");
 		GameData::m_pPlayer->observe();
 
-		SLevel_Clear();
+		XEventLevel evLevel;
+		evLevel.type = XEventLevel::TYPE_UNLOAD;
+		g_pLevelChannel->broadcastEvent(&evLevel);
+		//SLevel_Clear();
 	});
 	m_pGUI->registerCallback("dial_settings", [](gui::IEvent * ev){
 		static gui::IDesktop * pSettingsDesktop = GameData::m_pGUI->createDesktopA("menu_settings", "menu/settings.html");

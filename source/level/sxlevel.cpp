@@ -10,12 +10,16 @@ See the license in LICENSE
 
 #include "level.h"
 
+#include <xcommon/XEvents.h>
+
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
 report_func g_fnReportf = DefReport;
 #endif
 
 //##########################################################################
+
+IEventChannel<XEventLevel> *g_pLevelChannel = NULL;
 
 CLevel* g_pLevel = 0;
 
@@ -48,6 +52,23 @@ SX_LIB_API void SLevel_0Create(const char *szName, bool isUnic, bool isServerMod
 			}
 		}
 		g_pLevel = new CLevel(isServerMode);
+		g_pLevelChannel = Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID);
+
+		g_pLevelChannel->addListener([](const XEventLevel *pData)
+		{
+			switch(pData->type)
+			{
+			case XEventLevel::TYPE_LOAD:
+				g_pLevel->load(pData->szLevelName, true);
+				break;
+			case XEventLevel::TYPE_UNLOAD:
+				g_pLevel->clear();
+				break;
+			case XEventLevel::TYPE_SAVE:
+				g_pLevel->save(pData->szLevelName);
+				break;
+			}
+		});
 	}
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);

@@ -1,106 +1,104 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<DirectedGraph DataVirtualized="True" Layout="Sugiyama" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+<DirectedGraph DataVirtualized="True" Layout="Sugiyama" ZoomLevel="-1" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
   <Nodes>
-    <Node Id="SkyXEnging" Bounds="407.283391955116,44.5346385707685,81.1199999999999,25.96" Label="SkyXEngine" UseManualLocation="True" />
-    <Node Id="Sxaigrid" Bounds="137.366599112767,153.675918887759,60.8024306133333,25.94943168" Label="sxaigrid" UseManualLocation="True" />
-    <Node Id="Sxanim" Bounds="534.411102876209,392.215083618164,56.74,25.96" Label="sxanim" UseManualLocation="True" />
-    <Node Id="Sxcore" Bounds="214.276765715857,512.775468570656,53.6233333333334,25.96" Label="sxcore" UseManualLocation="True" />
-    <Node Id="Sxdecals" Bounds="440.817769542876,392.611621365613,63.5933333333332,25.96" Label="sxdecals" UseManualLocation="True" />
-    <Node Id="Sxgame" Bounds="495.006522957643,266.378366013279,60.3866666666668,25.96" Label="sxgame" UseManualLocation="True" />
-    <Node Id="Sxgcore" Bounds="558.030516486036,507.558992066975,60.6900000000001,25.96" Label="sxgcore" UseManualLocation="True" />
-    <Node Id="Sxgeom" Bounds="258.324436209542,390.472255249023,61.3099999999999,25.96" Label="sxgeom" UseManualLocation="True" />
-    <Node Id="Sxgreen" Bounds="349.634436209542,392.611621365613,61.1833333333334,25.96" Label="sxgreen" UseManualLocation="True" />
-    <Node Id="Sxgui" Bounds="139.747077545899,41.7995916061587,49.980008,25.94943168" Label="sxgui" UseManualLocation="True" />
-    <Node Id="Sxinput" Bounds="137.992790317132,209.614082528559,58.1834576533336,25.94943168" Label="sxinput" UseManualLocation="True" />
-    <Node Id="Sxlevel" Bounds="635.687453853962,256.227294439009,54.7133333333334,25.96" Label="sxlevel" UseManualLocation="True" />
-    <Node Id="Sxlight" Bounds="621.151102876209,392.982478637695,54.3366666666666,25.96" Label="sxlight" UseManualLocation="True" />
-    <Node Id="Sxmtrl" Bounds="383.345415586612,514.083194857614,52.0833333333333,25.96" Label="sxmtrl" UseManualLocation="True" />
-    <Node Id="Sxparticles" Bounds="705.487769542876,392.091319580078,74.7266666666667,25.96" Label="sxparticles" UseManualLocation="True" />
+    <Node Id="SkyXEnging" Bounds="842.112268472581,38.5346369934082,81.1199999999999,25.96" Label="SkyXEngine" UseManualLocation="True" />
+    <Node Id="Sxaigrid" Bounds="137.366599112767,153.681602907359,60.8024306133333,25.94943168" Label="sxaigrid" UseManualLocation="True" />
+    <Node Id="Sxanim" Bounds="500.696821521577,392.215083618164,56.74,25.96" Label="sxanim" UseManualLocation="True" />
+    <Node Id="Sxcore" Bounds="850.276765715857,310.775468570656,53.6233333333334,25.96" Label="sxcore" UseManualLocation="True" />
+    <Node Id="Sxdecals" Bounds="407.103488188244,392.61162902832,63.5933333333332,25.96" Label="sxdecals" UseManualLocation="True" />
+    <Node Id="Sxgame" Bounds="503.006522957643,-21.621633986721,60.3866666666668,25.96" Label="sxgame" UseManualLocation="True" />
+    <Node Id="Sxgcore" Bounds="846.030516486036,194.558992066975,60.6900000000001,25.9600000000001" Label="sxgcore" UseManualLocation="True" />
+    <Node Id="Sxgeom" Bounds="224.610154854911,392.472255249023,61.3099999999999,25.96" Label="sxgeom" UseManualLocation="True" />
+    <Node Id="Sxgreen" Bounds="315.920154854911,392.61162902832,61.1833333333334,25.96" Label="sxgreen" UseManualLocation="True" />
+    <Node Id="Sxgui" Bounds="139.747077545899,41.7825395473589,49.980008,25.94943168" Label="sxgui" UseManualLocation="True" />
+    <Node Id="Sxinput" Bounds="137.992790317132,209.631134587359,58.1834576533336,25.94943168" Label="sxinput" UseManualLocation="True" />
+    <Node Id="Sxlevel" Bounds="662.687453853962,-17.772705560991,54.7133333333334,25.96" Label="sxlevel" UseManualLocation="True" />
+    <Node Id="Sxlight" Bounds="587.436821521577,392.982478637695,54.3366666666666,25.96" Label="sxlight" UseManualLocation="True" />
+    <Node Id="Sxmtrl" Bounds="136.345415586612,342.083194857614,52.0833333333333,25.96" Label="sxmtrl" UseManualLocation="True" />
+    <Node Id="Sxparticles" Bounds="671.773488188244,393.091319580078,74.7266666666667,25.96" Label="sxparticles" UseManualLocation="True" />
     <Node Id="Sxphysics" Bounds="124.20455485026,265.65638347168,68.8866666666668,25.96" Label="sxphysics" UseManualLocation="True" />
-    <Node Id="Sxpp" Bounds="810.214436209542,389.704783935547,50,25.96" Label="sxpp" UseManualLocation="True" />
-    <Node Id="Sxrender" Bounds="375.472977895872,254.333520828219,65.3566666666666,25.96" Label="sxrender" UseManualLocation="True" />
-    <Node Id="Sxscore" Bounds="132.964280088412,97.7377552469587,58.6932577333334,25.94943168" Label="sxscore" UseManualLocation="True" />
+    <Node Id="Sxpp" Bounds="776.500154854911,394.704783935547,50,25.96" Label="sxpp" UseManualLocation="True" />
+    <Node Id="Sxrender" Bounds="321.472977895872,-16.666479171781,65.3566666666665,25.96" Label="sxrender" UseManualLocation="True" />
+    <Node Id="Sxscore" Bounds="132.964280088412,97.7320712273589,58.6932577333334,25.94943168" Label="sxscore" UseManualLocation="True" />
   </Nodes>
   <Links>
-    <Link Source="SkyXEnging" Target="Sxaigrid" Bounds="206.04470481283,70.4946385707685,208.489863322356,81.2456915487057" />
-    <Link Source="SkyXEnging" Target="Sxanim" Bounds="455.589599609375,70.4946365356445,109.419311523438,312.722648620605" />
-    <Link Source="SkyXEnging" Target="Sxcore" Bounds="258.680877685547,70.4946365356445,183.368499755859,435.56160736084" />
-    <Link Source="SkyXEnging" Target="Sxdecals" Bounds="448.76711909111,70.4946385707685,22.2847169616811,313.139686917836" />
-    <Link Source="SkyXEnging" Target="Sxgame" Bounds="452.369492010569,70.4946385707685,65.3409695145561,187.385557965539" />
-    <Link Source="SkyXEnging" Target="Sxgcore" Bounds="450.175842285156,70.4946365356445,122.125122070313,430.050102233887" />
-    <Link Source="SkyXEnging" Target="Sxgeom" Bounds="298.696137828961,70.4946385707685,143.18648534542,311.798804508306" />
-    <Link Source="SkyXEnging" Target="Sxgreen" Bounds="369.48095703125,70.4946365356445,72.5684204101563,313.157707214355" />
-    <Link Source="SkyXEnging" Target="Sxinput" Bounds="196.907840105002,70.4946385707685,228.861389766571,134.574568580558" />
-    <Link Source="SkyXEnging" Target="Sxlevel" Bounds="461.038490506475,70.4946385707685,182.3944900795,179.421204928255" />
-    <Link Source="SkyXEnging" Target="Sxlight" Bounds="455.311307537324,70.4946385707685,181.051978735909,314.68683036416" />
-    <Link Source="SkyXEnging" Target="Sxmtrl" Bounds="413.608367919922,70.4946365356445,36.5328369140625,434.752464294434" />
-    <Link Source="SkyXEnging" Target="Sxparticles" Bounds="458.3564453125,70.4946365356445,267.179260253906,314.829765319824" />
-    <Link Source="SkyXEnging" Target="Sxphysics" Bounds="182.773416724452,70.4946385707685,248.093998306113,189.695126962391" />
-    <Link Source="SkyXEnging" Target="Sxpp" Bounds="465.328826904297,70.4946365356445,352.967926025391,312.363822937012" />
-    <Link Source="SkyXEnging" Target="Sxrender" Bounds="412.280052973567,70.4946385707685,33.1076385398752,174.995753128036" />
-    <Link Source="SkyXEnging" Target="Sxscore" Bounds="200.505318939,65.0706039038666,206.778073016116,38.5209060984863" />
-    <Link Source="Sxaigrid" Target="Sxgcore" Bounds="176.663009643555,179.63102722168,373.524978637695,325.930374145508" />
-    <Link Source="Sxanim" Target="Sxgcore" Bounds="565.661319899573,418.175083618164,17.8843324567831,80.5976193481251" />
-    <Link Source="Sxanim" Target="Sxmtrl" Bounds="432.7716244503,418.175083618164,113.671698448556,90.3096166007599" />
-    <Link Source="Sxdecals" Target="Sxcore" Bounds="273.807718552927,418.571621365613,173.797469038379,90.2022760681095" />
-    <Link Source="Sxdecals" Target="Sxgcore" Bounds="485.686321306355,418.571621365613,83.2309430599756,82.6458948282784" />
-    <Link Source="Sxdecals" Target="Sxmtrl" Bounds="420.29871059763,418.571621365613,45.5594860180756,87.5282944456382" />
-    <Link Source="Sxdecals" Target="Sxphysics" Bounds="198.971924251136,294.941775316722,243.038964188049,98.2750223232019" />
-    <Link Source="Sxgame" Target="Sxaigrid" Bounds="206.752453650746,178.948581719326,288.254069306897,90.8895116775656" />
-    <Link Source="Sxgame" Target="Sxanim" Bounds="529.076344727428,292.338366013279,27.2528143990781,91.2530855435408" />
-    <Link Source="Sxgame" Target="Sxcore" Bounds="270.289001464844,292.33837890625,244.191528320313,215.784942626953" />
-    <Link Source="Sxgame" Target="Sxdecals" Bounds="481.482437748408,292.338366013279,38.310295429472,91.9652880605082" />
-    <Link Source="Sxgame" Target="Sxgcore" Bounds="524.939819335938,292.33837890625,50.1424560546875,207.65576171875" />
-    <Link Source="Sxgame" Target="Sxgeom" Bounds="321.655167564862,292.338366013279,178.836453118862,93.948317410471" />
-    <Link Source="Sxgame" Target="Sxgreen" Bounds="401.920631812784,292.338366013279,108.372223038109,94.3631394072474" />
-    <Link Source="Sxgame" Target="Sxgui" Bounds="193.19876034811,72.4914712818453,311.169467803753,193.886894731434" />
-    <Link Source="Sxgame" Target="Sxinput" Bounds="205.151779174805,225.419036865234,293.288619995117,40.9593200683594" />
-    <Link Source="Sxgame" Target="Sxlevel" Category="Wrong" Bounds="555.39318962431,271.882867522165,71.318569298642,5.25201324531662" />
-    <Link Source="Sxgame" Target="Sxlight" Bounds="537.822606960095,292.338366013279,91.5995282181829,94.1919798179023" />
-    <Link Source="Sxgame" Target="Sxmtrl" Bounds="411.142883300781,292.33837890625,100.934875488281,212.773468017578" />
-    <Link Source="Sxgame" Target="Sxparticles" Bounds="547.672585636049,292.338366013279,164.912364828423,95.2515585714692" />
-    <Link Source="Sxgame" Target="Sxphysics" Bounds="202.090408325195,279.221038818359,292.916122436523,2.16232299804688" />
-    <Link Source="Sxgame" Target="Sxscore" Bounds="197.930827908806,127.261040421103,299.471935502207,139.178707820187" />
-    <Link Source="Sxgcore" Target="Sxcore" Bounds="276.833984375,526.984069824219,281.196533203125,17.8721923828125" />
-    <Link Source="Sxgeom" Target="Sxgcore" Bounds="319.049526326478,415.21195739463,231.116889510061,90.3843577085492" />
-    <Link Source="Sxgeom" Target="Sxmtrl" Category="Weak" Bounds="301.623068323306,416.432255249023,88.8405031742295,91.2039927155253" />
-    <Link Source="Sxgreen" Target="Sxgcore" Bounds="403.730593428454,418.571621365613,153.261936008429,84.636589972779" />
-    <Link Source="Sxgreen" Target="Sxgeom" Bounds="328.631963519296,404.381947000652,21.002472690246,0.492423231220698" />
-    <Link Source="Sxgui" Target="Sxcore" Bounds="179.376693725586,67.7319717407227,59.7436676025391,436.079490661621" />
-    <Link Source="Sxgui" Target="Sxgcore" Bounds="174.645294189453,67.7319717407227,383.666107177734,435.294609069824" />
-    <Link Source="Sxinput" Target="Sxcore" Bounds="181.351379394531,235.58056640625,56.6719207763672,268.281829833984" />
-    <Link Source="Sxlevel" Target="Sxaigrid" Bounds="206.982090904856,174.775952707398,428.705362949106,88.7669220455118" />
-    <Link Source="Sxlevel" Target="Sxdecals" Category="Wrong" Bounds="498.055049426623,282.187294439009,146.865454120861,105.183948508376" />
-    <Link Source="Sxlevel" Target="Sxgcore" Bounds="593.907409667969,282.187286376953,64.0982666015625,216.650604248047" />
-    <Link Source="Sxlevel" Target="Sxgeom" Category="Wrong" Bounds="327.946209519867,279.025100820071,307.741244334095,110.442693517943" />
-    <Link Source="Sxlevel" Target="Sxgreen" Category="Wrong" Bounds="415.249153800849,281.724703442037,221.837814017138,106.977628948788" />
-    <Link Source="Sxlevel" Target="Sxparticles" Bounds="670.668615893115,282.187294439009,59.9996078092141,102.143797237252" />
-    <Link Source="Sxlevel" Target="Sxphysics" Category="Wrong" Bounds="202.075119018555,278.755920410156,433.612319946289,18.3095092773438" />
-    <Link Source="Sxlevel" Target="Sxpp" Bounds="679.786799050704,282.187294439009,131.572133291096,102.003170344017" />
-    <Link Source="Sxlevel" Target="Sxscore" Bounds="200.23793840147,122.712089035562,435.449515452492,137.835812643963" />
-    <Link Source="Sxlight" Target="Sxgcore" Bounds="599.338478975167,418.942478637695,42.1901058223066,80.6419608298766" />
-    <Link Source="Sxmtrl" Target="Sxgcore" Bounds="435.428748919945,521.972915948765,113.607740462453,4.14104933953149" />
-    <Link Source="Sxparticles" Target="Sxgcore" Bounds="612.949194744118,418.051319580078,112.53693429864,84.1192979158128" />
-    <Link Source="Sxparticles" Target="Sxlight" Bounds="684.487369653939,405.423547294841,21.0003998889373,0.197972777107509" />
-    <Link Source="Sxphysics" Target="Sxcore" Bounds="162.978101138508,291.61638347168,70.9319692027267,212.621635434013" />
-    <Link Source="Sxphysics" Target="Sxgeom" Bounds="172.20148092214,291.61638347168,96.7243465387733,92.6309386958803" />
-    <Link Source="Sxphysics" Target="Sxgreen" Bounds="181.302213238799,291.61638347168,168.460529777943,96.5209809247983" />
-    <Link Source="Sxphysics" Target="Sxlight" Bounds="193.091221516927,287.592458529572,419.349528587406,109.040719641555" />
-    <Link Source="Sxphysics" Target="Sxmtrl" Bounds="166.50471496582,291.616394042969,214.42512512207,217.705383300781" />
-    <Link Source="Sxpp" Target="Sxgcore" Bounds="627.250732421875,415.664794921875,206.820190429688,91.8231506347656" />
-    <Link Source="Sxpp" Target="Sxgcore" Index="1" Bounds="616.314208984375,415.664794921875,202.488098144531,89.1468200683594" />
-    <Link Source="Sxrender" Target="Sxanim" Bounds="422.707968805214,280.293520828219,118.79913799526,105.931791218333" />
-    <Link Source="Sxrender" Target="Sxdecals" Bounds="414.202387711982,280.293520828219,48.558232003778,104.160946106547" />
-    <Link Source="Sxrender" Target="Sxgame" Bounds="440.829644562539,270.676274852185,45.224155444777,4.65377805994905" />
-    <Link Source="Sxrender" Target="Sxgcore" Bounds="418.250152587891,280.293518066406,158.940032958984,219.329010009766" />
-    <Link Source="Sxrender" Target="Sxgeom" Bounds="306.269712980842,280.293520828219,90.5192850585411,103.406788778917" />
-    <Link Source="Sxrender" Target="Sxgreen" Bounds="384.628988672241,280.293520828219,20.9010166306232,103.496197501886" />
-    <Link Source="Sxrender" Target="Sxinput" Bounds="205.025354086169,229.642266885483,170.447623809703,31.6108084401531" />
-    <Link Source="Sxrender" Target="Sxlight" Bounds="430.635304700895,280.293520828219,187.405738330573,108.189254128443" />
-    <Link Source="Sxrender" Target="Sxmtrl" Bounds="408.637268066406,280.293518066406,4.82586669921875,224.818328857422" />
-    <Link Source="Sxrender" Target="Sxparticles" Bounds="439.053613542683,280.032480472983,263.938330862389,108.633361517565" />
-    <Link Source="Sxrender" Target="Sxpp" Bounds="440.806599318487,277.66465474076,360.82853547911,114.376099821832" />
-    <Link Source="Sxscore" Target="Sxcore" Bounds="180.481628417969,123.681503295898,58.7242126464844,380.126907348633" />
+    <Link Source="SkyXEnging" Target="Sxaigrid" Bounds="207.054523136048,58.0471836467989,635.057779110046,102.28167084899" />
+    <Link Source="SkyXEnging" Target="Sxanim" Bounds="548.407368188395,64.4946369934082,321.287685730356,321.355810999873" />
+    <Link Source="SkyXEnging" Target="Sxcore" Bounds="883.324401855469,64.4946365356445,28.430419921875,237.633110046387" />
+    <Link Source="SkyXEnging" Target="Sxdecals" Bounds="462.20334223306,64.4946369934082,404.200852478898,322.503834829426" />
+    <Link Source="SkyXEnging" Target="Sxgame" Bounds="572.26274842175,-1.91756069998991,269.849553824344,46.4504218049195" />
+    <Link Source="SkyXEnging" Target="Sxgcore" Bounds="877.262285549401,64.4946369934082,4.88617378654465,121.071669618329" />
+    <Link Source="SkyXEnging" Target="Sxgeom" Bounds="286.112850738672,64.4946369934082,573.550467750194,323.55557941836" />
+    <Link Source="SkyXEnging" Target="Sxgreen" Bounds="373.676878730158,64.4946369934082,489.340480263541,323.157352949717" />
+    <Link Source="SkyXEnging" Target="Sxinput" Bounds="204.929541260747,61.2122033142205,637.182760985347,152.345219012172" />
+    <Link Source="SkyXEnging" Target="Sxlevel" Bounds="726.039266843416,5.72907509562156,116.613729196477,34.0874777950307" />
+    <Link Source="SkyXEnging" Target="Sxlight" Bounds="629.850749265849,64.4946369934082,243.004843577192,321.309589611702" />
+    <Link Source="SkyXEnging" Target="Sxmtrl" Bounds="196.573872791809,64.4946369934082,655.29840863025,276.161285494427" />
+    <Link Source="SkyXEnging" Target="Sxparticles" Bounds="719.446297729637,64.4946369934082,156.873026851527,320.512993422469" />
+    <Link Source="SkyXEnging" Target="Sxphysics" Bounds="201.572368458656,63.8712602221587,641.709179290362,201.299991639165" />
+    <Link Source="SkyXEnging" Target="Sxpp" Bounds="804.806274414063,64.4946365356445,74.451171875,321.311180114746" />
+    <Link Source="SkyXEnging" Target="Sxrender" Bounds="395.780963798729,0.661509922699433,446.331338447365,46.6168577614922" />
+    <Link Source="SkyXEnging" Target="Sxscore" Bounds="200.627303677933,54.8474552418644,641.48499856816,52.71087054583" />
+    <Link Source="Sxaigrid" Target="Sxgcore" Bounds="198.169029942897,168.410304608034,638.876430435308,36.8595594966264" />
+    <Link Source="Sxanim" Target="Sxgcore" Bounds="551.874461463321,224.970545451174,293.871433440948,167.24453816699" />
+    <Link Source="Sxanim" Target="Sxmtrl" Bounds="197.371643066406,359.02294921875,303.91845703125,34.401123046875" />
+    <Link Source="Sxdecals" Target="Sxcore" Bounds="469.281280517578,329.820098876953,372.122711181641,63.2440795898438" />
+    <Link Source="Sxdecals" Target="Sxgcore" Bounds="467.571464633548,224.069569353103,372.289908664482,168.542059675217" />
+    <Link Source="Sxdecals" Target="Sxmtrl" Bounds="197.308456420898,360.830688476563,209.795028686523,37.6257629394531" />
+    <Link Source="Sxdecals" Target="Sxphysics" Bounds="195.499140533655,295.330129809823,214.74780352165,97.2814992184975" />
+    <Link Source="Sxgame" Target="Sxaigrid" Bounds="202.930000705637,4.33836791992189,303.211312494168,145.450637856955" />
+    <Link Source="Sxgame" Target="Sxanim" Bounds="529.286345336907,4.3383679199219,3.78388180390982,378.877164503866" />
+    <Link Source="Sxgame" Target="Sxcore" Bounds="546.628597256384,4.33836791992189,310.559911122522,300.182173132241" />
+    <Link Source="Sxgame" Target="Sxdecals" Bounds="443.852756267748,4.33836791992189,86.3922216665803,379.497779215977" />
+    <Link Source="Sxgame" Target="Sxgcore" Bounds="553.804944808862,4.33836791992189,294.350464522175,185.423597831267" />
+    <Link Source="Sxgame" Target="Sxgeom" Bounds="268.992827267944,4.3383679199219,255.495016273185,380.661064158961" />
+    <Link Source="Sxgame" Target="Sxgreen" Bounds="356.059625229336,4.33836791992189,171.290364020528,380.068067262367" />
+    <Link Source="Sxgame" Target="Sxgui" Bounds="198.596740992863,-3.44647036661372,304.409785292944,52.3777233967041" />
+    <Link Source="Sxgame" Target="Sxinput" Bounds="195.235580784141,4.33836791992189,317.414101053496,200.486588266046" />
+    <Link Source="Sxgame" Target="Sxlight" Bounds="535.748413331036,4.3383679199219,74.5742023071997,379.812731208839" />
+    <Link Source="Sxgame" Target="Sxmtrl" Bounds="182.045999501805,4.33836791992189,337.920189939418,331.442752195284" />
+    <Link Source="Sxgame" Target="Sxparticles" Bounds="538.706467528856,4.33836791992189,161.408818026949,380.467702139021" />
+    <Link Source="Sxgame" Target="Sxphysics" Bounds="182.712497159806,4.33836791992189,333.564088200306,255.840672352751" />
+    <Link Source="Sxgame" Target="Sxscore" Bounds="200.224888395427,1.07428575179609,302.781637890381,97.4321543854016" />
+    <Link Source="Sxgcore" Target="Sxcore" Bounds="876.455140213931,220.518986206055,0.498441380744453,81.2566457613642" />
+    <Link Source="Sxgeom" Target="Sxgcore" Bounds="285.920144348145,219.940680737171,551.535189001309,175.743534060302" />
+    <Link Source="Sxgeom" Target="Sxmtrl" Category="Weak" Bounds="194.060687586086,372.247054181448,37.279474433092,20.2252010675751" />
+    <Link Source="Sxgreen" Target="Sxgcore" Bounds="376.789054524512,221.928945077563,461.088028383177,172.345644985175" />
+    <Link Source="Sxgreen" Target="Sxgeom" Bounds="294.920133849339,405.512825853954,21.0000097867289,0.0320762484703323" />
+    <Link Source="Sxgui" Target="Sxcore" Bounds="189.727079805664,64.1939842496947,652.13340133071,246.25870334509" />
+    <Link Source="Sxgui" Target="Sxgcore" Bounds="189.727079805664,60.122362087874,647.503946965361,139.01268909137" />
+    <Link Source="Sxinput" Target="Sxcore" Bounds="196.176254888679,226.750365988649,645.190451997889,91.9160595708488" />
+    <Link Source="Sxlevel" Target="Sxaigrid" Bounds="206.720068498761,4.18773695483555,455.967362734963,149.681628539027" />
+    <Link Source="Sxlevel" Target="Sxdecals" Category="Wrong" Bounds="451.541414205267,8.18729064941408,230.559279952532,376.747745772718" />
+    <Link Source="Sxlevel" Target="Sxgcore" Bounds="701.434681095807,8.18729064941408,157.613954046794,179.607056849438" />
+    <Link Source="Sxlevel" Target="Sxgeom" Category="Wrong" Bounds="275.567361383346,8.18729064941408,400.720490117736,378.108374242945" />
+    <Link Source="Sxlevel" Target="Sxgreen" Category="Wrong" Bounds="363.154336370594,8.18729064941408,316.024217511642,377.523144395442" />
+    <Link Source="Sxlevel" Target="Sxparticles" Bounds="690.647274108411,8.18729064941408,17.4685838673611,375.913730653385" />
+    <Link Source="Sxlevel" Target="Sxphysics" Category="Wrong" Bounds="190.9249239136,8.18729064941408,474.78320059374,253.233591448063" />
+    <Link Source="Sxlevel" Target="Sxpp" Bounds="693.551438827528,8.18729064941408,102.093639661945,377.82909341908" />
+    <Link Source="Sxlevel" Target="Sxscore" Bounds="200.449433198466,1.19456086486332,462.237998035258,101.165241796712" />
+    <Link Source="Sxlight" Target="Sxgcore" Bounds="631.72903922612,225.955665676193,220.350260068272,167.026812961503" />
+    <Link Source="Sxmtrl" Target="Sxgcore" Bounds="188.428751627604,215.629979006945,648.787939918633,134.052496448011" />
+    <Link Source="Sxparticles" Target="Sxgcore" Bounds="720.070840036771,227.402271523147,139.572340374326,165.689048056931" />
+    <Link Source="Sxparticles" Target="Sxlight" Bounds="650.773490942116,406.004121780192,20.9999860272854,0.0241787628623342" />
+    <Link Source="Sxphysics" Target="Sxcore" Bounds="193.09121770223,280.799473032512,648.203220806051,40.7080776905021" />
+    <Link Source="Sxphysics" Target="Sxgeom" Bounds="168.536962233126,291.616383056641,71.3848709346769,93.6968681461896" />
+    <Link Source="Sxphysics" Target="Sxgreen" Bounds="177.855233698637,291.616383056641,141.992297806088,95.955979863875" />
+    <Link Source="Sxphysics" Target="Sxlight" Bounds="193.09121770223,288.25468580591,385.677250567309,107.70039367451" />
+    <Link Source="Sxphysics" Target="Sxmtrl" Bounds="159.282934007446,291.616383056641,2.02930019555191,41.4775711051929" />
+    <Link Source="Sxpp" Target="Sxgcore" Index="1" Bounds="806.355995441432,228.948428573234,62.0101596377267,165.756355362312" />
+    <Link Source="Sxrender" Target="Sxanim" Bounds="359.70403780108,9.29352233886721,160.270267902859,374.64691716388" />
+    <Link Source="Sxrender" Target="Sxdecals" Bounds="356.839077563908,9.29352233886721,77.5484046015823,374.505064638875" />
+    <Link Source="Sxrender" Target="Sxgame" Bounds="386.829654744466,-7.55705494591054,107.180316118822,2.96620694229373" />
+    <Link Source="Sxrender" Target="Sxgcore" Bounds="385.296045711588,8.91071502026148,453.14505673415,183.284833001974" />
+    <Link Source="Sxrender" Target="Sxgeom" Bounds="260.516688169039,9.29352233886721,90.4974514623395,374.430620361784" />
+    <Link Source="Sxrender" Target="Sxgreen" Bounds="346.922055749245,9.29352233886721,6.9869833297368,374.319674137491" />
+    <Link Source="Sxrender" Target="Sxinput" Bounds="183.544498018102,9.29352233886721,159.876778125892,193.400915691331" />
+    <Link Source="Sxrender" Target="Sxlight" Bounds="362.403974858175,9.29352233886721,239.119715851036,376.094056495099" />
+    <Link Source="Sxrender" Target="Sxmtrl" Bounds="173.568065959542,9.2935223388672,173.64499200244,324.85246671736" />
+    <Link Source="Sxrender" Target="Sxparticles" Bounds="365.396285330881,9.29352233886721,326.602493969061,376.995462321881" />
+    <Link Source="Sxrender" Target="Sxpp" Bounds="368.266520927061,9.29352233886721,412.493623412899,379.319273939955" />
+    <Link Source="Sxscore" Target="Sxcore" Bounds="191.65753432321,119.453929229573,649.994187157481,193.739170458083" />
   </Links>
   <Categories>
     <Category Id="Weak" Label="Weak" Background="#FF00FF00" IsTag="True" Stroke="#FF00FF00" />
@@ -122,8 +120,40 @@
     <Property Id="Value" DataType="System.String" />
     <Property Id="ValueLabel" DataType="System.String" />
     <Property Id="Visibility" Label="Visibility" Description="Defines whether a node in the graph is visible or not" DataType="System.Windows.Visibility" />
+    <Property Id="ZoomLevel" DataType="System.String" />
   </Properties>
   <Styles>
+    <Style TargetType="Link" GroupLabel="Current Call Stack Link" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="HasCategory('CurrentCallStackCall')" />
+      <Setter Property="Stroke" Value="#FFD93701" />
+      <Setter Property="Weight" Value="1" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Call Stack Indirect Link" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="HasCategory('CallStackIndirectCall')" />
+      <Setter Property="Stroke" Value="#FFB8B8B8" />
+      <Setter Property="StrokeDashArray" Value="4 1" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Call Stack Direct Link" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="HasCategory('CallStackDirectCall')" />
+      <Setter Property="Stroke" Value="#FFB8B8B8" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="External And Current" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="HasCategory('ExternalCallStackEntry') And HasCategory('CurrentCallStackEntry')" />
+      <Setter Property="Background" Value="#FFFFF8F0" />
+      <Setter Property="Stroke" Value="#FFCE5100" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Current Call Stack Node" ValueLabel="True">
+      <Condition Expression="HasCategory('CurrentCallStackEntry') And !HasCategory('QueryResult')" />
+      <Setter Property="Background" Value="#FFFFE3C6" />
+      <Setter Property="Stroke" Value="#FFD93701" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="External Call Stack Entry" ValueLabel="True">
+      <Condition Expression="HasCategory('ExternalCallStackEntry')" />
+      <Setter Property="Background" Value="#FFF7F7F7" />
+      <Setter Property="StrokeDashArray" Value="1 3" />
+      <Setter Property="Foreground" Value="#FFA5A5A5" />
+      <Setter Property="Stroke" Value="#FFA5A5A5" />
+    </Style>
     <Style TargetType="Node" GroupLabel="Results" ValueLabel="True">
       <Condition Expression="HasCategory('QueryResult')" />
       <Setter Property="Background" Value="#FFBCFFBE" />

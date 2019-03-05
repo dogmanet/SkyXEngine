@@ -9,6 +9,10 @@ CCore::CCore()
 CCore::~CCore()
 {
 	mem_delete(m_pPluginManager);
+	for(AssotiativeArray<XGUID, IBaseEventChannel*>::Iterator i = m_mEventChannels.begin(); i; i++)
+	{
+		mem_delete(*i.second);
+	}
 }
 
 void CCore::Release()
@@ -33,6 +37,19 @@ IAsyncFileReader *CCore::getAsyncFileReader()
 IAsyncTaskRunner *CCore::getAsyncTaskRunner()
 {
 	return(NULL);
+}
+
+IBaseEventChannel *CCore::getEventChannelInternal(const XGUID &guid)
+{
+	const AssotiativeArray<XGUID, IBaseEventChannel*>::Node *pNode;
+	if(m_mEventChannels.KeyExists(guid, &pNode))
+	{
+		return(*pNode->Val);
+	}
+	//@HACK
+	IBaseEventChannel *pOut = new IEventChannel<int>();
+	m_mEventChannels[guid] = pOut;
+	return(pOut);
 }
 
 void CCore::loadPlugins()

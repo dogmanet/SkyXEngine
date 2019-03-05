@@ -22,7 +22,10 @@ public:
 	void loadPlugins();
 
 protected:
+	IBaseEventChannel *getEventChannelInternal(const XGUID &guid);
+
 	CPluginManager *m_pPluginManager = NULL;
+	AssotiativeArray<XGUID, IBaseEventChannel*> m_mEventChannels;
 };
 
 #endif

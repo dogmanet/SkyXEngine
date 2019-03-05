@@ -345,6 +345,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "models", "models", "{7C1F0E
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dseplugin", "..\..\dseplugin\vs2013\dseplugin.vcxproj", "{5145958A-F75F-4F6D-9793-7384B616CF76}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{846B2EA2-15BC-40C4-B273-47A1D40E8BE9}"
+	ProjectSection(SolutionItems) = preProject
+		dependencies.dgml = dependencies.dgml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Singlethreaded|Win32 = Debug Singlethreaded|Win32
