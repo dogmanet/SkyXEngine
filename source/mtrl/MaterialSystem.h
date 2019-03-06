@@ -20,6 +20,11 @@ public:
 	void getMainTexture(IXTexture **ppTexture);
 	ID getId();
 	bool isTransparent();
+
+	ID getInternalID()
+	{
+		return(m_id);
+	}
 protected:
 	ID m_id = -1;
 };

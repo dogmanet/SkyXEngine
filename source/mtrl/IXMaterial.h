@@ -10,6 +10,10 @@ public:
 	virtual void getMainTexture(IXTexture **ppTexture) = 0;
 
 	virtual bool isTransparent() = 0;
+
+
+	//@FIXME: DO NOT USE! Will be removed!
+	virtual ID getInternalID() = 0;
 };
 
 #endif

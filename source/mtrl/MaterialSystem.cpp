@@ -38,7 +38,8 @@ void CMaterialSystem::addTexture(const char *szName, IGXTexture2D *pTexture)
 void CMaterialSystem::bindMaterial(IXMaterial *pMaterial, const SMMATRIX *pmWorld, IXShaderVariant *pShaderVariant)
 {
 	CMaterial *pMat = (CMaterial*)pMaterial;
-	SMtrl_MtlRender(pMat->getId(), pmWorld);
+	//SMtrl_MtlRender(pMat->getId(), pmWorld);
+	SGCore_MtlSet(pMat->getId(), pmWorld);
 }
 void CMaterialSystem::bindTexture(IXTexture *pTexture, UINT slot)
 {
