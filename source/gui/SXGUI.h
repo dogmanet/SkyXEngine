@@ -158,6 +158,8 @@ namespace gui
 		IGXRenderBuffer *getQuadRenderBufferXYZ(float3_t *pVertices);
 		IGXRenderBuffer *getQuadRenderBufferXYZTex16(float *pVertices);
 
+		IFont *getFont(const WCHAR * szName, UINT size, IFont::STYLE style, int iBlurRadius);
+
 	protected:
 		SMMATRIX m_mTransformWorld;
 		SMMATRIX m_mTransformViewProj;

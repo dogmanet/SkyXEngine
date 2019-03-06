@@ -195,6 +195,9 @@
     <ClInclude Include="..\..\..\source\gui\IRANGE.h">
       <Filter>Header Files\DOM\elements</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\gui\IFont.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\gui\SXGUI.cpp">

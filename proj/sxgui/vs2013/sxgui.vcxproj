@@ -120,6 +120,7 @@
     <ClInclude Include="..\..\..\source\gui\IDOMRECT.h" />
     <ClInclude Include="..\..\..\source\gui\IEvent.h" />
     <ClInclude Include="..\..\..\source\gui\Font.h" />
+    <ClInclude Include="..\..\..\source\gui\IFont.h" />
     <ClInclude Include="..\..\..\source\gui\IHEAD.h" />
     <ClInclude Include="..\..\..\source\gui\IHTML.h" />
     <ClInclude Include="..\..\..\source\gui\IHTMLparser.h" />
