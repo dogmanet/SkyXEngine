@@ -43,6 +43,33 @@ CTracer *g_pTracer;
 CTracer *g_pTracer2;
 
 IEventChannel<XEventLevel> *g_pLevelChannel;
+static gui::IFont *g_pFont = NULL;
+static IGXRenderBuffer *g_pTextRenderBuffer = NULL;
+static IGXIndexBuffer *g_pTextIndexBuffer = NULL;
+static UINT g_uVertexCount = 0;
+static UINT g_uIndexCount = 0;
+static ID g_idTextVS = -1;
+static ID g_idTextPS = -1;
+static ID g_idTextKit = -1;
+static IGXBlendState *g_pTextBlendState = NULL;
+
+//##########################################################################
+
+static void RenderText(const wchar_t *szText)
+{
+	if(!g_pFont)
+	{
+		g_pFont = GameData::m_pGUI->getFont(L"traceroute", 16, gui::IFont::STYLE_NONE, 0);
+	}
+
+	mem_release(g_pTextRenderBuffer);
+	mem_release(g_pTextIndexBuffer);
+
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+
+	g_pFont->buildString(szText, gui::IFont::DECORATION_NONE, gui::IFont::TEXT_ALIGN_LEFT,
+		&g_pTextRenderBuffer, &g_pTextIndexBuffer, &g_uVertexCount, &g_uIndexCount, NULL, *r_win_width, 0, 0);
+}
 
 //##########################################################################
 
@@ -334,7 +361,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		evLevel.type = XEventLevel::TYPE_LOAD;
 		evLevel.szLevelName = argv[1];
 		g_pLevelChannel->broadcastEvent(&evLevel);
-
+		
 		//SLevel_Load(argv[1], true);
 
 		//GameData::m_pGameStateManager->activate("ingame");
@@ -835,6 +862,14 @@ GameData::GameData(HWND hWnd, bool isGame):
 		});
 	});
 
+	Core_0RegisterConcmdArg("text", [](int argc, const char ** argv)
+	{
+		if(argc != 2)
+		{
+			printf("Usage: text <text>");
+			return;
+		}
+	});
 
 	//gui::IDesktop * pDesk = m_pGUI->createDesktopA("ingame", "ingame.html");
 	//gui::IDesktop * pDesk = m_pGUI->createDesktopA("ingame", "main_menu.html");
@@ -847,6 +882,16 @@ GameData::GameData(HWND hWnd, bool isGame):
 	//pl->setPos(float3(0, 0, 0));
 	//g_pRagdoll = new CRagdoll(pl);
 	//pl->setRagdoll(g_pRagdoll);
+
+	g_idTextVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_main.vs", "gui_main.vs", SHADER_CHECKDOUBLE_NAME);
+	g_idTextPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_main.ps", "gui_main.ps", SHADER_CHECKDOUBLE_NAME);
+	g_idTextKit = SGCore_ShaderCreateKit(g_idTextVS, g_idTextPS);
+
+	GXBLEND_DESC bsDesc;
+	bsDesc.renderTarget[0].bBlendEnable = true;
+	bsDesc.renderTarget[0].srcBlend = bsDesc.renderTarget[0].srcBlendAlpha = GXBLEND_SRC_ALPHA;
+	bsDesc.renderTarget[0].destBlend = bsDesc.renderTarget[0].destBlendAlpha = GXBLEND_INV_SRC_ALPHA;
+	g_pTextBlendState = SGCore_GetDXDevice()->createBlendState(&bsDesc);
 
 	//m_pStatsUI = m_pGUI->createDesktopA("stats", "sys/stats.html");
 
@@ -939,6 +984,49 @@ void GameData::render()
 		m_pGUI->render();
 	}
 	//m_pStatsUI->render(0.1f);
+	IGXContext *pDev = SGCore_GetDXDevice();
+	if(pDev)
+	{
+		const GX_FRAME_STATS *pFrameStats = pDev->getFrameStats();
+
+		static wchar_t wszStats[256];
+		swprintf_s(wszStats, L"FPS: 30\nCount poly: %u\nCount DIP: %u", pFrameStats->uPolyCount, pFrameStats->uDIPcount);
+
+		RenderText(wszStats);
+
+		if(g_pTextRenderBuffer)
+		{
+			pDev->setBlendState(g_pTextBlendState);
+			pDev->setRasterizerState(NULL);
+			pDev->setDepthStencilState(NULL);
+			pDev->setSamplerState(NULL, 0);
+
+			static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+			static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+
+			SMMATRIX m(
+				2.0f / (float)*r_win_width, 0.0f, 0.0f, 0.0f,
+				0.0f, -2.0f / (float)*r_win_height, 0.0f, 0.0f,
+				0.0f, 0.0f, 0.5f, 0.0f,
+				-1.0f, 1.0f, 0.5f, 1.0f);
+			m = SMMatrixTranslation(-0.5f, -0.5f, 0.0f) * m;
+			//	GetGUI()->getDevice()->SetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&m));
+
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, g_idTextVS, "g_mWVP", (float*)&SMMatrixTranspose(SMMatrixTranslation(float3(1.0f, 1.0f, 0.0f)) * m), 4);
+			SGCore_ShaderBind(g_idTextKit);
+			pDev->setRenderBuffer(g_pTextRenderBuffer);
+			pDev->setIndexBuffer(g_pTextIndexBuffer);
+			pDev->setTexture((IGXTexture2D*)g_pFont->getAPITexture(0));
+			pDev->setPrimitiveTopology(GXPT_TRIANGLELIST);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, g_idTextPS, "g_vColor", (float*)&float4_t(0, 0, 0, 1.0f), 1);
+			pDev->drawIndexed(g_uVertexCount, g_uIndexCount / 3, 0, 0);
+
+			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, g_idTextVS, "g_mWVP", (float*)&SMMatrixTranspose(m), 4);
+			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, g_idTextPS, "g_vColor", (float*)&float4_t(0.3f, 1.0f, 0.3f, 1.0f), 1);
+			pDev->drawIndexed(g_uVertexCount, g_uIndexCount / 3, 0, 0);
+			SGCore_ShaderUnBind();
+		}
+	}
 }
 void GameData::renderHUD()
 {

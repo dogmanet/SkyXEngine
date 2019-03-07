@@ -828,6 +828,11 @@ namespace gui
 			m_mCallbacksDefaultsWC[i](cmd.c_str(), ev);
 		}
 	}
+
+	IFont *CGUI::getFont(const WCHAR * szName, UINT size, IFont::STYLE style, int iBlurRadius)
+	{
+		return(IFontManager::getFont(szName, size, style, iBlurRadius));
+	}
 };
 
 

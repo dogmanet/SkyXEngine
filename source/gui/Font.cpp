@@ -583,6 +583,15 @@ namespace gui
 		}
 		return(m_vpTextures[i]);
 	}
+	const IGXTexture2D *CFont::getAPITexture(UINT i)
+	{
+		CPITexture pTex = getTexture(i);
+		if(!pTex)
+		{
+			return(NULL);
+		}
+		return(pTex->getAPItexture());
+	}
 
 	void CFont::addChar(WCHAR c, bool full)
 	{
