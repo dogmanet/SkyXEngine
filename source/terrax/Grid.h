@@ -71,6 +71,8 @@ protected:
 	IGXBlendState *m_pBlendStateNoColor = NULL;
 	IGXDepthStencilState *m_pStencilPass0 = NULL;
 	IGXDepthStencilState *m_pStencilPass1 = NULL;
+	IGXConstantBuffer *m_pVSConstantBuffer = NULL;
+	IGXConstantBuffer *m_pPSConstantBuffer = NULL;
 };
 
 #endif

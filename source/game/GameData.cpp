@@ -55,6 +55,8 @@ static ID g_idTextPS = -1;
 static ID g_idTextKit = -1;
 static IGXBlendState *g_pTextBlendState = NULL;
 static IGXSamplerState *g_pTextSamplerState = NULL;
+static UINT g_uFrameCount = 0;
+static UINT g_uFPS = 0;
 
 //##########################################################################
 
@@ -995,25 +997,44 @@ void GameData::render()
 	}
 	//m_pStatsUI->render(0.1f);
 	IGXContext *pDev = SGCore_GetDXDevice();
+	++g_uFrameCount;
+	
+	static UINT s_uTime = Core_TimeTotalMlsGetU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+	UINT uTime = Core_TimeTotalMlsGetU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+	if(uTime - s_uTime > 1000)
+	{
+		g_uFPS = g_uFrameCount * 1000 / (uTime - s_uTime);
+		s_uTime = uTime;
+		g_uFrameCount = 0;
+	}
 	if(pDev)
 	{
 		const GX_FRAME_STATS *pFrameStats = pDev->getFrameStats();
 
-		static wchar_t wszStats[256];
-		swprintf_s(wszStats, L"FPS: 30\n"
-			L"Count poly: %u\n"
-			L"Count DIP: %u\n"
-			L"Uploaded bytes: %u; (T: %u; VB: %u, IB: %u)\n"
-			, pFrameStats->uPolyCount, 
-			pFrameStats->uDIPcount, 
-			pFrameStats->uUploadedBuffersIndices + pFrameStats->uUploadedBuffersTextures + pFrameStats->uUploadedBuffersVertexes,
-			pFrameStats->uUploadedBuffersTextures,
-			pFrameStats->uUploadedBuffersVertexes,
-			pFrameStats->uUploadedBuffersIndices
-			);
+		static GX_FRAME_STATS s_oldFrameStats = {0};
+		static UINT s_uOldFps = 0;
 
-		RenderText(wszStats);
+		if(s_uOldFps != g_uFPS || memcmp(&s_oldFrameStats, pFrameStats, sizeof(s_oldFrameStats)))
+		{
+			s_uOldFps = g_uFPS;
+			s_oldFrameStats = *pFrameStats;
 
+			static wchar_t wszStats[256];
+			swprintf_s(wszStats, L"FPS: %u\n"
+				L"Count poly: %u\n"
+				L"Count DIP: %u\n"
+				L"Uploaded bytes: %u; (T: %u; VB: %u, IB: %u)\n"
+				, g_uFPS,
+				pFrameStats->uPolyCount,
+				pFrameStats->uDIPcount,
+				pFrameStats->uUploadedBuffersIndices + pFrameStats->uUploadedBuffersTextures + pFrameStats->uUploadedBuffersVertexes,
+				pFrameStats->uUploadedBuffersTextures,
+				pFrameStats->uUploadedBuffersVertexes,
+				pFrameStats->uUploadedBuffersIndices
+				);
+
+			RenderText(wszStats);
+		}
 		if(g_pTextRenderBuffer)
 		{
 			pDev->setBlendState(g_pTextBlendState);

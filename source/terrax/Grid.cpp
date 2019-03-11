@@ -239,10 +239,15 @@ CGrid::CGrid(UINT uSize)
 	dsDesc.stencilFunc = GXCOMPARISON_EQUAL;
 	dsDesc.stencilPassOp = GXSTENCIL_OP_KEEP;
 	m_pStencilPass1 = m_pDevice->createDepthStencilState(&dsDesc);
+
+	m_pVSConstantBuffer = m_pDevice->createConstantBuffer(sizeof(SMMATRIX));
+	m_pPSConstantBuffer = m_pDevice->createConstantBuffer(sizeof(float4));
 }
 
 CGrid::~CGrid()
 {
+	mem_release(m_pVSConstantBuffer);
+	mem_release(m_pPSConstantBuffer);
 	mem_release(m_pBlendState);
 	mem_release(m_pBlendStateNoColor);
 	mem_release(m_pStencilPass0);
@@ -259,8 +264,10 @@ void CGrid::render(GRID_STEP step)
 	SMMATRIX mViewProj, mWorld;
 	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
 	Core_RMatrixGet(G_RI_MATRIX_WORLD, &mWorld);
-//	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &SMMatrixTranspose(mWorld * mViewProj), 4);
+	m_pVSConstantBuffer->update(&SMMatrixTranspose(mWorld * mViewProj));
 	m_pDevice->setPrimitiveTopology(GXPT_LINELIST);
+	m_pDevice->setVertexShaderConstant(m_pVSConstantBuffer);
+	m_pDevice->setPixelShaderConstant(m_pPSConstantBuffer);
 
 	GRID_STEP hiliteFrom = GRID_STEP_100M;
 	switch(step)
@@ -358,7 +365,7 @@ void CGrid::render(GRID_STEP step)
 		
 
 		vColor.w = m_fOpacity;
-//		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vColor", &vColor, 1);
+		m_pPSConstantBuffer->update(&vColor);
 		m_pDevice->drawPrimitive(m_uVertexPerStep[i].m_uStartVertex, (m_uVertexPerStep[i].m_uEndVertex - m_uVertexPerStep[i].m_uStartVertex) / 2);
 	}
 	m_pDevice->setBlendState(pOldBlendState);
