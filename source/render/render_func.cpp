@@ -689,11 +689,8 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 
 	if (!isRenderSimulation)
 	{
-		g_pPipeline->renderGBuffer();
-
-		//SXDecals_Render();
-		//if (SGeom_GetCountModels() > 0)
-			//SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE);
+		if (SGeom_GetCountModels() > 0)
+			SGeom_Render(timeDelta, GEOM_RENDER_TYPE_OPAQUE);
 
 		SXAnim_Render();
 
@@ -1033,6 +1030,7 @@ void rfunc::RenderSky(DWORD timeDelta)
 {
 	IGXSurface *ColorSurf, *BackBuf;
 	ColorSurf = SGCore_GbufferGetRT(DS_RT_SCENELIGHT)->getMipmap();
+	//ColorSurf = SGCore_GbufferGetRT(DS_RT_COLOR)->getMipmap();
 	BackBuf = gdata::pDXDevice->getColorTarget();
 	gdata::pDXDevice->setColorTarget(ColorSurf);
 
@@ -1049,7 +1047,7 @@ void rfunc::RenderSky(DWORD timeDelta)
 	{
 	//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	//	SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
-		SGCore_SkyBoxRender(timeDelta, &float3(gdata::vConstCurrCamPos.x, gdata::vConstCurrCamPos.y + (SXGC_SKYBOX_SIZE * 0.5 - 10), gdata::vConstCurrCamPos.z));
+		SGCore_SkyBoxRender(timeDelta, &float3(gdata::vConstCurrCamPos.x, gdata::vConstCurrCamPos.y/* + (SXGC_SKYBOX_SIZE * 0.5 - 10)*/, gdata::vConstCurrCamPos.z));
 	}
 
 //	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
@@ -1287,12 +1285,30 @@ void rfunc::ComLighting(DWORD timeDelta)
 	static IGXTexture2D *s_pTex = NULL;
 	if(!s_pTex)
 	{
-		GXCOLOR *pData = new GXCOLOR[64 * 64 * 64];
+		/*GXCOLOR *pData = new GXCOLOR[64 * 64 * 64];
 		for(UINT i = 0; i < 64 * 64 * 64; ++i)
 		{
 			pData[i] = GXCOLOR_ARGB(255, rand() % 255, rand() % 255, rand() % 255);
 		}
 		s_pTex = gdata::pDXDevice->createTexture2D(64, 64 * 64, 1, GX_TEXUSAGE_DEFAULT, GXFMT_A8R8G8B8, pData);
+		mem_delete_a(pData);*/
+
+#define TIDX(x, y, z, w) (w * 64 + x + y * 64 * 64 * 3 + z * 64 * 3)
+
+		float4 *pData = new float4[64 * 64 * 64 * 3];
+		for(UINT x = 0; x < 64; ++x)
+		{
+			for(UINT y = 0; y < 64; ++y)
+			{
+				for(UINT z = 0; z < 64; ++z)
+				{
+					pData[TIDX(x, y, z, 0)] = float4(0.001346903f, 0.0f, 0.003454941f, -0.003454941f);
+					pData[TIDX(x, y, z, 1)] = float4(0.001346903f, -0.003454941f, 0.003454941f, 0.0f);
+					pData[TIDX(x, y, z, 2)] = float4(0.001346903f, -0.003454941f, 0.0f, -0.003454941f);
+				}
+			}
+		}
+		s_pTex = gdata::pDXDevice->createTexture2D(64 * 3, 64 * 64, 1, GX_TEXUSAGE_DEFAULT, GXFMT_A32B32G32R32F, pData);
 		mem_delete_a(pData);
 	}
 	

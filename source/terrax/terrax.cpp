@@ -89,7 +89,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		}
 	}
 	
-	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
+	//SGCore_SkyBoxLoadTex("sky_2_cube.dds");
+	SGCore_SkyBoxLoadTex("sky_hdr.dds");
+	//SGCore_SkyBoxLoadTex("sky_test_cube.dds");
 	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
 	SGCore_SkyBoxSetUse(false);
 	SGCore_SkyCloudsSetUse(false);

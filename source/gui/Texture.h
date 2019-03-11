@@ -58,7 +58,7 @@ namespace gui
 		static void release();
 		static void bindTexture(CPITexture tex);
 		static void unloadTexture(CPITexture tex);
-		static CTexture * createTexture(const StringW & szTexture, int w, int h, int bpp, bool isRT = false);
+		static CTexture * createTexture(const StringW & szTexture, int w, int h, int bpp, bool isRT = false, void *pInitData = NULL);
 		
 		static void onLostDevice();
 		static void onResetDevice();

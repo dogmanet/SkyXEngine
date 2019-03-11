@@ -501,7 +501,7 @@ void SkyXEngine_PrintfLog(int level, const char *szLibName, const char *szFormat
 void SkyXEngine_Frame(DWORD timeDelta);
 
 //! обновление данных кваром (реакция на обновление)
-void SkyXEngind_UpdateDataCVar();
+void SkyXEngine_UpdateDataCVar();
 
 //! запуск основного цикла обработки
 int SkyXEngine_CycleMain();

@@ -71,3 +71,23 @@ void CCore::loadPlugins()
 	}
 	m_pPluginManager->invokeStartup(this);
 }
+
+void CCore::getRenderPipeline(IXRenderPipeline **ppRenderPipeline)
+{
+	if(m_pRenderPipeline)
+	{
+		m_pRenderPipeline->AddRef();
+	}
+
+	*ppRenderPipeline = m_pRenderPipeline;
+}
+
+void CCore::setRenderPipeline(IXRenderPipeline *pRenderPipeline)
+{
+	mem_release(m_pRenderPipeline);
+	if(pRenderPipeline)
+	{
+		pRenderPipeline->AddRef();
+	}
+	m_pRenderPipeline = pRenderPipeline;
+}

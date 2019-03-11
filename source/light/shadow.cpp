@@ -638,7 +638,7 @@ void ShadowMapTech::init()
 	
 	DepthSurface = 0;
 	DepthMap = light_data::pDXDevice->createTexture2D(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F);
-	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, GXFMT_D24X8, GXMULTISAMPLE_NONE, true);
+	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, GXFMT_D24S8, GXMULTISAMPLE_NONE, true);
 
 	float fOffset = 0.5f + (0.5f/light_data::vSizeTexDepthLocal.x);
 	float range = 1.0f;
@@ -1032,7 +1032,7 @@ void ShadowMapCubeTech::init()
 	else if (hr == E_OUTOFMEMORY)
 		int qwert = 0;
 		*/
-	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.x, GXFMT_D24X8, GXMULTISAMPLE_NONE, true);
+	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.x, GXFMT_D24S8, GXMULTISAMPLE_NONE, true);
 }
 
 void ShadowMapCubeTech::begin()

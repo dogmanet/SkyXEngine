@@ -19,6 +19,9 @@ public:
 	IAsyncFileReader *getAsyncFileReader();
 	IAsyncTaskRunner *getAsyncTaskRunner();
 
+	void getRenderPipeline(IXRenderPipeline **ppRenderPipeline);
+	void setRenderPipeline(IXRenderPipeline *pRenderPipeline);
+
 	void loadPlugins();
 
 protected:
@@ -26,6 +29,8 @@ protected:
 
 	CPluginManager *m_pPluginManager = NULL;
 	AssotiativeArray<XGUID, IBaseEventChannel*> m_mEventChannels;
+
+	IXRenderPipeline *m_pRenderPipeline = NULL;
 };
 
 #endif

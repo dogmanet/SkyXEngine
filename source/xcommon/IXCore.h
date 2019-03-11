@@ -6,6 +6,7 @@
 #include "IAsyncFileReader.h"
 #include "IAsyncTaskRunner.h"
 #include "XEvents.h"
+#include "IXRenderPipeline.h"
 
 class IPluginManager;
 
@@ -17,6 +18,9 @@ public:
 
 	virtual IAsyncFileReader *getAsyncFileReader() = 0;
 	virtual IAsyncTaskRunner *getAsyncTaskRunner() = 0;
+
+	virtual void getRenderPipeline(IXRenderPipeline **ppRenderPipeline) = 0;
+	virtual void setRenderPipeline(IXRenderPipeline *pRenderPipeline) = 0;
 
 	template<typename T> IEventChannel<T> *getEventChannel(const XGUID &guid)
 	{

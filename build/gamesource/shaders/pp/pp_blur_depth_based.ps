@@ -36,10 +36,10 @@ half4 main(VSO_PP IN) : COLOR0
 	half vCenterDepth = tex2D(g_sDepth, vCenterTC).r * g_vNearFar.y;
 
 	[unroll]
-	for(half x=-COUNT_PIXELS; x<=COUNT_PIXELS; x++)
+	for(half x=-COUNT_PIXELS; x<=COUNT_PIXELS; x += 1)
 	{
 		[unroll]
-		for(half y=-COUNT_PIXELS; y<=COUNT_PIXELS; y++)
+		for(half y=-COUNT_PIXELS; y<=COUNT_PIXELS; y += 1)
 		{
 			half2 vSampleTC = vCenterTC + half2(x * g_vPixelSize.x,y * g_vPixelSize.y);
 			half fDepth = tex2D(g_sDepth, vSampleTC).r;

@@ -244,8 +244,8 @@ void pp_data::Init()
 	}
 
 	pp_data::rt_id::idDepthD2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5f, pp_data::vWinSize.y * 0.5f, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F, "pp_depth_d2");
-	pp_data::rt_id::idEdgeDetected = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTOGENMIPMAPS | GX_TEXUSAGE_AUTORESIZE, GXFMT_R5G6B5, "pp_edge_detected");
-	pp_data::rt_id::idEdgeDetected2 = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTOGENMIPMAPS | GX_TEXUSAGE_AUTORESIZE, GXFMT_R5G6B5, "pp_edge_detected2");
+	//pp_data::rt_id::idEdgeDetected = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R5G6B5, "pp_edge_detected");
+	//pp_data::rt_id::idEdgeDetected2 = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R5G6B5, "pp_edge_detected2");
 
 	pp_data::rt_id::idIntermediateWinSize = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "pp_intermidiatews");
 	pp_data::rt_id::idIntermediateWinSize2 = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "pp_intermidiatews2");
@@ -347,25 +347,21 @@ void pp_data::InitNoiseTex()
 		mem_release(pRnsSampler);
 	}
 
-	pRnsSampler = pp_data::pDXDevice->createTexture2D(*r_win_width, *r_win_height, 1, 0, GXFMT_A8R8G8B8);
-
-	DWORD *pData;
-	if(pRnsSampler->lock((void**)&pData, GXTL_WRITE))
+	GXCOLOR *pData = new GXCOLOR[*r_win_width * *r_win_height];
+	float3 vRnd;
+	for(int i = 0; i < (*r_win_width) * (*r_win_height); ++i)
 	{
-		float3 vRnd;
+		vRnd.x = randf(0, 1);
+		vRnd.y = randf(0, 1);
+		vRnd.z = randf(0, 1);
+		vRnd = SMVector3Normalize(vRnd);
 
-		for(int i = 0; i < (*r_win_width) * (*r_win_height); ++i)
-		{
-			vRnd.x = randf(0, 1);
-			vRnd.y = randf(0, 1);
-			vRnd.z = randf(0, 1);
-			vRnd = SMVector3Normalize(vRnd);
-
-			pData[i] = GXCOLOR_COLORVALUE(vRnd.x, vRnd.y, vRnd.z, 1.0f);
-		}
-
-		pRnsSampler->unlock();
+		pData[i] = GXCOLOR_COLORVALUE(vRnd.x, vRnd.y, vRnd.z, 1.0f);
 	}
+
+	pRnsSampler = pp_data::pDXDevice->createTexture2D(*r_win_width, *r_win_height, 1, 0, GXFMT_A8R8G8B8, pData);
+	mem_delete_a(pData);
+
 
 	pp_data::tex_id::idNoise = SGCore_LoadTexCreate("noise_rottex_fullscreen__", pRnsSampler);
 }
@@ -654,11 +650,11 @@ SX_LIB_API void SPP_RenderSSAO(const float4_t *pParam, int iQuality)
 
 	SGCore_ShaderUnBind();
 
-	if(GetKeyState('N'))
+	/*if(GetKeyState('N'))
 	{
 		pp_data::pDXDevice->saveTextureToFile("c:/1/ppssaof.png", SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT()));
 		pp_data::pDXDevice->saveTextureToFile("c:/1/ppssao0.png", SGCore_RTGetTexture(pp_data::rt_id::idIntermediateWinSize));
-	}
+	}*/
 
 	pp_data::pDXDevice->setColorTarget(BackBuf);
 

@@ -2405,7 +2405,30 @@ void CModels::segmentation2(CSegment *pSplit, CModel *pModel, int iCountSplitsSy
 		//SGCore_FCreateBoundingBoxMesh(&tmpMin, &tmpMax, &(pSplit->m_aSplits[i]->m_pBoundBox));
 		
 		pSplit->m_aSplits[i]->m_pBoundVolumeSys->getMinMax(&vMin, &vMax);
+
+		int iTmpCount = 0;
 		int iNumCurrentPoly = 0;
+		for(int j = 0; j<pSplit->m_uiCountSubSet; ++j)
+		{
+			for(int k = 0; k<pSplit->m_pCountPoly[j] * 3; k += 3)
+			{
+				if(SGCore_0InPosPoints2D(&vMin, &vMax,
+					&m_pCurrArrMeshVertex[pSplit->m_ppArrPoly[j][k]],
+					&m_pCurrArrMeshVertex[pSplit->m_ppArrPoly[j][k + 1]],
+					&m_pCurrArrMeshVertex[pSplit->m_ppArrPoly[j][k + 2]]
+					)
+					&& aFreePoly[iNumCurrentPoly]
+					)
+				{
+					++iTmpCount;
+				}
+				++iNumCurrentPoly;
+			}
+		}
+
+		iNumCurrentPoly = 0;
+		aSegmentPoly[i].reserve(iTmpCount * 3);
+		aSegmentGroup[i].reserve(iTmpCount);
 		for (int j = 0; j<pSplit->m_uiCountSubSet; ++j)
 		{
 			for (int k = 0; k<pSplit->m_pCountPoly[j] * 3; k += 3)

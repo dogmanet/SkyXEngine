@@ -259,7 +259,7 @@ void CGrid::render(GRID_STEP step)
 	SMMATRIX mViewProj, mWorld;
 	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
 	Core_RMatrixGet(G_RI_MATRIX_WORLD, &mWorld);
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &SMMatrixTranspose(mWorld * mViewProj), 4);
+//	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &SMMatrixTranspose(mWorld * mViewProj), 4);
 	m_pDevice->setPrimitiveTopology(GXPT_LINELIST);
 
 	GRID_STEP hiliteFrom = GRID_STEP_100M;
@@ -358,7 +358,7 @@ void CGrid::render(GRID_STEP step)
 		
 
 		vColor.w = m_fOpacity;
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vColor", &vColor, 1);
+//		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vColor", &vColor, 1);
 		m_pDevice->drawPrimitive(m_uVertexPerStep[i].m_uStartVertex, (m_uVertexPerStep[i].m_uEndVertex - m_uVertexPerStep[i].m_uStartVertex) / 2);
 	}
 	m_pDevice->setBlendState(pOldBlendState);

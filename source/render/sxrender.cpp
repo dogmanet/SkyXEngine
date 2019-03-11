@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -115,6 +115,8 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 		gdata::idDashedTex = SGCore_LoadTexCreate("dashed_material__", pDashedMaterial);
 
 		g_pPipeline = new CRenderPipeline(SGCore_GetDXDevice());
+		Core_GetIXCore()->setRenderPipeline(g_pPipeline);
+
 	}
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);

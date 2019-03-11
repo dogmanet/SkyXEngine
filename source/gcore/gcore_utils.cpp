@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -9,7 +9,7 @@ See the license in LICENSE
 void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 {
 	char szModuleName[64];
-	sprintf_s(szModuleName, "gxgapi%s.dll", Core_0GetCommandLineArg("gapi", "dx9"));
+	sprintf_s(szModuleName, "gxgapi%s.dll", Core_0GetCommandLineArg("gapi", "dx11"));
 	m_hLibGXAPI = LoadLibrary(szModuleName);
 	if(!m_hLibGXAPI)
 	{
@@ -98,7 +98,7 @@ void InitFullScreenQuad()
 
 void InitArrModes()
 {
-	//получение всех возможных разрешений монитора
+	//РїРѕР»СѓС‡РµРЅРёРµ РІСЃРµС… РІРѕР·РјРѕР¶РЅС‹С… СЂР°Р·СЂРµС€РµРЅРёР№ РјРѕРЅРёС‚РѕСЂР°
 	DEVMODE oDevMode;
 	int iNum = 0;
 	while (EnumDisplaySettings(NULL, iNum, &oDevMode))
@@ -127,13 +127,13 @@ void InitRT4Gbuffer()
 	const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	const int *r_win_height = GET_PCVAR_INT("r_win_height");
 	
-	//цвет (текстуры)
+	//С†РІРµС‚ (С‚РµРєСЃС‚СѓСЂС‹)
 	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
 	gcore_data::rt_id::idColorScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "ds_color");
-	//номрали + микрорельеф
+	//РЅРѕРјСЂР°Р»Рё + РјРёРєСЂРѕСЂРµР»СЊРµС„
 	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
 	gcore_data::rt_id::idNormalScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8/*D3DFMT_A2R10G10B10*/, "ds_normal");
-	//параметры освещени¤
+	//РїР°СЂР°РјРµС‚СЂС‹ РѕСЃРІРµС‰РµРЅРёВ¤
 	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
 	gcore_data::rt_id::idParamsScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "ds_param");
 
