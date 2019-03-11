@@ -5,19 +5,15 @@ mtrlgeom_base.vs
 */
 
 #include <../struct.h>
-
-//##########################################################################
-
-half4x4	g_mWVP;
-half4x4	g_mW;
+#include <../const.h>
 
 //##########################################################################
 
 VSO_SceneCommon main(VSI_Geometry IN)
 {
-	VSO_SceneCommon OUT;
+	VSO_SceneCommon OUT = (VSO_SceneCommon)0;
 
-	OUT.vPosition = mul(half4(IN.vPosition,1.f),g_mWVP);
+	OUT.vPosition = mul(half4(IN.vPosition, 1.f), g_mWVP);
 	OUT.vNormal = mul(IN.vNormal,g_mW);
 	OUT.vTexUV = IN.vTexUV;
 	OUT.vPos = OUT.vPosition;

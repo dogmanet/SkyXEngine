@@ -559,6 +559,14 @@ enum LOAD_TEXTURE_TYPE
 	LOAD_TEXTURE_TYPE_SELF,
 };
 
+enum SHADER_CONST_REGISTER
+{
+	SCR_SCENE = 3,
+	SCR_CAMERA = 2,
+	SCR_OBJECT = 1,
+	SCR_SUBSET = 0
+};
+
 //**************************************************************************
 
 //! существует ил файл name в папке с текстурами

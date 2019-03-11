@@ -55,6 +55,7 @@ static ID g_idTextPS = -1;
 static ID g_idTextKit = -1;
 static IGXBlendState *g_pTextBlendState = NULL;
 static IGXSamplerState *g_pTextSamplerState = NULL;
+static IGXDepthStencilState *g_pTextDepthState = NULL;
 static UINT g_uFrameCount = 0;
 static UINT g_uFPS = 0;
 
@@ -905,6 +906,10 @@ GameData::GameData(HWND hWnd, bool isGame):
 	g_pTextVSConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(SMMATRIX));
 	g_pTextPSConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(float4));
 
+	GXDEPTH_STENCIL_DESC dsDesc;
+	dsDesc.bDepthEnable = dsDesc.bEnableDepthWrite = false;
+	g_pTextDepthState = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
+
 	//m_pStatsUI = m_pGUI->createDesktopA("stats", "sys/stats.html");
 
 	if(m_isGame)
@@ -1039,11 +1044,8 @@ void GameData::render()
 		{
 			pDev->setBlendState(g_pTextBlendState);
 			pDev->setRasterizerState(NULL);
-			pDev->setDepthStencilState(NULL);
-			//pDev->setSamplerState(g_pTextSamplerState, 0);
+			pDev->setDepthStencilState(g_pTextDepthState);
 			pDev->setSamplerState(NULL, 0);
-
-			pDev->clear(/*GXCLEAR_COLOR | */GXCLEAR_DEPTH | GXCLEAR_STENCIL);
 
 			static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 			static const int *r_win_height = GET_PCVAR_INT("r_win_height");

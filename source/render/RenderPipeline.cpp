@@ -66,11 +66,16 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 
 	dsDesc.bDepthEnable = FALSE;
 	dsDesc.bEnableDepthWrite = FALSE;
-	m_pDepthStencilStateNoZ = gdata::pDXDevice->createDepthStencilState(&dsDesc);
+	m_pDepthStencilStateNoZ = m_pDevice->createDepthStencilState(&dsDesc);
+
+	m_pSceneShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData.vs));
+	m_pSceneShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData));
 
 }
 CRenderPipeline::~CRenderPipeline()
 {
+	mem_release(m_pSceneShaderDataVS);
+	mem_release(m_pSceneShaderDataPS);
 	mem_release(m_pGBufferColor);
 	mem_release(m_pGBufferNormals);
 	mem_release(m_pGBufferParams);
@@ -92,8 +97,15 @@ void CRenderPipeline::renderFrame()
 	UINT timeDelta = 16;
 	static const int *r_final_image = GET_PCVAR_INT("r_final_image");
 
+	// m_sceneShaderData.vNearFarLayers = 
+
+	m_pDevice->setVertexShaderConstant(m_pSceneShaderDataVS, SCR_SCENE);
+	m_pDevice->setPixelShaderConstant(m_pSceneShaderDataPS, SCR_SCENE);
+
+	renderPrepare();
+
 	Core_PStartSection(PERF_SECTION_MRT);
-	//renderGBuffer();
+	renderGBuffer();
 	Core_PEndSection(PERF_SECTION_MRT);
 
 	switch(*r_final_image)
@@ -201,7 +213,7 @@ void CRenderPipeline::renderGBuffer()
 	m_pDevice->setColorTarget(pDepthMapLinearSurf, 3);	//ставим рт глубины
 
 	renderStage(XRS_GBUFFER);
-	SXAnim_Render();
+	//SXAnim_Render();
 	//SXDecals_Render();
 
 	m_pDevice->setColorTarget(NULL, 1);

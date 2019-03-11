@@ -1076,6 +1076,9 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				case DS_RT_SCENELIGHT:
 					iActiveMenu = ID_3D_LIGHTINGSCENE;
 					break;
+				case DS_RT_DEPTH:
+					iActiveMenu = ID_3D_3DDEPTH;
+					break;
 				}
 			}
 			else
@@ -1547,6 +1550,10 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		case ID_3D_LIGHTINGSCENE:
 			Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 			break;
+		case ID_3D_3DDEPTH:
+			Core_0SetCVarInt("r_final_image", DS_RT_DEPTH);
+			break;
+			
 
 		case ID_2D_TOP:
 		case ID_2D_FRONT:

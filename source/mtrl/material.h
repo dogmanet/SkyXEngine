@@ -193,6 +193,14 @@ public:
 		//! удален ли материал
 		bool m_isDelete;
 
+		struct CMaterialsShaderData
+		{
+			float4_t m_vUserDataVS;
+			float4_t m_vUserDataPS;
+			float4_t m_vDestColor;
+			float4_t m_vNearFarLayers;
+		};
+
 		//! основные графические свойства
 		struct CMainGraphics
 		{
@@ -272,6 +280,9 @@ public:
 
 			//! отправляемые данные в пиксельный шейдер
 			СDataShader m_oDataPS;
+
+			CMaterialsShaderData m_constData;
+			IGXConstantBuffer *m_pConstantBuffer = NULL;
 		};
 
 		//! детализированные свойства, маска и 4 детальных и 4 микрорельефных карты

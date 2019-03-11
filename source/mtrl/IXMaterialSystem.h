@@ -74,7 +74,10 @@ public:
 	virtual void addTexture(const char *szName, IGXTexture2D *pTexture) = 0;
 
 	//! Установить материал для отрисовки
-	virtual void bindMaterial(IXMaterial *pMaterial, const SMMATRIX *pmWorld = NULL, IXShaderVariant *pShaderVariant = NULL) = 0;
+	virtual void bindMaterial(IXMaterial *pMaterial, IXShaderVariant *pShaderVariant = NULL) = 0;
+
+	//! Установить мировую матрицу для отрисовки
+	virtual void setWorld(const SMMATRIX &mWorld) = 0;
 
 	//! Установить текстуру в слот
 	virtual void bindTexture(IXTexture *pTexture, UINT slot = 0) = 0;

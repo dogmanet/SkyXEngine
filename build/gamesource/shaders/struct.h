@@ -23,7 +23,7 @@ struct VSO_ResPos
 //! стандартная структура постпроцесса, на вход врешинному шейдеру
 struct VSI_PP
 {
-	half4 vPosition	:POSITION;
+	half3 vPosition	:POSITION;
 	half2 vTexUV	:TEXCOORD0;
 };
 
@@ -61,9 +61,9 @@ struct VSI_Green
 //! статическая геометрия
 struct VSI_Geometry
 {
-	half3 vPosition	:POSITION0;
-	half2 vTexUV	:TEXCOORD0;
-	half3 vNormal	:NORMAL0;
+	float3 vPosition	:POSITION0;
+	float2 vTexUV	:TEXCOORD0;
+	float3 vNormal	:NORMAL0;
 };
 
 
@@ -249,7 +249,7 @@ struct VSO_LightBound
 
 struct VSI_GUITextured
 {
-	half4 vPosition	:POSITION0;
+	half3 vPosition	:POSITION0;
 	half2 vTexUV	:TEXCOORD0;
 };
 
@@ -314,3 +314,14 @@ struct VSI_TXHandler
 };
 
 //!@}
+
+
+
+
+
+
+
+
+
+
+

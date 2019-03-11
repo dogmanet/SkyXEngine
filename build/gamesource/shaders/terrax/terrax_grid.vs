@@ -8,13 +8,16 @@ terrax_grid.vs
 
 //##########################################################################
 
-half4x4 g_mWVP: register(b0);
+cbuffer MVP : register(b0)
+{
+	half4x4 g_mWVP1;
+};
 
 //##########################################################################
 
 VSO_TXColored main(VSI_TXGrid IN)
 {
 	VSO_TXColored OUT = (VSO_TXColored)0;
-	OUT.vPosition = mul(half4(IN.vPosition.xyz,1), g_mWVP);
+	OUT.vPosition = mul(half4(IN.vPosition.xyz,1), g_mWVP1);
 	return(OUT);
 }

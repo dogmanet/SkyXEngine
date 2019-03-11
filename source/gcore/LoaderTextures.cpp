@@ -1,17 +1,17 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 #include "LoaderTextures.h"
 
-СLoaderTextures::СLoaderTextures()
+CLoaderTextures::CLoaderTextures()
 {
 	CurrFirstFree = -1;
 }
 
-СLoaderTextures::~СLoaderTextures()
+CLoaderTextures::~CLoaderTextures()
 {
 	for (int i = 0; i < m_aTextures.size(); i++)
 	{
@@ -26,14 +26,14 @@ See the license in LICENSE
 	m_aPathes.clear();
 }
 
-bool СLoaderTextures::fileExists(const char* name)
+bool CLoaderTextures::fileExists(const char* name)
 {
 	char tmppath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
 	char tmp_path[SXGC_LOADTEX_MAX_SIZE_DIR];
 	char tmp_name[SXGC_LOADTEX_MAX_SIZE_NAME];
 	
 	bool IsTruePath = false;
-	//обрезаем имя текстуры и папку
+	//РѕР±СЂРµР·Р°РµРј РёРјСЏ С‚РµРєСЃС‚СѓСЂС‹ Рё РїР°РїРєСѓ
 	for (int i = 0; i<strlen(name); i++)
 	{
 		if (name[i] == '_')
@@ -56,7 +56,7 @@ bool СLoaderTextures::fileExists(const char* name)
 	return FileExistsFile(tmppath);
 }
 
-void СLoaderTextures::clearLoaded()
+void CLoaderTextures::clearLoaded()
 {
 	int tmpcountdel = 0;
 	for (int i = 0; i < m_aPathes.size(); ++i)
@@ -81,7 +81,7 @@ void СLoaderTextures::clearLoaded()
 	int qwert = 0;
 }
 
-void СLoaderTextures::deleteTexture(ID id)
+void CLoaderTextures::deleteTexture(ID id)
 {
 	if (!(id < m_aTextures.size() && id >= 0))
 		return;
@@ -108,13 +108,13 @@ void СLoaderTextures::deleteTexture(ID id)
 	}
 }
 
-ID СLoaderTextures::addName(const char* name, LOAD_TEXTURE_TYPE type, ID* iddir, ID* idname)
+ID CLoaderTextures::addName(const char* name, LOAD_TEXTURE_TYPE type, ID* iddir, ID* idname)
 {
-	char tmp_path[SXGC_LOADTEX_MAX_SIZE_DIR];//папка
-	char tmp_name[SXGC_LOADTEX_MAX_SIZE_NAME];//само имя текстыр с расширением
+	char tmp_path[SXGC_LOADTEX_MAX_SIZE_DIR];//РїР°РїРєР°
+	char tmp_name[SXGC_LOADTEX_MAX_SIZE_NAME];//СЃР°РјРѕ РёРјСЏ С‚РµРєСЃС‚С‹СЂ СЃ СЂР°СЃС€РёСЂРµРЅРёРµРј
 	ID id = -1;
 	bool IsTruePath = false;
-		//обрезаем имя текстуры и папку
+		//РѕР±СЂРµР·Р°РµРј РёРјСЏ С‚РµРєСЃС‚СѓСЂС‹ Рё РїР°РїРєСѓ
 		for(int i=0;i<strlen(name);i++)
 		{
 				if(name[i] == '_')
@@ -132,7 +132,7 @@ ID СLoaderTextures::addName(const char* name, LOAD_TEXTURE_TYPE type, ID* iddir,
 			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - wrong texture name [%s]!!!", GEN_MSG_LOCATION, name);
 		}
 
-	int tmpkey = -1;	//переменная в которой храним ключ от массива в который записываем
+	int tmpkey = -1;	//РїРµСЂРµРјРµРЅРЅР°СЏ РІ РєРѕС‚РѕСЂРѕР№ С…СЂР°РЅРёРј РєР»СЋС‡ РѕС‚ РјР°СЃСЃРёРІР° РІ РєРѕС‚РѕСЂС‹Р№ Р·Р°РїРёСЃС‹РІР°РµРј
 	
 	for (int i = 0; i<m_aPathes.size(); i++)
 	{
@@ -143,7 +143,7 @@ ID СLoaderTextures::addName(const char* name, LOAD_TEXTURE_TYPE type, ID* iddir,
 		}
 	}
 
-		//если мы не нашли совпадений значит путь уникален ...
+		//РµСЃР»Рё РјС‹ РЅРµ РЅР°С€Р»Рё СЃРѕРІРїР°РґРµРЅРёР№ Р·РЅР°С‡РёС‚ РїСѓС‚СЊ СѓРЅРёРєР°Р»РµРЅ ...
 		if(tmpkey == -1)
 		{
 			tmpkey = m_aPathes.size();
@@ -153,7 +153,7 @@ ID СLoaderTextures::addName(const char* name, LOAD_TEXTURE_TYPE type, ID* iddir,
 
 	bool isunic = true;
 	
-		//првоеряем записано ли уже имя текстуры
+		//РїСЂРІРѕРµСЂСЏРµРј Р·Р°РїРёСЃР°РЅРѕ Р»Рё СѓР¶Рµ РёРјСЏ С‚РµРєСЃС‚СѓСЂС‹
 		for(int i=0;i<m_aPathes[tmpkey]->m_aTextures.size();i++)
 		{
 				if(strcmp(m_aPathes[tmpkey]->m_aTextures[i]->m_sName.c_str(),tmp_name) == 0)
@@ -169,7 +169,7 @@ ID СLoaderTextures::addName(const char* name, LOAD_TEXTURE_TYPE type, ID* iddir,
 		if (iddir)
 			*iddir = tmpkey;
 
-		//если уникальное то записываем
+		//РµСЃР»Рё СѓРЅРёРєР°Р»СЊРЅРѕРµ С‚Рѕ Р·Р°РїРёСЃС‹РІР°РµРј
 		if(isunic)
 		{
 			if (CurrFirstFree + 1 == m_aTextures.size())
@@ -198,7 +198,7 @@ ID СLoaderTextures::addName(const char* name, LOAD_TEXTURE_TYPE type, ID* iddir,
 				++CurrFirstFree;
 			}
 
-			//если тип текстуры самоопределение
+			//РµСЃР»Рё С‚РёРї С‚РµРєСЃС‚СѓСЂС‹ СЃР°РјРѕРѕРїСЂРµРґРµР»РµРЅРёРµ
 			if (type == LOAD_TEXTURE_TYPE_SELF)
 				type = LOAD_TEXTURE_TYPE_LOAD;
 
@@ -217,12 +217,12 @@ ID СLoaderTextures::addName(const char* name, LOAD_TEXTURE_TYPE type, ID* iddir,
 	return id;
 }
 
-ID СLoaderTextures::getID(const char* name)
+ID CLoaderTextures::getID(const char* name)
 {
-	char tmp_path[SXGC_LOADTEX_MAX_SIZE_DIR];//папка
-	char tmp_name[SXGC_LOADTEX_MAX_SIZE_NAME];//само имя текстуры с расширением
+	char tmp_path[SXGC_LOADTEX_MAX_SIZE_DIR];//РїР°РїРєР°
+	char tmp_name[SXGC_LOADTEX_MAX_SIZE_NAME];//СЃР°РјРѕ РёРјСЏ С‚РµРєСЃС‚СѓСЂС‹ СЃ СЂР°СЃС€РёСЂРµРЅРёРµРј
 	ID id = -1;
-		//обрезаем имя текстуры и папку
+		//РѕР±СЂРµР·Р°РµРј РёРјСЏ С‚РµРєСЃС‚СѓСЂС‹ Рё РїР°РїРєСѓ
 		for(int i=0;i<strlen(name);i++)
 		{
 				if(name[i] == '_')
@@ -252,7 +252,7 @@ ID СLoaderTextures::getID(const char* name)
 	return id;
 }
 
-void СLoaderTextures::getName(ID id, char* name)
+void CLoaderTextures::getName(ID id, char* name)
 {
 		if(id < m_aTextures.size())
 		{
@@ -261,7 +261,7 @@ void СLoaderTextures::getName(ID id, char* name)
 		}
 }
 
-ID СLoaderTextures::create(const char* name, IGXTexture2D* tex)
+ID CLoaderTextures::create(const char* name, IGXTexture2D* tex)
 {
 	ID tmpkey, tmpKeyName;
 	ID id = addName(name, LOAD_TEXTURE_TYPE_CUSTOM, &tmpkey, &tmpKeyName);
@@ -269,7 +269,7 @@ ID СLoaderTextures::create(const char* name, IGXTexture2D* tex)
 	return id;
 }
 
-void СLoaderTextures::update(ID id)
+void CLoaderTextures::update(ID id)
 {
 	if(id < m_aTextures.size())
 	{
@@ -277,7 +277,7 @@ void СLoaderTextures::update(ID id)
 	}
 }
 
-ID СLoaderTextures::update(const char* name, LOAD_TEXTURE_TYPE type)
+ID CLoaderTextures::update(const char* name, LOAD_TEXTURE_TYPE type)
 {
 	ID tmpkey, tmpKeyName;
 	ID id = addName(name, type, &tmpkey, &tmpKeyName);
@@ -315,7 +315,7 @@ ID СLoaderTextures::update(const char* name, LOAD_TEXTURE_TYPE type)
 	return id;
 }
 
-void СLoaderTextures::loadTextures()
+void CLoaderTextures::loadTextures()
 {
 	if (m_aQueueToLoadIDs.size() <= 0)
 		return;
@@ -374,7 +374,7 @@ void СLoaderTextures::loadTextures()
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "all loaded textures [%d]\n", m_aTextures.size());
 }
 
-IGXTexture2D* СLoaderTextures::getTexture2d(ID id)
+IGXTexture2D* CLoaderTextures::getTexture2d(ID id)
 {
 		if(id < m_aTextures.size())
 		{
@@ -384,7 +384,7 @@ IGXTexture2D* СLoaderTextures::getTexture2d(ID id)
 			return 0;
 }
 
-IGXTextureCube* СLoaderTextures::getTextureCube(ID id)
+IGXTextureCube* CLoaderTextures::getTextureCube(ID id)
 {
 	if (id < m_aTextures.size())
 	{
@@ -394,7 +394,7 @@ IGXTextureCube* СLoaderTextures::getTextureCube(ID id)
 		return 0;
 }
 
-bool СLoaderTextures::addConstAllInDir(const char *szDir)
+bool CLoaderTextures::addConstAllInDir(const char *szDir)
 {
 	Array<String> aPathes = FileGetListFiles((String(Core_RStringGet(G_RI_STRING_PATH_GS_TEXTURES)) + szDir + "/*.dds").c_str());
 
@@ -408,7 +408,7 @@ bool СLoaderTextures::addConstAllInDir(const char *szDir)
 
 //##########################################################################
 
-IGXTexture2D* СLoaderTextures::loadTexture2d(const char *szPath)
+IGXTexture2D* CLoaderTextures::loadTexture2d(const char *szPath)
 {
 	//@TODO: use SXGC_LOADTEX_COUNT_MIPMAP
 	IGXTexture2D *pTex = g_pDevice->createTexture2DFromFile(szPath, GX_TEXUSAGE_DEFAULT);
@@ -416,7 +416,7 @@ IGXTexture2D* СLoaderTextures::loadTexture2d(const char *szPath)
 	return pTex;
 }
 
-IGXTextureCube* СLoaderTextures::loadTextureCube(const char *szPath)
+IGXTextureCube* CLoaderTextures::loadTextureCube(const char *szPath)
 {
 	//@TODO: use SXGC_LOADTEX_COUNT_MIPMAP
 	IGXTextureCube *pTex = g_pDevice->createTextureCubeFromFile(szPath, GX_TEXUSAGE_DEFAULT);

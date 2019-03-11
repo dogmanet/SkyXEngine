@@ -1,6 +1,15 @@
 #include "MaterialSystem.h"
 #include "sxmtrl.h"
 
+CMaterialSystem::CMaterialSystem()
+{
+	m_pObjectConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(CObjectData));
+}
+CMaterialSystem::~CMaterialSystem()
+{
+	mem_release(m_pObjectConstantBuffer);
+}
+
 void CMaterialSystem::loadMaterial(const char *szName, IXMaterial **ppMaterial, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount, XSHADER_VARIANT_DESC *pVariantsDesc)
 {
 	assert(!uVariantCount && "Variants is not implemented!");
@@ -35,11 +44,27 @@ void CMaterialSystem::addTexture(const char *szName, IGXTexture2D *pTexture)
 	SGCore_LoadTexCreate(szName, pTexture);
 }
 
-void CMaterialSystem::bindMaterial(IXMaterial *pMaterial, const SMMATRIX *pmWorld, IXShaderVariant *pShaderVariant)
+void CMaterialSystem::setWorld(const SMMATRIX &mWorld)
+{
+	SMMATRIX mV, mP;
+	Core_RMatrixGet(G_RI_MATRIX_VIEW, &mV);
+	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mP);
+
+	m_objectData.m_mW = SMMatrixTranspose(mWorld);
+//	m_objectData.m_mWV = SMMatrixTranspose(mV) * m_objectData.m_mW;
+//	m_objectData.m_mWVP = SMMatrixTranspose(mP) * m_objectData.m_mWV;
+	m_objectData.m_mWV = SMMatrixTranspose((SMMATRIX)mWorld * mV);
+	m_objectData.m_mWVP = SMMatrixTranspose((SMMATRIX)mWorld * mV * mP);
+
+	m_pObjectConstantBuffer->update(&m_objectData);
+	SGCore_GetDXDevice()->setVertexShaderConstant(m_pObjectConstantBuffer, SCR_OBJECT);
+	SGCore_GetDXDevice()->setPixelShaderConstant(m_pObjectConstantBuffer, SCR_OBJECT);
+}
+void CMaterialSystem::bindMaterial(IXMaterial *pMaterial, IXShaderVariant *pShaderVariant)
 {
 	CMaterial *pMat = (CMaterial*)pMaterial;
-	//SMtrl_MtlRender(pMat->getId(), pmWorld);
-	SGCore_MtlSet(pMat->getId(), pmWorld);
+	SMtrl_MtlRender(pMat->getId(), NULL);
+	// SGCore_MtlSet(pMat->getId(), NULL);
 }
 void CMaterialSystem::bindTexture(IXTexture *pTexture, UINT slot)
 {

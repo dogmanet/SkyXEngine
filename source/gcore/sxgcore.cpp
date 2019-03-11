@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -40,7 +40,7 @@ IGXVertexDeclaration *g_pStaticVertexDecl = 0;
 
 CShaderManager *g_pManagerShaders = 0;
 CreatorTextures *g_pManagerRenderTargets = 0;
-ÑLoaderTextures *g_pManagerTextures = 0;
+CLoaderTextures *g_pManagerTextures = 0;
 IGXRenderBuffer *g_pScreenTextureRB = 0;
 CSkyBox *g_pSkyBox = 0;
 CSkyClouds *g_pSkyClouds = 0;
@@ -48,6 +48,8 @@ COcclusionCulling *g_pOC = 0;
 IGXBlendState *g_pToneMappingBS = NULL;
 IGXSamplerState *g_pSamplerFilterPoint = NULL;
 IGXSamplerState *g_pSamplerFilterLinear = NULL;
+
+
 
 //##########################################################################
 
@@ -108,7 +110,7 @@ void GCoreInit(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 
 	g_pManagerShaders = new CShaderManager();
 	g_pManagerRenderTargets = new CreatorTextures();
-	g_pManagerTextures = new ÑLoaderTextures();
+	g_pManagerTextures = new CLoaderTextures();
 	g_pOC = new COcclusionCulling();
 	g_pOC->init(iWidth, iHeight);
 	InitToneMappingStates();

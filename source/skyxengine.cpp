@@ -983,7 +983,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	{
 		pRenderPipeline->endFrame();
 	}
-#ifdef SX_TERRAX
+#ifdef SX_TERRAX1
 	g_pTopRightSwapChain->swapBuffers();
 	g_pBottomLeftSwapChain->swapBuffers();
 	g_pBottomRightSwapChain->swapBuffers();
@@ -999,7 +999,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		pRenderPipeline->renderFrame();
 	}
 
-#ifdef SX_TERRAX 
+#ifdef SX_TERRAX1
 	XRender3D();
 
 	//#############################################################################

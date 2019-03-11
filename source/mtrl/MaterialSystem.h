@@ -32,14 +32,27 @@ protected:
 class CMaterialSystem: public IXMaterialSystem
 {
 public:
+	CMaterialSystem();
+	~CMaterialSystem();
+
 	void loadMaterial(const char *szName, IXMaterial **ppMaterial, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount = 0, XSHADER_VARIANT_DESC *pVariantsDesc = NULL);
 	bool getMaterial(const char *szName, IXMaterial **ppMaterial);
 
 	bool getTexture(const char *szName, IXTexture **ppTexture);
 	void addTexture(const char *szName, IGXTexture2D *pTexture);
 
-	void bindMaterial(IXMaterial *pMaterial, const SMMATRIX *pmWorld = NULL, IXShaderVariant *pShaderVariant = NULL);
+	void bindMaterial(IXMaterial *pMaterial, IXShaderVariant *pShaderVariant = NULL);
 	void bindTexture(IXTexture *pTexture, UINT slot = 0);
+	void setWorld(const SMMATRIX &mWorld);
+
+protected:
+	struct CObjectData
+	{
+		SMMATRIX m_mW;
+		SMMATRIX m_mWV;
+		SMMATRIX m_mWVP;
+	} m_objectData;
+	IGXConstantBuffer *m_pObjectConstantBuffer = NULL;
 };
 
 #endif

@@ -197,6 +197,8 @@ CMaterials::~CMaterials()
 CMaterials::CMaterial::CMaterial()
 {
 	nulling();
+
+	m_oMainGraphics.m_pConstantBuffer = mtrl_data::pDXDevice->createConstantBuffer(sizeof(m_oMainGraphics.m_constData));
 }
 
 void CMaterials::CMaterial::nulling()
@@ -221,6 +223,8 @@ void CMaterials::CMaterial::nulling()
 
 CMaterials::CMaterial::~CMaterial()
 {
+	mem_release(m_oMainGraphics.m_pConstantBuffer);
+
 	if (m_oMainGraphics.m_idMainTexture >= 0)
 		SGCore_LoadTexDelete(m_oMainGraphics.m_idMainTexture);
 
@@ -2164,6 +2168,47 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "Unvalid shader kit");
 
+	if(pColor)
+	{
+		pMtrl->m_oMainGraphics.m_constData.m_vDestColor = *pColor;
+	}
+	pMtrl->m_oMainGraphics.m_constData.m_vUserDataVS = pMtrl->m_oMainGraphics.m_oDataVS.m_vUserData;
+	pMtrl->m_oMainGraphics.m_constData.m_vUserDataPS = pMtrl->m_oMainGraphics.m_oDataPS.m_vUserData;
+	if(pMtrl->m_oMainGraphics.m_idShaderPS != -1)
+	{
+		//освещаемый ли тип материала или нет? Ппрозрачный освещаемый?
+		//0,0.33,0.66,1
+		float fLayer;
+		if(pMtrl->m_oMainGraphics.m_isUnlit)
+		{
+			if(!(pMtrl->m_oLightParam.m_isTransparent))
+				fLayer = MTLTYPE_UNLIT;
+			else
+				fLayer = MTLTYPE_UNLIT;
+		}
+		else
+		{
+			if(!(pMtrl->m_oLightParam.m_isTransparent))
+				fLayer = MTLTYPE_LIGHT;
+			else
+				fLayer = MTLTYPE_LIGHT;
+		}
+
+		if(m_useCountSurface && pMtrl->m_oLightParam.m_isTransparent)
+		{
+			if(m_idCurrIdSurface == 1)
+				m_idCurrIdSurface += 2;
+			else
+				++(m_idCurrIdSurface);
+		}
+		pMtrl->m_oMainGraphics.m_constData.m_vNearFarLayers = float4_t(*r_near, *r_far, fLayer, float(m_idCurrIdSurface));
+	}
+	pMtrl->m_oMainGraphics.m_pConstantBuffer->update(&pMtrl->m_oMainGraphics.m_constData);
+
+	mtrl_data::pDXDevice->setVertexShaderConstant(pMtrl->m_oMainGraphics.m_pConstantBuffer, SCR_SUBSET);
+	mtrl_data::pDXDevice->setPixelShaderConstant(pMtrl->m_oMainGraphics.m_pConstantBuffer, SCR_SUBSET);
+
+#if 0
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorld || pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldView || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorldView || pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorldViewProjection)
 		m_mWorldTrans = SMMatrixTranspose(m_mWorld);
 
@@ -2259,7 +2304,7 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 
 	if (pMtrl->m_oMainGraphics.m_useDestColor && pMtrl->m_oMainGraphics.m_idShaderPS >= 0 && pColor)
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vDestColor", (void*)pColor);
-
+#endif
 	//если материалом назначен альфа тест и не включен принудительный
 	if (pMtrl->m_oMainGraphics.m_useAlphaTest && !m_useForceblyAlphaTest)
 	{
@@ -2303,6 +2348,7 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);*/
 
 	//почти во всех пиксельных шейдерах материалов есть данна¤ NearFar, необходима¤ д¤л записи глубины
+#if 0
 	if (pMtrl->m_oMainGraphics.m_idShaderPS != -1)
 	{	
 		//освещаемый ли тип материала или нет? Ппрозрачный освещаемый?
@@ -2330,9 +2376,11 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 			else
 				++(m_idCurrIdSurface);
 		}
-
+#if 0
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vNearFarLayers", &float4_t(*r_near, *r_far, fLayer, float(m_idCurrIdSurface)));
+#endif
 	}
+#endif
 }
 
 void CMaterials::renderLight(const float4_t *pColor, const float4x4 *pWorld)

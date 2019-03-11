@@ -16,6 +16,8 @@ public:
 	void renderFrame();
 	void endFrame();
 
+	SX_ALIGNED_OP_MEM2();
+
 protected:
 	void renderStage(X_RENDER_STAGE stage);
 
@@ -59,6 +61,20 @@ protected:
 	IGXTexture2D *m_pGBufferDepth = NULL;
 
 	IGXDepthStencilState *m_pDepthStencilStateNoZ = NULL;
+
+	struct
+	{
+		struct
+		{
+			SMMATRIX mP;
+			float4 vTimeDelta;
+			float4 vWinSize;
+		} vs;
+		float4 vNearFarLayers;
+	}
+	m_sceneShaderData;
+	IGXConstantBuffer *m_pSceneShaderDataVS = NULL;
+	IGXConstantBuffer *m_pSceneShaderDataPS = NULL;
 };
 
 #endif

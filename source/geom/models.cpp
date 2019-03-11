@@ -3001,6 +3001,8 @@ void CModels::renderObject(DWORD timeDelta, ID idModel, ID idTex, const float3 *
 	else
 		mWorld = *(m_aModels[idModel]->m_pBoundVolume->calcWorld());
 
+	g_pRenderable->getMaterialSystem()->setWorld(mWorld);
+
 	for (int g = 0; g < m_aModels[idModel]->m_pModel->m_uiSubsetCount; g++)
 	{
 		if(ID_VALID(idTex))
@@ -3009,7 +3011,7 @@ void CModels::renderObject(DWORD timeDelta, ID idModel, ID idTex, const float3 *
 		}
 		else
 		{
-			g_pRenderable->getMaterialSystem()->bindMaterial(m_aModels[idModel]->m_aIDsTextures[g], &mWorld);
+			g_pRenderable->getMaterialSystem()->bindMaterial(m_aModels[idModel]->m_aIDsTextures[g]);
 		}
 
 		SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, m_aModels[idModel]->m_pModel->m_pVertexCount[g], iCountIndex, m_aModels[idModel]->m_pModel->m_pIndexCount[g] / 3);
@@ -3082,6 +3084,8 @@ void CModels::renderSegmets(DWORD timeDelta, ID idModel, ID idTex, ID idVisCalcO
 	
 	int iCountIndex = 0;
 
+	g_pRenderable->getMaterialSystem()->setWorld(*pModel->m_pBoundVolume->calcWorld());
+
 	for (int g = 0; g < pModel->m_pModel->m_uiSubsetCount; g++)
 	{
 		if (pModel->m_pCountDrawPoly[g] > 0)
@@ -3092,7 +3096,7 @@ void CModels::renderSegmets(DWORD timeDelta, ID idModel, ID idTex, ID idVisCalcO
 			}
 			else
 			{
-				g_pRenderable->getMaterialSystem()->bindMaterial(pModel->m_aIDsTextures[g], pModel->m_pBoundVolume->calcWorld());
+				g_pRenderable->getMaterialSystem()->bindMaterial(pModel->m_aIDsTextures[g]);
 			}
 
 			SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, pModel->m_pModel->m_pVertexCount[g], iCountIndex, pModel->m_pCountDrawPoly[g]);
@@ -3110,7 +3114,8 @@ void CModels::renderTransparency(DWORD timeDelta, CTransparencyModel *pTranspare
 	g_pDXDevice->setIndexBuffer(pTransparencyModel->m_pIndexBuffer);
 	g_pDXDevice->setRenderBuffer(pTransparencyModel->m_pRenderBuffer);
 	
-	g_pRenderable->getMaterialSystem()->bindMaterial(pTransparencyModel->m_idTex, pTransparencyModel->m_pBoundVolume->calcWorld());
+	g_pRenderable->getMaterialSystem()->setWorld(*pTransparencyModel->m_pBoundVolume->calcWorld());
+	g_pRenderable->getMaterialSystem()->bindMaterial(pTransparencyModel->m_idTex);
 
 	SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, pTransparencyModel->m_iCountVertex, 0, pTransparencyModel->m_iCountIndex / 3);
 	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((pTransparencyModel->m_iCountIndex / 3)));
