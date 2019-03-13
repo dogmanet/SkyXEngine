@@ -315,9 +315,15 @@ struct VSI_TXHandler
 
 //!@}
 
+struct VSI_GICubes
+{
+	half3 vPosition	:POSITION0;
+};
 
-
-
+struct VSO_GICubes
+{
+	half4 vPosition	:POSITION0;
+};
 
 
 

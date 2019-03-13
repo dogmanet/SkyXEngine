@@ -83,6 +83,39 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 
 	m_pLightInstanceShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_lightInstanceData.ps));
 
+	{
+		const UINT uSize = 10;
+		m_uGICubesCount = uSize * uSize * uSize;
+		float3_t *pData = new float3_t[m_uGICubesCount];
+		float fHalf = (float)uSize / 2.0f;
+		for(UINT x = 0; x < uSize; ++x)
+		{
+			for(UINT y = 0; y < uSize; ++y)
+			{
+				for(UINT z = 0; z < uSize; ++z)
+				{
+					pData[x + y * uSize + z * uSize * uSize] = (float3)(float3(x, y, z) - float3(fHalf));
+				}
+			}
+		}		
+		IGXVertexBuffer *pVB = m_pDevice->createVertexBuffer(sizeof(float3_t) * m_uGICubesCount, GX_BUFFER_USAGE_STATIC, pData);
+		mem_delete_a(pData);
+
+		GXVERTEXELEMENT oLayout[] =
+		{
+			{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+			GXDECL_END()
+		};
+
+		IGXVertexDeclaration *pVD = m_pDevice->createVertexDeclaration(oLayout);
+		m_pGICubesRB = m_pDevice->createRenderBuffer(1, &pVB, pVD);
+		mem_release(pVD);
+		mem_release(pVB);
+
+		ID idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gi_cubes.vs", "gi_cubes.vs", SHADER_CHECKDOUBLE_PATH);
+		ID idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gi_cubes.ps", "gi_cubes.ps", SHADER_CHECKDOUBLE_PATH);
+		m_idGICubesShader = SGCore_ShaderCreateKit(idVS, idPS);
+	}
 }
 CRenderPipeline::~CRenderPipeline()
 {
@@ -105,6 +138,8 @@ CRenderPipeline::~CRenderPipeline()
 	mem_release(m_pLightTotal);
 
 	mem_release(m_pDepthStencilStateNoZ);
+
+	mem_release(m_pGICubesRB);
 }
 
 void CRenderPipeline::resize(UINT uWidth, UINT uHeight, bool isWindowed)
@@ -188,6 +223,7 @@ void CRenderPipeline::renderFrame()
 #endif
 
 end:
+	showGICubes();
 	showFrameStats();
 }
 void CRenderPipeline::endFrame()
@@ -205,10 +241,20 @@ void CRenderPipeline::renderStage(X_RENDER_STAGE stage)
 	}
 }
 
+void CRenderPipeline::showGICubes()
+{
+	m_pDevice->setPrimitiveTopology(GXPT_POINTLIST);
+	m_pDevice->setRenderBuffer(m_pGICubesRB);
+	SGCore_ShaderBind(m_idGICubesShader);
+	m_pDevice->setVertexShaderConstant(m_pLightingShaderDataVS, 1);
+	m_pDevice->drawPrimitive(0, m_uGICubesCount);
 
+	m_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+}
 
 void CRenderPipeline::renderPrepare()
 {
+	renderStage(XRS_PREPARE);
 }
 void CRenderPipeline::renderGBuffer()
 {

@@ -30,6 +30,8 @@ protected:
 	void renderPostprocessFinal();
 	void renderEditor2D();
 
+	void showGICubes();
+
 protected:
 	UINT getIndexForStage(X_RENDER_STAGE stage);
 
@@ -112,6 +114,13 @@ protected:
 		} ps;
 	} m_lightInstanceData;
 	IGXConstantBuffer *m_pLightInstanceShaderDataPS = NULL;
+
+
+	//###################################
+
+	IGXRenderBuffer *m_pGICubesRB = NULL;
+	UINT m_uGICubesCount = 0;
+	ID m_idGICubesShader = -1;
 };
 
 #endif
