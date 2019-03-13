@@ -62,6 +62,13 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 	//GXFMT_G32R32F; // 64bpp; GXFMT_R32F
 	m_pGBufferDepth = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F);
 
+
+	m_pLightAmbientDiffuse = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F);
+	m_pLightSpecular = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R16F);
+
+	m_pLightTotal = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F);
+
+
 	GXDEPTH_STENCIL_DESC dsDesc;
 
 	dsDesc.bDepthEnable = FALSE;
@@ -71,15 +78,31 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 	m_pSceneShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData.vs));
 	m_pSceneShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData));
 
+	m_pLightingShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_lightingShaderData.vs));
+	m_pLightingShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_lightingShaderData.ps));
+
+	m_pLightInstanceShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_lightInstanceData.ps));
+
 }
 CRenderPipeline::~CRenderPipeline()
 {
 	mem_release(m_pSceneShaderDataVS);
 	mem_release(m_pSceneShaderDataPS);
+
+	mem_release(m_pLightingShaderDataVS);
+	mem_release(m_pLightingShaderDataPS);
+
+	mem_release(m_pLightInstanceShaderDataPS);
+
 	mem_release(m_pGBufferColor);
 	mem_release(m_pGBufferNormals);
 	mem_release(m_pGBufferParams);
 	mem_release(m_pGBufferDepth);
+
+	mem_release(m_pLightAmbientDiffuse);
+	mem_release(m_pLightSpecular);
+
+	mem_release(m_pLightTotal);
 
 	mem_release(m_pDepthStencilStateNoZ);
 }
@@ -127,6 +150,16 @@ void CRenderPipeline::renderFrame()
 		goto end;
 	}
 
+	renderGI();
+
+	switch(*r_final_image)
+	{
+	case DS_RT_AMBIENTDIFF:
+		showTexture(m_pLightAmbientDiffuse);
+		goto end;
+		break;
+	}
+
 #if 0
 	Core_PStartSection(PERF_SECTION_SHADOW_UPDATE);
 	SRender_UpdateShadow(timeDelta);
@@ -135,7 +168,7 @@ void CRenderPipeline::renderFrame()
 
 
 	Core_PStartSection(PERF_SECTION_LIGHTING);
-//	SRender_ComLighting(timeDelta);
+	SRender_ComLighting(timeDelta);
 
 	if(SGCore_SkyBoxIsCr())
 	{
@@ -185,7 +218,7 @@ void CRenderPipeline::renderGBuffer()
 	rfunc::SetRenderSceneFilter();
 
 	//?
-	Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
+	//Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
 
 	IGXSurface *pBackBuf, *pColorSurf, *pNormalSurf, *pParamSurf, *pDepthMapLinearSurf;
 
@@ -229,9 +262,309 @@ void CRenderPipeline::renderGBuffer()
 }
 void CRenderPipeline::renderShadows()
 {
+
 }
 void CRenderPipeline::renderGI()
 {
+	IGXSurface *pAmbientSurf, *pSpecDiffSurf, *pBackBuf;
+	pAmbientSurf = m_pLightAmbientDiffuse->getMipmap();
+	pSpecDiffSurf = m_pLightSpecular->getMipmap();
+
+	pBackBuf = m_pDevice->getColorTarget();
+
+	m_pDevice->setColorTarget(pAmbientSurf);
+	m_pDevice->setColorTarget(pSpecDiffSurf, 1);
+
+	//очищаем рт и стенсил
+	m_pDevice->clear(GXCLEAR_COLOR | GXCLEAR_STENCIL);
+
+	m_lightingShaderData.vs.mViewInv = SMMatrixTranspose(SMMatrixInverse(NULL, gdata::mCamView));
+	m_lightingShaderData.vs.mVP = SMMatrixTranspose(gdata::mCamView * gdata::mCamProj);
+	m_lightingShaderData.vs.vNearFar = gdata::vNearFar;
+	m_lightingShaderData.vs.vParamProj = float3_t(m_uOutWidth, m_uOutHeight, gdata::fProjFov);
+	m_pLightingShaderDataVS->update(&m_lightingShaderData.vs);
+
+	m_lightingShaderData.ps.vViewPos = gdata::vConstCurrCamPos;
+	m_pLightingShaderDataPS->update(&m_lightingShaderData.ps.vViewPos);
+
+	m_pDevice->setVertexShaderConstant(m_pLightingShaderDataVS, 1);
+	m_pDevice->setPixelShaderConstant(m_pLightingShaderDataPS, 1);
+
+	/*
+	vs:
+		cbuffer0: (per light)
+		- g_mW
+		cbuffer1: (per frame)
+		- g_mVP
+		- g_mViewInv
+		- g_vNearFar
+		- g_vParamProj
+
+	ps:
+		cbuffer0: (per light)
+		- g_vLightPos
+		- g_vLightColor
+		- g_vLightPowerDistShadow
+		cbuffer1: (per frame)
+		- g_vViewPos
+	*/
+
+	//проходимся циклом по всем источникам света
+	for(int i = 0; i < SLight_GetCount(); i++)
+	{
+		if(!SLight_GetExists(i))
+			continue;
+
+		//если свет виден фрустуму камеры (это надо было заранее просчитать) и если свет включен
+		if(/*SLight_GetVisibleForFrustum(i) && */SLight_GetEnable(i))
+		{
+			//пока что назначаем шейдер без теней
+			ID idshader = gdata::shaders_id::ps::idComLightingNonShadow;
+			ID idshaderkit = gdata::shaders_id::kit::idComLightingNonShadow;
+
+			//если не глобальный источник
+			if(SLight_GetType(i) != LTYPE_LIGHT_GLOBAL)
+			{
+				//помечаем в стенсил буфере пиксели  которые входят в ограничивающий объем света, чтобы их осветить
+				m_pDevice->setRasterizerState(gdata::rstates::pRasterizerCullNone);
+				m_pDevice->setStencilRef(0);
+				m_pDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateLightBound);
+				m_pDevice->setBlendState(gdata::rstates::pBlendNoColor);
+				//отрисовка ограничивающего объема
+				SLight_Render(i, 0);
+
+				m_pDevice->setStencilRef(255);
+				m_pDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateLightShadowNonGlobal);
+				//включаем вывод цвета
+				m_pDevice->setBlendState(gdata::rstates::pBlendAlphaOneOne);
+			}
+			else
+			{
+				//иначе это глобальный источник, отключаем стенсил тест
+				m_pDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateLightShadowGlobal);
+			}
+
+			//отключаем тест глубины ибо будем теперь пост процессом обрабатывать полученные данные
+			m_pDevice->setRasterizerState(NULL);
+
+#if 0
+			//если свет отбрасывает тени
+			if(SLight_GetShadowed(i))
+			{
+				//генерация теней для текущего света
+				//{{
+				//так как нам нужно провести очистку рт то убираем оба рт
+				gdata::pDXDevice->setColorTarget(pBackBuf);
+				gdata::pDXDevice->setColorTarget(NULL, 1);
+
+				//отключаем смешивание, нам не нужен хлам в рт
+				gdata::pDXDevice->setBlendState(gdata::rstates::pBlendRed);
+
+				SLight_ShadowNull();	//очищаем рт генерации теней
+				SLight_ShadowGen(i);	//генерируем тень для света
+
+				static const int * r_shadow_soft = GET_PCVAR_INT("r_shadow_soft");
+
+				if(r_shadow_soft)
+				{
+					if((*r_shadow_soft) == 1)
+						SLight_ShadowSoft(false, 2);
+					else if((*r_shadow_soft) == 2)
+					{
+						SLight_ShadowSoft(false, 2);
+						SLight_ShadowSoft(false, 2);
+					}
+				}
+
+				//включаем смешивание для освещения
+				gdata::pDXDevice->setBlendState(gdata::rstates::pBlendAlphaOneOne);
+				//}}
+
+
+				//опять назначаем второй рт
+				gdata::pDXDevice->setColorTarget(pAmbientSurf);
+				gdata::pDXDevice->setColorTarget(pSpecDiffSurf, 1);
+
+				//устанавливаем текстуру с тенями и переназначаем шейдер, теперь уже с тенями
+				gdata::pDXDevice->setTexture(SLight_GetShadow(), 4);
+				idshader = gdata::shaders_id::ps::idComLightingShadow;
+				idshaderkit = gdata::shaders_id::kit::idComLightingShadow;
+
+				//if (GetAsyncKeyState('Q'))
+				//D3DXSaveTextureToFile((String("C:/1/SLight_GetShadow") + String(i) + ".jpg").c_str(), D3DXIFF_JPG, SLight_GetShadow(), NULL);
+
+				/*if (i == SLight_GetGlobal())
+				gdata::pDXDevice->SetTexture(4, SGCore_LoadTexGetTex(SGCore_LoadTexGetID("g_shadow")));*/
+			}
+#endif
+			SGCore_ShaderUnBind();
+
+			//теперь когда будем считать освещение надо сбросить значения в стенсил буфере, чтобы каждый кадр не чистить
+			//если стенсил тест прошел успешно, устанавливаем значнеие в нуль
+			if(SLight_GetType(i) != LTYPE_LIGHT_GLOBAL)
+			{
+				gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateLightClear);
+			}
+
+			float3 tmpPosition;
+			float3 tmpPowerDistShadow;
+			float4 tmpColor;
+			SLight_GetColor(i, (float3*)&tmpColor);
+			SLight_GetPos(i, &tmpPosition, true);
+			tmpPowerDistShadow.x = SLight_GetPower(i);
+			tmpPowerDistShadow.y = SLight_GetDist(i);
+			tmpPowerDistShadow.z = SLight_GetShadowIntensity(i);
+
+#if 0
+			if(SLight_GetType(i) != LTYPE_LIGHT_GLOBAL)
+			{
+				tmpColor.w = 0.f;
+				ID gl_id = -1;
+				if((gl_id = SLight_GetGlobal()) >= 0)
+				{
+					float gl_power = 0.f;
+					if(SLight_GetEnable(gl_id))
+						gl_power = SLight_GetPower(gl_id);
+
+					float f_dep_coef = clampf(1.f - gl_power, 0.25f, 1.f);
+					tmpPowerDistShadow.x *= f_dep_coef;
+					tmpPowerDistShadow.y *= f_dep_coef;
+				}
+			}
+			else
+				tmpColor.w = 1.f;
+#endif
+
+			m_lightInstanceData.ps.vLightColor = tmpColor;
+			m_lightInstanceData.ps.vLightPos = tmpPosition;
+			m_lightInstanceData.ps.vLightPowerDistShadow = tmpPowerDistShadow;
+			m_pLightInstanceShaderDataPS->update(&m_lightInstanceData.ps);
+			m_pDevice->setPixelShaderConstant(m_pLightInstanceShaderDataPS);
+
+		//	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vViewPos", &gdata::vConstCurrCamPos);
+		//	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vLightPos", &(tmpPosition));
+		//	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vLightPowerDistShadow", &(tmpPowerDistShadow));
+		//	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vLightColor", &tmpColor);
+			//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "vNearFar", &gdata::vNearFar);
+
+			SGCore_ShaderBind(idshaderkit);
+
+			for(UINT i = 0; i <= 5; ++i)
+			{
+				m_pDevice->setSamplerState(gdata::rstates::pSamplerPointClamp, i);
+			}
+			//	SetSamplerFilter(0, 5, D3DTEXF_NONE);
+			//	SetSamplerAddress(0, 5, D3DTADDRESS_CLAMP);
+
+			m_pDevice->setTexture(m_pGBufferColor);
+			m_pDevice->setTexture(m_pGBufferNormals, 1);
+			m_pDevice->setTexture(m_pGBufferParams, 2);
+			m_pDevice->setTexture(m_pGBufferDepth, 3);
+			//m_pDevice->setTexture(SGCore_GbufferGetRT(DS_RT_ADAPTEDLUM), 5);
+
+			SGCore_ScreenQuadDraw();
+
+			SGCore_ShaderUnBind();
+		}
+	}
+
+#if 0
+	static IGXTexture2D *s_pTex = NULL;
+	if(!s_pTex)
+	{
+
+#define TIDX(x, y, z, w) (w * 64 + x + y * 64 * 64 * 3 + z * 64 * 3)
+
+		float4 *pData = new float4[64 * 64 * 64 * 3];
+		for(UINT x = 0; x < 64; ++x)
+		{
+			for(UINT y = 0; y < 64; ++y)
+			{
+				for(UINT z = 0; z < 64; ++z)
+				{
+					pData[TIDX(x, y, z, 0)] = float4(0.001346903f, 0.0f, 0.003454941f, -0.003454941f);
+					pData[TIDX(x, y, z, 1)] = float4(0.001346903f, -0.003454941f, 0.003454941f, 0.0f);
+					pData[TIDX(x, y, z, 2)] = float4(0.001346903f, -0.003454941f, 0.0f, -0.003454941f);
+				}
+			}
+		}
+		s_pTex = gdata::pDXDevice->createTexture2D(64 * 3, 64 * 64, 1, GX_TEXUSAGE_DEFAULT, GXFMT_A32B32G32R32F, pData);
+		mem_delete_a(pData);
+	}
+
+
+	{
+		//gdata::pDXDevice->setRasterizerState(NULL);
+		gdata::pDXDevice->setRasterizerState(gdata::rstates::pRasterizerCullNone);
+		gdata::pDXDevice->setBlendState(gdata::rstates::pBlendAlphaOneOne);
+		gdata::pDXDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateLightShadowGlobal);
+
+
+		ID idshader = gdata::shaders_id::ps::idComLightingGI;
+		ID idshaderkit = gdata::shaders_id::kit::idComLightingGI;
+
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vViewPos", &gdata::vConstCurrCamPos);
+
+		SGCore_ShaderBind(idshaderkit);
+
+		for(UINT i = 0; i <= 5; ++i)
+		{
+			gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerPointClamp, i);
+		}
+		gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerLinearClamp, 2);
+
+		gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_COLOR));
+		gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_NORMAL), 1);
+		gdata::pDXDevice->setTexture(s_pTex, 2);
+		gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH), 3);
+		gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_ADAPTEDLUM), 5);
+
+		SGCore_ScreenQuadDraw();
+
+		SGCore_ShaderUnBind();
+	}
+#endif
+
+	m_pDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateNoZ);
+	m_pDevice->setRasterizerState(NULL);
+	m_pDevice->setBlendState(NULL);
+	
+	m_pDevice->setColorTarget(NULL, 1);
+	
+	mem_release(pAmbientSurf);
+	mem_release(pSpecDiffSurf);
+
+	//-------------------------------
+
+	//теперь необходимо все смешать чтобы получить итоговую освещенную картинку
+	//{{
+	
+	gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerPointClamp, 0);
+	
+	IGXSurface *pComLightSurf = m_pLightTotal->getMipmap();
+	gdata::pDXDevice->setColorTarget(pComLightSurf);
+
+	//очищаем рт (в старой версии было многопроходное смешивание)
+	gdata::pDXDevice->clear(GXCLEAR_COLOR);
+
+	gdata::pDXDevice->setTexture(m_pGBufferColor);
+	gdata::pDXDevice->setTexture(m_pLightAmbientDiffuse, 1);
+	gdata::pDXDevice->setTexture(m_pLightSpecular, 2);
+	gdata::pDXDevice->setTexture(m_pGBufferNormals, 3);
+	//gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_ADAPTEDLUM), 4);
+	gdata::pDXDevice->setTexture(m_pGBufferParams, 5);
+
+	SGCore_ShaderBind(gdata::shaders_id::kit::idBlendAmbientSpecDiffColor);
+
+	SGCore_ScreenQuadDraw();
+
+	mem_release(pComLightSurf);
+	//}}
+
+	SGCore_ShaderUnBind();
+
+	gdata::pDXDevice->setColorTarget(pBackBuf);
+	mem_release(pBackBuf);
 }
 void CRenderPipeline::renderPostprocessMain()
 {

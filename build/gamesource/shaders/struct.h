@@ -234,7 +234,7 @@ struct VSO_AIgrid
 
 struct VSI_LightBound
 {
-	half4 vPosition	:POSITION0;
+	half3 vPosition	:POSITION0;
 };
 
 struct VSO_LightBound

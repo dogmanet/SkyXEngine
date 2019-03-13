@@ -220,6 +220,8 @@ public:
 
 		ISXBound *m_pBoundVolume;
 		float4x4 m_mWorldMat;
+		bool m_isVSDataDirty = false;
+		IGXConstantBuffer *m_pVSData = NULL;
 		
 		bool m_isVisibleFor;
 		float m_fDistFor;
@@ -227,6 +229,7 @@ public:
 		PSSM *m_pShadowPSSM;
 		ShadowMapTech *m_pShadowSM;
 		ShadowMapCubeTech *m_pShadowCube;
+
 	};
 
 protected:

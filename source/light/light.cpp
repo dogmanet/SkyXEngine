@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -145,6 +145,8 @@ CLights::CLight::CLight()
 	m_pShadowPSSM = 0;
 	m_pShadowSM = 0;
 	m_pShadowCube = 0;
+
+	m_pVSData = light_data::pDXDevice->createConstantBuffer(sizeof(SMMATRIX));
 }
 
 CLights::CLight::~CLight()
@@ -155,6 +157,8 @@ CLights::CLight::~CLight()
 	mem_delete(m_pShadowPSSM);
 	mem_delete(m_pShadowSM);
 	mem_delete(m_pShadowCube);
+
+	mem_release(m_pVSData);
 }
 
 void CLights::onLostDevice()
@@ -433,7 +437,7 @@ ID CLights::createDirection(ID id, const float3* pos, float dist, const float3* 
 	tmplight->m_isEnable = true;
 	float4x4 mpos = SMMatrixTranslation(*pos);
 	tmplight->m_mWorldMat = tmplight->m_qQuaternion.GetMatrix() * mpos;
-
+	tmplight->m_isVSDataDirty = true;
 	tmplight->m_vPosition = float3(pos->x, pos->y, pos->z);
 	
 	if (is_shadow)
@@ -465,12 +469,21 @@ void CLights::render(ID id, DWORD timeDelta)
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
+	if(m_aLights[id]->m_isVSDataDirty)
+	{
+		m_aLights[id]->m_pVSData->update(&SMMatrixTranspose(m_aLights[id]->m_mWorldMat));
+		m_aLights[id]->m_isVSDataDirty = false;
+	}
+
+#if 0
 	float4x4 tmpwmat = m_aLights[id]->m_mWorldMat;
 	float4x4 mV, mP;
 	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mV);
 	Core_RMatrixGet(G_RI_MATRIX_LIGHT_PROJ, &mP);
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idLightBound, "g_mWVP", &SMMatrixTranspose(m_aLights[id]->m_mWorldMat * mV * mP));
+#endif
+	light_data::pDXDevice->setVertexShaderConstant(m_aLights[id]->m_pVSData);
 	SGCore_ShaderBind(light_data::shader_id::kit::idLightBound);
 
 //	light_data::pDXDevice->SetTransform(D3DTS_WORLD, &(m_aLights[id]->m_mWorldMat.operator D3DXMATRIX()));
@@ -601,16 +614,16 @@ void CLights::setLightPos(ID id, const float3* vec, bool greal)
 {
 	LIGHTS_PRE_COND_ID(id, _VOID);
 
-	if (m_aLights[id]->m_isGlobal)
+	if(m_aLights[id]->m_isGlobal)
 	{
 		CLight* tmplight = m_aLights[id];
 		tmplight->m_fGAngleX = vec->x;
 		tmplight->m_fGAngleY = vec->y;
 
-		if (tmplight->m_fGAngleX > 360 || tmplight->m_fGAngleX < 0)
+		if(tmplight->m_fGAngleX > 360 || tmplight->m_fGAngleX < 0)
 			tmplight->m_fGAngleX = 0;
 
-		if (tmplight->m_fGAngleY > 360 || tmplight->m_fGAngleY < 0)
+		if(tmplight->m_fGAngleY > 360 || tmplight->m_fGAngleY < 0)
 			tmplight->m_fGAngleY = 0;
 
 
@@ -623,28 +636,31 @@ void CLights::setLightPos(ID id, const float3* vec, bool greal)
 		tmplight->m_vPosition.z *= LIGHTS_POS_G_MAX;
 
 		tmplight->m_mWorldMat = SMMatrixTranslation(tmplight->m_vPosition.x, tmplight->m_vPosition.y, tmplight->m_vPosition.z);
-		if (tmplight->m_pShadowPSSM)
+		tmplight->m_isVSDataDirty = true;
+		if(tmplight->m_pShadowPSSM)
 			tmplight->m_pShadowPSSM->setPosition(&float3(tmplight->m_vPosition.x, tmplight->m_vPosition.y, tmplight->m_vPosition.z));
 	}
 	else
 	{
-				m_aLights[id]->m_vPosition.x = (*vec).x;
-				m_aLights[id]->m_vPosition.y = (*vec).y;
-				m_aLights[id]->m_vPosition.z = (*vec).z;
+		m_aLights[id]->m_vPosition.x = (*vec).x;
+		m_aLights[id]->m_vPosition.y = (*vec).y;
+		m_aLights[id]->m_vPosition.z = (*vec).z;
 
-				float4x4 mpos = SMMatrixTranslation(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z);
-				m_aLights[id]->m_mWorldMat = m_aLights[id]->m_qQuaternion.GetMatrix() * mpos;
+		float4x4 mpos = SMMatrixTranslation(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z);
+		m_aLights[id]->m_mWorldMat = m_aLights[id]->m_qQuaternion.GetMatrix() * mpos;
+		m_aLights[id]->m_isVSDataDirty = true;
 
-			if (m_aLights[id]->m_pShadowSM)
-			{
-				m_aLights[id]->m_pShadowSM->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
-			}
+		if(m_aLights[id]->m_pShadowSM)
+		{
+			m_aLights[id]->m_pShadowSM->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
+		}
 
-			if (m_aLights[id]->m_pShadowCube)
-			{
-				m_aLights[id]->m_mWorldMat = SMMatrixTranslation(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z);
-				m_aLights[id]->m_pShadowCube->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
-			}
+		if(m_aLights[id]->m_pShadowCube)
+		{
+			m_aLights[id]->m_mWorldMat = SMMatrixTranslation(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z);
+			m_aLights[id]->m_isVSDataDirty = true;
+			m_aLights[id]->m_pShadowCube->setPosition(&float3(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z));
+		}
 	}
 
 	lightCountUpdateNull(id);
@@ -667,6 +683,7 @@ void CLights::setLightOrient(ID id, const SMQuaternion* q)
 	{
 		float4x4 mpos = SMMatrixTranslation(m_aLights[id]->m_vPosition.x, m_aLights[id]->m_vPosition.y, m_aLights[id]->m_vPosition.z);
 		m_aLights[id]->m_mWorldMat = m_aLights[id]->m_qQuaternion.GetMatrix() * mpos;
+		m_aLights[id]->m_isVSDataDirty = true;
 		m_aLights[id]->m_pShadowSM->setDirection(&(m_aLights[id]->m_qQuaternion * LIGHTS_DIR_BASE));
 	}
 

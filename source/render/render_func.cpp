@@ -67,10 +67,7 @@ void rfunc::SetRenderSceneFilter()
 		gdata::rstates::pSamplerScene = gdata::pDXDevice->createSamplerState(&samplerDesc);
 	}
 
-	for(UINT i = 0; i < 16; ++i)
-	{
-		gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerScene, i);
-	}
+	gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerScene, 0);
 }
 
 void rfunc::SetRenderSceneFilterUn()

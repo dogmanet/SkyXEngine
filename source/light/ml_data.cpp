@@ -263,6 +263,7 @@ void light_data::Init()
 	shader_id::ps::idStdSkinCP = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_skin.ps", "stdr_skin_cp.ps", SHADER_CHECKDOUBLE_NAME, Defines_CP);
 
 	shader_id::vs::idLightBound = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "lighting_bound.vs", "lighting_bound.vs", SHADER_CHECKDOUBLE_PATH);
-	shader_id::ps::idLightBound = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_bound.ps", "lighting_bound.ps", SHADER_CHECKDOUBLE_PATH);
-	shader_id::kit::idLightBound = SGCore_ShaderCreateKit(shader_id::vs::idLightBound, shader_id::ps::idLightBound);
+	//shader_id::ps::idLightBound = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_bound.ps", "lighting_bound.ps", SHADER_CHECKDOUBLE_PATH);
+	//shader_id::kit::idLightBound = SGCore_ShaderCreateKit(shader_id::vs::idLightBound, shader_id::ps::idLightBound);
+	shader_id::kit::idLightBound = SGCore_ShaderCreateKit(shader_id::vs::idLightBound, -1);
 }

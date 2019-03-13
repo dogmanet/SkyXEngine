@@ -509,7 +509,7 @@ void CShaderManager::reloadAll()
 			ID idVS = m_aShaderKit[i]->m_idVertexShader;
 			ID idPS = m_aShaderKit[i]->m_idPixelShader;
 
-			m_aShaderKit[i]->m_pShaderKit = g_pDevice->createShader(m_aVS[idVS]->m_pVertexShader, m_aPS[idPS]->m_pPixelShader);
+			m_aShaderKit[i]->m_pShaderKit = g_pDevice->createShader(ID_VALID(idVS) ? m_aVS[idVS]->m_pVertexShader : NULL, ID_VALID(idPS) ? m_aPS[idPS]->m_pPixelShader : NULL);
 		}
 	}
 
@@ -701,7 +701,7 @@ void CShaderManager::allLoad()
 			ID idVS = m_aShaderKit[i]->m_idVertexShader;
 			ID idPS = m_aShaderKit[i]->m_idPixelShader;
 
-			m_aShaderKit[i]->m_pShaderKit = g_pDevice->createShader(m_aVS[idVS]->m_pVertexShader, m_aPS[idPS]->m_pPixelShader);
+			m_aShaderKit[i]->m_pShaderKit = g_pDevice->createShader(ID_VALID(idVS) ? m_aVS[idVS]->m_pVertexShader : NULL, ID_VALID(idPS) ? m_aPS[idPS]->m_pPixelShader : NULL);
 		}
 	}
 
@@ -813,7 +813,7 @@ ID CShaderManager::getID(SHADER_TYPE type_shader, const char *szName)
 
 ID CShaderManager::createKit(ID idVertexShader, ID idPixelShader)
 {
-	if (!(idVertexShader >= 0 && idVertexShader < m_aVS.size() && idPixelShader >= 0 && idPixelShader < m_aPS.size()))
+	if (!(idVertexShader >= 0 && idVertexShader < m_aVS.size()) && !(idPixelShader >= 0 && idPixelShader < m_aPS.size()))
 		return -1;
 
 	ID idShaderKit = -1;
@@ -833,8 +833,8 @@ ID CShaderManager::createKit(ID idVertexShader, ID idPixelShader)
 		pShaderKit->m_idVertexShader = idVertexShader;
 		pShaderKit->m_idPixelShader = idPixelShader;
 
-		if (m_aVS[idVertexShader]->m_pVertexShader && m_aPS[idPixelShader]->m_pPixelShader)
-			pShaderKit->m_pShaderKit = g_pDevice->createShader(m_aVS[idVertexShader]->m_pVertexShader, m_aPS[idPixelShader]->m_pPixelShader);
+		if((!ID_VALID(idVertexShader) || m_aVS[idVertexShader]->m_pVertexShader) && (!ID_VALID(idPixelShader) || m_aPS[idPixelShader]->m_pPixelShader))
+			pShaderKit->m_pShaderKit = g_pDevice->createShader(ID_VALID(idVertexShader) ? m_aVS[idVertexShader]->m_pVertexShader : NULL, ID_VALID(idPixelShader) ? m_aPS[idPixelShader]->m_pPixelShader : NULL);
 
 		m_aShaderKit.push_back(pShaderKit);
 		idShaderKit = m_aShaderKit.size() - 1;

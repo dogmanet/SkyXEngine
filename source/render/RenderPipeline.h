@@ -55,10 +55,18 @@ protected:
 	UINT m_uOutWidth;
 	UINT m_uOutHeight;
 
+	//! G-Buffer
 	IGXTexture2D *m_pGBufferColor = NULL;
 	IGXTexture2D *m_pGBufferNormals = NULL;
 	IGXTexture2D *m_pGBufferParams = NULL;
 	IGXTexture2D *m_pGBufferDepth = NULL;
+
+	//! Буфер освещения
+	IGXTexture2D *m_pLightAmbientDiffuse = NULL;
+	IGXTexture2D *m_pLightSpecular = NULL;
+
+	//! Буфер освещения
+	IGXTexture2D *m_pLightTotal = NULL;
 
 	IGXDepthStencilState *m_pDepthStencilStateNoZ = NULL;
 
@@ -71,10 +79,39 @@ protected:
 			float4 vWinSize;
 		} vs;
 		float4 vNearFarLayers;
-	}
-	m_sceneShaderData;
+	} m_sceneShaderData;
 	IGXConstantBuffer *m_pSceneShaderDataVS = NULL;
 	IGXConstantBuffer *m_pSceneShaderDataPS = NULL;
+
+	struct
+	{
+		struct
+		{
+			SMMATRIX mVP;
+			SMMATRIX mViewInv;
+			float2 vNearFar;
+			float3 vParamProj;
+		} vs;
+		struct
+		{
+			float3 vViewPos;
+		} ps;
+	} m_lightingShaderData;
+	IGXConstantBuffer *m_pLightingShaderDataVS = NULL;
+	IGXConstantBuffer *m_pLightingShaderDataPS = NULL;
+
+
+	//@TODO: Move this into light instance!
+	struct
+	{
+		struct
+		{
+			float3 vLightPos;
+			float4 vLightColor;
+			float3 vLightPowerDistShadow;
+		} ps;
+	} m_lightInstanceData;
+	IGXConstantBuffer *m_pLightInstanceShaderDataPS = NULL;
 };
 
 #endif
