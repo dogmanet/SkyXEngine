@@ -468,11 +468,11 @@ SX_LIB_API void SGCore_ShaderReloadAll()
 	g_pManagerShaders->reloadAll();
 }
 
-SX_LIB_API ID SGCore_ShaderCreateKit(ID idVertexShader, ID idPixelShader)
+SX_LIB_API ID SGCore_ShaderCreateKit(ID idVertexShader, ID idPixelShader, ID idGeometryShader)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerShaders->createKit(idVertexShader, idPixelShader);
+	return g_pManagerShaders->createKit(idVertexShader, idPixelShader, idGeometryShader);
 }
 
 SX_LIB_API void SGCore_ShaderBind(ID idShaderKit)

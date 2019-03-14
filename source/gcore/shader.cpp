@@ -321,6 +321,79 @@ int LoadPixelShader(const char *szPath, CShaderPS *pShader,GXMACRO *aMacro)
 	return LOAD_SHADER_COMPLETE;
 }
 
+int LoadGeometryShader(const char *szPath, CShaderGS *pShader, GXMACRO *aMacro)
+{
+	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
+	char szFullPathCache[SXGC_SHADER_MAX_SIZE_FULLPATH];
+	char szDir[SXGC_SHADER_MAX_SIZE_DIR];
+	szDir[0] = 0;
+	char szName[SXGC_SHADER_MAX_SIZE_NAME];
+	StrParsePathName(szPath, szDir, szName);
+	if(szDir[0] != 0)
+	{
+		sprintf(szFullPath, "%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), szDir, szPath);
+		sprintf(szFullPathCache, "%s%s%s\\%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, szDir, pShader->m_szName);
+	}
+	else
+	{
+		sprintf(szFullPath, "%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), szPath);
+		sprintf(szFullPathCache, "%s%s%s", Core_RStringGet(G_RI_STRING_PATH_GS_SHADERS), SHADERS_CACHE_PATH, pShader->m_szName);
+	}
+
+#if !defined(_DEBUG) && 0 
+	UINT uiTimeFileCahce = GetTimeShaderFileCache(szFullPathCache);
+	UINT uiTimeFileSahder = FileGetTimeLastModify(szFullPath);
+	if(
+		//если юзаем кэш и файл кэша существует
+		(g_useCache && FileExistsFile(szFullPathCache)) &&
+		//если время изменения кэша такое же как и время изменения файла шейдера или файла шейдера нет
+		(uiTimeFileCahce == uiTimeFileSahder || !FileExistsFile(szFullPath))
+		)
+	{
+		CShaderFileCache *pSFC = CreateShaderFileCacheFormFile(szFullPathCache);
+
+		pShader->m_iCountVar = pSFC->m_iCountVar;
+		memcpy(pShader->m_aVarDesc, pSFC->m_aVarDesc, sizeof(D3DXCONSTANT_DESC)* SXGC_SHADER_VAR_MAX_COUNT);
+		memcpy(pShader->m_aMacros, pSFC->m_aMacros, sizeof(GXMACRO)* SXGC_SHADER_COUNT_MACRO);
+		pShader->m_pCode = pSFC->m_pCode;
+		pShader->m_pCode->AddRef();
+
+		HRESULT hr = g_pDevice->CreatePixelShader(
+			(DWORD*)pShader->m_pCode->GetBufferPointer(),
+			&(pShader->m_pPixelShader)
+			);
+		if(FAILED(hr))
+		{
+			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - error creating pixel shader [%s]", GEN_MSG_LOCATION, szPath);
+			return LOAD_SHADER_FAIL;
+		}
+
+		mem_delete(pSFC);
+
+		return LOAD_SHADER_CACHE;
+	}
+	else
+	{
+#endif
+		IGXGeometryShader *pGeometryShader = g_pDevice->createGeometryShader(szFullPath, aMacro);
+
+		pShader->m_pCode = 0;
+		pGeometryShader->getData(pShader->m_pCode, &pShader->m_uiCodeSize);
+		pShader->m_pCode = new BYTE[pShader->m_uiCodeSize];
+		pGeometryShader->getData(pShader->m_pCode, &pShader->m_uiCodeSize);
+
+		pShader->m_pGeometryShader = pGeometryShader;
+
+#if !defined(_DEBUG) && 0 
+		CShaderFileCache *pSFC = CreateShaderFileCacheFormShader(pShader);
+		SaveShaderFileCache(pSFC);
+		mem_delete(pSFC);
+	}
+#endif
+
+	return LOAD_SHADER_COMPLETE;
+}
+
 //**************************************************************************
 
 CShaderManager::CShaderManager()
@@ -398,15 +471,21 @@ CShaderManager::~CShaderManager()
 	{
 		mem_delete(m_aVS[i]);
 	}
-			
 
-	for (int i = 0; i < m_aPS.size(); ++i)
+
+	for(int i = 0; i < m_aPS.size(); ++i)
 	{
 		mem_delete(m_aPS[i]);
+	}
+
+	for(int i = 0; i < m_aGS.size(); ++i)
+	{
+		mem_delete(m_aGS[i]);
 	}
 			
 	m_aVS.clear();
 	m_aPS.clear();
+	m_aGS.clear();
 }
 
 String CShaderManager::getTextResultLoad(int iResult)
@@ -495,11 +574,20 @@ void CShaderManager::reloadAll()
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
 
-	for (int i = 0; i<m_aPS.size(); i++)
+	for(int i = 0; i<m_aPS.size(); i++)
 	{
 		CShaderPS *pShader = m_aPS[i];
 		sResult = getTextResultLoad(LoadPixelShader(m_aPS[i]->m_szPath, m_aPS[i], m_aPS[i]->m_aMacros));
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  PS id [%d], file[%s], name[%s], result [%s] \n", i, pShader->m_szPath, pShader->m_szName, sResult.c_str());
+	}
+
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
+
+	for(int i = 0; i<m_aGS.size(); i++)
+	{
+		CShaderGS *pShader = m_aGS[i];
+		sResult = getTextResultLoad(LoadGeometryShader(m_aGS[i]->m_szPath, m_aGS[i], m_aGS[i]->m_aMacros));
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  GS id [%d], file[%s], name[%s], result [%s] \n", i, pShader->m_szPath, pShader->m_szName, sResult.c_str());
 	}
 
 	for (int i = 0, il = m_aShaderKit.size(); i < il; ++i)
@@ -508,8 +596,9 @@ void CShaderManager::reloadAll()
 		{
 			ID idVS = m_aShaderKit[i]->m_idVertexShader;
 			ID idPS = m_aShaderKit[i]->m_idPixelShader;
+			ID idGS = m_aShaderKit[i]->m_idGeometryShader;
 
-			m_aShaderKit[i]->m_pShaderKit = g_pDevice->createShader(ID_VALID(idVS) ? m_aVS[idVS]->m_pVertexShader : NULL, ID_VALID(idPS) ? m_aPS[idPS]->m_pPixelShader : NULL);
+			m_aShaderKit[i]->m_pShaderKit = g_pDevice->createShader(ID_VALID(idVS) ? m_aVS[idVS]->m_pVertexShader : NULL, ID_VALID(idPS) ? m_aPS[idPS]->m_pPixelShader : NULL, ID_VALID(idGS) ? m_aGS[idGS]->m_pGeometryShader : NULL);
 		}
 	}
 
@@ -526,11 +615,19 @@ ID CShaderManager::existsPath(SHADER_TYPE type, const char *szPath)
 				return i;
 		}
 	}
-	else if (type == SHADER_TYPE_PIXEL)
+	else if(type == SHADER_TYPE_PIXEL)
 	{
-		for (int i = 0; i<m_aPS.size(); ++i)
+		for(int i = 0; i<m_aPS.size(); ++i)
 		{
-			if (strcmp(m_aPS[i]->m_szPath, szPath) == 0)
+			if(strcmp(m_aPS[i]->m_szPath, szPath) == 0)
+				return i;
+		}
+	}
+	else if(type == SHADER_TYPE_GEOMETRY)
+	{
+		for(int i = 0; i<m_aGS.size(); ++i)
+		{
+			if(strcmp(m_aGS[i]->m_szPath, szPath) == 0)
 				return i;
 		}
 	}
@@ -553,11 +650,19 @@ ID CShaderManager::existsName(SHADER_TYPE type_shader, const char *szName)
 				return i;
 		}
 	}
-	else if (type_shader == SHADER_TYPE_PIXEL)
+	else if(type_shader == SHADER_TYPE_PIXEL)
 	{
-		for (int i = 0; i<m_aPS.size(); ++i)
+		for(int i = 0; i<m_aPS.size(); ++i)
 		{
-			if (strcmp(m_aPS[i]->m_szName, szName) == 0)
+			if(strcmp(m_aPS[i]->m_szName, szName) == 0)
+				return i;
+		}
+	}
+	else if(type_shader == SHADER_TYPE_GEOMETRY)
+	{
+		for(int i = 0; i<m_aGS.size(); ++i)
+		{
+			if(strcmp(m_aGS[i]->m_szName, szName) == 0)
 				return i;
 		}
 	}
@@ -570,7 +675,7 @@ bool CShaderManager::isValidateTypeName(SHADER_TYPE type, const char *szName)
 	sprintf(szEndStr, "%s", szName + (strlen(szName) - 3));
 	szEndStr[3] = 0;
 
-	return (type == SHADER_TYPE_VERTEX && stricmp(szEndStr, ".vs") == 0) || (type == SHADER_TYPE_PIXEL && stricmp(szEndStr, ".ps") == 0);
+	return (type == SHADER_TYPE_VERTEX && stricmp(szEndStr, ".vs") == 0) || (type == SHADER_TYPE_PIXEL && stricmp(szEndStr, ".ps") == 0 || (type == SHADER_TYPE_GEOMETRY && stricmp(szEndStr, ".gs") == 0));
 }
 
 bool CShaderManager::existsFile(const char *szPath)
@@ -623,9 +728,9 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szN
 			pShader = pVS;
 		}
 	}
-	else if (type == SHADER_TYPE_PIXEL)
+	else if(type == SHADER_TYPE_PIXEL)
 	{
-		if (id == -1)
+		if(id == -1)
 		{
 			CShaderPS *pPS = new CShaderPS();
 			sprintf(pPS->m_szName, "%s", szName);
@@ -634,6 +739,19 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szN
 			m_aPS.push_back(pPS);
 			id = m_aPS.size() - 1;
 			pShader = pPS;
+		}
+	}
+	else if(type == SHADER_TYPE_GEOMETRY)
+	{
+		if(id == -1)
+		{
+			CShaderGS *pGS = new CShaderGS();
+			sprintf(pGS->m_szName, "%s", szName);
+			sprintf(pGS->m_szPath, "%s", szPath);
+			//sprintf(pPS->m_szFrom, "%s", szFrom);
+			m_aGS.push_back(pGS);
+			id = m_aGS.size() - 1;
+			pShader = pGS;
 		}
 	}
 
@@ -663,7 +781,7 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szN
 
 void CShaderManager::allLoad()
 {
-	if (m_aVS.size() == m_iLastAllLoadVS && m_aPS.size() == m_iLastAllLoadPS)
+	if(m_aVS.size() == m_iLastAllLoadVS && m_aPS.size() == m_iLastAllLoadPS && m_aGS.size() == m_iLastAllLoadGS)
 		return;
 
 	DWORD dwTime = GetTickCount();
@@ -690,9 +808,21 @@ void CShaderManager::allLoad()
 		sResult = getTextResultLoad(LoadPixelShader(pShader->m_szPath, pShader, pShader->m_aMacros));
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  PS id [%d], file[%s], name[%s], result [%s] \n", i, pShader->m_szPath, pShader->m_szName, sResult.c_str());
 	}
+	
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
+
+	for(int i = 0, il = m_aGS.size(); i < il; ++i)
+	{
+		CShaderGS *pShader = m_aGS[i];
+		if(pShader->m_pGeometryShader)
+			continue;
+		sResult = getTextResultLoad(LoadGeometryShader(pShader->m_szPath, pShader, pShader->m_aMacros));
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  GS id [%d], file[%s], name[%s], result [%s] \n", i, pShader->m_szPath, pShader->m_szName, sResult.c_str());
+	}
 
 	m_iLastAllLoadVS = m_aVS.size();
 	m_iLastAllLoadPS = m_aPS.size();
+	m_iLastAllLoadGS = m_aGS.size();
 
 	for (int i = 0, il = m_aShaderKit.size(); i < il; ++i)
 	{
@@ -700,8 +830,9 @@ void CShaderManager::allLoad()
 		{
 			ID idVS = m_aShaderKit[i]->m_idVertexShader;
 			ID idPS = m_aShaderKit[i]->m_idPixelShader;
+			ID idGS = m_aShaderKit[i]->m_idGeometryShader;
 
-			m_aShaderKit[i]->m_pShaderKit = g_pDevice->createShader(ID_VALID(idVS) ? m_aVS[idVS]->m_pVertexShader : NULL, ID_VALID(idPS) ? m_aPS[idPS]->m_pPixelShader : NULL);
+			m_aShaderKit[i]->m_pShaderKit = g_pDevice->createShader(ID_VALID(idVS) ? m_aVS[idVS]->m_pVertexShader : NULL, ID_VALID(idPS) ? m_aPS[idPS]->m_pPixelShader : NULL, ID_VALID(idGS) ? m_aGS[idGS]->m_pGeometryShader : NULL);
 		}
 	}
 
@@ -730,15 +861,28 @@ void CShaderManager::update(SHADER_TYPE type_shader, const char *szName)
 			}
 		}
 	}
-	else if (type_shader == SHADER_TYPE_PIXEL)
+	else if(type_shader == SHADER_TYPE_PIXEL)
 	{
-		for (int i = 0; i<m_aPS.size(); i++)
+		for(int i = 0; i<m_aPS.size(); i++)
 		{
-			if (strcmp(m_aPS[i]->m_szName, szName) == 0)
+			if(strcmp(m_aPS[i]->m_szName, szName) == 0)
 			{
 				CShaderPS *pShader = m_aPS[i];
 				mem_release(m_aPS[i]->m_pPixelShader);
 				LoadPixelShader(m_aPS[i]->m_szPath, pShader, m_aPS[i]->m_aMacros);
+				isUpdate = true;
+			}
+		}
+	}
+	else if(type_shader == SHADER_TYPE_GEOMETRY)
+	{
+		for(int i = 0; i<m_aGS.size(); i++)
+		{
+			if(strcmp(m_aGS[i]->m_szName, szName) == 0)
+			{
+				CShaderGS *pShader = m_aGS[i];
+				mem_release(m_aGS[i]->m_pGeometryShader);
+				LoadGeometryShader(m_aGS[i]->m_szPath, pShader, m_aGS[i]->m_aMacros);
 				isUpdate = true;
 			}
 		}
@@ -763,13 +907,23 @@ void CShaderManager::update(SHADER_TYPE type_shader, ID id)
 			isUpdate = true;
 		}
 	}
-	else if (type_shader == SHADER_TYPE_PIXEL)
+	else if(type_shader == SHADER_TYPE_PIXEL)
 	{
-		if (m_aPS.size() > id  && m_aPS[id])
+		if(m_aPS.size() > id  && m_aPS[id])
 		{
 			CShaderPS *pShader = m_aPS[id];
 			mem_release(m_aPS[id]->m_pPixelShader);
 			LoadPixelShader(m_aPS[id]->m_szPath, pShader, m_aPS[id]->m_aMacros);
+			isUpdate = true;
+		}
+	}
+	else if(type_shader == SHADER_TYPE_GEOMETRY)
+	{
+		if(m_aGS.size() > id  && m_aGS[id])
+		{
+			CShaderGS *pShader = m_aGS[id];
+			mem_release(m_aGS[id]->m_pGeometryShader);
+			LoadGeometryShader(m_aGS[id]->m_szPath, pShader, m_aGS[id]->m_aMacros);
 			isUpdate = true;
 		}
 	}
@@ -798,11 +952,21 @@ ID CShaderManager::getID(SHADER_TYPE type_shader, const char *szName)
 			}
 		}
 	}
-	else if (type_shader == SHADER_TYPE_PIXEL)
+	else if(type_shader == SHADER_TYPE_PIXEL)
 	{
-		for (int i = 0; i<m_aPS.size(); ++i)
+		for(int i = 0; i<m_aPS.size(); ++i)
 		{
-			if (strcmp(m_aPS[i]->m_szName, szName) == 0)
+			if(strcmp(m_aPS[i]->m_szName, szName) == 0)
+			{
+				return i;
+			}
+		}
+	}
+	else if(type_shader == SHADER_TYPE_GEOMETRY)
+	{
+		for(int i = 0; i<m_aGS.size(); ++i)
+		{
+			if(strcmp(m_aGS[i]->m_szName, szName) == 0)
 			{
 				return i;
 			}
@@ -811,16 +975,16 @@ ID CShaderManager::getID(SHADER_TYPE type_shader, const char *szName)
 	return -1;
 }
 
-ID CShaderManager::createKit(ID idVertexShader, ID idPixelShader)
+ID CShaderManager::createKit(ID idVertexShader, ID idPixelShader, ID idGeometryShader)
 {
-	if (!(idVertexShader >= 0 && idVertexShader < m_aVS.size()) && !(idPixelShader >= 0 && idPixelShader < m_aPS.size()))
+	if(!(idVertexShader >= 0 && idVertexShader < m_aVS.size()) && !(idPixelShader >= 0 && idPixelShader < m_aPS.size()) && !(idGeometryShader >= 0 && idGeometryShader < m_aGS.size()))
 		return -1;
 
 	ID idShaderKit = -1;
 
 	for (int i = 0, il = m_aShaderKit.size(); i < il; ++i)
 	{
-		if (m_aShaderKit[i] && m_aShaderKit[i]->m_idVertexShader == idVertexShader && m_aShaderKit[i]->m_idPixelShader == idPixelShader)
+		if(m_aShaderKit[i] && m_aShaderKit[i]->m_idVertexShader == idVertexShader && m_aShaderKit[i]->m_idPixelShader == idPixelShader && m_aShaderKit[i]->m_idGeometryShader == idGeometryShader)
 		{
 			idShaderKit = i;
 			break;
@@ -832,9 +996,10 @@ ID CShaderManager::createKit(ID idVertexShader, ID idPixelShader)
 		CShaderKit *pShaderKit = new CShaderKit();
 		pShaderKit->m_idVertexShader = idVertexShader;
 		pShaderKit->m_idPixelShader = idPixelShader;
+		pShaderKit->m_idGeometryShader = idGeometryShader;
 
-		if((!ID_VALID(idVertexShader) || m_aVS[idVertexShader]->m_pVertexShader) && (!ID_VALID(idPixelShader) || m_aPS[idPixelShader]->m_pPixelShader))
-			pShaderKit->m_pShaderKit = g_pDevice->createShader(ID_VALID(idVertexShader) ? m_aVS[idVertexShader]->m_pVertexShader : NULL, ID_VALID(idPixelShader) ? m_aPS[idPixelShader]->m_pPixelShader : NULL);
+		if((!ID_VALID(idVertexShader) || m_aVS[idVertexShader]->m_pVertexShader) && (!ID_VALID(idPixelShader) || m_aPS[idPixelShader]->m_pPixelShader) && (!ID_VALID(idPixelShader) || m_aGS[idPixelShader]->m_pGeometryShader))
+			pShaderKit->m_pShaderKit = g_pDevice->createShader(ID_VALID(idVertexShader) ? m_aVS[idVertexShader]->m_pVertexShader : NULL, ID_VALID(idPixelShader) ? m_aPS[idPixelShader]->m_pPixelShader : NULL, ID_VALID(idGeometryShader) ? m_aGS[idGeometryShader]->m_pGeometryShader : NULL);
 
 		m_aShaderKit.push_back(pShaderKit);
 		idShaderKit = m_aShaderKit.size() - 1;
@@ -1131,11 +1296,19 @@ bool CShaderManager::isValidated(SHADER_TYPE type_shader, ID idShader)
 				return true;
 		}
 	}
-	else if (type_shader == SHADER_TYPE_PIXEL)
+	else if(type_shader == SHADER_TYPE_PIXEL)
 	{
-		if (idShader < m_aPS.size())
+		if(idShader < m_aPS.size())
 		{
-			if (m_aPS[idShader]->m_pPixelShader)
+			if(m_aPS[idShader]->m_pPixelShader)
+				return true;
+		}
+	}
+	else if(type_shader == SHADER_TYPE_GEOMETRY)
+	{
+		if(idShader < m_aGS.size())
+		{
+			if(m_aGS[idShader]->m_pGeometryShader)
 				return true;
 		}
 	}
@@ -1152,12 +1325,20 @@ void CShaderManager::getPath(SHADER_TYPE type_shader, ID idShader, char *szPath)
 				sprintf(szPath, "%s", m_aVS[idShader]->m_szPath);
 		}
 	}
-	else if (type_shader == SHADER_TYPE_PIXEL)
+	else if(type_shader == SHADER_TYPE_PIXEL)
 	{
-		if (idShader < m_aPS.size())
+		if(idShader < m_aPS.size())
 		{
 			//if (m_aPS[idShader]->m_pPixelShader)
-				sprintf(szPath, "%s", m_aPS[idShader]->m_szPath);
+			sprintf(szPath, "%s", m_aPS[idShader]->m_szPath);
+		}
+	}
+	else if(type_shader == SHADER_TYPE_GEOMETRY)
+	{
+		if(idShader < m_aGS.size())
+		{
+			//if (m_aGS[idShader]->m_pPixelShader)
+			sprintf(szPath, "%s", m_aGS[idShader]->m_szPath);
 		}
 	}
 }
@@ -1172,12 +1353,20 @@ void CShaderManager::getName(SHADER_TYPE type_shader, ID idShader, char *szName)
 				sprintf(szName, "%s", m_aVS[idShader]->m_szName);
 		}
 	}
-	else if (type_shader == SHADER_TYPE_PIXEL)
+	else if(type_shader == SHADER_TYPE_PIXEL)
 	{
-		if (idShader < m_aPS.size())
+		if(idShader < m_aPS.size())
 		{
-			if (m_aPS[idShader]->m_pPixelShader)
+			if(m_aPS[idShader]->m_pPixelShader)
 				sprintf(szName, "%s", m_aPS[idShader]->m_szName);
+		}
+	}
+	else if(type_shader == SHADER_TYPE_GEOMETRY)
+	{
+		if(idShader < m_aGS.size())
+		{
+			if(m_aGS[idShader]->m_pGeometryShader)
+				sprintf(szName, "%s", m_aGS[idShader]->m_szName);
 		}
 	}
 }

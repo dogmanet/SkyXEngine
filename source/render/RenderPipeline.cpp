@@ -114,7 +114,8 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 
 		ID idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gi_cubes.vs", "gi_cubes.vs", SHADER_CHECKDOUBLE_PATH);
 		ID idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gi_cubes.ps", "gi_cubes.ps", SHADER_CHECKDOUBLE_PATH);
-		m_idGICubesShader = SGCore_ShaderCreateKit(idVS, idPS);
+		ID idGS = SGCore_ShaderLoad(SHADER_TYPE_GEOMETRY, "gi_cubes.gs", "gi_cubes.gs", SHADER_CHECKDOUBLE_PATH);
+		m_idGICubesShader = SGCore_ShaderCreateKit(idVS, idPS, idGS);
 	}
 }
 CRenderPipeline::~CRenderPipeline()

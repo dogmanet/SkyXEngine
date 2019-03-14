@@ -365,10 +365,13 @@ SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin);
 enum SHADER_TYPE
 {
 	//! вершинный
-	SHADER_TYPE_VERTEX,	
+	SHADER_TYPE_VERTEX,
 
 	//! пиксельный
-	SHADER_TYPE_PIXEL	
+	SHADER_TYPE_PIXEL,
+
+	//! геометрический
+	SHADER_TYPE_GEOMETRY
 };
 
 //! типы проверок дубликатов шейдеров
@@ -428,7 +431,7 @@ SX_LIB_API void SGCore_ShaderReloadAll();
 
 
 //! создание набора шейдеров (вершиный и пиксельный)
-SX_LIB_API ID SGCore_ShaderCreateKit(ID idVertexShader, ID idPixelShader);
+SX_LIB_API ID SGCore_ShaderCreateKit(ID idVertexShader, ID idPixelShader, ID idGeometryShader = -1);
 
 //! бинд шейдера по id
 SX_LIB_API void SGCore_ShaderBind(ID idShaderKit);
