@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -23,6 +23,8 @@ See the license in LICENSE
 #	pragma comment(lib, "BulletCollision_vs2010_debug.lib")
 #	pragma comment(lib, "LinearMath_vs2010_debug.lib")
 #	pragma comment(lib, "BulletWorldImporter_vs2010_debug.lib")
+#	pragma comment(lib, "BulletWorldImporter_vs2010_debug.lib")
+#	pragma comment(lib, "BulletFileLoader_vs2010_debug.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
 #	pragma comment(lib, "sxgeom.lib")
@@ -33,6 +35,7 @@ See the license in LICENSE
 #	pragma comment(lib, "BulletCollision_vs2010.lib")
 #	pragma comment(lib, "LinearMath_vs2010.lib")
 #	pragma comment(lib, "BulletWorldImporter_vs2010.lib")
+#	pragma comment(lib, "BulletFileLoader_vs2010.lib")
 #endif
 
 #if !defined(DEF_STD_REPORT)

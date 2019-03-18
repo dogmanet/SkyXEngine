@@ -658,10 +658,10 @@ bool XSaveLevel(const char *szNewName)
 	char szPath[1024];
 	szPath[0] = 0;
 	char szName[1024];
-	if(gui_func::dialogs::SelectDirOwn(szName, szPath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Save level", false, true, 0))
+	/*if(gui_func::dialogs::SelectDirOwn(szName, szPath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Save level", false, true, 0))
 	{
 		return(XSaveLevel(szName));
-	}
+	}*/
 	
 	return(false);
 }

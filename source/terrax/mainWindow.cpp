@@ -13,7 +13,7 @@
 #include <gcore/sxgcore.h>
 #include <render/sxrender.h>
 #include <input/sxinput.h>
-#include <sxguiwinapi/sxgui.h>
+//#include <sxguiwinapi/sxgui.h>
 #include <level/sxlevel.h>
 
 #include "terrax.h"
@@ -294,7 +294,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		g_hStatusWnd = CreateWindowEx(0, STATUSCLASSNAME, "For help, press F1", SBARS_SIZEGRIP | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hWnd, (HMENU)IDC_STATUSBAR, hInst, NULL);                   // no window creation data
 		{
 			g_pfnStatusBarOldWndproc = (WNDPROC)GetWindowLongPtr(g_hStatusWnd, GWLP_WNDPROC);
-			SetWindowLongPtr(g_hStatusWnd, GWLP_WNDPROC, (LONG)StatusBarWndProc);
+			SetWindowLongPtr(g_hStatusWnd, GWLP_WNDPROC, (LONG_PTR)StatusBarWndProc);
 			SendMessage(g_hStatusWnd, WM_SIZE, 0, 0);
 			XUpdateStatusGrid();
 		}
@@ -314,7 +314,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		g_hObjectTreeWnd = CreateWindowExA(0, WC_TREEVIEW, "", WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_CHECKBOXES | TVS_NOHSCROLL, rect.right, rect.top, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, 0, hInst, NULL);
 		{
 			g_pfnTreeOldWndproc = (WNDPROC)GetWindowLongPtr(g_hObjectTreeWnd, GWLP_WNDPROC);
-			SetWindowLongPtr(g_hObjectTreeWnd, GWLP_WNDPROC, (LONG)TreeViewWndProc);
+			SetWindowLongPtr(g_hObjectTreeWnd, GWLP_WNDPROC, (LONG_PTR)TreeViewWndProc);
 		}
 
 

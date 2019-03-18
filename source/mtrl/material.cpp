@@ -1028,7 +1028,7 @@ ID CMaterials::mtlLoad(const char *name, XSHADER_DEFAULT_DESC *pDefaultShaders)
 
 void CMaterials::mtlReLoad(ID id, const char* name)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	CUnitMaterial* tmpumtl = m_aUnitMtrls[id];
 	char tmpname[1024];
 	if (name == 0)
@@ -1499,7 +1499,7 @@ UINT CMaterials::mtlGetSort(ID id)
 
 void CMaterials::mtlSetPhysicMaterial(ID id, MTLTYPE_PHYSIC type)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	m_aUnitMtrls[id]->m_pMtrl->m_oPhysics.m_typePhysics = type;
 }
 
