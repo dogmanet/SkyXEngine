@@ -84,7 +84,7 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 	m_pLightInstanceShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_lightInstanceData.ps));
 
 	{
-		const UINT uSize = 10;
+		const UINT uSize = 32;
 		m_uGICubesCount = uSize * uSize * uSize;
 		float3_t *pData = new float3_t[m_uGICubesCount];
 		float fHalf = (float)uSize / 2.0f;
@@ -117,6 +117,54 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 		ID idGS = SGCore_ShaderLoad(SHADER_TYPE_GEOMETRY, "gi_cubes.gs", "gi_cubes.gs", SHADER_CHECKDOUBLE_PATH);
 		m_idGICubesShader = SGCore_ShaderCreateKit(idVS, idPS, idGS);
 	}
+
+#define TIDX(x, y, z) (x + y * 32 + z * 32 * 32)
+	float4 *pData = new float4[32 * 32 * 32];
+	memset(pData, 0, sizeof(float4) * 32 * 32 * 32);
+	/*for(UINT x = 0; x < 32; ++x)
+	{
+		for(UINT y = 0; y < 32; ++y)
+		{
+			for(UINT z = 0; z < 32; ++z)
+			{
+				pData[TIDX(x, y, z)] = float4(0.001346903f, 0.0f, 0.003454941f, -0.003454941f);
+			}
+		}
+	}	*/
+	for(UINT z = 0; z < 32; ++z)
+	{
+		pData[TIDX(16, z, 16)] = float4(0.001346903f, 0.0f, 0.003454941f, -0.003454941f);
+	}
+	m_pGIAccumRed = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A32B32G32R32F, pData);
+
+
+	memset(pData, 0, sizeof(float4) * 32 * 32 * 32);
+	for(UINT z = 0; z < 32; ++z)
+	{
+		pData[TIDX(16, 16, z)] = float4(0.001346903f, -0.003454941f, 0.0f, -0.003454941f);
+	}
+	m_pGIAccumGreen = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A32B32G32R32F, pData);
+
+
+	memset(pData, 0, sizeof(float4) * 32 * 32 * 32);
+	/*for(UINT x = 0; x < 32; ++x)
+	{
+		for(UINT y = 0; y < 32; ++y)
+		{
+			for(UINT z = 0; z < 32; ++z)
+			{
+				pData[TIDX(x, y, z)] = float4(0.001346903f, -0.003454941f, 0.0f, -0.003454941f);
+			}
+		}
+	}*/
+	for(UINT z = 0; z < 32; ++z)
+	{
+		pData[TIDX(z, 16, 16)] = float4(0.001346903f, -0.003454941f, 0.003454941f, 0.0f);
+	}
+	m_pGIAccumBlue = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A32B32G32R32F, pData);
+
+#undef TIDX
+	mem_delete_a(pData);
 }
 CRenderPipeline::~CRenderPipeline()
 {
@@ -141,6 +189,10 @@ CRenderPipeline::~CRenderPipeline()
 	mem_release(m_pDepthStencilStateNoZ);
 
 	mem_release(m_pGICubesRB);
+
+	mem_release(m_pGIAccumRed);
+	mem_release(m_pGIAccumGreen);
+	mem_release(m_pGIAccumBlue);
 }
 
 void CRenderPipeline::resize(UINT uWidth, UINT uHeight, bool isWindowed)
@@ -247,7 +299,13 @@ void CRenderPipeline::showGICubes()
 	m_pDevice->setPrimitiveTopology(GXPT_POINTLIST);
 	m_pDevice->setRenderBuffer(m_pGICubesRB);
 	SGCore_ShaderBind(m_idGICubesShader);
-	m_pDevice->setVertexShaderConstant(m_pLightingShaderDataVS, 1);
+	m_pDevice->setGeometryShaderConstant(m_pLightingShaderDataVS, 1);
+	m_pDevice->setDepthStencilState(NULL);
+	m_pDevice->setTexture(m_pGIAccumRed, 0);
+	m_pDevice->setTexture(m_pGIAccumGreen, 1);
+	m_pDevice->setTexture(m_pGIAccumBlue, 2);
+	m_pDevice->setSamplerState(gdata::rstates::pSamplerPointClamp, 0);
+
 	m_pDevice->drawPrimitive(0, m_uGICubesCount);
 
 	m_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);

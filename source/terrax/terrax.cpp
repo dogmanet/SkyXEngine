@@ -110,7 +110,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 
 //	SkyXEngine_RunGenPreview();
-//	Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
+	//	Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
+	Core_0SetCVarInt("r_final_image", DS_RT_AMBIENTDIFF);
 
 	SRender_EditorSetRenderGrid(true);
 	SRender_EditorSetRenderAxesStatic(true);
@@ -217,6 +218,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		g_xRenderStates.pTransformHandlerRotateIB = pDevice->createIndexBuffer(sizeof(USHORT)* 72, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_USHORT, pHandlerRotateIndices);
 
 	}
+
 	int result = SkyXEngine_CycleMain();
 
 	for(UINT ic = 0, il = g_pEditableSystems.size(); ic < il; ++ic)

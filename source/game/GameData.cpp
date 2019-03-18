@@ -1015,27 +1015,50 @@ void GameData::render()
 	if(pDev)
 	{
 		const GX_FRAME_STATS *pFrameStats = pDev->getFrameStats();
+		const GX_MEMORY_STATS *pMemoryStats = pDev->getMemoryStats();
 
 		static GX_FRAME_STATS s_oldFrameStats = {0};
+		static GX_MEMORY_STATS s_oldMemoryStats = {0};
 		static UINT s_uOldFps = 0;
 
-		if(s_uOldFps != g_uFPS || memcmp(&s_oldFrameStats, pFrameStats, sizeof(s_oldFrameStats)))
+		if(s_uOldFps != g_uFPS 
+			|| memcmp(&s_oldFrameStats, pFrameStats, sizeof(s_oldFrameStats)) 
+			|| memcmp(&s_oldMemoryStats, pMemoryStats, sizeof(s_oldMemoryStats)))
 		{
 			s_uOldFps = g_uFPS;
 			s_oldFrameStats = *pFrameStats;
+			s_oldMemoryStats = *pMemoryStats;
+
+			const GX_ADAPTER_DESC *pAdapterDesc = pDev->getAdapterDesc();
 
 			static wchar_t wszStats[256];
 			swprintf_s(wszStats, L"FPS: %u\n"
+				L"GPU: %s\n"
+				L"Total memory: %uMB\n"
+				L"Used memory: %.3fMB; (T: %.3fMB; RT: %.3fMB; VB: %.3fMB, IB: %.3fMB, SC: %.3fKB)\n"
+				L"Uploaded bytes: %u; (T: %u; VB: %u, IB: %u, SC: %u)\n"
 				L"Count poly: %u\n"
 				L"Count DIP: %u\n"
-				L"Uploaded bytes: %u; (T: %u; VB: %u, IB: %u)\n"
 				, g_uFPS,
-				pFrameStats->uPolyCount,
-				pFrameStats->uDIPcount,
-				pFrameStats->uUploadedBuffersIndices + pFrameStats->uUploadedBuffersTextures + pFrameStats->uUploadedBuffersVertexes,
+
+				pAdapterDesc->szDescription,
+				pAdapterDesc->uTotalGPUMemory / 1024 / 1024,
+
+				(float)(pMemoryStats->uIndexBufferBytes + pMemoryStats->uRenderTargetBytes + pMemoryStats->uShaderConstBytes + pMemoryStats->uTextureBytes + pMemoryStats->uVertexBufferBytes) / 1024.0f / 1024.0f,
+				(float)pMemoryStats->uTextureBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->uRenderTargetBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->uVertexBufferBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->uIndexBufferBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->uShaderConstBytes / 1024.0f,
+
+				pFrameStats->uUploadedBuffersIndices + pFrameStats->uUploadedBuffersTextures + pFrameStats->uUploadedBuffersVertexes + pFrameStats->uUploadedBuffersShaderConst,
 				pFrameStats->uUploadedBuffersTextures,
 				pFrameStats->uUploadedBuffersVertexes,
-				pFrameStats->uUploadedBuffersIndices
+				pFrameStats->uUploadedBuffersIndices,
+				pFrameStats->uUploadedBuffersShaderConst,
+
+				pFrameStats->uPolyCount,
+				pFrameStats->uDIPcount
 				);
 
 			RenderText(wszStats);

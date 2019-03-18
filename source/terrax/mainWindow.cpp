@@ -336,6 +336,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			tvis.item.cchTextMax = lstrlen(tvis.item.pszText);
 			TreeView_InsertItem(g_hObjectTreeWnd, &tvis);
 		}
+		
 		return FALSE;
 	}
 		break;

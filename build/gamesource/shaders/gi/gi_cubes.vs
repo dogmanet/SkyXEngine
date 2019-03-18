@@ -20,7 +20,8 @@ cbuffer perFrame: register(b1)
 
 VSO_GICubes main(VSI_GICubes IN)
 {
-	VSO_TXColored OUT = (VSO_GICubes)0;
-	OUT.vPosition = mul(half4(IN.vPosition.xyz,1), g_mVP);
+	VSO_GICubes OUT = (VSO_GICubes)0;
+	OUT.vPosition = float4(IN.vPosition.xyz,1);
+	// OUT.vPosition = mul(half4(IN.vPosition.xyz,1), g_mVP);
 	return(OUT);
 }

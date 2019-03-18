@@ -1,14 +1,51 @@
 
 /*
-terrax_colored.ps
+.ps
 */
+
+/*Spherical harmonics coefficients – precomputed*/
+#define SH_C0 0.282094792f // 1 / 2sqrt(pi)
+#define SH_C1 0.488602512f // sqrt(3/pi) / 2
+
+/*Cosine lobe coeff*/
+#define SH_cosLobe_C0 0.886226925f // sqrt(pi)/2
+#define SH_cosLobe_C1 1.02332671f // sqrt(pi/3)
+#define PI 3.1415926f
 
 #include <../struct.h>
 
+//##########################################################################
+
+SamplerState g_sSampler: register(s0);
+
+Texture3D g_txIllumRed: register(t0);
+Texture3D g_txIllumGreen: register(t1);
+Texture3D g_txIllumBlue: register(t2);
 
 //##########################################################################
 
-half4 main(VSO_GICubes IN):COLOR0
+float4 dirToSH(float3 dir) {
+	return float4(SH_C0, -SH_C1 * dir.y, SH_C1 * dir.z, -SH_C1 * dir.x);
+}
+
+float4 main(GSO_GICubes IN):COLOR0
 {
-	return(float4(1,1,1,1));
+	// return(float4(1,1,1,1));
+	
+	float3 vTexCoord = IN.vCenterPos.xyz / 32.0 + 0.5 + 1.0 / 64.0;
+	
+	float4 vColorR = g_txIllumRed.Sample(g_sSampler, vTexCoord);
+	float4 vColorG = g_txIllumGreen.Sample(g_sSampler, vTexCoord);
+	float4 vColorB = g_txIllumBlue.Sample(g_sSampler, vTexCoord);
+	
+	float3 vNormalPixel = normalize(IN.vNormal);
+	float4 SHintensity = dirToSH(-vNormalPixel);
+	
+	float r = saturate(dot(SHintensity, vColorR) / PI * 1000.0);
+	float g = saturate(dot(SHintensity, vColorG) / PI * 1000.0);
+	float b = saturate(dot(SHintensity, vColorB) / PI * 1000.0);
+	
+	return(float4(r, g, b, 1.0));
+	// return(float4(vTexCoord, 1.0));
+	// return(float4(IN.vNormal, 1.0));
 }

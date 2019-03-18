@@ -898,7 +898,7 @@ Global
 		{DAFA20F5-5162-4F21-99AF-DB8084D3C557}.Debug Singlethreaded|x64.ActiveCfg = Debug|Win32
 		{DAFA20F5-5162-4F21-99AF-DB8084D3C557}.Debug|Win32.ActiveCfg = Debug|Win32
 		{DAFA20F5-5162-4F21-99AF-DB8084D3C557}.Debug|Win32.Build.0 = Debug|Win32
-		{DAFA20F5-5162-4F21-99AF-DB8084D3C557}.Debug|x64.ActiveCfg = Debug|Win32
+		{DAFA20F5-5162-4F21-99AF-DB8084D3C557}.Debug|x64.ActiveCfg = Debug|x64
 		{DAFA20F5-5162-4F21-99AF-DB8084D3C557}.Release Singlethreaded|Win32.ActiveCfg = Release|Win32
 		{DAFA20F5-5162-4F21-99AF-DB8084D3C557}.Release Singlethreaded|x64.ActiveCfg = Release|Win32
 		{DAFA20F5-5162-4F21-99AF-DB8084D3C557}.Release|Win32.ActiveCfg = Release|Win32

@@ -317,12 +317,19 @@ struct VSI_TXHandler
 
 struct VSI_GICubes
 {
-	half3 vPosition	:POSITION0;
+	float3 vPosition	:POSITION0;
 };
 
 struct VSO_GICubes
 {
-	half4 vPosition	:POSITION0;
+	float4 vPosition	:POSITION0;
+};
+
+struct GSO_GICubes
+{
+	float4 vPosition  :POSITION0;
+	float3 vNormal    :NORMAL0;
+	float3 vCenterPos :TEXCOORD0;
 };
 
 

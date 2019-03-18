@@ -118,6 +118,17 @@ protected:
 
 	//###################################
 
+	struct CShadowRT
+	{
+
+	};
+
+	//###################################
+
+	IGXTexture3D *m_pGIAccumRed = NULL;
+	IGXTexture3D *m_pGIAccumGreen = NULL;
+	IGXTexture3D *m_pGIAccumBlue = NULL;
+
 	IGXRenderBuffer *m_pGICubesRB = NULL;
 	UINT m_uGICubesCount = 0;
 	ID m_idGICubesShader = -1;

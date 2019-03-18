@@ -105,6 +105,7 @@
     <ClInclude Include="..\..\..\source\render\gdata.h" />
     <ClInclude Include="..\..\..\source\render\RenderPipeline.h" />
     <ClInclude Include="..\..\..\source\render\render_func.h" />
+    <ClInclude Include="..\..\..\source\render\ShadowCache.h" />
     <ClInclude Include="..\..\..\source\render\simulation_model.h" />
     <ClInclude Include="..\..\..\source\render\sxrender.h" />
   </ItemGroup>

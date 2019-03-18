@@ -1021,17 +1021,7 @@ void ShadowMapCubeTech::init()
 	DepthSurface[5] = 0;
 
 	DepthMap = light_data::pDXDevice->createTextureCube(light_data::vSizeTexDepthLocal.x, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F);
-	/*HRESULT hr = D3DXCreateCubeTexture(light_data::pDXDevice, light_data::vSizeTexDepthLocal.x, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &);
-
-	if (hr == D3DERR_INVALIDCALL)
-		int qwert = 0;
-	else if (hr == D3DERR_NOTAVAILABLE)
-		int qwert = 0;
-	else if (hr == D3DERR_OUTOFVIDEOMEMORY)
-		int qwert = 0;
-	else if (hr == E_OUTOFMEMORY)
-		int qwert = 0;
-		*/
+	
 	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.x, GXFMT_D24S8, GXMULTISAMPLE_NONE, true);
 }
 
