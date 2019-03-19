@@ -118,6 +118,11 @@ protected:
 
 	//###################################
 
+	//! Список ламп для текущего кадра
+	Array<ID> m_aLightsForFrame;
+	//! Список ламп на текущий проход
+	Array<ID> m_aLightsBunch;
+
 	struct CShadowRT
 	{
 

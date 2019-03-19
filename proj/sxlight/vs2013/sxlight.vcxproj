@@ -211,6 +211,7 @@
     <ClInclude Include="..\..\..\source\common\file_utils.h" />
     <ClInclude Include="..\..\..\source\common\string.h" />
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
+    <ClInclude Include="..\..\..\source\light\IXLight.h" />
     <ClInclude Include="..\..\..\source\light\light.h" />
     <ClInclude Include="..\..\..\source\light\ml_data.h" />
     <ClInclude Include="..\..\..\source\light\shadow.h" />

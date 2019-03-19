@@ -412,7 +412,28 @@ void CRenderPipeline::renderGI()
 		- g_vLightPowerDistShadow
 		cbuffer1: (per frame)
 		- g_vViewPos
+
+
+	{
+		render shadowmaps
+		render direct light with shadows
+		inject VPLs into LPV grid
+	}
 	*/
+
+	// Определим список лампочек, которые будут участвовать в текущем кадре
+	m_aLightsForFrame.clearFast();
+	for(int i = 0, l = SLight_GetCount(); i < l; ++i)
+	{
+		if(!SLight_GetExists(i))
+			continue;
+
+		//если свет виден фрустуму камеры (это надо было заранее просчитать) и если свет включен
+		if(/*SLight_GetVisibleForFrustum(i) && */SLight_GetEnable(i))
+		{
+			m_aLightsForFrame.push_back(i);
+		}
+	}
 
 	//проходимся циклом по всем источникам света
 	for(int i = 0; i < SLight_GetCount(); i++)

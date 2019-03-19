@@ -241,7 +241,7 @@ protected:
 	//! массив света который надо удалить
 	Array<CLight*> m_aDelLights;	
 
-	//! массив света который надо удалить
+	//! 
 	Array<ID> m_aFreeIDs;		
 
 	ID m_idShadowMap;

@@ -51,10 +51,10 @@ void CMaterialSystem::setWorld(const SMMATRIX &mWorld)
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mP);
 
 	m_objectData.m_mW = SMMatrixTranspose(mWorld);
-//	m_objectData.m_mWV = SMMatrixTranspose(mV) * m_objectData.m_mW;
-//	m_objectData.m_mWVP = SMMatrixTranspose(mP) * m_objectData.m_mWV;
-	m_objectData.m_mWV = SMMatrixTranspose((SMMATRIX)mWorld * mV);
-	m_objectData.m_mWVP = SMMatrixTranspose((SMMATRIX)mWorld * mV * mP);
+	m_objectData.m_mWV = SMMatrixTranspose(mV) * m_objectData.m_mW;
+	m_objectData.m_mWVP = SMMatrixTranspose(mP) * m_objectData.m_mWV;
+//	m_objectData.m_mWV = SMMatrixTranspose((SMMATRIX)mWorld * mV);
+//	m_objectData.m_mWVP = SMMatrixTranspose((SMMATRIX)mWorld * mV * mP);
 
 	m_pObjectConstantBuffer->update(&m_objectData);
 	SGCore_GetDXDevice()->setVertexShaderConstant(m_pObjectConstantBuffer, SCR_OBJECT);

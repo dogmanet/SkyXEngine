@@ -56,5 +56,8 @@
     <ClInclude Include="..\..\..\source\common\string_utils.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\light\IXLight.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
