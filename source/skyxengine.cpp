@@ -451,8 +451,8 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	dsDesc.bEnableDepthWrite = FALSE;
 	g_pDSNoZ = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
 
-	ID idScreenOutVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
-	ID idScreenOutPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
+	ID idScreenOutVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs");
+	ID idScreenOutPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps");
 	g_idShaderScreenOut = SGCore_ShaderCreateKit(idScreenOutVS, idScreenOutPS);
 
 #ifdef SX_TERRAX

@@ -433,11 +433,11 @@ SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin)
 
 //##########################################################################
 
-SX_LIB_API ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, GXMACRO *pMacro)
+SX_LIB_API ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char *szPath, const char *szName, GXMACRO *pMacro)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerShaders->preLoad(type_shader, szPath, szName, check_double, pMacro);
+	return g_pManagerShaders->preLoad(type_shader, szPath, szName, pMacro);
 }
 
 SX_LIB_API void SGCore_ShaderAllLoad()

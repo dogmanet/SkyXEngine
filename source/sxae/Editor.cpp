@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -1233,11 +1233,11 @@ void Editor::InitD3D()
 	*/
 	m_pd3dDevice->GetSwapChain(0, &m_pSwapChain);
 
-	m_pVSH = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_skin.vs", "stdr_skin.vs", SHADER_CHECKDOUBLE_PATH);
-	m_pPSH = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_skin.ps", "stdr_skin.ps", SHADER_CHECKDOUBLE_PATH);
+	m_pVSH = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_skin.vs");
+	m_pPSH = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_skin.ps");
 
-	m_pVSHs = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_geom.vs", "stdr_geom.vs", SHADER_CHECKDOUBLE_PATH);
-	m_pPSHs = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_geom.ps", "stdr_geom.ps", SHADER_CHECKDOUBLE_PATH);
+	m_pVSHs = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_geom.vs");
+	m_pPSHs = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_geom.ps");
 
 	m_mProjMat = SMMatrixPerspectiveFovLH(50.0f / 180.0f * SM_PI, (float)width / (float)height, 0.1f, 10000.0f);
 

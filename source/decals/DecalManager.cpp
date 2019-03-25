@@ -112,8 +112,8 @@ DecalManager::DecalManager():
 
 	m_pBlendState = dev->createBlendState(&blendDesc);
 
-//	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "decal_base.vs", "decal_base.vs", SHADER_CHECKDOUBLE_PATH);
-//	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "decal_base.ps", "decal_base.ps", SHADER_CHECKDOUBLE_PATH);
+//	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "decal_base.vs");
+//	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "decal_base.ps");
 //	m_idShaderKit = SGCore_ShaderCreateKit(m_idVS, m_idPS);
 }
 

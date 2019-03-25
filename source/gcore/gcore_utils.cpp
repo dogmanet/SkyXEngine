@@ -174,15 +174,15 @@ void InitRT4Gbuffer()
 	gcore_data::rt_id::idLigthComScaled = SGCore_RTAdd(*r_win_width / 4, *r_win_height / 4, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcomscaled");
 
 
-	gcore_data::ps_id::idCalcAdaptedLum = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_calc_adapted_lum.ps", "pptm_calc_adapted_lum.ps", SHADER_CHECKDOUBLE_PATH);
-	gcore_data::ps_id::idSampleLumInit = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_lum_init.ps", "pptm_lum_init.ps", SHADER_CHECKDOUBLE_PATH);
-	gcore_data::ps_id::idSampleLumIterative = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_lum_iterative.ps", "pptm_lum_iterative.ps", SHADER_CHECKDOUBLE_PATH);
+	gcore_data::ps_id::idCalcAdaptedLum = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_calc_adapted_lum.ps");
+	gcore_data::ps_id::idSampleLumInit = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_lum_init.ps");
+	gcore_data::ps_id::idSampleLumIterative = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_lum_iterative.ps");
 }
 
 void LoadShaders()
 {
-	gcore_data::vs_id::idScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
-	//MLSet::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
+	gcore_data::vs_id::idScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs");
+	//MLSet::IDsShaders::PS::ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps");
 }
 
 void ToneMappingGetArrDownScale4x4(int iWidth, int iHeight, float2 aDS[])

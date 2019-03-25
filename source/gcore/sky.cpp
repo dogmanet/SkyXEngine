@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -17,8 +17,8 @@ CSkyBox::CSkyBox()
 
 	m_pVertexDeclarationSkyBox = g_pDevice->createVertexDeclaration(layoutskybox);
 
-	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_box.vs", "sky_box.vs", SHADER_CHECKDOUBLE_NAME);
-	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_box.ps", "sky_box.ps", SHADER_CHECKDOUBLE_NAME);
+	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_box.vs");
+	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_box.ps");
 
 	m_vColor = float4(0, 0, 0, 0);
 	m_fRotaionY = 0.f;
@@ -240,11 +240,11 @@ CSkyClouds::CSkyClouds()
 
 	m_pVertexDeclarationClouds = g_pDevice->createVertexDeclaration(layoutclouds);
 
-	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_clouds.vs", "sky_clouds.vs", SHADER_CHECKDOUBLE_NAME);
-	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds.ps", SHADER_CHECKDOUBLE_NAME);
+	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_clouds.vs");
+	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps");
 
 	GXMACRO Defines_SHADOW[] = { { "SHADOW", "" }, { 0, 0 } };
-	m_idPS_Shadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds_shadow.ps", SHADER_CHECKDOUBLE_NAME, Defines_SHADOW);
+	m_idPS_Shadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds_shadow.ps", Defines_SHADOW);
 
 	m_fRotaionY = 0;
 	m_fAlpha = 1.f;

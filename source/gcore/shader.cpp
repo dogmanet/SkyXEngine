@@ -639,6 +639,92 @@ ID CShaderManager::existsPath(SHADER_TYPE type, const char *szPath)
 	return -1;
 }
 
+ID CShaderManager::existsPathMacro(SHADER_TYPE type, const char *szPath, GXMACRO *aMacros)
+{
+	ID idShader = -1;
+	GXMACRO *pShaderMacro = NULL;
+	if(type == SHADER_TYPE_VERTEX)
+	{
+		for(int i = 0; i < m_aVS.size(); ++i)
+		{
+			if(strcmp(m_aVS[i]->m_szPath, szPath) == 0)
+			{
+				idShader = i;
+				pShaderMacro = m_aVS[i]->m_aMacros;
+				break;
+			}
+		}
+	}
+	else if(type == SHADER_TYPE_PIXEL)
+	{
+		for(int i = 0; i < m_aPS.size(); ++i)
+		{
+			if(strcmp(m_aPS[i]->m_szPath, szPath) == 0)
+			{
+				idShader = i;
+				pShaderMacro = m_aPS[i]->m_aMacros;
+				break;
+			}
+		}
+	}
+	else if(type == SHADER_TYPE_GEOMETRY)
+	{
+		for(int i = 0; i < m_aGS.size(); ++i)
+		{
+			if(strcmp(m_aGS[i]->m_szPath, szPath) == 0)
+			{
+				idShader = i;
+				pShaderMacro = m_aGS[i]->m_aMacros;
+				break;
+			}
+		}
+	}
+
+	if(ID_VALID(idShader))
+	{
+		GXMACRO def = {NULL, NULL};
+		if(!aMacros)
+		{
+			aMacros = &def;
+		}
+		UINT i = 0, j;
+		bool bFound = false;
+		while(aMacros[i].szName)
+		{
+			j = 0;
+			bFound = false;
+			while(pShaderMacro[j].szName)
+			{
+				if(!strcmp(aMacros[i].szName, pShaderMacro[j].szName))
+				{
+					if(strcmp(aMacros[i].szDefinition, pShaderMacro[j].szDefinition))
+					{
+						return(-1);
+					}
+					bFound = true;
+					break;
+				}
+				++j;
+			}
+			if(!bFound)
+			{
+				return(-1);
+			}
+			++i;
+		}
+		j = 0;
+		while(pShaderMacro[j].szName)
+		{
+			++j;
+		}
+		if(i != j)
+		{
+			return(-1);
+		}
+	}
+	return(-1);
+}
+
 ID CShaderManager::existsName(SHADER_TYPE type_shader, const char *szName)
 {
 	if (!isValidateTypeName(type_shader, szName))
@@ -699,37 +785,33 @@ bool CShaderManager::existsFile(const char *szPath)
 	return FileExistsFile(tmppath);
 }
 
-ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, GXMACRO *aMacros)
+ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szName, GXMACRO *aMacros)
 {
-	if (!isValidateTypeName(type, szName))
+	if(!szName)
+	{
+		szName = szPath;
+	}
+	if(!isValidateTypeName(type, szName))
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - name of shader [%s] is invalid", GEN_MSG_LOCATION, szName);
 		return -1;
 	}
 
-	ID id = -1;
-	bool isUnic = true;
-
-	if (check_double == SHADER_CHECKDOUBLE_PATH)
-		id = existsPath(type, szPath);
-	else if (check_double == SHADER_CHECKDOUBLE_NAME)
-		id = existsName(type, szName);
-
-	if (id >= 0)
-		isUnic = false;
+	ID id = existsPathMacro(type, szPath, aMacros);
+	bool isUnic = !ID_VALID(id);
 
 	CShader *pShader = 0;
 
-	if (type == SHADER_TYPE_VERTEX)
+	if(type == SHADER_TYPE_VERTEX)
 	{
-		if (id == -1)
+		if(id == -1)
 		{
 			CShaderVS *pVS = new CShaderVS();
 			sprintf(pVS->m_szName, "%s", szName);
 			sprintf(pVS->m_szPath, "%s", szPath);
 			//sprintf(pVS->m_szFrom, "%s", szFrom);
 			m_aVS.push_back(pVS);
-			id = m_aVS.size() -1;
+			id = m_aVS.size() - 1;
 			pShader = pVS;
 		}
 	}
@@ -760,19 +842,19 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szN
 		}
 	}
 
-	if (aMacros && isUnic)
+	if(aMacros && isUnic)
 	{
 		int iCountMacros = 0;
-		for (int i = 0; i < SXGC_SHADER_COUNT_MACRO; i++)
+		for(int i = 0; i < SXGC_SHADER_COUNT_MACRO; i++)
 		{
-			if (aMacros[i].szName == 0)
+			if(aMacros[i].szName == 0)
 			{
 				iCountMacros = i;
 				break;
 			}
 		}
 
-		for (int i = 0; i < iCountMacros; i++)
+		for(int i = 0; i < iCountMacros; i++)
 		{
 			pShader->m_aMacros[i] = aMacros[i];
 		}
@@ -781,7 +863,7 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szN
 		pShader->m_aMacros[iCountMacros].szDefinition = 0;
 	}
 
-	return id;
+	return(id);
 }
 
 void CShaderManager::allLoad()

@@ -892,8 +892,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 	//g_pRagdoll = new CRagdoll(pl);
 	//pl->setRagdoll(g_pRagdoll);
 
-	g_idTextVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_main.vs", "gui_main.vs", SHADER_CHECKDOUBLE_NAME);
-	g_idTextPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_main.ps", "gui_main.ps", SHADER_CHECKDOUBLE_NAME);
+	g_idTextVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_main.vs");
+	g_idTextPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_main.ps");
 	g_idTextKit = SGCore_ShaderCreateKit(g_idTextVS, g_idTextPS);
 
 	GXBLEND_DESC bsDesc;

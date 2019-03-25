@@ -280,7 +280,7 @@ public:
 	bool existsFile(const char *szPath);
 
 	//! добавление шейдера в очередь
-	ID preLoad(SHADER_TYPE type, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, GXMACRO *aMacros = 0);
+	ID preLoad(SHADER_TYPE type, const char *szPath, const char *szName, GXMACRO *aMacros = 0);
 
 	//! загрузка всех шейдеров
 	void allLoad();
@@ -320,9 +320,14 @@ public:
 
 
 	//! существует ли шейдер с именем файла и расширением name, если да то возвращает id
+	//@DEPRECATED: 
 	ID existsPath(SHADER_TYPE type, const char *szPath);
 
+	//! существует ли шейдер с именем файла и набором макросов, если да то возвращает id
+	ID existsPathMacro(SHADER_TYPE type, const char *szPath, GXMACRO *aMacros);
+
 	//! существует ли шейдер с пользовательским именем name, если да то возвращает id
+	//@DEPRECATED: 
 	ID existsName(SHADER_TYPE type, const char *szName);
 
 	//! загружен ли шейдер с данным id

@@ -374,19 +374,6 @@ enum SHADER_TYPE
 	SHADER_TYPE_GEOMETRY
 };
 
-//! типы проверок дубликатов шейдеров
-enum SHADER_CHECKDOUBLE
-{
-	//! нет проверки
-	SHADER_CHECKDOUBLE_NONE,	
-
-	//! проверка по пути (имени шейдера с расширением)
-	SHADER_CHECKDOUBLE_PATH,	
-
-	//! проверка по пользовательскому имени
-	SHADER_CHECKDOUBLE_NAME		
-};
-
 //**************************************************************************
 
 //! загрузить все шейдеры поставленные в очередь
@@ -396,8 +383,7 @@ SX_LIB_API void SGCore_ShaderAllLoad();
 SX_LIB_API ID SGCore_ShaderLoad(
 	SHADER_TYPE type_shader,		//!< тип шейдера
 	const char *szPath,				//!< имя файла шейдера с расширением
-	const char *szName,				//!< имя шейдера которое присвоится при загрузке
-	SHADER_CHECKDOUBLE check_double,//!< проверять ли на уникальность
+	const char *szName = NULL,		//!< имя шейдера которое присвоится при загрузке
 	GXMACRO *pMacro = 0			//!< макросы
 	);
 

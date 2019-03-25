@@ -112,9 +112,9 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 		mem_release(pVD);
 		mem_release(pVB);
 
-		ID idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gi_cubes.vs", "gi_cubes.vs", SHADER_CHECKDOUBLE_PATH);
-		ID idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gi_cubes.ps", "gi_cubes.ps", SHADER_CHECKDOUBLE_PATH);
-		ID idGS = SGCore_ShaderLoad(SHADER_TYPE_GEOMETRY, "gi_cubes.gs", "gi_cubes.gs", SHADER_CHECKDOUBLE_PATH);
+		ID idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gi_cubes.vs");
+		ID idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gi_cubes.ps");
+		ID idGS = SGCore_ShaderLoad(SHADER_TYPE_GEOMETRY, "gi_cubes.gs");
 		m_idGICubesShader = SGCore_ShaderCreateKit(idVS, idPS, idGS);
 	}
 
@@ -166,7 +166,7 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 #undef TIDX
 	mem_delete_a(pData);
 
-	m_idLightBoundShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "lighting_bound.vs", "lighting_bound.vs", SHADER_CHECKDOUBLE_PATH), -1);
+	m_idLightBoundShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "lighting_bound.vs"), -1);
 
 	m_pShadowCache = new CShadowCache();
 }
@@ -454,7 +454,6 @@ void CRenderPipeline::renderGI()
 	}
 
 	UINT uShadowCount = 0;
-	IXLight *pLight;
 	while((uShadowCount = m_pShadowCache->processNextBunch()))
 	{
 		//render direct light with shadows

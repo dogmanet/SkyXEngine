@@ -215,8 +215,8 @@ CGrid::CGrid(UINT uSize)
 	mem_release(pVB);
 	mem_release(pVD);
 
-	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_grid.vs", "terrax_grid.vs", SHADER_CHECKDOUBLE_PATH);
-	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "terrax_colored.ps", "terrax_colored.ps", SHADER_CHECKDOUBLE_PATH);
+	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_grid.vs");
+	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "terrax_colored.ps");
 	m_idShaderKit = SGCore_ShaderCreateKit(m_idVS, m_idPS);
 
 	GXBLEND_DESC blendDesc;

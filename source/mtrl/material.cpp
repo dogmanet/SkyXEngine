@@ -14,17 +14,17 @@ CMaterials::CMaterials()
 	m_useForceblyAlphaTest = false;
 	if(mtrl_data::pDXDevice)
 	{
-		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs", "mtrlgeom_base.vs", SHADER_CHECKDOUBLE_PATH);
-		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps", "mtrlgeom_base.ps", SHADER_CHECKDOUBLE_PATH);
+		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
+		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");
 
-		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs", "mtrlgreen_tree_base.vs", SHADER_CHECKDOUBLE_PATH);
-		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs", "mtrlgreen_grass_base.vs", SHADER_CHECKDOUBLE_PATH);
-		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps", "mtrlgreen_base.ps", SHADER_CHECKDOUBLE_PATH);
+		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs");
+		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs");
+		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
 
-		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps", "mtrlgeom_light.ps", SHADER_CHECKDOUBLE_PATH);
+		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps");
 
-		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlskin_base.vs", "mtrlskin_base.vs", SHADER_CHECKDOUBLE_PATH);
-		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlskin_base.ps", "mtrlskin_base.ps", SHADER_CHECKDOUBLE_PATH);
+		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlskin_base.vs");
+		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlskin_base.ps");
 	}
 	m_useCountSurface = false;
 	m_idCurrIdSurface = 0;
@@ -553,12 +553,12 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
 
 
 		if (STR_VALIDATE(sVS.c_str()))
-			pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, sVS.c_str(), sVS.c_str(), SHADER_CHECKDOUBLE_PATH);
+			pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, sVS.c_str());
 		else
 			pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExistsName(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
 
 		if (STR_VALIDATE(sPS.c_str()))
-			pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, sPS.c_str(), sPS.c_str(), SHADER_CHECKDOUBLE_PATH);
+			pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, sPS.c_str());
 		else
 			pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExistsName(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");
 
@@ -905,8 +905,8 @@ void CMaterials::createMtl(const char* name, CMaterial** mtl, XSHADER_DEFAULT_DE
 	//если такого материала не существует, то мы должны были задать примерный тип материала
 	pMtrl->m_oMainGraphics.m_typeModel = MTLTYPE_MODEL_STATIC;
 
-	pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, pDefaultShaders->szFileVS, pDefaultShaders->szFileVS, SHADER_CHECKDOUBLE_NAME);
-	pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, pDefaultShaders->szFilePS, pDefaultShaders->szFilePS, SHADER_CHECKDOUBLE_NAME);
+	pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, pDefaultShaders->szFileVS);
+	pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, pDefaultShaders->szFilePS);
 	pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld = true;
 	
 	
@@ -1547,7 +1547,7 @@ ID CMaterials::mtlGetTextureID(ID id)
 void CMaterials::mtlSetVS(ID id, const char* path_vs)
 {
 	MTL_PRE_COND_ID(id, _VOID);
-	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, path_vs, path_vs, SHADER_CHECKDOUBLE_PATH);
+	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, path_vs);
 	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.updateShaderKit(false);
 }
 
@@ -1566,7 +1566,7 @@ ID CMaterials::mtlGetVSID(ID id)
 void CMaterials::mtlSetPS(ID id, const char* path_ps)
 {
 	MTL_PRE_COND_ID(id, _VOID);
-	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, path_ps, path_ps, SHADER_CHECKDOUBLE_PATH);
+	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, path_ps);
 	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.updateShaderKit(false);
 }
 

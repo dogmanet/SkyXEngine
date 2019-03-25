@@ -1034,8 +1034,8 @@ void CAIGrid::initGraphics()
 
 	m_idTex = SGCore_LoadTexAddName("decal_aigrid.dds", LOAD_TEXTURE_TYPE_CONST);
 
-	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "aigrid_quad.vs", "aigrid_quad.vs", SHADER_CHECKDOUBLE_PATH);
-	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "aigrid_quad.ps", "aigrid_quad.ps", SHADER_CHECKDOUBLE_PATH);
+	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "aigrid_quad.vs");
+	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "aigrid_quad.ps");
 
 	m_idShaderKit = SGCore_ShaderCreateKit(m_idVS, m_idPS);
 
