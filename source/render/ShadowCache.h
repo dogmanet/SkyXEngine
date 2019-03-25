@@ -4,6 +4,7 @@
 #include <gdefines.h>
 
 #include <light/IXLight.h>
+#include <common/array.h>
 
 enum SHADOW_TYPE
 {
@@ -24,19 +25,15 @@ public:
 	//! Указывает, что начался новый кадр
 	void nextFrame();
 
-	//! Проверяет, есть ли актуальная тень для запрошенной лампочки
-	bool hasShadowFor(IXLight *pLight);
-
-	//! Получает количество доступных слотов для определенного типа теней
-	UINT getAvailableSlots(SHADOW_TYPE shadowType);
-
 	//! Добавляет источник к текущему проходу, В случае отсутствия свободных слотов, возвращает false
-	bool addLightToPass(IXLight *pLight);
+	void addLight(IXLight *pLight);
 
-	void updateShadows();
+	UINT processNextBunch();
+	IXLight *getLight(ID id);
 
 protected:
 	UINT m_uCurrentFrame = 0;
+	Array<IXLight*> m_aFrameLights;
 };
 
 #endif

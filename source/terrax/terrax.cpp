@@ -629,11 +629,13 @@ void XResetLevel()
 	SetWindowText(g_hWndMain, MAIN_WINDOW_TITLE " | " SKYXENGINE_VERSION4EDITORS);
 
 	SLevel_Clear();
+#if 0
 	ID gid = SLight_GetGlobal();
 	if(ID_VALID(gid))
 	{
 		SLight_DeleteLight(gid);
 	}
+#endif
 
 	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 	{

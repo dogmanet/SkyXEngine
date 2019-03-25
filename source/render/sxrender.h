@@ -19,7 +19,6 @@ See the license in LICENSE
 #pragma comment(lib, "sxgcore_d.lib")
 #pragma comment(lib, "sxgeom_d.lib")
 #pragma comment(lib, "sxgreen_d.lib")
-#pragma comment(lib, "sxlight_d.lib")
 #pragma comment(lib, "sxmtrl_d.lib")
 #pragma comment(lib, "sxparticles_d.lib")
 #pragma comment(lib, "sxpp_d.lib")
@@ -31,7 +30,6 @@ See the license in LICENSE
 #pragma comment(lib, "sxgcore.lib")
 #pragma comment(lib, "sxgeom.lib")
 #pragma comment(lib, "sxgreen.lib")
-#pragma comment(lib, "sxlight.lib")
 #pragma comment(lib, "sxmtrl.lib")
 #pragma comment(lib, "sxparticles.lib")
 #pragma comment(lib, "sxpp.lib")
@@ -42,11 +40,10 @@ See the license in LICENSE
 
 
 #undef SX_LIB_API
-#define SX_LIB_API extern "C" __declspec (dllimport)
+#define SX_LIB_API extern "C" __declspec(dllimport)
 #include <gcore/sxgcore.h>
 #include <geom/sxgeom.h>
 #include <green/sxgreen.h>
-#include <light/sxlight.h>
 #include <mtrl/sxmtrl.h>
 #include <anim/sxanim.h>
 #include <pp/sxpp.h>
@@ -55,7 +52,7 @@ See the license in LICENSE
 
 #ifdef SX_DLL
 #undef SX_LIB_API
-#define SX_LIB_API extern "C" __declspec (dllexport)
+#define SX_LIB_API extern "C" __declspec(dllexport)
 #endif
 
 /*! \defgroup sxrender sxrender - библиотека рендера

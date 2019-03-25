@@ -353,13 +353,6 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <geom/sxgeom.h>
 
 #if defined(_DEBUG)
-#pragma comment(lib, "sxlight_d.lib")
-#else
-#pragma comment(lib, "sxlight.lib")
-#endif
-#include <light/sxlight.h>
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxmtrl_d.lib")
 #else
 #pragma comment(lib, "sxmtrl.lib")

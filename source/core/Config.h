@@ -1,7 +1,7 @@
 
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -53,12 +53,12 @@ public:
 
 	bool operator==(const CConfigString &str) const
 	{
-		return (stricmp(str.m_szString, m_szString) == 0);
+		return (strcasecmp(str.m_szString, m_szString) == 0);
 	}
 
 	bool operator==(const CConfigString * str) const
 	{
-		return (stricmp(str->m_szString, m_szString) == 0);
+		return (strcasecmp(str->m_szString, m_szString) == 0);
 	}
 
 	CConfigString & operator+=(const char &	sym)

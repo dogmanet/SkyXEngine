@@ -75,7 +75,7 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	m_pGhostObject = new btPairCachingGhostObject();
 	void *p1 = m_pGhostObject;
 	void *p2 = &m_pGhostObject->getWorldTransform();
-	printf(COLOR_LRED "p1: 0x%08x; p2: 0x%08x" COLOR_RESET "\n", p1, p2);
+	printf(COLOR_LRED "p1: 0x%p; p2: 0x%p" COLOR_RESET "\n", p1, p2);
 	m_pGhostObject->setWorldTransform(startTransform);
 	//sweepBP->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
 	m_pGhostObject->setCollisionShape(m_pCollideShape);

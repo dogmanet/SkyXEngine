@@ -170,7 +170,7 @@ bool CBaseWeapon::setKV(const char * name, const char * value)
 
 	if(!strcmp(name, "fire_modes"))
 	{
-		int len = sizeof(char) * (strlen(value) + 1);
+		size_t len = sizeof(char) * (strlen(value) + 1);
 		char * tmpstr = (char*)alloca(len);
 		memcpy(tmpstr, value, len);
 		char * str[FIRE_MODE_COUNT];

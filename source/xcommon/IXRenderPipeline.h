@@ -25,8 +25,9 @@ public:
 	virtual void renderFrame() = 0;
 	virtual void endFrame() = 0;
 
-protected:
 	virtual void renderStage(X_RENDER_STAGE stage) = 0;
+
+protected:
 
 	virtual void renderPrepare() = 0;
 	virtual void renderGBuffer() = 0;

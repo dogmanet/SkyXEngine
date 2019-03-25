@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -11,14 +11,14 @@ See the license in LICENSE
 #include "PropDebris.h"
 
 /*! \skydocent prop_breakable
-Разбиваемый объект
+Р Р°Р·Р±РёРІР°РµРјС‹Р№ РѕР±СЉРµРєС‚
 */
 
 BEGIN_PROPTABLE(CPropBreakable)
-	//! Разбить
+	//! Р Р°Р·Р±РёС‚СЊ
 	DEFINE_INPUT(breakInput, "break", "Break", PDF_NONE)
 
-	//! При разбивании
+	//! РџСЂРё СЂР°Р·Р±РёРІР°РЅРёРё
 	DEFINE_OUTPUT(m_onBroken, "OnBroken", "On broken")
 
 	DEFINE_FIELD_FLOAT(m_fHealth, PDFF_NONE, "health", "Health", EDITOR_TEXTFIELD)
@@ -53,7 +53,7 @@ void CPropBreakable::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 	}
 	if(m_szModelFile)
 	{
-		int len = strlen(m_szModelFile);
+		int len = (int)strlen(m_szModelFile);
 		char *szMask = (char*)alloca(len + 2);
 		strcpy(szMask, m_szModelFile);
 

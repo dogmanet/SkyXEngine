@@ -1,47 +1,45 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 #include "BaseLight.h"
 
-#include <light/sxlight.h>
-
 /*! \skydocent base_light
-Базовый источник света
+Р‘Р°Р·РѕРІС‹Р№ РёСЃС‚РѕС‡РЅРёРє СЃРІРµС‚Р°
 */
 
 BEGIN_PROPTABLE(CBaseLight)
-	//! Цвет
+	//! Р¦РІРµС‚
 	DEFINE_FIELD_VECTOR(m_vColor, 0, "color", "Color", EDITOR_TEXTFIELD)
-	//! Дальность
+	//! Р”Р°Р»СЊРЅРѕСЃС‚СЊ
 	DEFINE_FIELD_FLOAT(m_fDist, 0, "dist", "Distance", EDITOR_TEXTFIELD)
-	//! Дальность дальняя
-	DEFINE_FIELD_FLOAT(m_fShadowDist, 0, "light_far", "Shadow far plane", EDITOR_TEXTFIELD)
-	//! Интенсивность теней
+	//! Р”Р°Р»СЊРЅРѕСЃС‚СЊ РґР°Р»СЊРЅСЏСЏ
+	//DEFINE_FIELD_FLOAT(m_fShadowDist, 0, "light_far", "Shadow far plane", EDITOR_TEXTFIELD)
+	//! РРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ С‚РµРЅРµР№
 	DEFINE_FIELD_FLOAT(m_fShadowIntensity, 0, "shadow_intensity", "Shadow intensity", EDITOR_TEXTFIELD)
-	//! Связанный свет (повторяет его состояние включения)
+	//! РЎРІСЏР·Р°РЅРЅС‹Р№ СЃРІРµС‚ (РїРѕРІС‚РѕСЂСЏРµС‚ РµРіРѕ СЃРѕСЃС‚РѕСЏРЅРёРµ РІРєР»СЋС‡РµРЅРёСЏ)
 	DEFINE_FIELD_ENTITYFN(m_pLinkedTo, 0, "linked_to", "Linked light to", setLinkedTo, EDITOR_TEXTFIELD)
 
-	//! Тип тени
+	//! РўРёРї С‚РµРЅРё
 	DEFINE_FIELD_INT(m_iShadowType, 0, "type_shadow", "Type shadow", EDITOR_COMBOBOX)
-		COMBO_OPTION("None", "-1")   //!< Нет
-		COMBO_OPTION("Static", "0")  //!< Статическая тень
-		COMBO_OPTION("Dynamic", "1") //!< Динамическая тень
+		//COMBO_OPTION("None", "-1")   //!< РќРµС‚
+		COMBO_OPTION("Static", "0")  //!< РЎС‚Р°С‚РёС‡РµСЃРєР°СЏ С‚РµРЅСЊ
+		COMBO_OPTION("Dynamic", "1") //!< Р”РёРЅР°РјРёС‡РµСЃРєР°СЏ С‚РµРЅСЊ
 	EDITOR_COMBO_END()
 
-	//! Включить
+	//! Р’РєР»СЋС‡РёС‚СЊ
 	DEFINE_INPUT(turnOn, "turnOn", "Turn On", PDF_NONE)
-	//! Выключить
+	//! Р’С‹РєР»СЋС‡РёС‚СЊ
 	DEFINE_INPUT(turnOff, "turnOff", "Turn Off", PDF_NONE)
 
-	//! При включении
+	//! РџСЂРё РІРєР»СЋС‡РµРЅРёРё
 	DEFINE_OUTPUT(m_onTurnOn, "OnTurnOn", "On Turn On")
-	//! При выключении
+	//! РџСЂРё РІС‹РєР»СЋС‡РµРЅРёРё
 	DEFINE_OUTPUT(m_onTurnOff, "OnTurnOff", "On Turn Off")
 
-	//! Изначально выключена
+	//! РР·РЅР°С‡Р°Р»СЊРЅРѕ РІС‹РєР»СЋС‡РµРЅР°
 	DEFINE_FLAG(LIGHT_INITIALLY_DARK, "Initially dark")
 END_PROPTABLE()
 
@@ -52,7 +50,6 @@ BaseClass(pMgr)
 {
 	m_vColor = float3(1, 1, 1);
 	m_fDist = 10;
-	m_fShadowDist = m_fDist;
 	m_iShadowType = 1;
 	m_fShadowIntensity = 1;
 }
@@ -74,30 +71,14 @@ void CBaseLight::onSync()
 {
 	BaseClass::onSync();
 
-	if(SLight_GetEnable(m_idLight) != m_isEnable)
-		SLight_SetEnable(m_idLight, m_isEnable);
-
-	float3 vec;
-	SLight_GetPos(m_idLight, &vec, false);
-
-	if(vec.x != m_vPosition.x || vec.y != m_vPosition.y || vec.z != m_vPosition.z)
-		SLight_SetPos(m_idLight, &(float3)m_vPosition, false);
-
-	SLight_SetColor(m_idLight, &(float3)m_vColor);
-
-	if(SLight_GetDist(m_idLight) != m_fDist)
+	if(m_pLight)
 	{
-		SLight_SetDist(m_idLight, m_fDist, true);
-		m_fShadowDist = m_fDist;
+		m_pLight->setEnabled(m_isEnable);
+		m_pLight->setPosition(m_vPosition);
+		m_pLight->setColor(m_vColor);
+		m_pLight->setShadowIntencity(m_fShadowIntensity);
+		m_pLight->setShadowDynamic(m_iShadowType != 0);
 	}
-
-	SLight_SetShadowIntensity(m_idLight, m_fShadowIntensity);
-
-	if(SLight_GetShadowLocalFar(m_idLight) != m_fShadowDist)
-		SLight_SetShadowLocalFar(m_idLight, m_fShadowDist);
-
-	if(SLight_GetTypeShadowed(m_idLight) != m_iShadowType)
-		SLight_SetTypeShadowed(m_idLight, (LTYPE_SHADOW)m_iShadowType);
 }
 
 

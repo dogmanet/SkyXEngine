@@ -11,9 +11,12 @@ lighting_blend.ps
 
 cbuffer perLight: register(b0)
 {
-	half4 g_vLightPos;
-	half4 g_vLightColor;
-	half3 g_vLightPowerDistShadow;
+	half4 g_vLightColorPower;
+	half4 g_vLightPosShadow;
+#ifdef IS_SPOT
+	half4 g_vLightSpotDirection;
+	half2 g_vLightSpotInnerOuterAngles;
+#endif
 };
 
 cbuffer perFrame: register(b1)
@@ -65,12 +68,14 @@ half GetSpecular(half4 matparam,half NdotH,half NdotV,half NdotL,half VdotL,half
 	matparam.x = lerp(PARAM_LIGHTING_ROUGHNESS_MIN, PARAM_LIGHTING_ROUGHNESS_MAX, matparam.x);
 	half D = D_Get(matparam.x, NdotH);
 	half G = G_Get(NdotV,NdotL,VdotL,NdotH,HdotV);
-	half3 F = F_Get(matparam.y, HdotV)*saturate(matparam.y*3);
+	half F = F_Get(matparam.y, HdotV)*saturate(matparam.y*3);
 	return ((D*G*F)/(PI*NdotL*NdotV+0.001));
 }
 
 //#############################################################################
 
+
+//IS_SPOT
 PSO_Lbuffer main(VSO_ResPos IN)
 {
 	PSO_Lbuffer OUT;
@@ -94,9 +99,9 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	#endif
 	
 	half4 vPosition = half4(g_vViewPos.xyz + IN.vWorldRay * fDepth, 1.0);
-	half fDistance = distance(vPosition.xyz, g_vLightPos.xyz);
-			
-	half fInvDistance = 1.f - (fDistance/g_vLightPowerDistShadow.y);
+	half fDistance = distance(vPosition.xyz, g_vLightPosShadow.xyz);
+	
+	half fInvDistance = 1.f - (fDistance/g_vLightColorPower.w);
 	
 	[branch]if(fInvDistance < 0.0)
 		fInvDistance = 0.0;
@@ -106,7 +111,7 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	half4 vParam = g_txParameters.Sample(g_sPointClamp, IN.vTexUV);
 	
 	half3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
-	half3 vLigth  = normalize(g_vLightPos.xyz - vPosition.xyz); 
+	half3 vLigth  = normalize(g_vLightPosShadow.xyz - vPosition.xyz); 
 	half3 vVertexToEye = normalize(g_vViewPos.xyz - vPosition.xyz);
 	half3 vHalfVector = normalize(vVertexToEye + vLigth.xyz);
 	
@@ -115,6 +120,13 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	half fNdotL = dot(vNormalPixel, vLigth);
 	half fLdotV = dot(vLigth, vVertexToEye);
 	half fHdotV = dot(vHalfVector, vVertexToEye); 
+
+#ifdef IS_SPOT
+	half fNdotD = dot(-vLigth, g_vLightSpotDirection.xyz);
+	fAttenuation *= saturate(fNdotD - g_vLightSpotInnerOuterAngles.y) / (g_vLightSpotInnerOuterAngles.x - g_vLightSpotInnerOuterAngles.y);
+#endif
+
+	fAttenuation *= saturate(fNdotL);
 
 	half fSpecular = GetSpecular(vParam, fNdotH, fNdotV, fNdotL, fLdotV, fHdotV);
 
@@ -137,15 +149,15 @@ PSO_Lbuffer main(VSO_ResPos IN)
 		fDiffuse *= max(fOriginShadow, 0.2);
 	else
 		//иначе выбираем значения тени из диапазона, на основании силы света
-		fDiffuse *= max(fShadow, lerp(0.01, 0.09, g_vLightColor.w) * g_vLightPowerDistShadow.z);
+		fDiffuse *= max(fShadow, /* lerp(0.01, 0.09, g_vLightColor.w) *  */g_vLightPosShadow.w);
 	#endif
 	
-	fDiffuse = lerp(1.0, fDiffuse, g_vLightPowerDistShadow.z);
+	fDiffuse = lerp(1.0, fDiffuse, g_vLightPosShadow.w);
 	
-	OUT.vAmdient.xyz = g_vLightColor.xyz * fAttenuation;
-	OUT.vAmdient.w = fDiffuse * fMdiffuse * vParam.w * g_vLightPowerDistShadow.x * 2.0 * fAttenuation;
+	OUT.vAmdient.xyz = g_vLightColorPower.xyz * fAttenuation;
+	OUT.vAmdient.w = fDiffuse * fMdiffuse * vParam.w * g_vLightColorPower.w * 2.0 * fAttenuation;
 	
-	OUT.vSpecular = fSpecular * fAbsDiffuse * fAttenuation * g_vLightPowerDistShadow.x;
+	OUT.vSpecular = fSpecular * fAbsDiffuse * fAttenuation * g_vLightColorPower.w;
 	
 	return OUT;
 }

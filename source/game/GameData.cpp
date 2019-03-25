@@ -34,6 +34,7 @@ CEntityManager * GameData::m_pMgr;
 CHUDcontroller * GameData::m_pHUDcontroller;
 CGameStateManager * GameData::m_pGameStateManager;
 gui::dom::IDOMnode *GameData::m_pCell;
+IXLightSystem *GameData::m_pLightSystem;
 //gui::IDesktop *GameData::m_pStatsUI;
 
 CRagdoll * g_pRagdoll;
@@ -237,6 +238,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 	m_pMgr = new CEntityManager();
 
 	g_pLevelChannel = Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID);
+
+	m_pLightSystem = (IXLightSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXLIGHTSYSTEM_GUID);
 
 	Core_0RegisterConcmd("+forward", ccmd_forward_on);
 	Core_0RegisterConcmd("-forward", ccmd_forward_off);
@@ -1004,11 +1007,11 @@ void GameData::render()
 	IGXContext *pDev = SGCore_GetDXDevice();
 	++g_uFrameCount;
 	
-	static UINT s_uTime = Core_TimeTotalMlsGetU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
-	UINT uTime = Core_TimeTotalMlsGetU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+	static int64_t s_uTime = Core_TimeTotalMlsGetU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+	int64_t uTime = Core_TimeTotalMlsGetU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	if(uTime - s_uTime > 1000)
 	{
-		g_uFPS = g_uFrameCount * 1000 / (uTime - s_uTime);
+		g_uFPS = (UINT)(g_uFrameCount * 1000 / (uTime - s_uTime));
 		s_uTime = uTime;
 		g_uFrameCount = 0;
 	}

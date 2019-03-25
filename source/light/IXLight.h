@@ -3,6 +3,7 @@
 
 #include <gdefines.h>
 #include <common/math.h>
+#include <graphix/graphix.h>
 
 //! типы источников света
 enum LIGHT_TYPE
@@ -11,18 +12,24 @@ enum LIGHT_TYPE
 	LIGHT_TYPE_NONE = -1,
 
 	//! глобальный
-	LIGHT_TYPE_GLOBAL,
+	LIGHT_TYPE_SUN,
 
 	//! точечный
 	LIGHT_TYPE_POINT,
 
 	//! направленный
-	LIGHT_TYPE_DIR,
+	LIGHT_TYPE_SPOT,
 	
 	//! Непосредственно включаемый в LPV сетку
-	LIGHT_TYPE_LPV
+	LIGHT_TYPE_LPV,
+
+
+	LIGHT_TYPE__COUNT
 };
 
+class IXLightPoint;
+class IXLightSun;
+class IXLightSpot;
 class IXLight: public IXUnknown
 {
 public:
@@ -34,12 +41,6 @@ public:
 	virtual float3 getPosition() = 0;
 	virtual void setPosition(const float3 &vPosition) = 0;
 
-	virtual SMQuaternion getDirection() = 0;
-	virtual void setDirection(const SMQuaternion &qDirection) = 0;
-
-	virtual float getDistance() = 0;
-	virtual void setDistance(float fDistance) = 0;
-
 	virtual float getShadowIntencity() = 0;
 	virtual void setShadowIntencity(float fShadowIntencity) = 0;
 
@@ -48,22 +49,40 @@ public:
 
 	virtual bool isShadowDynamic() = 0;
 	virtual void setShadowDynamic(bool isDynamic) = 0;
+
+	//@TODO: Remove this method
+	virtual void drawShape(IGXContext *pDevice) = 0;
+	//@TODO: Remove this method
+	virtual void setPSConstants(IGXContext *pDevice) = 0;
+
+	virtual IXLightSpot *asSpot() = 0;
+	virtual IXLightSun *asSun() = 0;
+	virtual IXLightPoint *asPoint() = 0;
 };
 
-class IXLightPoint: public IXLight
+class IXLightPoint: public virtual IXLight
 {
 
 };
 
+class IXLightSun: public virtual IXLight
+{
+public:
+	virtual SMQuaternion getDirection() = 0;
+	virtual void setDirection(const SMQuaternion &qDirection) = 0;
+};
+
 
 //! Spotlights emit a cone of light that has two parts: a bright inner cone and an outer cone. 
-class IXLightSpot: public IXLight
+class IXLightSpot: public virtual IXLight
 {
 public:
 	virtual float getInnerAngle() = 0;
 	virtual void setInnerAngle(float fAngle) = 0;
 	virtual float getOuterAngle() = 0;
 	virtual void setOuterAngle(float fAngle) = 0;
+	virtual SMQuaternion getDirection() = 0;
+	virtual void setDirection(const SMQuaternion &qDirection) = 0;
 };
 
 #endif

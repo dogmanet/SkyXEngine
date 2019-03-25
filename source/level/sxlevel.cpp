@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -9,7 +9,6 @@ See the license in LICENSE
 #include "sxlevel.h"
 
 #include "level.h"
-
 #include <xcommon/XEvents.h>
 
 #if !defined(DEF_STD_REPORT)
@@ -51,7 +50,9 @@ SX_LIB_API void SLevel_0Create(const char *szName, bool isUnic, bool isServerMod
 				return;
 			}
 		}
-		g_pLevel = new CLevel(isServerMode);
+		IXLightSystem *pLightSystem = (IXLightSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXLIGHTSYSTEM_GUID);
+		g_pLevel = new CLevel(isServerMode, pLightSystem);
+
 		g_pLevelChannel = Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID);
 
 		g_pLevelChannel->addListener([](const XEventLevel *pData)

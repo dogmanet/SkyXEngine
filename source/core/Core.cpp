@@ -54,12 +54,21 @@ IBaseEventChannel *CCore::getEventChannelInternal(const XGUID &guid)
 
 void CCore::loadPlugins()
 {
+#ifdef WIN64
+	auto list = FileGetListFiles("../bin64/plugins/*.dll");
+#else
 	auto list = FileGetListFiles("../bin/plugins/*.dll");
+#endif
+		
 	IXPlugin *pPlugin = NULL;
 	for(UINT i = 0, l = list.size(); i < l; ++i)
 	{
 		printf("Loading plugin '%s'... ", list[i].c_str());
-		pPlugin = m_pPluginManager->loadPlugin((String("../bin/plugins/") + list[i]).c_str());
+		pPlugin = m_pPluginManager->loadPlugin((String("../bin"
+#ifdef WIN64
+			"64"
+#endif
+			"/plugins/") + list[i]).c_str());
 		if(pPlugin)
 		{
 			printf(COLOR_GREEN "DONE!" COLOR_RESET "\n", list[i].c_str());

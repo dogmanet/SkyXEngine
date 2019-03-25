@@ -400,7 +400,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				r_resize = (int*)GET_PCVAR_INT("r_resize");
 			}
 
-			*r_resize = 1;
+			if(r_resize)
+			{
+				*r_resize = 1;
+			}
 		}
 
 		SendMessage(g_hStatusWnd, WM_SIZE, wParam, lParam);

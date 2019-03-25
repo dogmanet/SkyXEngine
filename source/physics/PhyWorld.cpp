@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -9,7 +9,6 @@ See the license in LICENSE
 #include <geom/sxgeom.h>
 #include <green/sxgreen.h>
 #include <gcore/sxgcore.h>
-#include <light/sxlight.h>
 
 #include "sxphysics.h"
 

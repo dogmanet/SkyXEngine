@@ -30,6 +30,8 @@ See the license in LICENSE
 
 #include "TakeDamageInfo.h"
 
+#include <light/IXLightSystem.h>
+
 #pragma pointers_to_members(full_generality, virtual_inheritance)
 
 #pragma warning(push)
@@ -222,6 +224,8 @@ protected:
 	btCollisionShape * m_pEditorCollideShape = NULL;
 	btRigidBody * m_pEditorRigidBody = NULL;
 	//@}
+
+	IXLightSystem *m_pLightSystem = NULL;
 };
 
 #pragma warning(pop)

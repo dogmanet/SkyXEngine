@@ -25,6 +25,12 @@
     <ClCompile Include="..\..\..\source\light\sxlight_dll.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\light\plugin_main.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\light\LightSystem.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -57,6 +63,12 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\light\IXLight.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\light\IXLightSystem.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\light\LightSystem.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

@@ -191,10 +191,6 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	Core_Dbg_Set(SkyXEngine_PrintfLog);
 	Core_SetOutPtr();
 
-#ifdef _SINGLETHREADED
-	Core_MForceSinglethreaded();
-#endif
-
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB core initialized\n");
 
 	SkyXEngine_CreateLoadCVar();
@@ -293,7 +289,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB geom initialized\n");
 
-#ifndef SX_SERVER
+#if 0
 	SLight_0Create("sxml", false);
 	SLight_Dbg_Set(SkyXEngine_PrintfLog);
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB light initialized\n");
@@ -1706,6 +1702,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 void SkyXEngine_UpdateDataCVar()
 {
 #ifndef SX_SERVER
+#if 0
 	ID idGlobalLight = SLight_GetGlobal();
 	static const bool * r_pssm_4or3 = GET_PCVAR_BOOL("r_pssm_4or3");
 	static bool r_pssm_4or3_old = true;
@@ -1761,6 +1758,7 @@ void SkyXEngine_UpdateDataCVar()
 		}
 		SLight_SettLCoefSizeDepth(r_lsm_quality_old);
 	}
+#endif
 
 	static const int * r_grass_freq = GET_PCVAR_INT("r_grass_freq");
 	static int r_grass_freq_old = 1;
@@ -2096,7 +2094,9 @@ void SkyXEngine_Kill()
 #endif
 	SGeom_AKill();
 #ifndef _SERVER
+#if 0
 	SLight_AKill();
+#endif
 	SSCore_AKill();
 	SGCore_AKill();
 #endif
@@ -2208,7 +2208,7 @@ void SkyXEngine_RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min_ve
 
 void SkyXEngine_RFuncMtlSet(ID id, const float4x4 *pWorld, const float4 *pColor)
 {
-#ifndef SX_SERVER
+#if 0
 	switch (Core_RIntGet(G_RI_INT_RENDERSTATE))
 	{
 	case RENDER_STATE_SHADOW:

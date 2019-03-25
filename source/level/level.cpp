@@ -1,24 +1,26 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 #include "level.h"
 #include <decals/sxdecals.h>
 
-CLevel::CLevel(bool isServerMode)
+CLevel::CLevel(bool isServerMode, IXLightSystem *pLightSystem)
 {
 	m_sAmbientSounds = "";
 	m_sWeather = "";
 	m_szName[0] = 0;
 	m_sLocalName = "";
 	m_isServerMode = isServerMode;
+	m_pLightSystem = pLightSystem;
+
 
 	if(!isServerMode)
 	{
 		loadParticles();
-		m_pWeather = new CWeather();
+		m_pWeather = new CWeather(m_pLightSystem);
 		m_pAmbientSounds = new CAmbientSounds();
 	}
 }
@@ -29,6 +31,7 @@ CLevel::~CLevel()
 
 	mem_delete(m_pWeather);
 	mem_delete(m_pAmbientSounds);
+	mem_release(m_pSun);
 }
 
 void CLevel::clear()
@@ -41,10 +44,22 @@ void CLevel::clear()
 	SGeom_Clear();
 	SGreen_Clear();
 
+	if(!m_pSun && m_pLightSystem)
+	{
+		m_pSun = m_pLightSystem->getSun();
+		if(m_pSun)
+		{
+			m_pSun->Release();
+		}
+	}
+	mem_release(m_pSun);
+
+#if 0
 	if(!m_isServerMode)
 	{
 		SLight_ClearIDArr();
 	}
+#endif
 	
 	//SGame_UnloadObjLevel();
 	Core_0ConsoleExecCmd("ent_unload_level");
@@ -217,14 +232,12 @@ void CLevel::load(const char *szName, bool isGame)
 			fHeight = (fHeight >= SXGC_SKYCLOUDS_MIN_SIZE ? fHeight : SXGC_SKYCLOUDS_MIN_SIZE);
 			SGCore_SkyCloudsSetWidthHeightPos(fWidth, fHeight, &float3((vMax + vMin) * 0.5));
 
-			ID gid = SLight_CreatePoint(
-				&float3(60, 60, 0),
-				0,
-				&float3(1, 1, 1),
-				true,
-				true);
-			SLight_SetEnable(gid, true);
-			SLight_SetName(gid, "sun");
+			if(m_pLightSystem)
+			{
+				m_pSun = m_pLightSystem->createSun();
+				m_pSun->setPosition(float3(60.0f, 60.0f, 0));
+				m_pSun->setColor(float4(1.0f, 1.0f, 1.0f, 100.0f));
+			}
 		}
 		else
 		{
@@ -277,10 +290,15 @@ void CLevel::save(const char *szName)
 		SGreen_Save(szFullPath);
 	}
 
-	if (SLight_GetGlobal() > 0)
-		fprintf(file, "type = outdoor\n");
-	else
-		fprintf(file, "type = indoor\n");
+	if(m_pLightSystem)
+	{
+		IXLightSun *pSun = m_pLightSystem->getSun();
+		if(pSun)
+			fprintf(file, "type = outdoor\n");
+		else
+			fprintf(file, "type = indoor\n");
+		mem_release(pSun);
+	}
 
 	
 

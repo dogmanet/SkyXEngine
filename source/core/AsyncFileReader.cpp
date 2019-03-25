@@ -39,7 +39,7 @@ public:
 
 	bool isDone()
 	{
-		return(m_isDone.load());
+		return(m_isDone.load() != 0);
 	}
 
 	void setDone()

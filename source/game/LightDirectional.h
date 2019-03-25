@@ -36,6 +36,8 @@ protected:
 
 	float m_fAngle;
 	float m_fRadiusTop;
+
+	IXLightSpot *m_pLightSpot = NULL;
 };
 
 #endif

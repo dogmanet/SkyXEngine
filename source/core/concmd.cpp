@@ -77,7 +77,7 @@ SX_LIB_API void Core_0RegisterConcmdArg(char * name, SXCONCMDARG cmd, const char
 	}
 	g_mCmds[name] = c;
 }
-SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, SXCONCMDCLS cmd, const char * desc)
+SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, const SXCONCMDCLS &cmd, const char * desc)
 {
 	ConCmd c;
 	c.type = CMD_CLS;
@@ -91,7 +91,7 @@ SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, SXCONCMDCLS
 	}
 	g_mCmds[name] = c;
 }
-SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, SXCONCMDCLSARG cmd, const char * desc)
+SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, const SXCONCMDCLSARG &cmd, const char * desc)
 {
 	ConCmd c;
 	c.type = CMD_CLS_ARG;
@@ -284,7 +284,7 @@ SX_LIB_API void Core_0ConsoleExecCmd(const char * format, ...)
 {
 	va_list va;
 	va_start(va, format);
-	int len = _vscprintf(format, va) + 1;
+	size_t len = _vscprintf(format, va) + 1;
 	char * buf, *cbuf = NULL;
 	if(len < 4096)
 	{
@@ -365,7 +365,7 @@ void exec(int argc, const char ** argv)
 		printf(COLOR_LRED "Couldn't exec '%s'\n" COLOR_RESET, argv[1]);
 		return;
 	}
-	int len = f->getSize() + 1;
+	size_t len = f->getSize() + 1;
 	char * buf, *cbuf = NULL;
 	if(len <= 4096)
 	{

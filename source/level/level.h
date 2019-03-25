@@ -20,6 +20,7 @@ See the license in LICENSE
 #include <common/string.h>
 #include <common/file_utils.h>
 #include <level/sxlevel.h>
+#include <light/IXLightSystem.h>
 
 #include "ambientsounds.h"
 #include "weather.h"
@@ -27,7 +28,7 @@ See the license in LICENSE
 class CLevel
 {
 public:
-	CLevel(bool isServerMode=false);
+	CLevel(bool isServerMode, IXLightSystem *pLightSystem);
 	~CLevel();
 
 	//! очистка уровня
@@ -111,6 +112,8 @@ protected:
 	CAmbientSounds* m_pAmbientSounds = NULL;
 
 	bool m_isServerMode = false;
+	IXLightSystem *m_pLightSystem;
+	IXLightSun *m_pSun = NULL;
 };
 
 #endif

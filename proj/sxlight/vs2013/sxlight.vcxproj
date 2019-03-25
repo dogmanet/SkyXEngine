@@ -69,7 +69,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/bin/</OutDir>
+    <OutDir>../../../build/bin/plugins/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IncludePath>../../../source;../../../sdks/;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
@@ -81,11 +81,11 @@
     <LibraryPath>../../../libs64;$(LibraryPath);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
     <SourcePath>../../../source;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</SourcePath>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/bin64/</OutDir>
+    <OutDir>../../../build/bin64/plugins/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/bin/</OutDir>
+    <OutDir>../../../build/bin/plugins/</OutDir>
     <IncludePath>../../../source;../../../sdks/;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
     <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</SourcePath>
@@ -95,7 +95,7 @@
     <LibraryPath>../../../libs64;$(LibraryPath);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
     <SourcePath>../../../source;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</SourcePath>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/bin64/</OutDir>
+    <OutDir>../../../build/bin64/plugins/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -103,7 +103,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SXLIGHT_EXPORTS;SX_DLL;%(PreprocessorDefinitions);SX_LIB_NAME="LIGHT"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;SXLIGHT_EXPORTS;SX_DLL;%(PreprocessorDefinitions);SX_LIB_NAME="LIGHT"</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
@@ -122,7 +122,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN64;_DEBUG;_WINDOWS;_USRDLL;SXLIGHT_EXPORTS;SX_DLL;%(PreprocessorDefinitions);SX_LIB_NAME="LIGHT"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN64;_DEBUG;_WINDOWS;_USRDLL;SXLIGHT_EXPORTS;SX_DLL;%(PreprocessorDefinitions);SX_LIB_NAME="LIGHT"</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
@@ -143,7 +143,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SXLIGHT_EXPORTS;SX_EXE;%(PreprocessorDefinitions);SX_LIB_NAME="LIGHT"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;SXLIGHT_EXPORTS;SX_EXE;%(PreprocessorDefinitions);SX_LIB_NAME="LIGHT"</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
@@ -164,7 +164,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN64;NDEBUG;_WINDOWS;_USRDLL;SXLIGHT_EXPORTS;SX_EXE;%(PreprocessorDefinitions);SX_LIB_NAME="LIGHT"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN64;NDEBUG;_WINDOWS;_USRDLL;SXLIGHT_EXPORTS;SX_EXE;%(PreprocessorDefinitions);SX_LIB_NAME="LIGHT"</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
@@ -187,12 +187,14 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\light\LightSystem.cpp" />
     <ClCompile Include="..\..\..\source\light\ml_data.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\light\plugin_main.cpp" />
     <ClCompile Include="..\..\..\source\light\shadow.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -211,7 +213,9 @@
     <ClInclude Include="..\..\..\source\common\file_utils.h" />
     <ClInclude Include="..\..\..\source\common\string.h" />
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
+    <ClInclude Include="..\..\..\source\light\LightSystem.h" />
     <ClInclude Include="..\..\..\source\light\IXLight.h" />
+    <ClInclude Include="..\..\..\source\light\IXLightSystem.h" />
     <ClInclude Include="..\..\..\source\light\light.h" />
     <ClInclude Include="..\..\..\source\light\ml_data.h" />
     <ClInclude Include="..\..\..\source\light\shadow.h" />

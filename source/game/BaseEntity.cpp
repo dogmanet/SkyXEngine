@@ -10,6 +10,8 @@ See the license in LICENSE
 
 #include "EntityManager.h"
 
+#include "GameData.h"
+
 /*! \skydocent base_entity
 Базовый объект. От него наследуются все остальные объекты
 */
@@ -70,6 +72,7 @@ CBaseEntity::CBaseEntity(CEntityManager * pWorld):
 	, m_bSynced(false)
 {
 	m_iId = pWorld->reg(this);
+	m_pLightSystem = GameData::m_pLightSystem;
 }
 
 /*void CBaseEntity::setDefaults()
@@ -345,7 +348,7 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 		return(false);
 	case PDF_OUTPUT:
 		{
-			int len = sizeof(char)* (1 + strlen(value));
+			size_t len = sizeof(char)* (1 + strlen(value));
 			char * str = new char[len];
 			memcpy(str, value, len);
 			int iConns = parse_str(str, NULL, 0, ',');

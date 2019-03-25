@@ -706,10 +706,6 @@ void ShadowMapTech::begin()
 	light_data::pDXDevice->setDepthStencilSurface(DepthStencilSurface);
 	OldColorSurface = light_data::pDXDevice->getColorTarget();
 
-	/*light_data::pDXDevice->GetTransform(D3DTS_VIEW,&OldView);
-	light_data::pDXDevice->GetTransform(D3DTS_PROJECTION,&OldProj);
-	light_data::pDXDevice->GetTransform(D3DTS_WORLD1,&OldViewProj);*/
-
 	Core_RMatrixGet(G_RI_MATRIX_VIEW, &OldView);
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &OldProj);
 	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &OldViewProj);
@@ -721,10 +717,6 @@ void ShadowMapTech::begin()
 
 	View = SMMatrixLookAtLH(Position, Position + Direction, upvec);
 	Proj = SMMatrixPerspectiveFovLH(AngleNearFar.x,light_data::vSizeTexDepthLocal.x / light_data::vSizeTexDepthLocal.y,AngleNearFar.y,AngleNearFar.z);
-
-	/*light_data::pDXDevice->SetTransform(D3DTS_VIEW,&(View.operator D3DXMATRIX()));
-	light_data::pDXDevice->SetTransform(D3DTS_PROJECTION,&(Proj.operator D3DXMATRIX()));
-	light_data::pDXDevice->SetTransform(D3DTS_WORLD1,&(View * Proj).operator D3DXMATRIX());*/
 
 	Core_RMatrixSet(G_RI_MATRIX_VIEW, &View);
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &Proj);

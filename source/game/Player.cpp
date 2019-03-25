@@ -5,7 +5,6 @@ See the license in LICENSE
 ***********************************************************/
 
 #include <input/sxinput.h>
-#include <light/sxlight.h>
 #include "Player.h"
 #include "LightDirectional.h"
 #include "BaseTool.h"

@@ -6,8 +6,6 @@ See the license in LICENSE
 
 #include "LightPoint.h"
 
-#include <light/sxlight.h>
-
 /*! \skydocent light_point
 Точечный источник света
 */
@@ -20,11 +18,16 @@ REGISTER_ENTITY(CLightPoint, light_point);
 
 CLightPoint::CLightPoint(CEntityManager * pMgr):BaseClass(pMgr)
 {
-	m_idLight = SLight_CreatePoint(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, false, true);
+	if(m_pLightSystem)
+	{
+		m_pLight = m_pLightSystem->createPoint();
+		//m_pLight->setDistance(m_fDist);
+		m_pLight->setColor(float4(m_vColor, m_fDist));
+	}
 }
 
 CLightPoint::~CLightPoint()
 {
-	SLight_DeleteLight(m_idLight);
+	mem_release(m_pLight);
 }
 

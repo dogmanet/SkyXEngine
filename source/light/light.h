@@ -19,13 +19,13 @@ See the license in LICENSE
 #include "ml_data.h"
 
 #define LIGHTS_PRE_COND_ID(id,stdval) \
-if (!(id >= 0 && id < m_aLights.size()))\
+if (!(id >= 0 && id < (ID)m_aLights.size()))\
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved index of access '%d'", GEN_MSG_LOCATION, id); return stdval; }\
 	else if (!m_aLights[id]) \
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - light: light is deleted '%d'", GEN_MSG_LOCATION, id); return stdval; }
 
 #define LIGHTS_PRE_COND_KEY_DEL(key,stdval) \
-if (!(key >= 0 && key < m_aDelLights.size()))\
+if (!(key >= 0 && key < (ID)m_aDelLights.size()))\
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - light: unresolved key of access '%d'", GEN_MSG_LOCATION, key); return stdval; }
 
 #include "shadow.h"
@@ -40,8 +40,11 @@ public:
 
 	ID createCopy(ID id);
 
+	IXLight *getIXLight(ID id);
+#if 0
 	void onLostDevice();
 	void onResetDevice();
+#endif
 
 	int getCountLights() const;
 	void clear();
@@ -49,6 +52,7 @@ public:
 	void resetUpdate4Local();
 
 	//очистка массивов идентификацторов (просчетов видимости)
+
 	void clearIDArr();
 
 	bool getExists(ID id) const;
@@ -121,13 +125,14 @@ public:
 	void comVisibleFrustumDistFor(const IFrustum *pFrustum, const float3 *pVec);
 
 	//-----------------------------------------------------------------------------
-
+#if 0
 	bool getLightEnable(ID id) const;
 	void setLightEnable(ID id, bool val);
 	bool getLightShadowed(ID id) const;
 	LTYPE_LIGHT getLightType(ID id) const;
 	void setLightTypeShadowed(ID id, LTYPE_SHADOW typeShadow);
 	LTYPE_SHADOW getLightTypeShadowed(ID id) const;
+#endif
 
 	//-----------------------------------------------------------------------------
 
@@ -193,6 +198,8 @@ public:
 		SX_ALIGNED_OP_MEM;
 
 		ID m_id;
+
+		IXLight *m_pIXLight = NULL;
 		
 		LTYPE_LIGHT m_typeLight;
 		char m_szName[OBJECT_NAME_MAX_LEN];
@@ -226,9 +233,9 @@ public:
 		bool m_isVisibleFor;
 		float m_fDistFor;
 
-		PSSM *m_pShadowPSSM;
-		ShadowMapTech *m_pShadowSM;
-		ShadowMapCubeTech *m_pShadowCube;
+		//PSSM *m_pShadowPSSM;
+		//ShadowMapTech *m_pShadowSM;
+		//ShadowMapCubeTech *m_pShadowCube;
 
 	};
 
@@ -251,5 +258,125 @@ protected:
 	ID m_idGlobalLight;
 	bool m_isCastGlobalShadow;
 };
+
+class CLightSystem;
+class CXLight: public virtual IXLight
+{
+public:
+	CXLight(CLightSystem *pLightSystem);
+	~CXLight();
+
+	LIGHT_TYPE getType();
+
+	float3 getColor();
+	void setColor(const float3 &vColor);
+
+	float3 getPosition();
+	void setPosition(const float3 &vPosition);
+
+	float getShadowIntencity();
+	void setShadowIntencity(float fShadowIntencity);
+
+	bool isEnabled();
+	void setEnabled(bool isEnabled);
+
+	bool isShadowDynamic();
+	void setShadowDynamic(bool isDynamic);
+
+	void drawShape(IGXContext *pDevice);
+	void setPSConstants(IGXContext *pDevice);
+
+	IXLightSpot *asSpot();
+	IXLightSun *asSun();
+	IXLightPoint *asPoint();
+
+protected:
+	virtual SMMATRIX getWorldTM();
+	virtual void updatePSConstants(IGXContext *pDevice) = 0;
+
+	CLightSystem *m_pLightSystem = NULL;
+
+	LIGHT_TYPE m_type = LIGHT_TYPE_NONE;
+	float3_t m_vColor;
+	bool m_isEnable = true;
+	float3 m_vPosition;
+	float m_fShadowIntensity = 1.0f;
+	bool m_isShadowDynamic = true;
+
+	IMesh *m_pShape = NULL;
+
+	struct _base_light_data_ps
+	{
+		float4 vLightColor; //!< xyz: цвет, w: мощность
+		float4 vLightPos; //!< xyz: позиция, w: непрозрачность тени
+	};
+
+	bool m_isVSDataDirty = true;
+	IGXConstantBuffer *m_pVSData = NULL;
+	bool m_isPSDataDirty = true;
+	IGXConstantBuffer *m_pPSData = NULL;
+};
+
+#pragma warning(push)
+#pragma warning(disable:4250)
+
+class CXLightPoint: public CXLight, public virtual IXLightPoint
+{
+public:
+	CXLightPoint(CLightSystem *pLightSystem);
+
+	void Release();
+
+protected:
+	void updatePSConstants(IGXContext *pDevice);
+
+	_base_light_data_ps m_dataPS;
+};
+
+class CXLightSun: public CXLight, public virtual IXLightSun
+{
+public:
+	CXLightSun(CLightSystem *pLightSystem);
+	void Release();
+
+	SMQuaternion getDirection();
+	void setDirection(const SMQuaternion &qDirection);
+
+protected:
+	void updatePSConstants(IGXContext *pDevice);
+
+	_base_light_data_ps m_dataPS;
+	SMQuaternion m_qDirection;
+};
+
+class CXLightSpot: public CXLight, public virtual IXLightSpot
+{
+public:
+	CXLightSpot(CLightSystem *pLightSystem);
+	void Release();
+
+	float getInnerAngle();
+	void setInnerAngle(float fAngle);
+	float getOuterAngle();
+	void setOuterAngle(float fAngle);
+	SMQuaternion getDirection();
+	void setDirection(const SMQuaternion &qDirection);
+
+protected:
+	void updatePSConstants(IGXContext *pDevice);
+
+	struct _spot_light_data_ps
+	{
+		_base_light_data_ps baseData;
+		float3 vDir;
+		float2 vInnerOuterAngle;
+	};
+	_spot_light_data_ps m_dataPS;
+	float m_fOuterAngle = SM_PIDIV2;
+	float m_fInnerAngle = SM_PIDIV4;
+	SMQuaternion m_qDirection;
+};
+
+#pragma warning(pop)
 
 #endif

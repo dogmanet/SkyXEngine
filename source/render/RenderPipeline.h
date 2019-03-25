@@ -4,6 +4,8 @@
 #include <xcommon/IXRenderable.h>
 #include <xcommon/IXRenderPipeline.h>
 #include <common/array.h>
+#include <light/IXLightSystem.h>
+#include "ShadowCache.h"
 
 class CRenderPipeline: public IXRenderPipeline
 {
@@ -18,8 +20,9 @@ public:
 
 	SX_ALIGNED_OP_MEM2();
 
-protected:
 	void renderStage(X_RENDER_STAGE stage);
+
+protected:
 
 	void renderPrepare();
 	void renderGBuffer();
@@ -56,6 +59,8 @@ protected:
 	bool m_isWindowed = true;
 	UINT m_uOutWidth;
 	UINT m_uOutHeight;
+
+	IXLightSystem *m_pLightSystem = NULL;
 
 	//! G-Buffer
 	IGXTexture2D *m_pGBufferColor = NULL;
@@ -102,31 +107,9 @@ protected:
 	IGXConstantBuffer *m_pLightingShaderDataVS = NULL;
 	IGXConstantBuffer *m_pLightingShaderDataPS = NULL;
 
-
-	//@TODO: Move this into light instance!
-	struct
-	{
-		struct
-		{
-			float3 vLightPos;
-			float4 vLightColor;
-			float3 vLightPowerDistShadow;
-		} ps;
-	} m_lightInstanceData;
-	IGXConstantBuffer *m_pLightInstanceShaderDataPS = NULL;
-
-
 	//###################################
-
-	//! Список ламп для текущего кадра
-	Array<ID> m_aLightsForFrame;
-	//! Список ламп на текущий проход
-	Array<ID> m_aLightsBunch;
-
-	struct CShadowRT
-	{
-
-	};
+	
+	CShadowCache *m_pShadowCache = NULL;
 
 	//###################################
 
@@ -137,6 +120,8 @@ protected:
 	IGXRenderBuffer *m_pGICubesRB = NULL;
 	UINT m_uGICubesCount = 0;
 	ID m_idGICubesShader = -1;
+
+	ID m_idLightBoundShader = -1;
 };
 
 #endif

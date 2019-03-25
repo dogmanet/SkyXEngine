@@ -302,7 +302,12 @@ int LoadPixelShader(const char *szPath, CShaderPS *pShader,GXMACRO *aMacro)
 	else
 	{
 #endif
-		IGXPixelShader *pPixelShader = g_pDevice->createPixelShader(szFullPath, aMacro);
+		IGXPixelShader *pPixelShader = NULL;
+		do
+		{
+			pPixelShader = g_pDevice->createPixelShader(szFullPath, aMacro);
+		}
+		while(!pPixelShader && MessageBoxA(NULL, "Unable to compile pixel shader. Want to retry?", "PS Shader error", MB_OKCANCEL | MB_ICONSTOP) == IDOK);
 
 		pShader->m_pCode = 0;
 		pPixelShader->getData(pShader->m_pCode, &pShader->m_uiCodeSize);

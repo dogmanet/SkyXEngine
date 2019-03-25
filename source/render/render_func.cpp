@@ -104,7 +104,6 @@ bool rfunc::ComDeviceLost(bool isSetWindowSize)
 	SGCore_OnLostDevice();
 	SGreen_OnLostDevice();
 	SGeom_OnLostDevice();
-	SLight_OnLostDevice();
 	SMtrl_OnLostDevice();
 	SPE_OnLostDevice();
 	SPP_OnLostDevice();
@@ -126,7 +125,6 @@ bool rfunc::ComDeviceLost(bool isSetWindowSize)
 	*r_resize = RENDER_RESIZE_NONE;
 	SGCore_OnResetDevice();
 	SGeom_OnResetDevice();
-	SLight_OnResetDevice();
 	SMtrl_OnResetDevice();
 	SGreen_OnResetDevice();
 	SPE_OnResetDevice();
@@ -139,6 +137,7 @@ bool rfunc::ComDeviceLost(bool isSetWindowSize)
 
 void rfunc::ComVisibleForLight()
 {
+#if 0
 	for (int i = 0; i<SLight_GetCount(); ++i)
 	{
 		if (!SLight_GetExists(i))
@@ -260,6 +259,7 @@ void rfunc::ComVisibleForLight()
 
 		SLight_DelDel(iCurrKey);
 	}
+#endif
 }
 
 void rfunc::ComVisibleForCamera()
@@ -756,7 +756,7 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 			//пересмотреть этот момент как будет время, а пока оставить второй вариант как наиболее логичный
 
 		//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-			gdata::pDXDevice->setBlendState(gdata::rstates::pBlendNoColor);
+			//gdata::pDXDevice->setBlendState(gdata::rstates::pBlendNoColor);
 		//	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
 			gdata::pDXDevice->clear(GXCLEAR_STENCIL);
 
@@ -869,6 +869,7 @@ void rfunc::BuildMRT(DWORD timeDelta, bool isRenderSimulation)
 
 void rfunc::UpdateShadow(DWORD timeDelta)
 {
+#if 0
 	Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_SHADOW);
 	SLight_ComVisibleFrustumDistFor(gdata::pCamera->getFrustum(), &gdata::vConstCurrCamPos);
 
@@ -1021,6 +1022,7 @@ void rfunc::UpdateShadow(DWORD timeDelta)
 	gdata::pDXDevice->setBlendState(NULL);
 //	gdata::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 //	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+#endif
 }
 
 void rfunc::RenderSky(DWORD timeDelta)
@@ -1094,6 +1096,7 @@ void rfunc::RenderSky(DWORD timeDelta)
 
 void rfunc::ComLighting(DWORD timeDelta)
 {
+#if 0
 	static int *r_win_width = (int*)GET_PCVAR_INT("r_win_width");
 	static int *r_win_height = (int*)GET_PCVAR_INT("r_win_height");
 
@@ -1389,6 +1392,7 @@ void rfunc::ComLighting(DWORD timeDelta)
 
 	gdata::pDXDevice->setColorTarget(pBackBuf);
 	mem_release(pBackBuf);
+#endif
 }
 
 void rfunc::UnionLayers()
@@ -1538,6 +1542,8 @@ void rfunc::RenderMainPostProcess(DWORD timeDelta)
 	float3 vGLpos;
 	float3 vGLcolor;
 
+//@TODO: Reimplement this!
+#if 0
 	ID idGlobalLight = SLight_GetGlobal();
 	if (idGlobalLight > -1)
 	{
@@ -1552,6 +1558,7 @@ void rfunc::RenderMainPostProcess(DWORD timeDelta)
 	else
 		SPP_UpdateSun(0);
 
+
 	//**********************************************************************
 
 	static const bool * pp_lensflare = GET_PCVAR_BOOL("pp_lensflare");
@@ -1561,7 +1568,7 @@ void rfunc::RenderMainPostProcess(DWORD timeDelta)
 	bool useBloom = ((pp_lensflare_usebloom ? (*pp_lensflare_usebloom) : false) && (pp_bloom && (*pp_bloom)));
 	if (pp_lensflare && (*pp_lensflare) && idGlobalLight >= 0)
 		SPP_RenderLensFlare(&float3_t(0.25f, 0.3f, 0.2f), &float4_t(vGLcolor.x, vGLcolor.y, vGLcolor.z, (SLight_GetCastGlobalShadow() ? 0 : SLight_GetPower(idGlobalLight))), useBloom);
-
+#endif
 	//**********************************************************************
 
 	SPP_RenderDOF(&float4_t(0, 100, 0, 20), 0);
