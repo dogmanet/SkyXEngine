@@ -41,38 +41,64 @@ void CShadowMap::init(UINT uSize)
 	m_fSize = (float)uSize;
 }
 
+void CShadowMap::setLight(IXLight *pLight)
+{
+	m_pLight = pLight;
+}
+
 void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 {
-	float3 upvec = float3(0, 1, 0);
+	assert(m_pLight && m_pLight->getType() == LIGHT_TYPE_SPOT);
+	IXLightSpot *pSpotLight = m_pLight->asSpot();
 
-	if(Direction.x == 0 && Direction.y == -1 && Direction.z == 0)
-		upvec = SMVector3Transform(Direction, SMMatrixRotationZ(1.57f));
+	float3 upvec = float3(0.0f, 1.0f, 0.0f);
+	float3 vPos = pSpotLight->getPosition();
+	float3 vDir = pSpotLight->getDirection() * LIGHTS_DIR_BASE;
+	float3 vUp = pSpotLight->getDirection() * float3(0.0f, 0.0f, 1.0f);
 
-	View = SMMatrixLookAtLH(Position, Position + Direction, upvec);
-	Proj = SMMatrixPerspectiveFovLH(AngleNearFar.x, m_fSize / m_fSize, AngleNearFar.y, AngleNearFar.z);
 
-	Core_RMatrixSet(G_RI_MATRIX_VIEW, &View);
-	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &Proj);
-	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(View * Proj));
+	m_mView = SMMatrixLookAtLH(vPos, vPos + vDir, upvec);
+	m_mProj = SMMatrixPerspectiveFovLH(pSpotLight->getOuterAngle(), 1.0f, 0.0025f, pSpotLight->getMaxDistance());
 
-	Frustum->update(&(View), &(Proj));
+	Core_RMatrixSet(G_RI_MATRIX_VIEW, &m_mView);
+	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &m_mProj);
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, light_data::shader_id::vs::idSMDepthGeomPSSMDirect, "g_mWVP", &SMMatrixTranspose(View * Proj));
-	SGCore_ShaderBind(light_data::shader_id::kit::idSMDepthGeomPSSMDirect);
+	IGXSurface *pDepthSurface = m_pDepthMap->getMipmap();
+	IGXSurface *pNormalSurface = m_pNormalMap->getMipmap();
+	IGXSurface *pFluxSurface = m_pFluxMap->getMipmap();
 
-	mem_release_del(DepthSurface);
-	DepthSurface = DepthMap->getMipmap();
+	m_pDevice->setColorTarget(pDepthSurface);
+	m_pDevice->setColorTarget(NULL, 1);
+	m_pDevice->setColorTarget(NULL, 2);
+	m_pDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH | GXCLEAR_STENCIL, GXCOLOR_ARGB(255, 255, 255, 255));
 
-	light_data::pDXDevice->setColorTarget(DepthSurface);
+	m_pDevice->setColorTarget(pFluxSurface, 0);
+	m_pDevice->setColorTarget(pNormalSurface, 1);
+	m_pDevice->clear(GXCLEAR_COLOR);
 
-	light_data::pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH, GXCOLOR_ARGB(255, 255, 255, 255));
+	m_pDevice->setColorTarget(pDepthSurface);
+	m_pDevice->setColorTarget(pNormalSurface, 1);
+	m_pDevice->setColorTarget(pFluxSurface, 2);
 
+	mem_release(pDepthSurface);
+	mem_release(pNormalSurface);
+	mem_release(pFluxSurface);
+	
 
 	pRenderPipeline->renderStage(XRS_SHADOWS);
+
+
+	if(GetAsyncKeyState('U'))
+	{
+		m_pDevice->saveTextureToFile("sm_depth.png", m_pDepthMap);
+		m_pDevice->saveTextureToFile("sm_normal.png", m_pNormalMap);
+		m_pDevice->saveTextureToFile("sm_flux.png", m_pFluxMap);
+	}
 }
 
 void CShadowMap::genShadow(IGXTexture2D *pShadowMap)
 {
+#if 0
 	const float c_fTexWidth = (float)pShadowMap->getWidth();
 	const float c_fTexHeight = (float)pShadowMap->getHeight();
 
@@ -150,5 +176,6 @@ void CShadowMap::genShadow(IGXTexture2D *pShadowMap)
 
 	mem_release_del(RenderSurf);
 	mem_release_del(BackBuf);
+#endif
 }
 

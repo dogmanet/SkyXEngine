@@ -139,6 +139,13 @@ struct PSO_Lbuffer
 	half4 vSpecular	:COLOR1;
 };
 
+//! структура вывода всех данных для RSM
+struct PSO_RSMbuffer 
+{
+	half4 vDepth    :COLOR0;
+	half4 vNormal   :COLOR1;
+	half4 vFlux     :COLOR2;
+};
 
 /*! \name SkyBox
 @{*/

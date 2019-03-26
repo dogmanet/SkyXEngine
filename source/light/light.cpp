@@ -1735,7 +1735,7 @@ void CXLight::setPSConstants(IGXContext *pDevice)
 
 SMMATRIX CXLight::getWorldTM()
 {
-	return(SMMatrixScaling(float3(SMVector3Length2(m_vColor))) * SMMatrixTranslation(m_vPosition));
+	return(SMMatrixScaling(float3(getMaxDistance())) * SMMatrixTranslation(m_vPosition));
 }
 
 IXLightSpot *CXLight::asSpot()
@@ -1761,6 +1761,11 @@ IXLightPoint *CXLight::asPoint()
 		return((CXLightPoint*)this);
 	}
 	return(NULL);
+}
+
+float CXLight::getMaxDistance()
+{
+	return(SMVector3Length2(m_vColor));
 }
 
 //##########################################################################
@@ -1832,6 +1837,11 @@ void CXLightSun::updatePSConstants(IGXContext *pDevice)
 	m_dataPS.vLightColor = float4(m_vColor, SMVector3Length2(m_vColor));
 	m_dataPS.vLightPos = float4(m_vPosition, m_fShadowIntensity);
 	m_pPSData->update(&m_dataPS);
+}
+
+float CXLightSun::getMaxDistance()
+{
+	return(1000.0f);
 }
 
 //##########################################################################

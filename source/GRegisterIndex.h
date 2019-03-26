@@ -15,13 +15,22 @@ See the license in LICENSE
 /*! \name float4x4 register 
 @{*/
 
+//@DEPRECATED: оно надо вообще?
 #define G_RI_MATRIX_WORLD			0	/*!< текущая мировая матрица */
+
 #define G_RI_MATRIX_VIEW			1	/*!< текущая видовая матрица */
 #define G_RI_MATRIX_PROJECTION		2	/*!< текущая матрица проекции */
+
+//@DEPRECATED: оно надо вообще?
 #define G_RI_MATRIX_VIEWPROJ		3	/*!< текущая комбинированная матрица вида и проекции */
+
+//@DEPRECATED: оно надо вообще?
 #define G_RI_MATRIX_TRANSP_VIEWPROJ 4	/*!< текущая транспонированная комбинированная матрица вида и проекции */
+
 #define G_RI_MATRIX_OBSERVER_VIEW	5	/*!< матрица вида камеры наблюдателя */
 #define G_RI_MATRIX_OBSERVER_PROJ	6	/*!< матрица проекции камеры наблюдателя */
+
+//@DEPRECATED: оно надо вообще?
 #define G_RI_MATRIX_LIGHT_PROJ		7	/*!< матрица проекции для света */
 
 //!@}

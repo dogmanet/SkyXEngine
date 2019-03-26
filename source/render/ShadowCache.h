@@ -5,6 +5,7 @@
 
 #include <light/IXLight.h>
 #include <common/array.h>
+#include "shadow.h"
 
 enum SHADOW_TYPE
 {
@@ -16,7 +17,7 @@ enum SHADOW_TYPE
 class CShadowCache
 {
 public:
-	CShadowCache();
+	CShadowCache(IXRenderPipeline *pRenderPipeline);
 	~CShadowCache();
 
 	//! Установка количества лампочек, инициализация кэша
@@ -32,8 +33,31 @@ public:
 	IXLight *getLight(ID id);
 
 protected:
+	IXRenderPipeline *m_pRenderPipeline;
+
 	UINT m_uCurrentFrame = 0;
 	Array<IXLight*> m_aFrameLights;
+
+	ID m_idRSMPixelShader = -1;
+
+	struct _shadow_map_s
+	{
+		CShadowMap map;
+		bool isDirty = false;
+		IXLight *pLight = NULL;
+	};
+
+	Array<_shadow_map_s> m_aShadowMaps;
+	//Array<CShadowCubeMap> m_aShadowCubeMaps;
+	//CShadowPSSM *m_pShadowPSSM;
+
+	struct _ready_shadows_s
+	{
+		IBaseShadowMap *pShadowMap;
+		IXLight *pLight;
+	};
+
+	Array<_ready_shadows_s> m_aReadyMaps;
 };
 
 #endif

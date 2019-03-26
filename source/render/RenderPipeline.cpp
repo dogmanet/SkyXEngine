@@ -168,7 +168,7 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 
 	m_idLightBoundShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "lighting_bound.vs"), -1);
 
-	m_pShadowCache = new CShadowCache();
+	m_pShadowCache = new CShadowCache(this);
 }
 CRenderPipeline::~CRenderPipeline()
 {

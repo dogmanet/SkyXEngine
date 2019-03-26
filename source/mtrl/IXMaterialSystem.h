@@ -81,6 +81,9 @@ public:
 
 	//! Установить текстуру в слот
 	virtual void bindTexture(IXTexture *pTexture, UINT slot = 0) = 0;
+
+	//! Переопределить пиксельный шейдер для последующих вызовов bindMaterial. Действует до тех пор, пока не будет отменено (-1)
+	virtual void overridePixelShader(ID id) = 0;
 };
 
 #endif

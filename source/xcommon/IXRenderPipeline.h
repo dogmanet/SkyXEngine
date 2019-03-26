@@ -17,6 +17,7 @@ enum X_RENDER_STAGE
 	XRS_EDITOR_2D = 0x00000080  //!< Рендер для редактора в виде 2D
 };
 
+class IGXContext;
 class IXRenderPipeline: public IXUnknown
 {
 public:
@@ -26,6 +27,8 @@ public:
 	virtual void endFrame() = 0;
 
 	virtual void renderStage(X_RENDER_STAGE stage) = 0;
+
+	virtual IGXContext *getDevice() = 0;
 
 protected:
 

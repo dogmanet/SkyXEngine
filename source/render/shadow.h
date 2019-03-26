@@ -15,7 +15,13 @@ See the license in LICENSE
 #include <gcore/sxgcore.h>
 #include <light/IXLight.h>
 
-class CShadowMap
+class IBaseShadowMap
+{
+public:
+	virtual void genShadow(IGXTexture2D *pShadowMap) = 0;
+};
+
+class CShadowMap: public IBaseShadowMap
 {
 public:
 	CShadowMap(IGXContext *pContext);
@@ -44,16 +50,7 @@ private:
 
 	float m_fSize;
 
-	//-------------------------------------------
-
-
-	float3 m_vPosition;
-	float3 m_vDirection;
-	float3 m_vAngleNearFar;
-
-	IGXSurface *m_pDepthSurface;
-	
-	IFrustum* m_pFrustum;
+	IXLight *m_pLight = NULL;
 
 	float4x4 m_mView;
 	float4x4 m_mProj;

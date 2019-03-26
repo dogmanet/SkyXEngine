@@ -290,6 +290,8 @@ public:
 	IXLightSun *asSun();
 	IXLightPoint *asPoint();
 
+	float getMaxDistance();
+
 protected:
 	virtual SMMATRIX getWorldTM();
 	virtual void updatePSConstants(IGXContext *pDevice) = 0;
@@ -336,11 +338,15 @@ protected:
 class CXLightSun: public CXLight, public virtual IXLightSun
 {
 public:
+	SX_ALIGNED_OP_MEM2();
+
 	CXLightSun(CLightSystem *pLightSystem);
 	void Release();
 
 	SMQuaternion getDirection();
 	void setDirection(const SMQuaternion &qDirection);
+
+	float getMaxDistance();
 
 protected:
 	void updatePSConstants(IGXContext *pDevice);

@@ -27,6 +27,9 @@ enum LIGHT_TYPE
 	LIGHT_TYPE__COUNT
 };
 
+/*! базовое направление направленноого источника света */
+#define LIGHTS_DIR_BASE float3(0, -1, 0)
+
 class IXLightPoint;
 class IXLightSun;
 class IXLightSpot;
@@ -58,6 +61,8 @@ public:
 	virtual IXLightSpot *asSpot() = 0;
 	virtual IXLightSun *asSun() = 0;
 	virtual IXLightPoint *asPoint() = 0;
+
+	virtual float getMaxDistance() = 0;
 };
 
 class IXLightPoint: public virtual IXLight
