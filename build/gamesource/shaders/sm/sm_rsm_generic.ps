@@ -25,7 +25,7 @@ PSO_RSMbuffer main(VSO_SceneCommon IN)
 	
 	PSO_RSMbuffer OUT;
 	OUT.vDepth = fDepth + fBias;
-	OUT.vNormal = normalize(IN.vNormal);
+	OUT.vNormal = half4(normalize(IN.vNormal), 1.0);
 	OUT.vFlux = vColor /* * lightColor * angle */;
 	
 	return(OUT);

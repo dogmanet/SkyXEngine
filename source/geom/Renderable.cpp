@@ -5,7 +5,7 @@ extern CModels *g_pModels;
 
 X_RENDER_STAGE CRenderable::getStages()
 {
-	return(XRS_GBUFFER);
+	return(XRS_GBUFFER | XRS_SHADOWS);
 }
 
 UINT CRenderable::getPriorityForStage(X_RENDER_STAGE stage)
@@ -23,6 +23,7 @@ void CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVis
 		g_pModels->render(0, GEOM_RENDER_TYPE_OPAQUE, 0);
 		break;
 	case XRS_SHADOWS:
+		g_pModels->render(0, GEOM_RENDER_TYPE_OPAQUE, 0);
 		break;
 	case XRS_GI:
 		break;

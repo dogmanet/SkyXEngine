@@ -66,6 +66,8 @@ public:
 	void setTypeModel(ID id, MTLTYPE_MODEL typeModel);
 	ID getID(const char *szName);
 
+	void setPixelShaderOverride(ID id);
+
 	//######################################################################
 
 	bool mtlGetUsingAlphaTest(ID id);
@@ -397,6 +399,8 @@ protected:
 	void addName(const char *szName, ID id);
 	ID addUnitMaterial(CUnitMaterial *pUnitMtrl);
 	ID addMaterial(CMaterial *pMtrl);
+
+	ID m_idPixelShaderOverride = -1;
 
 	//! структура описывающая папку и все текстуры в ней, у каждой свой id для доступа
 	struct CPath

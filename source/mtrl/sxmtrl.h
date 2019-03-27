@@ -402,6 +402,8 @@ SX_LIB_API void SMtrl_MtlRender(
 	const float4 *pColor=0		//!< указатель на принимаемый цвет
 	);
 
+SX_LIB_API void SMtrl_MtlPixelShaderOverride(ID id);
+
 //! стандартная отрисовка материала, используются стандартные шейдеры, нужно для теней, отражений и прочего
 SX_LIB_API void SMtrl_MtlRenderStd(
 	MTLTYPE_MODEL type,			//!< тип материала из MtlTypeModel

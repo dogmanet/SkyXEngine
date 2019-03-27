@@ -1,9 +1,9 @@
 #include "ShadowCache.h"
 #include <core/sxcore.h>
-#include <mtrl/IXMaterialSystem.h>
 
-CShadowCache::CShadowCache(IXRenderPipeline *pRenderPipeline):
-	m_pRenderPipeline(pRenderPipeline)
+CShadowCache::CShadowCache(IXRenderPipeline *pRenderPipeline, IXMaterialSystem *pMaterialSystem):
+	m_pRenderPipeline(pRenderPipeline),
+	m_pMaterialSystem(pMaterialSystem)
 {
 	Core_0RegisterCVarFloat("r_sm_max_memory", 0.15f, "Максимальный процент от доступной видеопамяти, отводимый под кэш теней");
 	m_idRSMPixelShader = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_rsm_generic.ps");
@@ -52,7 +52,15 @@ void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
 		}
 	}
 
-	m_aShadowMaps.resizeFast(uSpots);
+	if(m_aShadowMaps.size() != uSpots)
+	{
+		m_aShadowMaps.resizeFast(uSpots);
+		for(UINT i = 0, l = m_aShadowMaps.size(); i < l; ++i)
+		{
+			m_aShadowMaps[i].map.init(m_pRenderPipeline->getDevice(), uDefaultShadowmapSize);
+		}
+	}
+
 	m_aReadyMaps.resizeFast(uSpots + uPoints + (hasGlobal ? 1 : 0));
 	//m_aShadowCubeMaps.resizeFast(uPoints);
 	//@TODO: Init/deinit sun!
@@ -75,8 +83,7 @@ UINT CShadowCache::processNextBunch()
 	Core_RMatrixGet(G_RI_MATRIX_VIEW, &mOldView);
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mOldProj);
 
-	IXMaterialSystem *pMaterialSystem = NULL;
-	pMaterialSystem->overridePixelShader(m_idRSMPixelShader);
+	m_pMaterialSystem->overridePixelShader(m_idRSMPixelShader);
 
 	for(UINT i = 0, l = m_aFrameLights.size(); i < l; ++i)
 	{
@@ -104,7 +111,7 @@ UINT CShadowCache::processNextBunch()
 		}
 	}
 
-	pMaterialSystem->overridePixelShader(-1);
+	m_pMaterialSystem->overridePixelShader(-1);
 
 	Core_RMatrixSet(G_RI_MATRIX_VIEW, &mOldView);
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &mOldProj);

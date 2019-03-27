@@ -1,7 +1,6 @@
 #include "shadow.h"
 
-CShadowMap::CShadowMap(IGXContext *pDevice):
-	m_pDevice(pDevice)
+CShadowMap::CShadowMap()
 {
 }
 
@@ -10,6 +9,26 @@ CShadowMap::~CShadowMap()
 	mem_release(m_pDepthMap);
 	mem_release(m_pNormalMap);
 	mem_release(m_pFluxMap);
+	ReleaseDepthStencilSurface();
+}
+
+IGXDepthStencilSurface *CShadowMap::ms_pDepthStencilSurface = NULL;
+UINT CShadowMap::ms_uDepthStencilSurfaceRefCount = 0;
+
+void CShadowMap::InitDepthStencilSurface(IGXContext *pContext, UINT uSize)
+{
+	if(!ms_pDepthStencilSurface)
+	{
+		ms_pDepthStencilSurface = pContext->createDepthStencilSurface(uSize, uSize, GXFMT_D24S8, GXMULTISAMPLE_NONE, true);
+	}
+	++ms_uDepthStencilSurfaceRefCount;
+}
+void CShadowMap::ReleaseDepthStencilSurface()
+{
+	if(--ms_uDepthStencilSurfaceRefCount == 0)
+	{
+		mem_release(ms_pDepthStencilSurface);
+	}
 }
 
 UINT CShadowMap::GetMapMemory(UINT uSize)
@@ -21,8 +40,10 @@ UINT CShadowMap::GetMapMemory(UINT uSize)
 	return(uSize * uSize * 12);
 }
 
-void CShadowMap::init(UINT uSize)
+void CShadowMap::init(IGXContext *pContext, UINT uSize)
 {
+	m_pDevice = pContext;
+
 	//GXFMT_A8R8G8B8
 	m_pNormalMap = m_pDevice->createTexture2D(uSize, uSize, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A8R8G8B8);
 	//GXFMT_A8R8G8B8
@@ -39,6 +60,8 @@ void CShadowMap::init(UINT uSize)
 		fOffset, fOffset, fBias, 1.0f);
 
 	m_fSize = (float)uSize;
+
+	InitDepthStencilSurface(pContext, uSize);
 }
 
 void CShadowMap::setLight(IXLight *pLight)
@@ -51,17 +74,17 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 	assert(m_pLight && m_pLight->getType() == LIGHT_TYPE_SPOT);
 	IXLightSpot *pSpotLight = m_pLight->asSpot();
 
-	float3 upvec = float3(0.0f, 1.0f, 0.0f);
 	float3 vPos = pSpotLight->getPosition();
 	float3 vDir = pSpotLight->getDirection() * LIGHTS_DIR_BASE;
 	float3 vUp = pSpotLight->getDirection() * float3(0.0f, 0.0f, 1.0f);
 
-
-	m_mView = SMMatrixLookAtLH(vPos, vPos + vDir, upvec);
+	m_mView = SMMatrixLookAtLH(vPos, vPos + vDir, vUp);
 	m_mProj = SMMatrixPerspectiveFovLH(pSpotLight->getOuterAngle(), 1.0f, 0.0025f, pSpotLight->getMaxDistance());
 
 	Core_RMatrixSet(G_RI_MATRIX_VIEW, &m_mView);
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &m_mProj);
+
+	m_pDevice->setDepthStencilSurface(ms_pDepthStencilSurface);
 
 	IGXSurface *pDepthSurface = m_pDepthMap->getMipmap();
 	IGXSurface *pNormalSurface = m_pNormalMap->getMipmap();
@@ -87,12 +110,17 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 
 	pRenderPipeline->renderStage(XRS_SHADOWS);
 
+	m_pDevice->setColorTarget(NULL);
+	m_pDevice->setColorTarget(NULL, 1);
+	m_pDevice->setColorTarget(NULL, 2);
 
 	if(GetAsyncKeyState('U'))
 	{
-		m_pDevice->saveTextureToFile("sm_depth.png", m_pDepthMap);
-		m_pDevice->saveTextureToFile("sm_normal.png", m_pNormalMap);
-		m_pDevice->saveTextureToFile("sm_flux.png", m_pFluxMap);
+	//	m_pDevice->setColorTarget(NULL);
+	//	SGCore_ScreenQuadDraw();
+		m_pDevice->saveTextureToFile("sm_depth.dds", m_pDepthMap);
+		m_pDevice->saveTextureToFile("sm_normal.dds", m_pNormalMap);
+		m_pDevice->saveTextureToFile("sm_flux.dds", m_pFluxMap);
 	}
 }
 

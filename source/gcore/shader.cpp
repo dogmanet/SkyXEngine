@@ -721,6 +721,7 @@ ID CShaderManager::existsPathMacro(SHADER_TYPE type, const char *szPath, GXMACRO
 		{
 			return(-1);
 		}
+		return(idShader);
 	}
 	return(-1);
 }
@@ -1085,7 +1086,7 @@ ID CShaderManager::createKit(ID idVertexShader, ID idPixelShader, ID idGeometryS
 		pShaderKit->m_idPixelShader = idPixelShader;
 		pShaderKit->m_idGeometryShader = idGeometryShader;
 
-		if((!ID_VALID(idVertexShader) || m_aVS[idVertexShader]->m_pVertexShader) && (!ID_VALID(idPixelShader) || m_aPS[idPixelShader]->m_pPixelShader) && (!ID_VALID(idPixelShader) || m_aGS[idPixelShader]->m_pGeometryShader))
+		if((!ID_VALID(idVertexShader) || m_aVS[idVertexShader]->m_pVertexShader) && (!ID_VALID(idPixelShader) || m_aPS[idPixelShader]->m_pPixelShader) && (!ID_VALID(idGeometryShader) || m_aGS[idGeometryShader]->m_pGeometryShader))
 			pShaderKit->m_pShaderKit = g_pDevice->createShader(ID_VALID(idVertexShader) ? m_aVS[idVertexShader]->m_pVertexShader : NULL, ID_VALID(idPixelShader) ? m_aPS[idPixelShader]->m_pPixelShader : NULL, ID_VALID(idGeometryShader) ? m_aGS[idGeometryShader]->m_pGeometryShader : NULL);
 
 		m_aShaderKit.push_back(pShaderKit);

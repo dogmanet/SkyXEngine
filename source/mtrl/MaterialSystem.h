@@ -45,6 +45,8 @@ public:
 	void bindTexture(IXTexture *pTexture, UINT slot = 0);
 	void setWorld(const SMMATRIX &mWorld);
 
+	void overridePixelShader(ID id);
+
 protected:
 	struct CObjectData
 	{

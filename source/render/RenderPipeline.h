@@ -22,6 +22,8 @@ public:
 
 	void renderStage(X_RENDER_STAGE stage);
 
+	IGXContext *getDevice();
+
 protected:
 
 	void renderPrepare();

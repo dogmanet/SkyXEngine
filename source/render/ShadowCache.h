@@ -4,6 +4,7 @@
 #include <gdefines.h>
 
 #include <light/IXLight.h>
+#include <mtrl/IXMaterialSystem.h>
 #include <common/array.h>
 #include "shadow.h"
 
@@ -17,7 +18,7 @@ enum SHADOW_TYPE
 class CShadowCache
 {
 public:
-	CShadowCache(IXRenderPipeline *pRenderPipeline);
+	CShadowCache(IXRenderPipeline *pRenderPipeline, IXMaterialSystem *pMaterialSystem);
 	~CShadowCache();
 
 	//! Установка количества лампочек, инициализация кэша
@@ -34,6 +35,7 @@ public:
 
 protected:
 	IXRenderPipeline *m_pRenderPipeline;
+	IXMaterialSystem *m_pMaterialSystem;
 
 	UINT m_uCurrentFrame = 0;
 	Array<IXLight*> m_aFrameLights;

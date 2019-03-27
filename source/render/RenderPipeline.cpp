@@ -168,7 +168,7 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 
 	m_idLightBoundShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "lighting_bound.vs"), -1);
 
-	m_pShadowCache = new CShadowCache(this);
+	m_pShadowCache = new CShadowCache(this, pMaterialSystem);
 }
 CRenderPipeline::~CRenderPipeline()
 {
@@ -297,6 +297,11 @@ void CRenderPipeline::renderStage(X_RENDER_STAGE stage)
 	}
 }
 
+IGXContext *CRenderPipeline::getDevice()
+{
+	return(m_pDevice);
+}
+
 void CRenderPipeline::showGICubes()
 {
 	m_pDevice->setPrimitiveTopology(GXPT_POINTLIST);
@@ -380,6 +385,8 @@ void CRenderPipeline::renderGI()
 		return;
 	}
 
+	IGXDepthStencilSurface *pOldDSSurface = m_pDevice->getDepthStencilSurface();
+
 	UINT uCounts[LIGHT_TYPE__COUNT] = {0};
 	for(int i = 0, l = m_pLightSystem->getCount(); i < l; ++i)
 	{
@@ -395,8 +402,8 @@ void CRenderPipeline::renderGI()
 
 	pBackBuf = m_pDevice->getColorTarget();
 
-	m_pDevice->setColorTarget(pAmbientSurf);
-	m_pDevice->setColorTarget(pSpecDiffSurf, 1);
+	//m_pDevice->setColorTarget(pAmbientSurf);
+	//m_pDevice->setColorTarget(pSpecDiffSurf, 1);
 
 	//очищаем рт и стенсил
 	m_pDevice->clear(GXCLEAR_COLOR | GXCLEAR_STENCIL);
@@ -456,6 +463,11 @@ void CRenderPipeline::renderGI()
 	UINT uShadowCount = 0;
 	while((uShadowCount = m_pShadowCache->processNextBunch()))
 	{
+		m_pDevice->setColorTarget(pAmbientSurf);
+		m_pDevice->setColorTarget(pSpecDiffSurf, 1);
+		m_pDevice->setDepthStencilSurface(pOldDSSurface);
+
+
 		//render direct light with shadows
 		for(UINT i = 0; i < uShadowCount; ++i)
 		{
@@ -565,8 +577,12 @@ void CRenderPipeline::renderGI()
 		for(UINT i = 0; i < uShadowCount; ++i)
 		{
 		}
+		break;
 	}
+
 	SGCore_ShaderUnBind();
+
+	mem_release(pOldDSSurface);
 	
 #if 0
 	static IGXTexture2D *s_pTex = NULL;

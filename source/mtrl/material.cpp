@@ -1347,6 +1347,11 @@ ID CMaterials::getID(const char* name)
 	return -1;
 }
 
+void CMaterials::setPixelShaderOverride(ID id)
+{
+	m_idPixelShaderOverride = id;
+}
+
 int CMaterials::getCount()
 {
 	return m_aUnitMtrls.size();
@@ -2160,9 +2165,20 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 
 
 	if(ID_VALID(pMtrl->m_oMainGraphics.m_idShaderKit))
-		SGCore_ShaderBind(pMtrl->m_oMainGraphics.m_idShaderKit);
+	{
+		if(ID_VALID(m_idPixelShaderOverride))
+		{
+			SGCore_ShaderBind(SGCore_ShaderCreateKit(pMtrl->m_oMainGraphics.m_idShaderVS, m_idPixelShaderOverride));
+		}
+		else
+		{
+			SGCore_ShaderBind(pMtrl->m_oMainGraphics.m_idShaderKit);
+		}
+	}
 	else
-		LibReport(REPORT_MSG_LEVEL_ERROR, "Unvalid shader kit");
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid shader kit");
+	}
 
 	if(pColor)
 	{

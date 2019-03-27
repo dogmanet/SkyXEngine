@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -170,6 +170,12 @@ SX_LIB_API void SMtrl_MtlRender(ID id, const float4x4 *pWorld, const float4 *pCo
 {
 	ML_PRECOND(_VOID);
 	ArrMaterials->render(id, pWorld, pColor);
+}
+
+SX_LIB_API void SMtrl_MtlPixelShaderOverride(ID id)
+{
+	ML_PRECOND(_VOID);
+	ArrMaterials->setPixelShaderOverride(id);
 }
 
 SX_LIB_API void SMtrl_MtlRenderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot, ID idMtl)

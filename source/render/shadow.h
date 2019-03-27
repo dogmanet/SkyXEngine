@@ -24,21 +24,27 @@ public:
 class CShadowMap: public IBaseShadowMap
 {
 public:
-	CShadowMap(IGXContext *pContext);
+	CShadowMap();
 	~CShadowMap();
 
 	SX_ALIGNED_OP_MEM2();
 
 	static UINT GetMapMemory(UINT uSize);
 
-	void init(UINT uSize);
+	void init(IGXContext *pContext, UINT uSize);
 	
 	void setLight(IXLight *pLight);
 	void process(IXRenderPipeline *pRenderPipeline);
 	void genShadow(IGXTexture2D *shadowmap);
 	
 private:
-	IGXContext *m_pDevice;
+	IGXContext *m_pDevice = NULL;
+
+	static IGXDepthStencilSurface *ms_pDepthStencilSurface;
+	static UINT ms_uDepthStencilSurfaceRefCount;
+
+	static void InitDepthStencilSurface(IGXContext *pContext, UINT uSize);
+	static void ReleaseDepthStencilSurface();
 
 	IGXTexture2D *m_pDepthMap = NULL;
 	IGXTexture2D *m_pNormalMap = NULL;

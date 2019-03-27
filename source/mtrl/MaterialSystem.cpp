@@ -81,6 +81,11 @@ void CMaterialSystem::bindTexture(IXTexture *pTexture, UINT slot)
 	}
 }
 
+void CMaterialSystem::overridePixelShader(ID id)
+{
+	SMtrl_MtlPixelShaderOverride(id);
+}
+
 //#############################################################################
 
 CTexture::CTexture(ID id):
