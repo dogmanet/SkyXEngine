@@ -86,6 +86,8 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 
 	m_pDevice->setDepthStencilSurface(ms_pDepthStencilSurface);
 
+	m_pDevice->setBlendState(NULL);
+
 	IGXSurface *pDepthSurface = m_pDepthMap->getMipmap();
 	IGXSurface *pNormalSurface = m_pNormalMap->getMipmap();
 	IGXSurface *pFluxSurface = m_pFluxMap->getMipmap();
