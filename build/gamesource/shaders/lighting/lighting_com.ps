@@ -93,10 +93,21 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	
 	half fDepth = g_txDepth.Sample(g_sPointClamp, IN.vTexUV).r;
 	
-	#ifdef IS_SHADOWED
+#ifdef IS_SHADOWED
 	half fShadow = saturate(g_txShadow.Sample(g_sPointClamp, IN.vTexUV).r);
+	
+	// clip(fShadow - 0.001);
+	
+	[branch]if(fShadow < 0.001)
+	{
+		OUT.vAmdient.xyz = 0;
+		OUT.vAmdient.w = 0;
+		OUT.vSpecular = 0;
+		return OUT;
+	}
+	
 	half fOriginShadow = fShadow;
-	#endif
+#endif
 	
 	half4 vPosition = half4(g_vViewPos.xyz + IN.vWorldRay * fDepth, 1.0);
 	half fDistance = distance(vPosition.xyz, g_vLightPosShadow.xyz);
@@ -135,29 +146,49 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	half fDiffuse = fAbsDiffuse;
 	
 	//закрываем баг с отставанием теней
-	#ifdef IS_SHADOWED
+#ifdef IS_SHADOWED
 	fShadow = saturate(min(fShadow, fAbsDiffuse - 0.02));
 	fAbsDiffuse = fShadow;
-	#endif
+#endif
 
 	fDiffuse = saturate(fDiffuse + 0.2);
 	fDiffuse = lerp(1, fDiffuse, vParam.z);
 	
-	#ifdef IS_SHADOWED
+#ifdef IS_SHADOWED
 	//если просвечиваемость меньше 1 (значит пиксель просвечиваемый)
 	[branch]if(vParam.z < 1.0)
 		fDiffuse *= max(fOriginShadow, 0.2);
 	else
 		//иначе выбираем значения тени из диапазона, на основании силы света
 		fDiffuse *= max(fShadow, /* lerp(0.01, 0.09, g_vLightColor.w) *  */g_vLightPosShadow.w);
-	#endif
+#endif
 	
 	fDiffuse = lerp(1.0, fDiffuse, g_vLightPosShadow.w);
 	
 	OUT.vAmdient.xyz = g_vLightColorPower.xyz * fAttenuation;
 	OUT.vAmdient.w = fDiffuse * fMdiffuse * vParam.w * g_vLightColorPower.w * 2.0 * fAttenuation;
 	
+	// OUT.vAmdient.xyz *= OUT.vAmdient.w;
+	
 	OUT.vSpecular = fSpecular * fAbsDiffuse * fAttenuation * g_vLightColorPower.w;
 	
 	return OUT;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

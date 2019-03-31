@@ -32,6 +32,7 @@ public:
 
 	UINT processNextBunch();
 	IXLight *getLight(ID id);
+	IBaseShadowMap *getShadow(ID id);
 
 protected:
 	IXRenderPipeline *m_pRenderPipeline;
@@ -40,7 +41,11 @@ protected:
 	UINT m_uCurrentFrame = 0;
 	Array<IXLight*> m_aFrameLights;
 
+	ID m_idRSMCubeGeometryShader = -1;
+
 	ID m_idRSMPixelShader = -1;
+	ID m_idRSMCubePixelShader = -1;
+	ID m_idRSMPixelShaderSpot = -1;
 
 	struct _shadow_map_s
 	{
@@ -49,8 +54,15 @@ protected:
 		IXLight *pLight = NULL;
 	};
 
+	struct _shadow_cube_map_s
+	{
+		CShadowCubeMap map;
+		bool isDirty = false;
+		IXLight *pLight = NULL;
+	};
+
 	Array<_shadow_map_s> m_aShadowMaps;
-	//Array<CShadowCubeMap> m_aShadowCubeMaps;
+	Array<_shadow_cube_map_s> m_aShadowCubeMaps;
 	//CShadowPSSM *m_pShadowPSSM;
 
 	struct _ready_shadows_s

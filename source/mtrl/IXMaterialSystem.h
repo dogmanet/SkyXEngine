@@ -84,6 +84,9 @@ public:
 
 	//! Переопределить пиксельный шейдер для последующих вызовов bindMaterial. Действует до тех пор, пока не будет отменено (-1)
 	virtual void overridePixelShader(ID id) = 0;
+
+	//! Переопределить геометрический шейдер для последующих вызовов bindMaterial. Действует до тех пор, пока не будет отменено (-1)
+	virtual void overrideGeometryShader(ID id) = 0;
 };
 
 #endif

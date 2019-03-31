@@ -371,7 +371,10 @@ enum SHADER_TYPE
 	SHADER_TYPE_PIXEL,
 
 	//! геометрический
-	SHADER_TYPE_GEOMETRY
+	SHADER_TYPE_GEOMETRY,
+
+	//! вычислительный
+	SHADER_TYPE_COMPUTE
 };
 
 //**************************************************************************
@@ -417,7 +420,7 @@ SX_LIB_API void SGCore_ShaderReloadAll();
 
 
 //! создание набора шейдеров (вершиный и пиксельный)
-SX_LIB_API ID SGCore_ShaderCreateKit(ID idVertexShader, ID idPixelShader, ID idGeometryShader = -1);
+SX_LIB_API ID SGCore_ShaderCreateKit(ID idVertexShader, ID idPixelShader, ID idGeometryShader = -1, ID idComputeShader = -1);
 
 //! бинд шейдера по id
 SX_LIB_API void SGCore_ShaderBind(ID idShaderKit);

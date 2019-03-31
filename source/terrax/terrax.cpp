@@ -316,6 +316,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 		}
 
 		// Draw handlers
+#if 0
 		if(g_pLevelObjects.size())
 		{
 			SMMATRIX mViewProj;
@@ -394,6 +395,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 
 			SGCore_ShaderUnBind();
 		}
+#endif
 
 		if(g_xState.isFrameSelect)
 		{

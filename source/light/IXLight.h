@@ -56,7 +56,7 @@ public:
 	//@TODO: Remove this method
 	virtual void drawShape(IGXContext *pDevice) = 0;
 	//@TODO: Remove this method
-	virtual void setPSConstants(IGXContext *pDevice) = 0;
+	virtual IGXConstantBuffer *getConstants(IGXContext *pDevice) = 0;
 
 	virtual IXLightSpot *asSpot() = 0;
 	virtual IXLightSun *asSun() = 0;

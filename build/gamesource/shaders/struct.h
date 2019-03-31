@@ -110,6 +110,12 @@ struct VSO_SceneCommon
 	half4 vPos		:TEXCOORD2;
 };
 
+struct GSO_SceneShadows
+{
+	VSO_SceneCommon VSO;
+	uint uRTIndex   :SV_RenderTargetArrayIndex;
+};
+
 
 //! выходная структура с для кубического отражения
 struct VSO_RefCube 

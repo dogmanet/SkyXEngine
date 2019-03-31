@@ -1352,6 +1352,11 @@ void CMaterials::setPixelShaderOverride(ID id)
 	m_idPixelShaderOverride = id;
 }
 
+void CMaterials::setGeometryShaderOverride(ID id)
+{
+	m_idGeometryShaderOverride = id;
+}
+
 int CMaterials::getCount()
 {
 	return m_aUnitMtrls.size();
@@ -2166,9 +2171,10 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 
 	if(ID_VALID(pMtrl->m_oMainGraphics.m_idShaderKit))
 	{
-		if(ID_VALID(m_idPixelShaderOverride))
+		if(ID_VALID(m_idPixelShaderOverride) || ID_VALID(m_idGeometryShaderOverride))
 		{
-			SGCore_ShaderBind(SGCore_ShaderCreateKit(pMtrl->m_oMainGraphics.m_idShaderVS, m_idPixelShaderOverride));
+			ID idPS = ID_VALID(m_idPixelShaderOverride) ? m_idPixelShaderOverride : pMtrl->m_oMainGraphics.m_idShaderPS;
+			SGCore_ShaderBind(SGCore_ShaderCreateKit(pMtrl->m_oMainGraphics.m_idShaderVS, m_idPixelShaderOverride, m_idGeometryShaderOverride));
 		}
 		else
 		{

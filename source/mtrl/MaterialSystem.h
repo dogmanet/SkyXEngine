@@ -45,6 +45,7 @@ public:
 	void bindTexture(IXTexture *pTexture, UINT slot = 0);
 	void setWorld(const SMMATRIX &mWorld);
 
+	void overrideGeometryShader(ID id);
 	void overridePixelShader(ID id);
 
 protected:

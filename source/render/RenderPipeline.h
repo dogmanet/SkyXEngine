@@ -77,7 +77,12 @@ protected:
 	//! Буфер освещения
 	IGXTexture2D *m_pLightTotal = NULL;
 
+	//! Буфер тени
+	IGXTexture2D *m_pShadow = NULL;
+
 	IGXDepthStencilState *m_pDepthStencilStateNoZ = NULL;
+
+	IXMaterialSystem *m_pMaterialSystem = NULL;
 
 	struct
 	{
@@ -113,17 +118,34 @@ protected:
 	
 	CShadowCache *m_pShadowCache = NULL;
 
+	struct
+	{
+		struct
+		{
+			SMMATRIX mVP; // dummy
+			SMMATRIX mViewInv;
+			float2 vNearFar;
+			float3 vParamProj;
+		} vs;
+	} m_shadowShaderData;
+	IGXConstantBuffer *m_pShadowShaderDataVS = NULL;
+
 	//###################################
 
 	IGXTexture3D *m_pGIAccumRed = NULL;
 	IGXTexture3D *m_pGIAccumGreen = NULL;
 	IGXTexture3D *m_pGIAccumBlue = NULL;
 
+	IGXTexture3D *m_pGIAccumRed2 = NULL;
+	IGXTexture3D *m_pGIAccumGreen2 = NULL;
+	IGXTexture3D *m_pGIAccumBlue2 = NULL;
+
 	IGXRenderBuffer *m_pGICubesRB = NULL;
 	UINT m_uGICubesCount = 0;
 	ID m_idGICubesShader = -1;
 
 	ID m_idLightBoundShader = -1;
+	ID m_idLPVPropagateShader = -1;
 };
 
 #endif

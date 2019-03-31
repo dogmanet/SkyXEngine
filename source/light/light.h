@@ -284,7 +284,7 @@ public:
 	void setShadowDynamic(bool isDynamic);
 
 	void drawShape(IGXContext *pDevice);
-	void setPSConstants(IGXContext *pDevice);
+	IGXConstantBuffer *getConstants(IGXContext *pDevice);
 
 	IXLightSpot *asSpot();
 	IXLightSun *asSun();

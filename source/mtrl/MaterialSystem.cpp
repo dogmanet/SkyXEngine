@@ -49,12 +49,10 @@ void CMaterialSystem::setWorld(const SMMATRIX &mWorld)
 	SMMATRIX mV, mP;
 	Core_RMatrixGet(G_RI_MATRIX_VIEW, &mV);
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mP);
-
 	m_objectData.m_mW = SMMatrixTranspose(mWorld);
 	m_objectData.m_mWV = SMMatrixTranspose(mV) * m_objectData.m_mW;
 	m_objectData.m_mWVP = SMMatrixTranspose(mP) * m_objectData.m_mWV;
-//	m_objectData.m_mWV = SMMatrixTranspose((SMMATRIX)mWorld * mV);
-//	m_objectData.m_mWVP = SMMatrixTranspose((SMMATRIX)mWorld * mV * mP);
+	
 
 	m_pObjectConstantBuffer->update(&m_objectData);
 	SGCore_GetDXDevice()->setVertexShaderConstant(m_pObjectConstantBuffer, SCR_OBJECT);
@@ -84,6 +82,11 @@ void CMaterialSystem::bindTexture(IXTexture *pTexture, UINT slot)
 void CMaterialSystem::overridePixelShader(ID id)
 {
 	SMtrl_MtlPixelShaderOverride(id);
+}
+
+void CMaterialSystem::overrideGeometryShader(ID id)
+{
+	SMtrl_MtlGeometryShaderOverride(id);
 }
 
 //#############################################################################

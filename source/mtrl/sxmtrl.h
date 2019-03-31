@@ -403,6 +403,7 @@ SX_LIB_API void SMtrl_MtlRender(
 	);
 
 SX_LIB_API void SMtrl_MtlPixelShaderOverride(ID id);
+SX_LIB_API void SMtrl_MtlGeometryShaderOverride(ID id);
 
 //! стандартная отрисовка материала, используются стандартные шейдеры, нужно для теней, отражений и прочего
 SX_LIB_API void SMtrl_MtlRenderStd(

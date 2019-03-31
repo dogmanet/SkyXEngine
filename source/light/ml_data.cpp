@@ -148,13 +148,6 @@ void light_data::Init()
 {
 	light_data::pDXDevice = SGCore_GetDXDevice();
 		
-	uint32_t aRndColors[16];// = D3DCOLOR_ARGB(0, 250, 2, 255);
-
-	for (int i = 0; i < 16; ++i)
-		aRndColors[i] = GXCOLOR_ARGB(255, rand() % 255, rand() % 255, rand() % 255);
-
-	IGXTexture2D *pRnsSampler = pDXDevice->createTexture2D(4, 4, 1, 0, GXFMT_A8R8G8B8, aRndColors);
-
 	GXSAMPLER_DESC samplerDesc;
 	samplerDesc.filter = GXFILTER_MIN_MAG_MIP_POINT;
 	pSamplerPointWrap = pDXDevice->createSamplerState(&samplerDesc);
@@ -170,7 +163,6 @@ void light_data::Init()
 
 
 	//SGCore_LoadTexLoadTextures();
-	texture_id::idNoiseTex = SGCore_LoadTexCreate("noise_rottex__", pRnsSampler);
 
 	shader_id::vs::idSMDepthSkinPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_skin_pssm_direct.vs");
 	shader_id::ps::idSMDepthSkinPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_skin_pssm_direct.ps");

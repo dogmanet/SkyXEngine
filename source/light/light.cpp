@@ -1722,15 +1722,15 @@ void CXLight::drawShape(IGXContext *pDevice)
 	}
 }
 
-void CXLight::setPSConstants(IGXContext *pDevice)
+IGXConstantBuffer *CXLight::getConstants(IGXContext *pDevice)
 {
 	if(m_isPSDataDirty)
 	{
 		updatePSConstants(pDevice);
 		m_isPSDataDirty = false;
 	}
-
-	pDevice->setPixelShaderConstant(m_pPSData);
+	m_pPSData->AddRef();
+	return(m_pPSData);
 }
 
 SMMATRIX CXLight::getWorldTM()

@@ -145,6 +145,36 @@ struct CShaderGS: public CShader
 
 	IGXGeometryShader *m_pGeometryShader;
 };
+//! вычислительный шейдер
+struct CShaderCS: public CShader
+{
+	CShaderCS()
+	{
+		m_pComputeShader = 0;
+	};
+	CShaderCS(const CShaderCS &pOther):
+		m_pComputeShader(pOther.m_pComputeShader)
+	{
+		if(m_pComputeShader)
+		{
+			m_pComputeShader->AddRef();
+		}
+	};
+	~CShaderCS()
+	{
+		mem_release(m_pComputeShader);
+	};
+	CShaderCS &operator=(const CShaderCS &pOther)
+	{
+		m_pComputeShader = pOther.m_pComputeShader;
+		if(m_pComputeShader)
+		{
+			m_pComputeShader->AddRef();
+		}
+	}
+
+	IGXComputeShader *m_pComputeShader;
+};
 
 struct CShaderKit
 {
@@ -158,6 +188,8 @@ struct CShaderKit
 	CShaderKit(const CShaderKit &pOther):
 		m_idVertexShader(pOther.m_idVertexShader),
 		m_idPixelShader(pOther.m_idPixelShader),
+		m_idGeometryShader(pOther.m_idGeometryShader),
+		m_idComputeShader(pOther.m_idComputeShader),
 		m_pShaderKit(pOther.m_pShaderKit)
 	{
 		if(m_pShaderKit)
@@ -174,6 +206,8 @@ struct CShaderKit
 	{
 		m_idVertexShader = pOther.m_idVertexShader;
 		m_idPixelShader = pOther.m_idPixelShader;
+		m_idGeometryShader = pOther.m_idGeometryShader;
+		m_idComputeShader = pOther.m_idComputeShader;
 		m_pShaderKit = pOther.m_pShaderKit;
 		if(m_pShaderKit)
 		{
@@ -185,6 +219,7 @@ struct CShaderKit
 	ID m_idVertexShader = -1;
 	ID m_idPixelShader = -1;
 	ID m_idGeometryShader = -1;
+	ID m_idComputeShader = -1;
 	IGXShader *m_pShaderKit;
 };
 
@@ -267,6 +302,13 @@ int LoadGeometryShader(
 	GXMACRO *aMacro = 0	//!< массив дефайнов
 	);
 
+//загрузка вычислительного шейдера
+int LoadComputeShader(
+	const char *szPath,		//!< абсолютный путь до файла шейдера
+	CShaderCS *pShader,		//!< инициализированная структура CShaderCS
+	GXMACRO *aMacro = 0	//!< массив дефайнов
+	);
+
 //**************************************************************************
 
 //! менеджер шейдеров
@@ -297,7 +339,7 @@ public:
 	//! получить идентификатор шейдера по имени
 	ID getID(SHADER_TYPE type, const char *szName);
 
-	ID createKit(ID idVertexShader, ID idPixelShader, ID idGeometryShader);
+	ID createKit(ID idVertexShader, ID idPixelShader, ID idGeometryShader, ID idComputeShader);
 
 	//! бинд шейдеров по id
 	void bind(ID idShaderKit);
@@ -348,6 +390,7 @@ protected:
 	Array<CShaderVS*> m_aVS;	//!< массивы vs шейдеров
 	Array<CShaderPS*> m_aPS;	//!< массивы ps шейдеров
 	Array<CShaderGS*> m_aGS;	//!< массивы gs шейдеров
+	Array<CShaderCS*> m_aCS;	//!< массивы cs шейдеров
 
 	Array<CShaderKit*> m_aShaderKit;
 
@@ -377,6 +420,7 @@ protected:
 	int m_iLastAllLoadVS;		//! общее количество загруженных vs шейдеров, с прошлого раза
 	int m_iLastAllLoadPS;		//! общее количество загруженных ps шейдеров, с прошлого раза
 	int m_iLastAllLoadGS;		//! общее количество загруженных gs шейдеров, с прошлого раза
+	int m_iLastAllLoadCS;		//! общее количество загруженных gs шейдеров, с прошлого раза
 };
 
 #endif

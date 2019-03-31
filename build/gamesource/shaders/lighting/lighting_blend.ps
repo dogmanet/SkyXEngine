@@ -9,18 +9,20 @@ Cмешивание всех текстур для финального изоб
 
 //##########################################################################
 
-sampler2D g_sColor:register(s0);
-sampler2D g_sAmbient:register(s1);
-sampler2D g_sSpecDiff:register(s2);
-sampler2D g_sNormals:register(s3);
-sampler2D g_sAdaptedLum:register(s4);
-sampler2D g_sParameters:register(s5);
+SamplerState g_sSampler: register(s0);
+
+Texture2D g_txColor:register(t0);
+Texture2D g_txAmbient:register(t1);
+Texture2D g_txSpecDiff:register(t2);
+Texture2D g_txNormals:register(t3);
+Texture2D g_txAdaptedLum:register(t4);
+Texture2D g_txParameters:register(t5);
 
 //##########################################################################
 
 half4 main(VSO_PP IN):COLOR0
 {
-	half4 vNormal = tex2D(g_sNormals,IN.vTexUV);
+	half4 vNormal = g_txNormals.Sample(g_sSampler,IN.vTexUV);
 	half2 vLayerType = LayerDecode(vNormal.w);
 	//vLayerType.x *= LAYERS_COUNT_MAX;
 	//return half4(vLayerType.x, vLayerType.x, vLayerType.x, 1);
@@ -28,11 +30,11 @@ half4 main(VSO_PP IN):COLOR0
 	//half fLayer = LayerDecodeLayer(vNormal.w);
 	
 	//цвет приводим к sRGB
-	half4 vColor = tex2D(g_sColor,IN.vTexUV);
+	half4 vColor = g_txColor.Sample(g_sSampler,IN.vTexUV);
 	vColor.rgb = pow(vColor.rgb, 2.2);
-	half4 vParameters = tex2D(g_sParameters,IN.vTexUV);
+	half4 vParameters = g_txParameters.Sample(g_sSampler,IN.vTexUV);
 
-	half4 vAmbient = tex2D(g_sAmbient,IN.vTexUV);
+	half4 vAmbient = g_txAmbient.Sample(g_sSampler,IN.vTexUV);
 	//vAmbient.xyz *= 2;
 	half fAverage = (vAmbient.x + vAmbient.y + vAmbient.z)/3.0;
 	
@@ -44,16 +46,17 @@ half4 main(VSO_PP IN):COLOR0
 	/* 2) интерполяция приема цвета материалом, чем больше отражательная способность (f0) тем меньше примет цвета материал*/
 	//vAmbientColor = lerp(vAmbientColor.xyz, fAverage, clamp(vParameters.y, F0_MIN_4_DEST_AMBIENT, F0_MAX_4_DEST_AMBIENT));
 	
-	half fSpecular = tex2D(g_sSpecDiff,IN.vTexUV).r;
-	half fAdaptedLum = tex2D(g_sAdaptedLum, g_vTexUVcenter);
+	half fSpecular = g_txSpecDiff.Sample(g_sSampler,IN.vTexUV).r;
+	// half fAdaptedLum = tex2D(g_sAdaptedLum, g_vTexUVcenter);
+	half fAdaptedLum = 0.5;
 
 	// если материал освещаемый то надо вычислить его освещенность
-	if(vLayerType.y == MTLTYPE_LIGHT)
+	// if(vLayerType.y == MTLTYPE_LIGHT)
 		vColor.xyz = (vAmbientColor * vAmbient.w * vColor.xyz) + (fSpecular * 0.5 * vAmbient.xyz);
 		
 	// если слой материала относится к непрозрачной геометрии, тогда не нужна прозрачность
-	if(vLayerType.x == LAYER_OPAQUE)
-		vColor.a = 1.0;
+	// if(vLayerType.x == LAYER_OPAQUE)
+		// vColor.a = 1.0;
 
 	//применение тонмапинга
 	vColor.rgb *= TONE_MAPPING_DENOMENATOR/(fAdaptedLum + TONE_MAPPING_ADAPT_ADD_BIAS);

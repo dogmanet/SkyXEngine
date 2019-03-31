@@ -67,6 +67,7 @@ public:
 	ID getID(const char *szName);
 
 	void setPixelShaderOverride(ID id);
+	void setGeometryShaderOverride(ID id);
 
 	//######################################################################
 
@@ -401,6 +402,7 @@ protected:
 	ID addMaterial(CMaterial *pMtrl);
 
 	ID m_idPixelShaderOverride = -1;
+	ID m_idGeometryShaderOverride = -1;
 
 	//! структура описывающая папку и все текстуры в ней, у каждой свой id для доступа
 	struct CPath

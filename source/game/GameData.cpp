@@ -1034,7 +1034,7 @@ void GameData::render()
 
 			const GX_ADAPTER_DESC *pAdapterDesc = pDev->getAdapterDesc();
 
-			static wchar_t wszStats[256];
+			static wchar_t wszStats[512];
 			swprintf_s(wszStats, L"FPS: %u\n"
 				L"GPU: %s\n"
 				L"Total memory: %uMB\n"

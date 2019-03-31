@@ -437,8 +437,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			char szSelPath[1024];
 			szSelName[0] = szSelPath[0] = 0;
 			//XLoadLevel("ant");
-			//XLoadLevel("bunker");
-			XLoadLevel("sga2");
+			XLoadLevel("bunker");
+			//XLoadLevel("sga2");
 			/*if(gui_func::dialogs::SelectDirOwn(szSelName, szSelPath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Open level", false, false))
 			{
 				XLoadLevel(szSelName);

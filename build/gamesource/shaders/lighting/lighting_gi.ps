@@ -18,14 +18,21 @@ lighting_gi.ps
 
 //##########################################################################
 
-half4 g_vViewPos;
+cbuffer perFrame: register(b1)
+{
+	half3 g_vViewPos;
+};
 
 //##########################################################################
 
-sampler2D g_sNormals:register(s1);
-sampler2D g_sLightVolume:register(s2);
-sampler2D g_sDepth:register(s3);
-sampler2D g_sAdaptedLum:register(s5);
+SamplerState g_sPointClamp: register(s0);
+SamplerState g_sLinearClamp: register(s1);
+
+Texture2D g_txDepth:register(t0);
+Texture2D g_txNormals:register(t1);
+Texture3D g_txLightVolumeRed:register(t2);
+Texture3D g_txLightVolumeGreen:register(t3);
+Texture3D g_txLightVolumeBlue:register(t4);
 
 //#############################################################################
 
@@ -37,55 +44,32 @@ PSO_Lbuffer main(VSO_ResPos IN)
 {
 	PSO_Lbuffer OUT;
 
-	half4 vNormals = tex2D(g_sNormals, IN.vTexUV);
-	half2 vLayerType = LayerDecode(vNormals.w);
-		
-	[branch]if(vLayerType.y == MTLTYPE_UNLIT)
-	{
-		OUT.vAmdient.xyz = 0;
-		OUT.vAmdient.w = 0;
-		OUT.vSpecular = 0;
-		return OUT;
-	}
-	
-	half fDepth = tex2D(g_sDepth,IN.vTexUV).r;
+	half4 vNormals = g_txNormals.Sample(g_sPointClamp, IN.vTexUV);
+	half fDepth = g_txDepth.Sample(g_sPointClamp,IN.vTexUV).r;
 	
 	// xy_ - размеры пикселя текстуры, __z - размер сетки в мировых
-	// half3 vTexSize = half3(1.0/64.0, 1.0/4096.0, 4.0); 
-	// half3 vTexSize = half3(1.0/64.0, 1.0/4096.0, 8.0); 
-	half3 vTexSize = half3(1.0/64.0, 1.0/4096.0, 32.0); 
+	half3 vTexSize = half3(1.0 / 32.0, 1.0 / 32.0, 16); 
 	half3 vOrigin = half3(0, 0, 0); // Центр сетки
-	// half3 vOrigin = floor(g_vViewPos * 4) / 4; // Центр сетки
 	half4 vPosition = half4(g_vViewPos.xyz + IN.vWorldRay * fDepth, 1.0); // Мировая позиция пиксела
 	
-	half3 vLocalPos = (vPosition - vOrigin);
+	half3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
+	
+	/* half3 vLocalPos = (vPosition - vOrigin);
 		
-	clip(vTexSize.z - abs(vLocalPos.x));
-	clip(vTexSize.z - abs(vLocalPos.y));
-	clip(vTexSize.z - abs(vLocalPos.z));
+	clip(16.0 - abs(vLocalPos.x));
+	clip(16.0 - abs(vLocalPos.y));
+	clip(16.0 - abs(vLocalPos.z));
 		
 	vLocalPos /= vTexSize.z * 2.0;
 	vLocalPos += 0.5;
 	
-	half fRoundY = floor(vLocalPos.y * 64.0) * vTexSize.x;
+	vLocalPos /= 32.0;
 	
-	half2 vTexPos = half2(vLocalPos.x / 3.0, vLocalPos.z * vTexSize.x + fRoundY);
-	half4 vColorY0R = tex2D(g_sLightVolume, vTexPos);
-	half4 vColorY1R = tex2D(g_sLightVolume, vTexPos + half2(0.0, vTexSize.x));
-	half4 vColorR = lerp(vColorY0R, vColorY1R, (vLocalPos.y - fRoundY) / vTexSize.x);
+	half4 vColorR = g_txLightVolumeRed.Sample(g_sLinearClamp, vLocalPos);
+	half4 vColorG = g_txLightVolumeGreen.Sample(g_sLinearClamp, vLocalPos);
+	half4 vColorB = g_txLightVolumeBlue.Sample(g_sLinearClamp, vLocalPos);
+		
 	
-	vTexPos.x += 1.0 / 3.0;
-	half4 vColorY0G = tex2D(g_sLightVolume, vTexPos);
-	half4 vColorY1G = tex2D(g_sLightVolume, vTexPos + half2(0.0, vTexSize.x));
-	half4 vColorG = lerp(vColorY0G, vColorY1G, (vLocalPos.y - fRoundY) / vTexSize.x);
-	
-	vTexPos.x += 1.0 / 3.0;
-	half4 vColorY0B = tex2D(g_sLightVolume, vTexPos);
-	half4 vColorY1B = tex2D(g_sLightVolume, vTexPos + half2(0.0, vTexSize.x));
-	half4 vColorB = lerp(vColorY0B, vColorY1B, (vLocalPos.y - fRoundY) / vTexSize.x);
-	
-	
-	half3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
 	float4 SHintensity = dirToSH(-vNormalPixel);
 	
 	OUT.vAmdient.xyz = max(0, float3(
@@ -93,13 +77,26 @@ PSO_Lbuffer main(VSO_ResPos IN)
 		dot(SHintensity, vColorG), 
 		dot(SHintensity, vColorB)
 	)) / PI * 10.0;
-	// OUT.vAmdient.xyz = vColorX0Y0Z0;
-	// OUT.vAmdient.xyz = fLerp;
-	// OUT.vAmdient.xyz = saturate(half3(vTexPos, 0.0));
-	// OUT.vAmdient.xyz = saturate(vLocalPos);
-	// OUT.vAmdient.xyz = half3(vTexPos.r, 0, 0);
+	
 	OUT.vAmdient.w = 1;
 	
+	OUT.vSpecular = 0; */
+	
+	float3 vTexCoord = vPosition.xyz / 32.0 + 0.5 + 1.0 / 64.0;
+	
+	float4 vColorR = g_txLightVolumeRed.Sample(g_sLinearClamp, vTexCoord);
+	float4 vColorG = g_txLightVolumeGreen.Sample(g_sLinearClamp, vTexCoord);
+	float4 vColorB = g_txLightVolumeBlue.Sample(g_sLinearClamp, vTexCoord);
+	
+	// float3 vNormalPixel = normalize(IN.vNormal);
+	float4 SHintensity = dirToSH(-vNormalPixel);
+	
+	float r = saturate(dot(SHintensity, vColorR));
+	float g = saturate(dot(SHintensity, vColorG));
+	float b = saturate(dot(SHintensity, vColorB));
+	
+	OUT.vAmdient.xyz = float3(r, g, b) / PI;
+	OUT.vAmdient.w = 1;
 	OUT.vSpecular = 0;
 	
 	return OUT;

@@ -178,6 +178,12 @@ SX_LIB_API void SMtrl_MtlPixelShaderOverride(ID id)
 	ArrMaterials->setPixelShaderOverride(id);
 }
 
+SX_LIB_API void SMtrl_MtlGeometryShaderOverride(ID id)
+{
+	ML_PRECOND(_VOID);
+	ArrMaterials->setGeometryShaderOverride(id);
+}
+
 SX_LIB_API void SMtrl_MtlRenderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot, ID idMtl)
 {
 	ML_PRECOND(_VOID);
