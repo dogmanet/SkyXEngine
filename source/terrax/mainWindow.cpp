@@ -146,6 +146,106 @@ BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
 	return TRUE;
 }
 
+HWND g_hTabControl; // tab control handle
+HWND g_hCurrentTab = NULL; // tab dialog handle
+DLGTEMPLATE *g_pPropTemplates[3];
+HWND g_hPropTabs[3] = {0};
+BOOL g_bDlgWindowVisible = FALSE;
+
+DLGTEMPLATE * WINAPI DoLockDlgRes(LPCSTR lpszResName)
+{
+	HRSRC hrsrc = FindResource(NULL, lpszResName, RT_DIALOG);
+	HGLOBAL hglb = LoadResource(hInst, hrsrc);
+
+	return (DLGTEMPLATE *)LockResource(hglb);
+}
+VOID WINAPI OnSelChanged(HWND hwndDlg)
+{
+	int iSel = TabCtrl_GetCurSel(g_hTabControl);
+
+	// Destroy the current child dialog box, if any.  
+	if(g_hCurrentTab != NULL)
+	{
+		ShowWindow(g_hCurrentTab, FALSE);
+	}
+	g_hCurrentTab = NULL;
+
+
+	if(!g_hPropTabs[iSel])
+	{
+		// Create the new child dialog box.  
+		g_hPropTabs[iSel] = g_hCurrentTab = CreateDialogIndirect(hInst, g_pPropTemplates[iSel], hwndDlg, NULL);
+
+		RECT rcDisplay = {0, 0, 0, 0};
+		MapDialogRect(hwndDlg, &rcDisplay);
+		TabCtrl_AdjustRect(g_hTabControl, FALSE, &rcDisplay);
+		SetWindowPos(g_hCurrentTab, HWND_TOP, rcDisplay.left, rcDisplay.top, 0, 0, SWP_NOSIZE);
+	}
+	g_hCurrentTab = g_hPropTabs[iSel];
+	if(g_hCurrentTab)
+	{
+		ShowWindow(g_hCurrentTab, TRUE);
+	}
+}
+BOOL CALLBACK DlgProc(HWND hWnd, UINT M, WPARAM W, LPARAM L)
+{
+	switch(M)
+	{
+	case WM_INITDIALOG:
+	{
+		g_hTabControl = GetDlgItem(hWnd, IDC_TAB1);
+
+		TCITEM ti;
+		ti.mask = TCIF_TEXT;
+		ti.pszText = "Properties";
+		TabCtrl_InsertItem(g_hTabControl, 0, &ti);
+		ti.pszText = "Flags";
+		TabCtrl_InsertItem(g_hTabControl, 1, &ti);
+		ti.pszText = "Outputs";
+		TabCtrl_InsertItem(g_hTabControl, 2, &ti);
+		TabCtrl_SetCurSel(g_hTabControl, 0);
+
+		g_pPropTemplates[0] = DoLockDlgRes(MAKEINTRESOURCE(IDD_OP_PROPS));
+		g_pPropTemplates[1] = DoLockDlgRes(MAKEINTRESOURCE(IDD_OP_FLAGS));
+		g_pPropTemplates[2] = DoLockDlgRes(MAKEINTRESOURCE(IDD_OP_OUTPUTS));
+
+		OnSelChanged(hWnd);
+		return(TRUE);
+	}
+	case WM_CLOSE:
+	{
+		ShowWindow(hWnd, SW_HIDE);
+		g_bDlgWindowVisible = FALSE;
+		return(TRUE);
+	}
+	case WM_NOTIFY:
+	{
+		switch(((LPNMHDR)L)->code)
+		{
+		case TCN_SELCHANGE: // message sent because someone changed the tab selection (clicked on another tab)
+		{
+			OnSelChanged(hWnd);
+			return TRUE;
+		}
+		}
+		return TRUE;
+	}
+	/*case WM_COMMAND:
+	{
+		return TRUE;
+	}*/
+	}
+	return(FALSE);
+}
+
+bool IsEditMessage()
+{
+	HWND hFocused = GetFocus();
+	char className[6];
+	GetClassName(hFocused, className, 6);
+	return(hFocused && !strcasecmp(className, "edit"));
+}
+
 WNDPROC g_pfnTreeOldWndproc;
 LRESULT CALLBACK TreeViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -208,6 +308,7 @@ LRESULT CALLBACK StatusBarWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 	return(CallWindowProc(g_pfnStatusBarOldWndproc, hWnd, message, wParam, lParam));
 }
 
+HWND g_hPropDlg = NULL;
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	RECT rect;
@@ -357,6 +458,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_SIZE:
 	{
+		if(g_bDlgWindowVisible)
+		{
+			if(wParam == SIZE_MINIMIZED)
+			{
+				ShowWindow(g_hPropDlg, SW_HIDE);
+			}
+			else if(wParam == SIZE_RESTORED)
+			{
+				ShowWindow(g_hPropDlg, SW_SHOW);
+			}
+		}
 		GetClientRect(hWnd, &rect);
 
 		rect.top += MARGIN_TOP;
@@ -408,6 +520,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		SendMessage(g_hStatusWnd, WM_SIZE, wParam, lParam);
 	}
+		break;
+
+	case WM_INITMENU:
+		if(IsEditMessage())	
+		{
+			HMENU hMenu = (HMENU)wParam;
+			EnableMenuItem(hMenu, ID_EDIT_CUT, MF_ENABLED);
+			EnableMenuItem(hMenu, ID_EDIT_COPY, MF_ENABLED);
+			EnableMenuItem(hMenu, ID_EDIT_PASTE, MF_ENABLED);
+			EnableMenuItem(hMenu, ID_EDIT_DELETE, MF_ENABLED);
+			EnableMenuItem(hMenu, ID_EDIT_UNDO, MF_ENABLED);
+			EnableMenuItem(hMenu, ID_EDIT_REDO, MF_ENABLED);
+		}
 		break;
 
 	case WM_COMMAND:
@@ -471,6 +596,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 
 		case ID_VIEW_AUTOSIZEVIEWS:
+
+			if(HIWORD(wParam) == 1)
+			{
+				if(IsEditMessage())
+				{
+					SendMessage(GetFocus(), EM_SETSEL, 0, -1);
+					break;
+				}
+			}
 
 			GetClientRect(hWnd, &rect);
 
@@ -543,6 +677,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case ID_EDIT_UNDO:
+			if(IsEditMessage())
+			{
+				SendMessage(GetFocus(), EM_UNDO, 0, 0);
+				break;
+			}
 			if(g_pUndoManager->undo())
 			{
 				XUpdateUndoRedo();
@@ -550,14 +689,51 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case ID_EDIT_REDO:
+			if(IsEditMessage())
+			{
+				SendMessage(GetFocus(), EM_UNDO, 0, 0);
+				break;
+			}
 			if(g_pUndoManager->redo())
 			{
 				XUpdateUndoRedo();
 			}
 			break;
 
+		case ID_EDIT_COPY:
+			if(IsEditMessage())
+			{
+				SendMessage(GetFocus(), WM_COPY, 0, 0);
+				break;
+			}
+			break;
+
+		case ID_EDIT_CUT:
+			if(IsEditMessage())
+			{
+				SendMessage(GetFocus(), WM_CUT, 0, 0);
+				break;
+			}
+			break;
+
+		case ID_EDIT_PASTE:
+			if(IsEditMessage())
+			{
+				SendMessage(GetFocus(), WM_PASTE, 0, 0);
+				break;
+			}
+			break;
+
 		case ID_EDIT_DELETE:
 		{
+			if(IsEditMessage())
+			{
+				//SendMessage(GetFocus(), WM_CLEAR, 0, 0);
+				SendMessage(GetFocus(), WM_KEYDOWN, VK_DELETE, 0);
+				SendMessage(GetFocus(), WM_KEYUP, VK_DELETE, 0);
+				break;
+			}
+
 			CCommandDelete *pDelCmd = new CCommandDelete();
 			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 			{
@@ -569,6 +745,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			XExecCommand(pDelCmd);
 			break;
 		}
+
+		case ID_EDIT_PROPERTIES:
+			if(g_hPropDlg)
+			{
+				ShowWindow(g_hPropDlg, TRUE);
+			}
+			else
+			{
+				g_hPropDlg = CreateDialogA(hInst, MAKEINTRESOURCE(IDD_DIALOG1), g_hWndMain, DlgProc);
+				ShowWindow(g_hPropDlg, TRUE);
+				SetWindowPos(g_hPropDlg, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+			}
+			g_bDlgWindowVisible = TRUE;
 		}
 		break;
 
