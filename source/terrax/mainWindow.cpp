@@ -163,7 +163,6 @@ VOID WINAPI OnSelChanged(HWND hwndDlg)
 {
 	int iSel = TabCtrl_GetCurSel(g_hTabControl);
 
-	// Destroy the current child dialog box, if any.  
 	if(g_hCurrentTab != NULL)
 	{
 		ShowWindow(g_hCurrentTab, FALSE);
@@ -177,9 +176,11 @@ VOID WINAPI OnSelChanged(HWND hwndDlg)
 		g_hPropTabs[iSel] = g_hCurrentTab = CreateDialogIndirect(hInst, g_pPropTemplates[iSel], hwndDlg, NULL);
 
 		RECT rcDisplay = {0, 0, 0, 0};
-		MapDialogRect(hwndDlg, &rcDisplay);
+		GetWindowRect(g_hTabControl, &rcDisplay);
+		MapWindowPoints(HWND_DESKTOP, hwndDlg, (LPPOINT)&rcDisplay, 2);
+		//MapDialogRect(hwndDlg, &rcDisplay);
 		TabCtrl_AdjustRect(g_hTabControl, FALSE, &rcDisplay);
-		SetWindowPos(g_hCurrentTab, HWND_TOP, rcDisplay.left, rcDisplay.top, 0, 0, SWP_NOSIZE);
+		SetWindowPos(g_hCurrentTab, HWND_TOP, rcDisplay.left - 3, rcDisplay.top, 0, 0, SWP_NOSIZE);
 	}
 	g_hCurrentTab = g_hPropTabs[iSel];
 	if(g_hCurrentTab)
@@ -187,7 +188,7 @@ VOID WINAPI OnSelChanged(HWND hwndDlg)
 		ShowWindow(g_hCurrentTab, TRUE);
 	}
 }
-BOOL CALLBACK DlgProc(HWND hWnd, UINT M, WPARAM W, LPARAM L)
+INT_PTR CALLBACK DlgProc(HWND hWnd, UINT M, WPARAM W, LPARAM L)
 {
 	switch(M)
 	{
