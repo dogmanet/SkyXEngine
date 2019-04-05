@@ -21,6 +21,7 @@ HACCEL g_hAccelTable = NULL;
 #ifdef SX_TERRAX
 #include <terrax/terrax.h>
 
+IGXConstantBuffer *g_pCameraConstantBuffer = NULL;
 IGXSwapChain *g_pTopRightSwapChain = NULL;
 IGXSwapChain *g_pBottomLeftSwapChain = NULL;
 IGXSwapChain *g_pBottomRightSwapChain = NULL;
@@ -726,10 +727,13 @@ void SkyXEngine_InitViewports()
 	GetClientRect(g_hBottomRightWnd, &rc);
 	g_pBottomRightSwapChain = pContext->createSwapChain(rc.right - rc.left, rc.bottom - rc.top, g_hBottomRightWnd);
 	g_BottomRightDepthStencilSurface = pContext->createDepthStencilSurface(rc.right - rc.left, rc.bottom - rc.top, GXFMT_D24S8, GXMULTISAMPLE_NONE);
+
+	g_pCameraConstantBuffer = pContext->createConstantBuffer(sizeof(SMMATRIX));
 }
 
 void SkyXEngine_ReleaseViewports()
 {
+	mem_release(g_pCameraConstantBuffer);
 	mem_release(g_pTopRightSwapChain);
 	mem_release(g_pBottomLeftSwapChain);
 	mem_release(g_pBottomRightSwapChain);
@@ -979,7 +983,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	{
 		pRenderPipeline->endFrame();
 	}
-#ifdef SX_TERRAX1
+#ifdef SX_TERRAX
 	g_pTopRightSwapChain->swapBuffers();
 	g_pBottomLeftSwapChain->swapBuffers();
 	g_pBottomRightSwapChain->swapBuffers();
@@ -995,7 +999,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		pRenderPipeline->renderFrame();
 	}
 
-#ifdef SX_TERRAX1
+#ifdef SX_TERRAX
 	XRender3D();
 
 	//#############################################################################
@@ -1034,8 +1038,13 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		SMMATRIX mView;
 		pCameras[i]->getViewMatrix(&mView);
 		Core_RMatrixSet(G_RI_MATRIX_OBSERVER_VIEW, &mView);
+		Core_RMatrixSet(G_RI_MATRIX_VIEW, &mView);
 		Core_RMatrixSet(G_RI_MATRIX_OBSERVER_PROJ, &mProj);
+		Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &mProj);
 		Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(mView * mProj));
+
+		g_pCameraConstantBuffer->update(&SMMatrixTranspose(mView * mProj));
+		pDXDevice->setVertexShaderConstant(g_pCameraConstantBuffer, 4);
 
 		Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 		Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_FREE);
@@ -1046,6 +1055,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 			SGeom_Render(timeDelta, GEOM_RENDER_TYPE_ALL);
 
 		Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
+		pDXDevice->setVertexShaderConstant(g_pCameraConstantBuffer, 4);
 		XRender2D(views[i], fScales[i], false);
 		mem_release(pBackBuffer);
 	}

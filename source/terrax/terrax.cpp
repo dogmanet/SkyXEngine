@@ -9,6 +9,7 @@ See the license in LICENSE
 //#include <vld.h> 
 #include <skyxengine.h>
 #include <io.h>
+#include <windowsx.h>
 
 #include "terrax.h"
 #include "Grid.h"
@@ -33,6 +34,7 @@ static IGXVertexBuffer *g_pBorderVertexBuffer;
 static IGXRenderBuffer *g_pBorderRenderBuffer;
 
 CUndoManager *g_pUndoManager = NULL;
+extern HWND g_hComboTypesWnd;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
@@ -86,6 +88,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		{
 			g_pEditableSystems.push_back(pEditable);
 			pEditable->startup(SGCore_GetDXDevice());
+
+			ComboBox_AddString(g_hComboTypesWnd, pEditable->getName());
+		}
+	}
+	if(g_pEditableSystems.size() > 0)
+	{
+		ComboBox_SetCurSel(g_hComboTypesWnd, 0);
+		if(g_pEditableSystems.size() == 1)
+		{
+			ComboBox_Enable(g_hComboTypesWnd, FALSE);
 		}
 	}
 	
@@ -110,8 +122,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 
 //	SkyXEngine_RunGenPreview();
-	//	Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
-	Core_0SetCVarInt("r_final_image", DS_RT_AMBIENTDIFF);
+	Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
+	//Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 
 	SRender_EditorSetRenderGrid(true);
 	SRender_EditorSetRenderAxesStatic(true);
@@ -307,26 +319,26 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 	}
 	else
 	{
+		static IGXConstantBuffer *s_pColorBuffer = pDevice->createConstantBuffer(sizeof(float4));
+
 		for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 		{
 			if(g_pLevelObjects[i]->isSelected())
 			{
-				g_pLevelObjects[i]->renderSelection(false);
+			//	g_pLevelObjects[i]->renderSelection(false);
 			}
 		}
 
 		// Draw handlers
-#if 0
 		if(g_pLevelObjects.size())
 		{
-			SMMATRIX mViewProj;
-			Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, g_xRenderStates.idHandlerShaderVS, "g_mVP", &SMMatrixTranspose(mViewProj), 4);
+			pDevice->setPixelShaderConstant(s_pColorBuffer);
+
 			pDevice->setPrimitiveTopology(GXPT_LINELIST);
 			SGCore_ShaderBind(g_xRenderStates.idHandlerShaderKit);
 			pDevice->setIndexBuffer(g_xRenderStates.pHandlerIB);
 
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, g_xRenderStates.idColoredShaderPS, "g_vColor", &float4(0.0f, 1.0f, 0.0f, 1.0f), 1);
+			s_pColorBuffer->update(&float4(0.0f, 1.0f, 0.0f, 1.0f));
 
 			float3_t *pvData;
 			float fPtSize = 3.5f * fScale;
@@ -390,12 +402,11 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 				{
 					break;
 				}
-				SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, g_xRenderStates.idColoredShaderPS, "g_vColor", &float4(1.0f, 0.0f, 0.0f, 1.0f), 1);
+				s_pColorBuffer->update(&float4(1.0f, 0.0f, 0.0f, 1.0f));
 			}
 
 			SGCore_ShaderUnBind();
 		}
-#endif
 
 		if(g_xState.isFrameSelect)
 		{
@@ -571,6 +582,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 
 			SMMATRIX mViewProj;
 			SMMATRIX mWorld;
+			Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
 			switch(view)
 			{
 			case X2D_FRONT:
@@ -580,14 +592,17 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 				mWorld = SMMatrixRotationY(-SM_PIDIV2) * SMMatrixRotationZ(-SM_PIDIV2);
 				break;
 			}
+			static IGXConstantBuffer *m_sConstWVP = pDevice->createConstantBuffer(sizeof(SMMATRIX));
+			m_sConstWVP->update(&SMMatrixTranspose(mWorld * mViewProj));
+			pDevice->setVertexShaderConstant(m_sConstWVP, 4);
+
 			IGXRasterizerState *pOldRS = pDevice->getRasterizerState();
 			pDevice->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
-			Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, g_xRenderStates.idColoredShaderVS, "g_mWVP", &SMMatrixTranspose(mWorld * mViewProj), 4);
 			pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
 			SGCore_ShaderBind(g_xRenderStates.idColoredShaderKit);
 			pDevice->setRenderBuffer(g_xRenderStates.pTransformHandlerRB);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, g_xRenderStates.idColoredShaderPS, "g_vColor", &float4(1.0f, 1.0f, 1.0f, 1.0f), 1);
+			s_pColorBuffer->update(&float4(1.0f, 1.0f, 1.0f, 1.0f));
+			pDevice->setPixelShaderConstant(s_pColorBuffer);
 			if(g_xState.xformType == X2DXF_SCALE)
 			{
 				pDevice->setIndexBuffer(g_xRenderStates.pTransformHandlerScaleIB);
@@ -710,10 +725,10 @@ void XDrawBorder(GXCOLOR color, const float3_t &vA, const float3_t &vB, const fl
 	IGXBlendState *pOldBlendState = pDevice->getBlendState();
 	SGCore_ShaderBind(g_xRenderStates.idTexturedShaderKit);
 
-	SMMATRIX mViewProj;
-	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, g_xRenderStates.idTexturedShaderVS, "g_mWVP", &SMMatrixTranspose(mViewProj), 4);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, g_xRenderStates.idTexturedShaderPS, "g_vColor", &GXCOLOR_COLORVECTOR_ARGB(color), 1);
+	static IGXConstantBuffer *s_pColorBuffer = pDevice->createConstantBuffer(sizeof(float4));
+	s_pColorBuffer->update(&GXCOLOR_COLORVECTOR_ARGB(color));
+	pDevice->setPixelShaderConstant(s_pColorBuffer);
+
 	pDevice->setTexture(SGCore_LoadTexGetTex(SRender_EditorGetDashedTex()));
 	pDevice->setBlendState(g_xRenderStates.pBlendAlpha);
 	pDevice->setRenderBuffer(g_pBorderRenderBuffer);

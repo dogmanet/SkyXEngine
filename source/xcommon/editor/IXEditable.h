@@ -16,7 +16,11 @@ class IXEditable: public IXUnknown
 public:
 	virtual UINT getObjectCount() = 0;
 	virtual IXEditorObject *getObject(UINT id) = 0;
-	virtual IXEditorObject *newObject() = 0;
+	virtual IXEditorObject *newObject(const char *szClassName) = 0;
+
+	virtual const char *getName() = 0;
+	virtual UINT getClassCount() = 0;
+	virtual const char *getClass(UINT id) = 0;
 
 	virtual UINT getVersion()
 	{

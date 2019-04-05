@@ -217,6 +217,7 @@
     <Image Include="..\..\..\source\terrax\resource\ab_arrow.bmp" />
     <Image Include="..\..\..\source\terrax\resource\ab_arrow.png" />
     <Image Include="..\..\..\source\terrax\resource\ab_camera.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\ab_create.bmp" />
     <Image Include="..\..\..\source\terrax\resource\aigrid_bound.bmp" />
     <Image Include="..\..\..\source\terrax\resource\aigrid_graphpoint.bmp" />
     <Image Include="..\..\..\source\terrax\resource\aigrid_quad.bmp" />
@@ -224,6 +225,8 @@
     <Image Include="..\..\..\source\terrax\resource\axes.bmp" />
     <Image Include="..\..\..\source\terrax\resource\bitmap29.bmp" />
     <Image Include="..\..\..\source\terrax\resource\bitmap31.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\bitmap32.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\bitmap33.bmp" />
     <Image Include="..\..\..\source\terrax\resource\grid.bmp" />
     <Image Include="..\..\..\source\terrax\resource\lvl_in.bmp" />
     <Image Include="..\..\..\source\terrax\resource\lvl_out.bmp" />
@@ -250,6 +253,7 @@
     <Image Include="resource\ab_arrow.bmp" />
     <Image Include="resource\ab_arrow.png" />
     <Image Include="resource\ab_camera.bmp" />
+    <Image Include="resource\ab_create.bmp" />
     <Image Include="resource\aigrid_bound.bmp" />
     <Image Include="resource\aigrid_graphpoint.bmp" />
     <Image Include="resource\aigrid_quad.bmp" />

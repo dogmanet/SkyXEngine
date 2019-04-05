@@ -72,6 +72,7 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 	
 	
 	m_pShadow = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R16F);
+	//m_pShadow = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8);
 
 
 	GXDEPTH_STENCIL_DESC dsDesc;

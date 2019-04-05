@@ -18,6 +18,7 @@
 
 #include "terrax.h"
 #include <xcommon/editor/IXEditorObject.h>
+#include <xcommon/editor/IXEditable.h>
 #include "UndoManager.h"
 
 #include "CommandSelect.h"
@@ -37,9 +38,11 @@ HWND g_hBottomRightWnd = NULL;
 HWND g_hBottomLeftWnd = NULL;
 HWND g_hStatusWnd = NULL;
 HWND g_hObjectTreeWnd = NULL;
+HWND g_hComboTypesWnd = NULL;
 
 HWND g_hABArrowButton = NULL;
 HWND g_hABCameraButton = NULL;
+HWND g_hABCreateButton = NULL;
 
 BOOL g_isXResizeable = TRUE;
 BOOL g_isYResizeable = TRUE;
@@ -55,6 +58,8 @@ CTerraXConfig g_xConfig;
 CTerraXState g_xState;
 
 extern CUndoManager *g_pUndoManager;
+
+extern Array<IXEditable*> g_pEditableSystems;
 
 // Forward declarations of functions included in this code module:
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -413,12 +418,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			SendMessage(g_hABCameraButton, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
 		}
 
+		g_hABCreateButton = CreateWindow("Button", "", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON | BS_BITMAP | BS_PUSHLIKE | BS_CHECKBOX, rect.left - MARGIN_LEFT, rect.top + AB_BUTTON_HEIGHT * 2, MARGIN_LEFT, AB_BUTTON_HEIGHT, hWnd, (HMENU)IDC_AB_CREATE, hInst, NULL);
+		{
+			HBITMAP hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP34));
+			SendMessage(g_hABCreateButton, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
+		}
+
 		g_hObjectTreeWnd = CreateWindowExA(0, WC_TREEVIEW, "", WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_CHECKBOXES | TVS_NOHSCROLL, rect.right, rect.top, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, 0, hInst, NULL);
 		{
 			g_pfnTreeOldWndproc = (WNDPROC)GetWindowLongPtr(g_hObjectTreeWnd, GWLP_WNDPROC);
 			SetWindowLongPtr(g_hObjectTreeWnd, GWLP_WNDPROC, (LONG_PTR)TreeViewWndProc);
 		}
-
+		g_hComboTypesWnd = CreateWindowExA(0, WC_COMBOBOX, "", WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_SORT | CBS_DROPDOWNLIST | CBS_HASSTRINGS, rect.right, rect.top + OBJECT_TREE_HEIGHT, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, 0, hInst, NULL);
+		{
+			SetWindowFont(g_hComboTypesWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
+		}
 
 		{
 			TV_INSERTSTRUCT tvis;
@@ -652,10 +666,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDC_AB_ARROW:
 			CheckDlgButton(hWnd, IDC_AB_ARROW, TRUE);
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, FALSE);
+			CheckDlgButton(hWnd, IDC_AB_CREATE, FALSE);
 			break;
 		case IDC_AB_CAMERA:
 			CheckDlgButton(hWnd, IDC_AB_ARROW, FALSE);
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, TRUE);
+			CheckDlgButton(hWnd, IDC_AB_CREATE, FALSE);
+			break;
+		case IDC_AB_CREATE:
+			CheckDlgButton(hWnd, IDC_AB_ARROW, FALSE);
+			CheckDlgButton(hWnd, IDC_AB_CAMERA, FALSE);
+			CheckDlgButton(hWnd, IDC_AB_CREATE, TRUE);
 			break;
 
 		case ID_GRIDSIZE_SMALLER:

@@ -16,7 +16,21 @@ public:
 
 	UINT getObjectCount();
 	IXEditorObject *getObject(UINT id);
-	IXEditorObject *newObject();
+	IXEditorObject *newObject(const char *szClassName);
+
+	const char *getName()
+	{
+		return("Static geometry");
+	}
+	UINT getClassCount()
+	{
+		return(1);
+	}
+	const char *getClass(UINT id)
+	{
+		assert(id < getClassCount());
+		return("model");
+	}
 
 	void startup(IGXContext *pDevice);
 	void shutdown();

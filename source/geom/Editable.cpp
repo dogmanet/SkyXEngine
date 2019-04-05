@@ -56,7 +56,7 @@ IXEditorObject *CEditable::getObject(UINT id)
 {
 	return(new CEditorObject(this, id));
 }
-IXEditorObject *CEditable::newObject()
+IXEditorObject *CEditable::newObject(const char *szClassName)
 {
 	return(new CEditorObject(this));
 }
