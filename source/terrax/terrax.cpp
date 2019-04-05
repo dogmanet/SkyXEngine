@@ -10,6 +10,7 @@ See the license in LICENSE
 #include <skyxengine.h>
 #include <io.h>
 #include <windowsx.h>
+#include "resource.h"
 
 #include "terrax.h"
 #include "Grid.h"
@@ -28,6 +29,7 @@ BOOL XInitInstance(HINSTANCE, int);
 
 Array<IXEditable*> g_pEditableSystems;
 Array<IXEditorObject*> g_pLevelObjects;
+AssotiativeArray<AAString, IXEditable*> g_mEditableSystems;
 //SGeom_GetCountModels()
 
 static IGXVertexBuffer *g_pBorderVertexBuffer;
@@ -90,11 +92,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 			pEditable->startup(SGCore_GetDXDevice());
 
 			ComboBox_AddString(g_hComboTypesWnd, pEditable->getName());
+
+			g_mEditableSystems[AAString(pEditable->getName())] = pEditable;
 		}
 	}
 	if(g_pEditableSystems.size() > 0)
 	{
 		ComboBox_SetCurSel(g_hComboTypesWnd, 0);
+		SendMessage(GetParent(g_hComboTypesWnd), WM_COMMAND, MAKEWPARAM(IDC_CMB_TYPE, CBN_SELCHANGE), (LPARAM)g_hComboTypesWnd);
 		if(g_pEditableSystems.size() == 1)
 		{
 			ComboBox_Enable(g_hComboTypesWnd, FALSE);

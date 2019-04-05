@@ -5,6 +5,7 @@
 #include <gcore/sxgcore.h>
 #include "Command.h"
 #include <xcommon/editor/IXEditorObject.h>
+#include <common/assotiativearray.h>
 
 #define MAIN_WINDOW_TITLE      "TerraX"
 #define MAIN_WINDOW_CLASS      "X Main Window"

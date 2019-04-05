@@ -28,6 +28,7 @@
 #include "CommandDelete.h"
 
 extern Array<IXEditorObject*> g_pLevelObjects;
+extern AssotiativeArray<AAString, IXEditable*> g_mEditableSystems;
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
@@ -39,6 +40,7 @@ HWND g_hBottomLeftWnd = NULL;
 HWND g_hStatusWnd = NULL;
 HWND g_hObjectTreeWnd = NULL;
 HWND g_hComboTypesWnd = NULL;
+HWND g_hComboClassesWnd = NULL;
 
 HWND g_hABArrowButton = NULL;
 HWND g_hABCameraButton = NULL;
@@ -429,9 +431,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			g_pfnTreeOldWndproc = (WNDPROC)GetWindowLongPtr(g_hObjectTreeWnd, GWLP_WNDPROC);
 			SetWindowLongPtr(g_hObjectTreeWnd, GWLP_WNDPROC, (LONG_PTR)TreeViewWndProc);
 		}
-		g_hComboTypesWnd = CreateWindowExA(0, WC_COMBOBOX, "", WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_SORT | CBS_DROPDOWNLIST | CBS_HASSTRINGS, rect.right, rect.top + OBJECT_TREE_HEIGHT, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, 0, hInst, NULL);
+		
+		HWND hStatic = CreateWindowExA(0, WC_STATIC, "Object type", WS_VISIBLE | WS_CHILD, rect.right, rect.top + OBJECT_TREE_HEIGHT, MARGIN_RIGHT, 15, hWnd, 0, hInst, NULL);
+		{
+			SetWindowFont(hStatic, GetStockObject(DEFAULT_GUI_FONT), FALSE);
+		}
+
+		g_hComboTypesWnd = CreateWindowExA(0, WC_COMBOBOX, "", WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_SORT | CBS_DROPDOWNLIST | CBS_HASSTRINGS, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, (HMENU)IDC_CMB_TYPE, hInst, NULL);
 		{
 			SetWindowFont(g_hComboTypesWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
+		}
+
+		hStatic = CreateWindowExA(0, WC_STATIC, "Object class", WS_VISIBLE | WS_CHILD, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 25, MARGIN_RIGHT, 15, hWnd, 0, hInst, NULL);
+		{
+			SetWindowFont(hStatic, GetStockObject(DEFAULT_GUI_FONT), FALSE);
+		}
+
+		g_hComboClassesWnd = CreateWindowExA(0, WC_COMBOBOX, "", WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_SORT | CBS_DROPDOWN | CBS_HASSTRINGS, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 15 + 25, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, (HMENU)IDC_CMB_CLASS, hInst, NULL);
+		{
+			SetWindowFont(g_hComboClassesWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
 		}
 
 		{
@@ -780,6 +798,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SetWindowPos(g_hPropDlg, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 			}
 			g_bDlgWindowVisible = TRUE;
+
+		case IDC_CMB_TYPE:
+			{
+				int iSel = ComboBox_GetCurSel(g_hComboTypesWnd);
+				int iLen = ComboBox_GetLBTextLen(g_hComboTypesWnd, iSel);
+				char *szTypeName = (char*)alloca(sizeof(char)* (iLen + 1));
+				ComboBox_GetLBText(g_hComboTypesWnd, iSel, szTypeName);
+
+				ComboBox_ResetContent(g_hComboClassesWnd);
+
+				const AssotiativeArray<AAString, IXEditable*>::Node *pNode;
+				if(g_mEditableSystems.KeyExists(AAString(szTypeName), &pNode))
+				{
+					IXEditable *pEditable = *pNode->Val;
+					UINT uClassCount = pEditable->getClassCount();
+					for(UINT i = 0; i < uClassCount; ++i)
+					{
+						ComboBox_AddString(g_hComboClassesWnd, pEditable->getClass(i));
+					}
+					ComboBox_Enable(g_hComboClassesWnd, uClassCount > 1);
+					ComboBox_SetCurSel(g_hComboClassesWnd, 0);
+				}
+			}
+			break;
 		}
 		break;
 
