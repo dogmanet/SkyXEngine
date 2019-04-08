@@ -1006,10 +1006,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	HWND hWnds[] = {g_hTopRightWnd, g_hBottomLeftWnd, g_hBottomRightWnd};
 	IGXSwapChain *p2DSwapChains[] = {g_pTopRightSwapChain, g_pBottomLeftSwapChain, g_pBottomRightSwapChain};
 	IGXDepthStencilSurface *p2DDepthStencilSurfaces[] = {g_pTopRightDepthStencilSurface, g_pBottomLeftDepthStencilSurface, g_BottomRightDepthStencilSurface};
-//	float3 pv2DEyePoses[] = {float3(0.0f, 100.0f, 0.0f), float3(100.0f, 0.0f, 0.0f), float3(0.0f, 0.0f, 100.0f)};
-//	float3 pv2DEyeDirs[] = {float3(0.0f, -1.0f, 0.0f), float3(-1.0f, 0.0f, 0.0f), float3(0.0f, 0.0f, -1.0f)};
-//	float3 pv2DUPs[] = {float3(0.0f, 0.0f, 1.0f), float3(0.0f, 1.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)};
-	
+
 	ICamera **pCameras = g_xConfig.m_pViewportCamera + 1;
 	float *fScales = g_xConfig.m_fViewportScale + 1;
 	X_2D_VIEW *views = g_xConfig.m_x2DView + 1;

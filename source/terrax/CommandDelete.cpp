@@ -19,12 +19,12 @@ bool CCommandDelete::undo()
 	{
 		pObj = &m_aObjects[i];
 
-		pObj->pObject->preCreate();
+		pObj->pObject->preSetup();
 		for(auto i = pObj->mKeyValues.begin(); i; i++)
 		{
 			pObj->pObject->setKV(i.first->c_str(), i.second->c_str());
 		}
-		pObj->pObject->postCreate();
+		pObj->pObject->postSetup();
 
 		pObj->pObject->setPos(pObj->vPos);
 		pObj->pObject->setScale(pObj->vScale);

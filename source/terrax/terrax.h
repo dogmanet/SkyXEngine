@@ -121,6 +121,10 @@ struct CTerraXState
 	float3_t vSelectionBoundMax;
 
 	X_2DXFORM_TYPE xformType = X2DXF_SCALE;
+
+
+	bool bCreateMode = false;
+	float3 vCreateOrigin;
 };
 
 #define X_MAX_HANDLERS_PER_DIP 512
@@ -152,6 +156,9 @@ struct CTerraXRenderStates
 	IGXRenderBuffer *pTransformHandlerRB;
 	IGXIndexBuffer *pTransformHandlerScaleIB;
 	IGXIndexBuffer *pTransformHandlerRotateIB;
+
+
+	IGXRenderBuffer *pCreateCrossRB;
 
 };
 extern CTerraXRenderStates g_xRenderStates;

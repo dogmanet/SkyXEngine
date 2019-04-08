@@ -41,21 +41,35 @@ CEditorObject::~CEditorObject()
 
 void CEditorObject::setPos(const float3_t &pos)
 {
-	SGeom_ModelSetPosition(m_idModel, &float3(pos));
+	if(ID_VALID(m_idModel))
+	{
+		SGeom_ModelSetPosition(m_idModel, &float3(pos));
+	}
 	BaseClass::setPos(pos);
 }
 
 float3_t CEditorObject::getScale()
 {
+	if(!ID_VALID(m_idModel))
+	{
+		return(1.0f);
+	}
 	return(*SGeom_ModelGetScale(m_idModel));
 }
 void CEditorObject::setScale(const float3_t &pos)
 {
-	SGeom_ModelSetScale(m_idModel, &float3(pos));
+	if(ID_VALID(m_idModel))
+	{
+		SGeom_ModelSetScale(m_idModel, &float3(pos));
+	}
 }
 
 SMQuaternion CEditorObject::getOrient()
 {
+	if(!ID_VALID(m_idModel))
+	{
+		return(SMQuaternion());
+	}
 	const float3 *rot = SGeom_ModelGetRotation(m_idModel);
 
 	return(SMQuaternion(-rot->x, 'x') * SMQuaternion(-rot->y, 'y') * SMQuaternion(-rot->z, 'z'));
@@ -70,11 +84,22 @@ void CEditorObject::setOrient(const SMQuaternion &orient)
 
 void CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 {
+	if(!ID_VALID(m_idModel))
+	{
+		*pvMin = m_vPos - float3(0.1, 0.1f, 0.1f);
+		*pvMax = m_vPos + float3(0.1, 0.1f, 0.1f);
+		return;
+	}
 	SGeom_ModelGetMinMax(m_idModel, pvMin, pvMax);
 }
 
 void CEditorObject::renderSelection(bool is3D)
 {
+	if(!ID_VALID(m_idModel))
+	{
+		return;
+	}
+
 	IGXContext *pDevice = SGCore_GetDXDevice();
 	IGXBlendState *pOldBlendState = pDevice->getBlendState();
 	IGXRasterizerState *pOldRS = pDevice->getRasterizerState();
@@ -106,6 +131,10 @@ bool CEditorObject::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pv
 
 void CEditorObject::remove()
 {
+	if(!ID_VALID(m_idModel))
+	{
+		return;
+	}
 	SGeom_ModelDelete(m_idModel);
 
 	for(UINT i = 0, l = ms_aObjects.size(); i < l; ++i)
@@ -118,10 +147,10 @@ void CEditorObject::remove()
 
 	m_idModel = -1;
 }
-void CEditorObject::preCreate()
+void CEditorObject::preSetup()
 {
 }
-void CEditorObject::postCreate()
+void CEditorObject::postSetup()
 {
 	m_idModel = SGeom_ModelAdd(m_sModelName.c_str(), m_sName.c_str(), NULL, NULL, m_bSegmentation);
 }

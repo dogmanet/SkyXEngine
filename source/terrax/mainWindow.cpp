@@ -26,6 +26,7 @@
 #include "CommandScale.h"
 #include "CommandRotate.h"
 #include "CommandDelete.h"
+#include "CommandCreate.h"
 
 extern Array<IXEditorObject*> g_pLevelObjects;
 extern AssotiativeArray<AAString, IXEditable*> g_mEditableSystems;
@@ -412,6 +413,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			HBITMAP hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP30));
 			SendMessage(g_hABArrowButton, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
+			Button_SetCheck(g_hABArrowButton, TRUE);
 		}
 
 		g_hABCameraButton = CreateWindow("Button", "", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON | BS_BITMAP | BS_PUSHLIKE | BS_CHECKBOX, rect.left - MARGIN_LEFT, rect.top + AB_BUTTON_HEIGHT, MARGIN_LEFT, AB_BUTTON_HEIGHT, hWnd, (HMENU)IDC_AB_CAMERA, hInst, NULL);
@@ -681,15 +683,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			XInitViewportLayout(XVIEW_3DONLY);
 			break;
 
+		case IDC_ESCAPE:
 		case IDC_AB_ARROW:
 			CheckDlgButton(hWnd, IDC_AB_ARROW, TRUE);
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, FALSE);
 			CheckDlgButton(hWnd, IDC_AB_CREATE, FALSE);
+			g_xState.bCreateMode = false;
 			break;
 		case IDC_AB_CAMERA:
 			CheckDlgButton(hWnd, IDC_AB_ARROW, FALSE);
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, TRUE);
 			CheckDlgButton(hWnd, IDC_AB_CREATE, FALSE);
+			g_xState.bCreateMode = false;
 			break;
 		case IDC_AB_CREATE:
 			CheckDlgButton(hWnd, IDC_AB_ARROW, FALSE);
@@ -850,8 +855,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		case VK_RETURN:
 
-			/*if(IsWindowEnabled(focus))
-			SendMessage(hWnd, WM_COMMAND, 0, (LPARAM)focus);*/
+			if(g_xState.bCreateMode)
+			{
+				int iSel1 = ComboBox_GetCurSel(g_hComboTypesWnd);
+				int iLen1 = ComboBox_GetLBTextLen(g_hComboTypesWnd, iSel1);
+				char *szTypeName = (char*)alloca(sizeof(char)* (iLen1 + 1));
+				ComboBox_GetLBText(g_hComboTypesWnd, iSel1, szTypeName);
+
+				int iSel2 = ComboBox_GetCurSel(g_hComboClassesWnd);
+				int iLen2 = ComboBox_GetLBTextLen(g_hComboClassesWnd, iSel2);
+				char *szClassName = (char*)alloca(sizeof(char)* (iLen2 + 1));
+				ComboBox_GetLBText(g_hComboClassesWnd, iSel2, szClassName);
+
+				CCommandCreate *pCmd = new CCommandCreate(g_xState.vCreateOrigin, szTypeName, szClassName);
+				g_pUndoManager->execCommand(pCmd);
+
+				g_xState.bCreateMode = false;
+			}
 
 			break;
 		}
@@ -1576,7 +1596,25 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					g_xState.vFrameSelectStart = g_xState.vWorldMousePos;
 				}
 			}
+			else if(Button_GetCheck(g_hABCreateButton))
+			{
+				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
 
+				g_xState.bCreateMode = true;
+
+				switch(xCurView)
+				{
+				case X2D_TOP:
+					g_xState.vCreateOrigin = float3(g_xState.vWorldMousePos.x, g_xState.vCreateOrigin.y, g_xState.vWorldMousePos.y);
+					break;
+				case X2D_FRONT:
+					g_xState.vCreateOrigin = float3(g_xState.vWorldMousePos.x, g_xState.vWorldMousePos.y, g_xState.vCreateOrigin.z);
+					break;
+				case X2D_SIDE:
+					g_xState.vCreateOrigin = float3(g_xState.vCreateOrigin.x, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
+					break;
+				}
+			}
 			break;
 		}
 
@@ -1781,6 +1819,22 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			if(s_pRotateCmd)
 			{
 				SetCursor(hcRotate);
+			}
+
+			if(Button_GetCheck(g_hABCreateButton) && g_xState.bCreateMode && GetAsyncKeyState(VK_LBUTTON) < 0)
+			{
+				switch(g_xConfig.m_x2DView[g_xState.activeWindow])
+				{
+				case X2D_TOP:
+					g_xState.vCreateOrigin = float3(g_xState.vWorldMousePos.x, g_xState.vCreateOrigin.y, g_xState.vWorldMousePos.y);
+					break;
+				case X2D_FRONT:
+					g_xState.vCreateOrigin = float3(g_xState.vWorldMousePos.x, g_xState.vWorldMousePos.y, g_xState.vCreateOrigin.z);
+					break;
+				case X2D_SIDE:
+					g_xState.vCreateOrigin = float3(g_xState.vCreateOrigin.x, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
+					break;
+				}
 			}
 			return(TRUE);
 		}

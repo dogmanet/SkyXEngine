@@ -48,8 +48,8 @@ public:
 	virtual bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl) = 0;
 
 	virtual void remove() = 0;
-	virtual void preCreate() = 0; // вызывается при начале создания объекта до установки свойств
-	virtual void postCreate() = 0; // вызывается после установки всех необходимых свойств, завершает создание объекта
+	virtual void preSetup() = 0;
+	virtual void postSetup() = 0;
 
 	virtual void setKV(const char *szKey, const char *szValue) = 0;
 	virtual const char *getKV(const char *szKey) = 0;

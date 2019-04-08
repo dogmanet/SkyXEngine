@@ -136,16 +136,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	g_pGrid = new CGrid();
 	g_pGrid->setOpacity(0.7f);
 	
-	int countgc = SGame_EntGetClassListCount();
-	const char** listgc = new const char*[countgc];
-
-	SGame_EntGetClassList(listgc, countgc);
-	for(int i = 0; i < countgc; ++i)
-	{
-	//	level_editor::pComboBoxGameClass->addItem(listgc[i]);
-	}
-	mem_delete_a(listgc);
-
 	g_xRenderStates.idColoredShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_colored.vs");
 	g_xRenderStates.idColoredShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "terrax_colored.ps");
 	g_xRenderStates.idColoredShaderKit = SGCore_ShaderCreateKit(g_xRenderStates.idColoredShaderVS, g_xRenderStates.idColoredShaderPS);
@@ -212,7 +202,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		pVD = pDevice->createVertexDeclaration(oLayoutHandler);
 		g_xRenderStates.pTransformHandlerVB = pDevice->createVertexBuffer(sizeof(float3_t)* 32, GX_BUFFER_USAGE_STREAM | GX_BUFFER_WRITEONLY);
 		g_xRenderStates.pTransformHandlerRB = pDevice->createRenderBuffer(1, &g_xRenderStates.pTransformHandlerVB, pVD);
-		mem_release(pVD);
 		USHORT pHandlerIndices[] = {
 			0, 1, 2, 0, 2, 3,
 			4, 5, 6, 4, 6, 7,
@@ -234,6 +223,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		};
 		g_xRenderStates.pTransformHandlerRotateIB = pDevice->createIndexBuffer(sizeof(USHORT)* 72, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_USHORT, pHandlerRotateIndices);
 
+		float3_t pVertices[] = {
+			float3_t(10000.0f, 0.0f, 0.0f), float3_t(-10000.0f, 0.0f, 0.0f),
+			float3_t(0.0f, 10000.0f, 0.0f), float3_t(0.0f, -10000.0f, 0.0f),
+			float3_t(0.0f, 0.0f, 10000.0f), float3_t(0.0f, 0.0f, -10000.0f)
+		};
+		IGXVertexBuffer *pCreateCrossVB = pDevice->createVertexBuffer(sizeof(float3_t) * 6, GX_BUFFER_USAGE_STATIC, pVertices);
+		g_xRenderStates.pCreateCrossRB = pDevice->createRenderBuffer(1, &pCreateCrossVB, pVD);
+
+		mem_release(pVD);
 	}
 
 	int result = SkyXEngine_CycleMain();
@@ -251,6 +249,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 void XRender3D()
 {
+	IGXContext *pDevice = SGCore_GetDXDevice();
+
 	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 	{
 		if(g_pLevelObjects[i]->isSelected())
@@ -288,6 +288,30 @@ void XRender3D()
 		}
 
 		XDrawBorder(GXCOLOR_ARGB(255, 255, 255, 0), va, vb, vc, vd);
+	}
+
+	static IGXConstantBuffer *s_pColorBuffer = pDevice->createConstantBuffer(sizeof(float4));
+	static IGXConstantBuffer *s_mConstWVP = pDevice->createConstantBuffer(sizeof(SMMATRIX));
+
+	if(g_xState.bCreateMode)
+	{
+		IGXRasterizerState *pOldRS = pDevice->getRasterizerState();
+		pDevice->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
+		SMMATRIX mViewProj;
+		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
+		pDevice->setVertexShaderConstant(s_mConstWVP, 4);
+		pDevice->setPixelShaderConstant(s_pColorBuffer);
+		SGCore_ShaderBind(g_xRenderStates.idColoredShaderKit);
+
+		pDevice->setRenderBuffer(g_xRenderStates.pCreateCrossRB);
+		s_mConstWVP->update(&SMMatrixTranspose(SMMatrixTranslation(g_xState.vCreateOrigin) * mViewProj));
+		s_pColorBuffer->update(&float4(0.0f, 1.0f, 0.0f, 1.0f));
+		pDevice->setPrimitiveTopology(GXPT_LINELIST);
+		pDevice->drawPrimitive(0, 3);
+		pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+
+		pDevice->setRasterizerState(pOldRS);
+		mem_release(pOldRS);
 	}
 }
 
@@ -440,6 +464,8 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			}
 			XDrawBorder(GXCOLOR_ARGB(255, 255, 255, 0), va, vb, vc, vd, fScale);
 		}
+
+		static IGXConstantBuffer *s_mConstWVP = pDevice->createConstantBuffer(sizeof(SMMATRIX));
 		if(g_xState.bHasSelection)
 		{
 			float3_t va, vb, vc, vd;
@@ -597,9 +623,9 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 				mWorld = SMMatrixRotationY(-SM_PIDIV2) * SMMatrixRotationZ(-SM_PIDIV2);
 				break;
 			}
-			static IGXConstantBuffer *m_sConstWVP = pDevice->createConstantBuffer(sizeof(SMMATRIX));
-			m_sConstWVP->update(&SMMatrixTranspose(mWorld * mViewProj));
-			pDevice->setVertexShaderConstant(m_sConstWVP, 4);
+			
+			s_mConstWVP->update(&SMMatrixTranspose(mWorld * mViewProj));
+			pDevice->setVertexShaderConstant(s_mConstWVP, 4);
 
 			IGXRasterizerState *pOldRS = pDevice->getRasterizerState();
 			pDevice->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
@@ -618,7 +644,30 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 				pDevice->setIndexBuffer(g_xRenderStates.pTransformHandlerRotateIB);
 				pDevice->drawIndexed(32, 24, 0, 0);
 			}
+
+
 			SGCore_ShaderUnBind();
+			pDevice->setRasterizerState(pOldRS);
+			mem_release(pOldRS);
+		}
+
+		if(g_xState.bCreateMode)
+		{
+			IGXRasterizerState *pOldRS = pDevice->getRasterizerState();
+			pDevice->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
+			SMMATRIX mViewProj;
+			Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
+			pDevice->setVertexShaderConstant(s_mConstWVP, 4);
+			pDevice->setPixelShaderConstant(s_pColorBuffer);
+			SGCore_ShaderBind(g_xRenderStates.idColoredShaderKit);
+
+			pDevice->setRenderBuffer(g_xRenderStates.pCreateCrossRB);
+			s_mConstWVP->update(&SMMatrixTranspose(SMMatrixTranslation(g_xState.vCreateOrigin) * mViewProj));
+			s_pColorBuffer->update(&float4(0.0f, 1.0f, 0.0f, 1.0f));
+			pDevice->setPrimitiveTopology(GXPT_LINELIST);
+			pDevice->drawPrimitive(0, 3);
+			pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+
 			pDevice->setRasterizerState(pOldRS);
 			mem_release(pOldRS);
 		}

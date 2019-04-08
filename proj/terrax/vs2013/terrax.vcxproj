@@ -178,6 +178,7 @@
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\editors_utils\axes_helper.cpp" />
     <ClCompile Include="..\..\..\source\skyxengine.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\CommandCreate.cpp" />
     <ClCompile Include="..\..\..\source\terrax\CommandDelete.cpp" />
     <ClCompile Include="..\..\..\source\terrax\CommandMove.cpp" />
     <ClCompile Include="..\..\..\source\terrax\CommandRotate.cpp" />
@@ -199,6 +200,7 @@
     <ClInclude Include="..\..\..\source\gdefines.h" />
     <ClInclude Include="..\..\..\source\SkyXEngine.h" />
     <ClInclude Include="..\..\..\source\terrax\Command.h" />
+    <ClInclude Include="..\..\..\source\terrax\CommandCreate.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandDelete.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandMove.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandRotate.h" />

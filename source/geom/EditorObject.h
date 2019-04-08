@@ -30,8 +30,8 @@ public:
 	bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl);
 
 	void remove();
-	void preCreate();
-	void postCreate();
+	void preSetup();
+	void postSetup();
 
 	void setKV(const char *szKey, const char *szValue);
 	const char *getKV(const char *szKey);
