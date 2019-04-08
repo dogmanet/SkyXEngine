@@ -48,6 +48,7 @@ public:
 	virtual bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl) = 0;
 
 	virtual void remove() = 0;
+	virtual void create() = 0;
 	virtual void preSetup() = 0;
 	virtual void postSetup() = 0;
 

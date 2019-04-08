@@ -1319,7 +1319,7 @@ void SPP_ComEdgeDetected()
 //	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 	pp_data::pDXDevice->setDepthStencilState(pp_data::rstates::pDepthStencilNoZ);
 
-	if (GetAsyncKeyState('N'))
+	if (GetAsyncKeyState('N') < 0)
 	{
 		pp_data::pDXDevice->saveTextureToFile("C:\\1\\EdgeDetected.jpg", SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected));
 		pp_data::pDXDevice->saveTextureToFile("C:\\1\\EdgeDetected2.jpg", SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected2));

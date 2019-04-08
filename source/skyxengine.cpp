@@ -910,29 +910,29 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		float fMaxSpeed = 10.0f; //@TODO: CVar this!
 		float fMaxSpeedBoost = 40.0f; //@TODO: CVar this!
 		float fAccelTime = 0.5f; //@TODO: CVar this!
-		if(GetAsyncKeyState(VK_SHIFT))
+		if(GetAsyncKeyState(VK_SHIFT) < 0)
 		{
 			fMaxSpeed = fMaxSpeedBoost;
 		}
 		float fAccel = fMaxSpeed / fAccelTime;
 		bool mov = false;
 		float dt = (float)timeDelta * 0.001f;
-		if(GetAsyncKeyState('W'))
+		if(GetAsyncKeyState('W') < 0)
 		{
 			dir.z += 1.0f;
 			mov = true;
 		}
-		if(GetAsyncKeyState('S'))
+		if(GetAsyncKeyState('S') < 0)
 		{
 			dir.z -= 1.0f;
 			mov = true;
 		}
-		if(GetAsyncKeyState('A'))
+		if(GetAsyncKeyState('A') < 0)
 		{
 			dir.x -= 1.0f;
 			mov = true;
 		}
-		if(GetAsyncKeyState('D'))
+		if(GetAsyncKeyState('D') < 0)
 		{
 			dir.x += 1.0f;
 			mov = true;
@@ -964,7 +964,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	
 	SRender_UpdateView();
 
-	if (!GetAsyncKeyState('R'))
+	if (GetAsyncKeyState('R') >= 0)
 	{
 		Core_PStartSection(PERF_SECTION_VIS_CAMERA);
 		SRender_ComVisibleForCamera();

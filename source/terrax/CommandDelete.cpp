@@ -29,6 +29,7 @@ bool CCommandDelete::undo()
 		pObj->pObject->setPos(pObj->vPos);
 		pObj->pObject->setScale(pObj->vScale);
 		pObj->pObject->setOrient(pObj->qRotate);
+		pObj->pObject->create();
 
 		for(UINT i = g_pLevelObjects.size(); i > pObj->idObject; --i)
 		{

@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -305,8 +305,8 @@ HFONT CGUIComponent::getHFont()
 	return (HFONT)SendMessage(m_hWindow, WM_GETFONT, 0, 0);
 }
 
-//какая то херня происходила при вызове диалога смены шрифта
-//шрифт менялся только на дефлотный и все ... и все
+//РєР°РєР°СЏ С‚Рѕ С…РµСЂРЅСЏ РїСЂРѕРёСЃС…РѕРґРёР»Р° РїСЂРё РІС‹Р·РѕРІРµ РґРёР°Р»РѕРіР° СЃРјРµРЅС‹ С€СЂРёС„С‚Р°
+//С€СЂРёС„С‚ РјРµРЅСЏР»СЃСЏ С‚РѕР»СЊРєРѕ РЅР° РґРµС„Р»РѕС‚РЅС‹Р№ Рё РІСЃРµ ... Рё РІСЃРµ
 /*void CGUIComponent::SetFont(SXFont* font)
 {
 if(font)
@@ -448,13 +448,13 @@ void CGUIComponent::updateSize()
 	//if(NewParentRect.top != m_rcParentScreen.top)
 	//MessageBox(0,ToPointChar(NewParentRect.top),ToPointChar(m_rcParentScreen.top),0);
 
-	//трансляция координат в пространство родителя
+	//С‚СЂР°РЅСЃР»СЏС†РёСЏ РєРѕРѕСЂРґРёРЅР°С‚ РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРѕ СЂРѕРґРёС‚РµР»СЏ
 	//MapWindowPoints(NULL, m_hParent, (LPPOINT)&rect, 2);
 
 	if (abs(m_rcOffsetParent.left) > 30000 || abs(m_rcOffsetParent.right) > 30000 || abs(m_rcOffsetParent.top) > 30000 || abs(m_rcOffsetParent.bottom) > 30000)
 		return;
 
-	//смещение по всем направлениям
+	//СЃРјРµС‰РµРЅРёРµ РїРѕ РІСЃРµРј РЅР°РїСЂР°РІР»РµРЅРёСЏРј
 	RECT offset;
 	offset.left = m_rcOffsetParent.left ? m_rcOffsetParent.left : NewParentRect.left - m_rcParentScreen.left;
 	offset.right = m_rcOffsetParent.right ? m_rcOffsetParent.right : NewParentRect.right - m_rcParentScreen.right;
@@ -750,7 +750,7 @@ LRESULT CALLBACK WndProcAllDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 
 		if (msg == WM_KEYDOWN)
 		{
-			if (wParam == 'A' && (GetKeyState(VK_CONTROL) & 0x80))
+			if (wParam == 'A' && (GetKeyState(VK_CONTROL) < 0))
 			{
 				// User pressed Ctrl-A.  Let's select-all
 				if (IsEdit(hwnd))
@@ -760,10 +760,10 @@ LRESULT CALLBACK WndProcAllDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 				}
 			}
 		}
-		HandlerFunc MainFunction = 0;								//главная функция-обработчик, ее значение и будет возвращаться
-		Array<HandlerFunc> SecondFunction;	//массив дополнительных обработчиков на сообщения, их значения не должны смысла
-		//int CountSecond = 0;	//количество дополнительных функций-обработчиков
-		//инициализируем вышеописанные данные
+		HandlerFunc MainFunction = 0;								//РіР»Р°РІРЅР°СЏ С„СѓРЅРєС†РёСЏ-РѕР±СЂР°Р±РѕС‚С‡РёРє, РµРµ Р·РЅР°С‡РµРЅРёРµ Рё Р±СѓРґРµС‚ РІРѕР·РІСЂР°С‰Р°С‚СЊСЃСЏ
+		Array<HandlerFunc> SecondFunction;	//РјР°СЃСЃРёРІ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹С… РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ РЅР° СЃРѕРѕР±С‰РµРЅРёСЏ, РёС… Р·РЅР°С‡РµРЅРёСЏ РЅРµ РґРѕР»Р¶РЅС‹ СЃРјС‹СЃР»Р°
+		//int CountSecond = 0;	//РєРѕР»РёС‡РµСЃС‚РІРѕ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹С… С„СѓРЅРєС†РёР№-РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ
+		//РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РІС‹С€РµРѕРїРёСЃР°РЅРЅС‹Рµ РґР°РЅРЅС‹Рµ
 		for (int i = 0; i<Component->getCountHandlers(); i++)
 		{
 			CHandlerData *pHandler = Component->getHandler(i);
@@ -782,13 +782,13 @@ LRESULT CALLBACK WndProcAllDefault(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			}
 		}
 
-		//вызываем все дополнительные функции обработчики
+		//РІС‹Р·С‹РІР°РµРј РІСЃРµ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ С„СѓРЅРєС†РёРё РѕР±СЂР°Р±РѕС‚С‡РёРєРё
 		for (int i = 0, il = SecondFunction.size(); i < il; ++i)
 		{
 			SecondFunction[i](hwnd, msg, wParam, lParam);
 		}
 
-		//если была найдена главная функция то вызываем ее и возвраащем ее значение
+		//РµСЃР»Рё Р±С‹Р»Р° РЅР°Р№РґРµРЅР° РіР»Р°РІРЅР°СЏ С„СѓРЅРєС†РёСЏ С‚Рѕ РІС‹Р·С‹РІР°РµРј РµРµ Рё РІРѕР·РІСЂР°Р°С‰РµРј РµРµ Р·РЅР°С‡РµРЅРёРµ
 		if (MainFunction)
 			return MainFunction(hwnd, msg, wParam, lParam);
 

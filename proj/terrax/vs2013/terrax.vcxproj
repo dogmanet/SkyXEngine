@@ -112,6 +112,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
       <Profile>true</Profile>
+      <AdditionalOptions>"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'" 
+ %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -186,6 +188,7 @@
     <ClCompile Include="..\..\..\source\terrax\CommandSelect.cpp" />
     <ClCompile Include="..\..\..\source\terrax\Grid.cpp" />
     <ClCompile Include="..\..\..\source\terrax\mainWindow.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\PropertyWindow.cpp" />
     <ClCompile Include="..\..\..\source\terrax\terrax.cpp" />
     <ClCompile Include="..\..\..\source\terrax\UndoManager.cpp" />
   </ItemGroup>
@@ -206,6 +209,7 @@
     <ClInclude Include="..\..\..\source\terrax\CommandRotate.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandScale.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandSelect.h" />
+    <ClInclude Include="..\..\..\source\terrax\PropertyWindow.h" />
     <ClInclude Include="..\..\..\source\terrax\UndoManager.h" />
     <ClInclude Include="..\..\..\source\terrax\Grid.h" />
     <ClInclude Include="..\..\..\source\terrax\resource.h" />

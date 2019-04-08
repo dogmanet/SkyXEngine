@@ -513,7 +513,7 @@ void PSSM::genShadow(IGXTexture2D* shadowmap)
 	mem_release(RenderSurf);
 	mem_release(BackBuf);
 
-	if(GetAsyncKeyState(VK_NUMPAD1))
+	if(GetAsyncKeyState(VK_NUMPAD1) < 0)
 	{
 		light_data::pDXDevice->saveTextureToFile("C:\\1\\pssm.png", shadowmap);
 	}

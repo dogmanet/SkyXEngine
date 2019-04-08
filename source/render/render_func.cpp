@@ -265,7 +265,7 @@ void rfunc::ComVisibleForLight()
 void rfunc::ComVisibleForCamera()
 {
 	//if (SGeom_ModelsGetCount() > 0)
-	if (GetAsyncKeyState('T'))
+	if (GetAsyncKeyState('T') < 0)
 	{
 		int qwerty = 0;
 	}

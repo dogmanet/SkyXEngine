@@ -164,7 +164,7 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 	m_pDevice->setColorTarget(NULL, 1);
 	m_pDevice->setColorTarget(NULL, 2);
 
-	if(GetAsyncKeyState('U'))
+	if(GetAsyncKeyState('U') < 0)
 	{
 		m_pDevice->saveTextureToFile("sm_depth.dds", m_pDepthMap);
 		m_pDevice->saveTextureToFile("sm_normal.dds", m_pNormalMap);
@@ -245,7 +245,7 @@ void CShadowMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDepth
 	mem_release(pRenderSurf);
 	mem_release(pBackBuf);
 
-	if(GetAsyncKeyState('U'))
+	if(GetAsyncKeyState('U') < 0)
 	{
 		m_pDevice->saveTextureToFile("sm_shadow.dds", pShadowMap);
 	}
@@ -437,7 +437,7 @@ void CShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 	m_pDevice->setColorTarget(NULL, 1);
 	m_pDevice->setColorTarget(NULL, 2);
 
- 	if(GetAsyncKeyState('U'))
+ 	if(GetAsyncKeyState('U') < 0)
 	{
 		m_pDevice->saveTextureToFile("sm_depth.dds", m_pDepthMap);
 		m_pDevice->saveTextureToFile("sm_normal.dds", m_pNormalMap);
@@ -496,7 +496,7 @@ void CShadowCubeMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferD
 	mem_release(pRenderSurf);
 	mem_release(pBackBuf);
 
-	if(GetAsyncKeyState('U'))
+	if(GetAsyncKeyState('U') < 0)
 	{
 		m_pDevice->saveTextureToFile("sm_shadow.dds", pShadowMap);
 	}

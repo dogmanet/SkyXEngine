@@ -152,7 +152,16 @@ void CEditorObject::preSetup()
 }
 void CEditorObject::postSetup()
 {
-	m_idModel = SGeom_ModelAdd(m_sModelName.c_str(), m_sName.c_str(), NULL, NULL, m_bSegmentation);
+	
+}
+
+void CEditorObject::create()
+{
+	assert(!ID_VALID(m_idModel));
+	if(m_sModelName.length())
+	{
+		m_idModel = SGeom_ModelAdd(m_sModelName.c_str(), m_sName.c_str(), NULL, NULL, m_bSegmentation);
+	}
 }
 
 void CEditorObject::setKV(const char *szKey, const char *szValue)

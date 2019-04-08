@@ -31,6 +31,7 @@ bool CCommandCreate::exec()
 	}
 	m_pObject->setPos(m_vPos);
 	m_pObject->setSelected(true);
+	m_pObject->create();
 
 	g_pLevelObjects.push_back(m_pObject);
 	return(true);

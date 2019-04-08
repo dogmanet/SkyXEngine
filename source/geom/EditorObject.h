@@ -30,6 +30,7 @@ public:
 	bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl);
 
 	void remove();
+	void create();
 	void preSetup();
 	void postSetup();
 

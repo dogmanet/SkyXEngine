@@ -8,6 +8,9 @@
 #include <commctrl.h>
 #include <combaseapi.h>
 
+#include <uxtheme.h>
+#pragma comment(lib, "UxTheme.lib")
+
 #include <skyxengine.h>
 #include <core/sxcore.h>
 #include <gcore/sxgcore.h>
@@ -28,6 +31,8 @@
 #include "CommandDelete.h"
 #include "CommandCreate.h"
 
+#include "PropertyWindow.h"
+
 extern Array<IXEditorObject*> g_pLevelObjects;
 extern AssotiativeArray<AAString, IXEditable*> g_mEditableSystems;
 
@@ -41,7 +46,9 @@ HWND g_hBottomLeftWnd = NULL;
 HWND g_hStatusWnd = NULL;
 HWND g_hObjectTreeWnd = NULL;
 HWND g_hComboTypesWnd = NULL;
+HWND g_hStaticTypesWnd = NULL;
 HWND g_hComboClassesWnd = NULL;
+HWND g_hStaticClassesWnd = NULL;
 
 HWND g_hABArrowButton = NULL;
 HWND g_hABCameraButton = NULL;
@@ -52,6 +59,9 @@ BOOL g_isYResizeable = TRUE;
 
 BOOL g_is3DRotating = FALSE;
 BOOL g_is3DPanning = FALSE;
+
+BOOL m_isPropWindowVisible = FALSE;
+CPropertyWindow *g_pPropWindow = NULL;
 
 extern HACCEL g_hAccelTable;
 
@@ -149,102 +159,8 @@ BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
 	g_hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR1));
 
 	XCheckMenuItem(g_hMenu, ID_VIEW_GRID, g_xConfig.m_bShowGrid);
-	XUpdateUndoRedo();
 
 	return TRUE;
-}
-
-HWND g_hTabControl; // tab control handle
-HWND g_hCurrentTab = NULL; // tab dialog handle
-DLGTEMPLATE *g_pPropTemplates[3];
-HWND g_hPropTabs[3] = {0};
-BOOL g_bDlgWindowVisible = FALSE;
-
-DLGTEMPLATE * WINAPI DoLockDlgRes(LPCSTR lpszResName)
-{
-	HRSRC hrsrc = FindResource(NULL, lpszResName, RT_DIALOG);
-	HGLOBAL hglb = LoadResource(hInst, hrsrc);
-
-	return (DLGTEMPLATE *)LockResource(hglb);
-}
-VOID WINAPI OnSelChanged(HWND hwndDlg)
-{
-	int iSel = TabCtrl_GetCurSel(g_hTabControl);
-
-	if(g_hCurrentTab != NULL)
-	{
-		ShowWindow(g_hCurrentTab, FALSE);
-	}
-	g_hCurrentTab = NULL;
-
-
-	if(!g_hPropTabs[iSel])
-	{
-		// Create the new child dialog box.  
-		g_hPropTabs[iSel] = g_hCurrentTab = CreateDialogIndirect(hInst, g_pPropTemplates[iSel], hwndDlg, NULL);
-
-		RECT rcDisplay = {0, 0, 0, 0};
-		GetWindowRect(g_hTabControl, &rcDisplay);
-		MapWindowPoints(HWND_DESKTOP, hwndDlg, (LPPOINT)&rcDisplay, 2);
-		//MapDialogRect(hwndDlg, &rcDisplay);
-		TabCtrl_AdjustRect(g_hTabControl, FALSE, &rcDisplay);
-		SetWindowPos(g_hCurrentTab, HWND_TOP, rcDisplay.left - 3, rcDisplay.top, 0, 0, SWP_NOSIZE);
-	}
-	g_hCurrentTab = g_hPropTabs[iSel];
-	if(g_hCurrentTab)
-	{
-		ShowWindow(g_hCurrentTab, TRUE);
-	}
-}
-INT_PTR CALLBACK DlgProc(HWND hWnd, UINT M, WPARAM W, LPARAM L)
-{
-	switch(M)
-	{
-	case WM_INITDIALOG:
-	{
-		g_hTabControl = GetDlgItem(hWnd, IDC_TAB1);
-
-		TCITEM ti;
-		ti.mask = TCIF_TEXT;
-		ti.pszText = "Properties";
-		TabCtrl_InsertItem(g_hTabControl, 0, &ti);
-		ti.pszText = "Flags";
-		TabCtrl_InsertItem(g_hTabControl, 1, &ti);
-		ti.pszText = "Outputs";
-		TabCtrl_InsertItem(g_hTabControl, 2, &ti);
-		TabCtrl_SetCurSel(g_hTabControl, 0);
-
-		g_pPropTemplates[0] = DoLockDlgRes(MAKEINTRESOURCE(IDD_OP_PROPS));
-		g_pPropTemplates[1] = DoLockDlgRes(MAKEINTRESOURCE(IDD_OP_FLAGS));
-		g_pPropTemplates[2] = DoLockDlgRes(MAKEINTRESOURCE(IDD_OP_OUTPUTS));
-
-		OnSelChanged(hWnd);
-		return(TRUE);
-	}
-	case WM_CLOSE:
-	{
-		ShowWindow(hWnd, SW_HIDE);
-		g_bDlgWindowVisible = FALSE;
-		return(TRUE);
-	}
-	case WM_NOTIFY:
-	{
-		switch(((LPNMHDR)L)->code)
-		{
-		case TCN_SELCHANGE: // message sent because someone changed the tab selection (clicked on another tab)
-		{
-			OnSelChanged(hWnd);
-			return TRUE;
-		}
-		}
-		return TRUE;
-	}
-	/*case WM_COMMAND:
-	{
-		return TRUE;
-	}*/
-	}
-	return(FALSE);
 }
 
 bool IsEditMessage()
@@ -317,7 +233,6 @@ LRESULT CALLBACK StatusBarWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 	return(CallWindowProc(g_pfnStatusBarOldWndproc, hWnd, message, wParam, lParam));
 }
 
-HWND g_hPropDlg = NULL;
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	RECT rect;
@@ -411,19 +326,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		g_hABArrowButton = CreateWindow("Button", "", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON | BS_BITMAP | BS_PUSHLIKE | BS_CHECKBOX, rect.left - MARGIN_LEFT, rect.top, MARGIN_LEFT, AB_BUTTON_HEIGHT, hWnd, (HMENU)IDC_AB_ARROW, hInst, NULL);
 		{
+			SetWindowTheme(g_hABArrowButton, L" ", L" ");
 			HBITMAP hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP30));
 			SendMessage(g_hABArrowButton, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
 			Button_SetCheck(g_hABArrowButton, TRUE);
 		}
 
+		//WS_EX_DLGMODALFRAME
+
 		g_hABCameraButton = CreateWindow("Button", "", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON | BS_BITMAP | BS_PUSHLIKE | BS_CHECKBOX, rect.left - MARGIN_LEFT, rect.top + AB_BUTTON_HEIGHT, MARGIN_LEFT, AB_BUTTON_HEIGHT, hWnd, (HMENU)IDC_AB_CAMERA, hInst, NULL);
 		{
+			SetWindowTheme(g_hABCameraButton, L" ", L" ");
 			HBITMAP hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP31));
 			SendMessage(g_hABCameraButton, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
 		}
 
 		g_hABCreateButton = CreateWindow("Button", "", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON | BS_BITMAP | BS_PUSHLIKE | BS_CHECKBOX, rect.left - MARGIN_LEFT, rect.top + AB_BUTTON_HEIGHT * 2, MARGIN_LEFT, AB_BUTTON_HEIGHT, hWnd, (HMENU)IDC_AB_CREATE, hInst, NULL);
 		{
+			SetWindowTheme(g_hABCreateButton, L" ", L" ");
 			HBITMAP hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP34));
 			SendMessage(g_hABCreateButton, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
 		}
@@ -434,9 +354,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			SetWindowLongPtr(g_hObjectTreeWnd, GWLP_WNDPROC, (LONG_PTR)TreeViewWndProc);
 		}
 		
-		HWND hStatic = CreateWindowExA(0, WC_STATIC, "Object type", WS_VISIBLE | WS_CHILD, rect.right, rect.top + OBJECT_TREE_HEIGHT, MARGIN_RIGHT, 15, hWnd, 0, hInst, NULL);
+		g_hStaticTypesWnd = CreateWindowExA(0, WC_STATIC, "Object type", WS_VISIBLE | WS_CHILD, rect.right, rect.top + OBJECT_TREE_HEIGHT, MARGIN_RIGHT, 15, hWnd, 0, hInst, NULL);
 		{
-			SetWindowFont(hStatic, GetStockObject(DEFAULT_GUI_FONT), FALSE);
+			SetWindowFont(g_hStaticTypesWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
 		}
 
 		g_hComboTypesWnd = CreateWindowExA(0, WC_COMBOBOX, "", WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_SORT | CBS_DROPDOWNLIST | CBS_HASSTRINGS, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, (HMENU)IDC_CMB_TYPE, hInst, NULL);
@@ -444,9 +364,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			SetWindowFont(g_hComboTypesWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
 		}
 
-		hStatic = CreateWindowExA(0, WC_STATIC, "Object class", WS_VISIBLE | WS_CHILD, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 25, MARGIN_RIGHT, 15, hWnd, 0, hInst, NULL);
+		g_hStaticClassesWnd = CreateWindowExA(0, WC_STATIC, "Object class", WS_VISIBLE | WS_CHILD, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 25, MARGIN_RIGHT, 15, hWnd, 0, hInst, NULL);
 		{
-			SetWindowFont(hStatic, GetStockObject(DEFAULT_GUI_FONT), FALSE);
+			SetWindowFont(g_hStaticClassesWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
 		}
 
 		g_hComboClassesWnd = CreateWindowExA(0, WC_COMBOBOX, "", WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_SORT | CBS_DROPDOWN | CBS_HASSTRINGS, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 15 + 25, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, (HMENU)IDC_CMB_CLASS, hInst, NULL);
@@ -493,15 +413,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_SIZE:
 	{
-		if(g_bDlgWindowVisible)
+		if(m_isPropWindowVisible)
 		{
 			if(wParam == SIZE_MINIMIZED)
 			{
-				ShowWindow(g_hPropDlg, SW_HIDE);
+				g_pPropWindow->hide();
 			}
 			else if(wParam == SIZE_RESTORED)
 			{
-				ShowWindow(g_hPropDlg, SW_SHOW);
+				g_pPropWindow->show();
 			}
 		}
 		GetClientRect(hWnd, &rect);
@@ -537,6 +457,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		MoveWindow(g_hBottomRightWnd, rect.left + iLeftWidth + SPLITTER_BAR_WIDTH, rect.top + iTopHeight + SPLITTER_BAR_WIDTH, rect.right - rect.left - iLeftWidth - SPLITTER_BAR_WIDTH, rect.bottom - rect.top - SPLITTER_BAR_WIDTH - iTopHeight, FALSE);
 		MoveWindow(g_hObjectTreeWnd, rect.right, rect.top, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, FALSE);
 
+		MoveWindow(g_hStaticTypesWnd, rect.right, rect.top + OBJECT_TREE_HEIGHT, MARGIN_RIGHT, 15, FALSE);
+		MoveWindow(g_hComboTypesWnd, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, FALSE);
+		MoveWindow(g_hStaticClassesWnd, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 25, MARGIN_RIGHT, 15, FALSE);
+		MoveWindow(g_hComboClassesWnd, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 15 + 25, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, FALSE);
+
 		InvalidateRect(hWnd, &rect, TRUE);
 
 		{
@@ -568,6 +493,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			EnableMenuItem(hMenu, ID_EDIT_UNDO, MF_ENABLED);
 			EnableMenuItem(hMenu, ID_EDIT_REDO, MF_ENABLED);
 		}
+		XUpdateUndoRedo();
+
 		break;
 
 	case WM_COMMAND:
@@ -630,6 +557,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 
+		case IDC_CTRL_BACK:
+			if(HIWORD(wParam) == 1)
+			{
+				if(IsEditMessage())
+				{
+					HWND hEdit = GetFocus();
+					SendMessage(hEdit, WM_KEYDOWN, VK_CONTROL, 0);
+					SendMessage(hEdit, WM_KEYDOWN, VK_SHIFT, 0);
+					SendMessage(hEdit, WM_KEYDOWN, VK_LEFT, 0);
+					SendMessage(hEdit, WM_KEYUP, VK_LEFT, 0);
+					SendMessage(hEdit, WM_KEYUP, VK_SHIFT, 0);
+					SendMessage(hEdit, WM_KEYUP, VK_CONTROL, 0);
+					SendMessage(hEdit, WM_KEYDOWN, VK_DELETE, 0);
+					SendMessage(hEdit, WM_KEYUP, VK_DELETE, 0);
+					break;
+				}
+			}
+			break;
+
 		case ID_VIEW_AUTOSIZEVIEWS:
 
 			if(HIWORD(wParam) == 1)
@@ -684,6 +630,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case IDC_ESCAPE:
+			if(IsEditMessage())
+			{
+				HWND hEdit = GetFocus();
+				SendMessage(hEdit, WM_KEYDOWN, VK_ESCAPE, 0);
+				SendMessage(hEdit, WM_KEYUP, VK_ESCAPE, 0);
+				break;
+			}
+			//! no break here!
 		case IDC_AB_ARROW:
 			CheckDlgButton(hWnd, IDC_AB_ARROW, TRUE);
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, FALSE);
@@ -727,10 +681,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SendMessage(GetFocus(), EM_UNDO, 0, 0);
 				break;
 			}
-			if(g_pUndoManager->undo())
-			{
-				XUpdateUndoRedo();
-			}
+			g_pUndoManager->undo();
 			break;
 
 		case ID_EDIT_REDO:
@@ -739,10 +690,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SendMessage(GetFocus(), EM_UNDO, 0, 0);
 				break;
 			}
-			if(g_pUndoManager->redo())
-			{
-				XUpdateUndoRedo();
-			}
+			g_pUndoManager->redo();
 			break;
 
 		case ID_EDIT_COPY:
@@ -792,17 +740,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 
 		case ID_EDIT_PROPERTIES:
-			if(g_hPropDlg)
+			if(g_pPropWindow)
 			{
-				ShowWindow(g_hPropDlg, TRUE);
+				g_pPropWindow->show();
 			}
 			else
 			{
-				g_hPropDlg = CreateDialogA(hInst, MAKEINTRESOURCE(IDD_DIALOG1), g_hWndMain, DlgProc);
-				ShowWindow(g_hPropDlg, TRUE);
-				SetWindowPos(g_hPropDlg, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+				g_pPropWindow = new CPropertyWindow(hInst, g_hWndMain);
+				g_pPropWindow->clearClassList();
+				g_pPropWindow->addClass("light_point");
+				g_pPropWindow->addClass("light_spot");
+				g_pPropWindow->addClass("info_player_spawn");
+				g_pPropWindow->addClass("logic_relay");
+				g_pPropWindow->addClass("trigger");
+				g_pPropWindow->addClass("trigger_hurt");
+				g_pPropWindow->addClass("trigger_teleport");
+				g_pPropWindow->addClass("prop_dynamic");
+				g_pPropWindow->addClass("prop_button");
+				g_pPropWindow->addClass("prop_breakable");
+				g_pPropWindow->addClass("prop_debris");
 			}
-			g_bDlgWindowVisible = TRUE;
+			m_isPropWindowVisible = TRUE;
+			break;
 
 		case IDC_CMB_TYPE:
 			{
@@ -827,34 +786,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 			}
 			break;
-		}
-		break;
 
-	case WM_KEYDOWN:
-		switch(wParam)
-		{
-		case VK_TAB:
-			/*if(focus == hcolor_button)
+		case IDC_RETURN:
+			if(IsEditMessage())
 			{
-			SendMessage(focus, WM_KILLFOCUS, 0, 0);
-			SendMessage(hclose_button, WM_SETFOCUS, 0, 0);
-
-			focus = hclose_button;
+				SendMessage(GetFocus(), WM_KEYDOWN, VK_RETURN, 0);
+				SendMessage(GetFocus(), WM_KEYUP, VK_RETURN, 0);
+				SendMessage(GetFocus(), WM_CHAR, VK_RETURN, 0);
+				break;
 			}
-			else if(focus == hclose_button)
-			{
-			SendMessage(focus, WM_KILLFOCUS, 0, 0);
-			SendMessage(hcolor_button, WM_SETFOCUS, 0, 0);
-
-
-			focus = hcolor_button;
-			}*/
-
-
-			break;
-
-		case VK_RETURN:
-
+			//! No break here!
+		case IDC_CTRL_RETURN:
 			if(g_xState.bCreateMode)
 			{
 				int iSel1 = ComboBox_GetCurSel(g_hComboTypesWnd);
@@ -867,31 +809,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				char *szClassName = (char*)alloca(sizeof(char)* (iLen2 + 1));
 				ComboBox_GetLBText(g_hComboClassesWnd, iSel2, szClassName);
 
+				if(GetKeyState(VK_CONTROL) >= 0)
+				{
+					CCommandSelect *pCmdUnselect = new CCommandSelect();
+					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+					{
+						IXEditorObject *pObj = g_pLevelObjects[i];
+						if(pObj->isSelected())
+						{
+							pCmdUnselect->addDeselected(i);
+						}
+					}
+					g_pUndoManager->execCommand(pCmdUnselect);
+				}
+
 				CCommandCreate *pCmd = new CCommandCreate(g_xState.vCreateOrigin, szTypeName, szClassName);
 				g_pUndoManager->execCommand(pCmd);
 
 				g_xState.bCreateMode = false;
 			}
-
 			break;
 		}
 		break;
 
-/*
-	case WM_PAINT:
-
-		hdc = BeginPaint(hWnd, &ps);
-
-		// Painting 
-		GetClientRect(hWnd, &rect);
-
-		// TODO: Add any drawing code here...
-		EndPaint(hWnd, &ps);
-
-		break;
-*/
-		// Case statement to handle the left mouse button down message
-		// received while the mouse left button is down
 	case WM_LBUTTONDOWN:
 	{
 		int                 xPos;
@@ -1035,8 +975,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			if(ySizing)
 			{
-				RECT    focusrect;
-				HDC     hdc;
+				RECT focusrect;
+				HDC hdc;
 				hdc = GetDC(hWnd);
 				SetRect(&focusrect, rect.left, iTopHeight + MARGIN_TOP - (WIDTH_ADJUST * 2), rect.right, iTopHeight + MARGIN_TOP + WIDTH_ADJUST);
 				DrawFocusRect(hdc, &focusrect);
@@ -1171,6 +1111,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 
 	case WM_DESTROY:
+		mem_delete(g_pPropWindow);
 		DestroyMenu(g_hMenu);
 		DeleteObject(hcSizeEW);
 		DeleteObject(hcSizeNS);
