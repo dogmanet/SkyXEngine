@@ -78,6 +78,22 @@ INT_PTR CALLBACK CPropertyWindow::PropDlgProc(HWND hWnd, UINT msg, WPARAM wParam
 	return(FALSE);
 }
 
+INT_PTR CALLBACK CPropertyWindow::EditorDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch(msg)
+	{
+	case WM_COMMAND:
+	case WM_NOTIFY:
+		return(SendMessage(GetParent(hWnd), msg, wParam, lParam));
+
+	case WM_LBUTTONDOWN:
+		SetFocus(GetParent(GetParent(hWnd)));
+		return(TRUE);
+
+	}
+	return(FALSE);
+}
+
 INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg)
@@ -124,6 +140,7 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 			SetWindowLongPtr(info.hwndItem, GWLP_WNDPROC, (LONG_PTR)ClassListWndProc);
 
 			m_hPropListWnd = GetDlgItem(m_hPropTabs[0], IDC_LIST1);
+			ListView_SetExtendedListViewStyle(m_hPropListWnd, ListView_GetExtendedListViewStyle(m_hPropListWnd) | LVS_EX_FULLROWSELECT);
 
 			LV_COLUMNA lvColumn;
 			memset(&lvColumn, 0, sizeof(lvColumn));
@@ -149,10 +166,10 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 			ShowWindow(hEditorArea, SW_HIDE);
 			for(int i = 0; i < XPET__LAST; ++i)
 			{
-				m_phEditors[i] = CreateDialog(m_hInstance, MAKEINTRESOURCE(g_uEditorDlgIds[i]), m_hPropTabs[0], NULL);
+				m_phEditors[i] = CreateDialog(m_hInstance, MAKEINTRESOURCE(g_uEditorDlgIds[i]), m_hPropTabs[0], EditorDlgProc);
 				SetWindowPos(m_phEditors[i], HWND_TOP, rcDisplay.left, rcDisplay.top, 0, 0, SWP_NOSIZE);
 			}
-			ShowWindow(m_phEditors[XPET__LAST-1], SW_SHOW);
+			//ShowWindow(m_phEditors[XPET__LAST - 1], SW_SHOW);
 			break;
 		}
 	case WM_CLOSE:
@@ -164,6 +181,13 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 		case TCN_SELCHANGE:
 			onSelChanged();
 			break;
+
+		case LVN_ITEMCHANGED:
+			if(((LPNMHDR)lParam)->idFrom == IDC_LIST1)
+			{
+				onPropListChanged();
+			}
+			break;
 		}
 		break;
 
@@ -171,10 +195,37 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 		switch(HIWORD(wParam))
 		{
 		case CBN_EDITCHANGE:
-			int iLen = ComboBox_GetTextLength(m_hClassListWnd) + 1;
-			char *szTemp = (char*)alloca(sizeof(char)* iLen);
-			ComboBox_GetText(m_hClassListWnd, szTemp, iLen);
-			filterClassList(szTemp);
+			if(1)
+			{
+				int iLen = ComboBox_GetTextLength(m_hClassListWnd) + 1;
+				char *szTemp = (char*)alloca(sizeof(char)* iLen);
+				ComboBox_GetText(m_hClassListWnd, szTemp, iLen);
+				filterClassList(szTemp);
+			}
+			break;
+
+		case EN_KILLFOCUS:
+			if(LOWORD(wParam) == IDC_OPE_TEXT || LOWORD(wParam) == IDC_OPE_FILE)
+			{
+				HWND hEdit = (HWND)lParam;
+				int iValLen = Edit_GetTextLength(hEdit) + 1;
+				char *szValue = (char*)alloca(sizeof(char) * iValLen);
+				Edit_GetText(hEdit, szValue, iValLen);
+
+				int iSel = ListView_GetNextItem(m_hPropListWnd, -1, LVNI_SELECTED);
+				LVITEM lvItem;
+				memset(&lvItem, 0, sizeof(lvItem));
+				lvItem.iItem = iSel;
+				lvItem.mask = LVIF_PARAM;
+				ListView_GetItem(m_hPropListWnd, &lvItem);
+				prop_s *pField = &m_aPropFields[AAString((char*)lvItem.lParam)];
+
+				setPropFieldValue(pField->field.szKey, szValue);
+				if(m_pCallback)
+				{
+					m_pCallback->onPropertyChanged(pField->field.szKey, szValue);
+				}
+			}
 			break;
 		}
 		break;
@@ -205,6 +256,24 @@ LRESULT CALLBACK CPropertyWindow::ClassListWndProc(HWND hWnd, UINT message, WPAR
 	return(CallWindowProc(pThis->m_pfnClassListOldWndproc, hWnd, message, wParam, lParam));
 }
 
+void CPropertyWindow::onPropListChanged()
+{
+	if(ListView_GetSelectedCount(m_hPropListWnd))
+	{
+		int iSel = ListView_GetNextItem(m_hPropListWnd, -1, LVNI_SELECTED);
+		LVITEM lvItem;
+		memset(&lvItem, 0, sizeof(lvItem));
+		lvItem.iItem = iSel;
+		lvItem.mask = LVIF_PARAM;
+		ListView_GetItem(m_hPropListWnd, &lvItem);
+		prop_s *pField = &m_aPropFields[AAString((char*)lvItem.lParam)];
+		
+		SetDlgItemTextW(m_hPropTabs[0], IDC_OP_HELP, pField->field.szHelp ? StringW(String(pField->field.szHelp)).c_str() : L"");
+
+		initEditor(pField->field.editorType, pField->field.pEditorData, pField->sValue.c_str());
+	}
+}
+
 void CPropertyWindow::onSelChanged()
 {
 	int iSel = TabCtrl_GetCurSel(m_hTabControl);
@@ -227,7 +296,6 @@ void CPropertyWindow::clearClassList()
 	ComboBox_Enable(m_hClassListWnd, FALSE);
 	ComboBox_ResetContent(m_hClassListWnd);
 }
-
 void CPropertyWindow::addClass(const char *szClassName)
 {
 	m_asClassList.push_back(szClassName);
@@ -266,16 +334,76 @@ void CPropertyWindow::filterClassList(const char *szFilter)
 void CPropertyWindow::clearProps()
 {
 	ListView_DeleteAllItems(m_hPropListWnd);
+	m_aPropFields.clear();
 }
 void CPropertyWindow::addPropField(const X_PROP_FIELD *pField, const char *szValue)
 {
 	m_aPropFields[AAString(pField->szKey)] = {*pField, szValue ? szValue : ""};
 	LVITEMA lvItem;
 	memset(&lvItem, 0, sizeof(lvItem));
+	lvItem.mask = LVIF_TEXT | LVIF_PARAM;
+	lvItem.pszText = (LPSTR)pField->szName;
+	lvItem.cchTextMax = strlen(lvItem.pszText);
+	lvItem.lParam = (LPARAM)pField->szKey;
+	ListView_InsertItem(m_hPropListWnd, &lvItem);
 
-	//ListView_InsertItem(m_hPropListWnd, &lvItem);
+	if(szValue)
+	{
+		setPropFieldValue(pField->szKey, szValue);
+	}
+
 }
 void CPropertyWindow::setPropFieldValue(const char *szKey, const char *szValue)
 {
-	m_aPropFields[AAString(szKey)].sValue = szValue;
+	prop_s *pField = &m_aPropFields[AAString(szKey)];
+	pField->sValue = szValue;
+
+	LVFINDINFOA lvFindInfo;
+	memset(&lvFindInfo, 0, sizeof(lvFindInfo));
+	lvFindInfo.flags = LVFI_PARAM;
+	lvFindInfo.lParam = (LPARAM)szKey;
+	int iID = ListView_FindItem(m_hPropListWnd, -1, &lvFindInfo);
+
+	ListView_SetItemText(m_hPropListWnd, iID, 1, (LPSTR)pField->sValue.c_str());
+
+	onPropListChanged();
+}
+
+void CPropertyWindow::initEditor(X_PROP_EDITOR_TYPE type, const void *pData, const char *szValue)
+{
+	if(m_editorActive != XPET__LAST)
+	{
+		ShowWindow(m_phEditors[m_editorActive], SW_HIDE);
+	}
+	m_editorActive = type;
+	HWND hEditorDlg = m_phEditors[m_editorActive];
+	ShowWindow(hEditorDlg, SW_SHOW);
+
+	switch(type)
+	{
+	case XPET_TEXT:
+		SetDlgItemText(hEditorDlg, IDC_OPE_TEXT, szValue);
+		break;
+	case XPET_FILE:
+		SetDlgItemText(hEditorDlg, IDC_OPE_FILE, szValue);
+		break;
+	case XPET_COMBO:
+		if(1)
+		{
+			HWND hCombo = GetDlgItem(hEditorDlg, IDC_OPE_COMBO);
+			ComboBox_ResetContent(hCombo);
+			edt_kv *pKV = (edt_kv*)pData;
+			while(pKV->szKey)
+			{
+				ComboBox_AddString(hCombo, pKV->szKey);
+				ComboBox_SetItemData(hCombo, ComboBox_GetCount(hCombo) - 1, pKV->szValue);
+				if(!fstrcmp(pKV->szValue, szValue))
+				{
+					ComboBox_SetCurSel(hCombo, ComboBox_GetCount(hCombo) - 1);
+				}
+				++pKV;
+			}
+		}
+		break;
+	}
 }

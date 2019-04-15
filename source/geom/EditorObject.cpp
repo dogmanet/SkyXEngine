@@ -166,7 +166,7 @@ void CEditorObject::create()
 
 void CEditorObject::setKV(const char *szKey, const char *szValue)
 {
-	if(!strcmp(szKey, "model"))
+	if(!fstrcmp(szKey, "model"))
 	{
 		m_sModelName = szValue;
 		if(ID_VALID(m_idModel))
@@ -174,7 +174,7 @@ void CEditorObject::setKV(const char *szKey, const char *szValue)
 			// recreate
 		}
 	}
-	else if(!strcmp(szKey, "name"))
+	else if(!fstrcmp(szKey, "name"))
 	{
 		m_sName = szValue;
 		if(ID_VALID(m_idModel))
@@ -182,9 +182,9 @@ void CEditorObject::setKV(const char *szKey, const char *szValue)
 			SGeom_ModelSetName(m_idModel, szValue);
 		}
 	}
-	else if(!strcmp(szKey, "segmentate"))
+	else if(!fstrcmp(szKey, "segmentate"))
 	{
-		m_bSegmentation = !strcmp(szKey, "1") || !strcmp(szKey, "true") || !strcmp(szKey, "yes");
+		m_bSegmentation = !fstrcmp(szKey, "1") || !fstrcmp(szKey, "true") || !fstrcmp(szKey, "yes");
 		if(ID_VALID(m_idModel))
 		{
 			// recreate
@@ -193,15 +193,15 @@ void CEditorObject::setKV(const char *szKey, const char *szValue)
 }
 const char *CEditorObject::getKV(const char *szKey)
 {
-	if(!strcmp(szKey, "model"))
+	if(!fstrcmp(szKey, "model"))
 	{
 		return(m_sModelName.c_str());
 	}
-	else if(!strcmp(szKey, "name"))
+	else if(!fstrcmp(szKey, "name"))
 	{
 		return(m_sName.c_str());
 	}
-	else if(!strcmp(szKey, "segmentate"))
+	else if(!fstrcmp(szKey, "segmentate"))
 	{
 		m_szSegmentation[0] = m_bSegmentation ? '1' : '0';
 		m_szSegmentation[1] = 0;

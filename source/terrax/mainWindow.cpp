@@ -759,6 +759,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				g_pPropWindow->addClass("prop_button");
 				g_pPropWindow->addClass("prop_breakable");
 				g_pPropWindow->addClass("prop_debris");
+
+				X_PROP_FIELD field;
+				field.editorType = XPET_TEXT;
+				field.szKey = "name";
+				field.szName = "Name";
+				field.szHelp = "Entity name to refer from other objects";
+				g_pPropWindow->addPropField(&field, "test");
+
+				field.editorType = XPET_FILE;
+				field.szKey = "origin";
+				field.szName = "Origin";
+				field.szHelp = "Entity origin тест";
+				g_pPropWindow->addPropField(&field, "0 0 0");
 			}
 			m_isPropWindowVisible = TRUE;
 			break;

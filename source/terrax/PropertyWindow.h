@@ -23,18 +23,22 @@ struct X_PROP_FIELD
 	const char *szName;
 	X_PROP_EDITOR_TYPE editorType;
 	const void *pEditorData;
+	const char *szHelp;
 };
 
 class CPropertyWindow
 {
 protected:
+	INT_PTR CALLBACK dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static INT_PTR CALLBACK PropDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	INT_PTR CALLBACK dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK ClassListWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
+	static INT_PTR CALLBACK EditorDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK ClassListWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	
 	void onSelChanged();
+	void onPropListChanged();
 	void filterClassList(const char *szFilter);
+	void initEditor(X_PROP_EDITOR_TYPE type, const void *pData, const char *szValue);
 public:
 	CPropertyWindow(HINSTANCE hInstance, HWND hMainWnd);
 	~CPropertyWindow();
@@ -50,6 +54,17 @@ public:
 	void addPropField(const X_PROP_FIELD *pField, const char *szValue = NULL);
 	void setPropFieldValue(const char *szKey, const char *szValue);
 
+	void setClassName(const char *szClassName);
+	void allowClassChange(bool bAllow);
+
+	class ICallback
+	{
+	public:
+		virtual void onClassChanged(const char *szNewClassName) = 0;
+		virtual bool onPropertyChanged(const char *szKey, const char *szValue) = 0;
+	};
+
+	void setCallback(ICallback *pCallback);
 
 protected:
 
@@ -74,7 +89,16 @@ protected:
 		String sValue;
 	};
 
+	struct edt_kv
+	{
+		const char *szKey;
+		const char *szValue;
+	};
+
 	AssotiativeArray<AAString, prop_s> m_aPropFields;
+	X_PROP_EDITOR_TYPE m_editorActive = XPET__LAST;
+
+	ICallback *m_pCallback = NULL;
 };
 
 #endif
