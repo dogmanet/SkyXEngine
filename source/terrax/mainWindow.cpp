@@ -60,7 +60,7 @@ BOOL g_isYResizeable = TRUE;
 BOOL g_is3DRotating = FALSE;
 BOOL g_is3DPanning = FALSE;
 
-BOOL m_isPropWindowVisible = FALSE;
+BOOL g_isPropWindowVisible = FALSE;
 CPropertyWindow *g_pPropWindow = NULL;
 
 extern HACCEL g_hAccelTable;
@@ -413,7 +413,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_SIZE:
 	{
-		if(m_isPropWindowVisible)
+		if(g_isPropWindowVisible)
 		{
 			if(wParam == SIZE_MINIMIZED)
 			{
@@ -750,15 +750,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				g_pPropWindow->clearClassList();
 				g_pPropWindow->addClass("light_point");
 				g_pPropWindow->addClass("light_spot");
-				g_pPropWindow->addClass("info_player_spawn");
-				g_pPropWindow->addClass("logic_relay");
-				g_pPropWindow->addClass("trigger");
-				g_pPropWindow->addClass("trigger_hurt");
-				g_pPropWindow->addClass("trigger_teleport");
-				g_pPropWindow->addClass("prop_dynamic");
-				g_pPropWindow->addClass("prop_button");
-				g_pPropWindow->addClass("prop_breakable");
-				g_pPropWindow->addClass("prop_debris");
+				// g_pPropWindow->addClass("info_player_spawn");
+				// g_pPropWindow->addClass("logic_relay");
+				// g_pPropWindow->addClass("trigger");
+				// g_pPropWindow->addClass("trigger_hurt");
+				// g_pPropWindow->addClass("trigger_teleport");
+				// g_pPropWindow->addClass("prop_dynamic");
+				// g_pPropWindow->addClass("prop_button");
+				// g_pPropWindow->addClass("prop_breakable");
+				// g_pPropWindow->addClass("prop_debris");
 
 				X_PROP_FIELD field;
 				field.editorType = XPET_TEXT;
@@ -773,7 +773,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				field.szHelp = "Entity origin тест";
 				g_pPropWindow->addPropField(&field, "0 0 0");
 			}
-			m_isPropWindowVisible = TRUE;
+			g_isPropWindowVisible = TRUE;
 			break;
 
 		case IDC_CMB_TYPE:

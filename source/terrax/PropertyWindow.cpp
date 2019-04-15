@@ -131,6 +131,7 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 
 			onSelChanged();
 
+			m_hNoPropsText = GetDlgItem(m_hDlgWnd, IDC_NO_PROPS);
 
 			m_hClassListWnd = GetDlgItem(m_hPropTabs[0], IDC_CLASS_NAME);
 			COMBOBOXINFO info = {sizeof(COMBOBOXINFO)};
@@ -236,7 +237,7 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 	return(TRUE);
 }
 
-LRESULT CALLBACK CPropertyWindow::ClassListWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+INT_PTR CALLBACK CPropertyWindow::ClassListWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	CPropertyWindow *pThis = (CPropertyWindow*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	switch(message)
@@ -295,6 +296,13 @@ void CPropertyWindow::clearClassList()
 	m_asClassList.clearFast();
 	ComboBox_Enable(m_hClassListWnd, FALSE);
 	ComboBox_ResetContent(m_hClassListWnd);
+
+	ShowWindow(m_hTabControl, SW_HIDE);
+	ShowWindow(m_hNoPropsText, SW_SHOW);
+	if(m_hCurrentTab)
+	{
+		ShowWindow(m_hCurrentTab, SW_HIDE);
+	}
 }
 void CPropertyWindow::addClass(const char *szClassName)
 {
@@ -306,6 +314,12 @@ void CPropertyWindow::addClass(const char *szClassName)
 		ComboBox_SetCurSel(m_hClassListWnd, 0);
 	}
 	ComboBox_Enable(m_hClassListWnd, iCount > 1);
+	ShowWindow(m_hTabControl, SW_SHOW);
+	ShowWindow(m_hNoPropsText, SW_HIDE);
+	if(m_hCurrentTab)
+	{
+		ShowWindow(m_hCurrentTab, SW_SHOW);
+	}
 }
 
 void CPropertyWindow::filterClassList(const char *szFilter)

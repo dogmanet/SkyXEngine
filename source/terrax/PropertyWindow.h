@@ -62,6 +62,7 @@ public:
 	public:
 		virtual void onClassChanged(const char *szNewClassName) = 0;
 		virtual bool onPropertyChanged(const char *szKey, const char *szValue) = 0;
+		virtual void onWindowClose() = 0;
 	};
 
 	void setCallback(ICallback *pCallback);
@@ -69,13 +70,14 @@ public:
 protected:
 
 	HINSTANCE m_hInstance;
-	HWND m_hDlgWnd; // tab control handle
-	HWND m_hTabControl; // tab control handle
-	HWND m_hCurrentTab = NULL; // tab dialog handle
+	HWND m_hDlgWnd;
+	HWND m_hTabControl;
+	HWND m_hCurrentTab = NULL;
 	Array<HWND> m_hPropTabs;
 
 	HWND m_hClassListWnd = NULL;
 	HWND m_hPropListWnd = NULL;
+	HWND m_hNoPropsText = NULL;
 
 	WNDPROC m_pfnClassListOldWndproc;
 
