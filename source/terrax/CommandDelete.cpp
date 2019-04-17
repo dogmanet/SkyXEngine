@@ -10,6 +10,7 @@ bool CCommandDelete::exec()
 		pObj->pObject->remove();
 		g_pLevelObjects.erase(pObj->idObject);
 	}
+	XUpdatePropWindow();
 	return(m_aObjects.size());
 }
 bool CCommandDelete::undo()
@@ -37,6 +38,7 @@ bool CCommandDelete::undo()
 		}
 		g_pLevelObjects[pObj->idObject] = pObj->pObject;
 	}
+	XUpdatePropWindow();
 	return(true);
 }
 

@@ -1,0 +1,363 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<activityRootModel xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" xmlns:dm1="http://schemas.microsoft.com/dsltools/Kernel" xmlns:dm2="http://schemas.microsoft.com/dsltools/Component" xmlns:dm3="http://schemas.microsoft.com/dsltools/UseCase" xmlns:dm4="http://schemas.microsoft.com/dsltools/Activity" xmlns:dm5="http://schemas.microsoft.com/dsltools/Interaction" xmlns:dm6="http://schemas.microsoft.com/dsltools/UmlModelLibrary" xmlns:dm7="http://schemas.microsoft.com/dsltools/UmlDiagrams" xmlns:dm8="http://schemas.microsoft.com/dsltools/ModelStore" xmlns:dm9="http://schemas.microsoft.com/VisualStudio/TeamArchitect/SequenceDesigner" xmlns:dm10="http://schemas.microsoft.com/dsltools/SimpleShapesModel" xmlns:dm11="http://schemas.microsoft.com/VisualStudio/TeamArchitect/ComponentDesigner" xmlns:dm12="http://schemas.microsoft.com/dsltools/LogicalClassDesigner" xmlns:dm13="http://schemas.microsoft.com/dsltools/UseCaseModel" dslVersion="1.0.0.0" Id="9fefa3da-85d9-4f9c-83d0-34ab3200f94f" name="Activity1" linkedPackageId="30eedfea-e08c-4cbd-871a-034ccada0fa1" xmlns="http://schemas.microsoft.com/VisualStudio/TeamArchitect/ActivityDesigner">
+  <ownedCommentsInternal>
+    <comment Id="9271bd3d-6935-4141-9888-56e0899dff8a">
+      <elementDefinition Id="5c8210d1-8f2d-4575-8b8f-3e99488ebc60" />
+      <body>В случае возникновения дополнительных вопросов - обращайтесь к бумажным материалам (не прилагаются)</body>
+    </comment>
+  </ownedCommentsInternal>
+  <profileInstances>
+    <packageHasProfileInstances Id="95e3d888-ae31-4dd3-993b-e077f9060344">
+      <profileInstance Id="49f46c45-741a-41bc-b47e-c7ff036708f4" name="StandardProfileL2">
+        <elementDefinition Id="e34d544e-0fea-4ed6-ac5e-1b74119ac791" />
+      </profileInstance>
+      <elementDefinition Id="0caec977-1f8c-4ba3-a7db-8cc9ad9cc73b" />
+    </packageHasProfileInstances>
+    <packageHasProfileInstances Id="16978ba0-4b35-40e3-9c70-c8af7f28c8cd">
+      <profileInstance Id="e31ec80f-3486-42e2-88d1-333c4aab3c47" name="StandardProfileL3">
+        <elementDefinition Id="532ea607-fb19-44b8-8502-3351b05452be" />
+      </profileInstance>
+      <elementDefinition Id="29349502-908c-4fda-9054-c48619c59ed0" />
+    </packageHasProfileInstances>
+  </profileInstances>
+  <packagedElements>
+    <activityRootModelHasActivity>
+      <activity Id="314f00c0-1188-4b39-a666-2ad407fab904" name="Activity1" isAbstract="false" isLeaf="false" isActiveClass="false" isReentrant="false" isReadOnly="false" isSingleExecution="false">
+        <elementDefinition Id="ee1bf395-5f56-45b9-bb1d-d8d28ea49f3b" />
+        <nodes>
+          <opaqueAction Id="5e7894cd-e36c-4def-95ba-b80f72285351" name="Доделать редактор свойств объектов" isLeaf="false">
+            <elementDefinition Id="1da3c341-a236-46a0-a9a9-96734081eecc" />
+            <flowNodeTargets>
+              <controlFlow Id="2dfe8a94-aee4-400b-a428-581eb756840b" isLeaf="false">
+                <opaqueActionMoniker Id="8af683f7-cfa3-4198-8090-453aaa519311" LastKnownName="Сделать реализацию IEditable для sxgame" />
+                <elementDefinition Id="4153ec51-3ef7-4c77-9be4-e538d194ce2f" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <forkNode Id="c8bb01ad-3579-45d7-ae78-36892d4152ab" name="Fork1" isLeaf="false">
+            <elementDefinition Id="12985837-86ed-45f4-9fcb-04ea5d11522b" />
+            <flowNodeTargets>
+              <controlFlow Id="34900180-e93c-459a-8a15-3a1eab7a248a" isLeaf="false">
+                <opaqueActionMoniker Id="5e7894cd-e36c-4def-95ba-b80f72285351" LastKnownName="Доделать редактор свойств объектов" />
+                <elementDefinition Id="bd5251af-d13d-41b9-b800-617f58c77c7f" />
+              </controlFlow>
+              <controlFlow Id="55c70911-ae90-4ad0-8f93-15e90c8a1879" isLeaf="false">
+                <opaqueActionMoniker Id="2eb090ad-adf0-4e99-9dd6-45002a1832ca" LastKnownName="Разработать интерфейсы звуковой подсистемы и звука" />
+                <elementDefinition Id="a027a0de-7a89-449d-8530-47b8fb87d34c" />
+              </controlFlow>
+              <controlFlow Id="512eb6d0-059f-4221-830d-5f9fc6ca5a78" isLeaf="false">
+                <opaqueActionMoniker Id="dbd73dc3-c240-47f3-b5f3-a23d1964e592" LastKnownName="Разработать интерфейс модели (как хранилище данных)" />
+                <elementDefinition Id="a4482f6d-4755-4fd8-9d98-d767edc15374" />
+              </controlFlow>
+              <controlFlow Id="7c714e48-daac-4ec6-af0a-d73306a2dc80" isLeaf="false">
+                <opaqueActionMoniker Id="921d5e90-4991-47dd-90c7-81b6428fef71" LastKnownName="Перевести GUI на новое API шейдерных констант" />
+                <elementDefinition Id="8ebd6240-bb78-46de-8ab9-a6bc1670b174" />
+              </controlFlow>
+              <controlFlow Id="04c99f53-fa59-4187-81e4-8e485383322a" isLeaf="false">
+                <opaqueActionMoniker Id="7b0e3b53-183a-410d-a0e4-f5e85fe0ebbf" LastKnownName="Реализовать систему вариантов шейдеров" />
+                <elementDefinition Id="f451ebe7-0ee5-424e-b591-824b0593a1b7" />
+              </controlFlow>
+              <controlFlow Id="e3c5d931-e15f-49a0-99d8-00a7f3942fb6" isLeaf="false">
+                <opaqueActionMoniker Id="1fde6b3b-abc7-4a28-af1b-54d2b7877ef5" LastKnownName="Реализовать новый интерфейс взаимодействия с файловой системой" />
+                <elementDefinition Id="afd6ab74-ffc9-4a51-b71d-4fbc3ee4dcf3" />
+              </controlFlow>
+            </flowNodeTargets>
+          </forkNode>
+          <opaqueAction Id="8af683f7-cfa3-4198-8090-453aaa519311" name="Сделать реализацию IEditable для sxgame" isLeaf="false">
+            <elementDefinition Id="52912ed3-6607-4f71-b2f1-110f511ef668" />
+            <flowNodeTargets>
+              <controlFlow Id="1d3a05b9-689e-46b3-a433-340f28c4605a" isLeaf="false">
+                <opaqueActionMoniker Id="760de322-be87-483b-a317-f28791eabeac" LastKnownName="Протестировать освещение от точечного света и солнца" />
+                <elementDefinition Id="37b56f18-7ad6-4ed7-b4a9-792412ff2563" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="760de322-be87-483b-a317-f28791eabeac" name="Протестировать освещение от точечного света и солнца" isLeaf="false">
+            <elementDefinition Id="39762cca-7f22-4a6d-aebc-0c6d6812904a" />
+            <flowNodeTargets>
+              <controlFlow Id="5da59a52-e5a3-4669-8396-df87221ca418" isLeaf="false">
+                <opaqueActionMoniker Id="cbb72d37-2655-4ead-9d73-5909efc51e0c" LastKnownName="Реализовать новое API проверки видимости для подсистем рендера" />
+                <elementDefinition Id="c7f16d9e-1679-42a0-8bf8-50a81d082f42" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="2eb090ad-adf0-4e99-9dd6-45002a1832ca" name="Разработать интерфейсы звуковой подсистемы и звука" isLeaf="false">
+            <elementDefinition Id="f7219b1f-1942-458b-aaa1-a8a5103584b6" />
+            <flowNodeTargets>
+              <controlFlow Id="9adcde21-e960-4606-941c-df7410a04831" isLeaf="false">
+                <opaqueActionMoniker Id="0b9f04ba-1d70-4ee6-b6db-d227dd28d422" LastKnownName="Сделать пустую реализацию (заглушку) интерфейсов звука" />
+                <elementDefinition Id="967ece73-c93e-446e-8cb1-7f2261d28910" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="4a344b68-309f-4130-a9d4-c91285d42491" name="Перевести все подсистемы на новые интерфейсы звука" isLeaf="false">
+            <elementDefinition Id="56ac9686-3726-435a-93a2-f6499aba2d33" />
+            <flowNodeTargets>
+              <controlFlow Id="6b6d99a8-44f5-4ae8-bb92-f2ab259a4657" isLeaf="false">
+                <opaqueActionMoniker Id="05ea50b8-88b8-40a4-b401-20a9da6aa1ce" LastKnownName="Вынести звуковую подсистему в плагин, подклбючить к новым интерфейсам, обновление вынести в отдельный поток. Нижележащее звуковое API не менять" />
+                <elementDefinition Id="0d264a61-4f78-4fe1-b9ea-6c1ab28c6808" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="0b9f04ba-1d70-4ee6-b6db-d227dd28d422" name="Сделать пустую реализацию (заглушку) интерфейсов звука" isLeaf="false">
+            <elementDefinition Id="37845f57-0d46-4a0b-88eb-8894b4b42652" />
+            <flowNodeTargets>
+              <controlFlow Id="5100a23a-f3b0-4b4a-bdc7-7c1558e67c87" isLeaf="false">
+                <opaqueActionMoniker Id="4a344b68-309f-4130-a9d4-c91285d42491" LastKnownName="Перевести все подсистемы на новые интерфейсы звука" />
+                <elementDefinition Id="90c9594e-a3c1-4afd-843b-2df582833a60" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="05ea50b8-88b8-40a4-b401-20a9da6aa1ce" name="Вынести звуковую подсистему в плагин, подклбючить к новым интерфейсам, обновление вынести в отдельный поток. Нижележащее звуковое API не менять" isLeaf="false">
+            <elementDefinition Id="9f03843c-fb90-4775-8a29-9d018d7b9cae" />
+            <flowNodeTargets>
+              <controlFlow Id="afe1c4e1-224e-4b46-a473-7ea7972392fb" isLeaf="false">
+                <joinNodeMoniker Id="f711b13c-69f7-44d7-b234-71cf85051618" LastKnownName="Join2" />
+                <elementDefinition Id="7b833f1c-3f86-4c0c-be0b-a4c938ab3ad2" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="f62e3b67-bc52-4842-bbb8-aec5ee87bea1" name="Спроектировать интерфейсы необходимых объектов из физики" isLeaf="false">
+            <elementDefinition Id="d11e937c-485f-4cc0-af53-4487a1b38ae4" />
+            <flowNodeTargets>
+              <controlFlow Id="07109a22-7f53-4be5-86b1-4e3203b1ead0" isLeaf="false">
+                <opaqueActionMoniker Id="2f7c5181-7ce0-4947-a5a0-efabc5e508ad" LastKnownName="Перевести взаимодействие с физ-движком на новые интерфейсы. Возможность прямого доступа к bullet извне библиотеки физики убрать" />
+                <elementDefinition Id="2c558c00-aaed-4a92-a2e4-5e495803fef9" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="2f7c5181-7ce0-4947-a5a0-efabc5e508ad" name="Перевести взаимодействие с физ-движком на новые интерфейсы. Возможность прямого доступа к bullet извне библиотеки физики убрать" isLeaf="false">
+            <elementDefinition Id="01f46344-23c5-4f07-bcd3-6a5c90ff79bd" />
+            <flowNodeTargets>
+              <controlFlow Id="f80ddcba-2e6b-41d9-a2de-38e68fca1f4b" isLeaf="false">
+                <joinNodeMoniker Id="f711b13c-69f7-44d7-b234-71cf85051618" LastKnownName="Join2" />
+                <elementDefinition Id="87a6b23c-f620-4288-bcc5-eca6f7df5ae4" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="cbb72d37-2655-4ead-9d73-5909efc51e0c" name="Реализовать новое API проверки видимости для подсистем рендера" isLeaf="false">
+            <elementDefinition Id="61ddde74-565a-41ff-bb28-8ffbd1ccc874" />
+            <flowNodeTargets>
+              <controlFlow Id="14b1ce29-c44f-4632-b012-587e75fb7acc" isLeaf="false">
+                <joinNodeMoniker Id="f711b13c-69f7-44d7-b234-71cf85051618" LastKnownName="Join2" />
+                <elementDefinition Id="5e84f787-8e34-4ed7-995b-e4a64b22f2c3" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="fbe7218a-2c7a-42b1-8f62-8ef6c95fa582" name="Перевести загрузку/выгрузку уровня на предназначенное для этого сообщение. Убрать прямые вызовы" isLeaf="false">
+            <elementDefinition Id="34852d98-dba9-460b-9c2c-f22aac70587e" />
+            <flowNodeTargets>
+              <controlFlow Id="4a28ef05-59af-46e3-bb93-77d4005d3d07" isLeaf="false">
+                <joinNodeMoniker Id="f711b13c-69f7-44d7-b234-71cf85051618" LastKnownName="Join2" />
+                <elementDefinition Id="dab94da3-baab-4d2b-bcbd-99b5d653a13a" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="1fde6b3b-abc7-4a28-af1b-54d2b7877ef5" name="Реализовать новый интерфейс взаимодействия с файловой системой" isLeaf="false">
+            <elementDefinition Id="967613e3-4bb3-4ccf-9358-104b1ea555ad" />
+            <flowNodeTargets>
+              <controlFlow Id="58f270a4-28a0-4709-b374-dfa373044e38" isLeaf="false">
+                <opaqueActionMoniker Id="c497e2d9-c562-405b-a731-7e2cccf764b1" LastKnownName="Текстуры грузить асинхронно" />
+                <elementDefinition Id="a0132cca-5c67-46f3-8126-83b40eb12a55" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="ebca9219-94f5-489d-8c60-44987c5a572d" name="Перевести всю работу с файлами на новый интерфейс файловой системы" isLeaf="false">
+            <elementDefinition Id="30077912-5b0e-488e-9027-d860db1365a1" />
+            <flowNodeTargets>
+              <controlFlow Id="2bf40b65-72f0-4110-b17b-f093c701a29b" isLeaf="false">
+                <opaqueActionMoniker Id="f62e3b67-bc52-4842-bbb8-aec5ee87bea1" LastKnownName="Спроектировать интерфейсы необходимых объектов из физики" />
+                <elementDefinition Id="56409629-bb09-4542-9a3e-c64e577c8be0" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="1039652e-2a7a-404f-bef7-d2ddd6accd40" name="Реализовать интерфейсы нового рендера для травы" isLeaf="false">
+            <elementDefinition Id="9396ace8-e70b-4adb-87cd-c4caa7e9dd9c" />
+            <flowNodeTargets>
+              <controlFlow Id="8effda7e-72ae-46bd-863f-552a425fbf4d" isLeaf="false">
+                <joinNodeMoniker Id="22d64cb1-73ac-48ff-a1c9-755cf1ff30bf" LastKnownName="Join1" />
+                <elementDefinition Id="e554d60f-0174-45ca-873b-74761c60eded" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="f3cbc7be-c276-4e30-a4ae-2fde539822cc" name="Реализовать интерфейсы нового рендера для анимаций" isLeaf="false">
+            <elementDefinition Id="a16e0373-d75a-4b41-b510-ae775c25ff4b" />
+            <flowNodeTargets>
+              <controlFlow Id="7786afdb-dd80-4b42-b5eb-f62cf43ff81f" isLeaf="false">
+                <joinNodeMoniker Id="22d64cb1-73ac-48ff-a1c9-755cf1ff30bf" LastKnownName="Join1" />
+                <elementDefinition Id="a1c26931-cb72-47e3-9ac2-c7bb8103c5cd" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="13fb9ab4-e0df-47ee-9a44-5745a20b0eaf" name="Вынести всю работу с форматом dse в соответствующий плагин" isLeaf="false">
+            <elementDefinition Id="51e5062d-d535-4904-a0df-b2e159620c39" />
+            <flowNodeTargets>
+              <controlFlow Id="df1826de-44d7-4ae1-84c3-ffb79e061138" isLeaf="false">
+                <forkNodeMoniker Id="b2ab68e5-cd66-4e15-b140-8bb89e0a1b2c" LastKnownName="Fork2" />
+                <elementDefinition Id="a65187b8-e237-45c9-905f-1e394201a2c5" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="dbd73dc3-c240-47f3-b5f3-a23d1964e592" name="Разработать интерфейс модели (как хранилище данных)" isLeaf="false">
+            <elementDefinition Id="be37ef50-ddfc-4fb7-8217-c9402d74f53f" />
+            <flowNodeTargets>
+              <controlFlow Id="8a05697c-dc3e-4318-aa5b-3be80c2c0e3d" isLeaf="false">
+                <opaqueActionMoniker Id="a401c344-c376-4625-a203-d4928ba8c653" LastKnownName="Разработать интерфейсы провайдера статических/динамических/анимационных моделей" />
+                <elementDefinition Id="ab8fe006-0d58-4844-8101-a6c75927cdd5" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="a401c344-c376-4625-a203-d4928ba8c653" name="Разработать интерфейсы провайдера статических/динамических/анимационных моделей" isLeaf="false">
+            <elementDefinition Id="9dec1e53-2abf-43d1-9ebc-f4f9f4b6c6f6" />
+            <flowNodeTargets>
+              <controlFlow Id="6db4e74a-f848-4485-a6f6-fb09ea8f3267" isLeaf="false">
+                <opaqueActionMoniker Id="a3c8e57c-b67e-479d-8dbb-0b2844393aa1" LastKnownName="Реализовать соответствующие интерфейсы в соответствующих подсистемах" />
+                <elementDefinition Id="6954bc1e-9d46-4896-a9fa-926f69107cb6" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="a3c8e57c-b67e-479d-8dbb-0b2844393aa1" name="Реализовать соответствующие интерфейсы в соответствующих подсистемах" isLeaf="false">
+            <elementDefinition Id="a4c0c234-0b06-4432-adc1-8a51164aab70" />
+            <flowNodeTargets>
+              <controlFlow Id="5e1c941c-ff1d-4d1f-ac74-0819d71822a3" isLeaf="false">
+                <opaqueActionMoniker Id="13fb9ab4-e0df-47ee-9a44-5745a20b0eaf" LastKnownName="Вынести всю работу с форматом dse в соответствующий плагин" />
+                <elementDefinition Id="d6110535-efc1-4721-9159-be06fbbc2632" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="e0c75b16-875b-4ac7-8c08-f0d7981f3d72" name="Реализовать рендер статики инстансингом" isLeaf="false">
+            <elementDefinition Id="4a9a112a-425d-42a5-b506-fac594db31f4" />
+            <flowNodeTargets>
+              <controlFlow Id="999cc1e5-087e-4f4d-b7d7-f82a698476bf" isLeaf="false">
+                <opaqueActionMoniker Id="a6da2f86-ab4d-4b33-b834-ffe86ad946e0" LastKnownName="Реализовать рендер прозрачности с сортировкой по дальности, подключить сюда партиклы" />
+                <elementDefinition Id="4239bce4-0768-4115-862e-0864860fccf9" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="81efffe2-7cf4-4057-84b2-dd165393fb25" name="Рендер в TerraX через переопределение пайплайна" isLeaf="false">
+            <elementDefinition Id="a6070431-f2ac-4def-82d8-bd66ebc0abc5" />
+            <flowNodeTargets>
+              <controlFlow Id="0273f69d-648e-4aec-9bb2-ba210a40d560" isLeaf="false">
+                <opaqueActionMoniker Id="66e2ef4c-6b2c-48c5-8cde-e5faa50faf68" LastKnownName="Привязка к сетке в TerraX" />
+                <elementDefinition Id="f9bc4096-4e2c-49f5-94a6-c6a4d41b9925" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="a6da2f86-ab4d-4b33-b834-ffe86ad946e0" name="Реализовать рендер прозрачности с сортировкой по дальности, подключить сюда партиклы" isLeaf="false">
+            <elementDefinition Id="4cfde5ce-9ac2-40f4-8408-62bcd62f6b7d" />
+            <flowNodeTargets>
+              <controlFlow Id="b55cc2ed-09a5-4c8b-977a-28f271935bd9" isLeaf="false">
+                <opaqueActionMoniker Id="fbe7218a-2c7a-42b1-8f62-8ef6c95fa582" LastKnownName="Перевести загрузку/выгрузку уровня на предназначенное для этого сообщение. Убрать прямые вызовы" />
+                <elementDefinition Id="de565d7c-23c3-4e6e-b660-f09638e00cec" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="c497e2d9-c562-405b-a731-7e2cccf764b1" name="Текстуры грузить асинхронно" isLeaf="false">
+            <elementDefinition Id="637b2f6e-6726-4a1f-9a72-c25aa0e31abb" />
+            <flowNodeTargets>
+              <controlFlow Id="bc4cd7f0-650e-4a0e-a196-640857a52268" isLeaf="false">
+                <opaqueActionMoniker Id="b3556b62-613b-443a-8731-0c0ffc42811b" LastKnownName="Модели грузить асинхронно" />
+                <elementDefinition Id="34a466d6-322c-4416-8777-9d04cb4385b2" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="b3556b62-613b-443a-8731-0c0ffc42811b" name="Модели грузить асинхронно" isLeaf="false">
+            <elementDefinition Id="2afaa50d-e05e-430e-8b09-335fb7d076c7" />
+            <flowNodeTargets>
+              <controlFlow Id="642c9bec-07a3-4469-a6fc-13078f5751a2" isLeaf="false">
+                <joinNodeMoniker Id="f711b13c-69f7-44d7-b234-71cf85051618" LastKnownName="Join2" />
+                <elementDefinition Id="24f96c69-04c9-4cb7-8a74-22f6d6fa89e7" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="921d5e90-4991-47dd-90c7-81b6428fef71" name="Перевести GUI на новое API шейдерных констант" isLeaf="false">
+            <elementDefinition Id="29e141f5-02e8-4ec2-870f-eb9711ccfe5c" />
+            <flowNodeTargets>
+              <controlFlow Id="d0a28675-f1d8-467b-ba1c-2244f230d707" isLeaf="false">
+                <opaqueActionMoniker Id="81efffe2-7cf4-4057-84b2-dd165393fb25" LastKnownName="Рендер в TerraX через переопределение пайплайна" />
+                <elementDefinition Id="61ce0249-d887-411e-ab86-25f2f27900d2" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="53df0a99-43dd-4f1e-a599-c4750ad79805" name="Перевести постпроцесс на новое API рендера и шейдерных констант" isLeaf="false">
+            <elementDefinition Id="91952d26-9de3-4e9a-882d-7e714b24a101" />
+            <flowNodeTargets>
+              <controlFlow Id="f05d1cfb-6f7a-462e-8c82-46afb87c88d3" isLeaf="false">
+                <joinNodeMoniker Id="22d64cb1-73ac-48ff-a1c9-755cf1ff30bf" LastKnownName="Join1" />
+                <elementDefinition Id="b8caa682-abb5-404a-a325-c9c4c4f67339" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="45586856-4a9d-43c1-9681-948454e0b12c" name="Оптимизировать алгоритмы кэша теней" isLeaf="false">
+            <elementDefinition Id="960350d8-2e06-40c4-87b0-2e20c602e9b9" />
+          </opaqueAction>
+          <opaqueAction Id="7b0e3b53-183a-410d-a0e4-f5e85fe0ebbf" name="Реализовать систему вариантов шейдеров" isLeaf="false">
+            <elementDefinition Id="565cf3ae-7fc9-4256-919e-19a31c85c08c" />
+            <flowNodeTargets>
+              <controlFlow Id="0a7420a1-31b8-419c-8aaa-2dfb34303c4a" isLeaf="false">
+                <opaqueActionMoniker Id="e0c75b16-875b-4ac7-8c08-f0d7981f3d72" LastKnownName="Реализовать рендер статики инстансингом" />
+                <elementDefinition Id="2020bfff-c42a-4e72-beb8-f09494d6d467" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="66e2ef4c-6b2c-48c5-8cde-e5faa50faf68" name="Привязка к сетке в TerraX" isLeaf="false">
+            <elementDefinition Id="b5452cd0-011c-45e5-8cf2-9ce2ba81a744" />
+            <flowNodeTargets>
+              <controlFlow Id="96e9a5d4-0ef8-48d1-afd4-a6edb3d0b62a" isLeaf="false">
+                <opaqueActionMoniker Id="8102ec15-00ad-4eaa-aa24-86e4b2b4621c" LastKnownName="Сохранение/загрузка уровня в TerraX" />
+                <elementDefinition Id="94c165df-8778-4baa-9e60-ed9aefa0d785" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <opaqueAction Id="8102ec15-00ad-4eaa-aa24-86e4b2b4621c" name="Сохранение/загрузка уровня в TerraX" isLeaf="false">
+            <elementDefinition Id="d1fd4452-ee75-4869-8ea2-17d1ce9aff0a" />
+            <flowNodeTargets>
+              <controlFlow Id="50dab18c-6d6f-4350-bfd5-034f430a481b" isLeaf="false">
+                <joinNodeMoniker Id="f711b13c-69f7-44d7-b234-71cf85051618" LastKnownName="Join2" />
+                <elementDefinition Id="2a37800e-7c58-4daa-8113-a89c9b9e8306" />
+              </controlFlow>
+            </flowNodeTargets>
+          </opaqueAction>
+          <forkNode Id="b2ab68e5-cd66-4e15-b140-8bb89e0a1b2c" name="Fork2" isLeaf="false">
+            <elementDefinition Id="d975ea2a-4cda-41db-8ba1-8626610683f2" />
+            <flowNodeTargets>
+              <controlFlow Id="a69b5c5d-5d10-4efb-a210-b205e29c2fbf" isLeaf="false">
+                <opaqueActionMoniker Id="f3cbc7be-c276-4e30-a4ae-2fde539822cc" LastKnownName="Реализовать интерфейсы нового рендера для анимаций" />
+                <elementDefinition Id="070c36d7-5e3e-4748-ba0c-0b3be7cab923" />
+              </controlFlow>
+              <controlFlow Id="7f6ed460-72a8-49e8-b862-d879e4ef5bbb" isLeaf="false">
+                <opaqueActionMoniker Id="1039652e-2a7a-404f-bef7-d2ddd6accd40" LastKnownName="Реализовать интерфейсы нового рендера для травы" />
+                <elementDefinition Id="11aca23c-95c1-4d8b-a6c5-8ca098165491" />
+              </controlFlow>
+              <controlFlow Id="f8d3039f-eb05-49ec-9e17-9cc1ac56ba35" isLeaf="false">
+                <opaqueActionMoniker Id="53df0a99-43dd-4f1e-a599-c4750ad79805" LastKnownName="Перевести постпроцесс на новое API рендера и шейдерных констант" />
+                <elementDefinition Id="17caf0ca-33ee-4f66-9959-b4c89ab58641" />
+              </controlFlow>
+            </flowNodeTargets>
+          </forkNode>
+          <joinNode Id="22d64cb1-73ac-48ff-a1c9-755cf1ff30bf" name="Join1" isLeaf="false">
+            <elementDefinition Id="d81acfd3-aafe-4ae1-a8db-d20d141fb2cc" />
+            <flowNodeTargets>
+              <controlFlow Id="d098707e-ee79-478f-a807-b9e3a94ffcf8" isLeaf="false">
+                <opaqueActionMoniker Id="ebca9219-94f5-489d-8c60-44987c5a572d" LastKnownName="Перевести всю работу с файлами на новый интерфейс файловой системы" />
+                <elementDefinition Id="79086dde-7bfd-4192-8a26-d2fd5b6364f0" />
+              </controlFlow>
+            </flowNodeTargets>
+          </joinNode>
+          <joinNode Id="f711b13c-69f7-44d7-b234-71cf85051618" name="Join2" isLeaf="false">
+            <elementDefinition Id="b3566cbe-3729-47e4-b41f-fe4226227bb3" />
+            <flowNodeTargets>
+              <controlFlow Id="42e93358-a5b6-4c9b-8e0d-f40d9d7a8eb1" isLeaf="false">
+                <opaqueActionMoniker Id="45586856-4a9d-43c1-9681-948454e0b12c" LastKnownName="Оптимизировать алгоритмы кэша теней" />
+                <elementDefinition Id="92eee252-23c4-4cdb-9c98-eafd6628fc93" />
+              </controlFlow>
+            </flowNodeTargets>
+          </joinNode>
+        </nodes>
+      </activity>
+    </activityRootModelHasActivity>
+  </packagedElements>
+  <package Id="30eedfea-e08c-4cbd-871a-034ccada0fa1" name="design">
+    <elementDefinition Id="2446b10f-7494-4fcd-ba09-aa1c6fd5915d" />
+  </package>
+</activityRootModel>

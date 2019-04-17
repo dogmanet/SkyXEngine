@@ -34,6 +34,8 @@ bool CCommandCreate::exec()
 	m_pObject->create();
 
 	g_pLevelObjects.push_back(m_pObject);
+
+	XUpdatePropWindow();
 	return(true);
 }
 bool CCommandCreate::undo()
@@ -41,5 +43,6 @@ bool CCommandCreate::undo()
 	m_pObject->remove();
 	g_pLevelObjects.erase(g_pLevelObjects.size() - 1);
 
+	XUpdatePropWindow();
 	return(true);
 }

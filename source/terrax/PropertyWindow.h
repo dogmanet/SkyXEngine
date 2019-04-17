@@ -62,7 +62,6 @@ public:
 	public:
 		virtual void onClassChanged(const char *szNewClassName) = 0;
 		virtual bool onPropertyChanged(const char *szKey, const char *szValue) = 0;
-		virtual void onWindowClose() = 0;
 	};
 
 	void setCallback(ICallback *pCallback);

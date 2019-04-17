@@ -201,4 +201,6 @@ void XUpdateSelectionBound();
 bool XRayCast(X_WINDOW_POS wnd);
 bool XIsMouseInSelection(X_WINDOW_POS wnd);
 
+void XUpdatePropWindow();
+
 #endif

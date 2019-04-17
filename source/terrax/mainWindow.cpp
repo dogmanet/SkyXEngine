@@ -417,6 +417,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			if(wParam == SIZE_MINIMIZED)
 			{
+				g_isPropWindowVisible = g_pPropWindow->isVisible();
 				g_pPropWindow->hide();
 			}
 			else if(wParam == SIZE_RESTORED)
@@ -748,8 +749,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				g_pPropWindow = new CPropertyWindow(hInst, g_hWndMain);
 				g_pPropWindow->clearClassList();
-				g_pPropWindow->addClass("light_point");
-				g_pPropWindow->addClass("light_spot");
+				// g_pPropWindow->addClass("light_point");
+				// g_pPropWindow->addClass("light_spot");
 				// g_pPropWindow->addClass("info_player_spawn");
 				// g_pPropWindow->addClass("logic_relay");
 				// g_pPropWindow->addClass("trigger");
@@ -2066,4 +2067,9 @@ void XUpdateUndoRedo()
 		mii.cch = sprintf(str, "Can't redo\tCtrl+Y");
 	}
 	SetMenuItemInfoA(g_hMenu, ID_EDIT_REDO, FALSE, &mii);
+}
+
+void XUpdatePropWindow()
+{
+
 }
