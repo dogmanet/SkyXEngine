@@ -55,6 +55,7 @@ public:
 	void setCurrCountSurf(int iCount);
 
 	ID mtlLoad(const char *szName, MTLTYPE_MODEL type = MTLTYPE_MODEL_STATIC);
+	ID mtlLoad(const char *szName, XSHADER_DEFAULT_DESC *pDefaultShaders);
 	void mtlReLoad(ID id, const char *szName = 0);
 	void mtlSave(ID id);
 
@@ -64,6 +65,9 @@ public:
 	ID getLightMtrl();
 	void setTypeModel(ID id, MTLTYPE_MODEL typeModel);
 	ID getID(const char *szName);
+
+	void setPixelShaderOverride(ID id);
+	void setGeometryShaderOverride(ID id);
 
 	//######################################################################
 
@@ -192,6 +196,14 @@ public:
 		//! удален ли материал
 		bool m_isDelete;
 
+		struct CMaterialsShaderData
+		{
+			float4_t m_vUserDataVS;
+			float4_t m_vUserDataPS;
+			float4_t m_vDestColor;
+			float4_t m_vNearFarLayers;
+		};
+
 		//! основные графические свойства
 		struct CMainGraphics
 		{
@@ -271,6 +283,9 @@ public:
 
 			//! отправляемые данные в пиксельный шейдер
 			СDataShader m_oDataPS;
+
+			CMaterialsShaderData m_constData;
+			IGXConstantBuffer *m_pConstantBuffer = NULL;
 		};
 
 		//! детализированные свойства, маска и 4 детальных и 4 микрорельефных карты
@@ -379,11 +394,15 @@ protected:
 
 	bool loadMtl(const char *szName, CMaterial **ppMtrl);
 	void createMtl(const char *szName, CMaterial **ppMtrl, MTLTYPE_MODEL type);
+	void createMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT_DESC *pDefaultShaders);
 	ID createTexParamLighting(float fRoughness, float fF0, float fThickness);
 
 	void addName(const char *szName, ID id);
 	ID addUnitMaterial(CUnitMaterial *pUnitMtrl);
 	ID addMaterial(CMaterial *pMtrl);
+
+	ID m_idPixelShaderOverride = -1;
+	ID m_idGeometryShaderOverride = -1;
 
 	//! структура описывающая папку и все текстуры в ней, у каждой свой id для доступа
 	struct CPath

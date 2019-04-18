@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -104,16 +104,16 @@ DecalManager::DecalManager():
 	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_ALL;
 	blendDesc.renderTarget[0].srcBlend = GXBLEND_DEST_COLOR;
 	blendDesc.renderTarget[0].destBlend = GXBLEND_SRC_COLOR;
-	blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_DEST_COLOR;
-	blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_SRC_COLOR;
+	blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_DEST_ALPHA;
+	blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_SRC_ALPHA;
 	blendDesc.renderTarget[0].blendOp = GXBLEND_OP_ADD;
 	blendDesc.renderTarget[0].blendOpAlpha = GXBLEND_OP_ADD;
 	blendDesc.renderTarget[0].bBlendEnable = TRUE;
 
 	m_pBlendState = dev->createBlendState(&blendDesc);
 
-//	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "decal_base.vs", "decal_base.vs", SHADER_CHECKDOUBLE_PATH);
-//	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "decal_base.ps", "decal_base.ps", SHADER_CHECKDOUBLE_PATH);
+//	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "decal_base.vs");
+//	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "decal_base.ps");
 //	m_idShaderKit = SGCore_ShaderCreateKit(m_idVS, m_idPS);
 }
 

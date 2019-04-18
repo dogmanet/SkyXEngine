@@ -9,9 +9,15 @@ See the license in LICENSE
 
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "dsound.lib")
+#ifdef _DEBUG
+#pragma comment(lib, "libogg_static_d.lib")
+#pragma comment(lib, "libvorbis_static_d.lib")
+#pragma comment(lib, "libvorbisfile_d.lib")
+#else
 #pragma comment(lib, "libogg_static.lib")
 #pragma comment(lib, "libvorbis_static.lib")
-#pragma comment(lib, "libvorbisfile_static.lib")
+#pragma comment(lib, "libvorbisfile.lib")
+#endif
 #include <gdefines.h>
 #include <windows.h>
 #include <mmsystem.h>

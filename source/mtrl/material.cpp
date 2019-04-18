@@ -14,17 +14,17 @@ CMaterials::CMaterials()
 	m_useForceblyAlphaTest = false;
 	if(mtrl_data::pDXDevice)
 	{
-		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs", "mtrlgeom_base.vs", SHADER_CHECKDOUBLE_PATH);
-		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps", "mtrlgeom_base.ps", SHADER_CHECKDOUBLE_PATH);
+		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
+		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");
 
-		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs", "mtrlgreen_tree_base.vs", SHADER_CHECKDOUBLE_PATH);
-		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs", "mtrlgreen_grass_base.vs", SHADER_CHECKDOUBLE_PATH);
-		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps", "mtrlgreen_base.ps", SHADER_CHECKDOUBLE_PATH);
+		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs");
+		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs");
+		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
 
-		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps", "mtrlgeom_light.ps", SHADER_CHECKDOUBLE_PATH);
+		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps");
 
-		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlskin_base.vs", "mtrlskin_base.vs", SHADER_CHECKDOUBLE_PATH);
-		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlskin_base.ps", "mtrlskin_base.ps", SHADER_CHECKDOUBLE_PATH);
+		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "mtrlskin_base.vs");
+		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "mtrlskin_base.ps");
 	}
 	m_useCountSurface = false;
 	m_idCurrIdSurface = 0;
@@ -197,6 +197,8 @@ CMaterials::~CMaterials()
 CMaterials::CMaterial::CMaterial()
 {
 	nulling();
+
+	m_oMainGraphics.m_pConstantBuffer = mtrl_data::pDXDevice->createConstantBuffer(sizeof(m_oMainGraphics.m_constData));
 }
 
 void CMaterials::CMaterial::nulling()
@@ -221,6 +223,8 @@ void CMaterials::CMaterial::nulling()
 
 CMaterials::CMaterial::~CMaterial()
 {
+	mem_release(m_oMainGraphics.m_pConstantBuffer);
+
 	if (m_oMainGraphics.m_idMainTexture >= 0)
 		SGCore_LoadTexDelete(m_oMainGraphics.m_idMainTexture);
 
@@ -549,12 +553,12 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
 
 
 		if (STR_VALIDATE(sVS.c_str()))
-			pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, sVS.c_str(), sVS.c_str(), SHADER_CHECKDOUBLE_PATH);
+			pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, sVS.c_str());
 		else
 			pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExistsName(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
 
 		if (STR_VALIDATE(sPS.c_str()))
-			pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, sPS.c_str(), sPS.c_str(), SHADER_CHECKDOUBLE_PATH);
+			pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, sPS.c_str());
 		else
 			pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExistsName(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");
 
@@ -894,11 +898,54 @@ void CMaterials::createMtl(const char* name, CMaterial** mtl, MTLTYPE_MODEL type
 	pMtrl->m_oMainGraphics.updateShaderKit(true);
 }
 
+void CMaterials::createMtl(const char* name, CMaterial** mtl, XSHADER_DEFAULT_DESC *pDefaultShaders)
+{
+	CMaterial* pMtrl = *mtl;
+	new(pMtrl)CMaterial*;
+	//если такого материала не существует, то мы должны были задать примерный тип материала
+	pMtrl->m_oMainGraphics.m_typeModel = MTLTYPE_MODEL_STATIC;
+
+	pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, pDefaultShaders->szFileVS);
+	pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, pDefaultShaders->szFilePS);
+	pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld = true;
+	
+	
+
+	pMtrl->m_oMainGraphics.m_idMainTexture = SGCore_LoadTexAddName(name, LOAD_TEXTURE_TYPE_LOAD);
+	pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
+
+	pMtrl->m_oLightParam.m_fRoughness = MTL_LIGHTING_DEFAULT_ROUGHNESS;
+	pMtrl->m_oLightParam.m_fF0 = MTL_LIGHTING_DEFAULT_F0;
+	pMtrl->m_oLightParam.m_fThickness = MTL_LIGHTING_DEFAULT_THICKNESS;
+
+	pMtrl->m_oLightParam.m_idTexParam = -1;
+	pMtrl->m_oLightParam.m_isTextureParam = false;
+	pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(pMtrl->m_oLightParam.m_fRoughness, pMtrl->m_oLightParam.m_fF0, pMtrl->m_oLightParam.m_fThickness);
+
+	//char path[1024];
+	char tmp_name[256];
+	bool IsTruePath = false;
+
+	for(DWORD k = 0; k<strlen(name); k++)
+	{
+		if(name[k] == '.')
+		{
+			sprintf(tmp_name, "%s", name);
+			tmp_name[k] = 0;
+			IsTruePath = true;
+			break;
+		}
+	}
+
+	pMtrl->m_sName = tmp_name;
+	pMtrl->m_oMainGraphics.updateShaderKit(true);
+}
+
 ID CMaterials::mtlLoad(const char* name, MTLTYPE_MODEL type)
 {
 	ID IsLoad = exists(name);
 
-	if (IsLoad >= 0)
+	if (ID_VALID(IsLoad))
 	{
 		CUnitMaterial* tmpumtl = new CUnitMaterial();
 		tmpumtl->m_pMtrl = m_aUnitMtrls[IsLoad]->m_pMtrl;
@@ -936,9 +983,52 @@ ID CMaterials::mtlLoad(const char* name, MTLTYPE_MODEL type)
 	}
 }
 
+ID CMaterials::mtlLoad(const char *name, XSHADER_DEFAULT_DESC *pDefaultShaders)
+{
+	ID IsLoad = exists(name);
+
+	if(ID_VALID(IsLoad))
+	{
+		CUnitMaterial* tmpumtl = new CUnitMaterial();
+		tmpumtl->m_pMtrl = m_aUnitMtrls[IsLoad]->m_pMtrl;
+
+		if(m_aUnitMtrls[IsLoad]->m_pReflect)
+		{
+			CUnitMaterial* tmpmtl = m_aUnitMtrls[IsLoad];
+			tmpumtl->m_pReflect = new CReflection();
+			tmpumtl->m_pReflect->init(m_aUnitMtrls[IsLoad]->m_pReflect->getTypeReflect());
+		}
+
+		return addUnitMaterial(tmpumtl);
+	}
+	else
+	{
+		CUnitMaterial* tmpumtl = new CUnitMaterial();
+		tmpumtl->m_pMtrl = new CMaterial();
+		addMaterial(tmpumtl->m_pMtrl);
+		if(!loadMtl(name, &(tmpumtl->m_pMtrl)))
+		{
+			createMtl(name, &(tmpumtl->m_pMtrl), pDefaultShaders);
+		}
+		else
+		{
+			if(tmpumtl->m_pMtrl->m_oLightParam.m_typeReflect != MTLTYPE_REFLECT_NONE)
+			{
+				tmpumtl->m_pReflect = new CReflection();
+				tmpumtl->m_pReflect->init(tmpumtl->m_pMtrl->m_oLightParam.m_typeReflect);
+			}
+		}
+
+		ID tmpid = addUnitMaterial(tmpumtl);
+
+		addName(name, tmpid);
+		return tmpid;
+	}
+}
+
 void CMaterials::mtlReLoad(ID id, const char* name)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	CUnitMaterial* tmpumtl = m_aUnitMtrls[id];
 	char tmpname[1024];
 	if (name == 0)
@@ -1257,6 +1347,16 @@ ID CMaterials::getID(const char* name)
 	return -1;
 }
 
+void CMaterials::setPixelShaderOverride(ID id)
+{
+	m_idPixelShaderOverride = id;
+}
+
+void CMaterials::setGeometryShaderOverride(ID id)
+{
+	m_idGeometryShaderOverride = id;
+}
+
 int CMaterials::getCount()
 {
 	return m_aUnitMtrls.size();
@@ -1409,7 +1509,7 @@ UINT CMaterials::mtlGetSort(ID id)
 
 void CMaterials::mtlSetPhysicMaterial(ID id, MTLTYPE_PHYSIC type)
 {
-	MTL_PRE_COND_ID(id);
+	MTL_PRE_COND_ID(id, _VOID);
 	m_aUnitMtrls[id]->m_pMtrl->m_oPhysics.m_typePhysics = type;
 }
 
@@ -1457,7 +1557,7 @@ ID CMaterials::mtlGetTextureID(ID id)
 void CMaterials::mtlSetVS(ID id, const char* path_vs)
 {
 	MTL_PRE_COND_ID(id, _VOID);
-	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, path_vs, path_vs, SHADER_CHECKDOUBLE_PATH);
+	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, path_vs);
 	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.updateShaderKit(false);
 }
 
@@ -1476,7 +1576,7 @@ ID CMaterials::mtlGetVSID(ID id)
 void CMaterials::mtlSetPS(ID id, const char* path_ps)
 {
 	MTL_PRE_COND_ID(id, _VOID);
-	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, path_ps, path_ps, SHADER_CHECKDOUBLE_PATH);
+	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, path_ps);
 	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.updateShaderKit(false);
 }
 
@@ -2055,13 +2155,9 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 		{
 			//блокируем текстуру 1х1 котора¤ есть параметры освещени¤, и запсиываем туда то что настроили
 			IGXTexture2D* ParamLightModelTex = SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParamHand);
-			DWORD *param;
-			if(ParamLightModelTex->lock((void**)&param, GXTL_WRITE))
-			{
-				param[0] = GXCOLOR_ARGB(255, DWORD(pMtrl->m_oLightParam.m_fRoughness*255.f), DWORD(pMtrl->m_oLightParam.m_fF0*255.f), DWORD(pMtrl->m_oLightParam.m_fThickness*255.f));
-				ParamLightModelTex->unlock();
-			}
-
+			GXCOLOR clr = GXCOLOR_ARGB(255, DWORD(pMtrl->m_oLightParam.m_fRoughness*255.f), DWORD(pMtrl->m_oLightParam.m_fF0*255.f), DWORD(pMtrl->m_oLightParam.m_fThickness*255.f));
+			ParamLightModelTex->update(&clr);
+			
 			pMtrl->m_oLightParam.m_fOldRoughness = pMtrl->m_oLightParam.m_fRoughness;
 			pMtrl->m_oLightParam.m_fOldF0 = pMtrl->m_oLightParam.m_fF0;
 			pMtrl->m_oLightParam.m_fOldThickness = pMtrl->m_oLightParam.m_fThickness;
@@ -2074,10 +2170,63 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 
 
 	if(ID_VALID(pMtrl->m_oMainGraphics.m_idShaderKit))
-		SGCore_ShaderBind(pMtrl->m_oMainGraphics.m_idShaderKit);
+	{
+		if(ID_VALID(m_idPixelShaderOverride) || ID_VALID(m_idGeometryShaderOverride))
+		{
+			ID idPS = ID_VALID(m_idPixelShaderOverride) ? m_idPixelShaderOverride : pMtrl->m_oMainGraphics.m_idShaderPS;
+			SGCore_ShaderBind(SGCore_ShaderCreateKit(pMtrl->m_oMainGraphics.m_idShaderVS, m_idPixelShaderOverride, m_idGeometryShaderOverride));
+		}
+		else
+		{
+			SGCore_ShaderBind(pMtrl->m_oMainGraphics.m_idShaderKit);
+		}
+	}
 	else
-		LibReport(REPORT_MSG_LEVEL_ERROR, "Unvalid shader kit");
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid shader kit");
+	}
 
+	if(pColor)
+	{
+		pMtrl->m_oMainGraphics.m_constData.m_vDestColor = *pColor;
+	}
+	pMtrl->m_oMainGraphics.m_constData.m_vUserDataVS = pMtrl->m_oMainGraphics.m_oDataVS.m_vUserData;
+	pMtrl->m_oMainGraphics.m_constData.m_vUserDataPS = pMtrl->m_oMainGraphics.m_oDataPS.m_vUserData;
+	if(pMtrl->m_oMainGraphics.m_idShaderPS != -1)
+	{
+		//освещаемый ли тип материала или нет? Ппрозрачный освещаемый?
+		//0,0.33,0.66,1
+		float fLayer;
+		if(pMtrl->m_oMainGraphics.m_isUnlit)
+		{
+			if(!(pMtrl->m_oLightParam.m_isTransparent))
+				fLayer = MTLTYPE_UNLIT;
+			else
+				fLayer = MTLTYPE_UNLIT;
+		}
+		else
+		{
+			if(!(pMtrl->m_oLightParam.m_isTransparent))
+				fLayer = MTLTYPE_LIGHT;
+			else
+				fLayer = MTLTYPE_LIGHT;
+		}
+
+		if(m_useCountSurface && pMtrl->m_oLightParam.m_isTransparent)
+		{
+			if(m_idCurrIdSurface == 1)
+				m_idCurrIdSurface += 2;
+			else
+				++(m_idCurrIdSurface);
+		}
+		pMtrl->m_oMainGraphics.m_constData.m_vNearFarLayers = float4_t(*r_near, *r_far, fLayer, float(m_idCurrIdSurface));
+	}
+	pMtrl->m_oMainGraphics.m_pConstantBuffer->update(&pMtrl->m_oMainGraphics.m_constData);
+
+	mtrl_data::pDXDevice->setVertexShaderConstant(pMtrl->m_oMainGraphics.m_pConstantBuffer, SCR_SUBSET);
+	mtrl_data::pDXDevice->setPixelShaderConstant(pMtrl->m_oMainGraphics.m_pConstantBuffer, SCR_SUBSET);
+
+#if 0
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorld || pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldView || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorldView || pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorldViewProjection)
 		m_mWorldTrans = SMMatrixTranspose(m_mWorld);
 
@@ -2173,7 +2322,7 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 
 	if (pMtrl->m_oMainGraphics.m_useDestColor && pMtrl->m_oMainGraphics.m_idShaderPS >= 0 && pColor)
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vDestColor", (void*)pColor);
-
+#endif
 	//если материалом назначен альфа тест и не включен принудительный
 	if (pMtrl->m_oMainGraphics.m_useAlphaTest && !m_useForceblyAlphaTest)
 	{
@@ -2217,6 +2366,7 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 		mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);*/
 
 	//почти во всех пиксельных шейдерах материалов есть данна¤ NearFar, необходима¤ д¤л записи глубины
+#if 0
 	if (pMtrl->m_oMainGraphics.m_idShaderPS != -1)
 	{	
 		//освещаемый ли тип материала или нет? Ппрозрачный освещаемый?
@@ -2244,9 +2394,11 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 			else
 				++(m_idCurrIdSurface);
 		}
-
+#if 0
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pMtrl->m_oMainGraphics.m_idShaderPS, "g_vNearFarLayers", &float4_t(*r_near, *r_far, fLayer, float(m_idCurrIdSurface)));
+#endif
 	}
+#endif
 }
 
 void CMaterials::renderLight(const float4_t *pColor, const float4x4 *pWorld)

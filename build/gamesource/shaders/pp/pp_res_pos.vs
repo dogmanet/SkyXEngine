@@ -8,16 +8,20 @@ pp_res_pos.vs
 
 //##########################################################################
 
-half4x4 g_mViewInv;
-half2 g_vNearFar;
-half3 g_vParamProj;
+cbuffer perFrame: register(b1)
+{
+	half4x4 g_mVP;
+	half4x4 g_mViewInv;
+	half4 g_vNearFar;
+	half3 g_vParamProj;
+};
 
 //##########################################################################
 
-VSO_ResPos main(VSO_PP IN)
+VSO_ResPos main(VSI_PP IN)
 {
 	VSO_ResPos OUT;
-	OUT.vPosition = IN.vPosition;
+	OUT.vPosition = half4(IN.vPosition, 1.0);
 	OUT.vTexUV = IN.vTexUV.xy;
 	
 	half fTanHalfFOV = tan(g_vParamProj.z * 0.5) ; 

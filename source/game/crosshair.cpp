@@ -49,8 +49,8 @@ CCrosshair::CCrosshair():
 	m_pIndexBuffer = m_pDev->createIndexBuffer(sizeof(USHORT)* iIC, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY, GXIT_USHORT);
 	m_pRenderBuffer = m_pDev->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
 
-	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
-	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
+	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs");
+	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps");
 	m_idShaderKit = SGCore_ShaderCreateKit(m_idVS, m_idPS);
 
 	GXBLEND_DESC blendDesc;

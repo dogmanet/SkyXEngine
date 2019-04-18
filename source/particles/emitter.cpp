@@ -207,6 +207,8 @@ bool CEmitter::getAlife()
 
 void CEmitter::computeLighting()
 {
+//@TODO: Move lighting to GPU!
+#if 0
 	if (!m_isEnable)
 		return;
 
@@ -249,6 +251,7 @@ void CEmitter::computeLighting()
 			}
 		}
 	}
+#endif
 }
 
 void CEmitter::setCount(int iCount)

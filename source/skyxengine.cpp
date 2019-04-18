@@ -21,6 +21,7 @@ HACCEL g_hAccelTable = NULL;
 #ifdef SX_TERRAX
 #include <terrax/terrax.h>
 
+IGXConstantBuffer *g_pCameraConstantBuffer = NULL;
 IGXSwapChain *g_pTopRightSwapChain = NULL;
 IGXSwapChain *g_pBottomLeftSwapChain = NULL;
 IGXSwapChain *g_pBottomRightSwapChain = NULL;
@@ -191,10 +192,6 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	Core_Dbg_Set(SkyXEngine_PrintfLog);
 	Core_SetOutPtr();
 
-#ifdef _SINGLETHREADED
-	Core_MForceSinglethreaded();
-#endif
-
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB core initialized\n");
 
 	SkyXEngine_CreateLoadCVar();
@@ -293,7 +290,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB geom initialized\n");
 
-#ifndef SX_SERVER
+#if 0
 	SLight_0Create("sxml", false);
 	SLight_Dbg_Set(SkyXEngine_PrintfLog);
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB light initialized\n");
@@ -442,7 +439,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 		ShowWindow(hWnd3DCurr, SW_MAXIMIZE);
 #endif
 
-	SkyXEngind_UpdateDataCVar();
+	SkyXEngine_UpdateDataCVar();
 
 	SXAnim_UpdateSetThreadNum(Core_MGetThreadCount());
 
@@ -455,8 +452,8 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	dsDesc.bEnableDepthWrite = FALSE;
 	g_pDSNoZ = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
 
-	ID idScreenOutVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
-	ID idScreenOutPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
+	ID idScreenOutVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs");
+	ID idScreenOutPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps");
 	g_idShaderScreenOut = SGCore_ShaderCreateKit(idScreenOutVS, idScreenOutPS);
 
 #ifdef SX_TERRAX
@@ -730,10 +727,13 @@ void SkyXEngine_InitViewports()
 	GetClientRect(g_hBottomRightWnd, &rc);
 	g_pBottomRightSwapChain = pContext->createSwapChain(rc.right - rc.left, rc.bottom - rc.top, g_hBottomRightWnd);
 	g_BottomRightDepthStencilSurface = pContext->createDepthStencilSurface(rc.right - rc.left, rc.bottom - rc.top, GXFMT_D24S8, GXMULTISAMPLE_NONE);
+
+	g_pCameraConstantBuffer = pContext->createConstantBuffer(sizeof(SMMATRIX));
 }
 
 void SkyXEngine_ReleaseViewports()
 {
+	mem_release(g_pCameraConstantBuffer);
 	mem_release(g_pTopRightSwapChain);
 	mem_release(g_pBottomLeftSwapChain);
 	mem_release(g_pBottomRightSwapChain);
@@ -787,6 +787,302 @@ protected:
 
 void SkyXEngine_Frame(DWORD timeDelta)
 {
+	IXRenderPipeline *pRenderPipeline;
+	Core_GetIXCore()->getRenderPipeline(&pRenderPipeline);
+	static IGXContext *pDXDevice = SGCore_GetDXDevice();
+
+	static const int *r_resize = GET_PCVAR_INT("r_resize");
+	static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+
+	//потеряно ли устройство или произошло изменение размеров?
+	if(pDXDevice && !pDXDevice->canBeginFrame())
+	{
+		return;
+	}
+	if(*r_resize && pRenderPipeline)
+	{
+#ifdef SX_TERRAX
+		SkyXEngine_ReleaseViewports();
+#endif
+		pRenderPipeline->resize(*r_win_width, *r_win_height, *r_win_windowed);
+		*(int*)r_resize = 0;
+		return;
+	}
+	if(pDXDevice && pDXDevice->wasReset())
+	{
+		if(!
+#if defined(SX_GAME)
+		SRender_ComDeviceLost(false)	//пытаемся восстановить
+#else
+		SRender_ComDeviceLost(true)	//пытаемся восстановить
+#endif
+		)
+		{
+			return;
+		}
+
+#ifdef SX_TERRAX
+		SkyXEngine_InitViewports();
+#endif
+	}
+
+	//#############################################################################
+
+	Core_PStartSection(PERF_SECTION_GAME_UPDATE);
+	CLibUpdate updateGame(SGame_Update, PERF_SECTION_GAME_UPDATE);
+	ID idUpdateGame = Core_MForLoop(0, Core_MGetThreadCount(), &updateGame, 1);
+	Core_PEndSection(PERF_SECTION_GAME_UPDATE);
+
+	Core_PStartSection(PERF_SECTION_WEATHER_UPDATE);
+	SLevel_WeatherUpdate();
+	Core_PEndSection(PERF_SECTION_WEATHER_UPDATE);
+
+	Core_PStartSection(PERF_SECTION_AMBIENT_SND_UPDATE);
+	SLevel_AmbientSndUpdate();
+	Core_PEndSection(PERF_SECTION_AMBIENT_SND_UPDATE);
+
+	Core_PStartSection(PERF_SECTION_ANIM_UPDATE);
+	CLibUpdate updateAnim(SXAnim_Update, PERF_SECTION_ANIM_UPDATE);
+	ID idUpdateAnim = Core_MForLoop(0, Core_MGetThreadCount(), &updateAnim, 1);
+	Core_PEndSection(PERF_SECTION_ANIM_UPDATE);
+
+	Core_MWaitFor(idUpdateGame);
+	Core_PStartSection(PERF_SECTION_PHYS_UPDATE);
+	SPhysics_Update();
+	Core_PEndSection(PERF_SECTION_PHYS_UPDATE);
+	
+	//#############################################################################
+
+	Core_MWaitFor(idUpdateAnim);
+	Core_PStartSection(PERF_SECTION_ANIM_SYNC);
+	SXAnim_Sync();
+	Core_PEndSection(PERF_SECTION_ANIM_SYNC);
+
+	Core_PStartSection(PERF_SECTION_PHYS_SYNC);
+	SPhysics_Sync();
+	Core_PEndSection(PERF_SECTION_PHYS_SYNC);
+
+	Core_PStartSection(PERF_SECTION_GAME_SYNC);
+	SGame_Sync();
+	Core_PEndSection(PERF_SECTION_GAME_SYNC);
+	
+#ifdef SX_TERRAX 
+	if(g_is3DRotating || g_is3DPanning)
+	{
+		int x, y;
+		SSInput_GetMouseDelta(&x, &y);
+		static const float * sense = GET_PCVAR_FLOAT("cl_mousesense");
+		float dx = (float)x * *sense * 10.0f;
+		float dy = (float)y * *sense * 10.0f;
+		ICamera *pCamera = SRender_GetCamera();
+
+		if(g_is3DRotating)
+		{
+			static float3 m_vPitchYawRoll;
+			m_vPitchYawRoll.y -= dx;
+			m_vPitchYawRoll.x -= dy;
+			m_vPitchYawRoll.x = clampf(m_vPitchYawRoll.x, -SM_PIDIV2, SM_PIDIV2);
+			while(m_vPitchYawRoll.y < 0.0f)
+			{
+				m_vPitchYawRoll.y += SM_2PI;
+			}
+			while(m_vPitchYawRoll.y > SM_2PI)
+			{
+				m_vPitchYawRoll.y -= SM_2PI;
+			}
+
+			pCamera->setOrientation(&(SMQuaternion(m_vPitchYawRoll.x, 'x') * SMQuaternion(m_vPitchYawRoll.z, 'z') * SMQuaternion(m_vPitchYawRoll.y, 'y')));
+		}
+		else if(g_is3DPanning)
+		{
+			float3 vPos, vUp, vRight;
+			pCamera->getPosition(&vPos);
+			pCamera->getUp(&vUp);
+			pCamera->getRight(&vRight);
+			vPos += vUp * -dy * 10.0f + vRight * dx * 10.0f;
+			pCamera->setPosition(&vPos);
+		}
+
+		float3 dir;
+		static float s_fSpeed = 0;
+		float fMaxSpeed = 10.0f; //@TODO: CVar this!
+		float fMaxSpeedBoost = 40.0f; //@TODO: CVar this!
+		float fAccelTime = 0.5f; //@TODO: CVar this!
+		if(GetAsyncKeyState(VK_SHIFT) < 0)
+		{
+			fMaxSpeed = fMaxSpeedBoost;
+		}
+		float fAccel = fMaxSpeed / fAccelTime;
+		bool mov = false;
+		float dt = (float)timeDelta * 0.001f;
+		if(GetAsyncKeyState('W') < 0)
+		{
+			dir.z += 1.0f;
+			mov = true;
+		}
+		if(GetAsyncKeyState('S') < 0)
+		{
+			dir.z -= 1.0f;
+			mov = true;
+		}
+		if(GetAsyncKeyState('A') < 0)
+		{
+			dir.x -= 1.0f;
+			mov = true;
+		}
+		if(GetAsyncKeyState('D') < 0)
+		{
+			dir.x += 1.0f;
+			mov = true;
+		}
+
+		if(mov)
+		{
+			s_fSpeed += fAccel * dt;
+			if(s_fSpeed > fMaxSpeed)
+			{
+				s_fSpeed = fMaxSpeed;
+			}
+			float3 vPos, vDir, vRight;
+			pCamera->getPosition(&vPos);
+			pCamera->getLook(&vDir);
+			pCamera->getRight(&vRight);
+			dir = SMVector3Normalize(dir) * dt * s_fSpeed;
+			vPos += vDir * dir.z + vRight * dir.x;
+			pCamera->setPosition(&vPos);
+		}
+		else
+		{
+			s_fSpeed = 0;
+		}
+	}
+#endif
+
+	//#############################################################################
+	
+	SRender_UpdateView();
+
+	if (GetAsyncKeyState('R') >= 0)
+	{
+		Core_PStartSection(PERF_SECTION_VIS_CAMERA);
+		SRender_ComVisibleForCamera();
+		// parallelle that
+		Core_PEndSection(PERF_SECTION_VIS_CAMERA);
+	}
+
+	Core_PStartSection(PERF_SECTION_SML_UPDATE);
+	SMtrl_Update(timeDelta);
+	Core_PEndSection(PERF_SECTION_SML_UPDATE);
+
+	Core_PStartSection(PERF_SECTION_RENDER);
+
+	Core_PStartSection(PERF_SECTION_RENDER_PRESENT);
+	if(pRenderPipeline)
+	{
+		pRenderPipeline->endFrame();
+	}
+#ifdef SX_TERRAX
+	g_pTopRightSwapChain->swapBuffers();
+	g_pBottomLeftSwapChain->swapBuffers();
+	g_pBottomRightSwapChain->swapBuffers();
+#endif
+	Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
+
+	//#############################################################################
+
+
+	pDXDevice->beginFrame();
+	if(pRenderPipeline)
+	{
+		pRenderPipeline->renderFrame();
+	}
+
+#ifdef SX_TERRAX
+	XRender3D();
+
+	//#############################################################################
+	HWND hWnds[] = {g_hTopRightWnd, g_hBottomLeftWnd, g_hBottomRightWnd};
+	IGXSwapChain *p2DSwapChains[] = {g_pTopRightSwapChain, g_pBottomLeftSwapChain, g_pBottomRightSwapChain};
+	IGXDepthStencilSurface *p2DDepthStencilSurfaces[] = {g_pTopRightDepthStencilSurface, g_pBottomLeftDepthStencilSurface, g_BottomRightDepthStencilSurface};
+
+	ICamera **pCameras = g_xConfig.m_pViewportCamera + 1;
+	float *fScales = g_xConfig.m_fViewportScale + 1;
+	X_2D_VIEW *views = g_xConfig.m_x2DView + 1;
+	ICamera *p3DCamera = SRender_GetCamera();
+	pDXDevice->setSamplerState(NULL, 0);
+	//#############################################################################
+
+	XUpdateSelectionBound();
+
+	for(int i = 0; i < 3; ++i)
+	{
+		if(!IsWindowVisible(hWnds[i]))
+		{
+			continue;
+		}
+		SRender_SetCamera(pCameras[i]);
+		IGXSurface *pBackBuffer = p2DSwapChains[i]->getColorTarget();
+		pDXDevice->setColorTarget(pBackBuffer);
+		pDXDevice->setDepthStencilSurface(p2DDepthStencilSurfaces[i]);
+		pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH | GXCLEAR_STENCIL);
+
+		pDXDevice->setRasterizerState(g_xRenderStates.pRSWireframe);
+		pDXDevice->setDepthStencilState(g_pDSNoZ);
+		pDXDevice->setBlendState(NULL);
+		SMMATRIX mProj = SMMatrixOrthographicLH((float)pBackBuffer->getWidth() * fScales[i], (float)pBackBuffer->getHeight() * fScales[i], 1.0f, 2000.0f);
+		SMMATRIX mView;
+		pCameras[i]->getViewMatrix(&mView);
+		Core_RMatrixSet(G_RI_MATRIX_OBSERVER_VIEW, &mView);
+		Core_RMatrixSet(G_RI_MATRIX_VIEW, &mView);
+		Core_RMatrixSet(G_RI_MATRIX_OBSERVER_PROJ, &mProj);
+		Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &mProj);
+		Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(mView * mProj));
+
+		g_pCameraConstantBuffer->update(&SMMatrixTranspose(mView * mProj));
+		pDXDevice->setVertexShaderConstant(g_pCameraConstantBuffer, 4);
+
+		Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
+		Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_FREE);
+
+		XRender2D(views[i], fScales[i], true);
+
+		if(SGeom_GetCountModels() > 0)
+			SGeom_Render(timeDelta, GEOM_RENDER_TYPE_ALL);
+
+		Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
+		pDXDevice->setVertexShaderConstant(g_pCameraConstantBuffer, 4);
+		XRender2D(views[i], fScales[i], false);
+		mem_release(pBackBuffer);
+	}
+
+	//#############################################################################
+	SRender_SetCamera(p3DCamera);
+	pDXDevice->setColorTarget(NULL);
+	pDXDevice->setDepthStencilSurface(NULL);
+#endif
+	
+	pDXDevice->endFrame();
+	Core_PEndSection(PERF_SECTION_RENDER);
+
+	//#############################################################################
+
+	Core_PStartSection(PERF_SECTION_VIS_LIGHT);
+	SRender_ComVisibleForLight();
+	Core_PEndSection(PERF_SECTION_VIS_LIGHT);
+
+
+	Core_PStartSection(PERF_SECTION_CVAR_UPDATE);
+	SkyXEngine_UpdateDataCVar();
+	Core_PEndSection(PERF_SECTION_CVAR_UPDATE);
+
+	mem_release(pRenderPipeline);
+}
+
+#if 0
+void SkyXEngine_Frame(DWORD timeDelta)
+{
 #ifndef SX_SERVER
 	static IGXContext *pDXDevice = SGCore_GetDXDevice();
 	static float3 vCamPos, vCamDir;
@@ -795,7 +1091,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	static const int *r_final_image = GET_PCVAR_INT("r_final_image");
 	static const int *r_resize = GET_PCVAR_INT("r_resize");
 	static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
-	
+
 
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
@@ -811,7 +1107,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 #endif
 
 #ifndef SX_SERVER
-	if (!pDXDevice)
+	if(!pDXDevice)
 	{
 		SkyXEngine_PrintfLog(REPORT_MSG_LEVEL_ERROR, "SkyXEngine_Frame", "dxdevice not found ...");
 		return;
@@ -837,11 +1133,11 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	{
 		if(!
 #if defined(SX_GAME)
-		SRender_ComDeviceLost(false)	//пытаемся восстановить
+			SRender_ComDeviceLost(false)	//пытаемся восстановить
 #else
-		SRender_ComDeviceLost(true)	//пытаемся восстановить
+			SRender_ComDeviceLost(true)	//пытаемся восстановить
 #endif
-		)
+			)
 		{
 			return;
 		}
@@ -855,7 +1151,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 #if !defined(SX_GAME) && !defined(SX_SERVER) && !defined(SX_TERRAX)//&& !defined(SX_MATERIAL_EDITOR)
 #if defined(SX_MATERIAL_EDITOR)
-	if (SRender_EditorCameraGetMove())
+	if(SRender_EditorCameraGetMove())
 #endif
 		SRender_UpdateEditorial(timeDelta);
 #endif
@@ -1022,7 +1318,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SGCore_OC_Reprojection();
 	Core_PEndSection(PERF_SECTION_OC_REPROJECTION);
 
-	if (!GetAsyncKeyState('R'))
+	if(!GetAsyncKeyState('R'))
 	{
 		Core_PStartSection(PERF_SECTION_VIS_CAMERA);
 		SRender_ComVisibleForCamera();
@@ -1039,7 +1335,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	//ID idQuad = SAIG_QuadGetNear(&vCamPos, true, 1);
 	ID idQuad = -1;
 	for (int i = 0; i < 100;++i)
-		idQuad = SAIG_QuadGet(&vCamPos, true);
+	idQuad = SAIG_QuadGet(&vCamPos, true);
 	ttime = TimeGetMcsU(Core_RIntGet(G_RI_INT_TIMER_RENDER)) - ttime;
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "ttime = %lld, idQuad = %d \n", ttime, idQuad);
 	SAIG_GridSetNullColor();
@@ -1063,11 +1359,22 @@ void SkyXEngine_Frame(DWORD timeDelta)
 #endif
 	Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
 
-	pDXDevice->beginFrame();
-	pDXDevice->clear(GXCLEAR_COLOR);
-	SRender_UpdateReflection(timeDelta, isSimulationRender);
+	//#############################################################################
 
-	if (*r_final_image == DS_RT_AMBIENTDIFF || *r_final_image == DS_RT_SPECULAR || *r_final_image == DS_RT_SCENELIGHT)
+	pDXDevice->beginFrame();
+	//pDXDevice->clear(GXCLEAR_COLOR);
+#if 0
+	SRender_UpdateReflection(timeDelta, isSimulationRender);
+#endif
+
+	//рисуем сцену и заполняем mrt данными
+	Core_PStartSection(PERF_SECTION_MRT);
+
+	SRender_BuildMRT(timeDelta, isSimulationRender);
+	FlushCommandBuffer();
+	Core_PEndSection(PERF_SECTION_MRT);
+
+	if(*r_final_image == DS_RT_AMBIENTDIFF || *r_final_image == DS_RT_SPECULAR || *r_final_image == DS_RT_SCENELIGHT)
 	{
 		//рендерим глубину от света
 		Core_PStartSection(PERF_SECTION_SHADOW_UPDATE);
@@ -1077,15 +1384,9 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		FlushCommandBuffer();
 	}
 
-	//рисуем сцену и заполняем mrt данными
-	Core_PStartSection(PERF_SECTION_MRT);
 
-	SRender_BuildMRT(timeDelta, isSimulationRender);
-	FlushCommandBuffer();
-	Core_PEndSection(PERF_SECTION_MRT);
 
-	
-	if (*r_final_image == DS_RT_AMBIENTDIFF || *r_final_image == DS_RT_SPECULAR || *r_final_image == DS_RT_SCENELIGHT)
+	if(*r_final_image == DS_RT_AMBIENTDIFF || *r_final_image == DS_RT_SPECULAR || *r_final_image == DS_RT_SCENELIGHT)
 	{
 		//освещаем сцену
 		Core_PStartSection(PERF_SECTION_LIGHTING);
@@ -1108,18 +1409,17 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 		FlushCommandBuffer();
 	}
-
 	SGCore_ShaderUnBind();
 
-//	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-//	pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-//	pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-//	pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-//	pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+	//	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+	//	pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+	//	pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	//	pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	//	pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 	pDXDevice->setDepthStencilState(g_pDSNoZ);
 	pDXDevice->setBlendState(NULL);
 
-#if defined(SX_GAME)
+	//#if defined(SX_GAME)
 	if(!SSInput_GetKeyState(SIK_P))
 	{
 		Core_PStartSection(PERF_SECTION_RENDER_POSTPROCESS);
@@ -1129,12 +1429,12 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		FlushCommandBuffer();
 	}
 	pDXDevice->setDepthStencilState(g_pDSNoZ);
-#endif
+	//#endif
 	if(SSInput_GetKeyState(SIK_NUMPAD1))
 	{
 		pDXDevice->saveTextureToFile("c:/1/pp.png", SGCore_RTGetTexture(SPP_RTGetCurrSend()));
 	}
-	
+
 	IGXSurface *pRenderSurf, *pBackBuf;
 	pRenderSurf = SGCore_RTGetTexture(SPP_RTGetCurrSend())->getMipmap();
 
@@ -1165,26 +1465,26 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	mem_release(pRenderSurf);
 	mem_release(pBackBuf);
 
-//	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-//	pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-//	pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-//	pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-//	pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+	//	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+	//	pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+	//	pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	//	pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	//	pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 	pDXDevice->setDepthStencilState(g_pDSNoZ);
 	pDXDevice->setBlendState(NULL);
 
-#if defined(SX_GAME)
-	if (!SSInput_GetKeyState(SIK_P))
+	//#if defined(SX_GAME)
+	if(!SSInput_GetKeyState(SIK_P))
 		SRender_RenderFinalPostProcess(timeDelta);
-#endif
+	//#endif
 
 	FlushCommandBuffer();
 
-	
+
 	SGCore_ShaderBind(g_idShaderScreenOut);
 
 	pDXDevice->setRasterizerState(NULL);
-//	pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	//	pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 
 #if !defined(SX_GAME)
 	pDXDevice->setTexture(SGCore_GbufferGetRT((DS_RT)*r_final_image));
@@ -1200,17 +1500,17 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	pDXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
 	pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)mView));
 	pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)mProjLight));
-#endif
 	SRender_RenderEditorMain();
+#endif
 
 #if defined(SX_GAME) && defined(SX_AIGRID_RENDER)
 	//static const float * r_far = GET_PCVAR_FLOAT("r_far");
 	SAIG_RenderQuads(SRender_GetCamera()->getFrustum(), &vCamPos, *r_far);
 #endif
 
-//#ifdef _DEBUG
+	//#ifdef _DEBUG
 	SPhysics_DebugRender();
-//#endif
+	//#endif
 
 #ifdef SX_TERRAX 
 	XRender3D();
@@ -1219,14 +1519,15 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	HWND hWnds[] = {g_hTopRightWnd, g_hBottomLeftWnd, g_hBottomRightWnd};
 	IGXSwapChain *p2DSwapChains[] = {g_pTopRightSwapChain, g_pBottomLeftSwapChain, g_pBottomRightSwapChain};
 	IGXDepthStencilSurface *p2DDepthStencilSurfaces[] = {g_pTopRightDepthStencilSurface, g_pBottomLeftDepthStencilSurface, g_BottomRightDepthStencilSurface};
-//	float3 pv2DEyePoses[] = {float3(0.0f, 100.0f, 0.0f), float3(100.0f, 0.0f, 0.0f), float3(0.0f, 0.0f, 100.0f)};
-//	float3 pv2DEyeDirs[] = {float3(0.0f, -1.0f, 0.0f), float3(-1.0f, 0.0f, 0.0f), float3(0.0f, 0.0f, -1.0f)};
-//	float3 pv2DUPs[] = {float3(0.0f, 0.0f, 1.0f), float3(0.0f, 1.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)};
-	
+	//	float3 pv2DEyePoses[] = {float3(0.0f, 100.0f, 0.0f), float3(100.0f, 0.0f, 0.0f), float3(0.0f, 0.0f, 100.0f)};
+	//	float3 pv2DEyeDirs[] = {float3(0.0f, -1.0f, 0.0f), float3(-1.0f, 0.0f, 0.0f), float3(0.0f, 0.0f, -1.0f)};
+	//	float3 pv2DUPs[] = {float3(0.0f, 0.0f, 1.0f), float3(0.0f, 1.0f, 0.0f), float3(0.0f, 1.0f, 0.0f)};
+
 	ICamera **pCameras = g_xConfig.m_pViewportCamera + 1;
 	float *fScales = g_xConfig.m_fViewportScale + 1;
 	X_2D_VIEW *views = g_xConfig.m_x2DView + 1;
 	ICamera *p3DCamera = SRender_GetCamera();
+	pDXDevice->setSamplerState(NULL, 0);
 	//#############################################################################
 
 	XUpdateSelectionBound();
@@ -1241,7 +1542,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		IGXSurface *pBackBuffer = p2DSwapChains[i]->getColorTarget();
 		pDXDevice->setColorTarget(pBackBuffer);
 		pDXDevice->setDepthStencilSurface(p2DDepthStencilSurfaces[i]);
-		pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_STENCIL);
+		pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH | GXCLEAR_STENCIL);
 
 		pDXDevice->setRasterizerState(g_xRenderStates.pRSWireframe);
 		pDXDevice->setDepthStencilState(g_pDSNoZ);
@@ -1271,7 +1572,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	pDXDevice->setColorTarget(NULL);
 	pDXDevice->setDepthStencilSurface(NULL);
 #endif
-	
+
 #if defined(SX_GAME) || defined(SX_LEVEL_EDITOR)
 	static bool needGameTime = true;
 #else
@@ -1282,10 +1583,10 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	static char debugstr[4096];
 
 	int FrameCount = 0;
-	if ((FrameCount = SRender_OutputDebugInfo(timeDelta, needGameTime, debugstr)) > 0)
+	if((FrameCount = SRender_OutputDebugInfo(timeDelta, needGameTime, debugstr)) > 0)
 	{
 		debugstr[0] = 0;
-		
+
 		sprintf(debugstr + strlen(debugstr), "\nCount poly: %d\n", Core_RIntGet(G_RI_INT_COUNT_POLY) / FrameCount);
 		sprintf(debugstr + strlen(debugstr), "Count DIPs: %d\n", Core_RIntGet(G_RI_INT_COUNT_DIP) / FrameCount);
 
@@ -1324,7 +1625,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 
 #if defined(SX_LEVEL_EDITOR)
-//	level_editor::LevelEditorUpdate(timeDelta);
+	//	level_editor::LevelEditorUpdate(timeDelta);
 #endif
 
 #if defined(SX_MATERIAL_EDITOR)
@@ -1335,38 +1636,38 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SXParticlesEditor::ParticlesEditorUpdate(timeDelta);
 #endif
 
-	SRender_ShaderRegisterData();
+	//SRender_ShaderRegisterData();
 
 	/*if (SGCore_OC_IsVisible(&float3(1, 1, 1), &float3(-1, -1, -1)))
 	{
-		pDXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
-		pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)mView));
-		pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)mProjLight));
-		pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-		pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
-		//pDXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-		pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-		pDXDevice->SetTexture(0, 0);
-		g_pMeshBound->DrawSubset(0);
-		//pDXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-		pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
-		pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
-		pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+	pDXDevice->SetTransform(D3DTS_WORLD, &((D3DXMATRIX)SMMatrixIdentity()));
+	pDXDevice->SetTransform(D3DTS_VIEW, &((D3DXMATRIX)mView));
+	pDXDevice->SetTransform(D3DTS_PROJECTION, &((D3DXMATRIX)mProjLight));
+	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+	pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
+	//pDXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+	pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	pDXDevice->SetTexture(0, 0);
+	g_pMeshBound->DrawSubset(0);
+	//pDXDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+	pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
+	pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+	pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	}
 	else
 	{
-		SGCore_OC_IsVisible(&float3(1, 1, 1), &float3(-1, -1, -1));
+	SGCore_OC_IsVisible(&float3(1, 1, 1), &float3(-1, -1, -1));
 	}*/
 
 
 	Core_PStartSection(PERF_SECTION_OC_UPDATE);
 	SGCore_OC_Update(SGCore_GbufferGetRT_ID(DS_RT_DEPTH0), SRender_GetCamera()->getFrustum());
 	Core_PEndSection(PERF_SECTION_OC_UPDATE);
-	
+
 	pDXDevice->endFrame();
 
 	//@@@
-	
+
 
 	Core_PStartSection(PERF_SECTION_VIS_REFLECTION);
 	SRender_ComVisibleReflection();
@@ -1386,11 +1687,11 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_PStartSection(PERF_SECTION_AI_PATH);
 	SAIG_GridQueryFindPathUpdate(3);
 	Core_PEndSection(PERF_SECTION_AI_PATH);
-	
+
 	//Core_PStartSection(PERF_SECTION_RENDER_PRESENT);
 	//pDXDevice->Present(0, 0, 0, 0);
 	//Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
-	
+
 #ifndef SX_SERVER
 	Core_PEndSection(PERF_SECTION_RENDER);
 #endif
@@ -1403,10 +1704,12 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SGCore_OC_UpdateEnsureDone();
 #endif
 }
+#endif
 
-void SkyXEngind_UpdateDataCVar()
+void SkyXEngine_UpdateDataCVar()
 {
 #ifndef SX_SERVER
+#if 0
 	ID idGlobalLight = SLight_GetGlobal();
 	static const bool * r_pssm_4or3 = GET_PCVAR_BOOL("r_pssm_4or3");
 	static bool r_pssm_4or3_old = true;
@@ -1462,6 +1765,7 @@ void SkyXEngind_UpdateDataCVar()
 		}
 		SLight_SettLCoefSizeDepth(r_lsm_quality_old);
 	}
+#endif
 
 	static const int * r_grass_freq = GET_PCVAR_INT("r_grass_freq");
 	static int r_grass_freq_old = 1;
@@ -1714,12 +2018,14 @@ bool SkyXEngine_CycleMainIteration()
 		SSInput_Update();
 		Core_PEndSection(PERF_SECTION_PF_Y);
 
+#if 0
 		Core_PStartSection(PERF_SECTION_PF_Z);
 		static float3 vCamPos, vCamDir;
 		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
 		Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_DIRECTION, &vCamDir);
 		SSCore_Update(&vCamPos, &vCamDir);
 		Core_PEndSection(PERF_SECTION_PF_Z);
+#endif
 #endif
 
 		static DWORD lastTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
@@ -1795,7 +2101,9 @@ void SkyXEngine_Kill()
 #endif
 	SGeom_AKill();
 #ifndef _SERVER
+#if 0
 	SLight_AKill();
+#endif
 	SSCore_AKill();
 	SGCore_AKill();
 #endif
@@ -1907,7 +2215,7 @@ void SkyXEngine_RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min_ve
 
 void SkyXEngine_RFuncMtlSet(ID id, const float4x4 *pWorld, const float4 *pColor)
 {
-#ifndef SX_SERVER
+#if 0
 	switch (Core_RIntGet(G_RI_INT_RENDERSTATE))
 	{
 	case RENDER_STATE_SHADOW:

@@ -168,8 +168,7 @@ namespace gui
 			fread(data, sizeof(byte), w * h * 4, pF);
 			m_ppTextures.push_back(data);
 
-			CTexture * tex = CTextureManager::createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size())), w, h, 4);
-			tex->loadFromMem(data);
+			CTexture * tex = CTextureManager::createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size())), w, h, 4, false, data);
 			m_vpTextures.push_back(tex);
 		}
 		//LoadFTfontFace();
@@ -178,7 +177,7 @@ namespace gui
 
 	void CFont::generateBase()
 	{
-		static StringW s = L" qwertyuiop[]asdfghjkl;'zxcvbnm,./`1234567890-=\\~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?éöóêåíãøùçõúôûâàïğîëäæıÿ÷ñìèòüáşÉÖÓÊÅÍÃØÙÇÕÚÔÛÂÀÏĞÎËÄÆİß×ÑÌÈÒÜÁŞ¸¨	";
+		static StringW s = L" qwertyuiop[]asdfghjkl;'zxcvbnm,./`1234567890-=\\~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?Ğ¹Ñ†ÑƒĞºĞµĞ½Ğ³ÑˆÑ‰Ğ·Ñ…ÑŠÑ„Ñ‹Ğ²Ğ°Ğ¿Ñ€Ğ¾Ğ»Ğ´Ğ¶ÑÑÑ‡ÑĞ¼Ğ¸Ñ‚ÑŒĞ±ÑĞ™Ğ¦Ğ£ĞšĞ•ĞĞ“Ğ¨Ğ©Ğ—Ğ¥ĞªĞ¤Ğ«Ğ’ĞĞŸĞ ĞĞ›Ğ”Ğ–Ğ­Ğ¯Ğ§Ğ¡ĞœĞ˜Ğ¢Ğ¬Ğ‘Ğ®Ñ‘Ğ	";
 		for(UINT i = 0; i < s.length(); i++)
 		{
 			addChar(s[i]);
@@ -490,8 +489,7 @@ namespace gui
 			mem_delete_a(newImage);
 		}
 
-		CTexture * tex = CTextureManager::createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size() - 1)), width, height, 4);
-		tex->loadFromMem(image);
+		CTexture * tex = CTextureManager::createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size() - 1)), width, height, 4, false, image);
 		//SX_SAFE_DELETE_A(image);
 		for(UINT i = 0; i < list.size(); i++)
 		{
@@ -582,6 +580,15 @@ namespace gui
 			return(NULL);
 		}
 		return(m_vpTextures[i]);
+	}
+	const IGXTexture2D *CFont::getAPITexture(UINT i)
+	{
+		CPITexture pTex = getTexture(i);
+		if(!pTex)
+		{
+			return(NULL);
+		}
+		return(pTex->getAPItexture());
 	}
 
 	void CFont::addChar(WCHAR c, bool full)

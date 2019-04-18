@@ -122,7 +122,10 @@ namespace gdata
 		{
 			extern ID idScreenOut;
 			extern ID idComLightingNonShadow;
+			extern ID idComLightingSpotNonShadow;
+			extern ID idComLightingGI;
 			extern ID idComLightingShadow;
+			extern ID idComLightingSpotShadow;
 
 			extern ID idBlendAmbientSpecDiffColor;
 
@@ -142,7 +145,10 @@ namespace gdata
 			extern ID idBlendAmbientSpecDiffColor;
 			extern ID idUnionAlpha;
 			extern ID idComLightingNonShadow;
+			extern ID idComLightingSpotNonShadow;
 			extern ID idComLightingShadow;
+			extern ID idComLightingSpotShadow;
+			extern ID idComLightingGI;
 		};
 	};
 
@@ -166,7 +172,6 @@ namespace gdata
 
 		extern IGXSamplerState *pSamplerScene;
 
-		extern IGXBlendState *pBlendNoColor;
 		extern IGXBlendState *pBlendRed;
 		extern IGXBlendState *pBlendAlpha;
 		extern IGXBlendState *pBlendAlphaOneOne;

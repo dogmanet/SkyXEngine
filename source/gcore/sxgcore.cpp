@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -40,7 +40,7 @@ IGXVertexDeclaration *g_pStaticVertexDecl = 0;
 
 CShaderManager *g_pManagerShaders = 0;
 CreatorTextures *g_pManagerRenderTargets = 0;
-ÑLoaderTextures *g_pManagerTextures = 0;
+CLoaderTextures *g_pManagerTextures = 0;
 IGXRenderBuffer *g_pScreenTextureRB = 0;
 CSkyBox *g_pSkyBox = 0;
 CSkyClouds *g_pSkyClouds = 0;
@@ -48,6 +48,8 @@ COcclusionCulling *g_pOC = 0;
 IGXBlendState *g_pToneMappingBS = NULL;
 IGXSamplerState *g_pSamplerFilterPoint = NULL;
 IGXSamplerState *g_pSamplerFilterLinear = NULL;
+
+
 
 //##########################################################################
 
@@ -108,7 +110,7 @@ void GCoreInit(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 
 	g_pManagerShaders = new CShaderManager();
 	g_pManagerRenderTargets = new CreatorTextures();
-	g_pManagerTextures = new ÑLoaderTextures();
+	g_pManagerTextures = new CLoaderTextures();
 	g_pOC = new COcclusionCulling();
 	g_pOC->init(iWidth, iHeight);
 	InitToneMappingStates();
@@ -431,11 +433,11 @@ SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin)
 
 //##########################################################################
 
-SX_LIB_API ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char *szPath, const char *szName, SHADER_CHECKDOUBLE check_double, GXMACRO *pMacro)
+SX_LIB_API ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char *szPath, const char *szName, GXMACRO *pMacro)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerShaders->preLoad(type_shader, szPath, szName, check_double, pMacro);
+	return g_pManagerShaders->preLoad(type_shader, szPath, szName, pMacro);
 }
 
 SX_LIB_API void SGCore_ShaderAllLoad()
@@ -466,11 +468,11 @@ SX_LIB_API void SGCore_ShaderReloadAll()
 	g_pManagerShaders->reloadAll();
 }
 
-SX_LIB_API ID SGCore_ShaderCreateKit(ID idVertexShader, ID idPixelShader)
+SX_LIB_API ID SGCore_ShaderCreateKit(ID idVertexShader, ID idPixelShader, ID idGeometryShader, ID idComputeShader)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerShaders->createKit(idVertexShader, idPixelShader);
+	return g_pManagerShaders->createKit(idVertexShader, idPixelShader, idGeometryShader, idComputeShader);
 }
 
 SX_LIB_API void SGCore_ShaderBind(ID idShaderKit)

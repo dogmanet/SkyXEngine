@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -120,16 +120,16 @@ size_t CFile::getPos() const
 
 void CFile::setPos(size_t iPos)
 {
-	fseek(m_pFile, SEEK_SET, iPos);
+	_fseeki64(m_pFile, iPos, SEEK_SET);
 }
 
 size_t CFile::getSize() const
 {
-	long size;
-	long curr_pos = ftell(m_pFile);
-	fseek(m_pFile, 0, SEEK_END);
+	size_t size;
+	size_t curr_pos = _ftelli64(m_pFile);
+	_fseeki64(m_pFile, 0, SEEK_END);
 	size = ftell(m_pFile);
-	fseek(m_pFile, curr_pos, SEEK_SET);
+	_fseeki64(m_pFile, curr_pos, SEEK_SET);
 	return size;
 }
 
@@ -145,5 +145,5 @@ void CFile::close()
 
 bool CFile::isEOF() const
 {
-	return feof(m_pFile);
+	return(feof(m_pFile) != 0);
 }

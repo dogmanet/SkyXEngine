@@ -513,7 +513,7 @@ void PSSM::genShadow(IGXTexture2D* shadowmap)
 	mem_release(RenderSurf);
 	mem_release(BackBuf);
 
-	if(GetAsyncKeyState(VK_NUMPAD1))
+	if(GetAsyncKeyState(VK_NUMPAD1) < 0)
 	{
 		light_data::pDXDevice->saveTextureToFile("C:\\1\\pssm.png", shadowmap);
 	}
@@ -638,7 +638,7 @@ void ShadowMapTech::init()
 	
 	DepthSurface = 0;
 	DepthMap = light_data::pDXDevice->createTexture2D(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F);
-	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, GXFMT_D24X8, GXMULTISAMPLE_NONE, true);
+	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, GXFMT_D24S8, GXMULTISAMPLE_NONE, true);
 
 	float fOffset = 0.5f + (0.5f/light_data::vSizeTexDepthLocal.x);
 	float range = 1.0f;
@@ -706,10 +706,6 @@ void ShadowMapTech::begin()
 	light_data::pDXDevice->setDepthStencilSurface(DepthStencilSurface);
 	OldColorSurface = light_data::pDXDevice->getColorTarget();
 
-	/*light_data::pDXDevice->GetTransform(D3DTS_VIEW,&OldView);
-	light_data::pDXDevice->GetTransform(D3DTS_PROJECTION,&OldProj);
-	light_data::pDXDevice->GetTransform(D3DTS_WORLD1,&OldViewProj);*/
-
 	Core_RMatrixGet(G_RI_MATRIX_VIEW, &OldView);
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &OldProj);
 	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &OldViewProj);
@@ -721,10 +717,6 @@ void ShadowMapTech::begin()
 
 	View = SMMatrixLookAtLH(Position, Position + Direction, upvec);
 	Proj = SMMatrixPerspectiveFovLH(AngleNearFar.x,light_data::vSizeTexDepthLocal.x / light_data::vSizeTexDepthLocal.y,AngleNearFar.y,AngleNearFar.z);
-
-	/*light_data::pDXDevice->SetTransform(D3DTS_VIEW,&(View.operator D3DXMATRIX()));
-	light_data::pDXDevice->SetTransform(D3DTS_PROJECTION,&(Proj.operator D3DXMATRIX()));
-	light_data::pDXDevice->SetTransform(D3DTS_WORLD1,&(View * Proj).operator D3DXMATRIX());*/
 
 	Core_RMatrixSet(G_RI_MATRIX_VIEW, &View);
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &Proj);
@@ -1021,18 +1013,8 @@ void ShadowMapCubeTech::init()
 	DepthSurface[5] = 0;
 
 	DepthMap = light_data::pDXDevice->createTextureCube(light_data::vSizeTexDepthLocal.x, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F);
-	/*HRESULT hr = D3DXCreateCubeTexture(light_data::pDXDevice, light_data::vSizeTexDepthLocal.x, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &);
-
-	if (hr == D3DERR_INVALIDCALL)
-		int qwert = 0;
-	else if (hr == D3DERR_NOTAVAILABLE)
-		int qwert = 0;
-	else if (hr == D3DERR_OUTOFVIDEOMEMORY)
-		int qwert = 0;
-	else if (hr == E_OUTOFMEMORY)
-		int qwert = 0;
-		*/
-	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.x, GXFMT_D24X8, GXMULTISAMPLE_NONE, true);
+	
+	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.x, GXFMT_D24S8, GXMULTISAMPLE_NONE, true);
 }
 
 void ShadowMapCubeTech::begin()

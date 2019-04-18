@@ -10,6 +10,7 @@ bool CCommandSelect::exec()
 	{
 		g_pLevelObjects[m_aidDeselected[i]]->setSelected(false);
 	}
+	XUpdatePropWindow();
 	return(true);
 }
 bool CCommandSelect::undo()
@@ -23,6 +24,7 @@ bool CCommandSelect::undo()
 		g_pLevelObjects[m_aidDeselected[i]]->setSelected(true);
 	}
 
+	XUpdatePropWindow();
 	return(true);
 }
 

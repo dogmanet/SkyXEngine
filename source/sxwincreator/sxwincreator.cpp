@@ -12,7 +12,7 @@ namespace SXEngine
 namespace SXMainWndElem
 {
 	HWND ArrMainWnd[4];
-	//главное окно
+	//РіР»Р°РІРЅРѕРµ РѕРєРЅРѕ
 	ISXGUIBaseWnd* MainWnd = 0;
 	ISXGUIBaseWnd* WndLog = 0;
 	ISXGUIListBox* ListBoxLog = 0;
@@ -92,7 +92,7 @@ namespace SXMainWndElem
 	ISXGUIToolBar* SettingsPanel = 0;
 	ISXGUIToolBar* ToolsPanel = 0;
 
-	//имена  всех компонентов которые можно создать
+	//РёРјРµРЅР°  РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РєРѕС‚РѕСЂС‹Рµ РјРѕР¶РЅРѕ СЃРѕР·РґР°С‚СЊ
 	char* NameElements[] =
 	{
 		"Button",
@@ -133,21 +133,21 @@ namespace SXMainWndElem
 		IDB_BITMAP21,
 		IDB_BITMAP23,
 		IDB_BITMAP24 };
-	//порядковый номер создаваемого элемента
-	//нужно для имени
+	//РїРѕСЂСЏРґРєРѕРІС‹Р№ РЅРѕРјРµСЂ СЃРѕР·РґР°РІР°РµРјРѕРіРѕ СЌР»РµРјРµРЅС‚Р°
+	//РЅСѓР¶РЅРѕ РґР»СЏ РёРјРµРЅРё
 	int NumSourceElements[SX_WINCREATOR_COUNT_ELEMENT];
 	Array<SXCreateElement*> CreateElements;
-	//массив кнопок с отображением возможно создаваемых элементов
+	//РјР°СЃСЃРёРІ РєРЅРѕРїРѕРє СЃ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµРј РІРѕР·РјРѕР¶РЅРѕ СЃРѕР·РґР°РІР°РµРјС‹С… СЌР»РµРјРµРЅС‚РѕРІ
 	SXElement Elements[SX_WINCREATOR_COUNT_ELEMENT];
 
-	//массив всех созданных элементов
+	//РјР°СЃСЃРёРІ РІСЃРµС… СЃРѕР·РґР°РЅРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ
 	//Array<SXElement*> tmparr;
 	//Array<SXCreateElement*> CreateElements;
 
-	//порядковый номер активного элемента, если -1 значит ничего не выделено
+	//РїРѕСЂСЏРґРєРѕРІС‹Р№ РЅРѕРјРµСЂ Р°РєС‚РёРІРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р°, РµСЃР»Рё -1 Р·РЅР°С‡РёС‚ РЅРёС‡РµРіРѕ РЅРµ РІС‹РґРµР»РµРЅРѕ
 	int NumActiveElement = -1;
 
-	//статики для статистики
+	//СЃС‚Р°С‚РёРєРё РґР»СЏ СЃС‚Р°С‚РёСЃС‚РёРєРё
 	ISXGUIStatic* StaticStatisticMouseText;
 	ISXGUIStatic* StaticStatisticMouseGlobal;
 	ISXGUIStatic* StaticStatisticMouseParent;
@@ -158,11 +158,11 @@ namespace SXMainWndElem
 	ISXGUIStatic* StaticStatisticElemDelete;
 	ISXGUIStatic* StaticStatisticElemCurrent;
 
-	//количество созданных элементов
+	//РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРѕР·РґР°РЅРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ
 	int CountCreateNewElem = 0;
-	//количество удаленных элементов
+	//РєРѕР»РёС‡РµСЃС‚РІРѕ СѓРґР°Р»РµРЅРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ
 	int CountDeleteElem = 0;
-	//текущее количество элементов
+	//С‚РµРєСѓС‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ СЌР»РµРјРµРЅС‚РѕРІ
 	int CountCurrentElem = 0;
 
 	ISXGUIMenuWindow* MainMenu;
@@ -177,10 +177,10 @@ namespace SXMainWndElem
 
 	POINT GlobalCurPos;
 
-	//чтобы не выскакивали надоедающие уведомления
-	//создано ли хоть чтото или это пустой проект
+	//С‡С‚РѕР±С‹ РЅРµ РІС‹СЃРєР°РєРёРІР°Р»Рё РЅР°РґРѕРµРґР°СЋС‰РёРµ СѓРІРµРґРѕРјР»РµРЅРёСЏ
+	//СЃРѕР·РґР°РЅРѕ Р»Рё С…РѕС‚СЊ С‡С‚РѕС‚Рѕ РёР»Рё СЌС‚Рѕ РїСѓСЃС‚РѕР№ РїСЂРѕРµРєС‚
 	bool IsCreatedEl;
-	//загружался хотя бы один проект
+	//Р·Р°РіСЂСѓР¶Р°Р»СЃСЏ С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ РїСЂРѕРµРєС‚
 	bool IsLoadedEl;
 };
 
@@ -216,9 +216,9 @@ bool Render()
 
 	GetClientRect(SXMainWndElem::MainWnd->getHWND(), SXMainWndElem::MainWndOldRect);
 
-	//если нажата кнопка delete и есть активный элемент то удаляем его
-	//и ставим порядковый номер активного элемента -1
-	if (GetAsyncKeyState(VK_DELETE) && SXMainWndElem::NumActiveElement != -1)
+	//РµСЃР»Рё РЅР°Р¶Р°С‚Р° РєРЅРѕРїРєР° delete Рё РµСЃС‚СЊ Р°РєС‚РёРІРЅС‹Р№ СЌР»РµРјРµРЅС‚ С‚Рѕ СѓРґР°Р»СЏРµРј РµРіРѕ
+	//Рё СЃС‚Р°РІРёРј РїРѕСЂСЏРґРєРѕРІС‹Р№ РЅРѕРјРµСЂ Р°РєС‚РёРІРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° -1
+	if (GetAsyncKeyState(VK_DELETE) < 0 && SXMainWndElem::NumActiveElement != -1)
 	{
 		InLog("%s%s%s", "Deletion of the elements [", SXMainWndElem::CreateElements[SXMainWndElem::NumActiveElement]->Name, "] ...");
 		SXMainWndElem::CountDeleteElem++;
@@ -282,18 +282,18 @@ bool Render()
 	SXMainWndElem::StaticStatisticElemCurrent->setText(ElemStat);
 
 
-	//вывод всех окон на передний план
-	//находим активное окно
+	//РІС‹РІРѕРґ РІСЃРµС… РѕРєРѕРЅ РЅР° РїРµСЂРµРґРЅРёР№ РїР»Р°РЅ
+	//РЅР°С…РѕРґРёРј Р°РєС‚РёРІРЅРѕРµ РѕРєРЅРѕ
 	HWND ActivHwnd = GetActiveWindow();
-	//если хотя бы одно из наших окон активно
+	//РµСЃР»Рё С…РѕС‚СЏ Р±С‹ РѕРґРЅРѕ РёР· РЅР°С€РёС… РѕРєРѕРЅ Р°РєС‚РёРІРЅРѕ
 	if (SXMainWndElem::ArrMainWnd[0] == ActivHwnd)
 	{
-		//проходим еще раз по всем окнам
+		//РїСЂРѕС…РѕРґРёРј РµС‰Рµ СЂР°Р· РїРѕ РІСЃРµРј РѕРєРЅР°Рј
 		for (int k = 0; k<4; k++)
 		{
 			bool IsNext = false;
 			HWND tmph = ActivHwnd;
-			//если наше окно SXMainWndElem::ArrMainWnd[k] находится в пределах от 2 до 4 zпоследовательности
+			//РµСЃР»Рё РЅР°С€Рµ РѕРєРЅРѕ SXMainWndElem::ArrMainWnd[k] РЅР°С…РѕРґРёС‚СЃСЏ РІ РїСЂРµРґРµР»Р°С… РѕС‚ 2 РґРѕ 4 zРїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 			for (int j = 0; j<4; j++)
 			{
 				tmph = GetNextWindow(tmph, GW_HWNDNEXT);
@@ -460,7 +460,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE prevInstance, PSTR cmdLine, in
 	//SXMainWndElem::JobMainWnd->addHandler(ActivateAllWindows,WM_ACTIVATE/*,0,false,0,false,true*/);
 
 
-	//установка статистики курсора
+	//СѓСЃС‚Р°РЅРѕРІРєР° СЃС‚Р°С‚РёСЃС‚РёРєРё РєСѓСЂСЃРѕСЂР°
 	SXMainWndElem::StaticStatisticMouseText = SXGUICrStatic(SX_WINCREATOR_STAT_CUR_TEXT, 10, 73, 110, 15, SXMainWndElem::MainWnd->getHWND(), 0, 0);
 	SXMainWndElem::StaticStatisticMouseText->setColorBrush(RGB(220, 220, 220));
 	SXMainWndElem::StaticStatisticMouseText->setFont(0, 14, 0, 0, 0, 0, 0);
@@ -474,7 +474,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE prevInstance, PSTR cmdLine, in
 	SXMainWndElem::StaticStatisticMouseClient->setColorBrush(RGB(220, 220, 220));
 	SXMainWndElem::StaticStatisticMouseClient->setFont(0, 14, 0, 0, 0, 0, 0);
 
-	//установка статистики элементов
+	//СѓСЃС‚Р°РЅРѕРІРєР° СЃС‚Р°С‚РёСЃС‚РёРєРё СЌР»РµРјРµРЅС‚РѕРІ
 	SXMainWndElem::StaticStatisticElemText = SXGUICrStatic(SX_WINCREATOR_STAT_ALL_ELEM_TEXT, 280, 73, 130, 15, SXMainWndElem::MainWnd->getHWND(), 0, 0);
 	SXMainWndElem::StaticStatisticElemText->setColorBrush(RGB(220, 220, 220));
 	SXMainWndElem::StaticStatisticElemText->setFont(0, 14, 0, 0, 0, 0, 0);
@@ -492,7 +492,7 @@ int WINAPI WinMain(HINSTANCE hinstance, HINSTANCE prevInstance, PSTR cmdLine, in
 	int tmpPosX = 5;
 	int tmpPosY = 160;
 
-	//установка статиков для отображения параметров
+	//СѓСЃС‚Р°РЅРѕРІРєР° СЃС‚Р°С‚РёРєРѕРІ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ
 	SXMainWndElem::StaticParamPosX = SXGUICrStatic("PosX:", 5, tmpPosY, 80, 15, SXMainWndElem::ParamWnd->getHWND(), 0, 0);
 	SXMainWndElem::StaticParamPosX->setColorBrush(RGB(220, 220, 220));
 	//SXMainWndElem::StaticParamPosX->Font(0,15,0,0,0,0);

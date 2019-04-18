@@ -1,17 +1,20 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 #include "models.h"
 
+#include "Renderable.h"
+extern CRenderable *g_pRenderable;
+
 CModels::CModels(bool isServerMode)
 {
-	//объект расчетов видимости для наблюдателя
+	//РѕР±СЉРµРєС‚ СЂР°СЃС‡РµС‚РѕРІ РІРёРґРёРјРѕСЃС‚Рё РґР»СЏ РЅР°Р±Р»СЋРґР°С‚РµР»СЏ
 	m_aVisInfo.push_back(new CVisInfo());
 
-	//объект расчетов видимости для трассировки луча
+	//РѕР±СЉРµРєС‚ СЂР°СЃС‡РµС‚РѕРІ РІРёРґРёРјРѕСЃС‚Рё РґР»СЏ С‚СЂР°СЃСЃРёСЂРѕРІРєРё Р»СѓС‡Р°
 	m_aVisInfo.push_back(new CVisInfo());
 
 	m_pCurrArrMeshVertex = 0;
@@ -138,7 +141,6 @@ CModels::CTransparencyModel::CTransparencyModel()
 	m_isVisible4Observer = false;
 	m_fDist4Observer = 0;
 	m_sTex = "";
-	m_idTex = -1;
 	m_iCountVertex = 0;
 	m_iCountIndex = 0;
 	m_pVertexBuffer = 0;
@@ -253,10 +255,10 @@ void CModels::save(const char *szPath)
 		return;
 	}
 
-	//сохраняем магическое число
+	//СЃРѕС…СЂР°РЅСЏРµРј РјР°РіРёС‡РµСЃРєРѕРµ С‡РёСЃР»Рѕ
 	fwrite(SX_GEOM_MAGIC_WORD, sizeof(char)* strlen(SX_GEOM_MAGIC_WORD), 1, pFile);
 
-	//сохраняем версию формата
+	//СЃРѕС…СЂР°РЅСЏРµРј РІРµСЂСЃРёСЋ С„РѕСЂРјР°С‚Р°
 	uint32_t uiFmtVersion = SX_GEOM_FILE_FORMAT_VERSION;
 	fwrite(&uiFmtVersion, sizeof(uint32_t), 1, pFile);
 
@@ -264,23 +266,23 @@ void CModels::save(const char *szPath)
 	uint32_t uiSizeFile = 0;
 	fwrite(&uiSizeFile, sizeof(uint32_t), 1, pFile);
 
-	//сохраняем количество моделей
+	//СЃРѕС…СЂР°РЅСЏРµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РјРѕРґРµР»РµР№
 	int32_t iCountModel = m_aModels.size();
 	fwrite(&iCountModel, sizeof(int32_t), 1, pFile);
 
 	for (int i = 0; i < m_aModels.size(); ++i)
 	{
-		//записываем данные - размер блока, после записи модели данные обновляются
+		//Р·Р°РїРёСЃС‹РІР°РµРј РґР°РЅРЅС‹Рµ - СЂР°Р·РјРµСЂ Р±Р»РѕРєР°, РїРѕСЃР»Рµ Р·Р°РїРёСЃРё РјРѕРґРµР»Рё РґР°РЅРЅС‹Рµ РѕР±РЅРѕРІР»СЏСЋС‚СЃСЏ
 		long lPosModel = ftell(pFile);
 		uint32_t uiSizeBlock = lPosModel;
 		fwrite(&uiSizeBlock, sizeof(uint32_t), 1, pFile);
 
-		//сохраняем размер имени и имя
+		//СЃРѕС…СЂР°РЅСЏРµРј СЂР°Р·РјРµСЂ РёРјРµРЅРё Рё РёРјСЏ
 		int32_t iStrLen = m_aModels[i]->m_sName.length();
 		fwrite(&iStrLen, sizeof(int32_t), 1, pFile);
 		fwrite(m_aModels[i]->m_sName.c_str(), sizeof(char), iStrLen, pFile);
 
-		//сохраняем трансформации
+		//СЃРѕС…СЂР°РЅСЏРµРј С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёРё
 		float3 vPosition, vRotation, vScale;
 		m_aModels[i]->m_pBoundVolume->getPosition(&vPosition);
 		m_aModels[i]->m_pBoundVolume->getRotation(&vRotation);
@@ -290,29 +292,29 @@ void CModels::save(const char *szPath)
 		fwrite(&vRotation, sizeof(float3_t), 1, pFile);
 		fwrite(&vScale, sizeof(float3_t), 1, pFile);
 
-		//сохранение данных модели для рендера
+		//СЃРѕС…СЂР°РЅРµРЅРёРµ РґР°РЅРЅС‹С… РјРѕРґРµР»Рё РґР»СЏ СЂРµРЅРґРµСЂР°
 		//{
-		//сохраняем размер пути до модели и путь до модели
+		//СЃРѕС…СЂР°РЅСЏРµРј СЂР°Р·РјРµСЂ РїСѓС‚Рё РґРѕ РјРѕРґРµР»Рё Рё РїСѓС‚СЊ РґРѕ РјРѕРґРµР»Рё
 		iStrLen = m_aModels[i]->m_sPath.length();
 		fwrite(&iStrLen, sizeof(int32_t), 1, pFile);
 		fwrite(m_aModels[i]->m_sPath.c_str(), sizeof(char), iStrLen, pFile);
 
-		//количество подгрупп в основной модели
+		//РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕРґРіСЂСѓРїРї РІ РѕСЃРЅРѕРІРЅРѕР№ РјРѕРґРµР»Рё
 		uint32_t iCountSubset = m_aModels[i]->m_pModel->m_uiSubsetCount;
 		fwrite(&(m_aModels[i]->m_pModel->m_uiSubsetCount), sizeof(uint32_t), 1, pFile);
 
-		//если есть подгруппы, может не быть если загрузить модель у которой все материалы пп
+		//РµСЃР»Рё РµСЃС‚СЊ РїРѕРґРіСЂСѓРїРїС‹, РјРѕР¶РµС‚ РЅРµ Р±С‹С‚СЊ РµСЃР»Рё Р·Р°РіСЂСѓР·РёС‚СЊ РјРѕРґРµР»СЊ Сѓ РєРѕС‚РѕСЂРѕР№ РІСЃРµ РјР°С‚РµСЂРёР°Р»С‹ РїРї
 		if (iCountSubset > 0)
 		{
-			//общее количество вершин
+			//РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂС€РёРЅ
 			uint32_t iAllCountVertex = m_aModels[i]->m_pModel->m_uiAllVertexCount;
 			fwrite(&iAllCountVertex, sizeof(uint32_t), 1, pFile);
 
-			//общее количество индексов
+			//РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅРґРµРєСЃРѕРІ
 			uint32_t iAllCountIndex = m_aModels[i]->m_pModel->m_uiAllIndexCount;
 			fwrite(&iAllCountIndex, sizeof(uint32_t), 1, pFile);
 
-			//сохранение массива имен текстур без расширения в виде: int32_t - количество символов, array char - строка
+			//СЃРѕС…СЂР°РЅРµРЅРёРµ РјР°СЃСЃРёРІР° РёРјРµРЅ С‚РµРєСЃС‚СѓСЂ Р±РµР· СЂР°СЃС€РёСЂРµРЅРёСЏ РІ РІРёРґРµ: int32_t - РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ, array char - СЃС‚СЂРѕРєР°
 			for (int k = 0; k < iCountSubset; ++k)
 			{
 				iStrLen = strlen(m_aModels[i]->m_pModel->m_ppTextures[k]);
@@ -320,20 +322,20 @@ void CModels::save(const char *szPath)
 				fwrite(m_aModels[i]->m_pModel->m_ppTextures[k], sizeof(char)* iStrLen, 1, pFile);
 			}
 
-			//сохранение массива стартовых индексов
+			//СЃРѕС…СЂР°РЅРµРЅРёРµ РјР°СЃСЃРёРІР° СЃС‚Р°СЂС‚РѕРІС‹С… РёРЅРґРµРєСЃРѕРІ
 			fwrite(m_aModels[i]->m_pModel->m_pStartIndex, sizeof(uint32_t), iCountSubset, pFile);
 
-			//сохранение массива количества индексов
+			//СЃРѕС…СЂР°РЅРµРЅРёРµ РјР°СЃСЃРёРІР° РєРѕР»РёС‡РµСЃС‚РІР° РёРЅРґРµРєСЃРѕРІ
 			fwrite(m_aModels[i]->m_pModel->m_pIndexCount, sizeof(uint32_t), iCountSubset, pFile);
 
-			//сохранение массива стартовых вершин
+			//СЃРѕС…СЂР°РЅРµРЅРёРµ РјР°СЃСЃРёРІР° СЃС‚Р°СЂС‚РѕРІС‹С… РІРµСЂС€РёРЅ
 			fwrite(m_aModels[i]->m_pModel->m_pStartVertex, sizeof(uint32_t), iCountSubset, pFile);
 
-			//сохранение массива количества вершин
+			//СЃРѕС…СЂР°РЅРµРЅРёРµ РјР°СЃСЃРёРІР° РєРѕР»РёС‡РµСЃС‚РІР° РІРµСЂС€РёРЅ
 			fwrite(m_aModels[i]->m_pModel->m_pVertexCount, sizeof(uint32_t), iCountSubset, pFile);
 
 
-			//сохраняем данные вершинного и индексного буферов
+			//СЃРѕС…СЂР°РЅСЏРµРј РґР°РЅРЅС‹Рµ РІРµСЂС€РёРЅРЅРѕРіРѕ Рё РёРЅРґРµРєСЃРЅРѕРіРѕ Р±СѓС„РµСЂРѕРІ
 			//UINT *pIndex;
 			//m_aModels[i]->m_pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0);
 			//vertex_static_ex *pVertex;
@@ -350,33 +352,33 @@ void CModels::save(const char *szPath)
 		}
 		//}
 
-		//сохранение данных лода
+		//СЃРѕС…СЂР°РЅРµРЅРёРµ РґР°РЅРЅС‹С… Р»РѕРґР°
 		//{
 
-		//сохранение значения "есть ли лод"
+		//СЃРѕС…СЂР°РЅРµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ "РµСЃС‚СЊ Р»Рё Р»РѕРґ"
 		uint8_t ui8ExistsLod = (m_aModels[i]->m_pLod != 0);
 		fwrite(&ui8ExistsLod, sizeof(uint8_t), 1, pFile);
 
 		if (ui8ExistsLod)
 		{
-			//сохраняем размер пути до модели и путь до модели
+			//СЃРѕС…СЂР°РЅСЏРµРј СЂР°Р·РјРµСЂ РїСѓС‚Рё РґРѕ РјРѕРґРµР»Рё Рё РїСѓС‚СЊ РґРѕ РјРѕРґРµР»Рё
 			iStrLen = m_aModels[i]->m_pLod->m_sPath.length();
 			fwrite(&iStrLen, sizeof(int32_t), 1, pFile);
 			fwrite(m_aModels[i]->m_pLod->m_sPath.c_str(), sizeof(char), iStrLen, pFile);
 
-			//количество подгрупп в модели
+			//РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕРґРіСЂСѓРїРї РІ РјРѕРґРµР»Рё
 			int32_t iCountSubsetLod = m_aModels[i]->m_pLod->m_pModel->m_uiSubsetCount;
 			fwrite(&(m_aModels[i]->m_pLod->m_pModel->m_uiSubsetCount), sizeof(uint32_t), 1, pFile);
 
-			//общее количество вершин
+			//РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂС€РёРЅ
 			uint32_t iAllCountVertexLod = m_aModels[i]->m_pLod->m_pModel->m_uiAllVertexCount;
 			fwrite(&iAllCountVertexLod, sizeof(uint32_t), 1, pFile);
 
-			//общее количество индексов
+			//РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РёРЅРґРµРєСЃРѕРІ
 			uint32_t iAllCountIndexLod = m_aModels[i]->m_pLod->m_pModel->m_uiAllIndexCount;
 			fwrite(&iAllCountIndexLod, sizeof(uint32_t), 1, pFile);
 
-			//сохранение массива имен текстур без расширеня в виде: int32_t - количество символов, array char - строка
+			//СЃРѕС…СЂР°РЅРµРЅРёРµ РјР°СЃСЃРёРІР° РёРјРµРЅ С‚РµРєСЃС‚СѓСЂ Р±РµР· СЂР°СЃС€РёСЂРµРЅСЏ РІ РІРёРґРµ: int32_t - РєРѕР»РёС‡РµСЃС‚РІРѕ СЃРёРјРІРѕР»РѕРІ, array char - СЃС‚СЂРѕРєР°
 			for (int k = 0; k < iCountSubsetLod; ++k)
 			{
 				iStrLen = strlen(m_aModels[i]->m_pLod->m_pModel->m_ppTextures[k]);
@@ -389,7 +391,7 @@ void CModels::save(const char *szPath)
 			fwrite(m_aModels[i]->m_pLod->m_pModel->m_pStartVertex, sizeof(uint32_t), iCountSubsetLod, pFile);
 			fwrite(m_aModels[i]->m_pLod->m_pModel->m_pVertexCount, sizeof(uint32_t), iCountSubsetLod, pFile);
 
-			//сохраняем данные вершинного и индексного буферов
+			//СЃРѕС…СЂР°РЅСЏРµРј РґР°РЅРЅС‹Рµ РІРµСЂС€РёРЅРЅРѕРіРѕ Рё РёРЅРґРµРєСЃРЅРѕРіРѕ Р±СѓС„РµСЂРѕРІ
 			//UINT *pIndexLod;
 			//m_aModels[i]->m_pLod->m_pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndexLod, 0);
 			//vertex_static_ex *pVertexLod;
@@ -407,10 +409,10 @@ void CModels::save(const char *szPath)
 		//}
 
 
-		//сохранение данных физической модели
+		//СЃРѕС…СЂР°РЅРµРЅРёРµ РґР°РЅРЅС‹С… С„РёР·РёС‡РµСЃРєРѕР№ РјРѕРґРµР»Рё
 		//{
 
-		//сохранение значения "есть ли физическая модель"
+		//СЃРѕС…СЂР°РЅРµРЅРёРµ Р·РЅР°С‡РµРЅРёСЏ "РµСЃС‚СЊ Р»Рё С„РёР·РёС‡РµСЃРєР°СЏ РјРѕРґРµР»СЊ"
 		int8_t i8ExistsPhysics = (m_aModels[i]->m_pPhysics != 0);
 		fwrite(&i8ExistsPhysics, sizeof(int8_t), 1, pFile);
 
@@ -446,7 +448,7 @@ void CModels::save(const char *szPath)
 		//}
 
 
-		//сохранение пп моделей
+		//СЃРѕС…СЂР°РЅРµРЅРёРµ РїРї РјРѕРґРµР»РµР№
 		//{
 
 		uint32_t uiCountPtansparency = m_aModels[i]->m_aTransparency.size();
@@ -457,7 +459,7 @@ void CModels::save(const char *szPath)
 		//}
 
 
-		//сохранение сегментов модели, если есть
+		//СЃРѕС…СЂР°РЅРµРЅРёРµ СЃРµРіРјРµРЅС‚РѕРІ РјРѕРґРµР»Рё, РµСЃР»Рё РµСЃС‚СЊ
 		//{
 		int8_t i8ExistsSegments= (m_aModels[i]->m_pArrSplits != 0);
 		fwrite(&i8ExistsSegments, sizeof(int8_t), 1, pFile);
@@ -522,7 +524,7 @@ void CModels::save(const char *szPath)
 			}
 		}
 
-		//запоминаем текущую позицию в файле, перемещаемся к началу записи текущей модели, записываем размер блока, перемещаемся в конец для дальнейшей записи
+		//Р·Р°РїРѕРјРёРЅР°РµРј С‚РµРєСѓС‰СѓСЋ РїРѕР·РёС†РёСЋ РІ С„Р°Р№Р»Рµ, РїРµСЂРµРјРµС‰Р°РµРјСЃСЏ Рє РЅР°С‡Р°Р»Сѓ Р·Р°РїРёСЃРё С‚РµРєСѓС‰РµР№ РјРѕРґРµР»Рё, Р·Р°РїРёСЃС‹РІР°РµРј СЂР°Р·РјРµСЂ Р±Р»РѕРєР°, РїРµСЂРµРјРµС‰Р°РµРјСЃСЏ РІ РєРѕРЅРµС† РґР»СЏ РґР°Р»СЊРЅРµР№С€РµР№ Р·Р°РїРёСЃРё
 		long lCurrPos = ftell(pFile);
 		uiSizeBlock = lCurrPos - uiSizeBlock;
 		fseek(pFile, lPosModel, SEEK_SET);
@@ -535,10 +537,10 @@ void CModels::save(const char *szPath)
 	uint32_t uiCountTransparency = m_aTransparency.size();
 	fwrite(&uiCountTransparency, sizeof(uint32_t), 1, pFile);
 
-	//сохранение массива пп моделей
+	//СЃРѕС…СЂР°РЅРµРЅРёРµ РјР°СЃСЃРёРІР° РїРї РјРѕРґРµР»РµР№
 	for (int i = 0; i < m_aTransparency.size(); ++i)
 	{
-		//записываем данные - размер блока, после записи модели данные обновляются
+		//Р·Р°РїРёСЃС‹РІР°РµРј РґР°РЅРЅС‹Рµ - СЂР°Р·РјРµСЂ Р±Р»РѕРєР°, РїРѕСЃР»Рµ Р·Р°РїРёСЃРё РјРѕРґРµР»Рё РґР°РЅРЅС‹Рµ РѕР±РЅРѕРІР»СЏСЋС‚СЃСЏ
 		long lPosModel = ftell(pFile);
 		uint32_t uiSizeBlock = lPosModel;
 		fwrite(&uiSizeBlock, sizeof(uint32_t), 1, pFile);
@@ -552,7 +554,7 @@ void CModels::save(const char *szPath)
 		fwrite(&(m_aTransparency[i]->m_iCountVertex), sizeof(int32_t), 1, pFile);
 		fwrite(&(m_aTransparency[i]->m_iCountIndex), sizeof(int32_t), 1, pFile);
 
-		//сохраняем данные вершинного и индексного буферов
+		//СЃРѕС…СЂР°РЅСЏРµРј РґР°РЅРЅС‹Рµ РІРµСЂС€РёРЅРЅРѕРіРѕ Рё РёРЅРґРµРєСЃРЅРѕРіРѕ Р±СѓС„РµСЂРѕРІ
 		UINT *pIndexTrancparency = m_aTransparency[i]->m_pIndices;
 		//m_aTransparency[i]->m_pIndexBuffer->Lock(0, 0, (void **)&pIndexTrancparency, 0);
 		vertex_static_ex *pVertexTrancparency = m_aTransparency[i]->m_pVertices;
@@ -564,7 +566,7 @@ void CModels::save(const char *szPath)
 		//m_aTransparency[i]->m_pVertexBuffer->Unlock();
 		//m_aTransparency[i]->m_pIndexBuffer->Unlock();
 
-		//запоминаем текущую позицию в файле, перемещаемся к началу записи текущей модели, записываем размер блока, перемещаемся в конец для дальнейшей записи
+		//Р·Р°РїРѕРјРёРЅР°РµРј С‚РµРєСѓС‰СѓСЋ РїРѕР·РёС†РёСЋ РІ С„Р°Р№Р»Рµ, РїРµСЂРµРјРµС‰Р°РµРјСЃСЏ Рє РЅР°С‡Р°Р»Сѓ Р·Р°РїРёСЃРё С‚РµРєСѓС‰РµР№ РјРѕРґРµР»Рё, Р·Р°РїРёСЃС‹РІР°РµРј СЂР°Р·РјРµСЂ Р±Р»РѕРєР°, РїРµСЂРµРјРµС‰Р°РµРјСЃСЏ РІ РєРѕРЅРµС† РґР»СЏ РґР°Р»СЊРЅРµР№С€РµР№ Р·Р°РїРёСЃРё
 		long lCurrPos = ftell(pFile);
 		uiSizeBlock = lCurrPos - uiSizeBlock;
 		fseek(pFile, lPosModel, SEEK_SET);
@@ -589,9 +591,9 @@ void CModels::load(const char *szPath)
 		return;
 	}
 
-	//первичные проверки
+	//РїРµСЂРІРёС‡РЅС‹Рµ РїСЂРѕРІРµСЂРєРё
 	//{
-	//считывание и проверка магического слова
+	//СЃС‡РёС‚С‹РІР°РЅРёРµ Рё РїСЂРѕРІРµСЂРєР° РјР°РіРёС‡РµСЃРєРѕРіРѕ СЃР»РѕРІР°
 	uint64_t ui64Magic;
 	fread(&ui64Magic, sizeof(uint64_t), 1, pFile);
 
@@ -602,7 +604,7 @@ void CModels::load(const char *szPath)
 		return;
 	}
 
-	//считывание и проверка поддерживаемой версии
+	//СЃС‡РёС‚С‹РІР°РЅРёРµ Рё РїСЂРѕРІРµСЂРєР° РїРѕРґРґРµСЂР¶РёРІР°РµРјРѕР№ РІРµСЂСЃРёРё
 	uint32_t uiFmtVersion;
 	fread(&uiFmtVersion, sizeof(uint32_t), 1, pFile);
 
@@ -613,7 +615,7 @@ void CModels::load(const char *szPath)
 		return;
 	}
 
-	//считывание и проверка размера файла
+	//СЃС‡РёС‚С‹РІР°РЅРёРµ Рё РїСЂРѕРІРµСЂРєР° СЂР°Р·РјРµСЂР° С„Р°Р№Р»Р°
 	uint32_t uiSizeFile;
 	fread(&uiSizeFile, sizeof(uint32_t), 1, pFile);
 	long lCurrPos = ftell(pFile);
@@ -653,7 +655,7 @@ void CModels::load(const char *szPath)
 		szStr[iStrLen] = 0;
 		pModel->m_sName = szStr;
 
-		//считываем трансформации
+		//СЃС‡РёС‚С‹РІР°РµРј С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёРё
 		//{
 		float3 vPosition, vRotation, vScale;
 		fread(&(vPosition.x), sizeof(float), 1, pFile);
@@ -678,12 +680,12 @@ void CModels::load(const char *szPath)
 		szStr[iStrLen] = 0;
 		pModel->m_sPath = szStr;
 
-		//создаем статическую модель и считываем для нее данные
+		//СЃРѕР·РґР°РµРј СЃС‚Р°С‚РёС‡РµСЃРєСѓСЋ РјРѕРґРµР»СЊ Рё СЃС‡РёС‚С‹РІР°РµРј РґР»СЏ РЅРµРµ РґР°РЅРЅС‹Рµ
 		//{
 		pModel->m_pModel = SGCore_StaticModelCr();
 		fread(&(pModel->m_pModel->m_uiSubsetCount), sizeof(uint32_t), 1, pFile);
 
-		//если модель не пустая (есть не пп подгруппы)
+		//РµСЃР»Рё РјРѕРґРµР»СЊ РЅРµ РїСѓСЃС‚Р°СЏ (РµСЃС‚СЊ РЅРµ РїРї РїРѕРґРіСЂСѓРїРїС‹)
 		if (pModel->m_pModel->m_uiSubsetCount)
 		{
 			fread(&(pModel->m_pModel->m_uiAllVertexCount), sizeof(uint32_t), 1, pFile);
@@ -705,7 +707,13 @@ void CModels::load(const char *szPath)
 				szStr[iStrLen] = 0;
 				strcpy(pModel->m_pModel->m_ppTextures[k], szStr);
 				sprintf(szStr, "%s.dds", pModel->m_pModel->m_ppTextures[k]);
-				pModel->m_aIDsTextures.push_back(m_isServerMode ? -1 : SGCore_MtlLoad(szStr, MTL_TYPE_GEOM));
+
+				IXMaterial *pMaterial = NULL;
+				XSHADER_DEFAULT_DESC shaderDesc;
+				shaderDesc.szFileVS = "mtrlgeom_base.vs";
+				shaderDesc.szFilePS = "mtrlgeom_base.ps";
+				g_pRenderable->getMaterialSystem()->loadMaterial(szStr, &pMaterial, &shaderDesc);
+				pModel->m_aIDsTextures.push_back(pMaterial);
 			}
 
 			fread(pModel->m_pModel->m_pStartIndex, sizeof(uint32_t), pModel->m_pModel->m_uiSubsetCount, pFile);
@@ -719,7 +727,7 @@ void CModels::load(const char *szPath)
 			fread(pModel->m_pModel->m_pVertices, sizeof(vertex_static_ex), pModel->m_pModel->m_uiAllVertexCount, pFile);
 			fread(pModel->m_pModel->m_pIndices, sizeof(uint32_t), pModel->m_pModel->m_uiAllIndexCount, pFile);
 
-			//создаем баунд для модели
+			//СЃРѕР·РґР°РµРј Р±Р°СѓРЅРґ РґР»СЏ РјРѕРґРµР»Рё
 			pModel->m_pBoundVolume->calcBound(pModel->m_pModel->m_pVertices, pModel->m_pModel->m_uiAllVertexCount, sizeof(vertex_static_ex));
 
 			if(!m_isServerMode)
@@ -729,7 +737,7 @@ void CModels::load(const char *szPath)
 		}
 		//}
 
-		//считываем лод, если есть
+		//СЃС‡РёС‚С‹РІР°РµРј Р»РѕРґ, РµСЃР»Рё РµСЃС‚СЊ
 		//{
 		uint8_t ui8ExistsLod = 0;
 		fread(&ui8ExistsLod, sizeof(uint8_t), 1, pFile);
@@ -801,7 +809,7 @@ void CModels::load(const char *szPath)
 		}
 		//}
 
-		//считываем физическую модель, если есть
+		//СЃС‡РёС‚С‹РІР°РµРј С„РёР·РёС‡РµСЃРєСѓСЋ РјРѕРґРµР»СЊ, РµСЃР»Рё РµСЃС‚СЊ
 		//{
 		uint8_t ui8ExistsPhysics = 0;
 		fread(&ui8ExistsPhysics, sizeof(uint8_t), 1, pFile);
@@ -814,23 +822,23 @@ void CModels::load(const char *szPath)
 			fread(szStr, sizeof(char), iStrLen, pFile);
 			pModel->m_pPhysics->m_sPath = szStr;
 
-			//загрузка размера массива вершин и вершин
+			//Р·Р°РіСЂСѓР·РєР° СЂР°Р·РјРµСЂР° РјР°СЃСЃРёРІР° РІРµСЂС€РёРЅ Рё РІРµСЂС€РёРЅ
 			uint32_t uiSizeArr = 0;
 			fread(&uiSizeArr, sizeof(int32_t), 1, pFile);
 			pModel->m_pPhysics->m_aVertex.resize(uiSizeArr);
 			fread(&(pModel->m_pPhysics->m_aVertex[0]), sizeof(float3_t), pModel->m_pPhysics->m_aVertex.size(), pFile);
 
-			//загрузка размера массива индексов и индексов
+			//Р·Р°РіСЂСѓР·РєР° СЂР°Р·РјРµСЂР° РјР°СЃСЃРёРІР° РёРЅРґРµРєСЃРѕРІ Рё РёРЅРґРµРєСЃРѕРІ
 			fread(&uiSizeArr, sizeof(int32_t), 1, pFile);
 			pModel->m_pPhysics->m_aIndex.resize(uiSizeArr);
 			fread(&(pModel->m_pPhysics->m_aIndex[0]), sizeof(uint32_t), pModel->m_pPhysics->m_aIndex.size(), pFile);
 
-			//загрузка размеров массива с номерами материалов (для каждого индекса номер из локального массива) и номеров
+			//Р·Р°РіСЂСѓР·РєР° СЂР°Р·РјРµСЂРѕРІ РјР°СЃСЃРёРІР° СЃ РЅРѕРјРµСЂР°РјРё РјР°С‚РµСЂРёР°Р»РѕРІ (РґР»СЏ РєР°Р¶РґРѕРіРѕ РёРЅРґРµРєСЃР° РЅРѕРјРµСЂ РёР· Р»РѕРєР°Р»СЊРЅРѕРіРѕ РјР°СЃСЃРёРІР°) Рё РЅРѕРјРµСЂРѕРІ
 			fread(&uiSizeArr, sizeof(int32_t), 1, pFile);
 			pModel->m_pPhysics->m_aNumMtrl.resize(uiSizeArr);
 			fread(&(pModel->m_pPhysics->m_aNumMtrl[0]), sizeof(uint32_t), pModel->m_pPhysics->m_aNumMtrl.size(), pFile);
 
-			//загрузка массива с именами текстур (для материалов) и создание массива материалов для каждой подгруппы
+			//Р·Р°РіСЂСѓР·РєР° РјР°СЃСЃРёРІР° СЃ РёРјРµРЅР°РјРё С‚РµРєСЃС‚СѓСЂ (РґР»СЏ РјР°С‚РµСЂРёР°Р»РѕРІ) Рё СЃРѕР·РґР°РЅРёРµ РјР°СЃСЃРёРІР° РјР°С‚РµСЂРёР°Р»РѕРІ РґР»СЏ РєР°Р¶РґРѕР№ РїРѕРґРіСЂСѓРїРїС‹
 			Array<ID> aIDs;
 			fread(&uiSizeArr, sizeof(int32_t), 1, pFile);
 			for (int k = 0; k < uiSizeArr; ++k)
@@ -842,7 +850,7 @@ void CModels::load(const char *szPath)
 				aIDs.push_back(SGCore_MtlLoad(szStr, MTL_TYPE_GEOM));
 			}
 
-			//назначение каждому индексу id материала
+			//РЅР°Р·РЅР°С‡РµРЅРёРµ РєР°Р¶РґРѕРјСѓ РёРЅРґРµРєСЃСѓ id РјР°С‚РµСЂРёР°Р»Р°
 			pModel->m_pPhysics->m_aMtrl.resize(pModel->m_pPhysics->m_aIndex.size());
 			for (int k = 0; k < pModel->m_pPhysics->m_aMtrl.size(); ++k)
 			{
@@ -851,7 +859,7 @@ void CModels::load(const char *szPath)
 		}
 		//}
 
-		//считывание идентификаторов пп моделей для текущей модели
+		//СЃС‡РёС‚С‹РІР°РЅРёРµ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРІ РїРї РјРѕРґРµР»РµР№ РґР»СЏ С‚РµРєСѓС‰РµР№ РјРѕРґРµР»Рё
 		//{
 		uint32_t uiCountTransparency = 0;
 		fread(&uiCountTransparency, sizeof(uint32_t), 1, pFile);
@@ -862,7 +870,7 @@ void CModels::load(const char *szPath)
 		}
 		//}
 
-		//считывание сегментов модели, если есть
+		//СЃС‡РёС‚С‹РІР°РЅРёРµ СЃРµРіРјРµРЅС‚РѕРІ РјРѕРґРµР»Рё, РµСЃР»Рё РµСЃС‚СЊ
 		//{
 		int8_t i8ExistsSegments = 0;
 		fread(&i8ExistsSegments, sizeof(int8_t), 1, pFile);
@@ -979,7 +987,12 @@ void CModels::load(const char *szPath)
 		szStr[iStrLen] = 0;
 		pTransparency->m_sTex = szStr;
 		pTransparency->m_sTex += ".dds";
-		pTransparency->m_idTex = SGCore_MtlLoad((pTransparency->m_sTex + ".dds").c_str(), MTL_TYPE_GEOM);
+
+		XSHADER_DEFAULT_DESC shaderDesc;
+		shaderDesc.szFileVS = "mtrlgeom_base.vs";
+		shaderDesc.szFilePS = "mtrlgeom_base.ps";
+		g_pRenderable->getMaterialSystem()->loadMaterial(pTransparency->m_sTex.c_str(), &pTransparency->m_idTex, &shaderDesc);
+		
 
 		fread(&(pTransparency->m_iCountVertex), sizeof(int32_t), 1, pFile);
 		fread(&(pTransparency->m_iCountIndex), sizeof(int32_t), 1, pFile);
@@ -1018,7 +1031,7 @@ void CModels::load(const char *szPath)
 
 //##########################################################################
 
-ID CModels::createTransparencyModel(ID idTex, const char *szTex, const vertex_static_ex *pArrVertex, int iCountVertex, const UINT *pArrIndex, int iCountIndex)
+ID CModels::createTransparencyModel(IXMaterial *idTex, const char *szTex, const vertex_static_ex *pArrVertex, int iCountVertex, const UINT *pArrIndex, int iCountIndex)
 {
 	CTransparencyModel *pTransparency = new CTransparencyModel();
 	pTransparency->m_iCountVertex = iCountVertex;
@@ -1054,11 +1067,11 @@ ID CModels::createTransparencyModel(ID idTex, const char *szTex, const vertex_st
 
 ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, const char *szPhys, bool needSegmentation)
 {
-	//если путь до модели и путь до лода идентичны, то обнуляем путь до лода
+	//РµСЃР»Рё РїСѓС‚СЊ РґРѕ РјРѕРґРµР»Рё Рё РїСѓС‚СЊ РґРѕ Р»РѕРґР° РёРґРµРЅС‚РёС‡РЅС‹, С‚Рѕ РѕР±РЅСѓР»СЏРµРј РїСѓС‚СЊ РґРѕ Р»РѕРґР°
 	if (szLod && stricmp(szPath, szLod) == 0)
 		szLod = 0;
 
-	//если путь до модели и путь до физической модели идентичны, то обнуляем путь до физической модели
+	//РµСЃР»Рё РїСѓС‚СЊ РґРѕ РјРѕРґРµР»Рё Рё РїСѓС‚СЊ РґРѕ С„РёР·РёС‡РµСЃРєРѕР№ РјРѕРґРµР»Рё РёРґРµРЅС‚РёС‡РЅС‹, С‚Рѕ РѕР±РЅСѓР»СЏРµРј РїСѓС‚СЊ РґРѕ С„РёР·РёС‡РµСЃРєРѕР№ РјРѕРґРµР»Рё
 	if (szPhys && stricmp(szPath, szPhys) == 0)
 		szPhys = 0;
 
@@ -1085,15 +1098,22 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 	memcpy(pIndex, pNewIndeces, pModel->m_pModel->m_uiAllIndexCount * sizeof(UINT));
 	pModel->m_pModel->m_pIndexBuffer->Unlock();*/
 
-	//загружает материалы
+	//Р·Р°РіСЂСѓР¶Р°РµС‚ РјР°С‚РµСЂРёР°Р»С‹
 	for (int i = 0; i < pModel->m_pModel->m_uiSubsetCount; ++i)
 	{
 		sFullPath = String(pModel->m_pModel->m_ppTextures[i]) + ".dds";
-		pModel->m_aIDsTextures[i] = SGCore_MtlLoad(sFullPath.c_str(), MTL_TYPE_GEOM);
+
+		IXMaterial *pMaterial = NULL;
+		XSHADER_DEFAULT_DESC shaderDesc;
+		shaderDesc.szFileVS = "mtrlgeom_base.vs";
+		shaderDesc.szFilePS = "mtrlgeom_base.ps";
+		g_pRenderable->getMaterialSystem()->loadMaterial(sFullPath.c_str(), &pMaterial, &shaderDesc);
+		
+		pModel->m_aIDsTextures[i] = pMaterial;
 	}
 
 
-	//создаем пп модели, если в текущей загружаемой моделе есть такие подгруппы
+	//СЃРѕР·РґР°РµРј РїРї РјРѕРґРµР»Рё, РµСЃР»Рё РІ С‚РµРєСѓС‰РµР№ Р·Р°РіСЂСѓР¶Р°РµРјРѕР№ РјРѕРґРµР»Рµ РµСЃС‚СЊ С‚Р°РєРёРµ РїРѕРґРіСЂСѓРїРїС‹
 	//{
 
 	int iCountVertexNew = 0;
@@ -1107,8 +1127,9 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 
 	for (int g = 0; g < pModel->m_pModel->m_uiSubsetCount; ++g)
 	{
-		//если подгруппа не полупрозрачная то пропускаем
-		if (!SGCore_MtlIsTransparency(pModel->m_aIDsTextures[g]))
+		//РµСЃР»Рё РїРѕРґРіСЂСѓРїРїР° РЅРµ РїРѕР»СѓРїСЂРѕР·СЂР°С‡РЅР°СЏ С‚Рѕ РїСЂРѕРїСѓСЃРєР°РµРј
+		
+		if(!pModel->m_aIDsTextures[g]->isTransparent())
 		{
 			++iCountSubsetNew;
 			iCountIndexNew += pModel->m_pModel->m_pIndexCount[g];
@@ -1118,50 +1139,50 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 
 		char* szTexName = pModel->m_pModel->m_ppTextures[g];
 
-		//массивы индексов пп моделей
+		//РјР°СЃСЃРёРІС‹ РёРЅРґРµРєСЃРѕРІ РїРї РјРѕРґРµР»РµР№
 		Array<Array<UINT>> aIndex;
 
-		//массивы оригинальных индексов 
+		//РјР°СЃСЃРёРІС‹ РѕСЂРёРіРёРЅР°Р»СЊРЅС‹С… РёРЅРґРµРєСЃРѕРІ 
 		Array<Array<UINT>> aIndexInBuffer;
 
-		//массивы пп вершин
+		//РјР°СЃСЃРёРІС‹ РїРї РІРµСЂС€РёРЅ
 		Array<Array<vertex_static_ex>> aVertex;
 
-		//количество пп моделей в текущей подгруппе, или текущий номер модели в aIndex aIndexInBuffer aVertex
+		//РєРѕР»РёС‡РµСЃС‚РІРѕ РїРї РјРѕРґРµР»РµР№ РІ С‚РµРєСѓС‰РµР№ РїРѕРґРіСЂСѓРїРїРµ, РёР»Рё С‚РµРєСѓС‰РёР№ РЅРѕРјРµСЂ РјРѕРґРµР»Рё РІ aIndex aIndexInBuffer aVertex
 		int iCountSubModels = 0;
 
-		//массив занятых индексов
+		//РјР°СЃСЃРёРІ Р·Р°РЅСЏС‚С‹С… РёРЅРґРµРєСЃРѕРІ
 		Array<bool> aIndexBusy;
 		aIndexBusy.resize(pModel->m_pModel->m_pIndexCount[g]);
 		memset(&(aIndexBusy[0]), 0, sizeof(bool)*aIndexBusy.size());
 
-		//количество занятых индексов
+		//РєРѕР»РёС‡РµСЃС‚РІРѕ Р·Р°РЅСЏС‚С‹С… РёРЅРґРµРєСЃРѕРІ
 		int iCountIndexBusy = 0;
 
-		//при первой проверке индексов нам надо делать запись, эта переменная указыает на то, является ли текущий полигон первым в анализе
+		//РїСЂРё РїРµСЂРІРѕР№ РїСЂРѕРІРµСЂРєРµ РёРЅРґРµРєСЃРѕРІ РЅР°Рј РЅР°РґРѕ РґРµР»Р°С‚СЊ Р·Р°РїРёСЃСЊ, СЌС‚Р° РїРµСЂРµРјРµРЅРЅР°СЏ СѓРєР°Р·С‹Р°РµС‚ РЅР° С‚Рѕ, СЏРІР»СЏРµС‚СЃСЏ Р»Рё С‚РµРєСѓС‰РёР№ РїРѕР»РёРіРѕРЅ РїРµСЂРІС‹Рј РІ Р°РЅР°Р»РёР·Рµ
 		bool isFirstVerifable = true;
 
-		//количество занятых индексов с прошлой итерации
+		//РєРѕР»РёС‡РµСЃС‚РІРѕ Р·Р°РЅСЏС‚С‹С… РёРЅРґРµРєСЃРѕРІ СЃ РїСЂРѕС€Р»РѕР№ РёС‚РµСЂР°С†РёРё
 		int iCountIndexBusyOld = 0;
 
-		//если количество занятых индексов дошло до размеров массива занятых индексов, значит мы исчерпали все индексы
+		//РµСЃР»Рё РєРѕР»РёС‡РµСЃС‚РІРѕ Р·Р°РЅСЏС‚С‹С… РёРЅРґРµРєСЃРѕРІ РґРѕС€Р»Рѕ РґРѕ СЂР°Р·РјРµСЂРѕРІ РјР°СЃСЃРёРІР° Р·Р°РЅСЏС‚С‹С… РёРЅРґРµРєСЃРѕРІ, Р·РЅР°С‡РёС‚ РјС‹ РёСЃС‡РµСЂРїР°Р»Рё РІСЃРµ РёРЅРґРµРєСЃС‹
 		while (aIndexBusy.size() > iCountIndexBusy)
 		{
-			//если количество занятых индексов обнулено, значит считаем данные для новой пп модели
+			//РµСЃР»Рё РєРѕР»РёС‡РµСЃС‚РІРѕ Р·Р°РЅСЏС‚С‹С… РёРЅРґРµРєСЃРѕРІ РѕР±РЅСѓР»РµРЅРѕ, Р·РЅР°С‡РёС‚ СЃС‡РёС‚Р°РµРј РґР°РЅРЅС‹Рµ РґР»СЏ РЅРѕРІРѕР№ РїРї РјРѕРґРµР»Рё
 			if (iCountIndexBusyOld == 0)
 			{
 				iCountIndexBusyOld = iCountIndexBusy;
 				isFirstVerifable = true;
 			}
 
-			//проходимся по индексам, по трем сразу (по полигонам)
+			//РїСЂРѕС…РѕРґРёРјСЃСЏ РїРѕ РёРЅРґРµРєСЃР°Рј, РїРѕ С‚СЂРµРј СЃСЂР°Р·Сѓ (РїРѕ РїРѕР»РёРіРѕРЅР°Рј)
 			for (int i = 0; i < pModel->m_pModel->m_pIndexCount[g]; i += 3)
 			{
-				//если индекс занят, то пропускаем
+				//РµСЃР»Рё РёРЅРґРµРєСЃ Р·Р°РЅСЏС‚, С‚Рѕ РїСЂРѕРїСѓСЃРєР°РµРј
 				if (aIndexBusy[i])
 					continue;
 
-				//считаем количество уникальных индексов
+				//СЃС‡РёС‚Р°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СѓРЅРёРєР°Р»СЊРЅС‹С… РёРЅРґРµРєСЃРѕРІ
 				//{
 				int iCountNonUnic = 0;
 
@@ -1178,16 +1199,16 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 				}
 				//}
 
-				//если все индексы уникальные и сейчас не первый анализ, то пропускаем итерацию
+				//РµСЃР»Рё РІСЃРµ РёРЅРґРµРєСЃС‹ СѓРЅРёРєР°Р»СЊРЅС‹Рµ Рё СЃРµР№С‡Р°СЃ РЅРµ РїРµСЂРІС‹Р№ Р°РЅР°Р»РёР·, С‚Рѕ РїСЂРѕРїСѓСЃРєР°РµРј РёС‚РµСЂР°С†РёСЋ
 				if (iCountNonUnic == 0 && !isFirstVerifable)
 					continue;
 
-				//анализируем 3 индекса
+				//Р°РЅР°Р»РёР·РёСЂСѓРµРј 3 РёРЅРґРµРєСЃР°
 				for (int j = 0; j < 3; ++j)
 				{
 					int iKey = -1;
 
-					//ищем, возможно текущий индекс уже записывался в данные новой модели
+					//РёС‰РµРј, РІРѕР·РјРѕР¶РЅРѕ С‚РµРєСѓС‰РёР№ РёРЅРґРµРєСЃ СѓР¶Рµ Р·Р°РїРёСЃС‹РІР°Р»СЃСЏ РІ РґР°РЅРЅС‹Рµ РЅРѕРІРѕР№ РјРѕРґРµР»Рё
 					for (int k = 0, kl = aIndexInBuffer[iCountSubModels].size(); k < kl; ++k)
 					{
 						if (aIndexInBuffer[iCountSubModels][k] == (pIndex[pModel->m_pModel->m_pStartIndex[g] + i + j]))
@@ -1197,7 +1218,7 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 						}
 					}
 
-					//если индекс уникальный
+					//РµСЃР»Рё РёРЅРґРµРєСЃ СѓРЅРёРєР°Р»СЊРЅС‹Р№
 					if (iKey == -1)
 					{
 						aVertex[iCountSubModels].push_back(pVertex[pIndex[pModel->m_pModel->m_pStartIndex[g] + i + j]]);
@@ -1215,21 +1236,21 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 					aIndexInBuffer[iCountSubModels].push_back(pIndex[pModel->m_pModel->m_pStartIndex[g] + i + j]);
 				}
 
-				//сообщаем что проанализированные индексы уже заняты
+				//СЃРѕРѕР±С‰Р°РµРј С‡С‚Рѕ РїСЂРѕР°РЅР°Р»РёР·РёСЂРѕРІР°РЅРЅС‹Рµ РёРЅРґРµРєСЃС‹ СѓР¶Рµ Р·Р°РЅСЏС‚С‹
 				aIndexBusy[i] = aIndexBusy[i+1] = aIndexBusy[i+2] = true;
 				iCountIndexBusy += 3;
 
-				//сообщаем что начало анализа прошло
+				//СЃРѕРѕР±С‰Р°РµРј С‡С‚Рѕ РЅР°С‡Р°Р»Рѕ Р°РЅР°Р»РёР·Р° РїСЂРѕС€Р»Рѕ
 				isFirstVerifable = false;
 			}
 
-			//если предыдущее и текущее значения количества занятых полигонов равны, значит непрерывная пп модель закончилась
+			//РµСЃР»Рё РїСЂРµРґС‹РґСѓС‰РµРµ Рё С‚РµРєСѓС‰РµРµ Р·РЅР°С‡РµРЅРёСЏ РєРѕР»РёС‡РµСЃС‚РІР° Р·Р°РЅСЏС‚С‹С… РїРѕР»РёРіРѕРЅРѕРІ СЂР°РІРЅС‹, Р·РЅР°С‡РёС‚ РЅРµРїСЂРµСЂС‹РІРЅР°СЏ РїРї РјРѕРґРµР»СЊ Р·Р°РєРѕРЅС‡РёР»Р°СЃСЊ
 			if (iCountIndexBusyOld == iCountIndexBusy)
 			{
 				iCountIndexBusyOld = 0;
 				++iCountSubModels;
 			}
-			//иначе за эту итерацию добавилось еще данных, равняем количество занятых полигонов
+			//РёРЅР°С‡Рµ Р·Р° СЌС‚Сѓ РёС‚РµСЂР°С†РёСЋ РґРѕР±Р°РІРёР»РѕСЃСЊ РµС‰Рµ РґР°РЅРЅС‹С…, СЂР°РІРЅСЏРµРј РєРѕР»РёС‡РµСЃС‚РІРѕ Р·Р°РЅСЏС‚С‹С… РїРѕР»РёРіРѕРЅРѕРІ
 			else
 				iCountIndexBusyOld = iCountIndexBusy;
 		}
@@ -1241,22 +1262,22 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 	}
 	//}
 
-	//если новое количество подгрупп (количество не пп подгрупп) не равно текущему количеству подгрупп, тогда вычленяем пп модели
+	//РµСЃР»Рё РЅРѕРІРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕРґРіСЂСѓРїРї (РєРѕР»РёС‡РµСЃС‚РІРѕ РЅРµ РїРї РїРѕРґРіСЂСѓРїРї) РЅРµ СЂР°РІРЅРѕ С‚РµРєСѓС‰РµРјСѓ РєРѕР»РёС‡РµСЃС‚РІСѓ РїРѕРґРіСЂСѓРїРї, С‚РѕРіРґР° РІС‹С‡Р»РµРЅСЏРµРј РїРї РјРѕРґРµР»Рё
 	if (iCountSubsetNew != pModel->m_pModel->m_uiSubsetCount)
 	{
-		//новые данные для объекта модели
+		//РЅРѕРІС‹Рµ РґР°РЅРЅС‹Рµ РґР»СЏ РѕР±СЉРµРєС‚Р° РјРѕРґРµР»Рё
 		char **ppTextures = 0;
 		UINT *pStartIndex = 0;
 		UINT *pIndexCount = 0;
 		UINT *pStartVertex = 0;
 		UINT *pVertexCount = 0;
-		Array<ID> aIDsTextures;
+		Array<IXMaterial*> aIDsTextures;
 		//IDirect3DVertexBuffer9 *pVertexBuffer = 0;
 		//IDirect3DIndexBuffer9 *pIndexBuffer = 0;
 		UINT *pIndexNew = 0;
 		vertex_static_ex *pVertexNew = 0;
 
-		//если есть подгруппы, то есть есть не пп данные, то вырежем из модели пп подгруппы
+		//РµСЃР»Рё РµСЃС‚СЊ РїРѕРґРіСЂСѓРїРїС‹, С‚Рѕ РµСЃС‚СЊ РµСЃС‚СЊ РЅРµ РїРї РґР°РЅРЅС‹Рµ, С‚Рѕ РІС‹СЂРµР¶РµРј РёР· РјРѕРґРµР»Рё РїРї РїРѕРґРіСЂСѓРїРїС‹
 		if (iCountSubsetNew > 0)
 		{
 			ppTextures = new char*[iCountSubsetNew];
@@ -1280,28 +1301,28 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 			int iCountIndex = 0;
 			int iCountIndexMinus = 0;
 
-			//текущий номер записываемой подгруппы
+			//С‚РµРєСѓС‰РёР№ РЅРѕРјРµСЂ Р·Р°РїРёСЃС‹РІР°РµРјРѕР№ РїРѕРґРіСЂСѓРїРїС‹
 			int iNumGroup = 0;
 
 			for (int g = 0; g < pModel->m_pModel->m_uiSubsetCount; ++g)
 			{
-				//если подгруппа полупрозрачная то пропускаем
-				if (SGCore_MtlIsTransparency(pModel->m_aIDsTextures[g]))
+				//РµСЃР»Рё РїРѕРґРіСЂСѓРїРїР° РїРѕР»СѓРїСЂРѕР·СЂР°С‡РЅР°СЏ С‚Рѕ РїСЂРѕРїСѓСЃРєР°РµРј
+				if(pModel->m_aIDsTextures[g]->isTransparent())
 				{
 					iCountIndexMinus += pModel->m_pModel->m_pIndexCount[g];
 					iCountVertexMinus += pModel->m_pModel->m_pVertexCount[g];
 					continue;
 				}
 
-				//заполняем массив id материалов и массив имен текстур
+				//Р·Р°РїРѕР»РЅСЏРµРј РјР°СЃСЃРёРІ id РјР°С‚РµСЂРёР°Р»РѕРІ Рё РјР°СЃСЃРёРІ РёРјРµРЅ С‚РµРєСЃС‚СѓСЂ
 				aIDsTextures.push_back(pModel->m_aIDsTextures[g]);
 				ppTextures[iNumGroup] = new char[strlen(pModel->m_pModel->m_ppTextures[g]) + 1];
 				sprintf(ppTextures[iNumGroup], pModel->m_pModel->m_ppTextures[g]);
 
-				//копируем вершины в новый буфер
+				//РєРѕРїРёСЂСѓРµРј РІРµСЂС€РёРЅС‹ РІ РЅРѕРІС‹Р№ Р±СѓС„РµСЂ
 				memcpy(pVertexNew + iCountVertex, pVertex + pModel->m_pModel->m_pStartVertex[g], sizeof(vertex_static_ex)* pModel->m_pModel->m_pVertexCount[g]);
 
-				//обновляем данные стартовых позиций и количества
+				//РѕР±РЅРѕРІР»СЏРµРј РґР°РЅРЅС‹Рµ СЃС‚Р°СЂС‚РѕРІС‹С… РїРѕР·РёС†РёР№ Рё РєРѕР»РёС‡РµСЃС‚РІР°
 				pStartIndex[iNumGroup] = iCountIndex;
 				pIndexCount[iNumGroup] = pModel->m_pModel->m_pIndexCount[g];
 				pStartVertex[iNumGroup] = iCountVertex;
@@ -1322,7 +1343,7 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 			//pModel->m_pModel->m_pVertexBuffer->Unlock();
 		}
 
-		//удаление старых данных модели
+		//СѓРґР°Р»РµРЅРёРµ СЃС‚Р°СЂС‹С… РґР°РЅРЅС‹С… РјРѕРґРµР»Рё
 		//{
 		mem_delete_a(pModel->m_pModel->m_pIndices);
 		mem_delete_a(pModel->m_pModel->m_pVertices);
@@ -1341,7 +1362,7 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 		mem_delete_a(pModel->m_pModel->m_pVertexCount);
 		//}
 
-		//установка новых данных модели
+		//СѓСЃС‚Р°РЅРѕРІРєР° РЅРѕРІС‹С… РґР°РЅРЅС‹С… РјРѕРґРµР»Рё
 		//{
 		pModel->m_aIDsTextures = aIDsTextures;
 		pModel->m_pModel->m_pIndices = pIndexNew;
@@ -1362,7 +1383,7 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 	if (iCountSubsetNew > 0)
 		pModel->m_pBoundVolume->calcBound(pModel->m_pModel->m_pVertices, pModel->m_pModel->m_uiAllVertexCount, sizeof(vertex_static_ex));
 
-	//если для модели нужно деление, то делим
+	//РµСЃР»Рё РґР»СЏ РјРѕРґРµР»Рё РЅСѓР¶РЅРѕ РґРµР»РµРЅРёРµ, С‚Рѕ РґРµР»РёРј
 	if (pModel->m_pModel->m_uiSubsetCount > 0 && needSegmentation)
 	{
 		segmentation(pModel);
@@ -1390,27 +1411,27 @@ ID CModels::addModel(const char *szPath, const char *szName, const char *szLod, 
 
 void CModels::deleteModel(ID idModel)
 {
-	// удаление всех пп моделей удаляемой модели
+	// СѓРґР°Р»РµРЅРёРµ РІСЃРµС… РїРї РјРѕРґРµР»РµР№ СѓРґР°Р»СЏРµРјРѕР№ РјРѕРґРµР»Рё
 	for (int i = 0, il = m_aModels[idModel]->m_aTransparency.size(); i < il; ++i)
 	{
 		mem_delete(m_aTransparency[m_aModels[idModel]->m_aTransparency[i]]);
 	}
 
-	// перекомпоновка массива пп моделей
+	// РїРµСЂРµРєРѕРјРїРѕРЅРѕРІРєР° РјР°СЃСЃРёРІР° РїРї РјРѕРґРµР»РµР№
 	reCalcIdTransparency();
 
-	// декремент id моделей у всех пп моделей, родитель которых, выше чем удаляемая модель
+	// РґРµРєСЂРµРјРµРЅС‚ id РјРѕРґРµР»РµР№ Сѓ РІСЃРµС… РїРї РјРѕРґРµР»РµР№, СЂРѕРґРёС‚РµР»СЊ РєРѕС‚РѕСЂС‹С…, РІС‹С€Рµ С‡РµРј СѓРґР°Р»СЏРµРјР°СЏ РјРѕРґРµР»СЊ
 	for (int i = 0, il = m_aTransparency.size(); i < il; ++i)
 	{
 		if (m_aTransparency[i]->m_idModel > idModel)
 			--m_aTransparency[i]->m_idModel;
 	}
 
-	// удаление модели из памяти и массива
+	// СѓРґР°Р»РµРЅРёРµ РјРѕРґРµР»Рё РёР· РїР°РјСЏС‚Рё Рё РјР°СЃСЃРёРІР°
 	mem_delete(m_aModels[idModel]);
 	m_aModels.erase(idModel);
 
-	// очистка объекта просчетов видимости от удаленной модели
+	// РѕС‡РёСЃС‚РєР° РѕР±СЉРµРєС‚Р° РїСЂРѕСЃС‡РµС‚РѕРІ РІРёРґРёРјРѕСЃС‚Рё РѕС‚ СѓРґР°Р»РµРЅРЅРѕР№ РјРѕРґРµР»Рё
 	for (int i = 0; i < m_aVisInfo.size(); ++i)
 	{
 		mem_delete(m_aVisInfo[i]->m_aVisible4Model[idModel]);
@@ -1422,7 +1443,7 @@ void CModels::clear()
 {
 	while(m_aModels.size() > 0)
 	{
-		//удаляем каждую модель, так как модель удаляется из массива erase то можно за последний id брать (размер массива - 1)
+		//СѓРґР°Р»СЏРµРј РєР°Р¶РґСѓСЋ РјРѕРґРµР»СЊ, С‚Р°Рє РєР°Рє РјРѕРґРµР»СЊ СѓРґР°Р»СЏРµС‚СЃСЏ РёР· РјР°СЃСЃРёРІР° erase С‚Рѕ РјРѕР¶РЅРѕ Р·Р° РїРѕСЃР»РµРґРЅРёР№ id Р±СЂР°С‚СЊ (СЂР°Р·РјРµСЂ РјР°СЃСЃРёРІР° - 1)
 		deleteModel((m_aModels.size() - 1));
 	}
 }
@@ -1934,7 +1955,7 @@ void CModels::modelComBound4Segments(ID idModel)
 	if (!(pModel->m_pArrSplits))
 		return;
 
-	//копируем данные из дх буферов
+	//РєРѕРїРёСЂСѓРµРј РґР°РЅРЅС‹Рµ РёР· РґС… Р±СѓС„РµСЂРѕРІ
 	//{
 	vertex_static_ex *pVertex;
 	mem_delete(m_pCurrArrMeshVertex);
@@ -1955,10 +1976,10 @@ void CModels::modelComBound4Segments(ID idModel)
 	//pModel->m_pModel->m_pIndexBuffer->Unlock();
 	//}
 
-	//массив массивов сплитов по глубинам arr[0] - массив всех сплитов с глубиной 1, arr[1] - массив всех сплитов с глубиной 2
+	//РјР°СЃСЃРёРІ РјР°СЃСЃРёРІРѕРІ СЃРїР»РёС‚РѕРІ РїРѕ РіР»СѓР±РёРЅР°Рј arr[0] - РјР°СЃСЃРёРІ РІСЃРµС… СЃРїР»РёС‚РѕРІ СЃ РіР»СѓР±РёРЅРѕР№ 1, arr[1] - РјР°СЃСЃРёРІ РІСЃРµС… СЃРїР»РёС‚РѕРІ СЃ РіР»СѓР±РёРЅРѕР№ 2
 	Array<Array<CSegment*>> aSegmentDepth;
 
-	//трансформируем баунды всех конечных потомков
+	//С‚СЂР°РЅСЃС„РѕСЂРјРёСЂСѓРµРј Р±Р°СѓРЅРґС‹ РІСЃРµС… РєРѕРЅРµС‡РЅС‹С… РїРѕС‚РѕРјРєРѕРІ
 	//{
 	Array<CSegment*> aQueue;
 	int iCount = 0;
@@ -1979,7 +2000,7 @@ void CModels::modelComBound4Segments(ID idModel)
 		}
 		else
 		{
-			//устанавливаем баундам сегментов новые данные трансформации
+			//СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р±Р°СѓРЅРґР°Рј СЃРµРіРјРµРЅС‚РѕРІ РЅРѕРІС‹Рµ РґР°РЅРЅС‹Рµ С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёРё
 			pSegment->m_pBoundVolumeP->setPosition(pModel->m_pBoundVolume->getPosition());
 			pSegment->m_pBoundVolumeP->setRotation(pModel->m_pBoundVolume->getRotation());
 			pSegment->m_pBoundVolumeP->setScale(pModel->m_pBoundVolume->getScale());
@@ -2000,22 +2021,22 @@ void CModels::modelComBound4Segments(ID idModel)
 	}
 	//}
 
-	//трансформируем баунды всех родителей
+	//С‚СЂР°РЅСЃС„РѕСЂРјРёСЂСѓРµРј Р±Р°СѓРЅРґС‹ РІСЃРµС… СЂРѕРґРёС‚РµР»РµР№
 	//{
 	float3 vMax, vMin, vCountMax, vCountMin;
 
 	for (int i = 1, il = aSegmentDepth.size(); i < il; ++i)
 	{
-		//начинаем с максимальной глубины вложенности - 1, чтобы идти от потомков к родителям
+		//РЅР°С‡РёРЅР°РµРј СЃ РјР°РєСЃРёРјР°Р»СЊРЅРѕР№ РіР»СѓР±РёРЅС‹ РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё - 1, С‡С‚РѕР±С‹ РёРґС‚Рё РѕС‚ РїРѕС‚РѕРјРєРѕРІ Рє СЂРѕРґРёС‚РµР»СЏРј
 		int iCurrDepth = (aSegmentDepth.size() - i) - 1;
 
 		for (int k = 0, kl = aSegmentDepth[iCurrDepth].size(); k < kl; ++k)
 		{
-			//если сегмент конечный то ничего с ним не делаем
+			//РµСЃР»Рё СЃРµРіРјРµРЅС‚ РєРѕРЅРµС‡РЅС‹Р№ С‚Рѕ РЅРёС‡РµРіРѕ СЃ РЅРёРј РЅРµ РґРµР»Р°РµРј
 			if (aSegmentDepth[iCurrDepth][k]->m_isFinite)
 				continue;
 
-			//сначала инициализируем экстремумы
+			//СЃРЅР°С‡Р°Р»Р° РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј СЌРєСЃС‚СЂРµРјСѓРјС‹
 			for (int j = 0; j < 4; ++j)
 			{
 				if (aSegmentDepth[iCurrDepth][k]->m_aSplits[j])
@@ -2025,7 +2046,7 @@ void CModels::modelComBound4Segments(ID idModel)
 				}
 			}
 
-			//теперь считаем экстремумы на основании данных потомков
+			//С‚РµРїРµСЂСЊ СЃС‡РёС‚Р°РµРј СЌРєСЃС‚СЂРµРјСѓРјС‹ РЅР° РѕСЃРЅРѕРІР°РЅРёРё РґР°РЅРЅС‹С… РїРѕС‚РѕРјРєРѕРІ
 			for (int j = 0; j < 4; ++j)
 			{
 				if (aSegmentDepth[iCurrDepth][k]->m_aSplits[j])
@@ -2052,7 +2073,7 @@ void CModels::modelComBound4Segments(ID idModel)
 				}
 			}
 
-			//теперь устаналвиваем в оба баунда, потому что системный больше не нужен
+			//С‚РµРїРµСЂСЊ СѓСЃС‚Р°РЅР°Р»РІРёРІР°РµРј РІ РѕР±Р° Р±Р°СѓРЅРґР°, РїРѕС‚РѕРјСѓ С‡С‚Рѕ СЃРёСЃС‚РµРјРЅС‹Р№ Р±РѕР»СЊС€Рµ РЅРµ РЅСѓР¶РµРЅ
 			aSegmentDepth[iCurrDepth][k]->m_pBoundVolumeP->setMinMax(&vCountMin, &vCountMax);
 			aSegmentDepth[iCurrDepth][k]->m_pBoundVolumeSys->setMinMax(&vCountMin, &vCountMax);
 		}
@@ -2084,7 +2105,7 @@ void CModels::createExternalData4SegmentModel(CModel *pModel)
 
 void CModels::segmentation(CModel *pModel)
 {
-	//копируем данные из дх буферов
+	//РєРѕРїРёСЂСѓРµРј РґР°РЅРЅС‹Рµ РёР· РґС… Р±СѓС„РµСЂРѕРІ
 	//{
 	vertex_static_ex *pVertex;
 	mem_delete_a(m_pCurrArrMeshVertex);
@@ -2121,15 +2142,15 @@ void CModels::segmentation(CModel *pModel)
 	float3 vMin, vMax;
 	pModel->m_pArrSplits->m_pBoundVolumeP->getMinMax(&vMin, &vMax);
 
-	// определение типа деления и количества полигонов в сплите
+	// РѕРїСЂРµРґРµР»РµРЅРёРµ С‚РёРїР° РґРµР»РµРЅРёСЏ Рё РєРѕР»РёС‡РµСЃС‚РІР° РїРѕР»РёРіРѕРЅРѕРІ РІ СЃРїР»РёС‚Рµ
 	//{
 	int iCountSplitsSys = 0;
 	int iCountPolyInSegment = SX_GEOM_MIN_COUNT_POLY;
 
-	// габариты
+	// РіР°Р±Р°СЂРёС‚С‹
 	float3 vDimensions = vMax - vMin;
 
-	// общий объем
+	// РѕР±С‰РёР№ РѕР±СЉРµРј
 	float fGeneralVolume = vDimensions.x * vDimensions.y * vDimensions.z;
 	const float minVol = SX_GEOM_MIN_ALLVOLUME_FOR_SEGMENTATION;
 	const float minLen = SX_GEOM_MIN_LENGTH_FOR_SEGMENTATION;
@@ -2168,7 +2189,7 @@ void CModels::segmentation(CModel *pModel)
 	float fDimensionY = vDimensions.y;
 	float fDimensionZ = vDimensions.z;
 
-	// выравниваем для равномерного делени
+	// РІС‹СЂР°РІРЅРёРІР°РµРј РґР»СЏ СЂР°РІРЅРѕРјРµСЂРЅРѕРіРѕ РґРµР»РµРЅРё
 	//{
 	if (iCountSplitsSys == GEOM_COUNT_TYPE_SEGMENTATION_OCTO)
 	{
@@ -2236,27 +2257,27 @@ void CModels::segmentation(CModel *pModel)
 	pModel->m_pArrSplits->m_pNumberGroup = new uint32_t[pModel->m_pModel->m_uiSubsetCount];
 	pModel->m_pArrSplits->m_pCountPoly = new uint32_t[pModel->m_pModel->m_uiSubsetCount];
 
-	//заполняем массив с номерами подгрупп и массив с количествами полигонов
+	//Р·Р°РїРѕР»РЅСЏРµРј РјР°СЃСЃРёРІ СЃ РЅРѕРјРµСЂР°РјРё РїРѕРґРіСЂСѓРїРї Рё РјР°СЃСЃРёРІ СЃ РєРѕР»РёС‡РµСЃС‚РІР°РјРё РїРѕР»РёРіРѕРЅРѕРІ
 	for (int i = 0; i<pModel->m_pModel->m_uiSubsetCount; ++i)
 	{
 		pModel->m_pArrSplits->m_pNumberGroup[i] = i;
 		pModel->m_pArrSplits->m_pCountPoly[i] = pModel->m_pModel->m_pIndexCount[i] / 3;
 	}
 
-	//создаем массивы с полигонами, каждый полигон принадлежит своей подгруппе
+	//СЃРѕР·РґР°РµРј РјР°СЃСЃРёРІС‹ СЃ РїРѕР»РёРіРѕРЅР°РјРё, РєР°Р¶РґС‹Р№ РїРѕР»РёРіРѕРЅ РїСЂРёРЅР°РґР»РµР¶РёС‚ СЃРІРѕРµР№ РїРѕРґРіСЂСѓРїРїРµ
 	pModel->m_pArrSplits->m_ppArrPoly = new uint32_t*[pModel->m_pArrSplits->m_uiCountSubSet];
 	for (int i = 0; i<pModel->m_pArrSplits->m_uiCountSubSet; ++i)
 	{
 		pModel->m_pArrSplits->m_ppArrPoly[i] = new uint32_t[pModel->m_pArrSplits->m_pCountPoly[i] * 3];
 	}
 
-	//заполняем массивы с полигонами
+	//Р·Р°РїРѕР»РЅСЏРµРј РјР°СЃСЃРёРІС‹ СЃ РїРѕР»РёРіРѕРЅР°РјРё
 	for (int i = 0; i<pModel->m_pModel->m_uiSubsetCount; ++i)
 	{
 		memcpy(pModel->m_pArrSplits->m_ppArrPoly[i], m_pCurrArrMeshIndex + pModel->m_pModel->m_pStartIndex[i], pModel->m_pModel->m_pIndexCount[i] * sizeof(uint32_t));
 	}
 
-	//если количество полигонов и текущая установка деления позволяют делить дальше
+	//РµСЃР»Рё РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР»РёРіРѕРЅРѕРІ Рё С‚РµРєСѓС‰Р°СЏ СѓСЃС‚Р°РЅРѕРІРєР° РґРµР»РµРЅРёСЏ РїРѕР·РІРѕР»СЏСЋС‚ РґРµР»РёС‚СЊ РґР°Р»СЊС€Рµ
 	if (pModel->m_pArrSplits->m_uiCountAllPoly >= (UINT)iCountPolyInSegment && iCountSplitsSys != 0)
 	{
 		pModel->m_pArrSplits->m_isFinite = false;
@@ -2264,7 +2285,7 @@ void CModels::segmentation(CModel *pModel)
 	}
 	else
 	{
-		//оптимизация для Post TnL кэша
+		//РѕРїС‚РёРјРёР·Р°С†РёСЏ РґР»СЏ Post TnL РєСЌС€Р°
 		//{{
 		Array<UINT> aIndeces;
 		bool isUnic = true;
@@ -2321,17 +2342,17 @@ void CModels::segmentationCycle(CSegment *pSplit, CModel *pModel, int iCountSpli
 
 void CModels::segmentation2(CSegment *pSplit, CModel *pModel, int iCountSplitsSys, int iCountPolyInSegment, Array<CSegment*> *pQueue)
 {
-	//полигоны сегментов, точнее индексы в порядке полигонов (счет по 3 индекса)
+	//РїРѕР»РёРіРѕРЅС‹ СЃРµРіРјРµРЅС‚РѕРІ, С‚РѕС‡РЅРµРµ РёРЅРґРµРєСЃС‹ РІ РїРѕСЂСЏРґРєРµ РїРѕР»РёРіРѕРЅРѕРІ (СЃС‡РµС‚ РїРѕ 3 РёРЅРґРµРєСЃР°)
 	Array<UINT> aSegmentPoly[GEOM_COUNT_TYPE_SEGMENTATION_OCTO];
 
-	//подгруппы сегментов, на каждый полигон записывается подгруппа
+	//РїРѕРґРіСЂСѓРїРїС‹ СЃРµРіРјРµРЅС‚РѕРІ, РЅР° РєР°Р¶РґС‹Р№ РїРѕР»РёРіРѕРЅ Р·Р°РїРёСЃС‹РІР°РµС‚СЃСЏ РїРѕРґРіСЂСѓРїРїР°
 	Array<UINT> aSegmentGroup[GEOM_COUNT_TYPE_SEGMENTATION_OCTO];
 
 
 	for (int i = 0; i<iCountSplitsSys; ++i)
 		pSplit->m_aSplits[i] = new CSegment();
 
-	//получаем ограничивающие объемы для деления и облегаемые
+	//РїРѕР»СѓС‡Р°РµРј РѕРіСЂР°РЅРёС‡РёРІР°СЋС‰РёРµ РѕР±СЉРµРјС‹ РґР»СЏ РґРµР»РµРЅРёСЏ Рё РѕР±Р»РµРіР°РµРјС‹Рµ
 	//{{
 	if (iCountSplitsSys == GEOM_COUNT_TYPE_SEGMENTATION_QUAD)
 	{
@@ -2369,12 +2390,12 @@ void CModels::segmentation2(CSegment *pSplit, CModel *pModel, int iCountSplitsSy
 	}
 	//}}
 
-	//массив свободности каждого полигона
+	//РјР°СЃСЃРёРІ СЃРІРѕР±РѕРґРЅРѕСЃС‚Рё РєР°Р¶РґРѕРіРѕ РїРѕР»РёРіРѕРЅР°
 	bool *aFreePoly = new bool[pSplit->m_uiCountAllPoly];
 	for (int i = 0; i<pSplit->m_uiCountAllPoly; ++i)
 		aFreePoly[i] = true;
 
-	//распределяем полигоны по сплитам
+	//СЂР°СЃРїСЂРµРґРµР»СЏРµРј РїРѕР»РёРіРѕРЅС‹ РїРѕ СЃРїР»РёС‚Р°Рј
 	//{
 	int iCountComPoly = 0;
 	float3 vMin, vMax;
@@ -2384,7 +2405,30 @@ void CModels::segmentation2(CSegment *pSplit, CModel *pModel, int iCountSplitsSy
 		//SGCore_FCreateBoundingBoxMesh(&tmpMin, &tmpMax, &(pSplit->m_aSplits[i]->m_pBoundBox));
 		
 		pSplit->m_aSplits[i]->m_pBoundVolumeSys->getMinMax(&vMin, &vMax);
+
+		int iTmpCount = 0;
 		int iNumCurrentPoly = 0;
+		for(int j = 0; j<pSplit->m_uiCountSubSet; ++j)
+		{
+			for(int k = 0; k<pSplit->m_pCountPoly[j] * 3; k += 3)
+			{
+				if(SGCore_0InPosPoints2D(&vMin, &vMax,
+					&m_pCurrArrMeshVertex[pSplit->m_ppArrPoly[j][k]],
+					&m_pCurrArrMeshVertex[pSplit->m_ppArrPoly[j][k + 1]],
+					&m_pCurrArrMeshVertex[pSplit->m_ppArrPoly[j][k + 2]]
+					)
+					&& aFreePoly[iNumCurrentPoly]
+					)
+				{
+					++iTmpCount;
+				}
+				++iNumCurrentPoly;
+			}
+		}
+
+		iNumCurrentPoly = 0;
+		aSegmentPoly[i].reserve(iTmpCount * 3);
+		aSegmentGroup[i].reserve(iTmpCount);
 		for (int j = 0; j<pSplit->m_uiCountSubSet; ++j)
 		{
 			for (int k = 0; k<pSplit->m_pCountPoly[j] * 3; k += 3)
@@ -2411,7 +2455,7 @@ void CModels::segmentation2(CSegment *pSplit, CModel *pModel, int iCountSplitsSy
 	}
 	//}
 
-	// если вдруг какой-то из полигонов никуда не попал, то путем несложных расчетов определяем его в один из сплитов
+	// РµСЃР»Рё РІРґСЂСѓРі РєР°РєРѕР№-С‚Рѕ РёР· РїРѕР»РёРіРѕРЅРѕРІ РЅРёРєСѓРґР° РЅРµ РїРѕРїР°Р», С‚Рѕ РїСѓС‚РµРј РЅРµСЃР»РѕР¶РЅС‹С… СЂР°СЃС‡РµС‚РѕРІ РѕРїСЂРµРґРµР»СЏРµРј РµРіРѕ РІ РѕРґРёРЅ РёР· СЃРїР»РёС‚РѕРІ
 	if (iCountComPoly < pSplit->m_uiCountAllPoly)
 	{
 		int iNumCurrentPoly = 0;
@@ -2470,7 +2514,7 @@ void CModels::segmentation2(CSegment *pSplit, CModel *pModel, int iCountSplitsSy
 		}
 	}
 
-	// проход по всем плитам и правка данных
+	// РїСЂРѕС…РѕРґ РїРѕ РІСЃРµРј РїР»РёС‚Р°Рј Рё РїСЂР°РІРєР° РґР°РЅРЅС‹С…
 	for (int i = 0; i<iCountSplitsSys; i++)
 	{
 		if (aSegmentPoly[i].size() > 0)
@@ -2478,16 +2522,16 @@ void CModels::segmentation2(CSegment *pSplit, CModel *pModel, int iCountSplitsSy
 			pSplit->m_aSplits[i]->m_idDepth = pSplit->m_idDepth + 1;
 			pSplit->m_aSplits[i]->m_pParent = pSplit;
 
-			//подсчет количества уникальных подгрупп
+			//РїРѕРґСЃС‡РµС‚ РєРѕР»РёС‡РµСЃС‚РІР° СѓРЅРёРєР°Р»СЊРЅС‹С… РїРѕРґРіСЂСѓРїРї
 			//{
 			Array<UINT> aUnicSubSet;
 			pSplit->m_aSplits[i]->m_uiCountSubSet = 0;
 
-			//предварительно записываем одну подгруппу в массив aUnicSubSet
+			//РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅРѕ Р·Р°РїРёСЃС‹РІР°РµРј РѕРґРЅСѓ РїРѕРґРіСЂСѓРїРїСѓ РІ РјР°СЃСЃРёРІ aUnicSubSet
 			aUnicSubSet.push_back(aSegmentGroup[i][0]);
 			pSplit->m_aSplits[i]->m_uiCountSubSet++;
 
-			//циклом проходимся по aSegmentGroup и выбираем оттуда все первые уникальные значения
+			//С†РёРєР»РѕРј РїСЂРѕС…РѕРґРёРјСЃСЏ РїРѕ aSegmentGroup Рё РІС‹Р±РёСЂР°РµРј РѕС‚С‚СѓРґР° РІСЃРµ РїРµСЂРІС‹Рµ СѓРЅРёРєР°Р»СЊРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ
 			for (int k = 0; k<aSegmentGroup[i].size(); ++k)
 			{
 				bool isRecorded = false;
@@ -2508,7 +2552,7 @@ void CModels::segmentation2(CSegment *pSplit, CModel *pModel, int iCountSplitsSy
 			//
 			pSplit->m_aSplits[i]->m_pNumberGroup = new uint32_t[pSplit->m_aSplits[i]->m_uiCountSubSet];
 			
-			//записываем уникальные номера подгрупп
+			//Р·Р°РїРёСЃС‹РІР°РµРј СѓРЅРёРєР°Р»СЊРЅС‹Рµ РЅРѕРјРµСЂР° РїРѕРґРіСЂСѓРїРї
 			for (int k = 0; k<pSplit->m_aSplits[i]->m_uiCountSubSet; ++k)
 				pSplit->m_aSplits[i]->m_pNumberGroup[k] = (aUnicSubSet[k]);
 
@@ -2517,13 +2561,13 @@ void CModels::segmentation2(CSegment *pSplit, CModel *pModel, int iCountSplitsSy
 
 			pSplit->m_aSplits[i]->m_pCountPoly = new uint32_t[pSplit->m_aSplits[i]->m_uiCountSubSet];
 
-			//обнуление данных по количеству полигонов в сплите
+			//РѕР±РЅСѓР»РµРЅРёРµ РґР°РЅРЅС‹С… РїРѕ РєРѕР»РёС‡РµСЃС‚РІСѓ РїРѕР»РёРіРѕРЅРѕРІ РІ СЃРїР»РёС‚Рµ
 			for (int j = 0; j<pSplit->m_aSplits[i]->m_uiCountSubSet; ++j)
 				pSplit->m_aSplits[i]->m_pCountPoly[j] = 0;
 
 			pSplit->m_aSplits[i]->m_uiCountAllPoly = 0;
 
-			//вычисляем сколько полигонов в каждой подгруппе в данном сплите
+			//РІС‹С‡РёСЃР»СЏРµРј СЃРєРѕР»СЊРєРѕ РїРѕР»РёРіРѕРЅРѕРІ РІ РєР°Р¶РґРѕР№ РїРѕРґРіСЂСѓРїРїРµ РІ РґР°РЅРЅРѕРј СЃРїР»РёС‚Рµ
 			for (int k = 0; k<aSegmentPoly[i].size(); k += 3)
 			{
 				for (int j = 0; j<pSplit->m_aSplits[i]->m_uiCountSubSet; ++j)
@@ -2576,7 +2620,7 @@ void CModels::segmentation2(CSegment *pSplit, CModel *pModel, int iCountSplitsSy
 			{
 				pSplit->m_aSplits[i]->m_isFinite = true;
 				
-				//оптимизация для Post TnL кэша (13.11.2018 - подробностей не помню, но вроде полезная штука :) )
+				//РѕРїС‚РёРјРёР·Р°С†РёСЏ РґР»СЏ Post TnL РєСЌС€Р° (13.11.2018 - РїРѕРґСЂРѕР±РЅРѕСЃС‚РµР№ РЅРµ РїРѕРјРЅСЋ, РЅРѕ РІСЂРѕРґРµ РїРѕР»РµР·РЅР°СЏ С€С‚СѓРєР° :) )
 				//{
 				Array<uint32_t> aIndeces;
 				bool isUnic = true;
@@ -2709,7 +2753,7 @@ void CModels::comVisible(const IFrustum *pFrustum, const float3 *pViewPos, ID id
 		if (pModel->m_aTransparency.size() > 0)
 			comVisibleTransparency(pFrustum, pViewPos, idVisCalcObj);
 
-		//если в модели нет подгрупп тогда пропускаем
+		//РµСЃР»Рё РІ РјРѕРґРµР»Рё РЅРµС‚ РїРѕРґРіСЂСѓРїРї С‚РѕРіРґР° РїСЂРѕРїСѓСЃРєР°РµРј
 		if (pModel->m_pModel->m_uiSubsetCount == 0)
 			continue;
 
@@ -2717,13 +2761,13 @@ void CModels::comVisible(const IFrustum *pFrustum, const float3 *pViewPos, ID id
 		pModel->m_pBoundVolume->getSphere(&vSphereCenter, &fSphereRadius);
 		pVisCalcObj->m_aVisible4Model[i]->m_isVisible = pFrustum->sphereInFrustum(&vSphereCenter, fSphereRadius);
 
-		//если объект расчетов видимости для наблюдателя
+		//РµСЃР»Рё РѕР±СЉРµРєС‚ СЂР°СЃС‡РµС‚РѕРІ РІРёРґРёРјРѕСЃС‚Рё РґР»СЏ РЅР°Р±Р»СЋРґР°С‚РµР»СЏ
 		if (idVisCalcObj == SX_GEOM_DEFAULT_VISCALCOBJ)
 		{
-			//считаем расстояние от объекта до наблюдателя
+			//СЃС‡РёС‚Р°РµРј СЂР°СЃСЃС‚РѕСЏРЅРёРµ РѕС‚ РѕР±СЉРµРєС‚Р° РґРѕ РЅР°Р±Р»СЋРґР°С‚РµР»СЏ
 			pModel->m_fDist4Observer = SMVector3Length((vSphereCenter - (*pViewPos))) - fSphereRadius;
 
-			//если модель видна то делаем occlusion culling
+			//РµСЃР»Рё РјРѕРґРµР»СЊ РІРёРґРЅР° С‚Рѕ РґРµР»Р°РµРј occlusion culling
 			if (pVisCalcObj->m_aVisible4Model[i])
 			{
 				float3 vMin, vMax;
@@ -2734,14 +2778,14 @@ void CModels::comVisible(const IFrustum *pFrustum, const float3 *pViewPos, ID id
 
 		if (pVisCalcObj->m_aVisible4Model[i]->m_isVisible)
 		{
-			//если расстояние от наблюдателя до модели допускает рисование лода и лод есть - рисуем лод
+			//РµСЃР»Рё СЂР°СЃСЃС‚РѕСЏРЅРёРµ РѕС‚ РЅР°Р±Р»СЋРґР°С‚РµР»СЏ РґРѕ РјРѕРґРµР»Рё РґРѕРїСѓСЃРєР°РµС‚ СЂРёСЃРѕРІР°РЅРёРµ Р»РѕРґР° Рё Р»РѕРґ РµСЃС‚СЊ - СЂРёСЃСѓРµРј Р»РѕРґ
 			if (pModel->m_fDist4Observer >= SX_GEOM_DIST4LOD && pModel->m_pLod && pModel->m_pLod->m_pModel)
 				pModel->m_isRenderLod = true;
 			else
 			{
 				pModel->m_isRenderLod = false;
 
-				//если есть сегменты, то считаем какие сегменты рисовать
+				//РµСЃР»Рё РµСЃС‚СЊ СЃРµРіРјРµРЅС‚С‹, С‚Рѕ СЃС‡РёС‚Р°РµРј РєР°РєРёРµ СЃРµРіРјРµРЅС‚С‹ СЂРёСЃРѕРІР°С‚СЊ
 				if (pModel->m_pArrSplits)
 				{
 					int iCountIteration = 0;
@@ -2937,7 +2981,7 @@ void CModels::renderObject(DWORD timeDelta, ID idModel, ID idTex, const float3 *
 {
 	STATIC_PRECOND_MODEL_ID(idModel, _VOID);
 
-	//если нет подгрупп у модели - не отрисовываем
+	//РµСЃР»Рё РЅРµС‚ РїРѕРґРіСЂСѓРїРї Сѓ РјРѕРґРµР»Рё - РЅРµ РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј
 	if (m_aModels[idModel]->m_pModel->m_uiSubsetCount == 0)
 		return;
 
@@ -2957,9 +3001,18 @@ void CModels::renderObject(DWORD timeDelta, ID idModel, ID idTex, const float3 *
 	else
 		mWorld = *(m_aModels[idModel]->m_pBoundVolume->calcWorld());
 
+	g_pRenderable->getMaterialSystem()->setWorld(mWorld);
+
 	for (int g = 0; g < m_aModels[idModel]->m_pModel->m_uiSubsetCount; g++)
 	{
-		SGCore_MtlSet((idTex >= 0 ? idTex : m_aModels[idModel]->m_aIDsTextures[g]), &mWorld);
+		if(ID_VALID(idTex))
+		{
+			SGCore_MtlSet(idTex, &mWorld);
+		}
+		else
+		{
+			g_pRenderable->getMaterialSystem()->bindMaterial(m_aModels[idModel]->m_aIDsTextures[g]);
+		}
 
 		SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, m_aModels[idModel]->m_pModel->m_pVertexCount[g], iCountIndex, m_aModels[idModel]->m_pModel->m_pIndexCount[g] / 3);
 		Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((m_aModels[idModel]->m_pModel->m_pIndexCount[g] / 3)));
@@ -2974,15 +3027,15 @@ void CModels::renderSegmets(DWORD timeDelta, ID idModel, ID idTex, ID idVisCalcO
 
 	CModel *pModel = m_aModels[idModel];
 
-	//если нет подгрупп у модели - не отрисовываем
+	//РµСЃР»Рё РЅРµС‚ РїРѕРґРіСЂСѓРїРї Сѓ РјРѕРґРµР»Рё - РЅРµ РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј
 	if (pModel->m_pModel->m_uiSubsetCount == 0)
 		return;
 
-	//если количество видимых сплитов, для объекта расчетов видимости, нулевое (то есть нечего рисовать), то не обрабатываем
+	//РµСЃР»Рё РєРѕР»РёС‡РµСЃС‚РІРѕ РІРёРґРёРјС‹С… СЃРїР»РёС‚РѕРІ, РґР»СЏ РѕР±СЉРµРєС‚Р° СЂР°СЃС‡РµС‚РѕРІ РІРёРґРёРјРѕСЃС‚Рё, РЅСѓР»РµРІРѕРµ (С‚Рѕ РµСЃС‚СЊ РЅРµС‡РµРіРѕ СЂРёСЃРѕРІР°С‚СЊ), С‚Рѕ РЅРµ РѕР±СЂР°Р±Р°С‚С‹РІР°РµРј
 	if (m_aVisInfo[idVisCalcObj]->m_aVisible4Model[idModel]->m_iCountCom <= 0)
 		return;
 
-	//обнуляем массив количества рисуемых полгонов для всех подгрупп
+	//РѕР±РЅСѓР»СЏРµРј РјР°СЃСЃРёРІ РєРѕР»РёС‡РµСЃС‚РІР° СЂРёСЃСѓРµРјС‹С… РїРѕР»РіРѕРЅРѕРІ РґР»СЏ РІСЃРµС… РїРѕРґРіСЂСѓРїРї
 	memset(pModel->m_pCountDrawPoly, 0, sizeof(UINT)* pModel->m_pModel->m_uiSubsetCount);
 	
 	for (int j = 0, jl = m_aVisInfo[idVisCalcObj]->m_aVisible4Model[idModel]->m_iCountCom; j<jl; j++)
@@ -2992,8 +3045,8 @@ void CModels::renderSegmets(DWORD timeDelta, ID idModel, ID idTex, ID idVisCalcO
 		{
 			int iGroupModel = ppSegments[j]->m_pNumberGroup[g];
 			if (
-				ppSegments[j]->m_pCountPoly[g] > 0 &&	//если количество полигонов больше 0
-				//если количество записанных полигонов в данную подгруппу меньше либо равно общему количеству полигонов которое содержит данна¤ подгруппа
+				ppSegments[j]->m_pCountPoly[g] > 0 &&	//РµСЃР»Рё РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕР»РёРіРѕРЅРѕРІ Р±РѕР»СЊС€Рµ 0
+				//РµСЃР»Рё РєРѕР»РёС‡РµСЃС‚РІРѕ Р·Р°РїРёСЃР°РЅРЅС‹С… РїРѕР»РёРіРѕРЅРѕРІ РІ РґР°РЅРЅСѓСЋ РїРѕРґРіСЂСѓРїРїСѓ РјРµРЅСЊС€Рµ Р»РёР±Рѕ СЂР°РІРЅРѕ РѕР±С‰РµРјСѓ РєРѕР»РёС‡РµСЃС‚РІСѓ РїРѕР»РёРіРѕРЅРѕРІ РєРѕС‚РѕСЂРѕРµ СЃРѕРґРµСЂР¶РёС‚ РґР°РЅРЅР°В¤ РїРѕРґРіСЂСѓРїРїР°
 				pModel->m_pCountDrawPoly[iGroupModel] + ppSegments[j]->m_pCountPoly[g] <= pModel->m_pModel->m_pIndexCount[iGroupModel] / 3
 				)
 			{
@@ -3006,7 +3059,7 @@ void CModels::renderSegmets(DWORD timeDelta, ID idModel, ID idTex, ID idVisCalcO
 		}
 	}
 
-	//записываем в индексный буфер все видимые индексы
+	//Р·Р°РїРёСЃС‹РІР°РµРј РІ РёРЅРґРµРєСЃРЅС‹Р№ Р±СѓС„РµСЂ РІСЃРµ РІРёРґРёРјС‹Рµ РёРЅРґРµРєСЃС‹
 	//{
 	UINT *pIndices;
 	int iCountCopyPoly = 0;
@@ -3031,11 +3084,20 @@ void CModels::renderSegmets(DWORD timeDelta, ID idModel, ID idTex, ID idVisCalcO
 	
 	int iCountIndex = 0;
 
+	g_pRenderable->getMaterialSystem()->setWorld(*pModel->m_pBoundVolume->calcWorld());
+
 	for (int g = 0; g < pModel->m_pModel->m_uiSubsetCount; g++)
 	{
 		if (pModel->m_pCountDrawPoly[g] > 0)
 		{
-			SGCore_MtlSet((idTex > 0 ? idTex : pModel->m_aIDsTextures[g]), (float4x4*)pModel->m_pBoundVolume->calcWorld());
+			if(ID_VALID(idTex))
+			{
+				SGCore_MtlSet(idTex, (float4x4*)pModel->m_pBoundVolume->calcWorld());
+			}
+			else
+			{
+				g_pRenderable->getMaterialSystem()->bindMaterial(pModel->m_aIDsTextures[g]);
+			}
 
 			SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, pModel->m_pModel->m_pVertexCount[g], iCountIndex, pModel->m_pCountDrawPoly[g]);
 			Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + (pModel->m_pCountDrawPoly[g]));
@@ -3052,7 +3114,8 @@ void CModels::renderTransparency(DWORD timeDelta, CTransparencyModel *pTranspare
 	g_pDXDevice->setIndexBuffer(pTransparencyModel->m_pIndexBuffer);
 	g_pDXDevice->setRenderBuffer(pTransparencyModel->m_pRenderBuffer);
 	
-	SGCore_MtlSet(pTransparencyModel->m_idTex, (float4x4*)pTransparencyModel->m_pBoundVolume->calcWorld());
+	g_pRenderable->getMaterialSystem()->setWorld(*pTransparencyModel->m_pBoundVolume->calcWorld());
+	g_pRenderable->getMaterialSystem()->bindMaterial(pTransparencyModel->m_idTex);
 
 	SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, pTransparencyModel->m_iCountVertex, 0, pTransparencyModel->m_iCountIndex / 3);
 	Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((pTransparencyModel->m_iCountIndex / 3)));
@@ -3062,6 +3125,7 @@ void CModels::renderTransparency(DWORD timeDelta, CTransparencyModel *pTranspare
 
 bool SortTransparencyCompareFunc(CModels::CTransparencyModel *pM1, CModels::CTransparencyModel *pM2)
 {
+	//@FIXME: Fix this bug!
 	return (pM1->m_fDist4Observer < pM1->m_fDist4Observer);
 }
 
@@ -3423,14 +3487,18 @@ ID CModels::modelGetGroupMtrlID(ID idModel, ID idGroup)
 
 	if (idGroup >= 0)
 	{
-		//если номер подгруппы в пределах количества подгрупп самой модели
-		if (m_aModels[idModel]->m_aIDsTextures.size() > idGroup)
-			return m_aModels[idModel]->m_aIDsTextures[idGroup];
-		//если номер подгруппы в пределах суммы количества подгрупп модели и всех ее пп моделей
+		//РµСЃР»Рё РЅРѕРјРµСЂ РїРѕРґРіСЂСѓРїРїС‹ РІ РїСЂРµРґРµР»Р°С… РєРѕР»РёС‡РµСЃС‚РІР° РїРѕРґРіСЂСѓРїРї СЃР°РјРѕР№ РјРѕРґРµР»Рё
+		if(m_aModels[idModel]->m_aIDsTextures.size() > idGroup)
+		{
+			//@FIXME: Reimplement this!
+			return m_aModels[idModel]->m_aIDsTextures[idGroup]->getInternalID();
+		}
+		//РµСЃР»Рё РЅРѕРјРµСЂ РїРѕРґРіСЂСѓРїРїС‹ РІ РїСЂРµРґРµР»Р°С… СЃСѓРјРјС‹ РєРѕР»РёС‡РµСЃС‚РІР° РїРѕРґРіСЂСѓРїРї РјРѕРґРµР»Рё Рё РІСЃРµС… РµРµ РїРї РјРѕРґРµР»РµР№
 		else if (m_aModels[idModel]->m_aIDsTextures.size() + m_aModels[idModel]->m_aTransparency.size() > idGroup)
 		{
 			int iKey = idGroup - m_aModels[idModel]->m_aIDsTextures.size();
-			return m_aTransparency[m_aModels[idModel]->m_aTransparency[iKey]]->m_idTex;
+			//@FIXME: Reimplement this!
+			return m_aTransparency[m_aModels[idModel]->m_aTransparency[iKey]]->m_idTex->getInternalID();
 		}
 		else
 		{
@@ -3518,7 +3586,7 @@ bool CModels::modelGerSegmentation(ID idModel)
 
 void CModels::getArrBuffsGeom(float3_t ***pppArrVertex, int32_t	**ppArrCountVertex, uint32_t ***pppArrIndex, ID ***pppArrMtl, int32_t **ppArrCountIndex, int32_t *pCountModels)
 {
-	//инициализация массивов
+	//РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РјР°СЃСЃРёРІРѕРІ
 	(*pCountModels) = m_aModels.size();
 	(*pppArrVertex) = new float3_t*[m_aModels.size()];
 	(*pppArrIndex) = new uint32_t*[m_aModels.size()];
@@ -3526,19 +3594,19 @@ void CModels::getArrBuffsGeom(float3_t ***pppArrVertex, int32_t	**ppArrCountVert
 	(*ppArrCountVertex) = new int32_t[m_aModels.size()];
 	(*ppArrCountIndex) = new int32_t[m_aModels.size()];
 
-	//проход по всему списку моделей
+	//РїСЂРѕС…РѕРґ РїРѕ РІСЃРµРјСѓ СЃРїРёСЃРєСѓ РјРѕРґРµР»РµР№
 	for (int i = 0; i < m_aModels.size(); ++i)
 	{
 		float4x4 mWorld = *(m_aModels[i]->m_pBoundVolume->calcWorld());
-		//общее количество вершин/индексов (в дальнейшем может быть увеличено, т.е. + данные ппп)
+		//РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂС€РёРЅ/РёРЅРґРµРєСЃРѕРІ (РІ РґР°Р»СЊРЅРµР№С€РµРј РјРѕР¶РµС‚ Р±С‹С‚СЊ СѓРІРµР»РёС‡РµРЅРѕ, С‚.Рµ. + РґР°РЅРЅС‹Рµ РїРїРї)
 		int iCountVertex = m_aModels[i]->m_pModel->m_uiAllVertexCount;
 		int iCountIndex = m_aModels[i]->m_pModel->m_uiAllIndexCount;
 
-		//порядковый номер вершины/индекса
+		//РїРѕСЂСЏРґРєРѕРІС‹Р№ РЅРѕРјРµСЂ РІРµСЂС€РёРЅС‹/РёРЅРґРµРєСЃР°
 		int iCurrVertex = 0;
 		int iCurrIndex = 0;
 
-		//если есть физическая модель, то берем данные из нее, а данные ппп не учитываем, потому что их данные должны быть в физической модели
+		//РµСЃР»Рё РµСЃС‚СЊ С„РёР·РёС‡РµСЃРєР°СЏ РјРѕРґРµР»СЊ, С‚Рѕ Р±РµСЂРµРј РґР°РЅРЅС‹Рµ РёР· РЅРµРµ, Р° РґР°РЅРЅС‹Рµ РїРїРї РЅРµ СѓС‡РёС‚С‹РІР°РµРј, РїРѕС‚РѕРјСѓ С‡С‚Рѕ РёС… РґР°РЅРЅС‹Рµ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РІ С„РёР·РёС‡РµСЃРєРѕР№ РјРѕРґРµР»Рё
 		if (m_aModels[i]->m_pPhysics)
 		{
 			iCountVertex = m_aModels[i]->m_pPhysics->m_aVertex.size();
@@ -3564,11 +3632,11 @@ void CModels::getArrBuffsGeom(float3_t ***pppArrVertex, int32_t	**ppArrCountVert
 		}
 		else
 		{
-			//иначе берем данные из самой модели
+			//РёРЅР°С‡Рµ Р±РµСЂРµРј РґР°РЅРЅС‹Рµ РёР· СЃР°РјРѕР№ РјРѕРґРµР»Рё
 			iCountVertex = m_aModels[i]->m_pModel->m_uiAllVertexCount;
 			iCountIndex = m_aModels[i]->m_pModel->m_uiAllIndexCount;
 
-			//прибавляем количество вершин/индексов из массива ппп моделей (если есть)
+			//РїСЂРёР±Р°РІР»СЏРµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂС€РёРЅ/РёРЅРґРµРєСЃРѕРІ РёР· РјР°СЃСЃРёРІР° РїРїРї РјРѕРґРµР»РµР№ (РµСЃР»Рё РµСЃС‚СЊ)
 			for (int k = 0; k < m_aModels[i]->m_aTransparency.size(); ++k)
 			{
 				iCountVertex += m_aTransparency[m_aModels[i]->m_aTransparency[k]]->m_iCountVertex;
@@ -3582,23 +3650,24 @@ void CModels::getArrBuffsGeom(float3_t ***pppArrVertex, int32_t	**ppArrCountVert
 			(*ppArrCountVertex)[i] = iCountVertex;
 			(*ppArrCountIndex)[i] = iCountIndex;
 
-			//блокируем индексный и вершинный буферы
+			//Р±Р»РѕРєРёСЂСѓРµРј РёРЅРґРµРєСЃРЅС‹Р№ Рё РІРµСЂС€РёРЅРЅС‹Р№ Р±СѓС„РµСЂС‹
 			UINT *pIndex = m_aModels[i]->m_pModel->m_pIndices;
 			//m_aModels[i]->m_pModel->m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0);
 			vertex_static_ex *pVertex = m_aModels[i]->m_pModel->m_pVertices;
 			//m_aModels[i]->m_pModel->m_pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0);
 
-			//записываем позиции вершин
+			//Р·Р°РїРёСЃС‹РІР°РµРј РїРѕР·РёС†РёРё РІРµСЂС€РёРЅ
 			for (int k = 0; k < m_aModels[i]->m_pModel->m_uiAllVertexCount; ++k)
 				(*pppArrVertex)[i][k] = SMVector3Transform(pVertex[k].Pos, mWorld);
 
-			//записываем индексы и id материала для каждого индекса
+			//Р·Р°РїРёСЃС‹РІР°РµРј РёРЅРґРµРєСЃС‹ Рё id РјР°С‚РµСЂРёР°Р»Р° РґР»СЏ РєР°Р¶РґРѕРіРѕ РёРЅРґРµРєСЃР°
 			for (int g = 0; g < m_aModels[i]->m_pModel->m_uiSubsetCount; ++g)
 			{
 				for (int k = 0; k < m_aModels[i]->m_pModel->m_pIndexCount[g]; ++k)
 				{
 					(*pppArrIndex)[i][iCurrIndex] = pIndex[m_aModels[i]->m_pModel->m_pStartIndex[g] + k];
-					(*pppArrMtl)[i][iCurrIndex] = m_aModels[i]->m_aIDsTextures[g];
+					//@FIXME: Reimplement this!
+					(*pppArrMtl)[i][iCurrIndex] = m_aModels[i]->m_aIDsTextures[g]->getInternalID();
 					++iCurrIndex;
 				}
 			}
@@ -3606,34 +3675,35 @@ void CModels::getArrBuffsGeom(float3_t ***pppArrVertex, int32_t	**ppArrCountVert
 			//m_aModels[i]->m_pModel->m_pVertexBuffer->Unlock();
 			//m_aModels[i]->m_pModel->m_pIndexBuffer->Unlock();
 
-			//текущей вершиной устанавливаем скопированное количество вершин
+			//С‚РµРєСѓС‰РµР№ РІРµСЂС€РёРЅРѕР№ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЃРєРѕРїРёСЂРѕРІР°РЅРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂС€РёРЅ
 			iCurrVertex = m_aModels[i]->m_pModel->m_uiAllVertexCount;
 
-			//количество вершин для расчета индексов
+			//РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂС€РёРЅ РґР»СЏ СЂР°СЃС‡РµС‚Р° РёРЅРґРµРєСЃРѕРІ
 			int iCurrVertex2 = iCurrVertex;
 
-			//проходимся по массиву с ппп
+			//РїСЂРѕС…РѕРґРёРјСЃСЏ РїРѕ РјР°СЃСЃРёРІСѓ СЃ РїРїРї
 			for (int k = 0; k < m_aModels[i]->m_aTransparency.size(); ++k)
 			{
-				//блокируем индексный и вершинный буферы
+				//Р±Р»РѕРєРёСЂСѓРµРј РёРЅРґРµРєСЃРЅС‹Р№ Рё РІРµСЂС€РёРЅРЅС‹Р№ Р±СѓС„РµСЂС‹
 				UINT *pIndex = m_aTransparency[m_aModels[i]->m_aTransparency[k]]->m_pIndices;
 				//m_aTransparency[m_aModels[i]->m_aTransparency[k]]->m_pIndexBuffer->Lock(0, 0, (void **)&pIndex, 0);
 				vertex_static_ex *pVertex = m_aTransparency[m_aModels[i]->m_aTransparency[k]]->m_pVertices;
 				//m_aTransparency[m_aModels[i]->m_aTransparency[k]]->m_pVertexBuffer->Lock(0, 0, (void **)&pVertex, 0);
 
-				//записываем позиции вершин
+				//Р·Р°РїРёСЃС‹РІР°РµРј РїРѕР·РёС†РёРё РІРµСЂС€РёРЅ
 				for (int j = 0; j < m_aTransparency[m_aModels[i]->m_aTransparency[k]]->m_iCountVertex; ++j)
 				{
 					(*pppArrVertex)[i][iCurrVertex] = SMVector3Transform(pVertex[j].Pos, mWorld);
 					++iCurrVertex;
 				}
 
-				//записываем индексы и id материала для каждого индекса
+				//Р·Р°РїРёСЃС‹РІР°РµРј РёРЅРґРµРєСЃС‹ Рё id РјР°С‚РµСЂРёР°Р»Р° РґР»СЏ РєР°Р¶РґРѕРіРѕ РёРЅРґРµРєСЃР°
 				for (int j = 0; j < m_aTransparency[m_aModels[i]->m_aTransparency[k]]->m_iCountIndex; ++j)
 				{
-					//текущий индекс рассчитывается как индекс ппп + количество вершин основной модели
+					//С‚РµРєСѓС‰РёР№ РёРЅРґРµРєСЃ СЂР°СЃСЃС‡РёС‚С‹РІР°РµС‚СЃСЏ РєР°Рє РёРЅРґРµРєСЃ РїРїРї + РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂС€РёРЅ РѕСЃРЅРѕРІРЅРѕР№ РјРѕРґРµР»Рё
 					(*pppArrIndex)[i][iCurrIndex] = pIndex[j] + iCurrVertex2;
-					(*pppArrMtl)[i][iCurrIndex] = m_aTransparency[m_aModels[i]->m_aTransparency[k]]->m_idTex;
+					//@FIXME: Reimplement!
+					(*pppArrMtl)[i][iCurrIndex] = m_aTransparency[m_aModels[i]->m_aTransparency[k]]->m_idTex->getInternalID();
 					++iCurrIndex;
 				}
 
@@ -3755,8 +3825,9 @@ bool CModels::traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResul
 								if (idModel)
 									*idModel = id;
 
+								//@FIXME: Reimplement!
 								if (idMtrl)
-									*idMtrl = pModel->m_aIDsTextures[idGroup];
+									*idMtrl = pModel->m_aIDsTextures[idGroup]->getInternalID();
 							}
 						}
 					}
@@ -3792,8 +3863,9 @@ bool CModels::traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResul
 							if (idModel)
 								*idModel = id;
 
+							//@FIXME: Reimplement!
 							if (idMtrl)
-								*idMtrl = m_aModels[id]->m_aIDsTextures[g];
+								*idMtrl = m_aModels[id]->m_aIDsTextures[g]->getInternalID();
 						}
 					}
 				}
@@ -3831,8 +3903,9 @@ bool CModels::traceBeam(const float3 *pStart, const float3 *pDir, float3 *pResul
 						if (idModel)
 							*idModel = id;
 
+						//@FIXME: Reimplement!
 						if (idMtrl)
-							*idMtrl = pTransparencyModel->m_idTex;
+							*idMtrl = pTransparencyModel->m_idTex->getInternalID();
 					}
 				}
 			}
@@ -3898,9 +3971,10 @@ bool CModels::traceBeamId(ID id, const float3 *pStart, const float3 *pEnd, float
 							vResult = ip;
 							isFound = true;
 
+							//@FIXME: Reimplement!
 							if(idMtrl)
 							{
-								*idMtrl = pModel->m_aIDsTextures[idGroup];
+								*idMtrl = pModel->m_aIDsTextures[idGroup]->getInternalID();
 							}
 						}
 					}
@@ -3930,7 +4004,8 @@ bool CModels::traceBeamId(ID id, const float3 *pStart, const float3 *pEnd, float
 
 						if(idMtrl)
 						{
-							*idMtrl = m_aModels[id]->m_aIDsTextures[g];
+							//@FIXME: Reimplement!
+							*idMtrl = m_aModels[id]->m_aIDsTextures[g]->getInternalID();
 						}
 					}
 				}
@@ -3963,7 +4038,8 @@ bool CModels::traceBeamId(ID id, const float3 *pStart, const float3 *pEnd, float
 
 					if(idMtrl)
 					{
-						*idMtrl = pTransparencyModel->m_idTex;
+						//@FIXME: Reimplement this!
+						*idMtrl = pTransparencyModel->m_idTex->getInternalID();
 					}
 				}
 			}

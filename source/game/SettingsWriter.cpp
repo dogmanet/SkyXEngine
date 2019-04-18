@@ -10,7 +10,7 @@ void CSettingsWriter::loadFile(const char *szFile)
 		printf(COLOR_LRED "Couldn't exec '%s'\n" COLOR_RESET, szFile);
 		return;
 	}
-	int len = f->getSize() + 1;
+	int len = (int)f->getSize() + 1;
 	char * buf, *cbuf = NULL;
 	if(len <= 4096)
 	{

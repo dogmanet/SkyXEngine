@@ -33,6 +33,8 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
+#include <mtrl/IXMaterialSystem.h>
+
 /*! \name Базовые функции библиотеки
 @{*/
 
@@ -348,6 +350,11 @@ SX_LIB_API ID SMtrl_MtlLoad(
 	MTLTYPE_MODEL mtl_type = MTLTYPE_MODEL_STATIC	//!< тип модели материала на случай если материал не будет загружен/найден
 	);
 
+SX_LIB_API ID SMtrl_MtlLoad2(
+	const char *szName,								//!< имя_материала.расширение
+	XSHADER_DEFAULT_DESC *pDefaultShaders
+	);
+
 //! перезагрузка материала
 SX_LIB_API void SMtrl_MtlReloadMaterial(
 	ID id,					//!< идентификатор материала
@@ -394,6 +401,9 @@ SX_LIB_API void SMtrl_MtlRender(
 	const float4x4 *pWorld=0,	//!< указатель на мировую матрицу модели, либо 0 - тогда будет принята единичная матрица
 	const float4 *pColor=0		//!< указатель на принимаемый цвет
 	);
+
+SX_LIB_API void SMtrl_MtlPixelShaderOverride(ID id);
+SX_LIB_API void SMtrl_MtlGeometryShaderOverride(ID id);
 
 //! стандартная отрисовка материала, используются стандартные шейдеры, нужно для теней, отражений и прочего
 SX_LIB_API void SMtrl_MtlRenderStd(

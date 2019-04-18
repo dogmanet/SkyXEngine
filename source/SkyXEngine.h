@@ -353,13 +353,6 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <geom/sxgeom.h>
 
 #if defined(_DEBUG)
-#pragma comment(lib, "sxlight_d.lib")
-#else
-#pragma comment(lib, "sxlight.lib")
-#endif
-#include <light/sxlight.h>
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxmtrl_d.lib")
 #else
 #pragma comment(lib, "sxmtrl.lib")
@@ -422,7 +415,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #endif
 #include <game/sxgame.h>
 
-#if defined(SX_LEVEL_EDITOR) || defined(SX_MATERIAL_EDITOR) || defined(SX_PARTICLES_EDITOR)
+#if !defined(SX_TERRAX) && (defined(SX_LEVEL_EDITOR) || defined(SX_MATERIAL_EDITOR) || defined(SX_PARTICLES_EDITOR))
 #if defined(_DEBUG)
 #pragma comment(lib, "sxguiwinapi_d.lib")
 #else
@@ -501,7 +494,7 @@ void SkyXEngine_PrintfLog(int level, const char *szLibName, const char *szFormat
 void SkyXEngine_Frame(DWORD timeDelta);
 
 //! обновление данных кваром (реакция на обновление)
-void SkyXEngind_UpdateDataCVar();
+void SkyXEngine_UpdateDataCVar();
 
 //! запуск основного цикла обработки
 int SkyXEngine_CycleMain();

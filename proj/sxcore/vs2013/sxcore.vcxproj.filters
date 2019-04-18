@@ -146,5 +146,8 @@
     <ClInclude Include="..\..\..\source\core\FileInMemory.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\core\IFile.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

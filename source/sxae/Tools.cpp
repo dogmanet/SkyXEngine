@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -32,7 +32,7 @@ LRESULT CALLBACK InpSelAllWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 {
 	if(msg == WM_KEYDOWN)
 	{
-		if(wParam == 'A' && GetKeyState(VK_CONTROL))
+		if(wParam == 'A' && GetKeyState(VK_CONTROL) < 0)
 		{
 			if(IsEdit(hwnd))
 			{

@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -77,32 +77,32 @@ void pe_data::Init()
 
 	pe_data::pVertexDeclarationParticles = pe_data::pDXDevice->createVertexDeclaration(oInstanceParticles);
 
-	pe_data::shader_id::vs::idParticlesTrack = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "particles_track.vs", "particles_track.vs", SHADER_CHECKDOUBLE_PATH);
-	pe_data::shader_id::ps::idParticlesTrack = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_track.ps", "particles_track.ps", SHADER_CHECKDOUBLE_PATH);
+	pe_data::shader_id::vs::idParticlesTrack = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "particles_track.vs");
+	pe_data::shader_id::ps::idParticlesTrack = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_track.ps");
 
-	pe_data::shader_id::vs::idParticles = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "particles_main.vs", "particles_main.vs", SHADER_CHECKDOUBLE_PATH);
-	pe_data::shader_id::ps::idParticles = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_main.ps", SHADER_CHECKDOUBLE_NAME);
+	pe_data::shader_id::vs::idParticles = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "particles_main.vs");
+	pe_data::shader_id::ps::idParticles = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps");
 
 	GXMACRO Defines_PART_SOFT[] = { { "PART_SOFT", "" }, { 0, 0 } };
-	pe_data::shader_id::ps::idParticlesSoft = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_soft.ps", SHADER_CHECKDOUBLE_NAME, Defines_PART_SOFT);
+	pe_data::shader_id::ps::idParticlesSoft = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_soft.ps", Defines_PART_SOFT);
 
 	GXMACRO Defines_PART_REFRACTION[] = { { "PART_REFRACTION", "" }, { 0, 0 } };
-	pe_data::shader_id::ps::idParticlesRefraction = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_refraction.ps", SHADER_CHECKDOUBLE_NAME, Defines_PART_REFRACTION);
+	pe_data::shader_id::ps::idParticlesRefraction = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_refraction.ps", Defines_PART_REFRACTION);
 
 	GXMACRO Defines_PART_LIGHT[] = { { "PART_LIGHT", "" }, { 0, 0 } };
-	pe_data::shader_id::ps::idParticlesLight = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_light.ps", SHADER_CHECKDOUBLE_NAME, Defines_PART_LIGHT);
+	pe_data::shader_id::ps::idParticlesLight = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_light.ps", Defines_PART_LIGHT);
 
 	GXMACRO Defines_PART_SOFT_REFRACTION[] = { { "PART_SOFT", "" }, { "PART_REFRACTION", "" }, { 0, 0 } };
-	pe_data::shader_id::ps::idParticlesSoftRefraction = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_soft_refraction.ps", SHADER_CHECKDOUBLE_NAME, Defines_PART_SOFT_REFRACTION);
+	pe_data::shader_id::ps::idParticlesSoftRefraction = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_soft_refraction.ps", Defines_PART_SOFT_REFRACTION);
 
 	GXMACRO Defines_PART_SOFT_LIGHT[] = { { "PART_SOFT", "" }, { "PART_LIGHT", "" }, { 0, 0 } };
-	pe_data::shader_id::ps::idParticlesSoftLight = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_soft_light.ps", SHADER_CHECKDOUBLE_NAME, Defines_PART_SOFT_LIGHT);
+	pe_data::shader_id::ps::idParticlesSoftLight = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_soft_light.ps", Defines_PART_SOFT_LIGHT);
 
 	GXMACRO Defines_PART_REFRACTION_LIGHT[] = { { "PART_REFRACTION", "" }, { "PART_LIGHT", "" }, { 0, 0 } };
-	pe_data::shader_id::ps::idParticlesRefractionLight = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_refraction_light.ps", SHADER_CHECKDOUBLE_NAME, Defines_PART_REFRACTION_LIGHT);
+	pe_data::shader_id::ps::idParticlesRefractionLight = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_refraction_light.ps", Defines_PART_REFRACTION_LIGHT);
 
 	GXMACRO Defines_PART_SOFT_REFRACTION_LIGHT[] = { { "PART_SOFT", "" }, { "PART_REFRACTION", "" }, { "PART_LIGHT", "" }, { 0, 0 } };
-	pe_data::shader_id::ps::idParticlesSoftRefractionLight = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_soft_refraction_light.ps", SHADER_CHECKDOUBLE_NAME, Defines_PART_SOFT_REFRACTION_LIGHT);
+	pe_data::shader_id::ps::idParticlesSoftRefractionLight = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "particles_main.ps", "particles_soft_refraction_light.ps", Defines_PART_SOFT_REFRACTION_LIGHT);
 
 
 	pe_data::shader_id::kit::idParticles = SGCore_ShaderCreateKit(pe_data::shader_id::vs::idParticles, pe_data::shader_id::ps::idParticles);

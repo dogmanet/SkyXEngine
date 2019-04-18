@@ -34,14 +34,6 @@ See the license in LICENSE
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <gcore/sxgcore.h>
 
-#if defined(_DEBUG)
-#pragma comment(lib, "sxlight_d.lib")
-#else
-#pragma comment(lib, "sxlight.lib")
-#endif
-
-#include <light/sxlight.h>
-
 #ifdef SX_DLL
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)

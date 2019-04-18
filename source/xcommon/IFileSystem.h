@@ -36,7 +36,7 @@ enum FILE_OPEN_MODE
 DEFINE_ENUM_FLAG_OPERATORS(FILE_OPEN_MODE);
 
 class IFile;
-class IFileSystem: public IBaseObject
+class IFileSystem: public IXUnknown
 {
 public:
 	/*! Добавить корневой путь (позволяется как абсолютнй путь, так и относительно каталога build)
@@ -70,13 +70,23 @@ public:
 	*/
 	virtual Array<String> getFileList(const char *szPath, FILE_TYPE type) = 0;
 
+
+	class IFileIterator
+	{
+	public:
+		//! Возврат к первому элементу
+		virtual void reset() = 0;
+		//! Имя следующего файла, NULL если файлы закончились
+		virtual const char *next() = 0;
+	};
+
 	/*! возвращает список всех файлов или папок (в зависимости от type),
 	szPath не должен содержать фильтров, может быть не канонизирован и без последнего слэша,
 	szExt - расширение файла без точки
 	*/
-	virtual Array<String> getFileListRecursive(const char *szPath, FILE_TYPE type, const char *szExt = 0) = 0;
+	virtual IFileIterator *getFileListRecursive(const char *szPath, FILE_TYPE type, const char *szExt = 0) = 0;
 	//! То же, что предыдущая, только позволяет использовать массив расширений для поиска. Последний элемент массива NULL
-	virtual Array<String> getFileListRecursive(const char *szPath, FILE_TYPE type, const char **szExts) = 0;
+	virtual IFileIterator *getFileListRecursive(const char *szPath, FILE_TYPE type, const char **szExts) = 0;
 
 	//! Создает директорию по указанному пути, рекурсивно
 	virtual bool createDirectory(const char *szPath) = 0;

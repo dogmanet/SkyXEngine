@@ -49,15 +49,15 @@ namespace gui
 
 		def_w = CTextureManager::getTexture(L"/dev/white.png");
 
-		m_shaders.m_baseTexturedColored.m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_main.vs", "gui_main.vs", SHADER_CHECKDOUBLE_NAME);
-		m_shaders.m_baseTexturedColored.m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_main.ps", "gui_main.ps", SHADER_CHECKDOUBLE_NAME);
+		m_shaders.m_baseTexturedColored.m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_main.vs");
+		m_shaders.m_baseTexturedColored.m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_main.ps");
 		m_shaders.m_baseTexturedColored.m_idShaderKit = SGCore_ShaderCreateKit(m_shaders.m_baseTexturedColored.m_idVS, m_shaders.m_baseTexturedColored.m_idPS);
 
-		m_shaders.m_baseColored.m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_simple.vs", "gui_simple.vs", SHADER_CHECKDOUBLE_NAME);
-		m_shaders.m_baseColored.m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_simple.ps", "gui_simple.ps", SHADER_CHECKDOUBLE_NAME);
+		m_shaders.m_baseColored.m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_simple.vs");
+		m_shaders.m_baseColored.m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_simple.ps");
 		m_shaders.m_baseColored.m_idShaderKit = SGCore_ShaderCreateKit(m_shaders.m_baseColored.m_idVS, m_shaders.m_baseColored.m_idPS);
 
-		m_shaders.m_baseTexturedTextransformColored.m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_main_textransform.vs", "gui_main_textransform.vs", SHADER_CHECKDOUBLE_NAME);
+		m_shaders.m_baseTexturedTextransformColored.m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_main_textransform.vs");
 		m_shaders.m_baseTexturedTextransformColored.m_idPS = m_shaders.m_baseTexturedColored.m_idPS;
 		m_shaders.m_baseTexturedTextransformColored.m_idShaderKit = SGCore_ShaderCreateKit(m_shaders.m_baseTexturedTextransformColored.m_idVS, m_shaders.m_baseTexturedTextransformColored.m_idPS);
 
@@ -827,6 +827,11 @@ namespace gui
 		{
 			m_mCallbacksDefaultsWC[i](cmd.c_str(), ev);
 		}
+	}
+
+	IFont *CGUI::getFont(const WCHAR * szName, UINT size, IFont::STYLE style, int iBlurRadius)
+	{
+		return(IFontManager::getFont(szName, size, style, iBlurRadius));
 	}
 };
 

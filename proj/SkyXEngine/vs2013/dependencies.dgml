@@ -1,0 +1,289 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph DataVirtualized="True" Layout="Sugiyama" ZoomLevel="-1" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="SkyXEnging" Bounds="842.112268472581,38.5346369934082,81.1199999999999,25.96" Label="SkyXEngine" UseManualLocation="True" />
+    <Node Id="Sxaigrid" Bounds="137.366599112767,153.681602907359,60.8024306133333,25.94943168" Label="sxaigrid" UseManualLocation="True" />
+    <Node Id="Sxanim" Bounds="500.696821521577,392.215083618164,56.74,25.96" Label="sxanim" UseManualLocation="True" />
+    <Node Id="Sxcore" Bounds="850.276765715857,310.775468570656,53.6233333333334,25.96" Label="sxcore" UseManualLocation="True" />
+    <Node Id="Sxdecals" Bounds="407.103488188244,392.61162902832,63.5933333333332,25.96" Label="sxdecals" UseManualLocation="True" />
+    <Node Id="Sxgame" Bounds="503.006522957643,-21.621633986721,60.3866666666668,25.96" Label="sxgame" UseManualLocation="True" />
+    <Node Id="Sxgcore" Bounds="846.030516486036,194.558992066975,60.6900000000001,25.9600000000001" Label="sxgcore" UseManualLocation="True" />
+    <Node Id="Sxgeom" Bounds="224.610154854911,392.472255249023,61.3099999999999,25.96" Label="sxgeom" UseManualLocation="True" />
+    <Node Id="Sxgreen" Bounds="315.920154854911,392.61162902832,61.1833333333334,25.96" Label="sxgreen" UseManualLocation="True" />
+    <Node Id="Sxgui" Bounds="139.747077545899,41.7825395473589,49.980008,25.94943168" Label="sxgui" UseManualLocation="True" />
+    <Node Id="Sxinput" Bounds="137.992790317132,209.631134587359,58.1834576533336,25.94943168" Label="sxinput" UseManualLocation="True" />
+    <Node Id="Sxlevel" Bounds="662.687453853962,-17.772705560991,54.7133333333334,25.96" Label="sxlevel" UseManualLocation="True" />
+    <Node Id="Sxlight" Bounds="587.436821521577,392.982478637695,54.3366666666666,25.96" Label="sxlight" UseManualLocation="True" />
+    <Node Id="Sxmtrl" Bounds="136.345415586612,342.083194857614,52.0833333333333,25.96" Label="sxmtrl" UseManualLocation="True" />
+    <Node Id="Sxparticles" Bounds="671.773488188244,393.091319580078,74.7266666666667,25.96" Label="sxparticles" UseManualLocation="True" />
+    <Node Id="Sxphysics" Bounds="124.20455485026,265.65638347168,68.8866666666668,25.96" Label="sxphysics" UseManualLocation="True" />
+    <Node Id="Sxpp" Bounds="776.500154854911,394.704783935547,50,25.96" Label="sxpp" UseManualLocation="True" />
+    <Node Id="Sxrender" Bounds="321.472977895872,-16.666479171781,65.3566666666665,25.96" Label="sxrender" UseManualLocation="True" />
+    <Node Id="Sxscore" Bounds="132.964280088412,97.7320712273589,58.6932577333334,25.94943168" Label="sxscore" UseManualLocation="True" />
+  </Nodes>
+  <Links>
+    <Link Source="SkyXEnging" Target="Sxaigrid" Bounds="207.05452292343,58.0471835252739,635.057745549151,102.281663540966" />
+    <Link Source="SkyXEnging" Target="Sxanim" Bounds="548.407355217677,64.4946369934082,321.28766572758,321.355810803731" />
+    <Link Source="SkyXEnging" Target="Sxcore" Bounds="883.324401855469,64.4946365356445,28.430419921875,237.633110046387" />
+    <Link Source="SkyXEnging" Target="Sxdecals" Bounds="462.203348798769,64.4946369934082,404.200813684623,322.503834503711" />
+    <Link Source="SkyXEnging" Target="Sxgame" Bounds="572.262745063259,-1.91756181294679,269.849523409322,46.4504220883515" />
+    <Link Source="SkyXEnging" Target="Sxgcore" Bounds="877.262278775702,64.4946369934082,4.88614942369293,121.071675405639" />
+    <Link Source="SkyXEnging" Target="Sxgeom" Bounds="286.112859487986,64.4946369934082,573.550426851264,323.55557918161" />
+    <Link Source="SkyXEnging" Target="Sxgreen" Bounds="373.676888108256,64.4946369934082,489.340438761291,323.157352659913" />
+    <Link Source="SkyXEnging" Target="Sxinput" Bounds="204.929534345303,61.21220325749,637.182734127278,152.345211699411" />
+    <Link Source="SkyXEnging" Target="Sxlevel" Bounds="726.039289310338,5.72908121261775,116.613674486106,34.0874694878664" />
+    <Link Source="SkyXEnging" Target="Sxlight" Category="Weak" Bounds="629.850739306273,64.4946369934082,243.00482068075,321.309589367589" />
+    <Link Source="SkyXEnging" Target="Sxmtrl" Bounds="196.573869996802,64.4946369934082,655.298378265145,276.161278197626" />
+    <Link Source="SkyXEnging" Target="Sxparticles" Bounds="719.446306473795,64.4946369934082,156.872985980985,320.512993017428" />
+    <Link Source="SkyXEnging" Target="Sxphysics" Bounds="201.572372086213,63.8712606940677,641.709142501908,201.299990917342" />
+    <Link Source="SkyXEnging" Target="Sxpp" Bounds="804.806335449219,64.4946365356445,74.4510498046875,321.311180114746" />
+    <Link Source="SkyXEnging" Target="Sxrender" Bounds="395.780953609847,0.661508724394082,446.331314862734,46.6168586547724" />
+    <Link Source="SkyXEnging" Target="Sxscore" Bounds="200.627307173399,54.8474554119412,641.484961299182,52.7108701733204" />
+    <Link Source="Sxaigrid" Target="Sxgcore" Bounds="198.1690297261,168.410297641854,638.876428349177,36.8595715734226" />
+    <Link Source="Sxanim" Target="Sxgcore" Bounds="551.874450799581,224.970551118849,293.871440371142,167.244532499315" />
+    <Link Source="Sxanim" Target="Sxmtrl" Bounds="197.371643066406,359.02294921875,303.91845703125,34.401123046875" />
+    <Link Source="Sxdecals" Target="Sxcore" Bounds="469.281280517578,329.820098876953,372.122711181641,63.2440795898438" />
+    <Link Source="Sxdecals" Target="Sxgcore" Bounds="467.571473152381,224.069575169568,372.289897742189,168.542053858752" />
+    <Link Source="Sxdecals" Target="Sxmtrl" Bounds="197.31135559082,360.759887695313,209.792129516602,37.478515625" />
+    <Link Source="Sxdecals" Target="Sxphysics" Bounds="195.499144935072,295.330130164697,214.747806931304,97.2814988636234" />
+    <Link Source="Sxgame" Target="Sxaigrid" Bounds="202.930001164679,4.338366013279,303.211308066777,145.45063229188" />
+    <Link Source="Sxgame" Target="Sxanim" Bounds="529.286333820583,4.338366013279,3.78388972147457,378.877166412382" />
+    <Link Source="Sxgame" Target="Sxcore" Bounds="546.62859463835,4.338366013279,310.559935823831,300.182181134059" />
+    <Link Source="Sxgame" Target="Sxdecals" Bounds="443.852764013737,4.338366013279,86.3922109726064,379.497781066989" />
+    <Link Source="Sxgame" Target="Sxgcore" Bounds="553.804940801304,4.338366013279,294.350466967666,185.423605485596" />
+    <Link Source="Sxgame" Target="Sxgeom" Category="Wrong" Bounds="268.992837112886,4.338366013279,255.495003573856,380.661065939388" />
+    <Link Source="Sxgame" Target="Sxgui" Bounds="198.596746719822,-3.44647200282972,304.409776237821,52.3777245650996" />
+    <Link Source="Sxgame" Target="Sxinput" Bounds="195.235574630298,4.338366013279,317.414103187554,200.486582866552" />
+    <Link Source="Sxgame" Target="Sxlight" Category="Weak" Bounds="535.748409822372,4.338366013279,74.5741973953072,379.812733092263" />
+    <Link Source="Sxgame" Target="Sxmtrl" Bounds="182.045996998277,4.338366013279,337.920188949903,331.442747095263" />
+    <Link Source="Sxgame" Target="Sxparticles" Bounds="538.706464630678,4.338366013279,161.408831481382,380.467704144342" />
+    <Link Source="Sxgame" Target="Sxphysics" Bounds="182.712500443182,4.338366013279,333.564082048267,255.840674580796" />
+    <Link Source="Sxgame" Target="Sxscore" Bounds="200.224891866606,1.07428417578306,302.781631091037,97.4321555130274" />
+    <Link Source="Sxgcore" Target="Sxcore" Bounds="876.455140723621,220.518992066975,0.498459050342717,81.2566458366197" />
+    <Link Source="Sxgeom" Target="Sxgcore" Bounds="285.920154854911,219.94068648906,551.535176174657,175.743528396069" />
+    <Link Source="Sxgeom" Target="Sxmtrl" Category="Weak" Bounds="194.060684922474,372.247047116877,37.2794875452928,20.2252081321456" />
+    <Link Source="Sxgreen" Target="Sxgcore" Bounds="376.789065762617,221.928950888416,461.088014810127,172.345639213011" />
+    <Link Source="Sxgreen" Target="Sxgeom" Bounds="294.920144356105,405.512825853481,21.0000104988056,0.0320762493076927" />
+    <Link Source="Sxgui" Target="Sxcore" Bounds="189.727085545899,64.1939840684352,652.133418546838,246.258709469967" />
+    <Link Source="Sxgui" Target="Sxgcore" Bounds="189.727085545899,60.122362193418,647.503938932018,139.012694424308" />
+    <Link Source="Sxinput" Target="Sxcore" Bounds="196.176247970466,226.750358939323,645.190481890725,91.9160720893012" />
+    <Link Source="Sxlevel" Target="Sxaigrid" Bounds="206.720068375227,4.18773975796626,455.967385478735,149.681619563288" />
+    <Link Source="Sxlevel" Target="Sxdecals" Category="Wrong" Bounds="451.541423325344,8.187294439009,230.55929292864,376.747742121115" />
+    <Link Source="Sxlevel" Target="Sxgcore" Bounds="701.434702080753,8.187294439009,157.613932865818,179.60705849825" />
+    <Link Source="Sxlevel" Target="Sxgeom" Category="Wrong" Bounds="275.567372514828,8.187294439009,400.720501096153,378.108370574568" />
+    <Link Source="Sxlevel" Target="Sxgreen" Category="Wrong" Bounds="363.154348194486,8.187294439009,316.024227847038,377.523140726473" />
+    <Link Source="Sxlevel" Target="Sxparticles" Bounds="690.64729637402,8.187294439009,17.4685734203206,375.913726852401" />
+    <Link Source="Sxlevel" Target="Sxphysics" Category="Wrong" Bounds="190.924928962449,8.187294439009,474.783217014157,253.23358822946" />
+    <Link Source="Sxlevel" Target="Sxpp" Bounds="693.551461799846,8.187294439009,102.093648902512,377.829089688833" />
+    <Link Source="Sxlevel" Target="Sxscore" Bounds="200.449436724895,1.1945642388943,462.238017129067,101.165238953907" />
+    <Link Source="Sxlight" Target="Sxgcore" Bounds="631.729031431694,225.955671350623,220.350264483665,167.026807287072" />
+    <Link Source="Sxmtrl" Target="Sxgcore" Bounds="188.428748919945,215.629984162036,648.787940281725,134.052484719998" />
+    <Link Source="Sxparticles" Target="Sxgcore" Bounds="720.070850693705,227.402277530892,139.572328140808,165.689042049186" />
+    <Link Source="Sxparticles" Target="Sxlight" Bounds="650.77348222281,406.004121771408,21.0000059654343,0.0241787807190121" />
+    <Link Source="Sxphysics" Target="Sxcore" Bounds="193.091221516927,280.79947365403,648.203239953418,40.7080827787917" />
+    <Link Source="Sxphysics" Target="Sxgeom" Bounds="168.536966765142,291.61638347168,71.38487594178,93.6968679218677" />
+    <Link Source="Sxphysics" Target="Sxgreen" Bounds="177.855238333132,291.61638347168,141.992303470857,95.9559795964881" />
+    <Link Source="Sxphysics" Target="Sxmtrl" Bounds="159.282936776415,291.61638347168,2.02929648713609,41.4775636081228" />
+    <Link Source="Sxpp" Target="Sxgcore" Index="1" Bounds="806.356026092065,228.948434888951,62.0101300239614,165.756349046596" />
+    <Link Source="Sxrender" Target="Sxanim" Bounds="359.704027541732,9.293520828219,160.270266306832,374.646918656681" />
+    <Link Source="Sxrender" Target="Sxdecals" Bounds="356.83906796044,9.293520828219,77.5484216205179,374.505066227506" />
+    <Link Source="Sxrender" Target="Sxgame" Bounds="386.829644562539,-7.55705680740291,107.180322972872,2.96620725548273" />
+    <Link Source="Sxrender" Target="Sxgcore" Bounds="385.296035270727,8.91071365469122,453.145065040221,183.284839996193" />
+    <Link Source="Sxrender" Target="Sxgeom" Bounds="260.516697582547,9.293520828219,90.4974325348394,374.430621769634" />
+    <Link Source="Sxrender" Target="Sxgreen" Bounds="346.922065817507,9.293520828219,6.98696375915415,374.319675639348" />
+    <Link Source="Sxrender" Target="Sxinput" Bounds="183.544491222482,9.293520828219,159.876774646503,193.400909804645" />
+    <Link Source="Sxrender" Target="Sxlight" Category="Weak" Bounds="362.403964692159,9.293520828219,239.119717275203,376.094058009962" />
+    <Link Source="Sxrender" Target="Sxmtrl" Bounds="173.568063010827,9.293520828219,173.644984932587,324.852461139794" />
+    <Link Source="Sxrender" Target="Sxparticles" Bounds="365.396275785415,9.293520828219,326.602513906369,376.995463997599" />
+    <Link Source="Sxrender" Target="Sxpp" Bounds="368.266512049022,9.293520828219,412.49366349126,379.319275755513" />
+    <Link Source="Sxscore" Target="Sxcore" Bounds="191.657537821745,119.453929194366,649.994206618188,193.739176409404" />
+  </Links>
+  <Categories>
+    <Category Id="Weak" Label="Weak" Background="#FF00FF00" IsTag="True" Stroke="#FF00FF00" />
+    <Category Id="Wrong" Label="Wrong" Background="#FFFF1111" IsTag="True" Stroke="#FFFF1111" />
+  </Categories>
+  <Properties>
+    <Property Id="Background" Label="Background" Description="The background color" DataType="System.Windows.Media.Brush" />
+    <Property Id="Bounds" DataType="System.Windows.Rect" />
+    <Property Id="DataVirtualized" Label="Data Virtualized" Description="If true, the graph can contain nodes and links that represent data for virtualized nodes/links (i.e. not actually created in the graph)." DataType="System.Boolean" />
+    <Property Id="Expression" DataType="System.String" />
+    <Property Id="GroupLabel" DataType="System.String" />
+    <Property Id="IsEnabled" DataType="System.Boolean" />
+    <Property Id="IsTag" DataType="System.Boolean" />
+    <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />
+    <Property Id="Layout" DataType="System.String" />
+    <Property Id="Stroke" DataType="System.Windows.Media.Brush" />
+    <Property Id="TargetType" DataType="System.Type" />
+    <Property Id="UseManualLocation" DataType="System.Boolean" />
+    <Property Id="Value" DataType="System.String" />
+    <Property Id="ValueLabel" DataType="System.String" />
+    <Property Id="Visibility" Label="Visibility" Description="Defines whether a node in the graph is visible or not" DataType="System.Windows.Visibility" />
+    <Property Id="ZoomLevel" DataType="System.String" />
+  </Properties>
+  <Styles>
+    <Style TargetType="Link" GroupLabel="Current Call Stack Link" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="HasCategory('CurrentCallStackCall')" />
+      <Setter Property="Stroke" Value="#FFD93701" />
+      <Setter Property="Weight" Value="1" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Call Stack Indirect Link" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="HasCategory('CallStackIndirectCall')" />
+      <Setter Property="Stroke" Value="#FFB8B8B8" />
+      <Setter Property="StrokeDashArray" Value="4 1" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Call Stack Direct Link" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="HasCategory('CallStackDirectCall')" />
+      <Setter Property="Stroke" Value="#FFB8B8B8" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="External And Current" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="HasCategory('ExternalCallStackEntry') And HasCategory('CurrentCallStackEntry')" />
+      <Setter Property="Background" Value="#FFFFF8F0" />
+      <Setter Property="Stroke" Value="#FFCE5100" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Current Call Stack Node" ValueLabel="True">
+      <Condition Expression="HasCategory('CurrentCallStackEntry') And !HasCategory('QueryResult')" />
+      <Setter Property="Background" Value="#FFFFE3C6" />
+      <Setter Property="Stroke" Value="#FFD93701" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="External Call Stack Entry" ValueLabel="True">
+      <Condition Expression="HasCategory('ExternalCallStackEntry')" />
+      <Setter Property="Background" Value="#FFF7F7F7" />
+      <Setter Property="StrokeDashArray" Value="1 3" />
+      <Setter Property="Foreground" Value="#FFA5A5A5" />
+      <Setter Property="Stroke" Value="#FFA5A5A5" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Results" ValueLabel="True">
+      <Condition Expression="HasCategory('QueryResult')" />
+      <Setter Property="Background" Value="#FFBCFFBE" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Assembly" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Assembly')" />
+      <Setter Property="Background" Value="#FF094167" />
+      <Setter Property="Stroke" Value="#FF094167" />
+      <Setter Property="Icon" Value="CodeSchema_Assembly" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Namespace" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Namespace')" />
+      <Setter Property="Background" Value="#FF0E619A" />
+      <Setter Property="Stroke" Value="#FF0E619A" />
+      <Setter Property="Icon" Value="CodeSchema_Namespace" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Interface" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Interface')" />
+      <Setter Property="Background" Value="#FF1382CE" />
+      <Setter Property="Stroke" Value="#FF1382CE" />
+      <Setter Property="Icon" Value="CodeSchema_Interface" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Struct" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Struct')" />
+      <Setter Property="Background" Value="#FF1382CE" />
+      <Setter Property="Stroke" Value="#FF1382CE" />
+      <Setter Property="Icon" Value="CodeSchema_Struct" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Enumeration" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Enum')" />
+      <Setter Property="Background" Value="#FF1382CE" />
+      <Setter Property="Stroke" Value="#FF1382CE" />
+      <Setter Property="Icon" Value="CodeSchema_Enum" />
+      <Setter Property="LayoutSettings" Value="List" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Delegate" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Delegate')" />
+      <Setter Property="Background" Value="#FF1382CE" />
+      <Setter Property="Stroke" Value="#FF1382CE" />
+      <Setter Property="Icon" Value="CodeSchema_Delegate" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Class" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Type')" />
+      <Setter Property="Background" Value="#FF1382CE" />
+      <Setter Property="Stroke" Value="#FF1382CE" />
+      <Setter Property="Icon" Value="CodeSchema_Class" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Property" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Property')" />
+      <Setter Property="Background" Value="#FFE0E0E0" />
+      <Setter Property="Stroke" Value="#FFE0E0E0" />
+      <Setter Property="Icon" Value="CodeSchema_Property" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Method" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Method') Or HasCategory('CodeSchema_CallStackUnresolvedMethod')" />
+      <Setter Property="Background" Value="#FFE0E0E0" />
+      <Setter Property="Stroke" Value="#FFE0E0E0" />
+      <Setter Property="Icon" Value="CodeSchema_Method" />
+      <Setter Property="LayoutSettings" Value="List" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Event" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Event')" />
+      <Setter Property="Background" Value="#FFE0E0E0" />
+      <Setter Property="Stroke" Value="#FFE0E0E0" />
+      <Setter Property="Icon" Value="CodeSchema_Event" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Field" ValueLabel="Has category">
+      <Condition Expression="HasCategory('CodeSchema_Field')" />
+      <Setter Property="Background" Value="#FFE0E0E0" />
+      <Setter Property="Stroke" Value="#FFE0E0E0" />
+      <Setter Property="Icon" Value="CodeSchema_Field" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Out Parameter" ValueLabel="True">
+      <Condition Expression="CodeSchemaProperty_IsOut = 'True'" />
+      <Setter Property="Icon" Value="CodeSchema_OutParameter" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Parameter" ValueLabel="True">
+      <Condition Expression="HasCategory('CodeSchema_Parameter')" />
+      <Setter Property="Icon" Value="CodeSchema_Parameter" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Local Variable" ValueLabel="True">
+      <Condition Expression="HasCategory('CodeSchema_LocalExpression')" />
+      <Setter Property="Icon" Value="CodeSchema_LocalExpression" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Externals" ValueLabel="Has category">
+      <Condition Expression="HasCategory('Externals')" />
+      <Setter Property="Background" Value="#FF424242" />
+      <Setter Property="Stroke" Value="#FF424242" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Inherits From" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="HasCategory('InheritsFrom') And Target.HasCategory('CodeSchema_Class')" />
+      <Setter Property="TargetDecorator" Value="OpenArrow" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Implements" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="HasCategory('Implements') And Target.HasCategory('CodeSchema_Interface')" />
+      <Setter Property="TargetDecorator" Value="OpenArrow" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Field Read" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="Target.HasCategory('CodeSchema_Field') And HasCategory('CodeSchema_FieldRead')" />
+      <Setter Property="StrokeDashArray" Value="2 2" />
+    </Style>
+    <Style TargetType="Link" GroupLabel="Comment Link" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="Source.HasCategory('Comment')" />
+      <Setter Property="Stroke" Value="#FFE5C365" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Cursor Location Changed" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="IsCursorLocation" />
+      <Setter Property="IndicatorWest" Value="WestIndicator" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Disabled Breakpoint Location Changed" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="DisabledBreakpointCount" />
+      <Setter Property="IndicatorWest" Value="WestIndicator" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Enabled Breakpoint Location Changed" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="EnabledBreakpointCount" />
+      <Setter Property="IndicatorWest" Value="WestIndicator" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Instruction Pointer Location Changed" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="IsInstructionPointerLocation" />
+      <Setter Property="IndicatorWest" Value="WestIndicator" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Current Callstack Changed" ValueLabel="True" Visibility="Hidden">
+      <Condition Expression="IsCurrentCallstackFrame" />
+      <Setter Property="IndicatorWest" Value="WestIndicator" />
+    </Style>
+    <Style TargetType="Node" GroupLabel="Comment" ValueLabel="Has comment">
+      <Condition Expression="HasCategory('Comment')" />
+      <Setter Property="Background" Value="#FFFFFACD" />
+      <Setter Property="Stroke" Value="#FFE5C365" />
+      <Setter Property="StrokeThickness" Value="1" />
+      <Setter Property="NodeRadius" Value="2" />
+      <Setter Property="MaxWidth" Value="250" />
+    </Style>
+  </Styles>
+</DirectedGraph>

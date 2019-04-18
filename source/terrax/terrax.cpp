@@ -9,11 +9,15 @@ See the license in LICENSE
 //#include <vld.h> 
 #include <skyxengine.h>
 #include <io.h>
+#include <windowsx.h>
+#include "resource.h"
 
 #include "terrax.h"
 #include "Grid.h"
 
-#include "XStaticGeomObject.h"
+#include <xcommon/editor/IXEditorObject.h>
+#include <xcommon/editor/IXEditable.h>
+#include <mtrl/IXMaterialSystem.h>
 #include "UndoManager.h"
 
 extern HWND g_hWndMain;
@@ -23,13 +27,16 @@ CTerraXRenderStates g_xRenderStates;
 ATOM XRegisterClass(HINSTANCE hInstance);
 BOOL XInitInstance(HINSTANCE, int);
 
-Array<CXObject*> g_pLevelObjects;
+Array<IXEditable*> g_pEditableSystems;
+Array<IXEditorObject*> g_pLevelObjects;
+AssotiativeArray<AAString, IXEditable*> g_mEditableSystems;
 //SGeom_GetCountModels()
 
 static IGXVertexBuffer *g_pBorderVertexBuffer;
 static IGXRenderBuffer *g_pBorderRenderBuffer;
 
 CUndoManager *g_pUndoManager = NULL;
+extern HWND g_hComboTypesWnd;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
@@ -51,8 +58,57 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	}
 
 	SkyXEngine_Init(g_hTopLeftWnd, g_hWndMain, lpCmdLine);
+
+	IPluginManager *pPluginManager = Core_GetIXCore()->getPluginManager();
+
+	IXMaterialSystem *pMaterialSystem = (IXMaterialSystem*)pPluginManager->getInterface(IXMATERIALSYSTEM_GUID);
+
+	GXCOLOR w = GXCOLOR_ARGB(255, 255, 255, 255);
+	GXCOLOR t = GXCOLOR_ARGB(0, 255, 255, 255);
+	GXCOLOR colorData[] = {
+		t, t, t, w, w, w,
+		w, t, t, t, w, w,
+		w, w, t, t, t, w,
+		w, w, w, t, t, t,
+		t, w, w, w, t, t,
+		t, t, w, w, w, t
+	};
+	IGXTexture2D* pDashedMaterial = SGCore_GetDXDevice()->createTexture2D(6, 6, 1, 0, GXFMT_A8R8G8B8, colorData);
+	pMaterialSystem->addTexture("dev_dashed", pDashedMaterial);
+	mem_release(pDashedMaterial);
+
+	GXCOLOR tmpColor = GXCOLOR_ARGB(255, 255, 255, 255);
+	IGXTexture2D* pWhiteMaterial = SGCore_GetDXDevice()->createTexture2D(1, 1, 1, 0, GXFMT_A8R8G8B8, &tmpColor);
+	pMaterialSystem->addTexture("dev_white", pWhiteMaterial);
+	mem_release(pDashedMaterial);
+
+	UINT ic = 0;
+	IXEditable *pEditable;
+	while((pEditable = (IXEditable*)pPluginManager->getInterface(IXEDITABLE_GUID, ic++)))
+	{
+		if(pEditable->getVersion() == IXEDITABLE_VERSION)
+		{
+			g_pEditableSystems.push_back(pEditable);
+			pEditable->startup(SGCore_GetDXDevice());
+
+			ComboBox_AddString(g_hComboTypesWnd, pEditable->getName());
+
+			g_mEditableSystems[AAString(pEditable->getName())] = pEditable;
+		}
+	}
+	if(g_pEditableSystems.size() > 0)
+	{
+		ComboBox_SetCurSel(g_hComboTypesWnd, 0);
+		SendMessage(GetParent(g_hComboTypesWnd), WM_COMMAND, MAKEWPARAM(IDC_CMB_TYPE, CBN_SELCHANGE), (LPARAM)g_hComboTypesWnd);
+		if(g_pEditableSystems.size() == 1)
+		{
+			ComboBox_Enable(g_hComboTypesWnd, FALSE);
+		}
+	}
 	
-	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
+	//SGCore_SkyBoxLoadTex("sky_2_cube.dds");
+	SGCore_SkyBoxLoadTex("sky_hdr.dds");
+	//SGCore_SkyBoxLoadTex("sky_test_cube.dds");
 	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
 	SGCore_SkyBoxSetUse(false);
 	SGCore_SkyCloudsSetUse(false);
@@ -71,7 +127,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 
 //	SkyXEngine_RunGenPreview();
-//	Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
+	Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
+	//Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 
 	SRender_EditorSetRenderGrid(true);
 	SRender_EditorSetRenderAxesStatic(true);
@@ -79,18 +136,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	g_pGrid = new CGrid();
 	g_pGrid->setOpacity(0.7f);
 	
-	int countgc = SGame_EntGetClassListCount();
-	const char** listgc = new const char*[countgc];
-
-	SGame_EntGetClassList(listgc, countgc);
-	for(int i = 0; i < countgc; ++i)
-	{
-	//	level_editor::pComboBoxGameClass->addItem(listgc[i]);
-	}
-	mem_delete_a(listgc);
-
-	g_xRenderStates.idColoredShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_colored.vs", "terrax_colored.vs", SHADER_CHECKDOUBLE_PATH);
-	g_xRenderStates.idColoredShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "terrax_colored.ps", "terrax_colored.ps", SHADER_CHECKDOUBLE_PATH);
+	g_xRenderStates.idColoredShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_colored.vs");
+	g_xRenderStates.idColoredShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "terrax_colored.ps");
 	g_xRenderStates.idColoredShaderKit = SGCore_ShaderCreateKit(g_xRenderStates.idColoredShaderVS, g_xRenderStates.idColoredShaderPS);
 //	SkyXEngine_PreviewKill();
 	IGXContext *pDevice = SGCore_GetDXDevice();
@@ -112,8 +159,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	rsDesc.fillMode = GXFILL_WIREFRAME;
 	g_xRenderStates.pRSWireframe = SGCore_GetDXDevice()->createRasterizerState(&rsDesc);
 
-	g_xRenderStates.idTexturedShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_textured.vs", "terrax_textured.vs", SHADER_CHECKDOUBLE_PATH);
-	g_xRenderStates.idTexturedShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "terrax_textured.ps", "terrax_textured.ps", SHADER_CHECKDOUBLE_PATH);
+	g_xRenderStates.idTexturedShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_textured.vs");
+	g_xRenderStates.idTexturedShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "terrax_textured.ps");
 	g_xRenderStates.idTexturedShaderKit = SGCore_ShaderCreateKit(g_xRenderStates.idTexturedShaderVS, g_xRenderStates.idTexturedShaderPS);
 
 	GXVERTEXELEMENT oLayout[] =
@@ -140,7 +187,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	IGXVertexBuffer *ppVB[] = {g_xRenderStates.pHandlerVB, g_xRenderStates.pHandlerInstanceVB};
 	g_xRenderStates.pHandlerRB = pDevice->createRenderBuffer(2, ppVB, pVD);
 	mem_release(pVD);
-	g_xRenderStates.idHandlerShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_handler.vs", "terrax_handler.vs", SHADER_CHECKDOUBLE_PATH);
+	g_xRenderStates.idHandlerShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_handler.vs");
 	g_xRenderStates.idHandlerShaderKit = SGCore_ShaderCreateKit(g_xRenderStates.idHandlerShaderVS, g_xRenderStates.idColoredShaderPS);
 	USHORT pHandlerIndices[] = {0, 1, 2, 3, 4, 5, 6, 7};
 	g_xRenderStates.pHandlerIB = pDevice->createIndexBuffer(sizeof(USHORT)* 8, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_USHORT, pHandlerIndices);
@@ -155,7 +202,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		pVD = pDevice->createVertexDeclaration(oLayoutHandler);
 		g_xRenderStates.pTransformHandlerVB = pDevice->createVertexBuffer(sizeof(float3_t)* 32, GX_BUFFER_USAGE_STREAM | GX_BUFFER_WRITEONLY);
 		g_xRenderStates.pTransformHandlerRB = pDevice->createRenderBuffer(1, &g_xRenderStates.pTransformHandlerVB, pVD);
-		mem_release(pVD);
 		USHORT pHandlerIndices[] = {
 			0, 1, 2, 0, 2, 3,
 			4, 5, 6, 4, 6, 7,
@@ -177,8 +223,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		};
 		g_xRenderStates.pTransformHandlerRotateIB = pDevice->createIndexBuffer(sizeof(USHORT)* 72, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_USHORT, pHandlerRotateIndices);
 
+		float3_t pVertices[] = {
+			float3_t(10000.0f, 0.0f, 0.0f), float3_t(-10000.0f, 0.0f, 0.0f),
+			float3_t(0.0f, 10000.0f, 0.0f), float3_t(0.0f, -10000.0f, 0.0f),
+			float3_t(0.0f, 0.0f, 10000.0f), float3_t(0.0f, 0.0f, -10000.0f)
+		};
+		IGXVertexBuffer *pCreateCrossVB = pDevice->createVertexBuffer(sizeof(float3_t) * 6, GX_BUFFER_USAGE_STATIC, pVertices);
+		g_xRenderStates.pCreateCrossRB = pDevice->createRenderBuffer(1, &pCreateCrossVB, pVD);
+
+		mem_release(pVD);
 	}
+
 	int result = SkyXEngine_CycleMain();
+
+	for(UINT ic = 0, il = g_pEditableSystems.size(); ic < il; ++ic)
+	{
+		g_pEditableSystems[ic]->shutdown();
+	}
+
 	mem_delete(g_pGrid);
 	mem_delete(g_pUndoManager);
 	SkyXEngine_Kill();
@@ -187,6 +249,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 void XRender3D()
 {
+	IGXContext *pDevice = SGCore_GetDXDevice();
+
 	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 	{
 		if(g_pLevelObjects[i]->isSelected())
@@ -225,6 +289,30 @@ void XRender3D()
 
 		XDrawBorder(GXCOLOR_ARGB(255, 255, 255, 0), va, vb, vc, vd);
 	}
+
+	static IGXConstantBuffer *s_pColorBuffer = pDevice->createConstantBuffer(sizeof(float4));
+	static IGXConstantBuffer *s_mConstWVP = pDevice->createConstantBuffer(sizeof(SMMATRIX));
+
+	if(g_xState.bCreateMode)
+	{
+		IGXRasterizerState *pOldRS = pDevice->getRasterizerState();
+		pDevice->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
+		SMMATRIX mViewProj;
+		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
+		pDevice->setVertexShaderConstant(s_mConstWVP, 4);
+		pDevice->setPixelShaderConstant(s_pColorBuffer);
+		SGCore_ShaderBind(g_xRenderStates.idColoredShaderKit);
+
+		pDevice->setRenderBuffer(g_xRenderStates.pCreateCrossRB);
+		s_mConstWVP->update(&SMMatrixTranspose(SMMatrixTranslation(g_xState.vCreateOrigin) * mViewProj));
+		s_pColorBuffer->update(&float4(0.0f, 1.0f, 0.0f, 1.0f));
+		pDevice->setPrimitiveTopology(GXPT_LINELIST);
+		pDevice->drawPrimitive(0, 3);
+		pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+
+		pDevice->setRasterizerState(pOldRS);
+		mem_release(pOldRS);
+	}
 }
 
 void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
@@ -260,25 +348,26 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 	}
 	else
 	{
+		static IGXConstantBuffer *s_pColorBuffer = pDevice->createConstantBuffer(sizeof(float4));
+
 		for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 		{
 			if(g_pLevelObjects[i]->isSelected())
 			{
-				g_pLevelObjects[i]->renderSelection(false);
+			//	g_pLevelObjects[i]->renderSelection(false);
 			}
 		}
 
 		// Draw handlers
 		if(g_pLevelObjects.size())
 		{
-			SMMATRIX mViewProj;
-			Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, g_xRenderStates.idHandlerShaderVS, "g_mVP", &SMMatrixTranspose(mViewProj), 4);
+			pDevice->setPixelShaderConstant(s_pColorBuffer);
+
 			pDevice->setPrimitiveTopology(GXPT_LINELIST);
 			SGCore_ShaderBind(g_xRenderStates.idHandlerShaderKit);
 			pDevice->setIndexBuffer(g_xRenderStates.pHandlerIB);
 
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, g_xRenderStates.idColoredShaderPS, "g_vColor", &float4(0.0f, 1.0f, 0.0f, 1.0f), 1);
+			s_pColorBuffer->update(&float4(0.0f, 1.0f, 0.0f, 1.0f));
 
 			float3_t *pvData;
 			float fPtSize = 3.5f * fScale;
@@ -342,7 +431,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 				{
 					break;
 				}
-				SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, g_xRenderStates.idColoredShaderPS, "g_vColor", &float4(1.0f, 0.0f, 0.0f, 1.0f), 1);
+				s_pColorBuffer->update(&float4(1.0f, 0.0f, 0.0f, 1.0f));
 			}
 
 			SGCore_ShaderUnBind();
@@ -375,6 +464,8 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			}
 			XDrawBorder(GXCOLOR_ARGB(255, 255, 255, 0), va, vb, vc, vd, fScale);
 		}
+
+		static IGXConstantBuffer *s_mConstWVP = pDevice->createConstantBuffer(sizeof(SMMATRIX));
 		if(g_xState.bHasSelection)
 		{
 			float3_t va, vb, vc, vd;
@@ -522,6 +613,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 
 			SMMATRIX mViewProj;
 			SMMATRIX mWorld;
+			Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
 			switch(view)
 			{
 			case X2D_FRONT:
@@ -531,14 +623,17 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 				mWorld = SMMatrixRotationY(-SM_PIDIV2) * SMMatrixRotationZ(-SM_PIDIV2);
 				break;
 			}
+			
+			s_mConstWVP->update(&SMMatrixTranspose(mWorld * mViewProj));
+			pDevice->setVertexShaderConstant(s_mConstWVP, 4);
+
 			IGXRasterizerState *pOldRS = pDevice->getRasterizerState();
 			pDevice->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
-			Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, g_xRenderStates.idColoredShaderVS, "g_mWVP", &SMMatrixTranspose(mWorld * mViewProj), 4);
 			pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
 			SGCore_ShaderBind(g_xRenderStates.idColoredShaderKit);
 			pDevice->setRenderBuffer(g_xRenderStates.pTransformHandlerRB);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, g_xRenderStates.idColoredShaderPS, "g_vColor", &float4(1.0f, 1.0f, 1.0f, 1.0f), 1);
+			s_pColorBuffer->update(&float4(1.0f, 1.0f, 1.0f, 1.0f));
+			pDevice->setPixelShaderConstant(s_pColorBuffer);
 			if(g_xState.xformType == X2DXF_SCALE)
 			{
 				pDevice->setIndexBuffer(g_xRenderStates.pTransformHandlerScaleIB);
@@ -549,7 +644,30 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 				pDevice->setIndexBuffer(g_xRenderStates.pTransformHandlerRotateIB);
 				pDevice->drawIndexed(32, 24, 0, 0);
 			}
+
+
 			SGCore_ShaderUnBind();
+			pDevice->setRasterizerState(pOldRS);
+			mem_release(pOldRS);
+		}
+
+		if(g_xState.bCreateMode)
+		{
+			IGXRasterizerState *pOldRS = pDevice->getRasterizerState();
+			pDevice->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
+			SMMATRIX mViewProj;
+			Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
+			pDevice->setVertexShaderConstant(s_mConstWVP, 4);
+			pDevice->setPixelShaderConstant(s_pColorBuffer);
+			SGCore_ShaderBind(g_xRenderStates.idColoredShaderKit);
+
+			pDevice->setRenderBuffer(g_xRenderStates.pCreateCrossRB);
+			s_mConstWVP->update(&SMMatrixTranspose(SMMatrixTranslation(g_xState.vCreateOrigin) * mViewProj));
+			s_pColorBuffer->update(&float4(0.0f, 1.0f, 0.0f, 1.0f));
+			pDevice->setPrimitiveTopology(GXPT_LINELIST);
+			pDevice->drawPrimitive(0, 3);
+			pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+
 			pDevice->setRasterizerState(pOldRS);
 			mem_release(pOldRS);
 		}
@@ -565,11 +683,16 @@ void XLoadLevel(const char *szName)
 	sprintf(szCaption, "%s - [%s] | %s", MAIN_WINDOW_TITLE, szName, SKYXENGINE_VERSION4EDITORS);
 	SetWindowText(g_hWndMain, szCaption);
 
-	for(ID i = 0, l = SGeom_GetCountModels(); i < l; ++i)
+	for(UINT ic = 0, il = g_pEditableSystems.size(); ic < il; ++ic)
 	{
-		g_pLevelObjects.push_back(new CXStatixGeomObject(i));
-	//	g_pLevelObjects[i]->setSelected(true);
+		IXEditable *pEditable = g_pEditableSystems[ic];
+		for(ID i = 0, l = pEditable->getObjectCount(); i < l; ++i)
+		{
+			g_pLevelObjects.push_back(pEditable->getObject(i));
+		}
 	}
+
+	
 }
 
 void XResetLevel()
@@ -577,15 +700,17 @@ void XResetLevel()
 	SetWindowText(g_hWndMain, MAIN_WINDOW_TITLE " | " SKYXENGINE_VERSION4EDITORS);
 
 	SLevel_Clear();
+#if 0
 	ID gid = SLight_GetGlobal();
 	if(ID_VALID(gid))
 	{
 		SLight_DeleteLight(gid);
 	}
+#endif
 
 	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 	{
-		mem_delete(g_pLevelObjects[i]);
+		mem_release(g_pLevelObjects[i]);
 	}
 	g_pLevelObjects.clear();
 }
@@ -606,10 +731,10 @@ bool XSaveLevel(const char *szNewName)
 	char szPath[1024];
 	szPath[0] = 0;
 	char szName[1024];
-	if(gui_func::dialogs::SelectDirOwn(szName, szPath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Save level", false, true, 0))
+	/*if(gui_func::dialogs::SelectDirOwn(szName, szPath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Save level", false, true, 0))
 	{
 		return(XSaveLevel(szName));
-	}
+	}*/
 	
 	return(false);
 }
@@ -654,10 +779,10 @@ void XDrawBorder(GXCOLOR color, const float3_t &vA, const float3_t &vB, const fl
 	IGXBlendState *pOldBlendState = pDevice->getBlendState();
 	SGCore_ShaderBind(g_xRenderStates.idTexturedShaderKit);
 
-	SMMATRIX mViewProj;
-	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, g_xRenderStates.idTexturedShaderVS, "g_mWVP", &SMMatrixTranspose(mViewProj), 4);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, g_xRenderStates.idTexturedShaderPS, "g_vColor", &GXCOLOR_COLORVECTOR_ARGB(color), 1);
+	static IGXConstantBuffer *s_pColorBuffer = pDevice->createConstantBuffer(sizeof(float4));
+	s_pColorBuffer->update(&GXCOLOR_COLORVECTOR_ARGB(color));
+	pDevice->setPixelShaderConstant(s_pColorBuffer);
+
 	pDevice->setTexture(SGCore_LoadTexGetTex(SRender_EditorGetDashedTex()));
 	pDevice->setBlendState(g_xRenderStates.pBlendAlpha);
 	pDevice->setRenderBuffer(g_pBorderRenderBuffer);

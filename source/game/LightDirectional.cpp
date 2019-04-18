@@ -6,8 +6,6 @@ See the license in LICENSE
 
 #include "LightDirectional.h"
 
-#include <light/sxlight.h>
-
 /*! \skydocent light_directional
 Направленный источник света
 */
@@ -25,34 +23,35 @@ CLightDirectional::CLightDirectional(CEntityManager *pMgr):BaseClass(pMgr)
 {
 	m_fAngle = SM_PI * 0.4f;
 	m_fRadiusTop = 0.01f;
-	m_idLight = SLight_CreateDirection(&float3(0, 0, 0), m_fDist, &(float3)m_vColor, &SMQuaternion(-SM_PI, 'z'), m_fRadiusTop, m_fAngle, true);
-
-	//@FIXME: Что это??
-	//float3 f = LIGHTS_DIR_BASE;
-	//float3 a = SMVector3Cross(f, f);
-	//float ang = acosf(SMVector3Dot(f, f));
-	//m_vOrientation = SMQuaternion(a, ang);
+	if(m_pLightSystem)
+	{
+		m_pLight = m_pLightSpot = m_pLightSystem->createSpot();
+		//m_pLight->setDistance(m_fDist);
+		m_pLight->setColor(m_vColor);
+		m_pLightSpot->setDirection(SMQuaternion(-SM_PI, 'z'));
+		m_pLightSpot->setOuterAngle(m_fAngle);
+		m_pLightSpot->setInnerAngle(m_fAngle * 0.7f);
+	}
 }
 
 CLightDirectional::~CLightDirectional()
 {
-	SLight_DeleteLight(m_idLight);
+	mem_release(m_pLight);
 }
 
 void CLightDirectional::onSync()
 {
 	BaseClass::onSync();
 
-	SMQuaternion curr_rot;
-	SLight_GetOrient(m_idLight, &curr_rot);
-
-	if (curr_rot.x != m_vOrientation.x || curr_rot.y != m_vOrientation.y || curr_rot.z != m_vOrientation.z || curr_rot.w != m_vOrientation.w)
-		SLight_SetOrient(m_idLight, &m_vOrientation);
-
-	if (SLight_GetAngle(m_idLight) != m_fAngle)
-		SLight_SetAngle(m_idLight, m_fAngle);
-
+	if(m_pLightSpot)
+	{
+		m_pLightSpot->setDirection(m_vOrientation);
+		m_pLightSpot->setOuterAngle(m_fAngle);
+		m_pLightSpot->setInnerAngle(m_fAngle * 0.7f);
+	}
+#if 0
 	if (SLight_GetTopRadius(m_idLight) != m_fRadiusTop)
 		SLight_SetTopRadius(m_idLight, m_fRadiusTop);
+#endif
 }
 

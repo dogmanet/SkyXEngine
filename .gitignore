@@ -192,6 +192,7 @@ ModelManifest.xml
 
 *.phpt
 libs/
+libs64/
 
 source/s4g/tests/failed/
 source/s4g/tests/

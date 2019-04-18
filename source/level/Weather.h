@@ -11,6 +11,7 @@ See the license in LICENSE
 #include <GRegisterIndex.h>
 #include <common/Array.h>
 #include <common/String.h>
+#include <light/IXLightSystem.h>
 
 #include <time.h>
 
@@ -81,9 +82,9 @@ class CWeather
 {
 public:
 
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM2();
 
-	CWeather();
+	CWeather(IXLightSystem *pLightSystem);
 	~CWeather();
 
 	struct CDataSection
@@ -146,6 +147,8 @@ protected:
 	bool m_isPlaying;
 
 	void updateRainSound();
+
+	IXLightSystem *m_pLightSystem;
 	
 	Array<CTimeSection> m_aTimeSections;
 	int m_iSectionOld;		//порядковый номер старой секции
@@ -159,7 +162,7 @@ protected:
 	ID m_idEffThunderbolt;		//эффект молнии
 	ID m_idSndRain;				//звук дождя
 	ID m_idSndThunder;			//звук грозы
-	ID m_idLightThunderbolt;	//свет от молнии
+	IXLightPoint *m_pLightThunderbolt;	//свет от молнии
 
 	DWORD m_ulTimeBoltLast;		//время предыдущей грозы
 	DWORD m_ulTimeBoltNext;		//следующее время генерации грозы

@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -139,14 +139,8 @@ IGXTexture2D* CreatorTextures::GetTexture(const char* text)
 
 IGXTexture2D* CreatorTextures::GetTexture(ID num)
 {
-	if (num < Arr.size())
-	{
-		IGXTexture2D* tmptex = Arr[num]->Texture;
-		return Arr[num]->Texture;
-	}
-	else
-	{
-		dbg_break;
-		return 0;
-	}
+	assert(num < Arr.size());
+	
+	IGXTexture2D* tmptex = Arr[num]->Texture;
+	return Arr[num]->Texture;
 }

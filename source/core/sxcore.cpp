@@ -121,7 +121,7 @@ bool Core_0ClipBoardCopy(const char *szStr)
 {
     HGLOBAL hglb;
     char *s;
-	int len = strlen(szStr) + 1;
+	size_t len = strlen(szStr) + 1;
  
 	if(!(hglb = GlobalAlloc(GHND, len)))
 		return false;
@@ -150,9 +150,10 @@ bool Core_0IsProcessRun(const char* process)
 	pe.dwSize = sizeof(PROCESSENTRY32);
 	Process32First(hSnapshot, &pe);
 
-	while (1) {
-		if (stricmp(pe.szExeFile, process) == 0) return true;
-		if (!Process32Next(hSnapshot, &pe)) return false;
+	while(1)
+	{
+		if(strcasecmp(pe.szExeFile, process) == 0) return true;
+		if(!Process32Next(hSnapshot, &pe)) return false;
 	}
 }
 
@@ -184,7 +185,7 @@ void Core_0Create(const char* name, const char *szNameConsole, bool is_unic)
 			}
 
 			g_pTaskManager = new CTaskManager(iThreadNum);
-			if(stricmp(Core_0GetCommandLineArg("no-threads", "no"), "no"))
+			if(strcasecmp(Core_0GetCommandLineArg("no-threads", "no"), "no"))
 			{
 				g_pTaskManager->forceSinglethreaded();
 			}
@@ -215,6 +216,11 @@ void Core_AGetName(char* name)
 		strcpy(name, g_szCoreName);
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - invalid argument", GEN_MSG_LOCATION);
+}
+
+SX_LIB_API IXCore *Core_GetIXCore()
+{
+	return(g_pCore);
 }
 
 //##########################################################################

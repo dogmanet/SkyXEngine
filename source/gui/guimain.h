@@ -10,6 +10,8 @@
 #include <common/string.h>
 #include <common/Math.h>
 
+#include "IFont.h"
+
 #ifndef GUI_DLL
 #	include "IDesktop.h"
 #endif
@@ -100,6 +102,10 @@ namespace gui
 		virtual void messageBox(const WCHAR * title, const WCHAR * text, ...) = 0;
 		virtual void pushDesktop(IDesktop *) = 0;
 		virtual IDesktop * popDesktop() = 0;
+
+		virtual const SMMATRIX &getTransformViewProj() = 0;
+
+		virtual IFont *getFont(const WCHAR * szName, UINT size, IFont::STYLE style, int iBlurRadius) = 0;
 	};
 
 	typedef IGUI*(*PFNINITINSTANCE)(IGXContext*, const char*, HWND);

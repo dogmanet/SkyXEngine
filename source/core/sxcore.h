@@ -29,6 +29,8 @@ See the license in LICENSE
 
 //#define SM_D3D_CONVERSIONS
 #include <common/Math.h>
+#include <xcommon/IXCore.h>
+#include <xcommon/IPluginManager.h>
 
 #include <xcommon/IFileSystem.h>
 
@@ -72,7 +74,9 @@ SX_LIB_API void Core_0LoadCommandLine(const char *szCommandLine);
 SX_LIB_API void Core_0ExecCommandLine();
 
 //! Выполняет консольные команды из командной строки
-SX_LIB_API const char *Core_0GetCommandLineArg(const char *szArg, const char *szDefault=NULL);
+SX_LIB_API const char *Core_0GetCommandLineArg(const char *szArg, const char *szDefault = NULL);
+
+SX_LIB_API IXCore *Core_GetIXCore();
 
 
 //! установка своего обработчика вывода отладочной информации
@@ -368,42 +372,7 @@ SX_LIB_API int64_t Core_TimeTotalMcsGetU(ID id);
 
 //##########################################################################
 
-/*! \name Режимы открытия файлов 
-@{*/
-
-/*! двоичный */
-#define CORE_FILE_BIN	0	
-
-/*! текстовый */
-#define CORE_FILE_TEXT	1	
-
-//!@}
-
-/*! конец файла */
-#define CORE_FILE_EOF	EOF	
-
-/*! Интерфейс для записи/чтения файлов
- \note аргумент iType - режим отрытия файла
-*/
-class IFile : public IBaseObject
-{
-public:
-	virtual ~IFile(){};
-	
-	virtual int open(const char *szPath, int iType = CORE_FILE_TEXT) = 0;	//!< открыть файл
-	virtual int create(const char *szPath, int iType = CORE_FILE_TEXT) = 0;	//!< создать файл
-	virtual int add(const char *szPath, int iType = CORE_FILE_TEXT) = 0;	//!< добавить в конец файла
-	virtual size_t readBin(void *pDest, size_t iSize) = 0;					//!< считать в dest количетсво байт size
-	virtual size_t writeBin(const void *pSrc, size_t iSize) = 0;			//!< записать src в количетве size байт
-	virtual size_t readText(const char *szFormat, ...) = 0;					//!< чтение из файла, в аргументы только указатели
-	virtual size_t writeText(const char *szFormat, ...) = 0;				//!< запись в файл
-	virtual size_t getSize() const = 0;		//!< получить размер файла в байтах
-	virtual int readChar() = 0;				//!< считать символ
-	virtual size_t getPos() const = 0;		//!< текущая позиция курсора в файле
-	virtual void setPos(size_t iPos) = 0;	//!< установить позицию
-	virtual void close() = 0;				//!< закрыть файл
-	virtual bool isEOF() const = 0;			//!< текущая позиция является концом файла?
-};
+#include "IFile.h"
 
 /*! \name Создание экземпляров файлов 
 !@{*/
@@ -463,6 +432,9 @@ SX_LIB_API ISXConfig* Core_OpConfig(const char* path);
 
 /*! \name Работа с консолью 
 !@{*/
+
+#pragma pointers_to_members(full_generality, virtual_inheritance)
+
 typedef void(*SXCONCMD)(); /*!< Тип функции для регистрации команды без аргументов */
 typedef void(*SXCONCMDARG)(int argc, const char ** argv); /*!< Тип функции для регистрации команды с аргументами */
 
@@ -472,8 +444,8 @@ typedef void(ConCmdStub::* SXCONCMDCLSARG)(int argc, const char ** argv); /*!< �
 
 SX_LIB_API void Core_0RegisterConcmd(char * name, SXCONCMD cmd, const char * desc = NULL); //!< Регистрация консольной функции без аргументов
 SX_LIB_API void Core_0RegisterConcmdArg(char * name, SXCONCMDARG cmd, const char * desc = NULL); //!< Регистрация консольной функции с аргументами
-SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, SXCONCMDCLS cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса без аргументов
-SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, SXCONCMDCLSARG cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса с аргументами
+SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, const SXCONCMDCLS &cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса без аргументов
+SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, const SXCONCMDCLSARG &cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса с аргументами
 
 SX_LIB_API void Core_0ConsoleUpdate(); //!< Обновление консоли, выполнение буфера команд
 SX_LIB_API void Core_0ConsoleExecCmd(const char * format, ...); //!< Добавление команды на исполнение в буфер команд

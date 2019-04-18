@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -17,22 +17,23 @@ See the license in LICENSE
 #	pragma comment(lib, "sxcore_d.lib")
 #	pragma comment(lib, "sxgeom_d.lib")
 #	pragma comment(lib, "sxgreen_d.lib")
-#	pragma comment(lib, "sxlight_d.lib")
 #	pragma comment(lib, "sxmtrl_d.lib")
 #	pragma comment(lib, "BulletDynamics_vs2010_debug.lib")
 #	pragma comment(lib, "BulletCollision_vs2010_debug.lib")
 #	pragma comment(lib, "LinearMath_vs2010_debug.lib")
 #	pragma comment(lib, "BulletWorldImporter_vs2010_debug.lib")
+#	pragma comment(lib, "BulletWorldImporter_vs2010_debug.lib")
+#	pragma comment(lib, "BulletFileLoader_vs2010_debug.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
 #	pragma comment(lib, "sxgeom.lib")
 #	pragma comment(lib, "sxgreen.lib")
-#	pragma comment(lib, "sxlight.lib")
 #	pragma comment(lib, "sxmtrl.lib")
 #	pragma comment(lib, "BulletDynamics_vs2010.lib")
 #	pragma comment(lib, "BulletCollision_vs2010.lib")
 #	pragma comment(lib, "LinearMath_vs2010.lib")
 #	pragma comment(lib, "BulletWorldImporter_vs2010.lib")
+#	pragma comment(lib, "BulletFileLoader_vs2010.lib")
 #endif
 
 #if !defined(DEF_STD_REPORT)

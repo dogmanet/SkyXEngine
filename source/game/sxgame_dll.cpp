@@ -31,8 +31,6 @@ See the license in LICENSE
 #	pragma comment(lib, "sxmtrl_d.lib")
 #	pragma comment(lib, "sxaigrid_d.lib")
 #	pragma comment(lib, "sxgeom_d.lib")
-#	pragma comment(lib, "sxgreen_d.lib")
-#	pragma comment(lib, "sxlevel_d.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
 #	pragma comment(lib, "sxgcore.lib")
@@ -45,8 +43,6 @@ See the license in LICENSE
 #	pragma comment(lib, "sxmtrl.lib")
 #	pragma comment(lib, "sxaigrid.lib")
 #	pragma comment(lib, "sxgeom.lib")
-#	pragma comment(lib, "sxgreen.lib")
-#	pragma comment(lib, "sxlevel.lib")
 #endif
 
 #if !defined(DEF_STD_REPORT)

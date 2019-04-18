@@ -917,13 +917,7 @@ namespace gui
 								m_mTextRELs[i][j]->m_iLeftOffset += _offs;
 								for(UINT o = m_mTextRELs[i][j]->m_iFirstSym; o <= m_mTextRELs[i][j]->m_iLastSym; o++)
 								{
-									if((*m_mTextRELs[i][j]->m_prc)[o].left > 65555)
-									{
-										_asm
-										{
-											int 3;
-										};
-									}
+									assert((*m_mTextRELs[i][j]->m_prc)[o].left <= 65555);
 									(*m_mTextRELs[i][j]->m_prc)[o].left += _offs;
 									(*m_mTextRELs[i][j]->m_prc)[o].right += _offs;
 								}

@@ -28,7 +28,6 @@ See the license in LICENSE
 
 #include <geom/sxgeom.h>
 #include <green/sxgreen.h>
-#include <light/sxlight.h>
 #include <aigrid/sxaigrid.h>
 #include <physics/sxphysics.h>
 #include <game/sxgame.h>

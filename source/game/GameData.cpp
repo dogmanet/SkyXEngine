@@ -10,7 +10,6 @@ See the license in LICENSE
 #include "Ragdoll.h"
 
 #include <score/sxscore.h>
-#include <level/sxlevel.h>
 #include <input/sxinput.h>
 
 
@@ -24,6 +23,10 @@ See the license in LICENSE
 #include "BaseMag.h"
 #include "FuncTrain.h"
 
+#include <common/file_utils.h>
+
+#include <xcommon/XEvents.h>
+
 CPlayer * GameData::m_pPlayer;
 CPointCamera * GameData::m_pActiveCamera;
 gui::IGUI * GameData::m_pGUI = NULL;
@@ -31,6 +34,7 @@ CEntityManager * GameData::m_pMgr;
 CHUDcontroller * GameData::m_pHUDcontroller;
 CGameStateManager * GameData::m_pGameStateManager;
 gui::dom::IDOMnode *GameData::m_pCell;
+IXLightSystem *GameData::m_pLightSystem;
 //gui::IDesktop *GameData::m_pStatsUI;
 
 CRagdoll * g_pRagdoll;
@@ -39,7 +43,40 @@ IAnimPlayer * pl;
 CTracer *g_pTracer;
 CTracer *g_pTracer2;
 
+IEventChannel<XEventLevel> *g_pLevelChannel;
+static gui::IFont *g_pFont = NULL;
+static IGXRenderBuffer *g_pTextRenderBuffer = NULL;
+static IGXIndexBuffer *g_pTextIndexBuffer = NULL;
+static IGXConstantBuffer *g_pTextVSConstantBuffer = NULL;
+static IGXConstantBuffer *g_pTextPSConstantBuffer = NULL;
+static UINT g_uVertexCount = 0;
+static UINT g_uIndexCount = 0;
+static ID g_idTextVS = -1;
+static ID g_idTextPS = -1;
+static ID g_idTextKit = -1;
+static IGXBlendState *g_pTextBlendState = NULL;
+static IGXSamplerState *g_pTextSamplerState = NULL;
+static IGXDepthStencilState *g_pTextDepthState = NULL;
+static UINT g_uFrameCount = 0;
+static UINT g_uFPS = 0;
 
+//##########################################################################
+
+static void RenderText(const wchar_t *szText)
+{
+	if(!g_pFont)
+	{
+		g_pFont = GameData::m_pGUI->getFont(L"traceroute", 16, gui::IFont::STYLE_NONE, 0);
+	}
+
+	mem_release(g_pTextRenderBuffer);
+	mem_release(g_pTextIndexBuffer);
+
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+
+	g_pFont->buildString(szText, gui::IFont::DECORATION_NONE, gui::IFont::TEXT_ALIGN_LEFT,
+		&g_pTextRenderBuffer, &g_pTextIndexBuffer, &g_uVertexCount, &g_uIndexCount, NULL, *r_win_width, 0, 0);
+}
 
 //##########################################################################
 
@@ -81,6 +118,87 @@ static void UpdateSettingsDesktop()
 	}
 }
 
+#define MAX_LEVEL_STRING 128
+struct CLevelInfo
+{
+	char m_szName[MAX_LEVEL_STRING]; //!< имя папки уровня
+	char m_szLocalName[MAX_LEVEL_STRING]; //!< Отображаемое имя уровня
+	bool m_bHasPreview;
+
+	HANDLE m_hFind; //!< для внутреннего использования
+};
+
+BOOL EnumLevels(CLevelInfo *pInfo)
+{
+	WIN32_FIND_DATA fd;
+	bool bFound = false;
+	if(!pInfo->m_hFind)
+	{
+		if((pInfo->m_hFind = ::FindFirstFile((String(Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS)) + "*").c_str(), &fd)) != INVALID_HANDLE_VALUE)
+		{
+			bFound = true;
+		}
+	}
+	else
+	{
+		if(::FindNextFile(pInfo->m_hFind, &fd))
+		{
+			bFound = true;
+		}
+	}
+
+	if(bFound)
+	{
+		while(!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || (!strcmp(fd.cFileName, ".") || !strcmp(fd.cFileName, "..")))
+		{
+			bFound = false;
+			if(::FindNextFile(pInfo->m_hFind, &fd))
+			{
+				if((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && strcmp(fd.cFileName, ".") && strcmp(fd.cFileName, ".."))
+				{
+					bFound = true;
+					break;
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+
+	if(!bFound)
+	{
+		if(INVALID_HANDLE_VALUE != pInfo->m_hFind)
+		{
+			::FindClose(pInfo->m_hFind);
+		}
+		return(FALSE);
+	}
+
+	strncpy(pInfo->m_szName, fd.cFileName, MAX_LEVEL_STRING - 1);
+
+	{
+		char szFullPath[1024];
+		sprintf(szFullPath, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pInfo->m_szName, pInfo->m_szName);
+
+		ISXConfig *pConfig = Core_OpConfig(szFullPath);
+		if(pConfig->keyExists("level", "local_name"))
+		{
+			strncpy(pInfo->m_szLocalName, pConfig->getKey("level", "local_name"), MAX_LEVEL_STRING - 1);
+		}
+		else
+		{
+			strncpy(pInfo->m_szLocalName, fd.cFileName, MAX_LEVEL_STRING - 1);
+		}
+		mem_release(pConfig);
+
+		sprintf(szFullPath, "%s%s/preview.bmp", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pInfo->m_szName);
+		pInfo->m_bHasPreview = FileExistsFile(szFullPath);
+	}
+
+	return(TRUE);
+}
 
 //##########################################################################
 
@@ -118,6 +236,10 @@ GameData::GameData(HWND hWnd, bool isGame):
 	m_pHUDcontroller = new CHUDcontroller();
 
 	m_pMgr = new CEntityManager();
+
+	g_pLevelChannel = Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID);
+
+	m_pLightSystem = (IXLightSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXLIGHTSYSTEM_GUID);
 
 	Core_0RegisterConcmd("+forward", ccmd_forward_on);
 	Core_0RegisterConcmd("-forward", ccmd_forward_off);
@@ -244,8 +366,12 @@ GameData::GameData(HWND hWnd, bool isGame):
 			printf("Usage: map <levelname>");
 			return;
 		}
+		XEventLevel evLevel;
+		evLevel.type = XEventLevel::TYPE_LOAD;
+		evLevel.szLevelName = argv[1];
+		g_pLevelChannel->broadcastEvent(&evLevel);
 		
-		SLevel_Load(argv[1], true);
+		//SLevel_Load(argv[1], true);
 
 		//GameData::m_pGameStateManager->activate("ingame");
 
@@ -365,7 +491,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 		CLevelInfo levelInfo;
 		memset(&levelInfo, 0, sizeof(CLevelInfo));
-		while(SLevel_EnumLevels(&levelInfo))
+		while(EnumLevels(&levelInfo))
 		{
 			LibReport(REPORT_MSG_LEVEL_NOTICE, "Level: %s, dir: %s\n", levelInfo.m_szLocalName, levelInfo.m_szName);
 
@@ -432,7 +558,10 @@ GameData::GameData(HWND hWnd, bool isGame):
 		//Core_0ConsoleExecCmd("observe");
 		GameData::m_pPlayer->observe();
 
-		SLevel_Clear();
+		XEventLevel evLevel;
+		evLevel.type = XEventLevel::TYPE_UNLOAD;
+		g_pLevelChannel->broadcastEvent(&evLevel);
+		//SLevel_Clear();
 	});
 	m_pGUI->registerCallback("dial_settings", [](gui::IEvent * ev){
 		static gui::IDesktop * pSettingsDesktop = GameData::m_pGUI->createDesktopA("menu_settings", "menu/settings.html");
@@ -742,6 +871,14 @@ GameData::GameData(HWND hWnd, bool isGame):
 		});
 	});
 
+	Core_0RegisterConcmdArg("text", [](int argc, const char ** argv)
+	{
+		if(argc != 2)
+		{
+			printf("Usage: text <text>");
+			return;
+		}
+	});
 
 	//gui::IDesktop * pDesk = m_pGUI->createDesktopA("ingame", "ingame.html");
 	//gui::IDesktop * pDesk = m_pGUI->createDesktopA("ingame", "main_menu.html");
@@ -754,6 +891,27 @@ GameData::GameData(HWND hWnd, bool isGame):
 	//pl->setPos(float3(0, 0, 0));
 	//g_pRagdoll = new CRagdoll(pl);
 	//pl->setRagdoll(g_pRagdoll);
+
+	g_idTextVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_main.vs");
+	g_idTextPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_main.ps");
+	g_idTextKit = SGCore_ShaderCreateKit(g_idTextVS, g_idTextPS);
+
+	GXBLEND_DESC bsDesc;
+	bsDesc.renderTarget[0].bBlendEnable = true;
+	bsDesc.renderTarget[0].srcBlend = bsDesc.renderTarget[0].srcBlendAlpha = GXBLEND_SRC_ALPHA;
+	bsDesc.renderTarget[0].destBlend = bsDesc.renderTarget[0].destBlendAlpha = GXBLEND_INV_SRC_ALPHA;
+	g_pTextBlendState = SGCore_GetDXDevice()->createBlendState(&bsDesc);
+
+	GXSAMPLER_DESC sampDesc;
+	sampDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
+	g_pTextSamplerState = SGCore_GetDXDevice()->createSamplerState(&sampDesc);
+
+	g_pTextVSConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(SMMATRIX));
+	g_pTextPSConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(float4));
+
+	GXDEPTH_STENCIL_DESC dsDesc;
+	dsDesc.bDepthEnable = dsDesc.bEnableDepthWrite = false;
+	g_pTextDepthState = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
 
 	//m_pStatsUI = m_pGUI->createDesktopA("stats", "sys/stats.html");
 
@@ -843,9 +1001,107 @@ void GameData::render()
 	const bool * pbHudDraw = GET_PCVAR_BOOL("hud_draw");
 	if(*pbHudDraw)
 	{
-		m_pGUI->render();
+//		m_pGUI->render();
 	}
 	//m_pStatsUI->render(0.1f);
+	IGXContext *pDev = SGCore_GetDXDevice();
+	++g_uFrameCount;
+	
+	static int64_t s_uTime = Core_TimeTotalMlsGetU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+	int64_t uTime = Core_TimeTotalMlsGetU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+	if(uTime - s_uTime > 1000)
+	{
+		g_uFPS = (UINT)(g_uFrameCount * 1000 / (uTime - s_uTime));
+		s_uTime = uTime;
+		g_uFrameCount = 0;
+	}
+	if(pDev)
+	{
+		const GX_FRAME_STATS *pFrameStats = pDev->getFrameStats();
+		const GX_MEMORY_STATS *pMemoryStats = pDev->getMemoryStats();
+
+		static GX_FRAME_STATS s_oldFrameStats = {0};
+		static GX_MEMORY_STATS s_oldMemoryStats = {0};
+		static UINT s_uOldFps = 0;
+
+		if(s_uOldFps != g_uFPS 
+			|| memcmp(&s_oldFrameStats, pFrameStats, sizeof(s_oldFrameStats)) 
+			|| memcmp(&s_oldMemoryStats, pMemoryStats, sizeof(s_oldMemoryStats)))
+		{
+			s_uOldFps = g_uFPS;
+			s_oldFrameStats = *pFrameStats;
+			s_oldMemoryStats = *pMemoryStats;
+
+			const GX_ADAPTER_DESC *pAdapterDesc = pDev->getAdapterDesc();
+
+			static wchar_t wszStats[512];
+			swprintf_s(wszStats, L"FPS: %u\n"
+				L"GPU: %s\n"
+				L"Total memory: %uMB\n"
+				L"Used memory: %.3fMB; (T: %.3fMB; RT: %.3fMB; VB: %.3fMB, IB: %.3fMB, SC: %.3fKB)\n"
+				L"Uploaded bytes: %u; (T: %u; VB: %u, IB: %u, SC: %u)\n"
+				L"Count poly: %u\n"
+				L"Count DIP: %u\n"
+				, g_uFPS,
+
+				pAdapterDesc->szDescription,
+				pAdapterDesc->uTotalGPUMemory / 1024 / 1024,
+
+				(float)(pMemoryStats->uIndexBufferBytes + pMemoryStats->uRenderTargetBytes + pMemoryStats->uShaderConstBytes + pMemoryStats->uTextureBytes + pMemoryStats->uVertexBufferBytes) / 1024.0f / 1024.0f,
+				(float)pMemoryStats->uTextureBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->uRenderTargetBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->uVertexBufferBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->uIndexBufferBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->uShaderConstBytes / 1024.0f,
+
+				pFrameStats->uUploadedBuffersIndices + pFrameStats->uUploadedBuffersTextures + pFrameStats->uUploadedBuffersVertexes + pFrameStats->uUploadedBuffersShaderConst,
+				pFrameStats->uUploadedBuffersTextures,
+				pFrameStats->uUploadedBuffersVertexes,
+				pFrameStats->uUploadedBuffersIndices,
+				pFrameStats->uUploadedBuffersShaderConst,
+
+				pFrameStats->uPolyCount,
+				pFrameStats->uDIPcount
+				);
+
+			RenderText(wszStats);
+		}
+		if(g_pTextRenderBuffer)
+		{
+			pDev->setBlendState(g_pTextBlendState);
+			pDev->setRasterizerState(NULL);
+			pDev->setDepthStencilState(g_pTextDepthState);
+			pDev->setSamplerState(NULL, 0);
+
+			static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+			static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+
+			SMMATRIX m(
+				2.0f / (float)*r_win_width, 0.0f, 0.0f, 0.0f,
+				0.0f, -2.0f / (float)*r_win_height, 0.0f, 0.0f,
+				0.0f, 0.0f, 0.5f, 0.0f,
+				-1.0f, 1.0f, 0.5f, 1.0f);
+			m = SMMatrixTranslation(-0.5f, -0.5f, 0.0f) * m;
+			//	GetGUI()->getDevice()->SetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&m));
+
+			g_pTextVSConstantBuffer->update(&SMMatrixTranspose(SMMatrixTranslation(float3(1.0f, 1.0f, 0.0f)) * m));
+			g_pTextPSConstantBuffer->update(&float4_t(0, 0, 0, 1.0f));
+
+			SGCore_ShaderBind(g_idTextKit);
+			pDev->setRenderBuffer(g_pTextRenderBuffer);
+			pDev->setIndexBuffer(g_pTextIndexBuffer);
+			pDev->setTexture((IGXTexture2D*)g_pFont->getAPITexture(0));
+			pDev->setPrimitiveTopology(GXPT_TRIANGLELIST);
+			pDev->setVertexShaderConstant(g_pTextVSConstantBuffer);
+			pDev->setPixelShaderConstant(g_pTextPSConstantBuffer);
+			pDev->drawIndexed(g_uVertexCount, g_uIndexCount / 3, 0, 0);
+
+			g_pTextVSConstantBuffer->update(&SMMatrixTranspose(m));
+			g_pTextPSConstantBuffer->update(&float4_t(0.3f, 1.0f, 0.3f, 1.0f));
+			pDev->drawIndexed(g_uVertexCount, g_uIndexCount / 3, 0, 0);
+			SGCore_ShaderUnBind();
+		}
+	}
 }
 void GameData::renderHUD()
 {

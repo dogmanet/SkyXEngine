@@ -8,16 +8,20 @@
 #include <commctrl.h>
 #include <combaseapi.h>
 
+#include <uxtheme.h>
+#pragma comment(lib, "UxTheme.lib")
+
 #include <skyxengine.h>
 #include <core/sxcore.h>
 #include <gcore/sxgcore.h>
 #include <render/sxrender.h>
 #include <input/sxinput.h>
-#include <sxguiwinapi/sxgui.h>
+//#include <sxguiwinapi/sxgui.h>
 #include <level/sxlevel.h>
 
 #include "terrax.h"
-#include "XObject.h"
+#include <xcommon/editor/IXEditorObject.h>
+#include <xcommon/editor/IXEditable.h>
 #include "UndoManager.h"
 
 #include "CommandSelect.h"
@@ -25,8 +29,12 @@
 #include "CommandScale.h"
 #include "CommandRotate.h"
 #include "CommandDelete.h"
+#include "CommandCreate.h"
 
-extern Array<CXObject*> g_pLevelObjects;
+#include "PropertyWindow.h"
+
+extern Array<IXEditorObject*> g_pLevelObjects;
+extern AssotiativeArray<AAString, IXEditable*> g_mEditableSystems;
 
 // Global Variables:
 HINSTANCE hInst;								// current instance
@@ -37,15 +45,23 @@ HWND g_hBottomRightWnd = NULL;
 HWND g_hBottomLeftWnd = NULL;
 HWND g_hStatusWnd = NULL;
 HWND g_hObjectTreeWnd = NULL;
+HWND g_hComboTypesWnd = NULL;
+HWND g_hStaticTypesWnd = NULL;
+HWND g_hComboClassesWnd = NULL;
+HWND g_hStaticClassesWnd = NULL;
 
 HWND g_hABArrowButton = NULL;
 HWND g_hABCameraButton = NULL;
+HWND g_hABCreateButton = NULL;
 
 BOOL g_isXResizeable = TRUE;
 BOOL g_isYResizeable = TRUE;
 
 BOOL g_is3DRotating = FALSE;
 BOOL g_is3DPanning = FALSE;
+
+BOOL g_isPropWindowVisible = FALSE;
+CPropertyWindow *g_pPropWindow = NULL;
 
 extern HACCEL g_hAccelTable;
 
@@ -55,6 +71,8 @@ CTerraXConfig g_xConfig;
 CTerraXState g_xState;
 
 extern CUndoManager *g_pUndoManager;
+
+extern Array<IXEditable*> g_pEditableSystems;
 
 // Forward declarations of functions included in this code module:
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -141,9 +159,16 @@ BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
 	g_hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR1));
 
 	XCheckMenuItem(g_hMenu, ID_VIEW_GRID, g_xConfig.m_bShowGrid);
-	XUpdateUndoRedo();
 
 	return TRUE;
+}
+
+bool IsEditMessage()
+{
+	HWND hFocused = GetFocus();
+	char className[6];
+	GetClassName(hFocused, className, 6);
+	return(hFocused && !strcasecmp(className, "edit"));
 }
 
 WNDPROC g_pfnTreeOldWndproc;
@@ -294,29 +319,60 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		g_hStatusWnd = CreateWindowEx(0, STATUSCLASSNAME, "For help, press F1", SBARS_SIZEGRIP | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hWnd, (HMENU)IDC_STATUSBAR, hInst, NULL);                   // no window creation data
 		{
 			g_pfnStatusBarOldWndproc = (WNDPROC)GetWindowLongPtr(g_hStatusWnd, GWLP_WNDPROC);
-			SetWindowLongPtr(g_hStatusWnd, GWLP_WNDPROC, (LONG)StatusBarWndProc);
+			SetWindowLongPtr(g_hStatusWnd, GWLP_WNDPROC, (LONG_PTR)StatusBarWndProc);
 			SendMessage(g_hStatusWnd, WM_SIZE, 0, 0);
 			XUpdateStatusGrid();
 		}
 
 		g_hABArrowButton = CreateWindow("Button", "", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON | BS_BITMAP | BS_PUSHLIKE | BS_CHECKBOX, rect.left - MARGIN_LEFT, rect.top, MARGIN_LEFT, AB_BUTTON_HEIGHT, hWnd, (HMENU)IDC_AB_ARROW, hInst, NULL);
 		{
+			SetWindowTheme(g_hABArrowButton, L" ", L" ");
 			HBITMAP hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP30));
 			SendMessage(g_hABArrowButton, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
+			Button_SetCheck(g_hABArrowButton, TRUE);
 		}
+
+		//WS_EX_DLGMODALFRAME
 
 		g_hABCameraButton = CreateWindow("Button", "", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON | BS_BITMAP | BS_PUSHLIKE | BS_CHECKBOX, rect.left - MARGIN_LEFT, rect.top + AB_BUTTON_HEIGHT, MARGIN_LEFT, AB_BUTTON_HEIGHT, hWnd, (HMENU)IDC_AB_CAMERA, hInst, NULL);
 		{
+			SetWindowTheme(g_hABCameraButton, L" ", L" ");
 			HBITMAP hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP31));
 			SendMessage(g_hABCameraButton, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
+		}
+
+		g_hABCreateButton = CreateWindow("Button", "", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON | BS_BITMAP | BS_PUSHLIKE | BS_CHECKBOX, rect.left - MARGIN_LEFT, rect.top + AB_BUTTON_HEIGHT * 2, MARGIN_LEFT, AB_BUTTON_HEIGHT, hWnd, (HMENU)IDC_AB_CREATE, hInst, NULL);
+		{
+			SetWindowTheme(g_hABCreateButton, L" ", L" ");
+			HBITMAP hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(IDB_BITMAP34));
+			SendMessage(g_hABCreateButton, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
 		}
 
 		g_hObjectTreeWnd = CreateWindowExA(0, WC_TREEVIEW, "", WS_VISIBLE | WS_CHILD | WS_BORDER | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_CHECKBOXES | TVS_NOHSCROLL, rect.right, rect.top, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, 0, hInst, NULL);
 		{
 			g_pfnTreeOldWndproc = (WNDPROC)GetWindowLongPtr(g_hObjectTreeWnd, GWLP_WNDPROC);
-			SetWindowLongPtr(g_hObjectTreeWnd, GWLP_WNDPROC, (LONG)TreeViewWndProc);
+			SetWindowLongPtr(g_hObjectTreeWnd, GWLP_WNDPROC, (LONG_PTR)TreeViewWndProc);
+		}
+		
+		g_hStaticTypesWnd = CreateWindowExA(0, WC_STATIC, "Object type", WS_VISIBLE | WS_CHILD, rect.right, rect.top + OBJECT_TREE_HEIGHT, MARGIN_RIGHT, 15, hWnd, 0, hInst, NULL);
+		{
+			SetWindowFont(g_hStaticTypesWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
 		}
 
+		g_hComboTypesWnd = CreateWindowExA(0, WC_COMBOBOX, "", WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_SORT | CBS_DROPDOWNLIST | CBS_HASSTRINGS, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, (HMENU)IDC_CMB_TYPE, hInst, NULL);
+		{
+			SetWindowFont(g_hComboTypesWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
+		}
+
+		g_hStaticClassesWnd = CreateWindowExA(0, WC_STATIC, "Object class", WS_VISIBLE | WS_CHILD, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 25, MARGIN_RIGHT, 15, hWnd, 0, hInst, NULL);
+		{
+			SetWindowFont(g_hStaticClassesWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
+		}
+
+		g_hComboClassesWnd = CreateWindowExA(0, WC_COMBOBOX, "", WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_SORT | CBS_DROPDOWN | CBS_HASSTRINGS, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 15 + 25, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, (HMENU)IDC_CMB_CLASS, hInst, NULL);
+		{
+			SetWindowFont(g_hComboClassesWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
+		}
 
 		{
 			TV_INSERTSTRUCT tvis;
@@ -336,6 +392,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			tvis.item.cchTextMax = lstrlen(tvis.item.pszText);
 			TreeView_InsertItem(g_hObjectTreeWnd, &tvis);
 		}
+		
 		return FALSE;
 	}
 		break;
@@ -356,6 +413,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_SIZE:
 	{
+		if(g_isPropWindowVisible)
+		{
+			if(wParam == SIZE_MINIMIZED)
+			{
+				g_isPropWindowVisible = g_pPropWindow->isVisible();
+				g_pPropWindow->hide();
+			}
+			else if(wParam == SIZE_RESTORED)
+			{
+				g_pPropWindow->show();
+			}
+		}
 		GetClientRect(hWnd, &rect);
 
 		rect.top += MARGIN_TOP;
@@ -389,6 +458,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		MoveWindow(g_hBottomRightWnd, rect.left + iLeftWidth + SPLITTER_BAR_WIDTH, rect.top + iTopHeight + SPLITTER_BAR_WIDTH, rect.right - rect.left - iLeftWidth - SPLITTER_BAR_WIDTH, rect.bottom - rect.top - SPLITTER_BAR_WIDTH - iTopHeight, FALSE);
 		MoveWindow(g_hObjectTreeWnd, rect.right, rect.top, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, FALSE);
 
+		MoveWindow(g_hStaticTypesWnd, rect.right, rect.top + OBJECT_TREE_HEIGHT, MARGIN_RIGHT, 15, FALSE);
+		MoveWindow(g_hComboTypesWnd, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, FALSE);
+		MoveWindow(g_hStaticClassesWnd, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 25, MARGIN_RIGHT, 15, FALSE);
+		MoveWindow(g_hComboClassesWnd, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 15 + 25, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, FALSE);
+
 		InvalidateRect(hWnd, &rect, TRUE);
 
 		{
@@ -399,11 +473,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				r_resize = (int*)GET_PCVAR_INT("r_resize");
 			}
 
-			*r_resize = 1;
+			if(r_resize)
+			{
+				*r_resize = 1;
+			}
 		}
 
 		SendMessage(g_hStatusWnd, WM_SIZE, wParam, lParam);
 	}
+		break;
+
+	case WM_INITMENU:
+		if(IsEditMessage())	
+		{
+			HMENU hMenu = (HMENU)wParam;
+			EnableMenuItem(hMenu, ID_EDIT_CUT, MF_ENABLED);
+			EnableMenuItem(hMenu, ID_EDIT_COPY, MF_ENABLED);
+			EnableMenuItem(hMenu, ID_EDIT_PASTE, MF_ENABLED);
+			EnableMenuItem(hMenu, ID_EDIT_DELETE, MF_ENABLED);
+			EnableMenuItem(hMenu, ID_EDIT_UNDO, MF_ENABLED);
+			EnableMenuItem(hMenu, ID_EDIT_REDO, MF_ENABLED);
+		}
+		XUpdateUndoRedo();
+
 		break;
 
 	case WM_COMMAND:
@@ -434,6 +526,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			szSelName[0] = szSelPath[0] = 0;
 			//XLoadLevel("ant");
 			XLoadLevel("bunker");
+			//XLoadLevel("sga2");
 			/*if(gui_func::dialogs::SelectDirOwn(szSelName, szSelPath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Open level", false, false))
 			{
 				XLoadLevel(szSelName);
@@ -465,7 +558,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		}
 
+		case IDC_CTRL_BACK:
+			if(HIWORD(wParam) == 1)
+			{
+				if(IsEditMessage())
+				{
+					HWND hEdit = GetFocus();
+					SendMessage(hEdit, WM_KEYDOWN, VK_CONTROL, 0);
+					SendMessage(hEdit, WM_KEYDOWN, VK_SHIFT, 0);
+					SendMessage(hEdit, WM_KEYDOWN, VK_LEFT, 0);
+					SendMessage(hEdit, WM_KEYUP, VK_LEFT, 0);
+					SendMessage(hEdit, WM_KEYUP, VK_SHIFT, 0);
+					SendMessage(hEdit, WM_KEYUP, VK_CONTROL, 0);
+					SendMessage(hEdit, WM_KEYDOWN, VK_DELETE, 0);
+					SendMessage(hEdit, WM_KEYUP, VK_DELETE, 0);
+					break;
+				}
+			}
+			break;
+
 		case ID_VIEW_AUTOSIZEVIEWS:
+
+			if(HIWORD(wParam) == 1)
+			{
+				if(IsEditMessage())
+				{
+					SendMessage(GetFocus(), EM_SETSEL, 0, -1);
+					break;
+				}
+			}
 
 			GetClientRect(hWnd, &rect);
 
@@ -509,13 +630,31 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			XInitViewportLayout(XVIEW_3DONLY);
 			break;
 
+		case IDC_ESCAPE:
+			if(IsEditMessage())
+			{
+				HWND hEdit = GetFocus();
+				SendMessage(hEdit, WM_KEYDOWN, VK_ESCAPE, 0);
+				SendMessage(hEdit, WM_KEYUP, VK_ESCAPE, 0);
+				break;
+			}
+			//! no break here!
 		case IDC_AB_ARROW:
 			CheckDlgButton(hWnd, IDC_AB_ARROW, TRUE);
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, FALSE);
+			CheckDlgButton(hWnd, IDC_AB_CREATE, FALSE);
+			g_xState.bCreateMode = false;
 			break;
 		case IDC_AB_CAMERA:
 			CheckDlgButton(hWnd, IDC_AB_ARROW, FALSE);
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, TRUE);
+			CheckDlgButton(hWnd, IDC_AB_CREATE, FALSE);
+			g_xState.bCreateMode = false;
+			break;
+		case IDC_AB_CREATE:
+			CheckDlgButton(hWnd, IDC_AB_ARROW, FALSE);
+			CheckDlgButton(hWnd, IDC_AB_CAMERA, FALSE);
+			CheckDlgButton(hWnd, IDC_AB_CREATE, TRUE);
 			break;
 
 		case ID_GRIDSIZE_SMALLER:
@@ -538,21 +677,57 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case ID_EDIT_UNDO:
-			if(g_pUndoManager->undo())
+			if(IsEditMessage())
 			{
-				XUpdateUndoRedo();
+				SendMessage(GetFocus(), EM_UNDO, 0, 0);
+				break;
 			}
+			g_pUndoManager->undo();
 			break;
 
 		case ID_EDIT_REDO:
-			if(g_pUndoManager->redo())
+			if(IsEditMessage())
 			{
-				XUpdateUndoRedo();
+				SendMessage(GetFocus(), EM_UNDO, 0, 0);
+				break;
+			}
+			g_pUndoManager->redo();
+			break;
+
+		case ID_EDIT_COPY:
+			if(IsEditMessage())
+			{
+				SendMessage(GetFocus(), WM_COPY, 0, 0);
+				break;
+			}
+			break;
+
+		case ID_EDIT_CUT:
+			if(IsEditMessage())
+			{
+				SendMessage(GetFocus(), WM_CUT, 0, 0);
+				break;
+			}
+			break;
+
+		case ID_EDIT_PASTE:
+			if(IsEditMessage())
+			{
+				SendMessage(GetFocus(), WM_PASTE, 0, 0);
+				break;
 			}
 			break;
 
 		case ID_EDIT_DELETE:
 		{
+			if(IsEditMessage())
+			{
+				//SendMessage(GetFocus(), WM_CLEAR, 0, 0);
+				SendMessage(GetFocus(), WM_KEYDOWN, VK_DELETE, 0);
+				SendMessage(GetFocus(), WM_KEYUP, VK_DELETE, 0);
+				break;
+			}
+
 			CCommandDelete *pDelCmd = new CCommandDelete();
 			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 			{
@@ -564,56 +739,113 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			XExecCommand(pDelCmd);
 			break;
 		}
-		}
-		break;
 
-	case WM_KEYDOWN:
-		switch(wParam)
-		{
-		case VK_TAB:
-			/*if(focus == hcolor_button)
+		case ID_EDIT_PROPERTIES:
+			if(g_pPropWindow)
 			{
-			SendMessage(focus, WM_KILLFOCUS, 0, 0);
-			SendMessage(hclose_button, WM_SETFOCUS, 0, 0);
-
-			focus = hclose_button;
+				g_pPropWindow->show();
 			}
-			else if(focus == hclose_button)
+			else
 			{
-			SendMessage(focus, WM_KILLFOCUS, 0, 0);
-			SendMessage(hcolor_button, WM_SETFOCUS, 0, 0);
+				g_pPropWindow = new CPropertyWindow(hInst, g_hWndMain);
+				g_pPropWindow->clearClassList();
+				// g_pPropWindow->addClass("light_point");
+				// g_pPropWindow->addClass("light_spot");
+				// g_pPropWindow->addClass("info_player_spawn");
+				// g_pPropWindow->addClass("logic_relay");
+				// g_pPropWindow->addClass("trigger");
+				// g_pPropWindow->addClass("trigger_hurt");
+				// g_pPropWindow->addClass("trigger_teleport");
+				// g_pPropWindow->addClass("prop_dynamic");
+				// g_pPropWindow->addClass("prop_button");
+				// g_pPropWindow->addClass("prop_breakable");
+				// g_pPropWindow->addClass("prop_debris");
 
+				X_PROP_FIELD field;
+				field.editorType = XPET_TEXT;
+				field.szKey = "name";
+				field.szName = "Name";
+				field.szHelp = "Entity name to refer from other objects";
+				g_pPropWindow->addPropField(&field, "test");
 
-			focus = hcolor_button;
-			}*/
-
-
+				field.editorType = XPET_FILE;
+				field.szKey = "origin";
+				field.szName = "Origin";
+				field.szHelp = "Entity origin тест";
+				g_pPropWindow->addPropField(&field, "0 0 0");
+			}
+			g_isPropWindowVisible = TRUE;
 			break;
 
-		case VK_RETURN:
+		case IDC_CMB_TYPE:
+			{
+				int iSel = ComboBox_GetCurSel(g_hComboTypesWnd);
+				int iLen = ComboBox_GetLBTextLen(g_hComboTypesWnd, iSel);
+				char *szTypeName = (char*)alloca(sizeof(char)* (iLen + 1));
+				ComboBox_GetLBText(g_hComboTypesWnd, iSel, szTypeName);
 
-			/*if(IsWindowEnabled(focus))
-			SendMessage(hWnd, WM_COMMAND, 0, (LPARAM)focus);*/
+				ComboBox_ResetContent(g_hComboClassesWnd);
 
+				const AssotiativeArray<AAString, IXEditable*>::Node *pNode;
+				if(g_mEditableSystems.KeyExists(AAString(szTypeName), &pNode))
+				{
+					IXEditable *pEditable = *pNode->Val;
+					UINT uClassCount = pEditable->getClassCount();
+					for(UINT i = 0; i < uClassCount; ++i)
+					{
+						ComboBox_AddString(g_hComboClassesWnd, pEditable->getClass(i));
+					}
+					ComboBox_Enable(g_hComboClassesWnd, uClassCount > 1);
+					ComboBox_SetCurSel(g_hComboClassesWnd, 0);
+				}
+			}
+			break;
+
+		case IDC_RETURN:
+			if(IsEditMessage())
+			{
+				SendMessage(GetFocus(), WM_KEYDOWN, VK_RETURN, 0);
+				SendMessage(GetFocus(), WM_KEYUP, VK_RETURN, 0);
+				SendMessage(GetFocus(), WM_CHAR, VK_RETURN, 0);
+				break;
+			}
+			//! No break here!
+		case IDC_CTRL_RETURN:
+			if(g_xState.bCreateMode)
+			{
+				int iSel1 = ComboBox_GetCurSel(g_hComboTypesWnd);
+				int iLen1 = ComboBox_GetLBTextLen(g_hComboTypesWnd, iSel1);
+				char *szTypeName = (char*)alloca(sizeof(char)* (iLen1 + 1));
+				ComboBox_GetLBText(g_hComboTypesWnd, iSel1, szTypeName);
+
+				int iSel2 = ComboBox_GetCurSel(g_hComboClassesWnd);
+				int iLen2 = ComboBox_GetLBTextLen(g_hComboClassesWnd, iSel2);
+				char *szClassName = (char*)alloca(sizeof(char)* (iLen2 + 1));
+				ComboBox_GetLBText(g_hComboClassesWnd, iSel2, szClassName);
+
+				if(GetKeyState(VK_CONTROL) >= 0)
+				{
+					CCommandSelect *pCmdUnselect = new CCommandSelect();
+					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+					{
+						IXEditorObject *pObj = g_pLevelObjects[i];
+						if(pObj->isSelected())
+						{
+							pCmdUnselect->addDeselected(i);
+						}
+					}
+					g_pUndoManager->execCommand(pCmdUnselect);
+				}
+
+				CCommandCreate *pCmd = new CCommandCreate(g_xState.vCreateOrigin, szTypeName, szClassName);
+				g_pUndoManager->execCommand(pCmd);
+
+				g_xState.bCreateMode = false;
+			}
 			break;
 		}
 		break;
 
-/*
-	case WM_PAINT:
-
-		hdc = BeginPaint(hWnd, &ps);
-
-		// Painting 
-		GetClientRect(hWnd, &rect);
-
-		// TODO: Add any drawing code here...
-		EndPaint(hWnd, &ps);
-
-		break;
-*/
-		// Case statement to handle the left mouse button down message
-		// received while the mouse left button is down
 	case WM_LBUTTONDOWN:
 	{
 		int                 xPos;
@@ -757,8 +989,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			if(ySizing)
 			{
-				RECT    focusrect;
-				HDC     hdc;
+				RECT focusrect;
+				HDC hdc;
 				hdc = GetDC(hWnd);
 				SetRect(&focusrect, rect.left, iTopHeight + MARGIN_TOP - (WIDTH_ADJUST * 2), rect.right, iTopHeight + MARGIN_TOP + WIDTH_ADJUST);
 				DrawFocusRect(hdc, &focusrect);
@@ -893,6 +1125,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 
 	case WM_DESTROY:
+		mem_delete(g_pPropWindow);
 		DestroyMenu(g_hMenu);
 		DeleteObject(hcSizeEW);
 		DeleteObject(hcSizeNS);
@@ -970,7 +1203,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				bool bUse = false;
 				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 				{
-					CXObject *pObj = g_pLevelObjects[i];
+					IXEditorObject *pObj = g_pLevelObjects[i];
 					float3_t vPos = pObj->getPos();
 					bool sel = false;
 					switch(xCurView)
@@ -1074,6 +1307,9 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					break;
 				case DS_RT_SCENELIGHT:
 					iActiveMenu = ID_3D_LIGHTINGSCENE;
+					break;
+				case DS_RT_DEPTH:
+					iActiveMenu = ID_3D_3DDEPTH;
 					break;
 				}
 			}
@@ -1228,7 +1464,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					bool bUse = false;
 					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 					{
-						CXObject *pObj = g_pLevelObjects[i];
+						IXEditorObject *pObj = g_pLevelObjects[i];
 						float3_t vPos = pObj->getPos();
 						bool sel = false;
 						switch(xCurView)
@@ -1315,7 +1551,25 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					g_xState.vFrameSelectStart = g_xState.vWorldMousePos;
 				}
 			}
+			else if(Button_GetCheck(g_hABCreateButton))
+			{
+				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
 
+				g_xState.bCreateMode = true;
+
+				switch(xCurView)
+				{
+				case X2D_TOP:
+					g_xState.vCreateOrigin = float3(g_xState.vWorldMousePos.x, g_xState.vCreateOrigin.y, g_xState.vWorldMousePos.y);
+					break;
+				case X2D_FRONT:
+					g_xState.vCreateOrigin = float3(g_xState.vWorldMousePos.x, g_xState.vWorldMousePos.y, g_xState.vCreateOrigin.z);
+					break;
+				case X2D_SIDE:
+					g_xState.vCreateOrigin = float3(g_xState.vCreateOrigin.x, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
+					break;
+				}
+			}
 			break;
 		}
 
@@ -1521,6 +1775,22 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			{
 				SetCursor(hcRotate);
 			}
+
+			if(Button_GetCheck(g_hABCreateButton) && g_xState.bCreateMode && GetAsyncKeyState(VK_LBUTTON) < 0)
+			{
+				switch(g_xConfig.m_x2DView[g_xState.activeWindow])
+				{
+				case X2D_TOP:
+					g_xState.vCreateOrigin = float3(g_xState.vWorldMousePos.x, g_xState.vCreateOrigin.y, g_xState.vWorldMousePos.y);
+					break;
+				case X2D_FRONT:
+					g_xState.vCreateOrigin = float3(g_xState.vWorldMousePos.x, g_xState.vWorldMousePos.y, g_xState.vCreateOrigin.z);
+					break;
+				case X2D_SIDE:
+					g_xState.vCreateOrigin = float3(g_xState.vCreateOrigin.x, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
+					break;
+				}
+			}
 			return(TRUE);
 		}
 		break;
@@ -1546,6 +1816,10 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		case ID_3D_LIGHTINGSCENE:
 			Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 			break;
+		case ID_3D_3DDEPTH:
+			Core_0SetCVarInt("r_final_image", DS_RT_DEPTH);
+			break;
+			
 
 		case ID_2D_TOP:
 		case ID_2D_FRONT:
@@ -1793,4 +2067,9 @@ void XUpdateUndoRedo()
 		mii.cch = sprintf(str, "Can't redo\tCtrl+Y");
 	}
 	SetMenuItemInfoA(g_hMenu, ID_EDIT_REDO, FALSE, &mii);
+}
+
+void XUpdatePropWindow()
+{
+
 }

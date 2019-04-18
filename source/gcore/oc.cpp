@@ -111,9 +111,9 @@ void COcclusionCulling::init(int iWidth, int iHeight)
 	m_aRTdepth[0] = SGCore_RTAdd(m_iWidth, m_iHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "depth_oc", 0.25f);
 	m_aRTdepth[1] = SGCore_RTAdd(m_iWidth, m_iHeight, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "depth_oc2", 0.25f);
 
-	m_idVS_ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
-	m_idPS_ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
-	m_idPS_FindMax9 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_depth_find_max9.ps", "pp_depth_find_max9.ps", SHADER_CHECKDOUBLE_NAME);
+	m_idVS_ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs");
+	m_idPS_ScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps");
+	m_idPS_FindMax9 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_depth_find_max9.ps");
 	*/
 }
 

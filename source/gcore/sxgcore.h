@@ -365,23 +365,16 @@ SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin);
 enum SHADER_TYPE
 {
 	//! вершинный
-	SHADER_TYPE_VERTEX,	
+	SHADER_TYPE_VERTEX,
 
 	//! пиксельный
-	SHADER_TYPE_PIXEL	
-};
+	SHADER_TYPE_PIXEL,
 
-//! типы проверок дубликатов шейдеров
-enum SHADER_CHECKDOUBLE
-{
-	//! нет проверки
-	SHADER_CHECKDOUBLE_NONE,	
+	//! геометрический
+	SHADER_TYPE_GEOMETRY,
 
-	//! проверка по пути (имени шейдера с расширением)
-	SHADER_CHECKDOUBLE_PATH,	
-
-	//! проверка по пользовательскому имени
-	SHADER_CHECKDOUBLE_NAME		
+	//! вычислительный
+	SHADER_TYPE_COMPUTE
 };
 
 //**************************************************************************
@@ -393,8 +386,7 @@ SX_LIB_API void SGCore_ShaderAllLoad();
 SX_LIB_API ID SGCore_ShaderLoad(
 	SHADER_TYPE type_shader,		//!< тип шейдера
 	const char *szPath,				//!< имя файла шейдера с расширением
-	const char *szName,				//!< имя шейдера которое присвоится при загрузке
-	SHADER_CHECKDOUBLE check_double,//!< проверять ли на уникальность
+	const char *szName = NULL,		//!< имя шейдера которое присвоится при загрузке
 	GXMACRO *pMacro = 0			//!< макросы
 	);
 
@@ -428,7 +420,7 @@ SX_LIB_API void SGCore_ShaderReloadAll();
 
 
 //! создание набора шейдеров (вершиный и пиксельный)
-SX_LIB_API ID SGCore_ShaderCreateKit(ID idVertexShader, ID idPixelShader);
+SX_LIB_API ID SGCore_ShaderCreateKit(ID idVertexShader, ID idPixelShader, ID idGeometryShader = -1, ID idComputeShader = -1);
 
 //! бинд шейдера по id
 SX_LIB_API void SGCore_ShaderBind(ID idShaderKit);
@@ -557,6 +549,14 @@ enum LOAD_TEXTURE_TYPE
 	то будет определен LOAD_TEXTURE_TYPE_LOAD
 	*/
 	LOAD_TEXTURE_TYPE_SELF,
+};
+
+enum SHADER_CONST_REGISTER
+{
+	SCR_SCENE = 3,
+	SCR_CAMERA = 2,
+	SCR_OBJECT = 1,
+	SCR_SUBSET = 0
 };
 
 //**************************************************************************
@@ -1078,52 +1078,7 @@ struct CFrustumPlane
 	}
 };
 
-//! класс описывающий фрустум
-class IFrustum : public IBaseObject
-{
-public:
-	virtual ~IFrustum(){};
-
-	SX_ALIGNED_OP_MEM
-
-	//! обновление фрустума, на вход матрицы по которым необходимо построить фрустум
-	virtual void update(
-		const float4x4 *pView,	//<! видовая матрица
-		const float4x4 *pProj	//<! проекционная матрица
-		) = 0;
-
-	//! находится ли точка во фрустуме
-	virtual bool pointInFrustum(const float3 *pPoint) const = 0;	
-
-	//! находится ли треугольник во фрутстуме
-	virtual bool polyInFrustum(const float3 *pPoint1, const float3 *pPoint2, const float3 *pPoint3) const = 0;		
-
-	//! находится ли полигон во фрустуме полностью
-	virtual bool polyInFrustumAbs(const float3 *pPoint1, const float3 *pPoint2, const float3 *pPoint3) const = 0;	
-
-
-	//! находится ли полигон во фрустуме
-	virtual bool sphereInFrustum(const float3 *pPoint, float fRadius) const = 0;	
-
-	//! находится ли сфера во фрустуме полностью
-	virtual bool sphereInFrustumAbs(const float3 *pPoint, float fRadius) const = 0;	
-
-	//! находится ли параллелепипед (описанный точками экстремума) во фрустуме
-	virtual bool boxInFrustum(float3 *pMin, float3 *pMax) const = 0;				
-
-
-	//! возвращает координаты точки фрустума, iNumPoint = [0,7]
-	virtual float3 getPoint(int iNumPoint) const = 0;
-
-	//! возвращает координаты центра фрустума
-	virtual float3 getCenter() const = 0;
-
-	//! устанавливает координаты точки фрустума, iNumPoint = [0,7]
-	virtual void setPoint(int iNumPoint, const float3 *pPoint) = 0;
-
-	//! устанавливает координаты центра фрустума
-	virtual void setCenter(const float3 *pCenter) = 0;
-};
+#include <xcommon/render/IFrustum.h>
 
 //! создать ISXFrustum
 SX_LIB_API IFrustum* SGCore_CrFrustum(); 

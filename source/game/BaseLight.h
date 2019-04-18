@@ -1,12 +1,12 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 /*!
 \file
-Базовый свет
+Р‘Р°Р·РѕРІС‹Р№ СЃРІРµС‚
 */
 
 #ifndef __BASELIGHT_H
@@ -16,7 +16,7 @@ See the license in LICENSE
 
 #define LIGHT_INITIALLY_DARK ENT_FLAG_0
 
-/*! Базовый источник света
+/*! Р‘Р°Р·РѕРІС‹Р№ РёСЃС‚РѕС‡РЅРёРє СЃРІРµС‚Р°
 \ingroup clight
 */
 class CBaseLight: public CPointEntity
@@ -47,14 +47,14 @@ public:
 		return m_fDist;
 	}
 
-	void setShadowDist(float fShadowDist)
+	/*void setShadowDist(float fShadowDist)
 	{
 		m_fShadowDist = fShadowDist;
 	}
 	float getShadowDist() const
 	{
 		return m_fShadowDist;
-	}
+	}*/
 
 	void setShadowIntensity(float fShadowIntensity)
 	{
@@ -85,11 +85,11 @@ public:
 	void updateFlags();
 
 protected:
-	ID m_idLight = -1;
+	IXLight *m_pLight = NULL;
 
 	float3_t m_vColor;
 	float m_fDist;
-	float m_fShadowDist;
+	//float m_fShadowDist;
 	int m_iShadowType;
 	bool m_isEnable;
 	float m_fShadowIntensity;

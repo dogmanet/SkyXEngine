@@ -10,6 +10,7 @@ bool CCommandDelete::exec()
 		pObj->pObject->remove();
 		g_pLevelObjects.erase(pObj->idObject);
 	}
+	XUpdatePropWindow();
 	return(m_aObjects.size());
 }
 bool CCommandDelete::undo()
@@ -19,16 +20,17 @@ bool CCommandDelete::undo()
 	{
 		pObj = &m_aObjects[i];
 
-		pObj->pObject->preCreate();
+		pObj->pObject->preSetup();
 		for(auto i = pObj->mKeyValues.begin(); i; i++)
 		{
 			pObj->pObject->setKV(i.first->c_str(), i.second->c_str());
 		}
-		pObj->pObject->postCreate();
+		pObj->pObject->postSetup();
 
 		pObj->pObject->setPos(pObj->vPos);
 		pObj->pObject->setScale(pObj->vScale);
 		pObj->pObject->setOrient(pObj->qRotate);
+		pObj->pObject->create();
 
 		for(UINT i = g_pLevelObjects.size(); i > pObj->idObject; --i)
 		{
@@ -36,6 +38,7 @@ bool CCommandDelete::undo()
 		}
 		g_pLevelObjects[pObj->idObject] = pObj->pObject;
 	}
+	XUpdatePropWindow();
 	return(true);
 }
 

@@ -23,7 +23,7 @@ struct VSO_ResPos
 //! стандартная структура постпроцесса, на вход врешинному шейдеру
 struct VSI_PP
 {
-	half4 vPosition	:POSITION;
+	half3 vPosition	:POSITION;
 	half2 vTexUV	:TEXCOORD0;
 };
 
@@ -61,9 +61,9 @@ struct VSI_Green
 //! статическая геометрия
 struct VSI_Geometry
 {
-	half3 vPosition	:POSITION0;
-	half2 vTexUV	:TEXCOORD0;
-	half3 vNormal	:NORMAL0;
+	float3 vPosition	:POSITION0;
+	float2 vTexUV	:TEXCOORD0;
+	float3 vNormal	:NORMAL0;
 };
 
 
@@ -110,6 +110,12 @@ struct VSO_SceneCommon
 	half4 vPos		:TEXCOORD2;
 };
 
+struct GSO_SceneShadows
+{
+	VSO_SceneCommon VSO;
+	uint uRTIndex   :SV_RenderTargetArrayIndex;
+};
+
 
 //! выходная структура с для кубического отражения
 struct VSO_RefCube 
@@ -139,6 +145,13 @@ struct PSO_Lbuffer
 	half4 vSpecular	:COLOR1;
 };
 
+//! структура вывода всех данных для RSM
+struct PSO_RSMbuffer 
+{
+	half4 vDepth    :COLOR0;
+	half4 vNormal   :COLOR1;
+	half4 vFlux     :COLOR2;
+};
 
 /*! \name SkyBox
 @{*/
@@ -234,7 +247,7 @@ struct VSO_AIgrid
 
 struct VSI_LightBound
 {
-	half4 vPosition	:POSITION0;
+	half3 vPosition	:POSITION0;
 };
 
 struct VSO_LightBound
@@ -249,7 +262,7 @@ struct VSO_LightBound
 
 struct VSI_GUITextured
 {
-	half4 vPosition	:POSITION0;
+	half3 vPosition	:POSITION0;
 	half2 vTexUV	:TEXCOORD0;
 };
 
@@ -314,3 +327,27 @@ struct VSI_TXHandler
 };
 
 //!@}
+
+struct VSI_GICubes
+{
+	float3 vPosition	:POSITION0;
+};
+
+struct VSO_GICubes
+{
+	float4 vPosition	:POSITION0;
+};
+
+struct GSO_GICubes
+{
+	float4 vPosition  :POSITION0;
+	float3 vNormal    :NORMAL0;
+	float3 vCenterPos :TEXCOORD0;
+};
+
+
+
+
+
+
+

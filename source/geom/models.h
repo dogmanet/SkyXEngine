@@ -13,6 +13,7 @@ See the license in LICENSE
 #include <common/array.h>
 #include <gcore/sxgcore.h>
 #include "sxgeom.h"
+#include <mtrl/IXMaterial.h>
 
 /*! \name Типы деления
 @{*/
@@ -214,7 +215,7 @@ public:
 		String m_sTex;
 
 		//! id текстуры
-		ID m_idTex;
+		IXMaterial *m_idTex = NULL;
 
 		//! количество вершин
 		int32_t m_iCountVertex;
@@ -259,7 +260,7 @@ public:
 		CPhysMesh *m_pPhysics;
 
 		//! массив идентификаторов текстур
-		Array<ID> m_aIDsTextures;
+		Array<IXMaterial*> m_aIDsTextures;
 
 		//! массив с информацией о подгруппах
 		Array<CGroupInfo*> m_aGroupInfo;
@@ -494,7 +495,7 @@ protected:
 	//**********************************************************************
 
 	//! создание пп модели
-	ID createTransparencyModel(ID idTex, const char *szTex, const vertex_static_ex *pArrVertex, int iCountVertex, const UINT *pArrIndex, int iCountIndex);
+	ID createTransparencyModel(IXMaterial *idTex, const char *szTex, const vertex_static_ex *pArrVertex, int iCountVertex, const UINT *pArrIndex, int iCountIndex);
 
 	//! массив пп моделей
 	Array<CTransparencyModel*> m_aTransparency;

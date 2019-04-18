@@ -52,10 +52,11 @@ half4 main(VSO_ResPos IN) : COLOR0
 		
 		fDepth = tex2D(g_sDepth, vSamplePoint).r;
 		
-		[branch]if(fDepth * g_vNearFar.y > PP_MOTION_BLUR_DISTNOBLUR)
+		//@FIXME: Это не компилируется, компилятор валится с ошибкой Internal error: invalid read of more specific predicate
+		// [branch]if(fDepth * g_vNearFar.y > PP_MOTION_BLUR_DISTNOBLUR)
 			vColor += vCurrentSample;
-		else 
-			vColor += vOriginColor;
+		// else 
+			// vColor += vOriginColor;
 	}
 		
 	vColor /= half(g_vCountSamples);
