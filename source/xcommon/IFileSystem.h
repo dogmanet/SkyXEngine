@@ -56,13 +56,13 @@ public:
 	//! Проверяет наличие файла или каталога по указанному пути
 	virtual bool fileExists(const char *szPath) = 0;
 	//! Получает размер файла в байтах, либо FILE_NOT_FOUND в случае, если файл не существует, либо не является файлом
-	virtual size_t fileGetSize(const char *szPath) = 0;
+	virtual size_t getFileSize(const char *szPath) = 0;
 	//! Проверяет, что путь существует, и является файлом
 	virtual bool isFile(const char *szPath) = 0;
 	//! Проверяет, что путь существует, и является каталогом
 	virtual bool isDirectory(const char *szPath) = 0;
 	//! возвращает время последнего изменения файла
-	virtual time_t fileGetModifyTime(const char *szPath) = 0;
+	virtual time_t getFileModifyTime(const char *szPath) = 0;
 
 	/*! возвращает массив со всеми данными находящимися по пути szPath,
 	szPath может быть не канонизирован и необязательно должен заканчиваться слэшем,
