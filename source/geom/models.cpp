@@ -3005,14 +3005,15 @@ void CModels::renderObject(DWORD timeDelta, ID idModel, ID idTex, const float3 *
 
 	for (int g = 0; g < m_aModels[idModel]->m_pModel->m_uiSubsetCount; g++)
 	{
-		if(ID_VALID(idTex))
+		/*if(ID_VALID(idTex))
 		{
 			SGCore_MtlSet(idTex, &mWorld);
 		}
 		else
-		{
+		{*/
 			g_pRenderable->getMaterialSystem()->bindMaterial(m_aModels[idModel]->m_aIDsTextures[g]);
-		}
+			//g_pRenderable->getMaterialSystem()->bindTexture(g_pRenderable->getMaterialSystem()->getT
+		//}
 
 		SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, m_aModels[idModel]->m_pModel->m_pVertexCount[g], iCountIndex, m_aModels[idModel]->m_pModel->m_pIndexCount[g] / 3);
 		Core_RIntSet(G_RI_INT_COUNT_POLY, Core_RIntGet(G_RI_INT_COUNT_POLY) + ((m_aModels[idModel]->m_pModel->m_pIndexCount[g] / 3)));

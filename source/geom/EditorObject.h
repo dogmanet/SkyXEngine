@@ -16,11 +16,7 @@ public:
 	~CEditorObject();
 
 	void setPos(const float3_t &pos);
-
-	SMQuaternion getOrient();
 	void setOrient(const SMQuaternion &orient);
-
-	float3_t getScale();
 	void setScale(const float3_t &pos);
 
 	void getBound(float3 *pvMin, float3 *pvMax);
@@ -36,8 +32,11 @@ public:
 
 	void setKV(const char *szKey, const char *szValue);
 	const char *getKV(const char *szKey);
-	const char *getPropertyKey(UINT uKey);
+	const X_PROP_FIELD *getPropertyMeta(UINT uKey);
 	UINT getProperyCount();
+
+	const char *getTypeName();
+	const char *getClassName();
 
 protected:
 	ID m_idModel = -1;
@@ -45,6 +44,8 @@ protected:
 	String m_sName;
 	bool m_bSegmentation = false;
 	char m_szSegmentation[2];
+
+	bool m_isCreated = false;
 
 	static Array<CEditorObject*> ms_aObjects;
 

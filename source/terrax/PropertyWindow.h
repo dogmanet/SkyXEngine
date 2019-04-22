@@ -7,24 +7,7 @@
 #include <common/assotiativearray.h>
 #include <common/string.h>
 #include <common/aastring.h>
-
-enum X_PROP_EDITOR_TYPE
-{
-	XPET_TEXT,
-	XPET_FILE,
-	XPET_COMBO,
-
-	XPET__LAST
-};
-
-struct X_PROP_FIELD
-{
-	const char *szKey;
-	const char *szName;
-	X_PROP_EDITOR_TYPE editorType;
-	const void *pEditorData;
-	const char *szHelp;
-};
+#include "terrax.h"
 
 class CPropertyWindow
 {
@@ -61,10 +44,15 @@ public:
 	{
 	public:
 		virtual void onClassChanged(const char *szNewClassName) = 0;
+		virtual void onCancel() = 0;
+		virtual void onApply() = 0;
 		virtual bool onPropertyChanged(const char *szKey, const char *szValue) = 0;
 	};
 
-	void setCallback(ICallback *pCallback);
+	void setCallback(ICallback *pCallback)
+	{
+		m_pCallback = pCallback;
+	}
 
 protected:
 

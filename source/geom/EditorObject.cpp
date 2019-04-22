@@ -17,6 +17,12 @@ CEditorObject::CEditorObject(CEditable *pEditable, ID idModel):
 	m_sName = SGeom_ModelGetName(m_idModel);
 	m_sModelName = SGeom_ModelGetPath4Model(m_idModel);
 	m_bSegmentation = SGeom_ModelGetSegmentation(m_idModel);
+	m_vScale = *SGeom_ModelGetScale(m_idModel);
+
+	const float3 *rot = SGeom_ModelGetRotation(m_idModel);
+	m_qRot = SMQuaternion(-rot->x, 'x') * SMQuaternion(-rot->y, 'y') * SMQuaternion(-rot->z, 'z');
+
+	m_isCreated = true;
 
 	ms_aObjects.push_back(this);
 }
@@ -48,46 +54,34 @@ void CEditorObject::setPos(const float3_t &pos)
 	BaseClass::setPos(pos);
 }
 
-float3_t CEditorObject::getScale()
-{
-	if(!ID_VALID(m_idModel))
-	{
-		return(1.0f);
-	}
-	return(*SGeom_ModelGetScale(m_idModel));
-}
 void CEditorObject::setScale(const float3_t &pos)
 {
 	if(ID_VALID(m_idModel))
 	{
 		SGeom_ModelSetScale(m_idModel, &float3(pos));
 	}
+	BaseClass::setScale(pos);
 }
 
-SMQuaternion CEditorObject::getOrient()
-{
-	if(!ID_VALID(m_idModel))
-	{
-		return(SMQuaternion());
-	}
-	const float3 *rot = SGeom_ModelGetRotation(m_idModel);
-
-	return(SMQuaternion(-rot->x, 'x') * SMQuaternion(-rot->y, 'y') * SMQuaternion(-rot->z, 'z'));
-}
 void CEditorObject::setOrient(const SMQuaternion &orient)
 {
-	float3 vRotation = SMMatrixToEuler(orient.GetMatrix());
-	vRotation.x *= -1.0f;
-	vRotation.z *= -1.0f;
-	SGeom_ModelSetRotation(m_idModel, &vRotation);
+	if(ID_VALID(m_idModel))
+	{
+		float3 vRotation = SMMatrixToEuler(orient.GetMatrix());
+		vRotation.x *= -1.0f;
+		vRotation.z *= -1.0f;
+		SGeom_ModelSetRotation(m_idModel, &vRotation);
+	}
+
+	BaseClass::setOrient(orient);
 }
 
 void CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 {
 	if(!ID_VALID(m_idModel))
 	{
-		*pvMin = m_vPos - float3(0.1, 0.1f, 0.1f);
-		*pvMax = m_vPos + float3(0.1, 0.1f, 0.1f);
+		*pvMin = m_vPos - float3(0.1f, 0.1f, 0.1f);
+		*pvMax = m_vPos + float3(0.1f, 0.1f, 0.1f);
 		return;
 	}
 	SGeom_ModelGetMinMax(m_idModel, pvMin, pvMax);
@@ -135,6 +129,7 @@ void CEditorObject::remove()
 	{
 		return;
 	}
+	m_isCreated = false;
 	SGeom_ModelDelete(m_idModel);
 
 	for(UINT i = 0, l = ms_aObjects.size(); i < l; ++i)
@@ -158,9 +153,13 @@ void CEditorObject::postSetup()
 void CEditorObject::create()
 {
 	assert(!ID_VALID(m_idModel));
+	m_isCreated = true;
 	if(m_sModelName.length())
 	{
 		m_idModel = SGeom_ModelAdd(m_sModelName.c_str(), m_sName.c_str(), NULL, NULL, m_bSegmentation);
+		setPos(getPos());
+		setOrient(getOrient());
+		setScale(getScale());
 	}
 }
 
@@ -169,9 +168,20 @@ void CEditorObject::setKV(const char *szKey, const char *szValue)
 	if(!fstrcmp(szKey, "model"))
 	{
 		m_sModelName = szValue;
-		if(ID_VALID(m_idModel))
+		if(m_isCreated)
 		{
-			// recreate
+			if(ID_VALID(m_idModel))
+			{
+				SGeom_ModelDelete(m_idModel);
+			}
+			if(m_sModelName.length())
+			{
+				m_idModel = SGeom_ModelAdd(m_sModelName.c_str(), m_sName.c_str(), NULL, NULL, m_bSegmentation);
+			}
+			else
+			{
+				m_idModel = -1;
+			}
 		}
 	}
 	else if(!fstrcmp(szKey, "name"))
@@ -187,7 +197,8 @@ void CEditorObject::setKV(const char *szKey, const char *szValue)
 		m_bSegmentation = !fstrcmp(szKey, "1") || !fstrcmp(szKey, "true") || !fstrcmp(szKey, "yes");
 		if(ID_VALID(m_idModel))
 		{
-			// recreate
+			SGeom_ModelDelete(m_idModel);
+			m_idModel = SGeom_ModelAdd(m_sModelName.c_str(), m_sName.c_str(), NULL, NULL, m_bSegmentation);
 		}
 	}
 }
@@ -209,20 +220,30 @@ const char *CEditorObject::getKV(const char *szKey)
 	}
 	return(NULL);
 }
-const char *CEditorObject::getPropertyKey(UINT uKey)
+const X_PROP_FIELD *CEditorObject::getPropertyMeta(UINT uKey)
 {
-	static const char *s_szKeys[] = {
-		"model",
-		"name",
-		"segmentate"
+	static const X_PROP_FIELD s_szKeys[] = {
+		{"model", "Model file", XPET_TEXT, NULL, ""},
+		{"name", "Name", XPET_TEXT, NULL, ""},
+		{"segmentate", "Segmentate", XPET_TEXT /* XPET_YESNO */, NULL, ""}
 	};
+
 	if(uKey > 2)
 	{
 		return(NULL);
 	}
-	return(s_szKeys[uKey]);
+	return(&s_szKeys[uKey]);
 }
 UINT CEditorObject::getProperyCount()
 {
 	return(3);
+}
+
+const char *CEditorObject::getTypeName()
+{
+	return(m_pEditable->getName());
+}
+const char *CEditorObject::getClassName()
+{
+	return("model");
 }

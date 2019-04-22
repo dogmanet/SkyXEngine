@@ -51,7 +51,7 @@ void CCommandDelete::addObject(ID idObject)
 	UINT uKeyCount = obj.pObject->getProperyCount();
 	for(UINT i = 0; i < uKeyCount; ++i)
 	{
-		const char *szKey = obj.pObject->getPropertyKey(i);
+		const char *szKey = obj.pObject->getPropertyMeta(i)->szKey;
 		obj.mKeyValues[szKey] = obj.pObject->getKV(szKey);
 	}
 

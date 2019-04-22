@@ -30,6 +30,7 @@
 #include "CommandRotate.h"
 #include "CommandDelete.h"
 #include "CommandCreate.h"
+#include "CommandProperties.h"
 
 #include "PropertyWindow.h"
 
@@ -83,6 +84,54 @@ BOOL XCheckMenuItem(HMENU hMenu, UINT uIDCheckItem, bool bCheck);
 void XUpdateStatusGrid();
 void XUpdateStatusMPos();
 void XUpdateUndoRedo();
+
+class CPropertyCallback: public CPropertyWindow::ICallback
+{
+public:
+	void onClassChanged(const char *szNewClassName)
+	{
+
+	}
+	bool onPropertyChanged(const char *szKey, const char *szValue)
+	{
+		if(!m_pPropsCmd)
+		{
+			m_pPropsCmd = new CCommandProperties(); 
+			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+			{
+				IXEditorObject *pObj = g_pLevelObjects[i];
+				if(pObj->isSelected())
+				{
+					m_pPropsCmd->addObject(i);
+				}
+			}
+		}
+
+		m_pPropsCmd->setKV(szKey, szValue);
+		return(true);
+	}
+	void onCancel()
+	{
+		if(m_pPropsCmd)
+		{
+			m_pPropsCmd->undo();
+			mem_delete(m_pPropsCmd);
+		}
+	}
+	void onApply()
+	{
+		if(m_pPropsCmd)
+		{
+			CCommandProperties *pPropsCmd = m_pPropsCmd;
+			m_pPropsCmd = NULL;
+			g_pUndoManager->execCommand(pPropsCmd);
+		}
+	}
+protected:
+	CCommandProperties *m_pPropsCmd = NULL;
+};
+
+CPropertyCallback g_propertyCallback;
 
 ATOM XRegisterClass(HINSTANCE hInstance)
 {
@@ -749,31 +798,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				g_pPropWindow = new CPropertyWindow(hInst, g_hWndMain);
 				g_pPropWindow->clearClassList();
-				// g_pPropWindow->addClass("light_point");
-				// g_pPropWindow->addClass("light_spot");
-				// g_pPropWindow->addClass("info_player_spawn");
-				// g_pPropWindow->addClass("logic_relay");
-				// g_pPropWindow->addClass("trigger");
-				// g_pPropWindow->addClass("trigger_hurt");
-				// g_pPropWindow->addClass("trigger_teleport");
-				// g_pPropWindow->addClass("prop_dynamic");
-				// g_pPropWindow->addClass("prop_button");
-				// g_pPropWindow->addClass("prop_breakable");
-				// g_pPropWindow->addClass("prop_debris");
-
-				X_PROP_FIELD field;
-				field.editorType = XPET_TEXT;
-				field.szKey = "name";
-				field.szName = "Name";
-				field.szHelp = "Entity name to refer from other objects";
-				g_pPropWindow->addPropField(&field, "test");
-
-				field.editorType = XPET_FILE;
-				field.szKey = "origin";
-				field.szName = "Origin";
-				field.szHelp = "Entity origin тест";
-				g_pPropWindow->addPropField(&field, "0 0 0");
+				g_pPropWindow->setCallback(&g_propertyCallback);
 			}
+			XUpdatePropWindow();
 			g_isPropWindowVisible = TRUE;
 			break;
 
@@ -2071,5 +2098,124 @@ void XUpdateUndoRedo()
 
 void XUpdatePropWindow()
 {
+	if(!g_pPropWindow)
+	{
+		return;
+	}
+	g_propertyCallback.onApply();
+
+	const char *szFirstType = NULL;
+	const char *szFirstClass = NULL;
+	bool bDifferentClasses = false;
+	bool bDifferentTypes = false;
+	struct prop_item_s
+	{
+		X_PROP_FIELD xPropField;
+		bool isEnabled;
+		const char *szValue;
+	};
+	AssotiativeArray<AAString, prop_item_s> mProps;
+	g_pPropWindow->clearClassList();
+	g_pPropWindow->clearProps();
+	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+	{
+		IXEditorObject *pObj = g_pLevelObjects[i];
+		if(pObj->isSelected())
+		{
+			if(!szFirstType)
+			{
+				szFirstType = pObj->getTypeName();
+				szFirstClass = pObj->getClassName();
+			}
+			else
+			{
+				if(!bDifferentTypes)
+				{
+					bDifferentTypes = fstrcmp(szFirstType, pObj->getTypeName()) != 0;
+				}
+				if(!bDifferentTypes && !bDifferentClasses)
+				{
+					bDifferentClasses = fstrcmp(szFirstClass, pObj->getClassName()) != 0;
+				}
+			}
+
+			for(UINT i = 0, l = pObj->getProperyCount(); i < l; ++i)
+			{
+				const X_PROP_FIELD *pField = pObj->getPropertyMeta(i);
+
+				const AssotiativeArray<AAString, prop_item_s>::Node *pNode;
+				if(mProps.KeyExists(AAString(pField->szKey), &pNode))
+				{
+					if(pNode->Val->isEnabled)
+					{
+						if(pField->editorType != pNode->Val->xPropField.editorType
+							|| fstrcmp(pField->szName, pNode->Val->xPropField.szName)
+							|| pField->pEditorData != pNode->Val->xPropField.pEditorData
+							)
+						{
+							pNode->Val->isEnabled = false;
+						}
+						else if(fstrcmp(pField->szHelp, pNode->Val->xPropField.szHelp))
+						{
+							pNode->Val->xPropField.szHelp = "";
+						}
+
+						if(pNode->Val->isEnabled)
+						{
+							if(fstrcmp(pObj->getKV(pField->szKey), pNode->Val->szValue))
+							{
+								pNode->Val->szValue = "";
+							}
+						}
+					}
+				}
+				else
+				{
+					mProps[AAString(pField->szKey)] = {*pField, true, pObj->getKV(pField->szKey)};
+				}
+			}
+		}
+	}
+
+	// Nothing selected
+	if(!szFirstType)
+	{
+		return;
+	}
+
+	if(!bDifferentTypes)
+	{
+		// add classes for type
+		const AssotiativeArray<AAString, IXEditable*>::Node *pNode;
+		if(g_mEditableSystems.KeyExists(AAString(szFirstType), &pNode))
+		{
+			for(UINT i = 0, l = (*pNode->Val)->getClassCount(); i < l; ++i)
+			{
+				g_pPropWindow->addClass((*pNode->Val)->getClass(i));
+			}
+		}
+
+		if(!bDifferentClasses)
+		{
+			//@TODO: uncomment this
+			//g_pPropWindow->allowClassChange(true);
+			g_pPropWindow->setClassName(szFirstClass);
+		}
+		else
+		{
+			g_pPropWindow->allowClassChange(false);
+		}
+	}
+	else
+	{
+		g_pPropWindow->addClass("");
+		g_pPropWindow->allowClassChange(false);
+		g_pPropWindow->setClassName("");
+	}
+
+	for(AssotiativeArray<AAString, prop_item_s>::Iterator i = mProps.begin(); i; i++)
+	{
+		g_pPropWindow->addPropField(&i.second->xPropField, i.second->szValue);
+	}
 
 }
