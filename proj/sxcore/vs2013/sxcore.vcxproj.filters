@@ -52,6 +52,9 @@
     <ClCompile Include="..\..\..\source\core\FileInMemory.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="FileSystem.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -147,6 +150,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\IFile.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSystem.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

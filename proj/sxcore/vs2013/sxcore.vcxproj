@@ -51,6 +51,7 @@
     <ClCompile Include="..\..\..\source\core\Task.cpp" />
     <ClCompile Include="..\..\..\source\core\TaskManager.cpp" />
     <ClCompile Include="..\..\..\source\core\time.cpp" />
+    <ClCompile Include="FileSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\common\ConcurrentQueue.h" />
@@ -81,6 +82,7 @@
     <ClInclude Include="..\..\..\source\xcommon\IXRenderable.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXTextureLoader.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXUpdatable.h" />
+    <ClInclude Include="FileSystem.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C1C1F046-C839-4602-AF70-923CDD237C1B}</ProjectGuid>
