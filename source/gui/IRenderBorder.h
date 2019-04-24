@@ -10,7 +10,7 @@ namespace gui
 		namespace render
 		{
 
-#define IRB_PARAM float t, float l, float r, float3_t *** pppVertices, SHORT *** pppIndexes, SHORT * iVertexCount, SHORT * iIndexCount, float3_t * pBrd, int * c, SHORT *** ppFillIDx, SHORT ** pFillIdxCount
+#define IRB_PARAM float t, float l, float r, float3_t *** pppVertices, USHORT *** pppIndexes, USHORT * iVertexCount, USHORT * iIndexCount, float3_t * pBrd, int * c, USHORT *** ppFillIDx, USHORT ** pFillIdxCount
 			class IRenderBorder
 			{
 			public:
@@ -68,11 +68,14 @@ namespace gui
 				IGXIndexBuffer * m_pIndexBuffer;
 				IGXVertexBuffer * m_pVertexBuffer;
 				IGXRenderBuffer *m_pRenderBuffer = NULL;
+				IGXConstantBuffer *m_pColorsConstant[4];
+				IGXConstantBuffer *m_pColorBlack = NULL;
+				IGXConstantBuffer *m_pColorWhite = NULL;
 
-				SHORT m_iVertexCount[4];
-				SHORT m_iVertexStart[4];
-				SHORT m_iIndexStart[4];
-				SHORT m_iIndexCount[4];
+				USHORT m_iVertexCount[4];
+				USHORT m_iVertexStart[4];
+				USHORT m_iIndexStart[4];
+				USHORT m_iIndexCount[4];
 
 				int m_iSideCount[4];
 
@@ -89,22 +92,22 @@ namespace gui
 				struct buff_t
 				{
 					float3_t ** vb;
-					SHORT ** ib;
+					USHORT ** ib;
 					float3_t br[4];
-					SHORT iIC[2];
-					SHORT iVC[2];
+					USHORT iIC[2];
+					USHORT iVC[2];
 				};
 
 				static void buildRadius(IRB_PARAM);
 				static void buildCut(IRB_PARAM);
 
-				void concatBuffers(buff_t * pOut, const buff_t * b1, SHORT idx1, const buff_t * b2, SHORT idx2, float3_t * br);
+				void concatBuffers(buff_t * pOut, const buff_t * b1, USHORT idx1, const buff_t * b2, USHORT idx2, float3_t * br);
 
-				void createAPIbuffers(buff_t * t, buff_t * r, buff_t * b, buff_t * l, SHORT * pIndices, SHORT IndexCount);
+				void createAPIbuffers(buff_t * t, buff_t * r, buff_t * b, buff_t * l, USHORT * pIndices, USHORT IndexCount);
 
 				void releaseBuffer(buff_t * pIn);
 
-				void createFill(buff_t * t, buff_t * r, buff_t * b, buff_t * l, SHORT ** ppIndices, SHORT * pIndexCount, SHORT ** ppFillIDx[4], SHORT * pFillIdxCount[4]);
+				void createFill(buff_t * t, buff_t * r, buff_t * b, buff_t * l, USHORT ** ppIndices, USHORT * pIndexCount, USHORT ** ppFillIDx[4], USHORT * pFillIdxCount[4]);
 			};
 		};
 	};

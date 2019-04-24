@@ -1327,13 +1327,9 @@ namespace gui
 
 					shader = GetGUI()->getShaders()->m_baseTexturedTextransformColored;
 
-					SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, shader.m_idVS, "g_vTxTransform", (float*)&vTexTransform, 1);
-
-				//	DX_CALL(GetGUI()->getDevice()->SetTransform(D3DTS_TEXTURE0, (D3DMATRIX*)&m));
-				//	DX_CALL(GetGUI()->getDevice()->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT2));
-				//	DX_CALL(GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_ADDRESSU, m_bBackgroundRepeatX ? D3DTADDRESS_WRAP : D3DTADDRESS_BORDER));
-				//	DX_CALL(GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_ADDRESSV, m_bBackgroundRepeatY ? D3DTADDRESS_WRAP : D3DTADDRESS_BORDER));
-				//	DX_CALL(GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_BORDERCOLOR, m_iBackgroundColor));
+					static IGXConstantBuffer *s_pTransformConstant = GetGUI()->getDevice()->createConstantBuffer(sizeof(float2));
+					s_pTransformConstant->update(&vTexTransform);
+					GetGUI()->getDevice()->setVertexShaderConstant(s_pTransformConstant, 1);
 				}
 				else
 				{
@@ -1343,9 +1339,10 @@ namespace gui
 				SGCore_ShaderBind(shader.m_idShaderKit);
 
 				GetGUI()->getDevice()->setStencilRef(lvl);
-			//	DX_CALL(GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1));
-				SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&m_pBackgroundColor, 1);
-			//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&m_pBackgroundColor, 1));
+			
+				static IGXConstantBuffer *s_pColorConstant = GetGUI()->getDevice()->createConstantBuffer(sizeof(float2));
+				s_pColorConstant->update(&m_pBackgroundColor);
+				GetGUI()->getDevice()->setPixelShaderConstant(s_pColorConstant);
 
 			//	SGCore_SetSamplerFilter(0, D3DTEXF_ANISOTROPIC);
 				//DX_CALL(GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC));
@@ -1365,7 +1362,8 @@ namespace gui
 				if(m_bHasBackgroundImage && m_iTCBackground > 0)
 				{
 				//	CTextureManager::unbindShader();
-					SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1);
+					s_pColorConstant->update(&float4_t(1.0f, 1.0f, 1.0f, 1.0f));
+					//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1);
 					CTextureManager::bindTexture(m_pBackgroundImage);
 				//	DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, m_iTCBackground, &m_pVBackground, sizeof(pointtex)));
 					GetGUI()->getDevice()->drawPrimitive(0, m_iTCBackground);
@@ -2418,7 +2416,11 @@ namespace gui
 				float4_t vColor = m_pStyle->color->getColor();
 				float4_t vShadowColor = m_pStyle->text_shadow_color->isSet() ? m_pStyle->text_shadow_color->getColor() : vColor;
 
-				SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&vColor, 1);
+				static IGXConstantBuffer *s_pColorConstant = GetGUI()->getDevice()->createConstantBuffer(sizeof(float4));
+				s_pColorConstant->update(&vColor);
+				GetGUI()->getDevice()->setPixelShaderConstant(s_pColorConstant);
+
+				//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&vColor, 1);
 			//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&vColor, 1));
 				for(UINT i = 0; i < m_pRenderElems.size(); i++)
 				{
@@ -2430,7 +2432,8 @@ namespace gui
 					{
 						CTranslationManager::pushMatrix(SMMatrixTranslation(el->m_pNextREl->m_iLeftOffset, el->m_pNextREl->m_iTopOffset, 0.0f));
 						CTextureManager::bindTexture(pShadowFont->getTexture(0));
-						SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&vShadowColor, 1);
+						s_pColorConstant->update(&vShadowColor);
+						//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&vShadowColor, 1);
 					//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&vShadowColor, 1));
 
 						GetGUI()->getDevice()->setRenderBuffer(el->m_pNextREl->m_pRenderBuffer);
@@ -2438,7 +2441,8 @@ namespace gui
 					//	DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, el->m_pNextREl->m_iVertexCount, 0, el->m_pNextREl->m_iIndexBaseCount / 3));
 						GetGUI()->getDevice()->drawIndexed(el->m_pNextREl->m_iVertexCount, el->m_pNextREl->m_iIndexBaseCount / 3, 0, 0);
 
-						SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&vColor, 1);
+						s_pColorConstant->update(&vColor);
+						//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&vColor, 1);
 					//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&vColor, 1));
 						CTranslationManager::popMatrix();
 					}

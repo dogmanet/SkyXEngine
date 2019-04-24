@@ -998,11 +998,7 @@ void GameData::render()
 {
 	//g_pTracer->render();
 	//g_pTracer2->render();
-	const bool * pbHudDraw = GET_PCVAR_BOOL("hud_draw");
-	if(*pbHudDraw)
-	{
-//		m_pGUI->render();
-	}
+	
 	//m_pStatsUI->render(0.1f);
 	IGXContext *pDev = SGCore_GetDXDevice();
 	++g_uFrameCount;
@@ -1109,6 +1105,15 @@ void GameData::renderHUD()
 	if(*pbHudCrosshair)
 	{
 		m_pCrosshair->render();
+	}
+
+	if(m_pGUI)
+	{
+		const bool * pbHudDraw = GET_PCVAR_BOOL("hud_draw");
+		if(*pbHudDraw)
+		{
+			m_pGUI->render();
+		}
 	}
 }
 void GameData::sync()

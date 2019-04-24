@@ -29,15 +29,7 @@ namespace gui
 
 	CGUI::CGUI(IGXContext * pDev, const char * szResPath, HWND hWnd):
 		m_pDevice(pDev),
-		m_szResourceDir(NULL),
-		m_iScreenWidth(0),
-		m_iScreenHeight(0),
-		m_hWnd(hWnd),
-		m_pOldDepthStencilSurface(NULL),
-		m_pDepthStencilSurface(NULL),
-		m_pActiveDesktop(NULL),
-		m_bShowCursor(TRUE),
-		m_bDeviceLost(false)
+		m_hWnd(hWnd)
 	{
 		g_pGUI = this;
 		updateScreenSize();
@@ -127,6 +119,8 @@ namespace gui
 		GXSAMPLER_DESC samplerDesc;
 		samplerDesc.filter = GXFILTER_ANISOTROPIC;
 		m_pDefaultSamplerState = m_pDevice->createSamplerState(&samplerDesc);
+
+		m_pVSTransformConstant = m_pDevice->createConstantBuffer(sizeof(SMMATRIX));
 	}
 
 	IGXRenderBuffer *CGUI::getQuadRenderBufferXYZ(float3_t *pVertices)

@@ -913,7 +913,7 @@ namespace gui
 			}
 			else
 			{
-				appendHTML(text, build);
+				appendHTML(text, !!build);
 			}
 		}
 

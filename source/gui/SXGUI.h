@@ -149,10 +149,8 @@ namespace gui
 
 		void updateTransformShader()
 		{
-			SMMATRIX mat = SMMatrixTranspose(m_mTransformWorld * m_mTransformViewProj);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_shaders.m_baseTexturedColored.m_idVS, "g_mWVP", (float*)&mat, 4);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_shaders.m_baseTexturedTextransformColored.m_idVS, "g_mWVP", (float*)&mat, 4);
-			SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_shaders.m_baseColored.m_idVS, "g_mWVP", (float*)&mat, 4);
+			m_pVSTransformConstant->update(&SMMatrixTranspose(m_mTransformWorld * m_mTransformViewProj));
+			m_pDevice->setVertexShaderConstant(m_pVSTransformConstant, 0);
 		}
 
 		IGXRenderBuffer *getQuadRenderBufferXYZ(float3_t *pVertices);
@@ -165,28 +163,28 @@ namespace gui
 		SMMATRIX m_mTransformViewProj;
 
 		IGXContext * m_pDevice;
-		WCHAR * m_szResourceDir;
+		WCHAR * m_szResourceDir = NULL;
 
-		UINT m_iScreenWidth;
-		UINT m_iScreenHeight;
+		UINT m_iScreenWidth = 0;
+		UINT m_iScreenHeight = 0;
 
 		HWND m_hWnd;
 
 
-		IGXDepthStencilSurface * m_pOldDepthStencilSurface;
-		IGXSurface * m_pDepthStencilSurface;
+		IGXDepthStencilSurface * m_pOldDepthStencilSurface = NULL;
+		IGXSurface * m_pDepthStencilSurface = NULL;
 
-		IDesktop * m_pActiveDesktop;
+		IDesktop * m_pActiveDesktop = NULL;
 		Array<IDesktop*> m_mDesktopStack;
 
-		bool m_bShowCursor;
+		bool m_bShowCursor = true;
 		AssotiativeArray<StringW, IDesktop*> m_mDesktops;
 
 		AssotiativeArray<StringW, /* Array< */GUI_CALLBACK/* > */> m_mCallbacks;
 		Array<GUI_CALLBACK_WC> m_mCallbacksDefaults;
 		Array<GUI_CALLBACK_WC> m_mCallbacksDefaultsWC;
 
-		bool m_bDeviceLost;
+		bool m_bDeviceLost = false;
 
 		shaders_s m_shaders;
 		dsstate_s m_depthStencilStates;
@@ -203,6 +201,7 @@ namespace gui
 		IGXRenderBuffer *m_pQuadRenderXYZ;
 		IGXRenderBuffer *m_pQuadRenderXYZTex16;
 
+		IGXConstantBuffer *m_pVSTransformConstant = NULL;
 	};
 
 	CGUI * GetGUI();

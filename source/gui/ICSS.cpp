@@ -361,7 +361,7 @@ namespace gui
 
 		void ICSSstyleSet::loadFromString(const WCHAR * wstr)
 		{
-			UINT len = wcslen(wstr);
+			UINT len = (UINT)wcslen(wstr);
 
 			bool is_wait_begin = true;
 			bool is_read_pseudoclass = false;
@@ -1649,7 +1649,7 @@ namespace gui
 			bool readKey = false;
 			bool readValBgn = false;
 			bool readVal = false;
-			UINT len = wcslen(str);
+			UINT len = (UINT)wcslen(str);
 			WCHAR c;
 			*pNumSyms = 0;
 			for(UINT i = 0; i < len; i++)

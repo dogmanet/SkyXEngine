@@ -98,7 +98,7 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 			{
 				for(UINT z = 0; z < uSize; ++z)
 				{
-					pData[x + y * uSize + z * uSize * uSize] = (float3)(float3(x, y, z) - float3(fHalf));
+					pData[x + y * uSize + z * uSize * uSize] = (float3)(float3((float)x, (float)y, (float)z) - float3(fHalf));
 				}
 			}
 		}		
@@ -211,17 +211,29 @@ void CRenderPipeline::renderFrame()
 
 	renderGI();
 
-	switch(*r_final_image)
+	if(m_pLightSystem)
 	{
-	case DS_RT_AMBIENTDIFF:
-		showTexture(m_pLightAmbientDiffuse);
-		goto end;
-	case DS_RT_SPECULAR:
-		showTexture(m_pLightSpecular);
-		goto end;
+		switch(*r_final_image)
+		{
+		case DS_RT_AMBIENTDIFF:
+			showTexture(m_pLightAmbientDiffuse);
+			goto end;
+		case DS_RT_SPECULAR:
+			showTexture(m_pLightSpecular);
+			goto end;
+		}
+
+		showTexture(m_pLightTotal);
+	}
+	else
+	{
+		showTexture(m_pGBufferColor);
 	}
 
-	showTexture(m_pLightTotal);
+
+	renderPostprocessMain();
+	renderTransparent();
+	renderPostprocessFinal();
 
 #if 0
 	Core_PStartSection(PERF_SECTION_SHADOW_UPDATE);
@@ -251,8 +263,10 @@ void CRenderPipeline::renderFrame()
 #endif
 
 end:
-	showGICubes();
+//	showGICubes();
 	showFrameStats();
+
+	renderEditor2D();
 }
 void CRenderPipeline::endFrame()
 {
@@ -357,7 +371,6 @@ void CRenderPipeline::renderGI()
 {
 	if(!m_pLightSystem)
 	{
-		showTexture(m_pGBufferColor);
 		return;
 	}
 
@@ -368,7 +381,7 @@ void CRenderPipeline::renderGI()
 	{
 		++uCounts[m_pLightSystem->getLight(i)->getType()];
 	}
-	m_pShadowCache->setLightsCount(uCounts[LIGHT_TYPE_POINT], uCounts[LIGHT_TYPE_SPOT], uCounts[LIGHT_TYPE_SUN]);
+	m_pShadowCache->setLightsCount(uCounts[LIGHT_TYPE_POINT], uCounts[LIGHT_TYPE_SPOT], uCounts[LIGHT_TYPE_SUN] != 0);
 
 	m_pShadowCache->nextFrame();
 
@@ -387,7 +400,7 @@ void CRenderPipeline::renderGI()
 	m_lightingShaderData.vs.mViewInv = SMMatrixTranspose(SMMatrixInverse(NULL, gdata::mCamView));
 	m_lightingShaderData.vs.mVP = SMMatrixTranspose(gdata::mCamView * gdata::mCamProj);
 	m_lightingShaderData.vs.vNearFar = gdata::vNearFar;
-	m_lightingShaderData.vs.vParamProj = float3_t(m_uOutWidth, m_uOutHeight, gdata::fProjFov);
+	m_lightingShaderData.vs.vParamProj = float3_t((float)m_uOutWidth, (float)m_uOutHeight, gdata::fProjFov);
 	m_pLightingShaderDataVS->update(&m_lightingShaderData.vs);
 
 	m_lightingShaderData.ps.vViewPos = gdata::vConstCurrCamPos;
@@ -723,6 +736,10 @@ void CRenderPipeline::renderTransparent()
 }
 void CRenderPipeline::renderPostprocessFinal()
 {
+	Core_PStartSection(PERF_SECTION_RENDER_INFO);
+	//@FIXME: пока так
+	SGame_RenderHUD();
+	Core_PEndSection(PERF_SECTION_RENDER_INFO);
 }
 void CRenderPipeline::renderEditor2D()
 {

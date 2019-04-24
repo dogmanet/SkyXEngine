@@ -7,19 +7,18 @@
 namespace gui
 {
 	CDesktop::CDesktop(const StringW & sName):
-		m_pFocusedNode(NULL),
-		m_pRenderSurface(NULL),
-		m_pDepthStencilSurface(NULL),
-		m_txFinal(NULL),
-		m_sName(sName),
-		m_fParallaxFactor(0.0f)
+		m_sName(sName)
 	{
 		m_pDoc = new dom::CDOMdocument();
 		m_pDoc->setDesktop(this);
+
+		m_pColorWhite = GetGUI()->getDevice()->createConstantBuffer(sizeof(float4));
+		m_pColorWhite->update(&float4(1.0f, 1.0f, 1.0f, 1.0f));
 	}
 
 	CDesktop::~CDesktop()
 	{
+		mem_release(m_pColorWhite);
 		mem_delete(m_pDoc);
 		releaseRenderTarget();
 	}
@@ -213,9 +212,8 @@ namespace gui
 		//	CTextureManager::bindShader(def_sh);
 
 			GetGUI()->getDevice()->setRenderBuffer(m_pRenderBuffer);
-			GetGUI()->getDevice()->setIndexBuffer(GetGUI()->getQuadIndexBuffer());
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1);
-		//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1));
+			GetGUI()->getDevice()->setIndexBuffer(GetGUI()->getQuadIndexBuffer()); 
+			GetGUI()->getDevice()->setPixelShaderConstant(m_pColorWhite);
 
 			GetGUI()->updateTransformShader();
 
