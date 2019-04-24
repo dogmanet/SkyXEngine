@@ -52,7 +52,7 @@
     <ClCompile Include="..\..\..\source\core\FileInMemory.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="FileSystem.cpp">
+    <ClCompile Include="..\..\..\source\core\FileSystem.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -152,7 +152,7 @@
     <ClInclude Include="..\..\..\source\core\IFile.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="FileSystem.h">
+    <ClInclude Include="..\..\..\source\core\FileSystem.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

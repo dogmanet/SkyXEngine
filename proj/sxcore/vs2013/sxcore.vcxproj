@@ -39,6 +39,7 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\file.cpp" />
     <ClCompile Include="..\..\..\source\core\FileInMemory.cpp" />
+    <ClCompile Include="..\..\..\source\core\FileSystem.cpp" />
     <ClCompile Include="..\..\..\source\core\PerfMon.cpp" />
     <ClCompile Include="..\..\..\source\core\PluginManager.cpp" />
     <ClCompile Include="..\..\..\source\core\sxcore.cpp">
@@ -51,7 +52,6 @@
     <ClCompile Include="..\..\..\source\core\Task.cpp" />
     <ClCompile Include="..\..\..\source\core\TaskManager.cpp" />
     <ClCompile Include="..\..\..\source\core\time.cpp" />
-    <ClCompile Include="FileSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\common\ConcurrentQueue.h" />
@@ -65,6 +65,7 @@
     <ClInclude Include="..\..\..\source\core\Core.h" />
     <ClInclude Include="..\..\..\source\core\cvars.h" />
     <ClInclude Include="..\..\..\source\core\File.h" />
+    <ClInclude Include="..\..\..\source\core\FileSystem.h" />
     <ClInclude Include="..\..\..\source\core\IFile.h" />
     <ClInclude Include="..\..\..\source\core\PerfMon.h" />
     <ClInclude Include="..\..\..\source\core\PluginManager.h" />
@@ -82,7 +83,6 @@
     <ClInclude Include="..\..\..\source\xcommon\IXRenderable.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXTextureLoader.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXUpdatable.h" />
-    <ClInclude Include="FileSystem.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C1C1F046-C839-4602-AF70-923CDD237C1B}</ProjectGuid>
