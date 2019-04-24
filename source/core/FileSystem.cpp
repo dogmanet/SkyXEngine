@@ -1,14 +1,28 @@
 #include "FileSystem.h"
 
-bool FileSystem::fileExists(const char *szPath)
+time_t FileSystem::convertFiletimeToTime_t(const FILETIME& ft)
 {
-	HANDLE hFile = CreateFile(szPath,
+	ULARGE_INTEGER ull;
+	ull.LowPart = ft.dwLowDateTime;
+	ull.HighPart = ft.dwHighDateTime;
+
+	return ull.QuadPart / 10000000ULL - 11644473600ULL;
+}
+
+HANDLE FileSystem::GetFileHandle(const char *szPath)
+{
+	return CreateFile(szPath,
 		GENERIC_READ,
 		0,
 		NULL,
 		OPEN_EXISTING,
 		FILE_FLAG_SEQUENTIAL_SCAN,
 		NULL);
+}
+
+bool FileSystem::fileExists(const char *szPath)
+{
+	HANDLE hFile = GetFileHandle(szPath);
 
 	if (hFile != INVALID_HANDLE_VALUE)
 	{
@@ -21,13 +35,7 @@ bool FileSystem::fileExists(const char *szPath)
 
 size_t FileSystem::fileGetSize(const char *szPath)
 {
-	HANDLE hFile = CreateFile(szPath,
-		GENERIC_READ,
-		0,
-		NULL,
-		OPEN_EXISTING,
-		FILE_FLAG_SEQUENTIAL_SCAN,
-		NULL);
+	HANDLE hFile = GetFileHandle(szPath);
 
 	//Возможно, необходимо будет расширение для больших файлов
 	size_t dwSize = GetFileSize(hFile, nullptr);
@@ -59,4 +67,15 @@ bool FileSystem::isDirectory(const char *szPath)
 
 	//Если не существует или указанный путь ведет не к каталогу
 	return flag & FILE_ATTRIBUTE_DIRECTORY;
+}
+
+time_t FileSystem::fileGetModifyTime(const char *szPath)
+{
+	FILETIME mTime;
+
+	HANDLE hFile = GetFileHandle(szPath);
+
+	GetFileTime(hFile, nullptr, &mTime, nullptr);
+
+	return convertFiletimeToTime_t(mTime);
 }
