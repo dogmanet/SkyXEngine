@@ -62,7 +62,7 @@ public:
 	//! Проверяет, что путь существует, и является каталогом
 	virtual bool isDirectory(const char *szPath) = 0;
 	//! возвращает время последнего изменения файла
-	virtual time_t fileGetModifyTime(const char *szPath) = 0;
+	virtual time_t getFileModifyTime(const char *szPath) = 0;
 
 	/*! возвращает массив со всеми данными находящимися по пути szPath,
 	szPath может быть не канонизирован и необязательно должен заканчиваться слэшем,

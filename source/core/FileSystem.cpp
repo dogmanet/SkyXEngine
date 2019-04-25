@@ -9,7 +9,7 @@ time_t FileSystem::convertFiletimeToTime_t(const FILETIME& ft)
 	return ull.QuadPart / 10000000ULL - 11644473600ULL;
 }
 
-HANDLE FileSystem::GetFileHandle(const char *szPath)
+HANDLE FileSystem::getFileHandle(const char *szPath)
 {
 	return CreateFile(szPath,
 		GENERIC_READ,
@@ -22,12 +22,9 @@ HANDLE FileSystem::GetFileHandle(const char *szPath)
 
 bool FileSystem::fileExists(const char *szPath)
 {
-	HANDLE hFile = GetFileHandle(szPath);
+	HANDLE hFile = getFileHandle(szPath);
 
-	if (hFile != INVALID_HANDLE_VALUE)
-	{
-		CloseHandle(hFile);
-	}
+	CLOSE_HANDLE(hFile)
 
 	//Если файл существует то hFile != INVALID_HANDLE_VALUE
 	return hFile != INVALID_HANDLE_VALUE;
@@ -35,17 +32,16 @@ bool FileSystem::fileExists(const char *szPath)
 
 size_t FileSystem::fileGetSize(const char *szPath)
 {
-	HANDLE hFile = GetFileHandle(szPath);
+	WIN32_FILE_ATTRIBUTE_DATA lpFileInformation;
 
-	//Возможно, необходимо будет расширение для больших файлов
-	size_t dwSize = GetFileSize(hFile, nullptr);
+	GetFileAttributesEx(szPath, GetFileExInfoStandard, &lpFileInformation);
 
-	if (hFile != INVALID_HANDLE_VALUE)
-	{
-		CloseHandle(hFile);
-	}
+	//Преобразование размера из старших и младших бит
+	ULONGLONG FileSize = (static_cast<ULONGLONG>(lpFileInformation.nFileSizeHigh) <<
+		sizeof(lpFileInformation.nFileSizeLow) * sizeof(ULONGLONG)) |
+		lpFileInformation.nFileSizeLow;
 
-	return dwSize;
+	return FileSize;
 }
 
 bool FileSystem::isFile(const char *szPath)
@@ -69,13 +65,15 @@ bool FileSystem::isDirectory(const char *szPath)
 	return flag & FILE_ATTRIBUTE_DIRECTORY;
 }
 
-time_t FileSystem::fileGetModifyTime(const char *szPath)
+time_t FileSystem::getFileModifyTime(const char *szPath)
 {
 	FILETIME mTime;
 
-	HANDLE hFile = GetFileHandle(szPath);
+	HANDLE hFile = getFileHandle(szPath);
 
 	GetFileTime(hFile, nullptr, &mTime, nullptr);
+
+	CLOSE_HANDLE(hFile)
 
 	return convertFiletimeToTime_t(mTime);
 }
