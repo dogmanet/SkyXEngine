@@ -514,9 +514,9 @@ namespace gui
 			{
 				for(UINT i = 0; i < lvl; i++)
 				{
-					wprintf(L" ");
+					printf(" ");
 				}
-				wprintf(L"%s: %d W: %d H:%d T: %d L:%d\n", m_pNode ? CDOMnode::getNodeNameById(m_pNode->getNodeId()).c_str() : L"Anonymous", m_bHasFixedSize ? 1: 0 , m_iWidth, m_iHeight, m_iYpos, m_iXpos);
+				printf("%s: %d W: %d H:%d T: %d L:%d\n", m_pNode ? String(CDOMnode::getNodeNameById(m_pNode->getNodeId())).c_str() : "Anonymous", m_bHasFixedSize ? 1: 0 , m_iWidth, m_iHeight, m_iYpos, m_iXpos);
 				for(UINT i = 0; i < m_pChilds.size(); i++)
 				{
 					m_pChilds[i]->debugPrint(lvl + 1);

@@ -317,7 +317,7 @@ namespace gui
 			_wfopen_s(&pF, file.c_str(), L"rt, ccs=UTF-8");
 			if(!pF)
 			{
-				wprintf(L"[Error]: Unable to open \"%s\" file for reading\n", file.c_str());
+				printf("[Error]: Unable to open \"%s\" file for reading\n", String(file).c_str());
 				return;
 			}
 
@@ -327,7 +327,7 @@ namespace gui
 			wchar_t * str = new wchar_t[fs + 1];
 			if(!str)
 			{
-				wprintf(L"[Error]: Unable to allocate memory\n");
+				printf("[Error]: Unable to allocate memory\n");
 				return;
 			}
 			str[fread(str, sizeof(wchar_t), fs, pF)] = 0;
@@ -1666,7 +1666,7 @@ namespace gui
 					{
 						if(!readVal)
 						{
-							wprintf(L"[Error]: Unexpected symbol ';' in css string\n");
+							printf("[Error]: Unexpected symbol ';' in css string\n");
 						}
 						else
 						{
@@ -1682,7 +1682,7 @@ namespace gui
 					{
 						if(!readKey)
 						{
-							wprintf(L"[Error]: Unexpected symbol ':' in css string\n");
+							printf("[Error]: Unexpected symbol ':' in css string\n");
 						}
 						else
 						{
@@ -3386,7 +3386,7 @@ namespace gui
 						continue;
 					}
 				}
-				wprintf(_CRT_WIDE(COLOR_YELLOW) L"Unable to parse css transform string: '%s'\n" _CRT_WIDE(COLOR_RESET), val);
+				printf(COLOR_YELLOW "Unable to parse css transform string: '%s'\n" COLOR_RESET, String(val).c_str());
 				return;
 #undef TMP_IS_KW
 			}
@@ -3575,7 +3575,7 @@ namespace gui
 			}
 			else
 			{
-				wprintf(L"[Error]: Unsupported color type in css: '%s'\n", val.c_str());
+				printf("[Error]: Unsupported color type in css: '%s'\n", String(val).c_str());
 			}
 		}
 
@@ -3613,7 +3613,7 @@ namespace gui
 				}
 				else
 				{
-					wprintf(L"[Error]: Unknown dimension '%c' in css string\n", a);
+					printf("[Error]: Unknown dimension '%c' in css string\n", (char)a);
 				}
 			}
 			else if(n == 3)
@@ -3636,7 +3636,7 @@ namespace gui
 				}
 				else
 				{
-					wprintf(L"[Error]: Unknown dimension '%c%c' in css string\n", a, b);
+					printf("[Error]: Unknown dimension '%c%c' in css string\n", (char)a, (char)b);
 				}
 			}
 		}
