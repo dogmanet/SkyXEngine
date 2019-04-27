@@ -38,7 +38,14 @@ namespace gui
 				CTextureManager::bindTexture(texWhite);
 			//	float4_t asd(1, 1, 1, 0.5);
 
-				SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&float4_t(1, 1, 1, 0.5), 1);
+				static IGXConstantBuffer *s_pColorConstant = NULL;
+				if(!s_pColorConstant)
+				{
+					s_pColorConstant = GetGUI()->getDevice()->createConstantBuffer(sizeof(float4));
+					s_pColorConstant->update(&float4_t(1, 1, 1, 0.5));
+				}
+				GetGUI()->getDevice()->setPixelShaderConstant(s_pColorConstant);
+				//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&float4_t(1, 1, 1, 0.5), 1);
 			//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&asd, 1));
 
 				updateData();
@@ -56,8 +63,8 @@ namespace gui
 				{
 					pData[0] = {P, P + T, 0, 0, 0};
 					pData[1] = {W - P, P + T, 0, 0, 1};
-					pData[3] = {W - P, P + T + S, 0, 1, 1};
-					pData[4] = {P, P + T + S, 0, 1, 0};
+					pData[2] = {W - P, P + T + S, 0, 1, 1};
+					pData[3] = {P, P + T + S, 0, 1, 0};
 
 					if(m_eDir == SCROLLBAR_DIR_HORIZONTAL)
 					{
