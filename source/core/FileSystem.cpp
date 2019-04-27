@@ -1,6 +1,6 @@
 #include "FileSystem.h"
 
-time_t FileSystem::convertFiletimeToTime_t(const FILETIME& ft)
+time_t СFileSystem::convertFiletimeToTime_t(const FILETIME& ft)
 {
 	ULARGE_INTEGER ull;
 	ull.LowPart = ft.dwLowDateTime;
@@ -9,7 +9,7 @@ time_t FileSystem::convertFiletimeToTime_t(const FILETIME& ft)
 	return ull.QuadPart / 10000000ULL - 11644473600ULL;
 }
 
-HANDLE FileSystem::getFileHandle(const char *szPath)
+HANDLE СFileSystem::getFileHandle(const char *szPath)
 {
 	return CreateFile(szPath,
 		GENERIC_READ,
@@ -20,31 +20,32 @@ HANDLE FileSystem::getFileHandle(const char *szPath)
 		NULL);
 }
 
-bool FileSystem::fileExists(const char *szPath)
+bool СFileSystem::fileExists(const char *szPath)
 {
 	HANDLE hFile = getFileHandle(szPath);
 
-	CLOSE_HANDLE(hFile)
+	CLOSE_HANDLE(hFile);
 
 	//Если файл существует то hFile != INVALID_HANDLE_VALUE
 	return hFile != INVALID_HANDLE_VALUE;
 }
 
-size_t FileSystem::fileGetSize(const char *szPath)
+size_t СFileSystem::fileGetSize(const char *szPath)
 {
 	WIN32_FILE_ATTRIBUTE_DATA lpFileInformation;
 
-	GetFileAttributesEx(szPath, GetFileExInfoStandard, &lpFileInformation);
+	int result = GetFileAttributesEx(szPath, GetFileExInfoStandard, &lpFileInformation);
 
 	//Преобразование размера из старших и младших бит
 	ULONGLONG FileSize = (static_cast<ULONGLONG>(lpFileInformation.nFileSizeHigh) <<
 		sizeof(lpFileInformation.nFileSizeLow) * sizeof(ULONGLONG)) |
 		lpFileInformation.nFileSizeLow;
 
-	return FileSize;
+	//Если result != 0 то все хорошо, если 0 то файл не найден
+	return result != 0 ? FileSize : FILE_NOT_FOUND;
 }
 
-bool FileSystem::isFile(const char *szPath)
+bool СFileSystem::isFile(const char *szPath)
 {
 	DWORD flag = GetFileAttributes(szPath);
 
@@ -57,7 +58,7 @@ bool FileSystem::isFile(const char *szPath)
 	return true;
 }
 
-bool FileSystem::isDirectory(const char *szPath)
+bool СFileSystem::isDirectory(const char *szPath)
 {
 	DWORD flag = GetFileAttributes(szPath);
 
@@ -65,7 +66,7 @@ bool FileSystem::isDirectory(const char *szPath)
 	return flag & FILE_ATTRIBUTE_DIRECTORY;
 }
 
-time_t FileSystem::getFileModifyTime(const char *szPath)
+time_t СFileSystem::getFileModifyTime(const char *szPath)
 {
 	FILETIME mTime;
 
@@ -73,7 +74,7 @@ time_t FileSystem::getFileModifyTime(const char *szPath)
 
 	GetFileTime(hFile, nullptr, &mTime, nullptr);
 
-	CLOSE_HANDLE(hFile)
+	CLOSE_HANDLE(hFile);
 
 	return convertFiletimeToTime_t(mTime);
 }

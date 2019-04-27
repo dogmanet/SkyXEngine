@@ -8,7 +8,7 @@
 	CloseHandle(handle);\
 }
 
-class FileSystem final : public IFileSystem
+class СFileSystem final : public IFileSystem
 {
 private:
 	//! Вспомогательная функция для конвертирования FILETIME в time_t
