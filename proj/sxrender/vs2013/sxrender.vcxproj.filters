@@ -98,5 +98,8 @@
     <ClCompile Include="..\..\..\source\render\shadow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\render\RenderableVisibility.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

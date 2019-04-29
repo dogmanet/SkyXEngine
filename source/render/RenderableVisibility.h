@@ -6,7 +6,8 @@
 class CRenderableVisibility: public IXRenderableVisibility
 {
 public:
-	CRenderableVisibility(IXRenderPipeline *pPipeline);
+	CRenderableVisibility(ID idPlugin, UINT uRenderSystems);
+	~CRenderableVisibility();
 
 	ID getPluginId();
 
@@ -20,6 +21,8 @@ public:
 
 protected:
 	IXRenderableVisibility **m_ppVisibilities;
+	UINT m_uRenderSystems;
+	ID m_idPlugin;
 };
 
 #endif
