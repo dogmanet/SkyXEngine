@@ -293,6 +293,11 @@ IGXContext *CRenderPipeline::getDevice()
 	return(m_pDevice);
 }
 
+void CRenderPipeline::newVisData(IXRenderableVisibility **ppVisibility)
+{
+	*ppVisibility = NULL;
+}
+
 void CRenderPipeline::showGICubes()
 {
 	m_pDevice->setPrimitiveTopology(GXPT_POINTLIST);

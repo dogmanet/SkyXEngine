@@ -26,6 +26,8 @@ public:
 
 	IGXContext *getDevice();
 
+	void newVisData(IXRenderableVisibility **ppVisibility);
+
 protected:
 
 	void renderPrepare();

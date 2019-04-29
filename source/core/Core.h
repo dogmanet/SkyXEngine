@@ -29,7 +29,7 @@ protected:
 	IBaseEventChannel *getEventChannelInternal(const XGUID &guid);
 
 	CPluginManager *m_pPluginManager = NULL;
-	FileSystem *m_pFileSystem = NULL;
+	СFileSystem *m_pFileSystem = NULL;
 	AssotiativeArray<XGUID, IBaseEventChannel*> m_mEventChannels;
 
 	IXRenderPipeline *m_pRenderPipeline = NULL;
