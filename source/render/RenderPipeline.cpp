@@ -21,7 +21,7 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 			pRenderable->startup(m_pDevice, m_pMaterialSystem);
 			X_RENDER_STAGE stages = pRenderable->getStages();
 
-			for(UINT idx = 0; idx < sizeof(UINT) * 8; ++idx)
+			for(UINT idx = 0; idx < sizeof(UINT) * 8 /* bits in byte */; ++idx)
 			{
 				X_RENDER_STAGE stage = (X_RENDER_STAGE)(1 << idx);
 
@@ -271,6 +271,11 @@ end:
 void CRenderPipeline::endFrame()
 {
 	m_pDevice->swapBuffers();
+}
+
+void CRenderPipeline::updateVisibility()
+{
+
 }
 
 void CRenderPipeline::renderStage(X_RENDER_STAGE stage)

@@ -15,6 +15,8 @@ public:
 
 	void resize(UINT uWidth, UINT uHeight, bool isWindowed = true);
 
+	void updateVisibility();
+
 	void renderFrame();
 	void endFrame();
 

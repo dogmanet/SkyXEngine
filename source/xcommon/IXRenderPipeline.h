@@ -18,6 +18,7 @@ enum X_RENDER_STAGE
 };
 
 class IGXContext;
+class IXRenderableVisibility;
 class IXRenderPipeline: public IXUnknown
 {
 public:
@@ -25,10 +26,13 @@ public:
 
 	virtual void renderFrame() = 0;
 	virtual void endFrame() = 0;
+	virtual void updateVisibility() = 0;
 
 	virtual void renderStage(X_RENDER_STAGE stage) = 0;
 
 	virtual IGXContext *getDevice() = 0;
+
+	virtual void newVisData(IXRenderableVisibility **ppVisibility) = 0;
 
 protected:
 

@@ -54,6 +54,9 @@
     <ClInclude Include="..\..\..\source\render\shadow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\render\RenderableVisibility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\render\camera_update.cpp">

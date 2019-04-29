@@ -186,6 +186,7 @@
     <ClInclude Include="..\..\..\source\render\editor\axes_static.h" />
     <ClInclude Include="..\..\..\source\render\editor\grid.h" />
     <ClInclude Include="..\..\..\source\render\gdata.h" />
+    <ClInclude Include="..\..\..\source\render\RenderableVisibility.h" />
     <ClInclude Include="..\..\..\source\render\RenderPipeline.h" />
     <ClInclude Include="..\..\..\source\render\render_func.h" />
     <ClInclude Include="..\..\..\source\render\shadow.h" />

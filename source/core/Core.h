@@ -4,6 +4,7 @@
 #include "sxcore.h"
 #include <xcommon/IXCore.h>
 #include "PluginManager.h"
+#include "FileSystem.h"
 
 class CCore: public IXCore
 {
@@ -28,6 +29,7 @@ protected:
 	IBaseEventChannel *getEventChannelInternal(const XGUID &guid);
 
 	CPluginManager *m_pPluginManager = NULL;
+	FileSystem *m_pFileSystem = NULL;
 	AssotiativeArray<XGUID, IBaseEventChannel*> m_mEventChannels;
 
 	IXRenderPipeline *m_pRenderPipeline = NULL;

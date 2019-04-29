@@ -964,6 +964,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	
 	SRender_UpdateView();
 
+#if 0
 	if (GetAsyncKeyState('R') >= 0)
 	{
 		Core_PStartSection(PERF_SECTION_VIS_CAMERA);
@@ -971,6 +972,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		// parallelle that
 		Core_PEndSection(PERF_SECTION_VIS_CAMERA);
 	}
+#endif
 
 	Core_PStartSection(PERF_SECTION_SML_UPDATE);
 	SMtrl_Update(timeDelta);
@@ -981,6 +983,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_PStartSection(PERF_SECTION_RENDER_PRESENT);
 	if(pRenderPipeline)
 	{
+		pRenderPipeline->updateVisibility();
 		pRenderPipeline->endFrame();
 	}
 #ifdef SX_TERRAX
@@ -1068,9 +1071,11 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 	//#############################################################################
 
+#if 0
 	Core_PStartSection(PERF_SECTION_VIS_LIGHT);
 	SRender_ComVisibleForLight();
 	Core_PEndSection(PERF_SECTION_VIS_LIGHT);
+#endif
 
 
 	Core_PStartSection(PERF_SECTION_CVAR_UPDATE);

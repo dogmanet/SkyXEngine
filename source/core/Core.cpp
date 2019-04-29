@@ -1,13 +1,16 @@
 #include "Core.h"
 #include <common/file_utils.h>
 #include "AsyncFileReader.h"
+#include "FileSystem.h"
 
 CCore::CCore()
 {
 	m_pPluginManager = new CPluginManager();
+	//m_pFileSystem = new FileSystem();
 }
 CCore::~CCore()
 {
+	mem_delete(m_pFileSystem);
 	mem_delete(m_pPluginManager);
 	for(AssotiativeArray<XGUID, IBaseEventChannel*>::Iterator i = m_mEventChannels.begin(); i; i++)
 	{
@@ -27,7 +30,7 @@ IPluginManager *CCore::getPluginManager()
 }
 IFileSystem *CCore::getFileSystem()
 {
-	return(NULL);
+	return(m_pFileSystem);
 }
 
 IAsyncFileReader *CCore::getAsyncFileReader()

@@ -43,7 +43,7 @@ IXPlugin *CPluginManager::loadPlugin(const char *szPath)
 
 	if(pfnXPluginMain)
 	{
-		IXPlugin *pPlugin = pfnXPluginMain();
+		IXPlugin *pPlugin = pfnXPluginMain(m_aPlugins.size());
 		if(pPlugin)
 		{
 			if(pPlugin->getVersion() == IXPLUGIN_VERSION)
@@ -59,6 +59,11 @@ IXPlugin *CPluginManager::loadPlugin(const char *szPath)
 				m_aPlugins.push_back(pPlugin);
 
 				return(pPlugin);
+			}
+			else
+			{
+				printf(COLOR_LRED "Invalid version! " COLOR_RESET);
+				mem_release(pPlugin);
 			}
 		}
 	}

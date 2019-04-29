@@ -183,6 +183,7 @@
     <ClInclude Include="..\..\..\source\common\file_utils.h" />
     <ClInclude Include="..\..\..\source\common\string.h" />
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
+    <ClInclude Include="..\..\..\source\physics\ICollisionShape.h" />
     <ClInclude Include="..\..\..\source\physics\PhyWorld.h" />
     <ClInclude Include="..\..\..\source\physics\sxphysics.h" />
   </ItemGroup>

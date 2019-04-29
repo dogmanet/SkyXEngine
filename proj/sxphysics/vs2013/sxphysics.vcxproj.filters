@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\xcommon">
+      <UniqueIdentifier>{f3bf8cb0-e4c5-474e-bf4e-de005f837b39}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\physics\sxphysics_dll.cpp">
@@ -46,6 +49,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\string_utils.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\physics\ICollisionShape.h">
+      <Filter>Header Files\xcommon</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

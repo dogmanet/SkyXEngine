@@ -6,6 +6,16 @@
 class CStaticGeomPlugin: public IXPlugin
 {
 public:
+	CStaticGeomPlugin(ID id):
+		m_id(id)
+	{
+	}
+
+	ID getID()
+	{
+		return(m_id);
+	}
+
 	void startup(IXCore *pCore)
 	{
 		m_pCore = pCore;
@@ -47,6 +57,7 @@ public:
 protected:
 
 	IXCore *m_pCore;
+	ID m_id;
 };
 
 DECLARE_XPLUGIN(CStaticGeomPlugin);

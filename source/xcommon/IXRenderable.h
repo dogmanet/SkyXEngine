@@ -14,23 +14,27 @@ DEFINE_ENUM_FLAG_OPERATORS(X_RENDER_STAGE);
 
 class IXOcclusionCuller;
 class ICamera;
+class IFrustum;
 
 //! Данные о видимости для конкретной системы
 class IXRenderableVisibility: public IXUnknown
 {
 public:
+	virtual ID getPluginId() = 0;
+
 	//! Установка отсекателя по перекрытию
 	virtual void setOcclusionCuller(IXOcclusionCuller *pOcclusionCuller) = 0;
 
-	//! Выполнение проверки видимости для заданной камеры
-	virtual void updateForCamera(ICamera *pCamera) = 0;
+	//! Выполнение проверки видимости для заданной камеры. Если pReference задан - проверка ограничивается только уже рассчитанным множеством
+	virtual void updateForCamera(ICamera *pCamera, const IXRenderableVisibility *pReference = NULL) = 0;
+
+	//! Выполнение проверки видимости для заданного фрустума. Если pReference задан - проверка ограничивается только уже рассчитанным множеством
+	virtual void updateForFrustum(IFrustum *pFrustum, const IXRenderableVisibility *pReference = NULL) = 0;
 
 	/*! Выполнение проверки видимости для заданной камеры в режиме оптимизации для многопоточности. 
 	    Возвращает ID задачи из менеджера задач для отслеживания завершения внутренних задач
 	*/
-	virtual ID updateForCameraThreaded(ICamera *pCamera)
-	{
-	}
+//	virtual ID updateForCameraThreaded(ICamera *pCamera) = 0;
 };
 
 class IXRenderable: public IXUnknown
