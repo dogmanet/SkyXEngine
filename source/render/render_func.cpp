@@ -555,6 +555,7 @@ void rfunc::UpdateView()
 
 	gdata::pCamera->updateFrustum(&gdata::mCamProj);
 
+#if 0
 	if (gdata::idDefaultGeomArr < 0 || !SGeom_VisCaclObjExists(gdata::idDefaultGeomArr))
 		gdata::idDefaultGeomArr = SGeom_VisCaclObjAdd();
 
@@ -563,6 +564,7 @@ void rfunc::UpdateView()
 
 	if (gdata::idDefaultAnimArr < 0)
 		gdata::idDefaultAnimArr = SXAnim_ModelsAddArrForCom();
+#endif
 }
 
 int rfunc::OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char *szStr)

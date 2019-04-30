@@ -12,10 +12,10 @@ extern CRenderable *g_pRenderable;
 CModels::CModels(bool isServerMode)
 {
 	//объект расчетов видимости для наблюдателя
-	m_aVisInfo.push_back(new CVisInfo());
+//	m_aVisInfo.push_back(new CVisInfo());
 
 	//объект расчетов видимости для трассировки луча
-	m_aVisInfo.push_back(new CVisInfo());
+//	m_aVisInfo.push_back(new CVisInfo());
 
 	m_pCurrArrMeshVertex = 0;
 	m_pCurrArrMeshIndex = 0;
@@ -2768,7 +2768,7 @@ void CModels::comVisible(const IFrustum *pFrustum, const float3 *pViewPos, ID id
 			pModel->m_fDist4Observer = SMVector3Length((vSphereCenter - (*pViewPos))) - fSphereRadius;
 
 			//если модель видна то делаем occlusion culling
-			if (pVisCalcObj->m_aVisible4Model[i])
+			if(pVisCalcObj->m_aVisible4Model[i]->m_isVisible)
 			{
 				float3 vMin, vMax;
 				pModel->m_pBoundVolume->getMinMax(&vMin, &vMax);
@@ -2907,7 +2907,7 @@ void CModels::render(DWORD timeDelta, GEOM_RENDER_TYPE type, ID idVisCalcObj)
 	{
 		for (int i = 0; i < m_aModels.size(); ++i)
 		{
-			if (m_aVisInfo[idVisCalcObj]->m_aVisible4Model[i])
+			if (m_aVisInfo[idVisCalcObj]->m_aVisible4Model[i]->m_isVisible)
 			{
 				if (m_aModels[i]->m_isRenderLod && m_aModels[i]->m_pLod)
 				{

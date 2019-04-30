@@ -6,7 +6,7 @@
 class CRenderableVisibility: public IXRenderableVisibility
 {
 public:
-	CRenderableVisibility(ID idPlugin, UINT uRenderSystems);
+	CRenderableVisibility(ID idPlugin);
 	~CRenderableVisibility();
 
 	ID getPluginId();
@@ -17,13 +17,13 @@ public:
 
 	void updateForFrustum(IFrustum *pFrustum, const IXRenderableVisibility *pReference = NULL);
 
-	IXRenderableVisibility *getVisibility(ID id);
-	void setVisibility(ID id, IXRenderableVisibility *pVisibility);
-
+	ID getVisCalcObjId()
+	{
+		return(m_idVisCalcObj);
+	}
 protected:
-	IXRenderableVisibility **m_ppVisibilities;
-	UINT m_uRenderSystems;
 	ID m_idPlugin;
+	ID m_idVisCalcObj = -1;
 };
 
 #endif

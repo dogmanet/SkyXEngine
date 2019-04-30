@@ -22,7 +22,7 @@ public:
 
 	SX_ALIGNED_OP_MEM2();
 
-	void renderStage(X_RENDER_STAGE stage);
+	void renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility = NULL);
 
 	IGXContext *getDevice();
 
@@ -59,12 +59,15 @@ protected:
 	};
 
 	Array<_render_stage> m_apRenderStages;
+	Array<IXRenderable*> m_apRenderables;
 	IGXContext *m_pDevice;
 	IGXSwapChain *m_pSwapChain = NULL;
 
 	bool m_isWindowed = true;
 	UINT m_uOutWidth;
 	UINT m_uOutHeight;
+
+	IXRenderableVisibility *m_pMainCameraVisibility = NULL;
 
 	IXLightSystem *m_pLightSystem = NULL;
 

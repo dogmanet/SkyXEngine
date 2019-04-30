@@ -26,6 +26,9 @@
     <ClCompile Include="..\..\..\source\geom\Renderable.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\geom\RenderableVisibility.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -55,6 +58,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\geom\Renderable.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\geom\RenderableVisibility.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

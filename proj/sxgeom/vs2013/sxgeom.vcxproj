@@ -31,6 +31,7 @@
     <ClCompile Include="..\..\..\source\geom\models.cpp" />
     <ClCompile Include="..\..\..\source\geom\plugin_main.cpp" />
     <ClCompile Include="..\..\..\source\geom\Renderable.cpp" />
+    <ClCompile Include="..\..\..\source\geom\RenderableVisibility.cpp" />
     <ClCompile Include="..\..\..\source\geom\sxgeom.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -46,6 +47,7 @@
     <ClInclude Include="..\..\..\source\geom\EditorObject.h" />
     <ClInclude Include="..\..\..\source\geom\models.h" />
     <ClInclude Include="..\..\..\source\geom\Renderable.h" />
+    <ClInclude Include="..\..\..\source\geom\RenderableVisibility.h" />
     <ClInclude Include="..\..\..\source\geom\sxgeom.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

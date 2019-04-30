@@ -1,5 +1,6 @@
 #include "Renderable.h"
 #include "models.h"
+#include "RenderableVisibility.h"
 
 extern CModels *g_pModels;
 
@@ -15,15 +16,23 @@ UINT CRenderable::getPriorityForStage(X_RENDER_STAGE stage)
 
 void CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility)
 {
+	ID idVisCalcObj = 0;
+	if(pVisibility)
+	{
+		assert(pVisibility->getPluginId() == 0);
+
+		idVisCalcObj = ((CRenderableVisibility*)pVisibility)->getVisCalcObjId();
+	}
+
 	switch(stage)
 	{
 	case XRS_PREPARE:
 		break;
 	case XRS_GBUFFER:
-		g_pModels->render(0, GEOM_RENDER_TYPE_OPAQUE, 0);
+		g_pModels->render(0, GEOM_RENDER_TYPE_OPAQUE, idVisCalcObj);
 		break;
 	case XRS_SHADOWS:
-		g_pModels->render(0, GEOM_RENDER_TYPE_OPAQUE, 0);
+		g_pModels->render(0, GEOM_RENDER_TYPE_OPAQUE, idVisCalcObj);
 		break;
 	case XRS_GI:
 		break;
@@ -49,7 +58,7 @@ void CRenderable::shutdown()
 
 void CRenderable::newVisData(IXRenderableVisibility **ppVisibility)
 {
-	*ppVisibility = NULL;
+	*ppVisibility = new CRenderableVisibility(0);
 }
 
 IXMaterialSystem *CRenderable::getMaterialSystem()

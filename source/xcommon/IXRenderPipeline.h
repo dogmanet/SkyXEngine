@@ -28,7 +28,7 @@ public:
 	virtual void endFrame() = 0;
 	virtual void updateVisibility() = 0;
 
-	virtual void renderStage(X_RENDER_STAGE stage) = 0;
+	virtual void renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility = NULL) = 0;
 
 	virtual IGXContext *getDevice() = 0;
 

@@ -4,6 +4,13 @@
 
 #include "render_func.h"
 
+#include "RenderableVisibility.h"
+
+namespace gdata
+{
+	extern ICamera *pCamera;
+};
+
 CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 	m_pDevice(pDevice)
 {
@@ -19,6 +26,8 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 		if(pRenderable->getVersion() == IXRENDERABLE_VERSION)
 		{
 			pRenderable->startup(m_pDevice, m_pMaterialSystem);
+			m_apRenderables.push_back(pRenderable);
+
 			X_RENDER_STAGE stages = pRenderable->getStages();
 
 			for(UINT idx = 0; idx < sizeof(UINT) * 8 /* bits in byte */; ++idx)
@@ -138,9 +147,19 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 
 	m_pShadowCache = new CShadowCache(this, m_pMaterialSystem);
 	m_pShadowShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_shadowShaderData.vs));
+
+	
+	newVisData(&m_pMainCameraVisibility);
 }
 CRenderPipeline::~CRenderPipeline()
 {
+	for(UINT i = 0, l = m_apRenderables.size(); i < l; ++i)
+	{
+		m_apRenderables[i]->shutdown();
+	}
+
+	mem_release(m_pMainCameraVisibility);
+
 	mem_release(m_pSceneShaderDataVS);
 	mem_release(m_pSceneShaderDataPS);
 
@@ -275,16 +294,16 @@ void CRenderPipeline::endFrame()
 
 void CRenderPipeline::updateVisibility()
 {
-
+	m_pMainCameraVisibility->updateForCamera(gdata::pCamera);
 }
 
-void CRenderPipeline::renderStage(X_RENDER_STAGE stage)
+void CRenderPipeline::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility)
 {
 	auto &list = m_apRenderStages[getIndexForStage(stage)].aSystems;
 
 	for(UINT i = 0, l = list.size(); i < l; ++i)
 	{
-		list[i].pRenderable->renderStage(stage, NULL);
+		list[i].pRenderable->renderStage(stage, pVisibility);
 	}
 }
 
@@ -295,7 +314,14 @@ IGXContext *CRenderPipeline::getDevice()
 
 void CRenderPipeline::newVisData(IXRenderableVisibility **ppVisibility)
 {
-	*ppVisibility = NULL;
+	CRenderableVisibility *pVisibility = new CRenderableVisibility(-1, m_apRenderables.size());
+	for(UINT i = 0, l = m_apRenderables.size(); i < l; ++i)
+	{
+		IXRenderableVisibility *pVis = NULL;
+		m_apRenderables[i]->newVisData(&pVis);
+		pVisibility->setVisibility(i, pVis);
+	}
+	*ppVisibility = pVisibility;
 }
 
 void CRenderPipeline::showGICubes()
