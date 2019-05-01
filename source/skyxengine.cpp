@@ -246,8 +246,6 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SGCore_0Create("sxgcore", hWnd3DCurr, *r_win_width, *r_win_height, *r_win_windowed, false);
 	SGCore_Dbg_Set(SkyXEngine_PrintfLog);
 
-	SGCore_SetFunc_MtlSet(SkyXEngine_RFuncMtlSet);
-	SGCore_SetFunc_MtlLoad(SkyXEngine_RFuncMtlLoad);
 	SGCore_SetFunc_MtlIsTransparency((g_func_mtl_is_transparency)SMtrl_MtlIsTransparency);
 	SGCore_SetFunc_MtlGroupRenderIsSingly((g_func_mtl_group_render_is_singly)SMtrl_MtlGetTypeReflection);
 	SGCore_SetFunc_MtlGetPhysicType((g_func_mtl_get_physic_type)SMtrl_MtlGetPhysicMaterial);
@@ -2033,9 +2031,9 @@ bool SkyXEngine_CycleMainIteration()
 #endif
 #endif
 
-		static DWORD lastTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
-		DWORD currTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
-		DWORD timeDelta = (currTime - lastTime);
+		static time_t lastTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+		time_t currTime = TimeGetMls(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+		time_t timeDelta = (currTime - lastTime);
 		Core_RIntSet(G_RI_INT_TIME_DELTA, timeDelta);
 #ifdef SX_GAME
 		SRender_SetCamera(SGame_GetActiveCamera());
@@ -2106,9 +2104,6 @@ void SkyXEngine_Kill()
 #endif
 	SGeom_AKill();
 #ifndef _SERVER
-#if 0
-	SLight_AKill();
-#endif
 	SSCore_AKill();
 	SGCore_AKill();
 #endif
@@ -2212,40 +2207,6 @@ void SkyXEngine_PreviewKill()
 #endif
 
 //##########################################################################
-
-void SkyXEngine_RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)
-{
-
-}
-
-void SkyXEngine_RFuncMtlSet(ID id, const float4x4 *pWorld, const float4 *pColor)
-{
-#if 0
-	switch (Core_RIntGet(G_RI_INT_RENDERSTATE))
-	{
-	case RENDER_STATE_SHADOW:
-		SMtrl_MtlSetMainTexture(0, id);
-		SLight_ShadowSetShaderOfTypeMat(Core_RIntGet(G_RI_INT_CURRIDLIGHT), SMtrl_MtlGetTypeModel(id), pWorld);
-		break;
-
-	case RENDER_STATE_FREE:
-		SMtrl_MtlSetMainTexture(0, id);
-		Core_RMatrixSet(G_RI_MATRIX_WORLD, &(pWorld ? (*pWorld) : SMMatrixIdentity()));
-		//SGCore_ShaderUnBind();
-		SMtrl_MtlRenderStd(SMtrl_MtlGetTypeModel(id), pWorld, 0, id);
-		break;
-
-	case RENDER_STATE_MATERIAL:
-		SMtrl_MtlRender(id, pWorld, pColor);
-		break;
-	}
-#endif
-}
-
-ID SkyXEngine_RFuncMtlLoad(const char* name, int mtl_type)
-{
-	return SMtrl_MtlLoad(name, (MTLTYPE_MODEL)mtl_type);
-}
 
 bool SkyXEngine_RFuncAIQuadPhyNavigate(float3_t *pPos)
 {

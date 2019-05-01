@@ -17,12 +17,8 @@ See the license in LICENSE
 
 class CSimulationModel;
 class CAxesStatic;
-class CGrid;
 
 #include <input/sxinput.h>
-#include <render/simulation_model.h>
-#include <render/editor/grid.h>
-#include <render/editor/axes_static.h>
 #include <render/sxrender.h>
 
 
@@ -180,28 +176,6 @@ namespace gdata
 		extern IGXRasterizerState *pRasterizerCullFront;
 		extern IGXRasterizerState *pRasterizerCullNone;
 	};
-
-	namespace Editors
-	{
-		//! возможно управлять камерой
-		extern bool canMoveCamera;
-
-		//! указатель симуляционной модели
-		extern CSimulationModel *pSimModel;
-
-		//! сетка дял редакторов
-		extern CGrid *pGrid;				
-
-		//! рендер статический осей в центре координат
-		extern CAxesStatic *pAxesStatic;	
-
-
-		//! рисовать ли #pGrid
-		extern bool canRenderGrid;				
-
-		//! рисовать ли #pAxesStatic
-		extern bool canRenderAxesStatic;
-	}
 };
 
 //!@} render_gdata

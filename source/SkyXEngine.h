@@ -528,15 +528,6 @@ void SkyXEngine_PreviewKill();
 /*! \name skyxengine_redefined_func redefined_func - Функции обертки, для передачи графическому ядру для замены стандартных
 @{*/
 
-//! функция отрисовки, в данной версии не назначается
-void SkyXEngine_RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count);
-
-//! функция установки материала по id, world - мировая матрица
-void SkyXEngine_RFuncMtlSet(ID id, const float4x4 *pWorld=0, const float4 *pColor=0);
-
-//! функция загрузки материала
-ID SkyXEngine_RFuncMtlLoad(const char* name, int mtl_type);
-
 //! просчет физики для квада аи сетки
 bool SkyXEngine_RFuncAIQuadPhyNavigate(float3_t * pos);
 

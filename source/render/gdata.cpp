@@ -122,16 +122,6 @@ namespace gdata
 		IGXRasterizerState *pRasterizerCullNone;
 	};
 
-	namespace Editors
-	{
-		bool canMoveCamera = true;
-		CSimulationModel *pSimModel = 0;
-		CGrid *pGrid = 0;
-		CAxesStatic *pAxesStatic = 0;
-
-		bool canRenderGrid = false;
-		bool canRenderAxesStatic = false;
-	}
 };
 
 //##########################################################################

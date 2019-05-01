@@ -182,32 +182,24 @@
     <ClInclude Include="..\..\..\source\common\file_utils.h" />
     <ClInclude Include="..\..\..\source\common\string.h" />
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
-    <ClInclude Include="..\..\..\source\render\camera_update.h" />
-    <ClInclude Include="..\..\..\source\render\editor\axes_static.h" />
-    <ClInclude Include="..\..\..\source\render\editor\grid.h" />
     <ClInclude Include="..\..\..\source\render\gdata.h" />
     <ClInclude Include="..\..\..\source\render\RenderableVisibility.h" />
     <ClInclude Include="..\..\..\source\render\RenderPipeline.h" />
     <ClInclude Include="..\..\..\source\render\render_func.h" />
     <ClInclude Include="..\..\..\source\render\shadow.h" />
     <ClInclude Include="..\..\..\source\render\ShadowCache.h" />
-    <ClInclude Include="..\..\..\source\render\simulation_model.h" />
     <ClInclude Include="..\..\..\source\render\sxrender.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
-    <ClCompile Include="..\..\..\source\render\camera_update.cpp" />
-    <ClCompile Include="..\..\..\source\render\editor\axes_static.cpp" />
-    <ClCompile Include="..\..\..\source\render\editor\grid.cpp" />
     <ClCompile Include="..\..\..\source\render\gdata.cpp" />
     <ClCompile Include="..\..\..\source\render\RenderableVisibility.cpp" />
     <ClCompile Include="..\..\..\source\render\RenderPipeline.cpp" />
     <ClCompile Include="..\..\..\source\render\render_func.cpp" />
     <ClCompile Include="..\..\..\source\render\shadow.cpp" />
     <ClCompile Include="..\..\..\source\render\ShadowCache.cpp" />
-    <ClCompile Include="..\..\..\source\render\simulation_model.cpp" />
     <ClCompile Include="..\..\..\source\render\sxrender.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

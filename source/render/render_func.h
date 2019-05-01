@@ -60,42 +60,14 @@ namespace rfunc
 	//! обработка и установка основных матриц, обработка плоскостей отсечения
 	void UpdateView();						
 
-	//! вывод отладочной текстовой информации в окно рендера
-	int OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char *szStr = 0);
-
-	//! обработка видимости для источников света
-	void ComVisibleForLight();				
-
-	//! обработка видимости для камеры
-	void ComVisibleForCamera();				
-
 	//! обработка видимости для отражений
 	void ComVisibleReflection();			
 
-
-	//! построение G буфера, то есть рендер всей сцены
-	void BuildMRT(DWORD timeDelta, bool isRenderSimulation);		
-
-
-	//! обновление информации о тенях (рендер всего того что отбрасывает тени в буферы глубин источников света)
-	void UpdateShadow(DWORD timeDelta);		
-	
-
-	//! обработка/обновление отражений
-	void UpdateReflection(DWORD timeDelta, bool isRenderSimulation);	
-	void UpdateReflectionScene(DWORD timeDelta);
-	void UpdateReflectionSimModel(DWORD timeDelta);
 	
 
 	//! отрисовка скайбокса и облаков
 	void RenderSky(DWORD timeDelta);					
-
-	//! обработка освещения, render_sky - рисовать ли небо
-	void ComLighting(DWORD timeDelta);	
-	
-	//! объединение слоев прозрачности
-	void UnionLayers();
-	
+		
 
 	//! отрисовка партиклов (эффектов)
 	void RenderParticles(DWORD timeDelta);				
@@ -104,13 +76,6 @@ namespace rfunc
 	void RenderMainPostProcess(DWORD timeDelta);
 
 	void RenderFinalPostProcess(DWORD timeDelta);
-
-	void ShaderRegisterData();
-
-	//**********************************************************************
-
-	//! рендер основных элементов для редакторов
-	void RenderEditorMain();				
 
 	//**********************************************************************
 

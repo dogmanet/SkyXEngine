@@ -129,10 +129,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 //	SkyXEngine_RunGenPreview();
 	Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
 	//Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
-
-	SRender_EditorSetRenderGrid(true);
-	SRender_EditorSetRenderAxesStatic(true);
-
+	
 	g_pGrid = new CGrid();
 	g_pGrid->setOpacity(0.7f);
 	
