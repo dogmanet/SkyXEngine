@@ -15,7 +15,6 @@ See the license in LICENSE
 
 #if defined(_DEBUG)
 #	pragma comment(lib, "sxcore_d.lib")
-#	pragma comment(lib, "sxgeom_d.lib")
 #	pragma comment(lib, "sxgreen_d.lib")
 #	pragma comment(lib, "sxmtrl_d.lib")
 #	pragma comment(lib, "BulletDynamics_vs2010_debug.lib")
@@ -26,7 +25,6 @@ See the license in LICENSE
 #	pragma comment(lib, "BulletFileLoader_vs2010_debug.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
-#	pragma comment(lib, "sxgeom.lib")
 #	pragma comment(lib, "sxgreen.lib")
 #	pragma comment(lib, "sxmtrl.lib")
 #	pragma comment(lib, "BulletDynamics_vs2010.lib")

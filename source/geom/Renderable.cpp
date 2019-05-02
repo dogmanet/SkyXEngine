@@ -3,6 +3,7 @@
 #include "RenderableVisibility.h"
 
 extern CModels *g_pModels;
+IGXContext *g_pDXDevice = NULL;
 
 X_RENDER_STAGE CRenderable::getStages()
 {
@@ -51,6 +52,8 @@ void CRenderable::startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem
 {
 	m_pDevice = pDevice;
 	m_pMaterialSystem = pMaterialSystem;
+
+	g_pDXDevice = pDevice;
 }
 void CRenderable::shutdown()
 {

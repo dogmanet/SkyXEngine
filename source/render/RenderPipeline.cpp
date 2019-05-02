@@ -39,6 +39,7 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 					_render_sys rs;
 					rs.pRenderable = pRenderable;
 					rs.uPriority = pRenderable->getPriorityForStage(stage);
+					rs.uRenderableId = m_apRenderables.size() - 1;
 
 					m_apRenderStages[idx].aSystems.push_back(rs);
 				}
@@ -299,11 +300,18 @@ void CRenderPipeline::updateVisibility()
 
 void CRenderPipeline::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility)
 {
+	CRenderableVisibility *pVis = NULL;
+	if(pVisibility)
+	{
+		assert(((IXRenderableVisibility*)pVisibility)->getPluginId() == -1);
+		pVis = (CRenderableVisibility*)pVisibility;
+	}
+
 	auto &list = m_apRenderStages[getIndexForStage(stage)].aSystems;
 
 	for(UINT i = 0, l = list.size(); i < l; ++i)
 	{
-		list[i].pRenderable->renderStage(stage, pVisibility);
+		list[i].pRenderable->renderStage(stage, pVis ? pVis->getVisibility(list[i].uRenderableId) : NULL);
 	}
 }
 
@@ -384,7 +392,7 @@ void CRenderPipeline::renderGBuffer()
 	m_pDevice->setColorTarget(pParamSurf, 2);
 	m_pDevice->setColorTarget(pDepthMapLinearSurf, 3);	//ставим рт глубины
 
-	renderStage(XRS_GBUFFER);
+	renderStage(XRS_GBUFFER, m_pMainCameraVisibility);
 	//SXAnim_Render();
 	//SXDecals_Render();
 

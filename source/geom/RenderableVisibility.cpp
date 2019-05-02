@@ -2,16 +2,20 @@
 #include "sxgeom.h"
 #include <gcore/sxgcore.h>
 
+#include "models.h"
+
+extern CModels *g_pModels;
+
 CRenderableVisibility::CRenderableVisibility(ID idPlugin):
 	m_idPlugin(idPlugin)
 {
-	m_idVisCalcObj = SGeom_VisCaclObjAdd();
+	m_idVisCalcObj = g_pModels->addVisCaclObj();
 	assert(ID_VALID(m_idVisCalcObj));
 }
 
 CRenderableVisibility::~CRenderableVisibility()
 {
-	SGeom_VisCaclObjDelete(m_idVisCalcObj);
+	g_pModels->deleteVisCaclObj(m_idVisCalcObj);
 }
 
 ID CRenderableVisibility::getPluginId()
@@ -37,7 +41,7 @@ void CRenderableVisibility::updateForCamera(ICamera *pCamera, const IXRenderable
 
 	float3 vCamPos;
 	pCamera->getPosition(&vCamPos);
-	SGeom_ComVisible(pCamera->getFrustum(), &vCamPos, m_idVisCalcObj);
+	g_pModels->comVisible(pCamera->getFrustum(), &vCamPos, m_idVisCalcObj);
 }
 
 void CRenderableVisibility::updateForFrustum(IFrustum *pFrustum, const IXRenderableVisibility *pReference)

@@ -8,6 +8,7 @@ See the license in LICENSE
 
 #include "Renderable.h"
 extern CRenderable *g_pRenderable;
+extern IGXContext *g_pDXDevice;
 
 CModels::CModels(bool isServerMode)
 {

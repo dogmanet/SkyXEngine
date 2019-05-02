@@ -6,7 +6,6 @@ See the license in LICENSE
 
 #include "PhyWorld.h"
 #include <core/sxcore.h>
-#include <geom/sxgeom.h>
 #include <green/sxgreen.h>
 #include <gcore/sxgcore.h>
 
@@ -119,6 +118,44 @@ CPhyWorld::CPhyWorld():
 	//btSetCustomEnterProfileZoneFunc(CProfileManager::Start_Profile);
 	//btSetCustomLeaveProfileZoneFunc(CProfileManager::Stop_Profile);
 
+	Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->addListener([](const XEventLevel *pData)
+	{
+		char szPathLevel[1024];
+
+		switch(pData->type)
+		{
+		case XEventLevel::TYPE_LOAD:
+			SPhysics_UnloadGeom();			
+
+			sprintf(szPathLevel, "%s%s/%s.phy", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pData->szLevelName, pData->szLevelName);
+			LibReport(REPORT_MSG_LEVEL_NOTICE, "loading level\n");
+			//if(FileExistsFile(szPathLevel))
+			{
+				IEventChannel<XEventLevelProgress> *pProgressChannel = Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID);
+				XEventLevelProgress levelProgress;
+				//@TODO: fix that value!
+				levelProgress.idPlugin = -2;
+				levelProgress.fProgress = 0.0f;
+				levelProgress.type = XEventLevelProgress::TYPE_PROGRESS_BEGIN;
+				pProgressChannel->broadcastEvent(&levelProgress);
+
+				SPhysics_LoadGeom(szPathLevel);
+
+				levelProgress.fProgress = 1.0f;
+				levelProgress.type = XEventLevelProgress::TYPE_PROGRESS_END;
+				pProgressChannel->broadcastEvent(&levelProgress);
+			}
+			break;
+		case XEventLevel::TYPE_UNLOAD:
+			SPhysics_UnloadGeom();
+			break;
+		case XEventLevel::TYPE_SAVE:
+			sprintf(szPathLevel, "%s%s/%s.phy", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pData->szLevelName, pData->szLevelName);
+			SPhysics_ExportGeom(szPathLevel);
+			break;
+		}
+	});
+
 	printf("Done!\n");
 }
 
@@ -208,7 +245,7 @@ void CPhyWorld::loadGeom(const char * file)
 	int32_t * pIndexCount;
 
 	int32_t iModelCount;
-
+#if 0
 	SGeom_GetArrBuffsGeom(&ppVertices, &pVertexCount, &ppIndices, &ppMtls, &pIndexCount, &iModelCount);
 	if(iModelCount > 0)
 	{
@@ -277,7 +314,7 @@ void CPhyWorld::loadGeom(const char * file)
 		}
 	}
 	SGeom_ClearArrBuffsGeom(ppVertices, pVertexCount, ppIndices, ppMtls, pIndexCount, iModelCount);
-
+#endif
 
 
 

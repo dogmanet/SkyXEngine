@@ -3,6 +3,7 @@
 
 #include <gdefines.h>
 #include <gui/guimain.h>
+#include <xcommon/XEvents.h>
 
 enum HUD_EVENT
 {
@@ -48,6 +49,7 @@ public:
 	void update();
 
 protected:
+	IEventChannel<XEventLevelSize> *m_pLevelSizeChannel = NULL;
 	gui::IDesktop * m_pDesktop;
 
 	gui::dom::IDOMnode * m_pMinimapSpin;

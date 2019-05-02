@@ -1,6 +1,6 @@
 body{
 	color: #ffffff;
-	font-name: quick-junky-regular;
+	font-name: squares-bold-regular;
 }
 
 html, body
@@ -15,7 +15,7 @@ html, body
 	position: absolute;
 	top: 35%;
 	//bottom: 35%;
-	background-color: #00000088;
+	background-color: #000000cc;
 	left: 0;
 	right: 0;
 	
@@ -36,41 +36,11 @@ html, body
 
 button
 {
-	padding: 7px 15px;
-	background-color: #FFFFFF22;
-	
-	border-top-color: #00000066;
-	border-top-width: 2px;
-	border-left-color: #00000066;
-	border-left-width: 2px;
-	border-right-color: #00000066;
-	border-right-width: 2px;
-	border-bottom-color: #00000066;
-	border-bottom-width: 2px;
+	padding: 7px 16px 13px 10px;
 	margin-right: 5px;
-	
-	color: #FFFFFF;
-	
-	font-size: 20px;
-	
-	transition-property: background-color;
-	transition-duration: 0.2s;
+	width: 128px;
 }
 
-button:focus
-{
-	background-color: #00FF0022;
-}
-
-button:hover
-{
-	background-color: #FFFFFF33;
-}
-
-button:active
-{
-	background-color: #00FF0033;
-}
 
 #mb_buttons
 {

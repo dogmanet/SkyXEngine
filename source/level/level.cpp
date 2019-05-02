@@ -41,7 +41,6 @@ void CLevel::clear()
 	m_sWeather = "";
 	m_sAmbientSounds = "";
 
-	SGeom_Clear();
 	SGreen_Clear();
 
 	if(!m_pSun && m_pLightSystem)
@@ -63,7 +62,7 @@ void CLevel::clear()
 	
 	//SGame_UnloadObjLevel();
 	Core_0ConsoleExecCmd("ent_unload_level");
-	SPhysics_UnloadGeom();
+//	SPhysics_UnloadGeom();
 	SAIG_Clear();
 	if(!m_isServerMode)
 	{
@@ -94,7 +93,7 @@ void CLevel::load(const char *szName, bool isGame)
 	if (pConfig->keyExists("level", "local_name"))
 		m_sLocalName = pConfig->getKey("level", "local_name");
 
-	if (pConfig->keyExists("level", "geometry"))
+	/*if (pConfig->keyExists("level", "geometry"))
 	{
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load geometry\n");
 		sprintf(szFullPath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, pConfig->getKey("level", "geometry"));
@@ -105,7 +104,7 @@ void CLevel::load(const char *szName, bool isGame)
 			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of geometry '%s'", szFullPath);
 		}
 	}
-
+	*/
 	if (pConfig->keyExists("level", "green"))
 	{
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load green\n");
@@ -133,7 +132,7 @@ void CLevel::load(const char *szName, bool isGame)
 		}
 	}
 
-	if (pConfig->keyExists("level", "physic"))
+	/*if (pConfig->keyExists("level", "physic"))
 	{
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load physic\n");
 		
@@ -156,7 +155,7 @@ void CLevel::load(const char *szName, bool isGame)
 		if (isGame)
 			SPhysics_LoadGeom();
 	}
-
+	*/
 	if (pConfig->keyExists("level", "aigrid"))
 	{
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load aigrid\n");
@@ -225,7 +224,12 @@ void CLevel::load(const char *szName, bool isGame)
 			SGCore_SkyCloudsSetUse(true);
 
 			float3 vMin, vMax;
-			SGeom_GetMinMax(&vMin, &vMax);
+
+			XEventLevelSize levelSize;
+			Core_GetIXCore()->getEventChannel<XEventLevelSize>(EVENT_LEVEL_GET_SIZE_GUID)->broadcastEvent(&levelSize);
+			vMin = levelSize.vMin;
+			vMax = levelSize.vMax;
+
 			float fWidth = (vMax.x - vMin.x) * 2.f;
 			float fHeight = (vMax.z - vMin.z) * 2.f;
 			fWidth = (fWidth >= SXGC_SKYCLOUDS_MIN_SIZE ? fWidth : SXGC_SKYCLOUDS_MIN_SIZE);
@@ -275,13 +279,13 @@ void CLevel::save(const char *szName)
 	if (m_sLocalName.length() > 0)
 		fprintf(file, "local_name = %s\n", m_sLocalName.c_str());
 
-	if (SGeom_GetCountModels() > 0)
+	/*if (SGeom_GetCountModels() > 0)
 	{
 		fprintf(file, "geometry = %s.geom\n", szName);
 
 		sprintf(szFullPath, "%s%s/%s.geom", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
 		SGeom_Save(szFullPath);
-	}
+	}*/
 
 	if (SGreen_GetCount() > 0)
 	{
@@ -318,10 +322,11 @@ void CLevel::save(const char *szName)
 		SAIG_GridSave(szFullPath);
 	}
 
-	SPhysics_LoadGeom();
+	/*SPhysics_LoadGeom();
 	sprintf(szFullPath, "%s%s/%s.phy", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
 	fprintf(file, "physic = %s.phy\n", szName);
 	SPhysics_ExportGeom(szFullPath);
+	*/
 
 	if (m_sAmbientSounds[0])
 	{

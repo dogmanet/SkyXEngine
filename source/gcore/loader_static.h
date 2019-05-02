@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -42,7 +42,7 @@ struct DataStaticModel : public ISXDataStaticModel
 	{
 		ISXDataStaticModel *pModelCopy = new DataStaticModel();
 
-		//íå âñå äàííûå êîïèðóþöî!!!!!!!!!!!!!
+		//Ð½Ðµ Ð²ÑÐµ Ð´Ð°Ð½Ð½Ñ‹Ðµ ÐºÐ¾Ð¿Ð¸Ñ€ÑƒÑŽÑ†Ð¾!!!!!!!!!!!!!
 		pModelCopy->m_uiAllVertexCount = m_uiAllVertexCount;
 		pModelCopy->m_uiAllIndexCount = m_uiAllIndexCount;
 
@@ -110,7 +110,7 @@ struct DataStaticModel : public ISXDataStaticModel
 	{
 		mem_release_del(m_pVertexBuffer);
 		mem_release_del(m_pIndexBuffer);
-
+		
 		for (int i = 0; i < m_uiSubsetCount; ++i)
 		{
 			mem_delete_a(m_ppTextures[i]);

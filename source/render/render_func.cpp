@@ -102,12 +102,12 @@ bool rfunc::ComDeviceLost(bool isSetWindowSize)
 
 	//сбрасываем все что необходимо для восстановления устройства
 	SGCore_OnLostDevice();
-	SGreen_OnLostDevice();
-	SGeom_OnLostDevice();
+//	SGreen_OnLostDevice();
+//	SGeom_OnLostDevice();
 	SMtrl_OnLostDevice();
-	SPE_OnLostDevice();
-	SPP_OnLostDevice();
-	SGame_OnLostDevice();
+//	SPE_OnLostDevice();
+//	SPP_OnLostDevice();
+//	SGame_OnLostDevice();
 
 	rfunc::InitModeWindow();
 	bool bf = SGCore_OnDeviceReset(*r_win_width, *r_win_height, *r_win_windowed);
@@ -124,12 +124,12 @@ bool rfunc::ComDeviceLost(bool isSetWindowSize)
 	gdata::InitAllMatrix();
 	*r_resize = RENDER_RESIZE_NONE;
 	SGCore_OnResetDevice();
-	SGeom_OnResetDevice();
+//	SGeom_OnResetDevice();
 	SMtrl_OnResetDevice();
-	SGreen_OnResetDevice();
-	SPE_OnResetDevice();
-	SGame_OnResetDevice();
-	SPP_OnDeviceReset();
+//	SGreen_OnResetDevice();
+//	SPE_OnResetDevice();
+//	SGame_OnResetDevice();
+//	SPP_OnDeviceReset();
 	//	gdata::pDXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 	// }
 	return(true);
@@ -137,6 +137,7 @@ bool rfunc::ComDeviceLost(bool isSetWindowSize)
 
 void rfunc::ComVisibleReflection()
 {
+#if 0
 	static const int *r_reflection_render = GET_PCVAR_INT("r_reflection_render");
 
 	if (r_reflection_render && (*r_reflection_render) == REFLECTION_RENDER_ONLY_SKY)
@@ -223,6 +224,7 @@ void rfunc::ComVisibleReflection()
 			}
 		}
 	}
+#endif
 }
 
 void rfunc::SaveScreenShot()
@@ -497,6 +499,7 @@ void rfunc::RenderSky(DWORD timeDelta)
 
 void rfunc::RenderParticles(DWORD timeDelta)
 {
+#if 0
 	gdata::pDXDevice->setRasterizerState(gdata::rstates::pRasterizerCullNone);
 //	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 //#ifdef _GRAPHIX_API
@@ -523,10 +526,12 @@ void rfunc::RenderParticles(DWORD timeDelta)
 //	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 //	gdata::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 	gdata::pDXDevice->setDepthStencilState(NULL);
+#endif
 }
 
 void rfunc::RenderMainPostProcess(DWORD timeDelta)
 {
+#if 0
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 	static float2_t vWinSize;
@@ -615,10 +620,12 @@ void rfunc::RenderMainPostProcess(DWORD timeDelta)
 	static const float * pp_motionblur_coef = GET_PCVAR_FLOAT("pp_motionblur_coef");
 	if (pp_motionblur && (*pp_motionblur))
 		SPP_RenderMotionBlur((pp_motionblur_coef ? (*pp_motionblur_coef) : 0.1), timeDelta);
+#endif
 }
 
 void rfunc::RenderFinalPostProcess(DWORD timeDelta)
 {
+#if 0
 	static const float * pp_whiteblack_coef = GET_PCVAR_FLOAT("pp_whiteblack_coef");
 
 	if (pp_whiteblack_coef && (*pp_whiteblack_coef) > 0.f)
@@ -639,6 +646,7 @@ void rfunc::RenderFinalPostProcess(DWORD timeDelta)
 
 	if (pp_contrast && pp_gamma && pp_bright)
 		SPP_RenderCBG(&float3_t((*pp_contrast), (*pp_gamma), (*pp_bright)));
+#endif
 }
 
 #if 0

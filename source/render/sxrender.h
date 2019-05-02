@@ -17,24 +17,12 @@ See the license in LICENSE
 #if defined(_DEBUG)
 #pragma comment(lib, "sxinput_d.lib")
 #pragma comment(lib, "sxgcore_d.lib")
-#pragma comment(lib, "sxgeom_d.lib")
-#pragma comment(lib, "sxgreen_d.lib")
 #pragma comment(lib, "sxmtrl_d.lib")
-#pragma comment(lib, "sxparticles_d.lib")
-#pragma comment(lib, "sxpp_d.lib")
-#pragma comment(lib, "sxanim_d.lib")
-#pragma comment(lib, "sxdecals_d.lib")
 #pragma comment(lib, "sxgame_d.lib")
 #else
 #pragma comment(lib, "sxinput.lib")
 #pragma comment(lib, "sxgcore.lib")
-#pragma comment(lib, "sxgeom.lib")
-#pragma comment(lib, "sxgreen.lib")
 #pragma comment(lib, "sxmtrl.lib")
-#pragma comment(lib, "sxparticles.lib")
-#pragma comment(lib, "sxpp.lib")
-#pragma comment(lib, "sxanim.lib")
-#pragma comment(lib, "sxdecals.lib")
 #pragma comment(lib, "sxgame.lib")
 #endif
 
@@ -42,12 +30,7 @@ See the license in LICENSE
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec(dllimport)
 #include <gcore/sxgcore.h>
-#include <geom/sxgeom.h>
-#include <green/sxgreen.h>
 #include <mtrl/sxmtrl.h>
-#include <anim/sxanim.h>
-#include <pp/sxpp.h>
-#include <particles/sxparticles.h>
 
 
 #ifdef SX_DLL

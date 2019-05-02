@@ -267,6 +267,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	//D3DXCreateBox(SGCore_GetDXDevice(), 2, 2, 2, &g_pMeshBound, 0);
 
+#if 0
 	SGeom_0Create("sxgeom", false,
 #ifdef SX_SERVER
 		true
@@ -275,6 +276,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 #endif
 		);
 	SGeom_Dbg_Set(SkyXEngine_PrintfLog);
+#endif 
 
 	SGreen_0Create("sxgreen", false,
 #ifdef SX_SERVER
@@ -1049,8 +1051,10 @@ void SkyXEngine_Frame(DWORD timeDelta)
 
 		XRender2D(views[i], fScales[i], true);
 
+#if 0
 		if(SGeom_GetCountModels() > 0)
 			SGeom_Render(timeDelta, GEOM_RENDER_TYPE_ALL);
+#endif
 
 		Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
 		pDXDevice->setVertexShaderConstant(g_pCameraConstantBuffer, 4);
@@ -2102,7 +2106,9 @@ void SkyXEngine_Kill()
 #ifndef _SERVER
 	SXAnim_AKill();
 #endif
+#if 0
 	SGeom_AKill();
+#endif
 #ifndef _SERVER
 	SSCore_AKill();
 	SGCore_AKill();

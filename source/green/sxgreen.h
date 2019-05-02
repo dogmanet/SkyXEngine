@@ -21,16 +21,13 @@ See the license in LICENSE
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
-#pragma comment(lib, "sxgeom_d.lib")
 #else
 #pragma comment(lib, "sxgcore.lib")
-#pragma comment(lib, "sxgeom.lib")
 #endif
 
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <gcore/sxgcore.h>
-#include <geom/sxgeom.h>
 
 #ifdef SX_DLL
 #undef SX_LIB_API

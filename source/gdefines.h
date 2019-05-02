@@ -151,9 +151,7 @@ struct IBaseObject
 class IXUnknown
 {
 protected:
-	virtual ~IXUnknown()
-	{
-	}
+	virtual ~IXUnknown() = default;
 	UINT m_uRefCount = 1;
 public:
 	void AddRef()
@@ -296,10 +294,11 @@ typedef void(*report_func) (int iLevel, const char *szLibName, const char *szFor
 #ifndef DEFAULT_FUNCTION_REPORT 
 #define DEFAULT_FUNCTION_REPORT
 
+#if 0
 /*! Дефолтовая функция вывода отладочной информации ВМЕСТО НЕЕ В ЯДРО/ПОДСИСТЕМУ НУЖНО ОТПРАВЛЯТЬ СВОЮ */
 inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, ...)
 {
-#if defined(_WINDOWS)
+#if 0 && defined(_WINDOWS)
 	AllocConsole();
 	freopen("CONOUT$", "wt", stdout);
 #endif
@@ -310,6 +309,52 @@ inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, .
 	fprintf(stdout, "work program will be stopped within 5 seconds ...");
 	Sleep(5000);
 	exit(1);
+}
+#endif
+inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, ...)
+{
+	/*va_list va;
+	char buf[REPORT_MSG_MAX_LEN];
+	va_start(va, szFormat);
+	vsprintf_s(buf, REPORT_MSG_MAX_LEN, szFormat, va);
+	va_end(va);*/
+
+	static char szStr[REPORT_MSG_MAX_LEN];
+	szStr[0] = 0;
+	static char szStr2[REPORT_MSG_MAX_LEN];
+	szStr2[0] = 0;
+	int iStrLen = sizeof(szStr);
+
+	va_list va;
+	va_start(va, szFormat);
+	vsprintf_s(szStr, REPORT_MSG_MAX_LEN, szFormat, va);
+	va_end(va);
+
+	if(szStr[0] != ' ' && szStr[0] != '\t')
+		sprintf(szStr2, "%s%s%s: ", COLOR_GREEN, szLibName, COLOR_RESET);
+
+	if(iLevel == REPORT_MSG_LEVEL_ERROR)
+	{
+		sprintf(szStr2 + strlen(szStr2), "%s", COLOR_LRED);
+	}
+	else if(iLevel == REPORT_MSG_LEVEL_WARNING)
+	{
+		sprintf(szStr2 + strlen(szStr2), "%s", COLOR_YELLOW);
+	}
+
+	sprintf(szStr2 + strlen(szStr2), "%s", szStr);
+
+	if(iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_WARNING)
+	{
+		sprintf(szStr2 + strlen(szStr2), "%s", COLOR_RESET);
+	}
+
+	printf(szStr2);
+
+	if(iLevel == REPORT_MSG_LEVEL_ERROR)
+	{
+		exit(0);
+	}
 }
 
 #endif

@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -12,11 +12,9 @@ See the license in LICENSE
 #include "Editable.h"
 #include "Renderable.h"
 
+#include <xcommon/XEvents.h>
+
 //##########################################################################
-
-IGXContext *g_pDXDevice = 0;
-
-CRenderable *g_pRenderable = 0;
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
@@ -26,67 +24,6 @@ report_func g_fnReportf = DefReport;
 CModels *g_pModels = 0;
 
 #define GEOM_PRECOND(retval) if(!(g_pModels)){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxgeom is not init", GEN_MSG_LOCATION); return retval;}
-
-//##########################################################################
-
-SX_LIB_API long SGeom_0GetVersion()
-{
-	return SXGEOM_VERSION;
-}
-
-SX_LIB_API void SGeom_Dbg_Set(report_func rf)
-{
-	g_fnReportf = rf;
-}
-
-SX_LIB_API void SGeom_0Create(const char *szName, bool isUnic, bool isServerMode)
-{
-	if(!isServerMode)
-	{
-		g_pDXDevice = SGCore_GetDXDevice();
-	}
-
-	if (szName && strlen(szName) > 1)
-	{
-		if (isUnic)
-		{
-			HANDLE hMutex = CreateMutex(NULL, FALSE, szName);
-			if (GetLastError() == ERROR_ALREADY_EXISTS)
-			{
-				CloseHandle(hMutex);
-				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
-				return;
-			}
-		}
-		g_pModels = new CModels(isServerMode);
-
-		g_pRenderable = new CRenderable();
-
-		Core_GetIXCore()->getPluginManager()->registerInterface(IXEDITABLE_GUID, new CEditable(Core_GetIXCore()));
-		Core_GetIXCore()->getPluginManager()->registerInterface(IXRENDERABLE_GUID, g_pRenderable);
-	}
-	else
-		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
-}
-
-SX_LIB_API void SGeom_AKill()
-{
-	mem_delete(g_pModels);
-}
-
-SX_LIB_API void SGeom_OnLostDevice()
-{
-	GEOM_PRECOND(_VOID);
-
-	g_pModels->onLostDevice();
-}
-
-SX_LIB_API void SGeom_OnResetDevice()
-{
-	GEOM_PRECOND(_VOID);
-
-	g_pModels->onResetDevice();
-}
 
 //##########################################################################
 

@@ -905,6 +905,7 @@ ID CGreen::generate(const char *szName,
 	const char *szPathModel, const char *szPathLod1, const char *szPathLod2,
 	const char *szPathNavMesh)
 {
+#if 0
 	if (!STR_VALIDATE(szPathModel))
 	{
 		LibReport(REPORT_MSG_LEVEL_WARNING, "not initialized path for model!!!");
@@ -988,12 +989,13 @@ ID CGreen::generate(const char *szName,
 	{
 		LibReport(REPORT_MSG_LEVEL_WARNING,"not found static geometry in level!!!");
 	}
-
+#endif
 	return -1;
 }
 
 bool CGreen::genByTex(CModel *pGreen, ID idMask, bool shouldAveragedRGB, float3 *pGreenMin, float3 *pGreenMax, float fDensity)
 {
+#if 0
 	float3 vLeveMin, vLeveMax;
 	SGeom_GetMinMax(&vLeveMin, &vLeveMax);
 	float3 vPosMin = vLeveMin;
@@ -1127,7 +1129,7 @@ bool CGreen::genByTex(CModel *pGreen, ID idMask, bool shouldAveragedRGB, float3 
 		addNewObject2Global(pGreen, &oGreenData);
 	}
 	aPos.clear();
-
+#endif
 	return true;
 }
 

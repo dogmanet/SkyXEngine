@@ -100,7 +100,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/bin/</OutDir>
+    <OutDir>../../../build/bin/plugins/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IncludePath>../../../source;../../../sdks/;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
@@ -112,11 +112,11 @@
     <LibraryPath>../../../libs64;$(LibraryPath);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
     <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</SourcePath>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/bin64/</OutDir>
+    <OutDir>../../../build/bin64/plugins/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/bin/</OutDir>
+    <OutDir>../../../build/bin/plugins/</OutDir>
     <IncludePath>../../../source;../../../sdks/;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
     <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</SourcePath>
@@ -126,7 +126,7 @@
     <LibraryPath>../../../libs64;$(LibraryPath);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
     <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</SourcePath>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/bin64/</OutDir>
+    <OutDir>../../../build/bin64/plugins/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

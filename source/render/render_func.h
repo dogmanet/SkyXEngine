@@ -26,7 +26,6 @@ See the license in LICENSE
 
 #include <render/gdata.h>
 
-#include <geom/sxgeom.h>
 #include <green/sxgreen.h>
 #include <aigrid/sxaigrid.h>
 #include <physics/sxphysics.h>

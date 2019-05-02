@@ -51,6 +51,7 @@ protected:
 	{
 		IXRenderable *pRenderable;
 		UINT uPriority;
+		UINT uRenderableId;
 	};
 
 	struct _render_stage

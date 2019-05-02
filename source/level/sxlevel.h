@@ -20,7 +20,6 @@ See the license in LICENSE
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
 #pragma comment(lib, "sxscore_d.lib")
-#pragma comment(lib, "sxgeom_d.lib")
 #pragma comment(lib, "sxgreen_d.lib")
 #pragma comment(lib, "sxaigrid_d.lib")
 #pragma comment(lib, "sxparticles_d.lib")
@@ -30,7 +29,6 @@ See the license in LICENSE
 #else
 #pragma comment(lib, "sxgcore.lib")
 #pragma comment(lib, "sxscore.lib")
-#pragma comment(lib, "sxgeom.lib")
 #pragma comment(lib, "sxgreen.lib")
 #pragma comment(lib, "sxaigrid.lib")
 #pragma comment(lib, "sxparticles.lib")
@@ -41,7 +39,6 @@ See the license in LICENSE
 
 #include <gcore/sxgcore.h>
 #include <score/sxscore.h>
-#include <geom/sxgeom.h>
 #include <green/sxgreen.h>
 #include <aigrid/sxaigrid.h>
 #include <particles/sxparticles.h>
