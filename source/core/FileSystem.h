@@ -16,7 +16,15 @@ private:
 
 	HANDLE getFileHandle(const char *szPath);
 
+    //корневые пути и приоритет
+    Array<String> filePaths;
+    Array<int> priority;
+
 public:
+	UINT addRoot(const char *szPath, int iPriority) override;
+
+    UINT getRootCount() override;
+
 	bool fileExists(const char *szPath) override;
 
 	size_t fileGetSize(const char *szPath) override;

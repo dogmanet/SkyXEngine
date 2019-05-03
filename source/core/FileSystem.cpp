@@ -20,6 +20,18 @@ HANDLE СFileSystem::getFileHandle(const char *szPath)
 		NULL);
 }
 
+UINT СFileSystem::addRoot(const char *szPath, int iPriority = -1)
+{
+    filePaths.push_back(String(szPath));
+    priority.push_back(iPriority);
+    return filePaths.size() - 1;
+}
+
+UINT СFileSystem::getRootCount()
+{
+    return filePaths.size();
+}
+
 bool СFileSystem::fileExists(const char *szPath)
 {
 	HANDLE hFile = getFileHandle(szPath);
@@ -52,7 +64,7 @@ bool СFileSystem::isFile(const char *szPath)
 	//Если не существует или указанный путь ведет к каталогу
 	if (flag == INVALID_FILE_ATTRIBUTES && !(flag & FILE_ATTRIBUTE_DIRECTORY))
 	{
-			return false;
+		return false;
 	}
 
 	return true;
