@@ -155,5 +155,8 @@
     <ClInclude Include="..\..\..\source\core\FileSystem.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\common\list.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

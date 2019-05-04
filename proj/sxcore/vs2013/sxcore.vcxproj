@@ -56,7 +56,10 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\source\common\ConcurrentQueue.h" />
     <ClInclude Include="..\..\..\source\common\file_utils.h" />
-    <ClInclude Include="..\..\..\source\common\string.h" />
+    <ClInclude Include="..\..\..\source\common\list.h" />
+    <ClInclude Include="..\..\..\source\common\string.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\core\AsyncFileReader.h" />
     <ClInclude Include="..\..\..\source\core\FileInMemory.h" />
