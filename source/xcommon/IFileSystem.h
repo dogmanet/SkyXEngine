@@ -64,21 +64,20 @@ public:
 	//! возвращает время последнего изменения файла
 	virtual time_t getFileModifyTime(const char *szPath) = 0;
 
+    class IFileIterator
+    {
+    public:
+        //! Возврат к первому элементу
+        virtual void reset() = 0;
+        //! Имя следующего файла, NULL если файлы закончились
+        virtual const char *next() = 0;
+    };
+
 	/*! возвращает массив со всеми данными находящимися по пути szPath,
 	szPath может быть не канонизирован и необязательно должен заканчиваться слэшем,
 	szPath уже может содержать фильтр (к примеру C:/*), но если его нет, тогда функция подставит сама
 	*/
-	virtual Array<String> getFileList(const char *szPath, FILE_TYPE type) = 0;
-
-
-	class IFileIterator
-	{
-	public:
-		//! Возврат к первому элементу
-		virtual void reset() = 0;
-		//! Имя следующего файла, NULL если файлы закончились
-		virtual const char *next() = 0;
-	};
+    virtual IFileIterator *getFileList(const char *szPath, FILE_TYPE type) = 0;
 
 	/*! возвращает список всех файлов или папок (в зависимости от type),
 	szPath не должен содержать фильтров, может быть не канонизирован и без последнего слэша,

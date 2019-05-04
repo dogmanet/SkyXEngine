@@ -1,6 +1,6 @@
 #include "FileSystem.h"
 
-time_t СFileSystem::convertFiletimeToTime_t(const FILETIME& ft)
+time_t CFileSystem::convertFiletimeToTime_t(const FILETIME& ft)
 {
 	ULARGE_INTEGER ull;
 	ull.LowPart = ft.dwLowDateTime;
@@ -9,7 +9,7 @@ time_t СFileSystem::convertFiletimeToTime_t(const FILETIME& ft)
 	return ull.QuadPart / 10000000ULL - 11644473600ULL;
 }
 
-HANDLE СFileSystem::getFileHandle(const char *szPath)
+HANDLE CFileSystem::getFileHandle(const char *szPath)
 {
 	return CreateFile(szPath,
 		GENERIC_READ,
@@ -20,19 +20,19 @@ HANDLE СFileSystem::getFileHandle(const char *szPath)
 		NULL);
 }
 
-UINT СFileSystem::addRoot(const char *szPath, int iPriority = -1)
+UINT CFileSystem::addRoot(const char *szPath, int iPriority = -1)
 {
     filePaths.push_back(String(szPath));
     priority.push_back(iPriority);
     return filePaths.size() - 1;
 }
 
-UINT СFileSystem::getRootCount()
+UINT CFileSystem::getRootCount()
 {
     return filePaths.size();
 }
 
-bool СFileSystem::fileExists(const char *szPath)
+bool CFileSystem::fileExists(const char *szPath)
 {
 	HANDLE hFile = getFileHandle(szPath);
 
@@ -42,7 +42,7 @@ bool СFileSystem::fileExists(const char *szPath)
 	return hFile != INVALID_HANDLE_VALUE;
 }
 
-size_t СFileSystem::fileGetSize(const char *szPath)
+size_t CFileSystem::fileGetSize(const char *szPath)
 {
 	WIN32_FILE_ATTRIBUTE_DATA lpFileInformation;
 
@@ -57,7 +57,7 @@ size_t СFileSystem::fileGetSize(const char *szPath)
 	return result != 0 ? FileSize : FILE_NOT_FOUND;
 }
 
-bool СFileSystem::isFile(const char *szPath)
+bool CFileSystem::isFile(const char *szPath)
 {
 	DWORD flag = GetFileAttributes(szPath);
 
@@ -70,7 +70,7 @@ bool СFileSystem::isFile(const char *szPath)
 	return true;
 }
 
-bool СFileSystem::isDirectory(const char *szPath)
+bool CFileSystem::isDirectory(const char *szPath)
 {
 	DWORD flag = GetFileAttributes(szPath);
 
@@ -78,7 +78,7 @@ bool СFileSystem::isDirectory(const char *szPath)
 	return flag & FILE_ATTRIBUTE_DIRECTORY;
 }
 
-time_t СFileSystem::getFileModifyTime(const char *szPath)
+time_t CFileSystem::getFileModifyTime(const char *szPath)
 {
 	FILETIME mTime;
 
