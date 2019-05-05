@@ -44,7 +44,7 @@ public:
 	*/
 	virtual UINT addRoot(const char *szPath, int iPriority = -1) = 0;
 	virtual UINT getRootCount() = 0;
-	virtual const char *getRoot(UINT id);
+	virtual const char *getRoot(UINT id) = 0;
 	/*! Помечает корневой путь путем для записи. По этому пути будут осуществляться все операции создания файлов
 		Путь для записи может быть только один, если явно не задан - используется первый добавленный путь, не являющийся архивом
 	*/

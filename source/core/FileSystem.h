@@ -2,10 +2,17 @@
 #define __FILESYSTEM_H
 
 #include <xcommon/IFileSystem.h>
+#include <cassert>
 
 #define CLOSE_HANDLE(handle) if (handle != INVALID_HANDLE_VALUE) \
 {\
     CloseHandle(handle); \
+}
+
+//! Проверка существования пути с таким ID 
+#define FILEID_CHECKED(size) if (size - 1 < id) \
+{\
+    assert(size - 1 < id && "The path ID you entered does not exist"); \
 }
 
 class CFileSystem final : public IFileSystem
@@ -17,13 +24,20 @@ private:
     HANDLE getFileHandle(const char *szPath);
 
     //корневые пути и приоритет
-    Array<String> filePaths;
-    Array<int> priority;
+    Array<String> m_filePaths;
+    Array<int> m_priority;
+
+    //!Наш текущий ID корневого пути
+    UINT m_writableRoot = 0;
 
 public:
     UINT addRoot(const char *szPath, int iPriority) override;
 
     UINT getRootCount() override;
+
+    const char *getRoot(UINT id) override;
+
+    void setWritableRoot(UINT id) override;
 
     bool fileExists(const char *szPath) override;
 

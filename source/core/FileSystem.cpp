@@ -22,14 +22,28 @@ HANDLE CFileSystem::getFileHandle(const char *szPath)
 
 UINT CFileSystem::addRoot(const char *szPath, int iPriority = -1)
 {
-    filePaths.push_back(String(szPath));
-    priority.push_back(iPriority);
-    return filePaths.size() - 1;
+    m_filePaths.push_back(String(szPath));
+    m_priority.push_back(iPriority);
+    return m_filePaths.size() - 1;
 }
 
 UINT CFileSystem::getRootCount()
 {
-    return filePaths.size();
+    return m_filePaths.size();
+}
+
+const char *CFileSystem::getRoot(UINT id)
+{
+    FILEID_CHECKED(m_filePaths.size());
+
+    return m_filePaths[id].c_str();
+}
+
+void CFileSystem::setWritableRoot(UINT id)
+{
+    FILEID_CHECKED(m_filePaths.size());
+
+    m_writableRoot = id;
 }
 
 bool CFileSystem::fileExists(const char *szPath)
