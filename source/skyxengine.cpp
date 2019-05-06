@@ -260,23 +260,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SGCore_OC_SetEnable(false);
 //#endif
 
-//	SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, FALSE);
-
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB gcore initialized\n");
-
-
-	//D3DXCreateBox(SGCore_GetDXDevice(), 2, 2, 2, &g_pMeshBound, 0);
-
-#if 0
-	SGeom_0Create("sxgeom", false,
-#ifdef SX_SERVER
-		true
-#else
-		false
-#endif
-		);
-	SGeom_Dbg_Set(SkyXEngine_PrintfLog);
-#endif 
 
 	SGreen_0Create("sxgreen", false,
 #ifdef SX_SERVER
@@ -337,7 +321,6 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 		false
 #endif
 		);
-	SXAnim_Dbg_Set(SkyXEngine_PrintfLog);
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB anim initialized\n");
 
 
@@ -402,6 +385,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB game initialized\n");
 
+	Core_GetIXCore()->initUpdatable();
 
 
 #if !defined(SX_GAME) && !defined(SX_SERVER)
@@ -440,9 +424,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 #endif
 
 	SkyXEngine_UpdateDataCVar();
-
-	SXAnim_UpdateSetThreadNum(Core_MGetThreadCount());
-
+	
 #ifndef SX_PARTICLES_EDITOR
 	SGame_UpdateSetThreadNum(Core_MGetThreadCount());
 #endif
@@ -843,23 +825,13 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	SLevel_AmbientSndUpdate();
 	Core_PEndSection(PERF_SECTION_AMBIENT_SND_UPDATE);
 
-	Core_PStartSection(PERF_SECTION_ANIM_UPDATE);
-	CLibUpdate updateAnim(SXAnim_Update, PERF_SECTION_ANIM_UPDATE);
-	ID idUpdateAnim = Core_MForLoop(0, Core_MGetThreadCount(), &updateAnim, 1);
-	Core_PEndSection(PERF_SECTION_ANIM_UPDATE);
-
 	Core_MWaitFor(idUpdateGame);
 	Core_PStartSection(PERF_SECTION_PHYS_UPDATE);
 	SPhysics_Update();
 	Core_PEndSection(PERF_SECTION_PHYS_UPDATE);
 	
 	//#############################################################################
-
-	Core_MWaitFor(idUpdateAnim);
-	Core_PStartSection(PERF_SECTION_ANIM_SYNC);
-	SXAnim_Sync();
-	Core_PEndSection(PERF_SECTION_ANIM_SYNC);
-
+	
 	Core_PStartSection(PERF_SECTION_PHYS_SYNC);
 	SPhysics_Sync();
 	Core_PEndSection(PERF_SECTION_PHYS_SYNC);
@@ -867,6 +839,8 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	Core_PStartSection(PERF_SECTION_GAME_SYNC);
 	SGame_Sync();
 	Core_PEndSection(PERF_SECTION_GAME_SYNC);
+
+	Core_GetIXCore()->runUpdate();
 	
 #ifdef SX_TERRAX 
 	if(g_is3DRotating || g_is3DPanning)

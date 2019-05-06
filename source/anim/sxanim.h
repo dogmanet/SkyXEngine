@@ -311,23 +311,6 @@ SX_LIB_API void SXAnim_0Create(bool m_isServerMode = false);
 */
 SX_LIB_API void SXAnim_AKill();
 
-/*! Устанавливает функцию сообщений
-*/
-SX_LIB_API void SXAnim_Dbg_Set(report_func rf);
-
-/*! Устанавливает количество потоков обновления анимации
-*/
-SX_LIB_API void SXAnim_UpdateSetThreadNum(int num);
-
-/*! Выполняет обновление анимаций
-	@param[in] thread Номер потока, выполняющего обновление
-*/
-SX_LIB_API void SXAnim_Update(int thread = 0);
-
-/*! Выполняет синхронизацию. Для многопоточного обновления
-*/
-SX_LIB_API void SXAnim_Sync();
-
 /*! Создает проигрыватель анимации. 
 	@param[in] mdl Имя модели для загрузки. Может быть NULL
 */

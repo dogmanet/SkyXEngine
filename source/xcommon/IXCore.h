@@ -27,6 +27,9 @@ public:
 		return((IEventChannel<T>*)getEventChannelInternal(guid));
 	}
 
+	//@FIXME: Remove that!
+	virtual void initUpdatable() = 0;
+	virtual void runUpdate() = 0;
 protected:
 	virtual IBaseEventChannel *getEventChannelInternal(const XGUID &guid) = 0;
 };

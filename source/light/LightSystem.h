@@ -27,8 +27,8 @@ public:
 
 protected:
 	CXLightSun *m_pSun = NULL;
-	MemAlloc<CXLightPoint> m_poolPoint;
-	MemAlloc<CXLightSpot> m_poolSpot;
+	MemAlloc<CXLightPoint, 256, 16, 16> m_poolPoint;
+	MemAlloc<CXLightSpot, 256, 16, 16> m_poolSpot;
 
 	Array<CXLight*> m_aLights;
 

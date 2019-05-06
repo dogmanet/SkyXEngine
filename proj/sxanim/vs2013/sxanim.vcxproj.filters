@@ -30,6 +30,9 @@
     <ClCompile Include="..\..\..\source\anim\RenderableVisibility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\anim\Updatable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\anim\ModelFile.h">
@@ -45,6 +48,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\anim\RenderableVisibility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\anim\Updatable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -9,6 +9,7 @@ See the license in LICENSE
 
 #include "animated.h"
 #include "Renderable.h"
+#include "Updatable.h"
 
 #include <gcore/sxgcore.h>
 
@@ -37,6 +38,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 
 AnimationManager * g_mgr = NULL;
 CRenderable *g_pRenderable = NULL;
+CUpdatable *g_pUpdatable = NULL;
 
 SX_LIB_API void SXAnim_0Create(bool m_isServerMode)
 {
@@ -48,30 +50,16 @@ SX_LIB_API void SXAnim_0Create(bool m_isServerMode)
 	Core_SetOutPtr();
 	g_mgr = new AnimationManager(m_isServerMode ? NULL : SGCore_GetDXDevice());
 	g_pRenderable = new CRenderable();
+	g_pUpdatable = new CUpdatable();
 
 	Core_GetIXCore()->getPluginManager()->registerInterface(IXRENDERABLE_GUID, g_pRenderable);
+	Core_GetIXCore()->getPluginManager()->registerInterface(IXUPDATABLE_GUID, g_pUpdatable);
 }
 SX_LIB_API void SXAnim_AKill()
 {
 	SA_PRECOND(_VOID);
 	mem_delete(g_mgr);
 	mem_delete(g_pRenderable);
-}
-
-SX_LIB_API void SXAnim_Update(int thread)
-{
-	SA_PRECOND(_VOID);
-	g_mgr->update(thread);
-}
-SX_LIB_API void SXAnim_UpdateSetThreadNum(int num)
-{
-	SA_PRECOND(_VOID);
-	g_mgr->setThreadNum(num);
-}
-SX_LIB_API void SXAnim_Sync()
-{
-	SA_PRECOND(_VOID);
-	g_mgr->sync();
 }
 
 SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl)
@@ -83,9 +71,4 @@ SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl)
 		anim->setModel(mdl);
 	}
 	return(anim);
-}
-
-SX_LIB_API void SXAnim_Dbg_Set(report_func rf)
-{
-	g_fnReportf = rf;
 }

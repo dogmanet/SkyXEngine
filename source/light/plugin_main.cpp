@@ -5,9 +5,18 @@
 class CLightSystemPlugin: public IXPlugin
 {
 public:
+	CLightSystemPlugin(ID id):
+		m_id(id)
+	{}
+
 	void startup(IXCore *pCore)
 	{
 		m_pCore = pCore;
+	}
+
+	ID getID()
+	{
+		return(m_id);
 	}
 
 	UINT getInterfaceCount()
@@ -39,6 +48,7 @@ public:
 protected:
 
 	IXCore *m_pCore;
+	ID m_id;
 };
 
 DECLARE_XPLUGIN(CLightSystemPlugin);

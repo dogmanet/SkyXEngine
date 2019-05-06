@@ -10,6 +10,8 @@ CCore::CCore()
 }
 CCore::~CCore()
 {
+	shutdownUpdatable();
+
 	mem_delete(m_pFileSystem);
 	mem_delete(m_pPluginManager);
 	for(AssotiativeArray<XGUID, IBaseEventChannel*>::Iterator i = m_mEventChannels.begin(); i; i++)
@@ -102,4 +104,65 @@ void CCore::setRenderPipeline(IXRenderPipeline *pRenderPipeline)
 		pRenderPipeline->AddRef();
 	}
 	m_pRenderPipeline = pRenderPipeline;
+}
+
+void CCore::initUpdatable()
+{
+	IXCore *pCore = Core_GetIXCore();
+	IPluginManager *pPluginManager = pCore->getPluginManager();
+
+	IXUpdatable *pUpdatable;
+	UINT ic = 0;
+	while((pUpdatable = (IXUpdatable*)pPluginManager->getInterface(IXUPDATABLE_GUID, ic++)))
+	{
+		// if(pUpdatable->getVersion() == IXRENDERABLE_VERSION)
+		{
+			_update_sys rs;
+			rs.pUpdatable = pUpdatable;
+			rs.uPriority = pUpdatable->startup();
+
+			m_aUpdatables.push_back(rs);
+		}
+	}
+
+	m_aUpdatables.quickSort([](const _update_sys &a, const _update_sys &b)
+	{
+		return(a.uPriority < b.uPriority);
+	});
+}
+
+void CCore::runUpdate()
+{
+	static Array<ID> s_aIdToWait;
+	ID idTask;
+	//@FIXME: Change to actual value!
+	float fDeltaTime = 0.16f;
+	for(UINT i = 0, l = m_aUpdatables.size(); i < l; ++i)
+	{
+		idTask = m_aUpdatables[i].pUpdatable->run(fDeltaTime);
+		if(ID_VALID(idTask))
+		{
+			s_aIdToWait.push_back(idTask);
+		}
+	}
+
+	for(UINT i = 0, l = s_aIdToWait.size(); i < l; ++i)
+	{
+		Core_MWaitFor(s_aIdToWait[i]);
+	}
+
+	s_aIdToWait.clearFast();
+
+	for(UINT i = 0, l = m_aUpdatables.size(); i < l; ++i)
+	{
+		m_aUpdatables[i].pUpdatable->sync();
+	}
+}
+
+void CCore::shutdownUpdatable()
+{
+	for(UINT i = 0, l = m_aUpdatables.size(); i < l; ++i)
+	{
+		m_aUpdatables[i].pUpdatable->shutdown();
+	}
 }
