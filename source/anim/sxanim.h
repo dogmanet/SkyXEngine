@@ -328,24 +328,10 @@ SX_LIB_API void SXAnim_Update(int thread = 0);
 */
 SX_LIB_API void SXAnim_Sync();
 
-/*! Выполняет рендер всех анимаций с учетом видимости
-*/
-SX_LIB_API void SXAnim_Render(ID for_id=0);
-
 /*! Создает проигрыватель анимации. 
 	@param[in] mdl Имя модели для загрузки. Может быть NULL
 */
 SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl = NULL);
-
-//! просчитать видимость всех моделей для фрустума 
-SX_LIB_API void SXAnim_ModelsComVisible(
-	const IFrustum * frustum,	//!< фрустум для которого считаем видимость моделей
-	const float3 * viewpos,		//!< позиция источника фрустума чтобы просчитать дистанцию
-	ID id_arr = 0			//!< идентификатор массива информации о видимости для фрустума, создается через SXAnim_ModelsAddArrForCom, если 0 то считаем в дефолтный
-	);
-
-SX_LIB_API ID SXAnim_ModelsAddArrForCom();				//!< добавить массив просчетов, возвращает его идентификатор
-SX_LIB_API void SXAnim_ModelsDelArrForCom(ID id_arr);	//!< удалить массив просчетов с номером id_arr
 
 /*! @} sxanim */
 

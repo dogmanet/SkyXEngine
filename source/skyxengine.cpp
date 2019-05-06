@@ -288,7 +288,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SGreen_Dbg_Set(SkyXEngine_PrintfLog);
 	SGreen_SetFuncIntersect(SkyXEngine_RFuncGreenIntersect);
 
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB geom initialized\n");
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB green initialized\n");
 
 #if 0
 	SLight_0Create("sxml", false);
@@ -382,6 +382,12 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB level initialized\n");
 
+#ifndef SX_SERVER
+	SRender_0Create("sxrender", hWnd3DCurr, hWndParent3D, false);
+	SRender_Dbg_Set(SkyXEngine_PrintfLog);
+#endif
+
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB render initialized\n");
 
 #ifndef SX_PARTICLES_EDITOR
 	SGame_0Create(hWnd3DCurr, 
@@ -396,12 +402,6 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB game initialized\n");
 
-#ifndef SX_SERVER
-	SRender_0Create("sxrender", hWnd3DCurr, hWndParent3D, false);
-	SRender_Dbg_Set(SkyXEngine_PrintfLog);
-#endif
-
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB render initialized\n");
 
 
 #if !defined(SX_GAME) && !defined(SX_SERVER)

@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -55,8 +55,8 @@ public:
 	UINT GetBoneID(const char * name);
 	void getBoneName(UINT id, char * name, int len) const;
 
-	ModelMatrial ** m_iMaterials;
-	ModelLoD * m_pLods;
+	ModelMatrial ** m_iMaterials = NULL;
+	ModelLoD * m_pLods = NULL;
 	//SkyXEngine::Graphics::ThreeD::Bound BoundVol;
 
 	const ModelHitbox * getHitbox(const char * name) const;
@@ -79,25 +79,25 @@ protected:
 	ModelHeader m_hdr;
 	ModelHeader2 m_hdr2;
 #ifndef _SERVER
-	IGXIndexBuffer ** m_ppIndexBuffer;
-	IGXVertexBuffer ** m_ppVertexBuffer;
+	IGXIndexBuffer ** m_ppIndexBuffer = NULL;
+	IGXVertexBuffer ** m_ppVertexBuffer = NULL;
 	IGXRenderBuffer ** m_ppRenderBuffer = NULL;
 #endif
 
-	const ModelFile ** m_pDeps;
+	const ModelFile ** m_pDeps = NULL;
 
-	ModelActivity * pActivities;
+	ModelActivity * pActivities = NULL;
 
-	ModelBoneName * m_pBones;
-	ModelBone * m_pBonesBindPoseInv;
+	ModelBoneName * m_pBones = NULL;
+	ModelBone * m_pBonesBindPoseInv = false;
 
-	ModelBoneController * m_pControllers;
+	ModelBoneController * m_pControllers = NULL;
 
-	ModelSequence * m_pSequences;
+	ModelSequence * m_pSequences = NULL;
 
-	ModelHitbox * m_pHitboxes;
+	ModelHitbox * m_pHitboxes = NULL;
 
-	ModelPart * m_pParts;
+	ModelPart * m_pParts = NULL;
 
 	//AssotiativeArray<String, ModelBoneController> m_mfBoneControllers;
 	//AssotiativeArray<String, UINT> m_mSeqNames;
@@ -106,15 +106,15 @@ protected:
 
 	
 
-	bool m_bAssemblied;
-	bool m_bLoaded;
-	bool m_bInitPosInvSet;
+	bool m_bAssemblied = false;
+	bool m_bLoaded = false;
+	bool m_bInitPosInvSet = false;
 
 	AnimationManager * m_pMgr;
 
-	bool m_bIsTemp;
+	bool m_bIsTemp = false;
 
-	ISXBound * m_pBoundBox;
+	ISXBound * m_pBoundBox = NULL;
 
 
 };
@@ -255,6 +255,8 @@ protected:
 
 	ModelBoneShader * m_pBoneMatrix;
 	ModelBoneShader * m_pBoneMatrixRender; //!< read only in update cycle
+	IGXConstantBuffer *m_pBoneMatrixConstantBuffer = NULL;
+	UINT m_uBoneMatrixBufferSize = 0;
 
 	UINT m_iFadeTime[BLEND_MAX];
 	UINT m_iFadeCurTime[BLEND_MAX];
@@ -319,6 +321,7 @@ protected:
 	bool m_isGlowEnabled = false;
 	float3_t m_vGlowColor;
 
+
 private:
 	ISXBound * m_pBoundBox;
 	void AppendMesh(ModelLoDSubset * to, ModelLoDSubset * from, Array<int> & bone_relink, bool isStatic=false);
@@ -341,7 +344,7 @@ public:
 
 	IGXVertexDeclaration *getVertexDeclaration(MODEL_VERTEX_TYPE nDecl);
 
-	UINT getMaterial(const char * mat, bool bStatic = false);
+	IXMaterial *getMaterial(const char * mat, bool bStatic = false);
 
 	void computeVis(const IFrustum * frustum, const float3 * viewpos, ID id_arr);
 

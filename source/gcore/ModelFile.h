@@ -24,6 +24,8 @@ See the license in LICENSE
 #define MODEL_BONE_MAX_NAME 32  /*!< Максимальная длина имени кости */
 #define MODEL_CTRL_MAX_BONES 64 /*!< Максимальное количество костей, затрагиваемых контроллером */
 
+#include <mtrl/IXMaterial.h>
+
 struct model_vertex
 {
 
@@ -200,7 +202,7 @@ struct ModelLoD
 */
 struct ModelMatrial
 {
-	UINT iMat;                   //!< индекс материала
+	IXMaterial *pMat;            
 	char szName[MODEL_MAX_NAME]; //!< название материала
 };
 

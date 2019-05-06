@@ -178,6 +178,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\anim\Renderable.cpp" />
+    <ClCompile Include="..\..\..\source\anim\RenderableVisibility.cpp" />
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\anim\animated.cpp" />
     <ClCompile Include="..\..\..\source\anim\sxanim_dll.cpp" />
@@ -185,6 +187,8 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\source\anim\animated.h" />
     <ClInclude Include="..\..\..\source\anim\ModelFile.h" />
+    <ClInclude Include="..\..\..\source\anim\Renderable.h" />
+    <ClInclude Include="..\..\..\source\anim\RenderableVisibility.h" />
     <ClInclude Include="..\..\..\source\anim\sxanim.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

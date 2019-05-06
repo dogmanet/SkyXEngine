@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -8,6 +8,7 @@ See the license in LICENSE
 #include <windows.h>
 
 #include "animated.h"
+#include "Renderable.h"
 
 #include <gcore/sxgcore.h>
 
@@ -35,6 +36,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 }
 
 AnimationManager * g_mgr = NULL;
+CRenderable *g_pRenderable = NULL;
 
 SX_LIB_API void SXAnim_0Create(bool m_isServerMode)
 {
@@ -45,11 +47,15 @@ SX_LIB_API void SXAnim_0Create(bool m_isServerMode)
 	}
 	Core_SetOutPtr();
 	g_mgr = new AnimationManager(m_isServerMode ? NULL : SGCore_GetDXDevice());
+	g_pRenderable = new CRenderable();
+
+	Core_GetIXCore()->getPluginManager()->registerInterface(IXRENDERABLE_GUID, g_pRenderable);
 }
 SX_LIB_API void SXAnim_AKill()
 {
 	SA_PRECOND(_VOID);
 	mem_delete(g_mgr);
+	mem_delete(g_pRenderable);
 }
 
 SX_LIB_API void SXAnim_Update(int thread)
@@ -67,11 +73,6 @@ SX_LIB_API void SXAnim_Sync()
 	SA_PRECOND(_VOID);
 	g_mgr->sync();
 }
-SX_LIB_API void SXAnim_Render(ID for_id)
-{
-	SA_PRECOND(_VOID);
-	g_mgr->render(for_id);
-}
 
 SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl)
 {
@@ -82,23 +83,6 @@ SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl)
 		anim->setModel(mdl);
 	}
 	return(anim);
-}
-
-SX_LIB_API void SXAnim_ModelsComVisible(const IFrustum * frustum, const float3 * viewpos, ID id_arr)
-{
-	SA_PRECOND(_VOID);
-	g_mgr->computeVis(frustum, viewpos, id_arr);
-}
-
-SX_LIB_API ID SXAnim_ModelsAddArrForCom()
-{
-	SA_PRECOND(-1);
-	return(g_mgr->getNextVisId());
-}
-SX_LIB_API void SXAnim_ModelsDelArrForCom(ID id_arr)
-{
-	SA_PRECOND(_VOID);
-	g_mgr->freeVisID(id_arr);
 }
 
 SX_LIB_API void SXAnim_Dbg_Set(report_func rf)

@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -10,6 +10,11 @@ See the license in LICENSE
 #include <common/types.h>
 #include <gcore/sxgcore.h>
 #include <mtrl/sxmtrl.h>
+#include <mtrl/IXMaterial.h>
+
+#include "Renderable.h"
+
+extern CRenderable *g_pRenderable;
 
 /**
 *
@@ -17,24 +22,7 @@ See the license in LICENSE
 *
 */
 ModelFile::ModelFile(const char * name, AnimationManager * pMgr):
-m_bLoaded(false),
-m_bAssemblied(false),
-m_pDeps(NULL),
-pActivities(NULL),
-m_pBones(NULL),
-m_pControllers(NULL),
-m_pSequences(NULL),
-m_pLods(NULL),
-m_iMaterials(NULL),
-m_bInitPosInvSet(false),
-m_pBonesBindPoseInv(false),
-m_ppVertexBuffer(NULL),
-m_ppIndexBuffer(NULL),
-m_pMgr(pMgr),
-m_bIsTemp(false),
-m_pHitboxes(NULL),
-m_pParts(NULL),
-m_pBoundBox(NULL)
+	m_pMgr(pMgr)
 {
 	memset(&m_hdr, 0, sizeof(ModelHeader));
 	memset(&m_hdr2, 0, sizeof(ModelHeader2));
@@ -137,7 +125,7 @@ void ModelFile::Load(const char * name)
 			{
 				fread(m_iMaterials[j][i].szName, 1, MODEL_MAX_NAME, fp);
 
-				m_iMaterials[j][i].iMat = m_pMgr->getMaterial(m_iMaterials[j][i].szName, (m_hdr.iFlags & MODEL_FLAG_STATIC) != 0); //3
+				m_iMaterials[j][i].pMat = m_pMgr->getMaterial(m_iMaterials[j][i].szName, (m_hdr.iFlags & MODEL_FLAG_STATIC) != 0); //3
 
 			}
 		}
@@ -418,11 +406,14 @@ void ModelFile::render(SMMATRIX * mWorld, UINT nSkin, UINT nLod, ID idOverrideMa
 	m_pMgr->m_pd3dDevice->setIndexBuffer(m_ppIndexBuffer[nLod]);
 	m_pMgr->m_pd3dDevice->setRenderBuffer(m_ppRenderBuffer[nLod]);
 	
+	g_pRenderable->getMaterialSystem()->setWorld(*mWorld);
+
 	ID idMat;
 	for(UINT i = 0; i < m_pLods[nLod].iSubMeshCount; i++)
 	{
-		idMat = ID_VALID(idOverrideMaterial) ? idOverrideMaterial : m_iMaterials[nSkin][m_pLods[nLod].pSubLODmeshes[i].iMaterialID].iMat;
-		
+		//idMat = ID_VALID(idOverrideMaterial) ? idOverrideMaterial : m_iMaterials[nSkin][m_pLods[nLod].pSubLODmeshes[i].iMaterialID].pMat;
+		idMat = m_iMaterials[nSkin][m_pLods[nLod].pSubLODmeshes[i].iMaterialID].pMat->getInternalID();
+
 		if (SMtrl_AisInit() && SMtrl_MtlGetUseDestColor(idMat))
 		{
 			if(bUseGlow)
@@ -434,7 +425,9 @@ void ModelFile::render(SMMATRIX * mWorld, UINT nSkin, UINT nLod, ID idOverrideMa
 				SMtrl_MtlSetLighting(idMat, true);
 			}
 		}
-		SGCore_MtlSet(idMat, mWorld, pGlowColor ? &float4(*pGlowColor, 1.0f) : 0);
+
+		g_pRenderable->getMaterialSystem()->bindMaterial(m_iMaterials[nSkin][m_pLods[nLod].pSubLODmeshes[i].iMaterialID].pMat);
+		//SGCore_MtlSet(idMat, mWorld, pGlowColor ? &float4(*pGlowColor, 1.0f) : 0);
 		SGCore_DIP(
 			GXPT_TRIANGLELIST,
 			m_pLods[nLod].pSubLODmeshes[i].iStartVertex,
@@ -920,6 +913,8 @@ Animation::~Animation()
 	{
 		mem_delete(m_pMdl);
 	}
+
+	mem_release(m_pBoneMatrixConstantBuffer);
 }
 
 SMMATRIX Animation::getBoneTransform(UINT _id, bool bWithScale)
@@ -1349,7 +1344,7 @@ void Animation::FillBoneMatrix()
 		m_FinalBones[i].position = float3_t(0.0f, 0.0f, 0.0f);
 	}
 
-	//рассчитываем суммарную анимацию
+	//СЂР°СЃСЃС‡РёС‚С‹РІР°РµРј СЃСѓРјРјР°СЂРЅСѓСЋ Р°РЅРёРјР°С†РёСЋ
 	for(UINT slot = 0; slot < BLEND_MAX; slot++)
 	{
 		for(UINT i = 0; i < m_iBoneCount; i++)
@@ -1386,7 +1381,7 @@ void Animation::FillBoneMatrix()
 
 	//m_bUpdating = true;
 
-	//Переводим рассчитанный скелет в Мировую СК
+	//РџРµСЂРµРІРѕРґРёРј СЂР°СЃСЃС‡РёС‚Р°РЅРЅС‹Р№ СЃРєРµР»РµС‚ РІ РњРёСЂРѕРІСѓСЋ РЎРљ
 		{
 			for(UINT i = 0; i < m_iBoneCount; i++)
 			{
@@ -1407,7 +1402,7 @@ void Animation::FillBoneMatrix()
 		}
 
 
-		//Рассчитываем инвертированные трансформации позы скиннинга (если еще не сделали этого)
+		//Р Р°СЃСЃС‡РёС‚С‹РІР°РµРј РёРЅРІРµСЂС‚РёСЂРѕРІР°РЅРЅС‹Рµ С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёРё РїРѕР·С‹ СЃРєРёРЅРЅРёРЅРіР° (РµСЃР»Рё РµС‰Рµ РЅРµ СЃРґРµР»Р°Р»Рё СЌС‚РѕРіРѕ)
 		if(!m_pMdl->m_bInitPosInvSet)
 		{
 			for(UINT i = 0; i < m_iBoneCount; i++)
@@ -1432,7 +1427,7 @@ void Animation::FillBoneMatrix()
 			m_pMdl->m_bInitPosInvSet = true;
 		}
 
-		//Домножаем на инвертированные трансформации позы скиннинга
+		//Р”РѕРјРЅРѕР¶Р°РµРј РЅР° РёРЅРІРµСЂС‚РёСЂРѕРІР°РЅРЅС‹Рµ С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёРё РїРѕР·С‹ СЃРєРёРЅРЅРёРЅРіР°
 		for(UINT i = 0; i < m_iBoneCount; i++)
 		{
 			SMQuaternion q = mBonesOrig[i].orient * m_pBoneMatrix[i].orient;
@@ -1677,17 +1672,30 @@ void Animation::render()
 	{
 		return;
 	}
-	if(m_bBoneMatrixReFilled)
-	{
-		m_bBoneMatrixReFilled = false;
-	}
 	if(!m_pMdl)
 	{
 		return;
 	}
 	if(!(m_pMdl->m_hdr.iFlags & MODEL_FLAG_STATIC))
 	{
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, SMtrl_MtlGetVSID(m_pMdl->m_iMaterials[0]->iMat), "g_BufferBoneWorld", m_pBoneMatrixRender, sizeof(ModelBoneShader)* m_iBoneCount / sizeof(float) / 4);
+		if(m_bBoneMatrixReFilled)
+		{
+			if(m_uBoneMatrixBufferSize != m_iBoneCount)
+			{
+				mem_release(m_pBoneMatrixConstantBuffer);
+			}
+			if(!m_pBoneMatrixConstantBuffer)
+			{
+				m_pBoneMatrixConstantBuffer = m_pMgr->m_pd3dDevice->createConstantBuffer(sizeof(ModelBoneShader) * m_iBoneCount);
+				m_uBoneMatrixBufferSize = m_iBoneCount;
+			}
+			m_pBoneMatrixConstantBuffer->update(m_pBoneMatrixRender);
+
+			m_bBoneMatrixReFilled = false;
+		}
+		m_pMgr->m_pd3dDevice->setVertexShaderConstant(m_pBoneMatrixConstantBuffer, 10);
+
+		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, SMtrl_MtlGetVSID(m_pMdl->m_iMaterials[0]->iMat), "g_BufferBoneWorld", m_pBoneMatrixRender, sizeof(ModelBoneShader)* m_iBoneCount / sizeof(float) / 4);
 	//	DX_CALL(m_pMgr->m_pd3dDevice->SetVertexShaderConstantF(16, (float*)m_pBoneMatrixRender, sizeof(ModelBoneShader)* m_iBoneCount / sizeof(float) / 4));
 	}
 	
@@ -2042,7 +2050,7 @@ void Animation::assembly()
 	for(uint32_t i = 0; i < m_pMdl->m_hdr.iMaterialCount; ++i)
 	{
 		strcpy(m_pMdl->m_iMaterials[0][i].szName, vszMats[i]);
-		m_pMdl->m_iMaterials[0][i].iMat = m_pMgr->getMaterial(m_pMdl->m_iMaterials[0][i].szName);
+		m_pMdl->m_iMaterials[0][i].pMat = m_pMgr->getMaterial(m_pMdl->m_iMaterials[0][i].szName);
 	}
 
 	//SGCore_LoadTexLoadTextures();
@@ -2392,11 +2400,18 @@ void AnimationManager::sync()
 	}
 }
 
-UINT AnimationManager::getMaterial(const char * mat, bool bStatic)
+IXMaterial *AnimationManager::getMaterial(const char * mat, bool bStatic)
 {
 	char * tmp = (char*)alloca(sizeof(char)* (strlen(mat) + 5));
 	sprintf(tmp, "%s.dds", mat);
-	return(SGCore_MtlLoad(tmp, bStatic ? MTL_TYPE_GEOM : MTL_TYPE_SKIN));
+
+	IXMaterial *pMaterial = NULL;
+	XSHADER_DEFAULT_DESC shaderDesc;
+	shaderDesc.szFileVS = bStatic ? "mtrlgeom_base.vs" : "mtrlskin_base.vs";
+	shaderDesc.szFilePS = "mtrlgeom_base.ps";
+	g_pRenderable->getMaterialSystem()->loadMaterial(tmp, &pMaterial, &shaderDesc);
+
+	return(pMaterial);
 }
 
 void AnimationManager::computeVis(const IFrustum * frustum, const float3 * viewpos, ID id_arr)
