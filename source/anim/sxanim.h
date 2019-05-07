@@ -141,8 +141,6 @@ public:
 		@param[in] name Имя анимации
 		@param[in] iFadeTime Время перехода от предыдущей анимации к новой в ms
 		@param[in] slot Слот для воспроизведения. От 0 до BLEND_MAX
-
-		@warning В данный момент не работат
 	*/
 	virtual void startActivity(const char * name, UINT iFadeTime = 0, UINT slot = 0) = 0;
 
