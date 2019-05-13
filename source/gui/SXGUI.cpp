@@ -194,6 +194,7 @@ namespace gui
 			break;
 
 		case WM_SETCURSOR:
+			break;
 			return(FALSE);
 
 		case WM_KEYDOWN:

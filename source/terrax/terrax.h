@@ -9,6 +9,7 @@
 
 #define MAIN_WINDOW_TITLE      "TerraX"
 #define MAIN_WINDOW_CLASS      "X Main Window"
+#define GUI_WINDOW_CLASS       "X GUI Window"
 #define RENDER_WINDOW_CLASS    "X Viewport Window"
 #define WIDTH_ADJUST			2
 

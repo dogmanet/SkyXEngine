@@ -192,6 +192,7 @@
     <ClInclude Include="..\..\..\source\anim\RenderableVisibility.h" />
     <ClInclude Include="..\..\..\source\anim\sxanim.h" />
     <ClInclude Include="..\..\..\source\anim\Updatable.h" />
+    <ClInclude Include="..\..\..\source\xcommon\resource\IXModelProvider.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

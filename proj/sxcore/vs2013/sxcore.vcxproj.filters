@@ -55,6 +55,15 @@
     <ClCompile Include="..\..\..\source\core\FileSystem.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\core\ResourceModel.cpp">
+      <Filter>Source\resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\ResourceModelStatic.cpp">
+      <Filter>Source\resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\ResourceModelAnimated.cpp">
+      <Filter>Source\resource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -65,6 +74,12 @@
     </Filter>
     <Filter Include="Header\xcommon">
       <UniqueIdentifier>{b6ba7904-f9bb-4d17-b1f2-333d42a52b50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header\resource">
+      <UniqueIdentifier>{4d67fb1e-021a-4a83-a90b-3d4f3b7f45c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\resource">
+      <UniqueIdentifier>{ba70a1c2-d8e0-4210-a869-0663935c727a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -157,6 +172,27 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\list.h">
       <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\resource\IXResourceManager.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\resource\IXResourceModel.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\resource\IXModel.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\resource\IXModelProvider.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\ResourceModel.h">
+      <Filter>Header\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\ResourceModelAnimated.h">
+      <Filter>Header\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\ResourceModelStatic.h">
+      <Filter>Header\resource</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

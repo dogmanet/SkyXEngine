@@ -7,6 +7,9 @@ See the license in LICENSE
 #include "BaseAnimating.h"
 #include "gcore/sxgcore.h"
 
+#include <xcommon/resource/IXModelProvider.h>
+#include <xcommon/resource/IXResourceModel.h>
+
 /*! \skydocent base_animating
 Базовый класс для объектов, имеющих объем в игровом мире
 */
@@ -114,6 +117,30 @@ void CBaseAnimating::setModel(const char * mdl)
 	{
 		m_pAnimPlayer = SXAnim_CreatePlayer(mdl);
 		m_pAnimPlayer->setCallback(this, &ThisClass::onAnimationStateChanged);
+
+#if 0
+		IXResourceManager *pResourceManager = 0; // get it from somewhere
+		IXModelProvider *pProvider = 0; // get it from somewhere
+
+		IXResourceModel *pResource;
+		if(pResourceManager->getModel(mdl, &pResource))
+		{
+			IXDynamicModel *pModel;
+			if(pProvider->createDynamicModel(pResource, &pModel))
+			{
+				// use model
+				IXAnimatedModel *pAnimated = pModel->asAnimatedModel();
+				if(pAnimated)
+				{
+					// ??
+				}
+				else
+				{
+					// ??
+				}
+			}
+		}
+#endif
 	}
 	else
 	{

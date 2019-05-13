@@ -25,9 +25,14 @@ IGXConstantBuffer *g_pCameraConstantBuffer = NULL;
 IGXSwapChain *g_pTopRightSwapChain = NULL;
 IGXSwapChain *g_pBottomLeftSwapChain = NULL;
 IGXSwapChain *g_pBottomRightSwapChain = NULL;
+IGXSwapChain *g_pGuiSwapChain = NULL;
 IGXDepthStencilSurface *g_pTopRightDepthStencilSurface = NULL;
 IGXDepthStencilSurface *g_pBottomLeftDepthStencilSurface = NULL;
 IGXDepthStencilSurface *g_BottomRightDepthStencilSurface = NULL;
+IGXDepthStencilSurface *g_pGuiDepthStencilSurface = NULL;
+
+extern HWND g_pGuiWnd;
+void XGuiRender();
 
 #endif
 
@@ -710,6 +715,10 @@ void SkyXEngine_InitViewports()
 	g_pBottomRightSwapChain = pContext->createSwapChain(rc.right - rc.left, rc.bottom - rc.top, g_hBottomRightWnd);
 	g_BottomRightDepthStencilSurface = pContext->createDepthStencilSurface(rc.right - rc.left, rc.bottom - rc.top, GXFMT_D24S8, GXMULTISAMPLE_NONE);
 
+	GetClientRect(g_pGuiWnd, &rc);
+	g_pGuiSwapChain = pContext->createSwapChain(rc.right - rc.left, rc.bottom - rc.top, g_pGuiWnd);
+	g_pGuiDepthStencilSurface = pContext->createDepthStencilSurface(rc.right - rc.left, rc.bottom - rc.top, GXFMT_D24S8, GXMULTISAMPLE_NONE);
+
 	g_pCameraConstantBuffer = pContext->createConstantBuffer(sizeof(SMMATRIX));
 }
 
@@ -719,9 +728,11 @@ void SkyXEngine_ReleaseViewports()
 	mem_release(g_pTopRightSwapChain);
 	mem_release(g_pBottomLeftSwapChain);
 	mem_release(g_pBottomRightSwapChain);
+	mem_release(g_pGuiSwapChain);
 	mem_release(g_pTopRightDepthStencilSurface);
 	mem_release(g_pBottomLeftDepthStencilSurface);
 	mem_release(g_BottomRightDepthStencilSurface);
+	mem_release(g_pGuiDepthStencilSurface);
 }
 #endif
 //#############################################################################
@@ -964,6 +975,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	g_pTopRightSwapChain->swapBuffers();
 	g_pBottomLeftSwapChain->swapBuffers();
 	g_pBottomRightSwapChain->swapBuffers();
+	g_pGuiSwapChain->swapBuffers();
 #endif
 	Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
 
@@ -1036,10 +1048,18 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		mem_release(pBackBuffer);
 	}
 
+	IGXSurface *pBackBuffer = g_pGuiSwapChain->getColorTarget();
+	pDXDevice->setColorTarget(pBackBuffer);
+	pDXDevice->setDepthStencilSurface(g_pGuiDepthStencilSurface);
+	pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH | GXCLEAR_STENCIL);
+	XGuiRender();
+	mem_release(pBackBuffer);
+
 	//#############################################################################
 	SRender_SetCamera(p3DCamera);
 	pDXDevice->setColorTarget(NULL);
 	pDXDevice->setDepthStencilSurface(NULL);
+
 #endif
 	
 	pDXDevice->endFrame();
@@ -2039,8 +2059,10 @@ bool SkyXEngine_CycleMainIteration()
 		Core_PEndSection(PERF_SECTION_PREFRAME);
 
 #ifndef SX_SERVER
+		DWORD dwWndProcId;
+		GetWindowThreadProcessId(GetForegroundWindow(), &dwWndProcId);
 		if(Core_TimeWorkingGet(Core_RIntGet(G_RI_INT_TIMER_RENDER)) &&
-			(GetForegroundWindow() == SRender_GetHandleWin3D() || GetForegroundWindow() == (HWND)SRender_GetParentHandleWin3D() || GetForegroundWindow() == FindWindow(NULL, "sxconsole"))
+			(dwWndProcId == GetCurrentProcessId() || GetForegroundWindow() == FindWindow(NULL, "sxconsole"))
 			)
 		{
 #endif

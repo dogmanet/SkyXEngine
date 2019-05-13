@@ -26,16 +26,19 @@ See the license in LICENSE
 /*! Интерфейс для записи/чтения файлов
 \note аргумент iType - режим отрытия файла
 */
+//@TODO: inherit from IXUnknown
 class IFile: public IBaseObject
 {
 public:
-	virtual ~IFile()
-	{
-	};
-
+	//@TODO: remove that!
 	virtual int open(const char *szPath, int iType = CORE_FILE_TEXT) = 0;	//!< открыть файл
+	//@TODO: remove that!
 	virtual int create(const char *szPath, int iType = CORE_FILE_TEXT) = 0;	//!< создать файл
+	//@TODO: remove that!
 	virtual int add(const char *szPath, int iType = CORE_FILE_TEXT) = 0;	//!< добавить в конец файла
+
+	// virtual const char *getName() const = 0;
+
 	virtual size_t readBin(void *pDest, size_t iSize) = 0;					//!< считать в dest количетсво байт size
 	virtual size_t writeBin(const void *pSrc, size_t iSize) = 0;			//!< записать src в количетве size байт
 	virtual size_t readText(const char *szFormat, ...) = 0;					//!< чтение из файла, в аргументы только указатели
@@ -44,7 +47,10 @@ public:
 	virtual int readChar() = 0;				//!< считать символ
 	virtual size_t getPos() const = 0;		//!< текущая позиция курсора в файле
 	virtual void setPos(size_t iPos) = 0;	//!< установить позицию
+
+	//@TODO: remove that!
 	virtual void close() = 0;				//!< закрыть файл
+
 	virtual bool isEOF() const = 0;			//!< текущая позиция является концом файла?
 };
 

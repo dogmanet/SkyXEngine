@@ -233,6 +233,55 @@ struct ModelHitbox
 	char name[MODEL_MAX_NAME];      /*!< Имя хитбокса */
 };
 
+
+
+
+
+
+struct ModelPhyspartData
+{
+};
+
+#pragma pack(push, 1)
+struct ModelPhyspartDataConvex: public ModelPhyspartData
+{
+	uint32_t iVertCount = 0;
+	float3_t *pVerts = NULL;
+};
+#pragma pack(pop)
+#define MODEL_PHYSPART_DATA_CONVEX_STRUCT_SIZE sizeof(uint32_t)
+
+/*! Дескриптор хитбокса
+*/
+#pragma pack(push, 1)
+struct ModelPhyspart
+{
+	HITBOX_TYPE type;               /*!< Тип хитбокса */
+	float3_t lwh;                   /*!< Размеры */
+	float3_t pos;                   /*!< Положение */
+	float4_t rot;                   /*!< Ориентация */
+	char bone[MODEL_BONE_MAX_NAME]; /*!< Имя кости */
+	int bone_id;                    /*!< Идентификатор кости */
+	char name[MODEL_MAX_NAME];      /*!< Имя хитбокса */
+	uint64_t iDataOffset = 0;
+	//-----------------------
+	ModelPhyspartData *pData = NULL;
+};
+#pragma pack(pop)
+#define MODEL_PHYSPART_STRUCT_SIZE (sizeof(ModelPhyspart) - sizeof(ModelPhyspartData*))
+
+#pragma pack(push, 1)
+struct ModelPhysData
+{
+	float fWeight = 1.0f;
+	uint32_t iPhyspartCount = 0;
+	uint64_t iPartsOffset = 0;
+	//-----------------------
+	ModelPhyspart *pParts = NULL;
+};
+#pragma pack(pop)
+#define MODEL_PHYSDATA_STRUCT_SIZE (sizeof(ModelPhysData) - sizeof(ModelPhyspart*))
+
 /*! @} sxanim_defs */
 
 #endif

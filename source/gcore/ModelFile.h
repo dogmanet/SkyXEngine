@@ -44,7 +44,7 @@ struct vertex_static: public model_vertex
 */
 struct vertex_static_ex: public model_vertex
 {
-	vertex_static_ex(){}
+	vertex_static_ex() = default;
 	vertex_static_ex(float3_t vPos, float2_t vTex, float3_t vNormal, float3_t vTangent, float3_t vBinormal)
 	{
 		Pos = vPos; Tex = vTex; Norm = vNormal; Tangent = vTangent; Binorm = vBinormal;
@@ -114,16 +114,16 @@ enum MODEL_FLAG
 	MODEL_FLAG_HAS_TANGENT_BINORM = 0x2000, /*!< Используются расширенные типы вертексов */
 	MODEL_FLAG_NEW_STYLE_DEPS = 0x4000,     /*!< Используется новый тип импортированных моделей */
 	MODEL_FLAG_NEW_PACKED_ANIMS = 0x8000,   /*!< Сохранено с использованием исправленного размера структуры ModelSequence */
-	MODEL_FLAG_NORMALIZED_NORMALS = 0x10000    /*!< Сохранено с использованием исправленного размера структуры ModelSequence */
+	MODEL_FLAG_NORMALIZED_NORMALS = 0x10000 /*!< нормали нормализованы */
 };
 
-/*! Типф топологий модели в файле
+/*! Тип топологий модели в файле
 */
 enum MODEL_PT_TOPOLOGY
 {
 	MDLPT_TRIANGLELIST = 0,  /*!< Списки треугольников */
 	MDLPT_TRIANGLESTRIP = 1, /*!< Полоски треугольников */
-	MDLPT_TRIANGLEFAN = 2,   /*!< Фаны треугольников */
+	//MDLPT_TRIANGLEFAN = 2,   /*!< Фаны треугольников */
 
 	MDLPT_FORCE_DWORD = 0x7fffffff, /* force 32-bit size enum */
 };
@@ -190,11 +190,8 @@ struct ModelLoDSubset
 */
 struct ModelLoD
 {
-	unsigned int iSubMeshCount; //!< Количество сабсетов
-	ModelLoDSubset * pSubLODmeshes; //!< Массив сабсетов
-	ModelLoD():pSubLODmeshes(NULL), iSubMeshCount(0)
-	{
-	};
+	unsigned int iSubMeshCount = 0; //!< Количество сабсетов
+	ModelLoDSubset * pSubLODmeshes = NULL; //!< Массив сабсетов
 };// typedef SXmodelLODheader;
 #define MODEL_LOD_STRUCT_SIZE sizeof(unsigned int) /*!< Файловый размер структуры дескриптора лода */
 

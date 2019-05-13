@@ -8,6 +8,9 @@
 #include <commctrl.h>
 #include <combaseapi.h>
 
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
+
 #include <uxtheme.h>
 #pragma comment(lib, "UxTheme.lib")
 
@@ -33,6 +36,8 @@
 #include "CommandProperties.h"
 
 #include "PropertyWindow.h"
+
+#include <gui/guimain.h>
 
 extern Array<IXEditorObject*> g_pLevelObjects;
 extern AssotiativeArray<AAString, IXEditable*> g_mEditableSystems;
@@ -68,6 +73,9 @@ extern HACCEL g_hAccelTable;
 
 HMENU g_hMenu = NULL;
 
+HWND g_pGuiWnd = NULL;
+gui::IGUI *g_pGUI = NULL;
+
 CTerraXConfig g_xConfig;
 CTerraXState g_xState;
 
@@ -77,6 +85,7 @@ extern Array<IXEditable*> g_pEditableSystems;
 
 // Forward declarations of functions included in this code module:
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK GuiWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK RenderWndProc(HWND, UINT, WPARAM, LPARAM);
 void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheckItem = -1);
 void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
@@ -174,10 +183,73 @@ ATOM XRegisterClass(HINSTANCE hInstance)
 	{
 		return(FALSE);
 	}
+
+
 	
-	DeleteObject(hBrush);
+	//DeleteObject(hBrush);
+
+
+	// Intilaizing the class for the gui window
+	wcex.lpfnWndProc = GuiWndProc;
+	hBrush = CreateSolidBrush(RGB(0, 0, 0));
+	wcex.hbrBackground = (HBRUSH)hBrush;
+	wcex.lpszClassName = GUI_WINDOW_CLASS;
+
+	if(!RegisterClassEx(&wcex))
+	{
+		return(FALSE);
+	}
 
 	return(TRUE);
+}
+
+void XInitGuiWindow(bool pre)
+{
+	if(pre)
+	{
+		g_pGuiWnd = CreateWindowA(GUI_WINDOW_CLASS, "Material editor", WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_WIDTH, WINDOW_HEIGHT, NULL, NULL, hInst, NULL);
+		ShowWindow(g_pGuiWnd, SW_SHOW);
+		UpdateWindow(g_pGuiWnd);
+
+		DWM_BLURBEHIND dwmBlur = {0};
+		dwmBlur.dwFlags = DWM_BB_ENABLE;
+		dwmBlur.fEnable = TRUE;
+		
+		DwmEnableBlurBehindWindow(g_pGuiWnd, &dwmBlur);
+	}
+	else
+	{
+		HMODULE hDLL = LoadLibrary("sxgui"
+#ifdef _DEBUG
+			"_d"
+#endif
+			".dll");
+		if(!hDLL)
+		{
+			LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to load sxgui"
+#ifdef _DEBUG
+				"_d"
+#endif
+				".dll");
+		}
+
+		gui::PFNINITINSTANCE pfnGUIInit;
+		pfnGUIInit = (gui::PFNINITINSTANCE)GetProcAddress(hDLL, "InitInstance");
+
+		if(!pfnGUIInit)
+		{
+			LibReport(REPORT_MSG_LEVEL_ERROR, "The procedure entry point InitInstance could not be located in the dynamic link library sxgui.dll");
+		}
+
+		g_pGUI = pfnGUIInit(SGCore_GetDXDevice(), "./editor_gui/", g_pGuiWnd);
+
+		g_pGUI->pushDesktop(g_pGUI->createDesktopA("main", "main.html"));
+	}
+}
+
+void XGuiRender()
+{
+	g_pGUI->render();
 }
 
 BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
@@ -1160,6 +1232,53 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		PostQuitMessage(0);
 		break;
 
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
+}
+
+LRESULT CALLBACK GuiWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	RECT rect;
+	PAINTSTRUCT ps;
+	HDC hdc;
+	
+	static float fCoeffWidth = 0.0f;
+	static float fCoeffHeight = 0.0f;
+	static int iLeftWidth = 0;
+	static int iTopHeight = 0;
+
+	IMSG msg;
+	msg.lParam = lParam;
+	msg.wParam = wParam;
+	msg.message = message;
+
+	// SSInput_AddMsg(msg);
+
+
+	if(g_pGUI && !g_pGUI->putMessage(message, wParam, lParam))
+	{
+		return(TRUE);
+	}
+
+	switch(message)
+	{
+	case WM_SIZE:
+		{
+			static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
+
+			if(!r_resize)
+			{
+				r_resize = (int*)GET_PCVAR_INT("r_resize");
+			}
+
+			if(r_resize)
+			{
+				*r_resize = 1;
+			}
+		}
+		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}

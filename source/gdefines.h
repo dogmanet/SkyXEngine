@@ -148,17 +148,19 @@ struct IBaseObject
 
 #include <common/types.h>
 
+#define XMETHODCALLTYPE __stdcall
+
 class IXUnknown
 {
 protected:
 	virtual ~IXUnknown() = default;
 	UINT m_uRefCount = 1;
 public:
-	void AddRef()
+	void XMETHODCALLTYPE AddRef()
 	{
 		++m_uRefCount;
 	}
-	virtual void Release()
+	virtual void XMETHODCALLTYPE Release()
 	{
 		--m_uRefCount;
 		if(!m_uRefCount)
@@ -167,12 +169,38 @@ public:
 		}
 	}
 
-	virtual UINT getVersion()
+	virtual UINT XMETHODCALLTYPE getVersion()
 	{
 		return(0);
 	}
 };
 
+#if 0
+template <class T>
+class IXUnknownImplementation: public T
+{
+private:
+	UINT m_uRefCount = 1;
+public:
+	void XMETHODCALLTYPE AddRef() override
+	{
+		++m_uRefCount;
+	}
+	virtual void XMETHODCALLTYPE Release() override
+	{
+		--m_uRefCount;
+		if(!m_uRefCount)
+		{
+			delete this;
+		}
+	}
+
+	virtual UINT XMETHODCALLTYPE getVersion() override
+	{
+		return(0);
+	}
+};
+#endif
 
 typedef struct _XGUID
 {
@@ -239,6 +267,11 @@ typedef void(*report_func) (int iLevel, const char *szLibName, const char *szFor
 #	define WIN32_LEAN_AND_MEAN
 #	include <Windows.h>
 #endif
+
+#include <common/math.h>
+#include <common/array.h>
+#include <common/assotiativearray.h>
+#include <common/memalloc.h>
 
 /** \name Уровни критичности сообщений для функции репортов */
 //! @{

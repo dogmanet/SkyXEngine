@@ -26,6 +26,7 @@ CTerraXRenderStates g_xRenderStates;
 
 ATOM XRegisterClass(HINSTANCE hInstance);
 BOOL XInitInstance(HINSTANCE, int);
+void XInitGuiWindow(bool pre);
 
 Array<IXEditable*> g_pEditableSystems;
 Array<IXEditorObject*> g_pLevelObjects;
@@ -57,7 +58,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		return(1);
 	}
 
+	XInitGuiWindow(true);
+
 	SkyXEngine_Init(g_hTopLeftWnd, g_hWndMain, lpCmdLine);
+
+
+	XInitGuiWindow(false);
 
 	IPluginManager *pPluginManager = Core_GetIXCore()->getPluginManager();
 
