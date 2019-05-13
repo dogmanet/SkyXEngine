@@ -23,14 +23,14 @@ CResourceManager::CResourceManager(IXCore *pCore):
 	}
 }
 
-bool getModel(const char *szName, const IXResourceModel **ppOut, bool bForceReload)
+bool CResourceManager::getModel(const char *szName, const IXResourceModel **ppOut, bool bForceReload)
 {
-
+	return(false);
 }
-bool getModelStatic(const char *szName, const IXResourceModelStatic **ppOut, bool bForceReload)
+bool CResourceManager::getModelStatic(const char *szName, const IXResourceModelStatic **ppOut, bool bForceReload)
 {
 	IXResourceModel *pModel = NULL;
-	if(getModel(szName, &pModel, bForceReload))
+	if(getModel(szName, (const IXResourceModel**)&pModel, bForceReload))
 	{
 		if(pModel->getType() == XMT_STATIC)
 		{
@@ -42,10 +42,10 @@ bool getModelStatic(const char *szName, const IXResourceModelStatic **ppOut, boo
 	*ppOut = NULL;
 	return(false);
 }
-bool getModelAnimated(const char *szName, const IXResourceModelAnimated **ppOut, bool bForceReload)
+bool CResourceManager::getModelAnimated(const char *szName, const IXResourceModelAnimated **ppOut, bool bForceReload)
 {
 	IXResourceModel *pModel = NULL;
-	if(getModel(szName, &pModel, bForceReload))
+	if(getModel(szName, (const IXResourceModel**)&pModel, bForceReload))
 	{
 		if(pModel->getType() == XMT_ANIMATED)
 		{
