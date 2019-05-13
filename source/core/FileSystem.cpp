@@ -27,7 +27,7 @@ UINT CFileSystem::addRoot(const char *szPath, int iPriority = -1)
     return m_filePaths.size() - 1;
 }
 
-UINT CFileSystem::getRootCount()
+UINT inline CFileSystem::getRootCount()
 {
     return m_filePaths.size();
 }
@@ -44,6 +44,12 @@ void CFileSystem::setWritableRoot(UINT id)
     FILEID_CHECKED(m_filePaths.size());
 
     m_writableRoot = id;
+}
+
+bool CFileSystem::resolvePath(const char *szPath, char *szOut, int iOutMax)
+{
+    assert(!"No Implementation");
+    return false;
 }
 
 bool CFileSystem::fileExists(const char *szPath)
@@ -103,4 +109,46 @@ time_t CFileSystem::getFileModifyTime(const char *szPath)
 	CLOSE_HANDLE(hFile);
 
 	return convertFiletimeToTime_t(mTime);
+}
+
+IFileSystem::IFileIterator *CFileSystem::getFileList(const char *szPath, FILE_TYPE type)
+{
+    assert(!"No Implementation");
+    return nullptr;
+}
+
+IFileSystem::IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, FILE_TYPE type, const char *szExt = 0)
+{
+    assert(!"No Implementation");
+    return nullptr;
+}
+
+IFileSystem::IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, FILE_TYPE type, const char **szExts)
+{
+    assert(!"No Implementation");
+    return nullptr;
+}
+
+bool CFileSystem::createDirectory(const char *szPath)
+{
+    assert(!"No Implementation");
+    return false;
+}
+
+bool CFileSystem::deleteDirectory(const char *szPath)
+{
+    assert(!"No Implementation");
+    return false;
+}
+
+IFile *CFileSystem::openFileText(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ)
+{
+    assert(!"No Implementation");
+    return nullptr;
+}
+
+IFile *CFileSystem::openFileBin(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ)
+{
+    assert(!"No Implementation");
+    return nullptr;
 }

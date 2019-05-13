@@ -39,6 +39,7 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\file.cpp" />
     <ClCompile Include="..\..\..\source\core\FileInMemory.cpp" />
+    <ClCompile Include="..\..\..\source\core\FileIterator.cpp" />
     <ClCompile Include="..\..\..\source\core\FileSystem.cpp" />
     <ClCompile Include="..\..\..\source\core\PerfMon.cpp" />
     <ClCompile Include="..\..\..\source\core\PluginManager.cpp" />
@@ -72,6 +73,7 @@
     <ClInclude Include="..\..\..\source\core\Core.h" />
     <ClInclude Include="..\..\..\source\core\cvars.h" />
     <ClInclude Include="..\..\..\source\core\File.h" />
+    <ClInclude Include="..\..\..\source\core\FileIterator.h" />
     <ClInclude Include="..\..\..\source\core\FileSystem.h" />
     <ClInclude Include="..\..\..\source\core\IFile.h" />
     <ClInclude Include="..\..\..\source\core\PerfMon.h" />

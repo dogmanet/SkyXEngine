@@ -67,6 +67,9 @@
     <ClCompile Include="..\..\..\source\core\ResourceManager.cpp">
       <Filter>Source\resource</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\core\FileIterator.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -199,6 +202,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\ResourceManager.h">
       <Filter>Header\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\FileIterator.h">
+      <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

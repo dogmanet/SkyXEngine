@@ -68,9 +68,9 @@ public:
     {
     public:
         //! Возврат к первому элементу
-        virtual void reset() = 0;
+        virtual void XMETHODCALLTYPE reset() = 0;
         //! Имя следующего файла, NULL если файлы закончились
-        virtual const char *next() = 0;
+        virtual const char * XMETHODCALLTYPE next() = 0;
     };
 
 	/*! возвращает массив со всеми данными находящимися по пути szPath,
@@ -89,6 +89,9 @@ public:
 
 	//! Создает директорию по указанному пути, рекурсивно
 	virtual bool createDirectory(const char *szPath) = 0;
+
+    //! Удаляет директорую со всеми вложенными файлами/папками
+    virtual bool deleteDirectory(const char *szPath) = 0;
 
 	//! Открыть файл. При открытии с возможностью записи файла, находящегося вне записываемого корня, файл копируется в записывающийся корень и открывается копия.
 	virtual IFile *openFileText(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ) = 0;
