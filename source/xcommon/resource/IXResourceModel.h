@@ -105,7 +105,7 @@ struct XResourceModelHitbox
 	float3_t pos;          /*!< Положение */
 	SMQuaternion rot;      /*!< Ориентация */
 	int bone_id;           /*!< Идентификатор кости */
-	const char *szName;    /*!< Имя хитбокса */
+	char szName[MODEL_MAX_NAME];    /*!< Имя хитбокса */
 };
 
 struct XResourceModelBone
@@ -116,7 +116,7 @@ struct XResourceModelBone
 
 struct XResourceModelSequence
 {
-	const char *szName; /*!< Имя */
+	char szName[MODEL_MAX_NAME]; /*!< Имя */
 	bool isLooped; /*!< Анимация зациклена */
 	int iFramerate; /*!< Скорость кадров в секунду */
 	int iActivity; /*!< Идентификатор активности */
@@ -127,13 +127,13 @@ struct XResourceModelSequence
 
 struct XResourceModelController
 {
-	const char *szName;    /*!< Имя контроллера */
-	const UINT uBoneCount; /*!< Количество костей, которыми управляет контроллер */
+	char szName[MODEL_MAX_NAME];    /*!< Имя контроллера */
 
 	SMQuaternion qMinRot;  /*!< Вращение ОТ */
 	SMQuaternion qMaxRot;  /*!< Вращение ДО */
 	float3_t vMinTrans;    /*!< Перемещение ОТ */
 	float3_t vMaxTrans;    /*!< Перемещение ДО */
+	UINT uBoneCount;       /*!< Количество костей, которыми управляет контроллер */
 	UINT *pBones;          /*!< Массив индексов костей */
 };
 
@@ -190,7 +190,6 @@ class IXResourceModelAnimated;
 class IXResourceModel: public IXUnknown
 {
 public:
-
 	virtual void XMETHODCALLTYPE setPrimitiveTopology(XPT_TOPOLOGY topology) = 0;
 	virtual XPT_TOPOLOGY XMETHODCALLTYPE getPrimitiveTopology() const = 0;
 
@@ -225,6 +224,8 @@ public:
 
 	virtual UINT XMETHODCALLTYPE getSubsetCount(UINT uLod) const = 0;
 	virtual UINT XMETHODCALLTYPE addLod(UINT uSubsetCount, UINT *puVertexCount, UINT *puIndexCount) = 0;
+
+	virtual bool XMETHODCALLTYPE validate() const = 0;
 };
 
 // Implemented in core
@@ -257,9 +258,8 @@ public:
 	virtual UINT XMETHODCALLTYPE getSequenceCount() const = 0;
 	virtual const XResourceModelSequence * XMETHODCALLTYPE getSequence(UINT uIndex) const = 0;
 
-	virtual void XMETHODCALLTYPE setSequenceCount() = 0;
+	virtual void XMETHODCALLTYPE setSequenceCount(UINT uCount) = 0;
 	virtual XResourceModelSequence * XMETHODCALLTYPE getSequence(UINT uIndex) = 0;
-	virtual void XMETHODCALLTYPE setSequenceName(UINT uIndex, const char *szName) = 0;
 	virtual void XMETHODCALLTYPE setSequenceFrameCount(UINT uIndex, UINT uFrameCount) = 0;
 	
 
@@ -269,15 +269,14 @@ public:
 
 
 	virtual UINT XMETHODCALLTYPE getControllersCount() const = 0;
-	virtual void XMETHODCALLTYPE setControllersCount() = 0;
-	virtual void XMETHODCALLTYPE setControllerInfo(UINT uIndex, const char *szName, UINT uAffectedBonesCount) = 0;
+	virtual void XMETHODCALLTYPE setControllersCount(UINT uCount) = 0;
+	virtual void XMETHODCALLTYPE setControllerBoneCount(UINT uIndex, UINT uAffectedBonesCount) = 0;
 	virtual const XResourceModelController * XMETHODCALLTYPE getController(UINT uIndex) const = 0;
 	virtual XResourceModelController * XMETHODCALLTYPE getController(UINT uIndex) = 0;
 
 
 	virtual UINT XMETHODCALLTYPE getHitboxCount() const = 0;
-	virtual void XMETHODCALLTYPE setHitboxCount() = 0;
-	virtual void XMETHODCALLTYPE setHitboxName(const char *szHitbox) = 0;
+	virtual void XMETHODCALLTYPE setHitboxCount(UINT uCount) = 0;
 	virtual XResourceModelHitbox * XMETHODCALLTYPE getHitbox(UINT uIndex) = 0;
 	virtual const XResourceModelHitbox * XMETHODCALLTYPE getHitbox(UINT uIndex) const = 0;
 };

@@ -42,6 +42,7 @@
     <ClCompile Include="..\..\..\source\core\FileSystem.cpp" />
     <ClCompile Include="..\..\..\source\core\PerfMon.cpp" />
     <ClCompile Include="..\..\..\source\core\PluginManager.cpp" />
+    <ClCompile Include="..\..\..\source\core\ResourceManager.cpp" />
     <ClCompile Include="..\..\..\source\core\ResourceModel.cpp" />
     <ClCompile Include="..\..\..\source\core\ResourceModelAnimated.cpp" />
     <ClCompile Include="..\..\..\source\core\ResourceModelStatic.cpp" />
@@ -75,6 +76,7 @@
     <ClInclude Include="..\..\..\source\core\IFile.h" />
     <ClInclude Include="..\..\..\source\core\PerfMon.h" />
     <ClInclude Include="..\..\..\source\core\PluginManager.h" />
+    <ClInclude Include="..\..\..\source\core\ResourceManager.h" />
     <ClInclude Include="..\..\..\source\core\ResourceModel.h" />
     <ClInclude Include="..\..\..\source\core\ResourceModelAnimated.h" />
     <ClInclude Include="..\..\..\source\core\ResourceModelStatic.h" />

@@ -6,13 +6,15 @@
 class CResourceModelStatic final: public CResourceModel, public virtual IXResourceModelStatic
 {
 public:
-	XMODELTYPE getType() const override;
+	XMODELTYPE XMETHODCALLTYPE getType() const override;
 
-	UINT getSubsetCount(UINT uLod) const override;
-	UINT addLod(UINT uSubsetCount, UINT *puVertexCount, UINT *puIndexCount) override;
+	UINT XMETHODCALLTYPE getSubsetCount(UINT uLod) const override;
+	UINT XMETHODCALLTYPE addLod(UINT uSubsetCount, UINT *puVertexCount, UINT *puIndexCount) override;
 
-	const XResourceModelStaticSubset *getSubset(UINT uLod, UINT uSubset) const override;
-	XResourceModelStaticSubset *getSubset(UINT uLod, UINT uSubset) override;
+	const XResourceModelStaticSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) const override;
+	XResourceModelStaticSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) override;
+
+	bool XMETHODCALLTYPE validate() const;
 
 protected:
 

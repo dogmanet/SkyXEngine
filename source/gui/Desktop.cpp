@@ -60,7 +60,7 @@ namespace gui
 		m_pRenderSurface = GetGUI()->getDevice()->createColorTarget(m_iWidth, m_iHeight, GXFMT_A8R8G8B8, GXMULTISAMPLE_4_SAMPLES, false);
 		m_pDepthStencilSurface = GetGUI()->getDevice()->createDepthStencilSurface(m_iWidth, m_iHeight, GXFMT_D24S8, GXMULTISAMPLE_4_SAMPLES, false);
 
-		m_txFinal = CTextureManager::createTexture(StringW(L"@") + m_sName, m_iWidth, m_iHeight, 32, true);
+		m_txFinal = CTextureManager::createTexture(StringW(L"@") + m_sName, m_iWidth, m_iHeight, 32, true, NULL, false);
 
 		struct point
 		{

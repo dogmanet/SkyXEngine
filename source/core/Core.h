@@ -13,7 +13,7 @@ public:
 	CCore();
 	~CCore();
 
-	void Release() override;
+	void XMETHODCALLTYPE Release() override;
 
 	IPluginManager *getPluginManager() override;
 	IFileSystem *getFileSystem() override;

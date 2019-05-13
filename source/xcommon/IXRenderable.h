@@ -40,7 +40,7 @@ public:
 class IXRenderable: public IXUnknown
 {
 public:
-	virtual UINT getVersion()
+	virtual UINT XMETHODCALLTYPE getVersion()
 	{
 		return(IXRENDERABLE_VERSION);
 	}

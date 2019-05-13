@@ -64,6 +64,9 @@
     <ClCompile Include="..\..\..\source\core\ResourceModelAnimated.cpp">
       <Filter>Source\resource</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\core\ResourceManager.cpp">
+      <Filter>Source\resource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -192,6 +195,9 @@
       <Filter>Header\resource</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\ResourceModelStatic.h">
+      <Filter>Header\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\ResourceManager.h">
       <Filter>Header\resource</Filter>
     </ClInclude>
   </ItemGroup>

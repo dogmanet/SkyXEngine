@@ -32,11 +32,11 @@ namespace gui
 		m_mTextures.erase(tex->m_szName);
 	}
 
-	CTexture * CTextureManager::createTexture(const StringW & szTexture, int w, int h, int bpp, bool isRT, void *pInitData)
+	CTexture * CTextureManager::createTexture(const StringW & szTexture, int w, int h, int bpp, bool isRT, void *pInitData, bool isAutoResizeRT)
 	{
 		CTexture bt;
 
-		if(!(bt.m_pTexture = GetGUI()->getDevice()->createTexture2D(w, h, isRT ? 1 : 0, isRT ? GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE : 0, GXFMT_A8R8G8B8, pInitData)))
+		if(!(bt.m_pTexture = GetGUI()->getDevice()->createTexture2D(w, h, isRT ? 1 : 0, isRT ? GX_TEXUSAGE_RENDERTARGET | (isAutoResizeRT ? GX_TEXUSAGE_AUTORESIZE : 0) : 0, GXFMT_A8R8G8B8, pInitData)))
 		{
 			return(NULL);
 		}

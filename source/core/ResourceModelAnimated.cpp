@@ -1,5 +1,28 @@
 #include "ResourceModelAnimated.h"
 
+CResourceModelAnimated::~CResourceModelAnimated()
+{
+	mem_delete_a(m_pBones);
+
+	for(UINT uIndex = 0; uIndex < m_uSequenceCount; ++uIndex)
+	{
+		for(UINT i = 0; i < m_pSequences[uIndex].uNumFrames; ++i)
+		{
+			mem_delete_a(m_pSequences[uIndex].m_ppSequenceData[i]);
+		}
+		mem_delete_a(m_pSequences[uIndex].m_ppSequenceData);
+	}
+	mem_delete_a(m_pSequences);
+
+	for(UINT uIndex = 0; uIndex < m_uControllersCount; ++uIndex)
+	{
+		mem_delete_a(m_pControllers[uIndex].pBones);
+	}
+	mem_delete_a(m_pControllers);
+
+	mem_delete_a(m_pHitboxes);
+}
+
 XMODELTYPE CResourceModelAnimated::getType() const
 {
 	return(XMT_ANIMATED);
@@ -60,115 +83,181 @@ XResourceModelAnimatedSubset *CResourceModelAnimated::getSubset(UINT uLod, UINT 
 
 void CResourceModelAnimated::setBoneCount(UINT uCount)
 {
-	
+	mem_delete_a(m_pBones);
+	m_pBones = new _bone_hierarchy[uCount];
+	memset(m_pBones, 0, sizeof(_bone_hierarchy)* uCount);
+	m_uBoneCount = uCount;
 }
 UINT CResourceModelAnimated::getBoneCount() const
 {
-	return(0);
+	return(m_uBoneCount);
 }
 
 void CResourceModelAnimated::setBoneInfo(int iBone, const char *szName, int iParent, const float3 &vTranslation, const SMQuaternion &vRotation)
 {
-	
+	assert(iBone >= 0 && iBone < (int)m_uBoneCount);
+
+	m_pBones[iBone].pid = iParent;
+	strncpy(m_pBones[iBone].szName, szName, MODEL_BONE_MAX_NAME);
+	m_pBones[iBone].szName[MODEL_BONE_MAX_NAME - 1] = 0;
+
+	m_pBones[iBone].bindPose.position = vTranslation;
+	m_pBones[iBone].bindPose.orient = vRotation;
 }
 int CResourceModelAnimated::getBoneParent(int iBone) const
 {
-	return(0);
+	assert(iBone >= 0 && iBone < (int)m_uBoneCount);
+
+	return(m_pBones[iBone].pid);
 }
 const char *CResourceModelAnimated::getBoneName(int iBone) const
 {
-	return(0);
+	assert(iBone >= 0 && iBone < (int)m_uBoneCount);
+
+	return(m_pBones[iBone].szName);
 }
 float3 CResourceModelAnimated::getBoneTranslation(int iBone) const
 {
-	return(0);
+	assert(iBone >= 0 && iBone < (int)m_uBoneCount);
+
+	return(m_pBones[iBone].bindPose.position);
 }
 SMQuaternion CResourceModelAnimated::getBoneRotation(int iBone) const
 {
-	return(SMQuaternion());
+	assert(iBone >= 0 && iBone < (int)m_uBoneCount);
+
+	return(m_pBones[iBone].bindPose.orient);
 }
 
 
 UINT CResourceModelAnimated::getSequenceCount() const
 {
-	return(0);
+	return(m_uSequenceCount);
 }
 const XResourceModelSequence *CResourceModelAnimated::getSequence(UINT uIndex) const
 {
-	return(0);
+	assert(uIndex < m_uSequenceCount);
+	return(&m_pSequences[uIndex]);
 }
 
-void CResourceModelAnimated::setSequenceCount()
+void CResourceModelAnimated::setSequenceCount(UINT uCount)
 {
-	
+	for(UINT uIndex = 0; uIndex < m_uSequenceCount; ++uIndex)
+	{
+		for(UINT i = 0; i < m_pSequences[uIndex].uNumFrames; ++i)
+		{
+			mem_delete_a(m_pSequences[uIndex].m_ppSequenceData[i]);
+		}
+		mem_delete_a(m_pSequences[uIndex].m_ppSequenceData);
+	}
+	mem_delete_a(m_pSequences);
+	m_pSequences = new XResourceModelSequence[uCount];
+	memset(m_pSequences, 0, sizeof(XResourceModelSequence)*uCount);
+	m_uSequenceCount = uCount;
 }
 XResourceModelSequence *CResourceModelAnimated::getSequence(UINT uIndex)
 {
-	return(0);
-}
-void CResourceModelAnimated::setSequenceName(UINT uIndex, const char *szName)
-{
-	
+	assert(uIndex < m_uSequenceCount);
+	return(&m_pSequences[uIndex]);
 }
 void CResourceModelAnimated::setSequenceFrameCount(UINT uIndex, UINT uFrameCount)
 {
-	
+	assert(uIndex < m_uSequenceCount);
+
+	for(UINT i = 0; i < m_pSequences[uIndex].uNumFrames; ++i)
+	{
+		mem_delete_a(m_pSequences[uIndex].m_ppSequenceData[i]);
+	}
+	mem_delete_a(m_pSequences[uIndex].m_ppSequenceData);
+
+	m_pSequences[uIndex].m_ppSequenceData = new XResourceModelBone*[uFrameCount];
+	m_pSequences[uIndex].uNumFrames = uFrameCount;
+
+	for(UINT i = 0; i < m_pSequences[uIndex].uNumFrames; ++i)
+	{
+		m_pSequences[uIndex].m_ppSequenceData[i] = new XResourceModelBone[getBoneCount()];
+		memset(m_pSequences[uIndex].m_ppSequenceData[i], 0, sizeof(XResourceModelBone)* getBoneCount());
+	}
 }
 
 
 UINT CResourceModelAnimated::addActivity(const char *szName)
 {
-	return(0);
+	m_asActivities.push_back(szName);
+
+	return(m_asActivities.size() - 1);
 }
 const char *CResourceModelAnimated::getActivityName(UINT uIndex) const
 {
-	return(0);
+	assert(uIndex < m_asActivities.size());
+
+	return(m_asActivities[uIndex].c_str());
 }
 UINT CResourceModelAnimated::getActivitiesCount() const
 {
-	return(0);
+	return(m_asActivities.size());
 }
 
 
 UINT CResourceModelAnimated::getControllersCount() const
 {
-	return(0);
+	return(m_uControllersCount);
 }
-void CResourceModelAnimated::setControllersCount()
+void CResourceModelAnimated::setControllersCount(UINT uCount)
 {
-	
+	for(UINT uIndex = 0; uIndex < m_uControllersCount; ++uIndex)
+	{
+		mem_delete_a(m_pControllers[uIndex].pBones);
+	}
+	mem_delete_a(m_pControllers);
+	m_pControllers = new XResourceModelController[uCount];
+	memset(m_pControllers, 0, sizeof(XResourceModelController)* uCount);
+	m_uControllersCount = uCount;
 }
-void CResourceModelAnimated::setControllerInfo(UINT uIndex, const char *szName, UINT uAffectedBonesCount)
+void CResourceModelAnimated::setControllerBoneCount(UINT uIndex, UINT uAffectedBonesCount)
 {
-	
+	assert(uIndex < m_uControllersCount);
+	mem_delete_a(m_pControllers[uIndex].pBones);
+	m_pControllers[uIndex].pBones = new UINT[uAffectedBonesCount];
+	memset(m_pControllers[uIndex].pBones, 0, sizeof(UINT)* uAffectedBonesCount);
+	m_pControllers[uIndex].uBoneCount = uAffectedBonesCount;
 }
 const XResourceModelController *CResourceModelAnimated::getController(UINT uIndex) const
 {
-	return(0);
+	assert(uIndex < m_uControllersCount);
+	return(&m_pControllers[uIndex]);
 }
 XResourceModelController *CResourceModelAnimated::getController(UINT uIndex)
 {
-	return(0);
+	assert(uIndex < m_uControllersCount);
+	return(&m_pControllers[uIndex]);
 }
 
 
 UINT CResourceModelAnimated::getHitboxCount() const
 {
-	return(0);
+	return(m_uHitboxCount);
 }
-void CResourceModelAnimated::setHitboxCount()
+void CResourceModelAnimated::setHitboxCount(UINT uCount)
 {
-	
-}
-void CResourceModelAnimated::setHitboxName(const char *szHitbox)
-{
-	
+	mem_delete_a(m_pHitboxes);
+	m_pHitboxes = new XResourceModelHitbox[uCount];
+	memset(m_pHitboxes, 0, sizeof(XResourceModelHitbox)* uCount);
+	m_uHitboxCount = uCount;
 }
 XResourceModelHitbox *CResourceModelAnimated::getHitbox(UINT uIndex)
 {
-	return(0);
+	assert(uIndex < m_uHitboxCount);
+	return(&m_pHitboxes[uIndex]);
 }
 const XResourceModelHitbox *CResourceModelAnimated::getHitbox(UINT uIndex) const
 {
-	return(0);
+	assert(uIndex < m_uHitboxCount);
+	return(&m_pHitboxes[uIndex]);
+}
+
+bool CResourceModelAnimated::validate() const
+{
+	//@TODO: Implement me!
+	return(true);
 }

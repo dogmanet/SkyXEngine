@@ -6,51 +6,53 @@
 class CResourceModelAnimated: public CResourceModel, public virtual IXResourceModelAnimated
 {
 public:
-	XMODELTYPE getType() const override;
+	~CResourceModelAnimated();
 
-	UINT getSubsetCount(UINT uLod) const override;
-	UINT addLod(UINT uSubsetCount, UINT *puVertexCount, UINT *puIndexCount) override;
+	XMODELTYPE XMETHODCALLTYPE getType() const override;
 
-	const XResourceModelAnimatedSubset *getSubset(UINT uLod, UINT uSubset) const override;
-	XResourceModelAnimatedSubset *getSubset(UINT uLod, UINT uSubset) override;
+	UINT XMETHODCALLTYPE getSubsetCount(UINT uLod) const override;
+	UINT XMETHODCALLTYPE addLod(UINT uSubsetCount, UINT *puVertexCount, UINT *puIndexCount) override;
 
-
-	void setBoneCount(UINT uCount) override;
-	UINT getBoneCount() const override;
-
-	void setBoneInfo(int iBone, const char *szName, int iParent, const float3 &vTranslation, const SMQuaternion &vRotation) override;
-	int getBoneParent(int iBone) const override;
-	const char *getBoneName(int iBone) const override;
-	float3 getBoneTranslation(int iBone) const override;
-	SMQuaternion getBoneRotation(int iBone) const override;
+	const XResourceModelAnimatedSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) const override;
+	XResourceModelAnimatedSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) override;
 
 
-	UINT getSequenceCount() const override;
-	const XResourceModelSequence *getSequence(UINT uIndex) const override;
+	void XMETHODCALLTYPE setBoneCount(UINT uCount) override;
+	UINT XMETHODCALLTYPE getBoneCount() const override;
 
-	void setSequenceCount() override;
-	XResourceModelSequence *getSequence(UINT uIndex) override;
-	void setSequenceName(UINT uIndex, const char *szName) override;
-	void setSequenceFrameCount(UINT uIndex, UINT uFrameCount) override;
-
-
-	UINT addActivity(const char *szName) override;
-	const char *getActivityName(UINT uIndex) const override;
-	UINT getActivitiesCount() const override;
+	void XMETHODCALLTYPE setBoneInfo(int iBone, const char *szName, int iParent, const float3 &vTranslation, const SMQuaternion &vRotation) override;
+	int XMETHODCALLTYPE getBoneParent(int iBone) const override;
+	const char * XMETHODCALLTYPE getBoneName(int iBone) const override;
+	float3 XMETHODCALLTYPE getBoneTranslation(int iBone) const override;
+	SMQuaternion XMETHODCALLTYPE getBoneRotation(int iBone) const override;
 
 
-	UINT getControllersCount() const override;
-	void setControllersCount() override;
-	void setControllerInfo(UINT uIndex, const char *szName, UINT uAffectedBonesCount) override;
-	const XResourceModelController *getController(UINT uIndex) const override;
-	XResourceModelController *getController(UINT uIndex) override;
+	UINT XMETHODCALLTYPE getSequenceCount() const override;
+	const XResourceModelSequence * XMETHODCALLTYPE getSequence(UINT uIndex) const override;
+
+	void XMETHODCALLTYPE setSequenceCount(UINT uCount) override;
+	XResourceModelSequence * XMETHODCALLTYPE getSequence(UINT uIndex) override;
+	void XMETHODCALLTYPE setSequenceFrameCount(UINT uIndex, UINT uFrameCount) override;
 
 
-	UINT getHitboxCount() const override;
-	void setHitboxCount() override;
-	void setHitboxName(const char *szHitbox) override;
-	XResourceModelHitbox *getHitbox(UINT uIndex) override;
-	const XResourceModelHitbox *getHitbox(UINT uIndex) const override;
+	UINT XMETHODCALLTYPE addActivity(const char *szName) override;
+	const char * XMETHODCALLTYPE getActivityName(UINT uIndex) const override;
+	UINT XMETHODCALLTYPE getActivitiesCount() const override;
+
+
+	UINT XMETHODCALLTYPE getControllersCount() const override;
+	void XMETHODCALLTYPE setControllersCount(UINT uCount) override;
+	void XMETHODCALLTYPE setControllerBoneCount(UINT uIndex, UINT uAffectedBonesCount) override;
+	const XResourceModelController * XMETHODCALLTYPE getController(UINT uIndex) const override;
+	XResourceModelController * XMETHODCALLTYPE getController(UINT uIndex) override;
+
+
+	UINT XMETHODCALLTYPE getHitboxCount() const override;
+	void XMETHODCALLTYPE setHitboxCount(UINT uCount) override;
+	XResourceModelHitbox * XMETHODCALLTYPE getHitbox(UINT uIndex) override;
+	const XResourceModelHitbox * XMETHODCALLTYPE getHitbox(UINT uIndex) const override;
+
+	bool XMETHODCALLTYPE validate() const;
 
 protected:
 
@@ -69,6 +71,27 @@ protected:
 		}
 	};
 	Array<_subset_meta> m_aLods;
+
+	struct _bone_hierarchy
+	{
+		int pid;         /*!< Номер родительской кости */
+		char szName[MODEL_MAX_NAME];
+		XResourceModelBone bindPose;
+	};
+
+	_bone_hierarchy *m_pBones = NULL;
+	UINT m_uBoneCount = 0;
+
+	XResourceModelSequence *m_pSequences = NULL;
+	UINT m_uSequenceCount = 0;
+
+	Array<String> m_asActivities;
+
+	XResourceModelController *m_pControllers = NULL;
+	UINT m_uControllersCount = 0;
+
+	XResourceModelHitbox *m_pHitboxes = NULL;
+	UINT m_uHitboxCount = 0;
 };
 
 #endif

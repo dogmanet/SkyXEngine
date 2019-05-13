@@ -56,3 +56,9 @@ XResourceModelStaticSubset *CResourceModelStatic::getSubset(UINT uLod, UINT uSub
 
 	return(&m_aLods[uLod].pSubsets[uSubset]);
 }
+
+bool CResourceModelStatic::validate() const
+{
+	//@TODO: Implement me!
+	return(true);
+}

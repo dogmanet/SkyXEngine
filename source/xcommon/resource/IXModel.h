@@ -32,7 +32,7 @@ public:
 	virtual ISXBound * XMETHODCALLTYPE getLocalBound() const = 0;
 
 	virtual float4 XMETHODCALLTYPE getColor() const = 0;
-	virtual void XMETHODCALLTYPE setColor(const float4 vColor) = 0;
+	virtual void XMETHODCALLTYPE setColor(const float4 &vColor) = 0;
 };
 
 // Implemented in anim plugin

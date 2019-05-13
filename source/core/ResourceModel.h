@@ -9,35 +9,35 @@ class CResourceModel: public IXResourceModel
 public:
 	~CResourceModel();
 
-	void setPrimitiveTopology(XPT_TOPOLOGY topology) override;
-	XPT_TOPOLOGY getPrimitiveTopology() const override;
+	void XMETHODCALLTYPE setPrimitiveTopology(XPT_TOPOLOGY topology) override;
+	XPT_TOPOLOGY XMETHODCALLTYPE getPrimitiveTopology() const override;
 
 
-	UINT getPhysboxCount() const override;
-	const IModelPhysbox *getPhysbox(UINT uPart) const override;
-	void addPhysbox(IModelPhysbox *pPhysbox) override;
+	UINT XMETHODCALLTYPE getPhysboxCount() const override;
+	const IModelPhysbox * XMETHODCALLTYPE getPhysbox(UINT uPart) const override;
+	void XMETHODCALLTYPE addPhysbox(IModelPhysbox *pPhysbox) override;
 
 
-	UINT getMaterialCount() const override;
-	UINT getSkinCount() const override;
-	const char *getMaterial(UINT uMaterial, UINT uSkin = 0) const override;
-	void setMaterialCount(UINT uMaterialCount, UINT uSkinCount) override;
-	void setMaterial(UINT uMaterial, UINT uSkin, const char *szName) override;
+	UINT XMETHODCALLTYPE getMaterialCount() const override;
+	UINT XMETHODCALLTYPE getSkinCount() const override;
+	const char * XMETHODCALLTYPE getMaterial(UINT uMaterial, UINT uSkin = 0) const override;
+	void XMETHODCALLTYPE setMaterialCount(UINT uMaterialCount, UINT uSkinCount) override;
+	void XMETHODCALLTYPE setMaterial(UINT uMaterial, UINT uSkin, const char *szName) override;
 
 
-	float getMass() const override;
-	void setMass(float fMass) override;
+	float XMETHODCALLTYPE getMass() const override;
+	void XMETHODCALLTYPE setMass(float fMass) override;
 
 
-	UINT getGibsCount() const override;
-	const char *getGibName(UINT uIndex) const override;
-	UINT addGibName(const char *szFileName) override;
+	UINT XMETHODCALLTYPE getGibsCount() const override;
+	const char * XMETHODCALLTYPE getGibName(UINT uIndex) const override;
+	UINT XMETHODCALLTYPE addGibName(const char *szFileName) override;
 
-	const IXResourceModel * getGib(UINT uIndex) const override;
-	void setGib(UINT uIndex, IXResourceModel *pResource) override;
+	const IXResourceModel * XMETHODCALLTYPE getGib(UINT uIndex) const override;
+	void XMETHODCALLTYPE setGib(UINT uIndex, IXResourceModel *pResource) override;
 
-	const IXResourceModelStatic * asStatic() const override;
-	const IXResourceModelAnimated * asAnimated() const override;
+	const IXResourceModelStatic * XMETHODCALLTYPE asStatic() const override;
+	const IXResourceModelAnimated * XMETHODCALLTYPE asAnimated() const override;
 
 protected:
 	XPT_TOPOLOGY m_topology = XPT_TRIANGLELIST;
