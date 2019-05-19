@@ -10,18 +10,12 @@ CRenderable *g_pRenderable = NULL;
 class CStaticGeomPlugin: public IXPlugin
 {
 public:
-	CStaticGeomPlugin(ID id):
-		m_id(id)
+	CStaticGeomPlugin()
 	{
 		Core_SetOutPtr();
 	}
-
-	ID getID()
-	{
-		return(m_id);
-	}
-
-	void startup(IXCore *pCore)
+	
+	void XMETHODCALLTYPE startup(IXCore *pCore) override
 	{
 		m_pCore = pCore;
 
@@ -86,16 +80,16 @@ public:
 		});
 	}
 
-	void shutdown()
+	void XMETHODCALLTYPE shutdown() override
 	{
 		mem_delete(m_pModels);
 	}
 
-	UINT getInterfaceCount()
+	UINT XMETHODCALLTYPE getInterfaceCount() override
 	{
 		return(2);
 	}
-	const XGUID *getInterfaceGUID(UINT id)
+	const XGUID * XMETHODCALLTYPE getInterfaceGUID(UINT id) override
 	{
 		static XGUID s_guid;
 		switch(id)
@@ -111,7 +105,7 @@ public:
 		}
 		return(&s_guid);
 	}
-	IXUnknown *getInterface(const XGUID &guid)
+	IXUnknown * XMETHODCALLTYPE getInterface(const XGUID &guid) override
 	{
 		if(guid == IXEDITABLE_GUID)
 		{
@@ -125,9 +119,7 @@ public:
 	}
 
 protected:
-
 	IXCore *m_pCore;
-	ID m_id;
 
 	CModels *m_pModels = NULL;
 };

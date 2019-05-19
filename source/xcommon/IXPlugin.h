@@ -6,27 +6,20 @@
 #define X_PLUGIN_ENTRYPOINT XPluginMain
 #define X_PLUGIN_API extern "C" __declspec(dllexport)
 #define IXPLUGIN_VERSION 1
-#define DECLARE_XPLUGIN(cls) X_PLUGIN_API IXPlugin *X_PLUGIN_ENTRYPOINT(ID id){return(new cls(id));}
+#define DECLARE_XPLUGIN(cls) class cls##Imp:public cls{public:cls##Imp(ID id):m_id(id){}ID XMETHODCALLTYPE getID()override{return(m_id);}UINT XMETHODCALLTYPE getVersion()override{return(IXPLUGIN_VERSION);}protected:ID m_id;}; X_PLUGIN_API IXPlugin *X_PLUGIN_ENTRYPOINT(ID id){return(new cls##Imp(id));}
 
 class IXPlugin: public IXUnknown
 {
 public:
-	virtual UINT XMETHODCALLTYPE getVersion()
-	{
-		return(IXPLUGIN_VERSION);
-	}
-	virtual ID getID() = 0;
+	virtual UINT XMETHODCALLTYPE getVersion() = 0;
+	virtual ID XMETHODCALLTYPE getID() = 0;
 
-	virtual UINT getInterfaceCount() = 0;
-	virtual const XGUID *getInterfaceGUID(UINT id) = 0;
-	virtual IXUnknown *getInterface(const XGUID &guid) = 0;
+	virtual UINT XMETHODCALLTYPE getInterfaceCount() = 0;
+	virtual const XGUID * XMETHODCALLTYPE getInterfaceGUID(UINT id) = 0;
+	virtual IXUnknown * XMETHODCALLTYPE getInterface(const XGUID &guid) = 0;
 
-	virtual void startup(IXCore *pCore)
-	{
-	}
-	virtual void shutdown()
-	{
-	}
+	virtual void XMETHODCALLTYPE startup(IXCore *pCore) = 0;
+	virtual void XMETHODCALLTYPE shutdown() = 0;
 };
 
 typedef IXPlugin*(*PFNXPLUGINMAIN)(ID id);

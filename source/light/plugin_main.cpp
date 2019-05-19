@@ -5,25 +5,19 @@
 class CLightSystemPlugin: public IXPlugin
 {
 public:
-	CLightSystemPlugin(ID id):
-		m_id(id)
-	{}
-
-	void startup(IXCore *pCore)
+	void XMETHODCALLTYPE startup(IXCore *pCore) override
 	{
 		m_pCore = pCore;
 	}
-
-	ID getID()
+	void XMETHODCALLTYPE shutdown() override
 	{
-		return(m_id);
 	}
 
-	UINT getInterfaceCount()
+	UINT XMETHODCALLTYPE getInterfaceCount() override
 	{
 		return(1);
 	}
-	const XGUID *getInterfaceGUID(UINT id)
+	const XGUID * XMETHODCALLTYPE getInterfaceGUID(UINT id) override
 	{
 		static XGUID s_guid;
 		switch(id)
@@ -36,7 +30,7 @@ public:
 		}
 		return(&s_guid);
 	}
-	IXUnknown *getInterface(const XGUID &guid)
+	IXUnknown * XMETHODCALLTYPE getInterface(const XGUID &guid) override
 	{
 		if(guid == IXLIGHTSYSTEM_GUID)
 		{
@@ -46,9 +40,7 @@ public:
 	}
 
 protected:
-
 	IXCore *m_pCore;
-	ID m_id;
 };
 
 DECLARE_XPLUGIN(CLightSystemPlugin);

@@ -5,26 +5,19 @@
 class CDSEPlugin: public IXPlugin
 {
 public:
-	CDSEPlugin(ID id):
-		m_id(id)
-	{
-		// Core_SetOutPtr();
-	}
-
-	ID getID()
-	{
-		return(m_id);
-	}
-
-	void startup(IXCore *pCore)
+	void XMETHODCALLTYPE startup(IXCore *pCore) override
 	{
 	}
 
-	UINT getInterfaceCount()
+	void XMETHODCALLTYPE shutdown() override
+	{
+	}
+
+	UINT XMETHODCALLTYPE getInterfaceCount() override
 	{
 		return(1);
 	}
-	const XGUID *getInterfaceGUID(UINT id)
+	const XGUID * XMETHODCALLTYPE getInterfaceGUID(UINT id) override
 	{
 		static XGUID s_guid;
 		switch(id)
@@ -37,7 +30,7 @@ public:
 		}
 		return(&s_guid);
 	}
-	IXUnknown *getInterface(const XGUID &guid)
+	IXUnknown * XMETHODCALLTYPE getInterface(const XGUID &guid) override
 	{
 		if(guid == XMODELLOADER_GUID)
 		{
@@ -45,9 +38,6 @@ public:
 		}
 		return(NULL);
 	}
-
-protected:
-	ID m_id;
 };
 
 DECLARE_XPLUGIN(CDSEPlugin);
