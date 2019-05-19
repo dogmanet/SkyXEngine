@@ -2,7 +2,7 @@
 #define __IXMODEL_H
 
 #include <gdefines.h>
-#include <anim/ModelFile.h>
+#include "IXResourceModel.h"
 
 class IXStaticModel;
 class IXDynamicModel;
@@ -14,12 +14,8 @@ public:
 	virtual IXAnimatedModel * XMETHODCALLTYPE asAnimatedModel() = 0;
 	virtual IXDynamicModel * XMETHODCALLTYPE asDynamicModel() = 0;
 	virtual IXStaticModel * XMETHODCALLTYPE asStaticModel() = 0;
-};
 
-// Implemented in geom plugin
-class IXStaticModel: public IXModel
-{
-public:
+
 	virtual float3 XMETHODCALLTYPE getPosition() const = 0;
 	virtual void XMETHODCALLTYPE setPosition(const float3 &vPos) = 0;
 
@@ -29,14 +25,25 @@ public:
 	virtual UINT XMETHODCALLTYPE getSkin() const = 0;
 	virtual void XMETHODCALLTYPE setSkin(UINT uSkin) = 0;
 
-	virtual ISXBound * XMETHODCALLTYPE getLocalBound() const = 0;
+	virtual float3 XMETHODCALLTYPE getLocalBoundMin() const = 0;
+	virtual float3 XMETHODCALLTYPE getLocalBoundMax() const = 0;
 
 	virtual float4 XMETHODCALLTYPE getColor() const = 0;
 	virtual void XMETHODCALLTYPE setColor(const float4 &vColor) = 0;
+
+	virtual UINT XMETHODCALLTYPE getPhysboxCount(UINT uPartIndex = 0) const = 0;
+	virtual const IModelPhysbox * XMETHODCALLTYPE getPhysBox(UINT id, UINT uPartIndex = 0) const = 0;
+	virtual const IXResourceModel * XMETHODCALLTYPE getResource(UINT uIndex = 0) = 0;
+};
+
+// Implemented in geom plugin
+class IXStaticModel: public IXModel
+{
+public:
 };
 
 // Implemented in anim plugin
-class IXDynamicModel: public IXStaticModel
+class IXDynamicModel: public IXModel
 {
 public:
 };
@@ -45,8 +52,15 @@ public:
 class IXAnimatedModel: public IXDynamicModel
 {
 public:
-	virtual const ModelHitbox * XMETHODCALLTYPE getHitbox(UINT id) const = 0;
-	virtual UINT XMETHODCALLTYPE getHitboxCount() const = 0;
+	virtual UINT XMETHODCALLTYPE getPartsCount() const = 0;
+	virtual const char * XMETHODCALLTYPE getPartName(UINT uIndex) const = 0;
+	virtual UINT XMETHODCALLTYPE getPartIndex(const char *szName);
+	virtual XMODEL_PART_FLAGS XMETHODCALLTYPE getPartFlags(UINT uIndex) const = 0;
+	virtual bool XMETHODCALLTYPE isPartEnabled(UINT uIndex) const = 0;
+	virtual void XMETHODCALLTYPE enablePart(UINT uIndex, bool yesNo) = 0;
+
+	virtual UINT XMETHODCALLTYPE getHitboxCount(UINT uPartIndex = 0) const = 0;
+	virtual const XResourceModelHitbox * XMETHODCALLTYPE getHitbox(UINT id, UINT uPartIndex = 0) const = 0;
 
 	/*! Запускает воспроизведения анимации
 		@param[in] szName Имя анимации
@@ -72,12 +86,6 @@ public:
 		@param[in] uSlot Слот. От 0 до BLEND_MAX
 	*/
 	virtual void XMETHODCALLTYPE setProgress(float fProgress, UINT uSlot = 0) = 0;
-
-	/*! Разрешает/запрещает обновление конкретного слота
-		@param[in] bAllow разрешить/запретить
-		@param[in] slot Слот. От 0 до BLEND_MAX
-	*/
-	virtual void XMETHODCALLTYPE allowAdvance(bool bAllow, UINT slot = 0) = 0;
 
 	/*! Запускает воспроизведение указанной активности в заданном слоте
 		@param[in] szName Имя анимации
@@ -136,9 +144,8 @@ public:
 	/*! Устанавливает значение для заданного контроллера
 		@param[in] id Идентификатор контроллера
 		@param[in] fValue Значение от 0 до 1
-		@param[in] what Какую часть контроллера изменить
 	*/
-	virtual void XMETHODCALLTYPE setController(UINT id, float fValue, MODEL_BONE_CTL what) = 0;
+	virtual void XMETHODCALLTYPE setController(UINT id, float fValue) = 0;
 
 	virtual UINT XMETHODCALLTYPE getControllersCount() const = 0;
 	virtual const char * XMETHODCALLTYPE getControllerName(UINT id);

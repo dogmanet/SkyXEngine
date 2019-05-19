@@ -4,10 +4,14 @@
 #include <xcommon/resource/IXResourceModel.h>
 #include <common/string.h>
 
-class CResourceModel: public IXResourceModel
+class CResourceManager;
+class CResourceModel: public virtual IXResourceModel
 {
 public:
+	CResourceModel(CResourceManager *pMgr);
 	~CResourceModel();
+
+	void XMETHODCALLTYPE Release();
 
 	void XMETHODCALLTYPE setPrimitiveTopology(XPT_TOPOLOGY topology) override;
 	XPT_TOPOLOGY XMETHODCALLTYPE getPrimitiveTopology() const override;
@@ -15,7 +19,8 @@ public:
 
 	UINT XMETHODCALLTYPE getPhysboxCount() const override;
 	const IModelPhysbox * XMETHODCALLTYPE getPhysbox(UINT uPart) const override;
-	void XMETHODCALLTYPE addPhysbox(IModelPhysbox *pPhysbox) override;
+	int XMETHODCALLTYPE getPhysboxBone(UINT uPart) const override;
+	void XMETHODCALLTYPE addPhysbox(IModelPhysbox *pPhysbox, int iBone = -1) override;
 
 
 	UINT XMETHODCALLTYPE getMaterialCount() const override;
@@ -39,9 +44,25 @@ public:
 	const IXResourceModelStatic * XMETHODCALLTYPE asStatic() const override;
 	const IXResourceModelAnimated * XMETHODCALLTYPE asAnimated() const override;
 
+	IModelPhysboxBox    * XMETHODCALLTYPE newPhysboxBox() const override;
+	IModelPhysboxSphere * XMETHODCALLTYPE newPhysboxSphere() const override;
+	IModelPhysboxConvex * XMETHODCALLTYPE newPhysboxConvex() const override;
+
+	void setFileName(const char *szFilename);
+	const char *getFileName() const;
 protected:
+	CResourceManager *m_pManager;
+	const char *m_szFileName = NULL;
+
 	XPT_TOPOLOGY m_topology = XPT_TRIANGLELIST;
-	Array<IModelPhysbox*> m_aPhysBoxes;
+
+	struct _phys_box
+	{
+		IModelPhysbox *pPhysbox;
+		int iBone;
+	};
+
+	Array<_phys_box> m_aPhysBoxes;
 	UINT m_uMaterialCount = 0;
 	UINT m_uSkinCount = 0;
 	Array<Array<String>> m_aasMaterials;

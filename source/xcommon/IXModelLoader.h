@@ -19,6 +19,7 @@ public:
 	virtual const char * XMETHODCALLTYPE getDescription() const = 0;
 
 	virtual bool XMETHODCALLTYPE open(IFile *pFile) = 0;
+	virtual XMODELTYPE XMETHODCALLTYPE getType() const = 0;
 	virtual bool XMETHODCALLTYPE loadAsStatic(IXResourceModelStatic *pResource) = 0;
 	virtual bool XMETHODCALLTYPE loadAsAnimated(IXResourceModelAnimated *pResource) = 0;
 	// virtual void XMETHODCALLTYPE getInfo() = 0; // ??

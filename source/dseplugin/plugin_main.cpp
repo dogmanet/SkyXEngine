@@ -5,6 +5,17 @@
 class CDSEPlugin: public IXPlugin
 {
 public:
+	CDSEPlugin(ID id):
+		m_id(id)
+	{
+		// Core_SetOutPtr();
+	}
+
+	ID getID()
+	{
+		return(m_id);
+	}
+
 	void startup(IXCore *pCore)
 	{
 	}
@@ -34,6 +45,9 @@ public:
 		}
 		return(NULL);
 	}
+
+protected:
+	ID m_id;
 };
 
 DECLARE_XPLUGIN(CDSEPlugin);

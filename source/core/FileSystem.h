@@ -31,9 +31,9 @@ private:
     UINT m_writableRoot = 0;
 
 public:
-    UINT addRoot(const char *szPath, int iPriority) override;
+	UINT addRoot(const char *szPath, int iPriority = -1) override;
 
-    UINT inline getRootCount() override;
+    UINT getRootCount() override;
 
     const char *getRoot(UINT id) override;
 

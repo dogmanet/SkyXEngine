@@ -6,6 +6,11 @@
 class CResourceModelStatic final: public CResourceModel, public virtual IXResourceModelStatic
 {
 public:
+	CResourceModelStatic(CResourceManager *pMgr):
+		CResourceModel(pMgr)
+	{
+	}
+
 	XMODELTYPE XMETHODCALLTYPE getType() const override;
 
 	UINT XMETHODCALLTYPE getSubsetCount(UINT uLod) const override;

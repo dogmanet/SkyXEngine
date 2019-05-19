@@ -1,18 +1,44 @@
 #include "ResourceModel.h"
 #include "ResourceModelStatic.h"
 #include "ResourceModelAnimated.h"
+#include "ResourceManager.h"
+#include "ModelPhysbox.h"
+
+CResourceModel::CResourceModel(CResourceManager *pMgr):
+	m_pManager(pMgr)
+{
+}
 
 CResourceModel::~CResourceModel()
 {
 	for(UINT i = 0, l = m_aPhysBoxes.size(); i < l; ++i)
 	{
-		mem_release(m_aPhysBoxes[i]);
+		mem_release(m_aPhysBoxes[i].pPhysbox);
 	}
 
 	for(UINT i = 0, l = m_asGibs.size(); i < l; ++i)
 	{
 		mem_release(m_asGibs[i]);
 	}
+}
+
+void CResourceModel::Release()
+{
+	if(m_uRefCount == 1)
+	{
+		m_pManager->onResourceModelRelease(this);
+	}
+	IXResourceModel::Release();
+}
+
+void CResourceModel::setFileName(const char *szFilename)
+{
+	m_szFileName = szFilename;
+}
+
+const char *CResourceModel::getFileName() const
+{
+	return(m_szFileName);
 }
 
 void CResourceModel::setPrimitiveTopology(XPT_TOPOLOGY topology)
@@ -33,15 +59,21 @@ const IModelPhysbox *CResourceModel::getPhysbox(UINT uPart) const
 {
 	assert(uPart < m_aPhysBoxes.size());
 
-	return(m_aPhysBoxes[uPart]);
+	return(m_aPhysBoxes[uPart].pPhysbox);
 }
-void CResourceModel::addPhysbox(IModelPhysbox *pPhysbox)
+int CResourceModel::getPhysboxBone(UINT uPart) const
+{
+	assert(uPart < m_aPhysBoxes.size());
+
+	return(m_aPhysBoxes[uPart].iBone);
+}
+void CResourceModel::addPhysbox(IModelPhysbox *pPhysbox, int iBone)
 {
 	assert(pPhysbox);
 
 	pPhysbox->AddRef();
 
-	m_aPhysBoxes.push_back(pPhysbox);
+	m_aPhysBoxes.push_back({pPhysbox, iBone});
 }
 
 
@@ -144,4 +176,17 @@ const IXResourceModelAnimated * CResourceModel::asAnimated() const
 		return((const CResourceModelAnimated*)this);
 	}
 	return(NULL);
+}
+
+IModelPhysboxBox *CResourceModel::newPhysboxBox() const
+{
+	return(new CModelPhysboxBox());
+}
+IModelPhysboxSphere *CResourceModel::newPhysboxSphere() const
+{
+	return(new CModelPhysboxSphere());
+}
+IModelPhysboxConvex *CResourceModel::newPhysboxConvex() const
+{
+	return(new CModelPhysboxConvex());
 }

@@ -70,6 +70,9 @@
     <ClCompile Include="..\..\..\source\core\FileIterator.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\core\ModelPhysbox.cpp">
+      <Filter>Source\resource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -205,6 +208,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\FileIterator.h">
       <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\ModelPhysbox.h">
+      <Filter>Header\resource</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

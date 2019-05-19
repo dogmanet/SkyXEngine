@@ -2,7 +2,8 @@
 #define __IXRESOURCEMODEL_H
 
 #include <gdefines.h>
-#include <anim/ModelFile.h>
+
+#define XMODEL_MAX_NAME 32
 
 /*! Типы физбоксов
 */
@@ -57,6 +58,36 @@ enum XMODELTYPE
 	XMT_ANIMATED = 1,
 };
 
+///
+
+/*! Флаги импорта файла моделм анимации
+*/
+enum XMODEL_IMPORT
+{
+	XMI_MESH = 0x00000001, /*!< Импортировать сетку */
+	XMI_ANIMATIONS = 0x00000002, /*!< Импортировать анимации */
+	XMI_SKINS = 0x00000004, /*!< Импортировать скины */ // ?
+	XMI_CONTROLLERS = 0x00000008, /*!< Импортировать контроллеры */
+	XMI_HITBOXES = 0x00000010, /*!< Импортировать хитбоксы */
+	XMI_PHYSBOXES = 0x00000020, /*!< Импортировать физбоксы */
+	
+	XMI_ALL = 0xFFFFFFFF  /*!< Импортировать все */
+};
+DEFINE_ENUM_FLAG_OPERATORS(XMODEL_IMPORT);
+
+/*! Флаги управления частями модели
+*/
+enum XMODEL_PART_FLAGS
+{
+	XMP_NONE = 0x00000001,       /*!< нет */
+	XMP_HIDDEN = 0x00000002,     /*!< Часть спрятана */
+	XMP_COLLISIONS = 0x00000004, /*!< Проверять столкновения */
+	XMP_RAYTRACE = 0x00000008,   /*!< Проверять трассировки луча */
+	XMP_IMPORTED = 0x00000010    /*!< Часть импортируется из внешнего файла */
+};
+DEFINE_ENUM_FLAG_OPERATORS(XMODEL_PART_FLAGS);
+
+
 //##########################################################################
 
 struct XResourceModelStaticVertex
@@ -71,7 +102,7 @@ struct XResourceModelStaticVertex
 struct XResourceModelStaticSubset
 {
 	uint32_t iMaterialID; //!< Идентификатор материала
-	uint32_t iVectexCount; //!< Количество вертексов в сабсете
+	uint32_t iVertexCount; //!< Количество вертексов в сабсете
 	uint32_t iIndexCount; //!< Количество индексов в сабсете
 	XResourceModelStaticVertex *pVertices; //!< Указатель на массив вертексов
 	UINT *pIndices; //!< Массив индексов
@@ -91,7 +122,7 @@ struct XResourceModelAnimatedVertex
 struct XResourceModelAnimatedSubset
 {
 	uint32_t iMaterialID; //!< Идентификатор материала
-	uint32_t iVectexCount; //!< Количество вертексов в сабсете
+	uint32_t iVertexCount; //!< Количество вертексов в сабсете
 	uint32_t iIndexCount; //!< Количество индексов в сабсете
 	XResourceModelAnimatedVertex * pVertices; //!< Указатель на массив вертексов
 	UINT * pIndices; //!< Массив индексов
@@ -105,7 +136,7 @@ struct XResourceModelHitbox
 	float3_t pos;          /*!< Положение */
 	SMQuaternion rot;      /*!< Ориентация */
 	int bone_id;           /*!< Идентификатор кости */
-	char szName[MODEL_MAX_NAME];    /*!< Имя хитбокса */
+	char szName[XMODEL_MAX_NAME];    /*!< Имя хитбокса */
 };
 
 struct XResourceModelBone
@@ -116,7 +147,7 @@ struct XResourceModelBone
 
 struct XResourceModelSequence
 {
-	char szName[MODEL_MAX_NAME]; /*!< Имя */
+	char szName[XMODEL_MAX_NAME]; /*!< Имя */
 	bool isLooped; /*!< Анимация зациклена */
 	int iFramerate; /*!< Скорость кадров в секунду */
 	int iActivity; /*!< Идентификатор активности */
@@ -127,7 +158,7 @@ struct XResourceModelSequence
 
 struct XResourceModelController
 {
-	char szName[MODEL_MAX_NAME];    /*!< Имя контроллера */
+	char szName[XMODEL_MAX_NAME];    /*!< Имя контроллера */
 
 	SMQuaternion qMinRot;  /*!< Вращение ОТ */
 	SMQuaternion qMaxRot;  /*!< Вращение ДО */
@@ -155,7 +186,7 @@ public:
 	virtual void XMETHODCALLTYPE setPosition(const float3 &vPos) = 0;
 
 	virtual SMQuaternion XMETHODCALLTYPE getOrientation() const = 0;
-	virtual void XMETHODCALLTYPE setOrientation(const SMQuaternion &vPos) = 0;
+	virtual void XMETHODCALLTYPE setOrientation(const SMQuaternion &qRot) = 0;
 };
 
 class IModelPhysboxBox: public IModelPhysbox
@@ -196,7 +227,8 @@ public:
 
 	virtual UINT XMETHODCALLTYPE getPhysboxCount() const = 0;
 	virtual const IModelPhysbox * XMETHODCALLTYPE getPhysbox(UINT uPart) const = 0;
-	virtual void XMETHODCALLTYPE addPhysbox(IModelPhysbox *pPhysbox) = 0;
+	virtual int XMETHODCALLTYPE getPhysboxBone(UINT uPart) const = 0;
+	virtual void XMETHODCALLTYPE addPhysbox(IModelPhysbox *pPhysbox, int iBone = -1) = 0;
 
 
 	virtual UINT XMETHODCALLTYPE getMaterialCount() const = 0;
@@ -217,6 +249,7 @@ public:
 	virtual const IXResourceModel * XMETHODCALLTYPE getGib(UINT uIndex) const = 0;
 	virtual void XMETHODCALLTYPE setGib(UINT uIndex, IXResourceModel *pResource) = 0;
 
+
 	virtual XMODELTYPE XMETHODCALLTYPE getType() const = 0;
 	virtual const IXResourceModelStatic * XMETHODCALLTYPE asStatic() const = 0;
 	virtual const IXResourceModelAnimated * XMETHODCALLTYPE asAnimated() const = 0;
@@ -226,10 +259,14 @@ public:
 	virtual UINT XMETHODCALLTYPE addLod(UINT uSubsetCount, UINT *puVertexCount, UINT *puIndexCount) = 0;
 
 	virtual bool XMETHODCALLTYPE validate() const = 0;
+
+	virtual IModelPhysboxBox    * XMETHODCALLTYPE newPhysboxBox() const = 0;
+	virtual IModelPhysboxSphere * XMETHODCALLTYPE newPhysboxSphere() const = 0;
+	virtual IModelPhysboxConvex * XMETHODCALLTYPE newPhysboxConvex() const = 0;
 };
 
 // Implemented in core
-class IXResourceModelStatic: public IXResourceModel
+class IXResourceModelStatic: public virtual IXResourceModel
 {
 public:
 
@@ -238,11 +275,31 @@ public:
 };
 
 // Implemented in core
-class IXResourceModelAnimated: public IXResourceModel
+class IXResourceModelAnimated: public virtual IXResourceModel
 {
 public:
 	virtual const XResourceModelAnimatedSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) const = 0;
 	virtual XResourceModelAnimatedSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) = 0;
+
+
+	virtual UINT XMETHODCALLTYPE getImportsCount() const = 0;
+	virtual const char * XMETHODCALLTYPE getImportName(UINT uIndex) const = 0;
+	virtual XMODEL_IMPORT XMETHODCALLTYPE getImportImportFlags(UINT uIndex) const = 0;
+	virtual UINT XMETHODCALLTYPE addImportName(const char *szFileName, XMODEL_IMPORT importFlags) = 0;
+
+	virtual const IXResourceModel * XMETHODCALLTYPE getImport(UINT uIndex) const = 0;
+	virtual void XMETHODCALLTYPE setImport(UINT uIndex, IXResourceModel *pResource) = 0;
+
+
+	virtual UINT XMETHODCALLTYPE getPartsCount() const = 0;
+	virtual const char * XMETHODCALLTYPE getPartFileName(UINT uIndex) const = 0;
+	virtual const char * XMETHODCALLTYPE getPartName(UINT uIndex) const = 0;
+	virtual XMODEL_IMPORT XMETHODCALLTYPE getPartImportFlags(UINT uIndex) const = 0;
+	virtual XMODEL_PART_FLAGS XMETHODCALLTYPE getPartFlags(UINT uIndex) const = 0;
+	virtual UINT XMETHODCALLTYPE addPartName(const char *szFileName, const char *szName, XMODEL_IMPORT importFlags, XMODEL_PART_FLAGS partFlags) = 0;
+
+	virtual const IXResourceModel * XMETHODCALLTYPE getPart(UINT uIndex) const = 0;
+	virtual void XMETHODCALLTYPE setPart(UINT uIndex, IXResourceModel *pResource) = 0;
 
 
 	virtual void XMETHODCALLTYPE setBoneCount(UINT uCount) = 0;

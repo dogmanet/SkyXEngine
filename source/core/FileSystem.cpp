@@ -20,14 +20,14 @@ HANDLE CFileSystem::getFileHandle(const char *szPath)
 		NULL);
 }
 
-UINT CFileSystem::addRoot(const char *szPath, int iPriority = -1)
+UINT CFileSystem::addRoot(const char *szPath, int iPriority)
 {
     m_filePaths.push_back(String(szPath));
     m_priority.push_back(iPriority);
     return m_filePaths.size() - 1;
 }
 
-UINT inline CFileSystem::getRootCount()
+UINT CFileSystem::getRootCount()
 {
     return m_filePaths.size();
 }

@@ -6,6 +6,10 @@
 class CResourceModelAnimated: public CResourceModel, public virtual IXResourceModelAnimated
 {
 public:
+	CResourceModelAnimated(CResourceManager *pMgr):
+		CResourceModel(pMgr)
+	{
+	}
 	~CResourceModelAnimated();
 
 	XMODELTYPE XMETHODCALLTYPE getType() const override;
@@ -15,6 +19,26 @@ public:
 
 	const XResourceModelAnimatedSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) const override;
 	XResourceModelAnimatedSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) override;
+
+
+	UINT XMETHODCALLTYPE getImportsCount() const override;
+	const char * XMETHODCALLTYPE getImportName(UINT uIndex) const override;
+	XMODEL_IMPORT XMETHODCALLTYPE getImportImportFlags(UINT uIndex) const override;
+	UINT XMETHODCALLTYPE addImportName(const char *szFileName, XMODEL_IMPORT importFlags) override;
+
+	const IXResourceModel * XMETHODCALLTYPE getImport(UINT uIndex) const override;
+	void XMETHODCALLTYPE setImport(UINT uIndex, IXResourceModel *pResource) override;
+
+
+	UINT XMETHODCALLTYPE getPartsCount() const override;
+	const char * XMETHODCALLTYPE getPartFileName(UINT uIndex) const override;
+	const char * XMETHODCALLTYPE getPartName(UINT uIndex) const override;
+	XMODEL_IMPORT XMETHODCALLTYPE getPartImportFlags(UINT uIndex) const override;
+	XMODEL_PART_FLAGS XMETHODCALLTYPE getPartFlags(UINT uIndex) const override;
+	UINT XMETHODCALLTYPE addPartName(const char *szFileName, const char *szName, XMODEL_IMPORT importFlags, XMODEL_PART_FLAGS partFlags) override;
+
+	const IXResourceModel * XMETHODCALLTYPE getPart(UINT uIndex) const override;
+	void XMETHODCALLTYPE setPart(UINT uIndex, IXResourceModel *pResource) override;
 
 
 	void XMETHODCALLTYPE setBoneCount(UINT uCount) override;
@@ -75,7 +99,7 @@ protected:
 	struct _bone_hierarchy
 	{
 		int pid;         /*!< Номер родительской кости */
-		char szName[MODEL_MAX_NAME];
+		char szName[XMODEL_MAX_NAME];
 		XResourceModelBone bindPose;
 	};
 
@@ -92,6 +116,24 @@ protected:
 
 	XResourceModelHitbox *m_pHitboxes = NULL;
 	UINT m_uHitboxCount = 0;
+	
+	struct _import
+	{
+		IXResourceModel *pResource;
+		XMODEL_IMPORT importFlags;
+	};
+	Array<String> m_asImportsNames;
+	Array<_import> m_aImports;
+
+	struct _part
+	{
+		IXResourceModel *pResource;
+		XMODEL_IMPORT importFlags;
+		XMODEL_PART_FLAGS flags;
+		String sName;
+	};
+	Array<String> m_asPartsNames;
+	Array<_part> m_aParts;
 };
 
 #endif

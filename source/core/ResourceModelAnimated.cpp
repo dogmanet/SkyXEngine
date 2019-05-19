@@ -21,6 +21,16 @@ CResourceModelAnimated::~CResourceModelAnimated()
 	mem_delete_a(m_pControllers);
 
 	mem_delete_a(m_pHitboxes);
+
+	for(UINT i = 0, l = m_aImports.size(); i < l; ++i)
+	{
+		mem_release(m_aImports[i].pResource);
+	}
+
+	for(UINT i = 0, l = m_aParts.size(); i < l; ++i)
+	{
+		mem_release(m_aParts[i].pResource);
+	}
 }
 
 XMODELTYPE CResourceModelAnimated::getType() const
@@ -81,6 +91,104 @@ XResourceModelAnimatedSubset *CResourceModelAnimated::getSubset(UINT uLod, UINT 
 }
 
 
+UINT CResourceModelAnimated::getImportsCount() const
+{
+	return(m_aImports.size());
+}
+const char *CResourceModelAnimated::getImportName(UINT uIndex) const
+{
+	assert(uIndex < m_aImports.size());
+
+	return(m_asImportsNames[uIndex].c_str());
+}
+XMODEL_IMPORT CResourceModelAnimated::getImportImportFlags(UINT uIndex) const
+{
+	assert(uIndex < m_aImports.size());
+
+	return(m_aImports[uIndex].importFlags);
+}
+UINT CResourceModelAnimated::addImportName(const char *szFileName, XMODEL_IMPORT importFlags)
+{
+	m_asImportsNames.push_back(szFileName);
+	m_aImports.push_back({NULL, importFlags});
+
+	return(m_asImportsNames.size() - 1);
+}
+
+const IXResourceModel *CResourceModelAnimated::getImport(UINT uIndex) const
+{
+	assert(uIndex < m_aImports.size());
+
+	return(m_aImports[uIndex].pResource);
+}
+void CResourceModelAnimated::setImport(UINT uIndex, IXResourceModel *pResource)
+{
+	assert(uIndex < m_aImports.size());
+	assert(pResource);
+
+	pResource->AddRef();
+
+	mem_release(m_aImports[uIndex].pResource);
+
+	m_aImports[uIndex].pResource = pResource;
+}
+
+
+UINT CResourceModelAnimated::getPartsCount() const
+{
+	return(m_aParts.size());
+}
+const char *CResourceModelAnimated::getPartFileName(UINT uIndex) const
+{
+	assert(uIndex < m_aParts.size());
+
+	return(m_asPartsNames[uIndex].c_str());
+}
+const char *CResourceModelAnimated::getPartName(UINT uIndex) const
+{
+	assert(uIndex < m_aParts.size());
+
+	return(m_aParts[uIndex].sName.c_str());
+}
+XMODEL_IMPORT CResourceModelAnimated::getPartImportFlags(UINT uIndex) const
+{
+	assert(uIndex < m_aParts.size());
+
+	return(m_aParts[uIndex].importFlags);
+}
+XMODEL_PART_FLAGS CResourceModelAnimated::getPartFlags(UINT uIndex) const
+{
+	assert(uIndex < m_aParts.size());
+
+	return(m_aParts[uIndex].flags);
+}
+UINT CResourceModelAnimated::addPartName(const char *szFileName, const char *szName, XMODEL_IMPORT importFlags, XMODEL_PART_FLAGS partFlags)
+{
+	m_asPartsNames.push_back(szFileName);
+	m_aParts.push_back({NULL, importFlags, partFlags, szName});
+
+	return(m_asPartsNames.size() - 1);
+}
+
+const IXResourceModel *CResourceModelAnimated::getPart(UINT uIndex) const
+{
+	assert(uIndex < m_aParts.size());
+
+	return(m_aParts[uIndex].pResource);
+}
+void CResourceModelAnimated::setPart(UINT uIndex, IXResourceModel *pResource)
+{
+	assert(uIndex < m_aParts.size());
+	assert(pResource);
+
+	pResource->AddRef();
+
+	mem_release(m_aParts[uIndex].pResource);
+
+	m_aParts[uIndex].pResource = pResource;
+}
+
+
 void CResourceModelAnimated::setBoneCount(UINT uCount)
 {
 	mem_delete_a(m_pBones);
@@ -98,8 +206,8 @@ void CResourceModelAnimated::setBoneInfo(int iBone, const char *szName, int iPar
 	assert(iBone >= 0 && iBone < (int)m_uBoneCount);
 
 	m_pBones[iBone].pid = iParent;
-	strncpy(m_pBones[iBone].szName, szName, MODEL_BONE_MAX_NAME);
-	m_pBones[iBone].szName[MODEL_BONE_MAX_NAME - 1] = 0;
+	strncpy(m_pBones[iBone].szName, szName, XMODEL_MAX_NAME);
+	m_pBones[iBone].szName[XMODEL_MAX_NAME - 1] = 0;
 
 	m_pBones[iBone].bindPose.position = vTranslation;
 	m_pBones[iBone].bindPose.orient = vRotation;

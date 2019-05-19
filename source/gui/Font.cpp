@@ -221,7 +221,7 @@ namespace gui
 		{
 			if(m_szFontChars[i] != L'\t')
 			{
-				if(FT_Load_Char(m_pFTfontFace, m_szFontChars[i], FT_LOAD_RENDER | (m_iFontSize > 13 ? FT_LOAD_TARGET_LIGHT | FT_LOAD_FORCE_AUTOHINT : FT_LOAD_TARGET_MONO)))
+				if(FT_Load_Char(m_pFTfontFace, m_szFontChars[i], FT_LOAD_RENDER | (m_iFontSize > 13 ? FT_LOAD_TARGET_LIGHT | FT_LOAD_FORCE_AUTOHINT/* | FT_LOAD_TARGET_LCD*/ : FT_LOAD_TARGET_MONO)))
 					//if(FT_Load_Char(m_pFTfontFace, m_szFontChars[i], FT_LOAD_RENDER | FT_LOAD_TARGET_LIGHT | FT_LOAD_FORCE_AUTOHINT))
 				{
 					continue;
@@ -240,7 +240,7 @@ namespace gui
 			int iPadding = 1;
 
 			chardata d;
-			d.w = g->bitmap.width + m_iBlurRadius * 2 + iPadding * 2;
+			d.w = (g->bitmap.pixel_mode == FT_PIXEL_MODE_LCD ? (g->bitmap.width / 3) : g->bitmap.width) + m_iBlurRadius * 2 + iPadding * 2;
 			d.h = g->bitmap.rows + m_iBlurRadius * 2 + iPadding * 2;
 			d.xa = g->advance.x;
 			d.xo = g->bitmap_left;
@@ -267,21 +267,46 @@ namespace gui
 					buf++;
 				}
 			}
-			for(int y = bitmap->rows - 1, by = m_iBlurRadius + iPadding; y >= 0; --y, ++by)
+			if(g->bitmap.pixel_mode == FT_PIXEL_MODE_LCD)
 			{
-				for(UINT i = 0, bx = m_iBlurRadius + iPadding; i < bitmap->width; ++i, ++bx)
+				for(int y = bitmap->rows - 1, by = m_iBlurRadius + iPadding; y >= 0; --y, ++by)
 				{
-					cc = (by * d.w + bx) * 4;
-					unsigned char c = bitmap->buffer[y * bitmap->width + i];
-					d.data[cc] = 255;
-					cc++;
-					d.data[cc] = 255;
-					cc++;
-					d.data[cc] = 255;
-					cc++;
-					d.data[cc] = c;
-					//d.data[cc] = 255;
-					cc++;
+					for(UINT i = 0, bx = m_iBlurRadius + iPadding; i < bitmap->width; i += 3, ++bx)
+					{
+						cc = (by * d.w + bx) * 4;
+						unsigned char cr = bitmap->buffer[y * bitmap->width + i];
+						unsigned char cg = bitmap->buffer[y * bitmap->width + i + 1];
+						unsigned char cb = bitmap->buffer[y * bitmap->width + i + 2];
+						d.data[cc] = cb;
+						cc++;
+						d.data[cc] = cg;
+						cc++;
+						d.data[cc] = cr;
+						cc++;
+						d.data[cc] = (cr + cg + cb) / 3;
+						//d.data[cc] = 255;
+						cc++;
+					}
+				}
+			}
+			else
+			{
+				for(int y = bitmap->rows - 1, by = m_iBlurRadius + iPadding; y >= 0; --y, ++by)
+				{
+					for(UINT i = 0, bx = m_iBlurRadius + iPadding; i < bitmap->width; ++i, ++bx)
+					{
+						cc = (by * d.w + bx) * 4;
+						unsigned char c = bitmap->buffer[y * bitmap->width + i];
+						d.data[cc] = 255;
+						cc++;
+						d.data[cc] = 255;
+						cc++;
+						d.data[cc] = 255;
+						cc++;
+						d.data[cc] = c;
+						//d.data[cc] = 255;
+						cc++;
+					}
 				}
 			}
 

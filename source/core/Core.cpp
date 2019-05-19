@@ -6,12 +6,16 @@
 CCore::CCore()
 {
 	m_pPluginManager = new CPluginManager();
-	//m_pFileSystem = new FileSystem();
+	m_pFileSystem = new CFileSystem();
+	m_pResourceManager = new CResourceManager(this);
+
+	m_pFileSystem->addRoot("gamesource");
 }
 CCore::~CCore()
 {
 	shutdownUpdatable();
 
+	mem_delete(m_pResourceManager);
 	mem_delete(m_pFileSystem);
 	mem_delete(m_pPluginManager);
 	for(AssotiativeArray<XGUID, IBaseEventChannel*>::Iterator i = m_mEventChannels.begin(); i; i++)
@@ -33,6 +37,10 @@ IPluginManager *CCore::getPluginManager()
 IFileSystem *CCore::getFileSystem()
 {
 	return(m_pFileSystem);
+}
+IXResourceManager *CCore::getResourceManager()
+{
+	return(m_pResourceManager);
 }
 
 IAsyncFileReader *CCore::getAsyncFileReader()

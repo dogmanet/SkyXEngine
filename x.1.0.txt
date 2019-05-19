@@ -1,0 +1,18 @@
+sxgame:
+	реализовать IEditable, IEditorObject. Работу с моделями перевести на IXModel и провайдеры. Убрать жесткие зависимости от sxscore, sxaigrid, sxphysics, sxmtrl, sxgeom, sxgreen, sxdecals, sxanum, sxparticles
+sxrender:
+	Убрать устаревший код. Убрать жесткие зависимости от sxmtrl, sxgeom, sxgreen, sxdecals, sxanim, sxparticles, sxpp.
+sxphysics:
+	убрать экспорт классов bullet за пределы библиотеки. Для необходимых объектов создать интерфейсы-обертки. Убрать зависимость от sxgeom, sxgreen (эти подсистемы сами создают объекты физики)
+sxmtrl:
+	реализовать поддержку IXShaderVariant. Убрать устаревший код
+sxgeom:
+	доработать реализацию IEditorObject.Объекты сами себе загружают физику. Рефакторинг кода (в т.ч. убрать дублирование).
+sxanim:
+	реализовать IXAnimatedModel, IXAnimatedModelProvider. Убрать жесткие зависимости от других либ. Оформить в виде плагина.
+sxcore:
+	реализовать IXFileSystem. 
+sxgcore:
+	убрать работу с моделями. Вынести небо в sxweather. Убрать менеджер рендертаргетов. Убрать код OC.
+TerraX:
+	доделать редактор свойств объекта. Сделать рендер через расширение пайплайна. Реализовать загрузку/сохранение уровня.

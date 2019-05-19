@@ -24,6 +24,7 @@
     <ClCompile Include="..\..\..\source\dseplugin\plugin_main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\dseplugin\ModelFile.h" />
     <ClInclude Include="..\..\..\source\dseplugin\ModelLoader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

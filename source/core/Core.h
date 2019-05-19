@@ -6,6 +6,7 @@
 #include "PluginManager.h"
 #include "FileSystem.h"
 #include <xcommon/IXUpdatable.h>
+#include "ResourceManager.h"
 
 class CCore: public IXCore
 {
@@ -15,14 +16,15 @@ public:
 
 	void XMETHODCALLTYPE Release() override;
 
-	IPluginManager *getPluginManager() override;
-	IFileSystem *getFileSystem() override;
+	IPluginManager * XMETHODCALLTYPE getPluginManager() override;
+	IFileSystem * XMETHODCALLTYPE getFileSystem() override;
+	IXResourceManager * XMETHODCALLTYPE getResourceManager() override;
 
-	IAsyncFileReader *getAsyncFileReader() override;
-	IAsyncTaskRunner *getAsyncTaskRunner() override;
+	IAsyncFileReader * XMETHODCALLTYPE getAsyncFileReader() override;
+	IAsyncTaskRunner * XMETHODCALLTYPE getAsyncTaskRunner() override;
 
-	void getRenderPipeline(IXRenderPipeline **ppRenderPipeline) override;
-	void setRenderPipeline(IXRenderPipeline *pRenderPipeline) override;
+	void XMETHODCALLTYPE getRenderPipeline(IXRenderPipeline **ppRenderPipeline) override;
+	void XMETHODCALLTYPE setRenderPipeline(IXRenderPipeline *pRenderPipeline) override;
 
 	void loadPlugins();
 
@@ -35,6 +37,7 @@ protected:
 
 	CPluginManager *m_pPluginManager = NULL;
 	CFileSystem *m_pFileSystem = NULL;
+	CResourceManager *m_pResourceManager = NULL;
 	AssotiativeArray<XGUID, IBaseEventChannel*> m_mEventChannels;
 
 	IXRenderPipeline *m_pRenderPipeline = NULL;

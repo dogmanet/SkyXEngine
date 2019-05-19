@@ -218,3 +218,4 @@ docs/html/*
 /build/config_game_user.cfg
 
 /sdks/freetype-2.6/objs/
+/sdks/freetype-2.10.0/objs/

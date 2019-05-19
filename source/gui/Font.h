@@ -7,9 +7,11 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #ifdef _DEBUG
-#	pragma comment(lib, "freetype26d.lib")
+#	pragma comment(lib, "freetype.lib")
+//#	pragma comment(lib, "freetype26d.lib")
 #else
-#	pragma comment(lib, "freetype26.lib")
+#	pragma comment(lib, "freetype.lib")
+//#	pragma comment(lib, "freetype26.lib")
 #endif
 
 #define SXF_VERSION 1
