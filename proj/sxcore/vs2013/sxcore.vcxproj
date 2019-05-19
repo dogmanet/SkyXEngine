@@ -42,6 +42,7 @@
     <ClCompile Include="..\..\..\source\core\FileIterator.cpp" />
     <ClCompile Include="..\..\..\source\core\FileSystem.cpp" />
     <ClCompile Include="..\..\..\source\core\ModelPhysbox.cpp" />
+    <ClCompile Include="..\..\..\source\core\ModelProvider.cpp" />
     <ClCompile Include="..\..\..\source\core\PerfMon.cpp" />
     <ClCompile Include="..\..\..\source\core\PluginManager.cpp" />
     <ClCompile Include="..\..\..\source\core\ResourceManager.cpp" />
@@ -78,6 +79,7 @@
     <ClInclude Include="..\..\..\source\core\FileSystem.h" />
     <ClInclude Include="..\..\..\source\core\IFile.h" />
     <ClInclude Include="..\..\..\source\core\ModelPhysbox.h" />
+    <ClInclude Include="..\..\..\source\core\ModelProvider.h" />
     <ClInclude Include="..\..\..\source\core\PerfMon.h" />
     <ClInclude Include="..\..\..\source\core\PluginManager.h" />
     <ClInclude Include="..\..\..\source\core\ResourceManager.h" />

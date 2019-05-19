@@ -56,5 +56,8 @@
     <ClInclude Include="..\..\..\source\xcommon\resource\IXModelProvider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\anim\AnimatedModelProvider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -187,6 +187,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\anim\animated.h" />
+    <ClInclude Include="..\..\..\source\anim\AnimatedModelProvider.h" />
     <ClInclude Include="..\..\..\source\anim\ModelFile.h" />
     <ClInclude Include="..\..\..\source\anim\Renderable.h" />
     <ClInclude Include="..\..\..\source\anim\RenderableVisibility.h" />

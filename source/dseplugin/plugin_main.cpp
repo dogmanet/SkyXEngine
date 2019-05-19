@@ -23,7 +23,7 @@ public:
 		switch(id)
 		{
 		case 0:
-			s_guid = XMODELLOADER_GUID;
+			s_guid = IXMODELLOADER_GUID;
 			break;
 		default:
 			return(NULL);
@@ -32,7 +32,7 @@ public:
 	}
 	IXUnknown * XMETHODCALLTYPE getInterface(const XGUID &guid) override
 	{
-		if(guid == XMODELLOADER_GUID)
+		if(guid == IXMODELLOADER_GUID)
 		{
 			return(new CModelLoader());
 		}

@@ -43,9 +43,19 @@ public:
 };
 
 // Implemented in anim plugin
-class IXDynamicModel: public IXModel
+class IXDynamicModel: public IXStaticModel
 {
 public:
+};
+
+class IAnimationCallback
+{
+public:
+	virtual void onPlay(UINT uSlot) = 0;
+	virtual void onStop(UINT uSlot) = 0;
+	virtual void onLoop(UINT uSlot) = 0;
+
+	virtual void onProgress(UINT uSlot, float fProgress) = 0;
 };
 
 // Implemented in anim plugin
@@ -54,7 +64,7 @@ class IXAnimatedModel: public IXDynamicModel
 public:
 	virtual UINT XMETHODCALLTYPE getPartsCount() const = 0;
 	virtual const char * XMETHODCALLTYPE getPartName(UINT uIndex) const = 0;
-	virtual UINT XMETHODCALLTYPE getPartIndex(const char *szName);
+	virtual UINT XMETHODCALLTYPE getPartIndex(const char *szName) = 0;
 	virtual XMODEL_PART_FLAGS XMETHODCALLTYPE getPartFlags(UINT uIndex) const = 0;
 	virtual bool XMETHODCALLTYPE isPartEnabled(UINT uIndex) const = 0;
 	virtual void XMETHODCALLTYPE enablePart(UINT uIndex, bool yesNo) = 0;
@@ -148,10 +158,12 @@ public:
 	virtual void XMETHODCALLTYPE setController(UINT id, float fValue) = 0;
 
 	virtual UINT XMETHODCALLTYPE getControllersCount() const = 0;
-	virtual const char * XMETHODCALLTYPE getControllerName(UINT id);
-	virtual UINT XMETHODCALLTYPE getControllerId(const char *szName);
+	virtual const char * XMETHODCALLTYPE getControllerName(UINT id) = 0;
+	virtual UINT XMETHODCALLTYPE getControllerId(const char *szName) = 0;
 
 	// Коллбек на изменение состояния анимации!
+
+	virtual void setCallback(IAnimationCallback *pCallback) = 0;
 };
 
 #endif

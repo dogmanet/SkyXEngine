@@ -73,6 +73,9 @@
     <ClCompile Include="..\..\..\source\core\ModelPhysbox.cpp">
       <Filter>Source\resource</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\core\ModelProvider.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -211,6 +214,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\ModelPhysbox.h">
       <Filter>Header\resource</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\ModelProvider.h">
+      <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

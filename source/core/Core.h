@@ -8,6 +8,8 @@
 #include <xcommon/IXUpdatable.h>
 #include "ResourceManager.h"
 
+class CModelProvider;
+
 class CCore: public IXCore
 {
 public:
@@ -38,6 +40,7 @@ protected:
 	CPluginManager *m_pPluginManager = NULL;
 	CFileSystem *m_pFileSystem = NULL;
 	CResourceManager *m_pResourceManager = NULL;
+	CModelProvider *m_pModelProvider = NULL;
 	AssotiativeArray<XGUID, IBaseEventChannel*> m_mEventChannels;
 
 	IXRenderPipeline *m_pRenderPipeline = NULL;

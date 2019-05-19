@@ -10,7 +10,7 @@ CResourceManager::CResourceManager(IXCore *pCore):
 
 	IXModelLoader *pLoader;
 	UINT ic = 0;
-	while((pLoader = (IXModelLoader*)pPluginManager->getInterface(XMODELLOADER_GUID, ic++)))
+	while((pLoader = (IXModelLoader*)pPluginManager->getInterface(IXMODELLOADER_GUID, ic++)))
 	{
 		if(pLoader->getVersion() == IXMODELLOADER_VERSION)
 		{

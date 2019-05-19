@@ -2,19 +2,26 @@
 #include <common/file_utils.h>
 #include "AsyncFileReader.h"
 #include "FileSystem.h"
+#include "ModelProvider.h"
 
 CCore::CCore()
 {
 	m_pPluginManager = new CPluginManager();
+
 	m_pFileSystem = new CFileSystem();
+	m_pFileSystem->addRoot("gamesource");
+
 	m_pResourceManager = new CResourceManager(this);
 
-	m_pFileSystem->addRoot("gamesource");
+	m_pModelProvider = new CModelProvider(this);
+	m_pPluginManager->registerInterface(IXMODELPROVIDER_GUID, m_pModelProvider);
+
 }
 CCore::~CCore()
 {
 	shutdownUpdatable();
 
+	mem_delete(m_pModelProvider);
 	mem_delete(m_pResourceManager);
 	mem_delete(m_pFileSystem);
 	mem_delete(m_pPluginManager);
