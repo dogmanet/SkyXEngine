@@ -1,4 +1,6 @@
 #include "FileSystem.h"
+#include <shellapi.h>
+#include <ShlObj.h>
 
 time_t CFileSystem::convertFiletimeToTime_t(const FILETIME& ft)
 {
@@ -131,14 +133,26 @@ IFileSystem::IFileIterator *CFileSystem::getFileListRecursive(const char *szPath
 
 bool CFileSystem::createDirectory(const char *szPath)
 {
-    assert(!"No Implementation");
-    return false;
+    // Если вернуло не 0, то все плохо
+    return SHCreateDirectoryEx(nullptr, szPath, nullptr) == ERROR_SUCCESS;
 }
 
 bool CFileSystem::deleteDirectory(const char *szPath)
 {
-    assert(!"No Implementation");
-    return false;
+    SHFILEOPSTRUCT file_op = {
+        NULL,
+        FO_DELETE,
+        szPath,
+        "",
+        FOF_NOCONFIRMATION |
+        FOF_NOERRORUI |
+        FOF_SILENT,
+        false,
+        0,
+        "" };
+
+    // Если вернуло не 0, то все плохо
+    return SHFileOperation(&file_op) == 0;
 }
 
 IFile *CFileSystem::openFileText(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ)
