@@ -31,6 +31,8 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 		return(a < b);
 	});
 	assert(uResourceCount > 0 && "test m_apResources sorted ascending");
+
+	return(true);
 }
 bool CAnimatedModelShared::isSame(UINT uResourceCount, const IXResourceModelAnimated **ppResources)
 {
@@ -61,4 +63,73 @@ bool CAnimatedModelShared::isSame(UINT uResourceCount, const IXResourceModelAnim
 const Array<const IXResourceModelAnimated*> &CAnimatedModelShared::getResources()
 {
 	return(m_apResources);
+}
+
+
+UINT CAnimatedModelShared::getPhysboxCount(UINT uPartIndex) const
+{
+	return(0);
+}
+const IModelPhysbox *CAnimatedModelShared::getPhysBox(UINT id, UINT uPartIndex) const
+{
+	return(0);
+}
+const IXResourceModel *CAnimatedModelShared::getResource(UINT uIndex)
+{
+	return(0);
+}
+
+
+UINT CAnimatedModelShared::getPartsCount() const
+{
+	return(0);
+}
+const char *CAnimatedModelShared::getPartName(UINT uIndex) const
+{
+	return(0);
+}
+UINT CAnimatedModelShared::getPartIndex(const char *szName)
+{
+	return(0);
+}
+XMODEL_PART_FLAGS CAnimatedModelShared::getPartFlags(UINT uIndex) const
+{
+	return(XMP_NONE);
+}
+
+
+UINT CAnimatedModelShared::getHitboxCount(UINT uPartIndex) const
+{
+	return(0);
+}
+const XResourceModelHitbox *CAnimatedModelShared::getHitbox(UINT id, UINT uPartIndex) const
+{
+	return(0);
+}
+
+
+UINT CAnimatedModelShared::getBoneId(const char *szName)
+{
+	return(0);
+}
+UINT CAnimatedModelShared::getBoneCount() const
+{
+	return(0);
+}
+const char *CAnimatedModelShared::getBoneName(UINT id) const
+{
+	return(0);
+}
+
+UINT CAnimatedModelShared::getControllersCount() const
+{
+	return(0);
+}
+const char *CAnimatedModelShared::getControllerName(UINT id)
+{
+	return(0);
+}
+UINT CAnimatedModelShared::getControllerId(const char *szName)
+{
+	return(0);
 }

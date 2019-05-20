@@ -73,7 +73,7 @@ void CAnimatedModel::setColor(const float4 &vColor)
 	m_vColor = vColor;
 }
 
-UINT CAnimatedModel::getPhysboxCount(UINT uPartIndex = 0) const
+UINT CAnimatedModel::getPhysboxCount(UINT uPartIndex) const
 {
 	return(m_pShared->getPhysboxCount(uPartIndex));
 }
@@ -107,6 +107,7 @@ XMODEL_PART_FLAGS CAnimatedModel::getPartFlags(UINT uIndex) const
 bool CAnimatedModel::isPartEnabled(UINT uIndex) const
 {
 	//@TODO: Implement me
+	return(false);
 }
 void CAnimatedModel::enablePart(UINT uIndex, bool yesNo)
 {
