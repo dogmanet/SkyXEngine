@@ -163,7 +163,7 @@ public:
 
 	// Коллбек на изменение состояния анимации!
 
-	virtual void setCallback(IAnimationCallback *pCallback) = 0;
+	virtual void XMETHODCALLTYPE setCallback(IAnimationCallback *pCallback) = 0;
 };
 
 #endif
