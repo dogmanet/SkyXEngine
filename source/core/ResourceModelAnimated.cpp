@@ -31,6 +31,11 @@ CResourceModelAnimated::~CResourceModelAnimated()
 	{
 		mem_release(m_aParts[i].pResource);
 	}
+
+	for(UINT i = 0, l = m_aLods.size(); i < l; ++i)
+	{
+		m_aLods[i].clean();
+	}
 }
 
 XMODELTYPE CResourceModelAnimated::getType() const
@@ -60,6 +65,7 @@ UINT CResourceModelAnimated::addLod(UINT uSubsetCount, UINT *puVertexCount, UINT
 	}
 	subset.pVertices = new XResourceModelAnimatedVertex[uVertexCount];
 	subset.pIndices = new UINT[uIndexCount];
+	memset(subset.pIndices, 0, sizeof(UINT)* uIndexCount);
 
 	uIndexCount = 0;
 	uVertexCount = 0;
@@ -67,6 +73,8 @@ UINT CResourceModelAnimated::addLod(UINT uSubsetCount, UINT *puVertexCount, UINT
 	{
 		subset.pSubsets[i].pVertices = subset.pVertices + uVertexCount;
 		subset.pSubsets[i].pIndices = subset.pIndices + uIndexCount;
+		subset.pSubsets[i].iVertexCount = puVertexCount[i];
+		subset.pSubsets[i].iIndexCount = puIndexCount[i];
 		uVertexCount += puVertexCount[i];
 		uIndexCount += puIndexCount[i];
 	}

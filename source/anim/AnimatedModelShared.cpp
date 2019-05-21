@@ -21,6 +21,38 @@ void CAnimatedModelShared::Release()
 	}
 }
 
+void CAnimatedModelShared::_collectResources(const IXResourceModelAnimated *pResource, Array<const IXResourceModelAnimated*> &aResources)
+{
+	for(UINT i = 0, l = aResources.size(); i < l; ++i)
+	{
+		if(aResources[i] == pResource)
+		{
+			return;
+		}
+	}
+
+	m_apResources.push_back(pResource);
+
+	const IXResourceModel *pRes = NULL;
+	for(UINT i = 0, l = pResource->getImportsCount(); i < l; ++i)
+	{
+		pRes = pResource->getImport(i);
+		if(pRes->getType() == XMT_ANIMATED)
+		{
+			_collectResources(pRes->asAnimated(), aResources);
+		}
+	}
+
+	for(UINT i = 0, l = pResource->getPartsCount(); i < l; ++i)
+	{
+		pRes = pResource->getPart(i);
+		if(pRes->getType() == XMT_ANIMATED)
+		{
+			_collectResources(pRes->asAnimated(), aResources);
+		}
+	}
+}
+
 bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimated **ppResources)
 {
 	for(UINT i = 0; i < uResourceCount; ++i)
@@ -31,6 +63,48 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 		return(a < b);
 	});
 	assert(uResourceCount > 0 && "test m_apResources sorted ascending");
+
+	Array<const IXResourceModelAnimated*> aResources;
+	for(UINT i = 0; i < uResourceCount; ++i)
+	{
+		aResources.push_back(ppResources[i]);
+		_collectResources(ppResources[i], aResources);
+	}
+
+	//m_aszActivities
+
+	// merge activities
+	for(UINT i = 0, l = aResources.size(); i < l; ++i)
+	{
+		const IXResourceModelAnimated *pResource = aResources[i];
+		for(UINT j = 0, jl = pResource->getActivitiesCount(); j < jl; ++j)
+		{
+			bool isFound = false;
+			const char *szActivityName = pResource->getActivityName(j);
+			for(UINT k = 0, kl = m_aszActivities.size(); k < kl; ++k)
+			{
+				if(!strcasecmp(m_aszActivities[k], szActivityName))
+				{
+					isFound = true;
+					break;
+				}
+			}
+			if(!isFound)
+			{
+				m_aszActivities.push_back(szActivityName);
+			}
+		}
+	}
+
+	// merge bones hierarchy
+
+	// define parts
+	// merge skins/materials
+	// merge vertices/indices
+	// merge sequences
+	// merge controllers
+	// merge hitboxes
+	// merge physboxes
 
 	return(true);
 }

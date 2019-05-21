@@ -11,8 +11,6 @@ CCore::CCore()
 	m_pFileSystem = new CFileSystem();
 	m_pFileSystem->addRoot("gamesource");
 
-	m_pResourceManager = new CResourceManager(this);
-
 	m_pModelProvider = new CModelProvider(this);
 	m_pPluginManager->registerInterface(IXMODELPROVIDER_GUID, m_pModelProvider);
 
@@ -99,6 +97,8 @@ void CCore::loadPlugins()
 		}
 	}
 	m_pPluginManager->invokeStartup(this);
+
+	m_pResourceManager = new CResourceManager(this);
 }
 
 void CCore::getRenderPipeline(IXRenderPipeline **ppRenderPipeline)

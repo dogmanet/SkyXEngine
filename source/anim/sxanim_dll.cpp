@@ -13,6 +13,8 @@ See the license in LICENSE
 
 #include <gcore/sxgcore.h>
 
+#include "AnimatedModelProvider.h"
+
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
 report_func g_fnReportf = DefReport;
@@ -39,6 +41,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 AnimationManager * g_mgr = NULL;
 CRenderable *g_pRenderable = NULL;
 CUpdatable *g_pUpdatable = NULL;
+CAnimatedModelProvider *g_pAnimatedModelProvider = NULL;
 
 SX_LIB_API void SXAnim_0Create(bool m_isServerMode)
 {
@@ -51,15 +54,19 @@ SX_LIB_API void SXAnim_0Create(bool m_isServerMode)
 	g_mgr = new AnimationManager(m_isServerMode ? NULL : SGCore_GetDXDevice());
 	g_pRenderable = new CRenderable();
 	g_pUpdatable = new CUpdatable();
+	g_pAnimatedModelProvider = new CAnimatedModelProvider();
 
 	Core_GetIXCore()->getPluginManager()->registerInterface(IXRENDERABLE_GUID, g_pRenderable);
 	Core_GetIXCore()->getPluginManager()->registerInterface(IXUPDATABLE_GUID, g_pUpdatable);
+	Core_GetIXCore()->getPluginManager()->registerInterface(IXANIMATEDMODELPROVIDER_GUID, g_pAnimatedModelProvider);
+
 }
 SX_LIB_API void SXAnim_AKill()
 {
 	SA_PRECOND(_VOID);
 	mem_delete(g_mgr);
 	mem_delete(g_pRenderable);
+	mem_delete(g_pAnimatedModelProvider);
 }
 
 SX_LIB_API IAnimPlayer * SXAnim_CreatePlayer(const char * mdl)

@@ -10,6 +10,7 @@ public:
 		CResourceModel(pMgr)
 	{
 	}
+	~CResourceModelStatic();
 
 	XMODELTYPE XMETHODCALLTYPE getType() const override;
 
@@ -30,7 +31,7 @@ protected:
 		XResourceModelStaticVertex *pVertices;
 		UINT *pIndices;
 
-		~_subset_meta()
+		void clean()
 		{
 			mem_delete_a(pSubsets);
 			mem_delete_a(pVertices);

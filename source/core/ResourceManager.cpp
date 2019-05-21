@@ -3,6 +3,10 @@
 #include "ResourceModelStatic.h"
 #include "ResourceModelAnimated.h"
 
+#if 1
+#include "File.h"
+#endif
+
 CResourceManager::CResourceManager(IXCore *pCore):
 	m_pCore(pCore)
 {
@@ -62,7 +66,12 @@ bool CResourceManager::getModel(const char *szName, const IXResourceModel **ppOu
 	if(m_mapModelLoaders.KeyExists(AAString(szLowcaseExt), &pNode))
 	{
 		auto &aLoaders = *pNode->Val;
+#if 1
+		CFile *pFile = new CFile();
+		pFile->open(szName, CORE_FILE_BIN);
+#else
 		IFile *pFile = m_pCore->getFileSystem()->openFileBin(szName);
+#endif
 		for(UINT i = 0, l = aLoaders.size(); i < l; ++i)
 		{
 			IXModelLoader *pLoader = aLoaders[i];

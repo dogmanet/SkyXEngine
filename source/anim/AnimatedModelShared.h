@@ -2,6 +2,8 @@
 #define __ANIMATEDMODELSHARED_H
 
 #include <xcommon/resource/IXModelProvider.h>
+#include <graphix/graphix.h>
+
 class CAnimatedModelProvider;
 
 class CAnimatedModelShared
@@ -45,6 +47,14 @@ protected:
 	Array<const IXResourceModelAnimated*> m_apResources;
 
 	CAnimatedModelProvider *m_pProvider;
+
+	IGXRenderBuffer *m_pRenderBuffer = NULL;
+	IGXIndexBuffer *m_pIndexBuffer = NULL;
+
+	Array<const char*> m_aszActivities;
+
+private:
+	void _collectResources(const IXResourceModelAnimated *pResource, Array<const IXResourceModelAnimated*> &aResources);
 };
 
 #endif

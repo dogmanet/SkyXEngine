@@ -327,7 +327,7 @@ class CXLightPoint: public CXLight, public virtual IXLightPoint
 public:
 	CXLightPoint(CLightSystem *pLightSystem);
 
-	void Release();
+	void XMETHODCALLTYPE Release();
 
 protected:
 	void updatePSConstants(IGXContext *pDevice);
@@ -341,7 +341,7 @@ public:
 	SX_ALIGNED_OP_MEM2();
 
 	CXLightSun(CLightSystem *pLightSystem);
-	void Release();
+	void XMETHODCALLTYPE Release();
 
 	SMQuaternion getDirection();
 	void setDirection(const SMQuaternion &qDirection);
@@ -359,7 +359,7 @@ class CXLightSpot: public CXLight, public virtual IXLightSpot
 {
 public:
 	CXLightSpot(CLightSystem *pLightSystem);
-	void Release();
+	void XMETHODCALLTYPE Release();
 
 	float getInnerAngle();
 	void setInnerAngle(float fAngle);

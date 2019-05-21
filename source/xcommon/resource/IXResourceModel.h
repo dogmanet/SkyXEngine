@@ -101,7 +101,7 @@ struct XResourceModelStaticVertex
 
 struct XResourceModelStaticSubset
 {
-	uint32_t iMaterialID; //!< Идентификатор материала
+	uint32_t iMaterialID = 0; //!< Идентификатор материала
 	uint32_t iVertexCount; //!< Количество вертексов в сабсете
 	uint32_t iIndexCount; //!< Количество индексов в сабсете
 	XResourceModelStaticVertex *pVertices; //!< Указатель на массив вертексов
@@ -121,7 +121,7 @@ struct XResourceModelAnimatedVertex
 
 struct XResourceModelAnimatedSubset
 {
-	uint32_t iMaterialID; //!< Идентификатор материала
+	uint32_t iMaterialID = 0; //!< Идентификатор материала
 	uint32_t iVertexCount; //!< Количество вертексов в сабсете
 	uint32_t iIndexCount; //!< Количество индексов в сабсете
 	XResourceModelAnimatedVertex * pVertices; //!< Указатель на массив вертексов

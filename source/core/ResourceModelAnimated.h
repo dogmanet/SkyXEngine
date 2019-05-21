@@ -87,7 +87,7 @@ protected:
 		XResourceModelAnimatedVertex *pVertices;
 		UINT *pIndices;
 
-		~_subset_meta()
+		void clean()
 		{
 			mem_delete_a(pSubsets);
 			mem_delete_a(pVertices);

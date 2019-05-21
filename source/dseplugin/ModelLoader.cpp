@@ -285,7 +285,7 @@ bool CModelLoader::loadAsAnimated(IXResourceModelAnimated *pResource)
 						uSkipSize += sizeof(vertex_animated) * uVertexCount;
 					}
 				}
-				uSkipSize += sizeof(UINT) * lod.pSubLODmeshes[j].iIndexCount;
+				uSkipSize += sizeof(UINT) * uIndexCount;
 
 				m_pCurrentFile->setPos(m_pCurrentFile->getPos() + uSkipSize);
 			}
@@ -474,7 +474,7 @@ bool CModelLoader::loadAsAnimated(IXResourceModelAnimated *pResource)
 
 void CModelLoader::close()
 {
-	mem_release(m_pCurrentFile);
+	m_pCurrentFile = NULL;
 }
 
 bool CModelLoader::loadGeneric(IXResourceModel *pResource)
