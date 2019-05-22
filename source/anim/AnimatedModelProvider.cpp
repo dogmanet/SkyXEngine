@@ -29,7 +29,7 @@ bool CAnimatedModelProvider::createModel(UINT uResourceCount, const IXResourceMo
 		aModels.push_back(pShared);
 		if(!pShared->init(uResourceCount, ppResources))
 		{
-			delete pShared;
+			mem_delete(pShared);
 			return(false);
 		}
 	}

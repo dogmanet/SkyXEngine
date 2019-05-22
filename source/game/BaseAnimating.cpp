@@ -119,7 +119,7 @@ void CBaseAnimating::setModel(const char * mdl)
 		m_pAnimPlayer = SXAnim_CreatePlayer(mdl);
 		m_pAnimPlayer->setCallback(this, &ThisClass::onAnimationStateChanged);
 
-
+#if 0
 		IXResourceManager *pResourceManager = Core_GetIXCore()->getResourceManager(); // get it from somewhere
 		IXAnimatedModelProvider *pProvider = (IXAnimatedModelProvider*)Core_GetIXCore()->getPluginManager()->getInterface(IXANIMATEDMODELPROVIDER_GUID); // get it from somewhere
 
@@ -149,7 +149,7 @@ void CBaseAnimating::setModel(const char * mdl)
 				// mem_release(pResource);
 			}
 		}
-
+#endif
 	}
 	else
 	{

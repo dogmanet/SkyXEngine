@@ -6,6 +6,13 @@ See the license in LICENSE
 
 #include "SkyXEngine.h"
 
+#if 1
+
+#include <xcommon/resource/IXModelProvider.h>
+#include <xcommon/resource/IXResourceManager.h>
+#include <xcommon/resource/IXResourceModel.h>
+#endif
+
 //##########################################################################
 
 //! поток ведения лога
@@ -391,6 +398,26 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB game initialized\n");
 
 	Core_GetIXCore()->initUpdatable();
+
+#if 1
+	IXResourceManager *pResourceManager = Core_GetIXCore()->getResourceManager();
+	IXAnimatedModelProvider *pProvider = (IXAnimatedModelProvider*)Core_GetIXCore()->getPluginManager()->getInterface(IXANIMATEDMODELPROVIDER_GUID); // get it from somewhere
+
+	const IXResourceModel *pResource1, *pResource2;
+	if(pResourceManager->getModel("models/weapons/ak74/ak74.dse", &pResource1)
+		&& pResourceManager->getModel("models/weapons/hands.dse", &pResource2))
+	{
+		if(pResource1->getType() == XMT_ANIMATED && pResource2->getType() == XMT_ANIMATED)
+		{
+			IXAnimatedModel *pModel;
+			const IXResourceModelAnimated *pAnimatedResources[] = {
+				pResource1->asAnimated(),
+				pResource2->asAnimated()
+			};
+			bool res = pProvider->createModel(2, pAnimatedResources, &pModel);
+		}
+	}
+#endif
 
 
 #if !defined(SX_GAME) && !defined(SX_SERVER)

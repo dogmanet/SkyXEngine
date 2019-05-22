@@ -5,7 +5,14 @@
 
 #if 1
 #include "File.h"
+
+
+#include <xcommon/resource/IXModelProvider.h>
+#include <xcommon/resource/IXResourceManager.h>
+#include <xcommon/resource/IXResourceModel.h>
 #endif
+
+
 
 CResourceManager::CResourceManager(IXCore *pCore):
 	m_pCore(pCore)
@@ -27,6 +34,7 @@ CResourceManager::CResourceManager(IXCore *pCore):
 			}
 		}
 	}
+
 }
 
 bool CResourceManager::getModel(const char *szName, const IXResourceModel **ppOut, bool bForceReload)

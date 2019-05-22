@@ -3,6 +3,7 @@
 
 #include <xcommon/resource/IXModelProvider.h>
 #include <graphix/graphix.h>
+#include <mtrl/IXMaterial.h>
 
 class CAnimatedModelProvider;
 
@@ -53,8 +54,32 @@ protected:
 
 	Array<const char*> m_aszActivities;
 
+	struct bone_s
+	{
+		const char *szName;
+		int iParent;
+		XResourceModelBone bone;
+	};
+	bone_s *m_pBones = NULL;
+	UINT m_uBoneCount = 0;
+
+	IXMaterial ***m_pppMaterials = NULL;
+	UINT m_uMaterialCount = 0;
+	UINT m_uSubsetCount = 0;
+
 private:
 	void _collectResources(const IXResourceModelAnimated *pResource, Array<const IXResourceModelAnimated*> &aResources);
+
+	struct bone_node
+	{
+		UINT uResource;
+		UINT uBoneIdx;
+		bone_node *pParent;
+		const char *szName;
+		bool bLooseTransform;
+	};
+	void _mergeByParent(bone_node *pParent, bone_node *pNodes, UINT uTotalBones);
+	int _buildBoneListByParent(bone_node *pParent, bone_node *pNodes, UINT uTotalBones, bone_s *pList, const IXResourceModelAnimated **ppResources, int iParent);
 };
 
 #endif
