@@ -184,8 +184,8 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 	}
 
 	// merge skins/materials
+	Array<Array<mtl_node>> aaMaterials;
 	{
-		Array<Array<mtl_node>> aaMaterials;
 		UINT uTotalMaterials = 0;
 		for(UINT i = 0, l = aResources.size(); i < l; ++i)
 		{
@@ -266,92 +266,79 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 	}
 
 	// define parts
-	Array<const IXResourceModelAnimated*> aPartedResources;
-	Array<const IXResourceModelAnimated*> aPart;
-	m_aParts[0].szName = "";
-	m_aParts[0].flags = XMP_NONE;
-	for(UINT i = 0; i < uResourceCount; ++i)
 	{
-		for(UINT j = 0, jl = ppResources[i]->getPartsCount(); j < jl; ++j)
+		Array<const IXResourceModelAnimated*> aPartedResources;
+		Array<const IXResourceModelAnimated*> aPart;
+		m_aParts[0].szName = "";
+		m_aParts[0].flags = XMP_NONE;
+
+		Array<Array<Array<subset_s>>> aPartLods;
+
+		for(UINT i = 0; i < uResourceCount; ++i)
 		{
-			const IXResourceModel *pRes = ppResources[i]->getPart(j);
-			XMODEL_IMPORT importFlags = ppResources[i]->getPartImportFlags(j);
-			//@TODO: Test XMODEL_IMPORT flags
-			if(pRes->getType() == XMT_ANIMATED)
+			for(UINT j = 0, jl = ppResources[i]->getPartsCount(); j < jl; ++j)
 			{
-				aPart.push_back(pRes->asAnimated());
-				_collectResources(pRes->asAnimated(), aPart);
-
-
-				for(UINT k = 0, kl = aPart.size(); k < kl; ++k)
+				const IXResourceModel *pRes = ppResources[i]->getPart(j);
+				XMODEL_IMPORT importFlags = ppResources[i]->getPartImportFlags(j);
+				//@TODO: Test XMODEL_IMPORT flags
+				if(pRes->getType() == XMT_ANIMATED)
 				{
-					bool isFound = false;
-					for(UINT m = 0, ml = aPartedResources.size(); m < ml; ++m)
+					aPart.push_back(pRes->asAnimated());
+					_collectResources(pRes->asAnimated(), aPart);
+
+					for(UINT k = 0, kl = aPart.size(); k < kl; ++k)
 					{
-						if(aPartedResources[m] == aPart[k])
+						bool isFound = false;
+						for(UINT m = 0, ml = aPartedResources.size(); m < ml; ++m)
 						{
-							isFound = true;
-							aPart.erase(k);
-							--k; --kl;
-							break;
+							if(aPartedResources[m] == aPart[k])
+							{
+								isFound = true;
+								aPart.erase(k);
+								--k; --kl;
+								break;
+							}
 						}
-					}
-					if(!isFound)
-					{
-						aPartedResources.push_back(aPart[k]);
-					}
-				}
-
-				XPT_TOPOLOGY pt = aPart[0]->getPrimitiveTopology();
-				for(UINT k = 1, kl = aPart.size(); k < kl; ++k)
-				{
-					if((importFlags & XMI_MESH) && (aPart[k]->getPrimitiveTopology() != pt))
-					{
-						pt = XPT_TRIANGLELIST;
-						break;
-					}
-				}
-				
-				// process part:
-				part_s part;
-				part.topology = pt;
-				part.szName = ppResources[i]->getPartName(j);
-				part.flags = ppResources[i]->getPartFlags(j);
-				for(UINT k = 0, kl = aPart.size(); k < kl; ++k)
-				{
-					// merge vertices/indices
-					for(UINT m = 0, ml = aPart[k]->getLodCount(); m < ml; ++m)
-					{
-						for(UINT n = 0, nl = aPart[k]->getSubsetCount(m); n < nl; ++n)
+						if(!isFound)
 						{
-							const XResourceModelAnimatedSubset *pSubset = aPart[k]->getSubset(m, n);
-							int uid = pSubset->iIndexCount;
+							aPartedResources.push_back(aPart[k]);
 						}
 					}
 
-					// merge hitboxes
-					for(UINT m = 0, ml = aPart[k]->getHitboxCount(); m < ml; ++m)
-					{
-						part.aHitboxes.push_back(aPart[k]->getHitbox(m));
-					}
+					// process part:
+					part_s part;
+					initPart(aPart, &part, aPartLods[m_aParts.size()], aaMaterials, importFlags);
+					part.szName = ppResources[i]->getPartName(j);
+					part.flags = ppResources[i]->getPartFlags(j);
 
-					// merge physboxes
-					for(UINT m = 0, ml = aPart[k]->getPhysboxCount(); m < ml; ++m)
-					{
-						int iBone = aPart[k]->getPhysboxBone(m);
-						if(iBone >= 0)
-						{
-							iBone = getBoneId(aPart[k]->getBoneName(iBone));
-						}
-						part.aPhysboxes.push_back({aPart[k]->getPhysbox(m), iBone});
-					}
+					m_aParts.push_back(part);
+
+					aPart.clearFast();
 				}
-
-				m_aParts.push_back(part);
-
-				aPart.clearFast();
 			}
 		}
+
+		for(UINT i = 0, l = aResources.size(); i < l; ++i)
+		{
+			bool isFound = false;
+			for(UINT j = 0, jl = aPartedResources.size(); j < jl; ++j)
+			{
+				if(aPartedResources[j] == aResources[i])
+				{
+					isFound = true;
+					break;
+				}
+			}
+
+			if(!isFound)
+			{
+				aPart.push_back(aResources[i]);
+			}
+		}
+
+		initPart(aPart, &m_aParts[0], aPartLods[0], aaMaterials);
+
+		//aPartLods
 	}
 
 	
@@ -359,6 +346,105 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 	// merge controllers
 
 	return(true);
+}
+
+void CAnimatedModelShared::initPart(Array<const IXResourceModelAnimated*> &aPart, part_s *pPart, Array<Array<subset_s>> &aPartLods, Array<Array<mtl_node>> &aaMaterials, XMODEL_IMPORT importFlags)
+{
+	XPT_TOPOLOGY pt = aPart[0]->getPrimitiveTopology();
+	UINT uLodCount = 1;
+	for(UINT k = 1, kl = aPart.size(); k < kl; ++k)
+	{
+		if(importFlags & XMI_MESH)
+		{
+			UINT uLods = aPart[k]->getLodCount();
+			if(uLods > uLodCount)
+			{
+				uLodCount = uLods;
+			}
+			if(aPart[k]->getPrimitiveTopology() != pt)
+			{
+				pt = XPT_TRIANGLELIST;
+				//break;
+			}
+		}
+	}
+
+	pPart->topology = pt;
+
+	aPartLods.resizeFast(uLodCount);
+
+	for(UINT k = 0, kl = aPart.size(); k < kl; ++k)
+	{
+		// merge vertices/indices
+		if(importFlags & XMI_MESH)
+		{
+			XPT_TOPOLOGY topology = aPart[k]->getPrimitiveTopology();
+			for(UINT m = 0, ml = aPart[k]->getLodCount(); m < ml; ++m)
+			{
+				// vertices/indices merged
+				// indices part map {startIndex, count}
+				aPartLods[m].resizeFast(aPartLods[m].size() + aPart[k]->getSubsetCount(m));
+				for(UINT n = 0, nl = aPart[k]->getSubsetCount(m); n < nl; ++n)
+				{
+					const XResourceModelAnimatedSubset *pSubset = aPart[k]->getSubset(m, n);
+					int uid = pSubset->iIndexCount;
+					aPartLods[m][n].topology = topology;
+					aPartLods[m][n].data = *pSubset;
+
+					const char *szMainMaterial = aPart[k]->getMaterial(pSubset->iMaterialID, 0);
+					for(UINT i = 0, l = aaMaterials[0].size(); i < l; ++i)
+					{
+						if(!strcasecmp(szMainMaterial, aaMaterials[0][i].szName))
+						{
+							bool isSame = true;
+							for(UINT j = 1, jl = aaMaterials.size(); j < jl; ++j)
+							{
+								const char *szSkinMaterial = aPart[k]->getMaterial(pSubset->iMaterialID, j);
+								if(!(
+									(
+										(!aaMaterials[j][i].szName || !aaMaterials[j][i].szName[0]) &&
+										(!szSkinMaterial || !szSkinMaterial[0])
+									)
+									||
+									(
+										aaMaterials[j][i].szName && szSkinMaterial &&
+										!strcasecmp(aaMaterials[j][i].szName, szSkinMaterial)
+									))
+								)
+								{
+									isSame = false;
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// merge hitboxes
+		if(importFlags & XMI_HITBOXES)
+		{
+			for(UINT m = 0, ml = aPart[k]->getHitboxCount(); m < ml; ++m)
+			{
+				pPart->aHitboxes.push_back(aPart[k]->getHitbox(m));
+			}
+		}
+
+		// merge physboxes
+		if(importFlags & XMI_PHYSBOXES)
+		{
+			for(UINT m = 0, ml = aPart[k]->getPhysboxCount(); m < ml; ++m)
+			{
+				int iBone = aPart[k]->getPhysboxBone(m);
+				if(iBone >= 0)
+				{
+					iBone = getBoneId(aPart[k]->getBoneName(iBone));
+				}
+				pPart->aPhysboxes.push_back({aPart[k]->getPhysbox(m), iBone});
+			}
+		}
+	}
 }
 
 int CAnimatedModelShared::_buildBoneListByParent(bone_node *pParent, bone_node *pNodes, UINT uTotalBones, bone_s *pList, const IXResourceModelAnimated **ppResources, int iParent)

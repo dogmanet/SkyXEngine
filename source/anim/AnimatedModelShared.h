@@ -99,11 +99,19 @@ private:
 	{
 		const char *szName = NULL;
 		UINT uResource;
-	}; 
+	};
+
+	struct subset_s
+	{
+		XResourceModelAnimatedSubset data;
+		XPT_TOPOLOGY topology;
+	};
 
 	void _collectResources(const IXResourceModelAnimated *pResource, Array<const IXResourceModelAnimated*> &aResources);
 	void _mergeByParent(bone_node *pParent, bone_node *pNodes, UINT uTotalBones);
 	int _buildBoneListByParent(bone_node *pParent, bone_node *pNodes, UINT uTotalBones, bone_s *pList, const IXResourceModelAnimated **ppResources, int iParent);
+
+	void initPart(Array<const IXResourceModelAnimated*> &aPart, part_s *pPart, Array<Array<subset_s>> &partLods, Array<Array<mtl_node>> &aaMaterials, XMODEL_IMPORT importFlags = XMI_ALL);
 };
 
 #endif
