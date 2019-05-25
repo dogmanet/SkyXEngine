@@ -16,6 +16,7 @@ public:
 
 	UINT XMETHODCALLTYPE getSubsetCount(UINT uLod) const override;
 	UINT XMETHODCALLTYPE addLod(UINT uSubsetCount, UINT *puVertexCount, UINT *puIndexCount) override;
+	UINT XMETHODCALLTYPE getLodCount() const override;
 
 	const XResourceModelAnimatedSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) const override;
 	XResourceModelAnimatedSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) override;

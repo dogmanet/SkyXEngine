@@ -257,6 +257,7 @@ public:
 
 	virtual UINT XMETHODCALLTYPE getSubsetCount(UINT uLod) const = 0;
 	virtual UINT XMETHODCALLTYPE addLod(UINT uSubsetCount, UINT *puVertexCount, UINT *puIndexCount) = 0;
+	virtual UINT XMETHODCALLTYPE getLodCount() const = 0;
 
 	virtual bool XMETHODCALLTYPE validate() const = 0;
 

@@ -54,7 +54,7 @@ SX_LIB_API void SXAnim_0Create(bool m_isServerMode)
 	g_mgr = new AnimationManager(m_isServerMode ? NULL : SGCore_GetDXDevice());
 	g_pRenderable = new CRenderable();
 	g_pUpdatable = new CUpdatable();
-	g_pAnimatedModelProvider = new CAnimatedModelProvider();
+	g_pAnimatedModelProvider = new CAnimatedModelProvider(Core_GetIXCore());
 
 	Core_GetIXCore()->getPluginManager()->registerInterface(IXRENDERABLE_GUID, g_pRenderable);
 	Core_GetIXCore()->getPluginManager()->registerInterface(IXUPDATABLE_GUID, g_pUpdatable);

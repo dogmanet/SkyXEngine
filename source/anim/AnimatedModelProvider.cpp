@@ -1,4 +1,11 @@
 #include "AnimatedModelProvider.h"
+#include <xcommon/IPluginManager.h>
+
+
+CAnimatedModelProvider::CAnimatedModelProvider(IXCore *pCore):
+	m_pCore(pCore)
+{
+}
 
 bool CAnimatedModelProvider::createModel(UINT uResourceCount, const IXResourceModelAnimated **ppResources, IXAnimatedModel **ppModel)
 {
@@ -69,4 +76,9 @@ void CAnimatedModelProvider::onModelRelease(CAnimatedModel *pModel)
 	}
 
 	assert(!"Something wrong! Should never get here!");
+}
+
+IXMaterialSystem *CAnimatedModelProvider::getMaterialSystem()
+{
+	return((IXMaterialSystem*)m_pCore->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID));
 }

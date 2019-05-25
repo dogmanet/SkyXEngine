@@ -82,6 +82,10 @@ UINT CResourceModelAnimated::addLod(UINT uSubsetCount, UINT *puVertexCount, UINT
 	m_aLods.push_back(subset);
 	return(m_aLods.size() - 1);
 }
+UINT CResourceModelAnimated::getLodCount() const
+{
+	return(m_aLods.size());
+}
 
 const XResourceModelAnimatedSubset *CResourceModelAnimated::getSubset(UINT uLod, UINT uSubset) const
 {

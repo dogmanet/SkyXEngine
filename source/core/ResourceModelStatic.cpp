@@ -52,6 +52,10 @@ UINT CResourceModelStatic::addLod(UINT uSubsetCount, UINT *puVertexCount, UINT *
 	m_aLods.push_back(subset);
 	return(m_aLods.size() - 1);
 }
+UINT CResourceModelStatic::getLodCount() const
+{
+	return(m_aLods.size());
+}
 
 const XResourceModelStaticSubset *CResourceModelStatic::getSubset(UINT uLod, UINT uSubset) const
 {

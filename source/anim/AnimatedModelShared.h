@@ -22,6 +22,7 @@ public:
 
 	UINT getPhysboxCount(UINT uPartIndex = 0) const;
 	const IModelPhysbox *getPhysBox(UINT id, UINT uPartIndex = 0) const;
+	const int getPhysBoxBone(UINT id, UINT uPartIndex = 0) const;
 	const IXResourceModel *getResource(UINT uIndex = 0);
 
 
@@ -35,7 +36,7 @@ public:
 	const XResourceModelHitbox *getHitbox(UINT id, UINT uPartIndex = 0) const;
 
 
-	UINT getBoneId(const char *szName);
+	int getBoneId(const char *szName);
 	UINT getBoneCount() const;
 	const char *getBoneName(UINT id) const;
 
@@ -63,13 +64,28 @@ protected:
 	bone_s *m_pBones = NULL;
 	UINT m_uBoneCount = 0;
 
+	void **m_ppMaterialsBlob = NULL;
 	IXMaterial ***m_pppMaterials = NULL;
 	UINT m_uMaterialCount = 0;
-	UINT m_uSubsetCount = 0;
+	UINT m_uSkinCount = 0;
+
+	struct physbox_s
+	{
+		const IModelPhysbox *pPhysbox;
+		int iBone;
+	};
+
+	struct part_s
+	{
+		const char *szName;
+		XMODEL_PART_FLAGS flags;
+		Array<const XResourceModelHitbox*> aHitboxes;
+		Array<physbox_s> aPhysboxes;
+		XPT_TOPOLOGY topology;
+	};
+	Array<part_s> m_aParts;
 
 private:
-	void _collectResources(const IXResourceModelAnimated *pResource, Array<const IXResourceModelAnimated*> &aResources);
-
 	struct bone_node
 	{
 		UINT uResource;
@@ -78,6 +94,14 @@ private:
 		const char *szName;
 		bool bLooseTransform;
 	};
+
+	struct mtl_node
+	{
+		const char *szName = NULL;
+		UINT uResource;
+	}; 
+
+	void _collectResources(const IXResourceModelAnimated *pResource, Array<const IXResourceModelAnimated*> &aResources);
 	void _mergeByParent(bone_node *pParent, bone_node *pNodes, UINT uTotalBones);
 	int _buildBoneListByParent(bone_node *pParent, bone_node *pNodes, UINT uTotalBones, bone_s *pList, const IXResourceModelAnimated **ppResources, int iParent);
 };
