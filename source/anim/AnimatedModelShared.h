@@ -6,6 +6,7 @@
 #include <mtrl/IXMaterial.h>
 
 class CAnimatedModelProvider;
+class IXMaterialSystem;
 
 class CAnimatedModelShared
 {
@@ -39,19 +40,37 @@ public:
 	int getBoneId(const char *szName);
 	UINT getBoneCount() const;
 	const char *getBoneName(UINT id) const;
+	int getBoneParent(UINT id) const;
+	const XResourceModelBone *getBone(UINT id) const;
+	const XResourceModelBone *getInvertedBindPose() const;
 
 	UINT getControllersCount() const;
-	const char *getControllerName(UINT id);
-	UINT getControllerId(const char *szName);
+	const char *getControllerName(UINT id) const;
+	UINT getControllerId(const char *szName) const;
+	const XResourceModelController *getController(UINT uIndex) const;
+
+	int getActivityId(const char *szName) const;
+	const char *getActivityName(UINT id) const;
+
+	UINT getSequenceCount() const;
+	const XResourceModelSequence *getSequence(UINT uIndex) const;
+	int getSequenceId(const char *szName) const;
+
+	float3 getLocalBoundMin() const;
+	float3 getLocalBoundMax() const;
+
+	void render(const SMMATRIX &mWorld, UINT uSkin, UINT uLod, float4_t vColor);
 
 protected:
 	UINT m_uRefCount = 0;
 	Array<const IXResourceModelAnimated*> m_apResources;
 
-	CAnimatedModelProvider *m_pProvider;
+	IGXRenderBuffer **m_ppRenderBuffer = NULL;
+	IGXIndexBuffer **m_ppIndexBuffer = NULL;
 
-	IGXRenderBuffer *m_pRenderBuffer = NULL;
-	IGXIndexBuffer *m_pIndexBuffer = NULL;
+	CAnimatedModelProvider *m_pProvider;
+	IGXContext *m_pDevice;
+	IXMaterialSystem *m_pMaterialSystem;
 
 	Array<const char*> m_aszActivities;
 
@@ -62,6 +81,7 @@ protected:
 		XResourceModelBone bone;
 	};
 	bone_s *m_pBones = NULL;
+	XResourceModelBone *m_pInvBindPose = NULL;
 	UINT m_uBoneCount = 0;
 
 	void **m_ppMaterialsBlob = NULL;
@@ -75,15 +95,33 @@ protected:
 		int iBone;
 	};
 
+	float3_t m_vLocalMin;
+	float3_t m_vLocalMax;
+
+	struct subset_t
+	{
+		UINT uStartIndex = 0;
+		UINT uIndexCount = 0;
+		UINT uStartVertex = 0;
+		UINT uVertexCount = 0;
+	};
+
 	struct part_s
 	{
 		const char *szName;
 		XMODEL_PART_FLAGS flags;
 		Array<const XResourceModelHitbox*> aHitboxes;
 		Array<physbox_s> aPhysboxes;
-		XPT_TOPOLOGY topology;
+
+		Array<Array<subset_t>> aLods;
 	};
 	Array<part_s> m_aParts;
+
+	UINT m_uLodCount = 0;
+
+	Array<XResourceModelController> m_aControllers;
+
+	Array<XResourceModelSequence> m_aSequences;
 
 private:
 	struct bone_node
@@ -101,17 +139,17 @@ private:
 		UINT uResource;
 	};
 
-	struct subset_s
+	struct merge_subset_s
 	{
 		XResourceModelAnimatedSubset data;
-		XPT_TOPOLOGY topology;
+		const IXResourceModelAnimated *pResource;
 	};
-
+	
 	void _collectResources(const IXResourceModelAnimated *pResource, Array<const IXResourceModelAnimated*> &aResources);
 	void _mergeByParent(bone_node *pParent, bone_node *pNodes, UINT uTotalBones);
 	int _buildBoneListByParent(bone_node *pParent, bone_node *pNodes, UINT uTotalBones, bone_s *pList, const IXResourceModelAnimated **ppResources, int iParent);
 
-	void initPart(Array<const IXResourceModelAnimated*> &aPart, part_s *pPart, Array<Array<subset_s>> &partLods, Array<Array<mtl_node>> &aaMaterials, XMODEL_IMPORT importFlags = XMI_ALL);
+	void _initPart(Array<const IXResourceModelAnimated*> &aPart, part_s *pPart, Array<Array<merge_subset_s>> &partLods, Array<Array<mtl_node>> &aaMaterials, XMODEL_IMPORT importFlags = XMI_ALL);
 };
 
 #endif

@@ -72,14 +72,70 @@ public:
 
 	void XMETHODCALLTYPE setCallback(IAnimationCallback *pCallback) override;
 
+	void update(float fDT);
+
+	UINT addLayer();
+
+	void render(UINT uLod);
+	void sync();
 protected:
 	CAnimatedModelProvider *m_pProvider;
 	CAnimatedModelShared *m_pShared;
+	IGXContext *m_pDevice;
 
 	float3_t m_vPosition;
 	SMQuaternion m_qRotation;
 	UINT m_uSkin = 0;
 	float4_t m_vColor{1.0f, 1.0f, 1.0f, 1.0f};
+	bool m_isEnabled = true;
+
+	IGXConstantBuffer *m_pBoneConstantBuffer = NULL;
+
+	IAnimationCallback *m_pCallback = NULL;
+
+	struct ModelBoneShader
+	{
+		float4 position;   /*!< Позиция */
+		SMQuaternion orient; /*!< Вращение */
+	};
+
+	ModelBoneShader *m_pRenderFrameBones = NULL; //! Используются в текущем кадре }
+	ModelBoneShader *m_pNextFrameBones = NULL; //! Рассчет на следующий кадр      } -- переключаются каждый кадр
+	
+	XResourceModelBone *m_pBoneControllers = NULL;
+
+	bool m_isBoneMatrixReFilled = false;
+
+	struct layer_s
+	{
+		bool isPlaying = false;
+		bool isNewPlaying = false; // for fading
+		int iCurrentFrame = 0;
+		UINT uFrameCount = 0;
+		float fTime = 0;
+
+		UINT uFadeTime = 0;
+		UINT uFadeCurTime = 0;
+		bool isInFade = false;
+		bool bDoAdvance = true;
+
+		XResourceModelBone *pLastFrameBones = NULL;
+		XResourceModelBone *pCurrentBones = NULL;
+		bool *isBoneWorld = NULL;
+
+		UINT uAnimationId = 0;
+
+		int iActivity = -1;
+		UINT uActivityFadeTime = 0;
+
+		bool isDirty = true;
+	};
+	Array<layer_s, 1> m_aLayers;
+
+
+	void playActivityNext(UINT uLayer);
+	bool validateLayer(UINT uLayer);
+	void fillBoneMatrix();
 };
 
 #endif

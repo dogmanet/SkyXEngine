@@ -51,11 +51,11 @@ public:
 class IAnimationCallback
 {
 public:
-	virtual void onPlay(UINT uSlot) = 0;
-	virtual void onStop(UINT uSlot) = 0;
-	virtual void onLoop(UINT uSlot) = 0;
+	virtual void onPlay(UINT uLayer) = 0;
+	virtual void onStop(UINT uLayer) = 0;
+	virtual void onLoop(UINT uLayer) = 0;
 
-	virtual void onProgress(UINT uSlot, float fProgress) = 0;
+	virtual void onProgress(UINT uLayer, float fProgress) = 0;
 };
 
 // Implemented in anim plugin

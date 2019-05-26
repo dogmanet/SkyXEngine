@@ -1,7 +1,9 @@
 #include "Renderable.h"
 #include "animated.h"
 #include "RenderableVisibility.h"
+#include "AnimatedModelProvider.h"
 
+extern CAnimatedModelProvider *g_pAnimatedModelProvider;
 extern AnimationManager * g_mgr;
 
 X_RENDER_STAGE CRenderable::getStages()
@@ -30,6 +32,7 @@ void CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVis
 		break;
 	case XRS_GBUFFER:
 		g_mgr->render(idVisCalcObj);
+		g_pAnimatedModelProvider->render();
 		break;
 	case XRS_SHADOWS:
 		g_mgr->render(idVisCalcObj);

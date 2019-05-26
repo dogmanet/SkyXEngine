@@ -151,7 +151,7 @@ void CCore::runUpdate()
 	static Array<ID> s_aIdToWait;
 	ID idTask;
 	//@FIXME: Change to actual value!
-	float fDeltaTime = 0.16f;
+	float fDeltaTime = 0.016f;
 	for(UINT i = 0, l = m_aUpdatables.size(); i < l; ++i)
 	{
 		idTask = m_aUpdatables[i].pUpdatable->run(fDeltaTime);

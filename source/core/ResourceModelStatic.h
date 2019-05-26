@@ -12,6 +12,9 @@ public:
 	}
 	~CResourceModelStatic();
 
+	void XMETHODCALLTYPE setPrimitiveTopology(XPT_TOPOLOGY topology) override;
+	XPT_TOPOLOGY XMETHODCALLTYPE getPrimitiveTopology() const override;
+
 	XMODELTYPE XMETHODCALLTYPE getType() const override;
 
 	UINT XMETHODCALLTYPE getSubsetCount(UINT uLod) const override;
@@ -24,6 +27,8 @@ public:
 	bool XMETHODCALLTYPE validate() const;
 
 protected:
+
+	XPT_TOPOLOGY m_topology = XPT_TRIANGLELIST;
 
 	struct _subset_meta
 	{

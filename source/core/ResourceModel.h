@@ -13,10 +13,6 @@ public:
 
 	void XMETHODCALLTYPE Release();
 
-	void XMETHODCALLTYPE setPrimitiveTopology(XPT_TOPOLOGY topology) override;
-	XPT_TOPOLOGY XMETHODCALLTYPE getPrimitiveTopology() const override;
-
-
 	UINT XMETHODCALLTYPE getPhysboxCount() const override;
 	const IModelPhysbox * XMETHODCALLTYPE getPhysbox(UINT uPart) const override;
 	int XMETHODCALLTYPE getPhysboxBone(UINT uPart) const override;
@@ -53,8 +49,6 @@ public:
 protected:
 	CResourceManager *m_pManager;
 	const char *m_szFileName = NULL;
-
-	XPT_TOPOLOGY m_topology = XPT_TRIANGLELIST;
 
 	struct _phys_box
 	{

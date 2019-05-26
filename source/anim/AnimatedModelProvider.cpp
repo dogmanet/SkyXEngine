@@ -1,10 +1,41 @@
 #include "AnimatedModelProvider.h"
 #include <xcommon/IPluginManager.h>
 
+#if 1
+#include <gcore/sxgcore.h>
+#endif
 
 CAnimatedModelProvider::CAnimatedModelProvider(IXCore *pCore):
 	m_pCore(pCore)
 {
+	GXVERTEXELEMENT layoutDynamicEx[] =
+	{
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
+		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT},
+		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL},
+		{0, 56, GXDECLTYPE_UBYTE4, GXDECLUSAGE_BLENDINDICES},
+		{0, 60, GXDECLTYPE_FLOAT4, GXDECLUSAGE_BLENDWEIGHT},
+		GXDECL_END()
+	};
+
+	m_pVertexDeclaration = getDevice()->createVertexDeclaration(layoutDynamicEx);
+}
+
+CAnimatedModelProvider::~CAnimatedModelProvider()
+{
+	mem_release(m_pVertexDeclaration);
+}
+
+IGXVertexDeclaration *CAnimatedModelProvider::getVertexDeclaration()
+{
+	return(m_pVertexDeclaration);
+}
+
+IGXContext *CAnimatedModelProvider::getDevice()
+{
+	return(SGCore_GetDXDevice());
 }
 
 bool CAnimatedModelProvider::createModel(UINT uResourceCount, const IXResourceModelAnimated **ppResources, IXAnimatedModel **ppModel)
@@ -81,4 +112,28 @@ void CAnimatedModelProvider::onModelRelease(CAnimatedModel *pModel)
 IXMaterialSystem *CAnimatedModelProvider::getMaterialSystem()
 {
 	return((IXMaterialSystem*)m_pCore->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID));
+}
+
+void CAnimatedModelProvider::update(float fDT)
+{
+	for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
+	{
+		m_apModels[i]->update(fDT);
+	}
+}
+
+void CAnimatedModelProvider::sync()
+{
+	for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
+	{
+		m_apModels[i]->sync();
+	}
+}
+
+void CAnimatedModelProvider::render()
+{
+	for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
+	{
+		m_apModels[i]->render(0);
+	}
 }

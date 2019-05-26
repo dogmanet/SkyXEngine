@@ -8,6 +8,16 @@ CResourceModelStatic::~CResourceModelStatic()
 	}
 }
 
+void CResourceModelStatic::setPrimitiveTopology(XPT_TOPOLOGY topology)
+{
+	m_topology = topology;
+}
+XPT_TOPOLOGY CResourceModelStatic::getPrimitiveTopology() const
+{
+	return(m_topology);
+}
+
+
 XMODELTYPE CResourceModelStatic::getType() const
 {
 	return(XMT_STATIC);

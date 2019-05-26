@@ -221,10 +221,6 @@ class IXResourceModelAnimated;
 class IXResourceModel: public IXUnknown
 {
 public:
-	virtual void XMETHODCALLTYPE setPrimitiveTopology(XPT_TOPOLOGY topology) = 0;
-	virtual XPT_TOPOLOGY XMETHODCALLTYPE getPrimitiveTopology() const = 0;
-
-
 	virtual UINT XMETHODCALLTYPE getPhysboxCount() const = 0;
 	virtual const IModelPhysbox * XMETHODCALLTYPE getPhysbox(UINT uPart) const = 0;
 	virtual int XMETHODCALLTYPE getPhysboxBone(UINT uPart) const = 0;
@@ -270,6 +266,8 @@ public:
 class IXResourceModelStatic: public virtual IXResourceModel
 {
 public:
+	virtual void XMETHODCALLTYPE setPrimitiveTopology(XPT_TOPOLOGY topology) = 0;
+	virtual XPT_TOPOLOGY XMETHODCALLTYPE getPrimitiveTopology() const = 0;
 
 	virtual const XResourceModelStaticSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) const = 0;
 	virtual XResourceModelStaticSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) = 0;

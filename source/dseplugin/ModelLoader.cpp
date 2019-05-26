@@ -77,6 +77,16 @@ bool CModelLoader::loadAsStatic(IXResourceModelStatic *pResource)
 		return(false);
 	}
 
+	switch(m_hdr2.topology)
+	{
+	case MDLPT_TRIANGLESTRIP:
+		pResource->setPrimitiveTopology(XPT_TRIANGLESTRIP);
+		break;
+	case MDLPT_TRIANGLELIST:
+	default:
+		pResource->setPrimitiveTopology(XPT_TRIANGLELIST);
+	}
+
 	if(m_hdr.iLODcount && m_hdr.iLODoffset)
 	{
 		m_pCurrentFile->setPos(m_hdr.iLODoffset);
@@ -193,6 +203,14 @@ bool CModelLoader::loadAsStatic(IXResourceModelStatic *pResource)
 					}
 				}
 				m_pCurrentFile->readBin(pSubSet->pIndices, sizeof(UINT) * pSubSet->iIndexCount);
+
+				if(!(m_hdr.iFlags & MODEL_FLAG_NORMALIZED_NORMALS))
+				{
+					for(UINT k = 0; k < pSubSet->iVertexCount; ++k)
+					{
+						pSubSet->pVertices[k].vNorm = SMVector3Normalize(pSubSet->pVertices[k].vNorm);
+					}
+				}
 			}
 		}
 	}
@@ -330,6 +348,14 @@ bool CModelLoader::loadAsAnimated(IXResourceModelAnimated *pResource)
 					}
 				}
 				m_pCurrentFile->readBin(pSubSet->pIndices, sizeof(UINT) * pSubSet->iIndexCount);
+
+				if(!(m_hdr.iFlags & MODEL_FLAG_NORMALIZED_NORMALS))
+				{
+					for(UINT k = 0; k < pSubSet->iVertexCount; ++k)
+					{
+						pSubSet->pVertices[k].vNorm = SMVector3Normalize(pSubSet->pVertices[k].vNorm);
+					}
+				}
 			}
 		}
 	}
@@ -415,7 +441,7 @@ bool CModelLoader::loadAsAnimated(IXResourceModelAnimated *pResource)
 			assert(sizeof(pSequence->szName) == sizeof(ms.name));
 			memcpy(pSequence->szName, ms.name, MODEL_MAX_NAME);
 
-			pSequence->iActivity = ms.activity;
+			pSequence->iActivity = (int)ms.activity - 1;
 			pSequence->uActivityChance = ms.act_chance;
 			pSequence->isLooped = !!ms.bLooped;
 			pSequence->iFramerate = ms.framerate;
@@ -479,16 +505,6 @@ void CModelLoader::close()
 
 bool CModelLoader::loadGeneric(IXResourceModel *pResource)
 {
-	switch(m_hdr2.topology)
-	{
-	case MDLPT_TRIANGLESTRIP:
-		pResource->setPrimitiveTopology(XPT_TRIANGLESTRIP);
-		break;
-	case MDLPT_TRIANGLELIST:
-	default:
-		pResource->setPrimitiveTopology(XPT_TRIANGLELIST);
-	}
-
 	if(m_hdr2.iPhysicsDataOffset)
 	{
 		m_pCurrentFile->setPos(m_hdr2.iPhysicsDataOffset);

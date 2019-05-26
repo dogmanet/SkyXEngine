@@ -415,6 +415,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 				pResource2->asAnimated()
 			};
 			bool res = pProvider->createModel(2, pAnimatedResources, &pModel);
+			pModel->play("idle");
 		}
 	}
 #endif

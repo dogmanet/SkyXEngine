@@ -3,13 +3,16 @@
 #include <mtrl/IXMaterialSystem.h>
 
 CAnimatedModelShared::CAnimatedModelShared(CAnimatedModelProvider *pProvider):
-	m_pProvider(pProvider)
+	m_pProvider(pProvider),
+	m_pDevice(pProvider->getDevice()),
+	m_pMaterialSystem(pProvider->getMaterialSystem())
 {}
 CAnimatedModelShared::~CAnimatedModelShared()
 {
 	m_pProvider->onSharedModelRelease(this);
 
 	mem_delete_a(m_pBones);
+	mem_delete_a(m_pInvBindPose);
 
 	for(UINT i = 0; i < m_uSkinCount; ++i)
 	{
@@ -21,6 +24,31 @@ CAnimatedModelShared::~CAnimatedModelShared()
 
 	mem_delete_a(m_ppMaterialsBlob);
 	m_pppMaterials = NULL;
+
+	if(m_pDevice)
+	{
+		for(UINT i = 0; i < m_uLodCount; ++i)
+		{
+			mem_release(m_ppRenderBuffer[i]);
+			mem_release(m_ppIndexBuffer[i]);
+		}
+		mem_delete_a(m_ppRenderBuffer);
+		mem_delete_a(m_ppIndexBuffer);
+	}
+
+	for(UINT i = 0, l = m_aControllers.size(); i < l; ++i)
+	{
+		mem_delete_a(m_aControllers[i].pBones);
+	}
+
+	for(UINT i = 0, l = m_aSequences.size(); i < l; ++i)
+	{
+		for(UINT k = 0; k < m_aSequences[i].uNumFrames; ++k)
+		{
+			mem_delete_a(m_aSequences[i].m_ppSequenceData[k]);
+		}
+		mem_delete_a(m_aSequences[i].m_ppSequenceData);
+	}
 }
 void CAnimatedModelShared::AddRef()
 {
@@ -181,6 +209,30 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 		m_pBones = new bone_s[m_uBoneCount];
 		// memset(m_pBones, 254, sizeof(bone_s)* uFinalBones);
 		_buildBoneListByParent(NULL, pNodes, uTotalBones, m_pBones, &aResources[0], -1);
+
+		// calc inverted bind pose
+		{
+			m_pInvBindPose = new XResourceModelBone[m_uBoneCount];
+
+			for(UINT i = 0; i < m_uBoneCount; ++i)
+			{
+				m_pInvBindPose[i].orient = m_pBones[i].bone.orient;
+				m_pInvBindPose[i].position = m_pBones[i].bone.position;
+			}
+			for(UINT i = 0; i < m_uBoneCount; ++i)
+			{
+				if(m_pBones[i].iParent != -1)
+				{
+					m_pInvBindPose[i].orient = (m_pInvBindPose[i].orient * m_pInvBindPose[m_pBones[i].iParent].orient).Normalize();
+					m_pInvBindPose[i].position = (float3)(float4(m_pInvBindPose[m_pBones[i].iParent].orient * m_pInvBindPose[i].position, 1.0f) + m_pInvBindPose[m_pBones[i].iParent].position);
+				}
+			}
+			for(UINT i = 0; i < m_uBoneCount; ++i)
+			{
+				m_pInvBindPose[i].orient = m_pInvBindPose[i].orient.Conjugate();
+				m_pInvBindPose[i].position = (float3)-m_pInvBindPose[i].position;
+			}
+		}
 	}
 
 	// merge skins/materials
@@ -241,11 +293,11 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 		m_uSkinCount = aaMaterials.size();
 		m_ppMaterialsBlob = new void*[m_uMaterialCount * m_uSkinCount + m_uSkinCount];
 		m_pppMaterials = (IXMaterial***)m_ppMaterialsBlob;
-		IXMaterialSystem *pMaterialSystem = m_pProvider->getMaterialSystem();
 		XSHADER_DEFAULT_DESC shaderDesc;
 		shaderDesc.szFileVS = "mtrlskin_base.vs";
 		shaderDesc.szFilePS = "mtrlgeom_base.ps";
 
+		char szMaterialName[256];
 		for(UINT i = 0; i < m_uSkinCount; ++i)
 		{
 			m_pppMaterials[i] = (IXMaterial**)(m_ppMaterialsBlob + m_uSkinCount + m_uMaterialCount * i);
@@ -254,7 +306,8 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 			{
 				if(aaMaterials[i][j].szName && aaMaterials[i][j].szName[0])
 				{
-					pMaterialSystem->loadMaterial(aaMaterials[i][j].szName, &m_pppMaterials[i][j], &shaderDesc);
+					sprintf_s(szMaterialName, "%s.dds", aaMaterials[i][j].szName);
+					m_pMaterialSystem->loadMaterial(szMaterialName, &m_pppMaterials[i][j], &shaderDesc);
 				}
 				else
 				{
@@ -272,7 +325,7 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 		m_aParts[0].szName = "";
 		m_aParts[0].flags = XMP_NONE;
 
-		Array<Array<Array<subset_s>>> aPartLods;
+		Array<Array<Array<merge_subset_s>>> aPartLods;
 
 		for(UINT i = 0; i < uResourceCount; ++i)
 		{
@@ -307,7 +360,7 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 
 					// process part:
 					part_s part;
-					initPart(aPart, &part, aPartLods[m_aParts.size()], aaMaterials, importFlags);
+					_initPart(aPart, &part, aPartLods[m_aParts.size()], aaMaterials, importFlags);
 					part.szName = ppResources[i]->getPartName(j);
 					part.flags = ppResources[i]->getPartFlags(j);
 
@@ -336,21 +389,239 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 			}
 		}
 
-		initPart(aPart, &m_aParts[0], aPartLods[0], aaMaterials);
+		_initPart(aPart, &m_aParts[0], aPartLods[0], aaMaterials);
 
-		//aPartLods
+		Array<UINT> aLodIndexCount;
+		Array<UINT> aLodVertexCount;
+
+		for(UINT uMaterialId = 0, uMaterialCount = aaMaterials[0].size(); uMaterialId < uMaterialCount; ++uMaterialId)
+		{
+			for(UINT uPart = 0, uPartCount = aPartLods.size(); uPart < uPartCount; ++uPart)
+			{
+				auto &aLods = aPartLods[uPart];
+				for(UINT uLod = 0, uLodCount = aLods.size(); uLod < uLodCount; ++uLod)
+				{
+					if(uLodCount > m_uLodCount)
+					{
+						for(UINT i = m_uLodCount; i < uLodCount; ++i)
+						{
+							aLodIndexCount[i] = 0;
+							aLodVertexCount[i] = 0;
+						}
+						m_uLodCount = uLodCount;
+					}
+					auto &aSubsets = aLods[uLod];
+					subset_t subset;
+					for(UINT i = 0, l = aSubsets.size(); i < l; ++i)
+					{
+						XResourceModelAnimatedSubset *pSubset = &aSubsets[i].data;
+						if(pSubset->iMaterialID == uMaterialId)
+						{
+							// append subset to lod (group by materialId)
+
+							if(!subset.uIndexCount)
+							{
+								subset.uStartIndex = aLodIndexCount[uLod];
+								subset.uStartVertex = aLodVertexCount[uLod];
+							}
+							subset.uIndexCount += pSubset->iIndexCount;
+							subset.uVertexCount += pSubset->iVertexCount;
+
+							aLodIndexCount[uLod] += pSubset->iIndexCount;
+							aLodVertexCount[uLod] += pSubset->iVertexCount;
+						}
+					}
+
+					m_aParts[uPart].aLods[uLod][uMaterialId] = subset;
+				}
+			}
+		}
+
+		UINT **ppIndices = new UINT*[m_uLodCount];
+		XResourceModelAnimatedVertex **ppVertices = new XResourceModelAnimatedVertex*[m_uLodCount];
+		for(UINT i = 0; i < m_uLodCount; ++i)
+		{
+			ppIndices[i] = new UINT[aLodIndexCount[i]];
+			ppVertices[i] = new XResourceModelAnimatedVertex[aLodVertexCount[i]];
+		}
+
+
+		float3 vLocalMin;
+		float3 vLocalMax;
+		bool isMinMaxSet = false;
+		// fill buffers!
+		for(UINT uMaterialId = 0, uMaterialCount = aaMaterials[0].size(); uMaterialId < uMaterialCount; ++uMaterialId)
+		{
+			Array<UINT> aLodVertexCount;
+			aLodVertexCount.resizeFast(m_uLodCount);
+			for(UINT uLod = 0; uLod < m_uLodCount; ++uLod)
+			{
+				aLodVertexCount[uLod] = 0;
+			}
+
+			for(UINT uPart = 0, uPartCount = aPartLods.size(); uPart < uPartCount; ++uPart)
+			{
+				auto &aLods = aPartLods[uPart];
+				for(UINT uLod = 0, uLodCount = aLods.size(); uLod < uLodCount; ++uLod)
+				{
+					auto &aSubsets = aLods[uLod];
+					subset_t &subset = m_aParts[uPart].aLods[uLod][uMaterialId];
+					for(UINT i = 0, l = aSubsets.size(); i < l; ++i)
+					{
+						XResourceModelAnimatedSubset *pSubset = &aSubsets[i].data;
+						if(pSubset->iMaterialID == uMaterialId)
+						{
+							// append subset to lod (group by materialId)
+
+							//memcpy(&ppIndices[uLod][subset.uStartIndex], pSubset->pIndices, sizeof(UINT) * pSubset->iIndexCount);
+							memcpy(&ppVertices[uLod][subset.uStartVertex], pSubset->pVertices, sizeof(XResourceModelAnimatedVertex) * pSubset->iVertexCount);
+
+							UINT uIndexDelta = aLodVertexCount[uLod];
+							for(UINT j = 0; j < pSubset->iIndexCount; ++j)
+							{
+								ppIndices[uLod][subset.uStartIndex + j] = pSubset->pIndices[j] + uIndexDelta;
+							}
+
+							//@TODO: optimize that!!!
+							for(UINT j = 0; j < pSubset->iVertexCount; ++j)
+							{
+								XResourceModelAnimatedVertex &vtx = ppVertices[uLod][subset.uStartVertex + j];
+								for(UINT k = 0; k < 4; ++k)
+								{
+									vtx.u8BoneIndices[k] = getBoneId(aSubsets[i].pResource->getBoneName(vtx.u8BoneIndices[k]));
+								}
+
+								if(isMinMaxSet)
+								{
+									vLocalMin = SMVectorMin(vLocalMin, vtx.vPos);
+									vLocalMax = SMVectorMax(vLocalMax, vtx.vPos);
+								}
+								else
+								{
+									vLocalMin = vLocalMax = vtx.vPos;
+								}
+							}
+
+							aLodVertexCount[uLod] += pSubset->iVertexCount;
+						}
+					}
+				}
+			}
+		}
+
+		m_vLocalMin = vLocalMin;
+		m_vLocalMax = vLocalMax;
+
+		if(m_pDevice)
+		{
+			m_ppRenderBuffer = new IGXRenderBuffer*[m_uLodCount];
+			m_ppIndexBuffer = new IGXIndexBuffer*[m_uLodCount];
+
+			for(UINT i = 0; i < m_uLodCount; ++i)
+			{
+				m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer(sizeof(UINT) * aLodIndexCount[i], GX_BUFFER_USAGE_STATIC, GXIT_UINT, ppIndices[i]);
+				IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelAnimatedVertex) * aLodVertexCount[i], GX_BUFFER_USAGE_STATIC, ppVertices[i]);
+				m_ppRenderBuffer[i] = m_pDevice->createRenderBuffer(1, &pVertexBuffer, m_pProvider->getVertexDeclaration());
+				mem_release(pVertexBuffer);
+
+				mem_delete_a(ppIndices[i]);
+				mem_delete_a(ppVertices[i]);
+			}
+		}
+
+		mem_delete_a(ppIndices);
+		mem_delete_a(ppVertices);
 	}
 
-	
-	// merge sequences
+
 	// merge controllers
+	for(UINT i = 0, l = aResources.size(); i < l; ++i)
+	{
+		const IXResourceModelAnimated *pResource = aResources[i];
+		for(UINT j = 0, jl = pResource->getControllersCount(); j < jl; ++j)
+		{
+			const XResourceModelController *pController = pResource->getController(j);
+			m_aControllers.push_back(*pController);
+			XResourceModelController &ctl = m_aControllers[m_aControllers.size() - 1];
+			ctl.pBones = new UINT[ctl.uBoneCount];
+
+			for(UINT k = 0; k < ctl.uBoneCount; ++k)
+			{
+				ctl.pBones[k] = getBoneId(pResource->getBoneName(pController->pBones[k]));
+			}
+		}
+	}
+
+
+	// merge sequences
+	{
+		Array<UINT> uBoneMap;
+		for(UINT i = 0, l = aResources.size(); i < l; ++i)
+		{
+			const IXResourceModelAnimated *pResource = aResources[i];
+
+			UINT uBoneCount = pResource->getBoneCount();
+			for(UINT j = 0, jl = uBoneCount; j < jl; ++j)
+			{
+				uBoneMap[j] = getBoneId(pResource->getBoneName(j));
+			}
+
+			for(UINT j = 0, jl = pResource->getSequenceCount(); j < jl; ++j)
+			{
+				const XResourceModelSequence *pSequence = pResource->getSequence(j);
+				XResourceModelSequence *pNewSequence = NULL;
+
+				for(UINT k = 0, kl = m_aSequences.size(); k < kl; ++k)
+				{
+					if(!strcasecmp(m_aSequences[k].szName, pSequence->szName))
+					{
+						//@TODO: Add file names to report
+						LibReport(REPORT_MSG_LEVEL_WARNING, "Merging sequence '%s'\n",
+							pSequence->szName);
+						pNewSequence = &m_aSequences[k];
+					}
+				}
+				if(pNewSequence)
+				{
+					if(pNewSequence->uNumFrames != pSequence->uNumFrames)
+					{
+						//@TODO: Add file names to report
+						LibReport(REPORT_MSG_LEVEL_WARNING, "Unable to merge sequence '%s': frame count mismatch %u != %u\n",
+							pNewSequence->szName, pNewSequence->uNumFrames, pSequence->uNumFrames);
+						continue;
+					}
+				}
+				else
+				{
+					m_aSequences.push_back(*pSequence);
+					pNewSequence = &m_aSequences[m_aSequences.size() - 1];
+
+					pNewSequence->m_ppSequenceData = new XResourceModelBone*[pNewSequence->uNumFrames];
+					for(UINT k = 0; k < pNewSequence->uNumFrames; ++k)
+					{
+						pNewSequence->m_ppSequenceData[k] = new XResourceModelBone[m_uBoneCount];
+					}
+				}
+
+				for(UINT k = 0; k < pNewSequence->uNumFrames; ++k)
+				{
+					for(UINT m = 0, ml = uBoneCount; m< ml; ++m)
+					{
+						pNewSequence->m_ppSequenceData[k][uBoneMap[m]] = pSequence->m_ppSequenceData[k][m];
+					}
+				}
+			}
+
+			uBoneMap.clearFast();
+		}
+	}
+
 
 	return(true);
 }
 
-void CAnimatedModelShared::initPart(Array<const IXResourceModelAnimated*> &aPart, part_s *pPart, Array<Array<subset_s>> &aPartLods, Array<Array<mtl_node>> &aaMaterials, XMODEL_IMPORT importFlags)
+void CAnimatedModelShared::_initPart(Array<const IXResourceModelAnimated*> &aPart, part_s *pPart, Array<Array<merge_subset_s>> &aPartLods, Array<Array<mtl_node>> &aaMaterials, XMODEL_IMPORT importFlags)
 {
-	XPT_TOPOLOGY pt = aPart[0]->getPrimitiveTopology();
 	UINT uLodCount = 1;
 	for(UINT k = 1, kl = aPart.size(); k < kl; ++k)
 	{
@@ -361,15 +632,8 @@ void CAnimatedModelShared::initPart(Array<const IXResourceModelAnimated*> &aPart
 			{
 				uLodCount = uLods;
 			}
-			if(aPart[k]->getPrimitiveTopology() != pt)
-			{
-				pt = XPT_TRIANGLELIST;
-				//break;
-			}
 		}
 	}
-
-	pPart->topology = pt;
 
 	aPartLods.resizeFast(uLodCount);
 
@@ -378,18 +642,18 @@ void CAnimatedModelShared::initPart(Array<const IXResourceModelAnimated*> &aPart
 		// merge vertices/indices
 		if(importFlags & XMI_MESH)
 		{
-			XPT_TOPOLOGY topology = aPart[k]->getPrimitiveTopology();
 			for(UINT m = 0, ml = aPart[k]->getLodCount(); m < ml; ++m)
 			{
 				// vertices/indices merged
 				// indices part map {startIndex, count}
-				aPartLods[m].resizeFast(aPartLods[m].size() + aPart[k]->getSubsetCount(m));
+				UINT uPartOffset = aPartLods[m].size();
+				aPartLods[m].resizeFast(uPartOffset + aPart[k]->getSubsetCount(m));
 				for(UINT n = 0, nl = aPart[k]->getSubsetCount(m); n < nl; ++n)
 				{
 					const XResourceModelAnimatedSubset *pSubset = aPart[k]->getSubset(m, n);
 					int uid = pSubset->iIndexCount;
-					aPartLods[m][n].topology = topology;
-					aPartLods[m][n].data = *pSubset;
+					aPartLods[m][n + uPartOffset].data = *pSubset;
+					aPartLods[m][n + uPartOffset].pResource = aPart[k];
 
 					const char *szMainMaterial = aPart[k]->getMaterial(pSubset->iMaterialID, 0);
 					for(UINT i = 0, l = aaMaterials[0].size(); i < l; ++i)
@@ -409,12 +673,18 @@ void CAnimatedModelShared::initPart(Array<const IXResourceModelAnimated*> &aPart
 									(
 										aaMaterials[j][i].szName && szSkinMaterial &&
 										!strcasecmp(aaMaterials[j][i].szName, szSkinMaterial)
-									))
-								)
+									)
+								))
 								{
 									isSame = false;
 									break;
 								}
+							}
+
+							if(isSame)
+							{
+								aPartLods[m][n + uPartOffset].data.iMaterialID = i;
+								break;
 							}
 						}
 					}
@@ -625,16 +895,165 @@ const char *CAnimatedModelShared::getBoneName(UINT id) const
 
 	return(m_pBones[id].szName);
 }
+int CAnimatedModelShared::getBoneParent(UINT id) const
+{
+	assert(id < m_uBoneCount);
+
+	return(m_pBones[id].iParent);
+}
+const XResourceModelBone *CAnimatedModelShared::getBone(UINT id) const
+{
+	assert(id < m_uBoneCount);
+
+	return(&m_pBones[id].bone);
+}
+const XResourceModelBone *CAnimatedModelShared::getInvertedBindPose() const
+{
+	return(m_pInvBindPose);
+}
 
 UINT CAnimatedModelShared::getControllersCount() const
 {
-	return(0);
+	return(m_aControllers.size());
 }
-const char *CAnimatedModelShared::getControllerName(UINT id)
+const char *CAnimatedModelShared::getControllerName(UINT id) const
 {
-	return(0);
+	assert(id < m_aControllers.size());
+
+	return(m_aControllers[id].szName);
 }
-UINT CAnimatedModelShared::getControllerId(const char *szName)
+UINT CAnimatedModelShared::getControllerId(const char *szName) const
 {
-	return(0);
+	for(UINT i = 0; i < m_aControllers.size(); ++i)
+	{
+		if(!strcasecmp(m_aControllers[i].szName, szName))
+		{
+			return(i);
+		}
+	}
+	return(~0);
+}
+const XResourceModelController *CAnimatedModelShared::getController(UINT uIndex) const
+{
+	assert(uIndex < m_aControllers.size());
+
+	return(&m_aControllers[uIndex]);
+}
+
+int CAnimatedModelShared::getActivityId(const char *szName) const
+{
+	for(UINT i = 0, l = m_aszActivities.size(); i < l; ++i)
+	{
+		if(!strcasecmp(m_aszActivities[i], szName))
+		{
+			return(i);
+		}
+	}
+	return(-1);
+}
+
+const char *CAnimatedModelShared::getActivityName(UINT id) const
+{
+	assert(id < m_aszActivities.size());
+
+	return(m_aszActivities[id]);
+}
+
+UINT CAnimatedModelShared::getSequenceCount() const
+{
+	return(m_aSequences.size());
+}
+const XResourceModelSequence *CAnimatedModelShared::getSequence(UINT uIndex) const
+{
+	assert(uIndex < m_aSequences.size());
+
+	return(&m_aSequences[uIndex]);
+}
+
+int CAnimatedModelShared::getSequenceId(const char *szName) const
+{
+	for(UINT i = 0, l = m_aSequences.size(); i < l; ++i)
+	{
+		if(!strcasecmp(m_aSequences[i].szName, szName))
+		{
+			return(i);
+		}
+	}
+	return(-1);
+}
+
+float3 CAnimatedModelShared::getLocalBoundMin() const
+{
+	return(m_vLocalMin);
+}
+
+float3 CAnimatedModelShared::getLocalBoundMax() const
+{
+	return(m_vLocalMax);
+}
+
+void CAnimatedModelShared::render(const SMMATRIX &mWorld, UINT uSkin, UINT uLod, float4_t vColor)
+{
+	if(!m_pDevice)
+	{
+		return;
+	}
+
+	if(uSkin > m_uSkinCount)
+	{
+		uSkin = 0;
+	}
+
+	if(uLod > m_uLodCount)
+	{
+		return;
+	}
+
+	m_pDevice->setIndexBuffer(m_ppIndexBuffer[uLod]);
+	m_pDevice->setRenderBuffer(m_ppRenderBuffer[uLod]);
+	m_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+
+	m_pMaterialSystem->setWorld(mWorld);
+
+	for(UINT i = 0; i < m_uMaterialCount; ++i)
+	{
+		subset_t subset;
+		//UINT uDrawIndices = 0;
+		//UINT uDrawVertices = 0;
+		for(UINT uPart = 0, uPartCount = m_aParts.size(); uPart < uPartCount; ++uPart)
+		{
+			if(true /* subset enabled */)
+			{
+				subset_t &lodSubset = m_aParts[uPart].aLods[uLod][i];
+
+				if(subset.uIndexCount == 0)
+				{
+					subset = lodSubset;
+				}
+				else
+				{
+					subset.uIndexCount += lodSubset.uIndexCount;
+					subset.uVertexCount += lodSubset.uVertexCount;
+				}
+
+				/*if(subset.uIndexCount == lodSubset.uStartIndex)
+				{
+					subset.uIndexCount += lodSubset.uIndexCount;
+					subset.uVertexCount += lodSubset.uVertexCount;
+				}
+				else
+				{
+					// draw part (subset.uIndexCount - uDrawIndices), (subset.uVertexCount - uDrawVertices)
+					uDrawIndices = subset.uIndexCount;
+					uDrawVertices = subset.uVertexCount;
+				}*/
+			}
+		}
+
+		if(subset.uIndexCount != 0)
+		{
+			m_pMaterialSystem->bindMaterial(m_pppMaterials[uSkin][i]);
+			m_pDevice->drawIndexed(subset.uVertexCount, subset.uIndexCount / 3, subset.uStartIndex, subset.uStartVertex);
+		}
+	}
 }

@@ -41,16 +41,6 @@ const char *CResourceModel::getFileName() const
 	return(m_szFileName);
 }
 
-void CResourceModel::setPrimitiveTopology(XPT_TOPOLOGY topology)
-{
-	m_topology = topology;
-}
-XPT_TOPOLOGY CResourceModel::getPrimitiveTopology() const
-{
-	return(m_topology);
-}
-
-
 UINT CResourceModel::getPhysboxCount() const
 {
 	return(m_aPhysBoxes.size());
