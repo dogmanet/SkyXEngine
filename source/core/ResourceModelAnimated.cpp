@@ -133,6 +133,12 @@ const IXResourceModel *CResourceModelAnimated::getImport(UINT uIndex) const
 
 	return(m_aImports[uIndex].pResource);
 }
+IXResourceModel *CResourceModelAnimated::getImport(UINT uIndex)
+{
+	assert(uIndex < m_aImports.size());
+
+	return(m_aImports[uIndex].pResource);
+}
 void CResourceModelAnimated::setImport(UINT uIndex, IXResourceModel *pResource)
 {
 	assert(uIndex < m_aImports.size());
@@ -183,6 +189,12 @@ UINT CResourceModelAnimated::addPartName(const char *szFileName, const char *szN
 }
 
 const IXResourceModel *CResourceModelAnimated::getPart(UINT uIndex) const
+{
+	assert(uIndex < m_aParts.size());
+
+	return(m_aParts[uIndex].pResource);
+}
+IXResourceModel *CResourceModelAnimated::getPart(UINT uIndex)
 {
 	assert(uIndex < m_aParts.size());
 

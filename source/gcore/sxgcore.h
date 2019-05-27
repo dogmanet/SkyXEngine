@@ -1060,6 +1060,7 @@ struct CTriangle
 @{
 */
 
+//@TODO: поменять на SMPLANE
 //! структура описание плоскости
 struct CFrustumPlane
 {

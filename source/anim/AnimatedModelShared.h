@@ -16,10 +16,10 @@ public:
 	void AddRef();
 	void Release();
 
-	bool init(UINT uResourceCount, const IXResourceModelAnimated **ppResources);
-	bool isSame(UINT uResourceCount, const IXResourceModelAnimated **ppResources);
+	bool init(UINT uResourceCount, IXResourceModelAnimated **ppResources);
+	bool isSame(UINT uResourceCount, IXResourceModelAnimated **ppResources);
 
-	const Array<const IXResourceModelAnimated*> &getResources();
+	const Array<IXResourceModelAnimated*> &getResources();
 
 	UINT getPhysboxCount(UINT uPartIndex = 0) const;
 	const IModelPhysbox *getPhysBox(UINT id, UINT uPartIndex = 0) const;
@@ -63,7 +63,7 @@ public:
 
 protected:
 	UINT m_uRefCount = 0;
-	Array<const IXResourceModelAnimated*> m_apResources;
+	Array<IXResourceModelAnimated*> m_apResources;
 
 	IGXRenderBuffer **m_ppRenderBuffer = NULL;
 	IGXIndexBuffer **m_ppIndexBuffer = NULL;
@@ -145,11 +145,11 @@ private:
 		const IXResourceModelAnimated *pResource;
 	};
 	
-	void _collectResources(const IXResourceModelAnimated *pResource, Array<const IXResourceModelAnimated*> &aResources);
+	void _collectResources(IXResourceModelAnimated *pResource, Array<IXResourceModelAnimated*> &aResources);
 	void _mergeByParent(bone_node *pParent, bone_node *pNodes, UINT uTotalBones);
-	int _buildBoneListByParent(bone_node *pParent, bone_node *pNodes, UINT uTotalBones, bone_s *pList, const IXResourceModelAnimated **ppResources, int iParent);
+	int _buildBoneListByParent(bone_node *pParent, bone_node *pNodes, UINT uTotalBones, bone_s *pList, IXResourceModelAnimated **ppResources, int iParent);
 
-	void _initPart(Array<const IXResourceModelAnimated*> &aPart, part_s *pPart, Array<Array<merge_subset_s>> &partLods, Array<Array<mtl_node>> &aaMaterials, XMODEL_IMPORT importFlags = XMI_ALL);
+	void _initPart(Array<IXResourceModelAnimated*> &aPart, part_s *pPart, Array<Array<merge_subset_s>> &partLods, Array<Array<mtl_node>> &aaMaterials, XMODEL_IMPORT importFlags = XMI_ALL);
 };
 
 #endif

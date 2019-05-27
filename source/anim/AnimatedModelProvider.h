@@ -6,6 +6,7 @@
 #include "AnimatedModelShared.h"
 #include <xcommon/IXCore.h>
 #include <mtrl/IXMaterialSystem.h>
+#include "RenderableVisibility.h"
 
 class CAnimatedModelProvider: public IXAnimatedModelProvider
 {
@@ -13,7 +14,7 @@ public:
 	CAnimatedModelProvider(IXCore *pCore);
 	~CAnimatedModelProvider();
 
-	bool XMETHODCALLTYPE createModel(UINT uResourceCount, const IXResourceModelAnimated **ppResources, IXAnimatedModel **ppModel) override;
+	bool XMETHODCALLTYPE createModel(UINT uResourceCount, IXResourceModelAnimated **ppResources, IXAnimatedModel **ppModel) override;
 
 	void onSharedModelRelease(CAnimatedModelShared *pShared);
 	void onModelRelease(CAnimatedModel *pModel);
@@ -23,10 +24,11 @@ public:
 
 	void update(float fDT);
 	void sync();
-	void render();
+	void render(CRenderableVisibility *pVisibility = NULL);
+	void computeVisibility(const IFrustum *pFrustum, const float3 &vPosition, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference=NULL);
 
 protected:
-	AssotiativeArray<const IXResourceModelAnimated*, Array<CAnimatedModelShared*>> m_mModels;
+	AssotiativeArray<IXResourceModelAnimated*, Array<CAnimatedModelShared*>> m_mModels;
 
 	Array<CAnimatedModel*> m_apModels;
 

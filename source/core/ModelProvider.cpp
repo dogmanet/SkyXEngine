@@ -5,7 +5,7 @@ CModelProvider::CModelProvider(CCore *pCore):
 {
 }
 
-bool CModelProvider::createStaticModel(const IXResourceModel *pResource, IXStaticModel **ppModel)
+bool CModelProvider::createStaticModel(IXResourceModel *pResource, IXStaticModel **ppModel)
 {
 	if(pResource->getType() == XMT_STATIC)
 	{
@@ -28,7 +28,7 @@ bool CModelProvider::createStaticModel(const IXResourceModel *pResource, IXStati
 	return(false);
 }
 
-bool CModelProvider::createDynamicModel(const IXResourceModel *pResource, IXDynamicModel **ppModel)
+bool CModelProvider::createDynamicModel(IXResourceModel *pResource, IXDynamicModel **ppModel)
 {
 	if(pResource->getType() == XMT_ANIMATED)
 	{
@@ -36,7 +36,7 @@ bool CModelProvider::createDynamicModel(const IXResourceModel *pResource, IXDyna
 		if(pProvider)
 		{
 			IXAnimatedModel *pModel = NULL;
-			const IXResourceModelAnimated *pResourceAnimated = pResource->asAnimated();
+			IXResourceModelAnimated *pResourceAnimated = pResource->asAnimated();
 			bool result = pProvider->createModel(1, &pResourceAnimated, &pModel);
 			*ppModel = pModel;
 			return(result);

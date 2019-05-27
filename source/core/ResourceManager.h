@@ -14,9 +14,9 @@ class CResourceManager: public IXResourceManager
 public:
 	CResourceManager(IXCore *pCore);
 
-	bool XMETHODCALLTYPE getModel(const char *szName, const IXResourceModel **ppOut, bool bForceReload = false) override;
-	bool XMETHODCALLTYPE getModelStatic(const char *szName, const IXResourceModelStatic **ppOut, bool bForceReload = false) override;
-	bool XMETHODCALLTYPE getModelAnimated(const char *szName, const IXResourceModelAnimated **ppOut, bool bForceReload = false) override;
+	bool XMETHODCALLTYPE getModel(const char *szName, IXResourceModel **ppOut, bool bForceReload = false) override;
+	bool XMETHODCALLTYPE getModelStatic(const char *szName, IXResourceModelStatic **ppOut, bool bForceReload = false) override;
+	bool XMETHODCALLTYPE getModelAnimated(const char *szName, IXResourceModelAnimated **ppOut, bool bForceReload = false) override;
 
 	void onResourceModelRelease(CResourceModel *pResource);
 

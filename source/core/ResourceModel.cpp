@@ -167,6 +167,22 @@ const IXResourceModelAnimated * CResourceModel::asAnimated() const
 	}
 	return(NULL);
 }
+IXResourceModelStatic *CResourceModel::asStatic()
+{
+	if(getType() == XMT_STATIC)
+	{
+		return((CResourceModelStatic*)this);
+	}
+	return(NULL);
+}
+IXResourceModelAnimated * CResourceModel::asAnimated()
+{
+	if(getType() == XMT_ANIMATED)
+	{
+		return((CResourceModelAnimated*)this);
+	}
+	return(NULL);
+}
 
 IModelPhysboxBox *CResourceModel::newPhysboxBox() const
 {

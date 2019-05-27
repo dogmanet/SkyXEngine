@@ -3,10 +3,11 @@
 
 #include <xcommon/IXRenderable.h>
 
+class CAnimatedModelProvider;
 class CRenderableVisibility: public IXRenderableVisibility
 {
 public:
-	CRenderableVisibility(ID idPlugin);
+	CRenderableVisibility(ID idPlugin, CAnimatedModelProvider *m_pProvider);
 	~CRenderableVisibility();
 
 	ID getPluginId();
@@ -21,9 +22,21 @@ public:
 	{
 		return(m_idVisCalcObj);
 	}
+
+	struct item_s
+	{
+		bool isVisible = false;
+		UINT uLod = 0;
+	};
+
+	void setItemCount(UINT uCount);
+	item_s *getItem(UINT uIndex);
 protected:
 	ID m_idPlugin;
 	ID m_idVisCalcObj = -1;
+	CAnimatedModelProvider *m_pProvider;
+
+	Array<item_s> m_aItems;
 };
 
 #endif

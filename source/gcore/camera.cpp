@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -59,7 +59,7 @@ void CFrustum::update(const float4x4* view,const float4x4* proj)
 	m_aFrustumPlanes[5].m_vNormal.z = matComb._34 + matComb._33; 
 	m_aFrustumPlanes[5].m_fDistance = matComb._44 + matComb._43;
 
-		//Нормализация плоскостей
+		//РќРѕСЂРјР°Р»РёР·Р°С†РёСЏ РїР»РѕСЃРєРѕСЃС‚РµР№
 		for (int i = 0; i < 6; ++i)
 			m_aFrustumPlanes[i].normalize();
 }
@@ -122,21 +122,21 @@ bool CFrustum::sphereInFrustumAbs(const float3 *point, float radius) const
 
 bool CFrustum::boxInFrustum(float3* min, float3* max) const
 {
-		for ( register int p = 0; p < 6; p++ )
-		{
-			if( m_aFrustumPlanes[p].m_vNormal.x * (min->x) + m_aFrustumPlanes[p].m_vNormal.y * (min->y) + m_aFrustumPlanes[p].m_vNormal.z * (min->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
+	for(register int p = 0; p < 6; ++p)
+	{
+		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, *min) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
+		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, float3(min->x, min->y, max->z)) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
+		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, float3(min->x, max->y, min->z)) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
+		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, float3(min->x, max->y, max->z)) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
 
-			if( m_aFrustumPlanes[p].m_vNormal.x * (min->x) + m_aFrustumPlanes[p].m_vNormal.y * (min->y) + m_aFrustumPlanes[p].m_vNormal.z * (max->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
-			if( m_aFrustumPlanes[p].m_vNormal.x * (min->x) + m_aFrustumPlanes[p].m_vNormal.y * (max->y) + m_aFrustumPlanes[p].m_vNormal.z * (max->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
-			if( m_aFrustumPlanes[p].m_vNormal.x * (max->x) + m_aFrustumPlanes[p].m_vNormal.y * (max->y) + m_aFrustumPlanes[p].m_vNormal.z * (max->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
-			if( m_aFrustumPlanes[p].m_vNormal.x * (max->x) + m_aFrustumPlanes[p].m_vNormal.y * (min->y) + m_aFrustumPlanes[p].m_vNormal.z * (min->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
-			if( m_aFrustumPlanes[p].m_vNormal.x * (max->x) + m_aFrustumPlanes[p].m_vNormal.y * (max->y) + m_aFrustumPlanes[p].m_vNormal.z * (min->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
-			if( m_aFrustumPlanes[p].m_vNormal.x * (max->x) + m_aFrustumPlanes[p].m_vNormal.y * (min->y) + m_aFrustumPlanes[p].m_vNormal.z * (max->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
-			if( m_aFrustumPlanes[p].m_vNormal.x * (min->x) + m_aFrustumPlanes[p].m_vNormal.y * (max->y) + m_aFrustumPlanes[p].m_vNormal.z * (min->z) + m_aFrustumPlanes[p].m_fDistance > 0 ) continue;
-			return false;
-		}
+		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, float3(max->x, min->y, min->z)) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
+		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, float3(max->x, min->y, max->z)) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
+		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, float3(max->x, max->y, min->z)) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
+		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, *max) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
+		return(false);
+	}
 
-	return true;
+	return(true);
 }
 
 

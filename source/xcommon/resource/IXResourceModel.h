@@ -249,6 +249,8 @@ public:
 	virtual XMODELTYPE XMETHODCALLTYPE getType() const = 0;
 	virtual const IXResourceModelStatic * XMETHODCALLTYPE asStatic() const = 0;
 	virtual const IXResourceModelAnimated * XMETHODCALLTYPE asAnimated() const = 0;
+	virtual IXResourceModelStatic * XMETHODCALLTYPE asStatic() = 0;
+	virtual IXResourceModelAnimated * XMETHODCALLTYPE asAnimated() = 0;
 
 
 	virtual UINT XMETHODCALLTYPE getSubsetCount(UINT uLod) const = 0;
@@ -260,6 +262,8 @@ public:
 	virtual IModelPhysboxBox    * XMETHODCALLTYPE newPhysboxBox() const = 0;
 	virtual IModelPhysboxSphere * XMETHODCALLTYPE newPhysboxSphere() const = 0;
 	virtual IModelPhysboxConvex * XMETHODCALLTYPE newPhysboxConvex() const = 0;
+
+	virtual void XMETHODCALLTYPE makeReadOnly() = 0;
 };
 
 // Implemented in core
@@ -287,6 +291,7 @@ public:
 	virtual UINT XMETHODCALLTYPE addImportName(const char *szFileName, XMODEL_IMPORT importFlags) = 0;
 
 	virtual const IXResourceModel * XMETHODCALLTYPE getImport(UINT uIndex) const = 0;
+	virtual IXResourceModel * XMETHODCALLTYPE getImport(UINT uIndex) = 0;
 	virtual void XMETHODCALLTYPE setImport(UINT uIndex, IXResourceModel *pResource) = 0;
 
 
@@ -298,6 +303,7 @@ public:
 	virtual UINT XMETHODCALLTYPE addPartName(const char *szFileName, const char *szName, XMODEL_IMPORT importFlags, XMODEL_PART_FLAGS partFlags) = 0;
 
 	virtual const IXResourceModel * XMETHODCALLTYPE getPart(UINT uIndex) const = 0;
+	virtual IXResourceModel * XMETHODCALLTYPE getPart(UINT uIndex) = 0;
 	virtual void XMETHODCALLTYPE setPart(UINT uIndex, IXResourceModel *pResource) = 0;
 
 

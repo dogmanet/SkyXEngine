@@ -403,19 +403,20 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	IXResourceManager *pResourceManager = Core_GetIXCore()->getResourceManager();
 	IXAnimatedModelProvider *pProvider = (IXAnimatedModelProvider*)Core_GetIXCore()->getPluginManager()->getInterface(IXANIMATEDMODELPROVIDER_GUID); // get it from somewhere
 
-	const IXResourceModel *pResource1, *pResource2;
+	IXResourceModel *pResource1, *pResource2;
 	if(pResourceManager->getModel("models/weapons/ak74/ak74.dse", &pResource1)
 		&& pResourceManager->getModel("models/weapons/hands.dse", &pResource2))
 	{
 		if(pResource1->getType() == XMT_ANIMATED && pResource2->getType() == XMT_ANIMATED)
 		{
 			IXAnimatedModel *pModel;
-			const IXResourceModelAnimated *pAnimatedResources[] = {
+			IXResourceModelAnimated *pAnimatedResources[] = {
 				pResource1->asAnimated(),
 				pResource2->asAnimated()
 			};
 			bool res = pProvider->createModel(2, pAnimatedResources, &pModel);
 			pModel->play("idle");
+			// mem_release(pModel);
 		}
 	}
 #endif

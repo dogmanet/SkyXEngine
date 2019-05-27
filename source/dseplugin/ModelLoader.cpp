@@ -356,6 +356,10 @@ bool CModelLoader::loadAsAnimated(IXResourceModelAnimated *pResource)
 						pSubSet->pVertices[k].vNorm = SMVector3Normalize(pSubSet->pVertices[k].vNorm);
 					}
 				}
+				for(UINT k = 0; k < pSubSet->iVertexCount; ++k)
+				{
+					pSubSet->pVertices[k].vPos = (float3)(pSubSet->pVertices[k].vPos * 0.0254f);
+				}
 			}
 		}
 	}
@@ -383,7 +387,7 @@ bool CModelLoader::loadAsAnimated(IXResourceModelAnimated *pResource)
 		{
 			m_pCurrentFile->readBin(&mbn, sizeof(ModelBoneName));
 			assert(i == mbn.bone.id);
-			pResource->setBoneInfo(i, mbn.szName, mbn.bone.pid, mbn.bone.position, mbn.bone.orient);
+			pResource->setBoneInfo(i, mbn.szName, mbn.bone.pid, mbn.bone.position * 0.0254f, mbn.bone.orient);
 		}
 	}
 
@@ -454,7 +458,7 @@ bool CModelLoader::loadAsAnimated(IXResourceModelAnimated *pResource)
 					m_pCurrentFile->readBin(&mb, sizeof(ModelBone));
 
 					pSequence->m_ppSequenceData[j][k].orient = mb.orient;
-					pSequence->m_ppSequenceData[j][k].position = mb.position;
+					pSequence->m_ppSequenceData[j][k].position = (float3)(mb.position * 0.0254f);
 				}
 			}
 		}

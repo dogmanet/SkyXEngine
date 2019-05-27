@@ -23,7 +23,7 @@
 class IXStaticModelProvider: public IXUnknown
 {
 public:
-	virtual bool XMETHODCALLTYPE createModel(const IXResourceModelStatic *pResource, IXStaticModel **ppModel) = 0;
+	virtual bool XMETHODCALLTYPE createModel(IXResourceModelStatic *pResource, IXStaticModel **ppModel) = 0;
 };
 
 // - Can IXDynamicModelProvider and IXAnimatedModelProvider be implemented in different places?
@@ -33,14 +33,14 @@ public:
 class IXDynamicModelProvider: public IXUnknown
 {
 public:
-	virtual bool XMETHODCALLTYPE createModel(const IXResourceModel *pResource, IXDynamicModel **ppModel) = 0;
+	virtual bool XMETHODCALLTYPE createModel(IXResourceModel *pResource, IXDynamicModel **ppModel) = 0;
 };
 // Implemented in anim plugin
 class IXAnimatedModelProvider: public IXUnknown
 {
 public:
 	// build IXAnimatedModel from one or more IXResourceModelAnimated
-	virtual bool XMETHODCALLTYPE createModel(UINT uResourceCount, const IXResourceModelAnimated **ppResources, IXAnimatedModel **ppModel) = 0;
+	virtual bool XMETHODCALLTYPE createModel(UINT uResourceCount, IXResourceModelAnimated **ppResources, IXAnimatedModel **ppModel) = 0;
 };
 
 // Implemented in core
@@ -48,10 +48,10 @@ class IXModelProvider: public IXUnknown
 {
 public:
 	// static only
-	virtual bool XMETHODCALLTYPE createStaticModel(const IXResourceModel *pResource, IXStaticModel **ppModel) = 0;
+	virtual bool XMETHODCALLTYPE createStaticModel(IXResourceModel *pResource, IXStaticModel **ppModel) = 0;
 
 	// can be dynamic or animated
-	virtual bool XMETHODCALLTYPE createDynamicModel(const IXResourceModel *pResource, IXDynamicModel **ppModel) = 0;
+	virtual bool XMETHODCALLTYPE createDynamicModel(IXResourceModel *pResource, IXDynamicModel **ppModel) = 0;
 };
 
 

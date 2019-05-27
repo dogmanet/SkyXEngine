@@ -28,6 +28,7 @@ public:
 	UINT XMETHODCALLTYPE addImportName(const char *szFileName, XMODEL_IMPORT importFlags) override;
 
 	const IXResourceModel * XMETHODCALLTYPE getImport(UINT uIndex) const override;
+	IXResourceModel * XMETHODCALLTYPE getImport(UINT uIndex) override;
 	void XMETHODCALLTYPE setImport(UINT uIndex, IXResourceModel *pResource) override;
 
 
@@ -39,6 +40,7 @@ public:
 	UINT XMETHODCALLTYPE addPartName(const char *szFileName, const char *szName, XMODEL_IMPORT importFlags, XMODEL_PART_FLAGS partFlags) override;
 
 	const IXResourceModel * XMETHODCALLTYPE getPart(UINT uIndex) const override;
+	IXResourceModel * XMETHODCALLTYPE getPart(UINT uIndex) override;
 	void XMETHODCALLTYPE setPart(UINT uIndex, IXResourceModel *pResource) override;
 
 

@@ -10,10 +10,10 @@ public:
 	CModelProvider(CCore *pCore);
 
 	// static only
-	bool XMETHODCALLTYPE createStaticModel(const IXResourceModel *pResource, IXStaticModel **ppModel) override;
+	bool XMETHODCALLTYPE createStaticModel(IXResourceModel *pResource, IXStaticModel **ppModel) override;
 
 	// can be dynamic or animated
-	bool XMETHODCALLTYPE createDynamicModel(const IXResourceModel *pResource, IXDynamicModel **ppModel) override;
+	bool XMETHODCALLTYPE createDynamicModel(IXResourceModel *pResource, IXDynamicModel **ppModel) override;
 
 protected:
 	CCore *m_pCore;

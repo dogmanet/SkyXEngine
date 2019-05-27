@@ -49,6 +49,11 @@ CAnimatedModelShared::~CAnimatedModelShared()
 		}
 		mem_delete_a(m_aSequences[i].m_ppSequenceData);
 	}
+
+	for(UINT i = 0, l = m_apResources.size(); i < l; ++i)
+	{
+		mem_release(m_apResources[i]);
+	}
 }
 void CAnimatedModelShared::AddRef()
 {
@@ -63,7 +68,7 @@ void CAnimatedModelShared::Release()
 	}
 }
 
-void CAnimatedModelShared::_collectResources(const IXResourceModelAnimated *pResource, Array<const IXResourceModelAnimated*> &aResources)
+void CAnimatedModelShared::_collectResources(IXResourceModelAnimated *pResource, Array<IXResourceModelAnimated*> &aResources)
 {
 	for(UINT i = 0, l = aResources.size(); i < l; ++i)
 	{
@@ -73,9 +78,10 @@ void CAnimatedModelShared::_collectResources(const IXResourceModelAnimated *pRes
 		}
 	}
 
-	m_apResources.push_back(pResource);
+	// m_apResources.push_back(pResource);
+	aResources.push_back(pResource);
 
-	const IXResourceModel *pRes = NULL;
+	IXResourceModel *pRes = NULL;
 	for(UINT i = 0, l = pResource->getImportsCount(); i < l; ++i)
 	{
 		pRes = pResource->getImport(i);
@@ -95,17 +101,17 @@ void CAnimatedModelShared::_collectResources(const IXResourceModelAnimated *pRes
 	}
 }
 
-bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimated **ppResources)
+bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **ppResources)
 {
 	for(UINT i = 0; i < uResourceCount; ++i)
 	{
 		m_apResources.push_back(ppResources[i]);
 	}
-	m_apResources.quickSort([](const IXResourceModelAnimated *a, const IXResourceModelAnimated *b){
+	m_apResources.quickSort([](IXResourceModelAnimated *a, IXResourceModelAnimated *b){
 		return(a < b);
 	});
 
-	Array<const IXResourceModelAnimated*> aResources;
+	Array<IXResourceModelAnimated*> aResources;
 	for(UINT i = 0; i < uResourceCount; ++i)
 	{
 		aResources.push_back(ppResources[i]);
@@ -115,7 +121,7 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 	// merge activities
 	for(UINT i = 0, l = aResources.size(); i < l; ++i)
 	{
-		const IXResourceModelAnimated *pResource = aResources[i];
+		IXResourceModelAnimated *pResource = aResources[i];
 		for(UINT j = 0, jl = pResource->getActivitiesCount(); j < jl; ++j)
 		{
 			bool isFound = false;
@@ -150,7 +156,7 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 		bone_node *pStartNode = pNodes;
 		for(UINT i = 0, l = aResources.size(); i < l; ++i)
 		{
-			const IXResourceModelAnimated *pResource = aResources[i];
+			IXResourceModelAnimated *pResource = aResources[i];
 			for(UINT j = 0, jl = pResource->getBoneCount(); j < jl; ++j)
 			{
 				int iParent = pResource->getBoneParent(j);
@@ -320,8 +326,8 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 
 	// define parts
 	{
-		Array<const IXResourceModelAnimated*> aPartedResources;
-		Array<const IXResourceModelAnimated*> aPart;
+		Array<IXResourceModelAnimated*> aPartedResources;
+		Array<IXResourceModelAnimated*> aPart;
 		m_aParts[0].szName = "";
 		m_aParts[0].flags = XMP_NONE;
 
@@ -331,7 +337,7 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 		{
 			for(UINT j = 0, jl = ppResources[i]->getPartsCount(); j < jl; ++j)
 			{
-				const IXResourceModel *pRes = ppResources[i]->getPart(j);
+				IXResourceModel *pRes = ppResources[i]->getPart(j);
 				XMODEL_IMPORT importFlags = ppResources[i]->getPartImportFlags(j);
 				//@TODO: Test XMODEL_IMPORT flags
 				if(pRes->getType() == XMT_ANIMATED)
@@ -499,6 +505,7 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 								else
 								{
 									vLocalMin = vLocalMax = vtx.vPos;
+									isMinMaxSet = true;
 								}
 							}
 
@@ -620,7 +627,7 @@ bool CAnimatedModelShared::init(UINT uResourceCount, const IXResourceModelAnimat
 	return(true);
 }
 
-void CAnimatedModelShared::_initPart(Array<const IXResourceModelAnimated*> &aPart, part_s *pPart, Array<Array<merge_subset_s>> &aPartLods, Array<Array<mtl_node>> &aaMaterials, XMODEL_IMPORT importFlags)
+void CAnimatedModelShared::_initPart(Array<IXResourceModelAnimated*> &aPart, part_s *pPart, Array<Array<merge_subset_s>> &aPartLods, Array<Array<mtl_node>> &aaMaterials, XMODEL_IMPORT importFlags)
 {
 	UINT uLodCount = 1;
 	for(UINT k = 1, kl = aPart.size(); k < kl; ++k)
@@ -717,7 +724,7 @@ void CAnimatedModelShared::_initPart(Array<const IXResourceModelAnimated*> &aPar
 	}
 }
 
-int CAnimatedModelShared::_buildBoneListByParent(bone_node *pParent, bone_node *pNodes, UINT uTotalBones, bone_s *pList, const IXResourceModelAnimated **ppResources, int iParent)
+int CAnimatedModelShared::_buildBoneListByParent(bone_node *pParent, bone_node *pNodes, UINT uTotalBones, bone_s *pList, IXResourceModelAnimated **ppResources, int iParent)
 {
 	int iOffset = 0;
 	for(UINT i = 0; i < uTotalBones; ++i)
@@ -775,7 +782,7 @@ void CAnimatedModelShared::_mergeByParent(bone_node *pParent, bone_node *pNodes,
 
 }
 
-bool CAnimatedModelShared::isSame(UINT uResourceCount, const IXResourceModelAnimated **ppResources)
+bool CAnimatedModelShared::isSame(UINT uResourceCount, IXResourceModelAnimated **ppResources)
 {
 	if(uResourceCount != m_apResources.size())
 	{
@@ -801,7 +808,7 @@ bool CAnimatedModelShared::isSame(UINT uResourceCount, const IXResourceModelAnim
 	return(true);
 }
 
-const Array<const IXResourceModelAnimated*> &CAnimatedModelShared::getResources()
+const Array<IXResourceModelAnimated*> &CAnimatedModelShared::getResources()
 {
 	return(m_apResources);
 }

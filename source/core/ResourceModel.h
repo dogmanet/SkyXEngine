@@ -39,6 +39,8 @@ public:
 
 	const IXResourceModelStatic * XMETHODCALLTYPE asStatic() const override;
 	const IXResourceModelAnimated * XMETHODCALLTYPE asAnimated() const override;
+	IXResourceModelStatic * XMETHODCALLTYPE asStatic() override;
+	IXResourceModelAnimated * XMETHODCALLTYPE asAnimated() override;
 
 	IModelPhysboxBox    * XMETHODCALLTYPE newPhysboxBox() const override;
 	IModelPhysboxSphere * XMETHODCALLTYPE newPhysboxSphere() const override;
@@ -46,6 +48,11 @@ public:
 
 	void setFileName(const char *szFilename);
 	const char *getFileName() const;
+
+	void XMETHODCALLTYPE makeReadOnly() override
+	{
+		m_isReadOnly = true;
+	}
 protected:
 	CResourceManager *m_pManager;
 	const char *m_szFileName = NULL;
@@ -63,6 +70,8 @@ protected:
 	float m_fMass = 0.0f;
 	Array<String> m_asGibNames;
 	Array<IXResourceModel*> m_asGibs;
+
+	bool m_isReadOnly = false;
 };
 
 #endif

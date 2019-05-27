@@ -37,7 +37,7 @@ CResourceManager::CResourceManager(IXCore *pCore):
 
 }
 
-bool CResourceManager::getModel(const char *szName, const IXResourceModel **ppOut, bool bForceReload)
+bool CResourceManager::getModel(const char *szName, IXResourceModel **ppOut, bool bForceReload)
 {
 	const AssotiativeArray<String, IXResourceModel*>::Node *pNode1;
 	if(!bForceReload && m_mpModels.KeyExists(szName, &pNode1) && (*pNode1->Val))
@@ -139,7 +139,7 @@ bool CResourceManager::getModel(const char *szName, const IXResourceModel **ppOu
 			for(UINT i = 0, l = pResource->getGibsCount(); i < l; ++i)
 			{
 				IXResourceModel *pGibResource;
-				if(getModel(pResource->getGibName(i), (const IXResourceModel**)&pGibResource, bForceReload))
+				if(getModel(pResource->getGibName(i), &pGibResource, bForceReload))
 				{
 					pResource->setGib(i, pGibResource);
 				}
@@ -157,7 +157,7 @@ bool CResourceManager::getModel(const char *szName, const IXResourceModel **ppOu
 				for(UINT i = 0, l = pModel->getImportsCount(); i < l; ++i)
 				{
 					IXResourceModel *pImportResource;
-					if(getModel(pModel->getImportName(i), (const IXResourceModel**)&pImportResource, bForceReload))
+					if(getModel(pModel->getImportName(i), &pImportResource, bForceReload))
 					{
 						pModel->setImport(i, pImportResource);
 					}
@@ -172,7 +172,7 @@ bool CResourceManager::getModel(const char *szName, const IXResourceModel **ppOu
 				for(UINT i = 0, l = pModel->getPartsCount(); i < l; ++i)
 				{
 					IXResourceModel *pPartResource;
-					if(getModel(pModel->getPartName(i), (const IXResourceModel**)&pPartResource, bForceReload))
+					if(getModel(pModel->getPartName(i), &pPartResource, bForceReload))
 					{
 						pModel->setPart(i, pPartResource);
 					}
@@ -202,10 +202,10 @@ bool CResourceManager::getModel(const char *szName, const IXResourceModel **ppOu
 	assert(!"Should never get here!");
 	return(false);
 }
-bool CResourceManager::getModelStatic(const char *szName, const IXResourceModelStatic **ppOut, bool bForceReload)
+bool CResourceManager::getModelStatic(const char *szName, IXResourceModelStatic **ppOut, bool bForceReload)
 {
 	IXResourceModel *pModel = NULL;
-	if(getModel(szName, (const IXResourceModel**)&pModel, bForceReload))
+	if(getModel(szName, &pModel, bForceReload))
 	{
 		if(pModel->getType() == XMT_STATIC)
 		{
@@ -217,10 +217,10 @@ bool CResourceManager::getModelStatic(const char *szName, const IXResourceModelS
 	*ppOut = NULL;
 	return(false);
 }
-bool CResourceManager::getModelAnimated(const char *szName, const IXResourceModelAnimated **ppOut, bool bForceReload)
+bool CResourceManager::getModelAnimated(const char *szName, IXResourceModelAnimated **ppOut, bool bForceReload)
 {
 	IXResourceModel *pModel = NULL;
-	if(getModel(szName, (const IXResourceModel**)&pModel, bForceReload))
+	if(getModel(szName, &pModel, bForceReload))
 	{
 		if(pModel->getType() == XMT_ANIMATED)
 		{

@@ -19,11 +19,13 @@ UINT CRenderable::getPriorityForStage(X_RENDER_STAGE stage)
 void CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility)
 {
 	ID idVisCalcObj = 0;
+	CRenderableVisibility *pVis = NULL;
 	if(pVisibility)
 	{
 		assert(pVisibility->getPluginId() == 0);
 
-		idVisCalcObj = ((CRenderableVisibility*)pVisibility)->getVisCalcObjId();
+		pVis = (CRenderableVisibility*)pVisibility;
+		idVisCalcObj = pVis->getVisCalcObjId();
 	}
 
 	switch(stage)
@@ -32,10 +34,11 @@ void CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVis
 		break;
 	case XRS_GBUFFER:
 		g_mgr->render(idVisCalcObj);
-		g_pAnimatedModelProvider->render();
+		g_pAnimatedModelProvider->render(pVis);
 		break;
 	case XRS_SHADOWS:
 		g_mgr->render(idVisCalcObj);
+		g_pAnimatedModelProvider->render(pVis);
 		break;
 	case XRS_GI:
 		break;
@@ -61,7 +64,7 @@ void CRenderable::shutdown()
 
 void CRenderable::newVisData(IXRenderableVisibility **ppVisibility)
 {
-	*ppVisibility = new CRenderableVisibility(0);
+	*ppVisibility = new CRenderableVisibility(0, g_pAnimatedModelProvider);
 }
 
 IXMaterialSystem *CRenderable::getMaterialSystem()
