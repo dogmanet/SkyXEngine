@@ -97,6 +97,8 @@ protected:
 	{
 		float4 position;   /*!< Позиция */
 		SMQuaternion orient; /*!< Вращение */
+
+		SX_ALIGNED_OP_MEM2();
 	};
 
 	ModelBoneShader *m_pRenderFrameBones = NULL; //! Используются в текущем кадре }
