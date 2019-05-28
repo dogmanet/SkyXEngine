@@ -399,7 +399,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	Core_GetIXCore()->initUpdatable();
 
-#if 1
+#if 0
 	IXResourceManager *pResourceManager = Core_GetIXCore()->getResourceManager();
 	IXAnimatedModelProvider *pProvider = (IXAnimatedModelProvider*)Core_GetIXCore()->getPluginManager()->getInterface(IXANIMATEDMODELPROVIDER_GUID); // get it from somewhere
 
@@ -416,8 +416,27 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 			};
 			bool res = pProvider->createModel(2, pAnimatedResources, &pModel);
 			pModel->play("idle");
-			// mem_release(pModel);
+			mem_release(pModel);
 		}
+	}
+	mem_release(pResource1);
+	mem_release(pResource2);
+
+
+	{
+		IXDynamicModelProvider *pProvider = (IXDynamicModelProvider*)Core_GetIXCore()->getPluginManager()->getInterface(IXDYNAMICMODELPROVIDER_GUID); // get it from somewhere
+
+		IXResourceModel *pResource;
+		if(pResourceManager->getModel("meshes/ant/base.dse", &pResource))
+		{
+			if(pResource->getType() == XMT_STATIC)
+			{
+				IXDynamicModel *pModel;
+				bool res = pProvider->createModel(pResource, &pModel);
+				//mem_release(pModel);
+			}
+		}
+		mem_release(pResource);
 	}
 #endif
 

@@ -33,6 +33,15 @@ CAnimatedModel::~CAnimatedModel()
 	mem_delete_a(m_pBoneControllers);
 }
 
+bool XMETHODCALLTYPE CAnimatedModel::isEnabled() const
+{
+	return(m_isEnabled);
+}
+void XMETHODCALLTYPE CAnimatedModel::enable(bool yesNo)
+{
+	m_isEnabled = true;
+}
+
 UINT CAnimatedModel::addLayer()
 {
 	layer_s *pLayer = &m_aLayers[m_aLayers.size()];
@@ -43,117 +52,117 @@ UINT CAnimatedModel::addLayer()
 	return(m_aLayers.size() - 1);
 }
 
-IXAnimatedModel *CAnimatedModel::asAnimatedModel()
+IXAnimatedModel * XMETHODCALLTYPE CAnimatedModel::asAnimatedModel()
 {
 	return(this);
 }
-IXDynamicModel *CAnimatedModel::asDynamicModel()
+IXDynamicModel * XMETHODCALLTYPE CAnimatedModel::asDynamicModel()
 {
 	return(NULL);
 }
-IXStaticModel *CAnimatedModel::asStaticModel()
+IXStaticModel * XMETHODCALLTYPE CAnimatedModel::asStaticModel()
 {
 	return(NULL);
 }
 
-float3 CAnimatedModel::getPosition() const
+float3 XMETHODCALLTYPE CAnimatedModel::getPosition() const
 {
 	return(m_vPosition);
 }
-void CAnimatedModel::setPosition(const float3 &vPos)
+void XMETHODCALLTYPE CAnimatedModel::setPosition(const float3 &vPos)
 {
 	m_vPosition = vPos;
 }
 
-SMQuaternion CAnimatedModel::getOrientation() const
+SMQuaternion XMETHODCALLTYPE CAnimatedModel::getOrientation() const
 {
 	return(m_qRotation);
 }
-void CAnimatedModel::setOrientation(const SMQuaternion &qRot)
+void XMETHODCALLTYPE CAnimatedModel::setOrientation(const SMQuaternion &qRot)
 {
 	m_qRotation = qRot;
 }
 
-UINT CAnimatedModel::getSkin() const
+UINT XMETHODCALLTYPE CAnimatedModel::getSkin() const
 {
 	return(m_uSkin);
 }
-void CAnimatedModel::setSkin(UINT uSkin)
+void XMETHODCALLTYPE CAnimatedModel::setSkin(UINT uSkin)
 {
 	m_uSkin = uSkin;
 }
 
-float3 CAnimatedModel::getLocalBoundMin() const
+float3 XMETHODCALLTYPE CAnimatedModel::getLocalBoundMin() const
 {
 	return(m_pShared->getLocalBoundMin());
 }
-float3 CAnimatedModel::getLocalBoundMax() const
+float3 XMETHODCALLTYPE CAnimatedModel::getLocalBoundMax() const
 {
 	return(m_pShared->getLocalBoundMax());
 }
 
-float4 CAnimatedModel::getColor() const
+float4 XMETHODCALLTYPE CAnimatedModel::getColor() const
 {
 	return(m_vColor);
 }
-void CAnimatedModel::setColor(const float4 &vColor)
+void XMETHODCALLTYPE CAnimatedModel::setColor(const float4 &vColor)
 {
 	m_vColor = vColor;
 }
 
-UINT CAnimatedModel::getPhysboxCount(UINT uPartIndex) const
+UINT XMETHODCALLTYPE CAnimatedModel::getPhysboxCount(UINT uPartIndex) const
 {
 	return(m_pShared->getPhysboxCount(uPartIndex));
 }
-const IModelPhysbox *CAnimatedModel::getPhysBox(UINT id, UINT uPartIndex) const
+const IModelPhysbox * XMETHODCALLTYPE CAnimatedModel::getPhysBox(UINT id, UINT uPartIndex) const
 {
 	return(m_pShared->getPhysBox(id, uPartIndex));
 }
-const IXResourceModel *CAnimatedModel::getResource(UINT uIndex)
+const IXResourceModel * XMETHODCALLTYPE CAnimatedModel::getResource(UINT uIndex)
 {
 	return(m_pShared->getResource(uIndex));
 }
 
 
 
-UINT CAnimatedModel::getPartsCount() const
+UINT XMETHODCALLTYPE CAnimatedModel::getPartsCount() const
 {
 	return(m_pShared->getPartsCount());
 }
-const char *CAnimatedModel::getPartName(UINT uIndex) const
+const char * XMETHODCALLTYPE CAnimatedModel::getPartName(UINT uIndex) const
 {
 	return(m_pShared->getPartName(uIndex));
 }
-UINT CAnimatedModel::getPartIndex(const char *szName)
+UINT XMETHODCALLTYPE CAnimatedModel::getPartIndex(const char *szName)
 {
 	return(m_pShared->getPartIndex(szName));
 }
-XMODEL_PART_FLAGS CAnimatedModel::getPartFlags(UINT uIndex) const
+XMODEL_PART_FLAGS XMETHODCALLTYPE CAnimatedModel::getPartFlags(UINT uIndex) const
 {
 	return(m_pShared->getPartFlags(uIndex));
 }
-bool CAnimatedModel::isPartEnabled(UINT uIndex) const
+bool XMETHODCALLTYPE CAnimatedModel::isPartEnabled(UINT uIndex) const
 {
 	//@TODO: Implement me
 	assert(!"Not implemented");
 	return(false);
 }
-void CAnimatedModel::enablePart(UINT uIndex, bool yesNo)
+void XMETHODCALLTYPE CAnimatedModel::enablePart(UINT uIndex, bool yesNo)
 {
 	//@TODO: Implement me
 	assert(!"Not implemented");
 }
 
-UINT CAnimatedModel::getHitboxCount(UINT uPartIndex) const
+UINT XMETHODCALLTYPE CAnimatedModel::getHitboxCount(UINT uPartIndex) const
 {
 	return(m_pShared->getHitboxCount(uPartIndex));
 }
-const XResourceModelHitbox *CAnimatedModel::getHitbox(UINT id, UINT uPartIndex) const
+const XResourceModelHitbox * XMETHODCALLTYPE CAnimatedModel::getHitbox(UINT id, UINT uPartIndex) const
 {
 	return(m_pShared->getHitbox(id, uPartIndex));
 }
 
-void CAnimatedModel::play(const char *szName, UINT uFadeTime, UINT uLayer, bool bReplaceActivity)
+void XMETHODCALLTYPE CAnimatedModel::play(const char *szName, UINT uFadeTime, UINT uLayer, bool bReplaceActivity)
 {
 
 	//@TODO: Implement me
@@ -196,7 +205,7 @@ void CAnimatedModel::play(const char *szName, UINT uFadeTime, UINT uLayer, bool 
 		pLayer->uFadeCurTime = 0;
 	}
 }
-void CAnimatedModel::stop(UINT uLayer)
+void XMETHODCALLTYPE CAnimatedModel::stop(UINT uLayer)
 {
 	if(!validateLayer(uLayer))
 	{
@@ -214,7 +223,7 @@ void CAnimatedModel::stop(UINT uLayer)
 		}
 	}
 }
-void CAnimatedModel::resume(UINT uLayer)
+void XMETHODCALLTYPE CAnimatedModel::resume(UINT uLayer)
 {
 	if(!validateLayer(uLayer))
 	{
@@ -232,7 +241,7 @@ void CAnimatedModel::resume(UINT uLayer)
 		}
 	}
 }
-void CAnimatedModel::setProgress(float fProgress, UINT uLayer)
+void XMETHODCALLTYPE CAnimatedModel::setProgress(float fProgress, UINT uLayer)
 {
 	if(!validateLayer(uLayer))
 	{
@@ -252,7 +261,7 @@ void CAnimatedModel::setProgress(float fProgress, UINT uLayer)
 	pLayer->fTime = (fProgress - (float)pLayer->iCurrentFrame / (float)pLayer->uFrameCount) * fr * pLayer->uFrameCount;
 	pLayer->isDirty = true;
 }
-void CAnimatedModel::startActivity(const char *szName, UINT uFadeTime, UINT uLayer)
+void XMETHODCALLTYPE CAnimatedModel::startActivity(const char *szName, UINT uFadeTime, UINT uLayer)
 {
 	if(!validateLayer(uLayer))
 	{
@@ -270,7 +279,7 @@ void CAnimatedModel::startActivity(const char *szName, UINT uFadeTime, UINT uLay
 
 	playActivityNext(uLayer);
 }
-void CAnimatedModel::stopAll()
+void XMETHODCALLTYPE CAnimatedModel::stopAll()
 {
 	for(UINT i = 0, l = m_aLayers.size(); i < l; ++i)
 	{
@@ -325,7 +334,7 @@ void CAnimatedModel::playActivityNext(UINT uLayer)
 	}
 }
 
-float3 CAnimatedModel::getBoneTransformPos(UINT id)
+float3 XMETHODCALLTYPE CAnimatedModel::getBoneTransformPos(UINT id)
 {
 	if(id >= m_pShared->getBoneCount())
 	{
@@ -336,7 +345,7 @@ float3 CAnimatedModel::getBoneTransformPos(UINT id)
 
 	return(getOrientation() * ((m_pRenderFrameBones[id].position - m_pRenderFrameBones[id].orient * (float3)m_pShared->getInvertedBindPose()[id].position)) + getPosition());
 }
-SMQuaternion CAnimatedModel::getBoneTransformRot(UINT id)
+SMQuaternion XMETHODCALLTYPE CAnimatedModel::getBoneTransformRot(UINT id)
 {
 	if(id >= m_pShared->getBoneCount())
 	{
@@ -347,27 +356,27 @@ SMQuaternion CAnimatedModel::getBoneTransformRot(UINT id)
 	
 	return(m_pRenderFrameBones[id].orient * getOrientation());
 }
-SMMATRIX CAnimatedModel::getBoneTransform(UINT id)
+SMMATRIX XMETHODCALLTYPE CAnimatedModel::getBoneTransform(UINT id)
 {
 	//@TODO: Implement me
 	assert(!"Not implemented");
 	return(SMMatrixIdentity());
 }
 
-UINT CAnimatedModel::getBoneId(const char *szName)
+UINT XMETHODCALLTYPE CAnimatedModel::getBoneId(const char *szName)
 {
 	return(m_pShared->getBoneId(szName));
 }
-UINT CAnimatedModel::getBoneCount() const
+UINT XMETHODCALLTYPE CAnimatedModel::getBoneCount() const
 {
 	return(m_pShared->getBoneCount());
 }
-const char *CAnimatedModel::getBoneName(UINT id) const
+const char * XMETHODCALLTYPE CAnimatedModel::getBoneName(UINT id) const
 {
 	return(m_pShared->getBoneName(id));
 }
 
-bool CAnimatedModel::isPlayingAnimations()
+bool XMETHODCALLTYPE CAnimatedModel::isPlayingAnimations()
 {
 	for(UINT i = 0, l = m_aLayers.size(); i < l; ++i)
 	{
@@ -378,7 +387,7 @@ bool CAnimatedModel::isPlayingAnimations()
 	}
 	return(false);
 }
-bool CAnimatedModel::isPlayingAnimation(const char *szName)
+bool XMETHODCALLTYPE CAnimatedModel::isPlayingAnimation(const char *szName)
 {
 	for(UINT i = 0, l = m_aLayers.size(); i < l; ++i)
 	{
@@ -390,26 +399,26 @@ bool CAnimatedModel::isPlayingAnimation(const char *szName)
 	return(false);
 }
 
-void CAnimatedModel::setController(UINT id, float fValue)
+void XMETHODCALLTYPE CAnimatedModel::setController(UINT id, float fValue)
 {
 	//@TODO: Implement me
 	assert(!"Not implemented");
 }
 
-UINT CAnimatedModel::getControllersCount() const
+UINT XMETHODCALLTYPE CAnimatedModel::getControllersCount() const
 {
 	return(m_pShared->getControllersCount());
 }
-const char *CAnimatedModel::getControllerName(UINT id)
+const char * XMETHODCALLTYPE CAnimatedModel::getControllerName(UINT id)
 {
 	return(m_pShared->getControllerName(id));
 }
-UINT CAnimatedModel::getControllerId(const char *szName)
+UINT XMETHODCALLTYPE CAnimatedModel::getControllerId(const char *szName)
 {
 	return(m_pShared->getControllerId(szName));
 }
 
-void CAnimatedModel::setCallback(IAnimationCallback *pCallback)
+void XMETHODCALLTYPE CAnimatedModel::setCallback(IAnimationCallback *pCallback)
 {
 	m_pCallback = pCallback;
 }
@@ -648,6 +657,7 @@ void CAnimatedModel::render(UINT uLod)
 	if(m_isBoneMatrixReFilled)
 	{
 		m_pBoneConstantBuffer->update(m_pRenderFrameBones);
+		m_isBoneMatrixReFilled = false;
 	}
 
 	m_pDevice->setVertexShaderConstant(m_pBoneConstantBuffer, 10);

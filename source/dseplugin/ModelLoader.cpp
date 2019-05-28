@@ -134,7 +134,7 @@ bool CModelLoader::loadAsStatic(IXResourceModelStatic *pResource)
 						uSkipSize += sizeof(vertex_animated) * uVertexCount;
 					}
 				}
-				uSkipSize += sizeof(UINT) * lod.pSubLODmeshes[j].iIndexCount;
+				uSkipSize += sizeof(UINT) * uIndexCount;
 
 				m_pCurrentFile->setPos(m_pCurrentFile->getPos() + uSkipSize);
 			}
@@ -157,6 +157,7 @@ bool CModelLoader::loadAsStatic(IXResourceModelStatic *pResource)
 				{
 					if(m_hdr.iFlags & MODEL_FLAG_HAS_TANGENT_BINORM)
 					{
+						static_assert(sizeof(vertex_static_ex) == sizeof(XResourceModelStaticVertex), "vertex_static_ex must be equal to XResourceModelStaticVertex");
 						m_pCurrentFile->readBin(pSubSet->pVertices, sizeof(vertex_static_ex) * pSubSet->iVertexCount);
 					}
 					else
@@ -215,7 +216,7 @@ bool CModelLoader::loadAsStatic(IXResourceModelStatic *pResource)
 		}
 	}
 
-	return(false);
+	return(true);
 }
 bool CModelLoader::loadAsAnimated(IXResourceModelAnimated *pResource)
 {

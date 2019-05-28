@@ -34,6 +34,9 @@ public:
 	virtual UINT XMETHODCALLTYPE getPhysboxCount(UINT uPartIndex = 0) const = 0;
 	virtual const IModelPhysbox * XMETHODCALLTYPE getPhysBox(UINT id, UINT uPartIndex = 0) const = 0;
 	virtual const IXResourceModel * XMETHODCALLTYPE getResource(UINT uIndex = 0) = 0;
+
+	virtual bool XMETHODCALLTYPE isEnabled() const = 0;
+	virtual void XMETHODCALLTYPE enable(bool yesNo) = 0;
 };
 
 // Implemented in geom plugin

@@ -22,7 +22,7 @@ CResourceModel::~CResourceModel()
 	}
 }
 
-void CResourceModel::Release()
+void XMETHODCALLTYPE CResourceModel::Release()
 {
 	if(m_uRefCount == 1)
 	{
@@ -41,23 +41,23 @@ const char *CResourceModel::getFileName() const
 	return(m_szFileName);
 }
 
-UINT CResourceModel::getPhysboxCount() const
+UINT XMETHODCALLTYPE CResourceModel::getPhysboxCount() const
 {
 	return(m_aPhysBoxes.size());
 }
-const IModelPhysbox *CResourceModel::getPhysbox(UINT uPart) const
+const IModelPhysbox * XMETHODCALLTYPE CResourceModel::getPhysbox(UINT uPart) const
 {
 	assert(uPart < m_aPhysBoxes.size());
 
 	return(m_aPhysBoxes[uPart].pPhysbox);
 }
-int CResourceModel::getPhysboxBone(UINT uPart) const
+int XMETHODCALLTYPE CResourceModel::getPhysboxBone(UINT uPart) const
 {
 	assert(uPart < m_aPhysBoxes.size());
 
 	return(m_aPhysBoxes[uPart].iBone);
 }
-void CResourceModel::addPhysbox(IModelPhysbox *pPhysbox, int iBone)
+void XMETHODCALLTYPE CResourceModel::addPhysbox(IModelPhysbox *pPhysbox, int iBone)
 {
 	assert(pPhysbox);
 
@@ -67,22 +67,22 @@ void CResourceModel::addPhysbox(IModelPhysbox *pPhysbox, int iBone)
 }
 
 
-UINT CResourceModel::getMaterialCount() const
+UINT XMETHODCALLTYPE CResourceModel::getMaterialCount() const
 {
 	return(m_uMaterialCount);
 }
-UINT CResourceModel::getSkinCount() const
+UINT XMETHODCALLTYPE CResourceModel::getSkinCount() const
 {
 	return(m_uSkinCount);
 }
-const char *CResourceModel::getMaterial(UINT uMaterial, UINT uSkin) const
+const char * XMETHODCALLTYPE CResourceModel::getMaterial(UINT uMaterial, UINT uSkin) const
 {
 	assert(uMaterial < m_uMaterialCount);
 	assert(uSkin < m_uSkinCount);
 
 	return(m_aasMaterials[uSkin][uMaterial].c_str());
 }
-void CResourceModel::setMaterialCount(UINT uMaterialCount, UINT uSkinCount)
+void XMETHODCALLTYPE CResourceModel::setMaterialCount(UINT uMaterialCount, UINT uSkinCount)
 {
 	m_uMaterialCount = uMaterialCount;
 	m_uSkinCount = uSkinCount;
@@ -94,7 +94,7 @@ void CResourceModel::setMaterialCount(UINT uMaterialCount, UINT uSkinCount)
 		m_aasMaterials[i].resize(uMaterialCount);
 	}
 }
-void CResourceModel::setMaterial(UINT uMaterial, UINT uSkin, const char *szName)
+void XMETHODCALLTYPE CResourceModel::setMaterial(UINT uMaterial, UINT uSkin, const char *szName)
 {
 	assert(uMaterial < m_uMaterialCount);
 	assert(uSkin < m_uSkinCount);
@@ -103,11 +103,11 @@ void CResourceModel::setMaterial(UINT uMaterial, UINT uSkin, const char *szName)
 }
 
 
-float CResourceModel::getMass() const
+float XMETHODCALLTYPE CResourceModel::getMass() const
 {
 	return(m_fMass);
 }
-void CResourceModel::setMass(float fMass)
+void XMETHODCALLTYPE CResourceModel::setMass(float fMass)
 {
 	assert(fMass >= 0.0f);
 
@@ -115,17 +115,17 @@ void CResourceModel::setMass(float fMass)
 }
 
 
-UINT CResourceModel::getGibsCount() const
+UINT XMETHODCALLTYPE CResourceModel::getGibsCount() const
 {
 	return(m_asGibNames.size());
 }
-const char *CResourceModel::getGibName(UINT uIndex) const
+const char * XMETHODCALLTYPE CResourceModel::getGibName(UINT uIndex) const
 {
 	assert(uIndex < m_asGibNames.size());
 
 	return(m_asGibNames[uIndex].c_str());
 }
-UINT CResourceModel::addGibName(const char *szFileName)
+UINT XMETHODCALLTYPE CResourceModel::addGibName(const char *szFileName)
 {
 	m_asGibNames.push_back(szFileName);
 	m_asGibs.push_back(NULL);
@@ -133,13 +133,13 @@ UINT CResourceModel::addGibName(const char *szFileName)
 	return(m_asGibNames.size() - 1);
 }
 
-const IXResourceModel *CResourceModel::getGib(UINT uIndex) const
+const IXResourceModel * XMETHODCALLTYPE CResourceModel::getGib(UINT uIndex) const
 {
 	assert(uIndex < m_asGibs.size());
 
 	return(m_asGibs[uIndex]);
 }
-void CResourceModel::setGib(UINT uIndex, IXResourceModel *pResource)
+void XMETHODCALLTYPE CResourceModel::setGib(UINT uIndex, IXResourceModel *pResource)
 {
 	assert(uIndex < m_asGibs.size());
 	assert(pResource);
@@ -151,7 +151,7 @@ void CResourceModel::setGib(UINT uIndex, IXResourceModel *pResource)
 	m_asGibs[uIndex] = pResource;
 }
 
-const IXResourceModelStatic *CResourceModel::asStatic() const
+const IXResourceModelStatic * XMETHODCALLTYPE CResourceModel::asStatic() const
 {
 	if(getType() == XMT_STATIC)
 	{
@@ -159,7 +159,7 @@ const IXResourceModelStatic *CResourceModel::asStatic() const
 	}
 	return(NULL);
 }
-const IXResourceModelAnimated * CResourceModel::asAnimated() const
+const IXResourceModelAnimated * XMETHODCALLTYPE CResourceModel::asAnimated() const
 {
 	if(getType() == XMT_ANIMATED)
 	{
@@ -167,7 +167,7 @@ const IXResourceModelAnimated * CResourceModel::asAnimated() const
 	}
 	return(NULL);
 }
-IXResourceModelStatic *CResourceModel::asStatic()
+IXResourceModelStatic * XMETHODCALLTYPE CResourceModel::asStatic()
 {
 	if(getType() == XMT_STATIC)
 	{
@@ -175,7 +175,7 @@ IXResourceModelStatic *CResourceModel::asStatic()
 	}
 	return(NULL);
 }
-IXResourceModelAnimated * CResourceModel::asAnimated()
+IXResourceModelAnimated * XMETHODCALLTYPE CResourceModel::asAnimated()
 {
 	if(getType() == XMT_ANIMATED)
 	{
@@ -184,15 +184,15 @@ IXResourceModelAnimated * CResourceModel::asAnimated()
 	return(NULL);
 }
 
-IModelPhysboxBox *CResourceModel::newPhysboxBox() const
+IModelPhysboxBox * XMETHODCALLTYPE CResourceModel::newPhysboxBox() const
 {
 	return(new CModelPhysboxBox());
 }
-IModelPhysboxSphere *CResourceModel::newPhysboxSphere() const
+IModelPhysboxSphere * XMETHODCALLTYPE CResourceModel::newPhysboxSphere() const
 {
 	return(new CModelPhysboxSphere());
 }
-IModelPhysboxConvex *CResourceModel::newPhysboxConvex() const
+IModelPhysboxConvex * XMETHODCALLTYPE CResourceModel::newPhysboxConvex() const
 {
 	return(new CModelPhysboxConvex());
 }

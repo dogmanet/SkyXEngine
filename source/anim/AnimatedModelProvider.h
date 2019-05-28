@@ -25,7 +25,7 @@ public:
 	void update(float fDT);
 	void sync();
 	void render(CRenderableVisibility *pVisibility = NULL);
-	void computeVisibility(const IFrustum *pFrustum, const float3 &vPosition, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference=NULL);
+	void computeVisibility(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference=NULL);
 
 protected:
 	AssotiativeArray<IXResourceModelAnimated*, Array<CAnimatedModelShared*>> m_mModels;

@@ -124,15 +124,16 @@ bool CFrustum::boxInFrustum(float3* min, float3* max) const
 {
 	for(register int p = 0; p < 6; ++p)
 	{
-		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, *min) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
-		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, float3(min->x, min->y, max->z)) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
-		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, float3(min->x, max->y, min->z)) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
-		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, float3(min->x, max->y, max->z)) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
+		auto &plane = m_aFrustumPlanes[p];
+		if(SMVector3Dot(plane.m_vNormal, *min                          ) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(min->x, min->y, max->z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(min->x, max->y, min->z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(min->x, max->y, max->z)) + plane.m_fDistance > 0) continue;
 
-		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, float3(max->x, min->y, min->z)) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
-		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, float3(max->x, min->y, max->z)) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
-		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, float3(max->x, max->y, min->z)) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
-		if(SMVector3Dot(m_aFrustumPlanes[p].m_vNormal, *max) + m_aFrustumPlanes[p].m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(max->x, min->y, min->z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(max->x, min->y, max->z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(max->x, max->y, min->z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, *max                          ) + plane.m_fDistance > 0) continue;
 		return(false);
 	}
 

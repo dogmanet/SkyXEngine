@@ -181,6 +181,9 @@
     <ClCompile Include="..\..\..\source\anim\AnimatedModel.cpp" />
     <ClCompile Include="..\..\..\source\anim\AnimatedModelProvider.cpp" />
     <ClCompile Include="..\..\..\source\anim\AnimatedModelShared.cpp" />
+    <ClCompile Include="..\..\..\source\anim\DynamicModel.cpp" />
+    <ClCompile Include="..\..\..\source\anim\DynamicModelProvider.cpp" />
+    <ClCompile Include="..\..\..\source\anim\DynamicModelShared.cpp" />
     <ClCompile Include="..\..\..\source\anim\Renderable.cpp" />
     <ClCompile Include="..\..\..\source\anim\RenderableVisibility.cpp" />
     <ClCompile Include="..\..\..\source\anim\Updatable.cpp" />
@@ -193,6 +196,9 @@
     <ClInclude Include="..\..\..\source\anim\AnimatedModel.h" />
     <ClInclude Include="..\..\..\source\anim\AnimatedModelProvider.h" />
     <ClInclude Include="..\..\..\source\anim\AnimatedModelShared.h" />
+    <ClInclude Include="..\..\..\source\anim\DynamicModel.h" />
+    <ClInclude Include="..\..\..\source\anim\DynamicModelProvider.h" />
+    <ClInclude Include="..\..\..\source\anim\DynamicModelShared.h" />
     <ClInclude Include="..\..\..\source\anim\ModelFile.h" />
     <ClInclude Include="..\..\..\source\anim\Renderable.h" />
     <ClInclude Include="..\..\..\source\anim\RenderableVisibility.h" />

@@ -2414,7 +2414,7 @@ IXMaterial *AnimationManager::getMaterial(const char * mat, bool bStatic)
 	return(pMaterial);
 }
 
-void AnimationManager::computeVis(const IFrustum * frustum, const float3 * viewpos, ID id_arr)
+void AnimationManager::computeVis(const IFrustum * frustum, ID id_arr)
 {
 	float3 jcenter;
 	float3 jradius;

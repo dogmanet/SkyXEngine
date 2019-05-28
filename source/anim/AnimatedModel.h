@@ -10,6 +10,9 @@ public:
 	CAnimatedModel(CAnimatedModelProvider *pProvider, CAnimatedModelShared *pShared);
 	~CAnimatedModel();
 
+	bool XMETHODCALLTYPE isEnabled() const override;
+	void XMETHODCALLTYPE enable(bool yesNo) override;
+
 	IXAnimatedModel * XMETHODCALLTYPE asAnimatedModel() override;
 	IXDynamicModel * XMETHODCALLTYPE asDynamicModel() override;
 	IXStaticModel * XMETHODCALLTYPE asStaticModel() override;

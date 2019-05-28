@@ -2,8 +2,10 @@
 #include "animated.h"
 #include "RenderableVisibility.h"
 #include "AnimatedModelProvider.h"
+#include "DynamicModelProvider.h"
 
 extern CAnimatedModelProvider *g_pAnimatedModelProvider;
+extern CDynamicModelProvider *g_pDynamicModelProvider;
 extern AnimationManager * g_mgr;
 
 X_RENDER_STAGE CRenderable::getStages()
@@ -35,10 +37,12 @@ void CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVis
 	case XRS_GBUFFER:
 		g_mgr->render(idVisCalcObj);
 		g_pAnimatedModelProvider->render(pVis);
+		g_pDynamicModelProvider->render(pVis);
 		break;
 	case XRS_SHADOWS:
 		g_mgr->render(idVisCalcObj);
 		g_pAnimatedModelProvider->render(pVis);
+		g_pDynamicModelProvider->render(pVis);
 		break;
 	case XRS_GI:
 		break;
@@ -64,7 +68,7 @@ void CRenderable::shutdown()
 
 void CRenderable::newVisData(IXRenderableVisibility **ppVisibility)
 {
-	*ppVisibility = new CRenderableVisibility(0, g_pAnimatedModelProvider);
+	*ppVisibility = new CRenderableVisibility(0, g_pAnimatedModelProvider, g_pDynamicModelProvider);
 }
 
 IXMaterialSystem *CRenderable::getMaterialSystem()

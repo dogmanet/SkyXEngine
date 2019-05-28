@@ -8,28 +8,28 @@ CResourceModelStatic::~CResourceModelStatic()
 	}
 }
 
-void CResourceModelStatic::setPrimitiveTopology(XPT_TOPOLOGY topology)
+void XMETHODCALLTYPE CResourceModelStatic::setPrimitiveTopology(XPT_TOPOLOGY topology)
 {
 	m_topology = topology;
 }
-XPT_TOPOLOGY CResourceModelStatic::getPrimitiveTopology() const
+XPT_TOPOLOGY XMETHODCALLTYPE CResourceModelStatic::getPrimitiveTopology() const
 {
 	return(m_topology);
 }
 
 
-XMODELTYPE CResourceModelStatic::getType() const
+XMODELTYPE XMETHODCALLTYPE CResourceModelStatic::getType() const
 {
 	return(XMT_STATIC);
 }
 
-UINT CResourceModelStatic::getSubsetCount(UINT uLod) const
+UINT XMETHODCALLTYPE CResourceModelStatic::getSubsetCount(UINT uLod) const
 {
 	assert(uLod < m_aLods.size());
 
 	return(m_aLods[uLod].uSubsetCount);
 }
-UINT CResourceModelStatic::addLod(UINT uSubsetCount, UINT *puVertexCount, UINT *puIndexCount)
+UINT XMETHODCALLTYPE CResourceModelStatic::addLod(UINT uSubsetCount, UINT *puVertexCount, UINT *puIndexCount)
 {
 	_subset_meta subset;
 
@@ -53,8 +53,8 @@ UINT CResourceModelStatic::addLod(UINT uSubsetCount, UINT *puVertexCount, UINT *
 	{
 		subset.pSubsets[i].pVertices = subset.pVertices + uVertexCount;
 		subset.pSubsets[i].pIndices = subset.pIndices + uIndexCount;
-		subset.pSubsets[i].iIndexCount = puVertexCount[i];
-		subset.pSubsets[i].iVertexCount = puIndexCount[i];
+		subset.pSubsets[i].iIndexCount = puIndexCount[i];
+		subset.pSubsets[i].iVertexCount = puVertexCount[i];
 		uVertexCount += puVertexCount[i];
 		uIndexCount += puIndexCount[i];
 	}
@@ -62,19 +62,19 @@ UINT CResourceModelStatic::addLod(UINT uSubsetCount, UINT *puVertexCount, UINT *
 	m_aLods.push_back(subset);
 	return(m_aLods.size() - 1);
 }
-UINT CResourceModelStatic::getLodCount() const
+UINT XMETHODCALLTYPE CResourceModelStatic::getLodCount() const
 {
 	return(m_aLods.size());
 }
 
-const XResourceModelStaticSubset *CResourceModelStatic::getSubset(UINT uLod, UINT uSubset) const
+const XResourceModelStaticSubset * XMETHODCALLTYPE CResourceModelStatic::getSubset(UINT uLod, UINT uSubset) const
 {
 	assert(uLod < m_aLods.size());
 	assert(uSubset < m_aLods[uLod].uSubsetCount);
 
 	return(&m_aLods[uLod].pSubsets[uSubset]);
 }
-XResourceModelStaticSubset *CResourceModelStatic::getSubset(UINT uLod, UINT uSubset)
+XResourceModelStaticSubset * XMETHODCALLTYPE CResourceModelStatic::getSubset(UINT uLod, UINT uSubset)
 {
 	assert(uLod < m_aLods.size());
 	assert(uSubset < m_aLods[uLod].uSubsetCount);
@@ -82,7 +82,7 @@ XResourceModelStaticSubset *CResourceModelStatic::getSubset(UINT uLod, UINT uSub
 	return(&m_aLods[uLod].pSubsets[uSubset]);
 }
 
-bool CResourceModelStatic::validate() const
+bool XMETHODCALLTYPE CResourceModelStatic::validate() const
 {
 	//@TODO: Implement me!
 	return(true);

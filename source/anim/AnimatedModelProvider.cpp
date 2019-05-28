@@ -38,7 +38,7 @@ IGXContext *CAnimatedModelProvider::getDevice()
 	return(SGCore_GetDXDevice());
 }
 
-bool CAnimatedModelProvider::createModel(UINT uResourceCount, IXResourceModelAnimated **ppResources, IXAnimatedModel **ppModel)
+bool XMETHODCALLTYPE CAnimatedModelProvider::createModel(UINT uResourceCount, IXResourceModelAnimated **ppResources, IXAnimatedModel **ppModel)
 {
 	IXResourceModelAnimated *pMinPtr = ppResources[0];
 	for(UINT i = 1; i < uResourceCount; ++i)
@@ -142,7 +142,7 @@ void CAnimatedModelProvider::render(CRenderableVisibility *pVisibility)
 	}
 }
 
-void CAnimatedModelProvider::computeVisibility(const IFrustum *pFrustum, const float3 &vPosition, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)
+void CAnimatedModelProvider::computeVisibility(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)
 {
 	pVisibility->setItemCount(m_apModels.size());
 
@@ -150,13 +150,15 @@ void CAnimatedModelProvider::computeVisibility(const IFrustum *pFrustum, const f
 	for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
 	{
 		pMdl = m_apModels[i];
-		float3 vDelta = pMdl->getPosition() - vPosition;
-		pVisibility->getItem(i)->isVisible = (pReference ? pReference->getItem(i)->isVisible : true) 
-			&& pFrustum->boxInFrustum(&float3(pMdl->getLocalBoundMin() + vDelta), &float3(pMdl->getLocalBoundMax() + vDelta));
-	
-		float3 vMin = pMdl->getLocalBoundMin();
-		float3 vMax = pMdl->getLocalBoundMax();
-
-		printf("min: %.3f, %.3f, %.3f; max: %.3f, %.3f, %.3f\n", vMin.x, vMin.y, vMin.z, vMax.x, vMax.y, vMax.z);
+		if(pMdl->isEnabled())
+		{
+			float3 vDelta = pMdl->getPosition();
+			pVisibility->getItem(i)->isVisible = (pReference ? pReference->getItem(i)->isVisible : true)
+				&& pFrustum->boxInFrustum(&float3(pMdl->getLocalBoundMin() + vDelta), &float3(pMdl->getLocalBoundMax() + vDelta));
+		}
+		else
+		{
+			pVisibility->getItem(i)->isVisible = false;
+		}
 	}
 }

@@ -44,7 +44,7 @@ void CRenderableVisibility::updateForCamera(ICamera *pCamera, const IXRenderable
 	g_pModels->comVisible(pCamera->getFrustum(), &vCamPos, m_idVisCalcObj);
 }
 
-void CRenderableVisibility::updateForFrustum(IFrustum *pFrustum, const IXRenderableVisibility *pReference)
+void CRenderableVisibility::updateForFrustum(const IFrustum *pFrustum, const IXRenderableVisibility *pReference)
 {
 	CRenderableVisibility *pRef = NULL;
 	if(pReference)

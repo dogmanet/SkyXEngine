@@ -106,6 +106,7 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 	for(UINT i = 0; i < uResourceCount; ++i)
 	{
 		m_apResources.push_back(ppResources[i]);
+		ppResources[i]->AddRef();
 	}
 	m_apResources.quickSort([](IXResourceModelAnimated *a, IXResourceModelAnimated *b){
 		return(a < b);
@@ -999,7 +1000,7 @@ float3 CAnimatedModelShared::getLocalBoundMax() const
 	return(m_vLocalMax);
 }
 
-void CAnimatedModelShared::render(const SMMATRIX &mWorld, UINT uSkin, UINT uLod, float4_t vColor)
+void CAnimatedModelShared::render(const SMMATRIX &mWorld, UINT uSkin, UINT uLod, const float4_t &vColor)
 {
 	if(!m_pDevice)
 	{

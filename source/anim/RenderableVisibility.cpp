@@ -2,12 +2,14 @@
 #include "animated.h"
 #include <gcore/sxgcore.h>
 #include "AnimatedModelProvider.h"
+#include "DynamicModelProvider.h"
 
 extern AnimationManager * g_mgr;
 
-CRenderableVisibility::CRenderableVisibility(ID idPlugin, CAnimatedModelProvider *pProvider):
+CRenderableVisibility::CRenderableVisibility(ID idPlugin, CAnimatedModelProvider *pProviderAnimated, CDynamicModelProvider *pProviderDynamic):
 	m_idPlugin(idPlugin),
-	m_pProvider(pProvider)
+	m_pProviderAnimated(pProviderAnimated),
+	m_pProviderDynamic(pProviderDynamic)
 {
 	m_idVisCalcObj = g_mgr->getNextVisId();
 	assert(ID_VALID(m_idVisCalcObj));
@@ -30,20 +32,10 @@ void CRenderableVisibility::setOcclusionCuller(IXOcclusionCuller *pOcclusionCull
 
 void CRenderableVisibility::updateForCamera(ICamera *pCamera, const IXRenderableVisibility *pReference)
 {
-	CRenderableVisibility *pRef = NULL;
-	if(pReference)
-	{
-		assert(((IXRenderableVisibility*)pReference)->getPluginId() == getPluginId());
-		pRef = (CRenderableVisibility*)pReference;
-	}
-	
-	float3 vCamPos;
-	pCamera->getPosition(&vCamPos);
-	g_mgr->computeVis(pCamera->getFrustum(), &vCamPos, m_idVisCalcObj);
-	m_pProvider->computeVisibility(pCamera->getFrustum(), vCamPos, this, pRef);
+	updateForFrustum(pCamera->getFrustum(), pReference);
 }
 
-void CRenderableVisibility::updateForFrustum(IFrustum *pFrustum, const IXRenderableVisibility *pReference)
+void CRenderableVisibility::updateForFrustum(const IFrustum *pFrustum, const IXRenderableVisibility *pReference)
 {
 	CRenderableVisibility *pRef = NULL;
 	if(pReference)
@@ -52,9 +44,9 @@ void CRenderableVisibility::updateForFrustum(IFrustum *pFrustum, const IXRendera
 		pRef = (CRenderableVisibility*)pReference;
 	}
 
-	assert(!pRef && "Referencing is not supported!");
-
-	assert(!"Not implemented!");
+	g_mgr->computeVis(pFrustum, m_idVisCalcObj);
+	m_pProviderAnimated->computeVisibility(pFrustum, this, pRef);
+	m_pProviderDynamic->computeVisibility(pFrustum, this, pRef);
 }
 
 void CRenderableVisibility::setItemCount(UINT uCount)
@@ -72,4 +64,21 @@ void CRenderableVisibility::setItemCount(UINT uCount)
 CRenderableVisibility::item_s *CRenderableVisibility::getItem(UINT uIndex)
 {
 	return(&m_aItems[uIndex]);
+}
+
+void CRenderableVisibility::setItemCountDynamic(UINT uCount)
+{
+	if(m_aItemsDynamic.GetAllocSize() > uCount * 2)
+	{
+		m_aItemsDynamic.resize(uCount);
+	}
+	else
+	{
+		m_aItemsDynamic.resizeFast(uCount);
+	}
+}
+
+CRenderableVisibility::item_s *CRenderableVisibility::getItemDynamic(UINT uIndex)
+{
+	return(&m_aItemsDynamic[uIndex]);
 }

@@ -15,7 +15,7 @@ public:
 
 	void updateForCamera(ICamera *pCamera, const IXRenderableVisibility *pReference = NULL);
 
-	void updateForFrustum(IFrustum *pFrustum, const IXRenderableVisibility *pReference = NULL);
+	void updateForFrustum(const IFrustum *pFrustum, const IXRenderableVisibility *pReference = NULL);
 
 	ID getVisCalcObjId()
 	{
