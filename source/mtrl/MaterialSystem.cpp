@@ -61,7 +61,7 @@ void CMaterialSystem::setWorld(const SMMATRIX &mWorld)
 void CMaterialSystem::bindMaterial(IXMaterial *pMaterial, IXShaderVariant *pShaderVariant)
 {
 	CMaterial *pMat = (CMaterial*)pMaterial;
-	SMtrl_MtlRender(pMat->getId(), NULL);
+	SMtrl_MtlRender(pMaterial ? pMat->getId() : 0, NULL);
 	// SGCore_MtlSet(pMat->getId(), NULL);
 }
 void CMaterialSystem::bindTexture(IXTexture *pTexture, UINT slot)

@@ -401,6 +401,8 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 #if 0
 	IXResourceManager *pResourceManager = Core_GetIXCore()->getResourceManager();
+#if 0
+	
 	IXAnimatedModelProvider *pProvider = (IXAnimatedModelProvider*)Core_GetIXCore()->getPluginManager()->getInterface(IXANIMATEDMODELPROVIDER_GUID); // get it from somewhere
 
 	IXResourceModel *pResource1, *pResource2;
@@ -421,13 +423,14 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	}
 	mem_release(pResource1);
 	mem_release(pResource2);
-
+#endif
 
 	{
 		IXDynamicModelProvider *pProvider = (IXDynamicModelProvider*)Core_GetIXCore()->getPluginManager()->getInterface(IXDYNAMICMODELPROVIDER_GUID); // get it from somewhere
 
 		IXResourceModel *pResource;
-		if(pResourceManager->getModel("meshes/ant/base.dse", &pResource))
+		if(pResourceManager->getModel("objects/natural/trees/chernobyl/poplar_up/poplar_autumn_up_b.cgf", &pResource))
+		//if(pResourceManager->getModel("objects/props/containers/trash_container/trash_container_a.cgf", &pResource))
 		{
 			if(pResource->getType() == XMT_STATIC)
 			{
