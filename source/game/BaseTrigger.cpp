@@ -49,9 +49,9 @@ void CBaseTrigger::onPostLoad()
 {
 	BaseClass::onPostLoad();
 
-	if(m_pAnimPlayer)
+	if(m_pModel)
 	{
-		m_pAnimPlayer->enable(false);
+		m_pModel->enable(false);
 		//m_pAnimPlayer->setOverrideMaterial("dev_trigger.dds");
 	}
 }

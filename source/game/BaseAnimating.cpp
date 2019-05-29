@@ -7,7 +7,6 @@ See the license in LICENSE
 #include "BaseAnimating.h"
 #include "gcore/sxgcore.h"
 
-#include <xcommon/resource/IXModelProvider.h>
 #include <xcommon/resource/IXResourceManager.h>
 #include <xcommon/resource/IXResourceModel.h>
 
@@ -22,7 +21,7 @@ BEGIN_PROPTABLE(CBaseAnimating)
 	EDITOR_FILE_END()
 
 	//! Масштаб модели
-	DEFINE_FIELD_FLOAT(m_fBaseScale, 0, "scale", "Scale", EDITOR_TEXTFIELD)
+	// DEFINE_FIELD_FLOAT(m_fBaseScale, 0, "scale", "Scale", EDITOR_TEXTFIELD)
 
 	//! Объект референса для цвета свечения
 	DEFINE_FIELD_ENTITY(m_pEntColorRef, 0, "glow_color_ref", "Glow color reference", EDITOR_TEXTFIELD)
@@ -49,8 +48,7 @@ REGISTER_ENTITY_NOLISTING(CBaseAnimating, base_animating);
 
 CBaseAnimating::CBaseAnimating(CEntityManager * pMgr):
 	BaseClass(pMgr),
-	m_pAnimPlayer(NULL),
-	m_fBaseScale(1.0f),
+	// m_fBaseScale(1.0f),
 	m_pCollideShape(NULL),
 	m_pRigidBody(NULL),
 	m_isStatic(false),
@@ -62,26 +60,26 @@ CBaseAnimating::CBaseAnimating(CEntityManager * pMgr):
 CBaseAnimating::~CBaseAnimating()
 {
 	releasePhysics();
-	mem_release(m_pAnimPlayer);
+	mem_release(m_pModel);
 }
 
 void CBaseAnimating::getMinMax(float3 * min, float3 * max)
 {
-	if (m_pAnimPlayer)
+	if(m_pModel)
 	{
-		const ISXBound * bound = m_pAnimPlayer->getBound();
-		bound->getMinMax(min, max);
+		*min = m_pModel->getLocalBoundMin();
+		*max = m_pModel->getLocalBoundMax();
 	}
 }
 
-void CBaseAnimating::getSphere(float3 * center, float * radius)
+/*void CBaseAnimating::getSphere(float3 * center, float * radius)
 {
 	if(m_pAnimPlayer)
 	{
 		const ISXBound * bound = m_pAnimPlayer->getBound();
 		bound->getSphere(center, radius);
 	}
-}
+}*/
 
 bool CBaseAnimating::setKV(const char * name, const char * value)
 {
@@ -93,7 +91,7 @@ bool CBaseAnimating::setKV(const char * name, const char * value)
 	{
 		setModel(value);
 	}
-	else if(!strcmp(name, "scale"))
+	/*else if(!strcmp(name, "scale"))
 	{
 		releasePhysics();
 		if(m_pAnimPlayer)
@@ -101,7 +99,7 @@ bool CBaseAnimating::setKV(const char * name, const char * value)
 			m_pAnimPlayer->setScale(m_fBaseScale);
 		}
 		initPhysics();
-	}
+	}*/
 	return(true);
 }
 
@@ -109,63 +107,36 @@ void CBaseAnimating::setModel(const char * mdl)
 {
 	_setStrVal(&m_szModelFile, mdl);
 	releasePhysics();
+	mem_release(m_pModel);
 	if(!mdl[0] /*&& m_pAnimPlayer*/)
 	{
-		mem_release(m_pAnimPlayer);
 		return;
 	}
-	if(!m_pAnimPlayer)
+
+	IXResourceManager *pResourceManager = Core_GetIXCore()->getResourceManager();
+	IXModelProvider *pProvider = (IXModelProvider*)Core_GetIXCore()->getPluginManager()->getInterface(IXMODELPROVIDER_GUID);
+	
+	IXResourceModel *pResource;
+	if(pResourceManager->getModel(mdl, &pResource))
 	{
-		m_pAnimPlayer = SXAnim_CreatePlayer(mdl);
-		m_pAnimPlayer->setCallback(this, &ThisClass::onAnimationStateChanged);
-
-#if 0
-		IXResourceManager *pResourceManager = Core_GetIXCore()->getResourceManager(); // get it from somewhere
-		IXAnimatedModelProvider *pProvider = (IXAnimatedModelProvider*)Core_GetIXCore()->getPluginManager()->getInterface(IXANIMATEDMODELPROVIDER_GUID); // get it from somewhere
-
-		const IXResourceModel *pResource;
-		if(pResourceManager->getModel(mdl, &pResource))
+		IXDynamicModel *pModel;
+		if(pProvider->createDynamicModel(pResource, &pModel))
 		{
-			if(pResource->getType() == XMT_ANIMATED)
-			{
-				IXAnimatedModel *pModel;
-				const IXResourceModelAnimated *pAnimatedResource = pResource->asAnimated();
-				if(pProvider->createModel(1, &pAnimatedResource, &pModel))
-				{
-					// use model
-					IXAnimatedModel *pAnimated = pModel->asAnimatedModel();
-					if(pAnimated)
-					{
-						// ??
-					}
-					else
-					{
-						// ??
-					}
-				}
-			}
-			else
-			{
-				// mem_release(pResource);
-			}
+			m_pModel = pModel;
 		}
-#endif
+		mem_release(pResource);
 	}
-	else
-	{
-		m_pAnimPlayer->setModel(mdl);
-	}
-	m_pAnimPlayer->setSkin(m_iSkin);
-	m_pAnimPlayer->setScale(m_fBaseScale);
+	
+	m_pModel->setSkin(m_iSkin);
 	initPhysics();
 }
 
 float3 CBaseAnimating::getAttachmentPos(int id)
 {
 	float3 pos;
-	if(m_pAnimPlayer && id >= 0)
+	if(m_pModel && m_pModel->asAnimatedModel() && id >= 0)
 	{
-		pos = m_pAnimPlayer->getBoneTransformPos(id);
+		pos = m_pModel->asAnimatedModel()->getBoneTransformPos(id);
 	}
 
 	return(/*getOrient() * */pos/* + getPos()*/);
@@ -174,9 +145,9 @@ float3 CBaseAnimating::getAttachmentPos(int id)
 SMQuaternion CBaseAnimating::getAttachmentRot(int id)
 {
 	SMQuaternion rot;
-	if(m_pAnimPlayer && id >= 0)
+	if(m_pModel && m_pModel->asAnimatedModel() && id >= 0)
 	{
-		rot = m_pAnimPlayer->getBoneTransformRot(id);
+		rot = m_pModel->asAnimatedModel()->getBoneTransformRot(id);
 	}
 
 	return(/*getOrient() * */rot);
@@ -195,47 +166,47 @@ void CBaseAnimating::onSync()
 	//	m_pRigidBody->getWorldTransform().setOrigin(F3_BTVEC(getPos()));
 	//	m_pRigidBody->getWorldTransform().setRotation(Q4_BTQUAT(getOrient()));
 	}
-	if(m_pAnimPlayer)
+	if(m_pModel)
 	{
-		m_pAnimPlayer->setScale(m_fBaseScale);
-		m_pAnimPlayer->setPos(getPos());
-		m_pAnimPlayer->setOrient(getOrient());
+		m_pModel->setPosition(getPos());
+		m_pModel->setOrientation(getOrient());
 
 		float3_t vGlowColor = m_vGlowColor;
-		bool isGlowEnabled = m_pEntColorRef ? m_pEntColorRef->getMainColor(&vGlowColor) : m_vGlowColor.x != 0.0f || m_vGlowColor.y != 0.0f || m_vGlowColor.z != 0.0f;
-		m_pAnimPlayer->setGlowColor(vGlowColor);
-		m_pAnimPlayer->setGlowEnabled(isGlowEnabled);
+		//bool isGlowEnabled = m_pEntColorRef ? m_pEntColorRef->getMainColor(&vGlowColor) : m_vGlowColor.x != 0.0f || m_vGlowColor.y != 0.0f || m_vGlowColor.z != 0.0f;
+		m_pModel->setColor(float4(vGlowColor));
+		//m_pAnimPlayer->setGlowEnabled(isGlowEnabled);
 	}
 }
 
 void CBaseAnimating::playAnimation(const char * name, UINT iFadeTime, UINT slot)
 {
-	if(m_pAnimPlayer)
+	if(m_pModel && m_pModel->asAnimatedModel())
 	{
-		m_pAnimPlayer->play(name, iFadeTime, slot);
+		m_pModel->asAnimatedModel()->play(name, iFadeTime, slot);
 	}
 }
 
 bool CBaseAnimating::playingAnimations(const char* name)
 {
-	if(m_pAnimPlayer)
+	if(m_pModel && m_pModel->asAnimatedModel())
 	{
-		return(m_pAnimPlayer->playingAnimations(name));
+		return(m_pModel->asAnimatedModel()->isPlayingAnimation(name));
 	}
 	return(false);
 }
 
 void CBaseAnimating::playActivity(const char * name, UINT iFadeTime, UINT slot)
 {
-	if(m_pAnimPlayer)
+	if(m_pModel && m_pModel->asAnimatedModel())
 	{
-		m_pAnimPlayer->startActivity(name, iFadeTime, slot);
+		m_pModel->asAnimatedModel()->startActivity(name, iFadeTime, slot);
 	}
 }
 
 void CBaseAnimating::initPhysics()
 {
-	if(!m_pAnimPlayer)
+#if 0
+	if(!m_pModel && m_pModel->asAnimatedModel())
 	{
 		return;
 	}
@@ -269,6 +240,7 @@ void CBaseAnimating::initPhysics()
 
 
 	createPhysBody();
+#endif
 }
 
 void CBaseAnimating::createPhysBody()
@@ -526,9 +498,9 @@ void CBaseAnimating::inputSetSkin(inputdata_t * pInputdata)
 
 void CBaseAnimating::setSkin(int iSkin)
 {
-	if(m_pAnimPlayer)
+	if(m_pModel && m_pModel->asAnimatedModel())
 	{
-		m_pAnimPlayer->setSkin(iSkin);
+		m_pModel->asAnimatedModel()->setSkin(iSkin);
 	}
 	m_iSkin = iSkin;
 }

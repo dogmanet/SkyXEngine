@@ -77,9 +77,9 @@ void CBaseItem::setModeInventory()
 	m_bWorldMode = false;
 
 	releasePhysics();
-	if(m_pAnimPlayer)
+	if(m_pModel)
 	{
-		mem_release(m_pAnimPlayer);
+		mem_release(m_pModel);
 	}
 }
 

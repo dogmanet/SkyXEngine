@@ -313,29 +313,31 @@ float CBaseCharacter::getCurrentSpread()
 
 void CBaseCharacter::initHitboxes()
 {
-	if(!m_pAnimPlayer)
+	if(!m_pModel && m_pModel->asAnimatedModel())
 	{
 		return;
 	}
 
-	int l = m_pAnimPlayer->getHitboxCount();
+	auto pAnimatedModel = m_pModel->asAnimatedModel();
+
+	int l = pAnimatedModel->getHitboxCount();
 	m_pHitboxBodies = new btRigidBody*[l];
 
-	const ModelHitbox * hb;
+	const XResourceModelHitbox * hb;
 	for(int i = 0; i < l; ++i)
 	{
-		hb = m_pAnimPlayer->getHitbox(i);
+		hb = pAnimatedModel->getHitbox(i);
 		btCollisionShape *pShape;
 		switch(hb->type)
 		{
 		case HT_BOX:
-			pShape = new btBoxShape(F3_BTVEC(hb->lwh * 0.5f * m_fBaseScale));
+			pShape = new btBoxShape(F3_BTVEC(hb->lwh * 0.5f));
 			break;
 		case HT_CAPSULE:
-			pShape = new btCapsuleShape(hb->lwh.y * 0.5f * m_fBaseScale, hb->lwh.z * m_fBaseScale);
+			pShape = new btCapsuleShape(hb->lwh.y * 0.5f, hb->lwh.z);
 			break;
 		case HT_CYLINDER:
-			pShape = new btCylinderShape(F3_BTVEC(hb->lwh * 0.5f * m_fBaseScale));
+			pShape = new btCylinderShape(F3_BTVEC(hb->lwh * 0.5f));
 			break;
 		case HT_ELIPSOID:
 			// @FIXME: Add actual elipsoid shape
@@ -373,15 +375,22 @@ void CBaseCharacter::initHitboxes()
 
 void CBaseCharacter::updateHitboxes()
 {
-	if(!m_pAnimPlayer || !m_pHitboxBodies || !m_pAnimPlayer->playingAnimations())
+	if(!m_pModel || !m_pHitboxBodies)
 	{
 		return;
 	}
 
-	const ModelHitbox * hb;
-	for(int i = 0, l = m_pAnimPlayer->getHitboxCount(); i < l; ++i)
+	auto pAnimatedModel = m_pModel->asAnimatedModel();
+	if(!pAnimatedModel || !pAnimatedModel->isPlayingAnimations())
 	{
-		hb = m_pAnimPlayer->getHitbox(i);
+		return;
+	}
+	//@TODO: Reimplement me
+#if 0
+	const XResourceModelHitbox * hb;
+	for(int i = 0, l = pAnimatedModel->getHitboxCount(); i < l; ++i)
+	{
+		hb = pAnimatedModel->getHitbox(i);
 		
 		//SMMATRIX mBone = m_pAnimPlayer->getBoneTransformPos(hb->bone_id);
 
@@ -389,21 +398,27 @@ void CBaseCharacter::updateHitboxes()
 		m_pHitboxBodies[i]->getWorldTransform().setFromOpenGLMatrix((btScalar*)&(SMMatrixRotationX(hb->rot.x)
 			* SMMatrixRotationY(hb->rot.y)
 			* SMMatrixRotationZ(hb->rot.z)
-			* SMMatrixTranslation(hb->pos * m_fBaseScale)
-			* m_pAnimPlayer->getBoneTransform(hb->bone_id, true)
+			* SMMatrixTranslation(hb->pos)
+			* pAnimatedModel->getBoneTransform(hb->bone_id, true)
 			* getWorldTM()
 			));
 	}
+#endif
 }
 
 void CBaseCharacter::releaseHitboxes()
 {
-	if(!m_pAnimPlayer || !m_pHitboxBodies)
+	if(!m_pModel || !m_pHitboxBodies)
+	{
+		return;
+	}
+	auto pAnimatedModel = m_pModel->asAnimatedModel();
+	if(!pAnimatedModel)
 	{
 		return;
 	}
 
-	for(int i = 0, l = m_pAnimPlayer->getHitboxCount(); i < l; ++i)
+	for(int i = 0, l = pAnimatedModel->getHitboxCount(); i < l; ++i)
 	{
 		SPhysics_RemoveShape(m_pHitboxBodies[i]);
 

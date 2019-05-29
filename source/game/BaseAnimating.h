@@ -18,7 +18,7 @@ See the license in LICENSE
 #define __BASE_ANIMATING_H
 
 #include "BaseEntity.h"
-#include <anim/sxanim.h>
+#include <xcommon/resource/IXModelProvider.h>
 
 //! Анимированный игровой объект
 class CBaseAnimating: public CBaseEntity
@@ -30,7 +30,7 @@ public:
 	~CBaseAnimating();
 
 	void getMinMax(float3 * min, float3 * max);
-	void getSphere(float3 * center, float * radius);
+	// void getSphere(float3 * center, float * radius);
 
 	bool setKV(const char * name, const char * value);
 
@@ -70,9 +70,9 @@ protected:
 
 	void inputSetSkin(inputdata_t * pInputdata);
 
-	IAnimPlayer * m_pAnimPlayer;
+	IXModel *m_pModel = NULL;
 	const char * m_szModelFile;
-	float m_fBaseScale;
+	// float m_fBaseScale;
 	bool m_isStatic;
 
 	CBaseEntity *m_pEntColorRef = NULL;
