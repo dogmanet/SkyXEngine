@@ -194,11 +194,11 @@ void CPlayer::updateInput(float dt)
 		}
 		else
 		{
-			dir = SMQuaternion(m_vPitchYawRoll.y, 'y') * (SMVector3Normalize(dir) * dt);
-			dir *= 0.5f;
+			dir = SMQuaternion(m_vPitchYawRoll.y, 'y') * (SMVector3Normalize(dir)/* * dt*/);
+			dir *= 3.5f;
 			if(m_uMoveDir & PM_RUN)
 			{
-				dir *= 0.5f;
+				dir *= 2.0f;
 			}
 			if((m_uMoveDir & PM_JUMP))
 			{
@@ -220,7 +220,9 @@ void CPlayer::updateInput(float dt)
 			{
 				m_canJump = true;
 			}
-			m_pCharacter->setWalkDirection(F3_BTVEC(dir));
+			// m_pCharacter->setWalkDirection(F3_BTVEC(dir));
+			m_pCharacter->setVelocityForTimeInterval(F3_BTVEC(dir), dt);
+			
 
 			static const bool * cl_bob = GET_PCVAR_BOOL("cl_bob");
 			static const float * cl_bob_walk_y = GET_PCVAR_FLOAT("cl_bob_walk_y");

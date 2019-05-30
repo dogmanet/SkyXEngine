@@ -203,7 +203,7 @@ void CPhyWorld::update(int thread)
 	}
 
 	//printf("%.3fs\n", (float)(time1 - time0) / 1000.0f);
-	m_pDynamicsWorld->stepSimulation((float)(time1 - time0) / 1000.0f, 0, 1.0f / 60.0f);
+	m_pDynamicsWorld->stepSimulation((float)(time1 - time0) / 1000.0f, 2, 1.0f / 60.0f);
 
 	time0 = time1;
 }
