@@ -39,7 +39,7 @@ public:
 	float3 getAttachmentPos(int id);
 	SMQuaternion getAttachmentRot(int id);
 
-	void onSync();
+	void onSync() override;
 
 	void playAnimation(const char * name, UINT uFadeTime = 0, UINT slot = 0);
 	void playActivity(const char * name, UINT uFadeTime = 0, UINT slot = 0);

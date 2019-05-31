@@ -283,7 +283,14 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 		}
 		return(false);
 	case PDF_STRING:
-		_setStrVal(&(this->*((const char * ThisClass::*)field->pField)), value);
+		if(field->fnSet.sz)
+		{
+			(this->*(field->fnSet.sz))(value);
+		}
+		else
+		{
+			_setStrVal(&(this->*((const char * ThisClass::*)field->pField)), value);
+		}
 		break;
 	case PDF_ANGLES:
 		if(4 == sscanf(value, "%f %f %f %f", &q.x, &q.y, &q.z, &q.w))

@@ -22,7 +22,7 @@ bool XMETHODCALLTYPE CDynamicModel::isEnabled() const
 }
 void XMETHODCALLTYPE CDynamicModel::enable(bool yesNo)
 {
-	m_isEnabled = true;
+	m_isEnabled = yesNo;
 }
 
 IXAnimatedModel * XMETHODCALLTYPE CDynamicModel::asAnimatedModel()

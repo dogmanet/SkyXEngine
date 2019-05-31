@@ -864,7 +864,7 @@ SX_LIB_API void SGCore_SkyBoxCr()
 	SG_PRECOND(_VOID);
 
 	if (g_pSkyBox)
-		LibReport(REPORT_MSG_LEVEL_WARNING, "sky_box is already init");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "sky_box is already init\n");
 	else
 		g_pSkyBox = new CSkyBox();
 }
@@ -954,7 +954,7 @@ SX_LIB_API void SGCore_SkyCloudsCr()
 	SG_PRECOND(_VOID);
 
 	if (g_pSkyClouds)
-		LibReport(REPORT_MSG_LEVEL_WARNING, "sky_clouds is already init");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "sky_clouds is already init\n");
 	else
 		g_pSkyClouds = new CSkyClouds();
 }

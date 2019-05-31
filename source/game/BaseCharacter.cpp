@@ -134,6 +134,8 @@ CBaseCharacter::~CBaseCharacter()
 	mem_delete(m_pGhostObject);
 	mem_delete(m_pCollideShape);
 
+	mem_release(m_pHandsModelResource);
+
 	if(m_idQuadCurr >= 0)
 	{
 		//SAIG_QuadSetState(m_idQuadCurr, AIQUAD_STATE_FREE);

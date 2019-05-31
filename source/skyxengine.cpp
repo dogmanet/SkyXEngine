@@ -419,9 +419,9 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 		IXDynamicModelProvider *pProvider = (IXDynamicModelProvider*)Core_GetIXCore()->getPluginManager()->getInterface(IXDYNAMICMODELPROVIDER_GUID); // get it from somewhere
 
 		IXResourceModel *pResource;
-		if(pResourceManager->getModel("meshes/box.dse", &pResource))
+		//if(pResourceManager->getModel("meshes/box.dse", &pResource))
 		//if(pResourceManager->getModel("objects/natural/trees/chernobyl/poplar_up/poplar_autumn_up_b.cgf", &pResource))
-		//if(pResourceManager->getModel("objects/props/containers/trash_container/trash_container_a.cgf", &pResource))
+		if(pResourceManager->getModel("objects/architecture/survival/chernobyl/buildings/lazurniy/lazurniy_shop_b.cgf", &pResource))
 		{
 			if(pResource->getType() == XMT_STATIC)
 			{

@@ -611,7 +611,7 @@ void CModels::load(const char *szPath)
 
 	if (uiFmtVersion != SX_GEOM_FILE_FORMAT_VERSION)
 	{
-		LibReport(REPORT_MSG_LEVEL_ERROR, "file static geometry [%s] have unduported version %d\n", szPath, uiFmtVersion);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "file static geometry [%s] have unsuported version %d\n", szPath, uiFmtVersion);
 		fclose(pFile);
 		return;
 	}

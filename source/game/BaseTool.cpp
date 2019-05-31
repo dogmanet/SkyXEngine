@@ -174,18 +174,6 @@ void CBaseTool::reload()
 	}
 }
 
-void CBaseTool::attachHands()
-{
-	//@TODO: Reimplement me
-#if 0
-	if(m_pAnimPlayer)
-	{
-		m_pAnimPlayer->addModel("models/weapons/hands.dse");
-		m_pAnimPlayer->assembly();
-	}
-#endif
-}
-
 void CBaseTool::dbgMove(int dir, float dy)
 {
 	switch(dir)

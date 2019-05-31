@@ -281,7 +281,8 @@ typedef void(*report_func) (int iLevel, const char *szLibName, const char *szFor
 //! @{
 #define REPORT_MSG_LEVEL_NOTICE		0	/*!< заметка */
 #define REPORT_MSG_LEVEL_WARNING	1	/*!< предупреждение */
-#define REPORT_MSG_LEVEL_ERROR		-1	/*!< ошибка, желательно вылетать */
+#define REPORT_MSG_LEVEL_ERROR		-1	/*!< ошибка, продолжаем */
+#define REPORT_MSG_LEVEL_FATAL		-2	/*!< ошибка, желательно вылетать */
 
 #define REPORT_MSG_MAX_LEN 4096		/*!< максимальный размер сообщения */
 //! @}
@@ -368,9 +369,9 @@ inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, .
 	va_end(va);
 
 	if(szStr[0] != ' ' && szStr[0] != '\t')
-		sprintf(szStr2, "%s%s%s: ", COLOR_GREEN, szLibName, COLOR_RESET);
+		sprintf(szStr2, COLOR_GREEN "%s" COLOR_RESET ": ", szLibName);
 
-	if(iLevel == REPORT_MSG_LEVEL_ERROR)
+	if(iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_FATAL)
 	{
 		sprintf(szStr2 + strlen(szStr2), "%s", COLOR_LRED);
 	}
@@ -381,14 +382,14 @@ inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, .
 
 	sprintf(szStr2 + strlen(szStr2), "%s", szStr);
 
-	if(iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_WARNING)
+	if(iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_WARNING || iLevel == REPORT_MSG_LEVEL_FATAL)
 	{
 		sprintf(szStr2 + strlen(szStr2), "%s", COLOR_RESET);
 	}
 
-	printf(szStr2);
+	printf("%s", szStr2);
 
-	if(iLevel == REPORT_MSG_LEVEL_ERROR)
+	if(iLevel == REPORT_MSG_LEVEL_FATAL)
 	{
 		exit(0);
 	}
@@ -415,7 +416,7 @@ inline void LibReport(int iLevel, const char *szFormat, ...)
 	vsprintf_s(szStr, sizeof(szStr), szFormat, va);
 	va_end(va);
 
-	DefReport(iLevel, SX_LIB_NAME, szStr);
+	DefReport(iLevel, SX_LIB_NAME, "%s", szStr);
 }
 
 

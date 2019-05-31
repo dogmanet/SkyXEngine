@@ -39,7 +39,7 @@ bool XMETHODCALLTYPE CAnimatedModel::isEnabled() const
 }
 void XMETHODCALLTYPE CAnimatedModel::enable(bool yesNo)
 {
-	m_isEnabled = true;
+	m_isEnabled = yesNo;
 }
 
 UINT CAnimatedModel::addLayer()

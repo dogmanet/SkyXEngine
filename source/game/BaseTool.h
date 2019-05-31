@@ -51,8 +51,6 @@ public:
 
 	void setIsWorldModel(bool b);
 
-	void attachHands();
-
 	void dbgMove(int dir, float delta);
 
 	void onSync();

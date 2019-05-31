@@ -17,6 +17,7 @@ See the license in LICENSE
 #include "HUDcontroller.h"
 
 #include <aigrid/sxaigrid.h>
+#include <xcommon/resource/IXResourceManager.h>
 
 /*! \skydocent player
 Объект игрока в мире
@@ -66,6 +67,9 @@ CPlayer::CPlayer(CEntityManager * pMgr):
 	m_idQuadCurr = -1;
 
 	m_pCrosshair = new CCrosshair();
+
+	IXResourceManager *pResourceManager = Core_GetIXCore()->getResourceManager();
+	pResourceManager->getModelAnimated("models/weapons/hands.dse", &m_pHandsModelResource);
 
 	//m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 }

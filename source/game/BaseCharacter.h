@@ -112,6 +112,11 @@ public:
 
 	void use(bool start);
 
+	IXResourceModelAnimated *getHandsResource()
+	{
+		return(m_pHandsModelResource);
+	}
+
 protected:
 	//! Фонарик
 	CLightDirectional* m_flashlight;
@@ -157,6 +162,8 @@ protected:
 	CPointEntity * m_pHeadEnt;
 
 	float m_fCurrentHeight;
+
+	IXResourceModelAnimated *m_pHandsModelResource = NULL;
 };
 
 #endif

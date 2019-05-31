@@ -76,10 +76,18 @@ bool CResourceManager::getModel(const char *szName, IXResourceModel **ppOut, boo
 		auto &aLoaders = *pNode->Val;
 #if 1
 		CFile *pFile = new CFile();
-		pFile->open(szName, CORE_FILE_BIN);
+		if(pFile->open(szName, CORE_FILE_BIN) < 0)
+		{
+			mem_delete(pFile);
+		}
 #else
 		IFile *pFile = m_pCore->getFileSystem()->openFileBin(szName);
 #endif
+		if(!pFile)
+		{
+			LibReport(REPORT_MSG_LEVEL_ERROR, "File not found '%s'\n", szName);
+			return(false);
+		}
 		for(UINT i = 0, l = aLoaders.size(); i < l; ++i)
 		{
 			IXModelLoader *pLoader = aLoaders[i];

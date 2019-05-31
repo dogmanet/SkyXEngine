@@ -919,11 +919,12 @@ GameData::GameData(HWND hWnd, bool isGame):
 	{
 		CBaseTool *pTool = (CBaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
 		pTool->setOwner(m_pPlayer);
-		pTool->attachHands();
+		pTool->setHandsResource(m_pPlayer->getHandsResource());
 		pTool->playAnimation("idle");
 		pTool->setPos(m_pPlayer->getHead()->getPos() + float3(1.0f, 0.0f, 1.0f));
 		pTool->setOrient(m_pPlayer->getHead()->getOrient());
 		pTool->setParent(m_pPlayer->getHead());
+		pTool->setMode(IIM_EQUIPPED);
 
 		CBaseAmmo *pAmmo = (CBaseAmmo*)CREATE_ENTITY("ammo_5.45x39ps", m_pMgr);
 		pTool->chargeAmmo(pAmmo);

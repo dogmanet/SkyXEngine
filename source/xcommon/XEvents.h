@@ -4,6 +4,13 @@
 #include <gdefines.h>
 #include <common/math.h>
 
+template<typename T>
+class IEventListener
+{
+public:
+	virtual void onEvent(const T*) = 0;
+};
+
 class IBaseEventChannel
 {
 public:
@@ -30,6 +37,17 @@ public:
 		}
 		m_vListeners.push_back(fnListener);
 	}
+	void addListener(IEventListener<T> *pListener)
+	{
+		for(UINT i = 0, l = m_vListeners2.size(); i < l; ++i)
+		{
+			if(m_vListeners2[i] == pListener)
+			{
+				return;
+			}
+		}
+		m_vListeners2.push_back(pListener);
+	}
 	void removeListener(PFNLISTENER fnListener)
 	{
 		for(UINT i = 0, l = m_vListeners.size(); i < l; ++i)
@@ -41,15 +59,31 @@ public:
 			}
 		}
 	}
+	void removeListener(IEventListener<T> *pListener)
+	{
+		for(UINT i = 0, l = m_vListeners2.size(); i < l; ++i)
+		{
+			if(m_vListeners2[i] == pListener)
+			{
+				m_vListeners2.erase(i);
+				return;
+			}
+		}
+	}
 	void broadcastEvent(const T *pEvent)
 	{
 		for(UINT i = 0, l = m_vListeners.size(); i < l; ++i)
 		{
 			m_vListeners[i](pEvent);
 		}
+		for(UINT i = 0, l = m_vListeners2.size(); i < l; ++i)
+		{
+			m_vListeners2[i]->onEvent(pEvent);
+		}
 	}
 protected:
 	Array<PFNLISTENER> m_vListeners;
+	Array<IEventListener<T>*> m_vListeners2;
 };
 
 
