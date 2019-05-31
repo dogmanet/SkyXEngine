@@ -112,6 +112,8 @@ CPhyWorld::CPhyWorld():
 	//m_pDebugDrawer->setDebugMode(btIDebugDraw::DBG_FastWireframe);
 	m_pDynamicsWorld->setDebugDrawer(m_pDebugDrawer);
 
+	Core_GetIXCore()->getPluginManager()->registerInterface(IXRENDERABLE_GUID, new CRenderable(this));
+
 	Core_0RegisterCVarBool("r_physdebug", false, "Debug drawing physics shapes");
 	m_bDebugDraw = GET_PCVAR_BOOL("r_physdebug");
 
@@ -175,8 +177,10 @@ void CPhyWorld::render()
 {
 	if(*m_bDebugDraw)
 	{
+		CDebugDrawer *pDebugDrawer = (CDebugDrawer*)m_pDynamicsWorld->getDebugDrawer();
+		pDebugDrawer->begin();
 		m_pDynamicsWorld->debugDrawWorld();
-		((CDebugDrawer*)(m_pDynamicsWorld->getDebugDrawer()))->render();
+		pDebugDrawer->commit();
 	}
 }
 
@@ -838,26 +842,58 @@ void CPhyWorld::enableSimulation()
 
 //##############################################################
 
+void CPhyWorld::CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility)
+{
+	m_pWorld->render();
+}
+void CPhyWorld::CRenderable::startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem)
+{
+}
+
+//##############################################################
+
+CPhyWorld::CDebugDrawer::CDebugDrawer()
+{
+	auto pDevice = SGCore_GetDXDevice();
+
+	GXVERTEXELEMENT vertexDecl[] =
+	{
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
+		{0, 12, GXDECLTYPE_FLOAT4, GXDECLUSAGE_COLOR, GXDECLSPEC_PER_VERTEX_DATA},
+		GXDECL_END()
+	};
+
+	m_pVertexDeclaration = pDevice->createVertexDeclaration(vertexDecl);
+	m_pVertexBuffer = pDevice->createVertexBuffer(sizeof(render_point) * m_uDataSize, GX_BUFFER_USAGE_STREAM);
+	m_pRenderBuffer = pDevice->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
+	m_pVSConstantBuffer = pDevice->createConstantBuffer(sizeof(SMMATRIX));
+
+	ID idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dbg_colorvertex.vs");
+	ID idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dbg_colorvertex.ps");
+	m_idShader = SGCore_ShaderCreateKit(idVS, idPS);
+}
+
+CPhyWorld::CDebugDrawer::~CDebugDrawer()
+{
+	mem_release(m_pVertexBuffer);
+	mem_release(m_pVertexDeclaration);
+	mem_release(m_pRenderBuffer);
+	mem_release(m_pVSConstantBuffer);
+}
+
 void CPhyWorld::CDebugDrawer::drawLine(const btVector3 & from, const btVector3 & to, const btVector3 & color)
 {
-	int clr = 0;
-	clr += 255;
-	clr <<= 8;
-	clr += (int)(color.getX() * 255.0f);
-	clr <<= 8;
-	clr += (int)(color.getY() * 255.0f);
-	clr <<= 8;
-	clr += (int)(color.getZ() * 255.0f);
-	//clr <<= 8;
+	if(m_uDataPointer == m_uDataSize)
+	{
+		render();
+	}
 
-	render_point pt;
-	pt.clr = clr;
+	render_point pt = {BTVEC_F3(from), float4(BTVEC_F3(color), 1.0f)};
 
-	pt.pos = float3_t(from.x(), from.y(), from.z());
-	m_vDrawData.push_back(pt);
+	m_pDrawData[m_uDataPointer++] = pt;
 
-	pt.pos = float3_t(to.x(), to.y(), to.z());
-	m_vDrawData.push_back(pt);
+	pt.pos = BTVEC_F3(to);
+	m_pDrawData[m_uDataPointer++] = pt;
 }
 
 void CPhyWorld::CDebugDrawer::drawContactPoint(const btVector3 & PointOnB, const btVector3 & normalOnB, btScalar distance, int lifeTime, const btVector3& color)
@@ -935,32 +971,44 @@ int CPhyWorld::CDebugDrawer::getDebugMode() const
 	return(m_iDebugMode);
 }
 
+void CPhyWorld::CDebugDrawer::begin()
+{
+	m_uDataPointer = 0;
+
+	SGCore_ShaderBind(m_idShader);
+
+	SGCore_GetDXDevice()->setRenderBuffer(m_pRenderBuffer);
+	SGCore_GetDXDevice()->setPrimitiveTopology(GXPT_LINELIST);
+
+	SMMATRIX mViewProj, mWorld;
+	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
+	Core_RMatrixGet(G_RI_MATRIX_WORLD, &mWorld);
+	m_pVSConstantBuffer->update(&SMMatrixTranspose(mWorld * mViewProj));
+	SGCore_GetDXDevice()->setVertexShaderConstant(m_pVSConstantBuffer, 4);
+}
+
+void CPhyWorld::CDebugDrawer::commit()
+{
+	render();
+	SGCore_ShaderUnBind();
+	SGCore_GetDXDevice()->setPrimitiveTopology(GXPT_TRIANGLELIST);
+}
+
 void CPhyWorld::CDebugDrawer::render()
 {
-	if(!m_vDrawData.size())
+	if(!m_uDataPointer)
 	{
 		return;
 	}
-	SGCore_ShaderUnBind();
 
-	SMMATRIX mView, mProj;
-	Core_RMatrixGet(G_RI_MATRIX_VIEW, &mView);
-	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mProj);
-#ifdef _GRAPHIX_API
-	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixIdentity());
-	SGCore_GetDXDevice()->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&mView);
-	SGCore_GetDXDevice()->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&mProj);
+	render_point *pData = NULL;
+	if(m_pVertexBuffer->lock((void**)&pData, GXBL_WRITE))
+	{
+		memcpy(pData, m_pDrawData, sizeof(render_point) * m_uDataPointer);
+		m_pVertexBuffer->unlock();
 
-	SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	//SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, FALSE);
-	//SGCore_GetDXDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, 0xFF);
+		SGCore_GetDXDevice()->drawPrimitive(0, m_uDataPointer / 2);
+	}
 
-	SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-
-	SGCore_GetDXDevice()->SetTexture(0, 0);
-	
-	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, m_vDrawData.size() / 2, &(m_vDrawData[0]), sizeof(render_point));
-#endif
-
-	m_vDrawData.clear();
+	m_uDataPointer = 0;
 }

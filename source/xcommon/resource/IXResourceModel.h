@@ -12,9 +12,8 @@ enum XPHYSBOXTYPE
 	XPBT_BOX = 0,     /*!< Параллелепипед */
 	XPBT_SPHERE,      /*!< Сфера */
 	XPBT_CONVEX,
-
-	// XPBT_CYLINDER, /*!< Цилиндр */
-	// XPBT_CAPSULE   /*!< Капсула */
+	XPBT_CYLINDER,    /*!< Цилиндр */
+	XPBT_CAPSULE      /*!< Капсула */
 };
 
 /*! Типы хитбоксов
@@ -173,6 +172,8 @@ struct XResourceModelController
 class IModelPhysboxBox;
 class IModelPhysboxSphere;
 class IModelPhysboxConvex;
+class IModelPhysboxCylinder;
+class IModelPhysboxCapsule;
 class IModelPhysbox: public IXUnknown
 {
 public:
@@ -181,6 +182,8 @@ public:
 	virtual const IModelPhysboxBox * XMETHODCALLTYPE asBox() const = 0;
 	virtual const IModelPhysboxSphere * XMETHODCALLTYPE asSphere() const = 0;
 	virtual const IModelPhysboxConvex * XMETHODCALLTYPE asConvex() const = 0;
+	virtual const IModelPhysboxCylinder * XMETHODCALLTYPE asCylinder() const = 0;
+	virtual const IModelPhysboxCapsule * XMETHODCALLTYPE asCapsule() const = 0;
 
 	virtual float3 XMETHODCALLTYPE getPosition() const = 0;
 	virtual void XMETHODCALLTYPE setPosition(const float3 &vPos) = 0;
@@ -211,6 +214,26 @@ public:
 
 	virtual void XMETHODCALLTYPE initData(UINT uVertexCount, const float3_t *pData = NULL) = 0;
 	virtual float3_t * XMETHODCALLTYPE getData() = 0;
+};
+
+class IModelPhysboxCylinder: public IModelPhysbox
+{
+public:
+	virtual float XMETHODCALLTYPE getRadius() const = 0;
+	virtual void XMETHODCALLTYPE setRadius(float fRadius) = 0;
+
+	virtual float XMETHODCALLTYPE getHeight() const = 0;
+	virtual void XMETHODCALLTYPE setHeight(float fHeight) = 0;
+};
+
+class IModelPhysboxCapsule: public IModelPhysbox
+{
+public:
+	virtual float XMETHODCALLTYPE getRadius() const = 0;
+	virtual void XMETHODCALLTYPE setRadius(float fRadius) = 0;
+
+	virtual float XMETHODCALLTYPE getHeight() const = 0;
+	virtual void XMETHODCALLTYPE setHeight(float fHeight) = 0;
 };
 
 //##########################################################################
@@ -262,6 +285,8 @@ public:
 	virtual IModelPhysboxBox    * XMETHODCALLTYPE newPhysboxBox() const = 0;
 	virtual IModelPhysboxSphere * XMETHODCALLTYPE newPhysboxSphere() const = 0;
 	virtual IModelPhysboxConvex * XMETHODCALLTYPE newPhysboxConvex() const = 0;
+	virtual IModelPhysboxCylinder * XMETHODCALLTYPE newPhysboxCylinder() const = 0;
+	virtual IModelPhysboxCapsule * XMETHODCALLTYPE newPhysboxCapsule() const = 0;
 
 	virtual void XMETHODCALLTYPE makeReadOnly() = 0;
 };

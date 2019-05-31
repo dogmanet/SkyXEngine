@@ -176,6 +176,11 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 		}
 
 	}
+
+	for(UINT m = 0, ml = pResource->getPhysboxCount(); m < ml; ++m)
+	{
+		m_apPhysboxes.push_back(pResource->getPhysbox(m));
+	}
 	
 	return(true);
 }
@@ -214,12 +219,12 @@ void CDynamicModelShared::render(const SMMATRIX &mWorld, UINT uSkin, UINT uLod, 
 		return;
 	}
 
-	if(uSkin > m_uSkinCount)
+	if(uSkin >= m_uSkinCount)
 	{
 		uSkin = 0;
 	}
 
-	if(uLod > m_aLods.size())
+	if(uLod >= m_aLods.size())
 	{
 		return;
 	}

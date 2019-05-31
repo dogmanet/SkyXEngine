@@ -19,6 +19,14 @@ public:
 	{
 		return(NULL);
 	}
+	const IModelPhysboxCylinder * XMETHODCALLTYPE asCylinder() const override
+	{
+		return(NULL);
+	}
+	const IModelPhysboxCapsule * XMETHODCALLTYPE asCapsule() const override
+	{
+		return(NULL);
+	}
 
 	float3 XMETHODCALLTYPE getPosition() const override
 	{
@@ -89,6 +97,42 @@ public:
 protected:
 	UINT m_uVertexCount = 0;
 	float3_t *m_pData = NULL;
+};
+
+class CModelPhysboxCylinder: public IModelPhysboxImplementation<IModelPhysboxCylinder>
+{
+public:
+	XPHYSBOXTYPE XMETHODCALLTYPE getType() const override;
+
+	const IModelPhysboxCylinder * XMETHODCALLTYPE asCylinder() const override;
+
+	float XMETHODCALLTYPE getRadius() const override;
+	void XMETHODCALLTYPE setRadius(float fRadius) override;
+
+	float XMETHODCALLTYPE getHeight() const override;
+	void XMETHODCALLTYPE setHeight(float fHeight) override;
+
+protected:
+	float m_fRadius = 0.0f;
+	float m_fHeight = 0.0f;
+};
+
+class CModelPhysboxCapsule: public IModelPhysboxImplementation<IModelPhysboxCapsule>
+{
+public:
+	XPHYSBOXTYPE XMETHODCALLTYPE getType() const override;
+
+	const IModelPhysboxCapsule * XMETHODCALLTYPE asCapsule() const override;
+
+	float XMETHODCALLTYPE getRadius() const override;
+	void XMETHODCALLTYPE setRadius(float fRadius) override;
+
+	float XMETHODCALLTYPE getHeight() const override;
+	void XMETHODCALLTYPE setHeight(float fHeight) override;
+
+protected:
+	float m_fRadius = 0.0f;
+	float m_fHeight = 0.0f;
 };
 
 #endif

@@ -1007,12 +1007,12 @@ void CAnimatedModelShared::render(const SMMATRIX &mWorld, UINT uSkin, UINT uLod,
 		return;
 	}
 
-	if(uSkin > m_uSkinCount)
+	if(uSkin >= m_uSkinCount)
 	{
 		uSkin = 0;
 	}
 
-	if(uLod > m_uLodCount)
+	if(uLod >= m_uLodCount)
 	{
 		return;
 	}

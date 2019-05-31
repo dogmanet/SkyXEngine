@@ -234,6 +234,9 @@
     <ClCompile Include="..\..\..\source\game\LightDirectional.cpp">
       <Filter>Source Files\ents\light</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\PropStatic.cpp">
+      <Filter>Source Files\ents\props</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -403,6 +406,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\LightDirectional.h">
       <Filter>Header Files\ents\light</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\PropStatic.h">
+      <Filter>Header Files\ents\props</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

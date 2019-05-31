@@ -1,41 +1,41 @@
 #include "ModelPhysbox.h"
 
-XPHYSBOXTYPE CModelPhysboxBox::getType() const
+XPHYSBOXTYPE XMETHODCALLTYPE CModelPhysboxBox::getType() const
 {
 	return(XPBT_BOX);
 }
 
-const IModelPhysboxBox *CModelPhysboxBox::asBox() const
+const IModelPhysboxBox * XMETHODCALLTYPE CModelPhysboxBox::asBox() const
 {
 	return(this);
 }
 
-float3 CModelPhysboxBox::getSize() const
+float3 XMETHODCALLTYPE CModelPhysboxBox::getSize() const
 {
 	return(m_vSize);
 }
-void CModelPhysboxBox::setSize(const float3 &vSize)
+void XMETHODCALLTYPE CModelPhysboxBox::setSize(const float3 &vSize)
 {
 	m_vSize = vSize;
 }
 
 //##########################################################################
 
-XPHYSBOXTYPE CModelPhysboxSphere::getType() const
+XPHYSBOXTYPE XMETHODCALLTYPE CModelPhysboxSphere::getType() const
 {
 	return(XPBT_SPHERE);
 }
 
-const IModelPhysboxSphere *CModelPhysboxSphere::asSphere() const
+const IModelPhysboxSphere * XMETHODCALLTYPE CModelPhysboxSphere::asSphere() const
 {
 	return(this);
 }
 
-float CModelPhysboxSphere::getRadius() const
+float XMETHODCALLTYPE CModelPhysboxSphere::getRadius() const
 {
 	return(m_fRadius);
 }
-void CModelPhysboxSphere::setRadius(float fRadius)
+void XMETHODCALLTYPE CModelPhysboxSphere::setRadius(float fRadius)
 {
 	m_fRadius = fRadius;
 }
@@ -47,30 +47,30 @@ CModelPhysboxConvex::~CModelPhysboxConvex()
 	mem_delete_a(m_pData);
 }
 
-XPHYSBOXTYPE CModelPhysboxConvex::getType() const
+XPHYSBOXTYPE XMETHODCALLTYPE CModelPhysboxConvex::getType() const
 {
 	return(XPBT_CONVEX);
 }
 
-const IModelPhysboxConvex *CModelPhysboxConvex::asConvex() const
+const IModelPhysboxConvex * XMETHODCALLTYPE CModelPhysboxConvex::asConvex() const
 {
 	return(this);
 }
 
-UINT CModelPhysboxConvex::getVertexCount() const
+UINT XMETHODCALLTYPE CModelPhysboxConvex::getVertexCount() const
 {
 	return(m_uVertexCount);
 }
-const float3_t *CModelPhysboxConvex::getData() const
+const float3_t * XMETHODCALLTYPE CModelPhysboxConvex::getData() const
 {
 	return(m_pData);
 }
-float3_t *CModelPhysboxConvex::getData()
+float3_t * XMETHODCALLTYPE CModelPhysboxConvex::getData()
 {
 	return(m_pData);
 }
 
-void CModelPhysboxConvex::initData(UINT uVertexCount, const float3_t *pData)
+void XMETHODCALLTYPE CModelPhysboxConvex::initData(UINT uVertexCount, const float3_t *pData)
 {
 	mem_delete_a(m_pData);
 	m_uVertexCount = uVertexCount;
@@ -80,4 +80,64 @@ void CModelPhysboxConvex::initData(UINT uVertexCount, const float3_t *pData)
 	{
 		memcpy(m_pData, pData, sizeof(float3_t) * uVertexCount);
 	}
+}
+
+//##########################################################################
+
+XPHYSBOXTYPE XMETHODCALLTYPE CModelPhysboxCylinder::getType() const
+{
+	return(XPBT_CYLINDER);
+}
+
+const IModelPhysboxCylinder * XMETHODCALLTYPE CModelPhysboxCylinder::asCylinder() const
+{
+	return(this);
+}
+
+float XMETHODCALLTYPE CModelPhysboxCylinder::getRadius() const
+{
+	return(m_fRadius);
+}
+void XMETHODCALLTYPE CModelPhysboxCylinder::setRadius(float fRadius)
+{
+	m_fRadius = fRadius;
+}
+
+float XMETHODCALLTYPE CModelPhysboxCylinder::getHeight() const
+{
+	return(m_fHeight);
+}
+void XMETHODCALLTYPE CModelPhysboxCylinder::setHeight(float fHeight)
+{
+	m_fHeight = fHeight;
+}
+
+//##########################################################################
+
+XPHYSBOXTYPE XMETHODCALLTYPE CModelPhysboxCapsule::getType() const
+{
+	return(XPBT_CAPSULE);
+}
+
+const IModelPhysboxCapsule * XMETHODCALLTYPE CModelPhysboxCapsule::asCapsule() const
+{
+	return(this);
+}
+
+float XMETHODCALLTYPE CModelPhysboxCapsule::getRadius() const
+{
+	return(m_fRadius);
+}
+void XMETHODCALLTYPE CModelPhysboxCapsule::setRadius(float fRadius)
+{
+	m_fRadius = fRadius;
+}
+
+float XMETHODCALLTYPE CModelPhysboxCapsule::getHeight() const
+{
+	return(m_fHeight);
+}
+void XMETHODCALLTYPE CModelPhysboxCapsule::setHeight(float fHeight)
+{
+	m_fHeight = fHeight;
 }

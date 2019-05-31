@@ -47,12 +47,7 @@ END_PROPTABLE()
 REGISTER_ENTITY_NOLISTING(CBaseAnimating, base_animating);
 
 CBaseAnimating::CBaseAnimating(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	// m_fBaseScale(1.0f),
-	m_pCollideShape(NULL),
-	m_pRigidBody(NULL),
-	m_isStatic(false),
-	m_collisionGroup(CG_DEFAULT)
+	BaseClass(pMgr)
 {
 	memset(m_vNextAnim, 0, sizeof(m_vNextAnim));
 }
@@ -205,42 +200,54 @@ void CBaseAnimating::playActivity(const char * name, UINT iFadeTime, UINT slot)
 
 void CBaseAnimating::initPhysics()
 {
-#if 0
-	if(!m_pModel && m_pModel->asAnimatedModel())
+	if(!m_pModel)
 	{
 		return;
 	}
-	int32_t iShapeCount;
-	HITBOX_TYPE * phTypes;
-	float3_t ** ppfData;
-	int32_t * pfDataLen;
 
-	//m_pAnimPlayer->setScale(m_fBaseScale);
+	UINT uShapesCount = m_pModel->getPhysboxCount();
 
-	m_pAnimPlayer->getPhysData(&iShapeCount, &phTypes, &ppfData, &pfDataLen);
-
-	for(int i = 0; i < iShapeCount; ++i)
+	btCompoundShape *pShape = new btCompoundShape(true, uShapesCount);
+	for(UINT i = 0; i < uShapesCount; ++i)
 	{
-		if(phTypes[i] == HT_CONVEX)
+		auto pPhysbox = m_pModel->getPhysBox(i);
+		btCollisionShape *pLocalShape = NULL;
+		switch(pPhysbox->getType())
 		{
-			//m_pCollideShape = new btConvexHullShape((float*)ppfData[i], pfDataLen[i], sizeof(ppfData[0][0]));
-			btConvexHullShape tmpShape((float*)ppfData[i], pfDataLen[i], sizeof(ppfData[0][0]));
-			tmpShape.setMargin(0);
-			btVector3 *pData;
-			int iVertexCount;
-			SPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
-			m_pCollideShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
-			SPhysics_ReleaseHull(pData, iVertexCount);
-			
+		case XPBT_BOX:
+			pLocalShape = new btBoxShape(F3_BTVEC(pPhysbox->asBox()->getSize()));
+			break;
+		case XPBT_SPHERE:
+			pLocalShape = new btSphereShape(pPhysbox->asSphere()->getRadius());
+			break;
+		case XPBT_CAPSULE:
+			pLocalShape = new btCapsuleShape(pPhysbox->asCapsule()->getRadius(), pPhysbox->asCapsule()->getHeight());
+			break;
+		case XPBT_CYLINDER:
+			pLocalShape = new btCylinderShape(btVector3(pPhysbox->asCylinder()->getRadius(), pPhysbox->asCylinder()->getHeight() * 0.5f, pPhysbox->asCylinder()->getRadius()));
+			break;
+		case XPBT_CONVEX:
+			{
+				auto pConvex = pPhysbox->asConvex();
+				btConvexHullShape tmpShape((float*)pConvex->getData(), pConvex->getVertexCount(), sizeof(float3_t));
+				tmpShape.setMargin(0);
+				btVector3 *pData;
+				int iVertexCount;
+				SPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
+				pLocalShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
+				SPhysics_ReleaseHull(pData, iVertexCount);
+			}
+			break;
 		}
-		break;
+
+		if(pLocalShape)
+		{
+			btTransform localTransform(Q4_BTQUAT(pPhysbox->getOrientation()), F3_BTVEC(pPhysbox->getPosition()));
+			pShape->addChildShape(localTransform, pLocalShape);
+		}
 	}
-
-	m_pAnimPlayer->freePhysData(iShapeCount, phTypes, ppfData, pfDataLen);
-
-
+	m_pCollideShape = pShape;
 	createPhysBody();
-#endif
 }
 
 void CBaseAnimating::createPhysBody()
@@ -289,7 +296,15 @@ void CBaseAnimating::removePhysBody()
 void CBaseAnimating::releasePhysics()
 {
 	removePhysBody();
-	mem_delete(m_pCollideShape);
+	if(m_pCollideShape)
+	{
+		btCompoundShape *pShape = (btCompoundShape*)m_pCollideShape;
+		for(UINT i = 0, l = pShape->getNumChildShapes(); i < l; ++i)
+		{
+			delete pShape->getChildShape(i);
+		}
+		mem_delete(m_pCollideShape);
+	}
 }
 
 void CBaseAnimating::setCollisionGroup(COLLISION_GROUP group, COLLISION_GROUP mask)

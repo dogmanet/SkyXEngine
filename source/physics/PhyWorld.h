@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -18,6 +18,7 @@ See the license in LICENSE
 #include <common/AssotiativeArray.h>
 #include <common/Array.h>
 #include <common/file_utils.h>
+#include <xcommon/IXRenderable.h>
 
 #include <gdefines.h>
 
@@ -81,17 +82,23 @@ public:
 		struct render_point
 		{
 			float3_t pos;
-			DWORD clr;
+			float4_t clr;
 		};
 		int m_iDebugMode;
-		Array<render_point, 16384> m_vDrawData;
+		render_point m_pDrawData[4096];
+		UINT m_uDataSize = 4096;
+		UINT m_uDataPointer = 0;
 
-		bool m_bExpectObject;
+		bool m_bExpectObject = false;
+
+		IGXVertexBuffer *m_pVertexBuffer = NULL;
+		IGXVertexDeclaration *m_pVertexDeclaration = NULL;
+		IGXRenderBuffer *m_pRenderBuffer = NULL;
+		IGXConstantBuffer *m_pVSConstantBuffer = NULL;
+		ID m_idShader = -1;
 	public:
-		CDebugDrawer():
-			m_bExpectObject(false)
-		{
-		}
+		CDebugDrawer();
+		~CDebugDrawer();
 
 		void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
 
@@ -105,7 +112,41 @@ public:
 
 		int getDebugMode() const;
 
+		void begin();
 		void render();
+		void commit();
+	};
+
+	class CRenderable: public IXRenderable
+	{
+	public:
+		CRenderable(CPhyWorld *pWorld):
+			m_pWorld(pWorld)
+		{
+		}
+
+		X_RENDER_STAGE getStages() override
+		{
+			return(XRS_POSTPROCESS_MAIN);
+		}
+
+		UINT getPriorityForStage(X_RENDER_STAGE stage) override
+		{
+			return(1);
+		}
+
+		void renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility) override;
+		void startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem) override;
+		void shutdown() override
+		{
+		}
+		void newVisData(IXRenderableVisibility **ppVisibility) override
+		{
+			*ppVisibility = NULL;
+		}
+
+	protected:
+		CPhyWorld *m_pWorld;
 	};
 
 protected:
@@ -119,7 +160,7 @@ protected:
 	const bool * m_bDebugDraw;
 	CDebugDrawer * m_pDebugDrawer;
 
-	// физические формы для статической геометрии уровня
+	// С„РёР·РёС‡РµСЃРєРёРµ С„РѕСЂРјС‹ РґР»СЏ СЃС‚Р°С‚РёС‡РµСЃРєРѕР№ РіРµРѕРјРµС‚СЂРёРё СѓСЂРѕРІРЅСЏ
 	btTriangleMesh * m_pGeomStaticCollideMesh;
 	btCollisionShape * m_pGeomStaticCollideShape;
 	btRigidBody * m_pGeomStaticRigidBody;

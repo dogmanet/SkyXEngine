@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -8,7 +8,6 @@ See the license in LICENSE
 #define __RAGDOLL_H
 
 #include "sxgame.h"
-#include <anim/sxanim.h>
 
 class CRagdoll: public IAnimRagdoll
 {

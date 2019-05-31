@@ -45,6 +45,8 @@ public:
 	IModelPhysboxBox    * XMETHODCALLTYPE newPhysboxBox() const override;
 	IModelPhysboxSphere * XMETHODCALLTYPE newPhysboxSphere() const override;
 	IModelPhysboxConvex * XMETHODCALLTYPE newPhysboxConvex() const override;
+	IModelPhysboxCylinder * XMETHODCALLTYPE newPhysboxCylinder() const override;
+	IModelPhysboxCapsule * XMETHODCALLTYPE newPhysboxCapsule() const override;
 
 	void setFileName(const char *szFilename);
 	const char *getFileName() const;

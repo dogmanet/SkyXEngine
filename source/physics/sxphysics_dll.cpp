@@ -116,12 +116,6 @@ SX_LIB_API void SPhysics_UnloadGeom()
 	g_pWorld->unloadGeom();
 }
 
-SX_LIB_API void SPhysics_DebugRender()
-{
-	SP_PRECOND(_VOID);
-	g_pWorld->render();
-}
-
 SX_LIB_API void SPhysics_AddShape(btRigidBody * pBody)
 {
 	SP_PRECOND(_VOID);

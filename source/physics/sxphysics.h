@@ -110,10 +110,6 @@ SX_LIB_API bool SPhysics_ImportGeom(const char * file);
 */
 SX_LIB_API bool SPhysics_ExportGeom(const char * file);
 
-/*! Выполняет отрисовку физических объектов
-*/
-SX_LIB_API void SPhysics_DebugRender();
-
 /*! Добавляет объект в симуляцию
 */
 SX_LIB_API void SPhysics_AddShape(btRigidBody * pBody);

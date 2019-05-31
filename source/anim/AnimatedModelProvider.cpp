@@ -134,10 +134,17 @@ void CAnimatedModelProvider::render(CRenderableVisibility *pVisibility)
 {
 	for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
 	{
-		auto pItem = pVisibility->getItem(i);
-		if(pItem->isVisible)
+		if(pVisibility)
 		{
-			m_apModels[i]->render(pItem->uLod);
+			auto pItem = pVisibility->getItem(i);
+			if(pItem->isVisible)
+			{
+				m_apModels[i]->render(pItem->uLod);
+			}
+		}
+		else
+		{
+			m_apModels[i]->render(0);
 		}
 	}
 }

@@ -196,3 +196,11 @@ IModelPhysboxConvex * XMETHODCALLTYPE CResourceModel::newPhysboxConvex() const
 {
 	return(new CModelPhysboxConvex());
 }
+IModelPhysboxCylinder * XMETHODCALLTYPE CResourceModel::newPhysboxCylinder() const
+{
+	return(new CModelPhysboxCylinder());
+}
+IModelPhysboxCapsule * XMETHODCALLTYPE CResourceModel::newPhysboxCapsule() const
+{
+	return(new CModelPhysboxCapsule());
+}

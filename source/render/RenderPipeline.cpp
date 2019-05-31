@@ -774,6 +774,7 @@ void CRenderPipeline::renderGI()
 }
 void CRenderPipeline::renderPostprocessMain()
 {
+	renderStage(XRS_POSTPROCESS_MAIN);
 }
 void CRenderPipeline::renderTransparent()
 {

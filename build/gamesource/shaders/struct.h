@@ -326,6 +326,18 @@ struct VSI_TXHandler
 	half3 vInstPos	:TEXCOORD0;
 };
 
+struct VSI_DbgColorvertex
+{
+	half3 vPosition	:POSITION0;
+	half4 vColor	:COLOR0;
+};
+
+struct VSO_DbgColorvertex
+{
+	half4 vPosition	:POSITION;
+	half4 vColor	:COLOR0;
+};
+
 //!@}
 
 struct VSI_GICubes

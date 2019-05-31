@@ -7,7 +7,7 @@ See the license in LICENSE
 #include "GameData.h"
 #include "CrosshairManager.h"
 
-#include "Ragdoll.h"
+//#include "Ragdoll.h"
 
 #include <score/sxscore.h>
 #include <input/sxinput.h>
@@ -37,8 +37,8 @@ gui::dom::IDOMnode *GameData::m_pCell;
 IXLightSystem *GameData::m_pLightSystem;
 //gui::IDesktop *GameData::m_pStatsUI;
 
-CRagdoll * g_pRagdoll;
-IAnimPlayer * pl;
+//CRagdoll * g_pRagdoll;
+//IAnimPlayer * pl;
 
 CTracer *g_pTracer;
 CTracer *g_pTracer2;

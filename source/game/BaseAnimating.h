@@ -73,7 +73,7 @@ protected:
 	IXModel *m_pModel = NULL;
 	const char * m_szModelFile;
 	// float m_fBaseScale;
-	bool m_isStatic;
+	bool m_isStatic = false;
 
 	CBaseEntity *m_pEntColorRef = NULL;
 	float3_t m_vGlowColor;
@@ -83,8 +83,8 @@ protected:
 	virtual void createPhysBody();
 	virtual void removePhysBody();
 
-	btCollisionShape * m_pCollideShape;
-	btRigidBody * m_pRigidBody;
+	btCollisionShape *m_pCollideShape = NULL;
+	btRigidBody *m_pRigidBody = NULL;
 
 	virtual void _cleanup();
 
@@ -102,7 +102,7 @@ protected:
 	} m_vNextAnim[BLEND_MAX];
 
 private:
-	COLLISION_GROUP m_collisionGroup;
+	COLLISION_GROUP m_collisionGroup = CG_DEFAULT;
 	COLLISION_GROUP m_collisionMask = CG_ALL;
 };
 
