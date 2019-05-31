@@ -7,6 +7,7 @@
 #define CLOSE_HANDLE(handle) if (handle != INVALID_HANDLE_VALUE) \
 {\
     CloseHandle(handle); \
+    handle = nullptr; \
 }
 
 //! Проверка существования пути с таким ID 
@@ -54,13 +55,17 @@ public:
     time_t getFileModifyTime(const char *szPath) override;
 
     //! No implementation
-    IFileIterator *getFileList(const char *szPath, FILE_TYPE type) override;
+    IFileIterator *getFolderList() override;
+
+    IFileIterator *getFileList(const char *szPath, const char *szExt) override;
+
+    IFileIterator *getFileList(const char *szPath, const char **szExts, int extsCount) override;
 
     //! No implementation
-     IFileIterator *getFileListRecursive(const char *szPath, FILE_TYPE type, const char *szExt)  override;
+     IFileIterator *getFileListRecursive(const char *szPath,  const char *szExt)  override;
     
     //! No implementation
-     IFileIterator *getFileListRecursive(const char *szPath, FILE_TYPE type, const char **szExts) override;
+     IFileIterator *getFileListRecursive(const char *szPath, const char **szExts, int extsCount) override;
 
      //! No implementation
      bool createDirectory(const char *szPath) override;

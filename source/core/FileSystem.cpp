@@ -1,4 +1,6 @@
 #include "FileSystem.h"
+#include "FileExtIterator.h"
+#include "FileExtsIterator.h"
 #include <shellapi.h>
 #include <ShlObj.h>
 
@@ -113,19 +115,29 @@ time_t CFileSystem::getFileModifyTime(const char *szPath)
 	return convertFiletimeToTime_t(mTime);
 }
 
-IFileSystem::IFileIterator *CFileSystem::getFileList(const char *szPath, FILE_TYPE type)
+IFileSystem::IFileIterator *CFileSystem::getFolderList()
 {
     assert(!"No Implementation");
     return nullptr;
 }
 
-IFileSystem::IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, FILE_TYPE type, const char *szExt = 0)
+IFileSystem::IFileIterator *CFileSystem::getFileList(const char *szPath, const char *szExt)
+{
+    return new CFileExtIterator(szPath, szExt);
+}
+
+IFileSystem::IFileIterator *CFileSystem::getFileList(const char *szPath, const char **szExts, int extsCount)
+{
+    return new CFileExtsIterator(szPath, szExts, extsCount);
+}
+
+IFileSystem::IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char *szExt = 0)
 {
     assert(!"No Implementation");
     return nullptr;
 }
 
-IFileSystem::IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, FILE_TYPE type, const char **szExts)
+IFileSystem::IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char **szExts, int extsCount)
 {
     assert(!"No Implementation");
     return nullptr;
@@ -134,7 +146,7 @@ IFileSystem::IFileIterator *CFileSystem::getFileListRecursive(const char *szPath
 bool CFileSystem::createDirectory(const char *szPath)
 {
     // Если вернуло не 0, то все плохо
-    return SHCreateDirectoryEx(nullptr, szPath, nullptr) == ERROR_SUCCESS;
+    return SHCreateDirectoryEx(nullptr, szPath, nullptr) == NO_ERROR;
 }
 
 bool CFileSystem::deleteDirectory(const char *szPath)

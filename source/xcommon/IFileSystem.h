@@ -72,20 +72,27 @@ public:
         //! Имя следующего файла, NULL если файлы закончились
         virtual const char * XMETHODCALLTYPE next() = 0;
     };
+    
+    //! Возвращает список всех папок
+    virtual IFileIterator *getFolderList() = 0;
 
 	/*! возвращает массив со всеми данными находящимися по пути szPath,
 	szPath может быть не канонизирован и необязательно должен заканчиваться слэшем,
 	szPath уже может содержать фильтр (к примеру C:/*), но если его нет, тогда функция подставит сама
 	*/
-    virtual IFileIterator *getFileList(const char *szPath, FILE_TYPE type) = 0;
+    virtual IFileIterator *getFileList(const char *szPath, const char *szExt) = 0;
 
-	/*! возвращает список всех файлов или папок (в зависимости от type),
+    //! То же, что и предыдущая, только для массива расширений
+    virtual IFileIterator *getFileList(const char *szPath, const char **szExts, int extsCount) = 0;
+
+	/*! возвращает список всех файлов или папок (в зависимости от extention),
 	szPath не должен содержать фильтров, может быть не канонизирован и без последнего слэша,
 	szExt - расширение файла без точки
 	*/
-	virtual IFileIterator *getFileListRecursive(const char *szPath, FILE_TYPE type, const char *szExt = 0) = 0;
+	virtual IFileIterator *getFileListRecursive(const char *szPath, const char *szExt = 0) = 0;
+
 	//! То же, что предыдущая, только позволяет использовать массив расширений для поиска. Последний элемент массива NULL
-	virtual IFileIterator *getFileListRecursive(const char *szPath, FILE_TYPE type, const char **szExts) = 0;
+    virtual IFileIterator *getFileListRecursive(const char *szPath, const char **szExts, int extsCount) = 0;
 
 	//! Создает директорию по указанному пути, рекурсивно
 	virtual bool createDirectory(const char *szPath) = 0;
