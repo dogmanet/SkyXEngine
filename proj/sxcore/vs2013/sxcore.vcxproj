@@ -38,8 +38,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\file.cpp" />
+    <ClCompile Include="..\..\..\source\core\FileExtsIterator.cpp" />
     <ClCompile Include="..\..\..\source\core\FileInMemory.cpp" />
-    <ClCompile Include="..\..\..\source\core\FileIterator.cpp" />
+    <ClCompile Include="..\..\..\source\core\FileExtIterator.cpp" />
     <ClCompile Include="..\..\..\source\core\FileSystem.cpp" />
     <ClCompile Include="..\..\..\source\core\ModelPhysbox.cpp" />
     <ClCompile Include="..\..\..\source\core\ModelProvider.cpp" />
@@ -69,13 +70,14 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\core\AsyncFileReader.h" />
+    <ClInclude Include="..\..\..\source\core\FileExtsIterator.h" />
     <ClInclude Include="..\..\..\source\core\FileInMemory.h" />
     <ClInclude Include="..\..\..\source\core\concmd.h" />
     <ClInclude Include="..\..\..\source\core\Config.h" />
     <ClInclude Include="..\..\..\source\core\Core.h" />
     <ClInclude Include="..\..\..\source\core\cvars.h" />
     <ClInclude Include="..\..\..\source\core\File.h" />
-    <ClInclude Include="..\..\..\source\core\FileIterator.h" />
+    <ClInclude Include="..\..\..\source\core\FileExtIterator.h" />
     <ClInclude Include="..\..\..\source\core\FileSystem.h" />
     <ClInclude Include="..\..\..\source\core\IFile.h" />
     <ClInclude Include="..\..\..\source\core\ModelPhysbox.h" />

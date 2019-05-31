@@ -67,13 +67,16 @@
     <ClCompile Include="..\..\..\source\core\ResourceManager.cpp">
       <Filter>Source\resource</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\core\FileIterator.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\core\ModelPhysbox.cpp">
       <Filter>Source\resource</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\ModelProvider.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\FileExtIterator.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\FileExtsIterator.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -209,13 +212,16 @@
     <ClInclude Include="..\..\..\source\core\ResourceManager.h">
       <Filter>Header\resource</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\core\FileIterator.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\core\ModelPhysbox.h">
       <Filter>Header\resource</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\ModelProvider.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\FileExtIterator.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\FileExtsIterator.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
