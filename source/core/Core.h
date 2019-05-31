@@ -34,6 +34,8 @@ public:
 	void shutdownUpdatable();
 	void runUpdate() override;
 
+	UINT_PTR getCrtOutputHandler() override;
+
 protected:
 	IBaseEventChannel *getEventChannelInternal(const XGUID &guid) override;
 

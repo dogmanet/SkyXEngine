@@ -3,6 +3,9 @@
 
 #include "ResourceModel.h"
 
+#pragma warning(push)
+#pragma warning(disable: 4250)
+
 class CResourceModelStatic final: public CResourceModel, public virtual IXResourceModelStatic
 {
 public:
@@ -46,5 +49,7 @@ protected:
 	};
 	Array<_subset_meta> m_aLods;
 };
+
+#pragma warning(pop)
 
 #endif

@@ -20,6 +20,7 @@ public:
 	void onModelRelease(CAnimatedModel *pModel);
 	IXMaterialSystem *getMaterialSystem();
 	IGXContext *getDevice();
+	void setDevice(IGXContext *pContext);
 	IGXVertexDeclaration *getVertexDeclaration();
 
 	void update(float fDT);
@@ -35,6 +36,7 @@ protected:
 	IGXVertexDeclaration *m_pVertexDeclaration = NULL;
 
 	IXCore *m_pCore;
+	IGXContext *m_pRenderContext = NULL;
 };
 
 #endif

@@ -1,26 +1,10 @@
 #include "AnimatedModelProvider.h"
 #include <xcommon/IPluginManager.h>
 
-#if 1
-#include <gcore/sxgcore.h>
-#endif
-
 CAnimatedModelProvider::CAnimatedModelProvider(IXCore *pCore):
 	m_pCore(pCore)
 {
-	GXVERTEXELEMENT layoutDynamicEx[] =
-	{
-		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
-		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
-		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
-		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT},
-		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL},
-		{0, 56, GXDECLTYPE_UBYTE4, GXDECLUSAGE_BLENDINDICES},
-		{0, 60, GXDECLTYPE_FLOAT4, GXDECLUSAGE_BLENDWEIGHT},
-		GXDECL_END()
-	};
-
-	m_pVertexDeclaration = getDevice()->createVertexDeclaration(layoutDynamicEx);
+	
 }
 
 CAnimatedModelProvider::~CAnimatedModelProvider()
@@ -35,7 +19,26 @@ IGXVertexDeclaration *CAnimatedModelProvider::getVertexDeclaration()
 
 IGXContext *CAnimatedModelProvider::getDevice()
 {
-	return(SGCore_GetDXDevice());
+	return(m_pRenderContext);
+}
+
+void CAnimatedModelProvider::setDevice(IGXContext *pDevice)
+{
+	m_pRenderContext = pDevice;
+
+	GXVERTEXELEMENT layoutDynamicEx[] =
+	{
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
+		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT},
+		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL},
+		{0, 56, GXDECLTYPE_UBYTE4, GXDECLUSAGE_BLENDINDICES},
+		{0, 60, GXDECLTYPE_FLOAT4, GXDECLUSAGE_BLENDWEIGHT},
+		GXDECL_END()
+	};
+
+	m_pVertexDeclaration = getDevice()->createVertexDeclaration(layoutDynamicEx);
 }
 
 bool XMETHODCALLTYPE CAnimatedModelProvider::createModel(UINT uResourceCount, IXResourceModelAnimated **ppResources, IXAnimatedModel **ppModel)

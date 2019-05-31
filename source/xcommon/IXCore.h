@@ -8,6 +8,9 @@
 #include "XEvents.h"
 #include "IXRenderPipeline.h"
 
+#include <fcntl.h>
+#include <io.h>
+
 class IPluginManager;
 class IXResourceManager;
 
@@ -29,11 +32,35 @@ public:
 		return((IEventChannel<T>*)getEventChannelInternal(guid));
 	}
 
+	virtual UINT_PTR getCrtOutputHandler() = 0;
+
 	//@FIXME: Remove that!
 	virtual void initUpdatable() = 0;
 	virtual void runUpdate() = 0;
 protected:
 	virtual IBaseEventChannel *getEventChannelInternal(const XGUID &guid) = 0;
 };
+
+/*! Устанавливает поток вывода. Для работы консоли
+\warning Должна быть инлайнова, чтобы выполняться в контексте вызывающей библиотеки
+*/
+__inline void Core_SetOutPtr(IXCore *pCore)
+{
+	UINT_PTR sock = pCore->getCrtOutputHandler();
+	if(sock == ~0)
+	{
+		return;
+	}
+	int hOut = _open_osfhandle(sock, O_RDONLY | O_RDWR | O_WRONLY | _O_APPEND);
+	FILE * fOut = ::_fdopen(hOut, "a+");
+	::setvbuf(fOut, NULL, _IONBF, 0);
+
+	*stdout = *fOut;
+	*stderr = *fOut;
+
+	fOut->_file = 1;
+}
+
+#define INIT_OUTPUT_STREAM(icore) Core_SetOutPtr(icore)
 
 #endif

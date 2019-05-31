@@ -94,6 +94,10 @@ struct IBaseObject
 #ifndef __GDEFINES_H
 #define __GDEFINES_H
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <cstdlib>
 
 /*! \name Некоторые ограничения на размерности */
@@ -399,7 +403,7 @@ inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, .
 
 inline void LibReport(int iLevel, const char *szFormat, ...)
 {
-	extern report_func g_fnReportf;
+	// extern report_func g_fnReportf;
 
 	static char szStr[REPORT_MSG_MAX_LEN];
 	szStr[0] = 0;
@@ -411,7 +415,7 @@ inline void LibReport(int iLevel, const char *szFormat, ...)
 	vsprintf_s(szStr, sizeof(szStr), szFormat, va);
 	va_end(va);
 
-	g_fnReportf(iLevel, SX_LIB_NAME, szStr);
+	DefReport(iLevel, SX_LIB_NAME, szStr);
 }
 
 

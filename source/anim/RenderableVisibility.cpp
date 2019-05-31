@@ -1,23 +1,13 @@
 #include "RenderableVisibility.h"
-#include "animated.h"
 #include <gcore/sxgcore.h>
 #include "AnimatedModelProvider.h"
 #include "DynamicModelProvider.h"
-
-extern AnimationManager * g_mgr;
 
 CRenderableVisibility::CRenderableVisibility(ID idPlugin, CAnimatedModelProvider *pProviderAnimated, CDynamicModelProvider *pProviderDynamic):
 	m_idPlugin(idPlugin),
 	m_pProviderAnimated(pProviderAnimated),
 	m_pProviderDynamic(pProviderDynamic)
 {
-	m_idVisCalcObj = g_mgr->getNextVisId();
-	assert(ID_VALID(m_idVisCalcObj));
-}
-
-CRenderableVisibility::~CRenderableVisibility()
-{
-	g_mgr->freeVisID(m_idVisCalcObj);
 }
 
 ID CRenderableVisibility::getPluginId()
@@ -44,7 +34,6 @@ void CRenderableVisibility::updateForFrustum(const IFrustum *pFrustum, const IXR
 		pRef = (CRenderableVisibility*)pReference;
 	}
 
-	g_mgr->computeVis(pFrustum, m_idVisCalcObj);
 	m_pProviderAnimated->computeVisibility(pFrustum, this, pRef);
 	m_pProviderDynamic->computeVisibility(pFrustum, this, pRef);
 }

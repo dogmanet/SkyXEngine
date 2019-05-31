@@ -1,24 +1,9 @@
 #include "DynamicModelProvider.h"
 #include <xcommon/IPluginManager.h>
 
-#if 1
-#include <gcore/sxgcore.h>
-#endif
-
 CDynamicModelProvider::CDynamicModelProvider(IXCore *pCore):
 	m_pCore(pCore)
 {
-	GXVERTEXELEMENT layoutStaticEx[] =
-	{
-		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
-		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
-		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
-		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT},
-		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL},
-		GXDECL_END()
-	};
-
-	m_pVertexDeclaration = getDevice()->createVertexDeclaration(layoutStaticEx);
 }
 
 CDynamicModelProvider::~CDynamicModelProvider()
@@ -33,7 +18,24 @@ IGXVertexDeclaration *CDynamicModelProvider::getVertexDeclaration()
 
 IGXContext *CDynamicModelProvider::getDevice()
 {
-	return(SGCore_GetDXDevice());
+	return(m_pRenderContext);
+}
+void CDynamicModelProvider::setDevice(IGXContext *pDevice)
+{
+	m_pRenderContext = pDevice;
+
+
+	GXVERTEXELEMENT layoutStaticEx[] =
+	{
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
+		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT},
+		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL},
+		GXDECL_END()
+	};
+
+	m_pVertexDeclaration = pDevice->createVertexDeclaration(layoutStaticEx);
 }
 
 bool XMETHODCALLTYPE CDynamicModelProvider::createModel(IXResourceModel *pResource, IXDynamicModel **ppModel)

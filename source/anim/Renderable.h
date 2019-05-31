@@ -3,28 +3,37 @@
 
 #include <xcommon/IXRenderable.h>
 
+#include "AnimatedModelProvider.h"
+#include "DynamicModelProvider.h"
+
 class CRenderable: public IXRenderable
 {
 public:
+	CRenderable(ID idPlugin, CAnimatedModelProvider *pProviderAnimated, CDynamicModelProvider *pProviderDynamic);
+
 	//! Возвращает поддерживаемые стадии рендера
-	X_RENDER_STAGE getStages();
+	X_RENDER_STAGE getStages() override;
 
 	//! Возвращает приоритет рендера внутри стадии. Чем меньше число - тем раньше будет рендер
-	UINT getPriorityForStage(X_RENDER_STAGE stage);
+	UINT getPriorityForStage(X_RENDER_STAGE stage) override;
 
 	//! Выполняет отрисовку согласно заданной стадии с учетом видимости. Если pVisibility == NULL - рисуется все
-	void renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility);
+	void renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility) override;
 
-	void startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem);
-	void shutdown();
+	void startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem) override;
+	void shutdown() override;
 
 	//! Создает новый объект просчета видимости для системы
-	void newVisData(IXRenderableVisibility **ppVisibility);
+	void newVisData(IXRenderableVisibility **ppVisibility) override;
 
 	IXMaterialSystem *getMaterialSystem();
 protected:
 	IGXContext *m_pDevice = NULL;
 	IXMaterialSystem *m_pMaterialSystem = NULL;
+	ID m_idPlugin = -1;
+
+	CAnimatedModelProvider *m_pAnimatedModelProvider = NULL;
+	CDynamicModelProvider *m_pDynamicModelProvider = NULL;
 };
 
 #endif

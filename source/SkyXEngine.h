@@ -367,13 +367,6 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <pp/sxpp.h>
 
 #if defined(_DEBUG)
-#pragma comment(lib, "sxanim_d.lib")
-#else
-#pragma comment(lib, "sxanim.lib")
-#endif
-#include <anim/sxanim.h>
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxphysics_d.lib")
 #else
 #pragma comment(lib, "sxphysics.lib")

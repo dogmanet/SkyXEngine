@@ -325,17 +325,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB pp initialized\n");
 #endif
-
-	SXAnim_0Create(
-#ifdef SX_SERVER
-		true
-#else
-		false
-#endif
-		);
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB anim initialized\n");
-
-
+	
 	SPhysics_0Create();
 	SPhysics_Dbg_Set(SkyXEngine_PrintfLog);
 
@@ -2151,9 +2141,6 @@ void SkyXEngine_Kill()
 	SXDecals_AKill();
 #endif
 	SPhysics_AKill();
-#ifndef _SERVER
-	SXAnim_AKill();
-#endif
 #if 0
 	SGeom_AKill();
 #endif

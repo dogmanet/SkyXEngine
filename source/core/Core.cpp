@@ -181,3 +181,8 @@ void CCore::shutdownUpdatable()
 		m_aUpdatables[i].pUpdatable->shutdown();
 	}
 }
+
+UINT_PTR CCore::getCrtOutputHandler()
+{
+	return(Core_ConsoleGetOutHandler());
+}

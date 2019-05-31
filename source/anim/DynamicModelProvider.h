@@ -20,6 +20,7 @@ public:
 	void onModelRelease(CDynamicModel *pModel);
 	IXMaterialSystem *getMaterialSystem();
 	IGXContext *getDevice();
+	void setDevice(IGXContext *pContext);
 	IGXVertexDeclaration *getVertexDeclaration();
 
 	void render(CRenderableVisibility *pVisibility = NULL);
@@ -33,6 +34,7 @@ protected:
 	IGXVertexDeclaration *m_pVertexDeclaration = NULL;
 
 	IXCore *m_pCore;
+	IGXContext *m_pRenderContext = NULL;
 };
 
 #endif

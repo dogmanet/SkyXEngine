@@ -3,6 +3,9 @@
 
 #include "ResourceModel.h"
 
+#pragma warning(push)
+#pragma warning(disable: 4250)
+
 class CResourceModelAnimated: public CResourceModel, public virtual IXResourceModelAnimated
 {
 public:
@@ -138,5 +141,7 @@ protected:
 	Array<String> m_asPartsNames;
 	Array<_part> m_aParts;
 };
+
+#pragma warning(pop)
 
 #endif

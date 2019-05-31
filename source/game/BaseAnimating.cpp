@@ -118,11 +118,11 @@ void CBaseAnimating::setModel(const char * mdl)
 		if(pProvider->createDynamicModel(pResource, &pModel))
 		{
 			m_pModel = pModel;
+			m_pModel->setSkin(m_iSkin);
 		}
 		mem_release(pResource);
 	}
 	
-	m_pModel->setSkin(m_iSkin);
 	initPhysics();
 }
 

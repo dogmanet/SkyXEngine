@@ -1,12 +1,12 @@
 #include "Renderable.h"
-#include "animated.h"
 #include "RenderableVisibility.h"
-#include "AnimatedModelProvider.h"
-#include "DynamicModelProvider.h"
 
-extern CAnimatedModelProvider *g_pAnimatedModelProvider;
-extern CDynamicModelProvider *g_pDynamicModelProvider;
-extern AnimationManager * g_mgr;
+CRenderable::CRenderable(ID idPlugin, CAnimatedModelProvider *pProviderAnimated, CDynamicModelProvider *pProviderDynamic):
+	m_idPlugin(idPlugin),
+	m_pAnimatedModelProvider(pProviderAnimated),
+	m_pDynamicModelProvider(pProviderDynamic)
+{
+}
 
 X_RENDER_STAGE CRenderable::getStages()
 {
@@ -20,14 +20,12 @@ UINT CRenderable::getPriorityForStage(X_RENDER_STAGE stage)
 
 void CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility)
 {
-	ID idVisCalcObj = 0;
 	CRenderableVisibility *pVis = NULL;
 	if(pVisibility)
 	{
-		assert(pVisibility->getPluginId() == 0);
+		assert(pVisibility->getPluginId() == m_idPlugin);
 
 		pVis = (CRenderableVisibility*)pVisibility;
-		idVisCalcObj = pVis->getVisCalcObjId();
 	}
 
 	switch(stage)
@@ -35,14 +33,12 @@ void CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVis
 	case XRS_PREPARE:
 		break;
 	case XRS_GBUFFER:
-		g_mgr->render(idVisCalcObj);
-		g_pAnimatedModelProvider->render(pVis);
-		g_pDynamicModelProvider->render(pVis);
+		m_pAnimatedModelProvider->render(pVis);
+		m_pDynamicModelProvider->render(pVis);
 		break;
 	case XRS_SHADOWS:
-		g_mgr->render(idVisCalcObj);
-		g_pAnimatedModelProvider->render(pVis);
-		g_pDynamicModelProvider->render(pVis);
+		m_pAnimatedModelProvider->render(pVis);
+		m_pDynamicModelProvider->render(pVis);
 		break;
 	case XRS_GI:
 		break;
@@ -61,6 +57,9 @@ void CRenderable::startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem
 {
 	m_pDevice = pDevice;
 	m_pMaterialSystem = pMaterialSystem;
+
+	m_pAnimatedModelProvider->setDevice(pDevice);
+	m_pDynamicModelProvider->setDevice(pDevice);
 }
 void CRenderable::shutdown()
 {
@@ -68,7 +67,7 @@ void CRenderable::shutdown()
 
 void CRenderable::newVisData(IXRenderableVisibility **ppVisibility)
 {
-	*ppVisibility = new CRenderableVisibility(0, g_pAnimatedModelProvider, g_pDynamicModelProvider);
+	*ppVisibility = new CRenderableVisibility(m_idPlugin, m_pAnimatedModelProvider, m_pDynamicModelProvider);
 }
 
 IXMaterialSystem *CRenderable::getMaterialSystem()
