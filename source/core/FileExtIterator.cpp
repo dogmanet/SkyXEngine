@@ -23,8 +23,10 @@ const char *CFileExtIterator::next()
             //Сохраняем HANDLE файла, что бы можно было продожлить с того места
             m_handle = hf;
 
+            m_pathStr = m_sPath + "/" + FindFileData.cFileName;
+
             //Возвращаем полный путь, вместе с именем файла и расширением
-            return (m_sPath + "\\" + FindFileData.cFileName).c_str();
+            return m_pathStr.c_str();
         }
     }
 

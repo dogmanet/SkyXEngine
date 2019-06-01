@@ -9,6 +9,7 @@ class CDirIterator final : public IFileSystem::IFileIterator
 {
 private:
     String m_sPath;
+    String m_pathStr;
 
     HANDLE m_handle = nullptr;
 

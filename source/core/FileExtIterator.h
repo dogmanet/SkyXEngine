@@ -9,6 +9,8 @@ class CFileExtIterator final : public IFileSystem::IFileIterator
 {
 private:
     String m_sPath;
+    String m_pathStr;
+
     const char *m_szExt;
 
     HANDLE m_handle = nullptr;

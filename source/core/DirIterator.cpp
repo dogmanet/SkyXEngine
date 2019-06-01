@@ -21,7 +21,9 @@ const char *CDirIterator::next()
             {
                 m_handle = hf;
 
-                return (m_sPath + "\\" + FindFileData.cFileName).c_str();
+                m_pathStr = m_sPath + "/" + FindFileData.cFileName;
+
+                return m_pathStr.c_str();
             }
         }
     }
