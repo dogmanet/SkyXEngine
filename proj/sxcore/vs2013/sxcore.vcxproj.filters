@@ -79,6 +79,9 @@
     <ClCompile Include="..\..\..\source\core\FileExtsIterator.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\core\DirIterator.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -222,6 +225,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\FileExtsIterator.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\DirIterator.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
