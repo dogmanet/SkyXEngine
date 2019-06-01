@@ -74,7 +74,7 @@ public:
     };
     
     //! Возвращает список всех папок
-    virtual IFileIterator *getFolderList() = 0;
+    virtual IFileIterator *getFolderList(const char *szPath) = 0;
 
 	/*! возвращает массив со всеми данными находящимися по пути szPath,
 	szPath может быть не канонизирован и необязательно должен заканчиваться слэшем,

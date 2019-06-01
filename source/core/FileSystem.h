@@ -54,8 +54,7 @@ public:
     //! Данная функция возвращает время в UTC (Coordinated Universal Time)
     time_t getFileModifyTime(const char *szPath) override;
 
-    //! No implementation
-    IFileIterator *getFolderList() override;
+    IFileIterator *getFolderList(const char *szPath) override;
 
     IFileIterator *getFileList(const char *szPath, const char *szExt = 0) override;
 

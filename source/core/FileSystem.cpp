@@ -1,6 +1,7 @@
 #include "FileSystem.h"
 #include "FileExtIterator.h"
 #include "FileExtsIterator.h"
+#include "DirIterator.h"
 #include <shellapi.h>
 #include <ShlObj.h>
 
@@ -115,10 +116,9 @@ time_t CFileSystem::getFileModifyTime(const char *szPath)
 	return convertFiletimeToTime_t(mTime);
 }
 
-IFileSystem::IFileIterator *CFileSystem::getFolderList()
+IFileSystem::IFileIterator *CFileSystem::getFolderList(const char *szPath)
 {
-    assert(!"No Implementation");
-    return nullptr;
+    return new CDirIterator(szPath);
 }
 
 IFileSystem::IFileIterator *CFileSystem::getFileList(const char *szPath, const char *szExt)
