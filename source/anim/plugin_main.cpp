@@ -10,8 +10,6 @@ class CDSEPlugin: public IXPlugin
 public:
 	void XMETHODCALLTYPE startup(IXCore *pCore) override
 	{
-		INIT_OUTPUT_STREAM(pCore);
-
 		m_pAnimatedModelProvider = new CAnimatedModelProvider(pCore);
 		m_pDynamicModelProvider = new CDynamicModelProvider(pCore);
 		m_pRenderable = new CRenderable(getID(), m_pAnimatedModelProvider, m_pDynamicModelProvider);

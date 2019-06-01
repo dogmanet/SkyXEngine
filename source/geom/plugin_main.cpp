@@ -12,13 +12,10 @@ class CStaticGeomPlugin: public IXPlugin
 public:
 	CStaticGeomPlugin()
 	{
-		Core_SetOutPtr();
 	}
 	
 	void XMETHODCALLTYPE startup(IXCore *pCore) override
 	{
-		INIT_OUTPUT_STREAM(pCore);
-
 		m_pCore = pCore;
 
 		g_pModels = m_pModels = new CModels(false);
