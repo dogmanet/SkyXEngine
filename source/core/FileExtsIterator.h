@@ -8,7 +8,7 @@
 class CFileExtsIterator final : public IFileSystem::IFileIterator
 {
 private:
-    String m_szPath;
+    String m_sPath;
 
     const char **m_szExts;
 

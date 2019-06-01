@@ -1,7 +1,7 @@
 #include "FileExtsIterator.h"
 
 CFileExtsIterator::CFileExtsIterator(const char *szPath, const char **szExts, int extArraySize)
-: m_szPath(szPath), m_szExts(szExts), m_extCount(extArraySize)
+: m_sPath(szPath), m_szExts(szExts), m_extCount(extArraySize)
 {}
 
 const char *CFileExtsIterator::next()
@@ -11,7 +11,7 @@ const char *CFileExtsIterator::next()
 
     while (m_currentExt < m_extCount)
     {
-        String fileName = m_szPath + "*." + *m_szExts[m_currentExt];
+        String fileName = m_sPath + "*." + *m_szExts[m_currentExt];
 
         //Проверяем указатель, если m_handle пустой, то ищем первый файл с расширением szExts
         hf = INVALID_OR_NULL(m_handle) ? FindFirstFile(fileName.c_str(), &FindFileData) : m_handle;
@@ -22,13 +22,13 @@ const char *CFileExtsIterator::next()
             {
                 m_handle = hf;
 
-                return (m_szPath + "\\" + FindFileData.cFileName).c_str();
+                return (m_sPath + "\\" + FindFileData.cFileName).c_str();
             }
             ++m_currentExt;
         }
     }
 
-    return "";
+    return nullptr;
 }
 
 void CFileExtsIterator::reset()

@@ -80,7 +80,7 @@ public:
 	szPath может быть не канонизирован и необязательно должен заканчиваться слэшем,
 	szPath уже может содержать фильтр (к примеру C:/*), но если его нет, тогда функция подставит сама
 	*/
-    virtual IFileIterator *getFileList(const char *szPath, const char *szExt) = 0;
+    virtual IFileIterator *getFileList(const char *szPath, const char *szExt = 0) = 0;
 
     //! То же, что и предыдущая, только для массива расширений
     virtual IFileIterator *getFileList(const char *szPath, const char **szExts, int extsCount) = 0;

@@ -57,7 +57,7 @@ public:
     //! No implementation
     IFileIterator *getFolderList() override;
 
-    IFileIterator *getFileList(const char *szPath, const char *szExt) override;
+    IFileIterator *getFileList(const char *szPath, const char *szExt = 0) override;
 
     IFileIterator *getFileList(const char *szPath, const char **szExts, int extsCount) override;
 

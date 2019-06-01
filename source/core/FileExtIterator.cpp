@@ -1,7 +1,7 @@
 #include "FileExtIterator.h"
 
 CFileExtIterator::CFileExtIterator(const char *szPath, const char *szExt)
-: m_szPath(szPath), m_szExt(szExt)
+: m_sPath(szPath), m_szExt(szExt)
 {}
 
 const char *CFileExtIterator::next()
@@ -10,7 +10,7 @@ const char *CFileExtIterator::next()
     HANDLE hf;
 
     //Если указали расширение файла - то добавляем его к имени пути, иначе ищем все файлы
-    String fileName = m_szExt == nullptr ? (m_szPath + "*.*") : (m_szPath + "*." + *m_szExt);
+    String fileName = m_szExt == nullptr ? (m_sPath + "*.*") : (m_sPath + "*." + *m_szExt);
 
     //Проверяем указатель, если m_handle пустой, то ищем первый файл с расширением szExts
     hf = INVALID_OR_NULL(m_handle) ? FindFirstFile(fileName.c_str(), &FindFileData) : m_handle;
@@ -24,12 +24,12 @@ const char *CFileExtIterator::next()
             m_handle = hf;
 
             //Возвращаем полный путь, вместе с именем файла и расширением
-            return (m_szPath + "\\" + FindFileData.cFileName).c_str();
+            return (m_sPath + "\\" + FindFileData.cFileName).c_str();
         }
     }
 
     //Если вообще не нашли файлов возвращаем пустую строку?? или nullptr?
-    return "";
+    return nullptr;
 }
 
 void CFileExtIterator::reset()
