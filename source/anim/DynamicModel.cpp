@@ -53,7 +53,26 @@ SMQuaternion XMETHODCALLTYPE CDynamicModel::getOrientation() const
 }
 void XMETHODCALLTYPE CDynamicModel::setOrientation(const SMQuaternion &qRot)
 {
+	if(m_qRotation == qRot)
+	{
+		return;
+	}
 	m_qRotation = qRot;
+	m_isLocalAABBvalid = false;
+}
+
+float XMETHODCALLTYPE CDynamicModel::getScale() const
+{
+	return(m_fScale);
+}
+void XMETHODCALLTYPE CDynamicModel::setScale(float fScale)
+{
+	if(m_fScale == fScale)
+	{
+		return;
+	}
+	m_fScale = fScale;
+	m_isLocalAABBvalid = false;
 }
 
 UINT XMETHODCALLTYPE CDynamicModel::getSkin() const
@@ -67,11 +86,48 @@ void XMETHODCALLTYPE CDynamicModel::setSkin(UINT uSkin)
 
 float3 XMETHODCALLTYPE CDynamicModel::getLocalBoundMin() const
 {
-	return(m_pShared->getLocalBoundMin());
+	_updateAABB();
+
+	return(m_vLocalMin);
 }
 float3 XMETHODCALLTYPE CDynamicModel::getLocalBoundMax() const
 {
-	return(m_pShared->getLocalBoundMax());
+	_updateAABB();
+
+	return(m_vLocalMax);
+}
+
+void CDynamicModel::_updateAABB() const
+{
+	if(m_isLocalAABBvalid)
+	{
+		return;
+	}
+
+	float3 vMin = m_pShared->getLocalBoundMin() * m_fScale;
+	float3 vMax = m_pShared->getLocalBoundMax() * m_fScale;
+
+	float3 vCurrent[] = {
+		m_qRotation * float3(vMin.x, vMin.y, vMin.z),
+		m_qRotation * float3(vMin.x, vMin.y, vMax.z),
+		m_qRotation * float3(vMin.x, vMax.y, vMin.z),
+		m_qRotation * float3(vMin.x, vMax.y, vMax.z),
+		m_qRotation * float3(vMax.x, vMin.y, vMin.z),
+		m_qRotation * float3(vMax.x, vMin.y, vMax.z),
+		m_qRotation * float3(vMax.x, vMax.y, vMin.z),
+		m_qRotation * float3(vMax.x, vMax.y, vMax.z)
+	};
+	
+	m_vLocalMin = (float3)SMVectorMin(
+		SMVectorMin(SMVectorMin(vCurrent[0], vCurrent[1]), SMVectorMin(vCurrent[2], vCurrent[3])),
+		SMVectorMin(SMVectorMin(vCurrent[4], vCurrent[5]), SMVectorMin(vCurrent[6], vCurrent[7]))
+		);
+	m_vLocalMax = (float3)SMVectorMax(
+		SMVectorMax(SMVectorMax(vCurrent[0], vCurrent[1]), SMVectorMax(vCurrent[2], vCurrent[3])),
+		SMVectorMax(SMVectorMax(vCurrent[4], vCurrent[5]), SMVectorMax(vCurrent[6], vCurrent[7]))
+		);
+
+	m_isLocalAABBvalid = true;
 }
 
 float4 XMETHODCALLTYPE CDynamicModel::getColor() const
@@ -109,5 +165,5 @@ void CDynamicModel::render(UINT uLod)
 		return;
 	}
 
-	m_pShared->render(m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition), m_uSkin, uLod, m_vColor);
+	m_pShared->render(SMMatrixScaling(m_fScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition), m_uSkin, uLod, m_vColor);
 }

@@ -1,5 +1,7 @@
 #include "UndoManager.h"
 
+void XUpdateWindowTitle();
+
 CUndoManager::~CUndoManager()
 {
 	reset();
@@ -47,6 +49,10 @@ void CUndoManager::reset()
 		mem_delete(m_stackUndo[i]);
 	}
 	m_stackUndo.clearFast();
+
+	m_iLastSaveIndex = 0;
+
+	XUpdateWindowTitle();
 }
 void CUndoManager::flushRedo()
 {
@@ -55,6 +61,11 @@ void CUndoManager::flushRedo()
 		mem_delete(m_stackRedo[i]);
 	}
 	m_stackRedo.clearFast();
+
+	if(m_iLastSaveIndex > m_stackUndo.size())
+	{
+		m_iLastSaveIndex = -1;
+	}
 }
 
 bool CUndoManager::execCommand(CCommand *pCommand)
@@ -63,6 +74,7 @@ bool CUndoManager::execCommand(CCommand *pCommand)
 	{
 		flushRedo();
 		m_stackUndo.push_back(pCommand);
+		XUpdateWindowTitle();
 		return(true);
 	}
 	mem_delete(pCommand);
@@ -80,6 +92,7 @@ bool CUndoManager::undo()
 	{
 		m_stackUndo.erase(m_stackUndo.size() - 1);
 		m_stackRedo.push_back(pCmd);
+		XUpdateWindowTitle();
 		return(true);
 	}
 	return(false);
@@ -96,7 +109,19 @@ bool CUndoManager::redo()
 	{
 		m_stackRedo.erase(m_stackRedo.size() - 1);
 		m_stackUndo.push_back(pCmd);
+		XUpdateWindowTitle();
 		return(true);
 	}
 	return(false);
+}
+
+bool CUndoManager::isDirty()
+{
+	return(m_stackUndo.size() != m_iLastSaveIndex);
+}
+
+void CUndoManager::makeClean()
+{
+	m_iLastSaveIndex = m_stackUndo.size();
+	XUpdateWindowTitle();
 }

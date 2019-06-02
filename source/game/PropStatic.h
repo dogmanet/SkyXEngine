@@ -28,6 +28,8 @@ public:
 	void createPhysBody() override;
 	void removePhysBody() override;
 protected:
+	void onSetScale(float fScale);
+	float m_fScale = 1.0f;
 };
 
 #endif

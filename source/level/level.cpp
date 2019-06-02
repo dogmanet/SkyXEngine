@@ -61,7 +61,7 @@ void CLevel::clear()
 #endif
 	
 	//SGame_UnloadObjLevel();
-	Core_0ConsoleExecCmd("ent_unload_level");
+//	Core_0ConsoleExecCmd("ent_unload_level");
 //	SPhysics_UnloadGeom();
 	SAIG_Clear();
 	if(!m_isServerMode)
@@ -117,7 +117,7 @@ void CLevel::load(const char *szName, bool isGame)
 		}
 	}
 	
-	if (pConfig->keyExists("level", "entity"))
+	/*if (pConfig->keyExists("level", "entity"))
 	{
 		//LibReport(REPORT_MSG_LEVEL_NOTICE, "  load entity\n");
 		sprintf(szFullPathEntity, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, pConfig->getKey("level", "entity"));
@@ -130,7 +130,7 @@ void CLevel::load(const char *szName, bool isGame)
 		{
 			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of entity '%s'", szFullPathEntity);
 		}
-	}
+	}*/
 
 	/*if (pConfig->keyExists("level", "physic"))
 	{
@@ -250,13 +250,13 @@ void CLevel::load(const char *szName, bool isGame)
 		}
 	}
 
-	Core_0ConsoleExecCmd("ent_load_level \"%s\" \"%s\"", szFullPathEntity, szName);
+	// Core_0ConsoleExecCmd("ent_load_level \"%s\" \"%s\"", szFullPathEntity, szName);
 
 	//SGame_OnLevelLoad(szName);
 
 	mem_release(pConfig);
 
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "level '%s' loaded!\n", szName);
+	//LibReport(REPORT_MSG_LEVEL_NOTICE, "level '%s' loaded!\n", szName);
 }
 
 void CLevel::save(const char *szName)

@@ -19,6 +19,9 @@ public:
 	virtual float3 XMETHODCALLTYPE getPosition() const = 0;
 	virtual void XMETHODCALLTYPE setPosition(const float3 &vPos) = 0;
 
+	virtual float XMETHODCALLTYPE getScale() const = 0;
+	virtual void XMETHODCALLTYPE setScale(float fScale)  = 0;
+
 	virtual SMQuaternion XMETHODCALLTYPE getOrientation() const = 0;
 	virtual void XMETHODCALLTYPE setOrientation(const SMQuaternion &qRot) = 0;
 

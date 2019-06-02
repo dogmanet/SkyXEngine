@@ -21,10 +21,14 @@ public:
 
 	void reset();
 	void flushRedo();
+
+	bool isDirty();
+	void makeClean();
 protected:
 	Array<CCommand*> m_stackUndo;
 	Array<CCommand*> m_stackRedo;
 
+	int m_iLastSaveIndex = 0;
 };
 
 #endif

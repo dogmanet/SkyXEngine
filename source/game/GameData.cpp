@@ -202,6 +202,92 @@ BOOL EnumLevels(CLevelInfo *pInfo)
 
 //##########################################################################
 
+class CLevelLoadProgressListener: public IEventListener<XEventLevelProgress>
+{
+public:
+	void onEvent(const XEventLevelProgress *pData)
+	{
+		if(m_isDonning)
+		{
+			return;
+		}
+		switch(pData->type)
+		{
+		case XEventLevelProgress::TYPE_PROGRESS_BEGIN:
+			++m_iLoadingCount;
+			break;
+		case XEventLevelProgress::TYPE_PROGRESS_END:
+			--m_iLoadingCount;
+			break;
+		}
+
+		testDone();
+	}
+	void onSendBegin()
+	{
+		XEventLevelProgress ev;
+		ev.fProgress = 0.0f;
+		ev.idPlugin = -1;
+		ev.type = XEventLevelProgress::TYPE_PROGRESS_BEGIN;
+		Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID)->broadcastEvent(&ev);
+
+		m_isSending = true;
+		m_iLoadingCount = 0;
+	}
+	void onSendDone()
+	{
+		m_isSending = false;
+
+		testDone();
+	}
+
+	void testDone()
+	{
+		assert(m_iLoadingCount >= 0);
+		if(m_isSending)
+		{
+			return;
+		}
+
+		if(m_iLoadingCount == 0)
+		{
+			XEventLevelProgress ev;
+			ev.fProgress = 0.0f;
+			ev.idPlugin = -1;
+			ev.type = XEventLevelProgress::TYPE_PROGRESS_END;
+			m_isDonning = true;
+			Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID)->broadcastEvent(&ev);
+			m_isDonning = false;
+
+			LibReport(REPORT_MSG_LEVEL_NOTICE, COLOR_LGREEN "Level is loaded!" COLOR_RESET "\n");
+		}
+	}
+
+protected:
+	bool m_isSending = false;
+	bool m_isDonning = false;
+
+	int m_iLoadingCount = 0;
+};
+
+CLevelLoadProgressListener g_levelProgressListener;
+
+void EndMap()
+{
+	if(!GameData::m_pMgr->isEditorMode())
+	{
+		GameData::m_pGameStateManager->activate("main_menu");
+		GameData::m_pPlayer->observe();
+	}
+
+	XEventLevel evLevel;
+	evLevel.type = XEventLevel::TYPE_UNLOAD;
+	evLevel.szLevelName = NULL;
+	g_pLevelChannel->broadcastEvent(&evLevel);
+};
+
+//##########################################################################
+
 GameData::GameData(HWND hWnd, bool isGame):
 	m_hWnd(hWnd)
 {
@@ -238,6 +324,35 @@ GameData::GameData(HWND hWnd, bool isGame):
 	m_pMgr = new CEntityManager();
 
 	g_pLevelChannel = Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID);
+	Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID)->addListener(&g_levelProgressListener);
+
+	g_pLevelChannel->addListener([](const XEventLevel *pData)
+	{
+		switch(pData->type)
+		{
+		case XEventLevel::TYPE_LOAD:
+			{
+				char szPath[256];
+				sprintf(szPath, "levels/%s/%s.ent", pData->szLevelName, pData->szLevelName);
+				LibReport(REPORT_MSG_LEVEL_NOTICE, "loading entities\n");
+				SGame_LoadEnts(szPath);
+				SGame_OnLevelLoad(pData->szLevelName);
+			}
+			break;
+
+		case XEventLevel::TYPE_UNLOAD:
+			SGame_UnloadObjLevel();
+			break;
+		case XEventLevel::TYPE_SAVE:
+			{
+				char szPath[256];
+				sprintf(szPath, "levels/%s/%s.ent", pData->szLevelName, pData->szLevelName);
+				SGame_SaveEnts(szPath);
+			}
+			
+			break;
+		}
+	});
 
 	m_pLightSystem = (IXLightSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXLIGHTSYSTEM_GUID);
 
@@ -321,20 +436,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 	{
 		UpdateSettingsDesktop();
 	});
-
-	Core_0RegisterConcmdArg("ent_load_level", [](int argc, const char ** argv){
-		if(argc != 3)
-		{
-			printf("Usage: ent_load_file <entfile> <levelname>");
-			return;
-		}
-		LibReport(REPORT_MSG_LEVEL_NOTICE, "load entity\n");
-		SGame_LoadEnts(argv[1]);
-		SGame_OnLevelLoad(argv[2]);
-	});
-	Core_0RegisterConcmd("ent_unload_level", [](){
-		SGame_UnloadObjLevel();
-	});
+	
 	Core_0RegisterConcmdArg("ent_save_level", [](int argc, const char ** argv){
 		if(argc != 2)
 		{
@@ -366,10 +468,19 @@ GameData::GameData(HWND hWnd, bool isGame):
 			printf("Usage: map <levelname>");
 			return;
 		}
+
+		EndMap();
+
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "Loading level '" COLOR_LGREEN "%s" COLOR_RESET "'\n", argv[1]);
+
+		g_levelProgressListener.onSendBegin();
+
 		XEventLevel evLevel;
 		evLevel.type = XEventLevel::TYPE_LOAD;
 		evLevel.szLevelName = argv[1];
 		g_pLevelChannel->broadcastEvent(&evLevel);
+
+		g_levelProgressListener.onSendDone();
 		
 		//SLevel_Load(argv[1], true);
 
@@ -388,6 +499,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 			bEnt->setKV("origin", "0 1 0");
 		}
 	});
+	Core_0RegisterConcmd("endmap", EndMap);
 
 	Core_0RegisterConcmdArg("gmode", [](int argc, const char ** argv)
 	{
@@ -553,15 +665,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		}
 	});
 	m_pGUI->registerCallback("to_mainmenu", [](gui::IEvent * ev){
-		GameData::m_pGameStateManager->activate("main_menu");
-
-		//Core_0ConsoleExecCmd("observe");
-		GameData::m_pPlayer->observe();
-
-		XEventLevel evLevel;
-		evLevel.type = XEventLevel::TYPE_UNLOAD;
-		g_pLevelChannel->broadcastEvent(&evLevel);
-		//SLevel_Clear();
+		Core_0ConsoleExecCmd("endmap");
 	});
 	m_pGUI->registerCallback("dial_settings", [](gui::IEvent * ev){
 		static gui::IDesktop * pSettingsDesktop = GameData::m_pGUI->createDesktopA("menu_settings", "menu/settings.html");

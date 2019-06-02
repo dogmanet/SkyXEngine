@@ -34,6 +34,7 @@ bool CCommandCreate::exec()
 	m_pObject->create();
 
 	g_pLevelObjects.push_back(m_pObject);
+	m_pObject->AddRef();
 
 	XUpdatePropWindow();
 	return(true);

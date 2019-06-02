@@ -19,6 +19,7 @@ See the license in LICENSE
 #include <xcommon/editor/IXEditable.h>
 #include <mtrl/IXMaterialSystem.h>
 #include "UndoManager.h"
+#include "Tools.h"
 
 extern HWND g_hWndMain;
 CGrid *g_pGrid = NULL;
@@ -39,6 +40,8 @@ static IGXRenderBuffer *g_pBorderRenderBuffer;
 CUndoManager *g_pUndoManager = NULL;
 extern HWND g_hComboTypesWnd;
 
+void XUpdateWindowTitle();
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
 //	SkyXEngine_PreviewCreate();
@@ -58,12 +61,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		return(1);
 	}
 
-	XInitGuiWindow(true);
+	// XInitGuiWindow(true);
 
 	SkyXEngine_Init(g_hTopLeftWnd, g_hWndMain, lpCmdLine);
 
 
-	XInitGuiWindow(false);
+	// XInitGuiWindow(false);
 
 	IPluginManager *pPluginManager = Core_GetIXCore()->getPluginManager();
 
@@ -111,6 +114,55 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 			ComboBox_Enable(g_hComboTypesWnd, FALSE);
 		}
 	}
+
+	Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID)->addListener([](const XEventLevelProgress *pData)
+	{
+		switch(pData->type)
+		{
+		case XEventLevelProgress::TYPE_PROGRESS_END:
+			if(pData->idPlugin == -1)
+			{
+				for(UINT ic = 0, il = g_pEditableSystems.size(); ic < il; ++ic)
+				{
+					IXEditable *pEditable = g_pEditableSystems[ic];
+					for(ID i = 0, l = pEditable->getObjectCount(); i < l; ++i)
+					{
+						g_pLevelObjects.push_back(pEditable->getObject(i));
+					}
+				}
+			}
+			break;
+		}
+	});
+
+	Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->addListener([](const XEventLevel *pData)
+	{
+		switch(pData->type)
+		{
+		case XEventLevel::TYPE_LOAD:
+			XUpdateWindowTitle();
+			break;
+		case XEventLevel::TYPE_UNLOAD:
+
+			SLevel_Clear();
+
+			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+			{
+				mem_release(g_pLevelObjects[i]);
+			}
+			g_pLevelObjects.clear();
+
+
+			g_pUndoManager->reset();
+
+			XUpdateWindowTitle();
+			break;
+
+		case XEventLevel::TYPE_SAVE:
+			g_pUndoManager->makeClean();
+			break;
+		}
+	});
 	
 	//SGCore_SkyBoxLoadTex("sky_2_cube.dds");
 	SGCore_SkyBoxLoadTex("sky_hdr.dds");
@@ -679,65 +731,36 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 
 void XLoadLevel(const char *szName)
 {
-	XResetLevel();
-
-	SLevel_Load(szName, false);
-	char szCaption[256];
-	sprintf(szCaption, "%s - [%s] | %s", MAIN_WINDOW_TITLE, szName, SKYXENGINE_VERSION4EDITORS);
-	SetWindowText(g_hWndMain, szCaption);
-
-	for(UINT ic = 0, il = g_pEditableSystems.size(); ic < il; ++ic)
-	{
-		IXEditable *pEditable = g_pEditableSystems[ic];
-		for(ID i = 0, l = pEditable->getObjectCount(); i < l; ++i)
-		{
-			g_pLevelObjects.push_back(pEditable->getObject(i));
-		}
-	}
-
-	
+	Core_0ConsoleExecCmd("map %s", szName);	
 }
 
 void XResetLevel()
 {
-	SetWindowText(g_hWndMain, MAIN_WINDOW_TITLE " | " SKYXENGINE_VERSION4EDITORS);
-
-	SLevel_Clear();
-#if 0
-	ID gid = SLight_GetGlobal();
-	if(ID_VALID(gid))
-	{
-		SLight_DeleteLight(gid);
-	}
-#endif
-
-	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-	{
-		mem_release(g_pLevelObjects[i]);
-	}
-	g_pLevelObjects.clear();
+	Core_0ConsoleExecCmd("endmap");
 }
 
-bool XSaveLevel(const char *szNewName)
+bool XSaveLevel(const char *szNewName, bool bForcePrompt)
 {
 	if(szNewName)
 	{
-		SLevel_Save(szNewName);
+		XEventLevel ev;
+		ev.type = XEventLevel::TYPE_SAVE;
+		ev.szLevelName = szNewName;
+		Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->broadcastEvent(&ev);
 		return(true);
 	}
 	
-	if(SLevel_GetName()[0])
+	if(!bForcePrompt && SLevel_GetName()[0])
 	{
 		return(XSaveLevel(SLevel_GetName()));
 	}
 		
-	char szPath[1024];
-	szPath[0] = 0;
 	char szName[1024];
-	/*if(gui_func::dialogs::SelectDirOwn(szName, szPath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Save level", false, true, 0))
+	int iMaxLength = sizeof(szName);
+	if(Tools::DlgPrompt(szName, &iMaxLength, "Level name", "Save new level"))
 	{
 		return(XSaveLevel(szName));
-	}*/
+	}
 	
 	return(false);
 }
@@ -891,4 +914,20 @@ bool XIsMouseInSelection(X_WINDOW_POS wnd)
 			fMPos.y >= g_xState.vSelectionBoundMin.y && fMPos.y <= g_xState.vSelectionBoundMax.y);
 	}
 	return(false);
+}
+
+void XUpdateWindowTitle()
+{
+	const char *szLevelName = SLevel_GetName();
+	char szCaption[256];
+	bool isDirty = g_pUndoManager->isDirty();
+	if(szLevelName && szLevelName[0])
+	{
+		sprintf(szCaption, "%s - [%s]%s | %s", MAIN_WINDOW_TITLE, szLevelName, isDirty ? "*" : "", SKYXENGINE_VERSION4EDITORS);
+	}
+	else
+	{
+		sprintf(szCaption, "%s%s | %s", MAIN_WINDOW_TITLE, isDirty ? " - *" : "", SKYXENGINE_VERSION4EDITORS);
+	}
+	SetWindowText(g_hWndMain, szCaption);
 }

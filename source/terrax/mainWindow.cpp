@@ -11,6 +11,8 @@
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
 
+#include "LevelOpenDialog.h"
+
 #include <uxtheme.h>
 #pragma comment(lib, "UxTheme.lib")
 
@@ -624,60 +626,81 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case ID_FILE_OPEN:
 		{
-			const char *szLevelName = SLevel_GetName();
-			char szPrompt[128];
-			if(szLevelName[0])
+			if(g_pUndoManager->isDirty())
 			{
-				sprintf_s(szPrompt, "Save changes to %s?", szLevelName);
-			}
-			UINT mb = MessageBoxA(hWnd, szLevelName[0] ? szPrompt : "Save changes?", MAIN_WINDOW_TITLE, MB_YESNOCANCEL);
-			if(mb == IDYES)
-			{
-				if(!XSaveLevel())
+				const char *szLevelName = SLevel_GetName();
+				char szPrompt[128];
+				if(szLevelName[0])
+				{
+					sprintf_s(szPrompt, "Save changes to %s?", szLevelName);
+				}
+				UINT mb = MessageBoxA(hWnd, szLevelName[0] ? szPrompt : "Save changes?", MAIN_WINDOW_TITLE, MB_YESNOCANCEL);
+				if(mb == IDYES)
+				{
+					if(!XSaveLevel())
+					{
+						break;
+					}
+				}
+				else if(mb == IDCANCEL)
 				{
 					break;
 				}
-			}
-			else if(mb == IDCANCEL)
-			{
-				break;
 			}
 			char szSelName[MAX_PATH];
 			char szSelPath[1024];
 			szSelName[0] = szSelPath[0] = 0;
-			//XLoadLevel("ant");
-			XLoadLevel("bunker");
-			//XLoadLevel("sga2");
-			/*if(gui_func::dialogs::SelectDirOwn(szSelName, szSelPath, Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), "Open level", false, false))
 			{
-				XLoadLevel(szSelName);
-			}*/
+				CLevelOpenDialog dlg(hInst, g_hWndMain);
+				const char *szLevelName = dlg.getLevelName();
+				if(szLevelName)
+				{
+					XLoadLevel(szLevelName);
+				}
+			}
 			break;
 		}
 		case ID_FILE_NEW:
 		{
-			const char *szLevelName = SLevel_GetName();
-			char szPrompt[128];
-			if(szLevelName[0])
+			if(g_pUndoManager->isDirty())
 			{
-				sprintf_s(szPrompt, "Save changes to %s?", szLevelName);
-			}
-			UINT mb = MessageBoxA(hWnd, szLevelName[0] ? szPrompt : "Save changes?", MAIN_WINDOW_TITLE, MB_YESNOCANCEL);
-			if(mb == IDYES)
-			{
-				if(!XSaveLevel())
+				const char *szLevelName = SLevel_GetName();
+				char szPrompt[128];
+				if(szLevelName[0])
+				{
+					sprintf_s(szPrompt, "Save changes to %s?", szLevelName);
+				}
+				UINT mb = MessageBoxA(hWnd, szLevelName[0] ? szPrompt : "Save changes?", MAIN_WINDOW_TITLE, MB_YESNOCANCEL);
+				if(mb == IDYES)
+				{
+					if(!XSaveLevel())
+					{
+						break;
+					}
+				}
+				else if(mb == IDCANCEL)
 				{
 					break;
 				}
-			}
-			else if(mb == IDCANCEL)
-			{
-				break;
 			}
 
 			XResetLevel();
 			break;
 		}
+		
+		case ID_FILE_SAVE:
+			if(g_pUndoManager->isDirty())
+			{
+				XSaveLevel();
+			}
+			break;
+
+		case ID_FILE_SAVEAS:
+			if(g_pUndoManager->isDirty())
+			{
+				XSaveLevel(NULL, true);
+			}
+			break;
 
 		case IDC_CTRL_BACK:
 			if(HIWORD(wParam) == 1)
@@ -941,6 +964,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				g_xState.bCreateMode = false;
 			}
+			break;
+
+		case ID_FILE_EXIT:
+			PostMessage(hWnd, WM_CLOSE, 0, 0);
 			break;
 		}
 		break;
@@ -1232,10 +1259,35 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		PostQuitMessage(0);
 		break;
 
+	case WM_CLOSE:
+		if(g_pUndoManager->isDirty())
+		{
+			const char *szLevelName = SLevel_GetName();
+			char szPrompt[128];
+			if(szLevelName[0])
+			{
+				sprintf_s(szPrompt, "Save changes to %s?", szLevelName);
+			}
+			UINT mb = MessageBoxA(hWnd, szLevelName[0] ? szPrompt : "Save changes?", MAIN_WINDOW_TITLE, MB_YESNOCANCEL);
+			if(mb == IDYES)
+			{
+				if(!XSaveLevel())
+				{
+					break;
+				}
+			}
+			else if(mb == IDCANCEL)
+			{
+				break;
+			}
+		}
+		DestroyWindow(hWnd);
+		break;
+
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
-	return 0;
+	return(0);
 }
 
 LRESULT CALLBACK GuiWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)

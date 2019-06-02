@@ -24,6 +24,9 @@ public:
 	SMQuaternion XMETHODCALLTYPE getOrientation() const override;
 	void XMETHODCALLTYPE setOrientation(const SMQuaternion &qRot) override;
 
+	float XMETHODCALLTYPE getScale() const override;
+	void XMETHODCALLTYPE setScale(float fScale) override;
+
 	UINT XMETHODCALLTYPE getSkin() const override;
 	void XMETHODCALLTYPE setSkin(UINT uSkin) override;
 
@@ -49,7 +52,13 @@ protected:
 	UINT m_uSkin = 0;
 	float4_t m_vColor{1.0f, 1.0f, 1.0f, 1.0f};
 	bool m_isEnabled = true;
+	float m_fScale = 1.0f;
 
+	mutable bool m_isLocalAABBvalid = false;
+	mutable float3_t m_vLocalMin;
+	mutable float3_t m_vLocalMax;
+
+	void _updateAABB() const;
 };
 
 #endif

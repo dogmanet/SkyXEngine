@@ -11,7 +11,8 @@ See the license in LICENSE
 */
 
 BEGIN_PROPTABLE(CPropStatic)
-	//empty
+	//! Масштаб модели
+	DEFINE_FIELD_FLOATFN(m_fScale, 0, "scale", "Scale", onSetScale, EDITOR_TEXTFIELD)
 END_PROPTABLE()
 
 REGISTER_ENTITY(CPropStatic, prop_static);
@@ -51,3 +52,13 @@ void CPropStatic::removePhysBody()
 	SPhysics_RemoveShape(m_pRigidBody);
 	mem_delete(m_pRigidBody);
 }
+
+void CPropStatic::onSetScale(float fScale)
+{
+	m_fScale = fScale;
+	if(m_pModel)
+	{
+		m_pModel->setScale(fScale);
+	}
+}
+

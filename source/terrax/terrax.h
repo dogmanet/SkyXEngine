@@ -180,7 +180,7 @@ extern BOOL g_is3DRotating;
 extern BOOL g_is3DPanning;
 
 void XResetLevel();
-bool XSaveLevel(const char *szNewName=NULL);
+bool XSaveLevel(const char *szNewName=NULL, bool bForcePrompt = false);
 void XLoadLevel(const char *szName);
 void XRender3D();
 void XRender2D(X_2D_VIEW view, float fScale, bool preScene);

@@ -805,6 +805,10 @@ void CEntityManager::setOutputTimeout(named_output_t * pOutput, inputdata_t * pD
 
 void CEntityManager::sheduleDestroy(CBaseEntity *pEnt)
 {
+	if(pEnt->getFlags() & EF_REMOVED)
+	{
+		return;
+	}
 	pEnt->setFlags(pEnt->getFlags() | EF_REMOVED);
 	m_vEntRemoveList.push_back(pEnt);
 
