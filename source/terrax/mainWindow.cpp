@@ -696,7 +696,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case ID_FILE_SAVEAS:
-			if(g_pUndoManager->isDirty())
+			//if(g_pUndoManager->isDirty())
 			{
 				XSaveLevel(NULL, true);
 			}

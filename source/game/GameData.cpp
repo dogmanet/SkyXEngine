@@ -27,6 +27,8 @@ See the license in LICENSE
 
 #include <xcommon/XEvents.h>
 
+#include "Editable.h"
+
 CPlayer * GameData::m_pPlayer;
 CPointCamera * GameData::m_pActiveCamera;
 gui::IGUI * GameData::m_pGUI = NULL;
@@ -35,6 +37,7 @@ CHUDcontroller * GameData::m_pHUDcontroller;
 CGameStateManager * GameData::m_pGameStateManager;
 gui::dom::IDOMnode *GameData::m_pCell;
 IXLightSystem *GameData::m_pLightSystem;
+CEditable *g_pEditable = NULL;
 //gui::IDesktop *GameData::m_pStatsUI;
 
 //CRagdoll * g_pRagdoll;
@@ -322,6 +325,9 @@ GameData::GameData(HWND hWnd, bool isGame):
 	m_pHUDcontroller = new CHUDcontroller();
 
 	m_pMgr = new CEntityManager();
+
+	g_pEditable = new CEditable(Core_GetIXCore());
+	Core_GetIXCore()->getPluginManager()->registerInterface(IXEDITABLE_GUID, g_pEditable);
 
 	g_pLevelChannel = Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID);
 	Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID)->addListener(&g_levelProgressListener);
@@ -1049,6 +1055,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 GameData::~GameData()
 {
 	//mem_delete(g_pRagdoll);
+	mem_delete(g_pEditable);
 
 	mem_delete(m_pGameStateManager);
 	mem_delete(m_pHUDcontroller);
