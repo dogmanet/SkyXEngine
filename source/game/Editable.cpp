@@ -1,4 +1,5 @@
 #include "Editable.h"
+#include "EditorObject.h"
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxmtrl_d.lib")
@@ -50,16 +51,37 @@ CEditable::~CEditable()
 
 UINT CEditable::getObjectCount()
 {
-	//GameData::m_pMgr->getCount();
-	return(0);
+	UINT uResult = 0;
+	CBaseEntity *pEnt;
+	for(int i = 0, l = GameData::m_pMgr->getCount(); i < l; ++i)
+	{
+		if((pEnt = GameData::m_pMgr->getById(i)) && (pEnt->getFlags() & EF_LEVEL) && !(pEnt->getFlags() & EF_REMOVED))
+		{
+			++uResult;
+		}
+	}
+	return(uResult);
 }
 IXEditorObject *CEditable::getObject(UINT id)
 {
-	//return(new CEditorObject(this, id));
+	UINT uResult = 0;
+	CBaseEntity *pEnt;
+	for(int i = 0, l = GameData::m_pMgr->getCount(); i < l; ++i)
+	{
+		if((pEnt = GameData::m_pMgr->getById(i)) && (pEnt->getFlags() & EF_LEVEL) && !(pEnt->getFlags() & EF_REMOVED))
+		{
+			if(uResult == id)
+			{
+				return(new CEditorObject(this, pEnt));
+			}
+			++uResult;
+		}
+	}
+	
 	return(NULL);
 }
 IXEditorObject *CEditable::newObject(const char *szClassName)
 {
-	//return(new CEditorObject(this));
+	return(new CEditorObject(this));
 	return(NULL);
 }

@@ -190,6 +190,7 @@
     <ClCompile Include="..\..\..\source\game\crosshair.cpp" />
     <ClCompile Include="..\..\..\source\game\CrosshairManager.cpp" />
     <ClCompile Include="..\..\..\source\game\Editable.cpp" />
+    <ClCompile Include="..\..\..\source\game\EditorObject.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityFactory.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityManager.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncTrain.cpp" />
@@ -247,6 +248,7 @@
     <ClInclude Include="..\..\..\source\game\BaseTrigger.h" />
     <ClInclude Include="..\..\..\source\game\BaseCharacter.h" />
     <ClInclude Include="..\..\..\source\game\Editable.h" />
+    <ClInclude Include="..\..\..\source\game\EditorObject.h" />
     <ClInclude Include="..\..\..\source\game\GameStateManager.h" />
     <ClInclude Include="..\..\..\source\game\CharacterInventory.h" />
     <ClInclude Include="..\..\..\source\game\GameStates.h" />

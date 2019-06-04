@@ -240,6 +240,9 @@
     <ClCompile Include="..\..\..\source\game\Editable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\EditorObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -414,6 +417,9 @@
       <Filter>Header Files\ents\props</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\Editable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\EditorObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
