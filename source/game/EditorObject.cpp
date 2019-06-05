@@ -13,6 +13,8 @@ CEditorObject::CEditorObject(CEditable *pEditable, CBaseEntity *pEntity):
 
 	m_szClassName = pEntity->getClassName();
 
+	_iniFieldList();
+
 	m_vPos = pEntity->getPos();
 	//@TODO: fix me
 	m_vScale = float3(1.0f);
@@ -22,13 +24,60 @@ CEditorObject::CEditorObject(CEditable *pEditable, CBaseEntity *pEntity):
 CEditorObject::CEditorObject(CEditable *pEditable, const char *szClassName):
 	m_pEditable(pEditable)
 {
-	m_pEntity = CREATE_ENTITY(szClassName, GameData::m_pMgr);
-	m_szClassName = m_pEntity->getClassName();
+	m_szClassName = CEntityFactoryMap::GetInstance()->getClassNamePtr(szClassName);
+	assert(m_szClassName);
+
+	_iniFieldList();
 }
 
 CEditorObject::~CEditorObject()
 {
 	
+}
+
+void CEditorObject::_iniFieldList()
+{
+	proptable_t *pTable = CEntityFactoryMap::GetInstance()->getPropTable(m_szClassName);
+	propdata_t *pField = NULL;
+	X_PROP_FIELD xField;
+	while(pTable)
+	{
+		for(int i = 0; i < pTable->numFields; ++i)
+		{
+			pField = &pTable->pData[i];
+			if(
+				!(pField->flags & (PDFF_INPUT | PDFF_MESSAGE | PDFF_NOEDIT | PDFF_OUTPUT))
+				&& pField->szKey 
+				&& pField->szEdName
+				&& pField->editor.type != PDE_NONE
+				)
+			{
+				switch(pField->editor.type)
+				{
+				case PDE_COMBOBOX:
+					xField.editorType = XPET_COMBO;
+					xField.pEditorData = pField->editor.pData;
+					break;
+				case PDE_FILEFIELD:
+					xField.editorType = XPET_FILE;
+					break;
+				case PDE_FLAGS:
+					continue;
+					break;
+				case PDE_TEXTFIELD:
+					xField.editorType = XPET_TEXT; 
+					break;
+				}
+				xField.szHelp = "";
+				xField.szKey = pField->szKey;
+				xField.szName = pField->szEdName;
+
+				m_aFields.push_back(xField);
+			}
+		}
+
+		pTable = pTable->pBaseProptable;
+	}
 }
 
 void CEditorObject::setPos(const float3_t &pos)
@@ -65,6 +114,8 @@ void CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 		return;
 	}
 	m_pEntity->getMinMax(pvMin, pvMax);
+	*pvMin += m_vPos;
+	*pvMax += m_vPos;
 }
 
 void CEditorObject::renderSelection(bool is3D)
@@ -140,41 +191,27 @@ void CEditorObject::setKV(const char *szKey, const char *szValue)
 }
 const char *CEditorObject::getKV(const char *szKey)
 {
-#if 0
-	if(!fstrcmp(szKey, "model"))
-	{
-		return(m_sModelName.c_str());
-	}
-	else if(!fstrcmp(szKey, "name"))
-	{
-		return(m_sName.c_str());
-	}
-	else if(!fstrcmp(szKey, "segmentate"))
-	{
-		m_szSegmentation[0] = m_bSegmentation ? '1' : '0';
-		m_szSegmentation[1] = 0;
-		return(m_szSegmentation);
-	}
-#endif
-	return(NULL);
-}
-const X_PROP_FIELD *CEditorObject::getPropertyMeta(UINT uKey)
-{
-	static const X_PROP_FIELD s_szKeys[] = {
-		{"model", "Model file", XPET_TEXT, NULL, ""},
-		{"name", "Name", XPET_TEXT, NULL, ""},
-		{"segmentate", "Segmentate", XPET_TEXT /* XPET_YESNO */, NULL, ""}
-	};
-
-	if(uKey > 2)
+	if(!m_pEntity)
 	{
 		return(NULL);
 	}
-	return(&s_szKeys[uKey]);
+
+	char tmp[4096];
+
+	m_pEntity->getKV(szKey, tmp, sizeof(tmp));
+
+	m_msPropCache[szKey] = tmp;
+	return(m_msPropCache[szKey].c_str());
+}
+const X_PROP_FIELD *CEditorObject::getPropertyMeta(UINT uKey)
+{
+	assert(uKey < m_aFields.size());
+
+	return(&m_aFields[uKey]);
 }
 UINT CEditorObject::getProperyCount()
 {
-	return(3);
+	return(m_aFields.size());
 }
 
 const char *CEditorObject::getTypeName()

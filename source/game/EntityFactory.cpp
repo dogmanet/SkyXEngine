@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -125,4 +125,14 @@ void CEntityFactoryMap::getListing(const char ** pszOut, int size)
 			pszOut[j++] = i.first->getName();
 		}
 	}
+}
+
+const char *CEntityFactoryMap::getClassNamePtr(const char *szClassName)
+{
+	IEntityFactory * pFactory = getFactory(szClassName);
+	if(pFactory)
+	{
+		return(pFactory->getClassName());
+	}
+	return(NULL);
 }

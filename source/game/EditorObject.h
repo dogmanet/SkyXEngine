@@ -43,6 +43,11 @@ protected:
 	const char *m_szClassName = NULL;
 
 	CEditable *m_pEditable;
+
+	Array<X_PROP_FIELD> m_aFields;
+	AssotiativeArray<String, String> m_msPropCache;
+
+	void _iniFieldList();
 };
 
 #endif

@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -48,6 +48,8 @@ public:
 
 	int getListCount();
 	void getListing(const char ** pszOut, int size);
+
+	const char *getClassNamePtr(const char *szClassName);
 private:
 	IEntityFactory * getFactory(const char * szName);
 	AssotiativeArray<AAString, IEntityFactory*> m_mFactories;
