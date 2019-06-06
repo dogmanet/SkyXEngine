@@ -236,7 +236,7 @@ CGrid::CGrid(UINT uSize)
 	dsDesc.stencilPassOp = GXSTENCIL_OP_INCR;
 	m_pStencilPass0 = m_pDevice->createDepthStencilState(&dsDesc);
 
-	dsDesc.stencilFunc = GXCOMPARISON_EQUAL;
+	dsDesc.stencilFunc = GXCMP_EQUAL;
 	dsDesc.stencilPassOp = GXSTENCIL_OP_KEEP;
 	m_pStencilPass1 = m_pDevice->createDepthStencilState(&dsDesc);
 

@@ -422,7 +422,7 @@ namespace gui
 				iCI += l->iIC[0];
 				memcpy((USHORT*)pData + iCI, pIndices, sizeof(USHORT) * IndexCount);
 
-				m_pIndexBuffer = GetGUI()->getDevice()->createIndexBuffer(sizeof(USHORT)* iIndexCount, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY, GXIT_USHORT, pData);
+				m_pIndexBuffer = GetGUI()->getDevice()->createIndexBuffer(sizeof(USHORT)* iIndexCount, GX_BUFFER_USAGE_DYNAMIC, GXIT_UINT16, pData);
 				mem_delete_a(pData);
 
 			}

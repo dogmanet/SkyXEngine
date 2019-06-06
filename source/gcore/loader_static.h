@@ -100,10 +100,10 @@ struct DataStaticModel : public ISXDataStaticModel
 		mem_release(m_pIndexBuffer);
 		mem_release(m_pRenderBuffer);
 
-		m_pVertexBuffer = g_pDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_ALLOWDISCARD, m_pVertices);
+		m_pVertexBuffer = g_pDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_uiAllVertexCount, GX_BUFFER_USAGE_STATIC, m_pVertices);
 		m_pRenderBuffer = g_pDevice->createRenderBuffer(1, &m_pVertexBuffer, SGCore_StaticModelGetDecl());
 
-		m_pIndexBuffer = g_pDevice->createIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_ALLOWDISCARD, GXIT_UINT, m_pIndices);
+		m_pIndexBuffer = g_pDevice->createIndexBuffer(sizeof(UINT)* m_uiAllIndexCount, GX_BUFFER_USAGE_STATIC, GXIT_UINT32, m_pIndices);
 	}
 
 	DataStaticModel::~DataStaticModel()

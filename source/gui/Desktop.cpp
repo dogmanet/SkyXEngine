@@ -78,7 +78,7 @@ namespace gui
 			{0, m_iHeight, 0, 0.0f, 1.0f}
 		};
 
-		m_pVertices = GetGUI()->getDevice()->createVertexBuffer(sizeof(point) * 4, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, a);
+		m_pVertices = GetGUI()->getDevice()->createVertexBuffer(sizeof(point) * 4, GX_BUFFER_USAGE_STATIC, a);
 		m_pRenderBuffer = GetGUI()->getDevice()->createRenderBuffer(1, &m_pVertices, GetGUI()->getVertexDeclarations()->m_pXYZTex);
 	}
 	void CDesktop::releaseRenderTarget()

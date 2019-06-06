@@ -60,7 +60,7 @@ namespace gui
 		m_depthStencilStates.m_pDefault = m_pDevice->createDepthStencilState(&depthStencilDesc);
 
 		depthStencilDesc.bStencilEnable = true;
-		depthStencilDesc.stencilFunc = GXCOMPARISON_EQUAL;
+		depthStencilDesc.stencilFunc = GXCMP_EQUAL;
 		depthStencilDesc.stencilPassOp = GXSTENCIL_OP_INCR;
 		m_depthStencilStates.m_pStencilIncr = m_pDevice->createDepthStencilState(&depthStencilDesc);
 
@@ -108,7 +108,7 @@ namespace gui
 		USHORT pIdxQuad[] = {
 			0, 1, 2, 0, 2, 3
 		};
-		m_pQuadIndexes = m_pDevice->createIndexBuffer(sizeof(USHORT) * 6, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_USHORT, pIdxQuad);
+		m_pQuadIndexes = m_pDevice->createIndexBuffer(sizeof(USHORT) * 6, GX_BUFFER_USAGE_STATIC, GXIT_UINT16, pIdxQuad);
 
 		m_pQuadVerticesXYZ = m_pDevice->createVertexBuffer(sizeof(float) * 3 * 4, GX_BUFFER_USAGE_STREAM);
 		m_pQuadVerticesXYZTex16 = m_pDevice->createVertexBuffer(sizeof(float) * 5 * 16, GX_BUFFER_USAGE_STREAM);

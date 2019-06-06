@@ -271,7 +271,7 @@ void CEmitter::setCount(int iCount)
 
 	m_pArr = new CommonParticle[m_iCount];
 
-	m_pTransVertBuf = pe_data::pDXDevice->createVertexBuffer(m_iCount * sizeof(CommonParticleDecl2), GX_BUFFER_USAGE_STREAM | GX_BUFFER_ALLOWDISCARD);
+	m_pTransVertBuf = pe_data::pDXDevice->createVertexBuffer(m_iCount * sizeof(CommonParticleDecl2), GX_BUFFER_USAGE_STREAM);
 
 	createGeomData();
 }
@@ -412,7 +412,7 @@ void CEmitter::createGeomData()
 
 	//@FIXME: Consider to make it static
 	m_pVertexBuff = pe_data::pDXDevice->createVertexBuffer(4 * m_oData.m_iFigureCountQuads * sizeof(CommonParticleDecl), GX_BUFFER_USAGE_DYNAMIC);
-	m_pIndexBuff = pe_data::pDXDevice->createIndexBuffer(6 * m_oData.m_iFigureCountQuads * sizeof(WORD), GX_BUFFER_USAGE_DYNAMIC, GXIT_USHORT);
+	m_pIndexBuff = pe_data::pDXDevice->createIndexBuffer(6 * m_oData.m_iFigureCountQuads * sizeof(WORD), GX_BUFFER_USAGE_DYNAMIC, GXIT_UINT16);
 	IGXVertexBuffer *pvb[] = {m_pVertexBuff, m_pTransVertBuf};
 	m_pRenderBuff = pe_data::pDXDevice->createRenderBuffer(2, pvb, pe_data::pVertexDeclarationParticles);
 
@@ -439,7 +439,7 @@ void CEmitter::createGeomData()
 
 	//@FIXME: Consider to make it static
 	m_pVertexBuffQuad = pe_data::pDXDevice->createVertexBuffer(4 * sizeof(CommonParticleDecl), GX_BUFFER_USAGE_DYNAMIC);
-	m_pIndexBuffQuad = pe_data::pDXDevice->createIndexBuffer(6 * sizeof(WORD), GX_BUFFER_USAGE_DYNAMIC, GXIT_USHORT);
+	m_pIndexBuffQuad = pe_data::pDXDevice->createIndexBuffer(6 * sizeof(WORD), GX_BUFFER_USAGE_DYNAMIC, GXIT_UINT16);
 	IGXVertexBuffer *pvbq[] = {m_pVertexBuffQuad, m_pTransVertBuf};
 	m_pRenderBuffQuad = pe_data::pDXDevice->createRenderBuffer(2, pvbq, pe_data::pVertexDeclarationParticles);
 

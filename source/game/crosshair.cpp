@@ -45,8 +45,8 @@ CCrosshair::CCrosshair():
 
 	m_pVertexDeclaration = m_pDev->createVertexDeclaration(vel);
 	//@TODO: Change to GX_BUFFER_USAGE_STREAM (can be lost in DX9)
-	m_pVertexBuffer = m_pDev->createVertexBuffer(sizeof(Vertex)* iVC, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY);
-	m_pIndexBuffer = m_pDev->createIndexBuffer(sizeof(USHORT)* iIC, GX_BUFFER_USAGE_DYNAMIC | GX_BUFFER_WRITEONLY, GXIT_USHORT);
+	m_pVertexBuffer = m_pDev->createVertexBuffer(sizeof(Vertex)* iVC, GX_BUFFER_USAGE_DYNAMIC);
+	m_pIndexBuffer = m_pDev->createIndexBuffer(sizeof(USHORT)* iIC, GX_BUFFER_USAGE_DYNAMIC, GXIT_UINT16);
 	m_pRenderBuffer = m_pDev->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
 
 	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs");

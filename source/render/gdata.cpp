@@ -201,18 +201,18 @@ void gdata::shaders_id::InitAllShaders()
 	gdata::rstates::pDepthStencilStateNoZ = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
 	dsDesc.bStencilEnable = TRUE;
-	dsDesc.depthFunc = GXCOMPARISON_ALWAYS;
+	dsDesc.depthFunc = GXCMP_ALWAYS;
 	dsDesc.stencilPassOp = GXSTENCIL_OP_REPLACE;
 	gdata::rstates::pDepthStencilStateMrtStage0 = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
 	dsDesc.bDepthEnable = TRUE;
-	dsDesc.depthFunc = GXCOMPARISON_LESS_EQUAL;
-	dsDesc.stencilFunc = GXCOMPARISON_NOT_EQUAL;
+	dsDesc.depthFunc = GXCMP_LESS_EQUAL;
+	dsDesc.stencilFunc = GXCMP_NOT_EQUAL;
 	dsDesc.stencilPassOp = GXSTENCIL_OP_DECR;
 	gdata::rstates::pDepthStencilStateMrtStage1 = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
 	dsDesc.bEnableDepthWrite = FALSE;
-	dsDesc.stencilFunc = GXCOMPARISON_ALWAYS;
+	dsDesc.stencilFunc = GXCMP_ALWAYS;
 	dsDesc.stencilDepthFailOp = GXSTENCIL_OP_INCR;
 	dsDesc.stencilPassOp = GXSTENCIL_OP_KEEP;
 	dsDesc.stencilBackDepthFailOp = GXSTENCIL_OP_DECR;
@@ -220,7 +220,7 @@ void gdata::shaders_id::InitAllShaders()
 
 	dsDesc.bDepthEnable = FALSE;
 	dsDesc.bEnableDepthWrite = FALSE;
-	dsDesc.stencilFunc = GXCOMPARISON_EQUAL;
+	dsDesc.stencilFunc = GXCMP_EQUAL;
 	dsDesc.stencilDepthFailOp = GXSTENCIL_OP_ZERO;
 	dsDesc.stencilFailOp = GXSTENCIL_OP_ZERO;
 	dsDesc.stencilPassOp = GXSTENCIL_OP_KEEP;

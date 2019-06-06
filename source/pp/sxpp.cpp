@@ -329,7 +329,7 @@ void pp_data::Init()
 	dsDesc.stencilPassOp = GXSTENCIL_OP_REPLACE;
 	rstates::pDepthStencilEdgeDetect = pDXDevice->createDepthStencilState(&dsDesc);
 
-	dsDesc.stencilFunc = GXCOMPARISON_EQUAL;
+	dsDesc.stencilFunc = GXCMP_EQUAL;
 	dsDesc.stencilPassOp = GXSTENCIL_OP_KEEP;
 	rstates::pDepthStencilDLAA = pDXDevice->createDepthStencilState(&dsDesc);
 }

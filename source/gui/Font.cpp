@@ -1243,11 +1243,11 @@ namespace gui
 			}
 		}
 		
-		IGXVertexBuffer *pVertBuffer = GetGUI()->getDevice()->createVertexBuffer(sizeof(vertex)* iVertexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, pVB);
+		IGXVertexBuffer *pVertBuffer = GetGUI()->getDevice()->createVertexBuffer(sizeof(vertex)* iVertexCount, GX_BUFFER_USAGE_STATIC, pVB);
 		*ppVertexBuffer = GetGUI()->getDevice()->createRenderBuffer(1, &pVertBuffer, GetGUI()->getVertexDeclarations()->m_pXYZTex);
 		mem_release(pVertBuffer);
 
-		*ppIndexBuffer = GetGUI()->getDevice()->createIndexBuffer(sizeof(UINT)* iIndexCount, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_UINT, pIB);
+		*ppIndexBuffer = GetGUI()->getDevice()->createIndexBuffer(sizeof(UINT)* iIndexCount, GX_BUFFER_USAGE_STATIC, GXIT_UINT32, pIB);
 
 		mem_delete_a(pVB);
 		mem_delete_a(pIB);

@@ -335,7 +335,7 @@ void CAIGrid::reCreateBuffs()
 	
 	if (m_useGraphics)
 	{
-		m_pTransVertBuf = m_pDXDevice->createVertexBuffer(m_aQuads.size() * sizeof(CAIQuadVertexDataInst), GX_BUFFER_USAGE_STREAM | GX_BUFFER_WRITEONLY);
+		m_pTransVertBuf = m_pDXDevice->createVertexBuffer(m_aQuads.size() * sizeof(CAIQuadVertexDataInst), GX_BUFFER_USAGE_STREAM);
 
 		IGXVertexBuffer *bufs[] = {m_pVertexQuad, m_pTransVertBuf};
 		m_pRenderBuffer = m_pDXDevice->createRenderBuffer(2, bufs, m_pDecl);
@@ -372,7 +372,7 @@ void CAIGrid::defInitBuffs(ID id)
 
 	if (m_useGraphics)
 	{
-		m_pTransVertBuf = m_pDXDevice->createVertexBuffer(m_aQuads.size() * sizeof(CAIQuadVertexDataInst), GX_BUFFER_USAGE_STREAM | GX_BUFFER_WRITEONLY);
+		m_pTransVertBuf = m_pDXDevice->createVertexBuffer(m_aQuads.size() * sizeof(CAIQuadVertexDataInst), GX_BUFFER_USAGE_STREAM);
 		
 		IGXVertexBuffer *bufs[] = {m_pVertexQuad, m_pTransVertBuf};
 		m_pRenderBuffer = m_pDXDevice->createRenderBuffer(2, bufs, m_pDecl);
@@ -1051,11 +1051,11 @@ void CAIGrid::initGraphics()
 		{AIGRID_QUAD_SIZEDIV2, 0.0f, AIGRID_QUAD_SIZEDIV2, 1.0, 0.0f},
 		{AIGRID_QUAD_SIZEDIV2, 0.0f, -AIGRID_QUAD_SIZEDIV2, 1.0, 1.0f}
 	};
-	m_pVertexQuad = m_pDXDevice->createVertexBuffer(4 * sizeof(CAIQuadVertexData), GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, &vertices);
+	m_pVertexQuad = m_pDXDevice->createVertexBuffer(4 * sizeof(CAIQuadVertexData), GX_BUFFER_USAGE_STATIC, &vertices);
 
 	USHORT indices[] = {0, 1, 2, 0, 2, 3};
 
-	m_pIndexQuad = m_pDXDevice->createIndexBuffer(6 * sizeof(USHORT), GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, GXIT_USHORT, &indices);
+	m_pIndexQuad = m_pDXDevice->createIndexBuffer(6 * sizeof(USHORT), GX_BUFFER_USAGE_STATIC, GXIT_UINT16, &indices);
 }
 
 void CAIGrid::clear()

@@ -1126,10 +1126,10 @@ void GameData::render()
 	if(pDev)
 	{
 		const GX_FRAME_STATS *pFrameStats = pDev->getFrameStats();
-		const GX_MEMORY_STATS *pMemoryStats = pDev->getMemoryStats();
+		const GX_GPU_MEMORY_STATS *pMemoryStats = pDev->getMemoryStats();
 
 		static GX_FRAME_STATS s_oldFrameStats = {0};
-		static GX_MEMORY_STATS s_oldMemoryStats = {0};
+		static GX_GPU_MEMORY_STATS s_oldMemoryStats = {0};
 		static UINT s_uOldFps = 0;
 
 		if(s_uOldFps != g_uFPS 

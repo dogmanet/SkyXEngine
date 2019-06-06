@@ -90,7 +90,7 @@ void InitFullScreenQuad()
 	};
 
 
-	IGXVertexBuffer *pVB = g_pDevice->createVertexBuffer(sizeof(VERTEX_SCREEN_TEXTURE)* 6, GX_BUFFER_USAGE_STATIC | GX_BUFFER_WRITEONLY, aVertices);
+	IGXVertexBuffer *pVB = g_pDevice->createVertexBuffer(sizeof(VERTEX_SCREEN_TEXTURE)* 6, GX_BUFFER_USAGE_STATIC, aVertices);
 	g_pScreenTextureRB = g_pDevice->createRenderBuffer(1, &pVB, pVD);
 	mem_release(pVD);
 	mem_release(pVB);

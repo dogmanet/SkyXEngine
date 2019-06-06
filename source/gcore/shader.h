@@ -179,7 +179,7 @@ struct CShaderCS: public CShader
 struct CShaderKit
 {
 	CShaderKit(){ m_idVertexShader = m_idPixelShader = -1; m_pShaderKit = 0; }
-	CShaderKit(ID idVertexShader, ID idPixelShader, IGXShader *pShaderKit)
+	CShaderKit(ID idVertexShader, ID idPixelShader, IGXShaderSet *pShaderKit)
 	{
 		m_idVertexShader = idVertexShader;
 		m_idPixelShader = idPixelShader; 
@@ -220,7 +220,7 @@ struct CShaderKit
 	ID m_idPixelShader = -1;
 	ID m_idGeometryShader = -1;
 	ID m_idComputeShader = -1;
-	IGXShader *m_pShaderKit;
+	IGXShaderSet *m_pShaderKit;
 };
 
 //! кэшированный шейдер

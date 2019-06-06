@@ -66,7 +66,7 @@ CSkyBox::CSkyBox()
 		5,7,2,
     };
 
-	m_pIndeces = g_pDevice->createIndexBuffer(36 * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_USHORT, indices_tmp);
+	m_pIndeces = g_pDevice->createIndexBuffer(36 * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_UINT16, indices_tmp);
 
 	m_pRenderBuffer = g_pDevice->createRenderBuffer(1, &m_pVertices, m_pVertexDeclarationSkyBox);
 	
@@ -273,7 +273,7 @@ CSkyClouds::CSkyClouds()
         0,1,2,
         0,2,3
     };
-	m_pIndeces = g_pDevice->createIndexBuffer(6 * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_USHORT, indices_tmp);
+	m_pIndeces = g_pDevice->createIndexBuffer(6 * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_UINT16, indices_tmp);
 
 	m_pRenderBuffer = g_pDevice->createRenderBuffer(1, &m_pVertices, m_pVertexDeclarationClouds);
 	

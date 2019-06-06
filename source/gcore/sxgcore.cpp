@@ -56,7 +56,7 @@ IGXSamplerState *g_pSamplerFilterLinear = NULL;
 void StdDrawIndexedPrimitive(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)
 {
 	Core_RIntSet(G_RI_INT_COUNT_DIP, Core_RIntGet(G_RI_INT_COUNT_DIP) + 1);
-	g_pDevice->setPrimitiveTopology((GXPT)type_primitive);
+	g_pDevice->setPrimitiveTopology((GXPRIMITIVETOPOLOGY)type_primitive);
 	g_pDevice->drawIndexed(num_vertices, prim_count, start_index, base_vertexIndex);
 }
 
@@ -295,7 +295,7 @@ SX_LIB_API bool SGCore_OnDeviceReset(int iWidth, int iHeight, bool isWindowed)
 {
 	SG_PRECOND(false);
 
-	// g_pDevice->resize(iWidth, iHeight, isWindowed);
+	g_pDevice->resize(iWidth, iHeight, isWindowed);
 
 	return(true);
 }
@@ -1074,7 +1074,7 @@ public:
 
 		IGXVertexDeclaration *pVD = g_pDevice->createVertexDeclaration(oLayout);
 
-		m_pIB = g_pDevice->createIndexBuffer(sizeof(USHORT) * uIndexCount, GX_BUFFER_USAGE_STATIC, GXIT_USHORT, pIndices);
+		m_pIB = g_pDevice->createIndexBuffer(sizeof(USHORT) * uIndexCount, GX_BUFFER_USAGE_STATIC, GXIT_UINT16, pIndices);
 		m_pVB = g_pDevice->createVertexBuffer(sizeof(float) * 3 * uVertexCount, GX_BUFFER_USAGE_STATIC, pVertices);
 		m_pRB = g_pDevice->createRenderBuffer(1, &m_pVB, pVD);
 
