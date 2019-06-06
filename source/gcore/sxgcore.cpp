@@ -295,7 +295,7 @@ SX_LIB_API bool SGCore_OnDeviceReset(int iWidth, int iHeight, bool isWindowed)
 {
 	SG_PRECOND(false);
 
-	g_pDevice->resize(iWidth, iHeight, isWindowed);
+	// g_pDevice->resize(iWidth, iHeight, isWindowed);
 
 	return(true);
 }

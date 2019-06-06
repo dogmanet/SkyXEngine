@@ -368,6 +368,7 @@ public:
 	SMQuaternion getDirection();
 	void setDirection(const SMQuaternion &qDirection);
 
+	SMMATRIX getWorldTM();
 protected:
 	void updatePSConstants(IGXContext *pDevice);
 

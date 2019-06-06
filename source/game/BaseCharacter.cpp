@@ -112,7 +112,8 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	m_flashlight->setOrient(m_pHeadEnt->getOrient() * SMQuaternion(SM_PIDIV2, 'x'));
 	m_flashlight->setParent(m_pHeadEnt);
 	m_flashlight->setDist(20.f);
-	m_flashlight->setAngle(SMToRadian(60));
+	m_flashlight->setOuterAngle(SMToRadian(60));
+	m_flashlight->setInnerAngle(SMToRadian(10));
 	m_flashlight->setColor(float3(3.5, 3.5, 3.5));
 	//m_flashlight->setShadowType(-1);
 	m_flashlight->setShadowType(1);

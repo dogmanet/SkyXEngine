@@ -1915,3 +1915,10 @@ void CXLightSpot::updatePSConstants(IGXContext *pDevice)
 	m_dataPS.vDir = m_qDirection * LIGHTS_DIR_BASE;
 	m_pPSData->update(&m_dataPS);
 }
+
+SMMATRIX CXLightSpot::getWorldTM()
+{
+	float fAngleScale = cosf(m_fInnerAngle * 0.5f) * sqrtf(2.0f);
+
+	return(SMMatrixScaling(float3(fAngleScale, 1.0f, fAngleScale)) * SMMatrixScaling(float3(getMaxDistance())) * m_qDirection.GetMatrix() * SMMatrixTranslation(m_vPosition));
+}

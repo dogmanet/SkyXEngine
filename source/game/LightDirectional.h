@@ -25,8 +25,22 @@ public:
 	DECLARE_CONSTRUCTOR();
 	~CLightDirectional();
 
-	void setAngle(float fAngle) { m_fAngle = fAngle; };
-	float getAngle() const { return m_fAngle; };
+	void setOuterAngle(float fAngle)
+	{
+		m_fOuterAngle = fAngle;
+	}
+	float getOuterAngle() const
+	{
+		return m_fOuterAngle;
+	}
+	void setInnerAngle(float fAngle)
+	{
+		m_fInnerAngle = fAngle;
+	}
+	float getInnerAngle() const
+	{
+		return m_fInnerAngle;
+	}
 
 	void setRadiusTop(float fRadiusTop) { m_fRadiusTop = fRadiusTop; };
 	float getRadiusTop() const { return m_fRadiusTop; };
@@ -34,8 +48,9 @@ public:
 protected:
 	void onSync();
 
-	float m_fAngle;
-	float m_fRadiusTop;
+	float m_fOuterAngle = SM_PI * 0.4f;
+	float m_fInnerAngle = SM_PI * 0.4f * 0.7f;
+	float m_fRadiusTop = 0.01f;
 
 	IXLightSpot *m_pLightSpot = NULL;
 };
