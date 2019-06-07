@@ -102,7 +102,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;SX_DLL;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);SX_LIB_NAME="xWnd"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;SX_DLL;_DEBUG;XWINDOW_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);SX_LIB_NAME="xWnd"</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
@@ -122,7 +122,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN64;_CRT_SECURE_NO_WARNINGS;SX_DLL;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);SX_LIB_NAME="xWnd"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;_CRT_SECURE_NO_WARNINGS;SX_DLL;_DEBUG;XWINDOW_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions);SX_LIB_NAME="xWnd"</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
@@ -144,7 +144,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;SX_DLL;%(PreprocessorDefinitions);SX_LIB_NAME="xWnd"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;XWINDOW_EXPORTS;_WINDOWS;_USRDLL;SX_DLL;%(PreprocessorDefinitions);SX_LIB_NAME="xWnd"</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
@@ -165,7 +165,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN64;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;SX_DLL;%(PreprocessorDefinitions);SX_LIB_NAME="xWnd"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;_CRT_SECURE_NO_WARNINGS;NDEBUG;XWINDOW_EXPORTS;_WINDOWS;_USRDLL;SX_DLL;%(PreprocessorDefinitions);SX_LIB_NAME="xWnd"</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
@@ -179,9 +179,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\source\xWindow\xWindow.h" />
+    <ClInclude Include="..\..\..\source\xWindow\IXWindowSystem.h" />
+    <ClInclude Include="..\..\..\source\xWindow\Window.h" />
+    <ClInclude Include="..\..\..\source\xWindow\WindowSystem.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\xWindow\dllmain.cpp" />
+    <ClCompile Include="..\..\..\source\xWindow\Window.cpp" />
+    <ClCompile Include="..\..\..\source\xWindow\WindowSystem.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
