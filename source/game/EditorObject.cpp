@@ -177,6 +177,8 @@ void CEditorObject::create()
 	assert(!m_pEntity);
 	m_pEntity = CREATE_ENTITY(m_szClassName, GameData::m_pMgr);
 
+	m_pEntity->setFlags(m_pEntity->getFlags() | EF_LEVEL | EF_EXPORT);
+
 	setPos(getPos());
 	setOrient(getOrient());
 	setScale(getScale());

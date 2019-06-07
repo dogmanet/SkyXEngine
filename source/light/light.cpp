@@ -1650,6 +1650,7 @@ void CXLight::setColor(const float3 &vColor)
 		return;
 	}
 	m_vColor = vColor;
+	m_isVSDataDirty = true;
 	m_isPSDataDirty = true;
 }
 
