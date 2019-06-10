@@ -23,6 +23,17 @@ See the license in LICENSE
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 
+#if defined(_WINDOWS)
+#	if defined(SXCORE_EXPORTS)
+#		define SXCORE_API __declspec(dllexport)
+#	else
+#		define SXCORE_API __declspec(dllimport)
+#	endif
+#else
+#	define SXCORE_API
+#endif
+#define C extern "C"
+
 #include <io.h>
 #include <fcntl.h>
 #include <tlhelp32.h>
@@ -60,6 +71,13 @@ enum CORE_TASK_FLAG
 
 /*! \name Базовые функции ядра 
 !@{*/
+
+//! @FIXME: Убрать это!
+class ITask;
+C SXCORE_API IXCore* XCoreInit(const char *szName);
+C SXCORE_API void XCoreStart();
+C SXCORE_API void XCoreStop();
+C SXCORE_API void XCoreAddTask(ITask *pTask);
 
 //! возвращает версию ядра
 SX_LIB_API long Core_0GetVersion();

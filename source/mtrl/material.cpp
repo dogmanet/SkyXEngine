@@ -198,7 +198,10 @@ CMaterials::CMaterial::CMaterial()
 {
 	nulling();
 
-	m_oMainGraphics.m_pConstantBuffer = mtrl_data::pDXDevice->createConstantBuffer(sizeof(m_oMainGraphics.m_constData));
+	if(mtrl_data::pDXDevice)
+	{
+		m_oMainGraphics.m_pConstantBuffer = mtrl_data::pDXDevice->createConstantBuffer(sizeof(m_oMainGraphics.m_constData));
+	}
 }
 
 void CMaterials::CMaterial::nulling()

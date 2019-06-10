@@ -18,7 +18,7 @@ protected:
 	IXCore *m_pCore;
 	IFileSystem *m_pFileSystem = NULL;
 
-	Array<ITask::TaskPtr> m_vpQueue;
+	Array<ITask*> m_vpQueue;
 };
 
 #endif

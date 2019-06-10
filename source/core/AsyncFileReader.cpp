@@ -6,7 +6,7 @@
 #include "TaskManager.h"
 extern CTaskManager *g_pTaskManager;
 
-class CIOTask: public ITask
+class CIOTask: public ITaskImpl<ITask>
 {
 public:
 	CIOTask(const char *szFile, IFileSystem *pFileSystem, IAsyncFileReaderCallback *pCallback):
@@ -71,9 +71,8 @@ CAsyncFileReader::~CAsyncFileReader()
 void CAsyncFileReader::loadFile(const char *szFile, IAsyncFileReaderCallback *pCallback)
 {
 	CIOTask *pTask = new CIOTask(szFile, m_pFileSystem, pCallback);
-	ITask::TaskPtr ptr(pTask);
-	m_vpQueue.push_back(ptr);
-	g_pTaskManager->addTaskIO(ptr);
+	m_vpQueue.push_back(pTask);
+	g_pTaskManager->addTaskIO(pTask);
 }
 
 void CAsyncFileReader::runCallbacks()
@@ -81,7 +80,7 @@ void CAsyncFileReader::runCallbacks()
 	CIOTask *pTask;
 	for(UINT i = 0, l = m_vpQueue.size(); i < l; ++i)
 	{
-		pTask = (CIOTask*)m_vpQueue[i].get();
+		pTask = (CIOTask*)m_vpQueue[i];
 		if(pTask->isDone())
 		{
 			if(pTask->m_pResult)
@@ -93,6 +92,7 @@ void CAsyncFileReader::runCallbacks()
 			{
 				pTask->m_pCallback->onError();
 			}
+			mem_release(pTask);
 
 			m_vpQueue.erase(i);
 			--i; --l;

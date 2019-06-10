@@ -9,14 +9,15 @@
 #include "ResourceManager.h"
 
 class CModelProvider;
+class CPerfMon;
+class CTimeManager;
+class CTaskManager;
 
 class CCore: public IXCore
 {
 public:
-	CCore();
+	CCore(const char *szName);
 	~CCore();
-
-	void XMETHODCALLTYPE Release() override;
 
 	IPluginManager * XMETHODCALLTYPE getPluginManager() override;
 	IFileSystem * XMETHODCALLTYPE getFileSystem() override;
@@ -54,6 +55,10 @@ protected:
 	};
 
 	Array<_update_sys> m_aUpdatables;
+
+	CPerfMon *m_pPerfMon = NULL;
+	CTimeManager *m_pTimers = NULL;
+	CTaskManager *m_pTaskManager = NULL;
 };
 
 #endif

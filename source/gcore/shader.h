@@ -55,7 +55,7 @@ struct CShader
 	GXMACRO m_aMacros[SXGC_SHADER_COUNT_MACRO];
 
 	//! буфер с бинарным кодом шейдера
-	BYTE *m_pCode;
+	BYTE *m_pCode = NULL;
 	UINT m_uiCodeSize;
 };
 

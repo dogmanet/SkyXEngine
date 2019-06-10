@@ -49,16 +49,21 @@ SX_LIB_API void SMtrl_0Create(const char *szName, bool isUnic, bool isServerMode
 				return;
 			}
 		}
-		if(!isServerMode)
+		/*if(!isServerMode)
 		{
 			mtrl_data::Init();
-		}
+		}*/
 		ArrMaterials = new CMaterials();
 		g_pMaterialSystem = new CMaterialSystem();
 		Core_GetIXCore()->getPluginManager()->registerInterface(IXMATERIALSYSTEM_GUID, g_pMaterialSystem);
 	}
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
+}
+
+SX_LIB_API void SMtrl_DevSet(IGXContext *pDev)
+{
+	mtrl_data::Init();
 }
 
 SX_LIB_API void SMtrl_AKill()

@@ -7,36 +7,12 @@ See the license in LICENSE
 #ifndef __TASK_H
 #define __TASK_H
 
-#include "sxcore.h"
-#include <memory>
-#define _NTASKMANAGER
-
-class ITask
-{
-public:
-	typedef std::shared_ptr<ITask> TaskPtr;
-
-	ITask(UINT iFlags = CORE_TASK_FLAG_MAINTHREAD_REPEATING);
-	virtual ~ITask(){}
-
-	virtual void run() = 0;
-
-	void stopRepeating()
-	{
-		m_iFlags &= ~CORE_TASK_FLAG_REPEATING;
-	}
-
-	UINT getFlags() const;
-
-private:
-	UINT m_iFlags;
-};
+#include "ITask.h"
 
 // Ѕазовый класс задачи
-class CTask: public ITask
+class CTask: public ITaskImpl<ITask>
 {
 public:
-
 	CTask(THREAD_UPDATE_FUNCTION fnFunc, UINT iFlags = CORE_TASK_FLAG_MAINTHREAD_REPEATING);
 
 	void run();

@@ -66,6 +66,9 @@ public:
 
 	//! 
 	virtual INT_PTR XMETHODCALLTYPE runDefaultCallback(UINT msg, WPARAM wParam, LPARAM lParam) = 0;
+
+	//! 
+	virtual const XWINDOW_DESC* XMETHODCALLTYPE getDesc() = 0;
 };
 
 class IXWindowCallback

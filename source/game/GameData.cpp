@@ -320,9 +320,11 @@ GameData::GameData(HWND hWnd, bool isGame):
 		LibReport(REPORT_MSG_LEVEL_ERROR, "The procedure entry point InitInstance could not be located in the dynamic link library sxgui.dll");
 	}
 
-	m_pGUI = pfnGUIInit(SGCore_GetDXDevice(), "./gui/", hWnd);
-
-	m_pHUDcontroller = new CHUDcontroller();
+	if(hWnd)
+	{
+		m_pGUI = pfnGUIInit(SGCore_GetDXDevice(), "./gui/", hWnd);
+		m_pHUDcontroller = new CHUDcontroller();
+	}
 
 	m_pMgr = new CEntityManager();
 

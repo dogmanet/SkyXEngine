@@ -3,7 +3,10 @@
 
 CMaterialSystem::CMaterialSystem()
 {
-	m_pObjectConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(CObjectData));
+	if(SGCore_GetDXDevice())
+	{
+		m_pObjectConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(CObjectData));
+	}
 }
 CMaterialSystem::~CMaterialSystem()
 {

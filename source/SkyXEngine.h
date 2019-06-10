@@ -446,7 +446,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 @{*/
 
 //! инициализация движка
-void SkyXEngine_Init(HWND hWnd3D = 0, HWND hWndParent3D = 0, const char * szCmdLine = NULL);
+// void SkyXEngine_Init(HWND hWnd3D = 0, HWND hWndParent3D = 0, const char * szCmdLine = NULL);
 
 //! инициализация путей в регистрах
 void SkyXEngine_InitPaths();
@@ -489,7 +489,7 @@ int SkyXEngine_CycleMain();
 bool SkyXEngine_CycleMainIteration();
 
 //! уничтожение данных движка, освобождение памяти
-void SkyXEngine_Kill();
+// void SkyXEngine_Kill();
 
 //**************************************************************************
 
