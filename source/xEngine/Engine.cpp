@@ -49,14 +49,19 @@ CEngine::CEngine(int argc, char **argv, const char *szName)
 		dirname(szPath);
 		dirname(szPath);
 		strcat(szPath, "gamesource/");
-		SetCurrentDirectoryA(szPath);
+		BOOL ret = SetCurrentDirectoryA(szPath);
+		int a = 0;
 	}
 
+	char szPath[MAX_PATH];
+	GetCurrentDirectoryA(MAX_PATH, szPath);
 
 	m_pCore = XCoreInit(szName);
 	INIT_OUTPUT_STREAM(m_pCore);
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB core initialized\n");
-	
+
+	GetCurrentDirectoryA(MAX_PATH, szPath);
+
 	Core_0RegisterCVarString("engine_version", SKYXENGINE_VERSION, "Текущая версия движка", FCVAR_READONLY);
 
 
@@ -64,9 +69,13 @@ CEngine::CEngine(int argc, char **argv, const char *szName)
 	SMtrl_0Create("sxml", false, true);
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB mtrl initialized\n");
 
+	GetCurrentDirectoryA(MAX_PATH, szPath);
 	// init physics
 	SPhysics_0Create();
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB physics initialized\n");
+	GetCurrentDirectoryA(MAX_PATH, szPath);
+
+	GetCurrentDirectoryA(MAX_PATH, szPath);
 }
 CEngine::~CEngine()
 {
@@ -179,6 +188,9 @@ bool CEngine::runFrame()
 	}
 
 	Core_0ConsoleUpdate();
+
+	SGCore_ShaderAllLoad();
+	SGCore_LoadTexAllLoad();
 
 
 	// draw frame
