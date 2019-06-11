@@ -10,6 +10,15 @@
     handle = nullptr; \
 }
 
+//! Сравнение длинны массива и буфера записи
+#define CHECK_SIZE(len, buffSize) \
+{ \
+    if (len > buffSize) \
+    { \
+        return false; \
+    } \
+}
+
 //! Проверка существования пути с таким ID 
 #define FILEID_CHECKED(size) if (size - 1 < id) \
 {\
@@ -23,6 +32,8 @@ private:
     time_t convertFiletimeToTime_t(const FILETIME& ft);
 
     HANDLE getFileHandle(const char *szPath);
+
+    bool isAbsolutePath(const char* szPath);
 
     //корневые пути и приоритет
     Array<String> m_filePaths;
@@ -40,7 +51,6 @@ public:
 
     void setWritableRoot(UINT id) override;
 
-    //! No implementation
     bool resolvePath(const char *szPath, char *szOut, int iOutMax) override;
 
     bool fileExists(const char *szPath) override;

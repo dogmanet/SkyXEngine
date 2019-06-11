@@ -25,6 +25,19 @@ HANDLE CFileSystem::getFileHandle(const char *szPath)
 		NULL);
 }
 
+bool CFileSystem::isAbsolutePath(const char *szPath)
+{
+    while (szPath != 0)
+    {
+        if (*szPath == ':' && *(szPath + 1) == '/')
+        {
+            return true;
+        }
+        ++szPath;
+    }
+    return false;
+}
+
 UINT CFileSystem::addRoot(const char *szPath, int iPriority)
 {
     m_filePaths.push_back(String(szPath));
@@ -53,7 +66,34 @@ void CFileSystem::setWritableRoot(UINT id)
 
 bool CFileSystem::resolvePath(const char *szPath, char *szOut, int iOutMax)
 {
-    assert(!"No Implementation");
+    int len = 0;
+
+    if (isAbsolutePath(szPath))
+    {
+        len = strlen(szPath) + 1;
+
+        CHECK_SIZE(len, iOutMax);
+
+        memcpy(szOut, szPath, len);
+        return true;
+    }
+    
+    String buff;
+
+    for (UINT i = 0, l = m_filePaths.size(); i < l; ++i)
+    {
+        buff = (m_filePaths[0] + '/' + szPath);
+
+        if (fileExists(buff.c_str()) && isFile(buff.c_str()))
+        {
+            CHECK_SIZE(len, iOutMax);
+
+            len = buff.length() + 1;
+            memcpy(szOut, buff.c_str(), len);
+            return true;
+        }
+    }
+
     return false;
 }
 
