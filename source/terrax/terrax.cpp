@@ -10,6 +10,8 @@ See the license in LICENSE
 #include <skyxengine.h>
 #include <io.h>
 #include <windowsx.h>
+#include <commctrl.h>
+#pragma comment(lib, "Comctl32.lib")
 #include "resource.h"
 
 #include "terrax.h"
@@ -48,6 +50,8 @@ static IGXRenderBuffer *g_pBorderRenderBuffer;
 CUndoManager *g_pUndoManager = NULL;
 extern HWND g_hComboTypesWnd;
 
+String g_sLevelName;
+
 void XUpdateWindowTitle();
 
 HACCEL g_hAccelTable = NULL;
@@ -70,9 +74,6 @@ void XInitViewports();
 class CEngineCallback: public IXEngineCallback
 {
 public:
-	CEngineCallback()
-	{
-	}
 	void XMETHODCALLTYPE onGraphicsResize(UINT uWidth, UINT uHeight, bool isFullscreen, bool isBorderless, IXEngine *pEngine) override
 	{
 		XReleaseViewports();
@@ -192,6 +193,11 @@ public:
 		return(true);
 	}
 
+	ICamera* XMETHODCALLTYPE getCameraForFrame() override
+	{
+		return(g_xConfig.m_pViewportCamera[XWP_TOP_LEFT]);
+	}
+
 protected:
 };
 
@@ -217,9 +223,6 @@ public:
 
 	void renderFrame() override
 	{
-		SRender_SetCamera(g_xConfig.m_pViewportCamera[XWP_TOP_LEFT]);
-		SRender_UpdateView();
-
 		m_pOldPipeline->renderFrame();
 
 		XRender3D();
@@ -472,11 +475,12 @@ int main(int argc, char **argv)
 		switch(pData->type)
 		{
 		case XEventLevel::TYPE_LOAD:
+			g_sLevelName = pData->szLevelName;
 			XUpdateWindowTitle();
 			break;
 		case XEventLevel::TYPE_UNLOAD:
 
-			SLevel_Clear();
+			g_sLevelName = "";
 
 			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 			{
@@ -491,6 +495,7 @@ int main(int argc, char **argv)
 			break;
 
 		case XEventLevel::TYPE_SAVE:
+			g_sLevelName = pData->szLevelName;
 			g_pUndoManager->makeClean();
 			break;
 		}
@@ -1135,9 +1140,9 @@ bool XSaveLevel(const char *szNewName, bool bForcePrompt)
 		return(true);
 	}
 	
-	if(!bForcePrompt && SLevel_GetName()[0])
+	if(!bForcePrompt && g_sLevelName[0])
 	{
-		return(XSaveLevel(SLevel_GetName()));
+		return(XSaveLevel(g_sLevelName.c_str()));
 	}
 		
 	char szName[1024];
@@ -1303,7 +1308,7 @@ bool XIsMouseInSelection(X_WINDOW_POS wnd)
 
 void XUpdateWindowTitle()
 {
-	const char *szLevelName = SLevel_GetName();
+	const char *szLevelName = g_sLevelName.c_str();
 	char szCaption[256];
 	bool isDirty = g_pUndoManager->isDirty();
 	if(szLevelName && szLevelName[0])

@@ -387,12 +387,12 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #endif
 #include <decals/sxdecals.h>
 
-#if defined(_DEBUG)
-#pragma comment(lib, "sxlevel_d.lib")
-#else
-#pragma comment(lib, "sxlevel.lib")
-#endif
-#include <level/sxlevel.h>
+//#if defined(_DEBUG)
+//#pragma comment(lib, "sxlevel_d.lib")
+//#else
+//#pragma comment(lib, "sxlevel.lib")
+//#endif
+//#include <level/sxlevel.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgame_d.lib")

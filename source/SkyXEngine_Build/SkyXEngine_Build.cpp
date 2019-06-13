@@ -107,6 +107,11 @@ public:
 		return(m_pWindowSystem->processMessages());
 	}
 
+	ICamera* XMETHODCALLTYPE getCameraForFrame() override
+	{
+		return(SGame_GetActiveCamera());
+	}
+
 protected:
 	IXWindowSystem *m_pWindowSystem;
 	IXWindow *m_pWindow;
@@ -151,33 +156,4 @@ int main(int argc, char **argv)
 	mem_release(pWindow);
 	mem_release(pEngine);
 	return(ret);
-
-#if 0
-
-	//MessageBox(0, 0, 0, 0);
-	SkyXEngine_PreviewCreate();
-	SkyXEngine_Init(0, 0, lpCmdLine);
-	SkyXEngine_PreviewKill();
-
-	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
-	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
-	SGCore_SkyBoxSetUse(false);
-	SGCore_SkyCloudsSetUse(false);
-	
-	//SGCore_OC_SetEnable(false);
-
-	SGreen_0SettSetFreqGrass(100);
-
-	SGCore_ShaderAllLoad();
-	SGCore_LoadTexAllLoad();
-
-	SetWindowPos((HWND)SGCore_GetHWND(), HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-
-	SLevel_AmbientSndPlay();
-	SLevel_WeatherSndPlay();
-
-	int result = SkyXEngine_CycleMain();
-	SkyXEngine_Kill();
-	return result;
-#endif
 }

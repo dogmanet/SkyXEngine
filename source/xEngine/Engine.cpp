@@ -213,7 +213,6 @@ bool CEngine::runFrame()
 
 	SSInput_Update();
 
-	SRender_SetCamera(SGame_GetActiveCamera());
 	
 	// draw frame
 	{
@@ -239,10 +238,11 @@ bool CEngine::runFrame()
 		
 		//#############################################################################
 
-		SRender_UpdateView();
 
 		if(pRenderContext)
 		{
+			SRender_SetCamera(m_pCallback->getCameraForFrame());
+			SRender_UpdateView();
 
 			IXRenderPipeline *pRenderPipeline;
 			m_pCore->getRenderPipeline(&pRenderPipeline);

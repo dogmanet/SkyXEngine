@@ -17,6 +17,7 @@
 #define C extern "C"
 
 class IXEngine;
+class ICamera;
 
 class IXEngineCallback
 {
@@ -24,6 +25,8 @@ public:
 	virtual void XMETHODCALLTYPE onGraphicsResize(UINT uWidth, UINT uHeight, bool isFullscreen, bool isBorderless, IXEngine *pEngine) = 0;
 
 	virtual bool XMETHODCALLTYPE processWindowMessages() = 0;
+
+	virtual ICamera* XMETHODCALLTYPE getCameraForFrame() = 0;
 };
 
 class IXEngine: public IXUnknown
