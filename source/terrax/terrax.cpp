@@ -540,13 +540,13 @@ int main(int argc, char **argv)
 	IGXContext *pDevice = SGCore_GetDXDevice();
 
 	GXBLEND_DESC blendDesc;
-	blendDesc.renderTarget[0].bBlendEnable = true;
-	blendDesc.renderTarget[0].srcBlend = blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_BLEND_FACTOR;
-	blendDesc.renderTarget[0].destBlend = blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_INV_BLEND_FACTOR;
+	blendDesc.renderTarget[0].useBlend = true;
+	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_BLEND_FACTOR;
+	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_BLEND_FACTOR;
 	g_xRenderStates.pBlendColorFactor = pDevice->createBlendState(&blendDesc);
 
-	blendDesc.renderTarget[0].srcBlend = blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_SRC_ALPHA;
-	blendDesc.renderTarget[0].destBlend = blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_INV_SRC_ALPHA;
+	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
+	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
 	g_xRenderStates.pBlendAlpha = pDevice->createBlendState(&blendDesc);
 
 	GXRASTERIZER_DESC rsDesc; 
@@ -632,8 +632,8 @@ int main(int argc, char **argv)
 	}
 
 	GXDEPTH_STENCIL_DESC dsDesc;
-	dsDesc.bDepthEnable = FALSE;
-	dsDesc.bEnableDepthWrite = FALSE;
+	dsDesc.useDepthTest = FALSE;
+	dsDesc.useDepthWrite = FALSE;
 	g_pDSNoZ = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
 
 	XInitViewports();
@@ -1196,7 +1196,7 @@ void XDrawBorder(GXCOLOR color, const float3_t &vA, const float3_t &vB, const fl
 	SGCore_ShaderBind(g_xRenderStates.idTexturedShaderKit);
 
 	static IGXConstantBuffer *s_pColorBuffer = pDevice->createConstantBuffer(sizeof(float4));
-	s_pColorBuffer->update(&GXCOLOR_COLORVECTOR_ARGB(color));
+	s_pColorBuffer->update(&GXCOLOR_COLOR_TO_F4(color));
 	pDevice->setPixelShaderConstant(s_pColorBuffer);
 
 	pDevice->setTexture(SGCore_LoadTexGetTex(SRender_EditorGetDashedTex()));

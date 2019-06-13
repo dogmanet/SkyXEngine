@@ -5,6 +5,7 @@ CShadowCache::CShadowCache(IXRenderPipeline *pRenderPipeline, IXMaterialSystem *
 	m_pRenderPipeline(pRenderPipeline),
 	m_pMaterialSystem(pMaterialSystem)
 {
+	Core_0RegisterCVarFloat("r_lsm_quality", 1, "Коэфициент размера карты глубины для локальных источников света относительно размеров окна рендера [0.5,4] (низкое, высокое)");
 	Core_0RegisterCVarFloat("r_sm_max_memory", 0.15f, "Максимальный процент от доступной видеопамяти, отводимый под кэш теней");
 	m_idRSMPixelShader = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_rsm_generic.ps");
 
@@ -32,7 +33,7 @@ void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
 	static const float *s_pfRSMMaxMemory = GET_PCVAR_FLOAT("r_sm_max_memory");
 	const UINT uDefaultShadowmapSize = (UINT)(512 * *s_pfRLSMQuality);
 
-	size_t stMaxMem = (size_t)(m_pRenderPipeline->getDevice()->getAdapterDesc()->uTotalGPUMemory * *s_pfRSMMaxMemory);
+	size_t stMaxMem = (size_t)(m_pRenderPipeline->getDevice()->getAdapterDesc()->sizeTotalGPUmemory * *s_pfRSMMaxMemory);
 
 	size_t stPointsMemory = 0;
 	size_t stSpotsMemory = uSpots * CShadowMap::GetMapMemory(uDefaultShadowmapSize);

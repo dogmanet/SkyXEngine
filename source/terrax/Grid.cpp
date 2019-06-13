@@ -220,24 +220,24 @@ CGrid::CGrid(UINT uSize)
 	m_idShaderKit = SGCore_ShaderCreateKit(m_idVS, m_idPS);
 
 	GXBLEND_DESC blendDesc;
-	blendDesc.renderTarget[0].bBlendEnable = TRUE;
-	blendDesc.renderTarget[0].srcBlend = blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_SRC_ALPHA;
-	blendDesc.renderTarget[0].destBlend = blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_INV_SRC_ALPHA;
+	blendDesc.renderTarget[0].useBlend = TRUE;
+	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
+	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
 
 	m_pBlendState = m_pDevice->createBlendState(&blendDesc);
 
-	blendDesc.renderTarget[0].bBlendEnable = FALSE;
+	blendDesc.renderTarget[0].useBlend = FALSE;
 	blendDesc.renderTarget[0].u8RenderTargetWriteMask = 0;
 	m_pBlendStateNoColor = m_pDevice->createBlendState(&blendDesc);
 
 	GXDEPTH_STENCIL_DESC dsDesc;
-	dsDesc.bDepthEnable = FALSE;
-	dsDesc.bStencilEnable = TRUE;
-	dsDesc.stencilPassOp = GXSTENCIL_OP_INCR;
+	dsDesc.useDepthTest = FALSE;
+	dsDesc.useStencilTest = TRUE;
+	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_INCR;
 	m_pStencilPass0 = m_pDevice->createDepthStencilState(&dsDesc);
 
-	dsDesc.stencilFunc = GXCMP_EQUAL;
-	dsDesc.stencilPassOp = GXSTENCIL_OP_KEEP;
+	dsDesc.stencilTestFront.cmpFuncStencil = GXCMP_EQUAL;
+	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_KEEP;
 	m_pStencilPass1 = m_pDevice->createDepthStencilState(&dsDesc);
 
 	m_pVSConstantBuffer = m_pDevice->createConstantBuffer(sizeof(SMMATRIX));

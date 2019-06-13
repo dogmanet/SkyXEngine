@@ -55,38 +55,38 @@ namespace gui
 
 		//@TODO: Release this
 		GXDEPTH_STENCIL_DESC depthStencilDesc;
-		depthStencilDesc.bDepthEnable = false;
-		depthStencilDesc.bEnableDepthWrite = false;
+		depthStencilDesc.useDepthTest = false;
+		depthStencilDesc.useDepthWrite = false;
 		m_depthStencilStates.m_pDefault = m_pDevice->createDepthStencilState(&depthStencilDesc);
 
-		depthStencilDesc.bStencilEnable = true;
-		depthStencilDesc.stencilFunc = GXCMP_EQUAL;
-		depthStencilDesc.stencilPassOp = GXSTENCIL_OP_INCR;
+		depthStencilDesc.useStencilTest = true;
+		depthStencilDesc.stencilTestFront.cmpFuncStencil = GXCMP_EQUAL;
+		depthStencilDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_INCR;
 		m_depthStencilStates.m_pStencilIncr = m_pDevice->createDepthStencilState(&depthStencilDesc);
 
-		depthStencilDesc.stencilPassOp = GXSTENCIL_OP_KEEP;
+		depthStencilDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_KEEP;
 		m_depthStencilStates.m_pStencilKeep = m_pDevice->createDepthStencilState(&depthStencilDesc);
 
-		depthStencilDesc.stencilPassOp = GXSTENCIL_OP_DECR;
+		depthStencilDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_DECR;
 		m_depthStencilStates.m_pStencilDecr = m_pDevice->createDepthStencilState(&depthStencilDesc);
 
 		GXBLEND_DESC blendDesc;
-		blendDesc.renderTarget[0].bBlendEnable = true;
-		blendDesc.renderTarget[0].srcBlendAlpha = blendDesc.renderTarget[0].srcBlend = GXBLEND_SRC_ALPHA;
-		blendDesc.renderTarget[0].destBlendAlpha = blendDesc.renderTarget[0].destBlend = GXBLEND_INV_SRC_ALPHA;
+		blendDesc.renderTarget[0].useBlend = true;
+		blendDesc.renderTarget[0].blendSrcAlpha = blendDesc.renderTarget[0].blendSrcColor = GXBLEND_SRC_ALPHA;
+		blendDesc.renderTarget[0].blendDestAlpha = blendDesc.renderTarget[0].blendDestColor = GXBLEND_INV_SRC_ALPHA;
 		m_blendStates.m_pDefault = m_pDevice->createBlendState(&blendDesc);
 
 		blendDesc.renderTarget[0].u8RenderTargetWriteMask = 0;
 		m_blendStates.m_pNoColorWrite = m_pDevice->createBlendState(&blendDesc);
 
 		blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_ALL;
-		blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_ONE;
+		blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_ONE;
 		blendDesc.renderTarget[0].blendOpAlpha = GXBLEND_OP_MAX;
 		m_blendStates.m_pDesktop = m_pDevice->createBlendState(&blendDesc);
 
 		GXRASTERIZER_DESC rasterizerDesc;
-		rasterizerDesc.bMultisampleEnable = true;
-		rasterizerDesc.bAntialiasedLineEnable = true;
+		rasterizerDesc.useMultisample = true;
+		rasterizerDesc.useAntialiasedLine = true;
 		rasterizerDesc.cullMode = GXCULL_NONE;
 		m_pDefaultRState = m_pDevice->createRasterizerState(&rasterizerDesc);
 

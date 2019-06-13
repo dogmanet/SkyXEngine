@@ -284,16 +284,16 @@ void pp_data::Init()
 	shaders_id::kit::idSSAO_Q_3 = SGCore_ShaderCreateKit(shaders_id::vs::idResPos, shaders_id::ps::idSSAO_Q_3);
 
 	GXBLEND_DESC blendDesc;
-	blendDesc.renderTarget[0].bBlendEnable = true;
-	blendDesc.renderTarget[0].srcBlend = blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_SRC_ALPHA;
-	blendDesc.renderTarget[0].destBlend = blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_INV_SRC_ALPHA;
+	blendDesc.renderTarget[0].useBlend = true;
+	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
+	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
 	rstates::pBlendAlpha = pDXDevice->createBlendState(&blendDesc);
 
-	blendDesc.renderTarget[0].srcBlend = blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_ONE;
-	blendDesc.renderTarget[0].destBlend = blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_ONE;
+	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_ONE;
+	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_ONE;
 	rstates::pBlendAlphaOne = pDXDevice->createBlendState(&blendDesc);
 
-	blendDesc.renderTarget[0].bBlendEnable = false;
+	blendDesc.renderTarget[0].useBlend = false;
 	blendDesc.renderTarget[0].u8RenderTargetWriteMask = 0;
 	rstates::pBlendNoColor = pDXDevice->createBlendState(&blendDesc);
 
@@ -316,21 +316,21 @@ void pp_data::Init()
 	
 
 	GXRASTERIZER_DESC rasterizerDesc;
-	rasterizerDesc.bScissorEnable = true;
+	rasterizerDesc.useScissorTest = true;
 	rstates::pRasterizerScissorsTest = pDXDevice->createRasterizerState(&rasterizerDesc);
 
 
 
 	GXDEPTH_STENCIL_DESC dsDesc;
-	dsDesc.bDepthEnable = FALSE;
+	dsDesc.useDepthTest = FALSE;
 	rstates::pDepthStencilNoZ = pDXDevice->createDepthStencilState(&dsDesc);
 
-	dsDesc.bStencilEnable = true;
-	dsDesc.stencilPassOp = GXSTENCIL_OP_REPLACE;
+	dsDesc.useStencilTest = true;
+	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_REPLACE;
 	rstates::pDepthStencilEdgeDetect = pDXDevice->createDepthStencilState(&dsDesc);
 
-	dsDesc.stencilFunc = GXCMP_EQUAL;
-	dsDesc.stencilPassOp = GXSTENCIL_OP_KEEP;
+	dsDesc.stencilTestFront.cmpFuncStencil = GXCMP_EQUAL;
+	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_KEEP;
 	rstates::pDepthStencilDLAA = pDXDevice->createDepthStencilState(&dsDesc);
 }
 
@@ -356,7 +356,7 @@ void pp_data::InitNoiseTex()
 		vRnd.z = randf(0, 1);
 		vRnd = SMVector3Normalize(vRnd);
 
-		pData[i] = GXCOLOR_COLORVALUE(vRnd.x, vRnd.y, vRnd.z, 1.0f);
+		pData[i] = GXCOLOR_FLOAT_RGBA(vRnd.x, vRnd.y, vRnd.z, 1.0f);
 	}
 
 	pRnsSampler = pp_data::pDXDevice->createTexture2D(*r_win_width, *r_win_height, 1, 0, GXFMT_A8R8G8B8, pData);

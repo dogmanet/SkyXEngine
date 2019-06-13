@@ -20,8 +20,8 @@ CReflection::CReflection()
 	}
 
 	GXDEPTH_STENCIL_DESC dsDesc;
-	dsDesc.bDepthEnable = false;
-	dsDesc.bEnableDepthWrite = false;
+	dsDesc.useDepthTest = false;
+	dsDesc.useDepthWrite = false;
 	m_pDSState = mtrl_data::pDXDevice->createDepthStencilState(&dsDesc);
 }
 
