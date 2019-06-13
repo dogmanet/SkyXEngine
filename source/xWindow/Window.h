@@ -19,6 +19,8 @@ public:
 	void XMETHODCALLTYPE update(const XWINDOW_DESC *pWindowDesc) override;
 
 	INT_PTR XMETHODCALLTYPE runDefaultCallback(UINT msg, WPARAM wParam, LPARAM lParam) override;
+
+	const XWINDOW_DESC* XMETHODCALLTYPE getDesc() override;
 	
 	INT_PTR runCallback(UINT msg, WPARAM wParam, LPARAM lParam);
 

@@ -87,8 +87,8 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 
 	GXDEPTH_STENCIL_DESC dsDesc;
 
-	dsDesc.bDepthEnable = FALSE;
-	dsDesc.bEnableDepthWrite = FALSE;
+	dsDesc.useDepthTest = FALSE;
+	dsDesc.useDepthWrite = FALSE;
 	m_pDepthStencilStateNoZ = m_pDevice->createDepthStencilState(&dsDesc);
 
 	m_pSceneShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData.vs));
@@ -657,15 +657,15 @@ void CRenderPipeline::renderGI()
 			m_pDevice->setTextureCS(m_pGIAccumGreen, 1);
 			m_pDevice->setTextureCS(m_pGIAccumBlue, 2);
 
-			m_pDevice->setUnorderedAccessVeiwCS(m_pGIAccumRed2, 0);
-			m_pDevice->setUnorderedAccessVeiwCS(m_pGIAccumGreen2, 1);
-			m_pDevice->setUnorderedAccessVeiwCS(m_pGIAccumBlue2, 2);
+			m_pDevice->setUnorderedAccessViewCS(m_pGIAccumRed2, 0);
+			m_pDevice->setUnorderedAccessViewCS(m_pGIAccumGreen2, 1);
+			m_pDevice->setUnorderedAccessViewCS(m_pGIAccumBlue2, 2);
 
 			m_pDevice->computeDispatch(2, 16, 32);
 
-			m_pDevice->setUnorderedAccessVeiwCS(NULL, 0);
-			m_pDevice->setUnorderedAccessVeiwCS(NULL, 1);
-			m_pDevice->setUnorderedAccessVeiwCS(NULL, 2);
+			m_pDevice->setUnorderedAccessViewCS(NULL, 0);
+			m_pDevice->setUnorderedAccessViewCS(NULL, 1);
+			m_pDevice->setUnorderedAccessViewCS(NULL, 2);
 
 			m_pDevice->setTextureCS(NULL, 0);
 			m_pDevice->setTextureCS(NULL, 1);
@@ -678,15 +678,15 @@ void CRenderPipeline::renderGI()
 			m_pDevice->setTextureCS(m_pGIAccumGreen2, 1);
 			m_pDevice->setTextureCS(m_pGIAccumBlue2, 2);
 
-			m_pDevice->setUnorderedAccessVeiwCS(m_pGIAccumRed, 0);
-			m_pDevice->setUnorderedAccessVeiwCS(m_pGIAccumGreen, 1);
-			m_pDevice->setUnorderedAccessVeiwCS(m_pGIAccumBlue, 2);
+			m_pDevice->setUnorderedAccessViewCS(m_pGIAccumRed, 0);
+			m_pDevice->setUnorderedAccessViewCS(m_pGIAccumGreen, 1);
+			m_pDevice->setUnorderedAccessViewCS(m_pGIAccumBlue, 2);
 
 			m_pDevice->computeDispatch(2, 16, 32);
 
-			m_pDevice->setUnorderedAccessVeiwCS(NULL, 0);
-			m_pDevice->setUnorderedAccessVeiwCS(NULL, 1);
-			m_pDevice->setUnorderedAccessVeiwCS(NULL, 2);
+			m_pDevice->setUnorderedAccessViewCS(NULL, 0);
+			m_pDevice->setUnorderedAccessViewCS(NULL, 1);
+			m_pDevice->setUnorderedAccessViewCS(NULL, 2);
 
 			m_pDevice->setTextureCS(NULL, 0);
 			m_pDevice->setTextureCS(NULL, 1);

@@ -173,6 +173,7 @@ void SkyXEngine_PrintfLog(int iLevel, const char *szLibName, const char *szForma
 
 //##########################################################################
 
+#if 0
 void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 {
 	if(szCmdLine)
@@ -248,13 +249,14 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB input initialized\n");
 
+#if 0
 	SSCore_0Create("sxsound", hWnd3DCurr, false);
 	SSCore_Dbg_Set(SkyXEngine_PrintfLog);
 	SSCore_ChannelAdd(SX_SOUND_CHANNEL_GAME, true);
 	//SSCore_SndkitCreateFromList("test", SX_SOUND_CHANNEL_GAME, false, 0, 1.f, " messages/artefact_lead.ogg  d100   v1.0  300   300    300 , messages/artefact_lose.ogg d50 v0.7 400 400 400, messages/artefact_lost.ogg d30 v1.0 200 200 200, messages/artefact_new.ogg d35 v0.9 250 250 250");
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB sound initialized\n");
-
+#endif
 	SGCore_0Create("sxgcore", hWnd3DCurr, *r_win_width, *r_win_height, *r_win_windowed, false);
 	SGCore_Dbg_Set(SkyXEngine_PrintfLog);
 
@@ -274,6 +276,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB gcore initialized\n");
 
+#if 0
 	SGreen_0Create("sxgreen", false,
 #ifdef SX_SERVER
 		true
@@ -285,7 +288,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SGreen_SetFuncIntersect(SkyXEngine_RFuncGreenIntersect);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB green initialized\n");
-
+#endif
 #if 0
 	SLight_0Create("sxml", false);
 	SLight_Dbg_Set(SkyXEngine_PrintfLog);
@@ -302,7 +305,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SMtrl_Dbg_Set(SkyXEngine_PrintfLog);
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB mtrl initialized\n");
 
-
+#if 0
 #ifndef SX_SERVER
 	SPE_0Create("sxparticles", false);
 	SPE_Dbg_Set(SkyXEngine_PrintfLog);
@@ -325,19 +328,23 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB pp initialized\n");
 #endif
+#endif
 	
 	SPhysics_0Create();
 	SPhysics_Dbg_Set(SkyXEngine_PrintfLog);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB physics initialized\n");
 
+#if 0
 #ifndef SX_SERVER
 	SXDecals_0Create();
 	SXDecals_Dbg_Set(SkyXEngine_PrintfLog);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB decals initialized\n");
 #endif
+#endif
 
+#if 0
 #if defined(SX_LEVEL_EDITOR)
 	SAIG_0Create("sxaigrid", true, false);
 	SAIG_BBCreate(&float3(0, 0, 0), &float3(10, 10, 10));
@@ -354,8 +361,9 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SAIG_SetFunc_QuadPhyNavigate(SkyXEngine_RFuncAIQuadPhyNavigate);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB aigrid initialized\n");
+#endif
 
-
+#if 0
 	SLevel_0Create("sxlevel", false,
 #ifdef SX_SERVER
 		true
@@ -366,6 +374,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SLevel_Dbg_Set(SkyXEngine_PrintfLog);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB level initialized\n");
+#endif
 
 #ifndef SX_SERVER
 	SRender_0Create("sxrender", hWnd3DCurr, hWndParent3D, false);
@@ -491,9 +500,11 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "Engine initialized!\n");
 }
+#endif
 
 //**************************************************************************
 
+#if 0
 void SkyXEngine_InitPaths()
 {
 	char szPath[MAX_PATH];
@@ -559,7 +570,7 @@ void SkyXEngine_InitPaths()
 	Core_RStringSet(G_RI_STRING_PATH_GS_GUI, szPath);
 	FileCreateDir(szPath);
 }
-
+#endif
 void SkyXEngine_CreateLoadCVar()
 {
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "CVar init ...\n");
@@ -648,6 +659,7 @@ void SkyXEngine_CreateLoadCVar()
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "CVar initialized\n");
 }
 
+#if 0
 LRESULT CALLBACK SkyXEngine_WndProc(HWND hWnd, UINT uiMessage, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
@@ -738,6 +750,7 @@ HWND SkyXEngine_CreateWindow(const char *szName, const char *szCaption, int iWid
 	ShowWindow(hWnd, SW_HIDE);
 	return hWnd;
 }
+#endif
 
 //#############################################################################
 #ifdef SX_TERRAX
@@ -1981,6 +1994,7 @@ void SkyXEngine_UpdateDataCVar()
 
 //#############################################################################
 
+#if 0
 int SkyXEngine_CycleMain()
 {
 	Core_MTaskAdd([](){
@@ -1994,6 +2008,7 @@ int SkyXEngine_CycleMain()
 
 	return(0);
 }
+#endif
 
 bool SkyXEngine_CycleMainIteration()
 {
@@ -2135,6 +2150,7 @@ bool SkyXEngine_CycleMainIteration()
 
 //#############################################################################
 
+#if 0
 void SkyXEngine_Kill()
 {
 #if !defined(SX_PARTICLES_EDITOR)
@@ -2156,6 +2172,7 @@ void SkyXEngine_Kill()
 
 	mem_delete(g_pPreviewBuffer);
 }
+#endif
 
 //#############################################################################
 

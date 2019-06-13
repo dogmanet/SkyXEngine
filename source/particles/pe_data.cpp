@@ -118,24 +118,24 @@ void pe_data::Init()
 	//@TODO: Check these states
 	GXBLEND_DESC blendDesc;
 	memset(&blendDesc, 0, sizeof(blendDesc));
-	blendDesc.renderTarget[0].bBlendEnable = TRUE;
-	blendDesc.renderTarget[0].blendOp = GXBLEND_OP_ADD;
+	blendDesc.renderTarget[0].useBlend = TRUE;
+	blendDesc.renderTarget[0].blendOpColor = GXBLEND_OP_ADD;
 	blendDesc.renderTarget[0].blendOpAlpha = GXBLEND_OP_ADD;
-	blendDesc.renderTarget[0].destBlend = GXBLEND_INV_SRC_ALPHA;
-	blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_ZERO;
-	blendDesc.renderTarget[0].srcBlend = GXBLEND_SRC_ALPHA;
-	blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_ONE;
+	blendDesc.renderTarget[0].blendDestColor = GXBLEND_INV_SRC_ALPHA;
+	blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_ZERO;
+	blendDesc.renderTarget[0].blendSrcColor = GXBLEND_SRC_ALPHA;
+	blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_ONE;
 	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_ALL;
 
 	pe_data::pBlendStates[PARTICLESTYPE_ALPHABLEND_ALPHA] = pe_data::pDXDevice->createBlendState(&blendDesc);
 
-	blendDesc.renderTarget[0].bBlendEnable = TRUE;
-	blendDesc.renderTarget[0].blendOp = GXBLEND_OP_ADD;
+	blendDesc.renderTarget[0].useBlend = TRUE;
+	blendDesc.renderTarget[0].blendOpColor = GXBLEND_OP_ADD;
 	blendDesc.renderTarget[0].blendOpAlpha = GXBLEND_OP_ADD;
-	blendDesc.renderTarget[0].destBlend = GXBLEND_ONE;
-	blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_ZERO;
-	blendDesc.renderTarget[0].srcBlend = GXBLEND_ONE;
-	blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_ONE;
+	blendDesc.renderTarget[0].blendDestColor = GXBLEND_ONE;
+	blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_ZERO;
+	blendDesc.renderTarget[0].blendSrcColor = GXBLEND_ONE;
+	blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_ONE;
 	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_ALL;
 
 	pe_data::pBlendStates[PARTICLESTYPE_ALPHABLEND_ADD] = pe_data::pDXDevice->createBlendState(&blendDesc);

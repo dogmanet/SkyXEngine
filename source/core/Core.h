@@ -9,14 +9,15 @@
 #include "ResourceManager.h"
 
 class CModelProvider;
+class CPerfMon;
+class CTimeManager;
+class CTaskManager;
 
 class CCore: public IXCore
 {
 public:
-	CCore();
+	CCore(const char *szName);
 	~CCore();
-
-	void XMETHODCALLTYPE Release() override;
 
 	IPluginManager * XMETHODCALLTYPE getPluginManager() override;
 	IFileSystem * XMETHODCALLTYPE getFileSystem() override;
@@ -34,7 +35,10 @@ public:
 	void shutdownUpdatable();
 	void runUpdate() override;
 
-	UINT_PTR getCrtOutputHandler() override;
+	UINT_PTR XMETHODCALLTYPE getCrtOutputHandler() override;
+
+	void XMETHODCALLTYPE execCmd(const char *szCommand) override;
+	void execCmd2(const char * szFormat, ...) override;
 
 protected:
 	IBaseEventChannel *getEventChannelInternal(const XGUID &guid) override;
@@ -54,6 +58,10 @@ protected:
 	};
 
 	Array<_update_sys> m_aUpdatables;
+
+	CPerfMon *m_pPerfMon = NULL;
+	CTimeManager *m_pTimers = NULL;
+	CTaskManager *m_pTaskManager = NULL;
 };
 
 #endif

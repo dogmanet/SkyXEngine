@@ -22,7 +22,7 @@
 #include <render/sxrender.h>
 #include <input/sxinput.h>
 //#include <sxguiwinapi/sxgui.h>
-#include <level/sxlevel.h>
+//#include <level/sxlevel.h>
 
 #include "terrax.h"
 #include <xcommon/editor/IXEditorObject.h>
@@ -84,6 +84,8 @@ CTerraXState g_xState;
 extern CUndoManager *g_pUndoManager;
 
 extern Array<IXEditable*> g_pEditableSystems;
+
+extern String g_sLevelName;
 
 // Forward declarations of functions included in this code module:
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -492,7 +494,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			SetWindowFont(g_hStaticClassesWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
 		}
 
-		g_hComboClassesWnd = CreateWindowExA(0, WC_COMBOBOX, "", WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_SORT | CBS_DROPDOWN | CBS_HASSTRINGS, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 15 + 25, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, (HMENU)IDC_CMB_CLASS, hInst, NULL);
+		g_hComboClassesWnd = CreateWindowExA(0, WC_COMBOBOX, "", WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_SORT | CBS_DROPDOWNLIST | CBS_HASSTRINGS, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 15 + 25, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, (HMENU)IDC_CMB_CLASS, hInst, NULL);
 		{
 			SetWindowFont(g_hComboClassesWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
 		}
@@ -515,7 +517,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			tvis.item.cchTextMax = lstrlen(tvis.item.pszText);
 			TreeView_InsertItem(g_hObjectTreeWnd, &tvis);
 		}
-		
+
 		return FALSE;
 	}
 		break;
@@ -588,19 +590,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		InvalidateRect(hWnd, &rect, TRUE);
 
-		{
-			static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
-
-			if(!r_resize)
-			{
-				r_resize = (int*)GET_PCVAR_INT("r_resize");
-			}
-
-			if(r_resize)
-			{
-				*r_resize = 1;
-			}
-		}
+		RECT rcTopLeft;
+		GetClientRect(g_hTopLeftWnd, &rcTopLeft);
+		g_pEngine->getCore()->execCmd2("r_win_width %d\nr_win_height %d", rcTopLeft.right - rcTopLeft.left, rcTopLeft.bottom - rcTopLeft.top);
 
 		SendMessage(g_hStatusWnd, WM_SIZE, wParam, lParam);
 	}
@@ -628,7 +620,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			if(g_pUndoManager->isDirty())
 			{
-				const char *szLevelName = SLevel_GetName();
+				const char *szLevelName = g_sLevelName.c_str();
 				char szPrompt[128];
 				if(szLevelName[0])
 				{
@@ -664,7 +656,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			if(g_pUndoManager->isDirty())
 			{
-				const char *szLevelName = SLevel_GetName();
+				const char *szLevelName = g_sLevelName.c_str();
 				char szPrompt[128];
 				if(szLevelName[0])
 				{
@@ -1171,7 +1163,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if(isTop)
 			{
 				// pCamera = g_pTopLeftCamera;
-				pCamera = SRender_GetCamera();
+				pCamera = g_xConfig.m_pViewportCamera[XWP_TOP_LEFT];
 				float3 vLook, vPos;
 				pCamera->getLook(&vLook);
 				pCamera->getPosition(&vPos);
@@ -1262,7 +1254,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_CLOSE:
 		if(g_pUndoManager->isDirty())
 		{
-			const char *szLevelName = SLevel_GetName();
+			const char *szLevelName = g_sLevelName.c_str();
 			char szPrompt[128];
 			if(szLevelName[0])
 			{
@@ -1339,6 +1331,11 @@ LRESULT CALLBACK GuiWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	if(g_pEngine && g_pEngine->onMessage(message, wParam, lParam))
+	{
+		return(TRUE);
+	}
+
 	PAINTSTRUCT ps;
 	HDC hdc;
 	RECT rect; 

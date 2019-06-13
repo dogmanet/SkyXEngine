@@ -38,7 +38,7 @@ SOCKET CommandSocket = INVALID_SOCKET;
 bool g_bRunning = false;
 bool g_bRunningCmd = false;
 
-typedef CConcurrentQueue<char *> CommandBuffer;
+typedef CConcurrentQueue<char*> CommandBuffer;
 typedef std::mutex Mutex;
 CommandBuffer g_vCommandBuffer;
 Stack<CommandBuffer> g_cbufStack;

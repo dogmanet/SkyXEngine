@@ -196,44 +196,44 @@ void gdata::shaders_id::InitAllShaders()
 
 	GXDEPTH_STENCIL_DESC dsDesc;
 
-	dsDesc.bDepthEnable = FALSE;
-	dsDesc.bEnableDepthWrite = FALSE;
+	dsDesc.useDepthTest = FALSE;
+	dsDesc.useDepthWrite = FALSE;
 	gdata::rstates::pDepthStencilStateNoZ = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
-	dsDesc.bStencilEnable = TRUE;
-	dsDesc.depthFunc = GXCMP_ALWAYS;
-	dsDesc.stencilPassOp = GXSTENCIL_OP_REPLACE;
+	dsDesc.useStencilTest = TRUE;
+	dsDesc.cmpFuncDepth = GXCMP_ALWAYS;
+	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_REPLACE;
 	gdata::rstates::pDepthStencilStateMrtStage0 = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
-	dsDesc.bDepthEnable = TRUE;
-	dsDesc.depthFunc = GXCMP_LESS_EQUAL;
-	dsDesc.stencilFunc = GXCMP_NOT_EQUAL;
-	dsDesc.stencilPassOp = GXSTENCIL_OP_DECR;
+	dsDesc.useDepthTest = TRUE;
+	dsDesc.cmpFuncDepth = GXCMP_LESS_EQUAL;
+	dsDesc.stencilTestFront.cmpFuncStencil = GXCMP_NOT_EQUAL;
+	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_DECR;
 	gdata::rstates::pDepthStencilStateMrtStage1 = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
-	dsDesc.bEnableDepthWrite = FALSE;
-	dsDesc.stencilFunc = GXCMP_ALWAYS;
-	dsDesc.stencilDepthFailOp = GXSTENCIL_OP_INCR;
-	dsDesc.stencilPassOp = GXSTENCIL_OP_KEEP;
-	dsDesc.stencilBackDepthFailOp = GXSTENCIL_OP_DECR;
+	dsDesc.useDepthWrite = FALSE;
+	dsDesc.stencilTestFront.cmpFuncStencil = GXCMP_ALWAYS;
+	dsDesc.stencilTestFront.stencilOpDepthFail = GXSTENCIL_OP_INCR;
+	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_KEEP;
+	dsDesc.stencilTestBack.stencilOpDepthFail = GXSTENCIL_OP_DECR;
 	gdata::rstates::pDepthStencilStateLightBound = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
-	dsDesc.bDepthEnable = FALSE;
-	dsDesc.bEnableDepthWrite = FALSE;
-	dsDesc.stencilFunc = GXCMP_EQUAL;
-	dsDesc.stencilDepthFailOp = GXSTENCIL_OP_ZERO;
-	dsDesc.stencilFailOp = GXSTENCIL_OP_ZERO;
-	dsDesc.stencilPassOp = GXSTENCIL_OP_KEEP;
+	dsDesc.useDepthTest = FALSE;
+	dsDesc.useDepthWrite = FALSE;
+	dsDesc.stencilTestFront.cmpFuncStencil = GXCMP_EQUAL;
+	dsDesc.stencilTestFront.stencilOpDepthFail = GXSTENCIL_OP_ZERO;
+	dsDesc.stencilTestFront.stencilOpFail = GXSTENCIL_OP_ZERO;
+	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_KEEP;
 	gdata::rstates::pDepthStencilStateLightShadowNonGlobal = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
-	dsDesc.stencilPassOp = GXSTENCIL_OP_ZERO;
+	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_ZERO;
 	gdata::rstates::pDepthStencilStateLightClear = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
-	dsDesc.bStencilEnable = FALSE;
+	dsDesc.useStencilTest = FALSE;
 	gdata::rstates::pDepthStencilStateLightShadowGlobal = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
-	dsDesc.bDepthEnable = TRUE;
-	dsDesc.bEnableDepthWrite = FALSE;
+	dsDesc.useDepthTest = TRUE;
+	dsDesc.useDepthWrite = FALSE;
 	gdata::rstates::pDepthStencilStateParticles = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
 	
@@ -267,17 +267,17 @@ void gdata::shaders_id::InitAllShaders()
 	gdata::rstates::pBlendRed = gdata::pDXDevice->createBlendState(&blendDesc);
 
 	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_ALL;
-	blendDesc.renderTarget[0].bBlendEnable = TRUE;
-	blendDesc.renderTarget[0].srcBlend = blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_INV_DEST_ALPHA;
-	blendDesc.renderTarget[0].destBlend = blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_DEST_ALPHA;
+	blendDesc.renderTarget[0].useBlend = TRUE;
+	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_INV_DEST_ALPHA;
+	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_DEST_ALPHA;
 	gdata::rstates::pBlendAlpha = gdata::pDXDevice->createBlendState(&blendDesc);
 
-	blendDesc.renderTarget[0].srcBlend = blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_ONE;
-	blendDesc.renderTarget[0].destBlend = blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_ONE;
+	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_ONE;
+	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_ONE;
 	gdata::rstates::pBlendAlphaOneOne = gdata::pDXDevice->createBlendState(&blendDesc);
 
-	blendDesc.renderTarget[0].srcBlend = blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_SRC_ALPHA;
-	blendDesc.renderTarget[0].destBlend = blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_INV_SRC_ALPHA;
+	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
+	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
 	gdata::rstates::pBlendAlphaSky = gdata::pDXDevice->createBlendState(&blendDesc);
 	
 

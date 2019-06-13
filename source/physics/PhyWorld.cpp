@@ -855,6 +855,10 @@ void CPhyWorld::CRenderable::startup(IGXContext *pDevice, IXMaterialSystem *pMat
 CPhyWorld::CDebugDrawer::CDebugDrawer()
 {
 	auto pDevice = SGCore_GetDXDevice();
+	if(!pDevice)
+	{
+		return;
+	}
 
 	GXVERTEXELEMENT vertexDecl[] =
 	{

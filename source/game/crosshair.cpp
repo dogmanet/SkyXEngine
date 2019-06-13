@@ -54,14 +54,14 @@ CCrosshair::CCrosshair():
 	m_idShaderKit = SGCore_ShaderCreateKit(m_idVS, m_idPS);
 
 	GXBLEND_DESC blendDesc;
-	blendDesc.renderTarget[0].srcBlend = blendDesc.renderTarget[0].srcBlendAlpha = GXBLEND_SRC_ALPHA;
-	blendDesc.renderTarget[0].destBlend = blendDesc.renderTarget[0].destBlendAlpha = GXBLEND_INV_SRC_ALPHA;
-	blendDesc.renderTarget[0].bBlendEnable = TRUE;
+	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
+	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
+	blendDesc.renderTarget[0].useBlend = TRUE;
 	m_pBlendState = m_pDev->createBlendState(&blendDesc);
 
 	GXDEPTH_STENCIL_DESC dsDesc;
-	dsDesc.bDepthEnable = FALSE;
-	dsDesc.bEnableDepthWrite = FALSE;
+	dsDesc.useDepthTest = FALSE;
+	dsDesc.useDepthWrite = FALSE;
 	m_pDepthState = m_pDev->createDepthStencilState(&dsDesc);
 }
 

@@ -9,73 +9,151 @@ See the license in LICENSE
 #include <SkyXEngine.h>
 //#include <common/string_func.h>
 
-#if 0
 #include <xWindow/IXWindowSystem.h>
+#include <xEngine/IXEngine.h>
 
 #ifdef _DEBUG
 #	pragma comment(lib, "xWindow_d.lib")
+#	pragma comment(lib, "xEngine_d.lib")
 #else
 #	pragma comment(lib, "xWindow.lib")
+#	pragma comment(lib, "xEngine.lib")
 #endif
 
 class CWindowCallback: public IXWindowCallback
 {
 public:
-	INT_PTR XMETHODCALLTYPE onMessage(UINT msg, WPARAM wParam, LPARAM lParam, IXWindow *pWindow)
+	CWindowCallback(IXEngine *pEngine):
+		m_pEngine(pEngine)
 	{
-		return(pWindow->runDefaultCallback(msg, wParam, lParam));
 	}
-};
-#endif
 
+	INT_PTR XMETHODCALLTYPE onMessage(UINT msg, WPARAM wParam, LPARAM lParam, IXWindow *pWindow) override
+	{
+		if(m_pEngine->onMessage(msg, wParam, lParam))
+		{
+			return(TRUE);
+		}
+
+		switch(msg)
+		{
+		case WM_CLOSE:
+			PostQuitMessage(0);
+			break;
+
+		case WM_SYSKEYDOWN:
+		case WM_SYSKEYUP:
+			// системная обработка F10 (вызов меню) не надо, останавливает главный цикл
+			if(wParam == VK_F10)
+			{
+				return(0);
+			}
+			// системная обработка Alt (вызов меню) не надо, останавливает главный цикл
+			if((wParam == VK_MENU || wParam == VK_LMENU || wParam == VK_RMENU)
+				&& GetKeyState(VK_TAB) < 0)
+			{
+				return(0);
+			}
+			break;
+
+		default:
+			return(pWindow->runDefaultCallback(msg, wParam, lParam));
+		}
+
+		return(0);
+	}
+protected:
+	IXEngine *m_pEngine;
+};
+
+class CEngineCallback: public IXEngineCallback
+{
+public:
+	CEngineCallback(IXWindowSystem *pWindowSystem, IXWindow *pWindow):
+		m_pWindow(pWindow),
+		m_pWindowSystem(pWindowSystem)
+	{}
+	void XMETHODCALLTYPE onGraphicsResize(UINT uWidth, UINT uHeight, bool isFullscreen, bool isBorderless, IXEngine *pEngine) override
+	{
+		XWINDOW_DESC wdesc = *m_pWindow->getDesc();
+		if(isFullscreen || isBorderless)
+		{
+			wdesc.iPosX = 0;
+			wdesc.iPosY = 0;
+		}
+		else if(wdesc.iPosX == 0 && wdesc.iPosY == 0)
+		{
+			wdesc.iPosX = XCW_CENTER;
+			wdesc.iPosY = XCW_CENTER;
+		}
+		wdesc.iSizeX = (int)uWidth;
+		wdesc.iSizeY = (int)uHeight;
+		wdesc.flags = XWF_BUTTON_CLOSE | XWF_BUTTON_MINIMIZE | XWF_NORESIZE;
+
+		if(isFullscreen || isBorderless)
+		{
+			wdesc.flags |= XWF_NOBORDER;
+		}
+		else
+		{
+			wdesc.flags &= ~XWF_NOBORDER;
+		}
+
+		m_pWindow->update(&wdesc);
+	}
+
+	bool XMETHODCALLTYPE processWindowMessages() override
+	{
+		return(m_pWindowSystem->processMessages());
+	}
+
+	ICamera* XMETHODCALLTYPE getCameraForFrame() override
+	{
+		return(SGame_GetActiveCamera());
+	}
+
+protected:
+	IXWindowSystem *m_pWindowSystem;
+	IXWindow *m_pWindow;
+};
+
+#if defined(_WINDOWS)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
-#if 0
-	IXWindowSystem *pWindowSystem = XWindowInit();
+	UNREFERENCED_PARAMETER(hPrevInstance);
 
-	XWINDOW_DESC wdesc;
-	wdesc.iPosX = XCW_USEDEFAULT;
-	wdesc.iPosY = XCW_USEDEFAULT;
-	wdesc.iSizeX = 800;
-	wdesc.iSizeY = 600;
-	wdesc.szTitle = "xWindow";
-	wdesc.flags = XWF_BUTTON_CLOSE | XWF_BUTTON_MINIMIZE | XWF_NORESIZE;
-
-	CWindowCallback cb;
-	IXWindow *pWindow = pWindowSystem->createWindow(&wdesc, &cb);
-
-	while(pWindowSystem->processMessages())
-	{
-		Sleep(10);
-	}
-	mem_release(pWindow);
-	mem_release(pWindowSystem);
-	return(0);
+	int argc;
+	char **argv = CommandLineToArgvA(lpCmdLine, &argc);
+#else
+int main(int argc, char **argv)
+{
 #endif
 
-	//MessageBox(0, 0, 0, 0);
-	SkyXEngine_PreviewCreate();
-	SkyXEngine_Init(0, 0, lpCmdLine);
-	SkyXEngine_PreviewKill();
+	IXEngine *pEngine = XEngineInit(argc, argv, "build");
 
-	SGCore_SkyBoxLoadTex("sky_2_cube.dds");
-	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
-	SGCore_SkyBoxSetUse(false);
-	SGCore_SkyCloudsSetUse(false);
-	
-	//SGCore_OC_SetEnable(false);
+	IXWindowSystem *pWindowSystem = XWindowInit();
 
-	SGreen_0SettSetFreqGrass(100);
+	CWindowCallback cb(pEngine);
+	XWINDOW_DESC wdesc;
+	wdesc.iPosX = XCW_CENTER;
+	wdesc.iPosY = XCW_CENTER;
+	wdesc.iSizeX = 800;
+	wdesc.iSizeY = 600;
+	wdesc.szTitle = "SkyXEngine build";
+	wdesc.flags = XWF_BUTTON_CLOSE | XWF_BUTTON_MINIMIZE | XWF_NORESIZE;
+	IXWindow *pWindow = pWindowSystem->createWindow(&wdesc, &cb);
+	CEngineCallback engineCb(pWindowSystem, pWindow);
 
-	SGCore_ShaderAllLoad();
-	SGCore_LoadTexAllLoad();
+	pEngine->initGraphics(pWindow->getOSHandle(), &engineCb);
+	// pEngine->initServer();
 
-	SetWindowPos((HWND)SGCore_GetHWND(), HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 
-	SLevel_AmbientSndPlay();
-	SLevel_WeatherSndPlay();
+	pEngine->getCore()->execCmd("exec ../config_game.cfg");
+	pEngine->getCore()->execCmd("exec ../config_game_user.cfg");
 
-	int result = SkyXEngine_CycleMain();
-	SkyXEngine_Kill();
-	return result;
+	int ret = pEngine->start();
+
+	mem_release(pWindow);
+	mem_release(pEngine);
+	return(ret);
 }

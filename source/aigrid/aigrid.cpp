@@ -2517,13 +2517,13 @@ void CAIGrid::renderQuads(const IFrustum * frustum, const float3 * viewpos, floa
 						RTGPUArrVerteces[tmpkey].m_vPos = aq->m_vPos;
 
 						if(quadSelectedExists(aq->m_id))
-							RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLORVECTOR_ARGB(AIGRID_COLOR_SEL_MAIN);
+							RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLOR_TO_F4(AIGRID_COLOR_SEL_MAIN);
 						else if(quadSelectedExistsNeightborDirect(aq->m_id))
-							RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLORVECTOR_ARGB(AIGRID_COLOR_SEL_ADD);
+							RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLOR_TO_F4(AIGRID_COLOR_SEL_ADD);
 						else if(m_uiCountSplits > 0 && m_isMarkSplits)
-							RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLORVECTOR_ARGB(m_aSplitsColor[aq->m_iSplit - 1]);
+							RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLOR_TO_F4(m_aSplitsColor[aq->m_iSplit - 1]);
 						else
-							RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLORVECTOR_ARGB(m_aQuadColors[aq->m_id]);
+							RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLOR_TO_F4(m_aQuadColors[aq->m_id]);
 
 						/*if (aq->m_iSplit > 1)
 						{
@@ -2571,7 +2571,7 @@ void CAIGrid::renderQuads(const IFrustum * frustum, const float3 * viewpos, floa
 						else
 						{
 							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(1, 1, 0, 0);
-							RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLORVECTOR_ARGB(GXCOLOR_ARGB(255, 255, 0, 0));
+							RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLOR_TO_F4(GXCOLOR_ARGB(255, 255, 0, 0));
 						}
 
 						++tmpkey;
@@ -2664,7 +2664,7 @@ void CAIGrid::renderGraphPoints(const float3 * viewpos, float dist)
 					else
 						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(1, 1, 0, 0);
 
-					RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLORVECTOR_ARGB(GXCOLOR_ARGB(200, 0, 0, 255));
+					RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLOR_TO_F4(GXCOLOR_ARGB(200, 0, 0, 255));
 					++tmpkey;
 				}
 			}

@@ -230,5 +230,8 @@
     <ClInclude Include="..\..\..\source\core\DirIterator.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\core\ITask.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

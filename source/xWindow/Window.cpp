@@ -23,7 +23,7 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 		case WM_ACTIVATE:
 		case WM_SIZE:
 		case WM_COMMAND:
-		case WM_KILLFOCUS:
+		//case WM_KILLFOCUS:
 		case WM_XBUTTONDBLCLK:
 		case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP:
@@ -54,6 +54,7 @@ CWindow::CWindow(HINSTANCE hInst, UINT uId, const XWINDOW_DESC *pWindowDesc, IXW
 	assert(pCallback);
 
 	m_windowDesc = *pWindowDesc;
+	m_windowDesc.szTitle = NULL;
 
 #if defined(_WINDOWS)
 	UINT style = CS_HREDRAW | CS_VREDRAW;
@@ -75,7 +76,8 @@ CWindow::CWindow(HINSTANCE hInst, UINT uId, const XWINDOW_DESC *pWindowDesc, IXW
 	wcex.hInstance = hInst;
 	wcex.hIcon = NULL;
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wcex.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+	
 	wcex.lpszMenuName = NULL;
 	wcex.lpszClassName = szClassName;
 	wcex.hIconSm = NULL;
@@ -88,8 +90,8 @@ CWindow::CWindow(HINSTANCE hInst, UINT uId, const XWINDOW_DESC *pWindowDesc, IXW
 
 	//#############################################################################
 
-	RECT rc = {0, 0, pWindowDesc->iSizeX, pWindowDesc->iSizeY};
-	DWORD wndStyle = 0;
+	
+	DWORD wndStyle = WS_OVERLAPPED | WS_CAPTION | WS_THICKFRAME;
 
 	if(pWindowDesc->flags & XWF_BUTTON_MINIMIZE)
 	{
@@ -105,8 +107,13 @@ CWindow::CWindow(HINSTANCE hInst, UINT uId, const XWINDOW_DESC *pWindowDesc, IXW
 	}
 	if(pWindowDesc->flags & XWF_NOBORDER)
 	{
-		wndStyle &= ~(WS_SYSMENU | WS_CAPTION | WS_SIZEBOX | WS_MAXIMIZE | WS_MINIMIZE | WS_THICKFRAME);
+		wndStyle &= ~(WS_SYSMENU | WS_CAPTION | WS_MAXIMIZE | WS_MINIMIZE | WS_THICKFRAME);
 	}
+	else if(pWindowDesc->flags & XWF_NORESIZE)
+	{
+		wndStyle &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
+	}
+	RECT rc = {0, 0, pWindowDesc->iSizeX, pWindowDesc->iSizeY};
 	AdjustWindowRect(&rc, wndStyle, false);
 
 	int iPosX = pWindowDesc->iPosX;
@@ -120,8 +127,16 @@ CWindow::CWindow(HINSTANCE hInst, UINT uId, const XWINDOW_DESC *pWindowDesc, IXW
 	{
 		iPosY = CW_USEDEFAULT;
 	}
-
-	m_hWnd = CreateWindowA(szClassName, pWindowDesc->szTitle, wndStyle, iPosX, iPosY, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, wcex.hInstance, NULL);
+	if(iPosX == XCW_CENTER)
+	{
+		iPosX = (GetSystemMetrics(SM_CXSCREEN) - (rc.right - rc.left)) / 2;
+	}
+	if(iPosY == XCW_CENTER)
+	{
+		iPosY = (GetSystemMetrics(SM_CYSCREEN) - (rc.bottom - rc.top)) / 2;
+	}
+	
+	m_hWnd = CreateWindowExA(0/*WS_EX_APPWINDOW*/, szClassName, pWindowDesc->szTitle, wndStyle, iPosX, iPosY, rc.right - rc.left, rc.bottom - rc.top, pParent ? (HWND)pParent->getOSHandle() : NULL, NULL, wcex.hInstance, NULL);
 	if(!m_hWnd)
 	{
 		LibReport(REPORT_MSG_LEVEL_FATAL, "Unable to create window!\n");
@@ -140,6 +155,7 @@ CWindow::CWindow(HINSTANCE hInst, UINT uId, const XWINDOW_DESC *pWindowDesc, IXW
 
 	ShowWindow(m_hWnd, SW_NORMAL);
 
+	
 
 	if(pWindowDesc->flags & XWF_NOBORDER)
 	{
@@ -171,7 +187,7 @@ void XMETHODCALLTYPE CWindow::hide()
 }
 void XMETHODCALLTYPE CWindow::close()
 {
-	ShowWindow(m_hWnd, SW_HIDE);
+	SendMessage(m_hWnd, WM_CLOSE, 0, 0);
 }
 void XMETHODCALLTYPE CWindow::show()
 {
@@ -187,12 +203,99 @@ void XMETHODCALLTYPE CWindow::setTitle(const char *szTitle)
 }
 void XMETHODCALLTYPE CWindow::update(const XWINDOW_DESC *pWindowDesc)
 {
-	SetClassLong(m_hWnd, GCL_STYLE, GetClassLong(m_hWnd, GCL_STYLE) | CS_NOCLOSE);
+	if(pWindowDesc->flags & XWF_BUTTON_CLOSE)
+	{
+		SetClassLong(m_hWnd, GCL_STYLE, GetClassLong(m_hWnd, GCL_STYLE) & ~CS_NOCLOSE);
+	}
+	else
+	{
+		SetClassLong(m_hWnd, GCL_STYLE, GetClassLong(m_hWnd, GCL_STYLE) | CS_NOCLOSE);
+	}
+
+	DWORD wndStyle = GetWindowLong(m_hWnd, GWL_STYLE);
+
+	if(pWindowDesc->flags & XWF_BUTTON_MINIMIZE)
+	{
+		wndStyle |= WS_MINIMIZEBOX | WS_SYSMENU;
+	}
+	if(pWindowDesc->flags & XWF_BUTTON_MAXIMIZE)
+	{
+		wndStyle |= WS_MAXIMIZEBOX | WS_SYSMENU;
+	}
+	if(pWindowDesc->flags & XWF_BUTTON_CLOSE)
+	{
+		wndStyle |= WS_SYSMENU;
+	}
+	if(pWindowDesc->flags & XWF_NOBORDER)
+	{
+		wndStyle &= ~(WS_SYSMENU | WS_CAPTION | WS_MAXIMIZE | WS_MINIMIZE | WS_THICKFRAME);
+	}
+	else
+	{
+		wndStyle |= WS_CAPTION | WS_THICKFRAME;
+
+		if(pWindowDesc->flags & XWF_NORESIZE)
+		{
+			wndStyle &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
+		}
+	}
+
+	SetWindowLong(m_hWnd, GWL_STYLE, wndStyle);
+
+	SetWindowPos(m_hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+
+	RECT rc = {0, 0, pWindowDesc->iSizeX, pWindowDesc->iSizeY};
+	AdjustWindowRect(&rc, wndStyle, false);
+
+	RECT rcOld;
+	GetWindowRect(m_hWnd, &rcOld);
+
+
+	if(rcOld.right - rcOld.left != rc.right - rc.left || rcOld.bottom - rcOld.top != rc.bottom - rc.top)
+	{
+		SetWindowPos(m_hWnd, HWND_TOP, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+	}
+
+	if(pWindowDesc->iPosX != XCW_USEDEFAULT && pWindowDesc->iPosY != XCW_USEDEFAULT)
+	{
+		int iPosX = pWindowDesc->iPosX;
+		int iPosY = pWindowDesc->iPosY;
+
+		if(iPosX == XCW_CENTER)
+		{
+			iPosX = (GetSystemMetrics(SM_CXSCREEN) - (rc.right - rc.left)) / 2;
+		}
+		if(iPosY == XCW_CENTER)
+		{
+			iPosY = (GetSystemMetrics(SM_CYSCREEN) - (rc.bottom - rc.top)) / 2;
+		}
+
+		SetWindowPos(m_hWnd, HWND_TOP, iPosX, iPosY, 0, 0, SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+	}
+
+	if(pWindowDesc->szTitle)
+	{
+		SetWindowTextA(m_hWnd, pWindowDesc->szTitle);
+	}
+
+	m_windowDesc = *pWindowDesc;
+	m_windowDesc.szTitle = NULL;
 }
 
 INT_PTR XMETHODCALLTYPE CWindow::runDefaultCallback(UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	switch(msg)
+	{
+	case WM_CLOSE:
+		ShowWindow(m_hWnd, SW_HIDE);
+		return(TRUE);
+	}
 	return(DefWindowProcA(m_hWnd, msg, wParam, lParam));
+}
+
+const XWINDOW_DESC* XMETHODCALLTYPE CWindow::getDesc()
+{
+	return(&m_windowDesc);
 }
 
 INT_PTR CWindow::runCallback(UINT msg, WPARAM wParam, LPARAM lParam)

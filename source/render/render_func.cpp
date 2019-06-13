@@ -80,58 +80,9 @@ void rfunc::SetRenderSceneFilterUn()
 
 bool rfunc::ComDeviceLost(bool isSetWindowSize)
 {
-	static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
-
-	static int *r_win_width = (int*)GET_PCVAR_INT("r_win_width");
-	static int *r_win_height = (int*)GET_PCVAR_INT("r_win_height");
-	static const bool *r_win_windowed = GET_PCVAR_BOOL("r_win_windowed");
-
-	if(isSetWindowSize && *r_resize != RENDER_RESIZE_CHANGE)
-	{
-		//получаем текущий размер окна в которое рисовали
-		RECT rect_scene;
-		GetClientRect(gdata::hHandle3D, &rect_scene);
-
-		*r_win_width = rect_scene.right;
-		*r_win_height = rect_scene.bottom;
-		if(!*r_win_width || !*r_win_height)
-		{
-			return(false);
-		}
-	}
-
-	//сбрасываем все что необходимо для восстановления устройства
-	SGCore_OnLostDevice();
-//	SGreen_OnLostDevice();
-//	SGeom_OnLostDevice();
-	SMtrl_OnLostDevice();
-//	SPE_OnLostDevice();
-//	SPP_OnLostDevice();
-//	SGame_OnLostDevice();
-
-	rfunc::InitModeWindow();
-	bool bf = SGCore_OnDeviceReset(*r_win_width, *r_win_height, *r_win_windowed);
-	LibReport(REPORT_MSG_LEVEL_WARNING, "r_win_width %d, r_win_height %d, r_win_windowed %d \n", *r_win_width, *r_win_height, *r_win_windowed);
-
-	/*if (bf)
-	{
-	//если все-таки функция зашла сюда значит что-то было неосвобождено
-	LibReport(REPORT_MSG_LEVEL_ERROR, "reset device is failed ... \n");
-	}
-	else
-	{*/
-
 	gdata::InitAllMatrix();
-	*r_resize = RENDER_RESIZE_NONE;
 	SGCore_OnResetDevice();
-//	SGeom_OnResetDevice();
-	SMtrl_OnResetDevice();
-//	SGreen_OnResetDevice();
-//	SPE_OnResetDevice();
-//	SGame_OnResetDevice();
-//	SPP_OnDeviceReset();
-	//	gdata::pDXDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-	// }
+
 	return(true);
 }
 

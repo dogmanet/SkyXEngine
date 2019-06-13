@@ -44,6 +44,8 @@ SX_LIB_API long SMtrl_0GetVersion();
 //! установить функцию обработки сообщений
 SX_LIB_API void SMtrl_Dbg_Set(report_func rf);
 
+SX_LIB_API void SMtrl_DevSet(IGXContext *pDev);
+
 //! инициализция подсистемы
 SX_LIB_API void SMtrl_0Create(
 	const char *szName,				//!< присваиваемое имя

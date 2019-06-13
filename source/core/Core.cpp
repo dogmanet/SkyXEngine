@@ -4,8 +4,40 @@
 #include "FileSystem.h"
 #include "ModelProvider.h"
 
-CCore::CCore()
+#include "concmd.h"
+#include "TaskManager.h"
+
+#include "PerfMon.h"
+#include "time.h"
+
+#include <GRegisterIndex.h>
+
+extern CTimeManager *g_pTimers;
+extern CPerfMon *g_pPerfMon;
+extern CCore *g_pCore;
+extern CTaskManager *g_pTaskManager;
+
+CCore::CCore(const char *szName)
 {
+	ConsoleConnect(szName);
+	ConsoleRegisterCmds();
+
+	Core_0RegisterCVarBool("g_time_run", true, "Запущено ли игрвоое время?", FCVAR_NOTIFY);
+	Core_0RegisterCVarFloat("g_time_speed", 1.f, "Скорость/соотношение течения игрового времени", FCVAR_NOTIFY);
+	Core_0RegisterCVarBool("dbg_config_save", false, "Отладочный вывод процесса сохранения конфига");
+	Core_0RegisterCVarInt("r_stats", 1, "Показывать ли статистику? 0 - нет, 1 - fps и игровое время, 2 - показать полностью");
+
+	Core_0RegisterConcmd("on_g_time_run_change", []()
+	{
+		static const bool * g_time_run = GET_PCVAR_BOOL("g_time_run");
+		Core_TimeWorkingSet(Core_RIntGet(G_RI_INT_TIMER_GAME), *g_time_run);
+	});
+	Core_0RegisterConcmd("on_g_time_speed_change", []()
+	{
+		static const float * g_time_speed = GET_PCVAR_FLOAT("g_time_speed");
+		Core_TimeSpeedSet(Core_RIntGet(G_RI_INT_TIMER_GAME), *g_time_speed);
+	});
+
 	m_pPluginManager = new CPluginManager();
 
 	m_pFileSystem = new CFileSystem();
@@ -13,11 +45,45 @@ CCore::CCore()
 
 	m_pModelProvider = new CModelProvider(this);
 	m_pPluginManager->registerInterface(IXMODELPROVIDER_GUID, m_pModelProvider);
+	
+	g_pPerfMon = m_pPerfMon = new CPerfMon();
+	g_pTimers = m_pTimers = new CTimeManager();
 
+	ID idTimerRender = Core_TimeAdd();
+	ID idTimerGame = Core_TimeAdd();
+	Core_RIntSet(G_RI_INT_TIMER_RENDER, idTimerRender);
+	Core_RIntSet(G_RI_INT_TIMER_GAME, idTimerGame);
+
+	tm ct = {0, 0, 10, 27, 5, 2030 - 1900, 0, 0, 0};
+	Core_TimeUnixStartSet(idTimerGame, mktime(&ct));
+
+	Core_TimeWorkingSet(idTimerRender, true);
+	Core_TimeWorkingSet(idTimerGame, true);
+
+	Core_TimeSpeedSet(idTimerGame, 10);
+
+	int iThreadNum = 0;
+	if(!sscanf(Core_0GetCommandLineArg("threads", "0"), "%d", &iThreadNum) || iThreadNum < 0)
+	{
+		LibReport(REPORT_MSG_LEVEL_WARNING, "Invalid -threads value! Defaulting to 0\n");
+	}
+
+	g_pTaskManager = m_pTaskManager = new CTaskManager(iThreadNum);
+	if(strcasecmp(Core_0GetCommandLineArg("no-threads", "no"), "no"))
+	{
+		m_pTaskManager->forceSinglethreaded();
+	}
+
+	loadPlugins();
 }
 CCore::~CCore()
 {
 	shutdownUpdatable();
+
+	mem_delete(m_pTaskManager);
+
+	mem_delete(m_pTimers);
+	mem_delete(m_pPerfMon);
 
 	mem_delete(m_pModelProvider);
 	mem_delete(m_pResourceManager);
@@ -27,12 +93,8 @@ CCore::~CCore()
 	{
 		mem_delete(*i.second);
 	}
-}
 
-void CCore::Release()
-{
-	--m_uRefCount;
-	assert(m_uRefCount && "You MUST NOT explicitly call Release on IXCore interface");
+	ConsoleDisconnect();
 }
 
 IPluginManager *CCore::getPluginManager()
@@ -182,7 +244,97 @@ void CCore::shutdownUpdatable()
 	}
 }
 
-UINT_PTR CCore::getCrtOutputHandler()
+UINT_PTR XMETHODCALLTYPE CCore::getCrtOutputHandler()
 {
 	return(Core_ConsoleGetOutHandler());
+}
+
+//! @FIXME Remove that!
+extern std::mutex g_conUpdMtx;
+extern CConcurrentQueue<char*> g_vCommandBuffer;
+void XMETHODCALLTYPE CCore::execCmd(const char *szCommand)
+{
+	execCmd2("%s", szCommand);
+}
+void CCore::execCmd2(const char * szFormat, ...)
+{
+	va_list va;
+	va_start(va, szFormat);
+	size_t len = _vscprintf(szFormat, va) + 1;
+	char * buf, *cbuf = NULL;
+	if(len < 4096)
+	{
+		buf = (char*)alloca(len * sizeof(char));
+	}
+	else
+	{
+		cbuf = buf = new char[len];
+	}
+	vsprintf(buf, szFormat, va);
+	va_end(va);
+
+	//g_vCommandBuffer
+
+	char * nl;
+	do
+	{
+		nl = strstr(buf, "\n");
+		if(nl)
+		{
+			*nl = 0;
+			++nl;
+
+			while(isspace(*buf))
+			{
+				++buf;
+			}
+
+			if(!(*buf == '/' && *(buf + 1) == '/') && (len = strlen(buf)))
+			{
+				char * str = new char[len + 1];
+				memcpy(str, buf, len + 1);
+				g_conUpdMtx.lock();
+				g_vCommandBuffer.push(str);
+				g_conUpdMtx.unlock();
+			}
+			buf = nl;
+		}
+	}
+	while(nl);
+
+	while(isspace(*buf))
+	{
+		++buf;
+	}
+
+	if(!(*buf == '/' && *(buf + 1) == '/') && (len = strlen(buf)))
+	{
+		char * str = new char[len + 1];
+		memcpy(str, buf, len + 1);
+		g_conUpdMtx.lock();
+		g_vCommandBuffer.push(str);
+		g_conUpdMtx.unlock();
+	}
+
+	mem_delete_a(cbuf);
+}
+
+//##########################################################################
+
+C SXCORE_API IXCore* XCoreInit(const char *szName)
+{
+	return(g_pCore = new CCore(szName));
+}
+
+C SXCORE_API void XCoreStart()
+{
+	g_pTaskManager->start();
+}
+C SXCORE_API void XCoreStop()
+{
+	g_pTaskManager->stop();
+}
+C SXCORE_API void XCoreAddTask(ITask *pTask)
+{
+	g_pTaskManager->addTask(pTask);
 }

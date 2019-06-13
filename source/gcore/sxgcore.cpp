@@ -305,8 +305,8 @@ SX_LIB_API void SGCore_OnResetDevice()
 	SG_PRECOND(_VOID);
 
 	//g_pFPStext->OnResetDevice();
-	g_pManagerRenderTargets->OnResetDevice();
-	g_pOC->onResetDevice(0/*g_oD3DAPP.BackBufferWidth*/, 9/*g_oD3DAPP.BackBufferHeight*/);
+//	g_pManagerRenderTargets->OnResetDevice();
+//	g_pOC->onResetDevice(0/*g_oD3DAPP.BackBufferWidth*/, 9/*g_oD3DAPP.BackBufferHeight*/);
 	InitFullScreenQuad();
 	
 	gcore_data::rt_id::iHowAdaptedLum = 0;

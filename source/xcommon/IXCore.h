@@ -27,16 +27,21 @@ public:
 	virtual void XMETHODCALLTYPE getRenderPipeline(IXRenderPipeline **ppRenderPipeline) = 0;
 	virtual void XMETHODCALLTYPE setRenderPipeline(IXRenderPipeline *pRenderPipeline) = 0;
 
-	template<typename T> IEventChannel<T> *getEventChannel(const XGUID &guid)
-	{
-		return((IEventChannel<T>*)getEventChannelInternal(guid));
-	}
+	virtual UINT_PTR XMETHODCALLTYPE getCrtOutputHandler() = 0;
 
-	virtual UINT_PTR getCrtOutputHandler() = 0;
+	virtual void XMETHODCALLTYPE execCmd(const char *szCommand) = 0;
+	virtual void execCmd2(const char * szFormat, ...) = 0;
+
+
 
 	//@FIXME: Remove that!
 	virtual void initUpdatable() = 0;
 	virtual void runUpdate() = 0;
+
+	template<typename T> IEventChannel<T> *getEventChannel(const XGUID &guid)
+	{
+		return((IEventChannel<T>*)getEventChannelInternal(guid));
+	}
 protected:
 	virtual IBaseEventChannel *getEventChannelInternal(const XGUID &guid) = 0;
 };

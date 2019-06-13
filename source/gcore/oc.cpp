@@ -49,8 +49,6 @@ void QuadGetSphere(const float2 &vMin, const float2 &vMax, float &fRadius, float
 
 COcclusionCulling::COcclusionCulling()
 {
-	m_isEnable = true;
-
 	m_pFrustum = 0;
 	m_iCountFC = 0;
 	m_iCountFCfail = 0;

@@ -32,8 +32,6 @@ See the license in LICENSE
 
 //##########################################################################
 
-char g_szCoreName[CORE_NAME_MAX_LEN];
-
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
 report_func g_fnReportf = DefReport;
@@ -62,7 +60,7 @@ if (!(id >= 0 && id < CORE_REGISTRY_SIZE))\
 
 //**************************************************************************
 
-CTimeManager* g_pTimers = 0;
+CTimeManager *g_pTimers = NULL;
 CCore *g_pCore = NULL;
 #define CORE_TIME_PRECOND(retval) if(!g_pTimers){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxcore is not init", GEN_MSG_LOCATION); return retval;}
 
@@ -156,7 +154,7 @@ bool Core_0IsProcessRun(const char* process)
 		if(!Process32Next(hSnapshot, &pe)) return false;
 	}
 }
-
+#if 0
 void Core_0Create(const char* name, const char *szNameConsole, bool is_unic)
 {
 		if(name && strlen(name) > 1)
@@ -207,7 +205,9 @@ void Core_AKill()
 	mem_delete(g_pTimers);
 	ConsoleDisconnect();
 }
+#endif
 
+#if 0
 void Core_AGetName(char* name)
 {
 	SXCORE_PRECOND(_VOID);
@@ -217,6 +217,7 @@ void Core_AGetName(char* name)
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - invalid argument", GEN_MSG_LOCATION);
 }
+#endif
 
 SX_LIB_API IXCore *Core_GetIXCore()
 {

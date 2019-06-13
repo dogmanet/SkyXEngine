@@ -6,8 +6,6 @@
 
 CPluginManager::~CPluginManager()
 {
-	//@FIXME: !!!
-	return;
 	for(UINT i = 0, l = m_aPlugins.size(); i < l; ++i)
 	{
 		m_aPlugins[i]->shutdown();

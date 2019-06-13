@@ -23,6 +23,17 @@ See the license in LICENSE
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 
+#if defined(_WINDOWS)
+#	if defined(SXCORE_EXPORTS)
+#		define SXCORE_API __declspec(dllexport)
+#	else
+#		define SXCORE_API __declspec(dllimport)
+#	endif
+#else
+#	define SXCORE_API
+#endif
+#define C extern "C"
+
 #include <io.h>
 #include <fcntl.h>
 #include <tlhelp32.h>
@@ -60,6 +71,13 @@ enum CORE_TASK_FLAG
 
 /*! \name Базовые функции ядра 
 !@{*/
+
+//! @FIXME: Убрать это!
+class ITask;
+C SXCORE_API IXCore* XCoreInit(const char *szName);
+C SXCORE_API void XCoreStart();
+C SXCORE_API void XCoreStop();
+C SXCORE_API void XCoreAddTask(ITask *pTask);
 
 //! возвращает версию ядра
 SX_LIB_API long Core_0GetVersion();
@@ -526,23 +544,23 @@ SX_LIB_API void Core_0RegisterCVarPointer(
 
 //! Получает указатель на значение строкового квара. При отсутствии квара запрошенного типа возвращает NULL
 SX_LIB_API const char ** Core_0GetPCVarString(const char * name);
-#define GET_PCVAR_STRING(k) Core_0GetPCVarString(k);
+#define GET_PCVAR_STRING(k) Core_0GetPCVarString(k)
 
 //! Получает указатель на значение целочисленного квара. При отсутствии квара запрошенного типа возвращает NULL
 SX_LIB_API const int * Core_0GetPCVarInt(const char * name);
-#define GET_PCVAR_INT(k) Core_0GetPCVarInt(k);
+#define GET_PCVAR_INT(k) Core_0GetPCVarInt(k)
 
 //! Получает указатель на значение дробного квара. При отсутствии квара запрошенного типа возвращает NULL
 SX_LIB_API const float * Core_0GetPCVarFloat(const char * name);
-#define GET_PCVAR_FLOAT(k) Core_0GetPCVarFloat(k);
+#define GET_PCVAR_FLOAT(k) Core_0GetPCVarFloat(k)
 
 //! Получает указатель на значение логического квара. При отсутствии квара запрошенного типа возвращает NULL
 SX_LIB_API const bool * Core_0GetPCVarBool(const char * name);
-#define GET_PCVAR_BOOL(k) Core_0GetPCVarBool(k);
+#define GET_PCVAR_BOOL(k) Core_0GetPCVarBool(k)
 
 //! Получает указатель по имени. При отсутствии квара запрошенного типа возвращает NULL
 SX_LIB_API UINT_PTR * Core_0GetPCVarPointer(const char * name);
-#define GET_PCVAR_POINTER(k) Core_0GetPCVarPointer(k);
+#define GET_PCVAR_POINTER(k) Core_0GetPCVarPointer(k)
 
 //! Устанавливает новое значение квара. Должен существовать
 SX_LIB_API void Core_0SetCVarString(const char * name, const char * value);

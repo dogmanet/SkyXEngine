@@ -27,6 +27,7 @@ enum XWINDOW_FLAG
 DEFINE_ENUM_FLAG_OPERATORS(XWINDOW_FLAG);
 
 #define XCW_USEDEFAULT ((int)0x80000000)
+#define XCW_CENTER ((int)0x80000001)
 
 struct XWINDOW_DESC
 {
@@ -66,6 +67,9 @@ public:
 
 	//! 
 	virtual INT_PTR XMETHODCALLTYPE runDefaultCallback(UINT msg, WPARAM wParam, LPARAM lParam) = 0;
+
+	//! 
+	virtual const XWINDOW_DESC* XMETHODCALLTYPE getDesc() = 0;
 };
 
 class IXWindowCallback

@@ -320,9 +320,11 @@ GameData::GameData(HWND hWnd, bool isGame):
 		LibReport(REPORT_MSG_LEVEL_ERROR, "The procedure entry point InitInstance could not be located in the dynamic link library sxgui.dll");
 	}
 
-	m_pGUI = pfnGUIInit(SGCore_GetDXDevice(), "./gui/", hWnd);
-
-	m_pHUDcontroller = new CHUDcontroller();
+	if(hWnd)
+	{
+		m_pGUI = pfnGUIInit(SGCore_GetDXDevice(), "./gui/", hWnd);
+		m_pHUDcontroller = new CHUDcontroller();
+	}
 
 	m_pMgr = new CEntityManager();
 
@@ -525,8 +527,9 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 	//Core_0RegisterCVarFloat("r_default_fov", 45.0f, "Default FOV value");
 	Core_0RegisterCVarBool("cl_mode_editor", false, "Editor control mode");
-	Core_0RegisterCVarBool("cl_grab_cursor", true, "Grab cursor on move");
+	Core_0RegisterCVarBool("cl_grab_cursor", false, "Grab cursor on move");
 	
+	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
 
 	Core_0RegisterCVarBool("cl_bob", true, "View bobbing");
 	Core_0RegisterCVarFloat("cl_bob_walk_y", 0.1f, "View bobbing walk y amplitude");
@@ -1007,9 +1010,9 @@ GameData::GameData(HWND hWnd, bool isGame):
 	g_idTextKit = SGCore_ShaderCreateKit(g_idTextVS, g_idTextPS);
 
 	GXBLEND_DESC bsDesc;
-	bsDesc.renderTarget[0].bBlendEnable = true;
-	bsDesc.renderTarget[0].srcBlend = bsDesc.renderTarget[0].srcBlendAlpha = GXBLEND_SRC_ALPHA;
-	bsDesc.renderTarget[0].destBlend = bsDesc.renderTarget[0].destBlendAlpha = GXBLEND_INV_SRC_ALPHA;
+	bsDesc.renderTarget[0].useBlend = true;
+	bsDesc.renderTarget[0].blendSrcColor = bsDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
+	bsDesc.renderTarget[0].blendDestColor = bsDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
 	g_pTextBlendState = SGCore_GetDXDevice()->createBlendState(&bsDesc);
 
 	GXSAMPLER_DESC sampDesc;
@@ -1020,7 +1023,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 	g_pTextPSConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(float4));
 
 	GXDEPTH_STENCIL_DESC dsDesc;
-	dsDesc.bDepthEnable = dsDesc.bEnableDepthWrite = false;
+	dsDesc.useDepthTest = dsDesc.useDepthWrite = false;
 	g_pTextDepthState = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
 
 	//m_pStatsUI = m_pGUI->createDesktopA("stats", "sys/stats.html");
@@ -1153,14 +1156,14 @@ void GameData::render()
 				, g_uFPS,
 
 				pAdapterDesc->szDescription,
-				pAdapterDesc->uTotalGPUMemory / 1024 / 1024,
+				pAdapterDesc->sizeTotalGPUmemory / 1024 / 1024,
 
-				(float)(pMemoryStats->uIndexBufferBytes + pMemoryStats->uRenderTargetBytes + pMemoryStats->uShaderConstBytes + pMemoryStats->uTextureBytes + pMemoryStats->uVertexBufferBytes) / 1024.0f / 1024.0f,
-				(float)pMemoryStats->uTextureBytes / 1024.0f / 1024.0f,
-				(float)pMemoryStats->uRenderTargetBytes / 1024.0f / 1024.0f,
-				(float)pMemoryStats->uVertexBufferBytes / 1024.0f / 1024.0f,
-				(float)pMemoryStats->uIndexBufferBytes / 1024.0f / 1024.0f,
-				(float)pMemoryStats->uShaderConstBytes / 1024.0f,
+				(float)(pMemoryStats->sizeIndexBufferBytes + pMemoryStats->sizeRenderTargetBytes + pMemoryStats->sizeShaderConstBytes + pMemoryStats->sizeTextureBytes + pMemoryStats->sizeVertexBufferBytes) / 1024.0f / 1024.0f,
+				(float)pMemoryStats->sizeTextureBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->sizeRenderTargetBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->sizeVertexBufferBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->sizeIndexBufferBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->sizeShaderConstBytes / 1024.0f,
 
 				pFrameStats->uUploadedBuffersIndices + pFrameStats->uUploadedBuffersTextures + pFrameStats->uUploadedBuffersVertexes + pFrameStats->uUploadedBuffersShaderConst,
 				pFrameStats->uUploadedBuffersTextures,

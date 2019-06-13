@@ -6,6 +6,7 @@
 #include "Command.h"
 #include <xcommon/editor/IXEditorObject.h>
 #include <common/assotiativearray.h>
+#include <xEngine/IXEngine.h>
 
 #define MAIN_WINDOW_TITLE      "TerraX"
 #define MAIN_WINDOW_CLASS      "X Main Window"
@@ -203,5 +204,7 @@ bool XRayCast(X_WINDOW_POS wnd);
 bool XIsMouseInSelection(X_WINDOW_POS wnd);
 
 void XUpdatePropWindow();
+
+extern IXEngine *g_pEngine;
 
 #endif
