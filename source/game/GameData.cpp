@@ -527,8 +527,9 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 	//Core_0RegisterCVarFloat("r_default_fov", 45.0f, "Default FOV value");
 	Core_0RegisterCVarBool("cl_mode_editor", false, "Editor control mode");
-	Core_0RegisterCVarBool("cl_grab_cursor", true, "Grab cursor on move");
+	Core_0RegisterCVarBool("cl_grab_cursor", false, "Grab cursor on move");
 	
+	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
 
 	Core_0RegisterCVarBool("cl_bob", true, "View bobbing");
 	Core_0RegisterCVarFloat("cl_bob_walk_y", 0.1f, "View bobbing walk y amplitude");

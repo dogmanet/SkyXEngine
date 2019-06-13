@@ -35,7 +35,10 @@ public:
 	void shutdownUpdatable();
 	void runUpdate() override;
 
-	UINT_PTR getCrtOutputHandler() override;
+	UINT_PTR XMETHODCALLTYPE getCrtOutputHandler() override;
+
+	void XMETHODCALLTYPE execCmd(const char *szCommand) override;
+	void execCmd2(const char * szFormat, ...) override;
 
 protected:
 	IBaseEventChannel *getEventChannelInternal(const XGUID &guid) override;

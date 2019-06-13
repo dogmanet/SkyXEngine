@@ -34,7 +34,7 @@ public:
 
 	virtual void newVisData(IXRenderableVisibility **ppVisibility) = 0;
 
-protected:
+//protected:
 
 	virtual void renderPrepare() = 0;
 	virtual void renderGBuffer() = 0;

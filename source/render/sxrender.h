@@ -98,6 +98,7 @@ See the license in LICENSE
 //!@}
 
 //! тип изменения размеров окна рендера
+//! @DEPRECATED
 enum RENDER_RESIZE
 {
 	/*! ничего не меняли */

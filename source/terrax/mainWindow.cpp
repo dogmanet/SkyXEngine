@@ -515,7 +515,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			tvis.item.cchTextMax = lstrlen(tvis.item.pszText);
 			TreeView_InsertItem(g_hObjectTreeWnd, &tvis);
 		}
-		
+
 		return FALSE;
 	}
 		break;
@@ -588,19 +588,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		InvalidateRect(hWnd, &rect, TRUE);
 
-		{
-			static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
-
-			if(!r_resize)
-			{
-				r_resize = (int*)GET_PCVAR_INT("r_resize");
-			}
-
-			if(r_resize)
-			{
-				*r_resize = 1;
-			}
-		}
+		RECT rcTopLeft;
+		GetClientRect(g_hTopLeftWnd, &rcTopLeft);
+		g_pEngine->getCore()->execCmd2("r_win_width %d\nr_win_height %d", rcTopLeft.right - rcTopLeft.left, rcTopLeft.bottom - rcTopLeft.top);
 
 		SendMessage(g_hStatusWnd, WM_SIZE, wParam, lParam);
 	}
@@ -1339,6 +1329,11 @@ LRESULT CALLBACK GuiWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	if(g_pEngine && g_pEngine->onMessage(message, wParam, lParam))
+	{
+		return(TRUE);
+	}
+
 	PAINTSTRUCT ps;
 	HDC hdc;
 	RECT rect; 

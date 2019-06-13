@@ -59,6 +59,23 @@ protected:
 	int m_iEnd;
 };
 
+//##########################################################################
+
+class CTaskStub: public ITaskImpl<ITask>
+{
+public:
+	CTaskStub():
+		ITaskImpl(CORE_TASK_FLAG_BACKGROUND)
+	{
+	}
+
+	void run()
+	{
+	}
+};
+
+//##########################################################################
+
 CTaskManager::CTaskManager(unsigned int numThreads):
 m_isSingleThreaded(false),
 m_isRunning(false)
@@ -97,7 +114,6 @@ void CTaskManager::forceSinglethreaded()
 
 void CTaskManager::addTask(TaskPtr task)
 {
-	task->AddRef();
 	unsigned int flags = task->getFlags();
 
 	if(flags & CORE_TASK_FLAG_ON_SYNC)
@@ -128,7 +144,6 @@ void CTaskManager::addTask(TaskPtr task)
 
 void CTaskManager::addTaskIO(TaskPtr task)
 {
-	task->AddRef();
 	task->stopRepeating();
 	m_aIOTasks.push(task);
 	m_ConditionIOThread.notify_one();
@@ -138,7 +153,7 @@ void CTaskManager::add(THREAD_UPDATE_FUNCTION fnFunc, DWORD dwFlag)
 {
 	TaskPtr pTask = new CTask(fnFunc, dwFlag);
 	addTask(pTask);
-	mem_release(pTask);
+	// mem_release(pTask);
 }
 
 void CTaskManager::start()
@@ -191,9 +206,9 @@ void CTaskManager::start()
 			{
 				worker(true);
 			}
+			*/
 
 			m_aiNumWaitFor.clearFast();
-*/
 			sheduleNextBunch();
 
 		}
@@ -253,11 +268,21 @@ void CTaskManager::stop()
 	m_isRunning = false;
 	m_ConditionIOThread.notify_all();
 	m_ConditionWorker.notify_all();
+	
+	ITask *pStubTask = new CTaskStub();
+	for(int i = 0, l = m_aThreads.size() - 1; i < l; ++i)
+	{
+		pStubTask->AddRef();
+	}
+	for(int i = 0, l = m_aThreads.size(); i < l; ++i)
+	{
+		addTask(pStubTask);
+	}
 
 	for(int i = 0, l = m_aThreads.size(); i < l; ++i)
 	{
 		m_aThreads[i]->join();
-		delete m_aThreads[i];
+		mem_delete(m_aThreads[i]);
 	}
 	m_aThreads.clear();
 	if(m_pIOThread)
@@ -275,7 +300,10 @@ void CTaskManager::execute(TaskPtr t)
 	{
 		addTask(t);
 	}
-	mem_release(t);
+	else
+	{
+		mem_release(t);
+	}
 }
 
 void CTaskManager::workerMain()
@@ -296,9 +324,21 @@ void CTaskManager::worker(bool bOneRun)
 
 	while(m_isRunning)
 	{
-		if(m_BackgroundTasks.tryPop(task))
+		if(bOneRun)
+		{
+			if(!m_BackgroundTasks.tryPop(task))
+			{
+				return;
+			}
+		}
+		else
+		{
+			task = m_BackgroundTasks.pop();
+		}
+		//if(m_BackgroundTasks.tryPop(task))
 		{
 			//printf("#%d: Executing task\n", Core_MGetThreadID());
+			task->AddRef();
 			execute(task);
 
 			if(task->getFlags() & (CORE_TASK_FLAG_FRAME_SYNC/* | CORE_TASK_FLAG_ON_SYNC*/))
@@ -321,10 +361,10 @@ void CTaskManager::worker(bool bOneRun)
 
 				m_ConditionFor.notify_one();
 			}
-
+			mem_release(task);
 			//std::this_thread::yield();
 		}
-		else
+		/*else
 		{
 			if(bOneRun)
 			{
@@ -340,7 +380,7 @@ void CTaskManager::worker(bool bOneRun)
 			// std::this_thread::yield();
 			//std::this_thread::sleep_for(std::chrono::microseconds(166));
 
-		}
+		}*/
 	}
 }
 
@@ -393,7 +433,7 @@ ID CTaskManager::forLoop(int iStart, int iEnd, const IParallelForBody *pBody, in
 		iCur = (std::min)(iTotal, iChunkSize);
 		TaskPtr pTask = new CTaskForLoop(id, pBody, iStart, iStart + iCur);
 		addTask(pTask);
-		mem_release(pTask);
+		// mem_release(pTask);
 		iTotal -= iCur;
 		iStart += iCur;
 	}

@@ -72,6 +72,7 @@ void CAsyncFileReader::loadFile(const char *szFile, IAsyncFileReaderCallback *pC
 {
 	CIOTask *pTask = new CIOTask(szFile, m_pFileSystem, pCallback);
 	m_vpQueue.push_back(pTask);
+	pTask->AddRef();
 	g_pTaskManager->addTaskIO(pTask);
 }
 

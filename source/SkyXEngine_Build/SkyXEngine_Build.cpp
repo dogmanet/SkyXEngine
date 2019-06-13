@@ -83,8 +83,8 @@ public:
 		}
 		else if(wdesc.iPosX == 0 && wdesc.iPosY == 0)
 		{
-			wdesc.iPosX = XCW_USEDEFAULT;
-			wdesc.iPosY = XCW_USEDEFAULT;
+			wdesc.iPosX = XCW_CENTER;
+			wdesc.iPosY = XCW_CENTER;
 		}
 		wdesc.iSizeX = (int)uWidth;
 		wdesc.iSizeY = (int)uHeight;
@@ -130,8 +130,8 @@ int main(int argc, char **argv)
 
 	CWindowCallback cb(pEngine);
 	XWINDOW_DESC wdesc;
-	wdesc.iPosX = XCW_USEDEFAULT;
-	wdesc.iPosY = XCW_USEDEFAULT;
+	wdesc.iPosX = XCW_CENTER;
+	wdesc.iPosY = XCW_CENTER;
 	wdesc.iSizeX = 800;
 	wdesc.iSizeY = 600;
 	wdesc.szTitle = "SkyXEngine build";
@@ -141,6 +141,10 @@ int main(int argc, char **argv)
 
 	pEngine->initGraphics(pWindow->getOSHandle(), &engineCb);
 	// pEngine->initServer();
+
+
+	pEngine->getCore()->execCmd("exec ../config_game.cfg");
+	pEngine->getCore()->execCmd("exec ../config_game_user.cfg");
 
 	int ret = pEngine->start();
 

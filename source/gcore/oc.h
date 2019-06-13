@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -16,19 +16,19 @@ See the license in LICENSE
 
 extern IGXContext *g_pDevice;
 
-//! коэффициент размера буфера глубины occlusion culling
+//! РєРѕСЌС„С„РёС†РёРµРЅС‚ СЂР°Р·РјРµСЂР° Р±СѓС„РµСЂР° РіР»СѓР±РёРЅС‹ occlusion culling
 #define OC_SIZE_COEF 0.25f
 
-//! дистанция (в метрах) при которой тест occlusion culling всегда будет давать true
+//! РґРёСЃС‚Р°РЅС†РёСЏ (РІ РјРµС‚СЂР°С…) РїСЂРё РєРѕС‚РѕСЂРѕР№ С‚РµСЃС‚ occlusion culling РІСЃРµРіРґР° Р±СѓРґРµС‚ РґР°РІР°С‚СЊ true
 #define OC_DIST_NEAR_NOT_CULL 4.f
 
-//! погрешность разниц глубин для теста occlusion culling
+//! РїРѕРіСЂРµС€РЅРѕСЃС‚СЊ СЂР°Р·РЅРёС† РіР»СѓР±РёРЅ РґР»СЏ С‚РµСЃС‚Р° occlusion culling
 //static float g_fOCbiasDepth = 0.0001f;
 
-//! количество пикселей расширения треугольников для 
+//! РєРѕР»РёС‡РµСЃС‚РІРѕ РїРёРєСЃРµР»РµР№ СЂР°СЃС€РёСЂРµРЅРёСЏ С‚СЂРµСѓРіРѕР»СЊРЅРёРєРѕРІ РґР»СЏ 
 const float g_fOCextTriangle = 2.f;
 
-//! небольшео расширение бокса для теста occlusion culling
+//! РЅРµР±РѕР»СЊС€РµРѕ СЂР°СЃС€РёСЂРµРЅРёРµ Р±РѕРєСЃР° РґР»СЏ С‚РµСЃС‚Р° occlusion culling
 const float3 g_cvOCext(0.05f, 0.05f, 0.05f);
 
 #define OC_MAX_MUTEX_COUNT 512
@@ -56,31 +56,31 @@ public:
 	COcclusionCulling();
 	~COcclusionCulling();
 
-	//! инициализация на основании размеров рендера
+	//! РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РЅР° РѕСЃРЅРѕРІР°РЅРёРё СЂР°Р·РјРµСЂРѕРІ СЂРµРЅРґРµСЂР°
 	void init(int iWidth, int iHeight);
 
-	//! обработка потери устройства
+	//! РѕР±СЂР°Р±РѕС‚РєР° РїРѕС‚РµСЂРё СѓСЃС‚СЂРѕР№СЃС‚РІР°
 	void onLostDevice();
 
-	//! обработк сброса устройства
+	//! РѕР±СЂР°Р±РѕС‚Рє СЃР±СЂРѕСЃР° СѓСЃС‚СЂРѕР№СЃС‚РІР°
 	void onResetDevice(int iWidth, int iHeight);
 
-	//! установка включен/выключен тест
+	//! СѓСЃС‚Р°РЅРѕРІРєР° РІРєР»СЋС‡РµРЅ/РІС‹РєР»СЋС‡РµРЅ С‚РµСЃС‚
 	void setEnable(bool isEnable);
 
-	//! возвращает текущее состояния влюченности теста
+	//! РІРѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰РµРµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІР»СЋС‡РµРЅРЅРѕСЃС‚Рё С‚РµСЃС‚Р°
 	bool getEnable();
 
-	/*! обновление данных теста
-	 \param idDepthMap - идентификатор rt глубины
-	 \param pFrustum - фрустум камеры
+	/*! РѕР±РЅРѕРІР»РµРЅРёРµ РґР°РЅРЅС‹С… С‚РµСЃС‚Р°
+	 \param idDepthMap - РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ rt РіР»СѓР±РёРЅС‹
+	 \param pFrustum - С„СЂСѓСЃС‚СѓРј РєР°РјРµСЂС‹
 	*/
 	void update(ID idDepthMap, const IFrustum *pFrustum);
 
-	//! репроекция старого буфера глубины на основании новых матриц
+	//! СЂРµРїСЂРѕРµРєС†РёСЏ СЃС‚Р°СЂРѕРіРѕ Р±СѓС„РµСЂР° РіР»СѓР±РёРЅС‹ РЅР° РѕСЃРЅРѕРІР°РЅРёРё РЅРѕРІС‹С… РјР°С‚СЂРёС†
 	void reprojection();
 
-	//! просчет видимости бокса
+	//! РїСЂРѕСЃС‡РµС‚ РІРёРґРёРјРѕСЃС‚Рё Р±РѕРєСЃР°
 	bool comVisible(const float3 *pMax, const float3 *pMin);
 
 	void ensureUpdateDone();
@@ -133,7 +133,7 @@ protected:
 				vNewPos.x = vNewPos.x * 0.5f + 0.5f;
 				vNewPos.y = (vNewPos.y * (-0.5f) + 0.5f);
 
-				//костыль решения проблем округления, без этого будут белые линии
+				//РєРѕСЃС‚С‹Р»СЊ СЂРµС€РµРЅРёСЏ РїСЂРѕР±Р»РµРј РѕРєСЂСѓРіР»РµРЅРёСЏ, Р±РµР· СЌС‚РѕРіРѕ Р±СѓРґСѓС‚ Р±РµР»С‹Рµ Р»РёРЅРёРё
 
 				vNewPos2.x = float(int(vNewPos.x * 10000.f) / 10000.f);
 				vNewPos2.y = float(int(vNewPos.y * 10000.f) / 10000.f);
@@ -156,7 +156,7 @@ protected:
 						int qwerty = 0;
 					else
 					{
-						//если в буфере репроекции нет записей для текущего пикселя, либо записанная глубина меньше чем новая
+						//РµСЃР»Рё РІ Р±СѓС„РµСЂРµ СЂРµРїСЂРѕРµРєС†РёРё РЅРµС‚ Р·Р°РїРёСЃРµР№ РґР»СЏ С‚РµРєСѓС‰РµРіРѕ РїРёРєСЃРµР»СЏ, Р»РёР±Рѕ Р·Р°РїРёСЃР°РЅРЅР°СЏ РіР»СѓР±РёРЅР° РјРµРЅСЊС€Рµ С‡РµРј РЅРѕРІР°СЏ
 						std::lock_guard<std::mutex> lock(m_pArrDepthBufferMutex[iPosPixel % OC_MAX_MUTEX_COUNT]);
 
 						if(m_pArrDepthBufferReProjection[iPosPixel] >= 1.f || vNewPos.z > m_pArrDepthBufferReProjection[iPosPixel])
@@ -245,22 +245,22 @@ protected:
 
 	void ensureReprojectionDone();
 
-	//! массив surfaces для обработки
+	//! РјР°СЃСЃРёРІ surfaces РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё
 	IGXSurface *m_pSurfDepthBuffer[3];
 
-	//! массив глубины
+	//! РјР°СЃСЃРёРІ РіР»СѓР±РёРЅС‹
 	float *m_pArrDepthBuffer = 0;
 
-	//! массив мировых координат
+	//! РјР°СЃСЃРёРІ РјРёСЂРѕРІС‹С… РєРѕРѕСЂРґРёРЅР°С‚
 	float4 *m_pArrWorldPos = 0;
 
-	//! массив репроекционной глубины
+	//! РјР°СЃСЃРёРІ СЂРµРїСЂРѕРµРєС†РёРѕРЅРЅРѕР№ РіР»СѓР±РёРЅС‹
 	float *m_pArrDepthBufferReProjection = 0;
 
-	//! массив растеризации (debug)
+	//! РјР°СЃСЃРёРІ СЂР°СЃС‚РµСЂРёР·Р°С†РёРё (debug)
 	float *m_pArrDepthBufferRasterize = 0;
 
-	//! массив замков синхронизации
+	//! РјР°СЃСЃРёРІ Р·Р°РјРєРѕРІ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё
 	std::mutex *m_pArrDepthBufferMutex = 0;
 
 	COCReprojection *m_pReprojectionCycle = 0;
@@ -268,28 +268,28 @@ protected:
 	COCUpdate *m_pUpdateCycle = 0;
 	ID m_idUpdateCycle = -1;
 
-	//! включен ли тест
-	bool m_isEnable;
+	//! РІРєР»СЋС‡РµРЅ Р»Рё С‚РµСЃС‚
+	bool m_isEnable = false;
 
-	//! прошлая видовая матрица
+	//! РїСЂРѕС€Р»Р°СЏ РІРёРґРѕРІР°СЏ РјР°С‚СЂРёС†Р°
 	float4x4 m_mOldView;
 
-	//! прошлая проекционная матрица
+	//! РїСЂРѕС€Р»Р°СЏ РїСЂРѕРµРєС†РёРѕРЅРЅР°СЏ РјР°С‚СЂРёС†Р°
 	float4x4 m_mOldProj;
 
-	//! общее количество пикселей в буфере для теста
+	//! РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РїРёРєСЃРµР»РµР№ РІ Р±СѓС„РµСЂРµ РґР»СЏ С‚РµСЃС‚Р°
 	int m_iCountPixels;
 
-	//! ширина буфера теста
+	//! С€РёСЂРёРЅР° Р±СѓС„РµСЂР° С‚РµСЃС‚Р°
 	int m_iWidth;
 
-	//! высота буфера теста
+	//! РІС‹СЃРѕС‚Р° Р±СѓС„РµСЂР° С‚РµСЃС‚Р°
 	int m_iHeight;
 
-	//! массив ке глубин
+	//! РјР°СЃСЃРёРІ РєРµ РіР»СѓР±РёРЅ
 	ID m_aRTdepth[2];
 
-	//! текущий ключ массива #m_aRTdepth
+	//! С‚РµРєСѓС‰РёР№ РєР»СЋС‡ РјР°СЃСЃРёРІР° #m_aRTdepth
 	int m_iCurrRTdepth;
 
 
@@ -297,7 +297,7 @@ protected:
 	ID m_idPS_ScreenOut;
 	ID m_idPS_FindMax9;
 
-	//! текущий фрустум камеры
+	//! С‚РµРєСѓС‰РёР№ С„СЂСѓСЃС‚СѓРј РєР°РјРµСЂС‹
 	const IFrustum *m_pFrustum;
 
 	int m_iCountFC;

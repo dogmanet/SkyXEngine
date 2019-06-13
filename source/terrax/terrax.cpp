@@ -21,6 +21,14 @@ See the license in LICENSE
 #include "UndoManager.h"
 #include "Tools.h"
 
+#include <xEngine/IXEngine.h>
+
+#ifdef _DEBUG
+#	pragma comment(lib, "xEngine_d.lib")
+#else
+#	pragma comment(lib, "xEngine.lib")
+#endif
+
 extern HWND g_hWndMain;
 CGrid *g_pGrid = NULL;
 CTerraXRenderStates g_xRenderStates;
@@ -42,11 +50,326 @@ extern HWND g_hComboTypesWnd;
 
 void XUpdateWindowTitle();
 
+HACCEL g_hAccelTable = NULL;
+IXEngine *g_pEngine = NULL;
+
+IGXConstantBuffer *g_pCameraConstantBuffer = NULL;
+IGXSwapChain *g_pTopRightSwapChain = NULL;
+IGXSwapChain *g_pBottomLeftSwapChain = NULL;
+IGXSwapChain *g_pBottomRightSwapChain = NULL;
+IGXSwapChain *g_pGuiSwapChain = NULL;
+IGXDepthStencilSurface *g_pTopRightDepthStencilSurface = NULL;
+IGXDepthStencilSurface *g_pBottomLeftDepthStencilSurface = NULL;
+IGXDepthStencilSurface *g_BottomRightDepthStencilSurface = NULL;
+IGXDepthStencilSurface *g_pGuiDepthStencilSurface = NULL;
+IGXDepthStencilState *g_pDSNoZ;
+
+void XReleaseViewports();
+void XInitViewports();
+
+class CEngineCallback: public IXEngineCallback
+{
+public:
+	CEngineCallback()
+	{
+	}
+	void XMETHODCALLTYPE onGraphicsResize(UINT uWidth, UINT uHeight, bool isFullscreen, bool isBorderless, IXEngine *pEngine) override
+	{
+		XReleaseViewports();
+		XInitViewports();
+	}
+
+	bool XMETHODCALLTYPE processWindowMessages() override
+	{
+		MSG msg = {0};
+
+		while(::PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		{
+			if(msg.message == WM_QUIT)
+			{
+				return(false);
+			}
+			if(g_hAccelTable && TranslateAccelerator(GetParent((HWND)SGCore_GetHWND()), g_hAccelTable, &msg))
+			{
+				continue;
+			}
+			::TranslateMessage(&msg);
+			::DispatchMessage(&msg);
+		}
+
+		if(g_is3DRotating || g_is3DPanning)
+		{
+			int x, y;
+			SSInput_GetMouseDelta(&x, &y);
+			static const float * sense = GET_PCVAR_FLOAT("cl_mousesense");
+			float dx = (float)x * *sense * 10.0f;
+			float dy = (float)y * *sense * 10.0f;
+			ICamera *pCamera = g_xConfig.m_pViewportCamera[XWP_TOP_LEFT];
+
+			if(g_is3DRotating)
+			{
+				static float3 m_vPitchYawRoll;
+				m_vPitchYawRoll.y -= dx;
+				m_vPitchYawRoll.x -= dy;
+				m_vPitchYawRoll.x = clampf(m_vPitchYawRoll.x, -SM_PIDIV2, SM_PIDIV2);
+				while(m_vPitchYawRoll.y < 0.0f)
+				{
+					m_vPitchYawRoll.y += SM_2PI;
+				}
+				while(m_vPitchYawRoll.y > SM_2PI)
+				{
+					m_vPitchYawRoll.y -= SM_2PI;
+				}
+
+				pCamera->setOrientation(&(SMQuaternion(m_vPitchYawRoll.x, 'x') * SMQuaternion(m_vPitchYawRoll.z, 'z') * SMQuaternion(m_vPitchYawRoll.y, 'y')));
+			}
+			else if(g_is3DPanning)
+			{
+				float3 vPos, vUp, vRight;
+				pCamera->getPosition(&vPos);
+				pCamera->getUp(&vUp);
+				pCamera->getRight(&vRight);
+				vPos += vUp * -dy * 10.0f + vRight * dx * 10.0f;
+				pCamera->setPosition(&vPos);
+			}
+
+			float3 dir;
+			static float s_fSpeed = 0;
+			float fMaxSpeed = 10.0f; //@TODO: CVar this!
+			float fMaxSpeedBoost = 40.0f; //@TODO: CVar this!
+			float fAccelTime = 0.5f; //@TODO: CVar this!
+			if(GetAsyncKeyState(VK_SHIFT) < 0)
+			{
+				fMaxSpeed = fMaxSpeedBoost;
+			}
+			float fAccel = fMaxSpeed / fAccelTime;
+			bool mov = false;
+			//! @FIXME add actial timeDelta
+			//float dt = (float)timeDelta * 0.001f;
+			float dt = (float)16 * 0.001f;
+			if(GetAsyncKeyState('W') < 0)
+			{
+				dir.z += 1.0f;
+				mov = true;
+			}
+			if(GetAsyncKeyState('S') < 0)
+			{
+				dir.z -= 1.0f;
+				mov = true;
+			}
+			if(GetAsyncKeyState('A') < 0)
+			{
+				dir.x -= 1.0f;
+				mov = true;
+			}
+			if(GetAsyncKeyState('D') < 0)
+			{
+				dir.x += 1.0f;
+				mov = true;
+			}
+
+			if(mov)
+			{
+				s_fSpeed += fAccel * dt;
+				if(s_fSpeed > fMaxSpeed)
+				{
+					s_fSpeed = fMaxSpeed;
+				}
+				float3 vPos, vDir, vRight;
+				pCamera->getPosition(&vPos);
+				pCamera->getLook(&vDir);
+				pCamera->getRight(&vRight);
+				dir = SMVector3Normalize(dir) * dt * s_fSpeed;
+				vPos += vDir * dir.z + vRight * dir.x;
+				pCamera->setPosition(&vPos);
+			}
+			else
+			{
+				s_fSpeed = 0;
+			}
+		}
+
+		return(true);
+	}
+
+protected:
+};
+
+class CRenderPipeline: public IXRenderPipeline
+{
+public:
+	CRenderPipeline(IXCore *pCore):
+		m_pCore(pCore)
+	{
+		pCore->getRenderPipeline(&m_pOldPipeline);
+		pCore->setRenderPipeline(this);
+	}
+	~CRenderPipeline()
+	{
+		m_pCore->setRenderPipeline(m_pOldPipeline);
+		mem_release(m_pOldPipeline);
+	}
+
+	void resize(UINT uWidth, UINT uHeight, bool isWindowed = true) override
+	{
+		m_pOldPipeline->resize(uWidth, uHeight, isWindowed);
+	}
+
+	void renderFrame() override
+	{
+		SRender_SetCamera(g_xConfig.m_pViewportCamera[XWP_TOP_LEFT]);
+		SRender_UpdateView();
+
+		m_pOldPipeline->renderFrame();
+
+		XRender3D();
+
+		//#############################################################################
+		HWND hWnds[] = {g_hTopRightWnd, g_hBottomLeftWnd, g_hBottomRightWnd};
+		IGXSwapChain *p2DSwapChains[] = {g_pTopRightSwapChain, g_pBottomLeftSwapChain, g_pBottomRightSwapChain};
+		IGXDepthStencilSurface *p2DDepthStencilSurfaces[] = {g_pTopRightDepthStencilSurface, g_pBottomLeftDepthStencilSurface, g_BottomRightDepthStencilSurface};
+		IGXContext *pDXDevice = getDevice();
+
+		ICamera **pCameras = g_xConfig.m_pViewportCamera + 1;
+		float *fScales = g_xConfig.m_fViewportScale + 1;
+		X_2D_VIEW *views = g_xConfig.m_x2DView + 1;
+		//ICamera *p3DCamera = SRender_GetCamera();
+		pDXDevice->setSamplerState(NULL, 0);
+		//#############################################################################
+
+		XUpdateSelectionBound();
+
+		for(int i = 0; i < 3; ++i)
+		{
+			if(!IsWindowVisible(hWnds[i]))
+			{
+				continue;
+			}
+			SRender_SetCamera(pCameras[i]);
+			IGXSurface *pBackBuffer = p2DSwapChains[i]->getColorTarget();
+			pDXDevice->setColorTarget(pBackBuffer);
+			pDXDevice->setDepthStencilSurface(p2DDepthStencilSurfaces[i]);
+			pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH | GXCLEAR_STENCIL);
+
+			pDXDevice->setRasterizerState(g_xRenderStates.pRSWireframe);
+			pDXDevice->setDepthStencilState(g_pDSNoZ);
+			pDXDevice->setBlendState(NULL);
+			SMMATRIX mProj = SMMatrixOrthographicLH((float)pBackBuffer->getWidth() * fScales[i], (float)pBackBuffer->getHeight() * fScales[i], 1.0f, 2000.0f);
+			SMMATRIX mView;
+			pCameras[i]->getViewMatrix(&mView);
+			Core_RMatrixSet(G_RI_MATRIX_OBSERVER_VIEW, &mView);
+			Core_RMatrixSet(G_RI_MATRIX_VIEW, &mView);
+			Core_RMatrixSet(G_RI_MATRIX_OBSERVER_PROJ, &mProj);
+			Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &mProj);
+			Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(mView * mProj));
+
+			g_pCameraConstantBuffer->update(&SMMatrixTranspose(mView * mProj));
+			pDXDevice->setVertexShaderConstant(g_pCameraConstantBuffer, 4);
+
+			Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
+			Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_FREE);
+
+			XRender2D(views[i], fScales[i], true);
+
+			renderEditor2D();
+
+			Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
+			pDXDevice->setVertexShaderConstant(g_pCameraConstantBuffer, 4);
+			XRender2D(views[i], fScales[i], false);
+			mem_release(pBackBuffer);
+		}
+		/*
+		IGXSurface *pBackBuffer = g_pGuiSwapChain->getColorTarget();
+		pDXDevice->setColorTarget(pBackBuffer);
+		pDXDevice->setDepthStencilSurface(g_pGuiDepthStencilSurface);
+		pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH | GXCLEAR_STENCIL);
+		XGuiRender();
+		mem_release(pBackBuffer);
+		*/
+		//#############################################################################
+		//SRender_SetCamera(p3DCamera);
+		pDXDevice->setColorTarget(NULL);
+		pDXDevice->setDepthStencilSurface(NULL);
+
+	}
+	void endFrame() override
+	{
+		m_pOldPipeline->endFrame();
+
+		g_pTopRightSwapChain->swapBuffers();
+		g_pBottomLeftSwapChain->swapBuffers();
+		g_pBottomRightSwapChain->swapBuffers();
+	}
+	void updateVisibility() override
+	{
+		m_pOldPipeline->updateVisibility();
+	}
+
+	void renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility = NULL) override
+	{
+		m_pOldPipeline->renderStage(stage, pVisibility);
+	}
+
+	IGXContext *getDevice() override
+	{
+		return(m_pOldPipeline->getDevice());
+	}
+
+	void newVisData(IXRenderableVisibility **ppVisibility) override
+	{
+		m_pOldPipeline->newVisData(ppVisibility);
+	}
+
+//protected:
+
+	void renderPrepare() override
+	{
+		m_pOldPipeline->renderPrepare();
+	}
+	void renderGBuffer() override
+	{
+		m_pOldPipeline->renderGBuffer();
+	}
+	void renderShadows() override
+	{
+		m_pOldPipeline->renderShadows();
+	}
+	void renderGI() override
+	{
+		m_pOldPipeline->renderGI();
+	}
+	void renderPostprocessMain() override
+	{
+		m_pOldPipeline->renderPostprocessMain();
+	}
+	void renderTransparent() override
+	{
+		m_pOldPipeline->renderTransparent();
+	}
+	void renderPostprocessFinal()  override
+	{
+		m_pOldPipeline->renderPostprocessFinal();
+	}
+	void renderEditor2D() override
+	{
+		m_pOldPipeline->renderEditor2D();
+	}
+
+	IXCore *m_pCore;
+	IXRenderPipeline *m_pOldPipeline = NULL;
+};
+
+#if defined(_WINDOWS)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
-//	SkyXEngine_PreviewCreate();
-//	SXGUIinit();
+	UNREFERENCED_PARAMETER(hPrevInstance);
 
+	int argc;
+	char **argv = CommandLineToArgvA(lpCmdLine, &argc);
+#else
+int main(int argc, char **argv)
+{
+#endif
 
 	INITCOMMONCONTROLSEX icex;
 	icex.dwSize = sizeof(INITCOMMONCONTROLSEX);
@@ -63,10 +386,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 
 	// XInitGuiWindow(true);
 
-	SkyXEngine_Init(g_hTopLeftWnd, g_hWndMain, lpCmdLine);
-
-
+	//SkyXEngine_Init(g_hTopLeftWnd, g_hWndMain, lpCmdLine);
+	IXEngine *pEngine = XEngineInit(argc, argv, "TerraX");
+	g_pEngine = pEngine;
+	CEngineCallback engineCb;
+	pEngine->initGraphics((XWINDOW_OS_HANDLE)g_hTopLeftWnd, &engineCb);
+	pEngine->getCore()->execCmd("exec ../config_editor.cfg");
+	CRenderPipeline *pPipeline = new CRenderPipeline(Core_GetIXCore());
 	// XInitGuiWindow(false);
+
+	RECT rcTopLeft;
+	GetClientRect(g_hTopLeftWnd, &rcTopLeft);
+	g_pEngine->getCore()->execCmd2("r_win_width %d\nr_win_height %d", rcTopLeft.right - rcTopLeft.left, rcTopLeft.bottom - rcTopLeft.top);
+
 
 	IPluginManager *pPluginManager = Core_GetIXCore()->getPluginManager();
 
@@ -165,11 +497,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 	});
 	
 	//SGCore_SkyBoxLoadTex("sky_2_cube.dds");
-	SGCore_SkyBoxLoadTex("sky_hdr.dds");
+	//SGCore_SkyBoxLoadTex("sky_hdr.dds");
 	//SGCore_SkyBoxLoadTex("sky_test_cube.dds");
-	SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
-	SGCore_SkyBoxSetUse(false);
-	SGCore_SkyCloudsSetUse(false);
+	//SGCore_SkyCloudsLoadTex("sky_oblaka.dds");
+	//SGCore_SkyBoxSetUse(false);
+	//SGCore_SkyCloudsSetUse(false);
+
+	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
+
+	g_xConfig.m_pViewportCamera[XWP_TOP_LEFT] = SGCore_CrCamera();
+	g_xConfig.m_pViewportCamera[XWP_TOP_LEFT]->setFOV(*r_default_fov);
 
 	g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT] = SGCore_CrCamera();
 	g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT]->setPosition(&X2D_TOP_POS);
@@ -289,17 +626,65 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 		mem_release(pVD);
 	}
 
-	int result = SkyXEngine_CycleMain();
+	GXDEPTH_STENCIL_DESC dsDesc;
+	dsDesc.bDepthEnable = FALSE;
+	dsDesc.bEnableDepthWrite = FALSE;
+	g_pDSNoZ = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
+
+	XInitViewports();
+
+	g_pCameraConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(SMMATRIX));
+
+	int result = pEngine->start();
 
 	for(UINT ic = 0, il = g_pEditableSystems.size(); ic < il; ++ic)
 	{
 		g_pEditableSystems[ic]->shutdown();
 	}
+	XReleaseViewports();
 
+	mem_release(g_pDSNoZ);
+	mem_delete(pPipeline);
+	mem_release(g_pCameraConstantBuffer);
 	mem_delete(g_pGrid);
 	mem_delete(g_pUndoManager);
-	SkyXEngine_Kill();
+	//SkyXEngine_Kill();
+	mem_release(pEngine);
 	return result;
+}
+
+void XInitViewports()
+{
+	IGXContext *pContext = SGCore_GetDXDevice();
+	RECT rc;
+	GetClientRect(g_hTopRightWnd, &rc);
+	g_pTopRightSwapChain = pContext->createSwapChain(rc.right - rc.left, rc.bottom - rc.top, g_hTopRightWnd);
+	g_pTopRightDepthStencilSurface = pContext->createDepthStencilSurface(rc.right - rc.left, rc.bottom - rc.top, GXFMT_D24S8, GXMULTISAMPLE_NONE);
+
+	GetClientRect(g_hBottomLeftWnd, &rc);
+	g_pBottomLeftSwapChain = pContext->createSwapChain(rc.right - rc.left, rc.bottom - rc.top, g_hBottomLeftWnd);
+	g_pBottomLeftDepthStencilSurface = pContext->createDepthStencilSurface(rc.right - rc.left, rc.bottom - rc.top, GXFMT_D24S8, GXMULTISAMPLE_NONE);
+
+	GetClientRect(g_hBottomRightWnd, &rc);
+	g_pBottomRightSwapChain = pContext->createSwapChain(rc.right - rc.left, rc.bottom - rc.top, g_hBottomRightWnd);
+	g_BottomRightDepthStencilSurface = pContext->createDepthStencilSurface(rc.right - rc.left, rc.bottom - rc.top, GXFMT_D24S8, GXMULTISAMPLE_NONE);
+	/*
+	GetClientRect(g_pGuiWnd, &rc);
+	g_pGuiSwapChain = pContext->createSwapChain(rc.right - rc.left, rc.bottom - rc.top, g_pGuiWnd);
+	g_pGuiDepthStencilSurface = pContext->createDepthStencilSurface(rc.right - rc.left, rc.bottom - rc.top, GXFMT_D24S8, GXMULTISAMPLE_NONE);
+	*/
+}
+
+void XReleaseViewports()
+{
+	mem_release(g_pTopRightSwapChain);
+	mem_release(g_pBottomLeftSwapChain);
+	mem_release(g_pBottomRightSwapChain);
+	mem_release(g_pGuiSwapChain);
+	mem_release(g_pTopRightDepthStencilSurface);
+	mem_release(g_pBottomLeftDepthStencilSurface);
+	mem_release(g_BottomRightDepthStencilSurface);
+	mem_release(g_pGuiDepthStencilSurface);
 }
 
 void XRender3D()
