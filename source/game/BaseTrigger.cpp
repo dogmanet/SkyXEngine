@@ -158,40 +158,30 @@ void CBaseTrigger::onSync()
 	{
 		const btBroadphasePair &pair = pairArray[i];
 		btBroadphasePair *pCollisionPair = SPhysics_GetDynWorld()->getPairCache()->findPair(pair.m_pProxy0, pair.m_pProxy1);
-		if(!pCollisionPair)
+		
+		if(pCollisionPair && pCollisionPair->m_algorithm)
 		{
-			continue;
-		}
-		else
-		{
-			if(pCollisionPair->m_algorithm)
-			{
-				pCollisionPair->m_algorithm->getAllContactManifolds(manifoldArray);
-				if(!manifoldArray.size())
-				{
-					continue;
-				}
-				else
-				{
-					for(int j = 0, jl = manifoldArray.size(); j < jl; ++j)
-					{
-						if(manifoldArray[j]->getNumContacts() > 0)
-						{
-							const btCollisionObject * pObject = (manifoldArray[0]->getBody0() == m_pGhostObject)
-								? manifoldArray[0]->getBody1()
-								: manifoldArray[0]->getBody0();
+			manifoldArray.resize(0);
+			pCollisionPair->m_algorithm->getAllContactManifolds(manifoldArray);
 
-							CBaseEntity * pEnt = (CBaseEntity*)pObject->getUserPointer();
-							if(pEnt)
-							{
-								m_aNewTouches.push_back(pEnt);
-								//printf("touched %s\n", pEnt->getClassName());
-							}
-						}
+			for(int j = 0, jl = manifoldArray.size(); j < jl; ++j)
+			{
+				if(manifoldArray[j]->getNumContacts() > 0)
+				{
+					const btCollisionObject *pObject = (manifoldArray[0]->getBody0() == m_pGhostObject)
+						? manifoldArray[0]->getBody1()
+						: manifoldArray[0]->getBody0();
+
+					CBaseEntity *pEnt = (CBaseEntity*)pObject->getUserPointer();
+					if(pEnt)
+					{
+						m_aNewTouches.push_back(pEnt);
+						//printf("touched %s\n", pEnt->getClassName());
 					}
+					break;
 				}
-				//printf("m=%d ", manifoldArray.size());
 			}
+			//printf("m=%d ", manifoldArray.size());
 		}
 	}
 	//m_pGhostObject->getOverlappingObject(0);

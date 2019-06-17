@@ -34,7 +34,7 @@ void CPropStatic::createPhysBody()
 			btVector3(0, 0, 0)  // local inertia
 			);
 		m_pRigidBody = new btRigidBody(rigidBodyCI);
-		m_pRigidBody->getInvMass();
+		//m_pRigidBody->getInvMass();
 
 		//m_pRigidBody->setFriction(100.0f);
 		m_pRigidBody->setUserPointer(this);

@@ -266,7 +266,7 @@ void CBaseAnimating::createPhysBody()
 			vInertia  // local inertia
 			);
 		m_pRigidBody = new btRigidBody(rigidBodyCI);
-		m_pRigidBody->getInvMass();
+		//m_pRigidBody->getInvMass();
 
 		//m_pRigidBody->setFriction(100.0f);
 		m_pRigidBody->setUserPointer(this);
