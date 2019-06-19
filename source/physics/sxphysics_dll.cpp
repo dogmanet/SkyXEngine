@@ -9,6 +9,7 @@ See the license in LICENSE
 
 #include "sxphysics.h"
 #include "PhyWorld.h"
+#include "Physics.h"
 
 #include <core/sxcore.h>
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
@@ -39,7 +40,8 @@ See the license in LICENSE
 report_func g_fnReportf = DefReport;
 #endif
 
-CPhyWorld * g_pWorld = NULL;
+CPhyWorld *g_pWorld = NULL;
+CPhysics *g_pPhysics = NULL;
 
 #define SP_PRECOND(ret) if(!g_pWorld){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxphysics is not init", GEN_MSG_LOCATION);return ret;}
 
@@ -74,13 +76,20 @@ SX_LIB_API void SPhysics_0Create()
 	Core_SetOutPtr();
 
 	g_pWorld = new CPhyWorld();
+	g_pPhysics = new CPhysics();
 
 	Core_0RegisterConcmd("perf_physics", SPhysics_DumpStats);
 }
 SX_LIB_API void SPhysics_AKill()
 {
 	SP_PRECOND(_VOID);
+	mem_delete(g_pPhysics);
 	mem_delete(g_pWorld);
+}
+
+SX_LIB_API IXPhysics* SPhysics_GetIXPhysics()
+{
+	return(g_pPhysics);
 }
 
 SX_LIB_API void SPhysics_Update(int thread)

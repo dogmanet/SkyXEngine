@@ -33,6 +33,15 @@
     <ClCompile Include="..\..\..\source\common\string_utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\physics\CollisionShape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\physics\Physics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\physics\CollisionObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\physics\sxphysics.h">
@@ -53,11 +62,20 @@
     <ClInclude Include="..\..\..\source\physics\ICollisionShape.h">
       <Filter>Header Files\xcommon</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\physics\ICollisionObject.h">
+      <Filter>Header Files\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\physics\CollisionShape.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\source\physics\IXPhysics.h">
       <Filter>Header Files\xcommon</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\physics\ICollisionObject.h">
-      <Filter>Header Files\xcommon</Filter>
+    <ClInclude Include="..\..\..\source\physics\Physics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\physics\CollisionObject.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

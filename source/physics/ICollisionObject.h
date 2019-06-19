@@ -14,9 +14,21 @@ enum XCOLLISION_FLAGS
 };
 DEFINE_ENUM_FLAG_OPERATORS(XCOLLISION_FLAGS);
 
+enum XCOLLISION_OBJECT_TYPE
+{
+	XCOT_INVALID,
+	XCOT_RIGID_BODY,
+	XCOT_GHOST_OBJECT,
+};
+
+class IRigidBody;
+class IGhostObject;
+
 class ICollisionObject: public IXUnknown
 {
 public:
+	virtual XCOLLISION_OBJECT_TYPE XMETHODCALLTYPE getType() const = 0;
+
 	virtual void XMETHODCALLTYPE setCollisionShape(ICollisionShape *pCollisionShape) = 0;
 	virtual ICollisionShape* XMETHODCALLTYPE getCollisionShape() = 0;
 
@@ -46,13 +58,16 @@ public:
 
 	virtual void XMETHODCALLTYPE setCCDmotionThreshold(float fRadius) = 0;
 	virtual float XMETHODCALLTYPE getCCDmotionThreshold() const = 0;
+
+	virtual IRigidBody* XMETHODCALLTYPE asRigidBody() const = 0;
+	virtual IGhostObject* XMETHODCALLTYPE asGhostObject() const = 0;
 };
 
 struct XRIDIGBODY_DESC
 {
 	float fMass;
 	float3_t vStartWorldPosition;
-	SMQuaternion vStartWorldRotation;
+	SMQuaternion qStartWorldRotation;
 	ICollisionShape *pCollisionShape = NULL;
 	float3_t vLocalInertia;
 
@@ -72,7 +87,7 @@ struct XRIDIGBODY_DESC
 class IRigidBody: public ICollisionObject
 {
 public:
-	virtual void XMETHODCALLTYPE getDamping(float fLinearDamping, float fAngularDamping) = 0;
+	virtual void XMETHODCALLTYPE setDamping(float fLinearDamping, float fAngularDamping) = 0;
 	virtual float XMETHODCALLTYPE getLinearDamping() const = 0;
 	virtual float XMETHODCALLTYPE getAngularDamping() const = 0;
 
@@ -99,13 +114,6 @@ public:
 	virtual void XMETHODCALLTYPE setAngularVelocity(const float3 &vAngularVelocity) = 0;
 };
 
-class IGhostObject: public ICollisionObject
-{
-public:
-	virtual UINT XMETHODCALLTYPE getOverlappingObjectCount() const = 0;
-	virtual ICollisionObject* XMETHODCALLTYPE getOverlappingObject(UINT uIndex) const = 0;
-
-};
 
 class IContactManifoldPoint
 {
@@ -138,9 +146,12 @@ public:
 	virtual IContactManifold* XMETHODCALLTYPE getContactManifold(UINT uIndex) const = 0;
 };
 
-class IGhostObjectPairCaching: public IGhostObject
+class IGhostObject: public ICollisionObject
 {
 public:
+	virtual UINT XMETHODCALLTYPE getOverlappingObjectCount() const = 0;
+	virtual ICollisionObject* XMETHODCALLTYPE getOverlappingObject(UINT uIndex) const = 0;
+
 	virtual UINT XMETHODCALLTYPE getOverlappingPairCount() const = 0;
 	virtual ICollisionPair* XMETHODCALLTYPE getOverlappingPair(UINT uIndex) const = 0;
 };
