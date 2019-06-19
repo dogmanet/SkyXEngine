@@ -2,8 +2,18 @@
 #include "FileExtIterator.h"
 #include "FileExtsIterator.h"
 #include "DirIterator.h"
+#include "File.h"
 #include <shellapi.h>
 #include <ShlObj.h>
+
+String CFileSystem::GetFileName(const char *name)
+{
+    LPWIN32_FIND_DATAA wfd;
+
+    HANDLE const hFind = FindFirstFile(name, wfd);
+
+   return String(wfd->cFileName[0]);
+}
 
 time_t CFileSystem::convertFiletimeToTime_t(const FILETIME& ft)
 {
@@ -36,6 +46,38 @@ bool CFileSystem::isAbsolutePath(const char *szPath)
         ++szPath;
     }
     return false;
+}
+
+IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode, int iType)
+{
+    CFile *file;
+
+    if (fileExists(szPath))
+    {
+        return nullptr;
+    }
+
+    switch (mode)
+    {
+    case FILE_MODE_READ:
+        file->open(szPath, iType);
+
+        break;
+    case FILE_MODE_WRITE:
+        CopyFile(szPath, GetFileName(szPath).c_str(), false);
+        file->open(szPath, iType);
+
+        break;
+    case FILE_MODE_APPEND:
+        CopyFile(szPath, GetFileName(szPath).c_str(), false);
+        file->add(szPath, iType);
+
+        break;
+    default:
+        break;
+    }
+
+    return file;
 }
 
 UINT CFileSystem::addRoot(const char *szPath, int iPriority)
@@ -209,12 +251,10 @@ bool CFileSystem::deleteDirectory(const char *szPath)
 
 IFile *CFileSystem::openFileText(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ)
 {
-    assert(!"No Implementation");
-    return nullptr;
+    return openFile(szPath, mode, CORE_FILE_TEXT);
 }
 
 IFile *CFileSystem::openFileBin(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ)
 {
-    assert(!"No Implementation");
-    return nullptr;
+    return openFile(szPath, mode, CORE_FILE_BIN);
 }
