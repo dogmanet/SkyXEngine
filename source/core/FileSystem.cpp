@@ -57,6 +57,8 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode, int iType)
         return nullptr;
     }
 
+    String fileName;
+
     switch (mode)
     {
     case FILE_MODE_READ:
@@ -64,13 +66,15 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode, int iType)
 
         break;
     case FILE_MODE_WRITE:
-        CopyFile(szPath, GetFileName(szPath).c_str(), false);
-        file->open(szPath, iType);
+        fileName = GetFileName(szPath).c_str();
+        CopyFile(szPath, fileName.c_str(), false);
+        file->open(fileName.c_str(), iType);
 
         break;
     case FILE_MODE_APPEND:
-        CopyFile(szPath, GetFileName(szPath).c_str(), false);
-        file->add(szPath, iType);
+        fileName = GetFileName(szPath).c_str();
+        CopyFile(szPath, fileName.c_str(), false);
+        file->add(fileName.c_str(), iType);
 
         break;
     default:
