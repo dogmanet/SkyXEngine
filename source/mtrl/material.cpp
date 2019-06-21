@@ -5,6 +5,7 @@ See the license in LICENSE
 ***********************************************************/
 
 #include "material.h"
+#include "ShaderVariant.h"
 
 CMaterials::CMaterials()
 {
@@ -501,7 +502,7 @@ void CMaterials::addName(const char *szName, ID id)
 	m_aMtrlPathes[idTex]->m_aObjects.push_back(new CPath::CObject(id, sName.c_str()));
 }
 
-bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
+bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount, XSHADER_VARIANT_DESC *pVariantsDesc)
 {
 	char* ArrRGBA[4] = { "r", "g", "b", "a" };
 
@@ -555,15 +556,27 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl)
 			pMtrl->m_oPhysics.m_typePhysics = MTLTYPE_PHYSIC_DEFAULT;
 
 
-		if (STR_VALIDATE(sVS.c_str()))
-			pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, sVS.c_str());
+		//! @todo Use default shaders
+		const char *szVertexShader;
+		if(STR_VALIDATE(sVS.c_str()))
+			szVertexShader = sVS.c_str();
 		else
-			pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExistsName(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
+			szVertexShader = pDefaultShaders ? pDefaultShaders->szFileVS : "mtrlgeom_base.vs";
 
-		if (STR_VALIDATE(sPS.c_str()))
-			pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, sPS.c_str());
+		const char *szPixelShader;
+		if(STR_VALIDATE(sVS.c_str()))
+			szPixelShader = sPS.c_str();
 		else
-			pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExistsName(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");
+			szPixelShader = pDefaultShaders ? pDefaultShaders->szFilePS : "mtrlgeom_base.ps";
+
+		pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, szVertexShader);
+		pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, szPixelShader);
+
+		for(UINT i = 0; i < uVariantCount; ++i)
+		{
+			assert(pVariantsDesc[i].pMacrosVS);
+			pVariantsDesc[i].pShaderVariant = new CShaderVariant(szVertexShader, szPixelShader, pVariantsDesc[i].pMacrosVS);
+		}
 
 		pMtrl->m_oMainGraphics.updateShaderKit(true);
 
@@ -901,7 +914,7 @@ void CMaterials::createMtl(const char* name, CMaterial** mtl, MTLTYPE_MODEL type
 	pMtrl->m_oMainGraphics.updateShaderKit(true);
 }
 
-void CMaterials::createMtl(const char* name, CMaterial** mtl, XSHADER_DEFAULT_DESC *pDefaultShaders)
+void CMaterials::createMtl(const char* name, CMaterial** mtl, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount, XSHADER_VARIANT_DESC *pVariantsDesc)
 {
 	CMaterial* pMtrl = *mtl;
 	new(pMtrl)CMaterial*;
@@ -912,7 +925,11 @@ void CMaterials::createMtl(const char* name, CMaterial** mtl, XSHADER_DEFAULT_DE
 	pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, pDefaultShaders->szFilePS);
 	pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld = true;
 	
-	
+	for(UINT i = 0; i < uVariantCount; ++i)
+	{
+		assert(pVariantsDesc[i].pMacrosVS);
+		pVariantsDesc[i].pShaderVariant = new CShaderVariant(pDefaultShaders->szFileVS, pDefaultShaders->szFilePS, pVariantsDesc[i].pMacrosVS);
+	}
 
 	pMtrl->m_oMainGraphics.m_idMainTexture = SGCore_LoadTexAddName(name, LOAD_TEXTURE_TYPE_LOAD);
 	pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
@@ -966,7 +983,7 @@ ID CMaterials::mtlLoad(const char* name, MTLTYPE_MODEL type)
 		CUnitMaterial* tmpumtl = new CUnitMaterial();
 		tmpumtl->m_pMtrl = new CMaterial();
 		addMaterial(tmpumtl->m_pMtrl);
-		if (!loadMtl(name, &(tmpumtl->m_pMtrl)))
+		if (!loadMtl(name, &(tmpumtl->m_pMtrl), NULL))
 		{
 			createMtl(name, &(tmpumtl->m_pMtrl), type);
 		}
@@ -986,7 +1003,7 @@ ID CMaterials::mtlLoad(const char* name, MTLTYPE_MODEL type)
 	}
 }
 
-ID CMaterials::mtlLoad(const char *name, XSHADER_DEFAULT_DESC *pDefaultShaders)
+ID CMaterials::mtlLoad(const char *name, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount, XSHADER_VARIANT_DESC *pVariantsDesc)
 {
 	ID IsLoad = exists(name);
 
@@ -1002,6 +1019,17 @@ ID CMaterials::mtlLoad(const char *name, XSHADER_DEFAULT_DESC *pDefaultShaders)
 			tmpumtl->m_pReflect->init(m_aUnitMtrls[IsLoad]->m_pReflect->getTypeReflect());
 		}
 
+		char szShaderVS[SXGC_SHADER_MAX_SIZE_FULLPATH];
+		char szShaderPS[SXGC_SHADER_MAX_SIZE_FULLPATH];
+		SGCore_ShaderGetPath(SHADER_TYPE_VERTEX, tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS, szShaderVS);
+		SGCore_ShaderGetPath(SHADER_TYPE_PIXEL, tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS, szShaderPS);
+
+		for(UINT i = 0; i < uVariantCount; ++i)
+		{
+			assert(pVariantsDesc[i].pMacrosVS);
+			pVariantsDesc[i].pShaderVariant = new CShaderVariant(szShaderVS, szShaderPS, pVariantsDesc[i].pMacrosVS);
+		}
+
 		return addUnitMaterial(tmpumtl);
 	}
 	else
@@ -1009,9 +1037,9 @@ ID CMaterials::mtlLoad(const char *name, XSHADER_DEFAULT_DESC *pDefaultShaders)
 		CUnitMaterial* tmpumtl = new CUnitMaterial();
 		tmpumtl->m_pMtrl = new CMaterial();
 		addMaterial(tmpumtl->m_pMtrl);
-		if(!loadMtl(name, &(tmpumtl->m_pMtrl)))
+		if(!loadMtl(name, &(tmpumtl->m_pMtrl), pDefaultShaders, uVariantCount, pVariantsDesc))
 		{
-			createMtl(name, &(tmpumtl->m_pMtrl), pDefaultShaders);
+			createMtl(name, &(tmpumtl->m_pMtrl), pDefaultShaders, uVariantCount, pVariantsDesc);
 		}
 		else
 		{
@@ -1031,6 +1059,7 @@ ID CMaterials::mtlLoad(const char *name, XSHADER_DEFAULT_DESC *pDefaultShaders)
 
 void CMaterials::mtlReLoad(ID id, const char* name)
 {
+	assert(!"Is this used?");
 	MTL_PRE_COND_ID(id, _VOID);
 	CUnitMaterial* tmpumtl = m_aUnitMtrls[id];
 	char tmpname[1024];
@@ -1038,9 +1067,8 @@ void CMaterials::mtlReLoad(ID id, const char* name)
 		sprintf(tmpname, "%s.dds", tmpumtl->m_pMtrl->m_sName.c_str());
 	else
 		sprintf(tmpname, "%s", name);
-
 	tmpumtl->m_pMtrl->nulling();
-	if (!loadMtl(tmpname, &(tmpumtl->m_pMtrl)))
+	if (!loadMtl(tmpname, &(tmpumtl->m_pMtrl), NULL))
 	{
 		createMtl(name, &(tmpumtl->m_pMtrl), tmpumtl->m_pMtrl->m_oMainGraphics.m_typeModel);
 	}

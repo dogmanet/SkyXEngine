@@ -354,7 +354,9 @@ SX_LIB_API ID SMtrl_MtlLoad(
 
 SX_LIB_API ID SMtrl_MtlLoad2(
 	const char *szName,								//!< имя_материала.расширение
-	XSHADER_DEFAULT_DESC *pDefaultShaders
+	XSHADER_DEFAULT_DESC *pDefaultShaders, 
+	UINT uVariantCount, 
+	XSHADER_VARIANT_DESC *pVariantsDesc
 	);
 
 //! перезагрузка материала

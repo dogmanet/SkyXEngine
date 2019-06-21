@@ -115,11 +115,11 @@ SX_LIB_API ID SMtrl_MtlLoad(const char *szName, MTLTYPE_MODEL mtl_type)
 	return ArrMaterials->mtlLoad(szName, mtl_type);
 }
 
-SX_LIB_API ID SMtrl_MtlLoad2(const char *szName, XSHADER_DEFAULT_DESC *pDefaultShaders)
+SX_LIB_API ID SMtrl_MtlLoad2(const char *szName, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount, XSHADER_VARIANT_DESC *pVariantsDesc)
 {
 	ML_PRECOND(-1);
 
-	return ArrMaterials->mtlLoad(szName, pDefaultShaders);
+	return ArrMaterials->mtlLoad(szName, pDefaultShaders, uVariantCount, pVariantsDesc);
 }
 
 SX_LIB_API void SMtrl_MtlSave(ID id)

@@ -38,17 +38,12 @@ public:
 struct XSHADER_VARIANT_DESC
 {
 	//! Дескриптор варианта шейдера, используется для передачи в IXMaterialSystem::bindMaterial()
-	IXShaderVariant **ppShaderVariant;
+	IXShaderVariant *pShaderVariant;
 
 	/*! Массив макроопределений для вершинного шейдера, может быть NULL.
 	    Последний элемент массива должен быть {NULL, NULL}
 	*/
 	GXMACRO *pMacrosVS;
-
-	/*! Массив макроопределений для пиксельного шейдера, может быть NULL.
-	Последний элемент массива должен быть {NULL, NULL}
-	*/
-	GXMACRO *pMacrosPS;
 };
 
 class IXMaterialSystem: public IXUnknown

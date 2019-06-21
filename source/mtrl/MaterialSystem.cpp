@@ -17,7 +17,7 @@ void CMaterialSystem::loadMaterial(const char *szName, IXMaterial **ppMaterial, 
 {
 	assert(!uVariantCount && "Variants is not implemented!");
 
-	ID id = SMtrl_MtlLoad2(szName, pDefaultShaders);
+	ID id = SMtrl_MtlLoad2(szName, pDefaultShaders, uVariantCount, pVariantsDesc);
 	*ppMaterial = new CMaterial(id);
 }
 bool CMaterialSystem::getMaterial(const char *szName, IXMaterial **ppMaterial)

@@ -176,6 +176,7 @@
     <ClCompile Include="..\..\..\source\mtrl\MaterialSystem.cpp" />
     <ClCompile Include="..\..\..\source\mtrl\ml_data.cpp" />
     <ClCompile Include="..\..\..\source\mtrl\reflection.cpp" />
+    <ClCompile Include="..\..\..\source\mtrl\ShaderVariant.cpp" />
     <ClCompile Include="..\..\..\source\mtrl\sxmtrl.cpp" />
     <ClCompile Include="..\..\..\source\mtrl\sxmtrl_dll.cpp" />
   </ItemGroup>
@@ -190,6 +191,7 @@
     <ClInclude Include="..\..\..\source\mtrl\MaterialSystem.h" />
     <ClInclude Include="..\..\..\source\mtrl\ml_data.h" />
     <ClInclude Include="..\..\..\source\mtrl\reflection.h" />
+    <ClInclude Include="..\..\..\source\mtrl\ShaderVariant.h" />
     <ClInclude Include="..\..\..\source\mtrl\sxmtrl.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
