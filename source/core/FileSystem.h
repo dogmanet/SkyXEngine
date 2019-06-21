@@ -28,7 +28,7 @@
 class CFileSystem final : public IFileSystem
 {
 private:
-    String CFileSystem::GetFileName(const char *name);
+    String *getFileName(const char *name);
 
     //! Вспомогательная функция для конвертирования FILETIME в time_t
     time_t convertFiletimeToTime_t(const FILETIME& ft);
@@ -37,14 +37,15 @@ private:
 
     bool isAbsolutePath(const char* szPath);
 
-    IFile *openFile(const char *szPath, FILE_OPEN_MODE mode, int iType);
+    String *copyFile(const char* szPath);
 
     //корневые пути и приоритет
     Array<String> m_filePaths;
     Array<int> m_priority;
 
     //!Наш текущий ID корневого пути для записи
-    UINT m_writableRoot = 0;
+    //! -1 - значит не установлен
+    int m_writableRoot = -1;
 
 public:
 	UINT addRoot(const char *szPath, int iPriority = -1) override;
@@ -84,11 +85,7 @@ public:
 
      bool deleteDirectory(const char *szPath) override;
 
-     //! No implementation
-     IFile *openFileText(const char *szPath, FILE_OPEN_MODE) override;
-
-     //! No implementation
-     IFile *openFileBin(const char *szPath, FILE_OPEN_MODE) override;
+     IFile *openFile(const char *szPath, FILE_OPEN_MODE) override;
 };
 
 #endif

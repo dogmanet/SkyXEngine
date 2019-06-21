@@ -101,8 +101,7 @@ public:
     virtual bool deleteDirectory(const char *szPath) = 0;
 
 	//! Открыть файл. При открытии с возможностью записи файла, находящегося вне записываемого корня, файл копируется в записывающийся корень и открывается копия.
-	virtual IFile *openFileText(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ) = 0;
-	virtual IFile *openFileBin(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ) = 0;
+	virtual IFile *openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ) = 0;
 };
 
 #endif

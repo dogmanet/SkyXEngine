@@ -2,17 +2,19 @@
 #include "FileExtIterator.h"
 #include "FileExtsIterator.h"
 #include "DirIterator.h"
-#include "File.h"
 #include <shellapi.h>
+#include "File.h"
 #include <ShlObj.h>
 
-String CFileSystem::GetFileName(const char *name)
+String *CFileSystem::getFileName(const char *name)
 {
     LPWIN32_FIND_DATAA wfd;
 
     HANDLE const hFind = FindFirstFile(name, wfd);
 
-   return String(wfd->cFileName[0]);
+    FindClose(hFind);
+
+    return new String(wfd->cFileName[0]);
 }
 
 time_t CFileSystem::convertFiletimeToTime_t(const FILETIME& ft)
@@ -48,46 +50,25 @@ bool CFileSystem::isAbsolutePath(const char *szPath)
     return false;
 }
 
-IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode, int iType)
+String *CFileSystem::copyFile(const char* szPath)
 {
-    CFile *file;
+    String *newFilePath = new String(m_filePaths[m_writableRoot] + '/' + getFileName(szPath));
+    CopyFile(szPath, newFilePath->c_str(), false);
 
-    if (fileExists(szPath))
-    {
-        return nullptr;
-    }
-
-    String fileName;
-
-    switch (mode)
-    {
-    case FILE_MODE_READ:
-        file->open(szPath, iType);
-
-        break;
-    case FILE_MODE_WRITE:
-        fileName = GetFileName(szPath).c_str();
-        CopyFile(szPath, fileName.c_str(), false);
-        file->open(fileName.c_str(), iType);
-
-        break;
-    case FILE_MODE_APPEND:
-        fileName = GetFileName(szPath).c_str();
-        CopyFile(szPath, fileName.c_str(), false);
-        file->add(fileName.c_str(), iType);
-
-        break;
-    default:
-        break;
-    }
-
-    return file;
+    return newFilePath;
 }
 
 UINT CFileSystem::addRoot(const char *szPath, int iPriority)
 {
     m_filePaths.push_back(String(szPath));
     m_priority.push_back(iPriority);
+
+    //Если у нас некорректный путь для записи и путь не является архивным
+    if (m_writableRoot == -1 && szPath[0] != '@')
+    {
+        m_writableRoot = m_filePaths.size() - 1;
+    }
+
     return m_filePaths.size() - 1;
 }
 
@@ -253,12 +234,46 @@ bool CFileSystem::deleteDirectory(const char *szPath)
     return SHFileOperation(&file_op) == 0;
 }
 
-IFile *CFileSystem::openFileText(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ)
+IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ)
 {
-    return openFile(szPath, mode, CORE_FILE_TEXT);
-}
+    CFile *file = new CFile;
 
-IFile *CFileSystem::openFileBin(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ)
-{
-    return openFile(szPath, mode, CORE_FILE_BIN);
+    //Если путь не корректен
+    if (fileExists(szPath))
+    {
+        return nullptr;
+    }
+
+    //Если путей на запись нет, и количество корневых путей нулевое
+    if (m_filePaths.size() == 0)
+    {
+        return nullptr;
+    }
+
+    String *newFileName;
+
+    switch (mode)
+    {
+    case FILE_MODE_READ:
+        file->open(szPath, CORE_FILE_BIN);
+
+        break;
+    case FILE_MODE_WRITE:
+        newFileName = copyFile(szPath);
+        file->open(newFileName->c_str(), CORE_FILE_BIN);
+        mem_delete(newFileName);
+
+        break;
+    case FILE_MODE_APPEND:
+        newFileName = copyFile(szPath);
+        file->add(newFileName->c_str(), CORE_FILE_BIN);
+        mem_delete(newFileName);
+
+        break;
+    default:
+        assert(false && "You cannot use multiple opening types at the same time");
+        break;
+    }
+
+    return file;
 }
