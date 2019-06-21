@@ -212,7 +212,7 @@ float3 CDynamicModelShared::getLocalBoundMax() const
 	return(m_vLocalMax);
 }
 
-void CDynamicModelShared::render(const SMMATRIX &mWorld, UINT uSkin, UINT uLod, const float4_t &vColor)
+void CDynamicModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor)
 {
 	if(!m_pDevice)
 	{
@@ -241,9 +241,7 @@ void CDynamicModelShared::render(const SMMATRIX &mWorld, UINT uSkin, UINT uLod, 
 		m_pDevice->setPrimitiveTopology(GXPT_TRIANGLESTRIP);
 		break;
 	}
-	
 
-	m_pMaterialSystem->setWorld(mWorld);
 
 	UINT uPrimCount = 0;
 	subset_t *pSubset;

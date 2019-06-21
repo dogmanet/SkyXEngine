@@ -47,6 +47,9 @@ protected:
 	CDynamicModelShared *m_pShared;
 	IGXContext *m_pDevice;
 
+	IGXConstantBuffer *m_pWorldBuffer = NULL;
+	bool m_isWorldDirty = true;
+
 	float3_t m_vPosition;
 	SMQuaternion m_qRotation;
 	UINT m_uSkin = 0;

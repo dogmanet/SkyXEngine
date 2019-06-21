@@ -49,17 +49,17 @@ void CMaterialSystem::addTexture(const char *szName, IGXTexture2D *pTexture)
 
 void CMaterialSystem::setWorld(const SMMATRIX &mWorld)
 {
-	SMMATRIX mV, mP;
-	Core_RMatrixGet(G_RI_MATRIX_VIEW, &mV);
-	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mP);
+	//SMMATRIX mV, mP;
+	//Core_RMatrixGet(G_RI_MATRIX_VIEW, &mV);
+	//Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mP);
 	m_objectData.m_mW = SMMatrixTranspose(mWorld);
-	m_objectData.m_mWV = SMMatrixTranspose(mV) * m_objectData.m_mW;
-	m_objectData.m_mWVP = SMMatrixTranspose(mP) * m_objectData.m_mWV;
+	// m_objectData.m_mWV = SMMatrixTranspose(mV) * m_objectData.m_mW;
+	// m_objectData.m_mWVP = SMMatrixTranspose(mP) * m_objectData.m_mWV;
 	
 
 	m_pObjectConstantBuffer->update(&m_objectData);
 	SGCore_GetDXDevice()->setVertexShaderConstant(m_pObjectConstantBuffer, SCR_OBJECT);
-	SGCore_GetDXDevice()->setPixelShaderConstant(m_pObjectConstantBuffer, SCR_OBJECT);
+	//SGCore_GetDXDevice()->setPixelShaderConstant(m_pObjectConstantBuffer, SCR_OBJECT);
 }
 void CMaterialSystem::bindMaterial(IXMaterial *pMaterial, IXShaderVariant *pShaderVariant)
 {

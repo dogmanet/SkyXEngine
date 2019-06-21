@@ -16,6 +16,7 @@ CAnimatedModel::CAnimatedModel(CAnimatedModelProvider *pProvider, CAnimatedModel
 	if(m_pDevice)
 	{
 		m_pBoneConstantBuffer = m_pDevice->createConstantBuffer(sizeof(ModelBoneShader) * pShared->getBoneCount());
+		m_pWorldBuffer = m_pDevice->createConstantBuffer(sizeof(SMMATRIX));
 	}
 }
 CAnimatedModel::~CAnimatedModel()
@@ -23,6 +24,7 @@ CAnimatedModel::~CAnimatedModel()
 	m_pProvider->onModelRelease(this);
 	mem_release(m_pShared);
 	mem_release(m_pBoneConstantBuffer);
+	mem_release(m_pWorldBuffer);
 
 	for(UINT i = 0, l = m_aLayers.size(); i < l; ++i)
 	{
@@ -71,7 +73,12 @@ float3 XMETHODCALLTYPE CAnimatedModel::getPosition() const
 }
 void XMETHODCALLTYPE CAnimatedModel::setPosition(const float3 &vPos)
 {
+	if((float3)m_vPosition == vPos)
+	{
+		return;
+	}
 	m_vPosition = vPos;
+	m_isWorldDirty = true;
 }
 
 SMQuaternion XMETHODCALLTYPE CAnimatedModel::getOrientation() const
@@ -86,6 +93,7 @@ void XMETHODCALLTYPE CAnimatedModel::setOrientation(const SMQuaternion &qRot)
 	}
 	m_qRotation = qRot;
 	m_isLocalAABBvalid = false;
+	m_isWorldDirty = true;
 }
 
 float XMETHODCALLTYPE CAnimatedModel::getScale() const
@@ -100,6 +108,7 @@ void XMETHODCALLTYPE CAnimatedModel::setScale(float fScale)
 	}
 	m_fScale = fScale;
 	m_isLocalAABBvalid = false;
+	m_isWorldDirty = true;
 }
 
 UINT XMETHODCALLTYPE CAnimatedModel::getSkin() const
@@ -716,9 +725,16 @@ void CAnimatedModel::render(UINT uLod)
 		m_isBoneMatrixReFilled = false;
 	}
 
+	if(m_isWorldDirty)
+	{
+		m_pWorldBuffer->update(&SMMatrixTranspose(SMMatrixScaling(m_fScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition)));
+		m_isWorldDirty = false;
+	}
+
+	m_pDevice->setVertexShaderConstant(m_pWorldBuffer, 1 /* SCR_OBJECT */);
 	m_pDevice->setVertexShaderConstant(m_pBoneConstantBuffer, 10);
 
-	m_pShared->render(SMMatrixScaling(m_fScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition), m_uSkin, uLod, m_vColor);
+	m_pShared->render(m_uSkin, uLod, m_vColor);
 }
 
 void CAnimatedModel::sync()

@@ -26,7 +26,7 @@ public:
 	float3 getLocalBoundMin() const;
 	float3 getLocalBoundMax() const;
 
-	void render(const SMMATRIX &mWorld, UINT uSkin, UINT uLod, const float4_t &vColor);
+	void render(UINT uSkin, UINT uLod, const float4_t &vColor);
 
 protected:
 	UINT m_uRefCount = 0;

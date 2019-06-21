@@ -8,12 +8,16 @@ CDynamicModel::CDynamicModel(CDynamicModelProvider *pProvider, CDynamicModelShar
 {
 	pShared->AddRef();
 
-
+	if(m_pDevice)
+	{
+		m_pWorldBuffer = m_pDevice->createConstantBuffer(sizeof(SMMATRIX));
+	}
 }
 CDynamicModel::~CDynamicModel()
 {
 	m_pProvider->onModelRelease(this);
 	mem_release(m_pShared);
+	mem_release(m_pWorldBuffer);
 }
 
 bool XMETHODCALLTYPE CDynamicModel::isEnabled() const
@@ -44,7 +48,12 @@ float3 XMETHODCALLTYPE CDynamicModel::getPosition() const
 }
 void XMETHODCALLTYPE CDynamicModel::setPosition(const float3 &vPos)
 {
+	if((float3)m_vPosition == vPos)
+	{
+		return;
+	}
 	m_vPosition = vPos;
+	m_isWorldDirty = true;
 }
 
 SMQuaternion XMETHODCALLTYPE CDynamicModel::getOrientation() const
@@ -59,6 +68,7 @@ void XMETHODCALLTYPE CDynamicModel::setOrientation(const SMQuaternion &qRot)
 	}
 	m_qRotation = qRot;
 	m_isLocalAABBvalid = false;
+	m_isWorldDirty = true;
 }
 
 float XMETHODCALLTYPE CDynamicModel::getScale() const
@@ -73,6 +83,7 @@ void XMETHODCALLTYPE CDynamicModel::setScale(float fScale)
 	}
 	m_fScale = fScale;
 	m_isLocalAABBvalid = false;
+	m_isWorldDirty = true;
 }
 
 UINT XMETHODCALLTYPE CDynamicModel::getSkin() const
@@ -165,5 +176,13 @@ void CDynamicModel::render(UINT uLod)
 		return;
 	}
 
-	m_pShared->render(SMMatrixScaling(m_fScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition), m_uSkin, uLod, m_vColor);
+	if(m_isWorldDirty)
+	{
+		m_pWorldBuffer->update(&SMMatrixTranspose(SMMatrixScaling(m_fScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition)));
+		m_isWorldDirty = false;
+	}
+
+	m_pDevice->setVertexShaderConstant(m_pWorldBuffer, 1 /* SCR_OBJECT */);
+
+	m_pShared->render(m_uSkin, uLod, m_vColor);
 }

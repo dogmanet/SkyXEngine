@@ -109,6 +109,19 @@ protected:
 	{
 		struct
 		{
+			//SMMATRIX mV;
+			SMMATRIX mVP;
+			float3 vPosCam;
+		} vs;
+		//float4 vNearFarLayers;
+	} m_cameraShaderData;
+	IGXConstantBuffer *m_pCameraShaderDataVS = NULL;
+	//IGXConstantBuffer *m_pCameraShaderDataPS = NULL;
+
+	struct
+	{
+		struct
+		{
 			SMMATRIX mVP;
 			SMMATRIX mViewInv;
 			float2 vNearFar;

@@ -1000,7 +1000,7 @@ float3 CAnimatedModelShared::getLocalBoundMax() const
 	return(m_vLocalMax);
 }
 
-void CAnimatedModelShared::render(const SMMATRIX &mWorld, UINT uSkin, UINT uLod, const float4_t &vColor)
+void CAnimatedModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor)
 {
 	if(!m_pDevice)
 	{
@@ -1020,8 +1020,6 @@ void CAnimatedModelShared::render(const SMMATRIX &mWorld, UINT uSkin, UINT uLod,
 	m_pDevice->setIndexBuffer(m_ppIndexBuffer[uLod]);
 	m_pDevice->setRenderBuffer(m_ppRenderBuffer[uLod]);
 	m_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
-
-	m_pMaterialSystem->setWorld(mWorld);
 
 	for(UINT i = 0; i < m_uMaterialCount; ++i)
 	{

@@ -94,6 +94,8 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 	m_pSceneShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData.vs));
 	m_pSceneShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData));
 
+	m_pCameraShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_cameraShaderData.vs));
+
 	m_pLightingShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_lightingShaderData.vs));
 	m_pLightingShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_lightingShaderData.ps));
 
@@ -164,6 +166,8 @@ CRenderPipeline::~CRenderPipeline()
 	mem_release(m_pSceneShaderDataVS);
 	mem_release(m_pSceneShaderDataPS);
 
+	mem_release(m_pCameraShaderDataVS);
+
 	mem_release(m_pLightingShaderDataVS);
 	mem_release(m_pLightingShaderDataPS);
 
@@ -206,6 +210,12 @@ void CRenderPipeline::renderFrame()
 
 	m_pDevice->setVertexShaderConstant(m_pSceneShaderDataVS, SCR_SCENE);
 	m_pDevice->setPixelShaderConstant(m_pSceneShaderDataPS, SCR_SCENE);
+
+	//m_cameraShaderData.vs.mV = SMMatrixTranspose(gdata::mCamView);
+	m_cameraShaderData.vs.mVP = SMMatrixTranspose(gdata::mCamView * gdata::mCamProj);
+	m_cameraShaderData.vs.vPosCam = gdata::vConstCurrCamPos;
+	m_pCameraShaderDataVS->update(&m_cameraShaderData.vs);
+	m_pDevice->setVertexShaderConstant(m_pCameraShaderDataVS, SCR_CAMERA);
 
 	renderPrepare();
 

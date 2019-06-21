@@ -7,7 +7,7 @@ class CTexture: public IXTexture
 {
 public:
 	CTexture(ID id);
-	void getAPITexture(IGXBaseTexture **ppTexture);
+	void getAPITexture(IGXBaseTexture **ppTexture) override;
 	ID getId();
 protected:
 	ID m_id = -1;
@@ -17,9 +17,9 @@ class CMaterial: public IXMaterial
 {
 public:
 	CMaterial(ID id);
-	void getMainTexture(IXTexture **ppTexture);
+	void getMainTexture(IXTexture **ppTexture) override;
 	ID getId();
-	bool isTransparent();
+	bool isTransparent() override;
 
 	ID getInternalID()
 	{
@@ -52,8 +52,8 @@ protected:
 	struct CObjectData
 	{
 		SMMATRIX m_mW;
-		SMMATRIX m_mWV;
-		SMMATRIX m_mWVP;
+	//	SMMATRIX m_mWV;
+	//	SMMATRIX m_mWVP;
 	} m_objectData;
 	IGXConstantBuffer *m_pObjectConstantBuffer = NULL;
 };

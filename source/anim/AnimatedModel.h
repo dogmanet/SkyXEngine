@@ -96,6 +96,8 @@ protected:
 	bool m_isEnabled = true;
 	float m_fScale = 1.0f;
 
+	IGXConstantBuffer *m_pWorldBuffer = NULL;
+	bool m_isWorldDirty = true;
 	IGXConstantBuffer *m_pBoneConstantBuffer = NULL;
 
 	IAnimationCallback *m_pCallback = NULL;
