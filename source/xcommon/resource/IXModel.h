@@ -40,6 +40,8 @@ public:
 
 	virtual bool XMETHODCALLTYPE isEnabled() const = 0;
 	virtual void XMETHODCALLTYPE enable(bool yesNo) = 0;
+
+	virtual void XMETHODCALLTYPE render(UINT uLod) = 0;
 };
 
 // Implemented in geom plugin

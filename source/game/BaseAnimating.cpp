@@ -531,3 +531,11 @@ void CBaseAnimating::_releaseEditorBoxes()
 {
 	// do nothing
 }
+
+void CBaseAnimating::renderEditor(bool is3D)
+{
+	if(m_pModel)
+	{
+		m_pModel->render(0);
+	}
+}

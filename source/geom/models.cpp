@@ -2902,13 +2902,13 @@ void CModels::renderSingly(DWORD timeDelta, ID idModel, ID idMtrl, const float3 
 
 void CModels::render(DWORD timeDelta, GEOM_RENDER_TYPE type, ID idVisCalcObj)
 {
-	STATIC_PRECOND_VISCALCOBJ_ID(idVisCalcObj, _VOID);
+	//STATIC_PRECOND_VISCALCOBJ_ID(idVisCalcObj, _VOID);
 
 	if (type == GEOM_RENDER_TYPE_ALL || type == GEOM_RENDER_TYPE_OPAQUE)
 	{
 		for (int i = 0; i < m_aModels.size(); ++i)
 		{
-			if (m_aVisInfo[idVisCalcObj]->m_aVisible4Model[i]->m_isVisible)
+			if(!ID_VALID(idVisCalcObj) || m_aVisInfo[idVisCalcObj]->m_aVisible4Model[i]->m_isVisible)
 			{
 				if (m_aModels[i]->m_isRenderLod && m_aModels[i]->m_pLod)
 				{
@@ -3025,7 +3025,12 @@ void CModels::renderObject(DWORD timeDelta, ID idModel, ID idTex, const float3 *
 void CModels::renderSegmets(DWORD timeDelta, ID idModel, ID idTex, ID idVisCalcObj)
 {
 	STATIC_PRECOND_MODEL_ID(idModel, _VOID);
-	STATIC_PRECOND_VISCALCOBJ_ID(idVisCalcObj, _VOID);
+	//STATIC_PRECOND_VISCALCOBJ_ID(idVisCalcObj, _VOID);
+	if(!ID_VALID(idVisCalcObj))
+	{
+		//! @todo Render all instead of return
+		return;
+	}
 
 	CModel *pModel = m_aModels[idModel];
 

@@ -169,7 +169,7 @@ const IXResourceModel * XMETHODCALLTYPE CDynamicModel::getResource(UINT uIndex)
 	return(m_pShared->getResource());
 }
 
-void CDynamicModel::render(UINT uLod)
+void XMETHODCALLTYPE CDynamicModel::render(UINT uLod)
 {
 	if(!m_pDevice || !m_isEnabled)
 	{

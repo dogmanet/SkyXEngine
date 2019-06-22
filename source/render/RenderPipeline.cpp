@@ -211,7 +211,6 @@ void CRenderPipeline::renderFrame()
 	m_pDevice->setVertexShaderConstant(m_pSceneShaderDataVS, SCR_SCENE);
 	m_pDevice->setPixelShaderConstant(m_pSceneShaderDataPS, SCR_SCENE);
 
-	//m_cameraShaderData.vs.mV = SMMatrixTranspose(gdata::mCamView);
 	m_cameraShaderData.vs.mVP = SMMatrixTranspose(gdata::mCamView * gdata::mCamProj);
 	m_cameraShaderData.vs.vPosCam = gdata::vConstCurrCamPos;
 	m_pCameraShaderDataVS->update(&m_cameraShaderData.vs);
@@ -295,8 +294,6 @@ void CRenderPipeline::renderFrame()
 end:
 //	showGICubes();
 	showFrameStats();
-
-	renderEditor2D();
 }
 void CRenderPipeline::endFrame()
 {
@@ -798,6 +795,17 @@ void CRenderPipeline::renderPostprocessFinal()
 }
 void CRenderPipeline::renderEditor2D()
 {
+	SMMATRIX mVP;
+	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mVP);
+	float3 vCamPos;
+	SRender_GetCamera()->getPosition(&vCamPos);
+
+	m_cameraShaderData.vs.mVP = SMMatrixTranspose(mVP);
+	m_cameraShaderData.vs.vPosCam = vCamPos;
+	m_pCameraShaderDataVS->update(&m_cameraShaderData.vs);
+	m_pDevice->setVertexShaderConstant(m_pCameraShaderDataVS, SCR_CAMERA);
+
+	renderStage(XRS_EDITOR_2D);
 }
 
 //##########################################################################

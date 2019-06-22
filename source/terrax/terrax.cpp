@@ -70,6 +70,7 @@ IGXDepthStencilState *g_pDSNoZ;
 
 void XReleaseViewports();
 void XInitViewports();
+void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
 
 class CEngineCallback: public IXEngineCallback
 {
@@ -224,6 +225,9 @@ public:
 	void renderFrame() override
 	{
 		m_pOldPipeline->renderFrame();
+		
+		IGXContext *pDXDevice = getDevice();
+		pDXDevice->setDepthStencilState(NULL);
 
 		XRender3D();
 
@@ -231,8 +235,7 @@ public:
 		HWND hWnds[] = {g_hTopRightWnd, g_hBottomLeftWnd, g_hBottomRightWnd};
 		IGXSwapChain *p2DSwapChains[] = {g_pTopRightSwapChain, g_pBottomLeftSwapChain, g_pBottomRightSwapChain};
 		IGXDepthStencilSurface *p2DDepthStencilSurfaces[] = {g_pTopRightDepthStencilSurface, g_pBottomLeftDepthStencilSurface, g_BottomRightDepthStencilSurface};
-		IGXContext *pDXDevice = getDevice();
-
+		
 		ICamera **pCameras = g_xConfig.m_pViewportCamera + 1;
 		float *fScales = g_xConfig.m_fViewportScale + 1;
 		X_2D_VIEW *views = g_xConfig.m_x2DView + 1;
@@ -256,7 +259,7 @@ public:
 
 			pDXDevice->setRasterizerState(g_xRenderStates.pRSWireframe);
 			pDXDevice->setDepthStencilState(g_pDSNoZ);
-			pDXDevice->setBlendState(NULL);
+ 			pDXDevice->setBlendState(NULL);
 			SMMATRIX mProj = SMMatrixOrthographicLH((float)pBackBuffer->getWidth() * fScales[i], (float)pBackBuffer->getHeight() * fScales[i], 1.0f, 2000.0f);
 			SMMATRIX mView;
 			pCameras[i]->getViewMatrix(&mView);
@@ -281,6 +284,7 @@ public:
 			XRender2D(views[i], fScales[i], false);
 			mem_release(pBackBuffer);
 		}
+
 		/*
 		IGXSurface *pBackBuffer = g_pGuiSwapChain->getColorTarget();
 		pDXDevice->setColorTarget(pBackBuffer);
@@ -477,6 +481,91 @@ int main(int argc, char **argv)
 		case XEventLevel::TYPE_LOAD:
 			g_sLevelName = pData->szLevelName;
 			XUpdateWindowTitle();
+			{
+				char szPathLevel[1024], szKey[64];
+				sprintf(szPathLevel, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pData->szLevelName, pData->szLevelName);
+
+				ISXConfig *pCfg = Core_OpConfig(szPathLevel);
+				const char *szVal;
+
+				szVal = pCfg->getKey("terrax", "vp_layout");
+				if(szVal)
+				{
+					int iVal = 0;
+					if(sscanf(szVal, "%d", &iVal) && iVal >= 0 && iVal <= 3)
+					{
+						XInitViewportLayout((X_VIEWPORT_LAYOUT)iVal);
+					}
+				}
+
+				szVal = pCfg->getKey("terrax", "grid_step");
+				if(szVal)
+				{
+					int iVal = 0;
+					if(sscanf(szVal, "%d", &iVal) && iVal >= GRID_STEP_MINIMAL && iVal <= GRID_STEP_MAXIMAL)
+					{
+						g_xConfig.m_gridStep = (GRID_STEP)iVal;
+					}
+				}
+
+				szVal = pCfg->getKey("terrax", "grid_show");
+				if(szVal)
+				{
+					int iVal = 0;
+					if(sscanf(szVal, "%d", &iVal))
+					{
+						g_xConfig.m_bShowGrid = iVal != 0;
+					}
+				}
+
+				for(UINT i = 0; i < 4; ++i)
+				{
+					float3 vec;
+					sprintf_s(szKey, "cam%u_pos", i);
+					szVal = pCfg->getKey("terrax", szKey);
+					if(szVal)
+					{
+						if(sscanf(szVal, "%f %f %f", &vec.x, &vec.y, &vec.z) == 3)
+						{
+							g_xConfig.m_pViewportCamera[i]->setPosition(&vec);
+						}
+					}
+
+					sprintf_s(szKey, "cam%u_dir", i);
+					szVal = pCfg->getKey("terrax", szKey);
+					if(szVal)
+					{
+						if(sscanf(szVal, "%f %f %f", &vec.x, &vec.y, &vec.z) == 3)
+						{
+							g_xConfig.m_pViewportCamera[i]->setOrientation(&(SMQuaternion(vec.x, 'x') * SMQuaternion(vec.y, 'y') * SMQuaternion(vec.z, 'z')));
+						}
+					}
+
+					sprintf_s(szKey, "cam%u_scale", i);
+					szVal = pCfg->getKey("terrax", szKey);
+					if(szVal)
+					{
+						float fVal = 0.0;
+						if(sscanf(szVal, "%f", &fVal) && fVal > 0.0f)
+						{
+							g_xConfig.m_fViewportScale[i] = fVal;
+						}
+					}
+
+					sprintf_s(szKey, "cam%u_view", i);
+					szVal = pCfg->getKey("terrax", szKey);
+					if(szVal)
+					{
+						int iVal = 0;
+						if(sscanf(szVal, "%f", &iVal) && iVal >= -1 && iVal <= 2)
+						{
+							g_xConfig.m_x2DView[i] = (X_2D_VIEW)iVal;
+						}
+					}
+				}
+
+				mem_release(pCfg);
+			}
 			break;
 		case XEventLevel::TYPE_UNLOAD:
 
@@ -497,6 +586,49 @@ int main(int argc, char **argv)
 		case XEventLevel::TYPE_SAVE:
 			g_sLevelName = pData->szLevelName;
 			g_pUndoManager->makeClean();
+			{
+				char szPathLevel[1024], szKey[64], szVal[1024];
+				sprintf(szPathLevel, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pData->szLevelName, pData->szLevelName);
+
+				ISXConfig *pCfg = Core_OpConfig(szPathLevel);
+
+				pCfg->set("level", "type", "indoor");
+				pCfg->set("level", "local_name", "");
+
+				for(UINT i = 0; i < 4; ++i)
+				{
+					float3 vec;
+					g_xConfig.m_pViewportCamera[i]->getPosition(&vec);
+					sprintf_s(szVal, "%f %f %f", vec.x, vec.y, vec.z);
+					sprintf_s(szKey, "cam%u_pos", i);
+					pCfg->set("terrax", szKey, szVal);
+
+					g_xConfig.m_pViewportCamera[i]->getRotation(&vec);
+					sprintf_s(szVal, "%f %f %f", vec.x, vec.y, vec.z);
+					sprintf_s(szKey, "cam%u_dir", i);
+					pCfg->set("terrax", szKey, szVal);
+
+					sprintf_s(szVal, "%f", g_xConfig.m_fViewportScale[i]);
+					sprintf_s(szKey, "cam%u_scale", i);
+					pCfg->set("terrax", szKey, szVal);
+
+					sprintf_s(szVal, "%d", g_xConfig.m_x2DView[i]);
+					sprintf_s(szKey, "cam%u_view", i);
+					pCfg->set("terrax", szKey, szVal);
+				}
+
+				sprintf_s(szVal, "%d", g_xConfig.m_xViewportLayout);
+				pCfg->set("terrax", "vp_layout", szVal);
+
+				sprintf_s(szVal, "%d", g_xConfig.m_gridStep);
+				pCfg->set("terrax", "grid_step", szVal);
+
+				sprintf_s(szVal, "%d", g_xConfig.m_bShowGrid ? 1 : 0);
+				pCfg->set("terrax", "grid_show", szVal);
+
+				pCfg->save();
+				mem_release(pCfg);
+			}
 			break;
 		}
 	});
@@ -799,7 +931,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 		{
 			if(g_pLevelObjects[i]->isSelected())
 			{
-			//	g_pLevelObjects[i]->renderSelection(false);
+				g_pLevelObjects[i]->renderSelection(false);
 			}
 		}
 
@@ -1133,6 +1265,14 @@ bool XSaveLevel(const char *szNewName, bool bForcePrompt)
 {
 	if(szNewName)
 	{
+		char szPathDirLevel[1024];
+		sprintf(szPathDirLevel, "%s%s/", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szNewName);
+
+		if(!FileExistsDir(szPathDirLevel))
+		{
+			FileCreateDir(szPathDirLevel);
+		}
+
 		XEventLevel ev;
 		ev.type = XEventLevel::TYPE_SAVE;
 		ev.szLevelName = szNewName;
@@ -1142,7 +1282,9 @@ bool XSaveLevel(const char *szNewName, bool bForcePrompt)
 	
 	if(!bForcePrompt && g_sLevelName[0])
 	{
-		return(XSaveLevel(g_sLevelName.c_str()));
+		// g_sLevelName can changed during save process, so pointer will be broken
+		String tmp = g_sLevelName;
+		return(XSaveLevel(tmp.c_str()));
 	}
 		
 	char szName[1024];

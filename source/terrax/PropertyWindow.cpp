@@ -1,8 +1,10 @@
 #include "PropertyWindow.h"
 #include "resource.h"
+#include <xcommon/resource/IXResourceManager.h>
 
 #include <windowsx.h>
 #include <commctrl.h>
+#include <Commdlg.h>
 
 static UINT g_uEditorDlgIds[] = {
 	IDD_PROPEDIT_TEXT,
@@ -28,6 +30,7 @@ CPropertyWindow::~CPropertyWindow()
 
 void CPropertyWindow::show()
 {
+	ShowWindow(m_phEditors[m_editorActive], SW_HIDE);
 	ShowWindow(m_hDlgWnd, SW_SHOWNA);
 }
 void CPropertyWindow::hide()
@@ -229,6 +232,100 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 			}
 			break;
 		}
+
+		if(LOWORD(wParam) == IDC_OPE_FILE_SELECT)
+		{
+			OPENFILENAMEW ofn;
+			wchar_t szFile[1024], szFilter[1024];
+			memset(szFile, 0, sizeof(szFile));
+
+			szFilter[0] = 0;
+			wchar_t *szTmp = szFilter;
+
+			if(!fstrcmp(szCurrentFileType, "model"))
+			{
+				auto pMgr = Core_GetIXCore()->getResourceManager();
+				UINT uFormatCount = pMgr->getModelSupportedFormats();
+
+				szTmp += swprintf(szTmp, L"All supported formats") + 1;
+				for(UINT i = 0; i < uFormatCount; ++i)
+				{
+					auto pFmt = pMgr->getModelSupportedFormat(i);
+					szTmp += swprintf(szTmp, L"*.%S;", pFmt->szExtension);
+				}
+				szTmp[-1] = 0;
+				for(UINT i = 0; i < uFormatCount; ++i)
+				{
+					auto pFmt = pMgr->getModelSupportedFormat(i);
+					szTmp += swprintf(szTmp, L"%S (*.%S)", pFmt->szDescription, pFmt->szExtension) + 1;
+					szTmp += swprintf(szTmp, L"*.%S", pFmt->szExtension) + 1;
+				}
+			}
+			else if(!fstrcmp(szCurrentFileType, "sound"))
+			{
+				szTmp += swprintf(szTmp, L"All supported formats") + 1;
+				szTmp += swprintf(szTmp, L"*.ogg") + 1;
+
+				szTmp += swprintf(szTmp, L"Ogg Vorbis (*.ogg)") + 1;
+				szTmp += swprintf(szTmp, L"*.ogg") + 1;
+			}
+			else
+			{
+				szTmp += swprintf(szTmp, L"All files") + 1;
+				szTmp += swprintf(szTmp, L"*.*") + 1;
+			}
+			szTmp[0] = 0;
+
+			memset(&ofn, 0, sizeof(OPENFILENAMEW));
+			ofn.lStructSize = sizeof(OPENFILENAMEW);
+			ofn.hwndOwner = NULL;
+			ofn.lpstrFile = szFile;
+			ofn.nMaxFile = sizeof(szFile);
+			ofn.lpstrFilter = szFilter;
+			ofn.nFilterIndex = 0;
+			ofn.lpstrFileTitle = NULL;
+			ofn.nMaxFileTitle = 0;
+			ofn.lpstrInitialDir = NULL;
+			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+			if(GetOpenFileNameW(&ofn))
+			{
+				wchar_t *str = szFile;
+				while(*str)
+				{
+					if(*str == L'\\')
+					{
+						*str = L'/';
+					}
+					++str;
+				}
+				wchar_t szCurDir[1024];
+				GetCurrentDirectoryW(1024, szCurDir);
+				str = szCurDir;
+				while(*str)
+				{
+					if(*str == L'\\')
+					{
+						*str = L'/';
+					}
+					++str;
+				}
+
+				str = szFile;
+				wchar_t *szDir = szCurDir;
+				while(*str && *szDir && *str == *szDir)
+				{
+					++str; ++szDir;
+				}
+				if(str[0] == L'/')
+				{
+					++str;
+				}
+
+				SetWindowTextW(GetDlgItem(m_phEditors[m_editorActive], IDC_OPE_FILE), str);
+			}
+		}
+
 		break;
 
 	default:
@@ -347,6 +444,7 @@ void CPropertyWindow::filterClassList(const char *szFilter)
 
 void CPropertyWindow::clearProps()
 {
+	ShowWindow(m_phEditors[m_editorActive], SW_HIDE);
 	ListView_DeleteAllItems(m_hPropListWnd);
 	m_aPropFields.clear();
 }
@@ -400,6 +498,7 @@ void CPropertyWindow::initEditor(X_PROP_EDITOR_TYPE type, const void *pData, con
 		break;
 	case XPET_FILE:
 		SetDlgItemText(hEditorDlg, IDC_OPE_FILE, szValue);
+		szCurrentFileType = (char*)pData;
 		break;
 	case XPET_COMBO:
 		if(1)

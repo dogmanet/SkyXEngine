@@ -223,7 +223,7 @@ const char *CEditorObject::getKV(const char *szKey)
 const X_PROP_FIELD *CEditorObject::getPropertyMeta(UINT uKey)
 {
 	static const X_PROP_FIELD s_szKeys[] = {
-		{"model", "Model file", XPET_TEXT, NULL, ""},
+		{"model", "Model file", XPET_TEXT, "model", ""},
 		{"name", "Name", XPET_TEXT, NULL, ""},
 		{"segmentate", "Segmentate", XPET_TEXT /* XPET_YESNO */, NULL, ""}
 	};

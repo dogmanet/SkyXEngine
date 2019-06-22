@@ -58,6 +58,8 @@ public:
 	void setCollisionGroup(COLLISION_GROUP group, COLLISION_GROUP mask = CG_ALL);
 	COLLISION_GROUP getCollisionGroup();
 
+	void renderEditor(bool is3D) override;
+
 protected:
 	virtual void _initEditorBoxes();
 	virtual void _releaseEditorBoxes();

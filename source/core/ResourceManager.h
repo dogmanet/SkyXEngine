@@ -18,6 +18,9 @@ public:
 	bool XMETHODCALLTYPE getModelStatic(const char *szName, IXResourceModelStatic **ppOut, bool bForceReload = false) override;
 	bool XMETHODCALLTYPE getModelAnimated(const char *szName, IXResourceModelAnimated **ppOut, bool bForceReload = false) override;
 
+	UINT XMETHODCALLTYPE getModelSupportedFormats() override;
+	const XFormatName* XMETHODCALLTYPE getModelSupportedFormat(UINT uIndex) override;
+
 	void onResourceModelRelease(CResourceModel *pResource);
 
 protected:
@@ -25,6 +28,8 @@ protected:
 
 	AssotiativeArray<AAString, Array<IXModelLoader*>> m_mapModelLoaders;
 	AssotiativeArray<String, IXResourceModel*> m_mpModels;
+	
+	Array<XFormatName> m_aModelExts;
 };
 
 #endif

@@ -208,8 +208,15 @@ void CBaseTool::dbgMove(int dir, float dy)
 
 void CBaseTool::onSync()
 {
-	float3_t ang = ((CPlayer*)m_pOwner)->getWeaponDeltaAngles();
-	m_vOffsetOrient = m_qSlotRotResult * SMQuaternion(ang.x, 'x') * SMQuaternion(ang.y, 'y') * SMQuaternion(ang.z, 'z');
+	if(m_pOwner)
+	{
+		float3_t ang = ((CPlayer*)m_pOwner)->getWeaponDeltaAngles();
+		m_vOffsetOrient = m_qSlotRotResult * SMQuaternion(ang.x, 'x') * SMQuaternion(ang.y, 'y') * SMQuaternion(ang.z, 'z');
+	}
+	else
+	{
+		m_vOffsetOrient = m_qSlotRotResult;
+	}
 	BaseClass::onSync();
 	if(m_pModel && m_pModel->asAnimatedModel())
 	{

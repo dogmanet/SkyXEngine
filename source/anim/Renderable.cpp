@@ -10,7 +10,7 @@ CRenderable::CRenderable(ID idPlugin, CAnimatedModelProvider *pProviderAnimated,
 
 X_RENDER_STAGE CRenderable::getStages()
 {
-	return(XRS_GBUFFER | XRS_SHADOWS);
+	return(XRS_GBUFFER | XRS_SHADOWS | XRS_EDITOR_2D);
 }
 
 UINT CRenderable::getPriorityForStage(X_RENDER_STAGE stage)
@@ -49,6 +49,8 @@ void CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVis
 	case XRS_POSTPROCESS_FINAL:
 		break;
 	case XRS_EDITOR_2D:
+		m_pAnimatedModelProvider->render(pVis);
+		m_pDynamicModelProvider->render(pVis);
 		break;
 	}
 }

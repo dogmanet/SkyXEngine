@@ -31,6 +31,7 @@ CResourceManager::CResourceManager(IXCore *pCore):
 				strlwr(const_cast<char*>(sExt.getName()));
 				sExt.setName(pLoader->getExt(i));
 				m_mapModelLoaders[sExt].push_back(pLoader);
+				m_aModelExts.push_back({pLoader->getDescription(), pLoader->getExt(i)});
 			}
 		}
 	}
@@ -244,4 +245,15 @@ bool CResourceManager::getModelAnimated(const char *szName, IXResourceModelAnima
 void CResourceManager::onResourceModelRelease(CResourceModel *pResource)
 {
 	m_mpModels[pResource->getFileName()] = NULL;
+}
+
+UINT XMETHODCALLTYPE CResourceManager::getModelSupportedFormats()
+{
+	return(m_aModelExts.size());
+}
+const XFormatName* XMETHODCALLTYPE CResourceManager::getModelSupportedFormat(UINT uIndex)
+{
+	assert(uIndex < m_aModelExts.size());
+
+	return(&m_aModelExts[uIndex]);
 }

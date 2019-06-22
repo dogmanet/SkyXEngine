@@ -13,10 +13,10 @@ class IXModelLoader: public IXUnknown
 {
 public:
 	virtual UINT XMETHODCALLTYPE getExtCount() const = 0;
-	virtual const char * XMETHODCALLTYPE getExt(UINT uIndex) const = 0;
-	virtual const char * XMETHODCALLTYPE getAuthor() const = 0;
-	virtual const char * XMETHODCALLTYPE getCopyright() const = 0;
-	virtual const char * XMETHODCALLTYPE getDescription() const = 0;
+	virtual const char* XMETHODCALLTYPE getExt(UINT uIndex) const = 0;
+	virtual const char* XMETHODCALLTYPE getAuthor() const = 0;
+	virtual const char* XMETHODCALLTYPE getCopyright() const = 0;
+	virtual const char* XMETHODCALLTYPE getDescription() const = 0;
 
 	virtual bool XMETHODCALLTYPE open(IFile *pFile) = 0;
 	virtual XMODELTYPE XMETHODCALLTYPE getType() const = 0;

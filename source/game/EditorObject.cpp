@@ -60,6 +60,22 @@ void CEditorObject::_iniFieldList()
 					break;
 				case PDE_FILEFIELD:
 					xField.editorType = XPET_FILE;
+					xField.pEditorData = NULL;
+					{
+						editor_kv *pKV = (editor_kv*)pField->editor.pData;
+						if(pKV && pKV[0].value)
+						{
+							if(!fstrcmp(pKV[0].value, "dse"))
+							{
+								xField.pEditorData = "model";
+							}
+							else if(!fstrcmp(pKV[0].value, "ogg"))
+							{
+								xField.pEditorData = "sound";
+							}
+						}
+						//xField.pEditorData
+					}
 					break;
 				case PDE_FLAGS:
 					continue;
@@ -120,7 +136,7 @@ void CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 
 void CEditorObject::renderSelection(bool is3D)
 {
-	/*if(!ID_VALID(m_idModel))
+	if(!m_pEntity)
 	{
 		return;
 	}
@@ -128,7 +144,7 @@ void CEditorObject::renderSelection(bool is3D)
 	IGXContext *pDevice = SGCore_GetDXDevice();
 	IGXBlendState *pOldBlendState = pDevice->getBlendState();
 	IGXRasterizerState *pOldRS = pDevice->getRasterizerState();
-	
+
 	m_pEditable->m_pMaterialSystem->bindTexture(m_pEditable->m_pWhiteTexture);
 	//pDevice->setTexture(m_pEditable->m_pWhiteTexture);
 	pDevice->setBlendState(m_pEditable->m_pBlendColorFactor);
@@ -136,17 +152,17 @@ void CEditorObject::renderSelection(bool is3D)
 	if(is3D)
 	{
 		pDevice->setBlendFactor(GXCOLOR_ARGB(70, 255, 0, 0));
-		SGeom_RenderSingly(0, m_idModel, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_STATIC));
+		m_pEntity->renderEditor(is3D);
 	}
 
 	pDevice->setRasterizerState(m_pEditable->m_pRSWireframe);
 	pDevice->setBlendFactor(GXCOLOR_ARGB(255, 255, 255, 0));
-	SGeom_RenderSingly(0, m_idModel, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_STATIC));
+	m_pEntity->renderEditor(is3D);
 
 	pDevice->setBlendState(pOldBlendState);
 	pDevice->setRasterizerState(pOldRS);
 	mem_release(pOldBlendState);
-	mem_release(pOldRS);*/
+	mem_release(pOldRS);
 }
 
 bool CEditorObject::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl)

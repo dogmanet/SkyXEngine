@@ -40,7 +40,7 @@ public:
 	const IModelPhysbox * XMETHODCALLTYPE getPhysBox(UINT id, UINT uPartIndex = 0) const override;
 	const IXResourceModel * XMETHODCALLTYPE getResource(UINT uIndex = 0) override;
 
-	void render(UINT uLod);
+	void XMETHODCALLTYPE render(UINT uLod) override;
 
 protected:
 	CDynamicModelProvider *m_pProvider;

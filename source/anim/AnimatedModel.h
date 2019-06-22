@@ -82,7 +82,7 @@ public:
 
 	UINT addLayer();
 
-	void render(UINT uLod);
+	void XMETHODCALLTYPE render(UINT uLod) override;
 	void sync();
 protected:
 	CAnimatedModelProvider *m_pProvider;

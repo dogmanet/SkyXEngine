@@ -917,3 +917,8 @@ float3 CBaseEntity::getEditorBoxSize()
 {
 	return(m_vEditorBoxSize);
 }
+
+void CBaseEntity::renderEditor(bool is3D)
+{
+
+}

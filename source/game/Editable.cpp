@@ -19,7 +19,8 @@ void CEditable::startup(IGXContext *pDevice)
 	GXBLEND_DESC blendDesc;
 	blendDesc.renderTarget[0].useBlend = true;
 	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_BLEND_FACTOR;
-	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_BLEND_FACTOR;
+	blendDesc.renderTarget[0].blendDestColor = GXBLEND_ONE;
+	blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_BLEND_FACTOR;
 	m_pBlendColorFactor = m_pDevice->createBlendState(&blendDesc);
 
 	GXRASTERIZER_DESC rsDesc;

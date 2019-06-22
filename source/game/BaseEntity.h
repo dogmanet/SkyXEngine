@@ -136,8 +136,9 @@ public:
 	//! Обновляет действие флагов в режиме редактора уровня
 	virtual void updateFlags(){}
 
-
 	virtual float3 getEditorBoxSize();
+
+	virtual void renderEditor(bool is3D);
 
 private:
 	void setClassName(const char * name);

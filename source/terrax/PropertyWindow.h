@@ -88,6 +88,8 @@ protected:
 	X_PROP_EDITOR_TYPE m_editorActive = XPET__LAST;
 
 	ICallback *m_pCallback = NULL;
+
+	const char *szCurrentFileType = NULL;
 };
 
 #endif
