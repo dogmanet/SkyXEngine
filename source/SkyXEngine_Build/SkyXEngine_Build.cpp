@@ -130,6 +130,7 @@ int main(int argc, char **argv)
 #endif
 
 	IXEngine *pEngine = XEngineInit(argc, argv, "build");
+	INIT_OUTPUT_STREAM(pEngine->getCore());
 
 	IXWindowSystem *pWindowSystem = XWindowInit();
 
@@ -150,6 +151,31 @@ int main(int argc, char **argv)
 
 	pEngine->getCore()->execCmd("exec ../config_game.cfg");
 	pEngine->getCore()->execCmd("exec ../config_game_user.cfg");
+
+#if 1
+
+	IFileSystem *pFS = pEngine->getCore()->getFileSystem();
+	pFS->addRoot("fs_test");
+
+	printf(COLOR_LRED "################# FILESYTEM TEST ##################\n");
+
+
+	IFile *pFile = pFS->openFile("dir/test.txt", FILE_MODE_READ);
+	if(pFile)
+	{
+		char *pData = (char*)alloca(sizeof(char) * pFile->getSize());
+		pFile->readBin(pData, sizeof(char) * pFile->getSize());
+
+		printf("File opened! Content: \n%s\n", pData);
+	}
+	else
+	{
+		printf("Unable to open file!\n");
+	}
+
+	printf("###################################################\n" COLOR_RESET);
+
+#endif
 
 	int ret = pEngine->start();
 
