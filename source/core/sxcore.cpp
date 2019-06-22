@@ -556,14 +556,9 @@ int64_t Core_TimeTotalMcsGetU(ID id)
 static AssotiativeArray<String, String> g_mCommandLine;
 static Array<String> g_aConsoleLine;
 
-void Core_0LoadCommandLine(const char *szCommandLine)
+void Core_0LoadCommandLine(int argc, char **argv)
 {
-	StringW wsCmdLine = StringW(String(szCommandLine));
-	int argc;
-	wchar_t **argv = CommandLineToArgvW(wsCmdLine.c_str(), &argc);
-
-
-	const WCHAR * key = NULL;
+	const char * key = NULL;
 	bool isCvar = true;
 	for(int i = 0; i < argc; ++i)
 	{
@@ -573,11 +568,11 @@ void Core_0LoadCommandLine(const char *szCommandLine)
 			{
 				if(isCvar)
 				{
-					g_aConsoleLine.push_back(String(StringW(key)));
+					g_aConsoleLine.push_back(key);
 				}
 				else
 				{
-					g_mCommandLine[String(StringW(key))] = "";
+					g_mCommandLine[key] = "";
 				}
 			}
 			key = &argv[i][1];
@@ -589,11 +584,11 @@ void Core_0LoadCommandLine(const char *szCommandLine)
 			{
 				if(isCvar)
 				{
-					g_aConsoleLine.push_back(String(StringW(key)));
+					g_aConsoleLine.push_back(key);
 				}
 				else
 				{
-					g_mCommandLine[String(StringW(key))] = "";
+					g_mCommandLine[key] = "";
 				}
 			}
 			key = &argv[i][1];
@@ -603,11 +598,11 @@ void Core_0LoadCommandLine(const char *szCommandLine)
 		{
 			if(isCvar)
 			{
-				g_aConsoleLine.push_back(String(StringW(key)) + " " + String(StringW(argv[i])));
+				g_aConsoleLine.push_back(String(key) + " " + argv[i]);
 			}
 			else
 			{
-				g_mCommandLine[String(StringW(key))] = String(StringW(argv[i]));
+				g_mCommandLine[key] = argv[i];
 			}
 			//store val
 			key = NULL;
@@ -617,11 +612,11 @@ void Core_0LoadCommandLine(const char *szCommandLine)
 	{
 		if(isCvar)
 		{
-			g_aConsoleLine.push_back(String(StringW(key)));
+			g_aConsoleLine.push_back(key);
 		}
 		else
 		{
-			g_mCommandLine[String(StringW(key))] = "";
+			g_mCommandLine[key] = "";
 		}
 	}
 }

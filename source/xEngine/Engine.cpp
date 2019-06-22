@@ -39,6 +39,7 @@ CEngine::CEngine(int argc, char **argv, const char *szName)
 {
 	srand((UINT)time(0));
 
+	Core_0LoadCommandLine(argc, argv);
 	//SkyXEngine_InitOutLog();
 	initPaths();
 
@@ -192,6 +193,8 @@ IXCore* XMETHODCALLTYPE CEngine::getCore()
 
 int XMETHODCALLTYPE CEngine::start()
 {
+	Core_0ExecCommandLine();
+
 	CTaskManager::TaskPtr pTask = new CMainLoopTask(this);
 	XCoreAddTask(pTask);
 	XCoreStart();

@@ -86,7 +86,7 @@ SX_LIB_API long Core_0GetVersion();
 SX_LIB_API void Core_0Create(const char *szName, const char *szNameConsole, bool isUnic = true);
 
 //! Загружает командную строку
-SX_LIB_API void Core_0LoadCommandLine(const char *szCommandLine);
+SX_LIB_API void Core_0LoadCommandLine(int argc, char **argv);
 
 //! Выполняет консольные команды из командной строки
 SX_LIB_API void Core_0ExecCommandLine();
