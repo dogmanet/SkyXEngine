@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 	pEngine->getCore()->execCmd("exec ../config_game.cfg");
 	pEngine->getCore()->execCmd("exec ../config_game_user.cfg");
 
-#if 1
+#if 0
 
 	IFileSystem *pFS = pEngine->getCore()->getFileSystem();
 	pFS->addRoot("fs_test");
