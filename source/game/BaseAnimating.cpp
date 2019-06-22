@@ -151,10 +151,12 @@ SMQuaternion CBaseAnimating::getAttachmentRot(int id)
 void CBaseAnimating::onSync()
 {
 	BaseClass::onSync();
-	if(!m_pParent && m_pRigidBody)
+	if(!m_pParent && m_pRigidBody && !m_isStatic)
 	{
-		setPos(BTVEC_F3(m_pRigidBody->getWorldTransform().getOrigin()));
-		setOrient(BTQUAT_Q4(m_pRigidBody->getWorldTransform().getRotation()));
+		btVector3 &v = m_pRigidBody->getWorldTransform().getOrigin();
+		setPos(BTVEC_F3(v));
+		btQuaternion &q = m_pRigidBody->getWorldTransform().getRotation();
+		setOrient(BTQUAT_Q4(q));
 	}
 	else if(m_pRigidBody)
 	{

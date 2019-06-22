@@ -242,7 +242,8 @@ void XMETHODCALLTYPE CWindow::update(const XWINDOW_DESC *pWindowDesc)
 
 	SetWindowLong(m_hWnd, GWL_STYLE, wndStyle);
 
-	SetWindowPos(m_hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+	UINT uSWPflags = SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER;
+	//SetWindowPos(m_hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
 
 	RECT rc = {0, 0, pWindowDesc->iSizeX, pWindowDesc->iSizeY};
 	AdjustWindowRect(&rc, wndStyle, false);
@@ -253,14 +254,15 @@ void XMETHODCALLTYPE CWindow::update(const XWINDOW_DESC *pWindowDesc)
 
 	if(rcOld.right - rcOld.left != rc.right - rc.left || rcOld.bottom - rcOld.top != rc.bottom - rc.top)
 	{
-		SetWindowPos(m_hWnd, HWND_TOP, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+		uSWPflags &= ~SWP_NOSIZE;
+		//SetWindowPos(m_hWnd, HWND_TOP, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 	}
+
+	int iPosX = pWindowDesc->iPosX;
+	int iPosY = pWindowDesc->iPosY;
 
 	if(pWindowDesc->iPosX != XCW_USEDEFAULT && pWindowDesc->iPosY != XCW_USEDEFAULT)
 	{
-		int iPosX = pWindowDesc->iPosX;
-		int iPosY = pWindowDesc->iPosY;
-
 		if(iPosX == XCW_CENTER)
 		{
 			iPosX = (GetSystemMetrics(SM_CXSCREEN) - (rc.right - rc.left)) / 2;
@@ -270,8 +272,10 @@ void XMETHODCALLTYPE CWindow::update(const XWINDOW_DESC *pWindowDesc)
 			iPosY = (GetSystemMetrics(SM_CYSCREEN) - (rc.bottom - rc.top)) / 2;
 		}
 
-		SetWindowPos(m_hWnd, HWND_TOP, iPosX, iPosY, 0, 0, SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+		uSWPflags &= ~SWP_NOMOVE;
+		//SetWindowPos(m_hWnd, HWND_TOP, iPosX, iPosY, 0, 0, SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 	}
+	SetWindowPos(m_hWnd, HWND_TOP, iPosX, iPosY, rc.right - rc.left, rc.bottom - rc.top, uSWPflags);
 
 	if(pWindowDesc->szTitle)
 	{

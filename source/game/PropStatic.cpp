@@ -17,6 +17,12 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CPropStatic, prop_static);
 
+CPropStatic::CPropStatic(CEntityManager *pMgr):
+	BaseClass(pMgr)
+{
+	m_isStatic = true;
+}
+
 CPropStatic::~CPropStatic()
 {
 	removePhysBody();

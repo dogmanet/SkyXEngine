@@ -22,7 +22,7 @@ class CPropStatic: public CBaseAnimating
 	DECLARE_CLASS(CPropStatic, CBaseAnimating);
 	DECLARE_PROPTABLE();
 public:
-	DECLARE_TRIVIAL_CONSTRUCTOR();
+	DECLARE_CONSTRUCTOR();
 	~CPropStatic();
 
 	void createPhysBody() override;
