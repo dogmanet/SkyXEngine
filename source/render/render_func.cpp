@@ -49,7 +49,7 @@ void rfunc::SetRenderSceneFilter()
 
 	if(!gdata::rstates::pSamplerScene)
 	{
-		GXSAMPLER_DESC samplerDesc;
+		GXSamplerDesc samplerDesc;
 		samplerDesc.uMaxAnisotropy = r_texfilter_max_anisotropy2;
 		switch(r_texfilter_type2)
 		{
@@ -387,7 +387,7 @@ void rfunc::RenderSky(DWORD timeDelta)
 	BackBuf = gdata::pDXDevice->getColorTarget();
 	gdata::pDXDevice->setColorTarget(ColorSurf);
 
-	gdata::pDXDevice->clear(GXCLEAR_COLOR, RENDER_DEFAUL_BACKGROUND_COLOR);
+	gdata::pDXDevice->clear(GX_CLEAR_COLOR, RENDER_DEFAUL_BACKGROUND_COLOR);
 
 //	SetSamplerFilter(0, 2, D3DTEXF_ANISOTROPIC);
 	gdata::pDXDevice->setRasterizerState(NULL);

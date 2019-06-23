@@ -296,7 +296,7 @@ namespace gui
 				UINT m_iTextIdx;
 				Array<Array<CRenderElement*>> m_mTextRELs;
 				
-				GXSAMPLER_DESC m_samplerDesc;
+				GXSamplerDesc m_samplerDesc;
 				IGXSamplerState *m_pSamplerState = NULL;
 			};
 

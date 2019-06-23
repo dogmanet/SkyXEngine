@@ -255,7 +255,7 @@ public:
 			IGXSurface *pBackBuffer = p2DSwapChains[i]->getColorTarget();
 			pDXDevice->setColorTarget(pBackBuffer);
 			pDXDevice->setDepthStencilSurface(p2DDepthStencilSurfaces[i]);
-			pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH | GXCLEAR_STENCIL);
+			pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL);
 
 			pDXDevice->setRasterizerState(g_xRenderStates.pRSWireframe);
 			pDXDevice->setDepthStencilState(g_pDSNoZ);
@@ -289,7 +289,7 @@ public:
 		IGXSurface *pBackBuffer = g_pGuiSwapChain->getColorTarget();
 		pDXDevice->setColorTarget(pBackBuffer);
 		pDXDevice->setDepthStencilSurface(g_pGuiDepthStencilSurface);
-		pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH | GXCLEAR_STENCIL);
+		pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL);
 		XGuiRender();
 		mem_release(pBackBuffer);
 		*/
@@ -411,8 +411,8 @@ int main(int argc, char **argv)
 
 	IXMaterialSystem *pMaterialSystem = (IXMaterialSystem*)pPluginManager->getInterface(IXMATERIALSYSTEM_GUID);
 
-	GXCOLOR w = GXCOLOR_ARGB(255, 255, 255, 255);
-	GXCOLOR t = GXCOLOR_ARGB(0, 255, 255, 255);
+	GXCOLOR w = GX_COLOR_ARGB(255, 255, 255, 255);
+	GXCOLOR t = GX_COLOR_ARGB(0, 255, 255, 255);
 	GXCOLOR colorData[] = {
 		t, t, t, w, w, w,
 		w, t, t, t, w, w,
@@ -425,7 +425,7 @@ int main(int argc, char **argv)
 	pMaterialSystem->addTexture("dev_dashed", pDashedMaterial);
 	mem_release(pDashedMaterial);
 
-	GXCOLOR tmpColor = GXCOLOR_ARGB(255, 255, 255, 255);
+	GXCOLOR tmpColor = GX_COLOR_ARGB(255, 255, 255, 255);
 	IGXTexture2D* pWhiteMaterial = SGCore_GetDXDevice()->createTexture2D(1, 1, 1, 0, GXFMT_A8R8G8B8, &tmpColor);
 	pMaterialSystem->addTexture("dev_white", pWhiteMaterial);
 	mem_release(pDashedMaterial);
@@ -671,7 +671,7 @@ int main(int argc, char **argv)
 //	SkyXEngine_PreviewKill();
 	IGXContext *pDevice = SGCore_GetDXDevice();
 
-	GXBLEND_DESC blendDesc;
+	GXBlendDesc blendDesc;
 	blendDesc.renderTarget[0].useBlend = true;
 	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_BLEND_FACTOR;
 	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_BLEND_FACTOR;
@@ -681,7 +681,7 @@ int main(int argc, char **argv)
 	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
 	g_xRenderStates.pBlendAlpha = pDevice->createBlendState(&blendDesc);
 
-	GXRASTERIZER_DESC rsDesc; 
+	GXRasterizerDesc rsDesc; 
 	rsDesc.cullMode = GXCULL_NONE;
 	g_xRenderStates.pRSSolidNoCull = SGCore_GetDXDevice()->createRasterizerState(&rsDesc);
 
@@ -692,44 +692,44 @@ int main(int argc, char **argv)
 	g_xRenderStates.idTexturedShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "terrax_textured.ps");
 	g_xRenderStates.idTexturedShaderKit = SGCore_ShaderCreateKit(g_xRenderStates.idTexturedShaderVS, g_xRenderStates.idTexturedShaderPS);
 
-	GXVERTEXELEMENT oLayout[] =
+	GXVertexElement oLayout[] =
 	{
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
 		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
-		GXDECL_END()
+		GX_DECL_END()
 	};
 	IGXVertexDeclaration *pVD = pDevice->createVertexDeclaration(oLayout);
-	g_pBorderVertexBuffer = pDevice->createVertexBuffer(sizeof(XBorderVertex) * 5, GX_BUFFER_USAGE_STREAM);
+	g_pBorderVertexBuffer = pDevice->createVertexBuffer(sizeof(XBorderVertex) * 5, GXBUFFER_USAGE_STREAM);
 	g_pBorderRenderBuffer = pDevice->createRenderBuffer(1, &g_pBorderVertexBuffer, pVD);
 	mem_release(pVD);
 
 	// Object handlers
-	GXVERTEXELEMENT oLayoutHandler[] =
+	GXVertexElement oLayoutHandler[] =
 	{
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
 		{1, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD, GXDECLSPEC_PER_INSTANCE_DATA},
-		GXDECL_END()
+		GX_DECL_END()
 	};
 	pVD = pDevice->createVertexDeclaration(oLayoutHandler);
-	g_xRenderStates.pHandlerVB = pDevice->createVertexBuffer(sizeof(float3_t) * 8, GX_BUFFER_USAGE_STREAM);
-	g_xRenderStates.pHandlerInstanceVB = pDevice->createVertexBuffer(sizeof(float3_t) * X_MAX_HANDLERS_PER_DIP, GX_BUFFER_USAGE_STREAM);
+	g_xRenderStates.pHandlerVB = pDevice->createVertexBuffer(sizeof(float3_t) * 8, GXBUFFER_USAGE_STREAM);
+	g_xRenderStates.pHandlerInstanceVB = pDevice->createVertexBuffer(sizeof(float3_t) * X_MAX_HANDLERS_PER_DIP, GXBUFFER_USAGE_STREAM);
 	IGXVertexBuffer *ppVB[] = {g_xRenderStates.pHandlerVB, g_xRenderStates.pHandlerInstanceVB};
 	g_xRenderStates.pHandlerRB = pDevice->createRenderBuffer(2, ppVB, pVD);
 	mem_release(pVD);
 	g_xRenderStates.idHandlerShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_handler.vs");
 	g_xRenderStates.idHandlerShaderKit = SGCore_ShaderCreateKit(g_xRenderStates.idHandlerShaderVS, g_xRenderStates.idColoredShaderPS);
 	USHORT pHandlerIndices[] = {0, 1, 2, 3, 4, 5, 6, 7};
-	g_xRenderStates.pHandlerIB = pDevice->createIndexBuffer(sizeof(USHORT)* 8, GX_BUFFER_USAGE_STATIC, GXIT_UINT16, pHandlerIndices);
+	g_xRenderStates.pHandlerIB = pDevice->createIndexBuffer(sizeof(USHORT)* 8, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pHandlerIndices);
 
 	{
 		// Transform handlers
-		GXVERTEXELEMENT oLayoutHandler[] =
+		GXVertexElement oLayoutHandler[] =
 		{
 			{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
-			GXDECL_END()
+			GX_DECL_END()
 		};
 		pVD = pDevice->createVertexDeclaration(oLayoutHandler);
-		g_xRenderStates.pTransformHandlerVB = pDevice->createVertexBuffer(sizeof(float3_t)* 32, GX_BUFFER_USAGE_STREAM);
+		g_xRenderStates.pTransformHandlerVB = pDevice->createVertexBuffer(sizeof(float3_t)* 32, GXBUFFER_USAGE_STREAM);
 		g_xRenderStates.pTransformHandlerRB = pDevice->createRenderBuffer(1, &g_xRenderStates.pTransformHandlerVB, pVD);
 		USHORT pHandlerIndices[] = {
 			0, 1, 2, 0, 2, 3,
@@ -742,7 +742,7 @@ int main(int argc, char **argv)
 			24, 25, 26, 24, 26, 27,
 			28, 29, 30, 28, 30, 31
 		};
-		g_xRenderStates.pTransformHandlerScaleIB = pDevice->createIndexBuffer(sizeof(USHORT)* 48, GX_BUFFER_USAGE_STATIC, GXIT_UINT16, pHandlerIndices);
+		g_xRenderStates.pTransformHandlerScaleIB = pDevice->createIndexBuffer(sizeof(USHORT)* 48, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pHandlerIndices);
 		
 		USHORT pHandlerRotateIndices[] = {
 			0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 5, 0, 5, 6, 0, 6, 7,
@@ -750,20 +750,20 @@ int main(int argc, char **argv)
 			16, 17, 18, 16, 18, 19, 16, 19, 20, 16, 20, 21, 16, 21, 22, 16, 22, 23,
 			24, 25, 26, 24, 26, 27, 24, 27, 28, 24, 28, 29, 24, 29, 30, 24, 30, 31
 		};
-		g_xRenderStates.pTransformHandlerRotateIB = pDevice->createIndexBuffer(sizeof(USHORT)* 72, GX_BUFFER_USAGE_STATIC, GXIT_UINT16, pHandlerRotateIndices);
+		g_xRenderStates.pTransformHandlerRotateIB = pDevice->createIndexBuffer(sizeof(USHORT)* 72, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pHandlerRotateIndices);
 
 		float3_t pVertices[] = {
 			float3_t(10000.0f, 0.0f, 0.0f), float3_t(-10000.0f, 0.0f, 0.0f),
 			float3_t(0.0f, 10000.0f, 0.0f), float3_t(0.0f, -10000.0f, 0.0f),
 			float3_t(0.0f, 0.0f, 10000.0f), float3_t(0.0f, 0.0f, -10000.0f)
 		};
-		IGXVertexBuffer *pCreateCrossVB = pDevice->createVertexBuffer(sizeof(float3_t) * 6, GX_BUFFER_USAGE_STATIC, pVertices);
+		IGXVertexBuffer *pCreateCrossVB = pDevice->createVertexBuffer(sizeof(float3_t) * 6, GXBUFFER_USAGE_STATIC, pVertices);
 		g_xRenderStates.pCreateCrossRB = pDevice->createRenderBuffer(1, &pCreateCrossVB, pVD);
 
 		mem_release(pVD);
 	}
 
-	GXDEPTH_STENCIL_DESC dsDesc;
+	GXDepthStencilDesc dsDesc;
 	dsDesc.useDepthTest = FALSE;
 	dsDesc.useDepthWrite = FALSE;
 	g_pDSNoZ = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
@@ -864,7 +864,7 @@ void XRender3D()
 			break;
 		}
 
-		XDrawBorder(GXCOLOR_ARGB(255, 255, 255, 0), va, vb, vc, vd);
+		XDrawBorder(GX_COLOR_ARGB(255, 255, 255, 0), va, vb, vc, vd);
 	}
 
 	static IGXConstantBuffer *s_pColorBuffer = pDevice->createConstantBuffer(sizeof(float4));
@@ -1039,7 +1039,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 				vd = float3_t(0.0f, g_xState.vWorldMousePos.y, g_xState.vFrameSelectStart.x);
 				break;
 			}
-			XDrawBorder(GXCOLOR_ARGB(255, 255, 255, 0), va, vb, vc, vd, fScale);
+			XDrawBorder(GX_COLOR_ARGB(255, 255, 255, 0), va, vb, vc, vd, fScale);
 		}
 
 		static IGXConstantBuffer *s_mConstWVP = pDevice->createConstantBuffer(sizeof(SMMATRIX));
@@ -1081,7 +1081,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 					g_xState.vSelectionBoundMin.y + g_xState.vSelectionBoundMax.y) * 0.5f;
 				break;
 			}
-			XDrawBorder(GXCOLOR_ARGB(255, 255, 0, 0), va, vb, vc, vd, fScale);
+			XDrawBorder(GX_COLOR_ARGB(255, 255, 0, 0), va, vb, vc, vd, fScale);
 
 			float3_t *pvData;
 			float fPtSize = 3.0f * fScale;
@@ -1338,7 +1338,7 @@ void XDrawBorder(GXCOLOR color, const float3_t &vA, const float3_t &vB, const fl
 	SGCore_ShaderBind(g_xRenderStates.idTexturedShaderKit);
 
 	static IGXConstantBuffer *s_pColorBuffer = pDevice->createConstantBuffer(sizeof(float4));
-	s_pColorBuffer->update(&GXCOLOR_COLOR_TO_F4(color));
+	s_pColorBuffer->update(&GX_COLOR_COLOR_TO_F4(color));
 	pDevice->setPixelShaderConstant(s_pColorBuffer);
 
 	pDevice->setTexture(SGCore_LoadTexGetTex(SRender_EditorGetDashedTex()));

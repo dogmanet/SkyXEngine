@@ -6,7 +6,7 @@
 class CShaderVariant: public IXShaderVariant
 {
 public:
-	CShaderVariant(const char *szShaderVS, const char *szShaderPS, GXMACRO *pMacros);
+	CShaderVariant(const char *szShaderVS, const char *szShaderPS, GXMacro *pMacros);
 	ID getShaderKit() const;
 
 protected:

@@ -67,10 +67,10 @@ void mtrl_data::Init()
 	mtrl_data::shader_id::vs::idStdGeom = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_geom.vs");
 	mtrl_data::shader_id::ps::idStdGeom = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_geom.ps");
 
-	GXMACRO Defines_CP[] = { { "_CLIP_PLANE_", "" }, { 0, 0 } };
+	GXMacro Defines_CP[] = { { "_CLIP_PLANE_", "" }, { 0, 0 } };
 	mtrl_data::shader_id::ps::idStdGeomCP = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_geom.ps", "stdr_geom_cp.ps", Defines_CP);
 
-	GXMACRO Defines_GRASS[] = { { "_GRASS_", "" }, { 0, 0 } };
+	GXMacro Defines_GRASS[] = { { "_GRASS_", "" }, { 0, 0 } };
 	mtrl_data::shader_id::vs::idStdGrass = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_green.vs", "stdr_grass.vs", Defines_GRASS);
 	mtrl_data::shader_id::vs::idStdTree = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_green.vs", "stdr_tree.vs");
 

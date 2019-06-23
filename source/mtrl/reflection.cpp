@@ -19,7 +19,7 @@ CReflection::CReflection()
 		m_aFrustums[i] = 0;
 	}
 
-	GXDEPTH_STENCIL_DESC dsDesc;
+	GXDepthStencilDesc dsDesc;
 	dsDesc.useDepthTest = false;
 	dsDesc.useDepthWrite = false;
 	m_pDSState = mtrl_data::pDXDevice->createDepthStencilState(&dsDesc);
@@ -85,16 +85,16 @@ void CReflection::onLostDevice()
 void CReflection::onResetDevice()
 {
 #if 0
-	m_pTexWork = mtrl_data::pDXDevice->createTexture2D(mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A8R8G8B8);
+	m_pTexWork = mtrl_data::pDXDevice->createTexture2D(mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
 
 	if (typeReflection == MTLTYPE_REFLECT_PLANE)
 	{
-		m_pTexPlaneRef = mtrl_data::pDXDevice->createTexture2D(mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 0, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTOGENMIPMAPS, GXFMT_A8R8G8B8);
+		m_pTexPlaneRef = mtrl_data::pDXDevice->createTexture2D(mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 0, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTOGENMIPMAPS, GXFMT_A8R8G8B8);
 		//D3DXCreateTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexPlaneRef);
 	}
 	else if (typeReflection == MTLTYPE_REFLECT_CUBE_STATIC || typeReflection == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 	{
-		m_pTexCubeRef = mtrl_data::pDXDevice->createTextureCube(mtrl_data::vSizeTexReflection.x, 0, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTOGENMIPMAPS, GXFMT_A8R8G8B8);
+		m_pTexCubeRef = mtrl_data::pDXDevice->createTextureCube(mtrl_data::vSizeTexReflection.x, 0, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTOGENMIPMAPS, GXFMT_A8R8G8B8);
 		//D3DXCreateCubeTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexCubeRef);
 		//@FIXME: no such api!
 		//m_pTexCubeRef->SetAutoGenFilterType(D3DTEXF_LINEAR);
@@ -108,7 +108,7 @@ void CReflection::init(MTLTYPE_REFLECT howref)
 {
 	typeReflection = howref;
 
-	m_pTexWork = mtrl_data::pDXDevice->createTexture2D(mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A8R8G8B8);
+	m_pTexWork = mtrl_data::pDXDevice->createTexture2D(mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
 	//D3DXCreateTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexWork);
 
 	if (typeReflection == MTLTYPE_REFLECT_PLANE)
@@ -117,7 +117,7 @@ void CReflection::init(MTLTYPE_REFLECT howref)
 			m_aFrustums[0] = SGCore_CrFrustum();
 
 		if (!m_pTexPlaneRef)
-			m_pTexPlaneRef = mtrl_data::pDXDevice->createTexture2D(mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 0, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTOGENMIPMAPS, GXFMT_A8R8G8B8);
+			m_pTexPlaneRef = mtrl_data::pDXDevice->createTexture2D(mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 0, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTOGENMIPMAPS, GXFMT_A8R8G8B8);
 			//D3DXCreateTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, mtrl_data::vSizeTexReflection.y, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &m_pTexPlaneRef);
 	}
 	else if (typeReflection == MTLTYPE_REFLECT_CUBE_STATIC || typeReflection == MTLTYPE_REFLECT_CUBE_DYNAMIC)
@@ -129,7 +129,7 @@ void CReflection::init(MTLTYPE_REFLECT howref)
 		}
 
 		if (!m_pTexCubeRef)
-			m_pTexCubeRef = mtrl_data::pDXDevice->createTextureCube(mtrl_data::vSizeTexReflection.x, 0, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTOGENMIPMAPS, GXFMT_A8R8G8B8);
+			m_pTexCubeRef = mtrl_data::pDXDevice->createTextureCube(mtrl_data::vSizeTexReflection.x, 0, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTOGENMIPMAPS, GXFMT_A8R8G8B8);
 			//D3DXCreateCubeTexture(mtrl_data::pDXDevice, mtrl_data::vSizeTexReflection.x, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R5G6B5, D3DPOOL_DEFAULT, &m_pTexCubeRef);
 	}
 	else
@@ -254,7 +254,7 @@ void CReflection::preRenderRefPlane(const SMPLANE* plane)
 	mem_release(m_pSurface);
 	m_pSurface = m_pTexWork->getMipmap();
 	mtrl_data::pDXDevice->setColorTarget(m_pSurface);
-	mtrl_data::pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH);
+	mtrl_data::pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH);
 }
 
 void CReflection::postRenderRefPlane()
@@ -371,7 +371,7 @@ void CReflection::preRenderRefCube(ID idFace, const float4x4 *pWorld)
 	m_pSurface = m_pTexWork->getMipmap();
 	mtrl_data::pDXDevice->setColorTarget(m_pSurface);
 
-	mtrl_data::pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH);
+	mtrl_data::pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH);
 }
 
 void CReflection::postRenderRefCube(ID idFace)

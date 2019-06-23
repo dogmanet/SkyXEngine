@@ -10,7 +10,7 @@ CGreen::CGreen()
 {
 	if(CGreen::m_pDXDevice)
 	{
-	GXVERTEXELEMENT oInstanceGreen[] =
+	GXVertexElement oInstanceGreen[] =
 	{
 		{0,  0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION,  GXDECLSPEC_PER_VERTEX_DATA},
 		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD,  GXDECLSPEC_PER_VERTEX_DATA},
@@ -20,7 +20,7 @@ CGreen::CGreen()
 		{1,  0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1, GXDECLSPEC_PER_INSTANCE_DATA},
 		{1, 12, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD2, GXDECLSPEC_PER_INSTANCE_DATA},
 		{1, 24, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD3, GXDECLSPEC_PER_INSTANCE_DATA},
-		GXDECL_END()
+		GX_DECL_END()
 	};
 
 	m_pVertexDeclarationGreen = CGreen::m_pDXDevice->createVertexDeclaration(oInstanceGreen);
@@ -180,7 +180,7 @@ void CGreen::onResetDevice()
 
 void CGreen::createInstVB()
 {
-	m_pTransVertBuf = CGreen::m_pDXDevice->createVertexBuffer(GREEN_MAX_ELEM_IN_DIP * sizeof(CGreenDataVertex), GX_BUFFER_USAGE_STREAM);
+	m_pTransVertBuf = CGreen::m_pDXDevice->createVertexBuffer(GREEN_MAX_ELEM_IN_DIP * sizeof(CGreenDataVertex), GXBUFFER_USAGE_STREAM);
 }
 
 //##########################################################################

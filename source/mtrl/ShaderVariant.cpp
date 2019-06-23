@@ -1,7 +1,7 @@
 #include "ShaderVariant.h"
 #include <gcore/sxgcore.h>
 
-CShaderVariant::CShaderVariant(const char *szShaderVS, const char *szShaderPS, GXMACRO *pMacros)
+CShaderVariant::CShaderVariant(const char *szShaderVS, const char *szShaderPS, GXMacro *pMacros)
 {
 	ID idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, szShaderVS, NULL, pMacros);
 	ID idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, szShaderPS, NULL, pMacros);

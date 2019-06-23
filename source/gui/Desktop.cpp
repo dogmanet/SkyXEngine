@@ -78,7 +78,7 @@ namespace gui
 			{0, m_iHeight, 0, 0.0f, 1.0f}
 		};
 
-		m_pVertices = GetGUI()->getDevice()->createVertexBuffer(sizeof(point) * 4, GX_BUFFER_USAGE_STATIC, a);
+		m_pVertices = GetGUI()->getDevice()->createVertexBuffer(sizeof(point) * 4, GXBUFFER_USAGE_STATIC, a);
 		m_pRenderBuffer = GetGUI()->getDevice()->createRenderBuffer(1, &m_pVertices, GetGUI()->getVertexDeclarations()->m_pXYZTex);
 	}
 	void CDesktop::releaseRenderTarget()
@@ -114,7 +114,7 @@ namespace gui
 			pOldDS = GetGUI()->getDevice()->getDepthStencilSurface();
 			GetGUI()->getDevice()->setDepthStencilSurface(m_pDepthStencilSurface);
 
-			GetGUI()->getDevice()->clear(GXCLEAR_COLOR | GXCLEAR_STENCIL);
+			GetGUI()->getDevice()->clear(GX_CLEAR_COLOR | GX_CLEAR_STENCIL);
 
 			//GetGUI()->getDevice()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 			//GetGUI()->getDevice()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);

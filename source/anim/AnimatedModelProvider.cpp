@@ -26,7 +26,7 @@ void CAnimatedModelProvider::setDevice(IGXContext *pDevice)
 {
 	m_pRenderContext = pDevice;
 
-	GXVERTEXELEMENT layoutDynamicEx[] =
+	GXVertexElement layoutDynamicEx[] =
 	{
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
 		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
@@ -35,7 +35,7 @@ void CAnimatedModelProvider::setDevice(IGXContext *pDevice)
 		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL},
 		{0, 56, GXDECLTYPE_UBYTE4, GXDECLUSAGE_BLENDINDICES},
 		{0, 60, GXDECLTYPE_FLOAT4, GXDECLUSAGE_BLENDWEIGHT},
-		GXDECL_END()
+		GX_DECL_END()
 	};
 
 	m_pVertexDeclaration = getDevice()->createVertexDeclaration(layoutDynamicEx);

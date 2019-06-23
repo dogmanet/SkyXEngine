@@ -115,14 +115,14 @@ void GCoreInit(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 	g_pOC->init(iWidth, iHeight);
 	InitToneMappingStates();
 
-	GXVERTEXELEMENT oLayoutStatic[] =
+	GXVertexElement oLayoutStatic[] =
 	{
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
 		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
 		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
 		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT},
 		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL},
-		GXDECL_END()
+		GX_DECL_END()
 	};
 
 	g_pStaticVertexDecl = g_pDevice->createVertexDeclaration(oLayoutStatic);
@@ -433,7 +433,7 @@ SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin)
 
 //##########################################################################
 
-SX_LIB_API ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char *szPath, const char *szName, GXMACRO *pMacro)
+SX_LIB_API ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char *szPath, const char *szName, GXMacro *pMacro)
 {
 	SG_PRECOND(-1);
 
@@ -1066,16 +1066,16 @@ public:
 		m_uVertexCount(uVertexCount),
 		m_uIndexCount(uIndexCount)
 	{
-		GXVERTEXELEMENT oLayout[] =
+		GXVertexElement oLayout[] =
 		{
 			{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
-			GXDECL_END()
+			GX_DECL_END()
 		};
 
 		IGXVertexDeclaration *pVD = g_pDevice->createVertexDeclaration(oLayout);
 
-		m_pIB = g_pDevice->createIndexBuffer(sizeof(USHORT) * uIndexCount, GX_BUFFER_USAGE_STATIC, GXIT_UINT16, pIndices);
-		m_pVB = g_pDevice->createVertexBuffer(sizeof(float) * 3 * uVertexCount, GX_BUFFER_USAGE_STATIC, pVertices);
+		m_pIB = g_pDevice->createIndexBuffer(sizeof(USHORT) * uIndexCount, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pIndices);
+		m_pVB = g_pDevice->createVertexBuffer(sizeof(float) * 3 * uVertexCount, GXBUFFER_USAGE_STATIC, pVertices);
 		m_pRB = g_pDevice->createRenderBuffer(1, &m_pVB, pVD);
 
 		mem_release(pVD);

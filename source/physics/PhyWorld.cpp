@@ -860,15 +860,15 @@ CPhyWorld::CDebugDrawer::CDebugDrawer()
 		return;
 	}
 
-	GXVERTEXELEMENT vertexDecl[] =
+	GXVertexElement vertexDecl[] =
 	{
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
 		{0, 12, GXDECLTYPE_FLOAT4, GXDECLUSAGE_COLOR, GXDECLSPEC_PER_VERTEX_DATA},
-		GXDECL_END()
+		GX_DECL_END()
 	};
 
 	m_pVertexDeclaration = pDevice->createVertexDeclaration(vertexDecl);
-	m_pVertexBuffer = pDevice->createVertexBuffer(sizeof(render_point) * m_uDataSize, GX_BUFFER_USAGE_STREAM);
+	m_pVertexBuffer = pDevice->createVertexBuffer(sizeof(render_point) * m_uDataSize, GXBUFFER_USAGE_STREAM);
 	m_pRenderBuffer = pDevice->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
 	m_pVSConstantBuffer = pDevice->createConstantBuffer(sizeof(SMMATRIX));
 

@@ -58,11 +58,11 @@ void InitFPStext()
 void InitFullScreenQuad()
 {
 	mem_release(g_pScreenTextureRB);
-	GXVERTEXELEMENT oLayoutQuad[] =
+	GXVertexElement oLayoutQuad[] =
 	{
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
 		{0, 12, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD},
-		GXDECL_END()
+		GX_DECL_END()
 	};
 
 	IGXVertexDeclaration *pVD = g_pDevice->createVertexDeclaration(oLayoutQuad);
@@ -90,7 +90,7 @@ void InitFullScreenQuad()
 	};
 
 
-	IGXVertexBuffer *pVB = g_pDevice->createVertexBuffer(sizeof(VERTEX_SCREEN_TEXTURE)* 6, GX_BUFFER_USAGE_STATIC, aVertices);
+	IGXVertexBuffer *pVB = g_pDevice->createVertexBuffer(sizeof(VERTEX_SCREEN_TEXTURE)* 6, GXBUFFER_USAGE_STATIC, aVertices);
 	g_pScreenTextureRB = g_pDevice->createRenderBuffer(1, &pVB, pVD);
 	mem_release(pVD);
 	mem_release(pVB);
@@ -129,21 +129,21 @@ void InitRT4Gbuffer()
 	
 	//цвет (текстуры)
 	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
-	gcore_data::rt_id::idColorScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "ds_color");
+	gcore_data::rt_id::idColorScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "ds_color");
 	//номрали + микрорельеф
 	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
-	gcore_data::rt_id::idNormalScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8/*D3DFMT_A2R10G10B10*/, "ds_normal");
+	gcore_data::rt_id::idNormalScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8/*D3DFMT_A2R10G10B10*/, "ds_normal");
 	//параметры освещени¤
 	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
-	gcore_data::rt_id::idParamsScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "ds_param");
+	gcore_data::rt_id::idParamsScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "ds_param");
 
 	//GXFMT_G32R32F; // 64bpp; GXFMT_R32F
-	gcore_data::rt_id::idDepthScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F, "ds_depth");
-	gcore_data::rt_id::idDepthScene0 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F, "ds_depth_0");
-	gcore_data::rt_id::idDepthScene1 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F, "ds_depth_1");
+	gcore_data::rt_id::idDepthScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F, "ds_depth");
+	gcore_data::rt_id::idDepthScene0 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F, "ds_depth_0");
+	gcore_data::rt_id::idDepthScene1 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F, "ds_depth_1");
 
-	gcore_data::rt_id::idLightAmbientDiff = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_ambient");
-	gcore_data::rt_id::idLightSpecular = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R16F, "ds_specdiff");
+	gcore_data::rt_id::idLightAmbientDiff = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_ambient");
+	gcore_data::rt_id::idLightSpecular = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R16F, "ds_specdiff");
 
 
 	gcore_data::rt_id::aToneMaps.clear();
@@ -158,20 +158,20 @@ void InitRT4Gbuffer()
 			break;
 
 		sprintf(szNameRT, "tone_map_%dx%d", tmpsize, tmpsize);
-		gcore_data::rt_id::aToneMaps[tmpcount] = SGCore_RTAdd(tmpsize, tmpsize, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R16F, szNameRT);
+		gcore_data::rt_id::aToneMaps[tmpcount] = SGCore_RTAdd(tmpsize, tmpsize, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R16F, szNameRT);
 		gcore_data::rt_id::aSurfToneMap[tmpcount] = 0;
 		++tmpcount;
 	}
 	gcore_data::rt_id::iCountArrToneMaps = tmpcount;
 
-	gcore_data::rt_id::idAdaptLumCurr = SGCore_RTAdd(1, 1, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R16F, "adapted_lum_curr");
-	gcore_data::rt_id::idAdaptLumLast = SGCore_RTAdd(1, 1, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R16F, "adapted_lum_last");
+	gcore_data::rt_id::idAdaptLumCurr = SGCore_RTAdd(1, 1, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R16F, "adapted_lum_curr");
+	gcore_data::rt_id::idAdaptLumLast = SGCore_RTAdd(1, 1, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R16F, "adapted_lum_last");
 
-	gcore_data::rt_id::idLigthCom = SGCore_RTAdd(*r_win_width, *r_win_height, 1,  GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcom");
-	gcore_data::rt_id::idLigthCom2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcom2");
-	gcore_data::rt_id::idLigthCom3 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "ds_lightcom3");
+	gcore_data::rt_id::idLigthCom = SGCore_RTAdd(*r_win_width, *r_win_height, 1,  GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcom");
+	gcore_data::rt_id::idLigthCom2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcom2");
+	gcore_data::rt_id::idLigthCom3 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "ds_lightcom3");
 
-	gcore_data::rt_id::idLigthComScaled = SGCore_RTAdd(*r_win_width / 4, *r_win_height / 4, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcomscaled");
+	gcore_data::rt_id::idLigthComScaled = SGCore_RTAdd(*r_win_width / 4, *r_win_height / 4, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcomscaled");
 
 
 	gcore_data::ps_id::idCalcAdaptedLum = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_calc_adapted_lum.ps");
@@ -209,11 +209,11 @@ void ToneMappingGetArrDownScale4x4(int iWidth, int iHeight, float2 aDS[])
 
 void InitToneMappingStates()
 {
-	GXBLEND_DESC blendDesc;
+	GXBlendDesc blendDesc;
 	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_RED;
 	g_pToneMappingBS = g_pDevice->createBlendState(&blendDesc);
 
-	GXSAMPLER_DESC samplerDesc;
+	GXSamplerDesc samplerDesc;
 	samplerDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
 	g_pSamplerFilterLinear = g_pDevice->createSamplerState(&samplerDesc);
 

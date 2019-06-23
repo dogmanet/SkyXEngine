@@ -37,7 +37,7 @@ struct CShader
 		m_szName[0] = 0; 
 		m_szPath[0] = 0; 
 
-		ZeroMemory(m_aMacros, sizeof(GXMACRO)* SXGC_SHADER_COUNT_MACRO);
+		ZeroMemory(m_aMacros, sizeof(GXMacro)* SXGC_SHADER_COUNT_MACRO);
 	}
 
 	~CShader()
@@ -52,7 +52,7 @@ struct CShader
 	char m_szPath[SXGC_SHADER_MAX_SIZE_DIR];
 
 	//! массив макросов (данные последнего макроса должны быть NULL)
-	GXMACRO m_aMacros[SXGC_SHADER_COUNT_MACRO];
+	GXMacro m_aMacros[SXGC_SHADER_COUNT_MACRO];
 
 	//! буфер с бинарным кодом шейдера
 	BYTE *m_pCode = NULL;
@@ -232,7 +232,7 @@ struct CShaderFileCache : public CShader
 		m_szPath[0] = 0; 
 		m_uiDate = 0; 
 		m_pCode = 0; 
-		ZeroMemory(m_aMacros, sizeof(GXMACRO)* SXGC_SHADER_COUNT_MACRO);
+		ZeroMemory(m_aMacros, sizeof(GXMacro)* SXGC_SHADER_COUNT_MACRO);
 		int qwert = 0;
 	}
 
@@ -285,28 +285,28 @@ uint32_t GetTimeShaderFileCache(const char *szPath);
 int LoadVertexShader(
 	const char *szPath,		//!< абсолютный путь до файла шейдера
 	CShaderVS *pShader,		//!< инициализированная структура CShaderVS
-	GXMACRO *aMacro = 0	//!< массив дефайнов
+	GXMacro *aMacro = 0	//!< массив дефайнов
 	);
 
 //загрузка пиксельного шейдера
 int LoadPixelShader(
 	const char *szPath,		//!< абсолютный путь до файла шейдера
 	CShaderPS *pShader,		//!< инициализированная структура CShaderPS
-	GXMACRO *aMacro = 0	//!< массив дефайнов
+	GXMacro *aMacro = 0	//!< массив дефайнов
 	);
 
 //загрузка геометрического шейдера
 int LoadGeometryShader(
 	const char *szPath,		//!< абсолютный путь до файла шейдера
 	CShaderGS *pShader,		//!< инициализированная структура CShaderGS
-	GXMACRO *aMacro = 0	//!< массив дефайнов
+	GXMacro *aMacro = 0	//!< массив дефайнов
 	);
 
 //загрузка вычислительного шейдера
 int LoadComputeShader(
 	const char *szPath,		//!< абсолютный путь до файла шейдера
 	CShaderCS *pShader,		//!< инициализированная структура CShaderCS
-	GXMACRO *aMacro = 0	//!< массив дефайнов
+	GXMacro *aMacro = 0	//!< массив дефайнов
 	);
 
 //**************************************************************************
@@ -322,7 +322,7 @@ public:
 	bool existsFile(const char *szPath);
 
 	//! добавление шейдера в очередь
-	ID preLoad(SHADER_TYPE type, const char *szPath, const char *szName, GXMACRO *aMacros = 0);
+	ID preLoad(SHADER_TYPE type, const char *szPath, const char *szName, GXMacro *aMacros = 0);
 
 	//! загрузка всех шейдеров
 	void allLoad();
@@ -366,7 +366,7 @@ public:
 	ID existsPath(SHADER_TYPE type, const char *szPath);
 
 	//! существует ли шейдер с именем файла и набором макросов, если да то возвращает id
-	ID existsPathMacro(SHADER_TYPE type, const char *szPath, GXMACRO *aMacros);
+	ID existsPathMacro(SHADER_TYPE type, const char *szPath, GXMacro *aMacros);
 
 	//! существует ли шейдер с пользовательским именем name, если да то возвращает id
 	//@DEPRECATED: 

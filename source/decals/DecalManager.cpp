@@ -90,16 +90,16 @@ DecalManager::DecalManager():
 	
 	mem_release(config);
 
-	GXVERTEXELEMENT vel[] = {
+	GXVertexElement vel[] = {
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
 		{0, 12, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
 		{0, 24, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
-		GXDECL_END()
+		GX_DECL_END()
 	};
 
 	m_pVertexDeclaration = dev->createVertexDeclaration(vel);
 
-	GXBLEND_DESC blendDesc;
+	GXBlendDesc blendDesc;
 	memset(&blendDesc, 0, sizeof(blendDesc));
 	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_ALL;
 	blendDesc.renderTarget[0].blendSrcColor = GXBLEND_DEST_COLOR;
@@ -720,7 +720,7 @@ void DecalManager::updateBuffer()
 		}
 	}
 
-	m_pVertexBuffer = dev->createVertexBuffer(sizeof(DecalVertex) * iVC, GX_BUFFER_USAGE_STATIC, pData);
+	m_pVertexBuffer = dev->createVertexBuffer(sizeof(DecalVertex) * iVC, GXBUFFER_USAGE_STATIC, pData);
 
 	m_pRenderBuffer = dev->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
 

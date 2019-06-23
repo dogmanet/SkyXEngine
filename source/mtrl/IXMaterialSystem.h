@@ -43,7 +43,7 @@ struct XSHADER_VARIANT_DESC
 	/*! Массив макроопределений для вершинного шейдера, может быть NULL.
 	    Последний элемент массива должен быть {NULL, NULL}
 	*/
-	GXMACRO *pMacrosVS;
+	GXMacro *pMacrosVS;
 };
 
 class IXMaterialSystem: public IXUnknown

@@ -387,7 +387,7 @@ SX_LIB_API ID SGCore_ShaderLoad(
 	SHADER_TYPE type_shader,		//!< тип шейдера
 	const char *szPath,				//!< имя файла шейдера с расширением
 	const char *szName = NULL,		//!< имя шейдера которое присвоится при загрузке
-	GXMACRO *pMacro = 0			//!< макросы
+	GXMacro *pMacro = 0			//!< макросы
 	);
 
 //! существует ли файл name в папке с шейдерами

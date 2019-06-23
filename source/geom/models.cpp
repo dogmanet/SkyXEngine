@@ -37,7 +37,7 @@ void CModels::onResetDevice()
 {
 	for(int i = 0, l = m_aModels.size(); i < l; ++i)
 	{
-//		m_aModels[i]->m_pVisibleIndexBuffer = g_pDXDevice->createIndexBuffer(m_aModels[i]->m_pModel->m_uiAllIndexCount * sizeof(UINT), GX_BUFFER_USAGE_STREAM, GXIT_UINT32);
+//		m_aModels[i]->m_pVisibleIndexBuffer = g_pDXDevice->createIndexBuffer(m_aModels[i]->m_pModel->m_uiAllIndexCount * sizeof(UINT), GXBUFFER_USAGE_STREAM, GXIT_UINT32);
 		
 		m_aModels[i]->m_pModel->syncBuffers();
 	}
@@ -165,10 +165,10 @@ void CModels::CTransparencyModel::syncBuffers(bool bRecreate)
 	mem_release(m_pIndexBuffer);
 	mem_release(m_pRenderBuffer);
 
-	m_pVertexBuffer = g_pDXDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_iCountVertex, GX_BUFFER_USAGE_STATIC, m_pVertices);
+	m_pVertexBuffer = g_pDXDevice->createVertexBuffer(sizeof(vertex_static_ex)* m_iCountVertex, GXBUFFER_USAGE_STATIC, m_pVertices);
 	m_pRenderBuffer = g_pDXDevice->createRenderBuffer(1, &m_pVertexBuffer, SGCore_StaticModelGetDecl());
 
-	m_pIndexBuffer = g_pDXDevice->createIndexBuffer(sizeof(UINT)* m_iCountIndex, GX_BUFFER_USAGE_STATIC, GXIT_UINT32, m_pIndices);
+	m_pIndexBuffer = g_pDXDevice->createIndexBuffer(sizeof(UINT)* m_iCountIndex, GXBUFFER_USAGE_STATIC, GXIT_UINT32, m_pIndices);
 }
 
 //**************************************************************************
@@ -2101,7 +2101,7 @@ void CModels::createExternalData4SegmentModel(CModel *pModel)
 		pModel->m_pVisibleIndeces[i] = new UINT[pModel->m_pModel->m_pIndexCount[i]];
 	}
 
-	pModel->m_pVisibleIndexBuffer = g_pDXDevice->createIndexBuffer(pModel->m_pModel->m_uiAllIndexCount * sizeof(UINT), GX_BUFFER_USAGE_STREAM, GXIT_UINT32);
+	pModel->m_pVisibleIndexBuffer = g_pDXDevice->createIndexBuffer(pModel->m_pModel->m_uiAllIndexCount * sizeof(UINT), GXBUFFER_USAGE_STREAM, GXIT_UINT32);
 }
 
 void CModels::segmentation(CModel *pModel)

@@ -30,7 +30,7 @@ void CShadowMap::InitDepthStencilSurface(IGXContext *pContext, UINT uSize)
 	{
 		ms_pDepthStencilSurface = pContext->createDepthStencilSurface(uSize, uSize, GXFMT_D24S8, GXMULTISAMPLE_NONE, false);
 
-		GXSAMPLER_DESC samplerDesc;
+		GXSamplerDesc samplerDesc;
 		samplerDesc.filter = GXFILTER_MIN_MAG_MIP_POINT;
 		ms_pSamplerPointWrap = pContext->createSamplerState(&samplerDesc);
 
@@ -44,14 +44,14 @@ void CShadowMap::InitDepthStencilSurface(IGXContext *pContext, UINT uSize)
 		ms_pSamplerLinearClamp = pContext->createSamplerState(&samplerDesc);
 
 		ID idResPosDepth = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs");
-		GXMACRO Defines_GSD_9[] = {{"GSD_9", ""}, {0, 0}};
+		GXMacro Defines_GSD_9[] = {{"GSD_9", ""}, {0, 0}};
 		ID idGenShadowDirect9 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_direct.ps", "ppgensm_direct_9.ps", Defines_GSD_9);
 		ms_idShader = SGCore_ShaderCreateKit(idResPosDepth, idGenShadowDirect9);
 
 		uint32_t aRndColors[16];// = D3DCOLOR_ARGB(0, 250, 2, 255);
 
 		for(int i = 0; i < 16; ++i)
-			aRndColors[i] = GXCOLOR_ARGB(255, rand() % 255, rand() % 255, rand() % 255);
+			aRndColors[i] = GX_COLOR_ARGB(255, rand() % 255, rand() % 255, rand() % 255);
 
 		ms_pRandomTexture = pContext->createTexture2D(4, 4, 1, 0, GXFMT_A8R8G8B8, aRndColors);
 
@@ -89,11 +89,11 @@ void CShadowMap::init(IGXContext *pContext, UINT uSize)
 	m_pDevice = pContext;
 
 	//GXFMT_A8R8G8B8
-	m_pNormalMap = m_pDevice->createTexture2D(uSize, uSize, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A8R8G8B8);
+	m_pNormalMap = m_pDevice->createTexture2D(uSize, uSize, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
 	//GXFMT_A8R8G8B8
-	m_pFluxMap = m_pDevice->createTexture2D(uSize, uSize, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A8R8G8B8);
+	m_pFluxMap = m_pDevice->createTexture2D(uSize, uSize, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
 	//GXFMT_R32F
-	m_pDepthMap = m_pDevice->createTexture2D(uSize, uSize, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R32F);
+	m_pDepthMap = m_pDevice->createTexture2D(uSize, uSize, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R32F);
 
 	float fOffset = 0.5f + (0.5f / (float)uSize);
 	float fRange = 1.0f;
@@ -142,11 +142,11 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 	m_pDevice->setColorTarget(pDepthSurface);
 	m_pDevice->setColorTarget(NULL, 1);
 	m_pDevice->setColorTarget(NULL, 2);
-	m_pDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH | GXCLEAR_STENCIL, GXCOLOR_ARGB(255, 255, 255, 255));
+	m_pDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
 
 	m_pDevice->setColorTarget(pFluxSurface, 0);
 	m_pDevice->setColorTarget(pNormalSurface, 1);
-	m_pDevice->clear(GXCLEAR_COLOR);
+	m_pDevice->clear(GX_CLEAR_COLOR);
 
 	m_pDevice->setColorTarget(pDepthSurface);
 	m_pDevice->setColorTarget(pNormalSurface, 1);
@@ -183,7 +183,7 @@ void CShadowMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDepth
 	pBackBuf = m_pDevice->getColorTarget();
 	m_pDevice->setColorTarget(pRenderSurf);
 
-	m_pDevice->clear(GXCLEAR_COLOR);
+	m_pDevice->clear(GX_CLEAR_COLOR);
 
 	m_pDevice->setSamplerState(ms_pSamplerPointClamp, 0);
 	m_pDevice->setSamplerState(ms_pSamplerLinearClamp, 1);
@@ -308,7 +308,7 @@ void CShadowCubeMap::InitDepthStencilSurface(IGXContext *pContext, UINT uSize)
 	{
 		ms_pDepthStencilSurface = pContext->createDepthStencilSurfaceCube(uSize, GXFMT_D24S8, GXMULTISAMPLE_NONE, false);
 
-		GXSAMPLER_DESC samplerDesc;
+		GXSamplerDesc samplerDesc;
 		samplerDesc.filter = GXFILTER_MIN_MAG_MIP_POINT;
 		ms_pSamplerPointWrap = pContext->createSamplerState(&samplerDesc);
 
@@ -322,7 +322,7 @@ void CShadowCubeMap::InitDepthStencilSurface(IGXContext *pContext, UINT uSize)
 		ms_pSamplerLinearClamp = pContext->createSamplerState(&samplerDesc);
 
 		ID idResPosDepth = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs");
-		GXMACRO Defines_GSC_6[] = {{"GSC_6", ""}, {0, 0}};
+		GXMacro Defines_GSC_6[] = {{"GSC_6", ""}, {0, 0}};
 		ID idGenShadowPoint6 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_point.ps", "ppgensm_point_6.ps", Defines_GSC_6);
 		ms_idShader = SGCore_ShaderCreateKit(idResPosDepth, idGenShadowPoint6);
 	}
@@ -353,11 +353,11 @@ void CShadowCubeMap::init(IGXContext *pContext, UINT uSize)
 	m_pDevice = pContext;
 
 	//GXFMT_A8R8G8B8
-	m_pNormalMap = m_pDevice->createTextureCube(uSize, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A8R8G8B8);
+	m_pNormalMap = m_pDevice->createTextureCube(uSize, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
 	//GXFMT_A8R8G8B8
-	m_pFluxMap = m_pDevice->createTextureCube(uSize, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_A8R8G8B8);
+	m_pFluxMap = m_pDevice->createTextureCube(uSize, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
 	//GXFMT_R32F
-	m_pDepthMap = m_pDevice->createTextureCube(uSize, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R32F);
+	m_pDepthMap = m_pDevice->createTextureCube(uSize, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R32F);
 
 	float fOffset = 0.5f + (0.5f / (float)uSize);
 	float fRange = 1.0f;
@@ -412,11 +412,11 @@ void CShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 	m_pDevice->setColorTarget(pDepthSurface);
 	m_pDevice->setColorTarget(NULL, 1);
 	m_pDevice->setColorTarget(NULL, 2);
-	m_pDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH | GXCLEAR_STENCIL, GXCOLOR_ARGB(255, 255, 255, 255));
+	m_pDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
 
 	m_pDevice->setColorTarget(pFluxSurface, 0);
 	m_pDevice->setColorTarget(pNormalSurface, 1);
-	m_pDevice->clear(GXCLEAR_COLOR);
+	m_pDevice->clear(GX_CLEAR_COLOR);
 
 	m_pDevice->setColorTarget(pDepthSurface);
 	m_pDevice->setColorTarget(pNormalSurface, 1);
@@ -456,7 +456,7 @@ void CShadowCubeMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferD
 	pBackBuf = m_pDevice->getColorTarget();
 	m_pDevice->setColorTarget(pRenderSurf);
 
-	m_pDevice->clear(GXCLEAR_COLOR);
+	m_pDevice->clear(GX_CLEAR_COLOR);
 
 	m_pDevice->setSamplerState(ms_pSamplerPointClamp, 0);
 	m_pDevice->setSamplerState(ms_pSamplerLinearClamp, 1);

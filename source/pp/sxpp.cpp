@@ -181,16 +181,16 @@ void pp_data::Init()
 
 	pp_data::shaders_id::ps::idFogLinear = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_fog_linear.ps");
 	
-	GXMACRO Defines_SSAO_Q_3[] = { { "SSAO_Q_3", "" }, { 0, 0 } };
+	GXMacro Defines_SSAO_Q_3[] = { { "SSAO_Q_3", "" }, { 0, 0 } };
 	pp_data::shaders_id::ps::idSSAO_Q_3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_3.ps", Defines_SSAO_Q_3);
 
-	GXMACRO Defines_SSAO_Q_2[] = {{"SSAO_Q_2", ""}, {0, 0}};
+	GXMacro Defines_SSAO_Q_2[] = {{"SSAO_Q_2", ""}, {0, 0}};
 	pp_data::shaders_id::ps::idSSAO_Q_2 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_2.ps", Defines_SSAO_Q_2);
 
-	GXMACRO Defines_SSAO_Q_1[] = {{"SSAO_Q_1", ""}, {0, 0}};
+	GXMacro Defines_SSAO_Q_1[] = {{"SSAO_Q_1", ""}, {0, 0}};
 	pp_data::shaders_id::ps::idSSAO_Q_1 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_1.ps", Defines_SSAO_Q_1);
 
-	GXMACRO Defines_SAMPLES25_BLENDCOLOR[] = {{"SAMPLES_25", ""}, {"BLEND_COLOR", ""}, {0, 0}};
+	GXMacro Defines_SAMPLES25_BLENDCOLOR[] = {{"SAMPLES_25", ""}, {"BLEND_COLOR", ""}, {0, 0}};
 	pp_data::shaders_id::ps::idBlurDepthBased25BlendColor = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_blur_depth_based.ps", "pp_blur_depth_based_25_blend_color.ps", Defines_SAMPLES25_BLENDCOLOR);
 	
 	pp_data::shaders_id::ps::idWhiteBlack = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_black_white.ps");
@@ -199,7 +199,7 @@ void pp_data::Init()
 
 	pp_data::shaders_id::ps::idSunRender = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_sun_render.ps");
 
-	GXMACRO Defines_GaussBlur_H[] = {{"_H_", ""}, {0, 0}};
+	GXMacro Defines_GaussBlur_H[] = {{"_H_", ""}, {0, 0}};
 	pp_data::shaders_id::ps::idGaussBlurH = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_gauss_blur.ps", "ppe_gauss_blur_h.ps", Defines_GaussBlur_H);
 	pp_data::shaders_id::ps::idGaussBlurW = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_gauss_blur.ps", "ppe_gauss_blur_w.ps");
 	pp_data::shaders_id::ps::idFreeBlur3x3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_free_blur_3x3.ps");
@@ -243,18 +243,18 @@ void pp_data::Init()
 		pp_data::aRndVecSSAO[i].z *= scale;
 	}
 
-	pp_data::rt_id::idDepthD2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5f, pp_data::vWinSize.y * 0.5f, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F, "pp_depth_d2");
-	//pp_data::rt_id::idEdgeDetected = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R5G6B5, "pp_edge_detected");
-	//pp_data::rt_id::idEdgeDetected2 = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R5G6B5, "pp_edge_detected2");
+	pp_data::rt_id::idDepthD2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5f, pp_data::vWinSize.y * 0.5f, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F, "pp_depth_d2");
+	//pp_data::rt_id::idEdgeDetected = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R5G6B5, "pp_edge_detected");
+	//pp_data::rt_id::idEdgeDetected2 = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R5G6B5, "pp_edge_detected2");
 
-	pp_data::rt_id::idIntermediateWinSize = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "pp_intermidiatews");
-	pp_data::rt_id::idIntermediateWinSize2 = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "pp_intermidiatews2");
+	pp_data::rt_id::idIntermediateWinSize = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "pp_intermidiatews");
+	pp_data::rt_id::idIntermediateWinSize2 = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "pp_intermidiatews2");
 
 	//pp_data::rt_id::IntermediateWinSizeD2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_intermidiatews_d2", 0.5);
 	//pp_data::rt_id::IntermediateWinSize2D2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_intermidiatews2_d2", 0.5);
 
-	pp_data::rt_id::idBright = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 0, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTOGENMIPMAPS | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "pp_bright");
-	pp_data::rt_id::idBright2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 0, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTOGENMIPMAPS | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8, "pp_bright2");
+	pp_data::rt_id::idBright = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 0, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTOGENMIPMAPS | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "pp_bright");
+	pp_data::rt_id::idBright2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 0, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTOGENMIPMAPS | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "pp_bright2");
 
 
 	shaders_id::kit::idBlurDepthBased25BlendColor = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idBlurDepthBased25BlendColor);
@@ -283,7 +283,7 @@ void pp_data::Init()
 	shaders_id::kit::idSSAO_Q_2 = SGCore_ShaderCreateKit(shaders_id::vs::idResPos, shaders_id::ps::idSSAO_Q_2);
 	shaders_id::kit::idSSAO_Q_3 = SGCore_ShaderCreateKit(shaders_id::vs::idResPos, shaders_id::ps::idSSAO_Q_3);
 
-	GXBLEND_DESC blendDesc;
+	GXBlendDesc blendDesc;
 	blendDesc.renderTarget[0].useBlend = true;
 	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
 	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
@@ -298,7 +298,7 @@ void pp_data::Init()
 	rstates::pBlendNoColor = pDXDevice->createBlendState(&blendDesc);
 
 
-	GXSAMPLER_DESC samplerDesc;
+	GXSamplerDesc samplerDesc;
 
 	samplerDesc.addressU = samplerDesc.addressV = samplerDesc.addressW = GXTEXTURE_ADDRESS_CLAMP;
 	rstates::pSamplerPointClamp = pDXDevice->createSamplerState(&samplerDesc);
@@ -315,22 +315,22 @@ void pp_data::Init()
 
 	
 
-	GXRASTERIZER_DESC rasterizerDesc;
+	GXRasterizerDesc rasterizerDesc;
 	rasterizerDesc.useScissorTest = true;
 	rstates::pRasterizerScissorsTest = pDXDevice->createRasterizerState(&rasterizerDesc);
 
 
 
-	GXDEPTH_STENCIL_DESC dsDesc;
+	GXDepthStencilDesc dsDesc;
 	dsDesc.useDepthTest = FALSE;
 	rstates::pDepthStencilNoZ = pDXDevice->createDepthStencilState(&dsDesc);
 
 	dsDesc.useStencilTest = true;
-	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_REPLACE;
+	dsDesc.stencilTestFront.opPass = GXSTENCIL_OP_REPLACE;
 	rstates::pDepthStencilEdgeDetect = pDXDevice->createDepthStencilState(&dsDesc);
 
-	dsDesc.stencilTestFront.cmpFuncStencil = GXCMP_EQUAL;
-	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_KEEP;
+	dsDesc.stencilTestFront.cmpFunc = GXCMP_EQUAL;
+	dsDesc.stencilTestFront.opPass = GXSTENCIL_OP_KEEP;
 	rstates::pDepthStencilDLAA = pDXDevice->createDepthStencilState(&dsDesc);
 }
 
@@ -356,7 +356,7 @@ void pp_data::InitNoiseTex()
 		vRnd.z = randf(0, 1);
 		vRnd = SMVector3Normalize(vRnd);
 
-		pData[i] = GXCOLOR_FLOAT_RGBA(vRnd.x, vRnd.y, vRnd.z, 1.0f);
+		pData[i] = GX_COLOR_FLOAT_RGBA(vRnd.x, vRnd.y, vRnd.z, 1.0f);
 	}
 
 	pRnsSampler = pp_data::pDXDevice->createTexture2D(*r_win_width, *r_win_height, 1, 0, GXFMT_A8R8G8B8, pData);
@@ -582,7 +582,7 @@ SX_LIB_API void SPP_RenderSSAO(const float4_t *pParam, int iQuality)
 	BackBuf = pp_data::pDXDevice->getColorTarget();
 	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	pp_data::pDXDevice->clear(GXCLEAR_COLOR);
+	pp_data::pDXDevice->clear(GX_CLEAR_COLOR);
 
 	for(UINT i = 0; i < 4; ++i)
 	{
@@ -1030,7 +1030,7 @@ SX_LIB_API void SPP_RenderLensFlare(const float3_t *pParam, const float4_t *pSun
 	{
 		if(!useBloom)
 		{
-			pp_data::pDXDevice->clear(GXCLEAR_COLOR);
+			pp_data::pDXDevice->clear(GX_CLEAR_COLOR);
 		}
 
 	//	SGCore_SetSamplerFilter(0, D3DTADDRESS_MIRROR);
@@ -1056,7 +1056,7 @@ SX_LIB_API void SPP_RenderLensFlare(const float3_t *pParam, const float4_t *pSun
 	{
 		if(!useBloom)
 		{
-			pp_data::pDXDevice->clear(GXCLEAR_COLOR);
+			pp_data::pDXDevice->clear(GX_CLEAR_COLOR);
 		}
 	}
 
@@ -1286,7 +1286,7 @@ void SPP_ComEdgeDetected()
 //	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 //	pp_data::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
 
-	pp_data::pDXDevice->clear(GXCLEAR_STENCIL);
+	pp_data::pDXDevice->clear(GX_CLEAR_STENCIL);
 
 	pp_data::pDXDevice->setDepthStencilState(pp_data::rstates::pDepthStencilEdgeDetect);
 	pp_data::pDXDevice->setStencilRef(1);
@@ -1338,7 +1338,7 @@ SX_LIB_API void SPP_RenderNFAA(const float3_t *pParam)
 	IGXSurface *RenderSurf, *BackBuf;
 	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->getMipmap();
 
-	pp_data::pDXDevice->clear(GXCLEAR_COLOR);
+	pp_data::pDXDevice->clear(GX_CLEAR_COLOR);
 
 	BackBuf = pp_data::pDXDevice->getColorTarget();
 	pp_data::pDXDevice->setColorTarget(RenderSurf);
@@ -1385,7 +1385,7 @@ SX_LIB_API void SPP_RenderDLAA()
 	IGXSurface *RenderSurf, *BackBuf;
 	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->getMipmap();
 
-	pp_data::pDXDevice->clear(GXCLEAR_COLOR);
+	pp_data::pDXDevice->clear(GX_CLEAR_COLOR);
 
 	BackBuf = pp_data::pDXDevice->getColorTarget();
 	pp_data::pDXDevice->setColorTarget(RenderSurf);

@@ -129,7 +129,7 @@ void PSSM::onResetDevice()
 		m_aIsUpdate[i] = 0;
 
 	//	light_data::pDXDevice->CreateTexture(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &(m_aDepthMaps[i]), NULL);
-	//	m_aDepthMaps[i] = light_data::pDXDevice->createTexture2D(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R32F);
+	//	m_aDepthMaps[i] = light_data::pDXDevice->createTexture2D(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R32F);
 		
 		DepthSurfaces[i] = 0;
 	}
@@ -166,7 +166,7 @@ void PSSM::init()
 		m_aIsUpdate[i] = 0;
 
 	//	light_data::pDXDevice->CreateTexture(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &(m_aDepthMaps[i]), NULL);
-		m_aDepthMaps[i] = light_data::pDXDevice->createTexture2D(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, 1, GX_TEXUSAGE_RENDERTARGET, GXFMT_R32F);
+		m_aDepthMaps[i] = light_data::pDXDevice->createTexture2D(light_data::vSizeTexDepthGlobal.x, light_data::vSizeTexDepthGlobal.y, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R32F);
 
 		DepthSurfaces[i] = 0;
 
@@ -344,7 +344,7 @@ void PSSM::preRender(int split)
 	light_data::pDXDevice->setColorTarget(DepthSurfaces[split]);
 	
 
-	light_data::pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH, GXCOLOR_ARGB(255, 255, 255, 255));
+	light_data::pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH, GX_COLOR_ARGB(255, 255, 255, 255));
 }
 
 void PSSM::begin()
@@ -528,7 +528,7 @@ void PSSM::genShadowAll(IGXTexture2D* shadowmap)
 	light_data::pDXDevice->setColorTarget(RenderSurf);
 
 
-	light_data::pDXDevice->clear(GXCLEAR_COLOR);
+	light_data::pDXDevice->clear(GX_CLEAR_COLOR);
 
 	light_data::pDXDevice->setColorTarget(BackBuf);
 
@@ -637,7 +637,7 @@ void ShadowMapTech::init()
 	Frustum = SGCore_CrFrustum();
 	
 	DepthSurface = 0;
-	DepthMap = light_data::pDXDevice->createTexture2D(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F);
+	DepthMap = light_data::pDXDevice->createTexture2D(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F);
 	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.y, GXFMT_D24S8, GXMULTISAMPLE_NONE, true);
 
 	float fOffset = 0.5f + (0.5f/light_data::vSizeTexDepthLocal.x);
@@ -732,7 +732,7 @@ void ShadowMapTech::begin()
 	
 	light_data::pDXDevice->setColorTarget(DepthSurface);
 	
-	light_data::pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH, GXCOLOR_ARGB(255,255,255,255));
+	light_data::pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH, GX_COLOR_ARGB(255,255,255,255));
 }
 
 void ShadowMapTech::end()
@@ -1012,7 +1012,7 @@ void ShadowMapCubeTech::init()
 	DepthSurface[4] = 0;
 	DepthSurface[5] = 0;
 
-	DepthMap = light_data::pDXDevice->createTextureCube(light_data::vSizeTexDepthLocal.x, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F);
+	DepthMap = light_data::pDXDevice->createTextureCube(light_data::vSizeTexDepthLocal.x, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F);
 	
 	DepthStencilSurface = light_data::pDXDevice->createDepthStencilSurface(light_data::vSizeTexDepthLocal.x, light_data::vSizeTexDepthLocal.x, GXFMT_D24S8, GXMULTISAMPLE_NONE, true);
 }
@@ -1044,7 +1044,7 @@ void ShadowMapCubeTech::pre(int cube)
 			DepthSurface[cube] = DepthMap->getMipmap((GXCUBEMAP_FACES)cube, 0);
 			light_data::pDXDevice->setColorTarget(DepthSurface[cube]);
 
-			light_data::pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH, GXCOLOR_ARGB(255, 255, 255, 255));
+			light_data::pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH, GX_COLOR_ARGB(255, 255, 255, 255));
 		}
 		return;
 	}
@@ -1073,7 +1073,7 @@ void ShadowMapCubeTech::pre(int cube)
 	DepthSurface[cube] = DepthMap->getMipmap((GXCUBEMAP_FACES)cube, 0);
 	light_data::pDXDevice->setColorTarget(DepthSurface[cube]);
 	
-	light_data::pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH, GXCOLOR_ARGB(255,255,255,255));
+	light_data::pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH, GX_COLOR_ARGB(255,255,255,255));
 
 	SGCore_ShaderBind(light_data::shader_id::kit::idSMDepthGeomCube);
 

@@ -1009,20 +1009,20 @@ GameData::GameData(HWND hWnd, bool isGame):
 	g_idTextPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_main.ps");
 	g_idTextKit = SGCore_ShaderCreateKit(g_idTextVS, g_idTextPS);
 
-	GXBLEND_DESC bsDesc;
+	GXBlendDesc bsDesc;
 	bsDesc.renderTarget[0].useBlend = true;
 	bsDesc.renderTarget[0].blendSrcColor = bsDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
 	bsDesc.renderTarget[0].blendDestColor = bsDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
 	g_pTextBlendState = SGCore_GetDXDevice()->createBlendState(&bsDesc);
 
-	GXSAMPLER_DESC sampDesc;
+	GXSamplerDesc sampDesc;
 	sampDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
 	g_pTextSamplerState = SGCore_GetDXDevice()->createSamplerState(&sampDesc);
 
 	g_pTextVSConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(SMMATRIX));
 	g_pTextPSConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(float4));
 
-	GXDEPTH_STENCIL_DESC dsDesc;
+	GXDepthStencilDesc dsDesc;
 	dsDesc.useDepthTest = dsDesc.useDepthWrite = false;
 	g_pTextDepthState = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
 
@@ -1128,11 +1128,11 @@ void GameData::render()
 	}
 	if(pDev)
 	{
-		const GX_FRAME_STATS *pFrameStats = pDev->getFrameStats();
-		const GX_GPU_MEMORY_STATS *pMemoryStats = pDev->getMemoryStats();
+		const GXFrameStats *pFrameStats = pDev->getFrameStats();
+		const GXAdapterMemoryStats *pMemoryStats = pDev->getMemoryStats();
 
-		static GX_FRAME_STATS s_oldFrameStats = {0};
-		static GX_GPU_MEMORY_STATS s_oldMemoryStats = {0};
+		static GXFrameStats s_oldFrameStats = {0};
+		static GXAdapterMemoryStats s_oldMemoryStats = {0};
 		static UINT s_uOldFps = 0;
 
 		if(s_uOldFps != g_uFPS 
@@ -1143,7 +1143,7 @@ void GameData::render()
 			s_oldFrameStats = *pFrameStats;
 			s_oldMemoryStats = *pMemoryStats;
 
-			const GX_ADAPTER_DESC *pAdapterDesc = pDev->getAdapterDesc();
+			const GXAdapterDesc *pAdapterDesc = pDev->getAdapterDesc();
 
 			static wchar_t wszStats[512];
 			swprintf_s(wszStats, L"FPS: %u\n"
@@ -1156,7 +1156,7 @@ void GameData::render()
 				, g_uFPS,
 
 				pAdapterDesc->szDescription,
-				pAdapterDesc->sizeTotalGPUmemory / 1024 / 1024,
+				pAdapterDesc->sizeTotalMemory / 1024 / 1024,
 
 				(float)(pMemoryStats->sizeIndexBufferBytes + pMemoryStats->sizeRenderTargetBytes + pMemoryStats->sizeShaderConstBytes + pMemoryStats->sizeTextureBytes + pMemoryStats->sizeVertexBufferBytes) / 1024.0f / 1024.0f,
 				(float)pMemoryStats->sizeTextureBytes / 1024.0f / 1024.0f,

@@ -25,14 +25,14 @@ void CDynamicModelProvider::setDevice(IGXContext *pDevice)
 	m_pRenderContext = pDevice;
 
 
-	GXVERTEXELEMENT layoutStaticEx[] =
+	GXVertexElement layoutStaticEx[] =
 	{
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
 		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
 		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
 		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT},
 		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL},
-		GXDECL_END()
+		GX_DECL_END()
 	};
 
 	m_pVertexDeclaration = pDevice->createVertexDeclaration(layoutStaticEx);

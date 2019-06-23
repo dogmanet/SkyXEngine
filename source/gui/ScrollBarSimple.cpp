@@ -10,7 +10,7 @@ namespace gui
 			CScrollBarSimple::CScrollBarSimple(IRenderFrame * _parent, SCROLLBAR_DIR _dir):
 				IScrollBar(_parent, _dir)
 			{
-				m_pVertices = GetGUI()->getDevice()->createVertexBuffer(sizeof(point) * 4, GX_BUFFER_USAGE_STREAM);
+				m_pVertices = GetGUI()->getDevice()->createVertexBuffer(sizeof(point) * 4, GXBUFFER_USAGE_STREAM);
 				m_pRenderBuffer = GetGUI()->getDevice()->createRenderBuffer(1, &m_pVertices, GetGUI()->getVertexDeclarations()->m_pXYZTex);
 			}
 

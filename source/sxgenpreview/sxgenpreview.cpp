@@ -221,7 +221,7 @@ UINT CreatePreviewModels()
 #endif
 
 		pDXDevice->beginFrame();
-		pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH);
+		pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH);
 
 		SXAnim_Render();
 

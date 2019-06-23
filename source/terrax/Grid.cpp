@@ -200,13 +200,13 @@ CGrid::CGrid(UINT uSize)
 	}
 	m_uVertexPerStep[GRID_STEP_1CM] = {m_uVertexPerStep[GRID_STEP_1CM + 1].m_uEndVertex, uCurV};
 
-	IGXVertexBuffer *pVB = m_pDevice->createVertexBuffer(sizeof(vertex) * uVC, GX_BUFFER_USAGE_STATIC, pVertices);
+	IGXVertexBuffer *pVB = m_pDevice->createVertexBuffer(sizeof(vertex) * uVC, GXBUFFER_USAGE_STATIC, pVertices);
 	mem_delete_a(pVertices);
 
-	GXVERTEXELEMENT vertexDecl[] =
+	GXVertexElement vertexDecl[] =
 	{
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
-		GXDECL_END()
+		GX_DECL_END()
 	};
 
 	IGXVertexDeclaration *pVD = m_pDevice->createVertexDeclaration(vertexDecl);
@@ -219,7 +219,7 @@ CGrid::CGrid(UINT uSize)
 	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "terrax_colored.ps");
 	m_idShaderKit = SGCore_ShaderCreateKit(m_idVS, m_idPS);
 
-	GXBLEND_DESC blendDesc;
+	GXBlendDesc blendDesc;
 	blendDesc.renderTarget[0].useBlend = TRUE;
 	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
 	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
@@ -230,14 +230,14 @@ CGrid::CGrid(UINT uSize)
 	blendDesc.renderTarget[0].u8RenderTargetWriteMask = 0;
 	m_pBlendStateNoColor = m_pDevice->createBlendState(&blendDesc);
 
-	GXDEPTH_STENCIL_DESC dsDesc;
+	GXDepthStencilDesc dsDesc;
 	dsDesc.useDepthTest = FALSE;
 	dsDesc.useStencilTest = TRUE;
-	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_INCR;
+	dsDesc.stencilTestFront.opPass = GXSTENCIL_OP_INCR;
 	m_pStencilPass0 = m_pDevice->createDepthStencilState(&dsDesc);
 
-	dsDesc.stencilTestFront.cmpFuncStencil = GXCMP_EQUAL;
-	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_KEEP;
+	dsDesc.stencilTestFront.cmpFunc = GXCMP_EQUAL;
+	dsDesc.stencilTestFront.opPass = GXSTENCIL_OP_KEEP;
 	m_pStencilPass1 = m_pDevice->createDepthStencilState(&dsDesc);
 
 	m_pVSConstantBuffer = m_pDevice->createConstantBuffer(sizeof(SMMATRIX));

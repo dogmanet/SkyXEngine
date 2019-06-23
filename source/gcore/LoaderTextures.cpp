@@ -411,7 +411,7 @@ bool CLoaderTextures::addConstAllInDir(const char *szDir)
 IGXTexture2D* CLoaderTextures::loadTexture2d(const char *szPath)
 {
 	//@TODO: use SXGC_LOADTEX_COUNT_MIPMAP
-	IGXTexture2D *pTex = g_pDevice->createTexture2DFromFile(szPath, GX_TEXUSAGE_DEFAULT);
+	IGXTexture2D *pTex = g_pDevice->createTexture2DFromFile(szPath, GX_TEXFLAG_DEFAULT);
 
 	return pTex;
 }
@@ -419,7 +419,7 @@ IGXTexture2D* CLoaderTextures::loadTexture2d(const char *szPath)
 IGXTextureCube* CLoaderTextures::loadTextureCube(const char *szPath)
 {
 	//@TODO: use SXGC_LOADTEX_COUNT_MIPMAP
-	IGXTextureCube *pTex = g_pDevice->createTextureCubeFromFile(szPath, GX_TEXUSAGE_DEFAULT);
+	IGXTextureCube *pTex = g_pDevice->createTextureCubeFromFile(szPath, GX_TEXFLAG_DEFAULT);
 
 	return pTex;
 }

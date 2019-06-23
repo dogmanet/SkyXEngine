@@ -405,7 +405,7 @@ namespace gui
 				memcpy((float3_t*)pData + iCV, l->vb[0], sizeof(float3_t) * l->iVC[0]);
 				iCV += l->iVC[0];
 
-				m_pVertexBuffer = GetGUI()->getDevice()->createVertexBuffer(sizeof(float3_t)* iVertexCount, GX_BUFFER_USAGE_STATIC, pData);
+				m_pVertexBuffer = GetGUI()->getDevice()->createVertexBuffer(sizeof(float3_t)* iVertexCount, GXBUFFER_USAGE_STATIC, pData);
 				mem_delete_a(pData);
 
 				m_pRenderBuffer = GetGUI()->getDevice()->createRenderBuffer(1, &m_pVertexBuffer, GetGUI()->getVertexDeclarations()->m_pXYZ);
@@ -422,7 +422,7 @@ namespace gui
 				iCI += l->iIC[0];
 				memcpy((USHORT*)pData + iCI, pIndices, sizeof(USHORT) * IndexCount);
 
-				m_pIndexBuffer = GetGUI()->getDevice()->createIndexBuffer(sizeof(USHORT)* iIndexCount, GX_BUFFER_USAGE_DYNAMIC, GXIT_UINT16, pData);
+				m_pIndexBuffer = GetGUI()->getDevice()->createIndexBuffer(sizeof(USHORT)* iIndexCount, GXBUFFER_USAGE_DYNAMIC, GXIT_UINT16, pData);
 				mem_delete_a(pData);
 
 			}

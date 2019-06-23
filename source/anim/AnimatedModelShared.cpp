@@ -527,8 +527,8 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 
 			for(UINT i = 0; i < m_uLodCount; ++i)
 			{
-				m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer(sizeof(UINT) * aLodIndexCount[i], GX_BUFFER_USAGE_STATIC, GXIT_UINT32, ppIndices[i]);
-				IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelAnimatedVertex) * aLodVertexCount[i], GX_BUFFER_USAGE_STATIC, ppVertices[i]);
+				m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer(sizeof(UINT) * aLodIndexCount[i], GXBUFFER_USAGE_STATIC, GXIT_UINT32, ppIndices[i]);
+				IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelAnimatedVertex) * aLodVertexCount[i], GXBUFFER_USAGE_STATIC, ppVertices[i]);
 				m_ppRenderBuffer[i] = m_pDevice->createRenderBuffer(1, &pVertexBuffer, m_pProvider->getVertexDeclaration());
 				mem_release(pVertexBuffer);
 

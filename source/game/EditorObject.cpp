@@ -151,12 +151,12 @@ void CEditorObject::renderSelection(bool is3D)
 
 	if(is3D)
 	{
-		pDevice->setBlendFactor(GXCOLOR_ARGB(70, 255, 0, 0));
+		pDevice->setBlendFactor(GX_COLOR_ARGB(70, 255, 0, 0));
 		m_pEntity->renderEditor(is3D);
 	}
 
 	pDevice->setRasterizerState(m_pEditable->m_pRSWireframe);
-	pDevice->setBlendFactor(GXCOLOR_ARGB(255, 255, 255, 0));
+	pDevice->setBlendFactor(GX_COLOR_ARGB(255, 255, 255, 0));
 	m_pEntity->renderEditor(is3D);
 
 	pDevice->setBlendState(pOldBlendState);

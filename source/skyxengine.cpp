@@ -485,7 +485,7 @@ void SkyXEngine_Init(HWND hWnd3D, HWND hWndParent3D, const char * szCmdLine)
 	SGame_UpdateSetThreadNum(Core_MGetThreadCount());
 #endif
 
-	GXDEPTH_STENCIL_DESC dsDesc;
+	GXDepthStencilDesc dsDesc;
 	dsDesc.bDepthEnable = FALSE;
 	dsDesc.bEnableDepthWrite = FALSE;
 	g_pDSNoZ = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
@@ -1070,7 +1070,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		IGXSurface *pBackBuffer = p2DSwapChains[i]->getColorTarget();
 		pDXDevice->setColorTarget(pBackBuffer);
 		pDXDevice->setDepthStencilSurface(p2DDepthStencilSurfaces[i]);
-		pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH | GXCLEAR_STENCIL);
+		pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL);
 
 		pDXDevice->setRasterizerState(g_xRenderStates.pRSWireframe);
 		pDXDevice->setDepthStencilState(g_pDSNoZ);
@@ -1106,7 +1106,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	IGXSurface *pBackBuffer = g_pGuiSwapChain->getColorTarget();
 	pDXDevice->setColorTarget(pBackBuffer);
 	pDXDevice->setDepthStencilSurface(g_pGuiDepthStencilSurface);
-	pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH | GXCLEAR_STENCIL);
+	pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL);
 	XGuiRender();
 	mem_release(pBackBuffer);
 	*/
@@ -1418,7 +1418,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 	//#############################################################################
 
 	pDXDevice->beginFrame();
-	//pDXDevice->clear(GXCLEAR_COLOR);
+	//pDXDevice->clear(GX_CLEAR_COLOR);
 #if 0
 	SRender_UpdateReflection(timeDelta, isSimulationRender);
 #endif
@@ -1598,7 +1598,7 @@ void SkyXEngine_Frame(DWORD timeDelta)
 		IGXSurface *pBackBuffer = p2DSwapChains[i]->getColorTarget();
 		pDXDevice->setColorTarget(pBackBuffer);
 		pDXDevice->setDepthStencilSurface(p2DDepthStencilSurfaces[i]);
-		pDXDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH | GXCLEAR_STENCIL);
+		pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL);
 
 		pDXDevice->setRasterizerState(g_xRenderStates.pRSWireframe);
 		pDXDevice->setDepthStencilState(g_pDSNoZ);

@@ -54,23 +54,23 @@ namespace gui
 		m_shaders.m_baseTexturedTextransformColored.m_idShaderKit = SGCore_ShaderCreateKit(m_shaders.m_baseTexturedTextransformColored.m_idVS, m_shaders.m_baseTexturedTextransformColored.m_idPS);
 
 		//@TODO: Release this
-		GXDEPTH_STENCIL_DESC depthStencilDesc;
+		GXDepthStencilDesc depthStencilDesc;
 		depthStencilDesc.useDepthTest = false;
 		depthStencilDesc.useDepthWrite = false;
 		m_depthStencilStates.m_pDefault = m_pDevice->createDepthStencilState(&depthStencilDesc);
 
 		depthStencilDesc.useStencilTest = true;
-		depthStencilDesc.stencilTestFront.cmpFuncStencil = GXCMP_EQUAL;
-		depthStencilDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_INCR;
+		depthStencilDesc.stencilTestFront.cmpFunc = GXCMP_EQUAL;
+		depthStencilDesc.stencilTestFront.opPass = GXSTENCIL_OP_INCR;
 		m_depthStencilStates.m_pStencilIncr = m_pDevice->createDepthStencilState(&depthStencilDesc);
 
-		depthStencilDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_KEEP;
+		depthStencilDesc.stencilTestFront.opPass = GXSTENCIL_OP_KEEP;
 		m_depthStencilStates.m_pStencilKeep = m_pDevice->createDepthStencilState(&depthStencilDesc);
 
-		depthStencilDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_DECR;
+		depthStencilDesc.stencilTestFront.opPass = GXSTENCIL_OP_DECR;
 		m_depthStencilStates.m_pStencilDecr = m_pDevice->createDepthStencilState(&depthStencilDesc);
 
-		GXBLEND_DESC blendDesc;
+		GXBlendDesc blendDesc;
 		blendDesc.renderTarget[0].useBlend = true;
 		blendDesc.renderTarget[0].blendSrcAlpha = blendDesc.renderTarget[0].blendSrcColor = GXBLEND_SRC_ALPHA;
 		blendDesc.renderTarget[0].blendDestAlpha = blendDesc.renderTarget[0].blendDestColor = GXBLEND_INV_SRC_ALPHA;
@@ -84,39 +84,39 @@ namespace gui
 		blendDesc.renderTarget[0].blendOpAlpha = GXBLEND_OP_MAX;
 		m_blendStates.m_pDesktop = m_pDevice->createBlendState(&blendDesc);
 
-		GXRASTERIZER_DESC rasterizerDesc;
+		GXRasterizerDesc rasterizerDesc;
 		rasterizerDesc.useMultisample = true;
 		rasterizerDesc.useAntialiasedLine = true;
 		rasterizerDesc.cullMode = GXCULL_NONE;
 		m_pDefaultRState = m_pDevice->createRasterizerState(&rasterizerDesc);
 
-		GXVERTEXELEMENT aVertexElementsXYZTex[] =
+		GXVertexElement aVertexElementsXYZTex[] =
 		{
 			{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
 			{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD, GXDECLSPEC_PER_VERTEX_DATA},
-			GXDECL_END()
+			GX_DECL_END()
 		};
 		m_vertexDeclarations.m_pXYZTex = m_pDevice->createVertexDeclaration(aVertexElementsXYZTex);
 
-		GXVERTEXELEMENT aVertexElementsXYZ[] =
+		GXVertexElement aVertexElementsXYZ[] =
 		{
 			{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
-			GXDECL_END()
+			GX_DECL_END()
 		};
 		m_vertexDeclarations.m_pXYZ = m_pDevice->createVertexDeclaration(aVertexElementsXYZ);
 
 		USHORT pIdxQuad[] = {
 			0, 1, 2, 0, 2, 3
 		};
-		m_pQuadIndexes = m_pDevice->createIndexBuffer(sizeof(USHORT) * 6, GX_BUFFER_USAGE_STATIC, GXIT_UINT16, pIdxQuad);
+		m_pQuadIndexes = m_pDevice->createIndexBuffer(sizeof(USHORT) * 6, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pIdxQuad);
 
-		m_pQuadVerticesXYZ = m_pDevice->createVertexBuffer(sizeof(float) * 3 * 4, GX_BUFFER_USAGE_STREAM);
-		m_pQuadVerticesXYZTex16 = m_pDevice->createVertexBuffer(sizeof(float) * 5 * 16, GX_BUFFER_USAGE_STREAM);
+		m_pQuadVerticesXYZ = m_pDevice->createVertexBuffer(sizeof(float) * 3 * 4, GXBUFFER_USAGE_STREAM);
+		m_pQuadVerticesXYZTex16 = m_pDevice->createVertexBuffer(sizeof(float) * 5 * 16, GXBUFFER_USAGE_STREAM);
 
 		m_pQuadRenderXYZ = m_pDevice->createRenderBuffer(1, &m_pQuadVerticesXYZ, m_vertexDeclarations.m_pXYZ);
 		m_pQuadRenderXYZTex16 = m_pDevice->createRenderBuffer(1, &m_pQuadVerticesXYZTex16, m_vertexDeclarations.m_pXYZTex);
 
-		GXSAMPLER_DESC samplerDesc;
+		GXSamplerDesc samplerDesc;
 		samplerDesc.filter = GXFILTER_ANISOTROPIC;
 		m_pDefaultSamplerState = m_pDevice->createSamplerState(&samplerDesc);
 
@@ -373,7 +373,7 @@ namespace gui
 
 		CVideoUpdateManager::update();
 
-		m_pDevice->clear(GXCLEAR_STENCIL);
+		m_pDevice->clear(GX_CLEAR_STENCIL);
 
 		m_pDevice->setRasterizerState(m_pDefaultRState);
 

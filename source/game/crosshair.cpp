@@ -37,29 +37,29 @@ CCrosshair::CCrosshair():
 	m_pVertices[1] = (Vertex*)&m_pMemoryBlob[(sizeof(Vertex)* iVC + sizeof(USHORT)* iIC)];
 	m_pIndices[1] = (USHORT*)&m_pMemoryBlob[sizeof(Vertex)* iVC + (sizeof(Vertex)* iVC + sizeof(USHORT)* iIC)];
 
-	GXVERTEXELEMENT vel[] = {
+	GXVertexElement vel[] = {
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
 		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
-		GXDECL_END()
+		GX_DECL_END()
 	};
 
 	m_pVertexDeclaration = m_pDev->createVertexDeclaration(vel);
-	//@TODO: Change to GX_BUFFER_USAGE_STREAM (can be lost in DX9)
-	m_pVertexBuffer = m_pDev->createVertexBuffer(sizeof(Vertex)* iVC, GX_BUFFER_USAGE_DYNAMIC);
-	m_pIndexBuffer = m_pDev->createIndexBuffer(sizeof(USHORT)* iIC, GX_BUFFER_USAGE_DYNAMIC, GXIT_UINT16);
+	//@TODO: Change to GXBUFFER_USAGE_STREAM (can be lost in DX9)
+	m_pVertexBuffer = m_pDev->createVertexBuffer(sizeof(Vertex)* iVC, GXBUFFER_USAGE_DYNAMIC);
+	m_pIndexBuffer = m_pDev->createIndexBuffer(sizeof(USHORT)* iIC, GXBUFFER_USAGE_DYNAMIC, GXIT_UINT16);
 	m_pRenderBuffer = m_pDev->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
 
 	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs");
 	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps");
 	m_idShaderKit = SGCore_ShaderCreateKit(m_idVS, m_idPS);
 
-	GXBLEND_DESC blendDesc;
+	GXBlendDesc blendDesc;
 	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
 	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
 	blendDesc.renderTarget[0].useBlend = TRUE;
 	m_pBlendState = m_pDev->createBlendState(&blendDesc);
 
-	GXDEPTH_STENCIL_DESC dsDesc;
+	GXDepthStencilDesc dsDesc;
 	dsDesc.useDepthTest = FALSE;
 	dsDesc.useDepthWrite = FALSE;
 	m_pDepthState = m_pDev->createDepthStencilState(&dsDesc);

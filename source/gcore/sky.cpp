@@ -8,11 +8,11 @@ See the license in LICENSE
 
 CSkyBox::CSkyBox()
 {
-	GXVERTEXELEMENT layoutskybox[] =
+	GXVertexElement layoutskybox[] =
 	{
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
 		{0, 12, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD},
-		GXDECL_END()
+		GX_DECL_END()
 	};
 
 	m_pVertexDeclarationSkyBox = g_pDevice->createVertexDeclaration(layoutskybox);
@@ -43,7 +43,7 @@ CSkyBox::CSkyBox()
 		CSkyBoxVertex(-X, -Y, -Z, -1.0f, -1.0f, -1.0f)
 	};
 
-	m_pVertices = g_pDevice->createVertexBuffer(8 * sizeof(CSkyBoxVertex), GX_BUFFER_USAGE_STATIC, tmpVertices);
+	m_pVertices = g_pDevice->createVertexBuffer(8 * sizeof(CSkyBoxVertex), GXBUFFER_USAGE_STATIC, tmpVertices);
 
 	WORD indices_tmp[] =
     {
@@ -66,7 +66,7 @@ CSkyBox::CSkyBox()
 		5,7,2,
     };
 
-	m_pIndeces = g_pDevice->createIndexBuffer(36 * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_UINT16, indices_tmp);
+	m_pIndeces = g_pDevice->createIndexBuffer(36 * sizeof(WORD), GXBUFFER_USAGE_STATIC, GXIT_UINT16, indices_tmp);
 
 	m_pRenderBuffer = g_pDevice->createRenderBuffer(1, &m_pVertices, m_pVertexDeclarationSkyBox);
 	
@@ -231,11 +231,11 @@ void CSkyBox::render(float timeDelta, const float3* pos,bool is_shadow)
 
 CSkyClouds::CSkyClouds()
 {
-	GXVERTEXELEMENT layoutclouds[] =
+	GXVertexElement layoutclouds[] =
 	{
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
 		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
-		GXDECL_END()
+		GX_DECL_END()
 	};
 
 	m_pVertexDeclarationClouds = g_pDevice->createVertexDeclaration(layoutclouds);
@@ -243,7 +243,7 @@ CSkyClouds::CSkyClouds()
 	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_clouds.vs");
 	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps");
 
-	GXMACRO Defines_SHADOW[] = { { "SHADOW", "" }, { 0, 0 } };
+	GXMacro Defines_SHADOW[] = { { "SHADOW", "" }, { 0, 0 } };
 	m_idPS_Shadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_clouds.ps", "sky_clouds_shadow.ps", Defines_SHADOW);
 
 	m_fRotaionY = 0;
@@ -251,7 +251,7 @@ CSkyClouds::CSkyClouds()
 	m_vColor = float4_t(0, 0, 0, 0);
 	m_mMatRotation = SMMatrixIdentity();
 	//@FIXME: Consider to make it static
-	m_pVertices = g_pDevice->createVertexBuffer(4 * sizeof(CSkyCloudsVertex), GX_BUFFER_USAGE_DYNAMIC);
+	m_pVertices = g_pDevice->createVertexBuffer(4 * sizeof(CSkyCloudsVertex), GXBUFFER_USAGE_DYNAMIC);
 	
 	float X = 800;
 	float Y = 0;
@@ -273,7 +273,7 @@ CSkyClouds::CSkyClouds()
         0,1,2,
         0,2,3
     };
-	m_pIndeces = g_pDevice->createIndexBuffer(6 * sizeof(WORD), GX_BUFFER_USAGE_STATIC, GXIT_UINT16, indices_tmp);
+	m_pIndeces = g_pDevice->createIndexBuffer(6 * sizeof(WORD), GXBUFFER_USAGE_STATIC, GXIT_UINT16, indices_tmp);
 
 	m_pRenderBuffer = g_pDevice->createRenderBuffer(1, &m_pVertices, m_pVertexDeclarationClouds);
 	

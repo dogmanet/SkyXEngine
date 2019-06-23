@@ -66,26 +66,26 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 
 
 	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
-	m_pGBufferColor = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8);
+	m_pGBufferColor = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8);
 	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
-	m_pGBufferNormals = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8);
+	m_pGBufferNormals = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8);
 	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
-	m_pGBufferParams = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8);
+	m_pGBufferParams = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8);
 	//GXFMT_G32R32F; // 64bpp; GXFMT_R32F
-	m_pGBufferDepth = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R32F);
+	m_pGBufferDepth = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F);
 
 
-	m_pLightAmbientDiffuse = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F);
-	m_pLightSpecular = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R16F);
+	m_pLightAmbientDiffuse = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F);
+	m_pLightSpecular = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R16F);
 
-	m_pLightTotal = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A16B16G16R16F);
+	m_pLightTotal = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F);
 	
 	
-	m_pShadow = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R16F);
-	//m_pShadow = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_A8R8G8B8);
+	m_pShadow = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R16F);
+	//m_pShadow = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8);
 
 
-	GXDEPTH_STENCIL_DESC dsDesc;
+	GXDepthStencilDesc dsDesc;
 
 	dsDesc.useDepthTest = FALSE;
 	dsDesc.useDepthWrite = FALSE;
@@ -114,13 +114,13 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 				}
 			}
 		}		
-		IGXVertexBuffer *pVB = m_pDevice->createVertexBuffer(sizeof(float3_t) * m_uGICubesCount, GX_BUFFER_USAGE_STATIC, pData);
+		IGXVertexBuffer *pVB = m_pDevice->createVertexBuffer(sizeof(float3_t) * m_uGICubesCount, GXBUFFER_USAGE_STATIC, pData);
 		mem_delete_a(pData);
 
-		GXVERTEXELEMENT oLayout[] =
+		GXVertexElement oLayout[] =
 		{
 			{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
-			GXDECL_END()
+			GX_DECL_END()
 		};
 
 		IGXVertexDeclaration *pVD = m_pDevice->createVertexDeclaration(oLayout);
@@ -135,13 +135,13 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 	}
 
 //#define TIDX(x, y, z) (x + y * 32 + z * 32 * 32)
-	m_pGIAccumRed = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
-	m_pGIAccumGreen = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
-	m_pGIAccumBlue = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+	m_pGIAccumRed = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+	m_pGIAccumGreen = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+	m_pGIAccumBlue = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
 
-	m_pGIAccumRed2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
-	m_pGIAccumGreen2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
-	m_pGIAccumBlue2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+	m_pGIAccumRed2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+	m_pGIAccumGreen2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+	m_pGIAccumBlue2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
 //#undef TIDX
 
 	m_idLightBoundShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "lighting_bound.vs"), -1);
@@ -385,15 +385,15 @@ void CRenderPipeline::renderGBuffer()
 	//очищаем рт глубины  максимальным значением
 	//чтобы там где нет окружения к примеру был скайбокс, а значит в рт глубины было максимальное значение - максимальная отдаленность
 	m_pDevice->setColorTarget(pDepthMapLinearSurf);
-	m_pDevice->clear(GXCLEAR_COLOR, GXCOLOR_ARGB(255, 255, 255, 255));
+	m_pDevice->clear(GX_CLEAR_COLOR, GX_COLOR_ARGB(255, 255, 255, 255));
 
 	m_pDevice->setColorTarget(pParamSurf);
 	m_pDevice->setColorTarget(pNormalSurf, 1);
-	m_pDevice->clear(GXCLEAR_COLOR);
+	m_pDevice->clear(GX_CLEAR_COLOR);
 	m_pDevice->setColorTarget(NULL, 1);
 
 	m_pDevice->setColorTarget(pColorSurf);
-	m_pDevice->clear(GXCLEAR_COLOR | GXCLEAR_DEPTH | GXCLEAR_STENCIL, RENDER_DEFAUL_BACKGROUND_COLOR);
+	m_pDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, RENDER_DEFAUL_BACKGROUND_COLOR);
 
 	m_pDevice->setColorTarget(pNormalSurf, 1);
 	m_pDevice->setColorTarget(pParamSurf, 2);
@@ -446,7 +446,7 @@ void CRenderPipeline::renderGI()
 	m_pDevice->setColorTarget(pSpecDiffSurf, 1);
 
 	//очищаем рт и стенсил
-	m_pDevice->clear(GXCLEAR_COLOR | GXCLEAR_STENCIL);
+	m_pDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_STENCIL);
 
 	m_lightingShaderData.vs.mViewInv = SMMatrixTranspose(SMMatrixInverse(NULL, gdata::mCamView));
 	m_lightingShaderData.vs.mVP = SMMatrixTranspose(gdata::mCamView * gdata::mCamProj);
@@ -632,7 +632,7 @@ void CRenderPipeline::renderGI()
 		IGXDepthStencilSurface *pOldSurface = m_pDevice->getDepthStencilSurface();
 		m_pDevice->setDepthStencilSurfaceNULL();
 
-		m_pDevice->clear(GXCLEAR_COLOR);
+		m_pDevice->clear(GX_CLEAR_COLOR);
 
 		//inject VPLs into LPV grid
 		for(UINT i = 0; i < uShadowCount; ++i)
@@ -758,7 +758,7 @@ void CRenderPipeline::renderGI()
 	gdata::pDXDevice->setColorTarget(pComLightSurf);
 
 	//очищаем рт (в старой версии было многопроходное смешивание)
-	gdata::pDXDevice->clear(GXCLEAR_COLOR);
+	gdata::pDXDevice->clear(GX_CLEAR_COLOR);
 
 	gdata::pDXDevice->setTexture(m_pGBufferColor);
 	gdata::pDXDevice->setTexture(m_pLightAmbientDiffuse, 1);

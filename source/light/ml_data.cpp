@@ -148,7 +148,7 @@ void light_data::Init()
 {
 	light_data::pDXDevice = SGCore_GetDXDevice();
 		
-	GXSAMPLER_DESC samplerDesc;
+	GXSamplerDesc samplerDesc;
 	samplerDesc.filter = GXFILTER_MIN_MAG_MIP_POINT;
 	pSamplerPointWrap = pDXDevice->createSamplerState(&samplerDesc);
 	 
@@ -184,7 +184,7 @@ void light_data::Init()
 	
 	shader_id::vs::idSMDepthTreePSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_green_pssm_direct.vs", "sm_depth_tree_pssm_direct.vs");
 	
-	GXMACRO Defines_GRASS[] = { { "_GRASS_", "" }, { 0, 0 } };
+	GXMacro Defines_GRASS[] = { { "_GRASS_", "" }, { 0, 0 } };
 	shader_id::vs::idSMDepthGrassPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sm_depth_green_pssm_direct.vs", "sm_depth_grass_pssm_direct.vs", Defines_GRASS);
 
 	shader_id::ps::idSMDepthGreenPSSMDirect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_depth_green_pssm_direct.ps");
@@ -209,19 +209,19 @@ void light_data::Init()
 	shader_id::ps::idPSSM4 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_pssm.ps");
 	shader_id::kit::idResPosDepthPSSM4 = SGCore_ShaderCreateKit(shader_id::vs::idResPosDepth, shader_id::ps::idPSSM4);
 
-	GXMACRO Defines_SPLITS3[] = { { "SPLITS3", "" }, { 0, 0 } };
+	GXMacro Defines_SPLITS3[] = { { "SPLITS3", "" }, { 0, 0 } };
 	shader_id::ps::idPSSM3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_pssm.ps", "ppgensm_pssm3split.ps", Defines_SPLITS3);
 	shader_id::kit::idResPosDepthPSSM3 = SGCore_ShaderCreateKit(shader_id::vs::idResPosDepth, shader_id::ps::idPSSM3);
 
 	shader_id::ps::idGenShadowDirect4 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_direct.ps");
 	shader_id::kit::idResPosDepthGenShadowDirect4 = SGCore_ShaderCreateKit(shader_id::vs::idResPosDepth, shader_id::ps::idGenShadowDirect4);
-	GXMACRO Defines_GSD_9[] = { { "GSD_9", "" }, { 0, 0 } };
+	GXMacro Defines_GSD_9[] = { { "GSD_9", "" }, { 0, 0 } };
 	shader_id::ps::idGenShadowDirect9 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_direct.ps", "ppgensm_direct_9.ps", Defines_GSD_9);
 	shader_id::kit::idResPosDepthGenShadowDirect9 = SGCore_ShaderCreateKit(shader_id::vs::idResPosDepth, shader_id::ps::idGenShadowDirect9);
 
 	shader_id::ps::idGenShadowCube1 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_point.ps");
 	shader_id::kit::idResPosDepthGenShadowCube1 = SGCore_ShaderCreateKit(shader_id::vs::idResPosDepth, shader_id::ps::idGenShadowCube1);
-	GXMACRO Defines_GSC_6[] = { { "GSC_6", "" }, { 0, 0 } };
+	GXMacro Defines_GSC_6[] = { { "GSC_6", "" }, { 0, 0 } };
 	shader_id::ps::idGenShadowCube6 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_point.ps", "ppgensm_point_6.ps", Defines_GSC_6);
 	shader_id::kit::idResPosDepthGenShadowCube6 = SGCore_ShaderCreateKit(shader_id::vs::idResPosDepth, shader_id::ps::idGenShadowCube6);
 
@@ -239,7 +239,7 @@ void light_data::Init()
 	shader_id::vs::idStdGeom = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_geom.vs");
 	shader_id::ps::idStdGeom = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_geom.ps");
 
-	GXMACRO Defines_CP[] = { { "_CLIP_PLANE_", "" }, { 0, 0 } };
+	GXMacro Defines_CP[] = { { "_CLIP_PLANE_", "" }, { 0, 0 } };
 	shader_id::ps::idStdGeomCP = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_geom.ps", "stdr_geom_cp.ps", Defines_CP);
 
 	//D3DXMACRO Defines_GRASS[] = { { "_GRASS_", "" }, { 0, 0 } };

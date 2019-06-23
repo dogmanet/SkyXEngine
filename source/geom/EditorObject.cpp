@@ -104,12 +104,12 @@ void CEditorObject::renderSelection(bool is3D)
 
 	if(is3D)
 	{
-		pDevice->setBlendFactor(GXCOLOR_ARGB(70, 255, 0, 0));
+		pDevice->setBlendFactor(GX_COLOR_ARGB(70, 255, 0, 0));
 		SGeom_RenderSingly(0, m_idModel, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_STATIC));
 	}
 
 	pDevice->setRasterizerState(m_pEditable->m_pRSWireframe);
-	pDevice->setBlendFactor(GXCOLOR_ARGB(255, 255, 255, 0));
+	pDevice->setBlendFactor(GX_COLOR_ARGB(255, 255, 255, 0));
 	SGeom_RenderSingly(0, m_idModel, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_STATIC));
 
 	pDevice->setBlendState(pOldBlendState);

@@ -9,13 +9,13 @@ CShadowCache::CShadowCache(IXRenderPipeline *pRenderPipeline, IXMaterialSystem *
 	Core_0RegisterCVarFloat("r_sm_max_memory", 0.15f, "Максимальный процент от доступной видеопамяти, отводимый под кэш теней");
 	m_idRSMPixelShader = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_rsm_generic.ps");
 
-	GXMACRO aDefsCube[] = {
+	GXMacro aDefsCube[] = {
 		{"IS_CUBEMAP", "1"},
 		{NULL, NULL}
 	};
 	m_idRSMCubePixelShader = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_rsm_generic.ps", "sm_rsm_cube.ps", aDefsCube);
 
-	GXMACRO aDefsSpot[] = {
+	GXMacro aDefsSpot[] = {
 		{"IS_SPOT", "1"},
 		{NULL, NULL}
 	};
@@ -33,7 +33,7 @@ void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
 	static const float *s_pfRSMMaxMemory = GET_PCVAR_FLOAT("r_sm_max_memory");
 	const UINT uDefaultShadowmapSize = (UINT)(512 * *s_pfRLSMQuality);
 
-	size_t stMaxMem = (size_t)(m_pRenderPipeline->getDevice()->getAdapterDesc()->sizeTotalGPUmemory * *s_pfRSMMaxMemory);
+	size_t stMaxMem = (size_t)(m_pRenderPipeline->getDevice()->getAdapterDesc()->sizeTotalMemory * *s_pfRSMMaxMemory);
 
 	size_t stPointsMemory = 0;
 	size_t stSpotsMemory = uSpots * CShadowMap::GetMapMemory(uDefaultShadowmapSize);

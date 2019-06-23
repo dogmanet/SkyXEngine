@@ -165,21 +165,21 @@ void gdata::shaders_id::InitAllShaders()
 	gdata::shaders_id::vs::idResPos = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs", "pp_quad_render_res_pos.vs");
 
 	gdata::shaders_id::ps::idComLightingNonShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_nonshadow.ps");
-	GXMACRO Defines_IS_SPOT[] = {{"IS_SPOT", ""}, {0, 0}};
+	GXMacro Defines_IS_SPOT[] = {{"IS_SPOT", ""}, {0, 0}};
 	gdata::shaders_id::ps::idComLightingSpotNonShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_spot_nonshadow.ps", Defines_IS_SPOT);
-	GXMACRO Defines_IS_SHADOWED[] = { { "IS_SHADOWED", "" }, { 0, 0 } };
+	GXMacro Defines_IS_SHADOWED[] = { { "IS_SHADOWED", "" }, { 0, 0 } };
 	gdata::shaders_id::ps::idComLightingShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_shadow.ps", Defines_IS_SHADOWED);
-	GXMACRO Defines_IS_SPOT_SHADOWED[] = {{"IS_SHADOWED", ""}, {"IS_SPOT", ""}, {0, 0}};
+	GXMacro Defines_IS_SPOT_SHADOWED[] = {{"IS_SHADOWED", ""}, {"IS_SPOT", ""}, {0, 0}};
 	gdata::shaders_id::ps::idComLightingSpotShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_spot_shadow.ps", Defines_IS_SPOT_SHADOWED);
 	gdata::shaders_id::ps::idBlendAmbientSpecDiffColor = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_blend.ps");
 
 	gdata::shaders_id::ps::idUnionAlpha = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_union_alpha.ps");
 
-	GXMACRO Defines_STR[] = { { "_STR_", "" }, { 0, 0 } };
+	GXMacro Defines_STR[] = { { "_STR_", "" }, { 0, 0 } };
 	gdata::shaders_id::ps::idStencilStr = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_str.ps", Defines_STR);
-	GXMACRO Defines_COLUMN[] = { { "_COLUMN_", "" }, { 0, 0 } };
+	GXMacro Defines_COLUMN[] = { { "_COLUMN_", "" }, { 0, 0 } };
 	gdata::shaders_id::ps::idStencilColumn = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_column.ps", Defines_COLUMN);
-	GXMACRO Defines_COLUMN_STR[] = { { "_COLUMN_STR_", "" }, { 0, 0 } };
+	GXMacro Defines_COLUMN_STR[] = { { "_COLUMN_STR_", "" }, { 0, 0 } };
 	gdata::shaders_id::ps::idStencilStrColumn = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_str_column.ps", Defines_COLUMN_STR);
 
 	gdata::shaders_id::kit::idScreenOut = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idScreenOut);
@@ -194,7 +194,7 @@ void gdata::shaders_id::InitAllShaders()
 	gdata::shaders_id::kit::idComLightingSpotShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingSpotShadow);
 
 
-	GXDEPTH_STENCIL_DESC dsDesc;
+	GXDepthStencilDesc dsDesc;
 
 	dsDesc.useDepthTest = FALSE;
 	dsDesc.useDepthWrite = FALSE;
@@ -202,31 +202,31 @@ void gdata::shaders_id::InitAllShaders()
 
 	dsDesc.useStencilTest = TRUE;
 	dsDesc.cmpFuncDepth = GXCMP_ALWAYS;
-	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_REPLACE;
+	dsDesc.stencilTestFront.opPass = GXSTENCIL_OP_REPLACE;
 	gdata::rstates::pDepthStencilStateMrtStage0 = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
 	dsDesc.useDepthTest = TRUE;
 	dsDesc.cmpFuncDepth = GXCMP_LESS_EQUAL;
-	dsDesc.stencilTestFront.cmpFuncStencil = GXCMP_NOT_EQUAL;
-	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_DECR;
+	dsDesc.stencilTestFront.cmpFunc = GXCMP_NOT_EQUAL;
+	dsDesc.stencilTestFront.opPass = GXSTENCIL_OP_DECR;
 	gdata::rstates::pDepthStencilStateMrtStage1 = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
 	dsDesc.useDepthWrite = FALSE;
-	dsDesc.stencilTestFront.cmpFuncStencil = GXCMP_ALWAYS;
-	dsDesc.stencilTestFront.stencilOpDepthFail = GXSTENCIL_OP_INCR;
-	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_KEEP;
-	dsDesc.stencilTestBack.stencilOpDepthFail = GXSTENCIL_OP_DECR;
+	dsDesc.stencilTestFront.cmpFunc = GXCMP_ALWAYS;
+	dsDesc.stencilTestFront.opDepthFail = GXSTENCIL_OP_INCR;
+	dsDesc.stencilTestFront.opPass = GXSTENCIL_OP_KEEP;
+	dsDesc.stencilTestBack.opDepthFail = GXSTENCIL_OP_DECR;
 	gdata::rstates::pDepthStencilStateLightBound = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
 	dsDesc.useDepthTest = FALSE;
 	dsDesc.useDepthWrite = FALSE;
-	dsDesc.stencilTestFront.cmpFuncStencil = GXCMP_EQUAL;
-	dsDesc.stencilTestFront.stencilOpDepthFail = GXSTENCIL_OP_ZERO;
-	dsDesc.stencilTestFront.stencilOpFail = GXSTENCIL_OP_ZERO;
-	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_KEEP;
+	dsDesc.stencilTestFront.cmpFunc = GXCMP_EQUAL;
+	dsDesc.stencilTestFront.opDepthFail = GXSTENCIL_OP_ZERO;
+	dsDesc.stencilTestFront.opFail = GXSTENCIL_OP_ZERO;
+	dsDesc.stencilTestFront.opPass = GXSTENCIL_OP_KEEP;
 	gdata::rstates::pDepthStencilStateLightShadowNonGlobal = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
-	dsDesc.stencilTestFront.stencilOpPass = GXSTENCIL_OP_ZERO;
+	dsDesc.stencilTestFront.opPass = GXSTENCIL_OP_ZERO;
 	gdata::rstates::pDepthStencilStateLightClear = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
 	dsDesc.useStencilTest = FALSE;
@@ -238,7 +238,7 @@ void gdata::shaders_id::InitAllShaders()
 
 	
 
-	GXSAMPLER_DESC samplerDesc;
+	GXSamplerDesc samplerDesc;
 
 	samplerDesc.addressU = samplerDesc.addressV = samplerDesc.addressW = GXTEXTURE_ADDRESS_CLAMP;
 	gdata::rstates::pSamplerPointClamp = gdata::pDXDevice->createSamplerState(&samplerDesc);
@@ -261,7 +261,7 @@ void gdata::shaders_id::InitAllShaders()
 
 	
 
-	GXBLEND_DESC blendDesc;
+	GXBlendDesc blendDesc;
 
 	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_RED;
 	gdata::rstates::pBlendRed = gdata::pDXDevice->createBlendState(&blendDesc);
@@ -282,7 +282,7 @@ void gdata::shaders_id::InitAllShaders()
 	
 
 
-	GXRASTERIZER_DESC rasterizerDesc;
+	GXRasterizerDesc rasterizerDesc;
 
 	rasterizerDesc.cullMode = GXCULL_FRONT;
 	gdata::rstates::pRasterizerCullFront = gdata::pDXDevice->createRasterizerState(&rasterizerDesc);

@@ -36,7 +36,7 @@ namespace gui
 	{
 		CTexture bt;
 
-		if(!(bt.m_pTexture = GetGUI()->getDevice()->createTexture2D(w, h, isRT ? 1 : 0, isRT ? GX_TEXUSAGE_RENDERTARGET | (isAutoResizeRT ? GX_TEXUSAGE_AUTORESIZE : 0) : 0, GXFMT_A8R8G8B8, pInitData)))
+		if(!(bt.m_pTexture = GetGUI()->getDevice()->createTexture2D(w, h, isRT ? 1 : 0, isRT ? GX_TEXFLAG_RENDERTARGET | (isAutoResizeRT ? GX_TEXFLAG_AUTORESIZE : 0) : 0, GXFMT_A8R8G8B8, pInitData)))
 		{
 			return(NULL);
 		}

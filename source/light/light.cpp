@@ -14,8 +14,8 @@ CLights::CLights()
 	const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-	m_idShadowMap = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R16F, "shadowmap");
-	m_idShadowMap2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXUSAGE_RENDERTARGET | GX_TEXUSAGE_AUTORESIZE, GXFMT_R16F, "shadowmap2");
+	m_idShadowMap = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R16F, "shadowmap");
+	m_idShadowMap2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R16F, "shadowmap2");
 
 	m_idGlobalLight = -1;
 	m_isCastGlobalShadow = false;
@@ -1029,7 +1029,7 @@ void CLights::shadowNull()
 	BackBuf = light_data::pDXDevice->getColorTarget();
 	light_data::pDXDevice->setColorTarget(RenderSurf);
 
-	light_data::pDXDevice->clear(GXCLEAR_COLOR);
+	light_data::pDXDevice->clear(GX_CLEAR_COLOR);
 
 	light_data::pDXDevice->setShader(NULL);
 

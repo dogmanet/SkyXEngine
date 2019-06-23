@@ -14,7 +14,7 @@ CShaderFileCache* CreateShaderFileCacheFormShader(CShader *pShader)
 	strcpy(pSFC->m_szName, pShader->m_szName);
 	strcpy(pSFC->m_szPath, pShader->m_szPath);
 	pSFC->m_pCode = pShader->m_pCode;
-	memcpy(pSFC->m_aMacros, pShader->m_aMacros, sizeof(GXMACRO) * SXGC_SHADER_COUNT_MACRO);
+	memcpy(pSFC->m_aMacros, pShader->m_aMacros, sizeof(GXMacro) * SXGC_SHADER_COUNT_MACRO);
 
 	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
 	char szDir[SXGC_SHADER_MAX_SIZE_DIR];
@@ -176,7 +176,7 @@ uint32_t GetTimeShaderFileCache(const char *szPath)
 
 //**************************************************************************
 
-int LoadVertexShader(const char *szPath, CShaderVS *pShader, GXMACRO *aMacro)
+int LoadVertexShader(const char *szPath, CShaderVS *pShader, GXMacro *aMacro)
 {
 	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
 	char szFullPathCache[SXGC_SHADER_MAX_SIZE_FULLPATH];
@@ -208,7 +208,7 @@ int LoadVertexShader(const char *szPath, CShaderVS *pShader, GXMACRO *aMacro)
 		pShader->m_iCountVar = pSFC->m_iCountVar;
 		//strcpy(pShader->m_szName, pSFC->m_szName);
 		memcpy(pShader->m_aVarDesc, pSFC->m_aVarDesc, sizeof(D3DXCONSTANT_DESC) * SXGC_SHADER_VAR_MAX_COUNT);
-		memcpy(pShader->m_aMacros, pSFC->m_aMacros, sizeof(GXMACRO) * SXGC_SHADER_COUNT_MACRO);
+		memcpy(pShader->m_aMacros, pSFC->m_aMacros, sizeof(GXMacro) * SXGC_SHADER_COUNT_MACRO);
 		pShader->m_pCode = pSFC->m_pCode;
 		pShader->m_pCode->AddRef();
 
@@ -248,7 +248,7 @@ int LoadVertexShader(const char *szPath, CShaderVS *pShader, GXMACRO *aMacro)
 	return LOAD_SHADER_COMPLETE;
 }
 
-int LoadPixelShader(const char *szPath, CShaderPS *pShader,GXMACRO *aMacro)
+int LoadPixelShader(const char *szPath, CShaderPS *pShader,GXMacro *aMacro)
 {
 	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
 	char szFullPathCache[SXGC_SHADER_MAX_SIZE_FULLPATH];
@@ -281,7 +281,7 @@ int LoadPixelShader(const char *szPath, CShaderPS *pShader,GXMACRO *aMacro)
 
 		pShader->m_iCountVar = pSFC->m_iCountVar;
 		memcpy(pShader->m_aVarDesc, pSFC->m_aVarDesc, sizeof(D3DXCONSTANT_DESC)* SXGC_SHADER_VAR_MAX_COUNT);
-		memcpy(pShader->m_aMacros, pSFC->m_aMacros, sizeof(GXMACRO)* SXGC_SHADER_COUNT_MACRO);
+		memcpy(pShader->m_aMacros, pSFC->m_aMacros, sizeof(GXMacro)* SXGC_SHADER_COUNT_MACRO);
 		pShader->m_pCode = pSFC->m_pCode;
 		pShader->m_pCode->AddRef();
 
@@ -326,7 +326,7 @@ int LoadPixelShader(const char *szPath, CShaderPS *pShader,GXMACRO *aMacro)
 	return LOAD_SHADER_COMPLETE;
 }
 
-int LoadGeometryShader(const char *szPath, CShaderGS *pShader, GXMACRO *aMacro)
+int LoadGeometryShader(const char *szPath, CShaderGS *pShader, GXMacro *aMacro)
 {
 	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
 	char szFullPathCache[SXGC_SHADER_MAX_SIZE_FULLPATH];
@@ -359,7 +359,7 @@ int LoadGeometryShader(const char *szPath, CShaderGS *pShader, GXMACRO *aMacro)
 
 		pShader->m_iCountVar = pSFC->m_iCountVar;
 		memcpy(pShader->m_aVarDesc, pSFC->m_aVarDesc, sizeof(D3DXCONSTANT_DESC)* SXGC_SHADER_VAR_MAX_COUNT);
-		memcpy(pShader->m_aMacros, pSFC->m_aMacros, sizeof(GXMACRO)* SXGC_SHADER_COUNT_MACRO);
+		memcpy(pShader->m_aMacros, pSFC->m_aMacros, sizeof(GXMacro)* SXGC_SHADER_COUNT_MACRO);
 		pShader->m_pCode = pSFC->m_pCode;
 		pShader->m_pCode->AddRef();
 
@@ -399,7 +399,7 @@ int LoadGeometryShader(const char *szPath, CShaderGS *pShader, GXMACRO *aMacro)
 	return LOAD_SHADER_COMPLETE;
 }
 
-int LoadComputeShader(const char *szPath, CShaderCS *pShader, GXMACRO *aMacro)
+int LoadComputeShader(const char *szPath, CShaderCS *pShader, GXMacro *aMacro)
 {
 	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
 	char szFullPathCache[SXGC_SHADER_MAX_SIZE_FULLPATH];
@@ -432,7 +432,7 @@ int LoadComputeShader(const char *szPath, CShaderCS *pShader, GXMACRO *aMacro)
 
 		pShader->m_iCountVar = pSFC->m_iCountVar;
 		memcpy(pShader->m_aVarDesc, pSFC->m_aVarDesc, sizeof(D3DXCONSTANT_DESC)* SXGC_SHADER_VAR_MAX_COUNT);
-		memcpy(pShader->m_aMacros, pSFC->m_aMacros, sizeof(GXMACRO)* SXGC_SHADER_COUNT_MACRO);
+		memcpy(pShader->m_aMacros, pSFC->m_aMacros, sizeof(GXMacro)* SXGC_SHADER_COUNT_MACRO);
 		pShader->m_pCode = pSFC->m_pCode;
 		pShader->m_pCode->AddRef();
 
@@ -743,10 +743,10 @@ ID CShaderManager::existsPath(SHADER_TYPE type, const char *szPath)
 	return -1;
 }
 
-ID CShaderManager::existsPathMacro(SHADER_TYPE type, const char *szPath, GXMACRO *aMacros)
+ID CShaderManager::existsPathMacro(SHADER_TYPE type, const char *szPath, GXMacro *aMacros)
 {
 	ID idShader = -1;
-	GXMACRO *pShaderMacro = NULL;
+	GXMacro *pShaderMacro = NULL;
 	if(type == SHADER_TYPE_VERTEX)
 	{
 		for(int i = 0; i < m_aVS.size(); ++i)
@@ -798,7 +798,7 @@ ID CShaderManager::existsPathMacro(SHADER_TYPE type, const char *szPath, GXMACRO
 
 	if(ID_VALID(idShader))
 	{
-		GXMACRO def = {NULL, NULL};
+		GXMacro def = {NULL, NULL};
 		if(!aMacros)
 		{
 			aMacros = &def;
@@ -915,7 +915,7 @@ bool CShaderManager::existsFile(const char *szPath)
 	return FileExistsFile(tmppath);
 }
 
-ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szName, GXMACRO *aMacros)
+ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, const char *szName, GXMacro *aMacros)
 {
 	if(!szName)
 	{

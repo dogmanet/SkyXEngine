@@ -335,7 +335,7 @@ void CAIGrid::reCreateBuffs()
 	
 	if (m_useGraphics)
 	{
-		m_pTransVertBuf = m_pDXDevice->createVertexBuffer(m_aQuads.size() * sizeof(CAIQuadVertexDataInst), GX_BUFFER_USAGE_STREAM);
+		m_pTransVertBuf = m_pDXDevice->createVertexBuffer(m_aQuads.size() * sizeof(CAIQuadVertexDataInst), GXBUFFER_USAGE_STREAM);
 
 		IGXVertexBuffer *bufs[] = {m_pVertexQuad, m_pTransVertBuf};
 		m_pRenderBuffer = m_pDXDevice->createRenderBuffer(2, bufs, m_pDecl);
@@ -372,7 +372,7 @@ void CAIGrid::defInitBuffs(ID id)
 
 	if (m_useGraphics)
 	{
-		m_pTransVertBuf = m_pDXDevice->createVertexBuffer(m_aQuads.size() * sizeof(CAIQuadVertexDataInst), GX_BUFFER_USAGE_STREAM);
+		m_pTransVertBuf = m_pDXDevice->createVertexBuffer(m_aQuads.size() * sizeof(CAIQuadVertexDataInst), GXBUFFER_USAGE_STREAM);
 		
 		IGXVertexBuffer *bufs[] = {m_pVertexQuad, m_pTransVertBuf};
 		m_pRenderBuffer = m_pDXDevice->createRenderBuffer(2, bufs, m_pDecl);
@@ -1018,7 +1018,7 @@ void CAIGrid::initGraphics()
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - dx device is not init", GEN_MSG_LOCATION);
 	}
 
-	GXVERTEXELEMENT InstanceCAIquad[] =
+	GXVertexElement InstanceCAIquad[] =
 	{
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
 		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
@@ -1027,7 +1027,7 @@ void CAIGrid::initGraphics()
 		{1, 12, GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD2},
 		{1, 28, GXDECLTYPE_FLOAT4, GXDECLUSAGE_COLOR},
 
-		GXDECL_END()
+		GX_DECL_END()
 	};
 
 	m_pDecl = m_pDXDevice->createVertexDeclaration(InstanceCAIquad);
@@ -1051,11 +1051,11 @@ void CAIGrid::initGraphics()
 		{AIGRID_QUAD_SIZEDIV2, 0.0f, AIGRID_QUAD_SIZEDIV2, 1.0, 0.0f},
 		{AIGRID_QUAD_SIZEDIV2, 0.0f, -AIGRID_QUAD_SIZEDIV2, 1.0, 1.0f}
 	};
-	m_pVertexQuad = m_pDXDevice->createVertexBuffer(4 * sizeof(CAIQuadVertexData), GX_BUFFER_USAGE_STATIC, &vertices);
+	m_pVertexQuad = m_pDXDevice->createVertexBuffer(4 * sizeof(CAIQuadVertexData), GXBUFFER_USAGE_STATIC, &vertices);
 
 	USHORT indices[] = {0, 1, 2, 0, 2, 3};
 
-	m_pIndexQuad = m_pDXDevice->createIndexBuffer(6 * sizeof(USHORT), GX_BUFFER_USAGE_STATIC, GXIT_UINT16, &indices);
+	m_pIndexQuad = m_pDXDevice->createIndexBuffer(6 * sizeof(USHORT), GXBUFFER_USAGE_STATIC, GXIT_UINT16, &indices);
 }
 
 void CAIGrid::clear()
@@ -2450,7 +2450,7 @@ void CAIGrid::gridTestValidation()
 
 	for (int i = 0; i < m_uiCountSplits; ++i)
 	{
-		m_aSplitsColor[i] = GXCOLOR_ARGB(200, rand() % 255, rand() % 255, rand() % 255);
+		m_aSplitsColor[i] = GX_COLOR_ARGB(200, rand() % 255, rand() % 255, rand() % 255);
 	}
 	//}
 
@@ -2517,13 +2517,13 @@ void CAIGrid::renderQuads(const IFrustum * frustum, const float3 * viewpos, floa
 						RTGPUArrVerteces[tmpkey].m_vPos = aq->m_vPos;
 
 						if(quadSelectedExists(aq->m_id))
-							RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLOR_TO_F4(AIGRID_COLOR_SEL_MAIN);
+							RTGPUArrVerteces[tmpkey].m_vColor = GX_COLOR_COLOR_TO_F4(AIGRID_COLOR_SEL_MAIN);
 						else if(quadSelectedExistsNeightborDirect(aq->m_id))
-							RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLOR_TO_F4(AIGRID_COLOR_SEL_ADD);
+							RTGPUArrVerteces[tmpkey].m_vColor = GX_COLOR_COLOR_TO_F4(AIGRID_COLOR_SEL_ADD);
 						else if(m_uiCountSplits > 0 && m_isMarkSplits)
-							RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLOR_TO_F4(m_aSplitsColor[aq->m_iSplit - 1]);
+							RTGPUArrVerteces[tmpkey].m_vColor = GX_COLOR_COLOR_TO_F4(m_aSplitsColor[aq->m_iSplit - 1]);
 						else
-							RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLOR_TO_F4(m_aQuadColors[aq->m_id]);
+							RTGPUArrVerteces[tmpkey].m_vColor = GX_COLOR_COLOR_TO_F4(m_aQuadColors[aq->m_id]);
 
 						/*if (aq->m_iSplit > 1)
 						{
@@ -2571,7 +2571,7 @@ void CAIGrid::renderQuads(const IFrustum * frustum, const float3 * viewpos, floa
 						else
 						{
 							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(1, 1, 0, 0);
-							RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLOR_TO_F4(GXCOLOR_ARGB(255, 255, 0, 0));
+							RTGPUArrVerteces[tmpkey].m_vColor = GX_COLOR_COLOR_TO_F4(GX_COLOR_ARGB(255, 255, 0, 0));
 						}
 
 						++tmpkey;
@@ -2664,7 +2664,7 @@ void CAIGrid::renderGraphPoints(const float3 * viewpos, float dist)
 					else
 						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(1, 1, 0, 0);
 
-					RTGPUArrVerteces[tmpkey].m_vColor = GXCOLOR_COLOR_TO_F4(GXCOLOR_ARGB(200, 0, 0, 255));
+					RTGPUArrVerteces[tmpkey].m_vColor = GX_COLOR_COLOR_TO_F4(GX_COLOR_ARGB(200, 0, 0, 255));
 					++tmpkey;
 				}
 			}
