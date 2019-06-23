@@ -209,6 +209,7 @@ void CBaseAnimating::initPhysics()
 
 	UINT uShapesCount = m_pModel->getPhysboxCount();
 
+
 	btCompoundShape *pShape = new btCompoundShape(true, uShapesCount);
 	for(UINT i = 0; i < uShapesCount; ++i)
 	{
@@ -246,6 +247,65 @@ void CBaseAnimating::initPhysics()
 		{
 			btTransform localTransform(Q4_BTQUAT(pPhysbox->getOrientation()), F3_BTVEC(pPhysbox->getPosition()));
 			pShape->addChildShape(localTransform, pLocalShape);
+		}
+	}
+	if(!uShapesCount)
+	{
+		{
+			auto pResource = m_pModel->getResource()->asStatic();
+			if(pResource)
+			{
+				UINT uUsedLod = pResource->getLodCount() - 1;
+				for(UINT i = 0, l = pResource->getSubsetCount(uUsedLod); i < l; ++i)
+				{
+					btCollisionShape *pLocalShape = NULL;
+					auto pSubset = pResource->getSubset(uUsedLod, i);
+
+					btConvexHullShape tmpShape((float*)pSubset->pVertices, pSubset->iVertexCount, sizeof(pSubset->pVertices[0]));
+					tmpShape.setMargin(0);
+					btVector3 *pData;
+					int iVertexCount;
+					SPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
+					pLocalShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
+					SPhysics_ReleaseHull(pData, iVertexCount);
+
+
+					if(pLocalShape)
+					{
+						btTransform localTransform;
+						localTransform.setIdentity();
+						pShape->addChildShape(localTransform, pLocalShape);
+					}
+				}
+			}
+		}
+		{
+			auto pResource = m_pModel->getResource()->asAnimated();
+			if(pResource)
+			{
+				UINT uUsedLod = pResource->getLodCount() - 1;
+				for(UINT i = 0, l = pResource->getSubsetCount(uUsedLod); i < l; ++i)
+				{
+					btCollisionShape *pLocalShape = NULL;
+					auto pSubset = pResource->getSubset(uUsedLod, i);
+
+					btConvexHullShape tmpShape((float*)pSubset->pVertices, pSubset->iVertexCount, sizeof(pSubset->pVertices[0]));
+					tmpShape.setMargin(0);
+					btVector3 *pData;
+					int iVertexCount;
+					SPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
+					pLocalShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
+					SPhysics_ReleaseHull(pData, iVertexCount);
+
+
+					if(pLocalShape)
+					{
+						btTransform localTransform;
+						localTransform.setIdentity();
+						pShape->addChildShape(localTransform, pLocalShape);
+					}
+				}
+			}
 		}
 	}
 	m_pCollideShape = pShape;

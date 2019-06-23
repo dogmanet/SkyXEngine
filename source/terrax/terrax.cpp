@@ -591,9 +591,15 @@ int main(int argc, char **argv)
 				sprintf(szPathLevel, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pData->szLevelName, pData->szLevelName);
 
 				ISXConfig *pCfg = Core_OpConfig(szPathLevel);
-
-				pCfg->set("level", "type", "indoor");
-				pCfg->set("level", "local_name", "");
+				
+				if(!pCfg->keyExists("level", "type"))
+				{
+					pCfg->set("level", "type", "indoor");
+				}
+				if(!pCfg->keyExists("level", "local_name"))
+				{
+					pCfg->set("level", "local_name", pData->szLevelName);
+				}
 
 				for(UINT i = 0; i < 4; ++i)
 				{

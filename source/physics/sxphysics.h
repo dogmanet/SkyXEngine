@@ -35,6 +35,7 @@ See the license in LICENSE
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
 #include <BulletDynamics/Dynamics/btDiscreteDynamicsWorldMt.h>
 #include "IXPhysics.h"
+#include <xcommon/resource/IXResourceModel.h>
 
 //! Описатель физических свойств поверхности
 struct SurfaceInfo
@@ -117,6 +118,10 @@ SX_LIB_API void SPhysics_DumpStats();
 SX_LIB_API void SPhysics_BuildHull(btConvexHullShape *pIn, btVector3 **ppOut, int *pNumVertices);
 
 SX_LIB_API void SPhysics_ReleaseHull(btVector3 *pData, int iNumVertices);
+
+SX_LIB_API btCollisionShape* SPhysics_CreateTrimeshShape(const XResourceModelStaticSubset *pSubset);
+SX_LIB_API void SPhysics_ReleaseTrimeshShape(btCollisionShape *pShape);
+
 
 #endif
 

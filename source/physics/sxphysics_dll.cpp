@@ -203,3 +203,27 @@ SX_LIB_API void SPhysics_ReleaseHull(btVector3 *pData, int iNumVertices)
 {
 	mem_delete_a(pData);
 }
+
+SX_LIB_API btCollisionShape* SPhysics_CreateTrimeshShape(const XResourceModelStaticSubset *pSubset)
+{
+	btTriangleMesh *pMesh = new btTriangleMesh(true, false);
+	pMesh->preallocateIndices(pSubset->iIndexCount);
+	pMesh->preallocateVertices(pSubset->iVertexCount);
+	for(UINT i = 0; i < pSubset->iVertexCount; ++i)
+	{
+		pMesh->findOrAddVertex(F3_BTVEC(pSubset->pVertices[i].vPos), false);
+	}
+	for(UINT i = 0; i < pSubset->iIndexCount; i += 3)
+	{
+		pMesh->addTriangleIndices(pSubset->pIndices[i], pSubset->pIndices[i + 1], pSubset->pIndices[i + 2]);
+	}
+
+	return(new btBvhTriangleMeshShape(pMesh, true));
+}
+
+SX_LIB_API void SPhysics_ReleaseTrimeshShape(btCollisionShape *pShape)
+{
+	assert(pShape->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE);
+
+	mem_delete(pShape);
+}

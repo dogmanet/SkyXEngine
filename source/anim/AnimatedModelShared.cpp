@@ -835,7 +835,7 @@ const int CAnimatedModelShared::getPhysBoxBone(UINT id, UINT uPartIndex) const
 }
 const IXResourceModel *CAnimatedModelShared::getResource(UINT uIndex)
 {
-	return(0);
+	return(m_apResources[uIndex]);
 }
 
 

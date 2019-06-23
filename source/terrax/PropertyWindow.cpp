@@ -208,6 +208,32 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 			}
 			break;
 
+		case CBN_SELCHANGE:
+			if(LOWORD(wParam) == IDC_OPE_COMBO)
+			{
+				HWND hCombo = (HWND)lParam;
+				int iSel = ComboBox_GetCurSel(hCombo);
+				if(iSel >= 0)
+				{
+					const char *szValue = (const char*)ComboBox_GetItemData(hCombo, iSel);
+
+					int iSel = ListView_GetNextItem(m_hPropListWnd, -1, LVNI_SELECTED);
+					LVITEM lvItem;
+					memset(&lvItem, 0, sizeof(lvItem));
+					lvItem.iItem = iSel;
+					lvItem.mask = LVIF_PARAM;
+					ListView_GetItem(m_hPropListWnd, &lvItem);
+					prop_s *pField = &m_aPropFields[AAString((char*)lvItem.lParam)];
+
+					setPropFieldValue(pField->field.szKey, szValue);
+					if(m_pCallback)
+					{
+						m_pCallback->onPropertyChanged(pField->field.szKey, szValue);
+					}
+				}
+			}
+			break;
+
 		case EN_KILLFOCUS:
 			if(LOWORD(wParam) == IDC_OPE_TEXT || LOWORD(wParam) == IDC_OPE_FILE)
 			{
@@ -322,7 +348,9 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 					++str;
 				}
 
-				SetWindowTextW(GetDlgItem(m_phEditors[m_editorActive], IDC_OPE_FILE), str);
+				HWND hEditWnd = GetDlgItem(m_phEditors[m_editorActive], IDC_OPE_FILE);
+				SetWindowTextW(hEditWnd, str);
+				SendMessage(hWnd, WM_COMMAND, MAKEWPARAM(IDC_OPE_FILE, EN_KILLFOCUS), (LPARAM)hEditWnd);
 			}
 		}
 

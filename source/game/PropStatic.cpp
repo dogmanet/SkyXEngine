@@ -68,3 +68,65 @@ void CPropStatic::onSetScale(float fScale)
 	}
 }
 
+void CPropStatic::initPhysics()
+{
+	if(!m_pModel)
+	{
+		return;
+	}
+
+	UINT uShapesCount = m_pModel->getPhysboxCount();
+
+	float3 vSize = m_pModel->getLocalBoundMax() - m_pModel->getLocalBoundMin();
+	bool useTrimesh = m_useTrimeshPhysics && vSize.x > 1.0f && vSize.z > 1.0f && vSize.y > 1.8f;
+
+	if(uShapesCount || !useTrimesh)
+	{
+		BaseClass::initPhysics();
+		return;
+	}
+
+	btCompoundShape *pShape = new btCompoundShape(true, uShapesCount);
+
+	auto pResource = m_pModel->getResource()->asStatic();
+	UINT uUsedLod = pResource->getLodCount() - 1;
+	for(UINT i = 0, l = pResource->getSubsetCount(uUsedLod); i < l; ++i)
+	{
+		btCollisionShape *pLocalShape = NULL;
+		auto pSubset = pResource->getSubset(uUsedLod, i);
+
+		pLocalShape = SPhysics_CreateTrimeshShape(pSubset);
+		
+		if(pLocalShape)
+		{
+			btTransform localTransform;
+			localTransform.setIdentity();
+			pShape->addChildShape(localTransform, pLocalShape);
+		}
+	}
+
+	m_pCollideShape = pShape;
+	createPhysBody();
+}
+
+void CPropStatic::releasePhysics()
+{
+	removePhysBody();
+	if(m_pCollideShape)
+	{
+		btCompoundShape *pShape = (btCompoundShape*)m_pCollideShape;
+		for(UINT i = 0, l = pShape->getNumChildShapes(); i < l; ++i)
+		{
+			auto pChild = pShape->getChildShape(i);
+			if(pChild->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE)
+			{
+
+			}
+			else
+			{
+				mem_delete(pChild);
+			}
+		}
+		mem_delete(m_pCollideShape);
+	}
+}
