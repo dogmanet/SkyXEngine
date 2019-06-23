@@ -33,7 +33,7 @@ public:
 protected:
 	void onSetScale(float fScale);
 	float m_fScale = 1.0f;
-	bool m_useTrimeshPhysics = true;
+	bool m_useTrimeshPhysics = false;
 };
 
 #endif

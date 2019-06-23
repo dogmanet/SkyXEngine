@@ -13,6 +13,12 @@ See the license in LICENSE
 BEGIN_PROPTABLE(CPropStatic)
 	//! Масштаб модели
 	DEFINE_FIELD_FLOATFN(m_fScale, 0, "scale", "Scale", onSetScale, EDITOR_TEXTFIELD)
+
+
+	DEFINE_FIELD_BOOL(m_useTrimeshPhysics, 0, "use_trimesh", "Use trimesh physics", EDITOR_COMBOBOX)
+		COMBO_OPTION("Yes", "1")
+		COMBO_OPTION("No", "0")
+	EDITOR_COMBO_END()
 END_PROPTABLE()
 
 REGISTER_ENTITY(CPropStatic, prop_static);
