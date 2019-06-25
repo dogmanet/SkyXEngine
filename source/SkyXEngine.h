@@ -1,4 +1,3 @@
-
 /***********************************************************
 Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
@@ -293,7 +292,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #ifndef __SKYXENGINE_H
 #define __SKYXENGINE_H
 
-#define SKYXENGINE_VERSION "X.0.0"
+#define SKYXENGINE_VERSION "X.1.0-dev"
 
 #define SKYXENGINE_VERSION4EDITORS "SkyXEngine version " ## SKYXENGINE_VERSION
 
