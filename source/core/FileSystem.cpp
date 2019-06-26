@@ -239,7 +239,7 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
     CFile *file = new CFile;
 
     //Если путь не корректен
-    if (fileExists(szPath))
+    if (!fileExists(szPath))
     {
         return nullptr;
     }
