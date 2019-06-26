@@ -613,9 +613,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		InvalidateRect(hWnd, &rect, TRUE);
 
-		RECT rcTopLeft;
-		GetClientRect(g_hTopLeftWnd, &rcTopLeft);
-		g_pEngine->getCore()->execCmd2("r_win_width %d\nr_win_height %d", rcTopLeft.right - rcTopLeft.left, rcTopLeft.bottom - rcTopLeft.top);
+		if(g_pEngine)
+		{
+			RECT rcTopLeft;
+			GetClientRect(g_hTopLeftWnd, &rcTopLeft);
+			g_pEngine->getCore()->execCmd2("r_win_width %d\nr_win_height %d", rcTopLeft.right - rcTopLeft.left, rcTopLeft.bottom - rcTopLeft.top);
+		}
 
 		SendMessage(g_hStatusWnd, WM_SIZE, wParam, lParam);
 	}

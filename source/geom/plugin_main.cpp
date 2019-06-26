@@ -86,7 +86,7 @@ public:
 
 	UINT XMETHODCALLTYPE getInterfaceCount() override
 	{
-		return(2);
+		return(1);
 	}
 	const XGUID * XMETHODCALLTYPE getInterfaceGUID(UINT id) override
 	{
@@ -94,10 +94,10 @@ public:
 		switch(id)
 		{
 		case 0:
-			s_guid = IXEDITABLE_GUID;
+			s_guid = IXRENDERABLE_GUID;
 			break;
 		case 1:
-			s_guid = IXRENDERABLE_GUID;
+			s_guid = IXEDITABLE_GUID;
 			break;
 		default:
 			return(NULL);

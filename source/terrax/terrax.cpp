@@ -371,7 +371,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 
-	int argc;
+	int argc = 0;
 	char **argv = CommandLineToArgvA(lpCmdLine, &argc);
 #else
 int main(int argc, char **argv)
