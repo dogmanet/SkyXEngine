@@ -19,36 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\source\common\string.cpp" />
-    <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
-    <ClCompile Include="..\..\..\source\geom\Editable.cpp" />
-    <ClCompile Include="..\..\..\source\geom\EditorObject.cpp">
-      <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PreprocessToFile>
-      <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</PreprocessToFile>
-      <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</PreprocessToFile>
-      <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</PreprocessToFile>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\geom\models.cpp" />
     <ClCompile Include="..\..\..\source\geom\plugin_main.cpp" />
-    <ClCompile Include="..\..\..\source\geom\Renderable.cpp" />
-    <ClCompile Include="..\..\..\source\geom\RenderableVisibility.cpp" />
-    <ClCompile Include="..\..\..\source\geom\sxgeom.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\geom\sxgeom_dll.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\source\common\string.h" />
-    <ClInclude Include="..\..\..\source\common\string_utils.h" />
-    <ClInclude Include="..\..\..\source\geom\Editable.h" />
-    <ClInclude Include="..\..\..\source\geom\EditorObject.h" />
-    <ClInclude Include="..\..\..\source\geom\models.h" />
-    <ClInclude Include="..\..\..\source\geom\Renderable.h" />
-    <ClInclude Include="..\..\..\source\geom\RenderableVisibility.h" />
-    <ClInclude Include="..\..\..\source\geom\sxgeom.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0C7E3DB7-005F-41E9-A570-868BCF959E91}</ProjectGuid>
@@ -102,13 +74,13 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/plugins/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>../../../source;../../../sdks/;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src/;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
     <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>../../../source;../../../sdks/;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src/;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>../../../libs64;$(LibraryPath);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
     <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</SourcePath>
     <LinkIncremental>false</LinkIncremental>
@@ -117,12 +89,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/plugins/</OutDir>
-    <IncludePath>../../../source;../../../sdks/;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src/;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
     <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>../../../source;../../../sdks/;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src/;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
     <LibraryPath>../../../libs64;$(LibraryPath);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
     <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</SourcePath>
     <LinkIncremental>false</LinkIncremental>
