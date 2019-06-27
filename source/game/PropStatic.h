@@ -30,8 +30,11 @@ public:
 
 	void initPhysics() override;
 	void releasePhysics() override;
+
+	void setModel(const char *mdl) override;
 protected:
 	void onSetScale(float fScale);
+	void onSetUseTrimesh(bool use);
 	float m_fScale = 1.0f;
 	bool m_useTrimeshPhysics = false;
 };

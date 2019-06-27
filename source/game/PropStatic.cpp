@@ -15,7 +15,7 @@ BEGIN_PROPTABLE(CPropStatic)
 	DEFINE_FIELD_FLOATFN(m_fScale, 0, "scale", "Scale", onSetScale, EDITOR_TEXTFIELD)
 
 
-	DEFINE_FIELD_BOOL(m_useTrimeshPhysics, 0, "use_trimesh", "Use trimesh physics", EDITOR_COMBOBOX)
+	DEFINE_FIELD_BOOLFN(m_useTrimeshPhysics, 0, "use_trimesh", "Use trimesh physics", onSetUseTrimesh, EDITOR_COMBOBOX)
 		COMBO_OPTION("Yes", "1")
 		COMBO_OPTION("No", "0")
 	EDITOR_COMBO_END()
@@ -134,5 +134,25 @@ void CPropStatic::releasePhysics()
 			}
 		}
 		mem_delete(m_pCollideShape);
+	}
+}
+
+void CPropStatic::setModel(const char *mdl)
+{
+	BaseClass::setModel(mdl);
+
+	if(m_pModel)
+	{
+		m_pModel->setScale(m_fScale);
+	}
+}
+
+void CPropStatic::onSetUseTrimesh(bool use)
+{
+	if(m_useTrimeshPhysics != use)
+	{
+		m_useTrimeshPhysics = use;
+		releasePhysics();
+		initPhysics();
 	}
 }

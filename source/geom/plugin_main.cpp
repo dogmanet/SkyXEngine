@@ -149,7 +149,7 @@ public:
 			fread(&(vRotation.x), sizeof(float), 1, pFile);
 			fread(&(vRotation.y), sizeof(float), 1, pFile);
 			fread(&(vRotation.z), sizeof(float), 1, pFile);
-			pEntity->setOrient(SMQuaternion(vRotation.x, 'x') * SMQuaternion(vRotation.y, 'y') * SMQuaternion(vRotation.z, 'z'));
+			pEntity->setOrient(SMQuaternion(-vRotation.x, 'x') * SMQuaternion(-vRotation.y, 'y') * SMQuaternion(-vRotation.z, 'z'));
 
 			fread(&(vScale.x), sizeof(float), 1, pFile);
 			fread(&(vScale.y), sizeof(float), 1, pFile);
@@ -165,6 +165,7 @@ public:
 			fread(szStr + 7, sizeof(char), iStrLen, pFile);
 			szStr[iStrLen + 7] = 0;
 			pEntity->setKV("model", szStr);
+
 
 			pEntity->setFlags(pEntity->getFlags() | EF_LEVEL | EF_EXPORT);
 			
