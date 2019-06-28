@@ -151,7 +151,7 @@ CWindow::CWindow(HINSTANCE hInst, UINT uId, const XWINDOW_DESC *pWindowDesc, IXW
 		DwmEnableBlurBehindWindow(m_hWnd, &dwmBlur);
 	}
 
-	SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG)this);
+	SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG_PTR)this);
 
 	ShowWindow(m_hWnd, SW_NORMAL);
 
