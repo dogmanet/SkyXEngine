@@ -59,9 +59,12 @@ protected:
 
 	Array<_update_sys> m_aUpdatables;
 
+
 	CPerfMon *m_pPerfMon = NULL;
 	CTimeManager *m_pTimers = NULL;
 	CTaskManager *m_pTaskManager = NULL;
+
+	std::chrono::system_clock::time_point m_tLastUpdateTime;
 };
 
 #endif

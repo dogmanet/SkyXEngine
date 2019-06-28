@@ -203,6 +203,14 @@ void XMETHODCALLTYPE CWindow::setTitle(const char *szTitle)
 }
 void XMETHODCALLTYPE CWindow::update(const XWINDOW_DESC *pWindowDesc)
 {
+	HMONITOR monitor = MonitorFromWindow(m_hWnd, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO info;
+	info.cbSize = sizeof(MONITORINFO);
+	GetMonitorInfo(monitor, &info);
+	bool bForceNoBorder = (pWindowDesc->iSizeX == info.rcMonitor.right - info.rcMonitor.left
+		&& pWindowDesc->iSizeY == info.rcMonitor.bottom - info.rcMonitor.top);
+
+
 	if(pWindowDesc->flags & XWF_BUTTON_CLOSE)
 	{
 		SetClassLong(m_hWnd, GCL_STYLE, GetClassLong(m_hWnd, GCL_STYLE) & ~CS_NOCLOSE);
@@ -226,7 +234,7 @@ void XMETHODCALLTYPE CWindow::update(const XWINDOW_DESC *pWindowDesc)
 	{
 		wndStyle |= WS_SYSMENU;
 	}
-	if(pWindowDesc->flags & XWF_NOBORDER)
+	if((pWindowDesc->flags & XWF_NOBORDER) || bForceNoBorder)
 	{
 		wndStyle &= ~(WS_SYSMENU | WS_CAPTION | WS_MAXIMIZE | WS_MINIMIZE | WS_THICKFRAME);
 	}

@@ -206,14 +206,18 @@ void CCore::initUpdatable()
 	{
 		return(a.uPriority < b.uPriority);
 	});
+
+	m_tLastUpdateTime = std::chrono::high_resolution_clock::now();
 }
 
 void CCore::runUpdate()
 {
 	static Array<ID> s_aIdToWait;
 	ID idTask;
-	//@FIXME: Change to actual value!
-	float fDeltaTime = 0.016f;
+	time_point tNow = std::chrono::high_resolution_clock::now();
+	float fDeltaTime = (float)std::chrono::duration_cast<std::chrono::microseconds>(tNow - m_tLastUpdateTime).count() / 1000000.0f;
+	m_tLastUpdateTime = tNow;
+
 	for(UINT i = 0, l = m_aUpdatables.size(); i < l; ++i)
 	{
 		idTask = m_aUpdatables[i].pUpdatable->run(fDeltaTime);
