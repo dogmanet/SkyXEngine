@@ -16,24 +16,21 @@ See the license in LICENSE
 
 BEGIN_PROPTABLE(CBaseAnimating)
 	//! Файл модели. Поддерживаются статические и анимированные модели
-	DEFINE_FIELD_STRING(m_szModelFile, 0, "model", "Model file", EDITOR_FILEFIELD)
-		FILE_OPTION("Select model", "dse")
-	EDITOR_FILE_END()
+	DEFINE_FIELD_STRINGFN(m_szModelFile, 0, "model", "Model file", setModel, EDITOR_MODEL)
 
 	//! Масштаб модели
-	// DEFINE_FIELD_FLOAT(m_fBaseScale, 0, "scale", "Scale", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_FLOATFN(m_fBaseScale, 0, "scale", "Scale", setScale, EDITOR_TEXTFIELD)
 
 	//! Объект референса для цвета свечения
 	DEFINE_FIELD_ENTITY(m_pEntColorRef, 0, "glow_color_ref", "Glow color reference", EDITOR_TEXTFIELD)
 	//! Цвет свечения
 	DEFINE_FIELD_VECTOR(m_vGlowColor, 0, "glow_color", "Glow color", EDITOR_TEXTFIELD)
 
-	DEFINE_FIELD_BOOLFN(m_isStatic, 0, "is_static", "Is static", onIsStaticChange, EDITOR_COMBOBOX)
-		COMBO_OPTION("Yes", "1")
-		COMBO_OPTION("No", "0")
-	EDITOR_COMBO_END()
+	DEFINE_FIELD_BOOLFN(m_isStatic, 0, "is_static", "Is static", onIsStaticChange, EDITOR_YESNO)
 
 	DEFINE_FIELD_INTFN(m_iSkin, 0, "skin", "Skin", setSkin, EDITOR_TEXTFIELD)
+
+	DEFINE_FIELD_BOOLFN(m_useAutoPhysbox, 0, "auto_physbox", "Auto generate physbox", onSetUseAutoPhysbox, EDITOR_YESNO)
 
 	DEFINE_INPUT(inputPlayAnim, "playAnim", "Play animation", PDF_STRING)
 	DEFINE_INPUT(inputPlayAnimNext, "playAnimNext", "Play animation next", PDF_STRING)
@@ -76,26 +73,14 @@ void CBaseAnimating::getMinMax(float3 * min, float3 * max)
 	}
 }*/
 
-bool CBaseAnimating::setKV(const char * name, const char * value)
+void CBaseAnimating::onSetUseAutoPhysbox(bool use)
 {
-	if(!BaseClass::setKV(name, value))
+	if(m_useAutoPhysbox != use)
 	{
-		return(false);
-	}
-	if(!strcmp(name, "model"))
-	{
-		setModel(value);
-	}
-	/*else if(!strcmp(name, "scale"))
-	{
+		m_useAutoPhysbox = use;
 		releasePhysics();
-		if(m_pAnimPlayer)
-		{
-			m_pAnimPlayer->setScale(m_fBaseScale);
-		}
 		initPhysics();
-	}*/
-	return(true);
+	}
 }
 
 void CBaseAnimating::setModel(const char * mdl)
@@ -119,10 +104,23 @@ void CBaseAnimating::setModel(const char * mdl)
 		{
 			m_pModel = pModel;
 			m_pModel->setSkin(m_iSkin);
+			m_pModel->setScale(m_fBaseScale);
 		}
 		mem_release(pResource);
 	}
-	
+
+	initPhysics();
+}
+
+void CBaseAnimating::setScale(float fScale)
+{
+	m_fBaseScale = fScale;
+
+	releasePhysics();
+	if(m_pModel)
+	{
+		m_pModel->setScale(m_fBaseScale);
+	}
 	initPhysics();
 }
 
@@ -218,16 +216,16 @@ void CBaseAnimating::initPhysics()
 		switch(pPhysbox->getType())
 		{
 		case XPBT_BOX:
-			pLocalShape = new btBoxShape(F3_BTVEC(pPhysbox->asBox()->getSize()));
+			pLocalShape = new btBoxShape(F3_BTVEC(pPhysbox->asBox()->getSize()) * m_fBaseScale);
 			break;
 		case XPBT_SPHERE:
-			pLocalShape = new btSphereShape(pPhysbox->asSphere()->getRadius());
+			pLocalShape = new btSphereShape(pPhysbox->asSphere()->getRadius() * m_fBaseScale);
 			break;
 		case XPBT_CAPSULE:
-			pLocalShape = new btCapsuleShape(pPhysbox->asCapsule()->getRadius(), pPhysbox->asCapsule()->getHeight());
+			pLocalShape = new btCapsuleShape(pPhysbox->asCapsule()->getRadius() * m_fBaseScale, pPhysbox->asCapsule()->getHeight() * m_fBaseScale);
 			break;
 		case XPBT_CYLINDER:
-			pLocalShape = new btCylinderShape(btVector3(pPhysbox->asCylinder()->getRadius(), pPhysbox->asCylinder()->getHeight() * 0.5f, pPhysbox->asCylinder()->getRadius()));
+			pLocalShape = new btCylinderShape(btVector3(pPhysbox->asCylinder()->getRadius(), pPhysbox->asCylinder()->getHeight() * 0.5f, pPhysbox->asCylinder()->getRadius()) * m_fBaseScale);
 			break;
 		case XPBT_CONVEX:
 			{
@@ -237,6 +235,10 @@ void CBaseAnimating::initPhysics()
 				btVector3 *pData;
 				int iVertexCount;
 				SPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
+				for(int i = 0; i < iVertexCount; ++i)
+				{
+					pData[i] *= m_fBaseScale;
+				}
 				pLocalShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
 				SPhysics_ReleaseHull(pData, iVertexCount);
 			}
@@ -245,11 +247,11 @@ void CBaseAnimating::initPhysics()
 
 		if(pLocalShape)
 		{
-			btTransform localTransform(Q4_BTQUAT(pPhysbox->getOrientation()), F3_BTVEC(pPhysbox->getPosition()));
+			btTransform localTransform(Q4_BTQUAT(pPhysbox->getOrientation()), F3_BTVEC(pPhysbox->getPosition()) * m_fBaseScale);
 			pShape->addChildShape(localTransform, pLocalShape);
 		}
 	}
-	if(!uShapesCount)
+	if(!uShapesCount && m_useAutoPhysbox)
 	{
 		{
 			auto pResource = m_pModel->getResource()->asStatic();
@@ -266,6 +268,10 @@ void CBaseAnimating::initPhysics()
 					btVector3 *pData;
 					int iVertexCount;
 					SPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
+					for(int i = 0; i < iVertexCount; ++i)
+					{
+						pData[i] *= m_fBaseScale;
+					}
 					pLocalShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
 					SPhysics_ReleaseHull(pData, iVertexCount);
 
@@ -294,6 +300,10 @@ void CBaseAnimating::initPhysics()
 					btVector3 *pData;
 					int iVertexCount;
 					SPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
+					for(int i = 0; i < iVertexCount; ++i)
+					{
+						pData[i] *= m_fBaseScale;
+					}
 					pLocalShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
 					SPhysics_ReleaseHull(pData, iVertexCount);
 

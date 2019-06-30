@@ -31,7 +31,7 @@ CResourceManager::CResourceManager(IXCore *pCore):
 				strlwr(const_cast<char*>(sExt.getName()));
 				sExt.setName(pLoader->getExt(i));
 				m_mapModelLoaders[sExt].push_back(pLoader);
-				m_aModelExts.push_back({pLoader->getDescription(), pLoader->getExt(i)});
+				m_aModelExts.push_back({pLoader->getExtText(i), pLoader->getExt(i)});
 			}
 		}
 	}

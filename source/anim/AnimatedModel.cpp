@@ -408,7 +408,7 @@ float3 XMETHODCALLTYPE CAnimatedModel::getBoneTransformPos(UINT id)
 		return(0);
 	}
 
-	return(getOrientation() * ((m_pRenderFrameBones[id].position - m_pRenderFrameBones[id].orient * (float3)m_pShared->getInvertedBindPose()[id].position)) + getPosition());
+	return(getOrientation() * ((m_pRenderFrameBones[id].position - m_pRenderFrameBones[id].orient * (float3)m_pShared->getInvertedBindPose()[id].position)) * m_fScale + getPosition());
 }
 SMQuaternion XMETHODCALLTYPE CAnimatedModel::getBoneTransformRot(UINT id)
 {

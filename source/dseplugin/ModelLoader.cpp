@@ -1,16 +1,16 @@
 #include "ModelLoader.h"
 #include "ModelFile.h"
 
-UINT CModelLoader::getVersion()
+UINT XMETHODCALLTYPE CModelLoader::getVersion()
 {
 	return(IXMODELLOADER_VERSION);
 }
 
-UINT CModelLoader::getExtCount() const
+UINT XMETHODCALLTYPE CModelLoader::getExtCount() const
 {
 	return(1);
 }
-const char *CModelLoader::getExt(UINT uIndex) const
+const char* XMETHODCALLTYPE CModelLoader::getExt(UINT uIndex) const
 {
 	assert(uIndex < getExtCount());
 	switch(uIndex)
@@ -20,20 +20,36 @@ const char *CModelLoader::getExt(UINT uIndex) const
 	}
 	return(NULL);
 }
-const char *CModelLoader::getAuthor() const
+const char* XMETHODCALLTYPE CModelLoader::getExtText(UINT uIndex) const
+{
+	assert(uIndex < getExtCount());
+	switch(uIndex)
+	{
+	case 0:
+		return("SkyXEngine model");
+	}
+	return(NULL);
+}
+const char* XMETHODCALLTYPE CModelLoader::getAuthor() const
 {
 	return("D-AIRY @ DogmaNet");
 }
-const char *CModelLoader::getCopyright() const
+const char* XMETHODCALLTYPE CModelLoader::getCopyright() const
 {
 	return("Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2019");
 }
-const char *CModelLoader::getDescription() const
+const char* XMETHODCALLTYPE CModelLoader::getDescription() const
 {
 	return("DSE model loader");
 }
 
-bool CModelLoader::open(IFile *pFile)
+void XMETHODCALLTYPE CModelLoader::getInfo(XModelInfo *pModelInfo)
+{
+	assert(!"Not implemented!");
+	//! @todo Implement me!
+}
+
+bool XMETHODCALLTYPE CModelLoader::open(IFile *pFile)
 {
 	assert(!m_pCurrentFile && "File already opened!");
 	if(m_pCurrentFile)
@@ -66,11 +82,11 @@ bool CModelLoader::open(IFile *pFile)
 
 	return(true);
 }
-XMODELTYPE CModelLoader::getType() const
+XMODELTYPE XMETHODCALLTYPE CModelLoader::getType() const
 {
 	return((m_hdr.iFlags & MODEL_FLAG_STATIC) ? XMT_STATIC : XMT_ANIMATED);
 }
-bool CModelLoader::loadAsStatic(IXResourceModelStatic *pResource)
+bool XMETHODCALLTYPE CModelLoader::loadAsStatic(IXResourceModelStatic *pResource)
 {
 	if(!loadGeneric(pResource))
 	{
@@ -218,7 +234,7 @@ bool CModelLoader::loadAsStatic(IXResourceModelStatic *pResource)
 
 	return(true);
 }
-bool CModelLoader::loadAsAnimated(IXResourceModelAnimated *pResource)
+bool XMETHODCALLTYPE CModelLoader::loadAsAnimated(IXResourceModelAnimated *pResource)
 {
 	if(getType() != XMT_ANIMATED)
 	{
@@ -359,7 +375,7 @@ bool CModelLoader::loadAsAnimated(IXResourceModelAnimated *pResource)
 				}
 				for(UINT k = 0; k < pSubSet->iVertexCount; ++k)
 				{
-					pSubSet->pVertices[k].vPos = (float3)(pSubSet->pVertices[k].vPos * 0.0254f);
+					pSubSet->pVertices[k].vPos = /*(float3)(*/pSubSet->pVertices[k].vPos/* * 0.0254f)*/;
 				}
 			}
 		}
@@ -388,7 +404,7 @@ bool CModelLoader::loadAsAnimated(IXResourceModelAnimated *pResource)
 		{
 			m_pCurrentFile->readBin(&mbn, sizeof(ModelBoneName));
 			assert(i == mbn.bone.id);
-			pResource->setBoneInfo(i, mbn.szName, mbn.bone.pid, mbn.bone.position * 0.0254f, mbn.bone.orient);
+			pResource->setBoneInfo(i, mbn.szName, mbn.bone.pid, mbn.bone.position/* * 0.0254f*/, mbn.bone.orient);
 		}
 	}
 
@@ -459,7 +475,7 @@ bool CModelLoader::loadAsAnimated(IXResourceModelAnimated *pResource)
 					m_pCurrentFile->readBin(&mb, sizeof(ModelBone));
 
 					pSequence->m_ppSequenceData[j][k].orient = mb.orient;
-					pSequence->m_ppSequenceData[j][k].position = (float3)(mb.position * 0.0254f);
+					pSequence->m_ppSequenceData[j][k].position = /*(float3)(*/mb.position/* * 0.0254f)*/;
 				}
 			}
 		}
@@ -503,7 +519,7 @@ bool CModelLoader::loadAsAnimated(IXResourceModelAnimated *pResource)
 	return(true);
 }
 
-void CModelLoader::close()
+void XMETHODCALLTYPE CModelLoader::close()
 {
 	m_pCurrentFile = NULL;
 }

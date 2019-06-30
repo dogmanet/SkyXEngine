@@ -134,3 +134,31 @@ void CDynamicModelProvider::computeVisibility(const IFrustum *pFrustum, CRendera
 		}
 	}
 }
+
+void CDynamicModelProvider::getLevelSize(const XEventLevelSize *pData)
+{
+	CDynamicModel *pMdl;
+	float3 vMax, vMin;
+	for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
+	{
+		pMdl = m_apModels[i];
+		if(pMdl->isEnabled())
+		{
+			float3 vDelta = pMdl->getPosition();
+			vMin = pMdl->getLocalBoundMin() + vDelta;
+			vMax = pMdl->getLocalBoundMax() + vDelta;
+
+			if(pData->vMax == pData->vMin)
+			{
+				pData->vMax = vMax;
+				pData->vMin = vMin;
+			}
+			else
+			{
+				pData->vMax = SMVectorMax(pData->vMax, vMax);
+				pData->vMin = SMVectorMin(pData->vMin, vMin);
+			}
+
+		}
+	}
+}

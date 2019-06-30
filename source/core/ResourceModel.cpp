@@ -204,3 +204,8 @@ IModelPhysboxCapsule * XMETHODCALLTYPE CResourceModel::newPhysboxCapsule() const
 {
 	return(new CModelPhysboxCapsule());
 }
+
+void XMETHODCALLTYPE CResourceModel::setLocalAABB(const float3 &vMin, const float3 &vMax)
+{
+	//! @todo: implement me!
+}

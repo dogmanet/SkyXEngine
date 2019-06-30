@@ -50,6 +50,8 @@ protected:
 	void onModelChanged();
 	void onSync() override;
 
+	void setScale(float fScale) override;
+
 	const char * m_szInvName; //!< Имя, отображаемое в инвентаре
 	bool m_bInvStackable; //!< Можно ли хранить несколько итемов в одной ячейке
 	int m_iInvStackCurSize; //!< Количество итемов в стеке

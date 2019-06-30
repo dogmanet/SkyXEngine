@@ -11,14 +11,7 @@ See the license in LICENSE
 */
 
 BEGIN_PROPTABLE(CPropStatic)
-	//! Масштаб модели
-	DEFINE_FIELD_FLOATFN(m_fScale, 0, "scale", "Scale", onSetScale, EDITOR_TEXTFIELD)
-
-
-	DEFINE_FIELD_BOOLFN(m_useTrimeshPhysics, 0, "use_trimesh", "Use trimesh physics", onSetUseTrimesh, EDITOR_COMBOBOX)
-		COMBO_OPTION("Yes", "1")
-		COMBO_OPTION("No", "0")
-	EDITOR_COMBO_END()
+	DEFINE_FIELD_BOOLFN(m_useTrimeshPhysics, 0, "use_trimesh", "Use trimesh physics", onSetUseTrimesh, EDITOR_YESNO)
 END_PROPTABLE()
 
 REGISTER_ENTITY(CPropStatic, prop_static);
@@ -65,15 +58,6 @@ void CPropStatic::removePhysBody()
 	mem_delete(m_pRigidBody);
 }
 
-void CPropStatic::onSetScale(float fScale)
-{
-	m_fScale = fScale;
-	if(m_pModel)
-	{
-		m_pModel->setScale(fScale);
-	}
-}
-
 void CPropStatic::initPhysics()
 {
 	if(!m_pModel)
@@ -92,6 +76,11 @@ void CPropStatic::initPhysics()
 		return;
 	}
 
+	if(!m_useAutoPhysbox)
+	{
+		return;
+	}
+
 	btCompoundShape *pShape = new btCompoundShape(true, uShapesCount);
 
 	auto pResource = m_pModel->getResource()->asStatic();
@@ -105,6 +94,7 @@ void CPropStatic::initPhysics()
 		
 		if(pLocalShape)
 		{
+			pLocalShape->setLocalScaling(btVector3(m_fBaseScale, m_fBaseScale, m_fBaseScale));
 			btTransform localTransform;
 			localTransform.setIdentity();
 			pShape->addChildShape(localTransform, pLocalShape);
@@ -134,16 +124,6 @@ void CPropStatic::releasePhysics()
 			}
 		}
 		mem_delete(m_pCollideShape);
-	}
-}
-
-void CPropStatic::setModel(const char *mdl)
-{
-	BaseClass::setModel(mdl);
-
-	if(m_pModel)
-	{
-		m_pModel->setScale(m_fScale);
 	}
 }
 

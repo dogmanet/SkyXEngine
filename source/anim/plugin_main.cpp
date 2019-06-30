@@ -1,23 +1,48 @@
 #include <xcommon/IXPlugin.h>
+#include <xcommon/XEvents.h>
 #include "Renderable.h"
 #include "Updatable.h"
 #include "AnimatedModelProvider.h"
 #include "DynamicModelProvider.h"
 
+class CLevelSizeEventListener: public IEventListener<XEventLevelSize>
+{
+public:
+	CLevelSizeEventListener(CAnimatedModelProvider *pAnimatedModelProvider, CDynamicModelProvider *pDynamicModelProvider):
+		m_pAnimatedModelProvider(pAnimatedModelProvider),
+		m_pDynamicModelProvider(pDynamicModelProvider)
+	{
+	}
+	void onEvent(const XEventLevelSize *pData)
+	{
+		m_pDynamicModelProvider->getLevelSize(pData);
+		m_pAnimatedModelProvider->getLevelSize(pData);
+	}
+
+protected:
+	CAnimatedModelProvider *m_pAnimatedModelProvider;
+	CDynamicModelProvider *m_pDynamicModelProvider;
+};
 
 class CDSEPlugin: public IXPlugin
 {
 public:
 	void XMETHODCALLTYPE startup(IXCore *pCore) override
 	{
+		m_pCore = pCore;
 		m_pAnimatedModelProvider = new CAnimatedModelProvider(pCore);
 		m_pDynamicModelProvider = new CDynamicModelProvider(pCore);
 		m_pRenderable = new CRenderable(getID(), m_pAnimatedModelProvider, m_pDynamicModelProvider);
 		m_pUpdatable = new CUpdatable(m_pAnimatedModelProvider);
+		m_pLevelSizeEventListener = new CLevelSizeEventListener(m_pAnimatedModelProvider, m_pDynamicModelProvider);
+
+		m_pCore->getEventChannel<XEventLevelSize>(EVENT_LEVEL_GET_SIZE_GUID)->addListener(m_pLevelSizeEventListener);
 	}
 
 	void XMETHODCALLTYPE shutdown() override
 	{
+		m_pCore->getEventChannel<XEventLevelSize>(EVENT_LEVEL_GET_SIZE_GUID)->removeListener(m_pLevelSizeEventListener);
+		mem_delete(m_pLevelSizeEventListener);
 		mem_delete(m_pRenderable);
 		mem_delete(m_pUpdatable);
 		mem_delete(m_pAnimatedModelProvider);
@@ -74,8 +99,10 @@ public:
 protected:
 	CRenderable *m_pRenderable = NULL;
 	CUpdatable *m_pUpdatable = NULL;
+	IXCore *m_pCore = NULL;
 	CAnimatedModelProvider *m_pAnimatedModelProvider = NULL;
 	CDynamicModelProvider *m_pDynamicModelProvider = NULL;
+	CLevelSizeEventListener *m_pLevelSizeEventListener = NULL;
 };
 
 DECLARE_XPLUGIN(CDSEPlugin);

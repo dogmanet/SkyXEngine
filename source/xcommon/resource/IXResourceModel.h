@@ -280,6 +280,8 @@ public:
 	virtual UINT XMETHODCALLTYPE addLod(UINT uSubsetCount, UINT *puVertexCount, UINT *puIndexCount) = 0;
 	virtual UINT XMETHODCALLTYPE getLodCount() const = 0;
 
+	virtual void XMETHODCALLTYPE setLocalAABB(const float3 &vMin, const float3 &vMax) = 0;
+
 	virtual bool XMETHODCALLTYPE validate() const = 0;
 
 	virtual IModelPhysboxBox    * XMETHODCALLTYPE newPhysboxBox() const = 0;

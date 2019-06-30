@@ -29,9 +29,7 @@ BEGIN_PROPTABLE(CBaseItem)
 	DEFINE_OUTPUT(m_onPickUp, "OnPickUp", "On pickup")
 	DEFINE_OUTPUT(m_onDrop, "OnDrop", "On drop")
 
-	DEFINE_FIELD_STRINGFN(m_szViewModelFile, 0, "model_view", "View model file", onSetViewModel, EDITOR_FILEFIELD)
-		FILE_OPTION("Select model", "dse")
-	EDITOR_FILE_END()
+	DEFINE_FIELD_STRINGFN(m_szViewModelFile, 0, "model_view", "View model file", onSetViewModel, EDITOR_MODEL)
 END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseItem, base_item);
@@ -116,6 +114,16 @@ void CBaseItem::onModeChanged(INVENTORY_ITEM_MODE oldMode, INVENTORY_ITEM_MODE n
 	}
 }
 
+void CBaseItem::setScale(float fScale)
+{
+	BaseClass::setScale(fScale);
+
+	if(m_pViewModel)
+	{
+		m_pViewModel->setScale(fScale);
+	}
+}
+
 void CBaseItem::onSetViewModel(const char *mdl)
 {
 	_setStrVal(&m_szViewModelFile, mdl);
@@ -168,6 +176,7 @@ void CBaseItem::onModelChanged()
 		{
 			m_pViewModel->play("IDLE");
 			m_pViewModel->enable(m_inventoryMode == IIM_EQUIPPED);
+			m_pViewModel->setScale(m_fBaseScale);
 		}
 	}
 }

@@ -28,6 +28,8 @@ public:
 	void render(CRenderableVisibility *pVisibility = NULL);
 	void computeVisibility(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference=NULL);
 
+	void getLevelSize(const XEventLevelSize *pData);
+
 protected:
 	AssotiativeArray<IXResourceModelAnimated*, Array<CAnimatedModelShared*>> m_mModels;
 

@@ -32,9 +32,8 @@ public:
 	void getMinMax(float3 * min, float3 * max);
 	// void getSphere(float3 * center, float * radius);
 
-	bool setKV(const char * name, const char * value);
-
-	virtual void setModel(const char * mdl);
+	virtual void setModel(const char *szMdl);
+	virtual void setScale(float fScale);
 
 	float3 getAttachmentPos(int id);
 	SMQuaternion getAttachmentRot(int id);
@@ -74,8 +73,9 @@ protected:
 
 	IXModel *m_pModel = NULL;
 	const char * m_szModelFile;
-	// float m_fBaseScale;
+	float m_fBaseScale = 1.0f;
 	bool m_isStatic = false;
+	bool m_useAutoPhysbox = true;
 
 	CBaseEntity *m_pEntColorRef = NULL;
 	float3_t m_vGlowColor;
@@ -93,7 +93,7 @@ protected:
 	virtual void onAnimationStateChanged(int slot, ANIM_STATE as);
 
 	void onIsStaticChange(bool isStatic);
-
+	void onSetUseAutoPhysbox(bool use);
 	int m_iSkin = 0;
 
 	struct

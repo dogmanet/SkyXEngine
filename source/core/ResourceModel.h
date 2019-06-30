@@ -48,6 +48,8 @@ public:
 	IModelPhysboxCylinder * XMETHODCALLTYPE newPhysboxCylinder() const override;
 	IModelPhysboxCapsule * XMETHODCALLTYPE newPhysboxCapsule() const override;
 
+	void XMETHODCALLTYPE setLocalAABB(const float3 &vMin, const float3 &vMax) override;
+
 	void setFileName(const char *szFilename);
 	const char *getFileName() const;
 
