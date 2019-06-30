@@ -55,6 +55,9 @@ private:
 public:
     CFileSystem();
 
+    //! Возвращает абсолютный канонизированный путь
+    char *getAbsoliteCanonizePath(const char *szPath) override;
+
 	UINT addRoot(const char *szPath, int iPriority = -1) override;
 
     UINT getRootCount() override;

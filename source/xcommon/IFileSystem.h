@@ -39,6 +39,9 @@ class IFile;
 class IFileSystem: public IXUnknown
 {
 public:
+    //! Возвращает абсолютный канонизированный путь
+    virtual char *getAbsoliteCanonizePath(const char *szPath) = 0;
+
 	/*! Добавить корневой путь (позволяется как абсолютнй путь, так и относительно каталога build)
 	 Так же, принимает путь к упакованному архиву с префиксом '@', например "@c:/engine/build/textures.ext" или "@textures.ext" (относительно build)
 	*/
