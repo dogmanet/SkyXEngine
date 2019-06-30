@@ -140,7 +140,7 @@ bool CFileSystem::resolvePath(const char *szPath, char *szOut, int iOutMax)
 
     for (UINT i = 0, l = m_filePaths.size(); i < l; ++i)
     {
-        buff = (m_filePaths[0] + '/' + szPath);
+        buff = (m_filePaths[i] + '/' + szPath);
 
         if (fileExists(buff.c_str()) && isFile(buff.c_str()))
         {
@@ -267,17 +267,19 @@ bool CFileSystem::deleteDirectory(const char *szPath)
 
 IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ)
 {
-    //Если путь не корректен
-    if (!fileExists(szPath))
-    {
-        return nullptr;
-    }
-
     //Если путей на запись нет, и количество корневых путей нулевое
     if (m_filePaths.size() == 0)
     {
         return nullptr;
     }
+
+    bool absolute = isAbsolutePath(szPath);
+    int len = absolute ? strlen(szPath) + 1 : MAX_PATH;
+    char *fullPath = new char[len];
+  
+    absolute ? memcpy(fullPath, szPath, len) : resolvePath(szPath, fullPath, MAX_PATH);
+      
+    canonize_path(fullPath);
 
     CFile *file = new CFile;
 
@@ -286,17 +288,17 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
     switch (mode)
     {
     case FILE_MODE_READ:
-        file->open(szPath, CORE_FILE_BIN);
+        file->open(fullPath, CORE_FILE_BIN);
 
         break;
     case FILE_MODE_WRITE:
-        newFileName = copyFile(szPath);
+        newFileName = copyFile(fullPath);
         file->open(newFileName->c_str(), CORE_FILE_BIN);
         mem_delete(newFileName);
 
         break;
     case FILE_MODE_APPEND:
-        newFileName = copyFile(szPath);
+        newFileName = copyFile(fullPath);
         file->add(newFileName->c_str(), CORE_FILE_BIN);
         mem_delete(newFileName);
 
@@ -305,6 +307,8 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
         assert(false && "You cannot use multiple opening types at the same time");
         break;
     }
+
+    mem_delete(fullPath);
 
     return file;
 }
