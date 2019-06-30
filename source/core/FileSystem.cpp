@@ -52,7 +52,7 @@ HANDLE CFileSystem::getFileHandle(const char *szPath)
 
 bool CFileSystem::isAbsolutePath(const char *szPath)
 {
-    while (szPath != 0)
+    while (*szPath != '\0')
     {
         if (*szPath == ':' && *(szPath + 1) == '/')
         {
@@ -89,13 +89,13 @@ UINT CFileSystem::addRoot(const char *szPath, int iPriority)
         str += m_pathToBuild;
     }
 
-    str += szPath;
+    str += szPath; // <--- Оптимизация для того что бы не создавать временных объектов
 
     m_filePaths.push_back(str);
     m_priority.push_back(iPriority);
 
     //Если у нас некорректный путь для записи и путь не является архивным
-    if (m_writableRoot == -1 && szPath[0] != '@')
+    if (m_writableRoot == -1 && *szPath != '@')
     {
         m_writableRoot = m_filePaths.size() - 1;
     }
