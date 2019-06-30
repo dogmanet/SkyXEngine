@@ -28,6 +28,8 @@
 class CFileSystem final : public IFileSystem
 {
 private:
+    char *getFullPathToBuild();
+
     String *getFileName(const char *name);
 
     //! Вспомогательная функция для конвертирования FILETIME в time_t
@@ -43,11 +45,16 @@ private:
     Array<String> m_filePaths;
     Array<int> m_priority;
 
+    //Полный путь к build
+    String m_pathToBuild;
+
     //!Наш текущий ID корневого пути для записи
     //! -1 - значит не установлен
     int m_writableRoot = -1;
 
 public:
+    CFileSystem();
+
 	UINT addRoot(const char *szPath, int iPriority = -1) override;
 
     UINT getRootCount() override;

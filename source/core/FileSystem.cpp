@@ -2,9 +2,22 @@
 #include "FileExtIterator.h"
 #include "FileExtsIterator.h"
 #include "DirIterator.h"
-#include <shellapi.h>
 #include "File.h"
+#include <shellapi.h>
 #include <ShlObj.h>
+
+char *CFileSystem::getFullPathToBuild()
+{
+    char *path = new char[MAX_PATH];
+
+    GetModuleFileName(nullptr, path, MAX_PATH);
+
+    char *pos = strstr(path, "build\\");
+
+    pos[6] = '\0';
+
+    return path;
+}
 
 String *CFileSystem::getFileName(const char *name)
 {
@@ -58,9 +71,27 @@ String *CFileSystem::copyFile(const char* szPath)
     return newFilePath;
 }
 
+CFileSystem::CFileSystem()
+{
+    char *path = getFullPathToBuild();
+    m_pathToBuild = path;
+
+    mem_delete(path);
+}
+
 UINT CFileSystem::addRoot(const char *szPath, int iPriority)
 {
-    m_filePaths.push_back(String(szPath));
+    String str;
+
+    //Если путь не абсолютный - то прибавляем к нему часть пути к папке build
+    if (!isAbsolutePath(szPath))
+    {
+        str += m_pathToBuild;
+    }
+
+    str += szPath;
+
+    m_filePaths.push_back(str);
     m_priority.push_back(iPriority);
 
     //Если у нас некорректный путь для записи и путь не является архивным
@@ -236,8 +267,6 @@ bool CFileSystem::deleteDirectory(const char *szPath)
 
 IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ)
 {
-    CFile *file = new CFile;
-
     //Если путь не корректен
     if (!fileExists(szPath))
     {
@@ -249,6 +278,8 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
     {
         return nullptr;
     }
+
+    CFile *file = new CFile;
 
     String *newFileName;
 
