@@ -57,6 +57,7 @@ HWND g_hComboTypesWnd = NULL;
 HWND g_hStaticTypesWnd = NULL;
 HWND g_hComboClassesWnd = NULL;
 HWND g_hStaticClassesWnd = NULL;
+HWND g_hCheckboxRandomScaleYawWnd = NULL;
 
 HWND g_hABArrowButton = NULL;
 HWND g_hABCameraButton = NULL;
@@ -522,6 +523,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			SetWindowLongPtr(g_hComboClassesWnd, GWLP_WNDPROC, (LONG_PTR)ClassesComboWndProc);
 		}
 
+		//g_hCheckboxRandomScaleYawWnd
+		g_hCheckboxRandomScaleYawWnd = CreateWindowExA(0, WC_BUTTON, "Random scale and yaw", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 15 + 25 + 25, MARGIN_RIGHT, 15, hWnd, (HMENU)0, hInst, NULL);
+		{
+			SetWindowFont(g_hCheckboxRandomScaleYawWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
+		}
+
 		{
 			TV_INSERTSTRUCT tvis;
 			memset(&tvis, 0, sizeof(tvis));
@@ -610,7 +617,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		MoveWindow(g_hComboTypesWnd, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, FALSE);
 		MoveWindow(g_hStaticClassesWnd, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 25, MARGIN_RIGHT, 15, FALSE);
 		MoveWindow(g_hComboClassesWnd, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 15 + 25, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, FALSE);
-
+		MoveWindow(g_hCheckboxRandomScaleYawWnd, rect.right, rect.top + OBJECT_TREE_HEIGHT + 15 + 15 + 25 + 25, MARGIN_RIGHT, 15, FALSE);
+		
 		InvalidateRect(hWnd, &rect, TRUE);
 
 		if(g_pEngine)
@@ -977,7 +985,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					g_pUndoManager->execCommand(pCmdUnselect);
 				}
 
-				CCommandCreate *pCmd = new CCommandCreate(g_xState.vCreateOrigin, szTypeName, szClassName);
+				CCommandCreate *pCmd = new CCommandCreate(g_xState.vCreateOrigin, szTypeName, szClassName, Button_GetCheck(g_hCheckboxRandomScaleYawWnd));
 				g_pUndoManager->execCommand(pCmd);
 
 				g_xState.bCreateMode = false;

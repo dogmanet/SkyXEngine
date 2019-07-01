@@ -11,7 +11,7 @@
 class CCommandCreate: public CCommand
 {
 public:
-	CCommandCreate(const float3_t vPos, const char *szTypeName, const char *szClassName);
+	CCommandCreate(const float3_t vPos, const char *szTypeName, const char *szClassName, bool useRandomScaleYaw=false);
 	~CCommandCreate();
 
 	bool exec();
@@ -24,6 +24,8 @@ public:
 
 protected:
 	float3_t m_vPos;
+	SMQuaternion m_qOrient;
+	float m_fScale = 1.0f;
 	String m_sClassName;
 	IXEditable *m_pEditable = NULL;
 	IXEditorObject *m_pObject = NULL;
