@@ -54,7 +54,8 @@ bool CFileSystem::isAbsolutePath(const char *szPath)
 {
     while (*szPath != '\0')
     {
-        if (*szPath == ':' && *(szPath + 1) == '/')
+        //Для корректности нужна проверка на разные слеши, ведь на вход может прийти путь не с /
+        if (*szPath == ':' && (*(szPath + 1) == '/' || *(szPath + 1) == '\\'))
         {
             return true;
         }
@@ -198,13 +199,8 @@ bool CFileSystem::isFile(const char *szPath)
 {
 	DWORD flag = GetFileAttributes(szPath);
 
-	//Если не существует или указанный путь ведет к каталогу
-	if (flag == INVALID_FILE_ATTRIBUTES && !(flag & FILE_ATTRIBUTE_DIRECTORY))
-	{
-		return false;
-	}
-
-	return true;
+	//Если не существует или указанный путь ведет не к файлу
+    return !(flag & FILE_ATTRIBUTE_DIRECTORY);
 }
 
 bool CFileSystem::isDirectory(const char *szPath)
