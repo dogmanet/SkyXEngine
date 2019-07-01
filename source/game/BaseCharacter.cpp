@@ -333,21 +333,20 @@ void CBaseCharacter::initHitboxes()
 		btCollisionShape *pShape;
 		switch(hb->type)
 		{
-		case HT_BOX:
+		case XHT_BOX:
 			pShape = new btBoxShape(F3_BTVEC(hb->lwh * 0.5f));
 			break;
-		case HT_CAPSULE:
+		case XHT_CAPSULE:
 			pShape = new btCapsuleShape(hb->lwh.y * 0.5f, hb->lwh.z);
 			break;
-		case HT_CYLINDER:
+		case XHT_CYLINDER:
 			pShape = new btCylinderShape(F3_BTVEC(hb->lwh * 0.5f));
 			break;
-		case HT_ELIPSOID:
-			// @FIXME: Add actual elipsoid shape
+		case XHT_SPHERE:
 			pShape = new btSphereShape(hb->lwh.x);
 			break;
-		case HT_CONVEX:
-			assert(false && "Not supported here");
+		default:
+			assert(!"Not supported here!");
 		}
 		btVector3 vInertia;
 		const float fMass = 1.0f;

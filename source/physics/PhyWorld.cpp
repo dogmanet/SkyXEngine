@@ -6,8 +6,6 @@ See the license in LICENSE
 
 #include "PhyWorld.h"
 #include <core/sxcore.h>
-#include <green/sxgreen.h>
-#include <gcore/sxgcore.h>
 
 #include "sxphysics.h"
 
@@ -120,6 +118,7 @@ CPhyWorld::CPhyWorld():
 	//btSetCustomEnterProfileZoneFunc(CProfileManager::Start_Profile);
 	//btSetCustomLeaveProfileZoneFunc(CProfileManager::Stop_Profile);
 
+#if 0
 	Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->addListener([](const XEventLevel *pData)
 	{
 		char szPathLevel[1024];
@@ -157,13 +156,16 @@ CPhyWorld::CPhyWorld():
 			break;
 		}
 	});
+#endif
 
 	printf("Done!\n");
 }
 
 CPhyWorld::~CPhyWorld()
 {
+#if 0
 	unloadGeom();
+#endif
 
 	mem_delete(m_pDynamicsWorld);
 	mem_delete(m_pGHostPairCallback);
@@ -232,6 +234,8 @@ void CPhyWorld::removeShape(btRigidBody * pBody)
 		m_pDynamicsWorld->removeRigidBody(pBody);
 	}
 }
+
+#if 0
 
 void CPhyWorld::loadGeom(const char * file)
 {
@@ -810,6 +814,7 @@ bool CPhyWorld::exportGeom(const char * _file)
 	}
 	return(ret);
 }
+#endif
 
 MTLTYPE_PHYSIC CPhyWorld::getMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
 {

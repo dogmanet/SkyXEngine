@@ -56,12 +56,13 @@ public:
 	void addShape(btRigidBody * pBody, int group, int mask);
 	void removeShape(btRigidBody * pBody);
 
-
+#if 0
 	void loadGeom(const char * file=NULL);
 	void unloadGeom();
 
 	bool importGeom(const char * file);
 	bool exportGeom(const char * file);
+#endif
 
 	void disableSimulation();
 	void enableSimulation();

@@ -198,7 +198,6 @@
     <ClInclude Include="..\..\..\source\anim\DynamicModel.h" />
     <ClInclude Include="..\..\..\source\anim\DynamicModelProvider.h" />
     <ClInclude Include="..\..\..\source\anim\DynamicModelShared.h" />
-    <ClInclude Include="..\..\..\source\anim\ModelFile.h" />
     <ClInclude Include="..\..\..\source\anim\Renderable.h" />
     <ClInclude Include="..\..\..\source\anim\RenderableVisibility.h" />
     <ClInclude Include="..\..\..\source\anim\Updatable.h" />

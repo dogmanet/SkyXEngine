@@ -40,30 +40,7 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
-//#pragma comment(lib, "d3d9.lib")
-//#pragma comment(lib, "DxErr9.lib")
-//#pragma comment(lib, "d3dx9.lib")
-
-#include <gcore/ModelFile.h>
-
-//флаги компиляции шейдеров
-#define SHADER_DEBUG D3DXSHADER_DEBUG | D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY | D3DXSHADER_AVOID_FLOW_CONTROL | D3DXSHADER_SKIPOPTIMIZATION
-#define SHADER_RELEASE D3DXSHADER_OPTIMIZATION_LEVEL3 | D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY | D3DXSHADER_PARTIALPRECISION | D3DXSHADER_PREFER_FLOW_CONTROL
-
-//определяем флаг компилции шейдеров
-#if defined(DEBUG) || defined(_DEBUG) 
-#define SHADER_FLAGS SHADER_DEBUG 
-#else 
-#define SHADER_FLAGS SHADER_RELEASE 
-#endif
-
-//
-#define SXGC_ERR_NON_DETECTED_D3D -1
-#define SXGC_ERR_FAILED_INIT_D3D -2
-
 class IFrustum;
-
-
 
 //! \name Базовые функции библиотеки 
 //!@{
@@ -643,118 +620,6 @@ SX_LIB_API IGXTexture2D* SGCore_RTGetTexture(ID id);
 
 //#############################################################################
 
-/*! \defgroup sxgcore_dse_static Статическая модель dse формата
- \ingroup sxgcore
- \note sxgcore предоставляет возможность загрузки статических моделей, формат вершин которых представлен структурой #vertex_static, которая объявлена в файле ModelFile.h
- \todo Описать формат файла статической модели dse
-@{*/
-
-//! структура статической модели dse
-struct ISXDataStaticModel : public IBaseObject
-{
-	virtual ~ISXDataStaticModel(){};
-
-	virtual ISXDataStaticModel* getCopy()=0;//!< получить абсолютную копию модели
-
-	virtual void syncBuffers(bool bRecreate = false)=0;
-	
-	IGXVertexBuffer *m_pVertexBuffer;//!< вершиный буфер
-	IGXIndexBuffer *m_pIndexBuffer;	//!< индексный буфер
-	IGXRenderBuffer *m_pRenderBuffer = NULL;
-	vertex_static_ex *m_pVertices = NULL;
-	UINT *m_pIndices = NULL;
-
-	uint32_t m_uiSubsetCount;		//!< количество подгрупп
-	char **m_ppTextures;			//!< массив имен текстур без расширения
-	uint32_t *m_pStartIndex;		//!< массив стартовых позиций индексов для каждой подгруппы
-	uint32_t *m_pIndexCount;		//!< массив количества индексов для каждой подгруппы
-	uint32_t *m_pStartVertex;		//!< массив стартовых позиций вершин для каждой подгруппы
-	uint32_t *m_pVertexCount;		//!< массив количества вершин для каждой подгруппы
-	uint32_t m_uiAllIndexCount;		//!< общее количество индексов
-	uint32_t m_uiAllVertexCount;	//!< общее количество вершин
-
-	float4_t m_vBSphere;
-	float3_t m_vBBMax, m_vBBMin;
-};
-
-//! типы dse файлов
-enum DSE_TYPE
-{
-	//! статика
-	DSE_TYPE_STATIC,
-
-	//! анимация
-	DSE_TYPE_ANIMATION,
-
-	//! анимационная модель
-	DSE_TYPE_ANIM_MESH,
-};
-
-//! возможная информация о dse файле
-struct CDSEinfo
-{
-	//! тип файла
-	DSE_TYPE type;
-
-	//! количество вершин
-	int iCountVertex;
-
-	//! количество индексов
-	int iCountIndex;
-
-	//! количество подгрупп
-	int iCountSubsets;
-
-	//! версия
-	int iVersion;
-
-	//! количество скинов
-	int iCountSkin;
-
-	//! количество хитбоксов
-	int iCountHitbox;
-
-	//! количество костей
-	int iCountBone;
-
-	//! количетсов анимаций
-	int iCountAnimation;
-
-	//! габариты в метрах
-	float3_t vDimensions;
-
-	//! центр модели в метрах
-	float3_t vCenter;
-};
-
-//! получить информацию о dse файле pInfo != 0, путь абсолютный
-SX_LIB_API bool SGCore_DSEgetInfo(const char *szPath, CDSEinfo *pOutInfo);
-
-//! создать статическую модель
-SX_LIB_API ISXDataStaticModel* SGCore_StaticModelCr();	
-
-//! является ли файл в пути szPath dse форматом? путь абсолютный
-SX_LIB_API bool SGCore_DSE_IsDSE(const char *szPath);
-
-//! является ли файл в пути szPath dse моделью? путь абсолютный
-SX_LIB_API bool SGCore_DSE_IsModel(const char *szPath);
-
-//! является ли файл в пути szPath dse анимацией? путь абсолютный
-SX_LIB_API bool SGCore_DSE_IsAnimation(const char *szPath);
-
-//! загрузить статическую модель, data инициализируется внутри
-SX_LIB_API void SGCore_StaticModelLoad(const char *szFile, ISXDataStaticModel **ppData);	
-
-// сохранить статическую модель
-//SX_LIB_API void SGCore_StaticModelSave(const char *szFile, ISXDataStaticModel **pData);
-
-//! возвращает декларацию вершин статической модели
-SX_LIB_API IGXVertexDeclaration* SGCore_StaticModelGetDecl();	
-
-//!@} sxgcore_dse_static
-
-//#############################################################################
-
 /*! \defgroup sxgcore_bb Ограничивающий объем
  \ingroup sxgcore
 @{*/
@@ -814,27 +679,13 @@ public:
 
 	/*! Просчет ограничивающего объема по вершинному буферу*/
 	virtual void calcBound(
-		IGXVertexBuffer *pVertexBuffer, //!< вершинный буфер (незаблокированный), в вершинах которого первым элементом идет позиция float3_t вектор  
-		int iCountVertex,		//!< количество вершин
-		int iBytePerVertex		//!< количество байт в вершине
-		) = 0;
-
-	/*! Просчет ограничивающего объема по вершинному буферу*/
-	virtual void calcBound(
-		vertex_static_ex *pVertex, //!< вершинный буфер (незаблокированный), в вершинах которого первым элементом идет позиция float3_t вектор  
+		float3_t *pVertex, //!< вершинный буфер (незаблокированный), в вершинах которого первым элементом идет позиция float3_t вектор  
 		int iCountVertex,		//!< количество вершин
 		int iBytePerVertex		//!< количество байт в вершине
 		) = 0;
 
 	virtual void calcBoundIndex(
-		IGXVertexBuffer *pVertexBuffer,
-		uint32_t **ppArrIndex, 
-		uint32_t *pCountIndex,
-		int iCountSubset,
-		int iBytePerVertex
-		) = 0;
-	virtual void calcBoundIndex(
-		vertex_static_ex *pVertexBuffer,
+		float3_t *pVertexBuffer,
 		uint32_t **ppArrIndex, 
 		uint32_t *pCountIndex,
 		int iCountSubset,
@@ -921,14 +772,6 @@ SX_LIB_API void SGCore_FCreateSphere(
 	UINT iSideCount,    //!< количество боковых сторон
 	UINT iStackCount,   //!< количество горизонтальных слоев
 	IMesh ** ppMesh     //!< выходной меш
-	);
-
-//! просчет ограничивающего объема по вершинному буфер
-SX_LIB_API void SGCore_FCompBoundBox(
-	IGXVertexBuffer* vertex_buffer, //!< вершинный буфер (незаблокированный), в вершинах которого первым элементом идет позиция float3_t вектор
-	ISXBound** bound,	//!< инициализированный ISXBound
-	DWORD count_vert,	//!< количество вершин
-	DWORD bytepervert	//!< количество байт в вершине
 	);
 
 //! создание меша (ID3DXMesh) ограничивающего объема

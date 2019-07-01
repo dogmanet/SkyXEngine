@@ -20,11 +20,16 @@ See the license in LICENSE
 #include "BaseEntity.h"
 #include <xcommon/resource/IXModelProvider.h>
 
+#define BLEND_MAX 4
+
+class CAnimationCallback;
 //! Анимированный игровой объект
 class CBaseAnimating: public CBaseEntity
 {
 	DECLARE_CLASS(CBaseAnimating, CBaseEntity);
 	DECLARE_PROPTABLE();
+
+	friend class CAnimationCallback;
 public:
 	CBaseAnimating(CEntityManager * pMgr);
 	~CBaseAnimating();
@@ -90,7 +95,10 @@ protected:
 
 	virtual void _cleanup();
 
-	virtual void onAnimationStateChanged(int slot, ANIM_STATE as);
+	virtual void onAnimationStart(UINT uLayer);
+	virtual void onAnimationStop(UINT uLayer);
+	virtual void onAnimationLoop(UINT uLayer);
+	virtual void onAnimationProgress(UINT uLayer, float fProgress);
 
 	void onIsStaticChange(bool isStatic);
 	void onSetUseAutoPhysbox(bool use);
@@ -98,7 +106,7 @@ protected:
 
 	struct
 	{
-		char szName[MODEL_MAX_NAME];
+		char szName[XMODEL_MAX_NAME];
 		UINT uFadeTime;
 		bool isActivity;
 	} m_vNextAnim[BLEND_MAX];
@@ -106,6 +114,7 @@ protected:
 private:
 	COLLISION_GROUP m_collisionGroup = CG_DEFAULT;
 	COLLISION_GROUP m_collisionMask = CG_ALL;
+	CAnimationCallback *m_pAnimationCallback;
 };
 
 #endif

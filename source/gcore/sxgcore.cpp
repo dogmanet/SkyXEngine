@@ -14,7 +14,6 @@ See the license in LICENSE
 #include <gcore/camera.h>
 #include <gcore/oc.h>
 
-#include <gcore/loader_static.h>
 #include <gcore/sky.h>
 
 #include <gcore/gcore_utils.h>
@@ -712,20 +711,6 @@ SX_LIB_API void SGCore_FCreateSphere(float fRadius, UINT iSideCount, UINT iStack
 	SG_PRECOND(_VOID);
 
 	CreateSphere(fRadius, iSideCount, iStackCount, ppMesh, g_pDevice);
-}
-
-SX_LIB_API void SGCore_FCompBoundBox(IGXVertexBuffer *pVertexBuffer, ISXBound **ppBound, DWORD dwCountVertices, DWORD dwBytesPerVertex)
-{
-	SG_PRECOND(_VOID);
-
-	ComputeBoundingBox(pVertexBuffer, ppBound, dwCountVertices, dwBytesPerVertex);
-}
-
-SX_LIB_API void SGCore_FCompBoundBox2(IGXVertexBuffer *pVertexBuffer, ISXBound *pBound, DWORD dwCountVertices, DWORD dwBytesPerVertex)
-{
-	SG_PRECOND(_VOID);
-
-	ComputeBoundingBox2(pVertexBuffer, pBound, dwCountVertices, dwBytesPerVertex);
 }
 
 SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3 *pMin, const float3 *pMax, IMesh **ppBBmesh)

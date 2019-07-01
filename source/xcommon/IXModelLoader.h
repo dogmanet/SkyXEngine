@@ -41,6 +41,9 @@ struct XModelInfo
 
 	//! центр модели в метрах
 	float3_t vCenter;
+
+	//! количество лодов
+	UINT uLodCount;
 };
 
 class IXModelLoader: public IXUnknown

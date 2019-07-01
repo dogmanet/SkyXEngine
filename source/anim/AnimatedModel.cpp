@@ -595,6 +595,7 @@ void CAnimatedModel::update(float fDT)
 							{
 								m_pCallback->onStop(i);
 							}
+							pLayer->fTime = 0.0f;
 							cont = true;
 							break;
 						}
@@ -602,10 +603,10 @@ void CAnimatedModel::update(float fDT)
 
 					pLayer->fTime += rev ? fr : -fr;
 				}
-				if(cont)
+				/*if(cont)
 				{
 					continue;
-				}
+				}*/
 				if(pLayer->iCurrentFrame < 0)
 				{
 					pLayer->iCurrentFrame += pLayer->uFrameCount;

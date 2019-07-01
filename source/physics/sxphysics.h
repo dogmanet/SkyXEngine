@@ -74,6 +74,7 @@ SX_LIB_API void SPhysics_Update(int thread = 0);
 */
 SX_LIB_API void SPhysics_Sync();
 
+#if 0
 /*! Загружает информацию о геометрии уровня
 */
 SX_LIB_API void SPhysics_LoadGeom(const char * file = NULL);
@@ -89,7 +90,7 @@ SX_LIB_API bool SPhysics_ImportGeom(const char * file);
 /*! Выгружает информацию о геометрии уровня
 */
 SX_LIB_API bool SPhysics_ExportGeom(const char * file);
-
+#endif
 /*! Добавляет объект в симуляцию
 */
 SX_LIB_API void SPhysics_AddShape(btRigidBody * pBody);

@@ -51,9 +51,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\source\anim\ModelFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\anim\Renderable.h">
       <Filter>Header Files</Filter>
     </ClInclude>

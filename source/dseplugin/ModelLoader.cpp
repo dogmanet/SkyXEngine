@@ -45,8 +45,87 @@ const char* XMETHODCALLTYPE CModelLoader::getDescription() const
 
 void XMETHODCALLTYPE CModelLoader::getInfo(XModelInfo *pModelInfo)
 {
-	assert(!"Not implemented!");
-	//! @todo Implement me!
+	pModelInfo->type = getType();
+	pModelInfo->uSkinCount = m_hdr.iSkinCount;
+	pModelInfo->uSubsetsCount = m_hdr.iMaterialCount;
+	pModelInfo->uBoneCount = m_hdr2.iBoneTableCount;
+	pModelInfo->uAnimationCount = m_hdr.iAnimationCount;
+	pModelInfo->uHitboxCount = m_hdr2.iHitboxCount;
+	pModelInfo->uLodCount = m_hdr.iLODcount;
+
+	pModelInfo->uVertexCount = 0;
+	pModelInfo->uIndexCount = 0;
+
+	if(m_hdr.iLODcount && m_hdr.iLODoffset)
+	{
+		m_pCurrentFile->setPos((size_t)m_hdr.iLODoffset);
+
+		ModelLoD lod;
+		if(m_hdr.iLODcount)
+		{
+			m_pCurrentFile->readBin(&lod, MODEL_LOD_STRUCT_SIZE);
+			float3 vMin, vMax;
+			float3 vPos;
+
+			for(UINT j = 0; j < lod.iSubMeshCount; j++)
+			{
+				uint32_t uMaterialID, uVertexCount, uIndexCount;
+				m_pCurrentFile->readBin(&uMaterialID, sizeof(uint32_t));
+				m_pCurrentFile->readBin(&uVertexCount, sizeof(uint32_t));
+				m_pCurrentFile->readBin(&uIndexCount, sizeof(uint32_t));
+
+				pModelInfo->uVertexCount += uVertexCount;
+				pModelInfo->uIndexCount += uIndexCount;
+
+				for(UINT i = 0; i < uVertexCount; ++i)
+				{
+					if(m_hdr.iFlags & MODEL_FLAG_STATIC)
+					{
+						if(m_hdr.iFlags & MODEL_FLAG_HAS_TANGENT_BINORM)
+						{
+							vertex_static_ex v;
+							m_pCurrentFile->readBin(&v, sizeof(v));
+							vPos = v.Pos;
+						}
+						else
+						{
+							vertex_static v;
+							m_pCurrentFile->readBin(&v, sizeof(v));
+							vPos = v.Pos;
+						}
+					}
+					else
+					{
+						if(m_hdr.iFlags & MODEL_FLAG_HAS_TANGENT_BINORM)
+						{
+							vertex_animated_ex v;
+							m_pCurrentFile->readBin(&v, sizeof(v));
+							vPos = v.Pos;
+						}
+						else
+						{
+							vertex_animated v;
+							m_pCurrentFile->readBin(&v, sizeof(v));
+							vPos = v.Pos;
+						}
+					}
+					if(j == 0 && i == 0)
+					{
+						vMin = vPos;
+						vMax = vPos;
+					}
+					else
+					{
+						vMin = SMVectorMin(vMin, vPos);
+						vMax = SMVectorMax(vMax, vPos);
+					}
+				}
+			}
+
+			pModelInfo->vDimensions = float3_t(vMax - vMin);
+			pModelInfo->vCenter = float3_t((vMax + vMin) * 0.5f);
+		}
+	}
 }
 
 bool XMETHODCALLTYPE CModelLoader::open(IFile *pFile)
@@ -76,7 +155,7 @@ bool XMETHODCALLTYPE CModelLoader::open(IFile *pFile)
 
 	if(m_hdr.iSecondHeaderOffset)
 	{
-		pFile->setPos(m_hdr.iSecondHeaderOffset);
+		pFile->setPos((size_t)m_hdr.iSecondHeaderOffset);
 		pFile->readBin(&m_hdr2, sizeof(m_hdr2));
 	}
 
@@ -105,7 +184,7 @@ bool XMETHODCALLTYPE CModelLoader::loadAsStatic(IXResourceModelStatic *pResource
 
 	if(m_hdr.iLODcount && m_hdr.iLODoffset)
 	{
-		m_pCurrentFile->setPos(m_hdr.iLODoffset);
+		m_pCurrentFile->setPos((size_t)m_hdr.iLODoffset);
 
 		for(uint32_t i = 0; i < m_hdr.iLODcount; i++)
 		{
@@ -248,7 +327,7 @@ bool XMETHODCALLTYPE CModelLoader::loadAsAnimated(IXResourceModelAnimated *pReso
 
 	if(m_hdr2.iDepsCount && m_hdr2.iDependensiesOffset)
 	{
-		m_pCurrentFile->setPos(m_hdr2.iDependensiesOffset);
+		m_pCurrentFile->setPos((size_t)m_hdr2.iDependensiesOffset);
 
 		if(m_hdr.iFlags & MODEL_FLAG_NEW_STYLE_DEPS)
 		{
@@ -275,7 +354,7 @@ bool XMETHODCALLTYPE CModelLoader::loadAsAnimated(IXResourceModelAnimated *pReso
 
 	if(m_hdr.iLODcount && m_hdr.iLODoffset)
 	{
-		m_pCurrentFile->setPos(m_hdr.iLODoffset);
+		m_pCurrentFile->setPos((size_t)m_hdr.iLODoffset);
 
 		for(uint32_t i = 0; i < m_hdr.iLODcount; i++)
 		{
@@ -383,7 +462,7 @@ bool XMETHODCALLTYPE CModelLoader::loadAsAnimated(IXResourceModelAnimated *pReso
 
 	if(m_hdr2.iActivitiesTableCount && m_hdr2.iActivitiesTableOffset)
 	{
-		m_pCurrentFile->setPos(m_hdr2.iActivitiesTableOffset);
+		m_pCurrentFile->setPos((size_t)m_hdr2.iActivitiesTableOffset);
 
 		ModelActivity ma;
 		for(UINT i = 0; i < m_hdr2.iActivitiesTableCount; ++i)
@@ -395,7 +474,7 @@ bool XMETHODCALLTYPE CModelLoader::loadAsAnimated(IXResourceModelAnimated *pReso
 
 	if(m_hdr2.iBoneTableOffset)
 	{
-		m_pCurrentFile->setPos(m_hdr2.iBoneTableOffset);
+		m_pCurrentFile->setPos((size_t)m_hdr2.iBoneTableOffset);
 		
 		pResource->setBoneCount(m_hdr2.iBoneTableCount);
 
@@ -410,7 +489,7 @@ bool XMETHODCALLTYPE CModelLoader::loadAsAnimated(IXResourceModelAnimated *pReso
 
 	if(m_hdr2.iControllersCount && m_hdr2.iControllersOffset)
 	{
-		m_pCurrentFile->setPos(m_hdr2.iControllersOffset);
+		m_pCurrentFile->setPos((size_t)m_hdr2.iControllersOffset);
 
 		pResource->setControllersCount(m_hdr2.iControllersCount);
 
@@ -439,7 +518,7 @@ bool XMETHODCALLTYPE CModelLoader::loadAsAnimated(IXResourceModelAnimated *pReso
 
 	if(m_hdr.iAnimationsOffset)
 	{
-		m_pCurrentFile->setPos(m_hdr.iAnimationsOffset);
+		m_pCurrentFile->setPos((size_t)m_hdr.iAnimationsOffset);
 
 		pResource->setSequenceCount(m_hdr.iAnimationCount);
 
@@ -483,7 +562,7 @@ bool XMETHODCALLTYPE CModelLoader::loadAsAnimated(IXResourceModelAnimated *pReso
 
 	if(m_hdr2.iHitboxCount && m_hdr2.iHitboxesOffset)
 	{
-		m_pCurrentFile->setPos(m_hdr2.iHitboxesOffset);
+		m_pCurrentFile->setPos((size_t)m_hdr2.iHitboxesOffset);
 
 		pResource->setHitboxCount(m_hdr2.iHitboxCount);
 
@@ -528,13 +607,13 @@ bool CModelLoader::loadGeneric(IXResourceModel *pResource)
 {
 	if(m_hdr2.iPhysicsDataOffset)
 	{
-		m_pCurrentFile->setPos(m_hdr2.iPhysicsDataOffset);
+		m_pCurrentFile->setPos((size_t)m_hdr2.iPhysicsDataOffset);
 
 		ModelPhysData physData;
 		m_pCurrentFile->readBin(&physData, MODEL_PHYSDATA_STRUCT_SIZE);
 		pResource->setMass(physData.fWeight);
 
-		m_pCurrentFile->setPos(physData.iPartsOffset);
+		m_pCurrentFile->setPos((size_t)physData.iPartsOffset);
 
 		ModelPhyspart *pPhysparts = (ModelPhyspart*)alloca(sizeof(ModelPhyspart) * physData.iPhyspartCount);
 		memset(pPhysparts, 0, sizeof(ModelPhyspart) * physData.iPhyspartCount);
@@ -567,7 +646,7 @@ bool CModelLoader::loadGeneric(IXResourceModel *pResource)
 				{
 					IModelPhysboxConvex *pConvex = pResource->newPhysboxConvex();
 
-					m_pCurrentFile->setPos(pPhysparts[i].iDataOffset);
+					m_pCurrentFile->setPos((size_t)pPhysparts[i].iDataOffset);
 					ModelPhyspartDataConvex *pData = (ModelPhyspartDataConvex*)alloca(sizeof(ModelPhyspartDataConvex));
 					m_pCurrentFile->readBin(pData, MODEL_PHYSPART_DATA_CONVEX_STRUCT_SIZE);
 
@@ -593,7 +672,7 @@ bool CModelLoader::loadGeneric(IXResourceModel *pResource)
 	
 	if(m_hdr.iMaterialsOffset)
 	{
-		m_pCurrentFile->setPos(m_hdr.iMaterialsOffset);
+		m_pCurrentFile->setPos((size_t)m_hdr.iMaterialsOffset);
 
 		pResource->setMaterialCount(m_hdr.iMaterialCount, m_hdr.iSkinCount);
 		char szName[MODEL_MAX_NAME];

@@ -43,16 +43,52 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseAnimating, base_animating);
 
+//##########################################################################
+
+class CAnimationCallback: public IAnimationCallback
+{
+public:
+	CAnimationCallback(CBaseAnimating *pBaseAnimating):
+		m_pBaseAnimating(pBaseAnimating)
+	{
+	}
+
+	void onPlay(UINT uLayer) override
+	{
+		m_pBaseAnimating->onAnimationStart(uLayer);
+	}
+	void onStop(UINT uLayer) override
+	{
+		m_pBaseAnimating->onAnimationStop(uLayer);
+	}
+	void onLoop(UINT uLayer) override
+	{
+		m_pBaseAnimating->onAnimationLoop(uLayer);
+	}
+
+	void onProgress(UINT uLayer, float fProgress) override
+	{
+		m_pBaseAnimating->onAnimationProgress(uLayer, fProgress);
+	}
+
+private:
+	CBaseAnimating *m_pBaseAnimating;
+};
+
+//##########################################################################
+
 CBaseAnimating::CBaseAnimating(CEntityManager * pMgr):
 	BaseClass(pMgr)
 {
 	memset(m_vNextAnim, 0, sizeof(m_vNextAnim));
+	m_pAnimationCallback = new CAnimationCallback(this);
 }
 
 CBaseAnimating::~CBaseAnimating()
 {
 	releasePhysics();
 	mem_release(m_pModel);
+	mem_delete(m_pAnimationCallback);
 }
 
 void CBaseAnimating::getMinMax(float3 * min, float3 * max)
@@ -105,6 +141,13 @@ void CBaseAnimating::setModel(const char * mdl)
 			m_pModel = pModel;
 			m_pModel->setSkin(m_iSkin);
 			m_pModel->setScale(m_fBaseScale);
+			
+			auto pAnimating = m_pModel->asAnimatedModel();
+			if(pAnimating)
+			{
+				pAnimating->setCallback(m_pAnimationCallback);
+				pAnimating->play("idle");
+			}
 		}
 		mem_release(pResource);
 	}
@@ -433,29 +476,38 @@ void CBaseAnimating::_cleanup()
 	BaseClass::_cleanup();
 }
 
-void CBaseAnimating::onAnimationStateChanged(int slot, ANIM_STATE as)
+void CBaseAnimating::onAnimationStart(UINT uLayer)
 {
-	if(as == AS_STOP && m_vNextAnim[slot].szName[0] != 0)
+}
+void CBaseAnimating::onAnimationStop(UINT uLayer)
+{
+	if(m_vNextAnim[uLayer].szName[0] != 0)
 	{
-		if(m_vNextAnim[slot].isActivity)
+		if(m_vNextAnim[uLayer].isActivity)
 		{
-			playActivity(m_vNextAnim[slot].szName, m_vNextAnim[slot].uFadeTime, slot);
+			playActivity(m_vNextAnim[uLayer].szName, m_vNextAnim[uLayer].uFadeTime, uLayer);
 		}
 		else
 		{
-			playAnimation(m_vNextAnim[slot].szName, m_vNextAnim[slot].uFadeTime, slot);
+			playAnimation(m_vNextAnim[uLayer].szName, m_vNextAnim[uLayer].uFadeTime, uLayer);
 		}
 
-		m_vNextAnim[slot].szName[0] = 0;
+		m_vNextAnim[uLayer].szName[0] = 0;
 	}
+}
+void CBaseAnimating::onAnimationLoop(UINT uLayer)
+{
+}
+void CBaseAnimating::onAnimationProgress(UINT uLayer, float fProgress)
+{
 }
 
 void CBaseAnimating::playAnimationNext(const char * name, UINT uFadeTime, UINT slot)
 {
 	assert(slot < BLEND_MAX);
 
-	strncpy(m_vNextAnim[slot].szName, name, MODEL_MAX_NAME);
-	m_vNextAnim[slot].szName[MODEL_MAX_NAME - 1] = 0;
+	strncpy(m_vNextAnim[slot].szName, name, XMODEL_MAX_NAME);
+	m_vNextAnim[slot].szName[XMODEL_MAX_NAME - 1] = 0;
 	m_vNextAnim[slot].isActivity = false;
 	m_vNextAnim[slot].uFadeTime = uFadeTime;
 }
@@ -464,8 +516,8 @@ void CBaseAnimating::playActivityNext(const char * name, UINT uFadeTime, UINT sl
 {
 	assert(slot < BLEND_MAX);
 
-	strncpy(m_vNextAnim[slot].szName, name, MODEL_MAX_NAME);
-	m_vNextAnim[slot].szName[MODEL_MAX_NAME - 1] = 0;
+	strncpy(m_vNextAnim[slot].szName, name, XMODEL_MAX_NAME);
+	m_vNextAnim[slot].szName[XMODEL_MAX_NAME - 1] = 0;
 	m_vNextAnim[slot].isActivity = true;
 	m_vNextAnim[slot].uFadeTime = uFadeTime;
 }

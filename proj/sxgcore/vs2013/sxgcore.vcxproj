@@ -203,7 +203,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\gcore\loader_static.cpp" />
     <ClCompile Include="..\..\..\source\gcore\oc.cpp" />
     <ClCompile Include="..\..\..\source\gcore\shader.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -236,8 +235,6 @@
     <ClInclude Include="..\..\..\source\gcore\gcore_utils.h" />
     <ClInclude Include="..\..\..\source\gcore\GeomOptimize.h" />
     <ClInclude Include="..\..\..\source\gcore\LoaderTextures.h" />
-    <ClInclude Include="..\..\..\source\gcore\loader_static.h" />
-    <ClInclude Include="..\..\..\source\gcore\ModelFile.h" />
     <ClInclude Include="..\..\..\source\gcore\oc.h" />
     <ClInclude Include="..\..\..\source\gcore\shader.h" />
     <ClInclude Include="..\..\..\source\gcore\sky.h" />

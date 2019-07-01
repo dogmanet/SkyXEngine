@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -12,9 +12,6 @@ See the license in LICENSE
 
 void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** ppMesh, IGXContext * pDevice, UINT iSideCount);
 void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppMesh, IGXContext * pDevice);
-
-void ComputeBoundingBox(IGXVertexBuffer* vertex_buffer,ISXBound** bound,DWORD count_vert,DWORD bytepervert);
-void ComputeBoundingBox2(IGXVertexBuffer* vertex_buffer, ISXBound* bound, DWORD count_vert, DWORD bytepervert);
 
 bool InPosition2D(const float3* min, const float3* max, const float3* pos);
 bool InPositionAbs2D(float3* min,float3* max,float3* pos);
@@ -35,8 +32,8 @@ void ComputeBoundingBoxArr4(ISXBound* bound,ISXBound** bound_arr);
 
 void CreateBoundingBoxMesh(const float3* min, const float3* max, IMesh** bbmesh, IGXContext* device);
 
-//простой объект с минимальным описанием
-//для корректного использования необходимо сначала установить позицию/поворот/масштаб после чего CalculateWorld
+//РїСЂРѕСЃС‚РѕР№ РѕР±СЉРµРєС‚ СЃ РјРёРЅРёРјР°Р»СЊРЅС‹Рј РѕРїРёСЃР°РЅРёРµРј
+//РґР»СЏ РєРѕСЂСЂРµРєС‚РЅРѕРіРѕ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РЅРµРѕР±С…РѕРґРёРјРѕ СЃРЅР°С‡Р°Р»Р° СѓСЃС‚Р°РЅРѕРІРёС‚СЊ РїРѕР·РёС†РёСЋ/РїРѕРІРѕСЂРѕС‚/РјР°СЃС€С‚Р°Р± РїРѕСЃР»Рµ С‡РµРіРѕ CalculateWorld
 class CTransObject : public virtual ITransObject
 {
 public:
@@ -59,10 +56,10 @@ public:
 
 protected:
 
-	float3 m_vPosition;	//!< позиция
-	float3 m_vRotation;	//!< повороты
-	float3 m_vScale;	//!< масштабирование
-	float4x4 m_mWorld;	//!< мировая матрица на основе поворотов масштабирования и позиции
+	float3 m_vPosition;	//!< РїРѕР·РёС†РёСЏ
+	float3 m_vRotation;	//!< РїРѕРІРѕСЂРѕС‚С‹
+	float3 m_vScale;	//!< РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРµ
+	float4x4 m_mWorld;	//!< РјРёСЂРѕРІР°СЏ РјР°С‚СЂРёС†Р° РЅР° РѕСЃРЅРѕРІРµ РїРѕРІРѕСЂРѕС‚РѕРІ РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ Рё РїРѕР·РёС†РёРё
 };
 
 #define TRANSFORM_COORD_SCREEN2(point,sizemapdepth)\
@@ -74,10 +71,10 @@ protected:
 	point.x *= sizemapdepth->x; \
 	point.y *= sizemapdepth->y;
 
-//класс ограничивающего объема
-//для созданяи минимума и максимума необходимо вызвать CalculateBound
-//SetMinMax, GetMinMax до вызова CalculateWorldAndTrans возвращают нетрансформирвоанные данные
-//конечным этапом построения Bound и Object является CalculateWorldAndTrans
+//РєР»Р°СЃСЃ РѕРіСЂР°РЅРёС‡РёРІР°СЋС‰РµРіРѕ РѕР±СЉРµРјР°
+//РґР»СЏ СЃРѕР·РґР°РЅСЏРё РјРёРЅРёРјСѓРјР° Рё РјР°РєСЃРёРјСѓРјР° РЅРµРѕР±С…РѕРґРёРјРѕ РІС‹Р·РІР°С‚СЊ CalculateBound
+//SetMinMax, GetMinMax РґРѕ РІС‹Р·РѕРІР° CalculateWorldAndTrans РІРѕР·РІСЂР°С‰Р°СЋС‚ РЅРµС‚СЂР°РЅСЃС„РѕСЂРјРёСЂРІРѕР°РЅРЅС‹Рµ РґР°РЅРЅС‹Рµ
+//РєРѕРЅРµС‡РЅС‹Рј СЌС‚Р°РїРѕРј РїРѕСЃС‚СЂРѕРµРЅРёСЏ Bound Рё Object СЏРІР»СЏРµС‚СЃСЏ CalculateWorldAndTrans
 class CBound : public CTransObject, public virtual ISXBound
 {
 public:
@@ -88,12 +85,10 @@ public:
 
 	SX_ALIGNED_OP_MEM;
 
-	void calcBound(vertex_static_ex *pVertexBuffer, int iCountVertex, int iBytePerVertex);
-	void calcBound(IGXVertexBuffer *pVertexBuffer, int iCountVertex, int iBytePerVertex);
-	void calcBoundIndex(IGXVertexBuffer *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex);
-	void calcBoundIndex(vertex_static_ex *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex);
+	void calcBound(float3_t *pVertexBuffer, int iCountVertex, int iBytePerVertex) override;
+	void calcBoundIndex(float3_t *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex) override;
 
-	//функция просчета мировой матрицы и трансформации минимума и максимума
+	//С„СѓРЅРєС†РёСЏ РїСЂРѕСЃС‡РµС‚Р° РјРёСЂРѕРІРѕР№ РјР°С‚СЂРёС†С‹ Рё С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёРё РјРёРЅРёРјСѓРјР° Рё РјР°РєСЃРёРјСѓРјР°
 	//float4x4* calcWorldAndTrans();
 
 	void resetTransform();

@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -72,7 +72,7 @@ void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** p
 	}
 
 	IMesh *pMesh = SGCore_CrMesh(iVC, iIC, pVertices, pIndices);
-	pMesh->getBound()->calcBound((vertex_static_ex*)pVertices, iVC, sizeof(float3_t));
+	pMesh->getBound()->calcBound((float3_t*)pVertices, iVC, sizeof(float3_t));
 
 	mem_delete(pIndices);
 	mem_delete(pVertices);
@@ -137,7 +137,7 @@ void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppM
 	assert(iCurV == iVC);
 
 	IMesh *pMesh = SGCore_CrMesh(iVC, iIC, pVertices, pIndices);
-	pMesh->getBound()->calcBound((vertex_static_ex*)pVertices, iVC, sizeof(float3_t));
+	pMesh->getBound()->calcBound((float3_t*)pVertices, iVC, sizeof(float3_t));
 
 	mem_delete(pIndices);
 	mem_delete(pVertices);
@@ -146,98 +146,6 @@ void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppM
 }
 
 //##########################################################################
-
-void ComputeBoundingBox(IGXVertexBuffer* vertex_buffer, ISXBound** bound, DWORD count_vert, DWORD bytepervert)
-{
-	float3_t *V = 0;
-	HRESULT hr = 0;
-	float3_t Max;
-	float3_t Min;
-
-	if(vertex_buffer->lock((void **)&V, GXBL_READ))
-	{
-		float3_t tmppos = *(float3_t*)((char*)(V)+bytepervert * 0);
-		Max = tmppos;
-		Min = tmppos;
-
-		for(DWORD i = 0; i < count_vert; i++)
-		{
-			float3_t pos = *(float3*)((char*)(V)+bytepervert * i);
-
-			if(pos.x > Max.x)
-				Max.x = pos.x;
-
-			if(pos.y > Max.y)
-				Max.y = pos.y;
-
-			if(pos.z > Max.z)
-				Max.z = pos.z;
-
-
-			if(pos.x < Min.x)
-				Min.x = pos.x;
-
-			if(pos.y < Min.y)
-				Min.y = pos.y;
-
-			if(pos.z < Min.z)
-				Min.z = pos.z;
-		}
-		vertex_buffer->unlock();
-	}
-
-	(*bound)->setMinMax(&float3(Min), &float3(Max));
-}
-
-void ComputeBoundingBox2(IGXVertexBuffer* vertex_buffer, ISXBound* bound, DWORD count_vert, DWORD bytepervert)
-{
-	float3_t *V = 0;
-	HRESULT hr = 0;
-	float3_t Max;
-	float3_t Min;
-
-	if(vertex_buffer->lock((void **)&V, GXBL_READ))
-	{
-		float3_t tmppos = *(float3*)((char*)(V)+bytepervert * 0);
-		Max = tmppos;
-		Min = tmppos;
-
-		for(DWORD i = 0; i < count_vert; i++)
-		{
-			float3_t pos = *(float3*)((char*)(V)+bytepervert * i);
-
-			if(pos.x > Max.x)
-				Max.x = pos.x;
-
-			if(pos.y > Max.y)
-				Max.y = pos.y;
-
-			if(pos.z > Max.z)
-				Max.z = pos.z;
-
-
-			if(pos.x < Min.x)
-				Min.x = pos.x;
-
-			if(pos.y < Min.y)
-				Min.y = pos.y;
-
-			if(pos.z < Min.z)
-				Min.z = pos.z;
-		}
-		vertex_buffer->unlock();
-	}
-
-	Min.x /= 100.f;
-	Min.y /= 100.f;
-	Min.z /= 100.f;
-
-	Max.x /= 100.f;
-	Max.y /= 100.f;
-	Max.z /= 100.f;
-
-	bound->setMinMax(&float3(Min), &float3(Max));
-}
 
 void ComputeBoundingBoxArr8(ISXBound* bound, ISXBound** bound_arr)
 {
@@ -642,7 +550,7 @@ void CreateBoundingBoxMesh(const float3* min, const float3* max, IMesh** bbmesh,
 	};
 
 	IMesh *pMesh = SGCore_CrMesh(iVC, iIC, pVertices, pIndices);
-	pMesh->getBound()->calcBound((vertex_static_ex*)pVertices, iVC, sizeof(float3_t));
+	pMesh->getBound()->calcBound((float3_t*)pVertices, iVC, sizeof(float3_t));
 
 	*bbmesh = pMesh;
 }
@@ -708,7 +616,7 @@ const float3* CTransObject::getScale(float3 *pScale)
 
 //##########################################################################
 
-void CBound::calcBound(vertex_static_ex *pVertex, int iCountVertex, int iBytePerVertex)
+void CBound::calcBound(float3_t *pVertex, int iCountVertex, int iBytePerVertex)
 {
 	calcWorld();
 
@@ -776,20 +684,8 @@ void CBound::calcBound(vertex_static_ex *pVertex, int iCountVertex, int iBytePer
 	m_fRadiusTransform = SMVector3Length(m_vCenterTransform - m_vMaxTransform);
 }
 
-void CBound::calcBound(IGXVertexBuffer *pVertexBuffer, int iCountVertex, int iBytePerVertex)
-{
-	BYTE *pVertex = 0;
 
-	calcWorld();
-	
-	if (pVertexBuffer && pVertexBuffer->lock((void **)&pVertex, GXBL_READ))
-	{
-		calcBound((vertex_static_ex*)pVertex, iCountVertex, iBytePerVertex);
-		pVertexBuffer->unlock();
-	}
-}
-
-void CBound::calcBoundIndex(vertex_static_ex *pVertex, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex)
+void CBound::calcBoundIndex(float3_t *pVertex, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex)
 {
 	if(!ppArrIndex || pCountIndex || iCountSubset <= 0)
 		return;
@@ -849,27 +745,6 @@ void CBound::calcBoundIndex(vertex_static_ex *pVertex, uint32_t **ppArrIndex, ui
 					m_vMinTransform.z = vPos.z;
 			}
 		}
-	}
-
-	m_vCenterOrigin = (m_vMinOrigin + m_vMaxOrigin) * 0.5f;
-	m_fRadiusOrigin = SMVector3Length(m_vCenterOrigin - m_vMaxOrigin);
-
-	m_vCenterTransform = (m_vMinTransform + m_vMaxTransform) * 0.5f;
-	m_fRadiusTransform = SMVector3Length(m_vCenterTransform - m_vMaxTransform);
-
-}
-
-void CBound::calcBoundIndex(IGXVertexBuffer *pVertexBuffer, uint32_t **ppArrIndex, uint32_t *pCountIndex, int iCountSubset, int iBytePerVertex)
-{
-	if (!ppArrIndex || pCountIndex || iCountSubset <= 0)
-		return;
-
-	vertex_static_ex *pVertex = 0;
-
-	if (pVertexBuffer && pVertexBuffer->lock((void **)&pVertex, GXBL_READ))
-	{
-		calcBoundIndex(pVertex, ppArrIndex, pCountIndex, iCountSubset, iBytePerVertex);
-		pVertexBuffer->unlock();
 	}
 
 	m_vCenterOrigin = (m_vMinOrigin + m_vMaxOrigin) * 0.5f;

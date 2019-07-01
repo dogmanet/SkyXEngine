@@ -31,9 +31,6 @@
     <ClCompile Include="..\..\..\source\common\string.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\gcore\loader_static.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\common\file_utils.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -62,9 +59,6 @@
     <ClInclude Include="..\..\..\source\gcore\LoaderTextures.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\gcore\ModelFile.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\shader.h">
       <Filter>Header</Filter>
     </ClInclude>
@@ -87,9 +81,6 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\string.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\gcore\loader_static.h">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\file_utils.h">
