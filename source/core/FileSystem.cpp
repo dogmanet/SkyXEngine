@@ -77,21 +77,32 @@ CFileSystem::CFileSystem()
     char *path = getFullPathToBuild();
     m_pathToBuild = path;
 
-    mem_delete(path);
+    mem_delete_a(path);
 }
 
 //! Возвращает абсолютный канонизированный путь
 char *CFileSystem::getAbsoliteCanonizePath(const char *szPath)
 {
     bool absolute = isAbsolutePath(szPath);
+    bool correctPath = true;
+
     int len = absolute ? strlen(szPath) + 1 : MAX_PATH;
     char *fullPath = new char[len];
 
-    absolute ? memcpy(fullPath, szPath, len) : resolvePath(szPath, fullPath, len);
+    absolute ? memcpy(fullPath, szPath, len) : correctPath = resolvePath(szPath, fullPath, len);
 
-    canonize_path(fullPath);
+    //Во время поиска пути могут произойти ошибки - путь может быть не найден, или слишком маленький буфер для записи
+    if (correctPath)
+    {
+        //Если все корректно прошло, то путь можно канонизировать
+        canonize_path(fullPath);
 
-    return fullPath;
+        return fullPath;
+    }
+
+    mem_delete_a(fullPath);
+
+    return nullptr;
 }
 
 UINT CFileSystem::addRoot(const char *szPath, int iPriority)
@@ -312,7 +323,7 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
         break;
     }
 
-    mem_delete(fullPath);
+    mem_delete_a(fullPath);
 
     return file;
 }

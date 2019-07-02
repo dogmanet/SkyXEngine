@@ -28,6 +28,9 @@
 class CFileSystem final : public IFileSystem
 {
 private:
+    //! Возвращает абсолютный канонизированный путь
+    char *getAbsoliteCanonizePath(const char *szPath);
+
     char *getFullPathToBuild();
 
     String *getFileName(const char *name);
@@ -54,9 +57,6 @@ private:
 
 public:
     CFileSystem();
-
-    //! Возвращает абсолютный канонизированный путь
-    char *getAbsoliteCanonizePath(const char *szPath) override;
 
 	UINT addRoot(const char *szPath, int iPriority = -1) override;
 
