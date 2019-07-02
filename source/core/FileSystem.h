@@ -28,6 +28,9 @@
 class CFileSystem final : public IFileSystem
 {
 private:
+    //Метод нужен для вызора режима открытия файла в FileOpen
+    void swithFileMode(IFile *file, const char *szPath, FILE_OPEN_MODE mode);
+
     //! Возвращает абсолютный канонизированный путь
     char *getAbsoliteCanonizePath(const char *szPath);
 

@@ -6,6 +6,45 @@
 #include <shellapi.h>
 #include <ShlObj.h>
 
+void CFileSystem::swithFileMode(IFile *file, const char *szPath, FILE_OPEN_MODE mode)
+{
+    switch (mode)
+    {
+    case FILE_MODE_WRITE:
+        file->open(szPath, CORE_FILE_BIN);
+        break;
+
+    case FILE_MODE_APPEND:
+        file->add(szPath, CORE_FILE_BIN);
+        break;
+    }
+}
+
+//! Возвращает абсолютный канонизированный путь
+char *CFileSystem::getAbsoliteCanonizePath(const char *szPath)
+{
+    bool absolute = isAbsolutePath(szPath);
+    bool correctPath = true;
+
+    int len = absolute ? strlen(szPath) + 1 : MAX_PATH;
+    char *fullPath = new char[len];
+
+    absolute ? memcpy(fullPath, szPath, len) : correctPath = resolvePath(szPath, fullPath, len);
+
+    //Во время поиска пути могут произойти ошибки - путь может быть не найден, или слишком маленький буфер для записи
+    if (correctPath)
+    {
+        //Если все корректно прошло, то путь можно канонизировать
+        canonize_path(fullPath);
+
+        return fullPath;
+    }
+
+    mem_delete_a(fullPath);
+
+    return nullptr;
+}
+
 char *CFileSystem::getFullPathToBuild()
 {
     char *path = new char[MAX_PATH];
@@ -78,31 +117,6 @@ CFileSystem::CFileSystem()
     m_pathToBuild = path;
 
     mem_delete_a(path);
-}
-
-//! Возвращает абсолютный канонизированный путь
-char *CFileSystem::getAbsoliteCanonizePath(const char *szPath)
-{
-    bool absolute = isAbsolutePath(szPath);
-    bool correctPath = true;
-
-    int len = absolute ? strlen(szPath) + 1 : MAX_PATH;
-    char *fullPath = new char[len];
-
-    absolute ? memcpy(fullPath, szPath, len) : correctPath = resolvePath(szPath, fullPath, len);
-
-    //Во время поиска пути могут произойти ошибки - путь может быть не найден, или слишком маленький буфер для записи
-    if (correctPath)
-    {
-        //Если все корректно прошло, то путь можно канонизировать
-        canonize_path(fullPath);
-
-        return fullPath;
-    }
-
-    mem_delete_a(fullPath);
-
-    return nullptr;
 }
 
 UINT CFileSystem::addRoot(const char *szPath, int iPriority)
@@ -288,41 +302,35 @@ bool CFileSystem::deleteDirectory(const char *szPath)
 
 IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ)
 {
-    //Если путей на запись нет, и количество корневых путей нулевое
-    if (m_filePaths.size() == 0)
+    //Выходим если режим открытия - не для чтения и нет пути для записи
+    if (m_writableRoot == -1 && mode != FILE_MODE_READ)
     {
         return nullptr;
     }
 
     char *fullPath = getAbsoliteCanonizePath(szPath);
 
-    CFile *file = new CFile;
-
-    String *newFileName;
-
-    switch (mode)
+    //Если по каким либо причинам нельзя вернуть полный путь - на выход
+    if (!fullPath)
     {
-    case FILE_MODE_READ:
-        file->open(fullPath, CORE_FILE_BIN);
-
-        break;
-    case FILE_MODE_WRITE:
-        newFileName = copyFile(fullPath);
-        file->open(newFileName->c_str(), CORE_FILE_BIN);
-        mem_delete(newFileName);
-
-        break;
-    case FILE_MODE_APPEND:
-        newFileName = copyFile(fullPath);
-        file->add(newFileName->c_str(), CORE_FILE_BIN);
-        mem_delete(newFileName);
-
-        break;
-    default:
-        assert(false && "You cannot use multiple opening types at the same time");
-        break;
+        return nullptr;
     }
 
+    IFile *file = new CFile;
+
+    //Если открываем только на чтение - то копирование не нужно (следовательно и выделение памяти тоже лишняя операция)
+    if (mode == FILE_MODE_READ)
+    {
+        file->open(fullPath, CORE_FILE_BIN);
+        mem_delete_a(fullPath);
+        return file;
+    }
+
+    String *newFileName = copyFile(fullPath);
+
+    swithFileMode(file, newFileName->c_str(), mode);
+
+    mem_delete(newFileName);
     mem_delete_a(fullPath);
 
     return file;
