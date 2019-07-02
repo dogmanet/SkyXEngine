@@ -2,9 +2,22 @@
 #include "FileExtIterator.h"
 #include "FileExtsIterator.h"
 #include "DirIterator.h"
-#include <shellapi.h>
 #include "File.h"
+#include <shellapi.h>
 #include <ShlObj.h>
+
+char *CFileSystem::getFullPathToBuild()
+{
+    char *path = new char[MAX_PATH];
+
+    GetModuleFileName(nullptr, path, MAX_PATH);
+
+    char *pos = strstr(path, "build\\");
+
+    pos[6] = '\0';
+
+    return path;
+}
 
 String *CFileSystem::getFileName(const char *name)
 {
@@ -39,9 +52,10 @@ HANDLE CFileSystem::getFileHandle(const char *szPath)
 
 bool CFileSystem::isAbsolutePath(const char *szPath)
 {
-    while (szPath != 0)
+    while (*szPath != '\0')
     {
-        if (*szPath == ':' && *(szPath + 1) == '/')
+        //Для корректности нужна проверка на разные слеши, ведь на вход может прийти путь не с /
+        if (*szPath == ':' && (*(szPath + 1) == '/' || *(szPath + 1) == '\\'))
         {
             return true;
         }
@@ -58,13 +72,56 @@ String *CFileSystem::copyFile(const char* szPath)
     return newFilePath;
 }
 
+CFileSystem::CFileSystem()
+{
+    char *path = getFullPathToBuild();
+    m_pathToBuild = path;
+
+    mem_delete_a(path);
+}
+
+//! Возвращает абсолютный канонизированный путь
+char *CFileSystem::getAbsoliteCanonizePath(const char *szPath)
+{
+    bool absolute = isAbsolutePath(szPath);
+    bool correctPath = true;
+
+    int len = absolute ? strlen(szPath) + 1 : MAX_PATH;
+    char *fullPath = new char[len];
+
+    absolute ? memcpy(fullPath, szPath, len) : correctPath = resolvePath(szPath, fullPath, len);
+
+    //Во время поиска пути могут произойти ошибки - путь может быть не найден, или слишком маленький буфер для записи
+    if (correctPath)
+    {
+        //Если все корректно прошло, то путь можно канонизировать
+        canonize_path(fullPath);
+
+        return fullPath;
+    }
+
+    mem_delete_a(fullPath);
+
+    return nullptr;
+}
+
 UINT CFileSystem::addRoot(const char *szPath, int iPriority)
 {
-    m_filePaths.push_back(String(szPath));
+    String str;
+
+    //Если путь не абсолютный - то прибавляем к нему часть пути к папке build
+    if (!isAbsolutePath(szPath))
+    {
+        str += m_pathToBuild;
+    }
+
+    str += szPath; // <--- Оптимизация для того что бы не создавать временных объектов
+
+    m_filePaths.push_back(str);
     m_priority.push_back(iPriority);
 
     //Если у нас некорректный путь для записи и путь не является архивным
-    if (m_writableRoot == -1 && szPath[0] != '@')
+    if (m_writableRoot == -1 && *szPath != '@')
     {
         m_writableRoot = m_filePaths.size() - 1;
     }
@@ -109,7 +166,7 @@ bool CFileSystem::resolvePath(const char *szPath, char *szOut, int iOutMax)
 
     for (UINT i = 0, l = m_filePaths.size(); i < l; ++i)
     {
-        buff = (m_filePaths[0] + '/' + szPath);
+        buff = (m_filePaths[i] + '/' + szPath);
 
         if (fileExists(buff.c_str()) && isFile(buff.c_str()))
         {
@@ -153,13 +210,8 @@ bool CFileSystem::isFile(const char *szPath)
 {
 	DWORD flag = GetFileAttributes(szPath);
 
-	//Если не существует или указанный путь ведет к каталогу
-	if (flag == INVALID_FILE_ATTRIBUTES && !(flag & FILE_ATTRIBUTE_DIRECTORY))
-	{
-		return false;
-	}
-
-	return true;
+	//Если не существует или указанный путь ведет не к файлу
+    return !(flag & FILE_ATTRIBUTE_DIRECTORY);
 }
 
 bool CFileSystem::isDirectory(const char *szPath)
@@ -236,36 +288,32 @@ bool CFileSystem::deleteDirectory(const char *szPath)
 
 IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ)
 {
-    CFile *file = new CFile;
-
-    //Если путь не корректен
-    if (!fileExists(szPath))
-    {
-        return nullptr;
-    }
-
     //Если путей на запись нет, и количество корневых путей нулевое
     if (m_filePaths.size() == 0)
     {
         return nullptr;
     }
 
+    char *fullPath = getAbsoliteCanonizePath(szPath);
+
+    CFile *file = new CFile;
+
     String *newFileName;
 
     switch (mode)
     {
     case FILE_MODE_READ:
-        file->open(szPath, CORE_FILE_BIN);
+        file->open(fullPath, CORE_FILE_BIN);
 
         break;
     case FILE_MODE_WRITE:
-        newFileName = copyFile(szPath);
+        newFileName = copyFile(fullPath);
         file->open(newFileName->c_str(), CORE_FILE_BIN);
         mem_delete(newFileName);
 
         break;
     case FILE_MODE_APPEND:
-        newFileName = copyFile(szPath);
+        newFileName = copyFile(fullPath);
         file->add(newFileName->c_str(), CORE_FILE_BIN);
         mem_delete(newFileName);
 
@@ -274,6 +322,8 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
         assert(false && "You cannot use multiple opening types at the same time");
         break;
     }
+
+    mem_delete_a(fullPath);
 
     return file;
 }
