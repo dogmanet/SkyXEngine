@@ -252,25 +252,6 @@ enum MTLSORT
 
 //!@}
 
-//! тип модели материала
-enum MTLTYPE_MODEL
-{
-	//! статическая геометрия
-	MTLTYPE_MODEL_STATIC = 0,	
-
-	//! растительность трава
-	MTLTYPE_MODEL_GRASS,		
-
-	//! растительность дерево
-	MTLTYPE_MODEL_TREE,		
-
-	//! анимационная модель
-	MTLTYPE_MODEL_SKIN,		
-
-	//! значение по умолчанию
-	MTLTYPE_MODEL_DEFAULT = MTLTYPE_MODEL_STATIC
-};
-
 //! физический тип материала
 enum MTLTYPE_PHYSIC
 {
@@ -347,9 +328,9 @@ enum MTL_SHADERSTD
  \note все материалы оборачиваются в специальную структуру, поэтому дубликатов среди идентификаторов материалов нет
  \note любой повторно загружаемый материал не загружается, а лишь дублирует обертку, со ссылкой на внутренности оберкти
  */
-SX_LIB_API ID SMtrl_MtlLoad(
-	const char *szName,								//!< имя_материала.расширение
-	MTLTYPE_MODEL mtl_type = MTLTYPE_MODEL_STATIC	//!< тип модели материала на случай если материал не будет загружен/найден
+
+SX_LIB_API ID SMtrl_MtlGetId(
+	const char *szName								//!< имя_материала.расширение
 	);
 
 SX_LIB_API ID SMtrl_MtlLoad2(
@@ -383,9 +364,6 @@ SX_LIB_API void SMtrl_MtlClear(
 //! возвращает общее количество материалов
 SX_LIB_API long SMtrl_MtlGetCount();					
 
-//! возвращает тип модели материала по id
-SX_LIB_API MTLTYPE_MODEL SMtrl_MtlGetTypeModel(ID id);
-
 //! возвращает id дефолтного материала света
 SX_LIB_API ID SMtrl_MtlGetLightMtrl();
 
@@ -393,11 +371,6 @@ SX_LIB_API ID SMtrl_MtlGetLightMtrl();
 //SX_LIB_API UINT SMtrl_MtlGetSort(ID id);
 
 SX_LIB_API bool SMtrl_MtlIsTransparency(ID id);
-
-/*! установка типа модели материала по id
- \warning меняется только внутренний флаг (определение)!!! все остальное для данного типа надо загружать вручную, сделано для больших возможностей построения материалов
-*/
-SX_LIB_API void SMtrl_MtlSetTypeModel(ID id, MTLTYPE_MODEL type_model);
 
 //! установка параметров материала по id, вызывается перед DIP
 SX_LIB_API void SMtrl_MtlRender(
@@ -408,14 +381,6 @@ SX_LIB_API void SMtrl_MtlRender(
 
 SX_LIB_API void SMtrl_MtlPixelShaderOverride(ID id);
 SX_LIB_API void SMtrl_MtlGeometryShaderOverride(ID id);
-
-//! стандартная отрисовка материала, используются стандартные шейдеры, нужно для теней, отражений и прочего
-SX_LIB_API void SMtrl_MtlRenderStd(
-	MTLTYPE_MODEL type,			//!< тип материала из MtlTypeModel
-	const float4x4 *pWorld,		//!< мировая матрица трансформации, либо 0 и будет применена единичная матрица
-	ID idSlot,					//!< текстурный слот в который установить текстуру
-	ID idMtl					//!< идентификатор материала из которого будет браться текстура
-	);
 
 //! установка параметров материала для рендера источника света
 SX_LIB_API void SMtrl_MtlRenderLight(
@@ -432,9 +397,6 @@ SX_LIB_API void SMtrl_MtlSetPhysicMaterial(ID id, MTLTYPE_PHYSIC type);
 
 //! возвращает текущий тип физического материала
 SX_LIB_API MTLTYPE_PHYSIC SMtrl_MtlGetPhysicMaterial(ID id);				
-
-//! возвращает id стандартного материала для определенной модели материалов указанной в #MtlTypeModel 
-SX_LIB_API ID SMtrl_MtlGetStdMtl(MTLTYPE_MODEL type_model);
 
 /*! \name Управление полупрозрачными поверхностями
 Каждый выводимый пиксель помечается номером поверхности к которой он относится

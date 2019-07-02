@@ -108,11 +108,11 @@ SX_LIB_API void SMtrl_Update(DWORD timeDelta)
 
 //#############################################################################
 
-SX_LIB_API ID SMtrl_MtlLoad(const char *szName, MTLTYPE_MODEL mtl_type)
+SX_LIB_API ID SMtrl_MtlGetId(const char *szName)
 {
 	ML_PRECOND(-1);
 
-	return ArrMaterials->mtlLoad(szName, mtl_type);
+	return(ArrMaterials->exists(szName));
 }
 
 SX_LIB_API ID SMtrl_MtlLoad2(const char *szName, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount, XSHADER_VARIANT_DESC *pVariantsDesc)
@@ -127,13 +127,6 @@ SX_LIB_API void SMtrl_MtlSave(ID id)
 	ML_PRECOND(_VOID);
 
 	ArrMaterials->mtlSave(id);
-}
-
-SX_LIB_API MTLTYPE_MODEL SMtrl_MtlGetTypeModel(ID id)
-{
-	ML_PRECOND(MTLTYPE_MODEL_STATIC);
-
-	return ArrMaterials->getTypeModel(id);
 }
 
 SX_LIB_API ID SMtrl_MtlGetLightMtrl()
@@ -155,13 +148,6 @@ SX_LIB_API bool SMtrl_MtlIsTransparency(ID id)
 	ML_PRECOND(false);
 
 	return ArrMaterials->mtlGetTransparency(id);
-}
-
-SX_LIB_API void SMtrl_MtlSetTypeModel(ID id, MTLTYPE_MODEL type_model)
-{
-	ML_PRECOND(_VOID);
-
-	ArrMaterials->setTypeModel(id, type_model);
 }
 
 SX_LIB_API long SMtrl_MtlGetCount()
@@ -187,12 +173,6 @@ SX_LIB_API void SMtrl_MtlGeometryShaderOverride(ID id)
 {
 	ML_PRECOND(_VOID);
 	ArrMaterials->setGeometryShaderOverride(id);
-}
-
-SX_LIB_API void SMtrl_MtlRenderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot, ID idMtl)
-{
-	ML_PRECOND(_VOID);
-	ArrMaterials->renderStd(type, pWorld, idSlot, idMtl);
 }
 
 SX_LIB_API void SMtrl_MtlRenderLight(const float4_t *pColor, const float4x4 *pWorld)
@@ -247,13 +227,6 @@ SX_LIB_API bool SMtrl_MtlGetForceblyAlphaTest()
 {
 	ML_PRECOND(false);
 	return ArrMaterials->getForceblyAlphaTest();
-}
-
-
-SX_LIB_API ID SMtrl_MtlGetStdMtl(MTLTYPE_MODEL type_model)
-{
-	ML_PRECOND(-1);
-	return ArrMaterials->getStdMtl(type_model);
 }
 
 

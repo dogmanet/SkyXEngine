@@ -15,14 +15,12 @@ CMaterialSystem::~CMaterialSystem()
 
 void CMaterialSystem::loadMaterial(const char *szName, IXMaterial **ppMaterial, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount, XSHADER_VARIANT_DESC *pVariantsDesc)
 {
-	assert(!uVariantCount && "Variants is not implemented!");
-
 	ID id = SMtrl_MtlLoad2(szName, pDefaultShaders, uVariantCount, pVariantsDesc);
 	*ppMaterial = new CMaterial(id);
 }
 bool CMaterialSystem::getMaterial(const char *szName, IXMaterial **ppMaterial)
 {
-	ID id = SMtrl_MtlLoad(szName);
+	ID id = SMtrl_MtlGetId(szName);
 	if(!ID_VALID(id))
 	{
 		return(false);

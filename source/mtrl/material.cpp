@@ -261,7 +261,6 @@ CMaterials::CMaterial::CMainGraphics::CMainGraphics()
 	m_isUnlit = false;
 	m_useAlphaTest = false;
 	m_useDestColor = false;
-	m_typeModel = MTLTYPE_MODEL::MTLTYPE_MODEL_DEFAULT;
 	m_oDataVS = CMainGraphics::СDataShader();
 	m_oDataPS = CMainGraphics::СDataShader();
 	m_oDataVS.m_isTransUserDataInOtherShader = false;
@@ -544,11 +543,6 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT
 			pMtrl->m_oMainGraphics.m_isUnlit = String(pConfig->getKey(sName.c_str(), "lighted")).toBool();
 		else
 			pMtrl->m_oMainGraphics.m_isUnlit = false;
-
-		if (pConfig->keyExists(sName.c_str(), "model"))
-			pMtrl->m_oMainGraphics.m_typeModel = (MTLTYPE_MODEL)String(pConfig->getKey(sName.c_str(), "model")).toInt();
-		else
-			pMtrl->m_oMainGraphics.m_typeModel = MTLTYPE_MODEL_DEFAULT;
 
 		if (pConfig->keyExists(sName.c_str(), "physmaterial"))
 			pMtrl->m_oPhysics.m_typePhysics = (MTLTYPE_PHYSIC)String(pConfig->getKey(sName.c_str(), "physmaterial")).toInt();
@@ -840,86 +834,12 @@ ID CMaterials::createTexParamLighting(float roughness, float f0, float thickness
 	return SGCore_LoadTexCreate(nametex, TexMaterial);
 }
 
-void CMaterials::createMtl(const char* name, CMaterial** mtl, MTLTYPE_MODEL type)
-{
-	CMaterial* pMtrl = *mtl;
-	new(pMtrl)CMaterial*;
-	//если такого материала не существует, то мы должны были задать примерный тип материала
-	pMtrl->m_oMainGraphics.m_typeModel = type;
-	//обычна¤ геометри¤
-	if (type == MTLTYPE_MODEL_STATIC)
-	{
-		pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExistsName(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
-		pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExistsName(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");
-		pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld = true;
-	}
-	//деревь¤
-	else if (type == MTLTYPE_MODEL_TREE)
-	{
-		pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExistsName(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs");
-		pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExistsName(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
-		//pMtrl->RenderStates.m_oMainGraphics.m_useAlphaTest = true;
-	}
-	//трава
-	else if (type == MTLTYPE_MODEL_GRASS)
-	{
-		pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExistsName(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs");
-		pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExistsName(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
-		//pMtrl->RenderStates.m_oMainGraphics.m_useAlphaTest = true;
-	}
-	//анимационная модель
-	else if (type == MTLTYPE_MODEL_SKIN)
-	{
-		pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExistsName(SHADER_TYPE_VERTEX, "mtrlskin_base.vs");
-		pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExistsName(SHADER_TYPE_PIXEL, "mtrlskin_base.ps");
-		pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld = true;
-	}
-	//источник света
-	/*else if (type == MTL_LIGHT)
-	{
-	pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExistsName(0, "mtrlgeom_base.vs");
-	pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExistsName(1, "mtrlgeom_light.ps");
-	pMtrl->IsForwardRender = true;
-	pMtrl->m_oMainGraphics.m_oDataPS.m_isTransUserData = true;
-	pMtrl->m_oMainGraphics.m_oDataPS.m_vUserData = float4(0, 0, 0, 0);
-	}*/
-
-	pMtrl->m_oMainGraphics.m_idMainTexture = SGCore_LoadTexAddName(name, LOAD_TEXTURE_TYPE_LOAD);
-	pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
-
-	pMtrl->m_oLightParam.m_fRoughness = MTL_LIGHTING_DEFAULT_ROUGHNESS;
-	pMtrl->m_oLightParam.m_fF0 = MTL_LIGHTING_DEFAULT_F0;
-	pMtrl->m_oLightParam.m_fThickness = MTL_LIGHTING_DEFAULT_THICKNESS;
-
-	pMtrl->m_oLightParam.m_idTexParam = -1;
-	pMtrl->m_oLightParam.m_isTextureParam = false;
-	pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(pMtrl->m_oLightParam.m_fRoughness, pMtrl->m_oLightParam.m_fF0, pMtrl->m_oLightParam.m_fThickness);
-
-	//char path[1024];
-	char tmp_name[256];
-	bool IsTruePath = false;
-
-	for (DWORD k = 0; k<strlen(name); k++)
-	{
-		if (name[k] == '.')
-		{
-			sprintf(tmp_name, "%s", name);
-			tmp_name[k] = 0;
-			IsTruePath = true;
-			break;
-		}
-	}
-
-	pMtrl->m_sName = tmp_name;
-	pMtrl->m_oMainGraphics.updateShaderKit(true);
-}
-
 void CMaterials::createMtl(const char* name, CMaterial** mtl, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount, XSHADER_VARIANT_DESC *pVariantsDesc)
 {
 	CMaterial* pMtrl = *mtl;
 	new(pMtrl)CMaterial*;
 	//если такого материала не существует, то мы должны были задать примерный тип материала
-	pMtrl->m_oMainGraphics.m_typeModel = MTLTYPE_MODEL_STATIC;
+
 
 	pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, pDefaultShaders->szFileVS);
 	pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, pDefaultShaders->szFilePS);
@@ -959,48 +879,6 @@ void CMaterials::createMtl(const char* name, CMaterial** mtl, XSHADER_DEFAULT_DE
 
 	pMtrl->m_sName = tmp_name;
 	pMtrl->m_oMainGraphics.updateShaderKit(true);
-}
-
-ID CMaterials::mtlLoad(const char* name, MTLTYPE_MODEL type)
-{
-	ID IsLoad = exists(name);
-
-	if (ID_VALID(IsLoad))
-	{
-		CUnitMaterial* tmpumtl = new CUnitMaterial();
-		tmpumtl->m_pMtrl = m_aUnitMtrls[IsLoad]->m_pMtrl;
-
-		if (m_aUnitMtrls[IsLoad]->m_pReflect){
-			CUnitMaterial* tmpmtl = m_aUnitMtrls[IsLoad];
-			tmpumtl->m_pReflect = new CReflection();
-			tmpumtl->m_pReflect->init(m_aUnitMtrls[IsLoad]->m_pReflect->getTypeReflect());
-		}
-
-		return addUnitMaterial(tmpumtl);
-	}
-	else
-	{
-		CUnitMaterial* tmpumtl = new CUnitMaterial();
-		tmpumtl->m_pMtrl = new CMaterial();
-		addMaterial(tmpumtl->m_pMtrl);
-		if (!loadMtl(name, &(tmpumtl->m_pMtrl), NULL))
-		{
-			createMtl(name, &(tmpumtl->m_pMtrl), type);
-		}
-		else
-		{
-			if (tmpumtl->m_pMtrl->m_oLightParam.m_typeReflect != MTLTYPE_REFLECT_NONE)
-			{
-				tmpumtl->m_pReflect = new CReflection();
-				tmpumtl->m_pReflect->init(tmpumtl->m_pMtrl->m_oLightParam.m_typeReflect);
-			}
-		}
-
-		ID tmpid = addUnitMaterial(tmpumtl);
-
-		addName(name, tmpid);
-		return tmpid;
-	}
 }
 
 ID CMaterials::mtlLoad(const char *name, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount, XSHADER_VARIANT_DESC *pVariantsDesc)
@@ -1070,7 +948,13 @@ void CMaterials::mtlReLoad(ID id, const char* name)
 	tmpumtl->m_pMtrl->nulling();
 	if (!loadMtl(tmpname, &(tmpumtl->m_pMtrl), NULL))
 	{
-		createMtl(name, &(tmpumtl->m_pMtrl), tmpumtl->m_pMtrl->m_oMainGraphics.m_typeModel);
+		char szVS[512], szPS[512];
+		XSHADER_DEFAULT_DESC defShaders;
+		defShaders.szFilePS = szPS;
+		defShaders.szFileVS = szVS;
+		SGCore_ShaderGetPath(SHADER_TYPE_VERTEX, tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS, szVS);
+		SGCore_ShaderGetPath(SHADER_TYPE_PIXEL, tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS, szPS);
+		createMtl(name, &(tmpumtl->m_pMtrl), &defShaders);
 	}
 	else
 	{
@@ -1110,7 +994,6 @@ void CMaterials::mtlSave(ID id)
 	SGCore_ShaderGetPath(SHADER_TYPE_VERTEX, mtrl->m_oMainGraphics.m_idShaderVS, tmpPathVSName);
 	SGCore_ShaderGetPath(SHADER_TYPE_PIXEL, mtrl->m_oMainGraphics.m_idShaderPS, tmpPathPSName);
 
-	fprintf(file, "model = %d\n", mtrl->m_oMainGraphics.m_typeModel);
 	fprintf(file, "lighted = %d\n", mtrl->m_oMainGraphics.m_isUnlit);
 	fprintf(file, "physmaterial = %d\n", mtrl->m_oPhysics.m_typePhysics);
 
@@ -1323,35 +1206,10 @@ void CMaterials::onResetDevice()
 
 //##########################################################################
 
-ID CMaterials::getStdMtl(MTLTYPE_MODEL m_typeModel)
-{
-	if (m_typeModel == MTLTYPE_MODEL_STATIC)
-		return m_idMtrlDefStatic;
-	else if (m_typeModel == MTLTYPE_MODEL_GRASS)
-		return m_idMtrlDefGrass;
-	else if (m_typeModel == MTLTYPE_MODEL_TREE)
-		return m_idMtrlDefTree;
-	else if (m_typeModel == MTLTYPE_MODEL_SKIN)
-		return m_idMtrlDefSkin;
-
-	return(-1);
-}
-
-MTLTYPE_MODEL CMaterials::getTypeModel(ID id)
-{
-	MTL_PRE_COND_ID(id, MTLTYPE_MODEL_STATIC);
-	return m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_typeModel;
-}
 
 ID CMaterials::getLightMtrl()
 {
 	return m_idMtrlDefLight;
-}
-
-void CMaterials::setTypeModel(ID id, MTLTYPE_MODEL typeModel)
-{
-	MTL_PRE_COND_ID(id, _VOID);
-	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_typeModel = typeModel;
 }
 
 void CMaterials::update(UINT timeDelta)
@@ -2015,111 +1873,6 @@ void CMaterials::setCurrCountSurf(int count)
 }
 
 //##########################################################################
-
-void CMaterials::renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot, ID idMtl)
-{
-	//может быть случай когда текстура в которую сейчас рисуем еще стоит в текстурных слотах
-	//из-за этого может быть необъяснимое поводенеие и как результат непонятные артефакты в самой текстуре в которую сейчас рисуем
-	//поэтому нужно обнулить слот в котором возможно была текстура
-	//такое явление может быть в случае когда в кадре только один материал который отражает
-	mtrl_data::pDXDevice->setTexture(NULL, MTL_TEX_R_REFLECTION);
-
-	static ID s_idShaderKitGeom = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdGeom, mtrl_data::shader_id::ps::idStdGeom);
-	static ID s_idShaderKitGeomCP = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdGeom, mtrl_data::shader_id::ps::idStdGeomCP);
-
-	if (idMtl >= 0 && idMtl < m_aUnitMtrls.size())
-		setMainTexture(idSlot, idMtl);
-
-	if (type == MTLTYPE_MODEL_STATIC)
-	{
-		float4x4 wmat = (pWorld ? (*pWorld) : SMMatrixIdentity());
-		float4x4 wvpmat;
-		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &wvpmat);
-		wvpmat = SMMatrixTranspose(wmat * wvpmat);
-		wmat = SMMatrixTranspose(wmat);
-
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, mtrl_data::shader_id::vs::idStdGeom, "g_mWVP", &wvpmat);
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, mtrl_data::shader_id::vs::idStdGeom, "g_mW", &wmat);
-
-		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
-		{
-			SGCore_ShaderBind(s_idShaderKitGeomCP);
-
-			float3 tmpnormal, tmppoint;
-
-			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
-			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
-
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGeomCP, "g_vPlaneNormal", &tmpnormal);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGeomCP, "g_vPlanePoint", &tmppoint);
-		}
-		else
-			SGCore_ShaderBind(s_idShaderKitGeom);
-	}
-	else if (type == MTLTYPE_MODEL_GRASS || type == MTLTYPE_MODEL_TREE)
-	{
-		static ID s_idShaderKitGrassGreen = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdGrass, mtrl_data::shader_id::ps::idStdGreen);
-		static ID s_idShaderKitGrassGreenCP = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdGrass, mtrl_data::shader_id::ps::idStdGreenCP);
-
-		static ID s_idShaderKitTreeGreen = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdTree, mtrl_data::shader_id::ps::idStdGreen);
-		static ID s_idShaderKitTreeGreenCP = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdTree, mtrl_data::shader_id::ps::idStdGreenCP);
-
-		ID tmpvs = (type == MTLTYPE_MODEL_GRASS ? mtrl_data::shader_id::vs::idStdGrass : mtrl_data::shader_id::vs::idStdTree);
-
-		float4x4 wmat = (pWorld ? (*pWorld) : SMMatrixIdentity());
-		float4x4 wvpmat;
-		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &wvpmat);
-		wvpmat = SMMatrixTranspose(wmat * wvpmat);
-		wmat = SMMatrixTranspose(wmat);
-
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpvs, "g_mWVP", &wvpmat);
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, tmpvs, "g_mW", &wmat);
-
-		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
-		{
-			SGCore_ShaderBind((type == MTLTYPE_MODEL_GRASS ? s_idShaderKitGrassGreenCP : s_idShaderKitTreeGreenCP));
-
-			float3 tmpnormal, tmppoint;
-
-			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
-			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
-
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGreenCP, "g_vPlaneNormal", &tmpnormal);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdGreenCP, "g_vPlanePoint", &tmppoint);
-		}
-		else
-			SGCore_ShaderBind((type == MTLTYPE_MODEL_GRASS ? s_idShaderKitGrassGreen : s_idShaderKitTreeGreen));
-	}
-	else if (type == MTLTYPE_MODEL_SKIN)
-	{
-		static ID s_idShaderKitSkin = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdSkin, mtrl_data::shader_id::ps::idStdSkin);
-		static ID s_idShaderKitSkinCP = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idStdSkin, mtrl_data::shader_id::ps::idStdSkinCP);
-		
-		float4x4 wmat = (pWorld ? (*pWorld) : SMMatrixIdentity());
-		float4x4 wvpmat;
-		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &wvpmat);
-		wvpmat = SMMatrixTranspose(wmat * wvpmat);
-		wmat = SMMatrixTranspose(wmat);
-
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, mtrl_data::shader_id::vs::idStdSkin, "g_mWVP", &wvpmat);
-		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, mtrl_data::shader_id::vs::idStdSkin, "g_mW", &wmat);
-
-		if (Core_RBoolGet(G_RI_BOOL_CLIPPLANE0))
-		{
-			SGCore_ShaderBind(s_idShaderKitSkinCP);
-
-			float3 tmpnormal, tmppoint;
-
-			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_NORMAL, &tmpnormal);
-			Core_RFloat3Get(G_RI_FLOAT3_CLIPPLANE0_POINT, &tmppoint);
-
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdSkinCP, "g_vPlaneNormal", &tmpnormal);
-			SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, mtrl_data::shader_id::ps::idStdSkinCP, "g_vPlanePoint", &tmppoint);
-		}
-		else
-			SGCore_ShaderBind(s_idShaderKitSkin);
-	}
-}
 
 void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 {

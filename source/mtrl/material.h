@@ -41,7 +41,7 @@ public:
 	void update(UINT timeDelta);
 	void setMainTexture(ID idSlot, ID idTexure);
 	void render(ID id, const float4x4 *pWorld=0, const float4 *pColor=0);
-	void renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot, ID idMtl);
+
 	void renderLight(const float4_t *pColor, const float4x4 *pWorld);
 	int getCount();
 
@@ -54,16 +54,12 @@ public:
 	int getCurrCountSurf();
 	void setCurrCountSurf(int iCount);
 
-	ID mtlLoad(const char *szName, MTLTYPE_MODEL type = MTLTYPE_MODEL_STATIC);
 	ID mtlLoad(const char *szName, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount = 0, XSHADER_VARIANT_DESC *pVariantsDesc = NULL);
 	void mtlReLoad(ID id, const char *szName = 0);
 	void mtlSave(ID id);
 
-	ID getStdMtl(MTLTYPE_MODEL typeModel);
 	ID exists(const char *szName);
-	MTLTYPE_MODEL getTypeModel(ID id);
 	ID getLightMtrl();
-	void setTypeModel(ID id, MTLTYPE_MODEL typeModel);
 	ID getID(const char *szName);
 
 	void setPixelShaderOverride(ID id);
@@ -233,8 +229,6 @@ public:
 			//! используется ли принимаемый цвет?
 			bool m_useDestColor;
 
-			//! тип модели для рендера
-			MTLTYPE_MODEL m_typeModel;
 
 			//! отправляемые данные в шейдеры
 			struct СDataShader
@@ -393,7 +387,6 @@ protected:
 	bool m_useForceblyAlphaTest;
 
 	bool loadMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount = 0, XSHADER_VARIANT_DESC *pVariantsDesc = NULL);
-	void createMtl(const char *szName, CMaterial **ppMtrl, MTLTYPE_MODEL type);
 	void createMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount = 0, XSHADER_VARIANT_DESC *pVariantsDesc = NULL);
 	ID createTexParamLighting(float fRoughness, float fF0, float fThickness);
 
