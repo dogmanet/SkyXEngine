@@ -31,9 +31,6 @@
     <ClCompile Include="..\..\..\source\common\file_utils.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\core\file.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\common\string_utils.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -47,12 +44,6 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\AsyncFileReader.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\core\FileInMemory.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\core\FileSystem.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\ResourceModel.cpp">
@@ -74,13 +65,22 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\FileExtIterator.cpp">
-      <Filter>Source</Filter>
+      <Filter>Source\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\FileExtsIterator.cpp">
-      <Filter>Source</Filter>
+      <Filter>Source\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\file.cpp">
+      <Filter>Source\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\FileSystem.cpp">
+      <Filter>Source\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\FileInMemory.cpp">
+      <Filter>Source\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\DirIterator.cpp">
-      <Filter>Source</Filter>
+      <Filter>Source\FileSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -98,6 +98,12 @@
     </Filter>
     <Filter Include="Source\resource">
       <UniqueIdentifier>{ba70a1c2-d8e0-4210-a869-0663935c727a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\FileSystem">
+      <UniqueIdentifier>{c75fa556-f27b-43be-ae1c-c6bea640758b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header\FileSystem">
+      <UniqueIdentifier>{445611bf-f56a-4d14-91e3-6f93aa9a36a6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -179,15 +185,6 @@
     <ClInclude Include="..\..\..\source\core\AsyncFileReader.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\core\FileInMemory.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\IFile.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\FileSystem.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\common\list.h">
       <Filter>Header</Filter>
     </ClInclude>
@@ -221,17 +218,26 @@
     <ClInclude Include="..\..\..\source\core\ModelProvider.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\core\FileExtIterator.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\FileExtsIterator.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\DirIterator.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\core\ITask.h">
       <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\FileExtIterator.h">
+      <Filter>Header\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\FileExtsIterator.h">
+      <Filter>Header\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\FileInMemory.h">
+      <Filter>Header\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\DirIterator.h">
+      <Filter>Header\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\FileSystem.h">
+      <Filter>Header\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\IFile.h">
+      <Filter>Header\xcommon</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

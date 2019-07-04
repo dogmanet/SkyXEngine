@@ -155,7 +155,8 @@ int main(int argc, char **argv)
 #if 0
 
 	IFileSystem *pFS = pEngine->getCore()->getFileSystem();
-	pFS->addRoot("fs_test");
+	pFS->addRoot("fs_test", 10);
+	pFS->addRoot("fs_test2", 20);
 
 	printf(COLOR_LRED "################# FILESYTEM TEST ##################\n");
 
@@ -163,9 +164,9 @@ int main(int argc, char **argv)
 	IFile *pFile = pFS->openFile("dir/test.txt", FILE_MODE_READ);
 	if(pFile)
 	{
-		char *pData = (char*)alloca(sizeof(char) * pFile->getSize());
-		pFile->readBin(pData, sizeof(char) * pFile->getSize());
-
+		char *pData = (char*)alloca(sizeof(char) * (pFile->getSize() + 1));
+		size_t sizeRead = pFile->readBin(pData, sizeof(char) * pFile->getSize());
+		pData[sizeRead] = 0;
 		printf("File opened! Content: \n%s\n", pData);
 	}
 	else
