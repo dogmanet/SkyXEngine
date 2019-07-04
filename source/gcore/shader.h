@@ -59,122 +59,50 @@ struct CShader
 	UINT m_uiCodeSize;
 };
 
-//! вершинный шейдер
-struct CShaderVS : public CShader
+template<class T>
+struct CShaderImpl: public CShader
 {
-	CShaderVS()
+	CShaderImpl<T>()
 	{
-		m_pVertexShader = 0;
+		m_pGXShader = 0;
 	};
-	CShaderVS(const CShaderVS &pOther):
-		m_pVertexShader(pOther.m_pVertexShader)
+	CShaderImpl<T>(const CShaderImpl<T> &pOther) :
+		m_pGXShader(pOther.m_pGXShader)
 	{
-		if(m_pVertexShader)
+		if(m_pGXShader)
 		{
-			m_pVertexShader->AddRef();
+			m_pGXShader->AddRef();
 		}
 	};
-	~CShaderVS(){ mem_release(m_pVertexShader); };
-	CShaderVS &operator=(const CShaderVS &pOther)
+	~CShaderImpl<T>()
 	{
-		m_pVertexShader = pOther.m_pVertexShader;
-		if(m_pVertexShader)
+		mem_release(m_pGXShader);
+	};
+	CShaderImpl<T> &operator=(const CShaderImpl<T> &pOther)
+	{
+		m_pGXShader = pOther.m_pGXShader;
+		if(m_pGXShader)
 		{
-			m_pVertexShader->AddRef();
+			m_pGXShader->AddRef();
 		}
 	}
 
-	IGXVertexShader *m_pVertexShader;
+	T *m_pGXShader;
 };
+
+//! вершинный шейдер
+typedef CShaderImpl<IGXVertexShader> CShaderVS;
 
 //! пиксельный шейдер
-struct CShaderPS : public CShader
-{
-	CShaderPS()
-	{
-		m_pPixelShader = 0;
-	};
-	CShaderPS(const CShaderPS &pOther):
-		m_pPixelShader(pOther.m_pPixelShader)
-	{
-		if(m_pPixelShader)
-		{
-			m_pPixelShader->AddRef();
-		}
-	};
-	~CShaderPS(){ mem_release(m_pPixelShader); };
-	CShaderPS &operator=(const CShaderPS &pOther)
-	{
-		m_pPixelShader = pOther.m_pPixelShader;
-		if(m_pPixelShader)
-		{
-			m_pPixelShader->AddRef();
-		}
-	}
-
-	IGXPixelShader *m_pPixelShader;
-};
+typedef CShaderImpl<IGXPixelShader> CShaderPS;
 
 //! геометрический шейдер
-struct CShaderGS: public CShader
-{
-	CShaderGS()
-	{
-		m_pGeometryShader = 0;
-	};
-	CShaderGS(const CShaderGS &pOther):
-		m_pGeometryShader(pOther.m_pGeometryShader)
-	{
-		if(m_pGeometryShader)
-		{
-			m_pGeometryShader->AddRef();
-		}
-	};
-	~CShaderGS()
-	{
-		mem_release(m_pGeometryShader);
-	};
-	CShaderGS &operator=(const CShaderGS &pOther)
-	{
-		m_pGeometryShader = pOther.m_pGeometryShader;
-		if(m_pGeometryShader)
-		{
-			m_pGeometryShader->AddRef();
-		}
-	}
+typedef CShaderImpl<IGXGeometryShader> CShaderGS;
 
-	IGXGeometryShader *m_pGeometryShader;
-};
 //! вычислительный шейдер
-struct CShaderCS: public CShader
-{
-	CShaderCS()
-	{
-		m_pComputeShader = 0;
-	};
-	CShaderCS(const CShaderCS &pOther):
-		m_pComputeShader(pOther.m_pComputeShader)
-	{
-		if(m_pComputeShader)
-		{
-			m_pComputeShader->AddRef();
-		}
-	};
-	~CShaderCS()
-	{
-		mem_release(m_pComputeShader);
-	};
-	CShaderCS &operator=(const CShaderCS &pOther)
-	{
-		m_pComputeShader = pOther.m_pComputeShader;
-		if(m_pComputeShader)
-		{
-			m_pComputeShader->AddRef();
-		}
-	}
+typedef CShaderImpl<IGXComputeShader> CShaderCS;
 
-	IGXComputeShader *m_pComputeShader;
-};
+
 
 struct CShaderKit
 {
@@ -348,19 +276,6 @@ public:
 	void unbind();
 
 
-	//! передача float значений в шейдер по имени
-	void setValueRegisterF(SHADER_TYPE type, const char *szNameShader, const char *szNameVar, void *pData, int iCountFloat4 = 0);
-
-	//! передача float значений в шейдер по ID
-	void setValueRegisterF(SHADER_TYPE type, ID idShader, const char *szNameVar, void *data, int iCountFloat4 = 0);
-
-	//! передача int значений в шейдер по имени
-	void setValueRegisterI(SHADER_TYPE type, const char *szNameShader, const char *szNameVar, void *pData, int iCountInt4 = 0);
-
-	//! передача int значений в шейдер по ID
-	void setValueRegisterI(SHADER_TYPE type, ID idShader, const char *szNameVar, void *data, int iCountInt4 = 0);
-
-
 	//! существует ли шейдер с именем файла и расширением name, если да то возвращает id
 	//@DEPRECATED: 
 	ID existsPath(SHADER_TYPE type, const char *szPath);
@@ -393,11 +308,7 @@ protected:
 	Array<CShaderCS*> m_aCS;	//!< массивы cs шейдеров
 
 	Array<CShaderKit*> m_aShaderKit;
-
-	bool m_canInfo4FailSend;
-
-	void updateDataInfo4FailSend();
-
+	
 	//! массив всех инклюдов
 	Array<CShaderInclude> m_aIncludes;
 

@@ -23,6 +23,8 @@ See the license in LICENSE
 //#include <dxerr9.h>
 #include <graphix/graphix.h>
 
+#define SGCore_ShaderSetVRF(...) assert(!"Deprecated!")
+
 #if defined(_DEBUG)
 #pragma comment(lib, "sxcore_d.lib")
 #else
@@ -406,48 +408,6 @@ SX_LIB_API void SGCore_ShaderBind(ID idShaderKit);
 //! обнуление биндов шейдеров
 SX_LIB_API void SGCore_ShaderUnBind();	
 
-//**************************************************************************
-
-/*! \name Передача данных в шейдер
-@{*/
-
-//! передача float значений в шейдер по имени
-SX_LIB_API void SGCore_ShaderSetVRFN(
-	SHADER_TYPE type_shader,	//!< тип шейдера из #SHADER_TYPE
-	const char *szNameShader,	//!< пользовательское имя шейдера
-	const char *szNameVar,		//!< имя переменной которой присваивается значение
-	void *pData,				//!< указатель на массив данных
-	int iCountFloat4 = 0		//!< количество float4 значений в передаваемом массиве, если меньше одного значит количество будет взято из шейдера
-	);
-
-//! передача float значений в шейдер по ID
-SX_LIB_API void SGCore_ShaderSetVRF(
-	SHADER_TYPE type_shader,	//!< тип шейдера из #SHADER_TYPE
-	ID idShader,				//!< идентификатор шейдера
-	const char *szNameVar,		//!< имя переменной которой присваивается значение
-	void *pData,				//!< указатель на массив данных
-	int iCountFloat4 = 0		//!< количество float4 значений в передаваемом массиве, если меньше одного значит количество будет взято из шейдера
-	);
-
-//! передача int значений в шейдер по имени
-SX_LIB_API void SGCore_ShaderSetVRIN(
-	SHADER_TYPE type_shader,	//!< тип шейдера из #SHADER_TYPE
-	const char *szNameShader,	//!< пользовательское имя шейдера
-	const char *szNameVar,		//!< имя переменной которой присваивается значение
-	void *pData,				//!< указатель на массив данных
-	int iCountInt4 = 0			//!< количество int4 значений в передаваемом массиве, если меньше одного значит количество будет взято из шейдера
-	);
-
-//! передача int значений в шейдер по ID
-SX_LIB_API void SGCore_ShaderSetVRI(
-	SHADER_TYPE type_shader,	//!< тип шейдера из #SHADER_TYPE
-	ID idShader,				//!< идентификатор шейдера
-	const char *szNameVar,		//!< имя переменной которой присваивается значение
-	void *pData,				//!< указатель на массив данных
-	int iCountInt4 = 0			//!< количество int4 значений в передаваемом массиве, если меньше одного значит количество будет взято из шейдера
-	);
-
-//!@}
 //!@} sxgcore_shaders
 
 //#############################################################################

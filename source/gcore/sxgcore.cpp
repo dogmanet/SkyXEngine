@@ -489,34 +489,6 @@ SX_LIB_API void SGCore_ShaderUnBind()
 	return g_pManagerShaders->unbind();
 }
 
-SX_LIB_API void SGCore_ShaderSetVRFN(SHADER_TYPE type_shader, const char *szNameShader, const char *szNameVar, void *pData, int iCountFloat4)
-{
-	SG_PRECOND(_VOID);
-
-	return g_pManagerShaders->setValueRegisterF(type_shader, szNameShader, szNameVar, pData, iCountFloat4);
-}
-
-SX_LIB_API void SGCore_ShaderSetVRF(SHADER_TYPE type_shader, ID idShader, const char *szNameVar, void *pData, int iCountFloat4)
-{
-	SG_PRECOND(_VOID);
-
-	return g_pManagerShaders->setValueRegisterF(type_shader, idShader, szNameVar, pData, iCountFloat4);
-}
-
-SX_LIB_API void SGCore_ShaderSetVRIN(SHADER_TYPE type_shader, const char *szNameShader, const char *szNameVar, void *pData, int iCountInt4)
-{
-	SG_PRECOND(_VOID);
-
-	return g_pManagerShaders->setValueRegisterI(type_shader, szNameShader, szNameVar, pData, iCountInt4);
-}
-
-SX_LIB_API void SGCore_ShaderSetVRI(SHADER_TYPE type_shader, ID idShader, const char* szNameVar, void *pData, int iCountInt4)
-{
-	SG_PRECOND(_VOID);
-
-	return g_pManagerShaders->setValueRegisterI(type_shader, idShader, szNameVar, pData, iCountInt4);
-}
-
 
 SX_LIB_API ID SGCore_ShaderExistsName(SHADER_TYPE type_shader, const char *szName)
 {
