@@ -21,6 +21,22 @@ AI сетка состоит из квадратов (квад), квады им
 #ifndef __SXAIGRID_H
 #define __SXAIGRID_H
 
+#if 1
+
+#define SAIG_QuadGetNear(...) (-1)
+#define SAIG_QuadSetState(...)
+#define SAIG_QuadGetState(...) (AIQUAD_STATE_FREE)
+#define SAIG_QuadSetStateWho(...)
+#define SAIG_QuadGetStateWho(...) (-1)
+#define SAIG_QuadGetPos(...)
+#define SAIG_QuadGet(...) (-1)
+#define SAIG_GridQueryFindPath(...) (-1)
+#define SAIG_GridGetSizePath(...) (-1)
+#define SAIG_GridSetColorArr(...)
+#define SAIG_GridGetPath(...)
+
+#else
+
 #include <gdefines.h>
 
 #if defined(_DEBUG)
@@ -58,6 +74,7 @@ SX_LIB_API void SAIG_0Create(
 SX_LIB_API void SAIG_AKill();	
 
 //!@}
+#endif
 
 /*! преобразование float в int
  \warning осторожно, изменения  могут повлечь баги в генерации и некоторых иных функция. Когда было *100 то в некоторых местах генерировались дубликаты, и поиск квада по позиции не всегда работал корректно
@@ -162,6 +179,7 @@ enum AIQUAD_STATE
 */
 typedef bool(*g_aiquad_phy_navigate) (float3_t *pPos);
 
+#if 0
 //##########################################################################
 
 /*! переназначение g_aiquad_phy_navigate, обязательное действие для работы с сеткой */
@@ -359,7 +377,7 @@ SX_LIB_API void SAIG_RenderGraphPoints(const float3 *pViewPos, float fDist);
 SX_LIB_API void SAIG_RenderBB();			
 
 //!@}
-
+#endif
 #endif
 
 //!@} sxaigrid

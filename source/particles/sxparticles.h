@@ -24,6 +24,17 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
+#if 1
+
+#define SPE_EffectSetEnable(...)
+#define SPE_EffectInstanceByName(...) (-1)
+#define SPE_EffectPlayByName(...)
+#define SPE_EffectSetPos(...)
+#define SPE_EffectSetRotQ(...)
+
+#else
+
+
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
 #else
@@ -84,7 +95,7 @@ SX_LIB_API void SPE_OnLostDevice();
 SX_LIB_API void SPE_OnResetDevice();
 
 //!@}
-
+#endif
 //#############################################################################
 
 /*! базовое направления взгляда эффекта */
@@ -539,7 +550,7 @@ struct CParticlesData
 Получить идентификатор уже созданного эффекта можно, посредством ключа (key) который лежит в пределах [0, #SPE_EffectCountGet),
 передав этот ключ #SPE_EffectIdOfKey, которая в случае успеха вернет идентификатор эффекта.
 @{*/
-
+#if 0
 //! загрузка информации об эффектах и эмиттерах из файла
 SX_LIB_API void SPE_EffectLoad(const char *szPath);	
 
@@ -747,6 +758,8 @@ SX_LIB_API void SPE_EmitterGetName(ID id, ID idPart, char *szName);
 
 SX_LIB_API int SPE_EmitterGetTrackCount(ID id, ID idPart);
 SX_LIB_API int SPE_EmitterGetTrackPos(ID id, ID idPart, float3 **ppArr, int iCount);
+
+#endif
 
 //!@} sxparticles_part
 

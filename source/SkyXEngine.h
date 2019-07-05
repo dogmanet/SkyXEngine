@@ -331,13 +331,6 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <input/sxinput.h>
 
 #if defined(_DEBUG)
-#pragma comment(lib, "sxscore_d.lib")
-#else
-#pragma comment(lib, "sxscore.lib")
-#endif
-#include <score/sxscore.h>
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
 #else
 #pragma comment(lib, "sxgcore.lib")
@@ -352,20 +345,6 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <mtrl/sxmtrl.h>
 
 #if defined(_DEBUG)
-#pragma comment(lib, "sxparticles_d.lib")
-#else
-#pragma comment(lib, "sxparticles.lib")
-#endif
-#include <particles/sxparticles.h>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxpp_d.lib")
-#else
-#pragma comment(lib, "sxpp.lib")
-#endif
-#include <pp/sxpp.h>
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxphysics_d.lib")
 #else
 #pragma comment(lib, "sxphysics.lib")
@@ -373,41 +352,11 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <physics/sxphysics.h>
 
 #if defined(_DEBUG)
-#pragma comment(lib, "sxaigrid_d.lib")
-#else
-#pragma comment(lib, "sxaigrid.lib")
-#endif
-#include <aigrid/sxaigrid.h>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxdecals_d.lib")
-#else
-#pragma comment(lib, "sxdecals.lib")
-#endif
-#include <decals/sxdecals.h>
-
-//#if defined(_DEBUG)
-//#pragma comment(lib, "sxlevel_d.lib")
-//#else
-//#pragma comment(lib, "sxlevel.lib")
-//#endif
-//#include <level/sxlevel.h>
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxgame_d.lib")
 #else
 #pragma comment(lib, "sxgame.lib")
 #endif
 #include <game/sxgame.h>
-
-#if !defined(SX_TERRAX) && (defined(SX_LEVEL_EDITOR) || defined(SX_MATERIAL_EDITOR) || defined(SX_PARTICLES_EDITOR))
-#if defined(_DEBUG)
-#pragma comment(lib, "sxguiwinapi_d.lib")
-#else
-#pragma comment(lib, "sxguiwinapi.lib")
-#endif
-#include <sxguiwinapi/sxgui.h>
-#endif
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxrender_d.lib")

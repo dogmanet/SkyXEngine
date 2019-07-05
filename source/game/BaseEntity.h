@@ -20,6 +20,7 @@ See the license in LICENSE
 
 #include <gdefines.h>
 #include <common/Math.h>
+#include <core/sxcore.h>
 #include <physics/sxphysics.h>
 #include <score/sxscore.h>
 

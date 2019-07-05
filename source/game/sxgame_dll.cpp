@@ -24,21 +24,13 @@ See the license in LICENSE
 #	pragma comment(lib, "sxgcore_d.lib")
 #	pragma comment(lib, "sxinput_d.lib")
 #	pragma comment(lib, "sxphysics_d.lib")
-#	pragma comment(lib, "sxdecals_d.lib")
-#	pragma comment(lib, "sxparticles_d.lib")
-#	pragma comment(lib, "sxscore_d.lib")
 #	pragma comment(lib, "sxmtrl_d.lib")
-#	pragma comment(lib, "sxaigrid_d.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
 #	pragma comment(lib, "sxgcore.lib")
 #	pragma comment(lib, "sxinput.lib")
 #	pragma comment(lib, "sxphysics.lib")
-#	pragma comment(lib, "sxdecals.lib")
-#	pragma comment(lib, "sxparticles.lib")
-#	pragma comment(lib, "sxscore.lib")
 #	pragma comment(lib, "sxmtrl.lib")
-#	pragma comment(lib, "sxaigrid.lib")
 #endif
 
 #if !defined(DEF_STD_REPORT)
