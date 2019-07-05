@@ -317,11 +317,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxgreen", "..\..\sxgreen\sx
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GraphiX", "GraphiX", "{8C9E1225-F0B3-403E-AB88-3372E67DE173}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gxgapiogl", "..\..\..\sdks\graphix\proj\graphix\ogl\vs2013\gxgapiogl.vcxproj", "{9117FCDB-957B-4FF8-8AD4-90965159B721}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gxgapiogl", "..\..\..\sdks\graphix\proj\vs2013\ogl\gxgapiogl.vcxproj", "{9117FCDB-957B-4FF8-8AD4-90965159B721}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gxgapidx9", "..\..\..\sdks\graphix\proj\graphix\dx9\vs2013\gxgapidx9.vcxproj", "{15AD3AF2-47B1-4836-9777-F1249EB299A7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gxgapidx9", "..\..\..\sdks\graphix\proj\vs2013\dx9\gxgapidx9.vcxproj", "{15AD3AF2-47B1-4836-9777-F1249EB299A7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gxgapidx11", "..\..\..\sdks\graphix\proj\graphix\dx11\vs2013\gxgapidx11.vcxproj", "{DAFA20F5-5162-4F21-99AF-DB8084D3C557}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gxgapidx11", "..\..\..\sdks\graphix\proj\vs2013\dx11\gxgapidx11.vcxproj", "{DAFA20F5-5162-4F21-99AF-DB8084D3C557}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "terrax", "..\..\terrax\vs2013\terrax.vcxproj", "{A1AC0163-A56A-416D-AFA0-19F7DFBE9F64}"
 	ProjectSection(ProjectDependencies) = postProject

@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -14,13 +14,13 @@ See the license in LICENSE
 
 extern IGXContext *g_pDevice;
 
-//структура описывающая движковые текстуры
+//СЃС‚СЂСѓРєС‚СѓСЂР° РѕРїРёСЃС‹РІР°СЋС‰Р°СЏ РґРІРёР¶РєРѕРІС‹Рµ С‚РµРєСЃС‚СѓСЂС‹
 struct CreatedTexture
 {
-	char Name[64];	//имя
-	IGXTexture2D* Texture;	//текстура
+	char Name[64];	//РёРјСЏ
+	IGXTexture2D* Texture;	//С‚РµРєСЃС‚СѓСЂР°
 	UINT Level;
-	//float CoefFullScreen;		//если меньше 0 то брать размер из Desc, иначе это коэфициент умножение размера экрана на это число
+	//float CoefFullScreen;		//РµСЃР»Рё РјРµРЅСЊС€Рµ 0 С‚Рѕ Р±СЂР°С‚СЊ СЂР°Р·РјРµСЂ РёР· Desc, РёРЅР°С‡Рµ СЌС‚Рѕ РєРѕСЌС„РёС†РёРµРЅС‚ СѓРјРЅРѕР¶РµРЅРёРµ СЂР°Р·РјРµСЂР° СЌРєСЂР°РЅР° РЅР° СЌС‚Рѕ С‡РёСЃР»Рѕ
 };
 
 class CreatorTextures

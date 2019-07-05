@@ -6,6 +6,28 @@ See the license in LICENSE
 
 #include "gcore_utils.h"
 
+
+class CGXLogger: public IGXLogger
+{
+public:
+	void logInfo(const char *szString) override
+	{
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "%s", szString);
+	}
+	void logWarning(const char *szString) override
+	{
+		LibReport(REPORT_MSG_LEVEL_WARNING, "%s", szString);
+	}
+	void logError(const char *szString) override
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s", szString);
+	}
+};
+
+CGXLogger g_gxLogger;
+
+//##########################################################################
+
 void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 {
 	char szModuleName[64];
@@ -13,28 +35,29 @@ void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 	m_hLibGXAPI = LoadLibrary(szModuleName);
 	if(!m_hLibGXAPI)
 	{
-		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - unable to load GX: %s", GEN_MSG_LOCATION, szModuleName);
+		LibReport(REPORT_MSG_LEVEL_FATAL, "%s - unable to load GX: %s\n", GEN_MSG_LOCATION, szModuleName);
 		return;
 	}
 
-	IGXContext * (*libGXGetInstance)();
+	IGXContext* (*libGXGetInstance)();
 	libGXGetInstance = (IGXContext*(*)())GetProcAddress(m_hLibGXAPI, "GetInstance");
 	if(!libGXGetInstance)
 	{
-		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - %s: Not a GX module!", GEN_MSG_LOCATION, szModuleName);
+		LibReport(REPORT_MSG_LEVEL_FATAL, "%s - %s: Not a GX module!\n", GEN_MSG_LOCATION, szModuleName);
 		return;
 	}
 
 	g_pDevice = libGXGetInstance();
 	if(!g_pDevice)
 	{
-		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - %s: Cannot spawn GX context!", GEN_MSG_LOCATION, szModuleName);
+		LibReport(REPORT_MSG_LEVEL_FATAL, "%s - %s: Cannot spawn GX context!\n", GEN_MSG_LOCATION, szModuleName);
 		return;
 	}
+	g_pDevice->setLogger(&g_gxLogger);
 
 	if(!g_pDevice->initContext(hWnd, iWidth, iHeight, isWindowed))
 	{
-		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - %s: Cannot init GX context!", GEN_MSG_LOCATION, szModuleName);
+		LibReport(REPORT_MSG_LEVEL_FATAL, "%s - %s: Cannot init GX context!\n", GEN_MSG_LOCATION, szModuleName);
 		return;
 	}
 }

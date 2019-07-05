@@ -357,37 +357,49 @@ inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, .
 	vsprintf_s(buf, REPORT_MSG_MAX_LEN, szFormat, va);
 	va_end(va);*/
 
-	static char szStr[REPORT_MSG_MAX_LEN];
-	szStr[0] = 0;
-	static char szStr2[REPORT_MSG_MAX_LEN];
-	szStr2[0] = 0;
-	int iStrLen = sizeof(szStr);
-
 	va_list va;
 	va_start(va, szFormat);
-	vsprintf_s(szStr, REPORT_MSG_MAX_LEN, szFormat, va);
-	va_end(va);
-
-	if(szStr[0] != ' ' && szStr[0] != '\t')
-		sprintf(szStr2, COLOR_GREEN "%s" COLOR_RESET ": ", szLibName);
-
+	size_t len = _vscprintf(szFormat, va) + 1;
+	if(szFormat[0] != ' ' && szFormat[0] != '\t')
+	{
+		len += strlen(COLOR_GREEN COLOR_RESET ": ");
+		len += strlen(szLibName);
+	}
 	if(iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_FATAL)
 	{
-		sprintf(szStr2 + strlen(szStr2), "%s", COLOR_LRED);
+		len += strlen(COLOR_LRED);
 	}
 	else if(iLevel == REPORT_MSG_LEVEL_WARNING)
 	{
-		sprintf(szStr2 + strlen(szStr2), "%s", COLOR_YELLOW);
+		len += strlen(COLOR_YELLOW);
 	}
-
-	sprintf(szStr2 + strlen(szStr2), "%s", szStr);
-
 	if(iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_WARNING || iLevel == REPORT_MSG_LEVEL_FATAL)
 	{
-		sprintf(szStr2 + strlen(szStr2), "%s", COLOR_RESET);
+		len += strlen(COLOR_RESET);
 	}
 
-	printf("%s", szStr2);
+	char *buf = (char*)alloca(len * sizeof(char));
+	char *tmp = buf;
+	if(szFormat[0] != ' ' && szFormat[0] != '\t')
+	{
+		tmp += sprintf(tmp, COLOR_GREEN "%s" COLOR_RESET ": ", szLibName);
+	}
+	if(iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_FATAL)
+	{
+		tmp += sprintf(tmp, "%s", COLOR_LRED);
+	}
+	else if(iLevel == REPORT_MSG_LEVEL_WARNING)
+	{
+		tmp += sprintf(tmp, "%s", COLOR_YELLOW);
+	}
+	tmp += vsprintf(tmp, szFormat, va);
+	va_end(va);
+	if(iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_WARNING || iLevel == REPORT_MSG_LEVEL_FATAL)
+	{
+		tmp += sprintf(tmp, "%s", COLOR_RESET);
+	}
+
+	printf("%s", buf);
 
 	if(iLevel == REPORT_MSG_LEVEL_FATAL)
 	{
@@ -406,17 +418,14 @@ inline void LibReport(int iLevel, const char *szFormat, ...)
 {
 	// extern report_func g_fnReportf;
 
-	static char szStr[REPORT_MSG_MAX_LEN];
-	szStr[0] = 0;
-	int iStrLen = sizeof(szStr);
-	//format_str(szStr, szFormat);
-
-	va_list va; 
+	va_list va;
 	va_start(va, szFormat);
-	vsprintf_s(szStr, sizeof(szStr), szFormat, va);
+	size_t len = _vscprintf(szFormat, va) + 1;
+	char * buf = (char*)alloca(len * sizeof(char));
+	vsprintf(buf, szFormat, va);
 	va_end(va);
 
-	DefReport(iLevel, SX_LIB_NAME, "%s", szStr);
+	DefReport(iLevel, SX_LIB_NAME, "%s", buf);
 }
 
 

@@ -41,7 +41,10 @@ CCore::CCore(const char *szName)
 	m_pPluginManager = new CPluginManager();
 
 	m_pFileSystem = new CFileSystem();
+	m_pFileSystem->addRoot("engine");
 	m_pFileSystem->addRoot("gamesource");
+	UINT uGamePathId = m_pFileSystem->addRoot("local");
+	m_pFileSystem->setWritableRoot(uGamePathId);
 
 	m_pModelProvider = new CModelProvider(this);
 	m_pPluginManager->registerInterface(IXMODELPROVIDER_GUID, m_pModelProvider);

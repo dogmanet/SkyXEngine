@@ -255,6 +255,11 @@ static int LoadShader(const char *szPath, CShaderImpl<T> *pShader, GXMacro *aMac
 		}
 		while(!pGXShader && MessageBoxA(NULL, "Unable to compile shader. Want to retry?", "Shader error", MB_OKCANCEL | MB_ICONSTOP) == IDOK);
 
+		if(!pGXShader)
+		{
+			return(LOAD_SHADER_FAIL);
+		}
+
 		pShader->m_pCode = 0;
 		pGXShader->getData(pShader->m_pCode, &pShader->m_uiCodeSize);
 		pShader->m_pCode = new BYTE[pShader->m_uiCodeSize];
