@@ -87,6 +87,7 @@ void CPlayer::updateInput(float dt)
 	static const float * sense = GET_PCVAR_FLOAT("cl_mousesense");
 	static const bool * editor_mode = GET_PCVAR_BOOL("cl_mode_editor");
 	static const bool * grab_cursor = GET_PCVAR_BOOL("cl_grab_cursor");
+	static const bool * invert_y = GET_PCVAR_BOOL("cl_invert_y");
 
 	if(*editor_mode && !SSInput_GetKeyState(SIK_LCONTROL))
 	{
@@ -100,8 +101,15 @@ void CPlayer::updateInput(float dt)
 	{
 		SSInput_GetMouseDelta(&x, &y);
 
-		float dx = (float)x * *sense * 10.0f /* / dt */;
-		float dy = (float)y * *sense * 10.0f /* / dt */;
+		//float dx = (float)x * *sense * 10.0f /* / dt */;
+		//float dy = (float)y * *sense * 10.0f /* / dt */;
+		float fCoeff = SMToRadian(0.022) * *sense;
+		float dx = (float)x * fCoeff /* / dt */;
+		float dy = (float)y * fCoeff /* / dt */;
+		if(*invert_y)
+		{
+			dy *= -1;
+		}
 		if(m_iDSM && m_pActiveTool)
 		{
 			m_pActiveTool->dbgMove(m_iDSM, dy);

@@ -606,7 +606,7 @@ void SkyXEngine_CreateLoadCVar()
 
 	Core_0RegisterCVarInt("r_reflection_render", 0, "Режим рендера отражений 0 - отражения только от skybox, 1 - геометрия, 2 - растительность, 3 - анимационные модели");
 
-	Core_0RegisterCVarFloat("cl_mousesense", 0.001f, "Mouse sense value");
+	Core_0RegisterCVarFloat("cl_mousesense", 2.0f, "Mouse sense value");
 
 	Core_0RegisterCVarInt("pp_ssao", 1, "Рисовать ли эффект ssao? 0 - нет, 1 - на низком качестве, 2 - на среднем, 3 - на высоком");
 	Core_0RegisterCVarBool("pp_bloom", true, "Рисовать ли эффект bloom?");
