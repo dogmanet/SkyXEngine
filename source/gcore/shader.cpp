@@ -7,7 +7,7 @@ See the license in LICENSE
 #include "shader.h"
 #include "ShaderPreprocessor.h"
 
-#define SX_SHADER_CACHE_MAGIC MAKEFOURCC('F', 'S', 'C', 'X') /*!< X Compiled Shader File*/
+#define SX_SHADER_CACHE_MAGIC MAKEFOURCC('X', 'C', 'S', 'F') /*!< X Compiled Shader File*/
 #define SX_SHADER_CACHE_VERSION 1
 
 //##########################################################################
@@ -110,14 +110,17 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 					do
 					{
 						uint32_t uChunkSize = 0;
-						pCacheFile->readBin(&uChunkSize, sizeof(uChunkSize));
+						if(!pCacheFile->readBin(&uChunkSize, sizeof(uChunkSize)))
+						{
+							break;
+						}
 						size_t sizeNextBlockPos = pCacheFile->getPos() + uChunkSize;
 
 						UINT uMacroCountFile = 0;
+						pCacheFile->readBin(&uMacroCountFile, sizeof(uMacroCountFile));
 						bool isMatched = uMacroCount == uMacroCountFile;
 						if(isMatched)
 						{
-							pCacheFile->readBin(&uMacroCountFile, sizeof(uMacroCountFile));
 							for(UINT i = 0; i < uMacroCountFile; ++i)
 							{
 								uint8_t u8Len = 0;
@@ -147,6 +150,7 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 						if(isMatched)
 						{
 							uint32_t uIncludeCount = 0;
+							pCacheFile->readBin(&uIncludeCount, sizeof(uIncludeCount));
 							bool isValid = true;
 							for(UINT i = 0; i < uIncludeCount; ++i)
 							{
