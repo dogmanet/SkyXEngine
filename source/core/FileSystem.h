@@ -76,12 +76,18 @@ public:
      IFile *openFile(const char *szPath, FILE_OPEN_MODE) override;
 
 private:
+    //Возвращает превращает канонизированный путь в неканонизированный
+    char *getNormalPath(const char *szPath);
+
+    //Сравнивает пути с корнем, и возвращает true если путь - абсолютный и в корне
+    bool isAbsoletePathInRoot(const char *szPath);
+
     //! Возвращает абсолютный канонизированный путь
     char *getAbsoliteCanonizePath(const char *szPath);
 
     char *getFullPathToBuild();
 
-    String *getFileName(const char *name);
+    char *getFileName(const char *name);
 
     //! Вспомогательная функция для конвертирования FILETIME в time_t
     time_t convertFiletimeToTime_t(const FILETIME& ft);
