@@ -6,20 +6,6 @@
 #include <shellapi.h>
 #include <ShlObj.h>
 
-void CFileSystem::swithFileMode(IFile *file, const char *szPath, FILE_OPEN_MODE mode)
-{
-    switch (mode)
-    {
-    case FILE_MODE_WRITE:
-        file->open(szPath, CORE_FILE_BIN);
-        break;
-
-    case FILE_MODE_APPEND:
-        file->add(szPath, CORE_FILE_BIN);
-        break;
-    }
-}
-
 //! Возвращает абсолютный канонизированный путь
 char *CFileSystem::getAbsoliteCanonizePath(const char *szPath)
 {
@@ -29,7 +15,14 @@ char *CFileSystem::getAbsoliteCanonizePath(const char *szPath)
     int len = absolute ? strlen(szPath) + 1 : MAX_PATH;
     char *fullPath = new char[len];
 
-    absolute ? memcpy(fullPath, szPath, len) : correctPath = resolvePath(szPath, fullPath, len);
+    if (absolute) 
+    {
+        memcpy(fullPath, szPath, len);
+    }
+    else
+    { 
+        correctPath = resolvePath(szPath, fullPath, len); 
+    }
 
     //Во время поиска пути могут произойти ошибки - путь может быть не найден, или слишком маленький буфер для записи
     if (correctPath)
@@ -62,9 +55,9 @@ String *CFileSystem::getFileName(const char *name)
 {
     LPWIN32_FIND_DATAA wfd;
 
-    HANDLE const hFind = FindFirstFile(name, wfd);
+    HANDLE hFind = FindFirstFile(name, wfd);
 
-    FindClose(hFind);
+    FIND_CLOSE(hFind);
 
     return new String(wfd->cFileName[0]);
 }
@@ -297,7 +290,7 @@ bool CFileSystem::deleteDirectory(const char *szPath)
         "" };
 
     // Если вернуло не 0, то все плохо
-    return SHFileOperation(&file_op) == 0;
+    return SHFileOperation(&file_op) == NO_ERROR;
 }
 
 IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ)
@@ -318,9 +311,9 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
 
     IFile *file = new CFile;
 
-    //Если открываем только на чтение - то копирование не нужно (следовательно и выделение памяти тоже лишняя операция)
     if (mode == FILE_MODE_READ)
     {
+        //Если открываем только на чтение - то копирование не нужно (следовательно и выделение памяти тоже лишняя операция)
         file->open(fullPath, CORE_FILE_BIN);
         mem_delete_a(fullPath);
         return file;
@@ -328,7 +321,16 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
 
     String *newFileName = copyFile(fullPath);
 
-    swithFileMode(file, newFileName->c_str(), mode);
+    switch (mode)
+    {
+    case FILE_MODE_WRITE:
+        file->open(fullPath, CORE_FILE_BIN);
+        break;
+
+    case FILE_MODE_APPEND:
+        file->add(fullPath, CORE_FILE_BIN);
+        break;
+    }
 
     mem_delete(newFileName);
     mem_delete_a(fullPath);

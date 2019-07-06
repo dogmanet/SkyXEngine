@@ -10,6 +10,12 @@
     handle = nullptr; \
 }
 
+#define FIND_CLOSE(handle) if (handle != INVALID_HANDLE_VALUE) \
+{\
+    FindClose(handle); \
+    handle = nullptr; \
+}
+
 //! Сравнение длинны массива и буфера записи
 #define CHECK_SIZE(len, buffSize) \
 { \
@@ -27,37 +33,6 @@
 
 class CFileSystem final : public IFileSystem
 {
-private:
-    //Метод нужен для вызора режима открытия файла в FileOpen
-    void swithFileMode(IFile *file, const char *szPath, FILE_OPEN_MODE mode);
-
-    //! Возвращает абсолютный канонизированный путь
-    char *getAbsoliteCanonizePath(const char *szPath);
-
-    char *getFullPathToBuild();
-
-    String *getFileName(const char *name);
-
-    //! Вспомогательная функция для конвертирования FILETIME в time_t
-    time_t convertFiletimeToTime_t(const FILETIME& ft);
-
-    HANDLE getFileHandle(const char *szPath);
-
-    bool isAbsolutePath(const char* szPath);
-
-    String *copyFile(const char* szPath);
-
-    //корневые пути и приоритет
-    Array<String> m_filePaths;
-    Array<int> m_priority;
-
-    //Полный путь к build
-    String m_pathToBuild;
-
-    //!Наш текущий ID корневого пути для записи
-    //! -1 - значит не установлен
-    int m_writableRoot = -1;
-
 public:
     CFileSystem();
 
@@ -99,6 +74,34 @@ public:
      bool deleteDirectory(const char *szPath) override;
 
      IFile *openFile(const char *szPath, FILE_OPEN_MODE) override;
+
+private:
+    //! Возвращает абсолютный канонизированный путь
+    char *getAbsoliteCanonizePath(const char *szPath);
+
+    char *getFullPathToBuild();
+
+    String *getFileName(const char *name);
+
+    //! Вспомогательная функция для конвертирования FILETIME в time_t
+    time_t convertFiletimeToTime_t(const FILETIME& ft);
+
+    HANDLE getFileHandle(const char *szPath);
+
+    bool isAbsolutePath(const char* szPath);
+
+    String *copyFile(const char* szPath);
+
+    //корневые пути и приоритет
+    Array<String> m_filePaths;
+    Array<int> m_priority;
+
+    //Полный путь к build
+    String m_pathToBuild;
+
+    //!Наш текущий ID корневого пути для записи
+    //! -1 - значит не установлен
+    int m_writableRoot = -1;
 };
 
 #endif
