@@ -203,6 +203,7 @@ source/s4g/tests/
 *.sxf
 
 build/*
+!engine/
 !gamesource/
 build/gamesource/*
 /build/gamesource/shaders/cache/*

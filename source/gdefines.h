@@ -264,7 +264,7 @@ inline bool operator==(const XGUID &a, const XGUID &b)
 #define ASSERT(expr) if(!expr) ASSERT_S(#expr)
 
 //! Тип функции вывода отладочной информации
-typedef void(*report_func) (int iLevel, const char *szLibName, const char *szFormat, ...);
+typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMessage);
 
 #include <cstdio> 
 #if defined(_WINDOWS)
@@ -349,57 +349,25 @@ inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, .
 	exit(1);
 }
 #endif
-inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, ...)
+inline void DefReport(int iLevel, const char *szLibName, const char *szMessage)
 {
-	/*va_list va;
-	char buf[REPORT_MSG_MAX_LEN];
-	va_start(va, szFormat);
-	vsprintf_s(buf, REPORT_MSG_MAX_LEN, szFormat, va);
-	va_end(va);*/
-
-	va_list va;
-	va_start(va, szFormat);
-	size_t len = _vscprintf(szFormat, va) + 1;
-	if(szFormat[0] != ' ' && szFormat[0] != '\t')
+	if(szMessage[0] != ' ' && szMessage[0] != '\t')
 	{
-		len += strlen(COLOR_GREEN COLOR_RESET ": ");
-		len += strlen(szLibName);
+		printf(COLOR_GREEN "%s" COLOR_RESET ": ", szLibName);
 	}
 	if(iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_FATAL)
 	{
-		len += strlen(COLOR_LRED);
+		fputs(COLOR_LRED, stdout);
 	}
 	else if(iLevel == REPORT_MSG_LEVEL_WARNING)
 	{
-		len += strlen(COLOR_YELLOW);
+		fputs(COLOR_YELLOW, stdout);
 	}
+	fputs(szMessage, stdout);
 	if(iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_WARNING || iLevel == REPORT_MSG_LEVEL_FATAL)
 	{
-		len += strlen(COLOR_RESET);
+		fputs(COLOR_RESET, stdout);
 	}
-
-	char *buf = (char*)alloca(len * sizeof(char));
-	char *tmp = buf;
-	if(szFormat[0] != ' ' && szFormat[0] != '\t')
-	{
-		tmp += sprintf(tmp, COLOR_GREEN "%s" COLOR_RESET ": ", szLibName);
-	}
-	if(iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_FATAL)
-	{
-		tmp += sprintf(tmp, "%s", COLOR_LRED);
-	}
-	else if(iLevel == REPORT_MSG_LEVEL_WARNING)
-	{
-		tmp += sprintf(tmp, "%s", COLOR_YELLOW);
-	}
-	tmp += vsprintf(tmp, szFormat, va);
-	va_end(va);
-	if(iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_WARNING || iLevel == REPORT_MSG_LEVEL_FATAL)
-	{
-		tmp += sprintf(tmp, "%s", COLOR_RESET);
-	}
-
-	printf("%s", buf);
 
 	if(iLevel == REPORT_MSG_LEVEL_FATAL)
 	{
@@ -416,8 +384,6 @@ inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, .
 
 inline void LibReport(int iLevel, const char *szFormat, ...)
 {
-	// extern report_func g_fnReportf;
-
 	va_list va;
 	va_start(va, szFormat);
 	size_t len = _vscprintf(szFormat, va) + 1;
@@ -425,7 +391,7 @@ inline void LibReport(int iLevel, const char *szFormat, ...)
 	vsprintf(buf, szFormat, va);
 	va_end(va);
 
-	DefReport(iLevel, SX_LIB_NAME, "%s", buf);
+	DefReport(iLevel, SX_LIB_NAME, buf);
 }
 
 

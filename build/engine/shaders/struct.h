@@ -5,7 +5,7 @@ struct.h
 Определены все структуры которые используются
 */
 
-#include <../gdefines.h>
+#include "gdefines.h"
 
 /* \name ПОСТПРОЦЕСС
 @{*/

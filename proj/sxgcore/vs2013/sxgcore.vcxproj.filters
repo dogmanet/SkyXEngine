@@ -13,9 +13,6 @@
     <ClCompile Include="..\..\..\source\gcore\camera.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\gcore\CreatorTextures.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\gcore\LoaderTextures.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -46,6 +43,9 @@
     <ClCompile Include="..\..\..\source\gcore\gcore_data.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\gcore\ShaderPreprocessor.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -71,9 +71,6 @@
     <ClInclude Include="..\..\..\source\gcore\camera.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\gcore\creatortextures.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\GeomOptimize.h">
       <Filter>Header</Filter>
     </ClInclude>
@@ -96,6 +93,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\gcore_data.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gcore\ShaderPreprocessor.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

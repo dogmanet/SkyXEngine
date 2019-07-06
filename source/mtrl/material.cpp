@@ -37,8 +37,8 @@ CMaterials::CMaterials()
 	tmpMtlDefaultLight->m_sName = String(MTL_VIRTUAL_DIR_STD_MTL) + "_light";
 	if(mtrl_data::pDXDevice)
 	{
-		tmpMtlDefaultLight->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExistsName(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
-		tmpMtlDefaultLight->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExistsName(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps");
+		tmpMtlDefaultLight->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExists(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
+		tmpMtlDefaultLight->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExists(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps");
 	}
 
 	tmpMtlDefaultLight->m_oMainGraphics.m_idMainTexture = -1;
@@ -66,8 +66,8 @@ CMaterials::CMaterials()
 	tmpMtlDefaultLight->m_sName = String(MTL_VIRTUAL_DIR_STD_MTL) + "_base";
 	if(mtrl_data::pDXDevice)
 	{
-		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExistsName(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
-		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExistsName(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExists(SHADER_TYPE_VERTEX, "mtrlgeom_base.vs");
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExists(SHADER_TYPE_PIXEL, "mtrlgeom_base.ps");
 	}
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld = true;
 
@@ -94,8 +94,8 @@ CMaterials::CMaterials()
 	tmpMtlDefaultLight->m_sName = String(MTL_VIRTUAL_DIR_STD_MTL) + "_tree";
 	if(mtrl_data::pDXDevice)
 	{
-		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExistsName(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs");
-		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExistsName(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExists(SHADER_TYPE_VERTEX, "mtrlgreen_tree_base.vs");
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExists(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
 	}
 
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
@@ -120,8 +120,8 @@ CMaterials::CMaterials()
 	tmpMtlDefaultLight->m_sName = String(MTL_VIRTUAL_DIR_STD_MTL) + "_grass";
 	if(mtrl_data::pDXDevice)
 	{
-		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExistsName(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs");
-		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExistsName(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExists(SHADER_TYPE_VERTEX, "mtrlgreen_grass_base.vs");
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExists(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
 	}
 
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
@@ -147,8 +147,8 @@ CMaterials::CMaterials()
 	tmpMtlDefaultLight->m_sName = String(MTL_VIRTUAL_DIR_STD_MTL) + "_skin";
 	if(mtrl_data::pDXDevice)
 	{
-		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExistsName(SHADER_TYPE_VERTEX, "mtrlskin_base.vs");
-		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExistsName(SHADER_TYPE_PIXEL, "mtrlskin_base.ps");
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderVS = SGCore_ShaderExists(SHADER_TYPE_VERTEX, "mtrlskin_base.vs");
+		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExists(SHADER_TYPE_PIXEL, "mtrlskin_base.ps");
 	}
 
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
@@ -1903,7 +1903,9 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 			mtrl_data::pDXDevice->setTexture(m_aUnitMtrls[id]->m_pReflect->getRefCubeTex(), MTL_TEX_R_REFLECTION);
 	}
 
+#if 0
 	mtrl_data::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH0), MTL_TEX_R_CURR_DEPTH);
+#endif
 
 	//если есть рефаркци¤, а она идет вторым проходом, то отправл¤ем, иначе посылаем 0
 	/*if (pMtrl->m_oLightParam.m_type_transparency)

@@ -229,12 +229,6 @@ enum DS_RT
 	DS_RT_ADAPTEDLUM
 };
 
-//! id render target по его типу
-SX_LIB_API ID SGCore_GbufferGetRT_ID(DS_RT type);
-
-//! текстура render target по его типу
-SX_LIB_API IGXTexture2D* SGCore_GbufferGetRT(DS_RT type);
-
 SX_LIB_API void SGCore_ToneMappingCom(DWORD timeDelta, float factor_adapted);
 
 //!@} sxgcore_ds
@@ -318,13 +312,13 @@ SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin);
 #define SXGC_SHADER_MAX_SIZE_NAME 64
 
 //! общий максимальный  размер имени текстуры с расширением
-#define SXGC_SHADER_MAX_SIZE_DIRNAME SXGC_SHADER_MAX_SIZE_DIR + SXGC_SHADER_MAX_SIZE_NAME
+#define SXGC_SHADER_MAX_SIZE_DIRNAME (SXGC_SHADER_MAX_SIZE_DIR + SXGC_SHADER_MAX_SIZE_NAME)
 
 //! максимальный размер пути до файла шейдера (без имени файла)
 #define SXGC_SHADER_MAX_SIZE_STDPATH 256
 
 //! максимальный размер полного пути до шейдера (включая имя шейдера)
-#define SXGC_SHADER_MAX_SIZE_FULLPATH SXGC_SHADER_MAX_SIZE_STDPATH + SXGC_SHADER_MAX_SIZE_DIRNAME
+#define SXGC_SHADER_MAX_SIZE_FULLPATH (SXGC_SHADER_MAX_SIZE_STDPATH + SXGC_SHADER_MAX_SIZE_DIRNAME)
 
 
 //! максимальная длина имени переменной в шейдере
@@ -372,27 +366,15 @@ SX_LIB_API ID SGCore_ShaderLoad(
 //! существует ли файл name в папке с шейдерами
 SX_LIB_API bool SGCore_ShaderFileExists(const char *szName);
 
-//! записывает пользовательское имя шейдера в name
-SX_LIB_API void SGCore_ShaderGetName(SHADER_TYPE type_shader, ID idShader, char *szName);
-
 //! записывает имя шейдер с расширением в path
 SX_LIB_API void SGCore_ShaderGetPath(SHADER_TYPE type_shader, ID idShader, char *szPath);
 
-//! существует ли шейдер с пользовательским именем name, если да то возвращает id
-SX_LIB_API ID SGCore_ShaderExistsName(SHADER_TYPE type_shader, const char *szName);
-
 //! существует ли шейдер с именем файла и расширением name, если да то возвращает id
-SX_LIB_API ID SGCore_ShaderExistsPath(SHADER_TYPE type_shader, const char *szPath);
+SX_LIB_API ID SGCore_ShaderExists(SHADER_TYPE type_shader, const char *szPath, GXMacro *pMacro = 0);
 
 //! загружен ли шейдер с данным id
-SX_LIB_API bool SGCore_ShaderIsValidated(SHADER_TYPE type_shader, ID idShader);
+SX_LIB_API bool SGCore_ShaderIsLoaded(SHADER_TYPE type_shader, ID idShader);
 
-
-//! обновление шейдера по имени
-SX_LIB_API void SGCore_ShaderUpdateN(SHADER_TYPE type_shader, const char *szName);
-
-//! обновление шейдера по id
-SX_LIB_API void SGCore_ShaderUpdate(SHADER_TYPE type_shader, ID idShader);
 
 //! перезагрузить все шейдеры, с учетом макросов
 SX_LIB_API void SGCore_ShaderReloadAll();	
@@ -543,40 +525,6 @@ SX_LIB_API IGXTextureCube* SGCore_LoadTexGetTexCube(ID idTexture);
 SX_LIB_API void SGCore_LoadTexAllLoad();	
 
 //!@} sxgcore_loadtex
-
-//#############################################################################
-
-/*! \defgroup sxgcore_rt Render targets
- \ingroup sxgcore
- \note Cброс и восстановление устройства сюда приходят
-@{*/
-
-//! добавить новый render target
-SX_LIB_API ID SGCore_RTAdd(
-	UINT iWidth,			//!< ширина
-	UINT iHeight,			//!< высота
-	UINT iLevels,			//!< количество mip-map уровней
-	DWORD dwUsage,			//!< признак применения, возможные значения из D3DUSAGE_
-	GXFORMAT format,		//!< формат из D3DFORMAT
-	const char *szName		//!< имя rt
-	);
-
-//! удалить rt по имени
-SX_LIB_API void SGCore_RTDeleteN(const char *szName);	
-
-//! удалить rt по id
-SX_LIB_API void SGCore_RTDelete(ID id);				
-
-//! возвращает id по имени
-SX_LIB_API ID SGCore_RTGetId(const char *szName);
-
-//! возвращает текстуру по имени
-SX_LIB_API IGXTexture2D* SGCore_RTGetTextureN(const char *szName);
-
-//! возвращает текстуру по id
-SX_LIB_API IGXTexture2D* SGCore_RTGetTexture(ID id);				
-
-//!@} sxgcore_rt
 
 //#############################################################################
 

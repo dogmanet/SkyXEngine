@@ -8,7 +8,6 @@ See the license in LICENSE
 
 #include <gcore/GeomOptimize.h>
 #include <gcore/shader.h>
-#include <gcore/creatortextures.h>
 #include <gcore/loadertextures.h>
 #include <gcore/bound.h>
 #include <gcore/camera.h>
@@ -38,7 +37,6 @@ HWND g_hWnd = NULL;
 IGXVertexDeclaration *g_pStaticVertexDecl = 0;
 
 CShaderManager *g_pManagerShaders = 0;
-CreatorTextures *g_pManagerRenderTargets = 0;
 CLoaderTextures *g_pManagerTextures = 0;
 IGXRenderBuffer *g_pScreenTextureRB = 0;
 CSkyBox *g_pSkyBox = 0;
@@ -108,7 +106,6 @@ void GCoreInit(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 	InitFullScreenQuad();
 
 	g_pManagerShaders = new CShaderManager();
-	g_pManagerRenderTargets = new CreatorTextures();
 	g_pManagerTextures = new CLoaderTextures();
 	g_pOC = new COcclusionCulling();
 	g_pOC->init(iWidth, iHeight);
@@ -132,50 +129,6 @@ void GCoreInit(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 }
 
 //##########################################################################
-
-SX_LIB_API ID SGCore_GbufferGetRT_ID(DS_RT type)
-{
-	SG_PRECOND(-1);
-
-	if (type == DS_RT_COLOR)
-		return gcore_data::rt_id::idColorScene;
-	else if (type == DS_RT_NORMAL)
-		return gcore_data::rt_id::idNormalScene;
-	else if (type == DS_RT_PARAM)
-		return gcore_data::rt_id::idParamsScene;
-	else if (type == DS_RT_DEPTH)
-		return gcore_data::rt_id::idDepthScene;
-	else if (type == DS_RT_DEPTH0)
-		return gcore_data::rt_id::idDepthScene0;
-	else if (type == DS_RT_DEPTH1)
-		return gcore_data::rt_id::idDepthScene1;
-
-	else if (type == DS_RT_AMBIENTDIFF)
-		return gcore_data::rt_id::idLightAmbientDiff;
-	else if (type == DS_RT_SPECULAR)
-		return gcore_data::rt_id::idLightSpecular;
-
-	else if (type == DS_RT_SCENELIGHT)
-		return gcore_data::rt_id::idLigthCom;
-	else if (type == DS_RT_SCENELIGHT2)
-		return gcore_data::rt_id::idLigthCom2;
-
-	else if (type == DS_RT_ADAPTEDLUM)
-		return gcore_data::rt_id::GetCurrAdaptedLum();
-
-	return -1;
-}
-
-SX_LIB_API IGXTexture2D* SGCore_GbufferGetRT(DS_RT type)
-{
-	SG_PRECOND(0);
-
-	ID id = SGCore_GbufferGetRT_ID(type);
-	if (id >= 0)
-		return SGCore_RTGetTexture(id);
-	else
-		return 0;
-}
 
 SX_LIB_API void SGCore_ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 {
@@ -238,7 +191,6 @@ SX_LIB_API void SGCore_AKill()
 	mem_delete(g_pOC);
 
 	mem_delete(g_pManagerShaders);
-	mem_delete(g_pManagerRenderTargets);
 	mem_delete(g_pManagerTextures);
 
 	mem_release(g_pScreenTextureRB);
@@ -285,7 +237,6 @@ SX_LIB_API void SGCore_OnLostDevice()
 	SG_PRECOND(_VOID);
 
 	//g_pFPStext->OnLostDevice();
-	g_pManagerRenderTargets->OnLostDevice();
 
 	g_pOC->onLostDevice();
 }
@@ -436,7 +387,7 @@ SX_LIB_API ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char *szPath, con
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerShaders->preLoad(type_shader, szPath, szName, pMacro);
+	return g_pManagerShaders->preLoad(type_shader, szPath, pMacro);
 }
 
 SX_LIB_API void SGCore_ShaderAllLoad()
@@ -444,20 +395,6 @@ SX_LIB_API void SGCore_ShaderAllLoad()
 	SG_PRECOND(_VOID);
 
 	return g_pManagerShaders->allLoad();
-}
-
-SX_LIB_API void SGCore_ShaderUpdateN(SHADER_TYPE type_shader, const char *szName)
-{
-	SG_PRECOND(_VOID);
-
-	g_pManagerShaders->update(type_shader, szName);
-}
-
-SX_LIB_API void SGCore_ShaderUpdate(SHADER_TYPE type_shader, ID id)
-{
-	SG_PRECOND(_VOID);
-
-	g_pManagerShaders->update(type_shader, id);
 }
 
 SX_LIB_API void SGCore_ShaderReloadAll()
@@ -489,26 +426,18 @@ SX_LIB_API void SGCore_ShaderUnBind()
 	return g_pManagerShaders->unbind();
 }
 
-
-SX_LIB_API ID SGCore_ShaderExistsName(SHADER_TYPE type_shader, const char *szName)
+SX_LIB_API ID SGCore_ShaderExists(SHADER_TYPE type_shader, const char *szName, GXMacro *pMacro)
 {
 	SG_PRECOND(-1);
 
-	return g_pManagerShaders->existsName(type_shader, szName);
+	return g_pManagerShaders->existsPathMacro(type_shader, szName, pMacro);
 }
 
-SX_LIB_API ID SGCore_ShaderExistsPath(SHADER_TYPE type_shader, const char *szName)
-{
-	SG_PRECOND(-1);
-
-	return g_pManagerShaders->existsName(type_shader, szName);
-}
-
-SX_LIB_API bool SGCore_ShaderIsValidated(SHADER_TYPE type_shader, ID idShader)
+SX_LIB_API bool SGCore_ShaderIsLoaded(SHADER_TYPE type_shader, ID idShader)
 {
 	SG_PRECOND(0);
 
-	return g_pManagerShaders->isValidated(type_shader, idShader);
+	return g_pManagerShaders->isLoaded(type_shader, idShader);
 }
 
 SX_LIB_API void SGCore_ShaderGetPath(SHADER_TYPE type_shader, ID idShader, char *szPath)
@@ -516,13 +445,6 @@ SX_LIB_API void SGCore_ShaderGetPath(SHADER_TYPE type_shader, ID idShader, char 
 	SG_PRECOND(_VOID);
 
 	g_pManagerShaders->getPath(type_shader, idShader, szPath);
-}
-
-SX_LIB_API void SGCore_ShaderGetName(SHADER_TYPE type_shader, ID idShader, char *szName)
-{
-	SG_PRECOND(_VOID);
-
-	g_pManagerShaders->getName(type_shader, idShader, szName);
 }
 
 SX_LIB_API bool SGCore_ShaderFileExists(const char *szName)
@@ -623,50 +545,6 @@ SX_LIB_API void SGCore_LoadTexAllLoad()
 	SG_PRECOND(_VOID);
 
 	return g_pManagerTextures->loadTextures();
-}
-
-//##########################################################################
-
-SX_LIB_API ID SGCore_RTAdd(UINT uiWidth, UINT uiHeight, UINT uiLevels, DWORD dwUsage, GXFORMAT format, const char *szName)
-{
-	SG_PRECOND(-1);
-
-	return g_pManagerRenderTargets->Add(uiWidth, uiHeight, uiLevels, dwUsage, format, szName);
-}
-
-SX_LIB_API void SGCore_RTDeleteN(const char *szName)
-{
-	SG_PRECOND(_VOID);
-
-	return g_pManagerRenderTargets->Delete(szName);
-}
-
-SX_LIB_API void SGCore_RTDelete(ID id)
-{
-	SG_PRECOND(_VOID);
-
-	return g_pManagerRenderTargets->Delete(id);
-}
-
-SX_LIB_API ID SGCore_RTGetId(const char *szName)
-{
-	SG_PRECOND(-1);
-
-	return g_pManagerRenderTargets->GetNum(szName);
-}
-
-SX_LIB_API IGXTexture2D* SGCore_RTGetTextureN(const char *szName)
-{
-	SG_PRECOND(0);
-
-	return g_pManagerRenderTargets->GetTexture(szName);
-}
-
-SX_LIB_API IGXTexture2D* SGCore_RTGetTexture(ID id)
-{
-	SG_PRECOND(0);
-
-	return g_pManagerRenderTargets->GetTexture(id);
 }
 
 //##########################################################################

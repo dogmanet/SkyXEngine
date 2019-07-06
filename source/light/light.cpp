@@ -30,8 +30,6 @@ CLights::~CLights()
 
 	m_aLights.clear();
 
-	SGCore_RTDelete(m_idShadowMap);
-	SGCore_RTDelete(m_idShadowMap2);
 }
 
 ID CLights::createCopy(ID id)

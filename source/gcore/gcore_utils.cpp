@@ -152,21 +152,21 @@ void InitRT4Gbuffer()
 	
 	//цвет (текстуры)
 	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
-	gcore_data::rt_id::idColorScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "ds_color");
+	gcore_data::rt_id::idColorScene = -1; // SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "ds_color");
 	//номрали + микрорельеф
 	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
-	gcore_data::rt_id::idNormalScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8/*D3DFMT_A2R10G10B10*/, "ds_normal");
+	gcore_data::rt_id::idNormalScene = -1; // SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8/*D3DFMT_A2R10G10B10*/, "ds_normal");
 	//параметры освещени¤
 	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
-	gcore_data::rt_id::idParamsScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "ds_param");
+	gcore_data::rt_id::idParamsScene = -1; // SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "ds_param");
 
 	//GXFMT_G32R32F; // 64bpp; GXFMT_R32F
-	gcore_data::rt_id::idDepthScene = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F, "ds_depth");
-	gcore_data::rt_id::idDepthScene0 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F, "ds_depth_0");
-	gcore_data::rt_id::idDepthScene1 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F, "ds_depth_1");
+	gcore_data::rt_id::idDepthScene = -1; // SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F, "ds_depth");
+	gcore_data::rt_id::idDepthScene0 = -1; // SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F, "ds_depth_0");
+	gcore_data::rt_id::idDepthScene1 = -1; // SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F, "ds_depth_1");
 
-	gcore_data::rt_id::idLightAmbientDiff = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_ambient");
-	gcore_data::rt_id::idLightSpecular = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R16F, "ds_specdiff");
+	gcore_data::rt_id::idLightAmbientDiff = -1; // SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_ambient");
+	gcore_data::rt_id::idLightSpecular = -1; // SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R16F, "ds_specdiff");
 
 
 	gcore_data::rt_id::aToneMaps.clear();
@@ -181,20 +181,20 @@ void InitRT4Gbuffer()
 			break;
 
 		sprintf(szNameRT, "tone_map_%dx%d", tmpsize, tmpsize);
-		gcore_data::rt_id::aToneMaps[tmpcount] = SGCore_RTAdd(tmpsize, tmpsize, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R16F, szNameRT);
+		gcore_data::rt_id::aToneMaps[tmpcount] = -1; // SGCore_RTAdd(tmpsize, tmpsize, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R16F, szNameRT);
 		gcore_data::rt_id::aSurfToneMap[tmpcount] = 0;
 		++tmpcount;
 	}
 	gcore_data::rt_id::iCountArrToneMaps = tmpcount;
 
-	gcore_data::rt_id::idAdaptLumCurr = SGCore_RTAdd(1, 1, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R16F, "adapted_lum_curr");
-	gcore_data::rt_id::idAdaptLumLast = SGCore_RTAdd(1, 1, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R16F, "adapted_lum_last");
+	gcore_data::rt_id::idAdaptLumCurr = -1; // SGCore_RTAdd(1, 1, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R16F, "adapted_lum_curr");
+	gcore_data::rt_id::idAdaptLumLast = -1; // SGCore_RTAdd(1, 1, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R16F, "adapted_lum_last");
 
-	gcore_data::rt_id::idLigthCom = SGCore_RTAdd(*r_win_width, *r_win_height, 1,  GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcom");
-	gcore_data::rt_id::idLigthCom2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcom2");
-	gcore_data::rt_id::idLigthCom3 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "ds_lightcom3");
+	gcore_data::rt_id::idLigthCom = -1; // SGCore_RTAdd(*r_win_width, *r_win_height, 1,  GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcom");
+	gcore_data::rt_id::idLigthCom2 = -1; // SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcom2");
+	gcore_data::rt_id::idLigthCom3 = -1; // SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "ds_lightcom3");
 
-	gcore_data::rt_id::idLigthComScaled = SGCore_RTAdd(*r_win_width / 4, *r_win_height / 4, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcomscaled");
+	gcore_data::rt_id::idLigthComScaled = -1; // SGCore_RTAdd(*r_win_width / 4, *r_win_height / 4, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F, "ds_lightcomscaled");
 
 
 	gcore_data::ps_id::idCalcAdaptedLum = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pptm_calc_adapted_lum.ps");
@@ -246,6 +246,7 @@ void InitToneMappingStates()
 
 void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 {
+#if 0
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
@@ -376,5 +377,5 @@ void ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
 
 	g_pDevice->setBlendState(NULL);
 	//g_pDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
-
+#endif
 }

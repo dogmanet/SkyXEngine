@@ -204,6 +204,7 @@ void rfunc::SaveScreenShot()
 
 void rfunc::SaveWorkTex()
 {
+#if 0
 	char tmppath[1024];
 	sprintf(tmppath, "%scolor.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
 	gdata::pDXDevice->saveTextureToFile(tmppath, SGCore_GbufferGetRT(DS_RT_COLOR));
@@ -232,6 +233,7 @@ void rfunc::SaveWorkTex()
 
 	sprintf(tmppath, "%slight_com_2.png", Core_RStringGet(G_RI_STRING_PATH_WORKTEX));
 	gdata::pDXDevice->saveTextureToFile(tmppath, SGCore_GbufferGetRT(DS_RT_SCENELIGHT2));
+#endif
 }
 
 void rfunc::InitModeWindow()
@@ -381,6 +383,7 @@ void rfunc::UpdateView()
 
 void rfunc::RenderSky(DWORD timeDelta)
 {
+#if 0
 	IGXSurface *ColorSurf, *BackBuf;
 	ColorSurf = SGCore_GbufferGetRT(DS_RT_SCENELIGHT)->getMipmap();
 	//ColorSurf = SGCore_GbufferGetRT(DS_RT_COLOR)->getMipmap();
@@ -446,6 +449,7 @@ void rfunc::RenderSky(DWORD timeDelta)
 
 	gdata::pDXDevice->setBlendState(NULL);
 //	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+#endif
 }
 
 void rfunc::RenderParticles(DWORD timeDelta)
