@@ -47,12 +47,21 @@ int CFile::create(const char *szPath, int iType)
 
 int CFile::add(const char *szPath, int iType)
 {
-    const char *szMode = (iType == CORE_FILE_BIN) ? "ab" : "a";
-
-    m_pFile = fopen(szPath, szMode);
-	if (!m_pFile)
-		return -1;
-	return 0;
+	m_pFile = fopen(szPath, (iType == CORE_FILE_BIN) ? "rb+" : "r+");
+	if(m_pFile)
+	{
+		_fseeki64(m_pFile, 0, SEEK_END);
+		return(0);
+	}
+	else
+	{
+		m_pFile = fopen(szPath, (iType == CORE_FILE_BIN) ? "wb+" : "w+");
+		if(m_pFile)
+		{
+			return(0);
+		}
+	}
+	return(-1);
 }
 
 size_t CFile::readBin(void *pDest, size_t iSize)
