@@ -298,7 +298,7 @@ time_t CFileSystem::getFileModifyTime(const char *szPath)
 
     if (!path)
     {
-        return false;
+        return 0;
     }
 
     FILETIME mTime;
@@ -394,7 +394,11 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
     if (mode == FILE_MODE_READ)
     {
         //Если открываем только на чтение - то копирование не нужно (следовательно и выделение памяти тоже лишняя операция)
-        file->open(fullPath, CORE_FILE_BIN);
+        if (file->open(fullPath, CORE_FILE_BIN) != 0)
+        {
+            mem_delete(file);
+        }
+
         mem_delete_a(fullPath);
         return file;
     }
@@ -450,15 +454,22 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
         mem_delete(newFileName);
     }
 
+    int res = 0;
+
     switch (mode)
     {
     case FILE_MODE_WRITE:
-        file->open(fullPath, CORE_FILE_BIN);
+        res = file->open(fullPath, CORE_FILE_BIN);
         break;
 
     case FILE_MODE_APPEND:
-        file->add(fullPath, CORE_FILE_BIN);
+        res = file->add(fullPath, CORE_FILE_BIN);
         break;
+    }
+
+    if (res != 0)
+    {
+        mem_delete(file);
     }
 
     mem_delete_a(fullPath);
