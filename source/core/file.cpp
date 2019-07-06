@@ -27,12 +27,9 @@ void CFile::Release()
 
 int CFile::open(const char *szPath, int iType)
 {
-	char* mode;
-	if (iType == CORE_FILE_BIN)
-			mode = "rb";
-	else if (iType == CORE_FILE_TEXT)
-			mode = "r+";
-	m_pFile = fopen(szPath, mode);
+    const char *szMode = (iType == CORE_FILE_BIN) ? "rb" : "r+";
+
+    m_pFile = fopen(szPath, szMode);
 		if(!m_pFile)
 			return -1;
 	return 0;
@@ -40,12 +37,9 @@ int CFile::open(const char *szPath, int iType)
 
 int CFile::create(const char *szPath, int iType)
 {
-	char* mode;
-	if (iType == CORE_FILE_BIN)
-			mode = "wb";
-	else if (iType == CORE_FILE_TEXT)
-			mode = "w";
-	m_pFile = fopen(szPath, mode);
+    const char *szMode = (iType == CORE_FILE_BIN) ? "wb" : "w";
+
+    m_pFile = fopen(szPath, szMode);
 	if (!m_pFile)
 		return -1;
 	return 0;
@@ -53,12 +47,9 @@ int CFile::create(const char *szPath, int iType)
 
 int CFile::add(const char *szPath, int iType)
 {
-	char* mode;
-	if (iType == CORE_FILE_BIN)
-			mode = "ab";
-	else if (iType == CORE_FILE_TEXT)
-			mode = "a";
-	m_pFile = fopen(szPath, mode);
+    const char *szMode = (iType == CORE_FILE_BIN) ? "ab" : "a";
+
+    m_pFile = fopen(szPath, szMode);
 	if (!m_pFile)
 		return -1;
 	return 0;
