@@ -90,7 +90,7 @@ private:
     char *getFileName(const char *name);
 
     //! Вспомогательная функция для конвертирования FILETIME в time_t
-    time_t convertFiletimeToTime_t(const FILETIME& ft);
+    time_t filetimeToTime_t(const FILETIME& ft);
 
     HANDLE getFileHandle(const char *szPath);
 
