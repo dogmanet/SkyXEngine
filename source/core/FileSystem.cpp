@@ -403,19 +403,19 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
 
     if (!fullPath)
     {
-        char *fp = getFullPathToBuild();
-
-        newFileName = new String(fp);
+        newFileName = new String(m_filePaths[m_writableRoot].c_str());
+        *newFileName += '/';
         *newFileName += szPath;
 
         fullPath = getAbsoliteCanonizePath(newFileName->c_str());
 
-        mem_delete_a(fp);
         mem_delete(newFileName);
     }
 
+    bool inRoot = isAbsoletePathInRoot(fullPath);
+
     //Если путь в корне, и файла не существует - создаем его
-    if (isAbsoletePathInRoot(fullPath) && !fileExists(fullPath))
+    if (inRoot && !fileExists(fullPath))
     {
         unsigned len = strlen(fullPath) + 1;
         char *dn = new char[len];
@@ -435,7 +435,7 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
         return nullptr;
     }
     //Если путь вне корня - тогда копируем в корень
-    else
+    else if (!inRoot)
     {
         newFileName = copyFile(fullPath);
         unsigned lenPath = strlen(fullPath) + 1;
