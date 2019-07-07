@@ -104,8 +104,9 @@ public:
 			int x, y;
 			SSInput_GetMouseDelta(&x, &y);
 			static const float * sense = GET_PCVAR_FLOAT("cl_mousesense");
-			float dx = (float)x * *sense * 10.0f;
-			float dy = (float)y * *sense * 10.0f;
+			float fCoeff = SMToRadian(0.022) * *sense;
+			float dx = (float)x * fCoeff;
+			float dy = (float)y * fCoeff;
 			ICamera *pCamera = g_xConfig.m_pViewportCamera[XWP_TOP_LEFT];
 
 			if(g_is3DRotating)
@@ -303,9 +304,15 @@ public:
 	{
 		m_pOldPipeline->endFrame();
 
-		g_pTopRightSwapChain->swapBuffers();
-		g_pBottomLeftSwapChain->swapBuffers();
-		g_pBottomRightSwapChain->swapBuffers();
+		HWND hWnds[] = {g_hTopRightWnd, g_hBottomLeftWnd, g_hBottomRightWnd};
+		IGXSwapChain *p2DSwapChains[] = {g_pTopRightSwapChain, g_pBottomLeftSwapChain, g_pBottomRightSwapChain};
+		for(int i = 0; i < 3; ++i)
+		{
+			if(IsWindowVisible(hWnds[i]))
+			{
+				p2DSwapChains[i]->swapBuffers();
+			}
+		}
 	}
 	void updateVisibility() override
 	{

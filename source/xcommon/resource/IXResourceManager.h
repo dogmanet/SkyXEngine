@@ -22,6 +22,10 @@ public:
 	virtual UINT XMETHODCALLTYPE getModelSupportedFormats() = 0;
 	virtual const XFormatName* XMETHODCALLTYPE getModelSupportedFormat(UINT uIndex) = 0;
 
+	virtual IXResourceModelStatic* XMETHODCALLTYPE newResourceModelStatic() = 0;
+	virtual IXResourceModelAnimated* XMETHODCALLTYPE newResourceModelAnimated() = 0;
+	virtual void XMETHODCALLTYPE addModel(const char *szName, IXResourceModel *pModel) = 0;
+
 	// void getModelInfo();
 	// void getTextureInfo();
 	// void getTexture();

@@ -38,7 +38,7 @@ CResourceManager::CResourceManager(IXCore *pCore):
 
 }
 
-bool CResourceManager::getModel(const char *szName, IXResourceModel **ppOut, bool bForceReload)
+bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceModel **ppOut, bool bForceReload)
 {
 	const AssotiativeArray<String, IXResourceModel*>::Node *pNode1;
 	if(!bForceReload && m_mpModels.KeyExists(szName, &pNode1) && (*pNode1->Val))
@@ -211,7 +211,7 @@ bool CResourceManager::getModel(const char *szName, IXResourceModel **ppOut, boo
 	assert(!"Should never get here!");
 	return(false);
 }
-bool CResourceManager::getModelStatic(const char *szName, IXResourceModelStatic **ppOut, bool bForceReload)
+bool XMETHODCALLTYPE CResourceManager::getModelStatic(const char *szName, IXResourceModelStatic **ppOut, bool bForceReload)
 {
 	IXResourceModel *pModel = NULL;
 	if(getModel(szName, &pModel, bForceReload))
@@ -226,7 +226,7 @@ bool CResourceManager::getModelStatic(const char *szName, IXResourceModelStatic 
 	*ppOut = NULL;
 	return(false);
 }
-bool CResourceManager::getModelAnimated(const char *szName, IXResourceModelAnimated **ppOut, bool bForceReload)
+bool XMETHODCALLTYPE CResourceManager::getModelAnimated(const char *szName, IXResourceModelAnimated **ppOut, bool bForceReload)
 {
 	IXResourceModel *pModel = NULL;
 	if(getModel(szName, &pModel, bForceReload))
@@ -244,7 +244,10 @@ bool CResourceManager::getModelAnimated(const char *szName, IXResourceModelAnima
 
 void CResourceManager::onResourceModelRelease(CResourceModel *pResource)
 {
-	m_mpModels[pResource->getFileName()] = NULL;
+	if(pResource->getFileName())
+	{
+		m_mpModels[pResource->getFileName()] = NULL;
+	}
 }
 
 UINT XMETHODCALLTYPE CResourceManager::getModelSupportedFormats()
@@ -256,4 +259,21 @@ const XFormatName* XMETHODCALLTYPE CResourceManager::getModelSupportedFormat(UIN
 	assert(uIndex < m_aModelExts.size());
 
 	return(&m_aModelExts[uIndex]);
+}
+
+IXResourceModelStatic* XMETHODCALLTYPE CResourceManager::newResourceModelStatic()
+{
+	return(new CResourceModelStatic(this));
+}
+IXResourceModelAnimated* XMETHODCALLTYPE CResourceManager::newResourceModelAnimated()
+{
+	return(new CResourceModelAnimated(this));
+}
+void XMETHODCALLTYPE CResourceManager::addModel(const char *szName, IXResourceModel *pModel)
+{
+	CResourceModel *pResource = dynamic_cast<CResourceModel*>(pModel);
+	assert(pResource);
+	
+	m_mpModels[szName] = pResource;
+	pResource->setFileName(m_mpModels.TmpNode->Key.c_str());
 }

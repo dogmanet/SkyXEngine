@@ -68,7 +68,7 @@ void CPropStatic::initPhysics()
 	UINT uShapesCount = m_pModel->getPhysboxCount();
 
 	float3 vSize = m_pModel->getLocalBoundMax() - m_pModel->getLocalBoundMin();
-	bool useTrimesh = m_useTrimeshPhysics && vSize.x > 1.0f && vSize.z > 1.0f && vSize.y > 1.8f;
+	bool useTrimesh = m_useTrimeshPhysics && (vSize.x > 1.0f || vSize.z > 1.0f || vSize.y > 1.8f) ;
 
 	if(uShapesCount || !useTrimesh)
 	{

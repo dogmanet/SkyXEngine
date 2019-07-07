@@ -7,6 +7,7 @@ CShadowMap::CShadowMap()
 
 CShadowMap::~CShadowMap()
 {
+	mem_release(m_pCameraShaderDataVS);
 	mem_release(m_pShaderDataInjectVS);
 	mem_release(m_pShaderDataPS);
 	mem_release(m_pDepthMap);
@@ -109,6 +110,7 @@ void CShadowMap::init(IGXContext *pContext, UINT uSize)
 
 	m_pShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_shaderData.ps));
 	m_pShaderDataInjectVS = m_pDevice->createConstantBuffer(sizeof(SMMATRIX));
+	m_pCameraShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_cameraShaderData.vs));
 }
 
 void CShadowMap::setLight(IXLight *pLight)
@@ -130,6 +132,12 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 
 	Core_RMatrixSet(G_RI_MATRIX_VIEW, &m_mView);
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &m_mProj);
+
+
+	m_cameraShaderData.vs.mVP = SMMatrixTranspose(m_mView * m_mProj);
+	m_cameraShaderData.vs.vPosCam = vPos;
+	m_pCameraShaderDataVS->update(&m_cameraShaderData.vs);
+	m_pDevice->setVertexShaderConstant(m_pCameraShaderDataVS, SCR_CAMERA);
 
 	m_pDevice->setDepthStencilSurface(ms_pDepthStencilSurface);
 

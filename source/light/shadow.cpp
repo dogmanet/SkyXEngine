@@ -424,6 +424,7 @@ void PSSM::flickering(float4x4 *matLVP,float size_x,float size_y)
 
 void PSSM::genShadow(IGXTexture2D* shadowmap)
 {
+#if 0
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
@@ -517,6 +518,7 @@ void PSSM::genShadow(IGXTexture2D* shadowmap)
 	{
 		light_data::pDXDevice->saveTextureToFile("C:\\1\\pssm.png", shadowmap);
 	}
+#endif
 }
 
 void PSSM::genShadowAll(IGXTexture2D* shadowmap)
@@ -754,6 +756,7 @@ void ShadowMapTech::end()
 
 void ShadowMapTech::genShadow(IGXTexture2D* shadowmap)
 {
+#if 0
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
@@ -840,6 +843,7 @@ void ShadowMapTech::genShadow(IGXTexture2D* shadowmap)
 
 	mem_release_del(RenderSurf);
 	mem_release_del(BackBuf);
+#endif
 }
 
 //##########################################################################
@@ -1112,6 +1116,7 @@ void ShadowMapCubeTech::end()
 
 void ShadowMapCubeTech::genShadow(IGXTexture2D* shadowmap)
 {
+#if 0
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
@@ -1188,6 +1193,7 @@ void ShadowMapCubeTech::genShadow(IGXTexture2D* shadowmap)
 	light_data::pDXDevice->setColorTarget(BackBuf);
 	mem_release_del(RenderSurf);
 	mem_release_del(BackBuf);
+#endif
 }
 
 void ShadowMapCubeTech::setIDArr(long id, int split, long idarr)

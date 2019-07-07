@@ -13,10 +13,10 @@ CLights::CLights()
 
 	const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	const int *r_win_height = GET_PCVAR_INT("r_win_height");
-
+#if 0
 	m_idShadowMap = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R16F, "shadowmap");
 	m_idShadowMap2 = SGCore_RTAdd(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R16F, "shadowmap2");
-
+#endif
 	m_idGlobalLight = -1;
 	m_isCastGlobalShadow = false;
 }
@@ -809,7 +809,10 @@ float CLights::getDistFor(ID id)
 
 IGXTexture2D* CLights::getShadow2()
 {
+	return(NULL);
+#if 0
 	return SGCore_RTGetTexture((m_iHowShadow == 1 ? m_idShadowMap2 : m_idShadowMap));
+#endif
 }
 
 #if 0
@@ -1021,6 +1024,7 @@ void CLights::shadowGen2(ID id)
 
 void CLights::shadowNull()
 {
+#if 0
 	IGXSurface *RenderSurf, *BackBuf;
 
 	RenderSurf = SGCore_RTGetTexture(m_idShadowMap)->getMipmap(0);
@@ -1037,6 +1041,7 @@ void CLights::shadowNull()
 	mem_release_del(BackBuf);
 
 	m_iHowShadow = 0;
+#endif
 }
 
 void CLights::setLightAngle(ID id, float angle, bool is_create)
@@ -1433,6 +1438,7 @@ void CLights::lightCountUpdateNull(ID id)
 
 void CLights::shadowSoft(bool randomsam, float size, bool isfirst)
 {
+#if 0
 	if (isfirst)
 		m_iHowShadow = 0;
 
@@ -1503,6 +1509,7 @@ void CLights::shadowSoft(bool randomsam, float size, bool isfirst)
 			m_iHowShadow = 0;
 		else
 			m_iHowShadow = 1;
+#endif
 }
 
 void CLights::set4Or3Splits(ID id, bool is4)

@@ -21,6 +21,10 @@ public:
 	UINT XMETHODCALLTYPE getModelSupportedFormats() override;
 	const XFormatName* XMETHODCALLTYPE getModelSupportedFormat(UINT uIndex) override;
 
+	IXResourceModelStatic* XMETHODCALLTYPE newResourceModelStatic() override;
+	IXResourceModelAnimated* XMETHODCALLTYPE newResourceModelAnimated() override;
+	void XMETHODCALLTYPE addModel(const char *szName, IXResourceModel *pModel) override;
+
 	void onResourceModelRelease(CResourceModel *pResource);
 
 protected:

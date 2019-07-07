@@ -83,6 +83,18 @@ private:
 	} m_shaderData;
 	IGXConstantBuffer *m_pShaderDataPS = NULL;
 	IGXConstantBuffer *m_pShaderDataInjectVS = NULL;
+
+	struct
+	{
+		struct
+		{
+			//SMMATRIX mV;
+			SMMATRIX mVP;
+			float3 vPosCam;
+		} vs;
+		//float4 vNearFarLayers;
+	} m_cameraShaderData;
+	IGXConstantBuffer *m_pCameraShaderDataVS = NULL;
 };
 
 //##########################################################################
