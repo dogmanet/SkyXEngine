@@ -33,7 +33,7 @@ protected:
 	void releasePhysics() override;
 
 	void onSetUseTrimesh(int iVal);
-	bool m_iTrimeshPhysics = 0;
+	int m_iTrimeshPhysics = 0;
 };
 
 #endif
