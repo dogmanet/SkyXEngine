@@ -310,7 +310,7 @@ time_t CFileSystem::getFileModifyTime(const char *szPath)
 
     mem_delete(path);
 
-    return filetimeToTime_t(lpFileInformation.ftLastAccessTime);
+	return filetimeToTime_t(lpFileInformation.ftLastWriteTime);
 }
 
 IFileSystem::IFileIterator *CFileSystem::getFolderList(const char *szPath)
@@ -458,7 +458,7 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
     switch (mode)
     {
     case FILE_MODE_WRITE:
-        res = file->open(fullPath, CORE_FILE_BIN);
+        res = file->create(fullPath, CORE_FILE_BIN);
         break;
 
     case FILE_MODE_APPEND:

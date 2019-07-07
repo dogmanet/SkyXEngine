@@ -8,7 +8,7 @@ See the license in LICENSE
 #include "ShaderPreprocessor.h"
 
 #define SX_SHADER_CACHE_MAGIC MAKEFOURCC('X', 'C', 'S', 'F') /*!< X Compiled Shader File*/
-#define SX_SHADER_CACHE_VERSION 1
+#define SX_SHADER_CACHE_VERSION 2
 
 //##########################################################################
 
@@ -60,12 +60,12 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 	if(szDir[0] != 0)
 	{
 		sprintf(szFullPath, "shaders/%s/%s", szDir, szPath);
-		sprintf(szFullPathCache, "cache/shaders/%s/%s/%sc", szGAPI, szDir, szName);
+		sprintf(szFullPathCache, "cache/shaders/%s/%s/%sc", szGAPI, szDir, szPath);
 	}
 	else
 	{
 		sprintf(szFullPath, "shaders/%s", szPath);
-		sprintf(szFullPathCache, "cache/shaders/%s/%sc", szGAPI, szName);
+		sprintf(szFullPathCache, "cache/shaders/%s/%sc", szGAPI, szPath);
 	}
 	bool isSourceExists = pFileSystem->fileExists(szFullPath);
 	bool isCacheExists = pFileSystem->fileExists(szFullPathCache);
@@ -76,7 +76,6 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 
 	if(isCacheExists)
 	{
-		//(!isSourceExists /* || isValid(cache) */)
 		IFile *pCacheFile = pFileSystem->openFile(szFullPathCache);
 		if(pCacheFile)
 		{
@@ -109,6 +108,7 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 
 					do
 					{
+						size_t sizeChunkBegin = pCacheFile->getPos();
 						uint32_t uChunkSize = 0;
 						if(!pCacheFile->readBin(&uChunkSize, sizeof(uChunkSize)))
 						{
@@ -128,7 +128,7 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 								char *szName = (char*)alloca(u8Len);
 								pCacheFile->readBin(szName, u8Len);
 
-								if(!strcmp(aMacro[i].szName, szName))
+								if(strcmp(aMacro[i].szName, szName))
 								{
 									isMatched = false;
 									break;
@@ -139,7 +139,7 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 								char *szDefinition = (char*)alloca(u8Len);
 								pCacheFile->readBin(szDefinition, u8Len);
 
-								if(!strcmp(aMacro[i].szDefinition, szDefinition))
+								if(strcmp(aMacro[i].szDefinition, szDefinition))
 								{
 									isMatched = false;
 									break;
@@ -164,6 +164,7 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 								if(tMod != pFileSystem->getFileModifyTime(szName))
 								{
 									isValid = false;
+									break;
 								}
 							}
 
@@ -182,6 +183,34 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 									pShader->m_pGXShader = pGXShader;
 									return(LOAD_SHADER_CACHE);
 								}
+							}
+							else
+							{
+								// clear from file
+								// 0 - sizeChunkBegin
+								// sizeNextBlockPos - end
+								size_t sizeFile = pCacheFile->getSize();
+								size_t sizeFileNew = sizeFile - (sizeNextBlockPos - sizeChunkBegin);
+								byte *pBuffer = (byte*)alloca(sizeFileNew);
+								pCacheFile->setPos(0);
+								pCacheFile->readBin(pBuffer, sizeChunkBegin);
+								pCacheFile->setPos(sizeNextBlockPos);
+								pCacheFile->readBin(pBuffer + sizeChunkBegin, sizeFile - sizeNextBlockPos);
+								mem_release(pCacheFile);
+
+								pCacheFile = pFileSystem->openFile(szFullPathCache, FILE_MODE_WRITE);
+								if(pCacheFile)
+								{
+									pCacheFile->writeBin(pBuffer, sizeFileNew);
+									mem_release(pCacheFile);
+								}
+
+								pCacheFile = pFileSystem->openFile(szFullPathCache);
+								if(!pCacheFile)
+								{
+									break;
+								}
+								sizeNextBlockPos = sizeChunkBegin;
 							}
 						}
 
@@ -249,61 +278,89 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 							uint32_t uVersion = SX_SHADER_CACHE_VERSION;
 							pCacheFile->writeBin(&uVersion, sizeof(uVersion));
 						}
-
-						size_t sizeStartPos = pCacheFile->getPos();
-
-						uint32_t uChunkSize = 0;
-						pCacheFile->writeBin(&uChunkSize, sizeof(uChunkSize));
-
-						pCacheFile->writeBin(&uMacroCount, sizeof(uMacroCount));
-
-						for(UINT i = 0; i < uMacroCount; ++i)
+						else
 						{
-							uint8_t u8Len = (uint8_t)strlen(aMacro[i].szName) + 1;
-							pCacheFile->writeBin(&u8Len, sizeof(u8Len));
-							pCacheFile->writeBin(aMacro[i].szName, u8Len);
+							pCacheFile->setPos(0);
+							uint32_t uMagic = 0;
+							pCacheFile->readBin(&uMagic, sizeof(uMagic));
+							uint32_t uVersion = 0;
+							pCacheFile->readBin(&uVersion, sizeof(uVersion));
+							pCacheFile->setPos(pCacheFile->getSize());
 
-							u8Len = (uint8_t)strlen(aMacro[i].szDefinition) + 1;
-							pCacheFile->writeBin(&u8Len, sizeof(u8Len));
-							pCacheFile->writeBin(aMacro[i].szDefinition, u8Len);
+							if(uMagic != SX_SHADER_CACHE_MAGIC || uVersion != SX_SHADER_CACHE_VERSION)
+							{
+								mem_release(pCacheFile);
+								pCacheFile = pFileSystem->openFile(szFullPathCache, FILE_MODE_WRITE);
+
+								uint32_t uMagic = SX_SHADER_CACHE_MAGIC;
+								pCacheFile->writeBin(&uMagic, sizeof(uMagic));
+								uint32_t uVersion = SX_SHADER_CACHE_VERSION;
+								pCacheFile->writeBin(&uVersion, sizeof(uVersion));
+							}
 						}
 
-						uint32_t uIncludeCount = pPreprocessor->getIncludesCount();
-						const char **pszIncludes = (const char**)alloca(sizeof(const char*) * uIncludeCount);
-						pPreprocessor->getIncludes(pszIncludes);
-
-						++uIncludeCount;
-						pCacheFile->writeBin(&uIncludeCount, sizeof(uIncludeCount));
-					
-						uint8_t uLen = (uint8_t)strlen(szFullPath) + 1;
-						pCacheFile->writeBin(&uLen, sizeof(uLen));
-						pCacheFile->writeBin(szFullPath, uLen);
-
-						time_t tMod = pFileSystem->getFileModifyTime(szFullPath);
-						pCacheFile->writeBin(&tMod, sizeof(tMod));
-
-						for(UINT i = 0; i < uIncludeCount - 1; ++i)
+						if(!pCacheFile)
 						{
-							uLen = (uint8_t)strlen(pszIncludes[i]) + 1;
+							LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to create shader cache file (%s):\n", szFullPathCache);
+						}
+						else
+						{
+
+							size_t sizeStartPos = pCacheFile->getPos();
+
+							uint32_t uChunkSize = 0;
+							pCacheFile->writeBin(&uChunkSize, sizeof(uChunkSize));
+
+							pCacheFile->writeBin(&uMacroCount, sizeof(uMacroCount));
+
+							for(UINT i = 0; i < uMacroCount; ++i)
+							{
+								uint8_t u8Len = (uint8_t)strlen(aMacro[i].szName) + 1;
+								pCacheFile->writeBin(&u8Len, sizeof(u8Len));
+								pCacheFile->writeBin(aMacro[i].szName, u8Len);
+
+								u8Len = (uint8_t)strlen(aMacro[i].szDefinition) + 1;
+								pCacheFile->writeBin(&u8Len, sizeof(u8Len));
+								pCacheFile->writeBin(aMacro[i].szDefinition, u8Len);
+							}
+
+							uint32_t uIncludeCount = pPreprocessor->getIncludesCount();
+							const char **pszIncludes = (const char**)alloca(sizeof(const char*) * uIncludeCount);
+							pPreprocessor->getIncludes(pszIncludes);
+
+							++uIncludeCount;
+							pCacheFile->writeBin(&uIncludeCount, sizeof(uIncludeCount));
+
+							uint8_t uLen = (uint8_t)strlen(szFullPath) + 1;
 							pCacheFile->writeBin(&uLen, sizeof(uLen));
-							pCacheFile->writeBin(pszIncludes[i], uLen);
+							pCacheFile->writeBin(szFullPath, uLen);
 
-							tMod = pFileSystem->getFileModifyTime(pszIncludes[i]);
+							time_t tMod = pFileSystem->getFileModifyTime(szFullPath);
 							pCacheFile->writeBin(&tMod, sizeof(tMod));
+
+							for(UINT i = 0; i < uIncludeCount - 1; ++i)
+							{
+								uLen = (uint8_t)strlen(pszIncludes[i]) + 1;
+								pCacheFile->writeBin(&uLen, sizeof(uLen));
+								pCacheFile->writeBin(pszIncludes[i], uLen);
+
+								tMod = pFileSystem->getFileModifyTime(pszIncludes[i]);
+								pCacheFile->writeBin(&tMod, sizeof(tMod));
+							}
+							UINT uCodeSize = 0;
+							pGXShader->getData(NULL, &uCodeSize);
+							byte *pCode = (byte*)alloca(uCodeSize);
+							pGXShader->getData(pCode, &uCodeSize);
+
+							pCacheFile->writeBin(&uCodeSize, sizeof(uCodeSize));
+							pCacheFile->writeBin(pCode, uCodeSize);
+
+							uChunkSize = (uint32_t)(pCacheFile->getPos() - sizeStartPos - sizeof(uChunkSize));
+							pCacheFile->setPos(sizeStartPos);
+							pCacheFile->writeBin(&uChunkSize, sizeof(uChunkSize));
+
+							mem_release(pCacheFile);
 						}
-						UINT uCodeSize = 0;
-						pGXShader->getData(NULL, &uCodeSize);
-						byte *pCode = (byte*)alloca(uCodeSize);
-						pGXShader->getData(pCode, &uCodeSize);
-
-						pCacheFile->writeBin(&uCodeSize, sizeof(uCodeSize));
-						pCacheFile->writeBin(pCode, uCodeSize);
-
-						uChunkSize = (uint32_t)(pCacheFile->getPos() - sizeStartPos - sizeof(uChunkSize));
-						pCacheFile->setPos(sizeStartPos);
-						pCacheFile->writeBin(&uChunkSize, sizeof(uChunkSize));
-
-						mem_release(pCacheFile);
 					}
 				}
 			}
@@ -369,7 +426,7 @@ const char* CShaderManager::getTextResultLoad(int iResult)
 	case LOAD_SHADER_COMPLETE:
 		return(COLOR_LGREEN "complete" COLOR_RESET);
 	case LOAD_SHADER_CACHE:
-		return(COLOR_MAGENTA "cache" COLOR_RESET);
+		return(COLOR_LMAGENTA "cache" COLOR_RESET);
 	}
 
 	return("unknown");
