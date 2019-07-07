@@ -234,7 +234,7 @@ bool CFileSystem::fileExists(const char *szPath)
         return false;
     }
 
-    return fileGetSize(szPath) != -1;
+    return fileGetSize(path) != -1;
 }
 
 size_t CFileSystem::fileGetSize(const char *szPath)
