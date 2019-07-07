@@ -23,8 +23,8 @@ public:
 	}
 	void run()
 	{
-		IFile *pFile = Core_CrFile();
-		if(pFile->open(m_szFileName, CORE_FILE_BIN) == 0)
+		IFile *pFile = m_pFileSystem->openFile(m_szFileName);
+		if(pFile)
 		{
 			size_t uSize = pFile->getSize();
 			byte *pData = new byte[uSize];
@@ -61,7 +61,7 @@ public:
 CAsyncFileReader::CAsyncFileReader(IXCore *pCore):
 	m_pCore(pCore)
 {
-	m_pCore->getFileSystem();
+	m_pFileSystem = m_pCore->getFileSystem();
 }
 CAsyncFileReader::~CAsyncFileReader()
 {

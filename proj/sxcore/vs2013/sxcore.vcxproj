@@ -23,6 +23,7 @@
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\core\AsyncFileReader.cpp" />
+    <ClCompile Include="..\..\..\source\core\AsyncTaskRunner.cpp" />
     <ClCompile Include="..\..\..\source\core\concmd.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -71,6 +72,7 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\core\AsyncFileReader.h" />
+    <ClInclude Include="..\..\..\source\core\AsyncTaskRunner.h" />
     <ClInclude Include="..\..\..\source\core\DirIterator.h" />
     <ClInclude Include="..\..\..\source\core\FileExtsIterator.h" />
     <ClInclude Include="..\..\..\source\core\FileInMemory.h" />

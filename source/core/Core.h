@@ -19,12 +19,12 @@ public:
 	CCore(const char *szName);
 	~CCore();
 
-	IPluginManager * XMETHODCALLTYPE getPluginManager() override;
-	IFileSystem * XMETHODCALLTYPE getFileSystem() override;
-	IXResourceManager * XMETHODCALLTYPE getResourceManager() override;
+	IPluginManager* XMETHODCALLTYPE getPluginManager() override;
+	IFileSystem* XMETHODCALLTYPE getFileSystem() override;
+	IXResourceManager* XMETHODCALLTYPE getResourceManager() override;
 
-	IAsyncFileReader * XMETHODCALLTYPE getAsyncFileReader() override;
-	IAsyncTaskRunner * XMETHODCALLTYPE getAsyncTaskRunner() override;
+	IAsyncFileReader* XMETHODCALLTYPE getAsyncFileReader() override;
+	IAsyncTaskRunner* XMETHODCALLTYPE getAsyncTaskRunner() override;
 
 	void XMETHODCALLTYPE getRenderPipeline(IXRenderPipeline **ppRenderPipeline) override;
 	void XMETHODCALLTYPE setRenderPipeline(IXRenderPipeline *pRenderPipeline) override;
@@ -38,10 +38,10 @@ public:
 	UINT_PTR XMETHODCALLTYPE getCrtOutputHandler() override;
 
 	void XMETHODCALLTYPE execCmd(const char *szCommand) override;
-	void execCmd2(const char * szFormat, ...) override;
+	void execCmd2(const char *szFormat, ...) override;
 
 protected:
-	IBaseEventChannel *getEventChannelInternal(const XGUID &guid) override;
+	IBaseEventChannel* getEventChannelInternal(const XGUID &guid) override;
 
 	CPluginManager *m_pPluginManager = NULL;
 	CFileSystem *m_pFileSystem = NULL;

@@ -11,7 +11,11 @@ See the license in LICENSE
 */
 
 BEGIN_PROPTABLE(CPropStatic)
-	DEFINE_FIELD_BOOLFN(m_useTrimeshPhysics, 0, "use_trimesh", "Use trimesh physics", onSetUseTrimesh, EDITOR_YESNO)
+	DEFINE_FIELD_INTFN(m_iTrimeshPhysics, 0, "use_trimesh", "Use trimesh physics", onSetUseTrimesh, EDITOR_COMBOBOX)
+		COMBO_OPTION("No", "0")
+		COMBO_OPTION("Yes", "1")
+		COMBO_OPTION("Force", "2")
+	EDITOR_COMBO_END()
 END_PROPTABLE()
 
 REGISTER_ENTITY(CPropStatic, prop_static);
@@ -68,7 +72,7 @@ void CPropStatic::initPhysics()
 	UINT uShapesCount = m_pModel->getPhysboxCount();
 
 	float3 vSize = m_pModel->getLocalBoundMax() - m_pModel->getLocalBoundMin();
-	bool useTrimesh = m_useTrimeshPhysics && (vSize.x > 1.0f || vSize.z > 1.0f || vSize.y > 1.8f) ;
+	bool useTrimesh = (m_iTrimeshPhysics == 2) || ((m_iTrimeshPhysics == 1) && vSize.x > 1.0f && vSize.z > 1.0f && vSize.y > 1.8f);
 
 	if(uShapesCount || !useTrimesh)
 	{
@@ -127,11 +131,11 @@ void CPropStatic::releasePhysics()
 	}
 }
 
-void CPropStatic::onSetUseTrimesh(bool use)
+void CPropStatic::onSetUseTrimesh(int iVal)
 {
-	if(m_useTrimeshPhysics != use)
+	if(m_iTrimeshPhysics != iVal)
 	{
-		m_useTrimeshPhysics = use;
+		m_iTrimeshPhysics = iVal;
 		releasePhysics();
 		initPhysics();
 	}

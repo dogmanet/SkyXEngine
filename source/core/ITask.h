@@ -27,7 +27,7 @@ template<class T>
 class ITaskImpl: public T
 {
 public:
-	ITaskImpl(UINT uFlags = CORE_TASK_FLAG_MAINTHREAD_REPEATING):
+	ITaskImpl<T>(UINT uFlags = CORE_TASK_FLAG_MAINTHREAD_REPEATING):
 		m_uFlags(uFlags)
 	{
 	}

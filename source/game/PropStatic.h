@@ -32,8 +32,8 @@ protected:
 	void initPhysics() override;
 	void releasePhysics() override;
 
-	void onSetUseTrimesh(bool use);
-	bool m_useTrimeshPhysics = false;
+	void onSetUseTrimesh(int iVal);
+	bool m_iTrimeshPhysics = 0;
 };
 
 #endif

@@ -129,4 +129,22 @@ struct XEventLevelSize
 	mutable float3 vMax;
 };
 
+
+// {67822A33-6F92-460F-8AA8-817874CD0F4E}
+#define EVENT_ASYNC_TASK_GUID DEFINE_XGUID(0x67822a33, 0x6f92, 0x460f, 0x8a, 0xa8, 0x81, 0x78, 0x74, 0xcd, 0xf, 0x4e)
+
+struct XEventAsyncTask
+{
+	enum
+	{
+		TYPE_ADDED,
+		TYPE_STARTED,
+		TYPE_FINISHED,
+		TYPE_PROGRESS
+	} type;
+	void *pTaskId;
+	int iProgress;
+	const char *szTaskName;
+};
+
 #endif

@@ -1,6 +1,7 @@
 #include "Core.h"
 #include <common/file_utils.h>
 #include "AsyncFileReader.h"
+#include "AsyncTaskRunner.h"
 #include "FileSystem.h"
 #include "ModelProvider.h"
 
@@ -100,29 +101,29 @@ CCore::~CCore()
 	ConsoleDisconnect();
 }
 
-IPluginManager *CCore::getPluginManager()
+IPluginManager* XMETHODCALLTYPE CCore::getPluginManager()
 {
 	return(m_pPluginManager);
 }
-IFileSystem *CCore::getFileSystem()
+IFileSystem* XMETHODCALLTYPE CCore::getFileSystem()
 {
 	return(m_pFileSystem);
 }
-IXResourceManager *CCore::getResourceManager()
+IXResourceManager* XMETHODCALLTYPE CCore::getResourceManager()
 {
 	return(m_pResourceManager);
 }
 
-IAsyncFileReader *CCore::getAsyncFileReader()
+IAsyncFileReader* XMETHODCALLTYPE CCore::getAsyncFileReader()
 {
 	return(new CAsyncFileReader(this));
 }
-IAsyncTaskRunner *CCore::getAsyncTaskRunner()
+IAsyncTaskRunner* XMETHODCALLTYPE CCore::getAsyncTaskRunner()
 {
-	return(NULL);
+	return(new CAsyncTaskRunner(this));
 }
 
-IBaseEventChannel *CCore::getEventChannelInternal(const XGUID &guid)
+IBaseEventChannel* CCore::getEventChannelInternal(const XGUID &guid)
 {
 	const AssotiativeArray<XGUID, IBaseEventChannel*>::Node *pNode;
 	if(m_mEventChannels.KeyExists(guid, &pNode))
@@ -166,7 +167,7 @@ void CCore::loadPlugins()
 	m_pResourceManager = new CResourceManager(this);
 }
 
-void CCore::getRenderPipeline(IXRenderPipeline **ppRenderPipeline)
+void XMETHODCALLTYPE CCore::getRenderPipeline(IXRenderPipeline **ppRenderPipeline)
 {
 	if(m_pRenderPipeline)
 	{
@@ -176,7 +177,7 @@ void CCore::getRenderPipeline(IXRenderPipeline **ppRenderPipeline)
 	*ppRenderPipeline = m_pRenderPipeline;
 }
 
-void CCore::setRenderPipeline(IXRenderPipeline *pRenderPipeline)
+void XMETHODCALLTYPE CCore::setRenderPipeline(IXRenderPipeline *pRenderPipeline)
 {
 	mem_release(m_pRenderPipeline);
 	if(pRenderPipeline)

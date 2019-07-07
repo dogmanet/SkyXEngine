@@ -17,12 +17,12 @@ class IXResourceManager;
 class IXCore: public IXUnknown
 {
 public:
-	virtual IPluginManager * XMETHODCALLTYPE getPluginManager() = 0;
-	virtual IFileSystem * XMETHODCALLTYPE getFileSystem() = 0;
-	virtual IXResourceManager * XMETHODCALLTYPE getResourceManager() = 0;
+	virtual IPluginManager* XMETHODCALLTYPE getPluginManager() = 0;
+	virtual IFileSystem* XMETHODCALLTYPE getFileSystem() = 0;
+	virtual IXResourceManager* XMETHODCALLTYPE getResourceManager() = 0;
 
-	virtual IAsyncFileReader * XMETHODCALLTYPE getAsyncFileReader() = 0;
-	virtual IAsyncTaskRunner * XMETHODCALLTYPE getAsyncTaskRunner() = 0;
+	virtual IAsyncFileReader* XMETHODCALLTYPE getAsyncFileReader() = 0;
+	virtual IAsyncTaskRunner* XMETHODCALLTYPE getAsyncTaskRunner() = 0;
 
 	virtual void XMETHODCALLTYPE getRenderPipeline(IXRenderPipeline **ppRenderPipeline) = 0;
 	virtual void XMETHODCALLTYPE setRenderPipeline(IXRenderPipeline *pRenderPipeline) = 0;
@@ -30,7 +30,7 @@ public:
 	virtual UINT_PTR XMETHODCALLTYPE getCrtOutputHandler() = 0;
 
 	virtual void XMETHODCALLTYPE execCmd(const char *szCommand) = 0;
-	virtual void execCmd2(const char * szFormat, ...) = 0;
+	virtual void execCmd2(const char *szFormat, ...) = 0;
 
 
 
