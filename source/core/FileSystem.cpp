@@ -93,13 +93,13 @@ char *CFileSystem::getFileName(const char *name)
     return fn;
 }
 
-time_t CFileSystem::convertFiletimeToTime_t(const FILETIME& ft)
+time_t CFileSystem::filetimeToTime_t(const FILETIME& ft)
 {
 	ULARGE_INTEGER ull;
 	ull.LowPart = ft.dwLowDateTime;
 	ull.HighPart = ft.dwHighDateTime;
 
-	return ull.QuadPart / 10000000ULL - 11644473600ULL;
+    return ull.QuadPart / 10000000ULL - 11644473600ULL;
 }
 
 HANDLE CFileSystem::getFileHandle(const char *szPath)
@@ -234,17 +234,18 @@ bool CFileSystem::fileExists(const char *szPath)
         return false;
     }
 
-    HANDLE hFile = getFileHandle(path);
-
-	CLOSE_HANDLE(hFile);
-    mem_delete_a(path);
-
-	//Если файл существует то hFile != INVALID_HANDLE_VALUE
-	return hFile != INVALID_HANDLE_VALUE;
+    return fileGetSize(path) != -1;
 }
 
 size_t CFileSystem::fileGetSize(const char *szPath)
 {
+    char* path = getAbsoliteCanonizePath(szPath);
+
+    if (!path)
+    {
+        return false;
+    }
+
 	WIN32_FILE_ATTRIBUTE_DATA lpFileInformation;
 
 	int result = GetFileAttributesEx(szPath, GetFileExInfoStandard, &lpFileInformation);
@@ -253,6 +254,8 @@ size_t CFileSystem::fileGetSize(const char *szPath)
 	ULONGLONG FileSize = (static_cast<ULONGLONG>(lpFileInformation.nFileSizeHigh) <<
 		sizeof(lpFileInformation.nFileSizeLow) * sizeof(ULONGLONG)) |
 		lpFileInformation.nFileSizeLow;
+
+    mem_delete_a(path);
 
 	//Если result != 0 то все хорошо, если 0 то файл не найден
 	return result != 0 ? FileSize : FILE_NOT_FOUND;
@@ -301,17 +304,13 @@ time_t CFileSystem::getFileModifyTime(const char *szPath)
         return 0;
     }
 
-    FILETIME mTime;
+    WIN32_FILE_ATTRIBUTE_DATA lpFileInformation;
 
-    HANDLE hFile = getFileHandle(path);
+    GetFileAttributesEx(path, GetFileExInfoStandard, &lpFileInformation);
 
-    mem_delete_a(path);
+    mem_delete(path);
 
-	GetFileTime(hFile, nullptr, &mTime, nullptr);
-
-	CLOSE_HANDLE(hFile);
-
-	return convertFiletimeToTime_t(mTime);
+    return filetimeToTime_t(lpFileInformation.ftLastAccessTime);
 }
 
 IFileSystem::IFileIterator *CFileSystem::getFolderList(const char *szPath)
