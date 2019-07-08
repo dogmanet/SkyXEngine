@@ -6,7 +6,6 @@ See the license in LICENSE
 
 #include "sxgcore.h"
 
-#include <gcore/GeomOptimize.h>
 #include <gcore/shader.h>
 #include <gcore/loadertextures.h>
 #include <gcore/bound.h>
@@ -568,20 +567,6 @@ SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3 *pMin, const float3 *
 	SG_PRECOND(_VOID);
 
 	CreateBoundingBoxMesh(pMin, pMax, ppBBmesh, g_pDevice);
-}
-
-SX_LIB_API void SGCore_OptimizeIndecesInSubsetUint16(uint16_t *pIndecesBuffer, uint16_t numFaces, uint16_t numVerts)
-{
-	SG_PRECOND(_VOID);
-
-	OptimizeIndecesInSubsetUint16(pIndecesBuffer, numFaces, numVerts);
-}
-
-SX_LIB_API void SGCore_OptimizeIndecesInSubsetUint32(uint32_t *pIndecesBuffer, uint32_t numFaces, uint32_t numVerts)
-{
-	SG_PRECOND(_VOID);
-
-	OptimizeIndecesInSubsetUint32(pIndecesBuffer, numFaces, numVerts);
 }
 
 //##########################################################################

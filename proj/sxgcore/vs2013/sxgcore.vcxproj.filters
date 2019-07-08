@@ -16,9 +16,6 @@
     <ClCompile Include="..\..\..\source\gcore\LoaderTextures.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\gcore\GeomOptimize.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\gcore\bound.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -69,9 +66,6 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\camera.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\gcore\GeomOptimize.h">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\bound.h">

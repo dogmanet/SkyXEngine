@@ -202,7 +202,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\gcore\gcore_data.cpp" />
     <ClCompile Include="..\..\..\source\gcore\gcore_utils.cpp" />
-    <ClCompile Include="..\..\..\source\gcore\GeomOptimize.cpp" />
     <ClCompile Include="..\..\..\source\gcore\LoaderTextures.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -239,7 +238,6 @@
     <ClInclude Include="..\..\..\source\gcore\camera.h" />
     <ClInclude Include="..\..\..\source\gcore\gcore_data.h" />
     <ClInclude Include="..\..\..\source\gcore\gcore_utils.h" />
-    <ClInclude Include="..\..\..\source\gcore\GeomOptimize.h" />
     <ClInclude Include="..\..\..\source\gcore\LoaderTextures.h" />
     <ClInclude Include="..\..\..\source\gcore\oc.h" />
     <ClInclude Include="..\..\..\source\gcore\shader.h" />

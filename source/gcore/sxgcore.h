@@ -685,24 +685,6 @@ SX_LIB_API void SGCore_FCreateSphere(
 //! создание меша (ID3DXMesh) ограничивающего объема
 SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3* min, const float3* max, IMesh** bbmesh);
 
-/*! \name Оптимизация индексных буферов
-@{*/
-
-//! 16 битные индексные буферы
-SX_LIB_API void SGCore_OptimizeIndecesInSubsetUint16(
-	uint16_t* ib,		//!< указатель на индексный буфер
-	uint16_t numFaces,	//!< количество индексов
-	uint16_t numVerts	//!< количество вершин
-	);	
-
-//! 16 битные индексные буферы
-SX_LIB_API void SGCore_OptimizeIndecesInSubsetUint32(
-	uint32_t* ib,		//!< указатель на индексный буфер
-	uint32_t numFaces,	//!< количество индексов
-	uint32_t numVerts	//!< количество вершин
-	);	
-//!@}
-
 //##########################################################################
 
 /*! \defgroup sxgcore_bb_intersect Функции просчета попаданий точек в объемы и деление объемов
