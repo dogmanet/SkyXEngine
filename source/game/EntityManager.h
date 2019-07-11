@@ -96,7 +96,7 @@ public:
 	CBaseEntity * findEntityInSphere(const float3 &f3Origin, float fRadius, CBaseEntity * pStart = 0);
 
 	bool exportList(const char * file);
-	bool import(const char * file);
+	bool import(const char * file, bool shouldSendProgress = false);
 
 	void dumpList(int argc, const char ** argv);
 	void entKV(int argc, const char ** argv);

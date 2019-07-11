@@ -483,13 +483,6 @@ SX_LIB_API ID SGCore_LoadTexAddName(const char *szName, LOAD_TEXTURE_TYPE type)
 	return g_pManagerTextures->addName(szName, type);
 }
 
-SX_LIB_API ID SGCore_LoadTexAddConstAllInDir(const char *szDir)
-{
-	SG_PRECOND(false);
-
-	return g_pManagerTextures->addConstAllInDir(szDir);
-}
-
 SX_LIB_API ID SGCore_LoadTexGetID(const char *szName)
 {
 	SG_PRECOND(-1);
@@ -530,6 +523,13 @@ SX_LIB_API IGXTexture2D* SGCore_LoadTexGetTex(ID idTexture)
 	SG_PRECOND(0);
 
 	return g_pManagerTextures->getTexture2d(idTexture);
+}
+
+SX_LIB_API void SGCore_LoadTexSetTex(ID idTexture, IGXTexture2D *pTexture)
+{
+	SG_PRECOND(_VOID);
+
+	g_pManagerTextures->setTexture2d(idTexture, pTexture);
 }
 
 SX_LIB_API IGXTextureCube* SGCore_LoadTexGetTexCube(ID idTexture)

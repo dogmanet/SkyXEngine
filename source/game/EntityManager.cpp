@@ -378,8 +378,13 @@ bool CEntityManager::exportList(const char * file)
 	return(ret);
 }
 
-bool CEntityManager::import(const char * file)
+bool CEntityManager::import(const char * file, bool shouldSendProgress)
 {
+	IEventChannel<XEventLevelProgress> *pEventChannel = NULL;
+	if(shouldSendProgress)
+	{
+		pEventChannel = Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID);
+	}
 	ISXConfig * conf = Core_CrConfig();
 	char sect[32];
 	CBaseEntity * pEnt = NULL;
@@ -402,55 +407,75 @@ bool CEntityManager::import(const char * file)
 
 	tmpList.reserve(ic);
 
-	for(int i = 0; i < ic; ++i)
 	{
-		sprintf(sect, "ent_%d", i);
-		if(!conf->keyExists(sect, "classname"))
-		{
-			printf(COLOR_LRED "Unable to load entity #%d, classname undefined\n" COLOR_RESET, i);
-			tmpList[i] = NULL;
-			continue;
-		}
-		if(!(pEnt = CREATE_ENTITY_NOPOST(conf->getKey(sect, "classname"), this)))
-		{
-			printf(COLOR_LRED "Unable to load entity #%d, classname '%s' undefined\n" COLOR_RESET, i, conf->getKey(sect, "classname"));
-			tmpList[i] = NULL;
-			continue;
-		}
-		if(conf->keyExists(sect, "name"))
-		{
-			pEnt->setKV("name", conf->getKey(sect, "name"));
-		}
-		if(conf->keyExists(sect, "origin"))
-		{
-			pEnt->setKV("origin", conf->getKey(sect, "origin"));
-		}
-		if(conf->keyExists(sect, "rotation"))
-		{
-			pEnt->setKV("rotation", conf->getKey(sect, "rotation"));
-		}
-		pEnt->setFlags(pEnt->getFlags() | EF_EXPORT | EF_LEVEL);
-		tmpList[i] = pEnt;
-	}
 
-	for(int i = 0; i < ic; ++i)
-	{
-		sprintf(sect, "ent_%d", i);
-		if(!(pEnt = tmpList[i]))
+		XEventLevelProgress ev;
+		ev.idPlugin = -3;
+		ev.szLoadingText = "Загрузка объектов игрового мира";
+		ev.type = XEventLevelProgress::TYPE_PROGRESS_VALUE;
+		ev.fProgress = 0.0f;
+		for(int i = 0; i < ic; ++i)
 		{
-			continue;
-		}
-		int keyc = conf->getKeyCount(sect);
-		const char * key;
-		for(int j = 0; j < keyc; ++j)
-		{
-			key = conf->getKeyName(sect, j);
- 			if(strcmp(key, "classname") && strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
+			sprintf(sect, "ent_%d", i);
+			if(!conf->keyExists(sect, "classname"))
 			{
-				pEnt->setKV(key, conf->getKey(sect, key));
+				printf(COLOR_LRED "Unable to load entity #%d, classname undefined\n" COLOR_RESET, i);
+				tmpList[i] = NULL;
+				continue;
+			}
+			if(!(pEnt = CREATE_ENTITY_NOPOST(conf->getKey(sect, "classname"), this)))
+			{
+				printf(COLOR_LRED "Unable to load entity #%d, classname '%s' undefined\n" COLOR_RESET, i, conf->getKey(sect, "classname"));
+				tmpList[i] = NULL;
+				continue;
+			}
+			if(conf->keyExists(sect, "name"))
+			{
+				pEnt->setKV("name", conf->getKey(sect, "name"));
+			}
+			if(conf->keyExists(sect, "origin"))
+			{
+				pEnt->setKV("origin", conf->getKey(sect, "origin"));
+			}
+			if(conf->keyExists(sect, "rotation"))
+			{
+				pEnt->setKV("rotation", conf->getKey(sect, "rotation"));
+			}
+			pEnt->setFlags(pEnt->getFlags() | EF_EXPORT | EF_LEVEL);
+			tmpList[i] = pEnt;
+
+			if((i & 0xF) == 0 && pEventChannel)
+			{
+				ev.fProgress = (float)i / (float)ic * 0.1f;
+				pEventChannel->broadcastEvent(&ev);
 			}
 		}
-		pEnt->onPostLoad();
+
+		for(int i = 0; i < ic; ++i)
+		{
+			sprintf(sect, "ent_%d", i);
+			if(!(pEnt = tmpList[i]))
+			{
+				continue;
+			}
+			int keyc = conf->getKeyCount(sect);
+			const char * key;
+			for(int j = 0; j < keyc; ++j)
+			{
+				key = conf->getKeyName(sect, j);
+				if(strcmp(key, "classname") && strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
+				{
+					pEnt->setKV(key, conf->getKey(sect, key));
+				}
+			}
+			pEnt->onPostLoad();
+
+			if(/*(i & 0xF) == 0 && */pEventChannel)
+			{
+				ev.fProgress = (float)i / (float)ic * 0.9f + 0.1f;
+				pEventChannel->broadcastEvent(&ev);
+			}
+		}
 	}
 
 	mem_release(conf);

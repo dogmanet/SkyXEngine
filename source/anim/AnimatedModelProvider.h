@@ -7,6 +7,7 @@
 #include <xcommon/IXCore.h>
 #include <mtrl/IXMaterialSystem.h>
 #include "RenderableVisibility.h"
+#include <common/ConcurrentQueue.h>
 
 class CAnimatedModelProvider: public IXAnimatedModelProvider
 {
@@ -20,6 +21,7 @@ public:
 	void onModelRelease(CAnimatedModel *pModel);
 	IXMaterialSystem *getMaterialSystem();
 	IGXContext *getDevice();
+	IXCore* getCore();
 	void setDevice(IGXContext *pContext);
 	IGXVertexDeclaration *getVertexDeclaration();
 
@@ -30,6 +32,9 @@ public:
 
 	void getLevelSize(const XEventLevelSize *pData);
 
+	void scheduleSharedGPUinit(CAnimatedModelShared *pShared);
+	void scheduleModelGPUinit(CAnimatedModel *pModel);
+
 protected:
 	AssotiativeArray<IXResourceModelAnimated*, Array<CAnimatedModelShared*>> m_mModels;
 
@@ -39,6 +44,9 @@ protected:
 
 	IXCore *m_pCore;
 	IGXContext *m_pRenderContext = NULL;
+
+	CConcurrentQueue<CAnimatedModelShared*> m_queueGPUinitShared;
+	CConcurrentQueue<CAnimatedModel*> m_queueGPUinitModel;
 };
 
 #endif

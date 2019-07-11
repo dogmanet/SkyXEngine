@@ -208,6 +208,7 @@ build/*
 build/gamesource/*
 /build/gamesource/shaders/cache/*
 !shaders/
+!gui/
 docs/html/*
 !docs/html/material_editor/
 !docs/html/particles_editor/

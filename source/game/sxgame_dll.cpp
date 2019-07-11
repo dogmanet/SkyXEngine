@@ -158,24 +158,6 @@ SX_LIB_API void SGame_Dbg_Set(report_func rf)
 	g_fnReportf = rf;
 }
 
-SX_LIB_API void SGame_LoadEnts(const char * file)
-{
-	SG_PRECOND(_VOID);
-	GameData::m_pMgr->import(file);
-}
-
-SX_LIB_API void SGame_UnloadObjLevel()
-{
-	SG_PRECOND(_VOID);
-	GameData::m_pMgr->unloadObjLevel();
-}
-
-SX_LIB_API void SGame_SaveEnts(const char * file)
-{
-	SG_PRECOND(_VOID);
-	GameData::m_pMgr->exportList(file);
-}
-
 SX_LIB_API void SGame_PlayerSpawn()
 {
 	SG_PRECOND(_VOID);
@@ -394,11 +376,6 @@ SX_LIB_API void SGame_OnResetDevice()
 	{
 		GameData::m_pGUI->onResetDevice();
 	}
-}
-
-SX_LIB_API void SGame_OnLevelLoad(const char *szName)
-{
-	GameData::m_pHUDcontroller->loadMap(szName);
 }
 
 SX_LIB_API void SGame_SetDebugText(const char *szText)

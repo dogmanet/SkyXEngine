@@ -32,11 +32,12 @@ public:
 	virtual void XMETHODCALLTYPE execCmd(const char *szCommand) = 0;
 	virtual void execCmd2(const char *szFormat, ...) = 0;
 
-
-
 	//@FIXME: Remove that!
 	virtual void initUpdatable() = 0;
 	virtual void runUpdate() = 0;
+
+	virtual ID XMETHODCALLTYPE getThreadId() = 0;
+	virtual bool XMETHODCALLTYPE isOnMainThread() = 0;
 
 	template<typename T> IEventChannel<T> *getEventChannel(const XGUID &guid)
 	{

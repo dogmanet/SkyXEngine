@@ -28,12 +28,19 @@ public:
 
 	void render(UINT uSkin, UINT uLod, const float4_t &vColor);
 
+	void initGPUresources();
+
 protected:
 	UINT m_uRefCount = 0;
 	IXResourceModelStatic *m_pResource;
 
 	IGXRenderBuffer **m_ppRenderBuffer = NULL;
 	IGXIndexBuffer **m_ppIndexBuffer = NULL;
+
+	UINT **m_ppTempIndices = NULL;
+	XResourceModelStaticVertex **m_ppTempVertices = NULL;
+	UINT *m_puTempTotalIndices = 0;
+	UINT *m_puTempTotalVertices = 0;
 
 	CDynamicModelProvider *m_pProvider;
 	IGXContext *m_pDevice;

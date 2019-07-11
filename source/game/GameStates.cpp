@@ -10,8 +10,8 @@ CMainMenuGameState::CMainMenuGameState()
 {
 	m_pDesktop = GameData::m_pGUI->createDesktopA("menu_main", "menu/main.html");
 
-	gui::dom::IDOMnode * pNode = m_pDesktop->getDocument()->getElementById(L"engine_version");
-	static const char ** pszVersion = GET_PCVAR_STRING("engine_version");
+	gui::dom::IDOMnode *pNode = m_pDesktop->getDocument()->getElementById(L"engine_version");
+	static const char **pszVersion = GET_PCVAR_STRING("engine_version");
 	if(pNode && pszVersion)
 	{
 		pNode->setText(StringW(L"SkyXEngine ") + StringW(String(*pszVersion)), TRUE);
@@ -34,8 +34,8 @@ CIngameMenuGameState::CIngameMenuGameState()
 {
 	m_pDesktop = GameData::m_pGUI->createDesktopA("menu_ingame", "menu/ingame.html");
 
-	gui::dom::IDOMnode * pNode = m_pDesktop->getDocument()->getElementById(L"engine_version");
-	static const char ** pszVersion = GET_PCVAR_STRING("engine_version");
+	gui::dom::IDOMnode *pNode = m_pDesktop->getDocument()->getElementById(L"engine_version");
+	static const char **pszVersion = GET_PCVAR_STRING("engine_version");
 	if(pNode && pszVersion)
 	{
 		pNode->setText(StringW(L"SkyXEngine ") + StringW(String(*pszVersion)), TRUE);

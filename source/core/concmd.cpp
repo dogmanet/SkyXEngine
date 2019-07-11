@@ -588,6 +588,7 @@ void ConsoleRegisterCmds()
 	Core_0RegisterConcmdArg("echo", echo, "Echoes all parameters to console");
 	Core_0RegisterConcmdArg("exec", exec, "Executes given cfg file");
 	Core_0RegisterConcmd("exit", cmd_exit, "Shuts down the engine");
+	Core_0RegisterConcmd("quit", cmd_exit, "Shuts down the engine");
 	Core_0RegisterConcmdArg("cvar_handle", cvar_handle, "Handle to show or set cvar value");
 	Core_0RegisterConcmdArg("help", cmd_help, "Handle to show command description");
 	Core_0RegisterConcmdArg("cvarlist", cmd_cvarlist, "List all CVars");

@@ -12,6 +12,7 @@ See the license in LICENSE
 #include <common/file_utils.h>
 #include "reflection.h"
 #include <direct.h>
+#include <common/ConcurrentQueue.h>
 
 #define MTL_PRE_COND_ID(id,stdval) \
 if (!(id >= 0 && id < m_aUnitMtrls.size()))\
@@ -455,6 +456,15 @@ protected:
 	ID m_idBeginNonDef;
 
 	float4x4 m_mWorld, m_mViewProj, m_mWorldTrans, m_mViewTrans, m_mProjTrans;
+
+private:
+
+	struct LoadTexparamData
+	{
+		UINT uData;
+		ID idTex;
+	};
+	CConcurrentQueue<LoadTexparamData> m_queueLoadTexparam;
 };
 
 #endif

@@ -14,7 +14,7 @@ See the license in LICENSE
 #include <graphix/graphix.h>
 #include <common/array.h>
 #include <common/String.h>
-#include <common/file_utils.h>
+#include <common/string_utils.h>
 #include "sxgcore.h"
 
 extern IGXContext *g_pDevice;
@@ -182,6 +182,7 @@ protected:
 
 	Array<CShaderKit*> m_aShaderKit;
 	
+	mutex m_mxLock;
 
 	int m_iLastAllLoadVS = 0;		//! общее количество загруженных vs шейдеров, с прошлого раза
 	int m_iLastAllLoadPS = 0;		//! общее количество загруженных ps шейдеров, с прошлого раза

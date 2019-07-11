@@ -824,14 +824,21 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT
 ID CMaterials::createTexParamLighting(float roughness, float f0, float thickness)
 {
 	uint32_t tmpColor = GX_COLOR_ARGB(255, DWORD(roughness*255.f), DWORD(f0*255.f), DWORD(thickness*255.f));
-	IGXTexture2D* TexMaterial = mtrl_data::pDXDevice->createTexture2D(1, 1, 1, 0, GXFMT_A8R8G8B8, &tmpColor);
-
-	//SGCore_LoadTexLoadTextures();
+	IGXTexture2D* TexMaterial = NULL;
 
 	char nametex[64];
 	sprintf(nametex, "%c_%d_%d_%d", MTL_VIRTUAL_DIR_HAND_MTL, m_aUnitMtrls.size(), rand() % 9999, rand() % 9999);
 
-	return SGCore_LoadTexCreate(nametex, TexMaterial);
+	if(Core_GetIXCore()->isOnMainThread())
+	{
+		TexMaterial = mtrl_data::pDXDevice->createTexture2D(1, 1, 1, 0, GXFMT_A8R8G8B8, &tmpColor);
+		return(SGCore_LoadTexCreate(nametex, TexMaterial));
+	}
+	
+	// schedule to create
+	ID idTex = SGCore_LoadTexCreate(nametex, TexMaterial);
+	m_queueLoadTexparam.push({tmpColor, idTex});
+	return(idTex);
 }
 
 void CMaterials::createMtl(const char* name, CMaterial** mtl, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount, XSHADER_VARIANT_DESC *pVariantsDesc)
@@ -1214,8 +1221,17 @@ ID CMaterials::getLightMtrl()
 
 void CMaterials::update(UINT timeDelta)
 {
+	assert(Core_GetIXCore()->isOnMainThread());
+
 	m_uiCurrTimeDelta = timeDelta;
 	m_uiCountTimeDelta += timeDelta;
+
+	LoadTexparamData tdata;
+	while(m_queueLoadTexparam.tryPop(tdata))
+	{
+		auto pTexture = mtrl_data::pDXDevice->createTexture2D(1, 1, 1, 0, GXFMT_A8R8G8B8, &(tdata.uData));
+		SGCore_LoadTexSetTex(tdata.idTex, pTexture);
+	}
 }
 
 void CMaterials::setMainTexture(ID slot, ID id)
@@ -1941,12 +1957,16 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 		{
 			//блокируем текстуру 1х1 котора¤ есть параметры освещени¤, и запсиываем туда то что настроили
 			IGXTexture2D* ParamLightModelTex = SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParamHand);
-			GXCOLOR clr = GX_COLOR_ARGB(255, DWORD(pMtrl->m_oLightParam.m_fRoughness*255.f), DWORD(pMtrl->m_oLightParam.m_fF0*255.f), DWORD(pMtrl->m_oLightParam.m_fThickness*255.f));
-			ParamLightModelTex->update(&clr);
+			if(ParamLightModelTex)
+			{
+				GXCOLOR clr = GX_COLOR_ARGB(255, DWORD(pMtrl->m_oLightParam.m_fRoughness*255.f), DWORD(pMtrl->m_oLightParam.m_fF0*255.f), DWORD(pMtrl->m_oLightParam.m_fThickness*255.f));
 			
-			pMtrl->m_oLightParam.m_fOldRoughness = pMtrl->m_oLightParam.m_fRoughness;
-			pMtrl->m_oLightParam.m_fOldF0 = pMtrl->m_oLightParam.m_fF0;
-			pMtrl->m_oLightParam.m_fOldThickness = pMtrl->m_oLightParam.m_fThickness;
+				ParamLightModelTex->update(&clr);
+			
+				pMtrl->m_oLightParam.m_fOldRoughness = pMtrl->m_oLightParam.m_fRoughness;
+				pMtrl->m_oLightParam.m_fOldF0 = pMtrl->m_oLightParam.m_fF0;
+				pMtrl->m_oLightParam.m_fOldThickness = pMtrl->m_oLightParam.m_fThickness;
+			}
 		}
 
 		mtrl_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParamHand), MTL_TEX_R_PARAM_LIGHT);

@@ -37,6 +37,7 @@ public:
 				XEventLevelProgress levelProgress;
 				levelProgress.idPlugin = m_idPlugin;
 				levelProgress.fProgress = 0.0f;
+				levelProgress.szLoadingText = "Импорт геометрии";
 				levelProgress.type = XEventLevelProgress::TYPE_PROGRESS_BEGIN;
 				pProgressChannel->broadcastEvent(&levelProgress);
 

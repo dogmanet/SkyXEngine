@@ -22,6 +22,11 @@ IGXContext *CAnimatedModelProvider::getDevice()
 	return(m_pRenderContext);
 }
 
+IXCore* CAnimatedModelProvider::getCore()
+{
+	return(m_pCore);
+}
+
 void CAnimatedModelProvider::setDevice(IGXContext *pDevice)
 {
 	m_pRenderContext = pDevice;
@@ -119,6 +124,33 @@ IXMaterialSystem *CAnimatedModelProvider::getMaterialSystem()
 
 void CAnimatedModelProvider::update(float fDT)
 {
+	typedef std::chrono::system_clock::time_point time_point;
+	time_point tStart = std::chrono::high_resolution_clock::now();
+
+	CAnimatedModelShared *pShared;
+	while(m_queueGPUinitShared.tryPop(pShared))
+	{
+		pShared->initGPUresources();
+		mem_release(pShared);
+
+		if(((float)std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tStart).count() / 1000000.0f) > 0.0001f)
+		{
+			break;
+		}
+	}
+
+	CAnimatedModel *pModel;
+	while(m_queueGPUinitModel.tryPop(pModel))
+	{
+		pModel->initGPUresources();
+		mem_release(pModel);
+
+		if(((float)std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tStart).count() / 1000000.0f) > 0.0001f)
+		{
+			break;
+		}
+	}
+
 	for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
 	{
 		m_apModels[i]->update(fDT);
@@ -198,4 +230,16 @@ void CAnimatedModelProvider::getLevelSize(const XEventLevelSize *pData)
 			}
 		}
 	}
+}
+
+void CAnimatedModelProvider::scheduleSharedGPUinit(CAnimatedModelShared *pShared)
+{
+	pShared->AddRef();
+	m_queueGPUinitShared.push(pShared);
+}
+
+void CAnimatedModelProvider::scheduleModelGPUinit(CAnimatedModel *pModel)
+{
+	pModel->AddRef();
+	m_queueGPUinitModel.push(pModel);
 }

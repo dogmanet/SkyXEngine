@@ -54,6 +54,19 @@ CAnimatedModelShared::~CAnimatedModelShared()
 	{
 		mem_release(m_apResources[i]);
 	}
+
+	if(m_ppTempIndices)
+	{
+		for(UINT i = 0; i < m_uLodCount; ++i)
+		{
+			mem_delete_a(m_ppTempIndices[i]);
+			mem_delete_a(m_ppTempVertices[i]);
+		}
+		mem_delete_a(m_ppTempIndices);
+		mem_delete_a(m_ppTempVertices);
+		mem_delete_a(m_puTempTotalIndices);
+		mem_delete_a(m_puTempTotalVertices);
+	}
 }
 void CAnimatedModelShared::AddRef()
 {
@@ -444,6 +457,12 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 			}
 		}
 
+		if(!m_pProvider->getCore()->isOnMainThread())
+		{
+			m_puTempTotalIndices = new UINT[m_uLodCount];
+			m_puTempTotalVertices = new UINT[m_uLodCount];
+		}
+
 		UINT **ppIndices = new UINT*[m_uLodCount];
 		XResourceModelAnimatedVertex **ppVertices = new XResourceModelAnimatedVertex*[m_uLodCount];
 		for(UINT i = 0; i < m_uLodCount; ++i)
@@ -527,18 +546,40 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 
 			for(UINT i = 0; i < m_uLodCount; ++i)
 			{
-				m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer(sizeof(UINT) * aLodIndexCount[i], GXBUFFER_USAGE_STATIC, GXIT_UINT32, ppIndices[i]);
-				IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelAnimatedVertex) * aLodVertexCount[i], GXBUFFER_USAGE_STATIC, ppVertices[i]);
-				m_ppRenderBuffer[i] = m_pDevice->createRenderBuffer(1, &pVertexBuffer, m_pProvider->getVertexDeclaration());
-				mem_release(pVertexBuffer);
+				if(m_pProvider->getCore()->isOnMainThread())
+				{
+					m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer(sizeof(UINT) * aLodIndexCount[i], GXBUFFER_USAGE_STATIC, GXIT_UINT32, ppIndices[i]);
+					IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelAnimatedVertex) * aLodVertexCount[i], GXBUFFER_USAGE_STATIC, ppVertices[i]);
+					m_ppRenderBuffer[i] = m_pDevice->createRenderBuffer(1, &pVertexBuffer, m_pProvider->getVertexDeclaration());
+					mem_release(pVertexBuffer);
+				}
+				else
+				{
+					m_ppIndexBuffer[i] = NULL;
+					m_ppRenderBuffer[i] = NULL;
 
+					m_ppTempIndices = ppIndices;
+					m_ppTempVertices = ppVertices;
+					m_puTempTotalIndices[i] = aLodIndexCount[i];
+					m_puTempTotalVertices[i] = aLodVertexCount[i];
+
+					m_pProvider->scheduleSharedGPUinit(this);
+				}
+
+
+			}
+		}
+			
+		if(m_pProvider->getCore()->isOnMainThread())
+		{
+			for(UINT i = 0; i < m_uLodCount; ++i)
+			{
 				mem_delete_a(ppIndices[i]);
 				mem_delete_a(ppVertices[i]);
 			}
+			mem_delete_a(ppIndices);
+			mem_delete_a(ppVertices);
 		}
-
-		mem_delete_a(ppIndices);
-		mem_delete_a(ppVertices);
 	}
 
 
@@ -626,6 +667,30 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 
 
 	return(true);
+}
+
+void CAnimatedModelShared::initGPUresources()
+{
+	if(!m_ppTempIndices)
+	{
+		return;
+	}
+	assert(m_pProvider->getCore()->isOnMainThread());
+
+	for(UINT i = 0; i < m_uLodCount; ++i)
+	{
+		m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer(sizeof(UINT) * m_puTempTotalIndices[i], GXBUFFER_USAGE_STATIC, GXIT_UINT32, m_ppTempIndices[i]);
+		IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelAnimatedVertex) * m_puTempTotalVertices[i], GXBUFFER_USAGE_STATIC, m_ppTempVertices[i]);
+		m_ppRenderBuffer[i] = m_pDevice->createRenderBuffer(1, &pVertexBuffer, m_pProvider->getVertexDeclaration());
+		mem_release(pVertexBuffer);
+
+		mem_delete_a(m_ppTempIndices[i]);
+		mem_delete_a(m_ppTempVertices[i]);
+	}
+	mem_delete_a(m_ppTempIndices);
+	mem_delete_a(m_ppTempVertices);
+	mem_delete_a(m_puTempTotalIndices);
+	mem_delete_a(m_puTempTotalVertices);
 }
 
 void CAnimatedModelShared::_initPart(Array<IXResourceModelAnimated*> &aPart, part_s *pPart, Array<Array<merge_subset_s>> &aPartLods, Array<Array<mtl_node>> &aaMaterials, XMODEL_IMPORT importFlags)

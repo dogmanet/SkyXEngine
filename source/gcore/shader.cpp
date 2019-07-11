@@ -49,6 +49,8 @@ static void CreateShaderFromData(IGXContext *pContext, IGXComputeShader  **ppOut
 template <class T>
 static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSystem, const char *szPath, CShaderImpl<T> *pShader, GXMacro *aMacro)
 {
+	assert(Core_GetIXCore()->isOnMainThread());
+
 	char szFullPath[SXGC_SHADER_MAX_SIZE_FULLPATH];
 	char szFullPathCache[SXGC_SHADER_MAX_SIZE_FULLPATH];
 	char szDir[SXGC_SHADER_MAX_SIZE_DIR];
@@ -463,6 +465,9 @@ void CShaderManager::reloadAll()
 	m_iLastAllLoadGS = 0;
 	m_iLastAllLoadCS = 0;
 
+	mem_delete(m_pPreprocessor);
+	m_pPreprocessor = new CShaderPreprocessor(Core_GetIXCore()->getFileSystem());
+
 	allLoad(true);
 }
 
@@ -587,6 +592,8 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, GXMacro *aMacro
 
 	if(!ID_VALID(id))
 	{
+		ScopedLock lock(m_mxLock);
+
 		CShader *pShader = 0;
 		if(type == SHADER_TYPE_VERTEX)
 		{
@@ -650,6 +657,8 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, GXMacro *aMacro
 
 void CShaderManager::allLoad(bool bReload)
 {
+	ScopedLock lock(m_mxLock);
+
 	if(m_aVS.size() == m_iLastAllLoadVS && m_aPS.size() == m_iLastAllLoadPS && m_aGS.size() == m_iLastAllLoadGS && m_aCS.size() == m_iLastAllLoadCS)
 		return;
 

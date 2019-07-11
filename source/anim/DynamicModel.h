@@ -13,9 +13,9 @@ public:
 	bool XMETHODCALLTYPE isEnabled() const override;
 	void XMETHODCALLTYPE enable(bool yesNo) override;
 
-	IXAnimatedModel * XMETHODCALLTYPE asAnimatedModel() override;
-	IXDynamicModel * XMETHODCALLTYPE asDynamicModel() override;
-	IXStaticModel * XMETHODCALLTYPE asStaticModel() override;
+	IXAnimatedModel* XMETHODCALLTYPE asAnimatedModel() override;
+	IXDynamicModel* XMETHODCALLTYPE asDynamicModel() override;
+	IXStaticModel* XMETHODCALLTYPE asStaticModel() override;
 
 
 	float3 XMETHODCALLTYPE getPosition() const override;
@@ -37,10 +37,13 @@ public:
 	void XMETHODCALLTYPE setColor(const float4 &vColor) override;
 
 	UINT XMETHODCALLTYPE getPhysboxCount(UINT uPartIndex = 0) const override;
-	const IModelPhysbox * XMETHODCALLTYPE getPhysBox(UINT id, UINT uPartIndex = 0) const override;
-	const IXResourceModel * XMETHODCALLTYPE getResource(UINT uIndex = 0) override;
+	const IModelPhysbox* XMETHODCALLTYPE getPhysBox(UINT id, UINT uPartIndex = 0) const override;
+	const IXResourceModel* XMETHODCALLTYPE getResource(UINT uIndex = 0) override;
 
 	void XMETHODCALLTYPE render(UINT uLod) override;
+
+	CDynamicModelShared* getShared();
+	void initGPUresources();
 
 protected:
 	CDynamicModelProvider *m_pProvider;

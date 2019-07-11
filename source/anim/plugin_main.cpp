@@ -33,7 +33,7 @@ public:
 		m_pAnimatedModelProvider = new CAnimatedModelProvider(pCore);
 		m_pDynamicModelProvider = new CDynamicModelProvider(pCore);
 		m_pRenderable = new CRenderable(getID(), m_pAnimatedModelProvider, m_pDynamicModelProvider);
-		m_pUpdatable = new CUpdatable(m_pAnimatedModelProvider);
+		m_pUpdatable = new CUpdatable(m_pAnimatedModelProvider, m_pDynamicModelProvider);
 		m_pLevelSizeEventListener = new CLevelSizeEventListener(m_pAnimatedModelProvider, m_pDynamicModelProvider);
 
 		m_pCore->getEventChannel<XEventLevelSize>(EVENT_LEVEL_GET_SIZE_GUID)->addListener(m_pLevelSizeEventListener);

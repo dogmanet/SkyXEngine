@@ -9,14 +9,20 @@ CAnimatedModel::CAnimatedModel(CAnimatedModelProvider *pProvider, CAnimatedModel
 	pShared->AddRef();
 	addLayer();
 
-	m_pRenderFrameBones = new ModelBoneShader[pShared->getBoneCount() * 2];
+	m_pBonesBlob = m_pRenderFrameBones = new ModelBoneShader[pShared->getBoneCount() * 2];
 	m_pNextFrameBones = m_pRenderFrameBones + pShared->getBoneCount();
 	m_pBoneControllers = new XResourceModelBone[pShared->getBoneCount()];
 
 	if(m_pDevice)
 	{
-		m_pBoneConstantBuffer = m_pDevice->createConstantBuffer(sizeof(ModelBoneShader) * pShared->getBoneCount());
-		m_pWorldBuffer = m_pDevice->createConstantBuffer(sizeof(SMMATRIX));
+		if(m_pProvider->getCore()->isOnMainThread())
+		{
+			initGPUresources();
+		}
+		else
+		{
+			m_pProvider->scheduleModelGPUinit(this);
+		}
 	}
 }
 CAnimatedModel::~CAnimatedModel()
@@ -31,8 +37,18 @@ CAnimatedModel::~CAnimatedModel()
 		mem_delete_a(m_aLayers[i].pCurrentBones);
 	}
 
-	mem_delete_a(m_pRenderFrameBones);
+	mem_delete_a(m_pBonesBlob);
 	mem_delete_a(m_pBoneControllers);
+}
+
+void CAnimatedModel::initGPUresources()
+{
+	if(m_pWorldBuffer)
+	{
+		return;
+	}
+	m_pBoneConstantBuffer = m_pDevice->createConstantBuffer(sizeof(ModelBoneShader) * m_pShared->getBoneCount());
+	m_pWorldBuffer = m_pDevice->createConstantBuffer(sizeof(SMMATRIX));
 }
 
 bool XMETHODCALLTYPE CAnimatedModel::isEnabled() const
@@ -696,6 +712,7 @@ void CAnimatedModel::fillBoneMatrix()
 		int iParent = m_pShared->getBoneParent(i);
 		if(/*!m_pIsBoneWorld[0][i] && */iParent != -1)
 		{
+			assert(iParent >= 0 && (UINT)iParent < l);
 			m_pNextFrameBones[i].orient = (m_pNextFrameBones[i].orient * m_pNextFrameBones[iParent].orient).Normalize();
 			m_pNextFrameBones[i].position = (float4)(float4(m_pNextFrameBones[iParent].orient * (float3)m_pNextFrameBones[i].position, 1.0f) + m_pNextFrameBones[iParent].position);
 		}
@@ -715,7 +732,7 @@ void CAnimatedModel::fillBoneMatrix()
 
 void XMETHODCALLTYPE CAnimatedModel::render(UINT uLod)
 {
-	if(!m_pDevice || !m_isEnabled)
+	if(!m_pDevice || !m_isEnabled || !m_pWorldBuffer)
 	{
 		return;
 	}

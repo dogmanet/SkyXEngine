@@ -81,6 +81,10 @@ public:
 			m_vListeners2[i]->onEvent(pEvent);
 		}
 	}
+	UINT getListenersCount()
+	{
+		return(m_vListeners.size() + m_vListeners2.size());
+	}
 protected:
 	Array<PFNLISTENER> m_vListeners;
 	Array<IEventListener<T>*> m_vListeners2;
@@ -95,9 +99,15 @@ struct XEventLevel
 {
 	enum
 	{
-		TYPE_LOAD,
-		TYPE_SAVE,
-		TYPE_UNLOAD,
+		TYPE_LOAD, //!< Запрос на загрузку уровня
+		TYPE_SAVE, //!< Запрос на сохранение уровня
+		TYPE_UNLOAD, //!< Запрос на выгрузку уровня
+
+
+		TYPE_LOAD_BEGIN, //!< До начала загрузки уровня
+		TYPE_LOAD_END, //!< Уровень полностью загружен
+		TYPE_UNLOAD_BEGIN, //!< До начала выгрузки уровня
+		TYPE_UNLOAD_END, //!< Уровень полностью выгружен
 	} type;
 	const char *szLevelName;
 };
@@ -116,7 +126,8 @@ struct XEventLevelProgress
 		TYPE_PROGRESS_END,
 	} type;
 	ID idPlugin;
-	float fProgress;
+	float fProgress = 0.0f;
+	const char *szLoadingText = NULL;
 };
 
 

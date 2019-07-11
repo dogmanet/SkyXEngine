@@ -51,7 +51,7 @@ void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
 
 		if(uSpots)
 		{
-			uSpots = stSpotsMemory / CShadowMap::GetMapMemory(uDefaultShadowmapSize);
+			uSpots = (UINT)(stSpotsMemory / CShadowMap::GetMapMemory(uDefaultShadowmapSize));
 			if(!uSpots)
 			{
 				uSpots = 1;

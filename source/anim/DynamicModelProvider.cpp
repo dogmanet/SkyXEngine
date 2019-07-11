@@ -1,5 +1,6 @@
 #include "DynamicModelProvider.h"
 #include <xcommon/IPluginManager.h>
+#include <chrono>
 
 CDynamicModelProvider::CDynamicModelProvider(IXCore *pCore):
 	m_pCore(pCore)
@@ -16,10 +17,16 @@ IGXVertexDeclaration *CDynamicModelProvider::getVertexDeclaration()
 	return(m_pVertexDeclaration);
 }
 
-IGXContext *CDynamicModelProvider::getDevice()
+IGXContext* CDynamicModelProvider::getDevice()
 {
 	return(m_pRenderContext);
 }
+
+IXCore* CDynamicModelProvider::getCore()
+{
+	return(m_pCore);
+}
+
 void CDynamicModelProvider::setDevice(IGXContext *pDevice)
 {
 	m_pRenderContext = pDevice;
@@ -161,4 +168,46 @@ void CDynamicModelProvider::getLevelSize(const XEventLevelSize *pData)
 
 		}
 	}
+}
+
+void CDynamicModelProvider::update()
+{
+	typedef std::chrono::system_clock::time_point time_point;
+	time_point tStart = std::chrono::high_resolution_clock::now();
+
+	CDynamicModelShared *pShared;
+	while(m_queueGPUinitShared.tryPop(pShared))
+	{
+		pShared->initGPUresources();
+		mem_release(pShared);
+
+		if(((float)std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tStart).count() / 1000000.0f) > 0.0001f)
+		{
+			break;
+		}
+	}
+
+	CDynamicModel *pModel;
+	while(m_queueGPUinitModel.tryPop(pModel))
+	{
+		pModel->initGPUresources();
+		mem_release(pModel);
+
+		if(((float)std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tStart).count() / 1000000.0f) > 0.0001f)
+		{
+			break;
+		}
+	}
+}
+
+void CDynamicModelProvider::scheduleSharedGPUinit(CDynamicModelShared *pShared)
+{
+	pShared->AddRef();
+	m_queueGPUinitShared.push(pShared);
+}
+
+void CDynamicModelProvider::scheduleModelGPUinit(CDynamicModel *pModel)
+{
+	pModel->AddRef();
+	m_queueGPUinitModel.push(pModel);
 }

@@ -411,13 +411,13 @@ SX_LIB_API void SGCore_ShaderUnBind();
 #define SXGC_LOADTEX_MAX_SIZE_NAME 64
 
 //! общий максимальный  размер имени текстуры с расширением
-#define SXGC_LOADTEX_MAX_SIZE_DIRNAME SXGC_LOADTEX_MAX_SIZE_DIR + SXGC_LOADTEX_MAX_SIZE_NAME
+#define SXGC_LOADTEX_MAX_SIZE_DIRNAME (SXGC_LOADTEX_MAX_SIZE_DIR + SXGC_LOADTEX_MAX_SIZE_NAME)
 
 //! максимальный размер пути до файла текстуры (без имени файла)
 #define SXGC_LOADTEX_MAX_SIZE_STDPATH 256
 
 //! максимальный размер полного пути до текстуры (включая имя текстуры)
-#define SXGC_LOADTEX_MAX_SIZE_FULLPATH SXGC_LOADTEX_MAX_SIZE_STDPATH + SXGC_LOADTEX_MAX_SIZE_DIRNAME
+#define SXGC_LOADTEX_MAX_SIZE_FULLPATH (SXGC_LOADTEX_MAX_SIZE_STDPATH + SXGC_LOADTEX_MAX_SIZE_DIRNAME)
 
 
 //! количество mipmap уровней в загружаемых текстурах
@@ -492,8 +492,6 @@ SX_LIB_API void SGCore_LoadTexDelete(ID idTexture);
 //! добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
 SX_LIB_API ID SGCore_LoadTexAddName(const char *szName, LOAD_TEXTURE_TYPE type);
 
-SX_LIB_API ID SGCore_LoadTexAddConstAllInDir(const char *szDir);
-
 //! получить id по имени
 SX_LIB_API ID SGCore_LoadTexGetID(const char *szName);
 
@@ -517,6 +515,8 @@ SX_LIB_API void SGCore_LoadTexUpdate(ID idTexture);
 
 //! возвращает текстуру по id
 SX_LIB_API IGXTexture2D* SGCore_LoadTexGetTex(ID idTexture);
+
+SX_LIB_API void SGCore_LoadTexSetTex(ID idTexture, IGXTexture2D *pTexture);
 
 //! возвращает текстуру по id
 SX_LIB_API IGXTextureCube* SGCore_LoadTexGetTexCube(ID idTexture);

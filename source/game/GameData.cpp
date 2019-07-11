@@ -12,7 +12,6 @@ See the license in LICENSE
 #include <score/sxscore.h>
 #include <input/sxinput.h>
 
-
 #include "Tracer.h"
 
 #include "GameStates.h"
@@ -26,6 +25,7 @@ See the license in LICENSE
 #include <common/file_utils.h>
 
 #include <xcommon/XEvents.h>
+#include <xcommon/IAsyncTaskRunner.h>
 
 #include "Editable.h"
 
@@ -37,6 +37,7 @@ CHUDcontroller * GameData::m_pHUDcontroller;
 CGameStateManager * GameData::m_pGameStateManager;
 gui::dom::IDOMnode *GameData::m_pCell;
 IXLightSystem *GameData::m_pLightSystem;
+bool GameData::m_isLevelLoaded = false;
 CEditable *g_pEditable = NULL;
 //gui::IDesktop *GameData::m_pStatsUI;
 
@@ -205,89 +206,164 @@ BOOL EnumLevels(CLevelInfo *pInfo)
 
 //##########################################################################
 
-class CLevelLoadProgressListener: public IEventListener<XEventLevelProgress>
-{
-public:
-	void onEvent(const XEventLevelProgress *pData)
-	{
-		if(m_isDonning)
-		{
-			return;
-		}
-		switch(pData->type)
-		{
-		case XEventLevelProgress::TYPE_PROGRESS_BEGIN:
-			++m_iLoadingCount;
-			break;
-		case XEventLevelProgress::TYPE_PROGRESS_END:
-			--m_iLoadingCount;
-			break;
-		}
-
-		testDone();
-	}
-	void onSendBegin()
-	{
-		XEventLevelProgress ev;
-		ev.fProgress = 0.0f;
-		ev.idPlugin = -1;
-		ev.type = XEventLevelProgress::TYPE_PROGRESS_BEGIN;
-		Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID)->broadcastEvent(&ev);
-
-		m_isSending = true;
-		m_iLoadingCount = 0;
-	}
-	void onSendDone()
-	{
-		m_isSending = false;
-
-		testDone();
-	}
-
-	void testDone()
-	{
-		assert(m_iLoadingCount >= 0);
-		if(m_isSending)
-		{
-			return;
-		}
-
-		if(m_iLoadingCount == 0)
-		{
-			XEventLevelProgress ev;
-			ev.fProgress = 0.0f;
-			ev.idPlugin = -1;
-			ev.type = XEventLevelProgress::TYPE_PROGRESS_END;
-			m_isDonning = true;
-			Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID)->broadcastEvent(&ev);
-			m_isDonning = false;
-
-			LibReport(REPORT_MSG_LEVEL_NOTICE, COLOR_LGREEN "Level is loaded!" COLOR_RESET "\n");
-		}
-	}
-
-protected:
-	bool m_isSending = false;
-	bool m_isDonning = false;
-
-	int m_iLoadingCount = 0;
-};
-
-CLevelLoadProgressListener g_levelProgressListener;
-
 void EndMap()
 {
+	if(!GameData::m_isLevelLoaded)
+	{
+		return;
+	}
+
 	if(!GameData::m_pMgr->isEditorMode())
 	{
 		GameData::m_pGameStateManager->activate("main_menu");
 		GameData::m_pPlayer->observe();
 	}
-
+	
 	XEventLevel evLevel;
-	evLevel.type = XEventLevel::TYPE_UNLOAD;
 	evLevel.szLevelName = NULL;
+
+	evLevel.type = XEventLevel::TYPE_UNLOAD_BEGIN;
+	g_pLevelChannel->broadcastEvent(&evLevel);
+
+	evLevel.type = XEventLevel::TYPE_UNLOAD;
+	g_pLevelChannel->broadcastEvent(&evLevel);
+
+	evLevel.type = XEventLevel::TYPE_UNLOAD_END;
 	g_pLevelChannel->broadcastEvent(&evLevel);
 };
+
+class CLevelLoadTask: public IAsyncTask
+{
+public:
+	CLevelLoadTask(const char *szLevelName)
+	{
+		m_szLevelName = strdup(szLevelName);
+	}
+	~CLevelLoadTask()
+	{
+		free(m_szLevelName);
+	}
+	void XMETHODCALLTYPE exec();
+	void XMETHODCALLTYPE abort()
+	{
+		// do nothing
+	}
+	void XMETHODCALLTYPE onFinished();
+
+	const char* XMETHODCALLTYPE getName();
+
+	int XMETHODCALLTYPE getProgress();
+
+protected:
+	char szProgressText[256];
+	char *m_szLevelName;
+	std::atomic_int m_iDone;
+};
+
+IAsyncTaskRunner *g_pAsyncTaskRunner = NULL;
+CLevelLoadTask *g_pLevelLoadTask = NULL;
+
+class CLevelLoadProgressListener: public IEventListener<XEventLevelProgress>
+{
+public:
+	void onEvent(const XEventLevelProgress *pData)
+	{
+		switch(pData->type)
+		{
+		case XEventLevelProgress::TYPE_PROGRESS_BEGIN:
+			m_fCurrentLoaderProgress = 0.0f;
+			break;
+		case XEventLevelProgress::TYPE_PROGRESS_END:
+			++m_uLoadersDone;
+			m_fCurrentLoaderProgress = 1.0f;
+			break;
+		case XEventLevelProgress::TYPE_PROGRESS_VALUE:
+			m_fCurrentLoaderProgress = pData->fProgress;
+			break;
+		}
+
+		if(pData->szLoadingText)
+		{
+			ScopedLock lock(m_mxLoadingText);
+			m_sLoadingText = pData->szLoadingText;
+		}
+
+		m_fProgress = m_fCurrentLoaderProgress;
+		//m_fProgress = ((float)m_uLoadersDone + m_fCurrentLoaderProgress) / (float)m_uLoadersCount;
+	}
+	void onLoadBegin()
+	{
+		m_uLoadersCount = Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->getListenersCount();
+		m_fCurrentLoaderProgress = 0.0f;
+		m_uLoadersDone = 0;
+	}
+
+	float getProgress()
+	{
+		return(clampf(m_fProgress, 0.0f, 1.0f));
+	}
+
+	void getLoadingText(char *szBuffer, UINT uBufferSize)
+	{
+		ScopedLock lock(m_mxLoadingText);
+		UINT uTextLength = m_sLoadingText.length();
+		uTextLength = min(uTextLength, uBufferSize - 1);
+
+		memcpy(szBuffer, m_sLoadingText.c_str(), uTextLength);
+		szBuffer[uTextLength] = 0;
+	}
+
+protected:
+	String m_sLoadingText;
+	mutex m_mxLoadingText;
+	UINT m_uLoadersDone = 0;
+	UINT m_uLoadersCount = 0;
+	float m_fCurrentLoaderProgress = 0.0f;
+	float m_fProgress = 0.0f;
+};
+
+CLevelLoadProgressListener g_levelProgressListener;
+
+void XMETHODCALLTYPE CLevelLoadTask::exec()
+{
+	XEventLevel evLevel;
+	evLevel.szLevelName = m_szLevelName;
+
+	g_levelProgressListener.onLoadBegin();
+	
+	evLevel.type = XEventLevel::TYPE_LOAD;
+	g_pLevelChannel->broadcastEvent(&evLevel);
+}
+
+void XMETHODCALLTYPE CLevelLoadTask::onFinished()
+{
+	XEventLevel evLevel;
+	evLevel.szLevelName = m_szLevelName;
+	
+	evLevel.type = XEventLevel::TYPE_LOAD_END;
+	g_pLevelChannel->broadcastEvent(&evLevel);
+
+	LibReport(REPORT_MSG_LEVEL_NOTICE, COLOR_LGREEN "Level is loaded!" COLOR_RESET "\n");
+
+	if(!GameData::m_pMgr->isEditorMode())
+	{
+		Core_0ConsoleExecCmd("gmode ingame");
+		Core_0ConsoleExecCmd("spawn");
+	}
+	mem_release(g_pLevelLoadTask);
+}
+
+int XMETHODCALLTYPE CLevelLoadTask::getProgress()
+{
+	return((int)(g_levelProgressListener.getProgress() * 100.0f));
+}
+
+const char* XMETHODCALLTYPE CLevelLoadTask::getName()
+{
+	g_levelProgressListener.getLoadingText(szProgressText, sizeof(szProgressText));
+	
+	return(szProgressText);
+}
 
 //##########################################################################
 
@@ -340,29 +416,49 @@ GameData::GameData(HWND hWnd, bool isGame):
 		{
 		case XEventLevel::TYPE_LOAD:
 			{
+				auto pEventChannel = Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID);
+				XEventLevelProgress ev;
+				ev.szLoadingText = "Загрузка объектов игрового мира";
+				ev.idPlugin = -3;
+				ev.type = XEventLevelProgress::TYPE_PROGRESS_BEGIN;
+				ev.fProgress = 0.0f;
+				pEventChannel->broadcastEvent(&ev);
+
 				char szPath[256];
 				sprintf(szPath, "levels/%s/%s.ent", pData->szLevelName, pData->szLevelName);
 				LibReport(REPORT_MSG_LEVEL_NOTICE, "loading entities\n");
-				SGame_LoadEnts(szPath);
-				SGame_OnLevelLoad(pData->szLevelName);
+				GameData::m_pMgr->import(szPath, true);
+
+				ev.type = XEventLevelProgress::TYPE_PROGRESS_END;
+				ev.fProgress = 1.0f;
+				pEventChannel->broadcastEvent(&ev);
 			}
 			break;
 
 		case XEventLevel::TYPE_UNLOAD:
-			SGame_UnloadObjLevel();
+			GameData::m_pMgr->unloadObjLevel();
 			break;
 		case XEventLevel::TYPE_SAVE:
 			{
 				char szPath[256];
 				sprintf(szPath, "levels/%s/%s.ent", pData->szLevelName, pData->szLevelName);
-				SGame_SaveEnts(szPath);
+				GameData::m_pMgr->exportList(szPath);
 			}
-			
+			break;
+
+		case XEventLevel::TYPE_LOAD_END:
+			GameData::m_isLevelLoaded = true;
+			GameData::m_pHUDcontroller->loadMap(pData->szLevelName);
+			break;
+		case XEventLevel::TYPE_UNLOAD_BEGIN:
+			GameData::m_isLevelLoaded = false;
 			break;
 		}
 	});
 
 	m_pLightSystem = (IXLightSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXLIGHTSYSTEM_GUID);
+
+	g_pAsyncTaskRunner = Core_GetIXCore()->getAsyncTaskRunner();
 
 	Core_0RegisterConcmd("+forward", ccmd_forward_on);
 	Core_0RegisterConcmd("-forward", ccmd_forward_off);
@@ -451,7 +547,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 			printf("Usage: ent_save_level <entfile>");
 			return;
 		}
-		SGame_SaveEnts(argv[1]);
+		GameData::m_pMgr->exportList(argv[1]);
 	});
 
 	Core_0RegisterConcmdArg("ent_dump_info", [](int argc, const char ** argv)
@@ -480,32 +576,23 @@ GameData::GameData(HWND hWnd, bool isGame):
 		EndMap();
 
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "Loading level '" COLOR_LGREEN "%s" COLOR_RESET "'\n", argv[1]);
-
-		g_levelProgressListener.onSendBegin();
+		
+		static gui::IDesktop *pLoadingDesktop = GameData::m_pGUI->createDesktopA("loading", "menu/loading.html");
+		gui::dom::IDOMnode *pNode = pLoadingDesktop->getDocument()->getElementById(L"engine_version");
+		static const char **pszVersion = GET_PCVAR_STRING("engine_version");
+		if(pNode && pszVersion)
+		{
+			pNode->setText(StringW(L"SkyXEngine ") + StringW(String(*pszVersion)), TRUE);
+		}
+		GameData::m_pGUI->pushDesktop(pLoadingDesktop);
 
 		XEventLevel evLevel;
-		evLevel.type = XEventLevel::TYPE_LOAD;
 		evLevel.szLevelName = argv[1];
+		evLevel.type = XEventLevel::TYPE_LOAD_BEGIN;
 		g_pLevelChannel->broadcastEvent(&evLevel);
 
-		g_levelProgressListener.onSendDone();
-		
-		//SLevel_Load(argv[1], true);
-
-		//GameData::m_pGameStateManager->activate("ingame");
-
-		if(!m_pMgr->isEditorMode())
-		{
-			Core_0ConsoleExecCmd("gmode ingame");
-			Core_0ConsoleExecCmd("spawn");
-		}
-
-		for(int i = 0; i < 0; ++i)
-		{
-			CBaseEntity* bEnt = SGame_CreateEntity("npc_zombie");
-			bEnt->setFlags(bEnt->getFlags() | EF_EXPORT | EF_LEVEL);
-			bEnt->setKV("origin", "0 1 0");
-		}
+		g_pLevelLoadTask = new CLevelLoadTask(argv[1]);
+		g_pAsyncTaskRunner->runTask(g_pLevelLoadTask);
 	});
 	Core_0RegisterConcmd("endmap", EndMap);
 
@@ -1058,6 +1145,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 }
 GameData::~GameData()
 {
+	mem_release(g_pAsyncTaskRunner);
 	//mem_delete(g_pRagdoll);
 	mem_delete(g_pEditable);
 
@@ -1083,20 +1171,46 @@ GameData::~GameData()
 
 void GameData::update()
 {
+	g_pAsyncTaskRunner->runCallbacks();
+	if(g_pLevelLoadTask)
+	{
+		int iProgress = g_pLevelLoadTask->getProgress();
+		auto pDesktop = GameData::m_pGUI->getActiveDesktop();
+		if(pDesktop)
+		{
+			auto pProgress = pDesktop->getDocument()->getElementById(L"progress_inner");
+			if(pProgress)
+			{
+				pProgress->getStyleSelf()->width->set(iProgress);
+				pProgress->getStyleSelf()->width->setDim(gui::css::ICSSproperty::DIM_PC);
+				pProgress->updateStyles();
+			}
+
+			auto pText = pDesktop->getDocument()->getElementById(L"text");
+			if(pText)
+			{
+				pText->setText(StringW(String(g_pLevelLoadTask->getName())), TRUE);
+			}
+		}
+
+	}
 	m_pCrosshair->update();
 	m_pGUI->update();
 
-	static const bool * pbHudRangeFinder = GET_PCVAR_BOOL("hud_rangefinder");
-	if(*pbHudRangeFinder)
+	if(m_isLevelLoaded)
 	{
-		float fRange = m_pPlayer->getAimRange();
-		m_pHUDcontroller->setAimRange(fRange);
+		static const bool * pbHudRangeFinder = GET_PCVAR_BOOL("hud_rangefinder");
+		if(*pbHudRangeFinder)
+		{
+			float fRange = m_pPlayer->getAimRange();
+			m_pHUDcontroller->setAimRange(fRange);
+		}
+		else
+		{
+			m_pHUDcontroller->setAimRange(-1.0f);
+		}
+		m_pHUDcontroller->update();
 	}
-	else
-	{
-		m_pHUDcontroller->setAimRange(-1.0f);
-	}
-	m_pHUDcontroller->update();
 	/*
 	float3 start(-10.0f, 100.0f, -10.0f),
 		end = start + float3(10.0f, -200.0f, 10.0f);

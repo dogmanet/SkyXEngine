@@ -327,6 +327,16 @@ void CCore::execCmd2(const char * szFormat, ...)
 	mem_delete_a(cbuf);
 }
 
+ID XMETHODCALLTYPE CCore::getThreadId()
+{
+	return(Core_MGetThreadID());
+}
+
+bool XMETHODCALLTYPE CCore::isOnMainThread()
+{
+	return(getThreadId() == 0);
+}
+
 //##########################################################################
 
 C SXCORE_API IXCore* XCoreInit(const char *szName)

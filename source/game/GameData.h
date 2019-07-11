@@ -43,6 +43,7 @@ public:
 
 	static gui::dom::IDOMnode *m_pCell;
 	//static gui::IDesktop *m_pStatsUI;
+	static bool m_isLevelLoaded;
 
 protected:
 
@@ -97,7 +98,6 @@ protected:
 	static void ccmd_send_camera();
 
 	bool m_isGame;
-
 };
 
 extern GameData * g_pGameData;

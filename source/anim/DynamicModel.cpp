@@ -10,7 +10,14 @@ CDynamicModel::CDynamicModel(CDynamicModelProvider *pProvider, CDynamicModelShar
 
 	if(m_pDevice)
 	{
-		m_pWorldBuffer = m_pDevice->createConstantBuffer(sizeof(SMMATRIX));
+		if(m_pProvider->getCore()->isOnMainThread())
+		{
+			initGPUresources();
+		}
+		else
+		{
+			m_pProvider->scheduleModelGPUinit(this);
+		}
 	}
 }
 CDynamicModel::~CDynamicModel()
@@ -18,6 +25,15 @@ CDynamicModel::~CDynamicModel()
 	m_pProvider->onModelRelease(this);
 	mem_release(m_pShared);
 	mem_release(m_pWorldBuffer);
+}
+
+void CDynamicModel::initGPUresources()
+{
+	if(m_pWorldBuffer)
+	{
+		return;
+	}
+	m_pWorldBuffer = m_pDevice->createConstantBuffer(sizeof(SMMATRIX));
 }
 
 bool XMETHODCALLTYPE CDynamicModel::isEnabled() const
@@ -171,7 +187,7 @@ const IXResourceModel * XMETHODCALLTYPE CDynamicModel::getResource(UINT uIndex)
 
 void XMETHODCALLTYPE CDynamicModel::render(UINT uLod)
 {
-	if(!m_pDevice || !m_isEnabled)
+	if(!m_pDevice || !m_isEnabled || !m_pWorldBuffer)
 	{
 		return;
 	}
@@ -185,4 +201,9 @@ void XMETHODCALLTYPE CDynamicModel::render(UINT uLod)
 	m_pDevice->setVertexShaderConstant(m_pWorldBuffer, 1 /* SCR_OBJECT */);
 
 	m_pShared->render(m_uSkin, uLod, m_vColor);
+}
+
+CDynamicModelShared* CDynamicModel::getShared()
+{
+	return(m_pShared);
 }

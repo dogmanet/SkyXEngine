@@ -460,27 +460,7 @@ int main(int argc, char **argv)
 			ComboBox_Enable(g_hComboTypesWnd, FALSE);
 		}
 	}
-
-	Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID)->addListener([](const XEventLevelProgress *pData)
-	{
-		switch(pData->type)
-		{
-		case XEventLevelProgress::TYPE_PROGRESS_END:
-			if(pData->idPlugin == -1)
-			{
-				for(UINT ic = 0, il = g_pEditableSystems.size(); ic < il; ++ic)
-				{
-					IXEditable *pEditable = g_pEditableSystems[ic];
-					for(ID i = 0, l = pEditable->getObjectCount(); i < l; ++i)
-					{
-						g_pLevelObjects.push_back(pEditable->getObject(i));
-					}
-				}
-			}
-			break;
-		}
-	});
-
+	
 	Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->addListener([](const XEventLevel *pData)
 	{
 		switch(pData->type)
@@ -641,6 +621,17 @@ int main(int argc, char **argv)
 
 				pCfg->save();
 				mem_release(pCfg);
+			}
+			break;
+
+		case XEventLevel::TYPE_LOAD_END:
+			for(UINT ic = 0, il = g_pEditableSystems.size(); ic < il; ++ic)
+			{
+				IXEditable *pEditable = g_pEditableSystems[ic];
+				for(ID i = 0, l = pEditable->getObjectCount(); i < l; ++i)
+				{
+					g_pLevelObjects.push_back(pEditable->getObject(i));
+				}
 			}
 			break;
 		}

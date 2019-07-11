@@ -7,6 +7,7 @@
 #include <xcommon/IXCore.h>
 #include <mtrl/IXMaterialSystem.h>
 #include "RenderableVisibility.h"
+#include <common/ConcurrentQueue.h>
 
 class CDynamicModelProvider: public IXDynamicModelProvider
 {
@@ -18,8 +19,9 @@ public:
 
 	void onSharedModelRelease(CDynamicModelShared *pShared);
 	void onModelRelease(CDynamicModel *pModel);
-	IXMaterialSystem *getMaterialSystem();
-	IGXContext *getDevice();
+	IXMaterialSystem* getMaterialSystem();
+	IGXContext* getDevice();
+	IXCore* getCore();
 	void setDevice(IGXContext *pContext);
 	IGXVertexDeclaration *getVertexDeclaration();
 
@@ -27,6 +29,11 @@ public:
 	void computeVisibility(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference=NULL);
 
 	void getLevelSize(const XEventLevelSize *pData);
+
+	void update();
+
+	void scheduleSharedGPUinit(CDynamicModelShared *pShared);
+	void scheduleModelGPUinit(CDynamicModel *pModel);
 
 protected:
 	AssotiativeArray<IXResourceModel*, CDynamicModelShared*> m_mModels;
@@ -37,6 +44,9 @@ protected:
 
 	IXCore *m_pCore;
 	IGXContext *m_pRenderContext = NULL;
+
+	CConcurrentQueue<CDynamicModelShared*> m_queueGPUinitShared;
+	CConcurrentQueue<CDynamicModel*> m_queueGPUinitModel;
 };
 
 #endif

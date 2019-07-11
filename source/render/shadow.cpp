@@ -391,6 +391,11 @@ void CShadowCubeMap::setLight(IXLight *pLight)
 void CShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 {
 	assert(m_pLight && m_pLight->getType() == LIGHT_TYPE_POINT);
+	if(!m_pDevice)
+	{
+		return;
+	}
+
 	IXLightPoint *pPointLight = m_pLight->asPoint();
 
 	float3 vPos = pPointLight->getPosition();

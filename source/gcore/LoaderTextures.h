@@ -11,8 +11,8 @@ See the license in LICENSE
 #include <graphix/graphix.h>
 #include <common/array.h>
 #include <common/String.h>
-#include <common/file_utils.h>
 #include "sxgcore.h"
+#include <common/ConcurrentQueue.h>
 
 void LibReport(int iLevel, const char *szFormat, ...);
 extern IGXContext *g_pDevice;
@@ -56,12 +56,10 @@ public:
 
 	//! получить текстуру по id
 	IGXTexture2D* getTexture2d(ID id);
+	void setTexture2d(ID id, IGXTexture2D *pTexture);
 
 	//! получить текстуру по id
 	IGXTextureCube* getTextureCube(ID id);
-
-	//! загрузить все текстуры из директории szDir (относительно директории текстур) и присвоить им статус константные
-	bool addConstAllInDir(const char *szDir);
 
 private:
 
@@ -124,13 +122,13 @@ private:
 	//! массив путей с текстурами
 	Array<CPath*> m_aPathes;
 
-	int CurrFirstFree;
+	int CurrFirstFree = 0;
 
 	//! массив текстур, ключ == идентификатор
 	Array<CTexture*> m_aTextures;
 
 	//! массив id текстур на загрузку
-	Array<ID> m_aQueueToLoadIDs;
+	CConcurrentQueue<ID> m_aQueueToLoadIDs;
 
 	//**********************************************************************
 

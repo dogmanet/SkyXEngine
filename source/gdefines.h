@@ -151,6 +151,8 @@ struct IBaseObject
 #endif
 
 #include <common/types.h>
+#include <atomic>
+#include <mutex>
 
 #define XMETHODCALLTYPE __stdcall
 

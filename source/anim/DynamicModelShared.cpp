@@ -6,7 +6,8 @@ CDynamicModelShared::CDynamicModelShared(CDynamicModelProvider *pProvider):
 	m_pProvider(pProvider),
 	m_pDevice(pProvider->getDevice()),
 	m_pMaterialSystem(pProvider->getMaterialSystem())
-{}
+{
+}
 CDynamicModelShared::~CDynamicModelShared()
 {
 	m_pProvider->onSharedModelRelease(this);
@@ -34,6 +35,19 @@ CDynamicModelShared::~CDynamicModelShared()
 	}
 	
 	mem_release(m_pResource);
+
+	if(m_ppTempIndices)
+	{
+		for(UINT i = 0, l = m_aLods.size(); i < l; ++i)
+		{
+			mem_delete_a(m_ppTempIndices[i]);
+			mem_delete_a(m_ppTempVertices[i]);
+		}
+		mem_delete_a(m_ppTempIndices);
+		mem_delete_a(m_ppTempVertices);
+		mem_delete_a(m_puTempTotalIndices);
+		mem_delete_a(m_puTempTotalVertices);
+	}
 }
 void CDynamicModelShared::AddRef()
 {
@@ -100,7 +114,13 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 			m_ppRenderBuffer = new IGXRenderBuffer*[uLodCount];
 			m_ppIndexBuffer = new IGXIndexBuffer*[uLodCount];
 
-
+			if(!m_pProvider->getCore()->isOnMainThread())
+			{
+				m_ppTempIndices = new UINT*[uLodCount];
+				m_ppTempVertices = new XResourceModelStaticVertex*[uLodCount];
+				m_puTempTotalIndices = new UINT[uLodCount];
+				m_puTempTotalVertices = new UINT[uLodCount];
+			}
 
 			bool isMinMaxSet = false;
 			float3 vLocalMin, vLocalMax;
@@ -160,19 +180,35 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 					}
 				}
 
-				m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer(sizeof(UINT) * uTotalIndices, GXBUFFER_USAGE_STATIC, GXIT_UINT32, pIndices);
-				IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelStaticVertex) * uTotalVertices, GXBUFFER_USAGE_STATIC, pVertices);
-				m_ppRenderBuffer[i] = m_pDevice->createRenderBuffer(1, &pVertexBuffer, m_pProvider->getVertexDeclaration());
-				mem_release(pVertexBuffer);
+				if(m_pProvider->getCore()->isOnMainThread())
+				{
+					m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer(sizeof(UINT) * uTotalIndices, GXBUFFER_USAGE_STATIC, GXIT_UINT32, pIndices);
+					IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelStaticVertex) * uTotalVertices, GXBUFFER_USAGE_STATIC, pVertices);
+					m_ppRenderBuffer[i] = m_pDevice->createRenderBuffer(1, &pVertexBuffer, m_pProvider->getVertexDeclaration());
+					mem_release(pVertexBuffer);
 
-				mem_delete_a(pIndices);
-				mem_delete_a(pVertices);
+					mem_delete_a(pIndices);
+					mem_delete_a(pVertices);
+				}
+				else
+				{
+					m_ppIndexBuffer[i] = NULL;
+					m_ppRenderBuffer[i] = NULL;
+
+					m_ppTempIndices[i] = pIndices;
+					m_ppTempVertices[i] = pVertices;
+					m_puTempTotalIndices[i] = uTotalIndices;
+					m_puTempTotalVertices[i] = uTotalVertices;
+
+					m_pProvider->scheduleSharedGPUinit(this);
+				}
+
 			}
 
 			m_vLocalMin = vLocalMin;
 			m_vLocalMax = vLocalMax;
 
-			printf("Min: %.2f, %.2f, %.2f; Max: %.2f, %.2f, %.2f\n", m_vLocalMin.x, m_vLocalMin.y, m_vLocalMin.z, m_vLocalMax.x, m_vLocalMax.y, m_vLocalMax.z);
+			//printf("Min: %.2f, %.2f, %.2f; Max: %.2f, %.2f, %.2f\n", m_vLocalMin.x, m_vLocalMin.y, m_vLocalMin.z, m_vLocalMax.x, m_vLocalMax.y, m_vLocalMax.z);
 		}
 
 	}
@@ -183,6 +219,30 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 	}
 	
 	return(true);
+}
+
+void CDynamicModelShared::initGPUresources()
+{
+	if(!m_ppTempIndices)
+	{
+		return;
+	}
+	assert(m_pProvider->getCore()->isOnMainThread());
+
+	for(UINT i = 0, l = m_aLods.size(); i < l; ++i)
+	{
+		m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer(sizeof(UINT) * m_puTempTotalIndices[i], GXBUFFER_USAGE_STATIC, GXIT_UINT32, m_ppTempIndices[i]);
+		IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelStaticVertex) * m_puTempTotalVertices[i], GXBUFFER_USAGE_STATIC, m_ppTempVertices[i]);
+		m_ppRenderBuffer[i] = m_pDevice->createRenderBuffer(1, &pVertexBuffer, m_pProvider->getVertexDeclaration());
+		mem_release(pVertexBuffer);
+
+		mem_delete_a(m_ppTempIndices[i]);
+		mem_delete_a(m_ppTempVertices[i]);
+	}
+	mem_delete_a(m_ppTempIndices);
+	mem_delete_a(m_ppTempVertices);
+	mem_delete_a(m_puTempTotalIndices);
+	mem_delete_a(m_puTempTotalVertices);
 }
 
 IXResourceModelStatic *CDynamicModelShared::getResource()
@@ -225,6 +285,11 @@ void CDynamicModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor)
 	}
 
 	if(uLod >= m_aLods.size())
+	{
+		return;
+	}
+
+	if(!m_ppIndexBuffer[uLod] || !m_ppRenderBuffer[uLod])
 	{
 		return;
 	}

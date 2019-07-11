@@ -103,7 +103,7 @@ void CPlayer::updateInput(float dt)
 
 		//float dx = (float)x * *sense * 10.0f /* / dt */;
 		//float dy = (float)y * *sense * 10.0f /* / dt */;
-		float fCoeff = SMToRadian(0.022) * *sense;
+		float fCoeff = SMToRadian(0.022f) * *sense;
 		float dx = (float)x * fCoeff /* / dt */;
 		float dy = (float)y * fCoeff /* / dt */;
 		if(*invert_y)

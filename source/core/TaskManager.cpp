@@ -492,7 +492,7 @@ public:
 	}
 };
 
-ID Core_MGetThreadID()
+SX_LIB_API ID Core_MGetThreadID()
 {
 	static CThreadsafeCounter s_threadCounter;
 

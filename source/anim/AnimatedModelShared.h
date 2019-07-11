@@ -61,12 +61,19 @@ public:
 
 	void render(UINT uSkin, UINT uLod, const float4_t &vColor);
 
+	void initGPUresources();
+
 protected:
 	UINT m_uRefCount = 0;
 	Array<IXResourceModelAnimated*> m_apResources;
 
 	IGXRenderBuffer **m_ppRenderBuffer = NULL;
 	IGXIndexBuffer **m_ppIndexBuffer = NULL;
+
+	UINT **m_ppTempIndices = NULL;
+	XResourceModelAnimatedVertex **m_ppTempVertices = NULL;
+	UINT *m_puTempTotalIndices = 0;
+	UINT *m_puTempTotalVertices = 0;
 
 	CAnimatedModelProvider *m_pProvider;
 	IGXContext *m_pDevice;

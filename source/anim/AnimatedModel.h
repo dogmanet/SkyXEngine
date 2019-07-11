@@ -84,6 +84,8 @@ public:
 
 	void XMETHODCALLTYPE render(UINT uLod) override;
 	void sync();
+
+	void initGPUresources();
 protected:
 	CAnimatedModelProvider *m_pProvider;
 	CAnimatedModelShared *m_pShared;
@@ -110,6 +112,7 @@ protected:
 		SX_ALIGNED_OP_MEM2();
 	};
 
+	ModelBoneShader *m_pBonesBlob = NULL;
 	ModelBoneShader *m_pRenderFrameBones = NULL; //! Используются в текущем кадре }
 	ModelBoneShader *m_pNextFrameBones = NULL; //! Рассчет на следующий кадр      } -- переключаются каждый кадр
 	
