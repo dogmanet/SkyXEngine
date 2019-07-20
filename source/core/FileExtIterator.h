@@ -3,12 +3,10 @@
 
 #include "FileSystem.h"
 
-#define INVALID_OR_NULL(handle) handle == nullptr || handle == INVALID_HANDLE_VALUE
-
 class CFileExtIterator final : public IFileSystem::IFileIterator
 {
 private:
-    String m_sPath;
+    String m_szPath;
     String m_pathStr;
 
     const char *m_szExt;
