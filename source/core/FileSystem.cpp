@@ -345,7 +345,14 @@ IFileSystem::IFileIterator *CFileSystem::getFolderList(const char *szPath)
 
 IFileSystem::IFileIterator *CFileSystem::getFileList(const char *szPath, const char *szExt)
 {
-    return new CFileExtIterator(szPath, szExt);
+    if (isAbsolutePath(szPath))
+    {
+        return new CFileExtIterator(szPath, szExt);
+    }
+    
+    Array<String>* paths = getAllvariantsCanonizePath(szPath);
+
+    return paths ? new CFileExtrPathsIterator(paths, szExt) : nullptr;
 }
 
 IFileSystem::IFileIterator *CFileSystem::getFileList(const char *szPath, const char **szExts, int extsCount)

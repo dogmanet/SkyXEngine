@@ -3,8 +3,6 @@
 
 #include "FileSystem.h"
 
-#define INVALID_OR_NULL(handle) handle == nullptr || handle == INVALID_HANDLE_VALUE
-
 class CFileExtsIterator final : public IFileSystem::IFileIterator
 {
 private:

@@ -79,11 +79,11 @@
     <ClCompile Include="..\..\..\source\core\FileInMemory.cpp">
       <Filter>Source\FileSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\core\DirIterator.cpp">
-      <Filter>Source\FileSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\core\AsyncTaskRunner.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\FIleExtPathsIterator.cpp">
+      <Filter>Source\FileSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -233,9 +233,6 @@
     <ClInclude Include="..\..\..\source\core\FileInMemory.h">
       <Filter>Header\FileSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\core\DirIterator.h">
-      <Filter>Header\FileSystem</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\core\FileSystem.h">
       <Filter>Header\FileSystem</Filter>
     </ClInclude>
@@ -244,6 +241,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\AsyncTaskRunner.h">
       <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\FileExtPathsIterator.h">
+      <Filter>Header\FileSystem</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

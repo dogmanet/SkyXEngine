@@ -160,7 +160,6 @@ int main(int argc, char **argv)
 
 	printf(COLOR_LRED "################# FILESYTEM TEST ##################\n");
 
-
 	IFile *pFile = pFS->openFile("dir/test.txt", FILE_MODE_READ);
 	if(pFile)
 	{
@@ -173,6 +172,13 @@ int main(int argc, char **argv)
 	{
 		printf("Unable to open file!\n");
 	}
+
+    IFileSystem::IFileIterator *it = pFS->getFileList("dir/dir1");
+
+    while (const char *file = it->next())
+    {
+        printf("%s \n", file);
+    }
 
 	printf("###################################################\n" COLOR_RESET);
 
