@@ -1,3 +1,8 @@
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, Ivan Dokunov, 2019
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __FILESYSTEM_H
 #define __FILESYSTEM_H
 
@@ -76,10 +81,12 @@ public:
      IFile *openFile(const char *szPath, FILE_OPEN_MODE) override;
 
 private:
-    //Возвращает превращает канонизированный путь в неканонизированный
+    Array<String>* getAllvariantsCanonizePath(const char *szPath);
+
+    //!Превращает канонизированный путь в неканонизированный
     char *getNormalPath(const char *szPath);
 
-    //Сравнивает пути с корнем, и возвращает true если путь - абсолютный и в корне
+    //!Сравнивает пути с корнем, и возвращает true если путь - абсолютный и в корне
     bool isAbsoletePathInRoot(const char *szPath);
 
     //! Возвращает абсолютный канонизированный путь
@@ -98,11 +105,11 @@ private:
 
     String *copyFile(const char* szPath);
 
-    //корневые пути и приоритет
+    //!корневые пути и приоритет
     Array<String> m_filePaths;
     Array<int> m_priority;
 
-    //Полный путь к build
+    //!Полный путь к build
     String m_pathToBuild;
 
     //!Наш текущий ID корневого пути для записи

@@ -1,9 +1,36 @@
 #include "FileSystem.h"
 #include "FileExtIterator.h"
 #include "FileExtsIterator.h"
+#include "FileExtPathsIterator.h"
 #include "File.h"
 #include <shellapi.h>
 #include <ShlObj.h>
+
+Array<String>* CFileSystem::getAllvariantsCanonizePath(const char *szPath)
+{
+    Array<String>* paths = new Array<String>();
+
+    for (int i = 0, I = m_filePaths.size(); i < I; ++i)
+    {
+        String buff = m_filePaths[i];
+        buff += '/';
+        buff += szPath;
+        buff += '/'; // <- оптимизация buffObj
+
+        if (isDirectory(buff.c_str()))
+        {
+            paths->push_back(buff);
+        }
+    }
+
+    //Если путей нет - тогда очищаем за собой массив и возвращаем nullptr
+    if (!paths->size())
+    {
+        mem_delete(paths);
+    }
+
+    return paths;
+}
 
 char *CFileSystem::getNormalPath(const char *szPath)
 {
@@ -81,7 +108,6 @@ char *CFileSystem::getFullPathToBuild()
 char *CFileSystem::getFileName(const char *name)
 {
     WIN32_FIND_DATAA wfd;
-
     HANDLE hFind = FindFirstFile(name, &wfd);
 
     FIND_CLOSE(hFind);
@@ -274,7 +300,7 @@ bool CFileSystem::isFile(const char *szPath)
     mem_delete_a(path);
 
 	//Если не существует или указанный путь ведет не к файлу
-    return !(flag & FILE_ATTRIBUTE_DIRECTORY);
+    return (flag != INVALID_FILE_ATTRIBUTES) && !(flag & FILE_ATTRIBUTE_DIRECTORY);
 }
 
 bool CFileSystem::isDirectory(const char *szPath)
@@ -291,7 +317,7 @@ bool CFileSystem::isDirectory(const char *szPath)
     mem_delete_a(path);
 
 	//Если не существует или указанный путь ведет не к каталогу
-	return flag & FILE_ATTRIBUTE_DIRECTORY;
+	return (flag != INVALID_FILE_ATTRIBUTES) && (flag & FILE_ATTRIBUTE_DIRECTORY);
 }
 
 time_t CFileSystem::getFileModifyTime(const char *szPath)

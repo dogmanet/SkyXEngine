@@ -15,6 +15,8 @@
 
 #define FILE_NOT_FOUND ((size_t)-1)
 
+#define INVALID_OR_NULL(handle) handle == nullptr || handle == INVALID_HANDLE_VALUE
+
 //! типы списков для #getFileList
 enum FILE_TYPE
 {
