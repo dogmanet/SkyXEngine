@@ -6,6 +6,23 @@
 #include <shellapi.h>
 #include <ShlObj.h>
 
+bool CFileSystem::isFileOrDirectory(const char *szPath, bool isFile)
+{
+    char* path = getAbsoliteCanonizePath(szPath);
+
+    if (!path)
+    {
+        return false;
+    }
+
+    DWORD flag = GetFileAttributes(path);
+
+    mem_delete_a(path);
+
+    //Проверка на то куда имено ведет путь - к файлу или папке
+    return (flag != INVALID_FILE_ATTRIBUTES) && (isFile ? !(flag & FILE_ATTRIBUTE_DIRECTORY) : (flag & FILE_ATTRIBUTE_DIRECTORY));
+}
+
 Array<String>* CFileSystem::getAllvariantsCanonizePath(const char *szPath)
 {
     Array<String>* paths = new Array<String>();
@@ -288,36 +305,12 @@ size_t CFileSystem::fileGetSize(const char *szPath)
 
 bool CFileSystem::isFile(const char *szPath)
 {
-    char* path = getAbsoliteCanonizePath(szPath);
-
-    if (!path)
-    {
-        return false;
-    }
-
-    DWORD flag = GetFileAttributes(path);
-
-    mem_delete_a(path);
-
-	//Если не существует или указанный путь ведет не к файлу
-    return (flag != INVALID_FILE_ATTRIBUTES) && !(flag & FILE_ATTRIBUTE_DIRECTORY);
+    return isFileOrDirectory(szPath, true);
 }
 
 bool CFileSystem::isDirectory(const char *szPath)
 {
-    char* path = getAbsoliteCanonizePath(szPath);
-
-    if (!path)
-    {
-        return false;
-    }
-
-    DWORD flag = GetFileAttributes(path);
-
-    mem_delete_a(path);
-
-	//Если не существует или указанный путь ведет не к каталогу
-	return (flag != INVALID_FILE_ATTRIBUTES) && (flag & FILE_ATTRIBUTE_DIRECTORY);
+    return isFileOrDirectory(szPath, false);
 }
 
 time_t CFileSystem::getFileModifyTime(const char *szPath)

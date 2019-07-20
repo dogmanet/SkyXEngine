@@ -81,6 +81,9 @@ public:
      IFile *openFile(const char *szPath, FILE_OPEN_MODE) override;
 
 private:
+    //! Метод делает проверку, ведет ли путь к файлу или папке
+    bool isFileOrDirectory(const char *szPath, bool isFile);
+
     Array<String>* getAllvariantsCanonizePath(const char *szPath);
 
     //!Превращает канонизированный путь в неканонизированный

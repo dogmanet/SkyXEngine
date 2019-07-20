@@ -1,3 +1,8 @@
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, Ivan Dokunov, 2019
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __FILE_EXT_ITERATOR_H
 #define __FILE_EXT_ITERATOR_H
 
