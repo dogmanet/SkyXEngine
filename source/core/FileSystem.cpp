@@ -8,7 +8,7 @@
 
 bool CFileSystem::isFileOrDirectory(const char *szPath, bool isFile)
 {
-    char* path = getAbsoliteCanonizePath(szPath);
+    char* path = getAbsoluteCanonizePath(szPath);
 
     if (!path)
     {
@@ -66,7 +66,7 @@ char *CFileSystem::getNormalPath(const char *szPath)
     return rp;
 }
 
-bool CFileSystem::isAbsoletePathInRoot(const char *szPath)
+bool CFileSystem::isAbsolutePathInRoot(const char *szPath)
 {
     if (!isAbsolutePath(szPath))
     {
@@ -80,7 +80,7 @@ bool CFileSystem::isAbsoletePathInRoot(const char *szPath)
     return pos != nullptr;
 }
 
-char *CFileSystem::getAbsoliteCanonizePath(const char *szPath)
+char *CFileSystem::getAbsoluteCanonizePath(const char *szPath)
 {
     bool absolute = isAbsolutePath(szPath);
     bool correctPath = true;
@@ -268,7 +268,7 @@ bool CFileSystem::resolvePath(const char *szPath, char *szOut, int iOutMax)
 
 bool CFileSystem::fileExists(const char *szPath)
 {
-    char* path = getAbsoliteCanonizePath(szPath);
+    char* path = getAbsoluteCanonizePath(szPath);
 
     if (!path)
     {
@@ -281,7 +281,7 @@ bool CFileSystem::fileExists(const char *szPath)
 
 size_t CFileSystem::fileGetSize(const char *szPath)
 {
-    char* path = getAbsoliteCanonizePath(szPath);
+    char* path = getAbsoluteCanonizePath(szPath);
 
     if (!path)
     {
@@ -315,7 +315,7 @@ bool CFileSystem::isDirectory(const char *szPath)
 
 time_t CFileSystem::getFileModifyTime(const char *szPath)
 {
-    char* path = getAbsoliteCanonizePath(szPath);
+    char* path = getAbsoluteCanonizePath(szPath);
 
     if (!path)
     {
@@ -405,7 +405,7 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
         return nullptr;
     }
 
-    char *fullPath = getAbsoliteCanonizePath(szPath);
+    char *fullPath = getAbsoluteCanonizePath(szPath);
 
     //Если по каким либо причинам нельзя вернуть полный путь - на выход
     if (!fullPath && mode == FILE_MODE_READ)
@@ -435,12 +435,12 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
         *newFileName += '/';
         *newFileName += szPath;
 
-        fullPath = getAbsoliteCanonizePath(newFileName->c_str());
+        fullPath = getAbsoluteCanonizePath(newFileName->c_str());
 
         mem_delete(newFileName);
     }
 
-    bool inRoot = isAbsoletePathInRoot(fullPath);
+    bool inRoot = isAbsolutePathInRoot(fullPath);
 
     //Если путь в корне, и файла не существует - создаем его
     if (inRoot && !fileExists(fullPath))

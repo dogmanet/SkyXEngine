@@ -90,10 +90,10 @@ private:
     char *getNormalPath(const char *szPath);
 
     //!Сравнивает пути с корнем, и возвращает true если путь - абсолютный и в корне
-    bool isAbsoletePathInRoot(const char *szPath);
+    bool isAbsolutePathInRoot(const char *szPath);
 
     //! Возвращает абсолютный канонизированный путь
-    char *getAbsoliteCanonizePath(const char *szPath);
+    char *getAbsoluteCanonizePath(const char *szPath);
 
     char *getFullPathToBuild();
 
