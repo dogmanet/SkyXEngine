@@ -28,7 +28,7 @@ const char *CFileExtrPathsIterator::next()
                 m_handle = hf;
 
                 //По стандарту FindNextFile находит .. (корневую директорию)
-                if (!strcmp(FindFileData.cFileName, ".."))
+                if (!strcmp(FindFileData.cFileName, "..") || !strcmp(FindFileData.cFileName, "."))
                 {
                     continue;
                 }

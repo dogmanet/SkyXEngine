@@ -11,7 +11,7 @@ See the license in LICENSE
 class CFileExtIterator final : public IFileSystem::IFileIterator
 {
 private:
-    String m_szPath;
+    String m_sPath;
     String m_pathStr;
 
     const char *m_szExt;
