@@ -12,8 +12,6 @@ See the license in LICENSE
 #include <gcore/camera.h>
 #include <gcore/oc.h>
 
-#include <gcore/sky.h>
-
 #include <gcore/gcore_utils.h>
 #include <gcore/gcore_data.h>
 
@@ -38,8 +36,6 @@ IGXVertexDeclaration *g_pStaticVertexDecl = 0;
 CShaderManager *g_pManagerShaders = 0;
 CLoaderTextures *g_pManagerTextures = 0;
 IGXRenderBuffer *g_pScreenTextureRB = 0;
-CSkyBox *g_pSkyBox = 0;
-CSkyClouds *g_pSkyClouds = 0;
 COcclusionCulling *g_pOC = 0;
 IGXBlendState *g_pToneMappingBS = NULL;
 IGXSamplerState *g_pSamplerFilterPoint = NULL;
@@ -92,8 +88,6 @@ g_func_mtl_group_render_is_singly g_fnMtlGroupRenderIsSingly = StdMtlGroupIsSyng
 //##########################################################################
 
 #define SG_PRECOND(retval) if(!g_pDevice){ LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxgcore is not init", GEN_MSG_LOCATION); return retval;}
-#define SG_PRECOND_SKY_BOX(retval) SG_PRECOND(retval _VOID); if(!g_pSkyBox){ LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sky_box is not init", GEN_MSG_LOCATION); return retval;}
-#define SG_PRECOND_SKY_CLOUDS(retval) SG_PRECOND(retval _VOID); if(!g_pSkyClouds){ LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sky_clouds is not init", GEN_MSG_LOCATION); return retval;}
 #define SG_PRECOND_SKY_OC(retval) SG_PRECOND(retval _VOID); if(!g_pOC){ LibReport(REPORT_MSG_LEVEL_ERROR, "%s - occlusion culling is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
@@ -125,6 +119,8 @@ void GCoreInit(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 	InitArrModes();
 	InitRT4Gbuffer();
 	LoadShaders();
+
+	Core_0RegisterConcmd("shader_reload", SGCore_ShaderReloadAll);
 }
 
 //##########################################################################
@@ -193,8 +189,6 @@ SX_LIB_API void SGCore_AKill()
 	mem_delete(g_pManagerTextures);
 
 	mem_release(g_pScreenTextureRB);
-	mem_delete(g_pSkyBox);
-	mem_delete(g_pSkyClouds);
 
 	mem_release(g_pSamplerFilterLinear);
 	mem_release(g_pSamplerFilterPoint);
@@ -674,207 +668,6 @@ SX_LIB_API ITransObject* SGCore_CrTransObject()
 SX_LIB_API ISXBound* SGCore_CrBound()
 {
 	return new CBound();
-}
-
-
-//##########################################################################
-
-SX_LIB_API void SGCore_SkyBoxCr()
-{
-	SG_PRECOND(_VOID);
-
-	if (g_pSkyBox)
-		LibReport(REPORT_MSG_LEVEL_WARNING, "sky_box is already init\n");
-	else
-		g_pSkyBox = new CSkyBox();
-}
-
-SX_LIB_API bool SGCore_SkyBoxIsCr()
-{
-	SG_PRECOND(false);
-	return (g_pSkyBox != 0);
-}
-
-SX_LIB_API bool SGCore_SkyBoxGetUse()
-{
-	SG_PRECOND(false);
-	return g_pSkyBox->getUse();
-}
-
-SX_LIB_API void SGCore_SkyBoxSetUse(bool isUse)
-{
-	SG_PRECOND(_VOID);
-	g_pSkyBox->setUse(isUse);
-}
-
-SX_LIB_API bool SGCore_SkyBoxIsLoadTex()
-{
-	SG_PRECOND_SKY_BOX(false);
-	return g_pSkyBox->isLoadTex();
-}
-
-SX_LIB_API void SGCore_SkyBoxLoadTex(const char *texture)
-{
-	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->loadTexture(texture);
-}
-
-SX_LIB_API void SGCore_SkyBoxChangeTex(const char *texture)
-{
-	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->changeTexture(texture);
-}
-
-SX_LIB_API void SGCore_SkyBoxGetActiveTex(char *texture)
-{
-	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->getActiveTexture(texture);
-}
-
-SX_LIB_API void SGCore_SkyBoxGetSecondTex(char *texture)
-{
-	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->getSecondTexture(texture);
-}
-
-SX_LIB_API void SGCore_SkyBoxSetRot(float angle)
-{
-	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->setRotation(angle);
-}
-
-SX_LIB_API float SGCore_SkyBoxGetRot()
-{
-	SG_PRECOND_SKY_BOX(0);
-	return g_pSkyBox->getRotation();
-}
-
-SX_LIB_API void SGCore_SkyBoxSetColor(const float4_t* color)
-{
-	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->setColor(color);
-}
-
-SX_LIB_API void SGCore_SkyBoxGetColor(float4_t* color)
-{
-	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->getColor(color);
-}
-
-SX_LIB_API void SGCore_SkyBoxRender(float timeDelta, const float3* pos)
-{
-	SG_PRECOND_SKY_BOX(_VOID);
-	g_pSkyBox->render(timeDelta, pos, false);
-}
-
-//**************************************************************************
-
-SX_LIB_API void SGCore_SkyCloudsCr()
-{
-	SG_PRECOND(_VOID);
-
-	if (g_pSkyClouds)
-		LibReport(REPORT_MSG_LEVEL_WARNING, "sky_clouds is already init\n");
-	else
-		g_pSkyClouds = new CSkyClouds();
-}
-
-SX_LIB_API bool SGCore_SkyCloudsIsCr()
-{
-	SG_PRECOND(false);
-
-	return (g_pSkyClouds != 0);
-}
-
-SX_LIB_API bool SGCore_SkyCloudsGetUse()
-{
-	SG_PRECOND(false);
-	return g_pSkyClouds->getUse();
-}
-
-SX_LIB_API void SGCore_SkyCloudsSetUse(bool isUse)
-{
-	SG_PRECOND(_VOID);
-	g_pSkyClouds->setUse(isUse);
-}
-
-SX_LIB_API bool SGCore_SkyCloudsIsLoadTex()
-{
-	SG_PRECOND_SKY_CLOUDS(false);
-
-	return g_pSkyClouds->isLoadTex();
-}
-
-SX_LIB_API void SGCore_SkyCloudsSetWidthHeightPos(float width, float height, const float3* pos)
-{
-	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->setWidthHeightPos(width, height, pos);
-}
-
-SX_LIB_API void SGCore_SkyCloudsLoadTex(const char *texture)
-{
-	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->loadTexture(texture);
-}
-
-SX_LIB_API void SGCore_SkyCloudsChangeTex(const char *texture)
-{
-	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->changeTexture(texture);
-}
-
-SX_LIB_API void SGCore_SkyCloudsSetRot(float angle)
-{
-	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->setRotation(angle);
-}
-
-SX_LIB_API float SGCore_SkyCloudsGetRot()
-{
-	SG_PRECOND_SKY_CLOUDS(0);
-	return g_pSkyClouds->getRotation();
-}
-
-SX_LIB_API void SGCore_SkyCloudsSetAlpha(float alpha)
-{
-	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->setAlpha(alpha);
-}
-
-SX_LIB_API float SGCore_SkyCloudsGetAlpha()
-{
-	SG_PRECOND_SKY_CLOUDS(0);
-	return g_pSkyClouds->getAlpha();
-}
-
-SX_LIB_API void SGCore_SkyCloudsSetSpeed(float speed)
-{
-	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->setSpeed(speed);
-}
-
-SX_LIB_API float SGCore_SkyCloudsGetSpeed()
-{
-	SG_PRECOND_SKY_CLOUDS(0);
-	return g_pSkyClouds->getSpeed();
-}
-
-SX_LIB_API void SGCore_SkyCloudsSetColor(const float4_t* color)
-{
-	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->setColor(color);
-}
-
-SX_LIB_API void SGCore_SkyCloudsGetColor(float4_t* color)
-{
-	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->getColor(color);
-}
-
-SX_LIB_API void SGCore_SkyCloudsRender(DWORD timeDetlta, const float3* pos, bool is_shadow)
-{
-	SG_PRECOND_SKY_CLOUDS(_VOID);
-	g_pSkyClouds->render(timeDetlta, pos, is_shadow);
 }
 
 //##########################################################################

@@ -259,6 +259,7 @@ protected:
 	bool m_isCastGlobalShadow;
 };
 
+
 class CLightSystem;
 class CXLight: public virtual IXLight
 {
@@ -292,9 +293,18 @@ public:
 
 	float getMaxDistance();
 
+	virtual void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax);
+	IXRenderableVisibility *getVisibility() override;
+	LIGHT_RENDER_TYPE getRenderType() override
+	{
+		return(m_renderType);
+	}
 protected:
 	virtual SMMATRIX getWorldTM();
 	virtual void updatePSConstants(IGXContext *pDevice) = 0;
+	virtual void updateFrustum()
+	{
+	}
 
 	CLightSystem *m_pLightSystem = NULL;
 
@@ -317,6 +327,11 @@ protected:
 	IGXConstantBuffer *m_pVSData = NULL;
 	bool m_isPSDataDirty = true;
 	IGXConstantBuffer *m_pPSData = NULL;
+
+
+	IFrustum *m_pFrustum = NULL;
+	IXRenderableVisibility *m_pVisibility = NULL;
+	LIGHT_RENDER_TYPE m_renderType = LRT_NONE;
 };
 
 #pragma warning(push)
@@ -328,6 +343,10 @@ public:
 	CXLightPoint(CLightSystem *pLightSystem);
 
 	void XMETHODCALLTYPE Release();
+
+	void updateFrustum() override;
+
+	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax) override;
 
 protected:
 	void updatePSConstants(IGXContext *pDevice);
@@ -369,8 +388,11 @@ public:
 	void setDirection(const SMQuaternion &qDirection);
 
 	SMMATRIX getWorldTM();
+
+	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax) override;
 protected:
 	void updatePSConstants(IGXContext *pDevice);
+	void updateFrustum() override;
 
 	struct _spot_light_data_ps
 	{

@@ -1,0 +1,43 @@
+
+/*
+sky_clouds.ps
+Рендер облаков (квадрат с натянутой текстурой облаков)
+*/
+
+#include <../struct.h>
+
+//##########################################################################
+
+sampler2D g_sCurrent: register(s0);
+sampler2D g_sNext: register(s1);
+
+//##########################################################################
+
+half2 g_vBlendFactorBias;
+half4 g_vColor;
+half g_fAlpha;
+
+//##########################################################################
+
+half4 main(VSO_SkyClouds IN):COLOR0
+{
+	half fDist = 1.0 - distance(IN.vTexUV, half2(1.f,1.f));
+	IN.vTexUV.x += g_vBlendFactorBias.y;
+	
+	half4 vColor1 = tex2D(g_sCurrent, IN.vTexUV);
+	half4 vColor2 = tex2D(g_sNext, IN.vTexUV);
+	half4 vFinalColor = lerp(vColor1, vColor2, g_vBlendFactorBias.x);
+	fDist *= 1.f + fDist;
+	vFinalColor.a *= saturate(fDist);
+	
+	#ifndef SHADOW
+	vFinalColor.rgb = lerp(vFinalColor.rgb, g_vColor.rgb, g_vColor.a);
+	#endif
+	vFinalColor.a *= g_fAlpha;
+	
+	#ifdef SHADOW
+	return vFinalColor.a;
+	#else
+	return vFinalColor;
+	#endif
+}

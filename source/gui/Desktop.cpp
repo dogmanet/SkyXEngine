@@ -258,7 +258,7 @@ namespace gui
 				}
 				rc = pTarget->getRenderFrame()->getVisibleRect();
 			//	Config::TestRect = rc;
-				ShowCursor(TRUE);
+				bool bShow = true;
 				switch(pTarget->getStyle()->cursor->getInt())
 				{
 				case css::ICSSproperty::CURSOR_AUTO:
@@ -326,9 +326,10 @@ namespace gui
 					//IDC_HELP
 
 				case css::ICSSproperty::CURSOR_NONE:
-					ShowCursor(FALSE);
+					bShow = false;
 					break;
 				}
+				GetGUI()->showCursor(bShow);
 			}
 
 			switch(ev.type)

@@ -104,3 +104,14 @@ IMesh *CLightSystem::getShapeCone()
 	m_pShapeCone->AddRef();
 	return(m_pShapeCone);
 }
+
+void CLightSystem::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax)
+{
+	for(UINT i = 0, l = m_aLights.size(); i < l; ++i)
+	{
+		if(m_aLights[i]->isEnabled())
+		{
+			m_aLights[i]->updateVisibility(pMainCamera, vLPVmin, vLPVmax);
+		}
+	}
+}

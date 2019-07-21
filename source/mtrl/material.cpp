@@ -1905,8 +1905,19 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 	CMaterial *pMtrl = m_aUnitMtrls[id]->m_pMtrl;
 
 	//если есть то устанавливаем текстуру материала
-	if (ID_VALID(pMtrl->m_oMainGraphics.m_idMainTexture))
-		mtrl_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(pMtrl->m_oMainGraphics.m_idMainTexture), MTL_TEX_R_MAIN);
+	if(ID_VALID(pMtrl->m_oMainGraphics.m_idMainTexture))
+	{
+		auto pTex = SGCore_LoadTexGetTex(pMtrl->m_oMainGraphics.m_idMainTexture);
+		if(pTex)
+		{
+			mtrl_data::pDXDevice->setTexture(pTex, MTL_TEX_R_MAIN);
+		}
+		else
+		{
+			mtrl_data::pDXDevice->setTexture(SGCore_LoadTexGetTexCube(pMtrl->m_oMainGraphics.m_idMainTexture), MTL_TEX_R_MAIN);
+		}
+	}
+
 
 	//если нет отражени¤ то отправл¤ем 0
 	if (pMtrl->m_oLightParam.m_typeReflect == 0)

@@ -5,7 +5,7 @@ mtrl.h
 */
  
 //! матрица для трансформации координат текстуры отражения (над водой)
-static const half4x4  MatrixReflection =
+static const float4x4  MatrixReflection =
 {	0.5,	0,		0,		0, 
     0,		0.5,	0,		0, 
     0,		0,		0.5,	0, 
@@ -13,7 +13,7 @@ static const half4x4  MatrixReflection =
 };
 
 //! матрица для трансофрмации координат текстуры преломления (под водой)
-static const half4x4  MatrixRefraction =
+static const float4x4  MatrixRefraction =
 {	0.5,	0,		0,		0, 
     0,		-0.5,	0,		0, 
     0,		0,		0.5,	0, 
@@ -23,7 +23,7 @@ static const half4x4  MatrixRefraction =
 //##########################################################################
 
 //! отсечение пикселя по дистанции (при превышении)
-void ClipFar(half fZ, half fFar)
+void ClipFar(float fZ, float fFar)
 {
 	clip(fFar-fZ);
 }
@@ -31,16 +31,16 @@ void ClipFar(half fZ, half fFar)
 //##########################################################################
 
 //! просчет цвета линейной глубины [0,1] на основании текущей позиции и плоскостей отсечения! 
-half ComDepthByPos(half4 vPositionWVP, half2 vNearFar)
+float ComDepthByPos(float4 vPositionWVP, float2 vNearFar)
 {
 	return ((vPositionWVP.z + vNearFar.x)/vNearFar.y);
 }
 
 //! аналогично #ComDepthByPos, только возвращает вектор
-half4 ComDepthByPosVec4(half4 vPositionWVP, half2 vNearFar)
+float4 ComDepthByPosVec4(float4 vPositionWVP, float2 vNearFar)
 {
-	half fDepth = ComDepthByPos(vPositionWVP, vNearFar);
-	return half4(fDepth, fDepth, fDepth,1);
+	float fDepth = ComDepthByPos(vPositionWVP, vNearFar);
+	return float4(fDepth, fDepth, fDepth,1);
 }
 
 #define GetDepthW ComDepthByPosVec4
@@ -48,7 +48,7 @@ half4 ComDepthByPosVec4(half4 vPositionWVP, half2 vNearFar)
 //##########################################################################
 
 //! возвращает номер лода для для отражений, на основании шероховатости материала [0, 1]
-half GetTexLod4Ref(half fRoughness)
+float GetTexLod4Ref(float fRoughness)
 {
 	return lerp(0.f, MTRL_REF_LOD_COUNT, fRoughness);
 }
@@ -58,19 +58,19 @@ half GetTexLod4Ref(half fRoughness)
  \param vDX - ddx(vTexUV.x)
  \param vDY - ddx(vTexUV.y)
 */
-half GetTextureLodEx(half fCountLods, half2 vDX, half2 vDY)
+float GetTextureLodEx(float fCountLods, float2 vDX, float2 vDY)
 {
 	return (fCountLods - 1.0)+log2(max(length(vDX), length(vDY)));
 }
 
 //! возвращает номер лода, подробности #GetTextureLodEx
-half GetTextureLod(half fCountLods, half2 vTexUV)
+float GetTextureLod(float fCountLods, float2 vTexUV)
 {
 	return GetTextureLodEx(fCountLods, ddx(vTexUV.x), ddx(vTexUV.y));
 }
 
 //! возвращает номер нужного лода на основании текстурных координат, для текстур сцены (текстуры для моделей)
-half GetTextureLod4Scene(half2 vTexUV)
+float GetTextureLod4Scene(float2 vTexUV)
 {
 	return GetTextureLodEx(SCENE_COUNT_TEXTURE_LOD, ddx(vTexUV), ddy(vTexUV));
 }
@@ -78,7 +78,7 @@ half GetTextureLod4Scene(half2 vTexUV)
 //##########################################################################
 
 //! кодирование xyz нормали в xy
-half3 NormalEncode(half3 vNormal)
+float3 NormalEncode(float3 vNormal)
 {
 	/*vNormal.xy = vNormal.xy * 0.5 + 0.5;
 	
@@ -91,9 +91,9 @@ half3 NormalEncode(half3 vNormal)
 }
 
 //! декодирование нормали xy в xyz
-half3 NormalDecode(half3 vNormal)
+float3 NormalDecode(float3 vNormal)
 {
-	/*half fLayer = 0;
+	/*float fLayer = 0;
 	
 	if(vNormal.z >= 0.5)
 		fLayer = (floor((vNormal.z - 0.5) * 255.0 + 0.5)) * g_fUnit256;
@@ -104,14 +104,14 @@ half3 NormalDecode(half3 vNormal)
 	vNormal.z = sign(vNormal.z * 2.0 - 1.0);
 	vNormal.z = sqrt(1 - pow(vNormal.x, 2) - pow(vNormal.y, 2)) * vNormal.z;
 	
-	return half4(vNormal, fLayer);*/
+	return float4(vNormal, fLayer);*/
 	
 	return vNormal * 2.0 - 1.0;
 }
 
-half LayerEncode(half fLayer, int iLighted)
+float LayerEncode(float fLayer, int iLighted)
 {
-	half fResult = 0;
+	float fResult = 0;
 	[branch]if(iLighted == MTLTYPE_LIGHT)
 		fResult = 0.5 + fLayer * g_fUnit256;
 	else
@@ -121,9 +121,9 @@ half LayerEncode(half fLayer, int iLighted)
 }
 
 
-half2 LayerDecode(half fCode)
+float2 LayerDecode(float fCode)
 {
-	half fLayer = 0;
+	float fLayer = 0;
 	int iLighted = MTLTYPE_UNLIT;
 	
 	if(fCode >= 0.5)
@@ -137,14 +137,14 @@ half2 LayerDecode(half fCode)
 		iLighted = MTLTYPE_UNLIT;
 	}
 	
-	return half2(int(fLayer * LAYERS_COUNT_MAX), iLighted);
+	return float2(int(fLayer * LAYERS_COUNT_MAX), iLighted);
 }
 
 #define LayerDecodeLayer(fCode)(LayerDecode(fCode).x)
 #define LayerDecodeType(fCode)(LayerDecode(fCode).y)
 
 //! преобразвоание цвета в нормаль (если конечно цвет содержит нормаль)
-half3 Color2Normal(half3 vColor)
+float3 Color2Normal(float3 vColor)
 {
 	return (2.0 * vColor - 1.0);
 }
@@ -158,7 +158,7 @@ half3 Color2Normal(half3 vColor)
  \param vWVPposition - float4 позиция пикселя (считается в вершинном шейдере как mul(vPos, g_mWVP))
  \param vNearFarLayers - float4, аналог g_vNearFarLayers (https://wiki.skyxengine.com/index.php?title=Организация_шейдеров_материалов#Константы) 
 */
-PSO_Gbuffer CreateGbuffer(half4 vColor, half3 vNormal, half4 vParam, half4 vWVPposition, half4 vNearFarLayers)
+PSO_Gbuffer CreateGbuffer(float4 vColor, float3 vNormal, float4 vParam, float4 vWVPposition, float4 vNearFarLayers)
 {
 	PSO_Gbuffer OUT;
 	
@@ -182,45 +182,45 @@ PSO_Gbuffer CreateGbuffer(half4 vColor, half3 vNormal, half4 vParam, half4 vWVPp
 //##########################################################################
 
 //! возвращает фактор интерполяции [0, 1] для детальных/микрорельефных текстур, где чем меньше значение тем больше будет проявление детальности/микронормалей
-half GetLerpFactorDetail(half fDistance)
+float GetLerpFactorDetail(float fDistance)
 {
 	return saturate(fDistance/MTRL_LAND_DIST);
 }
 
 //! смешивание макронормали (модели) с микронормалью (из normal map)
-half3 MixNormalMicro(half3 vMacroNormal, half3 vMicroNormal)
+float3 MixNormalMicro(float3 vMacroNormal, float3 vMicroNormal)
 {
-	return normalize((vMacroNormal + half3(vMicroNormal.xy,vMacroNormal.z)));
+	return normalize((vMacroNormal + float3(vMicroNormal.xy,vMacroNormal.z)));
 }
 
 //! смешивание 2 детальных текстур по маске, где r канал маски для первой детальной текстуры, а g для второй
-half4 MixDetail2(half4 vMask, half4 vDetail1, half4 vDetail2, half fIntesity)
+float4 MixDetail2(float4 vMask, float4 vDetail1, float4 vDetail2, float fIntesity)
 {
 	return (vDetail1 * vMask.r + vDetail2 * vMask.g) * fIntesity * 2.0;
 }
 
 //! смешивание 4 детальных текстур по маске, где на каждую текстуру по каналу из маски, r канал для первой детальной, и т.д.
-half4 MixDetail4(half4 vMask, half4 vDetail1, half4 vDetail2, half4 vDetail3, half4 vDetail4, half fIntesity)
+float4 MixDetail4(float4 vMask, float4 vDetail1, float4 vDetail2, float4 vDetail3, float4 vDetail4, float fIntesity)
 {
 	return (vDetail1 * vMask.r + vDetail2 * vMask.g + vDetail3 * vMask.b + vDetail4 * vMask.a) * fIntesity;
 }
 
 //! смешивание двух микронормалей (normal map)
-half3 MixMicroNormal(half3 vMicroNormal1, half3 vMicroNormal2, half fIntesity)
+float3 MixMicroNormal(float3 vMicroNormal1, float3 vMicroNormal2, float fIntesity)
 {
 	return (vMicroNormal1 * fIntesity + vMicroNormal2 * fIntesity);
 }
 
 //! смешивание 4 микронормалей (normal map) по маске, где на каждую текстуру по каналу из маски, r канал для vMicroNormal1, и т.д.
-half3 MixMicroNormal4(half4 vMask, half3 vMicroNormal1, half3 vMicroNormal2, half3 vMicroNormal3, half3 vMicroNormal4, half fIntesity)
+float3 MixMicroNormal4(float4 vMask, float3 vMicroNormal1, float3 vMicroNormal2, float3 vMicroNormal3, float3 vMicroNormal4, float fIntesity)
 {
 	return (vMicroNormal1 * vMask.r + vMicroNormal2 * vMask.g + vMicroNormal3 * vMask.b + vMicroNormal4 * vMask.a) * fIntesity;
 }
 
 //! смешивание цвета и детального цвета, на основе фактора интерполяции #GetLerpFactorDetail
-half4 MixColorDetail(half4 vColor, half4 vDetail, half fLerpFactor)
+float4 MixColorDetail(float4 vColor, float4 vDetail, float fLerpFactor)
 {
-	half4 vBlend = vColor * vDetail * (2.0 - vDetail);
+	float4 vBlend = vColor * vDetail * (2.0 - vDetail);
 	vColor.rgb = lerp(vBlend,vColor,fLerpFactor).rgb;
 	return vColor;
 }

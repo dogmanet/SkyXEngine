@@ -4,9 +4,6 @@
     <ClCompile Include="..\..\..\source\gcore\shader.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\gcore\sky.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\gcore\sxgcore.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -54,9 +51,6 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\shader.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\gcore\sky.h">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\sxgcore.h">

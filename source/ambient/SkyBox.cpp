@@ -4,130 +4,118 @@ Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
-#include "sky.h"
+#include "SkyBox.h"
 
-CSkyBox::CSkyBox()
+
+void CSkyBox::setDevice(IGXContext *pDevice)
 {
-	GXVertexElement layoutskybox[] =
+	m_pDevice = pDevice;
+
+	if(m_pDevice)
 	{
-		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
-		{0, 12, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD},
-		GX_DECL_END()
-	};
+		GXVertexElement layoutskybox[] =
+		{
+			{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+			{0, 12, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD},
+			GX_DECL_END()
+		};
 
-	m_pVertexDeclarationSkyBox = g_pDevice->createVertexDeclaration(layoutskybox);
+		m_pVertexDeclarationSkyBox = m_pDevice->createVertexDeclaration(layoutskybox);
 
-	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "sky_box.vs");
-	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sky_box.ps");
+		//! @todo fix that! r_far cvar
+		float fFar = 800.0f * 0.57735f;
 
-	m_vColor = float4(0, 0, 0, 0);
-	m_fRotaionY = 0.f;
-	m_mMatRotation = SMMatrixIdentity();
 
-	
-	float X = SXGC_SKYBOX_SIZE * 0.5;
-	float Y = SXGC_SKYBOX_SIZE * 0.5;
-	float Z = SXGC_SKYBOX_SIZE * 0.5;
-	//float tmpy = 45;
+		float X = fFar;
+		float Y = fFar;
+		float Z = fFar;
 
-	CSkyBoxVertex tmpVertices[] = {
-		CSkyBoxVertex(X, Y, Z, 1.0f, 1.0f, 1.0f),
-		CSkyBoxVertex(-X, Y, Z, -1.0f, 1.0f, 1.0f),
-		CSkyBoxVertex(X, -Y, Z, 1.0f, -1.0f, 1.0f),
+		CSkyBoxVertex tmpVertices[] = {
+			CSkyBoxVertex(X, Y, Z, 1.0f, 1.0f, 1.0f),
+			CSkyBoxVertex(-X, Y, Z, -1.0f, 1.0f, 1.0f),
+			CSkyBoxVertex(X, -Y, Z, 1.0f, -1.0f, 1.0f),
 
-		CSkyBoxVertex(X, Y, -Z, 1.0f, 1.0f, -1.0f),
-		CSkyBoxVertex(-X, -Y, Z, -1.0f, -1.0f, 1.0f),
-		CSkyBoxVertex(X, -Y, -Z, 1.0f, -1.0f, -1.0f),
+			CSkyBoxVertex(X, Y, -Z, 1.0f, 1.0f, -1.0f),
+			CSkyBoxVertex(-X, -Y, Z, -1.0f, -1.0f, 1.0f),
+			CSkyBoxVertex(X, -Y, -Z, 1.0f, -1.0f, -1.0f),
 
-		CSkyBoxVertex(-X, Y, -Z, -1.0f, 1.0f, -1.0f),
-		CSkyBoxVertex(-X, -Y, -Z, -1.0f, -1.0f, -1.0f)
-	};
+			CSkyBoxVertex(-X, Y, -Z, -1.0f, 1.0f, -1.0f),
+			CSkyBoxVertex(-X, -Y, -Z, -1.0f, -1.0f, -1.0f)
+		};
 
-	m_pVertices = g_pDevice->createVertexBuffer(8 * sizeof(CSkyBoxVertex), GXBUFFER_USAGE_STATIC, tmpVertices);
+		IGXVertexBuffer *pVertices = m_pDevice->createVertexBuffer(8 * sizeof(CSkyBoxVertex), GXBUFFER_USAGE_STATIC, tmpVertices);
+		m_pRenderBuffer = m_pDevice->createRenderBuffer(1, &pVertices, m_pVertexDeclarationSkyBox);
+		mem_release(pVertices);
 
-	WORD indices_tmp[] =
-    {
-        4,1,0,
-        2,4,0,
+		WORD indices_tmp[] =
+		{
+			4, 1, 0,
+			2, 4, 0,
 
-        7,5,3,
-        6,7,3,
+			7, 5, 3,
+			6, 7, 3,
 
-        2,0,3,
-        5,2,3,
+			2, 0, 3,
+			5, 2, 3,
 
-		7,6,1,
-		4,7,1,
+			7, 6, 1,
+			4, 7, 1,
 
-		6,3,0,
-		1,6,0,
+			6, 3, 0,
+			1, 6, 0,
 
-		7,4,2,
-		5,7,2,
-    };
-
-	m_pIndeces = g_pDevice->createIndexBuffer(36 * sizeof(WORD), GXBUFFER_USAGE_STATIC, GXIT_UINT16, indices_tmp);
-
-	m_pRenderBuffer = g_pDevice->createRenderBuffer(1, &m_pVertices, m_pVertexDeclarationSkyBox);
-	
-	m_idTex1 = -1;
-	m_idTex2 = -1;
-
-	m_isChange = false;
-	//m_isChangeMainTex = false;
-	m_fFactorBlend = 0.0f;
-
-	m_isUse = true;
-};
-
-CSkyBox::~CSkyBox()
-{
-	mem_release(m_pVertices);
-	mem_release(m_pIndeces);
-	mem_release(m_pRenderBuffer);
-
-	mem_release(m_pVertexDeclarationSkyBox);
-}
-
-void CSkyBox::loadTexture(const char *texture)
-{
-	m_idTex1 = 0;
-	if (!texture)
-	{
-		m_idTex2 = 0;
-
-		m_isChange = false;
-		//m_isChangeMainTex = false;
-		m_fFactorBlend = 0.0f;
-
-		return;
+			7, 4, 2,
+			5, 7, 2,
+		};
+		m_pIndeces = m_pDevice->createIndexBuffer(36 * sizeof(WORD), GXBUFFER_USAGE_STATIC, GXIT_UINT16, indices_tmp);
 	}
+	else
+	{
+		mem_release(m_pSky1);
+		mem_release(m_pSky2);
+		mem_release(m_pIndeces);
+		mem_release(m_pRenderBuffer);
 
-	m_idTex1 = SGCore_LoadTexAddName(texture, LOAD_TEXTURE_TYPE_CONST);
-
-	if (m_idTex1 == -1)
-		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed load texture '%s'", GEN_MSG_LOCATION, texture);
+		mem_release(m_pVertexDeclarationSkyBox);
+	}
+}
+void CSkyBox::setMaterialSystem(IXMaterialSystem *pMaterialSystem)
+{
+	m_pMaterialSystem = pMaterialSystem;
 }
 
-bool CSkyBox::isLoadTex()
+
+void CSkyBox::setTexture(const char *szTexture)
 {
-	return (m_idTex1 != -1 || m_idTex2 != -1);
+	assert(m_pMaterialSystem);
+	assert(szTexture);
+	
+	mem_release(m_pSky1);
+	XSHADER_DEFAULT_DESC shDesc;
+	shDesc.szFilePS = "sky_box.ps";
+	shDesc.szFileVS = "sky_box.vs";
+	m_pMaterialSystem->loadMaterial(szTexture, &m_pSky1, &shDesc);
+
+	if(!m_pSky1)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed load texture '%s'", GEN_MSG_LOCATION, szTexture);
+	}
 }
 
-bool CSkyBox::getUse()
+bool CSkyBox::isEnabled()
 {
-	return m_isUse;
+	return m_isEnabled;
 }
-
-void CSkyBox::setUse(bool isUse)
+void CSkyBox::enable(bool yesNo)
 {
-	m_isUse = isUse;
+	m_isEnabled = yesNo;
 }
 
 void CSkyBox::changeTexture(const char *texture)
 {
+#if 0
 	ID idNew = -1;
-	if (/*m_isChangeMainTex*/m_isChange)
+	if(m_isChanging)
 	{
 		m_idTex1 = SGCore_LoadTexAddName(texture, LOAD_TEXTURE_TYPE_CONST);
 		idNew = m_idTex1;
@@ -138,22 +126,15 @@ void CSkyBox::changeTexture(const char *texture)
 		idNew = m_idTex2;
 	}
 
-	if (idNew != -1)
-		m_isChange = true;
+	if(ID_VALID(idNew))
+	{
+		m_isChanging = true;
+	}
 	else
+	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed load texture '%s'", GEN_MSG_LOCATION, texture);
-}
-
-void CSkyBox::getActiveTexture(char *texture)
-{
-	if (texture)
-		SGCore_LoadTexGetName((/*m_isChangeMainTex*/m_isChange ? m_idTex2 : m_idTex1), texture);
-}
-
-void CSkyBox::getSecondTexture(char *texture)
-{
-	if (texture)
-		SGCore_LoadTexGetName((/*m_isChangeMainTex*/m_isChange ? m_idTex1 : m_idTex2), texture);
+	}
+#endif
 }
 
 void CSkyBox::setRotation(float angle)
@@ -167,66 +148,69 @@ float CSkyBox::getRotation()
 	return m_fRotaionY;
 }
 
-void CSkyBox::setColor(const float4_t* color)
+void CSkyBox::setColor(const float4 &vColor)
 {
-	m_vColor = *color;
+	m_vColor = vColor;
 }
 
-void CSkyBox::getColor(float4_t* color)
+const float4_t& CSkyBox::getColor()
 {
-	*color = m_vColor;
+	return(m_vColor);
 }
 
-void CSkyBox::render(float timeDelta, const float3* pos,bool is_shadow)
+void CSkyBox::render()
 {
-	if (m_isChange)
-		m_fFactorBlend += timeDelta * 0.001f * 0.2f;
-
-	float4x4 World = m_mMatRotation * SMMatrixTranslation(pos->x, pos->y, pos->z);
-
-	float4x4 View;
-	float4x4 Proj;
-
-	Core_RMatrixGet(G_RI_MATRIX_VIEW, &View);
-	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &Proj);
-
-	float4x4 WVP = World * View * Proj;
-
-	WVP = SMMatrixTranspose(WVP);
-
-	if (m_isChange && m_fFactorBlend >= 1.0)
+	if(!m_isEnabled || !m_pSky1)
 	{
-		m_fFactorBlend = 0.0;
-		//m_isChangeMainTex = !m_isChangeMainTex;
-		m_isChange = false;
+		return;
 	}
 
-	if (/*m_isChangeMainTex*/m_isChange)
+	float4x4 World = SMMatrixTranspose(m_mMatRotation/* * SMMatrixTranslation(pos->x, pos->y, pos->z)*/);
+
+	m_pMaterialSystem->bindMaterial(m_pSky1);
+#if 0
+	if (/*m_isChangingMainTex*/m_isChanging)
 	{
-		g_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex2));
-		g_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex1), 1);
+		m_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex2));
+		m_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex1), 1);
 	}
 	else
 	{
-		g_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex1));
-		g_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex2), 1);
+		m_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex1));
+		m_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex2), 1);
 	}
+#endif
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &WVP);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vColor", &m_vColor);
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_fBlendFactor", &m_fFactorBlend); 
+	//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &WVP);
+	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vColor", &m_vColor);
+	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_fBlendFactor", &m_fBlendFactor); 
 	
-	static ID s_idShader = SGCore_ShaderCreateKit(m_idVS, m_idPS);
-	SGCore_ShaderBind(s_idShader);
+	//static ID s_idShader = SGCore_ShaderCreateKit(m_idVS, m_idPS);
+	//SGCore_ShaderBind(s_idShader);
 
-	g_pDevice->setIndexBuffer(m_pIndeces);
-	g_pDevice->setRenderBuffer(m_pRenderBuffer);
-	g_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
-	g_pDevice->drawIndexed(8, 12, 0, 0);
+	m_pDevice->setIndexBuffer(m_pIndeces);
+	m_pDevice->setRenderBuffer(m_pRenderBuffer);
+	m_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	m_pDevice->drawIndexed(8, 12, 0, 0);
 
-	SGCore_ShaderUnBind();
+	//SGCore_ShaderUnBind();
 };
 
+void CSkyBox::update(float fDT)
+{
+	if(m_isChanging)
+	{
+		m_fBlendFactor += fDT * 0.001f * 0.2f;
+
+		if(m_fBlendFactor >= 1.0f)
+		{
+			m_fBlendFactor = 0.0;
+			m_isChanging = false;
+		}
+	}
+}
+
+#if 0
 //##########################################################################
 
 CSkyClouds::CSkyClouds()
@@ -283,9 +267,9 @@ CSkyClouds::CSkyClouds()
 	m_idTex1 = -1;
 	m_idTex1 = -1;
 
-	m_isChange = false;
-	//m_isChangeMainTex = false;
-	m_fFactorBlend = 0.0f;
+	m_isChanging = false;
+	//m_isChangingMainTex = false;
+	m_fBlendFactor = 0.0f;
 
 	m_isUse = true;
 }
@@ -312,7 +296,7 @@ void CSkyClouds::setUse(bool isUse)
 void CSkyClouds::changeTexture(const char *texture)
 {
 	ID idNew;
-	if (/*m_isChangeMainTex*/m_isChange)
+	if (/*m_isChangingMainTex*/m_isChanging)
 	{
 		m_idTex1 = SGCore_LoadTexAddName(texture, LOAD_TEXTURE_TYPE_CONST);
 		idNew = m_idTex1;
@@ -324,7 +308,7 @@ void CSkyClouds::changeTexture(const char *texture)
 	}
 
 	if (idNew != -1)
-		m_isChange = true;
+		m_isChanging = true;
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed load texture '%s'", GEN_MSG_LOCATION, texture);
 }
@@ -400,9 +384,9 @@ void CSkyClouds::loadTexture(const char *texture)
 	{
 		m_idTex2 = 0;
 
-		m_isChange = false;
-		//m_isChangeMainTex = false;
-		m_fFactorBlend = 0.0f;
+		m_isChanging = false;
+		//m_isChangingMainTex = false;
+		m_fBlendFactor = 0.0f;
 
 		return;
 	}
@@ -420,8 +404,8 @@ bool CSkyClouds::isLoadTex()
 
 void CSkyClouds::render(DWORD timeDelta, const float3* pos,bool is_shadow)
 {
-	if (m_isChange)
-		m_fFactorBlend += timeDelta * 0.001f * 0.2f;
+	if (m_isChanging)
+		m_fBlendFactor += timeDelta * 0.001f * 0.2f;
 
 	m_fBias += timeDelta * 0.001f * m_fSpeed;
 
@@ -430,14 +414,14 @@ void CSkyClouds::render(DWORD timeDelta, const float3* pos,bool is_shadow)
 
 	float4x4 World = SMMatrixTranslation(0, pos->y, 0);
 
-	if (m_isChange && m_fFactorBlend >= 1.0)
+	if (m_isChanging && m_fBlendFactor >= 1.0)
 	{
-		m_fFactorBlend = 0.0;
-		//m_isChangeMainTex = !m_isChangeMainTex;
-		m_isChange = false;
+		m_fBlendFactor = 0.0;
+		//m_isChangingMainTex = !m_isChangingMainTex;
+		m_isChanging = false;
 	}
 
-	if (/*m_isChangeMainTex*/m_isChange)
+	if (/*m_isChangingMainTex*/m_isChanging)
 	{
 		g_pDevice->setTexture(SGCore_LoadTexGetTex(m_idTex2));
 		g_pDevice->setTexture(SGCore_LoadTexGetTex(m_idTex1), 1);
@@ -461,7 +445,7 @@ void CSkyClouds::render(DWORD timeDelta, const float3* pos,bool is_shadow)
 		WVP = SMMatrixTranspose(WVP);
 
 		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &WVP);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vBlendFactorBias", &float2(m_fFactorBlend, m_fBias));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vBlendFactorBias", &float2(m_fBlendFactor, m_fBias));
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vColor", &m_vColor);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_fAlpha", &m_fAlpha);
 
@@ -478,7 +462,7 @@ void CSkyClouds::render(DWORD timeDelta, const float3* pos,bool is_shadow)
 		WVP = SMMatrixTranspose(WVP);
 
 		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &WVP);
-		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS_Shadow, "g_vBlendFactorBias", &float2(m_fFactorBlend, m_fBias));
+		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS_Shadow, "g_vBlendFactorBias", &float2(m_fBlendFactor, m_fBias));
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS_Shadow, "g_fAlpha", &m_fAlpha);
 
 		static ID s_idShader = SGCore_ShaderCreateKit(m_idVS, m_idPS_Shadow);
@@ -493,3 +477,5 @@ void CSkyClouds::render(DWORD timeDelta, const float3* pos,bool is_shadow)
 
 	SGCore_ShaderUnBind();
 }
+
+#endif

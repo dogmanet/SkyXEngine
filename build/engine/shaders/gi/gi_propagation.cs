@@ -1,33 +1,9 @@
-#define LPV_DIM 32
-#define LPV_DIMH 16
-#define LPV_CELL_SIZE 1.0
+
+#include "../lpv.h"
 
 int3 getGridPos(float3 worldPos)
 {
 	return((worldPos / LPV_CELL_SIZE) + int3(LPV_DIMH, LPV_DIMH, LPV_DIMH));
-}
-
-// https://github.com/mafian89/Light-Propagation-Volumes/blob/master/shaders/lightInject.frag and
-// https://github.com/djbozkosz/Light-Propagation-Volumes/blob/master/data/shaders/lpvInjection.cs seem
-// to use the same coefficients, which differ from the RSM paper. Due to completeness of their code, I will stick to their solutions.
-/*Spherical harmonics coefficients - precomputed*/
-#define SH_c0 0.282094792f // 1 / 2sqrt(pi)
-#define SH_c1 0.488602512f // sqrt(3/pi) / 2
-
-/*Cosine lobe coeff*/
-#define SH_cosLobe_c0 0.886226925f // sqrt(pi)/2
-#define SH_cosLobe_c1 1.02332671f // sqrt(pi/3)
-#define Pi 3.1415926f
-
-float4 dirToCosineLobe(float3 dir)
-{
-	//dir = normalize(dir);
-	return(float4(SH_cosLobe_c0, -SH_cosLobe_c1 * dir.y, SH_cosLobe_c1 * dir.z, -SH_cosLobe_c1 * dir.x));
-}
-
-float4 dirToSH(float3 dir)
-{
-	return(float4(SH_c0, -SH_c1 * dir.y, SH_c1 * dir.z, -SH_c1 * dir.x));
 }
 
 // End of lpv.h
@@ -68,18 +44,29 @@ float3 getReprojSideDirection(uint index, float3x3 orientation)
 // orientation = [ right | up | forward ] = [ x | y | z ]
 float3x3 neighbourOrientations[6] = {
 	// Z+
-	float3x3(1, 0, 0,0, 1, 0,0, 0, 1),
+	float3x3( 1,  0,  0,
+		      0,  1,  0,
+		      0,  0,  1),
 	// Z-
-	float3x3(-1, 0, 0,0, 1, 0,0, 0, -1),
+	float3x3(-1,  0,  0,
+	          0,  1,  0,
+	          0,  0, -1),
 	// X+
-	float3x3(0, 0, 1,0, 1, 0,-1, 0, 0
-	),
+	float3x3( 0,  0,  1,
+	          0,  1,  0,
+	         -1,  0,  0),
 	// X-
-	float3x3(0, 0, -1,0, 1, 0,1, 0, 0),
+	float3x3( 0,  0, -1,
+	          0,  1,  0,
+	          1,  0,  0),
 	// Y+
-	float3x3(1, 0, 0,0, 0, 1,0, -1, 0),
+	float3x3( 1,  0,  0,
+	          0,  0,  1,
+	          0, -1,  0),
 	// Y-
-	float3x3(1, 0, 0,0, 0, -1,0, 1, 0)
+	float3x3( 1,  0,  0,
+	          0,  0, -1,
+	          0,  1,  0)
 };
 
 [numthreads(16, 2, 1)]
@@ -98,15 +85,15 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID, uint3 groupThreadID : SV_
 		// TODO: transpose all orientation matrices and use row indexing instead? ie int3( orientation[2] )
 		float3 mainDirection = mul(orientation, float3(0, 0, 1));
 
-		uint3 neighbourIndex = cellIndex - directions[neighbour];
+		int3 neighbourIndex = (int3)cellIndex - (int3)directions[neighbour];
 		float4 rCoeffsNeighbour = lpvR[neighbourIndex];
 		float4 gCoeffsNeighbour = lpvG[neighbourIndex];
 		float4 bCoeffsNeighbour = lpvB[neighbourIndex];
 
-		const float directFaceSubtendedSolidAngle = 0.4006696846f / Pi / 2;
-		const float sideFaceSubtendedSolidAngle = 0.4234413544f / Pi / 3;
+		const float directFaceSubtendedSolidAngle = 0.4006696846f / PI / 2;
+		const float sideFaceSubtendedSolidAngle = 0.4234413544f / PI / 3;
 
-		for (uint sideFace = 0; sideFace < 4; ++sideFace)
+		for(uint sideFace = 0; sideFace < 4; ++sideFace)
 		{
 			float3 evalDirection = getEvalSideDirection(sideFace, orientation);
 			float3 reprojDirection = getReprojSideDirection(sideFace, orientation);
@@ -123,14 +110,18 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID, uint3 groupThreadID : SV_
 		float4 curCosLobe = dirToCosineLobe(curDir);
 		float4 curDirSH = dirToSH(curDir);
 
-		int3 neighbourCellIndex = (int3)cellIndex + (int3)curDir;
+		// int3 neighbourCellIndex = (int3)cellIndex + (int3)curDir;
 
 		cR += directFaceSubtendedSolidAngle * max(0.0f, dot(rCoeffsNeighbour, curDirSH)) * curCosLobe;
 		cG += directFaceSubtendedSolidAngle * max(0.0f, dot(gCoeffsNeighbour, curDirSH)) * curCosLobe;
 		cB += directFaceSubtendedSolidAngle * max(0.0f, dot(bCoeffsNeighbour, curDirSH)) * curCosLobe;
 	}
 
-	lpvRW[dispatchThreadID.xyz] = lpvR[dispatchThreadID.xyz] + cR * 0.7;
-	lpvGW[dispatchThreadID.xyz] = lpvG[dispatchThreadID.xyz] + cG * 0.7;
-	lpvBW[dispatchThreadID.xyz] = lpvB[dispatchThreadID.xyz] + cB * 0.7;
+	lpvRW[cellIndex] = lpvR[cellIndex] + cR * 0.7;
+	lpvGW[cellIndex] = lpvG[cellIndex] + cG * 0.7;
+	lpvBW[cellIndex] = lpvB[cellIndex] + cB * 0.7;
+
+	// lpvRW[cellIndex] = float4(0.1, 0.1, 0.1, 0.1);
+	// lpvGW[cellIndex] = float4(0.9, 0.9, 0.9, 0.9);
+	// lpvBW[cellIndex] = float4(0.1, 0.1, 0.1, 0.1);
 }

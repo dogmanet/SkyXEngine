@@ -108,6 +108,7 @@ namespace gdata
 		IGXSamplerState *pSamplerLinearWrap;
 		IGXSamplerState *pSamplerLinearMirror;
 		IGXSamplerState *pSamplerLinearClamp;
+		IGXSamplerState *pSamplerLinearBorder;
 		IGXSamplerState *pSamplerAnisotopicClamp;
 		IGXSamplerState *pSamplerAnisotopicWrap;
 
@@ -259,6 +260,10 @@ void gdata::shaders_id::InitAllShaders()
 	samplerDesc.addressU = samplerDesc.addressV = samplerDesc.addressW = GXTEXTURE_ADDRESS_WRAP;
 	gdata::rstates::pSamplerAnisotopicWrap = gdata::pDXDevice->createSamplerState(&samplerDesc);
 
+	samplerDesc.addressU = samplerDesc.addressV = samplerDesc.addressW = GXTEXTURE_ADDRESS_BORDER;
+	samplerDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.f4BorderColor = float4_t(0.0f, 0.0f, 0.0f, 0.0f);
+	gdata::rstates::pSamplerLinearBorder = gdata::pDXDevice->createSamplerState(&samplerDesc);
 	
 
 	GXBlendDesc blendDesc;

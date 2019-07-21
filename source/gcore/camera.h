@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -9,68 +9,74 @@ See the license in LICENSE
 
 #include "sxgcore.h"
 
-//класс описывающий фрустум
-class CFrustum : public virtual IFrustum
+//РєР»Р°СЃСЃ РѕРїРёСЃС‹РІР°СЋС‰РёР№ С„СЂСѓСЃС‚СѓРј
+class CFrustum: public IFrustum
 {
 public:
+	SX_ALIGNED_OP_MEM2();
+
 	CFrustum();
-	~CFrustum();
-	void Release(){ mem_del(this); }
-	SX_ALIGNED_OP_MEM
 
-	void update(const float4x4 *pView,const float4x4 *pProj);
+	void update(const float4x4 *pView, const float4x4 *pProj) override;
+	void update(const SMPLANE *pPlanes, bool isNormalized = false) override;
 
-	bool pointInFrustum(const float3 *pPoint) const;
-	bool polyInFrustum(const float3 *pPount1, const float3 *pPount2, const float3 *pPount3) const;
-	bool polyInFrustumAbs(const float3 *pPount1, const float3 *pPount2, const float3 *pPount3) const;
-	
-	bool sphereInFrustum(const float3 *pPount, float fRadius) const;
+	bool pointInFrustum(const float3 *pPoint) const override;
+	bool polyInFrustum(const float3 *pPount1, const float3 *pPount2, const float3 *pPount3) const override;
+	bool polyInFrustumAbs(const float3 *pPount1, const float3 *pPount2, const float3 *pPount3) const override;
 
-	bool sphereInFrustumAbs(const float3 *pPount, float fRadius) const;
-	bool boxInFrustum(float3 *pMin, float3 *pMax) const;
+	bool sphereInFrustum(const float3 *pPount, float fRadius) const override;
 
+	bool sphereInFrustumAbs(const float3 *pPount, float fRadius) const override;
+	bool boxInFrustum(const float3 *pMin, const float3 *pMax) const override;
 
-	float3 getPoint(int iNumPoint) const;
-	float3 getCenter() const;
+	bool frustumInFrustum(const IFrustum *pOther) const override;
 
-	void setPoint(int iNumPoint, const float3 *pPoint);
-	void setCenter(const float3 *pCenter);
+	float3 getPoint(int iNumPoint) const override;
+	float3 getCenter() const override;
+
+	/*void setPoint(int iNumPoint, const float3 *pPoint);
+	void setCenter(const float3 *pCenter);*/
 
 private:
 
 	CFrustumPlane m_aFrustumPlanes[6];
 
-	float3 m_aPoints[8];
+	mutable float3 m_aPoints[8];
 	float3 m_vCenter;
+
+	bool m_isPointValid[8];
 };
 
 //**************************************************************************
 
-class CCamera : public virtual ICamera
+class CCamera: public ICamera
 {
 public:
-	CCamera	();
-	~CCamera	();
-	void Release(){ mem_del(this); }
+	CCamera();
+	~CCamera();
+	void Release()
+	{
+		mem_del(this);
+	}
 	SX_ALIGNED_OP_MEM
 
-	void posLeftRight(float fUnits);//влево/вправо
-	void posUpDown(float fUnits);	//вверх/вниз
-	void posFrontBack(float fUnits);//вперед/назад
-	
-	void rotUpDown(float fAngle);	//вращение вверх/вниз
-	void rotRightLeft(float fAngle);//вращение вправо/влево
-	void roll(float fAngle);		//крен
+		void posLeftRight(float fUnits);//РІР»РµРІРѕ/РІРїСЂР°РІРѕ
+	void posUpDown(float fUnits);	//РІРІРµСЂС…/РІРЅРёР·
+	void posFrontBack(float fUnits);//РІРїРµСЂРµРґ/РЅР°Р·Р°Рґ
+
+	void rotUpDown(float fAngle);	//РІСЂР°С‰РµРЅРёРµ РІРІРµСЂС…/РІРЅРёР·
+	void rotRightLeft(float fAngle);//РІСЂР°С‰РµРЅРёРµ РІРїСЂР°РІРѕ/РІР»РµРІРѕ
+	void roll(float fAngle);		//РєСЂРµРЅ
 	void setOrientation(const SMQuaternion *pQuaternion);
 
-	void getViewMatrix(float4x4 *pMatrix);//получаем матрицу вида
-	
+	void getViewMatrix(float4x4 *pMatrix);//РїРѕР»СѓС‡Р°РµРј РјР°С‚СЂРёС†Сѓ РІРёРґР°
+
 	void getPosition(float3 *pPos) const;
 	void setPosition(const float3 *pPos);
 
 	void getDirection(float3 *pDir) const;
 	//void setDirection(const float3 *pDir);
-	
+
 	void getRight(float3 *pRight) const;
 	void getUp(float3 *pUp) const;
 	void getLook(float3 *pLook) const;
@@ -89,7 +95,7 @@ public:
 	const IFrustum* getFrustum();
 
 protected:
-	CFrustum m_oFrustum;	//!< фрустум этой камеры
+	CFrustum m_oFrustum;	//!< С„СЂСѓСЃС‚СѓРј СЌС‚РѕР№ РєР°РјРµСЂС‹
 
 	float3 m_vRight;
 	float3 m_vUp;

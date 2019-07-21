@@ -507,6 +507,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		else
 			printf("cmd send_camera not found '%s' camera", argv[1]);
 	});
+		
 
 	Core_0RegisterConcmdArg("gui_load", [](int argc, const char ** argv){
 		if(argc != 3)
@@ -1531,6 +1532,7 @@ void GameData::ccmd_switch_firemode()
 
 void GameData::ccmd_game_menu()
 {
+	Core_0ConsoleExecCmd("cl_grab_cursor 0");
 	m_pGameStateManager->activate("ingame_menu");
 }
 

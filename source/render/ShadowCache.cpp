@@ -5,7 +5,8 @@ CShadowCache::CShadowCache(IXRenderPipeline *pRenderPipeline, IXMaterialSystem *
 	m_pRenderPipeline(pRenderPipeline),
 	m_pMaterialSystem(pMaterialSystem)
 {
-	Core_0RegisterCVarFloat("r_lsm_quality", 1, "Коэфициент размера карты глубины для локальных источников света относительно размеров окна рендера [0.5,4] (низкое, высокое)");
+	//! @todo implement handling r_lsm_quality change
+	Core_0RegisterCVarFloat("r_lsm_quality", 2.0f, "Коэфициент размера карты глубины для локальных источников света относительно размеров окна рендера [0.5,4] (низкое, высокое)", FCVAR_READONLY);
 	Core_0RegisterCVarFloat("r_sm_max_memory", 0.15f, "Максимальный процент от доступной видеопамяти, отводимый под кэш теней");
 	m_idRSMPixelShader = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "sm_rsm_generic.ps");
 

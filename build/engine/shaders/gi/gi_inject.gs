@@ -1,6 +1,5 @@
-#define LPV_DIM 32
-#define LPV_DIMH 16
-#define LPV_CELL_SIZE 1.0
+
+#include "../lpv.h"
 
 struct GS_IN
 {
@@ -26,9 +25,14 @@ void main(point GS_IN input[1], inout PointStream<PS_IN> OutputStream)
 {
 	PS_IN output;
 
-	output.depthIndex = input[0].cellIndex.z;
-	// output.depthIndex = 0;
+	if(input[0].cellIndex.z < 0 || input[0].cellIndex.z >= LPV_DIM)
+	{
+		return;
+	}
 	output.screenPos.xy = (float2(input[0].cellIndex.xy) + 0.5) / float2(LPV_DIM, LPV_DIM) * 2.0 - 1.0;
+	output.depthIndex = input[0].cellIndex.z;
+
+	// output.depthIndex = 10;
 	// invert y direction because y points downwards in the viewport?
 	output.screenPos.y = -output.screenPos.y;
 	output.screenPos.zw = float2(0, 1);

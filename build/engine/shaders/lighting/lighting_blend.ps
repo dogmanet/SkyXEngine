@@ -4,8 +4,8 @@ lighting_blend.ps
 Cмешивание всех текстур для финального изображения
 */
 
-#include <../struct.h>
-#include <../mtrl.h>
+#include "../struct.h"
+#include "../mtrl.h"
 
 //##########################################################################
 
@@ -20,35 +20,37 @@ Texture2D g_txParameters:register(t5);
 
 //##########################################################################
 
-half4 main(VSO_PP IN):COLOR0
+float4 main(VSO_PP IN):COLOR0
 {
-	half4 vNormal = g_txNormals.Sample(g_sSampler,IN.vTexUV);
-	half2 vLayerType = LayerDecode(vNormal.w);
+	float4 vNormal = g_txNormals.Sample(g_sSampler,IN.vTexUV);
+	float2 vLayerType = LayerDecode(vNormal.w);
 	//vLayerType.x *= LAYERS_COUNT_MAX;
-	//return half4(vLayerType.x, vLayerType.x, vLayerType.x, 1);
-	//half fSort = LayerDecodeType(vNormal.w);
-	//half fLayer = LayerDecodeLayer(vNormal.w);
+	//return float4(vLayerType.x, vLayerType.x, vLayerType.x, 1);
+	//float fSort = LayerDecodeType(vNormal.w);
+	//float fLayer = LayerDecodeLayer(vNormal.w);
 	
 	//цвет приводим к sRGB
-	half4 vColor = g_txColor.Sample(g_sSampler,IN.vTexUV);
+	float4 vColor = g_txColor.Sample(g_sSampler,IN.vTexUV);
 	vColor.rgb = pow(vColor.rgb, 2.2);
-	half4 vParameters = g_txParameters.Sample(g_sSampler,IN.vTexUV);
+	float4 vColorOriginal = vColor;
+	float4 vParameters = g_txParameters.Sample(g_sSampler,IN.vTexUV);
 
-	half4 vAmbient = g_txAmbient.Sample(g_sSampler,IN.vTexUV);
+	float4 vAmbient = g_txAmbient.Sample(g_sSampler,IN.vTexUV);
+	// vAmbient += 0.1;
 	//vAmbient.xyz *= 2;
-	half fAverage = (vAmbient.x + vAmbient.y + vAmbient.z)/3.0;
+	float fAverage = (vAmbient.x + vAmbient.y + vAmbient.z)/3.0;
 	
 	/* расчет фонового цвета
 	1) интерполяция от чернобелого до цветного, на основании затенения, то есть чем больше тень тем меньше там фонового цвета
 	*/
-	half3 vAmbientColor = lerp(fAverage, vAmbient.xyz, saturate(vAmbient.w+0.5));
+	float3 vAmbientColor = lerp(fAverage, vAmbient.xyz, saturate(vAmbient.w+0.5));
 	
 	/* 2) интерполяция приема цвета материалом, чем больше отражательная способность (f0) тем меньше примет цвета материал*/
 	//vAmbientColor = lerp(vAmbientColor.xyz, fAverage, clamp(vParameters.y, F0_MIN_4_DEST_AMBIENT, F0_MAX_4_DEST_AMBIENT));
 	
-	half fSpecular = g_txSpecDiff.Sample(g_sSampler,IN.vTexUV).r;
-	// half fAdaptedLum = tex2D(g_sAdaptedLum, g_vTexUVcenter);
-	half fAdaptedLum = 0.5;
+	float fSpecular = g_txSpecDiff.Sample(g_sSampler,IN.vTexUV).r;
+	// float fAdaptedLum = tex2D(g_sAdaptedLum, g_vTexUVcenter);
+	float fAdaptedLum = 0.5;
 
 	// если материал освещаемый то надо вычислить его освещенность
 	// if(vLayerType.y == MTLTYPE_LIGHT)
@@ -63,5 +65,5 @@ half4 main(VSO_PP IN):COLOR0
 	vColor.rgb /= (fAdaptedLum + vColor.rgb);
 	
 	//приводим цвет к линейному пространству
-	return half4(pow(vColor.rgb, 1.0/2.2), vColor.a);
+	return float4(pow(lerp(vColor.rgb, vColorOriginal.xyz, vColorOriginal.a), 1.0/2.2), 1.0f);
 }

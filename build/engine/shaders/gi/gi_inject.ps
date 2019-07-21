@@ -1,14 +1,4 @@
-// https://github.com/mafian89/Light-Propagation-Volumes/blob/master/shaders/lightInject.frag and
-// https://github.com/djbozkosz/Light-Propagation-Volumes/blob/master/data/shaders/lpvInjection.cs seem
-// to use the same coefficients, which differ from the RSM paper. Due to completeness of their code, I will stick to their solutions.
-/*Spherical harmonics coefficients – precomputed*/
-#define SH_C0 0.282094792f // 1 / 2sqrt(pi)
-#define SH_C1 0.488602512f // sqrt(3/pi) / 2
-
-/*Cosine lobe coeff*/
-#define SH_cosLobe_C0 0.886226925f // sqrt(pi)/2
-#define SH_cosLobe_C1 1.02332671f // sqrt(pi/3)
-#define PI 3.1415926f
+#include "../lpv.h"
 
 struct PS_IN
 {
@@ -25,22 +15,17 @@ struct PS_OUT
 	float4 blueSH :SV_Target2;
 };
 
-float4 dirToCosineLobe(float3 dir)
+#ifdef _DEBUG
+float4 main(PS_IN input):COLOR0
 {
-	//dir = normalize(dir);
-	return float4(SH_cosLobe_C0, -SH_cosLobe_C1 * dir.y, SH_cosLobe_C1 * dir.z, -SH_cosLobe_C1 * dir.x);
+	return(float4(1.0, 1.0, 1.0, 1.0));
 }
-
-float4 dirToSH(float3 dir)
-{
-	return float4(SH_C0, -SH_C1 * dir.y, SH_C1 * dir.z, -SH_C1 * dir.x);
-}
-
+#else
 PS_OUT main(PS_IN input)
 {
 	PS_OUT output;
 
-	const static float surfelWeight = 0.015;
+	const static float surfelWeight = 0.015f * LPV_POINT_WEIGHT;
 	float4 coeffs = (dirToCosineLobe(input.normal) / PI) * surfelWeight;
 	output.redSH = coeffs * input.flux.r;
 	output.greenSH = coeffs * input.flux.g;
@@ -51,3 +36,4 @@ PS_OUT main(PS_IN input)
 
 	return output;
 }
+#endif

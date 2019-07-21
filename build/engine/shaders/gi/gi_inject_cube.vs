@@ -5,16 +5,16 @@ cbuffer perLight: register(b7)
 {
 	half4 g_vLightColorPower;
 	half4 g_vLightPosShadow;
-// #ifdef IS_SPOT
+#ifdef IS_SPOT
 	half4 g_vLightSpotDirection;
 	half2 g_vLightSpotInnerOuterAngles;
-// #endif
+#endif
 };
 
-cbuffer b6 :register(b6)
+/* cbuffer b6 :register(b6)
 {
-	float4x4 g_mInvVP;
-};
+	float4x4 g_mInvVP[6];
+}; */
 
 cbuffer b8: register(b8)
 {
@@ -40,9 +40,11 @@ struct GS_IN
 	float3 flux :LIGHT_FLUX;
 };
 
-Texture2D rsmWsPosMap :register(t0);
-Texture2D rsmWsNorMap :register(t1);
-Texture2D rsmFluxMap :register(t2);
+TextureCube rsmWsPosMap :register(t0);
+TextureCube rsmWsNorMap :register(t1);
+TextureCube rsmFluxMap :register(t2);
+
+SamplerState g_sPoint: register(s0);
 
 struct RsmTexel
 {
@@ -53,44 +55,82 @@ struct RsmTexel
 
 float Luminance(RsmTexel rsmTexel)
 {
-	return((rsmTexel.flux.r * 0.299f + rsmTexel.flux.g * 0.587f + rsmTexel.flux.b * 0.114f) + max(0.0f, dot(rsmTexel.normalWS, -g_vLightSpotDirection.xyz)));
+	return((rsmTexel.flux.r * 0.299f + rsmTexel.flux.g * 0.587f + rsmTexel.flux.b * 0.114f)/*  + max(0.0f, dot(rsmTexel.normalWS, -g_vLightSpotDirection.xyz)) */);
 }
 
-RsmTexel GetRsmTexel(int2 coords, uint2 vTexSize)
+RsmTexel GetRsmTexel(int3 coords, uint2 vTexSize)
 {
 	RsmTexel tx = (RsmTexel)0;
+		
+
+	float3 vDir = (float3)0;
 	
-	float4 vScreenSpace = float4(((float2)coords + 0.5f) / (float2)vTexSize * 2.0 - 1.0, rsmWsPosMap.Load(int3(coords, 0)).x, 1.0);
-	// float4 vScreenSpace = float4(((float2)coords + 0.5f) / (float2)vTexSize * 2.0 - 1.0, 0.0f, 1.0);
+	const float c_fHalfSize = LPV_POINT_COUNT * KERNEL_SIZE * 0.5;
 	
-	tx.flux = rsmFluxMap.Load(int3(coords, 0)) * float4(g_vLightColorPower.xyz, 1.0);
-	tx.normalWS = rsmWsNorMap.Load(int3(coords, 0)).xyz * 2.0 - 1.0;
-	vScreenSpace.y *= -1.0;
+	switch(coords[2])
+	{
+	case 0:
+		vDir = float3((float)coords.x - c_fHalfSize, (float)coords.y - c_fHalfSize, c_fHalfSize);
+		break;
+	case 1:
+		vDir = float3((float)coords.x - c_fHalfSize, (float)coords.y - c_fHalfSize, -c_fHalfSize);
+		break;
+	case 2:
+		vDir = float3((float)coords.x - c_fHalfSize, c_fHalfSize, (float)coords.y - c_fHalfSize);
+		break;
+	case 3:
+		vDir = float3((float)coords.x - c_fHalfSize, -c_fHalfSize, (float)coords.y - c_fHalfSize);
+		break;
+	case 4:
+		vDir = float3(c_fHalfSize, (float)coords.x - c_fHalfSize, (float)coords.y - c_fHalfSize);
+		break;
+	case 5:
+		vDir = float3(-c_fHalfSize, (float)coords.x - c_fHalfSize, (float)coords.y - c_fHalfSize);
+		break;
+	}
 	
-	float4 vWS = mul(vScreenSpace, g_mInvVP);
-	tx.positionWS = vWS.xyz / vWS.w;
+	// float fVectorLength = rsmWsPosMap.Load(int4(coords, 0)).x;
+	vDir = normalize(vDir);
+	// vDir /= c_fHalfSize * 2.0;
+	float fVectorLength = rsmWsPosMap.SampleLevel(g_sPoint, vDir, 0).x;
+	// vDir *= sqrt(0.01);
+	vDir *= sqrt(fVectorLength);
+	// vDir /= 1270.0;
+	tx.positionWS = float4(g_vLightPosShadow.xyz + vDir, 0.0);
 	
-	half3 vLigth  = normalize(g_vLightPosShadow.xyz - tx.positionWS);
-	half fNdotD = dot(-vLigth, g_vLightSpotDirection.xyz);
-	tx.flux *= saturate(fNdotD - g_vLightSpotInnerOuterAngles.y) / (g_vLightSpotInnerOuterAngles.x - g_vLightSpotInnerOuterAngles.y);
+	tx.flux = rsmFluxMap.SampleLevel(g_sPoint, vDir, 0) * float4(g_vLightColorPower.xyz, 1.0);
+	tx.normalWS = rsmWsNorMap.SampleLevel(g_sPoint, vDir, 0).xyz * 2.0 - 1.0;
+	// vScreenSpace.y *= -1.0;
+	
+	// float4 vWS = mul(vScreenSpace, g_mInvVP[coords.z]);
+	// tx.positionWS = vWS.xyz / vWS.w;
+	
+	// half3 vLigth  = normalize(g_vLightPosShadow.xyz - tx.positionWS);
+	// half fNdotD = dot(-vLigth, g_vLightSpotDirection.xyz);
+	// tx.flux *= saturate(fNdotD - g_vLightSpotInnerOuterAngles.y) / (g_vLightSpotInnerOuterAngles.x - g_vLightSpotInnerOuterAngles.y);
 	
 	half fDistance = distance(tx.positionWS, g_vLightPosShadow.xyz);
 	half fInvDistance = 1.f - (fDistance/g_vLightColorPower.w);
 	tx.flux *= fInvDistance * fInvDistance;
-	
+
+#ifndef _DEBUG
 	tx.positionWS += (tx.normalWS * POSWS_BIAS_NORMAL);
+#endif
 	return(tx);
 }
 
-#define KERNEL_SIZE 4
-#define STEP_SIZE 1
 
 GS_IN main(VS_IN input)
 {	
+	// input.posIndex = 128 + 128 * 256 + 1;
+
 	const uint2 RSMsize = uint2(LPV_MAP_SIZE, LPV_MAP_SIZE);
 	const uint2 RSMsizeNew = RSMsize / KERNEL_SIZE;
-	int3 rsmCoords = int3(input.posIndex % RSMsizeNew.x, input.posIndex / RSMsizeNew.x, 0) * KERNEL_SIZE;
-		
+	uint uCubeSide = input.posIndex % 6;
+	uint uIndex = input.posIndex / 6;
+	int3 rsmCoords = int3(uIndex % RSMsizeNew.x, uIndex / RSMsizeNew.x, 0) * KERNEL_SIZE;
+	rsmCoords.z = uCubeSide;
+	
 #ifdef _DEBUG
 	RsmTexel rsmTexel = GetRsmTexel(rsmCoords, RSMsize);
 	GS_IN output1 = (GS_IN)0;
@@ -115,11 +155,11 @@ GS_IN main(VS_IN input)
 		{
 			for(uint x = 0; x < KERNEL_SIZE; x += STEP_SIZE)
 			{
-				int2 texIdx = rsmCoords.xy + int2(x, y);
+				int3 texIdx = rsmCoords.xyz + int3(x, y, 0);
 				RsmTexel rsmTexel = GetRsmTexel(texIdx, RSMsize);
 				
 				float texLum = Luminance(rsmTexel);
-				if(texLum > maxLuminance)
+				if (texLum > maxLuminance)
 				{
 					brightestCellIndex = getGridPos(rsmTexel.positionWS);
 					maxLuminance = texLum;
@@ -134,7 +174,7 @@ GS_IN main(VS_IN input)
 	{
 		for(uint x = 0; x < KERNEL_SIZE; x += STEP_SIZE)
 		{
-			int2 texIdx = rsmCoords.xy + int2(x, y);
+			int3 texIdx = rsmCoords.xyz + int3(x, y, 0);
 			RsmTexel rsmTexel = GetRsmTexel(texIdx, RSMsize);
 			
 			int3 texelIndex = getGridPos(rsmTexel.positionWS);

@@ -56,6 +56,7 @@ void CIngameMenuGameState::activate()
 
 void CIngameGameState::activate()
 {
+	Core_0ConsoleExecCmd("cl_grab_cursor 1");
 	GameData::m_pHUDcontroller->activate();
 
 	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);

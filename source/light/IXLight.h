@@ -30,6 +30,19 @@ enum LIGHT_TYPE
 /*! базовое направление направленноого источника света */
 #define LIGHTS_DIR_BASE float3(0, -1, 0)
 
+class IXRenderableVisibility;
+
+
+enum LIGHT_RENDER_TYPE
+{
+	LRT_NONE = 0, //!< Не рендерится
+	LRT_LIGHT = 1, //!< Только освещение, без LPV 
+	LRT_LPV = 2, //!< Рендер для LPV в 32x32 
+	LRT_FULL = 3, //!< Полноразмерный рендер 
+};
+DEFINE_ENUM_FLAG_OPERATORS(LIGHT_RENDER_TYPE);
+
+
 class IXLightPoint;
 class IXLightSun;
 class IXLightSpot;
@@ -56,13 +69,17 @@ public:
 	//@TODO: Remove this method
 	virtual void drawShape(IGXContext *pDevice) = 0;
 	//@TODO: Remove this method
-	virtual IGXConstantBuffer *getConstants(IGXContext *pDevice) = 0;
+	virtual IGXConstantBuffer* getConstants(IGXContext *pDevice) = 0;
+	//@TODO: Remove this method
+	virtual LIGHT_RENDER_TYPE getRenderType() = 0;
 
 	virtual IXLightSpot *asSpot() = 0;
 	virtual IXLightSun *asSun() = 0;
 	virtual IXLightPoint *asPoint() = 0;
 
 	virtual float getMaxDistance() = 0;
+
+	virtual IXRenderableVisibility* getVisibility() = 0;
 };
 
 class IXLightPoint: public virtual IXLight

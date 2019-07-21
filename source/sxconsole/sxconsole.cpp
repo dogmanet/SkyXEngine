@@ -262,6 +262,7 @@ void WriteColored(char ** _buf)
 				esc += 5;
 				if(!sscanf(esc, "%d", &clr))
 				{
+					buf = esc;
 					continue;
 				}
 				esc += (int)(log10(clr) + 1);
@@ -297,11 +298,13 @@ void WriteColored(char ** _buf)
 				esc += 5;
 				if(!sscanf(esc, "%d", &clr))
 				{
+					buf = esc;
 					continue;
 				}
 				esc += (int)(floor(log10(clr)) + 1);
 				if(*esc != 'm')
 				{
+					buf = esc;
 					continue;
 				}
 				++esc;

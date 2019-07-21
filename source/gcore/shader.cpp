@@ -8,7 +8,7 @@ See the license in LICENSE
 #include "ShaderPreprocessor.h"
 
 #define SX_SHADER_CACHE_MAGIC MAKEFOURCC('X', 'C', 'S', 'F') /*!< X Compiled Shader File*/
-#define SX_SHADER_CACHE_VERSION 2
+#define SX_SHADER_CACHE_VERSION 3
 
 //##########################################################################
 
@@ -174,7 +174,17 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 							{
 								UINT uCodeSize = 0;
 								pCacheFile->readBin(&uCodeSize, sizeof(uCodeSize));
-								byte *pCode = (byte*)alloca(uCodeSize);
+								byte *pCode;
+								bool isFree = false;
+								if(uCodeSize <= 32768)
+								{
+									pCode = (byte*)alloca(uCodeSize);
+								}
+								else
+								{
+									isFree = true;
+									pCode = (byte*)malloc(uCodeSize);
+								}
 								pCacheFile->readBin(pCode, uCodeSize);
 
 								T *pGXShader = NULL;
@@ -185,6 +195,11 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 									pShader->m_pGXShader = pGXShader;
 									return(LOAD_SHADER_CACHE);
 								}
+
+								if(isFree)
+								{
+									free(pCode);
+								}
 							}
 							else
 							{
@@ -193,7 +208,17 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 								// sizeNextBlockPos - end
 								size_t sizeFile = pCacheFile->getSize();
 								size_t sizeFileNew = sizeFile - (sizeNextBlockPos - sizeChunkBegin);
-								byte *pBuffer = (byte*)alloca(sizeFileNew);
+								byte *pBuffer;
+								bool isFree = false;
+								if(sizeFileNew <= 32768)
+								{
+									pBuffer = (byte*)alloca(sizeFileNew);
+								}
+								else
+								{
+									isFree = true;
+									pBuffer = (byte*)malloc(sizeFileNew);
+								}
 								pCacheFile->setPos(0);
 								pCacheFile->readBin(pBuffer, sizeChunkBegin);
 								pCacheFile->setPos(sizeNextBlockPos);
@@ -213,6 +238,11 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 									break;
 								}
 								sizeNextBlockPos = sizeChunkBegin;
+
+								if(isFree)
+								{
+									free(pBuffer);
+								}
 							}
 						}
 
@@ -351,7 +381,17 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 							}
 							UINT uCodeSize = 0;
 							pGXShader->getData(NULL, &uCodeSize);
-							byte *pCode = (byte*)alloca(uCodeSize);
+							byte *pCode;
+							bool isFree = false;
+							if(uCodeSize <= 32768)
+							{
+								pCode = (byte*)alloca(uCodeSize);
+							}
+							else
+							{
+								pCode = (byte*)malloc(uCodeSize);
+								isFree = true;
+							}
 							pGXShader->getData(pCode, &uCodeSize);
 
 							pCacheFile->writeBin(&uCodeSize, sizeof(uCodeSize));
@@ -362,6 +402,11 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 							pCacheFile->writeBin(&uChunkSize, sizeof(uChunkSize));
 
 							mem_release(pCacheFile);
+
+							if(isFree)
+							{
+								free(pCode);
+							}
 						}
 					}
 				}

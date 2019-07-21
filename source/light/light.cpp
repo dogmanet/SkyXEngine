@@ -6,6 +6,7 @@ See the license in LICENSE
 
 #include "light.h"
 #include "LightSystem.h"
+#include <xcommon/IXRenderable.h>
 
 CLights::CLights()
 {
@@ -1631,12 +1632,20 @@ ID CLights::delGetIDArr(ID key, ID inid, int how)
 CXLight::CXLight(CLightSystem *pLightSystem):
 	m_pLightSystem(pLightSystem)
 {
+	IXRenderPipeline *pPipeline;
+	Core_GetIXCore()->getRenderPipeline(&pPipeline);
+	pPipeline->newVisData(&m_pVisibility);
+	mem_release(pPipeline);
+
+	m_pFrustum = SGCore_CrFrustum();
 }
 CXLight::~CXLight()
 {
+	mem_release(m_pFrustum);
 	mem_release(m_pShape);
 	mem_release(m_pVSData);
 	mem_release(m_pPSData);
+	mem_release(m_pVisibility);
 }
 
 LIGHT_TYPE CXLight::getType()
@@ -1728,7 +1737,7 @@ void CXLight::drawShape(IGXContext *pDevice)
 	}
 }
 
-IGXConstantBuffer *CXLight::getConstants(IGXContext *pDevice)
+IGXConstantBuffer* CXLight::getConstants(IGXContext *pDevice)
 {
 	if(m_isPSDataDirty)
 	{
@@ -1744,7 +1753,7 @@ SMMATRIX CXLight::getWorldTM()
 	return(SMMatrixScaling(float3(getMaxDistance())) * SMMatrixTranslation(m_vPosition));
 }
 
-IXLightSpot *CXLight::asSpot()
+IXLightSpot* CXLight::asSpot()
 {
 	if(m_type == LIGHT_TYPE_SPOT)
 	{
@@ -1752,7 +1761,7 @@ IXLightSpot *CXLight::asSpot()
 	}
 	return(NULL);
 }
-IXLightSun *CXLight::asSun()
+IXLightSun* CXLight::asSun()
 {
 	if(m_type == LIGHT_TYPE_SUN)
 	{
@@ -1760,7 +1769,7 @@ IXLightSun *CXLight::asSun()
 	}
 	return(NULL);
 }
-IXLightPoint *CXLight::asPoint()
+IXLightPoint* CXLight::asPoint()
 {
 	if(m_type == LIGHT_TYPE_POINT)
 	{
@@ -1772,6 +1781,26 @@ IXLightPoint *CXLight::asPoint()
 float CXLight::getMaxDistance()
 {
 	return(SMVector3Length2(m_vColor));
+}
+
+void CXLight::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax)
+{
+	updateFrustum();
+
+	if(m_pFrustum->boxInFrustum(&vLPVmin, &vLPVmax))
+	{
+		m_renderType |= LRT_LPV;
+	}
+
+	if(m_renderType != LRT_NONE)
+	{
+		m_pVisibility->updateForFrustum(m_pFrustum);
+	}
+}
+
+IXRenderableVisibility *CXLight::getVisibility()
+{
+	return(m_pVisibility);
 }
 
 //##########################################################################
@@ -1801,6 +1830,39 @@ void CXLightPoint::updatePSConstants(IGXContext *pDevice)
 	m_dataPS.vLightColor = float4(m_vColor, SMVector3Length2(m_vColor));
 	m_dataPS.vLightPos = float4(m_vPosition, m_fShadowIntensity);
 	m_pPSData->update(&m_dataPS);
+}
+
+void CXLightPoint::updateFrustum()
+{
+	//! @todo optimize me!
+	float3 vPos = getPosition();
+	float fRadius = getMaxDistance();
+
+	// ax + by + cz + d = 0
+
+	SMPLANE planes[] = {
+		SMPLANE(-1.0f,  0.0f,  0.0f, fRadius + vPos.x),
+		SMPLANE( 1.0f,  0.0f,  0.0f, fRadius - vPos.x),
+		SMPLANE( 0.0f, -1.0f,  0.0f, fRadius + vPos.y),
+		SMPLANE( 0.0f,  1.0f,  0.0f, fRadius - vPos.y),
+		SMPLANE( 0.0f,  0.0f, -1.0f, fRadius + vPos.z),
+		SMPLANE( 0.0f,  0.0f,  1.0f, fRadius - vPos.z),
+	};
+
+	m_pFrustum->update(planes, true);
+}
+
+void CXLightPoint::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax)
+{
+	m_renderType = LRT_NONE;
+	
+	float3 vOrigin = getPosition();
+	if(pMainCamera->getFrustum()->sphereInFrustum(&vOrigin, getMaxDistance()))
+	{
+		m_renderType |= LRT_LIGHT;
+	}
+
+	CXLight::updateVisibility(pMainCamera, vLPVmin, vLPVmax);
 }
 
 //##########################################################################
@@ -1927,4 +1989,31 @@ SMMATRIX CXLightSpot::getWorldTM()
 	float fAngleScale = cosf(m_fInnerAngle * 0.5f) * sqrtf(2.0f);
 
 	return(SMMatrixScaling(float3(fAngleScale, 1.0f, fAngleScale)) * SMMatrixScaling(float3(getMaxDistance())) * m_qDirection.GetMatrix() * SMMatrixTranslation(m_vPosition));
+}
+
+void CXLightSpot::updateFrustum()
+{
+	//! @todo optimize me!
+	float3 vPos = getPosition();
+	float3 vDir = getDirection() * LIGHTS_DIR_BASE;
+	float3 vUp = getDirection() * float3(0.0f, 0.0f, 1.0f);
+
+	SMMATRIX mView = SMMatrixLookAtLH(vPos, vPos + vDir, vUp);
+	SMMATRIX mProj = SMMatrixPerspectiveFovLH(getOuterAngle(), 1.0f, 0.025f, getMaxDistance());
+
+	m_pFrustum->update(&mView, &mProj);
+}
+
+void CXLightSpot::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax)
+{
+	m_renderType = LRT_NONE;
+
+	updateFrustum();
+	float3 vOrigin = getPosition();
+	if(pMainCamera->getFrustum()->frustumInFrustum(m_pFrustum))
+	{
+		m_renderType |= LRT_LIGHT;
+	}
+
+	CXLight::updateVisibility(pMainCamera, vLPVmin, vLPVmax);
 }

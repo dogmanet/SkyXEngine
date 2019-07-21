@@ -8,7 +8,7 @@ gdefines.h
 #define __G_DEFINES
 
 //! координаты центра текстуры
-static const half2 g_vTexUVcenter = half2(0.5, 0.5);
+static const float2 g_vTexUVcenter = float2(0.5, 0.5);
 
 //! коэффициент освещения дальнего сплита теней для pssm [0,1]
 #define PSSM_SHADING_LAST 		0.1
@@ -43,9 +43,11 @@ static const half2 g_vTexUVcenter = half2(0.5, 0.5);
 
 //! добавочное смещение глубины для теней, для устранения shadow acne
 #define SHADOW_SLOPE_BIAS 0.00001
+// #define SHADOW_SLOPE_BIAS 0
 
 //! множитель slope смещения теней, для устранения shadow acne
 #define SHADOW_SLOPE_SCALE 1.8
+// #define SHADOW_SLOPE_SCALE 0
 
 
 //! минимально допустимое значение отражательной способности материала для принятия ambient цвета
@@ -56,9 +58,9 @@ static const half2 g_vTexUVcenter = half2(0.5, 0.5);
 //! максимальнео количество слоев
 #define LAYERS_COUNT_MAX 255.0
 
-static const half g_fUnit256 = 1.0/255.0;
+static const float g_fUnit256 = 1.0/255.0;
 
-static const half g_fUnit128 = 1.0/127.0;
+static const float g_fUnit128 = 1.0/127.0;
 
 //! слой непрозрачной геометрии
 #define LAYER_OPAQUE 1

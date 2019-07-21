@@ -229,7 +229,7 @@ void PSSM::updateFrustums(int split, const float3* poscam, const float3* dircam)
 	float far_height = tan(FovRatio.x / 2.f) * m_aNearFar[split].y;
 	float far_width = far_height * FovRatio.y;
 
-	m_aFrustums[split]->setPoint(0, &float3(nc - up*near_height - right*near_width));
+	/*m_aFrustums[split]->setPoint(0, &float3(nc - up*near_height - right*near_width));
 	m_aFrustums[split]->setPoint(1, &float3(nc + up*near_height - right*near_width));
 	m_aFrustums[split]->setPoint(2, &float3(nc + up*near_height + right*near_width));
 	m_aFrustums[split]->setPoint(3, &float3(nc - up*near_height + right*near_width));
@@ -237,13 +237,13 @@ void PSSM::updateFrustums(int split, const float3* poscam, const float3* dircam)
 	m_aFrustums[split]->setPoint(4, &float3(fc - up*far_height - right*far_width));
 	m_aFrustums[split]->setPoint(5, &float3(fc + up*far_height - right*far_width));
 	m_aFrustums[split]->setPoint(6, &float3(fc + up*far_height + right*far_width));
-	m_aFrustums[split]->setPoint(7, &float3(fc - up*far_height + right*far_width));
+	m_aFrustums[split]->setPoint(7, &float3(fc - up*far_height + right*far_width));*/
 
 	float3 vCenter(0, 0, 0);
 	for (int i = 0; i < 8; i++)
 		vCenter += m_aFrustums[split]->getPoint(i);
 	vCenter /= 8;
-	m_aFrustums[split]->setCenter(&vCenter);
+	//m_aFrustums[split]->setCenter(&vCenter);
 
 	float dist = 1;
 	float3 DirL = Position;

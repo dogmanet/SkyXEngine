@@ -292,7 +292,7 @@ void CRenderPipeline::renderFrame()
 #endif
 
 end:
-//	showGICubes();
+	//showGICubes();
 	showFrameStats();
 }
 void CRenderPipeline::endFrame()
@@ -303,6 +303,13 @@ void CRenderPipeline::endFrame()
 void CRenderPipeline::updateVisibility()
 {
 	m_pMainCameraVisibility->updateForCamera(gdata::pCamera);
+
+	if(m_pLightSystem)
+	{
+		float3 vCamPos;
+		gdata::pCamera->getPosition(&vCamPos);
+		m_pLightSystem->updateVisibility(gdata::pCamera, float3(-16.0f, -16.0f, -16.0f) + vCamPos, float3(16.0f, 16.0f, 16.0f) + vCamPos);
+	}
 }
 
 void CRenderPipeline::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility)
@@ -491,7 +498,7 @@ void CRenderPipeline::renderGI()
 		pLight = m_pLightSystem->getLight(i);
 
 		//если свет виден фрустуму камеры (это надо было заранее просчитать) и если свет включен
-		if(/*SLight_GetVisibleForFrustum(i) && */pLight->isEnabled())
+		if(pLight->isEnabled() && pLight->getRenderType() != LRT_NONE)
 		{
 			m_pShadowCache->addLight(pLight);
 		}
@@ -514,6 +521,10 @@ void CRenderPipeline::renderGI()
 	
 
 	//m_pDevice->setPixelShaderConstant(m_pShadowShaderDataPS, 7);
+
+
+	m_pDevice->setVertexShaderConstant(m_pCameraShaderDataVS, 8);
+	m_pDevice->setPixelShaderConstant(m_pCameraShaderDataVS, 8);
 
 	UINT uShadowCount = 0;
 	while((uShadowCount = m_pShadowCache->processNextBunch()))
@@ -565,7 +576,7 @@ void CRenderPipeline::renderGI()
 			m_pDevice->setVertexShaderConstant(m_pShadowShaderDataVS, 1);
 
 			gdata::pDXDevice->setBlendState(gdata::rstates::pBlendRed);
-			pShadow->genShadow(m_pShadow, m_pGBufferDepth);
+			pShadow->genShadow(m_pShadow, m_pGBufferDepth, m_pGBufferNormals);
 			gdata::pDXDevice->setBlendState(gdata::rstates::pBlendAlphaOneOne);
 			gdata::pDXDevice->setColorTarget(pAmbientSurf);
 			gdata::pDXDevice->setColorTarget(pSpecDiffSurf, 1);
@@ -614,8 +625,7 @@ void CRenderPipeline::renderGI()
 
 			SGCore_ScreenQuadDraw();
 		}
-
-
+		
 		IGXSurface *pLPVRed = m_pGIAccumRed->asRenderTarget();
 		IGXSurface *pLPVGreen = m_pGIAccumGreen->asRenderTarget();
 		IGXSurface *pLPVBlue = m_pGIAccumBlue->asRenderTarget();
@@ -641,12 +651,24 @@ void CRenderPipeline::renderGI()
 			pShadow->genLPV();
 		}
 
-		m_pDevice->setDepthStencilSurface(pOldSurface);
-		mem_release(pOldSurface);
-
 		m_pDevice->setColorTarget(NULL);
 		m_pDevice->setColorTarget(NULL, 1);
 		m_pDevice->setColorTarget(NULL, 2);
+
+#if 0
+		auto pTarget = m_pGBufferColor->asRenderTarget();
+		m_pDevice->setColorTarget(pAmbientSurf);
+		mem_release(pTarget);
+		for(UINT i = 0; i < uShadowCount; ++i)
+		{
+			pShadow = m_pShadowCache->getShadow(i);
+			pShadow->genLPV(true);
+		}
+		m_pDevice->setColorTarget(NULL);
+#endif
+
+		m_pDevice->setDepthStencilSurface(pOldSurface);
+		mem_release(pOldSurface);
 
 		break;
 	}
@@ -654,6 +676,9 @@ void CRenderPipeline::renderGI()
 	SGCore_ShaderUnBind();
 
 	mem_release(pOldDSSurface);
+
+	m_pDevice->setVertexShaderConstant(m_pLightingShaderDataVS, 1);
+	m_pDevice->setPixelShaderConstant(m_pLightingShaderDataPS, 1);
 
 	{
 		SGCore_ShaderBind(m_idLPVPropagateShader);
@@ -721,13 +746,13 @@ void CRenderPipeline::renderGI()
 		SGCore_ShaderBind(idshaderkit);
 
 		m_pDevice->setSamplerState(gdata::rstates::pSamplerPointClamp, 0);
-		m_pDevice->setSamplerState(gdata::rstates::pSamplerLinearClamp, 1);
+		m_pDevice->setSamplerState(gdata::rstates::pSamplerLinearBorder, 1);
 
 		gdata::pDXDevice->setTexture(m_pGBufferDepth);
 		gdata::pDXDevice->setTexture(m_pGBufferNormals, 1);
-		gdata::pDXDevice->setTexture(m_pGIAccumRed2, 2);
-		gdata::pDXDevice->setTexture(m_pGIAccumGreen2, 3);
-		gdata::pDXDevice->setTexture(m_pGIAccumBlue2, 4);
+		gdata::pDXDevice->setTexture(m_pGIAccumRed, 2);
+		gdata::pDXDevice->setTexture(m_pGIAccumGreen, 3);
+		gdata::pDXDevice->setTexture(m_pGIAccumBlue, 4);
 
 		SGCore_ScreenQuadDraw();
 
@@ -736,6 +761,7 @@ void CRenderPipeline::renderGI()
 		gdata::pDXDevice->setTexture(NULL, 4);
 
 		SGCore_ShaderUnBind();
+		m_pDevice->setSamplerState(gdata::rstates::pSamplerLinearClamp, 1);
 	}
 
 	m_pDevice->setDepthStencilState(gdata::rstates::pDepthStencilStateNoZ);

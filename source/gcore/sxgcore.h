@@ -800,14 +800,21 @@ struct CFrustumPlane
 	float3_t m_vNormal;
 	float m_fDistance;
 
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM2();
+
+	CFrustumPlane() = default;
+	CFrustumPlane(const SMPLANE &pPlane)
+	{
+		m_vNormal.x = pPlane.x;
+		m_vNormal.y = pPlane.y;
+		m_vNormal.z = pPlane.z;
+		m_fDistance = pPlane.w;
+	}
 
 	void normalize()
 	{
-		float fDenom = sqrt((m_vNormal.x*m_vNormal.x) + (m_vNormal.y*m_vNormal.y) + (m_vNormal.z*m_vNormal.z));
-		m_vNormal.x = m_vNormal.x / fDenom;
-		m_vNormal.y = m_vNormal.y / fDenom;
-		m_vNormal.z = m_vNormal.z / fDenom;
+		float fDenom = SMVector3Length(m_vNormal);
+		m_vNormal = (float3)(m_vNormal / fDenom);
 		m_fDistance = m_fDistance / fDenom;
 	}
 };
@@ -918,148 +925,6 @@ SX_LIB_API ICamera* SGCore_CrCamera();
 
 //!@} sxgcore_camera
 
-//#############################################################################
-
-/*! \defgroup sxgcore_sky Небо
- \ingroup sxgcore
-@{*/
-
-/*! \name SkyBox
- \note Используются кубические текстуры
-@{*/
-
-#define SXGC_SKYBOX_SIZE 200.f
-
-//! создание
-SX_LIB_API void SGCore_SkyBoxCr();	
-
-//! инициализирован ли skybox
-SX_LIB_API bool SGCore_SkyBoxIsCr();
-
-//! используется ли SkyBox
-SX_LIB_API bool SGCore_SkyBoxGetUse();
-
-//! установить должен ли использоваться SkyBox
-SX_LIB_API void SGCore_SkyBoxSetUse(bool isUse);
-
-//! загружена ли текстура?
-SX_LIB_API bool SGCore_SkyBoxIsLoadTex();
-
-
-//! загрузка текстуры, texture - имя текстуры с расширением
-SX_LIB_API void SGCore_SkyBoxLoadTex(const char *szTexture);	
-
-//! смена текстуры, texture - имя текстуры с расширением
-SX_LIB_API void SGCore_SkyBoxChangeTex(const char *szTexture);
-
-//! в аргумент записывает путь до текущей активной текстуры
-SX_LIB_API void SGCore_SkyBoxGetActiveTex(char *szTexture);
-
-//! в аргумент записывает путь до следующей текстуры 9если включена смена)
-SX_LIB_API void SGCore_SkyBoxGetSecondTex(char *szTexture);
-
-
-//! установка угла поворота angle по оси y, в радианах
-SX_LIB_API void SGCore_SkyBoxSetRot(float fAngle);	
-
-//! возвращает угол поворота по оси y, в радианах
-SX_LIB_API float SGCore_SkyBoxGetRot();				
-
-
-//! установка цвета окраски в пределах 0-1, альфа компонента (w) - на сколько будет окрашен
-SX_LIB_API void SGCore_SkyBoxSetColor(const float4_t *pColor);	
-
-//! в color записывает текущий цвет окраски
-SX_LIB_API void SGCore_SkyBoxGetColor(float4_t *pColor);	
-
-//! рендер скайбокса
-SX_LIB_API void SGCore_SkyBoxRender(
-	float timeDelta,	//!< время рендера кадра в млсек 
-	const float3 *pPos	//!< позиция набладателя, эта же позиция будет центром skybox
-	);
-
-//!@}
-
-//**************************************************************************
-
-/*! \name SkyClouds
-
- \note Простая плоскость параллельная xz на которую зеркально (х2) натягивается текстура, в постоянном движении.
- Положение констатно.
- Используются обычные 2д текстуры.
-@{*/
-
-//! минимальный размер плоскости облаков (по обеим сторонам)
-#define SXGC_SKYCLOUDS_MIN_SIZE 1000.f
-
-//! создание
-SX_LIB_API void SGCore_SkyCloudsCr();		
-
-//! инициализирован ли sky clouds
-SX_LIB_API bool SGCore_SkyCloudsIsCr();		
-
-//! используется ли SkyClouds
-SX_LIB_API bool SGCore_SkyCloudsGetUse();
-
-//! установить должен ли использоваться SkyClouds
-SX_LIB_API void SGCore_SkyCloudsSetUse(bool isUse);
-
-//! загружена ли текстура
-SX_LIB_API bool SGCore_SkyCloudsIsLoadTex();
-
-
-/*! установка размеров и позиции.
- Так как позиция облаков константна то чтобы была илюзия полного покрытия уровня, необходимо облакам указывать размер в несколько раз больше чем весь доступный уровень, к примеру x2
-*/
-SX_LIB_API void SGCore_SkyCloudsSetWidthHeightPos(
-	float fWidth,			//!< ширина в метрах
-	float fHeight,			//!< высота в метрах
-	const float3 *pCenter	//!< позиция центра
-	);
-
-//! загрузка текстуры, texture - имя текстуры с расширением
-SX_LIB_API void SGCore_SkyCloudsLoadTex(const char *szNameTexture);	
-
-//! плавная смена текстуры, texture - имя текстуры с расширением
-SX_LIB_API void SGCore_SkyCloudsChangeTex(const char *szNameTexture);
-
-
-//! установка угла поворота angle по оси y, в радианах
-SX_LIB_API void SGCore_SkyCloudsSetRot(float fAngle);
-
-//! возвращает текущий угол поворота по оси y, в радианах
-SX_LIB_API float SGCore_SkyCloudsGetRot();			
-
-
-//! устанавливает коэфициент прозрачности, в пределах 0-1
-SX_LIB_API void SGCore_SkyCloudsSetAlpha(float fAlpha);	
-
-//! возвращает текущий коэфициент прозрачности
-SX_LIB_API float SGCore_SkyCloudsGetAlpha();			
-
-
-//! устанавливает коэфициент скорости движения
-SX_LIB_API void SGCore_SkyCloudsSetSpeed(float fSpeed);	
-
-//! возвращает текущий коэфициент скорости движения
-SX_LIB_API float SGCore_SkyCloudsGetSpeed();			
-
-
-//! установка цвета окраски в пределах 0-1, альфа компонента (w) - на сколько будет окрашен
-SX_LIB_API void SGCore_SkyCloudsSetColor(const float4_t *pColor);
-
-//! в color записывает текущий цвет окраски
-SX_LIB_API void SGCore_SkyCloudsGetColor(float4_t *pColor);
-
-//! рендер облаков
-SX_LIB_API void SGCore_SkyCloudsRender(
-	DWORD timeDetlta,		//!< время рендера кадра в млсек
-	const float3* pos,		//!< позиция набладателя
-	bool isShadow			//!< для теней ли рендерим?
-	);
-
-//!@}
-//!@} sxgcore_sky
 
 #endif
 

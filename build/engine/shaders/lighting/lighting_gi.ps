@@ -4,23 +4,22 @@ lighting_gi.ps
 
 */
 
-/*Spherical harmonics coefficients – precomputed*/
-#define SH_C0 0.282094792f // 1 / 2sqrt(pi)
-#define SH_C1 0.488602512f // sqrt(3/pi) / 2
-
-/*Cosine lobe coeff*/
-#define SH_cosLobe_C0 0.886226925f // sqrt(pi)/2
-#define SH_cosLobe_C1 1.02332671f // sqrt(pi/3)
-#define PI 3.1415926f
-
-#include <../struct.h>
-#include <../mtrl.h>
+#include "../lpv.h"
+#include "../struct.h"
+#include "../mtrl.h"
 
 //##########################################################################
 
 cbuffer perFrame: register(b1)
 {
 	half3 g_vViewPos;
+};
+
+cbuffer b8: register(b8)
+{
+	// float4x4 mV;
+	float4x4 g_mVP;
+	float4 g_vPosCam;
 };
 
 //##########################################################################
@@ -36,10 +35,6 @@ Texture3D g_txLightVolumeBlue:register(t4);
 
 //#############################################################################
 
-float4 dirToSH(float3 dir) {
-	return float4(SH_C0, -SH_C1 * dir.y, SH_C1 * dir.z, -SH_C1 * dir.x);
-}
-
 PSO_Lbuffer main(VSO_ResPos IN)
 {
 	PSO_Lbuffer OUT;
@@ -51,6 +46,8 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	half3 vTexSize = half3(1.0 / 32.0, 1.0 / 32.0, 16); 
 	half3 vOrigin = half3(0, 0, 0); // Центр сетки
 	half4 vPosition = half4(g_vViewPos.xyz + IN.vWorldRay * fDepth, 1.0); // Мировая позиция пиксела
+	
+	vPosition -= floor(g_vPosCam);
 	
 	half3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
 	

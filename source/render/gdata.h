@@ -163,6 +163,7 @@ namespace gdata
 		extern IGXSamplerState *pSamplerLinearWrap;
 		extern IGXSamplerState *pSamplerLinearMirror;
 		extern IGXSamplerState *pSamplerLinearClamp;
+		extern IGXSamplerState *pSamplerLinearBorder;
 		extern IGXSamplerState *pSamplerAnisotopicClamp;
 		extern IGXSamplerState *pSamplerAnisotopicWrap;
 
