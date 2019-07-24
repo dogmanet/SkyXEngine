@@ -1912,6 +1912,21 @@ float CXLightSun::getMaxDistance()
 	return(1000.0f);
 }
 
+void CXLightSun::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax)
+{
+	m_renderType = LRT_LIGHT;
+#if 0
+	m_renderType = LRT_NONE;
+
+	float3 vOrigin = getPosition();
+	if(pMainCamera->getFrustum()->sphereInFrustum(&vOrigin, getMaxDistance()))
+	{
+		m_renderType |= LRT_LIGHT;
+	}
+#endif
+	CXLight::updateVisibility(pMainCamera, vLPVmin, vLPVmax);
+}
+
 //##########################################################################
 
 CXLightSpot::CXLightSpot(CLightSystem *pLightSystem):CXLight(pLightSystem)

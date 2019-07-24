@@ -405,12 +405,14 @@ int main(int argc, char **argv)
 	g_pEngine = pEngine;
 	CEngineCallback engineCb;
 	pEngine->initGraphics((XWINDOW_OS_HANDLE)g_hTopLeftWnd, &engineCb);
+	pEngine->getCore()->execCmd("gmode editor");
 	pEngine->getCore()->execCmd("exec ../config_editor.cfg");
 	CRenderPipeline *pPipeline = new CRenderPipeline(Core_GetIXCore());
 	// XInitGuiWindow(false);
 
 	RECT rcTopLeft;
 	GetClientRect(g_hTopLeftWnd, &rcTopLeft);
+
 	g_pEngine->getCore()->execCmd2("r_win_width %d\nr_win_height %d", rcTopLeft.right - rcTopLeft.left, rcTopLeft.bottom - rcTopLeft.top);
 
 

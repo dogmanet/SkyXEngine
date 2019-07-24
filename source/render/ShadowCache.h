@@ -47,31 +47,38 @@ protected:
 	ID m_idRSMCubePixelShader = -1;
 	ID m_idRSMPixelShaderSpot = -1;
 
-	struct _shadow_map_s
+	struct ShadowMap
 	{
 		CShadowMap map;
 		bool isDirty = false;
 		IXLight *pLight = NULL;
 	};
 
-	struct _shadow_cube_map_s
+	struct ShadowCubeMap
 	{
 		CShadowCubeMap map;
 		bool isDirty = false;
 		IXLight *pLight = NULL;
 	};
 
-	Array<_shadow_map_s> m_aShadowMaps;
-	Array<_shadow_cube_map_s> m_aShadowCubeMaps;
-	//CShadowPSSM *m_pShadowPSSM;
+	struct ShadowPSSM
+	{
+		CShadowPSSM map;
+		bool isDirty = false;
+		IXLight *pLight = NULL;
+	};
 
-	struct _ready_shadows_s
+	Array<ShadowMap> m_aShadowMaps;
+	Array<ShadowCubeMap> m_aShadowCubeMaps;
+	ShadowPSSM m_shadowPSSM;
+
+	struct ReadyShadows
 	{
 		IBaseShadowMap *pShadowMap;
 		IXLight *pLight;
 	};
 
-	Array<_ready_shadows_s> m_aReadyMaps;
+	Array<ReadyShadows> m_aReadyMaps;
 };
 
 #endif

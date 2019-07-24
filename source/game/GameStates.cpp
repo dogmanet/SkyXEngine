@@ -83,10 +83,14 @@ void CEditorState::activate()
 	Core_TimeWorkingSet(idTimerRender, true);
 	//SSCore_ChannelPlay(SX_SOUND_CHANNEL_GAME);
 //	SSInput_SetEnable(true);
+
+	GameData::m_pMgr->setEditorMode(true);
 }
 
 void CEditorState::deactivate()
 {
+	GameData::m_pMgr->setEditorMode(false);
+
 	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
 	Core_TimeWorkingSet(idTimerRender, false);
 	//SSCore_ChannelStop(SX_SOUND_CHANNEL_GAME);

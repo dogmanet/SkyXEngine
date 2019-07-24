@@ -107,6 +107,85 @@ private:
 
 //##########################################################################
 
+#define PSSM_MAX_SPLITS 4
+class CShadowPSSM: public IBaseShadowMap
+{
+public:
+	CShadowPSSM();
+	~CShadowPSSM();
+
+	SX_ALIGNED_OP_MEM2();
+
+	static UINT GetMapMemory(UINT uSize);
+
+	void init(IGXContext *pContext, UINT uSize);
+
+	void setLight(IXLight *pLight);
+	void process(IXRenderPipeline *pRenderPipeline);
+	void genShadow(IGXTexture2D *shadowmap, IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals) override;
+	void genLPV(bool isDebug = false) override;
+
+private:
+	IGXContext *m_pDevice = NULL;
+
+	IGXDepthStencilSurface *m_pDepthStencilSurface = NULL;
+
+	IGXSamplerState *m_pSamplerPointWrap = NULL;
+	IGXSamplerState *m_pSamplerPointClamp = NULL;
+	IGXSamplerState *m_pSamplerLinearClamp = NULL;
+	IGXSamplerState *m_pSamplerComparisonLinearClamp = NULL;
+
+	ID m_idShader = -1;
+	ID m_idInjectShader = -1;
+	ID m_idInjectDebugShader = -1;
+
+	struct Split
+	{
+		SX_ALIGNED_OP_MEM2();
+
+		IGXTexture2D *pDepthMap = NULL;
+		IGXTexture2D *pNormalMap = NULL;
+		IGXTexture2D *pFluxMap = NULL;
+
+		float4x4 mView;
+		float4x4 mProj;
+	};
+	Split m_splits[PSSM_MAX_SPLITS];
+
+	float4x4 m_mScaleBiasMat;
+	float m_fBias = 0.0001f;
+	float m_fBlurPixel = 0.5f;
+
+	float m_fSize;
+
+	IXLight *m_pLight = NULL;
+
+	struct
+	{
+		struct
+		{
+			SMMATRIX mMatrixTexture;
+			float3 vPixelMapSizeBias;
+		} ps;
+	} m_shaderData;
+	IGXConstantBuffer *m_pShaderDataPS = NULL;
+	IGXConstantBuffer *m_pShaderDataInjectVS = NULL;
+
+	struct
+	{
+		struct
+		{
+			//SMMATRIX mV;
+			SMMATRIX mVP;
+			float3 vPosCam;
+		} vs;
+		//float4 vNearFarLayers;
+	} m_cameraShaderData;
+	IGXConstantBuffer *m_pCameraShaderDataVS = NULL;
+};
+
+//##########################################################################
+
 class CShadowCubeMap: public IBaseShadowMap
 {
 public:

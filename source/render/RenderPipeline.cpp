@@ -546,7 +546,7 @@ void CRenderPipeline::renderGI()
 			pShadow = m_pShadowCache->getShadow(i);
 
 			//пока что назначаем шейдер без теней
-			ID idshaderkit = pLight->getType() == LIGHT_TYPE_SPOT ? gdata::shaders_id::kit::idComLightingSpotNonShadow : gdata::shaders_id::kit::idComLightingNonShadow;
+			//ID idshaderkit = pLight->getType() == LIGHT_TYPE_SPOT ? gdata::shaders_id::kit::idComLightingSpotNonShadow : gdata::shaders_id::kit::idComLightingNonShadow;
 
 			//если не глобальный источник
 			if(pLight->getType() != LIGHT_TYPE_SUN)
@@ -582,8 +582,8 @@ void CRenderPipeline::renderGI()
 			gdata::pDXDevice->setColorTarget(pSpecDiffSurf, 1);
 
 			gdata::pDXDevice->setTexture(m_pShadow, 4);
-			idshaderkit = gdata::shaders_id::kit::idComLightingShadow;
-			idshaderkit = pLight->getType() == LIGHT_TYPE_SPOT ? gdata::shaders_id::kit::idComLightingSpotShadow : gdata::shaders_id::kit::idComLightingShadow;
+			//idshaderkit = gdata::shaders_id::kit::idComLightingShadow;
+			ID idshaderkit = pLight->getType() == LIGHT_TYPE_SPOT ? gdata::shaders_id::kit::idComLightingSpotShadow : gdata::shaders_id::kit::idComLightingShadow;
 
 			m_pDevice->setVertexShaderConstant(m_pLightingShaderDataVS, 1);
 

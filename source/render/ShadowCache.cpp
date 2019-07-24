@@ -123,27 +123,24 @@ UINT CShadowCache::processNextBunch()
 			m_aShadowCubeMaps[uPoints].pLight = m_aFrameLights[i];
 			++uPoints;
 			break;
+		case LIGHT_TYPE_SUN:
+			m_shadowPSSM.isDirty = true;
+			m_shadowPSSM.pLight = m_aFrameLights[i];
+			break;
 		}
 	}
 
-	m_pMaterialSystem->overridePixelShader(m_idRSMPixelShader);
 	m_aReadyMaps.clearFast();
+
 	// render shadows
+	m_pMaterialSystem->overridePixelShader(m_idRSMPixelShader);
 	{
-		_shadow_map_s *pSM;
+		ShadowMap *pSM;
 		for(UINT i = 0, l = m_aShadowMaps.size(); i < l; ++i)
 		{
 			pSM = &m_aShadowMaps[i];
 			if(pSM->isDirty)
 			{
-				/*if(pSM->pLight->getType() == LIGHT_TYPE_SPOT)
-				{
-				m_pMaterialSystem->overridePixelShader(m_idRSMPixelShaderSpot);
-				}
-				else
-				{
-				m_pMaterialSystem->overridePixelShader(m_idRSMPixelShader);
-				}*/
 				pSM->map.setLight(pSM->pLight);
 				pSM->map.process(m_pRenderPipeline);
 				pSM->isDirty = false;
@@ -153,10 +150,19 @@ UINT CShadowCache::processNextBunch()
 		}
 	}
 
+	if(m_shadowPSSM.isDirty)
+	{
+		m_shadowPSSM.map.setLight(m_shadowPSSM.pLight);
+		m_shadowPSSM.map.process(m_pRenderPipeline);
+		m_shadowPSSM.isDirty = false;
+
+		m_aReadyMaps.push_back({&m_shadowPSSM.map, m_shadowPSSM.pLight});
+	}
+
 	m_pMaterialSystem->overrideGeometryShader(m_idRSMCubeGeometryShader);
 	m_pMaterialSystem->overridePixelShader(m_idRSMCubePixelShader);
 	{
-		_shadow_cube_map_s *pSM;
+		ShadowCubeMap *pSM;
 		for(UINT i = 0, l = m_aShadowCubeMaps.size(); i < l; ++i)
 		{
 			pSM = &m_aShadowCubeMaps[i];

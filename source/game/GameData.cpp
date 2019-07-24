@@ -371,7 +371,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 	m_hWnd(hWnd)
 {
 	loadFoostepsSounds();
-
+	isGame = true;
 	m_isGame = isGame;
 	
 	HMODULE hDLL = LoadLibrary("sxgui"
@@ -457,6 +457,9 @@ GameData::GameData(HWND hWnd, bool isGame):
 	});
 
 	m_pLightSystem = (IXLightSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXLIGHTSYSTEM_GUID);
+
+	IXLightSun *pSun = m_pLightSystem->createSun();
+	pSun->setColor(float3(0.0f, 1.0f, 0.0f));
 
 	g_pAsyncTaskRunner = Core_GetIXCore()->getAsyncTaskRunner();
 

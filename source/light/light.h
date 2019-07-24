@@ -367,6 +367,8 @@ public:
 
 	float getMaxDistance();
 
+	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax) override;
+
 protected:
 	void updatePSConstants(IGXContext *pDevice);
 
