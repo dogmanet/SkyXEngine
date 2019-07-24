@@ -1,4 +1,5 @@
 #include "ResourceModelStatic.h"
+#include "MeshOptimizer.h"
 
 CResourceModelStatic::~CResourceModelStatic()
 {
@@ -67,14 +68,14 @@ UINT XMETHODCALLTYPE CResourceModelStatic::getLodCount() const
 	return(m_aLods.size());
 }
 
-const XResourceModelStaticSubset * XMETHODCALLTYPE CResourceModelStatic::getSubset(UINT uLod, UINT uSubset) const
+const XResourceModelStaticSubset* XMETHODCALLTYPE CResourceModelStatic::getSubset(UINT uLod, UINT uSubset) const
 {
 	assert(uLod < m_aLods.size());
 	assert(uSubset < m_aLods[uLod].uSubsetCount);
 
 	return(&m_aLods[uLod].pSubsets[uSubset]);
 }
-XResourceModelStaticSubset * XMETHODCALLTYPE CResourceModelStatic::getSubset(UINT uLod, UINT uSubset)
+XResourceModelStaticSubset* XMETHODCALLTYPE CResourceModelStatic::getSubset(UINT uLod, UINT uSubset)
 {
 	assert(uLod < m_aLods.size());
 	assert(uSubset < m_aLods[uLod].uSubsetCount);
@@ -86,4 +87,18 @@ bool XMETHODCALLTYPE CResourceModelStatic::validate() const
 {
 	//@TODO: Implement me!
 	return(true);
+}
+
+void XMETHODCALLTYPE CResourceModelStatic::optimize()
+{
+	for(UINT uLod = 0, uLodCount = m_aLods.size(); uLod < uLodCount; ++uLod)
+	{
+		auto *pLod = &m_aLods[uLod];
+		for(UINT uSubset = 0, uSubsetCount = pLod->uSubsetCount; uSubset < uSubsetCount; ++uSubset)
+		{
+			auto *pSubset = &pLod->pSubsets[uSubset];
+
+			CMeshOptimizer<XResourceModelStaticVertex, UINT>::Optimize(pSubset->pVertices, pSubset->pIndices, pSubset->iVertexCount, pSubset->iIndexCount);
+		}
+	}
 }

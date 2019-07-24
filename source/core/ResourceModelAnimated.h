@@ -83,6 +83,9 @@ public:
 	const XResourceModelHitbox * XMETHODCALLTYPE getHitbox(UINT uIndex) const override;
 
 	bool XMETHODCALLTYPE validate() const;
+	void XMETHODCALLTYPE optimize() override
+	{
+	}
 
 protected:
 

@@ -24,10 +24,12 @@ public:
 	UINT XMETHODCALLTYPE addLod(UINT uSubsetCount, UINT *puVertexCount, UINT *puIndexCount) override;
 	UINT XMETHODCALLTYPE getLodCount() const override;
 
-	const XResourceModelStaticSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) const override;
-	XResourceModelStaticSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) override;
+	const XResourceModelStaticSubset* XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) const override;
+	XResourceModelStaticSubset* XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) override;
 
 	bool XMETHODCALLTYPE validate() const;
+
+	void XMETHODCALLTYPE optimize() override;
 
 protected:
 

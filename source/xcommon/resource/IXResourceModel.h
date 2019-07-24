@@ -179,11 +179,11 @@ class IModelPhysbox: public IXUnknown
 public:
 	virtual XPHYSBOXTYPE XMETHODCALLTYPE getType() const = 0;
 
-	virtual const IModelPhysboxBox * XMETHODCALLTYPE asBox() const = 0;
-	virtual const IModelPhysboxSphere * XMETHODCALLTYPE asSphere() const = 0;
-	virtual const IModelPhysboxConvex * XMETHODCALLTYPE asConvex() const = 0;
-	virtual const IModelPhysboxCylinder * XMETHODCALLTYPE asCylinder() const = 0;
-	virtual const IModelPhysboxCapsule * XMETHODCALLTYPE asCapsule() const = 0;
+	virtual const IModelPhysboxBox* XMETHODCALLTYPE asBox() const = 0;
+	virtual const IModelPhysboxSphere* XMETHODCALLTYPE asSphere() const = 0;
+	virtual const IModelPhysboxConvex* XMETHODCALLTYPE asConvex() const = 0;
+	virtual const IModelPhysboxCylinder* XMETHODCALLTYPE asCylinder() const = 0;
+	virtual const IModelPhysboxCapsule* XMETHODCALLTYPE asCapsule() const = 0;
 
 	virtual float3 XMETHODCALLTYPE getPosition() const = 0;
 	virtual void XMETHODCALLTYPE setPosition(const float3 &vPos) = 0;
@@ -210,10 +210,10 @@ class IModelPhysboxConvex: public IModelPhysbox
 {
 public:
 	virtual UINT XMETHODCALLTYPE getVertexCount() const = 0;
-	virtual const float3_t * XMETHODCALLTYPE getData() const = 0;
+	virtual const float3_t* XMETHODCALLTYPE getData() const = 0;
 
 	virtual void XMETHODCALLTYPE initData(UINT uVertexCount, const float3_t *pData = NULL) = 0;
-	virtual float3_t * XMETHODCALLTYPE getData() = 0;
+	virtual float3_t* XMETHODCALLTYPE getData() = 0;
 };
 
 class IModelPhysboxCylinder: public IModelPhysbox
@@ -245,14 +245,14 @@ class IXResourceModel: public IXUnknown
 {
 public:
 	virtual UINT XMETHODCALLTYPE getPhysboxCount() const = 0;
-	virtual const IModelPhysbox * XMETHODCALLTYPE getPhysbox(UINT uPart) const = 0;
+	virtual const IModelPhysbox* XMETHODCALLTYPE getPhysbox(UINT uPart) const = 0;
 	virtual int XMETHODCALLTYPE getPhysboxBone(UINT uPart) const = 0;
 	virtual void XMETHODCALLTYPE addPhysbox(IModelPhysbox *pPhysbox, int iBone = -1) = 0;
 
 
 	virtual UINT XMETHODCALLTYPE getMaterialCount() const = 0;
 	virtual UINT XMETHODCALLTYPE getSkinCount() const = 0;
-	virtual const char * XMETHODCALLTYPE getMaterial(UINT uMaterial, UINT uSkin = 0) const = 0;
+	virtual const char* XMETHODCALLTYPE getMaterial(UINT uMaterial, UINT uSkin = 0) const = 0;
 	virtual void XMETHODCALLTYPE setMaterialCount(UINT uMaterialCount, UINT uSkinCount) = 0;
 	virtual void XMETHODCALLTYPE setMaterial(UINT uMaterial, UINT uSkin, const char *szName) = 0;
 
@@ -262,7 +262,7 @@ public:
 
 
 	virtual UINT XMETHODCALLTYPE getGibsCount() const = 0;
-	virtual const char * XMETHODCALLTYPE getGibName(UINT uIndex) const = 0;
+	virtual const char* XMETHODCALLTYPE getGibName(UINT uIndex) const = 0;
 	virtual UINT XMETHODCALLTYPE addGibName(const char *szFileName) = 0;
 
 	virtual const IXResourceModel * XMETHODCALLTYPE getGib(UINT uIndex) const = 0;
@@ -270,10 +270,10 @@ public:
 
 
 	virtual XMODELTYPE XMETHODCALLTYPE getType() const = 0;
-	virtual const IXResourceModelStatic * XMETHODCALLTYPE asStatic() const = 0;
-	virtual const IXResourceModelAnimated * XMETHODCALLTYPE asAnimated() const = 0;
-	virtual IXResourceModelStatic * XMETHODCALLTYPE asStatic() = 0;
-	virtual IXResourceModelAnimated * XMETHODCALLTYPE asAnimated() = 0;
+	virtual const IXResourceModelStatic* XMETHODCALLTYPE asStatic() const = 0;
+	virtual const IXResourceModelAnimated* XMETHODCALLTYPE asAnimated() const = 0;
+	virtual IXResourceModelStatic* XMETHODCALLTYPE asStatic() = 0;
+	virtual IXResourceModelAnimated* XMETHODCALLTYPE asAnimated() = 0;
 
 
 	virtual UINT XMETHODCALLTYPE getSubsetCount(UINT uLod) const = 0;
@@ -284,13 +284,14 @@ public:
 
 	virtual bool XMETHODCALLTYPE validate() const = 0;
 
-	virtual IModelPhysboxBox    * XMETHODCALLTYPE newPhysboxBox() const = 0;
-	virtual IModelPhysboxSphere * XMETHODCALLTYPE newPhysboxSphere() const = 0;
-	virtual IModelPhysboxConvex * XMETHODCALLTYPE newPhysboxConvex() const = 0;
-	virtual IModelPhysboxCylinder * XMETHODCALLTYPE newPhysboxCylinder() const = 0;
-	virtual IModelPhysboxCapsule * XMETHODCALLTYPE newPhysboxCapsule() const = 0;
+	virtual IModelPhysboxBox* XMETHODCALLTYPE newPhysboxBox() const = 0;
+	virtual IModelPhysboxSphere* XMETHODCALLTYPE newPhysboxSphere() const = 0;
+	virtual IModelPhysboxConvex* XMETHODCALLTYPE newPhysboxConvex() const = 0;
+	virtual IModelPhysboxCylinder* XMETHODCALLTYPE newPhysboxCylinder() const = 0;
+	virtual IModelPhysboxCapsule* XMETHODCALLTYPE newPhysboxCapsule() const = 0;
 
 	virtual void XMETHODCALLTYPE makeReadOnly() = 0;
+	virtual void XMETHODCALLTYPE optimize() = 0;
 };
 
 // Implemented in core
@@ -300,37 +301,37 @@ public:
 	virtual void XMETHODCALLTYPE setPrimitiveTopology(XPT_TOPOLOGY topology) = 0;
 	virtual XPT_TOPOLOGY XMETHODCALLTYPE getPrimitiveTopology() const = 0;
 
-	virtual const XResourceModelStaticSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) const = 0;
-	virtual XResourceModelStaticSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) = 0;
+	virtual const XResourceModelStaticSubset* XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) const = 0;
+	virtual XResourceModelStaticSubset* XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) = 0;
 };
 
 // Implemented in core
 class IXResourceModelAnimated: public virtual IXResourceModel
 {
 public:
-	virtual const XResourceModelAnimatedSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) const = 0;
-	virtual XResourceModelAnimatedSubset * XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) = 0;
+	virtual const XResourceModelAnimatedSubset* XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) const = 0;
+	virtual XResourceModelAnimatedSubset* XMETHODCALLTYPE getSubset(UINT uLod, UINT uSubset) = 0;
 
 
 	virtual UINT XMETHODCALLTYPE getImportsCount() const = 0;
-	virtual const char * XMETHODCALLTYPE getImportName(UINT uIndex) const = 0;
+	virtual const char* XMETHODCALLTYPE getImportName(UINT uIndex) const = 0;
 	virtual XMODEL_IMPORT XMETHODCALLTYPE getImportImportFlags(UINT uIndex) const = 0;
 	virtual UINT XMETHODCALLTYPE addImportName(const char *szFileName, XMODEL_IMPORT importFlags) = 0;
 
-	virtual const IXResourceModel * XMETHODCALLTYPE getImport(UINT uIndex) const = 0;
-	virtual IXResourceModel * XMETHODCALLTYPE getImport(UINT uIndex) = 0;
+	virtual const IXResourceModel* XMETHODCALLTYPE getImport(UINT uIndex) const = 0;
+	virtual IXResourceModel* XMETHODCALLTYPE getImport(UINT uIndex) = 0;
 	virtual void XMETHODCALLTYPE setImport(UINT uIndex, IXResourceModel *pResource) = 0;
 
 
 	virtual UINT XMETHODCALLTYPE getPartsCount() const = 0;
-	virtual const char * XMETHODCALLTYPE getPartFileName(UINT uIndex) const = 0;
-	virtual const char * XMETHODCALLTYPE getPartName(UINT uIndex) const = 0;
+	virtual const char* XMETHODCALLTYPE getPartFileName(UINT uIndex) const = 0;
+	virtual const char* XMETHODCALLTYPE getPartName(UINT uIndex) const = 0;
 	virtual XMODEL_IMPORT XMETHODCALLTYPE getPartImportFlags(UINT uIndex) const = 0;
 	virtual XMODEL_PART_FLAGS XMETHODCALLTYPE getPartFlags(UINT uIndex) const = 0;
 	virtual UINT XMETHODCALLTYPE addPartName(const char *szFileName, const char *szName, XMODEL_IMPORT importFlags, XMODEL_PART_FLAGS partFlags) = 0;
 
-	virtual const IXResourceModel * XMETHODCALLTYPE getPart(UINT uIndex) const = 0;
-	virtual IXResourceModel * XMETHODCALLTYPE getPart(UINT uIndex) = 0;
+	virtual const IXResourceModel* XMETHODCALLTYPE getPart(UINT uIndex) const = 0;
+	virtual IXResourceModel* XMETHODCALLTYPE getPart(UINT uIndex) = 0;
 	virtual void XMETHODCALLTYPE setPart(UINT uIndex, IXResourceModel *pResource) = 0;
 
 
@@ -339,16 +340,16 @@ public:
 
 	virtual void XMETHODCALLTYPE setBoneInfo(int iBone, const char *szName, int iParent, const float3 &vTranslation, const SMQuaternion &vRotation) = 0;
 	virtual int XMETHODCALLTYPE getBoneParent(int iBone) const = 0;
-	virtual const char * XMETHODCALLTYPE getBoneName(int iBone) const = 0;
+	virtual const char* XMETHODCALLTYPE getBoneName(int iBone) const = 0;
 	virtual float3 XMETHODCALLTYPE getBoneTranslation(int iBone) const = 0;
 	virtual SMQuaternion XMETHODCALLTYPE getBoneRotation(int iBone) const = 0;
 
 
 	virtual UINT XMETHODCALLTYPE getSequenceCount() const = 0;
-	virtual const XResourceModelSequence * XMETHODCALLTYPE getSequence(UINT uIndex) const = 0;
+	virtual const XResourceModelSequence* XMETHODCALLTYPE getSequence(UINT uIndex) const = 0;
 
 	virtual void XMETHODCALLTYPE setSequenceCount(UINT uCount) = 0;
-	virtual XResourceModelSequence * XMETHODCALLTYPE getSequence(UINT uIndex) = 0;
+	virtual XResourceModelSequence* XMETHODCALLTYPE getSequence(UINT uIndex) = 0;
 	virtual void XMETHODCALLTYPE setSequenceFrameCount(UINT uIndex, UINT uFrameCount) = 0;
 	
 
@@ -360,14 +361,14 @@ public:
 	virtual UINT XMETHODCALLTYPE getControllersCount() const = 0;
 	virtual void XMETHODCALLTYPE setControllersCount(UINT uCount) = 0;
 	virtual void XMETHODCALLTYPE setControllerBoneCount(UINT uIndex, UINT uAffectedBonesCount) = 0;
-	virtual const XResourceModelController * XMETHODCALLTYPE getController(UINT uIndex) const = 0;
-	virtual XResourceModelController * XMETHODCALLTYPE getController(UINT uIndex) = 0;
+	virtual const XResourceModelController* XMETHODCALLTYPE getController(UINT uIndex) const = 0;
+	virtual XResourceModelController* XMETHODCALLTYPE getController(UINT uIndex) = 0;
 
 
 	virtual UINT XMETHODCALLTYPE getHitboxCount() const = 0;
 	virtual void XMETHODCALLTYPE setHitboxCount(UINT uCount) = 0;
-	virtual XResourceModelHitbox * XMETHODCALLTYPE getHitbox(UINT uIndex) = 0;
-	virtual const XResourceModelHitbox * XMETHODCALLTYPE getHitbox(UINT uIndex) const = 0;
+	virtual XResourceModelHitbox* XMETHODCALLTYPE getHitbox(UINT uIndex) = 0;
+	virtual const XResourceModelHitbox* XMETHODCALLTYPE getHitbox(UINT uIndex) const = 0;
 };
 
 

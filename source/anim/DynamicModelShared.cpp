@@ -67,6 +67,8 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 	m_pResource = pResource;
 	pResource->AddRef();
 
+	pResource->optimize();
+
 	m_topology = pResource->getPrimitiveTopology();
 
 	{
@@ -173,6 +175,37 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 										isMinMaxSet = true;
 									}
 								}
+
+#if 1
+#define POST_TNL_CACHE_SIZE 12
+								UINT pCache[POST_TNL_CACHE_SIZE];
+								byte u8CachePtr = 0;
+								for(UINT k = 0; k < POST_TNL_CACHE_SIZE; ++k)
+								{
+									pCache[k] = ~0;
+								}
+								UINT uMissCount = 0;
+								bool isFound;
+								for(UINT k = 0; k < pSubset->iIndexCount; ++k)
+								{
+									isFound = false;
+									for(UINT uCacheIdx = 0; uCacheIdx < POST_TNL_CACHE_SIZE; ++uCacheIdx)
+									{
+										if(pCache[uCacheIdx] == pSubset->pIndices[k])
+										{
+											isFound = true;
+											break;
+										}
+									}
+									if(!isFound)
+									{
+										++uMissCount;
+										pCache[u8CachePtr++] = pSubset->pIndices[k];
+										u8CachePtr %= POST_TNL_CACHE_SIZE;
+									}
+								}
+								printf("Tris: %5u; Miss: %5u; ACMR: %.2f\n", pSubset->iIndexCount / 3, uMissCount, (float)uMissCount / (float)(pSubset->iIndexCount / 3));
+#endif
 							}
 
 							break;

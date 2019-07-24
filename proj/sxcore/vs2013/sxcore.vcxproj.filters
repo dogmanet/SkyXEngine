@@ -85,6 +85,15 @@
     <ClCompile Include="..\..\..\source\core\FIleExtPathsIterator.cpp">
       <Filter>Source\FileSystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\core\DirectXMeshAdjacency.cpp">
+      <Filter>Source\resource\optimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\DirectXMeshOptimize.cpp">
+      <Filter>Source\resource\optimizer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\DirectXMeshOptimizeTVC.cpp">
+      <Filter>Source\resource\optimizer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -107,6 +116,9 @@
     </Filter>
     <Filter Include="Header\FileSystem">
       <UniqueIdentifier>{445611bf-f56a-4d14-91e3-6f93aa9a36a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\resource\optimizer">
+      <UniqueIdentifier>{9b5203c5-59fb-4f31-9a10-2701d4c3f0f8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -244,6 +256,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\FileExtPathsIterator.h">
       <Filter>Header\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\MeshOptimizer.h">
+      <Filter>Header\resource</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
