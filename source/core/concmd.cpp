@@ -352,21 +352,22 @@ void echo(int argc, const char ** argv)
 	printf("\n");
 }
 
-void exec(int argc, const char ** argv)
+void exec(int argc, const char **argv)
 {
 	if(argc != 2)
 	{
 		puts(COLOR_LRED "[exec]: Expected filename" COLOR_RESET);
 		return;
 	}
-	IFile * f = Core_CrFile();
-	if(f->open(argv[1], CORE_FILE_BIN) < 0)
+	
+	IFile *f = Core_GetIXCore()->getFileSystem()->openFile(argv[1]);
+	if(!f)
 	{
 		printf(COLOR_LRED "Couldn't exec '%s'\n" COLOR_RESET, argv[1]);
 		return;
 	}
 	size_t len = f->getSize() + 1;
-	char * buf, *cbuf = NULL;
+	char *buf, *cbuf = NULL;
 	if(len <= 4096)
 	{
 		buf = (char*)alloca(sizeof(char) * len);
@@ -381,7 +382,7 @@ void exec(int argc, const char ** argv)
 
 	ConsolePushBuffer();
 	Core_0ConsoleExecCmd("%s", buf);
-	f->Release();
+	mem_release(f); 
 
 	mem_delete_a(cbuf);
 }

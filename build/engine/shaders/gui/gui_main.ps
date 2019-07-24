@@ -3,7 +3,7 @@
 gui_main.ps
 */
 
-#include <../struct.h>
+#include "../struct.h"
 
 //##########################################################################
 
@@ -12,14 +12,13 @@ Texture2D g_txDiffuse : register(t0);		// basetexture
 
 //##########################################################################
 
-half4 g_vColor: register(b0);
+float4 g_vColor: register(b0);
 
 //##########################################################################
 
-half4 main(VSO_GUITextured IN):COLOR0
+float4 main(VSO_GUITextured IN):COLOR0
 {
-	// half4 vFinalColor = tex2D(g_sDiffuse, IN.vTexUV);
-	half4 vFinalColor = g_txDiffuse.Sample(g_sDiffuse, IN.vTexUV);
+	float4 vFinalColor = g_txDiffuse.Sample(g_sDiffuse, IN.vTexUV);
 	vFinalColor *= g_vColor;
 	
 	return(vFinalColor);

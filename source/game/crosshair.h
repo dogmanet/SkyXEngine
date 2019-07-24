@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -88,6 +88,7 @@ protected:
 	ID m_idShaderKit = -1;
 
 	IGXBlendState *m_pBlendState = NULL;
+	IGXSamplerState *m_pSamplerState = NULL;
 	IGXDepthStencilState *m_pDepthState = NULL;
 };
 

@@ -807,8 +807,10 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 	m_pGUI->registerCallback("settings_commit", [](gui::IEvent * ev){
 
-		CSettingsWriter settingsWriter;
-		settingsWriter.loadFile("../config_game_user_auto.cfg");
+		bool isNewExists = Core_GetIXCore()->getFileSystem()->fileExists("user_settings.cfg");
+		
+		CSettingsWriter settingsWriter(Core_GetIXCore()->getFileSystem());
+		settingsWriter.loadFile(isNewExists ? "user_settings.cfg" : "../config_game_user_auto.cfg");
 
 		gui::IDesktop * pSettingsDesktop = GameData::m_pGUI->getActiveDesktop();
 		gui::dom::IDOMdocument * doc = pSettingsDesktop->getDocument();
@@ -842,15 +844,17 @@ GameData::GameData(HWND hWnd, bool isGame):
 			}
 		}
 
-		settingsWriter.saveFile("../config_game_user_auto.cfg");
-
+		settingsWriter.saveFile("user_settings.cfg");
+		
 		GameData::m_pGUI->popDesktop();
 	});
 	m_pGUI->registerCallback("controls_commit", [](gui::IEvent * ev){
 
-		CSettingsWriter settingsWriter;
-		settingsWriter.loadFile("../config_game_user_auto.cfg");
+		bool isNewExists = Core_GetIXCore()->getFileSystem()->fileExists("user_settings.cfg");
 
+		CSettingsWriter settingsWriter(Core_GetIXCore()->getFileSystem());
+		settingsWriter.loadFile(isNewExists ? "user_settings.cfg" : "../config_game_user_auto.cfg");
+		
 		gui::IDesktop * pSettingsDesktop = GameData::m_pGUI->getActiveDesktop();
 		gui::dom::IDOMdocument * doc = pSettingsDesktop->getDocument();
 		auto pItems = doc->getElementsByClass(L"cctable_row");
@@ -894,7 +898,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		}
 
 
-		settingsWriter.saveFile("../config_game_user_auto.cfg");
+		settingsWriter.saveFile("config_game_user_auto.cfg");
 
 		GameData::m_pGUI->popDesktop();
 	});

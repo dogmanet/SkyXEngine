@@ -54,8 +54,10 @@ CCrosshair::CCrosshair():
 	m_idShaderKit = SGCore_ShaderCreateKit(m_idVS, m_idPS);
 
 	GXBlendDesc blendDesc;
-	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
-	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
+	//blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
+	//blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
+	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_ONE;
+	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_ONE;
 	blendDesc.renderTarget[0].useBlend = TRUE;
 	m_pBlendState = m_pDev->createBlendState(&blendDesc);
 
@@ -63,10 +65,15 @@ CCrosshair::CCrosshair():
 	dsDesc.useDepthTest = FALSE;
 	dsDesc.useDepthWrite = FALSE;
 	m_pDepthState = m_pDev->createDepthStencilState(&dsDesc);
+
+	GXSamplerDesc sampDesc;
+	sampDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
+	m_pSamplerState = m_pDev->createSamplerState(&sampDesc);
 }
 
 CCrosshair::~CCrosshair()
 {
+	mem_release(m_pSamplerState);
 	mem_release(m_pBlendState);
 	mem_release(m_pVertexBuffer);
 	mem_release(m_pIndexBuffer);
@@ -167,7 +174,7 @@ void CCrosshair::update()
 							pIndices[iCurIdx++] = iCurVtx - 1;
 							pVertices[iCurVtx++] = {
 								float3_t(fXradius * sinf(angle) + fOX, fYradius * -cosf(angle) + fOY, 0.0f),
-								float2_t(lerpf(f2TexMin.x, f2TexMax.x, sinf(angle) * 0.5f + 0.5f), -lerpf(f2TexMax.y, f2TexMin.y, -cosf(angle) * 0.5f + 0.5f))
+								float2_t(lerpf(f2TexMin.x, f2TexMax.x, sinf(angle) * 0.5f + 0.5f), 1.0f - lerpf(f2TexMax.y, f2TexMin.y, -cosf(angle) * 0.5f + 0.5f))
 							}; // circle
 						}
 
@@ -178,7 +185,7 @@ void CCrosshair::update()
 						iStopIdx = iCurVtx;
 						pVertices[iCurVtx++] = {
 							float3_t(fOX, fOY, 0.0f),
-							float2_t(lerpf(f2TexMin.x, f2TexMax.x, 0.5f), -lerpf(f2TexMax.y, f2TexMin.y, 0.5f))
+							float2_t(lerpf(f2TexMin.x, f2TexMax.x, 0.5f), 1.0f - lerpf(f2TexMax.y, f2TexMin.y, 0.5f))
 						}; // center
 					}
 					else
@@ -189,7 +196,7 @@ void CCrosshair::update()
 					}
 					pVertices[iCurVtx++] = {
 						float3_t(fXradius * sinf(angle) + fOX, fYradius * -cosf(angle) + fOY, 0.0f),
-						float2_t(lerpf(f2TexMin.x, f2TexMax.x, sinf(angle) * 0.5f + 0.5f), -lerpf(f2TexMax.y, f2TexMin.y, -cosf(angle) * 0.5f + 0.5f))
+						float2_t(lerpf(f2TexMin.x, f2TexMax.x, sinf(angle) * 0.5f + 0.5f), 1.0f - lerpf(f2TexMax.y, f2TexMin.y, -cosf(angle) * 0.5f + 0.5f))
 					}; // circle
 					//a=0 x=0 y=-1
 				}
@@ -218,11 +225,11 @@ void CCrosshair::update()
 
 							pVertices[iCurVtx++] = {
 								float3_t(fXFixedRadius * sinf(angle) + fOX, fYFixedRadius * -cosf(angle) + fOY, 0.0f),
-								float2_t(lerpf(f2TexMin.x, f2TexMax.x, (fTexFRX * sinf(angle) * 0.5f + 0.5f)), -lerpf(f2TexMax.y, f2TexMin.y, (fTexFRY * -cosf(angle) * 0.5f + 0.5f)))
+								float2_t(lerpf(f2TexMin.x, f2TexMax.x, (fTexFRX * sinf(angle) * 0.5f + 0.5f)), 1.0f - lerpf(f2TexMax.y, f2TexMin.y, (fTexFRY * -cosf(angle) * 0.5f + 0.5f)))
 							}; // circle inner
 							pVertices[iCurVtx++] = {
 								float3_t(fXradius * sinf(angle) + fOX, fYradius * -cosf(angle) + fOY, 0.0f),
-								float2_t(lerpf(f2TexMin.x, f2TexMax.x, sinf(angle) * 0.5f + 0.5f), -lerpf(f2TexMax.y, f2TexMin.y, -cosf(angle) * 0.5f + 0.5f))
+								float2_t(lerpf(f2TexMin.x, f2TexMax.x, sinf(angle) * 0.5f + 0.5f), 1.0f - lerpf(f2TexMax.y, f2TexMin.y, -cosf(angle) * 0.5f + 0.5f))
 							}; // circle
 						}
 
@@ -248,11 +255,11 @@ void CCrosshair::update()
 					}
 					pVertices[iCurVtx++] = {
 						float3_t(fXFixedRadius * sinf(angle) + fOX, fYFixedRadius * -cosf(angle) + fOY, 0.0f),
-						float2_t(lerpf(f2TexMin.x, f2TexMax.x, (fTexFRX * sinf(angle) * 0.5f + 0.5f)), -lerpf(f2TexMax.y, f2TexMin.y, (fTexFRY * -cosf(angle) * 0.5f + 0.5f)))
+						float2_t(lerpf(f2TexMin.x, f2TexMax.x, (fTexFRX * sinf(angle) * 0.5f + 0.5f)), 1.0f - lerpf(f2TexMax.y, f2TexMin.y, (fTexFRY * -cosf(angle) * 0.5f + 0.5f)))
 					}; // circle inner
 					pVertices[iCurVtx++] = {
 						float3_t(fXradius * sinf(angle) + fOX, fYradius * -cosf(angle) + fOY, 0.0f),
-						float2_t(lerpf(f2TexMin.x, f2TexMax.x, sinf(angle) * 0.5f + 0.5f), -lerpf(f2TexMax.y, f2TexMin.y, -cosf(angle) * 0.5f + 0.5f))
+						float2_t(lerpf(f2TexMin.x, f2TexMax.x, sinf(angle) * 0.5f + 0.5f), 1.0f-lerpf(f2TexMax.y, f2TexMin.y, -cosf(angle) * 0.5f + 0.5f))
 					}; // circle
 					//a=0 x=0 y=-1
 				}
@@ -271,7 +278,7 @@ void CCrosshair::update()
 					}
 					pVertices[iCurVtx++] = {
 						float3_t(fXFixedRadius * sinf(angle), fYFixedRadius * -cosf(angle), 0.0f),
-						float2_t(lerpf(f2TexMin.x, f2TexMax.x, (fTexFRX * sinf(angle) * 0.5f + 0.5f)), -lerpf(f2TexMax.y, f2TexMin.y, (fTexFRY * -cosf(angle) * 0.5f + 0.5f)))
+						float2_t(lerpf(f2TexMin.x, f2TexMax.x, (fTexFRX * sinf(angle) * 0.5f + 0.5f)), 1.0f - lerpf(f2TexMax.y, f2TexMin.y, (fTexFRY * -cosf(angle) * 0.5f + 0.5f)))
 					}; // circle inner
 				}
 			}
@@ -297,7 +304,7 @@ void CCrosshair::update()
 					}
 					pVertices[iCurVtx++] = {
 						float3_t((fXradius + fXoffset) * sinf(angle), (fYradius + fYoffset) * -cosf(angle), 0.0f),
-						float2_t(lerpf(f2TexMin.x, f2TexMax.x, sinf(angle) * 0.5f + 0.5f), -lerpf(f2TexMax.y, f2TexMin.y, -cosf(angle) * 0.5f + 0.5f))
+						float2_t(lerpf(f2TexMin.x, f2TexMax.x, sinf(angle) * 0.5f + 0.5f), 1.0f - lerpf(f2TexMax.y, f2TexMin.y, -cosf(angle) * 0.5f + 0.5f))
 					}; // circle
 				}
 
@@ -325,11 +332,11 @@ void CCrosshair::update()
 
 					pVertices[iCurVtx++] = {
 						float3_t(fXFixedRadius * sinf(angle) + fOX, fYFixedRadius * -cosf(angle) + fOY, 0.0f),
-						float2_t(lerpf(f2TexMin.x, f2TexMax.x, (fTexFRX * sinf(angle) * 0.5f + 0.5f)), -lerpf(f2TexMax.y, f2TexMin.y, (fTexFRY * -cosf(angle) * 0.5f + 0.5f)))
+						float2_t(lerpf(f2TexMin.x, f2TexMax.x, (fTexFRX * sinf(angle) * 0.5f + 0.5f)), 1.0f - lerpf(f2TexMax.y, f2TexMin.y, (fTexFRY * -cosf(angle) * 0.5f + 0.5f)))
 					}; // circle inner
 					pVertices[iCurVtx++] = {
 						float3_t((fXradius + fXoffset) * sinf(angle), (fYradius + fYoffset) * -cosf(angle), 0.0f),
-						float2_t(lerpf(f2TexMin.x, f2TexMax.x, sinf(angle) * 0.5f + 0.5f), -lerpf(f2TexMax.y, f2TexMin.y, -cosf(angle) * 0.5f + 0.5f))
+						float2_t(lerpf(f2TexMin.x, f2TexMax.x, sinf(angle) * 0.5f + 0.5f), 1.0f - lerpf(f2TexMax.y, f2TexMin.y, -cosf(angle) * 0.5f + 0.5f))
 					}; // circle
 				}
 
@@ -347,7 +354,7 @@ void CCrosshair::update()
 					}
 					pVertices[iCurVtx++] = {
 						float3_t(fXFixedRadius * sinf(angle), fYFixedRadius * -cosf(angle), 0.0f),
-						float2_t(lerpf(f2TexMin.x, f2TexMax.x, (fTexFRX * sinf(angle) * 0.5f + 0.5f)), -lerpf(f2TexMax.y, f2TexMin.y, (fTexFRY * -cosf(angle) * 0.5f + 0.5f)))
+						float2_t(lerpf(f2TexMin.x, f2TexMax.x, (fTexFRX * sinf(angle) * 0.5f + 0.5f)), 1.0f - lerpf(f2TexMax.y, f2TexMin.y, (fTexFRY * -cosf(angle) * 0.5f + 0.5f)))
 					}; // circle inner
 				}
 			}
@@ -382,6 +389,7 @@ void CCrosshair::render()
 	}
 	SGCore_ShaderBind(m_idShaderKit);
 	m_pDev->setBlendState(m_pBlendState);
+	m_pDev->setSamplerState(m_pSamplerState, 0);
 	m_pDev->setIndexBuffer(m_pIndexBuffer);
 	m_pDev->setRenderBuffer(m_pRenderBuffer);
 	m_pDev->setTexture(m_pTexture);

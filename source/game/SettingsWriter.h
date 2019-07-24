@@ -4,10 +4,13 @@
 #include <gdefines.h>
 #include <common/assotiativearray.h>
 #include <common/string.h>
+#include <xcommon/IFileSystem.h>
 
 class CSettingsWriter
 {
 public:
+	CSettingsWriter(IFileSystem *pFileSystem);
+
 	void loadFile(const char *szName);
 	void saveFile(const char *szFile);
 
@@ -16,7 +19,7 @@ public:
 	void unBind(const char *szKey);
 
 protected:
-
+	IFileSystem *m_pFileSystem;
 	AssotiativeArray<String, String> m_mCvarList;
 	AssotiativeArray<String, String> m_mBindList;
 };
