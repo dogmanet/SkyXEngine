@@ -123,13 +123,17 @@ void CEditorObject::setOrient(const SMQuaternion &orient)
 
 void CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 {
-	if(!m_pEntity)
+	*pvMin = *pvMax = float3();
+	if(m_pEntity)
 	{
-		*pvMin = m_vPos - float3(0.1f, 0.1f, 0.1f);
-		*pvMax = m_vPos + float3(0.1f, 0.1f, 0.1f);
-		return;
+		m_pEntity->getMinMax(pvMin, pvMax);
 	}
-	m_pEntity->getMinMax(pvMin, pvMax);
+
+	if(SMVector3Length2(*pvMax - *pvMin) < 0.0001f)
+	{
+		*pvMin = -(*pvMax = float3(0.1f, 0.1f, 0.1f));
+	}
+
 	*pvMin += m_vPos;
 	*pvMax += m_vPos;
 }
