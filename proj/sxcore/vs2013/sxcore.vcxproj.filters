@@ -85,6 +85,9 @@
     <ClCompile Include="..\..\..\source\core\FIleExtPathsIterator.cpp">
       <Filter>Source\FileSystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\core\FolderIterator.cpp">
+      <Filter>Source\FileSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -243,6 +246,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\FileExtPathsIterator.h">
+      <Filter>Header\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\FolderIterator.h">
       <Filter>Header\FileSystem</Filter>
     </ClInclude>
   </ItemGroup>
