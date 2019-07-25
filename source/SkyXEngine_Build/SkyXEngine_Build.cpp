@@ -173,9 +173,20 @@ int main(int argc, char **argv)
 		printf("Unable to open file!\n");
 	}
 
-    IFileSystem::IFileIterator *it = pFS->getFileList("dir/dir1");
+    printf("########## File iterator test ###########################\n");
 
-    while (const char *file = it->next())
+    IFileSystem::IFileIterator *itFile = pFS->getFileList("dir/dir1");
+
+    while (const char *file = itFile->next())
+    {
+        printf("%s \n", file);
+    }
+
+    printf("########## Folder iterator test ###########################\n");
+
+    IFileSystem::IFileIterator *itDirectory = pFS->getFolderList("dir/dir1");
+
+    while (const char *file = itDirectory->next())
     {
         printf("%s \n", file);
     }
