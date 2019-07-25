@@ -2,7 +2,14 @@
 
 CFileExtIterator::CFileExtIterator(const char *szPath, const char *szExt)
 : m_sPath(szPath), m_szExt(szExt)
-{}
+{
+    /*Дело в том что абсолютный путь к файлу может не иметь символ "/" 
+    или "\\" на конце строки, и, если его не будет путь будет некорректен*/
+    if (szPath[strlen(szPath) != '\\'] || szPath[strlen(szPath) != '/'])
+    {
+        m_sPath += '/';
+    }
+}
 
 const char *CFileExtIterator::next()
 {
@@ -31,7 +38,7 @@ const char *CFileExtIterator::next()
                 continue;
             }
 
-            m_pathStr = m_sPath + "/" + FindFileData.cFileName;
+            m_pathStr = m_sPath + FindFileData.cFileName;
 
             //Возвращаем полный путь, вместе с именем файла и расширением
             return m_pathStr.c_str();
