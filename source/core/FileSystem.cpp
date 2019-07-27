@@ -3,6 +3,7 @@
 #include "FileExtsIterator.h"
 #include "FileExtPathsIterator.h"
 #include "FolderIterator.h"
+#include "FolderPathsIterator.h"
 #include "File.h"
 #include <shellapi.h>
 #include <ShlObj.h>
@@ -334,7 +335,14 @@ time_t CFileSystem::getFileModifyTime(const char *szPath)
 
 IFileSystem::IFileIterator *CFileSystem::getFolderList(const char *szPath)
 {
-    return new CFolderIterator(szPath);
+    if (isAbsolutePath(szPath))
+    {
+        return new CFolderIterator(szPath);
+    }
+
+    Array<String>* paths = getAllvariantsCanonizePath(szPath);
+
+    return paths ? new CFolderPathsIterator(paths) : nullptr;
 }
 
 IFileSystem::IFileIterator *CFileSystem::getFileList(const char *szPath, const char *szExt)
