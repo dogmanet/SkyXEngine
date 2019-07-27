@@ -30,18 +30,15 @@ const char *CFileExtIterator::next()
             //Сохраняем HANDLE файла, что бы можно было продожлить с того места
             m_handle = hf;
 
-            /*В папке может быть максимум один "..". Следовательно можно добавить оптимизацию
-            на то что если в папке уже нашли один ".." то делать проверку на его наличие бессмысленно
-            TODO: сделать оптимизацию позже */
-            if (!strcmp(FindFileData.cFileName, "..") || !strcmp(FindFileData.cFileName, "."))
-            {
-                continue;
-            }
-
             m_pathStr = m_sPath + FindFileData.cFileName;
 
-            //Возвращаем полный путь, вместе с именем файла и расширением
-            return m_pathStr.c_str();
+            DWORD flag = GetFileAttributes(m_pathStr.c_str());
+
+            if (flag != INVALID_FILE_ATTRIBUTES && !(flag & FILE_ATTRIBUTE_DIRECTORY))
+            {
+                //Возвращаем полный путь, вместе с именем файла и расширением
+                return m_pathStr.c_str();
+            }
         }
     }
 

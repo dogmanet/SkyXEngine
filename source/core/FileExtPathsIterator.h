@@ -12,7 +12,6 @@ class CFileExtrPathsIterator final : public IFileSystem::IFileIterator
 {
 private:
     Array<String>* m_paths;
-    String m_szPath;
     String m_pathStr;
 
     int index = 0;

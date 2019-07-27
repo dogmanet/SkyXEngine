@@ -27,16 +27,15 @@ const char *CFileExtrPathsIterator::next()
                 //Сохраняем HANDLE файла, что бы можно было продожлить с того места
                 m_handle = hf;
 
-                //По стандарту FindNextFile находит .. (корневую директорию)
-                if (!strcmp(FindFileData.cFileName, "..") || !strcmp(FindFileData.cFileName, "."))
+                m_pathStr = (*m_paths)[index] + FindFileData.cFileName;
+
+                DWORD flag = GetFileAttributes(m_pathStr.c_str());
+
+                if (flag != INVALID_FILE_ATTRIBUTES && !(flag & FILE_ATTRIBUTE_DIRECTORY))
                 {
-                    continue;
+                    //Возвращаем полный путь, вместе с именем файла и расширением
+                    return m_pathStr.c_str();
                 }
-
-                m_pathStr = (*m_paths)[index] + "/" + FindFileData.cFileName;
-
-                //Возвращаем полный путь, вместе с именем файла и расширением
-                return m_pathStr.c_str();
             }
             ++index;
             FIND_CLOSE(m_handle);
