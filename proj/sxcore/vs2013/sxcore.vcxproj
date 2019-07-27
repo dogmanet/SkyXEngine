@@ -45,6 +45,7 @@
     <ClCompile Include="..\..\..\source\core\FileExtIterator.cpp" />
     <ClCompile Include="..\..\..\source\core\FileSystem.cpp" />
     <ClCompile Include="..\..\..\source\core\FolderIterator.cpp" />
+    <ClCompile Include="..\..\..\source\core\FolderPathsIterator.cpp" />
     <ClCompile Include="..\..\..\source\core\ModelPhysbox.cpp" />
     <ClCompile Include="..\..\..\source\core\ModelProvider.cpp" />
     <ClCompile Include="..\..\..\source\core\PerfMon.cpp" />
@@ -85,6 +86,7 @@
     <ClInclude Include="..\..\..\source\core\FileExtIterator.h" />
     <ClInclude Include="..\..\..\source\core\FileSystem.h" />
     <ClInclude Include="..\..\..\source\core\FolderIterator.h" />
+    <ClInclude Include="..\..\..\source\core\FolderPathsIterator.h" />
     <ClInclude Include="..\..\..\source\core\IFile.h" />
     <ClInclude Include="..\..\..\source\core\ITask.h" />
     <ClInclude Include="..\..\..\source\core\ModelPhysbox.h" />
