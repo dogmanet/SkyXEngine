@@ -181,7 +181,7 @@ void CPlayer::updateInput(float dt)
 			mov = true;
 		}
 
-		if(m_uMoveDir & PM_CROUCH || (m_fCurrentHeight < 1.0f && !m_pCharacter->canStandUp((m_fCapsHeight - m_fCapsRadius * 2.0f) * (1.0f - m_fCurrentHeight))))
+		if(m_uMoveDir & PM_CROUCH || (m_fCurrentHeight < 0.99f && !m_pCharacter->canStandUp((m_fCapsHeight - m_fCapsRadius * 2.0f) * (1.0f - m_fCurrentHeight))))
 		{
 			m_fCurrentHeight -= dt;
 			float fMinHeight = (m_fCapsHeightCrouch - m_fCapsRadius * 2.0f) / (m_fCapsHeight - m_fCapsRadius * 2.0f);
