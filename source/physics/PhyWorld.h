@@ -126,22 +126,35 @@ public:
 		{
 		}
 
-		X_RENDER_STAGE getStages() override
+		X_RENDER_STAGE XMETHODCALLTYPE getStages() override
 		{
 			return(XRS_POSTPROCESS_MAIN);
 		}
 
-		UINT getPriorityForStage(X_RENDER_STAGE stage) override
+		UINT XMETHODCALLTYPE getPriorityForStage(X_RENDER_STAGE stage) override
 		{
 			return(1);
 		}
 
-		void renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility) override;
-		void startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem) override;
-		void shutdown() override
+		void XMETHODCALLTYPE renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility) override;
+
+		UINT XMETHODCALLTYPE getTransparentCount(IXRenderableVisibility *pVisibility) override
+		{
+			return(0);
+		}
+		void XMETHODCALLTYPE getTransparentObject(IXRenderableVisibility *pVisibility, UINT uIndex, XTransparentObject *pObject) override
 		{
 		}
-		void newVisData(IXRenderableVisibility **ppVisibility) override
+		void XMETHODCALLTYPE renderTransparentObject(IXRenderableVisibility *pVisibility, UINT uIndex, UINT uSplitPlanes) override
+		{
+		}
+
+
+		void XMETHODCALLTYPE startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem) override;
+		void XMETHODCALLTYPE shutdown() override
+		{
+		}
+		void XMETHODCALLTYPE newVisData(IXRenderableVisibility **ppVisibility) override
 		{
 			*ppVisibility = NULL;
 		}

@@ -7,6 +7,8 @@
 #include <light/IXLightSystem.h>
 #include "ShadowCache.h"
 
+#define MAX_TRANSPARENCY_CLIP_PANES 4
+
 class CRenderPipeline: public IXRenderPipeline
 {
 public:
@@ -88,7 +90,9 @@ protected:
 	//! Буфер тени
 	IGXTexture2D *m_pShadow = NULL;
 
+	IGXDepthStencilState *m_pDepthStencilStateNoZWrite = NULL;
 	IGXDepthStencilState *m_pDepthStencilStateNoZ = NULL;
+	IGXBlendState *m_pBlendStateAlpha = NULL;
 
 	IXMaterialSystem *m_pMaterialSystem = NULL;
 
@@ -150,6 +154,56 @@ protected:
 		} vs;
 	} m_shadowShaderData;
 	IGXConstantBuffer *m_pShadowShaderDataVS = NULL;
+
+	//###################################
+
+	struct XTransparentNodeSP
+	{
+		int iPSP = -1;
+		XTransparentNodeSP *pNext = NULL;
+		float fCamDist = -1.0f;
+	};
+
+	struct XTransparentNode
+	{
+		XTransparentObject obj;
+		UINT uRenderable;
+		UINT uObjectID;
+		IXRenderableVisibility *pVisibility;
+		// split plane list
+		UINT uSplitPlanes = 0;
+		XTransparentNodeSP *pSplitPlanes = NULL;
+	};
+
+	struct XTransparentPSP
+	{
+		SMPLANE psp;
+		UINT uNode;
+		bool useMe = false;
+		int iBasePSP = -1; // номер похожей плоскости
+
+		bool isRenderFront = false;
+	};
+
+	struct XTransparentBSPObject
+	{
+		XTransparentBSPObject *pNext = NULL;
+		UINT uNode;
+	};
+	struct XTransparentBSPNode
+	{
+		int iPSP = -1;
+		XTransparentBSPObject *pObjects = NULL;
+		XTransparentBSPNode *pBack = NULL;
+		XTransparentBSPNode *pFront = NULL;
+	};
+
+	void buildTransparencyBSP(XTransparentPSP *pPSPs, UINT uPSPcount, UINT uStartPSP, XTransparentBSPNode *pNode, XTransparentBSPObject *pObjects, XTransparentNode *pObjectNodes, const float3 &vCamPos);
+	void renderTransparencyBSP(XTransparentBSPNode *pNode, XTransparentPSP *pPSPs, XTransparentNode *pObjectNodes, _render_sys *pRenderSystems, const float3 &vCamPos);
+	MemAlloc<XTransparentBSPNode> m_poolTransparencyBSPnodes;
+	MemAlloc<XTransparentBSPObject> m_poolTransparencyBSPobjects;
+	MemAlloc<XTransparentNodeSP> m_poolTransparencyBSPsplitPlanes;
+	IGXConstantBuffer *m_pTransparencyShaderClipPlanes = NULL;
 
 	//###################################
 

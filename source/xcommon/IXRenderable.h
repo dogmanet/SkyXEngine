@@ -9,7 +9,7 @@
 
 // {FDD30038-7D32-4EC6-911F-635376B1450D}
 #define IXRENDERABLE_GUID DEFINE_XGUID(0xfdd30038, 0x7d32, 0x4ec6, 0x91, 0x1f, 0x63, 0x53, 0x76, 0xb1, 0x45, 0xd)
-#define IXRENDERABLE_VERSION 1
+#define IXRENDERABLE_VERSION 2
 
 DEFINE_ENUM_FLAG_OPERATORS(X_RENDER_STAGE);
 
@@ -38,6 +38,14 @@ public:
 //	virtual ID updateForCameraThreaded(ICamera *pCamera) = 0;
 };
 
+struct XTransparentObject
+{
+	bool hasPSP;
+	SMPLANE psp;
+	float3 vMin;
+	float3 vMax;
+};
+
 class IXRenderable: public IXUnknown
 {
 public:
@@ -47,22 +55,29 @@ public:
 	}
 
 	//! Возвращает поддерживаемые стадии рендера
-	virtual X_RENDER_STAGE getStages() = 0;
+	virtual X_RENDER_STAGE XMETHODCALLTYPE getStages() = 0;
 
 	//! Возвращает приоритет рендера внутри стадии. Чем меньше число - тем раньше будет рендер
-	virtual UINT getPriorityForStage(X_RENDER_STAGE stage) = 0;
+	virtual UINT XMETHODCALLTYPE getPriorityForStage(_in X_RENDER_STAGE stage) = 0;
 
 	//! Выполняет отрисовку согласно заданной стадии с учетом видимости. Если pVisibility == NULL - рисуется все
-	virtual void renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility) = 0;
+	virtual void XMETHODCALLTYPE renderStage(_in X_RENDER_STAGE stage, _in _opt IXRenderableVisibility *pVisibility) = 0;
 
-	virtual void startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem) = 0;
-	virtual void shutdown() = 0;
+	//! Отрисовка прозрачных объектов
+	//! @{
+	virtual UINT XMETHODCALLTYPE getTransparentCount(_in IXRenderableVisibility *pVisibility) = 0;
+	virtual void XMETHODCALLTYPE getTransparentObject(_in IXRenderableVisibility *pVisibility, _in UINT uIndex, _out XTransparentObject *pObject) = 0;
+	virtual void XMETHODCALLTYPE renderTransparentObject(_in IXRenderableVisibility *pVisibility, _in UINT uIndex, _in UINT uSplitPlanes) = 0;
+	//! @}
+
+	virtual void XMETHODCALLTYPE startup(_in IGXContext *pDevice, _in IXMaterialSystem *pMaterialSystem) = 0;
+	virtual void XMETHODCALLTYPE shutdown() = 0;
 
 	//! Создает новый объект просчета видимости для системы
-	virtual void newVisData(IXRenderableVisibility **ppVisibility) = 0;
+	virtual void XMETHODCALLTYPE newVisData(_out IXRenderableVisibility **ppVisibility) = 0;
 
 	//! Оптимизирован ли алгоритм расчета видимости для параллельного выполнения?
-	virtual bool isVisThreadOptimized()
+	virtual bool XMETHODCALLTYPE isVisThreadOptimized()
 	{
 		return(false);
 	}

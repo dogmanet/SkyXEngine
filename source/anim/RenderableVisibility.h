@@ -5,6 +5,7 @@
 
 class CAnimatedModelProvider;
 class CDynamicModelProvider;
+class CDynamicModel;
 class CRenderableVisibility: public IXRenderableVisibility
 {
 public:
@@ -22,20 +23,35 @@ public:
 	{
 		bool isVisible = false;
 		UINT uLod = 0;
+		bool isTransparent = false;
+	};
+
+	struct TransparentModel
+	{
+		CDynamicModel *pReferenceMdl;
+		bool hasPSP;
+		SMPLANE psp;
+		UINT uLod;
 	};
 
 	void setItemCount(UINT uCount);
-	item_s *getItem(UINT uIndex);
+	item_s* getItem(UINT uIndex);
 
 	void setItemCountDynamic(UINT uCount);
-	item_s *getItemDynamic(UINT uIndex);
+	item_s* getItemDynamic(UINT uIndex);
+
+	void resetItemTransparentDynamic();
+	void addItemTransparentDynamic(const TransparentModel &mdl);
+	UINT getItemTransparentDynamicCount();
+	TransparentModel* getItemTransparentDynamic(UINT uIndex);
 protected:
 	ID m_idPlugin;
-	CAnimatedModelProvider *m_pProviderAnimated;
-	CDynamicModelProvider *m_pProviderDynamic;
+	CAnimatedModelProvider* m_pProviderAnimated;
+	CDynamicModelProvider* m_pProviderDynamic;
 
 	Array<item_s> m_aItems;
 	Array<item_s> m_aItemsDynamic;
+	Array<TransparentModel> m_aItemsDynamicTransparent;
 };
 
 #endif

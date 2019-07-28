@@ -847,11 +847,11 @@ void CPhyWorld::enableSimulation()
 
 //##############################################################
 
-void CPhyWorld::CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility)
+void XMETHODCALLTYPE CPhyWorld::CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility)
 {
 	m_pWorld->render();
 }
-void CPhyWorld::CRenderable::startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem)
+void XMETHODCALLTYPE CPhyWorld::CRenderable::startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem)
 {
 }
 

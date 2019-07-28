@@ -26,9 +26,20 @@ public:
 	float3 getLocalBoundMin() const;
 	float3 getLocalBoundMax() const;
 
-	void render(UINT uSkin, UINT uLod, const float4_t &vColor);
+	void render(UINT uSkin, UINT uLod, const float4_t &vColor, bool isTransparent);
 
 	void initGPUresources();
+
+	bool hasTransparentSubsets(UINT uSkin, UINT uLod);
+
+	void onMaterialTransparencyChanged(const IXMaterial *pMaterial);
+	float3 getTransparentBoundMin(UINT uSkin, UINT uLod) const;
+	float3 getTransparentBoundMax(UINT uSkin, UINT uLod) const;
+
+	const Array<float4_t>& getPSPs(UINT uSkin, UINT uLod) const;
+
+protected:
+	void buildPSPs();
 
 protected:
 	UINT m_uRefCount = 0;
@@ -50,6 +61,7 @@ protected:
 	IXMaterial ***m_pppMaterials = NULL;
 	UINT m_uMaterialCount = 0;
 	UINT m_uSkinCount = 0;
+	bool *m_isTransparent = NULL; //!< По количеству скинов, истина если есть прозрачные материалы в любом сабсете
 
 	XPT_TOPOLOGY m_topology;
 
@@ -71,6 +83,8 @@ protected:
 	};
 
 	Array<Array<subset_t>, 1> m_aLods;
+
+	Array<Array<Array<float4_t>>, 1> m_aPSPs;
 
 	Array<const IModelPhysbox*> m_apPhysboxes;
 };
