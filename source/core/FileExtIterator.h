@@ -8,7 +8,7 @@ See the license in LICENSE
 
 #include "FileSystem.h"
 
-class CFileExtIterator final : public IFileSystem::IFileIterator
+class CFileExtIterator final : public IFileIterator
 {
 private:
     String m_sPath;
@@ -21,7 +21,7 @@ private:
 public:
     CFileExtIterator(const char *szPath, const char *szExt = nullptr);
 
-    const char *XMETHODCALLTYPE next() override;
+    const char* XMETHODCALLTYPE next() override;
 
     void XMETHODCALLTYPE reset() override;
 

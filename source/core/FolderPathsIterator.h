@@ -8,7 +8,7 @@ See the license in LICENSE
 
 #include "FileSystem.h"
 
-class CFolderPathsIterator final : public IFileSystem::IFileIterator
+class CFolderPathsIterator final : public IFileIterator
 {
 private:
 
@@ -22,7 +22,7 @@ private:
 public:
     CFolderPathsIterator(Array<String> *paths);
 
-    const char *XMETHODCALLTYPE next() override;
+    const char* XMETHODCALLTYPE next() override;
 
     void XMETHODCALLTYPE reset() override;
 

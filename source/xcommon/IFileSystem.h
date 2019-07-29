@@ -38,6 +38,15 @@ enum FILE_OPEN_MODE
 };
 DEFINE_ENUM_FLAG_OPERATORS(FILE_OPEN_MODE);
 
+class IFileIterator: public IXUnknown
+{
+public:
+	//! Возврат к первому элементу
+	virtual void XMETHODCALLTYPE reset() = 0;
+	//! Имя следующего файла, NULL если файлы закончились
+	virtual const char* XMETHODCALLTYPE next() = 0;
+};
+
 class IFile;
 class IFileSystem: public IXUnknown
 {
@@ -66,24 +75,15 @@ public:
 	virtual bool isDirectory(const char *szPath) = 0;
 	//! возвращает время последнего изменения файла
 	virtual time_t getFileModifyTime(const char *szPath) = 0;
-
-    class IFileIterator
-    {
-    public:
-        //! Возврат к первому элементу
-        virtual void XMETHODCALLTYPE reset() = 0;
-        //! Имя следующего файла, NULL если файлы закончились
-        virtual const char * XMETHODCALLTYPE next() = 0;
-    };
-    
+	    
     //! Возвращает список всех папок
-    virtual IFileIterator *getFolderList(const char *szPath) = 0;
+    virtual IFileIterator* getFolderList(const char *szPath) = 0;
 
 	/*! возвращает массив со всеми данными находящимися по пути szPath,
 	szPath может быть не канонизирован и необязательно должен заканчиваться слэшем,
 	szPath уже может содержать фильтр (к примеру C:/*), но если его нет, тогда функция подставит сама
 	*/
-    virtual IFileIterator *getFileList(const char *szPath, const char *szExt = 0) = 0;
+    virtual IFileIterator* getFileList(const char *szPath, const char *szExt = 0) = 0;
 
     //! То же, что и предыдущая, только для массива расширений
     virtual IFileIterator *getFileList(const char *szPath, const char **szExts, int extsCount) = 0;
@@ -92,10 +92,10 @@ public:
 	szPath не должен содержать фильтров, может быть не канонизирован и без последнего слэша,
 	szExt - расширение файла без точки
 	*/
-	virtual IFileIterator *getFileListRecursive(const char *szPath, const char *szExt = 0) = 0;
+	virtual IFileIterator* getFileListRecursive(const char *szPath, const char *szExt = 0) = 0;
 
 	//! То же, что предыдущая, только позволяет использовать массив расширений для поиска. Последний элемент массива NULL
-    virtual IFileIterator *getFileListRecursive(const char *szPath, const char **szExts, int extsCount) = 0;
+    virtual IFileIterator* getFileListRecursive(const char *szPath, const char **szExts, int extsCount) = 0;
 
 	//! Создает директорию по указанному пути, рекурсивно
 	virtual bool createDirectory(const char *szPath) = 0;
@@ -104,7 +104,7 @@ public:
     virtual bool deleteDirectory(const char *szPath) = 0;
 
 	//! Открыть файл. При открытии с возможностью записи файла, находящегося вне записываемого корня, файл копируется в записывающийся корень и открывается копия.
-	virtual IFile *openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ) = 0;
+	virtual IFile* openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ) = 0;
 };
 
 #endif

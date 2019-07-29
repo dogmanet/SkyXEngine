@@ -3,7 +3,7 @@
 
 #include "FileSystem.h"
 
-class CFileExtsIterator final : public IFileSystem::IFileIterator
+class CFileExtsIterator final : public IFileIterator
 {
 private:
     String m_sPath;
@@ -21,7 +21,7 @@ private:
 public:
     CFileExtsIterator(const char *szPath, const char **szExts, int extArraySize);
 
-    const char *XMETHODCALLTYPE next() override;
+    const char* XMETHODCALLTYPE next() override;
 
     void XMETHODCALLTYPE reset() override;
 
