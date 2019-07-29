@@ -658,6 +658,7 @@ void CBaseAnimating::renderEditor(bool is3D)
 {
 	if(m_pModel)
 	{
-		m_pModel->render(0);
+		m_pModel->render(0, false);
+		m_pModel->render(0, true);
 	}
 }

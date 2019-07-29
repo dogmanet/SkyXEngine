@@ -158,4 +158,19 @@ struct XEventAsyncTask
 	const char *szTaskName;
 };
 
+
+// {534A9C0A-52AF-477F-8440-09C4C60A0F05}
+#define EVENT_MATERIAL_CHANGED_GUID DEFINE_XGUID(0x534a9c0a, 0x52af, 0x477f, 0x84, 0x40, 0x9, 0xc4, 0xc6, 0xa, 0xf, 0x5)
+
+class IXMaterial;
+struct XEventMaterialChanged
+{
+	enum
+	{
+		TYPE_TRANSPARENCY,
+		// ...
+	} type;
+	IXMaterial *pMaterial;
+};
+
 #endif

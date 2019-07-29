@@ -50,7 +50,7 @@ void CRenderableVisibility::setItemCount(UINT uCount)
 	}
 }
 
-CRenderableVisibility::item_s *CRenderableVisibility::getItem(UINT uIndex)
+CRenderableVisibility::item_s* CRenderableVisibility::getItem(UINT uIndex)
 {
 	return(&m_aItems[uIndex]);
 }
@@ -67,7 +67,27 @@ void CRenderableVisibility::setItemCountDynamic(UINT uCount)
 	}
 }
 
-CRenderableVisibility::item_s *CRenderableVisibility::getItemDynamic(UINT uIndex)
+CRenderableVisibility::item_s* CRenderableVisibility::getItemDynamic(UINT uIndex)
 {
 	return(&m_aItemsDynamic[uIndex]);
+}
+
+CRenderableVisibility::TransparentModel* CRenderableVisibility::getItemTransparentDynamic(UINT uIndex)
+{
+	return(&m_aItemsDynamicTransparent[uIndex]);
+}
+
+UINT CRenderableVisibility::getItemTransparentDynamicCount()
+{
+	return(m_aItemsDynamicTransparent.size());
+}
+
+void CRenderableVisibility::resetItemTransparentDynamic()
+{
+	m_aItemsDynamicTransparent.clearFast();
+}
+
+void CRenderableVisibility::addItemTransparentDynamic(const TransparentModel &mdl)
+{
+	m_aItemsDynamicTransparent.push_back(mdl);
 }

@@ -57,5 +57,5 @@ void CFolderPathsIterator::reset()
 CFolderPathsIterator::~CFolderPathsIterator()
 {
     FIND_CLOSE(m_handle);
-    mem_delete_a(m_paths);
+    mem_delete(m_paths);
 }

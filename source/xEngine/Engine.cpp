@@ -237,7 +237,7 @@ bool CEngine::runFrame()
 
 		SGame_Sync();
 
-		SMtrl_Update(0.0f);
+		SMtrl_Update(0);
 
 		m_pCore->runUpdate();
 		

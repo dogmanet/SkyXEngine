@@ -333,7 +333,7 @@ time_t CFileSystem::getFileModifyTime(const char *szPath)
 	return filetimeToTime_t(lpFileInformation.ftLastWriteTime);
 }
 
-IFileSystem::IFileIterator *CFileSystem::getFolderList(const char *szPath)
+IFileIterator *CFileSystem::getFolderList(const char *szPath)
 {
     if (isAbsolutePath(szPath))
     {
@@ -345,7 +345,7 @@ IFileSystem::IFileIterator *CFileSystem::getFolderList(const char *szPath)
     return paths ? new CFolderPathsIterator(paths) : nullptr;
 }
 
-IFileSystem::IFileIterator *CFileSystem::getFileList(const char *szPath, const char *szExt)
+IFileIterator *CFileSystem::getFileList(const char *szPath, const char *szExt)
 {
     if (isAbsolutePath(szPath))
     {
@@ -357,18 +357,18 @@ IFileSystem::IFileIterator *CFileSystem::getFileList(const char *szPath, const c
     return paths ? new CFileExtrPathsIterator(paths, szExt) : nullptr;
 }
 
-IFileSystem::IFileIterator *CFileSystem::getFileList(const char *szPath, const char **szExts, int extsCount)
+IFileIterator *CFileSystem::getFileList(const char *szPath, const char **szExts, int extsCount)
 {
     return new CFileExtsIterator(szPath, szExts, extsCount);
 }
 
-IFileSystem::IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char *szExt = 0)
+IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char *szExt = 0)
 {
     assert(!"No Implementation");
     return nullptr;
 }
 
-IFileSystem::IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char **szExts, int extsCount)
+IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char **szExts, int extsCount)
 {
     assert(!"No Implementation");
     return nullptr;

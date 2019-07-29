@@ -82,7 +82,7 @@ public:
 
 	UINT addLayer();
 
-	void XMETHODCALLTYPE render(UINT uLod) override;
+	void XMETHODCALLTYPE render(UINT uLod, bool isTransparent) override;
 	void sync();
 
 	void initGPUresources();

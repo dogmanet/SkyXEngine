@@ -8,17 +8,17 @@ CRenderable::CRenderable(ID idPlugin, CAnimatedModelProvider *pProviderAnimated,
 {
 }
 
-X_RENDER_STAGE CRenderable::getStages()
+X_RENDER_STAGE XMETHODCALLTYPE CRenderable::getStages()
 {
-	return(XRS_GBUFFER | XRS_SHADOWS | XRS_EDITOR_2D);
+	return(XRS_GBUFFER | XRS_SHADOWS | XRS_EDITOR_2D | XRS_TRANSPARENT);
 }
 
-UINT CRenderable::getPriorityForStage(X_RENDER_STAGE stage)
+UINT XMETHODCALLTYPE CRenderable::getPriorityForStage(X_RENDER_STAGE stage)
 {
 	return(20);
 }
 
-void CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility)
+void XMETHODCALLTYPE CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility)
 {
 	CRenderableVisibility *pVis = NULL;
 	if(pVisibility)
@@ -34,28 +34,48 @@ void CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVis
 		break;
 	case XRS_GBUFFER:
 		m_pAnimatedModelProvider->render(pVis);
-		m_pDynamicModelProvider->render(pVis);
+		m_pDynamicModelProvider->render(false, pVis);
 		break;
 	case XRS_SHADOWS:
 		m_pAnimatedModelProvider->render(pVis);
-		m_pDynamicModelProvider->render(pVis);
+		m_pDynamicModelProvider->render(false, pVis);
 		break;
 	case XRS_GI:
 		break;
 	case XRS_POSTPROCESS_MAIN:
 		break;
 	case XRS_TRANSPARENT:
+		//m_pDynamicModelProvider->render(true, pVis);
 		break;
 	case XRS_POSTPROCESS_FINAL:
 		break;
 	case XRS_EDITOR_2D:
 		m_pAnimatedModelProvider->render(pVis);
-		m_pDynamicModelProvider->render(pVis);
+		m_pDynamicModelProvider->render(false, pVis);
 		break;
 	}
 }
 
-void CRenderable::startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem)
+UINT XMETHODCALLTYPE CRenderable::getTransparentCount(IXRenderableVisibility *pVisibility)
+{
+	assert(pVisibility && pVisibility->getPluginId() == m_idPlugin);
+
+	return(m_pDynamicModelProvider->getTransparentCount((CRenderableVisibility*)pVisibility));
+}
+void XMETHODCALLTYPE CRenderable::getTransparentObject(IXRenderableVisibility *pVisibility, UINT uIndex, XTransparentObject *pObject)
+{
+	assert(pVisibility && pVisibility->getPluginId() == m_idPlugin);
+
+	m_pDynamicModelProvider->getTransparentObject((CRenderableVisibility*)pVisibility, uIndex, pObject);
+}
+void XMETHODCALLTYPE CRenderable::renderTransparentObject(IXRenderableVisibility *pVisibility, UINT uIndex, UINT uSplitPlanes)
+{
+	assert(pVisibility && pVisibility->getPluginId() == m_idPlugin);
+
+	m_pDynamicModelProvider->renderTransparentObject((CRenderableVisibility*)pVisibility, uIndex, uSplitPlanes);
+}
+
+void XMETHODCALLTYPE CRenderable::startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem)
 {
 	m_pDevice = pDevice;
 	m_pMaterialSystem = pMaterialSystem;
@@ -63,16 +83,16 @@ void CRenderable::startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem
 	m_pAnimatedModelProvider->setDevice(pDevice);
 	m_pDynamicModelProvider->setDevice(pDevice);
 }
-void CRenderable::shutdown()
+void XMETHODCALLTYPE CRenderable::shutdown()
 {
 }
 
-void CRenderable::newVisData(IXRenderableVisibility **ppVisibility)
+void XMETHODCALLTYPE CRenderable::newVisData(IXRenderableVisibility **ppVisibility)
 {
 	*ppVisibility = new CRenderableVisibility(m_idPlugin, m_pAnimatedModelProvider, m_pDynamicModelProvider);
 }
 
-IXMaterialSystem *CRenderable::getMaterialSystem()
+IXMaterialSystem* CRenderable::getMaterialSystem()
 {
 	return(m_pMaterialSystem);
 }

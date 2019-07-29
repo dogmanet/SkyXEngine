@@ -129,62 +129,34 @@ struct CLevelInfo
 	char m_szLocalName[MAX_LEVEL_STRING]; //!< Отображаемое имя уровня
 	bool m_bHasPreview;
 
-	HANDLE m_hFind; //!< для внутреннего использования
+	IFileIterator *m_pIterator = NULL; //!< для внутреннего использования
 };
 
 BOOL EnumLevels(CLevelInfo *pInfo)
 {
-	WIN32_FIND_DATA fd;
 	bool bFound = false;
-	if(!pInfo->m_hFind)
+	const char *szDirName = NULL;
+	if(!pInfo->m_pIterator)
 	{
-		if((pInfo->m_hFind = ::FindFirstFile((String(Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS)) + "*").c_str(), &fd)) != INVALID_HANDLE_VALUE)
-		{
-			bFound = true;
-		}
+		pInfo->m_pIterator = Core_GetIXCore()->getFileSystem()->getFolderList("levels/");
 	}
-	else
+	if(pInfo->m_pIterator && (szDirName = pInfo->m_pIterator->next()))
 	{
-		if(::FindNextFile(pInfo->m_hFind, &fd))
-		{
-			bFound = true;
-		}
-	}
-
-	if(bFound)
-	{
-		while(!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || (!strcmp(fd.cFileName, ".") || !strcmp(fd.cFileName, "..")))
-		{
-			bFound = false;
-			if(::FindNextFile(pInfo->m_hFind, &fd))
-			{
-				if((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && strcmp(fd.cFileName, ".") && strcmp(fd.cFileName, ".."))
-				{
-					bFound = true;
-					break;
-				}
-			}
-			else
-			{
-				break;
-			}
-		}
+		bFound = true;
 	}
 
 	if(!bFound)
 	{
-		if(INVALID_HANDLE_VALUE != pInfo->m_hFind)
-		{
-			::FindClose(pInfo->m_hFind);
-		}
+		mem_release(pInfo->m_pIterator);
 		return(FALSE);
 	}
 
-	strncpy(pInfo->m_szName, fd.cFileName, MAX_LEVEL_STRING - 1);
+	const char *szLevelName = basename(szDirName);
+	strncpy(pInfo->m_szName, szLevelName, MAX_LEVEL_STRING - 1);
 
 	{
 		char szFullPath[1024];
-		sprintf(szFullPath, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pInfo->m_szName, pInfo->m_szName);
+		sprintf(szFullPath, "levels/%s/%s.lvl", pInfo->m_szName, pInfo->m_szName);
 
 		ISXConfig *pConfig = Core_OpConfig(szFullPath);
 		if(pConfig->keyExists("level", "local_name"))
@@ -193,11 +165,11 @@ BOOL EnumLevels(CLevelInfo *pInfo)
 		}
 		else
 		{
-			strncpy(pInfo->m_szLocalName, fd.cFileName, MAX_LEVEL_STRING - 1);
+			strncpy(pInfo->m_szLocalName, pInfo->m_szName, MAX_LEVEL_STRING - 1);
 		}
 		mem_release(pConfig);
 
-		sprintf(szFullPath, "%s%s/preview.bmp", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pInfo->m_szName);
+		sprintf(szFullPath, "levels/%s/preview.bmp", pInfo->m_szName);
 		pInfo->m_bHasPreview = FileExistsFile(szFullPath);
 	}
 

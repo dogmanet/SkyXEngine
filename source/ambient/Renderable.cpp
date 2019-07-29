@@ -6,17 +6,17 @@ CRenderable::CRenderable(ID idPlugin, CSkyBox *pSkyBox):
 {
 }
 
-X_RENDER_STAGE CRenderable::getStages()
+X_RENDER_STAGE XMETHODCALLTYPE CRenderable::getStages()
 {
 	return(XRS_GBUFFER);
 }
 
-UINT CRenderable::getPriorityForStage(X_RENDER_STAGE stage)
+UINT XMETHODCALLTYPE CRenderable::getPriorityForStage(X_RENDER_STAGE stage)
 {
 	return(50);
 }
 
-void CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility)
+void XMETHODCALLTYPE CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility)
 {
 	UNREFERENCED_PARAMETER(pVisibility);
 
@@ -42,7 +42,7 @@ void CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVis
 	}
 }
 
-void CRenderable::startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem)
+void XMETHODCALLTYPE CRenderable::startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem)
 {
 	m_pDevice = pDevice;
 	m_pMaterialSystem = pMaterialSystem;
@@ -50,17 +50,17 @@ void CRenderable::startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem
 	m_pSkyBox->setDevice(pDevice);
 	m_pSkyBox->setMaterialSystem(pMaterialSystem);
 }
-void CRenderable::shutdown()
+void XMETHODCALLTYPE CRenderable::shutdown()
 {
 	m_pSkyBox->setDevice(NULL);
 }
 
-void CRenderable::newVisData(IXRenderableVisibility **ppVisibility)
+void XMETHODCALLTYPE CRenderable::newVisData(IXRenderableVisibility **ppVisibility)
 {
 	*ppVisibility = NULL;
 }
 
-IXMaterialSystem *CRenderable::getMaterialSystem()
+IXMaterialSystem* CRenderable::getMaterialSystem()
 {
 	return(m_pMaterialSystem);
 }

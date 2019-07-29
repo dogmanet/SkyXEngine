@@ -87,9 +87,18 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 
 	GXDepthStencilDesc dsDesc;
 
-	dsDesc.useDepthTest = FALSE;
 	dsDesc.useDepthWrite = FALSE;
+	m_pDepthStencilStateNoZWrite = m_pDevice->createDepthStencilState(&dsDesc);
+
+	dsDesc.useDepthTest = FALSE;
 	m_pDepthStencilStateNoZ = m_pDevice->createDepthStencilState(&dsDesc);
+
+
+	GXBlendDesc blendDesc;
+	blendDesc.renderTarget[0].useBlend = true;
+	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
+	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
+	m_pBlendStateAlpha = m_pDevice->createBlendState(&blendDesc);
 
 	m_pSceneShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData.vs));
 	m_pSceneShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData));
@@ -153,6 +162,9 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 
 	
 	newVisData(&m_pMainCameraVisibility);
+
+
+	m_pTransparencyShaderClipPlanes = m_pDevice->createConstantBuffer(sizeof(float4) * MAX_TRANSPARENCY_CLIP_PANES);
 }
 CRenderPipeline::~CRenderPipeline()
 {
@@ -160,6 +172,8 @@ CRenderPipeline::~CRenderPipeline()
 	{
 		m_apRenderables[i]->shutdown();
 	}
+
+	mem_release(m_pTransparencyShaderClipPlanes);
 
 	mem_release(m_pMainCameraVisibility);
 
@@ -181,6 +195,9 @@ CRenderPipeline::~CRenderPipeline()
 
 	mem_release(m_pLightTotal);
 
+	mem_release(m_pBlendStateAlpha);
+
+	mem_release(m_pDepthStencilStateNoZWrite);
 	mem_release(m_pDepthStencilStateNoZ);
 
 	mem_release(m_pGICubesRB);
@@ -811,7 +828,438 @@ void CRenderPipeline::renderPostprocessMain()
 }
 void CRenderPipeline::renderTransparent()
 {
+	assert(m_pMainCameraVisibility && m_pMainCameraVisibility->getPluginId() == -1);
+	CRenderableVisibility *pVis = (CRenderableVisibility*)m_pMainCameraVisibility;
+
+
+	m_pDevice->setDepthStencilState(m_pDepthStencilStateNoZWrite);
+	m_pDevice->setBlendState(m_pBlendStateAlpha);
+
+	//renderStage(XRS_TRANSPARENT, m_pMainCameraVisibility);
+
+	auto &list = m_apRenderStages[getIndexForStage(XRS_TRANSPARENT)].aSystems;
+
+	Array<XTransparentNode> aNodes;
+	Array<XTransparentPSP> aPSPs;
+
+	for(UINT i = 0, l = list.size(); i < l; ++i)
+	{
+		IXRenderableVisibility *pVisibility = pVis ? pVis->getVisibility(list[i].uRenderableId) : NULL;
+		UINT uCount = list[i].pRenderable->getTransparentCount(pVisibility);
+		for(UINT j = 0; j < uCount; ++j)
+		{
+			XTransparentObject obj;
+			list[i].pRenderable->getTransparentObject(pVisibility, j, &obj);
+
+			XTransparentNode tpNode;
+			tpNode.obj = obj;
+			tpNode.uRenderable = i;
+			tpNode.uObjectID = j;
+			tpNode.pVisibility = pVisibility;
+			aNodes.push_back(tpNode);
+
+			if(obj.hasPSP)
+			{
+				XTransparentPSP psp;
+				psp.psp = obj.psp;
+				psp.uNode = aNodes.size() - 1;
+				aPSPs.push_back(psp);
+			}
+		}
+	}
+
+	UINT uTotalPlanes = 0;
+	// Определение секущих плоскостей
+	for(UINT i = 0, l = aPSPs.size(); i < l; ++i)
+	{
+		XTransparentPSP *pPSP = &aPSPs[i];
+		XTransparentNode *pPSPNode = &aNodes[pPSP->uNode];
+
+		for(UINT j = 0, jl = aNodes.size(); j < jl; ++j)
+		{
+			if(j == pPSP->uNode)
+			{
+				continue;
+			}
+			
+			XTransparentNode *pNode = &aNodes[j];
+
+			if(SMAABBIntersectAABB(pNode->obj.vMin, pNode->obj.vMax, pPSPNode->obj.vMin, pPSPNode->obj.vMax)
+				&& SMPlaneIntersectAABB(pPSP->psp, pNode->obj.vMin, pNode->obj.vMax))
+			{
+				pPSP->useMe = true;
+				++uTotalPlanes;
+				break;
+			}
+		}
+	}
+
+	// Определение одинаковых плоскостей
+	for(UINT i = 0, l = aPSPs.size(); i < l; ++i)
+	{
+		XTransparentPSP *pPSP = &aPSPs[i];
+		if(pPSP->useMe)
+		{
+			for(UINT j = i + 1; j < l; ++j)
+			{
+				XTransparentPSP *pPSP2 = &aPSPs[j];
+				if(pPSP2->useMe && SMPlaneEqualEpsilon(pPSP2->psp, pPSP->psp, 0.01f))
+				{
+					pPSP2->iBasePSP = (int)i;
+					--uTotalPlanes;
+				}
+			}
+		}
+	}
+
+	XTransparentBSPObject *pRootObject = NULL, *pTailObject = NULL;
+	for(UINT i = 0, l = aNodes.size(); i < l; ++i)
+	{
+		XTransparentBSPObject *pObj = m_poolTransparencyBSPobjects.Alloc();
+		pObj->uNode = i;
+		if(!pRootObject)
+		{
+			pRootObject = pObj;
+			pTailObject = pObj;
+		}
+		else
+		{
+			pTailObject->pNext = pObj;
+			pTailObject = pObj;
+		}
+	}
+	//m_poolTransparencyBSPobjects
+
+	float3 vCamPos;
+	gdata::pCamera->getPosition(&vCamPos);
+
+	// Построение дерева
+	XTransparentBSPNode *pRootNode = m_poolTransparencyBSPnodes.Alloc();
+	buildTransparencyBSP(&aPSPs[0], aPSPs.size(), 0, pRootNode, pRootObject, &aNodes[0], vCamPos);
+	
+	//float4 vPlanes[MAX_TRANSPARENCY_CLIP_PANES];
+	//vPlanes[0] = SMPlaneNormalize(SMPlaneTransform(SMPLANE(0.0f, 1.0f, 0.0f, -1.0f), gdata::mCamView * gdata::mCamProj));
+	//vPlanes[0] /= fabsf(vPlanes[0].w);
+	//m_pTransparencyShaderClipPlanes->update(vPlanes);
+
+	// Отрисовка дерева
+	m_pDevice->setPixelShaderConstant(m_pTransparencyShaderClipPlanes, 6);
+	renderTransparencyBSP(pRootNode, &aPSPs[0], &aNodes[0], &list[0], vCamPos);
+
+	m_poolTransparencyBSPobjects.clear();
+	m_poolTransparencyBSPnodes.clear();
+	m_poolTransparencyBSPsplitPlanes.clear();
 }
+
+void CRenderPipeline::renderTransparencyBSP(XTransparentBSPNode *pNode, XTransparentPSP *pPSPs, XTransparentNode *pObjectNodes, _render_sys *pRenderSystems, const float3 &vCamPos)
+{
+	XTransparentBSPNode *pFirst, *pSecond;
+
+	bool isInFront = (pNode->iPSP >= 0) && SMVector3Dot(pPSPs[pNode->iPSP].psp, vCamPos) > -pPSPs[pNode->iPSP].psp.w;
+	if(isInFront)
+	{
+		pFirst = pNode->pBack;
+		pSecond = pNode->pFront;
+	}
+	else
+	{
+		pFirst = pNode->pFront;
+		pSecond = pNode->pBack;
+	}
+	if(pNode->iPSP >= 0)
+	{
+		pPSPs[pNode->iPSP].isRenderFront = !isInFront;
+	}
+	if(pFirst)
+	{
+		renderTransparencyBSP(pFirst, pPSPs, pObjectNodes, pRenderSystems, vCamPos);
+	}
+
+	static float4 vPlanes[MAX_TRANSPARENCY_CLIP_PANES];
+	XTransparentBSPObject *pObj = pNode->pObjects;
+	while(pObj)
+	{
+		XTransparentNode *pNode = &pObjectNodes[pObj->uNode];
+
+		XTransparentNodeSP *pCurSP = pNode->pSplitPlanes;
+		for(UINT i = 0; i < MAX_TRANSPARENCY_CLIP_PANES; ++i)
+		{
+			if(pCurSP)
+			{
+				SMPLANE plane = pPSPs[pCurSP->iPSP].psp;
+				if(!pPSPs[pCurSP->iPSP].isRenderFront)
+				{
+					plane *= -1.0f;
+				}
+				vPlanes[i] = SMPlaneNormalize(SMPlaneTransform(plane, gdata::mCamView * gdata::mCamProj));
+				vPlanes[i] /= fabsf(vPlanes[i].w);
+
+				pCurSP = pCurSP->pNext;
+			}
+			else
+			{
+				vPlanes[i] = SMPLANE(0, 0, 0, 1.0f);
+			}
+		}
+		m_pTransparencyShaderClipPlanes->update(vPlanes);
+
+		pRenderSystems[pNode->uRenderable].pRenderable->renderTransparentObject(pNode->pVisibility, pNode->uObjectID, 0);
+		pObj = pObj->pNext;
+	}
+
+	if(pNode->iPSP >= 0)
+	{
+		pPSPs[pNode->iPSP].isRenderFront = isInFront;
+	}
+	if(pSecond)
+	{
+		renderTransparencyBSP(pSecond, pPSPs, pObjectNodes, pRenderSystems, vCamPos);
+	}
+}
+
+void CRenderPipeline::buildTransparencyBSP(XTransparentPSP *pPSPs, UINT uPSPcount, UINT uStartPSP, XTransparentBSPNode *pBSPNode, XTransparentBSPObject *pObjects, XTransparentNode *pObjectNodes, const float3 &vCamPos)
+{
+	XTransparentPSP *pPSP;
+	UINT uPSPIndex = uStartPSP;
+
+	XTransparentBSPObject *pRootObject = NULL, *pTailObject = NULL;
+
+	do
+	{
+		pPSP = NULL;
+		// Выберем плоскость для текущего рассечения
+		for(; uPSPIndex < uPSPcount; ++uPSPIndex)
+		{
+			if(pPSPs[uPSPIndex].useMe && pPSPs[uPSPIndex].iBasePSP < 0)
+			{
+				pPSP = &pPSPs[uPSPIndex];
+				pBSPNode->iPSP = (int)uPSPIndex;
+				break;
+			}
+		}
+		if(!pPSP)
+		{
+			pBSPNode->pObjects = pObjects;
+			return;
+		}
+
+		// Найти объекты узла (совпадающие с плоскостью)
+		// Для каждого оставшегося объекта:
+		//     Если объект пересекает плоскость: то
+		//         Если объект пересекается с одним из объектов, порождающих PSP: то добавляем плоскость рассечения в него, помещаем объект в оба новых списка
+		//         Иначе: Помещаем объект в узел
+		//     Иначе: Помещаем объект в правый или левый список, в зависимости от расположения относительно плоскости
+		// Повторяем рекурсивно для правого и левого поддерева
+
+		// Найти объекты узла (совпадающие с плоскостью)
+		for(UINT i = 0; i < uPSPcount; ++i)
+		{
+			if(pPSPs[i].iBasePSP == pBSPNode->iPSP || i == pBSPNode->iPSP)
+			{
+				XTransparentBSPObject *pCur = pObjects, *pPrev = NULL;
+				while(pCur)
+				{
+					if(pCur->uNode == pPSPs[i].uNode)
+					{
+						if(pPrev)
+						{
+							pPrev->pNext = pCur->pNext;
+						}
+						else
+						{
+							pObjects = pCur->pNext;
+						}
+						pCur->pNext = NULL;
+						if(!pRootObject)
+						{
+							pRootObject = pTailObject = pCur;
+						}
+						else
+						{
+							pTailObject->pNext = pCur;
+							pTailObject = pCur;
+						}
+
+						break;
+					}
+
+					pPrev = pCur;
+					pCur = pCur->pNext;
+				}
+
+			}
+		}
+		++uPSPIndex;
+	}
+	while(!pRootObject);
+
+	XTransparentBSPObject *pFrontRootObject = NULL, *pFrontTailObject = NULL;
+	XTransparentBSPObject *pBackRootObject = NULL, *pBackTailObject = NULL;
+
+	// Для каждого оставшегося объекта:
+	XTransparentBSPObject *pCur = pObjects, *pNext;
+	while(pCur)
+	{
+		pNext = pCur->pNext;
+
+		XTransparentNode *pNode = &pObjectNodes[pCur->uNode];
+		if(SMPlaneIntersectAABB(pPSP->psp, pNode->obj.vMin, pNode->obj.vMax))
+		{
+			bool isIntersects = false;
+			for(UINT i = 0; i < uPSPcount; ++i)
+			{
+				XTransparentNode *pPSPNode = &pObjectNodes[pPSPs[i].uNode];
+				if(pPSPs[i].useMe && SMAABBIntersectAABB(pNode->obj.vMin, pNode->obj.vMax, pPSPNode->obj.vMin, pPSPNode->obj.vMax))
+				{
+					isIntersects = true;
+					break;
+				}
+			}
+
+			pCur->pNext = NULL;
+
+			if(isIntersects)
+			{
+				// добавляем плоскость рассечения pPSP в pCur
+
+				XTransparentNodeSP *pSplitPlane = m_poolTransparencyBSPsplitPlanes.Alloc();
+				pSplitPlane->fCamDist = SMDistancePointAABB(vCamPos, pNode->obj.vMin, pNode->obj.vMax);
+				pSplitPlane->iPSP = pBSPNode->iPSP;
+
+				XTransparentNodeSP *pTmpCur = pNode->pSplitPlanes, *pTmpPrev = NULL;
+				if(pTmpCur)
+				{
+					while(pTmpCur)
+					{
+						//pSplitPlane->pNext = pNode->pSplitPlanes;
+
+						if(pTmpCur->fCamDist < pSplitPlane->fCamDist)
+						{
+							pSplitPlane->pNext = pTmpCur;
+
+							if(pTmpPrev)
+							{
+								pTmpPrev = pSplitPlane;
+							}
+							else
+							{
+								pNode->pSplitPlanes = pSplitPlane;
+							}
+							break;
+						}
+
+						pTmpPrev = pTmpCur;
+						pTmpCur = pTmpCur->pNext;
+					}
+				}
+				else
+				{
+					pNode->pSplitPlanes = pSplitPlane;
+				}
+
+				++pNode->uSplitPlanes;
+
+
+				if(!pFrontRootObject)
+				{
+					pFrontRootObject = pFrontTailObject = pCur;
+				}
+				else
+				{
+					pFrontTailObject->pNext = pCur;
+					pFrontTailObject = pCur;
+				}
+				XTransparentBSPObject *pClone = m_poolTransparencyBSPobjects.Alloc();
+				pClone->uNode = pCur->uNode;
+				if(!pBackRootObject)
+				{
+					pBackRootObject = pBackTailObject = pClone;
+				}
+				else
+				{
+					pBackTailObject->pNext = pClone;
+					pBackTailObject = pClone;
+				}
+			}
+			else
+			{
+				if(!pRootObject)
+				{
+					pRootObject = pTailObject = pCur;
+				}
+				else
+				{
+					pTailObject->pNext = pCur;
+					pTailObject = pCur;
+				}
+			}
+
+		}
+		else
+		{
+			pCur->pNext = NULL;
+
+			//front
+			if(SMVector3Dot(pNode->obj.vMin, pPSP->psp) > -pPSP->psp.w)
+			{
+				if(!pFrontRootObject)
+				{
+					pFrontRootObject = pFrontTailObject = pCur;
+				}
+				else
+				{
+					pFrontTailObject->pNext = pCur;
+					pFrontTailObject = pCur;
+				}
+			}
+			else // back
+			{
+				if(!pBackRootObject)
+				{
+					pBackRootObject = pBackTailObject = pCur;
+				}
+				else
+				{
+					pBackTailObject->pNext = pCur;
+					pBackTailObject = pCur;
+				}
+			}
+
+		}
+
+		pCur = pNext;
+	}
+
+	if(pFrontRootObject)
+	{
+		XTransparentBSPNode *pFrontNode = m_poolTransparencyBSPnodes.Alloc();
+		buildTransparencyBSP(pPSPs, uPSPcount, pBSPNode->iPSP + 1, pFrontNode, pFrontRootObject, pObjectNodes, vCamPos);
+		if(pFrontNode->pObjects)
+		{
+			pBSPNode->pFront = pFrontNode;
+		}
+		else
+		{
+			m_poolTransparencyBSPnodes.Delete(pFrontNode);
+		}
+	}
+	if(pBackRootObject)
+	{
+		XTransparentBSPNode *pBackNode = m_poolTransparencyBSPnodes.Alloc();
+		buildTransparencyBSP(pPSPs, uPSPcount, pBSPNode->iPSP + 1, pBackNode, pBackRootObject, pObjectNodes, vCamPos);
+		pBSPNode->pBack = pBackNode;
+		if(pBackNode->pObjects)
+		{
+			pBSPNode->pBack = pBackNode;
+		}
+		else
+		{
+			m_poolTransparencyBSPnodes.Delete(pBackNode);
+		}
+	}
+	pBSPNode->pObjects = pRootObject;
+}
+
 void CRenderPipeline::renderPostprocessFinal()
 {
 	Core_PStartSection(PERF_SECTION_RENDER_INFO);
@@ -850,6 +1298,7 @@ UINT CRenderPipeline::getIndexForStage(X_RENDER_STAGE stage)
 void CRenderPipeline::showTexture(IGXTexture2D *pTexture)
 {
 	m_pDevice->setDepthStencilState(m_pDepthStencilStateNoZ);
+	
 	m_pDevice->setTexture(pTexture);
 	SGCore_ShaderBind(gdata::shaders_id::kit::idScreenOut);
 	SGCore_ScreenQuadDraw();

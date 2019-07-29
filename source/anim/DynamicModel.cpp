@@ -185,7 +185,7 @@ const IXResourceModel * XMETHODCALLTYPE CDynamicModel::getResource(UINT uIndex)
 	return(m_pShared->getResource());
 }
 
-void XMETHODCALLTYPE CDynamicModel::render(UINT uLod)
+void XMETHODCALLTYPE CDynamicModel::render(UINT uLod, bool isTransparent)
 {
 	if(!m_pDevice || !m_isEnabled || !m_pWorldBuffer)
 	{
@@ -200,10 +200,31 @@ void XMETHODCALLTYPE CDynamicModel::render(UINT uLod)
 
 	m_pDevice->setVertexShaderConstant(m_pWorldBuffer, 1 /* SCR_OBJECT */);
 
-	m_pShared->render(m_uSkin, uLod, m_vColor);
+	m_pShared->render(m_uSkin, uLod, m_vColor, isTransparent);
 }
 
 CDynamicModelShared* CDynamicModel::getShared()
 {
 	return(m_pShared);
+}
+
+UINT CDynamicModel::getPSPcount(UINT uLod) const
+{
+	return(m_pShared->getPSPs(m_uSkin, uLod).size());
+}
+SMPLANE CDynamicModel::getPSP(UINT uLod, UINT uPlane) const
+{
+	auto &aPlanes = m_pShared->getPSPs(m_uSkin, uLod);
+	assert(uPlane < aPlanes.size());
+
+	SMPLANE plane = aPlanes[uPlane];
+
+	plane = SMPlaneTransform(plane, SMMatrixScaling(m_fScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition));
+
+	return(plane);
+}
+
+bool CDynamicModel::hasTransparentSubsets(UINT uLod) const
+{
+	return(m_pShared->hasTransparentSubsets(m_uSkin, uLod));
 }

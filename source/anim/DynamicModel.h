@@ -40,11 +40,14 @@ public:
 	const IModelPhysbox* XMETHODCALLTYPE getPhysBox(UINT id, UINT uPartIndex = 0) const override;
 	const IXResourceModel* XMETHODCALLTYPE getResource(UINT uIndex = 0) override;
 
-	void XMETHODCALLTYPE render(UINT uLod) override;
+	void XMETHODCALLTYPE render(UINT uLod, bool isTransparent) override;
 
 	CDynamicModelShared* getShared();
 	void initGPUresources();
 
+	UINT getPSPcount(UINT uLod) const;
+	SMPLANE getPSP(UINT uLod, UINT uPlane) const;
+	bool hasTransparentSubsets(UINT uLod) const;
 protected:
 	CDynamicModelProvider *m_pProvider;
 	CDynamicModelShared *m_pShared;

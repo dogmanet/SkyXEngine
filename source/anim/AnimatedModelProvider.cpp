@@ -174,12 +174,12 @@ void CAnimatedModelProvider::render(CRenderableVisibility *pVisibility)
 			auto pItem = pVisibility->getItem(i);
 			if(pItem->isVisible)
 			{
-				m_apModels[i]->render(pItem->uLod);
+				m_apModels[i]->render(pItem->uLod, false);
 			}
 		}
 		else
 		{
-			m_apModels[i]->render(0);
+			m_apModels[i]->render(0, false);
 		}
 	}
 }

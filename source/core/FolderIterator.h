@@ -8,7 +8,7 @@ See the license in LICENSE
 
 #include "FileSystem.h"
 
-class CFolderIterator final : public IFileSystem::IFileIterator
+class CFolderIterator final : public IFileIterator
 {
 private:
     String m_sPath;
@@ -19,7 +19,7 @@ private:
 public:
     CFolderIterator(const char *szPath);
 
-    const char *XMETHODCALLTYPE next() override;
+    const char* XMETHODCALLTYPE next() override;
 
     void XMETHODCALLTYPE reset() override;
 
