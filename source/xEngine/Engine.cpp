@@ -112,10 +112,6 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 
 	SGCore_0Create("sxgcore", (HWND)hWindow, *r_win_width, *r_win_height, *r_win_windowed, false);
 	
-	SGCore_SetFunc_MtlIsTransparency((g_func_mtl_is_transparency)SMtrl_MtlIsTransparency);
-	SGCore_SetFunc_MtlGroupRenderIsSingly((g_func_mtl_group_render_is_singly)SMtrl_MtlGetTypeReflection);
-	SGCore_SetFunc_MtlGetPhysicType((g_func_mtl_get_physic_type)SMtrl_MtlGetPhysicMaterial);
-
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB gcore initialized\n");
 
 	SMtrl_DevSet(SGCore_GetDXDevice());

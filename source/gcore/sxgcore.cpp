@@ -10,16 +10,10 @@ See the license in LICENSE
 #include <gcore/loadertextures.h>
 #include <gcore/bound.h>
 #include <gcore/camera.h>
-#include <gcore/oc.h>
 
 #include <gcore/gcore_utils.h>
 #include <gcore/gcore_data.h>
 
-
-#if !defined(DEF_STD_REPORT)
-#define DEF_STD_REPORT
-report_func g_fnReportf = DefReport;
-#endif
 
 //##########################################################################
 
@@ -36,7 +30,6 @@ IGXVertexDeclaration *g_pStaticVertexDecl = 0;
 CShaderManager *g_pManagerShaders = 0;
 CLoaderTextures *g_pManagerTextures = 0;
 IGXRenderBuffer *g_pScreenTextureRB = 0;
-COcclusionCulling *g_pOC = 0;
 IGXBlendState *g_pToneMappingBS = NULL;
 IGXSamplerState *g_pSamplerFilterPoint = NULL;
 IGXSamplerState *g_pSamplerFilterLinear = NULL;
@@ -45,50 +38,7 @@ IGXSamplerState *g_pSamplerFilterLinear = NULL;
 
 //##########################################################################
 
-void StdDrawIndexedPrimitive(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count)
-{
-	Core_RIntSet(G_RI_INT_COUNT_DIP, Core_RIntGet(G_RI_INT_COUNT_DIP) + 1);
-	g_pDevice->setPrimitiveTopology((GXPRIMITIVETOPOLOGY)type_primitive);
-	g_pDevice->drawIndexed(num_vertices, prim_count, start_index, base_vertexIndex);
-}
-
-void StdMtlSet(ID id, const float4x4 *pWorld, const float4 *pColor)
-{
-
-	g_pDevice->setTexture(SGCore_LoadTexGetTex(id));
-}
-
-ID StdMtlLoad(const char *szName, int iMtlType)
-{
-	return SGCore_LoadTexAddName(szName, LOAD_TEXTURE_TYPE_LOAD);
-}
-
-bool StdMtlIsTransparency(ID id)
-{
-	return false;
-}
-
-int StdMtlGetPhysicType(ID id)
-{
-	return 0;
-}
-
-bool StdMtlGroupIsSyngly(ID id)
-{
-	return false;
-}
-
-g_func_dip g_fnDIP = StdDrawIndexedPrimitive;
-g_func_mtl_set g_fnMtlSet = StdMtlSet;
-g_func_mtl_load g_fnMtlLoad = StdMtlLoad;
-g_func_mtl_is_transparency g_fnMtlIsTransparency = StdMtlIsTransparency;
-g_func_mtl_get_physic_type g_fnMtlGetPhysicType = StdMtlGetPhysicType;
-g_func_mtl_group_render_is_singly g_fnMtlGroupRenderIsSingly = StdMtlGroupIsSyngly;
-
-//##########################################################################
-
 #define SG_PRECOND(retval) if(!g_pDevice){ LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxgcore is not init", GEN_MSG_LOCATION); return retval;}
-#define SG_PRECOND_SKY_OC(retval) SG_PRECOND(retval _VOID); if(!g_pOC){ LibReport(REPORT_MSG_LEVEL_ERROR, "%s - occlusion culling is not init", GEN_MSG_LOCATION); return retval;}
 
 //##########################################################################
 
@@ -100,8 +50,6 @@ void GCoreInit(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 
 	g_pManagerShaders = new CShaderManager();
 	g_pManagerTextures = new CLoaderTextures();
-	g_pOC = new COcclusionCulling();
-	g_pOC->init(iWidth, iHeight);
 	InitToneMappingStates();
 
 	GXVertexElement oLayoutStatic[] =
@@ -124,23 +72,6 @@ void GCoreInit(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 }
 
 //##########################################################################
-
-SX_LIB_API void SGCore_ToneMappingCom(DWORD timeDelta, float fFactorAdapted)
-{
-	ToneMappingCom(timeDelta, fFactorAdapted);
-}
-
-//##########################################################################
-
-SX_LIB_API long SGCore_0GetVersion()
-{
-	return SXGCORE_VERSION;
-}
-
-SX_LIB_API void SGCore_Dbg_Set(report_func rf)
-{
-	g_fnReportf = rf;
-}
 
 SX_LIB_API void SGCore_0Create(const char *szName, SXWINDOW hWnd, int iWidth, int iHeigth, bool isWindowed, bool isUnic)
 {
@@ -183,8 +114,6 @@ SX_LIB_API void SGCore_AKill()
 {
 	SG_PRECOND(_VOID);
 
-	mem_delete(g_pOC);
-
 	mem_delete(g_pManagerShaders);
 	mem_delete(g_pManagerTextures);
 
@@ -202,45 +131,6 @@ SX_LIB_API IGXContext* SGCore_GetDXDevice()
 {
 	SG_PRECOND(0);
 	return g_pDevice;
-}
-
-SX_LIB_API void SGCore_DbgMsg(const char *szFormat, ...)
-{
-	SG_PRECOND(_VOID);
-	
-	va_list va;
-	char buf[SXGC_STR_SIZE_DBG_MSG];
-	va_start(va, szFormat);
-	vsprintf_s(buf, SXGC_STR_SIZE_DBG_MSG, szFormat, va);
-	va_end(va);
-
-	RECT rect;
-	rect.top = 10;
-	rect.left = 10;
-	//rect.right = g_oD3DAPP.BackBufferWidth - 10;
-	//rect.bottom = g_oD3DAPP.BackBufferHeight - 10;
-	//g_pFPStext->DrawText(0, buf, -1, &rect, 0, 0xff000000);
-	--rect.top;
-	--rect.left;
-	//g_pFPStext->DrawText(0, buf, -1, &rect, 0, 0xffffffff);
-}
-
-SX_LIB_API void SGCore_OnLostDevice()
-{
-	SG_PRECOND(_VOID);
-
-	//g_pFPStext->OnLostDevice();
-
-	g_pOC->onLostDevice();
-}
-
-SX_LIB_API bool SGCore_OnDeviceReset(int iWidth, int iHeight, bool isWindowed)
-{
-	SG_PRECOND(false);
-
-	g_pDevice->resize(iWidth, iHeight, isWindowed);
-
-	return(true);
 }
 
 SX_LIB_API void SGCore_OnResetDevice()
@@ -261,117 +151,6 @@ SX_LIB_API void SGCore_ScreenQuadDraw()
 	g_pDevice->setRenderBuffer(g_pScreenTextureRB);
 	g_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
 	g_pDevice->drawPrimitive(0, 2);
-}
-
-//##########################################################################
-
-SX_LIB_API void SGCore_DIP(UINT uiTypePrimitive, long lBaseVertexIndex, UINT uiMinVertexIndex, UINT uiNumVertices, UINT uiStartIndex, UINT uiPrimitiveCount)
-{
-	SG_PRECOND(_VOID);
-	g_fnDIP(uiTypePrimitive, lBaseVertexIndex, uiMinVertexIndex, uiNumVertices, uiStartIndex, uiPrimitiveCount);
-}
-
-SX_LIB_API void SGCore_MtlSet(ID id, const float4x4 *pWorld, const float4 *pColor)
-{
-	SG_PRECOND(_VOID);
-	g_fnMtlSet(id, pWorld, pColor);
-}
-
-SX_LIB_API ID SGCore_MtlLoad(const char *szName, int iMtlType)
-{
-	SG_PRECOND(-1);
-	return g_fnMtlLoad(szName, iMtlType);
-}
-
-SX_LIB_API bool SGCore_MtlIsTransparency(ID id)
-{
-	SG_PRECOND(false);
-	return g_fnMtlIsTransparency(id);
-}
-
-SX_LIB_API int SGCore_MtlGetPhysicType(ID id)
-{
-	SG_PRECOND(-1);
-	return g_fnMtlGetPhysicType(id);
-}
-
-SX_LIB_API bool SGCore_MtlGroupRenderIsSingly(ID id)
-{
-	SG_PRECOND(false);
-	return g_fnMtlGroupRenderIsSingly(id);
-}
-
-
-SX_LIB_API void SGCore_SetFunc_DIP(g_func_dip fnFunc)
-{
-	SG_PRECOND(_VOID);
-	g_fnDIP = fnFunc;
-}
-
-SX_LIB_API void SGCore_SetFunc_MtlSet(g_func_mtl_set fnFunc)
-{
-	SG_PRECOND(_VOID);
-	g_fnMtlSet = fnFunc;
-}
-
-SX_LIB_API void SGCore_SetFunc_MtlLoad(g_func_mtl_load fnFunc)
-{
-	SG_PRECOND(_VOID);
-	g_fnMtlLoad = fnFunc;
-}
-
-SX_LIB_API void SGCore_SetFunc_MtlIsTransparency(g_func_mtl_is_transparency fnFunc)
-{
-	SG_PRECOND(_VOID);
-	g_fnMtlIsTransparency = fnFunc;
-}
-
-SX_LIB_API void SGCore_SetFunc_MtlGetPhysicType(g_func_mtl_get_physic_type fnFunc)
-{
-	SG_PRECOND(_VOID);
-	g_fnMtlGetPhysicType = fnFunc;
-}
-
-SX_LIB_API void SGCore_SetFunc_MtlGroupRenderIsSingly(g_func_mtl_group_render_is_singly fnFunc)
-{
-	SG_PRECOND(_VOID);
-	g_fnMtlGroupRenderIsSingly = fnFunc;
-}
-
-//##########################################################################
-
-SX_LIB_API void SGCore_OC_SetEnable(bool isEnable)
-{
-	SG_PRECOND_SKY_OC(_VOID);
-	g_pOC->setEnable(isEnable);
-}
-
-SX_LIB_API void SGCore_OC_Update(ID idDepthMap, const IFrustum *pFrustum)
-{
-	SG_PRECOND_SKY_OC(_VOID);
-
-	g_pOC->update(idDepthMap, pFrustum);
-}
-
-SX_LIB_API void SGCore_OC_UpdateEnsureDone()
-{
-	SG_PRECOND_SKY_OC(_VOID);
-
-	g_pOC->ensureUpdateDone();
-}
-
-SX_LIB_API void SGCore_OC_Reprojection()
-{
-	SG_PRECOND_SKY_OC(_VOID);
-
-	g_pOC->reprojection();
-}
-
-SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin)
-{
-	SG_PRECOND_SKY_OC(false);
-
-	return g_pOC->comVisible(pMax, pMin);
 }
 
 //##########################################################################
@@ -565,91 +344,6 @@ SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3 *pMin, const float3 *
 
 //##########################################################################
 
-SX_LIB_API bool SGCore_0InPos2D(const float3* min, const float3* max, const float3* pos)
-{
-	return InPosition2D(min, max, pos);
-}
-
-SX_LIB_API bool SGCore_0InPosAbs2D(float3* min, float3* max, float3* pos)
-{
-	return InPositionAbs2D(min, max, pos);
-}
-
-SX_LIB_API int SGCore_0CountPosPoints2D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
-{
-	return CountPositionPoints2D(min, max, p1, p2, p3);
-}
-
-SX_LIB_API int SGCore_0CountPosPointsAbs2D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
-{
-	return CountPositionPointsAbs2D(min, max, p1, p2, p3);
-}
-
-SX_LIB_API bool SGCore_0InPosPoints2D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
-{
-	return InPositionPoints2D(min, max, p1, p2, p3);
-}
-
-SX_LIB_API bool SGCore_0InPos3D(float3* min, float3* max, float3* pos)
-{
-	return InPosition3D(min, max, pos);
-}
-
-SX_LIB_API bool SGCore_0InPosAbs3D(float3* min, float3* max, float3* pos)
-{
-	return InPositionAbs3D(min, max, pos);
-}
-
-SX_LIB_API int SGCore_0CountPosPoints3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
-{
-	return CountPositionPoints3D(min, max, p1, p2, p3);
-}
-
-SX_LIB_API int SGCore_0CountPosPointsAbs3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
-{
-	return CountPositionPointsAbs3D(min, max, p1, p2, p3);
-}
-
-SX_LIB_API bool SGCore_0InPosPoints3D(float3* min, float3* max, float3* p1, float3* p2, float3* p3)
-{
-	return InPositionPoints3D(min, max, p1, p2, p3);
-}
-
-SX_LIB_API void SGCore_0ComBoundBoxArr8(ISXBound* bound, ISXBound** bound_arr)
-{
-	ComputeBoundingBoxArr8(bound, bound_arr);
-}
-
-SX_LIB_API void SGCore_0ComBoundBoxArr4(ISXBound* bound, ISXBound** bound_arr)
-{
-	ComputeBoundingBoxArr4(bound, bound_arr);
-}
-
-SX_LIB_API float SGCore_0DistancePointBeam2(const float3 & p, const float3 & start, const float3 & dir)
-{
-	float3 v = dir;
-	float3 w = p - start;
-	float c1;
-	if ((c1 = SMVector3Dot(w, v)) <= 0.0f)
-	{
-		return(SMVector3Length2(p - start));
-	}
-	float c2 = SMVector3Dot(v, v);
-
-	float b = c1 / c2;
-	float3 Pb = start + b * v;
-	return(SMVector3Length2(p - Pb));
-}
-
-SX_LIB_API bool SGCore_0InretsectBox(const float3 * min1, const float3 * max1, const float3 * min2, const float3 * max2)
-{
-	return (!((min1->x > max2->x || max1->x < min2->x)
-		|| (min1->y > max2->y || max1->y < min2->y)
-		|| (min1->z > max2->z || max1->z < min2->z)));
-}
-
-//##########################################################################
-
 SX_LIB_API IFrustum* SGCore_CrFrustum()
 {
 	return new CFrustum();
@@ -658,16 +352,6 @@ SX_LIB_API IFrustum* SGCore_CrFrustum()
 SX_LIB_API ICamera* SGCore_CrCamera()
 {
 	return new CCamera();
-}
-
-SX_LIB_API ITransObject* SGCore_CrTransObject()
-{
-	return new CTransObject();
-}
-
-SX_LIB_API ISXBound* SGCore_CrBound()
-{
-	return new CBound();
 }
 
 //##########################################################################
@@ -692,12 +376,9 @@ public:
 		m_pRB = g_pDevice->createRenderBuffer(1, &m_pVB, pVD);
 
 		mem_release(pVD);
-
-		m_pBound = SGCore_CrBound();
 	}
 	~CMesh()
 	{
-		mem_release(m_pBound);
 		mem_release(m_pIB);
 		mem_release(m_pVB);
 		mem_release(m_pRB);
@@ -723,10 +404,6 @@ public:
 			delete this;
 		}
 	}
-	ISXBound *getBound()
-	{
-		return(m_pBound);
-	}
 	void AddRef()
 	{
 		++m_uRefCount;
@@ -738,7 +415,6 @@ protected:
 	IGXIndexBuffer *m_pIB;
 	UINT m_uVertexCount;
 	UINT m_uIndexCount;
-	ISXBound *m_pBound;
 	UINT m_uRefCount = 1;
 };
 

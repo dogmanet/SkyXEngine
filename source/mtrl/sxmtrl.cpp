@@ -582,11 +582,6 @@ SX_LIB_API void SMtrl_MtlSetTypeReflection(ID id, MTLTYPE_REFLECT type)
 	ArrMaterials->mtlSetTypeReflection(id, type);
 }
 
-SX_LIB_API MTLTYPE_REFLECT SMtrl_MtlGetTypeReflection(ID id)
-{
-	ML_PRECOND(MTLTYPE_REFLECT_NONE);
-	return ArrMaterials->mtlGetTypeReflection(id);
-}
 
 //**************************************************************************
 

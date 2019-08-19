@@ -394,8 +394,8 @@ void CCrosshair::render()
 	m_pDev->setRenderBuffer(m_pRenderBuffer);
 	m_pDev->setTexture(m_pTexture);
 	m_pDev->setDepthStencilState(m_pDepthState);
-	SGCore_DIP(GXPT_TRIANGLELIST, 0, 0, m_iVertexCount[m_u8ActiveBuffer], 0, m_iIndexCount[m_u8ActiveBuffer] / 3);
-
+	m_pDev->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	m_pDev->drawIndexed(m_iVertexCount[m_u8ActiveBuffer], m_iIndexCount[m_u8ActiveBuffer] / 3);
 }
 void CCrosshair::onSync()
 {

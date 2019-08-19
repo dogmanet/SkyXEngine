@@ -47,12 +47,6 @@ class IFrustum;
 //! \name Базовые функции библиотеки 
 //!@{
 
-//! версия подсистемы
-SX_LIB_API long SGCore_0GetVersion();			
-
-//! установка функции вывода сообщений
-SX_LIB_API void SGCore_Dbg_Set(report_func fnReport);	
-
 //! инициализация подсистемы
 SX_LIB_API void SGCore_0Create(
 	const char *szName,			//!< передваваемое имя подсистемы
@@ -83,105 +77,15 @@ SX_LIB_API HRESULT SGCore_DXcallCheck(HRESULT hr, const char *callStr);
 
 //#############################################################################
 
-/*! \name Отладочное сообщение в окне рендера
- \note Графическое ядро предусматривает наличие текстового сообщения в окне рендера, которое формирует непосредственно сам программист и дает команду на его вывод
-@{*/
-
-/*!< размер отладочного сообщения, выводимого в окно рендера */
-#define SXGC_STR_SIZE_DBG_MSG 4096 
-
-/*! Вывод отладочного сообщения в окно рендера.
-Аргументы аналогичны стандартным функциям типа printf.
-*/
-SX_LIB_API void SGCore_DbgMsg(const char *szFormat, ...);
-
-//!@}
-
-//#############################################################################
-
 /*! \name Обработка потери/восстановления устройства 
  \warning Функции обработки потери/восстановления устройства обрабатывают ресурсы только в пределах данной библиотеки, другие библиотеки должны сами производить данную обработку!
 !@{*/
-
-//! вызывать при потере устройства
-SX_LIB_API void SGCore_OnLostDevice();	
-
-//! вызывать при попытке сброса устройства
-SX_LIB_API bool SGCore_OnDeviceReset(
-	int iWwidth,		//!< новая ширина окна
-	int iHeigth,		//!< новая выоста окна
-	bool isWindewed		//!< true - оконный режим, false - полноэкранный
-	);	
 
 //! вызывать при сбросе устроства
 SX_LIB_API void SGCore_OnResetDevice();	
 
 //! отрисовка full screen quad (уже смещенного как надо чтобы не было размытия)
 SX_LIB_API void SGCore_ScreenQuadDraw();
-
-//!@}
-
-//#############################################################################
-
-/*! \defgroup sxgcore_redefinition_func Переопределяемые функции
- \ingroup sxgcore
- \note sxgcore содержит базовые и необходимые функции для переопределения их пользователем, которые будут доступны из графического ядра в других библиотеках зависимых от графического ядра, но в тоже время, эти функции могут быть переопределены функциями из других библиотек. \n
-Это обеспечивает централизованную обобщенную зависимость от самого графического ядра и исключает перекрестные зависимости библиотек между собой, позволяя программисту воздействовать на ценрт управления не  из центра. \n
-Переопределяемые функции могут быть переопределены во внутреннем состоянии, то есть функция обертка так и останется функцией оберткой только будет вызывать уже переопределенную функцию. \n
-Переопределяемые функции изначально выполняют штатные действия исходя из их назначения, и могут вообще не переопределяться если так надо программисту, то есть необходимость в их переопределении исходит только от программиста. \n
-@{*/
-
-/*! \name Прототипы переопределяемых функций 
-@{*/
-
-/*! draw indexed primitive, команда отрисовки.
-Аналогична DrawIndexedPrimitive, в дополнение к DIP инкрементирует счетчик DIPов в int регистрах по индексу #G_RI_INT_COUNT_DIP, обнуление данных только на стороне приложения
-*/
-typedef void(*g_func_dip) (UINT uiTypePrimitive, long lBaseVertexIndex, UINT uiMinVertexIndex, UINT uiNumVertices, UINT uiStartIndex, UINT uiPrimitiveCount);
-
-/*! установка материала id, world - мировая матрица.
-По умолчанию установка текстуры в нулевой текстурный слот, id – идентификатор материала (по умолчанию - текстуры), pWorld – матрица трансформации модели, pColor - цвет, если материал принимает
-*/
-typedef void(*g_func_mtl_set) (ID id, const float4x4 *pWorld, const float4 *pColor);
-
-/*! загрузка материала, szName - имя текстуры с расширением, iMtlType - тип материала на случай провала загрузки.
-Загрузка материала (по умолчанию – текстуры) с именем name, iMtlType – типа материала, 
-будет задействован только в случае провала определения типа материала (по умолчанию не используется) - 
-тип стандартного материала будет определен на основании iMtlType, может принимать одно из значений MTL_TYPE_
-*/
-typedef ID(*g_func_mtl_load) (const char *szName,	int iMtlType);
-
-//! является ли материал полупрозрачным
-typedef bool(*g_func_mtl_is_transparency) (ID id);
-
-//! получить физический тип материала
-typedef int(*g_func_mtl_get_physic_type)(ID id);
-
-//! рисовать ли подгруппы моделей данного материала раздельно?
-typedef bool(*g_func_mtl_group_render_is_singly) (ID id);
-
-//!@}
-
-/*! \name Переопределяемые функции(переопределение реализации внутри)
-!@{*/
-
-//! \copydoc g_func_dip
-SX_LIB_API void SGCore_DIP(UINT uiTypePrimitive, long lBaseVertexIndex, UINT uiMinVertexIndex, UINT uiNumVertices, UINT uiStartIndex, UINT uiPrimitiveCount);
-
-//! \copydoc g_func_mtl_set
-SX_LIB_API void SGCore_MtlSet(ID id, const float4x4 *pWorld=0, const float4 *pColor=0);
-
-//! \copydoc g_func_mtl_load
-SX_LIB_API ID SGCore_MtlLoad(const char *szName, int iMtlType);
-
-//! \copydoc g_func_mtl_is_transparency
-SX_LIB_API bool SGCore_MtlIsTransparency(ID id);
-
-//! \copydoc g_func_mtl_get_physic_type
-SX_LIB_API int SGCore_MtlGetPhysicType(ID id);
-
-//! \copydoc g_func_mtl_group_render_is_singly
-SX_LIB_API bool SGCore_MtlGroupRenderIsSingly(ID id);
 
 //!@}
 
@@ -229,66 +133,8 @@ enum DS_RT
 	DS_RT_ADAPTEDLUM
 };
 
-SX_LIB_API void SGCore_ToneMappingCom(DWORD timeDelta, float factor_adapted);
-
 //!@} sxgcore_ds
 
-//##########################################################################
-
-/*! \name Переопределение функций
-!@{*/
-
-//! переназначение #g_func_dip
-SX_LIB_API void SGCore_SetFunc_DIP(g_func_dip fnFunc);
-
-//! переназначение #g_func_mtl_set
-SX_LIB_API void SGCore_SetFunc_MtlSet(g_func_mtl_set fnFunc);
-
-//! переназначение #g_func_mtl_load
-SX_LIB_API void SGCore_SetFunc_MtlLoad(g_func_mtl_load fnFunc);
-
-//! переназначение #g_func_mtl_is_transparency
-SX_LIB_API void SGCore_SetFunc_MtlIsTransparency(g_func_mtl_is_transparency fnFunc);
-
-//! переназначение #g_func_mtl_get_physic_type
-SX_LIB_API void SGCore_SetFunc_MtlGetPhysicType(g_func_mtl_get_physic_type fnFunc);
-
-//! переназначение g_func_mtl_group_render_is_singly
-SX_LIB_API void SGCore_SetFunc_MtlGroupRenderIsSingly(g_func_mtl_group_render_is_singly fnFunc);
-
-//!@}
-
-//!@} group sxgcore_redefinition_func
-
-//#############################################################################
-
-/*! \name Occlusion culling - отбсрос загороженного
- \note Глубина должна быть нелинейная, то есть z/w, чтобы преобразовать в линейную надо:
- near / (far + near - depth * (far - near))
- \note Процесс вкратце:
-  - в конце этого кадра берем глубину, уменьшаем в несколько раз (в 4) с выборкой наиболее дальних пикселей, перегоняем данные из текстуры в gpu в массив на cpu
-  - в начале следующего кадра, после обновления матриц, делаем репроекцию глубины, закрашивая пустые места максимальной глубиной
-  - в следующем кадре тестируем боксы на незагороженность, путем растеризации треугольников и сравнения глубины пикселей с пикселями глубины
-@{*/
-
-//! будет ли проводится тест на загороженность
-SX_LIB_API void SGCore_OC_SetEnable(bool isEnable);
-
-//! обновление буфера глубины для теста, должна вызываться в старом кадре, к примеру после всего рендера (глубина и матрицы для текущего)
-SX_LIB_API void SGCore_OC_Update(ID idDepthMap, const IFrustum *pFrustum);
-
-//! Ожидает завершение обновления (для многопоточного режима)
-SX_LIB_API void SGCore_OC_UpdateEnsureDone();
-
-//! репроекция глубины, должна вызываться в новом кадре до основного рендера всего того, что подвергается тесту на загороженность, матрицы должны быть от нового кадра
-SX_LIB_API void SGCore_OC_Reprojection();
-
-/*! не загорожен ли бокс? вызывается для каждого тестируемого объекта после #SGCore_OC_Reprojection и до #SGCore_OC_Update
- \note Координаты бокса должны быть в пространстве мира
-*/
-SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin);
-
-//!@}
 
 //#############################################################################
 
@@ -528,121 +374,6 @@ SX_LIB_API void SGCore_LoadTexAllLoad();
 
 //#############################################################################
 
-/*! \defgroup sxgcore_bb Ограничивающий объем
- \ingroup sxgcore
-@{*/
-
-/*! Простой объект трансформаций с минимальным описанием.
- \note Для корректного использования необходимо сначала установить позицию/поворот/масштаб после чего calcWorld
-*/
-struct ITransObject : public IBaseObject
-{
-	virtual ~ITransObject(){};
-
-	SX_ALIGNED_OP_MEM
-
-	//! просчет мировой матрицы трансформации на основе поворотов масштабирования и позиции
-	virtual const float4x4* calcWorld() = 0;	
-
-	virtual void setPosition(const float3 *pPos) = 0;
-	virtual void setRotation(const float3 *pRot) = 0;
-	virtual void setScale(const float3 *pScale) = 0;
-
-	virtual const float3* getPosition(float3 *pPos=0) = 0;
-	virtual const float3* getRotation(float3 *pRot = 0) = 0;
-	virtual const float3* getScale(float3 *pScale = 0) = 0;
-};
-
-//! создать ITransObject
-SX_LIB_API ITransObject* SGCore_CrTransObject();	
-
-//! структура описывающая ограничивающий квадрат (а точнее параллелепипед) в пространстве экрана
-/*struct SXPosBBScreen
-{
-	float x;		//!< позиция по оси x в пространстве экрана
-	float y;		//!< позиция по оси y в пространстве экрана
-	float width;	//!< ширина в пикселях
-	float height;	//!< высота в пикселях
-	float maxdepth;	//!< конец объекта глубина 0-1
-	float mindepth;	//!< начало объект глубина 0-1
-	bool IsVisible;	//!< виден ли квадрат наблюдателю
-};*/
-
-struct CBoundBox
-{
-	float3_t m_vMin;
-	float3_t m_vMax;
-};
-
-
-/*! класс ограничивающего объема
- \warning #setMinMax, #setSphere до вызова #calcWorldAndTrans возвращают нетрансформирвоанные данные
-*/
-class ISXBound : public virtual ITransObject
-{
-public:
-	virtual ~ISXBound(){};
-
-	SX_ALIGNED_OP_MEM
-
-	/*! Просчет ограничивающего объема по вершинному буферу*/
-	virtual void calcBound(
-		float3_t *pVertex, //!< вершинный буфер (незаблокированный), в вершинах которого первым элементом идет позиция float3_t вектор  
-		int iCountVertex,		//!< количество вершин
-		int iBytePerVertex		//!< количество байт в вершине
-		) = 0;
-
-	virtual void calcBoundIndex(
-		float3_t *pVertexBuffer,
-		uint32_t **ppArrIndex, 
-		uint32_t *pCountIndex,
-		int iCountSubset,
-		int iBytePerVertex
-		) = 0;
-
-	//! функция просчета мировой матрицы и трансформации минимума и максимума
-	//virtual float4x4*  calcWorldAndTrans() = 0;
-
-	virtual void resetTransform() = 0;
-
-	/*//! просчет структуры SXPosBBScreen 
-	virtual void getPosBBScreen(
-		SXPosBBScreen *res,		//!< инициализированная стркутура #SXPosBBScreen для записи
-		float3* campos,			//!< позиция наблюдателя
-		float3* sizemapdepth,	//!< размер карты глубины глябины для просчета float3(ширина, высота, максильная глубина)
-		float4x4* mat			//!< произведение видовой и проекционной матриц
-		) = 0;*/
-
-	//! установить экстремум, также просчитает и сферу
-	virtual void setMinMax(const float3 *pMin, const float3 *pMax) = 0;	
-
-	//! запишет в min и max точки экстремума
-	virtual void getMinMax(float3 *pMin, float3 *pMax) const = 0;			
-
-
-	//! установить сферу, просчитает также и параллелепипед
-	virtual void setSphere(const float3 *pCenter, float fRadius) = 0;	
-
-	//! запишет в center центр сферы, в radius радиус сферы
-	virtual void getSphere(float3 *pCenter, float *pRadius) const = 0;	
-
-
-	//! находится ли точка point в пределах сферы
-	virtual bool isPointInSphere(const float3 *pPoint) const = 0;	
-
-	//! находится ли точка point в пределах параллелепипеда
-	virtual bool isPointInBox(const float3 *pPoint) const = 0;		
-
-	virtual void cloneFrom(ISXBound *pFrom) = 0;
-};
-
-//! создать ISXBound
-SX_LIB_API ISXBound* SGCore_CrBound(); 
-
-//!@} sxgcore_bb
-
-//#############################################################################
-
 /*! Меш
 */
 struct IMesh: public IBaseObject
@@ -654,7 +385,6 @@ public:
 	virtual IGXVertexBuffer *getVertexBuffer() = 0;
 	virtual IGXIndexBuffer *getIndexBuffer() = 0;
 	virtual void Release() = 0;
-	virtual ISXBound *getBound() = 0;
 //	virtual UINT getVertexCount() = 0;
 //	virtual UINT getVertexSize() = 0;
 };
@@ -690,65 +420,6 @@ SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3* min, const float3* m
 /*! \defgroup sxgcore_bb_intersect Функции просчета попаданий точек в объемы и деление объемов
  \ingroup sxgcore
 @{*/
-
-/*! \name Просчеты попадания точки/точек в объем 
- \note 2d - на основании x и z координат \n
-3d - на основании всех трех координат \n
-Abs - абсолютное нахождение внутри, не на границах, иное допускает нахождение на границах 
-@{*/
-
-//! находится ли точка pos в пределах [min,max] по осям x z
-SX_LIB_API bool SGCore_0InPos2D(const float3 *pMin, const float3 *pMax, const float3 *pPos);
-
-//! находится ли точка pos в пределах (min,max) по осям x z
-SX_LIB_API bool SGCore_0InPosAbs2D(float3 *pMin, float3 *pMax, float3 *pPos);
-
-
-//! возвращает количество точек (p1,p2,p3) лежащих в пределах [min,max]  по осям x z
-SX_LIB_API int SGCore_0CountPosPoints2D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
-
-//! возвращает количество точек (p1,p2,p3) лежащих в пределах (min,max)  по осям x z
-SX_LIB_API int SGCore_0CountPosPointsAbs2D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
-
-//! лежит ли хотя бы одна точка абсолютно в (min,max) или хотя бы 2 точки в пределах [min,max], из числа трех точек p1,p2,p3, по осям x z
-SX_LIB_API bool SGCore_0InPosPoints2D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
-
-
-//! находится ли точка pos в пределах [min,max]
-SX_LIB_API bool SGCore_0InPos3D(float3 *pMin, float3 *pMax, float3 *pPos);
-
-//! находится ли точка pos в пределах (min,max)
-SX_LIB_API bool SGCore_0InPosAbs3D(float3 *pMin, float3 *pMax, float3 *pPos);
-
-
-//! возвращает количество точек (p1,p2,p3) лежащих в пределах [min,max]
-SX_LIB_API int SGCore_0CountPosPoints3D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
-
-//! возвращает количество точек (p1,p2,p3) лежащих в пределах (min,max)
-SX_LIB_API int SGCore_0CountPosPointsAbs3D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
-
-//! лежит ли хотя бы одна точка абсолютно в (min,max) или хотя бы 2 точки в пределах [min,max], из числа трех точек p1,p2,p3
-SX_LIB_API bool SGCore_0InPosPoints3D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
-
-//!@}
-
-//**************************************************************************
-
-/*! кубическое (octo) деление объема (по всем трем осям)
- \warning массивы и объекты должны быть заранее инициализированны
- */
-SX_LIB_API void SGCore_0ComBoundBoxArr8(ISXBound *pBound, ISXBound **ppBoundArr);
-
-/*! квадратичное (quad) деление объема (по двум осям x и z)
- \warning массивы и объекты должны быть заранее инициализированны
-*/
-SX_LIB_API void SGCore_0ComBoundBoxArr4(ISXBound *pBound, ISXBound **ppBoundArr);
-
-//! находит квадрат расстояния между лучем и точкой
-SX_LIB_API float SGCore_0DistancePointBeam2(const float3 &vPoint, const float3 &vStart, const float3 &vDir);
-
-//! возвращает пересекаются ли боксы или нет
-SX_LIB_API bool SGCore_0InretsectBox(const float3 *pMin1, const float3 *pMax1, const float3 *pMin2, const float3 *pMax2);
 
 struct CTriangle
 {

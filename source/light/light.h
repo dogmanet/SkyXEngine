@@ -225,7 +225,7 @@ public:
 
 		float m_fShadowIntensity;
 
-		ISXBound *m_pBoundVolume;
+		void *m_pBoundVolume;
 		float4x4 m_mWorldMat;
 		bool m_isVSDataDirty = false;
 		IGXConstantBuffer *m_pVSData = NULL;

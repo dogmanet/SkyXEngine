@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -27,30 +27,27 @@ extern IGXSamplerState *g_pSamplerFilterLinear;
 
 //##########################################################################
 
-//! инициализация устройства
+//! РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СѓСЃС‚СЂРѕР№СЃС‚РІР°
 void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed);
 
-//! инициализация отладочной инфы
+//! РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РѕС‚Р»Р°РґРѕС‡РЅРѕР№ РёРЅС„С‹
 void InitFPStext();
 
-//! инициализация полноэкранного квадрата
+//! РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїРѕР»РЅРѕСЌРєСЂР°РЅРЅРѕРіРѕ РєРІР°РґСЂР°С‚Р°
 void InitFullScreenQuad();
 
-//! инициализация массива режимов монитора
+//! РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РјР°СЃСЃРёРІР° СЂРµР¶РёРјРѕРІ РјРѕРЅРёС‚РѕСЂР°
 void InitArrModes();
 
-//! инициализация рендер таргетов для 
+//! РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЂРµРЅРґРµСЂ С‚Р°СЂРіРµС‚РѕРІ РґР»СЏ 
 void InitRT4Gbuffer();
 
-//! загрузка шейдеров
+//! Р·Р°РіСЂСѓР·РєР° С€РµР№РґРµСЂРѕРІ
 void LoadShaders();
 
 void InitToneMappingStates();
 
-//! заполнение массива для tone mapping
+//! Р·Р°РїРѕР»РЅРµРЅРёРµ РјР°СЃСЃРёРІР° РґР»СЏ tone mapping
 void ToneMappingGetArrDownScale4x4(int iWidth, int iHeight, float2 aDS[]);
-
-//! расчет tone mapping
-void ToneMappingCom(DWORD timeDelta, float fFactorAdapted);
 
 #endif

@@ -708,9 +708,6 @@ SX_LIB_API bool SMtrl_MtlGetRefractivity(ID id);
 //! установка типа отражений
 SX_LIB_API void SMtrl_MtlSetTypeReflection(ID id, MTLTYPE_REFLECT type);	
 
-//! возвращает текущий тип отражений для материала
-SX_LIB_API MTLTYPE_REFLECT SMtrl_MtlGetTypeReflection(ID id);				
-
 //!@}
 
 /*! \name Детальность и микрорельеф

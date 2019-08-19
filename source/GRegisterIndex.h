@@ -75,9 +75,6 @@ See the license in LICENSE
 /*! \name int register 
 @{*/
 
-#define G_RI_INT_COUNT_POLY		0	/*!< общее количество полигонов */
-#define G_RI_INT_COUNT_DIP		1	/*!< количество вызовов draw indexed primitive */
-#define G_RI_INT_CURRIDLIGHT	2	/*!< текущий идентификатор источнкиа света */
 #define G_RI_INT_RENDERSTATE	3	/*!< текущее состояние рендера */
 
 #define G_RI_INT_TIMER_RENDER	4	/*!< время для рендера */
