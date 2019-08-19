@@ -204,6 +204,7 @@ source/s4g/tests/
 
 build/*
 !engine/
+!demos/
 !gamesource/
 build/gamesource/*
 /build/gamesource/shaders/cache/*

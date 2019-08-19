@@ -75,15 +75,7 @@ bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceMo
 	if(m_mapModelLoaders.KeyExists(AAString(szLowcaseExt), &pNode))
 	{
 		auto &aLoaders = *pNode->Val;
-#if 1
-		CFile *pFile = new CFile();
-		if(pFile->open(szName, CORE_FILE_BIN) < 0)
-		{
-			mem_delete(pFile);
-		}
-#else
-		IFile *pFile = m_pCore->getFileSystem()->openFileBin(szName);
-#endif
+		IFile *pFile = m_pCore->getFileSystem()->openFile(szName);
 		if(!pFile)
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "File not found '%s'\n", szName);

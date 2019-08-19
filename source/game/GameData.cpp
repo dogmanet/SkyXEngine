@@ -155,19 +155,23 @@ BOOL EnumLevels(CLevelInfo *pInfo)
 	strncpy(pInfo->m_szName, szLevelName, MAX_LEVEL_STRING - 1);
 
 	{
-		char szFullPath[1024];
+		char szFullPath[1024], szFSPath[1024];
 		sprintf(szFullPath, "levels/%s/%s.lvl", pInfo->m_szName, pInfo->m_szName);
 
-		ISXConfig *pConfig = Core_OpConfig(szFullPath);
-		if(pConfig->keyExists("level", "local_name"))
+		if(Core_GetIXCore()->getFileSystem()->resolvePath(szFullPath, szFSPath, sizeof(szFSPath)))
 		{
-			strncpy(pInfo->m_szLocalName, pConfig->getKey("level", "local_name"), MAX_LEVEL_STRING - 1);
+
+			ISXConfig *pConfig = Core_OpConfig(szFSPath);
+			if(pConfig->keyExists("level", "local_name"))
+			{
+				strncpy(pInfo->m_szLocalName, pConfig->getKey("level", "local_name"), MAX_LEVEL_STRING - 1);
+			}
+			else
+			{
+				strncpy(pInfo->m_szLocalName, pInfo->m_szName, MAX_LEVEL_STRING - 1);
+			}
+			mem_release(pConfig);
 		}
-		else
-		{
-			strncpy(pInfo->m_szLocalName, pInfo->m_szName, MAX_LEVEL_STRING - 1);
-		}
-		mem_release(pConfig);
 
 		sprintf(szFullPath, "levels/%s/preview.bmp", pInfo->m_szName);
 		pInfo->m_bHasPreview = FileExistsFile(szFullPath);

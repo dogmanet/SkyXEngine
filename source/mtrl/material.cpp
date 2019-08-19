@@ -513,10 +513,10 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT
 
 	CMaterial *pMtrl = *ppMtrl;
 
-	char szPath[1024];
-	sprintf(szPath, "%s%s/%s.mtl", Core_RStringGet(G_RI_STRING_PATH_GS_MTRLS), sDir.c_str(), sName.c_str());
+	char szPath[1024], szTmpPath[1024];
+	sprintf(szTmpPath, "materials/%s/%s.mtl", sDir.c_str(), sName.c_str());
 
-	if (FileExistsFile(szPath))
+	if(Core_GetIXCore()->getFileSystem()->resolvePath(szTmpPath, szPath, sizeof(szPath)))
 	{
 		ISXConfig *pConfig = Core_OpConfig(szPath);
 

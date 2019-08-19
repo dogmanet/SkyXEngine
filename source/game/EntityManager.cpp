@@ -407,7 +407,14 @@ bool CEntityManager::import(const char * file, bool shouldSendProgress)
 	char sect[32];
 	CBaseEntity * pEnt = NULL;
 	Array<CBaseEntity*> tmpList;
-	if(conf->open(file))
+
+	char szFullPath[1024];
+	if(!Core_GetIXCore()->getFileSystem()->resolvePath(file, szFullPath, sizeof(szFullPath)))
+	{
+		goto err;
+	}
+
+	if(conf->open(szFullPath))
 	{
 		goto err;
 	}

@@ -44,6 +44,7 @@ CCore::CCore(const char *szName)
 	m_pFileSystem = new CFileSystem();
 	m_pFileSystem->addRoot("engine");
 	m_pFileSystem->addRoot("gamesource");
+	m_pFileSystem->addRoot("demos");
 	UINT uGamePathId = m_pFileSystem->addRoot("local");
 	m_pFileSystem->setWritableRoot(uGamePathId);
 

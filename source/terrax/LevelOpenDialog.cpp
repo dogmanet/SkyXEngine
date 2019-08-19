@@ -12,7 +12,7 @@ struct CLevelInfo
 	//bool m_bHasPreview;
 	bool m_isIndoor;
 
-	HANDLE m_hFind = NULL; //!< для внутреннего использования
+	IFileIterator *m_pIterator = NULL; //!< для внутреннего использования
 };
 
 BOOL GetLastWriteTime(const char *szFile, LPTSTR lpszString)
@@ -55,80 +55,55 @@ BOOL EnumLevels(CLevelInfo *pInfo)
 	pInfo->m_szLocalName[0] = 0;
 	pInfo->m_szLastEdit[0] = 0;
 
-	WIN32_FIND_DATA fd;
 	bool bFound = false;
-	if(!pInfo->m_hFind)
+	const char *szDirName = NULL;
+	if(!pInfo->m_pIterator)
 	{
-		if((pInfo->m_hFind = ::FindFirstFile((String(Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS)) + "*").c_str(), &fd)) != INVALID_HANDLE_VALUE)
-		{
-			bFound = true;
-		}
+		pInfo->m_pIterator = Core_GetIXCore()->getFileSystem()->getFolderList("levels/");
 	}
-	else
+	if(pInfo->m_pIterator && (szDirName = pInfo->m_pIterator->next()))
 	{
-		if(::FindNextFile(pInfo->m_hFind, &fd))
-		{
-			bFound = true;
-		}
-	}
-
-	if(bFound)
-	{
-		while(!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) || (!strcmp(fd.cFileName, ".") || !strcmp(fd.cFileName, "..")))
-		{
-			bFound = false;
-			if(::FindNextFile(pInfo->m_hFind, &fd))
-			{
-				if((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && strcmp(fd.cFileName, ".") && strcmp(fd.cFileName, ".."))
-				{
-					bFound = true;
-					break;
-				}
-			}
-			else
-			{
-				break;
-			}
-		}
+		bFound = true;
 	}
 
 	if(!bFound)
 	{
-		if(INVALID_HANDLE_VALUE != pInfo->m_hFind)
-		{
-			::FindClose(pInfo->m_hFind);
-		}
+		mem_release(pInfo->m_pIterator);
 		return(FALSE);
 	}
 
-	strncpy(pInfo->m_szName, fd.cFileName, MAX_LEVEL_STRING - 1);
+	const char *szLevelName = basename(szDirName);
+	strncpy(pInfo->m_szName, szLevelName, MAX_LEVEL_STRING - 1);
 
 	{
-		char szFullPath[1024];
-		sprintf(szFullPath, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pInfo->m_szName, pInfo->m_szName);
+		char szFullPath[1024], szFSPath[1024];
+		sprintf(szFullPath, "levels/%s/%s.lvl", pInfo->m_szName, pInfo->m_szName);
 
-		GetLastWriteTime(szFullPath, pInfo->m_szLastEdit);
+		if(Core_GetIXCore()->getFileSystem()->resolvePath(szFullPath, szFSPath, sizeof(szFSPath)))
+		{
+			GetLastWriteTime(szFSPath, pInfo->m_szLastEdit);
 
-		ISXConfig *pConfig = Core_OpConfig(szFullPath);
-		if(pConfig->keyExists("level", "local_name"))
-		{
-			strncpy(pInfo->m_szLocalName, pConfig->getKey("level", "local_name"), MAX_LEVEL_STRING - 1);
-		}
-		else
-		{
-			strncpy(pInfo->m_szLocalName, fd.cFileName, MAX_LEVEL_STRING - 1);
-		}
 
-		if(pConfig->keyExists("level", "type"))
-		{
-			pInfo->m_isIndoor = !!strcasecmp(pConfig->getKey("level", "type"), "outdoor");
+			ISXConfig *pConfig = Core_OpConfig(szFSPath);
+			if(pConfig->keyExists("level", "local_name"))
+			{
+				strncpy(pInfo->m_szLocalName, pConfig->getKey("level", "local_name"), MAX_LEVEL_STRING - 1);
+			}
+			else
+			{
+				strncpy(pInfo->m_szLocalName, pInfo->m_szName, MAX_LEVEL_STRING - 1);
+			}
+
+			if(pConfig->keyExists("level", "type"))
+			{
+				pInfo->m_isIndoor = !!strcasecmp(pConfig->getKey("level", "type"), "outdoor");
+			}
+			else
+			{
+				pInfo->m_isIndoor = true;
+			}
+			mem_release(pConfig);
 		}
-		else
-		{
-			pInfo->m_isIndoor = true;
-		}
-		
-		mem_release(pConfig);
 
 		//sprintf(szFullPath, "%s%s/preview.bmp", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pInfo->m_szName);
 		//pInfo->m_bHasPreview = FileExistsFile(szFullPath);
