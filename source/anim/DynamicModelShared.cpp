@@ -391,10 +391,37 @@ bool CDynamicModelShared::hasTransparentSubsets(UINT uSkin, UINT uLod)
 	{
 		return(false);
 	}
-
 	//! @todo add uLod support
 
 	return(m_isTransparent[uSkin]);
+}
+
+IXMaterial* CDynamicModelShared::getTransparentMaterial(UINT uSkin, UINT uLod)
+{
+	assert(uSkin < m_uSkinCount);
+	if(uSkin >= m_uSkinCount)
+	{
+		return(NULL);
+	}
+
+	assert(uLod < m_aLods.size());
+	if(uLod >= m_aLods.size())
+	{
+		return(NULL);
+	}
+
+	for(UINT j = 0, jl = m_pResource->getSubsetCount(uLod); j < jl; ++j)
+	{
+		auto pSubset = m_pResource->getSubset(uLod, j);
+		IXMaterial *pMaterial = m_pppMaterials[uSkin][pSubset->iMaterialID];
+
+		if(pMaterial && pMaterial->isTransparent())
+		{
+			pMaterial->AddRef();
+			return(pMaterial);
+		}
+	}
+	return(NULL);
 }
 
 float3 CDynamicModelShared::getTransparentBoundMin(UINT uSkin, UINT uLod) const

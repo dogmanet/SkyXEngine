@@ -228,3 +228,8 @@ bool CDynamicModel::hasTransparentSubsets(UINT uLod) const
 {
 	return(m_pShared->hasTransparentSubsets(m_uSkin, uLod));
 }
+
+IXMaterial* CDynamicModel::getTransparentMaterial(UINT uLod)
+{
+	return(m_pShared->getTransparentMaterial(m_uSkin, uLod));
+}

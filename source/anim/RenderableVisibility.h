@@ -32,6 +32,7 @@ public:
 		bool hasPSP;
 		SMPLANE psp;
 		UINT uLod;
+		IXMaterial *pMaterial;
 	};
 
 	void setItemCount(UINT uCount);

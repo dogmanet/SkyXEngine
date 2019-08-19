@@ -143,18 +143,18 @@ void CEntityManager::sync()
 	//static time_point tOld = std::chrono::high_resolution_clock::now();
 	//float dt;
 	//dt = (float)std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tOld).count() / 1000000.0f;
-	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
+	for(int i = 0, l = m_vEntSyncList.size(); i < l; ++i)
 	{
-		pEnt = m_vEntList[i];
+		pEnt = m_vEntSyncList[i];
 		if(pEnt)
 		{
 			pEnt->m_bSynced = false;
 		}
 	}
 	
-	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
+	for(int i = 0, l = m_vEntSyncList.size(); i < l; ++i)
 	{
-		pEnt = m_vEntList[i];
+		pEnt = m_vEntSyncList[i];
 		if(pEnt && !pEnt->m_bSynced)
 		{
 			//pEnt->updateDiscreteLinearVelocity(0, dt);
@@ -178,7 +178,7 @@ void CEntityManager::unloadObjLevel()
 	}
 }
 
-ID CEntityManager::reg(CBaseEntity * pEnt)
+ID CEntityManager::reg(CBaseEntity *pEnt)
 {
 	ID ent;
 	if(!pEnt)
@@ -209,7 +209,7 @@ void CEntityManager::unreg(ID ent)
 	timeout_t * t;
 	timeout_output_t * to;
 
-	CBaseEntity * pEnt = m_vEntList[ent];
+	CBaseEntity *pEnt = m_vEntList[ent];
 
 	for(int i = 0, l = m_vOutputTimeout.size(); i < l; ++i)
 	{
@@ -249,7 +249,25 @@ void CEntityManager::unreg(ID ent)
 	m_vFreeIDs.push_back(ent);
 }
 
-ID CEntityManager::setTimeout(void(CBaseEntity::*func)(float dt), CBaseEntity * pEnt, float delay)
+void CEntityManager::regSync(CBaseEntity *pEnt)
+{
+	assert(pEnt);
+	m_vEntSyncList.push_back(pEnt);
+}
+void CEntityManager::unregSync(CBaseEntity *pEnt)
+{
+	assert(pEnt);
+	for(UINT i = 0, l = m_vEntSyncList.size(); i < l; ++i)
+	{
+		if(m_vEntSyncList[i] == pEnt)
+		{
+			m_vEntSyncList.erase(i);
+			break;
+		}
+	}
+}
+
+ID CEntityManager::setTimeout(void(CBaseEntity::*func)(float dt), CBaseEntity *pEnt, float delay)
 {
 	timeout_t t;
 	t.status = TS_WAIT;
@@ -277,7 +295,7 @@ ID CEntityManager::setTimeout(void(CBaseEntity::*func)(float dt), CBaseEntity * 
 	return(id);
 }
 
-ID CEntityManager::setInterval(void(CBaseEntity::*func)(float dt), CBaseEntity * pEnt, float delay)
+ID CEntityManager::setInterval(void(CBaseEntity::*func)(float dt), CBaseEntity *pEnt, float delay)
 {
 	timeout_t t;
 	t.status = TS_WAIT;
@@ -487,9 +505,9 @@ err:
 }
 
 
-CBaseEntity * CEntityManager::findEntityByName(const char * name, CBaseEntity * pStart)
+CBaseEntity* CEntityManager::findEntityByName(const char *szName, CBaseEntity *pStart)
 {
-	if(!name[0])
+	if(!szName[0])
 	{
 		return(NULL);
 	}
@@ -504,7 +522,7 @@ CBaseEntity * CEntityManager::findEntityByName(const char * name, CBaseEntity * 
 		}
 		if(bFound)
 		{
-			if(!strcmp(pEnt->getName(), name))
+			if(!strcmp(pEnt->getName(), szName))
 			{
 				return(pEnt);
 			}
@@ -520,7 +538,7 @@ CBaseEntity * CEntityManager::findEntityByName(const char * name, CBaseEntity * 
 	return(NULL);
 }
 
-int CEntityManager::countEntityByName(const char * name)
+int CEntityManager::countEntityByName(const char *name)
 {
 	if(!name[0])
 	{
@@ -537,7 +555,7 @@ int CEntityManager::countEntityByName(const char * name)
 	return(c);
 }
 
-CBaseEntity * CEntityManager::findEntityByClass(const char * name, CBaseEntity * pStart)
+CBaseEntity* CEntityManager::findEntityByClass(const char *name, CBaseEntity *pStart)
 {
 	bool bFound = !pStart;
 	CBaseEntity * pEnt;
@@ -566,7 +584,7 @@ CBaseEntity * CEntityManager::findEntityByClass(const char * name, CBaseEntity *
 	return(NULL);
 }
 
-CBaseEntity * CEntityManager::findEntityInSphere(const float3 &f3Origin, float fRadius, CBaseEntity * pStart)
+CBaseEntity* CEntityManager::findEntityInSphere(const float3 &f3Origin, float fRadius, CBaseEntity *pStart)
 {
 	bool bFound = !pStart;
 	CBaseEntity * pEnt;
@@ -675,7 +693,7 @@ void CEntityManager::loadDynClasses()
 	}
 }
 
-void CEntityManager::dumpList(int argc, const char ** argv)
+void CEntityManager::dumpList(int argc, const char **argv)
 {
 	const char * filter = "";
 	if(argc > 1)
@@ -707,7 +725,7 @@ void CEntityManager::dumpList(int argc, const char ** argv)
 	printf("-----------------------------------------------------\n" COLOR_RESET);
 }
 
-void CEntityManager::entKV(int argc, const char ** argv)
+void CEntityManager::entKV(int argc, const char **argv)
 {
 	int id = 0;
 	if(argc == 1)
@@ -762,7 +780,7 @@ int CEntityManager::getCount()
 	return(m_vEntList.size());
 }
 
-CBaseEntity * CEntityManager::getById(ID id)
+CBaseEntity* CEntityManager::getById(ID id)
 {
 	if(id < 0 || (UINT)id >= m_vEntList.size())
 	{
@@ -772,7 +790,7 @@ CBaseEntity * CEntityManager::getById(ID id)
 	return(pEnt ? (pEnt->getFlags() & EF_REMOVED ? NULL : pEnt) : NULL);
 }
 
-CBaseEntity * CEntityManager::cloneEntity(CBaseEntity *pOther)
+CBaseEntity* CEntityManager::cloneEntity(CBaseEntity *pOther)
 {
 	if(!pOther)
 	{
@@ -815,7 +833,7 @@ CBaseEntity * CEntityManager::cloneEntity(CBaseEntity *pOther)
 	return(pEnt);
 }
 
-void CEntityManager::setOutputTimeout(named_output_t * pOutput, inputdata_t * pData)
+void CEntityManager::setOutputTimeout(named_output_t *pOutput, inputdata_t *pData)
 {
 	timeout_output_t t;
 	t.status = TS_WAIT;

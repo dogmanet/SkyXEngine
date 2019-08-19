@@ -24,6 +24,26 @@ class CPropStatic: public CBaseAnimating
 public:
 	DECLARE_CONSTRUCTOR();
 	~CPropStatic();
+	
+	void setPos(const float3 &pos) override
+	{
+		BaseClass::setPos(pos);
+
+		if(m_pModel)
+		{
+			m_pModel->setPosition(pos);
+		}
+	}
+
+	void setOrient(const SMQuaternion &q) override
+	{
+		BaseClass::setOrient(q);
+
+		if(m_pModel)
+		{
+			m_pModel->setOrientation(q);
+		}
+	}
 
 protected:
 	void createPhysBody() override;

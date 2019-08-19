@@ -52,10 +52,10 @@ public:
 	virtual ~CBaseEntity();
 
 	//! Возвращает имя движкового класса объекта
-	const char * getClassName();
+	const char* getClassName();
 	
 	//! Возвращает имя объекта
-	const char * getName();
+	const char* getName();
 	
 	//! Возвращает баунд объекта
 	virtual void getMinMax(float3 * min, float3 * max);
@@ -90,22 +90,22 @@ public:
 	SMQuaternion getOrient();
 
 	//! Устанавливает свойство объекта
-	virtual bool setKV(const char * name, const char * value);
+	virtual bool setKV(const char *name, const char *value);
 	//! Получает свойство объекта
-	virtual bool getKV(const char * name, char * out, int bufsize);
+	virtual bool getKV(const char *name, char *out, int bufsize);
 
 	//! Устанавливает родительский объект для объекта
-	void setParent(CBaseEntity * pEnt, int attachment = -1);
+	void setParent(CBaseEntity *pEnt, int attachment = -1);
 	//! Возвращает родительский объект объекта
-	CBaseEntity * getParent();
+	CBaseEntity* getParent();
 
 	//! Устанавливает владельца
-	void setOwner(CBaseEntity * pEnt);
+	void setOwner(CBaseEntity *pEnt);
 	//! Возвращает владельца объекта
-	CBaseEntity * getOwner();
+	CBaseEntity* getOwner();
 
 	//! Получает объект менеджера
-	CEntityManager * getManager();
+	CEntityManager* getManager();
 
 	//void updateDiscreteLinearVelocity(int step, float dt);
 	//const float3_t & getDiscreteLinearVelocity() const;

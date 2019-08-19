@@ -14,7 +14,7 @@ CEntityFactoryMap::CEntityFactoryMap():
 
 }
 
-void CEntityFactoryMap::addFactory(IEntityFactory * pFactory, const char * szName)
+void CEntityFactoryMap::addFactory(IEntityFactory *pFactory, const char *szName)
 {
 	if(!pFactory->isEditorHidden())
 	{
@@ -22,21 +22,21 @@ void CEntityFactoryMap::addFactory(IEntityFactory * pFactory, const char * szNam
 	}
 	m_mFactories[AAString(szName)] = pFactory;
 }
-CBaseEntity * CEntityFactoryMap::create(const char * szName, CEntityManager * pWorld, bool bDelayPostLoad)
+CBaseEntity* CEntityFactoryMap::create(const char *szName, CEntityManager *pWorld, bool bDelayPostLoad)
 {
-	IEntityFactory * pFactory = getFactory(szName);
+	IEntityFactory *pFactory = getFactory(szName);
 	if(pFactory)
 	{
-		EntDefaultsMap * defs = pFactory->getDefaults();
-		CBaseEntity * pEnt = pFactory->create(pWorld);
+		EntDefaultsMap *defs = pFactory->getDefaults();
+		CBaseEntity *pEnt = pFactory->create(pWorld);
 		pEnt->setDefaults();
 		pEnt->setClassName(pFactory->getClassName());
 
 		if(defs->Size() > 0)
 		{
-			proptable_t * pt = pFactory->getPropTable();
-			const char * key;
-			const EntDefaultsMap::Node * pNode;
+			proptable_t *pt = pFactory->getPropTable();
+			const char *key;
+			const EntDefaultsMap::Node *pNode;
 			while(pt)
 			{
 				for(int i = 0, l = pt->numFields; i < l; ++i)
@@ -59,17 +59,27 @@ CBaseEntity * CEntityFactoryMap::create(const char * szName, CEntityManager * pW
 		{
 			pEnt->_initEditorBoxes();
 		}
+
+		if(pFactory->isSyncable())
+		{
+			pWorld->regSync(pEnt);
+		}
+
 		return(pEnt);
 	}
 	return(NULL);
 }
-void CEntityFactoryMap::destroy(CBaseEntity * pEnt)
+void CEntityFactoryMap::destroy(CBaseEntity *pEnt)
 {
 	if(pEnt)
 	{
-		IEntityFactory * pFactory = getFactory(pEnt->getClassName());
+		IEntityFactory *pFactory = getFactory(pEnt->getClassName());
 		if(pFactory)
 		{
+			if(pFactory->isSyncable())
+			{
+				pEnt->m_pMgr->unregSync(pEnt);
+			}
 			return(pFactory->destroy(pEnt));
 		}
 	}

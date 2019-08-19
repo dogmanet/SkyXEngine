@@ -188,6 +188,7 @@ protected:
 	struct XTransparentBSPObject
 	{
 		XTransparentBSPObject *pNext = NULL;
+		float fCamDist;
 		UINT uNode;
 	};
 	struct XTransparentBSPNode
@@ -199,11 +200,21 @@ protected:
 	};
 
 	void buildTransparencyBSP(XTransparentPSP *pPSPs, UINT uPSPcount, UINT uStartPSP, XTransparentBSPNode *pNode, XTransparentBSPObject *pObjects, XTransparentNode *pObjectNodes, const float3 &vCamPos);
-	void renderTransparencyBSP(XTransparentBSPNode *pNode, XTransparentPSP *pPSPs, XTransparentNode *pObjectNodes, _render_sys *pRenderSystems, const float3 &vCamPos);
+	void renderTransparencyBSP(XTransparentBSPNode *pNode, XTransparentPSP *pPSPs, XTransparentNode *pObjectNodes, _render_sys *pRenderSystems, const float3 &vCamPos, UINT *puPlanesStack, UINT uPlaneCount, const SMMATRIX &mTransInvVP);
 	MemAlloc<XTransparentBSPNode> m_poolTransparencyBSPnodes;
 	MemAlloc<XTransparentBSPObject> m_poolTransparencyBSPobjects;
 	MemAlloc<XTransparentNodeSP> m_poolTransparencyBSPsplitPlanes;
+	Array<XTransparentNode> m_aTmpNodes;
+	Array<XTransparentPSP> m_aTmpPSPs;
 	IGXConstantBuffer *m_pTransparencyShaderClipPlanes = NULL;
+	IGXSamplerState *m_pRefractionScene = NULL;
+
+	IGXTexture2D *m_pRefractiveTextures[2];
+	int m_iRefractiveSource = -1;
+	IGXTexture2D *m_pRefractiveTextureRead = NULL;
+	IGXTexture2D *m_pRefractiveTextureWrite = NULL;
+
+	IGXTexture2D *m_pSceneTexture = NULL;
 
 	//###################################
 

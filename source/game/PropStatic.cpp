@@ -18,7 +18,7 @@ BEGIN_PROPTABLE(CPropStatic)
 	EDITOR_COMBO_END()
 END_PROPTABLE()
 
-REGISTER_ENTITY(CPropStatic, prop_static);
+REGISTER_ENTITY_NOSYNC(CPropStatic, prop_static);
 
 CPropStatic::CPropStatic(CEntityManager *pMgr):
 	BaseClass(pMgr)

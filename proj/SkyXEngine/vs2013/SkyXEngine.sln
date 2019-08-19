@@ -324,6 +324,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{846B2EA2-15BC-40C4-B273-47A1D40E8BE9}"
 	ProjectSection(SolutionItems) = preProject
 		dependencies.dgml = dependencies.dgml
+		Performance2.psess = Performance2.psess
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "freetype", "..\..\..\sdks\freetype-2.10.0\builds\windows\vc2010\freetype.vcxproj", "{F0BA654B-EFF1-4F48-8ED5-4B1AA6888687}"
@@ -719,5 +720,8 @@ Global
 		{D2386C4E-7032-487B-8EAD-951778AD6EBC} = {74D74409-BAC7-4DD0-8C74-117516B4A01C}
 		{74D74409-BAC7-4DD0-8C74-117516B4A01C} = {13D5622C-8643-4BD8-A730-B5C919DAFDDC}
 		{6FE14C5C-6052-4D96-A89F-0843D91F89AD} = {E6B16854-D4A4-4B56-8E1C-482DD523F205}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

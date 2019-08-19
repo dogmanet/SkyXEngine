@@ -31,6 +31,7 @@ public:
 	void initGPUresources();
 
 	bool hasTransparentSubsets(UINT uSkin, UINT uLod);
+	IXMaterial* getTransparentMaterial(UINT uSkin, UINT uLod);
 
 	void onMaterialTransparencyChanged(const IXMaterial *pMaterial);
 	float3 getTransparentBoundMin(UINT uSkin, UINT uLod) const;

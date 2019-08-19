@@ -162,19 +162,20 @@ void CDynamicModelProvider::computeVisibility(const IFrustum *pFrustum, CRendera
 			if(pItem->isVisible)
 			{
 				pItem->isTransparent = pMdl->hasTransparentSubsets(pItem->uLod);
-
+				IXMaterial *pMaterial = pMdl->getTransparentMaterial(pItem->uLod);
 				if(pItem->isTransparent)
 				{
 					UINT uPSPcount = pMdl->getPSPcount(pItem->uLod);
 					if(uPSPcount)
 					{
-						pVisibility->addItemTransparentDynamic({pMdl, true, pMdl->getPSP(pItem->uLod, 0)});
+						pVisibility->addItemTransparentDynamic({pMdl, true, pMdl->getPSP(pItem->uLod, 0), 0, pMaterial});
 					}
 					else
 					{
-						pVisibility->addItemTransparentDynamic({pMdl, false});
+						pVisibility->addItemTransparentDynamic({pMdl, false, SMPLANE(), 0, pMaterial});
 					}
 				}
+				mem_release(pMaterial);
 			}
 		}
 		else
@@ -274,7 +275,7 @@ void CDynamicModelProvider::getTransparentObject(CRenderableVisibility *pVisibil
 	{
 		pObject->psp = pMdl->psp;
 	}
-
+	pObject->pMaterial = pMdl->pMaterial;
 	//! @fixme use transparent local bound
 	pObject->vMin = pMdl->pReferenceMdl->getLocalBoundMin() + pMdl->pReferenceMdl->getPosition();
 	pObject->vMax = pMdl->pReferenceMdl->getLocalBoundMax() + pMdl->pReferenceMdl->getPosition();

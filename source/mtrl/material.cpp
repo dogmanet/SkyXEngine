@@ -316,6 +316,7 @@ CMaterials::CMaterial::CLightParam::CLightParam()
 	m_fF0 = 0.f;
 	m_fThickness = 1.f;
 	m_isTransparent = false;
+	m_isRefractive = false;
 
 	m_typeReflect = MTLTYPE_REFLECT_NONE;
 	m_isTextureParam = true;
@@ -703,6 +704,11 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT
 			pMtrl->m_oLightParam.m_isTransparent = String(pConfig->getKey(sName.c_str(), "transparent")).toBool();
 		else
 			pMtrl->m_oLightParam.m_isTransparent = false;
+
+		if (pConfig->keyExists(sName.c_str(), "refractive"))
+			pMtrl->m_oLightParam.m_isRefractive = String(pConfig->getKey(sName.c_str(), "refractive")).toBool();
+		else
+			pMtrl->m_oLightParam.m_isRefractive = false;
 
 
 		pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld = pMtrl->m_oMainGraphics.m_oDataVS.m_isTransView = pMtrl->m_oMainGraphics.m_oDataVS.m_isTransProjection =
@@ -1103,6 +1109,7 @@ void CMaterials::mtlSave(ID id)
 	fprintf(file, "density = %f\n\n", mtrl->m_oPhysics.m_fDensity);
 
 	fprintf(file, "transparent = %d\n", mtrl->m_oLightParam.m_isTransparent);
+	fprintf(file, "refractive = %d\n", mtrl->m_oLightParam.m_isRefractive);
 	fprintf(file, "reflection = %d\n", mtrl->m_oLightParam.m_typeReflect);
 
 	fclose(file);
@@ -1635,6 +1642,17 @@ bool CMaterials::mtlGetTransparency(ID id)
 	return m_aUnitMtrls[id]->m_pMtrl->m_oLightParam.m_isTransparent;
 }
 
+void CMaterials::mtlSetRefractivity(ID id, bool isRefractive)
+{
+	MTL_PRE_COND_ID(id, _VOID);
+	m_aUnitMtrls[id]->m_pMtrl->m_oLightParam.m_isRefractive = isRefractive;
+}
+
+bool CMaterials::mtlGetRefractivity(ID id)
+{
+	MTL_PRE_COND_ID(id, false);
+	return m_aUnitMtrls[id]->m_pMtrl->m_oLightParam.m_isRefractive;
+}
 
 void CMaterials::mtlSetTypeReflection(ID id, MTLTYPE_REFLECT type)
 {
@@ -1918,7 +1936,7 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 		}
 	}
 
-
+#if 0
 	//если нет отражени¤ то отправл¤ем 0
 	if (pMtrl->m_oLightParam.m_typeReflect == 0)
 		mtrl_data::pDXDevice->setTexture(NULL, MTL_TEX_R_REFLECTION);
@@ -1929,7 +1947,7 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 		else if (m_aUnitMtrls[id]->m_pReflect->getTypeReflect() == MTLTYPE_REFLECT_CUBE_STATIC || m_aUnitMtrls[id]->m_pReflect->getTypeReflect() == MTLTYPE_REFLECT_CUBE_DYNAMIC)
 			mtrl_data::pDXDevice->setTexture(m_aUnitMtrls[id]->m_pReflect->getRefCubeTex(), MTL_TEX_R_REFLECTION);
 	}
-
+#endif
 #if 0
 	mtrl_data::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_DEPTH0), MTL_TEX_R_CURR_DEPTH);
 #endif

@@ -697,7 +697,8 @@ SX_LIB_API float SMtrl_MtlGetF0(ID id);
 SX_LIB_API void SMtrl_MtlSetTransparency(ID id, bool isTransparent);
 
 //! возвращает текущее значение свойства полупрозрачности для материала
-SX_LIB_API bool SMtrl_MtlGetTransparency(ID id);				
+SX_LIB_API bool SMtrl_MtlGetTransparency(ID id);
+SX_LIB_API bool SMtrl_MtlGetRefractivity(ID id);
 
 //!@}
 

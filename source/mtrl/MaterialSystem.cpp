@@ -134,3 +134,13 @@ bool CMaterial::isTransparent()
 {
 	return(SMtrl_MtlGetTransparency(m_id));
 }
+
+bool CMaterial::isRefractive()
+{
+	return(SMtrl_MtlGetRefractivity(m_id));
+}
+
+bool CMaterial::isBlurred()
+{
+	return(false);
+}

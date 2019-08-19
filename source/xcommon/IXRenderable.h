@@ -44,6 +44,7 @@ struct XTransparentObject
 	SMPLANE psp;
 	float3 vMin;
 	float3 vMax;
+	IXMaterial *pMaterial;
 };
 
 class IXRenderable: public IXUnknown

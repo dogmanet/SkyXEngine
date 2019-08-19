@@ -122,6 +122,9 @@ public:
 	void mtlSetTransparency(ID id, bool isTransparent);
 	bool mtlGetTransparency(ID id);
 
+	void mtlSetRefractivity(ID id, bool isRefractive);
+	bool mtlGetRefractivity(ID id);
+
 	void mtlSetTypeReflection(ID id, MTLTYPE_REFLECT type);
 	MTLTYPE_REFLECT mtlGetTypeReflection(ID id);
 
@@ -332,6 +335,7 @@ public:
 
 			//! прозрачный ли материал
 			bool m_isTransparent;
+			bool m_isRefractive;
 		};
 
 		//! физические свойства

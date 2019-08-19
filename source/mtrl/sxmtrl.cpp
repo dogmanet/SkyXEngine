@@ -570,6 +570,12 @@ SX_LIB_API bool SMtrl_MtlGetTransparency(ID id)
 	return ArrMaterials->mtlGetTransparency(id);
 }
 
+SX_LIB_API bool SMtrl_MtlGetRefractivity(ID id)
+{
+	ML_PRECOND(false);
+	return ArrMaterials->mtlGetRefractivity(id);
+}
+
 SX_LIB_API void SMtrl_MtlSetTypeReflection(ID id, MTLTYPE_REFLECT type)
 {
 	ML_PRECOND(_VOID);

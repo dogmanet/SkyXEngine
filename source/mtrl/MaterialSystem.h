@@ -20,6 +20,8 @@ public:
 	void getMainTexture(IXTexture **ppTexture) override;
 	ID getId();
 	bool isTransparent() override;
+	bool isRefractive() override;
+	bool isBlurred() override;
 
 	ID getInternalID()
 	{

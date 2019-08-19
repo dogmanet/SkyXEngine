@@ -48,6 +48,7 @@ public:
 	UINT getPSPcount(UINT uLod) const;
 	SMPLANE getPSP(UINT uLod, UINT uPlane) const;
 	bool hasTransparentSubsets(UINT uLod) const;
+	IXMaterial* getTransparentMaterial(UINT uLod);
 protected:
 	CDynamicModelProvider *m_pProvider;
 	CDynamicModelShared *m_pShared;

@@ -80,6 +80,8 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 
 	m_pLightTotal = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F);
 	
+	m_pRefractiveTextures[0] = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F);
+	m_pRefractiveTextures[1] = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F);
 	
 	m_pShadow = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R16F);
 	//m_pShadow = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8);
@@ -165,6 +167,11 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 
 
 	m_pTransparencyShaderClipPlanes = m_pDevice->createConstantBuffer(sizeof(float4) * MAX_TRANSPARENCY_CLIP_PANES);
+
+	GXSamplerDesc sampDesc;
+	sampDesc.addressU = sampDesc.addressV = sampDesc.addressW = GXTEXTURE_ADDRESS_CLAMP;
+	sampDesc.filter = GXFILTER_MIN_MAG_MIP_POINT;
+	m_pRefractionScene = m_pDevice->createSamplerState(&sampDesc);
 }
 CRenderPipeline::~CRenderPipeline()
 {
@@ -172,6 +179,11 @@ CRenderPipeline::~CRenderPipeline()
 	{
 		m_apRenderables[i]->shutdown();
 	}
+
+	mem_release(m_pRefractiveTextures[0]);
+	mem_release(m_pRefractiveTextures[1]);
+
+	mem_release(m_pRefractionScene);
 
 	mem_release(m_pTransparencyShaderClipPlanes);
 
@@ -268,14 +280,15 @@ void CRenderPipeline::renderFrame()
 			showTexture(m_pLightSpecular);
 			goto end;
 		}
-
-		showTexture(m_pLightTotal);
+		
+		m_pSceneTexture = m_pLightTotal;
 	}
 	else
 	{
-		showTexture(m_pGBufferColor);
+		m_pSceneTexture = m_pGBufferColor;
 	}
 
+	showTexture(m_pSceneTexture);
 
 	renderPostprocessMain();
 	renderTransparent();
@@ -834,13 +847,20 @@ void CRenderPipeline::renderTransparent()
 
 	m_pDevice->setDepthStencilState(m_pDepthStencilStateNoZWrite);
 	m_pDevice->setBlendState(m_pBlendStateAlpha);
+	m_pDevice->setSamplerState(m_pRefractionScene, 1);
+	//m_pDevice->setTexture(m_pSceneTexture, 11);
+	m_pDevice->setTexture(m_pGBufferDepth, 12);
 
+	m_iRefractiveSource = -1;
+	IGXSurface *pSceneTarget = m_pSceneTexture->asRenderTarget();
+	m_pDevice->setColorTarget(pSceneTarget);
+	mem_release(pSceneTarget);
 	//renderStage(XRS_TRANSPARENT, m_pMainCameraVisibility);
 
 	auto &list = m_apRenderStages[getIndexForStage(XRS_TRANSPARENT)].aSystems;
 
-	Array<XTransparentNode> aNodes;
-	Array<XTransparentPSP> aPSPs;
+	Array<XTransparentNode> &aNodes = m_aTmpNodes;
+	Array<XTransparentPSP> &aPSPs = m_aTmpPSPs;
 
 	for(UINT i = 0, l = list.size(); i < l; ++i)
 	{
@@ -944,14 +964,30 @@ void CRenderPipeline::renderTransparent()
 
 	// Отрисовка дерева
 	m_pDevice->setPixelShaderConstant(m_pTransparencyShaderClipPlanes, 6);
-	renderTransparencyBSP(pRootNode, &aPSPs[0], &aNodes[0], &list[0], vCamPos);
 
-	m_poolTransparencyBSPobjects.clear();
-	m_poolTransparencyBSPnodes.clear();
-	m_poolTransparencyBSPsplitPlanes.clear();
+	SMMATRIX mTransInvVP = SMMatrixTranspose(SMMatrixInverse(NULL, gdata::mCamView * gdata::mCamProj));
+	UINT puPlanesStack[MAX_TRANSPARENCY_CLIP_PANES];
+	renderTransparencyBSP(pRootNode, &aPSPs[0], &aNodes[0], &list[0], vCamPos, puPlanesStack, 0, mTransInvVP);
+
+	m_poolTransparencyBSPobjects.clearFast();
+	m_poolTransparencyBSPnodes.clearFast();
+	m_poolTransparencyBSPsplitPlanes.clearFast();
+	m_aTmpNodes.clearFast();
+	m_aTmpPSPs.clearFast();
+
+	m_pDevice->setBlendState(NULL);
+	m_pDevice->setColorTarget(NULL);
+	if(m_iRefractiveSource == -1)
+	{
+		showTexture(m_pSceneTexture);
+	}
+	else
+	{
+		showTexture(m_pRefractiveTextures[m_iRefractiveSource]);
+	}
 }
 
-void CRenderPipeline::renderTransparencyBSP(XTransparentBSPNode *pNode, XTransparentPSP *pPSPs, XTransparentNode *pObjectNodes, _render_sys *pRenderSystems, const float3 &vCamPos)
+void CRenderPipeline::renderTransparencyBSP(XTransparentBSPNode *pNode, XTransparentPSP *pPSPs, XTransparentNode *pObjectNodes, _render_sys *pRenderSystems, const float3 &vCamPos, UINT *puPlanesStack, UINT uPlaneCount, const SMMATRIX &mTransInvVP)
 {
 	XTransparentBSPNode *pFirst, *pSecond;
 
@@ -969,14 +1005,16 @@ void CRenderPipeline::renderTransparencyBSP(XTransparentBSPNode *pNode, XTranspa
 	if(pNode->iPSP >= 0)
 	{
 		pPSPs[pNode->iPSP].isRenderFront = !isInFront;
+		puPlanesStack[uPlaneCount++] = (UINT)pNode->iPSP;
 	}
 	if(pFirst)
 	{
-		renderTransparencyBSP(pFirst, pPSPs, pObjectNodes, pRenderSystems, vCamPos);
+		renderTransparencyBSP(pFirst, pPSPs, pObjectNodes, pRenderSystems, vCamPos, puPlanesStack, uPlaneCount, mTransInvVP);
 	}
 
 	static float4 vPlanes[MAX_TRANSPARENCY_CLIP_PANES];
 	XTransparentBSPObject *pObj = pNode->pObjects;
+	bool isRefractiveSwapped = false;
 	while(pObj)
 	{
 		XTransparentNode *pNode = &pObjectNodes[pObj->uNode];
@@ -986,22 +1024,69 @@ void CRenderPipeline::renderTransparencyBSP(XTransparentBSPNode *pNode, XTranspa
 		{
 			if(pCurSP)
 			{
-				SMPLANE plane = pPSPs[pCurSP->iPSP].psp;
-				if(!pPSPs[pCurSP->iPSP].isRenderFront)
+				bool isFound = false;
+				while(!isFound && pCurSP)
 				{
-					plane *= -1.0f;
+					for(UINT j = 0; j < uPlaneCount; ++j)
+					{
+						if(puPlanesStack[j] == (UINT)pCurSP->iPSP)
+						{
+							isFound = true;
+							break;
+						}
+					}
+					if(!isFound)
+					{
+						pCurSP = pCurSP->pNext;
+					}
 				}
-				vPlanes[i] = SMPlaneNormalize(SMPlaneTransform(plane, gdata::mCamView * gdata::mCamProj));
-				vPlanes[i] /= fabsf(vPlanes[i].w);
 
-				pCurSP = pCurSP->pNext;
+				if(isFound)
+				{
+					SMPLANE plane = pPSPs[pCurSP->iPSP].psp;
+					if(!pPSPs[pCurSP->iPSP].isRenderFront)
+					{
+						plane *= -1.0f;
+					}
+					vPlanes[i] = SMPlaneNormalize(SMPlaneTransformTI(plane, mTransInvVP));
+					vPlanes[i] /= fabsf(vPlanes[i].w);
+
+					pCurSP = pCurSP->pNext;
+					continue;
+				}
+			}
+				
+			vPlanes[i] = SMPLANE(0, 0, 0, 1.0f);
+		}
+		m_pTransparencyShaderClipPlanes->update(vPlanes);
+
+		if(!isRefractiveSwapped && pNode->obj.pMaterial && pNode->obj.pMaterial->isRefractive())
+		{
+			if(m_iRefractiveSource == -1)
+			{
+				m_pRefractiveTextureRead = m_pSceneTexture;
+				++m_iRefractiveSource;
+				m_pRefractiveTextureWrite = m_pRefractiveTextures[m_iRefractiveSource];
 			}
 			else
 			{
-				vPlanes[i] = SMPLANE(0, 0, 0, 1.0f);
+				m_pRefractiveTextureRead = m_pRefractiveTextureWrite;
+				m_iRefractiveSource = (m_iRefractiveSource + 1) & 1;
+				m_pRefractiveTextureWrite = m_pRefractiveTextures[m_iRefractiveSource];
 			}
+			// swap render targets
+			m_pDevice->setTexture(m_pRefractiveTextureRead, 11);
+
+			IGXSurface *pSceneTarget = m_pRefractiveTextureWrite->asRenderTarget();
+			m_pDevice->setColorTarget(pSceneTarget);
+			mem_release(pSceneTarget);
+
+			m_pDevice->setBlendState(NULL);
+			showTexture(m_pRefractiveTextureRead);
+			m_pDevice->setBlendState(m_pBlendStateAlpha);
+
+			isRefractiveSwapped = true;
 		}
-		m_pTransparencyShaderClipPlanes->update(vPlanes);
 
 		pRenderSystems[pNode->uRenderable].pRenderable->renderTransparentObject(pNode->pVisibility, pNode->uObjectID, 0);
 		pObj = pObj->pNext;
@@ -1013,7 +1098,7 @@ void CRenderPipeline::renderTransparencyBSP(XTransparentBSPNode *pNode, XTranspa
 	}
 	if(pSecond)
 	{
-		renderTransparencyBSP(pSecond, pPSPs, pObjectNodes, pRenderSystems, vCamPos);
+		renderTransparencyBSP(pSecond, pPSPs, pObjectNodes, pRenderSystems, vCamPos, puPlanesStack, uPlaneCount, mTransInvVP);
 	}
 }
 
@@ -1039,7 +1124,69 @@ void CRenderPipeline::buildTransparencyBSP(XTransparentPSP *pPSPs, UINT uPSPcoun
 		}
 		if(!pPSP)
 		{
-			pBSPNode->pObjects = pObjects;
+			XTransparentBSPObject *pCurObj = pObjects, *pNextObj;
+			XTransparentNode *pNode;
+			while(pCurObj)
+			{
+				pNextObj = pCurObj->pNext;
+				pCurObj->pNext = NULL;
+
+				pNode = &pObjectNodes[pCurObj->uNode];
+				pCurObj->fCamDist = SMDistancePointAABB(vCamPos, pNode->obj.vMin, pNode->obj.vMax);
+				
+
+
+				XTransparentBSPObject *pTmpCur = pBSPNode->pObjects, *pTmpPrev = NULL;
+				if(pTmpCur)
+				{
+					bool isFound = false;
+					while(pTmpCur)
+					{
+						//pSplitPlane->pNext = pNode->pSplitPlanes;
+
+						if(pTmpCur->fCamDist < pCurObj->fCamDist)
+						{
+							pCurObj->pNext = pTmpCur;
+
+							if(pTmpPrev)
+							{
+								pTmpPrev->pNext = pCurObj;
+							}
+							else
+							{
+								pBSPNode->pObjects = pCurObj;
+							}
+							isFound = true;
+							break;
+						}
+
+						pTmpPrev = pTmpCur;
+						pTmpCur = pTmpCur->pNext;
+					}
+
+					if(!isFound)
+					{
+						if(pTmpPrev)
+						{
+							pTmpPrev->pNext = pCurObj;
+						}
+						else
+						{
+							pBSPNode->pObjects = pCurObj;
+						}
+					}
+				}
+				else
+				{
+					pBSPNode->pObjects = pCurObj;
+				}
+
+
+
+				pCurObj = pNextObj;
+			}
+
+			//pBSPNode->pObjects = pObjects;
 			return;
 		}
 
@@ -1129,6 +1276,7 @@ void CRenderPipeline::buildTransparencyBSP(XTransparentPSP *pPSPs, UINT uPSPcoun
 				XTransparentNodeSP *pTmpCur = pNode->pSplitPlanes, *pTmpPrev = NULL;
 				if(pTmpCur)
 				{
+					bool isFound = false;
 					while(pTmpCur)
 					{
 						//pSplitPlane->pNext = pNode->pSplitPlanes;
@@ -1139,17 +1287,31 @@ void CRenderPipeline::buildTransparencyBSP(XTransparentPSP *pPSPs, UINT uPSPcoun
 
 							if(pTmpPrev)
 							{
-								pTmpPrev = pSplitPlane;
+								//!!!
+								pTmpPrev->pNext = pSplitPlane;
 							}
 							else
 							{
 								pNode->pSplitPlanes = pSplitPlane;
 							}
+							isFound = true;
 							break;
 						}
 
 						pTmpPrev = pTmpCur;
 						pTmpCur = pTmpCur->pNext;
+					}
+
+					if(!isFound)
+					{
+						if(pTmpPrev)
+						{
+							pTmpPrev->pNext = pSplitPlane;
+						}
+						else
+						{
+							pNode->pSplitPlanes = pSplitPlane;
+						}
 					}
 				}
 				else
@@ -1297,11 +1459,15 @@ UINT CRenderPipeline::getIndexForStage(X_RENDER_STAGE stage)
 
 void CRenderPipeline::showTexture(IGXTexture2D *pTexture)
 {
+	IGXDepthStencilState *pOldState = m_pDevice->getDepthStencilState();
 	m_pDevice->setDepthStencilState(m_pDepthStencilStateNoZ);
 	
 	m_pDevice->setTexture(pTexture);
 	SGCore_ShaderBind(gdata::shaders_id::kit::idScreenOut);
 	SGCore_ScreenQuadDraw();
+
+	m_pDevice->setDepthStencilState(pOldState);
+	mem_release(pOldState);
 }
 
 void CRenderPipeline::showFrameStats()

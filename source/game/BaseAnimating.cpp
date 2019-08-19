@@ -141,6 +141,8 @@ void CBaseAnimating::setModel(const char * mdl)
 			m_pModel = pModel;
 			m_pModel->setSkin(m_iSkin);
 			m_pModel->setScale(m_fBaseScale);
+			m_pModel->setPosition(getPos());
+			m_pModel->setOrientation(getOrient());
 			
 			auto pAnimating = m_pModel->asAnimatedModel();
 			if(pAnimating)
