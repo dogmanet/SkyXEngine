@@ -98,15 +98,15 @@ protected:
 
 	struct
 	{
-		struct
+		/*struct
 		{
 			SMMATRIX mP;
 			float4 vTimeDelta;
 			float4 vWinSize;
-		} vs;
-		float4 vNearFarLayers;
+		} vs;*/
+		float4 vNearFarInvWinSize;
 	} m_sceneShaderData;
-	IGXConstantBuffer *m_pSceneShaderDataVS = NULL;
+	//IGXConstantBuffer *m_pSceneShaderDataVS = NULL;
 	IGXConstantBuffer *m_pSceneShaderDataPS = NULL;
 
 	struct

@@ -12,6 +12,10 @@ const.h
 	float4 vWinSize;
 	float4 vNearFarLayers;
 }; */
+cbuffer CDataScene: register(b3)
+{
+	float4 g_vNearFarInvWinSize;
+};
 cbuffer CDataCamera: register(b2)
 {
 	// float4x4 mV;

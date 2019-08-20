@@ -102,7 +102,7 @@ CRenderPipeline::CRenderPipeline(IGXContext *pDevice):
 	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
 	m_pBlendStateAlpha = m_pDevice->createBlendState(&blendDesc);
 
-	m_pSceneShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData.vs));
+	//m_pSceneShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData));
 	m_pSceneShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData));
 
 	m_pCameraShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_cameraShaderData.vs));
@@ -189,7 +189,7 @@ CRenderPipeline::~CRenderPipeline()
 
 	mem_release(m_pMainCameraVisibility);
 
-	mem_release(m_pSceneShaderDataVS);
+	//mem_release(m_pSceneShaderDataVS);
 	mem_release(m_pSceneShaderDataPS);
 
 	mem_release(m_pCameraShaderDataVS);
@@ -235,9 +235,9 @@ void CRenderPipeline::renderFrame()
 	UINT timeDelta = 16;
 	static const int *r_final_image = GET_PCVAR_INT("r_final_image");
 
-	// m_sceneShaderData.vNearFarLayers = 
-
-	m_pDevice->setVertexShaderConstant(m_pSceneShaderDataVS, SCR_SCENE);
+	m_sceneShaderData.vNearFarInvWinSize = float4(gdata::vNearFar, 1.0f / (float)m_uOutWidth, 1.0f / (float)m_uOutHeight);
+	m_pSceneShaderDataPS->update(&m_sceneShaderData);
+	//m_pDevice->setVertexShaderConstant(m_pSceneShaderDataVS, SCR_SCENE);
 	m_pDevice->setPixelShaderConstant(m_pSceneShaderDataPS, SCR_SCENE);
 
 	m_cameraShaderData.vs.mVP = SMMatrixTranspose(gdata::mCamView * gdata::mCamProj);
