@@ -91,6 +91,9 @@
     <ClCompile Include="..\..\..\source\core\FolderPathsIterator.cpp">
       <Filter>Source\FileSystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\core\ResourceTexture.cpp">
+      <Filter>Source\resource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -256,6 +259,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\FolderPathsIterator.h">
       <Filter>Header\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\resource\IXResourceTexture.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\ResourceTexture.h">
+      <Filter>Header\resource</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

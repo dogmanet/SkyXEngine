@@ -1,0 +1,226 @@
+#ifndef __RESOURCETEXTURE_H
+#define __RESOURCETEXTURE_H
+
+#include <xcommon/resource/IXResourceTexture.h>
+
+template<class T>
+class CResourceTextureImpl: public T
+{
+public:
+	typedef CResourceTextureImpl<T> BaseClass;
+
+	CResourceTextureImpl(GXTEXTURE_TYPE type):
+		m_type(type)
+	{
+	}
+
+	GXTEXTURE_TYPE XMETHODCALLTYPE getType() const override
+	{
+		return(m_type);
+	}
+	GXFORMAT XMETHODCALLTYPE getFormat() const override
+	{
+		return(m_format);
+	}
+	
+	UINT XMETHODCALLTYPE getFrameCount() const override
+	{
+		return(m_uFrameCount);
+	}
+	float XMETHODCALLTYPE getFrameTime() const override
+	{
+		return(m_fFrameTime);
+	}
+	void XMETHODCALLTYPE setFrameTime(float fTime) override
+	{
+		m_fFrameTime = fTime;
+	}
+
+	UINT XMETHODCALLTYPE getMipmapCount() const override
+	{
+		return(m_uMipmapCount);
+	}
+
+	XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) override
+	{
+		assert(pppData);
+		assert(m_uMipmapCount < uMipmap);
+		assert(m_uFrameCount < uFrame);
+		if(!pppData || m_uMipmapCount >= uMipmap || m_uFrameCount >= uFrame)
+		{
+			return(NULL);
+		}
+		return(&pppData[uFrame][uMipmap]);
+	}
+	const XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) const override
+	{
+		assert(pppData);
+		assert(m_uMipmapCount < uMipmap);
+		assert(m_uFrameCount < uFrame);
+		if(!pppData || m_uMipmapCount >= uMipmap || m_uFrameCount >= uFrame)
+		{
+			return(NULL);
+		}
+		return(&pppData[uFrame][uMipmap]);
+	}
+
+	const IXResourceTexture2D* XMETHODCALLTYPE as2D() const override
+	{
+		return(NULL);
+	}
+	const IXResourceTextureCube* XMETHODCALLTYPE asCube() const override
+	{
+		return(NULL);
+	}
+	IXResourceTexture2D* XMETHODCALLTYPE as2D() override
+	{
+		return(NULL);
+	}
+	IXResourceTextureCube* XMETHODCALLTYPE asCube() override
+	{
+		return(NULL);
+	}
+	
+	void XMETHODCALLTYPE makeReadOnly() override
+	{
+		//! @todo Implement me!
+	}
+
+	UINT getBitsPerPixel(GXFORMAT format)
+	{
+		switch(format)
+		{
+		case GXFMT_A32B32G32R32F:
+			return(128);
+
+		case GXFMT_G32R32F:
+		case GXFMT_A16B16G16R16F:
+		case GXFMT_A16B16G16R16:
+			return(64);
+
+		case GXFMT_R32F:
+		case GXFMT_G16R16F:
+		case GXFMT_D24X8:
+		case GXFMT_D24S8:
+		case GXFMT_D32:
+		case GXFMT_X8R8G8B8:
+		case GXFMT_A8R8G8B8:
+			return(32);
+
+		case GXFMT_R8G8B8:
+			return(24);
+
+		case GXFMT_D16:
+		case GXFMT_R16F:
+		case GXFMT_R5G6B5:
+			return(16);
+
+		case GXFMT_DXT1:
+		case GXFMT_ATI1N:
+			return(4);
+
+		case GXFMT_DXT3:
+		case GXFMT_DXT5:
+		case GXFMT_ATI2N:
+			return(8);
+		}
+		assert(!"Unknown format!");
+		return(0);
+	}
+
+	UINT XMETHODCALLTYPE getTextureBytes(GXFORMAT format, UINT uWidth, UINT uHeight) override
+	{
+		bool bc = true;
+		int bcnumBytesPerBlock = 16;
+
+		switch(format)
+		{
+		case GXFMT_DXT1:
+			bc = true;
+			bcnumBytesPerBlock = 8;
+			break;
+		case GXFMT_DXT3:
+			bc = true;
+			break;
+		case GXFMT_DXT5:
+			bc = true;
+			break;
+
+		case GXFMT_ATI1N:
+			bc = true;
+			bcnumBytesPerBlock = 8;
+			break;
+		case GXFMT_ATI2N:
+			bc = true;
+			break;
+
+		default:
+			bc = false;
+		}
+
+		if(bc)
+		{
+			int numBlocksWide = max(1, uWidth / 4);
+			int numBlocksHigh = max(1, uHeight / 4);
+
+			return(numBlocksWide * numBlocksHigh * bcnumBytesPerBlock);
+		}
+		else
+		{
+			UINT bpp = getBitsPerPixel(format);
+			return((uWidth * bpp + 7) / 8 * uHeight); // round up to nearest byte
+		}
+	}
+
+protected:
+	GXTEXTURE_TYPE m_type = GXTEXTURE_TYPE_UNKNOWN;
+	GXFORMAT m_format = GXFMT_UNKNOWN;
+	UINT m_uFrameCount = 0;
+	UINT m_uMipmapCount = 0;
+	float m_fFrameTime = 0.0f;
+
+	byte *pDataBlob = NULL;
+
+	XImageMip **pppData = NULL; // pppData[uFrame][uMip]
+};
+
+// Implemented in core
+class CResourceTexture2D: public CResourceTextureImpl<IXResourceTexture2D>
+{
+public:
+	CResourceTexture2D();
+	~CResourceTexture2D();
+
+	UINT XMETHODCALLTYPE getWidth() const override;
+	UINT XMETHODCALLTYPE getHeight() const override;
+
+	void XMETHODCALLTYPE init(UINT uWidth, UINT uHeight, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 0) override;
+
+	const IXResourceTexture2D* XMETHODCALLTYPE as2D() const override;
+	IXResourceTexture2D* XMETHODCALLTYPE as2D() override;
+
+protected: 
+	UINT m_uWidth = 0;
+	UINT m_uHeight = 0;
+};
+
+// Implemented in core
+class CResourceTextureCube: public CResourceTextureImpl<IXResourceTextureCube>
+{
+public:
+	CResourceTextureCube();
+	~CResourceTextureCube();
+
+	UINT XMETHODCALLTYPE getSize() const override;
+
+	void XMETHODCALLTYPE init(UINT uSize, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 0) override;
+
+	const IXResourceTextureCube* XMETHODCALLTYPE asCube() const override;
+	IXResourceTextureCube* XMETHODCALLTYPE asCube() override;
+
+protected:
+	UINT m_uSize = 0;
+};
+
+
+#endif
