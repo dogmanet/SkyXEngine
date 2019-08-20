@@ -136,20 +136,10 @@ public:
 		switch(format)
 		{
 		case GXFMT_DXT1:
-			bc = true;
-			bcnumBytesPerBlock = 8;
-			break;
-		case GXFMT_DXT3:
-			bc = true;
-			break;
-		case GXFMT_DXT5:
-			bc = true;
-			break;
-
 		case GXFMT_ATI1N:
-			bc = true;
 			bcnumBytesPerBlock = 8;
-			break;
+		case GXFMT_DXT3:
+		case GXFMT_DXT5:
 		case GXFMT_ATI2N:
 			bc = true;
 			break;
@@ -170,6 +160,21 @@ public:
 			UINT bpp = getBitsPerPixel(format);
 			return((uWidth * bpp + 7) / 8 * uHeight); // round up to nearest byte
 		}
+	}
+
+	bool isBlockCompressed(GXFORMAT format)
+	{
+		switch(format)
+		{
+		case GXFMT_DXT1:
+		case GXFMT_ATI1N:
+		case GXFMT_DXT3:
+		case GXFMT_DXT5:
+		case GXFMT_ATI2N:
+			return(true);
+		}
+
+		return(false);
 	}
 
 protected:

@@ -36,11 +36,18 @@ void XMETHODCALLTYPE CResourceTexture2D::init(UINT uWidth, UINT uHeight, GXFORMA
 
 	if(uMipmapCount == IXRESOURCE_TEXTURE_AUTO_MIPS)
 	{
-		UINT uSize = min(uWidth, uHeight);
-		uMipmapCount = 1;
-		while((uSize >>= 1) >= 4)
+		if(isBlockCompressed(format))
 		{
-			++uMipmapCount;
+			uMipmapCount = 1;
+		}
+		else
+		{
+			UINT uSize = min(uWidth, uHeight);
+			uMipmapCount = 1;
+			while((uSize >>= 1) >= 4)
+			{
+				++uMipmapCount;
+			}
 		}
 	}
 
@@ -117,11 +124,18 @@ void XMETHODCALLTYPE CResourceTextureCube::init(UINT uSize, GXFORMAT format, UIN
 
 	if(uMipmapCount == IXRESOURCE_TEXTURE_AUTO_MIPS)
 	{
-		UINT uTmpSize = uSize;
-		uMipmapCount = 1;
-		while((uTmpSize >>= 1) >= 4)
+		if(isBlockCompressed(format))
 		{
-			++uMipmapCount;
+			uMipmapCount = 1;
+		}
+		else
+		{
+			UINT uTmpSize = uSize;
+			uMipmapCount = 1;
+			while((uTmpSize >>= 1) >= 4)
+			{
+				++uMipmapCount;
+			}
 		}
 	}
 
