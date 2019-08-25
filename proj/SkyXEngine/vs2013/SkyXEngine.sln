@@ -351,6 +351,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "xCore", "xCore", "{74D74409
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxambient", "..\..\sxambient\vs2013\sxambient.vcxproj", "{6FE14C5C-6052-4D96-A89F-0843D91F89AD}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ddsplugin", "..\..\ddsplugin\vs2013\ddsplugin.vcxproj", "{FE640066-C8E8-41FB-AD13-89BC03BFFBFB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -659,6 +661,14 @@ Global
 		{6FE14C5C-6052-4D96-A89F-0843D91F89AD}.Release|Win32.Build.0 = Release|Win32
 		{6FE14C5C-6052-4D96-A89F-0843D91F89AD}.Release|x64.ActiveCfg = Release|x64
 		{6FE14C5C-6052-4D96-A89F-0843D91F89AD}.Release|x64.Build.0 = Release|x64
+		{FE640066-C8E8-41FB-AD13-89BC03BFFBFB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FE640066-C8E8-41FB-AD13-89BC03BFFBFB}.Debug|Win32.Build.0 = Debug|Win32
+		{FE640066-C8E8-41FB-AD13-89BC03BFFBFB}.Debug|x64.ActiveCfg = Debug|x64
+		{FE640066-C8E8-41FB-AD13-89BC03BFFBFB}.Debug|x64.Build.0 = Debug|x64
+		{FE640066-C8E8-41FB-AD13-89BC03BFFBFB}.Release|Win32.ActiveCfg = Release|Win32
+		{FE640066-C8E8-41FB-AD13-89BC03BFFBFB}.Release|Win32.Build.0 = Release|Win32
+		{FE640066-C8E8-41FB-AD13-89BC03BFFBFB}.Release|x64.ActiveCfg = Release|x64
+		{FE640066-C8E8-41FB-AD13-89BC03BFFBFB}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -720,6 +730,7 @@ Global
 		{D2386C4E-7032-487B-8EAD-951778AD6EBC} = {74D74409-BAC7-4DD0-8C74-117516B4A01C}
 		{74D74409-BAC7-4DD0-8C74-117516B4A01C} = {13D5622C-8643-4BD8-A730-B5C919DAFDDC}
 		{6FE14C5C-6052-4D96-A89F-0843D91F89AD} = {E6B16854-D4A4-4B56-8E1C-482DD523F205}
+		{FE640066-C8E8-41FB-AD13-89BC03BFFBFB} = {7C1F0E50-7A19-4AB4-B559-11EF078F4787}
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

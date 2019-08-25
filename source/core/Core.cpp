@@ -13,6 +13,8 @@
 
 #include <GRegisterIndex.h>
 
+#include <xcommon/IXTextureLoader.h>
+
 extern CTimeManager *g_pTimers;
 extern CPerfMon *g_pPerfMon;
 extern CCore *g_pCore;
@@ -80,6 +82,17 @@ CCore::CCore(const char *szName)
 	}
 
 	loadPlugins();
+#if 1
+	IXTextureLoader *pLoader = (IXTextureLoader*)m_pPluginManager->getInterface(IXTEXTURELOADER_GUID);
+	if(pLoader->open("textures/tp/tp_sga_window_center_up.dds", ""))
+	{
+		XTextureInfo texInfo;
+		pLoader->getInfo(&texInfo);
+		pLoader->close();
+	}
+
+
+#endif
 }
 CCore::~CCore()
 {
