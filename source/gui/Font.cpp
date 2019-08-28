@@ -17,6 +17,8 @@ namespace gui
 				{
 					UINT db = (dstheight - posY - y) * dstwidth * bpp + (posX + x) * bpp + c;
 					UINT sb = (srcheight - y - 1) * srcwidth * bpp + x * bpp + c;
+					assert(db < (UINT)(dstwidth * dstheight * 4));
+					assert(sb < (UINT)(srcwidth * srcheight * 4));
 					dst[db] = max(src[sb], dst[db]);
 					if((dstheight - posY - y) * dstwidth * bpp + (posX + x) * bpp + c >= dstwidth * dstheight * bpp)
 					{
@@ -187,6 +189,7 @@ namespace gui
 
 	void CFont::regen()
 	{
+		printf("_heapchk() = %d\n", _heapchk());
 		for(UINT i = 0; i < m_vpTextures.size(); i++)
 		{
 			CTextureManager::unloadTexture(m_vpTextures[i]);
@@ -286,6 +289,7 @@ namespace gui
 						d.data[cc] = (cr + cg + cb) / 3;
 						//d.data[cc] = 255;
 						cc++;
+						assert(cc <= d.w * d.h * 4);
 					}
 				}
 			}
@@ -306,6 +310,7 @@ namespace gui
 						d.data[cc] = c;
 						//d.data[cc] = 255;
 						cc++;
+						assert(cc <= d.w * d.h * 4);
 					}
 				}
 			}
@@ -397,6 +402,8 @@ namespace gui
 		}
 
 		printf("%dx%d\n", width, height);
+
+		printf("_heapchk() = %d\n", _heapchk());
 
 		byte * image = new byte[width*height * 4];
 		memset(image, 0, sizeof(byte)* width*height * 4);
@@ -514,6 +521,8 @@ namespace gui
 			mem_delete_a(newImage);
 		}
 
+		printf("_heapchk() = %d\n", _heapchk());
+
 		CTexture * tex = CTextureManager::createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size() - 1)), width, height, 4, false, image);
 		//SX_SAFE_DELETE_A(image);
 		for(UINT i = 0; i < list.size(); i++)
@@ -529,6 +538,10 @@ namespace gui
 		save(); // TODO: Find better place to call that
 
 		// TODO: Add rebuild handler to call Layout on the document
+
+
+		printf("_heapchk() = %d\n", _heapchk());
+
 	}
 
 	bool CFont::place(Array<chardata> &list, int width, int height)
