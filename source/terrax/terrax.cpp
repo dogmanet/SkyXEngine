@@ -31,6 +31,8 @@ See the license in LICENSE
 #	pragma comment(lib, "xEngine.lib")
 #endif
 
+GX_ENABLE_HIGH_PERFORMANCE_DUAL_GPU();
+
 extern HWND g_hWndMain;
 CGrid *g_pGrid = NULL;
 CTerraXRenderStates g_xRenderStates;

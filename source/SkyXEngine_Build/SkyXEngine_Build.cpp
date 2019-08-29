@@ -20,6 +20,8 @@ See the license in LICENSE
 #	pragma comment(lib, "xEngine.lib")
 #endif
 
+GX_ENABLE_HIGH_PERFORMANCE_DUAL_GPU();
+
 class CWindowCallback: public IXWindowCallback
 {
 public:
@@ -128,7 +130,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLin
 int main(int argc, char **argv)
 {
 #endif
-
 	IXEngine *pEngine = XEngineInit(argc, argv, "build");
 	INIT_OUTPUT_STREAM(pEngine->getCore());
 
