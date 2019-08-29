@@ -8,6 +8,18 @@
 #include <shellapi.h>
 #include <ShlObj.h>
 
+void CFileSystem::addPathInPriorityArray(int id, int iPriority)
+{
+    Pair newElement{ iPriority, id };
+
+    if (iPriority == -1)
+    {
+        newElement.priority = m_filePaths.size() > 1 ? m_priorityArray[m_lastRootId].priority : 1;
+    }
+        m_priorityArray.push_back(newElement);
+        m_priorityArray.quickSort([&](const Pair &obj, const Pair &obj2) -> bool {return obj.priority < obj2.priority; });
+}
+
 bool CFileSystem::isFileOrDirectory(const char *szPath, bool isFile)
 {
     char* path = getAbsoluteCanonizePath(szPath);
@@ -205,7 +217,7 @@ UINT CFileSystem::addRoot(const char *szPath, int iPriority)
     str += szPath; // <--- Оптимизация для того что бы не создавать временных объектов
 
     m_filePaths.push_back(str);
-    m_priority.push_back(iPriority);
+    addPathInPriorityArray(m_filePaths.size() - 1, iPriority);
 
     //Если у нас некорректный путь для записи и путь не является архивным
     if (m_writableRoot == -1 && *szPath != '@')
@@ -251,9 +263,10 @@ bool CFileSystem::resolvePath(const char *szPath, char *szOut, int iOutMax)
     
     String buff;
 
-    for (UINT i = 0, l = m_filePaths.size(); i < l; ++i)
+    for (UINT i = 0, l = m_priorityArray.size(); i < l; ++i)
     {
-        buff = (m_filePaths[i] + '/' + szPath);
+        int id = m_priorityArray[i].pathId;
+        buff = (m_filePaths[id] + '/' + szPath);
 
         if (fileExists(buff.c_str()) && isFile(buff.c_str()))
         {

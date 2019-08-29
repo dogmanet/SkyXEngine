@@ -8,14 +8,15 @@ See the license in LICENSE
 
 #include <xcommon/IFileSystem.h>
 #include <cassert>
+#include <map>
 
-#define CLOSE_HANDLE(handle) if (handle != INVALID_HANDLE_VALUE) \
+#define CLOSE_HANDLE(handle) if (handle != INVALID_HANDLE_VALUE && handle != nullptr) \
 {\
     CloseHandle(handle); \
     handle = nullptr; \
 }
 
-#define FIND_CLOSE(handle) if (handle != INVALID_HANDLE_VALUE) \
+#define FIND_CLOSE(handle) if (handle != INVALID_HANDLE_VALUE && handle != nullptr) \
 {\
     FindClose(handle); \
     handle = nullptr; \
@@ -35,6 +36,12 @@ See the license in LICENSE
 {\
     assert(size - 1 < id && "The path ID you entered does not exist"); \
 }
+
+struct Pair
+{
+    int priority;
+    int pathId;
+};
 
 class CFileSystem final : public IFileSystem
 {
@@ -81,6 +88,8 @@ public:
      IFile *openFile(const char *szPath, FILE_OPEN_MODE) override;
 
 private:
+    void addPathInPriorityArray(int id, int iPriority);
+
     //! Метод делает проверку, ведет ли путь к файлу или папке
     bool isFileOrDirectory(const char *szPath, bool isFile);
 
@@ -110,14 +119,19 @@ private:
 
     //!корневые пути и приоритет
     Array<String> m_filePaths;
-    Array<int> m_priority;
 
     //!Полный путь к build
     String m_pathToBuild;
 
+    Array<Pair> m_priorityArray;
+
     //!Наш текущий ID корневого пути для записи
     //! -1 - значит не установлен
     int m_writableRoot = -1;
+
+    //! ID последнего элемента, который был записан 
+    //! в корневые пути
+    int m_lastRootId = 0;
 };
 
 #endif
