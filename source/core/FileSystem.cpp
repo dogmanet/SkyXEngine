@@ -18,6 +18,8 @@ void CFileSystem::addPathInPriorityArray(int id, int iPriority)
     }
         m_priorityArray.push_back(newElement);
         m_priorityArray.quickSort([&](const Pair &obj, const Pair &obj2) -> bool {return obj.priority < obj2.priority; });
+
+        m_lastRootId = id;
 }
 
 bool CFileSystem::isFileOrDirectory(const char *szPath, bool isFile)
