@@ -14,6 +14,7 @@
 #include <GRegisterIndex.h>
 
 #include <xcommon/IXTextureLoader.h>
+#include "ResourceTexture.h"
 
 extern CTimeManager *g_pTimers;
 extern CPerfMon *g_pPerfMon;
@@ -82,15 +83,50 @@ CCore::CCore(const char *szName)
 	}
 
 	loadPlugins();
-#if 1
+#if 0
 	IXTextureLoader *pLoader = (IXTextureLoader*)m_pPluginManager->getInterface(IXTEXTURELOADER_GUID);
-	if(pLoader->open("textures/tp/tp_sga_window_center_up.dds", ""))
+	/*if(pLoader->open("textures/tp/tp_sga_window_center_up.dds", ""))
 	{
+		CResourceTexture2D *pTex2D = new CResourceTexture2D();
 		XTextureInfo texInfo;
 		pLoader->getInfo(&texInfo);
+		if(!pLoader->loadAs2D(pTex2D))
+		{
+			printf(COLOR_LRED "Unable to load texture!" COLOR_RESET "\n");
+		}
 		pLoader->close();
+
+		pTex2D->Release();
+	}*/
+
+	//if(pLoader->open("textures/fire/test.dds", ""))
+	if(pLoader->open("textures/fire/fire_tiled_a.dds", ""))
+	{
+		CResourceTexture2D *pTex2D = new CResourceTexture2D();
+		XTextureInfo texInfo;
+		pLoader->getInfo(&texInfo);
+		if(!pLoader->loadAs2D(pTex2D))
+		{
+			printf(COLOR_LRED "Unable to load texture!" COLOR_RESET "\n");
+		}
+		pLoader->close();
+
+		pTex2D->Release();
 	}
 
+	if(pLoader->open("textures/sky/sky_hdr_hl2.dds", ""))
+	{
+		CResourceTextureCube *pTexCube = new CResourceTextureCube();
+		XTextureInfo texInfo;
+		pLoader->getInfo(&texInfo);
+		if(!pLoader->loadAsCube(pTexCube))
+		{
+			printf(COLOR_LRED "Unable to load texture!" COLOR_RESET "\n");
+		}
+		pLoader->close();
+
+		pTexCube->Release();
+	}
 
 #endif
 }

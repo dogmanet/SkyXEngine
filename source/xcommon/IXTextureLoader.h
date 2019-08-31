@@ -26,6 +26,7 @@ struct XTextureInfo
 
 	//! Количество кадров
 	UINT uFrameCount;
+	float fFrameTime;
 
 	//! Количество мип-уровней
 	UINT uMipCount;

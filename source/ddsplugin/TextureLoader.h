@@ -25,6 +25,10 @@ public:
 	bool XMETHODCALLTYPE loadAsCube(IXResourceTextureCube *pResource) override;
 	void XMETHODCALLTYPE getInfo(XTextureInfo *pTextureInfo) override;
 	void XMETHODCALLTYPE close() override;
+
+	GXFORMAT getFormat();
+
+	bool isBlockCompressed(GXFORMAT format);
 	
 protected:
 	IFileSystem *m_pFileSystem;
@@ -33,6 +37,12 @@ protected:
 	DDS_HEADER m_ddsHeader;
 	bool m_hasDXT10Header = false;
 	DDS_HEADER_DXT10 m_dxt10Header;
+	GXFORMAT m_format;
+
+	int m_iXFrames = 1;
+	int m_iYFrames = 1;
+	float m_fFrameTime = 0.0;
+	int m_iSkipFrames = 0;
 };
 
 #endif

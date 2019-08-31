@@ -28,9 +28,6 @@ public:
 
 	virtual UINT XMETHODCALLTYPE getMipmapCount() const = 0;
 
-	virtual XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) = 0;
-	virtual const XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) const = 0;
-
 	virtual const IXResourceTexture2D* XMETHODCALLTYPE as2D() const = 0;
 	virtual const IXResourceTextureCube* XMETHODCALLTYPE asCube() const = 0;
 	virtual IXResourceTexture2D* XMETHODCALLTYPE as2D() = 0;
@@ -48,6 +45,9 @@ public:
 	virtual UINT XMETHODCALLTYPE getWidth() const = 0;
 	virtual UINT XMETHODCALLTYPE getHeight() const = 0;
 
+	virtual XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) = 0;
+	virtual const XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) const = 0;
+
 	virtual void XMETHODCALLTYPE init(UINT uWidth, UINT uHeight, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 0) = 0;
 };
 
@@ -56,6 +56,9 @@ class IXResourceTextureCube: public IXResourceTexture
 {
 public:
 	virtual UINT XMETHODCALLTYPE getSize() const = 0;
+
+	virtual XImageMip* XMETHODCALLTYPE getMip(GXCUBEMAP_FACES face, UINT uMipmap, UINT uFrame = 0) = 0;
+	virtual const XImageMip* XMETHODCALLTYPE getMip(GXCUBEMAP_FACES face, UINT uMipmap, UINT uFrame = 0) const = 0;
 
 	virtual void XMETHODCALLTYPE init(UINT uSize, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 0) = 0;
 };

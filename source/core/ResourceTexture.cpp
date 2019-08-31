@@ -42,9 +42,9 @@ void XMETHODCALLTYPE CResourceTexture2D::init(UINT uWidth, UINT uHeight, GXFORMA
 		}
 		else
 		{
-			UINT uSize = min(uWidth, uHeight);
+			UINT uSize = max(uWidth, uHeight);
 			uMipmapCount = 1;
-			while((uSize >>= 1) >= 4)
+			while((uSize >>= 1) >= 1)
 			{
 				++uMipmapCount;
 			}
@@ -53,35 +53,67 @@ void XMETHODCALLTYPE CResourceTexture2D::init(UINT uWidth, UINT uHeight, GXFORMA
 
 	size_t sizeData = uFrameCount * (sizeof(void*) + uMipmapCount * sizeof(XImageMip));
 	size_t sizeFrame = getTextureBytes(format, uWidth, uHeight);
-	size_t sizeTmp = sizeFrame;
+	UINT uTmpWidth = uWidth;
+	UINT uTmpHeight = uHeight;
 	for(UINT i = 0; i < uMipmapCount; ++i)
 	{
-		sizeData += sizeTmp * uFrameCount;
-		sizeTmp >>= 2;
+		sizeData += getTextureBytes(format, uTmpWidth, uTmpHeight) * uFrameCount;
+		uTmpWidth >>= 1;
+		uTmpHeight >>= 1;
+		uTmpWidth = max(uTmpWidth, 1);
+		uTmpHeight = max(uTmpHeight, 1);
 	}
 
 	pDataBlob = new byte[sizeData];
 
-	pppData = (XImageMip**)pDataBlob;
+	ppData = (XImageMip**)pDataBlob;
 	byte *pTmp = pDataBlob + sizeof(void*) * uFrameCount;
 	for(UINT i = 0; i < uFrameCount; ++i)
 	{
-		pppData[i] = (XImageMip*)pTmp;
-		pTmp += sizeof(void*) * uMipmapCount;
+		ppData[i] = (XImageMip*)pTmp;
+		pTmp += sizeof(XImageMip) * uMipmapCount;
 	}
 
 	for(UINT i = 0; i < uFrameCount; ++i)
 	{
-		sizeTmp = sizeFrame;
-		for(UINT j = 0; i < uMipmapCount; ++i)
+		uTmpWidth = uWidth;
+		uTmpHeight = uHeight;
+
+		for(UINT j = 0; j < uMipmapCount; ++j)
 		{
-			pppData[i][j].pData = pTmp;
-			pppData[i][j].sizeData = sizeTmp;
-			pppData[i][j].isWritten = false;
-			pTmp += sizeTmp;
-			sizeTmp >>= 2;
+			ppData[i][j].pData = pTmp;
+			ppData[i][j].sizeData = getTextureBytes(format, uTmpWidth, uTmpHeight);
+			ppData[i][j].isWritten = false;
+			pTmp += ppData[i][j].sizeData;
+			uTmpWidth >>= 1;
+			uTmpHeight >>= 1;
+			uTmpWidth = max(uTmpWidth, 1);
+			uTmpHeight = max(uTmpHeight, 1);
 		}
 	}
+}
+
+XImageMip* XMETHODCALLTYPE CResourceTexture2D::getMip(UINT uMipmap, UINT uFrame)
+{
+	assert(ppData);
+	assert(m_uMipmapCount > uMipmap);
+	assert(m_uFrameCount > uFrame);
+	if(!ppData || m_uMipmapCount <= uMipmap || m_uFrameCount <= uFrame)
+	{
+		return(NULL);
+	}
+	return(&ppData[uFrame][uMipmap]);
+}
+const XImageMip* XMETHODCALLTYPE CResourceTexture2D::getMip(UINT uMipmap, UINT uFrame) const
+{
+	assert(ppData);
+	assert(m_uMipmapCount < uMipmap);
+	assert(m_uFrameCount < uFrame);
+	if(!ppData || m_uMipmapCount >= uMipmap || m_uFrameCount >= uFrame)
+	{
+		return(NULL);
+	}
+	return(&ppData[uFrame][uMipmap]);
 }
 
 const IXResourceTexture2D* XMETHODCALLTYPE CResourceTexture2D::as2D() const
@@ -132,42 +164,51 @@ void XMETHODCALLTYPE CResourceTextureCube::init(UINT uSize, GXFORMAT format, UIN
 		{
 			UINT uTmpSize = uSize;
 			uMipmapCount = 1;
-			while((uTmpSize >>= 1) >= 4)
+			while((uTmpSize >>= 1) >= 1)
 			{
 				++uMipmapCount;
 			}
 		}
 	}
 
-	size_t sizeData = uFrameCount * (sizeof(void*) + uMipmapCount * sizeof(XImageMip));
-	size_t sizeFrame = getTextureBytes(format, uSize, uSize) * 6;
-	size_t sizeTmp = sizeFrame;
+	size_t sizeData = uFrameCount * (sizeof(void*) + uMipmapCount * (sizeof(void*) + 6 * sizeof(XImageMip)));
+	UINT uTmpSize = uSize;
 	for(UINT i = 0; i < uMipmapCount; ++i)
 	{
-		sizeData += sizeTmp * uFrameCount;
-		sizeTmp >>= 2;
+		sizeData += getTextureBytes(format, uTmpSize, uTmpSize) * 6 * uFrameCount;
+		uTmpSize >>= 1;
+		uTmpSize = max(uTmpSize, 1);
 	}
 
 	pDataBlob = new byte[sizeData];
 
-	pppData = (XImageMip**)pDataBlob;
+	pppData = (XImageMip***)pDataBlob;
 	byte *pTmp = pDataBlob + sizeof(void*) * uFrameCount;
 	for(UINT i = 0; i < uFrameCount; ++i)
 	{
-		pppData[i] = (XImageMip*)pTmp;
+		pppData[i] = (XImageMip**)pTmp;
 		pTmp += sizeof(void*) * uMipmapCount;
+		for(int mip = 0; mip < uMipmapCount; ++mip)
+		{
+			pppData[i][mip] = (XImageMip*)pTmp;
+			pTmp += sizeof(XImageMip) * 6;
+		}
 	}
 
 	for(UINT i = 0; i < uFrameCount; ++i)
 	{
-		sizeTmp = sizeFrame;
-		for(UINT j = 0; i < uMipmapCount; ++i)
+		uTmpSize = uSize;
+		for(UINT j = 0; j < uMipmapCount; ++j)
 		{
-			pppData[i][j].pData = pTmp;
-			pppData[i][j].sizeData = sizeTmp;
-			pppData[i][j].isWritten = false;
-			pTmp += sizeTmp;
-			sizeTmp >>= 2;
+			for(int side = 0; side < 6; ++side)
+			{
+				pppData[i][j][side].pData = pTmp;
+				pppData[i][j][side].sizeData = getTextureBytes(format, uTmpSize, uTmpSize);
+				pppData[i][j][side].isWritten = false;
+				pTmp += pppData[i][j][side].sizeData;
+			}
+			uTmpSize >>= 1;
+			uTmpSize = max(uTmpSize, 1);
 		}
 	}
 }
@@ -180,4 +221,27 @@ const IXResourceTextureCube* XMETHODCALLTYPE CResourceTextureCube::asCube() cons
 IXResourceTextureCube* XMETHODCALLTYPE CResourceTextureCube::asCube()
 {
 	return(this);
+}
+
+XImageMip* XMETHODCALLTYPE CResourceTextureCube::getMip(GXCUBEMAP_FACES face, UINT uMipmap, UINT uFrame)
+{
+	assert(pppData);
+	assert(m_uMipmapCount > uMipmap);
+	assert(m_uFrameCount > uFrame);
+	if(!pppData || m_uMipmapCount <= uMipmap || m_uFrameCount <= uFrame)
+	{
+		return(NULL);
+	}
+	return(&pppData[uFrame][uMipmap][face]);
+}
+const XImageMip* XMETHODCALLTYPE CResourceTextureCube::getMip(GXCUBEMAP_FACES face, UINT uMipmap, UINT uFrame) const
+{
+	assert(pppData);
+	assert(m_uMipmapCount < uMipmap);
+	assert(m_uFrameCount < uFrame);
+	if(!pppData || m_uMipmapCount >= uMipmap || m_uFrameCount >= uFrame)
+	{
+		return(NULL);
+	}
+	return(&pppData[uFrame][uMipmap][face]);
 }

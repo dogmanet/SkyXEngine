@@ -41,29 +41,6 @@ public:
 		return(m_uMipmapCount);
 	}
 
-	XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) override
-	{
-		assert(pppData);
-		assert(m_uMipmapCount < uMipmap);
-		assert(m_uFrameCount < uFrame);
-		if(!pppData || m_uMipmapCount >= uMipmap || m_uFrameCount >= uFrame)
-		{
-			return(NULL);
-		}
-		return(&pppData[uFrame][uMipmap]);
-	}
-	const XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) const override
-	{
-		assert(pppData);
-		assert(m_uMipmapCount < uMipmap);
-		assert(m_uFrameCount < uFrame);
-		if(!pppData || m_uMipmapCount >= uMipmap || m_uFrameCount >= uFrame)
-		{
-			return(NULL);
-		}
-		return(&pppData[uFrame][uMipmap]);
-	}
-
 	const IXResourceTexture2D* XMETHODCALLTYPE as2D() const override
 	{
 		return(NULL);
@@ -150,8 +127,8 @@ public:
 
 		if(bc)
 		{
-			int numBlocksWide = max(1, uWidth / 4);
-			int numBlocksHigh = max(1, uHeight / 4);
+			int numBlocksWide = max(1, (uWidth + 3) / 4);
+			int numBlocksHigh = max(1, (uHeight + 3) / 4);
 
 			return(numBlocksWide * numBlocksHigh * bcnumBytesPerBlock);
 		}
@@ -185,8 +162,6 @@ protected:
 	float m_fFrameTime = 0.0f;
 
 	byte *pDataBlob = NULL;
-
-	XImageMip **pppData = NULL; // pppData[uFrame][uMip]
 };
 
 // Implemented in core
@@ -201,12 +176,18 @@ public:
 
 	void XMETHODCALLTYPE init(UINT uWidth, UINT uHeight, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 0) override;
 
+	XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) override;
+	const XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) const override;
+
 	const IXResourceTexture2D* XMETHODCALLTYPE as2D() const override;
 	IXResourceTexture2D* XMETHODCALLTYPE as2D() override;
+
 
 protected: 
 	UINT m_uWidth = 0;
 	UINT m_uHeight = 0;
+
+	XImageMip **ppData = NULL; // ppData[uFrame][uMip]
 };
 
 // Implemented in core
@@ -220,11 +201,16 @@ public:
 
 	void XMETHODCALLTYPE init(UINT uSize, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 0) override;
 
+	XImageMip* XMETHODCALLTYPE getMip(GXCUBEMAP_FACES face, UINT uMipmap, UINT uFrame = 0) override;
+	const XImageMip* XMETHODCALLTYPE getMip(GXCUBEMAP_FACES face, UINT uMipmap, UINT uFrame = 0) const override;
+
 	const IXResourceTextureCube* XMETHODCALLTYPE asCube() const override;
 	IXResourceTextureCube* XMETHODCALLTYPE asCube() override;
 
 protected:
 	UINT m_uSize = 0;
+
+	XImageMip ***pppData = NULL; // pppData[uFrame][uMip][side]
 };
 
 
