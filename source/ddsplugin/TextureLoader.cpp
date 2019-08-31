@@ -1,7 +1,7 @@
 #include "TextureLoader.h"
 #include "DDSFile.h"
 
-CTextureLoader::CTextureLoader(IFileSystem* pFileSystem):
+CTextureLoader::CTextureLoader(IFileSystem *pFileSystem):
 	m_pFileSystem(pFileSystem)
 {
 }
@@ -191,7 +191,7 @@ bool XMETHODCALLTYPE CTextureLoader::open(const char *szFileName, const char *sz
 					LibReport(REPORT_MSG_LEVEL_WARNING, "Invalid texture frame count (%d) defaulting to 1: '%s'\n", m_iYFrames, szMetaFile);
 					m_iYFrames = 1;
 				}
-				if(m_iSkipFrames <= 0 || m_iSkipFrames >= m_iXFrames * m_iYFrames)
+				if(m_iSkipFrames < 0 || m_iSkipFrames >= m_iXFrames * m_iYFrames)
 				{
 					LibReport(REPORT_MSG_LEVEL_WARNING, "Invalid texture skip frames (%d) defaulting to 0: '%s'\n", m_iSkipFrames, szMetaFile);
 					m_iSkipFrames = 0;

@@ -266,5 +266,8 @@
     <ClInclude Include="..\..\..\source\core\ResourceTexture.h">
       <Filter>Header\resource</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IXTextureProxy.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

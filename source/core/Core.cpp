@@ -14,6 +14,7 @@
 #include <GRegisterIndex.h>
 
 #include <xcommon/IXTextureLoader.h>
+#include <xcommon/IXTextureProxy.h>
 #include "ResourceTexture.h"
 
 extern CTimeManager *g_pTimers;
@@ -128,6 +129,31 @@ CCore::CCore(const char *szName)
 		pTexCube->Release();
 	}
 
+#endif
+#if 0
+	IXTextureProxy *pProxy = (IXTextureProxy*)m_pPluginManager->getInterface(IXTEXTUREPROXY_GUID);
+	if(pProxy)
+	{
+		char szBuf[1024];
+		UINT uBufSize = sizeof(szBuf);
+		if(pProxy->resolveName("sky_hdr_hl2", szBuf, &uBufSize))
+		{
+			printf(COLOR_LGREEN "Name is resolved to '%s'!" COLOR_RESET "\n", szBuf);
+		}
+		else
+		{
+			printf(COLOR_LRED "Name is not resolved!" COLOR_RESET "\n");
+		}
+
+		if(pProxy->resolveName("test_byte", szBuf, &uBufSize))
+		{
+			printf(COLOR_LGREEN "Name is resolved to '%s'!" COLOR_RESET "\n", szBuf);
+		}
+		else
+		{
+			printf(COLOR_LRED "Name is not resolved!" COLOR_RESET "\n");
+		}
+	}
 #endif
 }
 CCore::~CCore()

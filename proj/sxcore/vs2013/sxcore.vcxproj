@@ -112,6 +112,7 @@
     <ClInclude Include="..\..\..\source\xcommon\IXPlugin.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXRenderable.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXTextureLoader.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXTextureProxy.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXUpdatable.h" />
     <ClInclude Include="..\..\..\source\xcommon\resource\IXModel.h" />
     <ClInclude Include="..\..\..\source\xcommon\resource\IXModelProvider.h" />

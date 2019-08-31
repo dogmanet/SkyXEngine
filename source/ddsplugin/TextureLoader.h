@@ -8,7 +8,7 @@
 class CTextureLoader: public IXTextureLoader
 {
 public:
-	CTextureLoader(IFileSystem* pFileSystem);
+	CTextureLoader(IFileSystem *pFileSystem);
 
 	UINT XMETHODCALLTYPE getVersion() override;
 
