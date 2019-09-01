@@ -17,7 +17,7 @@ void CFileSystem::addPathInPriorityArray(int id, int iPriority)
         newElement.priority = m_filePaths.size() > 1 ? m_priorityArray[m_lastRootId].priority : 1;
     }
         m_priorityArray.push_back(newElement);
-        m_priorityArray.quickSort([&](const Pair &obj, const Pair &obj2) -> bool {return obj.priority < obj2.priority; });
+        m_priorityArray.quickSort([](const Pair &obj, const Pair &obj2) -> bool {return obj.priority < obj2.priority; });
 
         m_lastRootId = id;
 }
@@ -293,7 +293,10 @@ bool CFileSystem::fileExists(const char *szPath)
         return false;
     }
 
-    return fileGetSize(path) != -1;
+    size_t size = fileGetSize(path) != -1;
+    mem_delete_a(path);
+
+    return size;
 }
 
 size_t CFileSystem::fileGetSize(const char *szPath)
