@@ -80,47 +80,58 @@ bool XMETHODCALLTYPE CMaterialSystem::loadTexture(const char *szName, IXTexture 
 	}
 
 	IXResourceTexture *pRes = NULL;
-	if(Core_GetIXCore()->getResourceManager()->getTexture(szFileName, &pRes))
+	bool useStub = false;
+	while(true)
 	{
-		UINT uWidth = 0;
-		UINT uHeight = 0;
-		switch(pRes->getType())
+		if(Core_GetIXCore()->getResourceManager()->getTexture(useStub ? "textures/dev/dev_null.dds" : szFileName, &pRes))
 		{
-		case GXTEXTURE_TYPE_2D:
+			UINT uWidth = 0;
+			UINT uHeight = 0;
+			switch(pRes->getType())
+			{
+			case GXTEXTURE_TYPE_2D:
 			{
 				IXResourceTexture2D *pRes2D = pRes->as2D();
 				uWidth = pRes2D->getWidth();
 				uHeight = pRes2D->getHeight();
 			}
 			break;
-		case GXTEXTURE_TYPE_CUBE:
+			case GXTEXTURE_TYPE_CUBE:
 			{
 				IXResourceTextureCube *pResCube = pRes->asCube();
 				uWidth = uHeight = pResCube->getSize();
 			}
 			break;
-		default:
-			assert(!"Unknown format!");
+			default:
+				assert(!"Unknown format!");
+			}
+
+			if((uWidth & (uWidth - 1)) != 0 || (uHeight & (uHeight - 1)) != 0)
+			{
+				LibReport(REPORT_MSG_LEVEL_WARNING, "Texture '%s' is non power of two (%ux%u)!\n", szFileName, uWidth, uHeight);
+			}
+			if(pRes->getMipmapCount() == 1)
+			{
+				LibReport(REPORT_MSG_LEVEL_WARNING, "Texture '%s' has no mipmaps!\n", szFileName);
+			}
+
+			CTexture *pTex = new CTexture(this, pRes);
+
+			m_mpTextures[sName] = pTex;
+			pTex->setName(m_mpTextures.TmpNode->Key.c_str());
+
+			*ppTexture = pTex;
+			return(true);
 		}
 
-		if((uWidth & (uWidth - 1)) != 0 || (uHeight & (uHeight - 1)) != 0)
+		if(useStub)
 		{
-			LibReport(REPORT_MSG_LEVEL_WARNING, "Texture '%s' is non power of two (%ux%u)!\n", szFileName, uWidth, uHeight);
-		}
-		if(pRes->getMipmapCount() == 1)
-		{
-			LibReport(REPORT_MSG_LEVEL_WARNING, "Texture '%s' has no mipmaps!\n", szFileName);
+			LibReport(REPORT_MSG_LEVEL_FATAL, "Unable to load stub texture (textures/dev/dev_null.dds)! Exiting now!\n");
 		}
 
-		CTexture *pTex = new CTexture(this, pRes);
-
-		m_mpTextures[sName] = pTex;
-		pTex->setName(m_mpTextures.TmpNode->Key.c_str());
-
-		*ppTexture = pTex;
-		return(true);
+		useStub = true;
 	}
-
+	
 	return(false);
 }
 
