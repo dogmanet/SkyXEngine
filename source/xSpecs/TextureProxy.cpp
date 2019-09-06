@@ -33,7 +33,6 @@ bool XMETHODCALLTYPE CTextureProxy::resolveName(const char *szName, char *szOutp
 
 	char *szFullPath = (char*)alloca(sizeof(char) * sizeBuf);
 	sprintf(szFullPath, "%s%s/%s.dds", szDirName, szTexDir, szName);
-
 	if(m_pFileSystem->fileExists(szFullPath))
 	{
 		if(szOutput)
@@ -47,5 +46,21 @@ bool XMETHODCALLTYPE CTextureProxy::resolveName(const char *szName, char *szOutp
 		}
 		return(true);
 	}
+
+	sprintf(szFullPath, "%s%s/%s", szDirName, szTexDir, szName);
+	if(m_pFileSystem->fileExists(szFullPath))
+	{
+		if(szOutput)
+		{
+			strncpy(szOutput, szFullPath, *puBufSize);
+			szOutput[*puBufSize - 1] = 0;
+		}
+		else
+		{
+			*puBufSize = (UINT)sizeBuf + 1;
+		}
+		return(true);
+	}
+
 	return(false);
 }

@@ -25,36 +25,6 @@ CLoaderTextures::~CLoaderTextures()
 	m_aPathes.clear();
 }
 
-bool CLoaderTextures::fileExists(const char* name)
-{
-	char tmppath[SXGC_LOADTEX_MAX_SIZE_FULLPATH];
-	char tmp_path[SXGC_LOADTEX_MAX_SIZE_DIR];
-	char tmp_name[SXGC_LOADTEX_MAX_SIZE_NAME];
-
-	bool IsTruePath = false;
-	//обрезаем имя текстуры и папку
-	for(int i = 0; i<strlen(name); i++)
-	{
-		if(name[i] == '_')
-		{
-			memcpy(tmp_path, name, sizeof(char)*i);
-			tmp_path[i] = 0;
-			sprintf(tmp_name, "%s", name + i + 1);
-			IsTruePath = true;
-			break;
-		}
-	}
-
-	if(!IsTruePath)
-	{
-		//LibReport(REPORT_MSG_LEVEL_ERROR, "%s - wrong texture name [%s]!!!", GEN_MSG_LOCATION, name);
-		return false;
-	}
-
-	sprintf(tmppath, "textures/%s/%s", tmp_path, name);
-	return(Core_GetIXCore()->getFileSystem()->fileExists(tmppath));
-}
-
 void CLoaderTextures::clearLoaded()
 {
 	int tmpcountdel = 0;

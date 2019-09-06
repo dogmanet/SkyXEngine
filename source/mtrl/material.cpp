@@ -6,6 +6,19 @@ See the license in LICENSE
 
 #include "material.h"
 #include "ShaderVariant.h"
+#include "MaterialSystem.h"
+
+extern CMaterialSystem *g_pMaterialSystem;
+
+static CTexture* LoadTex(const char *szName)
+{
+	IXTexture *pTex = NULL;
+	if(g_pMaterialSystem->loadTexture(szName, &pTex))
+	{
+		return((CTexture*)pTex);
+	}
+	return(NULL);
+}
 
 CMaterials::CMaterials()
 {
@@ -41,12 +54,12 @@ CMaterials::CMaterials()
 		tmpMtlDefaultLight->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExists(SHADER_TYPE_PIXEL, "mtrlgeom_light.ps");
 	}
 
-	tmpMtlDefaultLight->m_oMainGraphics.m_idMainTexture = -1;
+	tmpMtlDefaultLight->m_oMainGraphics.m_pMainTexture = NULL;
 	tmpMtlDefaultLight->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
 	tmpMtlDefaultLight->m_oMainGraphics.m_oDataVS.m_isTransWorld = true;
 
 	tmpMtlDefaultLight->m_oMainGraphics.m_isUnlit = true;
-	tmpMtlDefaultLight->m_oLightParam.m_idTexParam = -1;
+	tmpMtlDefaultLight->m_oLightParam.m_pTexParam = NULL;
 	tmpMtlDefaultLight->m_oLightParam.m_isTextureParam = false;
 	if(mtrl_data::pDXDevice)
 	{
@@ -71,11 +84,11 @@ CMaterials::CMaterials()
 	}
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld = true;
 
-	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
+	tmpumtl->m_pMtrl->m_oMainGraphics.m_pMainTexture = NULL;
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld = true;
 
-	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParam = -1;
+	tmpumtl->m_pMtrl->m_oLightParam.m_pTexParam = NULL;
 	tmpumtl->m_pMtrl->m_oLightParam.m_isTextureParam = false;
 	if(mtrl_data::pDXDevice)
 	{
@@ -98,10 +111,10 @@ CMaterials::CMaterials()
 		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExists(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
 	}
 
-	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
+	tmpumtl->m_pMtrl->m_oMainGraphics.m_pMainTexture = NULL;
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
 
-	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParam = -1;
+	tmpumtl->m_pMtrl->m_oLightParam.m_pTexParam = NULL;
 	tmpumtl->m_pMtrl->m_oLightParam.m_isTextureParam = false;
 	if(mtrl_data::pDXDevice)
 	{
@@ -124,10 +137,10 @@ CMaterials::CMaterials()
 		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExists(SHADER_TYPE_PIXEL, "mtrlgreen_base.ps");
 	}
 
-	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
+	tmpumtl->m_pMtrl->m_oMainGraphics.m_pMainTexture = NULL;
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
 
-	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParam = -1;
+	tmpumtl->m_pMtrl->m_oLightParam.m_pTexParam = NULL;
 	tmpumtl->m_pMtrl->m_oLightParam.m_isTextureParam = false;
 	if(mtrl_data::pDXDevice)
 	{
@@ -151,11 +164,11 @@ CMaterials::CMaterials()
 		tmpumtl->m_pMtrl->m_oMainGraphics.m_idShaderPS = SGCore_ShaderExists(SHADER_TYPE_PIXEL, "mtrlskin_base.ps");
 	}
 
-	tmpumtl->m_pMtrl->m_oMainGraphics.m_idMainTexture = -1;
+	tmpumtl->m_pMtrl->m_oMainGraphics.m_pMainTexture = NULL;
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
 	tmpumtl->m_pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld = true;
 
-	tmpumtl->m_pMtrl->m_oLightParam.m_idTexParam = -1;
+	tmpumtl->m_pMtrl->m_oLightParam.m_pTexParam = NULL;
 	tmpumtl->m_pMtrl->m_oLightParam.m_isTextureParam = false;
 	if(mtrl_data::pDXDevice)
 	{
@@ -211,7 +224,7 @@ void CMaterials::CMaterial::nulling()
 	
 	m_isDelete = false;
 
-	m_oMainGraphics.m_idMainTexture = -1;
+	m_oMainGraphics.m_pMainTexture = NULL;
 	m_oMainGraphics.m_idShaderVS = -1;
 	m_oMainGraphics.m_idShaderPS = -1;
 	m_oMainGraphics.m_idShaderKit = -1;
@@ -229,8 +242,8 @@ CMaterials::CMaterial::~CMaterial()
 {
 	mem_release(m_oMainGraphics.m_pConstantBuffer);
 
-	if (m_oMainGraphics.m_idMainTexture >= 0)
-		SGCore_LoadTexDelete(m_oMainGraphics.m_idMainTexture);
+	/*if (m_oMainGraphics.m_pMainTexture)
+		SGCore_LoadTexDelete(m_oMainGraphics.m_pMainTexture);
 
 	if (m_oLightParam.m_idTexParam >= 0)
 		SGCore_LoadTexDelete(m_oLightParam.m_idTexParam);
@@ -248,14 +261,14 @@ CMaterials::CMaterial::~CMaterial()
 
 		if (m_oMicroDetail.m_aMicroRelief[i] >= 0)
 			SGCore_LoadTexDelete(m_oMicroDetail.m_aMicroRelief[i]);
-	}
+	}*/
 }
 
 //**************************************************************************
 
 CMaterials::CMaterial::CMainGraphics::CMainGraphics()
 {
-	m_idMainTexture = -1;
+	m_pMainTexture = NULL;
 	m_idShaderVS = -1;
 	m_idShaderPS = -1;
 	m_isUnlit = false;
@@ -309,7 +322,7 @@ CMaterials::CMaterial::CMainGraphics::СDataShader::~СDataShader()
 
 CMaterials::CMaterial::CLightParam::CLightParam()
 {
-	m_idTexParam = -1;
+	m_pTexParam = NULL;
 	m_idTexParamHand = -1;
 
 	m_fRoughness = 0.f;
@@ -331,16 +344,16 @@ CMaterials::CMaterial::CLightParam::~CLightParam()
 
 CMaterials::CMaterial::CMaskDetailMicroRelief::CMaskDetailMicroRelief()
 {
-	m_idMask = -1;
-	m_aDetail[0] = -1;
-	m_aDetail[1] = -1;
-	m_aDetail[2] = -1;
-	m_aDetail[3] = -1;
+	m_pMask = NULL;
+	m_apDetail[0] = NULL;
+	m_apDetail[1] = NULL;
+	m_apDetail[2] = NULL;
+	m_apDetail[3] = NULL;
 
-	m_aMicroRelief[0] = -1;
-	m_aMicroRelief[1] = -1;
-	m_aMicroRelief[2] = -1;
-	m_aMicroRelief[3] = -1;
+	m_apMicroRelief[0] = NULL;
+	m_apMicroRelief[1] = NULL;
+	m_apMicroRelief[2] = NULL;
+	m_apMicroRelief[3] = NULL;
 }
 
 CMaterials::CMaterial::CMaskDetailMicroRelief::~CMaskDetailMicroRelief()
@@ -509,7 +522,8 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT
 	String sVS, sPS, sMask, sNormal, sDetail, sTexParamLight;
 
 	String sDir = StrSubstrSpre(szName, "_");
-	String sName = StrSubstrSpre(szName, ".");
+	//String sName = StrSubstrSpre(szName, ".");
+	String sName = szName;
 
 	CMaterial *pMtrl = *ppMtrl;
 
@@ -521,10 +535,12 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT
 		ISXConfig *pConfig = Core_OpConfig(szPath);
 
 		//если в конфиге указана текстура то берем ее
-		if (pConfig->keyExists(sName.c_str(), "texture"))
-			pMtrl->m_oMainGraphics.m_idMainTexture = SGCore_LoadTexAddName(pConfig->getKey(sName.c_str(), "texture"), LOAD_TEXTURE_TYPE_LOAD);
+		if(pConfig->keyExists(sName.c_str(), "texture"))
+			pMtrl->m_oMainGraphics.m_pMainTexture = LoadTex(pConfig->getKey(sName.c_str(), "texture"));
+			//pMtrl->m_oMainGraphics.m_idMainTexture = SGCore_LoadTexAddName(pConfig->getKey(sName.c_str(), "texture"), LOAD_TEXTURE_TYPE_LOAD);
 		else //если нет то тогда берем имя материала, может быть он имя текстуры, иначе будет -1
-			pMtrl->m_oMainGraphics.m_idMainTexture = SGCore_LoadTexAddName(szName, LOAD_TEXTURE_TYPE_LOAD);
+			//pMtrl->m_oMainGraphics.m_idMainTexture = SGCore_LoadTexAddName(szName, LOAD_TEXTURE_TYPE_LOAD);
+			pMtrl->m_oMainGraphics.m_pMainTexture = LoadTex(szName);
 
 		pMtrl->m_sName = sName.c_str();
 
@@ -579,73 +595,73 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT
 			sNormal = pConfig->getKey(sName.c_str(), "microrelief_r");
 
 		if (STR_VALIDATE(sNormal.c_str()))
-			pMtrl->m_oMicroDetail.m_aMicroRelief[0] = SGCore_LoadTexAddName(sNormal.c_str(), LOAD_TEXTURE_TYPE_LOAD);
+			pMtrl->m_oMicroDetail.m_apMicroRelief[0] = LoadTex(sNormal.c_str());
 		else
-			pMtrl->m_oMicroDetail.m_aMicroRelief[0] = -1;
+			pMtrl->m_oMicroDetail.m_apMicroRelief[0] = NULL;
 
 
 		if (pConfig->keyExists(sName.c_str(), "microrelief_g"))
 			sNormal = pConfig->getKey(sName.c_str(), "microrelief_g");
 
 		if (STR_VALIDATE(sNormal.c_str()))
-			pMtrl->m_oMicroDetail.m_aMicroRelief[1] = SGCore_LoadTexAddName(sNormal.c_str(), LOAD_TEXTURE_TYPE_LOAD);
+			pMtrl->m_oMicroDetail.m_apMicroRelief[1] = LoadTex(sNormal.c_str());
 		else
-			pMtrl->m_oMicroDetail.m_aMicroRelief[1] = -1;
+			pMtrl->m_oMicroDetail.m_apMicroRelief[1] = NULL;
 
 
 		if (pConfig->keyExists(sName.c_str(), "microrelief_b"))
 			sNormal = pConfig->getKey(sName.c_str(), "microrelief_b");
 		if (STR_VALIDATE(sNormal.c_str()))
-			pMtrl->m_oMicroDetail.m_aMicroRelief[2] = SGCore_LoadTexAddName(sNormal.c_str(), LOAD_TEXTURE_TYPE_LOAD);
+			pMtrl->m_oMicroDetail.m_apMicroRelief[2] = LoadTex(sNormal.c_str());
 		else
-			pMtrl->m_oMicroDetail.m_aMicroRelief[2] = -1;
+			pMtrl->m_oMicroDetail.m_apMicroRelief[2] = NULL;
 
 		
 		if (pConfig->keyExists(sName.c_str(), "microrelief_a"))
 			sNormal = pConfig->getKey(sName.c_str(), "microrelief_a");
 		if (STR_VALIDATE(sNormal.c_str()))
-			pMtrl->m_oMicroDetail.m_aMicroRelief[3] = SGCore_LoadTexAddName(sNormal.c_str(), LOAD_TEXTURE_TYPE_LOAD);
+			pMtrl->m_oMicroDetail.m_apMicroRelief[3] = LoadTex(sNormal.c_str());
 		else
-			pMtrl->m_oMicroDetail.m_aMicroRelief[3] = -1;
+			pMtrl->m_oMicroDetail.m_apMicroRelief[3] = NULL;
 
 
 		if (pConfig->keyExists(sName.c_str(), "detail_r"))
 			sDetail = pConfig->getKey(sName.c_str(), "detail_r");
 		if (STR_VALIDATE(sDetail.c_str()))
-			pMtrl->m_oMicroDetail.m_aDetail[0] = SGCore_LoadTexAddName(sDetail.c_str(), LOAD_TEXTURE_TYPE_LOAD);
+			pMtrl->m_oMicroDetail.m_apDetail[0] = LoadTex(sDetail.c_str());
 		else
-			pMtrl->m_oMicroDetail.m_aDetail[0] = -1;
+			pMtrl->m_oMicroDetail.m_apDetail[0] = NULL;
 
 		
 		if (pConfig->keyExists(sName.c_str(), "detail_g"))
 			sDetail = pConfig->getKey(sName.c_str(), "detail_g");
 		if (STR_VALIDATE(sDetail.c_str()))
-			pMtrl->m_oMicroDetail.m_aDetail[1] = SGCore_LoadTexAddName(sDetail.c_str(), LOAD_TEXTURE_TYPE_LOAD);
+			pMtrl->m_oMicroDetail.m_apDetail[1] = LoadTex(sDetail.c_str());
 		else
-			pMtrl->m_oMicroDetail.m_aDetail[1] = -1;
+			pMtrl->m_oMicroDetail.m_apDetail[1] = NULL;
 
 
 		if (pConfig->keyExists(sName.c_str(), "detail_b"))
 			sDetail = pConfig->getKey(sName.c_str(), "detail_b");
 		if (STR_VALIDATE(sDetail.c_str()))
-			pMtrl->m_oMicroDetail.m_aDetail[2] = SGCore_LoadTexAddName(sDetail.c_str(), LOAD_TEXTURE_TYPE_LOAD);
+			pMtrl->m_oMicroDetail.m_apDetail[2] = LoadTex(sDetail.c_str());
 		else
-			pMtrl->m_oMicroDetail.m_aDetail[2] = -1;
+			pMtrl->m_oMicroDetail.m_apDetail[2] = NULL;
 
 		
 		if (pConfig->keyExists(sName.c_str(), "detail_a"))
 			sDetail = pConfig->getKey(sName.c_str(), "detail_a");
 		if (STR_VALIDATE(sDetail.c_str()))
-			pMtrl->m_oMicroDetail.m_aDetail[3] = SGCore_LoadTexAddName(sDetail.c_str(), LOAD_TEXTURE_TYPE_LOAD);
+			pMtrl->m_oMicroDetail.m_apDetail[3] = LoadTex(sDetail.c_str());
 		else
-			pMtrl->m_oMicroDetail.m_aDetail[3] = -1;
+			pMtrl->m_oMicroDetail.m_apDetail[3] = NULL;
 
 		if (pConfig->keyExists(sName.c_str(), "mask"))
 			sMask = pConfig->getKey(sName.c_str(), "mask");
 		if (STR_VALIDATE(sMask.c_str()))
-			pMtrl->m_oMicroDetail.m_idMask = SGCore_LoadTexAddName(sMask.c_str(), LOAD_TEXTURE_TYPE_LOAD);
+			pMtrl->m_oMicroDetail.m_pMask = LoadTex(sMask.c_str());
 		else
-			pMtrl->m_oMicroDetail.m_idMask = -1;
+			pMtrl->m_oMicroDetail.m_pMask = NULL;
 
 
 		pMtrl->m_oLightParam.m_fRoughness = MTL_LIGHTING_DEFAULT_ROUGHNESS;
@@ -686,7 +702,7 @@ bool CMaterials::loadMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT
 		//если текстура с параметрами освещения была определена
 		if (STR_VALIDATE(sTexParamLight.c_str()))
 		{
-			pMtrl->m_oLightParam.m_idTexParam = SGCore_LoadTexAddName(sTexParamLight.c_str(), LOAD_TEXTURE_TYPE_LOAD);
+			pMtrl->m_oLightParam.m_pTexParam = LoadTex(sTexParamLight.c_str());
 			//если использование параметров освещения из текстуры не было определено
 			if (istexparam == -1)
 				pMtrl->m_oLightParam.m_isTextureParam = true;
@@ -863,15 +879,15 @@ void CMaterials::createMtl(const char* name, CMaterial** mtl, XSHADER_DEFAULT_DE
 		assert(pVariantsDesc[i].pMacrosVS);
 		pVariantsDesc[i].pShaderVariant = new CShaderVariant(pDefaultShaders->szFileVS, pDefaultShaders->szFilePS, pVariantsDesc[i].pMacrosVS);
 	}
-
-	pMtrl->m_oMainGraphics.m_idMainTexture = SGCore_LoadTexAddName(name, LOAD_TEXTURE_TYPE_LOAD);
+	
+	pMtrl->m_oMainGraphics.m_pMainTexture = LoadTex(name);
 	pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection = true;
 
 	pMtrl->m_oLightParam.m_fRoughness = MTL_LIGHTING_DEFAULT_ROUGHNESS;
 	pMtrl->m_oLightParam.m_fF0 = MTL_LIGHTING_DEFAULT_F0;
 	pMtrl->m_oLightParam.m_fThickness = MTL_LIGHTING_DEFAULT_THICKNESS;
 
-	pMtrl->m_oLightParam.m_idTexParam = -1;
+	pMtrl->m_oLightParam.m_pTexParam = NULL;
 	pMtrl->m_oLightParam.m_isTextureParam = false;
 	pMtrl->m_oLightParam.m_idTexParamHand = createTexParamLighting(pMtrl->m_oLightParam.m_fRoughness, pMtrl->m_oLightParam.m_fF0, pMtrl->m_oLightParam.m_fThickness);
 
@@ -981,6 +997,7 @@ void CMaterials::mtlReLoad(ID id, const char* name)
 
 void CMaterials::mtlSave(ID id)
 {
+#if 0
 	MTL_PRE_COND_ID(id, _VOID);
 
 	char* ArrRGBA[4] = { "r", "g", "b", "a" };
@@ -1018,7 +1035,7 @@ void CMaterials::mtlSave(ID id)
 	char namebasetex[256];
 	namebasetex[0] = '0';
 	namebasetex[1] = '\0';
-	SGCore_LoadTexGetName(mtrl->m_oMainGraphics.m_idMainTexture, namebasetex);
+	//SGCore_LoadTexGetName(mtrl->m_oMainGraphics.m_idMainTexture, namebasetex);
 	fprintf(file, "texture = %s\n", namebasetex);
 	fprintf(file, "use_dest_color = %d\n\n", mtrl->m_oMainGraphics.m_useDestColor);
 
@@ -1113,6 +1130,7 @@ void CMaterials::mtlSave(ID id)
 	fprintf(file, "reflection = %d\n", mtrl->m_oLightParam.m_typeReflect);
 
 	fclose(file);
+#endif
 }
 
 //##########################################################################
@@ -1243,8 +1261,13 @@ void CMaterials::update(UINT timeDelta)
 
 void CMaterials::setMainTexture(ID slot, ID id)
 {
-	if (id >= 0 && id < m_aUnitMtrls.size() && m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idMainTexture != -1)
-		mtrl_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idMainTexture), slot);
+	if(id >= 0 && id < m_aUnitMtrls.size() && m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_pMainTexture)
+	{
+		IGXBaseTexture *pTex = NULL;
+		m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_pMainTexture->getAPITexture(&pTex);
+		mtrl_data::pDXDevice->setTexture(pTex, slot);
+		mem_release(pTex);
+	}
 	else
 		mtrl_data::pDXDevice->setTexture(0, slot);
 }
@@ -1434,15 +1457,15 @@ MTLTYPE_PHYSIC CMaterials::mtlGetPhysicMaterial(ID id)
 void CMaterials::mtlSetTexture(ID id, const char* path_tex)
 {
 	MTL_PRE_COND_ID(id, _VOID);
-	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idMainTexture = SGCore_LoadTexAddName(path_tex, LOAD_TEXTURE_TYPE_LOAD);
+	m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_pMainTexture = LoadTex(path_tex);
 }
 
 void CMaterials::mtlGetTexture(ID id, char* name)
 {
 	MTL_PRE_COND_ID(id, _VOID);
 
-	if (name && m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idMainTexture >= 0)
-		SGCore_LoadTexGetName(m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idMainTexture, name);
+	//if (name && m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_pMainTexture)
+	//	SGCore_LoadTexGetName(m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idMainTexture, name);
 }
 
 void CMaterials::mtlSetUseDestColor(ID id, bool useDestColor)
@@ -1463,7 +1486,8 @@ ID CMaterials::mtlGetTextureID(ID id)
 {
 	MTL_PRE_COND_ID(id, -1);
 
-	return m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idMainTexture;
+	//return m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_idMainTexture;
+	return(-1);
 }
 
 void CMaterials::mtlSetVS(ID id, const char* path_vs)
@@ -1534,13 +1558,14 @@ bool CMaterials::mtlGetIsTextureLighting(ID id)
 void CMaterials::mtlSetTextureLighting(ID id, const char* path_tex)
 {
 	MTL_PRE_COND_ID(id, _VOID);
-	m_aUnitMtrls[id]->m_pMtrl->m_oLightParam.m_idTexParam = SGCore_LoadTexAddName(path_tex, LOAD_TEXTURE_TYPE_LOAD);
+	m_aUnitMtrls[id]->m_pMtrl->m_oLightParam.m_pTexParam = LoadTex(path_tex);
 }
 
 void CMaterials::mtlGetTextureLighting(ID id, char* path_tex)
 {
+#if 0
 	MTL_PRE_COND_ID(id, _VOID);
-	if (path_tex && m_aUnitMtrls[id]->m_pMtrl->m_oLightParam.m_idTexParam >= 0)
+	if (path_tex && m_aUnitMtrls[id]->m_pMtrl->m_oLightParam.m_pTexParam >= 0)
 	{
 		SGCore_LoadTexGetName(m_aUnitMtrls[id]->m_pMtrl->m_oLightParam.m_idTexParam, path_tex);
 		if (path_tex[0] == MTL_VIRTUAL_DIR_HAND_MTL)
@@ -1548,6 +1573,7 @@ void CMaterials::mtlGetTextureLighting(ID id, char* path_tex)
 	}
 	else if (path_tex)
 		path_tex[0] = 0;
+#endif
 }
 
 
@@ -1678,47 +1704,53 @@ MTLTYPE_REFLECT CMaterials::mtlGetTypeReflection(ID id)
 void CMaterials::mtlSetMaskTex(ID id, const char* path_tex)
 {
 	MTL_PRE_COND_ID(id, _VOID);
-	m_aUnitMtrls[id]->m_pMtrl->m_oMicroDetail.m_idMask = SGCore_LoadTexAddName(path_tex, LOAD_TEXTURE_TYPE_LOAD);
+	m_aUnitMtrls[id]->m_pMtrl->m_oMicroDetail.m_pMask = LoadTex(path_tex);
 }
 
 void CMaterials::mtlGetMaskTex(ID id, char* path_tex)
 {
+#if 0
 	MTL_PRE_COND_ID(id, _VOID);
 	if (path_tex && m_aUnitMtrls[id]->m_pMtrl->m_oMicroDetail.m_idMask >= 0)
 		SGCore_LoadTexGetName(m_aUnitMtrls[id]->m_pMtrl->m_oMicroDetail.m_idMask, path_tex);
 	else if (path_tex)
 		path_tex[0] = 0;
+#endif
 }
 
 void CMaterials::mtlSetMRTex(ID id, int channel, const char* path_tex)
 {
 	MTL_PRE_COND_ID(id, _VOID);
-	m_aUnitMtrls[id]->m_pMtrl->m_oMicroDetail.m_aMicroRelief[channel] = SGCore_LoadTexAddName(path_tex, LOAD_TEXTURE_TYPE_LOAD);
+	m_aUnitMtrls[id]->m_pMtrl->m_oMicroDetail.m_apMicroRelief[channel] = LoadTex(path_tex);
 }
 
 void CMaterials::mtlGetMRTex(ID id, int channel, char* path_tex)
 {
+#if 0
 	MTL_PRE_COND_ID(id, _VOID);
 	if (path_tex && m_aUnitMtrls[id]->m_pMtrl->m_oMicroDetail.m_aMicroRelief[channel] >= 0)
 		SGCore_LoadTexGetName(m_aUnitMtrls[id]->m_pMtrl->m_oMicroDetail.m_aMicroRelief[channel], path_tex);
 	else if (path_tex)
 		path_tex[0] = 0;
+#endif
 }
 
 
 void CMaterials::mtlSetDTex(ID id, int channel, const char* path_tex)
 {
 	MTL_PRE_COND_ID(id, _VOID);
-	m_aUnitMtrls[id]->m_pMtrl->m_oMicroDetail.m_aDetail[channel] = SGCore_LoadTexAddName(path_tex, LOAD_TEXTURE_TYPE_LOAD);
+	m_aUnitMtrls[id]->m_pMtrl->m_oMicroDetail.m_apDetail[channel] = LoadTex(path_tex);
 }
 
 void CMaterials::mtlGetDTex(ID id, int channel, char* path_tex)
 {
+#if 0
 	MTL_PRE_COND_ID(id, _VOID);
 	if (path_tex && m_aUnitMtrls[id]->m_pMtrl->m_oMicroDetail.m_aDetail[channel] >= 0)
 		SGCore_LoadTexGetName(m_aUnitMtrls[id]->m_pMtrl->m_oMicroDetail.m_aDetail[channel], path_tex);
 	else if (path_tex)
 		path_tex[0] = 0;
+#endif
 }
 
 
@@ -1921,19 +1953,14 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 	m_mWorld = (pWorld ? (*pWorld) : SMMatrixIdentity());
 
 	CMaterial *pMtrl = m_aUnitMtrls[id]->m_pMtrl;
+	IGXBaseTexture *pTex = NULL;
 
 	//если есть то устанавливаем текстуру материала
-	if(ID_VALID(pMtrl->m_oMainGraphics.m_idMainTexture))
+	if(pMtrl->m_oMainGraphics.m_pMainTexture)
 	{
-		auto pTex = SGCore_LoadTexGetTex(pMtrl->m_oMainGraphics.m_idMainTexture);
-		if(pTex)
-		{
-			mtrl_data::pDXDevice->setTexture(pTex, MTL_TEX_R_MAIN);
-		}
-		else
-		{
-			mtrl_data::pDXDevice->setTexture(SGCore_LoadTexGetTexCube(pMtrl->m_oMainGraphics.m_idMainTexture), MTL_TEX_R_MAIN);
-		}
+		pMtrl->m_oMainGraphics.m_pMainTexture->getAPITexture(&pTex);
+		mtrl_data::pDXDevice->setTexture(pTex, MTL_TEX_R_MAIN);
+		mem_release(pTex);
 	}
 
 #if 0
@@ -1958,26 +1985,44 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 	else
 		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_REFRACTION, 0);*/
 
-	if (ID_VALID(pMtrl->m_oMicroDetail.m_idMask))
-		mtrl_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(pMtrl->m_oMicroDetail.m_idMask), MTL_TEX_R_MASK);
+	if(pMtrl->m_oMicroDetail.m_pMask)
+	{
+		pMtrl->m_oMicroDetail.m_pMask->getAPITexture(&pTex);
+		mtrl_data::pDXDevice->setTexture(pTex, MTL_TEX_R_MASK);
+		mem_release(pTex);
+	}
+	else
+	{
+		mtrl_data::pDXDevice->setTexture(NULL, MTL_TEX_R_MASK);
+	}
 
 	for (int k = 0; k<4; k++)
 	{
-		if (ID_VALID(pMtrl->m_oMicroDetail.m_aDetail[k]))
-			mtrl_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(pMtrl->m_oMicroDetail.m_aDetail[k]), MTL_TEX_R_DETAIL + k);
+		if(pMtrl->m_oMicroDetail.m_apDetail[k])
+		{
+			pMtrl->m_oMicroDetail.m_apDetail[k]->getAPITexture(&pTex);
+			mtrl_data::pDXDevice->setTexture(pTex, MTL_TEX_R_DETAIL + k);
+			mem_release(pTex);
+		}
 		else
 			mtrl_data::pDXDevice->setTexture(NULL, MTL_TEX_R_DETAIL + k);
 
-		if (ID_VALID(pMtrl->m_oMicroDetail.m_aMicroRelief[k]))
-			mtrl_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(pMtrl->m_oMicroDetail.m_aMicroRelief[k]), MTL_TEX_R_MICRO + k);
+		if(pMtrl->m_oMicroDetail.m_apMicroRelief[k])
+		{
+			pMtrl->m_oMicroDetail.m_apMicroRelief[k]->getAPITexture(&pTex);
+			mtrl_data::pDXDevice->setTexture(pTex, MTL_TEX_R_MICRO + k);
+			mem_release(pTex);
+		}
 		else
 			mtrl_data::pDXDevice->setTexture(NULL, MTL_TEX_R_MICRO + k);
 	}
 
 	//если есть текстура с параметрами освещения и установлено что берем параметры из текстуры, то отправляем текстуру с параметрами
-	if (pMtrl->m_oLightParam.m_idTexParam != -1 && pMtrl->m_oLightParam.m_isTextureParam)
+	if (pMtrl->m_oLightParam.m_pTexParam && pMtrl->m_oLightParam.m_isTextureParam)
 	{
-		mtrl_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(pMtrl->m_oLightParam.m_idTexParam), MTL_TEX_R_PARAM_LIGHT);
+		pMtrl->m_oLightParam.m_pTexParam->getAPITexture(&pTex);
+		mtrl_data::pDXDevice->setTexture(pTex, MTL_TEX_R_PARAM_LIGHT);
+		mem_release(pTex);
 	}
 	//иначе если берем параметры из ... редактора
 	else //if (!pMtrl->m_oLightParam.m_isTextureParam)

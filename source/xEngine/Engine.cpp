@@ -205,7 +205,6 @@ bool CEngine::runFrame()
 	}
 	
 	SGCore_ShaderAllLoad();
-	SGCore_LoadTexAllLoad();
 
 	Core_TimesUpdate();
 	Core_0ConsoleUpdate();

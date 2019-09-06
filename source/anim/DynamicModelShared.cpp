@@ -83,7 +83,6 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 		shaderDesc.szFileVS = "mtrlgeom_base.vs";
 		shaderDesc.szFilePS = "mtrlgeom_base.ps";
 
-		char szMaterialName[256];
 		const char *szMaterial;
 		for(UINT i = 0; i < m_uSkinCount; ++i)
 		{
@@ -95,8 +94,7 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 				szMaterial = m_pResource->getMaterial(j, i);
 				if(szMaterial && szMaterial[0])
 				{
-					sprintf_s(szMaterialName, "%s.dds", szMaterial);
-					m_pMaterialSystem->loadMaterial(szMaterialName, &m_pppMaterials[i][j], &shaderDesc);
+					m_pMaterialSystem->loadMaterial(szMaterial, &m_pppMaterials[i][j], &shaderDesc);
 				}
 				else if(i == 0)
 				{

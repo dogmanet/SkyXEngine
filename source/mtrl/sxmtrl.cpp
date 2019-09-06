@@ -53,6 +53,9 @@ SX_LIB_API void SMtrl_0Create(const char *szName, bool isUnic, bool isServerMode
 		{
 			mtrl_data::Init();
 		}*/
+
+		INIT_OUTPUT_STREAM(Core_GetIXCore());
+
 		ArrMaterials = new CMaterials();
 		g_pMaterialSystem = new CMaterialSystem();
 		Core_GetIXCore()->getPluginManager()->registerInterface(IXMATERIALSYSTEM_GUID, g_pMaterialSystem);
@@ -104,6 +107,8 @@ SX_LIB_API void SMtrl_Update(DWORD timeDelta)
 
 	mtrl_data::mRefProjPlane = SMMatrixPerspectiveFovLH(*r_default_fov, float(*r_win_width) / float(*r_win_height), MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
 	mtrl_data::mRefProjCube = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
+
+	g_pMaterialSystem->update(0.016f);
 }
 
 //#############################################################################

@@ -667,8 +667,8 @@ int main(int argc, char **argv)
 
 
 //	SkyXEngine_RunGenPreview();
-	Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
-	//Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
+	//Core_0SetCVarInt("r_final_image", DS_RT_COLOR);
+	Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
 	
 	g_pGrid = new CGrid();
 	g_pGrid->setOpacity(0.7f);

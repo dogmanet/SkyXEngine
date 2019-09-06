@@ -1,13 +1,9 @@
 #include "ResourceTexture.h"
+#include "ResourceManager.h"
 
-CResourceTexture2D::CResourceTexture2D():
-	BaseClass(GXTEXTURE_TYPE_2D)
+CResourceTexture2D::CResourceTexture2D(CResourceManager *pMgr):
+	BaseClass(GXTEXTURE_TYPE_2D, pMgr)
 {
-}
-
-CResourceTexture2D::~CResourceTexture2D()
-{
-	mem_delete_a(pDataBlob);
 }
 
 UINT XMETHODCALLTYPE CResourceTexture2D::getWidth() const
@@ -52,7 +48,6 @@ void XMETHODCALLTYPE CResourceTexture2D::init(UINT uWidth, UINT uHeight, GXFORMA
 	}
 
 	size_t sizeData = uFrameCount * (sizeof(void*) + uMipmapCount * sizeof(XImageMip));
-	size_t sizeFrame = getTextureBytes(format, uWidth, uHeight);
 	UINT uTmpWidth = uWidth;
 	UINT uTmpHeight = uHeight;
 	for(UINT i = 0; i < uMipmapCount; ++i)
@@ -127,14 +122,9 @@ IXResourceTexture2D* XMETHODCALLTYPE CResourceTexture2D::as2D()
 
 //##########################################################################
 
-CResourceTextureCube::CResourceTextureCube():
-	BaseClass(GXTEXTURE_TYPE_CUBE)
+CResourceTextureCube::CResourceTextureCube(CResourceManager *pMgr):
+	BaseClass(GXTEXTURE_TYPE_CUBE, pMgr)
 {
-}
-
-CResourceTextureCube::~CResourceTextureCube()
-{
-	mem_delete_a(pDataBlob);
 }
 
 UINT XMETHODCALLTYPE CResourceTextureCube::getSize() const
@@ -188,7 +178,7 @@ void XMETHODCALLTYPE CResourceTextureCube::init(UINT uSize, GXFORMAT format, UIN
 	{
 		pppData[i] = (XImageMip**)pTmp;
 		pTmp += sizeof(void*) * uMipmapCount;
-		for(int mip = 0; mip < uMipmapCount; ++mip)
+		for(UINT mip = 0; mip < uMipmapCount; ++mip)
 		{
 			pppData[i][mip] = (XImageMip*)pTmp;
 			pTmp += sizeof(XImageMip) * 6;

@@ -155,6 +155,18 @@ CCore::CCore(const char *szName)
 		}
 	}
 #endif
+#if 0
+	while(1)
+	{
+		IXResourceTexture2D *pTex = NULL;
+		if(getResourceManager()->getTexture2D("textures/tp/tp_sga_window_center_up1.dds#+0button", &pTex))
+		{
+			printf(COLOR_LGREEN "Loaded!" COLOR_RESET "\n");
+			mem_release(pTex);
+		}
+		Sleep(10);
+	}
+#endif
 }
 CCore::~CCore()
 {

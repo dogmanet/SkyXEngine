@@ -12,7 +12,6 @@ CCrosshair::CCrosshair():
 	m_bDirty(true),
 	m_bBuildBuff(false),
 	m_fSize(0),
-	m_idTexture(-1),
 	m_bHidden(true),
 	m_fMaxSize(0.7f), // 70% of screen height
 	m_style(SPLIT_MOVE),
@@ -81,6 +80,8 @@ CCrosshair::~CCrosshair()
 	mem_release(m_pVertexDeclaration);
 
 	mem_delete_a(m_pMemoryBlob);
+
+	mem_release(m_pTexture);
 }
 
 void CCrosshair::setTexInfo(const float2_t & offs, const float2_t & size)
@@ -93,17 +94,8 @@ void CCrosshair::setTexInfo(const float2_t & offs, const float2_t & size)
 
 void CCrosshair::update()
 {
-	if(m_bDirty && m_idTexture >= 0)
+	if(m_bDirty && m_pTexture && m_pTexture->isReady())
 	{
-		if(!m_pTexture)
-		{
-			m_pTexture = SGCore_LoadTexGetTex(m_idTexture);
-			if(!m_pTexture)
-			{
-				return;
-			}
-		}
-
 		static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 		static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
@@ -366,7 +358,7 @@ void CCrosshair::update()
 }
 void CCrosshair::render()
 {
-	if(m_bHidden || !m_pTexture)
+	if(m_bHidden || !m_pTexture || !m_pTexture->isReady())
 	{
 		return;
 	}
@@ -392,7 +384,12 @@ void CCrosshair::render()
 	m_pDev->setSamplerState(m_pSamplerState, 0);
 	m_pDev->setIndexBuffer(m_pIndexBuffer);
 	m_pDev->setRenderBuffer(m_pRenderBuffer);
-	m_pDev->setTexture(m_pTexture);
+
+	IGXBaseTexture *pTex = NULL;
+	m_pTexture->getAPITexture(&pTex);
+	m_pDev->setTexture(pTex);
+	mem_release(pTex);
+
 	m_pDev->setDepthStencilState(m_pDepthState);
 	m_pDev->setPrimitiveTopology(GXPT_TRIANGLELIST);
 	m_pDev->drawIndexed(m_iVertexCount[m_u8ActiveBuffer], m_iIndexCount[m_u8ActiveBuffer] / 3);
@@ -460,20 +457,17 @@ void CCrosshair::setMaxSize(float size)
 	m_bDirty = true;
 	m_fMaxSize = size;
 }
-void CCrosshair::setTexture(ID id)
+void CCrosshair::setTexture(IXTexture *pTexture)
 {
-	if(m_idTexture != id)
+	if(m_pTexture != pTexture)
 	{
 		m_bDirty = true;
-		m_idTexture = id;
-		if(m_idTexture == -1)
+		mem_release(m_pTexture);
+		if(pTexture)
 		{
-			m_pTexture = NULL;
+			pTexture->AddRef();
 		}
-		else
-		{
-			m_pTexture = SGCore_LoadTexGetTex(m_idTexture);
-		}
+		m_pTexture = pTexture;
 	}
 }
 

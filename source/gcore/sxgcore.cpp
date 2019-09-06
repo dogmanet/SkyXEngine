@@ -228,67 +228,11 @@ SX_LIB_API bool SGCore_ShaderFileExists(const char *szName)
 
 //##########################################################################
 
-SX_LIB_API bool SGCore_LoadTexFileExists(const char *szName)
-{
-	SG_PRECOND(false);
-
-	return g_pManagerTextures->fileExists(szName);
-}
-
-SX_LIB_API void SGCore_LoadTexClearLoaded()
-{
-	SG_PRECOND(_VOID);
-
-	g_pManagerTextures->clearLoaded();
-}
-
-SX_LIB_API void SGCore_LoadTexDelete(ID id)
-{
-	SG_PRECOND(_VOID);
-
-	g_pManagerTextures->deleteTexture(id);
-}
-
-SX_LIB_API ID SGCore_LoadTexAddName(const char *szName, LOAD_TEXTURE_TYPE type)
-{
-	SG_PRECOND(-1);
-
-	return g_pManagerTextures->addName(szName, type);
-}
-
-SX_LIB_API ID SGCore_LoadTexGetID(const char *szName)
-{
-	SG_PRECOND(-1);
-
-	return g_pManagerTextures->getID(szName);
-}
-
-SX_LIB_API void SGCore_LoadTexGetName(ID id, char *szName)
-{
-	SG_PRECOND(_VOID);
-
-	return g_pManagerTextures->getName(id, szName);
-}
-
 SX_LIB_API ID SGCore_LoadTexCreate(const char *szName, IGXTexture2D *pTex)
 {
 	SG_PRECOND(-1);
 
 	return g_pManagerTextures->create(szName, pTex);
-}
-
-SX_LIB_API ID SGCore_LoadTexUpdateN(const char *szName, LOAD_TEXTURE_TYPE type)
-{
-	SG_PRECOND(-1);
-
-	return g_pManagerTextures->update(szName, type);
-}
-
-SX_LIB_API void SGCore_LoadTexUpdate(ID id)
-{
-	SG_PRECOND(_VOID);
-
-	return g_pManagerTextures->update(id);
 }
 
 SX_LIB_API IGXTexture2D* SGCore_LoadTexGetTex(ID idTexture)
@@ -303,20 +247,6 @@ SX_LIB_API void SGCore_LoadTexSetTex(ID idTexture, IGXTexture2D *pTexture)
 	SG_PRECOND(_VOID);
 
 	g_pManagerTextures->setTexture2d(idTexture, pTexture);
-}
-
-SX_LIB_API IGXTextureCube* SGCore_LoadTexGetTexCube(ID idTexture)
-{
-	SG_PRECOND(0);
-
-	return g_pManagerTextures->getTextureCube(idTexture);
-}
-
-SX_LIB_API void SGCore_LoadTexAllLoad()
-{
-	SG_PRECOND(_VOID);
-
-	return g_pManagerTextures->loadTextures();
 }
 
 //##########################################################################

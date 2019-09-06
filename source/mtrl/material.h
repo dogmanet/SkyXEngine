@@ -27,6 +27,8 @@ if (!(m_aUnitMtrls[id]->m_pReflect))\
 
 //##########################################################################
 
+class CTexture;
+
 class CMaterials
 {
 public:
@@ -213,7 +215,7 @@ public:
 			void updateShaderKit(bool bComplete);
 
 			//! основная текстура
-			ID m_idMainTexture;
+			CTexture *m_pMainTexture;
 
 			//! вершинный шейдер
 			ID m_idShaderVS;
@@ -293,13 +295,13 @@ public:
 			~CMaskDetailMicroRelief();
 
 			//! идентификатор текстуры маски, где к каждому каналу привязаны 4 детальных и микрорельефных текстуры
-			ID m_idMask;
+			CTexture *m_pMask;
 
 			//! массив идентификаторов детальных текстур, для каждого канала маски
-			ID m_aDetail[4];
+			CTexture *m_apDetail[4];
 
 			//! массив идентификаторов микрорельефных текстур (normal map), для каждого канала маски
-			ID m_aMicroRelief[4];
+			CTexture *m_apMicroRelief[4];
 		};
 
 		//! световые свойсвта, основные характеристики просчета освещения
@@ -309,7 +311,7 @@ public:
 			~CLightParam();
 
 			//! текстура с параметрами материала (созданная пользователем)
-			ID m_idTexParam;
+			CTexture *m_pTexParam;
 
 			//! текстура с параметрами материала, размер 1х1, параметры взяты из текущей структуры
 			ID m_idTexParamHand;

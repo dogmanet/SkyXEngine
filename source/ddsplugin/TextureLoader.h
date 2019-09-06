@@ -43,6 +43,9 @@ protected:
 	int m_iYFrames = 1;
 	float m_fFrameTime = 0.0;
 	int m_iSkipFrames = 0;
+
+	bool m_bConvertFromRGB24 = false;
+	bool m_bConvertSwapRB = false;
 };
 
 #endif

@@ -326,49 +326,15 @@ enum SHADER_CONST_REGISTER
 
 //**************************************************************************
 
-//! существует ил файл name в папке с текстурами
-SX_LIB_API bool SGCore_LoadTexFileExists(const char *szName);	
-
-//! очистить список загружаемых текстур
-SX_LIB_API void SGCore_LoadTexClearLoaded();				
-
-//! удалить тектуру по id (независимо от типа)
-SX_LIB_API void SGCore_LoadTexDelete(ID idTexture);				
-
-//! добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
-SX_LIB_API ID SGCore_LoadTexAddName(const char *szName, LOAD_TEXTURE_TYPE type);
-
-//! получить id по имени
-SX_LIB_API ID SGCore_LoadTexGetID(const char *szName);
-
-//! получить имя по id
-SX_LIB_API void SGCore_LoadTexGetName(ID idTexture, char *szName);
-
-
 /*! создать место для текстуры tex и присвоить ей имя name, возвращает id
  \warning создавать текстур необходимо в managed pool (D3DPOOL_MANAGED) ибо обработка потери и восстановления устройства сюда не приходит
 */
 SX_LIB_API ID SGCore_LoadTexCreate(const char *szName, IGXTexture2D *pTexture);
 
-/*! обновить/перезагрузить текстуру name, если текстуры не было в списке то добавляет.
-Если текстуру надо обновить, но тип у нее заранее не известен, но она точно уже загружена  
-то можно использовать тип самоопределения LOAD_TEXTURE_TYPE_SELF, тогда тип текстуры не изменится
-*/
-SX_LIB_API ID SGCore_LoadTexUpdateN(const char *szName, LOAD_TEXTURE_TYPE type);
-
-//! обновить/перезагрузить текстуру
-SX_LIB_API void SGCore_LoadTexUpdate(ID idTexture);
-
 //! возвращает текстуру по id
 SX_LIB_API IGXTexture2D* SGCore_LoadTexGetTex(ID idTexture);
 
 SX_LIB_API void SGCore_LoadTexSetTex(ID idTexture, IGXTexture2D *pTexture);
-
-//! возвращает текстуру по id
-SX_LIB_API IGXTextureCube* SGCore_LoadTexGetTexCube(ID idTexture);
-
-//! загрузка всех текстур поставленных в очередь, если есть очередь
-SX_LIB_API void SGCore_LoadTexAllLoad();	
 
 //!@} sxgcore_loadtex
 

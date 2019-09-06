@@ -118,6 +118,12 @@ bool XMETHODCALLTYPE CTextureLoader::open(const char *szFileName, const char *sz
 		return(false);
 	}
 
+	if(isBlockCompressed(m_format))
+	{
+		m_ddsHeader.width = max(1, ((m_ddsHeader.width + 3) / 4) * 4);
+		m_ddsHeader.height = max(1, ((m_ddsHeader.height + 3) / 4) * 4);
+	}
+
 	m_iXFrames = 1;
 	m_iYFrames = 1;
 	m_fFrameTime = 0.0f;
@@ -257,6 +263,7 @@ GXTEXTURE_TYPE XMETHODCALLTYPE CTextureLoader::getType() const
 	}*/
 	return(GXTEXTURE_TYPE_UNKNOWN);
 }
+
 bool XMETHODCALLTYPE CTextureLoader::loadAs2D(IXResourceTexture2D *pResource)
 {
 	if(getType() != GXTEXTURE_TYPE_2D)
@@ -281,10 +288,42 @@ bool XMETHODCALLTYPE CTextureLoader::loadAs2D(IXResourceTexture2D *pResource)
 	{
 		size_t sizeMip = pResource->getTextureBytes(info.format, uMipWidth, uMipHeight);
 
-		if(m_pCurrentFile->readBin(pData, sizeMip) != sizeMip)
+		if(m_bConvertFromRGB24)
 		{
-			LibReport(REPORT_MSG_LEVEL_ERROR, "Unexpected end of file\n");
-			goto end;
+			UINT uPixels = uMipWidth * uMipHeight;
+			byte *pTmp = pData;
+			for(UINT j = 0; j < uPixels; ++j)
+			{
+				for(UINT k = 0; k < 3; ++k)
+				{
+					if(m_pCurrentFile->readBin(pTmp++, 1) != 1)
+					{
+						LibReport(REPORT_MSG_LEVEL_ERROR, "Unexpected end of file\n");
+						goto end;
+					}
+				}
+				*pTmp++ = 0xFF;
+			}
+		}
+		else
+		{
+			if(m_pCurrentFile->readBin(pData, sizeMip) != sizeMip)
+			{
+				LibReport(REPORT_MSG_LEVEL_ERROR, "Unexpected end of file\n");
+				goto end;
+			}
+		}
+
+		if(m_bConvertSwapRB)
+		{
+			UINT uPixels = uMipWidth * uMipHeight;
+			byte tmp;
+			for(UINT j = 0; j < uPixels; ++j)
+			{
+				tmp = pData[j * 4 + 0];
+				pData[j * 4 + 0] = pData[j * 4 + 2];
+				pData[j * 4 + 2] = tmp;
+			}
 		}
 
 		// m_iXFrames
@@ -355,6 +394,7 @@ bool XMETHODCALLTYPE CTextureLoader::loadAs2D(IXResourceTexture2D *pResource)
 		uMipHeight = max(uMipHeight, 1);
 	}
 
+	mem_delete_a(pData);
 	return(true);
 end:
 	mem_delete_a(pData);
@@ -393,10 +433,42 @@ bool XMETHODCALLTYPE CTextureLoader::loadAsCube(IXResourceTextureCube *pResource
 			{
 				size_t sizeMip = pResource->getTextureBytes(info.format, uMipSize, uMipSize);
 
-				if(m_pCurrentFile->readBin(pData, sizeMip) != sizeMip)
+				if(m_bConvertFromRGB24)
 				{
-					LibReport(REPORT_MSG_LEVEL_ERROR, "Unexpected end of file\n");
-					goto end;
+					UINT uPixels = uMipSize * uMipSize;
+					byte *pTmp = pData;
+					for(UINT j = 0; j < uPixels; ++j)
+					{
+						for(UINT k = 0; k < 3; ++k)
+						{
+							if(m_pCurrentFile->readBin(pTmp++, 1) != 1)
+							{
+								LibReport(REPORT_MSG_LEVEL_ERROR, "Unexpected end of file\n");
+								goto end;
+							}
+						}
+						*pTmp++ = 0xFF;
+					}
+				}
+				else
+				{
+					if(m_pCurrentFile->readBin(pData, sizeMip) != sizeMip)
+					{
+						LibReport(REPORT_MSG_LEVEL_ERROR, "Unexpected end of file\n");
+						goto end;
+					}
+				}
+
+				if(m_bConvertSwapRB)
+				{
+					UINT uPixels = uMipSize * uMipSize;
+					byte tmp;
+					for(UINT j = 0; j < uPixels; ++j)
+					{
+						tmp = pData[j * 4 + 0];
+						pData[j * 4 + 0] = pData[j * 4 + 2];
+						pData[j * 4 + 2] = tmp;
+					}
 				}
 
 				// m_iXFrames
@@ -416,6 +488,7 @@ bool XMETHODCALLTYPE CTextureLoader::loadAsCube(IXResourceTextureCube *pResource
 			}
 		}
 	}
+	mem_delete_a(pData);
 	return(true);
 end:
 	mem_delete_a(pData);
@@ -445,6 +518,9 @@ bool CTextureLoader::isBlockCompressed(GXFORMAT format)
 
 GXFORMAT CTextureLoader::getFormat()
 {
+	m_bConvertFromRGB24 = false;
+	m_bConvertSwapRB = false;
+
 	if(m_ddsHeader.ddspf.flags == DDS_RGB)
 	{
 		if(m_ddsHeader.ddspf.RGBBitCount == 16)
@@ -458,7 +534,9 @@ GXFORMAT CTextureLoader::getFormat()
 		{
 			if(m_ddsHeader.ddspf.RBitMask == 0xff0000 && m_ddsHeader.ddspf.GBitMask == 0xff00 && m_ddsHeader.ddspf.BBitMask == 0xff)
 			{
-				return(GXFMT_R8G8B8);
+				//m_bConvertSwapRB = true;
+				m_bConvertFromRGB24 = true;
+				return(GXFMT_X8R8G8B8);
 			}
 		}
 		else if(m_ddsHeader.ddspf.RGBBitCount == 32)
@@ -469,6 +547,7 @@ GXFORMAT CTextureLoader::getFormat()
 			}
 			if(m_ddsHeader.ddspf.RBitMask == 0xff0000 && m_ddsHeader.ddspf.GBitMask == 0xff00 && m_ddsHeader.ddspf.BBitMask == 0xff)
 			{
+				m_bConvertSwapRB = true;
 				return(GXFMT_X8R8G8B8);
 			}
 		}
@@ -479,6 +558,7 @@ GXFORMAT CTextureLoader::getFormat()
 		{
 			if(m_ddsHeader.ddspf.RBitMask == 0xff0000 && m_ddsHeader.ddspf.GBitMask == 0xff00 && m_ddsHeader.ddspf.BBitMask == 0xff && m_ddsHeader.ddspf.ABitMask == 0xff000000)
 			{
+				m_bConvertSwapRB = true;
 				return(GXFMT_A8R8G8B8);
 			}
 			if(m_ddsHeader.ddspf.RBitMask == 0xff && m_ddsHeader.ddspf.GBitMask == 0xff00 && m_ddsHeader.ddspf.BBitMask == 0xff0000 && m_ddsHeader.ddspf.ABitMask == 0xff000000)

@@ -57,31 +57,34 @@ public:
 	    Каждый материал может иметь несколько вариантов одного и того же шейдера,
 	    собранных с разными наборами макроопределений
 	*/
-	virtual void loadMaterial(const char *szName, IXMaterial **ppMaterial, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount = 0, XSHADER_VARIANT_DESC *pVariantsDesc = NULL) = 0;
+	virtual void XMETHODCALLTYPE loadMaterial(const char *szName, IXMaterial **ppMaterial, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount = 0, XSHADER_VARIANT_DESC *pVariantsDesc = NULL) = 0;
 
 	//! Запрашивает материал, если не существует - вернет false
-	virtual bool getMaterial(const char *szName, IXMaterial **ppMaterial) = 0;
+	virtual bool XMETHODCALLTYPE getMaterial(const char *szName, IXMaterial **ppMaterial) = 0;
+
+	//! Загружает текстуру, если уже загружен - возвращает имеющийся
+	virtual bool XMETHODCALLTYPE loadTexture(const char *szName, IXTexture **ppTexture) = 0;
 
 	//! Запрашивает текстуру, если не существует - вернет false
-	virtual bool getTexture(const char *szName, IXTexture **ppTexture) = 0;
+	virtual bool XMETHODCALLTYPE getTexture(const char *szName, IXTexture **ppTexture) = 0;
 
 	//! Добавить текстуру
-	virtual void addTexture(const char *szName, IGXTexture2D *pTexture) = 0;
+	virtual void XMETHODCALLTYPE addTexture(const char *szName, IGXTexture2D *pTexture) = 0;
 
 	//! Установить материал для отрисовки
-	virtual void bindMaterial(IXMaterial *pMaterial, IXShaderVariant *pShaderVariant = NULL) = 0;
+	virtual void XMETHODCALLTYPE bindMaterial(IXMaterial *pMaterial, IXShaderVariant *pShaderVariant = NULL) = 0;
 
 	//! Установить мировую матрицу для отрисовки
-	virtual void setWorld(const SMMATRIX &mWorld) = 0;
+	virtual void XMETHODCALLTYPE setWorld(const SMMATRIX &mWorld) = 0;
 
 	//! Установить текстуру в слот
-	virtual void bindTexture(IXTexture *pTexture, UINT slot = 0) = 0;
+	virtual void XMETHODCALLTYPE bindTexture(IXTexture *pTexture, UINT slot = 0) = 0;
 
 	//! Переопределить пиксельный шейдер для последующих вызовов bindMaterial. Действует до тех пор, пока не будет отменено (-1)
-	virtual void overridePixelShader(ID id) = 0;
+	virtual void XMETHODCALLTYPE overridePixelShader(ID id) = 0;
 
 	//! Переопределить геометрический шейдер для последующих вызовов bindMaterial. Действует до тех пор, пока не будет отменено (-1)
-	virtual void overrideGeometryShader(ID id) = 0;
+	virtual void XMETHODCALLTYPE overrideGeometryShader(ID id) = 0;
 };
 
 #endif

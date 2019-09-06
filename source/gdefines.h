@@ -265,6 +265,8 @@ inline bool operator==(const XGUID &a, const XGUID &b)
 #define ASSERT_S(str,...) AllocConsole();freopen("CONOUT$", "wt", stdout); fprintf(stdout, str, ...); exit(1);
 #define ASSERT(expr) if(!expr) ASSERT_S(#expr)
 
+#define strdupa(str) strcpy((char*)alloca(sizeof(char) * (strlen(str) + 1)), str)
+
 //! Тип функции вывода отладочной информации
 typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMessage);
 

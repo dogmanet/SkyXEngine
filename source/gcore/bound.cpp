@@ -173,6 +173,6 @@ void CreateBoundingBoxMesh(const float3* min, const float3* max, IMesh** bbmesh,
 	};
 
 	IMesh *pMesh = SGCore_CrMesh(iVC, iIC, pVertices, pIndices);
-
+	
 	*bbmesh = pMesh;
 }

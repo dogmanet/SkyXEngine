@@ -24,9 +24,6 @@ public:
 	CLoaderTextures();
 	~CLoaderTextures();
 
-	//! существует ли текстура на диске
-	bool fileExists(const char *szName);
-
 	//! удалить все загруженные текстуры
 	void clearLoaded();
 

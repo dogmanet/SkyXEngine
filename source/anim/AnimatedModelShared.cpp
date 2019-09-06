@@ -317,7 +317,6 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 		shaderDesc.szFileVS = "mtrlskin_base.vs";
 		shaderDesc.szFilePS = "mtrlgeom_base.ps";
 
-		char szMaterialName[256];
 		for(UINT i = 0; i < m_uSkinCount; ++i)
 		{
 			m_pppMaterials[i] = (IXMaterial**)(m_ppMaterialsBlob + m_uSkinCount + m_uMaterialCount * i);
@@ -326,8 +325,7 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 			{
 				if(aaMaterials[i][j].szName && aaMaterials[i][j].szName[0])
 				{
-					sprintf_s(szMaterialName, "%s.dds", aaMaterials[i][j].szName);
-					m_pMaterialSystem->loadMaterial(szMaterialName, &m_pppMaterials[i][j], &shaderDesc);
+					m_pMaterialSystem->loadMaterial(aaMaterials[i][j].szName, &m_pppMaterials[i][j], &shaderDesc);
 				}
 				else
 				{

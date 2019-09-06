@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -21,7 +21,7 @@ void CCrosshairManager::loadCrosshair(ID id, CCrosshair * pCCrosshair)
 	pCCrosshair->setNumSegmens(desc->iNumSegments);
 	pCCrosshair->setStyle(desc->style);
 	pCCrosshair->setTexInfo(desc->f2TexOffset, desc->f2TexSize);
-	pCCrosshair->setTexture(desc->idTexture);
+	pCCrosshair->setTexture(desc->pTexture);
 }
 
 void CCrosshairManager::loadConfig(const char * szFile)
@@ -31,6 +31,9 @@ void CCrosshairManager::loadConfig(const char * szFile)
 	const char * sect;
 	
 	CrosshairDesc cd;
+
+	IXMaterialSystem *pMaterialSystem = (IXMaterialSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID);
+	assert(pMaterialSystem);
 
 	for(int i = 0; i < sections; ++i)
 	{
@@ -72,11 +75,11 @@ void CCrosshairManager::loadConfig(const char * szFile)
 		{
 			str = "split";
 		}
-		if(strcmpi(str, "split_move") == 0)
+		if(strcasecmp(str, "split_move") == 0)
 		{
 			cd.style = CCrosshair::SPLIT_MOVE;
 		}
-		else if(strcmpi(str, "scaled") == 0)
+		else if(strcasecmp(str, "scaled") == 0)
 		{
 			cd.style = CCrosshair::SCALED;
 		}
@@ -90,7 +93,7 @@ void CCrosshairManager::loadConfig(const char * szFile)
 		if(config->keyExists(sect, "tex"))
 		{
 			tex = config->getKey(sect, "tex");
-			cd.idTexture = SGCore_LoadTexAddName(tex, LOAD_TEXTURE_TYPE_CONST);
+			pMaterialSystem->loadTexture(tex, &cd.pTexture);
 		}
 		else
 		{

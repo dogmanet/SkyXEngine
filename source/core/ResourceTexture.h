@@ -3,15 +3,22 @@
 
 #include <xcommon/resource/IXResourceTexture.h>
 
+class CResourceManager;
 template<class T>
 class CResourceTextureImpl: public T
 {
 public:
 	typedef CResourceTextureImpl<T> BaseClass;
 
-	CResourceTextureImpl(GXTEXTURE_TYPE type):
-		m_type(type)
+	CResourceTextureImpl(GXTEXTURE_TYPE type, CResourceManager *pMgr):
+		m_type(type),
+		m_pManager(pMgr)
 	{
+	}
+	~CResourceTextureImpl()
+	{
+		m_pManager->onResourceTextureRelease(this);
+		mem_delete_a(pDataBlob);
 	}
 
 	GXTEXTURE_TYPE XMETHODCALLTYPE getType() const override
@@ -154,6 +161,15 @@ public:
 		return(false);
 	}
 
+	void setFileName(const char *szFilename)
+	{
+		m_szFileName = szFilename;
+	}
+	const char *getFileName() const
+	{
+		return(m_szFileName);
+	}
+
 protected:
 	GXTEXTURE_TYPE m_type = GXTEXTURE_TYPE_UNKNOWN;
 	GXFORMAT m_format = GXFMT_UNKNOWN;
@@ -162,14 +178,16 @@ protected:
 	float m_fFrameTime = 0.0f;
 
 	byte *pDataBlob = NULL;
+
+	const char *m_szFileName = NULL;
+	CResourceManager *m_pManager;
 };
 
 // Implemented in core
 class CResourceTexture2D: public CResourceTextureImpl<IXResourceTexture2D>
 {
 public:
-	CResourceTexture2D();
-	~CResourceTexture2D();
+	CResourceTexture2D(CResourceManager *pMgr);
 
 	UINT XMETHODCALLTYPE getWidth() const override;
 	UINT XMETHODCALLTYPE getHeight() const override;
@@ -194,8 +212,7 @@ protected:
 class CResourceTextureCube: public CResourceTextureImpl<IXResourceTextureCube>
 {
 public:
-	CResourceTextureCube();
-	~CResourceTextureCube();
+	CResourceTextureCube(CResourceManager *pMgr);
 
 	UINT XMETHODCALLTYPE getSize() const override;
 

@@ -9,6 +9,7 @@ See the license in LICENSE
 
 //#include <gdefines.h>
 #include "sxgame.h"
+#include <mtrl/IXMaterialSystem.h>
 //#include <common/SXmath.h>
 
 #define CROSSHAIR_MINSEGS 12
@@ -39,7 +40,7 @@ public:
 	void setFixedRadius(float r);
 	void setStyle(STYLE style);
 	void setMaxSize(float size);
-	void setTexture(ID id);
+	void setTexture(IXTexture *pTexture);
 	
 	void setSize(float size);
 
@@ -56,7 +57,7 @@ protected:
 	bool m_bDirty;
 	bool m_bBuildBuff;
 	float m_fSize;
-	ID m_idTexture;
+	IXTexture *m_pTexture = NULL;
 	bool m_bHidden;
 	float m_fMaxSize;
 	STYLE m_style;
@@ -77,8 +78,7 @@ protected:
 	IGXVertexDeclaration *m_pVertexDeclaration;
 	IGXRenderBuffer *m_pRenderBuffer;
 
-	IGXContext * m_pDev;
-	IGXTexture2D * m_pTexture;
+	IGXContext *m_pDev;
 
 	float2_t m_f2TexOffs;
 	float2_t m_f2TexSize;
