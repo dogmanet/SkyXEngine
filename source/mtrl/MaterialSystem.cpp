@@ -115,8 +115,9 @@ bool XMETHODCALLTYPE CMaterialSystem::loadTexture(const char *szName, IXTexture 
 				LibReport(REPORT_MSG_LEVEL_WARNING, "Texture '%s' has no mipmaps!\n", szFileName);
 			}
 
-			CTexture *pTex = new CTexture(this, pRes);
-
+			//CTexture *pTex = new CTexture(this, pRes);
+			CTexture *pTex = m_poolTextures.Alloc(this, pRes);
+			
 			m_mpTextures[sName] = pTex;
 			pTex->setName(m_mpTextures.TmpNode->Key.c_str());
 
@@ -203,6 +204,8 @@ void CMaterialSystem::onTextureRelease(CTexture *pTexture)
 	assert(pTexture);
 
 	m_mpTextures[pTexture->getName()] = NULL;
+
+	m_poolTextures.Delete(pTexture);
 }
 
 void CMaterialSystem::queueTextureUpload(CTexture *pTexture)
@@ -263,8 +266,6 @@ CTexture::CTexture(CMaterialSystem *pMaterialSystem, IXResourceTexture *m_pResou
 
 CTexture::~CTexture()
 {
-	m_pMaterialSystem->onTextureRelease(this);
-
 	mem_release(m_pResource);
 
 	for(UINT i = 0; i < m_uFrameCount; ++i)
@@ -272,6 +273,15 @@ CTexture::~CTexture()
 		mem_release(m_ppGXTexture[i]);
 	}
 	mem_delete_a(m_ppGXTexture);
+}
+
+void XMETHODCALLTYPE CTexture::Release()
+{
+	--m_uRefCount;
+	if(!m_uRefCount)
+	{
+		m_pMaterialSystem->onTextureRelease(this);
+	}
 }
 
 void XMETHODCALLTYPE CTexture::getAPITexture(IGXBaseTexture **ppTexture, UINT uFrame)

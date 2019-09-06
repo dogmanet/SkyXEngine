@@ -13,6 +13,7 @@ class CTexture: public IXTexture
 public:
 	CTexture(CMaterialSystem *pMaterialSystem, IXResourceTexture *m_pResource);
 	~CTexture();
+	void XMETHODCALLTYPE Release() override;
 	void XMETHODCALLTYPE getAPITexture(IGXBaseTexture **ppTexture, UINT uFrame = 0) override;
 	bool XMETHODCALLTYPE isReady() const override;
 
@@ -96,6 +97,7 @@ protected:
 	} m_objectData;
 	IGXConstantBuffer *m_pObjectConstantBuffer = NULL;
 
+	MemAlloc<CTexture> m_poolTextures;
 	Array<IXTextureProxy*> m_aTextureProxies;
 	AssotiativeArray<String, CTexture*> m_mpTextures;
 	CConcurrentQueue<CTexture*> m_queueTextureToLoad;
