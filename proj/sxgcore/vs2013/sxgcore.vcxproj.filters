@@ -10,9 +10,6 @@
     <ClCompile Include="..\..\..\source\gcore\camera.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\gcore\LoaderTextures.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\gcore\bound.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -44,9 +41,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\source\gcore\LoaderTextures.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\shader.h">
       <Filter>Header</Filter>
     </ClInclude>

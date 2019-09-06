@@ -46,12 +46,7 @@ namespace gdata
 
 	//!< камера для которой будет рендер
 	extern ICamera *pCamera;	
-
-	//! id текстуры с цветмо выделения (для редакторов)
-	extern ID idSelectTex;
-	extern ID idWhiteTex;
-	extern ID idDashedTex;
-	
+		
 
 	//! значение дальней и ближней плоскостей отсечения
 	extern float2_t vNearFar;	

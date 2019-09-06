@@ -74,7 +74,7 @@ public:
 
 	bool XMETHODCALLTYPE loadTexture(const char *szName, IXTexture **ppTexture) override;
 	bool XMETHODCALLTYPE getTexture(const char *szName, IXTexture **ppTexture) override;
-	void XMETHODCALLTYPE addTexture(const char *szName, IGXTexture2D *pTexture) override;
+	//void XMETHODCALLTYPE addTexture(const char *szName, IGXTexture2D *pTexture) override;
 
 	void XMETHODCALLTYPE bindMaterial(IXMaterial *pMaterial, IXShaderVariant *pShaderVariant = NULL) override;
 	void XMETHODCALLTYPE bindTexture(IXTexture *pTexture, UINT slot = 0) override;

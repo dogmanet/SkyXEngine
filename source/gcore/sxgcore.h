@@ -247,35 +247,6 @@ SX_LIB_API void SGCore_ShaderUnBind();
 Например: mtl_tex.dds - лежит по загружаемому пути: /mtl/mtl_tex.dds
 @{*/
 
-/*! \name Ограничения на размеры
-@{*/
-
-//! максимальный размер имени директории (до _)
-#define SXGC_LOADTEX_MAX_SIZE_DIR 64
-
-//! максимальный размер имени с расширением (после _)
-#define SXGC_LOADTEX_MAX_SIZE_NAME 64
-
-//! общий максимальный  размер имени текстуры с расширением
-#define SXGC_LOADTEX_MAX_SIZE_DIRNAME (SXGC_LOADTEX_MAX_SIZE_DIR + SXGC_LOADTEX_MAX_SIZE_NAME)
-
-//! максимальный размер пути до файла текстуры (без имени файла)
-#define SXGC_LOADTEX_MAX_SIZE_STDPATH 256
-
-//! максимальный размер полного пути до текстуры (включая имя текстуры)
-#define SXGC_LOADTEX_MAX_SIZE_FULLPATH (SXGC_LOADTEX_MAX_SIZE_STDPATH + SXGC_LOADTEX_MAX_SIZE_DIRNAME)
-
-
-//! количество mipmap уровней в загружаемых текстурах
-#define SXGC_LOADTEX_COUNT_MIPMAP 5	
-
-/*! формат в который будут преобразованы загружаемые текстуры
- \warning если установить формат со сжатием то необходимо следовать всем правилам оформления текстур для данного формата
-*/
-#define SXGC_LOADTEX_FORMAT_TEX D3DFMT_FROM_FILE
-
-//!@}
-
 //**************************************************************************
 
 /*! \name Типы материалов
@@ -297,24 +268,7 @@ SX_LIB_API void SGCore_ShaderUnBind();
 
 //!@}
 
-//! типы текстур
-enum LOAD_TEXTURE_TYPE
-{
-	//! загружаемая
-	LOAD_TEXTURE_TYPE_LOAD,		
-
-	//! неудаляемая загружаемая
-	LOAD_TEXTURE_TYPE_CONST,	
-
-	//! созданная пользователем
-	LOAD_TEXTURE_TYPE_CUSTOM,	
-
-	/*! самоопределение типа, на тот случай когда обновляем текстуру которая точно есть.
-	Если определить этот тип, а внутри у текстуры на самом деле нет типа (скорее всего нет текстуры)
-	то будет определен LOAD_TEXTURE_TYPE_LOAD
-	*/
-	LOAD_TEXTURE_TYPE_SELF,
-};
+//!@} sxgcore_loadtex
 
 enum SHADER_CONST_REGISTER
 {
@@ -323,20 +277,6 @@ enum SHADER_CONST_REGISTER
 	SCR_OBJECT = 1,
 	SCR_SUBSET = 0
 };
-
-//**************************************************************************
-
-/*! создать место для текстуры tex и присвоить ей имя name, возвращает id
- \warning создавать текстур необходимо в managed pool (D3DPOOL_MANAGED) ибо обработка потери и восстановления устройства сюда не приходит
-*/
-SX_LIB_API ID SGCore_LoadTexCreate(const char *szName, IGXTexture2D *pTexture);
-
-//! возвращает текстуру по id
-SX_LIB_API IGXTexture2D* SGCore_LoadTexGetTex(ID idTexture);
-
-SX_LIB_API void SGCore_LoadTexSetTex(ID idTexture, IGXTexture2D *pTexture);
-
-//!@} sxgcore_loadtex
 
 //#############################################################################
 

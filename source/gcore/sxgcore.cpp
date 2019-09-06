@@ -7,7 +7,6 @@ See the license in LICENSE
 #include "sxgcore.h"
 
 #include <gcore/shader.h>
-#include <gcore/loadertextures.h>
 #include <gcore/bound.h>
 #include <gcore/camera.h>
 
@@ -28,7 +27,6 @@ HWND g_hWnd = NULL;
 IGXVertexDeclaration *g_pStaticVertexDecl = 0;
 
 CShaderManager *g_pManagerShaders = 0;
-CLoaderTextures *g_pManagerTextures = 0;
 IGXRenderBuffer *g_pScreenTextureRB = 0;
 IGXBlendState *g_pToneMappingBS = NULL;
 IGXSamplerState *g_pSamplerFilterPoint = NULL;
@@ -49,7 +47,6 @@ void GCoreInit(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 	InitFullScreenQuad();
 
 	g_pManagerShaders = new CShaderManager();
-	g_pManagerTextures = new CLoaderTextures();
 	InitToneMappingStates();
 
 	GXVertexElement oLayoutStatic[] =
@@ -115,7 +112,6 @@ SX_LIB_API void SGCore_AKill()
 	SG_PRECOND(_VOID);
 
 	mem_delete(g_pManagerShaders);
-	mem_delete(g_pManagerTextures);
 
 	mem_release(g_pScreenTextureRB);
 
@@ -224,29 +220,6 @@ SX_LIB_API bool SGCore_ShaderFileExists(const char *szName)
 	SG_PRECOND(false);
 
 	return g_pManagerShaders->existsFile(szName);
-}
-
-//##########################################################################
-
-SX_LIB_API ID SGCore_LoadTexCreate(const char *szName, IGXTexture2D *pTex)
-{
-	SG_PRECOND(-1);
-
-	return g_pManagerTextures->create(szName, pTex);
-}
-
-SX_LIB_API IGXTexture2D* SGCore_LoadTexGetTex(ID idTexture)
-{
-	SG_PRECOND(0);
-
-	return g_pManagerTextures->getTexture2d(idTexture);
-}
-
-SX_LIB_API void SGCore_LoadTexSetTex(ID idTexture, IGXTexture2D *pTexture)
-{
-	SG_PRECOND(_VOID);
-
-	g_pManagerTextures->setTexture2d(idTexture, pTexture);
 }
 
 //##########################################################################

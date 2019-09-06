@@ -69,7 +69,7 @@ public:
 	virtual bool XMETHODCALLTYPE getTexture(const char *szName, IXTexture **ppTexture) = 0;
 
 	//! Добавить текстуру
-	virtual void XMETHODCALLTYPE addTexture(const char *szName, IGXTexture2D *pTexture) = 0;
+	//virtual void XMETHODCALLTYPE addTexture(const char *szName, IGXTexture2D *pTexture) = 0;
 
 	//! Установить материал для отрисовки
 	virtual void XMETHODCALLTYPE bindMaterial(IXMaterial *pMaterial, IXShaderVariant *pShaderVariant = NULL) = 0;

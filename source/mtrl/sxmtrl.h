@@ -84,10 +84,10 @@ SX_LIB_API void SMtrl_Update(
 @{*/
 
 /*! максимальная длина имени директории материала */
-#define MTL_MAX_SIZE_DIR SXGC_LOADTEX_MAX_SIZE_DIR		
+#define MTL_MAX_SIZE_DIR 64		
 
 /*! максимальная длина имени материала (без директории) */
-#define MTL_MAX_SIZE_NAME SXGC_LOADTEX_MAX_SIZE_NAME	
+#define MTL_MAX_SIZE_NAME 64	
 
 /*! максимальное количество обновлений статических отражений, в первый момент рендера */
 #define MTL_REF_UPDATE_MAX_COUNT_FOR_STATIC 3	

@@ -314,7 +314,7 @@ public:
 			CTexture *m_pTexParam;
 
 			//! текстура с параметрами материала, размер 1х1, параметры взяты из текущей структуры
-			ID m_idTexParamHand;
+			IGXTexture2D *m_pTexParamHand = NULL;
 
 			//! назначена ли (true) текстура для параметров материала (или данные берем из параметров и кладем в рабочую текстуру)
 			bool m_isTextureParam;
@@ -395,7 +395,6 @@ protected:
 
 	bool loadMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount = 0, XSHADER_VARIANT_DESC *pVariantsDesc = NULL);
 	void createMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount = 0, XSHADER_VARIANT_DESC *pVariantsDesc = NULL);
-	ID createTexParamLighting(float fRoughness, float fF0, float fThickness);
 
 	void addName(const char *szName, ID id);
 	ID addUnitMaterial(CUnitMaterial *pUnitMtrl);
@@ -462,15 +461,6 @@ protected:
 	ID m_idBeginNonDef;
 
 	float4x4 m_mWorld, m_mViewProj, m_mWorldTrans, m_mViewTrans, m_mProjTrans;
-
-private:
-
-	struct LoadTexparamData
-	{
-		UINT uData;
-		ID idTex;
-	};
-	CConcurrentQueue<LoadTexparamData> m_queueLoadTexparam;
 };
 
 #endif

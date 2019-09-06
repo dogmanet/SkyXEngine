@@ -70,6 +70,8 @@ IGXDepthStencilSurface *g_BottomRightDepthStencilSurface = NULL;
 IGXDepthStencilSurface *g_pGuiDepthStencilSurface = NULL;
 IGXDepthStencilState *g_pDSNoZ;
 
+IGXTexture2D *g_pDashedMaterial = NULL;
+
 void XReleaseViewports();
 void XInitViewports();
 void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
@@ -432,14 +434,14 @@ int main(int argc, char **argv)
 		t, w, w, w, t, t,
 		t, t, w, w, w, t
 	};
-	IGXTexture2D* pDashedMaterial = SGCore_GetDXDevice()->createTexture2D(6, 6, 1, 0, GXFMT_A8R8G8B8, colorData);
-	pMaterialSystem->addTexture("dev_dashed", pDashedMaterial);
-	mem_release(pDashedMaterial);
+	g_pDashedMaterial = SGCore_GetDXDevice()->createTexture2D(6, 6, 1, 0, GXFMT_A8R8G8B8, colorData);
+	//pMaterialSystem->addTexture("dev_dashed", pDashedMaterial);
+	//mem_release(pDashedMaterial);
 
-	GXCOLOR tmpColor = GX_COLOR_ARGB(255, 255, 255, 255);
-	IGXTexture2D* pWhiteMaterial = SGCore_GetDXDevice()->createTexture2D(1, 1, 1, 0, GXFMT_A8R8G8B8, &tmpColor);
-	pMaterialSystem->addTexture("dev_white", pWhiteMaterial);
-	mem_release(pDashedMaterial);
+	//GXCOLOR tmpColor = GX_COLOR_ARGB(255, 255, 255, 255);
+	//IGXTexture2D* pWhiteMaterial = SGCore_GetDXDevice()->createTexture2D(1, 1, 1, 0, GXFMT_A8R8G8B8, &tmpColor);
+	////pMaterialSystem->addTexture("dev_white", pWhiteMaterial);
+	//mem_release(pDashedMaterial);
 
 	UINT ic = 0;
 	IXEditable *pEditable;
@@ -788,6 +790,7 @@ int main(int argc, char **argv)
 	}
 	XReleaseViewports();
 
+	mem_release(g_pDashedMaterial);
 	mem_release(g_pDSNoZ);
 	mem_delete(pPipeline);
 	mem_release(g_pCameraConstantBuffer);
@@ -1349,7 +1352,7 @@ void XDrawBorder(GXCOLOR color, const float3_t &vA, const float3_t &vB, const fl
 	s_pColorBuffer->update(&GX_COLOR_COLOR_TO_F4(color));
 	pDevice->setPixelShaderConstant(s_pColorBuffer);
 
-	pDevice->setTexture(SGCore_LoadTexGetTex(SRender_EditorGetDashedTex()));
+	pDevice->setTexture(g_pDashedMaterial);
 	pDevice->setBlendState(g_xRenderStates.pBlendAlpha);
 	pDevice->setRenderBuffer(g_pBorderRenderBuffer);
 	pDevice->setPrimitiveTopology(GXPT_LINESTRIP);

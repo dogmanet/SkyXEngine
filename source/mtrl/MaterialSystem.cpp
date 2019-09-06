@@ -147,11 +147,11 @@ bool XMETHODCALLTYPE CMaterialSystem::getTexture(const char *szName, IXTexture *
 
 	return(false);
 }
-void XMETHODCALLTYPE CMaterialSystem::addTexture(const char *szName, IGXTexture2D *pTexture)
-{
-	pTexture->AddRef();
-	SGCore_LoadTexCreate(szName, pTexture);
-}
+//void XMETHODCALLTYPE CMaterialSystem::addTexture(const char *szName, IGXTexture2D *pTexture)
+//{
+//	pTexture->AddRef();
+//	SGCore_LoadTexCreate(szName, pTexture);
+//}
 
 void XMETHODCALLTYPE CMaterialSystem::setWorld(const SMMATRIX &mWorld)
 {
