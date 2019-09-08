@@ -379,20 +379,22 @@ void CCrosshair::render()
 			m_pIndexBuffer->unlock();
 		}
 	}
+	IGXContext *pCtx = m_pDev->getDirectContext();
+
 	SGCore_ShaderBind(m_idShaderKit);
-	m_pDev->setBlendState(m_pBlendState);
-	m_pDev->setSamplerState(m_pSamplerState, 0);
-	m_pDev->setIndexBuffer(m_pIndexBuffer);
-	m_pDev->setRenderBuffer(m_pRenderBuffer);
+	pCtx->setBlendState(m_pBlendState);
+	pCtx->setSamplerState(m_pSamplerState, 0);
+	pCtx->setIndexBuffer(m_pIndexBuffer);
+	pCtx->setRenderBuffer(m_pRenderBuffer);
 
 	IGXBaseTexture *pTex = NULL;
 	m_pTexture->getAPITexture(&pTex);
-	m_pDev->setTexture(pTex);
+	pCtx->setPSTexture(pTex);
 	mem_release(pTex);
 
-	m_pDev->setDepthStencilState(m_pDepthState);
-	m_pDev->setPrimitiveTopology(GXPT_TRIANGLELIST);
-	m_pDev->drawIndexed(m_iVertexCount[m_u8ActiveBuffer], m_iIndexCount[m_u8ActiveBuffer] / 3);
+	pCtx->setDepthStencilState(m_pDepthState);
+	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	pCtx->drawIndexed(m_iVertexCount[m_u8ActiveBuffer], m_iIndexCount[m_u8ActiveBuffer] / 3);
 }
 void CCrosshair::onSync()
 {

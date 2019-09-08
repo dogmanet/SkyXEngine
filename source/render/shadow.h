@@ -34,7 +34,7 @@ public:
 
 	static UINT GetMapMemory(UINT uSize);
 
-	void init(IGXContext *pContext, UINT uSize);
+	void init(IGXDevice *pContext, UINT uSize);
 	
 	void setLight(IXLight *pLight);
 	void process(IXRenderPipeline *pRenderPipeline);
@@ -42,7 +42,7 @@ public:
 	void genLPV(bool isDebug = false) override;
 	
 private:
-	IGXContext *m_pDevice = NULL;
+	IGXDevice *m_pDevice = NULL;
 
 	static IGXDepthStencilSurface *ms_pDepthStencilSurface;
 	static IGXDepthStencilSurface *ms_pDepthStencilSurface32;
@@ -60,7 +60,7 @@ private:
 	static ID ms_idInjectDebugShader32;
 	static IGXTexture2D *ms_pRandomTexture;
 
-	static void InitDepthStencilSurface(IGXContext *pContext, UINT uSize);
+	static void InitDepthStencilSurface(IGXDevice *pContext, UINT uSize);
 	static void ReleaseDepthStencilSurface();
 
 	IGXTexture2D *m_pDepthMap = NULL;
@@ -118,7 +118,7 @@ public:
 
 	static UINT GetMapMemory(UINT uSize);
 
-	void init(IGXContext *pContext, UINT uSize);
+	void init(IGXDevice *pContext, UINT uSize);
 
 	void setLight(IXLight *pLight);
 	void process(IXRenderPipeline *pRenderPipeline);
@@ -126,7 +126,7 @@ public:
 	void genLPV(bool isDebug = false) override;
 
 private:
-	IGXContext *m_pDevice = NULL;
+	IGXDevice *m_pDevice = NULL;
 
 	IGXDepthStencilSurface *m_pDepthStencilSurface = NULL;
 
@@ -196,7 +196,7 @@ public:
 
 	static UINT GetMapMemory(UINT uSize);
 
-	void init(IGXContext *pContext, UINT uSize);
+	void init(IGXDevice *pDevice, UINT uSize);
 
 	void setLight(IXLight *pLight);
 	void process(IXRenderPipeline *pRenderPipeline);
@@ -204,7 +204,7 @@ public:
 	void genLPV(bool isDebug = false) override;
 
 private:
-	IGXContext *m_pDevice = NULL;
+	IGXDevice *m_pDevice = NULL;
 
 	static IGXDepthStencilSurface *ms_pDepthStencilSurface;
 	static IGXDepthStencilSurface *ms_pDepthStencilSurface32;
@@ -221,7 +221,7 @@ private:
 	static ID ms_idInjectShader32;
 	static ID ms_idInjectDebugShader32;
 
-	static void InitDepthStencilSurface(IGXContext *pContext, UINT uSize);
+	static void InitDepthStencilSurface(IGXDevice *pContext, UINT uSize);
 	static void ReleaseDepthStencilSurface();
 
 	IGXTextureCube *m_pDepthMap = NULL;

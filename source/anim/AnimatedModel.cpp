@@ -749,8 +749,10 @@ void XMETHODCALLTYPE CAnimatedModel::render(UINT uLod, bool isTransparent)
 		m_isWorldDirty = false;
 	}
 
-	m_pDevice->setVertexShaderConstant(m_pWorldBuffer, 1 /* SCR_OBJECT */);
-	m_pDevice->setVertexShaderConstant(m_pBoneConstantBuffer, 10);
+	IGXContext *pCtx = m_pDevice->getDirectContext();
+
+	pCtx->setVSConstant(m_pWorldBuffer, 1 /* SCR_OBJECT */);
+	pCtx->setVSConstant(m_pBoneConstantBuffer, 10);
 
 	m_pShared->render(m_uSkin, uLod, m_vColor);
 }

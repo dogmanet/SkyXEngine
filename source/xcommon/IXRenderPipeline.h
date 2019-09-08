@@ -17,7 +17,7 @@ enum X_RENDER_STAGE
 	XRS_EDITOR_2D = 0x00000080  //!< Рендер для редактора в виде 2D
 };
 
-class IGXContext;
+class IGXDevice;
 class IXRenderableVisibility;
 class IXRenderPipeline: public IXUnknown
 {
@@ -30,7 +30,7 @@ public:
 
 	virtual void renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility = NULL) = 0;
 
-	virtual IGXContext *getDevice() = 0;
+	virtual IGXDevice* getDevice() = 0;
 
 	virtual void newVisData(IXRenderableVisibility **ppVisibility) = 0;
 

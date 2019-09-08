@@ -7,7 +7,7 @@ See the license in LICENSE
 #include "SkyBox.h"
 
 
-void CSkyBox::setDevice(IGXContext *pDevice)
+void CSkyBox::setDevice(IGXDevice *pDevice)
 {
 	m_pDevice = pDevice;
 
@@ -188,10 +188,12 @@ void CSkyBox::render()
 	//static ID s_idShader = SGCore_ShaderCreateKit(m_idVS, m_idPS);
 	//SGCore_ShaderBind(s_idShader);
 
-	m_pDevice->setIndexBuffer(m_pIndeces);
-	m_pDevice->setRenderBuffer(m_pRenderBuffer);
-	m_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
-	m_pDevice->drawIndexed(8, 12, 0, 0);
+	IGXContext *pCtx = m_pDevice->getDirectContext();
+
+	pCtx->setIndexBuffer(m_pIndeces);
+	pCtx->setRenderBuffer(m_pRenderBuffer);
+	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	pCtx->drawIndexed(8, 12, 0, 0);
 
 	//SGCore_ShaderUnBind();
 };

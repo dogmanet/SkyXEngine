@@ -214,8 +214,8 @@ bool CEngine::runFrame()
 	
 	// draw frame
 	{
-		static IGXContext *pRenderContext = SGCore_GetDXDevice();
-		if(pRenderContext && (!pRenderContext->canBeginFrame() || !checkResize()))
+		static IGXDevice *pRenderContext = SGCore_GetDXDevice();
+		if(pRenderContext && (/*!pRenderContext->canBeginFrame() || */!checkResize()))
 		{
 			goto end;
 		}
@@ -250,9 +250,9 @@ bool CEngine::runFrame()
 			pRenderPipeline->updateVisibility();
 			pRenderPipeline->endFrame();
 
-			pRenderContext->beginFrame();
+			pRenderContext->getDirectContext()->beginFrame();
 			pRenderPipeline->renderFrame();
-			pRenderContext->endFrame();
+			pRenderContext->getDirectContext()->endFrame();
 
 			mem_release(pRenderPipeline);
 		}

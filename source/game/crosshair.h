@@ -78,7 +78,7 @@ protected:
 	IGXVertexDeclaration *m_pVertexDeclaration;
 	IGXRenderBuffer *m_pRenderBuffer;
 
-	IGXContext *m_pDev;
+	IGXDevice *m_pDev;
 
 	float2_t m_f2TexOffs;
 	float2_t m_f2TexSize;

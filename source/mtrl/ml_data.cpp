@@ -9,7 +9,7 @@ See the license in LICENSE
 namespace mtrl_data
 {
 	void Init();
-	IGXContext *pDXDevice = 0;
+	IGXDevice *pDXDevice = 0;
 
 
 	float2_t vSizeTexReflection = float2_t(MTL_REF_TEX_SIZE, MTL_REF_TEX_SIZE);

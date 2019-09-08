@@ -30,7 +30,7 @@ public:
 	{
 	}
 
-	void XMETHODCALLTYPE startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem) override;
+	void XMETHODCALLTYPE startup(IGXDevice *pDevice, IXMaterialSystem *pMaterialSystem) override;
 	void XMETHODCALLTYPE shutdown() override;
 
 	//! Создает новый объект просчета видимости для системы
@@ -38,7 +38,7 @@ public:
 
 	IXMaterialSystem *getMaterialSystem();
 protected:
-	IGXContext *m_pDevice = NULL;
+	IGXDevice *m_pDevice = NULL;
 	IXMaterialSystem *m_pMaterialSystem = NULL;
 	ID m_idPlugin = -1;
 

@@ -19,7 +19,7 @@ See the license in LICENSE
 #define SXGCORE_VERSION 1
 
 
-IGXContext *g_pDevice = 0;
+IGXDevice *g_pDevice = 0;
 HMODULE m_hLibGXAPI = NULL;
 Array<DEVMODE> g_aModes;
 HWND g_hWnd = NULL;
@@ -123,7 +123,7 @@ SX_LIB_API void SGCore_AKill()
 	mem_release(g_pDevice);
 }
 
-SX_LIB_API IGXContext* SGCore_GetDXDevice()
+SX_LIB_API IGXDevice* SGCore_GetDXDevice()
 {
 	SG_PRECOND(0);
 	return g_pDevice;
@@ -144,9 +144,10 @@ SX_LIB_API void SGCore_OnResetDevice()
 SX_LIB_API void SGCore_ScreenQuadDraw()
 {
 	SG_PRECOND(_VOID);
-	g_pDevice->setRenderBuffer(g_pScreenTextureRB);
-	g_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
-	g_pDevice->drawPrimitive(0, 2);
+	IGXContext *pCtx = g_pDevice->getDirectContext();
+	pCtx->setRenderBuffer(g_pScreenTextureRB);
+	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	pCtx->drawPrimitive(0, 2);
 }
 
 //##########################################################################
@@ -288,9 +289,10 @@ public:
 	}
 	void draw()
 	{
-		g_pDevice->setRenderBuffer(m_pRB);
-		g_pDevice->setIndexBuffer(m_pIB);
-		g_pDevice->drawIndexed(m_uVertexCount, m_uIndexCount / 3, 0, 0);
+		IGXContext *pCtx = g_pDevice->getDirectContext();
+		pCtx->setRenderBuffer(m_pRB);
+		pCtx->setIndexBuffer(m_pIB);
+		pCtx->drawIndexed(m_uVertexCount, m_uIndexCount / 3, 0, 0);
 	}
 	IGXVertexBuffer *getVertexBuffer()
 	{

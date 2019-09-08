@@ -33,7 +33,7 @@ ID CShadowMap::ms_idInjectShader32 = -1;
 ID CShadowMap::ms_idInjectDebugShader32 = -1;
 IGXTexture2D *CShadowMap::ms_pRandomTexture = NULL;
 
-void CShadowMap::InitDepthStencilSurface(IGXContext *pContext, UINT uSize)
+void CShadowMap::InitDepthStencilSurface(IGXDevice *pContext, UINT uSize)
 {
 	if(!ms_pDepthStencilSurface)
 	{
@@ -124,7 +124,7 @@ UINT CShadowMap::GetMapMemory(UINT uSize)
 	return(uSize * uSize * 12);
 }
 
-void CShadowMap::init(IGXContext *pContext, UINT uSize)
+void CShadowMap::init(IGXDevice *pContext, UINT uSize)
 {
 	m_pDevice = pContext;
 
@@ -172,6 +172,8 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 		return;
 	}
 
+	IGXContext *pCtx = m_pDevice->getDirectContext();
+
 	IXLightSpot *pSpotLight = m_pLight->asSpot();
 
 	//! @todo remove double with Light::updateFrustum()
@@ -188,11 +190,11 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 	m_cameraShaderData.vs.mVP = SMMatrixTranspose(m_mView * m_mProj);
 	m_cameraShaderData.vs.vPosCam = vPos;
 	m_pCameraShaderDataVS->update(&m_cameraShaderData.vs);
-	m_pDevice->setVertexShaderConstant(m_pCameraShaderDataVS, SCR_CAMERA);
+	pCtx->setVSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
 
-	m_pDevice->setDepthStencilSurface((m_pLight->getRenderType() & LRT_LIGHT) ? ms_pDepthStencilSurface : ms_pDepthStencilSurface32);
+	pCtx->setDepthStencilSurface((m_pLight->getRenderType() & LRT_LIGHT) ? ms_pDepthStencilSurface : ms_pDepthStencilSurface32);
 
-	m_pDevice->setBlendState(NULL);
+	pCtx->setBlendState(NULL);
 
 	IGXSurface *pDepthSurface = NULL;
 	IGXSurface *pNormalSurface = NULL;
@@ -213,18 +215,18 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 		pFluxSurface = m_pFluxMap32->asRenderTarget();
 	}
 
-	m_pDevice->setColorTarget(pDepthSurface);
-	m_pDevice->setColorTarget(NULL, 1);
-	m_pDevice->setColorTarget(NULL, 2);
-	m_pDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
-
-	m_pDevice->setColorTarget(pFluxSurface, 0);
-	m_pDevice->setColorTarget(pNormalSurface, 1);
-	m_pDevice->clear(GX_CLEAR_COLOR);
-
-	m_pDevice->setColorTarget(pDepthSurface);
-	m_pDevice->setColorTarget(pNormalSurface, 1);
-	m_pDevice->setColorTarget(pFluxSurface, 2);
+	pCtx->setColorTarget(pDepthSurface);
+	pCtx->setColorTarget(NULL, 1);
+	pCtx->setColorTarget(NULL, 2);
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
+	
+	pCtx->setColorTarget(pFluxSurface, 0);
+	pCtx->setColorTarget(pNormalSurface, 1);
+	pCtx->clear(GX_CLEAR_COLOR);
+	
+	pCtx->setColorTarget(pDepthSurface);
+	pCtx->setColorTarget(pNormalSurface, 1);
+	pCtx->setColorTarget(pFluxSurface, 2);
 
 	mem_release(pDepthSurface);
 	mem_release(pNormalSurface);
@@ -234,9 +236,9 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 
 	pRenderPipeline->renderStage(XRS_SHADOWS, m_pLight->getVisibility());
 
-	m_pDevice->setColorTarget(NULL);
-	m_pDevice->setColorTarget(NULL, 1);
-	m_pDevice->setColorTarget(NULL, 2);
+	pCtx->setColorTarget(NULL);
+	pCtx->setColorTarget(NULL, 1);
+	pCtx->setColorTarget(NULL, 2);
 
 	/*if(GetAsyncKeyState('U') < 0)
 	{
@@ -252,41 +254,44 @@ void CShadowMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDepth
 	{
 		return;
 	}
+
+	IGXContext *pCtx = m_pDevice->getDirectContext();
+
 	const float c_fTexWidth = (float)pShadowMap->getWidth();
 	const float c_fTexHeight = (float)pShadowMap->getHeight();
 
 	IGXSurface *pRenderSurf, *pBackBuf;
 	pRenderSurf = pShadowMap->getMipmap(0);
-	pBackBuf = m_pDevice->getColorTarget();
-	m_pDevice->setColorTarget(pRenderSurf);
-	m_pDevice->setColorTarget(NULL, 1);
+	pBackBuf = pCtx->getColorTarget();
+	pCtx->setColorTarget(pRenderSurf);
+	pCtx->setColorTarget(NULL, 1);
 
-	m_pDevice->clear(GX_CLEAR_COLOR);
+	pCtx->clear(GX_CLEAR_COLOR);
 
-	m_pDevice->setSamplerState(ms_pSamplerPointClamp, 0);
+	pCtx->setSamplerState(ms_pSamplerPointClamp, 0);
 	//m_pDevice->setSamplerState(ms_pSamplerLinearClamp, 1);
-	m_pDevice->setSamplerState(ms_pSamplerComparisonLinearClamp, 1);
-	m_pDevice->setSamplerState(ms_pSamplerPointWrap, 2);
+	pCtx->setSamplerState(ms_pSamplerComparisonLinearClamp, 1);
+	pCtx->setSamplerState(ms_pSamplerPointWrap, 2);
 	
-	m_pDevice->setTexture(pGBufferDepth);
+	pCtx->setPSTexture(pGBufferDepth);
 	if(m_pLight->getRenderType() & LRT_LIGHT)
 	{
-		m_pDevice->setTexture(m_pDepthMap, 1);
+		pCtx->setPSTexture(m_pDepthMap, 1);
 	}
 	else
 	{
-		m_pDevice->setTexture(m_pDepthMap32, 1);
+		pCtx->setPSTexture(m_pDepthMap32, 1);
 	}
-	m_pDevice->setTexture(ms_pRandomTexture, 2);
-	m_pDevice->setTexture(pGBufferNormals, 3);
+	pCtx->setPSTexture(ms_pRandomTexture, 2);
+	pCtx->setPSTexture(pGBufferNormals, 3);
 
 	m_shaderData.ps.mMatrixTexture = SMMatrixTranspose(m_mView * m_mProj * m_mScaleBiasMat);
 	m_shaderData.ps.vPixelMapSizeBias = float3(m_fBlurPixel / m_fSize, m_fSize, m_fBias);
 	m_pShaderDataPS->update(&m_shaderData.ps);
-	m_pDevice->setPixelShaderConstant(m_pShaderDataPS, 6);
+	pCtx->setPSConstant(m_pShaderDataPS, 6);
 
-	IGXConstantBuffer *pLightConstants = m_pLight->getConstants(m_pDevice);
-	m_pDevice->setPixelShaderConstant(pLightConstants);
+	IGXConstantBuffer *pLightConstants = m_pLight->getConstants(pCtx);
+	pCtx->setPSConstant(pLightConstants);
 	mem_release(pLightConstants);
 	/*
 	vs:
@@ -334,7 +339,7 @@ void CShadowMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDepth
 
 	SGCore_ShaderUnBind();
 
-	m_pDevice->setColorTarget(pBackBuf);
+	pCtx->setColorTarget(pBackBuf);
 
 	mem_release(pRenderSurf);
 	mem_release(pBackBuf);
@@ -351,48 +356,51 @@ void CShadowMap::genLPV(bool isDebug)
 	{
 		return;
 	}
-	m_pDevice->setRenderBuffer(NULL);
-	m_pDevice->setIndexBuffer(NULL);
-	m_pDevice->setPrimitiveTopology(GXPT_POINTLIST);
+
+	IGXContext *pCtx = m_pDevice->getDirectContext();
+
+	pCtx->setRenderBuffer(NULL);
+	pCtx->setIndexBuffer(NULL);
+	pCtx->setPrimitiveTopology(GXPT_POINTLIST);
 	//SGCore_ShaderBind(isDebug ? ms_idInjectDebugShader : ms_idInjectShader);
 
 	if(m_pLight->getRenderType() & LRT_LIGHT)
 	{
-		m_pDevice->setTextureVS(m_pDepthMap);
-		m_pDevice->setTextureVS(m_pNormalMap, 1);
-		m_pDevice->setTextureVS(m_pFluxMap, 2);
+		pCtx->setVSTexture(m_pDepthMap);
+		pCtx->setVSTexture(m_pNormalMap, 1);
+		pCtx->setVSTexture(m_pFluxMap, 2);
 	}
 	else
 	{
-		m_pDevice->setTextureVS(m_pDepthMap32);
-		m_pDevice->setTextureVS(m_pNormalMap32, 1);
-		m_pDevice->setTextureVS(m_pFluxMap32, 2);
+		pCtx->setVSTexture(m_pDepthMap32);
+		pCtx->setVSTexture(m_pNormalMap32, 1);
+		pCtx->setVSTexture(m_pFluxMap32, 2);
 	}
 
 	m_pShaderDataInjectVS->update(&SMMatrixTranspose(SMMatrixInverse(NULL, m_mView * m_mProj)));
-	m_pDevice->setVertexShaderConstant(m_pShaderDataInjectVS, 6);
+	pCtx->setVSConstant(m_pShaderDataInjectVS, 6);
 
-	IGXConstantBuffer *pLightConstant = m_pLight->getConstants(m_pDevice);
-	m_pDevice->setVertexShaderConstant(pLightConstant, 7);
+	IGXConstantBuffer *pLightConstant = m_pLight->getConstants(pCtx);
+	pCtx->setVSConstant(pLightConstant, 7);
 	mem_release(pLightConstant);
 
 	if(m_pLight->getRenderType() & LRT_LIGHT)
 	{
 		SGCore_ShaderBind(isDebug ? ms_idInjectDebugShader : ms_idInjectShader);
-		m_pDevice->drawPrimitive(0, 256 * 256);
+		pCtx->drawPrimitive(0, 256 * 256);
 	}
 	else
 	{
 		SGCore_ShaderBind(isDebug ? ms_idInjectDebugShader32 : ms_idInjectShader32);
-		m_pDevice->drawPrimitive(0, 32 * 32);
+		pCtx->drawPrimitive(0, 32 * 32);
 	}
 
 	SGCore_ShaderUnBind();
-	m_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
 
-	m_pDevice->setTextureVS(NULL);
-	m_pDevice->setTextureVS(NULL, 1);
-	m_pDevice->setTextureVS(NULL, 2);
+	pCtx->setVSTexture(NULL);
+	pCtx->setVSTexture(NULL, 1);
+	pCtx->setVSTexture(NULL, 2);
 }
 
 //##########################################################################
@@ -431,7 +439,7 @@ UINT CShadowPSSM::GetMapMemory(UINT uSize)
 	return(uSize * uSize * 12 * PSSM_MAX_SPLITS);
 }
 
-void CShadowPSSM::init(IGXContext *pContext, UINT uSize)
+void CShadowPSSM::init(IGXDevice *pContext, UINT uSize)
 {
 	m_pDevice = pContext;
 
@@ -752,7 +760,7 @@ ID CShadowCubeMap::ms_idInjectShader32 = -1;
 ID CShadowCubeMap::ms_idInjectDebugShader = -1;
 ID CShadowCubeMap::ms_idInjectDebugShader32 = -1;
 
-void CShadowCubeMap::InitDepthStencilSurface(IGXContext *pContext, UINT uSize)
+void CShadowCubeMap::InitDepthStencilSurface(IGXDevice *pContext, UINT uSize)
 {
 	if(!ms_pDepthStencilSurface)
 	{
@@ -834,9 +842,9 @@ UINT CShadowCubeMap::GetMapMemory(UINT uSize)
 	return(uSize * uSize * 12 * 6);
 }
 
-void CShadowCubeMap::init(IGXContext *pContext, UINT uSize)
+void CShadowCubeMap::init(IGXDevice *pDevice, UINT uSize)
 {
-	m_pDevice = pContext;
+	m_pDevice = pDevice;
 
 	//GXFMT_A8R8G8B8
 	m_pNormalMap = m_pDevice->createTextureCube(uSize, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
@@ -862,7 +870,7 @@ void CShadowCubeMap::init(IGXContext *pContext, UINT uSize)
 
 	m_fSize = (float)uSize;
 
-	InitDepthStencilSurface(pContext, uSize);
+	InitDepthStencilSurface(m_pDevice, uSize);
 
 	m_pShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_shaderData.ps));
 	m_pShaderDataGS = m_pDevice->createConstantBuffer(sizeof(m_shaderData.gs));
@@ -882,6 +890,8 @@ void CShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 		return;
 	}
 
+	IGXContext *pCtx = m_pDevice->getDirectContext();
+
 	IXLightPoint *pPointLight = m_pLight->asPoint();
 
 	float3 vPos = pPointLight->getPosition();
@@ -897,9 +907,9 @@ void CShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 	}
 	m_pShaderDataGS->update(&m_shaderData.gs);
 	
-	m_pDevice->setDepthStencilSurface((m_pLight->getRenderType() & LRT_LIGHT) ? ms_pDepthStencilSurface : ms_pDepthStencilSurface32);
+	pCtx->setDepthStencilSurface((m_pLight->getRenderType() & LRT_LIGHT) ? ms_pDepthStencilSurface : ms_pDepthStencilSurface32);
 
-	m_pDevice->setBlendState(NULL);
+	pCtx->setBlendState(NULL);
 
 	Core_RMatrixSet(G_RI_MATRIX_VIEW, &SMMatrixIdentity());
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &SMMatrixIdentity());
@@ -913,7 +923,7 @@ void CShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 	//m_cameraShaderData.vs.mVP = SMMatrixIdentity();
 	m_cameraShaderData.vs.vPosCam = vPos;
 	m_pCameraShaderDataVS->update(&m_cameraShaderData.vs);
-	m_pDevice->setVertexShaderConstant(m_pCameraShaderDataVS, SCR_CAMERA);
+	pCtx->setVSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
 
 	IGXSurface *pDepthSurface = NULL;
 	IGXSurface *pNormalSurface = NULL;
@@ -934,33 +944,33 @@ void CShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 		pFluxSurface = m_pFluxMap32->asRenderTarget();
 	}
 
-	m_pDevice->setColorTarget(pDepthSurface);
-	m_pDevice->setColorTarget(NULL, 1);
-	m_pDevice->setColorTarget(NULL, 2);
-	m_pDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
-
-	m_pDevice->setColorTarget(pFluxSurface, 0);
-	m_pDevice->setColorTarget(pNormalSurface, 1);
-	m_pDevice->clear(GX_CLEAR_COLOR);
-
-	m_pDevice->setColorTarget(pDepthSurface);
-	m_pDevice->setColorTarget(pNormalSurface, 1);
-	m_pDevice->setColorTarget(pFluxSurface, 2);
+	pCtx->setColorTarget(pDepthSurface);
+	pCtx->setColorTarget(NULL, 1);
+	pCtx->setColorTarget(NULL, 2);
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
+	
+	pCtx->setColorTarget(pFluxSurface, 0);
+	pCtx->setColorTarget(pNormalSurface, 1);
+	pCtx->clear(GX_CLEAR_COLOR);
+	
+	pCtx->setColorTarget(pDepthSurface);
+	pCtx->setColorTarget(pNormalSurface, 1);
+	pCtx->setColorTarget(pFluxSurface, 2);
 
 	mem_release(pDepthSurface);
 	mem_release(pNormalSurface);
 	mem_release(pFluxSurface);
 	
-	IGXConstantBuffer *pLightConstants = m_pLight->getConstants(m_pDevice);
-	m_pDevice->setGeometryShaderConstant(m_pShaderDataGS, SCR_CAMERA);
-	m_pDevice->setGeometryShaderConstant(pLightConstants, SCR_OBJECT);
+	IGXConstantBuffer *pLightConstants = m_pLight->getConstants(pCtx);
+	pCtx->setGSConstant(m_pShaderDataGS, SCR_CAMERA);
+	pCtx->setGSConstant(pLightConstants, SCR_OBJECT);
 	mem_release(pLightConstants);
 
 	pRenderPipeline->renderStage(XRS_SHADOWS, m_pLight->getVisibility());
 
-	m_pDevice->setColorTarget(NULL);
-	m_pDevice->setColorTarget(NULL, 1);
-	m_pDevice->setColorTarget(NULL, 2);
+	pCtx->setColorTarget(NULL);
+	pCtx->setColorTarget(NULL, 1);
+	pCtx->setColorTarget(NULL, 2);
 
  	/*if(GetAsyncKeyState('U') < 0)
 	{
@@ -979,34 +989,36 @@ void CShadowCubeMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferD
 	const float c_fTexWidth = (float)pShadowMap->getWidth();
 	const float c_fTexHeight = (float)pShadowMap->getHeight();
 
+	IGXContext *pCtx = m_pDevice->getDirectContext();
+
 	IGXSurface *pRenderSurf, *pBackBuf;
 	pRenderSurf = pShadowMap->getMipmap(0);
-	pBackBuf = m_pDevice->getColorTarget();
-	m_pDevice->setColorTarget(pRenderSurf);
+	pBackBuf = pCtx->getColorTarget();
+	pCtx->setColorTarget(pRenderSurf);
 
-	m_pDevice->clear(GX_CLEAR_COLOR);
+	pCtx->clear(GX_CLEAR_COLOR);
 
-	m_pDevice->setSamplerState(ms_pSamplerPointClamp, 0);
-	m_pDevice->setSamplerState(ms_pSamplerComparisonLinearClamp, 1);
+	pCtx->setSamplerState(ms_pSamplerPointClamp, 0);
+	pCtx->setSamplerState(ms_pSamplerComparisonLinearClamp, 1);
 	//m_pDevice->setSamplerState(ms_pSamplerLinearClamp, 1);
 
-	m_pDevice->setTexture(pGBufferDepth);
+	pCtx->setPSTexture(pGBufferDepth);
 	if(m_pLight->getRenderType() & LRT_LIGHT)
 	{
-		m_pDevice->setTexture(m_pDepthMap, 1);
+		pCtx->setPSTexture(m_pDepthMap, 1);
 	}
 	else
 	{
-		m_pDevice->setTexture(m_pDepthMap32, 1);
+		pCtx->setPSTexture(m_pDepthMap32, 1);
 	}
-	m_pDevice->setTexture(pGBufferNormals, 3);
+	pCtx->setPSTexture(pGBufferNormals, 3);
 
 	m_shaderData.ps.vPixelSizeBias = float2(m_fBlurPixel / m_fSize, m_fBias);
 	m_pShaderDataPS->update(&m_shaderData.ps);
-	m_pDevice->setPixelShaderConstant(m_pShaderDataPS, 6);
+	pCtx->setPSConstant(m_pShaderDataPS, 6);
 
-	IGXConstantBuffer *pLightConstants = m_pLight->getConstants(m_pDevice);
-	m_pDevice->setPixelShaderConstant(pLightConstants);
+	IGXConstantBuffer *pLightConstants = m_pLight->getConstants(pCtx);
+	pCtx->setPSConstant(pLightConstants);
 	mem_release(pLightConstants);
 	
 	SGCore_ShaderBind(ms_idShader);
@@ -1028,7 +1040,7 @@ void CShadowCubeMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferD
 
 	SGCore_ShaderUnBind();
 
-	m_pDevice->setColorTarget(pBackBuf);
+	pCtx->setColorTarget(pBackBuf);
 
 	mem_release(pRenderSurf);
 	mem_release(pBackBuf);
@@ -1046,42 +1058,44 @@ void CShadowCubeMap::genLPV(bool isDebug)
 		return;
 	}
 
-	m_pDevice->setRenderBuffer(NULL);
-	m_pDevice->setIndexBuffer(NULL);
-	m_pDevice->setPrimitiveTopology(GXPT_POINTLIST);
+	IGXContext *pCtx = m_pDevice->getDirectContext();
+
+	pCtx->setRenderBuffer(NULL);
+	pCtx->setIndexBuffer(NULL);
+	pCtx->setPrimitiveTopology(GXPT_POINTLIST);
 
 	if(m_pLight->getRenderType() & LRT_LIGHT)
 	{
-		m_pDevice->setTextureVS(m_pDepthMap);
-		m_pDevice->setTextureVS(m_pNormalMap, 1);
-		m_pDevice->setTextureVS(m_pFluxMap, 2);
+		pCtx->setVSTexture(m_pDepthMap);
+		pCtx->setVSTexture(m_pNormalMap, 1);
+		pCtx->setVSTexture(m_pFluxMap, 2);
 	}
 	else
 	{
-		m_pDevice->setTextureVS(m_pDepthMap32);
-		m_pDevice->setTextureVS(m_pNormalMap32, 1);
-		m_pDevice->setTextureVS(m_pFluxMap32, 2);
+		pCtx->setVSTexture(m_pDepthMap32);
+		pCtx->setVSTexture(m_pNormalMap32, 1);
+		pCtx->setVSTexture(m_pFluxMap32, 2);
 	}
 
-	IGXConstantBuffer *pLightConstant = m_pLight->getConstants(m_pDevice);
-	m_pDevice->setVertexShaderConstant(pLightConstant, 7);
+	IGXConstantBuffer *pLightConstant = m_pLight->getConstants(pCtx);
+	pCtx->setVSConstant(pLightConstant, 7);
 	mem_release(pLightConstant);
 
 	if(m_pLight->getRenderType() & LRT_LIGHT)
 	{
 		SGCore_ShaderBind(isDebug ? ms_idInjectDebugShader : ms_idInjectShader);
-		m_pDevice->drawPrimitive(0, 256 * 256 * 6);
+		pCtx->drawPrimitive(0, 256 * 256 * 6);
 	}
 	else
 	{
 		SGCore_ShaderBind(isDebug ? ms_idInjectDebugShader32 : ms_idInjectShader32);
-		m_pDevice->drawPrimitive(0, 32 * 32 * 6);
+		pCtx->drawPrimitive(0, 32 * 32 * 6);
 	}
 
 	SGCore_ShaderUnBind();
-	m_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
 
-	m_pDevice->setTextureVS(NULL);
-	m_pDevice->setTextureVS(NULL, 1);
-	m_pDevice->setTextureVS(NULL, 2);
+	pCtx->setVSTexture(NULL);
+	pCtx->setVSTexture(NULL, 1);
+	pCtx->setVSTexture(NULL, 2);
 }

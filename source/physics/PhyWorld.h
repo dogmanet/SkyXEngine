@@ -150,7 +150,7 @@ public:
 		}
 
 
-		void XMETHODCALLTYPE startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem) override;
+		void XMETHODCALLTYPE startup(IGXDevice *pDevice, IXMaterialSystem *pMaterialSystem) override;
 		void XMETHODCALLTYPE shutdown() override
 		{
 		}

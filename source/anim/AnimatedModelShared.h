@@ -76,7 +76,7 @@ protected:
 	UINT *m_puTempTotalVertices = 0;
 
 	CAnimatedModelProvider *m_pProvider;
-	IGXContext *m_pDevice;
+	IGXDevice *m_pDevice;
 	IXMaterialSystem *m_pMaterialSystem;
 
 	Array<const char*> m_aszActivities;

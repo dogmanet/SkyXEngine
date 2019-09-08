@@ -64,7 +64,7 @@ SX_LIB_API void SMtrl_0Create(const char *szName, bool isUnic, bool isServerMode
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
 }
 
-SX_LIB_API void SMtrl_DevSet(IGXContext *pDev)
+SX_LIB_API void SMtrl_DevSet(IGXDevice *pDev)
 {
 	mtrl_data::Init();
 }

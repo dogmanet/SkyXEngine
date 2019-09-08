@@ -32,37 +32,37 @@ namespace gui
 
 
 		//############################
-		//#      Базовые методы      #
+		//#      Р‘Р°Р·РѕРІС‹Рµ РјРµС‚РѕРґС‹      #
 		//############################
 
-		/** Обработка ввода
-			Вызывается из цикла обработки сообщений окна
+		/** РћР±СЂР°Р±РѕС‚РєР° РІРІРѕРґР°
+			Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· С†РёРєР»Р° РѕР±СЂР°Р±РѕС‚РєРё СЃРѕРѕР±С‰РµРЅРёР№ РѕРєРЅР°
 		*/
 		virtual BOOL putMessage(UINT msg, WPARAM wParam, LPARAM lParam) = 0;
 
-		/**	Обновление
-			Контекст исполнения не важен
+		/**	РћР±РЅРѕРІР»РµРЅРёРµ
+			РљРѕРЅС‚РµРєСЃС‚ РёСЃРїРѕР»РЅРµРЅРёСЏ РЅРµ РІР°Р¶РµРЅ
 		*/
 		virtual void update() = 0;
 
-		/**	Синхронизация
-			Должно быть вызвано в окне синхронизации потоков
+		/**	РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ
+			Р”РѕР»Р¶РЅРѕ Р±С‹С‚СЊ РІС‹Р·РІР°РЅРѕ РІ РѕРєРЅРµ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё РїРѕС‚РѕРєРѕРІ
 		*/
 		virtual void syncronize() = 0;
 
-		/**	Отрисовка
-			Должно быть вызвано только в контексте потока рендера
+		/**	РћС‚СЂРёСЃРѕРІРєР°
+			Р”РѕР»Р¶РЅРѕ Р±С‹С‚СЊ РІС‹Р·РІР°РЅРѕ С‚РѕР»СЊРєРѕ РІ РєРѕРЅС‚РµРєСЃС‚Рµ РїРѕС‚РѕРєР° СЂРµРЅРґРµСЂР°
 		*/
 		virtual void render() = 0;
 
-		/** Обработка потери устройства
+		/** РћР±СЂР°Р±РѕС‚РєР° РїРѕС‚РµСЂРё СѓСЃС‚СЂРѕР№СЃС‚РІР°
 			
 		*/
 		virtual void onResetDevice() = 0;
 		virtual void onLostDevice() = 0;
 
 
-		/** Уничтожение
+		/** РЈРЅРёС‡С‚РѕР¶РµРЅРёРµ
 
 		*/
 		virtual void release() = 0;
@@ -70,29 +70,29 @@ namespace gui
 
 
 		//############################
-		//#        Методы GUI        #
+		//#        РњРµС‚РѕРґС‹ GUI        #
 		//############################
 
-		//Создание Desktop'а
+		//РЎРѕР·РґР°РЅРёРµ Desktop'Р°
 		virtual IDesktop * createDesktopA(const char * name, const char * file) = 0;
 		virtual IDesktop * createDesktopW(const WCHAR * name, const WCHAR * file) = 0;
 
-		//Установка активного Desktop'а
+		//РЈСЃС‚Р°РЅРѕРІРєР° Р°РєС‚РёРІРЅРѕРіРѕ Desktop'Р°
 		virtual void setActiveDesktop(IDesktop * d, BOOL clearStack=TRUE) = 0;
 		virtual void setActiveDesktopA(const char * name) = 0;
 		virtual void setActiveDesktopW(const WCHAR * name) = 0;
 
-		//Получить текущий активный Desktop
+		//РџРѕР»СѓС‡РёС‚СЊ С‚РµРєСѓС‰РёР№ Р°РєС‚РёРІРЅС‹Р№ Desktop
 		virtual IDesktop * getActiveDesktop() = 0;
 
-		//Получить Desktop по имени
+		//РџРѕР»СѓС‡РёС‚СЊ Desktop РїРѕ РёРјРµРЅРё
 		virtual IDesktop * getDesktopA(const char * name) = 0;
 		virtual IDesktop * getDesktopW(const WCHAR * name) = 0;
 
-		//Регистрация обработчика
+		//Р РµРіРёСЃС‚СЂР°С†РёСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєР°
 		virtual void registerCallback(const char * cbName, GUI_CALLBACK cb) = 0;
 
-		//Регистрация обработчика по умолчанию
+		//Р РµРіРёСЃС‚СЂР°С†РёСЏ РѕР±СЂР°Р±РѕС‚С‡РёРєР° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 		virtual void registerCallbackDefault(GUI_CALLBACK_WC cb, BOOL greedy = FALSE) = 0;
 
 		virtual GUI_CALLBACK getCallbackByName(const char * cbName) = 0;
@@ -108,7 +108,7 @@ namespace gui
 		virtual IFont *getFont(const WCHAR * szName, UINT size, IFont::STYLE style, int iBlurRadius) = 0;
 	};
 
-	typedef IGUI*(*PFNINITINSTANCE)(IGXContext*, const char*, HWND);
+	typedef IGUI*(*PFNINITINSTANCE)(IGXDevice*, const char*, HWND);
 };
 
 #ifdef SX_STATIC_BUILD

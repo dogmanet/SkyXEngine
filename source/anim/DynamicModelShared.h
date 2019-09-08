@@ -55,7 +55,7 @@ protected:
 	UINT *m_puTempTotalVertices = 0;
 
 	CDynamicModelProvider *m_pProvider;
-	IGXContext *m_pDevice;
+	IGXDevice *m_pDevice;
 	IXMaterialSystem *m_pMaterialSystem;
 
 	void **m_ppMaterialsBlob = NULL;

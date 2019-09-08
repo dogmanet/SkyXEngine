@@ -12,34 +12,34 @@
 class CRenderPipeline: public IXRenderPipeline
 {
 public:
-	CRenderPipeline(IGXContext *pDevice);
+	CRenderPipeline(IGXDevice *pDevice);
 	~CRenderPipeline();
 
-	void resize(UINT uWidth, UINT uHeight, bool isWindowed = true);
+	void resize(UINT uWidth, UINT uHeight, bool isWindowed = true) override;
 
-	void updateVisibility();
+	void updateVisibility() override;
 
-	void renderFrame();
-	void endFrame();
+	void renderFrame() override;
+	void endFrame() override;
 
 	SX_ALIGNED_OP_MEM2();
 
-	void renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility = NULL);
+	void renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility = NULL) override;
 
-	IGXContext *getDevice();
+	IGXDevice *getDevice() override;
 
-	void newVisData(IXRenderableVisibility **ppVisibility);
+	void newVisData(IXRenderableVisibility **ppVisibility) override;
 
 protected:
 
-	void renderPrepare();
-	void renderGBuffer();
-	void renderShadows();
-	void renderGI();
-	void renderPostprocessMain();
-	void renderTransparent();
-	void renderPostprocessFinal();
-	void renderEditor2D();
+	void renderPrepare() override;
+	void renderGBuffer() override;
+	void renderShadows() override;
+	void renderGI() override;
+	void renderPostprocessMain() override;
+	void renderTransparent() override;
+	void renderPostprocessFinal() override;
+	void renderEditor2D() override;
 
 	void showGICubes();
 
@@ -63,7 +63,7 @@ protected:
 
 	Array<_render_stage> m_apRenderStages;
 	Array<IXRenderable*> m_apRenderables;
-	IGXContext *m_pDevice;
+	IGXDevice *m_pDevice;
 	IGXSwapChain *m_pSwapChain = NULL;
 
 	bool m_isWindowed = true;

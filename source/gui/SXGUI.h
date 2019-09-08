@@ -23,7 +23,7 @@ namespace gui
 	public:
 		SX_ALIGNED_OP_MEM2();
 
-		CGUI(IGXContext * pDev, const char * szResPath, HWND hWnd);
+		CGUI(IGXDevice * pDev, const char * szResPath, HWND hWnd);
 
 		BOOL putMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 		void update();
@@ -60,7 +60,7 @@ namespace gui
 		void showCursor(BOOL bShow);
 
 		WCHAR * getResourceDir();
-		IGXContext * getDevice();
+		IGXDevice * getDevice();
 
 		UINT getScreenWidth();
 		UINT getScreenHeight();
@@ -150,7 +150,7 @@ namespace gui
 		void updateTransformShader()
 		{
 			m_pVSTransformConstant->update(&SMMatrixTranspose(m_mTransformWorld * m_mTransformViewProj));
-			m_pDevice->setVertexShaderConstant(m_pVSTransformConstant, 0);
+			m_pDevice->getDirectContext()->setVSConstant(m_pVSTransformConstant, 0);
 		}
 
 		IGXRenderBuffer *getQuadRenderBufferXYZ(float3_t *pVertices);
@@ -162,7 +162,7 @@ namespace gui
 		SMMATRIX m_mTransformWorld;
 		SMMATRIX m_mTransformViewProj;
 
-		IGXContext * m_pDevice;
+		IGXDevice * m_pDevice;
 		WCHAR * m_szResourceDir = NULL;
 
 		UINT m_iScreenWidth = 0;
@@ -207,7 +207,7 @@ namespace gui
 	CGUI * GetGUI();
 };
 
-EXTERN_C __declspec(dllexport) gui::IGUI * InitInstance(IGXContext * pDev, const char * szResPath, HWND hWnd);
+EXTERN_C __declspec(dllexport) gui::IGUI * InitInstance(IGXDevice * pDev, const char * szResPath, HWND hWnd);
 
 
 

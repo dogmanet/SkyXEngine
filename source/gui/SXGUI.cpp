@@ -27,7 +27,7 @@ namespace gui
 	CPITexture def_w;
 	CGUI * g_pGUI;
 
-	CGUI::CGUI(IGXContext * pDev, const char * szResPath, HWND hWnd):
+	CGUI::CGUI(IGXDevice * pDev, const char * szResPath, HWND hWnd):
 		m_pDevice(pDev),
 		m_hWnd(hWnd)
 	{
@@ -373,23 +373,25 @@ namespace gui
 
 		CVideoUpdateManager::update();
 
-		m_pDevice->clear(GX_CLEAR_STENCIL);
+		IGXContext *pCtx = m_pDevice->getDirectContext();
 
-		m_pDevice->setRasterizerState(m_pDefaultRState);
+		pCtx->clear(GX_CLEAR_STENCIL);
 
-		m_pDevice->setSamplerState(m_pDefaultSamplerState, 0);
+		pCtx->setRasterizerState(m_pDefaultRState);
 
-		m_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+		pCtx->setSamplerState(m_pDefaultSamplerState, 0);
+
+		pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
 
 	//	m_pDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL);
 	//	m_pDevice->SetRenderState(D3DRS_STENCILMASK, 0xFF);
 	//	m_pDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_INCR);
-		m_pDevice->setDepthStencilState(m_depthStencilStates.m_pDefault);
+		pCtx->setDepthStencilState(m_depthStencilStates.m_pDefault);
 	//	m_pDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 	//	m_pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 	//	m_pDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
 	//	m_pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-		m_pDevice->setBlendState(m_blendStates.m_pDefault);
+		pCtx->setBlendState(m_blendStates.m_pDefault);
 	//	m_pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 	//	m_pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	//	m_pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
@@ -662,7 +664,7 @@ namespace gui
 		return(m_szResourceDir);
 	}
 
-	IGXContext * CGUI::getDevice()
+	IGXDevice * CGUI::getDevice()
 	{
 		return(m_pDevice);
 	}
@@ -831,7 +833,7 @@ namespace gui
 };
 
 
-gui::IGUI * InitInstance(IGXContext * pDev, const char * szResPath, HWND hWnd)
+gui::IGUI * InitInstance(IGXDevice * pDev, const char * szResPath, HWND hWnd)
 {
 	Core_SetOutPtr();
 

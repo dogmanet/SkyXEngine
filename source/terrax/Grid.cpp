@@ -257,17 +257,19 @@ CGrid::~CGrid()
 
 void CGrid::render(GRID_STEP step)
 {
-	IGXBlendState *pOldBlendState = m_pDevice->getBlendState();
-	IGXDepthStencilState *pOldDepthStencilState = m_pDevice->getDepthStencilState();
+	IGXContext *pCtx = m_pDevice->getDirectContext();
+
+	IGXBlendState *pOldBlendState = pCtx->getBlendState();
+	IGXDepthStencilState *pOldDepthStencilState = pCtx->getDepthStencilState();
 	SGCore_ShaderBind(m_idShaderKit);
-	m_pDevice->setRenderBuffer(m_pRenderBuffer);
+	pCtx->setRenderBuffer(m_pRenderBuffer);
 	SMMATRIX mViewProj, mWorld;
 	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
 	Core_RMatrixGet(G_RI_MATRIX_WORLD, &mWorld);
 	m_pVSConstantBuffer->update(&SMMatrixTranspose(mWorld * mViewProj));
-	m_pDevice->setPrimitiveTopology(GXPT_LINELIST);
-	m_pDevice->setVertexShaderConstant(m_pVSConstantBuffer);
-	m_pDevice->setPixelShaderConstant(m_pPSConstantBuffer);
+	pCtx->setPrimitiveTopology(GXPT_LINELIST);
+	pCtx->setVSConstant(m_pVSConstantBuffer);
+	pCtx->setPSConstant(m_pPSConstantBuffer);
 
 	GRID_STEP hiliteFrom = GRID_STEP_100M;
 	switch(step)
@@ -304,8 +306,8 @@ void CGrid::render(GRID_STEP step)
 	}
 	if(m_isDotted)
 	{
-		m_pDevice->setBlendState(m_pBlendStateNoColor);
-		m_pDevice->setDepthStencilState(m_pStencilPass0);
+		pCtx->setBlendState(m_pBlendStateNoColor);
+		pCtx->setDepthStencilState(m_pStencilPass0);
 
 		for(GRID_STEP i = step; i <= GRID_STEP_MAXIMAL; i = (GRID_STEP)(i + 1))
 		{
@@ -319,16 +321,16 @@ void CGrid::render(GRID_STEP step)
 			}
 			if(i == GRID_STEP_AXES)
 			{
-				m_pDevice->drawPrimitive(m_uVertexPerStep[i].m_uStartVertex, (m_uVertexPerStep[i].m_uEndVertex - m_uVertexPerStep[i].m_uStartVertex) / 2);
+				pCtx->drawPrimitive(m_uVertexPerStep[i].m_uStartVertex, (m_uVertexPerStep[i].m_uEndVertex - m_uVertexPerStep[i].m_uStartVertex) / 2);
 			}
-			m_pDevice->drawPrimitive(m_uVertexPerStep[i].m_uStartVertex, (m_uVertexPerStep[i].m_uEndVertex - m_uVertexPerStep[i].m_uStartVertex) / 2);
+			pCtx->drawPrimitive(m_uVertexPerStep[i].m_uStartVertex, (m_uVertexPerStep[i].m_uEndVertex - m_uVertexPerStep[i].m_uStartVertex) / 2);
 		}
 
-		m_pDevice->setDepthStencilState(m_pStencilPass1);
-		m_pDevice->setStencilRef(2);
+		pCtx->setDepthStencilState(m_pStencilPass1);
+		pCtx->setStencilRef(2);
 	}
 
-	m_pDevice->setBlendState(m_pBlendState);
+	pCtx->setBlendState(m_pBlendState);
 	for(GRID_STEP i = step; i <= GRID_STEP_MAXIMAL; i = (GRID_STEP)(i + 1))
 	{
 		float4 vColor = GRID_COLOR_REGULAR;
@@ -366,12 +368,12 @@ void CGrid::render(GRID_STEP step)
 
 		vColor.w = m_fOpacity;
 		m_pPSConstantBuffer->update(&vColor);
-		m_pDevice->drawPrimitive(m_uVertexPerStep[i].m_uStartVertex, (m_uVertexPerStep[i].m_uEndVertex - m_uVertexPerStep[i].m_uStartVertex) / 2);
+		pCtx->drawPrimitive(m_uVertexPerStep[i].m_uStartVertex, (m_uVertexPerStep[i].m_uEndVertex - m_uVertexPerStep[i].m_uStartVertex) / 2);
 	}
-	m_pDevice->setBlendState(pOldBlendState);
+	pCtx->setBlendState(pOldBlendState);
 	if(m_isDotted)
 	{
-		m_pDevice->setDepthStencilState(pOldDepthStencilState);
+		pCtx->setDepthStencilState(pOldDepthStencilState);
 	}
 
 	SGCore_ShaderUnBind();

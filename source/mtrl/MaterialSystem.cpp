@@ -165,7 +165,7 @@ void XMETHODCALLTYPE CMaterialSystem::setWorld(const SMMATRIX &mWorld)
 	
 
 	m_pObjectConstantBuffer->update(&m_objectData);
-	SGCore_GetDXDevice()->setVertexShaderConstant(m_pObjectConstantBuffer, SCR_OBJECT);
+	SGCore_GetDXDevice()->getDirectContext()->setVSConstant(m_pObjectConstantBuffer, SCR_OBJECT);
 	//SGCore_GetDXDevice()->setPixelShaderConstant(m_pObjectConstantBuffer, SCR_OBJECT);
 }
 void XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial, IXShaderVariant *pShaderVariant)
@@ -180,12 +180,12 @@ void XMETHODCALLTYPE CMaterialSystem::bindTexture(IXTexture *pTexture, UINT slot
 	{
 		IGXBaseTexture *pTex;
 		pTexture->getAPITexture(&pTex);
-		SGCore_GetDXDevice()->setTexture(pTex, slot);
+		SGCore_GetDXDevice()->getDirectContext()->setPSTexture(pTex, slot);
 		mem_release(pTex);
 	}
 	else
 	{
-		SGCore_GetDXDevice()->setTexture(NULL, slot);
+		SGCore_GetDXDevice()->getDirectContext()->setPSTexture(NULL, slot);
 	}
 }
 
@@ -311,8 +311,8 @@ void CTexture::initGPUresources()
 		return;
 	}
 
-	IGXContext *pContext = SGCore_GetDXDevice();
-	if(!pContext)
+	IGXDevice *pDevice = SGCore_GetDXDevice();
+	if(!pDevice)
 	{
 		return;
 	}
@@ -337,7 +337,7 @@ void CTexture::initGPUresources()
 					pMips[i].sizeData = pMip->sizeData;
 				}
 
-				ppGXTexture[f] = pContext->createTexture2D(pRes2D->getWidth(), pRes2D->getHeight(), uMipCount, GX_TEXFLAG_INIT_ALL_MIPS, pRes2D->getFormat(), pMips);
+				ppGXTexture[f] = pDevice->createTexture2D(pRes2D->getWidth(), pRes2D->getHeight(), uMipCount, GX_TEXFLAG_INIT_ALL_MIPS, pRes2D->getFormat(), pMips);
 				assert(ppGXTexture[f]);
 			}
 			m_ppGXTexture = ppGXTexture;
@@ -363,7 +363,7 @@ void CTexture::initGPUresources()
 						pMips[i + s * uMipCount].sizeData = pMip->sizeData;
 					}
 				}
-				ppGXTexture[f] = pContext->createTextureCube(pResCube->getSize(), uMipCount, GX_TEXFLAG_INIT_ALL_MIPS, pResCube->getFormat(), pMips);
+				ppGXTexture[f] = pDevice->createTextureCube(pResCube->getSize(), uMipCount, GX_TEXFLAG_INIT_ALL_MIPS, pResCube->getFormat(), pMips);
 				assert(ppGXTexture[f]);
 			}
 			m_ppGXTexture = ppGXTexture;

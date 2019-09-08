@@ -39,8 +39,8 @@ void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 		return;
 	}
 
-	IGXContext* (*libGXGetInstance)();
-	libGXGetInstance = (IGXContext*(*)())GetProcAddress(m_hLibGXAPI, "GetInstance");
+	IGXDevice* (*libGXGetInstance)();
+	libGXGetInstance = (IGXDevice*(*)())GetProcAddress(m_hLibGXAPI, "GetInstance");
 	if(!libGXGetInstance)
 	{
 		LibReport(REPORT_MSG_LEVEL_FATAL, "%s - %s: Not a GX module!\n", GEN_MSG_LOCATION, szModuleName);

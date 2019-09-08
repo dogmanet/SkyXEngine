@@ -64,7 +64,7 @@ SX_LIB_API SXWINDOW SGCore_GetHWND();
 SX_LIB_API void SGCore_AKill();	
 
 //! возвращает dx устройство
-SX_LIB_API IGXContext* SGCore_GetDXDevice();	
+SX_LIB_API IGXDevice* SGCore_GetDXDevice();
 
 //! возвращает массив всех доступных разрешений монитора, в iCount записывает размер массива
 SX_LIB_API const DEVMODE* SGCore_GetModes(int *iCount);

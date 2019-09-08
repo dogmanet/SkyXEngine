@@ -17,7 +17,7 @@ See the license in LICENSE
 #include <common/string_utils.h>
 #include "sxgcore.h"
 
-extern IGXContext *g_pDevice;
+extern IGXDevice *g_pDevice;
 
 //! базовый класс шейдера
 struct CShader

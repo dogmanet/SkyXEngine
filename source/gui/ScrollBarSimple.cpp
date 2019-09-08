@@ -44,7 +44,10 @@ namespace gui
 					s_pColorConstant = GetGUI()->getDevice()->createConstantBuffer(sizeof(float4));
 					s_pColorConstant->update(&float4_t(1, 1, 1, 0.5));
 				}
-				GetGUI()->getDevice()->setPixelShaderConstant(s_pColorConstant);
+
+				IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+
+				pCtx->setPSConstant(s_pColorConstant);
 				//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&float4_t(1, 1, 1, 0.5), 1);
 			//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&asd, 1));
 
@@ -81,9 +84,9 @@ namespace gui
 				}
 
 				
-				GetGUI()->getDevice()->setRenderBuffer(m_pRenderBuffer);
-				GetGUI()->getDevice()->setIndexBuffer(GetGUI()->getQuadIndexBuffer());
-				GetGUI()->getDevice()->drawIndexed(4, 2, 0, 0);
+				pCtx->setRenderBuffer(m_pRenderBuffer);
+				pCtx->setIndexBuffer(GetGUI()->getQuadIndexBuffer());
+				pCtx->drawIndexed(4, 2, 0, 0);
 			//	DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
 			}
 

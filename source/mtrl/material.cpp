@@ -1254,11 +1254,11 @@ void CMaterials::setMainTexture(ID slot, ID id)
 	{
 		IGXBaseTexture *pTex = NULL;
 		m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_pMainTexture->getAPITexture(&pTex);
-		mtrl_data::pDXDevice->setTexture(pTex, slot);
+		mtrl_data::pDXDevice->getDirectContext()->setPSTexture(pTex, slot);
 		mem_release(pTex);
 	}
 	else
-		mtrl_data::pDXDevice->setTexture(0, slot);
+		mtrl_data::pDXDevice->getDirectContext()->setPSTexture(0, slot);
 }
 
 ID CMaterials::getID(const char* name)
@@ -1933,6 +1933,8 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 {
 	MTL_PRE_COND_ID(id, _VOID);
 
+	IGXContext *pCtx = mtrl_data::pDXDevice->getDirectContext();
+
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
@@ -1948,7 +1950,7 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 	if(pMtrl->m_oMainGraphics.m_pMainTexture)
 	{
 		pMtrl->m_oMainGraphics.m_pMainTexture->getAPITexture(&pTex);
-		mtrl_data::pDXDevice->setTexture(pTex, MTL_TEX_R_MAIN);
+		pCtx->setPSTexture(pTex, MTL_TEX_R_MAIN);
 		mem_release(pTex);
 	}
 
@@ -1977,12 +1979,12 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 	if(pMtrl->m_oMicroDetail.m_pMask)
 	{
 		pMtrl->m_oMicroDetail.m_pMask->getAPITexture(&pTex);
-		mtrl_data::pDXDevice->setTexture(pTex, MTL_TEX_R_MASK);
+		pCtx->setPSTexture(pTex, MTL_TEX_R_MASK);
 		mem_release(pTex);
 	}
 	else
 	{
-		mtrl_data::pDXDevice->setTexture(NULL, MTL_TEX_R_MASK);
+		pCtx->setPSTexture(NULL, MTL_TEX_R_MASK);
 	}
 
 	for (int k = 0; k<4; k++)
@@ -1990,27 +1992,27 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 		if(pMtrl->m_oMicroDetail.m_apDetail[k])
 		{
 			pMtrl->m_oMicroDetail.m_apDetail[k]->getAPITexture(&pTex);
-			mtrl_data::pDXDevice->setTexture(pTex, MTL_TEX_R_DETAIL + k);
+			pCtx->setPSTexture(pTex, MTL_TEX_R_DETAIL + k);
 			mem_release(pTex);
 		}
 		else
-			mtrl_data::pDXDevice->setTexture(NULL, MTL_TEX_R_DETAIL + k);
+			pCtx->setPSTexture(NULL, MTL_TEX_R_DETAIL + k);
 
 		if(pMtrl->m_oMicroDetail.m_apMicroRelief[k])
 		{
 			pMtrl->m_oMicroDetail.m_apMicroRelief[k]->getAPITexture(&pTex);
-			mtrl_data::pDXDevice->setTexture(pTex, MTL_TEX_R_MICRO + k);
+			pCtx->setPSTexture(pTex, MTL_TEX_R_MICRO + k);
 			mem_release(pTex);
 		}
 		else
-			mtrl_data::pDXDevice->setTexture(NULL, MTL_TEX_R_MICRO + k);
+			pCtx->setPSTexture(NULL, MTL_TEX_R_MICRO + k);
 	}
 
 	//если есть текстура с параметрами освещения и установлено что берем параметры из текстуры, то отправляем текстуру с параметрами
 	if (pMtrl->m_oLightParam.m_pTexParam && pMtrl->m_oLightParam.m_isTextureParam)
 	{
 		pMtrl->m_oLightParam.m_pTexParam->getAPITexture(&pTex);
-		mtrl_data::pDXDevice->setTexture(pTex, MTL_TEX_R_PARAM_LIGHT);
+		pCtx->setPSTexture(pTex, MTL_TEX_R_PARAM_LIGHT);
 		mem_release(pTex);
 	}
 	//иначе если берем параметры из ... редактора
@@ -2036,7 +2038,7 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 			}
 		}
 
-		mtrl_data::pDXDevice->setTexture(pMtrl->m_oLightParam.m_pTexParamHand, MTL_TEX_R_PARAM_LIGHT);
+		pCtx->setPSTexture(pMtrl->m_oLightParam.m_pTexParamHand, MTL_TEX_R_PARAM_LIGHT);
 	}
 	/*else
 		mtrl_data::pDXDevice->SetTexture(MTL_TEX_R_PARAM_LIGHT, SGCore_LoadTexGetTex(mtrl_data::IDsTexs::NullMaterial));*/
@@ -2096,8 +2098,8 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 	}
 	pMtrl->m_oMainGraphics.m_pConstantBuffer->update(&pMtrl->m_oMainGraphics.m_constData);
 
-	mtrl_data::pDXDevice->setVertexShaderConstant(pMtrl->m_oMainGraphics.m_pConstantBuffer, SCR_SUBSET);
-	mtrl_data::pDXDevice->setPixelShaderConstant(pMtrl->m_oMainGraphics.m_pConstantBuffer, SCR_SUBSET);
+	pCtx->setVSConstant(pMtrl->m_oMainGraphics.m_pConstantBuffer, SCR_SUBSET);
+	pCtx->setPSConstant(pMtrl->m_oMainGraphics.m_pConstantBuffer, SCR_SUBSET);
 
 #if 0
 	if (pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorld || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorld || pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldView || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorldView || pMtrl->m_oMainGraphics.m_oDataVS.m_isTransWorldViewProjection || pMtrl->m_oMainGraphics.m_oDataPS.m_isTransWorldViewProjection)

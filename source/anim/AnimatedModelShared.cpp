@@ -1080,9 +1080,11 @@ void CAnimatedModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor)
 		return;
 	}
 
-	m_pDevice->setIndexBuffer(m_ppIndexBuffer[uLod]);
-	m_pDevice->setRenderBuffer(m_ppRenderBuffer[uLod]);
-	m_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	IGXContext *pCtx = m_pDevice->getDirectContext();
+
+	pCtx->setIndexBuffer(m_ppIndexBuffer[uLod]);
+	pCtx->setRenderBuffer(m_ppRenderBuffer[uLod]);
+	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
 
 	for(UINT i = 0; i < m_uMaterialCount; ++i)
 	{
@@ -1122,7 +1124,7 @@ void CAnimatedModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor)
 		if(subset.uIndexCount != 0)
 		{
 			m_pMaterialSystem->bindMaterial(m_pppMaterials[uSkin][i]);
-			m_pDevice->drawIndexed(subset.uVertexCount, subset.uIndexCount / 3, subset.uStartIndex, subset.uStartVertex);
+			pCtx->drawIndexed(subset.uVertexCount, subset.uIndexCount / 3, subset.uStartIndex, subset.uStartVertex);
 		}
 	}
 }

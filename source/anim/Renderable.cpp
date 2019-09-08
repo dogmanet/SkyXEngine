@@ -75,7 +75,7 @@ void XMETHODCALLTYPE CRenderable::renderTransparentObject(IXRenderableVisibility
 	m_pDynamicModelProvider->renderTransparentObject((CRenderableVisibility*)pVisibility, uIndex, uSplitPlanes);
 }
 
-void XMETHODCALLTYPE CRenderable::startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem)
+void XMETHODCALLTYPE CRenderable::startup(IGXDevice *pDevice, IXMaterialSystem *pMaterialSystem)
 {
 	m_pDevice = pDevice;
 	m_pMaterialSystem = pMaterialSystem;

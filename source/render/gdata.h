@@ -31,7 +31,7 @@ class CAxesStatic;
 namespace gdata
 {
 	//! dx устройство
-	extern IGXContext* pDXDevice;
+	extern IGXDevice* pDXDevice;
 	//! Способности устройства
 //	extern D3DCAPS9 dxDeviceCaps;
 

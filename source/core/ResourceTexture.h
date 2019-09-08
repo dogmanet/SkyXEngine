@@ -91,9 +91,6 @@ public:
 		case GXFMT_A8R8G8B8:
 			return(32);
 
-		case GXFMT_R8G8B8:
-			return(24);
-
 		case GXFMT_D16:
 		case GXFMT_R16F:
 		case GXFMT_R5G6B5:

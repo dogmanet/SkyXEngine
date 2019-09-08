@@ -17,7 +17,7 @@ See the license in LICENSE
 
 //##########################################################################
 
-extern IGXContext *g_pDevice;
+extern IGXDevice *g_pDevice;
 extern HMODULE m_hLibGXAPI;
 extern Array<DEVMODE> g_aModes;
 extern IGXRenderBuffer *g_pScreenTextureRB;

@@ -249,12 +249,14 @@ void CReflection::preRenderRefPlane(const SMPLANE* plane)
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &mtrl_data::mRefProjPlane);
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(viewmat * mtrl_data::mRefProjPlane));
 
-	m_pBackBuffer = mtrl_data::pDXDevice->getColorTarget();
+	IGXContext *pCtx = mtrl_data::pDXDevice->getDirectContext();
+
+	m_pBackBuffer = pCtx->getColorTarget();
 
 	mem_release(m_pSurface);
 	m_pSurface = m_pTexWork->getMipmap();
-	mtrl_data::pDXDevice->setColorTarget(m_pSurface);
-	mtrl_data::pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH);
+	pCtx->setColorTarget(m_pSurface);
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH);
 }
 
 void CReflection::postRenderRefPlane()
@@ -272,8 +274,10 @@ void CReflection::postRenderRefPlane()
 	mtrl_data::pDXDevice->GetRenderState(D3DRS_ZENABLE, &zenable);
 	mtrl_data::pDXDevice->GetRenderState(D3DRS_ZWRITEENABLE, &zwriteenable);
 */
-	mtrl_data::pDXDevice->setDepthStencilState(m_pDSState);
-	mtrl_data::pDXDevice->setBlendState(NULL);
+	IGXContext *pCtx = mtrl_data::pDXDevice->getDirectContext();
+
+	pCtx->setDepthStencilState(m_pDSState);
+	pCtx->setBlendState(NULL);
 
 /*	mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
@@ -281,13 +285,13 @@ void CReflection::postRenderRefPlane()
 	mtrl_data::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 */
 	m_pSurface = m_pTexPlaneRef->getMipmap();
-	mtrl_data::pDXDevice->setColorTarget(m_pSurface);
+	pCtx->setColorTarget(m_pSurface);
 
 	static ID s_idShader = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idScreenOut, mtrl_data::shader_id::ps::idScreenOut);
 
 	SGCore_ShaderBind(s_idShader);
 
-	mtrl_data::pDXDevice->setTexture(m_pTexWork);
+	pCtx->setPSTexture(m_pTexWork);
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
@@ -299,7 +303,7 @@ void CReflection::postRenderRefPlane()
 */
 	mem_release(m_pSurface);
 
-	mtrl_data::pDXDevice->setColorTarget(m_pBackBuffer);
+	pCtx->setColorTarget(m_pBackBuffer);
 	mem_release(m_pBackBuffer);
 
 	/*if (GetAsyncKeyState(VK_NUMPAD9))
@@ -342,7 +346,7 @@ void CReflection::beginRenderRefCube(const float3_t* pCenter)
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &m_mOldMatProj);
 	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &m_mOldMatViewProj);
 
-	m_pBackBuffer = mtrl_data::pDXDevice->getColorTarget();
+	m_pBackBuffer = mtrl_data::pDXDevice->getDirectContext()->getColorTarget();
 }
 
 void CReflection::preRenderRefCube(ID idFace, const float4x4 *pWorld)
@@ -369,9 +373,12 @@ void CReflection::preRenderRefCube(ID idFace, const float4x4 *pWorld)
 
 	mem_release(m_pSurface);
 	m_pSurface = m_pTexWork->getMipmap();
-	mtrl_data::pDXDevice->setColorTarget(m_pSurface);
 
-	mtrl_data::pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH);
+	IGXContext *pCtx = mtrl_data::pDXDevice->getDirectContext();
+
+	pCtx->setColorTarget(m_pSurface);
+
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH);
 }
 
 void CReflection::postRenderRefCube(ID idFace)
@@ -380,25 +387,27 @@ void CReflection::postRenderRefCube(ID idFace)
 
 	DWORD alphablend, alphatest, zenable, zwriteenable;
 
+	IGXContext *pCtx = mtrl_data::pDXDevice->getDirectContext();
+
 /*	mtrl_data::pDXDevice->GetRenderState(D3DRS_ALPHABLENDENABLE, &alphablend);
 	mtrl_data::pDXDevice->GetRenderState(D3DRS_ALPHATESTENABLE, &alphatest);
 	mtrl_data::pDXDevice->GetRenderState(D3DRS_ZENABLE, &zenable);
 	mtrl_data::pDXDevice->GetRenderState(D3DRS_ZWRITEENABLE, &zwriteenable);
 */
-	mtrl_data::pDXDevice->setDepthStencilState(m_pDSState);
-	mtrl_data::pDXDevice->setBlendState(NULL);
+	pCtx->setDepthStencilState(m_pDSState);
+	pCtx->setBlendState(NULL);
 	//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	//mtrl_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	//mtrl_data::pDXDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 	//mtrl_data::pDXDevice->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 
 	m_pSurface = m_pTexCubeRef->getMipmap((GXCUBEMAP_FACES)idFace);
-	mtrl_data::pDXDevice->setColorTarget(m_pSurface);
+	pCtx->setColorTarget(m_pSurface);
 
 	static ID s_idShader = SGCore_ShaderCreateKit(mtrl_data::shader_id::vs::idScreenOut, mtrl_data::shader_id::ps::idScreenOut);
 	SGCore_ShaderBind(s_idShader);
 
-	mtrl_data::pDXDevice->setTexture(m_pTexWork);
+	pCtx->setPSTexture(m_pTexWork);
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
@@ -424,7 +433,7 @@ void CReflection::endRenderRefCube(const float3_t *pViewPos)
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &m_mOldMatProj);
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &m_mOldMatViewProj);
 
-	mtrl_data::pDXDevice->setColorTarget(m_pBackBuffer);
+	mtrl_data::pDXDevice->getDirectContext()->setColorTarget(m_pBackBuffer);
 	mem_release_del(m_pBackBuffer);
 
 	updateCountUpdate(pViewPos);

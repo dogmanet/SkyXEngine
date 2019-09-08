@@ -1266,7 +1266,10 @@ namespace gui
 				}
 				static CPITexture texWhite = CTextureManager::getTexture(TEX_WHITE);
 			//	static CSHADER shText = CTextureManager::loadShader(L"text");
-				IGXSamplerState *pOldSampler = GetGUI()->getDevice()->getSamplerState(0);
+
+				IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+
+				IGXSamplerState *pOldSampler = pCtx->getSamplerState(0);
 
 				auto shader = GetGUI()->getShaders()->m_baseTexturedColored;
 
@@ -1323,13 +1326,13 @@ namespace gui
 						m_pSamplerState = GetGUI()->getDevice()->createSamplerState(&m_samplerDesc);
 					}
 
-					GetGUI()->getDevice()->setSamplerState(m_pSamplerState, 0);
+					pCtx->setSamplerState(m_pSamplerState, 0);
 
 					shader = GetGUI()->getShaders()->m_baseTexturedTextransformColored;
 
 					static IGXConstantBuffer *s_pTransformConstant = GetGUI()->getDevice()->createConstantBuffer(sizeof(float2));
 					s_pTransformConstant->update(&vTexTransform);
-					GetGUI()->getDevice()->setVertexShaderConstant(s_pTransformConstant, 1);
+					pCtx->setVSConstant(s_pTransformConstant, 1);
 				}
 				else
 				{
@@ -1338,18 +1341,18 @@ namespace gui
 
 				SGCore_ShaderBind(shader.m_idShaderKit);
 
-				GetGUI()->getDevice()->setStencilRef(lvl);
+				pCtx->setStencilRef(lvl);
 			
 				static IGXConstantBuffer *s_pColorConstant = GetGUI()->getDevice()->createConstantBuffer(sizeof(float2));
 				s_pColorConstant->update(&m_pBackgroundColor);
-				GetGUI()->getDevice()->setPixelShaderConstant(s_pColorConstant);
+				pCtx->setPSConstant(s_pColorConstant);
 
 			//	SGCore_SetSamplerFilter(0, D3DTEXF_ANISOTROPIC);
 				//DX_CALL(GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC));
 				
 				IGXRenderBuffer *pRB = GetGUI()->getQuadRenderBufferXYZTex16((float*)m_pVBackground);
 
-				GetGUI()->getDevice()->setRenderBuffer(pRB);
+				pCtx->setRenderBuffer(pRB);
 
 				CTranslationManager::pushMatrix(SMMatrixTranslation(getInnerLeft(), getInnerTop(), 0.0f));
 				if(m_bHasBackground && m_iTCBackground > 0)
@@ -1357,7 +1360,7 @@ namespace gui
 				//	CTextureManager::bindShader(shText);
 					CTextureManager::bindTexture(texWhite);
 				//	DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, m_iTCBackground, &m_pVBackground, sizeof(pointtex)));
-					GetGUI()->getDevice()->drawPrimitive(0, m_iTCBackground);
+					pCtx->drawPrimitive(0, m_iTCBackground);
 				}
 				if(m_bHasBackgroundImage && m_iTCBackground > 0)
 				{
@@ -1366,7 +1369,7 @@ namespace gui
 					//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1);
 					CTextureManager::bindTexture(m_pBackgroundImage);
 				//	DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, m_iTCBackground, &m_pVBackground, sizeof(pointtex)));
-					GetGUI()->getDevice()->drawPrimitive(0, m_iTCBackground);
+					pCtx->drawPrimitive(0, m_iTCBackground);
 				}
 				CTranslationManager::popMatrix();
 				
@@ -1379,7 +1382,7 @@ namespace gui
 
 				if(m_bHasBackgroundImage)
 				{
-					GetGUI()->getDevice()->setSamplerState(pOldSampler, 0);
+					pCtx->setSamplerState(pOldSampler, 0);
 				//	GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_BORDERCOLOR, 0xFFFFFFFF);
 				//	GetGUI()->getDevice()->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
 				}
@@ -1702,7 +1705,9 @@ namespace gui
 
 			void IRenderBlock::render(UINT lvl)
 			{
-				GetGUI()->getDevice()->setStencilRef(lvl);
+				IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+
+				pCtx->setStencilRef(lvl);
 				if(m_iScrollTop != 0 || m_iScrollTopMax != 0)
 				{
 					//m_iScrollTop = Config::TestScrollPos;
@@ -1779,20 +1784,20 @@ namespace gui
 
 					if(m_bNeedCut)
 					{
-						GetGUI()->getDevice()->setDepthStencilState(GetGUI()->getDepthStencilStates()->m_pStencilIncr);
-						GetGUI()->getDevice()->setBlendState(GetGUI()->getBlendStates()->m_pNoColorWrite);
-					//	GetGUI()->getDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
-					//	GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILENABLE, TRUE);
-					//	GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_INCR);
-					//	GetGUI()->getDevice()->setStencilRef(lvl);
+						pCtx->setDepthStencilState(GetGUI()->getDepthStencilStates()->m_pStencilIncr);
+						pCtx->setBlendState(GetGUI()->getBlendStates()->m_pNoColorWrite);
+					//	pCtx->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
+					//	pCtx->SetRenderState(D3DRS_STENCILENABLE, TRUE);
+					//	pCtx->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_INCR);
+					//	pCtx->setStencilRef(lvl);
 						m_border.renderInnerFill();
 
-						GetGUI()->getDevice()->setBlendState(GetGUI()->getBlendStates()->m_pDefault);
-					//	GetGUI()->getDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, 0x0F);
-					//	GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILREF, lvl + 1);
-					//	GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILENABLE, FALSE);
-						GetGUI()->getDevice()->setDepthStencilState(GetGUI()->getDepthStencilStates()->m_pStencilKeep);
-					//	GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
+						pCtx->setBlendState(GetGUI()->getBlendStates()->m_pDefault);
+					//	pCtx->SetRenderState(D3DRS_COLORWRITEENABLE, 0x0F);
+					//	pCtx->SetRenderState(D3DRS_STENCILREF, lvl + 1);
+					//	pCtx->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+						pCtx->setDepthStencilState(GetGUI()->getDepthStencilStates()->m_pStencilKeep);
+					//	pCtx->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
 					}
 
 					m_border.render();
@@ -1806,7 +1811,7 @@ namespace gui
 
 					if(m_pScrollBarVert || m_pScrollBarHorz)
 					{
-						GetGUI()->getDevice()->setStencilRef(lvl + (m_bNeedCut ? 1 : 0));
+						pCtx->setStencilRef(lvl + (m_bNeedCut ? 1 : 0));
 					}
 					if(m_pScrollBarVert)
 					{
@@ -1834,26 +1839,26 @@ namespace gui
 						auto shader = GetGUI()->getShaders()->m_baseColored;
 						SGCore_ShaderBind(shader.m_idShaderKit);
 
-						GetGUI()->getDevice()->setDepthStencilState(GetGUI()->getDepthStencilStates()->m_pStencilDecr);
-					//	GetGUI()->getDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
-						GetGUI()->getDevice()->setBlendState(GetGUI()->getBlendStates()->m_pNoColorWrite);
-					//	GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_DECR);
+						pCtx->setDepthStencilState(GetGUI()->getDepthStencilStates()->m_pStencilDecr);
+					//	pCtx->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
+						pCtx->setBlendState(GetGUI()->getBlendStates()->m_pNoColorWrite);
+					//	pCtx->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_DECR);
 
 						IGXRenderBuffer *pRB = GetGUI()->getQuadRenderBufferXYZ((float3_t*)apdx8);
 					//	GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ);
 					//	DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &apdx8, sizeof(point2)));
-						GetGUI()->getDevice()->setRenderBuffer(pRB);
-						GetGUI()->getDevice()->setIndexBuffer(GetGUI()->getQuadIndexBuffer());
-						GetGUI()->getDevice()->drawIndexed(4, 2, 0, 0);
+						pCtx->setRenderBuffer(pRB);
+						pCtx->setIndexBuffer(GetGUI()->getQuadIndexBuffer());
+						pCtx->drawIndexed(4, 2, 0, 0);
 
-						GetGUI()->getDevice()->setDepthStencilState(GetGUI()->getDepthStencilStates()->m_pStencilKeep);
-					//	GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
-					//	GetGUI()->getDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, 0x0F);
-						GetGUI()->getDevice()->setBlendState(GetGUI()->getBlendStates()->m_pDefault);
+						pCtx->setDepthStencilState(GetGUI()->getDepthStencilStates()->m_pStencilKeep);
+					//	pCtx->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
+					//	pCtx->SetRenderState(D3DRS_COLORWRITEENABLE, 0x0F);
+						pCtx->setBlendState(GetGUI()->getBlendStates()->m_pDefault);
 						if(lvl == 0)
 						{
-							GetGUI()->getDevice()->setDepthStencilState(GetGUI()->getDepthStencilStates()->m_pDefault);
-					//		GetGUI()->getDevice()->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+							pCtx->setDepthStencilState(GetGUI()->getDepthStencilStates()->m_pDefault);
+					//		pCtx->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 						}
 					}
 				}
@@ -1883,7 +1888,7 @@ namespace gui
 
 			void IRenderAnonymousBlock::render(UINT lvl)
 			{
-				GetGUI()->getDevice()->setStencilRef(lvl);
+				GetGUI()->getDevice()->getDirectContext()->setStencilRef(lvl);
 				CTranslationManager::pushMatrix(SMMatrixTranslation(m_iXpos, m_iYpos, 0.0f));
 				BaseClass::render(lvl);
 				CTranslationManager::popMatrix();
@@ -2151,7 +2156,7 @@ namespace gui
 
 			void IRenderInline::render(UINT lvl)
 			{
-				GetGUI()->getDevice()->setStencilRef(lvl);
+				GetGUI()->getDevice()->getDirectContext()->setStencilRef(lvl);
 				CTranslationManager::pushMatrix(SMMatrixTranslation(m_iXpos, m_iYpos, 0.0f));
 				m_border.render();
 				renderBackground(lvl);
@@ -2391,7 +2396,9 @@ namespace gui
 			}
 			void IRenderTextNew::render(UINT lvl)
 			{
-				GetGUI()->getDevice()->setStencilRef(lvl);
+				IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+
+				pCtx->setStencilRef(lvl);
 				static CPITexture texWhite = NULL;
 			//	static CSHADER shText = NULL;
 				if(!texWhite)
@@ -2418,7 +2425,7 @@ namespace gui
 
 				static IGXConstantBuffer *s_pColorConstant = GetGUI()->getDevice()->createConstantBuffer(sizeof(float4));
 				s_pColorConstant->update(&vColor);
-				GetGUI()->getDevice()->setPixelShaderConstant(s_pColorConstant);
+				pCtx->setPSConstant(s_pColorConstant);
 
 				//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&vColor, 1);
 			//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&vColor, 1));
@@ -2436,10 +2443,10 @@ namespace gui
 						//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&vShadowColor, 1);
 					//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&vShadowColor, 1));
 
-						GetGUI()->getDevice()->setRenderBuffer(el->m_pNextREl->m_pRenderBuffer);
-						GetGUI()->getDevice()->setIndexBuffer(el->m_pNextREl->m_pIndexBuffer);
+						pCtx->setRenderBuffer(el->m_pNextREl->m_pRenderBuffer);
+						pCtx->setIndexBuffer(el->m_pNextREl->m_pIndexBuffer);
 					//	DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, el->m_pNextREl->m_iVertexCount, 0, el->m_pNextREl->m_iIndexBaseCount / 3));
-						GetGUI()->getDevice()->drawIndexed(el->m_pNextREl->m_iVertexCount, el->m_pNextREl->m_iIndexBaseCount / 3, 0, 0);
+						pCtx->drawIndexed(el->m_pNextREl->m_iVertexCount, el->m_pNextREl->m_iIndexBaseCount / 3, 0, 0);
 
 						s_pColorConstant->update(&vColor);
 						//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&vColor, 1);
@@ -2448,18 +2455,18 @@ namespace gui
 					}
 
 					CTextureManager::bindTexture(pFont->getTexture(0));
-					GetGUI()->getDevice()->setRenderBuffer(el->m_pRenderBuffer);
-					GetGUI()->getDevice()->setIndexBuffer(el->m_pIndexBuffer);
+					pCtx->setRenderBuffer(el->m_pRenderBuffer);
+					pCtx->setIndexBuffer(el->m_pIndexBuffer);
 					if(el->m_iIndexBaseCount)
 					{
 					//	DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, el->m_iVertexCount, 0, el->m_iIndexBaseCount / 3));
-						GetGUI()->getDevice()->drawIndexed(el->m_iVertexCount, el->m_iIndexBaseCount / 3, 0, 0);
+						pCtx->drawIndexed(el->m_iVertexCount, el->m_iIndexBaseCount / 3, 0, 0);
 					}
 					if(el->m_iIndexAddCount)
 					{
 						CTextureManager::bindTexture(texWhite);
 					//	DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, el->m_iVertexCount, el->m_iIndexBaseCount, el->m_iIndexAddCount / 3));
-						GetGUI()->getDevice()->drawIndexed(el->m_iVertexCount, el->m_iIndexAddCount / 3, el->m_iIndexBaseCount, 0);
+						pCtx->drawIndexed(el->m_iVertexCount, el->m_iIndexAddCount / 3, el->m_iIndexBaseCount, 0);
 					}
 
 					CTranslationManager::popMatrix();
@@ -2814,6 +2821,8 @@ namespace gui
 				}
 				if(m_pNode->parentNode()->getStyle()->_gui_text_cursor->getInt() == css::ICSSproperty::_GUI_TEXT_CURSOR_SHOW)
 				{
+					IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+
 					int iTextSize = m_pNode->parentNode()->getStyle()->font_size->getPX(m_pParent->getInnerHeight());
 					m_iTextSize = iTextSize;
 					float4_t color = m_pNode->parentNode()->getStyle()->color->getColor();
@@ -2870,9 +2879,9 @@ namespace gui
 					CTranslationManager::pushMatrix(SMMatrixTranslation(_x - 1.0f, _y, 0.0f));
 				//	DX_CALL(GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ));
 					IGXRenderBuffer *pRB = GetGUI()->getQuadRenderBufferXYZ((float3_t*)a);
-					GetGUI()->getDevice()->setRenderBuffer(pRB);
-					GetGUI()->getDevice()->setIndexBuffer(GetGUI()->getQuadIndexBuffer());
-					GetGUI()->getDevice()->drawIndexed(4, 2, 0, 0);
+					pCtx->setRenderBuffer(pRB);
+					pCtx->setIndexBuffer(GetGUI()->getQuadIndexBuffer());
+					pCtx->drawIndexed(4, 2, 0, 0);
 				//	DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
 					CTranslationManager::popMatrix();
 
@@ -2993,6 +3002,8 @@ namespace gui
 				}
 				if(m_pNode->parentNode()->getStyle()->_gui_text_cursor->getInt() == css::ICSSproperty::_GUI_TEXT_CURSOR_SHOW)
 				{
+					IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+
 					UINT iTextSize = m_pNode->parentNode()->getStyle()->font_size->getPX(m_pParent->getInnerHeight());
 					m_iTextSize = iTextSize;
 					float4_t color = float4_t(0.0f, 0.0f, 1.0f, 0.5f);
@@ -3026,7 +3037,7 @@ namespace gui
 				//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&color, 1));
 				//	DX_CALL(GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ));
 					
-					GetGUI()->getDevice()->setIndexBuffer(GetGUI()->getQuadIndexBuffer());
+					pCtx->setIndexBuffer(GetGUI()->getQuadIndexBuffer());
 
 					for(UINT i = selStart; i < selEnd; i++)
 					{
@@ -3041,9 +3052,9 @@ namespace gui
 						a[2].y = a[3].y;
 
 						IGXRenderBuffer *pRB = GetGUI()->getQuadRenderBufferXYZ((float3_t*)a);
-						GetGUI()->getDevice()->setRenderBuffer(pRB);
+						pCtx->setRenderBuffer(pRB);
 
-						GetGUI()->getDevice()->drawIndexed(4, 2, 0, 0);
+						pCtx->drawIndexed(4, 2, 0, 0);
 					}
 				}
 			}

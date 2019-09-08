@@ -6,7 +6,7 @@ See the license in LICENSE
 
 #include "Bound.h"
 
-void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** ppMesh, IGXContext * pDevice, UINT iSideCount)
+void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** ppMesh, IGXDevice * pDevice, UINT iSideCount)
 {
 	UINT iVC = iSideCount * 2;
 	UINT iIC = (iSideCount - 2) * 6 + iSideCount * 6;
@@ -79,7 +79,7 @@ void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** p
 	(*ppMesh) = pMesh;
 }
 
-void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppMesh, IGXContext * pDevice)
+void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppMesh, IGXDevice * pDevice)
 {
 	UINT iVC = (iStackCount - 1) * iSideCount + 2;
 	UINT iIC = (iStackCount - 1) * iSideCount * 6;
@@ -145,7 +145,7 @@ void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppM
 
 //##########################################################################
 
-void CreateBoundingBoxMesh(const float3* min, const float3* max, IMesh** bbmesh, IGXContext* device)
+void CreateBoundingBoxMesh(const float3* min, const float3* max, IMesh** bbmesh, IGXDevice* device)
 {
 	float dist_x = abs(max->x - min->x);
 	float dist_y = abs(max->y - min->y);

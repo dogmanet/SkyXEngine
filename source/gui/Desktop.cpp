@@ -103,18 +103,20 @@ namespace gui
 
 	void CDesktop::render(float fTimeDelta, bool bPresent)
 	{
+		IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+
 		m_pDoc->update(fTimeDelta);
 		if(m_pDoc->isDirty())
 		{
 			CTextureManager::bindTexture(NULL);
 			IGXSurface *pOldRT;
 			IGXDepthStencilSurface *pOldDS;
-			pOldRT = GetGUI()->getDevice()->getColorTarget();
-			GetGUI()->getDevice()->setColorTarget(m_pRenderSurface);
-			pOldDS = GetGUI()->getDevice()->getDepthStencilSurface();
-			GetGUI()->getDevice()->setDepthStencilSurface(m_pDepthStencilSurface);
+			pOldRT = pCtx->getColorTarget();
+			pCtx->setColorTarget(m_pRenderSurface);
+			pOldDS = pCtx->getDepthStencilSurface();
+			pCtx->setDepthStencilSurface(m_pDepthStencilSurface);
 
-			GetGUI()->getDevice()->clear(GX_CLEAR_COLOR | GX_CLEAR_STENCIL);
+			pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_STENCIL);
 
 			//GetGUI()->getDevice()->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
 			//GetGUI()->getDevice()->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ZERO);
@@ -122,15 +124,15 @@ namespace gui
 		//	GetGUI()->getDevice()->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
 		//	GetGUI()->getDevice()->SetRenderState(D3DRS_SRCBLENDALPHA, D3DBLEND_ONE);
 		//	GetGUI()->getDevice()->SetRenderState(D3DRS_BLENDOPALPHA, D3DBLENDOP_MAX);
-			GetGUI()->getDevice()->setBlendState(GetGUI()->getBlendStates()->m_pDesktop);
+			pCtx->setBlendState(GetGUI()->getBlendStates()->m_pDesktop);
 			
 			m_pDoc->render();
 
-			GetGUI()->getDevice()->setBlendState(GetGUI()->getBlendStates()->m_pDefault);
+			pCtx->setBlendState(GetGUI()->getBlendStates()->m_pDefault);
 		//	GetGUI()->getDevice()->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, FALSE);
 
-			GetGUI()->getDevice()->setColorTarget(pOldRT);
-			GetGUI()->getDevice()->setDepthStencilSurface(pOldDS);
+			pCtx->setColorTarget(pOldRT);
+			pCtx->setDepthStencilSurface(pOldDS);
 			mem_release(pOldRT);
 			mem_release(pOldDS);
 
@@ -138,7 +140,7 @@ namespace gui
 			
 			
 			IGXSurface *pNewSurface = m_txFinal->getAPItexture()->getMipmap();
-			GetGUI()->getDevice()->downsampleColorTarget(m_pRenderSurface, pNewSurface);
+			pCtx->downsampleColorTarget(m_pRenderSurface, pNewSurface);
 			mem_release(pNewSurface);
 
 			/*if(GetAsyncKeyState('K'))
@@ -211,13 +213,13 @@ namespace gui
 		//	GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
 		//	CTextureManager::bindShader(def_sh);
 
-			GetGUI()->getDevice()->setRenderBuffer(m_pRenderBuffer);
-			GetGUI()->getDevice()->setIndexBuffer(GetGUI()->getQuadIndexBuffer()); 
-			GetGUI()->getDevice()->setPixelShaderConstant(m_pColorWhite);
+			pCtx->setRenderBuffer(m_pRenderBuffer);
+			pCtx->setIndexBuffer(GetGUI()->getQuadIndexBuffer()); 
+			pCtx->setPSConstant(m_pColorWhite);
 
 			GetGUI()->updateTransformShader();
 
-			GetGUI()->getDevice()->drawIndexed(4, 2, 0, 0);
+			pCtx->drawIndexed(4, 2, 0, 0);
 		//	DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
 
 		//	GetGUI()->getDevice()->SetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mOldView));

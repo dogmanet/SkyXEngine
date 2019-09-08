@@ -13,9 +13,9 @@ public:
 	bool XMETHODCALLTYPE isEnabled() const override;
 	void XMETHODCALLTYPE enable(bool yesNo) override;
 
-	IXAnimatedModel * XMETHODCALLTYPE asAnimatedModel() override;
-	IXDynamicModel * XMETHODCALLTYPE asDynamicModel() override;
-	IXStaticModel * XMETHODCALLTYPE asStaticModel() override;
+	IXAnimatedModel* XMETHODCALLTYPE asAnimatedModel() override;
+	IXDynamicModel* XMETHODCALLTYPE asDynamicModel() override;
+	IXStaticModel* XMETHODCALLTYPE asStaticModel() override;
 
 
 	float3 XMETHODCALLTYPE getPosition() const override;
@@ -37,20 +37,20 @@ public:
 	void XMETHODCALLTYPE setColor(const float4 &vColor) override;
 
 	UINT XMETHODCALLTYPE getPhysboxCount(UINT uPartIndex = 0) const override;
-	const IModelPhysbox * XMETHODCALLTYPE getPhysBox(UINT id, UINT uPartIndex = 0) const override;
-	const IXResourceModel * XMETHODCALLTYPE getResource(UINT uIndex = 0) override;
+	const IModelPhysbox* XMETHODCALLTYPE getPhysBox(UINT id, UINT uPartIndex = 0) const override;
+	const IXResourceModel* XMETHODCALLTYPE getResource(UINT uIndex = 0) override;
 
 
 
 	UINT XMETHODCALLTYPE getPartsCount() const override;
-	const char * XMETHODCALLTYPE getPartName(UINT uIndex) const override;
+	const char* XMETHODCALLTYPE getPartName(UINT uIndex) const override;
 	UINT XMETHODCALLTYPE getPartIndex(const char *szName) override;
 	XMODEL_PART_FLAGS XMETHODCALLTYPE getPartFlags(UINT uIndex) const override;
 	bool XMETHODCALLTYPE isPartEnabled(UINT uIndex) const override;
 	void XMETHODCALLTYPE enablePart(UINT uIndex, bool yesNo) override;
 
 	UINT XMETHODCALLTYPE getHitboxCount(UINT uPartIndex = 0) const override;
-	const XResourceModelHitbox * XMETHODCALLTYPE getHitbox(UINT id, UINT uPartIndex = 0) const override;
+	const XResourceModelHitbox* XMETHODCALLTYPE getHitbox(UINT id, UINT uPartIndex = 0) const override;
 
 	void XMETHODCALLTYPE play(const char *szName, UINT uFadeTime = 0, UINT uSlot = 0, bool bReplaceActivity = true) override;
 	void XMETHODCALLTYPE stop(UINT uSlot = 0) override;
@@ -65,7 +65,7 @@ public:
 
 	UINT XMETHODCALLTYPE getBoneId(const char *szName) override;
 	UINT XMETHODCALLTYPE getBoneCount() const override;
-	const char * XMETHODCALLTYPE getBoneName(UINT id) const override;
+	const char* XMETHODCALLTYPE getBoneName(UINT id) const override;
 
 	bool XMETHODCALLTYPE isPlayingAnimations() override;
 	bool XMETHODCALLTYPE isPlayingAnimation(const char *szName) override;
@@ -73,7 +73,7 @@ public:
 	void XMETHODCALLTYPE setController(UINT id, float fValue) override;
 
 	UINT XMETHODCALLTYPE getControllersCount() const override;
-	const char * XMETHODCALLTYPE getControllerName(UINT id) override;
+	const char* XMETHODCALLTYPE getControllerName(UINT id) override;
 	UINT XMETHODCALLTYPE getControllerId(const char *szName) override;
 
 	void XMETHODCALLTYPE setCallback(IAnimationCallback *pCallback) override;
@@ -89,7 +89,7 @@ public:
 protected:
 	CAnimatedModelProvider *m_pProvider;
 	CAnimatedModelShared *m_pShared;
-	IGXContext *m_pDevice;
+	IGXDevice *m_pDevice;
 
 	float3_t m_vPosition;
 	SMQuaternion m_qRotation;

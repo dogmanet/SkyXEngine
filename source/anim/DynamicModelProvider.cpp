@@ -35,7 +35,7 @@ IGXVertexDeclaration *CDynamicModelProvider::getVertexDeclaration()
 	return(m_pVertexDeclaration);
 }
 
-IGXContext* CDynamicModelProvider::getDevice()
+IGXDevice* CDynamicModelProvider::getDevice()
 {
 	return(m_pRenderContext);
 }
@@ -45,7 +45,7 @@ IXCore* CDynamicModelProvider::getCore()
 	return(m_pCore);
 }
 
-void CDynamicModelProvider::setDevice(IGXContext *pDevice)
+void CDynamicModelProvider::setDevice(IGXDevice *pDevice)
 {
 	m_pRenderContext = pDevice;
 

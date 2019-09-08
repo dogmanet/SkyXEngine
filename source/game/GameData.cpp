@@ -1217,7 +1217,7 @@ void GameData::render()
 	//g_pTracer2->render();
 	
 	//m_pStatsUI->render(0.1f);
-	IGXContext *pDev = SGCore_GetDXDevice();
+	IGXDevice *pDev = SGCore_GetDXDevice();
 	++g_uFrameCount;
 	
 	static int64_t s_uTime = Core_TimeTotalMlsGetU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
@@ -1230,7 +1230,7 @@ void GameData::render()
 	}
 	if(pDev)
 	{
-		const GXFrameStats *pFrameStats = pDev->getFrameStats();
+		const GXFrameStats *pFrameStats = pDev->getDirectContext()->getFrameStats();
 		const GXAdapterMemoryStats *pMemoryStats = pDev->getMemoryStats();
 
 		static GXFrameStats s_oldFrameStats = {0};
@@ -1281,10 +1281,12 @@ void GameData::render()
 		}
 		if(g_pTextRenderBuffer)
 		{
-			pDev->setBlendState(g_pTextBlendState);
-			pDev->setRasterizerState(NULL);
-			pDev->setDepthStencilState(g_pTextDepthState);
-			pDev->setSamplerState(NULL, 0);
+			IGXContext *pContext = pDev->getDirectContext();
+
+			pContext->setBlendState(g_pTextBlendState);
+			pContext->setRasterizerState(NULL);
+			pContext->setDepthStencilState(g_pTextDepthState);
+			pContext->setSamplerState(NULL, 0);
 
 			static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 			static const int *r_win_height = GET_PCVAR_INT("r_win_height");
@@ -1301,17 +1303,17 @@ void GameData::render()
 			g_pTextPSConstantBuffer->update(&float4_t(0, 0, 0, 1.0f));
 
 			SGCore_ShaderBind(g_idTextKit);
-			pDev->setRenderBuffer(g_pTextRenderBuffer);
-			pDev->setIndexBuffer(g_pTextIndexBuffer);
-			pDev->setTexture((IGXTexture2D*)g_pFont->getAPITexture(0));
-			pDev->setPrimitiveTopology(GXPT_TRIANGLELIST);
-			pDev->setVertexShaderConstant(g_pTextVSConstantBuffer);
-			pDev->setPixelShaderConstant(g_pTextPSConstantBuffer);
-			pDev->drawIndexed(g_uVertexCount, g_uIndexCount / 3, 0, 0);
+			pContext->setRenderBuffer(g_pTextRenderBuffer);
+			pContext->setIndexBuffer(g_pTextIndexBuffer);
+			pContext->setPSTexture((IGXTexture2D*)g_pFont->getAPITexture(0));
+			pContext->setPrimitiveTopology(GXPT_TRIANGLELIST);
+			pContext->setVSConstant(g_pTextVSConstantBuffer);
+			pContext->setPSConstant(g_pTextPSConstantBuffer);
+			pContext->drawIndexed(g_uVertexCount, g_uIndexCount / 3, 0, 0);
 
 			g_pTextVSConstantBuffer->update(&SMMatrixTranspose(m));
 			g_pTextPSConstantBuffer->update(&float4_t(0.3f, 1.0f, 0.3f, 1.0f));
-			pDev->drawIndexed(g_uVertexCount, g_uIndexCount / 3, 0, 0);
+			pContext->drawIndexed(g_uVertexCount, g_uIndexCount / 3, 0, 0);
 			SGCore_ShaderUnBind();
 		}
 	}

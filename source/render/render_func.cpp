@@ -63,16 +63,16 @@ void rfunc::SetRenderSceneFilter()
 			samplerDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
 			break;
 		}
-		samplerDesc.fMinLOD = r_texfilter_max_miplevel2;
+		samplerDesc.fMinLOD = (float)r_texfilter_max_miplevel2;
 		gdata::rstates::pSamplerScene = gdata::pDXDevice->createSamplerState(&samplerDesc);
 	}
 
-	gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerScene, 0);
+	gdata::pDXDevice->getDirectContext()->setSamplerState(gdata::rstates::pSamplerScene, 0);
 }
 
 void rfunc::SetRenderSceneFilterUn()
 {
-	gdata::pDXDevice->setSamplerState(NULL, 0);
+	gdata::pDXDevice->getDirectContext()->setSamplerState(NULL, 0);
 //	gdata::pDXDevice->SetSamplerState(0, D3DSAMP_MAXMIPLEVEL, 0);
 }
 

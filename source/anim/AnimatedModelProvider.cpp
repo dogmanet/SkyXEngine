@@ -17,7 +17,7 @@ IGXVertexDeclaration *CAnimatedModelProvider::getVertexDeclaration()
 	return(m_pVertexDeclaration);
 }
 
-IGXContext *CAnimatedModelProvider::getDevice()
+IGXDevice *CAnimatedModelProvider::getDevice()
 {
 	return(m_pRenderContext);
 }
@@ -27,7 +27,7 @@ IXCore* CAnimatedModelProvider::getCore()
 	return(m_pCore);
 }
 
-void CAnimatedModelProvider::setDevice(IGXContext *pDevice)
+void CAnimatedModelProvider::setDevice(IGXDevice *pDevice)
 {
 	m_pRenderContext = pDevice;
 

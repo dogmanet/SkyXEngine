@@ -87,7 +87,7 @@ void CAxesHelper::render()
 
 	static float3 vCamPos;
 	Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &vCamPos);
-	SGCore_GetDXDevice()->setTexture(NULL);
+	SGCore_GetDXDevice()->getDirectContext()->setPSTexture(NULL);
 //	SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
 	SGCore_ShaderUnBind();
 

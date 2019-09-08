@@ -20,9 +20,9 @@ public:
 	void onSharedModelRelease(CAnimatedModelShared *pShared);
 	void onModelRelease(CAnimatedModel *pModel);
 	IXMaterialSystem *getMaterialSystem();
-	IGXContext *getDevice();
+	IGXDevice *getDevice();
 	IXCore* getCore();
-	void setDevice(IGXContext *pContext);
+	void setDevice(IGXDevice *pDevice);
 	IGXVertexDeclaration *getVertexDeclaration();
 
 	void update(float fDT);
@@ -43,7 +43,7 @@ protected:
 	IGXVertexDeclaration *m_pVertexDeclaration = NULL;
 
 	IXCore *m_pCore;
-	IGXContext *m_pRenderContext = NULL;
+	IGXDevice *m_pRenderContext = NULL;
 
 	CConcurrentQueue<CAnimatedModelShared*> m_queueGPUinitShared;
 	CConcurrentQueue<CAnimatedModel*> m_queueGPUinitModel;

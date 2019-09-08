@@ -52,7 +52,7 @@ public:
 protected:
 	CDynamicModelProvider *m_pProvider;
 	CDynamicModelShared *m_pShared;
-	IGXContext *m_pDevice;
+	IGXDevice *m_pDevice;
 
 	IGXConstantBuffer *m_pWorldBuffer = NULL;
 	bool m_isWorldDirty = true;

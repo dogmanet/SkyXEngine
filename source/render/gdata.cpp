@@ -8,7 +8,7 @@ See the license in LICENSE
 
 namespace gdata
 {
-	IGXContext *pDXDevice = 0;
+	IGXDevice *pDXDevice = 0;
 
 	HWND hHandleParent3D = 0;
 	HWND hHandle3D = 0;	

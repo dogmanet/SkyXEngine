@@ -119,6 +119,8 @@ namespace gui
 					texWhite = CTextureManager::getTexture(TEX_WHITE);
 				}
 
+				IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+
 			//	GetGUI()->getDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
 				CTextureManager::bindTexture(texWhite);
@@ -135,9 +137,9 @@ namespace gui
 				}
 				if(need)
 				{
-				//	GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ);
-					GetGUI()->getDevice()->setRenderBuffer(m_pRenderBuffer);
-					GetGUI()->getDevice()->setIndexBuffer(m_pIndexBuffer);
+				//	pCtx->SetFVF(D3DFVF_XYZ);
+					pCtx->setRenderBuffer(m_pRenderBuffer);
+					pCtx->setIndexBuffer(m_pIndexBuffer);
 				}
 
 				//	UINT iVC = 0;
@@ -146,8 +148,8 @@ namespace gui
 				{
 					if(m_iWidth[i] != 0)
 					{
-						GetGUI()->getDevice()->setPixelShaderConstant(m_pColorsConstant[i]);
-						GetGUI()->getDevice()->drawIndexed(m_iVertexCount[i], m_iIndexCount[i] / 3, m_iIndexStart[i], m_iVertexStart[i]);
+						pCtx->setPSConstant(m_pColorsConstant[i]);
+						pCtx->drawIndexed(m_iVertexCount[i], m_iIndexCount[i] / 3, m_iIndexStart[i], m_iVertexStart[i]);
 					}
 					//		iVC += m_iVertexCount[i];
 					//		iIC += m_iIndexCount[i];
@@ -157,13 +159,15 @@ namespace gui
 					//		GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&float4_t(0.0f, 1.0f, 0.0f, 0.4f), 1);
 					//		GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, iVC, iIC, m_iFillIndexCount / 3);
 				}
-				GetGUI()->getDevice()->setPixelShaderConstant(m_pColorBlack);
+				pCtx->setPSConstant(m_pColorBlack);
 			}
 
 			void IRenderBorder::renderInnerFill()
 			{
-				GetGUI()->getDevice()->setRenderBuffer(m_pRenderBuffer);
-				GetGUI()->getDevice()->setIndexBuffer(m_pIndexBuffer);
+				IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+
+				pCtx->setRenderBuffer(m_pRenderBuffer);
+				pCtx->setIndexBuffer(m_pIndexBuffer);
 
 				auto shader = GetGUI()->getShaders()->m_baseColored;
 				SGCore_ShaderBind(shader.m_idShaderKit);
@@ -177,8 +181,8 @@ namespace gui
 					iIC += m_iIndexCount[i];
 				}
 
-				GetGUI()->getDevice()->setPixelShaderConstant(m_pColorWhite);
-				GetGUI()->getDevice()->drawIndexed(iVC, m_iFillIndexCount / 3, iIC, 0);
+				pCtx->setPSConstant(m_pColorWhite);
+				pCtx->drawIndexed(iVC, m_iFillIndexCount / 3, iIC, 0);
 			}
 
 			void IRenderBorder::build()

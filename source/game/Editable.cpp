@@ -12,7 +12,7 @@ CEditable::CEditable(IXCore *pCore)
 	m_pCore = pCore;
 }
 
-void CEditable::startup(IGXContext *pDevice)
+void CEditable::startup(IGXDevice *pDevice)
 {
 	m_pDevice = pDevice;
 

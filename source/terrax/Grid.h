@@ -46,7 +46,7 @@ public:
 	static GRID_STEP GetMinStepForScale(float fScale);
 
 protected:
-	IGXContext *m_pDevice;
+	IGXDevice *m_pDevice;
 	IGXRenderBuffer *m_pRenderBuffer;
 	struct
 	{

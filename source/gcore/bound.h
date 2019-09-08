@@ -10,9 +10,9 @@ See the license in LICENSE
 #include <common/Math.h>
 #include "sxgcore.h"
 
-void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** ppMesh, IGXContext * pDevice, UINT iSideCount);
-void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppMesh, IGXContext * pDevice);
+void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** ppMesh, IGXDevice * pDevice, UINT iSideCount);
+void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppMesh, IGXDevice * pDevice);
 
-void CreateBoundingBoxMesh(const float3* min, const float3* max, IMesh** bbmesh, IGXContext* device);
+void CreateBoundingBoxMesh(const float3* min, const float3* max, IMesh** bbmesh, IGXDevice* device);
 
 #endif

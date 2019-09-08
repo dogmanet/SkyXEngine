@@ -343,16 +343,18 @@ void CDynamicModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor, 
 		return;
 	}
 
-	m_pDevice->setIndexBuffer(m_ppIndexBuffer[uLod]);
-	m_pDevice->setRenderBuffer(m_ppRenderBuffer[uLod]);
+	IGXContext *pCtx = m_pDevice->getDirectContext();
+
+	pCtx->setIndexBuffer(m_ppIndexBuffer[uLod]);
+	pCtx->setRenderBuffer(m_ppRenderBuffer[uLod]);
 
 	switch(m_topology)
 	{
 	case XPT_TRIANGLELIST:
-		m_pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+		pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
 		break;
 	case XPT_TRIANGLESTRIP:
-		m_pDevice->setPrimitiveTopology(GXPT_TRIANGLESTRIP);
+		pCtx->setPrimitiveTopology(GXPT_TRIANGLESTRIP);
 		break;
 	}
 
@@ -377,7 +379,7 @@ void CDynamicModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor, 
 				break;
 			}
 
-			m_pDevice->drawIndexed(pSubset->uVertexCount, uPrimCount, pSubset->uStartIndex, pSubset->uStartVertex);
+			pCtx->drawIndexed(pSubset->uVertexCount, uPrimCount, pSubset->uStartIndex, pSubset->uStartVertex);
 		}
 	}
 }

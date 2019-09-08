@@ -71,7 +71,7 @@ public:
 	virtual void XMETHODCALLTYPE renderTransparentObject(_in IXRenderableVisibility *pVisibility, _in UINT uIndex, _in UINT uSplitPlanes) = 0;
 	//! @}
 
-	virtual void XMETHODCALLTYPE startup(_in IGXContext *pDevice, _in IXMaterialSystem *pMaterialSystem) = 0;
+	virtual void XMETHODCALLTYPE startup(_in IGXDevice *pDevice, _in IXMaterialSystem *pMaterialSystem) = 0;
 	virtual void XMETHODCALLTYPE shutdown() = 0;
 
 	//! Создает новый объект просчета видимости для системы

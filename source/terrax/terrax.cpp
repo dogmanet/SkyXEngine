@@ -231,7 +231,7 @@ public:
 	{
 		m_pOldPipeline->renderFrame();
 		
-		IGXContext *pDXDevice = getDevice();
+		IGXContext *pDXDevice = getDevice()->getDirectContext();
 		pDXDevice->setDepthStencilState(NULL);
 
 		XRender3D();
@@ -275,7 +275,7 @@ public:
 			Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(mView * mProj));
 
 			g_pCameraConstantBuffer->update(&SMMatrixTranspose(mView * mProj));
-			pDXDevice->setVertexShaderConstant(g_pCameraConstantBuffer, 4);
+			pDXDevice->setVSConstant(g_pCameraConstantBuffer, 4);
 
 			Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 			Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_FREE);
@@ -285,7 +285,7 @@ public:
 			renderEditor2D();
 
 			Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
-			pDXDevice->setVertexShaderConstant(g_pCameraConstantBuffer, 4);
+			pDXDevice->setVSConstant(g_pCameraConstantBuffer, 4);
 			XRender2D(views[i], fScales[i], false);
 			mem_release(pBackBuffer);
 		}
@@ -328,7 +328,7 @@ public:
 		m_pOldPipeline->renderStage(stage, pVisibility);
 	}
 
-	IGXContext *getDevice() override
+	IGXDevice *getDevice() override
 	{
 		return(m_pOldPipeline->getDevice());
 	}
@@ -679,7 +679,7 @@ int main(int argc, char **argv)
 	g_xRenderStates.idColoredShaderPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "terrax_colored.ps");
 	g_xRenderStates.idColoredShaderKit = SGCore_ShaderCreateKit(g_xRenderStates.idColoredShaderVS, g_xRenderStates.idColoredShaderPS);
 //	SkyXEngine_PreviewKill();
-	IGXContext *pDevice = SGCore_GetDXDevice();
+	IGXDevice *pDevice = SGCore_GetDXDevice();
 
 	GXBlendDesc blendDesc;
 	blendDesc.renderTarget[0].useBlend = true;
@@ -803,7 +803,7 @@ int main(int argc, char **argv)
 
 void XInitViewports()
 {
-	IGXContext *pContext = SGCore_GetDXDevice();
+	IGXDevice *pContext = SGCore_GetDXDevice();
 	RECT rc;
 	GetClientRect(g_hTopRightWnd, &rc);
 	g_pTopRightSwapChain = pContext->createSwapChain(rc.right - rc.left, rc.bottom - rc.top, g_hTopRightWnd);
@@ -837,7 +837,8 @@ void XReleaseViewports()
 
 void XRender3D()
 {
-	IGXContext *pDevice = SGCore_GetDXDevice();
+	IGXDevice *pDevice = SGCore_GetDXDevice();
+	IGXContext *pCtx = pDevice->getDirectContext();
 
 	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 	{
@@ -883,29 +884,30 @@ void XRender3D()
 
 	if(g_xState.bCreateMode)
 	{
-		IGXRasterizerState *pOldRS = pDevice->getRasterizerState();
-		pDevice->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
+		IGXRasterizerState *pOldRS = pCtx->getRasterizerState();
+		pCtx->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
 		SMMATRIX mViewProj;
 		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
-		pDevice->setVertexShaderConstant(s_mConstWVP, 4);
-		pDevice->setPixelShaderConstant(s_pColorBuffer);
+		pCtx->setVSConstant(s_mConstWVP, 4);
+		pCtx->setPSConstant(s_pColorBuffer);
 		SGCore_ShaderBind(g_xRenderStates.idColoredShaderKit);
 
-		pDevice->setRenderBuffer(g_xRenderStates.pCreateCrossRB);
+		pCtx->setRenderBuffer(g_xRenderStates.pCreateCrossRB);
 		s_mConstWVP->update(&SMMatrixTranspose(SMMatrixTranslation(g_xState.vCreateOrigin) * mViewProj));
 		s_pColorBuffer->update(&float4(0.0f, 1.0f, 0.0f, 1.0f));
-		pDevice->setPrimitiveTopology(GXPT_LINELIST);
-		pDevice->drawPrimitive(0, 3);
-		pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+		pCtx->setPrimitiveTopology(GXPT_LINELIST);
+		pCtx->drawPrimitive(0, 3);
+		pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
 
-		pDevice->setRasterizerState(pOldRS);
+		pCtx->setRasterizerState(pOldRS);
 		mem_release(pOldRS);
 	}
 }
 
 void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 {
-	IGXContext *pDevice = SGCore_GetDXDevice();
+	IGXDevice *pDevice = SGCore_GetDXDevice();
+	IGXContext *pCtx = pDevice->getDirectContext();
 
 	if(preScene)
 	{
@@ -949,11 +951,11 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 		// Draw handlers
 		if(g_pLevelObjects.size())
 		{
-			pDevice->setPixelShaderConstant(s_pColorBuffer);
+			pCtx->setPSConstant(s_pColorBuffer);
 
-			pDevice->setPrimitiveTopology(GXPT_LINELIST);
+			pCtx->setPrimitiveTopology(GXPT_LINELIST);
 			SGCore_ShaderBind(g_xRenderStates.idHandlerShaderKit);
-			pDevice->setIndexBuffer(g_xRenderStates.pHandlerIB);
+			pCtx->setIndexBuffer(g_xRenderStates.pHandlerIB);
 
 			s_pColorBuffer->update(&float4(0.0f, 1.0f, 0.0f, 1.0f));
 
@@ -975,7 +977,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 
 				g_xRenderStates.pHandlerVB->unlock();
 			}
-			pDevice->setRenderBuffer(g_xRenderStates.pHandlerRB);
+			pCtx->setRenderBuffer(g_xRenderStates.pHandlerRB);
 			float4 fViewportBorders = g_xState.m_vViewportBorders[g_xState.activeWindow];
 			for(bool isSelected = false;; isSelected = true)
 			{
@@ -1002,7 +1004,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 					if(uHandlerCount == X_MAX_HANDLERS_PER_DIP)
 					{
 						g_xRenderStates.pHandlerInstanceVB->unlock();
-						pDevice->drawIndexedInstanced(uHandlerCount, 8, 4, 0, 0);
+						pCtx->drawIndexedInstanced(uHandlerCount, 8, 4, 0, 0);
 						pvData = NULL;
 						uHandlerCount = 0;
 					}
@@ -1013,7 +1015,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 				}
 				if(uHandlerCount)
 				{
-					pDevice->drawIndexedInstanced(uHandlerCount, 8, 4, 0, 0);
+					pCtx->drawIndexedInstanced(uHandlerCount, 8, 4, 0, 0);
 				}
 				if(isSelected)
 				{
@@ -1213,50 +1215,50 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			}
 			
 			s_mConstWVP->update(&SMMatrixTranspose(mWorld * mViewProj));
-			pDevice->setVertexShaderConstant(s_mConstWVP, 4);
+			pCtx->setVSConstant(s_mConstWVP, 4);
 
-			IGXRasterizerState *pOldRS = pDevice->getRasterizerState();
-			pDevice->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
-			pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+			IGXRasterizerState *pOldRS = pCtx->getRasterizerState();
+			pCtx->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
+			pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
 			SGCore_ShaderBind(g_xRenderStates.idColoredShaderKit);
-			pDevice->setRenderBuffer(g_xRenderStates.pTransformHandlerRB);
+			pCtx->setRenderBuffer(g_xRenderStates.pTransformHandlerRB);
 			s_pColorBuffer->update(&float4(1.0f, 1.0f, 1.0f, 1.0f));
-			pDevice->setPixelShaderConstant(s_pColorBuffer);
+			pCtx->setPSConstant(s_pColorBuffer);
 			if(g_xState.xformType == X2DXF_SCALE)
 			{
-				pDevice->setIndexBuffer(g_xRenderStates.pTransformHandlerScaleIB);
-				pDevice->drawIndexed(32, 16, 0, 0);
+				pCtx->setIndexBuffer(g_xRenderStates.pTransformHandlerScaleIB);
+				pCtx->drawIndexed(32, 16, 0, 0);
 			}
 			else if(g_xState.xformType == X2DXF_ROTATE)
 			{
-				pDevice->setIndexBuffer(g_xRenderStates.pTransformHandlerRotateIB);
-				pDevice->drawIndexed(32, 24, 0, 0);
+				pCtx->setIndexBuffer(g_xRenderStates.pTransformHandlerRotateIB);
+				pCtx->drawIndexed(32, 24, 0, 0);
 			}
 
 
 			SGCore_ShaderUnBind();
-			pDevice->setRasterizerState(pOldRS);
+			pCtx->setRasterizerState(pOldRS);
 			mem_release(pOldRS);
 		}
 
 		if(g_xState.bCreateMode)
 		{
-			IGXRasterizerState *pOldRS = pDevice->getRasterizerState();
-			pDevice->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
+			IGXRasterizerState *pOldRS = pCtx->getRasterizerState();
+			pCtx->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
 			SMMATRIX mViewProj;
 			Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
-			pDevice->setVertexShaderConstant(s_mConstWVP, 4);
-			pDevice->setPixelShaderConstant(s_pColorBuffer);
+			pCtx->setVSConstant(s_mConstWVP, 4);
+			pCtx->setPSConstant(s_pColorBuffer);
 			SGCore_ShaderBind(g_xRenderStates.idColoredShaderKit);
 
-			pDevice->setRenderBuffer(g_xRenderStates.pCreateCrossRB);
+			pCtx->setRenderBuffer(g_xRenderStates.pCreateCrossRB);
 			s_mConstWVP->update(&SMMatrixTranspose(SMMatrixTranslation(g_xState.vCreateOrigin) * mViewProj));
 			s_pColorBuffer->update(&float4(0.0f, 1.0f, 0.0f, 1.0f));
-			pDevice->setPrimitiveTopology(GXPT_LINELIST);
-			pDevice->drawPrimitive(0, 3);
-			pDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+			pCtx->setPrimitiveTopology(GXPT_LINELIST);
+			pCtx->drawPrimitive(0, 3);
+			pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
 
-			pDevice->setRasterizerState(pOldRS);
+			pCtx->setRasterizerState(pOldRS);
 			mem_release(pOldRS);
 		}
 	}
@@ -1344,22 +1346,24 @@ void XDrawBorder(GXCOLOR color, const float3_t &vA, const float3_t &vB, const fl
 		g_pBorderVertexBuffer->unlock();
 	}
 
-	IGXContext *pDevice = SGCore_GetDXDevice();
-	IGXBlendState *pOldBlendState = pDevice->getBlendState();
+	IGXDevice *pDevice = SGCore_GetDXDevice();
+	IGXContext *pCtx = pDevice->getDirectContext();
+
+	IGXBlendState *pOldBlendState = pCtx->getBlendState();
 	SGCore_ShaderBind(g_xRenderStates.idTexturedShaderKit);
 
 	static IGXConstantBuffer *s_pColorBuffer = pDevice->createConstantBuffer(sizeof(float4));
 	s_pColorBuffer->update(&GX_COLOR_COLOR_TO_F4(color));
-	pDevice->setPixelShaderConstant(s_pColorBuffer);
+	pCtx->setPSConstant(s_pColorBuffer);
 
-	pDevice->setTexture(g_pDashedMaterial);
-	pDevice->setBlendState(g_xRenderStates.pBlendAlpha);
-	pDevice->setRenderBuffer(g_pBorderRenderBuffer);
-	pDevice->setPrimitiveTopology(GXPT_LINESTRIP);
-	pDevice->drawPrimitive(0, 4);
+	pCtx->setPSTexture(g_pDashedMaterial);
+	pCtx->setBlendState(g_xRenderStates.pBlendAlpha);
+	pCtx->setRenderBuffer(g_pBorderRenderBuffer);
+	pCtx->setPrimitiveTopology(GXPT_LINESTRIP);
+	pCtx->drawPrimitive(0, 4);
 	SGCore_ShaderUnBind();
 
-	pDevice->setBlendState(pOldBlendState);
+	pCtx->setBlendState(pOldBlendState);
 	mem_release(pOldBlendState);
 }
 

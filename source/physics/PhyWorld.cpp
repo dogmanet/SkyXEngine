@@ -851,7 +851,7 @@ void XMETHODCALLTYPE CPhyWorld::CRenderable::renderStage(X_RENDER_STAGE stage, I
 {
 	m_pWorld->render();
 }
-void XMETHODCALLTYPE CPhyWorld::CRenderable::startup(IGXContext *pDevice, IXMaterialSystem *pMaterialSystem)
+void XMETHODCALLTYPE CPhyWorld::CRenderable::startup(IGXDevice *pDevice, IXMaterialSystem *pMaterialSystem)
 {
 }
 
@@ -986,21 +986,23 @@ void CPhyWorld::CDebugDrawer::begin()
 
 	SGCore_ShaderBind(m_idShader);
 
-	SGCore_GetDXDevice()->setRenderBuffer(m_pRenderBuffer);
-	SGCore_GetDXDevice()->setPrimitiveTopology(GXPT_LINELIST);
+	IGXContext *pCtx = SGCore_GetDXDevice()->getDirectContext();
+
+	pCtx->setRenderBuffer(m_pRenderBuffer);
+	pCtx->setPrimitiveTopology(GXPT_LINELIST);
 
 	SMMATRIX mViewProj, mWorld;
 	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
 	Core_RMatrixGet(G_RI_MATRIX_WORLD, &mWorld);
 	m_pVSConstantBuffer->update(&SMMatrixTranspose(mWorld * mViewProj));
-	SGCore_GetDXDevice()->setVertexShaderConstant(m_pVSConstantBuffer, 4);
+	pCtx->setVSConstant(m_pVSConstantBuffer, 4);
 }
 
 void CPhyWorld::CDebugDrawer::commit()
 {
 	render();
 	SGCore_ShaderUnBind();
-	SGCore_GetDXDevice()->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	SGCore_GetDXDevice()->getDirectContext()->setPrimitiveTopology(GXPT_TRIANGLELIST);
 }
 
 void CPhyWorld::CDebugDrawer::render()
@@ -1016,7 +1018,7 @@ void CPhyWorld::CDebugDrawer::render()
 		memcpy(pData, m_pDrawData, sizeof(render_point) * m_uDataPointer);
 		m_pVertexBuffer->unlock();
 
-		SGCore_GetDXDevice()->drawPrimitive(0, m_uDataPointer / 2);
+		SGCore_GetDXDevice()->getDirectContext()->drawPrimitive(0, m_uDataPointer / 2);
 	}
 
 	m_uDataPointer = 0;

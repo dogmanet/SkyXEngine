@@ -12,38 +12,38 @@ See the license in LICENSE
 
 //##########################################################################
 
-static void CreateShader(IGXContext *pContext, IGXPixelShader    **ppOut, const char *szCode, const char *szFile, GXMacro *pDefs)
+static void CreateShader(IGXDevice *pDevice, IGXPixelShader    **ppOut, const char *szCode, const char *szFile, GXMacro *pDefs)
 {
-	*ppOut = pContext->createPixelShaderFromString(szCode, pDefs);
+	*ppOut = pDevice->createPixelShaderFromString(szCode, pDefs);
 }
-static void CreateShader(IGXContext *pContext, IGXVertexShader   **ppOut, const char *szCode, const char *szFile, GXMacro *pDefs)
+static void CreateShader(IGXDevice *pDevice, IGXVertexShader   **ppOut, const char *szCode, const char *szFile, GXMacro *pDefs)
 {
-	*ppOut = pContext->createVertexShaderFromString(szCode, pDefs);
+	*ppOut = pDevice->createVertexShaderFromString(szCode, pDefs);
 }
-static void CreateShader(IGXContext *pContext, IGXGeometryShader **ppOut, const char *szCode, const char *szFile, GXMacro *pDefs)
+static void CreateShader(IGXDevice *pDevice, IGXGeometryShader **ppOut, const char *szCode, const char *szFile, GXMacro *pDefs)
 {
-	*ppOut = pContext->createGeometryShaderFromString(szCode, pDefs);
+	*ppOut = pDevice->createGeometryShaderFromString(szCode, pDefs);
 }
-static void CreateShader(IGXContext *pContext, IGXComputeShader  **ppOut, const char *szCode, const char *szFile, GXMacro *pDefs)
+static void CreateShader(IGXDevice *pDevice, IGXComputeShader  **ppOut, const char *szCode, const char *szFile, GXMacro *pDefs)
 {
-	*ppOut = pContext->createComputeShaderFromString(szCode, pDefs);
+	*ppOut = pDevice->createComputeShaderFromString(szCode, pDefs);
 }
 
-static void CreateShaderFromData(IGXContext *pContext, IGXPixelShader    **ppOut, byte *pCode, UINT uSize)
+static void CreateShaderFromData(IGXDevice *pDevice, IGXPixelShader    **ppOut, byte *pCode, UINT uSize)
 {
-	*ppOut = pContext->createPixelShaderFromBin(pCode, uSize);
+	*ppOut = pDevice->createPixelShaderFromBin(pCode, uSize);
 }
-static void CreateShaderFromData(IGXContext *pContext, IGXVertexShader   **ppOut, byte *pCode, UINT uSize)
+static void CreateShaderFromData(IGXDevice *pDevice, IGXVertexShader   **ppOut, byte *pCode, UINT uSize)
 {
-	*ppOut = pContext->createVertexShaderFromBin(pCode, uSize);
+	*ppOut = pDevice->createVertexShaderFromBin(pCode, uSize);
 }
-static void CreateShaderFromData(IGXContext *pContext, IGXGeometryShader **ppOut, byte *pCode, UINT uSize)
+static void CreateShaderFromData(IGXDevice *pDevice, IGXGeometryShader **ppOut, byte *pCode, UINT uSize)
 {
-	*ppOut = pContext->createGeometryShaderFromBin(pCode, uSize);
+	*ppOut = pDevice->createGeometryShaderFromBin(pCode, uSize);
 }
-static void CreateShaderFromData(IGXContext *pContext, IGXComputeShader  **ppOut, byte *pCode, UINT uSize)
+static void CreateShaderFromData(IGXDevice *pDevice, IGXComputeShader  **ppOut, byte *pCode, UINT uSize)
 {
-	*ppOut = pContext->createComputeShaderFromBin(pCode, uSize);
+	*ppOut = pDevice->createComputeShaderFromBin(pCode, uSize);
 }
 
 template <class T>
@@ -844,12 +844,12 @@ void CShaderManager::bind(ID idShaderKit)
 		return;
 	}
 
-	g_pDevice->setShader(m_aShaderKit[idShaderKit]->m_pShaderKit);
+	g_pDevice->getDirectContext()->setShader(m_aShaderKit[idShaderKit]->m_pShaderKit);
 }
 
 void CShaderManager::unbind()
 {
-	g_pDevice->setShader(0);
+	g_pDevice->getDirectContext()->setShader(0);
 }
 
 

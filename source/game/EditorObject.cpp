@@ -145,26 +145,28 @@ void CEditorObject::renderSelection(bool is3D)
 		return;
 	}
 
-	IGXContext *pDevice = SGCore_GetDXDevice();
-	IGXBlendState *pOldBlendState = pDevice->getBlendState();
-	IGXRasterizerState *pOldRS = pDevice->getRasterizerState();
+	IGXDevice *pDevice = SGCore_GetDXDevice();
+	IGXContext *pCtx = pDevice->getDirectContext();
+
+	IGXBlendState *pOldBlendState = pCtx->getBlendState();
+	IGXRasterizerState *pOldRS = pCtx->getRasterizerState();
 
 	m_pEditable->m_pMaterialSystem->bindTexture(m_pEditable->m_pWhiteTexture);
 	//pDevice->setTexture(m_pEditable->m_pWhiteTexture);
-	pDevice->setBlendState(m_pEditable->m_pBlendColorFactor);
+	pCtx->setBlendState(m_pEditable->m_pBlendColorFactor);
 
 	if(is3D)
 	{
-		pDevice->setBlendFactor(GX_COLOR_ARGB(70, 255, 0, 0));
+		pCtx->setBlendFactor(GX_COLOR_ARGB(70, 255, 0, 0));
 		m_pEntity->renderEditor(is3D);
 	}
 
-	pDevice->setRasterizerState(m_pEditable->m_pRSWireframe);
-	pDevice->setBlendFactor(GX_COLOR_ARGB(255, 255, 255, 0));
+	pCtx->setRasterizerState(m_pEditable->m_pRSWireframe);
+	pCtx->setBlendFactor(GX_COLOR_ARGB(255, 255, 255, 0));
 	m_pEntity->renderEditor(is3D);
 
-	pDevice->setBlendState(pOldBlendState);
-	pDevice->setRasterizerState(pOldRS);
+	pCtx->setBlendState(pOldBlendState);
+	pCtx->setRasterizerState(pOldRS);
 	mem_release(pOldBlendState);
 	mem_release(pOldRS);
 }

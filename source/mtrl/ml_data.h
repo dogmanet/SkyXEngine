@@ -21,7 +21,7 @@ namespace mtrl_data
 {
 	void Init();
 
-	extern IGXContext *pDXDevice;
+	extern IGXDevice *pDXDevice;
 
 	extern float2_t vSizeTexReflection;
 

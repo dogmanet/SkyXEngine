@@ -38,7 +38,7 @@ class CSkyBox
 public:
 	SX_ALIGNED_OP_MEM2();
 
-	void setDevice(IGXContext *pDevice);
+	void setDevice(IGXDevice *pDevice);
 	void setMaterialSystem(IXMaterialSystem *pMaterialSystem);
 
 	//! загрузка текстуры
@@ -99,7 +99,7 @@ protected:
 	IGXIndexBuffer *m_pIndeces = NULL;
 	IGXRenderBuffer *m_pRenderBuffer = NULL;
 
-	IGXContext *m_pDevice = NULL;
+	IGXDevice *m_pDevice = NULL;
 	IXMaterialSystem *m_pMaterialSystem = NULL;
 };
 

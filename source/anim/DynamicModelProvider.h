@@ -34,9 +34,9 @@ public:
 	void onSharedModelRelease(CDynamicModelShared *pShared);
 	void onModelRelease(CDynamicModel *pModel);
 	IXMaterialSystem* getMaterialSystem();
-	IGXContext* getDevice();
+	IGXDevice* getDevice();
 	IXCore* getCore();
-	void setDevice(IGXContext *pContext);
+	void setDevice(IGXDevice *pContext);
 	IGXVertexDeclaration *getVertexDeclaration();
 
 	void render(bool isTransparent, CRenderableVisibility *pVisibility = NULL);
@@ -66,7 +66,7 @@ protected:
 	IGXVertexDeclaration *m_pVertexDeclaration = NULL;
 
 	IXCore *m_pCore;
-	IGXContext *m_pRenderContext = NULL;
+	IGXDevice *m_pRenderContext = NULL;
 
 	CConcurrentQueue<CDynamicModelShared*> m_queueGPUinitShared;
 	CConcurrentQueue<CDynamicModel*> m_queueGPUinitModel;

@@ -14,29 +14,29 @@ public:
 	CEditable(IXCore *pCore);
 	~CEditable();
 
-	UINT getObjectCount();
-	IXEditorObject *getObject(UINT id);
-	IXEditorObject *newObject(const char *szClassName);
+	UINT getObjectCount() override;
+	IXEditorObject* getObject(UINT id) override;
+	IXEditorObject* newObject(const char *szClassName) override;
 
-	const char *getName()
+	const char* getName() override
 	{
 		return("Entity");
 	}
-	UINT getClassCount()
+	UINT getClassCount() override
 	{
 		return(CEntityFactoryMap::GetInstance()->getListCount());
 	}
-	const char *getClass(UINT id)
+	const char* getClass(UINT id) override
 	{
 		assert(id < getClassCount());
 		return(m_pszClassList[id]);
 	}
 
-	void startup(IGXContext *pDevice);
-	void shutdown();
+	void startup(IGXDevice *pDevice) override;
+	void shutdown() override;
 
 protected:
-	IGXContext *m_pDevice = NULL;
+	IGXDevice *m_pDevice = NULL;
 	IXCore *m_pCore = NULL;
 	IXMaterialSystem *m_pMaterialSystem = NULL;
 
