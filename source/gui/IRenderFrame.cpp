@@ -1267,7 +1267,7 @@ namespace gui
 				static CPITexture texWhite = CTextureManager::getTexture(TEX_WHITE);
 			//	static CSHADER shText = CTextureManager::loadShader(L"text");
 
-				IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+				IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
 
 				IGXSamplerState *pOldSampler = pCtx->getSamplerState(0);
 
@@ -1386,6 +1386,7 @@ namespace gui
 				//	GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_BORDERCOLOR, 0xFFFFFFFF);
 				//	GetGUI()->getDevice()->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
 				}
+				mem_release(pOldSampler);
 			}
 
 			void IRenderFrame::updateStyles()
@@ -1705,7 +1706,7 @@ namespace gui
 
 			void IRenderBlock::render(UINT lvl)
 			{
-				IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+				IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
 
 				pCtx->setStencilRef(lvl);
 				if(m_iScrollTop != 0 || m_iScrollTopMax != 0)
@@ -1888,7 +1889,7 @@ namespace gui
 
 			void IRenderAnonymousBlock::render(UINT lvl)
 			{
-				GetGUI()->getDevice()->getDirectContext()->setStencilRef(lvl);
+				GetGUI()->getDevice()->getThreadContext()->setStencilRef(lvl);
 				CTranslationManager::pushMatrix(SMMatrixTranslation(m_iXpos, m_iYpos, 0.0f));
 				BaseClass::render(lvl);
 				CTranslationManager::popMatrix();
@@ -2156,7 +2157,7 @@ namespace gui
 
 			void IRenderInline::render(UINT lvl)
 			{
-				GetGUI()->getDevice()->getDirectContext()->setStencilRef(lvl);
+				GetGUI()->getDevice()->getThreadContext()->setStencilRef(lvl);
 				CTranslationManager::pushMatrix(SMMatrixTranslation(m_iXpos, m_iYpos, 0.0f));
 				m_border.render();
 				renderBackground(lvl);
@@ -2396,7 +2397,7 @@ namespace gui
 			}
 			void IRenderTextNew::render(UINT lvl)
 			{
-				IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+				IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
 
 				pCtx->setStencilRef(lvl);
 				static CPITexture texWhite = NULL;
@@ -2821,7 +2822,7 @@ namespace gui
 				}
 				if(m_pNode->parentNode()->getStyle()->_gui_text_cursor->getInt() == css::ICSSproperty::_GUI_TEXT_CURSOR_SHOW)
 				{
-					IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+					IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
 
 					int iTextSize = m_pNode->parentNode()->getStyle()->font_size->getPX(m_pParent->getInnerHeight());
 					m_iTextSize = iTextSize;
@@ -3002,7 +3003,7 @@ namespace gui
 				}
 				if(m_pNode->parentNode()->getStyle()->_gui_text_cursor->getInt() == css::ICSSproperty::_GUI_TEXT_CURSOR_SHOW)
 				{
-					IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+					IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
 
 					UINT iTextSize = m_pNode->parentNode()->getStyle()->font_size->getPX(m_pParent->getInnerHeight());
 					m_iTextSize = iTextSize;

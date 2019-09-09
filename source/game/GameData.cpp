@@ -1230,7 +1230,7 @@ void GameData::render()
 	}
 	if(pDev)
 	{
-		const GXFrameStats *pFrameStats = pDev->getDirectContext()->getFrameStats();
+		const GXFrameStats *pFrameStats = pDev->getThreadContext()->getFrameStats();
 		const GXAdapterMemoryStats *pMemoryStats = pDev->getMemoryStats();
 
 		static GXFrameStats s_oldFrameStats = {0};
@@ -1281,7 +1281,7 @@ void GameData::render()
 		}
 		if(g_pTextRenderBuffer)
 		{
-			IGXContext *pContext = pDev->getDirectContext();
+			IGXContext *pContext = pDev->getThreadContext();
 
 			pContext->setBlendState(g_pTextBlendState);
 			pContext->setRasterizerState(NULL);

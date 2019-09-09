@@ -67,12 +67,12 @@ void rfunc::SetRenderSceneFilter()
 		gdata::rstates::pSamplerScene = gdata::pDXDevice->createSamplerState(&samplerDesc);
 	}
 
-	gdata::pDXDevice->getDirectContext()->setSamplerState(gdata::rstates::pSamplerScene, 0);
+	gdata::pDXDevice->getThreadContext()->setSamplerState(gdata::rstates::pSamplerScene, 0);
 }
 
 void rfunc::SetRenderSceneFilterUn()
 {
-	gdata::pDXDevice->getDirectContext()->setSamplerState(NULL, 0);
+	gdata::pDXDevice->getThreadContext()->setSamplerState(NULL, 0);
 //	gdata::pDXDevice->SetSamplerState(0, D3DSAMP_MAXMIPLEVEL, 0);
 }
 

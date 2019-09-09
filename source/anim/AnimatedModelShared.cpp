@@ -1080,7 +1080,7 @@ void CAnimatedModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor)
 		return;
 	}
 
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	pCtx->setIndexBuffer(m_ppIndexBuffer[uLod]);
 	pCtx->setRenderBuffer(m_ppRenderBuffer[uLod]);

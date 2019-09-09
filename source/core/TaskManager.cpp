@@ -411,7 +411,7 @@ ID CTaskManager::forLoop(int iStart, int iEnd, const IParallelForBody *pBody, in
 		return(0);
 	}
 	int iTotal = iEnd - iStart;
-	int iChunkSize = (int)(ceilf((float)iTotal / (float)m_iNumThreads) + 0.5f);
+	int iChunkSize = (int)(ceilf((float)iTotal / (float)(m_iNumThreads - 1)) + 0.5f);
 	if(iMaxChunkSize > 0 && iChunkSize > iMaxChunkSize)
 	{
 		iChunkSize = iMaxChunkSize;

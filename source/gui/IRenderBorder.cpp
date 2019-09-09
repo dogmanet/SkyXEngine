@@ -119,7 +119,7 @@ namespace gui
 					texWhite = CTextureManager::getTexture(TEX_WHITE);
 				}
 
-				IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+				IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
 
 			//	GetGUI()->getDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
@@ -164,7 +164,7 @@ namespace gui
 
 			void IRenderBorder::renderInnerFill()
 			{
-				IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+				IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
 
 				pCtx->setRenderBuffer(m_pRenderBuffer);
 				pCtx->setIndexBuffer(m_pIndexBuffer);

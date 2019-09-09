@@ -72,14 +72,14 @@ namespace gui
 		if(!tex)
 		{
 			//FIXME: Set fallback texture
-			GetGUI()->getDevice()->getDirectContext()->setPSTexture(NULL);
+			GetGUI()->getDevice()->getThreadContext()->setPSTexture(NULL);
 			m_pCurrentTex = NULL;
 			return;
 		}
 		if(m_pCurrentTex != tex)
 		{
 			m_pCurrentTex = tex;
-			GetGUI()->getDevice()->getDirectContext()->setPSTexture(m_pCurrentTex->m_pTexture);
+			GetGUI()->getDevice()->getThreadContext()->setPSTexture(m_pCurrentTex->m_pTexture);
 		}
 
 

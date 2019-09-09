@@ -360,7 +360,7 @@ SX_LIB_API BOOL SGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam)
 	}
 
 	static const bool *s_pGrabCursor = GET_PCVAR_BOOL("cl_grab_cursor");
-	if(message == WM_ACTIVATE && *s_pGrabCursor && LOWORD(wParam) == WA_INACTIVE)
+	if(message == WM_ACTIVATE && s_pGrabCursor && *s_pGrabCursor && LOWORD(wParam) == WA_INACTIVE)
 	{
 		Core_0ConsoleExecCmd("game_menu");
 	}

@@ -1254,11 +1254,11 @@ void CMaterials::setMainTexture(ID slot, ID id)
 	{
 		IGXBaseTexture *pTex = NULL;
 		m_aUnitMtrls[id]->m_pMtrl->m_oMainGraphics.m_pMainTexture->getAPITexture(&pTex);
-		mtrl_data::pDXDevice->getDirectContext()->setPSTexture(pTex, slot);
+		mtrl_data::pDXDevice->getThreadContext()->setPSTexture(pTex, slot);
 		mem_release(pTex);
 	}
 	else
-		mtrl_data::pDXDevice->getDirectContext()->setPSTexture(0, slot);
+		mtrl_data::pDXDevice->getThreadContext()->setPSTexture(0, slot);
 }
 
 ID CMaterials::getID(const char* name)
@@ -1933,7 +1933,7 @@ void CMaterials::render(ID id, const float4x4 *pWorld, const float4 *pColor)
 {
 	MTL_PRE_COND_ID(id, _VOID);
 
-	IGXContext *pCtx = mtrl_data::pDXDevice->getDirectContext();
+	IGXContext *pCtx = mtrl_data::pDXDevice->getThreadContext();
 
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");

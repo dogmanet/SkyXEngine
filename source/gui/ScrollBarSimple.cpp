@@ -45,7 +45,7 @@ namespace gui
 					s_pColorConstant->update(&float4_t(1, 1, 1, 0.5));
 				}
 
-				IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+				IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
 
 				pCtx->setPSConstant(s_pColorConstant);
 				//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&float4_t(1, 1, 1, 0.5), 1);

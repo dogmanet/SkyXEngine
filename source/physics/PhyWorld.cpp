@@ -986,7 +986,7 @@ void CPhyWorld::CDebugDrawer::begin()
 
 	SGCore_ShaderBind(m_idShader);
 
-	IGXContext *pCtx = SGCore_GetDXDevice()->getDirectContext();
+	IGXContext *pCtx = SGCore_GetDXDevice()->getThreadContext();
 
 	pCtx->setRenderBuffer(m_pRenderBuffer);
 	pCtx->setPrimitiveTopology(GXPT_LINELIST);
@@ -1002,7 +1002,7 @@ void CPhyWorld::CDebugDrawer::commit()
 {
 	render();
 	SGCore_ShaderUnBind();
-	SGCore_GetDXDevice()->getDirectContext()->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	SGCore_GetDXDevice()->getThreadContext()->setPrimitiveTopology(GXPT_TRIANGLELIST);
 }
 
 void CPhyWorld::CDebugDrawer::render()
@@ -1018,7 +1018,7 @@ void CPhyWorld::CDebugDrawer::render()
 		memcpy(pData, m_pDrawData, sizeof(render_point) * m_uDataPointer);
 		m_pVertexBuffer->unlock();
 
-		SGCore_GetDXDevice()->getDirectContext()->drawPrimitive(0, m_uDataPointer / 2);
+		SGCore_GetDXDevice()->getThreadContext()->drawPrimitive(0, m_uDataPointer / 2);
 	}
 
 	m_uDataPointer = 0;

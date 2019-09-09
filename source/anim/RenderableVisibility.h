@@ -39,7 +39,7 @@ public:
 	item_s* getItem(UINT uIndex);
 
 	void setItemCountDynamic(UINT uCount);
-	item_s* getItemDynamic(UINT uIndex);
+	item_s* getItemDynamic(UINT uIndex, bool forceCreate=true);
 
 	void resetItemTransparentDynamic();
 	void addItemTransparentDynamic(const TransparentModel &mdl);

@@ -146,7 +146,7 @@ void CEditorObject::renderSelection(bool is3D)
 	}
 
 	IGXDevice *pDevice = SGCore_GetDXDevice();
-	IGXContext *pCtx = pDevice->getDirectContext();
+	IGXContext *pCtx = pDevice->getThreadContext();
 
 	IGXBlendState *pOldBlendState = pCtx->getBlendState();
 	IGXRasterizerState *pOldRS = pCtx->getRasterizerState();

@@ -235,7 +235,7 @@ void CRenderPipeline::renderFrame()
 	UINT timeDelta = 16;
 	static const int *r_final_image = GET_PCVAR_INT("r_final_image");
 
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	m_sceneShaderData.vNearFarInvWinSize = float4(gdata::vNearFar, 1.0f / (float)m_uOutWidth, 1.0f / (float)m_uOutHeight);
 	m_pSceneShaderDataPS->update(&m_sceneShaderData);
@@ -380,7 +380,7 @@ void CRenderPipeline::newVisData(IXRenderableVisibility **ppVisibility)
 
 void CRenderPipeline::showGICubes()
 {
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	pCtx->setPrimitiveTopology(GXPT_POINTLIST);
 	pCtx->setRenderBuffer(m_pGICubesRB);
@@ -407,7 +407,7 @@ void CRenderPipeline::renderPrepare()
 }
 void CRenderPipeline::renderGBuffer()
 {
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	pCtx->setRasterizerState(NULL);
 	pCtx->setDepthStencilState(NULL);
@@ -468,7 +468,7 @@ void CRenderPipeline::renderGI()
 		return;
 	}
 
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	IGXDepthStencilSurface *pOldDSSurface = pCtx->getDepthStencilSurface();
 
@@ -852,7 +852,7 @@ void CRenderPipeline::renderTransparent()
 	assert(m_pMainCameraVisibility && m_pMainCameraVisibility->getPluginId() == -1);
 	CRenderableVisibility *pVis = (CRenderableVisibility*)m_pMainCameraVisibility;
 
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	pCtx->setDepthStencilState(m_pDepthStencilStateNoZWrite);
 	pCtx->setBlendState(m_pBlendStateAlpha);
@@ -897,92 +897,95 @@ void CRenderPipeline::renderTransparent()
 		}
 	}
 
-	UINT uTotalPlanes = 0;
-	// Определение секущих плоскостей
-	for(UINT i = 0, l = aPSPs.size(); i < l; ++i)
+	if(aNodes.size())
 	{
-		XTransparentPSP *pPSP = &aPSPs[i];
-		XTransparentNode *pPSPNode = &aNodes[pPSP->uNode];
-
-		for(UINT j = 0, jl = aNodes.size(); j < jl; ++j)
+		UINT uTotalPlanes = 0;
+		// Определение секущих плоскостей
+		for(UINT i = 0, l = aPSPs.size(); i < l; ++i)
 		{
-			if(j == pPSP->uNode)
-			{
-				continue;
-			}
-			
-			XTransparentNode *pNode = &aNodes[j];
+			XTransparentPSP *pPSP = &aPSPs[i];
+			XTransparentNode *pPSPNode = &aNodes[pPSP->uNode];
 
-			if(SMAABBIntersectAABB(pNode->obj.vMin, pNode->obj.vMax, pPSPNode->obj.vMin, pPSPNode->obj.vMax)
-				&& SMPlaneIntersectAABB(pPSP->psp, pNode->obj.vMin, pNode->obj.vMax))
+			for(UINT j = 0, jl = aNodes.size(); j < jl; ++j)
 			{
-				pPSP->useMe = true;
-				++uTotalPlanes;
-				break;
-			}
-		}
-	}
-
-	// Определение одинаковых плоскостей
-	for(UINT i = 0, l = aPSPs.size(); i < l; ++i)
-	{
-		XTransparentPSP *pPSP = &aPSPs[i];
-		if(pPSP->useMe)
-		{
-			for(UINT j = i + 1; j < l; ++j)
-			{
-				XTransparentPSP *pPSP2 = &aPSPs[j];
-				if(pPSP2->useMe && SMPlaneEqualEpsilon(pPSP2->psp, pPSP->psp, 0.01f))
+				if(j == pPSP->uNode)
 				{
-					pPSP2->iBasePSP = (int)i;
-					--uTotalPlanes;
+					continue;
+				}
+
+				XTransparentNode *pNode = &aNodes[j];
+
+				if(SMAABBIntersectAABB(pNode->obj.vMin, pNode->obj.vMax, pPSPNode->obj.vMin, pPSPNode->obj.vMax)
+					&& SMPlaneIntersectAABB(pPSP->psp, pNode->obj.vMin, pNode->obj.vMax))
+				{
+					pPSP->useMe = true;
+					++uTotalPlanes;
+					break;
 				}
 			}
 		}
-	}
 
-	XTransparentBSPObject *pRootObject = NULL, *pTailObject = NULL;
-	for(UINT i = 0, l = aNodes.size(); i < l; ++i)
-	{
-		XTransparentBSPObject *pObj = m_poolTransparencyBSPobjects.Alloc();
-		pObj->uNode = i;
-		if(!pRootObject)
+		// Определение одинаковых плоскостей
+		for(UINT i = 0, l = aPSPs.size(); i < l; ++i)
 		{
-			pRootObject = pObj;
-			pTailObject = pObj;
+			XTransparentPSP *pPSP = &aPSPs[i];
+			if(pPSP->useMe)
+			{
+				for(UINT j = i + 1; j < l; ++j)
+				{
+					XTransparentPSP *pPSP2 = &aPSPs[j];
+					if(pPSP2->useMe && SMPlaneEqualEpsilon(pPSP2->psp, pPSP->psp, 0.01f))
+					{
+						pPSP2->iBasePSP = (int)i;
+						--uTotalPlanes;
+					}
+				}
+			}
 		}
-		else
+
+		XTransparentBSPObject *pRootObject = NULL, *pTailObject = NULL;
+		for(UINT i = 0, l = aNodes.size(); i < l; ++i)
 		{
-			pTailObject->pNext = pObj;
-			pTailObject = pObj;
+			XTransparentBSPObject *pObj = m_poolTransparencyBSPobjects.Alloc();
+			pObj->uNode = i;
+			if(!pRootObject)
+			{
+				pRootObject = pObj;
+				pTailObject = pObj;
+			}
+			else
+			{
+				pTailObject->pNext = pObj;
+				pTailObject = pObj;
+			}
 		}
+		//m_poolTransparencyBSPobjects
+
+		float3 vCamPos;
+		gdata::pCamera->getPosition(&vCamPos);
+
+		// Построение дерева
+		XTransparentBSPNode *pRootNode = m_poolTransparencyBSPnodes.Alloc();
+		buildTransparencyBSP(&aPSPs[0], aPSPs.size(), 0, pRootNode, pRootObject, &aNodes[0], vCamPos);
+
+		//float4 vPlanes[MAX_TRANSPARENCY_CLIP_PANES];
+		//vPlanes[0] = SMPlaneNormalize(SMPlaneTransform(SMPLANE(0.0f, 1.0f, 0.0f, -1.0f), gdata::mCamView * gdata::mCamProj));
+		//vPlanes[0] /= fabsf(vPlanes[0].w);
+		//m_pTransparencyShaderClipPlanes->update(vPlanes);
+
+		// Отрисовка дерева
+		pCtx->setPSConstant(m_pTransparencyShaderClipPlanes, 6);
+
+		SMMATRIX mTransInvVP = SMMatrixTranspose(SMMatrixInverse(NULL, gdata::mCamView * gdata::mCamProj));
+		UINT puPlanesStack[MAX_TRANSPARENCY_CLIP_PANES];
+		renderTransparencyBSP(pRootNode, &aPSPs[0], &aNodes[0], &list[0], vCamPos, puPlanesStack, 0, mTransInvVP);
+
+		m_poolTransparencyBSPobjects.clearFast();
+		m_poolTransparencyBSPnodes.clearFast();
+		m_poolTransparencyBSPsplitPlanes.clearFast();
+		m_aTmpNodes.clearFast();
+		m_aTmpPSPs.clearFast();
 	}
-	//m_poolTransparencyBSPobjects
-
-	float3 vCamPos;
-	gdata::pCamera->getPosition(&vCamPos);
-
-	// Построение дерева
-	XTransparentBSPNode *pRootNode = m_poolTransparencyBSPnodes.Alloc();
-	buildTransparencyBSP(&aPSPs[0], aPSPs.size(), 0, pRootNode, pRootObject, &aNodes[0], vCamPos);
-	
-	//float4 vPlanes[MAX_TRANSPARENCY_CLIP_PANES];
-	//vPlanes[0] = SMPlaneNormalize(SMPlaneTransform(SMPLANE(0.0f, 1.0f, 0.0f, -1.0f), gdata::mCamView * gdata::mCamProj));
-	//vPlanes[0] /= fabsf(vPlanes[0].w);
-	//m_pTransparencyShaderClipPlanes->update(vPlanes);
-
-	// Отрисовка дерева
-	pCtx->setPSConstant(m_pTransparencyShaderClipPlanes, 6);
-
-	SMMATRIX mTransInvVP = SMMatrixTranspose(SMMatrixInverse(NULL, gdata::mCamView * gdata::mCamProj));
-	UINT puPlanesStack[MAX_TRANSPARENCY_CLIP_PANES];
-	renderTransparencyBSP(pRootNode, &aPSPs[0], &aNodes[0], &list[0], vCamPos, puPlanesStack, 0, mTransInvVP);
-
-	m_poolTransparencyBSPobjects.clearFast();
-	m_poolTransparencyBSPnodes.clearFast();
-	m_poolTransparencyBSPsplitPlanes.clearFast();
-	m_aTmpNodes.clearFast();
-	m_aTmpPSPs.clearFast();
 
 	pCtx->setBlendState(NULL);
 	pCtx->setColorTarget(NULL);
@@ -1000,7 +1003,7 @@ void CRenderPipeline::renderTransparencyBSP(XTransparentBSPNode *pNode, XTranspa
 {
 	XTransparentBSPNode *pFirst, *pSecond;
 
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	bool isInFront = (pNode->iPSP >= 0) && SMVector3Dot(pPSPs[pNode->iPSP].psp, vCamPos) > -pPSPs[pNode->iPSP].psp.w;
 	if(isInFront)
@@ -1450,7 +1453,7 @@ void CRenderPipeline::renderEditor2D()
 	m_cameraShaderData.vs.mVP = SMMatrixTranspose(mVP);
 	m_cameraShaderData.vs.vPosCam = vCamPos;
 	m_pCameraShaderDataVS->update(&m_cameraShaderData.vs);
-	m_pDevice->getDirectContext()->setVSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
+	m_pDevice->getThreadContext()->setVSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
 
 	renderStage(XRS_EDITOR_2D);
 }
@@ -1470,7 +1473,7 @@ UINT CRenderPipeline::getIndexForStage(X_RENDER_STAGE stage)
 
 void CRenderPipeline::showTexture(IGXTexture2D *pTexture)
 {
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	IGXDepthStencilState *pOldState = pCtx->getDepthStencilState();
 	pCtx->setDepthStencilState(m_pDepthStencilStateNoZ);

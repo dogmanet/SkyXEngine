@@ -231,7 +231,7 @@ public:
 	{
 		m_pOldPipeline->renderFrame();
 		
-		IGXContext *pDXDevice = getDevice()->getDirectContext();
+		IGXContext *pDXDevice = getDevice()->getThreadContext();
 		pDXDevice->setDepthStencilState(NULL);
 
 		XRender3D();
@@ -838,7 +838,7 @@ void XReleaseViewports()
 void XRender3D()
 {
 	IGXDevice *pDevice = SGCore_GetDXDevice();
-	IGXContext *pCtx = pDevice->getDirectContext();
+	IGXContext *pCtx = pDevice->getThreadContext();
 
 	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 	{
@@ -907,7 +907,7 @@ void XRender3D()
 void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 {
 	IGXDevice *pDevice = SGCore_GetDXDevice();
-	IGXContext *pCtx = pDevice->getDirectContext();
+	IGXContext *pCtx = pDevice->getThreadContext();
 
 	if(preScene)
 	{
@@ -1347,7 +1347,7 @@ void XDrawBorder(GXCOLOR color, const float3_t &vA, const float3_t &vB, const fl
 	}
 
 	IGXDevice *pDevice = SGCore_GetDXDevice();
-	IGXContext *pCtx = pDevice->getDirectContext();
+	IGXContext *pCtx = pDevice->getThreadContext();
 
 	IGXBlendState *pOldBlendState = pCtx->getBlendState();
 	SGCore_ShaderBind(g_xRenderStates.idTexturedShaderKit);

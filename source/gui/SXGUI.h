@@ -150,7 +150,7 @@ namespace gui
 		void updateTransformShader()
 		{
 			m_pVSTransformConstant->update(&SMMatrixTranspose(m_mTransformWorld * m_mTransformViewProj));
-			m_pDevice->getDirectContext()->setVSConstant(m_pVSTransformConstant, 0);
+			m_pDevice->getThreadContext()->setVSConstant(m_pVSTransformConstant, 0);
 		}
 
 		IGXRenderBuffer *getQuadRenderBufferXYZ(float3_t *pVertices);

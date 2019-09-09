@@ -2,6 +2,17 @@
 #include <xcommon/IPluginManager.h>
 #include <chrono>
 
+/*
+#if 1
+#	include <core/sxcore.h>
+#	ifdef _DEBUG
+#		pragma comment(lib, "sxcore_d.lib")
+#	else
+#		pragma comment(lib, "sxcore.lib")
+#	endif
+#endif
+*/
+
 CMaterialChangedEventListener::CMaterialChangedEventListener(CDynamicModelProvider *pProvider):
 	m_pProvider(pProvider)
 {
@@ -13,6 +24,68 @@ void CMaterialChangedEventListener::onEvent(const XEventMaterialChanged *pData)
 		m_pProvider->onMaterialTransparencyChanged(pData->pMaterial);
 	}
 }
+/*
+//##########################################################################
+
+class CRenderTask: public IParallelForBody
+{
+public:
+	CRenderTask(CRenderableVisibility *pVisibility, Array<CDynamicModel*> *pModels, IGXDevice *pDevice, IGXContextState *pState):
+		m_pVisibility(pVisibility),
+		m_pModels(pModels),
+		m_pDevice(pDevice),
+		m_pState(pState)
+	{
+	}
+
+	void forLoop(int iStart, int iEnd) const
+	{
+		//printf("%d %d\n", iStart, iEnd);
+		//printf("%d\n", Core_MGetThreadID());
+		m_pDevice->getThreadContext()->setFullState(m_pState);
+
+		m_pDevice->getThreadContext()->beginIndirect();
+
+		for(UINT i = iStart, l = iEnd; i < l; ++i)
+		{
+			//if(iStart != 279 && iStart != 558 && iStart != 837)
+			//{
+			//	break;
+			//}
+			//if(iStart == 558)
+			//{
+			//	//break;
+			//}
+			//if(iStart == 837)
+			//{
+			//	//break;
+			//}
+			if(m_pVisibility)
+			{
+				auto pItem = m_pVisibility->getItemDynamic(i, false);
+				if(pItem && pItem->isVisible)
+				{
+					(*m_pModels)[i]->render(pItem->uLod, false);
+					//break;
+				}
+			}
+			else
+			{
+				(*m_pModels)[i]->render(0, false);
+			}
+		}
+
+		//Sleep(2);
+		m_pDevice->getThreadContext()->endIndirect();
+	};
+
+protected:
+	CRenderableVisibility *m_pVisibility;
+	Array<CDynamicModel*> *m_pModels;
+	IGXDevice *m_pDevice;
+	IGXContextState *m_pState;
+};
+*/
 
 //##########################################################################
 
@@ -122,25 +195,65 @@ IXMaterialSystem *CDynamicModelProvider::getMaterialSystem()
 
 void CDynamicModelProvider::render(bool isTransparent, CRenderableVisibility *pVisibility)
 {
-	for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
-	{
-		if(pVisibility)
+	//if(isTransparent/* || m_apModels.size() < 1000*/)
+	//{
+		for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
 		{
-			auto pItem = pVisibility->getItemDynamic(i);
-			if(pItem->isVisible)
+			if(pVisibility)
 			{
-				if(isTransparent && !pItem->isTransparent)
+				auto pItem = pVisibility->getItemDynamic(i);
+				if(pItem->isVisible)
 				{
-					continue;
+					if(isTransparent && !pItem->isTransparent)
+					{
+						continue;
+					}
+					m_apModels[i]->render(pItem->uLod, isTransparent);
 				}
-				m_apModels[i]->render(pItem->uLod, isTransparent);
+			}
+			else
+			{
+				m_apModels[i]->render(0, isTransparent);
 			}
 		}
-		else
+	//}
+	/*else
+	{
+		IGXContextState *pState = m_pRenderContext->getThreadContext()->getCurrentState();
+		CRenderTask task(pVisibility, &m_apModels, m_pRenderContext, pState);
+
+		int iThreads = Core_MGetThreadCount();
+		int iChunkSize = ((int)m_apModels.size() + (iThreads - 1)) / iThreads;
+
+		ID idTask = Core_MForLoop(iChunkSize, m_apModels.size(), &task);
+
+		for(UINT i = 0, l = iChunkSize; i < l; ++i)
 		{
-			m_apModels[i]->render(0, isTransparent);
+			if(pVisibility)
+			{
+				auto pItem = pVisibility->getItemDynamic(i);
+				if(pItem->isVisible)
+				{
+					if(isTransparent && !pItem->isTransparent)
+					{
+						continue;
+					}
+					m_apModels[i]->render(pItem->uLod, isTransparent);
+				}
+			}
+			else
+			{
+				m_apModels[i]->render(0, isTransparent);
+			}
 		}
-	}
+		
+		Core_MWaitFor(idTask);
+
+		mem_release(pState);
+
+		m_pRenderContext->executeThreadContexts();
+		//printf("\n");
+	}*/
 }
 
 void CDynamicModelProvider::computeVisibility(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)

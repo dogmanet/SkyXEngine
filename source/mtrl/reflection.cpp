@@ -249,7 +249,7 @@ void CReflection::preRenderRefPlane(const SMPLANE* plane)
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &mtrl_data::mRefProjPlane);
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(viewmat * mtrl_data::mRefProjPlane));
 
-	IGXContext *pCtx = mtrl_data::pDXDevice->getDirectContext();
+	IGXContext *pCtx = mtrl_data::pDXDevice->getThreadContext();
 
 	m_pBackBuffer = pCtx->getColorTarget();
 
@@ -274,7 +274,7 @@ void CReflection::postRenderRefPlane()
 	mtrl_data::pDXDevice->GetRenderState(D3DRS_ZENABLE, &zenable);
 	mtrl_data::pDXDevice->GetRenderState(D3DRS_ZWRITEENABLE, &zwriteenable);
 */
-	IGXContext *pCtx = mtrl_data::pDXDevice->getDirectContext();
+	IGXContext *pCtx = mtrl_data::pDXDevice->getThreadContext();
 
 	pCtx->setDepthStencilState(m_pDSState);
 	pCtx->setBlendState(NULL);
@@ -346,7 +346,7 @@ void CReflection::beginRenderRefCube(const float3_t* pCenter)
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &m_mOldMatProj);
 	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &m_mOldMatViewProj);
 
-	m_pBackBuffer = mtrl_data::pDXDevice->getDirectContext()->getColorTarget();
+	m_pBackBuffer = mtrl_data::pDXDevice->getThreadContext()->getColorTarget();
 }
 
 void CReflection::preRenderRefCube(ID idFace, const float4x4 *pWorld)
@@ -374,7 +374,7 @@ void CReflection::preRenderRefCube(ID idFace, const float4x4 *pWorld)
 	mem_release(m_pSurface);
 	m_pSurface = m_pTexWork->getMipmap();
 
-	IGXContext *pCtx = mtrl_data::pDXDevice->getDirectContext();
+	IGXContext *pCtx = mtrl_data::pDXDevice->getThreadContext();
 
 	pCtx->setColorTarget(m_pSurface);
 
@@ -387,7 +387,7 @@ void CReflection::postRenderRefCube(ID idFace)
 
 	DWORD alphablend, alphatest, zenable, zwriteenable;
 
-	IGXContext *pCtx = mtrl_data::pDXDevice->getDirectContext();
+	IGXContext *pCtx = mtrl_data::pDXDevice->getThreadContext();
 
 /*	mtrl_data::pDXDevice->GetRenderState(D3DRS_ALPHABLENDENABLE, &alphablend);
 	mtrl_data::pDXDevice->GetRenderState(D3DRS_ALPHATESTENABLE, &alphatest);
@@ -433,7 +433,7 @@ void CReflection::endRenderRefCube(const float3_t *pViewPos)
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &m_mOldMatProj);
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &m_mOldMatViewProj);
 
-	mtrl_data::pDXDevice->getDirectContext()->setColorTarget(m_pBackBuffer);
+	mtrl_data::pDXDevice->getThreadContext()->setColorTarget(m_pBackBuffer);
 	mem_release_del(m_pBackBuffer);
 
 	updateCountUpdate(pViewPos);

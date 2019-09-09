@@ -103,7 +103,7 @@ namespace gui
 
 	void CDesktop::render(float fTimeDelta, bool bPresent)
 	{
-		IGXContext *pCtx = GetGUI()->getDevice()->getDirectContext();
+		IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
 
 		m_pDoc->update(fTimeDelta);
 		if(m_pDoc->isDirty())

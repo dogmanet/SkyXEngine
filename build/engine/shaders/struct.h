@@ -158,7 +158,7 @@ struct PSO_RSMbuffer
 
 struct VSI_SkyBox
 {
-	float4 vPosition	:POSITION0;
+	float3 vPosition	:POSITION0;
 	float3 vTexUV	:TEXCOORD0;
 };
 
@@ -274,7 +274,7 @@ struct VSO_GUITextured
 
 struct VSI_GUISimple
 {
-	float4 vPosition	:POSITION0;
+	float3 vPosition	:POSITION0;
 };
 
 struct VSO_GUISimple

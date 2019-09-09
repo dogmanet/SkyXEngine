@@ -250,9 +250,9 @@ bool CEngine::runFrame()
 			pRenderPipeline->updateVisibility();
 			pRenderPipeline->endFrame();
 
-			pRenderContext->getDirectContext()->beginFrame();
+			pRenderContext->getThreadContext()->beginFrame();
 			pRenderPipeline->renderFrame();
-			pRenderContext->getDirectContext()->endFrame();
+			pRenderContext->getThreadContext()->endFrame();
 
 			mem_release(pRenderPipeline);
 		}

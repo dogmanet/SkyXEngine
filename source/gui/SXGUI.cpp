@@ -373,7 +373,7 @@ namespace gui
 
 		CVideoUpdateManager::update();
 
-		IGXContext *pCtx = m_pDevice->getDirectContext();
+		IGXContext *pCtx = m_pDevice->getThreadContext();
 
 		pCtx->clear(GX_CLEAR_STENCIL);
 

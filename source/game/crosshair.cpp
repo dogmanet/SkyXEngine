@@ -379,7 +379,7 @@ void CCrosshair::render()
 			m_pIndexBuffer->unlock();
 		}
 	}
-	IGXContext *pCtx = m_pDev->getDirectContext();
+	IGXContext *pCtx = m_pDev->getThreadContext();
 
 	SGCore_ShaderBind(m_idShaderKit);
 	pCtx->setBlendState(m_pBlendState);

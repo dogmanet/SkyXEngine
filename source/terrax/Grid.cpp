@@ -257,7 +257,7 @@ CGrid::~CGrid()
 
 void CGrid::render(GRID_STEP step)
 {
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	IGXBlendState *pOldBlendState = pCtx->getBlendState();
 	IGXDepthStencilState *pOldDepthStencilState = pCtx->getDepthStencilState();

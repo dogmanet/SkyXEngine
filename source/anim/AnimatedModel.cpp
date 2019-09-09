@@ -749,7 +749,7 @@ void XMETHODCALLTYPE CAnimatedModel::render(UINT uLod, bool isTransparent)
 		m_isWorldDirty = false;
 	}
 
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	pCtx->setVSConstant(m_pWorldBuffer, 1 /* SCR_OBJECT */);
 	pCtx->setVSConstant(m_pBoneConstantBuffer, 10);

@@ -172,7 +172,7 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 		return;
 	}
 
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	IXLightSpot *pSpotLight = m_pLight->asSpot();
 
@@ -255,7 +255,7 @@ void CShadowMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDepth
 		return;
 	}
 
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	const float c_fTexWidth = (float)pShadowMap->getWidth();
 	const float c_fTexHeight = (float)pShadowMap->getHeight();
@@ -357,7 +357,7 @@ void CShadowMap::genLPV(bool isDebug)
 		return;
 	}
 
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	pCtx->setRenderBuffer(NULL);
 	pCtx->setIndexBuffer(NULL);
@@ -890,7 +890,7 @@ void CShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 		return;
 	}
 
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	IXLightPoint *pPointLight = m_pLight->asPoint();
 
@@ -989,7 +989,7 @@ void CShadowCubeMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferD
 	const float c_fTexWidth = (float)pShadowMap->getWidth();
 	const float c_fTexHeight = (float)pShadowMap->getHeight();
 
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	IGXSurface *pRenderSurf, *pBackBuf;
 	pRenderSurf = pShadowMap->getMipmap(0);
@@ -1058,7 +1058,7 @@ void CShadowCubeMap::genLPV(bool isDebug)
 		return;
 	}
 
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	pCtx->setRenderBuffer(NULL);
 	pCtx->setIndexBuffer(NULL);

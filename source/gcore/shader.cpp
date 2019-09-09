@@ -844,12 +844,12 @@ void CShaderManager::bind(ID idShaderKit)
 		return;
 	}
 
-	g_pDevice->getDirectContext()->setShader(m_aShaderKit[idShaderKit]->m_pShaderKit);
+	g_pDevice->getThreadContext()->setShader(m_aShaderKit[idShaderKit]->m_pShaderKit);
 }
 
 void CShaderManager::unbind()
 {
-	g_pDevice->getDirectContext()->setShader(0);
+	g_pDevice->getThreadContext()->setShader(0);
 }
 
 

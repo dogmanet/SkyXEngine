@@ -188,7 +188,7 @@ void CSkyBox::render()
 	//static ID s_idShader = SGCore_ShaderCreateKit(m_idVS, m_idPS);
 	//SGCore_ShaderBind(s_idShader);
 
-	IGXContext *pCtx = m_pDevice->getDirectContext();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	pCtx->setIndexBuffer(m_pIndeces);
 	pCtx->setRenderBuffer(m_pRenderBuffer);

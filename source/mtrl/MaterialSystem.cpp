@@ -165,7 +165,7 @@ void XMETHODCALLTYPE CMaterialSystem::setWorld(const SMMATRIX &mWorld)
 	
 
 	m_pObjectConstantBuffer->update(&m_objectData);
-	SGCore_GetDXDevice()->getDirectContext()->setVSConstant(m_pObjectConstantBuffer, SCR_OBJECT);
+	SGCore_GetDXDevice()->getThreadContext()->setVSConstant(m_pObjectConstantBuffer, SCR_OBJECT);
 	//SGCore_GetDXDevice()->setPixelShaderConstant(m_pObjectConstantBuffer, SCR_OBJECT);
 }
 void XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial, IXShaderVariant *pShaderVariant)
@@ -180,12 +180,12 @@ void XMETHODCALLTYPE CMaterialSystem::bindTexture(IXTexture *pTexture, UINT slot
 	{
 		IGXBaseTexture *pTex;
 		pTexture->getAPITexture(&pTex);
-		SGCore_GetDXDevice()->getDirectContext()->setPSTexture(pTex, slot);
+		SGCore_GetDXDevice()->getThreadContext()->setPSTexture(pTex, slot);
 		mem_release(pTex);
 	}
 	else
 	{
-		SGCore_GetDXDevice()->getDirectContext()->setPSTexture(NULL, slot);
+		SGCore_GetDXDevice()->getThreadContext()->setPSTexture(NULL, slot);
 	}
 }
 

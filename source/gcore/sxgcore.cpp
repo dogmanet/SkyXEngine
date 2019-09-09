@@ -144,7 +144,7 @@ SX_LIB_API void SGCore_OnResetDevice()
 SX_LIB_API void SGCore_ScreenQuadDraw()
 {
 	SG_PRECOND(_VOID);
-	IGXContext *pCtx = g_pDevice->getDirectContext();
+	IGXContext *pCtx = g_pDevice->getThreadContext();
 	pCtx->setRenderBuffer(g_pScreenTextureRB);
 	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
 	pCtx->drawPrimitive(0, 2);
@@ -289,7 +289,7 @@ public:
 	}
 	void draw()
 	{
-		IGXContext *pCtx = g_pDevice->getDirectContext();
+		IGXContext *pCtx = g_pDevice->getThreadContext();
 		pCtx->setRenderBuffer(m_pRB);
 		pCtx->setIndexBuffer(m_pIB);
 		pCtx->drawIndexed(m_uVertexCount, m_uIndexCount / 3, 0, 0);

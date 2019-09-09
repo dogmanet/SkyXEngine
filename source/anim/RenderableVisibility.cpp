@@ -67,9 +67,13 @@ void CRenderableVisibility::setItemCountDynamic(UINT uCount)
 	}
 }
 
-CRenderableVisibility::item_s* CRenderableVisibility::getItemDynamic(UINT uIndex)
+CRenderableVisibility::item_s* CRenderableVisibility::getItemDynamic(UINT uIndex, bool forceCreate)
 {
-	return(&m_aItemsDynamic[uIndex]);
+	if(forceCreate || uIndex < m_aItemsDynamic.size())
+	{
+		return(&m_aItemsDynamic[uIndex]);
+	}
+	return(NULL);
 }
 
 CRenderableVisibility::TransparentModel* CRenderableVisibility::getItemTransparentDynamic(UINT uIndex)
