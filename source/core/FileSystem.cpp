@@ -24,16 +24,15 @@ void CFileSystem::addPathInPriorityArray(int id, int iPriority)
 
 bool CFileSystem::isFileOrDirectory(const char *szPath, bool isFile)
 {
-    char* path = getAbsoluteCanonizePath(szPath);
+    char path[SIZE_PATH];
+    getAbsoluteCanonizePath(szPath, path, SIZE_PATH);
 
-    if (!path)
+    if (CHECK_CORRECT_PATH(path))
     {
         return false;
     }
 
     DWORD flag = GetFileAttributes(path);
-
-    mem_delete_a(path);
 
     //Проверка на то куда имено ведет путь - к файлу или папке
     return (flag != INVALID_FILE_ATTRIBUTES) && (isFile ? !(flag & FILE_ATTRIBUTE_DIRECTORY) : (flag & FILE_ATTRIBUTE_DIRECTORY));
@@ -96,35 +95,34 @@ bool CFileSystem::isAbsolutePathInRoot(const char *szPath)
     return pos != nullptr;
 }
 
-char *CFileSystem::getAbsoluteCanonizePath(const char *szPath)
+void CFileSystem::getAbsoluteCanonizePath(const char *szPath, char *outPath, int iOutMax)
 {
     bool absolute = isAbsolutePath(szPath);
     bool correctPath = true;
 
     int len = absolute ? strlen(szPath) + 1 : SIZE_PATH;
-    char *fullPath = new char[len];
 
     if (absolute) 
     {
-        memcpy(fullPath, szPath, len);
+        memcpy(outPath, szPath, len);
     }
     else
     { 
-        correctPath = resolvePath(szPath, fullPath, len); 
+        correctPath = resolvePath(szPath, outPath, len);
     }
 
     //Во время поиска пути могут произойти ошибки - путь может быть не найден, или слишком маленький буфер для записи
     if (correctPath)
     {
         //Если все корректно прошло, то путь можно канонизировать
-        canonize_path(fullPath);
-
-        return fullPath;
+        canonize_path(outPath);
     }
-
-    mem_delete_a(fullPath);
-
-    return nullptr;
+    else
+    {
+        //Если что то пошло не так записываем -1 в память, потом это значение можно проверить
+        outPath[0] = -1;
+        outPath[1] = '\0';
+    }
 }
 
 char *CFileSystem::getFullPathToBuild()
@@ -285,25 +283,24 @@ bool CFileSystem::resolvePath(const char *szPath, char *szOut, int iOutMax)
 
 bool CFileSystem::fileExists(const char *szPath)
 {
-    char* path = getAbsoluteCanonizePath(szPath);
+    char path[SIZE_PATH];
+    getAbsoluteCanonizePath(szPath, path, SIZE_PATH);
 
-    if (!path)
+    if (CHECK_CORRECT_PATH(path))
     {
         //Если не удалось найти полный путь - на выход
         return false;
     }
 
-    size_t size = fileGetSize(path) != -1;
-    mem_delete_a(path);
-
-    return size;
+    return fileGetSize(path) != -1;
 }
 
 size_t CFileSystem::fileGetSize(const char *szPath)
 {
-    char* path = getAbsoluteCanonizePath(szPath);
+    char path[SIZE_PATH];
+    getAbsoluteCanonizePath(szPath, path, SIZE_PATH);
 
-    if (!path)
+    if (CHECK_CORRECT_PATH(path))
     {
         return false;
     }
@@ -316,8 +313,6 @@ size_t CFileSystem::fileGetSize(const char *szPath)
 	ULONGLONG FileSize = (static_cast<ULONGLONG>(lpFileInformation.nFileSizeHigh) <<
 		sizeof(lpFileInformation.nFileSizeLow) * sizeof(ULONGLONG)) |
 		lpFileInformation.nFileSizeLow;
-
-    mem_delete_a(path);
 
 	//Если result != 0 то все хорошо, если 0 то файл не найден
 	return result != 0 ? FileSize : FILE_NOT_FOUND;
@@ -335,9 +330,10 @@ bool CFileSystem::isDirectory(const char *szPath)
 
 time_t CFileSystem::getFileModifyTime(const char *szPath)
 {
-    char* path = getAbsoluteCanonizePath(szPath);
+    char path[SIZE_PATH];
+    getAbsoluteCanonizePath(szPath, path, SIZE_PATH);
 
-    if (!path)
+    if (CHECK_CORRECT_PATH(path))
     {
         return 0;
     }
@@ -345,8 +341,6 @@ time_t CFileSystem::getFileModifyTime(const char *szPath)
     WIN32_FILE_ATTRIBUTE_DATA lpFileInformation;
 
     GetFileAttributesEx(path, GetFileExInfoStandard, &lpFileInformation);
-
-    mem_delete(path);
 
 	return filetimeToTime_t(lpFileInformation.ftLastWriteTime);
 }
@@ -432,10 +426,15 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
         return nullptr;
     }
 
-    char *fullPath = getAbsoluteCanonizePath(szPath);
+    //Зарезервированная строка, если вдруг не хватит SIZE_PATH
+    char reserveStr[SIZE_PATH * 2];
+    bool useReserveStr = false;
+
+    char fullPath[SIZE_PATH];
+    getAbsoluteCanonizePath(szPath, fullPath, SIZE_PATH);
 
     //Если по каким либо причинам нельзя вернуть полный путь - на выход
-    if (!fullPath && mode == FILE_MODE_READ)
+    if (CHECK_CORRECT_PATH(fullPath) && mode == FILE_MODE_READ)
     {
         return nullptr;
     }
@@ -449,8 +448,6 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
         {
             mem_delete(file);
         }
-
-        mem_delete_a(fullPath);
         return file;
     }
 
@@ -462,7 +459,7 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
         *newFileName += '/';
         *newFileName += szPath;
 
-        fullPath = getAbsoluteCanonizePath(newFileName->c_str());
+        getAbsoluteCanonizePath(newFileName->c_str(), fullPath, SIZE_PATH);
 
         mem_delete(newFileName);
     }
@@ -497,8 +494,8 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
         
         if (lenPath < newFileName->length())
         {
-            mem_delete_a(fullPath);
-            fullPath = new char[newFileName->length() + 1];
+            memcpy(reserveStr, newFileName->c_str(), newFileName->length() + 1);
+            useReserveStr = true;
         }
 
         memcpy(fullPath, newFileName->c_str(), newFileName->length() + 1);
@@ -507,14 +504,17 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
 
     int res = 0;
 
+    //Определяем использован ли дополнительный путь для записи в файловой системе
+    char* correctPath = useReserveStr ? reserveStr : fullPath;
+
     switch (mode)
     {
     case FILE_MODE_WRITE:
-        res = file->create(fullPath, CORE_FILE_BIN);
+        res = file->create(correctPath, CORE_FILE_BIN);
         break;
 
     case FILE_MODE_APPEND:
-        res = file->add(fullPath, CORE_FILE_BIN);
+        res = file->add(correctPath, CORE_FILE_BIN);
         break;
     }
 
@@ -522,8 +522,6 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
     {
         mem_delete(file);
     }
-
-    mem_delete_a(fullPath);
 
     return file;
 }

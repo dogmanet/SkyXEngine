@@ -37,6 +37,8 @@ See the license in LICENSE
     assert(size - 1 < id && "The path ID you entered does not exist"); \
 }
 
+#define CHECK_CORRECT_PATH(path) path[0] == -1
+
 struct Pair
 {
     int priority;
@@ -102,7 +104,7 @@ private:
     bool isAbsolutePathInRoot(const char *szPath);
 
     //! Возвращает абсолютный канонизированный путь
-    char *getAbsoluteCanonizePath(const char *szPath);
+    void getAbsoluteCanonizePath(const char *szPath, char *outPath, int iOutMax);
 
     char *getFullPathToBuild();
 
