@@ -6,6 +6,7 @@ See the license in LICENSE
 
 #include "BaseItem.h"
 #include "BaseCharacter.h"
+#include <xcommon/resource/IXResourceManager.h>
 
 /*! \skydocent base_item
 Базовый объект элемента инвентаря игрока
@@ -27,6 +28,8 @@ BEGIN_PROPTABLE(CBaseItem)
 
 	DEFINE_OUTPUT(m_onPickUp, "OnPickUp", "On pickup")
 	DEFINE_OUTPUT(m_onDrop, "OnDrop", "On drop")
+
+	DEFINE_FIELD_STRINGFN(m_szViewModelFile, 0, "model_view", "View model file", onSetViewModel, EDITOR_MODEL)
 END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseItem, base_item);
@@ -39,6 +42,13 @@ CBaseItem::CBaseItem(CEntityManager * pMgr):
 	m_iInvWeight(0.0f),
 	m_bPickable(true)
 {
+}
+
+CBaseItem::~CBaseItem()
+{
+	mem_release(m_pViewModel);
+	mem_release(m_pViewModelResource);
+	mem_release(m_pHandsModelResource);
 }
 
 float CBaseItem::getWeight()
@@ -64,32 +74,120 @@ void CBaseItem::onUse(CBaseEntity *pUser)
 	}
 	else
 	{
-		setModeInventory();
+		setMode(IIM_INVENTORY);
 	}
 }
 
-void CBaseItem::setModeInventory()
+void CBaseItem::setMode(INVENTORY_ITEM_MODE mode)
 {
-	if(!m_bWorldMode)
+	if(mode == m_inventoryMode)
 	{
 		return;
 	}
-	m_bWorldMode = false;
+	INVENTORY_ITEM_MODE oldMode = m_inventoryMode;
+	m_inventoryMode = mode;
+	onModeChanged(oldMode, mode);
+}
 
-	releasePhysics();
-	if(m_pAnimPlayer)
+void CBaseItem::onModeChanged(INVENTORY_ITEM_MODE oldMode, INVENTORY_ITEM_MODE newMode)
+{
+	if(m_pModel)
 	{
-		mem_release(m_pAnimPlayer);
+		m_pModel->enable(newMode == IIM_WORLD);
+	}
+	if(m_pViewModel)
+	{
+		m_pViewModel->enable(newMode == IIM_EQUIPPED);
+		if(newMode == IIM_EQUIPPED)
+		{
+			m_pViewModel->startActivity("ACT_HOLSTER");
+		}
+	}
+
+	if(newMode == IIM_WORLD)
+	{
+		initPhysics();
+	}
+	else
+	{
+		releasePhysics();
 	}
 }
 
-void CBaseItem::setModeWorld()
+void CBaseItem::setScale(float fScale)
 {
-	if(m_bWorldMode)
+	BaseClass::setScale(fScale);
+
+	if(m_pViewModel)
+	{
+		m_pViewModel->setScale(fScale);
+	}
+}
+
+void CBaseItem::onSetViewModel(const char *mdl)
+{
+	_setStrVal(&m_szViewModelFile, mdl);
+	mem_release(m_pViewModel);
+	mem_release(m_pViewModelResource);
+	if(!mdl[0])
 	{
 		return;
 	}
-	m_bWorldMode = true;
 
-	setModel(m_szModelFile);
+	IXResourceManager *pResourceManager = Core_GetIXCore()->getResourceManager();
+	if(!pResourceManager->getModelAnimated(mdl, &m_pViewModelResource))
+	{
+		return;
+	}
+	
+	onModelChanged();
+}
+
+void CBaseItem::setHandsResource(IXResourceModelAnimated *pResource)
+{
+	if(pResource)
+	{
+		pResource->AddRef();
+	}
+
+	mem_release(m_pHandsModelResource);
+	m_pHandsModelResource = pResource;
+
+	onModelChanged();
+}
+
+void CBaseItem::onModelChanged()
+{
+	mem_release(m_pViewModel);
+	if(!m_pViewModelResource || !m_pHandsModelResource)
+	{
+		return;
+	}
+
+	IXAnimatedModelProvider *pProvider = (IXAnimatedModelProvider*)Core_GetIXCore()->getPluginManager()->getInterface(IXANIMATEDMODELPROVIDER_GUID);
+	if(pProvider)
+	{
+		IXResourceModelAnimated *pAnimatedResources[] = {
+			m_pViewModelResource,
+			m_pHandsModelResource
+		};
+
+		if(pProvider->createModel(2, pAnimatedResources, &m_pViewModel))
+		{
+			m_pViewModel->play("IDLE");
+			m_pViewModel->enable(m_inventoryMode == IIM_EQUIPPED);
+			m_pViewModel->setScale(m_fBaseScale);
+		}
+	}
+}
+
+void CBaseItem::onSync()
+{
+	BaseClass::onSync();
+	
+	if(m_pViewModel)
+	{
+		m_pViewModel->setPosition(getPos());
+		m_pViewModel->setOrientation(getOrient());
+	}
 }

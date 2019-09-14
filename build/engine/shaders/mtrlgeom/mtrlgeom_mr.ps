@@ -1,0 +1,41 @@
+
+/*
+mtrlgeom_mr.ps
+Рендер геометрии с микрорельефом
+*/
+
+#include "../struct.h"
+#include "../mtrl.h"
+
+//##########################################################################
+
+SamplerState g_sScene: register(s0);
+Texture2D g_txColor: register(t0);
+Texture2D g_txNormals0: register(t6);
+Texture2D g_txParameters: register(t10);
+
+//##########################################################################
+
+// half4 g_vParam;
+// half4 g_vNearFarLayers;
+#include "../const.h"
+
+//##########################################################################
+
+PSO_Gbuffer main(VSO_SceneCommon IN)
+{
+	ClipFar(IN.vPos.z, g_vNearFarLayers.y);
+	IN.vNormal = normalize(IN.vNormal);
+	
+	half3 vNormal = MixNormalMicro(IN.vNormal, Color2Normal(
+		g_txNormals0.Sample(g_sScene, IN.vTexUV).xyz
+	) * g_vUserPS.z);
+	
+	return(CreateGbuffer(
+		float4(g_txColor.Sample(g_sScene, IN.vTexUV).xyz, 0.0f), 
+		vNormal, 
+		g_txParameters.Sample(g_sScene, IN.vTexUV),
+		IN.vPos, 
+		g_vNearFarLayers
+	));
+}

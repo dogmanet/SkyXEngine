@@ -10,6 +10,8 @@ See the license in LICENSE
 
 #include "EntityManager.h"
 
+#include "GameData.h"
+
 /*! \skydocent base_entity
 Базовый объект. От него наследуются все остальные объекты
 */
@@ -70,6 +72,7 @@ CBaseEntity::CBaseEntity(CEntityManager * pWorld):
 	, m_bSynced(false)
 {
 	m_iId = pWorld->reg(this);
+	m_pLightSystem = GameData::m_pLightSystem;
 }
 
 /*void CBaseEntity::setDefaults()
@@ -280,7 +283,14 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 		}
 		return(false);
 	case PDF_STRING:
-		_setStrVal(&(this->*((const char * ThisClass::*)field->pField)), value);
+		if(field->fnSet.sz)
+		{
+			(this->*(field->fnSet.sz))(value);
+		}
+		else
+		{
+			_setStrVal(&(this->*((const char * ThisClass::*)field->pField)), value);
+		}
 		break;
 	case PDF_ANGLES:
 		if(4 == sscanf(value, "%f %f %f %f", &q.x, &q.y, &q.z, &q.w))
@@ -345,7 +355,7 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 		return(false);
 	case PDF_OUTPUT:
 		{
-			int len = sizeof(char)* (1 + strlen(value));
+			size_t len = sizeof(char)* (1 + strlen(value));
 			char * str = new char[len];
 			memcpy(str, value, len);
 			int iConns = parse_str(str, NULL, 0, ',');
@@ -887,7 +897,7 @@ void CBaseEntity::_initEditorBoxes()
 		btVector3(0,0,0)  // local inertia
 		);
 	m_pEditorRigidBody = new btRigidBody(rigidBodyCI);
-	m_pEditorRigidBody->getInvMass();
+	//m_pEditorRigidBody->getInvMass();
 	m_pEditorRigidBody->setUserPointer(this);
 
 	SPhysics_AddShapeEx(m_pEditorRigidBody, CG_DEFAULT, CG_BULLETFIRE);
@@ -906,4 +916,9 @@ void CBaseEntity::_releaseEditorBoxes()
 float3 CBaseEntity::getEditorBoxSize()
 {
 	return(m_vEditorBoxSize);
+}
+
+void CBaseEntity::renderEditor(bool is3D)
+{
+
 }

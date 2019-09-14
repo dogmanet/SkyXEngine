@@ -9,10 +9,10 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
-#define SM_D3D_CONVERSIONS
-#include <common/SXMath.h>
+//#define SM_D3D_CONVERSIONS
+#include <common/Math.h>
 #include <common/Array.h>
-#include <d3d9.h>
+#include <graphix/graphix.h>
 #include <gcore/sxgcore.h>
 #include "sxlight.h"
 #include "ml_data.h"
@@ -36,8 +36,8 @@ public:
 	void begin();
 	void end();
 
-	void genShadow(IDirect3DTexture9 *pShadowMap);
-	void genShadowAll(IDirect3DTexture9 *pShadowMap);
+	void genShadow(IGXTexture2D *pShadowMap);
+	void genShadowAll(IGXTexture2D *pShadowMap);
 	
 	void setPosition(const float3 *pPos);
 	void getPosition(float3 *pPos);
@@ -56,7 +56,7 @@ public:
 
 	int m_aIsUpdate[5];
 	float2 m_aNearFar[5];
-	IDirect3DTexture9 *m_aDepthMaps[5];
+	IGXTexture2D *m_aDepthMaps[5];
 
 protected:
 
@@ -72,16 +72,16 @@ protected:
 	//генерация теней для 4 сплитов, иначе для 3
 	bool Generating4Slits;
 	
-	IDirect3DSurface9*	DepthSurfaces[5];
-	IDirect3DSurface9*	DepthStencilSurface;
+	IGXSurface*	DepthSurfaces[5];
+	IGXDepthStencilSurface*	DepthStencilSurface;
 	float4x4 Views[5];
 	float4x4 Projs[5];
 	float4x4 ViewProj[5];
 	float4x4 OldView,OldProj,OldViewProj;
 	float4x4 ScaleBiasMat;
 	
-	IDirect3DSurface9* OldDepthStencilSurface;
-	IDirect3DSurface9* OldColorSurface;
+	IGXDepthStencilSurface* OldDepthStencilSurface;
+	IGXSurface* OldColorSurface;
 };
 
 //##########################################################################
@@ -108,7 +108,7 @@ public:
 	void begin();
 	void end();
 
-	void genShadow(IDirect3DTexture9* shadowmap);
+	void genShadow(IGXTexture2D* shadowmap);
 
 	void setPosition(const float3* pos);
 	void getPosition(float3* pos);
@@ -147,15 +147,15 @@ private:
 	float3 Direction;
 	float3 AngleNearFar;
 
-	IDirect3DTexture9*	DepthMap;
-	IDirect3DSurface9*	DepthSurface;
-	IDirect3DSurface9*	DepthStencilSurface;
+	IGXTexture2D*	DepthMap;
+	IGXSurface*	DepthSurface;
+	IGXDepthStencilSurface *DepthStencilSurface;
 	
 	float4x4 OldView,OldProj,OldViewProj;
 	float4x4 ScaleBiasMat;
 
-	IDirect3DSurface9* OldDepthStencilSurface;
-	IDirect3DSurface9*  OldColorSurface;
+	IGXDepthStencilSurface* OldDepthStencilSurface;
+	IGXSurface* OldColorSurface;
 };
 
 //##########################################################################
@@ -199,7 +199,7 @@ public:
 	void post(int cube);
 	void end();
 
-	void genShadow(IDirect3DTexture9* shadowmap);
+	void genShadow(IGXTexture2D* shadowmap);
 
 	void setIDArr(long id, int split, long idarr);
 	long getCountIDArrs();
@@ -212,9 +212,9 @@ private:
 	Array<long*> IDArr;
 	float Bias;
 	float BlurPixel;
-	IDirect3DCubeTexture9*	DepthMap;
-	IDirect3DSurface9*	DepthSurface[6];
-	IDirect3DSurface9*	DepthStencilSurface;
+	IGXTextureCube*	DepthMap;
+	IGXSurface*	DepthSurface[6];
+	IGXDepthStencilSurface*	DepthStencilSurface;
 	float4x4 View[6];
 	float4x4 Proj[6];
 
@@ -223,8 +223,8 @@ private:
 
 	float4x4 OldView,OldProj,OldViewProj;
 
-	IDirect3DSurface9* OldDepthStencilSurface;
-	IDirect3DSurface9*  OldColorSurface;
+	IGXDepthStencilSurface* OldDepthStencilSurface;
+	IGXSurface*  OldColorSurface;
 
 	float3 Position;
 	float2 m_vNearFar;

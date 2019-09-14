@@ -9,8 +9,8 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
-#define SM_D3D_CONVERSIONS
-#include <common/SXMath.h>
+//#define SM_D3D_CONVERSIONS
+#include <common/Math.h>
 
 #include "sxparticles.h"
 #include "pe_data.h"
@@ -220,13 +220,15 @@ protected:
 	CommonParticle *m_pArr;
 	int m_iCount;
 
-	IDirect3DVertexBuffer9 *m_pTransVertBuf;
+	IGXVertexBuffer *m_pTransVertBuf;
 
-	IDirect3DVertexBuffer9 *m_pVertexBuff;
-	IDirect3DIndexBuffer9 *m_pIndexBuff;
+	IGXVertexBuffer *m_pVertexBuff;
+	IGXIndexBuffer *m_pIndexBuff;
+	IGXRenderBuffer *m_pRenderBuff = NULL;
 
-	IDirect3DVertexBuffer9 *m_pVertexBuffQuad;
-	IDirect3DIndexBuffer9 *m_pIndexBuffQuad;
+	IGXVertexBuffer *m_pVertexBuffQuad;
+	IGXIndexBuffer *m_pIndexBuffQuad;
+	IGXRenderBuffer *m_pRenderBuffQuad = NULL;
 
 	CParticlesData m_oData;
 

@@ -30,6 +30,18 @@ See the license in LICENSE
 #ifndef __SXSCORE_H
 #define __SXSCORE_H
 
+#if 1
+
+#define SSCore_SndInstancePlay3d(...)
+#define SSCore_SndPlay(...)
+#define SSCore_SndCreate3dInst(...) (-1)
+#define SSCore_SndCreate3d(...) (-1)
+#define SSCore_SndSetPosWorld(...)
+#define SSCore_ChannelPlay(...)
+#define SSCore_ChannelStop(...)
+
+
+#else
 #include <gdefines.h>
 #include <GRegisterIndex.h>
 
@@ -70,7 +82,7 @@ SX_LIB_API void SSCore_0Create(
 SX_LIB_API void SSCore_AKill();	
 
 //!@}
-
+#endif
 //#############################################################################
 
 /*! размер абсолюного пути до директории с файлами */
@@ -176,7 +188,7 @@ enum SOUND_CHANNEL
 };
 
 //#############################################################################
-
+#if 0
 //! очистка всего списка звуков (полное их удаление)
 SX_LIB_API void SSCore_Clear();	
 
@@ -488,7 +500,7 @@ SX_LIB_API void SSCore_SndkitDelete(ID idSndKit);
 SX_LIB_API void SSCore_SndkitDeleteAll();
 
 //!@}
-
+#endif
 
 #endif
 

@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright � Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -143,18 +143,18 @@ void CEntityManager::sync()
 	//static time_point tOld = std::chrono::high_resolution_clock::now();
 	//float dt;
 	//dt = (float)std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tOld).count() / 1000000.0f;
-	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
+	for(int i = 0, l = m_vEntSyncList.size(); i < l; ++i)
 	{
-		pEnt = m_vEntList[i];
+		pEnt = m_vEntSyncList[i];
 		if(pEnt)
 		{
 			pEnt->m_bSynced = false;
 		}
 	}
 	
-	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
+	for(int i = 0, l = m_vEntSyncList.size(); i < l; ++i)
 	{
-		pEnt = m_vEntList[i];
+		pEnt = m_vEntSyncList[i];
 		if(pEnt && !pEnt->m_bSynced)
 		{
 			//pEnt->updateDiscreteLinearVelocity(0, dt);
@@ -178,7 +178,7 @@ void CEntityManager::unloadObjLevel()
 	}
 }
 
-ID CEntityManager::reg(CBaseEntity * pEnt)
+ID CEntityManager::reg(CBaseEntity *pEnt)
 {
 	ID ent;
 	if(!pEnt)
@@ -209,7 +209,7 @@ void CEntityManager::unreg(ID ent)
 	timeout_t * t;
 	timeout_output_t * to;
 
-	CBaseEntity * pEnt = m_vEntList[ent];
+	CBaseEntity *pEnt = m_vEntList[ent];
 
 	for(int i = 0, l = m_vOutputTimeout.size(); i < l; ++i)
 	{
@@ -249,7 +249,25 @@ void CEntityManager::unreg(ID ent)
 	m_vFreeIDs.push_back(ent);
 }
 
-ID CEntityManager::setTimeout(void(CBaseEntity::*func)(float dt), CBaseEntity * pEnt, float delay)
+void CEntityManager::regSync(CBaseEntity *pEnt)
+{
+	assert(pEnt);
+	m_vEntSyncList.push_back(pEnt);
+}
+void CEntityManager::unregSync(CBaseEntity *pEnt)
+{
+	assert(pEnt);
+	for(UINT i = 0, l = m_vEntSyncList.size(); i < l; ++i)
+	{
+		if(m_vEntSyncList[i] == pEnt)
+		{
+			m_vEntSyncList.erase(i);
+			break;
+		}
+	}
+}
+
+ID CEntityManager::setTimeout(void(CBaseEntity::*func)(float dt), CBaseEntity *pEnt, float delay)
 {
 	timeout_t t;
 	t.status = TS_WAIT;
@@ -277,7 +295,7 @@ ID CEntityManager::setTimeout(void(CBaseEntity::*func)(float dt), CBaseEntity * 
 	return(id);
 }
 
-ID CEntityManager::setInterval(void(CBaseEntity::*func)(float dt), CBaseEntity * pEnt, float delay)
+ID CEntityManager::setInterval(void(CBaseEntity::*func)(float dt), CBaseEntity *pEnt, float delay)
 {
 	timeout_t t;
 	t.status = TS_WAIT;
@@ -378,13 +396,25 @@ bool CEntityManager::exportList(const char * file)
 	return(ret);
 }
 
-bool CEntityManager::import(const char * file)
+bool CEntityManager::import(const char * file, bool shouldSendProgress)
 {
+	IEventChannel<XEventLevelProgress> *pEventChannel = NULL;
+	if(shouldSendProgress)
+	{
+		pEventChannel = Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID);
+	}
 	ISXConfig * conf = Core_CrConfig();
 	char sect[32];
 	CBaseEntity * pEnt = NULL;
 	Array<CBaseEntity*> tmpList;
-	if(conf->open(file))
+
+	char szFullPath[1024];
+	if(!Core_GetIXCore()->getFileSystem()->resolvePath(file, szFullPath, sizeof(szFullPath)))
+	{
+		goto err;
+	}
+
+	if(conf->open(szFullPath))
 	{
 		goto err;
 	}
@@ -402,55 +432,75 @@ bool CEntityManager::import(const char * file)
 
 	tmpList.reserve(ic);
 
-	for(int i = 0; i < ic; ++i)
 	{
-		sprintf(sect, "ent_%d", i);
-		if(!conf->keyExists(sect, "classname"))
-		{
-			printf(COLOR_LRED "Unable to load entity #%d, classname undefined\n" COLOR_RESET, i);
-			tmpList[i] = NULL;
-			continue;
-		}
-		if(!(pEnt = CREATE_ENTITY_NOPOST(conf->getKey(sect, "classname"), this)))
-		{
-			printf(COLOR_LRED "Unable to load entity #%d, classname '%s' undefined\n" COLOR_RESET, i, conf->getKey(sect, "classname"));
-			tmpList[i] = NULL;
-			continue;
-		}
-		if(conf->keyExists(sect, "name"))
-		{
-			pEnt->setKV("name", conf->getKey(sect, "name"));
-		}
-		if(conf->keyExists(sect, "origin"))
-		{
-			pEnt->setKV("origin", conf->getKey(sect, "origin"));
-		}
-		if(conf->keyExists(sect, "rotation"))
-		{
-			pEnt->setKV("rotation", conf->getKey(sect, "rotation"));
-		}
-		pEnt->setFlags(pEnt->getFlags() | EF_EXPORT | EF_LEVEL);
-		tmpList[i] = pEnt;
-	}
 
-	for(int i = 0; i < ic; ++i)
-	{
-		sprintf(sect, "ent_%d", i);
-		if(!(pEnt = tmpList[i]))
+		XEventLevelProgress ev;
+		ev.idPlugin = -3;
+		ev.szLoadingText = "Загрузка объектов игрового мира";
+		ev.type = XEventLevelProgress::TYPE_PROGRESS_VALUE;
+		ev.fProgress = 0.0f;
+		for(int i = 0; i < ic; ++i)
 		{
-			continue;
-		}
-		int keyc = conf->getKeyCount(sect);
-		const char * key;
-		for(int j = 0; j < keyc; ++j)
-		{
-			key = conf->getKeyName(sect, j);
- 			if(strcmp(key, "classname") && strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
+			sprintf(sect, "ent_%d", i);
+			if(!conf->keyExists(sect, "classname"))
 			{
-				pEnt->setKV(key, conf->getKey(sect, key));
+				printf(COLOR_LRED "Unable to load entity #%d, classname undefined\n" COLOR_RESET, i);
+				tmpList[i] = NULL;
+				continue;
+			}
+			if(!(pEnt = CREATE_ENTITY_NOPOST(conf->getKey(sect, "classname"), this)))
+			{
+				printf(COLOR_LRED "Unable to load entity #%d, classname '%s' undefined\n" COLOR_RESET, i, conf->getKey(sect, "classname"));
+				tmpList[i] = NULL;
+				continue;
+			}
+			if(conf->keyExists(sect, "name"))
+			{
+				pEnt->setKV("name", conf->getKey(sect, "name"));
+			}
+			if(conf->keyExists(sect, "origin"))
+			{
+				pEnt->setKV("origin", conf->getKey(sect, "origin"));
+			}
+			if(conf->keyExists(sect, "rotation"))
+			{
+				pEnt->setKV("rotation", conf->getKey(sect, "rotation"));
+			}
+			pEnt->setFlags(pEnt->getFlags() | EF_EXPORT | EF_LEVEL);
+			tmpList[i] = pEnt;
+
+			if((i & 0xF) == 0 && pEventChannel)
+			{
+				ev.fProgress = (float)i / (float)ic * 0.1f;
+				pEventChannel->broadcastEvent(&ev);
 			}
 		}
-		pEnt->onPostLoad();
+
+		for(int i = 0; i < ic; ++i)
+		{
+			sprintf(sect, "ent_%d", i);
+			if(!(pEnt = tmpList[i]))
+			{
+				continue;
+			}
+			int keyc = conf->getKeyCount(sect);
+			const char * key;
+			for(int j = 0; j < keyc; ++j)
+			{
+				key = conf->getKeyName(sect, j);
+				if(strcmp(key, "classname") && strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
+				{
+					pEnt->setKV(key, conf->getKey(sect, key));
+				}
+			}
+			pEnt->onPostLoad();
+
+			if(/*(i & 0xF) == 0 && */pEventChannel)
+			{
+				ev.fProgress = (float)i / (float)ic * 0.9f + 0.1f;
+				pEventChannel->broadcastEvent(&ev);
+			}
+		}
 	}
 
 	mem_release(conf);
@@ -462,9 +512,9 @@ err:
 }
 
 
-CBaseEntity * CEntityManager::findEntityByName(const char * name, CBaseEntity * pStart)
+CBaseEntity* CEntityManager::findEntityByName(const char *szName, CBaseEntity *pStart)
 {
-	if(!name[0])
+	if(!szName[0])
 	{
 		return(NULL);
 	}
@@ -479,7 +529,7 @@ CBaseEntity * CEntityManager::findEntityByName(const char * name, CBaseEntity * 
 		}
 		if(bFound)
 		{
-			if(!strcmp(pEnt->getName(), name))
+			if(!strcmp(pEnt->getName(), szName))
 			{
 				return(pEnt);
 			}
@@ -495,7 +545,7 @@ CBaseEntity * CEntityManager::findEntityByName(const char * name, CBaseEntity * 
 	return(NULL);
 }
 
-int CEntityManager::countEntityByName(const char * name)
+int CEntityManager::countEntityByName(const char *name)
 {
 	if(!name[0])
 	{
@@ -512,7 +562,7 @@ int CEntityManager::countEntityByName(const char * name)
 	return(c);
 }
 
-CBaseEntity * CEntityManager::findEntityByClass(const char * name, CBaseEntity * pStart)
+CBaseEntity* CEntityManager::findEntityByClass(const char *name, CBaseEntity *pStart)
 {
 	bool bFound = !pStart;
 	CBaseEntity * pEnt;
@@ -541,7 +591,7 @@ CBaseEntity * CEntityManager::findEntityByClass(const char * name, CBaseEntity *
 	return(NULL);
 }
 
-CBaseEntity * CEntityManager::findEntityInSphere(const float3 &f3Origin, float fRadius, CBaseEntity * pStart)
+CBaseEntity* CEntityManager::findEntityInSphere(const float3 &f3Origin, float fRadius, CBaseEntity *pStart)
 {
 	bool bFound = !pStart;
 	CBaseEntity * pEnt;
@@ -650,7 +700,7 @@ void CEntityManager::loadDynClasses()
 	}
 }
 
-void CEntityManager::dumpList(int argc, const char ** argv)
+void CEntityManager::dumpList(int argc, const char **argv)
 {
 	const char * filter = "";
 	if(argc > 1)
@@ -682,7 +732,7 @@ void CEntityManager::dumpList(int argc, const char ** argv)
 	printf("-----------------------------------------------------\n" COLOR_RESET);
 }
 
-void CEntityManager::entKV(int argc, const char ** argv)
+void CEntityManager::entKV(int argc, const char **argv)
 {
 	int id = 0;
 	if(argc == 1)
@@ -737,7 +787,7 @@ int CEntityManager::getCount()
 	return(m_vEntList.size());
 }
 
-CBaseEntity * CEntityManager::getById(ID id)
+CBaseEntity* CEntityManager::getById(ID id)
 {
 	if(id < 0 || (UINT)id >= m_vEntList.size())
 	{
@@ -747,7 +797,7 @@ CBaseEntity * CEntityManager::getById(ID id)
 	return(pEnt ? (pEnt->getFlags() & EF_REMOVED ? NULL : pEnt) : NULL);
 }
 
-CBaseEntity * CEntityManager::cloneEntity(CBaseEntity *pOther)
+CBaseEntity* CEntityManager::cloneEntity(CBaseEntity *pOther)
 {
 	if(!pOther)
 	{
@@ -790,7 +840,7 @@ CBaseEntity * CEntityManager::cloneEntity(CBaseEntity *pOther)
 	return(pEnt);
 }
 
-void CEntityManager::setOutputTimeout(named_output_t * pOutput, inputdata_t * pData)
+void CEntityManager::setOutputTimeout(named_output_t *pOutput, inputdata_t *pData)
 {
 	timeout_output_t t;
 	t.status = TS_WAIT;
@@ -805,6 +855,10 @@ void CEntityManager::setOutputTimeout(named_output_t * pOutput, inputdata_t * pD
 
 void CEntityManager::sheduleDestroy(CBaseEntity *pEnt)
 {
+	if(pEnt->getFlags() & EF_REMOVED)
+	{
+		return;
+	}
 	pEnt->setFlags(pEnt->getFlags() | EF_REMOVED);
 	m_vEntRemoveList.push_back(pEnt);
 

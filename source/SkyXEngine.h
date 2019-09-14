@@ -1,4 +1,3 @@
-
 /***********************************************************
 Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
@@ -293,7 +292,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #ifndef __SKYXENGINE_H
 #define __SKYXENGINE_H
 
-#define SKYXENGINE_VERSION "0.10.1"
+#define SKYXENGINE_VERSION "X.4.0-dev"
 
 #define SKYXENGINE_VERSION4EDITORS "SkyXEngine version " ## SKYXENGINE_VERSION
 
@@ -332,32 +331,11 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <input/sxinput.h>
 
 #if defined(_DEBUG)
-#pragma comment(lib, "sxscore_d.lib")
-#else
-#pragma comment(lib, "sxscore.lib")
-#endif
-#include <score/sxscore.h>
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
 #else
 #pragma comment(lib, "sxgcore.lib")
 #endif
 #include <gcore/sxgcore.h>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxgeom_d.lib")
-#else
-#pragma comment(lib, "sxgeom.lib")
-#endif
-#include <geom/sxgeom.h>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxlight_d.lib")
-#else
-#pragma comment(lib, "sxlight.lib")
-#endif
-#include <light/sxlight.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxmtrl_d.lib")
@@ -367,27 +345,6 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <mtrl/sxmtrl.h>
 
 #if defined(_DEBUG)
-#pragma comment(lib, "sxparticles_d.lib")
-#else
-#pragma comment(lib, "sxparticles.lib")
-#endif
-#include <particles/sxparticles.h>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxpp_d.lib")
-#else
-#pragma comment(lib, "sxpp.lib")
-#endif
-#include <pp/sxpp.h>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxanim_d.lib")
-#else
-#pragma comment(lib, "sxanim.lib")
-#endif
-#include <anim/sxanim.h>
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxphysics_d.lib")
 #else
 #pragma comment(lib, "sxphysics.lib")
@@ -395,41 +352,11 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 #include <physics/sxphysics.h>
 
 #if defined(_DEBUG)
-#pragma comment(lib, "sxaigrid_d.lib")
-#else
-#pragma comment(lib, "sxaigrid.lib")
-#endif
-#include <aigrid/sxaigrid.h>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxdecals_d.lib")
-#else
-#pragma comment(lib, "sxdecals.lib")
-#endif
-#include <decals/sxdecals.h>
-
-#if defined(_DEBUG)
-#pragma comment(lib, "sxlevel_d.lib")
-#else
-#pragma comment(lib, "sxlevel.lib")
-#endif
-#include <level/sxlevel.h>
-
-#if defined(_DEBUG)
 #pragma comment(lib, "sxgame_d.lib")
 #else
 #pragma comment(lib, "sxgame.lib")
 #endif
 #include <game/sxgame.h>
-
-#if defined(SX_LEVEL_EDITOR) || defined(SX_MATERIAL_EDITOR) || defined(SX_PARTICLES_EDITOR)
-#if defined(_DEBUG)
-#pragma comment(lib, "sxguiwinapi_d.lib")
-#else
-#pragma comment(lib, "sxguiwinapi.lib")
-#endif
-#include <sxguiwinapi/sxgui.h>
-#endif
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxrender_d.lib")
@@ -467,7 +394,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 @{*/
 
 //! инициализация движка
-void SkyXEngine_Init(HWND hWnd3D = 0, HWND hWndParent3D = 0, const char * szCmdLine = NULL);
+// void SkyXEngine_Init(HWND hWnd3D = 0, HWND hWndParent3D = 0, const char * szCmdLine = NULL);
 
 //! инициализация путей в регистрах
 void SkyXEngine_InitPaths();
@@ -501,7 +428,7 @@ void SkyXEngine_PrintfLog(int level, const char *szLibName, const char *szFormat
 void SkyXEngine_Frame(DWORD timeDelta);
 
 //! обновление данных кваром (реакция на обновление)
-void SkyXEngind_UpdateDataCVar();
+void SkyXEngine_UpdateDataCVar();
 
 //! запуск основного цикла обработки
 int SkyXEngine_CycleMain();
@@ -510,7 +437,7 @@ int SkyXEngine_CycleMain();
 bool SkyXEngine_CycleMainIteration();
 
 //! уничтожение данных движка, освобождение памяти
-void SkyXEngine_Kill();
+// void SkyXEngine_Kill();
 
 //**************************************************************************
 
@@ -535,15 +462,6 @@ void SkyXEngine_PreviewKill();
 /*! \name skyxengine_redefined_func redefined_func - Функции обертки, для передачи графическому ядру для замены стандартных
 @{*/
 
-//! функция отрисовки, в данной версии не назначается
-void SkyXEngine_RFuncDIP(UINT type_primitive, long base_vertexIndex, UINT min_vertex_index, UINT num_vertices, UINT start_index, UINT prim_count);
-
-//! функция установки материала по id, world - мировая матрица
-void SkyXEngine_RFuncMtlSet(ID id, const float4x4 *pWorld=0, const float4 *pColor=0);
-
-//! функция загрузки материала
-ID SkyXEngine_RFuncMtlLoad(const char* name, int mtl_type);
-
 //! просчет физики для квада аи сетки
 bool SkyXEngine_RFuncAIQuadPhyNavigate(float3_t * pos);
 
@@ -561,10 +479,10 @@ bool SkyXEngine_RFuncGreenIntersect(const float3 *pStart, const float3 *pFinish,
 @{*/
 
 //! загружает текстуру по указанному пути как превью изображение и возвращает
-IDirect3DTexture9* SkyXEngine_LoadAsPreviewData(const char *szPath);
+IGXTexture2D* SkyXEngine_LoadAsPreviewData(const char *szPath);
 
 //! возвращает загруженную текстуру с превью, в szPath путь до оригинала
-IDirect3DTexture9* SkyXEngine_GetPreviewData(const char *szPath);
+IGXTexture2D* SkyXEngine_GetPreviewData(const char *szPath);
 
 //! запускает генератор создания превью для игровых ресурсов
 void SkyXEngine_RunGenPreview();

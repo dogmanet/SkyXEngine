@@ -12,6 +12,7 @@ See the license in LICENSE
 #include <common/file_utils.h>
 #include "reflection.h"
 #include <direct.h>
+#include <common/ConcurrentQueue.h>
 
 #define MTL_PRE_COND_ID(id,stdval) \
 if (!(id >= 0 && id < m_aUnitMtrls.size()))\
@@ -25,6 +26,8 @@ if (!(m_aUnitMtrls[id]->m_pReflect))\
 {LibReport(REPORT_MSG_LEVEL_ERROR, "%s - material: material id = '%d', name = '%s' unsupported reflection", GEN_MSG_LOCATION, id, m_aUnitMtrls[id]->m_pMtrl->m_sName.c_str()); return stdval; }
 
 //##########################################################################
+
+class CTexture;
 
 class CMaterials
 {
@@ -41,7 +44,7 @@ public:
 	void update(UINT timeDelta);
 	void setMainTexture(ID idSlot, ID idTexure);
 	void render(ID id, const float4x4 *pWorld=0, const float4 *pColor=0);
-	void renderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot, ID idMtl);
+
 	void renderLight(const float4_t *pColor, const float4x4 *pWorld);
 	int getCount();
 
@@ -54,16 +57,16 @@ public:
 	int getCurrCountSurf();
 	void setCurrCountSurf(int iCount);
 
-	ID mtlLoad(const char *szName, MTLTYPE_MODEL type = MTLTYPE_MODEL_STATIC);
+	ID mtlLoad(const char *szName, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount = 0, XSHADER_VARIANT_DESC *pVariantsDesc = NULL);
 	void mtlReLoad(ID id, const char *szName = 0);
 	void mtlSave(ID id);
 
-	ID getStdMtl(MTLTYPE_MODEL typeModel);
 	ID exists(const char *szName);
-	MTLTYPE_MODEL getTypeModel(ID id);
 	ID getLightMtrl();
-	void setTypeModel(ID id, MTLTYPE_MODEL typeModel);
 	ID getID(const char *szName);
+
+	void setPixelShaderOverride(ID id);
+	void setGeometryShaderOverride(ID id);
 
 	//######################################################################
 
@@ -85,8 +88,10 @@ public:
 	ID mtlGetTextureID(ID id);
 	void mtlSetVS(ID id, const char *szNameVS);
 	void mtlGetVS(ID id, char *szNamePS);
+	ID mtlGetVSID(ID id);
 	void mtlSetPS(ID id, const char *szNamePS);
 	void mtlGetPS(ID id, char *szNamePS);
+	ID mtlGetPSID(ID id);
 
 
 	void mtlSetLighting(ID id, bool isLighting);
@@ -118,6 +123,9 @@ public:
 
 	void mtlSetTransparency(ID id, bool isTransparent);
 	bool mtlGetTransparency(ID id);
+
+	void mtlSetRefractivity(ID id, bool isRefractive);
+	bool mtlGetRefractivity(ID id);
 
 	void mtlSetTypeReflection(ID id, MTLTYPE_REFLECT type);
 	MTLTYPE_REFLECT mtlGetTypeReflection(ID id);
@@ -153,10 +161,10 @@ public:
 	void mtlRefSetIDArr(ID id, ID idOwner, int iCube, ID idArr);
 	ID mtlRefGetIDArr(ID id, ID idOwner, int iCube);
 
-	void mtlRefPreRenderPlane(ID id, D3DXPLANE *pPlane);
+	void mtlRefPreRenderPlane(ID id, SMPLANE *pPlane);
 	const IFrustum* mtlRefGetfrustum(ID id, int iCube);
 	void mtlRefPostRenderPlane(ID id);
-	IDirect3DTexture9* mtlRefPlaneGetTex(ID id);
+	IGXTexture2D* mtlRefPlaneGetTex(ID id);
 
 	void mtlRefSetMinMax(ID id, const float3_t *pMin, const float3_t *pMax);
 	bool mtlRefIsAllowedRender(ID id);
@@ -167,7 +175,7 @@ public:
 	void mtlRefCubeEndRender(ID id, const float3_t *pViewPos);
 	bool mtlRefUpdateCountUpdate(ID id, const float3_t *pViewPos);
 	void mtlRefNullingCountUpdate(ID id);
-	IDirect3DCubeTexture9* refCubeGetTex(ID id);
+	IGXTextureCube* refCubeGetTex(ID id);
 
 	//######################################################################
 
@@ -190,20 +198,33 @@ public:
 		//! удален ли материал
 		bool m_isDelete;
 
+		struct CMaterialsShaderData
+		{
+			float4_t m_vUserDataVS;
+			float4_t m_vUserDataPS;
+			float4_t m_vDestColor;
+			float4_t m_vNearFarLayers;
+		};
+
 		//! основные графические свойства
 		struct CMainGraphics
 		{
 			CMainGraphics();
 			~CMainGraphics();
 
+			void updateShaderKit(bool bComplete);
+
 			//! основная текстура
-			ID m_idMainTexture;
+			CTexture *m_pMainTexture;
 
 			//! вершинный шейдер
 			ID m_idShaderVS;
 
 			//! пиксельный шейдер
 			ID m_idShaderPS;
+
+			//! набор шейдеров
+			ID m_idShaderKit = -1;
 
 			//! неосвещаемый материал
 			bool m_isUnlit;
@@ -214,8 +235,6 @@ public:
 			//! используется ли принимаемый цвет?
 			bool m_useDestColor;
 
-			//! тип модели для рендера
-			MTLTYPE_MODEL m_typeModel;
 
 			//! отправляемые данные в шейдеры
 			struct СDataShader
@@ -264,6 +283,9 @@ public:
 
 			//! отправляемые данные в пиксельный шейдер
 			СDataShader m_oDataPS;
+
+			CMaterialsShaderData m_constData;
+			IGXConstantBuffer *m_pConstantBuffer = NULL;
 		};
 
 		//! детализированные свойства, маска и 4 детальных и 4 микрорельефных карты
@@ -273,13 +295,13 @@ public:
 			~CMaskDetailMicroRelief();
 
 			//! идентификатор текстуры маски, где к каждому каналу привязаны 4 детальных и микрорельефных текстуры
-			ID m_idMask;
+			CTexture *m_pMask;
 
 			//! массив идентификаторов детальных текстур, для каждого канала маски
-			ID m_aDetail[4];
+			CTexture *m_apDetail[4];
 
 			//! массив идентификаторов микрорельефных текстур (normal map), для каждого канала маски
-			ID m_aMicroRelief[4];
+			CTexture *m_apMicroRelief[4];
 		};
 
 		//! световые свойсвта, основные характеристики просчета освещения
@@ -289,10 +311,10 @@ public:
 			~CLightParam();
 
 			//! текстура с параметрами материала (созданная пользователем)
-			ID m_idTexParam;
+			CTexture *m_pTexParam;
 
 			//! текстура с параметрами материала, размер 1х1, параметры взяты из текущей структуры
-			ID m_idTexParamHand;
+			IGXTexture2D *m_pTexParamHand = NULL;
 
 			//! назначена ли (true) текстура для параметров материала (или данные берем из параметров и кладем в рабочую текстуру)
 			bool m_isTextureParam;
@@ -315,6 +337,7 @@ public:
 
 			//! прозрачный ли материал
 			bool m_isTransparent;
+			bool m_isRefractive;
 		};
 
 		//! физические свойства
@@ -370,13 +393,15 @@ protected:
 	//! использовать ли принудительный альфа тест
 	bool m_useForceblyAlphaTest;
 
-	bool loadMtl(const char *szName, CMaterial **ppMtrl);
-	void createMtl(const char *szName, CMaterial **ppMtrl, MTLTYPE_MODEL type);
-	ID createTexParamLighting(float fRoughness, float fF0, float fThickness);
+	bool loadMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount = 0, XSHADER_VARIANT_DESC *pVariantsDesc = NULL);
+	void createMtl(const char *szName, CMaterial **ppMtrl, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount = 0, XSHADER_VARIANT_DESC *pVariantsDesc = NULL);
 
 	void addName(const char *szName, ID id);
 	ID addUnitMaterial(CUnitMaterial *pUnitMtrl);
 	ID addMaterial(CMaterial *pMtrl);
+
+	ID m_idPixelShaderOverride = -1;
+	ID m_idGeometryShaderOverride = -1;
 
 	//! структура описывающая папку и все текстуры в ней, у каждой свой id для доступа
 	struct CPath

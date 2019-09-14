@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -27,12 +27,9 @@ void CFile::Release()
 
 int CFile::open(const char *szPath, int iType)
 {
-	char* mode;
-	if (iType == CORE_FILE_BIN)
-			mode = "rb";
-	else if (iType == CORE_FILE_TEXT)
-			mode = "r+";
-	m_pFile = fopen(szPath, mode);
+    const char *szMode = (iType == CORE_FILE_BIN) ? "rb" : "r+";
+
+    m_pFile = fopen(szPath, szMode);
 		if(!m_pFile)
 			return -1;
 	return 0;
@@ -40,12 +37,9 @@ int CFile::open(const char *szPath, int iType)
 
 int CFile::create(const char *szPath, int iType)
 {
-	char* mode;
-	if (iType == CORE_FILE_BIN)
-			mode = "wb";
-	else if (iType == CORE_FILE_TEXT)
-			mode = "w";
-	m_pFile = fopen(szPath, mode);
+    const char *szMode = (iType == CORE_FILE_BIN) ? "wb" : "w";
+
+    m_pFile = fopen(szPath, szMode);
 	if (!m_pFile)
 		return -1;
 	return 0;
@@ -53,25 +47,31 @@ int CFile::create(const char *szPath, int iType)
 
 int CFile::add(const char *szPath, int iType)
 {
-	char* mode;
-	if (iType == CORE_FILE_BIN)
-			mode = "ab";
-	else if (iType == CORE_FILE_TEXT)
-			mode = "a";
-	m_pFile = fopen(szPath, mode);
-	if (!m_pFile)
-		return -1;
-	return 0;
+	m_pFile = fopen(szPath, (iType == CORE_FILE_BIN) ? "rb+" : "r+");
+	if(m_pFile)
+	{
+		_fseeki64(m_pFile, 0, SEEK_END);
+		return(0);
+	}
+	else
+	{
+		m_pFile = fopen(szPath, (iType == CORE_FILE_BIN) ? "wb+" : "w+");
+		if(m_pFile)
+		{
+			return(0);
+		}
+	}
+	return(-1);
 }
 
 size_t CFile::readBin(void *pDest, size_t iSize)
 {
-	return(fread(pDest, iSize, 1, m_pFile));
+	return(fread(pDest, 1, iSize, m_pFile));
 }
 
 size_t CFile::writeBin(const void *pSrc, size_t iSize)
 {
-	return(fwrite(pSrc, iSize, 1, m_pFile));
+	return(fwrite(pSrc, 1, iSize, m_pFile));
 }
 
 size_t CFile::readText(const char *szFormat, ...)
@@ -120,16 +120,16 @@ size_t CFile::getPos() const
 
 void CFile::setPos(size_t iPos)
 {
-	fseek(m_pFile, SEEK_SET, iPos);
+	_fseeki64(m_pFile, iPos, SEEK_SET);
 }
 
 size_t CFile::getSize() const
 {
-	long size;
-	long curr_pos = ftell(m_pFile);
-	fseek(m_pFile, 0, SEEK_END);
+	size_t size;
+	size_t curr_pos = _ftelli64(m_pFile);
+	_fseeki64(m_pFile, 0, SEEK_END);
 	size = ftell(m_pFile);
-	fseek(m_pFile, curr_pos, SEEK_SET);
+	_fseeki64(m_pFile, curr_pos, SEEK_SET);
 	return size;
 }
 
@@ -145,5 +145,5 @@ void CFile::close()
 
 bool CFile::isEOF() const
 {
-	return feof(m_pFile);
+	return(feof(m_pFile) != 0);
 }

@@ -18,8 +18,8 @@ See the license in LICENSE
 
 #include <common/array.h>
 
-#define SM_D3D_CONVERSIONS
-#include <common/SXMath.h>
+//#define SM_D3D_CONVERSIONS
+#include <common/Math.h>
 #include <geom/sxgeom.h>
 #include <green/sxgreen.h>
 #include <mtrl/sxmtrl.h>
@@ -45,7 +45,7 @@ public:
 	ID getIdMtl();
 
 	//! записывает плоскость (на основании первого треугольника модели)
-	void getPlane(D3DXPLANE *pPlane);
+	void getPlane(SMPLANE *pPlane);
 
 	//! записывает центр
 	void getCenter(float3_t *pCenter);
@@ -80,16 +80,18 @@ protected:
 	struct CModel
 	{
 		CModel(){ m_pModel = 0; }
-		CModel(ISXDataStaticModel *pModel, float3_t *pCenter, float3_t *pMax, float3_t *pMin, D3DXPLANE *pPlane)
+		CModel(ISXDataStaticModel *pModel, float3_t *pCenter, float3_t *pMax, float3_t *pMin, SMPLANE *pPlane)
 		{
 			m_pModel = pModel; m_vCenter = *pCenter; m_vMax = *pMax; m_vMin = *pMin; m_oPlane = *pPlane;
 		}
+
+		SX_ALIGNED_OP_MEM2();
 
 		//! указатель на статическую модель
 		ISXDataStaticModel *m_pModel;
 
 		//! врешинный буфер для анимацонной модели
-		IDirect3DVertexBuffer9 *m_pAnim;
+		IGXVertexBuffer *m_pAnim;
 		
 		//! минимум и максимум модели
 		float3_t m_vMin, m_vMax;
@@ -98,26 +100,26 @@ protected:
 		float3_t m_vCenter;
 
 		//! плоскость (на основании первого треугольника модели)
-		D3DXPLANE m_oPlane;
+		SMPLANE m_oPlane;
 	};
 
 	//**********************************************************************
 
 	//! вершинная декларация для статической модели
-	IDirect3DVertexDeclaration9 *m_pVertexDeclarationStatic;
+	IGXVertexDeclaration *m_pVertexDeclarationStatic;
 
 	//! вершинная декларация для растительности
-	IDirect3DVertexDeclaration9 *m_pVertexDeclarationGreen;
+	IGXVertexDeclaration *m_pVertexDeclarationGreen;
 
 	//! вершинная декларация для анимационное модели
-	IDirect3DVertexDeclaration9 *m_pVertexDeclarationSkin;
+	IGXVertexDeclaration *m_pVertexDeclarationSkin;
 
 
 	//! массив моделей
 	Array<CModel*> m_aModels;
 
 	//! вершинный буфер с трансформациями для растительности (всего одна вершина)
-	IDirect3DVertexBuffer9 *m_pTransVertBufGreen;
+	IGXVertexBuffer *m_pTransVertBufGreen;
 
 	//! данные о орастительности
 	CGreenDataVertex m_oGreen;

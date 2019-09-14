@@ -1,0 +1,39 @@
+#include "../lpv.h"
+
+struct PS_IN
+{
+	float4 screenPosition :SV_POSITION;
+	float3 normal :WORLD_NORMAL;
+	float3 flux :LIGHT_FLUX;
+	uint depthIndex :SV_RenderTargetArrayIndex;
+};
+
+struct PS_OUT
+{
+	float4 redSH :SV_Target0;
+	float4 greenSH :SV_Target1;
+	float4 blueSH :SV_Target2;
+};
+
+#ifdef _DEBUG
+float4 main(PS_IN input):COLOR0
+{
+	return(float4(1.0, 1.0, 1.0, 1.0));
+}
+#else
+PS_OUT main(PS_IN input)
+{
+	PS_OUT output;
+
+	const static float surfelWeight = 0.015f * LPV_POINT_WEIGHT;
+	float4 coeffs = (dirToCosineLobe(input.normal) / PI) * surfelWeight;
+	output.redSH = coeffs * input.flux.r;
+	output.greenSH = coeffs * input.flux.g;
+	output.blueSH = coeffs * input.flux.b;
+	
+	// output.greenSH = float4(1.0, 1.0, 1.0, 1.0);
+	// output.redSH = float4(1.0, 1.0, 1.0, 1.0);
+
+	return output;
+}
+#endif

@@ -2,15 +2,21 @@
 #include "SettingsWriter.h"
 #include <core/sxcore.h>
 
+CSettingsWriter::CSettingsWriter(IFileSystem *pFileSystem):
+	m_pFileSystem(pFileSystem)
+{
+	assert(pFileSystem);
+}
+
 void CSettingsWriter::loadFile(const char *szFile)
 {
-	IFile * f = Core_CrFile();
-	if(f->open(szFile, CORE_FILE_BIN) < 0)
+	IFile *f = m_pFileSystem->openFile(szFile);
+	if(!f)
 	{
 		printf(COLOR_LRED "Couldn't exec '%s'\n" COLOR_RESET, szFile);
 		return;
 	}
-	int len = f->getSize() + 1;
+	int len = (int)f->getSize() + 1;
 	char * buf, *cbuf = NULL;
 	if(len <= 4096)
 	{
@@ -67,7 +73,7 @@ void CSettingsWriter::loadFile(const char *szFile)
 		}
 	}
 
-	f->Release();
+	mem_release(f);
 
 	mem_delete_a(cbuf);
 }
@@ -89,8 +95,8 @@ void CSettingsWriter::unBind(const char *szKey)
 
 void CSettingsWriter::saveFile(const char *szFile)
 {
-	IFile * f = Core_CrFile();
-	if(f->create(szFile, CORE_FILE_BIN) < 0)
+	IFile *f = m_pFileSystem->openFile(szFile, FILE_MODE_WRITE);
+	if(!f)
 	{
 		printf(COLOR_LRED "Couldn't save file '%s'\n" COLOR_RESET, szFile);
 		return;
@@ -113,5 +119,5 @@ void CSettingsWriter::saveFile(const char *szFile)
 		}
 	}
 
-	f->Release();
+	mem_release(f);
 }

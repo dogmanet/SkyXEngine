@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -358,7 +358,7 @@ void SetCVar(const char * name, const char * value)
 		}
 		break;
 	case CVAR_BOOL:
-		Core_0SetCVarBool(name, strcmp(value, "0") && strcmpi(value, "false"));
+		Core_0SetCVarBool(name, strcmp(value, "0") && strcasecmp(value, "false"));
 		break;
 	}
 }
@@ -372,14 +372,14 @@ void DumpCVars()
 	for(AssotiativeArray<String, CVar>::Iterator i = g_mCVars.begin(); i; i++)
 	{
 		CVar * pCvar = i.second;
-		int len = i.first->length();
+		int len = (int)i.first->length();
 		if(iLenName < len)
 		{
 			iLenName = len;
 		}
 		if(pCvar->type == CVAR_STRING)
 		{
-			len = strlen(pCvar->value.c);
+			len = (int)strlen(pCvar->value.c);
 			if(iLenVal < len)
 			{
 				iLenVal = len;

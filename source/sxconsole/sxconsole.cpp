@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -253,6 +253,7 @@ void WriteColored(char ** _buf)
 			}
 			if(*esc != '[')
 			{
+				buf = esc;
 				continue;
 			}
 			++esc;
@@ -261,11 +262,13 @@ void WriteColored(char ** _buf)
 				esc += 5;
 				if(!sscanf(esc, "%d", &clr))
 				{
+					buf = esc;
 					continue;
 				}
 				esc += (int)(log10(clr) + 1);
 				if(*esc != 'm')
 				{
+					buf = esc;
 					continue;
 				}
 				++esc;
@@ -295,11 +298,13 @@ void WriteColored(char ** _buf)
 				esc += 5;
 				if(!sscanf(esc, "%d", &clr))
 				{
+					buf = esc;
 					continue;
 				}
 				esc += (int)(floor(log10(clr)) + 1);
 				if(*esc != 'm')
 				{
+					buf = esc;
 					continue;
 				}
 				++esc;

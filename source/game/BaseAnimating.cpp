@@ -7,30 +7,30 @@ See the license in LICENSE
 #include "BaseAnimating.h"
 #include "gcore/sxgcore.h"
 
+#include <xcommon/resource/IXResourceManager.h>
+#include <xcommon/resource/IXResourceModel.h>
+
 /*! \skydocent base_animating
 Базовый класс для объектов, имеющих объем в игровом мире
 */
 
 BEGIN_PROPTABLE(CBaseAnimating)
 	//! Файл модели. Поддерживаются статические и анимированные модели
-	DEFINE_FIELD_STRING(m_szModelFile, 0, "model", "Model file", EDITOR_FILEFIELD)
-		FILE_OPTION("Select model", "dse")
-	EDITOR_FILE_END()
+	DEFINE_FIELD_STRINGFN(m_szModelFile, 0, "model", "Model file", setModel, EDITOR_MODEL)
 
 	//! Масштаб модели
-	DEFINE_FIELD_FLOAT(m_fBaseScale, 0, "scale", "Scale", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_FLOATFN(m_fBaseScale, 0, "scale", "Scale", setScale, EDITOR_TEXTFIELD)
 
 	//! Объект референса для цвета свечения
 	DEFINE_FIELD_ENTITY(m_pEntColorRef, 0, "glow_color_ref", "Glow color reference", EDITOR_TEXTFIELD)
 	//! Цвет свечения
 	DEFINE_FIELD_VECTOR(m_vGlowColor, 0, "glow_color", "Glow color", EDITOR_TEXTFIELD)
 
-	DEFINE_FIELD_BOOLFN(m_isStatic, 0, "is_static", "Is static", onIsStaticChange, EDITOR_COMBOBOX)
-		COMBO_OPTION("Yes", "1")
-		COMBO_OPTION("No", "0")
-	EDITOR_COMBO_END()
+	DEFINE_FIELD_BOOLFN(m_isStatic, 0, "is_static", "Is static", onIsStaticChange, EDITOR_YESNO)
 
 	DEFINE_FIELD_INTFN(m_iSkin, 0, "skin", "Skin", setSkin, EDITOR_TEXTFIELD)
+
+	DEFINE_FIELD_BOOLFN(m_useAutoPhysbox, 0, "auto_physbox", "Auto generate physbox", onSetUseAutoPhysbox, EDITOR_YESNO)
 
 	DEFINE_INPUT(inputPlayAnim, "playAnim", "Play animation", PDF_STRING)
 	DEFINE_INPUT(inputPlayAnimNext, "playAnimNext", "Play animation next", PDF_STRING)
@@ -43,93 +43,138 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseAnimating, base_animating);
 
+//##########################################################################
+
+class CAnimationCallback: public IAnimationCallback
+{
+public:
+	CAnimationCallback(CBaseAnimating *pBaseAnimating):
+		m_pBaseAnimating(pBaseAnimating)
+	{
+	}
+
+	void onPlay(UINT uLayer) override
+	{
+		m_pBaseAnimating->onAnimationStart(uLayer);
+	}
+	void onStop(UINT uLayer) override
+	{
+		m_pBaseAnimating->onAnimationStop(uLayer);
+	}
+	void onLoop(UINT uLayer) override
+	{
+		m_pBaseAnimating->onAnimationLoop(uLayer);
+	}
+
+	void onProgress(UINT uLayer, float fProgress) override
+	{
+		m_pBaseAnimating->onAnimationProgress(uLayer, fProgress);
+	}
+
+private:
+	CBaseAnimating *m_pBaseAnimating;
+};
+
+//##########################################################################
+
 CBaseAnimating::CBaseAnimating(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	m_pAnimPlayer(NULL),
-	m_fBaseScale(1.0f),
-	m_pCollideShape(NULL),
-	m_pRigidBody(NULL),
-	m_isStatic(false),
-	m_collisionGroup(CG_DEFAULT)
+	BaseClass(pMgr)
 {
 	memset(m_vNextAnim, 0, sizeof(m_vNextAnim));
+	m_pAnimationCallback = new CAnimationCallback(this);
 }
 
 CBaseAnimating::~CBaseAnimating()
 {
 	releasePhysics();
-	mem_release(m_pAnimPlayer);
+	mem_release(m_pModel);
+	mem_delete(m_pAnimationCallback);
 }
 
 void CBaseAnimating::getMinMax(float3 * min, float3 * max)
 {
-	if (m_pAnimPlayer)
+	if(m_pModel)
 	{
-		const ISXBound * bound = m_pAnimPlayer->getBound();
-		bound->getMinMax(min, max);
+		*min = m_pModel->getLocalBoundMin();
+		*max = m_pModel->getLocalBoundMax();
 	}
 }
 
-void CBaseAnimating::getSphere(float3 * center, float * radius)
+/*void CBaseAnimating::getSphere(float3 * center, float * radius)
 {
 	if(m_pAnimPlayer)
 	{
 		const ISXBound * bound = m_pAnimPlayer->getBound();
 		bound->getSphere(center, radius);
 	}
-}
+}*/
 
-bool CBaseAnimating::setKV(const char * name, const char * value)
+void CBaseAnimating::onSetUseAutoPhysbox(bool use)
 {
-	if(!BaseClass::setKV(name, value))
+	if(m_useAutoPhysbox != use)
 	{
-		return(false);
-	}
-	if(!strcmp(name, "model"))
-	{
-		setModel(value);
-	}
-	else if(!strcmp(name, "scale"))
-	{
+		m_useAutoPhysbox = use;
 		releasePhysics();
-		if(m_pAnimPlayer)
-		{
-			m_pAnimPlayer->setScale(m_fBaseScale);
-		}
 		initPhysics();
 	}
-	return(true);
 }
 
 void CBaseAnimating::setModel(const char * mdl)
 {
 	_setStrVal(&m_szModelFile, mdl);
 	releasePhysics();
+	mem_release(m_pModel);
 	if(!mdl[0] /*&& m_pAnimPlayer*/)
 	{
-		mem_release(m_pAnimPlayer);
 		return;
 	}
-	if(!m_pAnimPlayer)
+
+	IXResourceManager *pResourceManager = Core_GetIXCore()->getResourceManager();
+	IXModelProvider *pProvider = (IXModelProvider*)Core_GetIXCore()->getPluginManager()->getInterface(IXMODELPROVIDER_GUID);
+	
+	IXResourceModel *pResource;
+	if(pResourceManager->getModel(mdl, &pResource))
 	{
-		m_pAnimPlayer = SXAnim_CreatePlayer(mdl);
-		m_pAnimPlayer->setCallback(this, &ThisClass::onAnimationStateChanged);
+		IXDynamicModel *pModel;
+		if(pProvider->createDynamicModel(pResource, &pModel))
+		{
+			m_pModel = pModel;
+			m_pModel->setSkin(m_iSkin);
+			m_pModel->setScale(m_fBaseScale);
+			m_pModel->setPosition(getPos());
+			m_pModel->setOrientation(getOrient());
+			
+			auto pAnimating = m_pModel->asAnimatedModel();
+			if(pAnimating)
+			{
+				pAnimating->setCallback(m_pAnimationCallback);
+				pAnimating->play("idle");
+			}
+		}
+		mem_release(pResource);
 	}
-	else
+
+	initPhysics();
+}
+
+void CBaseAnimating::setScale(float fScale)
+{
+	m_fBaseScale = fScale;
+
+	releasePhysics();
+	if(m_pModel)
 	{
-		m_pAnimPlayer->setModel(mdl);
+		m_pModel->setScale(m_fBaseScale);
 	}
-	m_pAnimPlayer->setSkin(m_iSkin);
-	m_pAnimPlayer->setScale(m_fBaseScale);
 	initPhysics();
 }
 
 float3 CBaseAnimating::getAttachmentPos(int id)
 {
 	float3 pos;
-	if(m_pAnimPlayer && id >= 0)
+	if(m_pModel && m_pModel->asAnimatedModel() && id >= 0)
 	{
-		pos = m_pAnimPlayer->getBoneTransformPos(id);
+		pos = m_pModel->asAnimatedModel()->getBoneTransformPos(id);
 	}
 
 	return(/*getOrient() * */pos/* + getPos()*/);
@@ -138,9 +183,9 @@ float3 CBaseAnimating::getAttachmentPos(int id)
 SMQuaternion CBaseAnimating::getAttachmentRot(int id)
 {
 	SMQuaternion rot;
-	if(m_pAnimPlayer && id >= 0)
+	if(m_pModel && m_pModel->asAnimatedModel() && id >= 0)
 	{
-		rot = m_pAnimPlayer->getBoneTransformRot(id);
+		rot = m_pModel->asAnimatedModel()->getBoneTransformRot(id);
 	}
 
 	return(/*getOrient() * */rot);
@@ -149,89 +194,176 @@ SMQuaternion CBaseAnimating::getAttachmentRot(int id)
 void CBaseAnimating::onSync()
 {
 	BaseClass::onSync();
-	if(!m_pParent && m_pRigidBody)
+	if(!m_pParent && m_pRigidBody && !m_isStatic)
 	{
-		setPos(BTVEC_F3(m_pRigidBody->getWorldTransform().getOrigin()));
-		setOrient(BTQUAT_Q4(m_pRigidBody->getWorldTransform().getRotation()));
+		btVector3 &v = m_pRigidBody->getWorldTransform().getOrigin();
+		setPos(BTVEC_F3(v));
+		btQuaternion &q = m_pRigidBody->getWorldTransform().getRotation();
+		setOrient(BTQUAT_Q4(q));
 	}
 	else if(m_pRigidBody)
 	{
 	//	m_pRigidBody->getWorldTransform().setOrigin(F3_BTVEC(getPos()));
 	//	m_pRigidBody->getWorldTransform().setRotation(Q4_BTQUAT(getOrient()));
 	}
-	if(m_pAnimPlayer)
+	if(m_pModel)
 	{
-		m_pAnimPlayer->setScale(m_fBaseScale);
-		m_pAnimPlayer->setPos(getPos());
-		m_pAnimPlayer->setOrient(getOrient());
+		m_pModel->setPosition(getPos());
+		m_pModel->setOrientation(getOrient());
 
 		float3_t vGlowColor = m_vGlowColor;
-		bool isGlowEnabled = m_pEntColorRef ? m_pEntColorRef->getMainColor(&vGlowColor) : m_vGlowColor.x != 0.0f || m_vGlowColor.y != 0.0f || m_vGlowColor.z != 0.0f;
-		m_pAnimPlayer->setGlowColor(vGlowColor);
-		m_pAnimPlayer->setGlowEnabled(isGlowEnabled);
+		//bool isGlowEnabled = m_pEntColorRef ? m_pEntColorRef->getMainColor(&vGlowColor) : m_vGlowColor.x != 0.0f || m_vGlowColor.y != 0.0f || m_vGlowColor.z != 0.0f;
+		m_pModel->setColor(float4(vGlowColor));
+		//m_pAnimPlayer->setGlowEnabled(isGlowEnabled);
 	}
 }
 
 void CBaseAnimating::playAnimation(const char * name, UINT iFadeTime, UINT slot)
 {
-	if(m_pAnimPlayer)
+	if(m_pModel && m_pModel->asAnimatedModel())
 	{
-		m_pAnimPlayer->play(name, iFadeTime, slot);
+		m_pModel->asAnimatedModel()->play(name, iFadeTime, slot);
 	}
 }
 
 bool CBaseAnimating::playingAnimations(const char* name)
 {
-	if(m_pAnimPlayer)
+	if(m_pModel && m_pModel->asAnimatedModel())
 	{
-		return(m_pAnimPlayer->playingAnimations(name));
+		return(m_pModel->asAnimatedModel()->isPlayingAnimation(name));
 	}
 	return(false);
 }
 
 void CBaseAnimating::playActivity(const char * name, UINT iFadeTime, UINT slot)
 {
-	if(m_pAnimPlayer)
+	if(m_pModel && m_pModel->asAnimatedModel())
 	{
-		m_pAnimPlayer->startActivity(name, iFadeTime, slot);
+		m_pModel->asAnimatedModel()->startActivity(name, iFadeTime, slot);
 	}
 }
 
 void CBaseAnimating::initPhysics()
 {
-	if(!m_pAnimPlayer)
+	if(!m_pModel)
 	{
 		return;
 	}
-	int32_t iShapeCount;
-	HITBOX_TYPE * phTypes;
-	float3_t ** ppfData;
-	int32_t * pfDataLen;
 
-	//m_pAnimPlayer->setScale(m_fBaseScale);
+	UINT uShapesCount = m_pModel->getPhysboxCount();
 
-	m_pAnimPlayer->getPhysData(&iShapeCount, &phTypes, &ppfData, &pfDataLen);
 
-	for(int i = 0; i < iShapeCount; ++i)
+	btCompoundShape *pShape = new btCompoundShape(true, uShapesCount);
+	for(UINT i = 0; i < uShapesCount; ++i)
 	{
-		if(phTypes[i] == HT_CONVEX)
+		auto pPhysbox = m_pModel->getPhysBox(i);
+		btCollisionShape *pLocalShape = NULL;
+		switch(pPhysbox->getType())
 		{
-			//m_pCollideShape = new btConvexHullShape((float*)ppfData[i], pfDataLen[i], sizeof(ppfData[0][0]));
-			btConvexHullShape tmpShape((float*)ppfData[i], pfDataLen[i], sizeof(ppfData[0][0]));
-			tmpShape.setMargin(0);
-			btVector3 *pData;
-			int iVertexCount;
-			SPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
-			m_pCollideShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
-			SPhysics_ReleaseHull(pData, iVertexCount);
-			
+		case XPBT_BOX:
+			pLocalShape = new btBoxShape(F3_BTVEC(pPhysbox->asBox()->getSize()) * m_fBaseScale);
+			break;
+		case XPBT_SPHERE:
+			pLocalShape = new btSphereShape(pPhysbox->asSphere()->getRadius() * m_fBaseScale);
+			break;
+		case XPBT_CAPSULE:
+			pLocalShape = new btCapsuleShape(pPhysbox->asCapsule()->getRadius() * m_fBaseScale, pPhysbox->asCapsule()->getHeight() * m_fBaseScale);
+			break;
+		case XPBT_CYLINDER:
+			pLocalShape = new btCylinderShape(btVector3(pPhysbox->asCylinder()->getRadius(), pPhysbox->asCylinder()->getHeight() * 0.5f, pPhysbox->asCylinder()->getRadius()) * m_fBaseScale);
+			break;
+		case XPBT_CONVEX:
+			{
+				auto pConvex = pPhysbox->asConvex();
+				btConvexHullShape tmpShape((float*)pConvex->getData(), pConvex->getVertexCount(), sizeof(float3_t));
+				tmpShape.setMargin(0);
+				btVector3 *pData;
+				int iVertexCount;
+				SPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
+				for(int i = 0; i < iVertexCount; ++i)
+				{
+					pData[i] *= m_fBaseScale;
+				}
+				pLocalShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
+				SPhysics_ReleaseHull(pData, iVertexCount);
+			}
+			break;
 		}
-		break;
+
+		if(pLocalShape)
+		{
+			btTransform localTransform(Q4_BTQUAT(pPhysbox->getOrientation()), F3_BTVEC(pPhysbox->getPosition()) * m_fBaseScale);
+			pShape->addChildShape(localTransform, pLocalShape);
+		}
 	}
+	if(!uShapesCount && m_useAutoPhysbox)
+	{
+		{
+			auto pResource = m_pModel->getResource()->asStatic();
+			if(pResource)
+			{
+				UINT uUsedLod = pResource->getLodCount() - 1;
+				for(UINT i = 0, l = pResource->getSubsetCount(uUsedLod); i < l; ++i)
+				{
+					btCollisionShape *pLocalShape = NULL;
+					auto pSubset = pResource->getSubset(uUsedLod, i);
 
-	m_pAnimPlayer->freePhysData(iShapeCount, phTypes, ppfData, pfDataLen);
+					btConvexHullShape tmpShape((float*)pSubset->pVertices, pSubset->iVertexCount, sizeof(pSubset->pVertices[0]));
+					tmpShape.setMargin(0);
+					btVector3 *pData;
+					int iVertexCount;
+					SPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
+					for(int i = 0; i < iVertexCount; ++i)
+					{
+						pData[i] *= m_fBaseScale;
+					}
+					pLocalShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
+					SPhysics_ReleaseHull(pData, iVertexCount);
 
 
+					if(pLocalShape)
+					{
+						btTransform localTransform;
+						localTransform.setIdentity();
+						pShape->addChildShape(localTransform, pLocalShape);
+					}
+				}
+			}
+		}
+		{
+			auto pResource = m_pModel->getResource()->asAnimated();
+			if(pResource)
+			{
+				UINT uUsedLod = pResource->getLodCount() - 1;
+				for(UINT i = 0, l = pResource->getSubsetCount(uUsedLod); i < l; ++i)
+				{
+					btCollisionShape *pLocalShape = NULL;
+					auto pSubset = pResource->getSubset(uUsedLod, i);
+
+					btConvexHullShape tmpShape((float*)pSubset->pVertices, pSubset->iVertexCount, sizeof(pSubset->pVertices[0]));
+					tmpShape.setMargin(0);
+					btVector3 *pData;
+					int iVertexCount;
+					SPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
+					for(int i = 0; i < iVertexCount; ++i)
+					{
+						pData[i] *= m_fBaseScale;
+					}
+					pLocalShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
+					SPhysics_ReleaseHull(pData, iVertexCount);
+
+
+					if(pLocalShape)
+					{
+						btTransform localTransform;
+						localTransform.setIdentity();
+						pShape->addChildShape(localTransform, pLocalShape);
+					}
+				}
+			}
+		}
+	}
+	m_pCollideShape = pShape;
 	createPhysBody();
 }
 
@@ -251,7 +383,7 @@ void CBaseAnimating::createPhysBody()
 			vInertia  // local inertia
 			);
 		m_pRigidBody = new btRigidBody(rigidBodyCI);
-		m_pRigidBody->getInvMass();
+		//m_pRigidBody->getInvMass();
 
 		//m_pRigidBody->setFriction(100.0f);
 		m_pRigidBody->setUserPointer(this);
@@ -281,7 +413,15 @@ void CBaseAnimating::removePhysBody()
 void CBaseAnimating::releasePhysics()
 {
 	removePhysBody();
-	mem_delete(m_pCollideShape);
+	if(m_pCollideShape)
+	{
+		btCompoundShape *pShape = (btCompoundShape*)m_pCollideShape;
+		for(UINT i = 0, l = pShape->getNumChildShapes(); i < l; ++i)
+		{
+			delete pShape->getChildShape(i);
+		}
+		mem_delete(m_pCollideShape);
+	}
 }
 
 void CBaseAnimating::setCollisionGroup(COLLISION_GROUP group, COLLISION_GROUP mask)
@@ -338,29 +478,38 @@ void CBaseAnimating::_cleanup()
 	BaseClass::_cleanup();
 }
 
-void CBaseAnimating::onAnimationStateChanged(int slot, ANIM_STATE as)
+void CBaseAnimating::onAnimationStart(UINT uLayer)
 {
-	if(as == AS_STOP && m_vNextAnim[slot].szName[0] != 0)
+}
+void CBaseAnimating::onAnimationStop(UINT uLayer)
+{
+	if(m_vNextAnim[uLayer].szName[0] != 0)
 	{
-		if(m_vNextAnim[slot].isActivity)
+		if(m_vNextAnim[uLayer].isActivity)
 		{
-			playActivity(m_vNextAnim[slot].szName, m_vNextAnim[slot].uFadeTime, slot);
+			playActivity(m_vNextAnim[uLayer].szName, m_vNextAnim[uLayer].uFadeTime, uLayer);
 		}
 		else
 		{
-			playAnimation(m_vNextAnim[slot].szName, m_vNextAnim[slot].uFadeTime, slot);
+			playAnimation(m_vNextAnim[uLayer].szName, m_vNextAnim[uLayer].uFadeTime, uLayer);
 		}
 
-		m_vNextAnim[slot].szName[0] = 0;
+		m_vNextAnim[uLayer].szName[0] = 0;
 	}
+}
+void CBaseAnimating::onAnimationLoop(UINT uLayer)
+{
+}
+void CBaseAnimating::onAnimationProgress(UINT uLayer, float fProgress)
+{
 }
 
 void CBaseAnimating::playAnimationNext(const char * name, UINT uFadeTime, UINT slot)
 {
 	assert(slot < BLEND_MAX);
 
-	strncpy(m_vNextAnim[slot].szName, name, MODEL_MAX_NAME);
-	m_vNextAnim[slot].szName[MODEL_MAX_NAME - 1] = 0;
+	strncpy(m_vNextAnim[slot].szName, name, XMODEL_MAX_NAME);
+	m_vNextAnim[slot].szName[XMODEL_MAX_NAME - 1] = 0;
 	m_vNextAnim[slot].isActivity = false;
 	m_vNextAnim[slot].uFadeTime = uFadeTime;
 }
@@ -369,8 +518,8 @@ void CBaseAnimating::playActivityNext(const char * name, UINT uFadeTime, UINT sl
 {
 	assert(slot < BLEND_MAX);
 
-	strncpy(m_vNextAnim[slot].szName, name, MODEL_MAX_NAME);
-	m_vNextAnim[slot].szName[MODEL_MAX_NAME - 1] = 0;
+	strncpy(m_vNextAnim[slot].szName, name, XMODEL_MAX_NAME);
+	m_vNextAnim[slot].szName[XMODEL_MAX_NAME - 1] = 0;
 	m_vNextAnim[slot].isActivity = true;
 	m_vNextAnim[slot].uFadeTime = uFadeTime;
 }
@@ -490,9 +639,9 @@ void CBaseAnimating::inputSetSkin(inputdata_t * pInputdata)
 
 void CBaseAnimating::setSkin(int iSkin)
 {
-	if(m_pAnimPlayer)
+	if(m_pModel && m_pModel->asAnimatedModel())
 	{
-		m_pAnimPlayer->setSkin(iSkin);
+		m_pModel->asAnimatedModel()->setSkin(iSkin);
 	}
 	m_iSkin = iSkin;
 }
@@ -505,4 +654,13 @@ void CBaseAnimating::_initEditorBoxes()
 void CBaseAnimating::_releaseEditorBoxes()
 {
 	// do nothing
+}
+
+void CBaseAnimating::renderEditor(bool is3D)
+{
+	if(m_pModel)
+	{
+		m_pModel->render(0, false);
+		m_pModel->render(0, true);
+	}
 }

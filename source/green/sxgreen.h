@@ -21,16 +21,13 @@ See the license in LICENSE
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxgcore_d.lib")
-#pragma comment(lib, "sxgeom_d.lib")
 #else
 #pragma comment(lib, "sxgcore.lib")
-#pragma comment(lib, "sxgeom.lib")
 #endif
 
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <gcore/sxgcore.h>
-#include <geom/sxgeom.h>
 
 #ifdef SX_DLL
 #undef SX_LIB_API
@@ -60,7 +57,8 @@ SX_LIB_API void SGreen_Dbg_Set(report_func fnFunc);
 //! инициализация подсистемы
 SX_LIB_API void SGreen_0Create(	
 	const char *szName,		//!< имя
-	bool isUnic = true		//!< должна ли подсистема быть уникальной по имени
+	bool isUnic = true,		//!< должна ли подсистема быть уникальной по имени
+	bool isServerMode = false //!< серверный режим (без графики)
 	);
 
 //! уничтожение подсистемы

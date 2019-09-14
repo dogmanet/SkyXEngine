@@ -1,7 +1,6 @@
 
 #include "HUDcontroller.h"
 #include "GameData.h"
-#include <geom/sxgeom.h>
 #include <common/file_utils.h>
 
 CHUDcontroller::CHUDcontroller():
@@ -33,7 +32,9 @@ CHUDcontroller::CHUDcontroller():
 		m_pChatLog->addPseudoclass(0x00004);
 	}
 	
-	Core_0RegisterCVarBool("hud_draw", true, "Включает отображение HUD");
+	Core_0RegisterCVarBool("hud_draw", true, "Включает отображение HUD"); 
+
+	m_pLevelSizeChannel = Core_GetIXCore()->getEventChannel<XEventLevelSize>(EVENT_LEVEL_GET_SIZE_GUID);
 }
 
 CHUDcontroller::~CHUDcontroller()
@@ -68,11 +69,11 @@ void CHUDcontroller::setPlayerRot(const float3 & vRotation)
 void CHUDcontroller::loadMap(const char *szName)
 {
 	// /hud/levels/stalker_atp.png
-	float3 vMin, vMax;
-	SGeom_GetMinMax(&vMin, &vMax);
+	XEventLevelSize levelSize;
+	m_pLevelSizeChannel->broadcastEvent(&levelSize);
 
-	m_vLevelMin = vMin;
-	m_vLevelMax = vMax;
+	m_vLevelMin = levelSize.vMin;
+	m_vLevelMax = levelSize.vMax;
 
 	if(m_pMinimapPan)
 	{
@@ -94,8 +95,8 @@ void CHUDcontroller::loadMap(const char *szName)
 			m_pMinimapPan->getStyleSelf()->background_size_y->unset();
 		}
 		
-		m_pMinimapPan->getStyleSelf()->width->set((vMax.x - vMin.x) * m_fMapScale);
-		m_pMinimapPan->getStyleSelf()->height->set((vMax.z - vMin.z) * m_fMapScale);
+		m_pMinimapPan->getStyleSelf()->width->set((m_vLevelMax.x - m_vLevelMin.x) * m_fMapScale);
+		m_pMinimapPan->getStyleSelf()->height->set((m_vLevelMax.z - m_vLevelMin.z) * m_fMapScale);
 		m_pMinimapPan->getStyleSelf()->background_image->set(StringW(String(szMapFile)));
 		m_pMinimapPan->updateStyles();
 	}

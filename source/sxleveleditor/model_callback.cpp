@@ -222,14 +222,10 @@ void level_editor::GeomUpdateCopyPos()
 	float3 vMin, vMax;
 	SGeom_ModelGetMinMax(level_editor::idCopy, &vMin, &vMax);
 
-	D3DXPLANE oPlane;
-	D3DXPlaneFromPoints(&oPlane,
-		&D3DXVECTOR3(vMin),
-		&D3DXVECTOR3(vMax.x, vMin.y, vMin.z),
-		&D3DXVECTOR3(vMin.x, vMin.y, vMax.z));
+	SMPLANE oPlane(vMin, float3(vMax.x, vMin.y, vMin.z), float3(vMin.x, vMin.y, vMax.z));
 
-	D3DXVECTOR3 vResult;
-	D3DXPlaneIntersectLine(&vResult, &oPlane, &D3DXVECTOR3(level_editor::vRayOrigin), &D3DXVECTOR3(float3(level_editor::vRayOrigin + level_editor::vRayDir * 10000.f)));
+	float3 vResult;
+	oPlane.intersectLine(&vResult, level_editor::vRayOrigin, level_editor::vRayOrigin + level_editor::vRayDir * 10000.f);
 
 	float3 vPos;
 	SGeom_ModelGetPosition(level_editor::idCopy, &vPos);

@@ -46,24 +46,28 @@ namespace gui
 		UINT m_iWidth;
 		UINT m_iHeight;
 
-		CPITexture m_txFinal;
+		CPITexture m_txFinal = NULL;
 
 		bool m_bShowSimulatedCursor;
 		bool m_bShowSystemCursor;
 
 		dom::CDOMdocument * m_pDoc;
 
-		dom::IDOMnode * m_pFocusedNode;
-		dom::IDOMnode * m_pHoveredNode;
+		dom::IDOMnode * m_pFocusedNode = NULL;
+		dom::IDOMnode * m_pHoveredNode = NULL;
 
 		//dom::IDOMnodeCollection m_cTmpNodes;
 
-		IDirect3DSurface9 * m_pRenderSurface;
-		IDirect3DSurface9 * m_pDepthStencilSurface;
+		IGXSurface * m_pRenderSurface = NULL;
+		IGXDepthStencilSurface * m_pDepthStencilSurface = NULL;
 
 		StringW m_sName;
 
-		float m_fParallaxFactor;
+		float m_fParallaxFactor = 0.0f;
+
+		IGXVertexBuffer *m_pVertices = NULL;
+		IGXRenderBuffer *m_pRenderBuffer = NULL;
+		IGXConstantBuffer *m_pColorWhite = NULL;
 	};
 };
 

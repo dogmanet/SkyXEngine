@@ -1,0 +1,51 @@
+
+/*
+sky_box.ps
+Рендер SkyBox
+*/
+
+#include "../struct.h"
+#include "../mtrl.h"
+#include "../const.h"
+
+//##########################################################################
+
+SamplerState g_sScene: register(s0);
+
+TextureCube g_txCurrent: register(t0);		// basetexture
+TextureCube g_txNext: register(t1);
+
+//##########################################################################
+
+// half g_fBlendFactor;
+// half4 g_vColor;
+
+//##########################################################################
+
+/* half4 main(VSO_SkyBox IN):COLOR0
+{
+	half4 vColor1 = texCUBE(g_sCurrent, IN.vTexUV);
+	half4 vColor2 = texCUBE(g_sNext, IN.vTexUV);
+	half4 vFinalColor = lerp(vColor1, vColor2, g_fBlendFactor);
+	vFinalColor.rgb = lerp(vFinalColor.rgb, g_vColor.rgb, g_vColor.a);
+	return vFinalColor;
+} */
+
+PSO_Gbuffer main(VSO_SkyBox IN)
+{
+	// ClipFar(IN.vPos.z, g_vNearFarLayers.y);
+		
+	half4 vColor = g_txCurrent.Sample(g_sScene, IN.vTexUV);
+	
+	vColor.xyz *= vColor.w * 25.0f;
+	vColor.w = 1.0f;
+	// vColor = float4(0, 1, 0, 1);
+		
+	return(CreateGbuffer(
+		vColor, 
+		-normalize(IN.vTexUV), 
+		(float4)0, 
+		float4(0, 0, g_vNearFarLayers.y - g_vNearFarLayers.x, 1.0), 
+		g_vNearFarLayers
+	));
+}

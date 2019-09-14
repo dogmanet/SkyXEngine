@@ -1,0 +1,155 @@
+[ent_0]
+team = -842150451
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = -3.925758 1.000896 -18.142702
+name = 
+flags = 0
+classname = info_player_spawn
+
+[ent_1]
+use_trimesh = 0
+skin = 0
+scale = 1.000000
+rotation = 0.000000 0.081049 0.000000 -0.996710
+parent = 
+origin = -6.353374 3.468264 6.488859
+name = 
+model = meshes/transparent/plane1.dse
+is_static = 1
+glow_color_ref = 
+glow_color = 0.000000 0.000000 0.000000
+flags = 0
+classname = prop_static
+auto_physbox = 1
+
+[meta]
+count = 10
+
+[ent_2]
+use_trimesh = 0
+skin = 0
+scale = 1.000000
+rotation = 0.000000 0.081049 0.000000 -0.996710
+parent = 
+origin = -9.025822 3.468264 -9.834812
+name = 
+model = meshes/transparent/plane1.dse
+is_static = 1
+glow_color_ref = 
+glow_color = 0.000000 0.000000 0.000000
+flags = 0
+classname = prop_static
+auto_physbox = 1
+
+[ent_3]
+use_trimesh = 1
+skin = 0
+scale = 1.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = 0.000000 0.000000 0.000000
+name = base
+model = meshes/transparent/base.dse
+is_static = 1
+glow_color_ref = 
+glow_color = 0.000000 0.000000 0.000000
+flags = 0
+classname = prop_static
+auto_physbox = 1
+
+[ent_4]
+use_trimesh = 0
+skin = 0
+scale = 1.000000
+rotation = 0.000000 -0.029537 0.000000 -0.999564
+parent = 
+origin = 0.551506 3.468264 -6.024114
+name = 
+model = meshes/transparent/plane2.dse
+is_static = 1
+glow_color_ref = 
+glow_color = 0.000000 0.000000 0.000000
+flags = 0
+classname = prop_static
+auto_physbox = 1
+
+[ent_5]
+use_trimesh = 0
+skin = 0
+scale = 1.000000
+rotation = 0.000000 0.682918 0.000000 -0.730495
+parent = 
+origin = -4.130323 3.495506 -11.273858
+name = 
+model = meshes/transparent/plane2.dse
+is_static = 1
+glow_color_ref = 
+glow_color = 0.000000 0.000000 0.000000
+flags = 0
+classname = prop_static
+auto_physbox = 1
+
+[ent_6]
+use_trimesh = 0
+skin = 0
+scale = 2.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = -6.141287 0.000000 6.633917
+name = 
+model = meshes/transparent/box3.dse
+is_static = 1
+glow_color_ref = 
+glow_color = 0.000000 0.000000 0.000000
+flags = 0
+classname = prop_static
+auto_physbox = 1
+
+[ent_7]
+use_trimesh = 0
+skin = 0
+scale = 2.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = -0.163496 0.000000 7.586028
+name = 
+model = meshes/transparent/box1.dse
+is_static = 1
+glow_color_ref = 
+glow_color = 0.000000 0.000000 0.000000
+flags = 0
+classname = prop_static
+auto_physbox = 1
+
+[ent_8]
+use_trimesh = 0
+skin = 0
+scale = 2.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = -9.934603 0.000000 15.668315
+name = 
+model = meshes/transparent/box2.dse
+is_static = 1
+glow_color_ref = 
+glow_color = 0.000000 0.000000 0.000000
+flags = 0
+classname = prop_static
+auto_physbox = 1
+
+[ent_9]
+use_trimesh = 0
+skin = 0
+scale = 2.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = -9.126783 0.000000 -11.453623
+name = 
+model = meshes/transparent/box1.dse
+is_static = 1
+glow_color_ref = 
+glow_color = 0.000000 0.000000 0.000000
+flags = 0
+classname = prop_static
+auto_physbox = 1

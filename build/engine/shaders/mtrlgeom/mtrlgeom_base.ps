@@ -1,0 +1,35 @@
+
+/*
+mtrlgeom_base.ps
+Базовый рендер геометрии
+*/
+
+#include "../struct.h"
+#include "../mtrl.h"
+
+//##########################################################################
+
+SamplerState g_sScene: register(s0);
+Texture2D g_txColor: register(t0);		// basetexture
+Texture2D g_txParameters: register(t10);		// basetexture
+
+//##########################################################################
+
+// half4 g_vNearFarLayers;
+#include "../const.h"
+
+//##########################################################################
+
+PSO_Gbuffer main(VSO_SceneCommon IN)
+{
+	ClipFar(IN.vPos.z, g_vNearFarLayers.y);
+	IN.vNormal = normalize(IN.vNormal);
+		
+	return(CreateGbuffer(
+		float4(g_txColor.Sample(g_sScene, IN.vTexUV).xyz, 0.0f), 
+		IN.vNormal, 
+		g_txParameters.Sample(g_sScene, IN.vTexUV), 
+		IN.vPos, 
+		g_vNearFarLayers
+	));
+}

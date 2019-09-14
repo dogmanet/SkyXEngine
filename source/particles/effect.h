@@ -9,8 +9,8 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
-#define SM_D3D_CONVERSIONS
-#include <common/SXMath.h>
+//#define SM_D3D_CONVERSIONS
+#include <common/Math.h>
 
 #include "pe_data.h"
 

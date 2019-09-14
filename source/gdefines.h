@@ -94,6 +94,10 @@ struct IBaseObject
 #ifndef __GDEFINES_H
 #define __GDEFINES_H
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <cstdlib>
 
 /*! \name Некоторые ограничения на размерности */
@@ -142,9 +146,106 @@ struct IBaseObject
 	virtual void Release()=0;
 };
 
+
+
 #endif
 
-#include <common/sxtypes.h>
+#include <common/types.h>
+#include <atomic>
+#include <mutex>
+
+#define XMETHODCALLTYPE __stdcall
+
+class IXUnknown
+{
+protected:
+	virtual ~IXUnknown() = default;
+	UINT m_uRefCount = 1;
+public:
+	void XMETHODCALLTYPE AddRef()
+	{
+		++m_uRefCount;
+	}
+	virtual void XMETHODCALLTYPE Release()
+	{
+		--m_uRefCount;
+		if(!m_uRefCount)
+		{
+			delete this;
+		}
+	}
+
+	virtual UINT XMETHODCALLTYPE getVersion()
+	{
+		return(0);
+	}
+};
+
+#if 0
+template <class T>
+class IXUnknownImplementation: public T
+{
+private:
+	UINT m_uRefCount = 1;
+public:
+	void XMETHODCALLTYPE AddRef() override
+	{
+		++m_uRefCount;
+	}
+	virtual void XMETHODCALLTYPE Release() override
+	{
+		--m_uRefCount;
+		if(!m_uRefCount)
+		{
+			delete this;
+		}
+	}
+
+	virtual UINT XMETHODCALLTYPE getVersion() override
+	{
+		return(0);
+	}
+};
+#endif
+
+typedef struct _XGUID
+{
+	_XGUID()
+	{
+	}
+	_XGUID(unsigned long l, unsigned short w1, unsigned short w2,
+		unsigned char b1, unsigned char b2, unsigned char b3, unsigned char b4,
+		unsigned char b5, unsigned char b6, unsigned char b7, unsigned char b8):
+		Data1(l), Data2(w1), Data3(w2), Data40(b1), Data41(b2), Data43(b3), Data44(b4),
+		Data45(b5), Data46(b6), Data47(b7)
+	{
+	}
+	unsigned long  Data1 = 0;
+	unsigned short Data2 = 0;
+	unsigned short Data3 = 0;
+	unsigned char  Data40 = 0;
+	unsigned char  Data41 = 0;
+	unsigned char  Data42 = 0;
+	unsigned char  Data43 = 0;
+	unsigned char  Data44 = 0;
+	unsigned char  Data45 = 0;
+	unsigned char  Data46 = 0;
+	unsigned char  Data47 = 0;
+} XGUID;
+
+#define DEFINE_XGUID(l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
+    XGUID(l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8)
+
+
+inline bool operator<(const XGUID &a, const XGUID &b)
+{
+	return(memcmp(&a, &b, sizeof(XGUID)) < 0);
+}
+
+inline bool operator==(const XGUID &a, const XGUID &b)
+{
+	return(memcmp(&a, &b, sizeof(XGUID)) == 0);
+}
 
 //! Считывание неопределенного количества аргументов при форматированнии строки в buf на основании format
 #define format_str(buf,format) va_list va; va_start(va, format); vsprintf_s(buf, sizeof(buf), format, va); va_end(va);
@@ -164,8 +265,10 @@ struct IBaseObject
 #define ASSERT_S(str,...) AllocConsole();freopen("CONOUT$", "wt", stdout); fprintf(stdout, str, ...); exit(1);
 #define ASSERT(expr) if(!expr) ASSERT_S(#expr)
 
+#define strdupa(str) strcpy((char*)alloca(sizeof(char) * (strlen(str) + 1)), str)
+
 //! Тип функции вывода отладочной информации
-typedef void(*report_func) (int iLevel, const char *szLibName, const char *szFormat, ...);
+typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMessage);
 
 #include <cstdio> 
 #if defined(_WINDOWS)
@@ -173,11 +276,17 @@ typedef void(*report_func) (int iLevel, const char *szLibName, const char *szFor
 #	include <Windows.h>
 #endif
 
+#include <common/math.h>
+#include <common/array.h>
+#include <common/assotiativearray.h>
+#include <common/memalloc.h>
+
 /** \name Уровни критичности сообщений для функции репортов */
 //! @{
 #define REPORT_MSG_LEVEL_NOTICE		0	/*!< заметка */
 #define REPORT_MSG_LEVEL_WARNING	1	/*!< предупреждение */
-#define REPORT_MSG_LEVEL_ERROR		-1	/*!< ошибка, желательно вылетать */
+#define REPORT_MSG_LEVEL_ERROR		-1	/*!< ошибка, продолжаем */
+#define REPORT_MSG_LEVEL_FATAL		-2	/*!< ошибка, желательно вылетать */
 
 #define REPORT_MSG_MAX_LEN 4096		/*!< максимальный размер сообщения */
 //! @}
@@ -227,10 +336,11 @@ typedef void(*report_func) (int iLevel, const char *szLibName, const char *szFor
 #ifndef DEFAULT_FUNCTION_REPORT 
 #define DEFAULT_FUNCTION_REPORT
 
+#if 0
 /*! Дефолтовая функция вывода отладочной информации ВМЕСТО НЕЕ В ЯДРО/ПОДСИСТЕМУ НУЖНО ОТПРАВЛЯТЬ СВОЮ */
 inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, ...)
 {
-#if defined(_WINDOWS)
+#if 0 && defined(_WINDOWS)
 	AllocConsole();
 	freopen("CONOUT$", "wt", stdout);
 #endif
@@ -242,6 +352,32 @@ inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, .
 	Sleep(5000);
 	exit(1);
 }
+#endif
+inline void DefReport(int iLevel, const char *szLibName, const char *szMessage)
+{
+	if(szMessage[0] != ' ' && szMessage[0] != '\t')
+	{
+		printf(COLOR_GREEN "%s" COLOR_RESET ": ", szLibName);
+	}
+	if(iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_FATAL)
+	{
+		fputs(COLOR_LRED, stdout);
+	}
+	else if(iLevel == REPORT_MSG_LEVEL_WARNING)
+	{
+		fputs(COLOR_YELLOW, stdout);
+	}
+	fputs(szMessage, stdout);
+	if(iLevel == REPORT_MSG_LEVEL_ERROR || iLevel == REPORT_MSG_LEVEL_WARNING || iLevel == REPORT_MSG_LEVEL_FATAL)
+	{
+		fputs(COLOR_RESET, stdout);
+	}
+
+	if(iLevel == REPORT_MSG_LEVEL_FATAL)
+	{
+		exit(0);
+	}
+}
 
 #endif
 
@@ -252,19 +388,14 @@ inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, .
 
 inline void LibReport(int iLevel, const char *szFormat, ...)
 {
-	extern report_func g_fnReportf;
-
-	static char szStr[REPORT_MSG_MAX_LEN];
-	szStr[0] = 0;
-	int iStrLen = sizeof(szStr);
-	//format_str(szStr, szFormat);
-
-	va_list va; 
+	va_list va;
 	va_start(va, szFormat);
-	vsprintf_s(szStr, sizeof(szStr), szFormat, va);
+	size_t len = _vscprintf(szFormat, va) + 1;
+	char * buf = (char*)alloca(len * sizeof(char));
+	vsprintf(buf, szFormat, va);
 	va_end(va);
 
-	g_fnReportf(iLevel, SX_LIB_NAME, szStr);
+	DefReport(iLevel, SX_LIB_NAME, buf);
 }
 
 

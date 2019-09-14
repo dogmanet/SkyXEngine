@@ -15,6 +15,9 @@ See the license in LICENSE
 #ifndef __SXPP_H
 #define __SXPP_H
 
+#if 1
+
+#else
 #include <gdefines.h>
 
 #if defined(_DEBUG)
@@ -31,7 +34,7 @@ See the license in LICENSE
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
-
+#endif
 //##########################################################################
 
 /*! \name Значения цветов для создания эффекта sepia
@@ -55,7 +58,7 @@ See the license in LICENSE
 
 /*! \name Базовые функции библиотеки
 @{*/
-
+#if 0
 //! возвращает версию подсистемы
 SX_LIB_API long SPP_0GetVersion();				
 
@@ -235,7 +238,7 @@ SX_LIB_API void SPP_RenderNFAA(const float3_t *pParam);
 
 //! dlaa (Directionally Localized Anti Aliasing)
 SX_LIB_API void SPP_RenderDLAA();	
-
+#endif
 //!@}
 
 //!@} sxpp_eff

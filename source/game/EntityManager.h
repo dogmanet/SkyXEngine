@@ -69,6 +69,7 @@ struct timeout_output_t
 class CEntityManager
 {
 	friend class CBaseEntity;
+	friend class CEntityFactoryMap;
 public:
 	CEntityManager();
 	~CEntityManager();
@@ -82,29 +83,29 @@ public:
 	void loadDefaults();
 	void loadDynClasses();
 
-	ID setTimeout(void(CBaseEntity::*func)(float dt), CBaseEntity * pEnt, float delay);
-	ID setInterval(void(CBaseEntity::*func)(float dt), CBaseEntity * pEnt, float delay);
-	void setOutputTimeout(named_output_t * pOutput, inputdata_t * pData);
+	ID setTimeout(void(CBaseEntity::*func)(float dt), CBaseEntity *pEnt, float delay);
+	ID setInterval(void(CBaseEntity::*func)(float dt), CBaseEntity *pEnt, float delay);
+	void setOutputTimeout(named_output_t * pOutput, inputdata_t *pData);
 	void clearTimeout(ID id);
 	void clearInterval(ID id);
 
-	int countEntityByName(const char * name);
-	CBaseEntity * findEntityByName(const char * name, CBaseEntity * pStart = 0);
+	int countEntityByName(const char *szName);
+	CBaseEntity* findEntityByName(const char *szName, CBaseEntity *pStart = 0);
 
-	CBaseEntity * findEntityByClass(const char * name, CBaseEntity * pStart = 0);
+	CBaseEntity* findEntityByClass(const char *szName, CBaseEntity *pStart = 0);
 
-	CBaseEntity * findEntityInSphere(const float3 &f3Origin, float fRadius, CBaseEntity * pStart = 0);
+	CBaseEntity* findEntityInSphere(const float3 &f3Origin, float fRadius, CBaseEntity *pStart = 0);
 
-	bool exportList(const char * file);
-	bool import(const char * file);
+	bool exportList(const char *szFile);
+	bool import(const char *szFile, bool shouldSendProgress = false);
 
-	void dumpList(int argc, const char ** argv);
-	void entKV(int argc, const char ** argv);
+	void dumpList(int argc, const char **argv);
+	void entKV(int argc, const char **argv);
 
 	int getCount();
-	CBaseEntity * getById(ID id);
+	CBaseEntity* getById(ID id);
 
-	CBaseEntity * cloneEntity(CBaseEntity *pEnt);
+	CBaseEntity* cloneEntity(CBaseEntity *pEnt);
 
 	void sheduleDestroy(CBaseEntity *pEnt);
 
@@ -112,10 +113,14 @@ public:
 	bool isEditorMode();
 
 protected:
-	ID reg(CBaseEntity * pEnt);
+	ID reg(CBaseEntity *pEnt);
 	void unreg(ID ent);
 
+	void regSync(CBaseEntity *pEnt);
+	void unregSync(CBaseEntity *pEnt);
+
 	Array<CBaseEntity*, 64> m_vEntList;
+	Array<CBaseEntity*, 64> m_vEntSyncList;
 	Array<CBaseEntity*> m_vEntRemoveList;
 	Array<ID> m_vFreeIDs;
 
@@ -128,8 +133,8 @@ protected:
 	int m_iThreadNum;
 
 	//! @warning это нужно хранить в течение работы проги, т.к. таблицы дефолтов ссылаются напрямую на этот объект
-	ISXConfig * m_pDefaultsConf;
-	ISXConfig * m_pDynClassConf;
+	ISXConfig *m_pDefaultsConf;
+	ISXConfig *m_pDynClassConf;
 
 	bool m_isEditorMode = false;
 };

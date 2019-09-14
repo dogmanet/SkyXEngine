@@ -60,7 +60,7 @@ CNPCBase::CNPCBase(CEntityManager * pMgr):
 	m_bRunMode(false)
 {
 	m_iCurrQuaidInPath = -1;
-	m_fBaseScale = 0.01f;
+	// m_fBaseScale = 0.01f;
 	m_idQuadCurr = -1;
 	m_statePath = NPC_STATE_PATH_NOTFOUND;
 
@@ -72,7 +72,7 @@ CNPCBase::CNPCBase(CEntityManager * pMgr):
 	m_ulTimeRot = 0;
 	m_canJump = false;*/
 	m_fStepHeight = 0.4f;
-	m_ulColor = D3DCOLOR_ARGB(128, rand() % 255, rand() % 255, rand() % 255);
+	m_ulColor = GX_COLOR_ARGB(128, rand() % 255, rand() % 255, rand() % 255);
 	//m_ulTimeReturnInGrid = m_ulTimeAllReturnInGrid = 0;
 
 	m_uMoveDir &= ~PM_OBSERVER;
@@ -89,12 +89,15 @@ void CNPCBase::setModel(const char * mdl)
 {
 	BaseClass::setModel(mdl);
 
-	ID idBone = m_pAnimPlayer->getBone("bip01_ponytail1");
+	if(m_pModel && m_pModel->asAnimatedModel())
+	{
+		ID idBone = m_pModel->asAnimatedModel()->getBoneId("bip01_ponytail1");
 
-	m_pHeadEnt->setParent(this, idBone);
+		m_pHeadEnt->setParent(this, idBone);
 
-	m_pHeadEnt->setOffsetOrient(SMQuaternion());
-	m_pHeadEnt->setOffsetPos(float3());
+		m_pHeadEnt->setOffsetOrient(SMQuaternion());
+		m_pHeadEnt->setOffsetPos(float3());
+	}
 }
 
 void CNPCBase::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)

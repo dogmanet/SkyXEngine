@@ -228,7 +228,7 @@ namespace level_editor
 	ID idCopy = -1;
 	float3 vCopyPos;
 
-	ID3DXMesh *pFigureBox = 0;
+	IMesh *pFigureBox = 0;
 	CAxesHelper *pAxesHelper = 0;
 
 	int iActiveGroupType = 0;		//!< текущая выделенная группа мировых сущностей EDITORS_LEVEL_GROUPTYPE_
@@ -2038,7 +2038,8 @@ void level_editor::DeleteAllElements()
 void level_editor::LEcreateRenderData()
 {
 	level_editor::pAxesHelper = new CAxesHelper();
-	D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &level_editor::pFigureBox, 0);
+	SGCore_FCreateBoundingBoxMesh(&float3(-0.5f, -0.5f, -0.5f), &float3(0.5f, 0.5f, 0.5f), &level_editor::pFigureBox);
+	//D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &level_editor::pFigureBox, 0);
 }
 
 void level_editor::LEdeleteRenderData()
@@ -2128,6 +2129,7 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 
 	if (level_editor::canGreenRenderBox)
 	{
+#ifdef _GRAPHIX_API
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
@@ -2141,10 +2143,12 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+#endif
 	}
 
 	if (level_editor::canSelSelection)
 	{
+#ifdef _GRAPHIX_API
 		if (level_editor::canSelZTest)
 		{
 			SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
@@ -2161,6 +2165,7 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 
 		if (level_editor::canSelBackFacesCull)
 			SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+#endif
 
 
 
@@ -2168,7 +2173,7 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 		{
 			if (level_editor::idActiveElement > -1)
 			{
-				SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
+				SGCore_GetDXDevice()->setTexture(SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
 				SGeom_RenderSingly(timeDelta, level_editor::idActiveElement, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_STATIC));
 			}
 		}
@@ -2187,12 +2192,12 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 			{
 				if (level_editor::idActiveGreenSplit >= 0 && level_editor::idActiveGreenObject >= 0)
 				{
-					SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
+					SGCore_GetDXDevice()->setTexture(SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
 					SGreen_RenderObject(timeDelta, &vObserverPos, level_editor::idActiveElement, level_editor::idActiveGreenSplit, level_editor::idActiveGreenObject, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
 				}
 				else
 				{
-					SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
+					SGCore_GetDXDevice()->setTexture(SGCore_LoadTexGetTex(SRender_EditorGetSelectTex()));
 					SGreen_RenderSingly(timeDelta, &vObserverPos, level_editor::idActiveElement, SMtrl_MtlGetStdMtl(MTLTYPE_MODEL_TREE));
 				}
 			}
@@ -2203,7 +2208,7 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 			ID idGameObj = level_editor::pListBoxList->getItemData(level_editor::idActiveElement);
 			SGame_EditorRender(idGameObj, SRender_EditorGetSelectTex());
 		}
-
+#ifdef _GRAPHIX_API
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 
@@ -2212,13 +2217,15 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 
 		if (level_editor::canSelBackFacesCull)
 			SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+#endif
 	}
 
-
+#ifdef _GRAPHIX_API
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
 	SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+#endif
 
 	if (level_editor::canAIGQuad)
 		SAIG_RenderQuads(SRender_GetCamera()->getFrustum(), &vObserverPos, *r_far);
@@ -2228,6 +2235,7 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 
 	if (level_editor::canAIGBound)
 	{
+#ifdef _GRAPHIX_API
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
@@ -2239,17 +2247,19 @@ void level_editor::LevelEditorUpdate(DWORD timeDelta)
 		SAIG_RenderBB();
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+#endif
 	}
 
 	if (level_editor::pAxesHelper)
 	{
 		level_editor::pAxesHelper->update();
-
+#ifdef _GRAPHIX_API
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_FALSE);
 		level_editor::pAxesHelper->render();
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 		SGCore_GetDXDevice()->SetRenderState(D3DRS_ZWRITEENABLE, D3DZB_TRUE);
+#endif
 	}
 
 	if (!level_editor::useCopyData && SSInput_GetKeyState(SIK_LCONTROL) && SSInput_GetKeyState(SIK_C) && level_editor::pRenderWindow->getFocus())

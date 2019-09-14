@@ -32,24 +32,29 @@ class CPathCorner: public CPointEntity
 	DECLARE_PROPTABLE();
 public:
 	CPathCorner(CEntityManager * pMgr);
+	~CPathCorner();
 
 	//! получает координаты точки на пути на расстоянии dist от начала
 	float3 getPoint(float dist);
 	//! получает вращение точки на пути на расстоянии dist от начала
 	SMQuaternion getRot(float dist);
 	//! получает длину пути
-	float GetLength();
+	float getLength();
+	//! получает новую скорость
+	float getNewSpeed();
 
 	//! Получает следующую точку на пути
-	CPathCorner * GetNext();
+	CPathCorner * getNext();
 	//! Получает предыдущую точку на пути
-	CPathCorner * GetPrev();
+	CPathCorner * getPrev();
 
 	void setPos(const float3 & pos);
 
+	void setNextPoint(CBaseEntity *pEnt);
+
 protected:
 	//! Пересчитывает путь
-	void RecalcPath(float t);
+	void recalcPath(float t);
 	void onPostLoad();
 
 	//! Тип сглаживания

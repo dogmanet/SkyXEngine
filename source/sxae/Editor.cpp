@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -1233,11 +1233,11 @@ void Editor::InitD3D()
 	*/
 	m_pd3dDevice->GetSwapChain(0, &m_pSwapChain);
 
-	m_pVSH = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_skin.vs", "stdr_skin.vs", SHADER_CHECKDOUBLE_PATH);
-	m_pPSH = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_skin.ps", "stdr_skin.ps", SHADER_CHECKDOUBLE_PATH);
+	m_pVSH = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_skin.vs");
+	m_pPSH = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_skin.ps");
 
-	m_pVSHs = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_geom.vs", "stdr_geom.vs", SHADER_CHECKDOUBLE_PATH);
-	m_pPSHs = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_geom.ps", "stdr_geom.ps", SHADER_CHECKDOUBLE_PATH);
+	m_pVSHs = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "stdr_geom.vs");
+	m_pPSHs = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "stdr_geom.ps");
 
 	m_mProjMat = SMMatrixPerspectiveFovLH(50.0f / 180.0f * SM_PI, (float)width / (float)height, 0.1f, 10000.0f);
 
@@ -1304,9 +1304,11 @@ void Editor::Update()
 	}
 	m_mViewMat = m_cam.GetMatrix();
 
-	m_pd3dDevice->BeginScene();
+	m_pd3dDevice->beginFrame();
 
-	m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(16, 32, 48), 1.0f, 0);
+	m_pd3dDevice->setClearColor(float4_t(0.0625f, 0.125f, 0.1875f, 1.0f));
+	m_pd3dDevice->clearTarget();
+	m_pd3dDevice->clearDepth(1.0f);
 	static VShaderInputCamera VSICData;
 	VSICData.mRes = SMMatrixTranspose(m_mWorldMat * m_mViewMat * m_mProjMat);
 	VSICData.mWorld = SMMatrixTranspose(m_mWorldMat);
@@ -1369,12 +1371,12 @@ void Editor::Update()
 		}
 		m_pd3dDevice->SetRenderState(D3DRS_ZENABLE, 1);
 	}
-	m_pd3dDevice->EndScene();
+	m_pd3dDevice->endFrame();
 
 	m_pAnimMgr->update();
 	m_pAnimMgr->sync();
 
-	m_pSwapChain->Present(NULL, NULL, NULL, NULL, D3DSWAPEFFECT_DISCARD);
+	m_pd3dDevice->swapBuffers();
 }
 
 bool filterStr(char const * str1, char const * str2)

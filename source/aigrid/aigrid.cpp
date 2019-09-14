@@ -326,7 +326,8 @@ bool CAIGrid::gridCompareHeight(ID id1, ID id2)
 void CAIGrid::reCreateBuffs()
 {
 	//GridClear();
-	mem_release_del(m_pTransVertBuf);
+	mem_release(m_pTransVertBuf);
+	mem_release(m_pRenderBuffer);
 	if (m_aQuads.size() <= 0)
 	{
 		return;
@@ -334,13 +335,10 @@ void CAIGrid::reCreateBuffs()
 	
 	if (m_useGraphics)
 	{
-		m_pDXDevice->CreateVertexBuffer(
-			m_aQuads.size() * sizeof(CAIQuadVertexDataInst),
-			D3DUSAGE_WRITEONLY,
-			0,
-			D3DPOOL_MANAGED,
-			&m_pTransVertBuf,
-			0);
+		m_pTransVertBuf = m_pDXDevice->createVertexBuffer(m_aQuads.size() * sizeof(CAIQuadVertexDataInst), GXBUFFER_USAGE_STREAM);
+
+		IGXVertexBuffer *bufs[] = {m_pVertexQuad, m_pTransVertBuf};
+		m_pRenderBuffer = m_pDXDevice->createRenderBuffer(2, bufs, m_pDecl);
 	}
 
 	m_aQuadColors.resize(m_aQuads.size());
@@ -365,7 +363,8 @@ void CAIGrid::reCreateBuffs()
 
 void CAIGrid::defInitBuffs(ID id)
 {
-	mem_release_del(m_pTransVertBuf);
+	mem_release(m_pTransVertBuf);
+	mem_release(m_pRenderBuffer);
 	if (m_aQuads.size() <= 0)
 	{
 		return;
@@ -373,13 +372,10 @@ void CAIGrid::defInitBuffs(ID id)
 
 	if (m_useGraphics)
 	{
-		m_pDXDevice->CreateVertexBuffer(
-			m_aQuads.size() * sizeof(CAIQuadVertexDataInst),
-			D3DUSAGE_WRITEONLY,
-			0,
-			D3DPOOL_MANAGED,
-			&m_pTransVertBuf,
-			0);
+		m_pTransVertBuf = m_pDXDevice->createVertexBuffer(m_aQuads.size() * sizeof(CAIQuadVertexDataInst), GXBUFFER_USAGE_STREAM);
+		
+		IGXVertexBuffer *bufs[] = {m_pVertexQuad, m_pTransVertBuf};
+		m_pRenderBuffer = m_pDXDevice->createRenderBuffer(2, bufs, m_pDecl);
 	}
 
 	m_aQuadColors[id] = 0;
@@ -464,6 +460,7 @@ void CAIGrid::bbSetDimensions(const float3* dim)
 
 	if (m_useGraphics)
 	{
+#ifdef _GRAPHIX_API
 		char* tmppos;
 		m_pBoundBox->LockVertexBuffer(0, (void**)&tmppos);
 		for (int i = 0; i < m_pBoundBox->GetNumVertices(); i++)
@@ -474,6 +471,7 @@ void CAIGrid::bbSetDimensions(const float3* dim)
 			tpos->z *= tmpscale.z;
 		}
 		m_pBoundBox->UnlockVertexBuffer();
+#endif
 	}
 }
 
@@ -516,6 +514,7 @@ void CAIGrid::bbSetPos(const float3* pos)
 	
 	if (m_useGraphics)
 	{
+#ifdef _GRAPHIX_API
 		char* tmppos;
 		m_pBoundBox->LockVertexBuffer(0, (void**)&tmppos);
 		for (int i = 0; i < m_pBoundBox->GetNumVertices(); i++)
@@ -526,6 +525,7 @@ void CAIGrid::bbSetPos(const float3* pos)
 			tpos->z += -tmpcenter.z + (pos->z);
 		}
 		m_pBoundBox->UnlockVertexBuffer();
+#endif
 	}
 }
 
@@ -1018,73 +1018,44 @@ void CAIGrid::initGraphics()
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - dx device is not init", GEN_MSG_LOCATION);
 	}
 
-	D3DVERTEXELEMENT9 InstanceCAIquad[] =
+	GXVertexElement InstanceCAIquad[] =
 	{
-		{ 0, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
-		{ 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
 
-		{ 1, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 1 },
-		{ 1, 12, D3DDECLTYPE_FLOAT4, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 2 },
-		{ 1, 28, D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0 },
+		{1, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1},
+		{1, 12, GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD2},
+		{1, 28, GXDECLTYPE_FLOAT4, GXDECLUSAGE_COLOR},
 
-		D3DDECL_END()
+		GX_DECL_END()
 	};
 
-	m_pDXDevice->CreateVertexDeclaration(InstanceCAIquad, &m_pDecl);
+	m_pDecl = m_pDXDevice->createVertexDeclaration(InstanceCAIquad);
 
 	m_idTex = SGCore_LoadTexAddName("decal_aigrid.dds", LOAD_TEXTURE_TYPE_CONST);
 
-	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "aigrid_quad.vs", "aigrid_quad.vs", SHADER_CHECKDOUBLE_PATH);
-	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "aigrid_quad.ps", "aigrid_quad.ps", SHADER_CHECKDOUBLE_PATH);
+	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "aigrid_quad.vs");
+	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "aigrid_quad.ps");
 
+	m_idShaderKit = SGCore_ShaderCreateKit(m_idVS, m_idPS);
 
-	IDirect3DTexture9* TexBB;
-	m_pDXDevice->CreateTexture(1, 1, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &TexBB, NULL);
-	D3DLOCKED_RECT LockedRect;
+	uint32_t tmpOldColor = AIGRID_COLOR_GBBOX;
+	IGXTexture2D* TexBB = m_pDXDevice->createTexture2D(1, 1, 1, 0, GXFMT_A8R8G8B8, &tmpOldColor);
 	
-	TexBB->LockRect(0, &LockedRect, 0, 0);
-
-	uint32_t* tmpOldColor = (uint32_t*)LockedRect.pBits + 0 * LockedRect.Pitch + 0 * sizeof(uint32_t);
-	*tmpOldColor = AIGRID_COLOR_GBBOX;
-
-	TexBB->UnlockRect(0);
-
 	//SGCore_LoadTexLoadTextures();
 	m_idTexBB = SGCore_LoadTexCreate("aigrid_tex_bb__", TexBB);
 
-	m_pDXDevice->CreateVertexBuffer(
-                   4 * sizeof(CAIQuadVertexData),
-                   D3DUSAGE_WRITEONLY,
-                   0,
-                   D3DPOOL_MANAGED,
-				   &m_pVertexQuad,
-                   0);
+	CAIQuadVertexData vertices[] = {
+		{-AIGRID_QUAD_SIZEDIV2, 0.0f, -AIGRID_QUAD_SIZEDIV2, 0.0, 1.0f},
+		{-AIGRID_QUAD_SIZEDIV2, 0.0f, AIGRID_QUAD_SIZEDIV2, 0.0, 0.0f},
+		{AIGRID_QUAD_SIZEDIV2, 0.0f, AIGRID_QUAD_SIZEDIV2, 1.0, 0.0f},
+		{AIGRID_QUAD_SIZEDIV2, 0.0f, -AIGRID_QUAD_SIZEDIV2, 1.0, 1.0f}
+	};
+	m_pVertexQuad = m_pDXDevice->createVertexBuffer(4 * sizeof(CAIQuadVertexData), GXBUFFER_USAGE_STATIC, &vertices);
 
-	m_pDXDevice->CreateIndexBuffer(
-                   6 * sizeof(WORD),
-                   D3DUSAGE_WRITEONLY,
-                   D3DFMT_INDEX16,
-                   D3DPOOL_MANAGED,
-				   &m_pIndexQuad,
-                   0);
+	USHORT indices[] = {0, 1, 2, 0, 2, 3};
 
-	CAIQuadVertexData* vertices;
-	m_pVertexQuad->Lock(0, 0, (void**)&vertices, 0);
-
-	vertices[0] = CAIQuadVertexData(-AIGRID_QUAD_SIZEDIV2, 0.0f, -AIGRID_QUAD_SIZEDIV2, 0.0, 1.0f);
-	vertices[1] = CAIQuadVertexData(-AIGRID_QUAD_SIZEDIV2, 0.0f,  AIGRID_QUAD_SIZEDIV2, 0.0, 0.0f);
-	vertices[2] = CAIQuadVertexData( AIGRID_QUAD_SIZEDIV2, 0.0f,  AIGRID_QUAD_SIZEDIV2, 1.0, 0.0f);
-	vertices[3] = CAIQuadVertexData( AIGRID_QUAD_SIZEDIV2, 0.0f, -AIGRID_QUAD_SIZEDIV2, 1.0, 1.0f);
-
-	m_pVertexQuad->Unlock();
-
-	WORD* indices = 0;
-	m_pIndexQuad->Lock(0, 0, (void**)&indices, 0);
-
-	indices[0]  = 0; indices[1]  = 1; indices[2]  = 2;
-	indices[3]  = 0; indices[4]  = 2; indices[5]  = 3;
-
-	m_pIndexQuad->Unlock();
+	m_pIndexQuad = m_pDXDevice->createIndexBuffer(6 * sizeof(USHORT), GXBUFFER_USAGE_STATIC, GXIT_UINT16, &indices);
 }
 
 void CAIGrid::clear()
@@ -1096,7 +1067,8 @@ void CAIGrid::clear()
 	m_oAllocBound.clear();
 	m_aBound.clear();
 
-	mem_release_del(m_pTransVertBuf);
+	mem_release(m_pTransVertBuf);
+	mem_release(m_pRenderBuffer);
 	m_aQuadColors.clear();
 	m_aIDsInOpen.clear();
 	m_aCostQuads.clear();
@@ -1108,7 +1080,7 @@ void CAIGrid::clear()
 	m_aPreCondFreeState.clear();
 	m_aGraphPointsIDs.clear();
 	m_aCostGraphPointsIDs.clear();
-	mem_release_del(m_pBoundBox);
+	mem_release(m_pBoundBox);
 }
 
 bool CAIGrid::existsQuads() const
@@ -2478,7 +2450,7 @@ void CAIGrid::gridTestValidation()
 
 	for (int i = 0; i < m_uiCountSplits; ++i)
 	{
-		m_aSplitsColor[i] = D3DCOLOR_ARGB(200, rand() % 255, rand() % 255, rand() % 255);
+		m_aSplitsColor[i] = GX_COLOR_ARGB(200, rand() % 255, rand() % 255, rand() % 255);
 	}
 	//}
 
@@ -2505,9 +2477,9 @@ void CAIGrid::renderBB()
 	if (!m_useGraphics)
 		return;
 
-	m_pDXDevice->SetTexture(0, SGCore_LoadTexGetTex(m_idTexBB));
+	m_pDXDevice->setTexture(SGCore_LoadTexGetTex(m_idTexBB));
 	if (m_pBoundBox)
-		m_pBoundBox->DrawSubset(0);
+		m_pBoundBox->draw();
 }
 
 void CAIGrid::renderQuads(const IFrustum * frustum, const float3 * viewpos, float dist)
@@ -2521,122 +2493,115 @@ void CAIGrid::renderQuads(const IFrustum * frustum, const float3 * viewpos, floa
 	if (m_pTransVertBuf)
 	{
 		CAIQuadVertexDataInst* RTGPUArrVerteces;
-		m_pTransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
 		UINT tmpkey = 0;
-		CBoundAIquad * bound = 0;
-		CAIquad * aq = 0;
-		float3 center;
-		float radius;
-
-		for (int i = 0, il = m_aBound.size(); i < il; ++i)
+		if(m_pTransVertBuf->lock((void**)&RTGPUArrVerteces, GXBL_WRITE))
 		{
-			bound = m_aBound[i];
-			center = (bound->m_f3Min + bound->m_f3Max) * 0.5f;
-			radius = SMVector3Length(center - bound->m_f3Max);
-			if (frustum->sphereInFrustum(&center, radius))
+			CBoundAIquad * bound = 0;
+			CAIquad * aq = 0;
+			float3 center;
+			float radius;
+
+			for(int i = 0, il = m_aBound.size(); i < il; ++i)
 			{
-				for (int k = 0, kl = bound->m_aIdsQuads.size(); k < kl; ++k)
+				bound = m_aBound[i];
+				center = (bound->m_f3Min + bound->m_f3Max) * 0.5f;
+				radius = SMVector3Length(center - bound->m_f3Max);
+				if(frustum->sphereInFrustum(&center, radius))
 				{
-					aq = m_aQuads[bound->m_aIdsQuads[k]];
-					if (SMVector3Distance(aq->m_vPos, (*viewpos)) > dist)
-						continue;
-
-					RTGPUArrVerteces[tmpkey].m_vPos = aq->m_vPos;
-
-					if (quadSelectedExists(aq->m_id))
-						RTGPUArrVerteces[tmpkey].m_uiColor = AIGRID_COLOR_SEL_MAIN;
-					else if (quadSelectedExistsNeightborDirect(aq->m_id))
-						RTGPUArrVerteces[tmpkey].m_uiColor = AIGRID_COLOR_SEL_ADD;
-					else if (m_uiCountSplits > 0 && m_isMarkSplits)
-						RTGPUArrVerteces[tmpkey].m_uiColor = (m_aSplitsColor[aq->m_iSplit - 1]);
-					else
-						RTGPUArrVerteces[tmpkey].m_uiColor = m_aQuadColors[aq->m_id];
-
-					/*if (aq->m_iSplit > 1)
+					for(int k = 0, kl = bound->m_aIdsQuads.size(); k < kl; ++k)
 					{
+						aq = m_aQuads[bound->m_aIdsQuads[k]];
+						if(SMVector3Distance(aq->m_vPos, (*viewpos)) > dist)
+							continue;
+
+						RTGPUArrVerteces[tmpkey].m_vPos = aq->m_vPos;
+
+						if(quadSelectedExists(aq->m_id))
+							RTGPUArrVerteces[tmpkey].m_vColor = GX_COLOR_COLOR_TO_F4(AIGRID_COLOR_SEL_MAIN);
+						else if(quadSelectedExistsNeightborDirect(aq->m_id))
+							RTGPUArrVerteces[tmpkey].m_vColor = GX_COLOR_COLOR_TO_F4(AIGRID_COLOR_SEL_ADD);
+						else if(m_uiCountSplits > 0 && m_isMarkSplits)
+							RTGPUArrVerteces[tmpkey].m_vColor = GX_COLOR_COLOR_TO_F4(m_aSplitsColor[aq->m_iSplit - 1]);
+						else
+							RTGPUArrVerteces[tmpkey].m_vColor = GX_COLOR_COLOR_TO_F4(m_aQuadColors[aq->m_id]);
+
+						/*if (aq->m_iSplit > 1)
+						{
 						int qwerty = 0;
 						RTGPUArrVerteces[tmpkey].pos.y += 0.1;
 						RTGPUArrVerteces[tmpkey].m_uiColor = D3DCOLOR_ARGB(128, 255, 0, 0);
-					}*/
+						}*/
 
-					if (aq->m_chAxisX == AIGRID_QUAD_DIR_POSITIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_NEGATIVE)
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0, 0);
-					else if (aq->m_chAxisX == AIGRID_QUAD_DIR_ALL && aq->m_chAxisY == AIGRID_QUAD_DIR_NEGATIVE)
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0);
-					else if (aq->m_chAxisX == AIGRID_QUAD_DIR_NEGATIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_NEGATIVE)
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0);
+						if(aq->m_chAxisX == AIGRID_QUAD_DIR_POSITIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_NEGATIVE)
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0, 0);
+						else if(aq->m_chAxisX == AIGRID_QUAD_DIR_ALL && aq->m_chAxisY == AIGRID_QUAD_DIR_NEGATIVE)
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0);
+						else if(aq->m_chAxisX == AIGRID_QUAD_DIR_NEGATIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_NEGATIVE)
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0);
 
-					else if (aq->m_chAxisX == AIGRID_QUAD_DIR_POSITIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_ALL)
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0, 0.25f);
-					else if (aq->m_chAxisX == AIGRID_QUAD_DIR_ALL && aq->m_chAxisY == AIGRID_QUAD_DIR_ALL)
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0.25f);
-					else if (aq->m_chAxisX == AIGRID_QUAD_DIR_NEGATIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_ALL)
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0.25f);
+						else if(aq->m_chAxisX == AIGRID_QUAD_DIR_POSITIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_ALL)
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0, 0.25f);
+						else if(aq->m_chAxisX == AIGRID_QUAD_DIR_ALL && aq->m_chAxisY == AIGRID_QUAD_DIR_ALL)
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0.25f);
+						else if(aq->m_chAxisX == AIGRID_QUAD_DIR_NEGATIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_ALL)
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0.25f);
 
-					else if (aq->m_chAxisX == AIGRID_QUAD_DIR_POSITIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_POSITIVE)
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0, 0.5f);
-					else if (aq->m_chAxisX == AIGRID_QUAD_DIR_ALL && aq->m_chAxisY == AIGRID_QUAD_DIR_POSITIVE)
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0.5f);
-					else if (aq->m_chAxisX == AIGRID_QUAD_DIR_NEGATIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_POSITIVE)
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0.5f);
+						else if(aq->m_chAxisX == AIGRID_QUAD_DIR_POSITIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_POSITIVE)
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0, 0.5f);
+						else if(aq->m_chAxisX == AIGRID_QUAD_DIR_ALL && aq->m_chAxisY == AIGRID_QUAD_DIR_POSITIVE)
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0.5f);
+						else if(aq->m_chAxisX == AIGRID_QUAD_DIR_NEGATIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_POSITIVE)
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0.5f);
 
-					else if (aq->m_chAxisX == AIGRID_QUAD_DIR_NEGATIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_NONE)
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0.75f);
-					else if (aq->m_chAxisX == AIGRID_QUAD_DIR_POSITIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_NONE)
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0.75f);
+						else if(aq->m_chAxisX == AIGRID_QUAD_DIR_NEGATIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_NONE)
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0.75f);
+						else if(aq->m_chAxisX == AIGRID_QUAD_DIR_POSITIVE && aq->m_chAxisY == AIGRID_QUAD_DIR_NONE)
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0.75f);
 
-					else if (aq->m_chAxisX == AIGRID_QUAD_DIR_NONE && aq->m_chAxisY == AIGRID_QUAD_DIR_NEGATIVE)
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0.75f);
-					else if (aq->m_chAxisX == AIGRID_QUAD_DIR_NONE && aq->m_chAxisY == AIGRID_QUAD_DIR_POSITIVE)
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0.5f);
+						else if(aq->m_chAxisX == AIGRID_QUAD_DIR_NONE && aq->m_chAxisY == AIGRID_QUAD_DIR_NEGATIVE)
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0.75f);
+						else if(aq->m_chAxisX == AIGRID_QUAD_DIR_NONE && aq->m_chAxisY == AIGRID_QUAD_DIR_POSITIVE)
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0.5f);
 
-					else if (aq->m_chAxisX == AIGRID_QUAD_DIR_ALL && aq->m_chAxisY == AIGRID_QUAD_DIR_NONE)
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0.25f);
-					else if (aq->m_chAxisX == AIGRID_QUAD_DIR_NONE && aq->m_chAxisY == AIGRID_QUAD_DIR_ALL)
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0);
+						else if(aq->m_chAxisX == AIGRID_QUAD_DIR_ALL && aq->m_chAxisY == AIGRID_QUAD_DIR_NONE)
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0.25f);
+						else if(aq->m_chAxisX == AIGRID_QUAD_DIR_NONE && aq->m_chAxisY == AIGRID_QUAD_DIR_ALL)
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0);
 
-					else
-					{
-						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(1, 1, 0, 0);
-						RTGPUArrVerteces[tmpkey].m_uiColor = D3DCOLOR_ARGB(255, 255, 0, 0);
+						else
+						{
+							RTGPUArrVerteces[tmpkey].m_vTC = float4_t(1, 1, 0, 0);
+							RTGPUArrVerteces[tmpkey].m_vColor = GX_COLOR_COLOR_TO_F4(GX_COLOR_ARGB(255, 255, 0, 0));
+						}
+
+						++tmpkey;
 					}
-
-					++tmpkey;
 				}
 			}
+
+			m_pTransVertBuf->unlock();
 		}
 
-		m_pTransVertBuf->Unlock();
 
-		m_pDXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | tmpkey));
+		m_pDXDevice->setIndexBuffer(m_pIndexQuad);
+		m_pDXDevice->setRenderBuffer(m_pRenderBuffer);
 
-		m_pDXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
-		m_pDXDevice->SetStreamSource(1, m_pTransVertBuf, 0, sizeof(CAIQuadVertexDataInst));
+		m_pDXDevice->setTexture(SGCore_LoadTexGetTex(m_idTex));
 
-		m_pDXDevice->SetStreamSource(0, m_pVertexQuad, 0, sizeof(CAIQuadVertexData));
-		m_pDXDevice->SetIndices(m_pIndexQuad);
-		m_pDXDevice->SetVertexDeclaration(m_pDecl);
+		SGCore_ShaderBind(m_idShaderKit);
 
-		m_pDXDevice->SetTexture(0, SGCore_LoadTexGetTex(m_idTex));
+		SMMATRIX mat;
+		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mat);
 
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_idVS);
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_idPS);
-
-		D3DXMATRIX tmpview, tmpproj;
-		m_pDXDevice->GetTransform(D3DTS_VIEW, &tmpview);
-		m_pDXDevice->GetTransform(D3DTS_PROJECTION, &tmpproj);
-
-		float4x4 wvp = SMMatrixIdentity() * float4x4(tmpview) * float4x4(tmpproj);
+		float4x4 wvp = SMMatrixIdentity() * mat;
 		wvp = SMMatrixTranspose(wvp);
 
 		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &wvp);
+		m_pDXDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+		m_pDXDevice->drawIndexedInstanced(tmpkey, 4, 2, 0, 0);
 
-		m_pDXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
 
 		SGCore_ShaderUnBind();
-
-		m_pDXDevice->SetStreamSourceFreq(0, 1);
-		m_pDXDevice->SetStreamSourceFreq(1, 1);
 	}
 }
 
@@ -2648,92 +2613,84 @@ void CAIGrid::renderGraphPoints(const float3 * viewpos, float dist)
 	if (m_pTransVertBuf)
 	{
 		CAIQuadVertexDataInst* RTGPUArrVerteces;
-		m_pTransVertBuf->Lock(0, 0, (void**)&RTGPUArrVerteces, D3DLOCK_DISCARD);
 		UINT tmpkey = 0;
-		CAIquad* aq = 0;
-		for (UINT i = 0; i<m_aGraphPointsIDs.size(); ++i)
+		if(m_pTransVertBuf->lock((void**)&RTGPUArrVerteces, GXBL_WRITE))
 		{
-			aq = m_aQuads[m_aGraphPointsIDs[i]];
-			if (!(aq->m_isClose) && SMVector3Distance(aq->m_vPos, (*viewpos)) <= dist)
+			CAIquad* aq = 0;
+			for(UINT i = 0; i < m_aGraphPointsIDs.size(); ++i)
 			{
-				RTGPUArrVerteces[tmpkey].m_vPos = aq->m_vPos;
-				//RTGPUArrVerteces[tmpkey].pos.y += 0.1f;
+				aq = m_aQuads[m_aGraphPointsIDs[i]];
+				if(!(aq->m_isClose) && SMVector3Distance(aq->m_vPos, (*viewpos)) <= dist)
+				{
+					RTGPUArrVerteces[tmpkey].m_vPos = aq->m_vPos;
+					//RTGPUArrVerteces[tmpkey].pos.y += 0.1f;
 
-				if (aq->m_chAxisX == 1 && aq->m_chAxisY == -1)
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0, 0);
-				else if (aq->m_chAxisX == 0 && aq->m_chAxisY == -1)
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0);
-				else if (aq->m_chAxisX == -1 && aq->m_chAxisY == -1)
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0);
+					if(aq->m_chAxisX == 1 && aq->m_chAxisY == -1)
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0, 0);
+					else if(aq->m_chAxisX == 0 && aq->m_chAxisY == -1)
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0);
+					else if(aq->m_chAxisX == -1 && aq->m_chAxisY == -1)
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0);
 
-				else if (aq->m_chAxisX == 1 && aq->m_chAxisY == 0)
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0, 0.25f);
-				else if (aq->m_chAxisX == 0 && aq->m_chAxisY == 0)
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0.25f);
-				else if (aq->m_chAxisX == -1 && aq->m_chAxisY == 0)
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0.25f);
+					else if(aq->m_chAxisX == 1 && aq->m_chAxisY == 0)
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0, 0.25f);
+					else if(aq->m_chAxisX == 0 && aq->m_chAxisY == 0)
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0.25f);
+					else if(aq->m_chAxisX == -1 && aq->m_chAxisY == 0)
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0.25f);
 
-				else if (aq->m_chAxisX == 1 && aq->m_chAxisY == 1)
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0, 0.5f);
-				else if (aq->m_chAxisX == 0 && aq->m_chAxisY == 1)
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0.5f);
-				else if (aq->m_chAxisX == -1 && aq->m_chAxisY == 1)
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0.5f);
+					else if(aq->m_chAxisX == 1 && aq->m_chAxisY == 1)
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0, 0.5f);
+					else if(aq->m_chAxisX == 0 && aq->m_chAxisY == 1)
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0.5f);
+					else if(aq->m_chAxisX == -1 && aq->m_chAxisY == 1)
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0.5f);
 
-				else if (aq->m_chAxisX == -1 && aq->m_chAxisY == 2)
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0.75f);
-				else if (aq->m_chAxisX == 1 && aq->m_chAxisY == 2)
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0.75f);
+					else if(aq->m_chAxisX == -1 && aq->m_chAxisY == 2)
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.25f, 0.75f);
+					else if(aq->m_chAxisX == 1 && aq->m_chAxisY == 2)
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.5f, 0.75f);
 
-				else if (aq->m_chAxisX == 2 && aq->m_chAxisY == -1)
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0.75f);
-				else if (aq->m_chAxisX == 2 && aq->m_chAxisY == 1)
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0.5f);
+					else if(aq->m_chAxisX == 2 && aq->m_chAxisY == -1)
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0.75f);
+					else if(aq->m_chAxisX == 2 && aq->m_chAxisY == 1)
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0.5f);
 
-				else if (aq->m_chAxisX == 0 && aq->m_chAxisY == 2)
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0.25f);
-				else if (aq->m_chAxisX == 2 && aq->m_chAxisY == 0)
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0);
+					else if(aq->m_chAxisX == 0 && aq->m_chAxisY == 2)
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0.25f);
+					else if(aq->m_chAxisX == 2 && aq->m_chAxisY == 0)
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(0.25f, 0.25f, 0.75f, 0);
 
-				else
-					RTGPUArrVerteces[tmpkey].m_vTC = float4_t(1, 1, 0, 0);
+					else
+						RTGPUArrVerteces[tmpkey].m_vTC = float4_t(1, 1, 0, 0);
 
-				RTGPUArrVerteces[tmpkey].m_uiColor = D3DCOLOR_ARGB(200, 0, 0, 255);
-				++tmpkey;
+					RTGPUArrVerteces[tmpkey].m_vColor = GX_COLOR_COLOR_TO_F4(GX_COLOR_ARGB(200, 0, 0, 255));
+					++tmpkey;
+				}
 			}
+
+			m_pTransVertBuf->unlock();
 		}
 
-		m_pTransVertBuf->Unlock();
+		m_pDXDevice->setIndexBuffer(m_pIndexQuad);
+		m_pDXDevice->setRenderBuffer(m_pRenderBuffer);
 
-		m_pDXDevice->SetStreamSourceFreq(0, (D3DSTREAMSOURCE_INDEXEDDATA | tmpkey));
+		m_pDXDevice->setTexture(SGCore_LoadTexGetTex(m_idTex));
 
-		m_pDXDevice->SetStreamSourceFreq(1, (D3DSTREAMSOURCE_INSTANCEDATA | 1));
-		m_pDXDevice->SetStreamSource(1, m_pTransVertBuf, 0, sizeof(CAIQuadVertexDataInst));
+		SGCore_ShaderBind(m_idShaderKit);
 
-		m_pDXDevice->SetStreamSource(0, m_pVertexQuad, 0, sizeof(CAIQuadVertexData));
-		m_pDXDevice->SetIndices(m_pIndexQuad);
-		m_pDXDevice->SetVertexDeclaration(m_pDecl);
+		SMMATRIX mat;
+		Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mat);
 
-		m_pDXDevice->SetTexture(0, SGCore_LoadTexGetTex(m_idTex));
-
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, m_idVS);
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, m_idPS);
-
-		D3DXMATRIX tmpview, tmpproj;
-		m_pDXDevice->GetTransform(D3DTS_VIEW, &tmpview);
-		m_pDXDevice->GetTransform(D3DTS_PROJECTION, &tmpproj);
-
-		float4x4 wvp = SMMatrixIdentity() * float4x4(tmpview) * float4x4(tmpproj);
+		float4x4 wvp = SMMatrixIdentity() * mat;
 		wvp = SMMatrixTranspose(wvp);
 
 		SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &wvp);
 
-		m_pDXDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, 4, 0, 2);
+		m_pDXDevice->setPrimitiveTopology(GXPT_TRIANGLELIST);
+		m_pDXDevice->drawIndexedInstanced(tmpkey, 4, 2, 0, 0);
 
 		SGCore_ShaderUnBind();
-
-		m_pDXDevice->SetStreamSourceFreq(0, 1);
-		m_pDXDevice->SetStreamSourceFreq(1, 1);
 	}
 }
 

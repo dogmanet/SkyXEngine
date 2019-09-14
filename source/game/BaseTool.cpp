@@ -174,15 +174,6 @@ void CBaseTool::reload()
 	}
 }
 
-void CBaseTool::attachHands()
-{
-	if(m_pAnimPlayer)
-	{
-		m_pAnimPlayer->addModel("models/weapons/hands.dse");
-		m_pAnimPlayer->assembly();
-	}
-}
-
 void CBaseTool::dbgMove(int dir, float dy)
 {
 	switch(dir)
@@ -217,13 +208,20 @@ void CBaseTool::dbgMove(int dir, float dy)
 
 void CBaseTool::onSync()
 {
-	float3_t ang = ((CPlayer*)m_pOwner)->getWeaponDeltaAngles();
-	m_vOffsetOrient = m_qSlotRotResult * SMQuaternion(ang.x, 'x') * SMQuaternion(ang.y, 'y') * SMQuaternion(ang.z, 'z');
+	if(m_pOwner)
+	{
+		float3_t ang = ((CPlayer*)m_pOwner)->getWeaponDeltaAngles();
+		m_vOffsetOrient = m_qSlotRotResult * SMQuaternion(ang.x, 'x') * SMQuaternion(ang.y, 'y') * SMQuaternion(ang.z, 'z');
+	}
+	else
+	{
+		m_vOffsetOrient = m_qSlotRotResult;
+	}
 	BaseClass::onSync();
-	if(m_pAnimPlayer)
+	if(m_pModel && m_pModel->asAnimatedModel())
 	{
 		//SPE_EffectPlayByID
-		float3 pos = m_pAnimPlayer->getBoneTransformPos(m_pAnimPlayer->getBone("muzzle_rifle1"));
+		float3 pos = m_pModel->asAnimatedModel()->getBoneTransformPos(m_pModel->asAnimatedModel()->getBoneId("muzzle_rifle1"));
 		SPE_EffectSetPos(m_iMuzzleFlash, &pos);
 		//pos = m_vOrientation * float3(0, 0, 1);
 		SPE_EffectSetRotQ(m_iMuzzleFlash, m_vOrientation);

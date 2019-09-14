@@ -195,17 +195,6 @@ SX_LIB_API void SGame_Update(int thread = 0);
 */
 SX_LIB_API void SGame_Sync();
 
-/*! Загружает список entity из файла
-*/
-SX_LIB_API void SGame_LoadEnts(const char * file);
-
-/*! Выгрузка игровых объеков уровня */
-SX_LIB_API void SGame_UnloadObjLevel();
-
-/*! Сохраняет объекты в файл
-*/
-SX_LIB_API void SGame_SaveEnts(const char * file);
-
 /*! Помещает игрока в мир
 */
 SX_LIB_API void SGame_PlayerSpawn();
@@ -257,8 +246,6 @@ SX_LIB_API BOOL SGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam);
 SX_LIB_API void SGame_OnLostDevice();
 
 SX_LIB_API void SGame_OnResetDevice();
-
-SX_LIB_API void SGame_OnLevelLoad(const char *szName);
 
 SX_LIB_API void SGame_SetDebugText(const char *szText);
 

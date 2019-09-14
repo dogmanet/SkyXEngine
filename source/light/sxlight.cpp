@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -67,6 +67,7 @@ SX_LIB_API void SLight_AKill()
 	mem_delete(ArrLights)
 }
 
+#if 0
 SX_LIB_API void SLight_OnLostDevice()
 {
 	ML_PRECOND(_VOID);
@@ -80,6 +81,7 @@ SX_LIB_API void SLight_OnResetDevice()
 	light_data::ReCalcSize();
 	ArrLights->onResetDevice();
 }
+#endif
 
 
 
@@ -89,8 +91,10 @@ SX_LIB_API void SLight_SettLCoefSizeDepth(float fCoef)
 
 	light_data::fCoefSizeDepthMapForLocal = fCoef;
 	light_data::ReCalcSize();
+#if 0
 	SLight_OnLostDevice();
 	SLight_OnResetDevice();
+#endif
 }
 
 SX_LIB_API void SLight_SettGCoefSizeDepth(float fCoef)
@@ -99,8 +103,10 @@ SX_LIB_API void SLight_SettGCoefSizeDepth(float fCoef)
 
 	light_data::fCoefSizeDepthMapForGlobal = fCoef;
 	light_data::ReCalcSize();
+#if 0
 	SLight_OnLostDevice();
 	SLight_OnResetDevice();
+#endif
 	
 }
 
@@ -152,6 +158,14 @@ SX_LIB_API bool SLight_GetExists(ID id)
 	ML_PRECOND(false);
 
 	return ArrLights->getExists(id);
+}
+
+
+SX_LIB_API IXLight *SLight_GetIXLight(ID id)
+{
+	ML_PRECOND(false);
+
+	return ArrLights->getIXLight(id);
 }
 
 
@@ -251,11 +265,13 @@ SX_LIB_API void SLight_SetOrient(ID id, const SMQuaternion *pQ)
 	ArrLights->setLightOrient(id, pQ);
 }
 
+#if 0
 SX_LIB_API LTYPE_LIGHT SLight_GetType(ID id)
 {
 	ML_PRECOND(LTYPE_LIGHT_NONE);
 	return ArrLights->getLightType(id);
 }
+#endif
 
 SX_LIB_API bool SLight_ComVisibleForFrustum(ID id, const IFrustum *pFrustum)
 {
@@ -287,6 +303,7 @@ SX_LIB_API void SLight_ComVisibleFrustumDistFor(const IFrustum *pFrustum, const 
 	return ArrLights->comVisibleFrustumDistFor(pFrustum, pPos);
 }
 
+#if 0
 SX_LIB_API bool SLight_GetEnable(ID id)
 {
 	ML_PRECOND(false);
@@ -304,6 +321,7 @@ SX_LIB_API bool SLight_GetShadowed(ID id)
 	ML_PRECOND(false);
 	return ArrLights->getLightShadowed(id);
 }
+#endif
 
 SX_LIB_API bool SLight_Get4Or3SplitsG(ID id)
 {
@@ -318,7 +336,7 @@ SX_LIB_API void SLight_Set4Or3SplitsG(ID id, bool is4or3)
 	ArrLights->set4Or3Splits(id, is4or3);
 }
 
-SX_LIB_API IDirect3DTexture9* SLight_GetShadow()
+SX_LIB_API IGXTexture2D* SLight_GetShadow()
 {
 	ML_PRECOND(0);
 	return ArrLights->getShadow2();
@@ -514,17 +532,17 @@ SX_LIB_API void SLight_SetIDArr(ID id, ID idOwner, int iHow, ID idArr)
 	ArrLights->setLightIDArr(id, idOwner, iHow, idArr);
 }
 
-SX_LIB_API void SLight_SetTypeShadowed(ID id, LTYPE_SHADOW type)
-{
-	ML_PRECOND(_VOID);
-	ArrLights->setLightTypeShadowed(id, type);
-}
+//SX_LIB_API void SLight_SetTypeShadowed(ID id, LTYPE_SHADOW type)
+//{
+//	ML_PRECOND(_VOID);
+//	ArrLights->setLightTypeShadowed(id, type);
+//}
 
-SX_LIB_API LTYPE_SHADOW SLight_GetTypeShadowed(ID id)
-{
-	ML_PRECOND(LTYPE_SHADOW_NONE);
-	return ArrLights->getLightTypeShadowed(id);
-}
+//SX_LIB_API LTYPE_SHADOW SLight_GetTypeShadowed(ID id)
+//{
+//	ML_PRECOND(LTYPE_SHADOW_NONE);
+//	return ArrLights->getLightTypeShadowed(id);
+//}
 
 SX_LIB_API bool SLight_CountUpdateUpdate(ID id, const float3 *pViewPos, int iHow)
 {

@@ -1,0 +1,17 @@
+VS/PS:
+- per scene: (6/7 regs) // set by pipeline // rb3
+	- g_mP
+	- g_vTimeDelta
+	- g_vWinSize
+	- g_vNearFarLayers (PS ONLY!)
+- per camera: (5 regs) // set by pipeline // rb2
+	- g_mV
+	- g_vPosCam
+- per object: (12 regs) // set by object // rb1
+	- g_mW
+	- g_mWV
+	- g_mWVP
+- per material: (3 regs) // set by material // rb0
+	- g_vParam
+	- g_vParamVS/g_vParamPS
+	- g_vDestColor (PS ONLY!)

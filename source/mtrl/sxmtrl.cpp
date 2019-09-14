@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -11,12 +11,15 @@ See the license in LICENSE
 
 #include "material.h"
 
+#include "MaterialSystem.h"
+
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
 report_func g_fnReportf = DefReport;
 #endif
 
 CMaterials* ArrMaterials = 0;
+CMaterialSystem *g_pMaterialSystem = NULL;
 
 #define ML_PRECOND(retval) if(!ArrMaterials){LibReport(-1, "%s - sxmtrl is not init", GEN_MSG_LOCATION); return retval;}
 
@@ -32,7 +35,7 @@ SX_LIB_API void SMtrl_Dbg_Set(report_func rf)
 	g_fnReportf = rf;
 }
 
-SX_LIB_API void SMtrl_0Create(const char *szName, bool isUnic)
+SX_LIB_API void SMtrl_0Create(const char *szName, bool isUnic, bool isServerMode)
 {
 	if (szName && strlen(szName) > 1)
 	{
@@ -43,25 +46,32 @@ SX_LIB_API void SMtrl_0Create(const char *szName, bool isUnic)
 			{
 				CloseHandle(hMutex);
 				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
-			}
-			else
-			{
-				mtrl_data::Init();
-				ArrMaterials = new CMaterials();
+				return;
 			}
 		}
-		else
+		/*if(!isServerMode)
 		{
 			mtrl_data::Init();
-			ArrMaterials = new CMaterials();
-		}
+		}*/
+
+		INIT_OUTPUT_STREAM(Core_GetIXCore());
+
+		ArrMaterials = new CMaterials();
+		g_pMaterialSystem = new CMaterialSystem();
+		Core_GetIXCore()->getPluginManager()->registerInterface(IXMATERIALSYSTEM_GUID, g_pMaterialSystem);
 	}
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
 }
 
+SX_LIB_API void SMtrl_DevSet(IGXDevice *pDev)
+{
+	mtrl_data::Init();
+}
+
 SX_LIB_API void SMtrl_AKill()
 {
+	mem_delete(g_pMaterialSystem);
 	mem_delete(ArrMaterials);
 }
 
@@ -97,15 +107,24 @@ SX_LIB_API void SMtrl_Update(DWORD timeDelta)
 
 	mtrl_data::mRefProjPlane = SMMatrixPerspectiveFovLH(*r_default_fov, float(*r_win_width) / float(*r_win_height), MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
 	mtrl_data::mRefProjCube = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, MTl_REF_PROJ_NEAR, MTl_REF_PROJ_FAR);
+
+	g_pMaterialSystem->update(0.016f);
 }
 
 //#############################################################################
 
-SX_LIB_API ID SMtrl_MtlLoad(const char *szName, MTLTYPE_MODEL mtl_type)
+SX_LIB_API ID SMtrl_MtlGetId(const char *szName)
 {
 	ML_PRECOND(-1);
 
-	return ArrMaterials->mtlLoad(szName, mtl_type);
+	return(ArrMaterials->exists(szName));
+}
+
+SX_LIB_API ID SMtrl_MtlLoad2(const char *szName, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount, XSHADER_VARIANT_DESC *pVariantsDesc)
+{
+	ML_PRECOND(-1);
+
+	return ArrMaterials->mtlLoad(szName, pDefaultShaders, uVariantCount, pVariantsDesc);
 }
 
 SX_LIB_API void SMtrl_MtlSave(ID id)
@@ -113,13 +132,6 @@ SX_LIB_API void SMtrl_MtlSave(ID id)
 	ML_PRECOND(_VOID);
 
 	ArrMaterials->mtlSave(id);
-}
-
-SX_LIB_API MTLTYPE_MODEL SMtrl_MtlGetTypeModel(ID id)
-{
-	ML_PRECOND(MTLTYPE_MODEL_STATIC);
-
-	return ArrMaterials->getTypeModel(id);
 }
 
 SX_LIB_API ID SMtrl_MtlGetLightMtrl()
@@ -143,13 +155,6 @@ SX_LIB_API bool SMtrl_MtlIsTransparency(ID id)
 	return ArrMaterials->mtlGetTransparency(id);
 }
 
-SX_LIB_API void SMtrl_MtlSetTypeModel(ID id, MTLTYPE_MODEL type_model)
-{
-	ML_PRECOND(_VOID);
-
-	ArrMaterials->setTypeModel(id, type_model);
-}
-
 SX_LIB_API long SMtrl_MtlGetCount()
 {
 	ML_PRECOND(-1);
@@ -163,10 +168,16 @@ SX_LIB_API void SMtrl_MtlRender(ID id, const float4x4 *pWorld, const float4 *pCo
 	ArrMaterials->render(id, pWorld, pColor);
 }
 
-SX_LIB_API void SMtrl_MtlRenderStd(MTLTYPE_MODEL type, const float4x4 *pWorld, ID idSlot, ID idMtl)
+SX_LIB_API void SMtrl_MtlPixelShaderOverride(ID id)
 {
 	ML_PRECOND(_VOID);
-	ArrMaterials->renderStd(type, pWorld, idSlot, idMtl);
+	ArrMaterials->setPixelShaderOverride(id);
+}
+
+SX_LIB_API void SMtrl_MtlGeometryShaderOverride(ID id)
+{
+	ML_PRECOND(_VOID);
+	ArrMaterials->setGeometryShaderOverride(id);
 }
 
 SX_LIB_API void SMtrl_MtlRenderLight(const float4_t *pColor, const float4x4 *pWorld)
@@ -221,13 +232,6 @@ SX_LIB_API bool SMtrl_MtlGetForceblyAlphaTest()
 {
 	ML_PRECOND(false);
 	return ArrMaterials->getForceblyAlphaTest();
-}
-
-
-SX_LIB_API ID SMtrl_MtlGetStdMtl(MTLTYPE_MODEL type_model)
-{
-	ML_PRECOND(-1);
-	return ArrMaterials->getStdMtl(type_model);
 }
 
 
@@ -293,7 +297,7 @@ SX_LIB_API void SMtrl_RefSetMinMax(ID id, const float3_t *pMin, const float3_t *
 	ArrMaterials->mtlRefSetMinMax(id, pMin, pMax);
 }
 
-SX_LIB_API void SMtrl_RefPreRenderPlane(ID id, D3DXPLANE *pPlane)
+SX_LIB_API void SMtrl_RefPreRenderPlane(ID id, SMPLANE *pPlane)
 {
 	ML_PRECOND(_VOID);
 	ArrMaterials->mtlRefPreRenderPlane(id, pPlane);
@@ -317,7 +321,7 @@ SX_LIB_API void SMtrl_RefPostRenderPlane(ID id)
 	ArrMaterials->mtlRefPostRenderPlane(id);
 }
 
-SX_LIB_API IDirect3DTexture9* SMtrl_RefGetTexPlane(ID id)
+SX_LIB_API IGXTexture2D* SMtrl_RefGetTexPlane(ID id)
 {
 	ML_PRECOND(0);
 	return ArrMaterials->mtlRefPlaneGetTex(id);
@@ -361,7 +365,7 @@ SX_LIB_API void SMtrl_RefNullingCountUpdate(ID id)
 	ArrMaterials->mtlRefNullingCountUpdate(id);
 }
 
-SX_LIB_API IDirect3DCubeTexture9* SMtrl_RefCubeGetTex(ID id)
+SX_LIB_API IGXTextureCube* SMtrl_RefCubeGetTex(ID id)
 {
 	ML_PRECOND(0);
 	return ArrMaterials->refCubeGetTex(id);
@@ -425,6 +429,12 @@ SX_LIB_API void SMtrl_MtlGetVS(ID id, char *szName)
 	ArrMaterials->mtlGetVS(id, szName);
 }
 
+SX_LIB_API ID SMtrl_MtlGetVSID(ID id)
+{
+	ML_PRECOND(-1);
+	return(ArrMaterials->mtlGetVSID(id));
+}
+
 SX_LIB_API void SMtrl_MtlSetPS(ID id, const char *szPath)
 {
 	ML_PRECOND(_VOID);
@@ -435,6 +445,12 @@ SX_LIB_API void SMtrl_MtlGetPS(ID id, char *szName)
 {
 	ML_PRECOND(_VOID);
 	ArrMaterials->mtlGetPS(id, szName);
+}
+
+SX_LIB_API ID SMtrl_MtlGetPSID(ID id)
+{
+	ML_PRECOND(-1);
+	return(ArrMaterials->mtlGetPSID(id));
 }
 
 SX_LIB_API float SMtrl_MtlGetDurability(ID id)
@@ -559,17 +575,18 @@ SX_LIB_API bool SMtrl_MtlGetTransparency(ID id)
 	return ArrMaterials->mtlGetTransparency(id);
 }
 
+SX_LIB_API bool SMtrl_MtlGetRefractivity(ID id)
+{
+	ML_PRECOND(false);
+	return ArrMaterials->mtlGetRefractivity(id);
+}
+
 SX_LIB_API void SMtrl_MtlSetTypeReflection(ID id, MTLTYPE_REFLECT type)
 {
 	ML_PRECOND(_VOID);
 	ArrMaterials->mtlSetTypeReflection(id, type);
 }
 
-SX_LIB_API MTLTYPE_REFLECT SMtrl_MtlGetTypeReflection(ID id)
-{
-	ML_PRECOND(MTLTYPE_REFLECT_NONE);
-	return ArrMaterials->mtlGetTypeReflection(id);
-}
 
 //**************************************************************************
 

@@ -9,8 +9,8 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
-#define SM_D3D_CONVERSIONS
-#include <common/SXMath.h>
+//#define SM_D3D_CONVERSIONS
+#include <common/Math.h>
 #include <common/array.h>
 
 #include <GRegisterIndex.h>
@@ -21,7 +21,7 @@ namespace mtrl_data
 {
 	void Init();
 
-	extern IDirect3DDevice9 *pDXDevice;
+	extern IGXDevice *pDXDevice;
 
 	extern float2_t vSizeTexReflection;
 

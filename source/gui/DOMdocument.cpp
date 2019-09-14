@@ -749,6 +749,13 @@ namespace gui
 			{
 				rf = rf->getParent();
 			}
+			for(UINT i = 0, l = m_ReflowQueue.size(); i < l; ++i)
+			{
+				if(m_ReflowQueue[i] == rf)
+				{
+					return;
+				}
+			}
 			m_ReflowQueue.push_back(rf);
 			return;
 #endif
@@ -913,7 +920,7 @@ namespace gui
 			}
 			else
 			{
-				appendHTML(text, build);
+				appendHTML(text, !!build);
 			}
 		}
 

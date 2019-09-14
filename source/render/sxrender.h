@@ -17,45 +17,25 @@ See the license in LICENSE
 #if defined(_DEBUG)
 #pragma comment(lib, "sxinput_d.lib")
 #pragma comment(lib, "sxgcore_d.lib")
-#pragma comment(lib, "sxgeom_d.lib")
-#pragma comment(lib, "sxgreen_d.lib")
-#pragma comment(lib, "sxlight_d.lib")
 #pragma comment(lib, "sxmtrl_d.lib")
-#pragma comment(lib, "sxparticles_d.lib")
-#pragma comment(lib, "sxpp_d.lib")
-#pragma comment(lib, "sxanim_d.lib")
-#pragma comment(lib, "sxdecals_d.lib")
 #pragma comment(lib, "sxgame_d.lib")
 #else
 #pragma comment(lib, "sxinput.lib")
 #pragma comment(lib, "sxgcore.lib")
-#pragma comment(lib, "sxgeom.lib")
-#pragma comment(lib, "sxgreen.lib")
-#pragma comment(lib, "sxlight.lib")
 #pragma comment(lib, "sxmtrl.lib")
-#pragma comment(lib, "sxparticles.lib")
-#pragma comment(lib, "sxpp.lib")
-#pragma comment(lib, "sxanim.lib")
-#pragma comment(lib, "sxdecals.lib")
 #pragma comment(lib, "sxgame.lib")
 #endif
 
 
 #undef SX_LIB_API
-#define SX_LIB_API extern "C" __declspec (dllimport)
+#define SX_LIB_API extern "C" __declspec(dllimport)
 #include <gcore/sxgcore.h>
-#include <geom/sxgeom.h>
-#include <green/sxgreen.h>
-#include <light/sxlight.h>
 #include <mtrl/sxmtrl.h>
-#include <anim/sxanim.h>
-#include <pp/sxpp.h>
-#include <particles/sxparticles.h>
 
 
 #ifdef SX_DLL
 #undef SX_LIB_API
-#define SX_LIB_API extern "C" __declspec (dllexport)
+#define SX_LIB_API extern "C" __declspec(dllexport)
 #endif
 
 /*! \defgroup sxrender sxrender - библиотека рендера
@@ -79,6 +59,9 @@ See the license in LICENSE
 /*! простая отрисовка (не материальная) */
 #define RENDER_STATE_FREE		2	
 
+/*! отрисовка контуров, для редактора */
+#define RENDER_STATE_WIRE		3	
+
 //!@}
 
 /*! \name Идентификаторы для определяния типа просчетов видимости
@@ -96,8 +79,8 @@ See the license in LICENSE
 //!@}
 
 
-/*! минимальное значение для альфа теста */
-#define RENDER_PARTICLES_ALPHATEST_VALUE 16	
+// /*! минимальное значение для альфа теста */
+// #define RENDER_PARTICLES_ALPHATEST_VALUE 16	
 
 
 /*! \name Идентификаторы для определяния типа просчетов видимости
@@ -115,6 +98,7 @@ See the license in LICENSE
 //!@}
 
 //! тип изменения размеров окна рендера
+//! @DEPRECATED
 enum RENDER_RESIZE
 {
 	/*! ничего не меняли */
@@ -128,7 +112,7 @@ enum RENDER_RESIZE
 };
 
 //! цвет очистки цветового буфера сцены по умолчанию
-#define RENDER_DEFAUL_BACKGROUND_COLOR D3DCOLOR_ARGB(0,128,128,128)
+#define RENDER_DEFAUL_BACKGROUND_COLOR GX_COLOR_ARGB(0, 128, 128, 128)
 
 /*! дальняя плоскость отсечения наблюдателя для света */
 #define G_DATA_LIGHT_FAR 100000 
@@ -217,86 +201,10 @@ SX_LIB_API void SRender_SetCamera(ICamera *pCamera);
 //! возвращает текущую камеру
 SX_LIB_API ICamera* SRender_GetCamera();
 
-//**************************************************************************
-
-/*! \name Симуляционная модель рендера
- \note Создана для редактора материалов, чтобы одной моделью предоставить рендер всех имеющихся типов
- \warning Добавить в симуляционную модель рендера возможно только статическую модель, у которой может быть только одна подгруппа с одной текстурой
-@{*/
-
-//! добавить статическую модель в симуляционноую модель рендера, szPath - путь до статической модели относительно папки местонахождения
-SX_LIB_API void SRender_SimModelAddModel(ISXDataStaticModel *pModel);
-
-//! возвращает id материала
-SX_LIB_API ID SRender_SimModelGetIDMtl();
-
-//! возвращает тип модели
-SX_LIB_API MTLTYPE_MODEL SRender_SimModelGetType();
-
-//! установить тип модели
-SX_LIB_API void SRender_SimModelSetType(MTLTYPE_MODEL type);
-
-
-//! активирует загруженную статическую модель по номеру
-SX_LIB_API void SRender_SimModelSetNumCurrModel(int iCurrNumModel);
-
-//! возвращает текущий номер активной статической модели
-SX_LIB_API int SRender_SimModelGetNumCurrModel();
-
-//! установка текущего угла поворота по оси Y
-SX_LIB_API void SRender_SimModelSetRotationY(float Rotation);
-
-//! возвращает текущий угол поворота по оси Y
-SX_LIB_API float SRender_SimModelGetRotationY();
-
-//!@}
-
-//**************************************************************************
-
-/*! \name Статические объекты для рендера в редакторах
-@{*/
-
-//! установка рендера статической сетки
-SX_LIB_API void SRender_EditorSetRenderGrid(bool canRender);
-
-//! разрешен ли рендер статической сетки
-SX_LIB_API bool SRender_EditorGetRenderGrid();
-
-//! установка рендера статических осей
-SX_LIB_API void SRender_EditorSetRenderAxesStatic(bool canRender);
-
-//! разрешен ли рендер статических осей
-SX_LIB_API bool SRender_EditorGetRenderAxesStatic();
-
-//!@}
-
-//**************************************************************************
-
-//! возвращает id текстуры которая содержит цвет выделения
-SX_LIB_API ID SRender_EditorGetSelectTex();
-
-//! установка возможности управления камерой
-SX_LIB_API void SRender_EditorCameraSetMove(bool canMove);
-
-//! возвращает возможно ли управлять камерой
-SX_LIB_API bool SRender_EditorCameraGetMove();
-
-//! центрирвоание курсора мыши
-SX_LIB_API void SRender_CentererCursor();
-
-//! обновление навигации режим "редактор"
-SX_LIB_API void SRender_UpdateEditorial(DWORD timeDelta);
-
 //##########################################################################
 
 //! обработка потери и восстановление устройства, isSetWindowSize - устанавливать ли размеры окна (сделано для редакторов)
-SX_LIB_API void SRender_ComDeviceLost(bool isSetWindowSize);
-
-//! обработка видимости для источников света
-SX_LIB_API void SRender_ComVisibleForLight();
-
-//! обработка видимости для камеры
-SX_LIB_API void SRender_ComVisibleForCamera();
+SX_LIB_API bool SRender_ComDeviceLost(bool isSetWindowSize);
 
 //! обработка видимости для отражений
 SX_LIB_API void SRender_ComVisibleReflection();
@@ -305,35 +213,8 @@ SX_LIB_API void SRender_ComVisibleReflection();
 //! обработка и установка основных матриц, обработка плоскостей отсечения
 SX_LIB_API void SRender_UpdateView();
 
-//! вывод отладочной текстовой информации в окно рендера
-SX_LIB_API int SRender_OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char *szStr = 0);
-
-
-//! построение G буфера, то есть рендер всей сцены
-SX_LIB_API void SRender_BuildMRT(DWORD timeDelta, bool isRenderSimulation);
-
-//! обновление информации о тенях (рендер всего того что отбрасывает тени в буферы глубин источников света)
-SX_LIB_API void SRender_UpdateShadow(DWORD timeDelta);
-
-
-//! обработка/обновление отражений
-SX_LIB_API void SRender_UpdateReflection(DWORD timeDelta, bool isRenderSimulation);
-
-//! обновление отражений для сцены
-SX_LIB_API void SRender_UpdateReflectionScene(DWORD timeDelta);
-
-//! обновление отражений для симуляционной модели
-SX_LIB_API void SRender_UpdateReflectionSimModel(DWORD timeDelta);
-
-
 //! отрисовка скайбокса и облаков
 SX_LIB_API void SRender_RenderSky(DWORD timeDelta);
-
-//! обработка освещения
-SX_LIB_API void SRender_ComLighting(DWORD timeDelta);
-
-//! объединение слоев прозрачности
-SX_LIB_API void SRender_UnionLayers();
 
 
 //! отрисовка партиклов (эффектов)
@@ -344,12 +225,6 @@ SX_LIB_API void SRender_RenderMainPostProcess(DWORD timeDelta);
 
 //! отрисовка финального (после gui) постпроцесса
 SX_LIB_API void SRender_RenderFinalPostProcess(DWORD timeDelta);
-
-//! очистка регистров шейдеров (были случаи когда не инициаилизировав определенный регист в шейдере, шейдер брал то что было установлено до него)
-SX_LIB_API void SRender_ShaderRegisterData();
-
-//! рендер статичных объектов для редакторов (сетка, направление осей в центре системы)
-SX_LIB_API void SRender_RenderEditorMain();
 
 //##########################################################################
 

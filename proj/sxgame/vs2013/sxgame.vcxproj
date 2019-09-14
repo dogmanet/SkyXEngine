@@ -5,9 +5,17 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -22,7 +30,20 @@
     <PlatformToolset>v120_xp</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120_xp</PlatformToolset>
@@ -35,22 +56,41 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/</OutDir>
-    <IncludePath>../../../source;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);;../../../sdks/dx9sdk/Include;</IncludePath>
-    <LibraryPath>../../../libs;$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);;../../../sdks/dx9sdk/Lib;</LibraryPath>
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath)</IncludePath>
+    <LibraryPath>../../../libs;$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86)</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath)</IncludePath>
+    <LibraryPath>../../../libs64;$(VC_LibraryPath_x64);$(WindowsSdk_71A_LibraryPath_x64)</LibraryPath>
+    <TargetName>$(ProjectName)_d</TargetName>
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>../../../build/bin64/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/</OutDir>
-    <IncludePath>../../../source;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath);;../../../sdks/dx9sdk/Include;</IncludePath>
-    <LibraryPath>../../../libs;$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);;../../../sdks/dx9sdk/Lib;</LibraryPath>
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath)</IncludePath>
+    <LibraryPath>../../../libs;$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath)</IncludePath>
+    <LibraryPath>../../../libs64;$(VC_LibraryPath_x64);$(WindowsSdk_71A_LibraryPath_x64)</LibraryPath>
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>../../../build/bin64/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -68,6 +108,26 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>SXGAME_EXPORT=_declspec(dllexport);SX_DLL;WIN64;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;_USRDLL;SXGAME_EXPORTS;SX_LIB_NAME="GAME";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
+      <PreprocessToFile>false</PreprocessToFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImportLibrary>../../../libs64/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
       <Profile>true</Profile>
     </Link>
@@ -93,11 +153,33 @@
       <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>SXGAME_EXPORT=_declspec(dllexport);SX_DLL;WIN64;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;SXGAME_EXPORTS;SX_LIB_NAME="GAME";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ImportLibrary>../../../libs64/$(TargetName).lib</ImportLibrary>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseHandle.cpp" />
+    <ClCompile Include="..\..\..\source\game\BaseLight.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseMag.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseScope.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseSilencer.cpp" />
@@ -107,6 +189,8 @@
     <ClCompile Include="..\..\..\source\game\CharacterInventory.cpp" />
     <ClCompile Include="..\..\..\source\game\crosshair.cpp" />
     <ClCompile Include="..\..\..\source\game\CrosshairManager.cpp" />
+    <ClCompile Include="..\..\..\source\game\Editable.cpp" />
+    <ClCompile Include="..\..\..\source\game\EditorObject.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityFactory.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityManager.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncTrain.cpp" />
@@ -125,8 +209,14 @@
     <ClCompile Include="..\..\..\source\game\PropDebris.cpp" />
     <ClCompile Include="..\..\..\source\game\PropDoor.cpp" />
     <ClCompile Include="..\..\..\source\game\PropDynamic.cpp" />
+    <ClCompile Include="..\..\..\source\game\PropStatic.cpp" />
     <ClCompile Include="..\..\..\source\game\proptable.cpp" />
-    <ClCompile Include="..\..\..\source\game\Ragdoll.cpp" />
+    <ClCompile Include="..\..\..\source\game\Ragdoll.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\..\source\game\BaseAmmo.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseAmmoBox.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseAnimating.cpp" />
@@ -150,12 +240,15 @@
     <ClInclude Include="..\..\..\source\common\file_utils.h" />
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\game\BaseHandle.h" />
+    <ClInclude Include="..\..\..\source\game\BaseLight.h" />
     <ClInclude Include="..\..\..\source\game\BaseMag.h" />
     <ClInclude Include="..\..\..\source\game\BaseScope.h" />
     <ClInclude Include="..\..\..\source\game\BaseSilencer.h" />
     <ClInclude Include="..\..\..\source\game\BaseWeaponAddon.h" />
     <ClInclude Include="..\..\..\source\game\BaseTrigger.h" />
     <ClInclude Include="..\..\..\source\game\BaseCharacter.h" />
+    <ClInclude Include="..\..\..\source\game\Editable.h" />
+    <ClInclude Include="..\..\..\source\game\EditorObject.h" />
     <ClInclude Include="..\..\..\source\game\GameStateManager.h" />
     <ClInclude Include="..\..\..\source\game\CharacterInventory.h" />
     <ClInclude Include="..\..\..\source\game\GameStates.h" />
@@ -167,6 +260,7 @@
     <ClInclude Include="..\..\..\source\game\PropDebris.h" />
     <ClInclude Include="..\..\..\source\game\PropDoor.h" />
     <ClInclude Include="..\..\..\source\game\PropDynamic.h" />
+    <ClInclude Include="..\..\..\source\game\PropStatic.h" />
     <ClInclude Include="..\..\..\source\game\Random.h" />
     <ClInclude Include="..\..\..\source\game\crosshair.h" />
     <ClInclude Include="..\..\..\source\game\CrosshairManager.h" />

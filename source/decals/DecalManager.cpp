@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -89,12 +89,41 @@ DecalManager::DecalManager():
 	}
 	
 	mem_release(config);
+
+	GXVertexElement vel[] = {
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
+		{0, 24, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		GX_DECL_END()
+	};
+
+	m_pVertexDeclaration = dev->createVertexDeclaration(vel);
+
+	GXBlendDesc blendDesc;
+	memset(&blendDesc, 0, sizeof(blendDesc));
+	blendDesc.renderTarget[0].u8RenderTargetWriteMask = GXCOLOR_WRITE_ENABLE_ALL;
+	blendDesc.renderTarget[0].blendSrcColor = GXBLEND_DEST_COLOR;
+	blendDesc.renderTarget[0].blendDestColor = GXBLEND_SRC_COLOR;
+	blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_DEST_ALPHA;
+	blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_SRC_ALPHA;
+	blendDesc.renderTarget[0].blendOpColor = GXBLEND_OP_ADD;
+	blendDesc.renderTarget[0].blendOpAlpha = GXBLEND_OP_ADD;
+	blendDesc.renderTarget[0].useBlend = TRUE;
+
+	m_pBlendState = dev->createBlendState(&blendDesc);
+
+//	m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "decal_base.vs");
+//	m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "decal_base.ps");
+//	m_idShaderKit = SGCore_ShaderCreateKit(m_idVS, m_idPS);
 }
 
 DecalManager::~DecalManager()
 {
 	clear();
+	mem_release(m_pBlendState);
+	mem_release(m_pRenderBuffer);
 	mem_release(m_pVertexBuffer);
+	mem_release(m_pVertexDeclaration);
 }
 
 int DecalManager::addDecal(Decal * pDecal)
@@ -316,7 +345,7 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 	di.m_Flags = flags;
 	
 	ID pMat = -1;
-	IDirect3DTexture9 * pTex = NULL;
+	IGXTexture2D * pTex = NULL;
 	const DecalType * dt = NULL;
 	if(type == DECAL_TYPE_CUSTOM)
 	{
@@ -343,13 +372,13 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 		return;
 	}
 
-	D3DSURFACE_DESC _info;
-	pTex->GetLevelDesc(0, &_info);
+	UINT uTexWidth = pTex->getWidth();
+	UINT uTexHeight = pTex->getHeight();
 
-	di.m_Size = (float)(_info.Width >> 1);
-	if((int)(_info.Height >> 1) > di.m_Size)
+	di.m_Size = (float)(uTexWidth >> 1);
+	if((int)(uTexHeight >> 1) > di.m_Size)
 	{
-		di.m_Size = (float)(_info.Height >> 1);
+		di.m_Size = (float)(uTexHeight >> 1);
 	}
 
 	scale *= 0.0008f;
@@ -357,7 +386,7 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 	di.m_scale = 1.0f / scale;
 	di.m_Size *= scale;
 
-	DecalTexRange rng = {0, 0, _info.Width, _info.Height};
+	DecalTexRange rng = {0, 0, uTexWidth, uTexHeight};
 
 	//Get random decal from atlas
 	if(dt)
@@ -536,7 +565,7 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 						vert0.pos = mBasis * vClippedVerts[0];
 						vert0.normal = n;
 						vert0.tex = float2((vClippedVerts[0].x - sBound.x) / (sBound.y - sBound.x), (vClippedVerts[0].y - tBound.x) / (tBound.y - tBound.x));
-						vert0.tex = (float2)(vert0.tex * float2((float)(rng.xmax - rng.xmin) / (float)_info.Width, (float)(rng.ymax - rng.ymin) / (float)_info.Height) + float2((float)rng.xmin / (float)_info.Width, (float)rng.ymin / (float)_info.Height));
+						vert0.tex = (float2)(vert0.tex * float2((float)(rng.xmax - rng.xmin) / (float)uTexWidth, (float)(rng.ymax - rng.ymin) / (float)uTexHeight) + float2((float)rng.xmin / (float)uTexWidth, (float)rng.ymin / (float)uTexHeight));
 						for(int ii = 1; ii < len - 1; ii++)
 						{
 							vClippedVerts[ii].z = nn; // fix normal
@@ -548,14 +577,14 @@ void DecalManager::shootDecal(DECAL_TYPE type, const float3 & position, ID iMate
 							vert.pos = mBasis * vClippedVerts[ii];
 							vert.normal = n;
 							vert.tex = float2((vClippedVerts[ii].x - sBound.x) / (sBound.y - sBound.x), (vClippedVerts[ii].y - tBound.x) / (tBound.y - tBound.x));
-							vert.tex = (float2)(vert.tex * float2((float)(rng.xmax - rng.xmin) / (float)_info.Width, (float)(rng.ymax - rng.ymin) / (float)_info.Height) + float2((float)rng.xmin / (float)_info.Width, (float)rng.ymin / (float)_info.Height));
+							vert.tex = (float2)(vert.tex * float2((float)(rng.xmax - rng.xmin) / (float)uTexWidth, (float)(rng.ymax - rng.ymin) / (float)uTexHeight) + float2((float)rng.xmin / (float)uTexWidth, (float)rng.ymin / (float)uTexHeight));
 
 							vDecalVerts.push_back(vert);
 							//m_dbgRender.push_back(vert.pos);
 
 							vert.pos = mBasis * vClippedVerts[ii + 1];
 							vert.tex = float2((vClippedVerts[ii + 1].x - sBound.x) / (sBound.y - sBound.x), (vClippedVerts[ii + 1].y - tBound.x) / (tBound.y - tBound.x));
-							vert.tex = (float2)(vert.tex * float2((float)(rng.xmax - rng.xmin) / (float)_info.Width, (float)(rng.ymax - rng.ymin) / (float)_info.Height) + float2((float)rng.xmin / (float)_info.Width, (float)rng.ymin / (float)_info.Height));
+							vert.tex = (float2)(vert.tex * float2((float)(rng.xmax - rng.xmin) / (float)uTexWidth, (float)(rng.ymax - rng.ymin) / (float)uTexHeight) + float2((float)rng.xmin / (float)uTexWidth, (float)rng.ymin / (float)uTexHeight));
 							vDecalVerts.push_back(vert);
 							//m_dbgRender.push_back(vert.pos);
 
@@ -594,12 +623,13 @@ void DecalManager::render()
 		return;
 	}
 
-	dev->SetFVF(D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1);
+	// set shaders
+	IGXBlendState *pOldBlendState = dev->getBlendState();
+	dev->setBlendState(m_pBlendState);
+	//dev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
-	dev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-
-	dev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
-	dev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCCOLOR);
+	//dev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_DESTCOLOR);
+	//dev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_SRCCOLOR);
 
 
 //	SkyXEngine::Core::Data::Device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
@@ -615,14 +645,25 @@ void DecalManager::render()
 		SkyXEngine::Core::Data::MaterialsManager->Render(m_vDecals[i]->m_material, &SMMatrixIdentity(), 0);
 		SkyXEngine::Core::Data::Device->DrawPrimitiveUP(D3DPT_TRIANGLELIST, m_vDecals[i]->iVertCount / 3, m_vDecals[i]->m_pVerts, sizeof(DecalVertex));
 	}*/
-	DX_CALL(dev->SetStreamSource(0, m_pVertexBuffer, 0, sizeof(DecalVertex)));
+	dev->setRenderBuffer(m_pRenderBuffer);
+	dev->setPrimitiveTopology(GXPT_TRIANGLELIST);
+//	SGCore_ShaderBind(m_idShaderKit);
+//	SMMATRIX mV, mP;
+//	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mV);
+//	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_PROJ, &mP);
+//	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mVP", &SMMatrixTranspose(mV * mP), 4);
+
 	for(UINT i = 0; i < m_iRngs.size(); i++)
 	{
 		SGCore_MtlSet(m_iRngs[i].iMaterialId, &SMMatrixIdentity());
-		DX_CALL(dev->DrawPrimitive(D3DPT_TRIANGLELIST, m_iRngs[i].iStartVertex, m_iRngs[i].iVertexCount / 3));
+		dev->drawPrimitive(m_iRngs[i].iStartVertex, m_iRngs[i].iVertexCount / 3);
+		//dev->drawIndexed(m_iRngs[i].iVertexCount, m_iRngs[i].iVertexCount / 3, 0, m_iRngs[i].iStartVertex);
 	}
 
-	dev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	dev->setBlendState(pOldBlendState);
+	mem_release(pOldBlendState);
+
+	//dev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
 void DecalManager::updateBuffer()
@@ -655,6 +696,7 @@ void DecalManager::updateBuffer()
 	}
 
 	
+	mem_release(m_pRenderBuffer);
 	mem_release(m_pVertexBuffer);
 
 	if(iVC == 0)
@@ -662,26 +704,25 @@ void DecalManager::updateBuffer()
 		m_bNeedUpdate = false;
 		return;
 	}
-
-	DX_CALL(dev->CreateVertexBuffer(sizeof(DecalVertex)* iVC, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, &m_pVertexBuffer, 0));
-	DecalVertex * pData;
-	if(!FAILED(DX_CALL(m_pVertexBuffer->Lock(0, sizeof(DecalVertex)* iVC, (void**)&pData, 0))))
+		
+	DecalVertex * pData = (DecalVertex*)alloca(sizeof(DecalVertex) * iVC);
+	
+	iVC = 0;
+	for(AssotiativeArray<ID, Array<_DecalMatItem>>::Iterator i = m_MaterialSort.begin(); i; i++)
 	{
-		iVC = 0;
-		for(AssotiativeArray<ID, Array<_DecalMatItem>>::Iterator i = m_MaterialSort.begin(); i; i++)
+		for(UINT j = 0, l = i.second->size(); j < l; ++j)
 		{
-			for(UINT j = 0, l = i.second->size(); j < l; ++j)
-			{
-				//iVC += i.second[0][j].m_pDecal->iVertCount;
-				//iCC += i.second[0][j].m_pDecal->iVertCount;
+			//iVC += i.second[0][j].m_pDecal->iVertCount;
+			//iCC += i.second[0][j].m_pDecal->iVertCount;
 
-				memcpy(pData + iVC, i.second[0][j].m_pDecal->m_pVerts, sizeof(DecalVertex) * i.second[0][j].m_pDecal->iVertCount);
-				iVC += i.second[0][j].m_pDecal->iVertCount;
-			}
+			memcpy(pData + iVC, i.second[0][j].m_pDecal->m_pVerts, sizeof(DecalVertex) * i.second[0][j].m_pDecal->iVertCount);
+			iVC += i.second[0][j].m_pDecal->iVertCount;
 		}
-		m_pVertexBuffer->Unlock();
 	}
-	//m_pVertexBuffer
+
+	m_pVertexBuffer = dev->createVertexBuffer(sizeof(DecalVertex) * iVC, GXBUFFER_USAGE_STATIC, pData);
+
+	m_pRenderBuffer = dev->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
 
 	m_bNeedUpdate = false;
 }

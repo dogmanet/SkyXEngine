@@ -8,13 +8,15 @@ See the license in LICENSE
 #define __PE_DATA_H
 
 #include <gdefines.h>
-#include <d3d9.h>
+#include <graphix/graphix.h>
 #include <gcore/sxgcore.h>
+
+#include "sxparticles.h"
 
 namespace pe_data
 {
-	extern IDirect3DDevice9 *pDXDevice;
-	extern IDirect3DVertexDeclaration9 *pVertexDeclarationParticles;
+	extern IGXContext *pDXDevice;
+	extern IGXVertexDeclaration *pVertexDeclarationParticles;
 
 	void Init();
 
@@ -43,7 +45,22 @@ namespace pe_data
 			extern ID idParticlesSoftRefractionLight;
 			extern ID idParticlesTrack;
 		};
+
+		namespace kit
+		{
+			extern ID idParticles;
+			extern ID idParticlesSoft;
+			extern ID idParticlesRefraction;
+			extern ID idParticlesLight;
+			extern ID idParticlesSoftRefraction;
+			extern ID idParticlesSoftLight;
+			extern ID idParticlesRefractionLight;
+			extern ID idParticlesSoftRefractionLight;
+			extern ID idParticlesTrack;
+		};
 	};
+
+	extern IGXBlendState *pBlendStates[PARTICLESTYPE_ALPLABLEND__SIZE];
 };
 
 #endif

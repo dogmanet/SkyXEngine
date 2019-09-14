@@ -2,14 +2,16 @@
 #define _IFont_H_
 
 #include "GUIbase.h"
-
+#include "IFont.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #ifdef _DEBUG
-#	pragma comment(lib, "freetype26d.lib")
+#	pragma comment(lib, "freetype.lib")
+//#	pragma comment(lib, "freetype26d.lib")
 #else
-#	pragma comment(lib, "freetype26.lib")
+#	pragma comment(lib, "freetype.lib")
+//#	pragma comment(lib, "freetype26.lib")
 #endif
 
 #define SXF_VERSION 1
@@ -20,35 +22,13 @@ namespace gui
 	// basePath/fonts/name.ttf // ttf font source file
 	// basePath/fonts/name_<size>.sxf // sxf font cache file
 
-	class CFont
+	class CFont: public IFont
 	{
 	public:
 		CFont():m_pFTfontFace(NULL), m_bHasBeenChanged(false), m_iBlurRadius(0)
 		{
 		}
 		~CFont();
-		enum STYLE
-		{
-			STYLE_NONE = 0x00,
-			STYLE_BOLD = 0x01,
-			STYLE_ITALIC = 0x02,
-			STYLE_BOLD_ITALIC = 0x03
-		};
-
-		enum DECORATION
-		{
-			DECORATION_NONE = 0x00,
-			DECORATION_UNDERLINE = 0x01,
-			DECORATION_LINE_THROUGH = 0x02,
-			DECORATION_OVERLINE = 0x04
-		};
-
-		enum TEXT_ALIGN
-		{
-			TEXT_ALIGN_LEFT,
-			TEXT_ALIGN_RIGHT,
-			TEXT_ALIGN_CENTER
-		};
 
 		void load(const WCHAR * szFont, UINT size, STYLE style, int iBlurRadius = 0);
 		void release();
@@ -79,14 +59,7 @@ namespace gui
 		{
 			float3_t Pos;
 			float2_t Tex;
-			DWORD color;
-		};
-
-		struct char_rects
-		{
-			Array<RECT> * pResArray;
-			int iXoffs;
-			int iYoffs;
+			//DWORD color;
 		};
 
 
@@ -94,10 +67,11 @@ namespace gui
 
 
 		CPITexture getTexture(UINT i);
+		const IGXTexture2D *getAPITexture(UINT i);
 
 		void getStringMetrics(const StringW & str, UINT * width, UINT * height, UINT * vertexCount, UINT * indexCount, UINT * strCount, char_rects * pcr = NULL);
 
-		void buildString(const StringW & str, UINT decoration, TEXT_ALIGN textAlign, IDirect3DVertexBuffer9 ** ppVertexBuffer, IDirect3DIndexBuffer9 ** ppIndexBuffer, UINT * vertexCount, UINT * indexCount, UINT * lineIndexCount, UINT iAreaWidth = 0, UINT iFirstShift = 0, UINT * pStrWidth = NULL);
+		void buildString(const StringW & str, UINT decoration, TEXT_ALIGN textAlign, IGXRenderBuffer ** ppVertexBuffer, IGXIndexBuffer ** ppIndexBuffer, UINT * vertexCount, UINT * indexCount, UINT * lineIndexCount, UINT iAreaWidth = 0, UINT iFirstShift = 0, UINT * pStrWidth = NULL);
 	protected:
 
 		struct SXFheader
@@ -191,6 +165,7 @@ namespace gui
 		static FT_Library requestFT();
 
 		static void release();
+		
 
 	protected:
 		static AssotiativeArray<StringW, CFont> m_mFonts;

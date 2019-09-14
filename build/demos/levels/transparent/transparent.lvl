@@ -1,0 +1,24 @@
+[level]
+type = indoor
+local_name = transparent
+
+[terrax]
+vp_layout = 0
+grid_step = 6
+grid_show = 1
+cam3_view = 1
+cam3_scale = 0.017939
+cam3_pos = -5.900388 -2.482251 -1000.000000
+cam3_dir = -0.000000 -0.000000 -0.000000
+cam2_view = 2
+cam2_scale = 0.068271
+cam2_pos = 1000.000000 -0.134729 -14.557329
+cam2_dir = 0.000000 1.#QNAN0 0.000000
+cam1_view = 0
+cam1_scale = 0.304896
+cam1_pos = -26.377651 1000.000000 2.464243
+cam1_dir = -1.570796 -0.000000 0.000000
+cam0_view = -1
+cam0_scale = 1.000000
+cam0_pos = 2.478239 10.869446 -34.316093
+cam0_dir = -0.169332 -0.145141 -0.000000

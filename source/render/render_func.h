@@ -18,17 +18,15 @@ See the license in LICENSE
 
 #include <GRegisterIndex.h>
 #include <windows.h>
-#include <common/sxtypes.h>
+#include <common/types.h>
 #include <common/file_utils.h>
 
-#define SM_D3D_CONVERSIONS
-#include <common/SXMath.h>
+//#define SM_D3D_CONVERSIONS
+#include <common/Math.h>
 
 #include <render/gdata.h>
 
-#include <geom/sxgeom.h>
 #include <green/sxgreen.h>
-#include <light/sxlight.h>
 #include <aigrid/sxaigrid.h>
 #include <physics/sxphysics.h>
 #include <game/sxgame.h>
@@ -49,14 +47,6 @@ namespace rfunc
 {
 	//быстрая реализация фильтрации и адресации
 	//{
-	//индифидуально для регистра
-	inline void SetSamplerFilter(DWORD dwId, DWORD dwValue);
-	inline void SetSamplerAddress(DWORD dwId, DWORD dwValue);
-	
-	//для указанного промежутка групп регистров
-	inline void SetSamplerFilter(DWORD dwIdStart, DWORD dwIdFisnish, DWORD dwValue);
-	inline void SetSamplerAddress(DWORD dwIdStart, DWORD dwIdFisnish, DWORD dwValue);
-
 	void SetRenderSceneFilter();
 	void SetRenderSceneFilterUn();
 	//}
@@ -64,47 +54,19 @@ namespace rfunc
 	//**********************************************************************
 
 	//! обработка потери и восстановление устройства
-	void ComDeviceLost(bool isSetWindowSize);
+	bool ComDeviceLost(bool isSetWindowSize);
 
 	//! обработка и установка основных матриц, обработка плоскостей отсечения
 	void UpdateView();						
 
-	//! вывод отладочной текстовой информации в окно рендера
-	int OutputDebugInfo(DWORD timeDelta, bool needGameTime, const char *szStr = 0);
-
-	//! обработка видимости для источников света
-	void ComVisibleForLight();				
-
-	//! обработка видимости для камеры
-	void ComVisibleForCamera();				
-
 	//! обработка видимости для отражений
 	void ComVisibleReflection();			
 
-
-	//! построение G буфера, то есть рендер всей сцены
-	void BuildMRT(DWORD timeDelta, bool isRenderSimulation);		
-
-
-	//! обновление информации о тенях (рендер всего того что отбрасывает тени в буферы глубин источников света)
-	void UpdateShadow(DWORD timeDelta);		
-	
-
-	//! обработка/обновление отражений
-	void UpdateReflection(DWORD timeDelta, bool isRenderSimulation);	
-	void UpdateReflectionScene(DWORD timeDelta);
-	void UpdateReflectionSimModel(DWORD timeDelta);
 	
 
 	//! отрисовка скайбокса и облаков
 	void RenderSky(DWORD timeDelta);					
-
-	//! обработка освещения, render_sky - рисовать ли небо
-	void ComLighting(DWORD timeDelta);	
-	
-	//! объединение слоев прозрачности
-	void UnionLayers();
-	
+		
 
 	//! отрисовка партиклов (эффектов)
 	void RenderParticles(DWORD timeDelta);				
@@ -113,13 +75,6 @@ namespace rfunc
 	void RenderMainPostProcess(DWORD timeDelta);
 
 	void RenderFinalPostProcess(DWORD timeDelta);
-
-	void ShaderRegisterData();
-
-	//**********************************************************************
-
-	//! рендер основных элементов для редакторов
-	void RenderEditorMain();				
 
 	//**********************************************************************
 

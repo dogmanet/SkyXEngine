@@ -11,8 +11,8 @@ See the license in LICENSE
 #include <common/array.h>
 #include <common/memalloc.h>
 
-#define SM_D3D_CONVERSIONS
-#include <common/SXMath.h>
+//#define SM_D3D_CONVERSIONS
+#include <common/Math.h>
 #include "sxaigrid.h"
 #include <math.h>
 
@@ -201,7 +201,7 @@ struct CAIQuadVertexDataInst
 	float4_t m_vTC;
 
 	//! цвет
-	uint32_t m_uiColor;
+	float4_t m_vColor;
 };
 
 //##########################################################################
@@ -444,10 +444,10 @@ protected:
 	bool m_useGraphics;
 
 	//! dx9 устройство
-	IDirect3DDevice9 *m_pDXDevice;
+	IGXContext *m_pDXDevice;
 
 	//! декларация вершин сетки
-	IDirect3DVertexDeclaration9 *m_pDecl;
+	IGXVertexDeclaration *m_pDecl;
 
 	//! текстура сетки
 	ID m_idTex;
@@ -457,6 +457,8 @@ protected:
 
 	//! пиксельный шейдер
 	ID m_idPS;
+
+	ID m_idShaderKit;
 
 	//! текстура для ограничивающих объемов
 	ID m_idTexBB;
@@ -538,16 +540,19 @@ protected:
 	uint16_t m_uiCountSplits;
 
 	//! вершинный буфер квада
-	IDirect3DVertexBuffer9 *m_pVertexQuad;
+	IGXVertexBuffer *m_pVertexQuad;
 
 	//! индексный буфер квада
-	IDirect3DIndexBuffer9 *m_pIndexQuad;
+	IGXIndexBuffer *m_pIndexQuad;
 
 	//! вершинный буфер с данными трансформаций
-	IDirect3DVertexBuffer9 *m_pTransVertBuf;
+	IGXVertexBuffer *m_pTransVertBuf;
+
+	//! 
+	IGXRenderBuffer *m_pRenderBuffer = NULL;
 
 	//! меш главного ограничивающего объема
-	ID3DXMesh *m_pBoundBox;
+	IMesh *m_pBoundBox;
 
 	//! значения ограничивающего объема
 	float3_t m_vMax, m_vMin;

@@ -88,64 +88,66 @@ br {
 button
 {
 	display: inline-block;
-	background-color: #d2cdc9;
+	background-color: #c6f0fd10;
 	
-	border-top-color: #fbfbfb;
-	border-left-color: #fbfbfb;
-	
-	border-right-color: #3d3d3d;
-	border-bottom-color: #3d3d3d;
+	border-color: #c6f0fd90;
 	
 	border-top-width: 2px;
 	border-left-width: 2px;
 	border-right-width: 2px;
 	border-bottom-width: 2px;
 	
-	padding: 3px;
+	padding: 10px;
 	
 	//width: 100px;
 	
-	color: #222;
+	color: #c6f0fd;
 	
 	text-align: center;
 	
 	font-size: 13px;
 	
-	//border-radius: 5px;
+	border-radius: 7px;
 	
 	border-bottom-right-method: cut;
 	border-bottom-left-method: cut;
 	border-top-right-method: cut;
 	border-top-left-method: cut;
 	cursor: pointer;
+	
+	
+	
+	transition-property: background-color, border-color, color;
+	transition-duration: 0.2s, 0.2s, 0.2s;
 }
 
 button:focus
 {
-	background-color: #e2ddd9;
+	background-color: #c6f0fd40;
 }
 
 button:hover
 {
-	background-color: #f2ede9;
+	background-color: #c6f0fd40;
 }
 
 button:active
 {
-	//color: #FFF;
+	color: #FFF;
 	//font-weight: bold;
+	border-color: #c6f0fdf0;
 	
-	border-top-color: #3d3d3d;
-	border-left-color: #3d3d3d;
 	
-	border-right-color: #fbfbfb;
-	border-bottom-color: #fbfbfb;
 	
-	//background-color: #827d79;
-	
-	//padding: 4px 2px 2px 4px;
-	
-	//display: none;
+	background-color: #c6f0fd90;
+}
+
+button:disabled
+{
+	background-color: #f0f0f010;
+	border-color: #f0f0f090;
+	color: #f0f0f080;
+	cursor: default;
 }
 
 input, textarea, password

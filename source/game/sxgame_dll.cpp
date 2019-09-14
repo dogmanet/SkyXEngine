@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -24,29 +24,13 @@ See the license in LICENSE
 #	pragma comment(lib, "sxgcore_d.lib")
 #	pragma comment(lib, "sxinput_d.lib")
 #	pragma comment(lib, "sxphysics_d.lib")
-#	pragma comment(lib, "sxdecals_d.lib")
-#	pragma comment(lib, "sxanim_d.lib")
-#	pragma comment(lib, "sxparticles_d.lib")
-#	pragma comment(lib, "sxscore_d.lib")
 #	pragma comment(lib, "sxmtrl_d.lib")
-#	pragma comment(lib, "sxaigrid_d.lib")
-#	pragma comment(lib, "sxgeom_d.lib")
-#	pragma comment(lib, "sxgreen_d.lib")
-#	pragma comment(lib, "sxlevel_d.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
 #	pragma comment(lib, "sxgcore.lib")
 #	pragma comment(lib, "sxinput.lib")
 #	pragma comment(lib, "sxphysics.lib")
-#	pragma comment(lib, "sxdecals.lib")
-#	pragma comment(lib, "sxanim.lib")
-#	pragma comment(lib, "sxparticles.lib")
-#	pragma comment(lib, "sxscore.lib")
 #	pragma comment(lib, "sxmtrl.lib")
-#	pragma comment(lib, "sxaigrid.lib")
-#	pragma comment(lib, "sxgeom.lib")
-#	pragma comment(lib, "sxgreen.lib")
-#	pragma comment(lib, "sxlevel.lib")
 #endif
 
 #if !defined(DEF_STD_REPORT)
@@ -56,7 +40,7 @@ report_func g_fnReportf = DefReport;
 
 
 GameData * g_pGameData = NULL;
-ID3DXMesh* g_pFigureBox = 0;
+IMesh* g_pFigureBox = 0;
 
 #define SG_PRECOND(ret) if(!g_pGameData){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxgame is not init", GEN_MSG_LOCATION);return ret;}
 
@@ -121,7 +105,8 @@ SX_LIB_API void SGame_0Create(HWND hWnd, bool isGame)
 	g_pGameData = new GameData(hWnd, isGame);
 
 	//g_pPlayer->spawn();
-	DX_CALL(D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &g_pFigureBox, 0));
+	SGCore_FCreateBoundingBoxMesh(&float3(-0.5f, -0.5f, -0.5f), &float3(0.5f, 0.5f, 0.5f), &g_pFigureBox);
+	//DX_CALL(D3DXCreateBox(SGCore_GetDXDevice(), 1, 1, 1, &g_pFigureBox, 0));
 
 	Core_0RegisterConcmd("add_corner", ccmd_cam_pt);
 	Core_0RegisterConcmdArg("ent_save", ccmd_save_as);
@@ -173,24 +158,6 @@ SX_LIB_API void SGame_Dbg_Set(report_func rf)
 	g_fnReportf = rf;
 }
 
-SX_LIB_API void SGame_LoadEnts(const char * file)
-{
-	SG_PRECOND(_VOID);
-	GameData::m_pMgr->import(file);
-}
-
-SX_LIB_API void SGame_UnloadObjLevel()
-{
-	SG_PRECOND(_VOID);
-	GameData::m_pMgr->unloadObjLevel();
-}
-
-SX_LIB_API void SGame_SaveEnts(const char * file)
-{
-	SG_PRECOND(_VOID);
-	GameData::m_pMgr->exportList(file);
-}
-
 SX_LIB_API void SGame_PlayerSpawn()
 {
 	SG_PRECOND(_VOID);
@@ -200,7 +167,7 @@ SX_LIB_API void SGame_PlayerSpawn()
 SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderPos)
 {
 	SG_PRECOND(_VOID);
-
+#ifdef _GRAPHIX_API
 	CBaseEntity* pEnt = SGame_EntGet(id);
 	if (!pEnt)
 		return;
@@ -221,7 +188,7 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 			return;
 
 		CPathCorner * pCur = pStartPoint;
-		while ((pCur = pCur->GetPrev()))
+		while ((pCur = pCur->getPrev()))
 		{
 			pStartPoint = pCur;
 		}
@@ -231,17 +198,17 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 		pCur = pStartPoint;
 		do
 		{
-			len += pCur->GetLength();
+			len += pCur->getLength();
 			++count;
 			SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&(SMMatrixScaling(vBoxSize) * pEnt->getOrient().GetMatrix() * SMMatrixTranslation(pCur->getPos())));
 
 			if (id == pCur->getId())
-				SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(id_sel_tex));
+				SGCore_GetDXDevice()->setTexture(SGCore_LoadTexGetTex(id_sel_tex));
 			else
-				SGCore_GetDXDevice()->SetTexture(0, 0);
+				SGCore_GetDXDevice()->setTexture(NULL);
 
-			g_pFigureBox->DrawSubset(0);
-		} while ((pCur = pCur->GetNext()));
+			g_pFigureBox->draw();
+		} while ((pCur = pCur->getNext()));
 
 
 		int npoints = count * 10;
@@ -271,7 +238,7 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 		SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixIdentity());
 
 		SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ);
-		SGCore_GetDXDevice()->SetTexture(0, 0);
+		SGCore_GetDXDevice()->setTexture(NULL);
 		DX_CALL(SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, npoints, &(pts[0]), sizeof(float3_t)));
 	}
 	else
@@ -287,6 +254,7 @@ SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderP
 		DX_CALL(SGCore_GetDXDevice()->SetTexture(0, SGCore_LoadTexGetTex(id_sel_tex)));
 		DX_CALL(g_pFigureBox->DrawSubset(0));
 	}
+#endif
 }
 
 SX_LIB_API int SGame_EntGetClassListCount()
@@ -391,6 +359,12 @@ SX_LIB_API BOOL SGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam)
 		}
 	}
 
+	static const bool *s_pGrabCursor = GET_PCVAR_BOOL("cl_grab_cursor");
+	if(message == WM_ACTIVATE && s_pGrabCursor && *s_pGrabCursor && LOWORD(wParam) == WA_INACTIVE)
+	{
+		Core_0ConsoleExecCmd("game_menu");
+	}
+
 	return(GameData::m_pGUI->putMessage(message, wParam, lParam));
 }
 
@@ -408,11 +382,6 @@ SX_LIB_API void SGame_OnResetDevice()
 	{
 		GameData::m_pGUI->onResetDevice();
 	}
-}
-
-SX_LIB_API void SGame_OnLevelLoad(const char *szName)
-{
-	GameData::m_pHUDcontroller->loadMap(szName);
 }
 
 SX_LIB_API void SGame_SetDebugText(const char *szText)

@@ -62,10 +62,10 @@ void CFuncTrain::start()
 void CFuncTrain::moveFunc(float dt)
 {
 	m_fCurDist += m_fSpeed * dt;
-	while(m_pCurStop && (m_fCurDist > m_pCurStop->GetLength()))
+	while(m_pCurStop && (m_fCurDist > m_pCurStop->getLength()))
 	{
-		m_fCurDist -= m_pCurStop->GetLength();
-		m_pCurStop = m_pCurStop->GetNext();
+		m_fCurDist -= m_pCurStop->getLength();
+		m_pCurStop = m_pCurStop->getNext();
 	}
 	if(m_pCurStop)
 	{
@@ -75,9 +75,9 @@ void CFuncTrain::moveFunc(float dt)
 	else
 	{
 		m_pCurStop = m_pStartStop;
-		while(m_pCurStop->GetNext())
+		while(m_pCurStop->getNext())
 		{
-			m_pCurStop = m_pCurStop->GetNext();
+			m_pCurStop = m_pCurStop->getNext();
 		}
 		setPos(m_pCurStop->getPoint(m_fCurDist));
 		setOrient(m_pCurStop->getRot(m_fCurDist));

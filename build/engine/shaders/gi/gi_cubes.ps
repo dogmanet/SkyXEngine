@@ -1,0 +1,46 @@
+
+/*
+.ps
+*/
+
+#include "../lpv.h"
+#include "../struct.h"
+
+//##########################################################################
+
+SamplerState g_sSampler: register(s0);
+
+Texture3D g_txIllumRed: register(t0);
+Texture3D g_txIllumGreen: register(t1);
+Texture3D g_txIllumBlue: register(t2);
+
+cbuffer b8: register(b8)
+{
+	// float4x4 mV;
+	float4x4 g_mVP;
+	float4 g_vPosCam;
+};
+
+//##########################################################################
+
+float4 main(GSO_GICubes IN):COLOR0
+{
+	// return(float4(1,1,1,1));
+	
+	float3 vTexCoord = (IN.vCenterPos.xyz - floor(g_vPosCam).xyz) / 32.0 + 0.5 + 1.0 / 64.0;
+	
+	float4 vColorR = g_txIllumRed.Sample(g_sSampler, vTexCoord);
+	float4 vColorG = g_txIllumGreen.Sample(g_sSampler, vTexCoord);
+	float4 vColorB = g_txIllumBlue.Sample(g_sSampler, vTexCoord);
+	
+	float3 vNormalPixel = normalize(IN.vNormal);
+	float4 SHintensity = dirToSH(-vNormalPixel);
+	
+	float r = saturate(dot(SHintensity, vColorR) / PI * 1000.0);
+	float g = saturate(dot(SHintensity, vColorG) / PI * 1000.0);
+	float b = saturate(dot(SHintensity, vColorB) / PI * 1000.0);
+	
+	return(float4(r, g, b, 1.0));
+	// return(float4(vTexCoord, 1.0));
+	// return(float4(IN.vNormal, 1.0));
+}

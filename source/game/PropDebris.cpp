@@ -1,13 +1,13 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 #include "PropDebris.h"
 
 /*! \skydocent prop_debris
-Ðàçáèâàåìûé îáúåêò
+Ð Ð°Ð·Ð±Ð¸Ð²Ð°ÐµÐ¼Ñ‹Ð¹ Ð¾Ð±ÑŠÐµÐºÑ‚
 */
 
 BEGIN_PROPTABLE(CPropDebris)
@@ -30,6 +30,8 @@ void CPropDebris::sheduleRemove()
 
 void CPropDebris::checkRemove(float fDT)
 {
+	//@TODO: Reimplement me
+#if 0
 	if(!m_pAnimPlayer->isVisibleFor(SX_ANIM_DEFAULT_VISCALCOBJ))
 	{
 		REMOVE_ENTITY(this);
@@ -38,4 +40,5 @@ void CPropDebris::checkRemove(float fDT)
 	{
 		SET_TIMEOUT(checkRemove, randf(3.0f, 6.0f));
 	}
+#endif
 }

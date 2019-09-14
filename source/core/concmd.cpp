@@ -38,7 +38,7 @@ SOCKET CommandSocket = INVALID_SOCKET;
 bool g_bRunning = false;
 bool g_bRunningCmd = false;
 
-typedef CConcurrentQueue<char *> CommandBuffer;
+typedef CConcurrentQueue<char*> CommandBuffer;
 typedef std::mutex Mutex;
 CommandBuffer g_vCommandBuffer;
 Stack<CommandBuffer> g_cbufStack;
@@ -77,7 +77,7 @@ SX_LIB_API void Core_0RegisterConcmdArg(char * name, SXCONCMDARG cmd, const char
 	}
 	g_mCmds[name] = c;
 }
-SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, SXCONCMDCLS cmd, const char * desc)
+SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, const SXCONCMDCLS &cmd, const char * desc)
 {
 	ConCmd c;
 	c.type = CMD_CLS;
@@ -91,7 +91,7 @@ SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, SXCONCMDCLS
 	}
 	g_mCmds[name] = c;
 }
-SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, SXCONCMDCLSARG cmd, const char * desc)
+SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, const SXCONCMDCLSARG &cmd, const char * desc)
 {
 	ConCmd c;
 	c.type = CMD_CLS_ARG;
@@ -284,7 +284,7 @@ SX_LIB_API void Core_0ConsoleExecCmd(const char * format, ...)
 {
 	va_list va;
 	va_start(va, format);
-	int len = _vscprintf(format, va) + 1;
+	size_t len = _vscprintf(format, va) + 1;
 	char * buf, *cbuf = NULL;
 	if(len < 4096)
 	{
@@ -352,21 +352,22 @@ void echo(int argc, const char ** argv)
 	printf("\n");
 }
 
-void exec(int argc, const char ** argv)
+void exec(int argc, const char **argv)
 {
 	if(argc != 2)
 	{
 		puts(COLOR_LRED "[exec]: Expected filename" COLOR_RESET);
 		return;
 	}
-	IFile * f = Core_CrFile();
-	if(f->open(argv[1], CORE_FILE_BIN) < 0)
+	
+	IFile *f = Core_GetIXCore()->getFileSystem()->openFile(argv[1]);
+	if(!f)
 	{
 		printf(COLOR_LRED "Couldn't exec '%s'\n" COLOR_RESET, argv[1]);
 		return;
 	}
-	int len = f->getSize() + 1;
-	char * buf, *cbuf = NULL;
+	size_t len = f->getSize() + 1;
+	char *buf, *cbuf = NULL;
 	if(len <= 4096)
 	{
 		buf = (char*)alloca(sizeof(char) * len);
@@ -381,7 +382,7 @@ void exec(int argc, const char ** argv)
 
 	ConsolePushBuffer();
 	Core_0ConsoleExecCmd("%s", buf);
-	f->Release();
+	mem_release(f); 
 
 	mem_delete_a(cbuf);
 }
@@ -497,6 +498,11 @@ void cmd_perf_dump()
 	char *buf = (char*)alloca(sizeof(char) * (iMeterWidth + 1));
 
 	Array<float> afTimes;
+	afTimes.resize(PERF_SECTION_COUNT);
+	for(int i = 0; i < PERF_SECTION_COUNT; ++i)
+	{
+		afTimes[i] = 0;
+	}
 
 	for(int i = 0, l = aaRecords.size(); i < l; ++i)
 	{
@@ -583,6 +589,7 @@ void ConsoleRegisterCmds()
 	Core_0RegisterConcmdArg("echo", echo, "Echoes all parameters to console");
 	Core_0RegisterConcmdArg("exec", exec, "Executes given cfg file");
 	Core_0RegisterConcmd("exit", cmd_exit, "Shuts down the engine");
+	Core_0RegisterConcmd("quit", cmd_exit, "Shuts down the engine");
 	Core_0RegisterConcmdArg("cvar_handle", cvar_handle, "Handle to show or set cvar value");
 	Core_0RegisterConcmdArg("help", cmd_help, "Handle to show command description");
 	Core_0RegisterConcmdArg("cvarlist", cmd_cvarlist, "List all CVars");

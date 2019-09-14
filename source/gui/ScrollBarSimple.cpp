@@ -10,8 +10,16 @@ namespace gui
 			CScrollBarSimple::CScrollBarSimple(IRenderFrame * _parent, SCROLLBAR_DIR _dir):
 				IScrollBar(_parent, _dir)
 			{
+				m_pVertices = GetGUI()->getDevice()->createVertexBuffer(sizeof(point) * 4, GXBUFFER_USAGE_STREAM);
+				m_pRenderBuffer = GetGUI()->getDevice()->createRenderBuffer(1, &m_pVertices, GetGUI()->getVertexDeclarations()->m_pXYZTex);
 			}
 
+			CScrollBarSimple::~CScrollBarSimple()
+			{
+				mem_release(m_pVertices);
+				mem_release(m_pRenderBuffer);
+			}
+			
 			int CScrollBarSimple::getWidth()
 			{
 				return(16);
@@ -20,13 +28,28 @@ namespace gui
 			void CScrollBarSimple::render()
 			{
 				static CPITexture texWhite = CTextureManager::getTexture(TEX_WHITE);
-				static CSHADER shText = CTextureManager::loadShader(L"text");
-				GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
+			//	static CSHADER shText = CTextureManager::loadShader(L"text");
+			//	GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
 
-				CTextureManager::bindShader(shText);
+				auto shader = GetGUI()->getShaders()->m_baseTexturedColored;
+				SGCore_ShaderBind(shader.m_idShaderKit);
+
+			//	CTextureManager::bindShader(shText);
 				CTextureManager::bindTexture(texWhite);
-				float4_t asd(1, 1, 1, 0.5);
-				DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&asd, 1));
+			//	float4_t asd(1, 1, 1, 0.5);
+
+				static IGXConstantBuffer *s_pColorConstant = NULL;
+				if(!s_pColorConstant)
+				{
+					s_pColorConstant = GetGUI()->getDevice()->createConstantBuffer(sizeof(float4));
+					s_pColorConstant->update(&float4_t(1, 1, 1, 0.5));
+				}
+
+				IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
+
+				pCtx->setPSConstant(s_pColorConstant);
+				//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&float4_t(1, 1, 1, 0.5), 1);
+			//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&asd, 1));
 
 				updateData();
 				if(m_iScrollMax == 0)
@@ -38,37 +61,33 @@ namespace gui
 				int S = m_iLength * (m_iLength - P) / (m_iScrollMax + m_iLength);
 				int T = m_iScrollCur * (m_iLength - 2 * P - S) / m_iScrollMax;
 
-				struct point
+				point *pData;
+				if(m_pVertices->lock((void**)&pData, GXBL_WRITE))
 				{
-					float x;
-					float y;
-					float z;
-					float tx;
-					float ty;
-				};
+					pData[0] = {P, P + T, 0, 0, 0};
+					pData[1] = {W - P, P + T, 0, 0, 1};
+					pData[2] = {W - P, P + T + S, 0, 1, 1};
+					pData[3] = {P, P + T + S, 0, 1, 0};
 
-
-				point a[6] = {
-					{P, P + T, 0, 0, 0},
-					{W - P, P + T, 0, 0, 1},
-					{P, P + T + S, 0, 1, 0},
-					{P, P + T + S, 0, 1, 0},
-					{W - P, P + T, 0, 0, 1},
-					{W - P, P + T + S, 0, 1, 1}
-				};
-
-				if(m_eDir == SCROLLBAR_DIR_HORIZONTAL)
-				{
-					float _x;
-					for(int i = 0; i < 6; i++)
+					if(m_eDir == SCROLLBAR_DIR_HORIZONTAL)
 					{
-						_x = a[i].x;
-						a[i].x = a[i].y;
-						a[i].y = _x;
+						float _x;
+						for(int i = 0; i < 4; i++)
+						{
+							_x = pData[i].x;
+							pData[i].x = pData[i].y;
+							pData[i].y = _x;
+						}
 					}
+
+					m_pVertices->unlock();
 				}
 
-				DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
+				
+				pCtx->setRenderBuffer(m_pRenderBuffer);
+				pCtx->setIndexBuffer(GetGUI()->getQuadIndexBuffer());
+				pCtx->drawIndexed(4, 2, 0, 0);
+			//	DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
 			}
 
 			void CScrollBarSimple::dispatchEvent(IEvent & ev)

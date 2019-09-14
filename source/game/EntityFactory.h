@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -22,13 +22,14 @@ class CEntityManager;
 class IEntityFactory
 {
 public:
-	virtual CBaseEntity * create(CEntityManager * pWorld) = 0;
+	virtual CBaseEntity* create(CEntityManager * pWorld) = 0;
 	virtual void destroy(CBaseEntity * pEnt) = 0;
-	virtual const char * getClassName() = 0;
-	virtual proptable_t * getPropTable() = 0;
+	virtual const char* getClassName() = 0;
+	virtual proptable_t* getPropTable() = 0;
 	virtual bool isEditorHidden() = 0;
-	virtual EntDefaultsMap * getDefaults() = 0;
-	virtual IEntityFactory * copy(const char * szName, bool showInListing) = 0;
+	virtual EntDefaultsMap* getDefaults() = 0;
+	virtual IEntityFactory* copy(const char * szName, bool showInListing) = 0;
+	virtual bool isSyncable() = 0;
 };
 
 class CEntityFactoryMap
@@ -37,19 +38,21 @@ class CEntityFactoryMap
 public:
 	CEntityFactoryMap();
 
-	void addFactory(IEntityFactory * pFactory, const char * szName);
-	CBaseEntity * create(const char * szName, CEntityManager * pMgr, bool bDelayPostLoad=false);
-	void destroy(CBaseEntity * pEnt);
+	void addFactory(IEntityFactory *pFactory, const char *szName);
+	CBaseEntity* create(const char *szName, CEntityManager *pMgr, bool bDelayPostLoad=false);
+	void destroy(CBaseEntity *pEnt);
 
-	static CEntityFactoryMap * GetInstance();
-	proptable_t * getPropTable(const char * szClass);
-	bool isEditorHidden(const char * szClass);
-	EntDefaultsMap * getDefaults(const char * szClass);
+	static CEntityFactoryMap* GetInstance();
+	proptable_t* getPropTable(const char *szClass);
+	bool isEditorHidden(const char *szClass);
+	EntDefaultsMap* getDefaults(const char *szClass);
 
 	int getListCount();
-	void getListing(const char ** pszOut, int size);
+	void getListing(const char **pszOut, int size);
+
+	const char* getClassNamePtr(const char *szClassName);
 private:
-	IEntityFactory * getFactory(const char * szName);
+	IEntityFactory* getFactory(const char *szName);
 	AssotiativeArray<AAString, IEntityFactory*> m_mFactories;
 	int m_iShowInListCount;
 };
@@ -58,11 +61,12 @@ template <class T>
 class CEntityFactory: public IEntityFactory
 {
 public:
-	CEntityFactory(const char * szName, bool showInListing)
+	CEntityFactory(const char * szName, bool showInListing, bool isSyncable=true)
 	{
 		m_bShowInListing = showInListing;
 		m_szClassName = szName;
 		m_pPropTable = T::SGetPropTable();
+		m_isSyncable = isSyncable;
 		CEntityFactoryMap::GetInstance()->addFactory(this, szName);
 	}
 
@@ -75,7 +79,7 @@ public:
 		}
 	}
 
-	IEntityFactory * copy(const char * szName, bool showInListing)
+	IEntityFactory* copy(const char *szName, bool showInListing) override
 	{
 		CEntityFactory<T> * newF = new CEntityFactory<T>(*this);
 		newF->m_szClassName = szName;
@@ -84,12 +88,12 @@ public:
 		return(newF);
 	}
 
-	CBaseEntity * create(CEntityManager * pWorld)
+	CBaseEntity* create(CEntityManager *pWorld) override
 	{
 		return(new T(pWorld));
 	}
 
-	void destroy(CBaseEntity * pEnt)
+	void destroy(CBaseEntity *pEnt) override
 	{
 		if(pEnt)
 		{
@@ -97,22 +101,27 @@ public:
 		}
 	}
 
-	const char * getClassName()
+	const char* getClassName() override
 	{
 		return(m_szClassName);
 	}
 
-	proptable_t * getPropTable()
+	proptable_t* getPropTable() override
 	{
 		return(m_pPropTable);
 	}
 
-	bool isEditorHidden()
+	bool isEditorHidden() override
 	{
 		return(!m_bShowInListing);
 	}
 
-	EntDefaultsMap * getDefaults()
+	bool isSyncable() override
+	{
+		return(m_isSyncable);
+	}
+
+	EntDefaultsMap* getDefaults() override
 	{
 		return(&m_mDefaults);
 	}
@@ -121,12 +130,16 @@ private:
 	const char * m_szClassName;
 	proptable_t * m_pPropTable;
 	bool m_bShowInListing;
+	bool m_isSyncable;
 	EntDefaultsMap m_mDefaults;
 	Array<CEntityFactory<T>*> m_vDerivatives;
 };
 
 #define REGISTER_ENTITY(cls, name) \
 	CEntityFactory<cls> ent_ ## name ## _factory(#name, 1)
+
+#define REGISTER_ENTITY_NOSYNC(cls, name) \
+	CEntityFactory<cls> ent_ ## name ## _factory(#name, 1, 0)
 
 #define REGISTER_ENTITY_NOLISTING(cls, name) \
 	CEntityFactory<cls> ent_ ## name ## _factory(#name, 0)

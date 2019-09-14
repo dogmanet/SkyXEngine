@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -267,7 +267,7 @@ void SXInput::setEnable(bool bEnable)
 
 bool SXInput::GetKeyState(InputCode Key)
 {
-	return((bool)m_vKeyMap[Key].state);
+	return(!!m_vKeyMap[Key].state);
 }
 
 InputEvents SXInput::GetKeyEvents(InputCode Key)
@@ -291,7 +291,7 @@ long SXInput::GetScroll()
 
 bool SXInput::GetMouseDouble(InputCode Button)
 {
-	return(m_vKeyMap[Button].is_dblclick);
+	return(!!m_vKeyMap[Button].is_dblclick);
 }
 
 bool SXInput::IsOtherButtonOn(InputCode Button)
@@ -463,7 +463,7 @@ void SXInput::Bind(const char * key, const char * cmd)
 	{
 		if(!fstrcmp(m_vKeyMap[i].bind, key))
 		{
-			int len = strlen(cmd);
+			int len = (int)strlen(cmd);
 			if(!m_vKeyMap[i].cmd)
 			{
 				if(len)

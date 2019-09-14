@@ -17,7 +17,7 @@ void SPP_ComEdgeDetected();
 
 namespace pp_data
 {
-	IDirect3DDevice9 *pDXDevice = 0;
+	IGXContext *pDXDevice = 0;
 	float3 vConstCurrCamPos;
 	float3 vConstCurrCamDir;
 	float2_t vWinSize = float2_t(640, 480);
@@ -26,7 +26,7 @@ namespace pp_data
 	float4 vSunPos;
 
 	//fov and ration esesno
-	float fProjFov = D3DX_PI * 0.25f;
+	float fProjFov = SM_PIDIV4;
 	float fProjRatio = vWinSize.x / vWinSize.y;
 
 	float3_t aRndVecSSAO[24];
@@ -80,6 +80,34 @@ namespace pp_data
 
 			ID idClip = -1;
 		};
+
+		namespace kit
+		{
+			ID idBlurDepthBased25BlendColor = -1;
+			ID idWhiteBlack = -1;
+			ID idSepia = -1;
+			ID idCBG = -1;
+			ID idGaussBlurH = -1;
+			ID idGaussBlurW = -1;
+			ID idDOF = -1;
+			ID idScreenOut = -1;
+			ID idSunRender = -1;
+			ID idLensFlare0 = -1;
+			ID idLensFlare2 = -1;
+			ID idBloomBP = -1;
+			ID idBloomFinal = -1;
+			ID idDepthEdgeDetect = -1;
+			ID idFreeBlur3x3 = -1;
+			ID idClip = -1;
+			ID idNFAA = -1;
+			ID idDLAA_Long = -1;
+			ID idDLAA_Small = -1;
+			ID idFogLinear = -1;
+			ID idMotionBlur = -1;
+			ID idSSAO_Q_1 = -1;
+			ID idSSAO_Q_2 = -1;
+			ID idSSAO_Q_3 = -1;
+		};
 	};
 
 	namespace rt_id
@@ -117,6 +145,24 @@ namespace pp_data
 		ID idNoise = -1;
 		ID idSun = -1;
 	};
+
+	namespace rstates
+	{
+		IGXBlendState *pBlendAlpha;
+		IGXBlendState *pBlendAlphaOne;
+		IGXBlendState *pBlendNoColor;
+
+		IGXSamplerState *pSamplerLinearClamp;
+		IGXSamplerState *pSamplerPointClamp;
+		IGXSamplerState *pSamplerPointMirror;
+		IGXSamplerState *pSamplerLinearMirror;
+
+		IGXRasterizerState *pRasterizerScissorsTest;
+
+		IGXDepthStencilState *pDepthStencilEdgeDetect;
+		IGXDepthStencilState *pDepthStencilDLAA;
+		IGXDepthStencilState *pDepthStencilNoZ;
+	};
 }
 
 void pp_data::Init()
@@ -128,54 +174,54 @@ void pp_data::Init()
 	pp_data::vWinSize.x = *r_win_width;
 	pp_data::vWinSize.y = *r_win_height;
 	Core_SetOutPtr();
-	pp_data::shaders_id::vs::idResPos = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs", "pp_quad_render_res_pos.vs", SHADER_CHECKDOUBLE_PATH);
+	pp_data::shaders_id::vs::idResPos = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs", "pp_quad_render_res_pos.vs");
 	
-	pp_data::shaders_id::vs::idScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs", "pp_quad_render.vs", SHADER_CHECKDOUBLE_PATH);
-	pp_data::shaders_id::ps::idScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps", "pp_quad_render.ps", SHADER_CHECKDOUBLE_PATH);
+	pp_data::shaders_id::vs::idScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs");
+	pp_data::shaders_id::ps::idScreenOut = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps");
 
-	pp_data::shaders_id::ps::idFogLinear = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_fog_linear.ps", "ppe_fog_linear.ps", SHADER_CHECKDOUBLE_PATH);
+	pp_data::shaders_id::ps::idFogLinear = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_fog_linear.ps");
 	
-	D3DXMACRO Defines_SSAO_Q_3[] = { { "SSAO_Q_3", "" }, { 0, 0 } };
-	pp_data::shaders_id::ps::idSSAO_Q_3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_3.ps", SHADER_CHECKDOUBLE_NAME, Defines_SSAO_Q_3);
+	GXMacro Defines_SSAO_Q_3[] = { { "SSAO_Q_3", "" }, { 0, 0 } };
+	pp_data::shaders_id::ps::idSSAO_Q_3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_3.ps", Defines_SSAO_Q_3);
 
-	D3DXMACRO Defines_SSAO_Q_2[] = { { "SSAO_Q_2", "" }, { 0, 0 } };
-	pp_data::shaders_id::ps::idSSAO_Q_2 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_2.ps", SHADER_CHECKDOUBLE_NAME, Defines_SSAO_Q_2);
+	GXMacro Defines_SSAO_Q_2[] = {{"SSAO_Q_2", ""}, {0, 0}};
+	pp_data::shaders_id::ps::idSSAO_Q_2 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_2.ps", Defines_SSAO_Q_2);
 
-	D3DXMACRO Defines_SSAO_Q_1[] = { { "SSAO_Q_1", "" }, { 0, 0 } };
-	pp_data::shaders_id::ps::idSSAO_Q_1 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_1.ps", SHADER_CHECKDOUBLE_NAME, Defines_SSAO_Q_1);
+	GXMacro Defines_SSAO_Q_1[] = {{"SSAO_Q_1", ""}, {0, 0}};
+	pp_data::shaders_id::ps::idSSAO_Q_1 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_1.ps", Defines_SSAO_Q_1);
 
-	D3DXMACRO Defines_SAMPLES25_BLENDCOLOR[] = { { "SAMPLES_25", "" }, { "BLEND_COLOR", "" }, { 0, 0 } };
-	pp_data::shaders_id::ps::idBlurDepthBased25BlendColor = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_blur_depth_based.ps", "pp_blur_depth_based_25_blend_color.ps", SHADER_CHECKDOUBLE_NAME, Defines_SAMPLES25_BLENDCOLOR);
+	GXMacro Defines_SAMPLES25_BLENDCOLOR[] = {{"SAMPLES_25", ""}, {"BLEND_COLOR", ""}, {0, 0}};
+	pp_data::shaders_id::ps::idBlurDepthBased25BlendColor = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_blur_depth_based.ps", "pp_blur_depth_based_25_blend_color.ps", Defines_SAMPLES25_BLENDCOLOR);
 	
-	pp_data::shaders_id::ps::idWhiteBlack = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_black_white.ps", "ppe_black_white.ps", SHADER_CHECKDOUBLE_PATH);
-	pp_data::shaders_id::ps::idSepia = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_sepia.ps", "ppe_sepia.ps", SHADER_CHECKDOUBLE_PATH);
-	pp_data::shaders_id::ps::idCBG = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_count_cbg.ps", "ppe_count_cbg.ps", SHADER_CHECKDOUBLE_PATH);
+	pp_data::shaders_id::ps::idWhiteBlack = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_black_white.ps");
+	pp_data::shaders_id::ps::idSepia = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_sepia.ps");
+	pp_data::shaders_id::ps::idCBG = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_count_cbg.ps");
 
-	pp_data::shaders_id::ps::idSunRender = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_sun_render.ps", "ppe_sun_render.ps", SHADER_CHECKDOUBLE_PATH);
+	pp_data::shaders_id::ps::idSunRender = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_sun_render.ps");
 
-	D3DXMACRO Defines_GaussBlur_H[] = { { "_H_", "" }, { 0, 0 } };
-	pp_data::shaders_id::ps::idGaussBlurH = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_gauss_blur.ps", "ppe_gauss_blur_h.ps", SHADER_CHECKDOUBLE_NAME, Defines_GaussBlur_H);
-	pp_data::shaders_id::ps::idGaussBlurW = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_gauss_blur.ps", "ppe_gauss_blur_w.ps", SHADER_CHECKDOUBLE_NAME);
-	pp_data::shaders_id::ps::idFreeBlur3x3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_free_blur_3x3.ps", "ppe_free_blur_3x3.ps", SHADER_CHECKDOUBLE_PATH);
+	GXMacro Defines_GaussBlur_H[] = {{"_H_", ""}, {0, 0}};
+	pp_data::shaders_id::ps::idGaussBlurH = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_gauss_blur.ps", "ppe_gauss_blur_h.ps", Defines_GaussBlur_H);
+	pp_data::shaders_id::ps::idGaussBlurW = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_gauss_blur.ps", "ppe_gauss_blur_w.ps");
+	pp_data::shaders_id::ps::idFreeBlur3x3 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_free_blur_3x3.ps");
 
-	pp_data::shaders_id::ps::idDOF = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_depth_of_field.ps", "ppe_depth_of_field.ps", SHADER_CHECKDOUBLE_PATH);
+	pp_data::shaders_id::ps::idDOF = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_depth_of_field.ps");
 
-	pp_data::shaders_id::ps::idBloomBP = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_bloom_bp.ps", "ppe_bloom_bp.ps", SHADER_CHECKDOUBLE_PATH);
-	pp_data::shaders_id::ps::idBloomFinal = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_bloom_final.ps", "ppe_bloom_final.ps", SHADER_CHECKDOUBLE_PATH);
+	pp_data::shaders_id::ps::idBloomBP = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_bloom_bp.ps");
+	pp_data::shaders_id::ps::idBloomFinal = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_bloom_final.ps");
 
-	pp_data::shaders_id::ps::idLensFlare0 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_lens_flare0.ps", "ppe_lens_flare0.ps", SHADER_CHECKDOUBLE_PATH);
-	pp_data::shaders_id::ps::idLensFlare2 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_lens_flare2.ps", "ppe_lens_flare2.ps", SHADER_CHECKDOUBLE_PATH);
+	pp_data::shaders_id::ps::idLensFlare0 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_lens_flare0.ps");
+	pp_data::shaders_id::ps::idLensFlare2 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_lens_flare2.ps");
 
-	pp_data::shaders_id::ps::idMotionBlur = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_motion_blur.ps", "ppe_motion_blur.ps", SHADER_CHECKDOUBLE_PATH);
+	pp_data::shaders_id::ps::idMotionBlur = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_motion_blur.ps");
 
-	pp_data::shaders_id::ps::idNFAA = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_nfaa.ps", "ppe_nfaa.ps", SHADER_CHECKDOUBLE_PATH);
+	pp_data::shaders_id::ps::idNFAA = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_nfaa.ps");
 
-	pp_data::shaders_id::ps::idDepthEdgeDetect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_depth_edge_detected.ps", "ppe_depth_edge_detected.ps", SHADER_CHECKDOUBLE_PATH);
+	pp_data::shaders_id::ps::idDepthEdgeDetect = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_depth_edge_detected.ps");
 
-	pp_data::shaders_id::ps::idDLAA_Small = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_dlaa_small.ps", "ppe_dlaa_small.ps", SHADER_CHECKDOUBLE_PATH);
-	pp_data::shaders_id::ps::idDLAA_Long = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_dlaa_long.ps", "ppe_dlaa_long.ps", SHADER_CHECKDOUBLE_PATH);
+	pp_data::shaders_id::ps::idDLAA_Small = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_dlaa_small.ps");
+	pp_data::shaders_id::ps::idDLAA_Long = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_dlaa_long.ps");
 
-	pp_data::shaders_id::ps::idClip = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_clip.ps", "pp_clip.ps", SHADER_CHECKDOUBLE_NAME);
+	pp_data::shaders_id::ps::idClip = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_clip.ps");
 
 	
 	pp_data::InitNoiseTex();
@@ -197,52 +243,125 @@ void pp_data::Init()
 		pp_data::aRndVecSSAO[i].z *= scale;
 	}
 
-	pp_data::rt_id::idDepthD2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5f, pp_data::vWinSize.y * 0.5f, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, "pp_depth_d2", 0.5);
-	pp_data::rt_id::idEdgeDetected = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R5G6B5, D3DPOOL_DEFAULT, "pp_edge_detected", 1);
-	pp_data::rt_id::idEdgeDetected2 = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_R5G6B5, D3DPOOL_DEFAULT, "pp_edge_detected2", 1);
+	pp_data::rt_id::idDepthD2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5f, pp_data::vWinSize.y * 0.5f, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F, "pp_depth_d2");
+	//pp_data::rt_id::idEdgeDetected = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R5G6B5, "pp_edge_detected");
+	//pp_data::rt_id::idEdgeDetected2 = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R5G6B5, "pp_edge_detected2");
 
-	pp_data::rt_id::idIntermediateWinSize = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_intermidiatews", 1);
-	pp_data::rt_id::idIntermediateWinSize2 = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_intermidiatews2", 1);
+	pp_data::rt_id::idIntermediateWinSize = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "pp_intermidiatews");
+	pp_data::rt_id::idIntermediateWinSize2 = SGCore_RTAdd(pp_data::vWinSize.x, pp_data::vWinSize.y, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "pp_intermidiatews2");
 
 	//pp_data::rt_id::IntermediateWinSizeD2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_intermidiatews_d2", 0.5);
 	//pp_data::rt_id::IntermediateWinSize2D2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_intermidiatews2_d2", 0.5);
 
-	pp_data::rt_id::idBright = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_bright", 0.5);
-	pp_data::rt_id::idBright2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 0, D3DUSAGE_RENDERTARGET | D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, "pp_bright2", 0.5);
+	pp_data::rt_id::idBright = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 0, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTOGENMIPMAPS | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "pp_bright");
+	pp_data::rt_id::idBright2 = SGCore_RTAdd(pp_data::vWinSize.x * 0.5, pp_data::vWinSize.y * 0.5, 0, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTOGENMIPMAPS | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8, "pp_bright2");
+
+
+	shaders_id::kit::idBlurDepthBased25BlendColor = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idBlurDepthBased25BlendColor);
+	shaders_id::kit::idWhiteBlack = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idWhiteBlack);
+	shaders_id::kit::idSepia = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idSepia);
+	shaders_id::kit::idCBG = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idCBG);
+	shaders_id::kit::idGaussBlurH = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idGaussBlurH);
+	shaders_id::kit::idGaussBlurW = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idGaussBlurW);
+	shaders_id::kit::idDOF = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idDOF);
+	shaders_id::kit::idScreenOut = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idScreenOut);
+	shaders_id::kit::idSunRender = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idSunRender);
+	shaders_id::kit::idLensFlare0 = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idLensFlare0);
+	shaders_id::kit::idLensFlare2 = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idLensFlare2);
+	shaders_id::kit::idBloomBP = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idBloomBP);
+	shaders_id::kit::idBloomFinal = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idBloomFinal);
+	shaders_id::kit::idDepthEdgeDetect = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idDepthEdgeDetect);
+	shaders_id::kit::idFreeBlur3x3 = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idFreeBlur3x3);
+	shaders_id::kit::idClip = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idClip);
+	shaders_id::kit::idNFAA = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idNFAA);
+	shaders_id::kit::idDLAA_Long = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idDLAA_Long);
+	shaders_id::kit::idDLAA_Small = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idDLAA_Small);
+	shaders_id::kit::idFogLinear = SGCore_ShaderCreateKit(shaders_id::vs::idScreenOut, shaders_id::ps::idFogLinear);
+	shaders_id::kit::idMotionBlur = SGCore_ShaderCreateKit(shaders_id::vs::idResPos, shaders_id::ps::idMotionBlur);
+
+	shaders_id::kit::idSSAO_Q_1 = SGCore_ShaderCreateKit(shaders_id::vs::idResPos, shaders_id::ps::idSSAO_Q_1);
+	shaders_id::kit::idSSAO_Q_2 = SGCore_ShaderCreateKit(shaders_id::vs::idResPos, shaders_id::ps::idSSAO_Q_2);
+	shaders_id::kit::idSSAO_Q_3 = SGCore_ShaderCreateKit(shaders_id::vs::idResPos, shaders_id::ps::idSSAO_Q_3);
+
+	GXBlendDesc blendDesc;
+	blendDesc.renderTarget[0].useBlend = true;
+	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
+	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
+	rstates::pBlendAlpha = pDXDevice->createBlendState(&blendDesc);
+
+	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_ONE;
+	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_ONE;
+	rstates::pBlendAlphaOne = pDXDevice->createBlendState(&blendDesc);
+
+	blendDesc.renderTarget[0].useBlend = false;
+	blendDesc.renderTarget[0].u8RenderTargetWriteMask = 0;
+	rstates::pBlendNoColor = pDXDevice->createBlendState(&blendDesc);
+
+
+	GXSamplerDesc samplerDesc;
+
+	samplerDesc.addressU = samplerDesc.addressV = samplerDesc.addressW = GXTEXTURE_ADDRESS_CLAMP;
+	rstates::pSamplerPointClamp = pDXDevice->createSamplerState(&samplerDesc);
+
+	samplerDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
+	rstates::pSamplerLinearClamp = pDXDevice->createSamplerState(&samplerDesc);
+
+	samplerDesc.filter = GXFILTER_MIN_MAG_MIP_POINT;
+	samplerDesc.addressU = samplerDesc.addressV = samplerDesc.addressW = GXTEXTURE_ADDRESS_MIRROR;
+	rstates::pSamplerPointMirror = pDXDevice->createSamplerState(&samplerDesc);
+
+	samplerDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
+	rstates::pSamplerLinearMirror = pDXDevice->createSamplerState(&samplerDesc);
+
+	
+
+	GXRasterizerDesc rasterizerDesc;
+	rasterizerDesc.useScissorTest = true;
+	rstates::pRasterizerScissorsTest = pDXDevice->createRasterizerState(&rasterizerDesc);
+
+
+
+	GXDepthStencilDesc dsDesc;
+	dsDesc.useDepthTest = FALSE;
+	rstates::pDepthStencilNoZ = pDXDevice->createDepthStencilState(&dsDesc);
+
+	dsDesc.useStencilTest = true;
+	dsDesc.stencilTestFront.opPass = GXSTENCIL_OP_REPLACE;
+	rstates::pDepthStencilEdgeDetect = pDXDevice->createDepthStencilState(&dsDesc);
+
+	dsDesc.stencilTestFront.cmpFunc = GXCMP_EQUAL;
+	dsDesc.stencilTestFront.opPass = GXSTENCIL_OP_KEEP;
+	rstates::pDepthStencilDLAA = pDXDevice->createDepthStencilState(&dsDesc);
 }
 
 void pp_data::InitNoiseTex()
 {
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+	
+	IGXTexture2D *pRnsSampler = 0;
 
-	D3DLOCKED_RECT oLockedRect;
-
-	IDirect3DTexture9 *pRnsSampler = 0;
-
-	if (pp_data::tex_id::idNoise != -1)
+	if(pp_data::tex_id::idNoise != -1)
 	{
 		pRnsSampler = SGCore_LoadTexGetTex(pp_data::tex_id::idNoise);
-		mem_release_del(pRnsSampler);
+		mem_release(pRnsSampler);
 	}
 
-	pp_data::pDXDevice->CreateTexture(*r_win_width, *r_win_height, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &pRnsSampler, NULL);
-
-	pRnsSampler->LockRect(0, &oLockedRect, 0, 0);
-
+	GXCOLOR *pData = new GXCOLOR[*r_win_width * *r_win_height];
 	float3 vRnd;
-
-	for (int i = 0; i < (*r_win_width) * (*r_win_height); ++i)
+	for(int i = 0; i < (*r_win_width) * (*r_win_height); ++i)
 	{
 		vRnd.x = randf(0, 1);
 		vRnd.y = randf(0, 1);
 		vRnd.z = randf(0, 1);
 		vRnd = SMVector3Normalize(vRnd);
 
-		((DWORD*)oLockedRect.pBits)[i] = D3DCOLOR_ARGB(255, DWORD(vRnd.x * 255.0), DWORD(vRnd.y * 255.0), DWORD(vRnd.z * 255.0));
+		pData[i] = GX_COLOR_FLOAT_RGBA(vRnd.x, vRnd.y, vRnd.z, 1.0f);
 	}
 
-	pRnsSampler->UnlockRect(0);
+	pRnsSampler = pp_data::pDXDevice->createTexture2D(*r_win_width, *r_win_height, 1, 0, GXFMT_A8R8G8B8, pData);
+	mem_delete_a(pData);
+
 
 	pp_data::tex_id::idNoise = SGCore_LoadTexCreate("noise_rottex_fullscreen__", pRnsSampler);
 }
@@ -412,38 +531,41 @@ SX_LIB_API void SPP_RenderFogLinear(const float3_t *pColor, float fDensity)
 	PP_PRECOND(_VOID);
 	PP_PRECOND_SECOND(_VOID);
 
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
-	SGCore_RTGetTexture(pp_data::rt_id::GetSendRT())->GetSurfaceLevel(0, &RenderSurf);
-	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	IGXSurface *RenderSurf, *BackBuf;
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetSendRT())->getMipmap();
+	BackBuf = pp_data::pDXDevice->getColorTarget();
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	pp_data::pDXDevice->setBlendState(pp_data::rstates::pBlendAlpha);
 
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+#ifdef _GRAPHIX_API
 	pp_data::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 	pp_data::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+#endif
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	pp_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::idDepth0));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idDepth0));
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idFogLinear, "g_vFogColor", &float3_t(pColor->x, pColor->y, pColor->z));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idFogLinear, "g_vFogColor", &float3(pColor->x, pColor->y, pColor->z));
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idFogLinear, "g_fFogDenisty", &fDensity);
 	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::FogLinear, "vNearFar", &pp_data::vNearFar);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idFogLinear);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idFogLinear);
 
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
-	pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	pp_data::pDXDevice->setColorTarget(BackBuf);
 
 	mem_release(RenderSurf);
 	mem_release(BackBuf);
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	pp_data::pDXDevice->setBlendState(NULL);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
 SX_LIB_API void SPP_RenderSSAO(const float4_t *pParam, int iQuality)
@@ -451,30 +573,41 @@ SX_LIB_API void SPP_RenderSSAO(const float4_t *pParam, int iQuality)
 	PP_PRECOND(_VOID);
 	PP_PRECOND_SECOND(_VOID);
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	
+	pp_data::pDXDevice->setBlendState(NULL);
+	//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
-	SGCore_RTGetTexture(pp_data::rt_id::idIntermediateWinSize)->GetSurfaceLevel(0, &RenderSurf);
-	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
 
-	pp_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	IGXSurface *RenderSurf, *BackBuf;
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::idIntermediateWinSize)->getMipmap();
+	BackBuf = pp_data::pDXDevice->getColorTarget();
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	
-	SGCore_SetSamplerFilter2(0, 3, D3DTEXF_LINEAR);
-	SGCore_SetSamplerAddress2(0, 3, D3DTADDRESS_CLAMP);
+	pp_data::pDXDevice->clear(GX_CLEAR_COLOR);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::idDepth1));
-	pp_data::pDXDevice->SetTexture(1, SGCore_RTGetTexture(pp_data::rt_id::idNormal));
-	pp_data::pDXDevice->SetTexture(2, SGCore_LoadTexGetTex(pp_data::tex_id::idNoise));
+	for(UINT i = 0; i < 4; ++i)
+	{
+		pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerLinearClamp, i);
+	}
+//	SGCore_SetSamplerFilter2(0, 3, D3DTEXF_LINEAR);
+//	SGCore_SetSamplerAddress2(0, 3, D3DTADDRESS_CLAMP);
+
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idDepth1));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idNormal), 1);
+	pp_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(pp_data::tex_id::idNoise), 2);
 
 	ID idpsshader = pp_data::shaders_id::ps::idSSAO_Q_1;
+	ID idkitshader = pp_data::shaders_id::kit::idSSAO_Q_1;
 
-	if (iQuality == 3)
+	if(iQuality == 3)
+	{
 		idpsshader = pp_data::shaders_id::ps::idSSAO_Q_3;
-	else if (iQuality == 2)
+		idkitshader = pp_data::shaders_id::kit::idSSAO_Q_3;
+	}
+	else if(iQuality == 2)
+	{
 		idpsshader = pp_data::shaders_id::ps::idSSAO_Q_2;
+		idkitshader = pp_data::shaders_id::kit::idSSAO_Q_2;
+	}
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idpsshader, "g_vNearFar", &pp_data::vNearFar);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idpsshader, "g_vParams", &float4(pParam->x, pParam->y, pParam->z, pParam->w));
@@ -492,8 +625,7 @@ SX_LIB_API void SPP_RenderSSAO(const float4_t *pParam, int iQuality)
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idResPos, "g_vParamProj", &float3_t(pp_data::vWinSize.x, pp_data::vWinSize.y, pp_data::fProjFov));
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idResPos);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, idpsshader);
+	SGCore_ShaderBind(idkitshader);
 
 	SGCore_ScreenQuadDraw();
 
@@ -502,29 +634,34 @@ SX_LIB_API void SPP_RenderSSAO(const float4_t *pParam, int iQuality)
 	mem_release(RenderSurf);
 
 
-	SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->GetSurfaceLevel(0, &RenderSurf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->getMipmap();
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::idDepth1));
-	pp_data::pDXDevice->SetTexture(1, SGCore_RTGetTexture(pp_data::rt_id::idIntermediateWinSize));
-	pp_data::pDXDevice->SetTexture(2, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idDepth1));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idIntermediateWinSize), 1);
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()), 2);
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idBlurDepthBased25BlendColor, "g_vPixelSize", &float2_t(1.f / pp_data::vWinSize.x, 1.f / pp_data::vWinSize.y));
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idBlurDepthBased25BlendColor, "g_vNearFar", &pp_data::vNearFar);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idBlurDepthBased25BlendColor);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idBlurDepthBased25BlendColor);
 
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
-	pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	/*if(GetKeyState('N'))
+	{
+		pp_data::pDXDevice->saveTextureToFile("c:/1/ppssaof.png", SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT()));
+		pp_data::pDXDevice->saveTextureToFile("c:/1/ppssao0.png", SGCore_RTGetTexture(pp_data::rt_id::idIntermediateWinSize));
+	}*/
+
+	pp_data::pDXDevice->setColorTarget(BackBuf);
 
 	mem_release(RenderSurf);
 	mem_release(BackBuf);
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 	pp_data::rt_id::IncrRT();
 
 	/*if (GetKeyState('N'))
@@ -539,28 +676,29 @@ SX_LIB_API void SPP_RenderSSAO(const float4_t *pParam, int iQuality)
 
 SX_LIB_API void SPP_RenderWhiteBlack(float fCoef)
 {
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
-	SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->GetSurfaceLevel(0, &RenderSurf);
+	pp_data::pDXDevice->setBlendState(NULL);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	IGXSurface *RenderSurf, *BackBuf;
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->getMipmap();
 
-	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	BackBuf = pp_data::pDXDevice->getColorTarget();
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+//	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
+//	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointClamp, 0);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idWhiteBlack, "g_fCoef", &fCoef);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idWhiteBlack);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idWhiteBlack);
 
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
-	pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	pp_data::pDXDevice->setColorTarget(BackBuf);
 	mem_release(RenderSurf);
 	mem_release(BackBuf);
 
@@ -569,17 +707,19 @@ SX_LIB_API void SPP_RenderWhiteBlack(float fCoef)
 
 SX_LIB_API void SPP_RenderSepia(float fCoef)
 {
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
-	SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->GetSurfaceLevel(0, &RenderSurf);
+	pp_data::pDXDevice->setBlendState(NULL);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	IGXSurface *RenderSurf, *BackBuf;
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->getMipmap();
 
-	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	BackBuf = pp_data::pDXDevice->getColorTarget();
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+//	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
+//	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointClamp, 0);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSepia, "g_vCountSepia", &fCoef);
 
@@ -587,14 +727,13 @@ SX_LIB_API void SPP_RenderSepia(float fCoef)
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSepia, "g_vDarkColor", &PP_SEPIA_DARK_COLOR);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSepia, "g_vLumWeights", &PP_SEPIA_WEIGHTS_COLOR);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSepia);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idSepia);
 
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
-	pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	pp_data::pDXDevice->setColorTarget(BackBuf);
 	mem_release(RenderSurf);
 	mem_release(BackBuf);
 
@@ -603,17 +742,19 @@ SX_LIB_API void SPP_RenderSepia(float fCoef)
 
 SX_LIB_API void SPP_RenderCBG(const float3_t *pParam)
 {
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
-	SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->GetSurfaceLevel(0, &RenderSurf);
+	pp_data::pDXDevice->setBlendState(NULL);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	IGXSurface *RenderSurf, *BackBuf;
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->getMipmap();
 
-	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	BackBuf = pp_data::pDXDevice->getColorTarget();
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+//	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
+//	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointClamp, 0);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 
 	float3_t vParam = *pParam;
 	vParam.x = lerpf(0.2, 2, saturatef(pParam->x));
@@ -622,14 +763,13 @@ SX_LIB_API void SPP_RenderCBG(const float3_t *pParam)
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idCBG, "g_vParam", &vParam);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idCBG);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idCBG);
 
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
-	pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	pp_data::pDXDevice->setColorTarget(BackBuf);
 	mem_release(RenderSurf);
 	mem_release(BackBuf);
 
@@ -640,27 +780,26 @@ SX_LIB_API void SPP_RenderCBG(const float3_t *pParam)
 
 SX_LIB_API void SPP_RenderDOF(const float4_t *pParam, float fSkyBlur)
 {
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
+	IGXSurface *RenderSurf, *BackBuf;
 
-	SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->GetSurfaceLevel(0, &RenderSurf);
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->getMipmap();
 
-	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	BackBuf = pp_data::pDXDevice->getColorTarget();
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_MIRROR);
+//	SGCore_SetSamplerAddress(0, D3DTADDRESS_MIRROR);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointMirror, 0);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 
-	D3DSURFACE_DESC desc;
-	SGCore_RTGetTexture(pp_data::rt_id::GetSendRT())->GetLevelDesc(0, &desc);
-	float2_t tmpSizeMap = float2_t(desc.Width, desc.Height);
+	IGXTexture2D *pTex = SGCore_RTGetTexture(pp_data::rt_id::GetSendRT());
+	float2_t tmpSizeMap = float2_t(pTex->getWidth(), pTex->getHeight());
 
 	float tmpcoefblurbloom = 1.f;
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idGaussBlurH, "g_fCoefBlur", &tmpcoefblurbloom);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idGaussBlurH, "g_vSizeMap", &tmpSizeMap);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idGaussBlurH);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idGaussBlurH);
 
 	SGCore_ScreenQuadDraw();
 
@@ -672,20 +811,20 @@ SX_LIB_API void SPP_RenderDOF(const float4_t *pParam, float fSkyBlur)
 
 
 
-	SGCore_RTGetTexture(pp_data::rt_id::idIntermediateWinSize)->GetSurfaceLevel(0, &RenderSurf);
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::idIntermediateWinSize)->getMipmap();
 
 	//pp_data::pDXDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_MIRROR);
+//	SGCore_SetSamplerAddress(0, D3DTADDRESS_MIRROR);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointMirror, 0);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT()));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT()));
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idGaussBlurW, "g_fCoefBlur", &tmpcoefblurbloom);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idGaussBlurW, "g_vSizeMap", &tmpSizeMap);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idGaussBlurW);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idGaussBlurW);
 
 	SGCore_ScreenQuadDraw();
 
@@ -697,30 +836,30 @@ SX_LIB_API void SPP_RenderDOF(const float4_t *pParam, float fSkyBlur)
 
 
 
-	SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->GetSurfaceLevel(0, &RenderSurf);
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->getMipmap();
 
 	//pp_data::pDXDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	SGCore_SetSamplerAddress2(0, 4, D3DTADDRESS_CLAMP);
+//	SGCore_SetSamplerAddress2(0, 4, D3DTADDRESS_CLAMP);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointClamp, 0);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
-	pp_data::pDXDevice->SetTexture(1, SGCore_RTGetTexture(pp_data::rt_id::idDepth0));
-	pp_data::pDXDevice->SetTexture(2, SGCore_RTGetTexture(pp_data::rt_id::idIntermediateWinSize));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idDepth0), 1);
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idIntermediateWinSize), 2);
 
 	float tmpskyblur = 0.0f;
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idDOF, "g_vParam", (void*)pParam);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idDOF, "g_fSkyBlur", &fSkyBlur);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idDOF, "g_vNearFar", &pp_data::vNearFar);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idDOF);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idDOF);
 
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
-	pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	pp_data::pDXDevice->setColorTarget(BackBuf);
 	mem_release(RenderSurf);
 	mem_release(BackBuf);
 
@@ -783,29 +922,31 @@ SX_LIB_API void SPP_RenderSun(const float4_t *pSunColor)
 		return;
 	}
 
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
-	SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->GetSurfaceLevel(0, &RenderSurf);
-	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	IGXSurface *RenderSurf, *BackBuf;
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->getMipmap();
+	BackBuf = pp_data::pDXDevice->getColorTarget();
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	SGCore_SetSamplerFilter2(0, 4, D3DTEXF_LINEAR);
-	SGCore_SetSamplerAddress2(0, 4, D3DTADDRESS_CLAMP);
+//	SGCore_SetSamplerFilter2(0, 4, D3DTEXF_LINEAR);
+//	SGCore_SetSamplerAddress2(0, 4, D3DTADDRESS_CLAMP);
+	for(UINT i = 0; i < 5; ++i)
+	{
+		pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerLinearClamp, i);
+	}
 
-	D3DSURFACE_DESC desc;
-	SGCore_LoadTexGetTex(pp_data::tex_id::idSun)->GetLevelDesc(0, &desc);
+	IGXTexture2D *pTex = SGCore_LoadTexGetTex(pp_data::tex_id::idSun);
 
-	float2_t SizeMapSun = float2_t(desc.Width, desc.Height);
+	float2_t SizeMapSun = float2_t(pTex->getWidth(), pTex->getHeight());
 
 	RECT rectscissor;
-	rectscissor.top = pp_data::vSunPos.y * pp_data::vWinSize.y - desc.Height*0.5f;
-	rectscissor.left = pp_data::vSunPos.x * pp_data::vWinSize.x - desc.Width*0.5f;
-	rectscissor.bottom = rectscissor.top + desc.Height;
-	rectscissor.right = rectscissor.left + desc.Width;
+	rectscissor.top = pp_data::vSunPos.y * pp_data::vWinSize.y - pTex->getHeight()*0.5f;
+	rectscissor.left = pp_data::vSunPos.x * pp_data::vWinSize.x - pTex->getWidth()*0.5f;
+	rectscissor.bottom = rectscissor.top + pTex->getHeight();
+	rectscissor.right = rectscissor.left + pTex->getWidth();
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idScreenOut);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idScreenOut);
 
 	SGCore_ScreenQuadDraw();
 
@@ -817,24 +958,29 @@ SX_LIB_API void SPP_RenderSun(const float4_t *pSunColor)
 
 
 
-	SGCore_RTGetTexture(pp_data::rt_id::GetSendRT())->GetSurfaceLevel(0, &RenderSurf);
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetSendRT())->getMipmap();
 	//pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::idDepth0));
-	pp_data::pDXDevice->SetTexture(2, SGCore_LoadTexGetTex(pp_data::tex_id::idSun));
-	pp_data::pDXDevice->SetTexture(3, SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT()));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idDepth0));
+	pp_data::pDXDevice->setTexture(SGCore_LoadTexGetTex(pp_data::tex_id::idSun), 2);
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT()), 3);
 
+	pp_data::pDXDevice->setBlendState(pp_data::rstates::pBlendAlpha);
 
-	pp_data::pDXDevice->SetScissorRect(&rectscissor);
-	pp_data::pDXDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	pp_data::pDXDevice->setScissorRect(rectscissor.top, rectscissor.right, rectscissor.bottom, rectscissor.left);
+//	pp_data::pDXDevice->SetScissorRect(&rectscissor);
+	pp_data::pDXDevice->setRasterizerState(pp_data::rstates::pRasterizerScissorsTest);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
+#ifdef _GRAPHIX_API
 	pp_data::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
 	pp_data::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+#endif
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	pp_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSunRender, "g_vLightPos", &pp_data::vSunPos);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSunRender, "g_vSizeMap", &(pp_data::vWinSize));
@@ -843,21 +989,22 @@ SX_LIB_API void SPP_RenderSun(const float4_t *pSunColor)
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSunRender, "g_vLightColor", (void*)pSunColor);
 	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::SunRender, "vNearFar", &pp_data::vNearFar);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idSunRender);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idSunRender);
 
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+	pp_data::pDXDevice->setRasterizerState(NULL);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
 
-	pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	pp_data::pDXDevice->setColorTarget(BackBuf);
 
 	mem_release(RenderSurf);
 	mem_release(BackBuf);
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	pp_data::pDXDevice->setBlendState(NULL);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 
 	//pp_data::rt_id::IncrRT();
 }
@@ -866,29 +1013,32 @@ SX_LIB_API void SPP_RenderLensFlare(const float3_t *pParam, const float4_t *pSun
 {
 	//при отключенном блуме будет баг, так как текстура не будет очищаться, надо это проверять, в рендере сделал проверку
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	pp_data::pDXDevice->setBlendState(pp_data::rstates::pBlendAlphaOne);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-	pp_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-	pp_data::pDXDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
-	SGCore_RTGetTexture(pp_data::rt_id::idBright)->GetSurfaceLevel(0, &RenderSurf);
+	IGXSurface *RenderSurf, *BackBuf;
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::idBright)->getMipmap();
 
-	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	BackBuf = pp_data::pDXDevice->getColorTarget();
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
 	if (pp_data::existsSun && pp_data::vSunPos.w < PP_MAX_ANGLE_VISIBLE_SUN && pSunColor->w > 0.3)
 	{
-		if (!useBloom)
-			pp_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+		if(!useBloom)
+		{
+			pp_data::pDXDevice->clear(GX_CLEAR_COLOR);
+		}
 
-		SGCore_SetSamplerFilter(0, D3DTADDRESS_MIRROR);
-		pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::idDepth0));
+	//	SGCore_SetSamplerFilter(0, D3DTADDRESS_MIRROR);
+		pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointMirror, 0);
+		pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idDepth0));
 
-		D3DSURFACE_DESC desc;
-		SGCore_RTGetTexture(pp_data::rt_id::idBright)->GetLevelDesc(0, &desc);
-		float2_t tmpSizeMap = float2_t(desc.Width, desc.Height);
+		IGXTexture2D *pTex = SGCore_RTGetTexture(pp_data::rt_id::idBright);
+		float2_t tmpSizeMap = float2_t(pTex->getWidth(), pTex->getHeight());
 
 		float LensFlareSunRadius = PP_SUN_RADIUS;
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idLensFlare0, "g_vLightPos", &pp_data::vSunPos);
@@ -896,8 +1046,7 @@ SX_LIB_API void SPP_RenderLensFlare(const float3_t *pParam, const float4_t *pSun
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idLensFlare0, "g_fRadiusSun", &LensFlareSunRadius);
 		SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idLensFlare0, "g_vColor", (void*)pSunColor);
 		//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::LensFlare0, "vNearFar", &pp_data::vNearFar);
-		SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-		SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idLensFlare0);
+		SGCore_ShaderBind(pp_data::shaders_id::kit::idLensFlare0);
 
 		SGCore_ScreenQuadDraw();
 
@@ -905,13 +1054,15 @@ SX_LIB_API void SPP_RenderLensFlare(const float3_t *pParam, const float4_t *pSun
 	}
 	else
 	{
-		if (!useBloom)
-			pp_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+		if(!useBloom)
+		{
+			pp_data::pDXDevice->clear(GX_CLEAR_COLOR);
+		}
 	}
 
-	pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
-	RenderSurf->Release();
-	BackBuf->Release();
+	pp_data::pDXDevice->setColorTarget(BackBuf);
+	mem_release(RenderSurf);
+	mem_release(BackBuf);
 
 	/*if (GetKeyState('N'))
 	{
@@ -922,48 +1073,50 @@ SX_LIB_API void SPP_RenderLensFlare(const float3_t *pParam, const float4_t *pSun
 	}*/
 
 
-	SGCore_RTGetTexture(pp_data::rt_id::GetSendRT())->GetSurfaceLevel(0, &RenderSurf);
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetSendRT())->getMipmap();
 
-	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	BackBuf = pp_data::pDXDevice->getColorTarget();
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	SGCore_SetSamplerFilter(0, D3DTADDRESS_MIRROR);
+//	SGCore_SetSamplerFilter(0, D3DTADDRESS_MIRROR);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointMirror, 0);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::idBright));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idBright));
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idLensFlare2, "g_vLensFlareParam", (void*)pParam);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idLensFlare2);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idLensFlare2);
 
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
-	pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
-	RenderSurf->Release();
-	BackBuf->Release();
+	pp_data::pDXDevice->setColorTarget(BackBuf);
+	mem_release(RenderSurf);
+	mem_release(BackBuf);
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	pp_data::pDXDevice->setBlendState(NULL);
 }
 
 SX_LIB_API void SPP_RenderBloom(const float3_t *pParam)
 {
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
-	SGCore_RTGetTexture(pp_data::rt_id::idBright)->GetSurfaceLevel(0, &RenderSurf);
+	pp_data::pDXDevice->setBlendState(NULL);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	IGXSurface *RenderSurf, *BackBuf;
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::idBright)->getMipmap();
 
-	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	BackBuf = pp_data::pDXDevice->getColorTarget();
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_MIRROR);
+//	SGCore_SetSamplerAddress(0, D3DTADDRESS_MIRROR);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerLinearMirror, 0);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
-	pp_data::pDXDevice->SetTexture(1, SGCore_RTGetTexture(pp_data::rt_id::idNormal));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idNormal), 1);
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idBloomBP, "g_vParam", (void*)pParam);
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idBloomBP);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idBloomBP);
 
 	SGCore_ScreenQuadDraw();
 
@@ -978,23 +1131,21 @@ SX_LIB_API void SPP_RenderBloom(const float3_t *pParam)
 	}*/
 
 
-	SGCore_RTGetTexture(pp_data::rt_id::idBright2)->GetSurfaceLevel(0, &RenderSurf);
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::idBright2)->getMipmap();
 
 	//pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::idBright));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idBright));
 
-	D3DSURFACE_DESC desc;
-	SGCore_RTGetTexture(pp_data::rt_id::idBright)->GetLevelDesc(0, &desc);
-	float2_t tmpSizeMap = float2_t(desc.Width, desc.Height);
+	IGXTexture2D *pTex = SGCore_RTGetTexture(pp_data::rt_id::idBright);
+	float2_t tmpSizeMap = float2_t(pTex->getWidth(), pTex->getHeight());
 
 	float tmpcoefblurbloom = 2.f;
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idGaussBlurH, "g_fCoefBlur", &tmpcoefblurbloom);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idGaussBlurH, "g_vSizeMap", &tmpSizeMap);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idGaussBlurH);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idGaussBlurH);
 
 	SGCore_ScreenQuadDraw();
 
@@ -1005,18 +1156,17 @@ SX_LIB_API void SPP_RenderBloom(const float3_t *pParam)
 
 
 
-	SGCore_RTGetTexture(pp_data::rt_id::idBright)->GetSurfaceLevel(0, &RenderSurf);
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::idBright)->getMipmap();
 
 	//pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::idBright2));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idBright2));
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idGaussBlurW, "g_fCoefBlur", &tmpcoefblurbloom);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idGaussBlurW, "g_vSizeMap", &tmpSizeMap);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idGaussBlurW);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idGaussBlurW);
 
 	SGCore_ScreenQuadDraw();
 
@@ -1032,41 +1182,44 @@ SX_LIB_API void SPP_RenderBloom(const float3_t *pParam)
 		D3DXSaveTextureToFile(tmppath, D3DXIFF_PNG, SGCore_RTGetTexture(pp_data::rt_id::Bright), NULL);
 	}*/
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+	pp_data::pDXDevice->setBlendState(pp_data::rstates::pBlendAlphaOne);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
-	pp_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
-	pp_data::pDXDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_ONE);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_ONE);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
 
-	SGCore_RTGetTexture(pp_data::rt_id::GetSendRT())->GetSurfaceLevel(0, &RenderSurf);
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetSendRT())->getMipmap();
 
 	//pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+//	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerLinearClamp, 0);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::idBright));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idBright));
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idBloomFinal);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idBloomFinal);
 
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
-	pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	pp_data::pDXDevice->setColorTarget(BackBuf);
 	mem_release(RenderSurf);
 	mem_release(BackBuf);
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	pp_data::pDXDevice->setBlendState(NULL);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
 }
 
 //##########################################################################
 
 void SPP_ComEdgeDetected()
 {
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
+	pp_data::pDXDevice->setBlendState(NULL);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	IGXSurface *RenderSurf, *BackBuf;
 
 	/*SGCore_RTGetTexture(pp_data::rt_id::DepthD2)->GetSurfaceLevel(0, &RenderSurf);
 
@@ -1085,171 +1238,177 @@ void SPP_ComEdgeDetected()
 
 	mem_release(RenderSurf);*/
 
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_MIRROR);
+//	SGCore_SetSamplerAddress(0, D3DTADDRESS_MIRROR);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointMirror, 0);
 	//SGCore_SetSamplerFilter(0, D3DTEXF_LINEAR);
 
-	SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected)->GetSurfaceLevel(0, &RenderSurf);
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected)->getMipmap();
 
-	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	BackBuf = pp_data::pDXDevice->getColorTarget();
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_MIRROR);
-	SGCore_SetSamplerFilter(0, D3DTEXF_LINEAR);
+//	SGCore_SetSamplerAddress(0, D3DTADDRESS_MIRROR);
+//	SGCore_SetSamplerFilter(0, D3DTEXF_LINEAR);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerLinearMirror, 0);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::idDepth1));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idDepth1));
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idDepthEdgeDetect, "g_vPixelSize", &float2_t(1.f / pp_data::vWinSize.x, 1.f / pp_data::vWinSize.y));
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idDepthEdgeDetect);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idDepthEdgeDetect);
 
 	SGCore_ScreenQuadDraw();
 
 	mem_release(RenderSurf);
-	SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected2)->GetSurfaceLevel(0, &RenderSurf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected2)->getMipmap();
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
 	//pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::Depth1));
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected));
 
-	D3DSURFACE_DESC desc;
-	SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected)->GetLevelDesc(0, &desc);
+	IGXTexture2D *pTex = SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected);
 
-	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idFreeBlur3x3, "g_vPixelSize", &float2_t(1.0f / desc.Width, 1.0f / desc.Height));
+	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idFreeBlur3x3, "g_vPixelSize", &float2_t(1.0f / pTex->getWidth(), 1.0f / pTex->getHeight()));
 	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::SSAOBlur1, "g_vNearFar", &pp_data::vNearFar);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idFreeBlur3x3);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idFreeBlur3x3);
 
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
 	mem_release(RenderSurf);
-	pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	pp_data::pDXDevice->setColorTarget(BackBuf);
 	mem_release(BackBuf);
 
 
+	pp_data::pDXDevice->setBlendState(pp_data::rstates::pBlendNoColor);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-	pp_data::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
+	pp_data::pDXDevice->clear(GX_CLEAR_STENCIL);
 
-	pp_data::pDXDevice->Clear(0, 0, D3DCLEAR_STENCIL, 0, 1.0f, 0);
-
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, TRUE);
-
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS);
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP);
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_REPLACE);
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP);
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILFAIL, D3DSTENCILOP_KEEP);
-
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILREF, 1);
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILMASK, 0xFFFFFFFF);
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILWRITEMASK, 0xFFFFFFFF);
+	pp_data::pDXDevice->setDepthStencilState(pp_data::rstates::pDepthStencilEdgeDetect);
+	pp_data::pDXDevice->setStencilRef(1);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, TRUE);
+//
+//	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_ALWAYS);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_REPLACE);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILZFAIL, D3DSTENCILOP_KEEP);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILFAIL, D3DSTENCILOP_KEEP);
+//
+//	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILREF, 1);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILMASK, 0xFFFFFFFF);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILWRITEMASK, 0xFFFFFFFF);
 
 	
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idClip);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idClip);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected2));
-	SGCore_SetSamplerFilter(0, D3DTEXF_LINEAR);
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected2));
+//	SGCore_SetSamplerFilter(0, D3DTEXF_LINEAR);
 
 	SGCore_ScreenQuadDraw();
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+	pp_data::pDXDevice->setBlendState(NULL);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
 
 	SGCore_ShaderUnBind();
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+	pp_data::pDXDevice->setDepthStencilState(pp_data::rstates::pDepthStencilNoZ);
 
-	if (GetAsyncKeyState('N'))
+	if (GetAsyncKeyState('N') < 0)
 	{
-		D3DXSaveTextureToFile("C:\\1\\EdgeDetected.jpg", D3DXIFF_JPG, SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected), NULL);
-		D3DXSaveTextureToFile("C:\\1\\EdgeDetected2.jpg", D3DXIFF_JPG, SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected2), NULL);
+		pp_data::pDXDevice->saveTextureToFile("C:\\1\\EdgeDetected.jpg", SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected));
+		pp_data::pDXDevice->saveTextureToFile("C:\\1\\EdgeDetected2.jpg", SGCore_RTGetTexture(pp_data::rt_id::idEdgeDetected2));
 	}
 }
 
 SX_LIB_API void SPP_RenderNFAA(const float3_t *pParam)
 {
-	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+//	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
+//	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointClamp, 0);
+	pp_data::pDXDevice->setBlendState(NULL);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
-	SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->GetSurfaceLevel(0, &RenderSurf);
+	IGXSurface *RenderSurf, *BackBuf;
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->getMipmap();
 
-	pp_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	pp_data::pDXDevice->clear(GX_CLEAR_COLOR);
 
-	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	BackBuf = pp_data::pDXDevice->getColorTarget();
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idScreenOut);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idScreenOut);
 
 	SGCore_ScreenQuadDraw();
 
 	//**
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idNFAA, "g_vParam", (void*)pParam);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idNFAA, "g_vPixelSize", &float2_t(1.f / pp_data::vWinSize.x, 1.f / pp_data::vWinSize.y));
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idNFAA);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idNFAA);
 
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
-	pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	pp_data::pDXDevice->setColorTarget(BackBuf);
 	mem_release(RenderSurf);
 	mem_release(BackBuf);
 
 	pp_data::rt_id::IncrRT();
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+	pp_data::pDXDevice->setDepthStencilState(pp_data::rstates::pDepthStencilNoZ);
 }
 
 SX_LIB_API void SPP_RenderDLAA()
 {
-	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
-	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+//	SGCore_SetSamplerFilter(0, D3DTEXF_NONE);
+//	SGCore_SetSamplerAddress(0, D3DTADDRESS_CLAMP);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointClamp, 0);
+	pp_data::pDXDevice->setBlendState(NULL);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 
 
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
-	SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->GetSurfaceLevel(0, &RenderSurf);
+	IGXSurface *RenderSurf, *BackBuf;
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->getMipmap();
 
-	pp_data::pDXDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+	pp_data::pDXDevice->clear(GX_CLEAR_COLOR);
 
-	pp_data::pDXDevice->GetRenderTarget(0, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	BackBuf = pp_data::pDXDevice->getColorTarget();
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idScreenOut);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idScreenOut);
 
 	SGCore_ScreenQuadDraw();
 
 	//**
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, TRUE);
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILREF, 1);
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL);
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
+	pp_data::pDXDevice->setStencilRef(1);
+	pp_data::pDXDevice->setDepthStencilState(pp_data::rstates::pDepthStencilDLAA);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
+//	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, TRUE);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILREF, 1);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_KEEP);
+
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
 	
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idDLAA_Long);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idDLAA_Long);
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idDLAA_Long, "g_vPixelSize", &float2_t(1.f / pp_data::vWinSize.x, 1.f / pp_data::vWinSize.y));
 
@@ -1261,43 +1420,51 @@ SX_LIB_API void SPP_RenderDLAA()
 
 	//**
 
-	SGCore_RTGetTexture(pp_data::rt_id::GetSendRT())->GetSurfaceLevel(0, &RenderSurf);
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetSendRT())->getMipmap();
 
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT()));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT()));
 
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idDLAA_Small, "g_vPixelSize", &float2_t(1.f / pp_data::vWinSize.x, 1.f / pp_data::vWinSize.y));
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idScreenOut);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idDLAA_Small);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idDLAA_Small);
 
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
-	pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	pp_data::pDXDevice->setColorTarget(BackBuf);
 	mem_release(RenderSurf);
 	mem_release(BackBuf);
 
-	pp_data::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+	//pp_data::pDXDevice->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+	pp_data::pDXDevice->setDepthStencilState(pp_data::rstates::pDepthStencilNoZ);
 }
 
 //##########################################################################
 
 SX_LIB_API void SPP_RenderMotionBlur(float fCoef, DWORD timeDelta)
 {
-	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-	LPDIRECT3DSURFACE9 RenderSurf, BackBuf;
-	SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->GetSurfaceLevel(0, &RenderSurf);
+	pp_data::pDXDevice->setBlendState(NULL);
+//	pp_data::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	IGXSurface *RenderSurf, *BackBuf;
+	RenderSurf = SGCore_RTGetTexture(pp_data::rt_id::GetRenderRT())->getMipmap();
 
+#ifdef _GRAPHIX_API
 	pp_data::pDXDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &BackBuf);
-	pp_data::pDXDevice->SetRenderTarget(0, RenderSurf);
+#else
+	BackBuf = pp_data::pDXDevice->getColorTarget();
+#endif
+	pp_data::pDXDevice->setColorTarget(RenderSurf);
 
-	SGCore_SetSamplerAddress2(0, 2, D3DTADDRESS_CLAMP);
+//	SGCore_SetSamplerAddress2(0, 2, D3DTADDRESS_CLAMP);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointClamp, 0);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointClamp, 1);
+	pp_data::pDXDevice->setSamplerState(pp_data::rstates::pSamplerPointClamp, 2);
 
-	pp_data::pDXDevice->SetTexture(0, SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
-	pp_data::pDXDevice->SetTexture(1, SGCore_RTGetTexture(pp_data::rt_id::idDepth0));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::GetSendRT()));
+	pp_data::pDXDevice->setTexture(SGCore_RTGetTexture(pp_data::rt_id::idDepth0), 1);
 
 	float determ = 0;
 	float4x4 ViewInv = SMMatrixTranspose(SMMatrixInverse(&determ, pp_data::mCamView));
@@ -1320,14 +1487,13 @@ SX_LIB_API void SPP_RenderMotionBlur(float fCoef, DWORD timeDelta)
 	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::MotionBlur, "InvViewProj", &ViewProjInv);
 	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idMotionBlur, "g_mVPprev", &ViewProjPrev);
 
-	SGCore_ShaderBind(SHADER_TYPE_VERTEX, pp_data::shaders_id::vs::idResPos);
-	SGCore_ShaderBind(SHADER_TYPE_PIXEL, pp_data::shaders_id::ps::idMotionBlur);
+	SGCore_ShaderBind(pp_data::shaders_id::kit::idMotionBlur);
 
 	SGCore_ScreenQuadDraw();
 
 	SGCore_ShaderUnBind();
 
-	pp_data::pDXDevice->SetRenderTarget(0, BackBuf);
+	pp_data::pDXDevice->setColorTarget(BackBuf);
 	mem_release(RenderSurf);
 	mem_release(BackBuf);
 

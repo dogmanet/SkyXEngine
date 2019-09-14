@@ -26,6 +26,8 @@ See the license in LICENSE
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <gcore/sxgcore.h>
 
+#include "IXLight.h"
+
 #ifdef SX_DLL
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
@@ -56,11 +58,13 @@ SX_LIB_API void SLight_AKill();
 /*! \name Обработка потери/восстановления устройства
 @{*/
 
+#if 0
 //! вызывать при потрете устройства
 SX_LIB_API void SLight_OnLostDevice();
 
 //! вызывать при восстановлении устройства
 SX_LIB_API void SLight_OnResetDevice();
+#endif
 
 //!@}
 
@@ -115,11 +119,6 @@ Cчитается: LIGHTS_UPDATE_PSSM_SPLIT*number_split
 /*! отдаленность глобального света (нужно для корректности теней), если не знаете, не трогайте */
 #define LIGHTS_POS_G_MAX 1000	
 
-
-/*! базовое направление направленноого источника света */
-#define LIGHTS_DIR_BASE float3(0, -1, 0)
-
-
 //! типы источников света
 enum LTYPE_LIGHT
 {
@@ -140,7 +139,7 @@ enum LTYPE_LIGHT
 enum LTYPE_SHADOW
 {
 	//! без теней
-	LTYPE_SHADOW_NONE = -1,	
+	//LTYPE_SHADOW_NONE = -1,	
 
 	//! статичные тени, тень обновляется первые несколько кадров (для корректности), далее не обновляется
 	LTYPE_SHADOW_STATIC,	
@@ -169,7 +168,9 @@ SX_LIB_API float SLight_GettGCoefSizeDepth();
 //!@}
 
 //! очистить список света
-SX_LIB_API void SLight_Clear();		
+SX_LIB_API void SLight_Clear();
+
+SX_LIB_API IXLight *SLight_GetIXLight(ID id);
 
 //! очистка всех идентификаторов просчетов во всех источниках света
 SX_LIB_API void SLight_ClearIDArr();	
@@ -203,8 +204,10 @@ SX_LIB_API ID SLight_CreateDirection(
 	bool isShadow				//!< отбрасвыает ли тени свет
 	);
 
+#if 0
 //! возвращает тип света
 SX_LIB_API LTYPE_LIGHT SLight_GetType(ID id);	
+#endif
 
 //! создать копию объекта и вернуть на нее id
 SX_LIB_API ID SLight_CreateCopy(ID id);		
@@ -261,12 +264,13 @@ SX_LIB_API void SLight_GetOrient(ID id, SMQuaternion *pQ);
 SX_LIB_API void SLight_SetOrient(ID id, const SMQuaternion *pQ);
 
 
+#if 0
 //! включен ли свет с идентификатором id
 SX_LIB_API bool SLight_GetEnable(ID id);				
 
 //! установить всключен (true) или отключен (false) свет  с идентификатором id
 SX_LIB_API void SLight_SetEnable(ID id, bool isEnable);	
-
+#endif
 //! возвращает идентификатор глобального источника света, если он есть, иначе -1
 SX_LIB_API ID SLight_GetGlobal();					
 
@@ -361,8 +365,10 @@ SX_LIB_API bool SLight_GetCubeEdgeEnable(
   - для направленного света - обычная техника Shadow Mapping
 @{*/
 
+#if 0
 //! отбрасывает ли свет тени
-SX_LIB_API bool SLight_GetShadowed(ID id);						
+SX_LIB_API bool SLight_GetShadowed(ID id);		
+#endif
 
 //! возвращает true в случае если установлено 4 сплита для PSSM, иначе (установлено 3 сплита) false
 SX_LIB_API bool SLight_Get4Or3SplitsG(ID id);				
@@ -378,13 +384,13 @@ SX_LIB_API void SLight_ShadowSetShaderOfTypeMat(ID id, int typemat, const float4
 @{*/
 
 //! установка динамики обработки теней
-SX_LIB_API void SLight_SetTypeShadowed(
-	ID id,				//!< идентификатор света
-	LTYPE_SHADOW type	//!< значение из перечисления #LTYPE_SHADOW
-	);
+//SX_LIB_API void SLight_SetTypeShadowed(
+//	ID id,				//!< идентификатор света
+//	LTYPE_SHADOW type	//!< значение из перечисления #LTYPE_SHADOW
+//	);
 
 //! возвращает тип динамики теней (одно из значений #LTYPE_SHADOW)
-SX_LIB_API LTYPE_SHADOW SLight_GetTypeShadowed(ID id);	
+//SX_LIB_API LTYPE_SHADOW SLight_GetTypeShadowed(ID id);	
 
 //! производит обработку данных затем возвращает разрешено ли обновлять тени, увеличивает внутрений счетчик, поэтому необходимо вызывать только когда надо
 SX_LIB_API bool SLight_CountUpdateUpdate(
@@ -450,7 +456,7 @@ SX_LIB_API void SLight_ShadowNull();
 SX_LIB_API void SLight_ShadowGen(ID id);		
 
 //! возвращает текстуру с тенями (если вызывались функции сглаживания) то вренутся сглаженная
-SX_LIB_API IDirect3DTexture9* SLight_GetShadow();
+SX_LIB_API IGXTexture2D* SLight_GetShadow();
 
 //! сглаживание текущей тени
 SX_LIB_API void SLight_ShadowSoft(

@@ -1,47 +1,65 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug Singlethreaded|Win32">
-      <Configuration>Debug Singlethreaded</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release Singlethreaded|Win32">
-      <Configuration>Release Singlethreaded</Configuration>
-      <Platform>Win32</Platform>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
+    <ClCompile Include="..\..\..\source\core\AsyncFileReader.cpp" />
+    <ClCompile Include="..\..\..\source\core\AsyncTaskRunner.cpp" />
     <ClCompile Include="..\..\..\source\core\concmd.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Singlethreaded|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Singlethreaded|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\Config.cpp" />
+    <ClCompile Include="..\..\..\source\core\Core.cpp" />
     <ClCompile Include="..\..\..\source\core\cvars.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Singlethreaded|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Singlethreaded|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\file.cpp" />
+    <ClCompile Include="..\..\..\source\core\FIleExtPathsIterator.cpp" />
+    <ClCompile Include="..\..\..\source\core\FileExtsIterator.cpp" />
+    <ClCompile Include="..\..\..\source\core\FileInMemory.cpp" />
+    <ClCompile Include="..\..\..\source\core\FileExtIterator.cpp" />
+    <ClCompile Include="..\..\..\source\core\FileSystem.cpp" />
+    <ClCompile Include="..\..\..\source\core\FolderIterator.cpp" />
+    <ClCompile Include="..\..\..\source\core\FolderPathsIterator.cpp" />
+    <ClCompile Include="..\..\..\source\core\ModelPhysbox.cpp" />
+    <ClCompile Include="..\..\..\source\core\ModelProvider.cpp" />
     <ClCompile Include="..\..\..\source\core\PerfMon.cpp" />
+    <ClCompile Include="..\..\..\source\core\PluginManager.cpp" />
+    <ClCompile Include="..\..\..\source\core\ResourceManager.cpp" />
+    <ClCompile Include="..\..\..\source\core\ResourceModel.cpp" />
+    <ClCompile Include="..\..\..\source\core\ResourceModelAnimated.cpp" />
+    <ClCompile Include="..\..\..\source\core\ResourceModelStatic.cpp" />
+    <ClCompile Include="..\..\..\source\core\ResourceTexture.cpp" />
     <ClCompile Include="..\..\..\source\core\sxcore.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug Singlethreaded|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release Singlethreaded|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\sxcore_dll.cpp" />
     <ClCompile Include="..\..\..\source\core\Task.cpp" />
@@ -51,17 +69,56 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\source\common\ConcurrentQueue.h" />
     <ClInclude Include="..\..\..\source\common\file_utils.h" />
-    <ClInclude Include="..\..\..\source\common\string.h" />
+    <ClInclude Include="..\..\..\source\common\list.h" />
+    <ClInclude Include="..\..\..\source\common\string.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
+    <ClInclude Include="..\..\..\source\core\AsyncFileReader.h" />
+    <ClInclude Include="..\..\..\source\core\AsyncTaskRunner.h" />
+    <ClInclude Include="..\..\..\source\core\FileExtPathsIterator.h" />
+    <ClInclude Include="..\..\..\source\core\FileExtsIterator.h" />
+    <ClInclude Include="..\..\..\source\core\FileInMemory.h" />
     <ClInclude Include="..\..\..\source\core\concmd.h" />
     <ClInclude Include="..\..\..\source\core\Config.h" />
+    <ClInclude Include="..\..\..\source\core\Core.h" />
     <ClInclude Include="..\..\..\source\core\cvars.h" />
     <ClInclude Include="..\..\..\source\core\File.h" />
+    <ClInclude Include="..\..\..\source\core\FileExtIterator.h" />
+    <ClInclude Include="..\..\..\source\core\FileSystem.h" />
+    <ClInclude Include="..\..\..\source\core\FolderIterator.h" />
+    <ClInclude Include="..\..\..\source\core\FolderPathsIterator.h" />
+    <ClInclude Include="..\..\..\source\core\IFile.h" />
+    <ClInclude Include="..\..\..\source\core\ITask.h" />
+    <ClInclude Include="..\..\..\source\core\ModelPhysbox.h" />
+    <ClInclude Include="..\..\..\source\core\ModelProvider.h" />
     <ClInclude Include="..\..\..\source\core\PerfMon.h" />
+    <ClInclude Include="..\..\..\source\core\PluginManager.h" />
+    <ClInclude Include="..\..\..\source\core\ResourceManager.h" />
+    <ClInclude Include="..\..\..\source\core\ResourceModel.h" />
+    <ClInclude Include="..\..\..\source\core\ResourceModelAnimated.h" />
+    <ClInclude Include="..\..\..\source\core\ResourceModelStatic.h" />
+    <ClInclude Include="..\..\..\source\core\ResourceTexture.h" />
     <ClInclude Include="..\..\..\source\core\sxcore.h" />
     <ClInclude Include="..\..\..\source\core\Task.h" />
     <ClInclude Include="..\..\..\source\core\TaskManager.h" />
     <ClInclude Include="..\..\..\source\core\time.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IAsyncFileReader.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IAsyncTaskRunner.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IFileSystem.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IPluginManager.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXCore.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXModelLoader.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXPlugin.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXRenderable.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXTextureLoader.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXTextureProxy.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXUpdatable.h" />
+    <ClInclude Include="..\..\..\source\xcommon\resource\IXModel.h" />
+    <ClInclude Include="..\..\..\source\xcommon\resource\IXModelProvider.h" />
+    <ClInclude Include="..\..\..\source\xcommon\resource\IXResourceManager.h" />
+    <ClInclude Include="..\..\..\source\xcommon\resource\IXResourceModel.h" />
+    <ClInclude Include="..\..\..\source\xcommon\resource\IXResourceTexture.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C1C1F046-C839-4602-AF70-923CDD237C1B}</ProjectGuid>
@@ -75,7 +132,7 @@
     <PlatformToolset>v120_xp</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Singlethreaded|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120_xp</PlatformToolset>
@@ -88,7 +145,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Singlethreaded|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120_xp</PlatformToolset>
@@ -101,45 +158,45 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Singlethreaded|Win32'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release Singlethreaded|Win32'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>../../../source;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include</IncludePath>
+    <IncludePath>../../../source;../../../sdks/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Lib</LibraryPath>
     <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Include</SourcePath>
     <OutDir>../../../build/bin/</OutDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Singlethreaded|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>../../../source;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include</IncludePath>
-    <LibraryPath>../../../libs;$(LibraryPath);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Lib</LibraryPath>
-    <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Include</SourcePath>
-    <OutDir>../../../build/</OutDir>
+    <IncludePath>../../../source;../../../sdks/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include</IncludePath>
+    <LibraryPath>../../../libs64;$(LibraryPath);$(WindowsSDK_LibraryPath_x64);../../../sdks/dx9sdk/Lib</LibraryPath>
+    <SourcePath>../../../source;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);../../../sdks/dx9sdk/Include</SourcePath>
+    <OutDir>../../../build/bin64/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/</OutDir>
-    <IncludePath>../../../source;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include</IncludePath>
+    <IncludePath>../../../source;../../../sdks/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Lib</LibraryPath>
     <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Include</SourcePath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Singlethreaded|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>../../../source;../../../sdks/;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include</IncludePath>
+    <LibraryPath>../../../libs64;$(LibraryPath);$(WindowsSDK_LibraryPath_x64);../../../sdks/dx9sdk/Lib</LibraryPath>
+    <SourcePath>../../../source;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);../../../sdks/dx9sdk/Include</SourcePath>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
-    <IncludePath>../../../source;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include</IncludePath>
-    <LibraryPath>../../../libs;$(LibraryPath);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Lib</LibraryPath>
-    <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Include</SourcePath>
+    <OutDir>../../../build/bin64/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -147,7 +204,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;SXCORE_EXPORTS;SX_DLL;SX_LIB_NAME="CORE";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;SXCORE_EXPORTS;SX_DLL;SX_LIB_NAME="CORE";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
@@ -160,13 +217,13 @@
       <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Singlethreaded|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_SINGLETHREADED;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;SXCORE_EXPORTS;SX_DLL;SX_LIB_NAME="CORE";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;WIN64;_DEBUG;_WINDOWS;_USRDLL;SXCORE_EXPORTS;SX_DLL;SX_LIB_NAME="CORE";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
@@ -175,7 +232,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
-      <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>../../../libs64/$(TargetName).lib</ImportLibrary>
       <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
@@ -187,7 +244,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SXCORE_EXPORTS;SX_DLL;SX_LIB_NAME="CORE";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;SXCORE_EXPORTS;SX_DLL;SX_LIB_NAME="CORE";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
@@ -200,7 +257,7 @@
       <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Singlethreaded|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level1</WarningLevel>
       <PrecompiledHeader>
@@ -208,16 +265,16 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_SINGLETHREADED;WIN32;NDEBUG;_WINDOWS;_USRDLL;SXCORE_EXPORTS;SX_DLL;SX_LIB_NAME="CORE";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;WIN64;NDEBUG;_WINDOWS;_USRDLL;SXCORE_EXPORTS;SX_DLL;SX_LIB_NAME="CORE";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>../../../libs64/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>

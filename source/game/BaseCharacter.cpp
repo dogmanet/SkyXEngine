@@ -75,7 +75,7 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	m_pGhostObject = new btPairCachingGhostObject();
 	void *p1 = m_pGhostObject;
 	void *p2 = &m_pGhostObject->getWorldTransform();
-	printf(COLOR_LRED "p1: 0x%08x; p2: 0x%08x" COLOR_RESET "\n", p1, p2);
+	printf(COLOR_LRED "p1: 0x%p; p2: 0x%p" COLOR_RESET "\n", p1, p2);
 	m_pGhostObject->setWorldTransform(startTransform);
 	//sweepBP->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
 	m_pGhostObject->setCollisionShape(m_pCollideShape);
@@ -112,7 +112,8 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	m_flashlight->setOrient(m_pHeadEnt->getOrient() * SMQuaternion(SM_PIDIV2, 'x'));
 	m_flashlight->setParent(m_pHeadEnt);
 	m_flashlight->setDist(20.f);
-	m_flashlight->setAngle(SMToRadian(60));
+	m_flashlight->setOuterAngle(SMToRadian(60));
+	m_flashlight->setInnerAngle(SMToRadian(10));
 	m_flashlight->setColor(float3(3.5, 3.5, 3.5));
 	//m_flashlight->setShadowType(-1);
 	m_flashlight->setShadowType(1);
@@ -133,6 +134,8 @@ CBaseCharacter::~CBaseCharacter()
 	mem_delete(m_pCharacter);
 	mem_delete(m_pGhostObject);
 	mem_delete(m_pCollideShape);
+
+	mem_release(m_pHandsModelResource);
 
 	if(m_idQuadCurr >= 0)
 	{
@@ -313,36 +316,37 @@ float CBaseCharacter::getCurrentSpread()
 
 void CBaseCharacter::initHitboxes()
 {
-	if(!m_pAnimPlayer)
+	if(!m_pModel && m_pModel->asAnimatedModel())
 	{
 		return;
 	}
 
-	int l = m_pAnimPlayer->getHitboxCount();
+	auto pAnimatedModel = m_pModel->asAnimatedModel();
+
+	int l = pAnimatedModel->getHitboxCount();
 	m_pHitboxBodies = new btRigidBody*[l];
 
-	const ModelHitbox * hb;
+	const XResourceModelHitbox * hb;
 	for(int i = 0; i < l; ++i)
 	{
-		hb = m_pAnimPlayer->getHitbox(i);
+		hb = pAnimatedModel->getHitbox(i);
 		btCollisionShape *pShape;
 		switch(hb->type)
 		{
-		case HT_BOX:
-			pShape = new btBoxShape(F3_BTVEC(hb->lwh * 0.5f * m_fBaseScale));
+		case XHT_BOX:
+			pShape = new btBoxShape(F3_BTVEC(hb->lwh * 0.5f));
 			break;
-		case HT_CAPSULE:
-			pShape = new btCapsuleShape(hb->lwh.y * 0.5f * m_fBaseScale, hb->lwh.z * m_fBaseScale);
+		case XHT_CAPSULE:
+			pShape = new btCapsuleShape(hb->lwh.y * 0.5f, hb->lwh.z);
 			break;
-		case HT_CYLINDER:
-			pShape = new btCylinderShape(F3_BTVEC(hb->lwh * 0.5f * m_fBaseScale));
+		case XHT_CYLINDER:
+			pShape = new btCylinderShape(F3_BTVEC(hb->lwh * 0.5f));
 			break;
-		case HT_ELIPSOID:
-			// @FIXME: Add actual elipsoid shape
+		case XHT_SPHERE:
 			pShape = new btSphereShape(hb->lwh.x);
 			break;
-		case HT_CONVEX:
-			assert(false && "Not supported here");
+		default:
+			assert(!"Not supported here!");
 		}
 		btVector3 vInertia;
 		const float fMass = 1.0f;
@@ -373,15 +377,22 @@ void CBaseCharacter::initHitboxes()
 
 void CBaseCharacter::updateHitboxes()
 {
-	if(!m_pAnimPlayer || !m_pHitboxBodies || !m_pAnimPlayer->playingAnimations())
+	if(!m_pModel || !m_pHitboxBodies)
 	{
 		return;
 	}
 
-	const ModelHitbox * hb;
-	for(int i = 0, l = m_pAnimPlayer->getHitboxCount(); i < l; ++i)
+	auto pAnimatedModel = m_pModel->asAnimatedModel();
+	if(!pAnimatedModel || !pAnimatedModel->isPlayingAnimations())
 	{
-		hb = m_pAnimPlayer->getHitbox(i);
+		return;
+	}
+	//@TODO: Reimplement me
+#if 0
+	const XResourceModelHitbox * hb;
+	for(int i = 0, l = pAnimatedModel->getHitboxCount(); i < l; ++i)
+	{
+		hb = pAnimatedModel->getHitbox(i);
 		
 		//SMMATRIX mBone = m_pAnimPlayer->getBoneTransformPos(hb->bone_id);
 
@@ -389,21 +400,27 @@ void CBaseCharacter::updateHitboxes()
 		m_pHitboxBodies[i]->getWorldTransform().setFromOpenGLMatrix((btScalar*)&(SMMatrixRotationX(hb->rot.x)
 			* SMMatrixRotationY(hb->rot.y)
 			* SMMatrixRotationZ(hb->rot.z)
-			* SMMatrixTranslation(hb->pos * m_fBaseScale)
-			* m_pAnimPlayer->getBoneTransform(hb->bone_id, true)
+			* SMMatrixTranslation(hb->pos)
+			* pAnimatedModel->getBoneTransform(hb->bone_id, true)
 			* getWorldTM()
 			));
 	}
+#endif
 }
 
 void CBaseCharacter::releaseHitboxes()
 {
-	if(!m_pAnimPlayer || !m_pHitboxBodies)
+	if(!m_pModel || !m_pHitboxBodies)
+	{
+		return;
+	}
+	auto pAnimatedModel = m_pModel->asAnimatedModel();
+	if(!pAnimatedModel)
 	{
 		return;
 	}
 
-	for(int i = 0, l = m_pAnimPlayer->getHitboxCount(); i < l; ++i)
+	for(int i = 0, l = pAnimatedModel->getHitboxCount(); i < l; ++i)
 	{
 		SPhysics_RemoveShape(m_pHitboxBodies[i]);
 

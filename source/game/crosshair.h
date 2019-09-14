@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -9,6 +9,7 @@ See the license in LICENSE
 
 //#include <gdefines.h>
 #include "sxgame.h"
+#include <mtrl/IXMaterialSystem.h>
 //#include <common/SXmath.h>
 
 #define CROSSHAIR_MINSEGS 12
@@ -39,7 +40,7 @@ public:
 	void setFixedRadius(float r);
 	void setStyle(STYLE style);
 	void setMaxSize(float size);
-	void setTexture(ID id);
+	void setTexture(IXTexture *pTexture);
 	
 	void setSize(float size);
 
@@ -56,7 +57,7 @@ protected:
 	bool m_bDirty;
 	bool m_bBuildBuff;
 	float m_fSize;
-	ID m_idTexture;
+	IXTexture *m_pTexture = NULL;
 	bool m_bHidden;
 	float m_fMaxSize;
 	STYLE m_style;
@@ -68,18 +69,27 @@ protected:
 
 	byte m_u8ActiveBuffer;
 	Vertex * m_pVertices[2];
-	UINT * m_pIndices[2];
+	USHORT * m_pIndices[2];
 	int m_iVertexCount[2];
 	int m_iIndexCount[2];
 
-	IDirect3DVertexBuffer9 * m_pVertexBuffer;
-	IDirect3DIndexBuffer9 * m_pIndexBuffer;
+	IGXVertexBuffer *m_pVertexBuffer;
+	IGXIndexBuffer *m_pIndexBuffer;
+	IGXVertexDeclaration *m_pVertexDeclaration;
+	IGXRenderBuffer *m_pRenderBuffer;
 
-	IDirect3DDevice9 * m_pDev;
-	IDirect3DTexture9 * m_pTexture;
+	IGXDevice *m_pDev;
 
 	float2_t m_f2TexOffs;
 	float2_t m_f2TexSize;
+
+	ID m_idVS = -1;
+	ID m_idPS = -1;
+	ID m_idShaderKit = -1;
+
+	IGXBlendState *m_pBlendState = NULL;
+	IGXSamplerState *m_pSamplerState = NULL;
+	IGXDepthStencilState *m_pDepthState = NULL;
 };
 
 #endif

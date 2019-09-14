@@ -17,6 +17,8 @@ namespace gui
 				{
 					UINT db = (dstheight - posY - y) * dstwidth * bpp + (posX + x) * bpp + c;
 					UINT sb = (srcheight - y - 1) * srcwidth * bpp + x * bpp + c;
+					assert(db < (UINT)(dstwidth * dstheight * 4));
+					assert(sb < (UINT)(srcwidth * srcheight * 4));
 					dst[db] = max(src[sb], dst[db]);
 					if((dstheight - posY - y) * dstwidth * bpp + (posX + x) * bpp + c >= dstwidth * dstheight * bpp)
 					{
@@ -168,8 +170,7 @@ namespace gui
 			fread(data, sizeof(byte), w * h * 4, pF);
 			m_ppTextures.push_back(data);
 
-			CTexture * tex = CTextureManager::createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size())), w, h, 4);
-			tex->loadFromMem(data);
+			CTexture * tex = CTextureManager::createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size())), w, h, 4, false, data);
 			m_vpTextures.push_back(tex);
 		}
 		//LoadFTfontFace();
@@ -178,7 +179,7 @@ namespace gui
 
 	void CFont::generateBase()
 	{
-		static StringW s = L" qwertyuiop[]asdfghjkl;'zxcvbnm,./`1234567890-=\\~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?ÈˆÛÍÂÌ„¯˘Áı˙Ù˚‚‡ÔÓÎ‰Ê˝ˇ˜ÒÏËÚ¸·˛…÷” ≈Õ√ÿŸ«’⁄‘€¬¿œ–ŒÀƒ∆›ﬂ◊—Ã»“‹¡ﬁ∏®	";
+		static StringW s = L" qwertyuiop[]asdfghjkl;'zxcvbnm,./`1234567890-=\\~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?–π—Ü—É–∫–µ–Ω–≥—à—â–∑—Ö—ä—Ñ—ã–≤–∞–ø—Ä–æ–ª–¥–∂—ç—è—á—Å–º–∏—Ç—å–±—é–ô–¶–£–ö–ï–ù–ì–®–©–ó–•–™–§–´–í–ê–ü–†–û–õ–î–ñ–≠–Ø–ß–°–ú–ò–¢–¨–ë–Æ—ë–Å	";
 		for(UINT i = 0; i < s.length(); i++)
 		{
 			addChar(s[i]);
@@ -188,6 +189,7 @@ namespace gui
 
 	void CFont::regen()
 	{
+		printf("_heapchk() = %d\n", _heapchk());
 		for(UINT i = 0; i < m_vpTextures.size(); i++)
 		{
 			CTextureManager::unloadTexture(m_vpTextures[i]);
@@ -222,7 +224,7 @@ namespace gui
 		{
 			if(m_szFontChars[i] != L'\t')
 			{
-				if(FT_Load_Char(m_pFTfontFace, m_szFontChars[i], FT_LOAD_RENDER | (m_iFontSize > 13 ? FT_LOAD_TARGET_LIGHT | FT_LOAD_FORCE_AUTOHINT : FT_LOAD_TARGET_MONO)))
+				if(FT_Load_Char(m_pFTfontFace, m_szFontChars[i], FT_LOAD_RENDER | (m_iFontSize > 13 ? FT_LOAD_TARGET_LIGHT | FT_LOAD_FORCE_AUTOHINT/* | FT_LOAD_TARGET_LCD*/ : FT_LOAD_TARGET_MONO)))
 					//if(FT_Load_Char(m_pFTfontFace, m_szFontChars[i], FT_LOAD_RENDER | FT_LOAD_TARGET_LIGHT | FT_LOAD_FORCE_AUTOHINT))
 				{
 					continue;
@@ -241,7 +243,7 @@ namespace gui
 			int iPadding = 1;
 
 			chardata d;
-			d.w = g->bitmap.width + m_iBlurRadius * 2 + iPadding * 2;
+			d.w = (g->bitmap.pixel_mode == FT_PIXEL_MODE_LCD ? (g->bitmap.width / 3) : g->bitmap.width) + m_iBlurRadius * 2 + iPadding * 2;
 			d.h = g->bitmap.rows + m_iBlurRadius * 2 + iPadding * 2;
 			d.xa = g->advance.x;
 			d.xo = g->bitmap_left;
@@ -268,21 +270,48 @@ namespace gui
 					buf++;
 				}
 			}
-			for(int y = bitmap->rows - 1, by = m_iBlurRadius + iPadding; y >= 0; --y, ++by)
+			if(g->bitmap.pixel_mode == FT_PIXEL_MODE_LCD)
 			{
-				for(UINT i = 0, bx = m_iBlurRadius + iPadding; i < bitmap->width; ++i, ++bx)
+				for(int y = bitmap->rows - 1, by = m_iBlurRadius + iPadding; y >= 0; --y, ++by)
 				{
-					cc = (by * d.w + bx) * 4;
-					unsigned char c = bitmap->buffer[y * bitmap->width + i];
-					d.data[cc] = 255;
-					cc++;
-					d.data[cc] = 255;
-					cc++;
-					d.data[cc] = 255;
-					cc++;
-					d.data[cc] = c;
-					//d.data[cc] = 255;
-					cc++;
+					for(UINT i = 0, bx = m_iBlurRadius + iPadding; i < bitmap->width; i += 3, ++bx)
+					{
+						cc = (by * d.w + bx) * 4;
+						unsigned char cr = bitmap->buffer[y * bitmap->width + i];
+						unsigned char cg = bitmap->buffer[y * bitmap->width + i + 1];
+						unsigned char cb = bitmap->buffer[y * bitmap->width + i + 2];
+						d.data[cc] = cb;
+						cc++;
+						d.data[cc] = cg;
+						cc++;
+						d.data[cc] = cr;
+						cc++;
+						d.data[cc] = (cr + cg + cb) / 3;
+						//d.data[cc] = 255;
+						cc++;
+						assert(cc <= d.w * d.h * 4);
+					}
+				}
+			}
+			else
+			{
+				for(int y = bitmap->rows - 1, by = m_iBlurRadius + iPadding; y >= 0; --y, ++by)
+				{
+					for(UINT i = 0, bx = m_iBlurRadius + iPadding; i < bitmap->width; ++i, ++bx)
+					{
+						cc = (by * d.w + bx) * 4;
+						unsigned char c = bitmap->buffer[y * bitmap->width + i];
+						d.data[cc] = 255;
+						cc++;
+						d.data[cc] = 255;
+						cc++;
+						d.data[cc] = 255;
+						cc++;
+						d.data[cc] = c;
+						//d.data[cc] = 255;
+						cc++;
+						assert(cc <= d.w * d.h * 4);
+					}
 				}
 			}
 
@@ -373,6 +402,8 @@ namespace gui
 		}
 
 		printf("%dx%d\n", width, height);
+
+		printf("_heapchk() = %d\n", _heapchk());
 
 		byte * image = new byte[width*height * 4];
 		memset(image, 0, sizeof(byte)* width*height * 4);
@@ -490,8 +521,9 @@ namespace gui
 			mem_delete_a(newImage);
 		}
 
-		CTexture * tex = CTextureManager::createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size() - 1)), width, height, 4);
-		tex->loadFromMem(image);
+		printf("_heapchk() = %d\n", _heapchk());
+
+		CTexture * tex = CTextureManager::createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size() - 1)), width, height, 4, false, image);
 		//SX_SAFE_DELETE_A(image);
 		for(UINT i = 0; i < list.size(); i++)
 		{
@@ -506,6 +538,10 @@ namespace gui
 		save(); // TODO: Find better place to call that
 
 		// TODO: Add rebuild handler to call Layout on the document
+
+
+		printf("_heapchk() = %d\n", _heapchk());
+
 	}
 
 	bool CFont::place(Array<chardata> &list, int width, int height)
@@ -582,6 +618,15 @@ namespace gui
 			return(NULL);
 		}
 		return(m_vpTextures[i]);
+	}
+	const IGXTexture2D *CFont::getAPITexture(UINT i)
+	{
+		CPITexture pTex = getTexture(i);
+		if(!pTex)
+		{
+			return(NULL);
+		}
+		return(pTex->getAPItexture());
 	}
 
 	void CFont::addChar(WCHAR c, bool full)
@@ -971,7 +1016,7 @@ namespace gui
 		}
 	}
 
-	void CFont::buildString(const StringW & str, UINT decoration, TEXT_ALIGN textAlign, IDirect3DVertexBuffer9 ** ppVertexBuffer, IDirect3DIndexBuffer9 ** ppIndexBuffer, UINT * vertexCount, UINT * indexCount, UINT * lineIndexCount, UINT iAreaWidth, UINT iFirstShift, UINT * pStrWidth)
+	void CFont::buildString(const StringW & str, UINT decoration, TEXT_ALIGN textAlign, IGXRenderBuffer ** ppVertexBuffer, IGXIndexBuffer ** ppIndexBuffer, UINT * vertexCount, UINT * indexCount, UINT * lineIndexCount, UINT iAreaWidth, UINT iFirstShift, UINT * pStrWidth)
 	{
 		UINT iIndexCount;
 		UINT iVertexCount;
@@ -1210,21 +1255,12 @@ namespace gui
 				pVB[i].Pos = (float3)(pVB[i].Pos + offs);
 			}
 		}
+		
+		IGXVertexBuffer *pVertBuffer = GetGUI()->getDevice()->createVertexBuffer(sizeof(vertex)* iVertexCount, GXBUFFER_USAGE_STATIC, pVB);
+		*ppVertexBuffer = GetGUI()->getDevice()->createRenderBuffer(1, &pVertBuffer, GetGUI()->getVertexDeclarations()->m_pXYZTex);
+		mem_release(pVertBuffer);
 
-		VOID * pData;
-		DX_CALL(GetGUI()->getDevice()->CreateVertexBuffer(sizeof(vertex)* iVertexCount, D3DUSAGE_WRITEONLY, NULL, D3DPOOL_MANAGED, ppVertexBuffer, 0));
-		if(!FAILED(DX_CALL((*ppVertexBuffer)->Lock(0, sizeof(vertex)* iVertexCount, (void**)&pData, 0))))
-		{
-			memcpy(pData, pVB, sizeof(vertex) * iVertexCount);
-			(*ppVertexBuffer)->Unlock();
-		}
-
-		DX_CALL(GetGUI()->getDevice()->CreateIndexBuffer(sizeof(UINT)* iIndexCount, D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_MANAGED, ppIndexBuffer, 0));
-		if(!FAILED(DX_CALL((*ppIndexBuffer)->Lock(0, sizeof(UINT)* iIndexCount, (void**)&pData, 0))))
-		{
-			memcpy(pData, pIB, sizeof(UINT) * iIndexCount);
-			(*ppIndexBuffer)->Unlock();
-		}
+		*ppIndexBuffer = GetGUI()->getDevice()->createIndexBuffer(sizeof(UINT)* iIndexCount, GXBUFFER_USAGE_STATIC, GXIT_UINT32, pIB);
 
 		mem_delete_a(pVB);
 		mem_delete_a(pIB);
@@ -1280,4 +1316,4 @@ namespace gui
 			m_pFT = NULL;
 		}
 	}
-};
+}

@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -9,30 +9,28 @@ See the license in LICENSE
 
 #include "sxphysics.h"
 #include "PhyWorld.h"
+#include "Physics.h"
 
 #include <core/sxcore.h>
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
 
 #if defined(_DEBUG)
 #	pragma comment(lib, "sxcore_d.lib")
-#	pragma comment(lib, "sxgeom_d.lib")
-#	pragma comment(lib, "sxgreen_d.lib")
-#	pragma comment(lib, "sxlight_d.lib")
 #	pragma comment(lib, "sxmtrl_d.lib")
 #	pragma comment(lib, "BulletDynamics_vs2010_debug.lib")
 #	pragma comment(lib, "BulletCollision_vs2010_debug.lib")
 #	pragma comment(lib, "LinearMath_vs2010_debug.lib")
 #	pragma comment(lib, "BulletWorldImporter_vs2010_debug.lib")
+#	pragma comment(lib, "BulletWorldImporter_vs2010_debug.lib")
+#	pragma comment(lib, "BulletFileLoader_vs2010_debug.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
-#	pragma comment(lib, "sxgeom.lib")
-#	pragma comment(lib, "sxgreen.lib")
-#	pragma comment(lib, "sxlight.lib")
 #	pragma comment(lib, "sxmtrl.lib")
 #	pragma comment(lib, "BulletDynamics_vs2010.lib")
 #	pragma comment(lib, "BulletCollision_vs2010.lib")
 #	pragma comment(lib, "LinearMath_vs2010.lib")
 #	pragma comment(lib, "BulletWorldImporter_vs2010.lib")
+#	pragma comment(lib, "BulletFileLoader_vs2010.lib")
 #endif
 
 #if !defined(DEF_STD_REPORT)
@@ -40,7 +38,8 @@ See the license in LICENSE
 report_func g_fnReportf = DefReport;
 #endif
 
-CPhyWorld * g_pWorld = NULL;
+CPhyWorld *g_pWorld = NULL;
+CPhysics *g_pPhysics = NULL;
 
 #define SP_PRECOND(ret) if(!g_pWorld){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxphysics is not init", GEN_MSG_LOCATION);return ret;}
 
@@ -75,13 +74,20 @@ SX_LIB_API void SPhysics_0Create()
 	Core_SetOutPtr();
 
 	g_pWorld = new CPhyWorld();
+	g_pPhysics = new CPhysics();
 
 	Core_0RegisterConcmd("perf_physics", SPhysics_DumpStats);
 }
 SX_LIB_API void SPhysics_AKill()
 {
 	SP_PRECOND(_VOID);
+	mem_delete(g_pPhysics);
 	mem_delete(g_pWorld);
+}
+
+SX_LIB_API IXPhysics* SPhysics_GetIXPhysics()
+{
+	return(g_pPhysics);
 }
 
 SX_LIB_API void SPhysics_Update(int thread)
@@ -105,6 +111,7 @@ SX_LIB_API void SPhysics_Dbg_Set(report_func rf)
 	g_fnReportf = rf;
 }
 
+#if 0
 SX_LIB_API void SPhysics_LoadGeom(const char * file)
 {
 	SP_PRECOND(_VOID);
@@ -116,12 +123,7 @@ SX_LIB_API void SPhysics_UnloadGeom()
 	SP_PRECOND(_VOID);
 	g_pWorld->unloadGeom();
 }
-
-SX_LIB_API void SPhysics_DebugRender()
-{
-	SP_PRECOND(_VOID);
-	g_pWorld->render();
-}
+#endif
 
 SX_LIB_API void SPhysics_AddShape(btRigidBody * pBody)
 {
@@ -147,6 +149,7 @@ SX_LIB_API btDiscreteDynamicsWorldMt * SPhysics_GetDynWorld()
 	return(g_pWorld->getBtWorld());
 }
 
+#if 0
 SX_LIB_API bool SPhysics_ImportGeom(const char * file)
 {
 	SP_PRECOND(false);
@@ -158,6 +161,7 @@ SX_LIB_API bool SPhysics_ExportGeom(const char * file)
 	SP_PRECOND(false);
 	return(g_pWorld->exportGeom(file));
 }
+#endif
 
 SX_LIB_API int SPhysics_GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
 {
@@ -200,4 +204,28 @@ SX_LIB_API void SPhysics_BuildHull(btConvexHullShape *pIn, btVector3 **ppOut, in
 SX_LIB_API void SPhysics_ReleaseHull(btVector3 *pData, int iNumVertices)
 {
 	mem_delete_a(pData);
+}
+
+SX_LIB_API btCollisionShape* SPhysics_CreateTrimeshShape(const XResourceModelStaticSubset *pSubset)
+{
+	btTriangleMesh *pMesh = new btTriangleMesh(true, false);
+	pMesh->preallocateIndices(pSubset->iIndexCount);
+	pMesh->preallocateVertices(pSubset->iVertexCount);
+	for(UINT i = 0; i < pSubset->iVertexCount; ++i)
+	{
+		pMesh->findOrAddVertex(F3_BTVEC(pSubset->pVertices[i].vPos), false);
+	}
+	for(UINT i = 0; i < pSubset->iIndexCount; i += 3)
+	{
+		pMesh->addTriangleIndices(pSubset->pIndices[i], pSubset->pIndices[i + 1], pSubset->pIndices[i + 2]);
+	}
+
+	return(new btBvhTriangleMeshShape(pMesh, true));
+}
+
+SX_LIB_API void SPhysics_ReleaseTrimeshShape(btCollisionShape *pShape)
+{
+	assert(pShape->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE);
+
+	mem_delete(pShape);
 }

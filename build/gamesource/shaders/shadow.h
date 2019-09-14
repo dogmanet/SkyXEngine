@@ -30,4 +30,5 @@ half3 ShadowSlopeBias(half fDepth)
 half ShadowCalcShading(half fDepth0, half fDepth1, half fBias)
 {
 	return (((fDepth0 + fBias) < fDepth1) ? 0.0f : 1.0f);
+	// return (((fDepth0 + 0.0000001) < fDepth1) ? 0.0f : 1.0f);
 }

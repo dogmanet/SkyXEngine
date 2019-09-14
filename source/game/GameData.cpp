@@ -7,12 +7,10 @@ See the license in LICENSE
 #include "GameData.h"
 #include "CrosshairManager.h"
 
-#include "Ragdoll.h"
+//#include "Ragdoll.h"
 
 #include <score/sxscore.h>
-#include <level/sxlevel.h>
 #include <input/sxinput.h>
-
 
 #include "Tracer.h"
 
@@ -24,6 +22,13 @@ See the license in LICENSE
 #include "BaseMag.h"
 #include "FuncTrain.h"
 
+#include <common/file_utils.h>
+
+#include <xcommon/XEvents.h>
+#include <xcommon/IAsyncTaskRunner.h>
+
+#include "Editable.h"
+
 CPlayer * GameData::m_pPlayer;
 CPointCamera * GameData::m_pActiveCamera;
 gui::IGUI * GameData::m_pGUI = NULL;
@@ -31,15 +36,51 @@ CEntityManager * GameData::m_pMgr;
 CHUDcontroller * GameData::m_pHUDcontroller;
 CGameStateManager * GameData::m_pGameStateManager;
 gui::dom::IDOMnode *GameData::m_pCell;
+IXLightSystem *GameData::m_pLightSystem;
+bool GameData::m_isLevelLoaded = false;
+CEditable *g_pEditable = NULL;
 //gui::IDesktop *GameData::m_pStatsUI;
 
-CRagdoll * g_pRagdoll;
-IAnimPlayer * pl;
+//CRagdoll * g_pRagdoll;
+//IAnimPlayer * pl;
 
 CTracer *g_pTracer;
 CTracer *g_pTracer2;
 
+IEventChannel<XEventLevel> *g_pLevelChannel;
+static gui::IFont *g_pFont = NULL;
+static IGXRenderBuffer *g_pTextRenderBuffer = NULL;
+static IGXIndexBuffer *g_pTextIndexBuffer = NULL;
+static IGXConstantBuffer *g_pTextVSConstantBuffer = NULL;
+static IGXConstantBuffer *g_pTextPSConstantBuffer = NULL;
+static UINT g_uVertexCount = 0;
+static UINT g_uIndexCount = 0;
+static ID g_idTextVS = -1;
+static ID g_idTextPS = -1;
+static ID g_idTextKit = -1;
+static IGXBlendState *g_pTextBlendState = NULL;
+static IGXSamplerState *g_pTextSamplerState = NULL;
+static IGXDepthStencilState *g_pTextDepthState = NULL;
+static UINT g_uFrameCount = 0;
+static UINT g_uFPS = 0;
 
+//##########################################################################
+
+static void RenderText(const wchar_t *szText)
+{
+	if(!g_pFont)
+	{
+		g_pFont = GameData::m_pGUI->getFont(L"traceroute", 16, gui::IFont::STYLE_NONE, 0);
+	}
+
+	mem_release(g_pTextRenderBuffer);
+	mem_release(g_pTextIndexBuffer);
+
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+
+	g_pFont->buildString(szText, gui::IFont::DECORATION_NONE, gui::IFont::TEXT_ALIGN_LEFT,
+		&g_pTextRenderBuffer, &g_pTextIndexBuffer, &g_uVertexCount, &g_uIndexCount, NULL, *r_win_width, 0, 0);
+}
 
 //##########################################################################
 
@@ -81,6 +122,224 @@ static void UpdateSettingsDesktop()
 	}
 }
 
+#define MAX_LEVEL_STRING 128
+struct CLevelInfo
+{
+	char m_szName[MAX_LEVEL_STRING]; //!< имя папки уровня
+	char m_szLocalName[MAX_LEVEL_STRING]; //!< Отображаемое имя уровня
+	bool m_bHasPreview;
+
+	IFileIterator *m_pIterator = NULL; //!< для внутреннего использования
+};
+
+BOOL EnumLevels(CLevelInfo *pInfo)
+{
+	bool bFound = false;
+	const char *szDirName = NULL;
+	if(!pInfo->m_pIterator)
+	{
+		pInfo->m_pIterator = Core_GetIXCore()->getFileSystem()->getFolderList("levels/");
+	}
+	if(pInfo->m_pIterator && (szDirName = pInfo->m_pIterator->next()))
+	{
+		bFound = true;
+	}
+
+	if(!bFound)
+	{
+		mem_release(pInfo->m_pIterator);
+		return(FALSE);
+	}
+
+	const char *szLevelName = basename(szDirName);
+	strncpy(pInfo->m_szName, szLevelName, MAX_LEVEL_STRING - 1);
+
+	{
+		char szFullPath[1024], szFSPath[1024];
+		sprintf(szFullPath, "levels/%s/%s.lvl", pInfo->m_szName, pInfo->m_szName);
+
+		if(Core_GetIXCore()->getFileSystem()->resolvePath(szFullPath, szFSPath, sizeof(szFSPath)))
+		{
+
+			ISXConfig *pConfig = Core_OpConfig(szFSPath);
+			if(pConfig->keyExists("level", "local_name"))
+			{
+				strncpy(pInfo->m_szLocalName, pConfig->getKey("level", "local_name"), MAX_LEVEL_STRING - 1);
+			}
+			else
+			{
+				strncpy(pInfo->m_szLocalName, pInfo->m_szName, MAX_LEVEL_STRING - 1);
+			}
+			mem_release(pConfig);
+		}
+
+		sprintf(szFullPath, "levels/%s/preview.bmp", pInfo->m_szName);
+		pInfo->m_bHasPreview = FileExistsFile(szFullPath);
+	}
+
+	return(TRUE);
+}
+
+//##########################################################################
+
+void EndMap()
+{
+	if(!GameData::m_isLevelLoaded)
+	{
+		return;
+	}
+
+	if(!GameData::m_pMgr->isEditorMode())
+	{
+		GameData::m_pGameStateManager->activate("main_menu");
+		GameData::m_pPlayer->observe();
+	}
+	
+	XEventLevel evLevel;
+	evLevel.szLevelName = NULL;
+
+	evLevel.type = XEventLevel::TYPE_UNLOAD_BEGIN;
+	g_pLevelChannel->broadcastEvent(&evLevel);
+
+	evLevel.type = XEventLevel::TYPE_UNLOAD;
+	g_pLevelChannel->broadcastEvent(&evLevel);
+
+	evLevel.type = XEventLevel::TYPE_UNLOAD_END;
+	g_pLevelChannel->broadcastEvent(&evLevel);
+};
+
+class CLevelLoadTask: public IAsyncTask
+{
+public:
+	CLevelLoadTask(const char *szLevelName)
+	{
+		m_szLevelName = strdup(szLevelName);
+	}
+	~CLevelLoadTask()
+	{
+		free(m_szLevelName);
+	}
+	void XMETHODCALLTYPE exec();
+	void XMETHODCALLTYPE abort()
+	{
+		// do nothing
+	}
+	void XMETHODCALLTYPE onFinished();
+
+	const char* XMETHODCALLTYPE getName();
+
+	int XMETHODCALLTYPE getProgress();
+
+protected:
+	char szProgressText[256];
+	char *m_szLevelName;
+	std::atomic_int m_iDone;
+};
+
+IAsyncTaskRunner *g_pAsyncTaskRunner = NULL;
+CLevelLoadTask *g_pLevelLoadTask = NULL;
+
+class CLevelLoadProgressListener: public IEventListener<XEventLevelProgress>
+{
+public:
+	void onEvent(const XEventLevelProgress *pData)
+	{
+		switch(pData->type)
+		{
+		case XEventLevelProgress::TYPE_PROGRESS_BEGIN:
+			m_fCurrentLoaderProgress = 0.0f;
+			break;
+		case XEventLevelProgress::TYPE_PROGRESS_END:
+			++m_uLoadersDone;
+			m_fCurrentLoaderProgress = 1.0f;
+			break;
+		case XEventLevelProgress::TYPE_PROGRESS_VALUE:
+			m_fCurrentLoaderProgress = pData->fProgress;
+			break;
+		}
+
+		if(pData->szLoadingText)
+		{
+			ScopedLock lock(m_mxLoadingText);
+			m_sLoadingText = pData->szLoadingText;
+		}
+
+		m_fProgress = m_fCurrentLoaderProgress;
+		//m_fProgress = ((float)m_uLoadersDone + m_fCurrentLoaderProgress) / (float)m_uLoadersCount;
+	}
+	void onLoadBegin()
+	{
+		m_uLoadersCount = Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->getListenersCount();
+		m_fCurrentLoaderProgress = 0.0f;
+		m_uLoadersDone = 0;
+	}
+
+	float getProgress()
+	{
+		return(clampf(m_fProgress, 0.0f, 1.0f));
+	}
+
+	void getLoadingText(char *szBuffer, UINT uBufferSize)
+	{
+		ScopedLock lock(m_mxLoadingText);
+		UINT uTextLength = m_sLoadingText.length();
+		uTextLength = min(uTextLength, uBufferSize - 1);
+
+		memcpy(szBuffer, m_sLoadingText.c_str(), uTextLength);
+		szBuffer[uTextLength] = 0;
+	}
+
+protected:
+	String m_sLoadingText;
+	mutex m_mxLoadingText;
+	UINT m_uLoadersDone = 0;
+	UINT m_uLoadersCount = 0;
+	float m_fCurrentLoaderProgress = 0.0f;
+	float m_fProgress = 0.0f;
+};
+
+CLevelLoadProgressListener g_levelProgressListener;
+
+void XMETHODCALLTYPE CLevelLoadTask::exec()
+{
+	XEventLevel evLevel;
+	evLevel.szLevelName = m_szLevelName;
+
+	g_levelProgressListener.onLoadBegin();
+	
+	evLevel.type = XEventLevel::TYPE_LOAD;
+	g_pLevelChannel->broadcastEvent(&evLevel);
+}
+
+void XMETHODCALLTYPE CLevelLoadTask::onFinished()
+{
+	XEventLevel evLevel;
+	evLevel.szLevelName = m_szLevelName;
+	
+	evLevel.type = XEventLevel::TYPE_LOAD_END;
+	g_pLevelChannel->broadcastEvent(&evLevel);
+
+	LibReport(REPORT_MSG_LEVEL_NOTICE, COLOR_LGREEN "Level is loaded!" COLOR_RESET "\n");
+
+	if(!GameData::m_pMgr->isEditorMode())
+	{
+		Core_0ConsoleExecCmd("gmode ingame");
+		Core_0ConsoleExecCmd("spawn");
+	}
+	mem_release(g_pLevelLoadTask);
+}
+
+int XMETHODCALLTYPE CLevelLoadTask::getProgress()
+{
+	return((int)(g_levelProgressListener.getProgress() * 100.0f));
+}
+
+const char* XMETHODCALLTYPE CLevelLoadTask::getName()
+{
+	g_levelProgressListener.getLoadingText(szProgressText, sizeof(szProgressText));
+	
+	return(szProgressText);
+}
 
 //##########################################################################
 
@@ -88,7 +347,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 	m_hWnd(hWnd)
 {
 	loadFoostepsSounds();
-
+	isGame = true;
 	m_isGame = isGame;
 	
 	HMODULE hDLL = LoadLibrary("sxgui"
@@ -113,11 +372,75 @@ GameData::GameData(HWND hWnd, bool isGame):
 		LibReport(REPORT_MSG_LEVEL_ERROR, "The procedure entry point InitInstance could not be located in the dynamic link library sxgui.dll");
 	}
 
-	m_pGUI = pfnGUIInit(SGCore_GetDXDevice(), "./gui/", hWnd);
-
-	m_pHUDcontroller = new CHUDcontroller();
+	if(hWnd)
+	{
+		m_pGUI = pfnGUIInit(SGCore_GetDXDevice(), "./gui/", hWnd);
+		m_pHUDcontroller = new CHUDcontroller();
+	}
 
 	m_pMgr = new CEntityManager();
+
+	g_pEditable = new CEditable(Core_GetIXCore());
+	Core_GetIXCore()->getPluginManager()->registerInterface(IXEDITABLE_GUID, g_pEditable);
+
+	g_pLevelChannel = Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID);
+	Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID)->addListener(&g_levelProgressListener);
+
+	g_pLevelChannel->addListener([](const XEventLevel *pData)
+	{
+		switch(pData->type)
+		{
+		case XEventLevel::TYPE_LOAD:
+			{
+				auto pEventChannel = Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID);
+				XEventLevelProgress ev;
+				ev.szLoadingText = "Загрузка объектов игрового мира";
+				ev.idPlugin = -3;
+				ev.type = XEventLevelProgress::TYPE_PROGRESS_BEGIN;
+				ev.fProgress = 0.0f;
+				pEventChannel->broadcastEvent(&ev);
+
+				char szPath[256];
+				sprintf(szPath, "levels/%s/%s.ent", pData->szLevelName, pData->szLevelName);
+				LibReport(REPORT_MSG_LEVEL_NOTICE, "loading entities\n");
+				GameData::m_pMgr->import(szPath, true);
+
+				ev.type = XEventLevelProgress::TYPE_PROGRESS_END;
+				ev.fProgress = 1.0f;
+				pEventChannel->broadcastEvent(&ev);
+			}
+			break;
+
+		case XEventLevel::TYPE_UNLOAD:
+			GameData::m_pMgr->unloadObjLevel();
+			break;
+		case XEventLevel::TYPE_SAVE:
+			{
+				char szPath[256];
+				sprintf(szPath, "levels/%s/%s.ent", pData->szLevelName, pData->szLevelName);
+				GameData::m_pMgr->exportList(szPath);
+			}
+			break;
+
+		case XEventLevel::TYPE_LOAD_END:
+			GameData::m_isLevelLoaded = true;
+			GameData::m_pHUDcontroller->loadMap(pData->szLevelName);
+			break;
+		case XEventLevel::TYPE_UNLOAD_BEGIN:
+			GameData::m_isLevelLoaded = false;
+			break;
+		}
+	});
+
+	m_pLightSystem = (IXLightSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXLIGHTSYSTEM_GUID);
+
+	if(m_pLightSystem)
+	{
+		IXLightSun *pSun = m_pLightSystem->createSun();
+		pSun->setColor(float3(0.0f, 1.0f, 0.0f));
+	}
+
+	g_pAsyncTaskRunner = Core_GetIXCore()->getAsyncTaskRunner();
 
 	Core_0RegisterConcmd("+forward", ccmd_forward_on);
 	Core_0RegisterConcmd("-forward", ccmd_forward_off);
@@ -166,6 +489,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		else
 			printf("cmd send_camera not found '%s' camera", argv[1]);
 	});
+		
 
 	Core_0RegisterConcmdArg("gui_load", [](int argc, const char ** argv){
 		if(argc != 3)
@@ -199,27 +523,14 @@ GameData::GameData(HWND hWnd, bool isGame):
 	{
 		UpdateSettingsDesktop();
 	});
-
-	Core_0RegisterConcmdArg("ent_load_level", [](int argc, const char ** argv){
-		if(argc != 3)
-		{
-			printf("Usage: ent_load_file <entfile> <levelname>");
-			return;
-		}
-		LibReport(REPORT_MSG_LEVEL_NOTICE, "load entity\n");
-		SGame_LoadEnts(argv[1]);
-		SGame_OnLevelLoad(argv[2]);
-	});
-	Core_0RegisterConcmd("ent_unload_level", [](){
-		SGame_UnloadObjLevel();
-	});
+	
 	Core_0RegisterConcmdArg("ent_save_level", [](int argc, const char ** argv){
 		if(argc != 2)
 		{
 			printf("Usage: ent_save_level <entfile>");
 			return;
 		}
-		SGame_SaveEnts(argv[1]);
+		GameData::m_pMgr->exportList(argv[1]);
 	});
 
 	Core_0RegisterConcmdArg("ent_dump_info", [](int argc, const char ** argv)
@@ -244,21 +555,29 @@ GameData::GameData(HWND hWnd, bool isGame):
 			printf("Usage: map <levelname>");
 			return;
 		}
+
+		EndMap();
+
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "Loading level '" COLOR_LGREEN "%s" COLOR_RESET "'\n", argv[1]);
 		
-		SLevel_Load(argv[1], true);
-
-		//GameData::m_pGameStateManager->activate("ingame");
-
-		Core_0ConsoleExecCmd("gmode ingame");
-		Core_0ConsoleExecCmd("spawn");
-
-		for(int i = 0; i < 0; ++i)
+		static gui::IDesktop *pLoadingDesktop = GameData::m_pGUI->createDesktopA("loading", "menu/loading.html");
+		gui::dom::IDOMnode *pNode = pLoadingDesktop->getDocument()->getElementById(L"engine_version");
+		static const char **pszVersion = GET_PCVAR_STRING("engine_version");
+		if(pNode && pszVersion)
 		{
-			CBaseEntity* bEnt = SGame_CreateEntity("npc_zombie");
-			bEnt->setFlags(bEnt->getFlags() | EF_EXPORT | EF_LEVEL);
-			bEnt->setKV("origin", "0 1 0");
+			pNode->setText(StringW(L"SkyXEngine ") + StringW(String(*pszVersion)), TRUE);
 		}
+		GameData::m_pGUI->pushDesktop(pLoadingDesktop);
+
+		XEventLevel evLevel;
+		evLevel.szLevelName = argv[1];
+		evLevel.type = XEventLevel::TYPE_LOAD_BEGIN;
+		g_pLevelChannel->broadcastEvent(&evLevel);
+
+		g_pLevelLoadTask = new CLevelLoadTask(argv[1]);
+		g_pAsyncTaskRunner->runTask(g_pLevelLoadTask);
 	});
+	Core_0RegisterConcmd("endmap", EndMap);
 
 	Core_0RegisterConcmdArg("gmode", [](int argc, const char ** argv)
 	{
@@ -278,8 +597,10 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 	//Core_0RegisterCVarFloat("r_default_fov", 45.0f, "Default FOV value");
 	Core_0RegisterCVarBool("cl_mode_editor", false, "Editor control mode");
-	Core_0RegisterCVarBool("cl_grab_cursor", true, "Grab cursor on move");
+	Core_0RegisterCVarBool("cl_grab_cursor", false, "Grab cursor on move");
 	
+	Core_0RegisterCVarFloat("cl_mousesense", 2.0f, "Mouse sense value");
+	Core_0RegisterCVarBool("cl_invert_y", false, "Invert Y axis");
 
 	Core_0RegisterCVarBool("cl_bob", true, "View bobbing");
 	Core_0RegisterCVarFloat("cl_bob_walk_y", 0.1f, "View bobbing walk y amplitude");
@@ -362,7 +683,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 		CLevelInfo levelInfo;
 		memset(&levelInfo, 0, sizeof(CLevelInfo));
-		while(SLevel_EnumLevels(&levelInfo))
+		while(EnumLevels(&levelInfo))
 		{
 			LibReport(REPORT_MSG_LEVEL_NOTICE, "Level: %s, dir: %s\n", levelInfo.m_szLocalName, levelInfo.m_szName);
 
@@ -424,12 +745,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		}
 	});
 	m_pGUI->registerCallback("to_mainmenu", [](gui::IEvent * ev){
-		GameData::m_pGameStateManager->activate("main_menu");
-
-		//Core_0ConsoleExecCmd("observe");
-		GameData::m_pPlayer->observe();
-
-		SLevel_Clear();
+		Core_0ConsoleExecCmd("endmap");
 	});
 	m_pGUI->registerCallback("dial_settings", [](gui::IEvent * ev){
 		static gui::IDesktop * pSettingsDesktop = GameData::m_pGUI->createDesktopA("menu_settings", "menu/settings.html");
@@ -470,8 +786,10 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 	m_pGUI->registerCallback("settings_commit", [](gui::IEvent * ev){
 
-		CSettingsWriter settingsWriter;
-		settingsWriter.loadFile("../config_game_user_auto.cfg");
+		bool isNewExists = Core_GetIXCore()->getFileSystem()->fileExists("user_settings.cfg");
+		
+		CSettingsWriter settingsWriter(Core_GetIXCore()->getFileSystem());
+		settingsWriter.loadFile(isNewExists ? "user_settings.cfg" : "../config_game_user_auto.cfg");
 
 		gui::IDesktop * pSettingsDesktop = GameData::m_pGUI->getActiveDesktop();
 		gui::dom::IDOMdocument * doc = pSettingsDesktop->getDocument();
@@ -505,15 +823,17 @@ GameData::GameData(HWND hWnd, bool isGame):
 			}
 		}
 
-		settingsWriter.saveFile("../config_game_user_auto.cfg");
-
+		settingsWriter.saveFile("user_settings.cfg");
+		
 		GameData::m_pGUI->popDesktop();
 	});
 	m_pGUI->registerCallback("controls_commit", [](gui::IEvent * ev){
 
-		CSettingsWriter settingsWriter;
-		settingsWriter.loadFile("../config_game_user_auto.cfg");
+		bool isNewExists = Core_GetIXCore()->getFileSystem()->fileExists("user_settings.cfg");
 
+		CSettingsWriter settingsWriter(Core_GetIXCore()->getFileSystem());
+		settingsWriter.loadFile(isNewExists ? "user_settings.cfg" : "../config_game_user_auto.cfg");
+		
 		gui::IDesktop * pSettingsDesktop = GameData::m_pGUI->getActiveDesktop();
 		gui::dom::IDOMdocument * doc = pSettingsDesktop->getDocument();
 		auto pItems = doc->getElementsByClass(L"cctable_row");
@@ -557,7 +877,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		}
 
 
-		settingsWriter.saveFile("../config_game_user_auto.cfg");
+		settingsWriter.saveFile("config_game_user_auto.cfg");
 
 		GameData::m_pGUI->popDesktop();
 	});
@@ -739,6 +1059,14 @@ GameData::GameData(HWND hWnd, bool isGame):
 		});
 	});
 
+	Core_0RegisterConcmdArg("text", [](int argc, const char ** argv)
+	{
+		if(argc != 2)
+		{
+			printf("Usage: text <text>");
+			return;
+		}
+	});
 
 	//gui::IDesktop * pDesk = m_pGUI->createDesktopA("ingame", "ingame.html");
 	//gui::IDesktop * pDesk = m_pGUI->createDesktopA("ingame", "main_menu.html");
@@ -752,17 +1080,39 @@ GameData::GameData(HWND hWnd, bool isGame):
 	//g_pRagdoll = new CRagdoll(pl);
 	//pl->setRagdoll(g_pRagdoll);
 
+	g_idTextVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_main.vs");
+	g_idTextPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_main.ps");
+	g_idTextKit = SGCore_ShaderCreateKit(g_idTextVS, g_idTextPS);
+
+	GXBlendDesc bsDesc;
+	bsDesc.renderTarget[0].useBlend = true;
+	bsDesc.renderTarget[0].blendSrcColor = bsDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
+	bsDesc.renderTarget[0].blendDestColor = bsDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
+	g_pTextBlendState = SGCore_GetDXDevice()->createBlendState(&bsDesc);
+
+	GXSamplerDesc sampDesc;
+	sampDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
+	g_pTextSamplerState = SGCore_GetDXDevice()->createSamplerState(&sampDesc);
+
+	g_pTextVSConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(SMMATRIX));
+	g_pTextPSConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(float4));
+
+	GXDepthStencilDesc dsDesc;
+	dsDesc.useDepthTest = dsDesc.useDepthWrite = false;
+	g_pTextDepthState = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
+
 	//m_pStatsUI = m_pGUI->createDesktopA("stats", "sys/stats.html");
 
 	if(m_isGame)
 	{
 		CBaseTool *pTool = (CBaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
 		pTool->setOwner(m_pPlayer);
-		pTool->attachHands();
+		pTool->setHandsResource(m_pPlayer->getHandsResource());
 		pTool->playAnimation("idle");
 		pTool->setPos(m_pPlayer->getHead()->getPos() + float3(1.0f, 0.0f, 1.0f));
 		pTool->setOrient(m_pPlayer->getHead()->getOrient());
 		pTool->setParent(m_pPlayer->getHead());
+		pTool->setMode(IIM_EQUIPPED);
 
 		CBaseAmmo *pAmmo = (CBaseAmmo*)CREATE_ENTITY("ammo_5.45x39ps", m_pMgr);
 		pTool->chargeAmmo(pAmmo);
@@ -782,7 +1132,9 @@ GameData::GameData(HWND hWnd, bool isGame):
 }
 GameData::~GameData()
 {
+	mem_release(g_pAsyncTaskRunner);
 	//mem_delete(g_pRagdoll);
+	mem_delete(g_pEditable);
 
 	mem_delete(m_pGameStateManager);
 	mem_delete(m_pHUDcontroller);
@@ -806,20 +1158,46 @@ GameData::~GameData()
 
 void GameData::update()
 {
+	g_pAsyncTaskRunner->runCallbacks();
+	if(g_pLevelLoadTask)
+	{
+		int iProgress = g_pLevelLoadTask->getProgress();
+		auto pDesktop = GameData::m_pGUI->getActiveDesktop();
+		if(pDesktop)
+		{
+			auto pProgress = pDesktop->getDocument()->getElementById(L"progress_inner");
+			if(pProgress)
+			{
+				pProgress->getStyleSelf()->width->set(iProgress);
+				pProgress->getStyleSelf()->width->setDim(gui::css::ICSSproperty::DIM_PC);
+				pProgress->updateStyles();
+			}
+
+			auto pText = pDesktop->getDocument()->getElementById(L"text");
+			if(pText)
+			{
+				pText->setText(StringW(String(g_pLevelLoadTask->getName())), TRUE);
+			}
+		}
+
+	}
 	m_pCrosshair->update();
 	m_pGUI->update();
 
-	static const bool * pbHudRangeFinder = GET_PCVAR_BOOL("hud_rangefinder");
-	if(*pbHudRangeFinder)
+	if(m_isLevelLoaded)
 	{
-		float fRange = m_pPlayer->getAimRange();
-		m_pHUDcontroller->setAimRange(fRange);
+		static const bool * pbHudRangeFinder = GET_PCVAR_BOOL("hud_rangefinder");
+		if(*pbHudRangeFinder)
+		{
+			float fRange = m_pPlayer->getAimRange();
+			m_pHUDcontroller->setAimRange(fRange);
+		}
+		else
+		{
+			m_pHUDcontroller->setAimRange(-1.0f);
+		}
+		m_pHUDcontroller->update();
 	}
-	else
-	{
-		m_pHUDcontroller->setAimRange(-1.0f);
-	}
-	m_pHUDcontroller->update();
 	/*
 	float3 start(-10.0f, 100.0f, -10.0f),
 		end = start + float3(10.0f, -200.0f, 10.0f);
@@ -837,12 +1215,108 @@ void GameData::render()
 {
 	//g_pTracer->render();
 	//g_pTracer2->render();
-	const bool * pbHudDraw = GET_PCVAR_BOOL("hud_draw");
-	if(*pbHudDraw)
-	{
-		m_pGUI->render();
-	}
+	
 	//m_pStatsUI->render(0.1f);
+	IGXDevice *pDev = SGCore_GetDXDevice();
+	++g_uFrameCount;
+	
+	static int64_t s_uTime = Core_TimeTotalMlsGetU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+	int64_t uTime = Core_TimeTotalMlsGetU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
+	if(uTime - s_uTime > 1000)
+	{
+		g_uFPS = (UINT)(g_uFrameCount * 1000 / (uTime - s_uTime));
+		s_uTime = uTime;
+		g_uFrameCount = 0;
+	}
+	if(pDev)
+	{
+		const GXFrameStats *pFrameStats = pDev->getThreadContext()->getFrameStats();
+		const GXAdapterMemoryStats *pMemoryStats = pDev->getMemoryStats();
+
+		static GXFrameStats s_oldFrameStats = {0};
+		static GXAdapterMemoryStats s_oldMemoryStats = {0};
+		static UINT s_uOldFps = 0;
+
+		if(s_uOldFps != g_uFPS 
+			|| memcmp(&s_oldFrameStats, pFrameStats, sizeof(s_oldFrameStats)) 
+			|| memcmp(&s_oldMemoryStats, pMemoryStats, sizeof(s_oldMemoryStats)))
+		{
+			s_uOldFps = g_uFPS;
+			s_oldFrameStats = *pFrameStats;
+			s_oldMemoryStats = *pMemoryStats;
+
+			const GXAdapterDesc *pAdapterDesc = pDev->getAdapterDesc();
+
+			static wchar_t wszStats[512];
+			swprintf_s(wszStats, L"FPS: %u\n"
+				L"GPU: %s\n"
+				L"Total memory: %uMB\n"
+				L"Used memory: %.3fMB; (T: %.3fMB; RT: %.3fMB; VB: %.3fMB, IB: %.3fMB, SC: %.3fKB)\n"
+				L"Uploaded bytes: %u; (T: %u; VB: %u, IB: %u, SC: %u)\n"
+				L"Count poly: %u\n"
+				L"Count DIP: %u\n"
+				, g_uFPS,
+
+				pAdapterDesc->szDescription,
+				pAdapterDesc->sizeTotalMemory / 1024 / 1024,
+
+				(float)(pMemoryStats->sizeIndexBufferBytes + pMemoryStats->sizeRenderTargetBytes + pMemoryStats->sizeShaderConstBytes + pMemoryStats->sizeTextureBytes + pMemoryStats->sizeVertexBufferBytes) / 1024.0f / 1024.0f,
+				(float)pMemoryStats->sizeTextureBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->sizeRenderTargetBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->sizeVertexBufferBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->sizeIndexBufferBytes / 1024.0f / 1024.0f,
+				(float)pMemoryStats->sizeShaderConstBytes / 1024.0f,
+
+				pFrameStats->uUploadedBuffersIndices + pFrameStats->uUploadedBuffersTextures + pFrameStats->uUploadedBuffersVertexes + pFrameStats->uUploadedBuffersShaderConst,
+				pFrameStats->uUploadedBuffersTextures,
+				pFrameStats->uUploadedBuffersVertexes,
+				pFrameStats->uUploadedBuffersIndices,
+				pFrameStats->uUploadedBuffersShaderConst,
+
+				pFrameStats->uPolyCount,
+				pFrameStats->uDIPcount
+				);
+
+			RenderText(wszStats);
+		}
+		if(g_pTextRenderBuffer)
+		{
+			IGXContext *pContext = pDev->getThreadContext();
+
+			pContext->setBlendState(g_pTextBlendState);
+			pContext->setRasterizerState(NULL);
+			pContext->setDepthStencilState(g_pTextDepthState);
+			pContext->setSamplerState(NULL, 0);
+
+			static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+			static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+
+			SMMATRIX m(
+				2.0f / (float)*r_win_width, 0.0f, 0.0f, 0.0f,
+				0.0f, -2.0f / (float)*r_win_height, 0.0f, 0.0f,
+				0.0f, 0.0f, 0.5f, 0.0f,
+				-1.0f, 1.0f, 0.5f, 1.0f);
+			m = SMMatrixTranslation(-0.5f, -0.5f, 0.0f) * m;
+			//	GetGUI()->getDevice()->SetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&m));
+
+			g_pTextVSConstantBuffer->update(&SMMatrixTranspose(SMMatrixTranslation(float3(1.0f, 1.0f, 0.0f)) * m));
+			g_pTextPSConstantBuffer->update(&float4_t(0, 0, 0, 1.0f));
+
+			SGCore_ShaderBind(g_idTextKit);
+			pContext->setRenderBuffer(g_pTextRenderBuffer);
+			pContext->setIndexBuffer(g_pTextIndexBuffer);
+			pContext->setPSTexture((IGXTexture2D*)g_pFont->getAPITexture(0));
+			pContext->setPrimitiveTopology(GXPT_TRIANGLELIST);
+			pContext->setVSConstant(g_pTextVSConstantBuffer);
+			pContext->setPSConstant(g_pTextPSConstantBuffer);
+			pContext->drawIndexed(g_uVertexCount, g_uIndexCount / 3, 0, 0);
+
+			g_pTextVSConstantBuffer->update(&SMMatrixTranspose(m));
+			g_pTextPSConstantBuffer->update(&float4_t(0.3f, 1.0f, 0.3f, 1.0f));
+			pContext->drawIndexed(g_uVertexCount, g_uIndexCount / 3, 0, 0);
+			SGCore_ShaderUnBind();
+		}
+	}
 }
 void GameData::renderHUD()
 {
@@ -850,6 +1324,15 @@ void GameData::renderHUD()
 	if(*pbHudCrosshair)
 	{
 		m_pCrosshair->render();
+	}
+
+	if(m_pGUI)
+	{
+		const bool * pbHudDraw = GET_PCVAR_BOOL("hud_draw");
+		if(*pbHudDraw)
+		{
+			m_pGUI->render();
+		}
 	}
 }
 void GameData::sync()
@@ -1037,6 +1520,7 @@ void GameData::ccmd_switch_firemode()
 
 void GameData::ccmd_game_menu()
 {
+	Core_0ConsoleExecCmd("cl_grab_cursor 0");
 	m_pGameStateManager->activate("ingame_menu");
 }
 

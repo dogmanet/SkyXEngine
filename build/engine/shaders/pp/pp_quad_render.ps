@@ -1,0 +1,19 @@
+
+/*
+pp_quad_render.ps
+Отрисовка полноэкранного квадрата (full screen quad)
+*/
+
+#include "../struct.h"
+
+//##########################################################################
+
+SamplerState g_sDiffuse: register(s0);
+Texture2D g_txDiffuse : register(t0);		// basetexture
+
+//##########################################################################
+
+float4 main(VSO_PP IN):COLOR0
+{
+	return(g_txDiffuse.Sample(g_sDiffuse, IN.vTexUV));
+}

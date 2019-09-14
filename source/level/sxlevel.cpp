@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -9,6 +9,7 @@ See the license in LICENSE
 #include "sxlevel.h"
 
 #include "level.h"
+#include <xcommon/XEvents.h>
 
 #if !defined(DEF_STD_REPORT)
 #define DEF_STD_REPORT
@@ -16,6 +17,8 @@ report_func g_fnReportf = DefReport;
 #endif
 
 //##########################################################################
+
+IEventChannel<XEventLevel> *g_pLevelChannel = NULL;
 
 CLevel* g_pLevel = 0;
 
@@ -33,7 +36,7 @@ SX_LIB_API void SLevel_Dbg_Set(report_func fnFunc)
 	g_fnReportf = fnFunc;
 }
 
-SX_LIB_API void SLevel_0Create(const char *szName, bool isUnic)
+SX_LIB_API void SLevel_0Create(const char *szName, bool isUnic, bool isServerMode)
 {
 	if (szName && strlen(szName) > 1)
 	{
@@ -44,16 +47,29 @@ SX_LIB_API void SLevel_0Create(const char *szName, bool isUnic)
 			{
 				CloseHandle(hMutex);
 				LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
-			}
-			else
-			{
-				g_pLevel = new CLevel();
+				return;
 			}
 		}
-		else
+		IXLightSystem *pLightSystem = (IXLightSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXLIGHTSYSTEM_GUID);
+		g_pLevel = new CLevel(isServerMode, pLightSystem);
+
+		g_pLevelChannel = Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID);
+
+		g_pLevelChannel->addListener([](const XEventLevel *pData)
 		{
-			g_pLevel = new CLevel();
-		}
+			switch(pData->type)
+			{
+			case XEventLevel::TYPE_LOAD:
+				g_pLevel->load(pData->szLevelName, true);
+				break;
+			case XEventLevel::TYPE_UNLOAD:
+				g_pLevel->clear();
+				break;
+			case XEventLevel::TYPE_SAVE:
+				g_pLevel->save(pData->szLevelName);
+				break;
+			}
+		});
 	}
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);

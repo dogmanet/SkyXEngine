@@ -572,9 +572,12 @@ void CSoundManager::loadWAV(CSound* snd, const char* fpath)
 
 	snd->m_uiSizeFull = (Hdr.ChunkSize + (sizeof(char)* 4 + sizeof(int32_t))) - sizeof(CSoundWaveHeader);
 
-	if (snd->m_uiStreamSize == 0)
+	/*if (snd->m_uiStreamSize == 0)
 		Hdr.DataSize = snd->m_uiSizeFull;
 	else
+		Hdr.DataSize = snd->m_uiStreamSize;*/
+
+	if (snd->m_uiStreamSize > 0)
 		Hdr.DataSize = snd->m_uiStreamSize;
 	
 	if (!(snd->m_pSoundBuffer = soundBufferCreate(&Hdr)))

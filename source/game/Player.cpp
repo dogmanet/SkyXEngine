@@ -5,7 +5,6 @@ See the license in LICENSE
 ***********************************************************/
 
 #include <input/sxinput.h>
-#include <light/sxlight.h>
 #include "Player.h"
 #include "LightDirectional.h"
 #include "BaseTool.h"
@@ -18,6 +17,7 @@ See the license in LICENSE
 #include "HUDcontroller.h"
 
 #include <aigrid/sxaigrid.h>
+#include <xcommon/resource/IXResourceManager.h>
 
 /*! \skydocent player
 Объект игрока в мире
@@ -68,6 +68,9 @@ CPlayer::CPlayer(CEntityManager * pMgr):
 
 	m_pCrosshair = new CCrosshair();
 
+	IXResourceManager *pResourceManager = Core_GetIXCore()->getResourceManager();
+	pResourceManager->getModelAnimated("models/weapons/hands.dse", &m_pHandsModelResource);
+
 	//m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 }
 
@@ -84,6 +87,7 @@ void CPlayer::updateInput(float dt)
 	static const float * sense = GET_PCVAR_FLOAT("cl_mousesense");
 	static const bool * editor_mode = GET_PCVAR_BOOL("cl_mode_editor");
 	static const bool * grab_cursor = GET_PCVAR_BOOL("cl_grab_cursor");
+	static const bool * invert_y = GET_PCVAR_BOOL("cl_invert_y");
 
 	if(*editor_mode && !SSInput_GetKeyState(SIK_LCONTROL))
 	{
@@ -97,8 +101,15 @@ void CPlayer::updateInput(float dt)
 	{
 		SSInput_GetMouseDelta(&x, &y);
 
-		float dx = (float)x * *sense * 10.0f /* / dt */;
-		float dy = (float)y * *sense * 10.0f /* / dt */;
+		//float dx = (float)x * *sense * 10.0f /* / dt */;
+		//float dy = (float)y * *sense * 10.0f /* / dt */;
+		float fCoeff = SMToRadian(0.022f) * *sense;
+		float dx = (float)x * fCoeff /* / dt */;
+		float dy = (float)y * fCoeff /* / dt */;
+		if(*invert_y)
+		{
+			dy *= -1;
+		}
 		if(m_iDSM && m_pActiveTool)
 		{
 			m_pActiveTool->dbgMove(m_iDSM, dy);
@@ -170,7 +181,7 @@ void CPlayer::updateInput(float dt)
 			mov = true;
 		}
 
-		if(m_uMoveDir & PM_CROUCH || (m_fCurrentHeight < 1.0f && !m_pCharacter->canStandUp((m_fCapsHeight - m_fCapsRadius * 2.0f) * (1.0f - m_fCurrentHeight))))
+		if(m_uMoveDir & PM_CROUCH || (m_fCurrentHeight < 0.99f && !m_pCharacter->canStandUp((m_fCapsHeight - m_fCapsRadius * 2.0f) * (1.0f - m_fCurrentHeight))))
 		{
 			m_fCurrentHeight -= dt;
 			float fMinHeight = (m_fCapsHeightCrouch - m_fCapsRadius * 2.0f) / (m_fCapsHeight - m_fCapsRadius * 2.0f);
@@ -195,11 +206,11 @@ void CPlayer::updateInput(float dt)
 		}
 		else
 		{
-			dir = SMQuaternion(m_vPitchYawRoll.y, 'y') * (SMVector3Normalize(dir) * dt);
-			dir *= 0.5f;
+			dir = SMQuaternion(m_vPitchYawRoll.y, 'y') * (SMVector3Normalize(dir)/* * dt*/);
+			dir *= 3.5f;
 			if(m_uMoveDir & PM_RUN)
 			{
-				dir *= 0.5f;
+				dir *= 2.0f;
 			}
 			if((m_uMoveDir & PM_JUMP))
 			{
@@ -221,7 +232,9 @@ void CPlayer::updateInput(float dt)
 			{
 				m_canJump = true;
 			}
-			m_pCharacter->setWalkDirection(F3_BTVEC(dir));
+			// m_pCharacter->setWalkDirection(F3_BTVEC(dir));
+			m_pCharacter->setVelocityForTimeInterval(F3_BTVEC(dir), dt);
+			
 
 			static const bool * cl_bob = GET_PCVAR_BOOL("cl_bob");
 			static const float * cl_bob_walk_y = GET_PCVAR_FLOAT("cl_bob_walk_y");

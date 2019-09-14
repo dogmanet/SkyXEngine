@@ -1,15 +1,11 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 #include "PhyWorld.h"
 #include <core/sxcore.h>
-#include <geom/sxgeom.h>
-#include <green/sxgreen.h>
-#include <gcore/sxgcore.h>
-#include <light/sxlight.h>
 
 #include "sxphysics.h"
 
@@ -114,18 +110,62 @@ CPhyWorld::CPhyWorld():
 	//m_pDebugDrawer->setDebugMode(btIDebugDraw::DBG_FastWireframe);
 	m_pDynamicsWorld->setDebugDrawer(m_pDebugDrawer);
 
+	Core_GetIXCore()->getPluginManager()->registerInterface(IXRENDERABLE_GUID, new CRenderable(this));
+
 	Core_0RegisterCVarBool("r_physdebug", false, "Debug drawing physics shapes");
 	m_bDebugDraw = GET_PCVAR_BOOL("r_physdebug");
 
 	//btSetCustomEnterProfileZoneFunc(CProfileManager::Start_Profile);
 	//btSetCustomLeaveProfileZoneFunc(CProfileManager::Stop_Profile);
 
+#if 0
+	Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->addListener([](const XEventLevel *pData)
+	{
+		char szPathLevel[1024];
+
+		switch(pData->type)
+		{
+		case XEventLevel::TYPE_LOAD:
+			SPhysics_UnloadGeom();			
+
+			sprintf(szPathLevel, "%s%s/%s.phy", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pData->szLevelName, pData->szLevelName);
+			LibReport(REPORT_MSG_LEVEL_NOTICE, "loading level\n");
+			//if(FileExistsFile(szPathLevel))
+			{
+				IEventChannel<XEventLevelProgress> *pProgressChannel = Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID);
+				XEventLevelProgress levelProgress;
+				//@TODO: fix that value!
+				levelProgress.idPlugin = -2;
+				levelProgress.fProgress = 0.0f;
+				levelProgress.type = XEventLevelProgress::TYPE_PROGRESS_BEGIN;
+				pProgressChannel->broadcastEvent(&levelProgress);
+
+				SPhysics_LoadGeom(szPathLevel);
+
+				levelProgress.fProgress = 1.0f;
+				levelProgress.type = XEventLevelProgress::TYPE_PROGRESS_END;
+				pProgressChannel->broadcastEvent(&levelProgress);
+			}
+			break;
+		case XEventLevel::TYPE_UNLOAD:
+			SPhysics_UnloadGeom();
+			break;
+		case XEventLevel::TYPE_SAVE:
+			sprintf(szPathLevel, "%s%s/%s.phy", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pData->szLevelName, pData->szLevelName);
+			SPhysics_ExportGeom(szPathLevel);
+			break;
+		}
+	});
+#endif
+
 	printf("Done!\n");
 }
 
 CPhyWorld::~CPhyWorld()
 {
+#if 0
 	unloadGeom();
+#endif
 
 	mem_delete(m_pDynamicsWorld);
 	mem_delete(m_pGHostPairCallback);
@@ -139,8 +179,10 @@ void CPhyWorld::render()
 {
 	if(*m_bDebugDraw)
 	{
+		CDebugDrawer *pDebugDrawer = (CDebugDrawer*)m_pDynamicsWorld->getDebugDrawer();
+		pDebugDrawer->begin();
 		m_pDynamicsWorld->debugDrawWorld();
-		((CDebugDrawer*)(m_pDynamicsWorld->getDebugDrawer()))->render();
+		pDebugDrawer->commit();
 	}
 }
 
@@ -167,7 +209,7 @@ void CPhyWorld::update(int thread)
 	}
 
 	//printf("%.3fs\n", (float)(time1 - time0) / 1000.0f);
-	m_pDynamicsWorld->stepSimulation((float)(time1 - time0) / 1000.0f, 0, 1.0f / 60.0f);
+	m_pDynamicsWorld->stepSimulation((float)(time1 - time0) / 1000.0f, 2, 1.0f / 60.0f);
 
 	time0 = time1;
 }
@@ -193,6 +235,8 @@ void CPhyWorld::removeShape(btRigidBody * pBody)
 	}
 }
 
+#if 0
+
 void CPhyWorld::loadGeom(const char * file)
 {
 	if(file && importGeom(file))
@@ -209,7 +253,7 @@ void CPhyWorld::loadGeom(const char * file)
 	int32_t * pIndexCount;
 
 	int32_t iModelCount;
-
+#if 0
 	SGeom_GetArrBuffsGeom(&ppVertices, &pVertexCount, &ppIndices, &ppMtls, &pIndexCount, &iModelCount);
 	if(iModelCount > 0)
 	{
@@ -278,7 +322,7 @@ void CPhyWorld::loadGeom(const char * file)
 		}
 	}
 	SGeom_ClearArrBuffsGeom(ppVertices, pVertexCount, ppIndices, ppMtls, pIndexCount, iModelCount);
-
+#endif
 
 
 
@@ -770,6 +814,7 @@ bool CPhyWorld::exportGeom(const char * _file)
 	}
 	return(ret);
 }
+#endif
 
 MTLTYPE_PHYSIC CPhyWorld::getMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
 {
@@ -802,26 +847,62 @@ void CPhyWorld::enableSimulation()
 
 //##############################################################
 
+void XMETHODCALLTYPE CPhyWorld::CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility)
+{
+	m_pWorld->render();
+}
+void XMETHODCALLTYPE CPhyWorld::CRenderable::startup(IGXDevice *pDevice, IXMaterialSystem *pMaterialSystem)
+{
+}
+
+//##############################################################
+
+CPhyWorld::CDebugDrawer::CDebugDrawer()
+{
+	auto pDevice = SGCore_GetDXDevice();
+	if(!pDevice)
+	{
+		return;
+	}
+
+	GXVertexElement vertexDecl[] =
+	{
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
+		{0, 12, GXDECLTYPE_FLOAT4, GXDECLUSAGE_COLOR, GXDECLSPEC_PER_VERTEX_DATA},
+		GX_DECL_END()
+	};
+
+	m_pVertexDeclaration = pDevice->createVertexDeclaration(vertexDecl);
+	m_pVertexBuffer = pDevice->createVertexBuffer(sizeof(render_point) * m_uDataSize, GXBUFFER_USAGE_STREAM);
+	m_pRenderBuffer = pDevice->createRenderBuffer(1, &m_pVertexBuffer, m_pVertexDeclaration);
+	m_pVSConstantBuffer = pDevice->createConstantBuffer(sizeof(SMMATRIX));
+
+	ID idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dbg_colorvertex.vs");
+	ID idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dbg_colorvertex.ps");
+	m_idShader = SGCore_ShaderCreateKit(idVS, idPS);
+}
+
+CPhyWorld::CDebugDrawer::~CDebugDrawer()
+{
+	mem_release(m_pVertexBuffer);
+	mem_release(m_pVertexDeclaration);
+	mem_release(m_pRenderBuffer);
+	mem_release(m_pVSConstantBuffer);
+}
+
 void CPhyWorld::CDebugDrawer::drawLine(const btVector3 & from, const btVector3 & to, const btVector3 & color)
 {
-	int clr = 0;
-	clr += 255;
-	clr <<= 8;
-	clr += (int)(color.getX() * 255.0f);
-	clr <<= 8;
-	clr += (int)(color.getY() * 255.0f);
-	clr <<= 8;
-	clr += (int)(color.getZ() * 255.0f);
-	//clr <<= 8;
+	if(m_uDataPointer == m_uDataSize)
+	{
+		render();
+	}
 
-	render_point pt;
-	pt.clr = clr;
+	render_point pt = {BTVEC_F3(from), float4(BTVEC_F3(color), 1.0f)};
 
-	pt.pos = float3_t(from.x(), from.y(), from.z());
-	m_vDrawData.push_back(pt);
+	m_pDrawData[m_uDataPointer++] = pt;
 
-	pt.pos = float3_t(to.x(), to.y(), to.z());
-	m_vDrawData.push_back(pt);
+	pt.pos = BTVEC_F3(to);
+	m_pDrawData[m_uDataPointer++] = pt;
 }
 
 void CPhyWorld::CDebugDrawer::drawContactPoint(const btVector3 & PointOnB, const btVector3 & normalOnB, btScalar distance, int lifeTime, const btVector3& color)
@@ -899,31 +980,46 @@ int CPhyWorld::CDebugDrawer::getDebugMode() const
 	return(m_iDebugMode);
 }
 
+void CPhyWorld::CDebugDrawer::begin()
+{
+	m_uDataPointer = 0;
+
+	SGCore_ShaderBind(m_idShader);
+
+	IGXContext *pCtx = SGCore_GetDXDevice()->getThreadContext();
+
+	pCtx->setRenderBuffer(m_pRenderBuffer);
+	pCtx->setPrimitiveTopology(GXPT_LINELIST);
+
+	SMMATRIX mViewProj, mWorld;
+	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
+	Core_RMatrixGet(G_RI_MATRIX_WORLD, &mWorld);
+	m_pVSConstantBuffer->update(&SMMatrixTranspose(mWorld * mViewProj));
+	pCtx->setVSConstant(m_pVSConstantBuffer, 4);
+}
+
+void CPhyWorld::CDebugDrawer::commit()
+{
+	render();
+	SGCore_ShaderUnBind();
+	SGCore_GetDXDevice()->getThreadContext()->setPrimitiveTopology(GXPT_TRIANGLELIST);
+}
+
 void CPhyWorld::CDebugDrawer::render()
 {
-	if(!m_vDrawData.size())
+	if(!m_uDataPointer)
 	{
 		return;
 	}
-	SGCore_ShaderUnBind();
 
-	SMMATRIX mView, mProj;
-	Core_RMatrixGet(G_RI_MATRIX_VIEW, &mView);
-	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mProj);
+	render_point *pData = NULL;
+	if(m_pVertexBuffer->lock((void**)&pData, GXBL_WRITE))
+	{
+		memcpy(pData, m_pDrawData, sizeof(render_point) * m_uDataPointer);
+		m_pVertexBuffer->unlock();
 
-	SGCore_GetDXDevice()->SetTransform(D3DTS_WORLD, (D3DMATRIX*)&SMMatrixIdentity());
-	SGCore_GetDXDevice()->SetTransform(D3DTS_VIEW, (D3DMATRIX*)&mView);
-	SGCore_GetDXDevice()->SetTransform(D3DTS_PROJECTION, (D3DMATRIX*)&mProj);
+		SGCore_GetDXDevice()->getThreadContext()->drawPrimitive(0, m_uDataPointer / 2);
+	}
 
-	SGCore_GetDXDevice()->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	//SGCore_GetDXDevice()->SetRenderState(D3DRS_LIGHTING, FALSE);
-	//SGCore_GetDXDevice()->SetRenderState(D3DRS_COLORWRITEENABLE, 0xFF);
-
-	SGCore_GetDXDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-
-	SGCore_GetDXDevice()->SetTexture(0, 0);
-	
-	SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINELIST, m_vDrawData.size() / 2, &(m_vDrawData[0]), sizeof(render_point));
-
-	m_vDrawData.clear();
+	m_uDataPointer = 0;
 }

@@ -1,22 +1,28 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 #include "level.h"
 #include <decals/sxdecals.h>
 
-CLevel::CLevel()
+CLevel::CLevel(bool isServerMode, IXLightSystem *pLightSystem)
 {
 	m_sAmbientSounds = "";
 	m_sWeather = "";
 	m_szName[0] = 0;
 	m_sLocalName = "";
+	m_isServerMode = isServerMode;
+	m_pLightSystem = pLightSystem;
 
-	loadParticles();
-	m_pWeather = new CWeather();
-	m_pAmbientSounds = new CAmbientSounds();
+
+	if(!isServerMode)
+	{
+		loadParticles();
+		m_pWeather = new CWeather(m_pLightSystem);
+		m_pAmbientSounds = new CAmbientSounds();
+	}
 }
 
 CLevel::~CLevel()
@@ -25,6 +31,7 @@ CLevel::~CLevel()
 
 	mem_delete(m_pWeather);
 	mem_delete(m_pAmbientSounds);
+	mem_release(m_pSun);
 }
 
 void CLevel::clear()
@@ -34,21 +41,38 @@ void CLevel::clear()
 	m_sWeather = "";
 	m_sAmbientSounds = "";
 
-	SGeom_Clear();
 	SGreen_Clear();
 
-	SLight_ClearIDArr();
+	if(!m_pSun && m_pLightSystem)
+	{
+		m_pSun = m_pLightSystem->getSun();
+		if(m_pSun)
+		{
+			m_pSun->Release();
+		}
+	}
+	mem_release(m_pSun);
+
+#if 0
+	if(!m_isServerMode)
+	{
+		SLight_ClearIDArr();
+	}
+#endif
 	
 	//SGame_UnloadObjLevel();
-	Core_0ConsoleExecCmd("ent_unload_level");
-	SPhysics_UnloadGeom();
+//	Core_0ConsoleExecCmd("ent_unload_level");
+//	SPhysics_UnloadGeom();
 	SAIG_Clear();
-	SXDecals_Clear();
+	if(!m_isServerMode)
+	{
+		SXDecals_Clear();
+	}
 }
 
 void CLevel::load(const char *szName, bool isGame)
 {
-	clear();
+	// clear();
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "load level '%s' ...\n", szName);
 	sprintf(m_szName, "%s", szName);
@@ -69,7 +93,7 @@ void CLevel::load(const char *szName, bool isGame)
 	if (pConfig->keyExists("level", "local_name"))
 		m_sLocalName = pConfig->getKey("level", "local_name");
 
-	if (pConfig->keyExists("level", "geometry"))
+	/*if (pConfig->keyExists("level", "geometry"))
 	{
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load geometry\n");
 		sprintf(szFullPath, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, pConfig->getKey("level", "geometry"));
@@ -80,7 +104,7 @@ void CLevel::load(const char *szName, bool isGame)
 			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of geometry '%s'", szFullPath);
 		}
 	}
-
+	*/
 	if (pConfig->keyExists("level", "green"))
 	{
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load green\n");
@@ -93,7 +117,7 @@ void CLevel::load(const char *szName, bool isGame)
 		}
 	}
 	
-	if (pConfig->keyExists("level", "entity"))
+	/*if (pConfig->keyExists("level", "entity"))
 	{
 		//LibReport(REPORT_MSG_LEVEL_NOTICE, "  load entity\n");
 		sprintf(szFullPathEntity, "%s%s/%s", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, pConfig->getKey("level", "entity"));
@@ -106,9 +130,9 @@ void CLevel::load(const char *szName, bool isGame)
 		{
 			LibReport(REPORT_MSG_LEVEL_WARNING, "not found file of entity '%s'", szFullPathEntity);
 		}
-	}
+	}*/
 
-	if (pConfig->keyExists("level", "physic"))
+	/*if (pConfig->keyExists("level", "physic"))
 	{
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load physic\n");
 		
@@ -131,7 +155,7 @@ void CLevel::load(const char *szName, bool isGame)
 		if (isGame)
 			SPhysics_LoadGeom();
 	}
-
+	*/
 	if (pConfig->keyExists("level", "aigrid"))
 	{
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load aigrid\n");
@@ -145,7 +169,7 @@ void CLevel::load(const char *szName, bool isGame)
 		}
 	}
 
-	if (pConfig->keyExists("level", "ambient_sounds"))
+	if(!m_isServerMode && pConfig->keyExists("level", "ambient_sounds"))
 	{
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load ambient_sounds\n");
 		m_sAmbientSounds = pConfig->getKey("level", "ambient_sounds");
@@ -170,7 +194,7 @@ void CLevel::load(const char *szName, bool isGame)
 		}
 	}
 
-	if (pConfig->keyExists("level", "weather"))
+	if(!m_isServerMode && pConfig->keyExists("level", "weather"))
 	{
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  load weather\n");
 		m_sWeather = pConfig->getKey("level", "weather");
@@ -187,7 +211,7 @@ void CLevel::load(const char *szName, bool isGame)
 		}
 	}
 
-	if (pConfig->keyExists("level", "type"))
+	if(!m_isServerMode && pConfig->keyExists("level", "type"))
 	{
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "  init type\n");
 		String sStr = pConfig->getKey("level", "type");
@@ -200,21 +224,24 @@ void CLevel::load(const char *szName, bool isGame)
 			SGCore_SkyCloudsSetUse(true);
 
 			float3 vMin, vMax;
-			SGeom_GetMinMax(&vMin, &vMax);
+
+			XEventLevelSize levelSize;
+			Core_GetIXCore()->getEventChannel<XEventLevelSize>(EVENT_LEVEL_GET_SIZE_GUID)->broadcastEvent(&levelSize);
+			vMin = levelSize.vMin;
+			vMax = levelSize.vMax;
+
 			float fWidth = (vMax.x - vMin.x) * 2.f;
 			float fHeight = (vMax.z - vMin.z) * 2.f;
 			fWidth = (fWidth >= SXGC_SKYCLOUDS_MIN_SIZE ? fWidth : SXGC_SKYCLOUDS_MIN_SIZE);
 			fHeight = (fHeight >= SXGC_SKYCLOUDS_MIN_SIZE ? fHeight : SXGC_SKYCLOUDS_MIN_SIZE);
 			SGCore_SkyCloudsSetWidthHeightPos(fWidth, fHeight, &float3((vMax + vMin) * 0.5));
 
-			ID gid = SLight_CreatePoint(
-				&float3(60, 60, 0),
-				0,
-				&float3(1, 1, 1),
-				true,
-				true);
-			SLight_SetEnable(gid, true);
-			SLight_SetName(gid, "sun");
+			if(m_pLightSystem)
+			{
+				m_pSun = m_pLightSystem->createSun();
+				m_pSun->setPosition(float3(60.0f, 60.0f, 0));
+				m_pSun->setColor(float4(1.0f, 1.0f, 1.0f, 100.0f));
+			}
 		}
 		else
 		{
@@ -223,13 +250,13 @@ void CLevel::load(const char *szName, bool isGame)
 		}
 	}
 
-	Core_0ConsoleExecCmd("ent_load_level \"%s\" \"%s\"", szFullPathEntity, szName);
+	// Core_0ConsoleExecCmd("ent_load_level \"%s\" \"%s\"", szFullPathEntity, szName);
 
 	//SGame_OnLevelLoad(szName);
 
 	mem_release(pConfig);
 
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "level '%s' loaded!\n", szName);
+	//LibReport(REPORT_MSG_LEVEL_NOTICE, "level '%s' loaded!\n", szName);
 }
 
 void CLevel::save(const char *szName)
@@ -252,13 +279,13 @@ void CLevel::save(const char *szName)
 	if (m_sLocalName.length() > 0)
 		fprintf(file, "local_name = %s\n", m_sLocalName.c_str());
 
-	if (SGeom_GetCountModels() > 0)
+	/*if (SGeom_GetCountModels() > 0)
 	{
 		fprintf(file, "geometry = %s.geom\n", szName);
 
 		sprintf(szFullPath, "%s%s/%s.geom", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
 		SGeom_Save(szFullPath);
-	}
+	}*/
 
 	if (SGreen_GetCount() > 0)
 	{
@@ -267,10 +294,15 @@ void CLevel::save(const char *szName)
 		SGreen_Save(szFullPath);
 	}
 
-	if (SLight_GetGlobal() > 0)
-		fprintf(file, "type = outdoor\n");
-	else
-		fprintf(file, "type = indoor\n");
+	if(m_pLightSystem)
+	{
+		IXLightSun *pSun = m_pLightSystem->getSun();
+		if(pSun)
+			fprintf(file, "type = outdoor\n");
+		else
+			fprintf(file, "type = indoor\n");
+		mem_release(pSun);
+	}
 
 	
 
@@ -290,10 +322,11 @@ void CLevel::save(const char *szName)
 		SAIG_GridSave(szFullPath);
 	}
 
-	SPhysics_LoadGeom();
+	/*SPhysics_LoadGeom();
 	sprintf(szFullPath, "%s%s/%s.phy", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), szName, szName);
 	fprintf(file, "physic = %s.phy\n", szName);
 	SPhysics_ExportGeom(szFullPath);
+	*/
 
 	if (m_sAmbientSounds[0])
 	{

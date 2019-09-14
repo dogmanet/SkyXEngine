@@ -23,12 +23,27 @@ See the license in LICENSE
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 
+#if defined(_WINDOWS)
+#	if defined(SXCORE_EXPORTS)
+#		define SXCORE_API __declspec(dllexport)
+#	else
+#		define SXCORE_API __declspec(dllimport)
+#	endif
+#else
+#	define SXCORE_API
+#endif
+#define C extern "C"
+
 #include <io.h>
 #include <fcntl.h>
 #include <tlhelp32.h>
 
-#define SM_D3D_CONVERSIONS
-#include <common/sxmath.h>
+//#define SM_D3D_CONVERSIONS
+#include <common/Math.h>
+#include <xcommon/IXCore.h>
+#include <xcommon/IPluginManager.h>
+
+#include <xcommon/IFileSystem.h>
 
 //! тип функции для обработки в менеджере задач
 typedef void(*THREAD_UPDATE_FUNCTION)();
@@ -57,6 +72,13 @@ enum CORE_TASK_FLAG
 /*! \name Базовые функции ядра 
 !@{*/
 
+//! @FIXME: Убрать это!
+class ITask;
+C SXCORE_API IXCore* XCoreInit(const char *szName);
+C SXCORE_API void XCoreStart();
+C SXCORE_API void XCoreStop();
+C SXCORE_API void XCoreAddTask(ITask *pTask);
+
 //! возвращает версию ядра
 SX_LIB_API long Core_0GetVersion();
 
@@ -64,13 +86,15 @@ SX_LIB_API long Core_0GetVersion();
 SX_LIB_API void Core_0Create(const char *szName, const char *szNameConsole, bool isUnic = true);
 
 //! Загружает командную строку
-SX_LIB_API void Core_0LoadCommandLine(const char *szCommandLine);
+SX_LIB_API void Core_0LoadCommandLine(int argc, char **argv);
 
 //! Выполняет консольные команды из командной строки
 SX_LIB_API void Core_0ExecCommandLine();
 
 //! Выполняет консольные команды из командной строки
-SX_LIB_API const char *Core_0GetCommandLineArg(const char *szArg, const char *szDefault=NULL);
+SX_LIB_API const char *Core_0GetCommandLineArg(const char *szArg, const char *szDefault = NULL);
+
+SX_LIB_API IXCore *Core_GetIXCore();
 
 
 //! установка своего обработчика вывода отладочной информации
@@ -179,6 +203,13 @@ enum PERF_SECTION
 	PERF_SECTION_VIS_PARTICLES, // R
 	PERF_SECTION_AI_PATH, // S
 	PERF_SECTION_CVAR_UPDATE, // T
+	PERF_SECTION_WMSG_PROC, // U
+	PERF_SECTION_PREFRAME, // V
+
+	PERF_SECTION_PF_W, // W
+	PERF_SECTION_PF_X, // X
+	PERF_SECTION_PF_Y, // Y
+	PERF_SECTION_PF_Z, // Z
 
 	PERF_SECTION_COUNT
 };
@@ -213,7 +244,13 @@ static const char *g_szPerfSectionName[] = {
 	"Vis light",
 	"Vis particles",
 	"AI path",
-	"CVars update"
+	"CVars update",
+	"WMsg process",
+	"Pre frame",
+	"Pre frame shaders/texs",
+	"Pre frame times/console",
+	"Pre frame input",
+	"Pre frame sound"
 };
 
 //! Начало секции измерения
@@ -353,41 +390,7 @@ SX_LIB_API int64_t Core_TimeTotalMcsGetU(ID id);
 
 //##########################################################################
 
-/*! \name Режимы открытия файлов 
-@{*/
-
-/*! двоичный */
-#define CORE_FILE_BIN	0	
-
-/*! текстовый */
-#define CORE_FILE_TEXT	1	
-
-//!@}
-
-/*! конец файла */
-#define CORE_FILE_EOF	EOF	
-
-/*! Интерфейс для записи/чтения файлов
- \note аргумент iType - режим отрытия файла
-*/
-struct IFile : public IBaseObject
-{
-	virtual ~IFile(){};
-	
-	virtual int open(const char *szPath, int iType = CORE_FILE_TEXT) = 0;	//!< открыть файл
-	virtual int create(const char *szPath, int iType = CORE_FILE_TEXT) = 0;	//!< создать файл
-	virtual int add(const char *szPath, int iType = CORE_FILE_TEXT) = 0;	//!< добавить в конец файла
-	virtual size_t readBin(void *pDest, size_t iSize) = 0;					//!< считать в dest количетсво байт size
-	virtual size_t writeBin(const void *pSrc, size_t iSize) = 0;			//!< записать src в количетве size байт
-	virtual size_t readText(const char *szFormat, ...) = 0;					//!< чтение из файла, в аргументы только указатели
-	virtual size_t writeText(const char *szFormat, ...) = 0;				//!< запись в файл
-	virtual size_t getSize() const = 0;		//!< получить размер файла в байтах
-	virtual int readChar() = 0;				//!< считать символ
-	virtual size_t getPos() const = 0;		//!< текущая позиция курсора в файле
-	virtual void setPos(size_t iPos) = 0;	//!< установить позицию
-	virtual void close() = 0;				//!< закрыть файл
-	virtual bool isEOF() const = 0;			//!< текущая позиция является концом файла?
-};
+#include "IFile.h"
 
 /*! \name Создание экземпляров файлов 
 !@{*/
@@ -447,6 +450,9 @@ SX_LIB_API ISXConfig* Core_OpConfig(const char* path);
 
 /*! \name Работа с консолью 
 !@{*/
+
+#pragma pointers_to_members(full_generality, virtual_inheritance)
+
 typedef void(*SXCONCMD)(); /*!< Тип функции для регистрации команды без аргументов */
 typedef void(*SXCONCMDARG)(int argc, const char ** argv); /*!< Тип функции для регистрации команды с аргументами */
 
@@ -456,8 +462,8 @@ typedef void(ConCmdStub::* SXCONCMDCLSARG)(int argc, const char ** argv); /*!< �
 
 SX_LIB_API void Core_0RegisterConcmd(char * name, SXCONCMD cmd, const char * desc = NULL); //!< Регистрация консольной функции без аргументов
 SX_LIB_API void Core_0RegisterConcmdArg(char * name, SXCONCMDARG cmd, const char * desc = NULL); //!< Регистрация консольной функции с аргументами
-SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, SXCONCMDCLS cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса без аргументов
-SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, SXCONCMDCLSARG cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса с аргументами
+SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, const SXCONCMDCLS &cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса без аргументов
+SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, const SXCONCMDCLSARG &cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса с аргументами
 
 SX_LIB_API void Core_0ConsoleUpdate(); //!< Обновление консоли, выполнение буфера команд
 SX_LIB_API void Core_0ConsoleExecCmd(const char * format, ...); //!< Добавление команды на исполнение в буфер команд
@@ -538,23 +544,23 @@ SX_LIB_API void Core_0RegisterCVarPointer(
 
 //! Получает указатель на значение строкового квара. При отсутствии квара запрошенного типа возвращает NULL
 SX_LIB_API const char ** Core_0GetPCVarString(const char * name);
-#define GET_PCVAR_STRING(k) Core_0GetPCVarString(k);
+#define GET_PCVAR_STRING(k) Core_0GetPCVarString(k)
 
 //! Получает указатель на значение целочисленного квара. При отсутствии квара запрошенного типа возвращает NULL
 SX_LIB_API const int * Core_0GetPCVarInt(const char * name);
-#define GET_PCVAR_INT(k) Core_0GetPCVarInt(k);
+#define GET_PCVAR_INT(k) Core_0GetPCVarInt(k)
 
 //! Получает указатель на значение дробного квара. При отсутствии квара запрошенного типа возвращает NULL
 SX_LIB_API const float * Core_0GetPCVarFloat(const char * name);
-#define GET_PCVAR_FLOAT(k) Core_0GetPCVarFloat(k);
+#define GET_PCVAR_FLOAT(k) Core_0GetPCVarFloat(k)
 
 //! Получает указатель на значение логического квара. При отсутствии квара запрошенного типа возвращает NULL
 SX_LIB_API const bool * Core_0GetPCVarBool(const char * name);
-#define GET_PCVAR_BOOL(k) Core_0GetPCVarBool(k);
+#define GET_PCVAR_BOOL(k) Core_0GetPCVarBool(k)
 
 //! Получает указатель по имени. При отсутствии квара запрошенного типа возвращает NULL
 SX_LIB_API UINT_PTR * Core_0GetPCVarPointer(const char * name);
-#define GET_PCVAR_POINTER(k) Core_0GetPCVarPointer(k);
+#define GET_PCVAR_POINTER(k) Core_0GetPCVarPointer(k)
 
 //! Устанавливает новое значение квара. Должен существовать
 SX_LIB_API void Core_0SetCVarString(const char * name, const char * value);

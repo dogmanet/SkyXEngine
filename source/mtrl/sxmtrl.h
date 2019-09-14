@@ -33,6 +33,8 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
+#include <mtrl/IXMaterialSystem.h>
+
 /*! \name Базовые функции библиотеки
 @{*/
 
@@ -42,10 +44,13 @@ SX_LIB_API long SMtrl_0GetVersion();
 //! установить функцию обработки сообщений
 SX_LIB_API void SMtrl_Dbg_Set(report_func rf);
 
+SX_LIB_API void SMtrl_DevSet(IGXDevice *pDev);
+
 //! инициализция подсистемы
 SX_LIB_API void SMtrl_0Create(
 	const char *szName,				//!< присваиваемое имя
-	bool isUnic = true				//!< должна ли подсистема быть уникальной по имени
+	bool isUnic = true,				//!< должна ли подсистема быть уникальной по имени
+	bool isServerMode = false		//!< серверный режим (без графики)
 	);
 
 //! уничтожить подсистему
@@ -79,10 +84,10 @@ SX_LIB_API void SMtrl_Update(
 @{*/
 
 /*! максимальная длина имени директории материала */
-#define MTL_MAX_SIZE_DIR SXGC_LOADTEX_MAX_SIZE_DIR		
+#define MTL_MAX_SIZE_DIR 64		
 
 /*! максимальная длина имени материала (без директории) */
-#define MTL_MAX_SIZE_NAME SXGC_LOADTEX_MAX_SIZE_NAME	
+#define MTL_MAX_SIZE_NAME 64	
 
 /*! максимальное количество обновлений статических отражений, в первый момент рендера */
 #define MTL_REF_UPDATE_MAX_COUNT_FOR_STATIC 3	
@@ -247,25 +252,6 @@ enum MTLSORT
 
 //!@}
 
-//! тип модели материала
-enum MTLTYPE_MODEL
-{
-	//! статическая геометрия
-	MTLTYPE_MODEL_STATIC = 0,	
-
-	//! растительность трава
-	MTLTYPE_MODEL_GRASS,		
-
-	//! растительность дерево
-	MTLTYPE_MODEL_TREE,		
-
-	//! анимационная модель
-	MTLTYPE_MODEL_SKIN,		
-
-	//! значение по умолчанию
-	MTLTYPE_MODEL_DEFAULT = MTLTYPE_MODEL_STATIC
-};
-
 //! физический тип материала
 enum MTLTYPE_PHYSIC
 {
@@ -342,9 +328,16 @@ enum MTL_SHADERSTD
  \note все материалы оборачиваются в специальную структуру, поэтому дубликатов среди идентификаторов материалов нет
  \note любой повторно загружаемый материал не загружается, а лишь дублирует обертку, со ссылкой на внутренности оберкти
  */
-SX_LIB_API ID SMtrl_MtlLoad(
+
+SX_LIB_API ID SMtrl_MtlGetId(
+	const char *szName								//!< имя_материала.расширение
+	);
+
+SX_LIB_API ID SMtrl_MtlLoad2(
 	const char *szName,								//!< имя_материала.расширение
-	MTLTYPE_MODEL mtl_type = MTLTYPE_MODEL_STATIC	//!< тип модели материала на случай если материал не будет загружен/найден
+	XSHADER_DEFAULT_DESC *pDefaultShaders, 
+	UINT uVariantCount, 
+	XSHADER_VARIANT_DESC *pVariantsDesc
 	);
 
 //! перезагрузка материала
@@ -371,9 +364,6 @@ SX_LIB_API void SMtrl_MtlClear(
 //! возвращает общее количество материалов
 SX_LIB_API long SMtrl_MtlGetCount();					
 
-//! возвращает тип модели материала по id
-SX_LIB_API MTLTYPE_MODEL SMtrl_MtlGetTypeModel(ID id);
-
 //! возвращает id дефолтного материала света
 SX_LIB_API ID SMtrl_MtlGetLightMtrl();
 
@@ -382,11 +372,6 @@ SX_LIB_API ID SMtrl_MtlGetLightMtrl();
 
 SX_LIB_API bool SMtrl_MtlIsTransparency(ID id);
 
-/*! установка типа модели материала по id
- \warning меняется только внутренний флаг (определение)!!! все остальное для данного типа надо загружать вручную, сделано для больших возможностей построения материалов
-*/
-SX_LIB_API void SMtrl_MtlSetTypeModel(ID id, MTLTYPE_MODEL type_model);
-
 //! установка параметров материала по id, вызывается перед DIP
 SX_LIB_API void SMtrl_MtlRender(
 	ID id,						//!< идентификатор материала
@@ -394,13 +379,8 @@ SX_LIB_API void SMtrl_MtlRender(
 	const float4 *pColor=0		//!< указатель на принимаемый цвет
 	);
 
-//! стандартная отрисовка материала, используются стандартные шейдеры, нужно для теней, отражений и прочего
-SX_LIB_API void SMtrl_MtlRenderStd(
-	MTLTYPE_MODEL type,			//!< тип материала из MtlTypeModel
-	const float4x4 *pWorld,		//!< мировая матрица трансформации, либо 0 и будет применена единичная матрица
-	ID idSlot,					//!< текстурный слот в который установить текстуру
-	ID idMtl					//!< идентификатор материала из которого будет браться текстура
-	);
+SX_LIB_API void SMtrl_MtlPixelShaderOverride(ID id);
+SX_LIB_API void SMtrl_MtlGeometryShaderOverride(ID id);
 
 //! установка параметров материала для рендера источника света
 SX_LIB_API void SMtrl_MtlRenderLight(
@@ -417,9 +397,6 @@ SX_LIB_API void SMtrl_MtlSetPhysicMaterial(ID id, MTLTYPE_PHYSIC type);
 
 //! возвращает текущий тип физического материала
 SX_LIB_API MTLTYPE_PHYSIC SMtrl_MtlGetPhysicMaterial(ID id);				
-
-//! возвращает id стандартного материала для определенной модели материалов указанной в #MtlTypeModel 
-SX_LIB_API ID SMtrl_MtlGetStdMtl(MTLTYPE_MODEL type_model);
 
 /*! \name Управление полупрозрачными поверхностями
 Каждый выводимый пиксель помечается номером поверхности к которой он относится
@@ -534,14 +511,14 @@ SX_LIB_API bool SMtrl_RefIsAllowedRender(ID id);	//!< разрешен ли ре
 //! первоначальные настройки данных для генерации отражения
 SX_LIB_API void SMtrl_RefPreRenderPlane(
 	ID id,				//!< идентификатор материала
-	D3DXPLANE *pPlane	//!< плоскость относительно которой будет считаться отражение
+	SMPLANE *pPlane	//!< плоскость относительно которой будет считаться отражение
 	);	
 
 //! завершающие операции
 SX_LIB_API void SMtrl_RefPostRenderPlane(ID id);			
 
 //! возвращает текстуру с плоским отражением (если оно есть, иначе 0)
-SX_LIB_API IDirect3DTexture9* SMtrl_RefGetTexPlane(ID id);	
+SX_LIB_API IGXTexture2D* SMtrl_RefGetTexPlane(ID id);	
 
 //!@}
 
@@ -582,7 +559,7 @@ SX_LIB_API void SMtrl_RefCubeEndRender(
 	);	
 
 //! возвращает cube текстуру отражением (если оно есть, иначе 0)
-SX_LIB_API IDirect3DCubeTexture9* SMtrl_RefCubeGetTex(ID id);	
+SX_LIB_API IGXTextureCube* SMtrl_RefCubeGetTex(ID id);	
 
 //!@}
 
@@ -617,16 +594,22 @@ SX_LIB_API bool SMtrl_MtlGetUseDestColor(ID id);
 @{*/
 
 //! установка вершинного шейдера
-SX_LIB_API void SMtrl_MtlSetVS(ID id, const char *szPathVS);	
+SX_LIB_API void SMtrl_MtlSetVS(ID id, const char *szPathVS);
 
 //! в name записывает имя текущего вершинного шейдера
-SX_LIB_API void SMtrl_MtlGetVS(ID id, char *szName);			
+SX_LIB_API void SMtrl_MtlGetVS(ID id, char *szName);
+
+//! Получает ID вершинного шейдера
+SX_LIB_API ID SMtrl_MtlGetVSID(ID id);
 
 //! установка пиксельного шейдера
-SX_LIB_API void SMtrl_MtlSetPS(ID id, const char *szPathPS);	
+SX_LIB_API void SMtrl_MtlSetPS(ID id, const char *szPathPS);
 
 //! в name записывает имя текущего пикельного шейдера
-SX_LIB_API void SMtrl_MtlGetPS(ID id, char *szName);			
+SX_LIB_API void SMtrl_MtlGetPS(ID id, char *szName);
+
+//! Получает ID пикельного шейдера
+SX_LIB_API ID SMtrl_MtlGetPSID(ID id);
 
 //!@}
 
@@ -714,7 +697,8 @@ SX_LIB_API float SMtrl_MtlGetF0(ID id);
 SX_LIB_API void SMtrl_MtlSetTransparency(ID id, bool isTransparent);
 
 //! возвращает текущее значение свойства полупрозрачности для материала
-SX_LIB_API bool SMtrl_MtlGetTransparency(ID id);				
+SX_LIB_API bool SMtrl_MtlGetTransparency(ID id);
+SX_LIB_API bool SMtrl_MtlGetRefractivity(ID id);
 
 //!@}
 
@@ -723,9 +707,6 @@ SX_LIB_API bool SMtrl_MtlGetTransparency(ID id);
 
 //! установка типа отражений
 SX_LIB_API void SMtrl_MtlSetTypeReflection(ID id, MTLTYPE_REFLECT type);	
-
-//! возвращает текущий тип отражений для материала
-SX_LIB_API MTLTYPE_REFLECT SMtrl_MtlGetTypeReflection(ID id);				
 
 //!@}
 

@@ -1,0 +1,25 @@
+
+/*
+gui_main.ps
+*/
+
+#include "../struct.h"
+
+//##########################################################################
+
+SamplerState g_sDiffuse: register(s0);
+Texture2D g_txDiffuse : register(t0);		// basetexture
+
+//##########################################################################
+
+float4 g_vColor: register(b0);
+
+//##########################################################################
+
+float4 main(VSO_GUITextured IN):COLOR0
+{
+	float4 vFinalColor = g_txDiffuse.Sample(g_sDiffuse, IN.vTexUV);
+	vFinalColor *= g_vColor;
+	
+	return(vFinalColor);
+}

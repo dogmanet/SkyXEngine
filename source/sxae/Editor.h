@@ -29,21 +29,12 @@ See the license in LICENSE
 #ifdef _DEBUG
 #	define D3D_DEBUG_INFO
 #endif
-#include <d3d9.h>
-#include <d3dx9.h>
-//#include <d3dcompiler.h>
-//#pragma comment(lib, "d3dcompiler.lib")
-#pragma comment(lib, "d3d9.lib")
+#include <graphix/graphix.h>
+
 #include "TabActivities.h"
 #include "TabAnimation.h"
 #include "TabAttachments.h"
 #include "TabHitboxes.h"
-
-//#ifdef _DEBUG
-//#	pragma comment(lib, "d3dx9d.lib")
-//#else
-//#	pragma comment(lib, "d3dx9.lib")
-//#endif
 
 /**@TODO:
 	- Добавить окошко лодов
@@ -119,9 +110,7 @@ protected:
 
 	bool m_bDirty;
 
-	IDirect3D9 * m_pD3D = NULL;
-	IDirect3DDevice9 * m_pd3dDevice = NULL;
-	IDirect3DSwapChain9 * m_pSwapChain = NULL;
+	IGXContext * m_pd3dDevice = NULL;
 
 	struct VShaderInputCamera
 	{

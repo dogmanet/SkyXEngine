@@ -1,0 +1,69 @@
+
+/*
+lighting_blend.ps
+Cмешивание всех текстур для финального изображения
+*/
+
+#include "../struct.h"
+#include "../mtrl.h"
+
+//##########################################################################
+
+SamplerState g_sSampler: register(s0);
+
+Texture2D g_txColor:register(t0);
+Texture2D g_txAmbient:register(t1);
+Texture2D g_txSpecDiff:register(t2);
+Texture2D g_txNormals:register(t3);
+Texture2D g_txAdaptedLum:register(t4);
+Texture2D g_txParameters:register(t5);
+
+//##########################################################################
+
+float4 main(VSO_PP IN):COLOR0
+{
+	float4 vNormal = g_txNormals.Sample(g_sSampler,IN.vTexUV);
+	float2 vLayerType = LayerDecode(vNormal.w);
+	//vLayerType.x *= LAYERS_COUNT_MAX;
+	//return float4(vLayerType.x, vLayerType.x, vLayerType.x, 1);
+	//float fSort = LayerDecodeType(vNormal.w);
+	//float fLayer = LayerDecodeLayer(vNormal.w);
+	
+	//цвет приводим к sRGB
+	float4 vColor = g_txColor.Sample(g_sSampler,IN.vTexUV);
+	vColor.rgb = pow(vColor.rgb, 2.2);
+	float4 vColorOriginal = vColor;
+	float4 vParameters = g_txParameters.Sample(g_sSampler,IN.vTexUV);
+
+	float4 vAmbient = g_txAmbient.Sample(g_sSampler,IN.vTexUV);
+	// vAmbient += 0.1;
+	//vAmbient.xyz *= 2;
+	float fAverage = (vAmbient.x + vAmbient.y + vAmbient.z)/3.0;
+	
+	/* расчет фонового цвета
+	1) интерполяция от чернобелого до цветного, на основании затенения, то есть чем больше тень тем меньше там фонового цвета
+	*/
+	float3 vAmbientColor = lerp(fAverage, vAmbient.xyz, saturate(vAmbient.w+0.5));
+	
+	/* 2) интерполяция приема цвета материалом, чем больше отражательная способность (f0) тем меньше примет цвета материал*/
+	//vAmbientColor = lerp(vAmbientColor.xyz, fAverage, clamp(vParameters.y, F0_MIN_4_DEST_AMBIENT, F0_MAX_4_DEST_AMBIENT));
+	
+	float fSpecular = g_txSpecDiff.Sample(g_sSampler,IN.vTexUV).r;
+	// float fAdaptedLum = tex2D(g_sAdaptedLum, g_vTexUVcenter);
+	float fAdaptedLum = 0.5;
+
+	// если материал освещаемый то надо вычислить его освещенность
+	// if(vLayerType.y == MTLTYPE_LIGHT)
+		vColor.xyz = (vAmbientColor * vAmbient.w * vColor.xyz) + (fSpecular * 0.5 * vAmbient.xyz);
+		
+	// если слой материала относится к непрозрачной геометрии, тогда не нужна прозрачность
+	// if(vLayerType.x == LAYER_OPAQUE)
+		// vColor.a = 1.0;
+
+	//применение тонмапинга
+	vColor.rgb *= TONE_MAPPING_DENOMENATOR/(fAdaptedLum + TONE_MAPPING_ADAPT_ADD_BIAS);
+	vColor.rgb /= (fAdaptedLum + vColor.rgb);
+	
+	//приводим цвет к линейному пространству
+	return float4(pow(lerp(vColor.rgb, vColorOriginal.xyz, vColorOriginal.a), 1.0/2.2), 1.0f);
+}

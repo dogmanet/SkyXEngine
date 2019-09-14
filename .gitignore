@@ -192,6 +192,7 @@ ModelManifest.xml
 
 *.phpt
 libs/
+libs64/
 
 source/s4g/tests/failed/
 source/s4g/tests/
@@ -202,10 +203,13 @@ source/s4g/tests/
 *.sxf
 
 build/*
+!engine/
+!demos/
 !gamesource/
 build/gamesource/*
 /build/gamesource/shaders/cache/*
 !shaders/
+!gui/
 docs/html/*
 !docs/html/material_editor/
 !docs/html/particles_editor/
@@ -217,3 +221,4 @@ docs/html/*
 /build/config_game_user.cfg
 
 /sdks/freetype-2.6/objs/
+/sdks/freetype-2.10.0/objs/

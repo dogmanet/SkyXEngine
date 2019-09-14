@@ -1,0 +1,204 @@
+
+/*
+lighting_blend.ps
+Расчет освещения и заполнение данными расчетов render targets
+*/
+
+#include "../struct.h"
+#include "../mtrl.h"
+
+//##########################################################################
+
+cbuffer perLight: register(b0)
+{
+	half4 g_vLightColorPower;
+	half4 g_vLightPosShadow;
+#ifdef IS_SPOT
+	half4 g_vLightSpotDirection;
+	half2 g_vLightSpotInnerOuterAngles;
+#endif
+};
+
+cbuffer perFrame: register(b1)
+{
+	half3 g_vViewPos;
+};
+
+
+
+//##########################################################################
+
+SamplerState g_sPointClamp: register(s0);
+
+Texture2D g_txNormals: register(t1);
+Texture2D g_txParameters: register(t2);
+//x - шероховатость (roughness)
+//y - отражательная способность поверхности (f0)
+//z - толщина (thickness)
+//w - occlusion
+
+Texture2D g_txDepth: register(t3);
+Texture2D g_txShadow: register(t4);
+// Texture2D g_txAdaptedLum: register(t5);
+
+//#############################################################################
+
+half D_Get(half roughness, half NdotH)
+{
+	half a = max(0.001f, roughness);
+	half a2 = a*a;
+	half d = ((NdotH * NdotH) * (a2 - 1.0) + 1.0);
+	
+	half NdotH2 = NdotH * NdotH;
+	return ((1.0f/(PI * a2 * NdotH2 * NdotH2 + 0.001)) * exp((NdotH2 - 1.0f) / ( a2 * NdotH2)));///(1.f+roughness);
+}
+
+half F_Get(half f0, half HdotV)
+{
+    return (f0 + (1.0 - f0) * pow((1.0 - HdotV), 5));
+}
+
+half G_Get(half NdotV, half NdotL, half LdotV, half NdotH,half VdotH)
+{
+	return min(1.0f, min((2.0f * NdotH * NdotV)/VdotH, (2.0f * NdotH * NdotL)/ VdotH));
+}
+
+half GetSpecular(half4 matparam,half NdotH,half NdotV,half NdotL,half VdotL,half HdotV)
+{
+	matparam.x = lerp(PARAM_LIGHTING_ROUGHNESS_MIN, PARAM_LIGHTING_ROUGHNESS_MAX, matparam.x);
+	half D = D_Get(matparam.x, NdotH);
+	half G = G_Get(NdotV,NdotL,VdotL,NdotH,HdotV);
+	half F = F_Get(matparam.y, HdotV)*saturate(matparam.y*3);
+	return ((D*G*F)/(PI*NdotL*NdotV+0.001));
+}
+
+//#############################################################################
+
+
+//IS_SPOT
+PSO_Lbuffer main(VSO_ResPos IN)
+{
+	PSO_Lbuffer OUT;
+
+	half4 vNormals = g_txNormals.Sample(g_sPointClamp, IN.vTexUV);
+	half2 vLayerType = LayerDecode(vNormals.w);
+	
+	/* [branch]if(vLayerType.y == MTLTYPE_UNLIT)
+	{
+		OUT.vAmdient.xyz = 0;
+		OUT.vAmdient.w = 0;
+		OUT.vSpecular = 0;
+		return OUT;
+	} */
+	
+	half fDepth = g_txDepth.Sample(g_sPointClamp, IN.vTexUV).r;
+	
+#ifdef IS_SHADOWED
+	half fShadow = /* saturate( */g_txShadow.Sample(g_sPointClamp, IN.vTexUV).r/* ) */;
+	
+	// clip(fShadow - 0.001);
+	
+	/* [branch]if(fShadow < 0.001)
+	{
+		OUT.vAmdient.xyz = 0;
+		OUT.vAmdient.w = 0;
+		OUT.vSpecular = 0;
+		return OUT;
+	} */
+	
+	half fOriginShadow = fShadow;
+#endif
+	
+	half4 vPosition = half4(g_vViewPos.xyz + IN.vWorldRay * fDepth, 1.0);
+	half fDistance = distance(vPosition.xyz, g_vLightPosShadow.xyz);
+	
+	half fInvDistance = 1.f - (fDistance/g_vLightColorPower.w);
+	
+	[branch]if(fInvDistance < 0.0)
+		fInvDistance = 0.0;
+	
+	half fAttenuation = fInvDistance*fInvDistance;
+	
+	half4 vParam = g_txParameters.Sample(g_sPointClamp, IN.vTexUV);
+	
+	half3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
+	half3 vLigth  = normalize(g_vLightPosShadow.xyz - vPosition.xyz); 
+	half3 vVertexToEye = normalize(g_vViewPos.xyz - vPosition.xyz);
+	half3 vHalfVector = normalize(vVertexToEye + vLigth.xyz);
+	
+	half fNdotH = dot(vNormalPixel, vHalfVector);
+	half fNdotV = dot(vNormalPixel, vVertexToEye);
+	half fNdotL = dot(vNormalPixel, vLigth);
+	half fLdotV = dot(vLigth, vVertexToEye);
+	half fHdotV = dot(vHalfVector, vVertexToEye); 
+
+#ifdef IS_SPOT
+	half fNdotD = dot(-vLigth, g_vLightSpotDirection.xyz);
+	fAttenuation *= saturate(fNdotD - g_vLightSpotInnerOuterAngles.y) / (g_vLightSpotInnerOuterAngles.x - g_vLightSpotInnerOuterAngles.y);
+#endif
+
+	fAttenuation *= saturate(fNdotL);
+
+#ifdef IS_SHADOWED
+	fAttenuation *= fOriginShadow;
+#endif
+
+	half fSpecular = GetSpecular(vParam, fNdotH, fNdotV, fNdotL, fLdotV, fHdotV);
+
+	half fAbsDiffuse = saturate(fNdotL);
+	half fMdiffuse = saturate(fNdotL * 0.5 + 0.5);
+	half fDiffuse = fAbsDiffuse;
+	
+	//закрываем баг с отставанием теней
+#ifdef IS_SHADOWED
+	// fShadow = saturate(min(fShadow, fAbsDiffuse - 0.02));
+	fAbsDiffuse = fShadow;
+#endif
+
+	fDiffuse = saturate(fDiffuse + 0.2);
+	fDiffuse = lerp(1, fDiffuse, vParam.z);
+	
+#ifdef IS_SHADOWED
+	//если просвечиваемость меньше 1 (значит пиксель просвечиваемый)
+	[branch]if(vParam.z < 1.0)
+		// fDiffuse *= max(fOriginShadow, 0.2);
+		fDiffuse *= fOriginShadow;
+	else
+		//иначе выбираем значения тени из диапазона, на основании силы света
+		// fDiffuse *= max(fShadow, /* lerp(0.01, 0.09, g_vLightColor.w) *  */g_vLightPosShadow.w);
+		fDiffuse *= fOriginShadow;
+#endif
+	
+	fDiffuse = lerp(1.0, fDiffuse, g_vLightPosShadow.w);
+	
+	OUT.vAmdient.xyz = g_vLightColorPower.xyz * fAttenuation;
+	OUT.vAmdient.w = fDiffuse * fMdiffuse * vParam.w * g_vLightColorPower.w * 2.0 * fAttenuation;
+	
+	// OUT.vAmdient.xyz *= OUT.vAmdient.w;
+	
+	// OUT.vAmdient.xyz = float3(IN.vTexUV.xy, 1);
+	// OUT.vAmdient.w = 1;
+	
+	OUT.vSpecular = fSpecular * fAbsDiffuse * fAttenuation * g_vLightColorPower.w;
+	// OUT.vSpecular = 0;
+	
+	return OUT;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -18,9 +18,12 @@ See the license in LICENSE
 
 #include <GRegisterIndex.h>
 
-#include <d3d9.h>
-#include <d3dx9.h>
-#include <dxerr9.h>
+//#include <d3d9.h>
+//#include <d3dx9.h>
+//#include <dxerr9.h>
+#include <graphix/graphix.h>
+
+#define SGCore_ShaderSetVRF(...) assert(!"Deprecated!")
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxcore_d.lib")
@@ -39,59 +42,29 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
-#pragma comment(lib, "d3d9.lib")
-#pragma comment(lib, "DxErr9.lib")
-#pragma comment(lib, "d3dx9.lib")
-
-#include <gcore/ModelFile.h>
-
-//флаги компиляции шейдеров
-#define SHADER_DEBUG D3DXSHADER_DEBUG | D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY | D3DXSHADER_AVOID_FLOW_CONTROL | D3DXSHADER_SKIPOPTIMIZATION
-#define SHADER_RELEASE D3DXSHADER_OPTIMIZATION_LEVEL3 | D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY | D3DXSHADER_PARTIALPRECISION | D3DXSHADER_PREFER_FLOW_CONTROL
-
-//определяем флаг компилции шейдеров
-#if defined(DEBUG) || defined(_DEBUG) 
-#define SHADER_FLAGS SHADER_DEBUG 
-#else 
-#define SHADER_FLAGS SHADER_RELEASE 
-#endif
-
-//
-#define SXGC_ERR_NON_DETECTED_D3D -1
-#define SXGC_ERR_FAILED_INIT_D3D -2
-
 class IFrustum;
-
-
 
 //! \name Базовые функции библиотеки 
 //!@{
 
-//! версия подсистемы
-SX_LIB_API long SGCore_0GetVersion();			
-
-//! установка функции вывода сообщений
-SX_LIB_API void SGCore_Dbg_Set(report_func fnReport);	
-
 //! инициализация подсистемы
 SX_LIB_API void SGCore_0Create(
 	const char *szName,			//!< передваваемое имя подсистемы
-	HWND hWnd,					//!< дескриптор окна в которое будет осуществляться рендер
+	SXWINDOW hWnd,					//!< дескриптор окна в которое будет осуществляться рендер
 	int iWidth,					//!< ширина области рендера
 	int iHeigth,				//!< высота области рендера
 	bool isWindowed,			//!< оконный режим использовать ли? иначе полноэкранный
-	DWORD dwFlags,				//!< флаги создания устрайства (стандартные dx)
 	bool isUnic = true			//!< должна ли подсистема быть уникальной на основе имени
 	);
 
 //! возвращает HWND окна рендера
-SX_LIB_API HWND SGCore_GetHWND();
+SX_LIB_API SXWINDOW SGCore_GetHWND();
 
 //! уничтожение либы
 SX_LIB_API void SGCore_AKill();	
 
 //! возвращает dx устройство
-SX_LIB_API IDirect3DDevice9* SGCore_GetDXDevice();	
+SX_LIB_API IGXDevice* SGCore_GetDXDevice();
 
 //! возвращает массив всех доступных разрешений монитора, в iCount записывает размер массива
 SX_LIB_API const DEVMODE* SGCore_GetModes(int *iCount);
@@ -104,127 +77,15 @@ SX_LIB_API HRESULT SGCore_DXcallCheck(HRESULT hr, const char *callStr);
 
 //#############################################################################
 
-/*! \name Отладочное сообщение в окне рендера
- \note Графическое ядро предусматривает наличие текстового сообщения в окне рендера, которое формирует непосредственно сам программист и дает команду на его вывод
-@{*/
-
-/*!< размер отладочного сообщения, выводимого в окно рендера */
-#define SXGC_STR_SIZE_DBG_MSG 4096 
-
-/*! Вывод отладочного сообщения в окно рендера.
-Аргументы аналогичны стандартным функциям типа printf.
-*/
-SX_LIB_API void SGCore_DbgMsg(const char *szFormat, ...);
-
-//!@}
-
-//#############################################################################
-
 /*! \name Обработка потери/восстановления устройства 
  \warning Функции обработки потери/восстановления устройства обрабатывают ресурсы только в пределах данной библиотеки, другие библиотеки должны сами производить данную обработку!
 !@{*/
-
-//! вызывать при потере устройства
-SX_LIB_API void SGCore_OnLostDevice();	
-
-//! вызывать при попытке сброса устройства
-SX_LIB_API bool SGCore_OnDeviceReset(
-	int iWwidth,		//!< новая ширина окна
-	int iHeigth,		//!< новая выоста окна
-	bool isWindewed		//!< true - оконный режим, false - полноэкранный
-	);	
 
 //! вызывать при сбросе устроства
 SX_LIB_API void SGCore_OnResetDevice();	
 
 //! отрисовка full screen quad (уже смещенного как надо чтобы не было размытия)
 SX_LIB_API void SGCore_ScreenQuadDraw();
-
-//!@}
-
-//#############################################################################
-
-/*! \name Базовые функции установки настроек выборки из текстуры 
-id - идентификатор текстурного слота
-value - для Filter D3DTEXTUREFILTERTYPE, для Address D3DTEXTUREADDRESS
-@{*/
-
-//! установка фильтрации для конкретного слота
-SX_LIB_API void SGCore_SetSamplerFilter(DWORD dwNum, DWORD dwValue);	
-
-//! установка фильтрации для набора слотов от begin_id до end_id
-SX_LIB_API void SGCore_SetSamplerFilter2(DWORD dwNumStart, DWORD dwCount, DWORD dwValue);
-
-
-//! установка адресации для конкретного слота
-SX_LIB_API void SGCore_SetSamplerAddress(DWORD dwNum, DWORD dwValue);
-
-//! установка адресации для набора слотов от begin_id до end_id
-SX_LIB_API void SGCore_SetSamplerAddress2(DWORD dwNumStart, DWORD dwCount, DWORD dwValue);
-
-//!@}
-
-//#############################################################################
-
-/*! \defgroup sxgcore_redefinition_func Переопределяемые функции
- \ingroup sxgcore
- \note sxgcore содержит базовые и необходимые функции для переопределения их пользователем, которые будут доступны из графического ядра в других библиотеках зависимых от графического ядра, но в тоже время, эти функции могут быть переопределены функциями из других библиотек. \n
-Это обеспечивает централизованную обобщенную зависимость от самого графического ядра и исключает перекрестные зависимости библиотек между собой, позволяя программисту воздействовать на ценрт управления не  из центра. \n
-Переопределяемые функции могут быть переопределены во внутреннем состоянии, то есть функция обертка так и останется функцией оберткой только будет вызывать уже переопределенную функцию. \n
-Переопределяемые функции изначально выполняют штатные действия исходя из их назначения, и могут вообще не переопределяться если так надо программисту, то есть необходимость в их переопределении исходит только от программиста. \n
-@{*/
-
-/*! \name Прототипы переопределяемых функций 
-@{*/
-
-/*! draw indexed primitive, команда отрисовки.
-Аналогична DrawIndexedPrimitive, в дополнение к DIP инкрементирует счетчик DIPов в int регистрах по индексу #G_RI_INT_COUNT_DIP, обнуление данных только на стороне приложения
-*/
-typedef void(*g_func_dip) (UINT uiTypePrimitive, long lBaseVertexIndex, UINT uiMinVertexIndex, UINT uiNumVertices, UINT uiStartIndex, UINT uiPrimitiveCount);
-
-/*! установка материала id, world - мировая матрица.
-По умолчанию установка текстуры в нулевой текстурный слот, id – идентификатор материала (по умолчанию - текстуры), pWorld – матрица трансформации модели, pColor - цвет, если материал принимает
-*/
-typedef void(*g_func_mtl_set) (ID id, const float4x4 *pWorld, const float4 *pColor);
-
-/*! загрузка материала, szName - имя текстуры с расширением, iMtlType - тип материала на случай провала загрузки.
-Загрузка материала (по умолчанию – текстуры) с именем name, iMtlType – типа материала, 
-будет задействован только в случае провала определения типа материала (по умолчанию не используется) - 
-тип стандартного материала будет определен на основании iMtlType, может принимать одно из значений MTL_TYPE_
-*/
-typedef ID(*g_func_mtl_load) (const char *szName,	int iMtlType);
-
-//! является ли материал полупрозрачным
-typedef bool(*g_func_mtl_is_transparency) (ID id);
-
-//! получить физический тип материала
-typedef int(*g_func_mtl_get_physic_type)(ID id);
-
-//! рисовать ли подгруппы моделей данного материала раздельно?
-typedef bool(*g_func_mtl_group_render_is_singly) (ID id);
-
-//!@}
-
-/*! \name Переопределяемые функции(переопределение реализации внутри)
-!@{*/
-
-//! \copydoc g_func_dip
-SX_LIB_API void SGCore_DIP(UINT uiTypePrimitive, long lBaseVertexIndex, UINT uiMinVertexIndex, UINT uiNumVertices, UINT uiStartIndex, UINT uiPrimitiveCount);
-
-//! \copydoc g_func_mtl_set
-SX_LIB_API void SGCore_MtlSet(ID id, const float4x4 *pWorld=0, const float4 *pColor=0);
-
-//! \copydoc g_func_mtl_load
-SX_LIB_API ID SGCore_MtlLoad(const char *szName, int iMtlType);
-
-//! \copydoc g_func_mtl_is_transparency
-SX_LIB_API bool SGCore_MtlIsTransparency(ID id);
-
-//! \copydoc g_func_mtl_get_physic_type
-SX_LIB_API int SGCore_MtlGetPhysicType(ID id);
-
-//! \copydoc g_func_mtl_group_render_is_singly
-SX_LIB_API bool SGCore_MtlGroupRenderIsSingly(ID id);
 
 //!@}
 
@@ -272,72 +133,8 @@ enum DS_RT
 	DS_RT_ADAPTEDLUM
 };
 
-//! id render target по его типу
-SX_LIB_API ID SGCore_GbufferGetRT_ID(DS_RT type);
-
-//! текстура render target по его типу
-SX_LIB_API IDirect3DTexture9* SGCore_GbufferGetRT(DS_RT type);
-
-SX_LIB_API void SGCore_ToneMappingCom(DWORD timeDelta, float factor_adapted);
-
 //!@} sxgcore_ds
 
-//##########################################################################
-
-/*! \name Переопределение функций
-!@{*/
-
-//! переназначение #g_func_dip
-SX_LIB_API void SGCore_SetFunc_DIP(g_func_dip fnFunc);
-
-//! переназначение #g_func_mtl_set
-SX_LIB_API void SGCore_SetFunc_MtlSet(g_func_mtl_set fnFunc);
-
-//! переназначение #g_func_mtl_load
-SX_LIB_API void SGCore_SetFunc_MtlLoad(g_func_mtl_load fnFunc);
-
-//! переназначение #g_func_mtl_is_transparency
-SX_LIB_API void SGCore_SetFunc_MtlIsTransparency(g_func_mtl_is_transparency fnFunc);
-
-//! переназначение #g_func_mtl_get_physic_type
-SX_LIB_API void SGCore_SetFunc_MtlGetPhysicType(g_func_mtl_get_physic_type fnFunc);
-
-//! переназначение g_func_mtl_group_render_is_singly
-SX_LIB_API void SGCore_SetFunc_MtlGroupRenderIsSingly(g_func_mtl_group_render_is_singly fnFunc);
-
-//!@}
-
-//!@} group sxgcore_redefinition_func
-
-//#############################################################################
-
-/*! \name Occlusion culling - отбсрос загороженного
- \note Глубина должна быть нелинейная, то есть z/w, чтобы преобразовать в линейную надо:
- near / (far + near - depth * (far - near))
- \note Процесс вкратце:
-  - в конце этого кадра берем глубину, уменьшаем в несколько раз (в 4) с выборкой наиболее дальних пикселей, перегоняем данные из текстуры в gpu в массив на cpu
-  - в начале следующего кадра, после обновления матриц, делаем репроекцию глубины, закрашивая пустые места максимальной глубиной
-  - в следующем кадре тестируем боксы на незагороженность, путем растеризации треугольников и сравнения глубины пикселей с пикселями глубины
-@{*/
-
-//! будет ли проводится тест на загороженность
-SX_LIB_API void SGCore_OC_SetEnable(bool isEnable);
-
-//! обновление буфера глубины для теста, должна вызываться в старом кадре, к примеру после всего рендера (глубина и матрицы для текущего)
-SX_LIB_API void SGCore_OC_Update(ID idDepthMap, const IFrustum *pFrustum);
-
-//! Ожидает завершение обновления (для многопоточного режима)
-SX_LIB_API void SGCore_OC_UpdateEnsureDone();
-
-//! репроекция глубины, должна вызываться в новом кадре до основного рендера всего того, что подвергается тесту на загороженность, матрицы должны быть от нового кадра
-SX_LIB_API void SGCore_OC_Reprojection();
-
-/*! не загорожен ли бокс? вызывается для каждого тестируемого объекта после #SGCore_OC_Reprojection и до #SGCore_OC_Update
- \note Координаты бокса должны быть в пространстве мира
-*/
-SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin);
-
-//!@}
 
 //#############################################################################
 
@@ -361,13 +158,13 @@ SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin);
 #define SXGC_SHADER_MAX_SIZE_NAME 64
 
 //! общий максимальный  размер имени текстуры с расширением
-#define SXGC_SHADER_MAX_SIZE_DIRNAME SXGC_SHADER_MAX_SIZE_DIR + SXGC_SHADER_MAX_SIZE_NAME
+#define SXGC_SHADER_MAX_SIZE_DIRNAME (SXGC_SHADER_MAX_SIZE_DIR + SXGC_SHADER_MAX_SIZE_NAME)
 
 //! максимальный размер пути до файла шейдера (без имени файла)
 #define SXGC_SHADER_MAX_SIZE_STDPATH 256
 
 //! максимальный размер полного пути до шейдера (включая имя шейдера)
-#define SXGC_SHADER_MAX_SIZE_FULLPATH SXGC_SHADER_MAX_SIZE_STDPATH + SXGC_SHADER_MAX_SIZE_DIRNAME
+#define SXGC_SHADER_MAX_SIZE_FULLPATH (SXGC_SHADER_MAX_SIZE_STDPATH + SXGC_SHADER_MAX_SIZE_DIRNAME)
 
 
 //! максимальная длина имени переменной в шейдере
@@ -387,23 +184,16 @@ SX_LIB_API bool SGCore_OC_IsVisible(const float3 *pMax, const float3 *pMin);
 enum SHADER_TYPE
 {
 	//! вершинный
-	SHADER_TYPE_VERTEX,	
+	SHADER_TYPE_VERTEX,
 
 	//! пиксельный
-	SHADER_TYPE_PIXEL	
-};
+	SHADER_TYPE_PIXEL,
 
-//! типы проверок дубликатов шейдеров
-enum SHADER_CHECKDOUBLE
-{
-	//! нет проверки
-	SHADER_CHECKDOUBLE_NONE,	
+	//! геометрический
+	SHADER_TYPE_GEOMETRY,
 
-	//! проверка по пути (имени шейдера с расширением)
-	SHADER_CHECKDOUBLE_PATH,	
-
-	//! проверка по пользовательскому имени
-	SHADER_CHECKDOUBLE_NAME		
+	//! вычислительный
+	SHADER_TYPE_COMPUTE
 };
 
 //**************************************************************************
@@ -415,95 +205,37 @@ SX_LIB_API void SGCore_ShaderAllLoad();
 SX_LIB_API ID SGCore_ShaderLoad(
 	SHADER_TYPE type_shader,		//!< тип шейдера
 	const char *szPath,				//!< имя файла шейдера с расширением
-	const char *szName,				//!< имя шейдера которое присвоится при загрузке
-	SHADER_CHECKDOUBLE check_double,//!< проверять ли на уникальность
-	D3DXMACRO *pMacro = 0			//!< макросы
+	const char *szName = NULL,		//!< имя шейдера которое присвоится при загрузке
+	GXMacro *pMacro = 0			//!< макросы
 	);
 
 //! существует ли файл name в папке с шейдерами
 SX_LIB_API bool SGCore_ShaderFileExists(const char *szName);
 
-//! записывает пользовательское имя шейдера в name
-SX_LIB_API void SGCore_ShaderGetName(SHADER_TYPE type_shader, ID idShader, char *szName);
-
 //! записывает имя шейдер с расширением в path
 SX_LIB_API void SGCore_ShaderGetPath(SHADER_TYPE type_shader, ID idShader, char *szPath);
 
-//! существует ли шейдер с пользовательским именем name, если да то возвращает id
-SX_LIB_API ID SGCore_ShaderExistsName(SHADER_TYPE type_shader, const char *szName);
-
 //! существует ли шейдер с именем файла и расширением name, если да то возвращает id
-SX_LIB_API ID SGCore_ShaderExistsPath(SHADER_TYPE type_shader, const char *szPath);
+SX_LIB_API ID SGCore_ShaderExists(SHADER_TYPE type_shader, const char *szPath, GXMacro *pMacro = 0);
 
 //! загружен ли шейдер с данным id
-SX_LIB_API bool SGCore_ShaderIsValidated(SHADER_TYPE type_shader, ID idShader);
+SX_LIB_API bool SGCore_ShaderIsLoaded(SHADER_TYPE type_shader, ID idShader);
 
-
-//! обновление шейдера по имени
-SX_LIB_API void SGCore_ShaderUpdateN(SHADER_TYPE type_shader, const char *szName);
-
-//! обновление шейдера по id
-SX_LIB_API void SGCore_ShaderUpdate(SHADER_TYPE type_shader, ID idShader);
 
 //! перезагрузить все шейдеры, с учетом макросов
 SX_LIB_API void SGCore_ShaderReloadAll();	
 
 
-//! получить идентификатор шейдера по имени
-SX_LIB_API ID SGCore_ShaderGetID(SHADER_TYPE type_shader, const char *szName);
-
-//! бинд шейдера по имени
-SX_LIB_API void SGCore_ShaderBindN(SHADER_TYPE type_shader, const char *szName);
+//! создание набора шейдеров (вершиный и пиксельный)
+SX_LIB_API ID SGCore_ShaderCreateKit(ID idVertexShader, ID idPixelShader, ID idGeometryShader = -1, ID idComputeShader = -1);
 
 //! бинд шейдера по id
-SX_LIB_API void SGCore_ShaderBind(SHADER_TYPE type_shader, ID idShader);
+SX_LIB_API void SGCore_ShaderBind(ID idShaderKit);
 
 
 //! обнуление биндов шейдеров
 SX_LIB_API void SGCore_ShaderUnBind();	
 
-//**************************************************************************
-
-/*! \name Передача данных в шейдер
-@{*/
-
-//! передача float значений в шейдер по имени
-SX_LIB_API void SGCore_ShaderSetVRFN(
-	SHADER_TYPE type_shader,	//!< тип шейдера из #SHADER_TYPE
-	const char *szNameShader,	//!< пользовательское имя шейдера
-	const char *szNameVar,		//!< имя переменной которой присваивается значение
-	void *pData,				//!< указатель на массив данных
-	int iCountFloat4 = 0		//!< количество float4 значений в передаваемом массиве, если меньше одного значит количество будет взято из шейдера
-	);
-
-//! передача float значений в шейдер по ID
-SX_LIB_API void SGCore_ShaderSetVRF(
-	SHADER_TYPE type_shader,	//!< тип шейдера из #SHADER_TYPE
-	ID idShader,				//!< идентификатор шейдера
-	const char *szNameVar,		//!< имя переменной которой присваивается значение
-	void *pData,				//!< указатель на массив данных
-	int iCountFloat4 = 0		//!< количество float4 значений в передаваемом массиве, если меньше одного значит количество будет взято из шейдера
-	);
-
-//! передача int значений в шейдер по имени
-SX_LIB_API void SGCore_ShaderSetVRIN(
-	SHADER_TYPE type_shader,	//!< тип шейдера из #SHADER_TYPE
-	const char *szNameShader,	//!< пользовательское имя шейдера
-	const char *szNameVar,		//!< имя переменной которой присваивается значение
-	void *pData,				//!< указатель на массив данных
-	int iCountInt4 = 0			//!< количество int4 значений в передаваемом массиве, если меньше одного значит количество будет взято из шейдера
-	);
-
-//! передача int значений в шейдер по ID
-SX_LIB_API void SGCore_ShaderSetVRI(
-	SHADER_TYPE type_shader,	//!< тип шейдера из #SHADER_TYPE
-	ID idShader,				//!< идентификатор шейдера
-	const char *szNameVar,		//!< имя переменной которой присваивается значение
-	void *pData,				//!< указатель на массив данных
-	int iCountInt4 = 0			//!< количество int4 значений в передаваемом массиве, если меньше одного значит количество будет взято из шейдера
-	);
-
-//!@}
 //!@} sxgcore_shaders
 
 //#############################################################################
@@ -514,35 +246,6 @@ SX_LIB_API void SGCore_ShaderSetVRI(
 Имя текстуры обязательно долно содержать нижний пробел (_), строка до первого нижнего проблема это имя папки в котором находится текстура с целым именем. \n
 Например: mtl_tex.dds - лежит по загружаемому пути: /mtl/mtl_tex.dds
 @{*/
-
-/*! \name Ограничения на размеры
-@{*/
-
-//! максимальный размер имени директории (до _)
-#define SXGC_LOADTEX_MAX_SIZE_DIR 64
-
-//! максимальный размер имени с расширением (после _)
-#define SXGC_LOADTEX_MAX_SIZE_NAME 64
-
-//! общий максимальный  размер имени текстуры с расширением
-#define SXGC_LOADTEX_MAX_SIZE_DIRNAME SXGC_LOADTEX_MAX_SIZE_DIR + SXGC_LOADTEX_MAX_SIZE_NAME
-
-//! максимальный размер пути до файла текстуры (без имени файла)
-#define SXGC_LOADTEX_MAX_SIZE_STDPATH 256
-
-//! максимальный размер полного пути до текстуры (включая имя текстуры)
-#define SXGC_LOADTEX_MAX_SIZE_FULLPATH SXGC_LOADTEX_MAX_SIZE_STDPATH + SXGC_LOADTEX_MAX_SIZE_DIRNAME
-
-
-//! количество mipmap уровней в загружаемых текстурах
-#define SXGC_LOADTEX_COUNT_MIPMAP 5	
-
-/*! формат в который будут преобразованы загружаемые текстуры
- \warning если установить формат со сжатием то необходимо следовать всем правилам оформления текстур для данного формата
-*/
-#define SXGC_LOADTEX_FORMAT_TEX D3DFMT_FROM_FILE
-
-//!@}
 
 //**************************************************************************
 
@@ -565,437 +268,64 @@ SX_LIB_API void SGCore_ShaderSetVRI(
 
 //!@}
 
-//! типы текстур
-enum LOAD_TEXTURE_TYPE
-{
-	//! загружаемая
-	LOAD_TEXTURE_TYPE_LOAD,		
-
-	//! неудаляемая загружаемая
-	LOAD_TEXTURE_TYPE_CONST,	
-
-	//! созданная пользователем
-	LOAD_TEXTURE_TYPE_CUSTOM,	
-
-	/*! самоопределение типа, на тот случай когда обновляем текстуру которая точно есть.
-	Если определить этот тип, а внутри у текстуры на самом деле нет типа (скорее всего нет текстуры)
-	то будет определен LOAD_TEXTURE_TYPE_LOAD
-	*/
-	LOAD_TEXTURE_TYPE_SELF,
-};
-
-//**************************************************************************
-
-//! существует ил файл name в папке с текстурами
-SX_LIB_API bool SGCore_LoadTexFileExists(const char *szName);	
-
-//! очистить список загружаемых текстур
-SX_LIB_API void SGCore_LoadTexClearLoaded();				
-
-//! удалить тектуру по id (независимо от типа)
-SX_LIB_API void SGCore_LoadTexDelete(ID idTexture);				
-
-//! добавляем имя текстуры, взамен получаем на нее ID (поставить в очередь)
-SX_LIB_API ID SGCore_LoadTexAddName(const char *szName, LOAD_TEXTURE_TYPE type);
-
-SX_LIB_API ID SGCore_LoadTexAddConstAllInDir(const char *szDir);
-
-//! получить id по имени
-SX_LIB_API ID SGCore_LoadTexGetID(const char *szName);
-
-//! получить имя по id
-SX_LIB_API void SGCore_LoadTexGetName(ID idTexture, char *szName);
-
-
-/*! создать место для текстуры tex и присвоить ей имя name, возвращает id
- \warning создавать текстур необходимо в managed pool (D3DPOOL_MANAGED) ибо обработка потери и восстановления устройства сюда не приходит
-*/
-SX_LIB_API ID SGCore_LoadTexCreate(const char *szName, IDirect3DTexture9 *pTexture);
-
-/*! обновить/перезагрузить текстуру name, если текстуры не было в списке то добавляет.
-Если текстуру надо обновить, но тип у нее заранее не известен, но она точно уже загружена  
-то можно использовать тип самоопределения LOAD_TEXTURE_TYPE_SELF, тогда тип текстуры не изменится
-*/
-SX_LIB_API ID SGCore_LoadTexUpdateN(const char *szName, LOAD_TEXTURE_TYPE type);
-
-//! обновить/перезагрузить текстуру
-SX_LIB_API void SGCore_LoadTexUpdate(ID idTexture);
-
-//! возвращает текстуру по id
-SX_LIB_API IDirect3DTexture9* SGCore_LoadTexGetTex(ID idTexture);
-
-//! возвращает текстуру по id
-SX_LIB_API IDirect3DCubeTexture9* SGCore_LoadTexGetTexCube(ID idTexture);
-
-//! загрузка всех текстур поставленных в очередь, если есть очередь
-SX_LIB_API void SGCore_LoadTexAllLoad();	
-
 //!@} sxgcore_loadtex
 
-//#############################################################################
-
-/*! \defgroup sxgcore_rt Render targets
- \ingroup sxgcore
- \note Cброс и восстановление устройства сюда приходят
-@{*/
-
-//! добавить новый render target
-SX_LIB_API ID SGCore_RTAdd(
-	UINT iWidth,			//!< ширина
-	UINT iHeight,			//!< высота
-	UINT iLevels,			//!< количество mip-map уровней
-	DWORD dwUsage,			//!< признак применения, возможные значения из D3DUSAGE_
-	D3DFORMAT format,		//!< формат из D3DFORMAT
-	D3DPOOL pool,			//!< где будет размещена текстура, из D3DPOOL
-	const char *szName,		//!< имя rt
-	/*! коэфициент размеров rt относительно области рендера 
-	(если rt и размер области одинаковы то 1, если rt меньша на 0.5 то 0.5) 
-	если указаны фиксированные значения то ставить 0, это нужно для устновления размеров при восстановлении устройства
-	*/
-	float fCoefFullScreen
-	);
-
-//! удалить rt по имени
-SX_LIB_API void SGCore_RTDeleteN(const char *szName);	
-
-//! удалить rt по id
-SX_LIB_API void SGCore_RTDelete(ID id);				
-
-//! возвращает id по имени
-SX_LIB_API ID SGCore_RTGetId(const char *szName);
-
-//! возвращает текстуру по имени
-SX_LIB_API IDirect3DTexture9* SGCore_RTGetTextureN(const char *szName);
-
-//! возвращает текстуру по id
-SX_LIB_API IDirect3DTexture9* SGCore_RTGetTexture(ID id);				
-
-//!@} sxgcore_rt
+enum SHADER_CONST_REGISTER
+{
+	SCR_SCENE = 3,
+	SCR_CAMERA = 2,
+	SCR_OBJECT = 1,
+	SCR_SUBSET = 0
+};
 
 //#############################################################################
 
-/*! \defgroup sxgcore_dse_static Статическая модель dse формата
- \ingroup sxgcore
- \note sxgcore предоставляет возможность загрузки статических моделей, формат вершин которых представлен структурой #vertex_static, которая объявлена в файле ModelFile.h
- \todo Описать формат файла статической модели dse
-@{*/
-
-//! структура статической модели dse
-struct ISXDataStaticModel : public IBaseObject
-{
-	virtual ~ISXDataStaticModel(){};
-
-	virtual ISXDataStaticModel* getCopy()=0;//!< получить абсолютную копию модели
-	
-	IDirect3DVertexBuffer9 *m_pVertexBuffer;//!< вершиный буфер
-	IDirect3DIndexBuffer9 *m_pIndexBuffer;	//!< индексный буфер
-
-	uint32_t m_uiSubsetCount;		//!< количество подгрупп
-	char **m_ppTextures;			//!< массив имен текстур без расширения
-	uint32_t *m_pStartIndex;		//!< массив стартовых позиций индексов для каждой подгруппы
-	uint32_t *m_pIndexCount;		//!< массив количества индексов для каждой подгруппы
-	uint32_t *m_pStartVertex;		//!< массив стартовых позиций вершин для каждой подгруппы
-	uint32_t *m_pVertexCount;		//!< массив количества вершин для каждой подгруппы
-	uint32_t m_uiAllIndexCount;		//!< общее количество индексов
-	uint32_t m_uiAllVertexCount;	//!< общее количество вершин
-
-	float4_t m_vBSphere;
-	float3_t m_vBBMax, m_vBBMin;
-};
-
-//! типы dse файлов
-enum DSE_TYPE
-{
-	//! статика
-	DSE_TYPE_STATIC,
-
-	//! анимация
-	DSE_TYPE_ANIMATION,
-
-	//! анимационная модель
-	DSE_TYPE_ANIM_MESH,
-};
-
-//! возможная информация о dse файле
-struct CDSEinfo
-{
-	//! тип файла
-	DSE_TYPE type;
-
-	//! количество вершин
-	int iCountVertex;
-
-	//! количество индексов
-	int iCountIndex;
-
-	//! количество подгрупп
-	int iCountSubsets;
-
-	//! версия
-	int iVersion;
-
-	//! количество скинов
-	int iCountSkin;
-
-	//! количество хитбоксов
-	int iCountHitbox;
-
-	//! количество костей
-	int iCountBone;
-
-	//! количетсов анимаций
-	int iCountAnimation;
-
-	//! габариты в метрах
-	float3_t vDimensions;
-
-	//! центр модели в метрах
-	float3_t vCenter;
-};
-
-//! получить информацию о dse файле pInfo != 0, путь абсолютный
-SX_LIB_API bool SGCore_DSEgetInfo(const char *szPath, CDSEinfo *pOutInfo);
-
-//! создать статическую модель
-SX_LIB_API ISXDataStaticModel* SGCore_StaticModelCr();	
-
-//! является ли файл в пути szPath dse форматом? путь абсолютный
-SX_LIB_API bool SGCore_DSE_IsDSE(const char *szPath);
-
-//! является ли файл в пути szPath dse моделью? путь абсолютный
-SX_LIB_API bool SGCore_DSE_IsModel(const char *szPath);
-
-//! является ли файл в пути szPath dse анимацией? путь абсолютный
-SX_LIB_API bool SGCore_DSE_IsAnimation(const char *szPath);
-
-//! загрузить статическую модель, data инициализируется внутри
-SX_LIB_API void SGCore_StaticModelLoad(const char *szFile, ISXDataStaticModel **ppData);	
-
-// сохранить статическую модель
-//SX_LIB_API void SGCore_StaticModelSave(const char *szFile, ISXDataStaticModel **pData);
-
-//! возвращает декларацию вершин статической модели
-SX_LIB_API IDirect3DVertexDeclaration9* SGCore_StaticModelGetDecl();	
-
-//!@} sxgcore_dse_static
-
-//#############################################################################
-
-/*! \defgroup sxgcore_bb Ограничивающий объем
- \ingroup sxgcore
-@{*/
-
-/*! Простой объект трансформаций с минимальным описанием.
- \note Для корректного использования необходимо сначала установить позицию/поворот/масштаб после чего calcWorld
+/*! Меш
 */
-struct ITransObject : public IBaseObject
+struct IMesh: public IBaseObject
 {
-	virtual ~ITransObject(){};
-
-	SX_ALIGNED_OP_MEM
-
-	//! просчет мировой матрицы трансформации на основе поворотов масштабирования и позиции
-	virtual const float4x4* calcWorld() = 0;	
-
-	virtual void setPosition(const float3 *pPos) = 0;
-	virtual void setRotation(const float3 *pRot) = 0;
-	virtual void setScale(const float3 *pScale) = 0;
-
-	virtual const float3* getPosition(float3 *pPos=0) = 0;
-	virtual const float3* getRotation(float3 *pRot = 0) = 0;
-	virtual const float3* getScale(float3 *pScale = 0) = 0;
-};
-
-//! создать ITransObject
-SX_LIB_API ITransObject* SGCore_CrTransObject();	
-
-//! структура описывающая ограничивающий квадрат (а точнее параллелепипед) в пространстве экрана
-/*struct SXPosBBScreen
-{
-	float x;		//!< позиция по оси x в пространстве экрана
-	float y;		//!< позиция по оси y в пространстве экрана
-	float width;	//!< ширина в пикселях
-	float height;	//!< высота в пикселях
-	float maxdepth;	//!< конец объекта глубина 0-1
-	float mindepth;	//!< начало объект глубина 0-1
-	bool IsVisible;	//!< виден ли квадрат наблюдателю
-};*/
-
-struct CBoundBox
-{
-	float3_t m_vMin;
-	float3_t m_vMax;
-};
-
-
-/*! класс ограничивающего объема
- \warning #setMinMax, #setSphere до вызова #calcWorldAndTrans возвращают нетрансформирвоанные данные
-*/
-class ISXBound : public virtual ITransObject
-{
+	virtual ~IMesh() {};
 public:
-	virtual ~ISXBound(){};
-
-	SX_ALIGNED_OP_MEM
-
-	/*! Просчет ограничивающего объема по вершинному буферу*/
-	virtual void calcBound(
-		IDirect3DVertexBuffer9 *pVertexBuffer, //!< вершинный буфер (незаблокированный), в вершинах которого первым элементом идет позиция float3_t вектор  
-		int iCountVertex,		//!< количество вершин
-		int iBytePerVertex		//!< количество байт в вершине
-		) = 0;
-
-	virtual void calcBoundIndex(
-		IDirect3DVertexBuffer9 *pVertexBuffer,
-		uint32_t **ppArrIndex, 
-		uint32_t *pCountIndex,
-		int iCountSubset,
-		int iBytePerVertex
-		) = 0;
-
-	//! функция просчета мировой матрицы и трансформации минимума и максимума
-	//virtual float4x4*  calcWorldAndTrans() = 0;
-
-	virtual void resetTransform() = 0;
-
-	/*//! просчет структуры SXPosBBScreen 
-	virtual void getPosBBScreen(
-		SXPosBBScreen *res,		//!< инициализированная стркутура #SXPosBBScreen для записи
-		float3* campos,			//!< позиция наблюдателя
-		float3* sizemapdepth,	//!< размер карты глубины глябины для просчета float3(ширина, высота, максильная глубина)
-		float4x4* mat			//!< произведение видовой и проекционной матриц
-		) = 0;*/
-
-	//! установить экстремум, также просчитает и сферу
-	virtual void setMinMax(const float3 *pMin, const float3 *pMax) = 0;	
-
-	//! запишет в min и max точки экстремума
-	virtual void getMinMax(float3 *pMin, float3 *pMax) const = 0;			
-
-
-	//! установить сферу, просчитает также и параллелепипед
-	virtual void setSphere(const float3 *pCenter, float fRadius) = 0;	
-
-	//! запишет в center центр сферы, в radius радиус сферы
-	virtual void getSphere(float3 *pCenter, float *pRadius) const = 0;	
-
-
-	//! находится ли точка point в пределах сферы
-	virtual bool isPointInSphere(const float3 *pPoint) const = 0;	
-
-	//! находится ли точка point в пределах параллелепипеда
-	virtual bool isPointInBox(const float3 *pPoint) const = 0;		
+	virtual void AddRef() = 0;
+	virtual void draw() = 0;
+	virtual IGXVertexBuffer *getVertexBuffer() = 0;
+	virtual IGXIndexBuffer *getIndexBuffer() = 0;
+	virtual void Release() = 0;
+//	virtual UINT getVertexCount() = 0;
+//	virtual UINT getVertexSize() = 0;
 };
 
-//! создать ISXBound
-SX_LIB_API ISXBound* SGCore_CrBound(); 
-
-//!@} sxgcore_bb
+//! создать IMesh
+SX_LIB_API IMesh* SGCore_CrMesh(UINT uVertexCount, UINT uIndexCount, float3_t *pVertices, USHORT *pIndices);
+//SX_LIB_API IMesh* SGCore_CloneMesh(IMesh *pOther);
 
 //#############################################################################
 
 //! создание меша (ID3DXMesh) конуса 
 SX_LIB_API void SGCore_FCreateCone(
-	float fTopRadius,		//!< верхний радиус
-	float fBottomRadius,	//!< нижний радиус
-	float fHeight,			//!< длина
-	ID3DXMesh ** ppMesh,	//!< выходной меш
-	UINT iSideCount			//!< количество частей??
+	float fTopRadius,       //!< верхний радиус
+	float fBottomRadius,    //!< нижний радиус
+	float fHeight,          //!< длина
+	IMesh ** ppMesh,        //!< выходной меш
+	UINT iSideCount         //!< количество боковых сторон
 	);
 
-//! просчет ограничивающего объема по вершинному буфер
-SX_LIB_API void SGCore_FCompBoundBox(
-	IDirect3DVertexBuffer9* vertex_buffer, //!< вершинный буфер (незаблокированный), в вершинах которого первым элементом идет позиция float3_t вектор
-	ISXBound** bound,	//!< инициализированный ISXBound
-	DWORD count_vert,	//!< количество вершин
-	DWORD bytepervert	//!< количество байт в вершине
+//! создание меша (ID3DXMesh) сферы 
+SX_LIB_API void SGCore_FCreateSphere(
+	float fRadius,      //!< радиус
+	UINT iSideCount,    //!< количество боковых сторон
+	UINT iStackCount,   //!< количество горизонтальных слоев
+	IMesh ** ppMesh     //!< выходной меш
 	);
 
 //! создание меша (ID3DXMesh) ограничивающего объема
-SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3* min, const float3* max, ID3DXMesh** bbmesh);
-
-/*! \name Оптимизация индексных буферов
-@{*/
-
-//! 16 битные индексные буферы
-SX_LIB_API void SGCore_OptimizeIndecesInSubsetUint16(
-	uint16_t* ib,		//!< указатель на индексный буфер
-	uint16_t numFaces,	//!< количество индексов
-	uint16_t numVerts	//!< количество вершин
-	);	
-
-//! 16 битные индексные буферы
-SX_LIB_API void SGCore_OptimizeIndecesInSubsetUint32(
-	uint32_t* ib,		//!< указатель на индексный буфер
-	uint32_t numFaces,	//!< количество индексов
-	uint32_t numVerts	//!< количество вершин
-	);	
-//!@}
+SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3* min, const float3* max, IMesh** bbmesh);
 
 //##########################################################################
 
 /*! \defgroup sxgcore_bb_intersect Функции просчета попаданий точек в объемы и деление объемов
  \ingroup sxgcore
 @{*/
-
-/*! \name Просчеты попадания точки/точек в объем 
- \note 2d - на основании x и z координат \n
-3d - на основании всех трех координат \n
-Abs - абсолютное нахождение внутри, не на границах, иное допускает нахождение на границах 
-@{*/
-
-//! находится ли точка pos в пределах [min,max] по осям x z
-SX_LIB_API bool SGCore_0InPos2D(const float3 *pMin, const float3 *pMax, const float3 *pPos);
-
-//! находится ли точка pos в пределах (min,max) по осям x z
-SX_LIB_API bool SGCore_0InPosAbs2D(float3 *pMin, float3 *pMax, float3 *pPos);
-
-
-//! возвращает количество точек (p1,p2,p3) лежащих в пределах [min,max]  по осям x z
-SX_LIB_API int SGCore_0CountPosPoints2D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
-
-//! возвращает количество точек (p1,p2,p3) лежащих в пределах (min,max)  по осям x z
-SX_LIB_API int SGCore_0CountPosPointsAbs2D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
-
-//! лежит ли хотя бы одна точка абсолютно в (min,max) или хотя бы 2 точки в пределах [min,max], из числа трех точек p1,p2,p3, по осям x z
-SX_LIB_API bool SGCore_0InPosPoints2D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
-
-
-//! находится ли точка pos в пределах [min,max]
-SX_LIB_API bool SGCore_0InPos3D(float3 *pMin, float3 *pMax, float3 *pPos);
-
-//! находится ли точка pos в пределах (min,max)
-SX_LIB_API bool SGCore_0InPosAbs3D(float3 *pMin, float3 *pMax, float3 *pPos);
-
-
-//! возвращает количество точек (p1,p2,p3) лежащих в пределах [min,max]
-SX_LIB_API int SGCore_0CountPosPoints3D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
-
-//! возвращает количество точек (p1,p2,p3) лежащих в пределах (min,max)
-SX_LIB_API int SGCore_0CountPosPointsAbs3D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
-
-//! лежит ли хотя бы одна точка абсолютно в (min,max) или хотя бы 2 точки в пределах [min,max], из числа трех точек p1,p2,p3
-SX_LIB_API bool SGCore_0InPosPoints3D(float3 *pMin, float3 *pMax, float3 *p1, float3 *p2, float3 *p3);
-
-//!@}
-
-//**************************************************************************
-
-/*! кубическое (octo) деление объема (по всем трем осям)
- \warning массивы и объекты должны быть заранее инициализированны
- */
-SX_LIB_API void SGCore_0ComBoundBoxArr8(ISXBound *pBound, ISXBound **ppBoundArr);
-
-/*! квадратичное (quad) деление объема (по двум осям x и z)
- \warning массивы и объекты должны быть заранее инициализированны
-*/
-SX_LIB_API void SGCore_0ComBoundBoxArr4(ISXBound *pBound, ISXBound **ppBoundArr);
-
-//! находит квадрат расстояния между лучем и точкой
-SX_LIB_API float SGCore_0DistancePointBeam2(const float3 &vPoint, const float3 &vStart, const float3 &vDir);
-
-//! возвращает пересекаются ли боксы или нет
-SX_LIB_API bool SGCore_0InretsectBox(const float3 *pMin1, const float3 *pMax1, const float3 *pMin2, const float3 *pMax2);
 
 struct CTriangle
 {
@@ -1040,70 +370,33 @@ struct CTriangle
 @{
 */
 
+//@TODO: поменять на SMPLANE
 //! структура описание плоскости
 struct CFrustumPlane
 {
 	float3_t m_vNormal;
 	float m_fDistance;
 
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM2();
+
+	CFrustumPlane() = default;
+	CFrustumPlane(const SMPLANE &pPlane)
+	{
+		m_vNormal.x = pPlane.x;
+		m_vNormal.y = pPlane.y;
+		m_vNormal.z = pPlane.z;
+		m_fDistance = pPlane.w;
+	}
 
 	void normalize()
 	{
-		float fDenom = sqrt((m_vNormal.x*m_vNormal.x) + (m_vNormal.y*m_vNormal.y) + (m_vNormal.z*m_vNormal.z));
-		m_vNormal.x = m_vNormal.x / fDenom;
-		m_vNormal.y = m_vNormal.y / fDenom;
-		m_vNormal.z = m_vNormal.z / fDenom;
+		float fDenom = SMVector3Length(m_vNormal);
+		m_vNormal = (float3)(m_vNormal / fDenom);
 		m_fDistance = m_fDistance / fDenom;
 	}
 };
 
-//! класс описывающий фрустум
-class IFrustum : public IBaseObject
-{
-public:
-	virtual ~IFrustum(){};
-
-	SX_ALIGNED_OP_MEM
-
-	//! обновление фрустума, на вход матрицы по которым необходимо построить фрустум
-	virtual void update(
-		const float4x4 *pView,	//<! видовая матрица
-		const float4x4 *pProj	//<! проекционная матрица
-		) = 0;
-
-	//! находится ли точка во фрустуме
-	virtual bool pointInFrustum(const float3 *pPoint) const = 0;	
-
-	//! находится ли треугольник во фрутстуме
-	virtual bool polyInFrustum(const float3 *pPoint1, const float3 *pPoint2, const float3 *pPoint3) const = 0;		
-
-	//! находится ли полигон во фрустуме полностью
-	virtual bool polyInFrustumAbs(const float3 *pPoint1, const float3 *pPoint2, const float3 *pPoint3) const = 0;	
-
-
-	//! находится ли полигон во фрустуме
-	virtual bool sphereInFrustum(const float3 *pPoint, float fRadius) const = 0;	
-
-	//! находится ли сфера во фрустуме полностью
-	virtual bool sphereInFrustumAbs(const float3 *pPoint, float fRadius) const = 0;	
-
-	//! находится ли параллелепипед (описанный точками экстремума) во фрустуме
-	virtual bool boxInFrustum(float3 *pMin, float3 *pMax) const = 0;				
-
-
-	//! возвращает координаты точки фрустума, iNumPoint = [0,7]
-	virtual float3 getPoint(int iNumPoint) const = 0;
-
-	//! возвращает координаты центра фрустума
-	virtual float3 getCenter() const = 0;
-
-	//! устанавливает координаты точки фрустума, iNumPoint = [0,7]
-	virtual void setPoint(int iNumPoint, const float3 *pPoint) = 0;
-
-	//! устанавливает координаты центра фрустума
-	virtual void setCenter(const float3 *pCenter) = 0;
-};
+#include <xcommon/render/IFrustum.h>
 
 //! создать ISXFrustum
 SX_LIB_API IFrustum* SGCore_CrFrustum(); 
@@ -1209,148 +502,6 @@ SX_LIB_API ICamera* SGCore_CrCamera();
 
 //!@} sxgcore_camera
 
-//#############################################################################
-
-/*! \defgroup sxgcore_sky Небо
- \ingroup sxgcore
-@{*/
-
-/*! \name SkyBox
- \note Используются кубические текстуры
-@{*/
-
-#define SXGC_SKYBOX_SIZE 200.f
-
-//! создание
-SX_LIB_API void SGCore_SkyBoxCr();	
-
-//! инициализирован ли skybox
-SX_LIB_API bool SGCore_SkyBoxIsCr();
-
-//! используется ли SkyBox
-SX_LIB_API bool SGCore_SkyBoxGetUse();
-
-//! установить должен ли использоваться SkyBox
-SX_LIB_API void SGCore_SkyBoxSetUse(bool isUse);
-
-//! загружена ли текстура?
-SX_LIB_API bool SGCore_SkyBoxIsLoadTex();
-
-
-//! загрузка текстуры, texture - имя текстуры с расширением
-SX_LIB_API void SGCore_SkyBoxLoadTex(const char *szTexture);	
-
-//! смена текстуры, texture - имя текстуры с расширением
-SX_LIB_API void SGCore_SkyBoxChangeTex(const char *szTexture);
-
-//! в аргумент записывает путь до текущей активной текстуры
-SX_LIB_API void SGCore_SkyBoxGetActiveTex(char *szTexture);
-
-//! в аргумент записывает путь до следующей текстуры 9если включена смена)
-SX_LIB_API void SGCore_SkyBoxGetSecondTex(char *szTexture);
-
-
-//! установка угла поворота angle по оси y, в радианах
-SX_LIB_API void SGCore_SkyBoxSetRot(float fAngle);	
-
-//! возвращает угол поворота по оси y, в радианах
-SX_LIB_API float SGCore_SkyBoxGetRot();				
-
-
-//! установка цвета окраски в пределах 0-1, альфа компонента (w) - на сколько будет окрашен
-SX_LIB_API void SGCore_SkyBoxSetColor(const float4_t *pColor);	
-
-//! в color записывает текущий цвет окраски
-SX_LIB_API void SGCore_SkyBoxGetColor(float4_t *pColor);	
-
-//! рендер скайбокса
-SX_LIB_API void SGCore_SkyBoxRender(
-	float timeDelta,	//!< время рендера кадра в млсек 
-	const float3 *pPos	//!< позиция набладателя, эта же позиция будет центром skybox
-	);
-
-//!@}
-
-//**************************************************************************
-
-/*! \name SkyClouds
-
- \note Простая плоскость параллельная xz на которую зеркально (х2) натягивается текстура, в постоянном движении.
- Положение констатно.
- Используются обычные 2д текстуры.
-@{*/
-
-//! минимальный размер плоскости облаков (по обеим сторонам)
-#define SXGC_SKYCLOUDS_MIN_SIZE 1000.f
-
-//! создание
-SX_LIB_API void SGCore_SkyCloudsCr();		
-
-//! инициализирован ли sky clouds
-SX_LIB_API bool SGCore_SkyCloudsIsCr();		
-
-//! используется ли SkyClouds
-SX_LIB_API bool SGCore_SkyCloudsGetUse();
-
-//! установить должен ли использоваться SkyClouds
-SX_LIB_API void SGCore_SkyCloudsSetUse(bool isUse);
-
-//! загружена ли текстура
-SX_LIB_API bool SGCore_SkyCloudsIsLoadTex();
-
-
-/*! установка размеров и позиции.
- Так как позиция облаков константна то чтобы была илюзия полного покрытия уровня, необходимо облакам указывать размер в несколько раз больше чем весь доступный уровень, к примеру x2
-*/
-SX_LIB_API void SGCore_SkyCloudsSetWidthHeightPos(
-	float fWidth,			//!< ширина в метрах
-	float fHeight,			//!< высота в метрах
-	const float3 *pCenter	//!< позиция центра
-	);
-
-//! загрузка текстуры, texture - имя текстуры с расширением
-SX_LIB_API void SGCore_SkyCloudsLoadTex(const char *szNameTexture);	
-
-//! плавная смена текстуры, texture - имя текстуры с расширением
-SX_LIB_API void SGCore_SkyCloudsChangeTex(const char *szNameTexture);
-
-
-//! установка угла поворота angle по оси y, в радианах
-SX_LIB_API void SGCore_SkyCloudsSetRot(float fAngle);
-
-//! возвращает текущий угол поворота по оси y, в радианах
-SX_LIB_API float SGCore_SkyCloudsGetRot();			
-
-
-//! устанавливает коэфициент прозрачности, в пределах 0-1
-SX_LIB_API void SGCore_SkyCloudsSetAlpha(float fAlpha);	
-
-//! возвращает текущий коэфициент прозрачности
-SX_LIB_API float SGCore_SkyCloudsGetAlpha();			
-
-
-//! устанавливает коэфициент скорости движения
-SX_LIB_API void SGCore_SkyCloudsSetSpeed(float fSpeed);	
-
-//! возвращает текущий коэфициент скорости движения
-SX_LIB_API float SGCore_SkyCloudsGetSpeed();			
-
-
-//! установка цвета окраски в пределах 0-1, альфа компонента (w) - на сколько будет окрашен
-SX_LIB_API void SGCore_SkyCloudsSetColor(const float4_t *pColor);
-
-//! в color записывает текущий цвет окраски
-SX_LIB_API void SGCore_SkyCloudsGetColor(float4_t *pColor);
-
-//! рендер облаков
-SX_LIB_API void SGCore_SkyCloudsRender(
-	DWORD timeDetlta,		//!< время рендера кадра в млсек
-	const float3* pos,		//!< позиция набладателя
-	bool isShadow			//!< для теней ли рендерим?
-	);
-
-//!@}
-//!@} sxgcore_sky
 
 #endif
 

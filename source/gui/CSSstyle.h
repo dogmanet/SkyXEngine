@@ -139,10 +139,18 @@ namespace gui
 
 			int getInt() const
 			{
+				if(m_type == gui::css::ICSSproperty::TYPE_VAR_FLOAT)
+				{
+					return((int)m_value.f);
+				}
 				return(m_value.i);
 			}
 			float getFloat() const
 			{
+				if(m_type == gui::css::ICSSproperty::TYPE_VAR_INT)
+				{
+					return((float)m_value.i);
+				}
 				return(m_value.f);
 			}
 			const WCHAR * getString() const

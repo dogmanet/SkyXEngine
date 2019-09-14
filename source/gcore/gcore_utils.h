@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -8,46 +8,46 @@ See the license in LICENSE
 #define __UTILS_H
 
 #include <gdefines.h>
-#include <d3d9.h>
+#include <graphix/graphix.h>
 #include <common/array.h>
-#include <common/SXMath.h>
+#include <common/Math.h>
 
 #include <gcore/sxgcore.h>
 #include <gcore/gcore_data.h>
 
 //##########################################################################
 
-extern IDirect3DDevice9 *g_pDXDevice;
-extern D3DPRESENT_PARAMETERS g_oD3DAPP;
-extern IDirect3D9 *g_pD3D9;
-extern ID3DXFont *g_pFPStext;
+extern IGXDevice *g_pDevice;
+extern HMODULE m_hLibGXAPI;
 extern Array<DEVMODE> g_aModes;
-extern ID3DXMesh *g_pScreenTexture;
+extern IGXRenderBuffer *g_pScreenTextureRB;
+extern IGXBlendState *g_pToneMappingBS;
+extern IGXSamplerState *g_pSamplerFilterPoint;
+extern IGXSamplerState *g_pSamplerFilterLinear;
 
 //##########################################################################
 
-//! инициализация устройства
-void InitDevice(HWND hWnd, int iWidth, int iHeight, bool isWindowed, DWORD dwFlags);
+//! РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СѓСЃС‚СЂРѕР№СЃС‚РІР°
+void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed);
 
-//! инициализация отладочной инфы
+//! РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РѕС‚Р»Р°РґРѕС‡РЅРѕР№ РёРЅС„С‹
 void InitFPStext();
 
-//! инициализация полноэкранного квадрата
+//! РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїРѕР»РЅРѕСЌРєСЂР°РЅРЅРѕРіРѕ РєРІР°РґСЂР°С‚Р°
 void InitFullScreenQuad();
 
-//! инициализация массива режимов монитора
+//! РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РјР°СЃСЃРёРІР° СЂРµР¶РёРјРѕРІ РјРѕРЅРёС‚РѕСЂР°
 void InitArrModes();
 
-//! инициализация рендер таргетов для 
+//! РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЂРµРЅРґРµСЂ С‚Р°СЂРіРµС‚РѕРІ РґР»СЏ 
 void InitRT4Gbuffer();
 
-//! загрузка шейдеров
+//! Р·Р°РіСЂСѓР·РєР° С€РµР№РґРµСЂРѕРІ
 void LoadShaders();
 
-//! заполнение массива для tone mapping
-void ToneMappingGetArrDownScale4x4(int iWidth, int iHeight, float2 aDS[]);
+void InitToneMappingStates();
 
-//! расчет tone mapping
-void ToneMappingCom(DWORD timeDelta, float fFactorAdapted);
+//! Р·Р°РїРѕР»РЅРµРЅРёРµ РјР°СЃСЃРёРІР° РґР»СЏ tone mapping
+void ToneMappingGetArrDownScale4x4(int iWidth, int iHeight, float2 aDS[]);
 
 #endif

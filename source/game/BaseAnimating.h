@@ -18,28 +18,32 @@ See the license in LICENSE
 #define __BASE_ANIMATING_H
 
 #include "BaseEntity.h"
-#include <anim/sxanim.h>
+#include <xcommon/resource/IXModelProvider.h>
 
+#define BLEND_MAX 4
+
+class CAnimationCallback;
 //! Анимированный игровой объект
 class CBaseAnimating: public CBaseEntity
 {
 	DECLARE_CLASS(CBaseAnimating, CBaseEntity);
 	DECLARE_PROPTABLE();
+
+	friend class CAnimationCallback;
 public:
 	CBaseAnimating(CEntityManager * pMgr);
 	~CBaseAnimating();
 
 	void getMinMax(float3 * min, float3 * max);
-	void getSphere(float3 * center, float * radius);
+	// void getSphere(float3 * center, float * radius);
 
-	bool setKV(const char * name, const char * value);
-
-	virtual void setModel(const char * mdl);
+	virtual void setModel(const char *szMdl);
+	virtual void setScale(float fScale);
 
 	float3 getAttachmentPos(int id);
 	SMQuaternion getAttachmentRot(int id);
 
-	void onSync();
+	void onSync() override;
 
 	void playAnimation(const char * name, UINT uFadeTime = 0, UINT slot = 0);
 	void playActivity(const char * name, UINT uFadeTime = 0, UINT slot = 0);
@@ -58,6 +62,8 @@ public:
 	void setCollisionGroup(COLLISION_GROUP group, COLLISION_GROUP mask = CG_ALL);
 	COLLISION_GROUP getCollisionGroup();
 
+	void renderEditor(bool is3D) override;
+
 protected:
 	virtual void _initEditorBoxes();
 	virtual void _releaseEditorBoxes();
@@ -70,10 +76,11 @@ protected:
 
 	void inputSetSkin(inputdata_t * pInputdata);
 
-	IAnimPlayer * m_pAnimPlayer;
+	IXModel *m_pModel = NULL;
 	const char * m_szModelFile;
-	float m_fBaseScale;
-	bool m_isStatic;
+	float m_fBaseScale = 1.0f;
+	bool m_isStatic = false;
+	bool m_useAutoPhysbox = true;
 
 	CBaseEntity *m_pEntColorRef = NULL;
 	float3_t m_vGlowColor;
@@ -83,27 +90,31 @@ protected:
 	virtual void createPhysBody();
 	virtual void removePhysBody();
 
-	btCollisionShape * m_pCollideShape;
-	btRigidBody * m_pRigidBody;
+	btCollisionShape *m_pCollideShape = NULL;
+	btRigidBody *m_pRigidBody = NULL;
 
 	virtual void _cleanup();
 
-	virtual void onAnimationStateChanged(int slot, ANIM_STATE as);
+	virtual void onAnimationStart(UINT uLayer);
+	virtual void onAnimationStop(UINT uLayer);
+	virtual void onAnimationLoop(UINT uLayer);
+	virtual void onAnimationProgress(UINT uLayer, float fProgress);
 
 	void onIsStaticChange(bool isStatic);
-
+	void onSetUseAutoPhysbox(bool use);
 	int m_iSkin = 0;
 
 	struct
 	{
-		char szName[MODEL_MAX_NAME];
+		char szName[XMODEL_MAX_NAME];
 		UINT uFadeTime;
 		bool isActivity;
 	} m_vNextAnim[BLEND_MAX];
 
 private:
-	COLLISION_GROUP m_collisionGroup;
+	COLLISION_GROUP m_collisionGroup = CG_DEFAULT;
 	COLLISION_GROUP m_collisionMask = CG_ALL;
+	CAnimationCallback *m_pAnimationCallback;
 };
 
 #endif

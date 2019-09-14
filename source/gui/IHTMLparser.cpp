@@ -273,7 +273,7 @@ namespace gui
 			_wfopen_s(&pF, file, L"rt, ccs=UTF-8");
 			if(!pF)
 			{
-				wprintf(L"[Error]: Unable to open \"%s\" file for reading\n", file);
+				printf("[Error]: Unable to open \"%s\" file for reading\n", String(StringW(file)).c_str());
 				return(NULL);
 			}
 
@@ -283,7 +283,7 @@ namespace gui
 			wchar_t * html = new wchar_t[fs + 1];
 			if(!html)
 			{
-				wprintf(L"[Error]: Unable to allocate memory\n");
+				printf("[Error]: Unable to allocate memory\n");
 				return(NULL);
 			}
 			html[fread(html, sizeof(wchar_t), fs, pF)] = 0;
@@ -420,7 +420,7 @@ namespace gui
 						}
 						else
 						{
-							wprintf(L"[Error]: Unexpected symbol '&lt;' in pos %d\n", i);
+							printf("[Error]: Unexpected symbol '&lt;' in pos %d\n", i);
 						}
 						bHandled = true;
 						break;
@@ -456,7 +456,7 @@ namespace gui
 												}
 												else
 												{
-													wprintf(L"Unknown tag %s\n", tagname.c_str());
+													printf("Unknown tag %s\n", String(tagname).c_str());
 													if(!nodes.IsEmpty())
 													{
 														pCur = nodes.pop();
@@ -519,7 +519,7 @@ namespace gui
 						}
 						else
 						{
-							wprintf(L"[Error]: Unexpected symbol '&gt;' in pos %d\n", i);
+							printf("[Error]: Unexpected symbol '&gt;' in pos %d\n", i);
 						}
 						bHandled = true;
 						break;
@@ -614,7 +614,7 @@ namespace gui
 
 							if(!c)
 							{
-								wprintf(L"[Error]: Unknown meta char \"%s\"\n", metasym.c_str());
+								printf("[Error]: Unknown meta char \"%s\"\n", String(metasym).c_str());
 								bHandled = true;
 							}
 							metasym = L"";
@@ -631,7 +631,7 @@ namespace gui
 							{
 								if(tagname.length() == 0)
 								{
-									wprintf(L"[Error]: Expected tag name but found ' ' in pos %d\n", i);
+									printf("[Error]: Expected tag name but found ' ' in pos %d\n", i);
 								}
 								else
 								{

@@ -2,22 +2,15 @@
 #define _GUIbase_H_
 
 #include <Windows.h>
-#include <d3d9.h>
-#include <d3dx9.h>
+#include <graphix/graphix.h>
 #include <gcore/sxgcore.h>
 
-#pragma comment(lib, "d3dcompiler.lib")
-#pragma comment(lib, "d3d9.lib")
-#if defined(_DEBUG) && 0
-#	pragma comment(lib, "d3dx9d.lib")
-#else
-#	pragma comment(lib, "d3dx9.lib")
-#endif
-
+#ifndef SX_STATIC_BUILD
 #if defined(_DEBUG)
 #	pragma comment(lib, "sxgcore_d.lib")
 #else
 #	pragma comment(lib, "sxgcore.lib")
+#endif
 #endif
 
 #if defined(_WINDOWS)
@@ -43,7 +36,7 @@ __forceinline int _log2(int n)
 	return(log);
 }
 
-#include <common/SXMath.h>
+#include <common/Math.h>
 #include <gdefines.h>
 #include <common/array.h>
 #include <common/MemAlloc.h>

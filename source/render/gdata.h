@@ -17,12 +17,8 @@ See the license in LICENSE
 
 class CSimulationModel;
 class CAxesStatic;
-class CGrid;
 
 #include <input/sxinput.h>
-#include <render/simulation_model.h>
-#include <render/editor/grid.h>
-#include <render/editor/axes_static.h>
 #include <render/sxrender.h>
 
 
@@ -35,23 +31,22 @@ class CGrid;
 namespace gdata
 {
 	//! dx устройство
-	extern IDirect3DDevice9* pDXDevice;	
+	extern IGXDevice* pDXDevice;
+	//! Способности устройства
+//	extern D3DCAPS9 dxDeviceCaps;
 
 	//! хэндл окна родителя окна рендера, на случай редакторов
 	extern HWND hHandleParent3D;	
 
 	//! хэндл окна рендера
-	extern HWND hHandle3D;		
+	extern HWND hHandle3D;
 	
 	//!< финальное изображение
 	extern DS_RT typeFinalImage;
 
 	//!< камера для которой будет рендер
 	extern ICamera *pCamera;	
-
-	//! id текстуры с цветмо выделения (для редакторов)
-	extern ID idSelectTex;
-	
+		
 
 	//! значение дальней и ближней плоскостей отсечения
 	extern float2_t vNearFar;	
@@ -118,7 +113,10 @@ namespace gdata
 		{
 			extern ID idScreenOut;
 			extern ID idComLightingNonShadow;
+			extern ID idComLightingSpotNonShadow;
+			extern ID idComLightingGI;
 			extern ID idComLightingShadow;
+			extern ID idComLightingSpotShadow;
 
 			extern ID idBlendAmbientSpecDiffColor;
 
@@ -128,29 +126,52 @@ namespace gdata
 			extern ID idStencilStrColumn;
 			extern ID idUnionAlpha;
 		};
+
+		namespace kit
+		{
+			extern ID idScreenOut;
+			extern ID idStencilStr;
+			extern ID idStencilColumn;
+			extern ID idStencilStrColumn;
+			extern ID idBlendAmbientSpecDiffColor;
+			extern ID idUnionAlpha;
+			extern ID idComLightingNonShadow;
+			extern ID idComLightingSpotNonShadow;
+			extern ID idComLightingShadow;
+			extern ID idComLightingSpotShadow;
+			extern ID idComLightingGI;
+		};
 	};
 
-	namespace Editors
+	namespace rstates
 	{
-		//! возможно управлять камерой
-		extern bool canMoveCamera;
+		extern IGXDepthStencilState *pDepthStencilStateNoZ;
+		extern IGXDepthStencilState *pDepthStencilStateMrtStage0;
+		extern IGXDepthStencilState *pDepthStencilStateMrtStage1;
+		extern IGXDepthStencilState *pDepthStencilStateLightBound;
+		extern IGXDepthStencilState *pDepthStencilStateLightClear;
+		extern IGXDepthStencilState *pDepthStencilStateLightShadowNonGlobal;
+		extern IGXDepthStencilState *pDepthStencilStateLightShadowGlobal;
+		extern IGXDepthStencilState *pDepthStencilStateParticles;
 
-		//! указатель симуляционной модели
-		extern CSimulationModel *pSimModel;
+		extern IGXSamplerState *pSamplerPointClamp;
+		extern IGXSamplerState *pSamplerLinearWrap;
+		extern IGXSamplerState *pSamplerLinearMirror;
+		extern IGXSamplerState *pSamplerLinearClamp;
+		extern IGXSamplerState *pSamplerLinearBorder;
+		extern IGXSamplerState *pSamplerAnisotopicClamp;
+		extern IGXSamplerState *pSamplerAnisotopicWrap;
 
-		//! сетка дял редакторов
-		extern CGrid *pGrid;				
+		extern IGXSamplerState *pSamplerScene;
 
-		//! рендер статический осей в центре координат
-		extern CAxesStatic *pAxesStatic;	
+		extern IGXBlendState *pBlendRed;
+		extern IGXBlendState *pBlendAlpha;
+		extern IGXBlendState *pBlendAlphaOneOne;
+		extern IGXBlendState *pBlendAlphaSky;
 
-
-		//! рисовать ли #pGrid
-		extern bool canRenderGrid;				
-
-		//! рисовать ли #pAxesStatic
-		extern bool canRenderAxesStatic;
-	}
+		extern IGXRasterizerState *pRasterizerCullFront;
+		extern IGXRasterizerState *pRasterizerCullNone;
+	};
 };
 
 //!@} render_gdata

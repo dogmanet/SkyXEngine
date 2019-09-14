@@ -7,7 +7,7 @@ See the license in LICENSE
 #ifndef __PROPTABLE_H
 #define __PROPTABLE_H
 
-#include <common/SXmath.h>
+#include <common/Math.h>
 
 class CBaseEntity;
 
@@ -364,6 +364,8 @@ const char * GetEmptyString();
 #define FILE_OPTION(name, value) , name, value
 #define EDITOR_FILE_END() , NULL)}
 
+#define EDITOR_YESNO EDITOR_COMBOBOX COMBO_OPTION("Yes", "1") COMBO_OPTION("No", "0") EDITOR_COMBO_END()
+#define EDITOR_MODEL EDITOR_FILEFIELD FILE_OPTION("Select model", "dse") EDITOR_FILE_END()
 
 #define DEFINE_FIELD_STRING(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_STRING, flags, keyname, edname, editor
 #define DEFINE_FIELD_VECTOR(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_VECTOR, flags, keyname, edname, editor

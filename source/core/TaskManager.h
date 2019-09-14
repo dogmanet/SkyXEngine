@@ -22,7 +22,7 @@ const DWORD MS_VC_EXCEPTION = 0x406D1388;
 typedef struct tagTHREADNAME_INFO
 {
 	DWORD dwType; // Must be 0x1000.
-	const char * szName; // Pointer to name (in user addr space).
+	const char *szName; // Pointer to name (in user addr space).
 	DWORD dwThreadID; // Thread ID (-1=caller thread).
 	DWORD dwFlags; // Reserved for future use, must be zero.
 } THREADNAME_INFO;
@@ -33,13 +33,14 @@ typedef struct tagTHREADNAME_INFO
 class CTaskManager
 {
 public:
-	typedef std::shared_ptr<ITask> TaskPtr;
+	typedef ITask *TaskPtr;
 	typedef CConcurrentQueue<TaskPtr> TaskList;
 
 	CTaskManager(unsigned int numThreads = 0); //< Количество рабочих потоков, 0 для автоопределения
 	~CTaskManager();
 
 	void addTask(TaskPtr task); //< Добавляет задачу в планировщик
+	void addTaskIO(TaskPtr task); //< Добавляет задачу ввода/вывода
 	void add(THREAD_UPDATE_FUNCTION fnFunc, DWORD dwFlag = CORE_TASK_FLAG_MAINTHREAD_REPEATING); //< Добавляет задачу в планировщик
 
 	void forceSinglethreaded();
@@ -54,23 +55,29 @@ public:
 	{
 		return(m_iNumThreads);
 	}
+
 	
 private:
 	void workerMain();
+	void workerIOMain();
 	void worker(bool bOneRun);
+	void workerIO();
 	void execute(TaskPtr task);
 	void synchronize();
 	void sheduleNextBunch();
+	void notifyWorkers(UINT uCount = 1);
 
 	Array<std::thread*> m_aThreads;
+	std::thread* m_pIOThread;
 	unsigned int m_iNumThreads;
 
 	bool m_isRunning;
 
-	TaskList m_TaskList[2]; //!< В главном потоке (сонхронно)
+	TaskList m_TaskList[2]; //!< В главном потоке (синхронно)
 	TaskList m_BackgroundTasks; //!< Фоновые задачи
 	TaskList m_SyncTasks; //!< Синхронные задачи
 	TaskList m_OnSyncTasks; //!< Задачи синхронизации
+	TaskList m_aIOTasks; //!< Задачи ввода/вывода
 
 	unsigned int m_iReadList;
 	unsigned int m_iWriteList;
@@ -80,7 +87,11 @@ private:
 
 	mutable std::mutex m_mutexSync;
 	mutable std::mutex m_mutexFor;
+	mutable std::mutex m_mutexIOThread;
 	Condition m_Condition;
+	Condition m_ConditionIOThread;
+	mutable std::mutex m_mutexWorker;
+	Condition m_ConditionWorker;
 	Condition m_ConditionFor;
 	int m_iNumTasksToWaitFor;
 

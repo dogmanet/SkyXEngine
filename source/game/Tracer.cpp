@@ -72,7 +72,7 @@ void CTracer::render()
 		return;
 	}
 
-
+#ifdef _GRAPHIX_API
 	SGCore_ShaderUnBind();
 
 	SMMATRIX mView, mProj;
@@ -96,6 +96,7 @@ void CTracer::render()
 	{
 		DX_CALL(SGCore_GetDXDevice()->DrawPrimitiveUP(D3DPT_LINESTRIP, m_vpPoints[i].size() - 1, &(m_vpPoints[i][0]), sizeof(Point)));
 	}
+#endif
 }
 
 void CTracer::putPoint(const float3 &vPoint, float fFracColor)

@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -14,6 +14,7 @@ See the license in LICENSE
 #include <gui/guimain.h>
 #include "HUDcontroller.h"
 #include "GameStateManager.h"
+#include <light/IXLightSystem.h>
 
 class GameData
 {
@@ -28,6 +29,7 @@ public:
 	static gui::IGUI * m_pGUI;
 	static CHUDcontroller * m_pHUDcontroller;
 	static CGameStateManager * m_pGameStateManager;
+	static IXLightSystem *m_pLightSystem;
 	HWND m_hWnd;
 
 	CCrosshair * m_pCrosshair;
@@ -41,6 +43,7 @@ public:
 
 	static gui::dom::IDOMnode *m_pCell;
 	//static gui::IDesktop *m_pStatsUI;
+	static bool m_isLevelLoaded;
 
 protected:
 
@@ -95,7 +98,6 @@ protected:
 	static void ccmd_send_camera();
 
 	bool m_isGame;
-
 };
 
 extern GameData * g_pGameData;

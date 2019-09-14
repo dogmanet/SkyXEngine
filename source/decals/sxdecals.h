@@ -17,8 +17,12 @@ See the license in LICENSE
 #ifndef __SXDECALS_H
 #define __SXDECALS_H
 
+#if 1
+#define SXDecals_ShootDecal(...)
+
+#else
 #include <gdefines.h>
-#include <common/SXMath.h>
+#include <common/Math.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "sxmtrl_d.lib")
@@ -34,7 +38,7 @@ See the license in LICENSE
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllexport)
 #endif
-
+#endif
 
 enum DECAL_TYPE
 {
@@ -51,7 +55,7 @@ enum DECAL_TYPE
 	DECAL_TYPE_LAST
 };
 
-
+#if 0
 /*! Инициализирует библиотеку
 */
 SX_LIB_API void SXDecals_0Create();
@@ -87,6 +91,7 @@ SX_LIB_API void SXDecals_ShootDecalEx(DECAL_TYPE type, const float3 & fWorldPos,
 */
 SX_LIB_API void SXDecals_Clear();
 
+#endif
 
 #endif
 

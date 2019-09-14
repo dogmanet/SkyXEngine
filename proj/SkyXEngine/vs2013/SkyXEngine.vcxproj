@@ -1,21 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug Singlethreaded|Win32">
-      <Configuration>Debug Singlethreaded</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release Singlethreaded|Win32">
-      <Configuration>Release Singlethreaded</Configuration>
-      <Platform>Win32</Platform>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -30,7 +30,7 @@
     <PlatformToolset>v120_xp</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Singlethreaded|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120_xp</PlatformToolset>
@@ -43,7 +43,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Singlethreaded|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120_xp</PlatformToolset>
@@ -56,13 +56,13 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Singlethreaded|Win32'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release Singlethreaded|Win32'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -70,32 +70,31 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>../../../source;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include;../../../sdks/ogg/libvorbis/include/;../../../sdks/ogg/libogg/include/;</IncludePath>
-    <LibraryPath>../../../libs;$(LibraryPath);../../../sdks/dx9sdk/Lib</LibraryPath>
-    <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Include</SourcePath>
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/ogg/libvorbis/include/;../../../sdks/ogg/libogg/include/;</IncludePath>
+    <LibraryPath>../../../libs;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</SourcePath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Singlethreaded|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>$(ProjectName)_d</TargetName>
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/ogg/libvorbis/include/;../../../sdks/ogg/libogg/include/;</IncludePath>
+    <LibraryPath>../../../libs64;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</SourcePath>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
-    <TargetName>$(ProjectName)_STd</TargetName>
-    <IncludePath>../../../source;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/dx9sdk/Include;../../../sdks/ogg/libvorbis/include/;../../../sdks/ogg/libogg/include/;</IncludePath>
-    <LibraryPath>../../../libs;$(LibraryPath);../../../sdks/dx9sdk/Lib</LibraryPath>
-    <SourcePath>../../../source;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../sdks/dx9sdk/Include</SourcePath>
+    <OutDir>../../../build/bin64/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/</OutDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src;../../../sdks/dx9sdk/Include</IncludePath>
-    <LibraryPath>$(LibraryPath);../../../libs;../../../sdks/dx9sdk/Lib</LibraryPath>
-    <SourcePath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../source;../../../sdks/dx9sdk/Include</SourcePath>
+    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
+    <LibraryPath>$(LibraryPath);../../../libs</LibraryPath>
+    <SourcePath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../source</SourcePath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Singlethreaded|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
+    <LibraryPath>$(LibraryPath);../../../libs64</LibraryPath>
+    <SourcePath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../source</SourcePath>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/</OutDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src;../../../sdks/dx9sdk/Include</IncludePath>
-    <LibraryPath>$(LibraryPath);../../../libs;../../../sdks/dx9sdk/Lib</LibraryPath>
-    <SourcePath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../source;../../../sdks/dx9sdk/Include</SourcePath>
-    <TargetName>$(ProjectName)_ST</TargetName>
+    <OutDir>../../../build/bin64/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -117,13 +116,13 @@
       <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug Singlethreaded|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_SINGLETHREADED;WIN32;_DEBUG;_WINDOWS;SX_GAME;SX_EXE;%(PreprocessorDefinitions);SX_LIB_NAME="ENGINE"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;SX_GAME;SX_EXE;%(PreprocessorDefinitions);SX_LIB_NAME="ENGINE"</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
@@ -158,7 +157,7 @@
       <AdditionalOptions>/NODEFAULTLIB:LIBCMTD.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release Singlethreaded|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <PrecompiledHeader>
@@ -166,13 +165,13 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_SINGLETHREADED;WIN32;NDEBUG;_WINDOWS;SX_GAME;SX_EXE;%(PreprocessorDefinitions);SX_LIB_NAME="ENGINE"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;SX_GAME;SX_EXE;%(PreprocessorDefinitions);SX_LIB_NAME="ENGINE"</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
@@ -183,7 +182,12 @@
     <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
-    <ClCompile Include="..\..\..\source\skyxengine.cpp" />
+    <ClCompile Include="..\..\..\source\skyxengine.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\..\source\SkyXEngine_Build\SkyXEngine_Build.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -5,9 +5,17 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -23,7 +31,20 @@
     <PlatformToolset>v120_xp</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120_xp</PlatformToolset>
@@ -36,24 +57,45 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/bin/</OutDir>
+    <OutDir>../../../build/bin/plugins/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>$(IncludePath);$(WindowsSdk_71A_IncludePath);../../../source;../../../sdks/dx9sdk/Include;</IncludePath>
-    <LibraryPath>../../../sdks/dx9sdk/Lib;../../../libs;$(LibraryPath)</LibraryPath>
-    <SourcePath>../../../source;$(SourcePath);../../../sdks/dx9sdk/Include;</SourcePath>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_71A_IncludePath);../../../source;</IncludePath>
+    <LibraryPath>;../../../libs;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(SourcePath)</SourcePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>$(ProjectName)_d</TargetName>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_71A_IncludePath);../../../source;</IncludePath>
+    <LibraryPath>;../../../libs64;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(SourcePath)</SourcePath>
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>../../../build/bin64/plugins/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/bin/</OutDir>
-    <IncludePath>$(IncludePath);$(WindowsSdk_71A_IncludePath);../../../source;../../../sdks/dx9sdk/Include;</IncludePath>
-    <LibraryPath>../../../sdks/dx9sdk/Lib;../../../libs;$(LibraryPath)</LibraryPath>
-    <SourcePath>../../../source;$(SourcePath);../../../sdks/dx9sdk/Include;</SourcePath>
+    <OutDir>../../../build/bin/plugins/</OutDir>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_71A_IncludePath);../../../source;</IncludePath>
+    <LibraryPath>;../../../libs;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(SourcePath)</SourcePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_71A_IncludePath);../../../source;</IncludePath>
+    <LibraryPath>;../../../libs64;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(SourcePath)</SourcePath>
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>../../../build/bin64/plugins/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -70,6 +112,25 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN64;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;_USRDLL;SXANIM_EXPORTS;SX_LIB_NAME="ANIM";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImportLibrary>../../../libs64/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
       <Profile>true</Profile>
     </Link>
@@ -95,15 +156,52 @@
       <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level1</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN64;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;SXANIM_EXPORTS;SX_LIB_NAME="ANIM";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDatabaseFile>$(ProjectDir)$(TargetName).pdb</ProgramDatabaseFile>
+      <ImportLibrary>../../../libs64/$(TargetName).lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\anim\AnimatedModel.cpp" />
+    <ClCompile Include="..\..\..\source\anim\AnimatedModelProvider.cpp" />
+    <ClCompile Include="..\..\..\source\anim\AnimatedModelShared.cpp" />
+    <ClCompile Include="..\..\..\source\anim\dllmain.cpp" />
+    <ClCompile Include="..\..\..\source\anim\DynamicModel.cpp" />
+    <ClCompile Include="..\..\..\source\anim\DynamicModelProvider.cpp" />
+    <ClCompile Include="..\..\..\source\anim\DynamicModelShared.cpp" />
+    <ClCompile Include="..\..\..\source\anim\plugin_main.cpp" />
+    <ClCompile Include="..\..\..\source\anim\Renderable.cpp" />
+    <ClCompile Include="..\..\..\source\anim\RenderableVisibility.cpp" />
+    <ClCompile Include="..\..\..\source\anim\Updatable.cpp" />
     <ClCompile Include="..\..\..\source\common\string.cpp" />
-    <ClCompile Include="..\..\..\source\anim\animated.cpp" />
-    <ClCompile Include="..\..\..\source\anim\sxanim_dll.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\source\anim\animated.h" />
-    <ClInclude Include="..\..\..\source\anim\ModelFile.h" />
-    <ClInclude Include="..\..\..\source\anim\sxanim.h" />
+    <ClInclude Include="..\..\..\source\anim\AnimatedModel.h" />
+    <ClInclude Include="..\..\..\source\anim\AnimatedModelProvider.h" />
+    <ClInclude Include="..\..\..\source\anim\AnimatedModelShared.h" />
+    <ClInclude Include="..\..\..\source\anim\DynamicModel.h" />
+    <ClInclude Include="..\..\..\source\anim\DynamicModelProvider.h" />
+    <ClInclude Include="..\..\..\source\anim\DynamicModelShared.h" />
+    <ClInclude Include="..\..\..\source\anim\Renderable.h" />
+    <ClInclude Include="..\..\..\source\anim\RenderableVisibility.h" />
+    <ClInclude Include="..\..\..\source\anim\Updatable.h" />
+    <ClInclude Include="..\..\..\source\xcommon\resource\IXModelProvider.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

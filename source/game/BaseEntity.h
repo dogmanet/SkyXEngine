@@ -19,7 +19,8 @@ See the license in LICENSE
 #define __BASE_ENTITY_H
 
 #include <gdefines.h>
-#include <common/SXMath.h>
+#include <common/Math.h>
+#include <core/sxcore.h>
 #include <physics/sxphysics.h>
 #include <score/sxscore.h>
 
@@ -29,6 +30,8 @@ See the license in LICENSE
 #include "proptable.h"
 
 #include "TakeDamageInfo.h"
+
+#include <light/IXLightSystem.h>
 
 #pragma pointers_to_members(full_generality, virtual_inheritance)
 
@@ -49,10 +52,10 @@ public:
 	virtual ~CBaseEntity();
 
 	//! Возвращает имя движкового класса объекта
-	const char * getClassName();
+	const char* getClassName();
 	
 	//! Возвращает имя объекта
-	const char * getName();
+	const char* getName();
 	
 	//! Возвращает баунд объекта
 	virtual void getMinMax(float3 * min, float3 * max);
@@ -87,22 +90,22 @@ public:
 	SMQuaternion getOrient();
 
 	//! Устанавливает свойство объекта
-	virtual bool setKV(const char * name, const char * value);
+	virtual bool setKV(const char *name, const char *value);
 	//! Получает свойство объекта
-	virtual bool getKV(const char * name, char * out, int bufsize);
+	virtual bool getKV(const char *name, char *out, int bufsize);
 
 	//! Устанавливает родительский объект для объекта
-	void setParent(CBaseEntity * pEnt, int attachment = -1);
+	void setParent(CBaseEntity *pEnt, int attachment = -1);
 	//! Возвращает родительский объект объекта
-	CBaseEntity * getParent();
+	CBaseEntity* getParent();
 
 	//! Устанавливает владельца
-	void setOwner(CBaseEntity * pEnt);
+	void setOwner(CBaseEntity *pEnt);
 	//! Возвращает владельца объекта
-	CBaseEntity * getOwner();
+	CBaseEntity* getOwner();
 
 	//! Получает объект менеджера
-	CEntityManager * getManager();
+	CEntityManager* getManager();
 
 	//void updateDiscreteLinearVelocity(int step, float dt);
 	//const float3_t & getDiscreteLinearVelocity() const;
@@ -134,8 +137,9 @@ public:
 	//! Обновляет действие флагов в режиме редактора уровня
 	virtual void updateFlags(){}
 
-
 	virtual float3 getEditorBoxSize();
+
+	virtual void renderEditor(bool is3D);
 
 private:
 	void setClassName(const char * name);
@@ -222,6 +226,8 @@ protected:
 	btCollisionShape * m_pEditorCollideShape = NULL;
 	btRigidBody * m_pEditorRigidBody = NULL;
 	//@}
+
+	IXLightSystem *m_pLightSystem = NULL;
 };
 
 #pragma warning(pop)

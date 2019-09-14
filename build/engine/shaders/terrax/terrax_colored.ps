@@ -1,0 +1,20 @@
+
+/*
+terrax_colored.ps
+*/
+
+#include <../struct.h>
+
+//##########################################################################
+
+cbuffer perFrame: register(b0)
+{
+	half4 g_vColor;
+};
+
+//##########################################################################
+
+half4 main(VSO_TXColored IN):COLOR0
+{
+	return(g_vColor);
+}

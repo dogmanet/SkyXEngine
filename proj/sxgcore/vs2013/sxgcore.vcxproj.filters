@@ -4,22 +4,10 @@
     <ClCompile Include="..\..\..\source\gcore\shader.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\gcore\sky.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\gcore\sxgcore.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\gcore\camera.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\gcore\CreatorTextures.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\gcore\LoaderTextures.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\gcore\GeomOptimize.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\gcore\bound.cpp">
@@ -31,22 +19,16 @@
     <ClCompile Include="..\..\..\source\common\string.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\gcore\loader_static.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\common\file_utils.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\common\string_utils.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\gcore\oc.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\gcore\gcore_utils.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\gcore\gcore_data.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gcore\ShaderPreprocessor.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -59,16 +41,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\source\gcore\LoaderTextures.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\gcore\ModelFile.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\shader.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\gcore\sky.h">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\sxgcore.h">
@@ -77,19 +50,10 @@
     <ClInclude Include="..\..\..\source\gcore\camera.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\gcore\creatortextures.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\gcore\GeomOptimize.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\bound.h">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\string.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\gcore\loader_static.h">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\file_utils.h">
@@ -98,13 +62,13 @@
     <ClInclude Include="..\..\..\source\common\string_utils.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\gcore\oc.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\gcore_utils.h">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\gcore\gcore_data.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gcore\ShaderPreprocessor.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

@@ -8,6 +8,7 @@ See the license in LICENSE
 #include "Tracer.h"
 #include "BaseTool.h"
 #include <particles/sxparticles.h>
+#include <mtrl/sxmtrl.h>
 #include <decals/sxdecals.h>
 #include <BulletCollision/NarrowPhaseCollision/btRaycastCallback.h>
 
