@@ -243,11 +243,11 @@ void CCore::loadPlugins()
 			"/plugins/") + list[i]).c_str());
 		if(pPlugin)
 		{
-			printf(COLOR_GREEN "DONE!" COLOR_RESET "\n", list[i].c_str());
+			printf(COLOR_GREEN "DONE!" COLOR_RESET "\n");
 		}
 		else
 		{
-			printf(COLOR_LRED "ERROR!" COLOR_RESET "\n", list[i].c_str());
+			printf(COLOR_LRED "ERROR!" COLOR_RESET "\n");
 		}
 	}
 	m_pPluginManager->invokeStartup(this);

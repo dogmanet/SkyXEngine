@@ -165,7 +165,7 @@ namespace gui
 			m_mMetaSyms[L"bull"] = 8226;
 			m_mMetaSyms[L"hellip"] = 8230;
 			m_mMetaSyms[L"prime"] = 8242;
-			m_mMetaSyms[L"prime"] = 8243;
+			m_mMetaSyms[L"Prime"] = 8243;
 			m_mMetaSyms[L"oline"] = 8254;
 			m_mMetaSyms[L"frasl"] = 8260;
 			m_mMetaSyms[L"weierp"] = 8472;
@@ -237,9 +237,9 @@ namespace gui
 			m_mMetaSyms[L"amp"] = 38;
 			m_mMetaSyms[L"lt"] = 60;
 			m_mMetaSyms[L"gt"] = 62;
-			m_mMetaSyms[L"oelig"] = 338;
+			m_mMetaSyms[L"OElig"] = 338;
 			m_mMetaSyms[L"oelig"] = 339;
-			m_mMetaSyms[L"scaron"] = 352;
+			m_mMetaSyms[L"Scaron"] = 352;
 			m_mMetaSyms[L"scaron"] = 353;
 			m_mMetaSyms[L"yuml"] = 376;
 			m_mMetaSyms[L"circ"] = 710;
@@ -260,7 +260,7 @@ namespace gui
 			m_mMetaSyms[L"rdquo"] = 8221;
 			m_mMetaSyms[L"bdquo"] = 8222;
 			m_mMetaSyms[L"dagger"] = 8224;
-			m_mMetaSyms[L"dagger"] = 8225;
+			m_mMetaSyms[L"Dagger"] = 8225;
 			m_mMetaSyms[L"permil"] = 8240;
 			m_mMetaSyms[L"lsaquo"] = 8249;
 			m_mMetaSyms[L"rsaquo"] = 8250;
@@ -459,7 +459,7 @@ namespace gui
 													printf("Unknown tag %s\n", String(tagname).c_str());
 													if(!nodes.IsEmpty())
 													{
-														pCur = nodes.pop();
+														nodes.pop(&pCur);
 													}
 													else
 													{
@@ -482,7 +482,7 @@ namespace gui
 												//									wprintf(L"close tag %s\n", tagname);
 												if(!nodes.IsEmpty())
 												{
-													pCur = nodes.pop();
+													nodes.pop(&pCur);
 
 												}
 												else
@@ -500,7 +500,7 @@ namespace gui
 									//								wprintf(L"close tag %s\n", tagname);
 									if(!nodes.IsEmpty())
 									{
-										pCur = nodes.pop();
+										nodes.pop(&pCur);
 									}
 									else
 									{

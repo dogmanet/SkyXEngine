@@ -397,16 +397,16 @@ namespace gui
 
 				UINT iCV = 0;
 				UINT iCI = 0;
-				VOID * pData;
+				float3_t *pData;
 				pData = new float3_t[iVertexCount];
 
-				memcpy((float3_t*)pData + iCV, t->vb[0], sizeof(float3_t) * t->iVC[0]);
+				memcpy(pData + iCV, t->vb[0], sizeof(float3_t) * t->iVC[0]);
 				iCV += t->iVC[0];
-				memcpy((float3_t*)pData + iCV, r->vb[0], sizeof(float3_t) * r->iVC[0]);
+				memcpy(pData + iCV, r->vb[0], sizeof(float3_t) * r->iVC[0]);
 				iCV += r->iVC[0];
-				memcpy((float3_t*)pData + iCV, b->vb[0], sizeof(float3_t) * b->iVC[0]);
+				memcpy(pData + iCV, b->vb[0], sizeof(float3_t) * b->iVC[0]);
 				iCV += b->iVC[0];
-				memcpy((float3_t*)pData + iCV, l->vb[0], sizeof(float3_t) * l->iVC[0]);
+				memcpy(pData + iCV, l->vb[0], sizeof(float3_t) * l->iVC[0]);
 				iCV += l->iVC[0];
 
 				m_pVertexBuffer = GetGUI()->getDevice()->createVertexBuffer(sizeof(float3_t)* iVertexCount, GXBUFFER_USAGE_STATIC, pData);
@@ -414,20 +414,20 @@ namespace gui
 
 				m_pRenderBuffer = GetGUI()->getDevice()->createRenderBuffer(1, &m_pVertexBuffer, GetGUI()->getVertexDeclarations()->m_pXYZ);
 
-				pData = new USHORT[iIndexCount];
+				USHORT *pData2 = new USHORT[iIndexCount];
 				
-				memcpy((USHORT*)pData + iCI, t->ib[0], sizeof(USHORT) * t->iIC[0]);
+				memcpy(pData2 + iCI, t->ib[0], sizeof(USHORT) * t->iIC[0]);
 				iCI += t->iIC[0];
-				memcpy((USHORT*)pData + iCI, r->ib[0], sizeof(USHORT) * r->iIC[0]);
+				memcpy(pData2 + iCI, r->ib[0], sizeof(USHORT) * r->iIC[0]);
 				iCI += r->iIC[0];
-				memcpy((USHORT*)pData + iCI, b->ib[0], sizeof(USHORT) * b->iIC[0]);
+				memcpy(pData2 + iCI, b->ib[0], sizeof(USHORT) * b->iIC[0]);
 				iCI += b->iIC[0];
-				memcpy((USHORT*)pData + iCI, l->ib[0], sizeof(USHORT) * l->iIC[0]);
+				memcpy(pData2 + iCI, l->ib[0], sizeof(USHORT) * l->iIC[0]);
 				iCI += l->iIC[0];
-				memcpy((USHORT*)pData + iCI, pIndices, sizeof(USHORT) * IndexCount);
+				memcpy(pData2 + iCI, pIndices, sizeof(USHORT) * IndexCount);
 
-				m_pIndexBuffer = GetGUI()->getDevice()->createIndexBuffer(sizeof(USHORT)* iIndexCount, GXBUFFER_USAGE_DYNAMIC, GXIT_UINT16, pData);
-				mem_delete_a(pData);
+				m_pIndexBuffer = GetGUI()->getDevice()->createIndexBuffer(sizeof(USHORT)* iIndexCount, GXBUFFER_USAGE_DYNAMIC, GXIT_UINT16, pData2);
+				mem_delete_a(pData2);
 
 			}
 

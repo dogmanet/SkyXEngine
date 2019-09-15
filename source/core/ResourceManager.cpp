@@ -206,19 +206,12 @@ bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceMo
 
 			return(true);
 		}
-		else
-		{
-			LibReport(REPORT_MSG_LEVEL_ERROR, "No one plugin could load model '%s'\n", szName);
-			return(false);
-		}
-	}
-	else
-	{
-		LibReport(REPORT_MSG_LEVEL_ERROR, "No plugins for model extension found '%s'\n", szName);
+
+		LibReport(REPORT_MSG_LEVEL_ERROR, "No one plugin could load model '%s'\n", szName);
 		return(false);
 	}
 
-	assert(!"Should never get here!");
+	LibReport(REPORT_MSG_LEVEL_ERROR, "No plugins for model extension found '%s'\n", szName);
 	return(false);
 }
 bool XMETHODCALLTYPE CResourceManager::getModelStatic(const char *szName, IXResourceModelStatic **ppOut, bool bForceReload)

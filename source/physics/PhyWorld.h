@@ -85,7 +85,7 @@ public:
 			float3_t pos;
 			float4_t clr;
 		};
-		int m_iDebugMode;
+		int m_iDebugMode = 0;
 		render_point m_pDrawData[4096];
 		UINT m_uDataSize = 4096;
 		UINT m_uDataPointer = 0;

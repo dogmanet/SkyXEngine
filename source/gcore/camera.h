@@ -56,7 +56,7 @@ public:
 	~CCamera();
 	void Release()
 	{
-		mem_del(this);
+		delete this;
 	}
 	SX_ALIGNED_OP_MEM
 

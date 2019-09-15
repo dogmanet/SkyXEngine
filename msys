@@ -1,0 +1,230 @@
+
+
+
+// pass name, shader template, available textures, avail samplers, required output
+pMaterialSystem->registerRenderPass("xGBuffer", "shaders/material/gbuffer.ps", NULL, {
+	// name, slot
+	{"Scene default", 0},
+	{NULL, 0}
+}, {
+	// name, ident, type, default(hlsl)
+	{"Base color", "vBaseColor", GXDECLTYPE_FLOAT3, "float3(1.0f, 0.0f, 0.0f)"},
+	{"Normal", "vNormal", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+	{"AO", "fAO", GXDECLTYPE_FLOAT, "0.0f"},
+	{"f0", "f0", GXDECLTYPE_FLOAT, "0.04f"},
+	{"Roughness", "fRoughness", GXDECLTYPE_FLOAT, "0.5f"},
+	{"Metallic", "fMetallic", GXDECLTYPE_FLOAT, "0.5f"},
+	{"Thickness", "fThickness", GXDECLTYPE_FLOAT, "1.0f"},
+	{"Lighting Coefficient", "fLightCoeff", GXDECLTYPE_FLOAT, "1.0f"},
+	
+	{"Height", "fHeight", GXDECLTYPE_FLOAT, "1.0f"},
+	{NULL, GXDECLTYPE_UNUSED, NULL}
+});
+pMaterialSystem->registerRenderPass("xTransparency", "shaders/material/transparent.ps", {
+	// name, slot
+	{"GBuffer color(rgb) light(a)", 0},
+	{"GBuffer normals(rgb) f0(a)", 1},
+	{"GBuffer depth(r)", 2},
+	{"", 3}, // reserved slot
+	// {"GBuffer roughness(r) metallic(g) thickness(b) AO(a)", 3},
+	{"Lighted scene", 4},
+	{NULL, 0}
+}, {
+	// name, slot
+	{"Scene default", 0},
+	{NULL, 0}
+}, {
+	// name, ident, type, default(hlsl)
+	{"Base color", "vBaseColor", GXDECLTYPE_FLOAT4, "float4(1.0f, 0.0f, 0.0f, 0.5f)"},
+	{"Normal", "vNormal", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+	{"AO", "fAO", GXDECLTYPE_FLOAT, "0.0f"},
+	{"f0", "f0", GXDECLTYPE_FLOAT, "0.04f"},
+	{"Roughness", "fRoughness", GXDECLTYPE_FLOAT, "0.5f"},
+	{"Metallic", "fMetallic", GXDECLTYPE_FLOAT, "0.5f"},
+	{"Thickness", "fThickness", GXDECLTYPE_FLOAT, "1.0f"},
+	{"Lighting Coefficient", "fLightCoeff", GXDECLTYPE_FLOAT, "1.0f"},
+	{"Emissive color", "fEmissiveColor", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+	{NULL, GXDECLTYPE_UNUSED, NULL}
+});
+pMaterialSystem->registerRenderPass("xIllumination", "shaders/material/illum.ps", {
+	// name, slot
+	{"GBuffer color(rgb) light(a)", 0},
+	{"GBuffer normals(rgb) f0(a)", 1},
+	{"GBuffer depth(r)", 2},
+	{"", 3}, // reserved slot
+	// {"GBuffer roughness(r) metallic(g) thickness(b) AO(a)", 3},
+	{"Lighted scene", 4},
+	{NULL, 0}
+}, {
+	// name, slot
+	{"Scene default", 0},
+	{NULL, 0}
+}, {
+	// name, ident, type, default(hlsl)
+	{"Emissive color", "fEmissiveColor", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+	{"Normal", "vNormal", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+	{NULL, GXDECLTYPE_UNUSED, NULL}
+});
+pMaterialSystem->registerRenderPass("xPostprocess", "shaders/material/post.ps", {
+	// name, slot
+	{"GBuffer color(rgb) light(a)", 0},
+	{"GBuffer normals(rgb) f0(a)", 1},
+	{"GBuffer depth(r)", 2},
+	{"", 3}, // reserved slot
+	// {"GBuffer roughness(r) metallic(g) thickness(b) AO(a)", 3},
+	{"Lighted scene", 4},
+	{NULL, 0}
+}, {
+	// name, slot
+	{"Point clamp", 0},
+	{NULL, 0}
+}, {
+	// name, ident, type, default(hlsl)
+	{"Color", "vColor", GXDECLTYPE_FLOAT3, "float3(1.0f, 0.0f, 0.0f)"},
+	{NULL, GXDECLTYPE_UNUSED, NULL}
+});
+pMaterialSystem->registerRenderPass("xShadow", "shaders/material/shadow.ps", NULL, {
+	// name, slot
+	{"Scene default", 0},
+	{NULL, 0}
+}, {
+	// name, ident, type, default(hlsl)
+	{"Base color", "vBaseColor", GXDECLTYPE_FLOAT3, "float3(1.0f, 0.0f, 0.0f)"},
+	{"Normal", "vNormal", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+	{NULL, GXDECLTYPE_UNUSED, NULL}
+});
+
+
+
+XVertexOutputElement aDeclScene[] = {
+	{"vPosition", GXDECLTYPE_FLOAT4, GXDECLUSAGE_POSITION},
+	{"vTexUV", GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+	{"vNormal", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1},
+	{"vPos", GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD2},
+	XVERTEX_OUTPUT_DECL_END()
+};
+pMaterialSystem->registerVertexFormat("xSceneGeneric", aDeclScene);
+
+XVertexOutputElement aDeclPost[] = {
+	{"vPosition", GXDECLTYPE_FLOAT4, GXDECLUSAGE_POSITION},
+	{"vTexUV", GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+	{"vEyeRay", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1},
+	{"vWorldRay", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD2},
+	XVERTEX_OUTPUT_DECL_END()
+};
+pMaterialSystem->registerVertexFormat("xPostprocess", aDeclPost);
+
+
+
+
+
+// target vertex format, shader file, defines = NULL
+IMaterialVS *pVShader = pMaterialSystem->registerVertexShader("xSceneGeneric", "shaders/base/static.vs");
+pMaterialSystem->registerVertexShader("xSceneGeneric", "shaders/base/anim.vs");
+pMaterialSystem->registerVertexShader("xSceneGeneric", "shaders/base/particles.vs");
+pMaterialSystem->registerVertexShader("xSceneGeneric", "shaders/base/green.vs");
+
+pMaterialSystem->registerVertexShader("xPostprocess", "shaders/base/post.vs");
+
+// on render
+pMaterialSystem->bindVS(pVShader);
+
+// shader file, defines = NULL
+IMaterialGS *pGShader = pMaterialSystem->registerGeometryShader("shaders/sm/sm_rsm_cube.gs");
+
+// on render
+pMaterialSystem->bindGS(pGShader);
+
+
+
+
+
+
+
+// name, source vertex format, target passes+programs, parameters=NULL
+pMaterialSystem->registerMaterialShader("Default", "xSceneGeneric", {
+	// pass, shader file, shader entrypoint, static macro, required samplers, parameter map
+	{"xGBuffer", "shaders/default/default.ps", "MainGBuffer", {{"DEFINE_1", "value"}, {NULL, NULL}}, {
+		// name, config
+		{"g_sPoint", GXSamplerState(...)},
+		{NULL, NULL}
+	}, {
+		// parameter name, texture name, define_if_supplied
+		XMATERIAL_PARAM_TEXTURE_OPT("Base texture", "txBase"), // will override generic parameter if supplied
+		
+		XMATERIAL_PARAM_FLAG("Use f0 texture", "has_f0_texture", "HAS_F0MAP"),
+		XMATERIAL_PARAM_GROUP(NULL, "HAS_F0MAP"),
+			XMATERIAL_PARAM_TEXTURE("f0 texture"),
+		XMATERIAL_PARAM_GROUP_END(),
+		XMATERIAL_PARAM_GROUP(NULL, "!HAS_F0MAP"),
+			XMATERIAL_PARAM_RANGE("f0", "0", "1", "pbr_f0"),
+		XMATERIAL_PARAM_GROUP_END(),
+	}},
+	{"xIllumination", "shaders/default/default.ps", "MainIllimination", NULL, NULL},
+	{"xShadow", "shaders/default/default.ps", "MainShadow", NULL, NULL},
+}, {
+	// parameter name
+	XMATERIAL_PARAM_TEXTURE("Base texture"),
+	// parameter name, define_if_supplied
+	XMATERIAL_PARAM_TEXTURE_OPT("Normal map", "HAS_NORMALMAP"),
+	// parameter name, material parameter name, define_if_set
+	XMATERIAL_PARAM_FLAG("Use param texture", "has_parameter_texture", "HAS_PARAMMAP"),
+	// group name (optional), condition (define)
+	XMATERIAL_PARAM_GROUP(NULL, "HAS_PARAMMAP"),
+		XMATERIAL_PARAM_TEXTURE("Param texture"),
+	XMATERIAL_PARAM_GROUP_END(),
+	XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP"),
+		// name, min, max, material parameter name
+		XMATERIAL_PARAM_RANGE("Roughness", "0", "1", "pbr_roughness"),
+		XMATERIAL_PARAM_RANGE("Metallic", "0", "1", "pbr_metallic"),
+		XMATERIAL_PARAM_RANGE("Thickness", "0", "1", "pbr_thickness"),
+		XMATERIAL_PARAM_RANGE("AO", "0", "1", "pbr_ao"),
+	XMATERIAL_PARAM_GROUP_END(),
+	
+	XMATERIAL_PARAM_FLAG("Enable alphatest", "has_alphatest", "HAS_ALPHATEST"),
+	XMATERIAL_PARAM_GROUP(NULL, "HAS_ALPHATEST"),
+		XMATERIAL_PARAM_RANGE("Alphatest threshold", "0", "1", "pbr_alphatest_threshold"),
+	XMATERIAL_PARAM_GROUP_END(),
+	{NULL}
+});
+
+pMaterialSystem->registerMaterialShader("Transparent", "xSceneGeneric", {
+	{"xTransparency", "shaders/default/default.ps", "MainTransparency", NULL, NULL},
+	{"xIllumination", "shaders/default/default.ps", "MainIllimination", NULL, NULL},
+	{"xShadow", "shaders/default/default.ps", "MainShadow", NULL, NULL},
+}, {
+	// material parameter name, value
+	XMATERIAL_STATIC_PARAM("transparent", "1"),
+	// parameter name, texture name
+	XMATERIAL_PARAM_TEXTURE("Base texture", "txBase"),
+	// parameter name, texture name, define_if_supplied
+	XMATERIAL_PARAM_TEXTURE_OPT("Normal map", "txNormals", "HAS_NORMALMAP"),
+	// parameter name, material parameter name, define_if_set
+	XMATERIAL_PARAM_FLAG("Refraction", "has_refraction", "HAS_REFRACTION"),
+	XMATERIAL_PARAM_FLAG("Use param texture", "has_parameter_texture", "HAS_PARAMMAP"),
+	// group name (optional), condition (define)
+	XMATERIAL_PARAM_GROUP(NULL, "HAS_PARAMMAP"),
+		XMATERIAL_PARAM_TEXTURE("Param texture", "txParameters"),
+	XMATERIAL_PARAM_GROUP_END(),
+	XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP"),
+		// name, min, max, material parameter name
+		XMATERIAL_PARAM_RANGE("Roughness", "0", "1", "pbr_roughness"),
+		XMATERIAL_PARAM_RANGE("Metallic", "0", "1", "pbr_metallic"),
+		XMATERIAL_PARAM_RANGE("Thickness", "0", "1", "pbr_thickness"),
+		XMATERIAL_PARAM_RANGE("AO", "0", "1", "pbr_ao"),
+	XMATERIAL_PARAM_GROUP_END(),
+	{NULL, NULL}
+});
+
+
+pMaterialSystem->registerMaterialShader("Postprocess", "xPostprocess", {
+	{"xPostprocess", "shaders/default/default.ps", "MainPostprocess", NULL, NULL},
+}, NULL);
+
+
+
+
+
+
+
+

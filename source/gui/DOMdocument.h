@@ -14,10 +14,7 @@ namespace gui
 		class CDOMdocument: public IDOMdocument
 		{
 		public:
-			CDOMdocument():
-				m_pRootNode(NULL),
-				m_pRTroot(NULL),
-				m_isDirty(true)
+			CDOMdocument()
 			{
 				m_pCSS = new css::ICSS(this);
 			}
@@ -108,11 +105,11 @@ namespace gui
 			const IDOMnodeCollection & createFromText(const StringW & html);
 
 		protected:
-			IDOMnode * m_pRootNode;
+			IDOMnode *m_pRootNode = NULL;
 
-			css::ICSS * m_pCSS;
+			css::ICSS *m_pCSS;
 
-			CDesktop * m_pDesktop;
+			CDesktop *m_pDesktop = NULL;
 
 			//index
 			AssotiativeArray<StringW, UINT> m_IndexStringById;
@@ -128,11 +125,11 @@ namespace gui
 
 			//void ApplyCSSrules(const css::ICSSstyle * style, IDOMnode * pNode);
 
-			render::IRenderFrame * m_pRTroot;
+			render::IRenderFrame *m_pRTroot = NULL;
 
 			Array<css::CCSSproperty*> m_aTransitionUpdateList;
 
-			bool m_isDirty;
+			bool m_isDirty = true;
 
 			IDOMnodeCollection m_cTmpNodes;
 		};

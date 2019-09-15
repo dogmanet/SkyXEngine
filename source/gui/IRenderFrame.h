@@ -33,7 +33,7 @@ namespace gui
 				friend class CDOMnode;
 			public:
 				IRenderFrame(CDOMnode * pNode, IRenderFrame * pRootNode);
-				~IRenderFrame();
+				virtual ~IRenderFrame();
 
 				virtual UINT layout(bool changed=true);
 				virtual void render(UINT lvl);
@@ -304,7 +304,7 @@ namespace gui
 			{
 				DECLARE_CLASS(IRenderBlock, IRenderFrame);
 			public:
-				IRenderBlock(CDOMnode * pNode, IRenderFrame * pRootNode);
+				IRenderBlock(CDOMnode *pNode, IRenderFrame *pRootNode);
 				UINT layout(bool changed = true);
 				void render(UINT lvl);
 			};
@@ -368,7 +368,11 @@ namespace gui
 			{
 				DECLARE_CLASS(IRenderTextNew, IRenderFrame);
 			public:
-				IRenderTextNew(CDOMnode * pNode, IRenderFrame * pRootNode);
+				IRenderTextNew(CDOMnode *pNode, IRenderFrame *pRootNode):
+					BaseClass(pNode, pRootNode)
+				{
+				}
+
 				UINT layout(bool changed = true);
 				void render(UINT lvl);
 
@@ -395,29 +399,29 @@ namespace gui
 				Array<CRenderElement> m_pRenderElems;
 				//Array<CRenderElement> m_pRenderElemsShadow;
 				StringW m_szClearText;
-				UINT m_iWordCount;
+				UINT m_iWordCount = 0;
 
 				Array<RECT> m_vCharRects;
 
 				float4_t m_pColor;
 
-				css::ICSSstyle * m_pStyle;
+				css::ICSSstyle *m_pStyle = NULL;
 
-				CFont * pFont;
-				CFont * pShadowFont;
+				CFont *pFont = NULL;
+				CFont *pShadowFont = NULL;
 
 				void setText(const StringW & text);
 
-				UINT m_iCaretPos;
-				UINT m_iSelectionStart;
-				UINT m_iSelectionEnd;
+				UINT m_iCaretPos = 0;
+				UINT m_iSelectionStart = 0;
+				UINT m_iSelectionEnd = 0;
 				void drawCaret();
 				void renderSelection();
 				bool m_bInSelection;
 
-				int m_iCaretX;
-				int m_iCaretY;
-				int m_iTextSize;
+				int m_iCaretX = 0;
+				int m_iCaretY = 0;
+				int m_iTextSize = 0;
 			};
 
 			class IRenderImageBlock: public IRenderBlock
@@ -433,7 +437,7 @@ namespace gui
 			{
 				DECLARE_CLASS(IRenderImageInlineBlock, IRenderInlineBlock);
 			public:
-				IRenderImageInlineBlock(CDOMnode * pNode, IRenderFrame * pRootNode);
+				IRenderImageInlineBlock(CDOMnode *pNode, IRenderFrame *pRootNode);
 				UINT layout(bool changed = true);
 				void render(UINT lvl);
 			};
@@ -442,13 +446,17 @@ namespace gui
 			{
 				DECLARE_CLASS(IRenderSelectBlock, IRenderBlock);
 			public:
-				IRenderSelectBlock(CDOMnode * pNode, IRenderFrame * pRootNode);
+				IRenderSelectBlock(CDOMnode *pNode, IRenderFrame *pRootNode):
+					BaseClass(pNode, pRootNode)
+				{
+				}
+
 				UINT layout(bool changed = true);
 
 				void onCreated();
 
 			protected:
-				IRenderFrame *m_pOptionsFrame;
+				IRenderFrame *m_pOptionsFrame = NULL;
 			};
 
 			class IRenderSelectOptionsBlock: public IRenderBlock

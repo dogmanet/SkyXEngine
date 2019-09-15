@@ -542,7 +542,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		}
 
 		CBaseEntity *pEnt;
-		if(sscanf(argv[1], "%x", &pEnt))
+		if(sscanf(argv[1], "%p", &pEnt))
 		{
 			LibReport(REPORT_MSG_LEVEL_WARNING, "Ent: id:%d; cls:'%s'; name:'%s'\n", pEnt->getId(), pEnt->getClassName(), pEnt->getName());
 		}
@@ -772,7 +772,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		for(int i = 0; i < iModesCount; ++i)
 		{
 			wchar_t str[64];
-			wsprintfW(str, L"<option value=\"%d|%d\">%dx%d</option>", pModes[i].dmPelsWidth, pModes[i].dmPelsHeight, pModes[i].dmPelsWidth, pModes[i].dmPelsHeight);
+			wsprintfW(str, L"<option value=\"%u|%u\">%ux%u</option>", pModes[i].dmPelsWidth, pModes[i].dmPelsHeight, pModes[i].dmPelsWidth, pModes[i].dmPelsHeight);
 
 			gui::dom::IDOMnodeCollection newItems = pLoadLevelDesktop->createFromText(str);
 			for(UINT i = 0, l = newItems.size(); i < l; i++)

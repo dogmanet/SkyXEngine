@@ -46,6 +46,18 @@ struct XSHADER_VARIANT_DESC
 	GXMacro *pMacrosVS;
 };
 
+struct XVertexOutputElement
+{
+	const char *szName;
+
+	//! Тип
+	GXDECLTYPE type;
+
+	//! Семантика
+	GXDECLUSAGE usage;
+};
+#define XVERTEX_OUTPUT_DECL_END() {NULL,GXDECLTYPE_UNUSED,(GXDECLUSAGE)0}
+
 class IXMaterialSystem: public IXUnknown
 {
 public:
@@ -85,6 +97,10 @@ public:
 
 	//! Переопределить геометрический шейдер для последующих вызовов bindMaterial. Действует до тех пор, пока не будет отменено (-1)
 	virtual void XMETHODCALLTYPE overrideGeometryShader(ID id) = 0;
+
+
+	//virtual bool XMETHODCALLTYPE registerVertexFormat(const char *szName, XVertexOutputElement *pDecl) = 0;
+	//virtual void XMETHODCALLTYPE unregisterVertexFormat(const char *szName) = 0;
 };
 
 #endif

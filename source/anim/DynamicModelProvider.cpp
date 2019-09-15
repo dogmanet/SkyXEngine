@@ -94,6 +94,8 @@ CDynamicModelProvider::CDynamicModelProvider(IXCore *pCore):
 {
 	m_pMaterialChangedEventListener = new CMaterialChangedEventListener(this);
 	pCore->getEventChannel<XEventMaterialChanged>(EVENT_MATERIAL_CHANGED_GUID)->addListener(m_pMaterialChangedEventListener);
+
+	IXMaterialSystem *pMaterialSystem = (IXMaterialSystem*)pCore->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID);
 }
 
 CDynamicModelProvider::~CDynamicModelProvider()

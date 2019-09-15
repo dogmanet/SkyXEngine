@@ -287,7 +287,7 @@ void cls::ReleasePropData()\
 {\
 	for(int i = 0; i < m_pPropTable.numFields; ++i)\
 	{\
-		mem_delete_a(m_pPropTable.pData[i].editor.pData); \
+		char *szData = (char*)m_pPropTable.pData[i].editor.pData; mem_delete_a(szData); m_pPropTable.pData[i].editor.pData = NULL; \
 	}\
 }\
 proptable_t * cls::SGetPropTable()\

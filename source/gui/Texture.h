@@ -13,12 +13,6 @@ namespace gui
 		friend class CTextureManager;
 		friend class CVideoRenderer;
 	public:
-		CTexture():
-			m_pTexture(NULL), 
-			m_bFailed(false), 
-			m_isRT(false)
-		{
-		}
 		void setGUI(CGUI * pGui);
 		void release();
 		IGXTexture2D * getAPItexture() const;
@@ -36,16 +30,16 @@ namespace gui
 		}
 
 	protected:
-		IGXTexture2D * m_pTexture;
+		IGXTexture2D *m_pTexture = NULL;
 
-		UINT m_iWidth;
-		UINT m_iHeight;
+		UINT m_iWidth = 0;
+		UINT m_iHeight = 0;
 
-		bool m_bFailed;
+		bool m_bFailed = false;
 
 		StringW m_szName;
 
-		bool m_isRT;
+		bool m_isRT = false;
 	};
 
 	typedef const CTexture * CPITexture;

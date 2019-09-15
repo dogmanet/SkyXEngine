@@ -452,10 +452,10 @@ bool XMETHODCALLTYPE CModelLoader::loadAsAnimated(IXResourceModelAnimated *pReso
 						pSubSet->pVertices[k].vNorm = SMVector3Normalize(pSubSet->pVertices[k].vNorm);
 					}
 				}
-				for(UINT k = 0; k < pSubSet->iVertexCount; ++k)
-				{
-					pSubSet->pVertices[k].vPos = /*(float3)(*/pSubSet->pVertices[k].vPos/* * 0.0254f)*/;
-				}
+				//for(UINT k = 0; k < pSubSet->iVertexCount; ++k)
+				//{
+				//	pSubSet->pVertices[k].vPos = /*(float3)(*/pSubSet->pVertices[k].vPos/* * 0.0254f)*/;
+				//}
 			}
 		}
 	}

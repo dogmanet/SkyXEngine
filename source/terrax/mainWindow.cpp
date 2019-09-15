@@ -1812,7 +1812,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			SetCapture(hWnd);
 			SSInput_SetEnable(true);
 		}
-		else
+		//else
 		break;
 	}
 

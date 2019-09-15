@@ -16,7 +16,7 @@ namespace gdata
 	DS_RT FinalImage = DS_RT_SCENELIGHT;
 	ICamera *pCamera = 0;
 	
-	float2_t vNearFar = float2_t(0.025, 400);
+	float2_t vNearFar = float2_t(0.025f, 400.0f);
 	float fProjFov = SM_PIDIV4;	
 
 	ID idDefaultGeomArr = -1;
@@ -129,7 +129,7 @@ void gdata::InitAllMatrix()
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 	static float2_t vWinSize;
-	vWinSize = float2(*r_win_width, *r_win_height);
+	vWinSize = float2((float)*r_win_width, (float)*r_win_height);
 
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");

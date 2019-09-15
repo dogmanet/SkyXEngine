@@ -43,7 +43,7 @@ namespace gui
 		_wfopen_s(&pF, file.c_str(), L"wb");
 		if(!pF)
 		{
-			printf(COLOR_LRED "[Error]: Unable to open \"%s\" file to writing\n" COLOR_RESET, file.c_str());
+			printf(COLOR_LRED "[Error]: Unable to open \"%S\" file for writing\n" COLOR_RESET, file.c_str());
 			return;
 		}
 		fwrite(&m_header, sizeof(SXFheader), 1, pF);

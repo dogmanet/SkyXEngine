@@ -1,0 +1,37 @@
+
+/*
+gbuffer.ps
+
+*/
+
+#include "../../struct.h"
+#include "../../mtrl.h"
+#include "../../const.h"
+
+//##########################################################################
+
+SamplerState g_sScene: register(s0);
+Texture2D g_txColor: register(t0);		// basetexture
+Texture2D g_txParameters: register(t10);		// basetexture
+
+//##########################################################################
+
+#include MATERIAL_SHADER
+
+//##########################################################################
+
+PSO_Gbuffer main(VSO_SceneCommon IN)
+{
+	// ClipFar(IN.vPos.z, g_vNearFarLayers.y);
+	IN.vNormal = normalize(IN.vNormal);
+	
+	XMaterial mtrl = ProcessMaterial(MATERIAL_PARAMETERS);
+		
+	return(CreateGbuffer(
+		mtrl.albedo, 
+		mtrl.normal, 
+		mtrl.parameters, 
+		IN.vPos, 
+		g_vNearFarLayers
+	));
+}

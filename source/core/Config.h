@@ -77,21 +77,15 @@ public:
 	struct CValue
 	{
 		CConfigString val;
-		bool isModified;
-		CValue():isModified(false)
-		{
-		}
+		bool isModified = false;
 	};
 	struct CSection
 	{
 		CConfigString parent;
 		AssotiativeArray<CConfigString, CValue> mValues;
-		bool native;
+		bool native = false;
 		CConfigString Include;
-		bool isModified;
-		CSection():isModified(false)
-		{
-		}
+		bool isModified = false;
 	};
 	CConfig();
 	//SXLoaderConfig(const char* file);

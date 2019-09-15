@@ -30,7 +30,7 @@ namespace gui
 
 			void CTranslationManager::popMatrix()
 			{
-				m_result = m_stack.pop();
+				m_stack.pop(&m_result);
 				//float det;
 				//m_result = m_result * SMMatrixInverse(&det, m);
 			//	GetGUI()->getDevice()->SetTransform(D3DTS_WORLD, reinterpret_cast<D3DMATRIX*>(&m_result));
@@ -355,6 +355,7 @@ namespace gui
 						{
 							m_pChilds[i + 1]->m_pPrev = m_pChilds[i]->m_pPrev;
 						}
+						textClear();
 						mem_delete(m_pChilds[i]);
 						m_pChilds.erase(i);
 						return;
@@ -2336,17 +2337,6 @@ namespace gui
 #endif
 			//##########################################################################
 
-			IRenderTextNew::IRenderTextNew(CDOMnode * pNode, IRenderFrame * pRootNode):
-				BaseClass(pNode, pRootNode), 
-				m_iCaretPos(0), 
-				m_bInSelection(false), 
-				m_iSelectionStart(0), 
-				m_iSelectionEnd(0),
-				pShadowFont(NULL)
-			{
-				//setText(((IDOMnodeText*)pNode)->getText());
-			}
-
 			void IRenderTextNew::setText(const StringW & text)
 			{
 				if(m_pParent && m_pParent->getNode() && m_pParent->getNode()->getStyle()->_gui_text_format->getInt() == css::ICSSproperty::_GUI_TEXT_FORMAT_PREFORMATTED)
@@ -3229,10 +3219,6 @@ namespace gui
 			}
 
 			//##########################################################################
-
-			IRenderSelectBlock::IRenderSelectBlock(CDOMnode * pNode, IRenderFrame * pRootFrame):BaseClass(pNode, pRootFrame)
-			{
-			}
 
 			UINT IRenderSelectBlock::layout(bool changed)
 			{

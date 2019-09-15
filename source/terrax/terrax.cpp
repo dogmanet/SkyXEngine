@@ -550,7 +550,7 @@ int main(int argc, char **argv)
 					if(szVal)
 					{
 						int iVal = 0;
-						if(sscanf(szVal, "%f", &iVal) && iVal >= -1 && iVal <= 2)
+						if(sscanf(szVal, "%d", &iVal) && iVal >= -1 && iVal <= 2)
 						{
 							g_xConfig.m_x2DView[i] = (X_2D_VIEW)iVal;
 						}

@@ -12,7 +12,7 @@ namespace gui
 
 		void IDOMnodeText::debugPrintMe(UINT lvl)
 		{
-			wprintf(L"%s\n", m_wsText);
+			wprintf(L"%s\n", m_wsText.c_str());
 		}
 
 

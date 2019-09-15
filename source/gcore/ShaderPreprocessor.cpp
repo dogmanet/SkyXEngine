@@ -476,8 +476,8 @@ String CShaderPreprocessor::process(const char *src, const char *file)
 						}
 						else
 						{
-							bCondState = bCondStack.pop();
-							wasElifSucceded = wasElifSuccededStack.pop();
+							bCondStack.pop(&bCondState);
+							wasElifSuccededStack.pop(&wasElifSucceded);
 						}
 					}
 					else if(dName == "include")
@@ -584,12 +584,7 @@ bool CShaderPreprocessor::isTrue(const String &_expr)
 	bool bPointFound = false;
 	float fVal = 0.0f;
 	float fMult = 1.0f;
-
-
-
-	fVal = 0.0f;
-	fMult = 1.0f;
-
+	
 	const char * szStr = expr.c_str();
 
 	iLen = expr.length();
@@ -606,7 +601,7 @@ bool CShaderPreprocessor::isTrue(const String &_expr)
 			if(!bReadingNumber)
 			{
 				bReadingNumber = true;
-				float fMult = 1.0f;
+				fMult = 1.0f;
 				if(szStr[i] == '.')
 				{
 					bPointFound = true;

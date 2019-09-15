@@ -275,7 +275,7 @@ SX_LIB_API void Core_0ConsoleUpdate()
 	}
 	if(!g_cbufStack.IsEmpty())
 	{
-		g_vCommandBuffer = g_cbufStack.pop();
+		g_cbufStack.pop(&g_vCommandBuffer);
 	}
 
 	//execute command buffer

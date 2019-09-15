@@ -12,6 +12,7 @@ See the license in LICENSE
 #include <gdefines.h>
 #include <common/array.h>
 #include <chrono>
+#include <mutex>
 
 #include "proptable.h"
 
@@ -137,6 +138,9 @@ protected:
 	ISXConfig *m_pDynClassConf;
 
 	bool m_isEditorMode = false;
+
+	std::mutex m_mxTimeout;
+	std::mutex m_mxInterval;
 };
 
 #endif

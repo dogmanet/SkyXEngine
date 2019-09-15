@@ -147,7 +147,7 @@ namespace gui
 	void CTexture::loadFromFile(const StringW & pName)
 	{
 		StringW path = StringW(GetGUI()->getResourceDir()) + L"/textures/" + pName;
-		m_pTexture = GetGUI()->getDevice()->createTexture2DFromFile(String(path).c_str(), true);
+		m_pTexture = GetGUI()->getDevice()->createTexture2DFromFile(String(path).c_str(), 0, true);
 		//if(FAILED(DX_CALL(D3DXCreateTextureFromFileExW(GetGUI()->getDevice(), path.c_str(), D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT, 0, D3DFMT_FROM_FILE, D3DPOOL_MANAGED, D3DX_DEFAULT, D3DX_DEFAULT, 0, &info, NULL, &m_pTexture))))
 		if(!m_pTexture)
 		{

@@ -110,13 +110,13 @@ namespace gui
 				}
 				if(sel->pseudoclass & (PSEUDOCLASS_NTH_CHILD | PSEUDOCLASS_NTH_LAST_CHILD | PSEUDOCLASS_NTH_LAST_OF_TYPE | PSEUDOCLASS_NTH_OF_TYPE))
 				{
-					wprintf(L"(%d", sel->nth_num, sel->pseudoclass & PSEUDOCLASS_NTH_REPEAT ? L"n" : L"", sel->nth_offset ? L"+" : L"", sel->nth_offset);
-					if(sel->nth_num, sel->pseudoclass & PSEUDOCLASS_NTH_REPEAT)
+					wprintf(L"(%u", sel->nth_num);
+					if(sel->pseudoclass & PSEUDOCLASS_NTH_REPEAT)
 					{
 						wprintf(L"n");
 						if(sel->nth_offset)
 						{
-							wprintf(L"-%d", sel->nth_offset);
+							wprintf(L"-%u", sel->nth_offset);
 						}
 					}
 					wprintf(L")");
@@ -1023,80 +1023,80 @@ namespace gui
 
 			if(p_margin_left.isSet())
 			{
-				wprintf(L"\tmargin-left: %f%s;\n", p_margin_left.getFloat(), CCSSproperty::getDimName(p_margin_left.getDim()));
+				wprintf(L"\tmargin-left: %f%s;\n", p_margin_left.getFloat(), CCSSproperty::getDimName(p_margin_left.getDim()).c_str());
 			}
 			if(p_margin_right.isSet())
 			{
-				wprintf(L"\tmargin-right: %f%s;\n", p_margin_right.getFloat(), CCSSproperty::getDimName(p_margin_right.getDim()));
+				wprintf(L"\tmargin-right: %f%s;\n", p_margin_right.getFloat(), CCSSproperty::getDimName(p_margin_right.getDim()).c_str());
 			}
 			if(p_margin_top.isSet())
 			{
-				wprintf(L"\tmargin-top: %f%s;\n", p_margin_top.getFloat(), CCSSproperty::getDimName(p_margin_top.getDim()));
+				wprintf(L"\tmargin-top: %f%s;\n", p_margin_top.getFloat(), CCSSproperty::getDimName(p_margin_top.getDim()).c_str());
 			}
 			if(p_margin_bottom.isSet())
 			{
-				wprintf(L"\tmargin-bottom: %f%s;\n", p_margin_bottom.getFloat(), CCSSproperty::getDimName(p_margin_bottom.getDim()));
+				wprintf(L"\tmargin-bottom: %f%s;\n", p_margin_bottom.getFloat(), CCSSproperty::getDimName(p_margin_bottom.getDim()).c_str());
 			}
 
 			if(p_padding_left.isSet())
 			{
-				wprintf(L"\tpadding-left: %f%s;\n", p_padding_left.getFloat(), CCSSproperty::getDimName(p_padding_left.getDim()));
+				wprintf(L"\tpadding-left: %f%s;\n", p_padding_left.getFloat(), CCSSproperty::getDimName(p_padding_left.getDim()).c_str());
 			}
 			if(p_padding_right.isSet())
 			{
-				wprintf(L"\tpadding-right: %f%s;\n", p_padding_right.getFloat(), CCSSproperty::getDimName(p_padding_right.getDim()));
+				wprintf(L"\tpadding-right: %f%s;\n", p_padding_right.getFloat(), CCSSproperty::getDimName(p_padding_right.getDim()).c_str());
 			}
 			if(p_padding_top.isSet())
 			{
-				wprintf(L"\tpadding-top: %f%s;\n", p_padding_top.getFloat(), CCSSproperty::getDimName(p_padding_top.getDim()));
+				wprintf(L"\tpadding-top: %f%s;\n", p_padding_top.getFloat(), CCSSproperty::getDimName(p_padding_top.getDim()).c_str());
 			}
 			if(p_padding_bottom.isSet())
 			{
-				wprintf(L"\tpadding-bottom: %f%s;\n", p_padding_bottom.getFloat(), CCSSproperty::getDimName(p_padding_bottom.getDim()));
+				wprintf(L"\tpadding-bottom: %f%s;\n", p_padding_bottom.getFloat(), CCSSproperty::getDimName(p_padding_bottom.getDim()).c_str());
 			}
 
 			if(p_left.isSet())
 			{
-				wprintf(L"\tleft: %f%s;\n", p_left.getFloat(), CCSSproperty::getDimName(p_left.getDim()));
+				wprintf(L"\tleft: %f%s;\n", p_left.getFloat(), CCSSproperty::getDimName(p_left.getDim()).c_str());
 			}
 			if(p_right.isSet())
 			{
-				wprintf(L"\tright: %f%s;\n", p_right.getFloat(), CCSSproperty::getDimName(p_right.getDim()));
+				wprintf(L"\tright: %f%s;\n", p_right.getFloat(), CCSSproperty::getDimName(p_right.getDim()).c_str());
 			}
 			if(p_top.isSet())
 			{
-				wprintf(L"\ttop: %f%s;\n", p_top.getFloat(), CCSSproperty::getDimName(p_top.getDim()));
+				wprintf(L"\ttop: %f%s;\n", p_top.getFloat(), CCSSproperty::getDimName(p_top.getDim()).c_str());
 			}
 			if(p_bottom.isSet())
 			{
-				wprintf(L"\tbottom: %f%s;\n", p_bottom.getFloat(), CCSSproperty::getDimName(p_bottom.getDim()));
+				wprintf(L"\tbottom: %f%s;\n", p_bottom.getFloat(), CCSSproperty::getDimName(p_bottom.getDim()).c_str());
 			}
 
 			if(p_width.isSet())
 			{
-				wprintf(L"\twidth: %f%s;\n", p_width.getFloat(), CCSSproperty::getDimName(p_width.getDim()));
+				wprintf(L"\twidth: %f%s;\n", p_width.getFloat(), CCSSproperty::getDimName(p_width.getDim()).c_str());
 			}
 			if(p_height.isSet())
 			{
-				wprintf(L"\theight: %f%s;\n", p_height.getFloat(), CCSSproperty::getDimName(p_height.getDim()));
+				wprintf(L"\theight: %f%s;\n", p_height.getFloat(), CCSSproperty::getDimName(p_height.getDim()).c_str());
 			}
 
 			if(p_max_width.isSet())
 			{
-				wprintf(L"\tmax-width: %f%s;\n", p_max_width.getFloat(), CCSSproperty::getDimName(p_max_width.getDim()));
+				wprintf(L"\tmax-width: %f%s;\n", p_max_width.getFloat(), CCSSproperty::getDimName(p_max_width.getDim()).c_str());
 			}
 			if(p_max_height.isSet())
 			{
-				wprintf(L"\tmax-height: %f%s;\n", p_max_height.getFloat(), CCSSproperty::getDimName(p_max_height.getDim()));
+				wprintf(L"\tmax-height: %f%s;\n", p_max_height.getFloat(), CCSSproperty::getDimName(p_max_height.getDim()).c_str());
 			}
 
 			if(p_min_width.isSet())
 			{
-				wprintf(L"\tmin-width: %f%s;\n", p_min_width.getFloat(), CCSSproperty::getDimName(p_min_width.getDim()));
+				wprintf(L"\tmin-width: %f%s;\n", p_min_width.getFloat(), CCSSproperty::getDimName(p_min_width.getDim()).c_str());
 			}
 			if(p_min_height.isSet())
 			{
-				wprintf(L"\tmin-height: %f%s;\n", p_min_height.getFloat(), CCSSproperty::getDimName(p_min_height.getDim()));
+				wprintf(L"\tmin-height: %f%s;\n", p_min_height.getFloat(), CCSSproperty::getDimName(p_min_height.getDim()).c_str());
 			}
 
 			if(p_cursor.isSet())
@@ -1311,20 +1311,20 @@ namespace gui
 
 			if(p_background_position_x.isSet())
 			{
-				wprintf(L"\tbackground-position-x: %f%s;\n", p_background_position_x.getFloat(), CCSSproperty::getDimName(p_background_position_x.getDim()));
+				wprintf(L"\tbackground-position-x: %f%s;\n", p_background_position_x.getFloat(), CCSSproperty::getDimName(p_background_position_x.getDim()).c_str());
 			}
 			if(p_background_position_y.isSet())
 			{
-				wprintf(L"\tbackground-position-y: %f%s;\n", p_background_position_y.getFloat(), CCSSproperty::getDimName(p_background_position_y.getDim()));
+				wprintf(L"\tbackground-position-y: %f%s;\n", p_background_position_y.getFloat(), CCSSproperty::getDimName(p_background_position_y.getDim()).c_str());
 			}
 
 			if(p_background_size_x.isSet())
 			{
-				wprintf(L"\tbackground-size-x: %f%s;\n", p_background_size_x.getFloat(), CCSSproperty::getDimName(p_background_size_x.getDim()));
+				wprintf(L"\tbackground-size-x: %f%s;\n", p_background_size_x.getFloat(), CCSSproperty::getDimName(p_background_size_x.getDim()).c_str());
 			}
 			if(p_background_size_y.isSet())
 			{
-				wprintf(L"\tbackground-size-y: %f%s;\n", p_background_size_y.getFloat(), CCSSproperty::getDimName(p_background_size_y.getDim()));
+				wprintf(L"\tbackground-size-y: %f%s;\n", p_background_size_y.getFloat(), CCSSproperty::getDimName(p_background_size_y.getDim()).c_str());
 			}
 
 			if(p_background_attachment.isSet())
@@ -1503,19 +1503,19 @@ namespace gui
 
 			if(p_border_top_width.isSet())
 			{
-				wprintf(L"\tborder-top-width: %f%s;\n", p_border_top_width.getFloat(), CCSSproperty::getDimName(p_border_top_width.getDim()));
+				wprintf(L"\tborder-top-width: %f%s;\n", p_border_top_width.getFloat(), CCSSproperty::getDimName(p_border_top_width.getDim()).c_str());
 			}
 			if(p_border_right_width.isSet())
 			{
-				wprintf(L"\tborder-right-width: %f%s;\n", p_border_right_width.getFloat(), CCSSproperty::getDimName(p_border_right_width.getDim()));
+				wprintf(L"\tborder-right-width: %f%s;\n", p_border_right_width.getFloat(), CCSSproperty::getDimName(p_border_right_width.getDim()).c_str());
 			}
 			if(p_border_bottom_width.isSet())
 			{
-				wprintf(L"\tborder-bottom-width: %f%s;\n", p_border_bottom_width.getFloat(), CCSSproperty::getDimName(p_border_bottom_width.getDim()));
+				wprintf(L"\tborder-bottom-width: %f%s;\n", p_border_bottom_width.getFloat(), CCSSproperty::getDimName(p_border_bottom_width.getDim()).c_str());
 			}
 			if(p_border_left_width.isSet())
 			{
-				wprintf(L"\tborder-left-width: %f%s;\n", p_border_left_width.getFloat(), CCSSproperty::getDimName(p_border_left_width.getDim()));
+				wprintf(L"\tborder-left-width: %f%s;\n", p_border_left_width.getFloat(), CCSSproperty::getDimName(p_border_left_width.getDim()).c_str());
 			}
 
 			if(p_border_top_color.isSet())
@@ -1537,20 +1537,20 @@ namespace gui
 
 			if(p_border_top_left_radius.isSet())
 			{
-				wprintf(L"\tborder-top-left-radius: %f%s;\n", p_border_top_left_radius.getFloat(), CCSSproperty::getDimName(p_border_top_left_radius.getDim()));
+				wprintf(L"\tborder-top-left-radius: %f%s;\n", p_border_top_left_radius.getFloat(), CCSSproperty::getDimName(p_border_top_left_radius.getDim()).c_str());
 			}
 			if(p_border_top_right_radius.isSet())
 			{
-				wprintf(L"\tborder-top-right-radius: %f%s;\n", p_border_top_right_radius.getFloat(), CCSSproperty::getDimName(p_border_top_right_radius.getDim()));
+				wprintf(L"\tborder-top-right-radius: %f%s;\n", p_border_top_right_radius.getFloat(), CCSSproperty::getDimName(p_border_top_right_radius.getDim()).c_str());
 			}
 
 			if(p_border_bottom_left_radius.isSet())
 			{
-				wprintf(L"\tborder-bottom-left-radius: %f%s;\n", p_border_bottom_left_radius.getFloat(), CCSSproperty::getDimName(p_border_bottom_left_radius.getDim()));
+				wprintf(L"\tborder-bottom-left-radius: %f%s;\n", p_border_bottom_left_radius.getFloat(), CCSSproperty::getDimName(p_border_bottom_left_radius.getDim()).c_str());
 			}
 			if(p_border_bottom_right_radius.isSet())
 			{
-				wprintf(L"\tborder-bottom-right-radius: %f%s;\n", p_border_bottom_right_radius.getFloat(), CCSSproperty::getDimName(p_border_bottom_right_radius.getDim()));
+				wprintf(L"\tborder-bottom-right-radius: %f%s;\n", p_border_bottom_right_radius.getFloat(), CCSSproperty::getDimName(p_border_bottom_right_radius.getDim()).c_str());
 			}
 
 			if(p_font_name.isSet())
@@ -1560,7 +1560,7 @@ namespace gui
 
 			if(p_font_size.isSet())
 			{
-				wprintf(L"\tfont-size: %f%s;\n", p_font_size.getFloat(), CCSSproperty::getDimName(p_font_size.getDim()));
+				wprintf(L"\tfont-size: %f%s;\n", p_font_size.getFloat(), CCSSproperty::getDimName(p_font_size.getDim()).c_str());
 			}
 
 			if(p_font_style.isSet())
@@ -2352,7 +2352,7 @@ namespace gui
 			{
 				parseValue(&p_border_top_right_radius, val);
 			}
-			else if(key == L"border-radius")
+			/*else if(key == L"border-radius")
 			{
 				// 1px				partcount = 1
 				// 1px 5px
@@ -2405,7 +2405,7 @@ namespace gui
 					parseValue(&p_border_bottom_right_radius, StringW(&(val.c_str()[parts[2]])));
 					parseValue(&p_border_bottom_left_radius, StringW(&(val.c_str()[parts[3]])));
 				}
-			}
+			}*/
 			/*else if(key == L"border-method")
 			{
 				// 1px				partcount = 1
@@ -2742,7 +2742,7 @@ namespace gui
 					parseValue(&p_border_left_width, StringW(&(val.c_str()[parts[3]])));
 				}
 			}
-			else if(key == L"border-width")
+			else if(key == L"border-radius")
 			{
 				// 1px				partcount = 1
 				// 1px 5px
@@ -3421,7 +3421,7 @@ namespace gui
 			{
 				*pfOut *= SM_2PI / 400.0f;
 			}
-			else if(wcscmp(szDim, L"grad") == 0)
+			else if(wcscmp(szDim, L"turn") == 0)
 			{
 				*pfOut *= SM_2PI;
 			}

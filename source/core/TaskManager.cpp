@@ -170,7 +170,7 @@ void CTaskManager::start()
 	{
 		std::thread * t = new std::thread(std::bind(&CTaskManager::workerMain, this));
 #if defined(_WINDOWS)
-		sprintf(name, "Worker #%d", i);
+		sprintf(name, "Worker #%u", i);
 		SetThreadName(GetThreadId(t->native_handle()), name);
 #endif
 		m_aThreads.push_back(t);

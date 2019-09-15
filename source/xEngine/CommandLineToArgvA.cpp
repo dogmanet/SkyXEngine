@@ -42,7 +42,10 @@ C XAPI LPSTR* CommandLineToArgvA(LPSTR lpCmdline, int *numargs)
 	if(!numargs || *lpCmdline == 0)
 	{
 		SetLastError(ERROR_INVALID_PARAMETER);
-		*numargs = 0;
+		if(numargs)
+		{
+			*numargs = 0;
+		}
 		return NULL;
 	}
 
