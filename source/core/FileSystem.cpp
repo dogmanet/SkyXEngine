@@ -88,9 +88,9 @@ bool CFileSystem::isAbsolutePathInRoot(const char *szPath)
         return false;
     }
 
-    char *rp = getFullPathToBuild();
-    const char *pos = strstr(szPath, rp);
-    mem_delete(rp);
+    char rootPath[SIZE_PATH];
+    getFullPathToBuild(rootPath, SIZE_PATH);
+    const char *pos = strstr(szPath, rootPath);
 
     return pos != nullptr;
 }
@@ -125,15 +125,12 @@ void CFileSystem::getAbsoluteCanonizePath(const char *szPath, char *outPath, int
     }
 }
 
-char *CFileSystem::getFullPathToBuild()
+void CFileSystem::getFullPathToBuild(char *buff, int iSize)
 {
-    char *path = new char[SIZE_PATH];
-    GetModuleFileName(nullptr, path, SIZE_PATH);
-    char *pos = strstr(path, "build\\");
-    pos[6] = '\0';
-    canonize_path(path);
-
-    return path;
+    GetModuleFileName(nullptr, buff, iSize);
+    dirname(buff);
+    dirname(buff);
+    canonize_path(buff);
 }
 
 char *CFileSystem::getFileName(const char *name)
@@ -198,10 +195,7 @@ String *CFileSystem::copyFile(const char* szPath)
 
 CFileSystem::CFileSystem()
 {
-    char *path = getFullPathToBuild();
-    m_pathToBuild = path;
-
-    mem_delete_a(path);
+    getFullPathToBuild(m_pathToBuild, SIZE_PATH);
 }
 
 UINT CFileSystem::addRoot(const char *szPath, int iPriority)
@@ -292,7 +286,7 @@ bool CFileSystem::fileExists(const char *szPath)
         return false;
     }
 
-    return fileGetSize(path) != -1;
+    return fileGetSize(path) != FILE_NOT_FOUND;
 }
 
 size_t CFileSystem::fileGetSize(const char *szPath)
@@ -302,7 +296,7 @@ size_t CFileSystem::fileGetSize(const char *szPath)
 
     if (CHECK_CORRECT_PATH(path))
     {
-        return false;
+        return FILE_NOT_FOUND;
     }
 
 	WIN32_FILE_ATTRIBUTE_DATA lpFileInformation;
@@ -311,7 +305,7 @@ size_t CFileSystem::fileGetSize(const char *szPath)
 
 	//Преобразование размера из старших и младших бит
 	ULONGLONG FileSize = (static_cast<ULONGLONG>(lpFileInformation.nFileSizeHigh) <<
-		sizeof(lpFileInformation.nFileSizeLow) * sizeof(ULONGLONG)) |
+        sizeof(lpFileInformation.nFileSizeLow) * NUM_BITS_IN_BYTE) |
 		lpFileInformation.nFileSizeLow;
 
 	//Если result != 0 то все хорошо, если 0 то файл не найден

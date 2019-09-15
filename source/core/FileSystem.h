@@ -39,6 +39,8 @@ See the license in LICENSE
 
 #define CHECK_CORRECT_PATH(path) path[0] == -1
 
+#define NUM_BITS_IN_BYTE 8
+
 struct Pair
 {
     int priority;
@@ -106,7 +108,7 @@ private:
     //! Возвращает абсолютный канонизированный путь
     void getAbsoluteCanonizePath(const char *szPath, char *outPath, int iOutMax);
 
-    char *getFullPathToBuild();
+    void getFullPathToBuild(char *buff, int iSize);
 
     char *getFileName(const char *name);
 
@@ -123,7 +125,7 @@ private:
     Array<String> m_filePaths;
 
     //!Полный путь к build
-    String m_pathToBuild;
+    char m_pathToBuild[SIZE_PATH];
 
     Array<Pair> m_priorityArray;
 

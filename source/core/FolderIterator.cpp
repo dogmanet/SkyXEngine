@@ -3,7 +3,7 @@
 CFolderIterator::CFolderIterator(const char *szPath)
 : m_sPath(szPath)
 {
-    if (szPath[strlen(szPath) != '\\'] || szPath[strlen(szPath) != '/'])
+    if (szPath[strlen(szPath) - 1] != '\\' || szPath[strlen(szPath) - 1] != '/')
     {
         m_sPath += "/";
     }
