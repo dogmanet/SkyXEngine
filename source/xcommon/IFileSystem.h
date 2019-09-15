@@ -63,7 +63,7 @@ public:
 	virtual void setWritableRoot(UINT id) = 0;
 
 	//! Находит полный путь в файловой системе для заданного файла
-	virtual bool resolvePath(const char *szPath, char *szOut, int iOutMax) = 0;
+    virtual bool resolvePath(const char *szPath, char *szOut, size_t iOutMax) = 0;
 
 	//! Проверяет наличие файла или каталога по указанному пути
 	virtual bool fileExists(const char *szPath) = 0;

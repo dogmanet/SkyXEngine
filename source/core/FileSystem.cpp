@@ -100,7 +100,7 @@ void CFileSystem::getAbsoluteCanonizePath(const char *szPath, char *outPath, int
     bool absolute = isAbsolutePath(szPath);
     bool correctPath = true;
 
-    int len = absolute ? strlen(szPath) + 1 : SIZE_PATH;
+    size_t len = absolute ? strlen(szPath) + 1 : SIZE_PATH;
 
     if (absolute) 
     {
@@ -241,9 +241,9 @@ void CFileSystem::setWritableRoot(UINT id)
     m_writableRoot = id;
 }
 
-bool CFileSystem::resolvePath(const char *szPath, char *szOut, int iOutMax)
+bool CFileSystem::resolvePath(const char *szPath, char *szOut, size_t iOutMax)
 {
-    int len = 0;
+    size_t len = 0;
 
     if (isAbsolutePath(szPath))
     {
@@ -463,7 +463,7 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
     //Если путь в корне, и файла не существует - создаем его
     if (inRoot && !fileExists(fullPath))
     {
-        unsigned len = strlen(fullPath) + 1;
+        size_t len = strlen(fullPath) + 1;
         char *dn = new char[len];
 
         memcpy(dn, fullPath, len);
@@ -484,7 +484,7 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
     else if (!inRoot)
     {
         newFileName = copyFile(fullPath);
-        unsigned lenPath = strlen(fullPath) + 1;
+        size_t lenPath = strlen(fullPath) + 1;
         
         if (lenPath < newFileName->length())
         {

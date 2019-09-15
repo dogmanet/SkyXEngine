@@ -60,7 +60,7 @@ public:
 
     void setWritableRoot(UINT id) override;
 
-    bool resolvePath(const char *szPath, char *szOut, int iOutMax) override;
+    bool resolvePath(const char *szPath, char *szOut, size_t iOutMax) override;
 
     bool fileExists(const char *szPath) override;
 
