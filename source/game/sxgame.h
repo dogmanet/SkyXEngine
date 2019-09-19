@@ -243,12 +243,6 @@ SX_LIB_API CBaseEntity *SGame_EntGetByName(const char *szName, ID idStart = 0);
 
 SX_LIB_API BOOL SGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam);
 
-SX_LIB_API void SGame_OnLostDevice();
-
-SX_LIB_API void SGame_OnResetDevice();
-
-SX_LIB_API void SGame_SetDebugText(const char *szText);
-
 /*! Копирует объект, возвращает ID копии
 */
 SX_LIB_API ID SGame_EntClone(ID idSrc);

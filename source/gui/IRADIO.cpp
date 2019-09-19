@@ -7,6 +7,7 @@ namespace gui
 	namespace dom
 	{
 		DEFINE_DOM_NODE(IRADIO);
+		LINK_DOM_NODE_TO_TAG(IRADIO, L"radio");
 
 		IRADIO::IRADIO()
 		{
@@ -15,7 +16,7 @@ namespace gui
 			m_bFocusable = true;
 		}
 
-		void IRADIO::setAttribute(const StringW & name, const StringW & value)
+		void IRADIO::setAttribute(const StringW &name, const StringW &value)
 		{
 			if(name == L"checked")
 			{

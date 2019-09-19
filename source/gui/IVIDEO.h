@@ -4,6 +4,8 @@
 #include "DOM.h"
 #include "VideoRenderer.h"
 
+#define _GUI_NO_VIDEO
+
 namespace gui
 {
 	namespace dom
@@ -14,26 +16,9 @@ namespace gui
 			DECLARE_CLASS(IVIDEO, IDOMnodeTag);
 			DECLARE_DOM_NODE(IVIDEO);
 
-			StringW initRenderer()
-			{
-				StringW vid = StringW(L"!video#") + StringW((int)m_renderer.getInstanceId());
-				if(!m_renderer.isLoaded())
-				{
-					StringW src = getAttribute(L"src");
-					StringW path = StringW(GetGUI()->getResourceDir()) + L"/video/" + src;
-					m_renderer.openFile(path.c_str());
+			StringW initRenderer();
 
-					CTextureManager::addTexture(vid, m_renderer.getTexture());
-					if(getAttribute(L"autoplay").toBool())
-					{
-						m_renderer.play();
-					}
-					m_renderer.setLooped(getAttribute(L"looped").toBool());
-				}
-				return(vid);
-			}
-
-			CVideoRenderer * GetVideoRenderer()
+			CVideoRenderer* GetVideoRenderer()
 			{
 				return(&m_renderer);
 			}

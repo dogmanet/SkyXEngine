@@ -151,7 +151,7 @@ namespace gui
 		}
 #endif
 
-		//##########################################################################
+//##########################################################################
 
 		void ICSSrule::ICSSselectorItem::setPseudoClass(const StringW & str)
 		{
@@ -295,7 +295,7 @@ namespace gui
 			}
 		}
 
-		//##########################################################################
+//##########################################################################
 
 #ifdef _DEBUG
 		void ICSS::debugDumpStyles()
@@ -312,7 +312,7 @@ namespace gui
 	
 		void ICSS::addFile(const WCHAR * szFile, int iMaxWidth)
 		{
-			StringW file(StringW(GetGUI()->getResourceDir()) + L"/css/" + szFile);
+			StringW file(StringW(m_pDesktopStack->getResourceDir()) + L"/css/" + szFile);
 			FILE * pF;
 			_wfopen_s(&pF, file.c_str(), L"rt, ccs=UTF-8");
 			if(!pF)
@@ -347,7 +347,7 @@ namespace gui
 			addFile(L"system.css");
 		}
 
-		//##########################################################################
+//##########################################################################
 
 #ifdef _DEBUG
 		void ICSSstyleSet::debugDumpStyles()
@@ -624,7 +624,7 @@ namespace gui
 			}
 		}
 
-		//##########################################################################
+//##########################################################################
 		
 		CCSSstyle::CCSSstyle():
 			p_display(ICSSproperty::TYPE_DISPLAY),
@@ -3482,8 +3482,8 @@ namespace gui
 			{
 				++(*pszStr);
 			}
-			wchar_t szDim[5];
-			memset(szDim, 0, sizeof(szDim));
+			//wchar_t szDim[5];
+			//memset(szDim, 0, sizeof(szDim));
 			int n = swscanf_s(*pszStr, L"%f", pfOut);
 			if(n < 1)
 			{

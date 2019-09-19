@@ -324,19 +324,19 @@ String CShaderPreprocessor::process(const char *src, const char *file)
 			{
 				if(sDirective)
 				{
-					if(!(ch == '\n' || ch == '\r') || cp == '\\')
+					if(ch != '\n' || cp == '\\')
 					{
 						dir += ch;
 					}
 				}
-				else if((!(ch == '\n' || ch == '\r') || cp == '\\') && bCondState)
+				else if((ch != '\n' || cp == '\\') && bCondState)
 				{
 					str += ch;
 					//out.push_back(ch);
 				}
 			}
 
-			if((ch == '\n' || ch == '\r') && cp != '\\')
+			if(ch == '\n' && cp != '\\')
 			{
 				/*if(!sNewLine)
 				{
@@ -536,10 +536,6 @@ String CShaderPreprocessor::process(const char *src, const char *file)
 		else if((ch == '\n'/* || ch == '\r'*/) && cp != '\\')
 		{
 			out.push_back(ch);
-		}
-		if(ch != '\r')
-		{
-			cp = ch;
 		}
 	}
 
@@ -1296,7 +1292,7 @@ static citem_t* Calculate(citem_t *pStart)
 					case 0:
 						if(tok == TOK_OP_GREATER)
 						{
-							result = result > pCur->val.f;
+							result = (result > pCur->val.f) ? 1.0f : 0.0f;
 							if(pSP == NULL)
 							{
 								pSP = pCur->pPrev;
@@ -1304,7 +1300,7 @@ static citem_t* Calculate(citem_t *pStart)
 						}
 						if(tok == TOK_OP_GREATER_EQUAL)
 						{
-							result = result >= pCur->val.f;
+							result = (result >= pCur->val.f) ? 1.0f : 0.0f;
 							if(pSP == NULL)
 							{
 								pSP = pCur->pPrev;
@@ -1312,7 +1308,7 @@ static citem_t* Calculate(citem_t *pStart)
 						}
 						if(tok == TOK_OP_LESSER_EQUAL)
 						{
-							result = result <= pCur->val.f;
+							result = (result <= pCur->val.f) ? 1.0f : 0.0f;
 							if(pSP == NULL)
 							{
 								pSP = pCur->pPrev;
@@ -1320,7 +1316,7 @@ static citem_t* Calculate(citem_t *pStart)
 						}
 						if(tok == TOK_OP_LESSER)
 						{
-							result = result > pCur->val.f;
+							result = (result > pCur->val.f) ? 1.0f : 0.0f;
 							if(pSP == NULL)
 							{
 								pSP = pCur->pPrev;
@@ -1328,7 +1324,7 @@ static citem_t* Calculate(citem_t *pStart)
 						}
 						if(tok == TOK_OP_EQUAL)
 						{
-							result = result == pCur->val.f;
+							result = (result == pCur->val.f) ? 1.0f : 0.0f;
 							if(pSP == NULL)
 							{
 								pSP = pCur->pPrev;
@@ -1336,7 +1332,7 @@ static citem_t* Calculate(citem_t *pStart)
 						}
 						if(tok == TOK_OP_NOT_EQUAL)
 						{
-							result = result != pCur->val.f;
+							result = (result != pCur->val.f) ? 1.0f : 0.0f;
 							if(pSP == NULL)
 							{
 								pSP = pCur->pPrev;

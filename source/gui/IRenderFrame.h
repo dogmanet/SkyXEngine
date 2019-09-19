@@ -15,24 +15,13 @@ namespace gui
 		//class IFont;
 		namespace render
 		{
-			class CTranslationManager
-			{
-			public:
-				static void pushMatrix(const SMMATRIX & m);
-				static void popMatrix();
-				static SMMATRIX getCurrentMatrix();
-			protected:
-				static SMMATRIX m_result;
-				static Stack<SMMATRIX, 256, 16> m_stack;
-			};
-
 			class IScrollBar;
 
 			class IRenderFrame
 			{
 				friend class CDOMnode;
 			public:
-				IRenderFrame(CDOMnode * pNode, IRenderFrame * pRootNode);
+				IRenderFrame(CDOMnode *pNode, IRenderFrame *pRootNode);
 				virtual ~IRenderFrame();
 
 				virtual UINT layout(bool changed=true);
@@ -61,7 +50,7 @@ namespace gui
 
 					UINT m_iFirstSym;
 					UINT m_iLastSym;
-					Array<RECT> * m_prc;
+					Array<RECT> *m_prc;
 
 					CRenderElement *m_pNextREl;
 				};
@@ -73,19 +62,19 @@ namespace gui
 				CUT_CONTENT
 				};*/
 
-				IRenderFrame * getParent();
-				IRenderFrame * getNextSibling();
-				IRenderFrame * getPrevSibling();
+				IRenderFrame* getParent();
+				IRenderFrame* getNextSibling();
+				IRenderFrame* getPrevSibling();
 
-				IRenderFrame * m_pRootNode;
+				IRenderFrame* m_pRootNode;
 
 				UINT getChildCount();
-				IRenderFrame * getChild(UINT id);
-				CDOMdocument * m_pDoc;
+				IRenderFrame* getChild(UINT id);
+				CDOMdocument* m_pDoc = NULL;
 
-				css::ICSSstyle * getComputedStyle();
+				css::ICSSstyle* getComputedStyle();
 
-				bool m_bIsOutOfFlow;
+				bool m_bIsOutOfFlow = false;
 
 				UINT getWidth();
 				UINT getContentWidth();
@@ -98,10 +87,10 @@ namespace gui
 				UINT getInnerWidth();
 				UINT getInnerHeight();
 
-				void addChild(IRenderFrame * pChild, bool bOutFlow = false);
-				void setParent(IRenderFrame * pParent);
+				void addChild(IRenderFrame *pChild, bool bOutFlow = false);
+				void setParent(IRenderFrame *pParent);
 
-				static IRenderFrame * createNode(CDOMnode * pNode, IRenderFrame * pRootNode);
+				static IRenderFrame* createNode(CDOMnode *pNode, IRenderFrame *pRootNode);
 
 				void debugPrint(UINT lvl = 0);
 
@@ -121,7 +110,7 @@ namespace gui
 				UINT getClientTop();
 				UINT getClientLeft();
 
-				CDOMnode * getNode();
+				CDOMnode* getNode();
 
 				UINT getContentTop();
 				UINT getContentLeft();
@@ -132,7 +121,7 @@ namespace gui
 				void textStart();
 				void textClear();
 				void textBreak();
-				void textAppend(CRenderElement * rel, int iLineIdx);
+				void textAppend(CRenderElement *rel, int iLineIdx);
 				int textGetLineIdx();
 				UINT textFixUp();
 
@@ -157,9 +146,9 @@ namespace gui
 				void setScrollSpeedY(int x);
 				void updateScroll();
 
-				void findElementByXY(int x, int y, IDOMnode ** ppNode, bool sendEnterLeave = false);
+				void findElementByXY(int x, int y, IDOMnode **ppNode, bool sendEnterLeave = false);
 
-				bool inRect(const RECT & rc, int x, int y);
+				bool inRect(const RECT &rc, int x, int y);
 
 				bool hasFixedSize()
 				{
@@ -176,9 +165,9 @@ namespace gui
 					m_bIsOutOfFlow = is;
 				}
 
-				bool isChildOf(IRenderFrame * pNode)
+				bool isChildOf(IRenderFrame *pNode)
 				{
-					IRenderFrame * pCur = getParent();
+					IRenderFrame *pCur = getParent();
 					while(pCur)
 					{
 						if(pCur == pNode)
@@ -190,7 +179,7 @@ namespace gui
 					return(false);
 				}
 
-				void setDocument(CDOMdocument * doc)
+				void setDocument(CDOMdocument *doc)
 				{
 					m_pDoc = doc;
 				}
@@ -214,7 +203,7 @@ namespace gui
 					return(m_bFreezed);
 				}
 
-				void removeChild(IRenderFrame * prf);
+				void removeChild(IRenderFrame *prf);
 
 			protected:
 
@@ -225,7 +214,7 @@ namespace gui
 					//DWORD color;
 				};
 
-				bool m_bFreezed;
+				bool m_bFreezed = false;
 
 				pointtex m_pVBackground[16];
 				int m_iTCBackground;
@@ -235,43 +224,43 @@ namespace gui
 
 				void renderBackground(UINT lvl);
 
-				bool m_bHasBackground;
+				bool m_bHasBackground = false;
 				bool m_bHasBackgroundImage;
 
 				float4_t m_pBackgroundColor;
 				UINT m_iBackgroundColor;
 
-				int m_iBackgroundOffsetX;
-				int m_iBackgroundOffsetY;
+				int m_iBackgroundOffsetX = 0;
+				int m_iBackgroundOffsetY = 0;
 
-				CPITexture m_pBackgroundImage;
+				CPITexture m_pBackgroundImage = NULL;
 
-				CDOMnode * m_pNode;
+				CDOMnode *m_pNode;
 				css::CCSSstyle m_ComputedStyle;
 
-				IRenderFrame * m_pParent;
-				IRenderFrame * m_pNext;
-				IRenderFrame * m_pPrev;
+				IRenderFrame *m_pParent = NULL;
+				IRenderFrame *m_pNext = NULL;
+				IRenderFrame *m_pPrev = NULL;
 				Array<IRenderFrame*> m_pChilds;
 				Array<IRenderFrame*> m_pChildsOutFlow;
 
-				int m_iXpos;
-				int m_iYpos;
-				UINT m_iWidth;
-				UINT m_iHeight;
+				int m_iXpos = 0;
+				int m_iYpos = 0;
+				UINT m_iWidth = 0;
+				UINT m_iHeight = 0;
 
-				UINT m_iTopPos;
-				UINT m_iTopPosMax;
-				UINT m_iLeftPos;
+				UINT m_iTopPos = 0;
+				UINT m_iTopPosMax = 0;
+				UINT m_iLeftPos = 0;
 
-				bool isWidthSet;
+				bool isWidthSet = true;
 
-				int m_iScrollTop;
-				int m_iScrollLeft;
-				int m_iScrollTopMax;
-				int m_iScrollLeftMax;
-				int m_iScrollSpeedX;
-				int m_iScrollSpeedY;
+				int m_iScrollTop = 0;
+				int m_iScrollLeft = 0;
+				int m_iScrollTopMax = 0;
+				int m_iScrollLeftMax = 0;
+				int m_iScrollSpeedX = 0;
+				int m_iScrollSpeedY = 0;
 
 				bool m_bBackgroundRepeatX = true;
 				bool m_bBackgroundRepeatY = true;
@@ -279,21 +268,21 @@ namespace gui
 				bool m_bBackgroundScrolling;
 				bool m_bBackgroundFixed;
 
-				bool m_bHasFixedSize;
+				bool m_bHasFixedSize = false;
 				bool m_bIsRectValid;
 
 				float2_t m_fBackgroundImageSize;
 
-				bool m_bNeedCut;
+				bool m_bNeedCut = false;
 
 				IRenderBorder m_border;
 
-				IScrollBar * m_pScrollBarVert;
-				IScrollBar * m_pScrollBarHorz;
+				IScrollBar *m_pScrollBarVert = NULL;
+				IScrollBar *m_pScrollBarHorz = NULL;
 
 				DWORD rc;
 
-				UINT m_iTextIdx;
+				UINT m_iTextIdx = 0;
 				Array<Array<CRenderElement*>> m_mTextRELs;
 				
 				GXSamplerDesc m_samplerDesc;
@@ -417,7 +406,7 @@ namespace gui
 				UINT m_iSelectionEnd = 0;
 				void drawCaret();
 				void renderSelection();
-				bool m_bInSelection;
+				bool m_bInSelection = false;
 
 				int m_iCaretX = 0;
 				int m_iCaretY = 0;

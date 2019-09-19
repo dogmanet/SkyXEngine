@@ -13,12 +13,17 @@ namespace gui
 		friend class CTextureManager;
 		friend class CVideoRenderer;
 	public:
-		void setGUI(CGUI * pGui);
-		void release();
-		IGXTexture2D * getAPItexture() const;
+		CTexture(CTextureManager *pMgr):
+			m_pTextureManager(pMgr)
+		{
+		}
 
-		void loadFromFile(const StringW & pName);
-		void loadFromMem(byte * pData);
+		void setGUI(CGUI *pGui);
+		void release();
+		IGXTexture2D* getAPItexture() const;
+
+		void loadFromFile(const StringW &pName);
+		void loadFromMem(byte *pData);
 
 		UINT getWidth() const
 		{
@@ -31,6 +36,7 @@ namespace gui
 
 	protected:
 		IGXTexture2D *m_pTexture = NULL;
+		CTextureManager *m_pTextureManager;
 
 		UINT m_iWidth = 0;
 		UINT m_iHeight = 0;
@@ -42,27 +48,32 @@ namespace gui
 		bool m_isRT = false;
 	};
 
-	typedef const CTexture * CPITexture;
+	typedef const CTexture* CPITexture;
 
 	class CTextureManager
 	{
 	public:
+		CTextureManager(const WCHAR *szResourceDir):
+			m_wsResourceDir(szResourceDir)
+		{
+		}
+		CPITexture getTexture(const StringW &szTexture);
+		void release();
+		void bindTexture(CPITexture tex);
+		void unloadTexture(CPITexture tex);
+		CTexture* createTexture(const StringW &szTexture, int w, int h, int bpp, bool isRT = false, void *pInitData = NULL, bool isAutoResizeRT = true);
 		
-		static CPITexture getTexture(const StringW & szTexture);
-		static void release();
-		static void bindTexture(CPITexture tex);
-		static void unloadTexture(CPITexture tex);
-		static CTexture * createTexture(const StringW & szTexture, int w, int h, int bpp, bool isRT = false, void *pInitData = NULL, bool isAutoResizeRT=true);
-		
-		static void onLostDevice();
-		static void onResetDevice();
+		void addTexture(const StringW &name, CPITexture tex);
 
-		static void addTexture(const StringW & name, CPITexture tex);
+		const StringW& getResourceDir()
+		{
+			return(m_wsResourceDir);
+		}
 
 	protected:
-		static AssotiativeArray<StringW, CTexture> m_mTextures;
-		static CPITexture m_pCurrentTex;
-
+		StringW m_wsResourceDir;
+		AssotiativeArray<StringW, CTexture*> m_mTextures;
+		CPITexture m_pCurrentTex;
 	};
 };
 

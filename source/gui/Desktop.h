@@ -10,10 +10,10 @@ namespace gui
 	class CDesktop: public IDesktop
 	{
 	public:
-		CDesktop(const StringW & sName);
+		CDesktop(CDesktopStack *pDecktopStack, const StringW &sName);
 		~CDesktop();
 
-		void loadFromFile(const WCHAR * str);
+		void loadFromFile(const WCHAR *str);
 
 		void setWidth(UINT w);
 		void setHeight(UINT h);
@@ -25,16 +25,14 @@ namespace gui
 
 		void dispatchEvent(IEvent ev);
 
-		dom::IDOMdocument * getDocument();
+		dom::IDOMdocument* getDocument();
 
-		void requestFocus(dom::IDOMnode * pNode);
+		void requestFocus(dom::IDOMnode *pNode);
 
-		dom::IDOMnode * getFocus();
+		dom::IDOMnode* getFocus();
 
-		const dom::IDOMnodeCollection & createFromText(const StringW & html);
-
-		void release();
-
+		const dom::IDOMnodeCollection& createFromText(const StringW &html);
+		
 		void createRenderTarget();
 		void releaseRenderTarget();
 		void setDirty();
@@ -42,6 +40,8 @@ namespace gui
 		float getParallaxFactor();
 
 	protected:
+
+		CDesktopStack *m_pDesktopStack;
 
 		UINT m_iWidth;
 		UINT m_iHeight;

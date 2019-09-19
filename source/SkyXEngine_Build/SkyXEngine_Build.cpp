@@ -200,5 +200,6 @@ int main(int argc, char **argv)
 
 	mem_release(pWindow);
 	mem_release(pEngine);
+	mem_release(pWindowSystem);
 	return(ret);
 }

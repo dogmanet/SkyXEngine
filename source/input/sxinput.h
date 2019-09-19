@@ -259,14 +259,14 @@ enum InputEvents
 //! стрктура для шаблона сообщений
 struct InMess
 {
-	InMess::InMess(){}
+	InMess::InMess() = default;
 	InMess::InMess(InputCode sect, InputEvents code)
 	{
 		Section = sect; Code = code;
 	}
 
-	InputCode Section;		//!< секция кнопка/клавиша
-	InputEvents Code;		//!< код сообщения из #InputEvents
+	InputCode Section = 0;		//!< секция кнопка/клавиша
+	InputEvents Code = iv_dissable;		//!< код сообщения из #InputEvents
 };
 
 //#############################################################################

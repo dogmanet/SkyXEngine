@@ -364,7 +364,10 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 
 			output_t *pOutput = &(this->*((output_t ThisClass::*)field->pField));
 			mem_delete_a(pOutput->pOutputs);
-			mem_delete_a(pOutput->pData);
+			{
+				char *pTmpData = (char*)pOutput->pData;
+				mem_delete_a(pTmpData);
+			}
 			pOutput->pData = str;
 			pOutput->pOutputs = new named_output_t[iConns];
 			pOutput->bDirty = true;

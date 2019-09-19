@@ -135,4 +135,52 @@
     <CodeCurrent>3922793813</CodeCurrent>
     <CodeNext>946893790</CodeNext>
   </sxgame>
+  <sxgame>
+    <FileName>string.h</FileName>
+    <ErrorCode>V677</ErrorCode>
+    <Message>Custom declaration of a standard 'WCHAR' type. The system header file should be used: #include &lt;WinNT.h&gt;.</Message>
+    <CodePrev>7479351</CodePrev>
+    <CodeCurrent>48482187</CodeCurrent>
+    <CodeNext>1551888307</CodeNext>
+  </sxgame>
+  <sxgame>
+    <FileName>string.h</FileName>
+    <ErrorCode>V677</ErrorCode>
+    <Message>Custom declaration of a standard 'DWORD' type. The system header file should be used: #include &lt;WinDef.h&gt;.</Message>
+    <CodePrev>48482187</CodePrev>
+    <CodeCurrent>1551888307</CodeCurrent>
+    <CodeNext>1551881587</CodeNext>
+  </sxgame>
+  <sxgame>
+    <FileName>string.h</FileName>
+    <ErrorCode>V677</ErrorCode>
+    <Message>Custom declaration of a standard 'WORD' type. The system header file should be used: #include &lt;WinDef.h&gt;.</Message>
+    <CodePrev>1551888307</CodePrev>
+    <CodeCurrent>1551881587</CodeCurrent>
+    <CodeNext>387971379</CodeNext>
+  </sxgame>
+  <sxgame>
+    <FileName>string.h</FileName>
+    <ErrorCode>V677</ErrorCode>
+    <Message>Custom declaration of a standard 'UINT' type. The system header file should be used: #include &lt;WinDef.h&gt;.</Message>
+    <CodePrev>1551881587</CodePrev>
+    <CodeCurrent>387971379</CodeCurrent>
+    <CodeNext>100</CodeNext>
+  </sxgame>
+  <sxgame>
+    <FileName>math.h</FileName>
+    <ErrorCode>V525</ErrorCode>
+    <Message>The code contains the collection of similar blocks. Check items 'vMin', 'vMax', 'vMax', 'vMin', 'vMin', 'vMax' in lines _, _, _, _, _, _.</Message>
+    <CodePrev>454964970</CodePrev>
+    <CodeCurrent>3711171488</CodeCurrent>
+    <CodeNext>3702586272</CodeNext>
+  </sxgame>
+  <sxgame>
+    <FileName>XEvents.h</FileName>
+    <ErrorCode>V730</ErrorCode>
+    <Message>Not all members of a class are initialized inside the compiler generated constructor. Consider inspecting: type, idPlugin.</Message>
+    <CodePrev>0</CodePrev>
+    <CodeCurrent>1594698625</CodeCurrent>
+    <CodeNext>123</CodeNext>
+  </sxgame>
 </NewDataSet>

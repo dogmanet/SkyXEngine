@@ -195,7 +195,6 @@
     <ClInclude Include="..\..\..\source\gui\ICHECKBOX.h" />
     <ClInclude Include="..\..\..\source\gui\ICSSstyle.h" />
     <ClInclude Include="..\..\..\source\gui\IDesktop.h" />
-    <ClInclude Include="..\..\..\source\gui\HTMLels.h" />
     <ClInclude Include="..\..\..\source\gui\IBODY.h" />
     <ClInclude Include="..\..\..\source\gui\IBR.h" />
     <ClInclude Include="..\..\..\source\gui\IBUTTON.h" />
@@ -245,7 +244,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\gui\CSSstyle.cpp" />
-    <ClCompile Include="..\..\..\source\gui\HTMLels.cpp" />
     <ClCompile Include="..\..\..\source\gui\IBODY.cpp" />
     <ClCompile Include="..\..\..\source\gui\IBR.cpp" />
     <ClCompile Include="..\..\..\source\gui\IBUTTON.cpp" />
@@ -285,8 +283,18 @@
     <ClCompile Include="..\..\..\source\gui\Texture.cpp" />
     <ClCompile Include="..\..\..\source\gui\ITH.cpp" />
     <ClCompile Include="..\..\..\source\gui\ITR.cpp" />
-    <ClCompile Include="..\..\..\source\gui\IVIDEO.cpp" />
-    <ClCompile Include="..\..\..\source\gui\VideoRenderer.cpp" />
+    <ClCompile Include="..\..\..\source\gui\IVIDEO.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui\VideoRenderer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\..\source\gui\IWINDOW.cpp" />
     <ClCompile Include="..\..\..\source\gui\keymap.cpp" />
     <ClCompile Include="..\..\..\source\gui\SXGUI.cpp" />

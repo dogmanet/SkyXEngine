@@ -281,6 +281,13 @@ typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMes
 #include <common/assotiativearray.h>
 #include <common/memalloc.h>
 
+#ifndef GET_X_LPARAM
+#define GET_X_LPARAM(lp)                        ((int)(short)LOWORD(lp))
+#endif
+#ifndef GET_Y_LPARAM
+#define GET_Y_LPARAM(lp)                        ((int)(short)HIWORD(lp))
+#endif
+
 /** \name Уровни критичности сообщений для функции репортов */
 //! @{
 #define REPORT_MSG_LEVEL_NOTICE		0	/*!< заметка */

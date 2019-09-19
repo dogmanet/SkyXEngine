@@ -220,19 +220,13 @@ struct input_t
 
 struct named_output_t
 {
-	named_output_t():
-		iOutCount(0),
-		pOutputs(NULL)
-	{
-	}
+	float fDelay = 0.0f;
+	const char *szTargetName = NULL;
+	const char *szTargetInput = NULL;
+	const char *szTargetData = NULL;
 
-	float fDelay;
-	const char *szTargetName;
-	const char *szTargetInput;
-	const char *szTargetData;
-
-	int iOutCount;
-	input_t *pOutputs;
+	int iOutCount = 0;
+	input_t *pOutputs = NULL;
 };
 
 struct output_t

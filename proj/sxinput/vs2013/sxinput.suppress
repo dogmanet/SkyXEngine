@@ -119,4 +119,20 @@
     <CodeCurrent>878980953</CodeCurrent>
     <CodeNext>0</CodeNext>
   </sxinput>
+  <sxinput>
+    <FileName>math.h</FileName>
+    <ErrorCode>V525</ErrorCode>
+    <Message>The code contains the collection of similar blocks. Check items 'vMin', 'vMax', 'vMax', 'vMin', 'vMin', 'vMax' in lines _, _, _, _, _, _.</Message>
+    <CodePrev>454964970</CodePrev>
+    <CodeCurrent>3711171488</CodeCurrent>
+    <CodeNext>3702586272</CodeNext>
+  </sxinput>
+  <sxinput>
+    <FileName>XEvents.h</FileName>
+    <ErrorCode>V730</ErrorCode>
+    <Message>Not all members of a class are initialized inside the compiler generated constructor. Consider inspecting: type, idPlugin.</Message>
+    <CodePrev>0</CodePrev>
+    <CodeCurrent>1594698625</CodeCurrent>
+    <CodeNext>123</CodeNext>
+  </sxinput>
 </NewDataSet>

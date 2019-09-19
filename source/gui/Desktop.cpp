@@ -6,10 +6,12 @@
 
 namespace gui
 {
-	CDesktop::CDesktop(const StringW & sName):
+	CDesktop::CDesktop(CDesktopStack *pDesktopStack, const StringW &sName):
+		m_pDesktopStack(pDesktopStack),
 		m_sName(sName)
 	{
-		m_pDoc = new dom::CDOMdocument();
+		pDesktopStack->AddRef();
+		m_pDoc = new dom::CDOMdocument(pDesktopStack);
 		m_pDoc->setDesktop(this);
 
 		m_pColorWhite = GetGUI()->getDevice()->createConstantBuffer(sizeof(float4));
@@ -21,11 +23,14 @@ namespace gui
 		mem_release(m_pColorWhite);
 		mem_delete(m_pDoc);
 		releaseRenderTarget();
+
+		m_pDesktopStack->destroyDesktop(this);
+		mem_release(m_pDesktopStack);
 	}
 
 	void CDesktop::loadFromFile(const WCHAR * str)
 	{
-		StringW file = StringW(GetGUI()->getResourceDir()) + L"/" + str;
+		StringW file = StringW(m_pDesktopStack->getResourceDir()) + L"/" + str;
 		dom::IHTMLparser p;
 		p.setDocument(m_pDoc);
 
@@ -60,7 +65,7 @@ namespace gui
 		m_pRenderSurface = GetGUI()->getDevice()->createColorTarget(m_iWidth, m_iHeight, GXFMT_A8R8G8B8, GXMULTISAMPLE_4_SAMPLES, false);
 		m_pDepthStencilSurface = GetGUI()->getDevice()->createDepthStencilSurface(m_iWidth, m_iHeight, GXFMT_D24S8, GXMULTISAMPLE_4_SAMPLES, false);
 
-		m_txFinal = CTextureManager::createTexture(StringW(L"@") + m_sName, m_iWidth, m_iHeight, 32, true, NULL, false);
+		m_txFinal = m_pDesktopStack->getTextureManager()->createTexture(StringW(L"@") + m_sName, m_iWidth, m_iHeight, 32, true, NULL, false);
 
 		struct point
 		{
@@ -90,7 +95,7 @@ namespace gui
 		mem_release(m_pDepthStencilSurface);
 		if(m_txFinal)
 		{
-			CTextureManager::unloadTexture(m_txFinal);
+			m_pDesktopStack->getTextureManager()->unloadTexture(m_txFinal);
 		}
 	}
 	void CDesktop::setDirty()
@@ -108,7 +113,7 @@ namespace gui
 		m_pDoc->update(fTimeDelta);
 		if(m_pDoc->isDirty())
 		{
-			CTextureManager::bindTexture(NULL);
+			m_pDesktopStack->getTextureManager()->bindTexture(NULL);
 			IGXSurface *pOldRT;
 			IGXDepthStencilSurface *pOldDS;
 			pOldRT = pCtx->getColorTarget();
@@ -152,7 +157,7 @@ namespace gui
 		if(bPresent)
 		{
 			//const CPITexture def_w = CTextureManager::getTexture(L"/img/map.jpg");
-			CTextureManager::bindTexture(m_txFinal);
+			m_pDesktopStack->getTextureManager()->bindTexture(m_txFinal);
 
 
 			/*if(GetAsyncKeyState('L'))
@@ -163,10 +168,10 @@ namespace gui
 			//CTextureManager::bindTexture(def_w);
 			
 			SMMATRIX mi = SMMatrixIdentity();
-			GetGUI()->setTransformWorld(mi);
+			m_pDesktopStack->setTransformWorld(mi);
 		//	GetGUI()->getDevice()->SetTransform(D3DTS_WORLD, reinterpret_cast<D3DMATRIX*>(&mi));
 			SMMATRIX mOldViewProj/*, mOldProj*/;
-			mOldViewProj = GetGUI()->getTransformViewProj();
+			mOldViewProj = m_pDesktopStack->getTransformViewProj();
 		//	GetGUI()->getDevice()->GetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mOldView));
 		//	GetGUI()->getDevice()->GetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&mOldProj));
 		//	GetGUI()->getDevice()->SetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mi));
@@ -179,7 +184,7 @@ namespace gui
 			m = SMMatrixTranslation(-0.5f, -0.5f, 0.0f) * m;
 		//	GetGUI()->getDevice()->SetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&m));
 
-			GetGUI()->setTransformViewProj(mi * m);
+			m_pDesktopStack->setTransformViewProj(mi * m);
 
 		/*	struct point
 			{
@@ -217,14 +222,14 @@ namespace gui
 			pCtx->setIndexBuffer(GetGUI()->getQuadIndexBuffer()); 
 			pCtx->setPSConstant(m_pColorWhite);
 
-			GetGUI()->updateTransformShader();
+			m_pDesktopStack->updateTransformShader();
 
 			pCtx->drawIndexed(4, 2, 0, 0);
 		//	DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
 
 		//	GetGUI()->getDevice()->SetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mOldView));
 		//	GetGUI()->getDevice()->SetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&mOldProj));
-			GetGUI()->setTransformViewProj(mOldViewProj);
+			m_pDesktopStack->setTransformViewProj(mOldViewProj);
 		}
 	}
 
@@ -331,7 +336,7 @@ namespace gui
 					bShow = false;
 					break;
 				}
-				GetGUI()->showCursor(bShow);
+				m_pDesktopStack->showCursor(bShow);
 			}
 
 			switch(ev.type)
@@ -439,11 +444,6 @@ namespace gui
 	void dom::CDOMdocument::requestFocus(IDOMnode * pn)
 	{
 		m_pDesktop->requestFocus(pn);
-	}
-
-	void CDesktop::release()
-	{
-		GetGUI()->destroyDesktop(this);
 	}
 
 	float CDesktop::getParallaxFactor()

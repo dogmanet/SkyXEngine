@@ -29,7 +29,7 @@ namespace gui
 		}
 	}
 	
-	//##########################################################################
+//##########################################################################
 
 	void CFont::save()
 	{
@@ -39,7 +39,7 @@ namespace gui
 		}
 		m_bHasBeenChanged = false;
 		FILE * pF;
-		StringW file = StringW(GetGUI()->getResourceDir()) + L"/fonts/" + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW(m_style) + L"-" + StringW(m_iBlurRadius) + L".sxf";
+		StringW file = m_pFontManager->getResourceDir() + L"/fonts/" + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW(m_style) + L"-" + StringW(m_iBlurRadius) + L".sxf";
 		_wfopen_s(&pF, file.c_str(), L"wb");
 		if(!pF)
 		{
@@ -99,24 +99,24 @@ namespace gui
 				suf = L"bi";
 				break;
 			}
-			StringW file = StringW(GetGUI()->getResourceDir()) + L"/fonts/" + m_szFontName + suf + L".ttf";
+			StringW file = m_pFontManager->getResourceDir() + L"/fonts/" + m_szFontName + suf + L".ttf";
 			String _f;
 			for(UINT i = 0; i < file.length(); i++)
 			{
 				_f += (char)file[i];
 			}
-			if(FT_New_Face(IFontManager::requestFT(), _f.c_str(), 0, &m_pFTfontFace))
+			if(FT_New_Face(m_pFontManager->requestFT(), _f.c_str(), 0, &m_pFTfontFace))
 			{
 				printf("Unable to load \"%s\" font\n", String(file).c_str());
 				if(m_style != STYLE_NONE)
 				{
-					file = StringW(GetGUI()->getResourceDir()) + L"/fonts/" + m_szFontName + L".ttf";
+					file = m_pFontManager->getResourceDir() + L"/fonts/" + m_szFontName + L".ttf";
 					_f = "";
 					for(UINT i = 0; i < file.length(); i++)
 					{
 						_f += (char)file[i];
 					}
-					if(FT_New_Face(IFontManager::requestFT(), _f.c_str(), 0, &m_pFTfontFace))
+					if(FT_New_Face(m_pFontManager->requestFT(), _f.c_str(), 0, &m_pFTfontFace))
 					{
 						printf("Unable to load \"%s\" font\n", String(file).c_str());
 					}
@@ -131,8 +131,10 @@ namespace gui
 		}
 	}
 
-	void CFont::load(const WCHAR * szFont, UINT size, STYLE style, int iBlurRadius)
+	void CFont::load(IFontManager *pFontManager, CTextureManager *pTextureManager, const WCHAR * szFont, UINT size, STYLE style, int iBlurRadius)
 	{
+		m_pFontManager = pFontManager;
+		m_pTextureManager = pTextureManager;
 		m_style = style;
 		freeFTfontFace();
 		m_iFontSize = size;
@@ -141,7 +143,7 @@ namespace gui
 		m_bEmulateItalic = false;
 		m_iBlurRadius = iBlurRadius;
 
-		StringW file = StringW(GetGUI()->getResourceDir()) + L"/fonts/" + m_szFontName + L"_" + StringW((int)size) + L"+" + StringW((int)style) + L"-" + StringW(iBlurRadius) + L".sxf";
+		StringW file = m_pFontManager->getResourceDir() + L"/fonts/" + m_szFontName + L"_" + StringW((int)size) + L"+" + StringW((int)style) + L"-" + StringW(iBlurRadius) + L".sxf";
 
 		FILE * pF;
 		_wfopen_s(&pF, file.c_str(), L"rb");
@@ -170,7 +172,7 @@ namespace gui
 			fread(data, sizeof(byte), w * h * 4, pF);
 			m_ppTextures.push_back(data);
 
-			CTexture * tex = CTextureManager::createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size())), w, h, 4, false, data);
+			CTexture * tex = m_pTextureManager->createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size())), w, h, 4, false, data);
 			m_vpTextures.push_back(tex);
 		}
 		//LoadFTfontFace();
@@ -192,7 +194,7 @@ namespace gui
 		printf("_heapchk() = %d\n", _heapchk());
 		for(UINT i = 0; i < m_vpTextures.size(); i++)
 		{
-			CTextureManager::unloadTexture(m_vpTextures[i]);
+			m_pTextureManager->unloadTexture(m_vpTextures[i]);
 		}
 		for(UINT i = 0; i < m_ppTextures.size(); i++)
 		{
@@ -261,7 +263,7 @@ namespace gui
 			{
 				FT_Bitmap tempbitmap;
 				FT_Bitmap_New(&tempbitmap);
-				FT_Bitmap_Convert(IFontManager::requestFT(), bitmap, &tempbitmap, 1);
+				FT_Bitmap_Convert(m_pFontManager->requestFT(), bitmap, &tempbitmap, 1);
 				bitmap = &tempbitmap;
 				byte * buf = tempbitmap.buffer;
 				for(UINT i = 0; i<tempbitmap.rows*tempbitmap.pitch; i++)
@@ -315,7 +317,7 @@ namespace gui
 				}
 			}
 
-			FT_Bitmap_Done(IFontManager::requestFT(), bitmap);
+			FT_Bitmap_Done(m_pFontManager->requestFT(), bitmap);
 
 			d.c = m_szFontChars[i]; // FIXME: Fix for two 32bit chars
 			for(UINT ii = 0; ii < list.size(); ii++)
@@ -523,7 +525,7 @@ namespace gui
 
 		printf("_heapchk() = %d\n", _heapchk());
 
-		CTexture * tex = CTextureManager::createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size() - 1)), width, height, 4, false, image);
+		CTexture * tex = m_pTextureManager->createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size() - 1)), width, height, 4, false, image);
 		//SX_SAFE_DELETE_A(image);
 		for(UINT i = 0; i < list.size(); i++)
 		{
@@ -1279,41 +1281,39 @@ namespace gui
 		}
 	}
 
-	//##########################################################################
-
-	AssotiativeArray<StringW, CFont> IFontManager::m_mFonts;
-
-	CFont * IFontManager::getFont(const WCHAR * szName, UINT size, CFont::STYLE style, int iBlurRadius)
+//##########################################################################
+	
+	IFontManager::IFontManager(const WCHAR *szResourceDir, CTextureManager *pTextureManager):
+		m_wsResourceDir(szResourceDir),
+		m_pTextureManager(pTextureManager)
 	{
-		StringW n = StringW(szName) + L"_" + StringW((int)size) + L"+" + StringW((int)style) + L"-" + StringW(iBlurRadius);
-		if(!m_mFonts.KeyExists(n))
+		if(FT_Init_FreeType(&m_pFT))
 		{
-			m_mFonts[n].load(szName, size, style, iBlurRadius);
+			LibReport(REPORT_MSG_LEVEL_FATAL, "Failed to initialise FreeType library\n");
 		}
-		return(&m_mFonts[n]);
 	}
 
-	FT_Library IFontManager::m_pFT = NULL;
-
-	FT_Library IFontManager::requestFT()
-	{
-		if(!m_pFT)
-		{
-			if(FT_Init_FreeType(&m_pFT))
-			{
-				printf("Failed to initialise FreeType library\n");
-				return(NULL);
-			}
-		}
-		return(m_pFT);
-	}
-
-	void IFontManager::release()
+	IFontManager::~IFontManager()
 	{
 		if(m_pFT)
 		{
 			FT_Done_FreeType(m_pFT);
 			m_pFT = NULL;
 		}
+	}
+
+	CFont* IFontManager::getFont(const WCHAR *szName, UINT size, CFont::STYLE style, int iBlurRadius)
+	{
+		StringW n = StringW(szName) + L"_" + StringW((int)size) + L"+" + StringW((int)style) + L"-" + StringW(iBlurRadius);
+		if(!m_mFonts.KeyExists(n))
+		{
+			m_mFonts[n].load(this, m_pTextureManager, szName, size, style, iBlurRadius);
+		}
+		return(&m_mFonts[n]);
+	}
+
+	FT_Library IFontManager::requestFT()
+	{
+		return(m_pFT);
 	}
 }

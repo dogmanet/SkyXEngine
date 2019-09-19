@@ -7,8 +7,9 @@ namespace gui
 	namespace dom
 	{
 		DEFINE_DOM_NODE(IOPTION);
+		LINK_DOM_NODE_TO_TAG(IOPTION, L"option");
 
-		void IOPTION::dispatchClientEvent(IEvent ev, bool * preventDefault)
+		void IOPTION::dispatchClientEvent(IEvent ev, bool *preventDefault)
 		{
 			if(ev.type == GUI_EVENT_TYPE_CLICK)
 			{

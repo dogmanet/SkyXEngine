@@ -6,7 +6,8 @@ namespace gui
 	{
 		namespace render
 		{
-			IRenderBorder::IRenderBorder():m_pIndexBuffer(NULL), m_pVertexBuffer(NULL), m_iInnerWidth(0), m_iInnerHeight(0), m_iFillIndexCount(0)
+			IRenderBorder::IRenderBorder(CTextureManager *pTextureManager):
+				m_pTextureManager(pTextureManager)
 			{
 				for(UINT i = 0; i < 4; i++)
 				{
@@ -116,14 +117,15 @@ namespace gui
 				static CPITexture texWhite = NULL;
 				if(!texWhite)
 				{
-					texWhite = CTextureManager::getTexture(TEX_WHITE);
+					
+					texWhite = m_pTextureManager->getTexture(TEX_WHITE);
 				}
 
 				IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
 
 			//	GetGUI()->getDevice()->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-				CTextureManager::bindTexture(texWhite);
+				m_pTextureManager->bindTexture(texWhite);
 			//	CTextureManager::bindShader(shText);
 				auto shader = GetGUI()->getShaders()->m_baseColored;
 				SGCore_ShaderBind(shader.m_idShaderKit);

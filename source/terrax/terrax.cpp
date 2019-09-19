@@ -402,7 +402,7 @@ int main(int argc, char **argv)
 		return(1);
 	}
 
-	// XInitGuiWindow(true);
+	 XInitGuiWindow(true);
 
 	//SkyXEngine_Init(g_hTopLeftWnd, g_hWndMain, lpCmdLine);
 	IXEngine *pEngine = XEngineInit(argc, argv, "TerraX");
@@ -412,7 +412,7 @@ int main(int argc, char **argv)
 	pEngine->getCore()->execCmd("gmode editor");
 	pEngine->getCore()->execCmd("exec ../config_editor.cfg");
 	CRenderPipeline *pPipeline = new CRenderPipeline(Core_GetIXCore());
-	// XInitGuiWindow(false);
+	 XInitGuiWindow(false);
 
 	RECT rcTopLeft;
 	GetClientRect(g_hTopLeftWnd, &rcTopLeft);

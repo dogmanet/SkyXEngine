@@ -8,6 +8,7 @@ namespace gui
 	namespace dom
 	{
 		DEFINE_DOM_NODE(IRANGE);
+		LINK_DOM_NODE_TO_TAG(IRANGE, L"range");
 
 		IRANGE::IRANGE():
 			m_bDragging(false),
@@ -31,7 +32,7 @@ namespace gui
 			appendChild(m_pTextNode);
 		}
 
-		void IRANGE::setAttribute(const StringW & name, const StringW & value)
+		void IRANGE::setAttribute(const StringW &name, const StringW &value)
 		{
 			BaseClass::setAttribute(name, value);
 
@@ -84,7 +85,7 @@ namespace gui
 			}
 		}
 
-		void IRANGE::dispatchClientEvent(IEvent ev, bool * preventDefault)
+		void IRANGE::dispatchClientEvent(IEvent ev, bool *preventDefault)
 		{
 			//ev.offsetX
 			switch(ev.type)

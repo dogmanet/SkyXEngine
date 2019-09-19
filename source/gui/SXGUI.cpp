@@ -1,7 +1,6 @@
 ﻿#include "GUIbase.h"
 #include "IHTMLparser.h"
 #include "IDOMdocument.h"
-#include "HTMLels.h"
 
 #include "IHTML.h"
 
@@ -21,25 +20,21 @@
 #include <chrono>
 typedef std::chrono::system_clock::time_point time_point;
 
-
 namespace gui
 {
-	CPITexture def_w;
-	CGUI * g_pGUI;
+	CGUI *g_pGUI;
 
-	CGUI::CGUI(IGXDevice * pDev, const char * szResPath, HWND hWnd):
-		m_pDevice(pDev),
-		m_hWnd(hWnd)
+	CGUI* GetGUI()
+	{
+		return(g_pGUI);
+	}
+
+	CGUI::CGUI(IGXDevice *pDev, IXMaterialSystem *pMaterialSystem, IFileSystem *pFileSystem):
+		m_pDevice(pDev)
 	{
 		g_pGUI = this;
-		updateScreenSize();
 
-		StringW srp = String(szResPath);
-
-		m_szResourceDir = new WCHAR[srp.length() + 1];
-		memcpy(m_szResourceDir, srp.c_str(), sizeof(WCHAR)* (srp.length() + 1));
-
-		def_w = CTextureManager::getTexture(L"/dev/white.png");
+		gui::CKeyMap::init();
 
 		m_shaders.m_baseTexturedColored.m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_main.vs");
 		m_shaders.m_baseTexturedColored.m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_main.ps");
@@ -53,7 +48,6 @@ namespace gui
 		m_shaders.m_baseTexturedTextransformColored.m_idPS = m_shaders.m_baseTexturedColored.m_idPS;
 		m_shaders.m_baseTexturedTextransformColored.m_idShaderKit = SGCore_ShaderCreateKit(m_shaders.m_baseTexturedTextransformColored.m_idVS, m_shaders.m_baseTexturedTextransformColored.m_idPS);
 
-		//@TODO: Release this
 		GXDepthStencilDesc depthStencilDesc;
 		depthStencilDesc.useDepthTest = false;
 		depthStencilDesc.useDepthWrite = false;
@@ -110,20 +104,83 @@ namespace gui
 		};
 		m_pQuadIndexes = m_pDevice->createIndexBuffer(sizeof(USHORT) * 6, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pIdxQuad);
 
-		m_pQuadVerticesXYZ = m_pDevice->createVertexBuffer(sizeof(float) * 3 * 4, GXBUFFER_USAGE_STREAM);
-		m_pQuadVerticesXYZTex16 = m_pDevice->createVertexBuffer(sizeof(float) * 5 * 16, GXBUFFER_USAGE_STREAM);
-
-		m_pQuadRenderXYZ = m_pDevice->createRenderBuffer(1, &m_pQuadVerticesXYZ, m_vertexDeclarations.m_pXYZ);
-		m_pQuadRenderXYZTex16 = m_pDevice->createRenderBuffer(1, &m_pQuadVerticesXYZTex16, m_vertexDeclarations.m_pXYZTex);
-
 		GXSamplerDesc samplerDesc;
 		samplerDesc.filter = GXFILTER_ANISOTROPIC;
 		m_pDefaultSamplerState = m_pDevice->createSamplerState(&samplerDesc);
-
-		m_pVSTransformConstant = m_pDevice->createConstantBuffer(sizeof(SMMATRIX));
 	}
 
-	IGXRenderBuffer *CGUI::getQuadRenderBufferXYZ(float3_t *pVertices)
+	CGUI::~CGUI()
+	{
+		g_pGUI = NULL;
+		mem_release(m_pDefaultSamplerState);
+		mem_release(m_pQuadIndexes);
+		mem_release(m_vertexDeclarations.m_pXYZ);
+		mem_release(m_vertexDeclarations.m_pXYZTex);
+		mem_release(m_pDefaultRState);
+		mem_release(m_blendStates.m_pDesktop);
+		mem_release(m_blendStates.m_pNoColorWrite);
+		mem_release(m_blendStates.m_pDefault);
+		mem_release(m_depthStencilStates.m_pStencilDecr);
+		mem_release(m_depthStencilStates.m_pStencilKeep);
+		mem_release(m_depthStencilStates.m_pStencilIncr);
+		mem_release(m_depthStencilStates.m_pDefault);
+	}
+
+	IGXDevice* CGUI::getDevice()
+	{
+		return(m_pDevice);
+	}
+
+	IDesktopStack* CGUI::newDesktopStack(const char *szResPath, UINT uWidth, UINT uHeight)
+	{
+		CDesktopStack *pStack = new CDesktopStack(this, m_pDevice, szResPath, uWidth, uHeight);
+		return(pStack);
+	}
+
+//##########################################################################
+
+	CDesktopStack::CDesktopStack(CGUI *pGUI, IGXDevice *pDev, const char *szResPath, UINT uWidth, UINT uHeight):
+		m_pGUI(pGUI),
+		m_pDevice(pDev)
+	{
+		pGUI->AddRef();
+		updateScreenSize(uWidth, uHeight);
+
+		StringW srp = String(szResPath);
+
+		m_szResourceDir = new WCHAR[srp.length() + 1];
+		memcpy(m_szResourceDir, srp.c_str(), sizeof(WCHAR)* (srp.length() + 1));
+
+		m_pQuadVerticesXYZ = m_pDevice->createVertexBuffer(sizeof(float) * 3 * 4, GXBUFFER_USAGE_STREAM);
+		m_pQuadVerticesXYZTex16 = m_pDevice->createVertexBuffer(sizeof(float) * 5 * 16, GXBUFFER_USAGE_STREAM);
+
+		m_pQuadRenderXYZ = m_pDevice->createRenderBuffer(1, &m_pQuadVerticesXYZ, pGUI->getVertexDeclarations()->m_pXYZ);
+		m_pQuadRenderXYZTex16 = m_pDevice->createRenderBuffer(1, &m_pQuadVerticesXYZTex16, pGUI->getVertexDeclarations()->m_pXYZTex);
+		
+		m_pVSTransformConstant = m_pDevice->createConstantBuffer(sizeof(SMMATRIX));
+
+		//! @todo: make common cache of that!
+		m_pTextureManager = new CTextureManager(m_szResourceDir);
+		m_pFontManager = new IFontManager(m_szResourceDir, m_pTextureManager);
+
+		m_pDefaultWhite = m_pTextureManager->getTexture(L"/dev/white.png");
+	}
+
+	CDesktopStack::~CDesktopStack()
+	{
+		mem_delete(m_pFontManager);
+		mem_delete(m_pTextureManager);
+
+		mem_release(m_pVSTransformConstant);
+		mem_release(m_pQuadRenderXYZTex16);
+		mem_release(m_pQuadRenderXYZ);
+		mem_release(m_pQuadVerticesXYZTex16);
+		mem_release(m_pQuadVerticesXYZ);
+
+		mem_release(m_pGUI);
+	}
+
+	IGXRenderBuffer* CDesktopStack::getQuadRenderBufferXYZ(float3_t *pVertices)
 	{
 		void *pData;
 		if(m_pQuadVerticesXYZ->lock(&pData, GXBL_WRITE))
@@ -133,7 +190,7 @@ namespace gui
 		}
 		return(m_pQuadRenderXYZ);
 	}
-	IGXRenderBuffer *CGUI::getQuadRenderBufferXYZTex16(float *pVertices)
+	IGXRenderBuffer* CDesktopStack::getQuadRenderBufferXYZTex16(float *pVertices)
 	{
 		void *pData;
 		if(m_pQuadVerticesXYZTex16->lock(&pData, GXBL_WRITE))
@@ -144,7 +201,7 @@ namespace gui
 		return(m_pQuadRenderXYZTex16);
 	}
 
-	BOOL CGUI::putMessage(UINT message, WPARAM wParam, LPARAM lParam)
+	BOOL CDesktopStack::putMessage(UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		if(!m_pActiveDesktop)
 		{
@@ -163,7 +220,8 @@ namespace gui
 		switch(message)
 		{
 		case WM_SIZE:
-			updateScreenSize();
+			updateScreenSize(LOWORD(lParam), HIWORD(lParam));
+			printf("%dx%d\n", (int)LOWORD(lParam), (int)HIWORD(lParam));
 			break;
 
 		case WM_MOUSEWHEEL:
@@ -181,11 +239,9 @@ namespace gui
 			if(wheelCount)
 			{
 				ev.type = wheelCount > 0 ? GUI_EVENT_TYPE_MOUSEWHEELUP : GUI_EVENT_TYPE_MOUSEWHEELDOWN;
-				mc.x = lParam & 0xFFFF;
-				mc.y = (lParam >> 16) & 0xFFFF;
-				ScreenToClient(m_hWnd, &mc);
-				ev.clientX = mc.x;
-				ev.clientY = mc.y;
+				ev.clientX = GET_X_LPARAM(lParam);
+				ev.clientY = GET_Y_LPARAM(lParam);
+
 				for(; wheelCount != 0; wheelCount += (wheelCount > 0 ? -1 : 1))
 				{
 					m_pActiveDesktop->dispatchEvent(ev);
@@ -249,7 +305,9 @@ namespace gui
 #ifdef _UNICODE
 			ev.key = wParam;
 #else
-			MultiByteToWideChar(1251, CP_ACP, src, 1, dst, 1);
+			
+			//MultiByteToWideChar(1251, CP_ACP, src, 1, dst, 1);
+			MultiByteToWideChar(CP_ACP, 0, src, 1, dst, 1);
 			ev.key = dst[0];
 #endif
 			ev.syskey = false;
@@ -261,8 +319,8 @@ namespace gui
 		case WM_LBUTTONDBLCLK:
 		case WM_LBUTTONDOWN:
 			ev.type = GUI_EVENT_TYPE_MOUSEDOWN;
-			ev.clientX = lParam & 0xFFFF;
-			ev.clientY = (lParam >> 16) & 0xFFFF;
+			ev.clientX = GET_X_LPARAM(lParam);
+			ev.clientY = GET_Y_LPARAM(lParam);
 			ev.key = KEY_LBUTTON;
 			CKeyMap::keyDown(KEY_LBUTTON);
 			m_pActiveDesktop->dispatchEvent(ev);
@@ -271,8 +329,8 @@ namespace gui
 
 		case WM_LBUTTONUP:
 			ev.type = GUI_EVENT_TYPE_MOUSEUP;
-			ev.clientX = lParam & 0xFFFF;
-			ev.clientY = (lParam >> 16) & 0xFFFF;
+			ev.clientX = GET_X_LPARAM(lParam);
+			ev.clientY = GET_Y_LPARAM(lParam);
 			ev.key = KEY_LBUTTON;
 			CKeyMap::keyUp(KEY_LBUTTON);
 			m_pActiveDesktop->dispatchEvent(ev);
@@ -281,16 +339,16 @@ namespace gui
 		case WM_RBUTTONDBLCLK:
 		case WM_RBUTTONDOWN:
 			ev.type = GUI_EVENT_TYPE_MOUSEDOWN;
-			ev.clientX = lParam & 0xFFFF;
-			ev.clientY = (lParam >> 16) & 0xFFFF;
+			ev.clientX = GET_X_LPARAM(lParam);
+			ev.clientY = GET_Y_LPARAM(lParam);
 			ev.key = KEY_RBUTTON;
 			CKeyMap::keyDown(KEY_RBUTTON);
 			m_pActiveDesktop->dispatchEvent(ev); break;
 
 		case WM_RBUTTONUP:
 			ev.type = GUI_EVENT_TYPE_MOUSEUP;
-			ev.clientX = lParam & 0xFFFF;
-			ev.clientY = (lParam >> 16) & 0xFFFF;
+			ev.clientX = GET_X_LPARAM(lParam);
+			ev.clientY = GET_Y_LPARAM(lParam);
 			ev.key = KEY_RBUTTON;
 			CKeyMap::keyUp(KEY_RBUTTON);
 			m_pActiveDesktop->dispatchEvent(ev);
@@ -301,16 +359,16 @@ namespace gui
 		case WM_MBUTTONDBLCLK:
 		case WM_MBUTTONDOWN:
 			ev.type = GUI_EVENT_TYPE_MOUSEDOWN;
-			ev.clientX = lParam & 0xFFFF;
-			ev.clientY = (lParam >> 16) & 0xFFFF;
+			ev.clientX = GET_X_LPARAM(lParam);
+			ev.clientY = GET_Y_LPARAM(lParam);
 			ev.key = KEY_MBUTTON;
 			CKeyMap::keyDown(KEY_MBUTTON);
 			m_pActiveDesktop->dispatchEvent(ev); break;
 
 		case WM_MBUTTONUP:
 			ev.type = GUI_EVENT_TYPE_MOUSEUP;
-			ev.clientX = lParam & 0xFFFF;
-			ev.clientY = (lParam >> 16) & 0xFFFF;
+			ev.clientX = GET_X_LPARAM(lParam);
+			ev.clientY = GET_Y_LPARAM(lParam);
 			ev.key = KEY_MBUTTON;
 			CKeyMap::keyUp(KEY_MBUTTON);
 			m_pActiveDesktop->dispatchEvent(ev);
@@ -321,16 +379,16 @@ namespace gui
 		case WM_XBUTTONDBLCLK:
 		case WM_XBUTTONDOWN:
 			ev.type = GUI_EVENT_TYPE_MOUSEDOWN;
-			ev.clientX = lParam & 0xFFFF;
-			ev.clientY = (lParam >> 16) & 0xFFFF;
+			ev.clientX = GET_X_LPARAM(lParam);
+			ev.clientY = GET_Y_LPARAM(lParam);
 			ev.key = GET_XBUTTON_WPARAM(wParam);
 			CKeyMap::keyDown(GET_XBUTTON_WPARAM(wParam));
 			m_pActiveDesktop->dispatchEvent(ev); break;
 
 		case WM_XBUTTONUP:
 			ev.type = GUI_EVENT_TYPE_MOUSEUP;
-			ev.clientX = lParam & 0xFFFF;
-			ev.clientY = (lParam >> 16) & 0xFFFF;
+			ev.clientX = GET_X_LPARAM(lParam);
+			ev.clientY = GET_Y_LPARAM(lParam);
 			ev.key = GET_XBUTTON_WPARAM(wParam);
 			CKeyMap::keyUp(GET_XBUTTON_WPARAM(wParam));
 			m_pActiveDesktop->dispatchEvent(ev);
@@ -338,8 +396,8 @@ namespace gui
 
 		case WM_MOUSEMOVE:
 			ev.type = GUI_EVENT_TYPE_MOUSEMOVE;
-			ev.clientX = lParam & 0xFFFF;
-			ev.clientY = (lParam >> 16) & 0xFFFF;
+			ev.clientX = GET_X_LPARAM(lParam);
+			ev.clientY = GET_Y_LPARAM(lParam);
 			m_pActiveDesktop->dispatchEvent(ev);
 			break;
 		}
@@ -347,17 +405,7 @@ namespace gui
 		return(TRUE);
 	}
 
-	void CGUI::update()
-	{
-		//@TODO: Implement me
-	}
-
-	void CGUI::syncronize()
-	{
-		//@TODO: Implement me
-	}
-
-	void CGUI::render()
+	void CDesktopStack::render()
 	{
 		if(!m_pActiveDesktop)
 		{
@@ -371,37 +419,23 @@ namespace gui
 
 		float fTimeDelta = (float)mksdt / 1000000.0f;
 
-		CVideoUpdateManager::update();
+		//CVideoUpdateManager::update();
 
 		IGXContext *pCtx = m_pDevice->getThreadContext();
 
 		pCtx->clear(GX_CLEAR_STENCIL);
 
-		pCtx->setRasterizerState(m_pDefaultRState);
+		pCtx->setRasterizerState(m_pGUI->getDefaultRasterizerState());
 
-		pCtx->setSamplerState(m_pDefaultSamplerState, 0);
+		pCtx->setSamplerState(m_pGUI->getDefaultSamplerState(), 0);
 
 		pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
+		
+		pCtx->setDepthStencilState(m_pGUI->getDepthStencilStates()->m_pDefault);
+		pCtx->setBlendState(m_pGUI->getBlendStates()->m_pDefault);
+		m_pTextureManager->bindTexture(m_pDefaultWhite);
 
-	//	m_pDevice->SetRenderState(D3DRS_STENCILFUNC, D3DCMP_EQUAL);
-	//	m_pDevice->SetRenderState(D3DRS_STENCILMASK, 0xFF);
-	//	m_pDevice->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_INCR);
-		pCtx->setDepthStencilState(m_depthStencilStates.m_pDefault);
-	//	m_pDevice->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
-	//	m_pDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-	//	m_pDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
-	//	m_pDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
-		pCtx->setBlendState(m_blendStates.m_pDefault);
-	//	m_pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	//	m_pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	//	m_pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-		CTextureManager::bindTexture(def_w);
-		/*
-		SMMATRIX mi = SMMatrixIdentity();
-		m_pDevice->SetTransform(D3DTS_WORLD, reinterpret_cast<D3DMATRIX*>(&mi));
-		m_pDevice->SetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mi));
-		*/
-		SGCore_ShaderBind(m_shaders.m_baseTexturedColored.m_idShaderKit);
+		SGCore_ShaderBind(m_pGUI->getShaders()->m_baseTexturedColored.m_idShaderKit);
 /*
 		SMMATRIX m(
 			2.0f / (float)m_iScreenWidth, 0.0f, 0.0f, 0.0f,
@@ -413,9 +447,9 @@ namespace gui
 
 		////
 
-		POINT pt;
-		GetCursorPos(&pt);
-		ScreenToClient(m_hWnd, &pt);
+		POINT pt = {0};
+		//GetCursorPos(&pt);
+		//ScreenToClient(m_hWnd, &pt);
 		if(pt.x < 0)
 		{
 			pt.x = 0;
@@ -449,11 +483,7 @@ namespace gui
 		);
 
 		setTransformViewProj(mi * m);
-	//	m_pDevice->SetTransform(D3DTS_VIEW, reinterpret_cast<D3DMATRIX*>(&mi));
-		////
 
-	//	m_pDevice->SetTransform(D3DTS_PROJECTION, reinterpret_cast<D3DMATRIX*>(&m));
-		//doc->Render();
 		for(UINT i = 0, l = m_mDesktopStack.size(); i < l; ++i)
 		{
 			if(m_mDesktopStack[i])
@@ -497,45 +527,10 @@ namespace gui
 
 		//		pDevice->SetDepthStencilSurface(pOldDepthStencilSurface);
 	}
-
-	void CGUI::onResetDevice()
+	
+	IDesktop* CDesktopStack::createDesktopA(const char *name, const char *file)
 	{
-		//@TODO: Implement me
-
-		CTextureManager::onResetDevice();
-
-		for(auto i = m_mDesktops.begin(); i; i++)
-		{
-		//	((CDesktop*)(*i.second))->createRenderTarget();
-			((CDesktop*)(*i.second))->setDirty();
-		}
-
-		m_bDeviceLost = false;
-	}
-
-	void CGUI::onLostDevice()
-	{
-		//@TODO: Implement me
-
-		m_bDeviceLost = true;
-
-		CTextureManager::onLostDevice();
-
-		for(auto i = m_mDesktops.begin(); i; i++)
-		{
-		//	((CDesktop*)(*i.second))->releaseRenderTarget();
-		}
-	}
-
-	void CGUI::release()
-	{
-		//@TODO: Release desired objects
-		delete this;
-	}
-
-	IDesktop * CGUI::createDesktopA(const char * name, const char * file)
-	{
-		IDesktop * d = new CDesktop(StringW(String(name)));
+		IDesktop *d = new CDesktop(this, StringW(String(name)));
 		d->setWidth(m_iScreenWidth);
 		d->setHeight(m_iScreenHeight);
 		d->updateSize();
@@ -544,9 +539,9 @@ namespace gui
 		return(d);
 	}
 
-	IDesktop * CGUI::createDesktopW(const wchar_t * name, const wchar_t * file)
+	IDesktop* CDesktopStack::createDesktopW(const wchar_t *name, const wchar_t *file)
 	{
-		IDesktop * d = new CDesktop(StringW(name));
+		IDesktop * d = new CDesktop(this, StringW(name));
 		d->setWidth(m_iScreenWidth);
 		d->setHeight(m_iScreenHeight);
 		d->updateSize();
@@ -556,7 +551,7 @@ namespace gui
 		return(d);
 	}
 
-	void CGUI::setActiveDesktop(IDesktop * d, BOOL clearStack)
+	void CDesktopStack::setActiveDesktop(IDesktop *d, BOOL clearStack)
 	{
 		m_pActiveDesktop = d;
 		CKeyMap::releaseKeys();
@@ -570,21 +565,21 @@ namespace gui
 		}
 	}
 
-	void CGUI::setActiveDesktopA(const char * name)
+	void CDesktopStack::setActiveDesktopA(const char *name)
 	{
 		setActiveDesktop(getDesktopA(name));
 	}
-	void CGUI::setActiveDesktopW(const WCHAR * name)
+	void CDesktopStack::setActiveDesktopW(const WCHAR *name)
 	{
 		setActiveDesktop(getDesktopW(name));
 	}
 
-	IDesktop * CGUI::getActiveDesktop()
+	IDesktop* CDesktopStack::getActiveDesktop()
 	{
 		return(m_pActiveDesktop);
 	}
 
-	IDesktop * CGUI::getDesktopA(const char * _name)
+	IDesktop* CDesktopStack::getDesktopA(const char *_name)
 	{
 		StringW name = String(_name);
 		if(m_mDesktops.KeyExists(name))
@@ -593,7 +588,7 @@ namespace gui
 		}
 		return(NULL);
 	}
-	IDesktop * CGUI::getDesktopW(const wchar_t * name)
+	IDesktop* CDesktopStack::getDesktopW(const wchar_t *name)
 	{
 		if(m_mDesktops.KeyExists(name))
 		{
@@ -602,7 +597,7 @@ namespace gui
 		return(NULL);
 	}
 
-	void CGUI::registerCallback(const char * cbName, GUI_CALLBACK cb)
+	void CDesktopStack::registerCallback(const char *cbName, GUI_CALLBACK cb)
 	{
 		if(cb)
 		{
@@ -611,7 +606,7 @@ namespace gui
 		}
 	}
 
-	void CGUI::registerCallbackDefault(GUI_CALLBACK_WC cb, BOOL greedy)
+	void CDesktopStack::registerCallbackDefault(GUI_CALLBACK_WC cb, BOOL greedy)
 	{
 		if(cb)
 		{
@@ -619,13 +614,11 @@ namespace gui
 		}
 	}
 
-	void CGUI::updateScreenSize()
+	void CDesktopStack::updateScreenSize(UINT uWidth, UINT uHeight)
 	{
-		RECT rect;
-		GetClientRect(m_hWnd, &rect);
-		m_iScreenHeight = rect.bottom - rect.top;
-		m_iScreenWidth = rect.right - rect.left;
-
+		m_iScreenWidth = uWidth;
+		m_iScreenHeight = uHeight;
+		
 		if(!m_iScreenHeight || !m_iScreenWidth)
 		{
 			return;
@@ -636,16 +629,13 @@ namespace gui
 			CDesktop * pDsk = ((CDesktop*)(*i.second));
 			pDsk->setWidth(m_iScreenWidth);
 			pDsk->setHeight(m_iScreenHeight);
-			if(!m_bDeviceLost)
-			{
-				pDsk->updateSize();
-			}
+			pDsk->updateSize();
 			((dom::CDOMdocument*)pDsk->getDocument())->calculateStyles();
 			((dom::CDOMnode*)((dom::CDOMdocument*)pDsk->getDocument())->getRootNode())->updateLayout(true);
 		}
 	}
 
-	void CGUI::showCursor(BOOL bShow)
+	void CDesktopStack::showCursor(BOOL bShow)
 	{
 		if(m_bShowCursor && !bShow)
 		{
@@ -659,17 +649,17 @@ namespace gui
 		}
 	}
 
-	WCHAR * CGUI::getResourceDir()
+	WCHAR* CDesktopStack::getResourceDir()
 	{
 		return(m_szResourceDir);
 	}
 
-	IGXDevice * CGUI::getDevice()
+	IGXDevice* CDesktopStack::getDevice()
 	{
 		return(m_pDevice);
 	}
 
-	GUI_CALLBACK CGUI::getCallbackByName(const char * _cbName)
+	GUI_CALLBACK CDesktopStack::getCallbackByName(const char *_cbName)
 	{
 		StringW cbName = String(_cbName);
 		if(m_mCallbacks.KeyExists(cbName))
@@ -679,7 +669,7 @@ namespace gui
 		return(NULL);
 	}
 
-	GUI_CALLBACK CGUI::getCallbackByName(const StringW & cbName)
+	GUI_CALLBACK CDesktopStack::getCallbackByName(const StringW &cbName)
 	{
 		if(m_mCallbacks.KeyExists(cbName))
 		{
@@ -688,21 +678,16 @@ namespace gui
 		return(NULL);
 	}
 
-	UINT CGUI::getScreenWidth()
+	UINT CDesktopStack::getScreenWidth()
 	{
 		return(m_iScreenWidth);
 	}
-	UINT CGUI::getScreenHeight()
+	UINT CDesktopStack::getScreenHeight()
 	{
 		return(m_iScreenHeight);
 	}
 
-	CGUI * GetGUI()
-	{
-		return(g_pGUI);
-	}
-
-	void CGUI::destroyDesktop(IDesktop * dp)
+	void CDesktopStack::destroyDesktop(IDesktop *dp)
 	{
 		if(!dp)
 		{
@@ -719,12 +704,11 @@ namespace gui
 		{
 			setActiveDesktop(NULL);
 		}
-		delete dp;
 	}
 
-	void CGUI::messageBox(const WCHAR * title, const WCHAR * text, ...)
+	void CDesktopStack::messageBox(const WCHAR *title, const WCHAR *text, ...)
 	{
-		IDesktop * dp = getDesktopW(L"MessageBox");
+		IDesktop *dp = getDesktopW(L"MessageBox");
 		/*if(dp)
 		{
 			PopDesktop();
@@ -750,7 +734,7 @@ namespace gui
 			pText->appendChild(newText[i]);
 		}
 
-		dom::IDOMnode * pBtns = doc->getElementById(L"mb_buttons");
+		dom::IDOMnode *pBtns = doc->getElementById(L"mb_buttons");
 
 		while(pBtns->getChilds()->size())
 		{
@@ -760,8 +744,8 @@ namespace gui
 		va_list ap;
 		va_start(ap, text);
 
-		WCHAR * cap;
-		WCHAR * cmd;
+		WCHAR *cap;
+		WCHAR *cmd;
 		dom::IDOMnode * pFirst = NULL;
 		while((cap = va_arg(ap, WCHAR*)))
 		{
@@ -783,7 +767,7 @@ namespace gui
 		pushDesktop(dp);
 	}
 
-	void CGUI::pushDesktop(IDesktop * dp)
+	void CDesktopStack::pushDesktop(IDesktop *dp)
 	{
 		if(m_pActiveDesktop)
 		{
@@ -792,7 +776,7 @@ namespace gui
 		}
 		setActiveDesktop(dp, FALSE);
 	}
-	IDesktop * CGUI::popDesktop()
+	IDesktop* CDesktopStack::popDesktop()
 	{
 		UINT s = m_mDesktopStack.size();
 		if(s == 0)
@@ -806,7 +790,7 @@ namespace gui
 		return(ret);
 	}
 
-	void CGUI::execCallback(const StringW cmd, IEvent * ev)
+	void CDesktopStack::execCallback(const StringW &cmd, IEvent *ev)
 	{
 		GUI_CALLBACK cb = getCallbackByName(cmd);
 		if(cb)
@@ -826,29 +810,31 @@ namespace gui
 		}
 	}
 
-	IFont *CGUI::getFont(const WCHAR * szName, UINT size, IFont::STYLE style, int iBlurRadius)
+	IFont* CDesktopStack::getFont(const WCHAR *szName, UINT size, IFont::STYLE style, int iBlurRadius)
 	{
-		return(IFontManager::getFont(szName, size, style, iBlurRadius));
+		return(m_pFontManager->getFont(szName, size, style, iBlurRadius));
 	}
 };
 
 
-gui::IGUI * InitInstance(IGXDevice * pDev, const char * szResPath, HWND hWnd)
+gui::IGUI* InitInstance(IGXDevice *pDev, IXMaterialSystem *pMaterialSystem, IFileSystem *pFileSystem)
 {
+	if(gui::g_pGUI)
+	{
+		return(gui::g_pGUI);
+	}
+
 	Core_SetOutPtr();
 
-	gui::CGUI * pGui = new gui::CGUI(pDev, szResPath, hWnd);
+	gui::CGUI *pGui = new gui::CGUI(pDev, pMaterialSystem, pFileSystem);
 
 	return(pGui);
 }
 
 #ifdef SX_STATIC_BUILD
-gui::IGUI * GUI_InitInstance(IGXContext * pDev, const char * szResPath, HWND hWnd)
+gui::IGUI * GUI_InitInstance(IGXContext * pDev, IXMaterialSystem *pMaterialSystem, IFileSystem *pFileSystem)
 {
-	gui::CKeyMap::init();
-	gui::dom::HTMLelsInit();
-
-	return(InitInstance(pDev, szResPath, hWnd));
+	return(InitInstance(pDev, pMaterialSystem, pFileSystem));
 }
 
 #else
@@ -862,11 +848,6 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	switch(ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
-		
-		gui::CKeyMap::init();
-
-		gui::dom::HTMLelsInit();
-
 		break;
 	case DLL_THREAD_ATTACH:
 		break;

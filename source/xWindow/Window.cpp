@@ -13,6 +13,17 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 	{
 		switch(msg)
 		{
+		case WM_MOUSEWHEEL:
+			{
+				POINT mc;
+				mc.x = GET_X_LPARAM(lParam);
+				mc.y = GET_Y_LPARAM(lParam);
+				ScreenToClient(hWnd, &mc);
+
+				lParam = MAKELPARAM(mc.x, mc.y);
+			}
+			// no break!;
+
 		case WM_DESTROY:
 		case WM_CLOSE:
 		case WM_SYSKEYDOWN:
@@ -36,7 +47,6 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 		case WM_MBUTTONDBLCLK:
 		case WM_MBUTTONDOWN:
 		case WM_MBUTTONUP:
-		case WM_MOUSEWHEEL:
 		case WM_INPUT:
 		case WM_SETCURSOR:
 		case WM_MOUSEMOVE:

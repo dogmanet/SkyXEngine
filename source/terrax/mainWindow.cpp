@@ -216,11 +216,16 @@ void XInitGuiWindow(bool pre)
 		ShowWindow(g_pGuiWnd, SW_SHOW);
 		UpdateWindow(g_pGuiWnd);
 
-		DWM_BLURBEHIND dwmBlur = {0};
-		dwmBlur.dwFlags = DWM_BB_ENABLE;
-		dwmBlur.fEnable = TRUE;
-		
-		DwmEnableBlurBehindWindow(g_pGuiWnd, &dwmBlur);
+		//DWM_BLURBEHIND dwmBlur = {0};
+		//dwmBlur.dwFlags = DWM_BB_ENABLE;
+		//dwmBlur.fEnable = TRUE;
+		//
+		//DwmEnableBlurBehindWindow(g_pGuiWnd, &dwmBlur);
+
+		MARGINS margins = {-1};
+
+		// Extend the frame across the whole window.
+		DwmExtendFrameIntoClientArea(g_pGuiWnd, &margins);
 	}
 	else
 	{

@@ -1,5 +1,6 @@
 #include "ScrollBarSimple.h"
 #include "IRenderFrame.h"
+#include "DOMdocument.h"
 
 namespace gui
 {
@@ -27,7 +28,8 @@ namespace gui
 
 			void CScrollBarSimple::render()
 			{
-				static CPITexture texWhite = CTextureManager::getTexture(TEX_WHITE);
+				
+				static CPITexture texWhite = m_pParent->getNode()->getDocument()->getDesktopStack()->getTextureManager()->getTexture(TEX_WHITE);
 			//	static CSHADER shText = CTextureManager::loadShader(L"text");
 			//	GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
 
@@ -35,7 +37,7 @@ namespace gui
 				SGCore_ShaderBind(shader.m_idShaderKit);
 
 			//	CTextureManager::bindShader(shText);
-				CTextureManager::bindTexture(texWhite);
+				m_pParent->getNode()->getDocument()->getDesktopStack()->getTextureManager()->bindTexture(texWhite);
 			//	float4_t asd(1, 1, 1, 0.5);
 
 				static IGXConstantBuffer *s_pColorConstant = NULL;

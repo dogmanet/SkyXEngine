@@ -22,15 +22,13 @@ namespace gui
 	// basePath/fonts/name.ttf // ttf font source file
 	// basePath/fonts/name_<size>.sxf // sxf font cache file
 
+	class IFontManager;
 	class CFont: public IFont
 	{
 	public:
-		CFont():m_pFTfontFace(NULL), m_bHasBeenChanged(false), m_iBlurRadius(0)
-		{
-		}
 		~CFont();
 
-		void load(const WCHAR * szFont, UINT size, STYLE style, int iBlurRadius = 0);
+		void load(IFontManager *pFontManager, CTextureManager *pTextureManager, const WCHAR *szFont, UINT size, STYLE style, int iBlurRadius = 0);
 		void release();
 
 		void save();
@@ -63,15 +61,15 @@ namespace gui
 		};
 
 
-		const CharDesc * getChar(UINT id);
+		const CharDesc* getChar(UINT id);
 
 
 		CPITexture getTexture(UINT i);
 		const IGXTexture2D *getAPITexture(UINT i);
 
-		void getStringMetrics(const StringW & str, UINT * width, UINT * height, UINT * vertexCount, UINT * indexCount, UINT * strCount, char_rects * pcr = NULL);
+		void getStringMetrics(const StringW &str, UINT *width, UINT *height, UINT *vertexCount, UINT *indexCount, UINT *strCount, char_rects *pcr = NULL);
 
-		void buildString(const StringW & str, UINT decoration, TEXT_ALIGN textAlign, IGXRenderBuffer ** ppVertexBuffer, IGXIndexBuffer ** ppIndexBuffer, UINT * vertexCount, UINT * indexCount, UINT * lineIndexCount, UINT iAreaWidth = 0, UINT iFirstShift = 0, UINT * pStrWidth = NULL);
+		void buildString(const StringW &str, UINT decoration, TEXT_ALIGN textAlign, IGXRenderBuffer **ppVertexBuffer, IGXIndexBuffer **ppIndexBuffer, UINT *vertexCount, UINT *indexCount, UINT * lineIndexCount, UINT iAreaWidth = 0, UINT iFirstShift = 0, UINT * pStrWidth = NULL);
 	protected:
 
 		struct SXFheader
@@ -117,7 +115,10 @@ namespace gui
 
 		bool place(Array<chardata> &list, int width, int height);
 
-		FT_Face m_pFTfontFace;
+		IFontManager *m_pFontManager = NULL;
+		CTextureManager *m_pTextureManager = NULL;
+
+		FT_Face m_pFTfontFace = NULL;
 
 		SXFheader m_header;
 		Array<CharDesc> m_chars;
@@ -134,7 +135,7 @@ namespace gui
 		Array<CTexture*> m_vpTextures;
 		Array<byte*> m_ppTextures;
 
-		bool m_bHasBeenChanged;
+		bool m_bHasBeenChanged = false;
 
 		void buildFont();
 
@@ -147,11 +148,11 @@ namespace gui
 		void regen();
 		void addChar(WCHAR c, bool full = true);
 
-		bool CFont::imageEqual(const chardata & a, const chardata & b);
+		bool CFont::imageEqual(const chardata &a, const chardata &b);
 
-		static const symRange * getSymRange(UINT sym);
+		static const symRange* getSymRange(UINT sym);
 
-		int m_iBlurRadius;
+		int m_iBlurRadius = 0;
 	};
 
 
@@ -161,16 +162,24 @@ namespace gui
 	class IFontManager
 	{
 	public:
-		static CFont * getFont(const WCHAR * szName, UINT size, CFont::STYLE style = CFont::STYLE_NONE, int iBlurRadius = 0);
-		static FT_Library requestFT();
+		IFontManager(const WCHAR *szResourceDir, CTextureManager *pTextureManager);
+		~IFontManager();
 
-		static void release();
+		CFont* getFont(const WCHAR *szName, UINT size, CFont::STYLE style = CFont::STYLE_NONE, int iBlurRadius = 0);
+		FT_Library requestFT();
 		
+		const StringW& getResourceDir()
+		{
+			return(m_wsResourceDir);
+		}
 
 	protected:
-		static AssotiativeArray<StringW, CFont> m_mFonts;
+		StringW m_wsResourceDir; 
+		CTextureManager *m_pTextureManager;
 
-		static FT_Library m_pFT;
+		AssotiativeArray<StringW, CFont> m_mFonts;
+
+		FT_Library m_pFT;
 	};
 
 };

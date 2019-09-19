@@ -398,7 +398,7 @@ namespace gui
 								}
 								if(bUse)
 								{
-									CDOMnode * pNode = (CDOMnode*)CDOMnode::createNode(0u);
+									CDOMnode * pNode = (CDOMnode*)CDOMnode::createNode(L"text");
 									pNode->setDocument((CDOMdocument*)m_pDocument);
 									((IDOMnodeText*)pNode)->setText(textnode);
 									if(pCur)
@@ -456,7 +456,7 @@ namespace gui
 												}
 												else
 												{
-													printf("Unknown tag %s\n", String(tagname).c_str());
+													printf("Unknown tag %S\n", tagname.c_str());
 													if(!nodes.IsEmpty())
 													{
 														nodes.pop(&pCur);
@@ -676,7 +676,7 @@ namespace gui
 			}
 			if(!root && textnode.length())
 			{
-				root = (CDOMnode*)CDOMnode::createNode(0u);
+				root = (CDOMnode*)CDOMnode::createNode(L"text");
 				root->setDocument((CDOMdocument*)m_pDocument);
 				((IDOMnodeText*)root)->setText(textnode);
 			}

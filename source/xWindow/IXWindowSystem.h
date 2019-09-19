@@ -31,12 +31,12 @@ DEFINE_ENUM_FLAG_OPERATORS(XWINDOW_FLAG);
 
 struct XWINDOW_DESC
 {
-	int iSizeX;
-	int iSizeY;
+	int iSizeX = 800;
+	int iSizeY = 600;
 	int iPosX = XCW_USEDEFAULT;
 	int iPosY = XCW_USEDEFAULT;
 	XWINDOW_FLAG flags = XWF_DEFAULT;
-	const char *szTitle;
+	const char *szTitle = NULL;
 };
 
 //#############################################################################
