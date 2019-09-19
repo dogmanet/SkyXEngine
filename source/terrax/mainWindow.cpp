@@ -210,6 +210,7 @@ ATOM XRegisterClass(HINSTANCE hInstance)
 
 void XInitGuiWindow(bool pre)
 {
+#if 0
 	if(pre)
 	{
 		g_pGuiWnd = CreateWindowA(GUI_WINDOW_CLASS, "Material editor", WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_WIDTH, WINDOW_HEIGHT, NULL, NULL, hInst, NULL);
@@ -255,11 +256,12 @@ void XInitGuiWindow(bool pre)
 
 		g_pGUI->pushDesktop(g_pGUI->createDesktopA("main", "main.html"));
 	}
+#endif
 }
 
 void XGuiRender()
 {
-	g_pGUI->render();
+	//g_pGUI->render();
 }
 
 BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
@@ -1340,10 +1342,10 @@ LRESULT CALLBACK GuiWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 	// SSInput_AddMsg(msg);
 
 
-	if(g_pGUI && !g_pGUI->putMessage(message, wParam, lParam))
-	{
-		return(TRUE);
-	}
+	//if(g_pGUI && !g_pGUI->putMessage(message, wParam, lParam))
+	//{
+		//return(TRUE);
+	//}
 
 	switch(message)
 	{
