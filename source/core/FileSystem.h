@@ -37,9 +37,11 @@ See the license in LICENSE
     assert(size - 1 < id && "The path ID you entered does not exist"); \
 }
 
-#define CHECK_CORRECT_PATH(path) path[0] == -1
+#define CHECK_CORRECT_PATH(path) path[0] == '\0'
 
 #define NUM_BITS_IN_BYTE 8
+
+#define MEMCCPY_ERROR(buff) memcpy(buff, "\0", 1);
 
 struct Pair
 {
@@ -100,7 +102,7 @@ private:
     Array<String>* getAllvariantsCanonizePath(const char *szPath);
 
     //!Превращает канонизированный путь в неканонизированный
-    char *getNormalPath(const char *szPath);
+    void getNormalPath(const char *szPath, char *outBuff, int iOutMax);
 
     //!Сравнивает пути с корнем, и возвращает true если путь - абсолютный и в корне
     bool isAbsolutePathInRoot(const char *szPath);
@@ -110,7 +112,7 @@ private:
 
     void getFullPathToBuild(char *buff, int iSize);
 
-    char *getFileName(const char *name);
+    void getFileName(const char *name, char *outName, int iOutBuff);
 
     //! Вспомогательная функция для конвертирования FILETIME в time_t
     time_t filetimeToTime_t(const FILETIME& ft);
