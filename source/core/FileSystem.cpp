@@ -461,15 +461,13 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
     if (inRoot && !fileExists(fullPath))
     {
         size_t len = strlen(fullPath) + 1;
-        char *dn = new char[len];
+        char dirName[SIZE_PATH / 2];
 
-        memcpy(dn, fullPath, len);
-        dirname(dn);
-        len = strlen(dn);
-        dn[len - 1] = '\0';
-        createDirectory(dn);
-
-        mem_delete_a(dn);
+        memcpy(dirName, fullPath, len);
+        dirname(dirName);
+        len = strlen(dirName);
+        dirName[len - 1] = '\0';
+        createDirectory(dirName);
     }
     //Если путь не в корне и его не существует - на выход
     else if (!fileExists(fullPath))
