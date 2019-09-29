@@ -444,7 +444,7 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
 
     String *newFileName;
 
-    if (!fullPath)
+    if (CHECK_CORRECT_PATH(fullPath))
     {
         newFileName = new String(m_filePaths[m_writableRoot].c_str());
         *newFileName += '/';
@@ -461,7 +461,7 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
     if (inRoot && !fileExists(fullPath))
     {
         size_t len = strlen(fullPath) + 1;
-        char dirName[SIZE_PATH / 2];
+        char dirName[SIZE_PATH];
 
         memcpy(dirName, fullPath, len);
         dirname(dirName);
