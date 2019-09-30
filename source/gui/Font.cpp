@@ -48,7 +48,7 @@ namespace gui
 		}
 		fwrite(&m_header, sizeof(SXFheader), 1, pF);
 		UINT c = 0;
-		for(UINT i = 0; i < m_chars.size(); i++)
+		for(UINT i = 0, l = m_chars.size(); i < l; i++)
 		{
 			if(m_chars[i].id != 0)
 			{
@@ -56,7 +56,7 @@ namespace gui
 				c++;
 			}
 		}
-		UINT w, h;
+		uint32_t w, h;
 		byte * data;
 		for(UINT i = 0; i < m_vpTextures.size(); i++)
 		{
@@ -100,25 +100,19 @@ namespace gui
 				break;
 			}
 			StringW file = m_pFontManager->getResourceDir() + L"/fonts/" + m_szFontName + suf + L".ttf";
-			String _f;
-			for(UINT i = 0; i < file.length(); i++)
-			{
-				_f += (char)file[i];
-			}
+			String _f(file);
+			
 			if(FT_New_Face(m_pFontManager->requestFT(), _f.c_str(), 0, &m_pFTfontFace))
 			{
-				printf("Unable to load \"%s\" font\n", String(file).c_str());
+				printf("Unable to load \"%s\" font\n", _f.c_str());
 				if(m_style != STYLE_NONE)
 				{
 					file = m_pFontManager->getResourceDir() + L"/fonts/" + m_szFontName + L".ttf";
-					_f = "";
-					for(UINT i = 0; i < file.length(); i++)
-					{
-						_f += (char)file[i];
-					}
+					_f = file;
+					
 					if(FT_New_Face(m_pFontManager->requestFT(), _f.c_str(), 0, &m_pFTfontFace))
 					{
-						printf("Unable to load \"%s\" font\n", String(file).c_str());
+						printf("Unable to load \"%s\" font\n", _f.c_str());
 					}
 					else
 					{
@@ -259,14 +253,15 @@ namespace gui
 			memset(d.data, 0, sizeof(byte)* d.w * d.h * 4);
 			int cc = 0;
 			FT_Bitmap * bitmap = &g->bitmap;
+			FT_Bitmap tempbitmapmono;
 			if(g->bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
 			{
-				FT_Bitmap tempbitmap;
-				FT_Bitmap_New(&tempbitmap);
-				FT_Bitmap_Convert(m_pFontManager->requestFT(), bitmap, &tempbitmap, 1);
-				bitmap = &tempbitmap;
-				byte * buf = tempbitmap.buffer;
-				for(UINT i = 0; i<tempbitmap.rows*tempbitmap.pitch; i++)
+				//FT_Bitmap tempbitmap;
+				FT_Bitmap_New(&tempbitmapmono);
+				FT_Bitmap_Convert(m_pFontManager->requestFT(), bitmap, &tempbitmapmono, 1);
+				bitmap = &tempbitmapmono;
+				byte * buf = tempbitmapmono.buffer;
+				for(UINT i = 0; i<tempbitmapmono.rows*tempbitmapmono.pitch; i++)
 				{
 					if(*buf > 0) *buf = 255;
 					buf++;
@@ -316,8 +311,10 @@ namespace gui
 					}
 				}
 			}
-
-			FT_Bitmap_Done(m_pFontManager->requestFT(), bitmap);
+			if(g->bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
+			{
+				FT_Bitmap_Done(m_pFontManager->requestFT(), &tempbitmapmono);
+			}
 
 			d.c = m_szFontChars[i]; // FIXME: Fix for two 32bit chars
 			for(UINT ii = 0; ii < list.size(); ii++)

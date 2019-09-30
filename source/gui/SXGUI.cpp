@@ -848,6 +848,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	switch(ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
+		//_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF);
 		break;
 	case DLL_THREAD_ATTACH:
 		break;

@@ -73,7 +73,7 @@ namespace gui
 	protected:
 		StringW m_wsResourceDir;
 		AssotiativeArray<StringW, CTexture*> m_mTextures;
-		CPITexture m_pCurrentTex;
+		CPITexture m_pCurrentTex = NULL;
 	};
 };
 
