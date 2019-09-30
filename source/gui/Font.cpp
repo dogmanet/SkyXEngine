@@ -1,5 +1,4 @@
 #include "Font.h"
-#include "utils.h"
 #include <math.h>
 
 #include FT_BITMAP_H
@@ -185,7 +184,7 @@ namespace gui
 
 	void CFont::regen()
 	{
-		printf("_heapchk() = %d\n", _heapchk());
+		//printf("_heapchk() = %d\n", _heapchk());
 		for(UINT i = 0; i < m_vpTextures.size(); i++)
 		{
 			m_pTextureManager->unloadTexture(m_vpTextures[i]);
@@ -241,6 +240,14 @@ namespace gui
 			chardata d;
 			d.w = (g->bitmap.pixel_mode == FT_PIXEL_MODE_LCD ? (g->bitmap.width / 3) : g->bitmap.width) + m_iBlurRadius * 2 + iPadding * 2;
 			d.h = g->bitmap.rows + m_iBlurRadius * 2 + iPadding * 2;
+
+			if(d.w > 64 || d.h > 64)
+			{
+				char tmp[128];
+				sprintf_s(tmp, "-:%dx%d", d.w, d.h);
+				MessageBoxA(NULL, tmp, "", MB_OK);
+			}
+
 			d.xa = g->advance.x;
 			d.xo = g->bitmap_left;
 			d.yo = g->bitmap_top;
@@ -326,18 +333,25 @@ namespace gui
 			}
 			list.push_back(d);
 		}
+		
+#define CHECK_0() if(list[0].w > 64 || list[0].h > 64){char tmp[128];sprintf_s(tmp, "#:%dx%d", list[0].w, list[0].h);MessageBoxA(NULL, tmp, GEN_MSG_LOCATION, MB_OK);}
 
+		CHECK_0();
 		//
-		UTILS::quickSortR(&list[0], list.size());
-
+		list.quickSort([](const chardata &a, const chardata &b){
+			return(a.h > b.h);
+		});
+		CHECK_0();
 		int ss = 0;
 		for(UINT i = 0; i < list.size(); i++)
 		{
+			//printf("%d ", list[i].h);
 			if(!list[i].like)
 			{
 				ss += (list[i].w + 2 + (m_bEmulateBold ? 1 : 0)) * (list[i].h + 2);
 			}
 		}
+		CHECK_0();
 		int s = sqrt((float)ss);
 		int pow2 = 1;
 		while(pow2 <= s)
@@ -384,7 +398,7 @@ namespace gui
 				place(list, width, height);
 			}
 		}
-
+		CHECK_0();
 		for(UINT i = 0; i < list.size(); i++)
 		{
 			if(list[i].like)
@@ -399,22 +413,27 @@ namespace gui
 				}
 			}
 		}
-
+		CHECK_0();
 		printf("%dx%d\n", width, height);
 
-		printf("_heapchk() = %d\n", _heapchk());
+		//printf("_heapchk() = %d\n", _heapchk());
 
 		byte * image = new byte[width*height * 4];
 		memset(image, 0, sizeof(byte)* width*height * 4);
 
-
+		CHECK_0();
 		int count = 0;
 		m_chars.clear();
 		CharDesc cd;
 		for(UINT i = 0; i < list.size(); i++)
 		{
 			//	wprintf(L"%d %d %d %d  %d %d\n", list[i].w, list[i].h, list[i].x, list[i].y, list[i].w + list[i].x, list[i].h + list[i].y);
-
+			if(list[i].w > 64 || list[i].h > 64)
+			{
+				char tmp[128];
+				sprintf_s(tmp, "%d:%dx%d", i, list[i].w, list[i].h);
+				MessageBoxA(NULL, tmp, "", MB_OK);
+			}
 			imageCopy(image, list[i].data, width, height, list[i].w, list[i].h, list[i].x, list[i].y, 4);
 			if(m_bEmulateBold)
 			{
@@ -520,7 +539,7 @@ namespace gui
 			mem_delete_a(newImage);
 		}
 
-		printf("_heapchk() = %d\n", _heapchk());
+		//printf("_heapchk() = %d\n", _heapchk());
 
 		CTexture * tex = m_pTextureManager->createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size() - 1)), width, height, 4, false, image);
 		//SX_SAFE_DELETE_A(image);
@@ -539,7 +558,7 @@ namespace gui
 		// TODO: Add rebuild handler to call Layout on the document
 
 
-		printf("_heapchk() = %d\n", _heapchk());
+		//printf("_heapchk() = %d\n", _heapchk());
 
 	}
 

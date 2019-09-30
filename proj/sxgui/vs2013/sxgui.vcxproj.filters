@@ -120,9 +120,6 @@
     <ClInclude Include="..\..\..\source\gui\IRenderFrame.h">
       <Filter>Header Files\DOM</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\gui\utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\gui\IRenderBorder.h">
       <Filter>Header Files\DOM</Filter>
     </ClInclude>

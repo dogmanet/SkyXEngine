@@ -239,7 +239,6 @@
     <ClInclude Include="..\..\..\source\gui\keymap.h" />
     <ClInclude Include="..\..\..\source\gui\SXGUI.h" />
     <ClInclude Include="..\..\..\source\gui\ITD.h" />
-    <ClInclude Include="..\..\..\source\gui\utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\common\string.cpp" />
