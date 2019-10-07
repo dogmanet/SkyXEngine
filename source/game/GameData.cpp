@@ -1110,6 +1110,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 	if(m_isGame)
 	{
+		/*
 		CBaseTool *pTool = (CBaseTool*)CREATE_ENTITY("weapon_ak74", m_pMgr);
 		pTool->setOwner(m_pPlayer);
 		pTool->setHandsResource(m_pPlayer->getHandsResource());
@@ -1128,7 +1129,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		pMag->load(30);
 		((CBaseWeapon*)pTool)->attachMag(pMag);
 
-		m_pPlayer->setActiveTool(pTool);
+		m_pPlayer->setActiveTool(pTool);*/
 	}
 	else
 	{

@@ -16,7 +16,7 @@ public:
 
 	UINT XMETHODCALLTYPE getInterfaceCount() override
 	{
-		return(1);
+		return(2);
 	}
 	const XGUID* XMETHODCALLTYPE getInterfaceGUID(UINT id) override
 	{
@@ -24,6 +24,9 @@ public:
 		switch(id)
 		{
 		case 0:
+			s_guid = IXTEXTUREPROXY_GUID;
+			break;
+		case 1:
 			s_guid = IXTEXTUREPROXY_GUID;
 			break;
 		default:
@@ -35,7 +38,16 @@ public:
 	{
 		if(guid == IXTEXTUREPROXY_GUID)
 		{
-			return(new CTextureProxy(m_pCore->getFileSystem()));
+			static bool s_isLoaded = false;
+			if(!s_isLoaded)
+			{
+				s_isLoaded = true;
+				return(new CTextureProxy(m_pCore->getFileSystem()));
+			}
+			else
+			{
+				return(new CTextureProxy2(m_pCore->getFileSystem()));
+			}
 		}
 		return(NULL);
 	}

@@ -1,0 +1,59 @@
+[ent_0]
+use_trimesh = 0
+skin = 0
+scale = 1.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = -39.979637 0.000000 -0.042590
+name = 
+model = meshes/console.dse
+is_static = 1
+glow_color_ref = 
+glow_color = 0.000000 0.000000 0.000000
+flags = 0
+classname = prop_static
+auto_physbox = 1
+
+[ent_1]
+use_trimesh = 2
+skin = 0
+scale = 1.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = -40.020397 0.000000 -0.021287
+name = 
+model = meshes/transparent/base.dse
+is_static = 1
+glow_color_ref = 
+glow_color = 0.000000 0.000000 0.000000
+flags = 0
+classname = prop_static
+auto_physbox = 1
+
+[meta]
+count = 4
+
+[ent_2]
+team = -1163005939
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = -37.802925 0.726724 -0.042639
+name = 
+flags = 0
+classname = info_player_spawn
+
+[ent_3]
+use_trimesh = 0
+skin = 0
+scale = 1.000000
+rotation = 0.000000 -0.315568 0.000000 0.948903
+parent = 
+origin = -39.457516 0.000000 1.711633
+name = 
+model = meshes/console2.dse
+is_static = 1
+glow_color_ref = 
+glow_color = 0.000000 0.000000 0.000000
+flags = 0
+classname = prop_static
+auto_physbox = 1

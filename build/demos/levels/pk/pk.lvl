@@ -1,0 +1,24 @@
+[level]
+type = indoor
+local_name = Практика
+
+[terrax]
+vp_layout = 0
+grid_step = 6
+grid_show = 1
+cam3_view = 1
+cam3_scale = 0.013574
+cam3_pos = -36.696609 -0.277784 -1000.000000
+cam3_dir = -0.000000 -0.000000 -0.000000
+cam2_view = 2
+cam2_scale = 1.000000
+cam2_pos = 1000.000000 0.000000 0.000000
+cam2_dir = 0.000000 1.#QNAN0 0.000000
+cam1_view = 0
+cam1_scale = 0.014194
+cam1_pos = -39.119102 1000.000000 2.200013
+cam1_dir = -1.570796 -0.000000 0.000000
+cam0_view = -1
+cam0_scale = 1.000000
+cam0_pos = -38.273438 2.666229 -0.143120
+cam0_dir = -0.698062 -1.189407 -0.000000

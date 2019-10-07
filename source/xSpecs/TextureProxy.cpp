@@ -64,3 +64,58 @@ bool XMETHODCALLTYPE CTextureProxy::resolveName(const char *szName, char *szOutp
 
 	return(false);
 }
+
+//##########################################################################
+
+CTextureProxy2::CTextureProxy2(IFileSystem *pFileSystem):
+	m_pFileSystem(pFileSystem)
+{
+}
+
+UINT XMETHODCALLTYPE CTextureProxy2::getVersion()
+{
+	return(IXTEXTUREPROXY_VERSION);
+}
+
+const char* XMETHODCALLTYPE CTextureProxy2::getDescription() const
+{
+	return("Test proxy");
+}
+
+bool XMETHODCALLTYPE CTextureProxy2::resolveName(const char *szName, char *szOutput, UINT *puBufSize)
+{
+	char szFullPath[256];
+	sprintf(szFullPath, "textures/pk/%s.dds", szName);
+	
+	if(m_pFileSystem->fileExists(szFullPath))
+	{
+		if(szOutput)
+		{
+			strncpy(szOutput, szFullPath, *puBufSize);
+			szOutput[*puBufSize - 1] = 0;
+		}
+		else
+		{
+			*puBufSize = (UINT)strlen(szFullPath) + 1;
+		}
+		return(true);
+	}
+
+	sprintf(szFullPath, "textures/pk/%s.png", szName);
+
+	if(m_pFileSystem->fileExists(szFullPath))
+	{
+		if(szOutput)
+		{
+			strncpy(szOutput, szFullPath, *puBufSize);
+			szOutput[*puBufSize - 1] = 0;
+		}
+		else
+		{
+			*puBufSize = (UINT)strlen(szFullPath) + 1;
+		}
+		return(true);
+	}
+
+	return(false);
+}

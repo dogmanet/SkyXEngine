@@ -20,4 +20,20 @@ protected:
 
 };
 
+class CTextureProxy2: public IXTextureProxy
+{
+public:
+	CTextureProxy2(IFileSystem *pFileSystem);
+
+	UINT XMETHODCALLTYPE getVersion() override;
+
+	const char* XMETHODCALLTYPE getDescription() const override;
+
+	bool XMETHODCALLTYPE resolveName(const char *szName, char *szOutput, UINT *puBufSize) override;
+
+protected:
+	IFileSystem *m_pFileSystem;
+
+};
+
 #endif
