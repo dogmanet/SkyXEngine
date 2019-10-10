@@ -712,9 +712,9 @@ namespace gui
 
 		void CDOMdocument::render()
 		{
+			m_isDirty = false;
 			m_pDesktopStack->getTextureManager()->bindTexture(NULL);
 			m_pRTroot->render(0);
-			m_isDirty = false;
 		}
 
 		IDOMnode * CDOMdocument::getElementByXY(int x, int y, bool sendEnterLeave)
@@ -982,9 +982,9 @@ namespace gui
 			{
 				return;
 			}
-			if(this->m_pRenderFrame->m_pScrollBarVert)
+			if(m_pRenderFrame->m_pScrollBarVert)
 			{
-				this->m_pRenderFrame->m_pScrollBarVert->dispatchEvent(ev);
+				m_pRenderFrame->m_pScrollBarVert->dispatchEvent(ev);
 			}
 			switch(ev.type)
 			{

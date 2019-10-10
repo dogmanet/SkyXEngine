@@ -391,10 +391,12 @@ namespace gui
 					}
 				}
 				m_iScrollTop = x;
+				m_pDoc->markDirty();
 			}
 			void IRenderFrame::setScrollLeft(int x)
 			{
 				m_iScrollLeft = x;
+				m_pDoc->markDirty();
 			}
 
 			//m_iScrollSpeedX
@@ -431,6 +433,11 @@ namespace gui
 					{
 						m_iScrollSpeedY = 0;
 					}
+				}
+
+				if(m_iScrollSpeedX || m_iScrollSpeedY)
+				{
+					m_pDoc->markDirty();
 				}
 			}
 

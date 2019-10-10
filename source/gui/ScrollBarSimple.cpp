@@ -110,10 +110,13 @@ namespace gui
 						else
 						{
 							int P = 4; // Padding 4px
-							int S = m_iLength * (m_iLength - P) / m_iScrollMax;
+							//int S = m_iLength * (m_iLength - P) / m_iScrollMax;
+
+							int S = m_iLength * (m_iLength - P) / (m_iScrollMax + m_iLength);
 
 							int delta = ev.clientY - m_iDragPos;
 							m_pParent->setScrollTop(m_iScrollStart + delta * m_iScrollMax / (m_iLength - 2 * P - S));
+							//m_pParent->setScrollTop(m_iScrollStart + delta * (m_iLength - 2 * P) / m_iScrollMax);
 						}
 					}
 				}
