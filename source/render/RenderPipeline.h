@@ -6,6 +6,7 @@
 #include <common/array.h>
 #include <light/IXLightSystem.h>
 #include "ShadowCache.h"
+#include <xUI/IXUI.h>
 
 #define MAX_TRANSPARENCY_CLIP_PANES 4
 
@@ -49,6 +50,8 @@ protected:
 	void showTexture(IGXTexture2D *pTexture);
 	void showFrameStats();
 
+	IXUI* getXUI();
+
 	struct _render_sys
 	{
 		IXRenderable *pRenderable;
@@ -73,6 +76,8 @@ protected:
 	IXRenderableVisibility *m_pMainCameraVisibility = NULL;
 
 	IXLightSystem *m_pLightSystem = NULL;
+
+	IXUI *m_pXUI = NULL;
 
 	//! G-Buffer
 	IGXTexture2D *m_pGBufferColor = NULL;

@@ -29,6 +29,8 @@ See the license in LICENSE
 
 #include "Editable.h"
 
+#include <xUI/IXUI.h>
+
 CPlayer* GameData::m_pPlayer;
 CPointCamera* GameData::m_pActiveCamera;
 gui::IGUI* GameData::m_pGUI = NULL;
@@ -1071,6 +1073,19 @@ GameData::GameData(HWND hWnd, bool isGame):
 			printf("Usage: text <text>");
 			return;
 		}
+	});
+
+	Core_0RegisterConcmd("open", []()
+	{
+		XWINDOW_DESC wdesc;
+		wdesc.iPosX = XCW_CENTER;
+		wdesc.iPosY = XCW_CENTER;
+		wdesc.iSizeX = 800;
+		wdesc.iSizeY = 600;
+		wdesc.szTitle = "Test window";
+		wdesc.flags = XWF_BUTTON_CLOSE | XWF_BUTTON_MINIMIZE | XWF_BUTTON_MAXIMIZE | /*XWF_NORESIZE | */XWF_TRANSPARENT;
+		IXUI *pXUI = (IXUI*)Core_GetIXCore()->getPluginManager()->getInterface(IXUI_GUID);
+		IUIWindow *pWindow = pXUI->createWindow(&wdesc);
 	});
 
 	//gui::IDesktop * pDesk = m_pGUI->createDesktopA("ingame", "ingame.html");

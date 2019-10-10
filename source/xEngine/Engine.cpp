@@ -73,6 +73,8 @@ CEngine::CEngine(int argc, char **argv, const char *szName)
 }
 CEngine::~CEngine()
 {
+	mem_release(m_pXUI);
+
 	SRender_AKill();
 	SGame_AKill();
 	SPhysics_AKill();
@@ -135,8 +137,36 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	SGame_0Create((HWND)hWindow, true);
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB game initialized\n");
 
+
+	//m_pXUI = 
+	HMODULE hDLL = LoadLibrary("xUI"
+#ifdef _DEBUG
+		"_d"
+#endif
+		".dll");
+	if(!hDLL)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to load xUI"
+#ifdef _DEBUG
+			"_d"
+#endif
+			".dll");
+	}
+
+	PFNXUIINIT pfnXGUIInit;
+	pfnXGUIInit = (PFNXUIINIT)GetProcAddress(hDLL, "InitInstance");
+
+	if(!pfnXGUIInit)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "The procedure entry point InitInstance could not be located in the dynamic link library xUI.dll");
+	}
+
+	IXWindowSystem *pWindowSystem = (IXWindowSystem*)m_pCore->getPluginManager()->getInterface(IXWINDOWSYSTEM_GUID);
+	m_pXUI = pfnXGUIInit(SGCore_GetDXDevice(), pWindowSystem, SGame_GetGUI());
+	m_pCore->getPluginManager()->registerInterface(IXUI_GUID, m_pXUI);
+
 	// init updatable
-	Core_GetIXCore()->initUpdatable();
+	m_pCore->initUpdatable();
 
 	getCore()->execCmd("exec ../config_sys.cfg");
 

@@ -17,8 +17,6 @@
 #include "ITEXT.h"
 
 #include <core/sxcore.h>
-#include <chrono>
-typedef std::chrono::system_clock::time_point time_point;
 
 namespace gui
 {
@@ -220,8 +218,23 @@ namespace gui
 		switch(message)
 		{
 		case WM_SIZE:
-			updateScreenSize(LOWORD(lParam), HIWORD(lParam));
-			printf("%dx%d\n", (int)LOWORD(lParam), (int)HIWORD(lParam));
+			updateScreenSize(LOWORD(lParam), HIWORD(lParam), !m_isResizing);
+			//printf("%dx%d\n", (int)LOWORD(lParam), (int)HIWORD(lParam));
+			m_isScreenSizeChanged = true;
+			break;
+
+		case WM_ENTERSIZEMOVE:
+			m_isResizing = true;
+			m_isScreenSizeChanged = false;
+			break;
+
+		case WM_EXITSIZEMOVE:
+			m_isResizing = false;
+			if(m_isScreenSizeChanged)
+			{
+				m_isScreenSizeChanged = false;
+				updateScreenSize(m_iScreenWidth, m_iScreenHeight);
+			}
 			break;
 
 		case WM_MOUSEWHEEL:
@@ -412,10 +425,9 @@ namespace gui
 			return;
 		}
 
-		static time_point tPrev = std::chrono::high_resolution_clock::now();
 		time_point tNow = std::chrono::high_resolution_clock::now();
-		long long mksdt = std::chrono::duration_cast<std::chrono::microseconds>(tNow - tPrev).count();
-		tPrev = tNow;
+		long long mksdt = std::chrono::duration_cast<std::chrono::microseconds>(tNow - m_tPrev).count();
+		m_tPrev = tNow;
 
 		float fTimeDelta = (float)mksdt / 1000000.0f;
 
@@ -614,12 +626,12 @@ namespace gui
 		}
 	}
 
-	void CDesktopStack::updateScreenSize(UINT uWidth, UINT uHeight)
+	void CDesktopStack::updateScreenSize(UINT uWidth, UINT uHeight, bool doResize)
 	{
 		m_iScreenWidth = uWidth;
 		m_iScreenHeight = uHeight;
 		
-		if(!m_iScreenHeight || !m_iScreenWidth)
+		if(!m_iScreenHeight || !m_iScreenWidth || !doResize)
 		{
 			return;
 		}

@@ -50,6 +50,8 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 		case WM_INPUT:
 		case WM_SETCURSOR:
 		case WM_MOUSEMOVE:
+		case WM_ENTERSIZEMOVE:
+		case WM_EXITSIZEMOVE:
 			return(pWindow->runCallback(msg, wParam, lParam));
 		}
 	}
@@ -61,7 +63,7 @@ CWindow::CWindow(HINSTANCE hInst, UINT uId, const XWINDOW_DESC *pWindowDesc, IXW
 	m_uId(uId),
 	m_pCallback(pCallback)
 {
-	assert(pCallback);
+	//assert(pCallback);
 
 	m_windowDesc = *pWindowDesc;
 	m_windowDesc.szTitle = NULL;
@@ -159,6 +161,10 @@ CWindow::CWindow(HINSTANCE hInst, UINT uId, const XWINDOW_DESC *pWindowDesc, IXW
 		dwmBlur.fEnable = TRUE;
 
 		DwmEnableBlurBehindWindow(m_hWnd, &dwmBlur);
+
+		// Extend the frame across the whole window.
+		//MARGINS margins = {-1};
+		//DwmExtendFrameIntoClientArea(m_hWnd, &margins);
 	}
 
 	SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG_PTR)this);

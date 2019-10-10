@@ -326,10 +326,13 @@ void CRenderPipeline::renderFrame()
 end:
 	//showGICubes();
 	showFrameStats();
+
+	getXUI()->render();
 }
 void CRenderPipeline::endFrame()
 {
 	m_pDevice->swapBuffers();
+	getXUI()->present();
 }
 
 void CRenderPipeline::updateVisibility()
@@ -1456,6 +1459,16 @@ void CRenderPipeline::renderEditor2D()
 	m_pDevice->getThreadContext()->setVSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
 
 	renderStage(XRS_EDITOR_2D);
+}
+
+IXUI* CRenderPipeline::getXUI()
+{
+	if(!m_pXUI)
+	{
+		m_pXUI = (IXUI*)Core_GetIXCore()->getPluginManager()->getInterface(IXUI_GUID);
+	}
+
+	return(m_pXUI);
 }
 
 //##########################################################################

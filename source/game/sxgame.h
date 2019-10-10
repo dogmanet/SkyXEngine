@@ -168,6 +168,7 @@ See the license in LICENSE
 #endif
 
 #include "BaseEntity.h"
+#include <gui/guimain.h>
 
 
 /*! Инициализирует библиотеку
@@ -194,6 +195,8 @@ SX_LIB_API void SGame_Update(int thread = 0);
 /*! Выполняет синхронизацию. Для многопоточного обновления
 */
 SX_LIB_API void SGame_Sync();
+
+SX_LIB_API gui::IGUI* SGame_GetGUI();
 
 /*! Помещает игрока в мир
 */

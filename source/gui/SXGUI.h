@@ -4,6 +4,9 @@
 #include <Windows.h>
 #include <graphix/graphix.h>
 
+#include <chrono>
+typedef std::chrono::system_clock::time_point time_point;
+
 #if 0
 #ifndef SXGUI_LIB
 #	ifdef _DEBUG
@@ -53,7 +56,7 @@ namespace gui
 		GUI_CALLBACK getCallbackByName(const char *cbName) override;
 		GUI_CALLBACK getCallbackByName(const StringW &cbName) override;
 
-		void updateScreenSize(UINT uWidth, UINT uHeight);
+		void updateScreenSize(UINT uWidth, UINT uHeight, bool doResize = true);
 		void showCursor(BOOL bShow);
 
 		WCHAR* getResourceDir();
@@ -124,6 +127,8 @@ namespace gui
 		CTextureManager *m_pTextureManager;
 		IFontManager *m_pFontManager;
 
+		bool m_isResizing = false;
+		bool m_isScreenSizeChanged = false;
 		UINT m_iScreenWidth = 0;
 		UINT m_iScreenHeight = 0;
 
@@ -132,6 +137,8 @@ namespace gui
 
 		IDesktop *m_pActiveDesktop = NULL;
 		Array<IDesktop*> m_mDesktopStack;
+
+		time_point m_tPrev = std::chrono::high_resolution_clock::now();;
 
 		bool m_bShowCursor = true;
 		AssotiativeArray<StringW, IDesktop*> m_mDesktops;

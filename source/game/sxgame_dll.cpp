@@ -139,6 +139,12 @@ SX_LIB_API void SGame_Sync()
 	g_pGameData->sync();
 }
 
+SX_LIB_API gui::IGUI* SGame_GetGUI()
+{
+	SG_PRECOND(NULL);
+	return(GameData::m_pGUI);
+}
+
 SX_LIB_API void SGame_Render()
 {
 	SG_PRECOND(_VOID);
