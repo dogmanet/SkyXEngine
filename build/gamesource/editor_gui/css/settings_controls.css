@@ -1,0 +1,95 @@
+
+#center_table
+{
+	//background-color: #0000FF88;
+	top: 30%; 
+	left: 10%; 
+	bottom: 15%; 
+	right: 10%;
+	position: absolute;
+	overflow-y: auto;
+}
+
+.cctable_cell {
+	//background-color: #00FF0088;
+	background-color: #c6f0fd50;
+	position: absolute;
+	height: 28px;
+	top: 0px;
+	line-height: 30px;
+	padding: 4px;
+	
+	transition-property: color, background-color;
+	transition-duration: 0.1s, 0.1s;
+	
+	//border-width: 2px;
+	//border-style: solid;
+	//border-color: #c6f0fd;
+}
+
+.cctable_left {
+	left: 0px;
+	right: 304px;
+}
+
+.cctable_ctl0,
+.cctable_ctl1 {
+	width: 150px;
+	text-align: center;
+}
+
+.cctable_items .cctable_ctl0,
+.cctable_items .cctable_ctl1 {
+	cursor: pointer;
+}
+
+.cctable_ctl0 {
+	right: 152px;
+}
+
+.cctable_ctl1 {
+	right: 0px;
+}
+
+.cctable_row  {
+	position: relative;
+	height: 28px;
+}
+
+.cctable_items {
+	position: absolute;
+	top: 30px;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+	overflow-y: auto;
+}
+
+.cctable_items .cctable_row{
+	height: 30px;
+}
+
+.cctable_row.header {
+	color: #fff;
+	font-weight: bold;
+}
+
+.cctable_items .cctable_row:hover .cctable_cell
+{
+	background-color: #fe950050;
+	color: #fe9500;
+}
+
+.cctable_items .cctable_row .cctable_ctl0:hover,
+.cctable_items .cctable_row .cctable_ctl1:hover
+{
+	background-color: #fe950080;
+	color: #fe9500;
+}
+
+.cctable_section {
+	text-align: center;
+	background-color: #c6f0fd80;
+	//height: 30px;
+	padding: 7px;
+}

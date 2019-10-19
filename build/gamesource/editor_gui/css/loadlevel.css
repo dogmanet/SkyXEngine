@@ -1,0 +1,145 @@
+
+#background
+{
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+	
+	-gui-z: 0;
+	opacity: 1;
+	transition-property: -gui-z;
+	transition-duration: 0.4s;
+}
+
+body:disabled #background
+{
+	-gui-z: -200px;
+	opacity: 0.4;
+}
+
+#left_panel
+{
+	//background-color: #00FF0088;
+	top: 20%; 
+	left: 35%; 
+	bottom: 10%; 
+	width: 30%;
+	position: absolute;
+	
+	transform: rotateY(0deg);
+}
+
+body:enabled #left_panel
+{
+	
+	transition-property: transform, left;
+	transition-duration: 0.4s, 0.4s;
+	left: 10%; 	
+	transform: rotateY(10deg);
+}
+
+#right_panel
+{
+	//background-color: #00FF0088;
+	top: 20%; 
+	right: -50%; 
+	bottom: 10%; 
+	width: 30%;
+	position: absolute;
+	
+	transform: rotateY(-90deg);
+	
+}
+
+body:enabled #right_panel
+{
+	transition-property: transform, right;
+	transition-duration: 0.4s, 0.4s;
+	
+	right: 10%;	
+	transform: rotateY(-10deg);
+}
+
+#map_preview
+{
+	//background-color: #00FF0088;
+	top: 10px; 
+	right: 10px; 
+	left: 10px;
+	height: 40%; 
+	position: absolute;
+	
+	//background-image: /maps/map4.png;
+	//background-image: ../../levels/stalker_atp/preview.png;
+	
+	background-position-x: 50%;
+	background-size-y: 100%;
+	
+	
+	border-width: 3px;
+	border-style: solid;
+	border-color: #c6f0fd;
+	
+	
+	border-radius: 15px;
+	border-top-right-method: cut;
+	border-top-left-method: cut;
+	border-bottom-right-method: cut;
+	border-bottom-left-method: cut;
+}
+
+.menu-item
+{
+	font-size: 24px;
+	//background-color: #FF000099;
+	padding: 10px;
+	transition-property: color, background-color;
+	transition-duration: 0.1s, 0.1s;
+	display: block;
+	background-color: #00000000;
+}
+
+.menu-item.bottom
+{
+	position: absolute;
+	bottom: 0;
+	height: 44px;
+	left: 10px;
+	right: 10px;
+}
+
+.menu-item:hover
+{
+	color: #fe9500;
+}
+.menu-item:active
+{
+	color: #fe9500;
+	background-color: #fe950055;
+}
+
+
+#map_list
+{
+	//background-color: #00FF0088;
+	top: 10px; 
+	right: 10px; 
+	left: 10px;
+	bottom: 60px; 
+	position: absolute;
+	
+	overflow-y: auto;
+	
+	border-width: 3px;
+	border-style: solid;
+	border-color: #c6f0fd;
+	
+	border-radius: 15px;
+	border-top-right-method: cut;
+	border-top-left-method: cut;
+	border-bottom-right-method: cut;
+	border-bottom-left-method: cut;
+	
+}

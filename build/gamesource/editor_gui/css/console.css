@@ -1,0 +1,54 @@
+#con_field
+{
+	position: fixed;
+	top: 10px;
+	left: 10px;
+	bottom: 40px;
+	right: 10px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: #000000CC;
+	background-color: #00000055;
+	padding: 5px;
+	font-name: lucon;
+	font-size: 13px;
+	color: #FFFFFF;
+}
+
+#con_input_block
+{
+	position: fixed;
+	left: 10px;
+	right: 10px;
+	bottom: 10px;
+	height: 25px;
+}
+#con_input
+{
+	position: absolute;
+	left: 0px;
+	right: 100px;
+	bottom: 0px;
+	top: 0px;
+	display: block;
+	font-name: lucon;
+}
+#con_submit
+{
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	width: 90px;
+	top: 0px;
+	display: block;
+}
+
+.c_green
+{
+	color: #00FF00;
+}
+
+br
+{
+	height: 0px;
+}
