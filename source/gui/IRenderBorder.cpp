@@ -17,11 +17,12 @@ namespace gui
 					m_iIndexStart[i] = 0;
 					m_iIndexCount[i] = 0;
 					//m_iColor[i] = 0xFF000000;
-					m_pColor[i] = float4_t(0.0f, 0.0f, 0.0f, 1.0f);
+					m_pColor[i] = float4_t(0.0f, 0.0f, 0.0f, 0.0f);
 					m_iVertexCount[i] = 0;
 					m_iVertexStart[i] = 0;
 					m_iSideCount[i] = 0;
 					m_pColorsConstant[i] = GetGUI()->getDevice()->createConstantBuffer(sizeof(float4));
+					m_pColorsConstant[i]->update(&m_pColor[i]);
 				}
 
 				m_pColorBlack = GetGUI()->getDevice()->createConstantBuffer(sizeof(float4));

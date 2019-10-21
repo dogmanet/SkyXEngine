@@ -51,7 +51,10 @@ void XMETHODCALLTYPE CXUI::render()
 
 	for(UINT i = 0, l = m_pWindows.size(); i < l; ++i)
 	{
-		m_pWindows[i]->render(pCtx);
+		if(m_pWindows[i]->isVisible())
+		{
+			m_pWindows[i]->render(pCtx);
+		}
 	}
 
 	pCtx->setColorTarget(pOldSurface);
@@ -63,7 +66,10 @@ void XMETHODCALLTYPE CXUI::present()
 {
 	for(UINT i = 0, l = m_pWindows.size(); i < l; ++i)
 	{
-		m_pWindows[i]->present();
+		if(m_pWindows[i]->isVisible())
+		{
+			m_pWindows[i]->present();
+		}
 	}
 }
 
