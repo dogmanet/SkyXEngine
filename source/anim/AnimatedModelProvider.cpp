@@ -4,7 +4,6 @@
 CAnimatedModelProvider::CAnimatedModelProvider(IXCore *pCore):
 	m_pCore(pCore)
 {
-	
 }
 
 CAnimatedModelProvider::~CAnimatedModelProvider()
@@ -44,13 +43,11 @@ void CAnimatedModelProvider::setDevice(IGXDevice *pDevice)
 	};
 
 	m_pVertexDeclaration = getDevice()->createVertexDeclaration(layoutDynamicEx);
+	
+	m_pMaterialSystem = (IXMaterialSystem*)m_pCore->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID);
+	XVertexFormatHandler *pFormat = m_pMaterialSystem->getVertexFormat("xSceneGeneric");
+	m_pVertexShaderHandler = m_pMaterialSystem->registerVertexShader(pFormat, "base/anim.vs");
 
-	IXMaterialSystem *pMaterialSystem = (IXMaterialSystem*)m_pCore->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID);
-	if(pMaterialSystem)
-	{
-		XVertexFormatHandler *pFormat = pMaterialSystem->getVertexFormat("xSceneGeneric");
-		m_pVertexShaderHandler = pMaterialSystem->registerVertexShader(pFormat, "shaders/base/anim.vs");
-	}
 }
 
 bool XMETHODCALLTYPE CAnimatedModelProvider::createModel(UINT uResourceCount, IXResourceModelAnimated **ppResources, IXAnimatedModel **ppModel)
@@ -174,6 +171,7 @@ void CAnimatedModelProvider::sync()
 
 void CAnimatedModelProvider::render(CRenderableVisibility *pVisibility)
 {
+	m_pMaterialSystem->bindVS(m_pVertexShaderHandler);
 	for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
 	{
 		if(pVisibility)
@@ -189,6 +187,7 @@ void CAnimatedModelProvider::render(CRenderableVisibility *pVisibility)
 			m_apModels[i]->render(0, false);
 		}
 	}
+	m_pMaterialSystem->bindVS(NULL);
 }
 
 void CAnimatedModelProvider::computeVisibility(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)

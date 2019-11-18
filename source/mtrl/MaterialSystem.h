@@ -96,6 +96,10 @@ public:
 	XVertexFormatHandler* XMETHODCALLTYPE getVertexFormat(const char *szName) override;
 
 	XVertexShaderHandler* XMETHODCALLTYPE registerVertexShader(XVertexFormatHandler *pVertexFormat, const char *szShaderFile, GXMacro *pDefines = NULL) override;
+	void XMETHODCALLTYPE bindVS(XVertexShaderHandler *pVertexShader);
+
+	XGeometryShaderHandler* XMETHODCALLTYPE registerGeometryShader(const char *szShaderFile, const char **aszRequiredParameters, GXMacro *pDefines = NULL) override;
+	void XMETHODCALLTYPE bindGS(XGeometryShaderHandler *pGeometryShader) override;
 
 	void queueTextureUpload(CTexture *pTexture);
 	void onTextureRelease(CTexture *pTexture);
@@ -117,21 +121,37 @@ protected:
 	void updateReferences();
 	void cleanData();
 
+	struct VertexFormatData;
 	struct VertexShaderData: public XVertexShaderHandler
 	{
+		const char *szShaderFile; //!< @fixme: нужно ли это хранить?
+		ID idShader;
+		VertexFormatData *pVertexFormat;
+		Array<GXMacro> aDefines; //!< @fixme: нужно ли это хранить?
+	};
+	struct GeometryShaderData: public XGeometryShaderHandler
+	{
 		const char *szShaderFile;
-		bool isCompleted;
+		//ID idShader;
+		//VertexFormatData *pVertexFormat;
 		Array<GXMacro> aDefines;
+		Array<const char*> aszRequiredParameters;
 	};
 
 	struct VertexFormatData: public XVertexFormatHandler
 	{
 		Array<XVertexOutputElement> aDecl;
-		Array<VertexShaderData> aVS;
-		// Array<> m_aGS;
+		Array<VertexShaderData*> aVS;
+		Array<GeometryShaderData*> aGS;
 	};
 
 	AssotiativeArray<String, VertexFormatData> m_mVertexFormats;
+	MemAlloc<VertexShaderData> m_poolVSdata;
+	MemAlloc<GeometryShaderData> m_poolGSdata;
+	Array<GeometryShaderData*> m_aGeometryShaders;
+
+	VertexShaderData *m_pCurrentVS = NULL;
+	GeometryShaderData *m_pCurrentGS = NULL;
 };
 
 #endif

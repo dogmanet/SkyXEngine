@@ -71,6 +71,7 @@ protected:
 	CConcurrentQueue<CDynamicModelShared*> m_queueGPUinitShared;
 	CConcurrentQueue<CDynamicModel*> m_queueGPUinitModel;
 
+	IXMaterialSystem *m_pMaterialSystem = NULL;
 	XVertexShaderHandler *m_pVertexShaderHandler = NULL;
 };
 

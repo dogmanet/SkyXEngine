@@ -94,8 +94,6 @@ CDynamicModelProvider::CDynamicModelProvider(IXCore *pCore):
 {
 	m_pMaterialChangedEventListener = new CMaterialChangedEventListener(this);
 	pCore->getEventChannel<XEventMaterialChanged>(EVENT_MATERIAL_CHANGED_GUID)->addListener(m_pMaterialChangedEventListener);
-
-	IXMaterialSystem *pMaterialSystem = (IXMaterialSystem*)pCore->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID);
 }
 
 CDynamicModelProvider::~CDynamicModelProvider()
@@ -137,12 +135,9 @@ void CDynamicModelProvider::setDevice(IGXDevice *pDevice)
 
 	m_pVertexDeclaration = pDevice->createVertexDeclaration(layoutStaticEx);
 
-	IXMaterialSystem *pMaterialSystem = (IXMaterialSystem*)m_pCore->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID);
-	if(pMaterialSystem)
-	{
-		XVertexFormatHandler *pFormat = pMaterialSystem->getVertexFormat("xSceneGeneric");
-		m_pVertexShaderHandler = pMaterialSystem->registerVertexShader(pFormat, "shaders/base/static.vs");
-	}
+	m_pMaterialSystem = (IXMaterialSystem*)m_pCore->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID);
+	XVertexFormatHandler *pFormat = m_pMaterialSystem->getVertexFormat("xSceneGeneric");
+	m_pVertexShaderHandler = m_pMaterialSystem->registerVertexShader(pFormat, "base/static.vs");
 }
 
 bool XMETHODCALLTYPE CDynamicModelProvider::createModel(IXResourceModel *pResource, IXDynamicModel **ppModel)
@@ -194,7 +189,7 @@ void CDynamicModelProvider::onModelRelease(CDynamicModel *pModel)
 		}
 	}
 
-	assert(!"Something wrong! Should never get here!");
+	assert(!"Something went wrong! Should never get here!");
 }
 
 IXMaterialSystem *CDynamicModelProvider::getMaterialSystem()
@@ -204,6 +199,7 @@ IXMaterialSystem *CDynamicModelProvider::getMaterialSystem()
 
 void CDynamicModelProvider::render(bool isTransparent, CRenderableVisibility *pVisibility)
 {
+	m_pMaterialSystem->bindVS(m_pVertexShaderHandler);
 	//if(isTransparent/* || m_apModels.size() < 1000*/)
 	//{
 		for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
@@ -263,6 +259,7 @@ void CDynamicModelProvider::render(bool isTransparent, CRenderableVisibility *pV
 		m_pRenderContext->executeThreadContexts();
 		//printf("\n");
 	}*/
+	m_pMaterialSystem->bindVS(NULL);
 }
 
 void CDynamicModelProvider::computeVisibility(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)

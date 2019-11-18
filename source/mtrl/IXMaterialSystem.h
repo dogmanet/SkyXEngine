@@ -60,6 +60,7 @@ struct XVertexOutputElement
 
 struct XVertexFormatHandler {};
 struct XVertexShaderHandler {};
+struct XGeometryShaderHandler {};
 
 class IXMaterialSystem: public IXUnknown
 {
@@ -107,6 +108,10 @@ public:
 	virtual XVertexFormatHandler* XMETHODCALLTYPE getVertexFormat(const char *szName) = 0;
 
 	virtual XVertexShaderHandler* XMETHODCALLTYPE registerVertexShader(XVertexFormatHandler *pVertexFormat, const char *szShaderFile, GXMacro *pDefines = NULL) = 0;
+	virtual void XMETHODCALLTYPE bindVS(XVertexShaderHandler *pVertexShader) = 0;
+
+	virtual XGeometryShaderHandler* XMETHODCALLTYPE registerGeometryShader(const char *szShaderFile, const char **aszRequiredParameters, GXMacro *pDefines = NULL) = 0;
+	virtual void XMETHODCALLTYPE bindGS(XGeometryShaderHandler *pGeometryShader) = 0;
 };
 
 #endif

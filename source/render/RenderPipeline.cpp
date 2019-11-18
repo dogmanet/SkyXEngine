@@ -37,7 +37,16 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	};
 	XVertexFormatHandler *pVertexFormatPostprocess = m_pMaterialSystem->registerVertexFormat("xPostprocess", voelPostprocess);
 	
-	m_pMaterialSystem->registerVertexShader(pVertexFormatPostprocess, "shaders/base/post.vs");
+
+	//! @todo move to liblight
+	const char *aszGSRequiredParams[] = {
+		"vPosition",
+		"vPos",
+		NULL
+	};
+	XGeometryShaderHandler *pRSMGeometryShader = m_pMaterialSystem->registerGeometryShader("sm/rsm_cube.gs", aszGSRequiredParams);
+
+	m_pMaterialSystem->registerVertexShader(pVertexFormatPostprocess, "base/post.vs");
 
 	IXRenderable *pRenderable;
 	UINT ic = 0;

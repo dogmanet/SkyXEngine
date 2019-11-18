@@ -48,6 +48,7 @@ protected:
 	CConcurrentQueue<CAnimatedModelShared*> m_queueGPUinitShared;
 	CConcurrentQueue<CAnimatedModel*> m_queueGPUinitModel;
 
+	IXMaterialSystem *m_pMaterialSystem = NULL;
 	XVertexShaderHandler *m_pVertexShaderHandler = NULL;
 };
 

@@ -281,16 +281,17 @@ XVertexShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerVertexShader(XVer
 
 	VertexFormatData *pVertexFormatData = (VertexFormatData*)pVertexFormat;
 
-	VertexShaderData vsData;
-	vsData.isCompleted = false;
-	vsData.szShaderFile = strdup(szShaderFile);
+	VertexShaderData *vsData = m_poolVSdata.Alloc();
+	vsData->pVertexFormat = pVertexFormatData;
+	vsData->idShader = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, szShaderFile, NULL, pDefines);
+	vsData->szShaderFile = strdup(szShaderFile);
 
 	while(pDefines && pDefines->szName)
 	{
 		GXMacro tmp;
 		tmp.szName = strdup(pDefines->szName);
 		tmp.szDefinition = strdup(pDefines->szDefinition);
-		vsData.aDefines.push_back(tmp);
+		vsData->aDefines.push_back(tmp);
 		++pDefines;
 	}
 
@@ -298,11 +299,121 @@ XVertexShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerVertexShader(XVer
 
 	updateReferences();
 
-	return((XVertexShaderHandler*)(pVertexFormatData->aVS.size() - 1));
+	return(vsData);
 }
+
+void XMETHODCALLTYPE CMaterialSystem::bindVS(XVertexShaderHandler *pVertexShader)
+{
+	m_pCurrentVS = (VertexShaderData*)pVertexShader;
+}
+
+XGeometryShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerGeometryShader(const char *szShaderFile, const char **aszRequiredParameters, GXMacro *pDefines)
+{
+	assert(szShaderFile);
+
+	GeometryShaderData *gsData = m_poolGSdata.Alloc();
+	//vsData->idShader = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, szShaderFile, NULL, pDefines);
+	gsData->szShaderFile = strdup(szShaderFile);
+
+	while(aszRequiredParameters)
+	{
+		gsData->aszRequiredParameters.push_back(*aszRequiredParameters);
+		++aszRequiredParameters;
+	}
+
+	while(pDefines && pDefines->szName)
+	{
+		GXMacro tmp;
+		tmp.szName = strdup(pDefines->szName);
+		tmp.szDefinition = strdup(pDefines->szDefinition);
+		gsData->aDefines.push_back(tmp);
+		++pDefines;
+	}
+
+	updateReferences();
+
+	return(gsData);
+}
+void XMETHODCALLTYPE CMaterialSystem::bindGS(XGeometryShaderHandler *pGeometryShader)
+{
+	m_pCurrentGS = (GeometryShaderData*)pGeometryShader;
+}
+
 
 void CMaterialSystem::updateReferences()
 {
+	for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; i++)
+	{
+		VertexFormatData *pFormat = i.second;
+		for(UINT j = 0, jl = m_aGeometryShaders.size(); j < jl; ++j)
+		{
+			GeometryShaderData *pGS = m_aGeometryShaders[j];
+
+			if(pFormat->aGS.size() <= j || !pFormat->aGS[j])
+			{
+				/*
+				$iFound = 0;
+				$aPassParameters = [];
+				foreach($data['decl'] as $decl)
+				{
+					if(in_array($decl['key'], $requiredParameters))
+					{
+						// echo("using: {$decl['key']}\n");
+						++$iFound;
+					}
+					else
+					{
+						// echo("passing: {$decl['key']}\n");
+						$aPassParameters[] = $decl;
+					}
+				}
+				if($iFound + count($aPassParameters) != count($data['decl']))
+				{
+					// var_dump($iFound, count($aPassParameters), count($data['decl']));
+					echo("Cannot use shader {$sFile} with {$sFormat} format. Skipping.\n");
+					$data['GS'][$key] = null;
+				}
+				else
+				{
+					// print_r($aPassParameters);
+				}
+				$defines = [];
+				$aStruct = [];
+				$aPass = [];
+				foreach($aPassParameters as $decl)
+				{
+					$aStruct[] = $this->getHLSLType($decl['type'])." {$decl['key']}: ".$this->getHLSLSemantic($decl['usage']);
+					$aPass[] = "(dst).{$decl['key']} = (src).{$decl['key']}";
+				}
+				$defines['XMAT_GS_STRUCT()'] = implode('; ', $aStruct);
+				$defines['XMAT_GS_PASS(dst, src)'] = implode('; ', $aPass);
+					
+				$data['GS'][$key] = [
+					'file' => $sFile,
+					'defines' => array_merge($aDefines, $defines),
+					'isCompiled' => false,
+				];
+				*/
+			}
+		}
+	}
+	/*
+		foreach($this->m_aGeometryShaders as $key => &$aGS)
+		{
+			$sFile = $aGS['file'];
+			$requiredParameters = $aGS['params'];
+			$aDefines = $aGS['defines'];
+			
+			
+			foreach($this->m_aVertexFormats as $sFormat => &$data)
+			{
+				if(!isset($data['GS'][$key]))
+				{
+					
+				}
+			}
+		}
+	*/
 }
 
 void CMaterialSystem::cleanData() 
@@ -316,12 +427,30 @@ void CMaterialSystem::cleanData()
 
 		for(UINT j = 0, jl = i.second->aVS.size(); j < jl; ++j)
 		{
-			for(UINT k = 0, kl = i.second->aVS[j].aDefines.size(); k < kl; ++k)
+			for(UINT k = 0, kl = i.second->aVS[j]->aDefines.size(); k < kl; ++k)
 			{
-				free((void*)i.second->aVS[j].aDefines[k].szDefinition);
-				free((void*)i.second->aVS[j].aDefines[k].szName);
+				free((void*)i.second->aVS[j]->aDefines[k].szDefinition);
+				free((void*)i.second->aVS[j]->aDefines[k].szName);
 			}
+
+			m_poolVSdata.Delete(i.second->aVS[j]);
 		}
+	}
+
+	for(UINT i = 0, l = m_aGeometryShaders.size(); i < l; ++i)
+	{
+		for(UINT k = 0, kl = m_aGeometryShaders[i]->aDefines.size(); k < kl; ++k)
+		{
+			free((void*)m_aGeometryShaders[i]->aDefines[k].szDefinition);
+			free((void*)m_aGeometryShaders[i]->aDefines[k].szName);
+		}
+
+		for(UINT k = 0, kl = m_aGeometryShaders[i]->aszRequiredParameters.size(); k < kl; ++k)
+		{
+			free((void*)m_aGeometryShaders[i]->aszRequiredParameters[k]);
+		}
+
+		m_poolGSdata.Delete(m_aGeometryShaders[i]);
 	}
 }
 
