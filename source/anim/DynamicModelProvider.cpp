@@ -136,6 +136,13 @@ void CDynamicModelProvider::setDevice(IGXDevice *pDevice)
 	};
 
 	m_pVertexDeclaration = pDevice->createVertexDeclaration(layoutStaticEx);
+
+	IXMaterialSystem *pMaterialSystem = (IXMaterialSystem*)m_pCore->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID);
+	if(pMaterialSystem)
+	{
+		XVertexFormatHandler *pFormat = pMaterialSystem->getVertexFormat("xSceneGeneric");
+		m_pVertexShaderHandler = pMaterialSystem->registerVertexShader(pFormat, "shaders/base/static.vs");
+	}
 }
 
 bool XMETHODCALLTYPE CDynamicModelProvider::createModel(IXResourceModel *pResource, IXDynamicModel **ppModel)

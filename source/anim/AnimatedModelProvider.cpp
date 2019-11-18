@@ -44,6 +44,13 @@ void CAnimatedModelProvider::setDevice(IGXDevice *pDevice)
 	};
 
 	m_pVertexDeclaration = getDevice()->createVertexDeclaration(layoutDynamicEx);
+
+	IXMaterialSystem *pMaterialSystem = (IXMaterialSystem*)m_pCore->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID);
+	if(pMaterialSystem)
+	{
+		XVertexFormatHandler *pFormat = pMaterialSystem->getVertexFormat("xSceneGeneric");
+		m_pVertexShaderHandler = pMaterialSystem->registerVertexShader(pFormat, "shaders/base/anim.vs");
+	}
 }
 
 bool XMETHODCALLTYPE CAnimatedModelProvider::createModel(UINT uResourceCount, IXResourceModelAnimated **ppResources, IXAnimatedModel **ppModel)

@@ -50,11 +50,18 @@ class CMaterial: public IXMaterial
 {
 public:
 	CMaterial(ID id);
-	void getMainTexture(IXTexture **ppTexture) override;
+	void XMETHODCALLTYPE getMainTexture(IXTexture **ppTexture) override;
 	ID getId();
-	bool isTransparent() override;
-	bool isRefractive() override;
-	bool isBlurred() override;
+	bool XMETHODCALLTYPE isTransparent() override;
+	bool XMETHODCALLTYPE isRefractive() override;
+	bool XMETHODCALLTYPE isBlurred() override;
+
+	void XMETHODCALLTYPE setFlag(const char *szFlag, bool isSet) override;
+	bool XMETHODCALLTYPE getFlag(const char *szFlag) override;
+
+	void XMETHODCALLTYPE setParam(const char *szFlag, float fValue) override;
+	float XMETHODCALLTYPE getParam(const char *szFlag) override;
+
 
 	ID getInternalID()
 	{
@@ -84,6 +91,11 @@ public:
 	void XMETHODCALLTYPE overrideGeometryShader(ID id) override;
 	void XMETHODCALLTYPE overridePixelShader(ID id) override;
 
+	XVertexFormatHandler* XMETHODCALLTYPE registerVertexFormat(const char *szName, XVertexOutputElement *pDecl) override;
+	void XMETHODCALLTYPE unregisterVertexFormat(const char *szName) override;
+	XVertexFormatHandler* XMETHODCALLTYPE getVertexFormat(const char *szName) override;
+
+	XVertexShaderHandler* XMETHODCALLTYPE registerVertexShader(XVertexFormatHandler *pVertexFormat, const char *szShaderFile, GXMacro *pDefines = NULL) override;
 
 	void queueTextureUpload(CTexture *pTexture);
 	void onTextureRelease(CTexture *pTexture);
@@ -101,6 +113,25 @@ protected:
 	Array<IXTextureProxy*> m_aTextureProxies;
 	AssotiativeArray<String, CTexture*> m_mpTextures;
 	CConcurrentQueue<CTexture*> m_queueTextureToLoad;
+
+	void updateReferences();
+	void cleanData();
+
+	struct VertexShaderData: public XVertexShaderHandler
+	{
+		const char *szShaderFile;
+		bool isCompleted;
+		Array<GXMacro> aDefines;
+	};
+
+	struct VertexFormatData: public XVertexFormatHandler
+	{
+		Array<XVertexOutputElement> aDecl;
+		Array<VertexShaderData> aVS;
+		// Array<> m_aGS;
+	};
+
+	AssotiativeArray<String, VertexFormatData> m_mVertexFormats;
 };
 
 #endif

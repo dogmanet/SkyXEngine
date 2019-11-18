@@ -19,6 +19,26 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	IPluginManager *pPluginManager = pCore->getPluginManager();
 	m_pMaterialSystem = (IXMaterialSystem*)pPluginManager->getInterface(IXMATERIALSYSTEM_GUID);
 
+	XVertexOutputElement voelGeneric[] = {
+		{"vPosition", GXDECLTYPE_FLOAT4, GXDECLUSAGE_POSITION},
+		{"vTexUV", GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		{"vNormal", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1},
+		{"vPos", GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD2},
+		XVERTEX_OUTPUT_DECL_END()
+	};
+	m_pMaterialSystem->registerVertexFormat("xSceneGeneric", voelGeneric);
+
+	XVertexOutputElement voelPostprocess[] = {
+		{"vPosition", GXDECLTYPE_FLOAT4, GXDECLUSAGE_POSITION},
+		{"vTexUV", GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		{"vEyeRay", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1},
+		{"vWorldRay", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD2},
+		XVERTEX_OUTPUT_DECL_END()
+	};
+	XVertexFormatHandler *pVertexFormatPostprocess = m_pMaterialSystem->registerVertexFormat("xPostprocess", voelPostprocess);
+	
+	m_pMaterialSystem->registerVertexShader(pVertexFormatPostprocess, "shaders/base/post.vs");
+
 	IXRenderable *pRenderable;
 	UINT ic = 0;
 	while((pRenderable = (IXRenderable*)pPluginManager->getInterface(IXRENDERABLE_GUID, ic++)))

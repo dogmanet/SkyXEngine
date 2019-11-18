@@ -29,6 +29,8 @@ CMaterialSystem::CMaterialSystem()
 CMaterialSystem::~CMaterialSystem()
 {
 	mem_release(m_pObjectConstantBuffer);
+
+	cleanData();
 }
 
 void XMETHODCALLTYPE CMaterialSystem::loadMaterial(const char *szName, IXMaterial **ppMaterial, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount, XSHADER_VARIANT_DESC *pVariantsDesc)
@@ -220,6 +222,106 @@ void CMaterialSystem::update(float fDT)
 		CTexture *pTexture = m_queueTextureToLoad.pop();
 		pTexture->initGPUresources();
 		mem_release(pTexture);
+	}
+}
+
+XVertexFormatHandler* XMETHODCALLTYPE CMaterialSystem::registerVertexFormat(const char *szName, XVertexOutputElement *pDecl)
+{
+	if(m_mVertexFormats.KeyExists(szName))
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "CMaterialSystem::registerVertexFormat(): format '%s' already been registered!\n", szName);
+		return(NULL);
+	}
+
+	VertexFormatData &format = m_mVertexFormats[szName];
+
+	XVertexOutputElement *pTmp = pDecl;
+	int iCount = 0;
+	while(pTmp->szName)
+	{
+		++iCount;
+		++pTmp;
+	}
+
+	format.aDecl.reserve(iCount);
+	pTmp = pDecl;
+	while(pTmp->szName)
+	{
+		XVertexOutputElement tmp = *pTmp;
+		tmp.szName = strdup(tmp.szName);
+		format.aDecl.push_back(tmp);
+		++pTmp;
+	}
+
+	updateReferences();
+
+	return(&format);
+}
+void XMETHODCALLTYPE CMaterialSystem::unregisterVertexFormat(const char *szName)
+{
+	assert(!"Not implemented");
+	//! @todo: implement me!
+
+	updateReferences();
+}
+XVertexFormatHandler* XMETHODCALLTYPE CMaterialSystem::getVertexFormat(const char *szName)
+{
+	const AssotiativeArray<String, VertexFormatData>::Node *pNode;
+	if(m_mVertexFormats.KeyExists(szName, &pNode))
+	{
+		return(pNode->Val);
+	}
+	return(NULL);
+}
+
+XVertexShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerVertexShader(XVertexFormatHandler *pVertexFormat, const char *szShaderFile, GXMacro *pDefines)
+{
+	assert(pVertexFormat);
+	assert(szShaderFile);
+
+	VertexFormatData *pVertexFormatData = (VertexFormatData*)pVertexFormat;
+
+	VertexShaderData vsData;
+	vsData.isCompleted = false;
+	vsData.szShaderFile = strdup(szShaderFile);
+
+	while(pDefines && pDefines->szName)
+	{
+		GXMacro tmp;
+		tmp.szName = strdup(pDefines->szName);
+		tmp.szDefinition = strdup(pDefines->szDefinition);
+		vsData.aDefines.push_back(tmp);
+		++pDefines;
+	}
+
+	pVertexFormatData->aVS.push_back(vsData);
+
+	updateReferences();
+
+	return((XVertexShaderHandler*)(pVertexFormatData->aVS.size() - 1));
+}
+
+void CMaterialSystem::updateReferences()
+{
+}
+
+void CMaterialSystem::cleanData() 
+{
+	for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; i++)
+	{
+		for(UINT j = 0, jl = i.second->aDecl.size(); j < jl; ++j)
+		{
+			free((void*)i.second->aDecl[j].szName);
+		}
+
+		for(UINT j = 0, jl = i.second->aVS.size(); j < jl; ++j)
+		{
+			for(UINT k = 0, kl = i.second->aVS[j].aDefines.size(); k < kl; ++k)
+			{
+				free((void*)i.second->aVS[j].aDefines[k].szDefinition);
+				free((void*)i.second->aVS[j].aDefines[k].szName);
+			}
+		}
 	}
 }
 
@@ -418,7 +520,7 @@ CMaterial::CMaterial(ID id):
 {
 }
 
-void CMaterial::getMainTexture(IXTexture **ppTexture)
+void XMETHODCALLTYPE CMaterial::getMainTexture(IXTexture **ppTexture)
 {
 	*ppTexture = NULL;
 	/*ID id = SMtrl_MtlGetTextureID(m_id);
@@ -430,17 +532,29 @@ ID CMaterial::getId()
 	return(m_id);
 }
 
-bool CMaterial::isTransparent()
+bool XMETHODCALLTYPE CMaterial::isTransparent()
 {
 	return(SMtrl_MtlGetTransparency(m_id));
 }
 
-bool CMaterial::isRefractive()
+bool XMETHODCALLTYPE CMaterial::isRefractive()
 {
 	return(SMtrl_MtlGetRefractivity(m_id));
 }
 
-bool CMaterial::isBlurred()
+bool XMETHODCALLTYPE CMaterial::isBlurred()
 {
 	return(false);
+}
+
+void XMETHODCALLTYPE CMaterial::setFlag(const char *szFlag, bool isSet) {}
+bool XMETHODCALLTYPE CMaterial::getFlag(const char *szFlag)
+{
+	return(false);
+}
+
+void XMETHODCALLTYPE CMaterial::setParam(const char *szFlag, float fValue) {}
+float XMETHODCALLTYPE CMaterial::getParam(const char *szFlag)
+{
+	return(0.0f);
 }

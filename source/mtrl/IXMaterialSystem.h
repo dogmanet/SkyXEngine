@@ -58,6 +58,9 @@ struct XVertexOutputElement
 };
 #define XVERTEX_OUTPUT_DECL_END() {NULL,GXDECLTYPE_UNUSED,(GXDECLUSAGE)0}
 
+struct XVertexFormatHandler {};
+struct XVertexShaderHandler {};
+
 class IXMaterialSystem: public IXUnknown
 {
 public:
@@ -99,8 +102,11 @@ public:
 	virtual void XMETHODCALLTYPE overrideGeometryShader(ID id) = 0;
 
 
-	//virtual bool XMETHODCALLTYPE registerVertexFormat(const char *szName, XVertexOutputElement *pDecl) = 0;
-	//virtual void XMETHODCALLTYPE unregisterVertexFormat(const char *szName) = 0;
+	virtual XVertexFormatHandler* XMETHODCALLTYPE registerVertexFormat(const char *szName, XVertexOutputElement *pDecl) = 0;
+	virtual void XMETHODCALLTYPE unregisterVertexFormat(const char *szName) = 0;
+	virtual XVertexFormatHandler* XMETHODCALLTYPE getVertexFormat(const char *szName) = 0;
+
+	virtual XVertexShaderHandler* XMETHODCALLTYPE registerVertexShader(XVertexFormatHandler *pVertexFormat, const char *szShaderFile, GXMacro *pDefines = NULL) = 0;
 };
 
 #endif
