@@ -267,7 +267,7 @@ String CShaderPreprocessor::process(const char *src, const char *file)
 			if(ch == '\n')
 			{
 				isOnelineComment = false;
-				out.push_back(ch);
+				// out.push_back(ch);
 			}
 			else
 			{
@@ -535,7 +535,12 @@ String CShaderPreprocessor::process(const char *src, const char *file)
 		}
 		else if((ch == '\n'/* || ch == '\r'*/) && cp != '\\')
 		{
+			str = "";
 			out.push_back(ch);
+		}
+		else
+		{
+			str += ch;
 		}
 	}
 
