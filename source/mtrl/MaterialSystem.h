@@ -101,6 +101,9 @@ public:
 	XGeometryShaderHandler* XMETHODCALLTYPE registerGeometryShader(const char *szShaderFile, const char **aszRequiredParameters, GXMacro *pDefines = NULL) override;
 	void XMETHODCALLTYPE bindGS(XGeometryShaderHandler *pGeometryShader) override;
 
+	XRenderPassHandler* XMETHODCALLTYPE registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput) override;
+	XRenderPassHandler* XMETHODCALLTYPE getRenderPass(const char *szName) override;
+
 	void queueTextureUpload(CTexture *pTexture);
 	void onTextureRelease(CTexture *pTexture);
 	void update(float fDT);
@@ -129,13 +132,19 @@ protected:
 		VertexFormatData *pVertexFormat;
 		Array<GXMacro> aDefines; //!< @fixme: нужно ли это хранить?
 	};
-	struct GeometryShaderData: public XGeometryShaderHandler
+	struct GeometryShader: public XGeometryShaderHandler
 	{
 		const char *szShaderFile;
-		//ID idShader;
 		//VertexFormatData *pVertexFormat;
 		Array<GXMacro> aDefines;
 		Array<const char*> aszRequiredParameters;
+	};
+	struct GeometryShaderData
+	{
+		bool isSkipped;
+		Array<GXMacro> aDefines;
+		int iCommonDefines;
+		ID idShader;
 	};
 
 	struct VertexFormatData: public XVertexFormatHandler
@@ -145,13 +154,99 @@ protected:
 		Array<GeometryShaderData*> aGS;
 	};
 
+	struct RenderPass: public XRenderPassHandler
+	{
+		const char *szName;
+		const char *szShaderFile;
+		Array<XRenderPassTexturesElement> aTextures;
+		Array<XRenderPassSamplersElement> aSamplers;
+		Array<XRenderPassOutputElement> aOutput;
+	};
+
 	AssotiativeArray<String, VertexFormatData> m_mVertexFormats;
 	MemAlloc<VertexShaderData> m_poolVSdata;
-	MemAlloc<GeometryShaderData> m_poolGSdata;
-	Array<GeometryShaderData*> m_aGeometryShaders;
+	MemAlloc<GeometryShader> m_poolGSdata;
+	Array<GeometryShader*> m_aGeometryShaders;
+	MemAlloc<GeometryShaderData> m_aGeometryShadersData;
+
+
+	AssotiativeArray<String, RenderPass> m_mRenderPasses;
 
 	VertexShaderData *m_pCurrentVS = NULL;
-	GeometryShaderData *m_pCurrentGS = NULL;
+	GeometryShader *m_pCurrentGS = NULL;
+
+	const char* getHLSLType(GXDECLTYPE type)
+	{
+		switch(type)
+		{
+		case GXDECLTYPE_FLOAT1:
+			return("float");
+		case GXDECLTYPE_FLOAT2:
+			return("float2");
+		case GXDECLTYPE_FLOAT3:
+			return("float3");
+		case GXDECLTYPE_FLOAT4:
+			return("float4");
+		}
+		assert(!"Unknown type");
+		return("");
+	}
+	int getTypeSize(GXDECLTYPE type)
+	{
+		switch(type)
+		{
+		case GXDECLTYPE_FLOAT1:
+			return(1);
+		case GXDECLTYPE_FLOAT2:
+			return(2);
+		case GXDECLTYPE_FLOAT3:
+			return(3);
+		case GXDECLTYPE_FLOAT4:
+			return(4);
+		}
+		assert(!"Unknown type");
+		return(0);
+	}
+	const char* getHLSLSemantic(GXDECLUSAGE usage)
+	{
+		switch(usage)
+		{
+		case GXDECLUSAGE_POSITION:
+			return("POSITION0");
+		case GXDECLUSAGE_TEXCOORD:
+			return("TEXCOORD0");
+		case GXDECLUSAGE_TEXCOORD1:
+			return("TEXCOORD1");
+		case GXDECLUSAGE_TEXCOORD2:
+			return("TEXCOORD2");
+		case GXDECLUSAGE_TEXCOORD3:
+			return("TEXCOORD3");
+		case GXDECLUSAGE_TEXCOORD4:
+			return("TEXCOORD4");
+		case GXDECLUSAGE_TEXCOORD5:
+			return("TEXCOORD5");
+		case GXDECLUSAGE_TEXCOORD6:
+			return("TEXCOORD6");
+		case GXDECLUSAGE_TEXCOORD7:
+			return("TEXCOORD7");
+		case GXDECLUSAGE_BINORMAL:
+			return("BINORMAL0");
+		case GXDECLUSAGE_BLENDINDICES:
+			return("BLENDINDICES0");
+		case GXDECLUSAGE_BLENDWEIGHT:
+			return("BLENDWEIGHT0");
+		case GXDECLUSAGE_COLOR:
+			return("COLOR0");
+		case GXDECLUSAGE_NORMAL:
+			return("NORMAL0");
+		case GXDECLUSAGE_TANGENT:
+			return("TANGENT0");
+		case GXDECLUSAGE_TESSFACTOR:
+			return("TESSFACTOR0");
+		}
+		assert(!"Unknown usage");
+		return("");
+	}
 };
 
 #endif

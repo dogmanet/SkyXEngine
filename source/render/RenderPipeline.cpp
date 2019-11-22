@@ -44,9 +44,135 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		"vPos",
 		NULL
 	};
-	XGeometryShaderHandler *pRSMGeometryShader = m_pMaterialSystem->registerGeometryShader("sm/rsm_cube.gs", aszGSRequiredParams);
+	XGeometryShaderHandler *pRSMGeometryShader = m_pMaterialSystem->registerGeometryShader("sm/rsmcube.gs", aszGSRequiredParams);
 
 	m_pMaterialSystem->registerVertexShader(pVertexFormatPostprocess, "base/post.vs");
+
+	{
+		XRenderPassSamplersElement pSamplers[] = {
+			{"Scene default", "g_sScene", 0},
+			XRENDER_PASS_SAMPLERS_LIST_END()
+		};
+
+		XRenderPassOutputElement pOutput[] = {
+			{"Base color", "vBaseColor", GXDECLTYPE_FLOAT3, "float3(1.0f, 0.0f, 0.0f)"},
+			{"Normal", "vNormal", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+			{"AO", "fAO", GXDECLTYPE_FLOAT1, "0.0f"},
+			{"f0", "f0", GXDECLTYPE_FLOAT1, "0.04f"},
+			{"Roughness", "fRoughness", GXDECLTYPE_FLOAT1, "0.5f"},
+			{"Metallic", "fMetallic", GXDECLTYPE_FLOAT1, "0.5f"},
+			{"Thickness", "fThickness", GXDECLTYPE_FLOAT1, "1.0f"},
+			{"Lighting Coefficient", "fLightCoeff", GXDECLTYPE_FLOAT1, "1.0f"},
+
+			{"Height", "fHeight", GXDECLTYPE_FLOAT1, "1.0f"},
+			XRENDER_PASS_OUTPUT_LIST_END()
+		};
+
+		m_pMaterialSystem->registerRenderPass("xGBuffer", "shaders/material/gbuffer.ps", NULL, pSamplers, pOutput);
+	}
+
+	{
+		XRenderPassTexturesElement pTextures[] = {
+			{"GBuffer color(rgb) light(a)", "g_txGBufferC3L1", 0},
+			{"GBuffer normals(rgb) f0(a)", "g_txGBufferN3F1", 1},
+			{"GBuffer depth(r)", "g_txGBufferD1", 2},
+			{"", "", 3}, // reserved slot
+			// {"GBuffer roughness(r) metallic(g) thickness(b) AO(a)", "g_txGBufferR1M1T1AO1", 3},
+			{"Lighted scene", "g_txScene", 4},
+			XRENDER_PASS_TEXTURES_LIST_END()
+		}; 
+		
+		XRenderPassSamplersElement pSamplers[] = {
+			{"Scene default", "g_sScene", 0},
+			{"Point clamp", "g_sPointClamp", 1},
+			XRENDER_PASS_SAMPLERS_LIST_END()
+		};
+
+		XRenderPassOutputElement pOutput[] = {
+			{"Base color", "vBaseColor", GXDECLTYPE_FLOAT4, "float4(1.0f, 0.0f, 0.0f, 0.5f)"},
+			{"Normal", "vNormal", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+			{"AO", "fAO", GXDECLTYPE_FLOAT1, "0.0f"},
+			{"f0", "f0", GXDECLTYPE_FLOAT1, "0.04f"},
+			{"Roughness", "fRoughness", GXDECLTYPE_FLOAT1, "0.5f"},
+			{"Metallic", "fMetallic", GXDECLTYPE_FLOAT1, "0.5f"},
+			{"Thickness", "fThickness", GXDECLTYPE_FLOAT1, "1.0f"},
+			{"Lighting Coefficient", "fLightCoeff", GXDECLTYPE_FLOAT1, "1.0f"},
+			{"Emissive color", "fEmissiveColor", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+			XRENDER_PASS_OUTPUT_LIST_END()
+		};
+
+		m_pMaterialSystem->registerRenderPass("xTransparency", "shaders/material/transparent.ps", pTextures, pSamplers, pOutput);
+	}
+
+	{
+		XRenderPassTexturesElement pTextures[] = {
+			{"GBuffer color(rgb) light(a)", "g_txGBufferC3L1", 0},
+			{"GBuffer normals(rgb) f0(a)", "g_txGBufferN3F1", 1},
+			{"GBuffer depth(r)", "g_txGBufferD1", 2},
+			{"", "", 3}, // reserved slot
+			// {"GBuffer roughness(r) metallic(g) thickness(b) AO(a)", "g_txGBufferR1M1T1AO1", 3},
+			{"Lighted scene", "g_txScene", 4},
+			XRENDER_PASS_TEXTURES_LIST_END()
+		};
+
+		XRenderPassSamplersElement pSamplers[] = {
+			{"Scene default", "g_sScene", 0},
+			{"Point clamp", "g_sPointClamp", 1},
+			XRENDER_PASS_SAMPLERS_LIST_END()
+		};
+
+		XRenderPassOutputElement pOutput[] = {
+			{"Emissive color", "fEmissiveColor", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+			{"Normal", "vNormal", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+			XRENDER_PASS_OUTPUT_LIST_END()
+		};
+
+		m_pMaterialSystem->registerRenderPass("xIllumination", "shaders/material/illum.ps", pTextures, pSamplers, pOutput);
+	}
+
+	{
+		XRenderPassTexturesElement pTextures[] = {
+			{"GBuffer color(rgb) light(a)", "g_txGBufferC3L1", 0},
+			{"GBuffer normals(rgb) f0(a)", "g_txGBufferN3F1", 1},
+			{"GBuffer depth(r)", "g_txGBufferD1", 2},
+			{"", "", 3}, // reserved slot
+			// {"GBuffer roughness(r) metallic(g) thickness(b) AO(a)", "g_txGBufferR1M1T1AO1", 3},
+			{"Lighted scene", "g_txScene", 4},
+			XRENDER_PASS_TEXTURES_LIST_END()
+		};
+
+		XRenderPassSamplersElement pSamplers[] = {
+			{"Scene default", "g_sScene", 0},
+			{"Point clamp", "g_sPointClamp", 1},
+			XRENDER_PASS_SAMPLERS_LIST_END()
+		};
+
+		XRenderPassOutputElement pOutput[] = {
+			{"Color", "vColor", GXDECLTYPE_FLOAT3, "float3(1.0f, 0.0f, 0.0f)"},
+			XRENDER_PASS_OUTPUT_LIST_END()
+		};
+
+		m_pMaterialSystem->registerRenderPass("xPostprocess", "shaders/material/post.ps", pTextures, pSamplers, pOutput);
+	}
+
+	{
+		XRenderPassSamplersElement pSamplers[] = {
+			{"Scene default", "g_sScene", 0},
+			// {"Point clamp", "g_sPointClamp", 1},
+			XRENDER_PASS_SAMPLERS_LIST_END()
+		};
+
+		XRenderPassOutputElement pOutput[] = {
+			{"Base color", "vBaseColor", GXDECLTYPE_FLOAT3, "float3(1.0f, 0.0f, 0.0f)"},
+			{"Normal", "vNormal", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+			XRENDER_PASS_OUTPUT_LIST_END()
+		};
+
+		m_pMaterialSystem->registerRenderPass("xShadow", "shaders/material/shadow.ps", NULL, pSamplers, pOutput);
+	}
+
+
+
 
 	IXRenderable *pRenderable;
 	UINT ic = 0;

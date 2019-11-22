@@ -48,6 +48,7 @@ struct XSHADER_VARIANT_DESC
 
 struct XVertexOutputElement
 {
+	//! Имя переменной
 	const char *szName;
 
 	//! Тип
@@ -58,7 +59,50 @@ struct XVertexOutputElement
 };
 #define XVERTEX_OUTPUT_DECL_END() {NULL,GXDECLTYPE_UNUSED,(GXDECLUSAGE)0}
 
+struct XRenderPassTexturesElement
+{
+	//! Имя текстуры
+	const char *szName;
+
+	//! Имя переменной
+	const char *szKey;
+
+	//! Слот в шейдере
+	UINT uSlot;
+};
+#define XRENDER_PASS_TEXTURES_LIST_END() {NULL,NULL,~0u}
+
+struct XRenderPassSamplersElement
+{
+	//! Имя семплера
+	const char *szName;
+
+	//! Имя переменной
+	const char *szKey;
+
+	//! Слот в шейдере
+	UINT uSlot;
+};
+#define XRENDER_PASS_SAMPLERS_LIST_END() {NULL,NULL,~0u}
+
+struct XRenderPassOutputElement
+{
+	//! Имя выхода
+	const char *szName;
+
+	//! Имя переменной
+	const char *szKey;
+
+	//! Тип
+	GXDECLTYPE type;
+
+	//! Значение по умолчанию (hlsl)
+	const char *szDefault;
+};
+#define XRENDER_PASS_OUTPUT_LIST_END() {NULL,NULL,GXDECLTYPE_UNUSED,NULL}
+
 struct XVertexFormatHandler {};
+struct XRenderPassHandler {};
 struct XVertexShaderHandler {};
 struct XGeometryShaderHandler {};
 
@@ -112,6 +156,12 @@ public:
 
 	virtual XGeometryShaderHandler* XMETHODCALLTYPE registerGeometryShader(const char *szShaderFile, const char **aszRequiredParameters, GXMacro *pDefines = NULL) = 0;
 	virtual void XMETHODCALLTYPE bindGS(XGeometryShaderHandler *pGeometryShader) = 0;
+
+	// ["GBuffer color(rgb) light(a)", "g_txGBufferC3L1", 0],
+	// ["Scene default", "g_sScene", 0]
+	// ["Base color", "vBaseColor", 'GXDECLTYPE_FLOAT4', "float4(1.0f, 0.0f, 0.0f, 0.5f)"],
+	virtual XRenderPassHandler* XMETHODCALLTYPE registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput) = 0;
+	virtual XRenderPassHandler* XMETHODCALLTYPE getRenderPass(const char *szName) = 0;
 };
 
 #endif

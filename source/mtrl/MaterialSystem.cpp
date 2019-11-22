@@ -301,7 +301,6 @@ XVertexShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerVertexShader(XVer
 
 	return(vsData);
 }
-
 void XMETHODCALLTYPE CMaterialSystem::bindVS(XVertexShaderHandler *pVertexShader)
 {
 	m_pCurrentVS = (VertexShaderData*)pVertexShader;
@@ -311,13 +310,13 @@ XGeometryShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerGeometryShader(
 {
 	assert(szShaderFile);
 
-	GeometryShaderData *gsData = m_poolGSdata.Alloc();
+	GeometryShader *gsData = m_poolGSdata.Alloc();
 	//vsData->idShader = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, szShaderFile, NULL, pDefines);
 	gsData->szShaderFile = strdup(szShaderFile);
 
-	while(aszRequiredParameters)
+	while(aszRequiredParameters && *aszRequiredParameters)
 	{
-		gsData->aszRequiredParameters.push_back(*aszRequiredParameters);
+		gsData->aszRequiredParameters.push_back(strdup(*aszRequiredParameters));
 		++aszRequiredParameters;
 	}
 
@@ -330,14 +329,75 @@ XGeometryShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerGeometryShader(
 		++pDefines;
 	}
 
+	m_aGeometryShaders.push_back(gsData);
+
 	updateReferences();
 
 	return(gsData);
 }
 void XMETHODCALLTYPE CMaterialSystem::bindGS(XGeometryShaderHandler *pGeometryShader)
 {
-	m_pCurrentGS = (GeometryShaderData*)pGeometryShader;
+	m_pCurrentGS = (GeometryShader*)pGeometryShader;
 }
+
+XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput)
+{
+	if(m_mRenderPasses.KeyExists(szName))
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "CMaterialSystem::registerRenderPass(): pass '%s' already been registered!\n", szName);
+		return(NULL);
+	}
+
+	RenderPass &pass = m_mRenderPasses[szName];
+
+	pass.szName = strdup(szName);
+	pass.szShaderFile = strdup(szShaderFile);
+
+	while(pTextures && pTextures->szName)
+	{
+		XRenderPassTexturesElement tmp = *pTextures;
+		tmp.szKey = strdup(tmp.szKey);
+		tmp.szName = strdup(tmp.szName);
+
+		pass.aTextures.push_back(tmp);
+		++pTextures;
+	}
+
+	while(pSamplers && pSamplers->szName)
+	{
+		XRenderPassSamplersElement tmp = *pSamplers;
+		tmp.szKey = strdup(tmp.szKey);
+		tmp.szName = strdup(tmp.szName);
+
+		pass.aSamplers.push_back(tmp);
+		++pSamplers;
+	}
+
+	while(pOutput && pOutput->szName)
+	{
+		XRenderPassOutputElement tmp = *pOutput;
+		tmp.szKey = strdup(tmp.szKey);
+		tmp.szName = strdup(tmp.szName);
+		tmp.szDefault = strdup(tmp.szDefault);
+		
+		pass.aOutput.push_back(tmp);
+		++pOutput;
+	}
+
+	updateReferences();
+
+	return(&pass);
+}
+XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::getRenderPass(const char *szName)
+{
+	const AssotiativeArray<String, RenderPass>::Node *pNode;
+	if(m_mRenderPasses.KeyExists(szName, &pNode))
+	{
+		return(pNode->Val);
+	}
+	return(NULL);
+}
+
 
 
 void CMaterialSystem::updateReferences()
@@ -347,73 +407,63 @@ void CMaterialSystem::updateReferences()
 		VertexFormatData *pFormat = i.second;
 		for(UINT j = 0, jl = m_aGeometryShaders.size(); j < jl; ++j)
 		{
-			GeometryShaderData *pGS = m_aGeometryShaders[j];
+			GeometryShader *pGS = m_aGeometryShaders[j];
 
 			if(pFormat->aGS.size() <= j || !pFormat->aGS[j])
 			{
-				/*
-				$iFound = 0;
-				$aPassParameters = [];
-				foreach($data['decl'] as $decl)
+				int iFound = 0;
+				Array<XVertexOutputElement*> aPassParameters;
+
+				for(UINT k = 0, kl = pFormat->aDecl.size(); k < kl; ++k)
 				{
-					if(in_array($decl['key'], $requiredParameters))
+					XVertexOutputElement *pEl = &pFormat->aDecl[k];
+
+					if(pGS->aszRequiredParameters.indexOf(pEl->szName, [](const char *a, const char *b){
+						return(!fstrcmp(a, b));
+					}) >= 0)
 					{
-						// echo("using: {$decl['key']}\n");
-						++$iFound;
+						++iFound;
 					}
-					else
+					else 
 					{
-						// echo("passing: {$decl['key']}\n");
-						$aPassParameters[] = $decl;
+						aPassParameters.push_back(pEl);
 					}
 				}
-				if($iFound + count($aPassParameters) != count($data['decl']))
+
+				GeometryShaderData *gsData = m_aGeometryShadersData.Alloc();
+				pFormat->aGS[j] = gsData;
+
+				if(iFound != (int)pGS->aszRequiredParameters.size())
 				{
-					// var_dump($iFound, count($aPassParameters), count($data['decl']));
-					echo("Cannot use shader {$sFile} with {$sFormat} format. Skipping.\n");
-					$data['GS'][$key] = null;
+					gsData->isSkipped = true;
+					LibReport(REPORT_MSG_LEVEL_WARNING, "Cannot use shader '%s' with '%s' format. Skipping.\n", pGS->szShaderFile, i.first->c_str());
+					continue;
 				}
-				else
+
+				gsData->isSkipped = false;
+				gsData->aDefines = pGS->aDefines;
+				gsData->iCommonDefines = gsData->aDefines.size();
+
+				String sPass, sStruct;
+				for(UINT k = 0, kl = aPassParameters.size(); k < kl; ++k)
 				{
-					// print_r($aPassParameters);
+					XVertexOutputElement *el = aPassParameters[k];
+					if(k != 0)
+					{
+						sStruct += "; ";
+						sPass += "; ";
+					}
+					sStruct += String(getHLSLType(el->type)) + " " + el->szName + ": " + getHLSLSemantic(el->usage);
+					sPass += String("(dst).") + el->szName + " = (src)." + el->szName;
 				}
-				$defines = [];
-				$aStruct = [];
-				$aPass = [];
-				foreach($aPassParameters as $decl)
-				{
-					$aStruct[] = $this->getHLSLType($decl['type'])." {$decl['key']}: ".$this->getHLSLSemantic($decl['usage']);
-					$aPass[] = "(dst).{$decl['key']} = (src).{$decl['key']}";
-				}
-				$defines['XMAT_GS_STRUCT()'] = implode('; ', $aStruct);
-				$defines['XMAT_GS_PASS(dst, src)'] = implode('; ', $aPass);
-					
-				$data['GS'][$key] = [
-					'file' => $sFile,
-					'defines' => array_merge($aDefines, $defines),
-					'isCompiled' => false,
-				];
-				*/
+				gsData->aDefines.push_back({"XMAT_GS_STRUCT()", strdup(sStruct.c_str())});
+				gsData->aDefines.push_back({"XMAT_GS_PASS(dst, src)", strdup(sPass.c_str())});
+				gsData->aDefines.push_back({NULL, NULL});
+
+				gsData->idShader = SGCore_ShaderLoad(SHADER_TYPE_GEOMETRY, pGS->szShaderFile, NULL, &gsData->aDefines[0]);
 			}
 		}
 	}
-	/*
-		foreach($this->m_aGeometryShaders as $key => &$aGS)
-		{
-			$sFile = $aGS['file'];
-			$requiredParameters = $aGS['params'];
-			$aDefines = $aGS['defines'];
-			
-			
-			foreach($this->m_aVertexFormats as $sFormat => &$data)
-			{
-				if(!isset($data['GS'][$key]))
-				{
-					
-				}
-			}
-		}
-	*/
 }
 
 void CMaterialSystem::cleanData() 
@@ -435,6 +485,17 @@ void CMaterialSystem::cleanData()
 
 			m_poolVSdata.Delete(i.second->aVS[j]);
 		}
+
+		for(UINT j = 0, jl = i.second->aGS.size(); j < jl; ++j)
+		{
+			for(UINT k = i.second->aGS[j]->iCommonDefines, kl = i.second->aGS[j]->aDefines.size(); k < kl; ++k)
+			{
+				free((void*)i.second->aGS[j]->aDefines[k].szDefinition);
+				//free((void*)i.second->aGS[j]->aDefines[k].szName);
+			}
+
+			m_aGeometryShadersData.Delete(i.second->aGS[j]);
+		}
 	}
 
 	for(UINT i = 0, l = m_aGeometryShaders.size(); i < l; ++i)
@@ -451,6 +512,32 @@ void CMaterialSystem::cleanData()
 		}
 
 		m_poolGSdata.Delete(m_aGeometryShaders[i]);
+	}
+
+	for(AssotiativeArray<String, RenderPass>::Iterator i = m_mRenderPasses.begin(); i; i++)
+	{
+		RenderPass *pPass = i.second;
+		free((void*)pPass->szName);
+		free((void*)pPass->szShaderFile);
+
+		for(UINT j = 0, jl = pPass->aTextures.size(); j < jl; ++j)
+		{
+			free((void*)pPass->aTextures[j].szName);
+			free((void*)pPass->aTextures[j].szKey);
+		}
+
+		for(UINT j = 0, jl = pPass->aSamplers.size(); j < jl; ++j)
+		{
+			free((void*)pPass->aSamplers[j].szName);
+			free((void*)pPass->aSamplers[j].szKey);
+		}
+
+		for(UINT j = 0, jl = pPass->aOutput.size(); j < jl; ++j)
+		{
+			free((void*)pPass->aOutput[j].szName);
+			free((void*)pPass->aOutput[j].szKey);
+			free((void*)pPass->aOutput[j].szDefault);
+		}
 	}
 }
 
