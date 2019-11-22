@@ -398,7 +398,186 @@ XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::getRenderPass(const char *s
 	return(NULL);
 }
 
+XMaterialShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerMaterialShader(const char *szName, XVertexFormatHandler *pVertexFormat, XMaterialShaderPass *pPasses, XMaterialProperty *pGenericProperties)
+{
+	assert(pVertexFormat);
+	assert(pPasses);
 
+	if(m_mMaterialShaders.KeyExists(szName))
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "CMaterialSystem::registerMaterialShader(): shader '%s' has already been registered!\n", szName);
+		return(NULL);
+	}
+
+	MaterialShader &shader = m_mMaterialShaders[szName];
+
+	shader.szName = strdup(szName);
+	shader.pVertexFormat = (VertexFormatData*)pVertexFormat;
+
+	Stack<const char*> stack;
+	while(pGenericProperties && pGenericProperties->type != XMPT_UNKNOWN)
+	{
+		XMaterialProperty tmp = *pGenericProperties;
+		tmp.szTitle = strdups(tmp.szTitle);
+		tmp.szKey = strdups(tmp.szKey);
+		tmp.szDefine = strdups(tmp.szDefine);
+
+		if(tmp.type == XMPT_PARAM_GROUP)
+		{
+			assert(tmp.szCondition);
+
+			tmp.szCondition = strdup(tmp.szCondition);
+			stack.push(tmp.szCondition);
+		}
+		else if(tmp.type == XMPT_PARAM_GROUP_END)
+		{
+			assert(stack.count() > 0);
+			stack.popN(1);
+		}
+		else
+		{
+			size_t sizeTotal = 0;
+			for(int i = 0, l = stack.count(); i < l; ++i)
+			{
+				sizeTotal += strlen(stack.get(i)) + 1;
+			}
+			if(sizeTotal)
+			{
+				char *szTemp = (char*)malloc(sizeTotal);
+				tmp.szCondition = szTemp;
+				for(int i = 0, l = stack.count(); i < l; ++i)
+				{
+					szTemp += sprintf(szTemp, "%s", stack.get(i));
+					if(i == l - 1)
+					{
+						*szTemp = 0;
+					}
+					else
+					{
+						*szTemp = ',';
+					}
+				}
+			}
+			else
+			{
+				tmp.szCondition = NULL;
+			}
+		}
+
+
+		shader.aProperties.push_back(tmp);
+		++pGenericProperties;
+	}
+	assert(stack.count() == 0);
+
+	while(pPasses && pPasses->pRenderPass)
+	{
+		MaterialShaderPassData *pPass = &shader.aPasses[shader.aPasses.size()];
+		pPass->pRenderPass = (RenderPass*)pPasses->pRenderPass;
+
+		pPass->szShaderFile = strdups(pPasses->szShaderFile);
+		pPass->szEntryPoint = strdups(pPasses->szEntryPoint);
+
+		{
+			GXMacro *pTmp = pPasses->pDefines;
+			while(pTmp && pTmp->szName)
+			{
+				GXMacro tmp;
+				tmp.szName = strdup(pTmp->szName);
+				tmp.szDefinition = strdup(pTmp->szDefinition);
+				pPass->aDefines.push_back(tmp);
+				++pTmp;
+			}
+		}
+
+		{
+			IGXDevice *pDevice = SGCore_GetDXDevice();
+
+			XMaterialShaderSampler *pTmp = pPasses->pSamplers;
+			while(pTmp && pTmp->szKey)
+			{
+				MaterialShaderSamplerData tmp;
+				tmp.szKey = strdup(pTmp->szKey);
+				tmp.pSampler = pDevice ? pDevice->createSamplerState(&pTmp->samplerDesc) : NULL;
+				assert(tmp.pSampler || !pDevice);
+
+				pPass->aSamplers.push_back(tmp);
+				++pTmp;
+			}
+		}
+
+		{
+			XMaterialProperty *pTmp = pPasses->pProperties;
+			while(pTmp && pTmp->type != XMPT_UNKNOWN)
+			{
+				XMaterialProperty tmp = *pTmp;
+				tmp.szTitle = strdups(tmp.szTitle);
+				tmp.szKey = strdups(tmp.szKey);
+				tmp.szDefine = strdups(tmp.szDefine);
+
+				if(tmp.type == XMPT_PARAM_GROUP)
+				{
+					assert(tmp.szCondition);
+
+					tmp.szCondition = strdup(tmp.szCondition);
+					stack.push(tmp.szCondition);
+				}
+				else if(tmp.type == XMPT_PARAM_GROUP_END)
+				{
+					assert(stack.count() > 0);
+					stack.popN(1);
+				}
+				else
+				{
+					size_t sizeTotal = 0;
+					for(int i = 0, l = stack.count(); i < l; ++i)
+					{
+						sizeTotal += strlen(stack.get(i)) + 1;
+					}
+					if(sizeTotal)
+					{
+						char *szTemp = (char*)malloc(sizeTotal);
+						tmp.szCondition = szTemp;
+						for(int i = 0, l = stack.count(); i < l; ++i)
+						{
+							szTemp += sprintf(szTemp, "%s", stack.get(i));
+							if(i == l - 1)
+							{
+								*szTemp = 0;
+							}
+							else
+							{
+								*szTemp = ',';
+							}
+						}
+					}
+					else
+					{
+						tmp.szCondition = NULL;
+					}
+				}
+
+
+				pPass->aProperties.push_back(tmp);
+				++pTmp;
+			}
+			assert(stack.count() == 0);
+		}
+
+		++pPasses;
+	}
+
+	return(&shader);
+}
+XMaterialShaderHandler* XMETHODCALLTYPE CMaterialSystem::getMaterialShader(const char *szName)
+{
+	const AssotiativeArray<String, MaterialShader>::Node *pNode;
+	if(m_mMaterialShaders.KeyExists(szName, &pNode))
+	{
+		return(pNode->Val);
+	}
+	return(NULL);
+}
 
 void CMaterialSystem::updateReferences()
 {
@@ -464,6 +643,8 @@ void CMaterialSystem::updateReferences()
 			}
 		}
 	}
+
+	
 }
 
 void CMaterialSystem::cleanData() 
@@ -537,6 +718,48 @@ void CMaterialSystem::cleanData()
 			free((void*)pPass->aOutput[j].szName);
 			free((void*)pPass->aOutput[j].szKey);
 			free((void*)pPass->aOutput[j].szDefault);
+		}
+	}
+
+	for(AssotiativeArray<String, MaterialShader>::Iterator i = m_mMaterialShaders.begin(); i; i++)
+	{
+		MaterialShader *pShader = i.second;
+		free((void*)pShader->szName);
+
+		for(UINT j = 0, jl = pShader->aProperties.size(); j < jl; ++j)
+		{
+			free((void*)pShader->aProperties[j].szCondition);
+			free((void*)pShader->aProperties[j].szDefine);
+			free((void*)pShader->aProperties[j].szKey);
+			free((void*)pShader->aProperties[j].szTitle);
+		}
+
+		for(UINT j = 0, jl = pShader->aPasses.size(); j < jl; ++j)
+		{
+			MaterialShaderPassData *pPass = &pShader->aPasses[j];
+
+			free((void*)pPass->szEntryPoint);
+			free((void*)pPass->szShaderFile);
+
+			for(UINT k = 0, kl = pPass->aDefines.size(); k < kl; ++k)
+			{
+				free((void*)pPass->aDefines[k].szName);
+				free((void*)pPass->aDefines[k].szDefinition);
+			}
+
+			for(UINT k = 0, kl = pPass->aProperties.size(); k < kl; ++k)
+			{
+				free((void*)pPass->aProperties[k].szCondition);
+				free((void*)pPass->aProperties[k].szDefine);
+				free((void*)pPass->aProperties[k].szKey);
+				free((void*)pPass->aProperties[k].szTitle);
+			}
+
+			for(UINT k = 0, kl = pPass->aSamplers.size(); k < kl; ++k)
+			{
+				free((void*)pPass->aSamplers[k].szKey);
+				mem_delete(pPass->aSamplers[k].pSampler);
+			}
 		}
 	}
 }

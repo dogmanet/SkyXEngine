@@ -267,6 +267,8 @@ inline bool operator==(const XGUID &a, const XGUID &b)
 
 #define strdupa(str) strcpy((char*)alloca(sizeof(char) * (strlen(str) + 1)), str)
 
+#define strdups(str) ((str) ? strdup(str) : NULL)
+
 //! Тип функции вывода отладочной информации
 typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMessage);
 

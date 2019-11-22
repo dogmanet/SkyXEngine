@@ -8,10 +8,11 @@
 
 // {7EC7E7F7-E0BE-4CB7-ABFE-9FC0C10880A5}
 #define IXMATERIALSYSTEM_GUID DEFINE_XGUID(0x7ec7e7f7, 0xe0be, 0x4cb7, 0xab, 0xfe, 0x9f, 0xc0, 0xc1, 0x8, 0x80, 0xa5)
-#define IXMATERIALSYSTEM_VERSION 1
+#define IXMATERIALSYSTEM_VERSION 2
 
 /*! Набор стандартных шейдеров для материала
     Если нужно задать макроопределения - используйте варианты IXShaderVariant
+	@deprecated
 */
 struct XSHADER_DEFAULT_DESC
 {
@@ -29,6 +30,8 @@ struct XSHADER_DEFAULT_DESC
     Зачем это нужно? Простой пример: Система может рисовать одну и ту же геометрию пообъектно, и инстансингом. 
     Вершинные шейдеры в этом случае будут различаться, и система должна иметь возможность выбрать, какой вариант
 	шейдера использовать при конкретной установке материала
+
+	@deprecated
 */
 class IXShaderVariant: public IXUnknown
 {
@@ -101,10 +104,31 @@ struct XRenderPassOutputElement
 };
 #define XRENDER_PASS_OUTPUT_LIST_END() {NULL,NULL,GXDECLTYPE_UNUSED,NULL}
 
+#include "XMaterialProperty.h"
+
 struct XVertexFormatHandler {};
 struct XRenderPassHandler {};
 struct XVertexShaderHandler {};
 struct XGeometryShaderHandler {};
+struct XMaterialShaderHandler {};
+
+struct XMaterialShaderSampler
+{
+	const char *szKey;
+	GXSamplerDesc samplerDesc;
+};
+#define XMATERIAL_SHADER_SAMPLER_LIST_END() {0}
+
+struct XMaterialShaderPass
+{
+	XRenderPassHandler *pRenderPass;
+	const char *szShaderFile;
+	const char *szEntryPoint;
+	GXMacro *pDefines;
+	XMaterialShaderSampler *pSamplers;
+	XMaterialProperty *pProperties;
+};
+#define XMATERIAL_SHADER_PASS_LIST_END() {0}
 
 class IXMaterialSystem: public IXUnknown
 {
@@ -162,6 +186,9 @@ public:
 	// ["Base color", "vBaseColor", 'GXDECLTYPE_FLOAT4', "float4(1.0f, 0.0f, 0.0f, 0.5f)"],
 	virtual XRenderPassHandler* XMETHODCALLTYPE registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput) = 0;
 	virtual XRenderPassHandler* XMETHODCALLTYPE getRenderPass(const char *szName) = 0;
+
+	virtual XMaterialShaderHandler* XMETHODCALLTYPE registerMaterialShader(const char *szName, XVertexFormatHandler *pVertexFormat, XMaterialShaderPass *pPasses, XMaterialProperty *pGenericProperties) = 0;
+	virtual XMaterialShaderHandler* XMETHODCALLTYPE getMaterialShader(const char *szName) = 0;
 };
 
 #endif

@@ -104,6 +104,9 @@ public:
 	XRenderPassHandler* XMETHODCALLTYPE registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput) override;
 	XRenderPassHandler* XMETHODCALLTYPE getRenderPass(const char *szName) override;
 
+	XMaterialShaderHandler* XMETHODCALLTYPE registerMaterialShader(const char *szName, XVertexFormatHandler *pVertexFormat, XMaterialShaderPass *pPasses, XMaterialProperty *pGenericProperties) override;
+	XMaterialShaderHandler* XMETHODCALLTYPE getMaterialShader(const char *szName) override;
+
 	void queueTextureUpload(CTexture *pTexture);
 	void onTextureRelease(CTexture *pTexture);
 	void update(float fDT);
@@ -111,8 +114,8 @@ protected:
 	struct CObjectData
 	{
 		SMMATRIX m_mW;
-	//	SMMATRIX m_mWV;
-	//	SMMATRIX m_mWVP;
+		//	SMMATRIX m_mWV;
+		//	SMMATRIX m_mWVP;
 	} m_objectData;
 	IGXConstantBuffer *m_pObjectConstantBuffer = NULL;
 
@@ -163,6 +166,30 @@ protected:
 		Array<XRenderPassOutputElement> aOutput;
 	};
 
+	struct MaterialShaderSamplerData
+	{
+		const char *szKey;
+		IGXSamplerState *pSampler;
+	};
+
+	struct MaterialShaderPassData
+	{
+		RenderPass *pRenderPass;
+		const char *szShaderFile;
+		const char *szEntryPoint;
+		Array<GXMacro> aDefines;
+		Array<MaterialShaderSamplerData> aSamplers;
+		Array<XMaterialProperty> aProperties;
+	};
+
+	struct MaterialShader: public XMaterialShaderHandler
+	{
+		const char *szName;
+		VertexFormatData *pVertexFormat;
+		Array<MaterialShaderPassData> aPasses;
+		Array<XMaterialProperty> aProperties;
+	};
+
 	AssotiativeArray<String, VertexFormatData> m_mVertexFormats;
 	MemAlloc<VertexShaderData> m_poolVSdata;
 	MemAlloc<GeometryShader> m_poolGSdata;
@@ -171,6 +198,7 @@ protected:
 
 
 	AssotiativeArray<String, RenderPass> m_mRenderPasses;
+	AssotiativeArray<String, MaterialShader> m_mMaterialShaders;
 
 	VertexShaderData *m_pCurrentVS = NULL;
 	GeometryShader *m_pCurrentGS = NULL;

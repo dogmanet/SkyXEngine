@@ -190,6 +190,7 @@
     <ClInclude Include="..\..\..\source\mtrl\IXMaterialSystem.h" />
     <ClInclude Include="..\..\..\source\mtrl\IXTexture.h" />
     <ClInclude Include="..\..\..\source\mtrl\material.h" />
+    <ClInclude Include="..\..\..\source\mtrl\XMaterialProperty.h" />
     <ClInclude Include="..\..\..\source\mtrl\MaterialSystem.h" />
     <ClInclude Include="..\..\..\source\mtrl\ml_data.h" />
     <ClInclude Include="..\..\..\source\mtrl\reflection.h" />

@@ -83,5 +83,8 @@
     <ClInclude Include="..\..\..\source\mtrl\ShaderVariant.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\mtrl\XMaterialProperty.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

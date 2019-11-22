@@ -26,7 +26,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		{"vPos", GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD2},
 		XVERTEX_OUTPUT_DECL_END()
 	};
-	m_pMaterialSystem->registerVertexFormat("xSceneGeneric", voelGeneric);
+	XVertexFormatHandler *pVertexFormatSceneGeneric = m_pMaterialSystem->registerVertexFormat("xSceneGeneric", voelGeneric);
 
 	XVertexOutputElement voelPostprocess[] = {
 		{"vPosition", GXDECLTYPE_FLOAT4, GXDECLUSAGE_POSITION},
@@ -48,6 +48,12 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 	m_pMaterialSystem->registerVertexShader(pVertexFormatPostprocess, "base/post.vs");
 
+	XRenderPassHandler *pRenderPassGBuffer = NULL;
+	XRenderPassHandler *pRenderPassTransparency = NULL;
+	XRenderPassHandler *pRenderPassIllumination = NULL;
+	XRenderPassHandler *pRenderPassPostprocess = NULL;
+	XRenderPassHandler *pRenderPassShadow = NULL;
+
 	{
 		XRenderPassSamplersElement pSamplers[] = {
 			{"Scene default", "g_sScene", 0},
@@ -68,7 +74,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XRENDER_PASS_OUTPUT_LIST_END()
 		};
 
-		m_pMaterialSystem->registerRenderPass("xGBuffer", "shaders/material/gbuffer.ps", NULL, pSamplers, pOutput);
+		pRenderPassGBuffer = m_pMaterialSystem->registerRenderPass("xGBuffer", "shaders/material/gbuffer.ps", NULL, pSamplers, pOutput);
 	}
 
 	{
@@ -101,7 +107,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XRENDER_PASS_OUTPUT_LIST_END()
 		};
 
-		m_pMaterialSystem->registerRenderPass("xTransparency", "shaders/material/transparent.ps", pTextures, pSamplers, pOutput);
+		pRenderPassTransparency = m_pMaterialSystem->registerRenderPass("xTransparency", "shaders/material/transparent.ps", pTextures, pSamplers, pOutput);
 	}
 
 	{
@@ -127,7 +133,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XRENDER_PASS_OUTPUT_LIST_END()
 		};
 
-		m_pMaterialSystem->registerRenderPass("xIllumination", "shaders/material/illum.ps", pTextures, pSamplers, pOutput);
+		pRenderPassIllumination = m_pMaterialSystem->registerRenderPass("xIllumination", "shaders/material/illum.ps", pTextures, pSamplers, pOutput);
 	}
 
 	{
@@ -152,7 +158,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XRENDER_PASS_OUTPUT_LIST_END()
 		};
 
-		m_pMaterialSystem->registerRenderPass("xPostprocess", "shaders/material/post.ps", pTextures, pSamplers, pOutput);
+		pRenderPassPostprocess = m_pMaterialSystem->registerRenderPass("xPostprocess", "shaders/material/post.ps", pTextures, pSamplers, pOutput);
 	}
 
 	{
@@ -168,11 +174,114 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XRENDER_PASS_OUTPUT_LIST_END()
 		};
 
-		m_pMaterialSystem->registerRenderPass("xShadow", "shaders/material/shadow.ps", NULL, pSamplers, pOutput);
+		pRenderPassShadow = m_pMaterialSystem->registerRenderPass("xShadow", "shaders/material/shadow.ps", NULL, pSamplers, pOutput);
 	}
 
+	{
+		XMaterialShaderSampler pSamplers[] = {
+			{"g_sDefault", GXSamplerDesc()},
+			XMATERIAL_SHADER_SAMPLER_LIST_END()
+		};
 
+		GXMacro pMacro[] = {
+			{"DEFINE_1", "value"},
+			GX_MACRO_END()
+		};
 
+		XMaterialProperty pProperties[] = {
+			XMATERIAL_PARAM_TEXTURE_OPT("Base texture", "txBase", NULL), // will override generic parameter if supplied
+			XMATERIAL_PARAM_COLOR("Some color", "vColor"),
+			XMATERIAL_PARAM_FLAG("Use f0 texture", "has_f0_texture", "HAS_F0MAP"),
+			XMATERIAL_PARAM_GROUP(NULL, "HAS_F0MAP"),
+				XMATERIAL_PARAM_TEXTURE("f0 texture", "txF0"),
+				XMATERIAL_PARAM_FLAG("Use f0 texture", "has_f0_texture", "HAS_F0MAP2"),
+			XMATERIAL_PARAM_GROUP_END(),
+			XMATERIAL_PARAM_GROUP(NULL, "!HAS_F0MAP"),
+				// XMATERIAL_PARAM_FLAG("Use f0 texture", "has_f0_texture", "HAS_F0MAP2"),
+				XMATERIAL_PARAM_RANGE("f0", "pbr_f0", 0.0f, 1.0f, 0.04f),
+			XMATERIAL_PARAM_GROUP_END(),
+			XMATERIAL_PROPERTY_LIST_END()
+		};
+
+		XMaterialShaderPass pPasses[] = {
+			{pRenderPassGBuffer, "shaders/default/default.ps", "MainGBuffer", pMacro, pSamplers, pProperties},
+			{pRenderPassIllumination, "shaders/default/default.ps", "MainIllimination", NULL, NULL, NULL},
+			{pRenderPassShadow, "shaders/default/default.ps", "MainShadow", NULL, NULL, NULL},
+			XMATERIAL_SHADER_PASS_LIST_END()
+		};
+
+		XMaterialProperty pGenericProperties[] = {
+			// parameter name, texture name
+			XMATERIAL_PARAM_TEXTURE("Base texture", "txBase"),
+			// parameter name, define_if_supplied
+			XMATERIAL_PARAM_TEXTURE_OPT("Normal map", "txNormals", "HAS_NORMALMAP"),
+			// parameter name, material parameter name, define_if_set
+			XMATERIAL_PARAM_FLAG("Use param texture", "has_parameter_texture", "HAS_PARAMMAP"),
+			// group name (optional), condition (define)
+			XMATERIAL_PARAM_GROUP(NULL, "HAS_PARAMMAP"),
+				XMATERIAL_PARAM_TEXTURE("Param texture", "txParameters"),
+			XMATERIAL_PARAM_GROUP_END(),
+			XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP"),
+				// name, min, max, material parameter name
+				XMATERIAL_PARAM_RANGE("Roughness", "pbr_roughness", 0.0f, 1.0f, 0.5f),
+				XMATERIAL_PARAM_RANGE("Metallic", "pbr_metallic", 0.0f, 1.0f, 0.0f),
+				XMATERIAL_PARAM_RANGE("Thickness", "pbr_thickness", 0.0f, 1.0f, 1.0f),
+				XMATERIAL_PARAM_RANGE("AO", "pbr_ao", 0.0f, 1.0f, 1.0f),
+			XMATERIAL_PARAM_GROUP_END(),
+
+			XMATERIAL_PARAM_FLAG("Enable alphatest", "has_alphatest", "HAS_ALPHATEST"),
+			XMATERIAL_PARAM_GROUP(NULL, "HAS_ALPHATEST"),
+				XMATERIAL_PARAM_RANGE("Alphatest threshold", "pbr_alphatest_threshold", 0.0f, 1.0f, 0.8f),
+			XMATERIAL_PARAM_GROUP_END(),
+			XMATERIAL_PROPERTY_LIST_END()
+		};
+
+		m_pMaterialSystem->registerMaterialShader("Default", pVertexFormatSceneGeneric, pPasses, pGenericProperties);
+	}
+
+	{
+		XMaterialShaderPass pPasses[] = {
+			{pRenderPassGBuffer, "shaders/default/transparent.ps", "MainTransparency", NULL, NULL, NULL},
+			{pRenderPassIllumination, "shaders/default/transparent.ps", "MainIllimination", NULL, NULL, NULL},
+			{pRenderPassShadow, "shaders/default/transparent.ps", "MainShadow", NULL, NULL, NULL},
+			XMATERIAL_SHADER_PASS_LIST_END()
+		};
+
+		XMaterialProperty pGenericProperties[] = {
+			XMATERIAL_STATIC_PARAM("transparent", 1.0f),
+			// parameter name, texture name
+			XMATERIAL_PARAM_TEXTURE("Base texture", "txBase"),
+			// parameter name, define_if_supplied
+			XMATERIAL_PARAM_TEXTURE_OPT("Normal map", "txNormals", "HAS_NORMALMAP"),
+			// parameter name, material parameter name, define_if_set
+			XMATERIAL_PARAM_FLAG("Refraction", "has_refraction", "HAS_REFRACTION"),
+			XMATERIAL_PARAM_FLAG("Use param texture", "has_parameter_texture", "HAS_PARAMMAP"),
+			// group name (optional), condition (define)
+			XMATERIAL_PARAM_GROUP(NULL, "HAS_PARAMMAP"),
+				XMATERIAL_PARAM_TEXTURE("Param texture", "txParameters"),
+			XMATERIAL_PARAM_GROUP_END(),
+			XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP"),
+				// name, min, max, material parameter name
+				XMATERIAL_PARAM_RANGE("Roughness", "pbr_roughness", 0.0f, 1.0f, 0.5f),
+				XMATERIAL_PARAM_RANGE("Metallic", "pbr_metallic", 0.0f, 1.0f, 0.0f),
+				XMATERIAL_PARAM_RANGE("Thickness", "pbr_thickness", 0.0f, 1.0f, 1.0f),
+				XMATERIAL_PARAM_RANGE("AO", "pbr_ao", 0.0f, 1.0f, 1.0f),
+			XMATERIAL_PARAM_GROUP_END(),
+
+			XMATERIAL_PROPERTY_LIST_END()
+		};
+
+		m_pMaterialSystem->registerMaterialShader("Transparent", pVertexFormatSceneGeneric, pPasses, pGenericProperties);
+	}
+
+	{
+		XMaterialShaderPass pPasses[] = {
+			{pRenderPassGBuffer, "shaders/default/postprocess.ps", "MainPostprocess", NULL, NULL, NULL},
+			XMATERIAL_SHADER_PASS_LIST_END()
+		};
+
+		m_pMaterialSystem->registerMaterialShader("Postprocess", pVertexFormatPostprocess, pPasses, NULL);
+	}
 
 	IXRenderable *pRenderable;
 	UINT ic = 0;
