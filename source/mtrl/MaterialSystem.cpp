@@ -3,6 +3,8 @@
 #include <xcommon/resource/IXResourceManager.h>
 #include <xcommon/resource/IXResourceTexture.h>
 
+#include "LogicExpression.h"
+
 CMaterialSystem::CMaterialSystem()
 {
 	if(SGCore_GetDXDevice())
@@ -441,6 +443,12 @@ XMaterialShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerMaterialShader(
 			{
 				sizeTotal += strlen(stack.get(i)) + 1;
 			}
+
+			CLogicExpression le;
+			le.setExpression("A && !(B && C || D) || E");
+			le.setParam("A", true);
+			bool res = le.evaluate();
+
 			if(sizeTotal)
 			{
 				char *szTemp = (char*)malloc(sizeTotal);

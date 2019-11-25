@@ -45,6 +45,9 @@
     <ClCompile Include="..\..\..\source\mtrl\ShaderVariant.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\mtrl\LogicExpression.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\mtrl\sxmtrl.h">
@@ -84,6 +87,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\mtrl\XMaterialProperty.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\mtrl\LogicExpression.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
