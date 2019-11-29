@@ -7,6 +7,8 @@
 #include <xcommon/resource/IXResourceTexture.h>
 #include <common/ConcurrentQueue.h>
 
+#include "LogicExpression.h"
+
 class CMaterialSystem;
 class CTexture: public IXTexture
 {
@@ -172,6 +174,12 @@ protected:
 		IGXSamplerState *pSampler;
 	};
 
+	struct MaterialProperty
+	{
+		XMaterialProperty prop;
+		CLogicExpression *pCondition;
+	};
+
 	struct MaterialShaderPassData
 	{
 		RenderPass *pRenderPass;
@@ -179,7 +187,8 @@ protected:
 		const char *szEntryPoint;
 		Array<GXMacro> aDefines;
 		Array<MaterialShaderSamplerData> aSamplers;
-		Array<XMaterialProperty> aProperties;
+		Array<MaterialProperty> aProperties;
+		bool isDirty;
 	};
 
 	struct MaterialShader: public XMaterialShaderHandler
@@ -187,7 +196,7 @@ protected:
 		const char *szName;
 		VertexFormatData *pVertexFormat;
 		Array<MaterialShaderPassData> aPasses;
-		Array<XMaterialProperty> aProperties;
+		Array<MaterialProperty> aProperties;
 	};
 
 	AssotiativeArray<String, VertexFormatData> m_mVertexFormats;
@@ -202,6 +211,8 @@ protected:
 
 	VertexShaderData *m_pCurrentVS = NULL;
 	GeometryShader *m_pCurrentGS = NULL;
+
+	friend void CopyProps(XMaterialProperty *pProperties, Array<CMaterialSystem::MaterialProperty> &aTarget, const char *szShaderName);
 
 	const char* getHLSLType(GXDECLTYPE type)
 	{

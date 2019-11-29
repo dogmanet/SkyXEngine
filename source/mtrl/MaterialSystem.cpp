@@ -3,8 +3,6 @@
 #include <xcommon/resource/IXResourceManager.h>
 #include <xcommon/resource/IXResourceTexture.h>
 
-#include "LogicExpression.h"
-
 CMaterialSystem::CMaterialSystem()
 {
 	if(SGCore_GetDXDevice())
@@ -400,26 +398,13 @@ XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::getRenderPass(const char *s
 	return(NULL);
 }
 
-XMaterialShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerMaterialShader(const char *szName, XVertexFormatHandler *pVertexFormat, XMaterialShaderPass *pPasses, XMaterialProperty *pGenericProperties)
+static void CopyProps(XMaterialProperty *pProperties, Array<CMaterialSystem::MaterialProperty> &aTarget, const char *szShaderName)
 {
-	assert(pVertexFormat);
-	assert(pPasses);
-
-	if(m_mMaterialShaders.KeyExists(szName))
-	{
-		LibReport(REPORT_MSG_LEVEL_ERROR, "CMaterialSystem::registerMaterialShader(): shader '%s' has already been registered!\n", szName);
-		return(NULL);
-	}
-
-	MaterialShader &shader = m_mMaterialShaders[szName];
-
-	shader.szName = strdup(szName);
-	shader.pVertexFormat = (VertexFormatData*)pVertexFormat;
-
 	Stack<const char*> stack;
-	while(pGenericProperties && pGenericProperties->type != XMPT_UNKNOWN)
+	while(pProperties && pProperties->type != XMPT_UNKNOWN)
 	{
-		XMaterialProperty tmp = *pGenericProperties;
+		CLogicExpression *pCondition = NULL;
+		XMaterialProperty tmp = *pProperties;
 		tmp.szTitle = strdups(tmp.szTitle);
 		tmp.szKey = strdups(tmp.szKey);
 		tmp.szDefine = strdups(tmp.szDefine);
@@ -441,47 +426,63 @@ XMaterialShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerMaterialShader(
 			size_t sizeTotal = 0;
 			for(int i = 0, l = stack.count(); i < l; ++i)
 			{
-				sizeTotal += strlen(stack.get(i)) + 1;
+				sizeTotal += strlen(stack.get(i)) + 5;
 			}
-
+			/*
 			CLogicExpression le;
 			le.setExpression("A && !(B && C || D) || E");
 			le.setParam("A", true);
 			bool res = le.evaluate();
-
+			*/
 			if(sizeTotal)
 			{
-				char *szTemp = (char*)malloc(sizeTotal);
-				tmp.szCondition = szTemp;
+				char *szTemp = (char*)alloca(sizeTotal);
+				//tmp.szCondition = szTemp;
+				const char *szCondition = szTemp;
 				for(int i = 0, l = stack.count(); i < l; ++i)
 				{
-					szTemp += sprintf(szTemp, "%s", stack.get(i));
-					if(i == l - 1)
-					{
-						*szTemp = 0;
-					}
-					else
-					{
-						*szTemp = ',';
-					}
+					const char *tmp = stack.get(i);
+					szTemp += sprintf(szTemp, "(%s)%s", tmp && tmp[0] ? tmp : "1", (i != l - 1) ? "&&" : "");
 				}
-			}
-			else
-			{
-				tmp.szCondition = NULL;
+
+				pCondition = new CLogicExpression();
+				if(!pCondition->setExpression(szCondition))
+				{
+					LibReport(REPORT_MSG_LEVEL_ERROR, "CMaterialSystem::registerMaterialShader(): Invalid property conditions; shader '%s'\n  %s\n", szShaderName, szCondition);
+				}
 			}
 		}
 
 
-		shader.aProperties.push_back(tmp);
-		++pGenericProperties;
+		aTarget.push_back({tmp, pCondition});
+		++pProperties;
 	}
 	assert(stack.count() == 0);
+}
+
+XMaterialShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerMaterialShader(const char *szName, XVertexFormatHandler *pVertexFormat, XMaterialShaderPass *pPasses, XMaterialProperty *pGenericProperties)
+{
+	assert(pVertexFormat);
+	assert(pPasses);
+
+	if(m_mMaterialShaders.KeyExists(szName))
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "CMaterialSystem::registerMaterialShader(): shader '%s' has already been registered!\n", szName);
+		return(NULL);
+	}
+
+	MaterialShader &shader = m_mMaterialShaders[szName];
+
+	shader.szName = strdup(szName);
+	shader.pVertexFormat = (VertexFormatData*)pVertexFormat;
+
+	CopyProps(pGenericProperties, shader.aProperties, szName);
 
 	while(pPasses && pPasses->pRenderPass)
 	{
 		MaterialShaderPassData *pPass = &shader.aPasses[shader.aPasses.size()];
 		pPass->pRenderPass = (RenderPass*)pPasses->pRenderPass;
+		pPass->isDirty = true;
 
 		pPass->szShaderFile = strdups(pPasses->szShaderFile);
 		pPass->szEntryPoint = strdups(pPasses->szEntryPoint);
@@ -514,64 +515,8 @@ XMaterialShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerMaterialShader(
 			}
 		}
 
-		{
-			XMaterialProperty *pTmp = pPasses->pProperties;
-			while(pTmp && pTmp->type != XMPT_UNKNOWN)
-			{
-				XMaterialProperty tmp = *pTmp;
-				tmp.szTitle = strdups(tmp.szTitle);
-				tmp.szKey = strdups(tmp.szKey);
-				tmp.szDefine = strdups(tmp.szDefine);
-
-				if(tmp.type == XMPT_PARAM_GROUP)
-				{
-					assert(tmp.szCondition);
-
-					tmp.szCondition = strdup(tmp.szCondition);
-					stack.push(tmp.szCondition);
-				}
-				else if(tmp.type == XMPT_PARAM_GROUP_END)
-				{
-					assert(stack.count() > 0);
-					stack.popN(1);
-				}
-				else
-				{
-					size_t sizeTotal = 0;
-					for(int i = 0, l = stack.count(); i < l; ++i)
-					{
-						sizeTotal += strlen(stack.get(i)) + 1;
-					}
-					if(sizeTotal)
-					{
-						char *szTemp = (char*)malloc(sizeTotal);
-						tmp.szCondition = szTemp;
-						for(int i = 0, l = stack.count(); i < l; ++i)
-						{
-							szTemp += sprintf(szTemp, "%s", stack.get(i));
-							if(i == l - 1)
-							{
-								*szTemp = 0;
-							}
-							else
-							{
-								*szTemp = ',';
-							}
-						}
-					}
-					else
-					{
-						tmp.szCondition = NULL;
-					}
-				}
-
-
-				pPass->aProperties.push_back(tmp);
-				++pTmp;
-			}
-			assert(stack.count() == 0);
-		}
-
+		CopyProps(pPasses->pProperties, pPass->aProperties, szName);
+		
 		++pPasses;
 	}
 
@@ -652,7 +597,21 @@ void CMaterialSystem::updateReferences()
 		}
 	}
 
-	
+	for(AssotiativeArray<String, MaterialShader>::Iterator i = m_mMaterialShaders.begin(); i; i++)
+	{
+		MaterialShader *pShader = i.second;
+		
+		for(UINT uPass = 0, uPassl = pShader->aPasses.size(); uPass < uPassl; ++uPass)
+		{
+			MaterialShaderPassData *pPass = &pShader->aPasses[uPass];
+			
+			if(pPass->isDirty)
+			{
+				RenderPass *pMetaPass = pPass->pRenderPass;
+
+			}
+		}
+	}
 }
 
 void CMaterialSystem::cleanData() 
@@ -736,10 +695,11 @@ void CMaterialSystem::cleanData()
 
 		for(UINT j = 0, jl = pShader->aProperties.size(); j < jl; ++j)
 		{
-			free((void*)pShader->aProperties[j].szCondition);
-			free((void*)pShader->aProperties[j].szDefine);
-			free((void*)pShader->aProperties[j].szKey);
-			free((void*)pShader->aProperties[j].szTitle);
+			free((void*)pShader->aProperties[j].prop.szCondition);
+			free((void*)pShader->aProperties[j].prop.szDefine);
+			free((void*)pShader->aProperties[j].prop.szKey);
+			free((void*)pShader->aProperties[j].prop.szTitle);
+			mem_delete(pShader->aProperties[j].pCondition);
 		}
 
 		for(UINT j = 0, jl = pShader->aPasses.size(); j < jl; ++j)
@@ -757,10 +717,11 @@ void CMaterialSystem::cleanData()
 
 			for(UINT k = 0, kl = pPass->aProperties.size(); k < kl; ++k)
 			{
-				free((void*)pPass->aProperties[k].szCondition);
-				free((void*)pPass->aProperties[k].szDefine);
-				free((void*)pPass->aProperties[k].szKey);
-				free((void*)pPass->aProperties[k].szTitle);
+				free((void*)pPass->aProperties[k].prop.szCondition);
+				free((void*)pPass->aProperties[k].prop.szDefine);
+				free((void*)pPass->aProperties[k].prop.szKey);
+				free((void*)pPass->aProperties[k].prop.szTitle);
+				mem_delete(pPass->aProperties[k].pCondition);
 			}
 
 			for(UINT k = 0, kl = pPass->aSamplers.size(); k < kl; ++k)
