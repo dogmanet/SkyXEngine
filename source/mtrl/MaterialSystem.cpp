@@ -532,6 +532,64 @@ XMaterialShaderHandler* XMETHODCALLTYPE CMaterialSystem::getMaterialShader(const
 	return(NULL);
 }
 
+static void GetAllDefines(Array<CMaterialSystem::MaterialDefine> &aAllDefines, Array<CMaterialSystem::MaterialProperty> &aProperties)
+{
+	for(UINT i = 0, l = aProperties.size(); i < l; ++i)
+	{
+		if(aProperties[i].prop.szDefine)
+		{
+			if(aAllDefines.indexOf(aProperties[i].prop.szDefine, [](const CMaterialSystem::MaterialDefine &a, const char *b){
+				return(!fstrcmp(a.szName, b));
+			}) < 0)
+			{
+				aAllDefines.push_back({aProperties[i].prop.szDefine, aProperties[i].pCondition});
+			}
+		}
+	}
+}
+
+static bool EvalCondition(CLogicExpression *pExpr, Array<CMaterialSystem::MaterialDefine*> &aStaticList)
+{
+	pExpr->resetParams();
+	for(UINT j = 0, jl = aStaticList.size(); j < jl; ++j)
+	{
+		pExpr->setParam(aStaticList[j]->szName, true);
+	}
+	return(pExpr->evaluate());
+}
+
+static void ParseTexturesConstants(Array<CMaterialSystem::MaterialProperty> &aProperties, Array<CMaterialSystem::MaterialDefine*> &aStaticList)
+{
+	for(UINT i = 0, l = aProperties.size(); i < l; ++i)
+	{
+		CMaterialSystem::MaterialProperty *pProp = &aProperties[i];
+		if(pProp->prop.type == XMPT_PARAM_TEXTURE || (
+				pProp->prop.type == XMPT_PARAM_TEXTURE_OPT
+				&& aStaticList.indexOf(pProp->prop.szDefine, [](const CMaterialSystem::MaterialDefine *a, const char *b){
+					return(!fstrcmp(a->szName, b));
+				}) >= 0
+		))
+		{
+			if(EvalCondition(pProp->pCondition, aStaticList))
+			{
+				// $aTextures[] = $param['key'];
+			}
+		}
+		else if(pProp->prop.varType != GXDECLTYPE_UNUSED)
+		{
+			if(EvalCondition(pProp->pCondition, aStaticList))
+			{
+				/*
+					$aConstants[] = [
+						'key' => $param['key'],
+						'type' => $param['var_type'],
+					];
+				*/
+			}
+		}
+	}
+}
+
 void CMaterialSystem::updateReferences()
 {
 	for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; i++)
@@ -604,11 +662,106 @@ void CMaterialSystem::updateReferences()
 		for(UINT uPass = 0, uPassl = pShader->aPasses.size(); uPass < uPassl; ++uPass)
 		{
 			MaterialShaderPassData *pPass = &pShader->aPasses[uPass];
-			
+
 			if(pPass->isDirty)
 			{
 				RenderPass *pMetaPass = pPass->pRenderPass;
+				Array<GXMacro> aGenericDefines = pPass->aDefines;
 
+				Array<MaterialShaderSamplerData> aSamplers({NULL, NULL}, GX_MAX_SAMPLERS);
+				for(UINT i = 0, l = pMetaPass->aSamplers.size(); i < l; ++i)
+				{
+					aSamplers[pMetaPass->aSamplers[i].uSlot].szKey = pMetaPass->aSamplers[i].szKey;
+				}
+
+				UINT j = 0;
+				for(UINT i = 0, l = pPass->aSamplers.size(); i < l; ++i)
+				{
+					for(; j < GX_MAX_SAMPLERS; ++j)
+					{
+						if(!aSamplers[j].szKey)
+						{
+							aSamplers[j] = pPass->aSamplers[i];
+						}
+					}
+				}
+				pPass->aTotalSamplers.swap(aSamplers);
+
+				Array<MaterialDefine> aAllDefines;
+				GetAllDefines(aAllDefines, pShader->aProperties);
+				GetAllDefines(aAllDefines, pPass->aProperties);
+
+				UINT uVariants = 1 << aAllDefines.size();
+
+				Array<MaterialDefine*> aStaticList;
+				Array<MaterialDefine*> aVariableList;
+				for(UINT i = 0; i < uVariants; ++i)
+				{
+					aStaticList.clear();
+					aVariableList.clear();
+
+					for(UINT j = 0, jl = aAllDefines.size(); j < jl; ++j)
+					{
+						if(i & (1 << j))
+						{
+							if(aAllDefines[j].pCondition)
+							{
+								aVariableList.push_back(&aAllDefines[j]);
+							}
+							else
+							{
+								aStaticList.push_back(&aAllDefines[j]);
+							}
+						}
+					}
+
+					bool bDoAgain = true;
+					while(bDoAgain)
+					{
+						bDoAgain = false;
+						for(UINT key = 0, keyl = aVariableList.size(); key < keyl; ++key)
+						{
+							MaterialDefine *pDefine = aVariableList[key];
+
+							bool isFound = false;
+
+							if(!pDefine->pCondition)
+							{
+								isFound = true;
+								break;
+							}
+							else if(EvalCondition(pDefine->pCondition, aStaticList))
+							{
+								isFound = true;
+								break;
+							}
+
+							if(isFound)
+							{
+								aStaticList.push_back(pDefine);
+								aVariableList.erase(key);
+								bDoAgain = true;
+								break;
+							}
+						}
+					}
+
+					if(aVariableList.size())
+					{
+						// bad variant, skipping
+					}
+					else
+					{
+						Array<GXMacro> aVariantDefines = aGenericDefines;
+						for(UINT j = 0, jl = aStaticList.size(); j < jl; ++j)
+						{
+							aVariantDefines.push_back({aStaticList[j]->szName, "1"});
+						}
+
+						ParseTexturesConstants(pShader->aProperties, aStaticList);
+						ParseTexturesConstants(pPass->aProperties, aStaticList);
+					}
+				}
 			}
 		}
 	}

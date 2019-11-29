@@ -180,6 +180,12 @@ protected:
 		CLogicExpression *pCondition;
 	};
 
+	struct MaterialDefine
+	{
+		const char *szName;
+		CLogicExpression *pCondition;
+	};
+
 	struct MaterialShaderPassData
 	{
 		RenderPass *pRenderPass;
@@ -189,6 +195,8 @@ protected:
 		Array<MaterialShaderSamplerData> aSamplers;
 		Array<MaterialProperty> aProperties;
 		bool isDirty;
+
+		Array<MaterialShaderSamplerData> aTotalSamplers;
 	};
 
 	struct MaterialShader: public XMaterialShaderHandler
@@ -213,6 +221,9 @@ protected:
 	GeometryShader *m_pCurrentGS = NULL;
 
 	friend void CopyProps(XMaterialProperty *pProperties, Array<CMaterialSystem::MaterialProperty> &aTarget, const char *szShaderName);
+	friend void GetAllDefines(Array<MaterialDefine> &aAllDefines, Array<MaterialProperty> &aProperties);
+	friend void ParseTexturesConstants(Array<MaterialProperty> &aProperties, Array<MaterialDefine*> &aStaticList);
+	friend bool EvalCondition(CLogicExpression *pExpr, Array<MaterialDefine*> &aStaticList);
 
 	const char* getHLSLType(GXDECLTYPE type)
 	{
