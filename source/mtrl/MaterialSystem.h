@@ -207,6 +207,12 @@ protected:
 		Array<MaterialProperty> aProperties;
 	};
 
+	struct MaterialShaderConstants
+	{
+		const char *szKey;
+		GXDECLTYPE type;
+	};
+
 	AssotiativeArray<String, VertexFormatData> m_mVertexFormats;
 	MemAlloc<VertexShaderData> m_poolVSdata;
 	MemAlloc<GeometryShader> m_poolGSdata;
@@ -222,7 +228,8 @@ protected:
 
 	friend void CopyProps(XMaterialProperty *pProperties, Array<CMaterialSystem::MaterialProperty> &aTarget, const char *szShaderName);
 	friend void GetAllDefines(Array<MaterialDefine> &aAllDefines, Array<MaterialProperty> &aProperties);
-	friend void ParseTexturesConstants(Array<MaterialProperty> &aProperties, Array<MaterialDefine*> &aStaticList);
+	friend void ParseTexturesConstants(Array<MaterialProperty> &aProperties, Array<MaterialDefine*> &aStaticList,
+		Array<const char*> &aTextures, Array<MaterialShaderConstants> &aConstants);
 	friend bool EvalCondition(CLogicExpression *pExpr, Array<MaterialDefine*> &aStaticList);
 
 	const char* getHLSLType(GXDECLTYPE type)

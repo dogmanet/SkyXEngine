@@ -550,6 +550,10 @@ static void GetAllDefines(Array<CMaterialSystem::MaterialDefine> &aAllDefines, A
 
 static bool EvalCondition(CLogicExpression *pExpr, Array<CMaterialSystem::MaterialDefine*> &aStaticList)
 {
+	if(!pExpr)
+	{
+		return(true);
+	}
 	pExpr->resetParams();
 	for(UINT j = 0, jl = aStaticList.size(); j < jl; ++j)
 	{
@@ -558,7 +562,8 @@ static bool EvalCondition(CLogicExpression *pExpr, Array<CMaterialSystem::Materi
 	return(pExpr->evaluate());
 }
 
-static void ParseTexturesConstants(Array<CMaterialSystem::MaterialProperty> &aProperties, Array<CMaterialSystem::MaterialDefine*> &aStaticList)
+static void ParseTexturesConstants(Array<CMaterialSystem::MaterialProperty> &aProperties, Array<CMaterialSystem::MaterialDefine*> &aStaticList,
+	Array<const char*> &aTextures, Array<CMaterialSystem::MaterialShaderConstants> &aConstants)
 {
 	for(UINT i = 0, l = aProperties.size(); i < l; ++i)
 	{
@@ -572,19 +577,14 @@ static void ParseTexturesConstants(Array<CMaterialSystem::MaterialProperty> &aPr
 		{
 			if(EvalCondition(pProp->pCondition, aStaticList))
 			{
-				// $aTextures[] = $param['key'];
+				aTextures.push_back(pProp->prop.szKey);
 			}
 		}
 		else if(pProp->prop.varType != GXDECLTYPE_UNUSED)
 		{
 			if(EvalCondition(pProp->pCondition, aStaticList))
 			{
-				/*
-					$aConstants[] = [
-						'key' => $param['key'],
-						'type' => $param['var_type'],
-					];
-				*/
+				aConstants.push_back({pProp->prop.szKey, pProp->prop.varType});
 			}
 		}
 	}
@@ -758,8 +758,17 @@ void CMaterialSystem::updateReferences()
 							aVariantDefines.push_back({aStaticList[j]->szName, "1"});
 						}
 
-						ParseTexturesConstants(pShader->aProperties, aStaticList);
-						ParseTexturesConstants(pPass->aProperties, aStaticList);
+						Array<const char*> aTextures;
+						Array<CMaterialSystem::MaterialShaderConstants> aConstants;
+
+						ParseTexturesConstants(pShader->aProperties, aStaticList, aTextures, aConstants);
+						ParseTexturesConstants(pPass->aProperties, aStaticList, aTextures, aConstants);
+
+						aConstants.quickSort([this](const MaterialShaderConstants &a, const MaterialShaderConstants &b){
+							return(this->getTypeSize(a.type) > this->getTypeSize(b.type));
+						});
+
+						int a = 0;
 					}
 				}
 			}
