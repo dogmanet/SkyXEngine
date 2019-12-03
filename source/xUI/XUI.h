@@ -6,7 +6,7 @@
 #include <gui/guimain.h>
 
 class CUIWindow;
-class CXUI: public IXUI
+class CXUI : public IXUI
 {
 public:
 	CXUI(IGXDevice *pDev, IXWindowSystem *pWindowSystem, gui::IGUI *pGUI);
@@ -25,9 +25,9 @@ public:
 private:
 	Array<CUIWindow*> m_pWindows;
 
-	IGXDevice *m_pDev = nullptr;
-    IXWindowSystem *m_pWindowSystem = nullptr;
-    gui::IGUI *m_pGUI = nullptr;
+	IGXDevice *m_pDev = NULL;
+	IXWindowSystem *m_pWindowSystem = NULL;
+	gui::IGUI *m_pGUI = NULL;
 };
 
 #endif
