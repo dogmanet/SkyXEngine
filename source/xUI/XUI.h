@@ -25,9 +25,9 @@ public:
 private:
 	Array<CUIWindow*> m_pWindows;
 
-	IGXDevice *m_pDev = NULL;
-	IXWindowSystem *m_pWindowSystem = NULL;
-	gui::IGUI *m_pGUI = NULL;
+	IGXDevice *m_pDev = nullptr;
+    IXWindowSystem *m_pWindowSystem = nullptr;
+    gui::IGUI *m_pGUI = nullptr;
 };
 
 #endif
