@@ -570,9 +570,9 @@ static void ParseTexturesConstants(Array<CMaterialSystem::MaterialProperty> &aPr
 		CMaterialSystem::MaterialProperty *pProp = &aProperties[i];
 		if(pProp->prop.type == XMPT_PARAM_TEXTURE || (
 				pProp->prop.type == XMPT_PARAM_TEXTURE_OPT
-				&& aStaticList.indexOf(pProp->prop.szDefine, [](const CMaterialSystem::MaterialDefine *a, const char *b){
+				&& (!pProp->prop.szDefine || aStaticList.indexOf(pProp->prop.szDefine, [](const CMaterialSystem::MaterialDefine *a, const char *b){
 					return(!fstrcmp(a->szName, b));
-				}) >= 0
+				}) >= 0)
 		))
 		{
 			if(EvalCondition(pProp->pCondition, aStaticList))
