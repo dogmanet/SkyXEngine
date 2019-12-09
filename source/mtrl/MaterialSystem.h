@@ -211,6 +211,7 @@ protected:
 	{
 		const char *szKey;
 		GXDECLTYPE type;
+		UINT uGroup;
 	};
 
 	AssotiativeArray<String, VertexFormatData> m_mVertexFormats;

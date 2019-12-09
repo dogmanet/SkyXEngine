@@ -768,6 +768,41 @@ void CMaterialSystem::updateReferences()
 							return(this->getTypeSize(a.type) > this->getTypeSize(b.type));
 						});
 
+						for(UINT j = 0, jl = aConstants.size(); j < jl; ++j)
+						{
+							aConstants[j].uGroup = UINT_MAX;
+						}
+						UINT uGroup = 0;
+						UINT uGroupSize = 0;
+						UINT uConstants = aConstants.size();
+						while(uConstants != 0)
+						{
+							for(UINT j = 0, jl = aConstants.size(); j < jl; ++j)
+							{
+								auto *pConst = &aConstants[j];
+								if(pConst->uGroup != UINT_MAX)
+								{
+									continue;
+								}
+
+
+								UINT uSize = getTypeSize(pConst->type);
+								if(uGroupSize + uSize > 4)
+								{
+									++uGroup;
+									uGroupSize = 0;
+								}
+
+								pConst->uGroup = uGroup;
+								uGroupSize += uSize;
+								--uConstants;
+								break;
+							}
+						}
+
+						// pMetaPass->szShaderFile;
+						// pPass->szShaderFile;
+						// pPass->szEntryPoint;
 						int a = 0;
 					}
 				}
