@@ -20,8 +20,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\xUI\IUIWindow.h" />
+    <ClInclude Include="..\..\..\source\xUI\IUIButton.h" />
+    <ClInclude Include="..\..\..\source\xUI\IUIControl.h" />
     <ClInclude Include="..\..\..\source\xUI\IXUI.h" />
     <ClInclude Include="..\..\..\source\xUI\UIWindow.h" />
+    <ClInclude Include="..\..\..\source\xUI\UIButton.h" />
     <ClInclude Include="..\..\..\source\xUI\XUI.h" />
   </ItemGroup>
   <ItemGroup>
