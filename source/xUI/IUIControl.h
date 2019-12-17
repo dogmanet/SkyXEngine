@@ -1,11 +1,18 @@
 #ifndef __IUICONTROL_H
 #define __IUICONTROL_H
 
-#include <gdefines.h>
+#include "IUICommand.h"
+
+enum ENABLE_MODE
+{
+	ENABLE,
+	DISABLE
+};
 
 class IUIControl : public IXUnknown
 {
-	//! Метод установки контента в контроле
+public:
+	//! Метод установки надписи в контроле
 	virtual void XMETHODCALLTYPE setLabel(const char *szTitle) = 0;
 
 	//! Метод установки позиции в окне
@@ -22,6 +29,12 @@ class IUIControl : public IXUnknown
 
 	//! Метод устанавливает имя элемента
 	virtual bool XMETHODCALLTYPE setName(const char *szName) = 0;
+
+	//! Метод позволяет "включить/выключить" контрол
+	virtual void XMETHODCALLTYPE setEnableMode(ENABLE_MODE mode);
+
+	//! Возвращает состояние контрола, включен ли он или нет
+	virtual bool XMETHODCALLTYPE isEnabled() = 0;
 };
 
 #endif

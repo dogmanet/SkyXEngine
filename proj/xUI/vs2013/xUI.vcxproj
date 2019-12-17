@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\xUI\IUICommand.h" />
     <ClInclude Include="..\..\..\source\xUI\IUIWindow.h" />
     <ClInclude Include="..\..\..\source\xUI\IUIButton.h" />
     <ClInclude Include="..\..\..\source\xUI\IUIControl.h" />
