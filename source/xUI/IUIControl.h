@@ -3,12 +3,6 @@
 
 #include "IUICommand.h"
 
-enum ENABLE_MODE
-{
-	ENABLE,
-	DISABLE
-};
-
 class IUIControl : public IXUnknown
 {
 public:
@@ -31,7 +25,7 @@ public:
 	virtual bool XMETHODCALLTYPE setName(const char *szName) = 0;
 
 	//! Метод позволяет "включить/выключить" контрол
-	virtual void XMETHODCALLTYPE setEnableMode(ENABLE_MODE mode);
+	virtual void XMETHODCALLTYPE setEnableMode(bool bEnable);
 
 	//! Возвращает состояние контрола, включен ли он или нет
 	virtual bool XMETHODCALLTYPE isEnabled() = 0;
