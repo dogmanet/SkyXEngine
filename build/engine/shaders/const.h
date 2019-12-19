@@ -38,6 +38,16 @@ cbuffer CDataMaterial: register(b0)
 
 
 
+#ifdef XMATERIAL_HAS_CONSTANTS
+cbuffer XMaterialConstants: register(b6)
+{
+    struct
+	{
+        XMAT_MS_CONST_STRUCT();
+    } g_xMaterialConstants;
+};
+#endif
+
 
 
 

@@ -174,7 +174,7 @@ enum DS_RT
 #define SXGC_SHADER_VAR_MAX_COUNT 64
 
 //! количество макросов в массиве макросов
-#define SXGC_SHADER_COUNT_MACRO 12
+#define SXGC_SHADER_COUNT_MACRO 32
 
 //!@}
 

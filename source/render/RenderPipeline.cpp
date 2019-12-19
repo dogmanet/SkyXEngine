@@ -54,9 +54,10 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	XRenderPassHandler *pRenderPassPostprocess = NULL;
 	XRenderPassHandler *pRenderPassShadow = NULL;
 
+#if 1
 	{
 		XRenderPassSamplersElement pSamplers[] = {
-			{"Scene default", "g_sScene", 0},
+			{"Scene default", "sScene", 0},
 			XRENDER_PASS_SAMPLERS_LIST_END()
 		};
 
@@ -74,9 +75,11 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XRENDER_PASS_OUTPUT_LIST_END()
 		};
 
-		pRenderPassGBuffer = m_pMaterialSystem->registerRenderPass("xGBuffer", "shaders/material/gbuffer.ps", NULL, pSamplers, pOutput);
+		pRenderPassGBuffer = m_pMaterialSystem->registerRenderPass("xGBuffer", "material/scene/gbuffer.ps", NULL, pSamplers, pOutput);
 	}
+#endif
 
+#if 1
 	{
 		XRenderPassTexturesElement pTextures[] = {
 			{"GBuffer color(rgb) light(a)", "g_txGBufferC3L1", 0},
@@ -89,8 +92,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		}; 
 		
 		XRenderPassSamplersElement pSamplers[] = {
-			{"Scene default", "g_sScene", 0},
-			{"Point clamp", "g_sPointClamp", 1},
+			{"Scene default", "sScene", 0},
+			{"Point clamp", "sPointClamp", 1},
 			XRENDER_PASS_SAMPLERS_LIST_END()
 		};
 
@@ -107,9 +110,11 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XRENDER_PASS_OUTPUT_LIST_END()
 		};
 
-		pRenderPassTransparency = m_pMaterialSystem->registerRenderPass("xTransparency", "shaders/material/transparent.ps", pTextures, pSamplers, pOutput);
+		pRenderPassTransparency = m_pMaterialSystem->registerRenderPass("xTransparency", "material/transparent.ps", pTextures, pSamplers, pOutput);
 	}
+#endif
 
+#if 1
 	{
 		XRenderPassTexturesElement pTextures[] = {
 			{"GBuffer color(rgb) light(a)", "g_txGBufferC3L1", 0},
@@ -122,8 +127,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		};
 
 		XRenderPassSamplersElement pSamplers[] = {
-			{"Scene default", "g_sScene", 0},
-			{"Point clamp", "g_sPointClamp", 1},
+			{"Scene default", "sScene", 0},
+			{"Point clamp", "sPointClamp", 1},
 			XRENDER_PASS_SAMPLERS_LIST_END()
 		};
 
@@ -133,9 +138,11 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XRENDER_PASS_OUTPUT_LIST_END()
 		};
 
-		pRenderPassIllumination = m_pMaterialSystem->registerRenderPass("xIllumination", "shaders/material/illum.ps", pTextures, pSamplers, pOutput);
+		pRenderPassIllumination = m_pMaterialSystem->registerRenderPass("xIllumination", "material/illum.ps", pTextures, pSamplers, pOutput);
 	}
+#endif
 
+#if 1
 	{
 		XRenderPassTexturesElement pTextures[] = {
 			{"GBuffer color(rgb) light(a)", "g_txGBufferC3L1", 0},
@@ -148,8 +155,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		};
 
 		XRenderPassSamplersElement pSamplers[] = {
-			{"Scene default", "g_sScene", 0},
-			{"Point clamp", "g_sPointClamp", 1},
+			{"Scene default", "sScene", 0},
+			{"Point clamp", "sPointClamp", 1},
 			XRENDER_PASS_SAMPLERS_LIST_END()
 		};
 
@@ -158,13 +165,15 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XRENDER_PASS_OUTPUT_LIST_END()
 		};
 
-		pRenderPassPostprocess = m_pMaterialSystem->registerRenderPass("xPostprocess", "shaders/material/post.ps", pTextures, pSamplers, pOutput);
+		pRenderPassPostprocess = m_pMaterialSystem->registerRenderPass("xPostprocess", "material/post.ps", pTextures, pSamplers, pOutput);
 	}
+#endif
 
+#if 1
 	{
 		XRenderPassSamplersElement pSamplers[] = {
-			{"Scene default", "g_sScene", 0},
-			// {"Point clamp", "g_sPointClamp", 1},
+			{"Scene default", "sScene", 0},
+			// {"Point clamp", "sPointClamp", 1},
 			XRENDER_PASS_SAMPLERS_LIST_END()
 		};
 
@@ -174,12 +183,14 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XRENDER_PASS_OUTPUT_LIST_END()
 		};
 
-		pRenderPassShadow = m_pMaterialSystem->registerRenderPass("xShadow", "shaders/material/shadow.ps", NULL, pSamplers, pOutput);
+		pRenderPassShadow = m_pMaterialSystem->registerRenderPass("xShadow", "material/shadow.ps", NULL, pSamplers, pOutput);
 	}
+#endif
 
+#if 1
 	{
 		XMaterialShaderSampler pSamplers[] = {
-			{"g_sDefault", GXSamplerDesc()},
+			{"sDefault", GXSamplerDesc()},
 			XMATERIAL_SHADER_SAMPLER_LIST_END()
 		};
 
@@ -204,9 +215,9 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		};
 
 		XMaterialShaderPass pPasses[] = {
-			{pRenderPassGBuffer, "shaders/default/default.ps", "MainGBuffer", pMacro, pSamplers, pProperties},
-			{pRenderPassIllumination, "shaders/default/default.ps", "MainIllimination", NULL, NULL, NULL},
-			{pRenderPassShadow, "shaders/default/default.ps", "MainShadow", NULL, NULL, NULL},
+			{pRenderPassGBuffer, "default/default.ps", "MainGBuffer", pMacro, pSamplers, pProperties},
+			{pRenderPassIllumination, "default/default.ps", "MainIllimination", NULL, NULL, NULL},
+			{pRenderPassShadow, "default/default.ps", "MainShadow", NULL, NULL, NULL},
 			XMATERIAL_SHADER_PASS_LIST_END()
 		};
 
@@ -215,6 +226,9 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XMATERIAL_PARAM_TEXTURE("Base texture", "txBase"),
 			// parameter name, define_if_supplied
 			XMATERIAL_PARAM_TEXTURE_OPT("Normal map", "txNormals", "HAS_NORMALMAP"),
+			XMATERIAL_PARAM_GROUP(NULL, "HAS_NORMALMAP"),
+				XMATERIAL_PARAM_RANGE("Normalmap weight", "nm_weight", 0.0f, 1.0f, 0.5f),
+			XMATERIAL_PARAM_GROUP_END(),
 			// parameter name, material parameter name, define_if_set
 			XMATERIAL_PARAM_FLAG("Use param texture", "has_parameter_texture", "HAS_PARAMMAP"),
 			// group name (optional), condition (define)
@@ -238,12 +252,14 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 		m_pMaterialSystem->registerMaterialShader("Default", pVertexFormatSceneGeneric, pPasses, pGenericProperties);
 	}
+#endif
 
+#if 1
 	{
 		XMaterialShaderPass pPasses[] = {
-			{pRenderPassGBuffer, "shaders/default/transparent.ps", "MainTransparency", NULL, NULL, NULL},
-			{pRenderPassIllumination, "shaders/default/transparent.ps", "MainIllimination", NULL, NULL, NULL},
-			{pRenderPassShadow, "shaders/default/transparent.ps", "MainShadow", NULL, NULL, NULL},
+			{pRenderPassGBuffer, "default/transparent.ps", "MainTransparency", NULL, NULL, NULL},
+			{pRenderPassIllumination, "default/transparent.ps", "MainIllimination", NULL, NULL, NULL},
+			{pRenderPassShadow, "default/transparent.ps", "MainShadow", NULL, NULL, NULL},
 			XMATERIAL_SHADER_PASS_LIST_END()
 		};
 
@@ -273,15 +289,18 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 		m_pMaterialSystem->registerMaterialShader("Transparent", pVertexFormatSceneGeneric, pPasses, pGenericProperties);
 	}
+#endif
 
+#if 1
 	{
 		XMaterialShaderPass pPasses[] = {
-			{pRenderPassGBuffer, "shaders/default/postprocess.ps", "MainPostprocess", NULL, NULL, NULL},
+			{pRenderPassPostprocess, "default/postprocess.ps", "MainPostprocess", NULL, NULL, NULL},
 			XMATERIAL_SHADER_PASS_LIST_END()
 		};
 
 		m_pMaterialSystem->registerMaterialShader("Postprocess", pVertexFormatPostprocess, pPasses, NULL);
 	}
+#endif
 
 	IXRenderable *pRenderable;
 	UINT ic = 0;

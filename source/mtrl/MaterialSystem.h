@@ -166,6 +166,7 @@ protected:
 		Array<XRenderPassTexturesElement> aTextures;
 		Array<XRenderPassSamplersElement> aSamplers;
 		Array<XRenderPassOutputElement> aOutput;
+		Array<GXMacro> aDefines;
 	};
 
 	struct MaterialShaderSamplerData
@@ -186,6 +187,12 @@ protected:
 		CLogicExpression *pCondition;
 	};
 
+	struct MaterialVariant
+	{
+		bool isReady;
+		ID idShader;
+	};
+	
 	struct MaterialShaderPassData
 	{
 		RenderPass *pRenderPass;
@@ -197,6 +204,8 @@ protected:
 		bool isDirty;
 
 		Array<MaterialShaderSamplerData> aTotalSamplers;
+
+		Array<MaterialVariant> aVariants;
 	};
 
 	struct MaterialShader: public XMaterialShaderHandler

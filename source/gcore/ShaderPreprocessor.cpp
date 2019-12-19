@@ -485,6 +485,7 @@ String CShaderPreprocessor::process(const char *src, const char *file)
 						if(bCondState)
 						{
 							String path;
+							dArgs = makeExpansion(dArgs).trim();
 							bool isLocal = dArgs[0] == '"';
 							String inc = getInclude(dArgs.substr(1, dArgs.length() - 2), file, &path, isLocal);
 							inc = process(inc.c_str(), path.c_str());
@@ -783,12 +784,20 @@ bool CShaderPreprocessor::isTrue(const String &_expr)
 
 String CShaderPreprocessor::makeExpansion(const String &expr)
 {
+	if(!expr.length())
+	{
+		return("");
+	}
 	ReplList rlist;
 	return(makeExpansion(expr, rlist));
 }
 
 String CShaderPreprocessor::makeExpansion(const String &_expr, ReplList &rlist)
 {
+	if(!_expr.length())
+	{
+		return("");
+	}
 	String tok;
 	String expr = _expr;
 	if(!isspace(0xFF & _expr[_expr.length() - 1]))
@@ -915,6 +924,10 @@ String CShaderPreprocessor::makeExpansion(const String &_expr, ReplList &rlist)
 
 String CShaderPreprocessor::replArgs(const String &_expr, const _define *pDef, const Array<String> &szArgs)
 {
+	if(!_expr.length())
+	{
+		return("");
+	}
 	String tok, tok_prev;
 	String expr = _expr;
 	if(!isspace(0xFF & _expr[_expr.length() - 1]))

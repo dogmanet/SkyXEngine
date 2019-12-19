@@ -92,18 +92,18 @@ bool XMETHODCALLTYPE CMaterialSystem::loadTexture(const char *szName, IXTexture 
 			switch(pRes->getType())
 			{
 			case GXTEXTURE_TYPE_2D:
-			{
-				IXResourceTexture2D *pRes2D = pRes->as2D();
-				uWidth = pRes2D->getWidth();
-				uHeight = pRes2D->getHeight();
-			}
-			break;
+				{
+					IXResourceTexture2D *pRes2D = pRes->as2D();
+					uWidth = pRes2D->getWidth();
+					uHeight = pRes2D->getHeight();
+				}
+				break;
 			case GXTEXTURE_TYPE_CUBE:
-			{
-				IXResourceTextureCube *pResCube = pRes->asCube();
-				uWidth = uHeight = pResCube->getSize();
-			}
-			break;
+				{
+					IXResourceTextureCube *pResCube = pRes->asCube();
+					uWidth = uHeight = pResCube->getSize();
+				}
+				break;
 			default:
 				assert(!"Unknown format!");
 			}
@@ -373,6 +373,9 @@ XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::registerRenderPass(const ch
 		++pSamplers;
 	}
 
+	String sOutStruct;
+	String sDefaultInitializer;
+	bool isFirst = true;
 	while(pOutput && pOutput->szName)
 	{
 		XRenderPassOutputElement tmp = *pOutput;
@@ -380,9 +383,22 @@ XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::registerRenderPass(const ch
 		tmp.szName = strdup(tmp.szName);
 		tmp.szDefault = strdup(tmp.szDefault);
 		
+		if(!isFirst)
+		{
+			sOutStruct += "; ";
+			sDefaultInitializer += "; ";
+		}
+		sOutStruct += String(getHLSLType(tmp.type)) + " " + tmp.szKey;
+		sDefaultInitializer += String("OUT.") + tmp.szKey + " = " + String(tmp.szDefault);
+
 		pass.aOutput.push_back(tmp);
 		++pOutput;
+		isFirst = false;
 	}
+	pass.aDefines.push_back({"XMATERIAL_OUTPUT_STRUCT()", strdup(sOutStruct.c_str())});
+	pass.aDefines.push_back({"XMATERIAL_DEFAULT_LOADER()", strdup((String("XMaterial XMATERIAL_LOAD_DEFAULTS(){XMaterial OUT = (XMaterial)0; ") + sDefaultInitializer + "; return(OUT);}").c_str())});
+	// pass.aDefines.push_back({"XMATERIAL_LOAD_DEFAULTS()", strdup("")});
+	// aDefines
 
 	updateReferences();
 
@@ -499,6 +515,15 @@ XMaterialShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerMaterialShader(
 			}
 		}
 
+		for(UINT i = 0, l = pPass->pRenderPass->aDefines.size(); i < l; ++i)
+		{
+			GXMacro *pTmp = &pPass->pRenderPass->aDefines[i];
+			GXMacro tmp;
+			tmp.szName = strdup(pTmp->szName);
+			tmp.szDefinition = strdup(pTmp->szDefinition);
+			pPass->aDefines.push_back(tmp);
+		}
+
 		{
 			IGXDevice *pDevice = SGCore_GetDXDevice();
 
@@ -577,7 +602,12 @@ static void ParseTexturesConstants(Array<CMaterialSystem::MaterialProperty> &aPr
 		{
 			if(EvalCondition(pProp->pCondition, aStaticList))
 			{
-				aTextures.push_back(pProp->prop.szKey);
+				if(aTextures.indexOf(pProp->prop.szKey, [](const char *a, const char *b){
+					return(!fstrcmp(a, b)); 
+				}) < 0)
+				{
+					aTextures.push_back(pProp->prop.szKey);
+				}
 			}
 		}
 		else if(pProp->prop.varType != GXDECLTYPE_UNUSED)
@@ -659,14 +689,28 @@ void CMaterialSystem::updateReferences()
 	{
 		MaterialShader *pShader = i.second;
 		
+		String sVSOstruct;
+		for(UINT k = 0, kl = pShader->pVertexFormat->aDecl.size(); k < kl; ++k)
+		{
+			XVertexOutputElement *el = &pShader->pVertexFormat->aDecl[k];
+			if(k != 0)
+			{
+				sVSOstruct += "; ";
+			}
+			sVSOstruct += String(getHLSLType(el->type)) + " " + el->szName + ": " + getHLSLSemantic(el->usage);
+		}
+
 		for(UINT uPass = 0, uPassl = pShader->aPasses.size(); uPass < uPassl; ++uPass)
 		{
 			MaterialShaderPassData *pPass = &pShader->aPasses[uPass];
 
 			if(pPass->isDirty)
 			{
+				pPass->isDirty = false;
+
 				RenderPass *pMetaPass = pPass->pRenderPass;
 				Array<GXMacro> aGenericDefines = pPass->aDefines;
+				aGenericDefines.push_back({"XMAT_PS_STRUCT()", sVSOstruct.c_str()});
 
 				Array<MaterialShaderSamplerData> aSamplers({NULL, NULL}, GX_MAX_SAMPLERS);
 				for(UINT i = 0, l = pMetaPass->aSamplers.size(); i < l; ++i)
@@ -682,9 +726,25 @@ void CMaterialSystem::updateReferences()
 						if(!aSamplers[j].szKey)
 						{
 							aSamplers[j] = pPass->aSamplers[i];
+							break;
 						}
 					}
 				}
+				String sSamplers;
+				bool isFirst = true;
+				for(UINT i = 0, l = aSamplers.size(); i < l; ++i)
+				{
+					if(aSamplers[i].szKey)
+					{
+						if(!isFirst)
+						{
+							sSamplers += "; ";
+						}
+						isFirst = false;
+						sSamplers += String("SamplerState g_") + aSamplers[i].szKey + ": register(s" + (int)i + ")";
+					}
+				}
+				aGenericDefines.push_back({"XMAT_MS_SAMPLERS()", sSamplers.c_str()});
 				pPass->aTotalSamplers.swap(aSamplers);
 
 				Array<MaterialDefine> aAllDefines;
@@ -749,6 +809,7 @@ void CMaterialSystem::updateReferences()
 					if(aVariableList.size())
 					{
 						// bad variant, skipping
+						pPass->aVariants[i].isReady = false;
 					}
 					else
 					{
@@ -768,6 +829,8 @@ void CMaterialSystem::updateReferences()
 							return(this->getTypeSize(a.type) > this->getTypeSize(b.type));
 						});
 
+
+						// Constants ---
 						for(UINT j = 0, jl = aConstants.size(); j < jl; ++j)
 						{
 							aConstants[j].uGroup = UINT_MAX;
@@ -799,11 +862,72 @@ void CMaterialSystem::updateReferences()
 								break;
 							}
 						}
+						String sConstants;
+						bool isFirst = true;
+						for(UINT uG = 0; uG <= uGroup; ++uG)
+						{
+							for(UINT j = 0, jl = aConstants.size(); j < jl; ++j)
+							{
+								if(aConstants[j].uGroup == uG)
+								{
+									if(!isFirst)
+									{
+										sConstants += "; ";
+									}
+									isFirst = false;
+									sConstants += String(getHLSLType(aConstants[j].type)) + " " + aConstants[j].szKey;									
+								}
+							}
+						}
+						aVariantDefines.push_back({"XMAT_MS_CONST_STRUCT()", strdupa(sConstants.c_str())});
+						if(aConstants.size())
+						{
+							aVariantDefines.push_back({"XMATERIAL_HAS_CONSTANTS", "1"});
+						}
+						// ---
 
-						// pMetaPass->szShaderFile;
-						// pPass->szShaderFile;
-						// pPass->szEntryPoint;
-						int a = 0;
+						// Textures ---
+						Array<const char*> aTextureMap(NULL, GX_MAX_TEXTURES);
+						for(UINT i = 0, l = pMetaPass->aTextures.size(); i < l; ++i)
+						{
+							aTextureMap[pMetaPass->aTextures[i].uSlot] = pMetaPass->aTextures[i].szKey;
+						}
+
+						UINT j = 0;
+						for(UINT k = 0, kl = aTextures.size(); k < kl; ++k)
+						{
+							for(; j < GX_MAX_TEXTURES; ++j)
+							{
+								if(!aTextureMap[j])
+								{
+									aTextureMap[j] = aTextures[k];
+									break;
+								}
+							}
+						}
+						String sTextures;
+						for(UINT j = 0; j < aTextureMap.size(); ++j)
+						{
+							if(aTextureMap[j])
+							{
+								sTextures += String("Texture2D g_") + aTextureMap[j] + ":register(t" + (int)j + ");";
+							}
+						}
+						aVariantDefines.push_back({"XMAT_MS_TEXTURES()", strdupa(sTextures.c_str())});
+						// ---
+												
+						char *szTemp = (char*)alloca(strlen(pPass->szShaderFile) + 3);
+						sprintf(szTemp, "<%s>", pPass->szShaderFile);
+						aVariantDefines.push_back({"XMATERIAL_SHADER", szTemp});
+						aVariantDefines.push_back({"XMATERIAL_MAIN", pPass->szEntryPoint});
+
+						aVariantDefines.push_back({NULL, NULL});
+						// prepare for compile
+						ID idShader = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, pMetaPass->szShaderFile, NULL, &aVariantDefines[0]);
+						
+						MaterialVariant *pVariant = &pPass->aVariants[i];
+						pVariant->idShader = idShader;
+						pVariant->isReady = true;
 					}
 				}
 			}
@@ -869,6 +993,12 @@ void CMaterialSystem::cleanData()
 		{
 			free((void*)pPass->aTextures[j].szName);
 			free((void*)pPass->aTextures[j].szKey);
+		}
+
+		for(UINT j = 0, jl = pPass->aDefines.size(); j < jl; ++j)
+		{
+			// free((void*)pPass->aDefines[j].szName);
+			free((void*)pPass->aDefines[j].szDefinition);
 		}
 
 		for(UINT j = 0, jl = pPass->aSamplers.size(); j < jl; ++j)
