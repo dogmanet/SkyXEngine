@@ -2038,6 +2038,11 @@ CMaterial::~CMaterial()
 		mem_release(m_aPassCache[i].pConstants);
 		mem_delete_a(m_aPassCache[i].pConstantsBlob);
 	}
+
+	for(AssotiativeArray<AAString, MaterialTexture>::Iterator i = m_mapTextures.begin(); i; i++)
+	{
+		mem_release(i.second->pTexture);
+	}
 }
 
 const char* XMETHODCALLTYPE CMaterial::getName() const
