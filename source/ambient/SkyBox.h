@@ -38,6 +38,8 @@ class CSkyBox
 public:
 	SX_ALIGNED_OP_MEM2();
 
+	CSkyBox();
+
 	void setDevice(IGXDevice *pDevice);
 	void setMaterialSystem(IXMaterialSystem *pMaterialSystem);
 
@@ -101,6 +103,8 @@ protected:
 
 	IGXDevice *m_pDevice = NULL;
 	IXMaterialSystem *m_pMaterialSystem = NULL;
+
+	XVertexShaderHandler* m_pVertexShaderHandler = NULL;
 };
 
 #if 0

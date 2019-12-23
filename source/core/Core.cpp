@@ -17,6 +17,8 @@
 #include <xcommon/IXTextureProxy.h>
 #include "ResourceTexture.h"
 
+#include "Config.h"
+
 extern CTimeManager *g_pTimers;
 extern CPerfMon *g_pPerfMon;
 extern CCore *g_pCore;
@@ -423,6 +425,11 @@ ID XMETHODCALLTYPE CCore::getThreadId()
 bool XMETHODCALLTYPE CCore::isOnMainThread()
 {
 	return(getThreadId() == 0);
+}
+
+IXConfig* XMETHODCALLTYPE CCore::newConfig()
+{
+	return(new CXConfig());
 }
 
 //##########################################################################

@@ -198,6 +198,8 @@
     <ClInclude Include="..\..\..\source\mtrl\reflection.h" />
     <ClInclude Include="..\..\..\source\mtrl\ShaderVariant.h" />
     <ClInclude Include="..\..\..\source\mtrl\sxmtrl.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXMaterialLoader.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXMaterialProxy.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

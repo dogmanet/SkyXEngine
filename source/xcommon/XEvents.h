@@ -165,12 +165,22 @@ struct XEventAsyncTask
 class IXMaterial;
 struct XEventMaterialChanged
 {
-	enum
+	enum TYPE
 	{
 		TYPE_TRANSPARENCY,
+		TYPE_REFRACTIVITY,
+		TYPE_BLURRED,
+		TYPE_PHYSICS_TYPE,
+		TYPE_DURABILITY,
+		TYPE_HIT_CHANCE,
+		TYPE_DENSITY,
+		TYPE_PROPERTY,
+		TYPE_FLAG,
+		TYPE_SHADER,
 		// ...
 	} type;
 	IXMaterial *pMaterial;
+	const char *szReference;
 };
 
 #endif

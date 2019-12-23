@@ -7,6 +7,7 @@
 #include "IAsyncTaskRunner.h"
 #include "XEvents.h"
 #include "IXRenderPipeline.h"
+#include "IXConfig.h"
 
 #include <fcntl.h>
 #include <io.h>
@@ -38,6 +39,8 @@ public:
 
 	virtual ID XMETHODCALLTYPE getThreadId() = 0;
 	virtual bool XMETHODCALLTYPE isOnMainThread() = 0;
+
+	virtual IXConfig* XMETHODCALLTYPE newConfig() = 0;
 
 	template<typename T> IEventChannel<T> *getEventChannel(const XGUID &guid)
 	{

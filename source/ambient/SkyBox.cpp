@@ -6,6 +6,9 @@ See the license in LICENSE
 
 #include "SkyBox.h"
 
+CSkyBox::CSkyBox()
+{
+}
 
 void CSkyBox::setDevice(IGXDevice *pDevice)
 {
@@ -82,6 +85,8 @@ void CSkyBox::setDevice(IGXDevice *pDevice)
 void CSkyBox::setMaterialSystem(IXMaterialSystem *pMaterialSystem)
 {
 	m_pMaterialSystem = pMaterialSystem;
+	XVertexFormatHandler *pFormat = m_pMaterialSystem->getVertexFormat("xSky");
+	m_pVertexShaderHandler = m_pMaterialSystem->registerVertexShader(pFormat, "base/skybox.vs");
 }
 
 
@@ -166,7 +171,7 @@ void CSkyBox::render()
 	}
 
 	float4x4 World = SMMatrixTranspose(m_mMatRotation/* * SMMatrixTranslation(pos->x, pos->y, pos->z)*/);
-
+	m_pMaterialSystem->bindVS(m_pVertexShaderHandler);
 	m_pMaterialSystem->bindMaterial(m_pSky1);
 #if 0
 	if (/*m_isChangingMainTex*/m_isChanging)

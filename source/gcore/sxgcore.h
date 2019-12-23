@@ -275,7 +275,9 @@ enum SHADER_CONST_REGISTER
 	SCR_SCENE = 3,
 	SCR_CAMERA = 2,
 	SCR_OBJECT = 1,
-	SCR_SUBSET = 0
+	SCR_SUBSET = 0,
+
+	SCR_XMATERIAL = 7
 };
 
 //#############################################################################

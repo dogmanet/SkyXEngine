@@ -83,9 +83,15 @@ bool XMETHODCALLTYPE CAnimatedModelProvider::createModel(UINT uResourceCount, IX
 			return(false);
 		}
 	}
+	else
+	{
+		pShared->AddRef();
+	}
 
 	CAnimatedModel *pModel = new CAnimatedModel(this, pShared);
 	m_apModels.push_back(pModel);
+
+	pShared->Release();
 
 	*ppModel = pModel;
 	return(true);

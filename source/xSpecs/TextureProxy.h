@@ -1,5 +1,5 @@
-#ifndef __TEXTURELOADER_H
-#define __TEXTURELOADER_H
+#ifndef __TEXTUREPROXY_H
+#define __TEXTUREPROXY_H
 
 #include <xcommon/IXTextureProxy.h>
 #include <xcommon/IFileSystem.h>

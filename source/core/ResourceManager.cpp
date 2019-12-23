@@ -32,8 +32,8 @@ CResourceManager::CResourceManager(IXCore *pCore):
 				for(UINT i = 0, l = pLoader->getExtCount(); i < l; ++i)
 				{
 					AAString sExt;
-					strlwr(const_cast<char*>(sExt.getName()));
 					sExt.setName(pLoader->getExt(i));
+					strlwr(const_cast<char*>(sExt.getName()));
 					m_mapModelLoaders[sExt].push_back(pLoader);
 					m_aModelExts.push_back({pLoader->getExtText(i), pLoader->getExt(i)});
 					LibReport(REPORT_MSG_LEVEL_NOTICE, " Ext: " COLOR_LCYAN "%s" COLOR_RESET ": " COLOR_WHITE "%s" COLOR_RESET "\n", pLoader->getExt(i), pLoader->getExtText(i));
@@ -55,8 +55,8 @@ CResourceManager::CResourceManager(IXCore *pCore):
 				for(UINT i = 0, l = pLoader->getExtCount(); i < l; ++i)
 				{
 					AAString sExt;
-					strlwr(const_cast<char*>(sExt.getName()));
 					sExt.setName(pLoader->getExt(i));
+					strlwr(const_cast<char*>(sExt.getName()));
 					m_mapTextureLoaders[sExt].push_back(pLoader);
 					m_aTextureExts.push_back({pLoader->getExtText(i), pLoader->getExt(i)});
 					LibReport(REPORT_MSG_LEVEL_NOTICE, " Ext: " COLOR_LCYAN "%s" COLOR_RESET ": " COLOR_WHITE "%s" COLOR_RESET "\n", pLoader->getExt(i), pLoader->getExtText(i));

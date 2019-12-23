@@ -1,13 +1,14 @@
-
+#ifdef COMPILE_MainGBuffer
 XMaterial MainGBuffer(PSI_XMaterial IN)
 {
 	XMaterial OUT = XMATERIAL_LOAD_DEFAULTS();
 	
 	float4 fColor = g_txBase.Sample(g_sScene, IN.vTexUV);
+	// float4 fColor = IN.vPos;
 #ifdef HAS_ALPHATEST
 	clip(fColor.a - g_xMaterialConstants.pbr_alphatest_threshold);
 #endif
-	OUT.vBaseColor = fColor.xyz;
+	OUT.vBaseColor = fColor.xyz/* * g_xMaterialConstants.vColor.xyz*/;
 	
 #ifdef HAS_PARAMMAP
 	float4 vParams = g_txParameters.Sample(g_sScene, IN.vTexUV);
@@ -39,22 +40,54 @@ XMaterial MainGBuffer(PSI_XMaterial IN)
 	
 	return(OUT);
 }
+#endif
 
+#ifdef COMPILE_MainIllimination
 XMaterial MainIllimination(PSI_XMaterial IN)
 {
 	XMaterial OUT = XMATERIAL_LOAD_DEFAULTS();
 	
+	float4 fColor = g_txBase.Sample(g_sScene, IN.vTexUV);
+	// float4 fColor = IN.vPos;
+#ifdef HAS_ALPHATEST
+	clip(fColor.a - g_xMaterialConstants.pbr_alphatest_threshold);
+#endif
+	OUT.vEmissiveColor = fColor.xyz;
 	
+#ifdef HAS_NORMALMAP
+	OUT.vNormal = MixNormalMicro(IN.vNormal, 
+		Color2Normal(g_txNormals.Sample(g_sScene, IN.vTexUV).xyz) * g_xMaterialConstants.nm_weight
+	);
+#else
+	OUT.vNormal = IN.vNormal;
+#endif
+
 	
 	return(OUT);
 }
+#endif
 
-
+#ifdef COMPILE_MainShadow
 XMaterial MainShadow(PSI_XMaterial IN)
 {
 	XMaterial OUT = XMATERIAL_LOAD_DEFAULTS();
 	
+	float4 fColor = g_txBase.Sample(g_sScene, IN.vTexUV);
+	// float4 fColor = IN.vPos;
+#ifdef HAS_ALPHATEST
+	clip(fColor.a - g_xMaterialConstants.pbr_alphatest_threshold);
+#endif
+	OUT.vBaseColor = fColor;
 	
+// #ifdef HAS_NORMALMAP
+// 	OUT.vNormal = MixNormalMicro(IN.vNormal, 
+// 		Color2Normal(g_txNormals.Sample(g_sScene, IN.vTexUV).xyz) * g_xMaterialConstants.nm_weight
+// 	);
+// #else
+	OUT.vNormal = IN.vNormal;
+// #endif
+
 	
 	return(OUT);
 }
+#endif

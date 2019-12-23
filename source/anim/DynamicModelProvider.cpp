@@ -165,9 +165,15 @@ bool XMETHODCALLTYPE CDynamicModelProvider::createModel(IXResourceModel *pResour
 		}
 		m_mModels[pResource] = pShared;
 	}
+	else
+	{
+		pShared->AddRef();
+	}
 
 	CDynamicModel *pModel = new CDynamicModel(this, pShared);
 	m_apModels.push_back(pModel);
+
+	pShared->Release();
 
 	*ppModel = pModel;
 	return(true);
@@ -378,7 +384,10 @@ void CDynamicModelProvider::onMaterialTransparencyChanged(const IXMaterial *pMat
 {
 	for(auto i = m_mModels.begin(); i; i++)
 	{
-		(*i.second)->onMaterialTransparencyChanged(pMaterial);
+		if(*i.second)
+		{
+			(*i.second)->onMaterialTransparencyChanged(pMaterial);
+		}
 	}
 }
 
@@ -401,6 +410,7 @@ void CDynamicModelProvider::getTransparentObject(CRenderableVisibility *pVisibil
 }
 void CDynamicModelProvider::renderTransparentObject(CRenderableVisibility *pVisibility, UINT uIndex, UINT uSplitPlanes)
 {
+	m_pMaterialSystem->bindVS(m_pVertexShaderHandler);
 	CRenderableVisibility::TransparentModel *pMdl = pVisibility->getItemTransparentDynamic(uIndex);
 	pMdl->pReferenceMdl->render(pMdl->uLod, true);
 }

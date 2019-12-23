@@ -237,6 +237,14 @@ protected:
 
 	ID m_idLightBoundShader = -1;
 	ID m_idLPVPropagateShader = -1;
+
+	//###################################
+
+	XRenderPassHandler *m_pRenderPassGBuffer = NULL;
+	XRenderPassHandler *m_pRenderPassTransparency = NULL;
+	XRenderPassHandler *m_pRenderPassIllumination = NULL;
+	XRenderPassHandler *m_pRenderPassPostprocess = NULL;
+	XRenderPassHandler *m_pRenderPassShadow = NULL;
 };
 
 #endif

@@ -1,0 +1,47 @@
+
+/*
+gbuffer.ps
+
+*/
+
+#include "../struct.h"
+#include "../mtrl.h"
+#include "../const.h"
+#include "../xmat.h"
+
+//##########################################################################
+
+PSO_Gbuffer main(PSI_XMaterial IN)
+{
+	// ClipFar(IN.vPos.z, g_vNearFarLayers.y);
+	IN.vNormal = normalize(IN.vNormal);
+	
+	XMaterial mtrl = XMATERIAL_MAIN(IN);
+		
+	PSO_Gbuffer OUT;
+	
+	OUT.vColor.xyz = mtrl.vBaseColor.xyz;
+	OUT.vColor.w = mtrl.fLightCoeff;
+	
+	OUT.vNormal.xyz = NormalEncode(normalize(mtrl.vNormal));
+	OUT.vNormal.w = mtrl.f0;
+	
+	OUT.vParam = float4(
+		mtrl.fRoughness,
+		mtrl.fMetallic,
+		mtrl.fThickness,
+		mtrl.fAO
+	);
+	
+	float fDepth = (
+#ifdef WANT_WRITE_DEPTH
+	mtrl.fDepth
+#else
+	IN.vPos.z
+#endif
+	+ g_vNearFarInvWinSize.x) / g_vNearFarInvWinSize.y;
+	
+	OUT.vDepth = float4(fDepth, fDepth, fDepth, 1.0f);
+	
+	return(OUT);
+}

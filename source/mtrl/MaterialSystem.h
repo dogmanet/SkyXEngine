@@ -4,8 +4,13 @@
 #include "IXMaterialSystem.h"
 #include <common/string.h>
 #include <xcommon/IXTextureProxy.h>
+#include <xcommon/IXMaterialProxy.h>
+#include <xcommon/IXMaterialLoader.h>
+#include <xcommon/resource/IXResourceManager.h>
 #include <xcommon/resource/IXResourceTexture.h>
+#include <xcommon/XEvents.h>
 #include <common/ConcurrentQueue.h>
+#include <common/aastring.h>
 
 #include "LogicExpression.h"
 
@@ -48,29 +53,240 @@ protected:
 	UINT m_uDepth = 1;
 };
 
+class CMaterial;
+class CMaterialProperty: public IMaterialProperty
+{
+public:
+	CMaterialProperty() = default;
+	CMaterialProperty(CMaterial *pMaterial, const char *szName, XEventMaterialChanged::TYPE typeNotifier = XEventMaterialChanged::TYPE_PROPERTY);
+
+	const char* XMETHODCALLTYPE getName() const override;
+
+	void XMETHODCALLTYPE set(const float4_t &vValue) override;
+	float4_t XMETHODCALLTYPE get() const override;
+
+	void setOffset(UINT uOffset, UINT uSize);
+	void setDefault(const float4_t &vValue);
+
+	void preparePass(UINT uPass);
+
+protected:
+
+	void setValue();
+
+private:
+	CMaterial *m_pMaterial = NULL;
+	const char *m_szName = NULL;
+	XEventMaterialChanged::TYPE m_typeNotifier = XEventMaterialChanged::TYPE_PROPERTY;
+
+	float4_t m_vValue = float4_t(0.0f, 0.0f, 0.0f, 0.0f);
+	bool m_isSet = false;
+
+	struct MaterialPass
+	{
+		UINT uOffset = UINT_MAX;
+		UINT uSize = 4;
+	};
+
+	Array<MaterialPass> m_aPassCache;
+	MaterialPass *m_pCurrentPass = NULL;
+};
+
+class CMaterialFlag: public IMaterialFlag
+{
+public:
+	CMaterialFlag() = default;
+	CMaterialFlag(CMaterial *pMaterial, const char *szName, XEventMaterialChanged::TYPE typeNotifier = XEventMaterialChanged::TYPE_FLAG);
+
+	const char* XMETHODCALLTYPE getName() const override;
+
+	void XMETHODCALLTYPE set(bool bValue) override;
+	bool XMETHODCALLTYPE get() const override;
+
+	void clearStatic();
+	void setStatic(bool bValue);
+
+private:
+	CMaterial *m_pMaterial = NULL;
+	const char *m_szName = NULL;
+	XEventMaterialChanged::TYPE m_typeNotifier = XEventMaterialChanged::TYPE_FLAG;
+
+	bool m_bValue = false;
+	bool m_isStatic = false;
+};
+
+class CGlobalFlag: public CMaterialFlag
+{
+	DECLARE_CLASS(CGlobalFlag, CMaterialFlag);
+
+public:
+	CGlobalFlag() = default;
+	CGlobalFlag(CMaterialSystem *pMaterialSystem, const char *szName);
+
+	void XMETHODCALLTYPE set(bool bValue) override;
+
+private:
+	CMaterialSystem *m_pMaterialSystem = NULL;
+};
+
 class CMaterial: public IXMaterial
 {
 public:
-	CMaterial(ID id);
-	void XMETHODCALLTYPE getMainTexture(IXTexture **ppTexture) override;
+	friend class CMaterialProperty;
+	friend class CMaterialFlag;
+	// friend class CMaterialSystem;
+
+	CMaterial(CMaterialSystem *pMaterialSystem, ID id, const char *szName);
+	~CMaterial();
+
+	const char* XMETHODCALLTYPE getName() const override;
+	//void XMETHODCALLTYPE getMainTexture(IXTexture **ppTexture) override;
 	ID getId();
-	bool XMETHODCALLTYPE isTransparent() override;
-	bool XMETHODCALLTYPE isRefractive() override;
-	bool XMETHODCALLTYPE isBlurred() override;
+	void XMETHODCALLTYPE setTransparent(bool bValue) override;
+	bool XMETHODCALLTYPE isTransparent() const override;
+
+	void XMETHODCALLTYPE setRefractive(bool bValue) override;
+	bool XMETHODCALLTYPE isRefractive() const override;
+
+	void XMETHODCALLTYPE setBlurred(bool bValue) override;
+	bool XMETHODCALLTYPE isBlurred() const override;
+
+	void XMETHODCALLTYPE setShader(const char *szShader) override;
+	const char* XMETHODCALLTYPE getShader() const override;
+	XMaterialShaderHandler* XMETHODCALLTYPE getShaderHandler() const override;
 
 	void XMETHODCALLTYPE setFlag(const char *szFlag, bool isSet) override;
 	bool XMETHODCALLTYPE getFlag(const char *szFlag) override;
+	IMaterialFlag* XMETHODCALLTYPE getFlagHandler(const char *szFlag) override;
+	IKeyIterator* XMETHODCALLTYPE getFlagsIterator() override;
 
-	void XMETHODCALLTYPE setParam(const char *szFlag, float fValue) override;
-	float XMETHODCALLTYPE getParam(const char *szFlag) override;
+	void XMETHODCALLTYPE setParam(const char *szParam, const float4_t &fValue) override;
+	float4_t XMETHODCALLTYPE getParam(const char *szParam) override;
+	IMaterialProperty* XMETHODCALLTYPE getParamHandler(const char *szParam) override;
+	IKeyIterator* XMETHODCALLTYPE getParamsIterator() override;
 
+	void XMETHODCALLTYPE setTexture(const char *szKey, const char *szTexture) override;
+	const char* XMETHODCALLTYPE getTextureName(const char *szKey) const override;
+	IXTexture* XMETHODCALLTYPE getTexture(const char *szKey) const override;
+	IKeyIterator* XMETHODCALLTYPE getTexturesIterator() override;
+
+	void XMETHODCALLTYPE setPhysicsType(MTLTYPE_PHYSIC type) override;
+	MTLTYPE_PHYSIC XMETHODCALLTYPE getPhysicsType() const override;
+
+	void XMETHODCALLTYPE setDurablility(float fValue) override;
+	float XMETHODCALLTYPE getDurablility() const override;
+
+	void XMETHODCALLTYPE setHitChance(float fValue) override;
+	float XMETHODCALLTYPE getHitChance() const override;
+
+	void XMETHODCALLTYPE setDensity(float fValue) override;
+	float XMETHODCALLTYPE getDensity() const override;
+
+	bool XMETHODCALLTYPE save() override;
 
 	ID getInternalID()
 	{
 		return(m_id);
 	}
+
+	bool isDirty() const
+	{
+		return(m_pCurrentPass->isDirty);
+	}
+
+	UINT getCachedVariant() const
+	{
+		return(m_pCurrentPass->uVariant);
+	}
+
+	void setCachedVariant(UINT uVariant)
+	{
+		m_pCurrentPass->uVariant = uVariant;
+		m_pCurrentPass->isDirty = false;
+	}
+
+	IXTexture* getTextureForSlot(UINT uSlot);
+	void clearTextureBindings();
+	void bindTextureToSlot(const char *szTexture, UINT uSlot);
+
+	IGXConstantBuffer* getConstants();
+	void initConstantsBindings(UINT uSize);
+	void bindConstantToOffset(const char *szConstant, UINT uOffset, UINT uSize, const float4_t &vDefault);
+	void setConstant(UINT uPass, UINT uOffset, const void *pValue, UINT uSize);
+
+	void preparePass(UINT uPass);
+
+	void clearStaticFlags();
+	void setStaticFlag(const char *szName, bool bValue);
+
+	void onGlobalFlagChanged(CGlobalFlag *pFlag);
+
+	void setProxy(IXMaterialProxy *pProxy);
+	IXMaterialProxy* getProxy();
+	
 protected:
+	CMaterialSystem *m_pMaterialSystem = NULL;
+
+	IXMaterialLoader *m_pLoader = NULL;
+	IXMaterialProxy *m_pProxy = NULL;
+
+	void notifyChanged(XEventMaterialChanged::TYPE type, const char *szReference = NULL);
+	
+	CMaterialFlag* createFlag(const char *szName, XEventMaterialChanged::TYPE type = XEventMaterialChanged::TYPE_FLAG);
+	CMaterialProperty* createProperty(const char *szName, XEventMaterialChanged::TYPE type = XEventMaterialChanged::TYPE_PROPERTY);
+
+	void updateShader();
+
+private:
 	ID m_id = -1;
+	const char *m_szName = NULL;
+
+	struct MaterialTexture
+	{
+		String sName;
+		IXTexture *pTexture = NULL;
+		// UINT uSlot = UINT_MAX;
+	};
+
+	String m_sShader;
+	XMaterialShaderHandler *m_pShader = NULL;
+
+	AssotiativeArray<AAString, CMaterialProperty> m_mapProperties;
+	AssotiativeArray<AAString, CMaterialFlag> m_mapFlags;
+	AssotiativeArray<AAString, MaterialTexture> m_mapTextures;
+	Array<CMaterialProperty*> m_aProperties;
+
+	struct MaterialPass
+	{
+		Array<MaterialTexture*> aTextureMap;
+		bool isDirty = true;
+		UINT uVariant = 0;
+		IGXConstantBuffer *pConstants = NULL;
+		byte *pConstantsBlob = NULL;
+		UINT uConstantSize = 0;
+		bool isConstantsDirty = true;
+	};
+
+	Array<MaterialPass> m_aPassCache;
+	MaterialPass *m_pCurrentPass = NULL;
+	UINT m_uCurrentPass = UINT_MAX;
+
+	//! тип физического материала
+	MTLTYPE_PHYSIC m_typePhysics = MTLTYPE_PHYSIC_DEFAULT;
+
+	//! коэффициент пробиваемости [0, ], чем больше тем сложнее пробить
+	CMaterialProperty *m_pDurability = NULL;
+
+	//! шанс пробиваемости [0 - пуля летит насквозь, 1 - пуля ударяется]
+	CMaterialProperty *m_pHitChance = NULL;
+
+	//! плотность материала кг/м3
+	CMaterialProperty *m_pDensity = NULL;
+
+	//! прозрачный ли материал
+	CMaterialFlag *m_pTransparent = NULL;
+	CMaterialFlag *m_pRefractive = NULL;
+	CMaterialFlag *m_pBlurred = NULL;
 };
 
 class CMaterialSystem: public IXMaterialSystem
@@ -105,13 +321,27 @@ public:
 
 	XRenderPassHandler* XMETHODCALLTYPE registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput) override;
 	XRenderPassHandler* XMETHODCALLTYPE getRenderPass(const char *szName) override;
+	void XMETHODCALLTYPE bindRenderPass(XRenderPassHandler *pRenderPass) override;
 
 	XMaterialShaderHandler* XMETHODCALLTYPE registerMaterialShader(const char *szName, XVertexFormatHandler *pVertexFormat, XMaterialShaderPass *pPasses, XMaterialProperty *pGenericProperties) override;
 	XMaterialShaderHandler* XMETHODCALLTYPE getMaterialShader(const char *szName) override;
 
+	void XMETHODCALLTYPE setFlag(const char *szFlag, bool isSet) override;
+	bool XMETHODCALLTYPE getFlag(const char *szFlag) override;
+	IMaterialFlag* XMETHODCALLTYPE getFlagHandler(const char *szFlag) override;
+
 	void queueTextureUpload(CTexture *pTexture);
 	void onTextureRelease(CTexture *pTexture);
+	void onMaterialRelease(CMaterial *pMaterial);
 	void update(float fDT);
+	void onMaterialShaderChange(CMaterial *pMaterial);
+
+	void onGlobalFlagChanged(CGlobalFlag *pFlag);
+
+	void notifyChanged(XEventMaterialChanged *pEvent);
+
+	bool saveMaterial(CMaterial *pMaterial);
+
 protected:
 	struct CObjectData
 	{
@@ -126,6 +356,19 @@ protected:
 	AssotiativeArray<String, CTexture*> m_mpTextures;
 	CConcurrentQueue<CTexture*> m_queueTextureToLoad;
 
+	struct MaterialLoader
+	{
+		IXMaterialLoader *pLoader;
+		bool canSave;
+	};
+
+	Array<IXMaterialProxy*> m_aMaterialProxies;
+	AssotiativeArray<AAString, Array<MaterialLoader>> m_mapMaterialLoaders;
+	Array<XFormatName> m_aMaterialExts;
+	AssotiativeArray<String, CMaterial*> m_mapMaterials;
+
+	IEventChannel<XEventMaterialChanged> *m_pNotifyChannel = NULL;
+
 	void updateReferences();
 	void cleanData();
 
@@ -136,6 +379,7 @@ protected:
 		ID idShader;
 		VertexFormatData *pVertexFormat;
 		Array<GXMacro> aDefines; //!< @fixme: нужно ли это хранить?
+		UINT uID;
 	};
 	struct GeometryShader: public XGeometryShaderHandler
 	{
@@ -143,6 +387,7 @@ protected:
 		//VertexFormatData *pVertexFormat;
 		Array<GXMacro> aDefines;
 		Array<const char*> aszRequiredParameters;
+		UINT uID;
 	};
 	struct GeometryShaderData
 	{
@@ -185,12 +430,47 @@ protected:
 	{
 		const char *szName;
 		CLogicExpression *pCondition;
+
+		// XMaterialProperty *pProp;
+	};
+
+	struct MaterialVariantVS
+	{
+		ID idSet;
+
+		Array<ID> aGeometryShaders;
+	};
+
+	struct MaterialShaderConstants
+	{
+		const char *szKey;
+		GXDECLTYPE type;
+		float4_t vDefault;
+		UINT uGroup;
+		UINT uOffset;
+	};
+
+	struct MaterialStaticFlag
+	{
+		const char *szName;
+		bool bValue;
+	};
+
+	struct MaterialTexture
+	{
+		const char *szName;
+		GXTEXTURE_TYPE type;
 	};
 
 	struct MaterialVariant
 	{
 		bool isReady;
 		ID idShader;
+
+		Array<MaterialVariantVS> aVertexShaders;
+		Array<MaterialTexture> aTextureMap;
+		UINT uConstantsSize;
+		Array<MaterialShaderConstants> aConstants;
 	};
 	
 	struct MaterialShaderPassData
@@ -203,6 +483,9 @@ protected:
 		Array<MaterialProperty> aProperties;
 		bool isDirty;
 
+		Array<MaterialDefine> aAllDefines;
+		Array<MaterialProperty*> aAllProperties;
+
 		Array<MaterialShaderSamplerData> aTotalSamplers;
 
 		Array<MaterialVariant> aVariants;
@@ -214,13 +497,8 @@ protected:
 		VertexFormatData *pVertexFormat;
 		Array<MaterialShaderPassData> aPasses;
 		Array<MaterialProperty> aProperties;
-	};
 
-	struct MaterialShaderConstants
-	{
-		const char *szKey;
-		GXDECLTYPE type;
-		UINT uGroup;
+		Array<MaterialStaticFlag> aStaticFlags;
 	};
 
 	AssotiativeArray<String, VertexFormatData> m_mVertexFormats;
@@ -235,11 +513,14 @@ protected:
 
 	VertexShaderData *m_pCurrentVS = NULL;
 	GeometryShader *m_pCurrentGS = NULL;
+	RenderPass *m_pCurrentRP = NULL;
+
+	AssotiativeArray<AAString, CGlobalFlag> m_mapFlags;
 
 	friend void CopyProps(XMaterialProperty *pProperties, Array<CMaterialSystem::MaterialProperty> &aTarget, const char *szShaderName);
-	friend void GetAllDefines(Array<MaterialDefine> &aAllDefines, Array<MaterialProperty> &aProperties);
+	friend void GetAllDefines(Array<MaterialDefine> &aAllDefines, Array<MaterialProperty> &aProperties, Array<MaterialProperty*> &aAllProps);
 	friend void ParseTexturesConstants(Array<MaterialProperty> &aProperties, Array<MaterialDefine*> &aStaticList,
-		Array<const char*> &aTextures, Array<MaterialShaderConstants> &aConstants);
+		Array<MaterialTexture> &aTextures, Array<MaterialShaderConstants> &aConstants);
 	friend bool EvalCondition(CLogicExpression *pExpr, Array<MaterialDefine*> &aStaticList);
 
 	const char* getHLSLType(GXDECLTYPE type)
@@ -314,6 +595,9 @@ protected:
 		assert(!"Unknown usage");
 		return("");
 	}
+
+	bool loadMaterialFromFile(const char *szName, CMaterial *pMaterial);
+	CGlobalFlag* createFlag(const char *szName);
 };
 
 #endif

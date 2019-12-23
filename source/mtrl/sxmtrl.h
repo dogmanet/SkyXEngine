@@ -252,41 +252,6 @@ enum MTLSORT
 
 //!@}
 
-//! физический тип материала
-enum MTLTYPE_PHYSIC
-{
-	MTLTYPE_PHYSIC_CONCRETE = 0,	//!< бетон
-
-	//! значение по умолчанию
-	MTLTYPE_PHYSIC_DEFAULT = MTLTYPE_PHYSIC_CONCRETE,
-
-	//! металл
-	MTLTYPE_PHYSIC_METAL,			
-
-	//! стекло
-	MTLTYPE_PHYSIC_GLASS,			
-
-	//! пластик
-	MTLTYPE_PHYSIC_PLASTIC,			
-
-	//! дерево
-	MTLTYPE_PHYSIC_TREE,			
-
-	//! плоть
-	MTLTYPE_PHYSIC_FLESH,			
-
-	//! земля/песок
-	MTLTYPE_PHYSIC_GROUD_SAND,		
-
-	//! вода
-	MTLTYPE_PHYSIC_WATER,			
-
-	//! листва/трава
-	MTLTYPE_PHYSIC_LEAF_GRASS,		
-
-	//! количество типов
-	MPT_COUNT
-};
 
 //! данные отправляемые в шейдеры
 enum MTL_SHADERSTD

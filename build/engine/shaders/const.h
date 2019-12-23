@@ -39,7 +39,7 @@ cbuffer CDataMaterial: register(b0)
 
 
 #ifdef XMATERIAL_HAS_CONSTANTS
-cbuffer XMaterialConstants: register(b6)
+cbuffer XMaterialConstants: register(b7)
 {
     struct
 	{

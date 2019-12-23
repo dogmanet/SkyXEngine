@@ -208,6 +208,14 @@ public:
 };
 #endif
 
+class IKeyIterator: public IXUnknown
+{
+public:
+	virtual const char* XMETHODCALLTYPE getCurrent() = 0;
+	virtual const char* XMETHODCALLTYPE getNext() = 0;
+	virtual bool XMETHODCALLTYPE isEnd() = 0;
+};
+
 typedef struct _XGUID
 {
 	_XGUID()

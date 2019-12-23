@@ -107,6 +107,7 @@
     <ClInclude Include="..\..\..\source\xcommon\IAsyncTaskRunner.h" />
     <ClInclude Include="..\..\..\source\xcommon\IFileSystem.h" />
     <ClInclude Include="..\..\..\source\xcommon\IPluginManager.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXConfig.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXCore.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXModelLoader.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXPlugin.h" />

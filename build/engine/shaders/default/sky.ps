@@ -1,0 +1,31 @@
+#ifdef COMPILE_MainGBuffer
+XMaterial MainGBuffer(PSI_XMaterial IN)
+{
+	XMaterial OUT = XMATERIAL_LOAD_DEFAULTS();
+
+	float4 vColor = g_txBase.Sample(g_sScene, IN.vTexUV);
+	// float4 vColor = g_txCurrent.Sample(g_sScene, IN.vTexUV);
+	
+	vColor.xyz *= vColor.w * 25.0f;
+	vColor.w = 1.0f;
+	
+	OUT.vBaseColor = vColor.xyz;
+	OUT.fLightCoeff = 0.0f;
+	OUT.vNormal = -IN.vTexUV;
+	OUT.fDepth = g_vNearFarInvWinSize.y - g_vNearFarInvWinSize.x;
+	return(OUT);
+}
+#endif
+
+#ifdef COMPILE_MainIllimination
+XMaterial MainIllimination(PSI_XMaterial IN)
+{
+	XMaterial OUT = XMATERIAL_LOAD_DEFAULTS();
+	
+	float4 fColor = g_txBase.Sample(g_sScene, IN.vTexUV);
+	
+	OUT.vEmissiveColor = fColor.xyz;
+
+	return(OUT);
+}
+#endif

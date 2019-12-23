@@ -832,3 +832,60 @@ CConfigString CConfig::getIncludeName(int i)
 	}
 	return("");
 }
+
+//#############################################################################
+
+CXConfig::CXConfig()
+{
+	m_pConfig = new CConfig();
+}
+CXConfig::~CXConfig()
+{
+	mem_delete(m_pConfig);
+}
+
+bool XMETHODCALLTYPE CXConfig::open(const char *szPath)
+{
+	return(m_pConfig->open(szPath) == 0);
+}
+bool XMETHODCALLTYPE CXConfig::save()
+{
+	return(m_pConfig->save() == 0);
+}
+
+const char* XMETHODCALLTYPE CXConfig::getKey(const char *szSection, const char *szKey)
+{
+	return(m_pConfig->getKey(szSection, szKey));
+}
+const char* XMETHODCALLTYPE CXConfig::getKeyName(const char *szSection, UINT uIndex)
+{
+	return(m_pConfig->getKeyName(szSection, uIndex));
+}
+const char* XMETHODCALLTYPE CXConfig::getSectionName(UINT uIndex)
+{
+	return(m_pConfig->getSectionName(uIndex));
+}
+void XMETHODCALLTYPE CXConfig::set(const char *szSection, const char *szKey, const char *szValue)
+{
+	return(m_pConfig->set(szSection, szKey, szValue));
+}
+UINT XMETHODCALLTYPE CXConfig::getSectionCount()
+{
+	return(m_pConfig->getSectionCount());
+}
+UINT XMETHODCALLTYPE CXConfig::getKeyCount()
+{
+	return(m_pConfig->getKeyCount());
+}
+UINT XMETHODCALLTYPE CXConfig::getKeyCount(const char *szSection)
+{
+	return(m_pConfig->getKeyCount(szSection));
+}
+bool XMETHODCALLTYPE CXConfig::sectionExists(const char *szSection)
+{
+	return(m_pConfig->sectionExists(szSection));
+}
+bool XMETHODCALLTYPE CXConfig::keyExists(const char *szSection, const char *szKey)
+{
+	return(m_pConfig->keyExists(szSection, szKey));
+}

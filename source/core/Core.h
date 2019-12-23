@@ -42,6 +42,8 @@ public:
 
 	ID XMETHODCALLTYPE getThreadId() override; 
 	bool XMETHODCALLTYPE isOnMainThread() override;
+	
+	IXConfig* XMETHODCALLTYPE CCore::newConfig() override;
 
 protected:
 	IBaseEventChannel* getEventChannelInternal(const XGUID &guid) override;

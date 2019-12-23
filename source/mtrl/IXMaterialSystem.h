@@ -106,11 +106,6 @@ struct XRenderPassOutputElement
 
 #include "XMaterialProperty.h"
 
-struct XVertexFormatHandler {};
-struct XRenderPassHandler {};
-struct XVertexShaderHandler {};
-struct XGeometryShaderHandler {};
-struct XMaterialShaderHandler {};
 
 struct XMaterialShaderSampler
 {
@@ -165,9 +160,11 @@ public:
 	virtual void XMETHODCALLTYPE bindTexture(IXTexture *pTexture, UINT slot = 0) = 0;
 
 	//! Переопределить пиксельный шейдер для последующих вызовов bindMaterial. Действует до тех пор, пока не будет отменено (-1)
+	//! @deprecated
 	virtual void XMETHODCALLTYPE overridePixelShader(ID id) = 0;
 
 	//! Переопределить геометрический шейдер для последующих вызовов bindMaterial. Действует до тех пор, пока не будет отменено (-1)
+	//! @deprecated
 	virtual void XMETHODCALLTYPE overrideGeometryShader(ID id) = 0;
 
 
@@ -186,9 +183,14 @@ public:
 	// ["Base color", "vBaseColor", 'GXDECLTYPE_FLOAT4', "float4(1.0f, 0.0f, 0.0f, 0.5f)"],
 	virtual XRenderPassHandler* XMETHODCALLTYPE registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput) = 0;
 	virtual XRenderPassHandler* XMETHODCALLTYPE getRenderPass(const char *szName) = 0;
+	virtual void XMETHODCALLTYPE bindRenderPass(XRenderPassHandler *pRenderPass) = 0;
 
 	virtual XMaterialShaderHandler* XMETHODCALLTYPE registerMaterialShader(const char *szName, XVertexFormatHandler *pVertexFormat, XMaterialShaderPass *pPasses, XMaterialProperty *pGenericProperties) = 0;
 	virtual XMaterialShaderHandler* XMETHODCALLTYPE getMaterialShader(const char *szName) = 0;
+
+	virtual void XMETHODCALLTYPE setFlag(const char *szFlag, bool isSet) = 0;
+	virtual bool XMETHODCALLTYPE getFlag(const char *szFlag) = 0;
+	virtual IMaterialFlag* XMETHODCALLTYPE getFlagHandler(const char *szFlag) = 0;
 };
 
 #endif

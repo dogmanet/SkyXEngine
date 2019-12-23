@@ -1,0 +1,37 @@
+
+/*
+gbuffer.ps
+
+*/
+
+#include "../struct.h"
+#include "../mtrl.h"
+#include "../shadow.h"
+#include "../const.h"
+#include "../xmat.h"
+
+
+//##########################################################################
+
+PSO_RSMbuffer main(PSI_XMaterial IN)
+{
+	// ClipFar(IN.vPos.z, g_vNearFarLayers.y);
+	IN.vNormal = normalize(IN.vNormal);
+	
+	XMaterial mtrl = XMATERIAL_MAIN(IN);
+	
+	PSO_RSMbuffer OUT;
+	
+#ifdef IS_CUBEMAP
+	OUT.vDepth = dot(IN.vPos.xyz, IN.vPos.xyz);
+#else
+	float fDepth = IN.vPos.z / IN.vPos.w;
+	float fBias = ShadowSlopeBias(fDepth);
+	OUT.vDepth = fDepth/*  + fBias */;
+#endif
+
+	OUT.vNormal = float4(NormalEncode(normalize(mtrl.vNormal)), 1.0);
+	OUT.vFlux = mtrl.vBaseColor;
+	
+	return(OUT);
+}

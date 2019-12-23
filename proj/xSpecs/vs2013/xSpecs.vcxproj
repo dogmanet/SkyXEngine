@@ -20,10 +20,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\xSpecs\dllmain.cpp" />
+    <ClCompile Include="..\..\..\source\xSpecs\MaterialLoader.cpp" />
+    <ClCompile Include="..\..\..\source\xSpecs\MaterialProxy.cpp" />
     <ClCompile Include="..\..\..\source\xSpecs\plugin_main.cpp" />
     <ClCompile Include="..\..\..\source\xSpecs\TextureProxy.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\xSpecs\MaterialLoader.h" />
+    <ClInclude Include="..\..\..\source\xSpecs\MaterialProxy.h" />
     <ClInclude Include="..\..\..\source\xSpecs\TextureProxy.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

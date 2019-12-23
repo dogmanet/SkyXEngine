@@ -43,7 +43,7 @@ protected:
 	void buildPSPs();
 
 protected:
-	UINT m_uRefCount = 0;
+	UINT m_uRefCount = 1;
 	IXResourceModelStatic *m_pResource = NULL;
 
 	IGXRenderBuffer **m_ppRenderBuffer = NULL;
