@@ -96,10 +96,7 @@ void CSkyBox::setTexture(const char *szTexture)
 	assert(szTexture);
 	
 	mem_release(m_pSky1);
-	XSHADER_DEFAULT_DESC shDesc;
-	shDesc.szFilePS = "sky_box.ps";
-	shDesc.szFileVS = "sky_box.vs";
-	m_pMaterialSystem->loadMaterial(szTexture, &m_pSky1, &shDesc);
+	m_pMaterialSystem->loadMaterial(szTexture, &m_pSky1, "Sky");
 
 	if(!m_pSky1)
 	{

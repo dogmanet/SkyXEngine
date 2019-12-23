@@ -66,7 +66,7 @@ CMaterialSystem::~CMaterialSystem()
 	cleanData();
 }
 
-void XMETHODCALLTYPE CMaterialSystem::loadMaterial(const char *szName, IXMaterial **ppMaterial, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount, XSHADER_VARIANT_DESC *pVariantsDesc)
+void XMETHODCALLTYPE CMaterialSystem::loadMaterial(const char *szName, IXMaterial **ppMaterial, const char *szDefaultShader)
 {
 	String sName(szName);
 
@@ -105,13 +105,13 @@ void XMETHODCALLTYPE CMaterialSystem::loadMaterial(const char *szName, IXMateria
 	CMaterial *pNewMaterial = NULL;
 
 	// ID id = SMtrl_MtlLoad2(szName, pDefaultShaders, uVariantCount, pVariantsDesc);
-	pNewMaterial = new CMaterial(this, -1, pNode->Key.c_str());
+	pNewMaterial = new CMaterial(this, pNode->Key.c_str());
 	*ppMaterial = pNewMaterial;
 	m_mapMaterials[sName] = pNewMaterial;
 
 	if(!loadMaterialFromFile(szFileName, pNewMaterial))
 	{
-		pNewMaterial->setShader("Default");
+		pNewMaterial->setShader(szDefaultShader ? szDefaultShader : "Default");
 		pNewMaterial->setTexture("txBase", szName);
 	}
 	else
@@ -328,7 +328,7 @@ void XMETHODCALLTYPE CMaterialSystem::setWorld(const SMMATRIX &mWorld)
 	SGCore_GetDXDevice()->getThreadContext()->setVSConstant(m_pObjectConstantBuffer, SCR_OBJECT);
 	//SGCore_GetDXDevice()->setPixelShaderConstant(m_pObjectConstantBuffer, SCR_OBJECT);
 }
-void XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial, IXShaderVariant *pShaderVariant)
+void XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 {
 	CMaterial *pMat = (CMaterial*)pMaterial;
 	if(pMaterial)
@@ -514,16 +514,6 @@ void XMETHODCALLTYPE CMaterialSystem::bindTexture(IXTexture *pTexture, UINT slot
 	{
 		SGCore_GetDXDevice()->getThreadContext()->setPSTexture(NULL, slot);
 	}
-}
-
-void XMETHODCALLTYPE CMaterialSystem::overridePixelShader(ID id)
-{
-	SMtrl_MtlPixelShaderOverride(id);
-}
-
-void XMETHODCALLTYPE CMaterialSystem::overrideGeometryShader(ID id)
-{
-	SMtrl_MtlGeometryShaderOverride(id);
 }
 
 void CMaterialSystem::onTextureRelease(CTexture *pTexture)
@@ -2020,8 +2010,7 @@ private:
 
 //#############################################################################
 
-CMaterial::CMaterial(CMaterialSystem *pMaterialSystem, ID id, const char *szName):
-	m_id(id),
+CMaterial::CMaterial(CMaterialSystem *pMaterialSystem, const char *szName):
 	m_pMaterialSystem(pMaterialSystem),
 	m_szName(szName)
 {
@@ -2063,10 +2052,6 @@ const char* XMETHODCALLTYPE CMaterial::getName() const
 	*ppTexture = new CTexture(id);*/
 //}
 
-ID CMaterial::getId()
-{
-	return(m_id);
-}
 
 void XMETHODCALLTYPE CMaterial::setTransparent(bool bValue)
 {

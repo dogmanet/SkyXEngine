@@ -112,9 +112,6 @@ public:
 	virtual const char* XMETHODCALLTYPE getName() const = 0;
 
 	virtual bool XMETHODCALLTYPE save() = 0;
-
-	//@FIXME: DO NOT USE! Will be removed!
-	virtual ID getInternalID() = 0;
 };
 
 #endif

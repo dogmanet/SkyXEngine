@@ -133,7 +133,7 @@ UINT CShadowCache::processNextBunch()
 	m_aReadyMaps.clearFast();
 
 	// render shadows
-	m_pMaterialSystem->overridePixelShader(m_idRSMPixelShader);
+//	m_pMaterialSystem->overridePixelShader(m_idRSMPixelShader);
 	{
 		ShadowMap *pSM;
 		for(UINT i = 0, l = m_aShadowMaps.size(); i < l; ++i)
@@ -159,8 +159,8 @@ UINT CShadowCache::processNextBunch()
 		m_aReadyMaps.push_back({&m_shadowPSSM.map, m_shadowPSSM.pLight});
 	}
 
-	m_pMaterialSystem->overrideGeometryShader(m_idRSMCubeGeometryShader);
-	m_pMaterialSystem->overridePixelShader(m_idRSMCubePixelShader);
+//	m_pMaterialSystem->overrideGeometryShader(m_idRSMCubeGeometryShader);
+//	m_pMaterialSystem->overridePixelShader(m_idRSMCubePixelShader);
 	{
 		ShadowCubeMap *pSM;
 		for(UINT i = 0, l = m_aShadowCubeMaps.size(); i < l; ++i)
@@ -177,8 +177,8 @@ UINT CShadowCache::processNextBunch()
 		}
 	}
 
-	m_pMaterialSystem->overrideGeometryShader(-1);
-	m_pMaterialSystem->overridePixelShader(-1);
+//	m_pMaterialSystem->overrideGeometryShader(-1);
+//	m_pMaterialSystem->overridePixelShader(-1);
 
 	Core_RMatrixSet(G_RI_MATRIX_VIEW, &mOldView);
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &mOldProj);

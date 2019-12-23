@@ -136,12 +136,11 @@ public:
 	friend class CMaterialFlag;
 	// friend class CMaterialSystem;
 
-	CMaterial(CMaterialSystem *pMaterialSystem, ID id, const char *szName);
+	CMaterial(CMaterialSystem *pMaterialSystem, const char *szName);
 	~CMaterial();
 
 	const char* XMETHODCALLTYPE getName() const override;
 	//void XMETHODCALLTYPE getMainTexture(IXTexture **ppTexture) override;
-	ID getId();
 	void XMETHODCALLTYPE setTransparent(bool bValue) override;
 	bool XMETHODCALLTYPE isTransparent() const override;
 
@@ -183,12 +182,7 @@ public:
 	float XMETHODCALLTYPE getDensity() const override;
 
 	bool XMETHODCALLTYPE save() override;
-
-	ID getInternalID()
-	{
-		return(m_id);
-	}
-
+	
 	bool isDirty() const
 	{
 		return(m_pCurrentPass->isDirty);
@@ -238,7 +232,6 @@ protected:
 	void updateShader();
 
 private:
-	ID m_id = -1;
 	const char *m_szName = NULL;
 
 	struct MaterialTexture
@@ -295,19 +288,16 @@ public:
 	CMaterialSystem();
 	~CMaterialSystem();
 
-	void XMETHODCALLTYPE loadMaterial(const char *szName, IXMaterial **ppMaterial, XSHADER_DEFAULT_DESC *pDefaultShaders, UINT uVariantCount = 0, XSHADER_VARIANT_DESC *pVariantsDesc = NULL) override;
+	void XMETHODCALLTYPE loadMaterial(const char *szName, IXMaterial **ppMaterial, const char *szDefaultShader = NULL) override;
 	bool XMETHODCALLTYPE getMaterial(const char *szName, IXMaterial **ppMaterial) override;
 
 	bool XMETHODCALLTYPE loadTexture(const char *szName, IXTexture **ppTexture) override;
 	bool XMETHODCALLTYPE getTexture(const char *szName, IXTexture **ppTexture) override;
 	//void XMETHODCALLTYPE addTexture(const char *szName, IGXTexture2D *pTexture) override;
 
-	void XMETHODCALLTYPE bindMaterial(IXMaterial *pMaterial, IXShaderVariant *pShaderVariant = NULL) override;
+	void XMETHODCALLTYPE bindMaterial(IXMaterial *pMaterial) override;
 	void XMETHODCALLTYPE bindTexture(IXTexture *pTexture, UINT slot = 0) override;
 	void XMETHODCALLTYPE setWorld(const SMMATRIX &mWorld) override;
-
-	void XMETHODCALLTYPE overrideGeometryShader(ID id) override;
-	void XMETHODCALLTYPE overridePixelShader(ID id) override;
 
 	XVertexFormatHandler* XMETHODCALLTYPE registerVertexFormat(const char *szName, XVertexOutputElement *pDecl) override;
 	void XMETHODCALLTYPE unregisterVertexFormat(const char *szName) override;

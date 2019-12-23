@@ -116,8 +116,6 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB gcore initialized\n");
 
-	SMtrl_DevSet(SGCore_GetDXDevice());
-
 #if 1
 	// init mtrl
 	SMtrl_0Create("sxml", false, true);
