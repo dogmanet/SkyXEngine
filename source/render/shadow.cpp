@@ -220,13 +220,13 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 	pCtx->setColorTarget(NULL, 2);
 	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
 	
-	pCtx->setColorTarget(pFluxSurface, 0);
-	pCtx->setColorTarget(pNormalSurface, 1);
-	pCtx->clear(GX_CLEAR_COLOR);
-	
-	pCtx->setColorTarget(pDepthSurface);
-	pCtx->setColorTarget(pNormalSurface, 1);
-	pCtx->setColorTarget(pFluxSurface, 2);
+//	pCtx->setColorTarget(pFluxSurface, 0);
+//	pCtx->setColorTarget(pNormalSurface, 1);
+//	pCtx->clear(GX_CLEAR_COLOR);
+//	
+//	pCtx->setColorTarget(pDepthSurface);
+//	pCtx->setColorTarget(pNormalSurface, 1);
+//	pCtx->setColorTarget(pFluxSurface, 2);
 
 	mem_release(pDepthSurface);
 	mem_release(pNormalSurface);
@@ -290,7 +290,7 @@ void CShadowMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDepth
 	m_pShaderDataPS->update(&m_shaderData.ps);
 	pCtx->setPSConstant(m_pShaderDataPS, 6);
 
-	IGXConstantBuffer *pLightConstants = m_pLight->getConstants(pCtx);
+	IGXConstantBuffer *pLightConstants = m_pLight->getConstants(m_pDevice);
 	pCtx->setPSConstant(pLightConstants);
 	mem_release(pLightConstants);
 	/*
@@ -380,7 +380,7 @@ void CShadowMap::genLPV(bool isDebug)
 	m_pShaderDataInjectVS->update(&SMMatrixTranspose(SMMatrixInverse(NULL, m_mView * m_mProj)));
 	pCtx->setVSConstant(m_pShaderDataInjectVS, 6);
 
-	IGXConstantBuffer *pLightConstant = m_pLight->getConstants(pCtx);
+	IGXConstantBuffer *pLightConstant = m_pLight->getConstants(m_pDevice);
 	pCtx->setVSConstant(pLightConstant, 7);
 	mem_release(pLightConstant);
 
@@ -949,19 +949,19 @@ void CShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 	pCtx->setColorTarget(NULL, 2);
 	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
 	
-	pCtx->setColorTarget(pFluxSurface, 0);
-	pCtx->setColorTarget(pNormalSurface, 1);
-	pCtx->clear(GX_CLEAR_COLOR);
-	
-	pCtx->setColorTarget(pDepthSurface);
-	pCtx->setColorTarget(pNormalSurface, 1);
-	pCtx->setColorTarget(pFluxSurface, 2);
+//	pCtx->setColorTarget(pFluxSurface, 0);
+//	pCtx->setColorTarget(pNormalSurface, 1);
+//	pCtx->clear(GX_CLEAR_COLOR);
+//
+//	pCtx->setColorTarget(pDepthSurface);
+//	pCtx->setColorTarget(pNormalSurface, 1);
+//	pCtx->setColorTarget(pFluxSurface, 2);
 
 	mem_release(pDepthSurface);
 	mem_release(pNormalSurface);
 	mem_release(pFluxSurface);
 	
-	IGXConstantBuffer *pLightConstants = m_pLight->getConstants(pCtx);
+	IGXConstantBuffer *pLightConstants = m_pLight->getConstants(m_pDevice);
 	pCtx->setGSConstant(m_pShaderDataGS, SCR_CAMERA);
 	pCtx->setGSConstant(pLightConstants, SCR_OBJECT);
 	mem_release(pLightConstants);
@@ -1017,7 +1017,7 @@ void CShadowCubeMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferD
 	m_pShaderDataPS->update(&m_shaderData.ps);
 	pCtx->setPSConstant(m_pShaderDataPS, 6);
 
-	IGXConstantBuffer *pLightConstants = m_pLight->getConstants(pCtx);
+	IGXConstantBuffer *pLightConstants = m_pLight->getConstants(m_pDevice);
 	pCtx->setPSConstant(pLightConstants);
 	mem_release(pLightConstants);
 	
@@ -1077,7 +1077,7 @@ void CShadowCubeMap::genLPV(bool isDebug)
 		pCtx->setVSTexture(m_pFluxMap32, 2);
 	}
 
-	IGXConstantBuffer *pLightConstant = m_pLight->getConstants(pCtx);
+	IGXConstantBuffer *pLightConstant = m_pLight->getConstants(m_pDevice);
 	pCtx->setVSConstant(pLightConstant, 7);
 	mem_release(pLightConstant);
 

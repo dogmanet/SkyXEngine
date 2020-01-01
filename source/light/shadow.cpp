@@ -341,17 +341,21 @@ void PSSM::preRender(int split)
 	mem_release(DepthSurfaces[split]);
 	DepthSurfaces[split] = m_aDepthMaps[split]->getMipmap();
 	
-	light_data::pDXDevice->setColorTarget(DepthSurfaces[split]);
+	IGXContext *pCtx = light_data::pDXDevice->getThreadContext();
+
+	pCtx->setColorTarget(DepthSurfaces[split]);
 	
 
-	light_data::pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH, GX_COLOR_ARGB(255, 255, 255, 255));
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH, GX_COLOR_ARGB(255, 255, 255, 255));
 }
 
 void PSSM::begin()
 {
-	OldDepthStencilSurface = light_data::pDXDevice->getDepthStencilSurface();
-	light_data::pDXDevice->setDepthStencilSurface(DepthStencilSurface);
-	OldColorSurface = light_data::pDXDevice->getColorTarget();
+	IGXContext *pCtx = light_data::pDXDevice->getThreadContext();
+
+	OldDepthStencilSurface = pCtx->getDepthStencilSurface();
+	pCtx->setDepthStencilSurface(DepthStencilSurface);
+	OldColorSurface = pCtx->getColorTarget();
 
 	/*light_data::pDXDevice->GetTransform(D3DTS_VIEW,&OldView);
 	light_data::pDXDevice->GetTransform(D3DTS_PROJECTION,&OldProj);
@@ -364,8 +368,10 @@ void PSSM::begin()
 
 void PSSM::end()
 {
-	light_data::pDXDevice->setDepthStencilSurface(OldDepthStencilSurface);
-	light_data::pDXDevice->setColorTarget(OldColorSurface);
+	IGXContext *pCtx = light_data::pDXDevice->getThreadContext();
+
+	pCtx->setDepthStencilSurface(OldDepthStencilSurface);
+	pCtx->setColorTarget(OldColorSurface);
 
 	mem_release_del(OldDepthStencilSurface);
 	mem_release_del(OldColorSurface);
@@ -525,14 +531,16 @@ void PSSM::genShadowAll(IGXTexture2D* shadowmap)
 {
 	IGXSurface *RenderSurf, *BackBuf;
 
+	IGXContext *pCtx = light_data::pDXDevice->getThreadContext();
+
 	RenderSurf = shadowmap->getMipmap();
-	BackBuf = light_data::pDXDevice->getColorTarget();
-	light_data::pDXDevice->setColorTarget(RenderSurf);
+	BackBuf = pCtx->getColorTarget();
+	pCtx->setColorTarget(RenderSurf);
 
 
-	light_data::pDXDevice->clear(GX_CLEAR_COLOR);
+	pCtx->clear(GX_CLEAR_COLOR);
 
-	light_data::pDXDevice->setColorTarget(BackBuf);
+	pCtx->setColorTarget(BackBuf);
 
 	mem_release_del(RenderSurf);
 	mem_release_del(BackBuf);
@@ -704,9 +712,11 @@ long ShadowMapTech::getIDArr(long id)
 
 void ShadowMapTech::begin()
 {
-	OldDepthStencilSurface = light_data::pDXDevice->getDepthStencilSurface();
-	light_data::pDXDevice->setDepthStencilSurface(DepthStencilSurface);
-	OldColorSurface = light_data::pDXDevice->getColorTarget();
+	IGXContext *pCtx = light_data::pDXDevice->getThreadContext();
+
+	OldDepthStencilSurface = pCtx->getDepthStencilSurface();
+	pCtx->setDepthStencilSurface(DepthStencilSurface);
+	OldColorSurface = pCtx->getColorTarget();
 
 	Core_RMatrixGet(G_RI_MATRIX_VIEW, &OldView);
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &OldProj);
@@ -732,15 +742,17 @@ void ShadowMapTech::begin()
 	mem_release_del(DepthSurface);
 	DepthSurface = DepthMap->getMipmap();
 	
-	light_data::pDXDevice->setColorTarget(DepthSurface);
+	pCtx->setColorTarget(DepthSurface);
 	
-	light_data::pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH, GX_COLOR_ARGB(255,255,255,255));
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH, GX_COLOR_ARGB(255, 255, 255, 255));
 }
 
 void ShadowMapTech::end()
 {
-	light_data::pDXDevice->setDepthStencilSurface(OldDepthStencilSurface);
-	light_data::pDXDevice->setColorTarget(OldColorSurface);
+	IGXContext *pCtx = light_data::pDXDevice->getThreadContext();
+
+	pCtx->setDepthStencilSurface(OldDepthStencilSurface);
+	pCtx->setColorTarget(OldColorSurface);
 
 	mem_release_del(OldDepthStencilSurface);
 	mem_release_del(OldColorSurface);
@@ -1023,9 +1035,11 @@ void ShadowMapCubeTech::init()
 
 void ShadowMapCubeTech::begin()
 {
-	OldDepthStencilSurface = light_data::pDXDevice->getDepthStencilSurface();
-	light_data::pDXDevice->setDepthStencilSurface(DepthStencilSurface);
-	OldColorSurface = light_data::pDXDevice->getColorTarget();
+	IGXContext *pCtx = light_data::pDXDevice->getThreadContext();
+
+	OldDepthStencilSurface = pCtx->getDepthStencilSurface();
+	pCtx->setDepthStencilSurface(DepthStencilSurface);
+	OldColorSurface = pCtx->getColorTarget();
 
 	/*light_data::pDXDevice->GetTransform(D3DTS_VIEW,&OldView);
 	light_data::pDXDevice->GetTransform(D3DTS_PROJECTION,&OldProj);
@@ -1038,6 +1052,8 @@ void ShadowMapCubeTech::begin()
 
 void ShadowMapCubeTech::pre(int cube)
 {
+	IGXContext *pCtx = light_data::pDXDevice->getThreadContext();
+
 	if (!EnableEdge[cube])
 	{
 		if (!EnableEdgeNulled[cube])
@@ -1046,9 +1062,9 @@ void ShadowMapCubeTech::pre(int cube)
 			mem_release_del(DepthSurface[cube]);
 
 			DepthSurface[cube] = DepthMap->getMipmap((GXCUBEMAP_FACES)cube, 0);
-			light_data::pDXDevice->setColorTarget(DepthSurface[cube]);
+			pCtx->setColorTarget(DepthSurface[cube]);
 
-			light_data::pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH, GX_COLOR_ARGB(255, 255, 255, 255));
+			pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH, GX_COLOR_ARGB(255, 255, 255, 255));
 		}
 		return;
 	}
@@ -1075,9 +1091,9 @@ void ShadowMapCubeTech::pre(int cube)
 	mem_release_del(DepthSurface[cube]);
 	
 	DepthSurface[cube] = DepthMap->getMipmap((GXCUBEMAP_FACES)cube, 0);
-	light_data::pDXDevice->setColorTarget(DepthSurface[cube]);
+	pCtx->setColorTarget(DepthSurface[cube]);
 	
-	light_data::pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH, GX_COLOR_ARGB(255,255,255,255));
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH, GX_COLOR_ARGB(255, 255, 255, 255));
 
 	SGCore_ShaderBind(light_data::shader_id::kit::idSMDepthGeomCube);
 
@@ -1100,8 +1116,10 @@ void ShadowMapCubeTech::post(int cube)
 
 void ShadowMapCubeTech::end()
 {
-	light_data::pDXDevice->setDepthStencilSurface(OldDepthStencilSurface);
-	light_data::pDXDevice->setColorTarget(OldColorSurface);
+	IGXContext *pCtx = light_data::pDXDevice->getThreadContext();
+
+	pCtx->setDepthStencilSurface(OldDepthStencilSurface);
+	pCtx->setColorTarget(OldColorSurface);
 	mem_release_del(OldDepthStencilSurface);
 	mem_release_del(OldColorSurface);
 

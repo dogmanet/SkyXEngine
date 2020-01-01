@@ -40,17 +40,15 @@ protected:
 
 	UINT m_uCurrentFrame = 0;
 	Array<IXLight*> m_aFrameLights;
+	bool m_isFirstBunch = true;
 
 	ID m_idRSMCubeGeometryShader = -1;
-
-	ID m_idRSMPixelShader = -1;
-	ID m_idRSMCubePixelShader = -1;
-	ID m_idRSMPixelShaderSpot = -1;
 
 	struct ShadowMap
 	{
 		CShadowMap map;
 		bool isDirty = false;
+		bool shouldProcess = false;
 		IXLight *pLight = NULL;
 	};
 
@@ -58,6 +56,7 @@ protected:
 	{
 		CShadowCubeMap map;
 		bool isDirty = false;
+		bool shouldProcess = false;
 		IXLight *pLight = NULL;
 	};
 
@@ -65,6 +64,7 @@ protected:
 	{
 		CShadowPSSM map;
 		bool isDirty = false;
+		bool shouldProcess = false;
 		IXLight *pLight = NULL;
 	};
 
@@ -79,6 +79,9 @@ protected:
 	};
 
 	Array<ReadyShadows> m_aReadyMaps;
+
+	XGeometryShaderHandler *m_pRSMGeometryShader = NULL;
+	XRenderPassHandler *m_pRenderPassShadow = NULL;
 };
 
 #endif

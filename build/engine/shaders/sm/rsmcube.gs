@@ -27,16 +27,16 @@ cbuffer perLight: register(b1)
 
 struct XVSO_SceneCommon 
 {
-	float4 vPosition	:POSITION0;
-	float4 vPos		:TEXCOORD2;
+	//float4 vPosition	:POSITION0;
 	XMAT_GS_STRUCT();
+	//float4 vPos		:TEXCOORD2;
 };
 
 struct XGSO_SceneShadows
 {
-	float4 vPosition	:POSITION0;
-	float4 vPos		:TEXCOORD2;
+	//float4 vPosition	:POSITION0;
 	XMAT_GS_STRUCT();
+	//float4 vPos		:TEXCOORD2;
 	
 	uint uRTIndex   :SV_RenderTargetArrayIndex;
 };
@@ -55,10 +55,10 @@ void main(triangle XVSO_SceneCommon input[3], inout TriangleStream<XGSO_SceneSha
 		[unroll]
 		for(int v = 0; v < 3; ++v)
 		{
+			XMAT_GS_PASS(OUT, input[v]);
+			
 			OUT.vPosition = mul(float4(input[v].vPosition.xyz, 1.f), g_mVP[f]);
 			OUT.vPos = float4(g_vLightPosShadow.xyz - input[v].vPosition.xyz, 1.0);
-			
-			XMAT_GS_PASS(OUT, input[v]);
 			
 			OutputStream.Append(OUT);
 		}

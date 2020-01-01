@@ -22,8 +22,8 @@ Texture2D g_txParameters:register(t5);
 
 float4 main(VSO_PP IN):COLOR0
 {
-	float4 vNormal = g_txNormals.Sample(g_sSampler,IN.vTexUV);
-	float2 vLayerType = LayerDecode(vNormal.w);
+	// float4 vNormal = g_txNormals.Sample(g_sSampler,IN.vTexUV);
+	// float2 vLayerType = LayerDecode(vNormal.w);
 	//vLayerType.x *= LAYERS_COUNT_MAX;
 	//return float4(vLayerType.x, vLayerType.x, vLayerType.x, 1);
 	//float fSort = LayerDecodeType(vNormal.w);
@@ -33,7 +33,7 @@ float4 main(VSO_PP IN):COLOR0
 	float4 vColor = g_txColor.Sample(g_sSampler,IN.vTexUV);
 	vColor.rgb = pow(vColor.rgb, 2.2);
 	float4 vColorOriginal = vColor;
-	float4 vParameters = g_txParameters.Sample(g_sSampler,IN.vTexUV);
+	// float4 vParameters = g_txParameters.Sample(g_sSampler,IN.vTexUV);
 
 	float4 vAmbient = g_txAmbient.Sample(g_sSampler,IN.vTexUV);
 	// vAmbient += 0.1;
@@ -65,5 +65,5 @@ float4 main(VSO_PP IN):COLOR0
 	vColor.rgb /= (fAdaptedLum + vColor.rgb);
 	
 	//приводим цвет к линейному пространству
-	return float4(pow(lerp(vColor.rgb, vColorOriginal.xyz, vColorOriginal.a), 1.0/2.2), 1.0f);
+	return(float4(pow(lerp(vColorOriginal.xyz, vColor.rgb, vColorOriginal.a), 1.0/2.2), 1.0f));
 }

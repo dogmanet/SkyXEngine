@@ -4,33 +4,33 @@ ppgensm_direct.ps
 Генерация теней для локального направленного света
 */
 
-#include "../struct.h"
-#include "../shadow.h"
-#include "../mtrl.h"
-#include "../ps.h"
+#include <struct.h>
+#include <shadow.h>
+#include <mtrl.h>
+#include <ps.h>
 
 //##########################################################################
 
 cbuffer perFrame: register(b1)
 {
-	half3 g_vPosCam;
+	float3 g_vPosCam;
 };
 
 cbuffer perShadow: register(b6)
 {
-	half4x4	g_mMatrixTexture;
+	float4x4	g_mMatrixTexture;
 	// half4 g_vPixelSize;
 	// half3 g_vSizeMapBias;
-	half3 vPixelMapSizeBias;
+	float3 vPixelMapSizeBias;
 };
 
 cbuffer perLight: register(b0)
 {
-	half4 g_vLightColorPower;
-	half4 g_vLightPosShadow;
+	float4 g_vLightColorPower;
+	float4 g_vLightPosShadow;
 #ifdef IS_SPOT
-	half4 g_vLightSpotDirection;
-	half2 g_vLightSpotInnerOuterAngles;
+	float4 g_vLightSpotDirection;
+	float2 g_vLightSpotInnerOuterAngles;
 #endif
 };
 
@@ -50,7 +50,7 @@ Texture2D g_txNormals: register(t3);
 
 //##########################################################################
 
-half4 main(VSO_ResPos IN):COLOR0
+float4 main(VSO_ResPos IN):COLOR0
 {
 	float fShadow = 0.0f;
 	half3 vNormal = normalize(NormalDecode(g_txNormals.Sample(g_sPointClamp, IN.vTexUV).xyz).xyz);
@@ -69,7 +69,7 @@ half4 main(VSO_ResPos IN):COLOR0
 	float cosTheta = saturate(dot(vNormal, normalize(g_vLightPosShadow.xyz - vPixelPos.xyz)));
 	// float fBias = clamp(vPixelMapSizeBias.z * tan(acos(cosTheta)), 0,0.01) / vTexCoord.w;
 	// float fBias = clamp(0.001f * tan(acos(cosTheta)), 0,0.001f) / vTexCoord.w;
-	float fBias = clamp(0.0001f * tan(acos(cosTheta)), 0.0001,0.001f) / vTexCoord.w;
+	float fBias = clamp(0.0001f / (vPixelMapSizeBias.x * 0.0009765625) * tan(acos(cosTheta)), 0.0001,0.001f) / vTexCoord.w;
 	// float fBias = 0.001f / vTexCoord.w;
 	
 // #undef GSD_9
@@ -113,4 +113,5 @@ half4 main(VSO_ResPos IN):COLOR0
 	// #endif
 
 	return saturate(fShadow);
+	// return float4(vNormal, 1);
 } 

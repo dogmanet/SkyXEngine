@@ -467,7 +467,7 @@ void XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 						}
 					}
 
-					MaterialVariantVS *pVS = &pVariant->aVertexShaders[m_pCurrentVS->uID];
+					MaterialVariantVS *pVS = &pVariant->aPassVariants[m_uCurrentRPvariant].aVertexShaders[m_pCurrentVS->uID];
 					ID idShaderSet = -1;
 					if(m_pCurrentGS)
 					{
@@ -663,7 +663,7 @@ void XMETHODCALLTYPE CMaterialSystem::bindGS(XGeometryShaderHandler *pGeometrySh
 	m_pCurrentGS = (GeometryShader*)pGeometryShader;
 }
 
-XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput)
+XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput, XRenderPassVariantElement *pVariants)
 {
 	if(m_mRenderPasses.KeyExists(szName))
 	{
@@ -723,6 +723,23 @@ XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::registerRenderPass(const ch
 	// pass.aDefines.push_back({"XMATERIAL_LOAD_DEFAULTS()", strdup("")});
 	// aDefines
 
+	Array<GXMacro> aMacro;
+	pass.aVariants.push_back(aMacro);
+
+	while(pVariants && pVariants->pMacro)
+	{
+		GXMacro *pMacro = pVariants->pMacro;
+		while(pMacro && pMacro->szName)
+		{
+			aMacro.push_back({strdup(pMacro->szName), strdup(pMacro->szDefinition)});
+			++pMacro;
+		}
+		pass.aVariants.push_back(aMacro);
+		aMacro.clearFast();
+
+		++pVariants;
+	}
+
 	updateReferences();
 
 	return(&pass);
@@ -736,9 +753,18 @@ XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::getRenderPass(const char *s
 	}
 	return(NULL);
 }
-void XMETHODCALLTYPE CMaterialSystem::bindRenderPass(XRenderPassHandler *pRenderPass)
+void XMETHODCALLTYPE CMaterialSystem::bindRenderPass(XRenderPassHandler *pRenderPass, UINT uVariant)
 {
 	m_pCurrentRP = (RenderPass*)pRenderPass;
+
+	assert(uVariant < m_pCurrentRP->aVariants.size());
+
+	if(uVariant >= m_pCurrentRP->aVariants.size())
+	{
+		uVariant = 0;
+	}
+
+	m_uCurrentRPvariant = uVariant;
 }
 
 static void CopyProps(XMaterialProperty *pProperties, Array<CMaterialSystem::MaterialProperty> &aTarget, const char *szShaderName)
@@ -989,9 +1015,16 @@ void CMaterialSystem::updateReferences()
 				int iFound = 0;
 				Array<XVertexOutputElement*> aPassParameters;
 
+				String sStruct;
 				for(UINT k = 0, kl = pFormat->aDecl.size(); k < kl; ++k)
 				{
 					XVertexOutputElement *pEl = &pFormat->aDecl[k];
+
+					if(k != 0)
+					{
+						sStruct += "; ";
+					}
+					sStruct += String(getHLSLType(pEl->type)) + " " + pEl->szName + ": " + getHLSLSemantic(pEl->usage);
 
 					if(pGS->aszRequiredParameters.indexOf(pEl->szName, [](const char *a, const char *b){
 						return(!fstrcmp(a, b));
@@ -1019,16 +1052,14 @@ void CMaterialSystem::updateReferences()
 				gsData->aDefines = pGS->aDefines;
 				gsData->iCommonDefines = gsData->aDefines.size();
 
-				String sPass, sStruct;
+				String sPass;
 				for(UINT k = 0, kl = aPassParameters.size(); k < kl; ++k)
 				{
 					XVertexOutputElement *el = aPassParameters[k];
 					if(k != 0)
 					{
-						sStruct += "; ";
 						sPass += "; ";
 					}
-					sStruct += String(getHLSLType(el->type)) + " " + el->szName + ": " + getHLSLSemantic(el->usage);
 					sPass += String("(dst).") + el->szName + " = (src)." + el->szName;
 				}
 				gsData->aDefines.push_back({"XMAT_GS_STRUCT()", strdup(sStruct.c_str())});
@@ -1282,25 +1313,40 @@ void CMaterialSystem::updateReferences()
 						sprintf(szTempName, "COMPILE_%s", pPass->szEntryPoint);
 						aVariantDefines.push_back({szTempName, "1"});
 
-						aVariantDefines.push_back({NULL, NULL});
-						// prepare for compile
-						ID idShader = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, pMetaPass->szShaderFile, NULL, &aVariantDefines[0]);
-						
 						MaterialVariant *pVariant = &pPass->aVariants[s];
-						pVariant->idShader = idShader;
 						pVariant->isReady = true;
 
-						pVariant->aVertexShaders.clearFast();
-						for(UINT j = 0, jl = pShader->pVertexFormat->aVS.size(); j < jl; ++j)
-						{
-							VertexShaderData *pVS = pShader->pVertexFormat->aVS[j];
-							MaterialVariantVS &vs = pVariant->aVertexShaders[j];
-							vs.idSet = SGCore_ShaderCreateKit(pVS->idShader, idShader);
+						UINT uOldSize = aVariantDefines.size();
 
-							for(UINT k = 0, kl = pShader->pVertexFormat->aGS.size(); k < kl; ++k)
+						pVariant->aPassVariants.clearFast();
+						for(UINT uPassVariant = 0, uPassVariantl = pPass->pRenderPass->aVariants.size(); uPassVariant < uPassVariantl; ++uPassVariant)
+						{
+							aVariantDefines.resizeFast(uOldSize);
+
+							auto &aPassVariants = pPass->pRenderPass->aVariants[uPassVariant];
+							for(UINT m = 0, ml = aPassVariants.size(); m < ml; ++m)
 							{
-								GeometryShaderData *pGS = pShader->pVertexFormat->aGS[k];
-								vs.aGeometryShaders[k] = SGCore_ShaderCreateKit(pVS->idShader, idShader, pGS->idShader);
+								aVariantDefines.push_back(aPassVariants[m]);
+							}
+
+							aVariantDefines.push_back({NULL, NULL});
+
+							ID idShader = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, pMetaPass->szShaderFile, NULL, &aVariantDefines[0]);
+							pVariant->aPassVariants[uPassVariant].idShader = idShader;
+
+
+							pVariant->aPassVariants[uPassVariant].aVertexShaders.clearFast();
+							for(UINT j = 0, jl = pShader->pVertexFormat->aVS.size(); j < jl; ++j)
+							{
+								VertexShaderData *pVS = pShader->pVertexFormat->aVS[j];
+								MaterialVariantVS &vs = pVariant->aPassVariants[uPassVariant].aVertexShaders[j];
+								vs.idSet = SGCore_ShaderCreateKit(pVS->idShader, idShader);
+
+								for(UINT k = 0, kl = pShader->pVertexFormat->aGS.size(); k < kl; ++k)
+								{
+									GeometryShaderData *pGS = pShader->pVertexFormat->aGS[k];
+									vs.aGeometryShaders[k] = SGCore_ShaderCreateKit(pVS->idShader, idShader, pGS->idShader);
+								}
 							}
 						}
 					}
@@ -1387,6 +1433,15 @@ void CMaterialSystem::cleanData()
 			free((void*)pPass->aOutput[j].szName);
 			free((void*)pPass->aOutput[j].szKey);
 			free((void*)pPass->aOutput[j].szDefault);
+		}
+
+		for(UINT j = 0, jl = pPass->aVariants.size(); j < jl; ++j)
+		{
+			for(UINT k = 0, kl = pPass->aVariants[j].size(); k < kl; ++k)
+			{
+				free((void*)pPass->aVariants[j][k].szName);
+				free((void*)pPass->aVariants[j][k].szDefinition);
+			}
 		}
 	}
 

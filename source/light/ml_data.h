@@ -23,7 +23,7 @@ namespace light_data
 
 	void ReCalcSize();
 
-	extern IGXContext *pDXDevice;
+	extern IGXDevice *pDXDevice;
 	
 	//размер текстуры глубины дл¤ локальных источников света
 	extern float2_t vSizeTexDepthGlobal;

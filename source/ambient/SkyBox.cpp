@@ -95,8 +95,10 @@ void CSkyBox::setTexture(const char *szTexture)
 	assert(m_pMaterialSystem);
 	assert(szTexture);
 	
+	IXMaterial *pSky = NULL;
+	m_pMaterialSystem->loadMaterial(szTexture, &pSky, "Sky");
 	mem_release(m_pSky1);
-	m_pMaterialSystem->loadMaterial(szTexture, &m_pSky1, "Sky");
+	m_pSky1 = pSky;
 
 	if(!m_pSky1)
 	{
@@ -166,6 +168,7 @@ void CSkyBox::render()
 	{
 		return;
 	}
+	m_pSky1->AddRef();
 
 	float4x4 World = SMMatrixTranspose(m_mMatRotation/* * SMMatrixTranslation(pos->x, pos->y, pos->z)*/);
 	m_pMaterialSystem->bindVS(m_pVertexShaderHandler);
@@ -197,6 +200,7 @@ void CSkyBox::render()
 	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
 	pCtx->drawIndexed(8, 12, 0, 0);
 
+	mem_release(m_pSky1);
 	//SGCore_ShaderUnBind();
 };
 

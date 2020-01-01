@@ -65,6 +65,11 @@ struct XRenderPassOutputElement
 };
 #define XRENDER_PASS_OUTPUT_LIST_END() {NULL,NULL,GXDECLTYPE_UNUSED,NULL}
 
+struct XRenderPassVariantElement
+{
+	GXMacro *pMacro;
+};
+
 #include "XMaterialProperty.h"
 
 
@@ -128,9 +133,9 @@ public:
 	// ["GBuffer color(rgb) light(a)", "g_txGBufferC3L1", 0],
 	// ["Scene default", "g_sScene", 0]
 	// ["Base color", "vBaseColor", 'GXDECLTYPE_FLOAT4', "float4(1.0f, 0.0f, 0.0f, 0.5f)"],
-	virtual XRenderPassHandler* XMETHODCALLTYPE registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput) = 0;
+	virtual XRenderPassHandler* XMETHODCALLTYPE registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput, XRenderPassVariantElement *pVariants=NULL) = 0;
 	virtual XRenderPassHandler* XMETHODCALLTYPE getRenderPass(const char *szName) = 0;
-	virtual void XMETHODCALLTYPE bindRenderPass(XRenderPassHandler *pRenderPass) = 0;
+	virtual void XMETHODCALLTYPE bindRenderPass(XRenderPassHandler *pRenderPass, UINT uVariant = 0) = 0;
 
 	virtual XMaterialShaderHandler* XMETHODCALLTYPE registerMaterialShader(const char *szName, XVertexFormatHandler *pVertexFormat, XMaterialShaderPass *pPasses, XMaterialProperty *pGenericProperties) = 0;
 	virtual XMaterialShaderHandler* XMETHODCALLTYPE getMaterialShader(const char *szName) = 0;

@@ -46,15 +46,6 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	};
 	XVertexFormatHandler *pVertexFormatSkyBox = m_pMaterialSystem->registerVertexFormat("xSky", voelSky);
 
-
-	//! @todo move to liblight
-	const char *aszGSRequiredParams[] = {
-		"vPosition",
-		"vPos",
-		NULL
-	};
-	XGeometryShaderHandler *pRSMGeometryShader = m_pMaterialSystem->registerGeometryShader("sm/rsmcube.gs", aszGSRequiredParams);
-
 	m_pMaterialSystem->registerVertexShader(pVertexFormatPostprocess, "base/post.vs");
 	{}
 
@@ -180,7 +171,16 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XRENDER_PASS_OUTPUT_LIST_END()
 		};
 
-		m_pRenderPassShadow = m_pMaterialSystem->registerRenderPass("xShadow", "material/shadow.ps", NULL, pSamplers, pOutput);
+		GXMacro pVariant1[] = {
+			{"IS_CUBEMAP", "1"},
+			{NULL, NULL}
+		};
+		XRenderPassVariantElement pVariants[] = {
+			pVariant1,
+			NULL
+		};
+
+		m_pRenderPassShadow = m_pMaterialSystem->registerRenderPass("xShadow", "material/shadow.ps", NULL, pSamplers, pOutput, pVariants);
 	}
 
 	{
@@ -449,6 +449,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 //#undef TIDX
 
 	m_idLightBoundShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "lighting_bound.vs"), -1);
+	// m_idLightBoundShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "lighting_bound.vs"), 
+	// 	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_bound_debug.ps"));
 
 	m_idLPVPropagateShader = SGCore_ShaderCreateKit(-1, -1, -1, SGCore_ShaderLoad(SHADER_TYPE_COMPUTE, "gi_propagation.cs"));
 
@@ -772,6 +774,8 @@ void CRenderPipeline::renderGI()
 		return;
 	}
 
+	m_pMaterialSystem->bindRenderPass(m_pRenderPassShadow);
+
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	IGXDepthStencilSurface *pOldDSSurface = pCtx->getDepthStencilSurface();
@@ -850,12 +854,12 @@ void CRenderPipeline::renderGI()
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
-	float4x4 mCamView;
-	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mCamView);
-	m_shadowShaderData.vs.mViewInv = SMMatrixTranspose(SMMatrixInverse(NULL, mCamView));
-	m_shadowShaderData.vs.vNearFar = float2(*r_near, *r_far);
-	m_shadowShaderData.vs.vParamProj = float3((float)m_uOutWidth, (float)m_uOutHeight, *r_default_fov);
-	m_pShadowShaderDataVS->update(&m_shadowShaderData.vs);
+// 	float4x4 &mCamView = gdata::mCamView;
+// 	// Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mCamView);
+// 	m_shadowShaderData.vs.mViewInv = SMMatrixTranspose(SMMatrixInverse(NULL, mCamView));
+// 	m_shadowShaderData.vs.vNearFar = gdata::vNearFar; // float2(*r_near, *r_far);
+// 	m_shadowShaderData.vs.vParamProj = float3((float)m_uOutWidth, (float)m_uOutHeight, gdata::fProjFov); // *r_default_fov);
+// 	m_pShadowShaderDataVS->update(&m_shadowShaderData.vs);
 
 	//@TODO: убрать это
 	//Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &m_shadowShaderData.ps.vPosCam);
@@ -867,7 +871,6 @@ void CRenderPipeline::renderGI()
 
 	pCtx->setVSConstant(m_pCameraShaderDataVS, 8);
 	pCtx->setPSConstant(m_pCameraShaderDataVS, 8);
-
 	UINT uShadowCount = 0;
 	while((uShadowCount = m_pShadowCache->processNextBunch()))
 	{
@@ -900,7 +903,7 @@ void CRenderPipeline::renderGI()
 
 				//отрисовка ограничивающего объема
 				SGCore_ShaderBind(m_idLightBoundShader);
-				pLight->drawShape(pCtx);
+				pLight->drawShape(m_pDevice);
 				
 				pCtx->setStencilRef(255);
 				pCtx->setDepthStencilState(gdata::rstates::pDepthStencilStateLightShadowNonGlobal);
@@ -915,7 +918,8 @@ void CRenderPipeline::renderGI()
 
 
 
-			pCtx->setVSConstant(m_pShadowShaderDataVS, 1);
+			//pCtx->setVSConstant(m_pShadowShaderDataVS, 1);
+			pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
 
 			pCtx->setBlendState(gdata::rstates::pBlendRed);
 			pShadow->genShadow(m_pShadow, m_pGBufferDepth, m_pGBufferNormals);
@@ -951,7 +955,7 @@ void CRenderPipeline::renderGI()
 				pCtx->setDepthStencilState(gdata::rstates::pDepthStencilStateLightClear);
 			}
 
-			IGXConstantBuffer *pLightConstants = pLight->getConstants(pCtx);
+			IGXConstantBuffer *pLightConstants = pLight->getConstants(m_pDevice);
 			pCtx->setPSConstant(pLightConstants);
 			mem_release(pLightConstants);
 
@@ -990,7 +994,7 @@ void CRenderPipeline::renderGI()
 		for(UINT i = 0; i < uShadowCount; ++i)
 		{
 			pShadow = m_pShadowCache->getShadow(i);
-			pShadow->genLPV();
+		//	pShadow->genLPV();
 		}
 
 		pCtx->setColorTarget(NULL);
@@ -1012,7 +1016,7 @@ void CRenderPipeline::renderGI()
 		pCtx->setDepthStencilSurface(pOldSurface);
 		mem_release(pOldSurface);
 
-		break;
+		//break;
 	}
 
 	SGCore_ShaderUnBind();
@@ -1025,7 +1029,7 @@ void CRenderPipeline::renderGI()
 	{
 		SGCore_ShaderBind(m_idLPVPropagateShader);
 
-		for(UINT i = 0; i < 16; ++i)
+		for(UINT i = 0; i < 1/*6*/; ++i)
 		{
 			pCtx->setCSTexture(m_pGIAccumRed, 0);
 			pCtx->setCSTexture(m_pGIAccumGreen, 1);

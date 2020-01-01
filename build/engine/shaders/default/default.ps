@@ -7,6 +7,7 @@ XMaterial MainGBuffer(PSI_XMaterial IN)
 	// float4 fColor = IN.vPos;
 #ifdef HAS_ALPHATEST
 	clip(fColor.a - g_xMaterialConstants.pbr_alphatest_threshold);
+	// clip(fColor.a - 0.03);
 #endif
 	OUT.vBaseColor = fColor.xyz/* * g_xMaterialConstants.vColor.xyz*/;
 	

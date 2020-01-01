@@ -309,9 +309,9 @@ public:
 	XGeometryShaderHandler* XMETHODCALLTYPE registerGeometryShader(const char *szShaderFile, const char **aszRequiredParameters, GXMacro *pDefines = NULL) override;
 	void XMETHODCALLTYPE bindGS(XGeometryShaderHandler *pGeometryShader) override;
 
-	XRenderPassHandler* XMETHODCALLTYPE registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput) override;
+	XRenderPassHandler* XMETHODCALLTYPE registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput, XRenderPassVariantElement *pVariants = NULL) override;
 	XRenderPassHandler* XMETHODCALLTYPE getRenderPass(const char *szName) override;
-	void XMETHODCALLTYPE bindRenderPass(XRenderPassHandler *pRenderPass) override;
+	void XMETHODCALLTYPE bindRenderPass(XRenderPassHandler *pRenderPass, UINT uVariant = 0) override;
 
 	XMaterialShaderHandler* XMETHODCALLTYPE registerMaterialShader(const char *szName, XVertexFormatHandler *pVertexFormat, XMaterialShaderPass *pPasses, XMaterialProperty *pGenericProperties) override;
 	XMaterialShaderHandler* XMETHODCALLTYPE getMaterialShader(const char *szName) override;
@@ -402,6 +402,8 @@ protected:
 		Array<XRenderPassSamplersElement> aSamplers;
 		Array<XRenderPassOutputElement> aOutput;
 		Array<GXMacro> aDefines;
+
+		Array<Array<GXMacro>> aVariants;
 	};
 
 	struct MaterialShaderSamplerData
@@ -452,12 +454,17 @@ protected:
 		GXTEXTURE_TYPE type;
 	};
 
+	struct MaterialVariantPass
+	{
+		ID idShader;
+		Array<MaterialVariantVS> aVertexShaders;
+	};
+
 	struct MaterialVariant
 	{
 		bool isReady;
-		ID idShader;
 
-		Array<MaterialVariantVS> aVertexShaders;
+		Array<MaterialVariantPass> aPassVariants;
 		Array<MaterialTexture> aTextureMap;
 		UINT uConstantsSize;
 		Array<MaterialShaderConstants> aConstants;
@@ -504,6 +511,7 @@ protected:
 	VertexShaderData *m_pCurrentVS = NULL;
 	GeometryShader *m_pCurrentGS = NULL;
 	RenderPass *m_pCurrentRP = NULL;
+	UINT m_uCurrentRPvariant = 0;
 
 	AssotiativeArray<AAString, CGlobalFlag> m_mapFlags;
 

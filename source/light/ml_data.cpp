@@ -12,7 +12,7 @@ namespace light_data
 
 	void ReCalcSize();
 
-	IGXContext *pDXDevice = 0;
+	IGXDevice *pDXDevice = 0;
 
 	//размер текстуры глубины дл¤ локальных источников света
 	float2_t vSizeTexDepthGlobal = float2_t(1024, 768);

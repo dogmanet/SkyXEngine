@@ -149,8 +149,10 @@ struct PSO_Lbuffer
 struct PSO_RSMbuffer 
 {
 	float4 vDepth    :COLOR0;
+#ifdef ENABLE_RSM
 	float4 vNormal   :COLOR1;
 	float4 vFlux     :COLOR2;
+#endif
 };
 
 /*! \name SkyBox

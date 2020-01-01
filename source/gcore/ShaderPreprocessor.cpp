@@ -1532,6 +1532,11 @@ void CShaderPreprocessor::reset()
 	m_sError = "";
 }
 
+void CShaderPreprocessor::clearIncludeCache()
+{
+	m_mIncludes.clear();
+}
+
 UINT CShaderPreprocessor::getIncludesCount()
 {
 	UINT u = 0;

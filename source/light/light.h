@@ -284,8 +284,8 @@ public:
 	bool isShadowDynamic();
 	void setShadowDynamic(bool isDynamic);
 
-	void drawShape(IGXContext *pDevice);
-	IGXConstantBuffer *getConstants(IGXContext *pDevice);
+	void drawShape(IGXDevice *pDevice);
+	IGXConstantBuffer *getConstants(IGXDevice *pDevice);
 
 	IXLightSpot *asSpot();
 	IXLightSun *asSun();
@@ -301,7 +301,7 @@ public:
 	}
 protected:
 	virtual SMMATRIX getWorldTM();
-	virtual void updatePSConstants(IGXContext *pDevice) = 0;
+	virtual void updatePSConstants(IGXDevice *pDevice) = 0;
 	virtual void updateFrustum()
 	{
 	}
@@ -349,7 +349,7 @@ public:
 	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax) override;
 
 protected:
-	void updatePSConstants(IGXContext *pDevice);
+	void updatePSConstants(IGXDevice *pDevice);
 
 	_base_light_data_ps m_dataPS;
 };
@@ -370,7 +370,7 @@ public:
 	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax) override;
 
 protected:
-	void updatePSConstants(IGXContext *pDevice);
+	void updatePSConstants(IGXDevice *pDevice);
 
 	_base_light_data_ps m_dataPS;
 	SMQuaternion m_qDirection;
@@ -393,7 +393,7 @@ public:
 
 	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax) override;
 protected:
-	void updatePSConstants(IGXContext *pDevice);
+	void updatePSConstants(IGXDevice *pDevice);
 	void updateFrustum() override;
 
 	struct _spot_light_data_ps

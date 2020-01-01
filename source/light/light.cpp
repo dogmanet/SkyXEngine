@@ -37,6 +37,7 @@ ID CLights::createCopy(ID id)
 {
 	LIGHTS_PRE_COND_ID(id,-1);
 	
+#if 0
 		CLight* tmplight = m_aLights[id];
 		CLight* tmplight2 = new CLight();
 		tmplight2->m_fAngle = tmplight->m_fAngle;
@@ -62,7 +63,6 @@ ID CLights::createCopy(ID id)
 		tmplight2->m_typeShadowed = tmplight->m_typeShadowed;
 		tmplight2->m_iCountUpdate = tmplight->m_iCountUpdate;
 		
-#if 0
 		if (tmplight->m_pShadowPSSM)
 		{
 			tmplight2->m_pShadowPSSM = new PSSM();
@@ -110,12 +110,14 @@ ID CLights::createCopy(ID id)
 		}
 		else
 			tmplight2->m_pShadowCube = 0;
-#endif
+
 
 		tmplight2->m_pMesh = tmplight->m_pMesh;
 		tmplight2->m_pMesh->AddRef();
 
 	return addLight(tmplight);
+#endif
+	return(-1);
 }
 
 CLights::CLight::CLight()
@@ -154,7 +156,9 @@ CLights::CLight::CLight()
 CLights::CLight::~CLight()
 {
 	mem_release_del(m_pMesh);
+#if 0
 	mem_release_del(m_pBoundVolume);
+#endif
 	
 	//mem_delete(m_pShadowPSSM);
 	//mem_delete(m_pShadowSM);
@@ -413,8 +417,10 @@ ID CLights::createPoint(ID id, const float3* center, float dist, const float3* c
 
 	tmplight->m_vColor = *color;
 	tmplight->m_isEnable = true;
+#if 0
 	tmplight->m_pBoundVolume = SGCore_CrBound();
 	tmplight->m_pBoundVolume->cloneFrom(tmplight->m_pMesh->getBound());
+#endif
 
 	if (tmplight->m_isGlobal)
 		m_idGlobalLight = tmpid;
@@ -479,9 +485,10 @@ ID CLights::createDirection(ID id, const float3* pos, float dist, const float3* 
 		tmplight->m_typeShadowed = LTYPE_SHADOW_DYNAMIC;
 	else
 		tmplight->m_typeShadowed = LTYPE_SHADOW_STATIC;
-
+#if 0
 	tmplight->m_pBoundVolume = SGCore_CrBound();
 	tmplight->m_pBoundVolume->cloneFrom(tmplight->m_pMesh->getBound());
+#endif
 
 	ID tmpid = id;
 
@@ -501,7 +508,9 @@ void CLights::render(ID id, DWORD timeDelta)
 		m_aLights[id]->m_isVSDataDirty = false;
 	}
 
-	light_data::pDXDevice->setVertexShaderConstant(m_aLights[id]->m_pVSData);
+	IGXContext *pCtx = light_data::pDXDevice->getThreadContext();
+
+	pCtx->setVSConstant(m_aLights[id]->m_pVSData);
 	SGCore_ShaderBind(light_data::shader_id::kit::idLightBound);
 
 //	light_data::pDXDevice->SetTransform(D3DTS_WORLD, &(m_aLights[id]->m_mWorldMat.operator D3DXMATRIX()));
@@ -613,10 +622,12 @@ void CLights::setLightDist(ID id, float radius_height, bool is_create)
 		m_aLights[id]->m_pShadowCube->setNearFar(&float2(LIGHTS_LOCAL_STD_NEAR, m_aLights[id]->m_fDist));
 #endif
 
+#if 0
 	if (m_aLights[id]->m_pMesh)
 	{
 		m_aLights[id]->m_pBoundVolume->cloneFrom(m_aLights[id]->m_pMesh->getBound());
 	}
+#endif
 
 	lightCountUpdateNull(id);
 }
@@ -769,7 +780,9 @@ bool CLights::comVisibleForFrustum(ID id, const IFrustum* frustum)
 
 	float3 tmpcenter;
 	float tmpradius;
+#if 0
 	m_aLights[id]->m_pBoundVolume->getSphere(&tmpcenter, &tmpradius);
+#endif
 	tmpcenter = SMVector3Transform(tmpcenter, m_aLights[id]->m_mWorldMat);
 
 	return frustum->sphereInFrustum(&tmpcenter, tmpradius);
@@ -1057,11 +1070,12 @@ void CLights::setLightAngle(ID id, float angle, bool is_create)
 			m_aLights[id]->m_fAngle = angle;
 			SGCore_FCreateCone(m_aLights[id]->m_vTopBottomRadius.x, m_aLights[id]->m_vTopBottomRadius.y, m_aLights[id]->m_fDist, &m_aLights[id]->m_pMesh, 32);
 		}
-
+#if 0
 		if (m_aLights[id]->m_pMesh)
 		{
 			m_aLights[id]->m_pBoundVolume->cloneFrom(m_aLights[id]->m_pMesh->getBound());
 		}
+#endif
 
 #if 0
 		if (m_aLights[id]->m_typeLight == LTYPE_LIGHT_DIR && m_aLights[id]->m_pShadowSM)
@@ -1082,10 +1096,12 @@ void CLights::setLightTopRadius(ID id, float top_radius)
 			SGCore_FCreateCone(top_radius, m_aLights[id]->m_vTopBottomRadius.y, m_aLights[id]->m_fDist, &m_aLights[id]->m_pMesh, 32);
 		}
 
+#if 0
 		if (m_aLights[id]->m_pMesh)
 		{
 			m_aLights[id]->m_pBoundVolume->cloneFrom(m_aLights[id]->m_pMesh->getBound());
 		}
+#endif
 
 		lightCountUpdateNull(id);
 }
@@ -1372,8 +1388,9 @@ bool CLights::lightCountUpdateUpdate(ID id, const float3* viewpos, int ghow)
 
 			float3 tmpcenter;
 			float tmpradius;
-
+#if 0
 			tmpl->m_pBoundVolume->getSphere(&tmpcenter, &tmpradius);
+#endif
 			float dist = SMVector3Distance(tmpl->m_vPosition, (*viewpos)) - tmpradius;
 			if (dist < LIGHTS_UPDATE_L0_DIST)
 				tmpl->m_iCountUpdate = -1;
@@ -1715,7 +1732,7 @@ void CXLight::setShadowDynamic(bool isDynamic)
 	m_isShadowDynamic = isDynamic;
 }
 
-void CXLight::drawShape(IGXContext *pDevice)
+void CXLight::drawShape(IGXDevice *pDevice)
 {
 	assert(pDevice);
 
@@ -1731,13 +1748,15 @@ void CXLight::drawShape(IGXContext *pDevice)
 			m_isVSDataDirty = false;
 		}
 
-		pDevice->setVertexShaderConstant(m_pVSData);
+		IGXContext *pCtx = pDevice->getThreadContext();
+
+		pCtx->setVSConstant(m_pVSData);
 
 		m_pShape->draw();
 	}
 }
 
-IGXConstantBuffer* CXLight::getConstants(IGXContext *pDevice)
+IGXConstantBuffer* CXLight::getConstants(IGXDevice *pDevice)
 {
 	if(m_isPSDataDirty)
 	{
@@ -1821,7 +1840,7 @@ void CXLightPoint::Release()
 	}
 }
 
-void CXLightPoint::updatePSConstants(IGXContext *pDevice)
+void CXLightPoint::updatePSConstants(IGXDevice *pDevice)
 {
 	if(!m_pPSData)
 	{
@@ -1896,7 +1915,7 @@ void CXLightSun::setDirection(const SMQuaternion &qDirection)
 	m_isVSDataDirty = true;
 }
 
-void CXLightSun::updatePSConstants(IGXContext *pDevice)
+void CXLightSun::updatePSConstants(IGXDevice *pDevice)
 {
 	if(!m_pPSData)
 	{
@@ -1986,7 +2005,7 @@ void CXLightSpot::setDirection(const SMQuaternion &qDirection)
 	m_isPSDataDirty = true;
 }
 
-void CXLightSpot::updatePSConstants(IGXContext *pDevice)
+void CXLightSpot::updatePSConstants(IGXDevice *pDevice)
 {
 	if(!m_pPSData)
 	{

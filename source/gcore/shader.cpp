@@ -430,6 +430,11 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 
 			mem_release(pFile);
 		}
+
+		if(!pGXShader)
+		{
+			pPreprocessor->clearIncludeCache();
+		}
 	}
 	while(!pGXShader && MessageBoxA(NULL, "Unable to compile shader. Want to retry?", "Shader error", MB_OKCANCEL | MB_ICONSTOP) == IDOK);
 
@@ -527,6 +532,7 @@ void CShaderManager::reloadAll()
 
 	mem_delete(m_pPreprocessor);
 	m_pPreprocessor = new CShaderPreprocessor(Core_GetIXCore()->getFileSystem());
+	m_pPreprocessor->addIncPath("shaders/");
 
 	allLoad(true);
 }
