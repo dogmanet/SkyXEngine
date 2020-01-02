@@ -200,7 +200,7 @@ void CSkyBox::render()
 	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
 	pCtx->drawIndexed(8, 12, 0, 0);
 
-	mem_release(m_pSky1);
+	m_pSky1->Release();
 	//SGCore_ShaderUnBind();
 };
 

@@ -42,8 +42,6 @@ protected:
 	Array<IXLight*> m_aFrameLights;
 	bool m_isFirstBunch = true;
 
-	ID m_idRSMCubeGeometryShader = -1;
-
 	struct ShadowMap
 	{
 		CShadowMap map;
