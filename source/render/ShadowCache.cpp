@@ -105,6 +105,8 @@ UINT CShadowCache::processNextBunch()
 	Core_RMatrixGet(G_RI_MATRIX_VIEW, &mOldView);
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mOldProj);
 
+	m_pRenderPipeline->getDevice()->getThreadContext()->setDepthStencilState(NULL);
+
 	bool isSomeFound = false;
 	if(m_isFirstBunch)
 	{

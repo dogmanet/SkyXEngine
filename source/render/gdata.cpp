@@ -139,13 +139,14 @@ void gdata::InitAllMatrix()
 	gdata::vNearFar.y = *r_far;
 	gdata::fProjFov = *r_default_fov;
 
-	gdata::mCamProj = SMMatrixPerspectiveFovLH(gdata::fProjFov, vWinSize.x / vWinSize.y, gdata::vNearFar.x, gdata::vNearFar.y);
+	// gdata::mCamProj = SMMatrixPerspectiveFovLH(gdata::fProjFov, vWinSize.x / vWinSize.y, gdata::vNearFar.x, gdata::vNearFar.y);
+	gdata::mCamProj = SMMatrixPerspectiveFovLH(gdata::fProjFov, vWinSize.x / vWinSize.y, gdata::vNearFar.y, gdata::vNearFar.x);
 	//gdata::MCamProj = SMMatrixOrthographicLH(vWinSize.x / 4, vWinSize.y / 4, gdata::NearFar.x, gdata::NearFar.y);
-	gdata::mLightProj = SMMatrixPerspectiveFovLH(gdata::fProjFov, vWinSize.x / vWinSize.y, gdata::vNearFar.x, G_DATA_LIGHT_FAR);
+//	gdata::mLightProj = SMMatrixPerspectiveFovLH(gdata::fProjFov, vWinSize.x / vWinSize.y, gdata::vNearFar.x, G_DATA_LIGHT_FAR);
 	//gdata::MLightProj = SMMatrixOrthographicLH(vWinSize.x / 4, vWinSize.y / 4, gdata::NearFar.x, G_DATA_LIGHT_FAR);
 
-	gdata::mRefPlaneSkyProj = SMMatrixPerspectiveFovLH(gdata::fProjFov, vWinSize.x / vWinSize.y, gdata::vNearFar.x, G_DATA_LIGHT_FAR);
-	gdata::mRefCubeSkyProj = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, gdata::vNearFar.x, G_DATA_LIGHT_FAR);
+//	gdata::mRefPlaneSkyProj = SMMatrixPerspectiveFovLH(gdata::fProjFov, vWinSize.x / vWinSize.y, gdata::vNearFar.x, G_DATA_LIGHT_FAR);
+//	gdata::mRefCubeSkyProj = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, gdata::vNearFar.x, G_DATA_LIGHT_FAR);
 
 	Core_RMatrixSet(G_RI_MATRIX_OBSERVER_PROJ, &gdata::mCamProj);
 	Core_RMatrixSet(G_RI_MATRIX_LIGHT_PROJ, &gdata::mLightProj);
@@ -204,7 +205,7 @@ void gdata::shaders_id::InitAllShaders()
 	gdata::rstates::pDepthStencilStateMrtStage0 = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
 	dsDesc.useDepthTest = TRUE;
-	dsDesc.cmpFuncDepth = GXCMP_LESS_EQUAL;
+	dsDesc.cmpFuncDepth = GXCMP_GREATER_EQUAL;
 	dsDesc.stencilTestFront.cmpFunc = GXCMP_NOT_EQUAL;
 	dsDesc.stencilTestFront.opPass = GXSTENCIL_OP_DECR;
 	gdata::rstates::pDepthStencilStateMrtStage1 = gdata::pDXDevice->createDepthStencilState(&dsDesc);

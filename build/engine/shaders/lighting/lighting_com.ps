@@ -95,6 +95,7 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	
 #ifdef IS_SHADOWED
 	half fShadow = /* saturate( */g_txShadow.Sample(g_sPointClamp, IN.vTexUV).r/* ) */;
+	// half fShadow = 0.5f;
 	
 	// clip(fShadow - 0.001);
 	
@@ -110,6 +111,13 @@ PSO_Lbuffer main(VSO_ResPos IN)
 #endif
 	
 	half4 vPosition = half4(g_vViewPos.xyz + IN.vWorldRay * fDepth, 1.0);
+	
+//	// OUT.vAmdient.xyz = frac(vPosition.xyz);
+//	OUT.vAmdient.xyz = vPosition.xyz;
+//	OUT.vAmdient.w = 0;
+//	OUT.vSpecular = 0;
+//	return OUT;
+	
 	half fDistance = distance(vPosition.xyz, g_vLightPosShadow.xyz);
 	
 	half fInvDistance = 1.f - (fDistance/g_vLightColorPower.w);

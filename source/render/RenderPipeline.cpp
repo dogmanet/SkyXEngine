@@ -11,6 +11,8 @@ namespace gdata
 	extern ICamera *pCamera;
 };
 
+//! При изменении базовых шейдеров отредактировать https://wiki.skyxengine.com/index.php?title=Стандартные_шейдеры_материалов
+
 CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	m_pDevice(pDevice)
 {
@@ -381,6 +383,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 
 	GXDepthStencilDesc dsDesc;
+	dsDesc.cmpFuncDepth = GXCMP_GREATER_EQUAL;
+	m_pDepthStencilStateDefault = m_pDevice->createDepthStencilState(&dsDesc);
 
 	dsDesc.useDepthWrite = FALSE;
 	m_pDepthStencilStateNoZWrite = m_pDevice->createDepthStencilState(&dsDesc);
@@ -710,7 +714,7 @@ void CRenderPipeline::renderGBuffer()
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassGBuffer);
 
 	pCtx->setRasterizerState(NULL);
-	pCtx->setDepthStencilState(NULL);
+	pCtx->setDepthStencilState(m_pDepthStencilStateDefault);
 	pCtx->setBlendState(NULL);
 	rfunc::SetRenderSceneFilter();
 
@@ -736,7 +740,7 @@ void CRenderPipeline::renderGBuffer()
 	pCtx->setColorTarget(NULL, 1);
 
 	pCtx->setColorTarget(pColorSurf);
-	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, RENDER_DEFAUL_BACKGROUND_COLOR);
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, RENDER_DEFAUL_BACKGROUND_COLOR, 0.0f);
 
 	pCtx->setColorTarget(pNormalSurf, 1);
 	pCtx->setColorTarget(pParamSurf, 2);
@@ -1164,7 +1168,13 @@ void CRenderPipeline::renderTransparent()
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
+	//pCtx->setPSConstant(m_pSceneShaderDataPS, SCR_SCENE);
+	pCtx->setVSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
+	rfunc::SetRenderSceneFilter();
+
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassTransparency);
+
+//	pCtx->setRasterizerState(NULL);
 
 	pCtx->setDepthStencilState(m_pDepthStencilStateNoZWrite);
 	pCtx->setBlendState(m_pBlendStateAlpha);

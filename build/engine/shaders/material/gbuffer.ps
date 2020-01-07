@@ -16,6 +16,10 @@ PSO_Gbuffer main(PSI_XMaterial IN)
 	// ClipFar(IN.vPos.z, g_vNearFarLayers.y);
 	IN.vNormal = normalize(IN.vNormal);
 	
+#ifndef WANT_WRITE_DEPTH
+	float fDepth = 1.0f - (IN.vPos.z / g_vNearFarInvWinSize.x);
+#endif
+
 	XMaterial mtrl = XMATERIAL_MAIN(IN);
 		
 	PSO_Gbuffer OUT;
@@ -33,15 +37,18 @@ PSO_Gbuffer main(PSI_XMaterial IN)
 		mtrl.fAO
 	);
 	
-	float fDepth = (
+	//float fDepth = 
 #ifdef WANT_WRITE_DEPTH
-	mtrl.fDepth
+	float fDepth = (mtrl.fDepth + g_vNearFarInvWinSize.x) / g_vNearFarInvWinSize.y;
 #else
-	IN.vPos.z
+	// 1.0f - IN.vPos.z / g_vNearFarInvWinSize.x;
+	//(IN.vPos.z / IN.vPos.w);
+	// 1.0f / (1.0 - IN.vPos.z)
+	// (g_vNearFarInvWinSize.y - g_vNearFarInvWinSize.x - IN.vPos.z)
 #endif
-	+ g_vNearFarInvWinSize.x) / g_vNearFarInvWinSize.y;
+	// + g_vNearFarInvWinSize.x) / g_vNearFarInvWinSize.y;
 	
 	OUT.vDepth = float4(fDepth, fDepth, fDepth, 1.0f);
-	
+	// OUT.vDepth = float4(((g_vNearFarInvWinSize.y - g_vNearFarInvWinSize.x) - IN.vPos.z) * 0.01, fDepth, fDepth, 1.0f);	
 	return(OUT);
 }

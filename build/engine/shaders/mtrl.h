@@ -33,7 +33,8 @@ void ClipFar(float fZ, float fFar)
 //! просчет цвета линейной глубины [0,1] на основании текущей позиции и плоскостей отсечения! 
 float ComDepthByPos(float4 vPositionWVP, float2 vNearFar)
 {
-	return ((vPositionWVP.z + vNearFar.x)/vNearFar.y);
+	// return ((vPositionWVP.z + vNearFar.x)/vNearFar.y);
+	return (1.0f - vPositionWVP.z/vNearFar.x);
 }
 
 //! аналогично #ComDepthByPos, только возвращает вектор

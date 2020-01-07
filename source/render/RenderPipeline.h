@@ -95,6 +95,7 @@ protected:
 	//! Буфер тени
 	IGXTexture2D *m_pShadow = NULL;
 
+	IGXDepthStencilState *m_pDepthStencilStateDefault = NULL;
 	IGXDepthStencilState *m_pDepthStencilStateNoZWrite = NULL;
 	IGXDepthStencilState *m_pDepthStencilStateNoZ = NULL;
 	IGXBlendState *m_pBlendStateAlpha = NULL;
