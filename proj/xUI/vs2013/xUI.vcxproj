@@ -29,6 +29,7 @@
     <ClInclude Include="..\..\..\source\xUI\XUI.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\xUI\UIButton.cpp" />
     <ClCompile Include="..\..\..\source\xUI\UIWindow.cpp" />
     <ClCompile Include="..\..\..\source\xUI\XUI.cpp" />
   </ItemGroup>
