@@ -1,5 +1,5 @@
-#ifndef __UIBUTTON_H
-#define __UIBUTTON_H
+#ifndef __IUIBUTTON_H
+#define __IUIBUTTON_H
 
 #include "IUIControl.h"
 
