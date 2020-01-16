@@ -2,6 +2,7 @@
 #define __IUIWINDOW_H
 
 #include <xWindow/IXWindowSystem.h>
+#include "IUIControl.h"
 
 class IUIWindow: public IXUnknown
 {
@@ -25,6 +26,9 @@ class IUIWindow: public IXUnknown
 
 	//! 
 	virtual const XWINDOW_DESC* XMETHODCALLTYPE getDesc() = 0;
+
+	//!
+	virtual void XMETHODCALLTYPE addControl(IUIControl *pControl) = 0;
 };
 
 #endif

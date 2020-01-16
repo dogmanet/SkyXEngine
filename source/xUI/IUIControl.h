@@ -25,10 +25,13 @@ public:
 	virtual bool XMETHODCALLTYPE setName(const char *szName) = 0;
 
 	//! Метод позволяет "включить/выключить" контрол
-	virtual void XMETHODCALLTYPE setEnableMode(bool bEnable);
+	virtual void XMETHODCALLTYPE setEnableMode(bool bEnable) = 0;
 
 	//! Возвращает состояние контрола, включен ли он или нет
 	virtual bool XMETHODCALLTYPE isEnabled() = 0;
+
+	//! Метод устанавливает ID элемента
+	virtual void XMETHODCALLTYPE setElementID(UINT uID) = 0;
 };
 
 #endif

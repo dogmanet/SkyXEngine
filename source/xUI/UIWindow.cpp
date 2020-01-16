@@ -124,6 +124,11 @@ const XWINDOW_DESC* XMETHODCALLTYPE CUIWindow::getDesc()
 	return(m_pXWindow->getDesc());
 }
 
+void XMETHODCALLTYPE CUIWindow::addControl(IUIControl *pControl)
+{
+	m_ChildControls.push_back(pControl);
+}
+
 IXWindow* CUIWindow::getXWindow()
 {
 	return(m_pXWindow);

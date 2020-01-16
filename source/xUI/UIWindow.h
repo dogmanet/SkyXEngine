@@ -49,6 +49,8 @@ public:
 
 	const XWINDOW_DESC* XMETHODCALLTYPE getDesc() override;
 
+	void XMETHODCALLTYPE addControl(IUIControl *pControl) override;
+
 	IXWindow* getXWindow();
 	void render(IGXContext *pContext);
 	void present();
@@ -59,6 +61,7 @@ private:
 
 	CXUI *m_pXUI = NULL;
 	IXWindow *m_pXWindow = NULL;
+	Array<IUIControl*> m_ChildControls;
 	gui::IDesktopStack *m_pDesktopStack = NULL;
 	gui::IDesktop *m_pDefaultDesktop = NULL;
 	IGXSwapChain *m_pGuiSwapChain = NULL;
