@@ -42,6 +42,9 @@
     <ClInclude Include="..\..\..\source\xUI\IUICommand.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\xUI\UIControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\xUI\XUI.cpp">
@@ -51,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\xUI\UIButton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\xUI\UIControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

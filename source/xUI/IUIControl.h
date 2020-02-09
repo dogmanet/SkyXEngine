@@ -2,6 +2,7 @@
 #define __IUICONTROL_H
 
 #include "IUICommand.h"
+#include "guimain.h"
 
 class IUIControl : public IXUnknown
 {

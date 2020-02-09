@@ -24,12 +24,14 @@
     <ClInclude Include="..\..\..\source\xUI\IUIButton.h" />
     <ClInclude Include="..\..\..\source\xUI\IUIControl.h" />
     <ClInclude Include="..\..\..\source\xUI\IXUI.h" />
+    <ClInclude Include="..\..\..\source\xUI\UIControl.h" />
     <ClInclude Include="..\..\..\source\xUI\UIWindow.h" />
     <ClInclude Include="..\..\..\source\xUI\UIButton.h" />
     <ClInclude Include="..\..\..\source\xUI\XUI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\xUI\UIButton.cpp" />
+    <ClCompile Include="..\..\..\source\xUI\UIControl.cpp" />
     <ClCompile Include="..\..\..\source\xUI\UIWindow.cpp" />
     <ClCompile Include="..\..\..\source\xUI\XUI.cpp" />
   </ItemGroup>
