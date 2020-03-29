@@ -470,24 +470,44 @@ SX_LIB_API void Core_0ConsoleExecCmd(const char * format, ...); //!< Добав�
 
 SX_LIB_API UINT_PTR Core_ConsoleGetOutHandler();
 
+class COutPtr
+{
+	friend void Core_SetOutPtr();
+	COutPtr()
+	{
+		UINT_PTR sock = Core_ConsoleGetOutHandler();
+		if(sock == ~0)
+		{
+			return;
+		}
+		int hOut = _open_osfhandle(sock, O_RDONLY | O_RDWR | O_WRONLY | _O_APPEND);
+		m_fOut = ::_fdopen(_dup(hOut), "a+");
+		::setvbuf(m_fOut, NULL, _IONBF, 0);
+
+		m_fStdout = *stdout;
+		m_fStderr = *stderr;
+
+		*stdout = *m_fOut;
+		*stderr = *m_fOut;
+	}
+	~COutPtr()
+	{
+		*stdout = m_fStdout;
+		*stderr = m_fStderr;
+		fclose(m_fOut);
+	}
+
+	FILE *m_fOut;
+	FILE m_fStdout;
+	FILE m_fStderr;
+};
+
 /*! Устанавливает поток вывода. Для работы консоли
 	\warning Должна быть инлайнова, чтобы выполняться в контексте вызывающей библиотеки
 */
 __inline void Core_SetOutPtr()
 {
-	UINT_PTR sock = Core_ConsoleGetOutHandler();
-	if(sock == ~0)
-	{
-		return;
-	}
-	int hOut = _open_osfhandle(sock, O_RDONLY | O_RDWR | O_WRONLY | _O_APPEND);
-	FILE * fOut = ::_fdopen(hOut, "a+");
-	::setvbuf(fOut, NULL, _IONBF, 0);
-
-	*stdout = *fOut;
-	*stderr = *fOut;
-
-	fOut->_file = 1;
+	static COutPtr s_optr;
 }
 
 //!@}
