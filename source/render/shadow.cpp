@@ -236,17 +236,7 @@ void CShadowMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDepth
 	//m_pDevice->setVertexShaderConstant(m_pLightingShaderDataVS, 1);
 
 //	SGCore_ShaderBind(ms_idShader);
-#if 0
-	if(light_data::isHalfGenPCFShadowLocal)
-	{
-		SGCore_ShaderBind(light_data::shader_id::kit::idResPosDepthGenShadowDirect4);
-	}
-	else
-	{
-		SGCore_ShaderBind(light_data::shader_id::kit::idResPosDepthGenShadowDirect9);
 
-	}
-#endif
 
 		
 
@@ -1176,17 +1166,7 @@ void CShadowCubeMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferD
 	mem_release(pLightConstants);
 	
 //	SGCore_ShaderBind(ms_idShader);
-#if 0
-	if(light_data::isHalfGenPCFShadowLocal)
-	{
-		SGCore_ShaderBind(light_data::shader_id::kit::idResPosDepthGenShadowDirect4);
-	}
-	else
-	{
-		SGCore_ShaderBind(light_data::shader_id::kit::idResPosDepthGenShadowDirect9);
 
-	}
-#endif
 
 
 

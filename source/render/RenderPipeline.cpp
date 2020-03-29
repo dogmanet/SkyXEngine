@@ -966,22 +966,7 @@ void CRenderPipeline::renderGI()
 			}
 
 			pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
-
-#if 0
-			static const int * r_shadow_soft = GET_PCVAR_INT("r_shadow_soft");
-
-			if(r_shadow_soft)
-			{
-				if((*r_shadow_soft) == 1)
-					SLight_ShadowSoft(false, 2);
-				else if((*r_shadow_soft) == 2)
-				{
-					SLight_ShadowSoft(false, 2);
-					SLight_ShadowSoft(false, 2);
-				}
-			}
-#endif
-
+			
 			//теперь когда будем считать освещение надо сбросить значения в стенсил буфере, чтобы каждый кадр не чистить
 			//если стенсил тест прошел успешно, устанавливаем значнеие в нуль
 			if(pLight->getType() != LIGHT_TYPE_SUN)
