@@ -212,7 +212,7 @@ void CShaderPreprocessor::undefTemp()
 
 String CShaderPreprocessor::process(const char *src, const char *file)
 {
-	AssotiativeArray<String, _define> mDefs = m_mDefs;
+//	AssotiativeArray<String, _define> mDefs = m_mDefs;
 	int len = strlen(src);
 
 	Array<char, 1024> out;
@@ -561,7 +561,7 @@ String CShaderPreprocessor::process(const char *src, const char *file)
 	a = istrue("(true || false) && true");
 	*/
 
-	m_mDefs = mDefs; ///< restore original defines
+//	m_mDefs = mDefs; ///< restore original defines
 
 	return(sOut);
 }
@@ -892,9 +892,9 @@ String CShaderPreprocessor::makeExpansion(const String &_expr, ReplList &rlist)
 			}
 			if(!sStripNext)
 			{
-				if(tok.length() && m_mDefs.KeyExists(tok) && (!rlist.KeyExists(tok) || !rlist[tok]))
+				if(tok.length() && m_mDefs.KeyExists(tok) && !(pDef = &(m_mDefs[tok]))->isUndef && (!rlist.KeyExists(tok) || !rlist[tok]))
 				{
-					pDef = &(m_mDefs[tok]);
+					// pDef = &(m_mDefs[tok]);
 					if(pDef->isMacro)
 					{
 						sWaitArgs = true;

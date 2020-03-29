@@ -22,6 +22,12 @@ See the license in LICENSE
 #pragma comment(lib, "sxgcore.lib")
 #endif
 
+#if defined(_DEBUG)
+#pragma comment(lib, "sxphysics_d.lib")
+#else
+#pragma comment(lib, "sxphysics.lib")
+#endif
+
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
 #include <gcore/sxgcore.h>

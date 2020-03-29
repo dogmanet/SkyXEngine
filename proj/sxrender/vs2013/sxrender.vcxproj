@@ -183,6 +183,7 @@
     <ClInclude Include="..\..\..\source\common\string.h" />
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\render\gdata.h" />
+    <ClInclude Include="..\..\..\source\render\OcclusionCuller.h" />
     <ClInclude Include="..\..\..\source\render\RenderableVisibility.h" />
     <ClInclude Include="..\..\..\source\render\RenderPipeline.h" />
     <ClInclude Include="..\..\..\source\render\render_func.h" />
@@ -195,6 +196,7 @@
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\render\gdata.cpp" />
+    <ClCompile Include="..\..\..\source\render\OcclusionCuller.cpp" />
     <ClCompile Include="..\..\..\source\render\RenderableVisibility.cpp" />
     <ClCompile Include="..\..\..\source\render\RenderPipeline.cpp" />
     <ClCompile Include="..\..\..\source\render\render_func.cpp" />

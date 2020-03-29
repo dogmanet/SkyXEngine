@@ -26,7 +26,7 @@ void CSkyBox::setDevice(IGXDevice *pDevice)
 		m_pVertexDeclarationSkyBox = m_pDevice->createVertexDeclaration(layoutskybox);
 
 		//! @todo fix that! r_far cvar
-		float fFar = 800.0f * 0.57735f;
+		float fFar = 5000.0f * 0.57735f;
 
 
 		float X = fFar;

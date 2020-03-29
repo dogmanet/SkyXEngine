@@ -463,6 +463,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 	
 	newVisData(&m_pMainCameraVisibility);
+	m_pMainCameraOcclusionCuller = new COcclusionCuller();
+	//m_pMainCameraVisibility->setOcclusionCuller(m_pMainCameraOcclusionCuller);
 
 
 	m_pTransparencyShaderClipPlanes = m_pDevice->createConstantBuffer(sizeof(float4) * MAX_TRANSPARENCY_CLIP_PANES);
@@ -486,6 +488,7 @@ CRenderPipeline::~CRenderPipeline()
 
 	mem_release(m_pTransparencyShaderClipPlanes);
 
+	mem_release(m_pMainCameraOcclusionCuller);
 	mem_release(m_pMainCameraVisibility);
 
 	//mem_release(m_pSceneShaderDataVS);
@@ -636,6 +639,11 @@ void CRenderPipeline::endFrame()
 
 void CRenderPipeline::updateVisibility()
 {
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
+
+	// m_pMainCameraOcclusionCuller->update(gdata::pCamera, gdata::fProjFov, (float)*r_win_width / (float)*r_win_height, *r_far);
 	m_pMainCameraVisibility->updateForCamera(gdata::pCamera);
 
 	if(m_pLightSystem)
@@ -791,6 +799,8 @@ void CRenderPipeline::renderGI()
 	}
 	m_pShadowCache->setLightsCount(uCounts[LIGHT_TYPE_POINT], uCounts[LIGHT_TYPE_SPOT], uCounts[LIGHT_TYPE_SUN] != 0);
 
+	m_pShadowCache->setObserverCamera(gdata::pCamera);
+
 	m_pShadowCache->nextFrame();
 
 	IGXSurface *pAmbientSurf, *pSpecDiffSurf, *pBackBuf;
@@ -872,6 +882,7 @@ void CRenderPipeline::renderGI()
 
 	//m_pDevice->setPixelShaderConstant(m_pShadowShaderDataPS, 7);
 
+	pCtx->setRasterizerState(gdata::rstates::pRasterizerConservative);
 
 	pCtx->setVSConstant(m_pCameraShaderDataVS, 8);
 	pCtx->setPSConstant(m_pCameraShaderDataVS, 8);
@@ -893,6 +904,11 @@ void CRenderPipeline::renderGI()
 		{
 			pLight = m_pShadowCache->getLight(i);
 			pShadow = m_pShadowCache->getShadow(i);
+
+			if(pLight->getType() == LIGHT_TYPE_SUN)
+			{
+			//	continue;
+			}
 
 			//пока что назначаем шейдер без теней
 			//ID idshaderkit = pLight->getType() == LIGHT_TYPE_SPOT ? gdata::shaders_id::kit::idComLightingSpotNonShadow : gdata::shaders_id::kit::idComLightingNonShadow;
@@ -931,9 +947,23 @@ void CRenderPipeline::renderGI()
 			pCtx->setColorTarget(pAmbientSurf);
 			pCtx->setColorTarget(pSpecDiffSurf, 1);
 
-			pCtx->setPSTexture(m_pShadow, 4);
+		//	pCtx->setPSTexture(m_pShadow, 4);
 			//idshaderkit = gdata::shaders_id::kit::idComLightingShadow;
-			ID idshaderkit = pLight->getType() == LIGHT_TYPE_SPOT ? gdata::shaders_id::kit::idComLightingSpotShadow : gdata::shaders_id::kit::idComLightingShadow;
+			ID idshaderkit = -1;
+			switch(pLight->getType())
+			{
+			case LIGHT_TYPE_SPOT:
+				idshaderkit = gdata::shaders_id::kit::idComLightingSpotShadow;
+				break;
+			case LIGHT_TYPE_POINT: 
+				idshaderkit = gdata::shaders_id::kit::idComLightingShadow;
+				break;
+			case LIGHT_TYPE_SUN:
+				idshaderkit = gdata::shaders_id::kit::idComLightingPSSMShadow;
+				break;
+			default:
+				assert(!"Unknown light type!");
+			}
 
 			pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
 

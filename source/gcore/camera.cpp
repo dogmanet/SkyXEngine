@@ -55,6 +55,8 @@ void CFrustum::update(const float4x4* view, const float4x4* proj)
 	for(int i = 0; i < 6; ++i)
 		m_aFrustumPlanes[i].normalize();
 
+	// printf("%.2f, %.2f, %.2f, %.2f\n", m_aFrustumPlanes[4].m_vNormal.x, m_aFrustumPlanes[4].m_vNormal.y, m_aFrustumPlanes[4].m_vNormal.z, m_aFrustumPlanes[4].m_fDistance);
+
 	memset(m_isPointValid, 0, sizeof(m_isPointValid));
 }
 
@@ -191,25 +193,27 @@ float3 CFrustum::getPoint(int iPoint) const
 				));
 			float3 &vPoint = m_aPoints[iPoint];
 			vPoint.x = SMMatrix3x3Determinant(SMMATRIX(
-				float4(m_aFrustumPlanes[p0].m_fDistance, m_aFrustumPlanes[p0].m_vNormal.y, m_aFrustumPlanes[p0].m_vNormal.z, 0.0f),
-				float4(m_aFrustumPlanes[p1].m_fDistance, m_aFrustumPlanes[p1].m_vNormal.y, m_aFrustumPlanes[p1].m_vNormal.z, 0.0f),
-				float4(m_aFrustumPlanes[p2].m_fDistance, m_aFrustumPlanes[p2].m_vNormal.y, m_aFrustumPlanes[p2].m_vNormal.z, 0.0f),
+				float4(-m_aFrustumPlanes[p0].m_fDistance, m_aFrustumPlanes[p0].m_vNormal.y, m_aFrustumPlanes[p0].m_vNormal.z, 0.0f),
+				float4(-m_aFrustumPlanes[p1].m_fDistance, m_aFrustumPlanes[p1].m_vNormal.y, m_aFrustumPlanes[p1].m_vNormal.z, 0.0f),
+				float4(-m_aFrustumPlanes[p2].m_fDistance, m_aFrustumPlanes[p2].m_vNormal.y, m_aFrustumPlanes[p2].m_vNormal.z, 0.0f),
 				float4(0.0f, 0.0f, 0.0f, 1.0f)
 				));
 			vPoint.y = SMMatrix3x3Determinant(SMMATRIX(
-				float4(m_aFrustumPlanes[p0].m_vNormal.x, m_aFrustumPlanes[p0].m_fDistance, m_aFrustumPlanes[p0].m_vNormal.z, 0.0f),
-				float4(m_aFrustumPlanes[p1].m_vNormal.x, m_aFrustumPlanes[p1].m_fDistance, m_aFrustumPlanes[p1].m_vNormal.z, 0.0f),
-				float4(m_aFrustumPlanes[p2].m_vNormal.x, m_aFrustumPlanes[p2].m_fDistance, m_aFrustumPlanes[p2].m_vNormal.z, 0.0f),
+				float4(m_aFrustumPlanes[p0].m_vNormal.x, -m_aFrustumPlanes[p0].m_fDistance, m_aFrustumPlanes[p0].m_vNormal.z, 0.0f),
+				float4(m_aFrustumPlanes[p1].m_vNormal.x, -m_aFrustumPlanes[p1].m_fDistance, m_aFrustumPlanes[p1].m_vNormal.z, 0.0f),
+				float4(m_aFrustumPlanes[p2].m_vNormal.x, -m_aFrustumPlanes[p2].m_fDistance, m_aFrustumPlanes[p2].m_vNormal.z, 0.0f),
 				float4(0.0f, 0.0f, 0.0f, 1.0f)
 				));
 			vPoint.z = SMMatrix3x3Determinant(SMMATRIX(
-				float4(m_aFrustumPlanes[p0].m_vNormal.x, m_aFrustumPlanes[p0].m_vNormal.y, m_aFrustumPlanes[p0].m_fDistance, 0.0f),
-				float4(m_aFrustumPlanes[p1].m_vNormal.x, m_aFrustumPlanes[p1].m_vNormal.y, m_aFrustumPlanes[p1].m_fDistance, 0.0f),
-				float4(m_aFrustumPlanes[p2].m_vNormal.x, m_aFrustumPlanes[p2].m_vNormal.y, m_aFrustumPlanes[p2].m_fDistance, 0.0f),
+				float4(m_aFrustumPlanes[p0].m_vNormal.x, m_aFrustumPlanes[p0].m_vNormal.y, -m_aFrustumPlanes[p0].m_fDistance, 0.0f),
+				float4(m_aFrustumPlanes[p1].m_vNormal.x, m_aFrustumPlanes[p1].m_vNormal.y, -m_aFrustumPlanes[p1].m_fDistance, 0.0f),
+				float4(m_aFrustumPlanes[p2].m_vNormal.x, m_aFrustumPlanes[p2].m_vNormal.y, -m_aFrustumPlanes[p2].m_fDistance, 0.0f),
 				float4(0.0f, 0.0f, 0.0f, 1.0f)
 				));
 
-			vPoint /= -fDet;
+			vPoint /= fDet;
+
+			m_isPointValid[iPoint] = true;
 		}
 		return(m_aPoints[iPoint]);
 	}

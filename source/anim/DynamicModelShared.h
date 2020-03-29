@@ -29,6 +29,7 @@ public:
 	void render(UINT uSkin, UINT uLod, const float4_t &vColor, bool isTransparent);
 
 	void initGPUresources();
+	bool isReady() const;
 
 	bool hasTransparentSubsets(UINT uSkin, UINT uLod);
 	IXMaterial* getTransparentMaterial(UINT uSkin, UINT uLod);

@@ -173,7 +173,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\mtrl\LogicExpression.cpp" />
-    <ClCompile Include="..\..\..\source\mtrl\MaterialSystem.cpp" />
+    <ClCompile Include="..\..\..\source\mtrl\MaterialSystem.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
+    </ClCompile>
     <ClCompile Include="..\..\..\source\mtrl\sxmtrl.cpp" />
     <ClCompile Include="..\..\..\source\mtrl\sxmtrl_dll.cpp" />
   </ItemGroup>

@@ -65,6 +65,7 @@ namespace gdata
 			ID idComLightingGI;
 			ID idComLightingShadow;
 			ID idComLightingSpotShadow;
+			ID idComLightingPSSMShadow;
 
 			ID idBlendAmbientSpecDiffColor;
 
@@ -86,6 +87,7 @@ namespace gdata
 			ID idComLightingShadow;
 			ID idComLightingSpotNonShadow;
 			ID idComLightingSpotShadow;
+			ID idComLightingPSSMShadow;
 			ID idComLightingGI;
 		};
 	};
@@ -118,6 +120,7 @@ namespace gdata
 
 		IGXRasterizerState *pRasterizerCullFront;
 		IGXRasterizerState *pRasterizerCullNone;
+		IGXRasterizerState *pRasterizerConservative;
 	};
 
 };
@@ -170,6 +173,8 @@ void gdata::shaders_id::InitAllShaders()
 	gdata::shaders_id::ps::idComLightingShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_shadow.ps", Defines_IS_SHADOWED);
 	GXMacro Defines_IS_SPOT_SHADOWED[] = {{"IS_SHADOWED", ""}, {"IS_SPOT", ""}, {0, 0}};
 	gdata::shaders_id::ps::idComLightingSpotShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_spot_shadow.ps", Defines_IS_SPOT_SHADOWED);
+	GXMacro Defines_IS_PSSM_SHADOWED[] = {{"IS_SHADOWED", ""}, {"IS_PSSM", ""}, {0, 0}};
+	gdata::shaders_id::ps::idComLightingPSSMShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_pssm_shadow.ps", Defines_IS_PSSM_SHADOWED);
 	gdata::shaders_id::ps::idBlendAmbientSpecDiffColor = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_blend.ps");
 
 	gdata::shaders_id::ps::idUnionAlpha = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_union_alpha.ps");
@@ -191,6 +196,7 @@ void gdata::shaders_id::InitAllShaders()
 	gdata::shaders_id::kit::idComLightingShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingShadow);
 	gdata::shaders_id::kit::idComLightingSpotNonShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingSpotNonShadow);
 	gdata::shaders_id::kit::idComLightingSpotShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingSpotShadow);
+	gdata::shaders_id::kit::idComLightingPSSMShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingPSSMShadow);
 
 
 	GXDepthStencilDesc dsDesc;
@@ -287,6 +293,10 @@ void gdata::shaders_id::InitAllShaders()
 
 	GXRasterizerDesc rasterizerDesc;
 
+	//rasterizerDesc.useConservativeRasterization = true;
+	gdata::rstates::pRasterizerConservative = gdata::pDXDevice->createRasterizerState(&rasterizerDesc);
+
+	//rasterizerDesc.useConservativeRasterization = false;
 	rasterizerDesc.cullMode = GXCULL_FRONT;
 	gdata::rstates::pRasterizerCullFront = gdata::pDXDevice->createRasterizerState(&rasterizerDesc);
 

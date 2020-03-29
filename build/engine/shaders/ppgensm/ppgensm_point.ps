@@ -4,46 +4,46 @@ ppgensm_point.ps
 Генерация теней для локального точечного света
 */
 
-#include "../struct.h"
-#include "../shadow.h"
-#include "../mtrl.h"
-#include "../ps.h"
+#include <struct.h>
+#include <shadow.h>
+#include <mtrl.h>
+#include <ps.h>
 
 //##########################################################################
 
-cbuffer perFrame: register(b1)
-{
-	float3 g_vPosCam;
-};
+//cbuffer perFrame: register(b1)
+//{
+//	float3 g_vPosCam;
+//};
 
 cbuffer perShadow: register(b6)
 {
 	float2 g_vPixelSizeBias;
 };
 
-cbuffer perLight: register(b0)
-{
-	float4 g_vLightColorPower;
-	float4 g_vLightPosShadow;
-#ifdef IS_SPOT
-	float4 g_vLightSpotDirection;
-	float2 g_vLightSpotInnerOuterAngles;
-#endif
-};
+//cbuffer perLight: register(b0)
+//{
+//	float4 g_vLightColorPower;
+//	float4 g_vLightPosShadow;
+//#ifdef IS_SPOT
+//	float4 g_vLightSpotDirection;
+//	float2 g_vLightSpotInnerOuterAngles;
+//#endif
+//};
 
 //##########################################################################
 
 // sampler2D g_sDepthView:register(s0);
 // samplerCUBE g_sDepthShadow:register(s1);
 
-SamplerState g_sPointClamp: register(s0);
-SamplerState g_sLinearClamp: register(s1);
+// SamplerState g_sPointClamp: register(s0);
+// SamplerState g_sLinearClamp: register(s1);
 SamplerComparisonState g_sComparisonLinearClamp: register(s1);
 // SamplerState g_sPointWrap: register(s2);
 
-Texture2D g_txDepthView: register(t0);
-TextureCube g_txDepthShadow: register(t1);
-Texture2D g_txNormals: register(t3);
+// Texture2D g_txDepthView: register(t0);
+TextureCube g_txDepthShadow: register(t4);
+// Texture2D g_txNormals: register(t3);
 
 // g_txDepthShadow.Sample(g_sLinearClamp, IN.vTexUV)
 
@@ -64,6 +64,7 @@ float4 main(VSO_ResPos IN):COLOR0
 	float4 vPosition = float4(g_vPosCam + IN.vWorldRay * fDepth, 1.0);
 	
 	float3 vDir = vPosition.xyz - g_vLightPosShadow.xyz;
+	// return(frac(vPosition.z));
     float fDistance = dot(vDir, vDir);
 	// return(fDistance);
 	// half fDistance = length(vDir);
@@ -73,17 +74,40 @@ float4 main(VSO_ResPos IN):COLOR0
 	float3 vTexUV = vDir;
 	
 	float cosTheta = saturate(dot(vNormal, -vDir));
+	// return(cosTheta);
 	// / (g_vPixelSizeBias.x * 0.0009765625 / 8.0) 
 	// float fBias = clamp(0.2f / (g_vPixelSizeBias.x * 0.0009765625 * 4) * tan(acos(cosTheta)), 0.1f,0.4f / (g_vPixelSizeBias.x * 0.0009765625 * 4));
 	// float fBias = clamp(0.2f * tan(acos(cosTheta)), 0.1f, 0.4f);
 	float fBias = 0.0;
 	// float fBias = clamp(0.2f / (g_vPixelSizeBias.x * 0.0009765625 / 2.0) * tan(acos(cosTheta)), 0.1f,2.0f);
-	float fCompareTo = fDistance - fBias;
+	// float fCompareTo = fDistance - fBias;
 	// float fCompareTo = fDistance - 0.2;
+	
+	float fOffset = g_vPixelSizeBias.x * 4; // g_vPixelSizeBias.x
+	
+	float fDepthLight0 = 1.0 - 1.0 / g_txDepthShadow.Sample(g_sPointClamp, vTexUV).r;
+	float fDepthLightX = 1.0 - 1.0 / g_txDepthShadow.Sample(g_sPointClamp, vTexUV + float3(fOffset, 0, 0)).r;
+	float fDepthLightY = 1.0 - 1.0 / g_txDepthShadow.Sample(g_sPointClamp, vTexUV + float3(0, fOffset, 0)).r;
+	float fDepthLightZ = 1.0 - 1.0 / g_txDepthShadow.Sample(g_sPointClamp, vTexUV + float3(0, 0, fOffset)).r;
+	
+	float ln = g_vNearFarInvWinSize.x;
+	float lf = g_vNearFarInvWinSize.y;
+	
+	float fScaleFactor = min(1.0 / (cosTheta * cosTheta), 100);
+	
+	//0008f
+	float fBias0 = (lf - fDepthLight0 * (lf - ln)) * (lf - fDepthLight0 * (lf - ln)) / (lf * ln * (lf - ln)) * lf * 0.0008f * fScaleFactor;
+	float fBiasX = (lf - fDepthLightX * (lf - ln)) * (lf - fDepthLightX * (lf - ln)) / (lf * ln * (lf - ln)) * lf * 0.0008f * fScaleFactor - fBias0;
+	float fBiasY = (lf - fDepthLightY * (lf - ln)) * (lf - fDepthLightY * (lf - ln)) / (lf * ln * (lf - ln)) * lf * 0.0008f * fScaleFactor - fBias0;
+	float fBiasZ = (lf - fDepthLightZ * (lf - ln)) * (lf - fDepthLightZ * (lf - ln)) / (lf * ln * (lf - ln)) * lf * 0.0008f * fScaleFactor - fBias0;
+	
+	// float fD = g_vPixelSizeBias.x * 0.5f * fDistance / g_vLightColorPower.w;
+	// fBias = fD * sqrt(1.0f / (cosTheta * cosTheta) - 1.0f);
+	// float fCompareTo = fDistance - fBias * 200.0f;
+	float fCompareTo = fDistance - fBias;
 	
 	fShadow = g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexUV, fCompareTo);
 	
-	float fOffset = g_vPixelSizeBias.x * 4; // g_vPixelSizeBias.x
 	
 // #undef GSC_6
 #ifdef GSC_6
@@ -94,7 +118,7 @@ float4 main(VSO_ResPos IN):COLOR0
 			for(int z=0;z<=1;++z)
 			{
 				vTexUV = vDir + float3(fOffset * x, fOffset * y, fOffset * z);
-				fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexUV, fCompareTo);
+				fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexUV, fCompareTo - fBiasX * x - fBiasY * y - fBiasZ * z));
 			}
 		}
 	}

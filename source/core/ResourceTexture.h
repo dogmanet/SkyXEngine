@@ -202,7 +202,7 @@ protected:
 	UINT m_uWidth = 0;
 	UINT m_uHeight = 0;
 
-	XImageMip **ppData = NULL; // ppData[uFrame][uMip]
+	XImageMip **m_ppData = NULL; // m_ppData[uFrame][uMip]
 };
 
 // Implemented in core
@@ -224,7 +224,7 @@ public:
 protected:
 	UINT m_uSize = 0;
 
-	XImageMip ***pppData = NULL; // pppData[uFrame][uMip][side]
+	XImageMip ***m_pppData = NULL; // m_pppData[uFrame][uMip][side]
 };
 
 

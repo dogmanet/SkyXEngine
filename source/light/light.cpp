@@ -7,6 +7,7 @@ See the license in LICENSE
 #include "light.h"
 #include "LightSystem.h"
 #include <xcommon/IXRenderable.h>
+#include <physics/sxphysics.h>
 
 CLights::CLights()
 {
@@ -1655,6 +1656,7 @@ CXLight::CXLight(CLightSystem *pLightSystem):
 	mem_release(pPipeline);
 
 	m_pFrustum = SGCore_CrFrustum();
+	m_pMutationObserver = SPhysics_NewMutationObserver();
 }
 CXLight::~CXLight()
 {
@@ -1663,6 +1665,7 @@ CXLight::~CXLight()
 	mem_release(m_pVSData);
 	mem_release(m_pPSData);
 	mem_release(m_pVisibility);
+	mem_release(m_pMutationObserver);
 }
 
 LIGHT_TYPE CXLight::getType()
@@ -1681,8 +1684,10 @@ void CXLight::setColor(const float3 &vColor)
 		return;
 	}
 	m_vColor = vColor;
+	m_pMutationObserver->setHalfExtents(float3(getMaxDistance() * 0.5f));
 	m_isVSDataDirty = true;
 	m_isPSDataDirty = true;
+	m_isDirty = true;
 }
 
 float3 CXLight::getPosition()
@@ -1696,8 +1701,10 @@ void CXLight::setPosition(const float3 &vPosition)
 		return;
 	}
 	m_vPosition = vPosition;
+	m_pMutationObserver->setPosition(vPosition);
 	m_isVSDataDirty = true;
 	m_isPSDataDirty = true;
+	m_isDirty = true;
 }
 
 float CXLight::getShadowIntencity()
@@ -1720,7 +1727,13 @@ bool CXLight::isEnabled()
 }
 void CXLight::setEnabled(bool isEnabled)
 {
+	if(m_isEnable == isEnabled)
+	{
+		return;
+	}
 	m_isEnable = isEnabled;
+	m_pMutationObserver->setEnabled(isEnabled);
+	m_isDirty = true;
 }
 
 bool CXLight::isShadowDynamic()
@@ -1913,6 +1926,7 @@ void CXLightSun::setDirection(const SMQuaternion &qDirection)
 	}
 	m_qDirection = qDirection;
 	m_isVSDataDirty = true;
+	m_isDirty = true;
 }
 
 void CXLightSun::updatePSConstants(IGXDevice *pDevice)
@@ -1922,7 +1936,7 @@ void CXLightSun::updatePSConstants(IGXDevice *pDevice)
 		m_pPSData = pDevice->createConstantBuffer(sizeof(m_dataPS));
 	}
 	m_dataPS.vLightColor = float4(m_vColor, SMVector3Length2(m_vColor));
-	m_dataPS.vLightPos = float4(m_vPosition, m_fShadowIntensity);
+	m_dataPS.vLightPos = -float4(m_qDirection * LIGHTS_DIR_BASE, m_fShadowIntensity);
 	m_pPSData->update(&m_dataPS);
 }
 
@@ -1989,6 +2003,7 @@ void CXLightSpot::setOuterAngle(float fAngle)
 	m_fOuterAngle = fAngle;
 	m_isVSDataDirty = true;
 	m_isPSDataDirty = true;
+	m_isDirty = true;
 }
 SMQuaternion CXLightSpot::getDirection()
 {
@@ -2003,6 +2018,7 @@ void CXLightSpot::setDirection(const SMQuaternion &qDirection)
 	m_qDirection = qDirection;
 	m_isVSDataDirty = true;
 	m_isPSDataDirty = true;
+	m_isDirty = true;
 }
 
 void CXLightSpot::updatePSConstants(IGXDevice *pDevice)

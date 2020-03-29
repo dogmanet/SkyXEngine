@@ -43,11 +43,17 @@ struct XGSO_SceneShadows
 
 //##########################################################################
 
+#ifdef PSSM_MAX_SPLITS
+#define SIDE_COUNT PSSM_MAX_SPLITS
+#else
+#define SIDE_COUNT 6
+#endif
+
 [maxvertexcount(18)]
 void main(triangle XVSO_SceneCommon input[3], inout TriangleStream<XGSO_SceneShadows> OutputStream)
 {
 	[unroll]
-	for(int f = 0; f < 6; ++f)
+	for(int f = 0; f < SIDE_COUNT; ++f)
 	{
 		XGSO_SceneShadows OUT;
 		OUT.uRTIndex = f;
@@ -58,7 +64,11 @@ void main(triangle XVSO_SceneCommon input[3], inout TriangleStream<XGSO_SceneSha
 			XMAT_GS_PASS(OUT, input[v]);
 			
 			OUT.vPosition = mul(float4(input[v].vPosition.xyz, 1.f), g_mVP[f]);
+#ifdef IS_CUBEMAP			
 			OUT.vPos = float4(g_vLightPosShadow.xyz - input[v].vPosition.xyz, 1.0);
+#else
+			OUT.vPos = OUT.vPosition;
+#endif
 			
 			OutputStream.Append(OUT);
 		}

@@ -3,6 +3,9 @@
 mtrl.h
 Общие функции для материалов
 */
+
+#ifndef __MTRL_H
+#define __MTRL_H
  
 //! матрица для трансформации координат текстуры отражения (над водой)
 static const float4x4  MatrixReflection =
@@ -225,3 +228,5 @@ float4 MixColorDetail(float4 vColor, float4 vDetail, float fLerpFactor)
 	vColor.rgb = lerp(vBlend,vColor,fLerpFactor).rgb;
 	return vColor;
 }
+
+#endif

@@ -345,6 +345,7 @@ protected:
 	Array<IXTextureProxy*> m_aTextureProxies;
 	AssotiativeArray<String, CTexture*> m_mpTextures;
 	CConcurrentQueue<CTexture*> m_queueTextureToLoad;
+	IXTexture *m_pDefaultTexture = NULL;
 
 	struct MaterialLoader
 	{

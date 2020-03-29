@@ -73,13 +73,9 @@ public:
 	//@TODO: Remove this method
 	virtual LIGHT_RENDER_TYPE getRenderType() = 0;
 	//@TODO: Remove this method
-	virtual bool isDirty()
-	{
-		return(true);
-	}
+	virtual bool isDirty() = 0;
 	//@TODO: Remove this method
-	virtual void markClean()
-	{}
+	virtual void markClean() = 0;
 
 	virtual IXLightSpot *asSpot() = 0;
 	virtual IXLightSun *asSun() = 0;

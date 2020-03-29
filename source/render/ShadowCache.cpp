@@ -6,20 +6,44 @@ CShadowCache::CShadowCache(IXRenderPipeline *pRenderPipeline, IXMaterialSystem *
 	m_pMaterialSystem(pMaterialSystem)
 {
 	//! @todo implement handling r_lsm_quality change
-	Core_0RegisterCVarFloat("r_lsm_quality", 0.5f, "Коэфициент размера карты глубины для локальных источников света относительно размеров окна рендера [0.5,4] (низкое, высокое)", FCVAR_READONLY);
+	Core_0RegisterCVarFloat("r_lsm_quality", 0.5f, "Коэфициент размера карты глубины для локальных источников света [0.5,4] (низкое, высокое)", FCVAR_READONLY);
 	Core_0RegisterCVarFloat("r_sm_max_memory", 0.15f, "Максимальный процент от доступной видеопамяти, отводимый под кэш теней");
+	Core_0RegisterCVarInt("r_pssm_splits", 6, "Количество PSSM сплитов. Допустимые значения от 1 до 6");
+	Core_0RegisterCVarFloat("r_pssm_max_distance", 800.0f, "Дальность прорисовки PSSM");
 	
 	const char *aszGSRequiredParams[] = {
 		"vPosition",
 		"vPos",
 		NULL
 	};
-	m_pRSMGeometryShader = m_pMaterialSystem->registerGeometryShader("sm/rsmcube.gs", aszGSRequiredParams);
+	GXMacro aCubemapDefines[] = {
+		{"IS_CUBEMAP", "1"},
+		GX_MACRO_END()
+	};
+	m_pCubemapGeometryShader = m_pMaterialSystem->registerGeometryShader("sm/rsmcube.gs", aszGSRequiredParams, aCubemapDefines);
+
+	char tmp[16];
+	for(int i = 0; i < PSSM_MAX_SPLITS; ++i)
+	{
+		sprintf(tmp, "%d", i + 1);
+		GXMacro aPSSMDefines[] = {
+			{"PSSM_MAX_SPLITS", tmp},
+			GX_MACRO_END()
+		};
+		m_pPSSMGeometryShader[i] = m_pMaterialSystem->registerGeometryShader("sm/rsmcube.gs", aszGSRequiredParams, aPSSMDefines);
+	}
 
 	m_pRenderPassShadow = m_pMaterialSystem->getRenderPass("xShadow");
+
+	GXRasterizerDesc rasterizerDesc;
+	//rasterizerDesc.cullMode = GXCULL_FRONT;
+	//rasterizerDesc.useConservativeRasterization = true;
+	m_pRasterizerConservative = m_pRenderPipeline->getDevice()->createRasterizerState(&rasterizerDesc);
+
 }
 CShadowCache::~CShadowCache()
 {
+	mem_delete(m_pShadowPSSM);
 }
 
 void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
@@ -76,15 +100,32 @@ void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
 	{
 		UINT i = m_aShadowCubeMaps.size();
 		m_aShadowCubeMaps.resizeFast(uPoints);
+		m_aShadowCubeMapsQueue.resizeFast(uPoints);
 		for(; i < uPoints; ++i)
 		{
 			m_aShadowCubeMaps[i].map.init(m_pRenderPipeline->getDevice(), uDefaultShadowmapSize);
 		}
+
+		for(i = 0; i < uPoints; ++i)
+		{
+			m_aShadowCubeMapsQueue[i] = &m_aShadowCubeMaps[i];
+		}
 	}
 
 	m_aReadyMaps.resizeFast(uSpots + uPoints + (hasGlobal ? 1 : 0));
-	//m_aShadowCubeMaps.resizeFast(uPoints);
-	//@TODO: Init/deinit sun!
+
+	if(hasGlobal)
+	{
+		if(!m_pShadowPSSM)
+		{
+			m_pShadowPSSM = new ShadowPSSM();
+			m_pShadowPSSM->map.init(m_pRenderPipeline->getDevice(), uDefaultShadowmapSize);
+		}
+	}
+	else
+	{
+		mem_delete(m_pShadowPSSM);
+	}
 }
 
 void CShadowCache::nextFrame()
@@ -92,6 +133,19 @@ void CShadowCache::nextFrame()
 	++m_uCurrentFrame;
 	m_aFrameLights.clearFast();
 	m_isFirstBunch = true;
+
+	{
+		ShadowCubeMap *pSM;
+		for(UINT i = 0, l = m_aShadowCubeMaps.size(); i < l; ++i)
+		{
+			pSM = &m_aShadowCubeMaps[i];
+
+			if(pSM->uLastUsed != UINT_MAX)
+			{
+				++pSM->uLastUsed;
+			}
+		}
+	}
 }
 
 void CShadowCache::addLight(IXLight *pLight)
@@ -101,11 +155,19 @@ void CShadowCache::addLight(IXLight *pLight)
 
 UINT CShadowCache::processNextBunch()
 {
+	if(!m_aFrameLights.size())
+	{
+		return(0);
+	}
+
+	static const int *r_pssm_splits = GET_PCVAR_INT("r_pssm_splits");
+
 	SMMATRIX mOldView, mOldProj;
 	Core_RMatrixGet(G_RI_MATRIX_VIEW, &mOldView);
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mOldProj);
 
 	m_pRenderPipeline->getDevice()->getThreadContext()->setDepthStencilState(NULL);
+	m_pRenderPipeline->getDevice()->getThreadContext()->setRasterizerState(m_pRasterizerConservative);
 
 	bool isSomeFound = false;
 	if(m_isFirstBunch)
@@ -149,15 +211,15 @@ UINT CShadowCache::processNextBunch()
 			}
 		}
 
-		if(!m_shadowPSSM.isDirty && (id = m_aFrameLights.indexOf(m_shadowPSSM.pLight)) >= 0)
+		if(false && m_pShadowPSSM && !m_pShadowPSSM->isDirty && (id = m_aFrameLights.indexOf(m_pShadowPSSM->pLight)) >= 0)
 		{
-			if(m_shadowPSSM.pLight->isDirty())
+			if(m_pShadowPSSM->pLight->isDirty())
 			{
-				m_shadowPSSM.pLight->markClean();
-				m_shadowPSSM.isDirty = true;
+				m_pShadowPSSM->pLight->markClean();
+				m_pShadowPSSM->isDirty = true;
 			}
 			m_aFrameLights.erase(id);
-			m_shadowPSSM.shouldProcess = true;
+			m_pShadowPSSM->shouldProcess = true;
 			isSomeFound = true;
 		}
 
@@ -168,6 +230,11 @@ UINT CShadowCache::processNextBunch()
 	{
 		UINT uPoints = 0, uSpots = 0;
 		bool isFound = false;
+
+		m_aShadowCubeMapsQueue.quickSort([](const ShadowCubeMap *a, const ShadowCubeMap *b){
+			return(a->uLastUsed > b->uLastUsed);
+		});
+
 		for(int i = (int)m_aFrameLights.size() - 1; i >= 0; --i)
 		{
 			switch(m_aFrameLights[i]->getType())
@@ -184,20 +251,20 @@ UINT CShadowCache::processNextBunch()
 				}
 				break;
 			case LIGHT_TYPE_POINT:
-				if(m_aShadowCubeMaps.size() > uPoints)
+				if(m_aShadowCubeMapsQueue.size() > uPoints)
 				{
-					m_aShadowCubeMaps[uPoints].isDirty = true;
-					m_aShadowCubeMaps[uPoints].shouldProcess = true;
-					m_aShadowCubeMaps[uPoints].pLight = m_aFrameLights[i];
+					m_aShadowCubeMapsQueue[uPoints]->isDirty = true;
+					m_aShadowCubeMapsQueue[uPoints]->shouldProcess = true;
+					m_aShadowCubeMapsQueue[uPoints]->pLight = m_aFrameLights[i];
 					++uPoints;
 					m_aFrameLights.erase(i);
 					isFound = true;
 				}
 				break;
 			case LIGHT_TYPE_SUN:
-				m_shadowPSSM.isDirty = true;
-				m_shadowPSSM.shouldProcess = true;
-				m_shadowPSSM.pLight = m_aFrameLights[i];
+				m_pShadowPSSM->isDirty = true;
+				m_pShadowPSSM->shouldProcess = true;
+				m_pShadowPSSM->pLight = m_aFrameLights[i];
 				m_aFrameLights.erase(i);
 				isFound = true;
 				break;
@@ -232,21 +299,25 @@ UINT CShadowCache::processNextBunch()
 		}
 	}
 
-	if(m_shadowPSSM.shouldProcess)
-	{
-		m_shadowPSSM.shouldProcess = false;
+	m_pMaterialSystem->bindGS(m_pPSSMGeometryShader[*r_pssm_splits - 1]);
 
-		if(m_shadowPSSM.isDirty)
+	if(m_pShadowPSSM && m_pShadowPSSM->shouldProcess && m_pCamera)
+	{
+		m_pShadowPSSM->shouldProcess = false;
+
+		if(m_pShadowPSSM->isDirty)
 		{
-			m_shadowPSSM.map.setLight(m_shadowPSSM.pLight);
-			m_shadowPSSM.map.process(m_pRenderPipeline);
-			m_shadowPSSM.isDirty = false;
+			m_pShadowPSSM->map.setObserverCamera(m_pCamera);
+			m_pShadowPSSM->map.setLight(m_pShadowPSSM->pLight);
+			m_pShadowPSSM->map.process(m_pRenderPipeline);
+			m_pShadowPSSM->isDirty = false;
 		}
 
-		m_aReadyMaps.push_back({&m_shadowPSSM.map, m_shadowPSSM.pLight});
+		m_aReadyMaps.push_back({&m_pShadowPSSM->map, m_pShadowPSSM->pLight});
 	}
 
-	m_pMaterialSystem->bindGS(m_pRSMGeometryShader);
+	m_pMaterialSystem->bindGS(m_pCubemapGeometryShader);
+
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassShadow, 1);
 	{
 		ShadowCubeMap *pSM;
@@ -255,6 +326,7 @@ UINT CShadowCache::processNextBunch()
 			pSM = &m_aShadowCubeMaps[i];
 			if(pSM->shouldProcess)
 			{
+				pSM->uLastUsed = 0;
 				pSM->shouldProcess = false;
 				if(pSM->isDirty)
 				{
@@ -276,15 +348,20 @@ UINT CShadowCache::processNextBunch()
 	return(m_aReadyMaps.size());
 }
 
-IXLight *CShadowCache::getLight(ID id)
+IXLight* CShadowCache::getLight(ID id)
 {
 	assert(ID_VALID(id) && m_aReadyMaps.size() > (UINT)id);
 	return(m_aReadyMaps[id].pLight);
 }
 
-IBaseShadowMap *CShadowCache::getShadow(ID id)
+IBaseShadowMap* CShadowCache::getShadow(ID id)
 {
 	assert(ID_VALID(id) && m_aReadyMaps.size() > (UINT)id);
 	return(m_aReadyMaps[id].pShadowMap);
+}
+
+void CShadowCache::setObserverCamera(ICamera *pCamera)
+{
+	m_pCamera = pCamera;
 }
 

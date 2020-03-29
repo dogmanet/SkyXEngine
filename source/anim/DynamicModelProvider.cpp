@@ -94,6 +94,7 @@ CDynamicModelProvider::CDynamicModelProvider(IXCore *pCore):
 {
 	m_pMaterialChangedEventListener = new CMaterialChangedEventListener(this);
 	pCore->getEventChannel<XEventMaterialChanged>(EVENT_MATERIAL_CHANGED_GUID)->addListener(m_pMaterialChangedEventListener);
+	m_pModelChangedEventChannel = pCore->getEventChannel<XEventModelChanged>(EVENT_MODEL_CHANGED_GUID);
 }
 
 CDynamicModelProvider::~CDynamicModelProvider()
@@ -179,6 +180,18 @@ bool XMETHODCALLTYPE CDynamicModelProvider::createModel(IXResourceModel *pResour
 	return(true);
 }
 
+void CDynamicModelProvider::onSharedModelReady(CDynamicModelShared *pShared)
+{
+	// CDynamicModel *pTmp;
+	// for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
+	// {
+	// 	pTmp = m_apModels[i];
+	// 	if(pTmp->getShared() == pShared)
+	// 	{
+	// 		notifyModelCreated(pTmp);
+	// 	}
+	// }
+}
 void CDynamicModelProvider::onSharedModelRelease(CDynamicModelShared *pShared)
 {
 	m_mModels[pShared->getResource()] = NULL;
@@ -413,4 +426,12 @@ void CDynamicModelProvider::renderTransparentObject(CRenderableVisibility *pVisi
 	m_pMaterialSystem->bindVS(m_pVertexShaderHandler);
 	CRenderableVisibility::TransparentModel *pMdl = pVisibility->getItemTransparentDynamic(uIndex);
 	pMdl->pReferenceMdl->render(pMdl->uLod, true);
+}
+
+void CDynamicModelProvider::notifyModelChanged(CDynamicModel *pModel, XEventModelChanged::TYPE type)
+{
+	XEventModelChanged ev;
+	ev.type = type;
+	ev.pModel = pModel;
+	m_pModelChangedEventChannel->broadcastEvent(&ev);
 }

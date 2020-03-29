@@ -14,6 +14,7 @@ See the license in LICENSE
 #include <common/Array.h>
 #include <common/String.h>
 #include <graphix/graphix.h>
+#include <xcommon/IXMutationObserver.h>
 
 #include "sxlight.h"
 #include "ml_data.h"
@@ -299,6 +300,21 @@ public:
 	{
 		return(m_renderType);
 	}
+
+	bool isDirty() override
+	{
+		if(m_isDirty)
+		{
+			m_pMutationObserver->reset();
+		}
+		return(m_isDirty || m_pMutationObserver->wasTriggered());
+	}
+	void markClean() override
+	{
+		m_isDirty = false;
+		m_pMutationObserver->reset();
+	}
+
 protected:
 	virtual SMMATRIX getWorldTM();
 	virtual void updatePSConstants(IGXDevice *pDevice) = 0;
@@ -332,6 +348,9 @@ protected:
 	IFrustum *m_pFrustum = NULL;
 	IXRenderableVisibility *m_pVisibility = NULL;
 	LIGHT_RENDER_TYPE m_renderType = LRT_NONE;
+	bool m_isDirty = true;
+
+	IXMutationObserver *m_pMutationObserver = NULL;
 };
 
 #pragma warning(push)

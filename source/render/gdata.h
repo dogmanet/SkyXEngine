@@ -117,6 +117,7 @@ namespace gdata
 			extern ID idComLightingGI;
 			extern ID idComLightingShadow;
 			extern ID idComLightingSpotShadow;
+			extern ID idComLightingPSSMShadow;
 
 			extern ID idBlendAmbientSpecDiffColor;
 
@@ -139,6 +140,7 @@ namespace gdata
 			extern ID idComLightingSpotNonShadow;
 			extern ID idComLightingShadow;
 			extern ID idComLightingSpotShadow;
+			extern ID idComLightingPSSMShadow;
 			extern ID idComLightingGI;
 		};
 	};
@@ -171,6 +173,7 @@ namespace gdata
 
 		extern IGXRasterizerState *pRasterizerCullFront;
 		extern IGXRasterizerState *pRasterizerCullNone;
+		extern IGXRasterizerState *pRasterizerConservative;
 	};
 };
 

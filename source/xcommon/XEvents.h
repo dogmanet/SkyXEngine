@@ -183,4 +183,23 @@ struct XEventMaterialChanged
 	const char *szReference;
 };
 
+
+// {32D85440-D150-4301-A6E0-7AE89BF34DC6}
+#define EVENT_MODEL_CHANGED_GUID DEFINE_XGUID(0x32d85440, 0xd150, 0x4301, 0xa6, 0xe0, 0x7a, 0xe8, 0x9b, 0xf3, 0x4d, 0xc6)
+
+class IXModel;
+struct XEventModelChanged
+{
+	enum TYPE
+	{
+		TYPE_CREATED,
+		TYPE_BEFORE_REMOVED,
+		TYPE_MOVED,
+		TYPE_VISIBILITY,
+		TYPE_SKIN,
+		// ...
+	} type;
+	IXModel *pModel;
+};
+
 #endif

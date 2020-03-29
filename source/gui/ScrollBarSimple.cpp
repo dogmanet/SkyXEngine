@@ -66,10 +66,10 @@ namespace gui
 				point *pData;
 				if(m_pVertices->lock((void**)&pData, GXBL_WRITE))
 				{
-					pData[0] = {P, P + T, 0, 0, 0};
-					pData[1] = {W - P, P + T, 0, 0, 1};
-					pData[2] = {W - P, P + T + S, 0, 1, 1};
-					pData[3] = {P, P + T + S, 0, 1, 0};
+					pData[0] = {(float)P, (float)(P + T), 0.0f, 0.0f, 0.0f};
+					pData[1] = {(float)(W - P), (float)(P + T), 0.0f, 0.0f, 1.0f};
+					pData[2] = {(float)(W - P), (float)(P + T + S), 0.0f, 1.0f, 1.0f};
+					pData[3] = {(float)P, (float)(P + T + S), 0.0f, 1.0f, 0.0f};
 
 					if(m_eDir == SCROLLBAR_DIR_HORIZONTAL)
 					{

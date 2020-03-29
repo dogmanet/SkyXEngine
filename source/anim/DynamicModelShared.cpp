@@ -296,6 +296,10 @@ UINT CDynamicModelShared::getPhysboxCount() const
 {
 	return(m_apPhysboxes.size());
 }
+bool CDynamicModelShared::isReady() const
+{
+	return(m_ppTempIndices != NULL);
+}
 const IModelPhysbox *CDynamicModelShared::getPhysBox(UINT id) const
 {
 	assert(id < m_apPhysboxes.size());

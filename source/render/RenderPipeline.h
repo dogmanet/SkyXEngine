@@ -7,6 +7,7 @@
 #include <light/IXLightSystem.h>
 #include "ShadowCache.h"
 #include <xUI/IXUI.h>
+#include "OcclusionCuller.h"
 
 #define MAX_TRANSPARENCY_CLIP_PANES 4
 
@@ -74,6 +75,7 @@ protected:
 	UINT m_uOutHeight;
 
 	IXRenderableVisibility *m_pMainCameraVisibility = NULL;
+	COcclusionCuller *m_pMainCameraOcclusionCuller = NULL;
 
 	IXLightSystem *m_pLightSystem = NULL;
 

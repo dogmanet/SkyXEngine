@@ -282,7 +282,7 @@ public:
 
 			XRender2D(views[i], fScales[i], true);
 
-			renderEditor2D();
+		//	renderEditor2D();
 
 			Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
 			pDXDevice->setVSConstant(g_pCameraConstantBuffer, 4);

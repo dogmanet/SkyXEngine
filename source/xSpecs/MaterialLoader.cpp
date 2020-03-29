@@ -189,15 +189,11 @@ bool XMETHODCALLTYPE CMaterialLoader::load(IXMaterial *pMaterial)
 		}
 	}
 
-	int istexparam = -1;
-
 	//если есть ключ использования текстуры то грузим
-	if(m_pConfig->keyExists(szSection, "use_texparamlight"))
+	if(m_pConfig->keyExists(szSection, "use_texparamlight") && StringToBool(m_pConfig->getKey(szSection, "use_texparamlight")))
 	{
-		istexparam = StringToBool(m_pConfig->getKey(szSection, "use_texparamlight"));
+		pMaterial->setFlag("has_parameter_texture", true);
 	}
-
-	pMaterial->setFlag("has_parameter_texture", istexparam != 0);
 
 	if(m_pConfig->keyExists(szSection, "texparamligth"))
 	{

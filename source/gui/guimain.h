@@ -2,7 +2,7 @@
 #define _GUIMAIN_H_
 
 #include <graphix/graphix.h>
-#include <Windows.h>
+//#include <Windows.h>
 #include <common/array.h>
 #include <common/MemAlloc.h>
 #include <common/stack.h>

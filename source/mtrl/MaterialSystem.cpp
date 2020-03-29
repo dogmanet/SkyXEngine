@@ -58,10 +58,13 @@ CMaterialSystem::CMaterialSystem()
 	}
 
 	m_pNotifyChannel = Core_GetIXCore()->getEventChannel<XEventMaterialChanged>(EVENT_MATERIAL_CHANGED_GUID);
+
+	loadTexture("textures/dev/dev_null.dds", &m_pDefaultTexture);
 }
 CMaterialSystem::~CMaterialSystem()
 {
 	mem_release(m_pObjectConstantBuffer);
+	mem_release(m_pDefaultTexture);
 
 	cleanData();
 }
@@ -480,11 +483,13 @@ void XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 
 					SGCore_ShaderBind(idShaderSet);
 
+					IXTexture *pTex = NULL;
 					for(UINT j = 0, jl = pVariant->aTextureMap.size(); j < jl; ++j)
 					{
 						if(pVariant->aTextureMap[j].szName)
 						{
-							bindTexture(pMat->getTextureForSlot(j), j);
+							pTex = pMat->getTextureForSlot(j);
+							bindTexture(pTex ? pTex : m_pDefaultTexture, j);
 						}
 					}
 					

@@ -5,6 +5,10 @@ struct.h
 Определены все структуры которые используются
 */
 
+#ifndef __STRUCT_H
+#define __STRUCT_H
+
+
 #include "gdefines.h"
 
 /* \name ПОСТПРОЦЕСС
@@ -360,7 +364,7 @@ struct GSO_GICubes
 };
 
 
-
+#endif
 
 
 

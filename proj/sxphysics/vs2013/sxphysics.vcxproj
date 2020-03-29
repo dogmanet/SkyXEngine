@@ -178,6 +178,7 @@
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\physics\CollisionObject.cpp" />
     <ClCompile Include="..\..\..\source\physics\CollisionShape.cpp" />
+    <ClCompile Include="..\..\..\source\physics\MutationObserver.cpp" />
     <ClCompile Include="..\..\..\source\physics\Physics.cpp" />
     <ClCompile Include="..\..\..\source\physics\PhyWorld.cpp" />
     <ClCompile Include="..\..\..\source\physics\sxphysics_dll.cpp" />
@@ -191,9 +192,11 @@
     <ClInclude Include="..\..\..\source\physics\ICollisionObject.h" />
     <ClInclude Include="..\..\..\source\physics\ICollisionShape.h" />
     <ClInclude Include="..\..\..\source\physics\IXPhysics.h" />
+    <ClInclude Include="..\..\..\source\physics\MutationObserver.h" />
     <ClInclude Include="..\..\..\source\physics\PhyWorld.h" />
     <ClInclude Include="..\..\..\source\physics\sxphysics.h" />
     <ClInclude Include="..\..\..\source\physics\Physics.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXMutationObserver.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

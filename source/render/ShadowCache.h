@@ -27,6 +27,8 @@ public:
 	//! Указывает, что начался новый кадр
 	void nextFrame();
 
+	void setObserverCamera(ICamera *pCamera);
+
 	//! Добавляет источник к текущему проходу, В случае отсутствия свободных слотов, возвращает false
 	void addLight(IXLight *pLight);
 
@@ -37,6 +39,10 @@ public:
 protected:
 	IXRenderPipeline *m_pRenderPipeline;
 	IXMaterialSystem *m_pMaterialSystem;
+
+	ICamera *m_pCamera = NULL;
+
+	IGXRasterizerState *m_pRasterizerConservative = NULL;
 
 	UINT m_uCurrentFrame = 0;
 	Array<IXLight*> m_aFrameLights;
@@ -56,6 +62,7 @@ protected:
 		bool isDirty = false;
 		bool shouldProcess = false;
 		IXLight *pLight = NULL;
+		UINT uLastUsed = UINT_MAX;
 	};
 
 	struct ShadowPSSM
@@ -68,7 +75,8 @@ protected:
 
 	Array<ShadowMap> m_aShadowMaps;
 	Array<ShadowCubeMap> m_aShadowCubeMaps;
-	ShadowPSSM m_shadowPSSM;
+	Array<ShadowCubeMap*> m_aShadowCubeMapsQueue;
+	ShadowPSSM *m_pShadowPSSM = NULL;
 
 	struct ReadyShadows
 	{
@@ -78,7 +86,9 @@ protected:
 
 	Array<ReadyShadows> m_aReadyMaps;
 
-	XGeometryShaderHandler *m_pRSMGeometryShader = NULL;
+	//XGeometryShaderHandler *m_pRSMGeometryShader = NULL;
+	XGeometryShaderHandler *m_pCubemapGeometryShader = NULL;
+	XGeometryShaderHandler *m_pPSSMGeometryShader[PSSM_MAX_SPLITS];
 	XRenderPassHandler *m_pRenderPassShadow = NULL;
 };
 
