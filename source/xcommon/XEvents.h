@@ -202,4 +202,23 @@ struct XEventModelChanged
 	IXModel *pModel;
 };
 
+
+// {A816DD94-0F92-48EA-A174-03599963BF84}
+#define EVENT_CVAR_CHANGED_GUID DEFINE_XGUID(0xa816dd94, 0xf92, 0x48ea, 0xa1, 0x74, 0x3, 0x59, 0x99, 0x63, 0xbf, 0x84)
+
+class IXModel;
+struct XEventCvarChanged
+{
+	enum TYPE
+	{
+		TYPE_INT,
+		TYPE_FLOAT,
+		TYPE_STRING,
+		TYPE_BOOL
+		// ...
+	} type;
+	const char *szName;
+	const void *pCvar;
+};
+
 #endif

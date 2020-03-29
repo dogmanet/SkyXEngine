@@ -45,6 +45,11 @@ public:
 	
 	IXConfig* XMETHODCALLTYPE CCore::newConfig() override;
 
+	const char** XMETHODCALLTYPE getPCVarString(const char *szName) override;
+	const int* XMETHODCALLTYPE getPCVarInt(const char *szName) override;
+	const float* XMETHODCALLTYPE getPCVarFloat(const char *szName) override;
+	const bool* XMETHODCALLTYPE getPCVarBool(const char *szName) override;
+
 protected:
 	IBaseEventChannel* getEventChannelInternal(const XGUID &guid) override;
 

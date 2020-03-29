@@ -42,6 +42,11 @@ public:
 
 	virtual IXConfig* XMETHODCALLTYPE newConfig() = 0;
 
+	virtual const char** XMETHODCALLTYPE getPCVarString(const char *szName) = 0;
+	virtual const int* XMETHODCALLTYPE getPCVarInt(const char *szName) = 0;
+	virtual const float* XMETHODCALLTYPE getPCVarFloat(const char *szName) = 0;
+	virtual const bool* XMETHODCALLTYPE getPCVarBool(const char *szName) = 0;
+
 	template<typename T> IEventChannel<T> *getEventChannel(const XGUID &guid)
 	{
 		return((IEventChannel<T>*)getEventChannelInternal(guid));

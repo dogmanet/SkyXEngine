@@ -5,9 +5,11 @@ See the license in LICENSE
 ***********************************************************/
 
 #include "cvars.h"
+#include <xcommon/XEvents.h>
 
 AssotiativeArray<String, CVar> g_mCVars;
 AssotiativeArray<String, CVarPtr> g_mCVarPtrs;
+IEventChannel<XEventCvarChanged> *g_pNotifyEventChannel = NULL;
 
 SX_LIB_API void Core_0RegisterCVarString(const char * name, const char * value, const char * desc, int flags)
 {
@@ -196,9 +198,17 @@ SX_LIB_API void Core_0SetCVarString(const char * name, const char * value)
 			cv->value.c = new char[len + 1];
 		}
 		strcpy((char*)cv->value.c, value);
-		if(pNode->Val->flags & FCVAR_NOTIFY)
+		if(pNode->Val->flags & FCVAR_NOTIFY_OLD)
 		{
 			Core_0ConsoleExecCmd("on_%s_change", name);
+		}
+		if(pNode->Val->flags & FCVAR_NOTIFY)
+		{
+			XEventCvarChanged ev;
+			ev.type = XEventCvarChanged::TYPE_STRING;
+			ev.szName = name;
+			ev.pCvar = &cv->value.c;
+			g_pNotifyEventChannel->broadcastEvent(&ev);
 		}
 	}
 }
@@ -210,9 +220,17 @@ SX_LIB_API void Core_0SetCVarInt(const char * name, int value)
 	{
 		CVar * cv = pNode->Val;
 		cv->value.i = value;
-		if(pNode->Val->flags & FCVAR_NOTIFY)
+		if(pNode->Val->flags & FCVAR_NOTIFY_OLD)
 		{
 			Core_0ConsoleExecCmd("on_%s_change", name);
+		}
+		if(pNode->Val->flags & FCVAR_NOTIFY)
+		{
+			XEventCvarChanged ev;
+			ev.type = XEventCvarChanged::TYPE_INT;
+			ev.szName = name;
+			ev.pCvar = &cv->value.i;
+			g_pNotifyEventChannel->broadcastEvent(&ev);
 		}
 	}
 }
@@ -224,9 +242,17 @@ SX_LIB_API void Core_0SetCVarFloat(const char * name, float value)
 	{
 		CVar * cv = pNode->Val;
 		cv->value.f = value;
-		if(pNode->Val->flags & FCVAR_NOTIFY)
+		if(pNode->Val->flags & FCVAR_NOTIFY_OLD)
 		{
 			Core_0ConsoleExecCmd("on_%s_change", name);
+		}
+		if(pNode->Val->flags & FCVAR_NOTIFY)
+		{
+			XEventCvarChanged ev;
+			ev.type = XEventCvarChanged::TYPE_FLOAT;
+			ev.szName = name;
+			ev.pCvar = &cv->value.f;
+			g_pNotifyEventChannel->broadcastEvent(&ev);
 		}
 	}
 }
@@ -238,9 +264,17 @@ SX_LIB_API void Core_0SetCVarBool(const char * name, bool value)
 	{
 		CVar * cv = pNode->Val;
 		cv->value.b = value;
-		if(pNode->Val->flags & FCVAR_NOTIFY)
+		if(pNode->Val->flags & FCVAR_NOTIFY_OLD)
 		{
 			Core_0ConsoleExecCmd("on_%s_change", name);
+		}
+		if(pNode->Val->flags & FCVAR_NOTIFY)
+		{
+			XEventCvarChanged ev;
+			ev.type = XEventCvarChanged::TYPE_BOOL;
+			ev.szName = name;
+			ev.pCvar = &cv->value.b;
+			g_pNotifyEventChannel->broadcastEvent(&ev);
 		}
 	}
 }
@@ -419,4 +453,9 @@ void DumpCVars()
 			break;
 		}
 	}
+}
+
+void CvarInitSystem(IXCore *pCore)
+{
+	g_pNotifyEventChannel = pCore->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID);
 }

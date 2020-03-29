@@ -12,10 +12,7 @@ See the license in LICENSE
 #include <common/array.h>
 #include <common/String.h>
 #include <mtrl/IXMaterialSystem.h>
-
-//##########################################################################
-
-#define SXGC_SKYBOX_SIZE 800.f
+#include <xcommon/IXCore.h>
 
 //##########################################################################
 
@@ -32,13 +29,17 @@ struct CSkyBoxVertex
 
 //##########################################################################
 
+class CRFarCvarListener;
+
 //! скайбокс, куб, на который накалывдается кубическая текстура с изображением неба
 class CSkyBox
 {
+	friend class CRFarCvarListener;
 public:
 	SX_ALIGNED_OP_MEM2();
 
-	CSkyBox();
+	CSkyBox(IXCore *pCore);
+	~CSkyBox();
 
 	void setDevice(IGXDevice *pDevice);
 	void setMaterialSystem(IXMaterialSystem *pMaterialSystem);
@@ -70,6 +71,10 @@ public:
 	void update(float fDT);
 
 protected:
+	void updateBuffers();
+
+	IXCore *m_pCore;
+
 	//! декларация вершин
 	IGXVertexDeclaration *m_pVertexDeclarationSkyBox = NULL;
 	
@@ -104,7 +109,9 @@ protected:
 	IGXDevice *m_pDevice = NULL;
 	IXMaterialSystem *m_pMaterialSystem = NULL;
 
-	XVertexShaderHandler* m_pVertexShaderHandler = NULL;
+	XVertexShaderHandler *m_pVertexShaderHandler = NULL;
+
+	CRFarCvarListener *m_pRFarCvarListener = NULL;
 };
 
 #if 0

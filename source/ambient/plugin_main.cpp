@@ -61,7 +61,7 @@ public:
 	{
 		m_pCore = pCore;
 
-		m_pSkyBox = new CSkyBox();
+		m_pSkyBox = new CSkyBox(pCore);
 		m_pRenderable = new CRenderable(getID(), m_pSkyBox);
 		m_pUpdatable = new CUpdatable(m_pSkyBox);
 

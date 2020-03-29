@@ -93,13 +93,13 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB input initialized\n");
 
 	// init graphics
-	Core_0RegisterCVarInt("r_win_width", 800, "Размер окна по горизонтали (в пикселях)", FCVAR_NOTIFY);
-	Core_0RegisterCVarInt("r_win_height", 600, "Размер окна по вертикали (в пикселях)", FCVAR_NOTIFY);
-	Core_0RegisterCVarBool("r_win_windowed", true, "Режим рендера true - оконный, false - полноэкранный", FCVAR_NOTIFY);
-	Core_0RegisterCVarBool("r_win_borderless", false, "Режим без рамки", FCVAR_NOTIFY);
+	Core_0RegisterCVarInt("r_win_width", 800, "Размер окна по горизонтали (в пикселях)", FCVAR_NOTIFY_OLD);
+	Core_0RegisterCVarInt("r_win_height", 600, "Размер окна по вертикали (в пикселях)", FCVAR_NOTIFY_OLD);
+	Core_0RegisterCVarBool("r_win_windowed", true, "Режим рендера true - оконный, false - полноэкранный", FCVAR_NOTIFY_OLD);
+	Core_0RegisterCVarBool("r_win_borderless", false, "Режим без рамки", FCVAR_NOTIFY_OLD);
 	Core_0RegisterCVarFloat("r_default_fov", SM_PI * 0.25f, "Дефолтный fov в радианах");
-	Core_0RegisterCVarFloat("r_near", 0.025f, "Ближняя плоскость отсчечения");
-	Core_0RegisterCVarFloat("r_far", 800, "Дальняя плоскость отсечения (дальность видимости)");
+	Core_0RegisterCVarFloat("r_near", 0.025f, "Ближняя плоскость отсчечения", FCVAR_NOTIFY);
+	Core_0RegisterCVarFloat("r_far", 800.0f, "Дальняя плоскость отсечения (дальность видимости)", FCVAR_NOTIFY);
 
 	Core_0RegisterCVarInt("r_final_image", DS_RT_SCENELIGHT, "Тип финального (выводимого в окно рендера) изображения из перечисления DS_RT");
 
