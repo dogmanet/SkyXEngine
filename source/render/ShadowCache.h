@@ -17,6 +17,7 @@ enum SHADOW_TYPE
 
 class CShadowCache
 {
+	friend class CRShadowSizeCvarListener;
 public:
 	CShadowCache(IXRenderPipeline *pRenderPipeline, IXMaterialSystem *pMaterialSystem);
 	~CShadowCache();
@@ -41,6 +42,7 @@ public:
 protected:
 	IXRenderPipeline *m_pRenderPipeline;
 	IXMaterialSystem *m_pMaterialSystem;
+	CRShadowSizeCvarListener *m_pShadowSizeCvarListener;
 
 	ICamera *m_pCamera = NULL;
 
@@ -92,6 +94,8 @@ protected:
 	XGeometryShaderHandler *m_pCubemapGeometryShader = NULL;
 	XGeometryShaderHandler *m_pPSSMGeometryShader[PSSM_MAX_SPLITS];
 	XRenderPassHandler *m_pRenderPassShadow = NULL;
+
+	void dropCaches();
 };
 
 #endif

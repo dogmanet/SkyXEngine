@@ -1,12 +1,46 @@
 #include "ShadowCache.h"
 #include <core/sxcore.h>
 
+class CRShadowSizeCvarListener: public IEventListener<XEventCvarChanged>
+{
+public:
+	CRShadowSizeCvarListener(IXCore *pCore, CShadowCache *pShadowCache):
+		m_pCore(pCore),
+		m_pShadowCache(pShadowCache)
+	{
+	}
+
+	virtual void onEvent(const XEventCvarChanged *pEvent)
+	{
+		static const float *s_pfRLSMQuality = GET_PCVAR_FLOAT("r_lsm_quality");
+		static const float *s_pfRPSMQuality = GET_PCVAR_FLOAT("r_psm_quality");
+		static const float *s_pfRPSSMQuality = GET_PCVAR_FLOAT("r_pssm_quality");
+		if(pEvent->pCvar == s_pfRLSMQuality 
+			|| pEvent->pCvar == s_pfRPSMQuality
+			|| pEvent->pCvar == s_pfRPSSMQuality
+			)
+		{
+			m_pShadowCache->dropCaches();
+		}
+	}
+
+private:
+	CShadowCache *m_pShadowCache;
+	IXCore *m_pCore;
+};
+
+//##########################################################################
+
 CShadowCache::CShadowCache(IXRenderPipeline *pRenderPipeline, IXMaterialSystem *pMaterialSystem):
 	m_pRenderPipeline(pRenderPipeline),
 	m_pMaterialSystem(pMaterialSystem)
 {
-	//! @todo implement handling r_lsm_quality change
-	Core_0RegisterCVarFloat("r_lsm_quality", 0.5f, "Коэфициент размера карты глубины для локальных источников света [0.5,4] (низкое, высокое)", FCVAR_READONLY);
+	m_pShadowSizeCvarListener = new CRShadowSizeCvarListener(Core_GetIXCore(), this);
+	Core_GetIXCore()->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID)->addListener(m_pShadowSizeCvarListener);
+
+	Core_0RegisterCVarFloat("r_lsm_quality", 0.5f, "Коэфициент размера карты глубины для направленных источников света [0.5,4] (низкое, высокое)", FCVAR_NOTIFY);
+	Core_0RegisterCVarFloat("r_psm_quality", 0.5f, "Коэфициент размера карты глубины для точечных источников света [0.5,4] (низкое, высокое)", FCVAR_NOTIFY);
+	Core_0RegisterCVarFloat("r_pssm_quality", 0.5f, "Коэфициент размера карты глубины для солнца [0.5,4] (низкое, высокое)", FCVAR_NOTIFY);
 	Core_0RegisterCVarFloat("r_sm_max_memory", 0.15f, "Максимальный процент от доступной видеопамяти, отводимый под кэш теней");
 	Core_0RegisterCVarInt("r_pssm_splits", 6, "Количество PSSM сплитов. Допустимые значения от 1 до 6");
 	Core_0RegisterCVarFloat("r_pssm_max_distance", 800.0f, "Дальность прорисовки PSSM");
@@ -43,19 +77,25 @@ CShadowCache::CShadowCache(IXRenderPipeline *pRenderPipeline, IXMaterialSystem *
 }
 CShadowCache::~CShadowCache()
 {
+	Core_GetIXCore()->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID)->removeListener(m_pShadowSizeCvarListener);
+	mem_delete(m_pShadowSizeCvarListener);
 	mem_delete(m_pShadowPSSM);
 }
 
 void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
 {
 	static const float *s_pfRLSMQuality = GET_PCVAR_FLOAT("r_lsm_quality");
+	static const float *s_pfRPSMQuality = GET_PCVAR_FLOAT("r_psm_quality");
+	static const float *s_pfRPSSMQuality = GET_PCVAR_FLOAT("r_pssm_quality");
 	static const float *s_pfRSMMaxMemory = GET_PCVAR_FLOAT("r_sm_max_memory");
-	const UINT uDefaultShadowmapSize = (UINT)(512 * *s_pfRLSMQuality);
+	const UINT uSpotShadowmapSize = (UINT)(512 * *s_pfRLSMQuality);
+	const UINT uPointShadowmapSize = (UINT)(512 * *s_pfRPSMQuality);
+	const UINT uSunShadowmapSize = (UINT)(512 * *s_pfRPSSMQuality);
 
 	size_t stMaxMem = (size_t)(m_pRenderPipeline->getDevice()->getAdapterDesc()->sizeTotalMemory * *s_pfRSMMaxMemory);
 
-	size_t stPointsMemory = uPoints * CShadowCubeMap::GetMapMemory(uDefaultShadowmapSize);
-	size_t stSpotsMemory = uSpots * CShadowMap::GetMapMemory(uDefaultShadowmapSize);
+	size_t stPointsMemory = uPoints * CShadowCubeMap::GetMapMemory(uPointShadowmapSize);
+	size_t stSpotsMemory = uSpots * CShadowMap::GetMapMemory(uSpotShadowmapSize);
 	size_t stSunMemory = 0;
 
 	size_t stTotal = stPointsMemory + stSpotsMemory;
@@ -70,7 +110,7 @@ void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
 
 		if(uSpots)
 		{
-			uSpots = (UINT)(stSpotsMemory / CShadowMap::GetMapMemory(uDefaultShadowmapSize));
+			uSpots = (UINT)(stSpotsMemory / CShadowMap::GetMapMemory(uSpotShadowmapSize));
 			if(!uSpots)
 			{
 				uSpots = 1;
@@ -78,7 +118,7 @@ void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
 		}
 		if(uPoints)
 		{
-			uPoints = (UINT)(stPointsMemory / CShadowCubeMap::GetMapMemory(uDefaultShadowmapSize));
+			uPoints = (UINT)(stPointsMemory / CShadowCubeMap::GetMapMemory(uPointShadowmapSize));
 			if(!uPoints)
 			{
 				uPoints = 1;
@@ -92,7 +132,7 @@ void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
 		m_aShadowMaps.resizeFast(uSpots);
 		for(; i < uSpots; ++i)
 		{
-			m_aShadowMaps[i].map.init(m_pRenderPipeline->getDevice(), uDefaultShadowmapSize);
+			m_aShadowMaps[i].map.init(m_pRenderPipeline->getDevice(), uSpotShadowmapSize);
 		}
 	}
 
@@ -103,7 +143,7 @@ void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
 		m_aShadowCubeMapsQueue.resizeFast(uPoints);
 		for(; i < uPoints; ++i)
 		{
-			m_aShadowCubeMaps[i].map.init(m_pRenderPipeline->getDevice(), uDefaultShadowmapSize);
+			m_aShadowCubeMaps[i].map.init(m_pRenderPipeline->getDevice(), uPointShadowmapSize);
 		}
 
 		for(i = 0; i < uPoints; ++i)
@@ -119,7 +159,7 @@ void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
 		if(!m_pShadowPSSM)
 		{
 			m_pShadowPSSM = new ShadowPSSM();
-			m_pShadowPSSM->map.init(m_pRenderPipeline->getDevice(), uDefaultShadowmapSize);
+			m_pShadowPSSM->map.init(m_pRenderPipeline->getDevice(), uSunShadowmapSize);
 		}
 	}
 	else
@@ -365,3 +405,10 @@ void CShadowCache::setObserverCamera(ICamera *pCamera)
 	m_pCamera = pCamera;
 }
 
+void CShadowCache::dropCaches()
+{
+	m_aShadowMaps.resizeFast(0);
+	m_aShadowCubeMaps.resizeFast(0);
+	m_aShadowCubeMapsQueue.resizeFast(0);
+	mem_delete(m_pShadowPSSM);
+}

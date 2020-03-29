@@ -513,8 +513,6 @@ void CShadowPSSM::init(IGXDevice *pContext, UINT uSize)
 {
 	m_pDevice = pContext;
 
-	uSize *= 2;
-
 	m_pDepthMap = m_pDevice->createTextureCube(uSize, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R32F);
 	m_pDepthStencilSurface = pContext->createDepthStencilSurfaceCube(uSize, GXFMT_D24S8, GXMULTISAMPLE_NONE, false);
 
