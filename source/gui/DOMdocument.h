@@ -19,6 +19,9 @@ namespace gui
 		void pushMatrix(const SMMATRIX & m);
 		void popMatrix();
 		SMMATRIX getCurrentMatrix();
+
+		SX_ALIGNED_OP_MEM2();
+
 	protected:
 		CDesktopStack *m_pDesktopStack;
 		SMMATRIX m_result;

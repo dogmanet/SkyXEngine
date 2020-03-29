@@ -21,6 +21,8 @@ public:
 	CShadowCache(IXRenderPipeline *pRenderPipeline, IXMaterialSystem *pMaterialSystem);
 	~CShadowCache();
 
+	SX_ALIGNED_OP_MEM2();
+
 	//! Установка количества лампочек, инициализация кэша
 	void setLightsCount(UINT iPoints, UINT iSpots, bool hasGlobal);
 
