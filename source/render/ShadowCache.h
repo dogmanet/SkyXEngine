@@ -75,6 +75,8 @@ protected:
 		bool isDirty = false;
 		bool shouldProcess = false;
 		IXLight *pLight = NULL;
+
+		SX_ALIGNED_OP_MEM2();
 	};
 
 	Array<ShadowMap> m_aShadowMaps;
