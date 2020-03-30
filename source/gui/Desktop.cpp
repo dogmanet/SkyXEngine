@@ -78,9 +78,9 @@ namespace gui
 
 		point a[] = {
 			{0, 0, 0, 0.0f, 0.0f},
-			{m_iWidth, 0, 0, 1.0f, 0.0f},
-			{m_iWidth, m_iHeight, 0, 1.0f, 1.0f},
-			{0, m_iHeight, 0, 0.0f, 1.0f}
+			{(float)m_iWidth, 0, 0, 1.0f, 0.0f},
+			{(float)m_iWidth, (float)m_iHeight, 0, 1.0f, 1.0f},
+			{0, (float)m_iHeight, 0, 0.0f, 1.0f}
 		};
 
 		m_pVertices = GetGUI()->getDevice()->createVertexBuffer(sizeof(point) * 4, GXBUFFER_USAGE_STATIC, a);

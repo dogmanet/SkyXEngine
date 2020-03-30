@@ -241,7 +241,7 @@ namespace gui
 						UINT d = 0, o = 0;
 						WCHAR cn;
 						StringW prm = str.substr(pos + 1);
-						UINT c = swscanf_s(prm.c_str(), L"%d%c-%d", &d, &cn, sizeof(cn), &o);
+						UINT c = swscanf_s(prm.c_str(), L"%d%c-%d", &d, &cn, 1, &o);
 						if(c >= 1)
 						{
 							nth_num = d;
@@ -3599,7 +3599,7 @@ namespace gui
 				}
 			}
 
-			int n = swscanf_s(_val.c_str(), L"%f%c%c", &p, &a, sizeof(a), &b, sizeof(b));
+			int n = swscanf_s(_val.c_str(), L"%f%c%c", &p, &a, 1, &b, 1);
 			clr->set(p);
 			if(n == 1)
 			{

@@ -670,7 +670,7 @@ void CShadowPSSM::updateFrustums()
 	m_pCamera->getUp(&vUp);
 	float fAspectRatio = (float)*r_win_width / (float)*r_win_height;
 	float fFovTan = tanf(*r_effective_fov * 0.5f);
-	for(UINT i = 0; i < *r_pssm_splits; ++i)
+	for(int i = 0; i < *r_pssm_splits; ++i)
 	{
 		Split &split = m_splits[i];
 

@@ -1749,16 +1749,16 @@ namespace gui
 					};
 					point a[6] = {
 						{0, 0, 0, rc},
-						{m_iWidth, 0, 0, rc},
-						{0, (float)(m_iHeight), 0, rc},
-						{0, (float)(m_iHeight), 0, rc},
-						{m_iWidth, 0, 0, rc},
-						{m_iWidth, (float)(m_iHeight), 0, rc}
+						{(float)m_iWidth, 0, 0, rc},
+						{0, (float)m_iHeight, 0, rc},
+						{0, (float)m_iHeight, 0, rc},
+						{(float)m_iWidth, 0, 0, rc},
+						{(float)m_iWidth, (float)(m_iHeight), 0, rc}
 					};
 					point2 apdx8[] = {
 						{0, 0, 0},
-						{m_iWidth, 0, 0},
-						{m_iWidth, (float)(m_iHeight), 0},
+						{(float)m_iWidth, 0, 0},
+						{(float)m_iWidth, (float)(m_iHeight), 0},
 						{0, (float)(m_iHeight), 0}
 					};
 					
