@@ -309,7 +309,7 @@ public:
 	XGeometryShaderHandler* XMETHODCALLTYPE registerGeometryShader(const char *szShaderFile, const char **aszRequiredParameters, GXMacro *pDefines = NULL) override;
 	void XMETHODCALLTYPE bindGS(XGeometryShaderHandler *pGeometryShader) override;
 
-	XRenderPassHandler* XMETHODCALLTYPE registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput, XRenderPassVariantElement *pVariants = NULL) override;
+	XRenderPassHandler* XMETHODCALLTYPE registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput, XRenderPassVariantElement *pVariants = NULL, bool bSkipMaterialShader = false) override;
 	XRenderPassHandler* XMETHODCALLTYPE getRenderPass(const char *szName) override;
 	void XMETHODCALLTYPE bindRenderPass(XRenderPassHandler *pRenderPass, UINT uVariant = 0) override;
 
@@ -395,6 +395,19 @@ protected:
 		Array<GeometryShaderData*> aGS;
 	};
 
+	struct MaterialVariantVS
+	{
+		ID idSet;
+
+		Array<ID> aGeometryShaders;
+	};
+
+	struct MaterialVariantPass
+	{
+		ID idShader;
+		Array<MaterialVariantVS> aVertexShaders;
+	};
+
 	struct RenderPass: public XRenderPassHandler
 	{
 		const char *szName;
@@ -403,6 +416,9 @@ protected:
 		Array<XRenderPassSamplersElement> aSamplers;
 		Array<XRenderPassOutputElement> aOutput;
 		Array<GXMacro> aDefines;
+
+		bool bSkipMaterialShader;
+		Array<MaterialVariantPass> aPassVariants;
 
 		Array<Array<GXMacro>> aVariants;
 	};
@@ -427,13 +443,6 @@ protected:
 		// XMaterialProperty *pProp;
 	};
 
-	struct MaterialVariantVS
-	{
-		ID idSet;
-
-		Array<ID> aGeometryShaders;
-	};
-
 	struct MaterialShaderConstants
 	{
 		const char *szKey;
@@ -453,12 +462,6 @@ protected:
 	{
 		const char *szName;
 		GXTEXTURE_TYPE type;
-	};
-
-	struct MaterialVariantPass
-	{
-		ID idShader;
-		Array<MaterialVariantVS> aVertexShaders;
 	};
 
 	struct MaterialVariant

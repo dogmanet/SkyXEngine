@@ -220,8 +220,9 @@ void XMETHODCALLTYPE CDynamicModel::render(UINT uLod, bool isTransparent)
 		m_isWorldDirty = false;
 	}
 
-	m_pDevice->getThreadContext()->setVSConstant(m_pWorldBuffer, 1 /* SCR_OBJECT */);
+	m_pProvider->bindVertexFormat();
 
+	m_pDevice->getThreadContext()->setVSConstant(m_pWorldBuffer, 1 /* SCR_OBJECT */);
 	m_pShared->render(m_uSkin, uLod, m_vColor, isTransparent);
 }
 

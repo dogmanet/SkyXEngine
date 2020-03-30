@@ -333,6 +333,29 @@ void XMETHODCALLTYPE CMaterialSystem::setWorld(const SMMATRIX &mWorld)
 }
 void XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 {
+	if(m_pCurrentRP && m_pCurrentRP->bSkipMaterialShader)
+	{
+		if(!m_pCurrentVS)
+		{
+			return;
+		}
+
+		MaterialVariantVS *pVS = &m_pCurrentRP->aPassVariants[m_uCurrentRPvariant].aVertexShaders[m_pCurrentVS->uID];
+		ID idShaderSet = -1;
+		if(m_pCurrentGS)
+		{
+			idShaderSet = pVS->aGeometryShaders[m_pCurrentGS->uID];
+		}
+		else
+		{
+			idShaderSet = pVS->idSet;
+		}
+
+		SGCore_ShaderBind(idShaderSet);
+
+		return;
+	}
+
 	CMaterial *pMat = (CMaterial*)pMaterial;
 	if(pMaterial)
 	{
@@ -668,7 +691,7 @@ void XMETHODCALLTYPE CMaterialSystem::bindGS(XGeometryShaderHandler *pGeometrySh
 	m_pCurrentGS = (GeometryShader*)pGeometryShader;
 }
 
-XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput, XRenderPassVariantElement *pVariants)
+XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::registerRenderPass(const char *szName, const char *szShaderFile, XRenderPassTexturesElement *pTextures, XRenderPassSamplersElement *pSamplers, XRenderPassOutputElement *pOutput, XRenderPassVariantElement *pVariants, bool bSkipMaterialShader)
 {
 	if(m_mRenderPasses.KeyExists(szName))
 	{
@@ -680,6 +703,8 @@ XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::registerRenderPass(const ch
 
 	pass.szName = strdup(szName);
 	pass.szShaderFile = strdup(szShaderFile);
+	pass.bSkipMaterialShader = bSkipMaterialShader;
+	assert(!bSkipMaterialShader && "bSkipMaterialShader is not currently supported!");
 
 	while(pTextures && pTextures->szName)
 	{
@@ -1359,6 +1384,71 @@ void CMaterialSystem::updateReferences()
 			}
 		}
 	}
+
+#if 0
+	for(AssotiativeArray<String, RenderPass>::Iterator i = m_mRenderPasses.begin(); i; i++)
+	{
+		RenderPass *pRP = i.second;
+		if(!pRP->bSkipMaterialShader)
+		{
+			continue;
+		}
+
+
+		String sVSOstruct;
+		for(UINT k = 0, kl = pShader->pVertexFormat->aDecl.size(); k < kl; ++k)
+		{
+			XVertexOutputElement *el = &pShader->pVertexFormat->aDecl[k];
+			if(k != 0)
+			{
+				sVSOstruct += "; ";
+			}
+			sVSOstruct += String(getHLSLType(el->type)) + " " + el->szName + ": " + getHLSLSemantic(el->usage);
+		}
+
+
+		Array<GXMacro> aVariantDefines = pRP->aDefines;
+		aVariantDefines.push_back({"XMAT_PS_STRUCT()", sVSOstruct.c_str()});
+		aVariantDefines.push_back({"XMAT_MS_TEXTURES()", ""});
+		aVariantDefines.push_back({"XMAT_MS_SAMPLERS()", ""});
+		aVariantDefines.push_back({"XMATERIAL_OUTPUT_STRUCT()", ""});
+		
+
+		UINT uOldSize = aVariantDefines.size();
+
+		pRP->aPassVariants.clearFast();
+		for(UINT uPassVariant = 0, uPassVariantl = pRP->aVariants.size(); uPassVariant < uPassVariantl; ++uPassVariant)
+		{
+			aVariantDefines.resizeFast(uOldSize);
+
+			auto &aPassVariants = pPass->pRenderPass->aVariants[uPassVariant];
+			for(UINT m = 0, ml = aPassVariants.size(); m < ml; ++m)
+			{
+				aVariantDefines.push_back(aPassVariants[m]);
+			}
+
+			aVariantDefines.push_back({NULL, NULL});
+
+			ID idShader = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, pMetaPass->szShaderFile, NULL, &aVariantDefines[0]);
+			pVariant->aPassVariants[uPassVariant].idShader = idShader;
+
+
+			pVariant->aPassVariants[uPassVariant].aVertexShaders.clearFast();
+			for(UINT j = 0, jl = pShader->pVertexFormat->aVS.size(); j < jl; ++j)
+			{
+				VertexShaderData *pVS = pShader->pVertexFormat->aVS[j];
+				MaterialVariantVS &vs = pVariant->aPassVariants[uPassVariant].aVertexShaders[j];
+				vs.idSet = SGCore_ShaderCreateKit(pVS->idShader, idShader);
+
+				for(UINT k = 0, kl = pShader->pVertexFormat->aGS.size(); k < kl; ++k)
+				{
+					GeometryShaderData *pGS = pShader->pVertexFormat->aGS[k];
+					vs.aGeometryShaders[k] = SGCore_ShaderCreateKit(pVS->idShader, idShader, pGS->idShader);
+				}
+			}
+		}
+	}
+#endif
 }
 
 void CMaterialSystem::cleanData() 

@@ -175,6 +175,11 @@ void CAnimatedModelProvider::sync()
 	}
 }
 
+void CAnimatedModelProvider::bindVertexFormat()
+{
+	m_pMaterialSystem->bindVS(m_pVertexShaderHandler);
+}
+
 void CAnimatedModelProvider::render(CRenderableVisibility *pVisibility)
 {
 	m_pMaterialSystem->bindVS(m_pVertexShaderHandler);

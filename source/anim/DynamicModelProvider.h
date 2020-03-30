@@ -56,6 +56,7 @@ public:
 
 	void notifyModelChanged(CDynamicModel *pModel, XEventModelChanged::TYPE type);
 
+	void bindVertexFormat();
 protected:
 	void onMaterialTransparencyChanged(const IXMaterial *pMaterial);
 

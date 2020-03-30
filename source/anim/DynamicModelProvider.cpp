@@ -216,9 +216,14 @@ IXMaterialSystem *CDynamicModelProvider::getMaterialSystem()
 	return((IXMaterialSystem*)m_pCore->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID));
 }
 
-void CDynamicModelProvider::render(bool isTransparent, CRenderableVisibility *pVisibility)
+void CDynamicModelProvider::bindVertexFormat()
 {
 	m_pMaterialSystem->bindVS(m_pVertexShaderHandler);
+}
+
+void CDynamicModelProvider::render(bool isTransparent, CRenderableVisibility *pVisibility)
+{
+	bindVertexFormat();
 	//if(isTransparent/* || m_apModels.size() < 1000*/)
 	//{
 		for(UINT i = 0, l = m_apModels.size(); i < l; ++i)

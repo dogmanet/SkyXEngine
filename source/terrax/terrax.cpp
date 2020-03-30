@@ -215,6 +215,14 @@ public:
 	{
 		pCore->getRenderPipeline(&m_pOldPipeline);
 		pCore->setRenderPipeline(this);
+
+		IPluginManager *pPluginManager = pCore->getPluginManager();
+		m_pMaterialSystem = (IXMaterialSystem*)pPluginManager->getInterface(IXMATERIALSYSTEM_GUID);
+
+		{
+			m_pRenderPassGeometry2D = m_pMaterialSystem->getRenderPass("xGBuffer");
+			// m_pRenderPassGeometry2D = m_pMaterialSystem->registerRenderPass("xEditor2D", "terrax/geom2d.ps", NULL, NULL, NULL, NULL, true);
+		}
 	}
 	~CRenderPipeline()
 	{
@@ -234,6 +242,8 @@ public:
 		IGXContext *pDXDevice = getDevice()->getThreadContext();
 		pDXDevice->setDepthStencilState(NULL);
 
+		m_pMaterialSystem->bindRenderPass(m_pRenderPassGeometry2D);
+
 		XRender3D();
 
 		//#############################################################################
@@ -249,6 +259,7 @@ public:
 		//#############################################################################
 
 		XUpdateSelectionBound();
+
 
 		for(int i = 0; i < 3; ++i)
 		{
@@ -282,7 +293,7 @@ public:
 
 			XRender2D(views[i], fScales[i], true);
 
-		//	renderEditor2D();
+			renderEditor2D();
 
 			Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
 			pDXDevice->setVSConstant(g_pCameraConstantBuffer, 4);
@@ -375,6 +386,9 @@ public:
 
 	IXCore *m_pCore;
 	IXRenderPipeline *m_pOldPipeline = NULL;
+	IXMaterialSystem *m_pMaterialSystem = NULL;
+
+	XRenderPassHandler *m_pRenderPassGeometry2D = NULL;
 };
 
 #if defined(_WINDOWS)
