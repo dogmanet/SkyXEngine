@@ -31,6 +31,7 @@ public:
 
 	bool XMETHODCALLTYPE createModel(IXResourceModel *pResource, IXDynamicModel **ppModel) override;
 
+	void onSharedModelReady(CDynamicModelShared *pShared);
 	void onSharedModelRelease(CDynamicModelShared *pShared);
 	void onModelRelease(CDynamicModel *pModel);
 	IXMaterialSystem* getMaterialSystem();
@@ -53,11 +54,15 @@ public:
 	void getTransparentObject(CRenderableVisibility *pVisibility, UINT uIndex, XTransparentObject *pObject);
 	void renderTransparentObject(CRenderableVisibility *pVisibility, UINT uIndex, UINT uSplitPlanes);
 
+	void notifyModelChanged(CDynamicModel *pModel, XEventModelChanged::TYPE type);
 
+	void bindVertexFormat();
 protected:
 	void onMaterialTransparencyChanged(const IXMaterial *pMaterial);
 
 	CMaterialChangedEventListener *m_pMaterialChangedEventListener;
+
+	IEventChannel<XEventModelChanged> *m_pModelChangedEventChannel;
 
 	AssotiativeArray<IXResourceModel*, CDynamicModelShared*> m_mModels;
 
@@ -70,6 +75,9 @@ protected:
 
 	CConcurrentQueue<CDynamicModelShared*> m_queueGPUinitShared;
 	CConcurrentQueue<CDynamicModel*> m_queueGPUinitModel;
+
+	IXMaterialSystem *m_pMaterialSystem = NULL;
+	XVertexShaderHandler *m_pVertexShaderHandler = NULL;
 };
 
 #endif

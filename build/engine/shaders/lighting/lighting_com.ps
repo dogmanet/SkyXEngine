@@ -4,24 +4,29 @@ lighting_blend.ps
 Расчет освещения и заполнение данными расчетов render targets
 */
 
-#include "../struct.h"
-#include "../mtrl.h"
+#include <struct.h>
+#include <mtrl.h>
 
 //##########################################################################
 
+cbuffer CDataScene: register(b3)
+{
+	float4 g_vNearFarInvWinSize;
+};
+
 cbuffer perLight: register(b0)
 {
-	half4 g_vLightColorPower;
-	half4 g_vLightPosShadow;
+	float4 g_vLightColorPower;
+	float4 g_vLightPosShadow;
 #ifdef IS_SPOT
-	half4 g_vLightSpotDirection;
-	half2 g_vLightSpotInnerOuterAngles;
+	float4 g_vLightSpotDirection;
+	float2 g_vLightSpotInnerOuterAngles;
 #endif
 };
 
 cbuffer perFrame: register(b1)
 {
-	half3 g_vViewPos;
+	float3 g_vPosCam;
 };
 
 
@@ -37,51 +42,73 @@ Texture2D g_txParameters: register(t2);
 //z - толщина (thickness)
 //w - occlusion
 
-Texture2D g_txDepth: register(t3);
-Texture2D g_txShadow: register(t4);
+// pCtx->setPSTexture(m_pGBufferColor);
+// pCtx->setPSTexture(m_pGBufferNormals, 1);
+// pCtx->setPSTexture(m_pGBufferParams, 2);
+// pCtx->setPSTexture(m_pGBufferDepth, 3);
+
+// Texture2D g_txShadow: register(t4);
 // Texture2D g_txAdaptedLum: register(t5);
+
+Texture2D g_txDepthView: register(t3);
+// Texture2D g_txDepthShadow: register(t4);
+// Texture2D g_txRandom: register(t);
 
 //#############################################################################
 
-half D_Get(half roughness, half NdotH)
+float D_Get(float roughness, float NdotH)
 {
-	half a = max(0.001f, roughness);
-	half a2 = a*a;
-	half d = ((NdotH * NdotH) * (a2 - 1.0) + 1.0);
+	float a = max(0.001f, roughness);
+	float a2 = a*a;
+	float d = ((NdotH * NdotH) * (a2 - 1.0) + 1.0);
 	
-	half NdotH2 = NdotH * NdotH;
+	float NdotH2 = NdotH * NdotH;
 	return ((1.0f/(PI * a2 * NdotH2 * NdotH2 + 0.001)) * exp((NdotH2 - 1.0f) / ( a2 * NdotH2)));///(1.f+roughness);
 }
 
-half F_Get(half f0, half HdotV)
+float F_Get(float f0, float HdotV)
 {
     return (f0 + (1.0 - f0) * pow((1.0 - HdotV), 5));
 }
 
-half G_Get(half NdotV, half NdotL, half LdotV, half NdotH,half VdotH)
+float G_Get(float NdotV, float NdotL, float LdotV, float NdotH,float VdotH)
 {
 	return min(1.0f, min((2.0f * NdotH * NdotV)/VdotH, (2.0f * NdotH * NdotL)/ VdotH));
 }
 
-half GetSpecular(half4 matparam,half NdotH,half NdotV,half NdotL,half VdotL,half HdotV)
+float GetSpecular(float4 matparam,float NdotH,float NdotV,float NdotL,float VdotL,float HdotV)
 {
 	matparam.x = lerp(PARAM_LIGHTING_ROUGHNESS_MIN, PARAM_LIGHTING_ROUGHNESS_MAX, matparam.x);
-	half D = D_Get(matparam.x, NdotH);
-	half G = G_Get(NdotV,NdotL,VdotL,NdotH,HdotV);
-	half F = F_Get(matparam.y, HdotV)*saturate(matparam.y*3);
+	float D = D_Get(matparam.x, NdotH);
+	float G = G_Get(NdotV,NdotL,VdotL,NdotH,HdotV);
+	float F = F_Get(matparam.y, HdotV)*saturate(matparam.y*3);
 	return ((D*G*F)/(PI*NdotL*NdotV+0.001));
 }
 
 //#############################################################################
 
+#define main GenShadow
+
+#ifdef IS_PSSM
+#include <ppgensm/ppgensm_pssm.ps>
+#else
+#ifdef IS_SPOT
+#include <ppgensm/ppgensm_direct.ps>
+#else
+#include <ppgensm/ppgensm_point.ps>
+#endif
+#endif
+#undef main
+
+//#############################################################################
 
 //IS_SPOT
 PSO_Lbuffer main(VSO_ResPos IN)
 {
 	PSO_Lbuffer OUT;
 
-	half4 vNormals = g_txNormals.Sample(g_sPointClamp, IN.vTexUV);
-	half2 vLayerType = LayerDecode(vNormals.w);
+	float4 vNormals = g_txNormals.Sample(g_sPointClamp, IN.vTexUV);
+	float2 vLayerType = LayerDecode(vNormals.w);
 	
 	/* [branch]if(vLayerType.y == MTLTYPE_UNLIT)
 	{
@@ -91,10 +118,12 @@ PSO_Lbuffer main(VSO_ResPos IN)
 		return OUT;
 	} */
 	
-	half fDepth = g_txDepth.Sample(g_sPointClamp, IN.vTexUV).r;
+	float fDepth = g_txDepthView.Sample(g_sPointClamp, IN.vTexUV).r;
 	
 #ifdef IS_SHADOWED
-	half fShadow = /* saturate( */g_txShadow.Sample(g_sPointClamp, IN.vTexUV).r/* ) */;
+	// float fShadow = /* saturate( */g_txShadow.Sample(g_sPointClamp, IN.vTexUV).r/* ) */;
+	// float fShadow = 0.5f;
+	float fShadow = GenShadow(IN).x;
 	
 	// clip(fShadow - 0.001);
 	
@@ -106,34 +135,53 @@ PSO_Lbuffer main(VSO_ResPos IN)
 		return OUT;
 	} */
 	
-	half fOriginShadow = fShadow;
+	float fOriginShadow = fShadow;
 #endif
 	
-	half4 vPosition = half4(g_vViewPos.xyz + IN.vWorldRay * fDepth, 1.0);
-	half fDistance = distance(vPosition.xyz, g_vLightPosShadow.xyz);
+	float4 vPosition = float4(g_vPosCam.xyz + IN.vWorldRay * fDepth, 1.0);
 	
-	half fInvDistance = 1.f - (fDistance/g_vLightColorPower.w);
+//	// OUT.vAmdient.xyz = frac(vPosition.xyz);
+//	OUT.vAmdient.xyz = vPosition.xyz;
+//	OUT.vAmdient.w = 0;
+//	OUT.vSpecular = 0;
+//	return OUT;
+	
+	
+#ifdef IS_PSSM
+	float fAttenuation = 1.0f;
+#else
+	
+	float fDistance = distance(vPosition.xyz, g_vLightPosShadow.xyz);
+	
+	float fInvDistance = 1.f - (fDistance/g_vLightColorPower.w);
 	
 	[branch]if(fInvDistance < 0.0)
 		fInvDistance = 0.0;
 	
-	half fAttenuation = fInvDistance*fInvDistance;
+	float fAttenuation = fInvDistance*fInvDistance;
 	
-	half4 vParam = g_txParameters.Sample(g_sPointClamp, IN.vTexUV);
+#endif
+	float4 vParam = g_txParameters.Sample(g_sPointClamp, IN.vTexUV);
 	
-	half3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
-	half3 vLigth  = normalize(g_vLightPosShadow.xyz - vPosition.xyz); 
-	half3 vVertexToEye = normalize(g_vViewPos.xyz - vPosition.xyz);
-	half3 vHalfVector = normalize(vVertexToEye + vLigth.xyz);
+
 	
-	half fNdotH = dot(vNormalPixel, vHalfVector);
-	half fNdotV = dot(vNormalPixel, vVertexToEye);
-	half fNdotL = dot(vNormalPixel, vLigth);
-	half fLdotV = dot(vLigth, vVertexToEye);
-	half fHdotV = dot(vHalfVector, vVertexToEye); 
+	float3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
+#ifdef IS_PSSM
+	float3 vLigth  = g_vLightPosShadow.xyz;
+#else
+	float3 vLigth  = normalize(g_vLightPosShadow.xyz - vPosition.xyz);
+#endif
+	float3 vVertexToEye = normalize(g_vPosCam.xyz - vPosition.xyz);
+	float3 vHalfVector = normalize(vVertexToEye + vLigth.xyz);
+	
+	float fNdotH = dot(vNormalPixel, vHalfVector);
+	float fNdotV = dot(vNormalPixel, vVertexToEye);
+	float fNdotL = dot(vNormalPixel, vLigth);
+	float fLdotV = dot(vLigth, vVertexToEye);
+	float fHdotV = dot(vHalfVector, vVertexToEye); 
 
 #ifdef IS_SPOT
-	half fNdotD = dot(-vLigth, g_vLightSpotDirection.xyz);
+	float fNdotD = dot(-vLigth, g_vLightSpotDirection.xyz);
 	fAttenuation *= saturate(fNdotD - g_vLightSpotInnerOuterAngles.y) / (g_vLightSpotInnerOuterAngles.x - g_vLightSpotInnerOuterAngles.y);
 #endif
 
@@ -143,11 +191,11 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	fAttenuation *= fOriginShadow;
 #endif
 
-	half fSpecular = GetSpecular(vParam, fNdotH, fNdotV, fNdotL, fLdotV, fHdotV);
+	float fSpecular = GetSpecular(vParam, fNdotH, fNdotV, fNdotL, fLdotV, fHdotV);
 
-	half fAbsDiffuse = saturate(fNdotL);
-	half fMdiffuse = saturate(fNdotL * 0.5 + 0.5);
-	half fDiffuse = fAbsDiffuse;
+	float fAbsDiffuse = saturate(fNdotL);
+	float fMdiffuse = saturate(fNdotL * 0.5 + 0.5);
+	float fDiffuse = fAbsDiffuse;
 	
 	//закрываем баг с отставанием теней
 #ifdef IS_SHADOWED

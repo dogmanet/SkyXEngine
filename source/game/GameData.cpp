@@ -29,16 +29,19 @@ See the license in LICENSE
 
 #include "Editable.h"
 
-CPlayer * GameData::m_pPlayer;
-CPointCamera * GameData::m_pActiveCamera;
-gui::IGUI * GameData::m_pGUI = NULL;
-CEntityManager * GameData::m_pMgr;
-CHUDcontroller * GameData::m_pHUDcontroller;
-CGameStateManager * GameData::m_pGameStateManager;
-gui::dom::IDOMnode *GameData::m_pCell;
-IXLightSystem *GameData::m_pLightSystem;
+#include <xUI/IXUI.h>
+
+CPlayer* GameData::m_pPlayer;
+CPointCamera* GameData::m_pActiveCamera;
+gui::IGUI* GameData::m_pGUI = NULL;
+gui::IDesktopStack* GameData::m_pGUIStack = NULL;
+CEntityManager* GameData::m_pMgr;
+CHUDcontroller* GameData::m_pHUDcontroller;
+CGameStateManager* GameData::m_pGameStateManager;
+gui::dom::IDOMnode* GameData::m_pCell;
+IXLightSystem* GameData::m_pLightSystem;
 bool GameData::m_isLevelLoaded = false;
-CEditable *g_pEditable = NULL;
+CEditable* g_pEditable = NULL;
 //gui::IDesktop *GameData::m_pStatsUI;
 
 //CRagdoll * g_pRagdoll;
@@ -70,7 +73,7 @@ static void RenderText(const wchar_t *szText)
 {
 	if(!g_pFont)
 	{
-		g_pFont = GameData::m_pGUI->getFont(L"traceroute", 16, gui::IFont::STYLE_NONE, 0);
+		g_pFont = GameData::m_pGUIStack->getFont(L"traceroute", 16, gui::IFont::STYLE_NONE, 0);
 	}
 
 	mem_release(g_pTextRenderBuffer);
@@ -86,7 +89,7 @@ static void RenderText(const wchar_t *szText)
 
 static void UpdateSettingsDesktop()
 {
-	gui::IDesktop * pSettingsDesktop = GameData::m_pGUI->getActiveDesktop();
+	gui::IDesktop * pSettingsDesktop = GameData::m_pGUIStack->getActiveDesktop();
 	gui::dom::IDOMdocument * doc = pSettingsDesktop->getDocument();
 	const gui::dom::IDOMnodeCollection &items = *doc->getElementsByClass(L"set_item");
 
@@ -374,7 +377,11 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 	if(hWnd)
 	{
-		m_pGUI = pfnGUIInit(SGCore_GetDXDevice(), "./gui/", hWnd);
+		static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+		static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+
+		m_pGUI = pfnGUIInit(SGCore_GetDXDevice(), (IXMaterialSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID), Core_GetIXCore()->getFileSystem());
+		m_pGUIStack = m_pGUI->newDesktopStack("./gui/", *r_win_width, *r_win_height);
 		m_pHUDcontroller = new CHUDcontroller();
 	}
 
@@ -436,8 +443,10 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 	if(m_pLightSystem)
 	{
+		//	252, 212, 64
 		IXLightSun *pSun = m_pLightSystem->createSun();
-		pSun->setColor(float3(0.0f, 1.0f, 0.0f));
+		pSun->setColor(float3(2.52f, 2.12f, 0.64f));
+		pSun->setDirection(SMQuaternion(LIGHTS_DIR_BASE, float3(1.0f, -1.0f, 1.0f)));
 	}
 
 	g_pAsyncTaskRunner = Core_GetIXCore()->getAsyncTaskRunner();
@@ -497,9 +506,9 @@ GameData::GameData(HWND hWnd, bool isGame):
 			printf("Usage: gui_load <desktop_name> <file>");
 			return;
 		}
-		if(!GameData::m_pGUI->getDesktopA(argv[1]))
+		if(!GameData::m_pGUIStack->getDesktopA(argv[1]))
 		{
-			GameData::m_pGUI->createDesktopA(argv[1], argv[2]);
+			GameData::m_pGUIStack->createDesktopA(argv[1], argv[2]);
 		}
 	});
 	Core_0RegisterConcmdArg("gui_push", [](int argc, const char ** argv){
@@ -508,16 +517,16 @@ GameData::GameData(HWND hWnd, bool isGame):
 			printf("Usage: gui_push <desktop_name>");
 			return;
 		}
-		gui::IDesktop * dp = GameData::m_pGUI->getDesktopA(argv[1]);
+		gui::IDesktop * dp = GameData::m_pGUIStack->getDesktopA(argv[1]);
 		if(!dp)
 		{
 			printf("Desktop '%s' not found", argv[1]);
 			return;
 		}
-		GameData::m_pGUI->pushDesktop(dp);
+		GameData::m_pGUIStack->pushDesktop(dp);
 	}); 
 	Core_0RegisterConcmd("gui_pop", [](){
-		GameData::m_pGUI->popDesktop();
+		GameData::m_pGUIStack->popDesktop();
 	});
 	Core_0RegisterConcmd("gui_settings_init", []()
 	{
@@ -542,7 +551,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		}
 
 		CBaseEntity *pEnt;
-		if(sscanf(argv[1], "%x", &pEnt))
+		if(sscanf(argv[1], "%p", &pEnt))
 		{
 			LibReport(REPORT_MSG_LEVEL_WARNING, "Ent: id:%d; cls:'%s'; name:'%s'\n", pEnt->getId(), pEnt->getClassName(), pEnt->getName());
 		}
@@ -560,14 +569,14 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "Loading level '" COLOR_LGREEN "%s" COLOR_RESET "'\n", argv[1]);
 		
-		static gui::IDesktop *pLoadingDesktop = GameData::m_pGUI->createDesktopA("loading", "menu/loading.html");
+		static gui::IDesktop *pLoadingDesktop = GameData::m_pGUIStack->createDesktopA("loading", "menu/loading.html");
 		gui::dom::IDOMnode *pNode = pLoadingDesktop->getDocument()->getElementById(L"engine_version");
 		static const char **pszVersion = GET_PCVAR_STRING("engine_version");
 		if(pNode && pszVersion)
 		{
 			pNode->setText(StringW(L"SkyXEngine ") + StringW(String(*pszVersion)), TRUE);
 		}
-		GameData::m_pGUI->pushDesktop(pLoadingDesktop);
+		GameData::m_pGUIStack->pushDesktop(pLoadingDesktop);
 
 		XEventLevel evLevel;
 		evLevel.szLevelName = argv[1];
@@ -653,21 +662,21 @@ GameData::GameData(HWND hWnd, bool isGame):
 	}
 
 
-	m_pGUI->registerCallback("on_exit", [](gui::IEvent * ev){
+	m_pGUIStack->registerCallback("on_exit", [](gui::IEvent * ev){
 		PostQuitMessage(0);
 	});
-	m_pGUI->registerCallback("on_cancel", [](gui::IEvent * ev){
-		GameData::m_pGUI->popDesktop();
+	m_pGUIStack->registerCallback("on_cancel", [](gui::IEvent * ev){
+		GameData::m_pGUIStack->popDesktop();
 	});
-	m_pGUI->registerCallback("exit_prompt", [](gui::IEvent * ev){
+	m_pGUIStack->registerCallback("exit_prompt", [](gui::IEvent * ev){
 		if(ev->key == KEY_ESCAPE || ev->key == KEY_LBUTTON)
 		{
-			GameData::m_pGUI->messageBox(StringW(String("Вы действительно хотите выйти?")).c_str(), L"", StringW(String("Да")).c_str(), L"on_exit", StringW(String("Нет")).c_str(), L"on_cancel", NULL);
+			GameData::m_pGUIStack->messageBox(StringW(String("Вы действительно хотите выйти?")).c_str(), L"", StringW(String("Да")).c_str(), L"on_exit", StringW(String("Нет")).c_str(), L"on_cancel", NULL);
 		}
 	});
-	m_pGUI->registerCallback("dial_loadlevel", [](gui::IEvent * ev){
-		static gui::IDesktop * pLoadLevelDesktop = GameData::m_pGUI->createDesktopA("menu_loadlevel", "menu/loadlevel.html");
-		GameData::m_pGUI->pushDesktop(pLoadLevelDesktop);
+	m_pGUIStack->registerCallback("dial_loadlevel", [](gui::IEvent * ev){
+		static gui::IDesktop * pLoadLevelDesktop = GameData::m_pGUIStack->createDesktopA("menu_loadlevel", "menu/loadlevel.html");
+		GameData::m_pGUIStack->pushDesktop(pLoadLevelDesktop);
 
 		gui::dom::IDOMdocument * doc = pLoadLevelDesktop->getDocument();
 
@@ -697,8 +706,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 		}
 	});
-	m_pGUI->registerCallback("loadlevel_select", [](gui::IEvent * ev){
-		gui::dom::IDOMdocument * doc = GameData::m_pGUI->getActiveDesktop()->getDocument();
+	m_pGUIStack->registerCallback("loadlevel_select", [](gui::IEvent * ev){
+		gui::dom::IDOMdocument * doc = GameData::m_pGUIStack->getActiveDesktop()->getDocument();
 		doc->getElementsByTag(L"body")[0][0]->addPseudoclass(0x00010);
 
 		//LibReport(REPORT_MSG_LEVEL_NOTICE, "Sel: %s\n", sLevelName.c_str());
@@ -727,36 +736,36 @@ GameData::GameData(HWND hWnd, bool isGame):
 		}
 
 	});
-	m_pGUI->registerCallback("loadlevel_go", [](gui::IEvent * ev){
+	m_pGUIStack->registerCallback("loadlevel_go", [](gui::IEvent * ev){
 		StringW sLevelName = ev->target->getAttribute(L"level_name");
 
 		Core_0ConsoleExecCmd("map %s", String(sLevelName).c_str());
 	});
-	m_pGUI->registerCallback("return_ingame", [](gui::IEvent * ev){
+	m_pGUIStack->registerCallback("return_ingame", [](gui::IEvent * ev){
 		if(ev->key == KEY_ESCAPE || ev->key == KEY_LBUTTON)
 		{
 			GameData::m_pGameStateManager->activate("ingame");
 		}
 	});
-	m_pGUI->registerCallback("mainmenu_prompt", [](gui::IEvent * ev){
+	m_pGUIStack->registerCallback("mainmenu_prompt", [](gui::IEvent * ev){
 		if(ev->key == KEY_ESCAPE || ev->key == KEY_LBUTTON)
 		{
-			GameData::m_pGUI->messageBox(StringW(String("Вы действительно хотите выйти в главное меню?")).c_str(), StringW(String("Весь несохраненный прогресс будет утерян.")).c_str(), StringW(String("Да")).c_str(), L"to_mainmenu", StringW(String("Нет")).c_str(), L"on_cancel", NULL);
+			GameData::m_pGUIStack->messageBox(StringW(String("Вы действительно хотите выйти в главное меню?")).c_str(), StringW(String("Весь несохраненный прогресс будет утерян.")).c_str(), StringW(String("Да")).c_str(), L"to_mainmenu", StringW(String("Нет")).c_str(), L"on_cancel", NULL);
 		}
 	});
-	m_pGUI->registerCallback("to_mainmenu", [](gui::IEvent * ev){
+	m_pGUIStack->registerCallback("to_mainmenu", [](gui::IEvent * ev){
 		Core_0ConsoleExecCmd("endmap");
 	});
-	m_pGUI->registerCallback("dial_settings", [](gui::IEvent * ev){
-		static gui::IDesktop * pSettingsDesktop = GameData::m_pGUI->createDesktopA("menu_settings", "menu/settings.html");
-		GameData::m_pGUI->pushDesktop(pSettingsDesktop);
+	m_pGUIStack->registerCallback("dial_settings", [](gui::IEvent * ev){
+		static gui::IDesktop * pSettingsDesktop = GameData::m_pGUIStack->createDesktopA("menu_settings", "menu/settings.html");
+		GameData::m_pGUIStack->pushDesktop(pSettingsDesktop);
 	});
-	m_pGUI->registerCallback("engine_command", [](gui::IEvent * ev){
+	m_pGUIStack->registerCallback("engine_command", [](gui::IEvent * ev){
 		Core_0ConsoleExecCmd("%s", String(ev->target->getAttribute(L"args")).c_str());
 	});
-	m_pGUI->registerCallback("dial_settings_video", [](gui::IEvent * ev){
-		static gui::IDesktop * pLoadLevelDesktop = GameData::m_pGUI->createDesktopA("menu_settings_video", "menu/settings_video.html");
-		GameData::m_pGUI->pushDesktop(pLoadLevelDesktop);
+	m_pGUIStack->registerCallback("dial_settings_video", [](gui::IEvent * ev){
+		static gui::IDesktop * pLoadLevelDesktop = GameData::m_pGUIStack->createDesktopA("menu_settings_video", "menu/settings_video.html");
+		GameData::m_pGUIStack->pushDesktop(pLoadLevelDesktop);
 
 		gui::dom::IDOMdocument * doc = pLoadLevelDesktop->getDocument();
 
@@ -772,7 +781,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		for(int i = 0; i < iModesCount; ++i)
 		{
 			wchar_t str[64];
-			wsprintfW(str, L"<option value=\"%d|%d\">%dx%d</option>", pModes[i].dmPelsWidth, pModes[i].dmPelsHeight, pModes[i].dmPelsWidth, pModes[i].dmPelsHeight);
+			wsprintfW(str, L"<option value=\"%u|%u\">%ux%u</option>", pModes[i].dmPelsWidth, pModes[i].dmPelsHeight, pModes[i].dmPelsWidth, pModes[i].dmPelsHeight);
 
 			gui::dom::IDOMnodeCollection newItems = pLoadLevelDesktop->createFromText(str);
 			for(UINT i = 0, l = newItems.size(); i < l; i++)
@@ -784,14 +793,14 @@ GameData::GameData(HWND hWnd, bool isGame):
 		UpdateSettingsDesktop();
 	});
 
-	m_pGUI->registerCallback("settings_commit", [](gui::IEvent * ev){
+	m_pGUIStack->registerCallback("settings_commit", [](gui::IEvent * ev){
 
 		bool isNewExists = Core_GetIXCore()->getFileSystem()->fileExists("user_settings.cfg");
 		
 		CSettingsWriter settingsWriter(Core_GetIXCore()->getFileSystem());
 		settingsWriter.loadFile(isNewExists ? "user_settings.cfg" : "../config_game_user_auto.cfg");
 
-		gui::IDesktop * pSettingsDesktop = GameData::m_pGUI->getActiveDesktop();
+		gui::IDesktop * pSettingsDesktop = GameData::m_pGUIStack->getActiveDesktop();
 		gui::dom::IDOMdocument * doc = pSettingsDesktop->getDocument();
 		const gui::dom::IDOMnodeCollection &items = *doc->getElementsByClass(L"set_item");
 
@@ -825,16 +834,16 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 		settingsWriter.saveFile("user_settings.cfg");
 		
-		GameData::m_pGUI->popDesktop();
+		GameData::m_pGUIStack->popDesktop();
 	});
-	m_pGUI->registerCallback("controls_commit", [](gui::IEvent * ev){
+	m_pGUIStack->registerCallback("controls_commit", [](gui::IEvent * ev){
 
 		bool isNewExists = Core_GetIXCore()->getFileSystem()->fileExists("user_settings.cfg");
 
 		CSettingsWriter settingsWriter(Core_GetIXCore()->getFileSystem());
 		settingsWriter.loadFile(isNewExists ? "user_settings.cfg" : "../config_game_user_auto.cfg");
 		
-		gui::IDesktop * pSettingsDesktop = GameData::m_pGUI->getActiveDesktop();
+		gui::IDesktop * pSettingsDesktop = GameData::m_pGUIStack->getActiveDesktop();
 		gui::dom::IDOMdocument * doc = pSettingsDesktop->getDocument();
 		auto pItems = doc->getElementsByClass(L"cctable_row");
 		if(pItems)
@@ -879,12 +888,12 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 		settingsWriter.saveFile("config_game_user_auto.cfg");
 
-		GameData::m_pGUI->popDesktop();
+		GameData::m_pGUIStack->popDesktop();
 	});
 
-	m_pGUI->registerCallback("dial_settings_controls", [](gui::IEvent * ev){
-		static gui::IDesktop * pControlsDesktop = GameData::m_pGUI->createDesktopA("menu_settings_controls", "menu/settings_controls.html");
-		GameData::m_pGUI->pushDesktop(pControlsDesktop);
+	m_pGUIStack->registerCallback("dial_settings_controls", [](gui::IEvent * ev){
+		static gui::IDesktop * pControlsDesktop = GameData::m_pGUIStack->createDesktopA("menu_settings_controls", "menu/settings_controls.html");
+		GameData::m_pGUIStack->pushDesktop(pControlsDesktop);
 
 		gui::dom::IDOMdocument * doc = pControlsDesktop->getDocument();
 
@@ -965,7 +974,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		mem_release(pConfig);
 	});
 
-	m_pGUI->registerCallback("bind_del", [](gui::IEvent * ev){
+	m_pGUIStack->registerCallback("bind_del", [](gui::IEvent * ev){
 		if(ev->key == KEY_LBUTTON)
 		{
 			StringW wsKey;
@@ -976,24 +985,24 @@ GameData::GameData(HWND hWnd, bool isGame):
 			GameData::m_pCell->setAttribute(L"key_del", wsOldKey);
 
 			GameData::m_pCell = NULL;
-			GameData::m_pGUI->popDesktop();
+			GameData::m_pGUIStack->popDesktop();
 		}
 	});
 
-	m_pGUI->registerCallback("bind_cancel", [](gui::IEvent * ev){
+	m_pGUIStack->registerCallback("bind_cancel", [](gui::IEvent * ev){
 		if(ev->key == KEY_LBUTTON)
 		{
 			GameData::m_pCell = NULL;
-			GameData::m_pGUI->popDesktop();
+			GameData::m_pGUIStack->popDesktop();
 		}
 	});
 	
-	m_pGUI->registerCallback("settings_ctl_key", [](gui::IEvent * ev){
+	m_pGUIStack->registerCallback("settings_ctl_key", [](gui::IEvent * ev){
 		if(ev->key != KEY_LBUTTON)
 		{
 			return;
 		}
-		GameData::m_pGUI->messageBox(
+		GameData::m_pGUIStack->messageBox(
 			StringW(String("Переназначить")).c_str(), 
 			StringW(String("Нажмите клавишу, которую вы хотите назначить для данного действия."
 			"Для отмены нажмите ESC")).c_str(),
@@ -1012,13 +1021,13 @@ GameData::GameData(HWND hWnd, bool isGame):
 				return;
 			}
 			printf("%s\n", szKey);
-			GameData::m_pGUI->popDesktop();
+			GameData::m_pGUIStack->popDesktop();
 
 			StringW wsNewKey = StringW(String(szKey));
 
 
 
-			gui::IDesktop * pSettingsDesktop = GameData::m_pGUI->getActiveDesktop();
+			gui::IDesktop * pSettingsDesktop = GameData::m_pGUIStack->getActiveDesktop();
 			gui::dom::IDOMdocument * doc = pSettingsDesktop->getDocument();
 			auto pItems = doc->getElementsByClass(L"cctable_row");
 			if(pItems)
@@ -1066,6 +1075,19 @@ GameData::GameData(HWND hWnd, bool isGame):
 			printf("Usage: text <text>");
 			return;
 		}
+	});
+
+	Core_0RegisterConcmd("open", []()
+	{
+		XWINDOW_DESC wdesc;
+		wdesc.iPosX = XCW_CENTER;
+		wdesc.iPosY = XCW_CENTER;
+		wdesc.iSizeX = 800;
+		wdesc.iSizeY = 600;
+		wdesc.szTitle = "Test window";
+		wdesc.flags = XWF_BUTTON_CLOSE | XWF_BUTTON_MINIMIZE | XWF_BUTTON_MAXIMIZE | /*XWF_NORESIZE | */XWF_TRANSPARENT;
+		IXUI *pXUI = (IXUI*)Core_GetIXCore()->getPluginManager()->getInterface(IXUI_GUID);
+		IUIWindow *pWindow = pXUI->createWindow(&wdesc);
 	});
 
 	//gui::IDesktop * pDesk = m_pGUI->createDesktopA("ingame", "ingame.html");
@@ -1139,11 +1161,8 @@ GameData::~GameData()
 	mem_delete(m_pGameStateManager);
 	mem_delete(m_pHUDcontroller);
 
-	if(m_pGUI)
-	{
-		m_pGUI->release();
-		m_pGUI = NULL;
-	}
+	mem_release(m_pGUIStack);
+	mem_release(m_pGUI);
 
 	mem_delete(g_pTracer);
 	mem_delete(g_pTracer2);
@@ -1162,7 +1181,7 @@ void GameData::update()
 	if(g_pLevelLoadTask)
 	{
 		int iProgress = g_pLevelLoadTask->getProgress();
-		auto pDesktop = GameData::m_pGUI->getActiveDesktop();
+		auto pDesktop = GameData::m_pGUIStack->getActiveDesktop();
 		if(pDesktop)
 		{
 			auto pProgress = pDesktop->getDocument()->getElementById(L"progress_inner");
@@ -1182,7 +1201,6 @@ void GameData::update()
 
 	}
 	m_pCrosshair->update();
-	m_pGUI->update();
 
 	if(m_isLevelLoaded)
 	{
@@ -1331,14 +1349,13 @@ void GameData::renderHUD()
 		const bool * pbHudDraw = GET_PCVAR_BOOL("hud_draw");
 		if(*pbHudDraw)
 		{
-			m_pGUI->render();
+			m_pGUIStack->render();
 		}
 	}
 }
 void GameData::sync()
 {
 	m_pCrosshair->onSync();
-	m_pGUI->syncronize();
 }
 
 void GameData::playFootstepSound(MTLTYPE_PHYSIC mtl_type, const float3 &f3Pos)

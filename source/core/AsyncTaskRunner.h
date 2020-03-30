@@ -15,6 +15,9 @@ public:
 	void XMETHODCALLTYPE runTask(IAsyncTask *pTask) override;
 	void XMETHODCALLTYPE runCallbacks() override;
 
+	ID XMETHODCALLTYPE forLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize = 0) override;
+	void XMETHODCALLTYPE waitForLoop(ID id) override;
+
 protected:
 	IXCore *m_pCore;
 

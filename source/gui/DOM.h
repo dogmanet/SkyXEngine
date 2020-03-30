@@ -70,34 +70,34 @@ namespace gui
 			virtual void debugPrintMe(UINT lvl = 0);
 #endif
 
-			static const StringW & getNodeNameById(UINT nid);
-			static UINT getNodeIdByName(const StringW & tag);
+			static const StringW& getNodeNameById(UINT nid);
+			static int getNodeIdByName(const StringW &tag);
 
-			virtual void setText(const StringW & text, BOOL build = FALSE);
-			const StringW & getText();
+			virtual void setText(const StringW &text, BOOL build = FALSE);
+			const StringW& getText();
 
 
-			static IDOMnode * createNode(const wchar_t * tag)
+			static IDOMnode* createNode(const wchar_t * tag)
 			{
-				WCHAR * t = new WCHAR[wcslen(tag) + 1];
+				WCHAR *t = new WCHAR[wcslen(tag) + 1];
 				memcpy(t, tag, (wcslen(tag) + 1) * sizeof(wchar_t));
 				_wcslwr_s(t, wcslen(tag) + 1);
 				StringW s(t);
 				mem_delete_a(t);
-				if(nodeIDs.KeyExists(s))
+				if(GetNodeIDs().KeyExists(s))
 				{
-					int nid = nodeIDs[s];
-					vTable * vt = &nodes[nid];
+					int nid = GetNodeIDs()[s];
+					vTable *vt = &GetNodeVTbls()[nid];
 					return(vt->getInstance(nid));
 				}
 				return(NULL);
 			}
 
-			static IDOMnode * createNode(UINT nid)
+			static IDOMnode* createNode(UINT nid)
 			{
-				if(nodeIDs.Size() > nid/* && nid > 0*/)
+				if(GetNodeIDs().Size() > nid/* && nid > 0*/)
 				{
-					vTable * vt = &nodes[nid];
+					vTable * vt = &GetNodeVTbls()[nid];
 					return(vt->getInstance(nid));
 				}
 				return(NULL);
@@ -108,40 +108,48 @@ namespace gui
 				return(false);
 			}
 
-			virtual void setAttribute(const StringW & name, const StringW & value);
-			const StringW & getAttribute(const StringW & name);
+			virtual void setAttribute(const StringW &name, const StringW &value);
+			const StringW& getAttribute(const StringW &name);
 
-			static AssotiativeArray<StringW, UINT> nodeIDs;
-			static Array<vTable> nodes;
+			static AssotiativeArray<StringW, UINT>& GetNodeIDs()
+			{
+				static AssotiativeArray<StringW, UINT> nodeIDs;
+				return(nodeIDs);
+			}
+			static Array<vTable>& GetNodeVTbls()
+			{
+				static Array<vTable> nodes;
+				return(nodes);
+			}
 
 			void applyChildStyle(bool noSelf = false);
 			void resetStyles();
 			void resetStyleChanges();
 
-			bool isChildOf(IDOMnode * pNode);
+			bool isChildOf(IDOMnode *pNode);
 			bool isAfter(IDOMnode * pNode);
 
-			IDOMnode * prevSibling()
+			IDOMnode* prevSibling()
 			{
 				return(m_pPrevSibling);
 			}
 
-			IDOMnode * nextSibling()
+			IDOMnode* nextSibling()
 			{
 				return(m_pNextSibling);
 			}
 
-			css::ICSSstyle * getStyle()
+			css::ICSSstyle* getStyle()
 			{
 				return(&m_css);
 			}
 
-			css::ICSSstyle * getStyleSelf()
+			css::ICSSstyle* getStyleSelf()
 			{
 				return(&m_css_self);
 			}
 
-			const Array<IDOMnode*> * getChilds()
+			const Array<IDOMnode*>* getChilds()
 			{
 				return(&m_vChilds);
 			}
@@ -158,12 +166,12 @@ namespace gui
 			void storeStyles();
 			void captureStyleChanges(CDOMdocument *pDoc);
 
-			CDOMdocument * getDocument()
+			CDOMdocument* getDocument()
 			{
 				return(m_pDocument);
 			}
 
-			render::IRenderFrame * getRenderFrame()
+			render::IRenderFrame* getRenderFrame()
 			{
 				return(m_pRenderFrame);
 			}
@@ -175,31 +183,31 @@ namespace gui
 			void updateLayout(bool bForce=false);
 
 
-			void dispatchEvent(IEvent & ev);
-			void dispatchClientEvent(IEvent ev, bool * preventDefault);
+			void dispatchEvent(IEvent &ev);
+			void dispatchClientEvent(IEvent ev, bool *preventDefault);
 
-			static void applyCSSrules(const css::ICSSstyle * style, CDOMnode * pNode);
+			static void applyCSSrules(const css::ICSSstyle *style, CDOMnode *pNode);
 
 
 
-			void classAdd(const StringW & cls);
+			void classAdd(const StringW &cls);
 			//void ClassAdd(UINT cls);
 
-			void classRemove(const StringW & cls);
+			void classRemove(const StringW &cls);
 			//void ClassRemove(UINT cls);
 
-			void classToggle(const StringW & cls, int set = -1);
+			void classToggle(const StringW &cls, int set = -1);
 			//void ClassToggle(UINT cls, int set = -1);
 
-			BOOL classExists(const StringW & cls);
+			BOOL classExists(const StringW &cls);
 			//BOOL ClassExists(UINT cls);
 
 		protected:
-			IDOMnode * m_pParent;
-			IDOMnode * m_pPrevSibling;
-			IDOMnode * m_pNextSibling;
+			IDOMnode *m_pParent;
+			IDOMnode *m_pPrevSibling;
+			IDOMnode *m_pNextSibling;
 			Array<IDOMnode*> m_vChilds;
-			CDOMdocument * m_pDocument;
+			CDOMdocument *m_pDocument;
 			UINT m_iNodeId;
 
 			UINT m_iDOMid;
@@ -213,7 +221,7 @@ namespace gui
 			css::CCSSstyle m_cssOld;
 			css::CCSSstyle m_css_self;
 
-			render::IRenderFrame * m_pRenderFrame;
+			render::IRenderFrame *m_pRenderFrame;
 
 			bool m_bToggleable;
 			bool m_bToggleState;
@@ -255,9 +263,9 @@ namespace gui
 				vTable vt;
 				vt.getInstance = &(T::getInstance);
 				vt.wsNodeName = name;
-				UINT nid = CDOMnode::nodes.size();
-				CDOMnode::nodeIDs[vt.wsNodeName] = nid;
-				CDOMnode::nodes[nid] = vt;
+				UINT nid = CDOMnode::GetNodeVTbls().size();
+				CDOMnode::GetNodeIDs()[vt.wsNodeName] = nid;
+				CDOMnode::GetNodeVTbls()[nid] = vt;
 			};
 		};
 	};

@@ -114,17 +114,11 @@
     <ClInclude Include="..\..\..\source\gui\IHTMLparser.h">
       <Filter>Header Files\DOM</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\gui\HTMLels.h">
-      <Filter>Header Files\DOM</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\gui\ITEXT.h">
       <Filter>Header Files\DOM\elements</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\gui\IRenderFrame.h">
       <Filter>Header Files\DOM</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\gui\utils.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\gui\IRenderBorder.h">
       <Filter>Header Files\DOM</Filter>
@@ -264,9 +258,6 @@
       <Filter>Source Files\DOM\elements</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\gui\IHTMLparser.cpp">
-      <Filter>Source Files\DOM</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\gui\HTMLels.cpp">
       <Filter>Source Files\DOM</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\gui\ITEXT.cpp">

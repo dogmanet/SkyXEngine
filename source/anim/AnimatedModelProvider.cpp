@@ -4,7 +4,6 @@
 CAnimatedModelProvider::CAnimatedModelProvider(IXCore *pCore):
 	m_pCore(pCore)
 {
-	
 }
 
 CAnimatedModelProvider::~CAnimatedModelProvider()
@@ -44,6 +43,11 @@ void CAnimatedModelProvider::setDevice(IGXDevice *pDevice)
 	};
 
 	m_pVertexDeclaration = getDevice()->createVertexDeclaration(layoutDynamicEx);
+	
+	m_pMaterialSystem = (IXMaterialSystem*)m_pCore->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID);
+	XVertexFormatHandler *pFormat = m_pMaterialSystem->getVertexFormat("xSceneGeneric");
+	m_pVertexShaderHandler = m_pMaterialSystem->registerVertexShader(pFormat, "base/anim.vs");
+
 }
 
 bool XMETHODCALLTYPE CAnimatedModelProvider::createModel(UINT uResourceCount, IXResourceModelAnimated **ppResources, IXAnimatedModel **ppModel)
@@ -79,9 +83,15 @@ bool XMETHODCALLTYPE CAnimatedModelProvider::createModel(UINT uResourceCount, IX
 			return(false);
 		}
 	}
+	else
+	{
+		pShared->AddRef();
+	}
 
 	CAnimatedModel *pModel = new CAnimatedModel(this, pShared);
 	m_apModels.push_back(pModel);
+
+	pShared->Release();
 
 	*ppModel = pModel;
 	return(true);
@@ -124,7 +134,7 @@ IXMaterialSystem *CAnimatedModelProvider::getMaterialSystem()
 
 void CAnimatedModelProvider::update(float fDT)
 {
-	typedef std::chrono::system_clock::time_point time_point;
+	typedef std::chrono::high_resolution_clock::time_point time_point;
 	time_point tStart = std::chrono::high_resolution_clock::now();
 
 	CAnimatedModelShared *pShared;
@@ -165,8 +175,14 @@ void CAnimatedModelProvider::sync()
 	}
 }
 
+void CAnimatedModelProvider::bindVertexFormat()
+{
+	m_pMaterialSystem->bindVS(m_pVertexShaderHandler);
+}
+
 void CAnimatedModelProvider::render(CRenderableVisibility *pVisibility)
 {
+	m_pMaterialSystem->bindVS(m_pVertexShaderHandler);
 	for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
 	{
 		if(pVisibility)
@@ -182,6 +198,7 @@ void CAnimatedModelProvider::render(CRenderableVisibility *pVisibility)
 			m_apModels[i]->render(0, false);
 		}
 	}
+	m_pMaterialSystem->bindVS(NULL);
 }
 
 void CAnimatedModelProvider::computeVisibility(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)

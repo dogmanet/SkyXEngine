@@ -6,6 +6,7 @@ namespace gui
 	namespace dom
 	{
 		DEFINE_DOM_NODE(IBUTTON);
+		LINK_DOM_NODE_TO_TAG(IBUTTON, L"button");
 
 		void IBUTTON::setAttribute(const StringW & name, const StringW & value)
 		{

@@ -78,13 +78,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/</OutDir>
-    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath)</IncludePath>
-    <LibraryPath>../../../sdks/bullet3/bin;../../../libs;$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);</LibraryPath>
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_IncludePath)</IncludePath>
+    <LibraryPath>../../../sdks/bullet3/bin;../../../libs;$(VC_LibraryPath_x86);$(WindowsSdk_LibraryPath_x86);</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath)</IncludePath>
-    <LibraryPath>../../../sdks/bullet3/bin64;../../../libs64;$(VC_LibraryPath_x64);$(WindowsSdk_71A_LibraryPath_x64);</LibraryPath>
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_IncludePath)</IncludePath>
+    <LibraryPath>../../../sdks/bullet3/bin64;../../../libs64;$(VC_LibraryPath_x64);$(WindowsSdk_LibraryPath_x64);</LibraryPath>
     <TargetName>$(ProjectName)_d</TargetName>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin64/</OutDir>
@@ -92,12 +92,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/</OutDir>
-    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath)</IncludePath>
-    <LibraryPath>../../../sdks/bullet3/bin;../../../libs;$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);</LibraryPath>
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_IncludePath)</IncludePath>
+    <LibraryPath>../../../sdks/bullet3/bin;../../../libs;$(VC_LibraryPath_x86);$(WindowsSdk_LibraryPath_x86);</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_71A_IncludePath)</IncludePath>
-    <LibraryPath>../../../sdks/bullet3/bin64;../../../libs64;$(VC_LibraryPath_x64);$(WindowsSdk_71A_LibraryPath_x64);</LibraryPath>
+    <IncludePath>../../../source;../../../sdks/;../../../sdks/bullet3/src;$(VC_IncludePath);$(WindowsSdk_IncludePath)</IncludePath>
+    <LibraryPath>../../../sdks/bullet3/bin64;../../../libs64;$(VC_LibraryPath_x64);$(WindowsSdk_LibraryPath_x64);</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin64/</OutDir>
   </PropertyGroup>

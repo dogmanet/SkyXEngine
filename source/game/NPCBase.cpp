@@ -302,7 +302,7 @@ void CNPCBase::pathFollowThinker(float fDelta)
 
 	if(fMovDirLen > fDist)
 	{
-		fDist = fDist;
+		fMovDirLen = fDist;
 	}
 
 	bool bMayJump = vDir.y > m_fStepHeight && m_pCharacter->canJump();

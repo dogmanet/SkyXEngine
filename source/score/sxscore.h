@@ -95,7 +95,7 @@ SX_LIB_API void SSCore_AKill();
 #define SOUND_MAX_SIZE_FULLPATH	(SOUND_MAX_SIZE_STDPATH + SOUND_MAX_SIZE_PATH)
 
 /*! минимально возможный размер потока для воспроизведения */
-#define SOUND_MIN_SIZE_STREAM	1024*64 
+#define SOUND_MIN_SIZE_STREAM	(1024*64 )
 
 /*! ошибочный идентификатор */
 #define SOUND_FAIL_ID	-1

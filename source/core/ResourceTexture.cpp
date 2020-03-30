@@ -61,11 +61,11 @@ void XMETHODCALLTYPE CResourceTexture2D::init(UINT uWidth, UINT uHeight, GXFORMA
 
 	pDataBlob = new byte[sizeData];
 
-	ppData = (XImageMip**)pDataBlob;
+	m_ppData = (XImageMip**)pDataBlob;
 	byte *pTmp = pDataBlob + sizeof(void*) * uFrameCount;
 	for(UINT i = 0; i < uFrameCount; ++i)
 	{
-		ppData[i] = (XImageMip*)pTmp;
+		m_ppData[i] = (XImageMip*)pTmp;
 		pTmp += sizeof(XImageMip) * uMipmapCount;
 	}
 
@@ -76,10 +76,10 @@ void XMETHODCALLTYPE CResourceTexture2D::init(UINT uWidth, UINT uHeight, GXFORMA
 
 		for(UINT j = 0; j < uMipmapCount; ++j)
 		{
-			ppData[i][j].pData = pTmp;
-			ppData[i][j].sizeData = getTextureBytes(format, uTmpWidth, uTmpHeight);
-			ppData[i][j].isWritten = false;
-			pTmp += ppData[i][j].sizeData;
+			m_ppData[i][j].pData = pTmp;
+			m_ppData[i][j].sizeData = getTextureBytes(format, uTmpWidth, uTmpHeight);
+			m_ppData[i][j].isWritten = false;
+			pTmp += m_ppData[i][j].sizeData;
 			uTmpWidth >>= 1;
 			uTmpHeight >>= 1;
 			uTmpWidth = max(uTmpWidth, 1);
@@ -90,25 +90,25 @@ void XMETHODCALLTYPE CResourceTexture2D::init(UINT uWidth, UINT uHeight, GXFORMA
 
 XImageMip* XMETHODCALLTYPE CResourceTexture2D::getMip(UINT uMipmap, UINT uFrame)
 {
-	assert(ppData);
+	assert(m_ppData);
 	assert(m_uMipmapCount > uMipmap);
 	assert(m_uFrameCount > uFrame);
-	if(!ppData || m_uMipmapCount <= uMipmap || m_uFrameCount <= uFrame)
+	if(!m_ppData || m_uMipmapCount <= uMipmap || m_uFrameCount <= uFrame)
 	{
 		return(NULL);
 	}
-	return(&ppData[uFrame][uMipmap]);
+	return(&m_ppData[uFrame][uMipmap]);
 }
 const XImageMip* XMETHODCALLTYPE CResourceTexture2D::getMip(UINT uMipmap, UINT uFrame) const
 {
-	assert(ppData);
+	assert(m_ppData);
 	assert(m_uMipmapCount < uMipmap);
 	assert(m_uFrameCount < uFrame);
-	if(!ppData || m_uMipmapCount >= uMipmap || m_uFrameCount >= uFrame)
+	if(!m_ppData || m_uMipmapCount >= uMipmap || m_uFrameCount >= uFrame)
 	{
 		return(NULL);
 	}
-	return(&ppData[uFrame][uMipmap]);
+	return(&m_ppData[uFrame][uMipmap]);
 }
 
 const IXResourceTexture2D* XMETHODCALLTYPE CResourceTexture2D::as2D() const
@@ -172,15 +172,15 @@ void XMETHODCALLTYPE CResourceTextureCube::init(UINT uSize, GXFORMAT format, UIN
 
 	pDataBlob = new byte[sizeData];
 
-	pppData = (XImageMip***)pDataBlob;
+	m_pppData = (XImageMip***)pDataBlob;
 	byte *pTmp = pDataBlob + sizeof(void*) * uFrameCount;
 	for(UINT i = 0; i < uFrameCount; ++i)
 	{
-		pppData[i] = (XImageMip**)pTmp;
+		m_pppData[i] = (XImageMip**)pTmp;
 		pTmp += sizeof(void*) * uMipmapCount;
 		for(UINT mip = 0; mip < uMipmapCount; ++mip)
 		{
-			pppData[i][mip] = (XImageMip*)pTmp;
+			m_pppData[i][mip] = (XImageMip*)pTmp;
 			pTmp += sizeof(XImageMip) * 6;
 		}
 	}
@@ -192,10 +192,10 @@ void XMETHODCALLTYPE CResourceTextureCube::init(UINT uSize, GXFORMAT format, UIN
 		{
 			for(int side = 0; side < 6; ++side)
 			{
-				pppData[i][j][side].pData = pTmp;
-				pppData[i][j][side].sizeData = getTextureBytes(format, uTmpSize, uTmpSize);
-				pppData[i][j][side].isWritten = false;
-				pTmp += pppData[i][j][side].sizeData;
+				m_pppData[i][j][side].pData = pTmp;
+				m_pppData[i][j][side].sizeData = getTextureBytes(format, uTmpSize, uTmpSize);
+				m_pppData[i][j][side].isWritten = false;
+				pTmp += m_pppData[i][j][side].sizeData;
 			}
 			uTmpSize >>= 1;
 			uTmpSize = max(uTmpSize, 1);
@@ -215,23 +215,23 @@ IXResourceTextureCube* XMETHODCALLTYPE CResourceTextureCube::asCube()
 
 XImageMip* XMETHODCALLTYPE CResourceTextureCube::getMip(GXCUBEMAP_FACES face, UINT uMipmap, UINT uFrame)
 {
-	assert(pppData);
+	assert(m_pppData);
 	assert(m_uMipmapCount > uMipmap);
 	assert(m_uFrameCount > uFrame);
-	if(!pppData || m_uMipmapCount <= uMipmap || m_uFrameCount <= uFrame)
+	if(!m_pppData || m_uMipmapCount <= uMipmap || m_uFrameCount <= uFrame)
 	{
 		return(NULL);
 	}
-	return(&pppData[uFrame][uMipmap][face]);
+	return(&m_pppData[uFrame][uMipmap][face]);
 }
 const XImageMip* XMETHODCALLTYPE CResourceTextureCube::getMip(GXCUBEMAP_FACES face, UINT uMipmap, UINT uFrame) const
 {
-	assert(pppData);
+	assert(m_pppData);
 	assert(m_uMipmapCount < uMipmap);
 	assert(m_uFrameCount < uFrame);
-	if(!pppData || m_uMipmapCount >= uMipmap || m_uFrameCount >= uFrame)
+	if(!m_pppData || m_uMipmapCount >= uMipmap || m_uFrameCount >= uFrame)
 	{
 		return(NULL);
 	}
-	return(&pppData[uFrame][uMipmap][face]);
+	return(&m_pppData[uFrame][uMipmap][face]);
 }

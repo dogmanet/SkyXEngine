@@ -316,7 +316,7 @@ float CBaseCharacter::getCurrentSpread()
 
 void CBaseCharacter::initHitboxes()
 {
-	if(!m_pModel && m_pModel->asAnimatedModel())
+	if(!m_pModel || !m_pModel->asAnimatedModel())
 	{
 		return;
 	}

@@ -5,7 +5,7 @@
 #include "ICollisionObject.h"
 
 
-#define BIT(n) (1 << n)
+#define BIT(n) (1 << (n))
 enum COLLISION_GROUP
 {
 	CG_NONE = 0,

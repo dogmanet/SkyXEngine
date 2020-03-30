@@ -543,11 +543,12 @@ GXFORMAT CTextureLoader::getFormat()
 		{
 			if(m_ddsHeader.ddspf.RBitMask == 0xff && m_ddsHeader.ddspf.GBitMask == 0xff00 && m_ddsHeader.ddspf.BBitMask == 0xff0000)
 			{
+				m_bConvertSwapRB = true;
 				return(GXFMT_X8R8G8B8); // GXFMT_X8B8G8R8
 			}
 			if(m_ddsHeader.ddspf.RBitMask == 0xff0000 && m_ddsHeader.ddspf.GBitMask == 0xff00 && m_ddsHeader.ddspf.BBitMask == 0xff)
 			{
-				m_bConvertSwapRB = true;
+				//m_bConvertSwapRB = true;
 				return(GXFMT_X8R8G8B8);
 			}
 		}

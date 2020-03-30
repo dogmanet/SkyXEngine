@@ -1,0 +1,38 @@
+
+/*
+gbuffer.ps
+
+*/
+
+#include "../struct.h"
+#include "../mtrl.h"
+#include "../const.h"
+#include "../xmat.h"
+
+//##########################################################################
+
+cbuffer CDataClipPlanes: register(b6)
+{
+	float4 g_vClipPlanes[4];
+};
+
+//##########################################################################
+
+float4 main(PSI_XMaterial IN):COLOR0
+{
+	float3 vPos = IN.vPos.xyz / IN.vPos.w;
+	[unroll]for(uint i = 0; i < 4; ++i)
+	{
+		float4 vPlane = g_vClipPlanes[i];
+		clip(dot(vPlane.xyz, vPos) + vPlane.w);
+	}
+	
+	// return(float4(1.0, 0.0, 0.0, 0.5));
+	
+	// ClipFar(IN.vPos.z, g_vNearFarLayers.y);
+	IN.vNormal = normalize(IN.vNormal);
+	
+	XMaterial mtrl = XMATERIAL_MAIN(IN);
+	
+	return(mtrl.vBaseColor);
+}

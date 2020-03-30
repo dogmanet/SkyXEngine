@@ -10,33 +10,7 @@ namespace light_data
 {
 	void Init();
 
-	void ReCalcSize();
-
-	IGXContext *pDXDevice = 0;
-
-	//размер текстуры глубины дл¤ локальных источников света
-	float2_t vSizeTexDepthGlobal = float2_t(1024, 768);
-
-	//размер текстуры глубины дл¤ локальных источников света
-	float2_t vSizeTexDepthLocal = float2_t(1024, 768);
-
-	//дистанции дл¤ 4 сплитов дл¤ глоальных теней PSSM
-	float4_t vDistForPSSM = float4_t(10.f, 40.f, 100.f, 200.f);
-
-	//коэфициент размера текстур дл¤ карт глубин локальных источников света
-	float fCoefSizeDepthMapForLocal = 2;
-
-	//коэфициент размера текстур дл¤ карт глубин глобального источника света
-	float fCoefSizeDepthMapForGlobal = 1;
-
-	bool isHalfGenPCFShadowLocal = false;
-
-	//ориентаци¤ и верхний вектор дл¤ рендера в кубическую текстуру
-	float3 vOrientedCube[6] = { float3(1, 0, 0), float3(-1, 0, 0), float3(0, 1, 0), float3(0, -1, 0), float3(0, 0, 1), float3(0, 0, -1) };
-	float3 vUpVectorsCube[6] = { float3(0, 1, 0), float3(0, 1, 0), float3(0, 0, -1), float3(0, 0, 1), float3(0, 1, 0), float3(0, 1, 0) };
-
-	float4x4 mRefProjPlane;
-	float4x4 mRefProjCube;
+	IGXDevice *pDXDevice = 0;
 
 	IGXSamplerState *pSamplerPointClamp;
 	IGXSamplerState *pSamplerLinearClamp;
@@ -125,24 +99,7 @@ namespace light_data
 			ID idLightBound;
 		};
 	};
-
-	namespace texture_id
-	{
-		ID idNoiseTex;
-	};
 };
-
-void light_data::ReCalcSize()
-{
-	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
-	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
-
-	vSizeTexDepthGlobal.x = float(*r_win_width) * light_data::fCoefSizeDepthMapForGlobal;
-	vSizeTexDepthGlobal.y = float(*r_win_height) * light_data::fCoefSizeDepthMapForGlobal;
-
-	vSizeTexDepthLocal.x = float(*r_win_width) * light_data::fCoefSizeDepthMapForLocal;
-	vSizeTexDepthLocal.y = float(*r_win_height) * light_data::fCoefSizeDepthMapForLocal;
-}
 
 void light_data::Init()
 {

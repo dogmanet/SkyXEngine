@@ -14,6 +14,8 @@ See the license in LICENSE
 #include <core/sxcore.h>
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
 
+#include "MutationObserver.h"
+
 #if defined(_DEBUG)
 #	pragma comment(lib, "sxcore_d.lib")
 #	pragma comment(lib, "sxmtrl_d.lib")
@@ -228,4 +230,9 @@ SX_LIB_API void SPhysics_ReleaseTrimeshShape(btCollisionShape *pShape)
 	assert(pShape->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE);
 
 	mem_delete(pShape);
+}
+
+SX_LIB_API IXMutationObserver* SPhysics_NewMutationObserver()
+{
+	return(new CMutationObserver(Core_GetIXCore()));
 }

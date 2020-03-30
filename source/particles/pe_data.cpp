@@ -8,7 +8,7 @@ See the license in LICENSE
 
 namespace pe_data
 {
-	IGXContext *pDXDevice = 0;
+	IGXDevice *pDXDevice = 0;
 	IGXVertexDeclaration *pVertexDeclarationParticles = 0;
 
 	void Init(IGXContext *pDevice);

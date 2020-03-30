@@ -1,0 +1,167 @@
+#background
+{
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+	
+	-gui-z: 0;
+	opacity: 1;
+	transition-property: -gui-z;
+	transition-duration: 0.4s;
+}
+
+body:disabled #background
+{
+	-gui-z: -200px;
+	opacity: 0.4;
+}
+
+#title
+{
+	top: 20%; 
+	left: 10%;
+	width: 30%;
+	position: absolute;
+	font-size: 32px;
+	transform: rotateY(10deg);
+}
+
+#left_menu
+{
+	//background-color: #00FF0088;
+	top: 40%; 
+	left: 10%; 
+	bottom: 10%; 
+	width: 30%;
+	position: absolute;
+	transform: rotateY(10deg);
+}
+
+#right_menu
+{
+	//background-color: #00FF0088;
+	height: 10%; 
+	right: 10%; 
+	bottom: 5%; 
+	width: 30%;
+	position: absolute;
+	transform: rotateY(-10deg);
+}
+
+#center_menu
+{
+	//background-color: #0000FF88;
+	top: 40%; 
+	left: 40%; 
+	bottom: 10%; 
+	width: 30%;
+	position: absolute;
+	transform: rotateY(-8deg);
+	overflow-y: hidden;
+}
+
+.menu-item
+{
+	font-size: 24px;
+	//background-color: #FF000099;
+	margin: 10px;
+	transition-property: color, -gui-z;
+	transition-duration: 0.1s, 0.1s;
+	-gui-z: 0;
+}
+
+.menu-item:hover
+{
+	color: #fe9500;
+	-gui-z: 30px;
+}
+
+.menu-item.bottom
+{
+	position: absolute;
+	bottom: 0;
+	height: 64px;
+	left: 10px;
+	right: 10px;
+}
+
+.menu-item.bottom:hover
+{
+	-gui-z: 0;
+}
+
+select
+{
+	display: block;
+	
+	border-width: 2px;
+	border-style: solid;
+	border-color: #c6f0fd;
+	
+	border-radius: 5px;
+	border-top-right-method: cut;
+	border-top-left-method: cut;
+	border-bottom-right-method: cut;
+	border-bottom-left-method: cut;
+	
+	//height: 64px;
+	max-height: 500px;
+	
+	padding: 5px;
+	
+	margin-bottom: 10px;
+	
+	font-size: 24px;
+	
+	-gui-z: 0;
+	
+	transition-property: -gui-z, border-color;
+	transition-duration: 0.1s, 0.1s;
+	
+	background-image: /dev/cbox.png;
+	background-repeat: no-repeat;
+	
+	background-position-x: 100%;
+	background-position-y: 50%;
+}
+
+select:checked
+{
+	max-height: 501px;
+	border-color: #fe9500;
+	-gui-z: 30px;
+	background-image: /dev/cbox_sel.png;
+}
+
+option
+{
+	display: block;
+	transition-property: color, background-color;
+	transition-duration: 0.1s, 0.1s;
+	padding: 5px;
+	background-color: #000000cc;
+}
+
+option:hover
+{
+	color: #fe9500;
+	//background-color: #FF7700cc;
+}
+
+range-meter
+{
+	background-color: #c6f0fddd;
+	top: 5px;
+	bottom: 5px;
+}
+
+
+range:hover range-meter
+{
+	background-color: #fe9500dd;
+	top: 5px;
+	bottom: 5px;
+}
+

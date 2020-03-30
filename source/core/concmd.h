@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -35,5 +35,7 @@ struct ConCmd
 bool ConsoleConnect(const char *szName = 0, bool bNewInstance = false);
 void ConsoleDisconnect();
 void ConsoleRegisterCmds();
+
+void CvarInitSystem(IXCore *pCore);
 
 #endif

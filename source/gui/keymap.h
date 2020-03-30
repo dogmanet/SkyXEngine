@@ -137,7 +137,7 @@ namespace gui
 
 		static bool keyState(int key);
 
-		static const bool * getKeys();
+		static const bool* getKeys();
 	};
 };
 #endif

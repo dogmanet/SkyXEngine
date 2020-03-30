@@ -134,6 +134,7 @@ int main(int argc, char **argv)
 	INIT_OUTPUT_STREAM(pEngine->getCore());
 
 	IXWindowSystem *pWindowSystem = XWindowInit();
+	pEngine->getCore()->getPluginManager()->registerInterface(IXWINDOWSYSTEM_GUID, pWindowSystem);
 
 	CWindowCallback cb(pEngine);
 	XWINDOW_DESC wdesc;
@@ -200,5 +201,6 @@ int main(int argc, char **argv)
 
 	mem_release(pWindow);
 	mem_release(pEngine);
+	mem_release(pWindowSystem);
 	return(ret);
 }

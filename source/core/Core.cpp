@@ -17,6 +17,8 @@
 #include <xcommon/IXTextureProxy.h>
 #include "ResourceTexture.h"
 
+#include "Config.h"
+
 extern CTimeManager *g_pTimers;
 extern CPerfMon *g_pPerfMon;
 extern CCore *g_pCore;
@@ -26,9 +28,10 @@ CCore::CCore(const char *szName)
 {
 	ConsoleConnect(szName);
 	ConsoleRegisterCmds();
+	CvarInitSystem(this);
 
-	Core_0RegisterCVarBool("g_time_run", true, "Запущено ли игрвоое время?", FCVAR_NOTIFY);
-	Core_0RegisterCVarFloat("g_time_speed", 1.f, "Скорость/соотношение течения игрового времени", FCVAR_NOTIFY);
+	Core_0RegisterCVarBool("g_time_run", true, "Запущено ли игровое время?", FCVAR_NOTIFY_OLD);
+	Core_0RegisterCVarFloat("g_time_speed", 1.f, "Скорость/соотношение течения игрового времени", FCVAR_NOTIFY_OLD);
 	Core_0RegisterCVarBool("dbg_config_save", false, "Отладочный вывод процесса сохранения конфига");
 	Core_0RegisterCVarInt("r_stats", 1, "Показывать ли статистику? 0 - нет, 1 - fps и игровое время, 2 - показать полностью");
 
@@ -243,11 +246,11 @@ void CCore::loadPlugins()
 			"/plugins/") + list[i]).c_str());
 		if(pPlugin)
 		{
-			printf(COLOR_GREEN "DONE!" COLOR_RESET "\n", list[i].c_str());
+			printf(COLOR_GREEN "DONE!" COLOR_RESET "\n");
 		}
 		else
 		{
-			printf(COLOR_LRED "ERROR!" COLOR_RESET "\n", list[i].c_str());
+			printf(COLOR_LRED "ERROR!" COLOR_RESET "\n");
 		}
 	}
 	m_pPluginManager->invokeStartup(this);
@@ -423,6 +426,28 @@ ID XMETHODCALLTYPE CCore::getThreadId()
 bool XMETHODCALLTYPE CCore::isOnMainThread()
 {
 	return(getThreadId() == 0);
+}
+
+IXConfig* XMETHODCALLTYPE CCore::newConfig()
+{
+	return(new CXConfig());
+}
+
+const char** XMETHODCALLTYPE CCore::getPCVarString(const char *szName)
+{
+	return(GET_PCVAR_STRING(szName));
+}
+const int* XMETHODCALLTYPE CCore::getPCVarInt(const char *szName)
+{
+	return(GET_PCVAR_INT(szName));
+}
+const float* XMETHODCALLTYPE CCore::getPCVarFloat(const char *szName)
+{
+	return(GET_PCVAR_FLOAT(szName));
+}
+const bool* XMETHODCALLTYPE CCore::getPCVarBool(const char *szName)
+{
+	return(GET_PCVAR_BOOL(szName));
 }
 
 //##########################################################################

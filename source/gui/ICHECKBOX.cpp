@@ -6,6 +6,7 @@ namespace gui
 	namespace dom
 	{
 		DEFINE_DOM_NODE(ICHECKBOX);
+		LINK_DOM_NODE_TO_TAG(ICHECKBOX, L"checkbox");
 
 		ICHECKBOX::ICHECKBOX()
 		{
@@ -13,7 +14,7 @@ namespace gui
 			m_bFocusable = true;
 		}
 
-		void ICHECKBOX::setAttribute(const StringW & name, const StringW & value)
+		void ICHECKBOX::setAttribute(const StringW &name, const StringW &value)
 		{
 			if(name == L"checked")
 			{

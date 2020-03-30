@@ -17,7 +17,7 @@ void SPP_ComEdgeDetected();
 
 namespace pp_data
 {
-	IGXContext *pDXDevice = 0;
+	IGXDevice *pDXDevice = 0;
 	float3 vConstCurrCamPos;
 	float3 vConstCurrCamDir;
 	float2_t vWinSize = float2_t(640, 480);

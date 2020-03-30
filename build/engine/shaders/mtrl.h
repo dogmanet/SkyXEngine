@@ -3,6 +3,9 @@
 mtrl.h
 Общие функции для материалов
 */
+
+#ifndef __MTRL_H
+#define __MTRL_H
  
 //! матрица для трансформации координат текстуры отражения (над водой)
 static const float4x4  MatrixReflection =
@@ -33,7 +36,8 @@ void ClipFar(float fZ, float fFar)
 //! просчет цвета линейной глубины [0,1] на основании текущей позиции и плоскостей отсечения! 
 float ComDepthByPos(float4 vPositionWVP, float2 vNearFar)
 {
-	return ((vPositionWVP.z + vNearFar.x)/vNearFar.y);
+	// return ((vPositionWVP.z + vNearFar.x)/vNearFar.y);
+	return (1.0f - vPositionWVP.z/vNearFar.x);
 }
 
 //! аналогично #ComDepthByPos, только возвращает вектор
@@ -224,3 +228,5 @@ float4 MixColorDetail(float4 vColor, float4 vDetail, float fLerpFactor)
 	vColor.rgb = lerp(vBlend,vColor,fLerpFactor).rgb;
 	return vColor;
 }
+
+#endif

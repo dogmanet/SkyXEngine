@@ -7,9 +7,6 @@ namespace gui
 {
 	namespace dom
 	{
-		AssotiativeArray<StringW, UINT> IDOMnodeTag::nodeIDs;
-		Array<vTable> IDOMnodeTag::nodes;
-
 		/*CSS::ICSSstyle * IDOMnodeTag::GetStyle()
 		{
 			return(m_pStyle);
@@ -49,9 +46,9 @@ namespace gui
 			static StringW text(L"text");
 			return(text);
 			}
-			else */if(IDOMnodeTag::nodes.size() > nid)
+			else */if(IDOMnodeTag::GetNodeVTbls().size() > nid)
 			{
-				return(IDOMnodeTag::nodes[nid].wsNodeName);
+				return(IDOMnodeTag::GetNodeVTbls()[nid].wsNodeName);
 			}
 			else
 			{
@@ -60,19 +57,21 @@ namespace gui
 			}
 		}
 
-		UINT CDOMnode::getNodeIdByName(const StringW & tag)
+		int CDOMnode::getNodeIdByName(const StringW &tag)
 		{
-			if(IDOMnodeTag::nodeIDs.KeyExists(tag))
+			if(IDOMnodeTag::GetNodeIDs().KeyExists(tag))
 			{
-				return(IDOMnodeTag::nodeIDs[tag]);
+				return(IDOMnodeTag::GetNodeIDs()[tag]);
 			}
-			return(0);
+			return(-1);
 		}
 
 #ifdef _DEBUG
 		void CDOMnode::debugPrintMe(UINT lvl)
 		{
-			if(m_iNodeId == 0)
+			static UINT nTEXT = CDOMnode::getNodeIdByName(L"text");
+
+			if(m_iNodeId == nTEXT)
 			{
 				return;
 			}
@@ -80,7 +79,7 @@ namespace gui
 			{
 				wprintf(L"  ");
 			}
-			wprintf(L"<%s", CDOMnode::getNodeNameById(m_iNodeId));
+			wprintf(L"<%s", CDOMnode::getNodeNameById(m_iNodeId).c_str());
 			for(AssotiativeArray<StringW, StringW>::Iterator i = m_mAttributes.begin(); i; i++)
 			{
 				wprintf(L" %s=\"%s\"", i.first->c_str(), i.second->c_str());
@@ -94,7 +93,7 @@ namespace gui
 			{
 				wprintf(L"  ");
 			}
-			wprintf(L"</%s>\n", CDOMnode::getNodeNameById(m_iNodeId));
+			wprintf(L"</%s>\n", CDOMnode::getNodeNameById(m_iNodeId).c_str());
 		}
 #endif
 		

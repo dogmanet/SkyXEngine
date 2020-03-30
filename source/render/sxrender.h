@@ -19,11 +19,13 @@ See the license in LICENSE
 #pragma comment(lib, "sxgcore_d.lib")
 #pragma comment(lib, "sxmtrl_d.lib")
 #pragma comment(lib, "sxgame_d.lib")
+#pragma comment(lib, "sxphysics_d.lib")
 #else
 #pragma comment(lib, "sxinput.lib")
 #pragma comment(lib, "sxgcore.lib")
 #pragma comment(lib, "sxmtrl.lib")
 #pragma comment(lib, "sxgame.lib")
+#pragma comment(lib, "sxphysics.lib")
 #endif
 
 

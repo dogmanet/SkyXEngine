@@ -56,6 +56,7 @@ public:
 	UINT getIncludesCount();
 	void getIncludes(const char **pszIncludes);
 
+	void clearIncludeCache();
 	void reset();
 
 	const char* getError();

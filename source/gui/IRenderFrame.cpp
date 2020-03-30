@@ -10,69 +10,42 @@
 
 namespace gui
 {
+	void CTranslationManager::pushMatrix(const SMMATRIX &m)
+	{
+		m_stack.push(m_result);
+		float fDet;
+		m_result *= SMMatrixInverse(&fDet, m_result) * m * m_result;
+		//	GetGUI()->getDevice()->SetTransform(D3DTS_WORLD, reinterpret_cast<D3DMATRIX*>(&m_result));
+		m_pDesktopStack->setTransformWorld(m_result);
+		m_pDesktopStack->updateTransformShader();
+	}
+
+	void CTranslationManager::popMatrix()
+	{
+		m_stack.pop(&m_result);
+		//float det;
+		//m_result = m_result * SMMatrixInverse(&det, m);
+		//	GetGUI()->getDevice()->SetTransform(D3DTS_WORLD, reinterpret_cast<D3DMATRIX*>(&m_result));
+		m_pDesktopStack->setTransformWorld(m_result);
+		m_pDesktopStack->updateTransformShader();
+	}
+
+	SMMATRIX CTranslationManager::getCurrentMatrix()
+	{
+		return(m_result);
+	}
+
+//##########################################################################
+
 	namespace dom
 	{
+
+
 		namespace render
 		{
-			SMMATRIX CTranslationManager::m_result;
-			
-			Stack<SMMATRIX, 256, 16> CTranslationManager::m_stack;
 
-			void CTranslationManager::pushMatrix(const SMMATRIX & m)
-			{
-				m_stack.push(m_result);
-				float fDet;
-				m_result *= SMMatrixInverse(&fDet, m_result) * m * m_result;
-			//	GetGUI()->getDevice()->SetTransform(D3DTS_WORLD, reinterpret_cast<D3DMATRIX*>(&m_result));
-				GetGUI()->setTransformWorld(m_result);
-				GetGUI()->updateTransformShader();
-			}
-
-			void CTranslationManager::popMatrix()
-			{
-				m_result = m_stack.pop();
-				//float det;
-				//m_result = m_result * SMMatrixInverse(&det, m);
-			//	GetGUI()->getDevice()->SetTransform(D3DTS_WORLD, reinterpret_cast<D3DMATRIX*>(&m_result));
-				GetGUI()->setTransformWorld(m_result);
-				GetGUI()->updateTransformShader();
-			}
-
-			SMMATRIX CTranslationManager::getCurrentMatrix()
-			{
-				return(m_result);
-			}
-
-			//##########################################################################
-
-			IRenderFrame::IRenderFrame(CDOMnode * pNode, IRenderFrame * pRootNode):
-				m_bHasFixedSize(false),
-				isWidthSet(true),
-				m_iScrollLeft(0),
-				m_iScrollLeftMax(0),
-				m_iBackgroundOffsetX(0),
-				m_iBackgroundOffsetY(0),
-				m_pBackgroundImage(NULL),
-				m_bHasBackground(false),
-				m_iScrollTop(0),
-				m_iScrollTopMax(0),
-				m_bNeedCut(false),
-				m_iTextIdx(0),
-				m_iWidth(0),
-				m_iHeight(0),
-				m_iXpos(0),
-				m_iYpos(0),
-				m_pParent(NULL),
-				m_iTopPos(0),
-				m_iLeftPos(0),
-				m_iTopPosMax(0),
-				m_bIsOutOfFlow(false), 
-				m_pDoc(NULL), 
-				m_bFreezed(false),
-				m_iScrollSpeedX(0),
-				m_iScrollSpeedY(0),
-				m_pScrollBarVert(NULL),
-				m_pScrollBarHorz(NULL)
+			IRenderFrame::IRenderFrame(CDOMnode *pNode, IRenderFrame *pRootNode):
+				m_border((pRootNode ? pRootNode->getNode() : pNode)->getDocument()->getDesktopStack()->getTextureManager())
 			{
 				m_pNode = pNode;
 				if(!pRootNode)
@@ -268,7 +241,7 @@ namespace gui
 				m_iTopPosMax = p;
 			}
 
-			IRenderFrame * IRenderFrame::getParent()
+			IRenderFrame* IRenderFrame::getParent()
 			{
 				return(m_pParent);
 			}
@@ -355,6 +328,7 @@ namespace gui
 						{
 							m_pChilds[i + 1]->m_pPrev = m_pChilds[i]->m_pPrev;
 						}
+						textClear();
 						mem_delete(m_pChilds[i]);
 						m_pChilds.erase(i);
 						return;
@@ -417,10 +391,12 @@ namespace gui
 					}
 				}
 				m_iScrollTop = x;
+				m_pDoc->markDirty();
 			}
 			void IRenderFrame::setScrollLeft(int x)
 			{
 				m_iScrollLeft = x;
+				m_pDoc->markDirty();
 			}
 
 			//m_iScrollSpeedX
@@ -458,10 +434,15 @@ namespace gui
 						m_iScrollSpeedY = 0;
 					}
 				}
+
+				if(m_iScrollSpeedX || m_iScrollSpeedY)
+				{
+					m_pDoc->markDirty();
+				}
 			}
 
 
-			IRenderFrame * IRenderFrame::createNode(CDOMnode * pNode, IRenderFrame * pRootNode)
+			IRenderFrame* IRenderFrame::createNode(CDOMnode * pNode, IRenderFrame * pRootNode)
 			{
 				if(!pNode)
 				{
@@ -470,8 +451,9 @@ namespace gui
 				static UINT nIMG = CDOMnode::getNodeIdByName(L"img");
 				static UINT nVIDEO = CDOMnode::getNodeIdByName(L"video");
 				static UINT nSELECT = CDOMnode::getNodeIdByName(L"select");
+				static UINT nTEXT = CDOMnode::getNodeIdByName(L"text");
 				UINT nid = pNode->getNodeId();
-				if(nid == 0) // Text node
+				if(nid == nTEXT) // Text node
 				{
 					return(new IRenderTextNew(pNode, pRootNode));
 				}
@@ -1164,7 +1146,7 @@ namespace gui
 
 				if(m_bHasBackgroundImage)
 				{
-					m_pBackgroundImage = CTextureManager::getTexture(pStyle->background_image->getString());
+					m_pBackgroundImage = m_pDoc->getDesktopStack()->getTextureManager()->getTexture(pStyle->background_image->getString());
 					UINT tw = m_pBackgroundImage->getWidth();
 					UINT th = m_pBackgroundImage->getHeight();
 
@@ -1264,7 +1246,7 @@ namespace gui
 				{
 					return;
 				}
-				static CPITexture texWhite = CTextureManager::getTexture(TEX_WHITE);
+				static CPITexture texWhite = m_pDoc->getDesktopStack()->getTextureManager()->getTexture(TEX_WHITE);
 			//	static CSHADER shText = CTextureManager::loadShader(L"text");
 
 				IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
@@ -1285,7 +1267,7 @@ namespace gui
 					int pl = 0;
 					if(m_bBackgroundFixed)
 					{
-						SMMATRIX mt = CTranslationManager::getCurrentMatrix();
+						SMMATRIX mt = m_pDoc->getTranslationManager()->getCurrentMatrix();
 						pl = mt._41;
 						pt = mt._42;
 					}
@@ -1350,15 +1332,15 @@ namespace gui
 			//	SGCore_SetSamplerFilter(0, D3DTEXF_ANISOTROPIC);
 				//DX_CALL(GetGUI()->getDevice()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_ANISOTROPIC));
 				
-				IGXRenderBuffer *pRB = GetGUI()->getQuadRenderBufferXYZTex16((float*)m_pVBackground);
+				IGXRenderBuffer *pRB = m_pDoc->getDesktopStack()->getQuadRenderBufferXYZTex16((float*)m_pVBackground);
 
 				pCtx->setRenderBuffer(pRB);
 
-				CTranslationManager::pushMatrix(SMMatrixTranslation(getInnerLeft(), getInnerTop(), 0.0f));
+				m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(getInnerLeft(), getInnerTop(), 0.0f));
 				if(m_bHasBackground && m_iTCBackground > 0)
 				{
 				//	CTextureManager::bindShader(shText);
-					CTextureManager::bindTexture(texWhite);
+					m_pDoc->getDesktopStack()->getTextureManager()->bindTexture(texWhite);
 				//	DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, m_iTCBackground, &m_pVBackground, sizeof(pointtex)));
 					pCtx->drawPrimitive(0, m_iTCBackground);
 				}
@@ -1367,11 +1349,11 @@ namespace gui
 				//	CTextureManager::unbindShader();
 					s_pColorConstant->update(&float4_t(1.0f, 1.0f, 1.0f, 1.0f));
 					//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&float4_t(1.0f, 1.0f, 1.0f, 1.0f), 1);
-					CTextureManager::bindTexture(m_pBackgroundImage);
+					m_pDoc->getDesktopStack()->getTextureManager()->bindTexture(m_pBackgroundImage);
 				//	DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, m_iTCBackground, &m_pVBackground, sizeof(pointtex)));
 					pCtx->drawPrimitive(0, m_iTCBackground);
 				}
-				CTranslationManager::popMatrix();
+				m_pDoc->getTranslationManager()->popMatrix();
 				
 
 				
@@ -1741,12 +1723,12 @@ namespace gui
 				{
 					m_pScrollBarHorz = new CScrollBarSimple(this, SCROLLBAR_DIR_HORIZONTAL);
 				}
-				CTranslationManager::pushMatrix(SMMatrixTranslation(m_iXpos, m_iYpos, m_pNode->getStyle()->_gui_z->getPX(getParent() ? getParent()->getContentWidth() : getWidth())));
+				m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(m_iXpos, m_iYpos, m_pNode->getStyle()->_gui_z->getPX(getParent() ? getParent()->getContentWidth() : getWidth())));
 				if(m_pNode->getStyle()->transform->isSet())
 				{
 					SMMATRIX mCurrent = /*CTranslationManager::getCurrentMatrix() * */SMMatrixTranslation((float)getWidth() * 0.5f, (float)getHeight() * 0.5f, 0.0f);
 					float fDet;
-					CTranslationManager::pushMatrix(SMMatrixInverse(&fDet, mCurrent) * m_pNode->getStyle()->transform->getMatrix() * mCurrent);
+					m_pDoc->getTranslationManager()->pushMatrix(SMMatrixInverse(&fDet, mCurrent) * m_pNode->getStyle()->transform->getMatrix() * mCurrent);
 				}
 
 				if(m_pNode->getStyle()->visibility->getInt() != css::ICSSproperty::VISIBILITY_HIDDEN)
@@ -1767,16 +1749,16 @@ namespace gui
 					};
 					point a[6] = {
 						{0, 0, 0, rc},
-						{m_iWidth, 0, 0, rc},
-						{0, (float)(m_iHeight), 0, rc},
-						{0, (float)(m_iHeight), 0, rc},
-						{m_iWidth, 0, 0, rc},
-						{m_iWidth, (float)(m_iHeight), 0, rc}
+						{(float)m_iWidth, 0, 0, rc},
+						{0, (float)m_iHeight, 0, rc},
+						{0, (float)m_iHeight, 0, rc},
+						{(float)m_iWidth, 0, 0, rc},
+						{(float)m_iWidth, (float)(m_iHeight), 0, rc}
 					};
 					point2 apdx8[] = {
 						{0, 0, 0},
-						{m_iWidth, 0, 0},
-						{m_iWidth, (float)(m_iHeight), 0},
+						{(float)m_iWidth, 0, 0},
+						{(float)m_iWidth, (float)(m_iHeight), 0},
 						{0, (float)(m_iHeight), 0}
 					};
 					
@@ -1817,24 +1799,24 @@ namespace gui
 					if(m_pScrollBarVert)
 					{
 						int sbOffset = m_iWidth - m_pScrollBarVert->getWidth();
-						CTranslationManager::pushMatrix(SMMatrixTranslation(sbOffset, 0.0f, 0.0f));
+						m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(sbOffset, 0.0f, 0.0f));
 						m_pScrollBarVert->setLength(m_iHeight);
 						m_pScrollBarVert->render();
-						CTranslationManager::popMatrix();
+						m_pDoc->getTranslationManager()->popMatrix();
 					}
 					if(m_pScrollBarHorz)
 					{
 						int sbOffset = m_iHeight - m_pScrollBarHorz->getWidth();
-						CTranslationManager::pushMatrix(SMMatrixTranslation(0.0f, sbOffset, 0.0f));
+						m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(0.0f, sbOffset, 0.0f));
 						m_pScrollBarHorz->setLength(m_iWidth);
 						m_pScrollBarHorz->render();
-						CTranslationManager::popMatrix();
+						m_pDoc->getTranslationManager()->popMatrix();
 					}
 
 
-					CTranslationManager::pushMatrix(SMMatrixTranslation(-m_iScrollLeft, -m_iScrollTop, 0.0f));
+					m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(-m_iScrollLeft, -m_iScrollTop, 0.0f));
 					BaseClass::render(lvl + (m_bNeedCut ? 1 : 0));
-					CTranslationManager::popMatrix();
+					m_pDoc->getTranslationManager()->popMatrix();
 					if(m_bNeedCut)
 					{
 						auto shader = GetGUI()->getShaders()->m_baseColored;
@@ -1845,7 +1827,7 @@ namespace gui
 						pCtx->setBlendState(GetGUI()->getBlendStates()->m_pNoColorWrite);
 					//	pCtx->SetRenderState(D3DRS_STENCILPASS, D3DSTENCILOP_DECR);
 
-						IGXRenderBuffer *pRB = GetGUI()->getQuadRenderBufferXYZ((float3_t*)apdx8);
+						IGXRenderBuffer *pRB = m_pDoc->getDesktopStack()->getQuadRenderBufferXYZ((float3_t*)apdx8);
 					//	GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ);
 					//	DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &apdx8, sizeof(point2)));
 						pCtx->setRenderBuffer(pRB);
@@ -1866,9 +1848,9 @@ namespace gui
 
 				if(m_pNode->getStyle()->transform->isSet())
 				{
-					CTranslationManager::popMatrix();
+					m_pDoc->getTranslationManager()->popMatrix();
 				}
-				CTranslationManager::popMatrix();
+				m_pDoc->getTranslationManager()->popMatrix();
 			}
 
 			//##########################################################################
@@ -1890,9 +1872,9 @@ namespace gui
 			void IRenderAnonymousBlock::render(UINT lvl)
 			{
 				GetGUI()->getDevice()->getThreadContext()->setStencilRef(lvl);
-				CTranslationManager::pushMatrix(SMMatrixTranslation(m_iXpos, m_iYpos, 0.0f));
+				m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(m_iXpos, m_iYpos, 0.0f));
 				BaseClass::render(lvl);
-				CTranslationManager::popMatrix();
+				m_pDoc->getTranslationManager()->popMatrix();
 			}
 
 			//##########################################################################
@@ -2158,11 +2140,11 @@ namespace gui
 			void IRenderInline::render(UINT lvl)
 			{
 				GetGUI()->getDevice()->getThreadContext()->setStencilRef(lvl);
-				CTranslationManager::pushMatrix(SMMatrixTranslation(m_iXpos, m_iYpos, 0.0f));
+				m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(m_iXpos, m_iYpos, 0.0f));
 				m_border.render();
 				renderBackground(lvl);
 				BaseClass::render(lvl);
-				CTranslationManager::popMatrix();
+				m_pDoc->getTranslationManager()->popMatrix();
 			}
 
 			//##########################################################################
@@ -2336,17 +2318,6 @@ namespace gui
 #endif
 			//##########################################################################
 
-			IRenderTextNew::IRenderTextNew(CDOMnode * pNode, IRenderFrame * pRootNode):
-				BaseClass(pNode, pRootNode), 
-				m_iCaretPos(0), 
-				m_bInSelection(false), 
-				m_iSelectionStart(0), 
-				m_iSelectionEnd(0),
-				pShadowFont(NULL)
-			{
-				//setText(((IDOMnodeText*)pNode)->getText());
-			}
-
 			void IRenderTextNew::setText(const StringW & text)
 			{
 				if(m_pParent && m_pParent->getNode() && m_pParent->getNode()->getStyle()->_gui_text_format->getInt() == css::ICSSproperty::_GUI_TEXT_FORMAT_PREFORMATTED)
@@ -2404,21 +2375,21 @@ namespace gui
 			//	static CSHADER shText = NULL;
 				if(!texWhite)
 				{
-					texWhite = CTextureManager::getTexture(TEX_WHITE);
+					texWhite = m_pDoc->getDesktopStack()->getTextureManager()->getTexture(TEX_WHITE);
 				}
 			/*	if(!shText)
 				{
 					shText = CTextureManager::loadShader(L"text");
 				}*/
 			//	GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
-				CTranslationManager::pushMatrix(SMMatrixTranslation(m_iXpos, m_iYpos, 0.0f));
+				m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(m_iXpos, m_iYpos, 0.0f));
 				//SMMATRIX m = SMMatrixTranslation(m_pParent->GetLeftOffset(), m_pParent->GetTopOffset(), 0.0f);
 				//GetGUI()->getDevice()->SetTransform(D3DTS_WORLD, reinterpret_cast<D3DMATRIX*>(&m));
 				
 				auto shader = GetGUI()->getShaders()->m_baseTexturedColored;
 				SGCore_ShaderBind(shader.m_idShaderKit);
 			//	CTextureManager::bindShader(shText);
-				CTextureManager::bindTexture(texWhite);
+				m_pDoc->getDesktopStack()->getTextureManager()->bindTexture(texWhite);
 				renderSelection();
 
 				float4_t vColor = m_pStyle->color->getColor();
@@ -2428,61 +2399,50 @@ namespace gui
 				s_pColorConstant->update(&vColor);
 				pCtx->setPSConstant(s_pColorConstant);
 
-				//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&vColor, 1);
-			//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&vColor, 1));
 				for(UINT i = 0; i < m_pRenderElems.size(); i++)
 				{
 					CRenderElement * el = &m_pRenderElems[i];
-					CTranslationManager::pushMatrix(SMMatrixTranslation(0.0f, el->m_iTopOffset, 0.0f));
-					CTranslationManager::pushMatrix(SMMatrixTranslation(el->m_iLeftOffset, 0.0f, 0.0f));
+					m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(0.0f, el->m_iTopOffset, 0.0f));
+					m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(el->m_iLeftOffset, 0.0f, 0.0f));
 
 					if(pShadowFont && el->m_pNextREl)
 					{
-						CTranslationManager::pushMatrix(SMMatrixTranslation(el->m_pNextREl->m_iLeftOffset, el->m_pNextREl->m_iTopOffset, 0.0f));
-						CTextureManager::bindTexture(pShadowFont->getTexture(0));
+						m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(el->m_pNextREl->m_iLeftOffset, el->m_pNextREl->m_iTopOffset, 0.0f));
+						m_pDoc->getDesktopStack()->getTextureManager()->bindTexture(pShadowFont->getTexture(0));
 						s_pColorConstant->update(&vShadowColor);
-						//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&vShadowColor, 1);
-					//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&vShadowColor, 1));
 
 						pCtx->setRenderBuffer(el->m_pNextREl->m_pRenderBuffer);
 						pCtx->setIndexBuffer(el->m_pNextREl->m_pIndexBuffer);
-					//	DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, el->m_pNextREl->m_iVertexCount, 0, el->m_pNextREl->m_iIndexBaseCount / 3));
 						pCtx->drawIndexed(el->m_pNextREl->m_iVertexCount, el->m_pNextREl->m_iIndexBaseCount / 3, 0, 0);
 
 						s_pColorConstant->update(&vColor);
-						//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&vColor, 1);
-					//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&vColor, 1));
-						CTranslationManager::popMatrix();
+						m_pDoc->getTranslationManager()->popMatrix();
 					}
 
-					CTextureManager::bindTexture(pFont->getTexture(0));
+					m_pDoc->getDesktopStack()->getTextureManager()->bindTexture(pFont->getTexture(0));
 					pCtx->setRenderBuffer(el->m_pRenderBuffer);
 					pCtx->setIndexBuffer(el->m_pIndexBuffer);
 					if(el->m_iIndexBaseCount)
 					{
-					//	DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, el->m_iVertexCount, 0, el->m_iIndexBaseCount / 3));
 						pCtx->drawIndexed(el->m_iVertexCount, el->m_iIndexBaseCount / 3, 0, 0);
 					}
 					if(el->m_iIndexAddCount)
 					{
-						CTextureManager::bindTexture(texWhite);
-					//	DX_CALL(GetGUI()->getDevice()->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, el->m_iVertexCount, el->m_iIndexBaseCount, el->m_iIndexAddCount / 3));
+						m_pDoc->getDesktopStack()->getTextureManager()->bindTexture(texWhite);
 						pCtx->drawIndexed(el->m_iVertexCount, el->m_iIndexAddCount / 3, el->m_iIndexBaseCount, 0);
 					}
 
-					CTranslationManager::popMatrix();
+					m_pDoc->getTranslationManager()->popMatrix();
 
 				}
 				for(UINT i = 0; i < m_pRenderElems.size(); i++)
 				{
-					CTranslationManager::popMatrix();
+					m_pDoc->getTranslationManager()->popMatrix();
 				}
 				
-				CTextureManager::bindTexture(texWhite);
+				m_pDoc->getDesktopStack()->getTextureManager()->bindTexture(texWhite);
 				drawCaret();
-			//	CTextureManager::unbindShader();
-				CTranslationManager::popMatrix();
-			//	GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_DIFFUSE);
+				m_pDoc->getTranslationManager()->popMatrix();
 			}
 
 			void IRenderTextNew::selectionStart()
@@ -2550,7 +2510,7 @@ namespace gui
 
 				CFont::STYLE style = (CFont::STYLE)((fontStyle == css::ICSSproperty::FONT_STYLE_ITALIC ? CFont::STYLE_ITALIC : 0) | (fontWeight == css::ICSSproperty::FONT_WEIGHT_BOLD ? CFont::STYLE_BOLD : 0));
 
-				pFont = IFontManager::getFont(szFontName, iTextSize, style);
+				pFont = m_pDoc->getDesktopStack()->getFontManager()->getFont(szFontName, iTextSize, style);
 
 				int iShadowX = 0;
 				int iShadowY = 0;
@@ -2568,7 +2528,7 @@ namespace gui
 						iShadowRadius = pStyle->text_shadow_blur_radius->getPX(pBlock->getContentWidth());
 					}
 
-					pShadowFont = IFontManager::getFont(szFontName, iTextSize, style, iShadowRadius);
+					pShadowFont = m_pDoc->getDesktopStack()->getFontManager()->getFont(szFontName, iTextSize, style, iShadowRadius);
 				}
 
 				struct word
@@ -2877,14 +2837,14 @@ namespace gui
 					color.w = op;
 					SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&color, 1);
 				//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&color, 1));
-					CTranslationManager::pushMatrix(SMMatrixTranslation(_x - 1.0f, _y, 0.0f));
+					m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(_x - 1.0f, _y, 0.0f));
 				//	DX_CALL(GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ));
-					IGXRenderBuffer *pRB = GetGUI()->getQuadRenderBufferXYZ((float3_t*)a);
+					IGXRenderBuffer *pRB = m_pDoc->getDesktopStack()->getQuadRenderBufferXYZ((float3_t*)a);
 					pCtx->setRenderBuffer(pRB);
 					pCtx->setIndexBuffer(GetGUI()->getQuadIndexBuffer());
 					pCtx->drawIndexed(4, 2, 0, 0);
 				//	DX_CALL(GetGUI()->getDevice()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, &a, sizeof(point)));
-					CTranslationManager::popMatrix();
+					m_pDoc->getTranslationManager()->popMatrix();
 
 					int _w = m_pParent->getInnerWidth();
 					int _scrollX = m_pParent->getScrollLeft();
@@ -3052,7 +3012,7 @@ namespace gui
 						a[3].y = m_vCharRects[i].bottom;
 						a[2].y = a[3].y;
 
-						IGXRenderBuffer *pRB = GetGUI()->getQuadRenderBufferXYZ((float3_t*)a);
+						IGXRenderBuffer *pRB = m_pDoc->getDesktopStack()->getQuadRenderBufferXYZ((float3_t*)a);
 						pCtx->setRenderBuffer(pRB);
 
 						pCtx->drawIndexed(4, 2, 0, 0);
@@ -3075,8 +3035,10 @@ namespace gui
 
 				if(m_pNode->getNodeId() == nVIDEO)
 				{
+#ifndef _GUI_NO_VIDEO
 					StringW src = ((IVIDEO*)m_pNode)->initRenderer();
 					style->background_image->set(src);
+#endif
 				}
 				else
 				{
@@ -3088,7 +3050,7 @@ namespace gui
 				style->background_attachment->set(css::ICSSproperty::BACKGROUND_ATTACHMENT_LOCAL);
 				style->background_position_x->set(0);
 				style->background_position_y->set(0);
-				CPITexture tex = CTextureManager::getTexture(style->background_image->getString());
+				CPITexture tex = m_pDoc->getDesktopStack()->getTextureManager()->getTexture(style->background_image->getString());
 
 				int _w = tex->getWidth();
 				int _h = tex->getHeight();
@@ -3160,8 +3122,10 @@ namespace gui
 
 				if(m_pNode->getNodeId() == nVIDEO)
 				{
+#ifndef _GUI_NO_VIDEO
 					StringW src = ((IVIDEO*)m_pNode)->initRenderer();
 					style->background_image->set(src);
+#endif
 				}
 				else
 				{
@@ -3171,7 +3135,7 @@ namespace gui
 				style->background_attachment->set(css::ICSSproperty::BACKGROUND_ATTACHMENT_LOCAL);
 				style->background_position_x->set(0);
 				style->background_position_y->set(0);
-				CPITexture tex = CTextureManager::getTexture(style->background_image->getString());
+				CPITexture tex = m_pDoc->getDesktopStack()->getTextureManager()->getTexture(style->background_image->getString());
 
 				int _w = tex->getWidth();
 				int _h = tex->getHeight();
@@ -3229,10 +3193,6 @@ namespace gui
 			}
 
 			//##########################################################################
-
-			IRenderSelectBlock::IRenderSelectBlock(CDOMnode * pNode, IRenderFrame * pRootFrame):BaseClass(pNode, pRootFrame)
-			{
-			}
 
 			UINT IRenderSelectBlock::layout(bool changed)
 			{

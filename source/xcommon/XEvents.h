@@ -165,12 +165,60 @@ struct XEventAsyncTask
 class IXMaterial;
 struct XEventMaterialChanged
 {
-	enum
+	enum TYPE
 	{
 		TYPE_TRANSPARENCY,
+		TYPE_REFRACTIVITY,
+		TYPE_BLURRED,
+		TYPE_PHYSICS_TYPE,
+		TYPE_DURABILITY,
+		TYPE_HIT_CHANCE,
+		TYPE_DENSITY,
+		TYPE_PROPERTY,
+		TYPE_FLAG,
+		TYPE_SHADER,
 		// ...
 	} type;
 	IXMaterial *pMaterial;
+	const char *szReference;
+};
+
+
+// {32D85440-D150-4301-A6E0-7AE89BF34DC6}
+#define EVENT_MODEL_CHANGED_GUID DEFINE_XGUID(0x32d85440, 0xd150, 0x4301, 0xa6, 0xe0, 0x7a, 0xe8, 0x9b, 0xf3, 0x4d, 0xc6)
+
+class IXModel;
+struct XEventModelChanged
+{
+	enum TYPE
+	{
+		TYPE_CREATED,
+		TYPE_BEFORE_REMOVED,
+		TYPE_MOVED,
+		TYPE_VISIBILITY,
+		TYPE_SKIN,
+		// ...
+	} type;
+	IXModel *pModel;
+};
+
+
+// {A816DD94-0F92-48EA-A174-03599963BF84}
+#define EVENT_CVAR_CHANGED_GUID DEFINE_XGUID(0xa816dd94, 0xf92, 0x48ea, 0xa1, 0x74, 0x3, 0x59, 0x99, 0x63, 0xbf, 0x84)
+
+class IXModel;
+struct XEventCvarChanged
+{
+	enum TYPE
+	{
+		TYPE_INT,
+		TYPE_FLOAT,
+		TYPE_STRING,
+		TYPE_BOOL
+		// ...
+	} type;
+	const char *szName;
+	const void *pCvar;
 };
 
 #endif

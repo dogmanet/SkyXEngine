@@ -73,6 +73,8 @@ CEngine::CEngine(int argc, char **argv, const char *szName)
 }
 CEngine::~CEngine()
 {
+	mem_release(m_pXUI);
+
 	SRender_AKill();
 	SGame_AKill();
 	SPhysics_AKill();
@@ -91,13 +93,13 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB input initialized\n");
 
 	// init graphics
-	Core_0RegisterCVarInt("r_win_width", 800, "Размер окна по горизонтали (в пикселях)", FCVAR_NOTIFY);
-	Core_0RegisterCVarInt("r_win_height", 600, "Размер окна по вертикали (в пикселях)", FCVAR_NOTIFY);
-	Core_0RegisterCVarBool("r_win_windowed", true, "Режим рендера true - оконный, false - полноэкранный", FCVAR_NOTIFY);
-	Core_0RegisterCVarBool("r_win_borderless", false, "Режим без рамки", FCVAR_NOTIFY);
+	Core_0RegisterCVarInt("r_win_width", 800, "Размер окна по горизонтали (в пикселях)", FCVAR_NOTIFY_OLD);
+	Core_0RegisterCVarInt("r_win_height", 600, "Размер окна по вертикали (в пикселях)", FCVAR_NOTIFY_OLD);
+	Core_0RegisterCVarBool("r_win_windowed", true, "Режим рендера true - оконный, false - полноэкранный", FCVAR_NOTIFY_OLD);
+	Core_0RegisterCVarBool("r_win_borderless", false, "Режим без рамки", FCVAR_NOTIFY_OLD);
 	Core_0RegisterCVarFloat("r_default_fov", SM_PI * 0.25f, "Дефолтный fov в радианах");
-	Core_0RegisterCVarFloat("r_near", 0.025f, "Ближняя плоскость отсчечения");
-	Core_0RegisterCVarFloat("r_far", 800, "Дальняя плоскость отсечения (дальность видимости)");
+	Core_0RegisterCVarFloat("r_near", 0.025f, "Ближняя плоскость отсчечения", FCVAR_NOTIFY);
+	Core_0RegisterCVarFloat("r_far", 800.0f, "Дальняя плоскость отсечения (дальность видимости)", FCVAR_NOTIFY);
 
 	Core_0RegisterCVarInt("r_final_image", DS_RT_SCENELIGHT, "Тип финального (выводимого в окно рендера) изображения из перечисления DS_RT");
 
@@ -113,8 +115,6 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	SGCore_0Create("sxgcore", (HWND)hWindow, *r_win_width, *r_win_height, *r_win_windowed, false);
 	
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB gcore initialized\n");
-
-	SMtrl_DevSet(SGCore_GetDXDevice());
 
 #if 1
 	// init mtrl
@@ -135,8 +135,36 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	SGame_0Create((HWND)hWindow, true);
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB game initialized\n");
 
+
+	//m_pXUI = 
+	HMODULE hDLL = LoadLibrary("xUI"
+#ifdef _DEBUG
+		"_d"
+#endif
+		".dll");
+	if(!hDLL)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to load xUI"
+#ifdef _DEBUG
+			"_d"
+#endif
+			".dll");
+	}
+
+	PFNXUIINIT pfnXGUIInit;
+	pfnXGUIInit = (PFNXUIINIT)GetProcAddress(hDLL, "InitInstance");
+
+	if(!pfnXGUIInit)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "The procedure entry point InitInstance could not be located in the dynamic link library xUI.dll");
+	}
+
+	IXWindowSystem *pWindowSystem = (IXWindowSystem*)m_pCore->getPluginManager()->getInterface(IXWINDOWSYSTEM_GUID);
+	m_pXUI = pfnXGUIInit(SGCore_GetDXDevice(), pWindowSystem, SGame_GetGUI());
+	m_pCore->getPluginManager()->registerInterface(IXUI_GUID, m_pXUI);
+
 	// init updatable
-	Core_GetIXCore()->initUpdatable();
+	m_pCore->initUpdatable();
 
 	getCore()->execCmd("exec ../config_sys.cfg");
 
@@ -210,7 +238,7 @@ bool CEngine::runFrame()
 	Core_0ConsoleUpdate();
 
 	SSInput_Update();
-
+	
 	
 	// draw frame
 	{
@@ -222,19 +250,31 @@ bool CEngine::runFrame()
 
 		//#############################################################################
 
+		Core_PStartSection(PERF_SECTION_GAME_UPDATE);
 		SGame_Update();
+		Core_PEndSection(PERF_SECTION_GAME_UPDATE);
 
+		Core_PStartSection(PERF_SECTION_PHYS_UPDATE);
 		SPhysics_Update();
+		Core_PEndSection(PERF_SECTION_PHYS_UPDATE);
 
 		//#############################################################################
 
+		Core_PStartSection(PERF_SECTION_PHYS_SYNC);
 		SPhysics_Sync();
+		Core_PEndSection(PERF_SECTION_PHYS_SYNC);
 
+		Core_PStartSection(PERF_SECTION_GAME_SYNC);
 		SGame_Sync();
+		Core_PEndSection(PERF_SECTION_GAME_SYNC);
 
+		Core_PStartSection(PERF_SECTION_MATSORT_UPDATE);
 		SMtrl_Update(0);
+		Core_PEndSection(PERF_SECTION_MATSORT_UPDATE);
 
+		Core_PStartSection(PERF_SECTION_CORE_UPDATE);
 		m_pCore->runUpdate();
+		Core_PEndSection(PERF_SECTION_CORE_UPDATE);
 		
 		//#############################################################################
 
@@ -247,12 +287,19 @@ bool CEngine::runFrame()
 			IXRenderPipeline *pRenderPipeline;
 			m_pCore->getRenderPipeline(&pRenderPipeline);
 
+			Core_PStartSection(PERF_SECTION_VIS_ALL);
 			pRenderPipeline->updateVisibility();
-			pRenderPipeline->endFrame();
+			Core_PEndSection(PERF_SECTION_VIS_ALL);
 
+			Core_PStartSection(PERF_SECTION_RENDER_PRESENT);
+			pRenderPipeline->endFrame();
+			Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
+
+			Core_PStartSection(PERF_SECTION_RENDER);
 			pRenderContext->getThreadContext()->beginFrame();
 			pRenderPipeline->renderFrame();
 			pRenderContext->getThreadContext()->endFrame();
+			Core_PEndSection(PERF_SECTION_RENDER);
 
 			mem_release(pRenderPipeline);
 		}

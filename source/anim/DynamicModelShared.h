@@ -29,6 +29,7 @@ public:
 	void render(UINT uSkin, UINT uLod, const float4_t &vColor, bool isTransparent);
 
 	void initGPUresources();
+	bool isReady() const;
 
 	bool hasTransparentSubsets(UINT uSkin, UINT uLod);
 	IXMaterial* getTransparentMaterial(UINT uSkin, UINT uLod);
@@ -43,8 +44,8 @@ protected:
 	void buildPSPs();
 
 protected:
-	UINT m_uRefCount = 0;
-	IXResourceModelStatic *m_pResource;
+	UINT m_uRefCount = 1;
+	IXResourceModelStatic *m_pResource = NULL;
 
 	IGXRenderBuffer **m_ppRenderBuffer = NULL;
 	IGXIndexBuffer **m_ppIndexBuffer = NULL;
@@ -64,7 +65,7 @@ protected:
 	UINT m_uSkinCount = 0;
 	bool *m_isTransparent = NULL; //!< По количеству скинов, истина если есть прозрачные материалы в любом сабсете
 
-	XPT_TOPOLOGY m_topology;
+	XPT_TOPOLOGY m_topology = XPT_TRIANGLELIST;
 
 	struct physbox_s
 	{

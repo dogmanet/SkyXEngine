@@ -6,6 +6,50 @@ See the license in LICENSE
 
 #include "SkyBox.h"
 
+class CRFarCvarListener: public IEventListener<XEventCvarChanged>
+{
+public:
+	CRFarCvarListener(IXCore *pCore, CSkyBox *pSkyBox):
+		m_pCore(pCore),
+		m_pSkyBox(pSkyBox)
+	{
+	}
+
+	virtual void onEvent(const XEventCvarChanged *pEvent)
+	{
+		static const float *r_far = m_pCore->getPCVarFloat("r_far");
+		if(pEvent->pCvar == r_far)
+		{
+			m_pSkyBox->updateBuffers();
+		}
+	}
+
+private:
+	CSkyBox *m_pSkyBox;
+	IXCore *m_pCore;
+};
+
+//##########################################################################
+
+CSkyBox::CSkyBox(IXCore *pCore):
+	m_pCore(pCore)
+{
+	m_pRFarCvarListener = new CRFarCvarListener(m_pCore, this);
+	m_pCore->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID)->addListener(m_pRFarCvarListener);
+}
+
+CSkyBox::~CSkyBox()
+{
+	m_pCore->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID)->removeListener(m_pRFarCvarListener);
+	mem_delete(m_pRFarCvarListener);
+
+	mem_release(m_pSky1);
+	mem_release(m_pSky2);
+	mem_release(m_pIndeces);
+	mem_release(m_pRenderBuffer);
+
+	mem_release(m_pVertexDeclarationSkyBox);
+}
 
 void CSkyBox::setDevice(IGXDevice *pDevice)
 {
@@ -22,31 +66,8 @@ void CSkyBox::setDevice(IGXDevice *pDevice)
 
 		m_pVertexDeclarationSkyBox = m_pDevice->createVertexDeclaration(layoutskybox);
 
-		//! @todo fix that! r_far cvar
-		float fFar = 800.0f * 0.57735f;
-
-
-		float X = fFar;
-		float Y = fFar;
-		float Z = fFar;
-
-		CSkyBoxVertex tmpVertices[] = {
-			CSkyBoxVertex(X, Y, Z, 1.0f, 1.0f, 1.0f),
-			CSkyBoxVertex(-X, Y, Z, -1.0f, 1.0f, 1.0f),
-			CSkyBoxVertex(X, -Y, Z, 1.0f, -1.0f, 1.0f),
-
-			CSkyBoxVertex(X, Y, -Z, 1.0f, 1.0f, -1.0f),
-			CSkyBoxVertex(-X, -Y, Z, -1.0f, -1.0f, 1.0f),
-			CSkyBoxVertex(X, -Y, -Z, 1.0f, -1.0f, -1.0f),
-
-			CSkyBoxVertex(-X, Y, -Z, -1.0f, 1.0f, -1.0f),
-			CSkyBoxVertex(-X, -Y, -Z, -1.0f, -1.0f, -1.0f)
-		};
-
-		IGXVertexBuffer *pVertices = m_pDevice->createVertexBuffer(8 * sizeof(CSkyBoxVertex), GXBUFFER_USAGE_STATIC, tmpVertices);
-		m_pRenderBuffer = m_pDevice->createRenderBuffer(1, &pVertices, m_pVertexDeclarationSkyBox);
-		mem_release(pVertices);
-
+		updateBuffers();
+		
 		WORD indices_tmp[] =
 		{
 			4, 1, 0,
@@ -82,19 +103,50 @@ void CSkyBox::setDevice(IGXDevice *pDevice)
 void CSkyBox::setMaterialSystem(IXMaterialSystem *pMaterialSystem)
 {
 	m_pMaterialSystem = pMaterialSystem;
+	XVertexFormatHandler *pFormat = m_pMaterialSystem->getVertexFormat("xSky");
+	m_pVertexShaderHandler = m_pMaterialSystem->registerVertexShader(pFormat, "base/skybox.vs");
 }
 
+void CSkyBox::updateBuffers()
+{
+	mem_release(m_pRenderBuffer);
+
+	static const float * r_far = m_pCore->getPCVarFloat("r_far");
+
+	float fFar = *r_far * 0.57735f;
+
+
+	float X = fFar;
+	float Y = fFar;
+	float Z = fFar;
+
+	CSkyBoxVertex tmpVertices[] = {
+		CSkyBoxVertex(X, Y, Z, 1.0f, 1.0f, 1.0f),
+		CSkyBoxVertex(-X, Y, Z, -1.0f, 1.0f, 1.0f),
+		CSkyBoxVertex(X, -Y, Z, 1.0f, -1.0f, 1.0f),
+
+		CSkyBoxVertex(X, Y, -Z, 1.0f, 1.0f, -1.0f),
+		CSkyBoxVertex(-X, -Y, Z, -1.0f, -1.0f, 1.0f),
+		CSkyBoxVertex(X, -Y, -Z, 1.0f, -1.0f, -1.0f),
+
+		CSkyBoxVertex(-X, Y, -Z, -1.0f, 1.0f, -1.0f),
+		CSkyBoxVertex(-X, -Y, -Z, -1.0f, -1.0f, -1.0f)
+	};
+
+	IGXVertexBuffer *pVertices = m_pDevice->createVertexBuffer(8 * sizeof(CSkyBoxVertex), GXBUFFER_USAGE_STATIC, tmpVertices);
+	m_pRenderBuffer = m_pDevice->createRenderBuffer(1, &pVertices, m_pVertexDeclarationSkyBox);
+	mem_release(pVertices);
+}
 
 void CSkyBox::setTexture(const char *szTexture)
 {
 	assert(m_pMaterialSystem);
 	assert(szTexture);
 	
+	IXMaterial *pSky = NULL;
+	m_pMaterialSystem->loadMaterial(szTexture, &pSky, "Sky");
 	mem_release(m_pSky1);
-	XSHADER_DEFAULT_DESC shDesc;
-	shDesc.szFilePS = "sky_box.ps";
-	shDesc.szFileVS = "sky_box.vs";
-	m_pMaterialSystem->loadMaterial(szTexture, &m_pSky1, &shDesc);
+	m_pSky1 = pSky;
 
 	if(!m_pSky1)
 	{
@@ -164,9 +216,10 @@ void CSkyBox::render()
 	{
 		return;
 	}
+	m_pSky1->AddRef();
 
 	float4x4 World = SMMatrixTranspose(m_mMatRotation/* * SMMatrixTranslation(pos->x, pos->y, pos->z)*/);
-
+	m_pMaterialSystem->bindVS(m_pVertexShaderHandler);
 	m_pMaterialSystem->bindMaterial(m_pSky1);
 #if 0
 	if (/*m_isChangingMainTex*/m_isChanging)
@@ -195,6 +248,7 @@ void CSkyBox::render()
 	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
 	pCtx->drawIndexed(8, 12, 0, 0);
 
+	m_pSky1->Release();
 	//SGCore_ShaderUnBind();
 };
 

@@ -15,14 +15,10 @@ namespace gui
 	class CTexture;
 	class IEvent;
 
-	class IDesktop
+	class IDesktop: public IXUnknown
 	{
 	public:
-		virtual ~IDesktop()
-		{
-		}
-
-		virtual void loadFromFile(const WCHAR * str) = 0;
+		virtual void loadFromFile(const WCHAR* str) = 0;
 
 		virtual void setWidth(UINT w) = 0;
 		virtual void setHeight(UINT h) = 0;
@@ -30,19 +26,17 @@ namespace gui
 
 		virtual void render(float fTimeDelta, bool bPresent=true) = 0;
 
-		virtual const CTexture * getTexture() = 0;
+		virtual const CTexture* getTexture() = 0;
 
 		virtual void dispatchEvent(IEvent ev) = 0;
 
-		virtual dom::IDOMdocument * getDocument() = 0;
+		virtual dom::IDOMdocument* getDocument() = 0;
 
-		virtual void requestFocus(dom::IDOMnode * pNode) = 0;
+		virtual void requestFocus(dom::IDOMnode *pNode) = 0;
 
-		virtual dom::IDOMnode * getFocus() = 0;
+		virtual dom::IDOMnode* getFocus() = 0;
 
-		virtual const dom::IDOMnodeCollection & createFromText(const StringW & html) = 0;
-
-		virtual void release() = 0;
+		virtual const dom::IDOMnodeCollection& createFromText(const StringW &html) = 0;
 
 		virtual float getParallaxFactor() = 0;
 	};

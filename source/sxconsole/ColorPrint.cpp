@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -36,7 +36,7 @@ void ColorPrint::textAttr(WORD attr)
 
 void ColorPrint::textAttr(AnsiColor text, AnsiColor background)
 {
-	if(text > 0x0f || background > 0x0f)
+	if(text > 0x0F || background > 0x0F)
 	{
 		return;
 	}

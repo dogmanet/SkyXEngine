@@ -141,7 +141,7 @@ SX_LIB_API ID Core_MGetThreadID();
 //! получить количество потоков
 SX_LIB_API int Core_MGetThreadCount();
 
-
+#if 0
 class IParallelForBody
 {
 public:
@@ -149,6 +149,7 @@ public:
 
 	virtual void forLoop(int iStart, int iEnd) const = 0;
 };
+#endif
 
 //! запускает в параллельную обработку pBody
 SX_LIB_API ID Core_MForLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize = 0);
@@ -166,7 +167,7 @@ SX_LIB_API void Core_MWaitFor(ID id);
 struct CPerfRecord
 {
 	int m_iDepth;
-	std::chrono::system_clock::time_point m_time;
+	std::chrono::high_resolution_clock::time_point m_time;
 	ID m_idSection;
 	bool m_isEntry;
 };
@@ -184,9 +185,9 @@ enum PERF_SECTION
 	PERF_SECTION_AMBIENT_SND_UPDATE, // 8
 	PERF_SECTION_MATSORT_UPDATE, // 9
 	PERF_SECTION_OC_REPROJECTION, // A
-	PERF_SECTION_VIS_CAMERA, // B
+	PERF_SECTION_VIS_ALL, // B
 	PERF_SECTION_RENDER, // C
-	PERF_SECTION_SML_UPDATE, // D
+	PERF_SECTION_CORE_UPDATE, // D
 	PERF_SECTION_SHADOW_UPDATE, // E
 	PERF_SECTION_MRT, // F
 	PERF_SECTION_LIGHTING, // G
@@ -226,9 +227,9 @@ static const char *g_szPerfSectionName[] = {
 	"Ambient sound update",
 	"Matsort update",
 	"OC reprojection",
-	"Vis camera",
+	"Vis all",
 	"Render overall",
-	"SML update",
+	"Core update",
 	"Shadow update",
 	"Render MRT",
 	"Render lighting",
@@ -470,24 +471,67 @@ SX_LIB_API void Core_0ConsoleExecCmd(const char * format, ...); //!< Добав�
 
 SX_LIB_API UINT_PTR Core_ConsoleGetOutHandler();
 
+class COutPtr
+{
+	friend void Core_SetOutPtr();
+	COutPtr()
+	{
+		UINT_PTR sock = Core_ConsoleGetOutHandler();
+		if(sock == ~0)
+		{
+			return;
+		}
+		int hOut = _open_osfhandle(sock, O_RDONLY | O_RDWR | O_WRONLY | _O_APPEND);
+		m_fOut = ::_fdopen(_dup(hOut), "a+");
+		::setvbuf(m_fOut, NULL, _IONBF, 0);
+
+#ifdef _MSC_VER
+		if(_fileno(stdout) < 0)
+		{
+			char szPipename[255];
+			HANDLE hPipe = NULL;
+			{
+				sprintf(szPipename, "\\\\.\\pipe\\SkyXEngineConsoleStdout-%u-%u", GetCurrentProcessId(), GetCurrentThreadId());
+				hPipe = CreateNamedPipe(szPipename, PIPE_ACCESS_DUPLEX, PIPE_NOWAIT | PIPE_READMODE_BYTE, PIPE_UNLIMITED_INSTANCES, 0, 0, 0, NULL);
+				freopen(szPipename, "w", stdout);
+				_dup2(_fileno(m_fOut), _fileno(stdout));
+				CloseHandle(hPipe);
+			}
+
+			{
+				sprintf(szPipename, "\\\\.\\pipe\\SkyXEngineConsoleStderr-%u-%u", GetCurrentProcessId(), GetCurrentThreadId());
+				hPipe = CreateNamedPipe(szPipename, PIPE_ACCESS_DUPLEX, PIPE_NOWAIT | PIPE_READMODE_BYTE, PIPE_UNLIMITED_INSTANCES, 0, 0, 0, NULL);
+				freopen(szPipename, "w", stderr);
+				_dup2(_fileno(m_fOut), _fileno(stderr));
+				CloseHandle(hPipe);
+			}
+		}
+		else
+		{
+#endif
+			_dup2(_fileno(m_fOut), _fileno(stdout));
+			_dup2(_fileno(m_fOut), _fileno(stderr));
+#ifdef _MSC_VER
+	}
+#endif
+		::setvbuf(stdout, NULL, _IONBF, 0);
+		::setvbuf(stderr, NULL, _IONBF, 0);
+		//close(hOut);
+	}
+	~COutPtr()
+	{
+		fclose(m_fOut);
+	}
+
+	FILE *m_fOut;
+};
+
 /*! Устанавливает поток вывода. Для работы консоли
 	\warning Должна быть инлайнова, чтобы выполняться в контексте вызывающей библиотеки
 */
 __inline void Core_SetOutPtr()
 {
-	UINT_PTR sock = Core_ConsoleGetOutHandler();
-	if(sock == ~0)
-	{
-		return;
-	}
-	int hOut = _open_osfhandle(sock, O_RDONLY | O_RDWR | O_WRONLY | _O_APPEND);
-	FILE * fOut = ::_fdopen(hOut, "a+");
-	::setvbuf(fOut, NULL, _IONBF, 0);
-
-	*stdout = *fOut;
-	*stderr = *fOut;
-
-	fOut->_file = 1;
+	static COutPtr s_optr;
 }
 
 //!@}
@@ -498,10 +542,11 @@ __inline void Core_SetOutPtr()
 //! Флаги кваров
 enum CVAR_FLAG
 {
-	FCVAR_NONE     = 0x00, //!< нет
-	FCVAR_CHEAT    = 0x01, //!< Изменение этой переменной с дефолтного значения разрешено только в режиме разработки
-	FCVAR_READONLY = 0x02,  //!< Только для чтения
-	FCVAR_NOTIFY   = 0x04  //!< Оповещать об изменениях
+	FCVAR_NONE       = 0x00, //!< нет
+	FCVAR_CHEAT      = 0x01, //!< Изменение этой переменной с дефолтного значения разрешено только в режиме разработки
+	FCVAR_READONLY   = 0x02,  //!< Только для чтения
+	FCVAR_NOTIFY_OLD = 0x04, //!< Оповещать об изменениях
+	FCVAR_NOTIFY     = 0x08  //!< Оповещать об изменениях
 };
 
 //! Регистрирует строковую переменную

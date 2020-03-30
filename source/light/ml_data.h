@@ -21,36 +21,8 @@ namespace light_data
 {
 	void Init();
 
-	void ReCalcSize();
-
-	extern IGXContext *pDXDevice;
+	extern IGXDevice *pDXDevice;
 	
-	//размер текстуры глубины дл¤ локальных источников света
-	extern float2_t vSizeTexDepthGlobal;
-
-	//размер текстуры глубины дл¤ локальных источников света
-	extern float2_t vSizeTexDepthLocal;
-
-	//дистанции дл¤ 4 сплитов дл¤ глоальных теней PSSM
-	extern float4_t vDistForPSSM;
-
-	//коэфициент размера текстур дл¤ карт глубин локальных источников света
-	extern float fCoefSizeDepthMapForLocal;
-
-	//коэфициент размера текстур дл¤ карт глубин глобального источника света
-	extern float fCoefSizeDepthMapForGlobal;
-
-	extern float2_t vSizeTexReflection;
-
-	extern bool isHalfGenPCFShadowLocal;
-
-	//ориентаци¤ и верхний вектор дл¤ рендера в кубическую текстуру
-	extern float3 vOrientedCube[6];
-	extern float3 vUpVectorsCube[6];
-
-	extern float4x4 mRefProjPlane;
-	extern float4x4 mRefProjCube;
-
 	extern IGXSamplerState *pSamplerPointClamp;
 	extern IGXSamplerState *pSamplerLinearClamp;
 	extern IGXSamplerState *pSamplerPointWrap;
@@ -137,11 +109,6 @@ namespace light_data
 
 			extern ID idLightBound;
 		};
-	};
-
-	namespace texture_id
-	{
-		extern ID idNoiseTex;
 	};
 };
 

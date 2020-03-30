@@ -71,13 +71,13 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_71A_IncludePath);../../../source</IncludePath>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath)</LibraryPath>
     <SourcePath>../../../source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_71A_IncludePath);../../../source</IncludePath>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source</IncludePath>
     <LibraryPath>../../../libs64;$(LibraryPath)</LibraryPath>
     <SourcePath>../../../source;$(SourcePath)</SourcePath>
     <LinkIncremental>false</LinkIncremental>
@@ -86,12 +86,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/</OutDir>
-    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_71A_IncludePath);../../../source</IncludePath>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source</IncludePath>
     <LibraryPath>../../../libs;$(LibraryPath)</LibraryPath>
     <SourcePath>../../../source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_71A_IncludePath);../../../source</IncludePath>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source</IncludePath>
     <LibraryPath>../../../libs64;$(LibraryPath)</LibraryPath>
     <SourcePath>../../../source;$(SourcePath)</SourcePath>
     <LinkIncremental>false</LinkIncremental>

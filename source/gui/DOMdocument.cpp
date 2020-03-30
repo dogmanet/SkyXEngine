@@ -15,31 +15,17 @@ namespace gui
 {
 	namespace dom
 	{
-		IDOMnode * CDOMdocument::createNode(const wchar_t * tag)
+		IDOMnode* CDOMdocument::createNode(const wchar_t *tag)
 		{
-			/*if(_wcsicmp(tag, L"text") == 0)
-			{
-			return(new IDOMnodeText());
-			}
-			else
-			{*/
 			return(IDOMnodeTag::createNode(tag));
-			/*}*/
 		}
 
-		IDOMnode * CDOMdocument::createNode(UINT nid)
+		IDOMnode* CDOMdocument::createNode(UINT nid)
 		{
-			/*if(nid == 0)
-			{
-			return(new IDOMnodeText());
-			}
-			else
-			{*/
 			return(CDOMnode::createNode(nid));
-			/*}*/
 		}
 
-		void CDOMdocument::setRootNode(IDOMnode * pNode)
+		void CDOMdocument::setRootNode(IDOMnode *pNode)
 		{
 			mem_delete(m_pRootNode);
 			m_pRootNode = pNode;
@@ -63,17 +49,17 @@ namespace gui
 			CDOMdocument::buildIndexFunc(this, m_pRootNode);
 		}
 
-		void CDOMdocument::indexAdd(IDOMnode * pNode)
+		void CDOMdocument::indexAdd(IDOMnode *pNode)
 		{
 			indexBuild();
 		}
 
-		void CDOMdocument::indexRemove(IDOMnode * pNode)
+		void CDOMdocument::indexRemove(IDOMnode *pNode)
 		{
 			indexBuild();
 		}
 
-		UINT CDOMdocument::getIndexForIdString(const StringW & id)
+		UINT CDOMdocument::getIndexForIdString(const StringW &id)
 		{
 			if(id.length() == 0)
 			{
@@ -91,7 +77,7 @@ namespace gui
 			}
 		}
 
-		UINT CDOMdocument::getIndexForClassString(const StringW & id)
+		UINT CDOMdocument::getIndexForClassString(const StringW &id)
 		{
 			if(id.length() == 0)
 			{
@@ -109,12 +95,12 @@ namespace gui
 			}
 		}
 
-		UINT CDOMdocument::getIndexForTagString(const StringW & id)
+		int CDOMdocument::getIndexForTagString(const StringW &id)
 		{
 			return(CDOMnode::getNodeIdByName(id));
 		}
 
-		void CDOMdocument::buildIndexFunc(IDOMdocument * _doc, IDOMnode * __node)
+		void CDOMdocument::buildIndexFunc(IDOMdocument *_doc, IDOMnode *__node)
 		{
 			return;
 			CDOMdocument * doc = (CDOMdocument*)_doc;
@@ -165,7 +151,7 @@ namespace gui
 			}
 		}
 
-		IDOMnode * CDOMdocument::getElementById(const StringW & id)
+		IDOMnode* CDOMdocument::getElementById(const StringW &id)
 		{
 			if(m_IndexStringById.KeyExists(id))
 			{
@@ -174,7 +160,7 @@ namespace gui
 			return(NULL);
 		}
 
-		IDOMnode * CDOMdocument::getElementById(UINT iid)
+		IDOMnode* CDOMdocument::getElementById(UINT iid)
 		{
 			if(m_IndexById.size() > iid)
 			{
@@ -183,7 +169,7 @@ namespace gui
 			return(NULL);
 		}
 
-		const IDOMnodeCollection * CDOMdocument::getElementsByClass(const StringW & id)
+		const IDOMnodeCollection* CDOMdocument::getElementsByClass(const StringW &id)
 		{
 			if(m_IndexStringByClass.KeyExists(id))
 			{
@@ -192,7 +178,7 @@ namespace gui
 			return(NULL);
 		}
 
-		const IDOMnodeCollection * CDOMdocument::getElementsByClass(UINT cid)
+		const IDOMnodeCollection* CDOMdocument::getElementsByClass(UINT cid)
 		{
 			if(m_IndexByClass.size() > cid)
 			{
@@ -201,12 +187,12 @@ namespace gui
 			return(NULL);
 		}
 
-		void CDOMdocument::setDesktop(IDesktop * pdp)
+		void CDOMdocument::setDesktop(IDesktop *pdp)
 		{
 			m_pDesktop = (CDesktop*)pdp;
 		}
 
-		const IDOMnodeCollection * CDOMdocument::getElementsByPseudoClass(UINT _cid)
+		const IDOMnodeCollection* CDOMdocument::getElementsByPseudoClass(UINT _cid)
 		{
 			UINT cid = _log2(_cid);
 			if(m_IndexByPseudoClass.size() > cid)
@@ -216,13 +202,13 @@ namespace gui
 			return(NULL);
 		}
 
-		const IDOMnodeCollection * CDOMdocument::getElementsByTag(const StringW & id)
+		const IDOMnodeCollection* CDOMdocument::getElementsByTag(const StringW &id)
 		{
 			UINT _nid = CDOMnode::getNodeIdByName(id);
 			return(getElementsByTag(_nid));
 		}
 
-		const IDOMnodeCollection * CDOMdocument::getElementsByTag(UINT tid)
+		const IDOMnodeCollection* CDOMdocument::getElementsByTag(UINT tid)
 		{
 			if(m_IndexByTagName.size() > tid)
 			{
@@ -238,7 +224,7 @@ namespace gui
 
 		void CDOMdocument::loadStyles()
 		{
-			const IDOMnodeCollection * nodes = getElementsByTag(CDOMnode::getNodeIdByName(L"link"));
+			const IDOMnodeCollection *nodes = getElementsByTag(CDOMnode::getNodeIdByName(L"link"));
 			if(nodes)
 			{
 				UINT c = nodes->size();
@@ -270,12 +256,12 @@ namespace gui
 			m_IndexById[id] = NULL;
 		}
 
-		void CDOMdocument::indexSetId(UINT id, IDOMnode * pNode)
+		void CDOMdocument::indexSetId(UINT id, IDOMnode *pNode)
 		{
 			m_IndexById[id] = pNode;
 		}
 
-		void CDOMdocument::indexUnsetClass(UINT id, IDOMnode * pNode)
+		void CDOMdocument::indexUnsetClass(UINT id, IDOMnode *pNode)
 		{
 			IDOMnodeCollection * els = &m_IndexByClass[id];
 			for(UINT i = 0; i < els->size(); i++)
@@ -288,12 +274,12 @@ namespace gui
 			}
 		}
 
-		void CDOMdocument::indexSetClass(UINT id, IDOMnode * pNode)
+		void CDOMdocument::indexSetClass(UINT id, IDOMnode *pNode)
 		{
 			m_IndexByClass[id].push_back(pNode);
 		}
 
-		void CDOMdocument::indexUnsetPseudoClass(UINT _id, IDOMnode * pNode)
+		void CDOMdocument::indexUnsetPseudoClass(UINT _id, IDOMnode *pNode)
 		{
 			UINT id = _log2(_id);
 			IDOMnodeCollection * els = &m_IndexByPseudoClass[id];
@@ -307,15 +293,15 @@ namespace gui
 			}
 		}
 
-		void CDOMdocument::indexSetPseudoClass(UINT _id, IDOMnode * pNode)
+		void CDOMdocument::indexSetPseudoClass(UINT _id, IDOMnode *pNode)
 		{
 			UINT id = _log2(_id);
 			m_IndexByPseudoClass[id].push_back(pNode);
 		}
 
-		void CDOMdocument::indexUnsetNode(CDOMnode * pNode)
+		void CDOMdocument::indexUnsetNode(CDOMnode *pNode)
 		{
-			IDOMnodeCollection * els = &m_IndexByTagName[pNode->m_iNodeId];
+			IDOMnodeCollection *els = &m_IndexByTagName[pNode->m_iNodeId];
 			for(UINT i = 0; i < els->size(); i++)
 			{
 				if((*els)[i] == pNode)
@@ -326,7 +312,7 @@ namespace gui
 			}
 		}
 
-		void CDOMdocument::IndexSetNode(CDOMnode * pNode)
+		void CDOMdocument::IndexSetNode(CDOMnode *pNode)
 		{
 			m_IndexByTagName[pNode->m_iNodeId].push_back(pNode);
 		}
@@ -366,7 +352,7 @@ namespace gui
 					}
 				}
 			}
-			if(sel->dom_tag > 0)
+			if(sel->dom_tag >= 0)
 			{
 				const IDOMnodeCollection * c = getElementsByTag(sel->dom_tag);
 				if(c)
@@ -475,7 +461,7 @@ namespace gui
 			}
 
 
-			if(sel->dom_tag > 0)
+			if(sel->dom_tag >= 0)
 			{
 				for(UINT k = 0; k < current.size(); k++)
 				{
@@ -651,7 +637,7 @@ namespace gui
 			for(UINT i = 0; i < icount; i++)
 			{
 				css = m_pCSS->m_styleOrder[i];
-				if(css->isEnabledForWidth(GetGUI()->getScreenWidth()))
+				if(css->isEnabledForWidth(m_pDesktopStack->getScreenWidth()))
 				{
 					UINT iRuleCount = css->m_pRules.size();
 					css::ICSSstyle * pStyle;
@@ -712,8 +698,8 @@ namespace gui
 			mem_delete(m_pRTroot);
 			m_pRTroot = render::IRenderFrame::createNode((CDOMnode*)m_pRootNode, NULL);
 			m_pRTroot->onCreated();
-			m_pRTroot->setWidth(GetGUI()->getScreenWidth());
-			m_pRTroot->setHeight(GetGUI()->getScreenHeight());
+			m_pRTroot->setWidth(m_pDesktopStack->getScreenWidth());
+			m_pRTroot->setHeight(m_pDesktopStack->getScreenHeight());
 			m_pRTroot->layout();
 			//m_pRTroot->DebugPrint();
 		}
@@ -726,9 +712,9 @@ namespace gui
 
 		void CDOMdocument::render()
 		{
-			CTextureManager::bindTexture(NULL);
-			m_pRTroot->render(0);
 			m_isDirty = false;
+			m_pDesktopStack->getTextureManager()->bindTexture(NULL);
+			m_pRTroot->render(0);
 		}
 
 		IDOMnode * CDOMdocument::getElementByXY(int x, int y, bool sendEnterLeave)
@@ -742,7 +728,7 @@ namespace gui
 			return(node);
 		}
 
-		void CDOMdocument::addReflowItem(render::IRenderFrame * rf, bool forceParent)
+		void CDOMdocument::addReflowItem(render::IRenderFrame *rf, bool forceParent)
 		{
 #if 1
 			while(rf->getParent() && !(rf->getNode() && (rf->getNode()->getStyle()->position->getInt() == css::ICSSproperty::POSITION_ABSOLUTE || rf->getNode()->getStyle()->position->getInt() == css::ICSSproperty::POSITION_FIXED)))
@@ -803,8 +789,8 @@ namespace gui
 				bool bHardReset = false;
 				if(!pLayoutBlock->getParent())
 				{
-					pLayoutBlock->setWidth(GetGUI()->getScreenWidth());
-					pLayoutBlock->setHeight(GetGUI()->getScreenHeight());
+					pLayoutBlock->setWidth(m_pDesktopStack->getScreenWidth());
+					pLayoutBlock->setHeight(m_pDesktopStack->getScreenHeight());
 					bHardReset = true;
 				}
 				pLayoutBlock->resetLayout(true, bHardReset);
@@ -857,7 +843,7 @@ namespace gui
 			return(ret);
 		}
 
-		IDOMnode * CDOMdocument::getRootNode()
+		IDOMnode* CDOMdocument::getRootNode()
 		{
 			return(m_pRootNode);
 		}
@@ -884,7 +870,7 @@ namespace gui
 			m_isDirty = true;
 		}
 
-		const IDOMnodeCollection & CDOMdocument::createFromText(const StringW & html)
+		const IDOMnodeCollection& CDOMdocument::createFromText(const StringW & html)
 		{
 			IHTMLparser p;
 			p.setDocument(this);
@@ -903,9 +889,9 @@ namespace gui
 			return(m_cTmpNodes);
 		}
 
-		//##########################################################################
+//##########################################################################
 
-		void CDOMnode::setText(const StringW & text, BOOL build)
+		void CDOMnode::setText(const StringW &text, BOOL build)
 		{
 			if(m_vChilds.size())
 			{
@@ -924,7 +910,7 @@ namespace gui
 			}
 		}
 
-		const StringW & CDOMnode::getText()
+		const StringW& CDOMnode::getText()
 		{
 			if(m_vChilds.size() && m_vChilds[0]->isTextNode())
 			{
@@ -960,7 +946,7 @@ namespace gui
 			}
 			if(cmd.length())
 			{
-				GetGUI()->execCallback(cmd, &ev);
+				m_pDocument->getDesktopStack()->execCallback(cmd, &ev);
 			}
 #undef GEVT_DPTC
 
@@ -996,9 +982,9 @@ namespace gui
 			{
 				return;
 			}
-			if(this->m_pRenderFrame->m_pScrollBarVert)
+			if(m_pRenderFrame->m_pScrollBarVert)
 			{
-				this->m_pRenderFrame->m_pScrollBarVert->dispatchEvent(ev);
+				m_pRenderFrame->m_pScrollBarVert->dispatchEvent(ev);
 			}
 			switch(ev.type)
 			{
@@ -1322,12 +1308,12 @@ namespace gui
 						}
 						if(ev.key == KEY_ENTER)
 						{
-							IEvent ev;
-							ev.clientX = ev.clientY = 0;
-							ev.type = GUI_EVENT_TYPE_CLICK;
-							ev.key = KEY_ENTER;
-							ev.target = this;
-							dispatchEvent(ev);
+							IEvent ev2;
+							ev2.clientX = ev2.clientY = 0;
+							ev2.type = GUI_EVENT_TYPE_CLICK;
+							ev2.key = KEY_ENTER;
+							ev2.target = this;
+							dispatchEvent(ev2);
 						}
 					}
 				}

@@ -269,5 +269,8 @@
     <ClInclude Include="..\..\..\source\xcommon\IXTextureProxy.h">
       <Filter>Header\xcommon</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IXConfig.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

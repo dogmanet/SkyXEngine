@@ -31,12 +31,12 @@ DEFINE_ENUM_FLAG_OPERATORS(XWINDOW_FLAG);
 
 struct XWINDOW_DESC
 {
-	int iSizeX;
-	int iSizeY;
+	int iSizeX = 800;
+	int iSizeY = 600;
 	int iPosX = XCW_USEDEFAULT;
 	int iPosY = XCW_USEDEFAULT;
 	XWINDOW_FLAG flags = XWF_DEFAULT;
-	const char *szTitle;
+	const char *szTitle = NULL;
 };
 
 //#############################################################################
@@ -77,6 +77,10 @@ class IXWindowCallback
 public:
 	virtual INT_PTR XMETHODCALLTYPE onMessage(UINT msg, WPARAM wParam, LPARAM lParam, IXWindow *pWindow) = 0;
 };
+
+
+// {DD8E8BED-5471-44E8-A7E8-F4135BFD76B6}
+#define IXWINDOWSYSTEM_GUID DEFINE_XGUID(0xdd8e8bed, 0x5471, 0x44e8, 0xa7, 0xe8, 0xf4, 0x13, 0x5b, 0xfd, 0x76, 0xb6)
 
 class IXWindowSystem: public IXUnknown
 {

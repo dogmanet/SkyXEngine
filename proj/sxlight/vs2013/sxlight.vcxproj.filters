@@ -4,22 +4,10 @@
     <ClCompile Include="..\..\..\source\light\ml_data.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\light\shadow.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\light\sxlight.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\light\light.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\common\string.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\common\file_utils.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\common\string_utils.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\light\sxlight_dll.cpp">
@@ -41,9 +29,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\source\light\shadow.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\light\sxlight.h">
       <Filter>Headers</Filter>
     </ClInclude>
@@ -51,15 +36,6 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\light\ml_data.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\common\string.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\common\file_utils.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\common\string_utils.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\light\IXLight.h">

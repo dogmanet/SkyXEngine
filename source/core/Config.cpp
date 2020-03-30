@@ -495,7 +495,7 @@ int CConfig::save()
 		{
 			if(*s_pbDebug)
 			{
-				printf(COLOR_YELLOW " modified" COLOR_RESET "\n", i.first->c_str());
+				printf(COLOR_YELLOW " modified" COLOR_RESET "\n");
 			}
 			for(AssotiativeArray<CConfigString, CValue>::Iterator j = i.second->mValues.begin(); j; j++)
 			{
@@ -507,7 +507,7 @@ int CConfig::save()
 				{
 					if(*s_pbDebug)
 					{
-						printf(COLOR_YELLOW " modified" COLOR_RESET "\n", i.first->c_str());
+						printf(COLOR_YELLOW " modified" COLOR_RESET "\n");
 					}
 					if(i.second->native) // Write to BaseFile
 					{
@@ -534,7 +534,7 @@ int CConfig::save()
 				{
 					if(*s_pbDebug)
 					{
-						printf(COLOR_GRAY " not modified" COLOR_RESET "\n", i.first->c_str());
+						printf(COLOR_GRAY " not modified" COLOR_RESET "\n");
 					}
 				}
 			}
@@ -543,7 +543,7 @@ int CConfig::save()
 		{
 			if(*s_pbDebug)
 			{
-				printf(COLOR_GRAY " not modified" COLOR_RESET "\n", i.first->c_str());
+				printf(COLOR_GRAY " not modified" COLOR_RESET "\n");
 			}
 		}
 	}
@@ -660,6 +660,7 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 							if(!pF)
 							{
 								ErrorFile = name;
+								mem_delete_a(szData);
 								return -1;
 							}
 							fwrite(szData, 1, i, pF); // First file part, including key
@@ -668,6 +669,7 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 							//fwrite("\n", 1, 1, pF);
 							fwrite(&szData[j], 1, fl - j, pF);
 							fclose(pF);
+							mem_delete_a(szData);
 							return 0;
 						}
 						else // Skip current row
@@ -800,7 +802,7 @@ bool CConfig::keyExists(const char * section, const char * key)
 void CConfig::Release()
 {
 	this->clear();
-	mem_del(this);
+	delete this;
 }
 
 void CConfig::clear()
@@ -829,4 +831,61 @@ CConfigString CConfig::getIncludeName(int i)
 		return(m_vIncludes[i].name);
 	}
 	return("");
+}
+
+//#############################################################################
+
+CXConfig::CXConfig()
+{
+	m_pConfig = new CConfig();
+}
+CXConfig::~CXConfig()
+{
+	mem_delete(m_pConfig);
+}
+
+bool XMETHODCALLTYPE CXConfig::open(const char *szPath)
+{
+	return(m_pConfig->open(szPath) == 0);
+}
+bool XMETHODCALLTYPE CXConfig::save()
+{
+	return(m_pConfig->save() == 0);
+}
+
+const char* XMETHODCALLTYPE CXConfig::getKey(const char *szSection, const char *szKey)
+{
+	return(m_pConfig->getKey(szSection, szKey));
+}
+const char* XMETHODCALLTYPE CXConfig::getKeyName(const char *szSection, UINT uIndex)
+{
+	return(m_pConfig->getKeyName(szSection, uIndex));
+}
+const char* XMETHODCALLTYPE CXConfig::getSectionName(UINT uIndex)
+{
+	return(m_pConfig->getSectionName(uIndex));
+}
+void XMETHODCALLTYPE CXConfig::set(const char *szSection, const char *szKey, const char *szValue)
+{
+	return(m_pConfig->set(szSection, szKey, szValue));
+}
+UINT XMETHODCALLTYPE CXConfig::getSectionCount()
+{
+	return(m_pConfig->getSectionCount());
+}
+UINT XMETHODCALLTYPE CXConfig::getKeyCount()
+{
+	return(m_pConfig->getKeyCount());
+}
+UINT XMETHODCALLTYPE CXConfig::getKeyCount(const char *szSection)
+{
+	return(m_pConfig->getKeyCount(szSection));
+}
+bool XMETHODCALLTYPE CXConfig::sectionExists(const char *szSection)
+{
+	return(m_pConfig->sectionExists(szSection));
+}
+bool XMETHODCALLTYPE CXConfig::keyExists(const char *szSection, const char *szKey)
+{
+	return(m_pConfig->keyExists(szSection, szKey));
 }

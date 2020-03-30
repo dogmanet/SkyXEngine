@@ -107,7 +107,7 @@ CBaseEntity::~CBaseEntity()
 		{
 			if(pt->pData[i].type == PDF_STRING && !(pt->pData[i].flags & PDFF_INPUT))
 			{
-				const char * str = this->*((const char * ThisClass::*)pt->pData->pField);
+				const char * str = this->*((const char * ThisClass::*)pt->pData[i].pField);
 				if(str && str != estr)
 				{
 					delete[] str;
@@ -364,7 +364,10 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 
 			output_t *pOutput = &(this->*((output_t ThisClass::*)field->pField));
 			mem_delete_a(pOutput->pOutputs);
-			mem_delete_a(pOutput->pData);
+			{
+				char *pTmpData = (char*)pOutput->pData;
+				mem_delete_a(pTmpData);
+			}
 			pOutput->pData = str;
 			pOutput->pOutputs = new named_output_t[iConns];
 			pOutput->bDirty = true;
@@ -420,7 +423,7 @@ bool CBaseEntity::getKV(const char * name, char * out, int bufsize)
 		sprintf_s(out, bufsize, "%d", this->*((int ThisClass::*)field->pField));
 		break;
 	case PDF_FLAGS:
-		sprintf_s(out, bufsize, "%d", this->*((int ThisClass::*)field->pField) & 0xFFFF0000);
+		sprintf_s(out, bufsize, "%u", this->*((int ThisClass::*)field->pField) & 0xFFFF0000);
 		break;
 	case PDF_FLOAT:
 		sprintf_s(out, bufsize, "%f", this->*((float ThisClass::*)field->pField));
@@ -827,7 +830,7 @@ void CBaseEntity::broadcastMessage(const char * szInputName, bool bArg, float fR
 	inputdata_t inputData;
 	memset(&inputData, 0, sizeof(inputData));
 	inputData.type = PDF_BOOL;
-	inputData.parameter.f = bArg;
+	inputData.parameter.b = bArg;
 	broadcastMessage(szInputName, inputData, fRadius);
 }
 void CBaseEntity::broadcastMessage(const char * szInputName, const char *szArg, float fRadius)

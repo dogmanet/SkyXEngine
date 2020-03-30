@@ -8,7 +8,7 @@ See the license in LICENSE
 #include "ShaderPreprocessor.h"
 
 #define SX_SHADER_CACHE_MAGIC MAKEFOURCC('X', 'C', 'S', 'F') /*!< X Compiled Shader File*/
-#define SX_SHADER_CACHE_VERSION 3
+#define SX_SHADER_CACHE_VERSION 4
 
 //##########################################################################
 
@@ -125,10 +125,10 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 						{
 							for(UINT i = 0; i < uMacroCountFile; ++i)
 							{
-								uint8_t u8Len = 0;
-								pCacheFile->readBin(&u8Len, sizeof(u8Len));
-								char *szName = (char*)alloca(u8Len);
-								pCacheFile->readBin(szName, u8Len);
+								uint16_t u16Len = 0;
+								pCacheFile->readBin(&u16Len, sizeof(u16Len));
+								char *szName = (char*)alloca(u16Len);
+								pCacheFile->readBin(szName, u16Len);
 
 								if(strcmp(aMacro[i].szName, szName))
 								{
@@ -136,10 +136,10 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 									break;
 								}
 
-								u8Len = 0;
-								pCacheFile->readBin(&u8Len, sizeof(u8Len));
-								char *szDefinition = (char*)alloca(u8Len);
-								pCacheFile->readBin(szDefinition, u8Len);
+								u16Len = 0;
+								pCacheFile->readBin(&u16Len, sizeof(u16Len));
+								char *szDefinition = (char*)alloca(u16Len);
+								pCacheFile->readBin(szDefinition, u16Len);
 
 								if(strcmp(aMacro[i].szDefinition, szDefinition))
 								{
@@ -156,10 +156,10 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 							bool isValid = true;
 							for(UINT i = 0; i < uIncludeCount; ++i)
 							{
-								uint8_t u8Len = 0;
-								pCacheFile->readBin(&u8Len, sizeof(u8Len));
-								char *szName = (char*)alloca(u8Len);
-								pCacheFile->readBin(szName, u8Len);
+								uint16_t u16Len = 0;
+								pCacheFile->readBin(&u16Len, sizeof(u16Len));
+								char *szName = (char*)alloca(u16Len);
+								pCacheFile->readBin(szName, u16Len);
 
 								time_t tMod = 0;
 								pCacheFile->readBin(&tMod, sizeof(tMod));
@@ -347,13 +347,13 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 
 							for(UINT i = 0; i < uMacroCount; ++i)
 							{
-								uint8_t u8Len = (uint8_t)strlen(aMacro[i].szName) + 1;
-								pCacheFile->writeBin(&u8Len, sizeof(u8Len));
-								pCacheFile->writeBin(aMacro[i].szName, u8Len);
+								uint16_t u16Len = (uint16_t)strlen(aMacro[i].szName) + 1;
+								pCacheFile->writeBin(&u16Len, sizeof(u16Len));
+								pCacheFile->writeBin(aMacro[i].szName, u16Len);
 
-								u8Len = (uint8_t)strlen(aMacro[i].szDefinition) + 1;
-								pCacheFile->writeBin(&u8Len, sizeof(u8Len));
-								pCacheFile->writeBin(aMacro[i].szDefinition, u8Len);
+								u16Len = (uint16_t)strlen(aMacro[i].szDefinition) + 1;
+								pCacheFile->writeBin(&u16Len, sizeof(u16Len));
+								pCacheFile->writeBin(aMacro[i].szDefinition, u16Len);
 							}
 
 							uint32_t uIncludeCount = pPreprocessor->getIncludesCount();
@@ -363,7 +363,7 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 							++uIncludeCount;
 							pCacheFile->writeBin(&uIncludeCount, sizeof(uIncludeCount));
 
-							uint8_t uLen = (uint8_t)strlen(szFullPath) + 1;
+							uint16_t uLen = (uint16_t)strlen(szFullPath) + 1;
 							pCacheFile->writeBin(&uLen, sizeof(uLen));
 							pCacheFile->writeBin(szFullPath, uLen);
 
@@ -372,7 +372,7 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 
 							for(UINT i = 0; i < uIncludeCount - 1; ++i)
 							{
-								uLen = (uint8_t)strlen(pszIncludes[i]) + 1;
+								uLen = (uint16_t)strlen(pszIncludes[i]) + 1;
 								pCacheFile->writeBin(&uLen, sizeof(uLen));
 								pCacheFile->writeBin(pszIncludes[i], uLen);
 
@@ -413,7 +413,27 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 			}
 			pPreprocessor->reset();
 
+			if(!pGXShader)
+			{
+				LibReport(REPORT_MSG_LEVEL_WARNING, " ===== Compiled with: =====\n");
+				if(aMacro)
+				{
+					GXMacro *pMacro = aMacro;
+					while(pMacro->szName)
+					{
+						LibReport(REPORT_MSG_LEVEL_WARNING, " '" COLOR_CYAN "%s" COLOR_YELLOW "' = '" COLOR_LGREEN "%s" COLOR_YELLOW "'\n", pMacro->szName, pMacro->szDefinition);
+						++pMacro;
+					}
+				}
+				LibReport(REPORT_MSG_LEVEL_WARNING, " ==========================\n\n");
+			}
+
 			mem_release(pFile);
+		}
+
+		if(!pGXShader)
+		{
+			pPreprocessor->clearIncludeCache();
 		}
 	}
 	while(!pGXShader && MessageBoxA(NULL, "Unable to compile shader. Want to retry?", "Shader error", MB_OKCANCEL | MB_ICONSTOP) == IDOK);
@@ -433,8 +453,8 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 
 CShaderManager::CShaderManager()
 {
-
 	m_pPreprocessor = new CShaderPreprocessor(Core_GetIXCore()->getFileSystem());
+	m_pPreprocessor->addIncPath("shaders/");
 }
 
 CShaderManager::~CShaderManager()
@@ -512,6 +532,7 @@ void CShaderManager::reloadAll()
 
 	mem_delete(m_pPreprocessor);
 	m_pPreprocessor = new CShaderPreprocessor(Core_GetIXCore()->getFileSystem());
+	m_pPreprocessor->addIncPath("shaders/");
 
 	allLoad(true);
 }
@@ -685,11 +706,13 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, GXMacro *aMacro
 					iCountMacros = i;
 					break;
 				}
+				assert(i < SXGC_SHADER_COUNT_MACRO - 1);
 			}
 
 			for(int i = 0; i < iCountMacros; i++)
 			{
-				pShader->m_aMacros[i] = aMacros[i];
+				pShader->m_aMacros[i].szDefinition = strdup(aMacros[i].szDefinition);
+				pShader->m_aMacros[i].szName = strdup(aMacros[i].szName);
 			}
 
 			pShader->m_aMacros[iCountMacros].szName = 0;

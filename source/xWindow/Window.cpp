@@ -5,6 +5,23 @@
 #pragma comment(lib, "Dwmapi.lib")
 #endif
 
+struct WINCOMPATTRDATA
+{
+	DWORD attribute; // the attribute to query, see below
+	PVOID pData; // buffer to store the result
+	ULONG dataSize; // size of the pData buffer
+};
+
+struct ACCENTPOLICY
+{
+	int AccentState;
+	int AccentFlags;
+	int GradientColor;
+	int AnimationId;
+};
+
+typedef BOOL (*WINAPI FNPTRSetWindowCompositionAttribute)(HWND hwnd, WINCOMPATTRDATA* pAttrData);
+
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	CWindow *pWindow = (CWindow*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -13,6 +30,17 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 	{
 		switch(msg)
 		{
+		case WM_MOUSEWHEEL:
+			{
+				POINT mc;
+				mc.x = GET_X_LPARAM(lParam);
+				mc.y = GET_Y_LPARAM(lParam);
+				ScreenToClient(hWnd, &mc);
+
+				lParam = MAKELPARAM(mc.x, mc.y);
+			}
+			// no break!;
+
 		case WM_DESTROY:
 		case WM_CLOSE:
 		case WM_SYSKEYDOWN:
@@ -36,10 +64,11 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 		case WM_MBUTTONDBLCLK:
 		case WM_MBUTTONDOWN:
 		case WM_MBUTTONUP:
-		case WM_MOUSEWHEEL:
 		case WM_INPUT:
 		case WM_SETCURSOR:
 		case WM_MOUSEMOVE:
+		case WM_ENTERSIZEMOVE:
+		case WM_EXITSIZEMOVE:
 			return(pWindow->runCallback(msg, wParam, lParam));
 		}
 	}
@@ -51,7 +80,7 @@ CWindow::CWindow(HINSTANCE hInst, UINT uId, const XWINDOW_DESC *pWindowDesc, IXW
 	m_uId(uId),
 	m_pCallback(pCallback)
 {
-	assert(pCallback);
+	//assert(pCallback);
 
 	m_windowDesc = *pWindowDesc;
 	m_windowDesc.szTitle = NULL;
@@ -149,6 +178,25 @@ CWindow::CWindow(HINSTANCE hInst, UINT uId, const XWINDOW_DESC *pWindowDesc, IXW
 		dwmBlur.fEnable = TRUE;
 
 		DwmEnableBlurBehindWindow(m_hWnd, &dwmBlur);
+
+		ACCENTPOLICY policy = {3, 0/*32 | 64 | 128 | 256*/, 0, 0};
+		WINCOMPATTRDATA data = {19, &policy, sizeof(ACCENTPOLICY)};
+
+		/*
+		// windows 10 dwm is buggy with overlapped windows :(
+		HMODULE hUser32Mod = LoadLibrary("user32.dll");
+		if(hUser32Mod)
+		{
+			FNPTRSetWindowCompositionAttribute SetWindowCompositionAttribute = (FNPTRSetWindowCompositionAttribute)GetProcAddress(hUser32Mod, "SetWindowCompositionAttribute");
+			if(SetWindowCompositionAttribute)
+			{
+				SetWindowCompositionAttribute(m_hWnd, &data);
+			}
+		}*/
+
+		// Extend the frame across the whole window.
+		// MARGINS margins = {-1};
+		// DwmExtendFrameIntoClientArea(m_hWnd, &margins);
 	}
 
 	SetWindowLongPtr(m_hWnd, GWLP_USERDATA, (LONG_PTR)this);

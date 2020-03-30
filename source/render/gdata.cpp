@@ -16,7 +16,7 @@ namespace gdata
 	DS_RT FinalImage = DS_RT_SCENELIGHT;
 	ICamera *pCamera = 0;
 	
-	float2_t vNearFar = float2_t(0.025, 400);
+	float2_t vNearFar = float2_t(0.025f, 400.0f);
 	float fProjFov = SM_PIDIV4;	
 
 	ID idDefaultGeomArr = -1;
@@ -65,6 +65,7 @@ namespace gdata
 			ID idComLightingGI;
 			ID idComLightingShadow;
 			ID idComLightingSpotShadow;
+			ID idComLightingPSSMShadow;
 
 			ID idBlendAmbientSpecDiffColor;
 
@@ -86,6 +87,7 @@ namespace gdata
 			ID idComLightingShadow;
 			ID idComLightingSpotNonShadow;
 			ID idComLightingSpotShadow;
+			ID idComLightingPSSMShadow;
 			ID idComLightingGI;
 		};
 	};
@@ -118,6 +120,7 @@ namespace gdata
 
 		IGXRasterizerState *pRasterizerCullFront;
 		IGXRasterizerState *pRasterizerCullNone;
+		IGXRasterizerState *pRasterizerConservative;
 	};
 
 };
@@ -129,7 +132,7 @@ void gdata::InitAllMatrix()
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 	static float2_t vWinSize;
-	vWinSize = float2(*r_win_width, *r_win_height);
+	vWinSize = float2((float)*r_win_width, (float)*r_win_height);
 
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
@@ -139,13 +142,14 @@ void gdata::InitAllMatrix()
 	gdata::vNearFar.y = *r_far;
 	gdata::fProjFov = *r_default_fov;
 
-	gdata::mCamProj = SMMatrixPerspectiveFovLH(gdata::fProjFov, vWinSize.x / vWinSize.y, gdata::vNearFar.x, gdata::vNearFar.y);
+	// gdata::mCamProj = SMMatrixPerspectiveFovLH(gdata::fProjFov, vWinSize.x / vWinSize.y, gdata::vNearFar.x, gdata::vNearFar.y);
+	gdata::mCamProj = SMMatrixPerspectiveFovLH(gdata::fProjFov, vWinSize.x / vWinSize.y, gdata::vNearFar.y, gdata::vNearFar.x);
 	//gdata::MCamProj = SMMatrixOrthographicLH(vWinSize.x / 4, vWinSize.y / 4, gdata::NearFar.x, gdata::NearFar.y);
-	gdata::mLightProj = SMMatrixPerspectiveFovLH(gdata::fProjFov, vWinSize.x / vWinSize.y, gdata::vNearFar.x, G_DATA_LIGHT_FAR);
+//	gdata::mLightProj = SMMatrixPerspectiveFovLH(gdata::fProjFov, vWinSize.x / vWinSize.y, gdata::vNearFar.x, G_DATA_LIGHT_FAR);
 	//gdata::MLightProj = SMMatrixOrthographicLH(vWinSize.x / 4, vWinSize.y / 4, gdata::NearFar.x, G_DATA_LIGHT_FAR);
 
-	gdata::mRefPlaneSkyProj = SMMatrixPerspectiveFovLH(gdata::fProjFov, vWinSize.x / vWinSize.y, gdata::vNearFar.x, G_DATA_LIGHT_FAR);
-	gdata::mRefCubeSkyProj = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, gdata::vNearFar.x, G_DATA_LIGHT_FAR);
+//	gdata::mRefPlaneSkyProj = SMMatrixPerspectiveFovLH(gdata::fProjFov, vWinSize.x / vWinSize.y, gdata::vNearFar.x, G_DATA_LIGHT_FAR);
+//	gdata::mRefCubeSkyProj = SMMatrixPerspectiveFovLH(SM_PI * 0.5f, 1, gdata::vNearFar.x, G_DATA_LIGHT_FAR);
 
 	Core_RMatrixSet(G_RI_MATRIX_OBSERVER_PROJ, &gdata::mCamProj);
 	Core_RMatrixSet(G_RI_MATRIX_LIGHT_PROJ, &gdata::mLightProj);
@@ -169,6 +173,8 @@ void gdata::shaders_id::InitAllShaders()
 	gdata::shaders_id::ps::idComLightingShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_shadow.ps", Defines_IS_SHADOWED);
 	GXMacro Defines_IS_SPOT_SHADOWED[] = {{"IS_SHADOWED", ""}, {"IS_SPOT", ""}, {0, 0}};
 	gdata::shaders_id::ps::idComLightingSpotShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_spot_shadow.ps", Defines_IS_SPOT_SHADOWED);
+	GXMacro Defines_IS_PSSM_SHADOWED[] = {{"IS_SHADOWED", ""}, {"IS_PSSM", ""}, {0, 0}};
+	gdata::shaders_id::ps::idComLightingPSSMShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_pssm_shadow.ps", Defines_IS_PSSM_SHADOWED);
 	gdata::shaders_id::ps::idBlendAmbientSpecDiffColor = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_blend.ps");
 
 	gdata::shaders_id::ps::idUnionAlpha = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_union_alpha.ps");
@@ -190,6 +196,7 @@ void gdata::shaders_id::InitAllShaders()
 	gdata::shaders_id::kit::idComLightingShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingShadow);
 	gdata::shaders_id::kit::idComLightingSpotNonShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingSpotNonShadow);
 	gdata::shaders_id::kit::idComLightingSpotShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingSpotShadow);
+	gdata::shaders_id::kit::idComLightingPSSMShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingPSSMShadow);
 
 
 	GXDepthStencilDesc dsDesc;
@@ -204,7 +211,7 @@ void gdata::shaders_id::InitAllShaders()
 	gdata::rstates::pDepthStencilStateMrtStage0 = gdata::pDXDevice->createDepthStencilState(&dsDesc);
 
 	dsDesc.useDepthTest = TRUE;
-	dsDesc.cmpFuncDepth = GXCMP_LESS_EQUAL;
+	dsDesc.cmpFuncDepth = GXCMP_GREATER_EQUAL;
 	dsDesc.stencilTestFront.cmpFunc = GXCMP_NOT_EQUAL;
 	dsDesc.stencilTestFront.opPass = GXSTENCIL_OP_DECR;
 	gdata::rstates::pDepthStencilStateMrtStage1 = gdata::pDXDevice->createDepthStencilState(&dsDesc);
@@ -286,6 +293,10 @@ void gdata::shaders_id::InitAllShaders()
 
 	GXRasterizerDesc rasterizerDesc;
 
+	//rasterizerDesc.useConservativeRasterization = true;
+	gdata::rstates::pRasterizerConservative = gdata::pDXDevice->createRasterizerState(&rasterizerDesc);
+
+	//rasterizerDesc.useConservativeRasterization = false;
 	rasterizerDesc.cullMode = GXCULL_FRONT;
 	gdata::rstates::pRasterizerCullFront = gdata::pDXDevice->createRasterizerState(&rasterizerDesc);
 

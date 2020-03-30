@@ -54,13 +54,13 @@ void rfunc::SetRenderSceneFilter()
 		switch(r_texfilter_type2)
 		{
 		case 1:
-			samplerDesc.filter = GXFILTER_MIN_MAG_MIP_POINT;
+			samplerDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
 			break;
 		case 2:
 			samplerDesc.filter = GXFILTER_ANISOTROPIC;
 			break;
 		default:
-			samplerDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
+			samplerDesc.filter = GXFILTER_MIN_MAG_MIP_POINT;
 			break;
 		}
 		samplerDesc.fMinLOD = (float)r_texfilter_max_miplevel2;
