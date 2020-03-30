@@ -87,6 +87,67 @@ protected:
 };
 */
 
+class CVisUpdate: public IParallelForBody
+{
+public:
+	CVisUpdate(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference, Array<CDynamicModel*> &m_apModels):
+		m_pFrustum(pFrustum),
+		m_pVisibility(pVisibility),
+		m_pReference(pReference),
+		m_apModels(m_apModels)
+	{
+	}
+
+	void forLoop(int iStart, int iEnd) const
+	{
+		CDynamicModel *pMdl;
+		for(int i = iStart; i < iEnd; ++i)
+		{
+			pMdl = m_apModels[i];
+			auto *pItem = m_pVisibility->getItemDynamic(i);
+			if(pMdl->isEnabled())
+			{
+				float3 vDelta = pMdl->getPosition();
+				pItem->isVisible = (m_pReference ? m_pReference->getItemDynamic(i)->isVisible : true)
+					&& m_pFrustum->boxInFrustum(&float3(pMdl->getLocalBoundMin() + vDelta), &float3(pMdl->getLocalBoundMax() + vDelta));
+
+				if(pItem->isVisible)
+				{
+					pItem->isTransparent = pMdl->hasTransparentSubsets(pItem->uLod);
+					if(pItem->isTransparent)
+					{
+						IXMaterial *pMaterial = pMdl->getTransparentMaterial(pItem->uLod);
+						UINT uPSPcount = pMdl->getPSPcount(pItem->uLod);
+						{
+							ScopedLock lock(m_transparency);
+							if(uPSPcount)
+							{
+								m_pVisibility->addItemTransparentDynamic({pMdl, true, pMdl->getPSP(pItem->uLod, 0), 0, pMaterial});
+							}
+							else
+							{
+								m_pVisibility->addItemTransparentDynamic({pMdl, false, SMPLANE(), 0, pMaterial});
+							}
+						}
+						mem_release(pMaterial);
+					}
+				}
+			}
+			else
+			{
+				pItem->isVisible = false;
+			}
+		}
+	};
+
+protected:
+	const IFrustum *m_pFrustum;
+	CRenderableVisibility *m_pVisibility;
+	CRenderableVisibility *m_pReference;
+	Array<CDynamicModel*> &m_apModels;
+	mutable mutex m_transparency;
+};
+
 //##########################################################################
 
 CDynamicModelProvider::CDynamicModelProvider(IXCore *pCore):
@@ -290,7 +351,11 @@ void CDynamicModelProvider::computeVisibility(const IFrustum *pFrustum, CRendera
 {
 	pVisibility->setItemCountDynamic(m_apModels.size());
 	pVisibility->resetItemTransparentDynamic();
-
+#if 1
+	CVisUpdate cycle(pFrustum, pVisibility, pReference, m_apModels);
+	ID id = m_pCore->getAsyncTaskRunner()->forLoop(0, m_apModels.size(), &cycle, 500);
+	m_pCore->getAsyncTaskRunner()->waitForLoop(id);
+#else
 	CDynamicModel *pMdl;
 	for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
 	{
@@ -305,9 +370,9 @@ void CDynamicModelProvider::computeVisibility(const IFrustum *pFrustum, CRendera
 			if(pItem->isVisible)
 			{
 				pItem->isTransparent = pMdl->hasTransparentSubsets(pItem->uLod);
-				IXMaterial *pMaterial = pMdl->getTransparentMaterial(pItem->uLod);
 				if(pItem->isTransparent)
 				{
+					IXMaterial *pMaterial = pMdl->getTransparentMaterial(pItem->uLod);
 					UINT uPSPcount = pMdl->getPSPcount(pItem->uLod);
 					if(uPSPcount)
 					{
@@ -317,8 +382,8 @@ void CDynamicModelProvider::computeVisibility(const IFrustum *pFrustum, CRendera
 					{
 						pVisibility->addItemTransparentDynamic({pMdl, false, SMPLANE(), 0, pMaterial});
 					}
+					mem_release(pMaterial);
 				}
-				mem_release(pMaterial);
 			}
 		}
 		else
@@ -326,6 +391,7 @@ void CDynamicModelProvider::computeVisibility(const IFrustum *pFrustum, CRendera
 			pItem->isVisible = false;
 		}
 	}
+#endif
 }
 
 void CDynamicModelProvider::getLevelSize(const XEventLevelSize *pData)

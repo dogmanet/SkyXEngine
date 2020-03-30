@@ -238,7 +238,7 @@ bool CEngine::runFrame()
 	Core_0ConsoleUpdate();
 
 	SSInput_Update();
-
+	
 	
 	// draw frame
 	{
@@ -250,19 +250,31 @@ bool CEngine::runFrame()
 
 		//#############################################################################
 
+		Core_PStartSection(PERF_SECTION_GAME_UPDATE);
 		SGame_Update();
+		Core_PEndSection(PERF_SECTION_GAME_UPDATE);
 
+		Core_PStartSection(PERF_SECTION_PHYS_UPDATE);
 		SPhysics_Update();
+		Core_PEndSection(PERF_SECTION_PHYS_UPDATE);
 
 		//#############################################################################
 
+		Core_PStartSection(PERF_SECTION_PHYS_SYNC);
 		SPhysics_Sync();
+		Core_PEndSection(PERF_SECTION_PHYS_SYNC);
 
+		Core_PStartSection(PERF_SECTION_GAME_SYNC);
 		SGame_Sync();
+		Core_PEndSection(PERF_SECTION_GAME_SYNC);
 
+		Core_PStartSection(PERF_SECTION_MATSORT_UPDATE);
 		SMtrl_Update(0);
+		Core_PEndSection(PERF_SECTION_MATSORT_UPDATE);
 
+		Core_PStartSection(PERF_SECTION_CORE_UPDATE);
 		m_pCore->runUpdate();
+		Core_PEndSection(PERF_SECTION_CORE_UPDATE);
 		
 		//#############################################################################
 
@@ -275,12 +287,19 @@ bool CEngine::runFrame()
 			IXRenderPipeline *pRenderPipeline;
 			m_pCore->getRenderPipeline(&pRenderPipeline);
 
+			Core_PStartSection(PERF_SECTION_VIS_ALL);
 			pRenderPipeline->updateVisibility();
-			pRenderPipeline->endFrame();
+			Core_PEndSection(PERF_SECTION_VIS_ALL);
 
+			Core_PStartSection(PERF_SECTION_RENDER_PRESENT);
+			pRenderPipeline->endFrame();
+			Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
+
+			Core_PStartSection(PERF_SECTION_RENDER);
 			pRenderContext->getThreadContext()->beginFrame();
 			pRenderPipeline->renderFrame();
 			pRenderContext->getThreadContext()->endFrame();
+			Core_PEndSection(PERF_SECTION_RENDER);
 
 			mem_release(pRenderPipeline);
 		}

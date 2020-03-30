@@ -225,7 +225,7 @@ void CTaskManager::synchronize()
 	{
 		execute(m_OnSyncTasks.pop());
 	}
-
+	g_pPerfMon->syncBegin();
 	/*std::unique_lock<std::mutex> lock(m_mutexSync);
 
 	while(m_iNumTasksToWaitFor > 0)

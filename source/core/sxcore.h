@@ -141,7 +141,7 @@ SX_LIB_API ID Core_MGetThreadID();
 //! получить количество потоков
 SX_LIB_API int Core_MGetThreadCount();
 
-
+#if 0
 class IParallelForBody
 {
 public:
@@ -149,6 +149,7 @@ public:
 
 	virtual void forLoop(int iStart, int iEnd) const = 0;
 };
+#endif
 
 //! запускает в параллельную обработку pBody
 SX_LIB_API ID Core_MForLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize = 0);
@@ -184,9 +185,9 @@ enum PERF_SECTION
 	PERF_SECTION_AMBIENT_SND_UPDATE, // 8
 	PERF_SECTION_MATSORT_UPDATE, // 9
 	PERF_SECTION_OC_REPROJECTION, // A
-	PERF_SECTION_VIS_CAMERA, // B
+	PERF_SECTION_VIS_ALL, // B
 	PERF_SECTION_RENDER, // C
-	PERF_SECTION_SML_UPDATE, // D
+	PERF_SECTION_CORE_UPDATE, // D
 	PERF_SECTION_SHADOW_UPDATE, // E
 	PERF_SECTION_MRT, // F
 	PERF_SECTION_LIGHTING, // G
@@ -226,9 +227,9 @@ static const char *g_szPerfSectionName[] = {
 	"Ambient sound update",
 	"Matsort update",
 	"OC reprojection",
-	"Vis camera",
+	"Vis all",
 	"Render overall",
-	"SML update",
+	"Core update",
 	"Shadow update",
 	"Render MRT",
 	"Render lighting",
