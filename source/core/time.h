@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -12,7 +12,7 @@ See the license in LICENSE
 #include <common/Array.h>
 
 #include <chrono>
-typedef std::chrono::system_clock::time_point time_point;
+typedef std::chrono::high_resolution_clock::time_point time_point;
 
 #include <core/sxcore.h>
 
@@ -33,9 +33,9 @@ public:
 		~CTime();
 
 		time_point m_timePoint;
-		int64_t m_iTimeTotal;		//общее прошедшее время с момента запуска
+		int64_t m_iTimeTotal;		//РѕР±С‰РµРµ РїСЂРѕС€РµРґС€РµРµ РІСЂРµРјСЏ СЃ РјРѕРјРµРЅС‚Р° Р·Р°РїСѓСЃРєР°
 		long double m_fDeltaFraction;
-		int64_t m_iUnixtimeCurr;	//текущее время в unix
+		int64_t m_iUnixtimeCurr;	//С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ РІ unix
 		int64_t m_iUnixtimeStart;
 		float m_fSpeed;
 		bool m_isWorking;

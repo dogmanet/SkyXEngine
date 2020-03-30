@@ -4,6 +4,8 @@ Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
+#include <functional>
+
 #include "TaskManager.h"
 #include "PerfMon.h"
 

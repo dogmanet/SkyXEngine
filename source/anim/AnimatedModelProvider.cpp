@@ -134,7 +134,7 @@ IXMaterialSystem *CAnimatedModelProvider::getMaterialSystem()
 
 void CAnimatedModelProvider::update(float fDT)
 {
-	typedef std::chrono::system_clock::time_point time_point;
+	typedef std::chrono::high_resolution_clock::time_point time_point;
 	time_point tStart = std::chrono::high_resolution_clock::now();
 
 	CAnimatedModelShared *pShared;

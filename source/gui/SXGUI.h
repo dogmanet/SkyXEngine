@@ -5,7 +5,7 @@
 #include <graphix/graphix.h>
 
 #include <chrono>
-typedef std::chrono::system_clock::time_point time_point;
+typedef std::chrono::high_resolution_clock::time_point time_point;
 
 #if 0
 #ifndef SXGUI_LIB

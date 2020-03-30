@@ -74,7 +74,7 @@ protected:
 	CTimeManager *m_pTimers = NULL;
 	CTaskManager *m_pTaskManager = NULL;
 
-	std::chrono::system_clock::time_point m_tLastUpdateTime;
+	std::chrono::high_resolution_clock::time_point m_tLastUpdateTime;
 };
 
 #endif

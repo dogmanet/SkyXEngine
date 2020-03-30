@@ -166,7 +166,7 @@ SX_LIB_API void Core_MWaitFor(ID id);
 struct CPerfRecord
 {
 	int m_iDepth;
-	std::chrono::system_clock::time_point m_time;
+	std::chrono::high_resolution_clock::time_point m_time;
 	ID m_idSection;
 	bool m_isEntry;
 };

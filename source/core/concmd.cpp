@@ -455,7 +455,7 @@ void cmd_perf_dump()
 	};
 
 
-	std::chrono::system_clock::time_point tStart, tEnd, tSync;
+	std::chrono::high_resolution_clock::time_point tStart, tEnd, tSync;
 
 	Array<Array<const CPerfRecord*>> aaRecords;
 	Array<const CPerfRecord*> aRecords;

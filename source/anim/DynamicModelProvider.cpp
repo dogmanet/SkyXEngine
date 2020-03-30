@@ -353,7 +353,7 @@ void CDynamicModelProvider::getLevelSize(const XEventLevelSize *pData)
 
 void CDynamicModelProvider::update()
 {
-	typedef std::chrono::system_clock::time_point time_point;
+	typedef std::chrono::high_resolution_clock::time_point time_point;
 	time_point tStart = std::chrono::high_resolution_clock::now();
 
 	CDynamicModelShared *pShared;

@@ -16,7 +16,7 @@ See the license in LICENSE
 
 #include "proptable.h"
 
-typedef std::chrono::system_clock::time_point time_point;
+typedef std::chrono::high_resolution_clock::time_point time_point;
 
 class CBaseEntity;
 struct ISXConfig;
