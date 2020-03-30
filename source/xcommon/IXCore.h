@@ -55,24 +55,44 @@ protected:
 	virtual IBaseEventChannel *getEventChannelInternal(const XGUID &guid) = 0;
 };
 
+class CCoreOutPtr
+{
+	friend void Core_SetOutPtr(IXCore *pCore);
+	CCoreOutPtr(IXCore *pCore)
+	{
+		UINT_PTR sock = pCore->getCrtOutputHandler();
+		if(sock == ~0)
+		{
+			return;
+		}
+		int hOut = _open_osfhandle(sock, O_RDONLY | O_RDWR | O_WRONLY | _O_APPEND);
+		m_fOut = ::_fdopen(_dup(hOut), "a+");
+		::setvbuf(m_fOut, NULL, _IONBF, 0);
+
+		m_fStdout = *stdout;
+		m_fStderr = *stderr;
+
+		*stdout = *m_fOut;
+		*stderr = *m_fOut;
+	}
+	~CCoreOutPtr()
+	{
+		*stdout = m_fStdout;
+		*stderr = m_fStderr;
+		fclose(m_fOut);
+	}
+
+	FILE *m_fOut;
+	FILE m_fStdout;
+	FILE m_fStderr;
+};
+
 /*! Устанавливает поток вывода. Для работы консоли
 \warning Должна быть инлайнова, чтобы выполняться в контексте вызывающей библиотеки
 */
 __inline void Core_SetOutPtr(IXCore *pCore)
 {
-	UINT_PTR sock = pCore->getCrtOutputHandler();
-	if(sock == ~0)
-	{
-		return;
-	}
-	int hOut = _open_osfhandle(sock, O_RDONLY | O_RDWR | O_WRONLY | _O_APPEND);
-	FILE * fOut = ::_fdopen(hOut, "a+");
-	::setvbuf(fOut, NULL, _IONBF, 0);
-
-	*stdout = *fOut;
-	*stderr = *fOut;
-
-	fOut->_file = 1;
+	static CCoreOutPtr s_optr(pCore);
 }
 
 #define INIT_OUTPUT_STREAM(icore) Core_SetOutPtr(icore)
