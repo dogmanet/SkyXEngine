@@ -69,22 +69,44 @@ class CCoreOutPtr
 		m_fOut = ::_fdopen(_dup(hOut), "a+");
 		::setvbuf(m_fOut, NULL, _IONBF, 0);
 
-		m_fStdout = *stdout;
-		m_fStderr = *stderr;
+#ifdef _MSC_VER
+		if(_fileno(stdout) < 0)
+		{
+			char szPipename[255];
+			HANDLE hPipe = NULL;
+			{
+				sprintf(szPipename, "\\\\.\\pipe\\SkyXEngineConsoleStdout-%u-%u", GetCurrentProcessId(), GetCurrentThreadId());
+				hPipe = CreateNamedPipe(szPipename, PIPE_ACCESS_DUPLEX, PIPE_NOWAIT | PIPE_READMODE_BYTE, PIPE_UNLIMITED_INSTANCES, 0, 0, 0, NULL);
+				freopen(szPipename, "w", stdout);
+				_dup2(_fileno(m_fOut), _fileno(stdout));
+				CloseHandle(hPipe);
+			}
 
-		*stdout = *m_fOut;
-		*stderr = *m_fOut;
+			{
+				sprintf(szPipename, "\\\\.\\pipe\\SkyXEngineConsoleStderr-%u-%u", GetCurrentProcessId(), GetCurrentThreadId());
+				hPipe = CreateNamedPipe(szPipename, PIPE_ACCESS_DUPLEX, PIPE_NOWAIT | PIPE_READMODE_BYTE, PIPE_UNLIMITED_INSTANCES, 0, 0, 0, NULL);
+				freopen(szPipename, "w", stderr);
+				_dup2(_fileno(m_fOut), _fileno(stderr));
+				CloseHandle(hPipe);
+			}
+		}
+		else
+		{
+#endif
+			_dup2(_fileno(m_fOut), _fileno(stdout));
+			_dup2(_fileno(m_fOut), _fileno(stderr));
+#ifdef _MSC_VER
+		}
+#endif
+		::setvbuf(stdout, NULL, _IONBF, 0);
+		::setvbuf(stderr, NULL, _IONBF, 0);
 	}
 	~CCoreOutPtr()
 	{
-		*stdout = m_fStdout;
-		*stderr = m_fStderr;
 		fclose(m_fOut);
 	}
 
 	FILE *m_fOut;
-	FILE m_fStdout;
-	FILE m_fStderr;
 };
 
 /*! Устанавливает поток вывода. Для работы консоли
