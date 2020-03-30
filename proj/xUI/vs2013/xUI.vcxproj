@@ -81,13 +81,13 @@
     <OutDir>../../../build/bin/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <SourcePath>$(VC_SourcePath);../../../source</SourcePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);../../../libs</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSdk_LibraryPath_x86);../../../libs</LibraryPath>
     <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)_d</TargetName>
     <SourcePath>$(VC_SourcePath);../../../source</SourcePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSdk_71A_LibraryPath_x64);../../../libs64</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSdk_LibraryPath_x64);../../../libs64</LibraryPath>
     <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin64/</OutDir>
@@ -96,12 +96,12 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/</OutDir>
     <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);../../../libs</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSdk_LibraryPath_x86);../../../libs</LibraryPath>
     <SourcePath>$(VC_SourcePath);../../../source</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSdk_71A_LibraryPath_x64);../../../libs64</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSdk_LibraryPath_x64);../../../libs64</LibraryPath>
     <SourcePath>$(VC_SourcePath);../../../source</SourcePath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin64/</OutDir>
