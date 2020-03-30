@@ -42,6 +42,9 @@
     <ClCompile Include="..\..\..\source\physics\CollisionObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\physics\MutationObserver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\physics\sxphysics.h">
@@ -75,6 +78,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\physics\CollisionObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IXMutationObserver.h">
+      <Filter>Header Files\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\physics\MutationObserver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

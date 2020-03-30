@@ -22,7 +22,7 @@ CFile::~CFile()
 
 void CFile::Release()
 {
-	mem_del(this);
+	delete this;
 }
 
 int CFile::open(const char *szPath, int iType)

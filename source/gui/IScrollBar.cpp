@@ -8,14 +8,9 @@ namespace gui
 	{
 		namespace render
 		{
-			IScrollBar::IScrollBar(IRenderFrame * _parent, SCROLLBAR_DIR _dir):
+			IScrollBar::IScrollBar(IRenderFrame *_parent, SCROLLBAR_DIR _dir):
 				m_pParent(_parent),
-				m_eDir(_dir),
-				m_iScrollMax(0),
-				m_iScrollCur(0),
-				m_iLength(0),
-				m_bDragging(false),
-				m_iDragPos(0)
+				m_eDir(_dir)
 			{
 			}
 

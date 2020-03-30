@@ -7,8 +7,9 @@ namespace gui
 	namespace dom
 	{
 		DEFINE_DOM_NODE(ISELECT);
+		LINK_DOM_NODE_TO_TAG(ISELECT, L"select");
 
-		void ISELECT::dispatchClientEvent(IEvent ev, bool * preventDefault)
+		void ISELECT::dispatchClientEvent(IEvent ev, bool *preventDefault)
 		{
 			if(ev.target == this)
 			{
@@ -30,7 +31,7 @@ namespace gui
 			BaseClass::dispatchClientEvent(ev, preventDefault);
 		}
 
-		void ISELECT::setAttribute(const StringW & name, const StringW & value)
+		void ISELECT::setAttribute(const StringW &name, const StringW &value)
 		{
 			BaseClass::setAttribute(name, value);
 

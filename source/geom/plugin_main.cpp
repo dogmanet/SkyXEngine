@@ -67,7 +67,7 @@ public:
 
 		if(!pFile)
 		{
-			LibReport(REPORT_MSG_LEVEL_ERROR, "failed to open (load) file static geometry [%s]\n", szPath);
+		//	LibReport(REPORT_MSG_LEVEL_ERROR, "failed to open (load) file static geometry [%s]\n", szPath);
 			return;
 		}
 

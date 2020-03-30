@@ -2,6 +2,7 @@
 #define __ENGINE_H
 
 #include "IXEngine.h"
+#include <xUI/IXUI.h>
 
 enum WANT_RESIZE
 {
@@ -45,6 +46,8 @@ protected:
 	IXCore *m_pCore = NULL;
 
 	WANT_RESIZE m_wantResize = WR_NONE;
+
+	IXUI *m_pXUI = NULL;
 };
 
 DEFINE_ENUM_FLAG_OPERATORS(WANT_RESIZE);

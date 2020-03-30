@@ -1,0 +1,54 @@
+
+/*
+gbuffer.ps
+
+*/
+
+#include "../struct.h"
+#include "../mtrl.h"
+#include "../const.h"
+#include "../xmat.h"
+
+//##########################################################################
+
+PSO_Gbuffer main(PSI_XMaterial IN)
+{
+	// ClipFar(IN.vPos.z, g_vNearFarLayers.y);
+	IN.vNormal = normalize(IN.vNormal);
+	
+#ifndef WANT_WRITE_DEPTH
+	float fDepth = 1.0f - (IN.vPos.z / g_vNearFarInvWinSize.x);
+#endif
+
+	XMaterial mtrl = XMATERIAL_MAIN(IN);
+		
+	PSO_Gbuffer OUT;
+	
+	OUT.vColor.xyz = mtrl.vBaseColor.xyz;
+	OUT.vColor.w = mtrl.fLightCoeff;
+	
+	OUT.vNormal.xyz = NormalEncode(normalize(mtrl.vNormal));
+	OUT.vNormal.w = mtrl.f0;
+	
+	OUT.vParam = float4(
+		mtrl.fRoughness,
+		mtrl.fMetallic,
+		mtrl.fThickness,
+		mtrl.fAO
+	);
+	
+	//float fDepth = 
+#ifdef WANT_WRITE_DEPTH
+	float fDepth = (mtrl.fDepth + g_vNearFarInvWinSize.x) / g_vNearFarInvWinSize.y;
+#else
+	// 1.0f - IN.vPos.z / g_vNearFarInvWinSize.x;
+	//(IN.vPos.z / IN.vPos.w);
+	// 1.0f / (1.0 - IN.vPos.z)
+	// (g_vNearFarInvWinSize.y - g_vNearFarInvWinSize.x - IN.vPos.z)
+#endif
+	// + g_vNearFarInvWinSize.x) / g_vNearFarInvWinSize.y;
+	
+	OUT.vDepth = float4(fDepth, fDepth, fDepth, 1.0f);
+	// OUT.vDepth = float4(((g_vNearFarInvWinSize.y - g_vNearFarInvWinSize.x) - IN.vPos.z) * 0.01, fDepth, fDepth, 1.0f);	
+	return(OUT);
+}

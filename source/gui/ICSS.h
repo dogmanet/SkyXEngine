@@ -91,23 +91,23 @@ namespace gui
 
 			struct ICSSselectorItem
 			{
-				UINT flags;
-				CONNECTOR connector;
+				UINT flags = 0;
+				CONNECTOR connector = CONNECTOR_NONE;
 
 				StringW s_id;
 				StringW s_tag;
 				Array<StringW> s_class;
-				UINT dom_id;
-				UINT dom_tag;
+				UINT dom_id = 0;
+				int dom_tag = -1;
 				Array<UINT> dom_class;
 
-				UINT nth_num; // :nth-child(2n+1) nth_num = 2
-				UINT nth_offset; // :nth-child(2n+1) nth_offset = 1
+				UINT nth_num = 0; // :nth-child(2n+1) nth_num = 2
+				UINT nth_offset = 0; // :nth-child(2n+1) nth_offset = 1
 
-				bool bSelectAny; // is '*' selector
+				bool bSelectAny = false; // is '*' selector
 
-				UINT pseudoclass;
-				PSEUDOELEMENT pseudoelement;
+				UINT pseudoclass = PSEUDOCLASS_NONE;
+				PSEUDOELEMENT pseudoelement = PSEUDOELEMENT_NONE;
 
 				void setPseudoClass(const StringW & str);
 
@@ -119,10 +119,6 @@ namespace gui
 				}
 
 				void buildIndex(ICSS * css);
-
-				ICSSselectorItem():flags(0), dom_id(0), dom_tag(0), connector(CONNECTOR_NONE), pseudoclass(PSEUDOCLASS_NONE), pseudoelement(PSEUDOELEMENT_NONE), bSelectAny(false), nth_num(0), nth_offset(0)
-				{
-				}
 			};
 
 			void addSelector(const ICSSselectorItem & item)
@@ -180,9 +176,10 @@ namespace gui
 		{
 			friend class dom::CDOMdocument;
 		public:
-			ICSS(dom::CDOMdocument * doc)
+			ICSS(dom::CDOMdocument *doc, CDesktopStack *pDesktopStack):
+				m_pDocument(doc),
+				m_pDesktopStack(pDesktopStack)
 			{
-				m_pDocument = doc;
 				dropStyles();
 			}
 
@@ -208,7 +205,8 @@ namespace gui
 			AssotiativeArray<StringW, ICSSstyleSet> m_styleSets;
 			Array<ICSSstyleSet*> m_styleOrder;
 
-			dom::CDOMdocument * m_pDocument;
+			CDesktopStack *m_pDesktopStack;
+			dom::CDOMdocument *m_pDocument;
 			// AssotiativeArray<ICSSrule, ICSSstyle> m_rules;
 			//	AssotiativeArray<String, String> m_mProperties;
 		};

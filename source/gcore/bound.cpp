@@ -73,8 +73,8 @@ void CreateCone(float fTopRadius, float fBottomRadius, float fHeight, IMesh ** p
 
 	IMesh *pMesh = SGCore_CrMesh(iVC, iIC, pVertices, pIndices);
 
-	mem_delete(pIndices);
-	mem_delete(pVertices);
+	mem_delete_a(pIndices);
+	mem_delete_a(pVertices);
 
 	(*ppMesh) = pMesh;
 }
@@ -137,8 +137,8 @@ void CreateSphere(float fRadius, UINT iSideCount, UINT iStackCount, IMesh ** ppM
 
 	IMesh *pMesh = SGCore_CrMesh(iVC, iIC, pVertices, pIndices);
 
-	mem_delete(pIndices);
-	mem_delete(pVertices);
+	mem_delete_a(pIndices);
+	mem_delete_a(pVertices);
 
 	(*ppMesh) = pMesh;
 }

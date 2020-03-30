@@ -44,7 +44,7 @@ private:
 	mutable float3 m_aPoints[8];
 	float3 m_vCenter;
 
-	bool m_isPointValid[8];
+	mutable bool m_isPointValid[8];
 };
 
 //**************************************************************************
@@ -56,7 +56,7 @@ public:
 	~CCamera();
 	void Release()
 	{
-		mem_del(this);
+		delete this;
 	}
 	SX_ALIGNED_OP_MEM
 

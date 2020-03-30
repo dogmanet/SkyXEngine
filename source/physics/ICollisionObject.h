@@ -65,7 +65,7 @@ public:
 
 struct XRIDIGBODY_DESC
 {
-	float fMass;
+	float fMass = 0.0f;
 	float3_t vStartWorldPosition;
 	SMQuaternion qStartWorldRotation;
 	ICollisionShape *pCollisionShape = NULL;

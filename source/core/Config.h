@@ -13,8 +13,9 @@ See the license in LICENSE
 #include <common/String.h>
 #include <common/Array.h>
 #include <common/AssotiativeArray.h>
+#include <xcommon/IXConfig.h>
 
-class CConfigString : public String
+class CConfigString: public String
 {
 public:
 	CConfigString() : String(){}
@@ -71,27 +72,21 @@ public:
 	}
 };
 
-class CConfig : public ISXConfig
+class CConfig: public ISXConfig
 {
 public:
 	struct CValue
 	{
 		CConfigString val;
-		bool isModified;
-		CValue():isModified(false)
-		{
-		}
+		bool isModified = false;
 	};
 	struct CSection
 	{
 		CConfigString parent;
 		AssotiativeArray<CConfigString, CValue> mValues;
-		bool native;
+		bool native = false;
 		CConfigString Include;
-		bool isModified;
-		CSection():isModified(false)
-		{
-		}
+		bool isModified = false;
 	};
 	CConfig();
 	//SXLoaderConfig(const char* file);
@@ -155,6 +150,29 @@ protected:
 	CConfigString baseName(CConfigString dir);
 
 	void modify(AssotiativeArray<CConfigString, CSection> & sections, AssotiativeArray<CConfigString, CValue> & values, CConfigString IncName);
+};
+
+class CXConfig: public IXConfig
+{
+public:
+	CXConfig();
+	~CXConfig();
+
+	bool XMETHODCALLTYPE open(const char *szPath) override;
+	bool XMETHODCALLTYPE save() override;
+
+	const char* XMETHODCALLTYPE getKey(const char *szSection, const char *szKey) override;
+	const char* XMETHODCALLTYPE getKeyName(const char *szSection, UINT uIndex) override;
+	const char* XMETHODCALLTYPE getSectionName(UINT uIndex) override;
+	void XMETHODCALLTYPE set(const char *szSection, const char *szKey, const char *szValue) override;
+	UINT XMETHODCALLTYPE getSectionCount() override;
+	UINT XMETHODCALLTYPE getKeyCount() override;
+	UINT XMETHODCALLTYPE getKeyCount(const char *szSection) override;
+	bool XMETHODCALLTYPE sectionExists(const char *szSection) override;
+	bool XMETHODCALLTYPE keyExists(const char *szSection, const char *szKey) override;
+
+protected:
+	CConfig *m_pConfig = NULL;
 };
 
 #endif

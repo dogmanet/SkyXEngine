@@ -1,7 +1,7 @@
 #ifndef _GUIbase_H_
 #define _GUIbase_H_
 
-#include <Windows.h>
+//#include <Windows.h>
 #include <graphix/graphix.h>
 #include <gcore/sxgcore.h>
 

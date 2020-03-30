@@ -1,0 +1,68 @@
+html
+{
+	background-color: #00000099;
+	background-image: /xbg.png;
+	
+	background-position-x: 50%;
+	background-size-y: 100%;
+}
+
+#background
+{
+	position: fixed;
+	top: 0px;
+	left: 0px;
+	bottom: 0px;
+	right: 0px;
+	
+	-gui-z: 0;
+	opacity: 1;
+	transition-property: -gui-z;
+	transition-duration: 0.4s;
+}
+
+body:disabled #background
+{
+	-gui-z: -200px;
+	opacity: 0.4;
+}
+
+#left_menu
+{
+	//background-color: #00FF0088;
+	top: 40%; 
+	left: 10%; 
+	height: 60%; 
+	width: 30%;
+	position: absolute;
+	transform: rotateY(10deg);
+}
+
+.menu-item
+{
+	font-size: 24px;
+	//background-color: #FF000099;
+	margin: 10px;
+	transition-property: color, -gui-z;
+	transition-duration: 0.1s, 0.1s;
+	-gui-z: 0;
+}
+
+.menu-item:hover
+{
+	color: #fe9500;
+	-gui-z: 30px;
+}
+
+#engine_version
+{
+	position: absolute;
+	bottom: 40px;
+	right: 40px;
+	font-size: 16px;
+	height: 16px;
+	text-align: right;
+	font-name: traceroute;
+	transform: rotateY(-5deg);
+	width: 30%;
+}

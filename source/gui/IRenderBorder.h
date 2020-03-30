@@ -14,7 +14,7 @@ namespace gui
 			class IRenderBorder
 			{
 			public:
-				IRenderBorder();
+				IRenderBorder(CTextureManager *pTextureManager);
 				~IRenderBorder();
 
 				enum CORNER_METHOD
@@ -65,8 +65,10 @@ namespace gui
 				UINT m_iRadius[4];
 				CORNER_METHOD m_method[4];
 
-				IGXIndexBuffer * m_pIndexBuffer;
-				IGXVertexBuffer * m_pVertexBuffer;
+				CTextureManager *m_pTextureManager;
+
+				IGXIndexBuffer *m_pIndexBuffer = NULL;
+				IGXVertexBuffer *m_pVertexBuffer = NULL;
 				IGXRenderBuffer *m_pRenderBuffer = NULL;
 				IGXConstantBuffer *m_pColorsConstant[4];
 				IGXConstantBuffer *m_pColorBlack = NULL;
@@ -79,15 +81,15 @@ namespace gui
 
 				int m_iSideCount[4];
 
-				int m_iFillIndexCount;
+				int m_iFillIndexCount = 0;
 
 				// 0 =
 				// 1 = 
 
 				float4_t m_pColor[4];
 
-				UINT m_iInnerWidth;
-				UINT m_iInnerHeight;
+				UINT m_iInnerWidth = NULL;
+				UINT m_iInnerHeight = NULL;
 
 				struct buff_t
 				{

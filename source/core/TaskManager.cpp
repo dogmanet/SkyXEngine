@@ -4,6 +4,8 @@ Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
+#include <functional>
+
 #include "TaskManager.h"
 #include "PerfMon.h"
 
@@ -170,7 +172,7 @@ void CTaskManager::start()
 	{
 		std::thread * t = new std::thread(std::bind(&CTaskManager::workerMain, this));
 #if defined(_WINDOWS)
-		sprintf(name, "Worker #%d", i);
+		sprintf(name, "Worker #%u", i);
 		SetThreadName(GetThreadId(t->native_handle()), name);
 #endif
 		m_aThreads.push_back(t);
@@ -223,7 +225,7 @@ void CTaskManager::synchronize()
 	{
 		execute(m_OnSyncTasks.pop());
 	}
-
+	g_pPerfMon->syncBegin();
 	/*std::unique_lock<std::mutex> lock(m_mutexSync);
 
 	while(m_iNumTasksToWaitFor > 0)

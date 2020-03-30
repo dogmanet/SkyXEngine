@@ -53,13 +53,6 @@ void CLevel::clear()
 	}
 	mem_release(m_pSun);
 
-#if 0
-	if(!m_isServerMode)
-	{
-		SLight_ClearIDArr();
-	}
-#endif
-	
 	//SGame_UnloadObjLevel();
 //	Core_0ConsoleExecCmd("ent_unload_level");
 //	SPhysics_UnloadGeom();

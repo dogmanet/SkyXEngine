@@ -22,9 +22,21 @@
     <ClCompile Include="..\..\..\source\xSpecs\TextureProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\xSpecs\MaterialProxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\xSpecs\MaterialLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\xSpecs\TextureProxy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xSpecs\MaterialProxy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xSpecs\MaterialLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

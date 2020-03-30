@@ -35,7 +35,7 @@ body:enabled #left_panel
 {
 	
 	transition-property: transform, left;
-	transition-duration: 0.4s, 0.4s;
+	transition-duration: 0.2s, 0.2s;
 	left: 10%; 	
 	transform: rotateY(10deg);
 }
@@ -56,7 +56,7 @@ body:enabled #left_panel
 body:enabled #right_panel
 {
 	transition-property: transform, right;
-	transition-duration: 0.4s, 0.4s;
+	transition-duration: 0.2s, 0.2s;
 	
 	right: 10%;	
 	transform: rotateY(-10deg);

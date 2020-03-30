@@ -45,6 +45,9 @@
     <ClInclude Include="..\..\..\source\render\RenderableVisibility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\render\OcclusionCuller.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\render\gdata.cpp">
@@ -75,6 +78,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\render\RenderableVisibility.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\render\OcclusionCuller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

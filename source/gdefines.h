@@ -131,7 +131,7 @@ struct IBaseObject
 //! for warning C4003: not enough actual parameters for macro
 #define _VOID
 
-#define ID_VALID(id) (id >= 0)
+#define ID_VALID(id) ((id) >= 0)
 
 #ifndef IFACEBASEOBJECT
 #define IFACEBASEOBJECT
@@ -208,6 +208,14 @@ public:
 };
 #endif
 
+class IKeyIterator: public IXUnknown
+{
+public:
+	virtual const char* XMETHODCALLTYPE getCurrent() = 0;
+	virtual const char* XMETHODCALLTYPE getNext() = 0;
+	virtual bool XMETHODCALLTYPE isEnd() = 0;
+};
+
 typedef struct _XGUID
 {
 	_XGUID()
@@ -267,6 +275,8 @@ inline bool operator==(const XGUID &a, const XGUID &b)
 
 #define strdupa(str) strcpy((char*)alloca(sizeof(char) * (strlen(str) + 1)), str)
 
+#define strdups(str) ((str) ? strdup(str) : NULL)
+
 //! Тип функции вывода отладочной информации
 typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMessage);
 
@@ -280,6 +290,13 @@ typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMes
 #include <common/array.h>
 #include <common/assotiativearray.h>
 #include <common/memalloc.h>
+
+#ifndef GET_X_LPARAM
+#define GET_X_LPARAM(lp)                        ((int)(short)LOWORD(lp))
+#endif
+#ifndef GET_Y_LPARAM
+#define GET_Y_LPARAM(lp)                        ((int)(short)HIWORD(lp))
+#endif
 
 /** \name Уровни критичности сообщений для функции репортов */
 //! @{

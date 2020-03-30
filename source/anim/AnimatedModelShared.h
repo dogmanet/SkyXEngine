@@ -64,7 +64,7 @@ public:
 	void initGPUresources();
 
 protected:
-	UINT m_uRefCount = 0;
+	UINT m_uRefCount = 1;
 	Array<IXResourceModelAnimated*> m_apResources;
 
 	IGXRenderBuffer **m_ppRenderBuffer = NULL;

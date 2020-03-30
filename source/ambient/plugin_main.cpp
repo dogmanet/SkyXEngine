@@ -34,7 +34,7 @@ public:
 				levelProgress.type = XEventLevelProgress::TYPE_PROGRESS_BEGIN;
 				pProgressChannel->broadcastEvent(&levelProgress);
 
-				m_pSkyBox->setTexture("sky_hdr_hl2.dds");
+				m_pSkyBox->setTexture("sky_hdr_hl2");
 
 				levelProgress.fProgress = 1.0f;
 				levelProgress.type = XEventLevelProgress::TYPE_PROGRESS_END;
@@ -61,7 +61,7 @@ public:
 	{
 		m_pCore = pCore;
 
-		m_pSkyBox = new CSkyBox();
+		m_pSkyBox = new CSkyBox(pCore);
 		m_pRenderable = new CRenderable(getID(), m_pSkyBox);
 		m_pUpdatable = new CUpdatable(m_pSkyBox);
 

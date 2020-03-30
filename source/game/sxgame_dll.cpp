@@ -87,7 +87,7 @@ void ccmd_save_as(int argc, const char ** argv)
 	}
 }
 
-SX_LIB_API ICamera * SGame_GetActiveCamera()
+SX_LIB_API ICamera* SGame_GetActiveCamera()
 {
 	SG_PRECOND(NULL);
 	return(GameData::m_pActiveCamera->getCamera());
@@ -137,6 +137,12 @@ SX_LIB_API void SGame_Sync()
 	SG_PRECOND(_VOID);
 	GameData::m_pMgr->sync();
 	g_pGameData->sync();
+}
+
+SX_LIB_API gui::IGUI* SGame_GetGUI()
+{
+	SG_PRECOND(NULL);
+	return(GameData::m_pGUI);
 }
 
 SX_LIB_API void SGame_Render()
@@ -365,29 +371,7 @@ SX_LIB_API BOOL SGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam)
 		Core_0ConsoleExecCmd("game_menu");
 	}
 
-	return(GameData::m_pGUI->putMessage(message, wParam, lParam));
-}
-
-SX_LIB_API void SGame_OnLostDevice()
-{
-	if(GameData::m_pGUI)
-	{
-		GameData::m_pGUI->onLostDevice();
-	}
-}
-
-SX_LIB_API void SGame_OnResetDevice()
-{
-	if(GameData::m_pGUI)
-	{
-		GameData::m_pGUI->onResetDevice();
-	}
-}
-
-SX_LIB_API void SGame_SetDebugText(const char *szText)
-{
-	//static gui::dom::IDOMnode * pNode = GameData::m_pStatsUI->getDocument()->getElementById(L"wrapper");
-	//pNode->setHTML(StringW(String(szText)).c_str());
+	return(GameData::m_pGUIStack->putMessage(message, wParam, lParam));
 }
 
 SX_LIB_API ID SGame_EntClone(ID idSrc)

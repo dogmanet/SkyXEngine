@@ -64,21 +64,22 @@ Array<String>* CFileSystem::getAllvariantsCanonizePath(const char *szPath)
     return paths;
 }
 
-char *CFileSystem::getNormalPath(const char *szPath)
+void CFileSystem::getNormalPath(const char *szPath, char *outBuff, int iOutMax)
 {
-    char *path = new char[SIZE_PATH];
-    char *rp = path;
-    memcpy(path, szPath, strlen(szPath) + 1);
+    size_t len = strlen(szPath) + 1;
 
-    while (*path++ != '\0')
+    if (iOutMax < len)
     {
-        if (*path == '/')
-        {
-            *path = '\\';
-        }
+        MEMCCPY_ERROR(outBuff);
+        return;
     }
 
-    return rp;
+    memcpy(outBuff, szPath, len);
+
+    do
+    {
+        *outBuff = *outBuff == '/' ? '\\' : *outBuff;
+    } while (*outBuff++ != '\0');
 }
 
 bool CFileSystem::isAbsolutePathInRoot(const char *szPath)
@@ -88,9 +89,9 @@ bool CFileSystem::isAbsolutePathInRoot(const char *szPath)
         return false;
     }
 
-    char *rp = getFullPathToBuild();
-    const char *pos = strstr(szPath, rp);
-    mem_delete(rp);
+    char rootPath[SIZE_PATH];
+    getFullPathToBuild(rootPath, SIZE_PATH);
+    const char *pos = strstr(szPath, rootPath);
 
     return pos != nullptr;
 }
@@ -100,7 +101,7 @@ void CFileSystem::getAbsoluteCanonizePath(const char *szPath, char *outPath, int
     bool absolute = isAbsolutePath(szPath);
     bool correctPath = true;
 
-    int len = absolute ? strlen(szPath) + 1 : SIZE_PATH;
+    size_t len = absolute ? strlen(szPath) + 1 : SIZE_PATH;
 
     if (absolute) 
     {
@@ -119,34 +120,31 @@ void CFileSystem::getAbsoluteCanonizePath(const char *szPath, char *outPath, int
     }
     else
     {
-        //Если что то пошло не так записываем -1 в память, потом это значение можно проверить
-        outPath[0] = -1;
-        outPath[1] = '\0';
+        //Если что то пошло не так записываем '\0' в память, потом это значение можно проверить
+        MEMCCPY_ERROR(outPath);
     }
 }
 
-char *CFileSystem::getFullPathToBuild()
+void CFileSystem::getFullPathToBuild(char *buff, int iSize)
 {
-    char *path = new char[SIZE_PATH];
-    GetModuleFileName(nullptr, path, SIZE_PATH);
-    char *pos = strstr(path, "build\\");
-    pos[6] = '\0';
-    canonize_path(path);
-
-    return path;
+    GetModuleFileName(nullptr, buff, iSize);
+    dirname(buff);
+    dirname(buff);
+    canonize_path(buff);
 }
 
-char *CFileSystem::getFileName(const char *name)
+void CFileSystem::getFileName(const char *name, char *outName, int iOutBuff)
 {
     WIN32_FIND_DATAA wfd;
     HANDLE hFind = FindFirstFile(name, &wfd);
 
-    FIND_CLOSE(hFind);
+    if (hFind != INVALID_HANDLE_VALUE)
+    {
+        FIND_CLOSE(hFind);
 
-    char *fn = new char[MAX_PATH];
-    memcpy(fn, wfd.cFileName, MAX_PATH);
-
-    return fn;
+        //Если размера буфера хватает - то записываем имя файла, если нет то записываем в [0] '\0'
+        iOutBuff > MAX_PATH ? memcpy(outName, wfd.cFileName, MAX_PATH) : MEMCCPY_ERROR(outName);
+    }
 }
 
 time_t CFileSystem::filetimeToTime_t(const FILETIME& ft)
@@ -187,21 +185,17 @@ String *CFileSystem::copyFile(const char* szPath)
 {
     createDirectory(m_filePaths[m_writableRoot].c_str());
 
-    char *fn = getFileName(szPath);
+    char fn[MAX_PATH];
+    getFileName(szPath, fn, MAX_PATH);
     String *newFilePath = new String(m_filePaths[m_writableRoot] + '/' + fn);
     CopyFile(szPath, newFilePath->c_str(), false);
-
-    mem_delete_a(fn);
 
     return newFilePath;
 }
 
 CFileSystem::CFileSystem()
 {
-    char *path = getFullPathToBuild();
-    m_pathToBuild = path;
-
-    mem_delete_a(path);
+    getFullPathToBuild(m_pathToBuild, SIZE_PATH);
 }
 
 UINT CFileSystem::addRoot(const char *szPath, int iPriority)
@@ -247,9 +241,9 @@ void CFileSystem::setWritableRoot(UINT id)
     m_writableRoot = id;
 }
 
-bool CFileSystem::resolvePath(const char *szPath, char *szOut, int iOutMax)
+bool CFileSystem::resolvePath(const char *szPath, char *szOut, size_t iOutMax)
 {
-    int len = 0;
+    size_t len = 0;
 
     if (isAbsolutePath(szPath))
     {
@@ -292,7 +286,7 @@ bool CFileSystem::fileExists(const char *szPath)
         return false;
     }
 
-    return fileGetSize(path) != -1;
+    return fileGetSize(path) != FILE_NOT_FOUND;
 }
 
 size_t CFileSystem::fileGetSize(const char *szPath)
@@ -302,7 +296,7 @@ size_t CFileSystem::fileGetSize(const char *szPath)
 
     if (CHECK_CORRECT_PATH(path))
     {
-        return false;
+        return FILE_NOT_FOUND;
     }
 
 	WIN32_FILE_ATTRIBUTE_DATA lpFileInformation;
@@ -311,7 +305,7 @@ size_t CFileSystem::fileGetSize(const char *szPath)
 
 	//Преобразование размера из старших и младших бит
 	ULONGLONG FileSize = (static_cast<ULONGLONG>(lpFileInformation.nFileSizeHigh) <<
-		sizeof(lpFileInformation.nFileSizeLow) * sizeof(ULONGLONG)) |
+        sizeof(lpFileInformation.nFileSizeLow) * NUM_BITS_IN_BYTE) |
 		lpFileInformation.nFileSizeLow;
 
 	//Если result != 0 то все хорошо, если 0 то файл не найден
@@ -388,22 +382,21 @@ IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char 
 
 bool CFileSystem::createDirectory(const char *szPath)
 {
-    char *p = getNormalPath(szPath);
-    bool noError = SHCreateDirectoryEx(nullptr, p, nullptr) == NO_ERROR;
+    char path[SIZE_PATH];
+    getNormalPath(szPath, path, SIZE_PATH);
 
-    mem_delete_a(p);
-
-    return noError;
+    return SHCreateDirectoryEx(nullptr, path, nullptr) == NO_ERROR;
 }
 
 bool CFileSystem::deleteDirectory(const char *szPath)
 {
-    char *p = getNormalPath(szPath);
+    char path[SIZE_PATH];
+    getNormalPath(szPath, path, SIZE_PATH);
 
     SHFILEOPSTRUCT file_op = {
         NULL,
         FO_DELETE,
-        p,
+        path,
         "",
         FOF_NOCONFIRMATION |
         FOF_NOERRORUI |
@@ -411,8 +404,6 @@ bool CFileSystem::deleteDirectory(const char *szPath)
         false,
         0,
         "" };
-
-    mem_delete_a(p);
 
     // Если вернуло не 0, то все плохо
     return SHFileOperation(&file_op) == NO_ERROR;
@@ -453,7 +444,7 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
 
     String *newFileName;
 
-    if (!fullPath)
+    if (CHECK_CORRECT_PATH(fullPath))
     {
         newFileName = new String(m_filePaths[m_writableRoot].c_str());
         *newFileName += '/';
@@ -469,16 +460,14 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
     //Если путь в корне, и файла не существует - создаем его
     if (inRoot && !fileExists(fullPath))
     {
-        unsigned len = strlen(fullPath) + 1;
-        char *dn = new char[len];
+        size_t len = strlen(fullPath) + 1;
+        char dirName[SIZE_PATH];
 
-        memcpy(dn, fullPath, len);
-        dirname(dn);
-        len = strlen(dn);
-        dn[len - 1] = '\0';
-        createDirectory(dn);
-
-        mem_delete_a(dn);
+        memcpy(dirName, fullPath, len);
+        dirname(dirName);
+        len = strlen(dirName);
+        dirName[len - 1] = '\0';
+        createDirectory(dirName);
     }
     //Если путь не в корне и его не существует - на выход
     else if (!fileExists(fullPath))
@@ -490,7 +479,7 @@ IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE
     else if (!inRoot)
     {
         newFileName = copyFile(fullPath);
-        unsigned lenPath = strlen(fullPath) + 1;
+        size_t lenPath = strlen(fullPath) + 1;
         
         if (lenPath < newFileName->length())
         {

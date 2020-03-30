@@ -12,10 +12,11 @@ See the license in LICENSE
 #include <gdefines.h>
 #include <common/array.h>
 #include <chrono>
+#include <mutex>
 
 #include "proptable.h"
 
-typedef std::chrono::system_clock::time_point time_point;
+typedef std::chrono::high_resolution_clock::time_point time_point;
 
 class CBaseEntity;
 struct ISXConfig;
@@ -137,6 +138,9 @@ protected:
 	ISXConfig *m_pDynClassConf;
 
 	bool m_isEditorMode = false;
+
+	std::mutex m_mxTimeout;
+	std::mutex m_mxInterval;
 };
 
 #endif

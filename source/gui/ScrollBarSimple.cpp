@@ -1,5 +1,6 @@
 #include "ScrollBarSimple.h"
 #include "IRenderFrame.h"
+#include "DOMdocument.h"
 
 namespace gui
 {
@@ -27,7 +28,8 @@ namespace gui
 
 			void CScrollBarSimple::render()
 			{
-				static CPITexture texWhite = CTextureManager::getTexture(TEX_WHITE);
+				
+				static CPITexture texWhite = m_pParent->getNode()->getDocument()->getDesktopStack()->getTextureManager()->getTexture(TEX_WHITE);
 			//	static CSHADER shText = CTextureManager::loadShader(L"text");
 			//	GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
 
@@ -35,7 +37,7 @@ namespace gui
 				SGCore_ShaderBind(shader.m_idShaderKit);
 
 			//	CTextureManager::bindShader(shText);
-				CTextureManager::bindTexture(texWhite);
+				m_pParent->getNode()->getDocument()->getDesktopStack()->getTextureManager()->bindTexture(texWhite);
 			//	float4_t asd(1, 1, 1, 0.5);
 
 				static IGXConstantBuffer *s_pColorConstant = NULL;
@@ -64,10 +66,10 @@ namespace gui
 				point *pData;
 				if(m_pVertices->lock((void**)&pData, GXBL_WRITE))
 				{
-					pData[0] = {P, P + T, 0, 0, 0};
-					pData[1] = {W - P, P + T, 0, 0, 1};
-					pData[2] = {W - P, P + T + S, 0, 1, 1};
-					pData[3] = {P, P + T + S, 0, 1, 0};
+					pData[0] = {(float)P, (float)(P + T), 0.0f, 0.0f, 0.0f};
+					pData[1] = {(float)(W - P), (float)(P + T), 0.0f, 0.0f, 1.0f};
+					pData[2] = {(float)(W - P), (float)(P + T + S), 0.0f, 1.0f, 1.0f};
+					pData[3] = {(float)P, (float)(P + T + S), 0.0f, 1.0f, 0.0f};
 
 					if(m_eDir == SCROLLBAR_DIR_HORIZONTAL)
 					{
@@ -108,10 +110,13 @@ namespace gui
 						else
 						{
 							int P = 4; // Padding 4px
-							int S = m_iLength * (m_iLength - P) / m_iScrollMax;
+							//int S = m_iLength * (m_iLength - P) / m_iScrollMax;
+
+							int S = m_iLength * (m_iLength - P) / (m_iScrollMax + m_iLength);
 
 							int delta = ev.clientY - m_iDragPos;
 							m_pParent->setScrollTop(m_iScrollStart + delta * m_iScrollMax / (m_iLength - 2 * P - S));
+							//m_pParent->setScrollTop(m_iScrollStart + delta * (m_iLength - 2 * P) / m_iScrollMax);
 						}
 					}
 				}

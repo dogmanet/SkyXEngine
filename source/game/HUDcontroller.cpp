@@ -9,7 +9,7 @@ CHUDcontroller::CHUDcontroller():
 	m_iWeaponCurrentLoad(0),
 	m_fAimRange(-1.0f)
 {
-	m_pDesktop = GameData::m_pGUI->createDesktopA("game_hud", "ingame.html");
+	m_pDesktop = GameData::m_pGUIStack->createDesktopA("game_hud", "ingame.html");
 
 	m_pMinimapSpin = m_pDesktop->getDocument()->getElementById(L"minimap_spin");
 	m_pMinimapPan = m_pDesktop->getDocument()->getElementById(L"minimap_pan");
@@ -39,12 +39,12 @@ CHUDcontroller::CHUDcontroller():
 
 CHUDcontroller::~CHUDcontroller()
 {
-	m_pDesktop->release();
+	mem_release(m_pDesktop);
 }
 
 void CHUDcontroller::activate()
 {
-	GameData::m_pGUI->setActiveDesktop(m_pDesktop);
+	GameData::m_pGUIStack->setActiveDesktop(m_pDesktop);
 }
 
 void CHUDcontroller::setPlayerPos(const float3 & vPosition)

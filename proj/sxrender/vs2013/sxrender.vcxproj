@@ -71,13 +71,13 @@
     <OutDir>../../../build/bin/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <SourcePath>$(VC_SourcePath);../../../source</SourcePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);../../../libs</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSdk_LibraryPath_x86);../../../libs</LibraryPath>
     <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)_d</TargetName>
     <SourcePath>$(VC_SourcePath);../../../source</SourcePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSdk_71A_LibraryPath_x64);../../../libs64</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSdk_LibraryPath_x64);../../../libs64</LibraryPath>
     <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin64/</OutDir>
@@ -86,12 +86,12 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/</OutDir>
     <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSdk_71A_LibraryPath_x86);../../../libs</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSdk_LibraryPath_x86);../../../libs</LibraryPath>
     <SourcePath>$(VC_SourcePath);../../../source</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSdk_71A_LibraryPath_x64);../../../libs64</LibraryPath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSdk_LibraryPath_x64);../../../libs64</LibraryPath>
     <SourcePath>$(VC_SourcePath);../../../source</SourcePath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin64/</OutDir>
@@ -183,6 +183,7 @@
     <ClInclude Include="..\..\..\source\common\string.h" />
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\render\gdata.h" />
+    <ClInclude Include="..\..\..\source\render\OcclusionCuller.h" />
     <ClInclude Include="..\..\..\source\render\RenderableVisibility.h" />
     <ClInclude Include="..\..\..\source\render\RenderPipeline.h" />
     <ClInclude Include="..\..\..\source\render\render_func.h" />
@@ -195,6 +196,7 @@
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\render\gdata.cpp" />
+    <ClCompile Include="..\..\..\source\render\OcclusionCuller.cpp" />
     <ClCompile Include="..\..\..\source\render\RenderableVisibility.cpp" />
     <ClCompile Include="..\..\..\source\render\RenderPipeline.cpp" />
     <ClCompile Include="..\..\..\source\render\render_func.cpp" />

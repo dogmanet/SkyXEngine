@@ -37,29 +37,25 @@ namespace gui
 	class IEvent
 	{
 	public:
-		IEvent():propagate(true), key(0), syskey(false), target(NULL), relatedTarget(NULL), clientX(0), clientY(0),
-			offsetX(0), offsetY(0), currentTarget(NULL), preventDefault(false)
-		{
-		}
 		void stopPropagation() // cancel bubble
 		{
 			propagate = false;
 		}
 		//protected:
-		GUI_EVENT_TYPE type;
-		bool propagate;
-		UINT key;
-		bool syskey;
-		bool preventDefault;
+		GUI_EVENT_TYPE type = GUI_EVENT_TYPE_UNKNOWN;
+		bool propagate = true;
+		UINT key = 0;
+		bool syskey = false;
+		bool preventDefault = false;
 
-		dom::IDOMnode * target;
-		dom::IDOMnode * relatedTarget;
-		dom::IDOMnode * currentTarget;
+		dom::IDOMnode *target = NULL;
+		dom::IDOMnode *relatedTarget = NULL;
+		dom::IDOMnode *currentTarget = NULL;
 
-		int clientX;
-		int clientY;
-		int offsetX;
-		int offsetY;
+		int clientX = 0;
+		int clientY = 0;
+		int offsetX = 0;
+		int offsetY = 0;
 	};
 };
 

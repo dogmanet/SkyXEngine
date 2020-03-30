@@ -1,0 +1,22 @@
+
+/*
+gbuffer.ps
+
+*/
+
+#include "../struct.h"
+#include "../mtrl.h"
+#include "../const.h"
+#include "../xmat.h"
+
+//##########################################################################
+
+float4 main(PSI_XMaterial IN):COLOR0
+{
+	// ClipFar(IN.vPos.z, g_vNearFarLayers.y);
+	IN.vNormal = normalize(IN.vNormal);
+	
+	XMaterial mtrl = XMATERIAL_MAIN(IN);
+	
+	return(float4(mtrl.vEmissiveColor, 1.0));
+}

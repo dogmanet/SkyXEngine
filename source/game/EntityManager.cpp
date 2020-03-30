@@ -10,8 +10,6 @@ See the license in LICENSE
 
 #include <core/sxcore.h>
 
-#include <mutex>
-
 CEntityManager::CEntityManager():
 	m_iThreadNum(1),
 	m_pDefaultsConf(NULL),
@@ -279,7 +277,8 @@ ID CEntityManager::setTimeout(void(CBaseEntity::*func)(float dt), CBaseEntity *p
 	
 	ID id;
 	{
-		std::unique_lock<std::mutex> lock;
+		ScopedLock lock(m_mxTimeout);
+
 		if(m_vFreeTimeout.size())
 		{
 			id = m_vFreeTimeout[0];
@@ -307,17 +306,17 @@ ID CEntityManager::setInterval(void(CBaseEntity::*func)(float dt), CBaseEntity *
 
 	ID id;
 	{
-		std::unique_lock<std::mutex> lock;
-	if(m_vFreeInterval.size())
-	{
-		id = m_vFreeInterval[0];
-		m_vFreeInterval.erase(0);
-	}
-	else
-	{
-		id = m_vInterval.size();
-	}
-	m_vInterval[id] = t;
+		ScopedLock lock(m_mxInterval);
+		if(m_vFreeInterval.size())
+		{
+			id = m_vFreeInterval[0];
+			m_vFreeInterval.erase(0);
+		}
+		else
+		{
+			id = m_vInterval.size();
+		}
+		m_vInterval[id] = t;
 	}
 
 	return(id);
@@ -710,7 +709,7 @@ void CEntityManager::dumpList(int argc, const char **argv)
 
 	printf(COLOR_GREEN "-----------------------------------------------------\n"
 		COLOR_GREEN "    Filter: " COLOR_LGREEN "%s\n"
-		COLOR_GREEN "    Total count: " COLOR_LGREEN "%d\n"
+		COLOR_GREEN "    Total count: " COLOR_LGREEN "%u\n"
 		COLOR_GREEN "-----------------------------------------------------\n"
 		"  id  |          class           |       name       |\n"
 		"------|--------------------------|------------------|\n"

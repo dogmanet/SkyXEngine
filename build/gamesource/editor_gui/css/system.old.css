@@ -1,0 +1,244 @@
+
+body, button, div, html, iframe, img, label, p, span, checkbox, radio {
+	background-color: #00000000;
+	_text-decoration-line: none;
+	margin: 0;
+	padding: 0;
+	border-style: none;
+	border-width: 0;
+	float: none;
+	}	
+
+body, div, html, p
+{
+display: block;
+}
+
+body, div, p	{
+	display: block;
+	}
+
+button, span	{
+
+	display: inline;
+	}
+	
+img, iframe, video, checkbox, radio
+{
+	display: inline-block;
+	background-color: #00000000;
+	background-repeat: no-repeat;
+}
+
+video
+{
+	background-color: #000000;
+}
+
+html	{
+	font-name: arial;
+	font-size: 16px; 
+	font-weight: normal;
+	color: #000000;
+	background-color: #00000044;
+
+	text-align: left;
+	}
+
+body	{
+	padding: 8px;
+	}
+
+p { 
+	_margin: 1.12em 0; 
+	}
+
+table, td, th, tr	{
+	background-color: #00000000;
+	text-decoration-line: none;
+	margin: 1px;
+	padding: 1px;
+	border-style: none;
+	float: none;
+	}
+
+table, tr	{
+	display: block;
+	background-position: 0 0;
+	}
+
+td, th	{ 
+	display: inline;
+	font-size: 1em;
+	color: #000000;
+	text-align: left;
+	}
+
+th	{
+	font-weight: 22px;
+	text-align: center;
+	}
+
+br {
+	display: block;
+	height: 16px;
+	visibility: hidden;
+}
+
+button
+{
+	display: inline-block;
+	background-color: #d2cdc9;
+	
+	border-top-color: #fbfbfb;
+	border-left-color: #fbfbfb;
+	
+	border-right-color: #3d3d3d;
+	border-bottom-color: #3d3d3d;
+	
+	border-top-width: 2px;
+	border-left-width: 2px;
+	border-right-width: 2px;
+	border-bottom-width: 2px;
+	
+	padding: 3px;
+	
+	//width: 100px;
+	
+	color: #222;
+	
+	text-align: center;
+	
+	font-size: 13px;
+	
+	//border-radius: 5px;
+	
+	border-bottom-right-method: cut;
+	border-bottom-left-method: cut;
+	border-top-right-method: cut;
+	border-top-left-method: cut;
+	cursor: pointer;
+}
+
+button:focus
+{
+	background-color: #e2ddd9;
+}
+
+button:hover
+{
+	background-color: #f2ede9;
+}
+
+button:active
+{
+	//color: #FFF;
+	//font-weight: bold;
+	
+	border-top-color: #3d3d3d;
+	border-left-color: #3d3d3d;
+	
+	border-right-color: #fbfbfb;
+	border-bottom-color: #fbfbfb;
+	
+	//background-color: #827d79;
+	
+	//padding: 4px 2px 2px 4px;
+	
+	//display: none;
+}
+
+input, textarea, password
+{
+	display: inline-block;
+	background-color: #d2cdc9;
+	
+	border-top-color: #3d3d3d;
+	border-left-color: #3d3d3d;
+	
+	border-right-color: #fbfbfb;
+	border-bottom-color: #fbfbfb;
+	
+	border-top-width: 1px;
+	border-left-width: 1px;
+	border-right-width: 1px;
+	border-bottom-width: 1px;
+	
+	padding: 3px;
+	
+	width: 150px;
+	
+	color: #222;
+	
+	//text-align: center;
+	
+	font-size: 13px;
+	//height: 19px;
+	-gui-text-appearance: one-line;
+	//-gui-text-format: preformatted;
+	cursor: text;
+}
+
+
+
+textarea
+{
+	-gui-text-appearance: multi-line;
+	height: 150px;
+	text-align: center;
+}
+
+password
+{
+	-gui-text-char-replace: *;
+}
+
+input:focus, textarea:focus
+{
+	-gui-text-cursor: show;
+}
+
+
+checkbox
+{
+	background-image: /dev/checkbox.png;
+	width: 13px;
+	height: 13px;
+	cursor: pointer;
+}
+
+checkbox:active
+{
+	background-image: /dev/checkbox_act.png;
+}
+
+radio
+{
+	border-radius: 6px;
+	//-image: /dev/checkbox.png;
+	width: 12px;
+	height: 12px;
+	
+	border-top-color: #3d3d3d;
+	border-left-color: #3d3d3d;
+	
+	border-right-color: #fbfbfb;
+	border-bottom-color: #fbfbfb;
+	
+	border-width: 2px;
+	
+	background-color: #FFFFFF;
+	cursor: pointer;
+}
+
+radio:active
+{
+	background-image: /dev/radio.png;
+}
+
+label
+{
+	display: inline-block;
+	font-size: 13px;
+	padding-left: 5px;
+}

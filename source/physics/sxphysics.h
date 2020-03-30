@@ -36,6 +36,7 @@ See the license in LICENSE
 #include <BulletDynamics/Dynamics/btDiscreteDynamicsWorldMt.h>
 #include "IXPhysics.h"
 #include <xcommon/resource/IXResourceModel.h>
+#include <xcommon/IXMutationObserver.h>
 
 //! Описатель физических свойств поверхности
 struct SurfaceInfo
@@ -123,6 +124,7 @@ SX_LIB_API void SPhysics_ReleaseHull(btVector3 *pData, int iNumVertices);
 SX_LIB_API btCollisionShape* SPhysics_CreateTrimeshShape(const XResourceModelStaticSubset *pSubset);
 SX_LIB_API void SPhysics_ReleaseTrimeshShape(btCollisionShape *pShape);
 
+SX_LIB_API IXMutationObserver* SPhysics_NewMutationObserver();
 
 #endif
 

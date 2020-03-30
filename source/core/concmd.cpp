@@ -275,7 +275,7 @@ SX_LIB_API void Core_0ConsoleUpdate()
 	}
 	if(!g_cbufStack.IsEmpty())
 	{
-		g_vCommandBuffer = g_cbufStack.pop();
+		g_cbufStack.pop(&g_vCommandBuffer);
 	}
 
 	//execute command buffer
@@ -455,7 +455,7 @@ void cmd_perf_dump()
 	};
 
 
-	std::chrono::system_clock::time_point tStart, tEnd, tSync;
+	std::chrono::high_resolution_clock::time_point tStart, tEnd, tSync;
 
 	Array<Array<const CPerfRecord*>> aaRecords;
 	Array<const CPerfRecord*> aRecords;
@@ -749,12 +749,7 @@ bool ConsoleConnect(const char *szName, bool bNewInstance)
 
 	FreeConsole();
 
-	hOut = _open_osfhandle(ConnectSocket, O_RDONLY | O_RDWR | O_WRONLY | _O_APPEND);
-	fOut = ::fdopen(hOut, "a+");
-	::setvbuf(fOut, NULL, _IONBF, 0);
-
-	*stdout = *fOut;
-	*stderr = *fOut;
+	Core_SetOutPtr();
 
 	g_bRunning = true;
 	//_beginthread(ConsoleRecv, 0, 0);
@@ -768,19 +763,14 @@ void ConsoleDisconnect()
 
 	g_bRunning = false; 
 
-	
-	if(fOut)
-	{
-	fclose(fOut);
-	}
-	/*int iResult = shutdown(ConnectSocket, SD_SEND);
+	int iResult = shutdown(ConnectSocket, SD_SEND);
 	if(iResult == SOCKET_ERROR)
 	{
 		printf("shutdown failed with error: %d\n", WSAGetLastError());
 		goto end;
-	}*/
-//end:
-	//closesocket(ConnectSocket);
+	}
+end:
+	closesocket(ConnectSocket);
 	WSACleanup();
 	//Sleep(1000);
 	CommandDisconnect();

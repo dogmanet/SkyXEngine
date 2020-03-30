@@ -6,6 +6,8 @@
 #include <common/array.h>
 #include <light/IXLightSystem.h>
 #include "ShadowCache.h"
+#include <xUI/IXUI.h>
+#include "OcclusionCuller.h"
 
 #define MAX_TRANSPARENCY_CLIP_PANES 4
 
@@ -49,6 +51,8 @@ protected:
 	void showTexture(IGXTexture2D *pTexture);
 	void showFrameStats();
 
+	IXUI* getXUI();
+
 	struct _render_sys
 	{
 		IXRenderable *pRenderable;
@@ -71,8 +75,11 @@ protected:
 	UINT m_uOutHeight;
 
 	IXRenderableVisibility *m_pMainCameraVisibility = NULL;
+	COcclusionCuller *m_pMainCameraOcclusionCuller = NULL;
 
 	IXLightSystem *m_pLightSystem = NULL;
+
+	IXUI *m_pXUI = NULL;
 
 	//! G-Buffer
 	IGXTexture2D *m_pGBufferColor = NULL;
@@ -90,6 +97,7 @@ protected:
 	//! Буфер тени
 	IGXTexture2D *m_pShadow = NULL;
 
+	IGXDepthStencilState *m_pDepthStencilStateDefault = NULL;
 	IGXDepthStencilState *m_pDepthStencilStateNoZWrite = NULL;
 	IGXDepthStencilState *m_pDepthStencilStateNoZ = NULL;
 	IGXBlendState *m_pBlendStateAlpha = NULL;
@@ -232,6 +240,14 @@ protected:
 
 	ID m_idLightBoundShader = -1;
 	ID m_idLPVPropagateShader = -1;
+
+	//###################################
+
+	XRenderPassHandler *m_pRenderPassGBuffer = NULL;
+	XRenderPassHandler *m_pRenderPassTransparency = NULL;
+	XRenderPassHandler *m_pRenderPassIllumination = NULL;
+	XRenderPassHandler *m_pRenderPassPostprocess = NULL;
+	XRenderPassHandler *m_pRenderPassShadow = NULL;
 };
 
 #endif

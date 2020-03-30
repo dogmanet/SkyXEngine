@@ -779,8 +779,8 @@ int main(int argc, char ** argv)
 	g_iCurColorFG = g_pColor->getDefaultFG();
 
 
-	csbi.dwMaximumWindowSize.X;
-	csbi.dwMaximumWindowSize.Y;
+	//csbi.dwMaximumWindowSize.X;
+	//csbi.dwMaximumWindowSize.Y;
 	SetColor(ANSI_LCYAN);
 	WriteOutput("SkyXEngine Console\n");
 	SetColor(g_pColor->getDefaultFG());

@@ -8,7 +8,7 @@
 
 CMainMenuGameState::CMainMenuGameState()
 {
-	m_pDesktop = GameData::m_pGUI->createDesktopA("menu_main", "menu/main.html");
+	m_pDesktop = GameData::m_pGUIStack->createDesktopA("menu_main", "menu/main.html");
 
 	gui::dom::IDOMnode *pNode = m_pDesktop->getDocument()->getElementById(L"engine_version");
 	static const char **pszVersion = GET_PCVAR_STRING("engine_version");
@@ -20,19 +20,19 @@ CMainMenuGameState::CMainMenuGameState()
 
 CMainMenuGameState::~CMainMenuGameState()
 {
-	m_pDesktop->release();
+	mem_release(m_pDesktop);
 }
 
 void CMainMenuGameState::activate()
 {
-	GameData::m_pGUI->setActiveDesktop(m_pDesktop);
+	GameData::m_pGUIStack->setActiveDesktop(m_pDesktop);
 }
 
 //##########################################################################
 
 CIngameMenuGameState::CIngameMenuGameState()
 {
-	m_pDesktop = GameData::m_pGUI->createDesktopA("menu_ingame", "menu/ingame.html");
+	m_pDesktop = GameData::m_pGUIStack->createDesktopA("menu_ingame", "menu/ingame.html");
 
 	gui::dom::IDOMnode *pNode = m_pDesktop->getDocument()->getElementById(L"engine_version");
 	static const char **pszVersion = GET_PCVAR_STRING("engine_version");
@@ -44,12 +44,12 @@ CIngameMenuGameState::CIngameMenuGameState()
 
 CIngameMenuGameState::~CIngameMenuGameState()
 {
-	m_pDesktop->release();
+	mem_release(m_pDesktop);
 }
 
 void CIngameMenuGameState::activate()
 {
-	GameData::m_pGUI->setActiveDesktop(m_pDesktop);
+	GameData::m_pGUIStack->setActiveDesktop(m_pDesktop);
 }
 
 //##########################################################################

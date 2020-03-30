@@ -212,7 +212,7 @@ void CShaderPreprocessor::undefTemp()
 
 String CShaderPreprocessor::process(const char *src, const char *file)
 {
-	AssotiativeArray<String, _define> mDefs = m_mDefs;
+//	AssotiativeArray<String, _define> mDefs = m_mDefs;
 	int len = strlen(src);
 
 	Array<char, 1024> out;
@@ -267,7 +267,7 @@ String CShaderPreprocessor::process(const char *src, const char *file)
 			if(ch == '\n')
 			{
 				isOnelineComment = false;
-				out.push_back(ch);
+				// out.push_back(ch);
 			}
 			else
 			{
@@ -324,19 +324,19 @@ String CShaderPreprocessor::process(const char *src, const char *file)
 			{
 				if(sDirective)
 				{
-					if(!(ch == '\n' || ch == '\r') || cp == '\\')
+					if(ch != '\n' || cp == '\\')
 					{
 						dir += ch;
 					}
 				}
-				else if((!(ch == '\n' || ch == '\r') || cp == '\\') && bCondState)
+				else if((ch != '\n' || cp == '\\') && bCondState)
 				{
 					str += ch;
 					//out.push_back(ch);
 				}
 			}
 
-			if((ch == '\n' || ch == '\r') && cp != '\\')
+			if(ch == '\n' && cp != '\\')
 			{
 				/*if(!sNewLine)
 				{
@@ -476,8 +476,8 @@ String CShaderPreprocessor::process(const char *src, const char *file)
 						}
 						else
 						{
-							bCondState = bCondStack.pop();
-							wasElifSucceded = wasElifSuccededStack.pop();
+							bCondStack.pop(&bCondState);
+							wasElifSuccededStack.pop(&wasElifSucceded);
 						}
 					}
 					else if(dName == "include")
@@ -485,6 +485,7 @@ String CShaderPreprocessor::process(const char *src, const char *file)
 						if(bCondState)
 						{
 							String path;
+							dArgs = makeExpansion(dArgs).trim();
 							bool isLocal = dArgs[0] == '"';
 							String inc = getInclude(dArgs.substr(1, dArgs.length() - 2), file, &path, isLocal);
 							inc = process(inc.c_str(), path.c_str());
@@ -535,11 +536,12 @@ String CShaderPreprocessor::process(const char *src, const char *file)
 		}
 		else if((ch == '\n'/* || ch == '\r'*/) && cp != '\\')
 		{
+			str = "";
 			out.push_back(ch);
 		}
-		if(ch != '\r')
+		else
 		{
-			cp = ch;
+			str += ch;
 		}
 	}
 
@@ -559,7 +561,7 @@ String CShaderPreprocessor::process(const char *src, const char *file)
 	a = istrue("(true || false) && true");
 	*/
 
-	m_mDefs = mDefs; ///< restore original defines
+//	m_mDefs = mDefs; ///< restore original defines
 
 	return(sOut);
 }
@@ -584,12 +586,7 @@ bool CShaderPreprocessor::isTrue(const String &_expr)
 	bool bPointFound = false;
 	float fVal = 0.0f;
 	float fMult = 1.0f;
-
-
-
-	fVal = 0.0f;
-	fMult = 1.0f;
-
+	
 	const char * szStr = expr.c_str();
 
 	iLen = expr.length();
@@ -606,7 +603,7 @@ bool CShaderPreprocessor::isTrue(const String &_expr)
 			if(!bReadingNumber)
 			{
 				bReadingNumber = true;
-				float fMult = 1.0f;
+				fMult = 1.0f;
 				if(szStr[i] == '.')
 				{
 					bPointFound = true;
@@ -787,12 +784,20 @@ bool CShaderPreprocessor::isTrue(const String &_expr)
 
 String CShaderPreprocessor::makeExpansion(const String &expr)
 {
+	if(!expr.length())
+	{
+		return("");
+	}
 	ReplList rlist;
 	return(makeExpansion(expr, rlist));
 }
 
 String CShaderPreprocessor::makeExpansion(const String &_expr, ReplList &rlist)
 {
+	if(!_expr.length())
+	{
+		return("");
+	}
 	String tok;
 	String expr = _expr;
 	if(!isspace(0xFF & _expr[_expr.length() - 1]))
@@ -887,9 +892,9 @@ String CShaderPreprocessor::makeExpansion(const String &_expr, ReplList &rlist)
 			}
 			if(!sStripNext)
 			{
-				if(tok.length() && m_mDefs.KeyExists(tok) && (!rlist.KeyExists(tok) || !rlist[tok]))
+				if(tok.length() && m_mDefs.KeyExists(tok) && !(pDef = &(m_mDefs[tok]))->isUndef && (!rlist.KeyExists(tok) || !rlist[tok]))
 				{
-					pDef = &(m_mDefs[tok]);
+					// pDef = &(m_mDefs[tok]);
 					if(pDef->isMacro)
 					{
 						sWaitArgs = true;
@@ -919,6 +924,10 @@ String CShaderPreprocessor::makeExpansion(const String &_expr, ReplList &rlist)
 
 String CShaderPreprocessor::replArgs(const String &_expr, const _define *pDef, const Array<String> &szArgs)
 {
+	if(!_expr.length())
+	{
+		return("");
+	}
 	String tok, tok_prev;
 	String expr = _expr;
 	if(!isspace(0xFF & _expr[_expr.length() - 1]))
@@ -1301,7 +1310,7 @@ static citem_t* Calculate(citem_t *pStart)
 					case 0:
 						if(tok == TOK_OP_GREATER)
 						{
-							result = result > pCur->val.f;
+							result = (result > pCur->val.f) ? 1.0f : 0.0f;
 							if(pSP == NULL)
 							{
 								pSP = pCur->pPrev;
@@ -1309,7 +1318,7 @@ static citem_t* Calculate(citem_t *pStart)
 						}
 						if(tok == TOK_OP_GREATER_EQUAL)
 						{
-							result = result >= pCur->val.f;
+							result = (result >= pCur->val.f) ? 1.0f : 0.0f;
 							if(pSP == NULL)
 							{
 								pSP = pCur->pPrev;
@@ -1317,7 +1326,7 @@ static citem_t* Calculate(citem_t *pStart)
 						}
 						if(tok == TOK_OP_LESSER_EQUAL)
 						{
-							result = result <= pCur->val.f;
+							result = (result <= pCur->val.f) ? 1.0f : 0.0f;
 							if(pSP == NULL)
 							{
 								pSP = pCur->pPrev;
@@ -1325,7 +1334,7 @@ static citem_t* Calculate(citem_t *pStart)
 						}
 						if(tok == TOK_OP_LESSER)
 						{
-							result = result > pCur->val.f;
+							result = (result > pCur->val.f) ? 1.0f : 0.0f;
 							if(pSP == NULL)
 							{
 								pSP = pCur->pPrev;
@@ -1333,7 +1342,7 @@ static citem_t* Calculate(citem_t *pStart)
 						}
 						if(tok == TOK_OP_EQUAL)
 						{
-							result = result == pCur->val.f;
+							result = (result == pCur->val.f) ? 1.0f : 0.0f;
 							if(pSP == NULL)
 							{
 								pSP = pCur->pPrev;
@@ -1341,7 +1350,7 @@ static citem_t* Calculate(citem_t *pStart)
 						}
 						if(tok == TOK_OP_NOT_EQUAL)
 						{
-							result = result != pCur->val.f;
+							result = (result != pCur->val.f) ? 1.0f : 0.0f;
 							if(pSP == NULL)
 							{
 								pSP = pCur->pPrev;
@@ -1521,6 +1530,11 @@ void CShaderPreprocessor::reset()
 	}
 
 	m_sError = "";
+}
+
+void CShaderPreprocessor::clearIncludeCache()
+{
+	m_mIncludes.clear();
 }
 
 UINT CShaderPreprocessor::getIncludesCount()

@@ -42,6 +42,13 @@ public:
 
 	ID XMETHODCALLTYPE getThreadId() override; 
 	bool XMETHODCALLTYPE isOnMainThread() override;
+	
+	IXConfig* XMETHODCALLTYPE CCore::newConfig() override;
+
+	const char** XMETHODCALLTYPE getPCVarString(const char *szName) override;
+	const int* XMETHODCALLTYPE getPCVarInt(const char *szName) override;
+	const float* XMETHODCALLTYPE getPCVarFloat(const char *szName) override;
+	const bool* XMETHODCALLTYPE getPCVarBool(const char *szName) override;
 
 protected:
 	IBaseEventChannel* getEventChannelInternal(const XGUID &guid) override;
@@ -67,7 +74,7 @@ protected:
 	CTimeManager *m_pTimers = NULL;
 	CTaskManager *m_pTaskManager = NULL;
 
-	std::chrono::system_clock::time_point m_tLastUpdateTime;
+	std::chrono::high_resolution_clock::time_point m_tLastUpdateTime;
 };
 
 #endif

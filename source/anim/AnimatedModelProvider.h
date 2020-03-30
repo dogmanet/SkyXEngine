@@ -35,6 +35,8 @@ public:
 	void scheduleSharedGPUinit(CAnimatedModelShared *pShared);
 	void scheduleModelGPUinit(CAnimatedModel *pModel);
 
+	void bindVertexFormat();
+
 protected:
 	AssotiativeArray<IXResourceModelAnimated*, Array<CAnimatedModelShared*>> m_mModels;
 
@@ -47,6 +49,9 @@ protected:
 
 	CConcurrentQueue<CAnimatedModelShared*> m_queueGPUinitShared;
 	CConcurrentQueue<CAnimatedModel*> m_queueGPUinitModel;
+
+	IXMaterialSystem *m_pMaterialSystem = NULL;
+	XVertexShaderHandler *m_pVertexShaderHandler = NULL;
 };
 
 #endif

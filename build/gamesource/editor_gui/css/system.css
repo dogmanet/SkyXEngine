@@ -1,0 +1,272 @@
+
+body, button, div, html, iframe, img, label, p, span, checkbox, radio {
+	background-color: #00000000;
+	_text-decoration-line: none;
+	margin: 0;
+	padding: 0;
+	border-style: none;
+	border-width: 0;
+	float: none;
+	}	
+
+body, div, html, p
+{
+display: block;
+}
+
+
+button, span	{
+
+	display: inline;
+	}
+	
+img, iframe, video, checkbox, radio
+{
+	display: inline-block;
+	background-color: #00000000;
+	background-repeat: no-repeat;
+}
+
+video
+{
+	background-color: #000000;
+}
+
+html	{
+	font-name: BloggerSans;
+	font-size: 13px; 
+	font-weight: normal;
+	color: #c6f0fd;
+	//background-color: #00000044;
+	background-color: #00000099;
+
+	text-align: left;
+	}
+
+body	{
+	padding: 0px;
+	
+	background-image: /hud/grid.png;
+	height: 100%;
+	position: relative;
+	}
+
+p { 
+	_margin: 1.12em 0; 
+	}
+
+table, td, th, tr	{
+	background-color: #00000000;
+	text-decoration-line: none;
+	margin: 1px;
+	padding: 1px;
+	border-style: none;
+	float: none;
+	}
+
+table, tr	{
+	display: block;
+	background-position: 0 0;
+	}
+
+td, th	{ 
+	display: inline;
+	font-size: 1em;
+	color: #000000;
+	text-align: left;
+	}
+
+th	{
+	font-weight: 22px;
+	text-align: center;
+	}
+
+br {
+	display: block;
+	height: 16px;
+	visibility: hidden;
+}
+
+button
+{
+	display: inline-block;
+	background-color: #c6f0fd10;
+	
+	border-color: #c6f0fd90;
+	
+	border-top-width: 2px;
+	border-left-width: 2px;
+	border-right-width: 2px;
+	border-bottom-width: 2px;
+	
+	padding: 0px 4px 4px;
+	
+	//width: 100px;
+	
+	color: #c6f0fd;
+	
+	text-align: center;
+		
+	//border-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom-left-radius: 1px;
+	border-top-right-radius: 1px;
+	border-top-left-radius: 4px;
+	
+	border-bottom-right-method: cut;
+	border-bottom-left-method: cut;
+	border-top-right-method: cut;
+	border-top-left-method: cut;
+	//cursor: pointer;
+	
+	
+	
+	transition-property: background-color, border-color, color;
+	transition-duration: 0.2s, 0.2s, 0.2s;
+}
+
+button:focus
+{
+	background-color: #c6f0fd40;
+}
+
+button:hover
+{
+	background-color: #c6f0fd40;
+}
+
+button:active
+{
+	color: #FFF;
+	//font-weight: bold;
+	border-color: #c6f0fdf0;
+	
+	
+	
+	background-color: #c6f0fd90;
+}
+
+button:disabled
+{
+	background-color: #f0f0f010;
+	border-color: #f0f0f090;
+	color: #f0f0f080;
+	cursor: default;
+}
+
+input, textarea, password
+{
+	display: inline-block;
+	background-color: #d2cdc9;
+	
+	border-top-color: #3d3d3d;
+	border-left-color: #3d3d3d;
+	
+	border-right-color: #fbfbfb;
+	border-bottom-color: #fbfbfb;
+	
+	border-top-width: 1px;
+	border-left-width: 1px;
+	border-right-width: 1px;
+	border-bottom-width: 1px;
+	
+	padding: 3px;
+	
+	width: 150px;
+	
+	color: #222;
+	
+	//text-align: center;
+	
+	font-size: 13px;
+	//height: 19px;
+	-gui-text-appearance: one-line;
+	//-gui-text-format: preformatted;
+	cursor: text;
+}
+
+
+
+textarea
+{
+	-gui-text-appearance: multi-line;
+	height: 150px;
+	text-align: center;
+}
+
+password
+{
+	-gui-text-char-replace: *;
+}
+
+input:focus, textarea:focus
+{
+	-gui-text-cursor: show;
+}
+
+
+checkbox
+{
+	background-image: /dev/checkbox.png;
+	width: 13px;
+	height: 13px;
+	cursor: pointer;
+}
+
+checkbox:active
+{
+	background-image: /dev/checkbox_act.png;
+}
+
+label
+{
+	display: inline-block;
+	font-size: 13px;
+	padding-left: 5px;
+}
+
+range
+{
+	position: relative;
+	//background-color: #00ff0033;
+	display: block;
+	height: 30px;
+}
+
+range-bar
+{
+	display: block;
+	//background-color: #ff000066;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 70px;
+	bottom: 0;
+}
+range-text
+{
+	display: block;
+	//background-color: #0000ff66;
+	position: absolute;
+	top: 4px;
+	right: 0;
+	width: 70px;
+	text-align: center;
+	bottom: 4px;
+	font-size: 100%;
+}
+
+range-drag
+{
+	display: none;
+}
+range-meter
+{
+	display: block;
+	background-color: #ff00FFcc;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 33%;
+	bottom: 0;
+}

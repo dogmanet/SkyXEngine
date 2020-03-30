@@ -79,10 +79,7 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 
 		m_ppMaterialsBlob = new void*[m_uMaterialCount * m_uSkinCount + m_uSkinCount];
 		m_pppMaterials = (IXMaterial***)m_ppMaterialsBlob;
-		XSHADER_DEFAULT_DESC shaderDesc;
-		shaderDesc.szFileVS = "mtrlgeom_base.vs";
-		shaderDesc.szFilePS = "mtrlgeom_base.ps";
-
+		
 		const char *szMaterial;
 		for(UINT i = 0; i < m_uSkinCount; ++i)
 		{
@@ -94,7 +91,7 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 				szMaterial = m_pResource->getMaterial(j, i);
 				if(szMaterial && szMaterial[0])
 				{
-					m_pMaterialSystem->loadMaterial(szMaterial, &m_pppMaterials[i][j], &shaderDesc);
+					m_pMaterialSystem->loadMaterial(szMaterial, &m_pppMaterials[i][j]);
 				}
 				else if(i == 0)
 				{
@@ -299,6 +296,10 @@ UINT CDynamicModelShared::getPhysboxCount() const
 {
 	return(m_apPhysboxes.size());
 }
+bool CDynamicModelShared::isReady() const
+{
+	return(m_ppTempIndices != NULL);
+}
 const IModelPhysbox *CDynamicModelShared::getPhysBox(UINT id) const
 {
 	assert(id < m_apPhysboxes.size());
@@ -365,7 +366,7 @@ void CDynamicModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor, 
 	{
 		pSubset = &m_aLods[uLod][i];
 		
-		if(pSubset->uIndexCount != 0 && ((!m_pppMaterials[uSkin][i] && !isTransparent) || m_pppMaterials[uSkin][i]->isTransparent() == isTransparent))
+		if(pSubset->uIndexCount != 0 && m_pppMaterials[uSkin][i] && ((!m_pppMaterials[uSkin][i] && !isTransparent) || m_pppMaterials[uSkin][i]->isTransparent() == isTransparent))
 		{
 			m_pMaterialSystem->bindMaterial(m_pppMaterials[uSkin][i]);
 

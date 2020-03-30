@@ -27,6 +27,7 @@ public:
 	static CPointCamera * m_pActiveCamera;
 	static CEntityManager * m_pMgr;
 	static gui::IGUI * m_pGUI;
+	static gui::IDesktopStack * m_pGUIStack;
 	static CHUDcontroller * m_pHUDcontroller;
 	static CGameStateManager * m_pGameStateManager;
 	static IXLightSystem *m_pLightSystem;

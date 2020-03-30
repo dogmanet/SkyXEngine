@@ -50,6 +50,8 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 			}
 		}
 
+		Core_SetOutPtr(Core_GetIXCore());
+
 		Core_0RegisterCVarInt("r_texfilter_type", 2, "Тип фильтрации текстур, 0 - точечная, 1 - линейная, 2 - анизотропная");
 		Core_0RegisterCVarInt("r_texfilter_max_anisotropy", 16, "Максимальное значение анизотропной фильтрации (если включена) [1,16]");
 		Core_0RegisterCVarInt("r_texfilter_max_miplevel", 0, "Какой mip уровень текстур использовать? 0 - самый высокий, 1 - ниже на один уровень и т.д.");

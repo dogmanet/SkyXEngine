@@ -19,6 +19,7 @@ namespace gui
 			{
 			public:
 				IScrollBar(IRenderFrame * _parent, SCROLLBAR_DIR _dir);
+				virtual ~IScrollBar() = default;
 				void setLength(int len);
 				virtual void render() = 0;
 
@@ -27,16 +28,16 @@ namespace gui
 
 				void updateData();
 			protected:
-				IRenderFrame * m_pParent;
+				IRenderFrame *m_pParent;
 
-				int m_iScrollMax;
-				int m_iScrollCur;
-				int m_iLength;
+				int m_iScrollMax = 0;
+				int m_iScrollCur = 0;
+				int m_iLength = 0;
 				SCROLLBAR_DIR m_eDir;
 
-				bool m_bDragging;
-				int m_iDragPos;
-				int m_iScrollStart;
+				bool m_bDragging = false;
+				int m_iDragPos = 0;
+				int m_iScrollStart = 0;
 			};
 		};
 	};

@@ -3,9 +3,11 @@
 CFileExtIterator::CFileExtIterator(const char *szPath, const char *szExt)
 : m_sPath(szPath), m_szExt(szExt)
 {
+    char symbol = szPath[strlen(szPath) - 1];
+
     /*Дело в том что абсолютный путь к файлу может не иметь символ "/" 
     или "\\" на конце строки, и, если его не будет путь будет некорректен*/
-    if (szPath[strlen(szPath) != '\\'] || szPath[strlen(szPath) != '/'])
+    if (symbol != '\\' && symbol != '/')
     {
         m_sPath += '/';
     }

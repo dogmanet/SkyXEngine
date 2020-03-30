@@ -215,6 +215,14 @@ public:
 	{
 		pCore->getRenderPipeline(&m_pOldPipeline);
 		pCore->setRenderPipeline(this);
+
+		IPluginManager *pPluginManager = pCore->getPluginManager();
+		m_pMaterialSystem = (IXMaterialSystem*)pPluginManager->getInterface(IXMATERIALSYSTEM_GUID);
+
+		{
+			m_pRenderPassGeometry2D = m_pMaterialSystem->getRenderPass("xGBuffer");
+			// m_pRenderPassGeometry2D = m_pMaterialSystem->registerRenderPass("xEditor2D", "terrax/geom2d.ps", NULL, NULL, NULL, NULL, true);
+		}
 	}
 	~CRenderPipeline()
 	{
@@ -234,6 +242,8 @@ public:
 		IGXContext *pDXDevice = getDevice()->getThreadContext();
 		pDXDevice->setDepthStencilState(NULL);
 
+		m_pMaterialSystem->bindRenderPass(m_pRenderPassGeometry2D);
+
 		XRender3D();
 
 		//#############################################################################
@@ -249,6 +259,7 @@ public:
 		//#############################################################################
 
 		XUpdateSelectionBound();
+
 
 		for(int i = 0; i < 3; ++i)
 		{
@@ -375,6 +386,9 @@ public:
 
 	IXCore *m_pCore;
 	IXRenderPipeline *m_pOldPipeline = NULL;
+	IXMaterialSystem *m_pMaterialSystem = NULL;
+
+	XRenderPassHandler *m_pRenderPassGeometry2D = NULL;
 };
 
 #if defined(_WINDOWS)
@@ -402,7 +416,7 @@ int main(int argc, char **argv)
 		return(1);
 	}
 
-	// XInitGuiWindow(true);
+	 XInitGuiWindow(true);
 
 	//SkyXEngine_Init(g_hTopLeftWnd, g_hWndMain, lpCmdLine);
 	IXEngine *pEngine = XEngineInit(argc, argv, "TerraX");
@@ -412,7 +426,7 @@ int main(int argc, char **argv)
 	pEngine->getCore()->execCmd("gmode editor");
 	pEngine->getCore()->execCmd("exec ../config_editor.cfg");
 	CRenderPipeline *pPipeline = new CRenderPipeline(Core_GetIXCore());
-	// XInitGuiWindow(false);
+	 XInitGuiWindow(false);
 
 	RECT rcTopLeft;
 	GetClientRect(g_hTopLeftWnd, &rcTopLeft);
@@ -550,7 +564,7 @@ int main(int argc, char **argv)
 					if(szVal)
 					{
 						int iVal = 0;
-						if(sscanf(szVal, "%f", &iVal) && iVal >= -1 && iVal <= 2)
+						if(sscanf(szVal, "%d", &iVal) && iVal >= -1 && iVal <= 2)
 						{
 							g_xConfig.m_x2DView[i] = (X_2D_VIEW)iVal;
 						}

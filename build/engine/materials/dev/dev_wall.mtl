@@ -1,60 +1,11 @@
 [dev_wall]
-model = 0
-lighted = 0
-physmaterial = 0
-vs = mtrlgeom_base.vs
-ps = mtrlgeom_mr.ps
-alphatest = 0
-texture = dev_wall.dds
+shader = Default
+tex.txBase = dev_wall.dds
+tex.txNormals = dev_wall_normal.dds
 
-mask = 0
-microrelief_r = dev_wall_normal.dds
-microrelief_g = 0
-microrelief_b = 0
-microrelief_a = 0
-detail_r = 0
-detail_g = 0
-detail_b = 0
-detail_a = 0
+prop.pbr_roughness = 0.98
+prop.pbr_metallness = 0.59
+prop.pbr_thickness = 1
 
-vs_world = 1
-vs_view = 0
-vs_projection = 0
-vs_worldview = 0
-vs_worldviewprojection = 1
-vs_poscam = 0
-vs_timedelta = 0
-vs_winsize = 0
-vs_userdata = 0
-vs_userdata_x = 0.000000
-vs_userdata_y = 0.000000
-vs_userdata_z = 0.000000
-vs_userdata_w = 0.000000
-vs_userdata_trans_ps = 0
-
-ps_world = 0
-ps_view = 0
-ps_projection = 0
-ps_worldview = 0
-ps_worldviewprojection = 0
-ps_poscam = 0
-ps_timedelta = 0
-ps_winsize = 0
-ps_userdata = 1
-ps_userdata_x = 0.000000
-ps_userdata_y = 0.000000
-ps_userdata_z = -1.000000
-ps_userdata_w = 0.000000
-ps_userdata_trans_vs = 0
-
-use_texparamlight = 0
-texparamligth = 0
-roughness = 0.980000
-f0 = 0.570000
-thickness = 1.000000
 durability = 10.000000
-hit_chance = 1.000000
 density = 1000.000000
-
-transparent = 0
-reflection = 0

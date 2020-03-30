@@ -168,6 +168,7 @@ See the license in LICENSE
 #endif
 
 #include "BaseEntity.h"
+#include <gui/guimain.h>
 
 
 /*! Инициализирует библиотеку
@@ -194,6 +195,8 @@ SX_LIB_API void SGame_Update(int thread = 0);
 /*! Выполняет синхронизацию. Для многопоточного обновления
 */
 SX_LIB_API void SGame_Sync();
+
+SX_LIB_API gui::IGUI* SGame_GetGUI();
 
 /*! Помещает игрока в мир
 */
@@ -242,12 +245,6 @@ SX_LIB_API CBaseEntity *SGame_EntGet(ID id);
 SX_LIB_API CBaseEntity *SGame_EntGetByName(const char *szName, ID idStart = 0);
 
 SX_LIB_API BOOL SGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam);
-
-SX_LIB_API void SGame_OnLostDevice();
-
-SX_LIB_API void SGame_OnResetDevice();
-
-SX_LIB_API void SGame_SetDebugText(const char *szText);
 
 /*! Копирует объект, возвращает ID копии
 */

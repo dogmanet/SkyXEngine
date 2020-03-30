@@ -17,15 +17,20 @@ enum SHADOW_TYPE
 
 class CShadowCache
 {
+	friend class CRShadowSizeCvarListener;
 public:
 	CShadowCache(IXRenderPipeline *pRenderPipeline, IXMaterialSystem *pMaterialSystem);
 	~CShadowCache();
+
+	SX_ALIGNED_OP_MEM2();
 
 	//! Установка количества лампочек, инициализация кэша
 	void setLightsCount(UINT iPoints, UINT iSpots, bool hasGlobal);
 
 	//! Указывает, что начался новый кадр
 	void nextFrame();
+
+	void setObserverCamera(ICamera *pCamera);
 
 	//! Добавляет источник к текущему проходу, В случае отсутствия свободных слотов, возвращает false
 	void addLight(IXLight *pLight);
@@ -37,20 +42,21 @@ public:
 protected:
 	IXRenderPipeline *m_pRenderPipeline;
 	IXMaterialSystem *m_pMaterialSystem;
+	CRShadowSizeCvarListener *m_pShadowSizeCvarListener;
+
+	ICamera *m_pCamera = NULL;
+
+	IGXRasterizerState *m_pRasterizerConservative = NULL;
 
 	UINT m_uCurrentFrame = 0;
 	Array<IXLight*> m_aFrameLights;
-
-	ID m_idRSMCubeGeometryShader = -1;
-
-	ID m_idRSMPixelShader = -1;
-	ID m_idRSMCubePixelShader = -1;
-	ID m_idRSMPixelShaderSpot = -1;
+	bool m_isFirstBunch = true;
 
 	struct ShadowMap
 	{
 		CShadowMap map;
 		bool isDirty = false;
+		bool shouldProcess = false;
 		IXLight *pLight = NULL;
 	};
 
@@ -58,19 +64,25 @@ protected:
 	{
 		CShadowCubeMap map;
 		bool isDirty = false;
+		bool shouldProcess = false;
 		IXLight *pLight = NULL;
+		UINT uLastUsed = UINT_MAX;
 	};
 
 	struct ShadowPSSM
 	{
 		CShadowPSSM map;
 		bool isDirty = false;
+		bool shouldProcess = false;
 		IXLight *pLight = NULL;
+
+		SX_ALIGNED_OP_MEM2();
 	};
 
 	Array<ShadowMap> m_aShadowMaps;
 	Array<ShadowCubeMap> m_aShadowCubeMaps;
-	ShadowPSSM m_shadowPSSM;
+	Array<ShadowCubeMap*> m_aShadowCubeMapsQueue;
+	ShadowPSSM *m_pShadowPSSM = NULL;
 
 	struct ReadyShadows
 	{
@@ -79,6 +91,13 @@ protected:
 	};
 
 	Array<ReadyShadows> m_aReadyMaps;
+
+	//XGeometryShaderHandler *m_pRSMGeometryShader = NULL;
+	XGeometryShaderHandler *m_pCubemapGeometryShader = NULL;
+	XGeometryShaderHandler *m_pPSSMGeometryShader[PSSM_MAX_SPLITS];
+	XRenderPassHandler *m_pRenderPassShadow = NULL;
+
+	void dropCaches();
 };
 
 #endif

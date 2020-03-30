@@ -11,6 +11,8 @@ namespace gdata
 	extern ICamera *pCamera;
 };
 
+//! При изменении базовых шейдеров отредактировать https://wiki.skyxengine.com/index.php?title=Стандартные_шейдеры_материалов
+
 CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	m_pDevice(pDevice)
 {
@@ -18,6 +20,299 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	IXCore *pCore = Core_GetIXCore();
 	IPluginManager *pPluginManager = pCore->getPluginManager();
 	m_pMaterialSystem = (IXMaterialSystem*)pPluginManager->getInterface(IXMATERIALSYSTEM_GUID);
+
+	XVertexOutputElement voelGeneric[] = {
+		{"vPosition", GXDECLTYPE_FLOAT4, GXDECLUSAGE_POSITION},
+		{"vTexUV", GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		{"vNormal", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1},
+		{"vPos", GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD2},
+		XVERTEX_OUTPUT_DECL_END()
+	};
+	XVertexFormatHandler *pVertexFormatSceneGeneric = m_pMaterialSystem->registerVertexFormat("xSceneGeneric", voelGeneric);
+
+	XVertexOutputElement voelPostprocess[] = {
+		{"vPosition", GXDECLTYPE_FLOAT4, GXDECLUSAGE_POSITION},
+		{"vTexUV", GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		{"vEyeRay", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1},
+		{"vWorldRay", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD2},
+		XVERTEX_OUTPUT_DECL_END()
+	};
+	XVertexFormatHandler *pVertexFormatPostprocess = m_pMaterialSystem->registerVertexFormat("xPostprocess", voelPostprocess);
+	
+	XVertexOutputElement voelSky[] = {
+		{"vPosition", GXDECLTYPE_FLOAT4, GXDECLUSAGE_POSITION},
+		{"vTexUV", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD},
+		{"vNormal", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1},
+		{"vPos", GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD2},
+		XVERTEX_OUTPUT_DECL_END()
+	};
+	XVertexFormatHandler *pVertexFormatSkyBox = m_pMaterialSystem->registerVertexFormat("xSky", voelSky);
+
+	m_pMaterialSystem->registerVertexShader(pVertexFormatPostprocess, "base/post.vs");
+	{}
+
+	{
+		XRenderPassSamplersElement pSamplers[] = {
+			{"Scene default", "sScene", 0},
+			XRENDER_PASS_SAMPLERS_LIST_END()
+		};
+
+		XRenderPassOutputElement pOutput[] = {
+			{"Base color", "vBaseColor", GXDECLTYPE_FLOAT3, "float3(1.0f, 0.0f, 0.0f)"},
+			{"Normal", "vNormal", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+			{"AO", "fAO", GXDECLTYPE_FLOAT1, "0.0f"},
+			{"f0", "f0", GXDECLTYPE_FLOAT1, "0.04f"},
+			{"Roughness", "fRoughness", GXDECLTYPE_FLOAT1, "0.5f"},
+			{"Metallic", "fMetallic", GXDECLTYPE_FLOAT1, "0.5f"},
+			{"Thickness", "fThickness", GXDECLTYPE_FLOAT1, "1.0f"},
+			{"Lighting Coefficient", "fLightCoeff", GXDECLTYPE_FLOAT1, "1.0f"},
+
+			// {"Depth", "fDepth", GXDECLTYPE_FLOAT1, "IN.vPos.z"},
+
+			{"Height", "fHeight", GXDECLTYPE_FLOAT1, "1.0f"},
+			XRENDER_PASS_OUTPUT_LIST_END()
+		};
+
+		m_pRenderPassGBuffer = m_pMaterialSystem->registerRenderPass("xGBuffer", "material/gbuffer.ps", NULL, pSamplers, pOutput);
+	}
+
+	{
+		XRenderPassTexturesElement pTextures[] = {
+			{"GBuffer color(rgb) light(a)", "txGBufferC3L1", 0},
+			{"GBuffer normals(rgb) f0(a)", "txGBufferN3F1", 1},
+			{"GBuffer depth(r)", "txGBufferD1", 2},
+			{"", "", 3}, // reserved slot
+			// {"GBuffer roughness(r) metallic(g) thickness(b) AO(a)", "g_txGBufferR1M1T1AO1", 3},
+			{"Lighted scene", "txScene", 4},
+			XRENDER_PASS_TEXTURES_LIST_END()
+		}; 
+		
+		XRenderPassSamplersElement pSamplers[] = {
+			{"Scene default", "sScene", 0},
+			{"Point clamp", "sPointClamp", 1},
+			XRENDER_PASS_SAMPLERS_LIST_END()
+		};
+
+		XRenderPassOutputElement pOutput[] = {
+			{"Base color", "vBaseColor", GXDECLTYPE_FLOAT4, "float4(1.0f, 0.0f, 0.0f, 0.5f)"},
+			{"Normal", "vNormal", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+			{"AO", "fAO", GXDECLTYPE_FLOAT1, "0.0f"},
+			{"f0", "f0", GXDECLTYPE_FLOAT1, "0.04f"},
+			{"Roughness", "fRoughness", GXDECLTYPE_FLOAT1, "0.5f"},
+			{"Metallic", "fMetallic", GXDECLTYPE_FLOAT1, "0.5f"},
+			{"Thickness", "fThickness", GXDECLTYPE_FLOAT1, "1.0f"},
+			{"Lighting Coefficient", "fLightCoeff", GXDECLTYPE_FLOAT1, "1.0f"},
+			{"Emissive color", "fEmissiveColor", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+			XRENDER_PASS_OUTPUT_LIST_END()
+		};
+
+		m_pRenderPassTransparency = m_pMaterialSystem->registerRenderPass("xTransparency", "material/transparent.ps", pTextures, pSamplers, pOutput);
+	}
+
+	{
+		XRenderPassTexturesElement pTextures[] = {
+			{"GBuffer color(rgb) light(a)", "g_txGBufferC3L1", 0},
+			{"GBuffer normals(rgb) f0(a)", "g_txGBufferN3F1", 1},
+			{"GBuffer depth(r)", "g_txGBufferD1", 2},
+			{"", "", 3}, // reserved slot
+			// {"GBuffer roughness(r) metallic(g) thickness(b) AO(a)", "g_txGBufferR1M1T1AO1", 3},
+			{"Lighted scene", "g_txScene", 4},
+			XRENDER_PASS_TEXTURES_LIST_END()
+		};
+
+		XRenderPassSamplersElement pSamplers[] = {
+			{"Scene default", "sScene", 0},
+			{"Point clamp", "sPointClamp", 1},
+			XRENDER_PASS_SAMPLERS_LIST_END()
+		};
+
+		XRenderPassOutputElement pOutput[] = {
+			{"Emissive color", "vEmissiveColor", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+			{"Normal", "vNormal", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+			XRENDER_PASS_OUTPUT_LIST_END()
+		};
+
+		m_pRenderPassIllumination = m_pMaterialSystem->registerRenderPass("xIllumination", "material/illum.ps", pTextures, pSamplers, pOutput);
+	}
+
+	{
+		XRenderPassTexturesElement pTextures[] = {
+			{"GBuffer color(rgb) light(a)", "g_txGBufferC3L1", 0},
+			{"GBuffer normals(rgb) f0(a)", "g_txGBufferN3F1", 1},
+			{"GBuffer depth(r)", "g_txGBufferD1", 2},
+			{"", "", 3}, // reserved slot
+			// {"GBuffer roughness(r) metallic(g) thickness(b) AO(a)", "g_txGBufferR1M1T1AO1", 3},
+			{"Lighted scene", "g_txScene", 4},
+			XRENDER_PASS_TEXTURES_LIST_END()
+		};
+
+		XRenderPassSamplersElement pSamplers[] = {
+			{"Scene default", "sScene", 0},
+			{"Point clamp", "sPointClamp", 1},
+			XRENDER_PASS_SAMPLERS_LIST_END()
+		};
+
+		XRenderPassOutputElement pOutput[] = {
+			{"Color", "vColor", GXDECLTYPE_FLOAT3, "float3(1.0f, 0.0f, 0.0f)"},
+			XRENDER_PASS_OUTPUT_LIST_END()
+		};
+
+		m_pRenderPassPostprocess = m_pMaterialSystem->registerRenderPass("xPostprocess", "material/post.ps", pTextures, pSamplers, pOutput);
+	}
+
+	{
+		XRenderPassSamplersElement pSamplers[] = {
+			{"Scene default", "sScene", 0},
+			// {"Point clamp", "sPointClamp", 1},
+			XRENDER_PASS_SAMPLERS_LIST_END()
+		};
+
+		XRenderPassOutputElement pOutput[] = {
+			{"Base color", "vBaseColor", GXDECLTYPE_FLOAT4, "float4(0.0f, 0.0f, 0.0f, 0.0f)"},
+			{"Normal", "vNormal", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
+			XRENDER_PASS_OUTPUT_LIST_END()
+		};
+
+		GXMacro pVariant1[] = {
+			{"IS_CUBEMAP", "1"},
+			{NULL, NULL}
+		};
+		XRenderPassVariantElement pVariants[] = {
+			pVariant1,
+			NULL
+		};
+
+		m_pRenderPassShadow = m_pMaterialSystem->registerRenderPass("xShadow", "material/shadow.ps", NULL, pSamplers, pOutput, pVariants);
+	}
+
+	{
+		XMaterialShaderSampler pSamplers[] = {
+			{"sDefault", GXSamplerDesc()},
+			XMATERIAL_SHADER_SAMPLER_LIST_END()
+		};
+		
+		XMaterialProperty pProperties[] = {
+			XMATERIAL_PARAM_TEXTURE_OPT("Base texture", "txBase", NULL), // will override generic parameter if supplied
+		//	XMATERIAL_PARAM_COLOR("Some color", "vColor", float4_t(1.0f, 1.0f, 1.0f, 1.0f)),
+			XMATERIAL_PARAM_FLAG("Use f0 texture", "has_f0_texture", "HAS_F0MAP"),
+			XMATERIAL_PARAM_GROUP(NULL, "HAS_F0MAP"),
+				XMATERIAL_PARAM_TEXTURE("f0 texture", "txF0"),
+			//	XMATERIAL_PARAM_FLAG("Use f0 texture", "has_f0_texture", "HAS_F0MAP2"),
+			XMATERIAL_PARAM_GROUP_END(),
+			XMATERIAL_PARAM_GROUP(NULL, "!HAS_F0MAP"),
+				// XMATERIAL_PARAM_FLAG("Use f0 texture", "has_f0_texture", "HAS_F0MAP2"),
+				XMATERIAL_PARAM_RANGE("f0", "pbr_f0", 0.0f, 1.0f, 0.04f),
+			XMATERIAL_PARAM_GROUP_END(),
+			XMATERIAL_PROPERTY_LIST_END()
+		};
+
+		XMaterialShaderPass pPasses[] = {
+			{m_pRenderPassGBuffer, "default/default.ps", "MainGBuffer", NULL, pSamplers, pProperties},
+			{m_pRenderPassIllumination, "default/default.ps", "MainIllimination", NULL, NULL, NULL},
+			{m_pRenderPassShadow, "default/default.ps", "MainShadow", NULL, NULL, NULL},
+			XMATERIAL_SHADER_PASS_LIST_END()
+		};
+
+		XMaterialProperty pGenericProperties[] = {
+			// parameter name, texture name
+			XMATERIAL_PARAM_TEXTURE("Base texture", "txBase"),
+			// parameter name, define_if_supplied
+			XMATERIAL_PARAM_TEXTURE_OPT("Normal map", "txNormals", "HAS_NORMALMAP"),
+			XMATERIAL_PARAM_GROUP(NULL, "HAS_NORMALMAP"),
+				XMATERIAL_PARAM_RANGE("Normalmap weight", "nm_weight", -1.0f, 1.0f, 1.0f),
+			XMATERIAL_PARAM_GROUP_END(),
+			// parameter name, material parameter name, define_if_set
+			XMATERIAL_PARAM_FLAG("Use param texture", "has_parameter_texture", "HAS_PARAMMAP"),
+			// group name (optional), condition (define)
+			XMATERIAL_PARAM_GROUP(NULL, "HAS_PARAMMAP"),
+				XMATERIAL_PARAM_TEXTURE("Param texture", "txParameters"),
+			XMATERIAL_PARAM_GROUP_END(),
+			XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP"),
+				// name, min, max, material parameter name
+				XMATERIAL_PARAM_RANGE("Roughness", "pbr_roughness", 0.0f, 1.0f, 0.5f),
+				XMATERIAL_PARAM_RANGE("Metallic", "pbr_metallic", 0.0f, 1.0f, 0.0f),
+				XMATERIAL_PARAM_RANGE("Thickness", "pbr_thickness", 0.0f, 1.0f, 1.0f),
+				XMATERIAL_PARAM_RANGE("AO", "pbr_ao", 0.0f, 1.0f, 1.0f),
+			XMATERIAL_PARAM_GROUP_END(),
+
+			XMATERIAL_PARAM_FLAG("Enable alphatest", "has_alphatest", "HAS_ALPHATEST"),
+			XMATERIAL_PARAM_GROUP(NULL, "HAS_ALPHATEST"),
+				XMATERIAL_PARAM_RANGE("Alphatest threshold", "pbr_alphatest_threshold", 0.0f, 1.0f, 0.8f),
+			XMATERIAL_PARAM_GROUP_END(),
+			XMATERIAL_PROPERTY_LIST_END()
+		};
+
+		m_pMaterialSystem->registerMaterialShader("Default", pVertexFormatSceneGeneric, pPasses, pGenericProperties);
+	}
+
+	{
+		GXMacro pMacro[] = {
+			{"WANT_WRITE_DEPTH", "1"},
+			GX_MACRO_END()
+		};
+
+		XMaterialShaderPass pPasses[] = {
+			{m_pRenderPassGBuffer, "default/sky.ps", "MainGBuffer", pMacro, NULL, NULL},
+			//{m_pRenderPassIllumination, "default/sky.ps", "MainIllimination", NULL, NULL, NULL},
+			XMATERIAL_SHADER_PASS_LIST_END()
+		};
+
+		XMaterialProperty pGenericProperties[] = {
+			// parameter name, texture name
+			XMATERIAL_PARAM_TEXTURE_CUBE("Base texture", "txBase"),
+			// parameter name, define_if_supplied
+			XMATERIAL_PROPERTY_LIST_END()
+		};
+
+		m_pMaterialSystem->registerMaterialShader("Sky", pVertexFormatSkyBox, pPasses, pGenericProperties);
+	}
+
+	{
+		XMaterialShaderPass pPasses[] = {
+			{m_pRenderPassTransparency, "default/transparent.ps", "MainTransparency", NULL, NULL, NULL},
+			{m_pRenderPassIllumination, "default/transparent.ps", "MainIllimination", NULL, NULL, NULL},
+			{m_pRenderPassShadow, "default/transparent.ps", "MainShadow", NULL, NULL, NULL},
+			XMATERIAL_SHADER_PASS_LIST_END()
+		};
+
+		XMaterialProperty pGenericProperties[] = {
+			XMATERIAL_STATIC_FLAG("transparent", true),
+			// parameter name, texture name
+			XMATERIAL_PARAM_TEXTURE("Base texture", "txBase"),
+			// parameter name, define_if_supplied
+			XMATERIAL_PARAM_TEXTURE_OPT("Normal map", "txNormals", "HAS_NORMALMAP"),
+			XMATERIAL_PARAM_GROUP(NULL, "HAS_NORMALMAP"),
+				XMATERIAL_PARAM_RANGE("Normalmap weight", "nm_weight", -1.0f, 1.0f, 1.0f),
+			XMATERIAL_PARAM_GROUP_END(),
+			// parameter name, material parameter name, define_if_set
+			XMATERIAL_PARAM_FLAG("Refraction", "refractive", "HAS_REFRACTION"),
+			XMATERIAL_PARAM_FLAG("Use param texture", "has_parameter_texture", "HAS_PARAMMAP"),
+			// group name (optional), condition (define)
+			XMATERIAL_PARAM_GROUP(NULL, "HAS_PARAMMAP"),
+				XMATERIAL_PARAM_TEXTURE("Param texture", "txParameters"),
+			XMATERIAL_PARAM_GROUP_END(),
+			XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP"),
+				// name, min, max, material parameter name
+				XMATERIAL_PARAM_RANGE("Roughness", "pbr_roughness", 0.0f, 1.0f, 0.5f),
+				XMATERIAL_PARAM_RANGE("Metallic", "pbr_metallic", 0.0f, 1.0f, 0.0f),
+				XMATERIAL_PARAM_RANGE("Thickness", "pbr_thickness", 0.0f, 1.0f, 1.0f),
+				XMATERIAL_PARAM_RANGE("AO", "pbr_ao", 0.0f, 1.0f, 1.0f),
+			XMATERIAL_PARAM_GROUP_END(),
+
+			XMATERIAL_PROPERTY_LIST_END()
+		};
+
+		m_pMaterialSystem->registerMaterialShader("Transparent", pVertexFormatSceneGeneric, pPasses, pGenericProperties);
+	}
+
+	{
+		XMaterialShaderPass pPasses[] = {
+			{m_pRenderPassPostprocess, "default/postprocess.ps", "MainPostprocess", NULL, NULL, NULL},
+			XMATERIAL_SHADER_PASS_LIST_END()
+		};
+
+		m_pMaterialSystem->registerMaterialShader("Postprocess", pVertexFormatPostprocess, pPasses, NULL);
+	}
 
 	IXRenderable *pRenderable;
 	UINT ic = 0;
@@ -88,6 +383,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 
 	GXDepthStencilDesc dsDesc;
+	dsDesc.cmpFuncDepth = GXCMP_GREATER_EQUAL;
+	m_pDepthStencilStateDefault = m_pDevice->createDepthStencilState(&dsDesc);
 
 	dsDesc.useDepthWrite = FALSE;
 	m_pDepthStencilStateNoZWrite = m_pDevice->createDepthStencilState(&dsDesc);
@@ -156,6 +453,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 //#undef TIDX
 
 	m_idLightBoundShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "lighting_bound.vs"), -1);
+	// m_idLightBoundShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "lighting_bound.vs"), 
+	// 	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_bound_debug.ps"));
 
 	m_idLPVPropagateShader = SGCore_ShaderCreateKit(-1, -1, -1, SGCore_ShaderLoad(SHADER_TYPE_COMPUTE, "gi_propagation.cs"));
 
@@ -164,6 +463,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 	
 	newVisData(&m_pMainCameraVisibility);
+	m_pMainCameraOcclusionCuller = new COcclusionCuller();
+	//m_pMainCameraVisibility->setOcclusionCuller(m_pMainCameraOcclusionCuller);
 
 
 	m_pTransparencyShaderClipPlanes = m_pDevice->createConstantBuffer(sizeof(float4) * MAX_TRANSPARENCY_CLIP_PANES);
@@ -187,6 +488,7 @@ CRenderPipeline::~CRenderPipeline()
 
 	mem_release(m_pTransparencyShaderClipPlanes);
 
+	mem_release(m_pMainCameraOcclusionCuller);
 	mem_release(m_pMainCameraVisibility);
 
 	//mem_release(m_pSceneShaderDataVS);
@@ -326,14 +628,22 @@ void CRenderPipeline::renderFrame()
 end:
 	//showGICubes();
 	showFrameStats();
+
+	getXUI()->render();
 }
 void CRenderPipeline::endFrame()
 {
 	m_pDevice->swapBuffers();
+	getXUI()->present();
 }
 
 void CRenderPipeline::updateVisibility()
 {
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+	static const float *r_far = GET_PCVAR_FLOAT("r_far");
+
+	// m_pMainCameraOcclusionCuller->update(gdata::pCamera, gdata::fProjFov, (float)*r_win_width / (float)*r_win_height, *r_far);
 	m_pMainCameraVisibility->updateForCamera(gdata::pCamera);
 
 	if(m_pLightSystem)
@@ -409,8 +719,10 @@ void CRenderPipeline::renderGBuffer()
 {
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
+	m_pMaterialSystem->bindRenderPass(m_pRenderPassGBuffer);
+
 	pCtx->setRasterizerState(NULL);
-	pCtx->setDepthStencilState(NULL);
+	pCtx->setDepthStencilState(m_pDepthStencilStateDefault);
 	pCtx->setBlendState(NULL);
 	rfunc::SetRenderSceneFilter();
 
@@ -436,7 +748,7 @@ void CRenderPipeline::renderGBuffer()
 	pCtx->setColorTarget(NULL, 1);
 
 	pCtx->setColorTarget(pColorSurf);
-	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, RENDER_DEFAUL_BACKGROUND_COLOR);
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, RENDER_DEFAUL_BACKGROUND_COLOR, 0.0f);
 
 	pCtx->setColorTarget(pNormalSurf, 1);
 	pCtx->setColorTarget(pParamSurf, 2);
@@ -456,6 +768,12 @@ void CRenderPipeline::renderGBuffer()
 	mem_release(pNormalSurf);
 	mem_release(pParamSurf);
 	mem_release(pDepthMapLinearSurf);
+
+	/*if(GetAsyncKeyState('U') < 0)
+	{
+		m_pDevice->saveTextureToFile("sm_color.dds", m_pGBufferColor);
+		m_pDevice->saveTextureToFile("sm_shadow.dds", m_pGBufferDepth);
+	}*/
 }
 void CRenderPipeline::renderShadows()
 {
@@ -468,6 +786,8 @@ void CRenderPipeline::renderGI()
 		return;
 	}
 
+	m_pMaterialSystem->bindRenderPass(m_pRenderPassShadow);
+
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	IGXDepthStencilSurface *pOldDSSurface = pCtx->getDepthStencilSurface();
@@ -478,6 +798,8 @@ void CRenderPipeline::renderGI()
 		++uCounts[m_pLightSystem->getLight(i)->getType()];
 	}
 	m_pShadowCache->setLightsCount(uCounts[LIGHT_TYPE_POINT], uCounts[LIGHT_TYPE_SPOT], uCounts[LIGHT_TYPE_SUN] != 0);
+
+	m_pShadowCache->setObserverCamera(gdata::pCamera);
 
 	m_pShadowCache->nextFrame();
 
@@ -546,12 +868,12 @@ void CRenderPipeline::renderGI()
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
-	float4x4 mCamView;
-	Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mCamView);
-	m_shadowShaderData.vs.mViewInv = SMMatrixTranspose(SMMatrixInverse(NULL, mCamView));
-	m_shadowShaderData.vs.vNearFar = float2(*r_near, *r_far);
-	m_shadowShaderData.vs.vParamProj = float3((float)m_uOutWidth, (float)m_uOutHeight, *r_default_fov);
-	m_pShadowShaderDataVS->update(&m_shadowShaderData.vs);
+// 	float4x4 &mCamView = gdata::mCamView;
+// 	// Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mCamView);
+// 	m_shadowShaderData.vs.mViewInv = SMMatrixTranspose(SMMatrixInverse(NULL, mCamView));
+// 	m_shadowShaderData.vs.vNearFar = gdata::vNearFar; // float2(*r_near, *r_far);
+// 	m_shadowShaderData.vs.vParamProj = float3((float)m_uOutWidth, (float)m_uOutHeight, gdata::fProjFov); // *r_default_fov);
+// 	m_pShadowShaderDataVS->update(&m_shadowShaderData.vs);
 
 	//@TODO: убрать это
 	//Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &m_shadowShaderData.ps.vPosCam);
@@ -560,10 +882,10 @@ void CRenderPipeline::renderGI()
 
 	//m_pDevice->setPixelShaderConstant(m_pShadowShaderDataPS, 7);
 
+	pCtx->setRasterizerState(gdata::rstates::pRasterizerConservative);
 
 	pCtx->setVSConstant(m_pCameraShaderDataVS, 8);
 	pCtx->setPSConstant(m_pCameraShaderDataVS, 8);
-
 	UINT uShadowCount = 0;
 	while((uShadowCount = m_pShadowCache->processNextBunch()))
 	{
@@ -583,6 +905,11 @@ void CRenderPipeline::renderGI()
 			pLight = m_pShadowCache->getLight(i);
 			pShadow = m_pShadowCache->getShadow(i);
 
+			if(pLight->getType() == LIGHT_TYPE_SUN)
+			{
+			//	continue;
+			}
+
 			//пока что назначаем шейдер без теней
 			//ID idshaderkit = pLight->getType() == LIGHT_TYPE_SPOT ? gdata::shaders_id::kit::idComLightingSpotNonShadow : gdata::shaders_id::kit::idComLightingNonShadow;
 
@@ -596,7 +923,7 @@ void CRenderPipeline::renderGI()
 
 				//отрисовка ограничивающего объема
 				SGCore_ShaderBind(m_idLightBoundShader);
-				pLight->drawShape(pCtx);
+				pLight->drawShape(m_pDevice);
 				
 				pCtx->setStencilRef(255);
 				pCtx->setDepthStencilState(gdata::rstates::pDepthStencilStateLightShadowNonGlobal);
@@ -611,7 +938,8 @@ void CRenderPipeline::renderGI()
 
 
 
-			pCtx->setVSConstant(m_pShadowShaderDataVS, 1);
+			//pCtx->setVSConstant(m_pShadowShaderDataVS, 1);
+			pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
 
 			pCtx->setBlendState(gdata::rstates::pBlendRed);
 			pShadow->genShadow(m_pShadow, m_pGBufferDepth, m_pGBufferNormals);
@@ -619,27 +947,26 @@ void CRenderPipeline::renderGI()
 			pCtx->setColorTarget(pAmbientSurf);
 			pCtx->setColorTarget(pSpecDiffSurf, 1);
 
-			pCtx->setPSTexture(m_pShadow, 4);
+		//	pCtx->setPSTexture(m_pShadow, 4);
 			//idshaderkit = gdata::shaders_id::kit::idComLightingShadow;
-			ID idshaderkit = pLight->getType() == LIGHT_TYPE_SPOT ? gdata::shaders_id::kit::idComLightingSpotShadow : gdata::shaders_id::kit::idComLightingShadow;
+			ID idshaderkit = -1;
+			switch(pLight->getType())
+			{
+			case LIGHT_TYPE_SPOT:
+				idshaderkit = gdata::shaders_id::kit::idComLightingSpotShadow;
+				break;
+			case LIGHT_TYPE_POINT: 
+				idshaderkit = gdata::shaders_id::kit::idComLightingShadow;
+				break;
+			case LIGHT_TYPE_SUN:
+				idshaderkit = gdata::shaders_id::kit::idComLightingPSSMShadow;
+				break;
+			default:
+				assert(!"Unknown light type!");
+			}
 
 			pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
-
-#if 0
-			static const int * r_shadow_soft = GET_PCVAR_INT("r_shadow_soft");
-
-			if(r_shadow_soft)
-			{
-				if((*r_shadow_soft) == 1)
-					SLight_ShadowSoft(false, 2);
-				else if((*r_shadow_soft) == 2)
-				{
-					SLight_ShadowSoft(false, 2);
-					SLight_ShadowSoft(false, 2);
-				}
-			}
-#endif
-
+			
 			//теперь когда будем считать освещение надо сбросить значения в стенсил буфере, чтобы каждый кадр не чистить
 			//если стенсил тест прошел успешно, устанавливаем значнеие в нуль
 			if(pLight->getType() != LIGHT_TYPE_SUN)
@@ -647,7 +974,7 @@ void CRenderPipeline::renderGI()
 				pCtx->setDepthStencilState(gdata::rstates::pDepthStencilStateLightClear);
 			}
 
-			IGXConstantBuffer *pLightConstants = pLight->getConstants(pCtx);
+			IGXConstantBuffer *pLightConstants = pLight->getConstants(m_pDevice);
 			pCtx->setPSConstant(pLightConstants);
 			mem_release(pLightConstants);
 
@@ -686,7 +1013,7 @@ void CRenderPipeline::renderGI()
 		for(UINT i = 0; i < uShadowCount; ++i)
 		{
 			pShadow = m_pShadowCache->getShadow(i);
-			pShadow->genLPV();
+		//	pShadow->genLPV();
 		}
 
 		pCtx->setColorTarget(NULL);
@@ -708,7 +1035,7 @@ void CRenderPipeline::renderGI()
 		pCtx->setDepthStencilSurface(pOldSurface);
 		mem_release(pOldSurface);
 
-		break;
+		//break;
 	}
 
 	SGCore_ShaderUnBind();
@@ -721,7 +1048,7 @@ void CRenderPipeline::renderGI()
 	{
 		SGCore_ShaderBind(m_idLPVPropagateShader);
 
-		for(UINT i = 0; i < 16; ++i)
+		for(UINT i = 0; i < 1/*6*/; ++i)
 		{
 			pCtx->setCSTexture(m_pGIAccumRed, 0);
 			pCtx->setCSTexture(m_pGIAccumGreen, 1);
@@ -845,6 +1172,8 @@ void CRenderPipeline::renderGI()
 }
 void CRenderPipeline::renderPostprocessMain()
 {
+	m_pMaterialSystem->bindRenderPass(m_pRenderPassPostprocess);
+
 	renderStage(XRS_POSTPROCESS_MAIN);
 }
 void CRenderPipeline::renderTransparent()
@@ -854,11 +1183,22 @@ void CRenderPipeline::renderTransparent()
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
+	//pCtx->setPSConstant(m_pSceneShaderDataPS, SCR_SCENE);
+	pCtx->setVSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
+	rfunc::SetRenderSceneFilter();
+
+	m_pMaterialSystem->bindRenderPass(m_pRenderPassTransparency);
+
+//	pCtx->setRasterizerState(NULL);
+
 	pCtx->setDepthStencilState(m_pDepthStencilStateNoZWrite);
 	pCtx->setBlendState(m_pBlendStateAlpha);
 	pCtx->setSamplerState(m_pRefractionScene, 1);
 	//m_pDevice->setTexture(m_pSceneTexture, 11);
-	pCtx->setPSTexture(m_pGBufferDepth, 12);
+	pCtx->setPSTexture(m_pGBufferColor);
+	pCtx->setPSTexture(m_pGBufferNormals, 1);
+	pCtx->setPSTexture(m_pGBufferDepth, 2);
+	pCtx->setPSTexture(m_pGBufferParams, 3);
 
 	m_iRefractiveSource = -1;
 	IGXSurface *pSceneTarget = m_pSceneTexture->asRenderTarget();
@@ -1089,7 +1429,7 @@ void CRenderPipeline::renderTransparencyBSP(XTransparentBSPNode *pNode, XTranspa
 				m_pRefractiveTextureWrite = m_pRefractiveTextures[m_iRefractiveSource];
 			}
 			// swap render targets
-			pCtx->setPSTexture(m_pRefractiveTextureRead, 11);
+			pCtx->setPSTexture(m_pRefractiveTextureRead, 4);
 
 			IGXSurface *pSceneTarget = m_pRefractiveTextureWrite->asRenderTarget();
 			pCtx->setColorTarget(pSceneTarget);
@@ -1438,6 +1778,8 @@ void CRenderPipeline::buildTransparencyBSP(XTransparentPSP *pPSPs, UINT uPSPcoun
 
 void CRenderPipeline::renderPostprocessFinal()
 {
+	m_pMaterialSystem->bindRenderPass(m_pRenderPassPostprocess);
+
 	Core_PStartSection(PERF_SECTION_RENDER_INFO);
 	//@FIXME: пока так
 	SGame_RenderHUD();
@@ -1456,6 +1798,16 @@ void CRenderPipeline::renderEditor2D()
 	m_pDevice->getThreadContext()->setVSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
 
 	renderStage(XRS_EDITOR_2D);
+}
+
+IXUI* CRenderPipeline::getXUI()
+{
+	if(!m_pXUI)
+	{
+		m_pXUI = (IXUI*)Core_GetIXCore()->getPluginManager()->getInterface(IXUI_GUID);
+	}
+
+	return(m_pXUI);
 }
 
 //##########################################################################

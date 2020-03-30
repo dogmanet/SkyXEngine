@@ -135,6 +135,6 @@ static const float g_fUnit128 = 1.0/127.0;
 //! параметр освещения "шероховатость поверхности", максимальное значение
 #define PARAM_LIGHTING_ROUGHNESS_MAX	0.4f
 
-#else
-	#error G_DEFINES double include
+//#else
+//	#error G_DEFINES double include
 #endif
