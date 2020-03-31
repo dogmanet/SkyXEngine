@@ -159,8 +159,12 @@ struct IBaseObject
 class IXUnknown
 {
 protected:
+	IXUnknown()
+	{
+		m_uRefCount.store(1);
+	}
 	virtual ~IXUnknown() = default;
-	UINT m_uRefCount = 1;
+	std::atomic_uint m_uRefCount;
 public:
 	void XMETHODCALLTYPE AddRef()
 	{
@@ -168,8 +172,7 @@ public:
 	}
 	virtual void XMETHODCALLTYPE Release()
 	{
-		--m_uRefCount;
-		if(!m_uRefCount)
+		if(!--m_uRefCount)
 		{
 			delete this;
 		}
@@ -186,7 +189,11 @@ template <class T>
 class IXUnknownImplementation: public T
 {
 private:
-	UINT m_uRefCount = 1;
+	IXUnknownImplementation()
+	{
+		m_uRefCount.store(1);
+	}
+	std::atomic_uint m_uRefCount;
 public:
 	void XMETHODCALLTYPE AddRef() override
 	{
@@ -194,8 +201,7 @@ public:
 	}
 	virtual void XMETHODCALLTYPE Release() override
 	{
-		--m_uRefCount;
-		if(!m_uRefCount)
+		if(!--m_uRefCount)
 		{
 			delete this;
 		}
