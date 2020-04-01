@@ -340,7 +340,7 @@ void XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 			return;
 		}
 
-		MaterialVariantVS *pVS = &m_pCurrentRP->aPassVariants[m_uCurrentRPvariant].aVertexShaders[m_pCurrentVS->uID];
+		MaterialVariantVS *pVS = &m_pCurrentRP->aPassFormats[m_pCurrentVS->pVertexFormat->uID].aPassVariants[m_uCurrentRPvariant].aVertexShaders[m_pCurrentVS->uID];
 		ID idShaderSet = -1;
 		if(m_pCurrentGS)
 		{
@@ -584,6 +584,7 @@ XVertexFormatHandler* XMETHODCALLTYPE CMaterialSystem::registerVertexFormat(cons
 	}
 
 	VertexFormatData &format = m_mVertexFormats[szName];
+	format.uID = m_mVertexFormats.Size() - 1;
 
 	XVertexOutputElement *pTmp = pDecl;
 	int iCount = 0;
@@ -602,6 +603,8 @@ XVertexFormatHandler* XMETHODCALLTYPE CMaterialSystem::registerVertexFormat(cons
 		format.aDecl.push_back(tmp);
 		++pTmp;
 	}
+
+	m_isMateriallesRenderPassDirty = true;
 
 	updateReferences();
 
@@ -647,6 +650,8 @@ XVertexShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerVertexShader(XVer
 	vsData->uID = pVertexFormatData->aVS.size();
 	pVertexFormatData->aVS.push_back(vsData);
 
+	m_isMateriallesRenderPassDirty = true;
+
 	updateReferences();
 
 	return(vsData);
@@ -682,6 +687,8 @@ XGeometryShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerGeometryShader(
 	gsData->uID = m_aGeometryShaders.size();
 	m_aGeometryShaders.push_back(gsData);
 
+	m_isMateriallesRenderPassDirty = true;
+
 	updateReferences();
 
 	return(gsData);
@@ -704,7 +711,12 @@ XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::registerRenderPass(const ch
 	pass.szName = strdup(szName);
 	pass.szShaderFile = strdup(szShaderFile);
 	pass.bSkipMaterialShader = bSkipMaterialShader;
-	assert(!bSkipMaterialShader && "bSkipMaterialShader is not currently supported!");
+	//assert(!bSkipMaterialShader && "bSkipMaterialShader is not currently supported!");
+
+	if(bSkipMaterialShader)
+	{
+		m_isMateriallesRenderPassDirty = true;
+	}
 
 	while(pTextures && pTextures->szName)
 	{
@@ -891,6 +903,8 @@ XMaterialShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerMaterialShader(
 		MaterialShaderPassData *pPass = &shader.aPasses[shader.aPasses.size()];
 		pPass->pRenderPass = (RenderPass*)pPasses->pRenderPass;
 		pPass->isDirty = true;
+
+		assert(!pPass->pRenderPass->bSkipMaterialShader && "Cannot use renderpass which is set to ignore material shaders!");
 
 		pPass->szShaderFile = strdups(pPasses->szShaderFile);
 		pPass->szEntryPoint = strdups(pPasses->szEntryPoint);
@@ -1385,66 +1399,59 @@ void CMaterialSystem::updateReferences()
 		}
 	}
 
-#if 0
-	for(AssotiativeArray<String, RenderPass>::Iterator i = m_mRenderPasses.begin(); i; i++)
+#if 1
+	if(m_isMateriallesRenderPassDirty)
 	{
-		RenderPass *pRP = i.second;
-		if(!pRP->bSkipMaterialShader)
+		for(AssotiativeArray<String, RenderPass>::Iterator i = m_mRenderPasses.begin(); i; i++)
 		{
-			continue;
-		}
-
-
-		String sVSOstruct;
-		for(UINT k = 0, kl = pShader->pVertexFormat->aDecl.size(); k < kl; ++k)
-		{
-			XVertexOutputElement *el = &pShader->pVertexFormat->aDecl[k];
-			if(k != 0)
+			RenderPass *pRP = i.second;
+			if(!pRP->bSkipMaterialShader)
 			{
-				sVSOstruct += "; ";
-			}
-			sVSOstruct += String(getHLSLType(el->type)) + " " + el->szName + ": " + getHLSLSemantic(el->usage);
-		}
-
-
-		Array<GXMacro> aVariantDefines = pRP->aDefines;
-		aVariantDefines.push_back({"XMAT_PS_STRUCT()", sVSOstruct.c_str()});
-		aVariantDefines.push_back({"XMAT_MS_TEXTURES()", ""});
-		aVariantDefines.push_back({"XMAT_MS_SAMPLERS()", ""});
-		aVariantDefines.push_back({"XMATERIAL_OUTPUT_STRUCT()", ""});
-		
-
-		UINT uOldSize = aVariantDefines.size();
-
-		pRP->aPassVariants.clearFast();
-		for(UINT uPassVariant = 0, uPassVariantl = pRP->aVariants.size(); uPassVariant < uPassVariantl; ++uPassVariant)
-		{
-			aVariantDefines.resizeFast(uOldSize);
-
-			auto &aPassVariants = pPass->pRenderPass->aVariants[uPassVariant];
-			for(UINT m = 0, ml = aPassVariants.size(); m < ml; ++m)
-			{
-				aVariantDefines.push_back(aPassVariants[m]);
+				continue;
 			}
 
-			aVariantDefines.push_back({NULL, NULL});
 
-			ID idShader = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, pMetaPass->szShaderFile, NULL, &aVariantDefines[0]);
-			pVariant->aPassVariants[uPassVariant].idShader = idShader;
+			Array<GXMacro> aVariantDefines = pRP->aDefines;
 
+			UINT uOldSize = aVariantDefines.size();
 
-			pVariant->aPassVariants[uPassVariant].aVertexShaders.clearFast();
-			for(UINT j = 0, jl = pShader->pVertexFormat->aVS.size(); j < jl; ++j)
+			for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; i++)
 			{
-				VertexShaderData *pVS = pShader->pVertexFormat->aVS[j];
-				MaterialVariantVS &vs = pVariant->aPassVariants[uPassVariant].aVertexShaders[j];
-				vs.idSet = SGCore_ShaderCreateKit(pVS->idShader, idShader);
-
-				for(UINT k = 0, kl = pShader->pVertexFormat->aGS.size(); k < kl; ++k)
+				VertexFormatData *pFormat = i.second;
+				pRP->aPassFormats[pFormat->uID].aPassVariants.clearFast();
+				for(UINT uPassVariant = 0, uPassVariantl = pRP->aVariants.size(); uPassVariant < uPassVariantl; ++uPassVariant)
 				{
-					GeometryShaderData *pGS = pShader->pVertexFormat->aGS[k];
-					vs.aGeometryShaders[k] = SGCore_ShaderCreateKit(pVS->idShader, idShader, pGS->idShader);
+					aVariantDefines.resizeFast(uOldSize);
+
+					auto &aPassVariants = pRP->aVariants[uPassVariant];
+					for(UINT m = 0, ml = aPassVariants.size(); m < ml; ++m)
+					{
+						aVariantDefines.push_back(aPassVariants[m]);
+					}
+
+					aVariantDefines.push_back({NULL, NULL});
+
+					ID idShader = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, pRP->szShaderFile, NULL, &aVariantDefines[0]);
+					pRP->aPassFormats[pFormat->uID].aPassVariants[uPassVariant].idShader = idShader;
+
+
+					pRP->aPassFormats[pFormat->uID].aPassVariants[uPassVariant].aVertexShaders.clearFast();
+
+
+					for(UINT j = 0, jl = pFormat->aVS.size(); j < jl; ++j)
+					{
+						VertexShaderData *pVS = pFormat->aVS[j];
+						MaterialVariantVS &vs = pRP->aPassFormats[pFormat->uID].aPassVariants[uPassVariant].aVertexShaders[j];
+						vs.idSet = SGCore_ShaderCreateKit(pVS->idShader, idShader);
+
+						for(UINT k = 0, kl = pFormat->aGS.size(); k < kl; ++k)
+						{
+							GeometryShaderData *pGS = pFormat->aGS[k];
+							vs.aGeometryShaders[k] = SGCore_ShaderCreateKit(pVS->idShader, idShader, pGS->idShader);
+						}
+					}
 				}
+
 			}
 		}
 	}

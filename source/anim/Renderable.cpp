@@ -52,6 +52,7 @@ void XMETHODCALLTYPE CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderable
 	case XRS_EDITOR_2D:
 		m_pAnimatedModelProvider->render(pVis);
 		m_pDynamicModelProvider->render(false, pVis);
+		m_pDynamicModelProvider->render(true, pVis);
 		break;
 	}
 }

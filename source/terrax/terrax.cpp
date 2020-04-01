@@ -220,8 +220,8 @@ public:
 		m_pMaterialSystem = (IXMaterialSystem*)pPluginManager->getInterface(IXMATERIALSYSTEM_GUID);
 
 		{
-			m_pRenderPassGeometry2D = m_pMaterialSystem->getRenderPass("xGBuffer");
-			// m_pRenderPassGeometry2D = m_pMaterialSystem->registerRenderPass("xEditor2D", "terrax/geom2d.ps", NULL, NULL, NULL, NULL, true);
+			//m_pRenderPassGeometry2D = m_pMaterialSystem->getRenderPass("xGBuffer");
+			m_pRenderPassGeometry2D = m_pMaterialSystem->registerRenderPass("xEditor2D", "terrax/geom2d.ps", NULL, NULL, NULL, NULL, true);
 		}
 	}
 	~CRenderPipeline()

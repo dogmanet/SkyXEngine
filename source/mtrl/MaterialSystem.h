@@ -390,6 +390,7 @@ protected:
 
 	struct VertexFormatData: public XVertexFormatHandler
 	{
+		UINT uID;
 		Array<XVertexOutputElement> aDecl;
 		Array<VertexShaderData*> aVS;
 		Array<GeometryShaderData*> aGS;
@@ -408,6 +409,11 @@ protected:
 		Array<MaterialVariantVS> aVertexShaders;
 	};
 
+	struct RenderPassVertexFormat
+	{
+		Array<MaterialVariantPass> aPassVariants;
+	};
+
 	struct RenderPass: public XRenderPassHandler
 	{
 		const char *szName;
@@ -418,7 +424,7 @@ protected:
 		Array<GXMacro> aDefines;
 
 		bool bSkipMaterialShader;
-		Array<MaterialVariantPass> aPassVariants;
+		Array<RenderPassVertexFormat> aPassFormats; // used only if bSkipMaterialShader
 
 		Array<Array<GXMacro>> aVariants;
 	};
@@ -508,7 +514,7 @@ protected:
 	Array<GeometryShader*> m_aGeometryShaders;
 	MemAlloc<GeometryShaderData> m_aGeometryShadersData;
 
-
+	bool m_isMateriallesRenderPassDirty = false;
 	AssotiativeArray<String, RenderPass> m_mRenderPasses;
 	AssotiativeArray<String, MaterialShader> m_mMaterialShaders;
 
