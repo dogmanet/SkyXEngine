@@ -35,6 +35,9 @@ public:
 	void disable();
 	void toggle();
 
+	void setPos(const float3 & pos) override;
+	void setOrient(const SMQuaternion & q) override;
+
 protected:
 	bool m_bEnabled;
 	ID m_idUpdateInterval;

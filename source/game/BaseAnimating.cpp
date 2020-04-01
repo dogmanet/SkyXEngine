@@ -450,10 +450,7 @@ void CBaseAnimating::setPos(const float3 & pos)
 	{
 		m_pRigidBody->getWorldTransform().setOrigin(F3_BTVEC(pos));
 
-		if(m_pMgr->isEditorMode())
-		{
-			SPhysics_GetDynWorld()->updateSingleAabb(m_pRigidBody);
-		}
+		SPhysics_GetDynWorld()->updateSingleAabb(m_pRigidBody);
 	}
 }
 
@@ -464,10 +461,7 @@ void CBaseAnimating::setOrient(const SMQuaternion & q)
 	{
 		m_pRigidBody->getWorldTransform().setRotation(Q4_BTQUAT(q));
 
-		if(m_pMgr->isEditorMode())
-		{
-			SPhysics_GetDynWorld()->updateSingleAabb(m_pRigidBody);
-		}
+		SPhysics_GetDynWorld()->updateSingleAabb(m_pRigidBody);
 	}
 }
 

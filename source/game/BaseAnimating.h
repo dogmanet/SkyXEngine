@@ -54,8 +54,8 @@ public:
 	void cancelNextAnimation(int iSlot = -1);
 
 	bool playingAnimations(const char* name);
-	void setPos(const float3 & pos);
-	void setOrient(const SMQuaternion & q);
+	void setPos(const float3 & pos) override;
+	void setOrient(const SMQuaternion & q) override;
 
 	void setSkin(int iSkin);
 	

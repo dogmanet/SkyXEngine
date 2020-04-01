@@ -34,9 +34,9 @@ public:
 
 		void forLoop(int iStart, int iEnd) const
 		{
-			Core_PStartSection(PERF_SECTION_PHYS_UPDATE);
+		//	Core_PStartSection(PERF_SECTION_PHYS_UPDATE);
 			m_pBody->forLoop(iStart, iEnd);
-			Core_PEndSection(PERF_SECTION_PHYS_UPDATE);
+		//	Core_PEndSection(PERF_SECTION_PHYS_UPDATE);
 		};
 
 	protected:
@@ -46,7 +46,13 @@ public:
 	virtual void parallelFor(int iBegin, int iEnd, int grainSize, const btIParallelForBody& body) BT_OVERRIDE
 	{
 		BT_PROFILE("parallelFor_SkyXEngine");
-		if(Core_MGetThreadID() == 0)
+
+		if(iBegin >= iEnd)
+		{
+			return;
+		}
+
+		if(Core_MGetThreadID() == 0 && (iEnd - iBegin) > grainSize)
 		{
 			CBody cbody(&body);
 			Core_MWaitFor(Core_MForLoop(iBegin, iEnd, &cbody, grainSize));
@@ -96,6 +102,8 @@ CPhyWorld::CPhyWorld():
 	
 	m_pDynamicsWorld = new btDiscreteDynamicsWorldMt(m_pDispatcher, m_pBroadphase, pSolverPool, m_pSolver, m_pCollisionConfiguration);
 
+	m_pDynamicsWorld->setForceUpdateAllAabbs(false);
+
 	m_pDynamicsWorld->getSolverInfo().m_numIterations = 30;
 
 	//btCreateDefaultTaskScheduler();
@@ -115,8 +123,8 @@ CPhyWorld::CPhyWorld():
 	Core_0RegisterCVarBool("r_physdebug", false, "Debug drawing physics shapes");
 	m_bDebugDraw = GET_PCVAR_BOOL("r_physdebug");
 
-	//btSetCustomEnterProfileZoneFunc(CProfileManager::Start_Profile);
-	//btSetCustomLeaveProfileZoneFunc(CProfileManager::Stop_Profile);
+	btSetCustomEnterProfileZoneFunc(CProfileManager::Start_Profile);
+	btSetCustomLeaveProfileZoneFunc(CProfileManager::Stop_Profile);
 
 #if 0
 	Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->addListener([](const XEventLevel *pData)

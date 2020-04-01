@@ -229,3 +229,26 @@ void CBaseTrigger::update(float dt)
 	}
 	m_aTouches.swap(m_aNewTouches);
 }
+
+
+void CBaseTrigger::setPos(const float3 & pos)
+{
+	BaseClass::setPos(pos);
+	if(m_pGhostObject)
+	{
+		m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(pos));
+
+		SPhysics_GetDynWorld()->updateSingleAabb(m_pGhostObject);
+	}
+}
+
+void CBaseTrigger::setOrient(const SMQuaternion & q)
+{
+	BaseClass::setOrient(q);
+	if(m_pGhostObject)
+	{
+		m_pGhostObject->getWorldTransform().setRotation(Q4_BTQUAT(q));
+
+		SPhysics_GetDynWorld()->updateSingleAabb(m_pGhostObject);
+	}
+}
