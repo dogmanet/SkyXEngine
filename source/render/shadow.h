@@ -15,6 +15,10 @@ See the license in LICENSE
 #include <gcore/sxgcore.h>
 #include <light/IXLight.h>
 
+#define RSM_POINT_SIZE 32
+#define RSM_SPOT_SIZE 32
+#define RSM_SUN_SIZE 32
+
 class IXTexture;
 class IBaseShadowMap
 {
@@ -258,11 +262,11 @@ private:
 
 //##########################################################################
 
-class CReflectiveShadowPSSM: public IBaseShadowMap
+class CReflectiveShadowSun: public IBaseReflectiveShadowMap
 {
 public:
-	CReflectiveShadowPSSM();
-	~CReflectiveShadowPSSM();
+	CReflectiveShadowSun();
+	~CReflectiveShadowSun();
 
 	SX_ALIGNED_OP_MEM2();
 
@@ -273,7 +277,7 @@ public:
 	void setObserverCamera(ICamera *pCamera);
 	void setLight(IXLight *pLight);
 	void process(IXRenderPipeline *pRenderPipeline);
-	//	void genLPV(bool isDebug = false) override;
+	void genLPV(bool isDebug = false) override;
 
 private:
 	IGXDevice *m_pDevice = NULL;

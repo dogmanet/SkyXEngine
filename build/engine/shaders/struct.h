@@ -172,6 +172,9 @@ struct VSO_SkyBox
 {
 	float4 vPosition	:POSITION0;
 	float3 vTexUV	:TEXCOORD0;
+	
+	float3 vNormal	:TEXCOORD1;
+	float4 vPos		:TEXCOORD2;
 };
 
 //!@}

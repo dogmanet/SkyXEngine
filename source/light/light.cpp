@@ -53,7 +53,7 @@ void CXLight::setColor(const float3 &vColor)
 	m_pMutationObserver->setHalfExtents(float3(getMaxDistance() * 0.5f));
 	m_isVSDataDirty = true;
 	m_isPSDataDirty = true;
-	m_isDirty = true;
+	m_dirty = LRT_ALL;
 }
 
 float3 CXLight::getPosition()
@@ -70,7 +70,7 @@ void CXLight::setPosition(const float3 &vPosition)
 	m_pMutationObserver->setPosition(vPosition);
 	m_isVSDataDirty = true;
 	m_isPSDataDirty = true;
-	m_isDirty = true;
+	m_dirty = LRT_ALL;
 }
 
 float CXLight::getShadowIntencity()
@@ -99,7 +99,7 @@ void CXLight::setEnabled(bool isEnabled)
 	}
 	m_isEnable = isEnabled;
 	m_pMutationObserver->setEnabled(isEnabled);
-	m_isDirty = true;
+	m_dirty = LRT_ALL;
 }
 
 bool CXLight::isShadowDynamic()
@@ -292,7 +292,7 @@ void CXLightSun::setDirection(const SMQuaternion &qDirection)
 	}
 	m_qDirection = qDirection;
 	m_isVSDataDirty = true;
-	m_isDirty = true;
+	m_dirty = LRT_ALL;
 }
 
 void CXLightSun::updatePSConstants(IGXDevice *pDevice)
@@ -369,7 +369,7 @@ void CXLightSpot::setOuterAngle(float fAngle)
 	m_fOuterAngle = fAngle;
 	m_isVSDataDirty = true;
 	m_isPSDataDirty = true;
-	m_isDirty = true;
+	m_dirty = LRT_ALL;
 }
 SMQuaternion CXLightSpot::getDirection()
 {
@@ -384,7 +384,7 @@ void CXLightSpot::setDirection(const SMQuaternion &qDirection)
 	m_qDirection = qDirection;
 	m_isVSDataDirty = true;
 	m_isPSDataDirty = true;
-	m_isDirty = true;
+	m_dirty = LRT_ALL;
 }
 
 void CXLightSpot::updatePSConstants(IGXDevice *pDevice)

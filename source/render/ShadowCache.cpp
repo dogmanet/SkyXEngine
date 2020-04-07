@@ -33,7 +33,11 @@ private:
 
 CShadowCache::CShadowCache(IXRenderPipeline *pRenderPipeline, IXMaterialSystem *pMaterialSystem):
 	m_pRenderPipeline(pRenderPipeline),
-	m_pMaterialSystem(pMaterialSystem)
+	m_pMaterialSystem(pMaterialSystem),
+	m_shadowMaps(m_aFrameLights, m_aReadyMaps, m_pRenderPipeline, LRT_LIGHT),
+	m_shadowCubeMaps(m_aFrameLights, m_aReadyMaps, m_pRenderPipeline, LRT_LIGHT),
+	m_reflectiveShadowMaps(m_aFrameRSMLights, m_aReadyReflectiveMaps, m_pRenderPipeline, LRT_LPV),
+	m_reflectiveShadowCubeMaps(m_aFrameRSMLights, m_aReadyReflectiveMaps, m_pRenderPipeline, LRT_LPV)
 {
 	m_pShadowSizeCvarListener = new CRShadowSizeCvarListener(Core_GetIXCore(), this);
 	Core_GetIXCore()->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID)->addListener(m_pShadowSizeCvarListener);
@@ -73,13 +77,13 @@ CShadowCache::CShadowCache(IXRenderPipeline *pRenderPipeline, IXMaterialSystem *
 	//rasterizerDesc.cullMode = GXCULL_FRONT;
 	//rasterizerDesc.useConservativeRasterization = true;
 	m_pRasterizerConservative = m_pRenderPipeline->getDevice()->createRasterizerState(&rasterizerDesc);
-
 }
 CShadowCache::~CShadowCache()
 {
 	Core_GetIXCore()->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID)->removeListener(m_pShadowSizeCvarListener);
 	mem_delete(m_pShadowSizeCvarListener);
 	mem_delete(m_pShadowPSSM);
+	mem_delete(m_pReflectiveShadowSun);
 }
 
 void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
@@ -96,7 +100,7 @@ void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
 
 	size_t stPointsMemory = uPoints * CShadowCubeMap::GetMapMemory(uPointShadowmapSize);
 	size_t stSpotsMemory = uSpots * CShadowMap::GetMapMemory(uSpotShadowmapSize);
-	size_t stSunMemory = 0;
+	size_t stSunMemory = CShadowPSSM::GetMapMemory(uSunShadowmapSize);
 
 	size_t stTotal = stPointsMemory + stSpotsMemory;
 	stMaxMem -= stSunMemory;
@@ -125,32 +129,9 @@ void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
 			}
 		}
 	}
-
-	if(m_aShadowMaps.size() != uSpots)
-	{
-		UINT i = m_aShadowMaps.size();
-		m_aShadowMaps.resizeFast(uSpots);
-		for(; i < uSpots; ++i)
-		{
-			m_aShadowMaps[i].map.init(m_pRenderPipeline->getDevice(), uSpotShadowmapSize);
-		}
-	}
-
-	if(m_aShadowCubeMaps.size() != uPoints)
-	{
-		UINT i = m_aShadowCubeMaps.size();
-		m_aShadowCubeMaps.resizeFast(uPoints);
-		m_aShadowCubeMapsQueue.resizeFast(uPoints);
-		for(; i < uPoints; ++i)
-		{
-			m_aShadowCubeMaps[i].map.init(m_pRenderPipeline->getDevice(), uPointShadowmapSize);
-		}
-
-		for(i = 0; i < uPoints; ++i)
-		{
-			m_aShadowCubeMapsQueue[i] = &m_aShadowCubeMaps[i];
-		}
-	}
+	
+	m_shadowMaps.setSize(uSpots, uSpotShadowmapSize);
+	m_shadowCubeMaps.setSize(uPoints, uPointShadowmapSize);
 
 	m_aReadyMaps.resizeFast(uSpots + uPoints + (hasGlobal ? 1 : 0));
 
@@ -168,29 +149,90 @@ void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
 	}
 }
 
+void CShadowCache::setRSMLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
+{
+	//static const float *s_pfRRSMQuality = GET_PCVAR_FLOAT("r_rsm_quality");
+	const UINT uSpotShadowmapSize = (UINT)(RSM_SPOT_SIZE);
+	const UINT uPointShadowmapSize = (UINT)(RSM_POINT_SIZE);
+	const UINT uSunShadowmapSize = (UINT)(RSM_SUN_SIZE);
+
+	//size_t stMaxMem = (size_t)(m_pRenderPipeline->getDevice()->getAdapterDesc()->sizeTotalMemory * *s_pfRSMMaxMemory);
+	size_t stMaxMem = (size_t)(m_pRenderPipeline->getDevice()->getAdapterDesc()->sizeTotalMemory * 0.3f);
+
+	size_t stPointsMemory = uPoints * CReflectiveShadowCubeMap::GetMapMemory(uPointShadowmapSize);
+	size_t stSpotsMemory = uSpots * CReflectiveShadowMap::GetMapMemory(uSpotShadowmapSize);
+	size_t stSunMemory = CReflectiveShadowSun::GetMapMemory(uSunShadowmapSize);
+
+	size_t stTotal = stPointsMemory + stSpotsMemory;
+	stMaxMem -= stSunMemory;
+
+	if(stTotal > stMaxMem)
+	{
+		float fCoeff = (float)stMaxMem / (float)stTotal;
+
+		stPointsMemory = (size_t)(stPointsMemory * fCoeff);
+		stSpotsMemory = (size_t)(stSpotsMemory * fCoeff);
+
+		if(uSpots)
+		{
+			uSpots = (UINT)(stSpotsMemory / CReflectiveShadowMap::GetMapMemory(uSpotShadowmapSize));
+			if(!uSpots)
+			{
+				uSpots = 1;
+			}
+		}
+		if(uPoints)
+		{
+			uPoints = (UINT)(stPointsMemory / CReflectiveShadowCubeMap::GetMapMemory(uPointShadowmapSize));
+			if(!uPoints)
+			{
+				uPoints = 1;
+			}
+		}
+	}
+
+	m_reflectiveShadowMaps.setSize(uSpots, uSpotShadowmapSize);
+	m_reflectiveShadowCubeMaps.setSize(uPoints, uPointShadowmapSize);
+
+	m_aReadyReflectiveMaps.resizeFast(uSpots + uPoints + (hasGlobal ? 1 : 0));
+
+	if(hasGlobal)
+	{
+		if(!m_pReflectiveShadowSun)
+		{
+			m_pReflectiveShadowSun = new ReflectiveShadowSun();
+			m_pReflectiveShadowSun->map.init(m_pRenderPipeline->getDevice(), uSunShadowmapSize);
+		}
+	}
+	else
+	{
+		mem_delete(m_pReflectiveShadowSun);
+	}
+}
+
 void CShadowCache::nextFrame()
 {
 	++m_uCurrentFrame;
 	m_aFrameLights.clearFast();
+	m_aFrameRSMLights.clearFast();
 	m_isFirstBunch = true;
-
-	{
-		ShadowCubeMap *pSM;
-		for(UINT i = 0, l = m_aShadowCubeMaps.size(); i < l; ++i)
-		{
-			pSM = &m_aShadowCubeMaps[i];
-
-			if(pSM->uLastUsed != UINT_MAX)
-			{
-				++pSM->uLastUsed;
-			}
-		}
-	}
+	
+	m_shadowMaps.updateLastUsed();
+	m_shadowCubeMaps.updateLastUsed();
+	m_reflectiveShadowMaps.updateLastUsed();
+	m_reflectiveShadowCubeMaps.updateLastUsed();
 }
 
 void CShadowCache::addLight(IXLight *pLight)
 {
+	pLight->testDirty();
 	m_aFrameLights.push_back(pLight);
+}
+
+void CShadowCache::addRSMLight(IXLight *pLight)
+{
+	pLight->testDirty();
+	m_aFrameRSMLights.push_back(pLight);
 }
 
 UINT CShadowCache::processNextBunch()
@@ -212,50 +254,21 @@ UINT CShadowCache::processNextBunch()
 	bool isSomeFound = false;
 	if(m_isFirstBunch)
 	{
+		if(m_shadowMaps.processFirstBunch())
+		{
+			isSomeFound = true;
+		}
+		if(m_shadowCubeMaps.processFirstBunch())
+		{
+			isSomeFound = true;
+		}
+
 		ID id;
-		{
-			ShadowMap *pSM;
-			for(UINT i = 0, l = m_aShadowMaps.size(); i < l; ++i)
-			{
-				pSM = &m_aShadowMaps[i];
-				if(!pSM->isDirty && (id = m_aFrameLights.indexOf(pSM->pLight)) >= 0)
-				{
-					if(pSM->pLight->isDirty())
-					{
-						pSM->pLight->markClean();
-						pSM->isDirty = true;
-					}
-					m_aFrameLights.erase(id);
-					pSM->shouldProcess = true;
-					isSomeFound = true;
-				}
-			}
-		}
-
-		{
-			ShadowCubeMap *pSM;
-			for(UINT i = 0, l = m_aShadowCubeMaps.size(); i < l; ++i)
-			{
-				pSM = &m_aShadowCubeMaps[i];
-				if(!pSM->isDirty && (id = m_aFrameLights.indexOf(pSM->pLight)) >= 0)
-				{
-					if(pSM->pLight->isDirty())
-					{
-						pSM->pLight->markClean();
-						pSM->isDirty = true;
-					}
-					m_aFrameLights.erase(id);
-					pSM->shouldProcess = true;
-					isSomeFound = true;
-				}
-			}
-		}
-
 		if(false && m_pShadowPSSM && !m_pShadowPSSM->isDirty && (id = m_aFrameLights.indexOf(m_pShadowPSSM->pLight)) >= 0)
 		{
-			if(m_pShadowPSSM->pLight->isDirty())
+			if(m_pShadowPSSM->pLight->isDirty(LRT_LIGHT))
 			{
-				m_pShadowPSSM->pLight->markClean();
+				m_pShadowPSSM->pLight->markClean(LRT_LIGHT);
 				m_pShadowPSSM->isDirty = true;
 			}
 			m_aFrameLights.erase(id);
@@ -271,33 +284,24 @@ UINT CShadowCache::processNextBunch()
 		UINT uPoints = 0, uSpots = 0;
 		bool isFound = false;
 
-		m_aShadowCubeMapsQueue.quickSort([](const ShadowCubeMap *a, const ShadowCubeMap *b){
-			return(a->uLastUsed > b->uLastUsed);
-		});
+		m_shadowMaps.sortQueue();
+		m_shadowCubeMaps.sortQueue();
 
 		for(int i = (int)m_aFrameLights.size() - 1; i >= 0; --i)
 		{
 			switch(m_aFrameLights[i]->getType())
 			{
 			case LIGHT_TYPE_SPOT:
-				if(m_aShadowMaps.size() > uSpots)
+				if(m_shadowMaps.checkIthLight(uSpots, i))
 				{
-					m_aShadowMaps[uSpots].isDirty = true;
-					m_aShadowMaps[uSpots].shouldProcess = true;
-					m_aShadowMaps[uSpots].pLight = m_aFrameLights[i];
 					++uSpots;
-					m_aFrameLights.erase(i);
 					isFound = true;
 				}
 				break;
 			case LIGHT_TYPE_POINT:
-				if(m_aShadowCubeMapsQueue.size() > uPoints)
+				if(m_shadowCubeMaps.checkIthLight(uSpots, i))
 				{
-					m_aShadowCubeMapsQueue[uPoints]->isDirty = true;
-					m_aShadowCubeMapsQueue[uPoints]->shouldProcess = true;
-					m_aShadowCubeMapsQueue[uPoints]->pLight = m_aFrameLights[i];
 					++uPoints;
-					m_aFrameLights.erase(i);
 					isFound = true;
 				}
 				break;
@@ -319,25 +323,8 @@ UINT CShadowCache::processNextBunch()
 
 	// render shadows
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassShadow);
-	{
-		ShadowMap *pSM;
-		for(UINT i = 0, l = m_aShadowMaps.size(); i < l; ++i)
-		{
-			pSM = &m_aShadowMaps[i];
-			if(pSM->shouldProcess)
-			{
-				pSM->shouldProcess = false;
-				if(pSM->isDirty)
-				{
-					pSM->map.setLight(pSM->pLight);
-					pSM->map.process(m_pRenderPipeline);
-					pSM->isDirty = false;
-				}
 
-				m_aReadyMaps.push_back({&pSM->map, pSM->pLight});
-			}
-		}
-	}
+	m_shadowMaps.processTheRest();
 
 	m_pMaterialSystem->bindGS(m_pPSSMGeometryShader[*r_pssm_splits - 1]);
 
@@ -359,26 +346,8 @@ UINT CShadowCache::processNextBunch()
 	m_pMaterialSystem->bindGS(m_pCubemapGeometryShader);
 
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassShadow, 1);
-	{
-		ShadowCubeMap *pSM;
-		for(UINT i = 0, l = m_aShadowCubeMaps.size(); i < l; ++i)
-		{
-			pSM = &m_aShadowCubeMaps[i];
-			if(pSM->shouldProcess)
-			{
-				pSM->uLastUsed = 0;
-				pSM->shouldProcess = false;
-				if(pSM->isDirty)
-				{
-					pSM->map.setLight(pSM->pLight);
-					pSM->map.process(m_pRenderPipeline);
-					pSM->isDirty = false;
-				}
 
-				m_aReadyMaps.push_back({&pSM->map, pSM->pLight});
-			}
-		}
-	}
+	m_shadowCubeMaps.processTheRest();
 
 	m_pMaterialSystem->bindGS(NULL);
 
@@ -388,16 +357,148 @@ UINT CShadowCache::processNextBunch()
 	return(m_aReadyMaps.size());
 }
 
+UINT CShadowCache::processNextRSMBunch()
+{
+	if(!m_aFrameRSMLights.size())
+	{
+		return(0);
+	}
+
+	SMMATRIX mOldView, mOldProj;
+	Core_RMatrixGet(G_RI_MATRIX_VIEW, &mOldView);
+	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mOldProj);
+
+	m_pRenderPipeline->getDevice()->getThreadContext()->setDepthStencilState(NULL);
+	m_pRenderPipeline->getDevice()->getThreadContext()->setRasterizerState(m_pRasterizerConservative);
+
+	bool isSomeFound = false;
+	if(m_isFirstRSMBunch)
+	{
+		if(m_reflectiveShadowMaps.processFirstBunch())
+		{
+			isSomeFound = true;
+		}
+		if(m_reflectiveShadowCubeMaps.processFirstBunch())
+		{
+			isSomeFound = true;
+		}
+
+		ID id;
+		if(false && m_pReflectiveShadowSun && !m_pReflectiveShadowSun->isDirty && (id = m_aFrameRSMLights.indexOf(m_pReflectiveShadowSun->pLight)) >= 0)
+		{
+			if(m_pReflectiveShadowSun->pLight->isDirty(LRT_LPV))
+			{
+				m_pReflectiveShadowSun->pLight->markClean(LRT_LPV);
+				m_pReflectiveShadowSun->isDirty = true;
+			}
+			m_aFrameRSMLights.erase(id);
+			m_pReflectiveShadowSun->shouldProcess = true;
+			isSomeFound = true;
+		}
+
+		m_isFirstBunch = false;
+	}
+
+	if(!isSomeFound)
+	{
+		UINT uPoints = 0, uSpots = 0;
+		bool isFound = false;
+
+		m_reflectiveShadowMaps.sortQueue();
+		m_reflectiveShadowCubeMaps.sortQueue();
+
+		for(int i = (int)m_aFrameRSMLights.size() - 1; i >= 0; --i)
+		{
+			switch(m_aFrameRSMLights[i]->getType())
+			{
+			case LIGHT_TYPE_SPOT:
+				if(m_reflectiveShadowMaps.checkIthLight(uSpots, i))
+				{
+					++uSpots;
+					isFound = true;
+				}
+				break;
+			case LIGHT_TYPE_POINT:
+				if(m_reflectiveShadowCubeMaps.checkIthLight(uSpots, i))
+				{
+					++uPoints;
+					isFound = true;
+				}
+				break;
+			case LIGHT_TYPE_SUN:
+				m_pReflectiveShadowSun->isDirty = true;
+				m_pReflectiveShadowSun->shouldProcess = true;
+				m_pReflectiveShadowSun->pLight = m_aFrameRSMLights[i];
+				m_aFrameRSMLights.erase(i);
+				isFound = true;
+				break;
+			}
+			if(!isFound)
+			{
+				break;
+			}
+		}
+	}
+	m_aReadyReflectiveMaps.clearFast();
+
+	// render shadows
+	m_pMaterialSystem->bindRenderPass(m_pRenderPassShadow, 2);
+
+	m_reflectiveShadowMaps.processTheRest();
+
+	//m_pMaterialSystem->bindGS(m_pPSSMGeometryShader[*r_pssm_splits - 1]);
+
+	if(m_pReflectiveShadowSun && m_pReflectiveShadowSun->shouldProcess && m_pCamera)
+	{
+		m_pReflectiveShadowSun->shouldProcess = false;
+
+		if(m_pReflectiveShadowSun->isDirty)
+		{
+			m_pReflectiveShadowSun->map.setObserverCamera(m_pCamera);
+			m_pReflectiveShadowSun->map.setLight(m_pReflectiveShadowSun->pLight);
+			m_pReflectiveShadowSun->map.process(m_pRenderPipeline);
+			m_pReflectiveShadowSun->isDirty = false;
+		}
+
+		m_aReadyReflectiveMaps.push_back({&m_pReflectiveShadowSun->map, m_pReflectiveShadowSun->pLight});
+	}
+
+	m_pMaterialSystem->bindGS(m_pCubemapGeometryShader);
+
+	m_pMaterialSystem->bindRenderPass(m_pRenderPassShadow, 3);
+
+	m_reflectiveShadowCubeMaps.processTheRest();
+
+	m_pMaterialSystem->bindGS(NULL);
+
+	Core_RMatrixSet(G_RI_MATRIX_VIEW, &mOldView);
+	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &mOldProj);
+
+	return(m_aReadyReflectiveMaps.size());
+}
+
 IXLight* CShadowCache::getLight(ID id)
 {
 	assert(ID_VALID(id) && m_aReadyMaps.size() > (UINT)id);
 	return(m_aReadyMaps[id].pLight);
 }
 
+IXLight* CShadowCache::getRSMLight(ID id)
+{
+	assert(ID_VALID(id) && m_aReadyReflectiveMaps.size() > (UINT)id);
+	return(m_aReadyReflectiveMaps[id].pLight);
+}
+
 IBaseShadowMap* CShadowCache::getShadow(ID id)
 {
 	assert(ID_VALID(id) && m_aReadyMaps.size() > (UINT)id);
 	return(m_aReadyMaps[id].pShadowMap);
+}
+
+IBaseReflectiveShadowMap* CShadowCache::getRSMShadow(ID id)
+{
+	assert(ID_VALID(id) && m_aReadyReflectiveMaps.size() > (UINT)id);
+	return(m_aReadyReflectiveMaps[id].pShadowMap);
 }
 
 void CShadowCache::setObserverCamera(ICamera *pCamera)
@@ -407,8 +508,7 @@ void CShadowCache::setObserverCamera(ICamera *pCamera)
 
 void CShadowCache::dropCaches()
 {
-	m_aShadowMaps.resizeFast(0);
-	m_aShadowCubeMaps.resizeFast(0);
-	m_aShadowCubeMapsQueue.resizeFast(0);
+	m_shadowMaps.dropCaches();
+	m_shadowCubeMaps.dropCaches();
 	mem_delete(m_pShadowPSSM);
 }

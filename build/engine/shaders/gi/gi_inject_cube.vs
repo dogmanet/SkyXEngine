@@ -1,5 +1,5 @@
 
-#include "../lpv.h"
+#include <lpv.h>
 
 cbuffer perLight: register(b7)
 {

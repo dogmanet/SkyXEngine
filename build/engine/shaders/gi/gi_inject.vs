@@ -1,5 +1,5 @@
 
-#include "../lpv.h"
+#include <lpv.h>
 
 cbuffer perLight: register(b7)
 {
@@ -82,8 +82,8 @@ RsmTexel GetRsmTexel(int2 coords, uint2 vTexSize)
 	return(tx);
 }
 
-#define KERNEL_SIZE 4
-#define STEP_SIZE 1
+// #define KERNEL_SIZE 4
+// #define STEP_SIZE 1
 
 GS_IN main(VS_IN input)
 {	

@@ -1,5 +1,5 @@
 
-#include "../lpv.h"
+#include <lpv.h>
 
 struct GS_IN
 {

@@ -58,18 +58,21 @@ public:
 		return(m_renderType);
 	}
 
-	bool isDirty() override
+	void testDirty() override
 	{
-		if(m_isDirty)
+		if(m_pMutationObserver->wasTriggered())
 		{
 			m_pMutationObserver->reset();
+			m_dirty = LRT_ALL;
 		}
-		return(m_isDirty || m_pMutationObserver->wasTriggered());
 	}
-	void markClean() override
+	bool isDirty(LIGHT_RENDER_TYPE type) override
 	{
-		m_isDirty = false;
-		m_pMutationObserver->reset();
+		return(m_dirty & type);
+	}
+	void markClean(LIGHT_RENDER_TYPE type) override
+	{
+		m_dirty &= ~type;
 	}
 
 protected:
@@ -105,7 +108,7 @@ protected:
 	IFrustum *m_pFrustum = NULL;
 	IXRenderableVisibility *m_pVisibility = NULL;
 	LIGHT_RENDER_TYPE m_renderType = LRT_NONE;
-	bool m_isDirty = true;
+	LIGHT_RENDER_TYPE m_dirty = LRT_ALL;
 
 	IXMutationObserver *m_pMutationObserver = NULL;
 };

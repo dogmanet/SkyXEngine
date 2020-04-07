@@ -26,6 +26,7 @@ public:
 
 	//! Установка количества лампочек, инициализация кэша
 	void setLightsCount(UINT iPoints, UINT iSpots, bool hasGlobal);
+	void setRSMLightsCount(UINT iPoints, UINT iSpots, bool hasGlobal);
 
 	//! Указывает, что начался новый кадр
 	void nextFrame();
@@ -34,10 +35,14 @@ public:
 
 	//! Добавляет источник к текущему проходу, В случае отсутствия свободных слотов, возвращает false
 	void addLight(IXLight *pLight);
+	void addRSMLight(IXLight *pLight);
 
 	UINT processNextBunch();
+	UINT processNextRSMBunch();
 	IXLight *getLight(ID id);
+	IXLight *getRSMLight(ID id);
 	IBaseShadowMap *getShadow(ID id);
+	IBaseReflectiveShadowMap *getRSMShadow(ID id);
 
 protected:
 	IXRenderPipeline *m_pRenderPipeline;
@@ -50,7 +55,9 @@ protected:
 
 	UINT m_uCurrentFrame = 0;
 	Array<IXLight*> m_aFrameLights;
+	Array<IXLight*> m_aFrameRSMLights;
 	bool m_isFirstBunch = true;
+	bool m_isFirstRSMBunch = true;
 
 	struct ShadowMap
 	{
@@ -58,6 +65,7 @@ protected:
 		bool isDirty = false;
 		bool shouldProcess = false;
 		IXLight *pLight = NULL;
+		UINT uLastUsed = UINT_MAX;
 	};
 
 	struct ShadowCubeMap
@@ -78,11 +86,156 @@ protected:
 
 		SX_ALIGNED_OP_MEM2();
 	};
+	
+	struct ReflectiveShadowMap
+	{
+		CReflectiveShadowMap map;
+		bool isDirty = false;
+		bool shouldProcess = false;
+		IXLight *pLight = NULL;
+		UINT uLastUsed = UINT_MAX;
+	};
 
-	Array<ShadowMap> m_aShadowMaps;
-	Array<ShadowCubeMap> m_aShadowCubeMaps;
-	Array<ShadowCubeMap*> m_aShadowCubeMapsQueue;
-	ShadowPSSM *m_pShadowPSSM = NULL;
+	struct ReflectiveShadowCubeMap
+	{
+		CReflectiveShadowCubeMap map;
+		bool isDirty = false;
+		bool shouldProcess = false;
+		IXLight *pLight = NULL;
+		UINT uLastUsed = UINT_MAX;
+	};
+
+	struct ReflectiveShadowSun
+	{
+		CReflectiveShadowSun map;
+		bool isDirty = false;
+		bool shouldProcess = false;
+		IXLight *pLight = NULL;
+
+		SX_ALIGNED_OP_MEM2();
+	};
+
+
+	template<class T, class R> struct Cache
+	{
+	private:
+		IXRenderPipeline *m_pRenderPipeline;
+		Array<T> m_aMaps;
+		Array<T*> m_aMapsQueue;
+		LIGHT_RENDER_TYPE m_renderType;
+		Array<IXLight*> &m_aFrameLights;
+		Array<R> &m_aReadyMaps;
+	public:
+		Cache(Array<IXLight*> &aFrameLights, Array<R> &aReadyMaps, IXRenderPipeline *pRenderPipeline, LIGHT_RENDER_TYPE renderType):
+			m_aFrameLights(aFrameLights),
+			m_aReadyMaps(aReadyMaps),
+			m_pRenderPipeline(pRenderPipeline),
+			m_renderType(renderType)
+		{
+		}
+		void setRenderType(LIGHT_RENDER_TYPE renderType)
+		{
+			m_renderType = renderType;
+		}
+		void setSize(UINT uSize, UINT uMapSize)
+		{
+			if(m_aMaps.size() != uSize)
+			{
+				UINT i = m_aMaps.size();
+				m_aMaps.resizeFast(uSize);
+				m_aMapsQueue.resizeFast(uSize);
+				for(; i < uSize; ++i)
+				{
+					m_aMaps[i].map.init(m_pRenderPipeline->getDevice(), uMapSize);
+				}
+
+				for(i = 0; i < uSize; ++i)
+				{
+					m_aMapsQueue[i] = &m_aMaps[i];
+				}
+			}
+		}
+		void updateLastUsed()
+		{
+			T *pSM;
+			for(UINT i = 0, l = m_aMaps.size(); i < l; ++i)
+			{
+				pSM = &m_aMaps[i];
+
+				if(pSM->uLastUsed != UINT_MAX)
+				{
+					++pSM->uLastUsed;
+				}
+			}
+		}
+
+		bool processFirstBunch()
+		{
+			T *pSM;
+			ID id;
+			bool isSomeFound = false;
+			for(UINT i = 0, l = m_aMaps.size(); i < l; ++i)
+			{
+				pSM = &m_aMaps[i];
+				if(!pSM->isDirty && (id = m_aFrameLights.indexOf(pSM->pLight)) >= 0)
+				{
+					if(pSM->pLight->isDirty(m_renderType))
+					{
+						pSM->pLight->markClean(m_renderType);
+						pSM->isDirty = true;
+					}
+					m_aFrameLights.erase(id);
+					pSM->shouldProcess = true;
+					isSomeFound = true;
+				}
+			}
+			return(isSomeFound);
+		}
+		void sortQueue()
+		{
+			m_aMapsQueue.quickSort([](const T *a, const T *b){
+				return(a->uLastUsed > b->uLastUsed);
+			});
+		}
+		bool checkIthLight(UINT uMap, int i)
+		{
+			if(m_aMapsQueue.size() > uMap)
+			{
+				m_aMapsQueue[uMap]->isDirty = true;
+				m_aMapsQueue[uMap]->shouldProcess = true;
+				m_aMapsQueue[uMap]->pLight = m_aFrameLights[i];
+				m_aFrameLights.erase(i);
+				return(true);
+			}
+			return(false);
+		}
+		void processTheRest()
+		{
+			T *pSM;
+			for(UINT i = 0, l = m_aMaps.size(); i < l; ++i)
+			{
+				pSM = &m_aMaps[i];
+				if(pSM->shouldProcess)
+				{
+					pSM->uLastUsed = 0;
+					pSM->shouldProcess = false;
+					if(pSM->isDirty)
+					{
+						pSM->map.setLight(pSM->pLight);
+						pSM->map.process(m_pRenderPipeline);
+						pSM->isDirty = false;
+					}
+
+					m_aReadyMaps.push_back({&pSM->map, pSM->pLight});
+				}
+			}
+		}
+		void dropCaches()
+		{
+			m_aMaps.resizeFast(0);
+			m_aMapsQueue.resizeFast(0);
+		}
+	};
 
 	struct ReadyShadows
 	{
@@ -91,6 +244,22 @@ protected:
 	};
 
 	Array<ReadyShadows> m_aReadyMaps;
+
+	struct ReadyReflectiveShadows
+	{
+		IBaseReflectiveShadowMap *pShadowMap;
+		IXLight *pLight;
+	};
+
+	Array<ReadyReflectiveShadows> m_aReadyReflectiveMaps;
+
+	Cache<ShadowMap, ReadyShadows> m_shadowMaps;
+	Cache<ShadowCubeMap, ReadyShadows> m_shadowCubeMaps;
+	Cache<ReflectiveShadowMap, ReadyReflectiveShadows> m_reflectiveShadowMaps;
+	Cache<ReflectiveShadowCubeMap, ReadyReflectiveShadows> m_reflectiveShadowCubeMaps;
+
+	ShadowPSSM *m_pShadowPSSM = NULL;
+	ReflectiveShadowSun *m_pReflectiveShadowSun = NULL;
 
 	//XGeometryShaderHandler *m_pRSMGeometryShader = NULL;
 	XGeometryShaderHandler *m_pCubemapGeometryShader = NULL;

@@ -21,6 +21,9 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	IPluginManager *pPluginManager = pCore->getPluginManager();
 	m_pMaterialSystem = (IXMaterialSystem*)pPluginManager->getInterface(IXMATERIALSYSTEM_GUID);
 
+	Core_0RegisterCVarBool("dev_lpv_cubes", false, "Отображать сетку LPV");
+	Core_0RegisterCVarBool("dev_lpv_points", false, "Отображать VPL при инъекции в LPV");
+	
 	XVertexOutputElement voelGeneric[] = {
 		{"vPosition", GXDECLTYPE_FLOAT4, GXDECLUSAGE_POSITION},
 		{"vTexUV", GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
@@ -176,9 +179,20 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		GXMacro pVariant1[] = {
 			{"IS_CUBEMAP", "1"},
 			{NULL, NULL}
+		}; 
+		GXMacro pVariant2[] = {
+			{"ENABLE_RSM", "1"},
+			{NULL, NULL}
+		};
+		GXMacro pVariant3[] = {
+			{"IS_CUBEMAP", "1"},
+			{"ENABLE_RSM", "1"},
+			{NULL, NULL}
 		};
 		XRenderPassVariantElement pVariants[] = {
 			pVariant1,
+			pVariant2,
+			pVariant3,
 			NULL
 		};
 
@@ -626,7 +640,12 @@ void CRenderPipeline::renderFrame()
 #endif
 
 end:
-	//showGICubes();
+	const bool *dev_lpv_cubes = GET_PCVAR_BOOL("dev_lpv_cubes");
+	if(*dev_lpv_cubes)
+	{
+		showGICubes();
+	}
+	
 	showFrameStats();
 
 	getXUI()->render();
@@ -696,12 +715,12 @@ void CRenderPipeline::showGICubes()
 	pCtx->setRenderBuffer(m_pGICubesRB);
 	SGCore_ShaderBind(m_idGICubesShader);
 	pCtx->setGSConstant(m_pLightingShaderDataVS, 1);
-	pCtx->setDepthStencilState(NULL);
+	pCtx->setDepthStencilState(m_pDepthStencilStateDefault);
 	pCtx->setPSTexture(m_pGIAccumRed2, 0);
 	pCtx->setPSTexture(m_pGIAccumGreen2, 1);
 	pCtx->setPSTexture(m_pGIAccumBlue2, 2);
 	pCtx->setSamplerState(gdata::rstates::pSamplerPointClamp, 0);
-
+	
 	pCtx->drawPrimitive(0, m_uGICubesCount);
 
 	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
@@ -798,6 +817,7 @@ void CRenderPipeline::renderGI()
 		++uCounts[m_pLightSystem->getLight(i)->getType()];
 	}
 	m_pShadowCache->setLightsCount(uCounts[LIGHT_TYPE_POINT], uCounts[LIGHT_TYPE_SPOT], uCounts[LIGHT_TYPE_SUN] != 0);
+	m_pShadowCache->setRSMLightsCount(uCounts[LIGHT_TYPE_POINT], uCounts[LIGHT_TYPE_SPOT], uCounts[LIGHT_TYPE_SUN] != 0);
 
 	m_pShadowCache->setObserverCamera(gdata::pCamera);
 
@@ -860,7 +880,14 @@ void CRenderPipeline::renderGI()
 		//если свет виден фрустуму камеры (это надо было заранее просчитать) и если свет включен
 		if(pLight->isEnabled() && pLight->getRenderType() != LRT_NONE)
 		{
-			m_pShadowCache->addLight(pLight);
+			if(pLight->getRenderType() & LRT_LPV)
+			{
+				m_pShadowCache->addRSMLight(pLight);
+			}
+			if(pLight->getRenderType() & LRT_LIGHT)
+			{
+				m_pShadowCache->addLight(pLight);
+			}
 		}
 	}
 
@@ -904,15 +931,7 @@ void CRenderPipeline::renderGI()
 		{
 			pLight = m_pShadowCache->getLight(i);
 			pShadow = m_pShadowCache->getShadow(i);
-
-			if(pLight->getType() == LIGHT_TYPE_SUN)
-			{
-			//	continue;
-			}
-
-			//пока что назначаем шейдер без теней
-			//ID idshaderkit = pLight->getType() == LIGHT_TYPE_SPOT ? gdata::shaders_id::kit::idComLightingSpotNonShadow : gdata::shaders_id::kit::idComLightingNonShadow;
-
+			
 			//если не глобальный источник
 			if(pLight->getType() != LIGHT_TYPE_SUN)
 			{
@@ -990,7 +1009,18 @@ void CRenderPipeline::renderGI()
 
 			SGCore_ScreenQuadDraw();
 		}
-		
+	}
+
+	bool isFirstRun = true;
+	while((uShadowCount = m_pShadowCache->processNextRSMBunch()))
+	{
+		pCtx->setDepthStencilSurface(pOldDSSurface);
+		pCtx->setBlendState(gdata::rstates::pBlendAlphaOneOne);
+
+		pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
+		pCtx->setPSConstant(m_pLightingShaderDataPS, 1);
+
+
 		IGXSurface *pLPVRed = m_pGIAccumRed->asRenderTarget();
 		IGXSurface *pLPVGreen = m_pGIAccumGreen->asRenderTarget();
 		IGXSurface *pLPVBlue = m_pGIAccumBlue->asRenderTarget();
@@ -1007,35 +1037,63 @@ void CRenderPipeline::renderGI()
 		IGXDepthStencilSurface *pOldSurface = pCtx->getDepthStencilSurface();
 		pCtx->unsetDepthStencilSurface();
 
-		pCtx->clear(GX_CLEAR_COLOR);
+		if(isFirstRun)
+		{
+			pCtx->clear(GX_CLEAR_COLOR);
+			isFirstRun = false;
+		}
 
+		IBaseReflectiveShadowMap *pShadow = NULL;
 		//inject VPLs into LPV grid
 		for(UINT i = 0; i < uShadowCount; ++i)
 		{
-			pShadow = m_pShadowCache->getShadow(i);
-		//	pShadow->genLPV();
+			pShadow = m_pShadowCache->getRSMShadow(i);
+			pShadow->genLPV();
 		}
 
 		pCtx->setColorTarget(NULL);
 		pCtx->setColorTarget(NULL, 1);
 		pCtx->setColorTarget(NULL, 2);
 
-#if 0
-		auto pTarget = m_pGBufferColor->asRenderTarget();
-		m_pDevice->setColorTarget(pAmbientSurf);
-		mem_release(pTarget);
-		for(UINT i = 0; i < uShadowCount; ++i)
+		const bool *dev_lpv_points = GET_PCVAR_BOOL("dev_lpv_points");
+		if(*dev_lpv_points)
 		{
-			pShadow = m_pShadowCache->getShadow(i);
-			pShadow->genLPV(true);
+			auto pTarget = m_pGBufferColor->asRenderTarget();
+			pCtx->setColorTarget(pAmbientSurf);
+			mem_release(pTarget);
+			for(UINT i = 0; i < uShadowCount; ++i)
+			{
+				pShadow = m_pShadowCache->getRSMShadow(i);
+				pShadow->genLPV(true);
+			}
+			pCtx->setColorTarget(NULL);
 		}
-		m_pDevice->setColorTarget(NULL);
-#endif
 
 		pCtx->setDepthStencilSurface(pOldSurface);
 		mem_release(pOldSurface);
 
 		//break;
+	}
+	if(isFirstRun)
+	{
+		IGXSurface *pLPVRed = m_pGIAccumRed->asRenderTarget();
+		IGXSurface *pLPVGreen = m_pGIAccumGreen->asRenderTarget();
+		IGXSurface *pLPVBlue = m_pGIAccumBlue->asRenderTarget();
+
+		pCtx->setColorTarget(pLPVRed);
+		pCtx->setColorTarget(pLPVGreen, 1);
+		pCtx->setColorTarget(pLPVBlue, 2);
+
+		mem_release(pLPVRed);
+		mem_release(pLPVGreen);
+		mem_release(pLPVBlue);
+
+		pCtx->clear(GX_CLEAR_COLOR);
+		isFirstRun = false;
+
+		pCtx->setColorTarget(NULL);
+		pCtx->setColorTarget(NULL, 1);
+		pCtx->setColorTarget(NULL, 2);
 	}
 
 	SGCore_ShaderUnBind();
@@ -1048,7 +1106,7 @@ void CRenderPipeline::renderGI()
 	{
 		SGCore_ShaderBind(m_idLPVPropagateShader);
 
-		for(UINT i = 0; i < 1/*6*/; ++i)
+		for(UINT i = 0; i < 6/*6*/; ++i)
 		{
 			pCtx->setCSTexture(m_pGIAccumRed, 0);
 			pCtx->setCSTexture(m_pGIAccumGreen, 1);
@@ -1067,8 +1125,6 @@ void CRenderPipeline::renderGI()
 			pCtx->setCSTexture(NULL, 0);
 			pCtx->setCSTexture(NULL, 1);
 			pCtx->setCSTexture(NULL, 2);
-
-
 
 
 			pCtx->setCSTexture(m_pGIAccumRed2, 0);
@@ -1107,6 +1163,8 @@ void CRenderPipeline::renderGI()
 		ID idshaderkit = gdata::shaders_id::kit::idComLightingGI;
 
 		//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vViewPos", &gdata::vConstCurrCamPos);
+
+	//	pCtx->setPSConstant(m_pCameraShaderDataVS, 8);
 
 		SGCore_ShaderBind(idshaderkit);
 
@@ -1169,6 +1227,8 @@ void CRenderPipeline::renderGI()
 
 	pCtx->setColorTarget(pBackBuf);
 	mem_release(pBackBuf);
+
+	//Sleep(16);
 }
 void CRenderPipeline::renderPostprocessMain()
 {

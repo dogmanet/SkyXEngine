@@ -4,16 +4,16 @@ terrax_colored.vs
 
 */
 
-#include "../struct.h"
+#include <struct.h>
 
 //##########################################################################
 
 cbuffer perFrame: register(b1)
 {
-	half4x4 g_mVP;
-	half4x4 g_mViewInv;
-	half2 g_vNearFar;
-	half3 g_vParamProj;
+	float4x4 g_mVP;
+	float4x4 g_mViewInv;
+	float2 g_vNearFar;
+	float3 g_vParamProj;
 };
 
 //##########################################################################

@@ -441,7 +441,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 	m_pLightSystem = (IXLightSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXLIGHTSYSTEM_GUID);
 
-	if(m_pLightSystem)
+	if(m_pLightSystem && false)
 	{
 		//	252, 212, 64
 		IXLightSun *pSun = m_pLightSystem->createSun();

@@ -39,6 +39,8 @@ enum LIGHT_RENDER_TYPE
 	LRT_LIGHT = 1, //!< Только освещение, без LPV 
 	LRT_LPV = 2, //!< Рендер для LPV в 32x32 
 	LRT_FULL = 3, //!< Полноразмерный рендер 
+
+	LRT_ALL = LRT_FULL
 };
 DEFINE_ENUM_FLAG_OPERATORS(LIGHT_RENDER_TYPE);
 
@@ -73,9 +75,11 @@ public:
 	//@TODO: Remove this method
 	virtual LIGHT_RENDER_TYPE getRenderType() = 0;
 	//@TODO: Remove this method
-	virtual bool isDirty() = 0;
+	virtual bool isDirty(LIGHT_RENDER_TYPE type) = 0;
 	//@TODO: Remove this method
-	virtual void markClean() = 0;
+	virtual void markClean(LIGHT_RENDER_TYPE type) = 0;
+	//@TODO: Remove this method
+	virtual void testDirty() = 0;
 
 	virtual IXLightSpot *asSpot() = 0;
 	virtual IXLightSun *asSun() = 0;

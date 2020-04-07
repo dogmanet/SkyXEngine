@@ -774,11 +774,11 @@ void CShadowPSSM::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDept
 
 //##########################################################################
 
-CReflectiveShadowPSSM::CReflectiveShadowPSSM()
+CReflectiveShadowSun::CReflectiveShadowSun()
 {
 }
 
-CReflectiveShadowPSSM::~CReflectiveShadowPSSM()
+CReflectiveShadowSun::~CReflectiveShadowSun()
 {
 	mem_release(m_pSamplerComparisonLinearClamp);
 	mem_release(m_pDepthStencilSurface);
@@ -798,7 +798,7 @@ CReflectiveShadowPSSM::~CReflectiveShadowPSSM()
 	}
 }
 
-UINT CReflectiveShadowPSSM::GetMapMemory(UINT uSize)
+UINT CReflectiveShadowSun::GetMapMemory(UINT uSize)
 {
 	//GXFMT_R32F - shadow
 	//GXFMT_A8R8G8B8 - xyz:color; w:???
@@ -807,12 +807,12 @@ UINT CReflectiveShadowPSSM::GetMapMemory(UINT uSize)
 	return(uSize * uSize * 12 * PSSM_MAX_SPLITS);
 }
 
-void CReflectiveShadowPSSM::setObserverCamera(ICamera *pCamera)
+void CReflectiveShadowSun::setObserverCamera(ICamera *pCamera)
 {
 	m_pCamera = pCamera;
 }
 
-void CReflectiveShadowPSSM::init(IGXDevice *pContext, UINT uSize)
+void CReflectiveShadowSun::init(IGXDevice *pContext, UINT uSize)
 {
 	m_pDevice = pContext;
 
@@ -882,12 +882,12 @@ void CReflectiveShadowPSSM::init(IGXDevice *pContext, UINT uSize)
 	m_pCameraShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_cameraShaderData.vs));
 }
 
-void CReflectiveShadowPSSM::setLight(IXLight *pLight)
+void CReflectiveShadowSun::setLight(IXLight *pLight)
 {
 	m_pLight = pLight;
 }
 
-void CReflectiveShadowPSSM::process(IXRenderPipeline *pRenderPipeline)
+void CReflectiveShadowSun::process(IXRenderPipeline *pRenderPipeline)
 {
 	assert(m_pLight && m_pLight->getType() == LIGHT_TYPE_SUN);
 	if(!m_pDevice)
@@ -958,6 +958,10 @@ void CReflectiveShadowPSSM::process(IXRenderPipeline *pRenderPipeline)
 	m_pDevice->saveTextureToFile("sm_flux.dds", m_pFluxMap);
 	}*/
 #endif
+}
+
+void CReflectiveShadowSun::genLPV(bool isDebug)
+{
 }
 
 //##########################################################################
