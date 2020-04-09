@@ -102,6 +102,7 @@ float4 main(VSO_ResPos IN):COLOR0
 	float fBiasZ = (lf - fDepthLightZ * (lf - ln)) * (lf - fDepthLightZ * (lf - ln)) / (lf * ln * (lf - ln)) * lf * 0.0008f * fScaleFactor - fBias0;
 	
 	// float fD = g_vPixelSizeBias.x * 0.5f * fDistance / g_vLightColorPower.w;
+	fBias = sqrt(1.0f / (cosTheta * cosTheta) - 1.0f);
 	// fBias = fD * sqrt(1.0f / (cosTheta * cosTheta) - 1.0f);
 	// float fCompareTo = fDistance - fBias * 200.0f;
 	float fCompareTo = fDistance - fBias;
