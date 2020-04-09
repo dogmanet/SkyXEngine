@@ -27,7 +27,7 @@ float4 main(GSO_GICubes IN):COLOR0
 {
 	// return(float4(1,1,1,1));
 	
-	float3 vTexCoord = (IN.vCenterPos.xyz - floor(g_vPosCam).xyz) / 32.0 + 0.5 + 1.0 / 64.0;
+	float3 vTexCoord = GetGridTexCoord(IN.vCenterPos.xyz, 0);
 	
 	float4 vColorR = g_txIllumRed.Sample(g_sSampler, vTexCoord);
 	float4 vColorG = g_txIllumGreen.Sample(g_sSampler, vTexCoord);

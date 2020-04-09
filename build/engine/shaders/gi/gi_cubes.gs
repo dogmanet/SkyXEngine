@@ -23,7 +23,7 @@ void main(point VSO_GICubes input[1], inout TriangleStream<GSO_GICubes> OutputSt
 // void main(point VSO_GICubes input[1], inout LineStream<VSO_GICubes> OutputStream)
 // void main(point VSO_GICubes input[1], inout PointStream<VSO_GICubes> OutputStream)
 {
-	const float fSize = 0.05;
+	const float fSize = 0.03;
 	const float fNormal = 0.57735027;
 	
 	float3 vCenter = input[0].vPosition.xyz;

@@ -1,6 +1,6 @@
 #define LPV_DIM 32
 #define LPV_DIMH 16
-#define LPV_CELL_SIZE 1.0
+// #define LPV_CELL_SIZE 1.0
 // #define LPV_POINT_COUNT 256
 // #define LPV_POINT_COUNT 32
 // #define LPV_MAP_SIZE 1024
@@ -9,6 +9,12 @@
 #define LPV_POINT_WEIGHT (256.0f * 256.0f / (float)(LPV_POINT_COUNT * LPV_POINT_COUNT))
 #define STEP_SIZE 1
 
+
+
+cbuffer b9: register(b9)
+{
+	float4 g_vCenterSize[3];
+};
 
 // https://github.com/mafian89/Light-Propagation-Volumes/blob/master/shaders/lightInject.frag and
 // https://github.com/djbozkosz/Light-Propagation-Volumes/blob/master/data/shaders/lpvInjection.cs seem
@@ -26,7 +32,8 @@
 #define POSWS_BIAS_NORMAL 0.2
 #define POSWS_BIAS_LIGHT 1.0
 
-float4 dirToSH(float3 dir) {
+float4 dirToSH(float3 dir)
+{
 	return float4(SH_C0, -SH_C1 * dir.y, SH_C1 * dir.z, -SH_C1 * dir.x);
 }
 
@@ -34,4 +41,25 @@ float4 dirToCosineLobe(float3 dir)
 {
 	//dir = normalize(dir);
 	return float4(SH_cosLobe_C0, -SH_cosLobe_C1 * dir.y, SH_cosLobe_C1 * dir.z, -SH_cosLobe_C1 * dir.x);
+}
+
+float3 GetGridCenter(uint uCascade)
+{
+	// return(floor(g_vCenterSize[uCascade].xyz) * g_vCenterSize[uCascade].w);
+	return(g_vCenterSize[uCascade].xyz - g_vCenterSize[uCascade].xyz % g_vCenterSize[uCascade].w);
+}
+
+float GetGridWorldSize(uint uCascade)
+{
+	return(g_vCenterSize[uCascade].w);
+}
+
+int3 getGridPos(float3 worldPos, uint uCascade)
+{
+	return((worldPos - GetGridCenter(uCascade)) / GetGridWorldSize(uCascade) + int3(LPV_DIMH, LPV_DIMH, LPV_DIMH));
+}
+
+float3 GetGridTexCoord(float3 worldPos, uint uCascade)
+{
+	return((worldPos - GetGridCenter(0)) / (GetGridWorldSize(uCascade) * LPV_DIM) + 0.5f + 1.0f / (LPV_DIM * 2.0f));
 }

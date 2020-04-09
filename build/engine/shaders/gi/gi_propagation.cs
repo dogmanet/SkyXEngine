@@ -1,12 +1,5 @@
 
-#include "../lpv.h"
-
-int3 getGridPos(float3 worldPos)
-{
-	return((worldPos / LPV_CELL_SIZE) + int3(LPV_DIMH, LPV_DIMH, LPV_DIMH));
-}
-
-// End of lpv.h
+#include <lpv.h>
 
 Texture3D<float4> lpvR :register(t0);
 Texture3D<float4> lpvG :register(t1);

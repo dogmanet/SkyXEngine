@@ -23,11 +23,6 @@ cbuffer b8: register(b8)
 	float4 g_vPosCam;
 };
 
-int3 getGridPos(float3 worldPos)
-{
-	return(((worldPos - floor(g_vPosCam.xyz)) / LPV_CELL_SIZE) + int3(LPV_DIMH, LPV_DIMH, LPV_DIMH));
-}
-
 struct VS_IN
 {
 	uint posIndex :SV_VertexID;
@@ -121,7 +116,7 @@ GS_IN main(VS_IN input)
 				float texLum = Luminance(rsmTexel);
 				if(texLum > maxLuminance)
 				{
-					brightestCellIndex = getGridPos(rsmTexel.positionWS);
+					brightestCellIndex = getGridPos(rsmTexel.positionWS, 0);
 					maxLuminance = texLum;
 				}
 			}
@@ -137,7 +132,7 @@ GS_IN main(VS_IN input)
 			int2 texIdx = rsmCoords.xy + int2(x, y);
 			RsmTexel rsmTexel = GetRsmTexel(texIdx, RSMsize);
 			
-			int3 texelIndex = getGridPos(rsmTexel.positionWS);
+			int3 texelIndex = getGridPos(rsmTexel.positionWS, 0);
 			float3 deltaGrid = texelIndex - brightestCellIndex;
 			if(dot(deltaGrid, deltaGrid) < 10) // If cell proximity is good enough
 			{
@@ -160,7 +155,7 @@ GS_IN main(VS_IN input)
 	//RsmTexel result = GetRsmTexel(rsmCoords.xy);
 
 	GS_IN output;
-	output.cellIndex = float4(getGridPos(result.positionWS), 1.0);
+	output.cellIndex = float4(getGridPos(result.positionWS, 0), 1.0);
 	// output.cellIndex = float4(result.positionWS, 1.0);
 	output.normal = result.normalWS;
 	output.flux = result.flux.rgb;
