@@ -233,6 +233,7 @@
     <ClCompile Include="..\..\..\source\game\PointCamera.cpp" />
     <ClCompile Include="..\..\..\source\game\PointEntity.cpp" />
     <ClCompile Include="..\..\..\source\game\Tracer.cpp" />
+    <ClCompile Include="..\..\..\source\game\TriggerHurt.cpp" />
     <ClCompile Include="..\..\..\source\game\ZombieHands.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -294,6 +295,7 @@
     <ClInclude Include="..\..\..\source\game\PointEntity.h" />
     <ClInclude Include="..\..\..\source\game\TakeDamageInfo.h" />
     <ClInclude Include="..\..\..\source\game\Tracer.h" />
+    <ClInclude Include="..\..\..\source\game\TriggerHurt.h" />
     <ClInclude Include="..\..\..\source\game\ZombieHands.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -23,7 +23,7 @@ struct ISXConfig;
 
 /*! Однократно запустить функцию fn через время time
 	\note Должно вызываться изнутри класса объекта
-*/
+	*/
 #define SET_TIMEOUT(fn, time) m_pMgr->setTimeout((void(CBaseEntity::*)(float))&ThisClass::fn, this, time)
 
 /*! Запускать функцию fn через каждые time секунд
@@ -35,7 +35,7 @@ struct ISXConfig;
 /*! Отменить интервал по идентификатору
 \note Должно вызываться изнутри класса объекта
 */
-#define CLEAR_INTERVAL(id) m_pMgr->clearInterval(id)
+#define CLEAR_INTERVAL(id) if(ID_VALID(id)){m_pMgr->clearInterval(id);} id = -1
 
 /*! Отменить таймер по идентификатору
 \note Должно вызываться изнутри класса объекта

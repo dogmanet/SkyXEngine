@@ -243,6 +243,9 @@
     <ClCompile Include="..\..\..\source\game\EditorObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\TriggerHurt.cpp">
+      <Filter>Source Files\ents\triggers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -421,6 +424,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\EditorObject.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\TriggerHurt.h">
+      <Filter>Header Files\ents\triggers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
