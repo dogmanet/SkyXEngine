@@ -55,6 +55,8 @@ protected:
 
 	btPairCachingGhostObject *m_pGhostObject;
 
+	bool m_isModelEnabled = true;
+
 	void inEnable(inputdata_t * pInputdata);
 	void inDisable(inputdata_t * pInputdata);
 	void inToggle(inputdata_t * pInputdata);

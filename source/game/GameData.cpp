@@ -628,6 +628,9 @@ GameData::GameData(HWND hWnd, bool isGame):
 	Core_0RegisterCVarBool("hud_crosshair", true, "Отображать метку прицела");
 	Core_0RegisterCVarBool("hud_rangefinder", true, "Отображать дальномер");
 
+
+	Core_0RegisterCVarBool("dev_show_triggers", false, "Show trigger volumes", FCVAR_CHEAT);
+
 	CCrosshairManager::loadConfig("config/game/crosshairs.cfg");
 
 	m_pPlayer = (CPlayer*)CREATE_ENTITY("player", m_pMgr);

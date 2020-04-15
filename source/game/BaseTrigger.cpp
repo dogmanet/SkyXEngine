@@ -51,7 +51,7 @@ void CBaseTrigger::onPostLoad()
 
 	if(m_pModel)
 	{
-		m_pModel->enable(false);
+		//m_pModel->enable(false);
 		//m_pAnimPlayer->setOverrideMaterial("dev_trigger.dds");
 	}
 }
@@ -144,6 +144,14 @@ void CBaseTrigger::onTouchEndAll(CBaseEntity *pActivator)
 void CBaseTrigger::onSync()
 {
 	BaseClass::onSync();
+
+	static const bool *dev_show_triggers = GET_PCVAR_BOOL("dev_show_triggers");
+
+	if(m_pModel && *dev_show_triggers != m_isModelEnabled)
+	{
+		m_isModelEnabled = *dev_show_triggers;
+		m_pModel->enable(m_isModelEnabled);
+	}
 
 	if(!m_pGhostObject || !m_bEnabled)
 	{
