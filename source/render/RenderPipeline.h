@@ -10,6 +10,9 @@
 #include "OcclusionCuller.h"
 
 #define MAX_TRANSPARENCY_CLIP_PANES 4
+#define LPV_CASCADES_COUNT 3
+#define LPV_GRID_SIZE 32
+#define LPV_STEP_COUNT 6
 
 class CRenderPipeline: public IXRenderPipeline
 {
@@ -129,6 +132,16 @@ protected:
 	} m_cameraShaderData;
 	IGXConstantBuffer *m_pCameraShaderDataVS = NULL;
 	//IGXConstantBuffer *m_pCameraShaderDataPS = NULL;
+
+	struct
+	{
+		struct
+		{
+			float4 vCenterSize[LPV_CASCADES_COUNT]; // xyz: center / size; w: world size of cell in meters
+		} vs;
+		//float4 vNearFarLayers;
+	} m_lpvCentersShaderData;
+	IGXConstantBuffer *m_pLPVcentersShaderData = NULL;
 
 	struct
 	{

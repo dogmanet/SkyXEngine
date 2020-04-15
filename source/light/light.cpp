@@ -302,7 +302,7 @@ void CXLightSun::updatePSConstants(IGXDevice *pDevice)
 		m_pPSData = pDevice->createConstantBuffer(sizeof(m_dataPS));
 	}
 	m_dataPS.vLightColor = float4(m_vColor, SMVector3Length2(m_vColor));
-	m_dataPS.vLightPos = -float4(m_qDirection * LIGHTS_DIR_BASE, m_fShadowIntensity);
+	m_dataPS.vLightPos = float4(m_qDirection * -LIGHTS_DIR_BASE, m_fShadowIntensity);
 	m_pPSData->update(&m_dataPS);
 }
 
@@ -313,7 +313,7 @@ float CXLightSun::getMaxDistance()
 
 void CXLightSun::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax)
 {
-	m_renderType = LRT_LIGHT;
+	m_renderType = LRT_LIGHT | LRT_LPV;
 #if 0
 	m_renderType = LRT_NONE;
 

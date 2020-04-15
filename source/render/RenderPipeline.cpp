@@ -418,6 +418,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 	m_pCameraShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_cameraShaderData.vs));
 
+	m_pLPVcentersShaderData = m_pDevice->createConstantBuffer(sizeof(m_lpvCentersShaderData.vs));
+
 	m_pLightingShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_lightingShaderData.vs));
 	m_pLightingShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_lightingShaderData.ps));
 
@@ -509,6 +511,8 @@ CRenderPipeline::~CRenderPipeline()
 	mem_release(m_pSceneShaderDataPS);
 
 	mem_release(m_pCameraShaderDataVS);
+
+	mem_release(m_pLPVcentersShaderData);
 
 	mem_release(m_pLightingShaderDataVS);
 	mem_release(m_pLightingShaderDataPS);
@@ -669,6 +673,7 @@ void CRenderPipeline::updateVisibility()
 	{
 		float3 vCamPos;
 		gdata::pCamera->getPosition(&vCamPos);
+		//! @todo: fix grid center pos!
 		m_pLightSystem->updateVisibility(gdata::pCamera, float3(-16.0f, -16.0f, -16.0f) + vCamPos, float3(16.0f, 16.0f, 16.0f) + vCamPos);
 	}
 }
@@ -796,7 +801,10 @@ void CRenderPipeline::renderGBuffer()
 }
 void CRenderPipeline::renderShadows()
 {
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
+	rfunc::SetRenderSceneFilter();
+	pCtx->setSamplerState(gdata::rstates::pSamplerPointClamp, 1);
 }
 void CRenderPipeline::renderGI()
 {
@@ -844,6 +852,20 @@ void CRenderPipeline::renderGI()
 	m_lightingShaderData.ps.vViewPos = gdata::vConstCurrCamPos;
 	m_pLightingShaderDataPS->update(&m_lightingShaderData.ps.vViewPos);
 
+	float3 vCamDir;
+	gdata::pCamera->getLook(&vCamDir);
+
+	const float c_aLPVsizes[] = {
+		//0.5f,
+		1.0f,
+		1.0f,
+		2.0f
+	};
+
+	m_lpvCentersShaderData.vs.vCenterSize[0] = float4(gdata::vConstCurrCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * c_aLPVsizes[0], c_aLPVsizes[0]);
+	m_lpvCentersShaderData.vs.vCenterSize[1] = float4(gdata::vConstCurrCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * c_aLPVsizes[1], c_aLPVsizes[1]);
+	m_lpvCentersShaderData.vs.vCenterSize[2] = float4(gdata::vConstCurrCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * c_aLPVsizes[2], c_aLPVsizes[2]);
+	m_pLPVcentersShaderData->update(&m_lpvCentersShaderData.vs);
 
 	/*
 	vs:
@@ -913,6 +935,7 @@ void CRenderPipeline::renderGI()
 
 	pCtx->setVSConstant(m_pCameraShaderDataVS, 8);
 	pCtx->setPSConstant(m_pCameraShaderDataVS, 8);
+	
 	UINT uShadowCount = 0;
 	while((uShadowCount = m_pShadowCache->processNextBunch()))
 	{
@@ -1009,7 +1032,14 @@ void CRenderPipeline::renderGI()
 
 			SGCore_ScreenQuadDraw();
 		}
+
+
+		//pCtx->setSamplerState(gdata::rstates::pSamplerLinearWrap, 0);
+		//pCtx->setSamplerState(gdata::rstates::pSamplerLinearWrap, 1);
 	}
+
+	pCtx->setVSConstant(m_pLPVcentersShaderData, 9);
+	pCtx->setPSConstant(m_pLPVcentersShaderData, 9);
 
 	bool isFirstRun = true;
 	while((uShadowCount = m_pShadowCache->processNextRSMBunch()))
@@ -1232,6 +1262,8 @@ void CRenderPipeline::renderGI()
 }
 void CRenderPipeline::renderPostprocessMain()
 {
+	rfunc::SetRenderSceneFilter();
+
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassPostprocess);
 
 	renderStage(XRS_POSTPROCESS_MAIN);
@@ -1838,6 +1870,8 @@ void CRenderPipeline::buildTransparencyBSP(XTransparentPSP *pPSPs, UINT uPSPcoun
 
 void CRenderPipeline::renderPostprocessFinal()
 {
+	rfunc::SetRenderSceneFilter();
+
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassPostprocess);
 
 	Core_PStartSection(PERF_SECTION_RENDER_INFO);

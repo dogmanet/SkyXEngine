@@ -17,7 +17,7 @@ See the license in LICENSE
 
 #define RSM_POINT_SIZE 32
 #define RSM_SPOT_SIZE 32
-#define RSM_SUN_SIZE 32
+#define RSM_SUN_SIZE 64
 
 class IXTexture;
 class IBaseShadowMap
@@ -278,34 +278,28 @@ public:
 	void setLight(IXLight *pLight);
 	void process(IXRenderPipeline *pRenderPipeline);
 	void genLPV(bool isDebug = false) override;
-
+protected:
+	void updateFrustum();
 private:
 	IGXDevice *m_pDevice = NULL;
 	ICamera *m_pCamera = NULL;
 
 	IGXDepthStencilSurface *m_pDepthStencilSurface = NULL;
 
+	IGXTexture2D *m_pDepthMap = NULL;
+	IGXTexture2D *m_pNormalMap = NULL;
+	IGXTexture2D *m_pFluxMap = NULL;
+
+	float4x4 m_mView;
+	float4x4 m_mProj;
+
 	IGXSamplerState *m_pSamplerPointWrap = NULL;
 	IGXSamplerState *m_pSamplerPointClamp = NULL;
 	IGXSamplerState *m_pSamplerLinearClamp = NULL;
 	IGXSamplerState *m_pSamplerComparisonLinearClamp = NULL;
 
-	ID m_idShader = -1;
 	ID m_idInjectShader = -1;
 	ID m_idInjectDebugShader = -1;
-
-	struct Split
-	{
-		SX_ALIGNED_OP_MEM2();
-
-		IGXTexture2D *pDepthMap = NULL;
-		IGXTexture2D *pNormalMap = NULL;
-		IGXTexture2D *pFluxMap = NULL;
-
-		float4x4 mView;
-		float4x4 mProj;
-	};
-	Split m_splits[PSSM_MAX_SPLITS];
 
 	float4x4 m_mScaleBiasMat;
 	float m_fBias = 0.0001f;
@@ -319,7 +313,7 @@ private:
 	{
 		struct
 		{
-			SMMATRIX mMatrixTexture[PSSM_MAX_SPLITS];
+			SMMATRIX mMatrixTexture;
 			float3 vPixelMapSizeBias;
 		} ps;
 	} m_shaderData;

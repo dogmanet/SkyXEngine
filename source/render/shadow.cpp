@@ -158,6 +158,7 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 	
 	//m_pLight->setPSConstants(m_pDevice, 5);
 
+	pRenderPipeline->renderShadows();
 	pRenderPipeline->renderStage(XRS_SHADOWS, m_pLight->getVisibility());
 
 	pCtx->setColorTarget(NULL);
@@ -191,7 +192,7 @@ void CShadowMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDepth
 //	pCtx->clear(GX_CLEAR_COLOR);
 
 	pCtx->setSamplerState(ms_pSamplerPointClamp, 0);
-	//m_pDevice->setSamplerState(ms_pSamplerLinearClamp, 1);
+	//pCtx->setSamplerState(ms_pSamplerLinearClamp, 1);
 	pCtx->setSamplerState(ms_pSamplerComparisonLinearClamp, 1);
 	pCtx->setSamplerState(ms_pSamplerPointWrap, 2);
 	
@@ -425,6 +426,7 @@ void CReflectiveShadowMap::process(IXRenderPipeline *pRenderPipeline)
 
 	//m_pLight->setPSConstants(m_pDevice, 5);
 
+	pRenderPipeline->renderShadows();
 	pRenderPipeline->renderStage(XRS_SHADOWS, m_pLight->getVisibility());
 
 	pCtx->setColorTarget(NULL);
@@ -599,6 +601,7 @@ void CShadowPSSM::process(IXRenderPipeline *pRenderPipeline)
 	pCtx->setGSConstant(pLightConstants, SCR_OBJECT);
 	mem_release(pLightConstants);
 
+	pRenderPipeline->renderShadows();
 	pRenderPipeline->renderStage(XRS_SHADOWS, NULL); // m_pLight->getVisibility());
 
 	pCtx->setColorTarget(NULL);
@@ -790,12 +793,9 @@ CReflectiveShadowSun::~CReflectiveShadowSun()
 	mem_release(m_pShaderDataInjectVS);
 	mem_release(m_pShaderDataPS);
 
-	for(UINT i = 0; i < PSSM_MAX_SPLITS; ++i)
-	{
-		mem_release(m_splits[i].pDepthMap);
-		mem_release(m_splits[i].pNormalMap);
-		mem_release(m_splits[i].pFluxMap);
-	}
+	mem_release(m_pDepthMap);
+	mem_release(m_pNormalMap);
+	mem_release(m_pFluxMap);
 }
 
 UINT CReflectiveShadowSun::GetMapMemory(UINT uSize)
@@ -804,7 +804,7 @@ UINT CReflectiveShadowSun::GetMapMemory(UINT uSize)
 	//GXFMT_A8R8G8B8 - xyz:color; w:???
 	//GXFMT_A8R8G8B8 - xyz:normals; w:???
 
-	return(uSize * uSize * 12 * PSSM_MAX_SPLITS);
+	return(RSM_SUN_SIZE * RSM_SUN_SIZE * 12 * PSSM_MAX_SPLITS);
 }
 
 void CReflectiveShadowSun::setObserverCamera(ICamera *pCamera)
@@ -816,17 +816,14 @@ void CReflectiveShadowSun::init(IGXDevice *pContext, UINT uSize)
 {
 	m_pDevice = pContext;
 
-	for(UINT i = 0; i < PSSM_MAX_SPLITS; ++i)
-	{
-		//GXFMT_A8R8G8B8
-		m_splits[i].pNormalMap = m_pDevice->createTexture2D(uSize, uSize, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
-		//GXFMT_A8R8G8B8
-		m_splits[i].pFluxMap = m_pDevice->createTexture2D(uSize, uSize, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
-		//GXFMT_R32F
-		m_splits[i].pDepthMap = m_pDevice->createTexture2D(uSize, uSize, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R32F);
-	}
+	//GXFMT_A8R8G8B8
+	m_pNormalMap = m_pDevice->createTexture2D(RSM_SUN_SIZE, RSM_SUN_SIZE, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
+	//GXFMT_A8R8G8B8
+	m_pFluxMap = m_pDevice->createTexture2D(RSM_SUN_SIZE, RSM_SUN_SIZE, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
+	//GXFMT_R32F
+	m_pDepthMap = m_pDevice->createTexture2D(RSM_SUN_SIZE, RSM_SUN_SIZE, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R32F);
 
-	float fOffset = 0.5f + (0.5f / (float)uSize);
+	float fOffset = 0.5f + (0.5f / (float)RSM_SUN_SIZE);
 	float fRange = 1.0f;
 	float fBias = 0.0f;
 	m_mScaleBiasMat = float4x4(0.5f, 0.0f, 0.0f, 0.0f,
@@ -834,9 +831,9 @@ void CReflectiveShadowSun::init(IGXDevice *pContext, UINT uSize)
 		0.0f, 0.0f, fRange, 0.0f,
 		fOffset, fOffset, fBias, 1.0f);
 
-	m_fSize = (float)uSize;
+	m_fSize = (float)RSM_SUN_SIZE;
 
-	m_pDepthStencilSurface = pContext->createDepthStencilSurface(uSize, uSize, GXFMT_D24S8, GXMULTISAMPLE_NONE, false);
+	m_pDepthStencilSurface = pContext->createDepthStencilSurface(RSM_SUN_SIZE, RSM_SUN_SIZE, GXFMT_D24S8, GXMULTISAMPLE_NONE, false);
 
 	GXSamplerDesc samplerDesc;
 	samplerDesc.filter = GXFILTER_MIN_MAG_MIP_POINT;
@@ -855,23 +852,14 @@ void CReflectiveShadowSun::init(IGXDevice *pContext, UINT uSize)
 	samplerDesc.filter = GXFILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
 	m_pSamplerComparisonLinearClamp = pContext->createSamplerState(&samplerDesc);
 
-
-	ID idResPosDepth = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs");
-	GXMacro Defines_GSD_9[] = {{"GSD_9", ""}, {0, 0}};
-	ID idGenShadowDirect9 = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppgensm_direct.ps", "ppgensm_direct_9.ps", Defines_GSD_9);
-	m_idShader = SGCore_ShaderCreateKit(idResPosDepth, idGenShadowDirect9);
-
-	static char tmp[32];
-	sprintf(tmp, "%u", uSize);
-
-	GXMacro definesInject[] = {{"LPV_POINT_COUNT", "256"}, {"LPV_MAP_SIZE", tmp}, {0, 0}};
+	GXMacro definesInject[] = {{"IS_SUN", "1"}, {"LPV_POINT_COUNT", "64"}, {"LPV_MAP_SIZE", MACRO_TEXT(RSM_SUN_SIZE)}, {0, 0}};
 	m_idInjectShader = SGCore_ShaderCreateKit(
 		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gi_inject.vs", 0, definesInject),
 		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gi_inject.ps", 0, definesInject),
 		SGCore_ShaderLoad(SHADER_TYPE_GEOMETRY, "gi_inject.gs", 0, definesInject)
 		);
 
-	GXMacro definesInjectDebug[] = {{"_DEBUG", "1"}, {"LPV_POINT_COUNT", "256"}, {"LPV_MAP_SIZE", tmp}, {0, 0}};
+	GXMacro definesInjectDebug[] = {{"IS_SUN", "1"}, {"_DEBUG", "1"}, {"LPV_POINT_COUNT", "64"}, {"LPV_MAP_SIZE", MACRO_TEXT(RSM_SUN_SIZE)}, {0, 0}};
 	m_idInjectDebugShader = SGCore_ShaderCreateKit(
 		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gi_inject.vs", 0, definesInjectDebug),
 		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gi_inject.ps", 0, definesInjectDebug)
@@ -894,17 +882,19 @@ void CReflectiveShadowSun::process(IXRenderPipeline *pRenderPipeline)
 	{
 		return;
 	}
-#if 0
+
+	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	IXLightSun *pSunLight = m_pLight->asSun();
 
-	//! @todo remove double with Light::updateFrustum()
-	float3 vPos = pSpotLight->getPosition();
-	float3 vDir = pSpotLight->getDirection() * LIGHTS_DIR_BASE;
-	float3 vUp = pSpotLight->getDirection() * float3(0.0f, 0.0f, 1.0f);
 
-	m_mView = SMMatrixLookAtLH(vPos, vPos + vDir, vUp);
-	m_mProj = SMMatrixPerspectiveFovLH(pSpotLight->getOuterAngle(), 1.0f, 0.025f, pSpotLight->getMaxDistance());
+	//! @todo remove double with Light::updateFrustum()
+	float3 vPos = pSunLight->getPosition();
+	float3 vDir = pSunLight->getDirection() * LIGHTS_DIR_BASE;
+	float3 vUp = pSunLight->getDirection() * float3(0.0f, 0.0f, 1.0f);
+
+
+	updateFrustum();
 
 	Core_RMatrixSet(G_RI_MATRIX_VIEW, &m_mView);
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &m_mProj);
@@ -912,56 +902,123 @@ void CReflectiveShadowSun::process(IXRenderPipeline *pRenderPipeline)
 	m_cameraShaderData.vs.mVP = SMMatrixTranspose(m_mView * m_mProj);
 	m_cameraShaderData.vs.vPosCam = vPos;
 	m_pCameraShaderDataVS->update(&m_cameraShaderData.vs);
-	m_pDevice->setVertexShaderConstant(m_pCameraShaderDataVS, SCR_CAMERA);
+	pCtx->setVSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
 
-	m_pDevice->setDepthStencilSurface(m_pDepthStencilSurface);
+	pCtx->setDepthStencilSurface(m_pDepthStencilSurface);
 
-	m_pDevice->setBlendState(NULL);
+	pCtx->setBlendState(NULL);
 
-	IGXSurface *pDepthSurface = NULL;
-	IGXSurface *pNormalSurface = NULL;
-	IGXSurface *pFluxSurface = NULL;
+	IGXSurface *pDepthSurface = m_pDepthMap->asRenderTarget();
+	IGXSurface *pNormalSurface = m_pNormalMap->asRenderTarget();
+	IGXSurface *pFluxSurface = m_pFluxMap->asRenderTarget();
 
-	pDepthSurface = m_pDepthMap->asRenderTarget();
-	pNormalSurface = m_pNormalMap->asRenderTarget();
-	pFluxSurface = m_pFluxMap->asRenderTarget();
+	pCtx->setColorTarget(pDepthSurface);
+	pCtx->setColorTarget(NULL, 1);
+	pCtx->setColorTarget(NULL, 2);
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
 
-	m_pDevice->setColorTarget(pDepthSurface);
-	m_pDevice->setColorTarget(NULL, 1);
-	m_pDevice->setColorTarget(NULL, 2);
-	m_pDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
+	pCtx->setColorTarget(pFluxSurface, 0);
+	pCtx->setColorTarget(pNormalSurface, 1);
+	pCtx->clear(GX_CLEAR_COLOR);
 
-	m_pDevice->setColorTarget(pFluxSurface, 0);
-	m_pDevice->setColorTarget(pNormalSurface, 1);
-	m_pDevice->clear(GX_CLEAR_COLOR);
-
-	m_pDevice->setColorTarget(pDepthSurface);
-	m_pDevice->setColorTarget(pNormalSurface, 1);
-	m_pDevice->setColorTarget(pFluxSurface, 2);
+	pCtx->setColorTarget(pDepthSurface);
+	pCtx->setColorTarget(pNormalSurface, 1);
+	pCtx->setColorTarget(pFluxSurface, 2);
 
 	mem_release(pDepthSurface);
 	mem_release(pNormalSurface);
 	mem_release(pFluxSurface);
 
 	//m_pLight->setPSConstants(m_pDevice, 5);
+	pRenderPipeline->renderShadows();
+	pRenderPipeline->renderStage(XRS_SHADOWS, NULL); // m_pLight->getVisibility());
 
-	pRenderPipeline->renderStage(XRS_SHADOWS, m_pLight->getVisibility());
-
-	m_pDevice->setColorTarget(NULL);
-	m_pDevice->setColorTarget(NULL, 1);
-	m_pDevice->setColorTarget(NULL, 2);
+	pCtx->setColorTarget(NULL);
+	pCtx->setColorTarget(NULL, 1);
+	pCtx->setColorTarget(NULL, 2);
 
 	/*if(GetAsyncKeyState('U') < 0)
 	{
-	m_pDevice->saveTextureToFile("sm_depth.dds", m_pDepthMap);
-	m_pDevice->saveTextureToFile("sm_normal.dds", m_pNormalMap);
-	m_pDevice->saveTextureToFile("sm_flux.dds", m_pFluxMap);
+		m_pDevice->saveTextureToFile("sm_depth.dds", m_pDepthMap);
+		m_pDevice->saveTextureToFile("sm_normal.dds", m_pNormalMap);
+		m_pDevice->saveTextureToFile("sm_flux.dds", m_pFluxMap);
 	}*/
-#endif
 }
+
+void CReflectiveShadowSun::updateFrustum()
+{
+	assert(m_pCamera);
+
+	IXLightSun *pSunLight = m_pLight->asSun();
+	float3 vLightDir = pSunLight->getDirection() * LIGHTS_DIR_BASE;
+	float3 vUpDir = pSunLight->getDirection() * float3(1.0f, 0.0f, 0.0f);
+
+	float3 vStart;
+	m_pCamera->getPosition(&vStart);
+	float3 vDir;
+	m_pCamera->getLook(&vDir);
+	vDir = SMVector3Normalize(vDir);
+
+	//! @todo: fix grid center pos!
+	float3 vGridCenter = vStart;
+	float fGridRadius = sqrtf(16.0f * 16.0f * 3.0f);
+
+	SMMATRIX mLight(SMMatrixTranspose(SMMATRIX(
+		float4(SMVector3Cross(vUpDir, vLightDir)),
+		float4(vUpDir),
+		float4(vLightDir),
+		float4(0.0f, 0.0f, 0.0f, 1.0f)
+		)));
+	SMMATRIX mLightInv = SMMatrixInverse(NULL, mLight);
+
+	vGridCenter = SMVector3Transform(vGridCenter, mLight);
+	float fStep = (fGridRadius * 2.0f / m_fSize);
+	vGridCenter.x -= fmodf(vGridCenter.x, fStep);
+	vGridCenter.y -= fmodf(vGridCenter.y, fStep);
+
+	vGridCenter = SMVector3Transform(vGridCenter, mLightInv);
+
+	float fMaxDistance = PSSM_LIGHT_FAR;
+
+	m_mProj = SMMatrixOrthographicLH(fGridRadius * 2.0f, fGridRadius * 2.0f, PSSM_LIGHT_NEAR, fMaxDistance);
+	m_mView = SMMatrixLookToLH(vGridCenter - vLightDir * (fMaxDistance /*- fRadius * 2*/ * 0.5f), vLightDir, vUpDir);
+}
+
 
 void CReflectiveShadowSun::genLPV(bool isDebug)
 {
+	if(!m_pDevice || !(m_pLight->getRenderType() & LRT_LPV))
+	{
+		return;
+	}
+
+	IGXContext *pCtx = m_pDevice->getThreadContext();
+
+	pCtx->setRenderBuffer(NULL);
+	pCtx->setIndexBuffer(NULL);
+	pCtx->setPrimitiveTopology(GXPT_POINTLIST);
+	//SGCore_ShaderBind(isDebug ? ms_idInjectDebugShader : ms_idInjectShader);
+
+	pCtx->setVSTexture(m_pDepthMap);
+	pCtx->setVSTexture(m_pNormalMap, 1);
+	pCtx->setVSTexture(m_pFluxMap, 2);
+
+	m_pShaderDataInjectVS->update(&SMMatrixTranspose(SMMatrixInverse(NULL, m_mView * m_mProj)));
+	pCtx->setVSConstant(m_pShaderDataInjectVS, 6);
+
+	IGXConstantBuffer *pLightConstant = m_pLight->getConstants(m_pDevice);
+	pCtx->setVSConstant(pLightConstant, 7);
+	mem_release(pLightConstant);
+
+	SGCore_ShaderBind(isDebug ? m_idInjectDebugShader : m_idInjectShader);
+	pCtx->drawPrimitive(0, 64 * 64);
+
+	SGCore_ShaderUnBind();
+	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
+
+	pCtx->setVSTexture(NULL);
+	pCtx->setVSTexture(NULL, 1);
+	pCtx->setVSTexture(NULL, 2);
 }
 
 //##########################################################################
@@ -1121,6 +1178,7 @@ void CShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 	pCtx->setGSConstant(pLightConstants, SCR_OBJECT);
 	mem_release(pLightConstants);
 
+	pRenderPipeline->renderShadows();
 	pRenderPipeline->renderStage(XRS_SHADOWS, m_pLight->getVisibility());
 
 	pCtx->setColorTarget(NULL);
@@ -1367,6 +1425,7 @@ void CReflectiveShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 	pCtx->setGSConstant(pLightConstants, SCR_OBJECT);
 	mem_release(pLightConstants);
 
+	pRenderPipeline->renderShadows();
 	pRenderPipeline->renderStage(XRS_SHADOWS, m_pLight->getVisibility());
 
 	pCtx->setColorTarget(NULL);

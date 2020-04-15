@@ -147,5 +147,6 @@ float4 main(VSO_ResPos IN): COLOR0
 			}
 		// }
 	}
-	return(fShadow * 0.95 + 0.05);
+	// return(fShadow * 0.95 + 0.05);
+	return(fShadow * g_vLightPosShadow.w + (1.0f - g_vLightPosShadow.w));
 }

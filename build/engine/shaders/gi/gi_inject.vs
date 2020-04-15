@@ -48,7 +48,13 @@ struct RsmTexel
 
 float Luminance(RsmTexel rsmTexel)
 {
-	return((rsmTexel.flux.r * 0.299f + rsmTexel.flux.g * 0.587f + rsmTexel.flux.b * 0.114f) + max(0.0f, dot(rsmTexel.normalWS, -g_vLightSpotDirection.xyz)));
+	return((rsmTexel.flux.r * 0.299f + rsmTexel.flux.g * 0.587f + rsmTexel.flux.b * 0.114f) + max(0.0f, 
+#ifdef IS_SUN
+	dot(rsmTexel.normalWS, -g_vLightSpotDirection.xyz)
+#else
+	dot(rsmTexel.normalWS, -g_vLightPosShadow.xyz)
+#endif
+	));
 }
 
 RsmTexel GetRsmTexel(int2 coords, uint2 vTexSize)
@@ -65,13 +71,14 @@ RsmTexel GetRsmTexel(int2 coords, uint2 vTexSize)
 	float4 vWS = mul(vScreenSpace, g_mInvVP);
 	tx.positionWS = vWS.xyz / vWS.w;
 	
-	half3 vLigth  = normalize(g_vLightPosShadow.xyz - tx.positionWS);
+#ifndef IS_SUN
+	half3 vLigth = normalize(g_vLightPosShadow.xyz - tx.positionWS);
 	half fNdotD = dot(-vLigth, g_vLightSpotDirection.xyz);
 	tx.flux *= saturate(fNdotD - g_vLightSpotInnerOuterAngles.y) / (g_vLightSpotInnerOuterAngles.x - g_vLightSpotInnerOuterAngles.y);
-	
 	half fDistance = distance(tx.positionWS, g_vLightPosShadow.xyz);
 	half fInvDistance = 1.f - (fDistance/g_vLightColorPower.w);
 	tx.flux *= fInvDistance * fInvDistance;
+#endif
 	
 	tx.positionWS += (tx.normalWS * POSWS_BIAS_NORMAL);
 	return(tx);
@@ -156,9 +163,12 @@ GS_IN main(VS_IN input)
 
 	GS_IN output;
 	output.cellIndex = float4(getGridPos(result.positionWS, 0), 1.0);
+	// output.cellIndex = float4(0.0f, 0.0f, 0.0f, 1.0);
 	// output.cellIndex = float4(result.positionWS, 1.0);
 	output.normal = result.normalWS;
+	// output.normal = float3(0.0f, 1.0f, 0.0f);
 	output.flux = result.flux.rgb;
+	// output.flux = float3(1.0f, 0.0f, 0.0f);
 
 	return(output);
 }

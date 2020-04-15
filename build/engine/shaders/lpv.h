@@ -6,7 +6,11 @@
 // #define LPV_MAP_SIZE 1024
 // #define LPV_MAP_SIZE 32
 #define KERNEL_SIZE (LPV_MAP_SIZE / LPV_POINT_COUNT)
+#ifdef IS_SUN
+#define LPV_POINT_WEIGHT (256.0f * 256.0f * 10.0f / (float)(LPV_POINT_COUNT * LPV_POINT_COUNT))
+#else
 #define LPV_POINT_WEIGHT (256.0f * 256.0f / (float)(LPV_POINT_COUNT * LPV_POINT_COUNT))
+#endif
 #define STEP_SIZE 1
 
 
