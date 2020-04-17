@@ -308,7 +308,12 @@ void CXLightSun::updatePSConstants(IGXDevice *pDevice)
 
 float CXLightSun::getMaxDistance()
 {
-	return(1000.0f);
+	return(m_fMaxDistance);
+}
+
+void CXLightSun::setMaxDistance(float fMax)
+{
+	m_fMaxDistance = fMax;
 }
 
 void CXLightSun::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax)

@@ -34,7 +34,7 @@ public:
 	{
 		if(guid == IXLIGHTSYSTEM_GUID)
 		{
-			return(new CLightSystem());
+			return(new CLightSystem(m_pCore));
 		}
 		return(NULL);
 	}

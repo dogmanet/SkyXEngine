@@ -145,6 +145,7 @@ public:
 	void setDirection(const SMQuaternion &qDirection);
 
 	float getMaxDistance();
+	void setMaxDistance(float fMax);
 
 	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax) override;
 
@@ -153,6 +154,8 @@ protected:
 
 	_base_light_data_ps m_dataPS;
 	SMQuaternion m_qDirection;
+
+	float m_fMaxDistance = 1000.0f;
 };
 
 class CXLightSpot: public CXLight, public virtual IXLightSpot

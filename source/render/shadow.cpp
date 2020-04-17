@@ -643,6 +643,12 @@ void CShadowPSSM::updateFrustums()
 	float fSplitWeight = 0.8f;
 	float fShadowDistance = min(*r_pssm_max_distance, *r_far);
 
+	float fMaxDistanceSun = pSunLight->getMaxDistance();
+	if(fShadowDistance > fMaxDistanceSun)
+	{
+		fShadowDistance = fMaxDistanceSun;
+	}
+
 	float aSplitDistances[PSSM_MAX_SPLITS];
 	for(int i = 0; i < *r_pssm_splits; ++i)
 	{

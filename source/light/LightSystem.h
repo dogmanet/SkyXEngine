@@ -5,9 +5,11 @@
 #include <common/memalloc.h>
 #include "light.h"
 
+class CLevelLoadListener;
 class CLightSystem: public IXLightSystem
 {
 public:
+	CLightSystem(IXCore *pCore);
 	~CLightSystem();
 
 	IXLightSun *createSun() override;
@@ -27,10 +29,18 @@ public:
 
 	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax) override;
 
+	void setLevelSize(const float3 &vMin, const float3 &vMax);
+
 protected:
 	CXLightSun *m_pSun = NULL;
 	MemAlloc<CXLightPoint, 256, 16, 16> m_poolPoint;
 	MemAlloc<CXLightSpot, 256, 16, 16> m_poolSpot;
+
+	float3_t m_vLevelMin, m_vLevelMax;
+	float m_fLevelDimensions = 0.0f;
+
+	IEventChannel<XEventLevel> *m_pLevelChannel = NULL;
+	CLevelLoadListener *m_pLevelListener = NULL;
 
 	Array<CXLight*> m_aLights;
 

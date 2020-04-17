@@ -1,10 +1,64 @@
 #include "LightSystem.h"
 
+class CLevelLoadListener: public IEventListener<XEventLevel>
+{
+public:
+	CLevelLoadListener(CLightSystem *pLightSystem, IXCore *pCore):
+		m_pLightSystem(pLightSystem)
+	{
+		m_pLevelSizeChannel = pCore->getEventChannel<XEventLevelSize>(EVENT_LEVEL_GET_SIZE_GUID);
+	}
+
+	void onEvent(const XEventLevel *pEvent) override
+	{
+		switch(pEvent->type)
+		{
+		case XEventLevel::TYPE_LOAD_END:
+			XEventLevelSize levelSize;
+			m_pLevelSizeChannel->broadcastEvent(&levelSize);
+
+			m_pLightSystem->setLevelSize(levelSize.vMin, levelSize.vMax);
+			break;
+		}
+	}
+
+private:
+	CLightSystem *m_pLightSystem;
+	IEventChannel<XEventLevelSize> *m_pLevelSizeChannel = NULL;
+};
+
+//##########################################################################
+
+CLightSystem::CLightSystem(IXCore *pCore)
+{
+	m_pLevelListener = new CLevelLoadListener(this, pCore);
+
+	m_pLevelChannel = pCore->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID);
+	m_pLevelChannel->addListener(m_pLevelListener);
+}
+
 CLightSystem::~CLightSystem()
 {
+	m_pLevelChannel->removeListener(m_pLevelListener);
+	mem_delete(m_pLevelListener);
 	mem_delete(m_pSun);
 	mem_release(m_pShapeSphere);
 	mem_release(m_pShapeCone);
+}
+
+void CLightSystem::setLevelSize(const float3 &vMin, const float3 &vMax)
+{
+	m_vLevelMin = vMin;
+	m_vLevelMax = vMax;
+	m_fLevelDimensions = SMVector3Length(vMin - vMax);
+	if(m_fLevelDimensions < 100.0f)
+	{
+		m_fLevelDimensions = 100.0f;
+	}
+	if(m_pSun)
+	{
+		m_pSun->setMaxDistance(m_fLevelDimensions);
+	}
 }
 
 IXLightSun *CLightSystem::createSun()
@@ -16,6 +70,7 @@ IXLightSun *CLightSystem::createSun()
 	else
 	{
 		m_pSun = new CXLightSun(this);
+		m_pSun->setMaxDistance(m_fLevelDimensions);
 		m_aLights.push_back(m_pSun);
 	}
 	return(m_pSun);
