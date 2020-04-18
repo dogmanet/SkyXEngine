@@ -125,7 +125,7 @@ namespace gdata
 			extern ID idStencilStr;
 			extern ID idStencilColumn;
 			extern ID idStencilStrColumn;
-			extern ID idUnionAlpha;
+			//extern ID idUnionAlpha;
 		};
 
 		namespace kit
@@ -135,7 +135,7 @@ namespace gdata
 			extern ID idStencilColumn;
 			extern ID idStencilStrColumn;
 			extern ID idBlendAmbientSpecDiffColor;
-			extern ID idUnionAlpha;
+			//extern ID idUnionAlpha;
 			extern ID idComLightingNonShadow;
 			extern ID idComLightingSpotNonShadow;
 			extern ID idComLightingShadow;

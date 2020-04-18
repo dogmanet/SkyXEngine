@@ -981,6 +981,20 @@ static void GetAllDefines(Array<CMaterialSystem::MaterialDefine> &aAllDefines, A
 	}
 }
 
+static const char* GetTextureTypeName(GXTEXTURE_TYPE type)
+{
+	switch(type)
+	{
+	case GXTEXTURE_TYPE_2D:
+		return("Texture2D");
+	case GXTEXTURE_TYPE_3D:
+		return("Texture3D");
+	case GXTEXTURE_TYPE_CUBE:
+		return("TextureCube");
+	}
+	return("<unknown>");
+}
+
 static bool EvalCondition(CLogicExpression *pExpr, Array<CMaterialSystem::MaterialDefine*> &aStaticList)
 {
 	if(!pExpr)
@@ -1320,7 +1334,7 @@ void CMaterialSystem::updateReferences()
 						Array<MaterialTexture> aTextureMap({0}, GX_MAX_TEXTURES);
 						for(UINT j = 0, jl = pMetaPass->aTextures.size(); j < jl; ++j)
 						{
-							aTextureMap[pMetaPass->aTextures[j].uSlot] = {pMetaPass->aTextures[j].szKey, GXTEXTURE_TYPE_2D};
+							aTextureMap[pMetaPass->aTextures[j].uSlot] = {pMetaPass->aTextures[j].szKey, pMetaPass->aTextures[j].type};
 						}
 
 						pPass->aVariants[s].aTextureMap = Array<MaterialTexture>({0}, GX_MAX_TEXTURES);
@@ -1342,7 +1356,7 @@ void CMaterialSystem::updateReferences()
 						{
 							if(aTextureMap[j].szName)
 							{
-								sTextures += (aTextureMap[j].type == GXTEXTURE_TYPE_2D ? String("Texture2D") : String("TextureCube")) + " g_" + aTextureMap[j].szName + ":register(t" + (int)j + ");";
+								sTextures += String(GetTextureTypeName(aTextureMap[j].type)) + " g_" + aTextureMap[j].szName + ":register(t" + (int)j + ");";
 							}
 						}
 						aVariantDefines.push_back({"XMAT_MS_TEXTURES()", strdupa(sTextures.c_str())});

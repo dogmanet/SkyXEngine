@@ -72,7 +72,7 @@ namespace gdata
 			ID idStencilStr;
 			ID idStencilColumn;
 			ID idStencilStrColumn;
-			ID idUnionAlpha;
+			//ID idUnionAlpha;
 		};
 
 		namespace kit
@@ -82,7 +82,7 @@ namespace gdata
 			ID idStencilColumn;
 			ID idStencilStrColumn;
 			ID idBlendAmbientSpecDiffColor;
-			ID idUnionAlpha;
+			//ID idUnionAlpha;
 			ID idComLightingNonShadow;
 			ID idComLightingShadow;
 			ID idComLightingSpotNonShadow;
@@ -177,7 +177,7 @@ void gdata::shaders_id::InitAllShaders()
 	gdata::shaders_id::ps::idComLightingPSSMShadow = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_pssm_shadow.ps", Defines_IS_PSSM_SHADOWED);
 	gdata::shaders_id::ps::idBlendAmbientSpecDiffColor = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_blend.ps");
 
-	gdata::shaders_id::ps::idUnionAlpha = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_union_alpha.ps");
+	//gdata::shaders_id::ps::idUnionAlpha = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_union_alpha.ps");
 
 	GXMacro Defines_STR[] = { { "_STR_", "" }, { 0, 0 } };
 	gdata::shaders_id::ps::idStencilStr = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_alpha_stencil_mark.ps", "pp_stencil_str.ps", Defines_STR);
@@ -191,7 +191,7 @@ void gdata::shaders_id::InitAllShaders()
 	gdata::shaders_id::kit::idStencilColumn = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idStencilColumn);
 	gdata::shaders_id::kit::idStencilStrColumn = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idStencilStrColumn);
 	gdata::shaders_id::kit::idBlendAmbientSpecDiffColor = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idBlendAmbientSpecDiffColor);
-	gdata::shaders_id::kit::idUnionAlpha = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idUnionAlpha);
+	//gdata::shaders_id::kit::idUnionAlpha = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idUnionAlpha);
 	gdata::shaders_id::kit::idComLightingNonShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingNonShadow);
 	gdata::shaders_id::kit::idComLightingShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingShadow);
 	gdata::shaders_id::kit::idComLightingSpotNonShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingSpotNonShadow);

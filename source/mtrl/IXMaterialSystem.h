@@ -33,6 +33,9 @@ struct XRenderPassTexturesElement
 
 	//! Слот в шейдере
 	UINT uSlot;
+
+	//! Тип текстуры
+	GXTEXTURE_TYPE type;
 };
 #define XRENDER_PASS_TEXTURES_LIST_END() {NULL,NULL,~0u}
 

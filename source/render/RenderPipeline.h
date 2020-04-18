@@ -127,6 +127,7 @@ protected:
 			//SMMATRIX mV;
 			SMMATRIX mVP;
 			float3 vPosCam;
+			SMMATRIX mInvVP;
 		} vs;
 		//float4 vNearFarLayers;
 	} m_cameraShaderData;

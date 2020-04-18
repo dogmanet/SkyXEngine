@@ -21,6 +21,7 @@ cbuffer CDataCamera: register(b2)
 	// float4x4 mV;
 	float4x4 g_mVP;
 	float4 g_vPosCam;
+	float4x4 g_mInvVP;
 };
 cbuffer CDataObject: register(b1)
 {

@@ -31,7 +31,7 @@ VSO_SceneCommon SkinBoneTransform(uint iBone, float weight, VSI_Animation v)
 	iBone *= 2;
 	float4 bpos = g_BufferBoneWorld[iBone];
 	float4 q = g_BufferBoneWorld[iBone + 1];
-	Output.vPosition = float4((SkinRotateVec(q, v.vPosition) + bpos) * weight, 1.0);
+	Output.vPosition = float4((SkinRotateVec(q, v.vPosition) + bpos.xyz) * weight, 1.0);
 	Output.vNormal = SkinRotateVec(q, v.vNormal) * weight;
 
 	return(Output);

@@ -82,17 +82,28 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	{
 		XRenderPassTexturesElement pTextures[] = {
 			{"GBuffer color(rgb) light(a)", "txGBufferC3L1", 0},
-			{"GBuffer normals(rgb) f0(a)", "txGBufferN3F1", 1},
+			// {"GBuffer normals(rgb) f0(a)", "txGBufferN3F1", 1},
 			{"GBuffer depth(r)", "txGBufferD1", 2},
-			{"", "", 3}, // reserved slot
+			// {"", "3", 3}, // reserved slot
 			// {"GBuffer roughness(r) metallic(g) thickness(b) AO(a)", "g_txGBufferR1M1T1AO1", 3},
 			{"Lighted scene", "txScene", 4},
+
+			{"LPV Red cascades", "txLightVolumeRed[3]", 5, GXTEXTURE_TYPE_3D},
+			{"", "6", 6},
+			{"", "7", 7},
+			{"LPV Green cascades", "txLightVolumeGreen[3]", 8, GXTEXTURE_TYPE_3D},
+			{"", "9", 9},
+			{"", "10", 10},
+			{"LPV Red cascades", "txLightVolumeBlue[3]", 11, GXTEXTURE_TYPE_3D},
+			{"", "12", 12},
+			{"", "13", 13},
 			XRENDER_PASS_TEXTURES_LIST_END()
 		}; 
 		
 		XRenderPassSamplersElement pSamplers[] = {
 			{"Scene default", "sScene", 0},
 			{"Point clamp", "sPointClamp", 1},
+			{"Linear clamp", "sLinearClamp", 2},
 			XRENDER_PASS_SAMPLERS_LIST_END()
 		};
 
@@ -576,9 +587,11 @@ void CRenderPipeline::renderFrame()
 	pCtx->setPSConstant(m_pSceneShaderDataPS, SCR_SCENE);
 
 	m_cameraShaderData.vs.mVP = SMMatrixTranspose(gdata::mCamView * gdata::mCamProj);
+	m_cameraShaderData.vs.mInvVP = SMMatrixInverse(NULL, m_cameraShaderData.vs.mVP);
 	m_cameraShaderData.vs.vPosCam = gdata::vConstCurrCamPos;
 	m_pCameraShaderDataVS->update(&m_cameraShaderData.vs);
 	pCtx->setVSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
+	pCtx->setPSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
 
 	renderPrepare();
 
@@ -1341,11 +1354,19 @@ void CRenderPipeline::renderTransparent()
 	pCtx->setDepthStencilState(m_pDepthStencilStateNoZWrite);
 	pCtx->setBlendState(m_pBlendStateAlpha);
 	pCtx->setSamplerState(m_pRefractionScene, 1);
+	pCtx->setSamplerState(gdata::rstates::pSamplerLinearClamp, 2);
 	//m_pDevice->setTexture(m_pSceneTexture, 11);
 	pCtx->setPSTexture(m_pGBufferColor);
-	pCtx->setPSTexture(m_pGBufferNormals, 1);
+//	pCtx->setPSTexture(m_pGBufferNormals, 1);
 	pCtx->setPSTexture(m_pGBufferDepth, 2);
-	pCtx->setPSTexture(m_pGBufferParams, 3);
+//	pCtx->setPSTexture(m_pGBufferParams, 3);
+
+	for(UINT i = 0; i < 3; ++i)
+	{
+		pCtx->setPSTexture(m_aLPVs[i].pGIAccumRed, 5 + i);
+		pCtx->setPSTexture(m_aLPVs[i].pGIAccumGreen, 8 + i);
+		pCtx->setPSTexture(m_aLPVs[i].pGIAccumBlue, 11 + i);
+	}
 
 	m_iRefractiveSource = -1;
 	IGXSurface *pSceneTarget = m_pSceneTexture->asRenderTarget();

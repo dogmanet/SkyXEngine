@@ -9,7 +9,7 @@ struct.h
 #define __STRUCT_H
 
 
-#include "gdefines.h"
+#include <gdefines.h>
 
 /* \name ПОСТПРОЦЕСС
 @{*/

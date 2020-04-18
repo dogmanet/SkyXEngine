@@ -6,7 +6,7 @@ gbuffer.ps
 
 #include <struct.h>
 #include <mtrl.h>
-#include <shadow.h>
+// #include <shadow.h>
 #include <const.h>
 #include <xmat.h>
 
@@ -25,7 +25,7 @@ PSO_RSMbuffer main(PSI_XMaterial IN)
 	// OUT.vDepth = 4.0;
 #else
 	float fDepth = IN.vPos.z / IN.vPos.w;
-	float fBias = ShadowSlopeBias(fDepth);
+	// float fBias = ShadowSlopeBias(fDepth);
 	OUT.vDepth = fDepth/*  + fBias */;
 #endif
 	

@@ -5,9 +5,9 @@ ppgensm_direct.ps
 */
 
 #include <struct.h>
-#include <shadow.h>
+// #include <shadow.h>
 #include <mtrl.h>
-#include <ps.h>
+// #include <ps.h>
 
 //##########################################################################
 
@@ -56,7 +56,7 @@ Texture2D g_txDepthShadow: register(t4);
 float4 main(VSO_ResPos IN):COLOR0
 {
 	float fShadow = 0.0f;
-	half3 vNormal = normalize(NormalDecode(g_txNormals.Sample(g_sPointClamp, IN.vTexUV).xyz).xyz);
+	float3 vNormal = normalize(NormalDecode(g_txNormals.Sample(g_sPointClamp, IN.vTexUV).xyz).xyz);
 	//g_txDepthView.Sample(g_sPointClamp, IN.vTexUV)
 	//g_txDepthShadow.Sample(g_sLinearClamp, IN.vTexUV)
 	

@@ -9,6 +9,9 @@ gbuffer.ps
 #include <const.h>
 #include <xmat.h>
 
+#define NO_LPV_TEXTURES
+#include <lpv.h>
+
 //##########################################################################
 
 cbuffer CDataClipPlanes: register(b6)
@@ -34,5 +37,7 @@ float4 main(PSI_XMaterial IN):COLOR0
 	
 	XMaterial mtrl = XMATERIAL_MAIN(IN);
 	
-	return(mtrl.vBaseColor);
+	float4 fWorldPos = mul(IN.vPos, g_mInvVP);
+	
+	return(mtrl.vBaseColor * float4(GetPixelLight(fWorldPos.xyz / fWorldPos.w, mtrl.vNormal), 1.0f));
 }
