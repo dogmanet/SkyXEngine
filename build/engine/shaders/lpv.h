@@ -7,7 +7,7 @@
 // #define LPV_MAP_SIZE 32
 #define KERNEL_SIZE (LPV_MAP_SIZE / LPV_POINT_COUNT)
 #ifdef IS_SUN
-#define LPV_POINT_WEIGHT (256.0f * 256.0f * 10.0f / (float)(LPV_POINT_COUNT * LPV_POINT_COUNT))
+#define LPV_POINT_WEIGHT (256.0f * 256.0f * 64.0f / (float)(LPV_POINT_COUNT * LPV_POINT_COUNT))
 #else
 #define LPV_POINT_WEIGHT (256.0f * 256.0f / (float)(LPV_POINT_COUNT * LPV_POINT_COUNT))
 #endif
@@ -18,6 +18,11 @@
 cbuffer b9: register(b9)
 {
 	float4 g_vCenterSize[3];
+};
+
+cbuffer b10: register(b10)
+{
+	float4 g_vCurrentCascade;
 };
 
 // https://github.com/mafian89/Light-Propagation-Volumes/blob/master/shaders/lightInject.frag and
@@ -65,5 +70,5 @@ int3 getGridPos(float3 worldPos, uint uCascade)
 
 float3 GetGridTexCoord(float3 worldPos, uint uCascade)
 {
-	return((worldPos - GetGridCenter(0)) / (GetGridWorldSize(uCascade) * LPV_DIM) + 0.5f + 1.0f / (LPV_DIM * 2.0f));
+	return((worldPos - GetGridCenter(uCascade)) / (GetGridWorldSize(uCascade) * LPV_DIM) + 0.5f + 1.0f / (LPV_DIM * 2.0f));
 }

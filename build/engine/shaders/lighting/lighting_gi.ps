@@ -22,9 +22,9 @@ SamplerState g_sLinearClamp: register(s1);
 
 Texture2D g_txDepth:register(t0);
 Texture2D g_txNormals:register(t1);
-Texture3D g_txLightVolumeRed:register(t2);
-Texture3D g_txLightVolumeGreen:register(t3);
-Texture3D g_txLightVolumeBlue:register(t4);
+Texture3D g_txLightVolumeRed[3]:register(t2);
+Texture3D g_txLightVolumeGreen[3]:register(t5);
+Texture3D g_txLightVolumeBlue[3]:register(t8);
 
 //#############################################################################
 
@@ -40,18 +40,27 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	
 	float3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
 	
-	float3 vTexCoord = GetGridTexCoord(vPosition.xyz, 0);
-	
-	float4 vColorR = g_txLightVolumeRed.Sample(g_sLinearClamp, vTexCoord);
-	float4 vColorG = g_txLightVolumeGreen.Sample(g_sLinearClamp, vTexCoord);
-	float4 vColorB = g_txLightVolumeBlue.Sample(g_sLinearClamp, vTexCoord);
 	
 	// float3 vNormalPixel = normalize(IN.vNormal);
 	float4 SHintensity = dirToSH(-vNormalPixel);
 	
-	float r = saturate(dot(SHintensity, vColorR));
-	float g = saturate(dot(SHintensity, vColorG));
-	float b = saturate(dot(SHintensity, vColorB));
+	float r = 0.0f;
+	float g = 0.0f;
+	float b = 0.0f;
+
+	for(uint i = 0; i < 3; ++i)
+	{
+		float3 vTexCoord = GetGridTexCoord(vPosition.xyz, i);
+		float4 vColorR = g_txLightVolumeRed[i].Sample(g_sLinearClamp, vTexCoord);
+		float4 vColorG = g_txLightVolumeGreen[i].Sample(g_sLinearClamp, vTexCoord);
+		float4 vColorB = g_txLightVolumeBlue[i].Sample(g_sLinearClamp, vTexCoord);
+		
+		r += saturate(dot(SHintensity, vColorR));
+		g += saturate(dot(SHintensity, vColorG));
+		b += saturate(dot(SHintensity, vColorB));
+	}
+	
+	
 	
 	OUT.vAmdient.xyz = float3(r, g, b) / PI/*  * 6.0f */;
 	OUT.vAmdient.w = 1;

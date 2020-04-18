@@ -419,6 +419,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	m_pCameraShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_cameraShaderData.vs));
 
 	m_pLPVcentersShaderData = m_pDevice->createConstantBuffer(sizeof(m_lpvCentersShaderData.vs));
+	m_pLPVcurrentCascadeShaderData = m_pDevice->createConstantBuffer(sizeof(float4_t));
 
 	m_pLightingShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_lightingShaderData.vs));
 	m_pLightingShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_lightingShaderData.ps));
@@ -459,13 +460,17 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	}
 
 //#define TIDX(x, y, z) (x + y * 32 + z * 32 * 32)
-	m_pGIAccumRed = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
-	m_pGIAccumGreen = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
-	m_pGIAccumBlue = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+	for(UINT i = 0; i < 3; ++i)
+	{
+		m_aLPVs[i].pGIAccumRed = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+		m_aLPVs[i].pGIAccumGreen = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+		m_aLPVs[i].pGIAccumBlue = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+		
+		m_aLPVs[i].pGIAccumRed2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+		m_aLPVs[i].pGIAccumGreen2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+		m_aLPVs[i].pGIAccumBlue2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
 
-	m_pGIAccumRed2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
-	m_pGIAccumGreen2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
-	m_pGIAccumBlue2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+	}
 //#undef TIDX
 
 	m_idLightBoundShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "lighting_bound.vs"), -1);
@@ -513,6 +518,7 @@ CRenderPipeline::~CRenderPipeline()
 	mem_release(m_pCameraShaderDataVS);
 
 	mem_release(m_pLPVcentersShaderData);
+	mem_release(m_pLPVcurrentCascadeShaderData);
 
 	mem_release(m_pLightingShaderDataVS);
 	mem_release(m_pLightingShaderDataPS);
@@ -534,9 +540,16 @@ CRenderPipeline::~CRenderPipeline()
 
 	mem_release(m_pGICubesRB);
 
-	mem_release(m_pGIAccumRed);
-	mem_release(m_pGIAccumGreen);
-	mem_release(m_pGIAccumBlue);
+	for(UINT i = 0; i < 3; ++i)
+	{
+		mem_release(m_aLPVs[i].pGIAccumRed);
+		mem_release(m_aLPVs[i].pGIAccumGreen);
+		mem_release(m_aLPVs[i].pGIAccumBlue);
+
+		mem_release(m_aLPVs[i].pGIAccumRed2);
+		mem_release(m_aLPVs[i].pGIAccumGreen2);
+		mem_release(m_aLPVs[i].pGIAccumBlue2);
+	}
 
 	mem_delete(m_pShadowCache);
 	mem_release(m_pShadowShaderDataVS);
@@ -721,12 +734,24 @@ void CRenderPipeline::showGICubes()
 	SGCore_ShaderBind(m_idGICubesShader);
 	pCtx->setGSConstant(m_pLightingShaderDataVS, 1);
 	pCtx->setDepthStencilState(m_pDepthStencilStateDefault);
-	pCtx->setPSTexture(m_pGIAccumRed2, 0);
-	pCtx->setPSTexture(m_pGIAccumGreen2, 1);
-	pCtx->setPSTexture(m_pGIAccumBlue2, 2);
 	pCtx->setSamplerState(gdata::rstates::pSamplerPointClamp, 0);
+
+	pCtx->setVSConstant(m_pLPVcurrentCascadeShaderData, 10);
+	pCtx->setGSConstant(m_pLPVcurrentCascadeShaderData, 10);
+	pCtx->setPSConstant(m_pLPVcurrentCascadeShaderData, 10);
+
+	for(UINT i = 2; i < 3; ++i)
+	{
+		float4_t vTmp((float)i + 0.5f);  // just to be sure
+		m_pLPVcurrentCascadeShaderData->update(&vTmp);
+
+		pCtx->setPSTexture(m_aLPVs[i].pGIAccumRed2, 0);
+		pCtx->setPSTexture(m_aLPVs[i].pGIAccumGreen2, 1);
+		pCtx->setPSTexture(m_aLPVs[i].pGIAccumBlue2, 2);
+
+		pCtx->drawPrimitive(0, m_uGICubesCount);
+	}
 	
-	pCtx->drawPrimitive(0, m_uGICubesCount);
 
 	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
 
@@ -857,9 +882,12 @@ void CRenderPipeline::renderGI()
 
 	const float c_aLPVsizes[] = {
 		//0.5f,
+		//1.0f,
+		//2.0f
+
 		1.0f,
-		1.0f,
-		2.0f
+		2.0f,
+		4.0f
 	};
 
 	m_lpvCentersShaderData.vs.vCenterSize[0] = float4(gdata::vConstCurrCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * c_aLPVsizes[0], c_aLPVsizes[0]);
@@ -1041,49 +1069,58 @@ void CRenderPipeline::renderGI()
 	pCtx->setVSConstant(m_pLPVcentersShaderData, 9);
 	pCtx->setPSConstant(m_pLPVcentersShaderData, 9);
 
-	bool isFirstRun = true;
+	bool isFirstRun[3] = {true, true, true};
 	while((uShadowCount = m_pShadowCache->processNextRSMBunch()))
 	{
+		pCtx->setVSConstant(m_pLPVcurrentCascadeShaderData, 10);
+		pCtx->setPSConstant(m_pLPVcurrentCascadeShaderData, 10);
+
 		pCtx->setDepthStencilSurface(pOldDSSurface);
 		pCtx->setBlendState(gdata::rstates::pBlendAlphaOneOne);
 
 		pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
 		pCtx->setPSConstant(m_pLightingShaderDataPS, 1);
 
-
-		IGXSurface *pLPVRed = m_pGIAccumRed->asRenderTarget();
-		IGXSurface *pLPVGreen = m_pGIAccumGreen->asRenderTarget();
-		IGXSurface *pLPVBlue = m_pGIAccumBlue->asRenderTarget();
-
-		//m_pDevice->setColorTarget(pAmbientSurf);
-		pCtx->setColorTarget(pLPVRed);
-		pCtx->setColorTarget(pLPVGreen, 1);
-		pCtx->setColorTarget(pLPVBlue, 2);
-
-		mem_release(pLPVRed);
-		mem_release(pLPVGreen);
-		mem_release(pLPVBlue);
-
 		IGXDepthStencilSurface *pOldSurface = pCtx->getDepthStencilSurface();
 		pCtx->unsetDepthStencilSurface();
 
-		if(isFirstRun)
-		{
-			pCtx->clear(GX_CLEAR_COLOR);
-			isFirstRun = false;
-		}
-
 		IBaseReflectiveShadowMap *pShadow = NULL;
-		//inject VPLs into LPV grid
-		for(UINT i = 0; i < uShadowCount; ++i)
-		{
-			pShadow = m_pShadowCache->getRSMShadow(i);
-			pShadow->genLPV();
-		}
 
-		pCtx->setColorTarget(NULL);
-		pCtx->setColorTarget(NULL, 1);
-		pCtx->setColorTarget(NULL, 2);
+		for(UINT i = 0; i < 3; ++i)
+		{
+			float4_t vTmp((float)i + 0.5f); // just to be sure
+			m_pLPVcurrentCascadeShaderData->update(&vTmp);
+
+			IGXSurface *pLPVRed = m_aLPVs[i].pGIAccumRed->asRenderTarget();
+			IGXSurface *pLPVGreen = m_aLPVs[i].pGIAccumGreen->asRenderTarget();
+			IGXSurface *pLPVBlue = m_aLPVs[i].pGIAccumBlue->asRenderTarget();
+
+			//m_pDevice->setColorTarget(pAmbientSurf);
+			pCtx->setColorTarget(pLPVRed);
+			pCtx->setColorTarget(pLPVGreen, 1);
+			pCtx->setColorTarget(pLPVBlue, 2);
+
+			mem_release(pLPVRed);
+			mem_release(pLPVGreen);
+			mem_release(pLPVBlue);
+
+			if(isFirstRun[i])
+			{
+				pCtx->clear(GX_CLEAR_COLOR);
+				isFirstRun[i] = false;
+			}
+
+			//inject VPLs into LPV grid
+			for(UINT j = 0; j < uShadowCount; ++j)
+			{
+				pShadow = m_pShadowCache->getRSMShadow(j);
+				pShadow->genLPV();
+			}
+
+			pCtx->setColorTarget(NULL);
+			pCtx->setColorTarget(NULL, 1);
+			pCtx->setColorTarget(NULL, 2);
+		}
 
 		const bool *dev_lpv_points = GET_PCVAR_BOOL("dev_lpv_points");
 		if(*dev_lpv_points)
@@ -1104,26 +1141,29 @@ void CRenderPipeline::renderGI()
 
 		//break;
 	}
-	if(isFirstRun)
+	for(UINT i = 0; i < 3; ++i)
 	{
-		IGXSurface *pLPVRed = m_pGIAccumRed->asRenderTarget();
-		IGXSurface *pLPVGreen = m_pGIAccumGreen->asRenderTarget();
-		IGXSurface *pLPVBlue = m_pGIAccumBlue->asRenderTarget();
+		if(isFirstRun[i])
+		{
+			IGXSurface *pLPVRed =   m_aLPVs[i].pGIAccumRed->asRenderTarget();
+			IGXSurface *pLPVGreen = m_aLPVs[i].pGIAccumGreen->asRenderTarget();
+			IGXSurface *pLPVBlue =  m_aLPVs[i].pGIAccumBlue->asRenderTarget();
 
-		pCtx->setColorTarget(pLPVRed);
-		pCtx->setColorTarget(pLPVGreen, 1);
-		pCtx->setColorTarget(pLPVBlue, 2);
+			pCtx->setColorTarget(pLPVRed);
+			pCtx->setColorTarget(pLPVGreen, 1);
+			pCtx->setColorTarget(pLPVBlue, 2);
 
-		mem_release(pLPVRed);
-		mem_release(pLPVGreen);
-		mem_release(pLPVBlue);
+			mem_release(pLPVRed);
+			mem_release(pLPVGreen);
+			mem_release(pLPVBlue);
 
-		pCtx->clear(GX_CLEAR_COLOR);
-		isFirstRun = false;
+			pCtx->clear(GX_CLEAR_COLOR);
+			isFirstRun[i] = false;
 
-		pCtx->setColorTarget(NULL);
-		pCtx->setColorTarget(NULL, 1);
-		pCtx->setColorTarget(NULL, 2);
+			pCtx->setColorTarget(NULL);
+			pCtx->setColorTarget(NULL, 1);
+			pCtx->setColorTarget(NULL, 2);
+		}
 	}
 
 	SGCore_ShaderUnBind();
@@ -1135,45 +1175,48 @@ void CRenderPipeline::renderGI()
 
 	{
 		SGCore_ShaderBind(m_idLPVPropagateShader);
-
-		for(UINT i = 0; i < 6/*6*/; ++i)
+		UINT uStepCount[] = {4, 6, 8};
+		for(UINT j = 0; j < 3; ++j)
 		{
-			pCtx->setCSTexture(m_pGIAccumRed, 0);
-			pCtx->setCSTexture(m_pGIAccumGreen, 1);
-			pCtx->setCSTexture(m_pGIAccumBlue, 2);
+			for(UINT i = 0; i < uStepCount[j]; ++i)
+			{
+				pCtx->setCSTexture(m_aLPVs[j].pGIAccumRed, 0);
+				pCtx->setCSTexture(m_aLPVs[j].pGIAccumGreen, 1);
+				pCtx->setCSTexture(m_aLPVs[j].pGIAccumBlue, 2);
 
-			pCtx->setCSUnorderedAccessView(m_pGIAccumRed2, 0);
-			pCtx->setCSUnorderedAccessView(m_pGIAccumGreen2, 1);
-			pCtx->setCSUnorderedAccessView(m_pGIAccumBlue2, 2);
+				pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumRed2, 0);
+				pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumGreen2, 1);
+				pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumBlue2, 2);
 
-			pCtx->computeDispatch(2, 16, 32);
+				pCtx->computeDispatch(2, 16, 32);
 
-			pCtx->setCSUnorderedAccessView(NULL, 0);
-			pCtx->setCSUnorderedAccessView(NULL, 1);
-			pCtx->setCSUnorderedAccessView(NULL, 2);
+				pCtx->setCSUnorderedAccessView(NULL, 0);
+				pCtx->setCSUnorderedAccessView(NULL, 1);
+				pCtx->setCSUnorderedAccessView(NULL, 2);
 
-			pCtx->setCSTexture(NULL, 0);
-			pCtx->setCSTexture(NULL, 1);
-			pCtx->setCSTexture(NULL, 2);
+				pCtx->setCSTexture(NULL, 0);
+				pCtx->setCSTexture(NULL, 1);
+				pCtx->setCSTexture(NULL, 2);
 
 
-			pCtx->setCSTexture(m_pGIAccumRed2, 0);
-			pCtx->setCSTexture(m_pGIAccumGreen2, 1);
-			pCtx->setCSTexture(m_pGIAccumBlue2, 2);
-			
-			pCtx->setCSUnorderedAccessView(m_pGIAccumRed, 0);
-			pCtx->setCSUnorderedAccessView(m_pGIAccumGreen, 1);
-			pCtx->setCSUnorderedAccessView(m_pGIAccumBlue, 2);
+				pCtx->setCSTexture(m_aLPVs[j].pGIAccumRed2, 0);
+				pCtx->setCSTexture(m_aLPVs[j].pGIAccumGreen2, 1);
+				pCtx->setCSTexture(m_aLPVs[j].pGIAccumBlue2, 2);
 
-			pCtx->computeDispatch(2, 16, 32);
+				pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumRed, 0);
+				pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumGreen, 1);
+				pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumBlue, 2);
 
-			pCtx->setCSUnorderedAccessView(NULL, 0);
-			pCtx->setCSUnorderedAccessView(NULL, 1);
-			pCtx->setCSUnorderedAccessView(NULL, 2);
-			
-			pCtx->setCSTexture(NULL, 0);
-			pCtx->setCSTexture(NULL, 1);
-			pCtx->setCSTexture(NULL, 2);
+				pCtx->computeDispatch(2, 16, 32);
+
+				pCtx->setCSUnorderedAccessView(NULL, 0);
+				pCtx->setCSUnorderedAccessView(NULL, 1);
+				pCtx->setCSUnorderedAccessView(NULL, 2);
+
+				pCtx->setCSTexture(NULL, 0);
+				pCtx->setCSTexture(NULL, 1);
+				pCtx->setCSTexture(NULL, 2);
+			}
 		}
 
 		SGCore_ShaderUnBind();
@@ -1203,9 +1246,21 @@ void CRenderPipeline::renderGI()
 
 		pCtx->setPSTexture(m_pGBufferDepth);
 		pCtx->setPSTexture(m_pGBufferNormals, 1);
-		pCtx->setPSTexture(m_pGIAccumRed, 2);
-		pCtx->setPSTexture(m_pGIAccumGreen, 3);
-		pCtx->setPSTexture(m_pGIAccumBlue, 4);
+		for(UINT i = 0; i < 3; ++i)
+		{
+			pCtx->setPSTexture(m_aLPVs[i].pGIAccumRed,   2 + i);
+			pCtx->setPSTexture(m_aLPVs[i].pGIAccumGreen, 5 + i);
+			pCtx->setPSTexture(m_aLPVs[i].pGIAccumBlue,  8 + i);
+		}
+		//r2  |0
+		//r3  |1
+		//r4  |2
+		//g5  |3
+		//g6  |4
+		//g7  |5
+		//b8  |6
+		//b9  |7
+		//b10 |8
 
 		SGCore_ScreenQuadDraw();
 

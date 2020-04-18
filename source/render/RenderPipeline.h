@@ -142,6 +142,7 @@ protected:
 		//float4 vNearFarLayers;
 	} m_lpvCentersShaderData;
 	IGXConstantBuffer *m_pLPVcentersShaderData = NULL;
+	IGXConstantBuffer *m_pLPVcurrentCascadeShaderData = NULL;
 
 	struct
 	{
@@ -238,14 +239,17 @@ protected:
 	IGXTexture2D *m_pSceneTexture = NULL;
 
 	//###################################
+	
+	struct LPVcascade
+	{
+		IGXTexture3D *pGIAccumRed = NULL;
+		IGXTexture3D *pGIAccumGreen = NULL;
+		IGXTexture3D *pGIAccumBlue = NULL;
 
-	IGXTexture3D *m_pGIAccumRed = NULL;
-	IGXTexture3D *m_pGIAccumGreen = NULL;
-	IGXTexture3D *m_pGIAccumBlue = NULL;
-
-	IGXTexture3D *m_pGIAccumRed2 = NULL;
-	IGXTexture3D *m_pGIAccumGreen2 = NULL;
-	IGXTexture3D *m_pGIAccumBlue2 = NULL;
+		IGXTexture3D *pGIAccumRed2 = NULL;
+		IGXTexture3D *pGIAccumGreen2 = NULL;
+		IGXTexture3D *pGIAccumBlue2 = NULL;
+	} m_aLPVs[3];
 
 	IGXRenderBuffer *m_pGICubesRB = NULL;
 	UINT m_uGICubesCount = 0;

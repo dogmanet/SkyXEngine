@@ -858,14 +858,14 @@ void CReflectiveShadowSun::init(IGXDevice *pContext, UINT uSize)
 	samplerDesc.filter = GXFILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
 	m_pSamplerComparisonLinearClamp = pContext->createSamplerState(&samplerDesc);
 
-	GXMacro definesInject[] = {{"IS_SUN", "1"}, {"LPV_POINT_COUNT", "64"}, {"LPV_MAP_SIZE", MACRO_TEXT(RSM_SUN_SIZE)}, {0, 0}};
+	GXMacro definesInject[] = {{"IS_SUN", "1"}, {"LPV_POINT_COUNT", MACRO_TEXT(RSM_SUN_POINTS)}, {"LPV_MAP_SIZE", MACRO_TEXT(RSM_SUN_SIZE)}, {0, 0}};
 	m_idInjectShader = SGCore_ShaderCreateKit(
 		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gi_inject.vs", 0, definesInject),
 		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gi_inject.ps", 0, definesInject),
 		SGCore_ShaderLoad(SHADER_TYPE_GEOMETRY, "gi_inject.gs", 0, definesInject)
 		);
 
-	GXMacro definesInjectDebug[] = {{"IS_SUN", "1"}, {"_DEBUG", "1"}, {"LPV_POINT_COUNT", "64"}, {"LPV_MAP_SIZE", MACRO_TEXT(RSM_SUN_SIZE)}, {0, 0}};
+	GXMacro definesInjectDebug[] = {{"IS_SUN", "1"}, {"_DEBUG", "1"}, {"LPV_POINT_COUNT", MACRO_TEXT(RSM_SUN_POINTS)}, {"LPV_MAP_SIZE", MACRO_TEXT(RSM_SUN_SIZE)}, {0, 0}};
 	m_idInjectDebugShader = SGCore_ShaderCreateKit(
 		SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gi_inject.vs", 0, definesInjectDebug),
 		SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gi_inject.ps", 0, definesInjectDebug)
@@ -967,7 +967,8 @@ void CReflectiveShadowSun::updateFrustum()
 
 	//! @todo: fix grid center pos!
 	float3 vGridCenter = vStart;
-	float fGridRadius = sqrtf(16.0f * 16.0f * 3.0f);
+	//float fGridRadius = sqrtf(16.0f * 16.0f * 3.0f);
+	float fGridRadius = sqrtf(64.0f * 64.0f * 3.0f);
 
 	SMMATRIX mLight(SMMatrixTranspose(SMMATRIX(
 		float4(SMVector3Cross(vUpDir, vLightDir)),
@@ -1017,7 +1018,7 @@ void CReflectiveShadowSun::genLPV(bool isDebug)
 	mem_release(pLightConstant);
 
 	SGCore_ShaderBind(isDebug ? m_idInjectDebugShader : m_idInjectShader);
-	pCtx->drawPrimitive(0, 64 * 64);
+	pCtx->drawPrimitive(0, RSM_SUN_POINTS * RSM_SUN_POINTS);
 
 	SGCore_ShaderUnBind();
 	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);

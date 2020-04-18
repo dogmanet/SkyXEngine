@@ -3,11 +3,11 @@
 
 cbuffer perLight: register(b7)
 {
-	half4 g_vLightColorPower;
-	half4 g_vLightPosShadow;
+	float4 g_vLightColorPower;
+	float4 g_vLightPosShadow;
 #ifdef IS_SPOT
-	half4 g_vLightSpotDirection;
-	half2 g_vLightSpotInnerOuterAngles;
+	float4 g_vLightSpotDirection;
+	float2 g_vLightSpotInnerOuterAngles;
 #endif
 };
 
@@ -91,7 +91,7 @@ RsmTexel GetRsmTexel(int3 coords, uint2 vTexSize)
 	// vDir *= sqrt(0.01);
 	vDir *= sqrt(fVectorLength);
 	// vDir /= 1270.0;
-	tx.positionWS = float4(g_vLightPosShadow.xyz + vDir, 0.0);
+	tx.positionWS = g_vLightPosShadow.xyz + vDir;
 	
 	tx.flux = rsmFluxMap.SampleLevel(g_sPoint, vDir, 0) * float4(g_vLightColorPower.xyz, 1.0);
 	tx.normalWS = rsmWsNorMap.SampleLevel(g_sPoint, vDir, 0).xyz * 2.0 - 1.0;
@@ -104,8 +104,8 @@ RsmTexel GetRsmTexel(int3 coords, uint2 vTexSize)
 	// half fNdotD = dot(-vLigth, g_vLightSpotDirection.xyz);
 	// tx.flux *= saturate(fNdotD - g_vLightSpotInnerOuterAngles.y) / (g_vLightSpotInnerOuterAngles.x - g_vLightSpotInnerOuterAngles.y);
 	
-	half fDistance = distance(tx.positionWS, g_vLightPosShadow.xyz);
-	half fInvDistance = 1.f - (fDistance/g_vLightColorPower.w);
+	float fDistance = distance(tx.positionWS, g_vLightPosShadow.xyz);
+	float fInvDistance = 1.f - (fDistance/g_vLightColorPower.w);
 	tx.flux *= fInvDistance * fInvDistance;
 
 #ifndef _DEBUG
@@ -118,6 +118,7 @@ RsmTexel GetRsmTexel(int3 coords, uint2 vTexSize)
 GS_IN main(VS_IN input)
 {	
 	// input.posIndex = 128 + 128 * 256 + 1;
+	uint uCurrentCascade = g_vCurrentCascade.x;
 
 	const uint2 RSMsize = uint2(LPV_MAP_SIZE, LPV_MAP_SIZE);
 	const uint2 RSMsizeNew = RSMsize / KERNEL_SIZE;
@@ -156,7 +157,7 @@ GS_IN main(VS_IN input)
 				float texLum = Luminance(rsmTexel);
 				if (texLum > maxLuminance)
 				{
-					brightestCellIndex = getGridPos(rsmTexel.positionWS, 0);
+					brightestCellIndex = getGridPos(rsmTexel.positionWS, uCurrentCascade);
 					maxLuminance = texLum;
 				}
 			}
@@ -172,7 +173,7 @@ GS_IN main(VS_IN input)
 			int3 texIdx = rsmCoords.xyz + int3(x, y, 0);
 			RsmTexel rsmTexel = GetRsmTexel(texIdx, RSMsize);
 			
-			int3 texelIndex = getGridPos(rsmTexel.positionWS, 0);
+			int3 texelIndex = getGridPos(rsmTexel.positionWS, uCurrentCascade);
 			float3 deltaGrid = texelIndex - brightestCellIndex;
 			if(dot(deltaGrid, deltaGrid) < 10) // If cell proximity is good enough
 			{
@@ -195,7 +196,7 @@ GS_IN main(VS_IN input)
 	//RsmTexel result = GetRsmTexel(rsmCoords.xy);
 
 	GS_IN output;
-	output.cellIndex = float4(getGridPos(result.positionWS, 0), 1.0);
+	output.cellIndex = float4(getGridPos(result.positionWS, uCurrentCascade), 1.0);
 	// output.cellIndex = float4(result.positionWS, 1.0);
 	output.normal = result.normalWS;
 	output.flux = result.flux.rgb;

@@ -16,6 +16,11 @@ cbuffer perFrame: register(b1)
 	float3 g_vParamProj;
 };
 
+/* cbuffer b10: register(b10)
+{
+	float4 g_vCurrentCascade;
+}; */
+
 //##########################################################################
 
 [maxvertexcount(14)]
@@ -23,7 +28,7 @@ void main(point VSO_GICubes input[1], inout TriangleStream<GSO_GICubes> OutputSt
 // void main(point VSO_GICubes input[1], inout LineStream<VSO_GICubes> OutputStream)
 // void main(point VSO_GICubes input[1], inout PointStream<VSO_GICubes> OutputStream)
 {
-	const float fSize = 0.03;
+	const float fSize = 0.03/*  * g_vCurrentCascade.y */;
 	const float fNormal = 0.57735027;
 	
 	float3 vCenter = input[0].vPosition.xyz;

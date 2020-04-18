@@ -25,9 +25,10 @@ cbuffer b8: register(b8)
 
 float4 main(GSO_GICubes IN):COLOR0
 {
+	uint uCurrentCascade = g_vCurrentCascade.x;
 	// return(float4(1,1,1,1));
 	
-	float3 vTexCoord = GetGridTexCoord(IN.vCenterPos.xyz, 0);
+	float3 vTexCoord = GetGridTexCoord(IN.vCenterPos.xyz, uCurrentCascade);
 	
 	float4 vColorR = g_txIllumRed.Sample(g_sSampler, vTexCoord);
 	float4 vColorG = g_txIllumGreen.Sample(g_sSampler, vTexCoord);

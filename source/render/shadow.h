@@ -17,7 +17,8 @@ See the license in LICENSE
 
 #define RSM_POINT_SIZE 32
 #define RSM_SPOT_SIZE 32
-#define RSM_SUN_SIZE 64
+#define RSM_SUN_SIZE 128
+#define RSM_SUN_POINTS 128
 
 class IXTexture;
 class IBaseShadowMap
