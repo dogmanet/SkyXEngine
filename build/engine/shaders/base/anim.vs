@@ -18,7 +18,7 @@ VSO_SceneCommon main(VSI_Animation IN)
 	// OUT.vPosition = mul(OUT.vPosition, g_mWVP);
 	OUT.vPosition = mul(OUT.vPosition, g_mW);
 	OUT.vPosition = mul(OUT.vPosition, g_mVP);
-	OUT.vNormal = mul(float4(OUT.vNormal, 1.0f), g_mW).xyz;
+	OUT.vNormal = mul(OUT.vNormal, (float3x3)g_mW);
 	OUT.vTexUV = IN.vTexUV;
 	
 	OUT.vPos = OUT.vPosition;

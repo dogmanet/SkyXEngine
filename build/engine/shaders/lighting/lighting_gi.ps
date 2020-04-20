@@ -21,6 +21,8 @@ SamplerState g_sPointClamp: register(s0);
 
 Texture2D g_txDepth:register(t0);
 Texture2D g_txNormals:register(t1);
+Texture2D g_txColor:register(t2);
+Texture2D g_txParams:register(t3);
 
 //#############################################################################
 
@@ -28,15 +30,23 @@ PSO_Lbuffer main(VSO_ResPos IN)
 {
 	PSO_Lbuffer OUT;
 
+	float4 vAlbedo = g_txColor.Sample(g_sPointClamp, IN.vTexUV);
 	float4 vNormals = g_txNormals.Sample(g_sPointClamp, IN.vTexUV);
+	float4 vParams = g_txParams.Sample(g_sPointClamp, IN.vTexUV);
 	float fDepth = g_txDepth.Sample(g_sPointClamp,IN.vTexUV).r;
 	
+	float fMetallic = vParams.y;
+	
 	float3 vOrigin = float3(0, 0, 0); // Центр сетки
-	float4 vPosition = float4(g_vViewPos.xyz + IN.vWorldRay * fDepth, 1.0); // Мировая позиция пиксела
+	float3 vPosition = g_vViewPos + IN.vWorldRay * fDepth; // Мировая позиция пиксела
+	
 	
 	float3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
 	
-	OUT.vAmdient.xyz = GetPixelLight(vPosition.xyz, vNormalPixel);
+	float3 vReflectDir = -normalize(reflect(g_vViewPos - vPosition, vNormalPixel));
+	
+	// OUT.vAmdient.xyz = lerp(vAlbedo.xyz, GetPixelLight(vPosition, vNormalPixel) * vAlbedo.xyz, vAlbedo.w);
+	OUT.vAmdient.xyz = lerp(vAlbedo.xyz, GetPixelLight(vPosition, lerp(vNormalPixel, vReflectDir, fMetallic)) * vAlbedo.xyz, vAlbedo.w);
 	OUT.vAmdient.w = 1;
 	OUT.vSpecular = 0;
 	

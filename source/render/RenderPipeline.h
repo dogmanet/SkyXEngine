@@ -48,6 +48,8 @@ protected:
 
 	void showGICubes();
 
+	void toneMapping();
+
 protected:
 	UINT getIndexForStage(X_RENDER_STAGE stage);
 

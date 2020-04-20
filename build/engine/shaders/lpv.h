@@ -7,10 +7,17 @@
 // #define LPV_MAP_SIZE 32
 #define KERNEL_SIZE (LPV_MAP_SIZE / LPV_POINT_COUNT)
 #ifdef IS_SUN
-#define LPV_POINT_WEIGHT (256.0f * 256.0f * 10.0f / (float)(LPV_POINT_COUNT * LPV_POINT_COUNT))
+#define LPV_POINT_WEIGHT (256.0f * 256.0f * 2.0f / (float)(LPV_POINT_COUNT * LPV_POINT_COUNT))
 #else
-#define LPV_POINT_WEIGHT (256.0f * 256.0f / (float)(LPV_POINT_COUNT * LPV_POINT_COUNT))
+#define LPV_POINT_WEIGHT (256.0f / (float)(LPV_POINT_COUNT * LPV_POINT_COUNT))
 #endif
+
+// #ifdef IS_SUN
+// #define LPV_POINT_WEIGHT (256.0f * 256.0f * 10.0f / (float)(LPV_POINT_COUNT * LPV_POINT_COUNT))
+// #else
+// #define LPV_POINT_WEIGHT (256.0f * 256.0f / (float)(LPV_POINT_COUNT * LPV_POINT_COUNT))
+// #endif
+
 #define STEP_SIZE 1
 
 
@@ -43,9 +50,9 @@ cbuffer b10: register(b10)
 
 
 #ifndef NO_LPV_TEXTURES
-Texture3D g_txLightVolumeRed[3]:register(t2);
-Texture3D g_txLightVolumeGreen[3]:register(t5);
-Texture3D g_txLightVolumeBlue[3]:register(t8);
+Texture3D g_txLightVolumeRed[3]:register(t4);
+Texture3D g_txLightVolumeGreen[3]:register(t7);
+Texture3D g_txLightVolumeBlue[3]:register(t10);
 SamplerState g_sLinearClamp: register(s1);
 #endif
 

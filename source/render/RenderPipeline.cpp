@@ -23,6 +23,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 	Core_0RegisterCVarBool("dev_lpv_cubes", false, "Отображать сетку LPV");
 	Core_0RegisterCVarBool("dev_lpv_points", false, "Отображать VPL при инъекции в LPV");
+
+	Core_0RegisterCVarFloat("hdr_adapted_coef", 0.03f, "Коэфициент привыкания к освещению (0,1] (медлено, быстро)");
 	
 	XVertexOutputElement voelGeneric[] = {
 		{"vPosition", GXDECLTYPE_FLOAT4, GXDECLUSAGE_POSITION},
@@ -244,7 +246,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			// parameter name, define_if_supplied
 			XMATERIAL_PARAM_TEXTURE_OPT("Normal map", "txNormals", "HAS_NORMALMAP"),
 			XMATERIAL_PARAM_GROUP(NULL, "HAS_NORMALMAP"),
-				XMATERIAL_PARAM_RANGE("Normalmap weight", "nm_weight", -1.0f, 1.0f, 1.0f),
+				XMATERIAL_PARAM_RANGE("Normalmap weight", "nm_weight", 1.0f, 1.0f, 1.0f),
 			XMATERIAL_PARAM_GROUP_END(),
 			// parameter name, material parameter name, define_if_set
 			XMATERIAL_PARAM_FLAG("Use param texture", "has_parameter_texture", "HAS_PARAMMAP"),
@@ -307,7 +309,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			// parameter name, define_if_supplied
 			XMATERIAL_PARAM_TEXTURE_OPT("Normal map", "txNormals", "HAS_NORMALMAP"),
 			XMATERIAL_PARAM_GROUP(NULL, "HAS_NORMALMAP"),
-				XMATERIAL_PARAM_RANGE("Normalmap weight", "nm_weight", -1.0f, 1.0f, 1.0f),
+				XMATERIAL_PARAM_RANGE("Normalmap weight", "nm_weight", 1.0f, 1.0f, 1.0f),
 			XMATERIAL_PARAM_GROUP_END(),
 			// parameter name, material parameter name, define_if_set
 			XMATERIAL_PARAM_FLAG("Refraction", "refractive", "HAS_REFRACTION"),
@@ -629,6 +631,7 @@ void CRenderPipeline::renderFrame()
 			goto end;
 		}
 		
+		//m_pSceneTexture = m_pLightAmbientDiffuse;
 		m_pSceneTexture = m_pLightTotal;
 	}
 	else
@@ -641,6 +644,11 @@ void CRenderPipeline::renderFrame()
 	renderPostprocessMain();
 	renderTransparent();
 	renderPostprocessFinal();
+
+	if(m_pLightSystem)
+	{
+		toneMapping();
+	}
 
 #if 0
 	Core_PStartSection(PERF_SECTION_SHADOW_UPDATE);
@@ -771,6 +779,14 @@ void CRenderPipeline::showGICubes()
 	pCtx->setPSTexture(NULL, 0);
 	pCtx->setPSTexture(NULL, 1);
 	pCtx->setPSTexture(NULL, 2);
+}
+
+void CRenderPipeline::toneMapping()
+{
+	Core_PStartSection(PERF_SECTION_TONEMAPPING);
+	static const float * hdr_adapted_coef = GET_PCVAR_FLOAT("hdr_adapted_coef");
+	//	SGCore_ToneMappingCom(timeDelta, (hdr_adapted_coef ? (*hdr_adapted_coef) : 0.03f));
+	Core_PEndSection(PERF_SECTION_TONEMAPPING);
 }
 
 void CRenderPipeline::renderPrepare()
@@ -1235,6 +1251,7 @@ void CRenderPipeline::renderGI()
 		SGCore_ShaderUnBind();
 	}
 	
+
 	{
 		pCtx->setColorTarget(pAmbientSurf);
 		pCtx->setColorTarget(pSpecDiffSurf, 1);
@@ -1259,21 +1276,14 @@ void CRenderPipeline::renderGI()
 
 		pCtx->setPSTexture(m_pGBufferDepth);
 		pCtx->setPSTexture(m_pGBufferNormals, 1);
+		pCtx->setPSTexture(m_pGBufferColor, 2);
+		pCtx->setPSTexture(m_pGBufferParams, 3);
 		for(UINT i = 0; i < 3; ++i)
 		{
-			pCtx->setPSTexture(m_aLPVs[i].pGIAccumRed,   2 + i);
-			pCtx->setPSTexture(m_aLPVs[i].pGIAccumGreen, 5 + i);
-			pCtx->setPSTexture(m_aLPVs[i].pGIAccumBlue,  8 + i);
+			pCtx->setPSTexture(m_aLPVs[i].pGIAccumRed,   4 + i);
+			pCtx->setPSTexture(m_aLPVs[i].pGIAccumGreen, 7 + i);
+			pCtx->setPSTexture(m_aLPVs[i].pGIAccumBlue,  10 + i);
 		}
-		//r2  |0
-		//r3  |1
-		//r4  |2
-		//g5  |3
-		//g6  |4
-		//g7  |5
-		//b8  |6
-		//b9  |7
-		//b10 |8
 
 		SGCore_ScreenQuadDraw();
 
