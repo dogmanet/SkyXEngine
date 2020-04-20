@@ -6,11 +6,15 @@ Cмешивание всех текстур для финального изоб
 
 #include <struct.h>
 #include <mtrl.h>
+#include <const.h>
 
 //##########################################################################
 
 Texture2D g_txColor: register(t0);
 Texture2D g_txAmbient: register(t1);
+Texture2D g_txNormals: register(t3);
+Texture2D g_txDepth: register(t4);
+Texture2D g_txParameters: register(t5);
 SamplerState g_sPointClamp: register(s0);
 
 // sampler2D g_sColor:register(s0);
@@ -22,9 +26,87 @@ SamplerState g_sPointClamp: register(s0);
 
 //##########################################################################
 
-float4 main(VSO_PP IN):COLOR0
+float3 GetUV(float3 position)
 {
+	float4 pVP = mul(float4(position, 1.0f), g_mVP);
+	pVP.xy = float2(0.5f, 0.5f) + float2(0.5f, -0.5f) * pVP.xy / pVP.w;
+	return float3(pVP.xy, pVP.z / pVP.w);
+}
+
+float3 GetPosition(float2 UV, float depth)
+{
+	float4 position = 1.0f; 
+ 
+	position.x = UV.x * 2.0f - 1.0f; 
+	position.y = -(UV.y * 2.0f - 1.0f); 
+
+	position.z = depth; 
+ 
+	position = mul(position, g_mInvVP); 
+ 
+	position /= position.w;
+
+	return position.xyz;
+}
+
+float3 GetReflection(float3 texelPosition, float3 texelNormal)
+{
+	float3 viewDir = normalize(texelPosition - g_vPosCam.xyz);
+	float3 reflectDir = normalize(reflect(viewDir, texelNormal));
+	
+	float3 currentRay = 0;
+
+	float3 nuv = 0;
+	float L = 0.01f;
+
+	float LDelmiter = 0.1f;
+
+	for(int i = 0; i < 10; i++)
+	{
+		currentRay = texelPosition + reflectDir * L;
+
+		nuv = GetUV(currentRay); // проецирование позиции на экран
+		float n = g_txDepth.Sample(g_sPointClamp, nuv.xy).r; // чтение глубины из DepthMap по UV
+
+		float3 newPosition = GetPosition(nuv.xy, n);
+		// L = length(texelPosition - newPosition);
+		L += 0.05f * i * sign(n);
+	}
+	
+	L = saturate(L * LDelmiter);
+
+	// float error = (1 - L);
+	// float error = 1.0f;
+	
+	// float error = 1.0f;
+	
+	float fLimit = 0.05f;
+	
+	float2 err = max(0.0f, abs(nuv.xy - 0.5f) - (0.5f - fLimit)) / fLimit;
+	
+	float error = max(0.0f, 1.0f - max(err.x, err.y));
+	
+	float fresnel = /* 0.0 +  */2.8 * pow(1+dot(viewDir, texelNormal), 2);
+	
+	return(g_txAmbient.Sample(g_sPointClamp, nuv.xy).xyz * error * fresnel);
+	// return(fresnel);
+}
+
+// float4 main(VSO_PP IN):COLOR0
+float4 main(VSO_ResPos IN):COLOR0
+{
+	float4 vAlbedo = g_txColor.Sample(g_sPointClamp, IN.vTexUV);
 	float4 vColor = g_txAmbient.Sample(g_sPointClamp, IN.vTexUV);
+	float fDepth = g_txDepth.Sample(g_sPointClamp, IN.vTexUV).r;
+	float4 vNormals = g_txNormals.Sample(g_sPointClamp, IN.vTexUV);
+	float4 vParams = g_txParameters.Sample(g_sPointClamp, IN.vTexUV);
+	
+	float4 vPosition = float4(g_vPosCam.xyz + IN.vWorldRay * fDepth, 1.0);
+	float3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
+	
+	vColor.rgb += (1.0f - vParams.x) * GetReflection(vPosition.xyz, vNormalPixel) * lerp((float)1.0f, vAlbedo, vParams.y) * vAlbedo.w * 0.1f;
+	// vColor.rgb += /* (1.0f - vParams.x) * /GetReflection(vPosition.xyz, vNormalPixel) * lerp((float)1.0f, vAlbedo, vParams.y) * vAlbedo.w * 0.1f;
+	
 	
 	float fAdaptedLum = 0.2f;
 	
@@ -33,6 +115,7 @@ float4 main(VSO_PP IN):COLOR0
 	
 	// return float4(pow(vColor.rgb, 1.0/2.2), vColor.a);
 	return float4(vColor.rgb, vColor.a);
+	// return float4(GetReflection(vPosition.xyz, vNormalPixel), 1.0f);
 	
 #if 0
 	float4 vNormal = tex2D(g_sNormals,IN.vTexUV);

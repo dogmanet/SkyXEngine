@@ -1321,6 +1321,7 @@ void CRenderPipeline::renderGI()
 	pCtx->setPSTexture(m_pLightAmbientDiffuse, 1);
 	pCtx->setPSTexture(m_pLightSpecular, 2);
 	pCtx->setPSTexture(m_pGBufferNormals, 3);
+	pCtx->setPSTexture(m_pGBufferDepth, 4);
 	//gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_ADAPTEDLUM), 4);
 	pCtx->setPSTexture(m_pGBufferParams, 5);
 

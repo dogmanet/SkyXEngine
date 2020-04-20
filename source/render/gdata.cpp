@@ -190,7 +190,7 @@ void gdata::shaders_id::InitAllShaders()
 	gdata::shaders_id::kit::idStencilStr = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idStencilStr);
 	gdata::shaders_id::kit::idStencilColumn = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idStencilColumn);
 	gdata::shaders_id::kit::idStencilStrColumn = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idStencilStrColumn);
-	gdata::shaders_id::kit::idBlendAmbientSpecDiffColor = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idBlendAmbientSpecDiffColor);
+	gdata::shaders_id::kit::idBlendAmbientSpecDiffColor = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idBlendAmbientSpecDiffColor);
 	//gdata::shaders_id::kit::idUnionAlpha = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idUnionAlpha);
 	gdata::shaders_id::kit::idComLightingNonShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingNonShadow);
 	gdata::shaders_id::kit::idComLightingShadow = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingShadow);
