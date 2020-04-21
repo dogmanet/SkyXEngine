@@ -1274,6 +1274,7 @@ void GameData::render()
 				L"Total memory: %uMB\n"
 				L"Used memory: %.3fMB; (T: %.3fMB; RT: %.3fMB; VB: %.3fMB, IB: %.3fMB, SC: %.3fKB)\n"
 				L"Uploaded bytes: %u; (T: %u; VB: %u, IB: %u, SC: %u)\n"
+				L"Shader switches: %u\n"
 				L"Count poly: %u\n"
 				L"Count DIP: %u\n"
 				, g_uFPS,
@@ -1294,6 +1295,7 @@ void GameData::render()
 				pFrameStats->uUploadedBuffersIndices,
 				pFrameStats->uUploadedBuffersShaderConst,
 
+				pFrameStats->uShaderSwitches,
 				pFrameStats->uPolyCount,
 				pFrameStats->uDIPcount
 				);

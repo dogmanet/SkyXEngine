@@ -115,7 +115,8 @@ float4 main(VSO_ResPos IN): COLOR0
 				
 				// float constantBias = 0.000001f;
 				float fDoubledInversedViewWidth = g_mMatrixTextureV[split][0][0];
-				float constantBias = delta * 0.0007f/*  * pow(2, split) */ /* * pow(1.0 / fDoubledInversedViewWidth, 1.0f + (float)split) */ / fDoubledInversedViewWidth;
+				// float constantBias = delta * 0.0007f/*  * pow(2, split) */ /* * pow(1.0 / fDoubledInversedViewWidth, 1.0f + (float)split) */ / fDoubledInversedViewWidth;
+				float constantBias = delta * 0.007f/*  * pow(2, split) */ /* * pow(1.0 / fDoubledInversedViewWidth, 1.0f + (float)split) */ / fDoubledInversedViewWidth;
 				
 				
 				/** Compute Adaptive Epsilon **/

@@ -1,0 +1,131 @@
+#ifdef COMPILE_MainGBuffer
+XMaterial MainGBuffer(PSI_XMaterial IN)
+{
+	XMaterial OUT = XMATERIAL_LOAD_DEFAULTS();
+	
+	float2 vDetailUV = IN.vTexUV * g_xMaterialConstants.terrain_detail_scale;
+	float2 vBaseUV = IN.vTexUV * g_xMaterialConstants.terrain_base_scale;
+	float2 vMaskUV = IN.vTexUV * g_xMaterialConstants.terrain_mask_scale;
+	
+	float4 vMask = g_txMask.Sample(g_sScene, vMaskUV);
+	
+	float4 vBaseColor = g_txBase.Sample(g_sScene, vBaseUV);
+	
+	float4 vColor = g_txDetail0.Sample(g_sScene, vDetailUV) * vMask.x;
+	vColor += g_txDetail1.Sample(g_sScene, vDetailUV) * vMask.y;
+	vColor += g_txDetail2.Sample(g_sScene, vDetailUV) * vMask.z;
+	vColor += g_txDetail3.Sample(g_sScene, vDetailUV) * vMask.w;
+
+
+	float4 vParams = (float4)0;	
+#ifdef HAS_PARAMMAP_0
+	vParams += g_txParameters0.Sample(g_sScene, vDetailUV) * vMask.x;
+#else
+	vParams += float4(g_xMaterialConstants.pbr_roughness_0, g_xMaterialConstants.pbr_metallic_0, g_xMaterialConstants.pbr_thickness_0, g_xMaterialConstants.pbr_ao_0) * vMask.x;
+#endif
+	
+#ifdef HAS_PARAMMAP_1
+	vParams += g_txParameters1.Sample(g_sScene, vDetailUV) * vMask.y;
+#else
+	vParams += float4(g_xMaterialConstants.pbr_roughness_1, g_xMaterialConstants.pbr_metallic_1, g_xMaterialConstants.pbr_thickness_1, g_xMaterialConstants.pbr_ao_1) * vMask.y;
+#endif
+	
+#ifdef HAS_PARAMMAP_2
+	vParams += g_txParameters2.Sample(g_sScene, vDetailUV) * vMask.z;
+#else
+	vParams += float4(g_xMaterialConstants.pbr_roughness_2, g_xMaterialConstants.pbr_metallic_2, g_xMaterialConstants.pbr_thickness_2, g_xMaterialConstants.pbr_ao_2) * vMask.z;
+#endif
+		
+#ifdef HAS_PARAMMAP_3
+	vParams += g_txParameters3.Sample(g_sScene, vDetailUV) * vMask.w;
+#else
+	vParams += float4(g_xMaterialConstants.pbr_roughness_3, g_xMaterialConstants.pbr_metallic_3, g_xMaterialConstants.pbr_thickness_3, g_xMaterialConstants.pbr_ao_3) * vMask.w;
+#endif
+	
+	
+	
+	float3 vNormal = (float3)0;
+#ifdef HAS_NORMALMAP_0
+	vNormal += Color2Normal(g_txNormals0.Sample(g_sScene, vDetailUV).xyz) * g_xMaterialConstants.nm_weight_0 * vMask.x;
+#endif
+
+#ifdef HAS_NORMALMAP_1
+	vNormal += Color2Normal(g_txNormals1.Sample(g_sScene, vDetailUV).xyz) * g_xMaterialConstants.nm_weight_1 * vMask.y;
+#endif
+
+#ifdef HAS_NORMALMAP_2
+	vNormal += Color2Normal(g_txNormals2.Sample(g_sScene, vDetailUV).xyz) * g_xMaterialConstants.nm_weight_2 * vMask.z;
+#endif
+	
+#ifdef HAS_NORMALMAP_3
+	vNormal += Color2Normal(g_txNormals3.Sample(g_sScene, vDetailUV).xyz) * g_xMaterialConstants.nm_weight_3 * vMask.w;
+#endif
+	
+	// float fMixFactor = min(1.0f, length(vMask));
+	float fMixFactor = min(1.0f, vMask.x + vMask.y + vMask.z + vMask.w);
+		
+	OUT.vBaseColor = lerp(vBaseColor.xyz, vColor.xyz, fMixFactor);
+
+#ifdef HAS_PARAMMAP
+	float4 vBaseParams = g_txParameters.Sample(g_sScene, vBaseUV) * vMask.x;
+#else
+	float4 vBaseParams = float4(g_xMaterialConstants.pbr_roughness, g_xMaterialConstants.pbr_metallic, g_xMaterialConstants.pbr_thickness, g_xMaterialConstants.pbr_ao);
+#endif
+	
+	vParams = lerp(vBaseParams, vParams, fMixFactor);
+	
+	OUT.fRoughness = vParams.x;
+	OUT.fMetallic = vParams.y;
+	OUT.fThickness = vParams.z;
+	OUT.fAO = vParams.w;
+	
+	OUT.vNormal = MixNormalMicro(IN.vNormal, vNormal);
+	
+	OUT.f0 = 0.004;
+	
+	return(OUT);
+}
+#endif
+
+#ifdef COMPILE_MainShadow
+XMaterial MainShadow(PSI_XMaterial IN)
+{
+	XMaterial OUT = XMATERIAL_LOAD_DEFAULTS();
+	
+	float2 vDetailUV = IN.vTexUV * g_xMaterialConstants.terrain_detail_scale;
+	float2 vBaseUV = IN.vTexUV * g_xMaterialConstants.terrain_base_scale;
+	float2 vMaskUV = IN.vTexUV * g_xMaterialConstants.terrain_mask_scale;
+	
+	float4 vBaseColor = g_txBase.Sample(g_sScene, vBaseUV);
+	
+	// float4 vMask = g_txMask.Sample(g_sScene, vMaskUV);
+	
+	
+	// float4 vColor = g_txDetail0.Sample(g_sScene, vDetailUV) * vMask.x;
+	// vColor += g_txDetail1.Sample(g_sScene, vDetailUV) * vMask.y;
+	// vColor += g_txDetail2.Sample(g_sScene, vDetailUV) * vMask.z;
+	// vColor += g_txDetail3.Sample(g_sScene, vDetailUV) * vMask.w;
+
+	
+	// OUT.vBaseColor = lerp(vBaseColor.xyz, vColor.xyz, min(1.0f, vMask.x + vMask.y + vMask.z + vMask.w));
+	OUT.vBaseColor = vBaseColor;
+	OUT.vNormal = IN.vNormal;
+	
+	return(OUT);
+}
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

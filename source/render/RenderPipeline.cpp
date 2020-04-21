@@ -246,7 +246,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			// parameter name, define_if_supplied
 			XMATERIAL_PARAM_TEXTURE_OPT("Normal map", "txNormals", "HAS_NORMALMAP"),
 			XMATERIAL_PARAM_GROUP(NULL, "HAS_NORMALMAP"),
-				XMATERIAL_PARAM_RANGE("Normalmap weight", "nm_weight", 1.0f, 1.0f, 1.0f),
+				XMATERIAL_PARAM_RANGE("Normalmap weight", "nm_weight", -1.0f, 1.0f, 1.0f),
 			XMATERIAL_PARAM_GROUP_END(),
 			// parameter name, material parameter name, define_if_set
 			XMATERIAL_PARAM_FLAG("Use param texture", "has_parameter_texture", "HAS_PARAMMAP"),
@@ -270,6 +270,137 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		};
 
 		m_pMaterialSystem->registerMaterialShader("Default", pVertexFormatSceneGeneric, pPasses, pGenericProperties);
+	}
+
+	{
+		XMaterialShaderSampler pSamplers[] = {
+			{"sDefault", GXSamplerDesc()},
+			XMATERIAL_SHADER_SAMPLER_LIST_END()
+		};
+
+		XMaterialShaderPass pPasses[] = {
+			{m_pRenderPassGBuffer, "default/terrain.ps", "MainGBuffer", NULL, pSamplers, NULL},
+			{m_pRenderPassShadow, "default/terrain.ps", "MainShadow", NULL, NULL, NULL},
+			XMATERIAL_SHADER_PASS_LIST_END()
+		};
+
+		XMaterialProperty pGenericProperties[] = {
+			// parameter name, texture name
+			XMATERIAL_PARAM_TEXTURE("Base texture", "txBase"),
+
+			XMATERIAL_PARAM_TEXTURE("Mask texture", "txMask"),
+			XMATERIAL_PARAM_TEXTURE("Detail texture 0", "txDetail0"),
+			XMATERIAL_PARAM_TEXTURE("Detail texture 1", "txDetail1"),
+			XMATERIAL_PARAM_TEXTURE("Detail texture 2", "txDetail2"),
+			XMATERIAL_PARAM_TEXTURE("Detail texture 3", "txDetail3"),
+
+			XMATERIAL_PARAM_RANGE("Base scale", "terrain_base_scale", 0.0f, 100.0f, 2.0f),
+			XMATERIAL_PARAM_RANGE("Detail scale", "terrain_detail_scale", 0.0f, 100.0f, 10.0f),
+			XMATERIAL_PARAM_RANGE("Mask scale", "terrain_mask_scale", 0.0f, 100.0f, 1.0f),
+
+			//XMATERIAL_PARAM_TEXTURE_OPT("Normal map", "txNormals", "HAS_NORMALMAP"),
+			//XMATERIAL_PARAM_GROUP(NULL, "HAS_NORMALMAP"),
+			//	XMATERIAL_PARAM_RANGE("Normalmap weight", "nm_weight", -1.0f, 1.0f, 1.0f),
+			//XMATERIAL_PARAM_GROUP_END(),
+
+		//	XMATERIAL_PARAM_FLAG("Use param texture", "has_parameter_texture", "HAS_PARAMMAP"),
+		//	// group name (optional), condition (define)
+		//	XMATERIAL_PARAM_GROUP(NULL, "HAS_PARAMMAP"),
+		//		XMATERIAL_PARAM_TEXTURE("Param texture", "txParameters"),
+		//	XMATERIAL_PARAM_GROUP_END(),
+		//	XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP"),
+				// name, min, max, material parameter name
+				XMATERIAL_PARAM_RANGE("Roughness", "pbr_roughness", 0.0f, 1.0f, 0.9f),
+				XMATERIAL_PARAM_RANGE("Metallic", "pbr_metallic", 0.0f, 1.0f, 0.0f),
+				XMATERIAL_PARAM_RANGE("Thickness", "pbr_thickness", 0.0f, 1.0f, 1.0f),
+				XMATERIAL_PARAM_RANGE("AO", "pbr_ao", 0.0f, 1.0f, 1.0f),
+		//	XMATERIAL_PARAM_GROUP_END(),
+
+
+			XMATERIAL_PARAM_TEXTURE_OPT("Normal map 0", "txNormals0", "HAS_NORMALMAP_0"),
+			XMATERIAL_PARAM_GROUP(NULL, "HAS_NORMALMAP_0"),
+				XMATERIAL_PARAM_RANGE("Normalmap 0 weight", "nm_weight_0", -1.0f, 1.0f, 1.0f),
+			XMATERIAL_PARAM_GROUP_END(),
+
+			// parameter name, material parameter name, define_if_set
+		//	XMATERIAL_PARAM_FLAG("Use param texture 0", "has_parameter_texture_0", "HAS_PARAMMAP_0"),
+		//	// group name (optional), condition (define)
+		//	XMATERIAL_PARAM_GROUP(NULL, "HAS_PARAMMAP_0"),
+		//		XMATERIAL_PARAM_TEXTURE("Param texture 0", "txParameters0"),
+		//	XMATERIAL_PARAM_GROUP_END(),
+		//	XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP_0"),
+				// name, min, max, material parameter name
+				XMATERIAL_PARAM_RANGE("Roughness 0", "pbr_roughness_0", 0.0f, 1.0f, 0.9f),
+				XMATERIAL_PARAM_RANGE("Metallic 0", "pbr_metallic_0", 0.0f, 1.0f, 0.0f),
+				XMATERIAL_PARAM_RANGE("Thickness 0", "pbr_thickness_0", 0.0f, 1.0f, 1.0f),
+				XMATERIAL_PARAM_RANGE("AO 0", "pbr_ao_0", 0.0f, 1.0f, 1.0f),
+		//	XMATERIAL_PARAM_GROUP_END(),
+
+
+			XMATERIAL_PARAM_TEXTURE_OPT("Normal map 1", "txNormals1", "HAS_NORMALMAP_1"),
+			XMATERIAL_PARAM_GROUP(NULL, "HAS_NORMALMAP_1"),
+				XMATERIAL_PARAM_RANGE("Normalmap 1 weight", "nm_weight_1", -1.0f, 1.0f, 1.0f),
+			XMATERIAL_PARAM_GROUP_END(),
+
+			// parameter name, material parameter name, define_if_set
+		//	XMATERIAL_PARAM_FLAG("Use param texture 1", "has_parameter_texture_1", "HAS_PARAMMAP_1"),
+		//	// group name (optional), condition (define)
+		//	XMATERIAL_PARAM_GROUP(NULL, "HAS_PARAMMAP_1"),
+		//		XMATERIAL_PARAM_TEXTURE("Param texture 1", "txParameters1"),
+		//	XMATERIAL_PARAM_GROUP_END(),
+		//	XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP_1"),
+				// name, min, max, material parameter name
+				XMATERIAL_PARAM_RANGE("Roughness 1", "pbr_roughness_1", 0.0f, 1.0f, 0.9f),
+				XMATERIAL_PARAM_RANGE("Metallic 1", "pbr_metallic_1", 0.0f, 1.0f, 0.0f),
+				XMATERIAL_PARAM_RANGE("Thickness 1", "pbr_thickness_1", 0.0f, 1.0f, 1.0f),
+				XMATERIAL_PARAM_RANGE("AO 1", "pbr_ao_1", 0.0f, 1.0f, 1.0f),
+		//	XMATERIAL_PARAM_GROUP_END(),
+
+
+
+			XMATERIAL_PARAM_TEXTURE_OPT("Normal map 2", "txNormals2", "HAS_NORMALMAP_2"),
+			XMATERIAL_PARAM_GROUP(NULL, "HAS_NORMALMAP_2"),
+				XMATERIAL_PARAM_RANGE("Normalmap 2 weight", "nm_weight_2", -1.0f, 1.0f, 1.0f),
+			XMATERIAL_PARAM_GROUP_END(),
+			
+			// parameter name, material parameter name, define_if_set
+		//	XMATERIAL_PARAM_FLAG("Use param texture 2", "has_parameter_texture_2", "HAS_PARAMMAP_2"),
+		//	// group name (optional), condition (define)
+		//	XMATERIAL_PARAM_GROUP(NULL, "HAS_PARAMMAP_2"),
+		//		XMATERIAL_PARAM_TEXTURE("Param texture 2", "txParameters2"),
+		//	XMATERIAL_PARAM_GROUP_END(),
+		//	XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP_2"),
+				// name, min, max, material parameter name
+				XMATERIAL_PARAM_RANGE("Roughness 2", "pbr_roughness_2", 0.0f, 1.0f, 0.9f),
+				XMATERIAL_PARAM_RANGE("Metallic 2", "pbr_metallic_2", 0.0f, 1.0f, 0.0f),
+				XMATERIAL_PARAM_RANGE("Thickness 2", "pbr_thickness_2", 0.0f, 1.0f, 1.0f),
+				XMATERIAL_PARAM_RANGE("AO 2", "pbr_ao_2", 0.0f, 1.0f, 1.0f),
+		//	XMATERIAL_PARAM_GROUP_END(),
+			
+
+			XMATERIAL_PARAM_TEXTURE_OPT("Normal map 3", "txNormals3", "HAS_NORMALMAP_3"),
+			XMATERIAL_PARAM_GROUP(NULL, "HAS_NORMALMAP_3"),
+				XMATERIAL_PARAM_RANGE("Normalmap 3 weight", "nm_weight_3", -1.0f, 1.0f, 1.0f),
+			XMATERIAL_PARAM_GROUP_END(),
+			
+			// parameter name, material parameter name, define_if_set
+		//	XMATERIAL_PARAM_FLAG("Use param texture 3", "has_parameter_texture_3", "HAS_PARAMMAP_3"),
+		//	// group name (optional), condition (define)
+		//	XMATERIAL_PARAM_GROUP(NULL, "HAS_PARAMMAP_3"),
+		//		XMATERIAL_PARAM_TEXTURE("Param texture 3", "txParameters3"),
+		//	XMATERIAL_PARAM_GROUP_END(),
+		//	XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP_3"),
+				// name, min, max, material parameter name
+				XMATERIAL_PARAM_RANGE("Roughness 3", "pbr_roughness_3", 0.0f, 1.0f, 0.9f),
+				XMATERIAL_PARAM_RANGE("Metallic 3", "pbr_metallic_3", 0.0f, 1.0f, 0.0f),
+				XMATERIAL_PARAM_RANGE("Thickness 3", "pbr_thickness_3", 0.0f, 1.0f, 1.0f),
+				XMATERIAL_PARAM_RANGE("AO 3", "pbr_ao_3", 0.0f, 1.0f, 1.0f),
+		//	XMATERIAL_PARAM_GROUP_END(),
+
+			XMATERIAL_PROPERTY_LIST_END()
+		};
+
+		m_pMaterialSystem->registerMaterialShader("Terrain", pVertexFormatSceneGeneric, pPasses, pGenericProperties);
 	}
 
 	{
@@ -309,7 +440,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			// parameter name, define_if_supplied
 			XMATERIAL_PARAM_TEXTURE_OPT("Normal map", "txNormals", "HAS_NORMALMAP"),
 			XMATERIAL_PARAM_GROUP(NULL, "HAS_NORMALMAP"),
-				XMATERIAL_PARAM_RANGE("Normalmap weight", "nm_weight", 1.0f, 1.0f, 1.0f),
+				XMATERIAL_PARAM_RANGE("Normalmap weight", "nm_weight", -1.0f, 1.0f, 1.0f),
 			XMATERIAL_PARAM_GROUP_END(),
 			// parameter name, material parameter name, define_if_set
 			XMATERIAL_PARAM_FLAG("Refraction", "refractive", "HAS_REFRACTION"),
