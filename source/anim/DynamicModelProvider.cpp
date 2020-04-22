@@ -353,8 +353,8 @@ void CDynamicModelProvider::computeVisibility(const IFrustum *pFrustum, CRendera
 	pVisibility->resetItemTransparentDynamic();
 #if 1
 	CVisUpdate cycle(pFrustum, pVisibility, pReference, m_apModels);
-	ID id = m_pCore->getAsyncTaskRunner()->forLoop(0, m_apModels.size(), &cycle, 500);
-	m_pCore->getAsyncTaskRunner()->waitForLoop(id);
+	ID id = m_pCore->forLoop(0, m_apModels.size(), &cycle, 500);
+	m_pCore->waitForLoop(id);
 #else
 	CDynamicModel *pMdl;
 	for(UINT i = 0, l = m_apModels.size(); i < l; ++i)

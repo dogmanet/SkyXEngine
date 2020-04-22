@@ -23,8 +23,8 @@ public:
 	IFileSystem* XMETHODCALLTYPE getFileSystem() override;
 	IXResourceManager* XMETHODCALLTYPE getResourceManager() override;
 
-	IAsyncFileReader* XMETHODCALLTYPE getAsyncFileReader() override;
-	IAsyncTaskRunner* XMETHODCALLTYPE getAsyncTaskRunner() override;
+	IAsyncFileReader* XMETHODCALLTYPE newAsyncFileReader() override;
+	IAsyncTaskRunner* XMETHODCALLTYPE newAsyncTaskRunner() override;
 
 	void XMETHODCALLTYPE getRenderPipeline(IXRenderPipeline **ppRenderPipeline) override;
 	void XMETHODCALLTYPE setRenderPipeline(IXRenderPipeline *pRenderPipeline) override;
@@ -49,6 +49,9 @@ public:
 	const int* XMETHODCALLTYPE getPCVarInt(const char *szName) override;
 	const float* XMETHODCALLTYPE getPCVarFloat(const char *szName) override;
 	const bool* XMETHODCALLTYPE getPCVarBool(const char *szName) override;
+
+	ID XMETHODCALLTYPE forLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize = 0) override;
+	void XMETHODCALLTYPE waitForLoop(ID id) override;
 
 protected:
 	IBaseEventChannel* getEventChannelInternal(const XGUID &guid) override;

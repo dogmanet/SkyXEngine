@@ -239,7 +239,6 @@ bool CEngine::runFrame()
 
 	SSInput_Update();
 	
-	
 	// draw frame
 	{
 		static IGXDevice *pRenderContext = SGCore_GetDXDevice();

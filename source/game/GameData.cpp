@@ -449,7 +449,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		pSun->setDirection(SMQuaternion(LIGHTS_DIR_BASE, float3(1.0f, -1.0f, 1.0f)));
 	}
 
-	g_pAsyncTaskRunner = Core_GetIXCore()->getAsyncTaskRunner();
+	g_pAsyncTaskRunner = Core_GetIXCore()->newAsyncTaskRunner();
 
 	Core_0RegisterConcmd("+forward", ccmd_forward_on);
 	Core_0RegisterConcmd("-forward", ccmd_forward_off);

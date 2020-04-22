@@ -205,11 +205,11 @@ IXResourceManager* XMETHODCALLTYPE CCore::getResourceManager()
 	return(m_pResourceManager);
 }
 
-IAsyncFileReader* XMETHODCALLTYPE CCore::getAsyncFileReader()
+IAsyncFileReader* XMETHODCALLTYPE CCore::newAsyncFileReader()
 {
 	return(new CAsyncFileReader(this));
 }
-IAsyncTaskRunner* XMETHODCALLTYPE CCore::getAsyncTaskRunner()
+IAsyncTaskRunner* XMETHODCALLTYPE CCore::newAsyncTaskRunner()
 {
 	return(new CAsyncTaskRunner(this));
 }
@@ -448,6 +448,15 @@ const float* XMETHODCALLTYPE CCore::getPCVarFloat(const char *szName)
 const bool* XMETHODCALLTYPE CCore::getPCVarBool(const char *szName)
 {
 	return(GET_PCVAR_BOOL(szName));
+}
+
+ID XMETHODCALLTYPE CCore::forLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize)
+{
+	return(g_pTaskManager->forLoop(iStart, iEnd, pBody, iMaxChunkSize));
+}
+void XMETHODCALLTYPE CCore::waitForLoop(ID id)
+{
+	g_pTaskManager->waitFor(id);
 }
 
 //##########################################################################

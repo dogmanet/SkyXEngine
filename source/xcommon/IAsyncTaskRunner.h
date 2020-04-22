@@ -34,9 +34,6 @@ class IAsyncTaskRunner: public IXUnknown
 public:
 	virtual void XMETHODCALLTYPE runTask(IAsyncTask *pTask) = 0;
 	virtual void XMETHODCALLTYPE runCallbacks() = 0;
-
-	virtual ID XMETHODCALLTYPE forLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize = 0) = 0;
-	virtual void XMETHODCALLTYPE waitForLoop(ID id) = 0;
 };
 
 #endif

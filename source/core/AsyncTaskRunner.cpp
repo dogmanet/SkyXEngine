@@ -154,12 +154,3 @@ void XMETHODCALLTYPE CAsyncTaskRunner::runCallbacks()
 		g_pTaskManager->addTask(m_vpQueue[0]);
 	}
 }
-
-ID XMETHODCALLTYPE CAsyncTaskRunner::forLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize)
-{
-	return(g_pTaskManager->forLoop(iStart, iEnd, pBody, iMaxChunkSize));
-}
-void XMETHODCALLTYPE CAsyncTaskRunner::waitForLoop(ID id)
-{
-	g_pTaskManager->waitFor(id);
-}

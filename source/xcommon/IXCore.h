@@ -22,8 +22,8 @@ public:
 	virtual IFileSystem* XMETHODCALLTYPE getFileSystem() = 0;
 	virtual IXResourceManager* XMETHODCALLTYPE getResourceManager() = 0;
 
-	virtual IAsyncFileReader* XMETHODCALLTYPE getAsyncFileReader() = 0;
-	virtual IAsyncTaskRunner* XMETHODCALLTYPE getAsyncTaskRunner() = 0;
+	virtual IAsyncFileReader* XMETHODCALLTYPE newAsyncFileReader() = 0;
+	virtual IAsyncTaskRunner* XMETHODCALLTYPE newAsyncTaskRunner() = 0;
 
 	virtual void XMETHODCALLTYPE getRenderPipeline(IXRenderPipeline **ppRenderPipeline) = 0;
 	virtual void XMETHODCALLTYPE setRenderPipeline(IXRenderPipeline *pRenderPipeline) = 0;
@@ -46,6 +46,9 @@ public:
 	virtual const int* XMETHODCALLTYPE getPCVarInt(const char *szName) = 0;
 	virtual const float* XMETHODCALLTYPE getPCVarFloat(const char *szName) = 0;
 	virtual const bool* XMETHODCALLTYPE getPCVarBool(const char *szName) = 0;
+
+	virtual ID XMETHODCALLTYPE forLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize = 0) = 0;
+	virtual void XMETHODCALLTYPE waitForLoop(ID id) = 0;
 
 	template<typename T> IEventChannel<T> *getEventChannel(const XGUID &guid)
 	{
