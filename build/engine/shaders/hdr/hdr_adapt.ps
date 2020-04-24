@@ -1,0 +1,35 @@
+
+/*
+hdr_adapt
+адаптация яркости
+*/
+
+#include <struct.h>
+#include <const.h>
+
+//##########################################################################
+
+SamplerState g_sPointClamp: register(s0);
+Texture2D g_txPrevLuminance: register(t0);
+Texture2D g_txNewLuminance: register(t1);
+
+//##########################################################################
+
+cbuffer b8: register(b8)
+{
+	float g_fAdaptationSpeed;
+	float g_fBaseValue;
+};
+
+//##########################################################################
+
+float4 main(VSO_PP IN):SV_TARGET
+{
+	float fPrevLuminance = g_txPrevLuminance.Load(uint3(0, 0, 0)).x;
+	float fNewLuminance = max(exp(g_txNewLuminance.Load(uint3(0, 0, 0)).x), 0.005f); //  0.03f
+	
+    // Pattanaik's technique
+    float fAdapted = fPrevLuminance + (fNewLuminance - fPrevLuminance) * (1 - exp(-g_fFrameTime * g_fAdaptationSpeed));
+
+    return(float4(fAdapted, 1.0f, 1.0f, 1.0f));
+}

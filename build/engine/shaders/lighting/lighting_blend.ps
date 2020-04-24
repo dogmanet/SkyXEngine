@@ -16,6 +16,7 @@ Texture2D g_txNormals: register(t3);
 Texture2D g_txDepth: register(t4);
 Texture2D g_txParameters: register(t5);
 SamplerState g_sPointClamp: register(s0);
+SamplerState g_sLinearClamp: register(s1);
 
 // sampler2D g_sColor:register(s0);
 // sampler2D g_sAmbient:register(s1);
@@ -88,7 +89,7 @@ float3 GetReflection(float3 texelPosition, float3 texelNormal)
 	
 	float fresnel = /* 0.0 +  */2.8 * pow(1+dot(viewDir, texelNormal), 2);
 	
-	return(g_txAmbient.Sample(g_sPointClamp, nuv.xy).xyz * error * fresnel);
+	return(g_txAmbient.Sample(g_sLinearClamp, nuv.xy).xyz * error * fresnel);
 	// return(fresnel);
 }
 
@@ -110,10 +111,10 @@ float4 main(VSO_ResPos IN):COLOR0
 	vColor.rgb += (1.0f - vParams.x) * GetReflection(vPosition.xyz, vNormalPixel) * lerp((float3)fF0, vAlbedo, vParams.y) * vAlbedo.w;
 	
 	
-	float fAdaptedLum = 0.2f;
+	// float fAdaptedLum = 0.2f;
 	
-	vColor.rgb *= TONE_MAPPING_DENOMENATOR/(fAdaptedLum + TONE_MAPPING_ADAPT_ADD_BIAS);
-	vColor.rgb /= (fAdaptedLum + vColor.rgb);
+	// vColor.rgb *= TONE_MAPPING_DENOMENATOR/(fAdaptedLum + TONE_MAPPING_ADAPT_ADD_BIAS);
+	// vColor.rgb /= (fAdaptedLum + vColor.rgb);
 	
 	// return float4(pow(vColor.rgb, 1.0/2.2), vColor.a);
 	return float4(vColor.rgb, vColor.a);

@@ -8,7 +8,7 @@ CRenderable::CRenderable(ID idPlugin, CSkyBox *pSkyBox):
 
 X_RENDER_STAGE XMETHODCALLTYPE CRenderable::getStages()
 {
-	return(XRS_GBUFFER);
+	return(XRS_GBUFFER | XRS_GI);
 }
 
 UINT XMETHODCALLTYPE CRenderable::getPriorityForStage(X_RENDER_STAGE stage)
@@ -30,6 +30,7 @@ void XMETHODCALLTYPE CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderable
 	case XRS_SHADOWS:
 		break;
 	case XRS_GI:
+		m_pSkyBox->render();
 		break;
 	case XRS_POSTPROCESS_MAIN:
 		break;

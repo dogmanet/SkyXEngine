@@ -445,7 +445,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 	{
 		//	252, 212, 64
 		IXLightSun *pSun = m_pLightSystem->createSun();
-		pSun->setColor(float3(2.52f, 2.12f, 0.64f) * 1.0f);
+		pSun->setColor(float3(2.52f, 2.12f, 0.64f) * 2.0f);
 		pSun->setDirection(SMQuaternion(LIGHTS_DIR_BASE, float3(1.0f, -1.0f, 1.0f)));
 	}
 

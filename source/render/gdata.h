@@ -126,6 +126,10 @@ namespace gdata
 			extern ID idStencilColumn;
 			extern ID idStencilStrColumn;
 			//extern ID idUnionAlpha;
+
+			extern ID idHDRinitLuminance;
+			extern ID idHDRAdaptLuminance;
+			extern ID idHDRToneMapping;
 		};
 
 		namespace kit
@@ -142,6 +146,10 @@ namespace gdata
 			extern ID idComLightingSpotShadow;
 			extern ID idComLightingPSSMShadow;
 			extern ID idComLightingGI;
+
+			extern ID idHDRinitLuminance;
+			extern ID idHDRAdaptLuminance;
+			extern ID idHDRToneMapping;
 		};
 	};
 

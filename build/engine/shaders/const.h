@@ -12,6 +12,10 @@ const.h
 	float4 vWinSize;
 	float4 vNearFarLayers;
 }; */
+cbuffer CDataFrame: register(b4)
+{
+	float g_fFrameTime;
+};
 cbuffer CDataScene: register(b3)
 {
 	float4 g_vNearFarInvWinSize;

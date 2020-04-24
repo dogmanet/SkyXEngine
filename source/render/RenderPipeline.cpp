@@ -13,6 +13,8 @@ namespace gdata
 
 //! При изменении базовых шейдеров отредактировать https://wiki.skyxengine.com/index.php?title=Стандартные_шейдеры_материалов
 
+#define LUMINANCE_BUFFER_SIZE 1024
+
 CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	m_pDevice(pDevice)
 {
@@ -24,7 +26,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	Core_0RegisterCVarBool("dev_lpv_cubes", false, "Отображать сетку LPV");
 	Core_0RegisterCVarBool("dev_lpv_points", false, "Отображать VPL при инъекции в LPV");
 
-	Core_0RegisterCVarFloat("hdr_adapted_coef", 0.03f, "Коэфициент привыкания к освещению (0,1] (медлено, быстро)");
+	Core_0RegisterCVarFloat("hdr_adapted_coef", 0.3f, "Коэфициент привыкания к освещению (0,1] (медлено, быстро)");
+	Core_0RegisterCVarFloat("hdr_base_value", 0.2f, "Базовое значение для тонмаппинга  (0,0.5] (темно, ярко)");
 	
 	XVertexOutputElement voelGeneric[] = {
 		{"vPosition", GXDECLTYPE_FLOAT4, GXDECLUSAGE_POSITION},
@@ -127,18 +130,18 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 	{
 		XRenderPassTexturesElement pTextures[] = {
-			{"GBuffer color(rgb) light(a)", "g_txGBufferC3L1", 0},
-			{"GBuffer normals(rgb) f0(a)", "g_txGBufferN3F1", 1},
-			{"GBuffer depth(r)", "g_txGBufferD1", 2},
-			{"", "", 3}, // reserved slot
-			// {"GBuffer roughness(r) metallic(g) thickness(b) AO(a)", "g_txGBufferR1M1T1AO1", 3},
-			{"Lighted scene", "g_txScene", 4},
+		//	{"GBuffer color(rgb) light(a)", "g_txGBufferC3L1", 0},
+		//	{"GBuffer normals(rgb) f0(a)", "g_txGBufferN3F1", 1},
+		//	{"GBuffer depth(r)", "g_txGBufferD1", 2},
+		//	{"", "", 3}, // reserved slot
+		//	// {"GBuffer roughness(r) metallic(g) thickness(b) AO(a)", "g_txGBufferR1M1T1AO1", 3},
+		//	{"Lighted scene", "g_txScene", 4},
 			XRENDER_PASS_TEXTURES_LIST_END()
 		};
 
 		XRenderPassSamplersElement pSamplers[] = {
 			{"Scene default", "sScene", 0},
-			{"Point clamp", "sPointClamp", 1},
+		//	{"Point clamp", "sPointClamp", 1},
 			XRENDER_PASS_SAMPLERS_LIST_END()
 		};
 
@@ -411,7 +414,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 		XMaterialShaderPass pPasses[] = {
 			{m_pRenderPassGBuffer, "default/sky.ps", "MainGBuffer", pMacro, NULL, NULL},
-			//{m_pRenderPassIllumination, "default/sky.ps", "MainIllimination", NULL, NULL, NULL},
+			{m_pRenderPassIllumination, "default/sky.ps", "MainIllimination", NULL, NULL, NULL},
 			XMATERIAL_SHADER_PASS_LIST_END()
 		};
 
@@ -529,7 +532,13 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 
 	m_pLightAmbientDiffuse = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F);
-	m_pLightSpecular = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R16F);
+	
+	m_pLightLuminance = m_pDevice->createTexture2D(LUMINANCE_BUFFER_SIZE, LUMINANCE_BUFFER_SIZE, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R16F);
+
+	m_pLightLuminance32 = m_pDevice->createTexture2D(32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_R16F);
+	m_pLightLuminance1 = m_pDevice->createTexture2D(1, 1, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_R16F);
+	m_pAdaptedLuminance[0] = m_pDevice->createTexture2D(1, 1, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_R16F);
+	m_pAdaptedLuminance[1] = m_pDevice->createTexture2D(1, 1, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_R16F);
 
 	m_pLightTotal = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F);
 	
@@ -567,6 +576,10 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 	m_pLightingShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_lightingShaderData.vs));
 	m_pLightingShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_lightingShaderData.ps));
+
+	m_pFrameShaderData = m_pDevice->createConstantBuffer(sizeof(m_frameShaderData));
+
+	m_pToneMappingShaderData = m_pDevice->createConstantBuffer(sizeof(m_toneMappingShaderData));
 
 	{
 		const UINT uSize = 32;
@@ -623,6 +636,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 	m_idLPVPropagateShader = SGCore_ShaderCreateKit(-1, -1, -1, SGCore_ShaderLoad(SHADER_TYPE_COMPUTE, "gi_propagation.cs"));
 
+	m_idLuminanceReductionShader = SGCore_ShaderCreateKit(-1, -1, -1, SGCore_ShaderLoad(SHADER_TYPE_COMPUTE, "hdr_reduction.cs"));
+
 	m_pShadowCache = new CShadowCache(this, m_pMaterialSystem);
 	m_pShadowShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_shadowShaderData.vs));
 
@@ -651,6 +666,8 @@ CRenderPipeline::~CRenderPipeline()
 
 	mem_release(m_pRefractionScene);
 
+	mem_release(m_pToneMappingShaderData);
+
 	mem_release(m_pTransparencyShaderClipPlanes);
 
 	mem_release(m_pMainCameraOcclusionCuller);
@@ -673,7 +690,14 @@ CRenderPipeline::~CRenderPipeline()
 	mem_release(m_pGBufferDepth);
 
 	mem_release(m_pLightAmbientDiffuse);
-	mem_release(m_pLightSpecular);
+	mem_release(m_pLightLuminance);
+
+	mem_release(m_pLightLuminance32);
+	mem_release(m_pLightLuminance1);
+	mem_release(m_pAdaptedLuminance[0]);
+	mem_release(m_pAdaptedLuminance[1]);
+
+	mem_release(m_pFrameShaderData);
 
 	mem_release(m_pLightTotal);
 
@@ -713,6 +737,14 @@ void CRenderPipeline::renderFrame()
 	static const int *r_final_image = GET_PCVAR_INT("r_final_image");
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
+	IGXSurface *pBackBuf = pCtx->getColorTarget();
+	IGXSurface *pSceneBuf = NULL;
+
+	m_frameShaderData.fFrameTime = (float)timeDelta / 1000.0f;
+	m_pFrameShaderData->update(&m_frameShaderData);
+
+	pCtx->setVSConstant(m_pFrameShaderData, SCR_FRAME);
+	pCtx->setPSConstant(m_pFrameShaderData, SCR_FRAME);
 
 	m_sceneShaderData.vNearFarInvWinSize = float4(gdata::vNearFar, 1.0f / (float)m_uOutWidth, 1.0f / (float)m_uOutHeight);
 	m_pSceneShaderDataPS->update(&m_sceneShaderData);
@@ -752,18 +784,17 @@ void CRenderPipeline::renderFrame()
 
 	if(m_pLightSystem)
 	{
-		switch(*r_final_image)
+		if(*r_final_image == DS_RT_AMBIENTDIFF)
 		{
-		case DS_RT_AMBIENTDIFF:
 			showTexture(m_pLightAmbientDiffuse);
-			goto end;
-		case DS_RT_SPECULAR:
-			showTexture(m_pLightSpecular);
 			goto end;
 		}
 		
 		//m_pSceneTexture = m_pLightAmbientDiffuse;
 		m_pSceneTexture = m_pLightTotal;
+
+		pSceneBuf = m_pLightAmbientDiffuse->asRenderTarget();
+		pCtx->setColorTarget(pSceneBuf);
 	}
 	else
 	{
@@ -778,7 +809,18 @@ void CRenderPipeline::renderFrame()
 
 	if(m_pLightSystem)
 	{
+		pCtx->setColorTarget(pBackBuf);
+
 		toneMapping();
+
+		if(*r_final_image == DS_RT_LUMINANCE)
+		{
+			showTexture(m_pLightLuminance);
+			// showTexture(m_pLightLuminance32);
+			goto end;
+		}
+
+		//showTexture(m_pLightAmbientDiffuse);
 	}
 
 #if 0
@@ -809,11 +851,19 @@ void CRenderPipeline::renderFrame()
 #endif
 
 end:
+	mem_release(pBackBuf);
+	mem_release(pSceneBuf);
+
 	const bool *dev_lpv_cubes = GET_PCVAR_BOOL("dev_lpv_cubes");
 	if(*dev_lpv_cubes)
 	{
 		showGICubes();
 	}
+
+	Core_PStartSection(PERF_SECTION_RENDER_INFO);
+	//@FIXME: пока так
+	SGame_RenderHUD();
+	Core_PEndSection(PERF_SECTION_RENDER_INFO);
 	
 	showFrameStats();
 
@@ -915,8 +965,91 @@ void CRenderPipeline::showGICubes()
 void CRenderPipeline::toneMapping()
 {
 	Core_PStartSection(PERF_SECTION_TONEMAPPING);
-	static const float * hdr_adapted_coef = GET_PCVAR_FLOAT("hdr_adapted_coef");
+	static const float *hdr_adapted_coef = GET_PCVAR_FLOAT("hdr_adapted_coef");
+	static const float *hdr_base_value = GET_PCVAR_FLOAT("hdr_base_value");
+	
+	//! @todo update only on change
+	m_toneMappingShaderData.fAdaptationSpeed = *hdr_adapted_coef;
+	m_toneMappingShaderData.fBaseValue = *hdr_base_value;
+	m_pToneMappingShaderData->update(&m_toneMappingShaderData);
+
 	//	SGCore_ToneMappingCom(timeDelta, (hdr_adapted_coef ? (*hdr_adapted_coef) : 0.03f));
+	IGXContext *pCtx = m_pDevice->getThreadContext();
+
+	pCtx->setPSConstant(m_pToneMappingShaderData, 8);
+
+	IGXSurface *pBackBuf = pCtx->getColorTarget();
+
+	IGXSurface *pRT = m_pLightLuminance->asRenderTarget();
+	pCtx->setColorTarget(pRT);
+	mem_release(pRT);
+
+	pCtx->setPSTexture(m_pLightAmbientDiffuse);
+	pCtx->setSamplerState(gdata::rstates::pSamplerLinearClamp, 0);
+
+	IGXDepthStencilSurface *pDSSurface = pCtx->getDepthStencilSurface();
+	pCtx->unsetDepthStencilSurface();
+
+	SGCore_ShaderBind(gdata::shaders_id::kit::idHDRinitLuminance);
+	SGCore_ScreenQuadDraw();
+	SGCore_ShaderUnBind();
+
+	pCtx->setColorTarget(pBackBuf);
+
+	// Reduction
+	{
+		SGCore_ShaderBind(m_idLuminanceReductionShader);
+
+		pCtx->setCSTexture(m_pLightLuminance, 0);
+		pCtx->setCSUnorderedAccessView(m_pLightLuminance32, 0);
+		pCtx->computeDispatch(32, 32, 1);
+		pCtx->setCSUnorderedAccessView(NULL, 0);
+		pCtx->setCSTexture(NULL, 0);
+
+		pCtx->setCSTexture(m_pLightLuminance32, 0);
+		pCtx->setCSUnorderedAccessView(m_pLightLuminance1, 0);
+		pCtx->computeDispatch(1, 1, 1);
+		pCtx->setCSUnorderedAccessView(NULL, 0);
+		pCtx->setCSTexture(NULL, 0);
+
+		SGCore_ShaderUnBind();
+	}
+
+	// Adaptation
+	{
+		// m_pLightLuminance1
+		pCtx->setPSTexture(m_pAdaptedLuminance[!m_uCurrAdaptedLuminanceTarget]);
+		pCtx->setPSTexture(m_pLightLuminance1, 1);
+		IGXSurface *pAdaptedLuminanceBuf = m_pAdaptedLuminance[m_uCurrAdaptedLuminanceTarget]->asRenderTarget();
+		pCtx->setColorTarget(pAdaptedLuminanceBuf);
+		mem_release(pAdaptedLuminanceBuf);
+		
+		SGCore_ShaderBind(gdata::shaders_id::kit::idHDRAdaptLuminance);
+
+		SGCore_ScreenQuadDraw();
+
+		SGCore_ShaderUnBind();
+	}
+
+
+	pCtx->setColorTarget(pBackBuf);
+	mem_release(pBackBuf);
+
+	{
+		pCtx->setSamplerState(gdata::rstates::pSamplerPointClamp, 0);
+		pCtx->setPSTexture(m_pLightAmbientDiffuse);
+		pCtx->setPSTexture(m_pAdaptedLuminance[m_uCurrAdaptedLuminanceTarget], 1);
+		pCtx->setPSTexture(m_pLightLuminance1, 2);
+		SGCore_ShaderBind(gdata::shaders_id::kit::idHDRToneMapping);
+
+		SGCore_ScreenQuadDraw();
+
+		SGCore_ShaderUnBind(); 
+	}
+
+	pCtx->setDepthStencilSurface(pDSSurface);
+	m_uCurrAdaptedLuminanceTarget = !m_uCurrAdaptedLuminanceTarget;
+
 	Core_PEndSection(PERF_SECTION_TONEMAPPING);
 }
 
@@ -998,7 +1131,6 @@ void CRenderPipeline::renderGI()
 		return;
 	}
 
-	m_pMaterialSystem->bindRenderPass(m_pRenderPassShadow);
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
@@ -1016,18 +1148,21 @@ void CRenderPipeline::renderGI()
 
 	m_pShadowCache->nextFrame();
 
-	IGXSurface *pAmbientSurf, *pSpecDiffSurf, *pBackBuf;
+	IGXSurface *pAmbientSurf, *pBackBuf;
 	pAmbientSurf = m_pLightAmbientDiffuse->getMipmap();
-	pSpecDiffSurf = m_pLightSpecular->getMipmap();
 
 	pBackBuf = pCtx->getColorTarget();
 
 	pCtx->setColorTarget(pAmbientSurf);
-	pCtx->setColorTarget(pSpecDiffSurf, 1);
 
 	//очищаем рт и стенсил
 	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_STENCIL);
 
+	rfunc::SetRenderSceneFilter();
+	m_pMaterialSystem->bindRenderPass(m_pRenderPassIllumination);
+	renderStage(XRS_GI);
+
+	m_pMaterialSystem->bindRenderPass(m_pRenderPassShadow);
 	m_lightingShaderData.vs.mViewInv = SMMatrixTranspose(SMMatrixInverse(NULL, gdata::mCamView));
 	m_lightingShaderData.vs.mVP = SMMatrixTranspose(gdata::mCamView * gdata::mCamProj);
 	m_lightingShaderData.vs.vNearFar = gdata::vNearFar;
@@ -1128,7 +1263,6 @@ void CRenderPipeline::renderGI()
 	while((uShadowCount = m_pShadowCache->processNextBunch()))
 	{
 		pCtx->setColorTarget(pAmbientSurf);
-		pCtx->setColorTarget(pSpecDiffSurf, 1);
 		pCtx->setDepthStencilSurface(pOldDSSurface);
 		pCtx->setBlendState(gdata::rstates::pBlendAlphaOneOne);
 
@@ -1175,7 +1309,6 @@ void CRenderPipeline::renderGI()
 			pShadow->genShadow(m_pShadow, m_pGBufferDepth, m_pGBufferNormals);
 			pCtx->setBlendState(gdata::rstates::pBlendAlphaOneOne);
 			pCtx->setColorTarget(pAmbientSurf);
-			pCtx->setColorTarget(pSpecDiffSurf, 1);
 
 		//	pCtx->setPSTexture(m_pShadow, 4);
 			//idshaderkit = gdata::shaders_id::kit::idComLightingShadow;
@@ -1336,48 +1469,52 @@ void CRenderPipeline::renderGI()
 	{
 		SGCore_ShaderBind(m_idLPVPropagateShader);
 		UINT uStepCount[] = {4, 6, 8};
-		for(UINT j = 0; j < 3; ++j)
-		{
-			for(UINT i = 0; i < uStepCount[j]; ++i)
+
+		//for(UINT k = 0; k < 1000; ++k)
+		//{
+			for(UINT j = 0; j < 3; ++j)
 			{
-				pCtx->setCSTexture(m_aLPVs[j].pGIAccumRed, 0);
-				pCtx->setCSTexture(m_aLPVs[j].pGIAccumGreen, 1);
-				pCtx->setCSTexture(m_aLPVs[j].pGIAccumBlue, 2);
+				for(UINT i = 0; i < uStepCount[j]; ++i)
+				{
+					pCtx->setCSTexture(m_aLPVs[j].pGIAccumRed, 0);
+					pCtx->setCSTexture(m_aLPVs[j].pGIAccumGreen, 1);
+					pCtx->setCSTexture(m_aLPVs[j].pGIAccumBlue, 2);
 
-				pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumRed2, 0);
-				pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumGreen2, 1);
-				pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumBlue2, 2);
+					pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumRed2, 0);
+					pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumGreen2, 1);
+					pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumBlue2, 2);
 
-				pCtx->computeDispatch(2, 16, 32);
+					pCtx->computeDispatch(4, 4, 32);
 
-				pCtx->setCSUnorderedAccessView(NULL, 0);
-				pCtx->setCSUnorderedAccessView(NULL, 1);
-				pCtx->setCSUnorderedAccessView(NULL, 2);
+					pCtx->setCSUnorderedAccessView(NULL, 0);
+					pCtx->setCSUnorderedAccessView(NULL, 1);
+					pCtx->setCSUnorderedAccessView(NULL, 2);
 
-				pCtx->setCSTexture(NULL, 0);
-				pCtx->setCSTexture(NULL, 1);
-				pCtx->setCSTexture(NULL, 2);
+					pCtx->setCSTexture(NULL, 0);
+					pCtx->setCSTexture(NULL, 1);
+					pCtx->setCSTexture(NULL, 2);
 
 
-				pCtx->setCSTexture(m_aLPVs[j].pGIAccumRed2, 0);
-				pCtx->setCSTexture(m_aLPVs[j].pGIAccumGreen2, 1);
-				pCtx->setCSTexture(m_aLPVs[j].pGIAccumBlue2, 2);
+					pCtx->setCSTexture(m_aLPVs[j].pGIAccumRed2, 0);
+					pCtx->setCSTexture(m_aLPVs[j].pGIAccumGreen2, 1);
+					pCtx->setCSTexture(m_aLPVs[j].pGIAccumBlue2, 2);
 
-				pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumRed, 0);
-				pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumGreen, 1);
-				pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumBlue, 2);
+					pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumRed, 0);
+					pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumGreen, 1);
+					pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumBlue, 2);
 
-				pCtx->computeDispatch(2, 16, 32);
+					pCtx->computeDispatch(4, 4, 32);
 
-				pCtx->setCSUnorderedAccessView(NULL, 0);
-				pCtx->setCSUnorderedAccessView(NULL, 1);
-				pCtx->setCSUnorderedAccessView(NULL, 2);
+					pCtx->setCSUnorderedAccessView(NULL, 0);
+					pCtx->setCSUnorderedAccessView(NULL, 1);
+					pCtx->setCSUnorderedAccessView(NULL, 2);
 
-				pCtx->setCSTexture(NULL, 0);
-				pCtx->setCSTexture(NULL, 1);
-				pCtx->setCSTexture(NULL, 2);
+					pCtx->setCSTexture(NULL, 0);
+					pCtx->setCSTexture(NULL, 1);
+					pCtx->setCSTexture(NULL, 2);
+				}
 			}
-		}
+		//}
 
 		SGCore_ShaderUnBind();
 	}
@@ -1385,7 +1522,6 @@ void CRenderPipeline::renderGI()
 
 	{
 		pCtx->setColorTarget(pAmbientSurf);
-		pCtx->setColorTarget(pSpecDiffSurf, 1);
 		//gdata::pDXDevice->setRasterizerState(NULL);
 		pCtx->setRasterizerState(gdata::rstates::pRasterizerCullNone);
 		pCtx->setBlendState(gdata::rstates::pBlendAlphaOneOne);
@@ -1426,14 +1562,15 @@ void CRenderPipeline::renderGI()
 		pCtx->setSamplerState(gdata::rstates::pSamplerLinearClamp, 1);
 	}
 
+
+
 	pCtx->setDepthStencilState(gdata::rstates::pDepthStencilStateNoZ);
 	pCtx->setRasterizerState(NULL);
 	pCtx->setBlendState(NULL);
 	
-	pCtx->setColorTarget(NULL, 1);
+	//pCtx->setColorTarget(NULL, 1);
 	
 	mem_release(pAmbientSurf);
-	mem_release(pSpecDiffSurf);
 
 	//-------------------------------
 
@@ -1441,7 +1578,8 @@ void CRenderPipeline::renderGI()
 	//{{
 	
 	pCtx->setSamplerState(gdata::rstates::pSamplerPointClamp, 0);
-	
+	pCtx->setSamplerState(gdata::rstates::pSamplerLinearClamp, 1);
+
 	IGXSurface *pComLightSurf = m_pLightTotal->getMipmap();
 	pCtx->setColorTarget(pComLightSurf);
 
@@ -1450,7 +1588,7 @@ void CRenderPipeline::renderGI()
 
 	pCtx->setPSTexture(m_pGBufferColor);
 	pCtx->setPSTexture(m_pLightAmbientDiffuse, 1);
-	pCtx->setPSTexture(m_pLightSpecular, 2);
+	//pCtx->setPSTexture(m_pLightSpecular, 2);
 	pCtx->setPSTexture(m_pGBufferNormals, 3);
 	pCtx->setPSTexture(m_pGBufferDepth, 4);
 	//gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_ADAPTEDLUM), 4);
@@ -1484,6 +1622,8 @@ void CRenderPipeline::renderTransparent()
 	CRenderableVisibility *pVis = (CRenderableVisibility*)m_pMainCameraVisibility;
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
+
+	IGXSurface *pBackBuff = pCtx->getColorTarget();
 
 	//pCtx->setPSConstant(m_pSceneShaderDataPS, SCR_SCENE);
 	pCtx->setVSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
@@ -1638,7 +1778,8 @@ void CRenderPipeline::renderTransparent()
 	}
 
 	pCtx->setBlendState(NULL);
-	pCtx->setColorTarget(NULL);
+	pCtx->setColorTarget(pBackBuff);
+	mem_release(pBackBuff);
 	if(m_iRefractiveSource == -1)
 	{
 		showTexture(m_pSceneTexture);
@@ -2091,11 +2232,6 @@ void CRenderPipeline::renderPostprocessFinal()
 	rfunc::SetRenderSceneFilter();
 
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassPostprocess);
-
-	Core_PStartSection(PERF_SECTION_RENDER_INFO);
-	//@FIXME: пока так
-	SGame_RenderHUD();
-	Core_PEndSection(PERF_SECTION_RENDER_INFO);
 }
 void CRenderPipeline::renderEditor2D()
 {

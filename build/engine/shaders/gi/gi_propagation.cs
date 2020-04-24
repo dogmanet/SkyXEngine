@@ -62,7 +62,7 @@ float3x3 neighbourOrientations[6] = {
 	          0,  1,  0)
 };
 
-[numthreads(16, 2, 1)]
+[numthreads(8, 8, 1)]
 void main(uint3 dispatchThreadID: SV_DispatchThreadID, uint3 groupThreadID : SV_GroupThreadID)
 {
 	uint3 cellIndex = dispatchThreadID.xyz;

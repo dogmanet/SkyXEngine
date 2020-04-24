@@ -94,7 +94,12 @@ protected:
 
 	//! Буфер освещения
 	IGXTexture2D *m_pLightAmbientDiffuse = NULL;
-	IGXTexture2D *m_pLightSpecular = NULL;
+	//! Буфер яркости
+	IGXTexture2D *m_pLightLuminance = NULL;
+	IGXTexture2D *m_pLightLuminance32 = NULL;
+	IGXTexture2D *m_pLightLuminance1 = NULL;
+	IGXTexture2D *m_pAdaptedLuminance[2];
+	UINT m_uCurrAdaptedLuminanceTarget = 0;
 
 	//! Буфер освещения
 	IGXTexture2D *m_pLightTotal = NULL;
@@ -108,6 +113,21 @@ protected:
 	IGXBlendState *m_pBlendStateAlpha = NULL;
 
 	IXMaterialSystem *m_pMaterialSystem = NULL;
+
+	struct
+	{
+		float fFrameTime;
+		float _padding[3];
+	} m_frameShaderData;
+	IGXConstantBuffer *m_pFrameShaderData = NULL;
+
+	struct
+	{
+		float fAdaptationSpeed;
+		float fBaseValue;
+		float _padding[2];
+	} m_toneMappingShaderData;
+	IGXConstantBuffer *m_pToneMappingShaderData = NULL;
 
 	struct
 	{
@@ -260,6 +280,7 @@ protected:
 
 	ID m_idLightBoundShader = -1;
 	ID m_idLPVPropagateShader = -1;
+	ID m_idLuminanceReductionShader = -1;
 
 	//###################################
 

@@ -73,6 +73,10 @@ namespace gdata
 			ID idStencilColumn;
 			ID idStencilStrColumn;
 			//ID idUnionAlpha;
+
+			ID idHDRinitLuminance;
+			ID idHDRAdaptLuminance;
+			ID idHDRToneMapping;
 		};
 
 		namespace kit
@@ -89,6 +93,10 @@ namespace gdata
 			ID idComLightingSpotShadow;
 			ID idComLightingPSSMShadow;
 			ID idComLightingGI;
+
+			ID idHDRinitLuminance;
+			ID idHDRAdaptLuminance;
+			ID idHDRToneMapping;
 		};
 	};
 
@@ -307,4 +315,13 @@ void gdata::shaders_id::InitAllShaders()
 
 	gdata::shaders_id::ps::idComLightingGI = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_gi.ps");
 	gdata::shaders_id::kit::idComLightingGI = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idResPos, gdata::shaders_id::ps::idComLightingGI);
+
+	gdata::shaders_id::ps::idHDRinitLuminance = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "hdr_luminance.ps");
+	gdata::shaders_id::kit::idHDRinitLuminance = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idHDRinitLuminance);
+
+	gdata::shaders_id::ps::idHDRAdaptLuminance = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "hdr_adapt.ps");
+	gdata::shaders_id::kit::idHDRAdaptLuminance = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idHDRAdaptLuminance);
+
+	gdata::shaders_id::ps::idHDRToneMapping = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "hdr_tonemapping.ps");
+	gdata::shaders_id::kit::idHDRToneMapping = SGCore_ShaderCreateKit(gdata::shaders_id::vs::idScreenOut, gdata::shaders_id::ps::idHDRToneMapping);
 }

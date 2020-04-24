@@ -133,9 +133,9 @@ float4 GetSpecular(float fRoughness, float4 fF0, float fNdotL, float3 vV, float3
 //#############################################################################
 
 //IS_SPOT
-PSO_Lbuffer main(VSO_ResPos IN)
+float4 main(VSO_ResPos IN):SV_TARGET
 {
-	PSO_Lbuffer OUT;
+	float4 OUT;
 
 	float4 vAlbedo = g_txScene.Sample(g_sPointClamp, IN.vTexUV);
 	float4 vNormals = g_txNormals.Sample(g_sPointClamp, IN.vTexUV);
@@ -215,20 +215,9 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	// float fMdiffuse = saturate(fNdotL * 0.5 + 0.5);
 	// float fDiffuse = 1.0f;
 	
-	OUT.vAmdient.xyz = lerp(vAlbedo.xyz, g_vLightColorPower.xyz * lerp(vAlbedo.xyz * fDiffuse + vSpecular.www, vSpecular.xyz, fMetallic) * fAttenuation * fShadow, vAlbedo.w);
+	OUT.xyz = lerp(vAlbedo.xyz, g_vLightColorPower.xyz * lerp(vAlbedo.xyz * fDiffuse + vSpecular.www, vSpecular.xyz, fMetallic) * fAttenuation * fShadow, vAlbedo.w);
 	
-	// OUT.vAmdient.w = /* fDiffuse *  */fMdiffuse * vParam.w * g_vLightColorPower.w * 2.0 * fAttenuation;
-	OUT.vAmdient.w = 1.0f;
-	
-	// OUT.vAmdient.xyz *= OUT.vAmdient.w;
-	
-	// OUT.vAmdient.xyz = float3(IN.vTexUV.xy, 1);
-	// OUT.vAmdient.w = 1;
-	
-	// OUT.vAmdient.xyz = pow(OUT.vAmdient.xyz, 1.0/2.2);
-	
-	// OUT.vSpecular = fSpecular * fAttenuation * g_vLightColorPower.w;
-	OUT.vSpecular = 0;
+	OUT.w = 1.0f;
 	return OUT;
 }
 

@@ -62,7 +62,7 @@ XMaterial MainGBuffer(PSI_XMaterial IN)
 #endif
 	
 	// float fMixFactor = min(1.0f, length(vMask));
-	float fMixFactor = min(1.0f, vMask.x + vMask.y + vMask.z + vMask.w);
+	float fMixFactor = min(1.0f, dot(vMask, 1.0f));
 		
 	OUT.vBaseColor = lerp(vBaseColor.xyz, vColor.xyz, fMixFactor);
 

@@ -120,8 +120,8 @@ enum DS_RT
 	//! эмбиент цвет (цвет света rgb) и диффузное освещение (a) rgba16f
 	DS_RT_AMBIENTDIFF,
 
-	//! блики r16f
-	DS_RT_SPECULAR,
+	//! яркость
+	DS_RT_LUMINANCE,
 
 	//! освещенная сцена rgba16
 	DS_RT_SCENELIGHT,
@@ -272,6 +272,7 @@ SX_LIB_API void SGCore_ShaderUnBind();
 
 enum SHADER_CONST_REGISTER
 {
+	SCR_FRAME = 4,
 	SCR_SCENE = 3,
 	SCR_CAMERA = 2,
 	SCR_OBJECT = 1,

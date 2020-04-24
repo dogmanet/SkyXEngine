@@ -39,5 +39,6 @@ float4 main(PSI_XMaterial IN):COLOR0
 	
 	float4 fWorldPos = mul(IN.vPos, g_mInvVP);
 	
-	return(mtrl.vBaseColor * float4(GetPixelLight(fWorldPos.xyz / fWorldPos.w, mtrl.vNormal), 1.0f));
+	// return(mtrl.vBaseColor * float4(GetPixelLight(fWorldPos.xyz / fWorldPos.w, mtrl.vNormal), 1.0f));
+	return(mtrl.vBaseColor);
 }
