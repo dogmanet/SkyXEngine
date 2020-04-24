@@ -70,14 +70,14 @@ float4 main(VSO_PP IN):SV_TARGET
 	float fExposure = 0;
 	vColor.xyz = ToneMap(vColor.xyz, fLuminance, 0, fExposure);
 	
-	if(IN.vTexUV.x > 0.9 && IN.vTexUV.y > 0.9)
+	/* if(IN.vTexUV.x > 0.9 && IN.vTexUV.y > 0.9)
 	{
 		vColor.xyz = fLuminance;
 	}
 	if(IN.vTexUV.x > 0.9 && IN.vTexUV.y > 0.8 && IN.vTexUV.y < 0.9)
 	{
 		vColor.xyz = fLuminance2;
-	}
+	} */
 	
     return(vColor);
 }

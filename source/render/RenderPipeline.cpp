@@ -1082,15 +1082,16 @@ void CRenderPipeline::renderGBuffer()
 	//очищаем рт глубины  максимальным значением
 	//чтобы там где нет окружения к примеру был скайбокс, а значит в рт глубины было максимальное значение - максимальная отдаленность
 	pCtx->setColorTarget(pDepthMapLinearSurf);
-	pCtx->clear(GX_CLEAR_COLOR, GX_COLOR_ARGB(255, 255, 255, 255));
+//	pCtx->clear(GX_CLEAR_COLOR, GX_COLOR_ARGB(255, 255, 255, 255));
 
 	pCtx->setColorTarget(pParamSurf);
 	pCtx->setColorTarget(pNormalSurf, 1);
-	pCtx->clear(GX_CLEAR_COLOR);
+//	pCtx->clear(GX_CLEAR_COLOR);
 	pCtx->setColorTarget(NULL, 1);
 
 	pCtx->setColorTarget(pColorSurf);
-	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, RENDER_DEFAUL_BACKGROUND_COLOR, 0.0f);
+	//pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, RENDER_DEFAUL_BACKGROUND_COLOR, 0.0f);
+	pCtx->clear(GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, RENDER_DEFAUL_BACKGROUND_COLOR, 0.0f);
 
 	pCtx->setColorTarget(pNormalSurf, 1);
 	pCtx->setColorTarget(pParamSurf, 2);
