@@ -108,7 +108,10 @@ float4 main(VSO_ResPos IN):COLOR0
 	float3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
 	
 	// vColor.rgb += (1.0f - vParams.x) * GetReflection(vPosition.xyz, vNormalPixel) * lerp((float3)(0.1f * fF0), vAlbedo, vParams.y) * vAlbedo.w;
-	vColor.rgb += (1.0f - vParams.x) * GetReflection(vPosition.xyz, vNormalPixel) * lerp((float3)fF0, vAlbedo, vParams.y) * vAlbedo.w;
+	vColor.rgb += (1.0f - vParams.x) * GetReflection(vPosition.xyz, vNormalPixel) * lerp((float3)fF0, vAlbedo.xyz, vParams.y) * vAlbedo.w;
+	
+	
+	vColor.rgb += vAlbedo.xyz * (1.0f - vAlbedo.w);
 	
 	
 	// float fAdaptedLum = 0.2f;

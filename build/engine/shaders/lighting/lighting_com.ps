@@ -215,7 +215,8 @@ float4 main(VSO_ResPos IN):SV_TARGET
 	// float fMdiffuse = saturate(fNdotL * 0.5 + 0.5);
 	// float fDiffuse = 1.0f;
 	
-	OUT.xyz = lerp(vAlbedo.xyz, g_vLightColorPower.xyz * lerp(vAlbedo.xyz * fDiffuse + vSpecular.www, vSpecular.xyz, fMetallic) * fAttenuation * fShadow, vAlbedo.w);
+	// OUT.xyz = lerp(vAlbedo.xyz, g_vLightColorPower.xyz * lerp(vAlbedo.xyz * fDiffuse + vSpecular.www, vSpecular.xyz, fMetallic) * fAttenuation * fShadow, vAlbedo.w);
+	OUT.xyz = (g_vLightColorPower.xyz * lerp(vAlbedo.xyz * fDiffuse + vSpecular.www, vSpecular.xyz, fMetallic) * fAttenuation * fShadow) * vAlbedo.w;
 	
 	OUT.w = 1.0f;
 	return OUT;

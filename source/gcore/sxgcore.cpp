@@ -11,7 +11,6 @@ See the license in LICENSE
 #include <gcore/camera.h>
 
 #include <gcore/gcore_utils.h>
-#include <gcore/gcore_data.h>
 
 
 //##########################################################################
@@ -28,9 +27,6 @@ IGXVertexDeclaration *g_pStaticVertexDecl = 0;
 
 CShaderManager *g_pManagerShaders = 0;
 IGXRenderBuffer *g_pScreenTextureRB = 0;
-IGXBlendState *g_pToneMappingBS = NULL;
-IGXSamplerState *g_pSamplerFilterPoint = NULL;
-IGXSamplerState *g_pSamplerFilterLinear = NULL;
 
 
 
@@ -43,11 +39,9 @@ IGXSamplerState *g_pSamplerFilterLinear = NULL;
 void GCoreInit(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 {
 	InitDevice(hWnd, iWidth, iHeight, isWindowed);
-	InitFPStext();
 	InitFullScreenQuad();
 
 	g_pManagerShaders = new CShaderManager();
-	InitToneMappingStates();
 
 	GXVertexElement oLayoutStatic[] =
 	{
@@ -62,8 +56,6 @@ void GCoreInit(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 	g_pStaticVertexDecl = g_pDevice->createVertexDeclaration(oLayoutStatic);
 
 	InitArrModes();
-	InitRT4Gbuffer();
-	LoadShaders();
 
 	Core_0RegisterConcmd("shader_reload", SGCore_ShaderReloadAll);
 }
@@ -115,9 +107,6 @@ SX_LIB_API void SGCore_AKill()
 
 	mem_release(g_pScreenTextureRB);
 
-	mem_release(g_pSamplerFilterLinear);
-	mem_release(g_pSamplerFilterPoint);
-
 	//mem_release(g_pFPStext);
 
 	mem_release(g_pDevice);
@@ -137,8 +126,6 @@ SX_LIB_API void SGCore_OnResetDevice()
 //	g_pManagerRenderTargets->OnResetDevice();
 //	g_pOC->onResetDevice(0/*g_oD3DAPP.BackBufferWidth*/, 9/*g_oD3DAPP.BackBufferHeight*/);
 	InitFullScreenQuad();
-	
-	gcore_data::rt_id::iHowAdaptedLum = 0;
 }
 
 SX_LIB_API void SGCore_ScreenQuadDraw()

@@ -1538,7 +1538,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				case DS_RT_AMBIENTDIFF:
 					iActiveMenu = ID_3D_AMBIENTDIFFUSE;
 					break;
-				case DS_RT_SPECULAR:
+				case DS_RT_LUMINANCE:
 					iActiveMenu = ID_3D_SPECULAR;
 					break;
 				case DS_RT_SCENELIGHT:
@@ -2047,7 +2047,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			Core_0SetCVarInt("r_final_image", DS_RT_AMBIENTDIFF);
 			break;
 		case ID_3D_SPECULAR:
-			Core_0SetCVarInt("r_final_image", DS_RT_SPECULAR);
+			Core_0SetCVarInt("r_final_image", DS_RT_LUMINANCE);
 			break;
 		case ID_3D_LIGHTINGSCENE:
 			Core_0SetCVarInt("r_final_image", DS_RT_SCENELIGHT);
