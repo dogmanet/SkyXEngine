@@ -15,8 +15,9 @@ See the license in LICENSE
 #include <graphix/graphix.h>
 #include <xcommon/IXMutationObserver.h>
 
-#include "sxlight.h"
-#include "ml_data.h"
+#include <gcore/sxgcore.h>
+
+#include "IXLight.h"
 
 class CLightSystem;
 class CXLight: public virtual IXLight
