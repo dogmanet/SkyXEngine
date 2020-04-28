@@ -64,10 +64,6 @@ namespace rfunc
 
 	
 
-	//! отрисовка скайбокса и облаков
-	void RenderSky(DWORD timeDelta);					
-		
-
 	//! отрисовка партиклов (эффектов)
 	void RenderParticles(DWORD timeDelta);				
 
@@ -89,8 +85,6 @@ namespace rfunc
 
 	//! изменить режим рендера (оконный/полноэкранный)
 	void ChangeModeWindow();	
-
-	void FullScreenChangeSizeAbs();
 };
 
 #endif

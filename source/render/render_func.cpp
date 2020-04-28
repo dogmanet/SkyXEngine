@@ -288,55 +288,6 @@ void rfunc::ChangeModeWindow()
 	*r_resize = RENDER_RESIZE_CHANGE;
 }
 
-void rfunc::FullScreenChangeSizeAbs()
-{
-	static bool *r_win_windowed = (bool*)GET_PCVAR_BOOL("r_win_windowed");
-
-	if (r_win_windowed == NULL || (*r_win_windowed))
-		return;
-
-	int iCountModes = 0;
-	static const DEVMODE *pModes = SGCore_GetModes(&iCountModes);
-
-	static int iFullScreenWidth = 800;
-	static int iFullScreenHeight = 600;
-
-	if (pModes)
-	{
-		iFullScreenWidth = pModes[iCountModes - 1].dmPelsWidth;
-		iFullScreenHeight = pModes[iCountModes - 1].dmPelsHeight;
-		pModes = 0;
-	}
-
-	static int * r_win_width = (int*)GET_PCVAR_INT("r_win_width");
-	static int * r_win_height = (int*)GET_PCVAR_INT("r_win_height");
-
-	if (!r_win_width || !r_win_height)
-		return;
-
-	static int r_win_width_old = *r_win_width;
-	static int r_win_height_old = *r_win_height;
-
-	if (*r_win_width == iFullScreenWidth && *r_win_height == iFullScreenHeight)
-	{
-		*r_win_width = r_win_width_old;
-		*r_win_height = r_win_height_old;
-	}
-	else
-	{
-		r_win_width_old = *r_win_width;
-		r_win_height_old = *r_win_height;
-
-		*r_win_width = iFullScreenWidth;
-		*r_win_height = iFullScreenHeight;
-
-		//LibReport(REPORT_MSG_LEVEL_WARNING, "iFullScreenWidth %d, iFullScreenHeight %d \n", iFullScreenWidth, iFullScreenHeight);
-	}
-
-	static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
-	*r_resize = RENDER_RESIZE_CHANGE;
-}
-
 //##########################################################################
 
 void rfunc::UpdateView()
@@ -381,76 +332,6 @@ void rfunc::UpdateView()
 
 //##########################################################################
 
-void rfunc::RenderSky(DWORD timeDelta)
-{
-#if 0
-	IGXSurface *ColorSurf, *BackBuf;
-	ColorSurf = SGCore_GbufferGetRT(DS_RT_SCENELIGHT)->getMipmap();
-	//ColorSurf = SGCore_GbufferGetRT(DS_RT_COLOR)->getMipmap();
-	BackBuf = gdata::pDXDevice->getColorTarget();
-	gdata::pDXDevice->setColorTarget(ColorSurf);
-
-	gdata::pDXDevice->clear(GX_CLEAR_COLOR, RENDER_DEFAUL_BACKGROUND_COLOR);
-
-//	SetSamplerFilter(0, 2, D3DTEXF_ANISOTROPIC);
-	gdata::pDXDevice->setRasterizerState(NULL);
-	for(UINT i = 0; i <= 2; ++i)
-	{
-		gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerAnisotopicClamp, i);
-	}
-
-	if (SGCore_SkyBoxIsCr() && SGCore_SkyBoxGetUse() && SGCore_SkyBoxIsLoadTex())
-	{
-	//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	//	SetSamplerAddress(0, 2, D3DTADDRESS_CLAMP);
-		SGCore_SkyBoxRender(timeDelta, &float3(gdata::vConstCurrCamPos.x, gdata::vConstCurrCamPos.y/* + (SXGC_SKYBOX_SIZE * 0.5 - 10)*/, gdata::vConstCurrCamPos.z));
-	}
-
-//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
-
-#ifdef _GRAPHIX_API
-	gdata::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-	gdata::pDXDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-#endif
-
-//	gdata::pDXDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-//	gdata::pDXDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	gdata::pDXDevice->setBlendState(gdata::rstates::pBlendAlphaSky);
-
-//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-
-	if (SGCore_SkyCloudsIsCr() && SGCore_SkyCloudsGetUse() && SGCore_SkyCloudsIsLoadTex())
-	{
-		for(UINT i = 0; i <= 2; ++i)
-		{
-			gdata::pDXDevice->setSamplerState(gdata::rstates::pSamplerAnisotopicWrap, i);
-		}
-	//	SetSamplerAddress(0, 2, D3DTADDRESS_MIRROR);
-		gdata::pDXDevice->setRasterizerState(gdata::rstates::pRasterizerCullNone);
-		SGCore_SkyCloudsRender(timeDelta, &float3(gdata::vConstCurrCamPos.x, gdata::vConstCurrCamPos.y + 150, gdata::vConstCurrCamPos.z), false);
-		gdata::pDXDevice->setRasterizerState(NULL);
-	}
-
-	gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_SCENELIGHT2));
-
-	SGCore_ShaderBind(gdata::shaders_id::kit::idScreenOut);
-
-//	gdata::pDXDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-
-	SGCore_ScreenQuadDraw();
-
-	SGCore_ShaderUnBind();
-
-	mem_release(ColorSurf);
-
-	gdata::pDXDevice->setColorTarget(BackBuf);
-	mem_release(BackBuf);
-
-	gdata::pDXDevice->setBlendState(NULL);
-//	gdata::pDXDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
-#endif
-}
 
 void rfunc::RenderParticles(DWORD timeDelta)
 {

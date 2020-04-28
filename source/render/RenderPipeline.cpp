@@ -731,33 +731,6 @@ void CRenderPipeline::renderFrame(float fDeltaTime)
 		//showTexture(m_pLightAmbientDiffuse);
 	}
 
-#if 0
-	Core_PStartSection(PERF_SECTION_SHADOW_UPDATE);
-	SRender_UpdateShadow(timeDelta);
-	Core_PEndSection(PERF_SECTION_SHADOW_UPDATE);
-
-
-
-	Core_PStartSection(PERF_SECTION_LIGHTING);
-	SRender_ComLighting(timeDelta);
-
-	if(SGCore_SkyBoxIsCr())
-	{
-		Core_PStartSection(PERF_SECTION_SKYBOX);
-		SRender_RenderSky(timeDelta);
-		Core_PEndSection(PERF_SECTION_SKYBOX);
-	}
-
-	Core_PStartSection(PERF_SECTION_TONEMAPPING);
-	static const float * r_hdr_adapted_coef = GET_PCVAR_FLOAT("r_hdr_adapted_coef");
-//	SGCore_ToneMappingCom(timeDelta, (r_hdr_adapted_coef ? (*r_hdr_adapted_coef) : 0.03f));
-	Core_PEndSection(PERF_SECTION_TONEMAPPING);
-
-	Core_PEndSection(PERF_SECTION_LIGHTING);
-
-	SGCore_ShaderUnBind();
-#endif
-
 end:
 	mem_release(pBackBuf);
 	mem_release(pSceneBuf);

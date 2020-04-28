@@ -215,9 +215,6 @@ SX_LIB_API void SRender_ComVisibleReflection();
 //! обработка и установка основных матриц, обработка плоскостей отсечения
 SX_LIB_API void SRender_UpdateView();
 
-//! отрисовка скайбокса и облаков
-SX_LIB_API void SRender_RenderSky(DWORD timeDelta);
-
 
 //! отрисовка партиклов (эффектов)
 SX_LIB_API void SRender_RenderParticles(DWORD timeDelta);
@@ -238,9 +235,6 @@ SX_LIB_API void SRender_SaveWorkTex();
 
 //! изменить режим рендера (оконный/полноэкранный)
 SX_LIB_API void SRender_ChangeModeWindow();
-
-//! переключение в режиме fullscreen в абсолютный fullscreen и обратно
-SX_LIB_API void SRender_FullScreenChangeSizeAbs();
 
 //!@} sxrender
 

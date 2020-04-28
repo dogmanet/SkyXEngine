@@ -71,9 +71,6 @@ namespace gdata
 	//! направление взгляда камеры
 	extern float3 vConstCurrCamDir;	
 
-	//! параметры перемещения камеры по умолчанию
-	extern float4_t vCamWalkParamEditor;
-
 
 	//! инициализация матриц
 	void InitAllMatrix();	
@@ -101,87 +98,26 @@ namespace gdata
 		//! загрузка всех необходимых шейдеров
 		void InitAllShaders();
 
-		//! вершинные шейдеры
-		namespace vs
-		{
-			extern ID idScreenOut;
-			extern ID idResPos;
-		};
-
-		//! пиксельные шейдеры
-		namespace ps
-		{
-			extern ID idScreenOut;
-			extern ID idComLightingNonShadow;
-			extern ID idComLightingSpotNonShadow;
-			extern ID idComLightingGI;
-			extern ID idComLightingShadow;
-			extern ID idComLightingSpotShadow;
-			extern ID idComLightingPSSMShadow;
-
-			extern ID idBlendAmbientSpecDiffColor;
-
-			
-			extern ID idStencilStr;
-			extern ID idStencilColumn;
-			extern ID idStencilStrColumn;
-			//extern ID idUnionAlpha;
-
-			extern ID idHDRinitLuminance;
-			extern ID idHDRAdaptLuminance;
-			extern ID idHDRToneMapping;
-		};
-
 		namespace kit
 		{
 			extern ID idScreenOut;
-			extern ID idStencilStr;
-			extern ID idStencilColumn;
-			extern ID idStencilStrColumn;
-			extern ID idBlendAmbientSpecDiffColor;
-			//extern ID idUnionAlpha;
-			extern ID idComLightingNonShadow;
-			extern ID idComLightingSpotNonShadow;
-			extern ID idComLightingShadow;
-			extern ID idComLightingSpotShadow;
-			extern ID idComLightingPSSMShadow;
-			extern ID idComLightingGI;
-
-			extern ID idHDRinitLuminance;
-			extern ID idHDRAdaptLuminance;
-			extern ID idHDRToneMapping;
 		};
 	};
 
 	namespace rstates
 	{
 		extern IGXDepthStencilState *pDepthStencilStateNoZ;
-		extern IGXDepthStencilState *pDepthStencilStateMrtStage0;
-		extern IGXDepthStencilState *pDepthStencilStateMrtStage1;
-		extern IGXDepthStencilState *pDepthStencilStateLightBound;
-		extern IGXDepthStencilState *pDepthStencilStateLightClear;
-		extern IGXDepthStencilState *pDepthStencilStateLightShadowNonGlobal;
-		extern IGXDepthStencilState *pDepthStencilStateLightShadowGlobal;
 		extern IGXDepthStencilState *pDepthStencilStateParticles;
 
 		extern IGXSamplerState *pSamplerPointClamp;
 		extern IGXSamplerState *pSamplerLinearWrap;
-		extern IGXSamplerState *pSamplerLinearMirror;
 		extern IGXSamplerState *pSamplerLinearClamp;
-		extern IGXSamplerState *pSamplerLinearBorder;
-		extern IGXSamplerState *pSamplerAnisotopicClamp;
-		extern IGXSamplerState *pSamplerAnisotopicWrap;
 
 		extern IGXSamplerState *pSamplerScene;
 
-		extern IGXBlendState *pBlendRed;
 		extern IGXBlendState *pBlendAlpha;
-		extern IGXBlendState *pBlendAlphaOneOne;
-		extern IGXBlendState *pBlendAlphaSky;
 
-		extern IGXRasterizerState *pRasterizerCullFront;
 		extern IGXRasterizerState *pRasterizerCullNone;
-		extern IGXRasterizerState *pRasterizerConservative;
 	};
 };
 

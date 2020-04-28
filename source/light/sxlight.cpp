@@ -11,24 +11,11 @@ See the license in LICENSE
 
 #include "light.h"
 
-#if !defined(DEF_STD_REPORT)
-#define DEF_STD_REPORT
-report_func g_fnReportf = DefReport;
-#endif
-
-#define ML_PRECOND(retval)
-//if(!ArrLights){LibReport(-1, "%s - sxmtlligth is not init", GEN_MSG_LOCATION); return retval;}
-
 //##########################################################################
 
 SX_LIB_API long SLight_0GetVersion()
 {
 	return SXMATERIAL_LIGTH_VERSION;
-}
-
-SX_LIB_API void SLight_Dbg_Set(report_func rf)
-{
-	g_fnReportf = rf;
 }
 
 SX_LIB_API void SLight_0Create(const char *szName, bool isUnic)

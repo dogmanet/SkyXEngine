@@ -149,11 +149,6 @@ SX_LIB_API void SRender_UpdateView()
 	rfunc::UpdateView();
 }
 
-SX_LIB_API void SRender_RenderSky(DWORD timeDelta)
-{
-	rfunc::RenderSky(timeDelta);
-}
-
 
 SX_LIB_API void SRender_RenderParticles(DWORD timeDelta)
 {
@@ -187,9 +182,4 @@ SX_LIB_API void SRender_ChangeModeWindow()
 	//LibReport(REPORT_MSG_LEVEL_NOTICE, "SRender_ChangeModeWindow\n");
 	rfunc::ChangeModeWindow();
 	//LibReport(REPORT_MSG_LEVEL_NOTICE, "SRender_ChangeModeWindow --\n");
-}
-
-SX_LIB_API void SRender_FullScreenChangeSizeAbs()
-{
-	rfunc::FullScreenChangeSizeAbs();
 }

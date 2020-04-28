@@ -47,9 +47,6 @@ See the license in LICENSE
 //! версия подсистемы
 SX_LIB_API long SLight_0GetVersion();			
 
-//! установить функцию обработки сообщений
-SX_LIB_API void SLight_Dbg_Set(report_func rf);
-
 //! инициализция подсистемы
 SX_LIB_API void SLight_0Create(
 	const char *szName,				//!< присваиваемое имя
