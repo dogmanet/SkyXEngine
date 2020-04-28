@@ -223,13 +223,13 @@ void CShadowCache::nextFrame()
 	m_reflectiveShadowCubeMaps.updateLastUsed();
 }
 
-void CShadowCache::addLight(IXLight *pLight)
+void CShadowCache::addLight(CXLight *pLight)
 {
 	pLight->testDirty();
 	m_aFrameLights.push_back(pLight);
 }
 
-void CShadowCache::addRSMLight(IXLight *pLight)
+void CShadowCache::addRSMLight(CXLight *pLight)
 {
 	pLight->testDirty();
 	m_aFrameRSMLights.push_back(pLight);
@@ -477,13 +477,13 @@ UINT CShadowCache::processNextRSMBunch()
 	return(m_aReadyReflectiveMaps.size());
 }
 
-IXLight* CShadowCache::getLight(ID id)
+CXLight* CShadowCache::getLight(ID id)
 {
 	assert(ID_VALID(id) && m_aReadyMaps.size() > (UINT)id);
 	return(m_aReadyMaps[id].pLight);
 }
 
-IXLight* CShadowCache::getRSMLight(ID id)
+CXLight* CShadowCache::getRSMLight(ID id)
 {
 	assert(ID_VALID(id) && m_aReadyReflectiveMaps.size() > (UINT)id);
 	return(m_aReadyReflectiveMaps[id].pLight);

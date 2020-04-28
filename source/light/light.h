@@ -53,12 +53,12 @@ public:
 
 	virtual void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax);
 	IXRenderableVisibility *getVisibility() override;
-	LIGHT_RENDER_TYPE getRenderType() override
+	LIGHT_RENDER_TYPE getRenderType()
 	{
 		return(m_renderType);
 	}
 
-	void testDirty() override
+	void testDirty()
 	{
 		if(m_pMutationObserver->wasTriggered())
 		{
@@ -66,11 +66,11 @@ public:
 			m_dirty = LRT_ALL;
 		}
 	}
-	bool isDirty(LIGHT_RENDER_TYPE type) override
+	bool isDirty(LIGHT_RENDER_TYPE type)
 	{
-		return(m_dirty & type);
+		return((m_dirty & type) != 0);
 	}
-	void markClean(LIGHT_RENDER_TYPE type) override
+	void markClean(LIGHT_RENDER_TYPE type)
 	{
 		m_dirty &= ~type;
 	}

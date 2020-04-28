@@ -455,9 +455,9 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 	IGXDepthStencilSurface *pOldDSSurface = pCtx->getDepthStencilSurface();
 
 	UINT uCounts[LIGHT_TYPE__COUNT] = {0};
-	for(int i = 0, l = getCount(); i < l; ++i)
+	for(int i = 0, l = m_aLights.size(); i < l; ++i)
 	{
-		++uCounts[getLight(i)->getType()];
+		++uCounts[m_aLights[i]->getType()];
 	}
 	m_pShadowCache->setLightsCount(uCounts[LIGHT_TYPE_POINT], uCounts[LIGHT_TYPE_SPOT], uCounts[LIGHT_TYPE_SUN] != 0);
 	m_pShadowCache->setRSMLightsCount(uCounts[LIGHT_TYPE_POINT], uCounts[LIGHT_TYPE_SPOT], uCounts[LIGHT_TYPE_SUN] != 0);
@@ -527,10 +527,10 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 	*/
 
 	// Определим список лампочек, которые будут участвовать в текущем кадре
-	IXLight *pLight;
-	for(int i = 0, l = getCount(); i < l; ++i)
+	CXLight *pLight;
+	for(int i = 0, l = m_aLights.size(); i < l; ++i)
 	{
-		pLight = getLight(i);
+		pLight = m_aLights[i];
 
 		//если свет виден фрустуму камеры (это надо было заранее просчитать) и если свет включен
 		if(pLight->isEnabled() && pLight->getRenderType() != LRT_NONE)

@@ -3,10 +3,11 @@
 
 #include <gdefines.h>
 
-#include <light/IXLight.h>
 #include <mtrl/IXMaterialSystem.h>
 #include <common/array.h>
 #include "shadow.h"
+
+#include "light.h"
 
 enum SHADOW_TYPE
 {
@@ -34,13 +35,13 @@ public:
 	void setObserverCamera(ICamera *pCamera);
 
 	//! Добавляет источник к текущему проходу, В случае отсутствия свободных слотов, возвращает false
-	void addLight(IXLight *pLight);
-	void addRSMLight(IXLight *pLight);
+	void addLight(CXLight *pLight);
+	void addRSMLight(CXLight *pLight);
 
 	UINT processNextBunch();
 	UINT processNextRSMBunch();
-	IXLight *getLight(ID id);
-	IXLight *getRSMLight(ID id);
+	CXLight *getLight(ID id);
+	CXLight *getRSMLight(ID id);
 	IBaseShadowMap *getShadow(ID id);
 	IBaseReflectiveShadowMap *getRSMShadow(ID id);
 
@@ -54,8 +55,8 @@ protected:
 	IGXRasterizerState *m_pRasterizerConservative = NULL;
 
 	UINT m_uCurrentFrame = 0;
-	Array<IXLight*> m_aFrameLights;
-	Array<IXLight*> m_aFrameRSMLights;
+	Array<CXLight*> m_aFrameLights;
+	Array<CXLight*> m_aFrameRSMLights;
 	bool m_isFirstBunch = true;
 	bool m_isFirstRSMBunch = true;
 
@@ -64,7 +65,7 @@ protected:
 		CShadowMap map;
 		bool isDirty = false;
 		bool shouldProcess = false;
-		IXLight *pLight = NULL;
+		CXLight *pLight = NULL;
 		UINT uLastUsed = UINT_MAX;
 	};
 
@@ -73,7 +74,7 @@ protected:
 		CShadowCubeMap map;
 		bool isDirty = false;
 		bool shouldProcess = false;
-		IXLight *pLight = NULL;
+		CXLight *pLight = NULL;
 		UINT uLastUsed = UINT_MAX;
 	};
 
@@ -82,7 +83,7 @@ protected:
 		CShadowPSSM map;
 		bool isDirty = false;
 		bool shouldProcess = false;
-		IXLight *pLight = NULL;
+		CXLight *pLight = NULL;
 
 		SX_ALIGNED_OP_MEM2();
 	};
@@ -92,7 +93,7 @@ protected:
 		CReflectiveShadowMap map;
 		bool isDirty = false;
 		bool shouldProcess = false;
-		IXLight *pLight = NULL;
+		CXLight *pLight = NULL;
 		UINT uLastUsed = UINT_MAX;
 	};
 
@@ -101,7 +102,7 @@ protected:
 		CReflectiveShadowCubeMap map;
 		bool isDirty = false;
 		bool shouldProcess = false;
-		IXLight *pLight = NULL;
+		CXLight *pLight = NULL;
 		UINT uLastUsed = UINT_MAX;
 	};
 
@@ -110,7 +111,7 @@ protected:
 		CReflectiveShadowSun map;
 		bool isDirty = false;
 		bool shouldProcess = false;
-		IXLight *pLight = NULL;
+		CXLight *pLight = NULL;
 
 		SX_ALIGNED_OP_MEM2();
 	};
@@ -123,10 +124,10 @@ protected:
 		Array<T> m_aMaps;
 		Array<T*> m_aMapsQueue;
 		LIGHT_RENDER_TYPE m_renderType;
-		Array<IXLight*> &m_aFrameLights;
+		Array<CXLight*> &m_aFrameLights;
 		Array<R> &m_aReadyMaps;
 	public:
-		Cache(Array<IXLight*> &aFrameLights, Array<R> &aReadyMaps, IXRenderPipeline *pRenderPipeline, LIGHT_RENDER_TYPE renderType):
+		Cache(Array<CXLight*> &aFrameLights, Array<R> &aReadyMaps, IXRenderPipeline *pRenderPipeline, LIGHT_RENDER_TYPE renderType):
 			m_aFrameLights(aFrameLights),
 			m_aReadyMaps(aReadyMaps),
 			m_pRenderPipeline(pRenderPipeline),
@@ -240,7 +241,7 @@ protected:
 	struct ReadyShadows
 	{
 		IBaseShadowMap *pShadowMap;
-		IXLight *pLight;
+		CXLight *pLight;
 	};
 
 	Array<ReadyShadows> m_aReadyMaps;
@@ -248,7 +249,7 @@ protected:
 	struct ReadyReflectiveShadows
 	{
 		IBaseReflectiveShadowMap *pShadowMap;
-		IXLight *pLight;
+		CXLight *pLight;
 	};
 
 	Array<ReadyReflectiveShadows> m_aReadyReflectiveMaps;

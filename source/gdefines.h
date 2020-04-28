@@ -156,6 +156,31 @@ struct IBaseObject
 
 #define XMETHODCALLTYPE __stdcall
 
+typedef struct _XGUID
+{
+	_XGUID()
+	{
+	}
+	_XGUID(unsigned long l, unsigned short w1, unsigned short w2,
+		unsigned char b1, unsigned char b2, unsigned char b3, unsigned char b4,
+		unsigned char b5, unsigned char b6, unsigned char b7, unsigned char b8):
+		Data1(l), Data2(w1), Data3(w2), Data40(b1), Data41(b2), Data43(b3), Data44(b4),
+		Data45(b5), Data46(b6), Data47(b7)
+	{
+	}
+	unsigned long  Data1 = 0;
+	unsigned short Data2 = 0;
+	unsigned short Data3 = 0;
+	unsigned char  Data40 = 0;
+	unsigned char  Data41 = 0;
+	unsigned char  Data42 = 0;
+	unsigned char  Data43 = 0;
+	unsigned char  Data44 = 0;
+	unsigned char  Data45 = 0;
+	unsigned char  Data46 = 0;
+	unsigned char  Data47 = 0;
+} XGUID;
+
 class IXUnknown
 {
 protected:
@@ -182,6 +207,11 @@ public:
 	{
 		return(0);
 	}
+
+	/*virtual void XMETHODCALLTYPE getInternalData(const XGUID *pGUID, void **ppOut)
+	{
+		*ppOut = NULL;
+	}*/
 };
 
 #if 0
@@ -221,31 +251,6 @@ public:
 	virtual const char* XMETHODCALLTYPE getNext() = 0;
 	virtual bool XMETHODCALLTYPE isEnd() = 0;
 };
-
-typedef struct _XGUID
-{
-	_XGUID()
-	{
-	}
-	_XGUID(unsigned long l, unsigned short w1, unsigned short w2,
-		unsigned char b1, unsigned char b2, unsigned char b3, unsigned char b4,
-		unsigned char b5, unsigned char b6, unsigned char b7, unsigned char b8):
-		Data1(l), Data2(w1), Data3(w2), Data40(b1), Data41(b2), Data43(b3), Data44(b4),
-		Data45(b5), Data46(b6), Data47(b7)
-	{
-	}
-	unsigned long  Data1 = 0;
-	unsigned short Data2 = 0;
-	unsigned short Data3 = 0;
-	unsigned char  Data40 = 0;
-	unsigned char  Data41 = 0;
-	unsigned char  Data42 = 0;
-	unsigned char  Data43 = 0;
-	unsigned char  Data44 = 0;
-	unsigned char  Data45 = 0;
-	unsigned char  Data46 = 0;
-	unsigned char  Data47 = 0;
-} XGUID;
 
 #define DEFINE_XGUID(l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
     XGUID(l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8)

@@ -14,6 +14,7 @@ See the license in LICENSE
 #include <graphix/graphix.h>
 #include <gcore/sxgcore.h>
 #include <light/IXLight.h>
+#include "light.h"
 
 #define RSM_POINT_SIZE 32
 #define RSM_SPOT_SIZE 32
@@ -49,7 +50,7 @@ public:
 
 	void init(IGXDevice *pContext, UINT uSize);
 
-	void setLight(IXLight *pLight);
+	void setLight(CXLight *pLight);
 	void process(IXRenderPipeline *pRenderPipeline);
 	void genShadow(IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals) override;
 
@@ -77,7 +78,7 @@ private:
 
 	float m_fSize;
 
-	IXLight *m_pLight = NULL;
+	CXLight *m_pLight = NULL;
 
 	float4x4 m_mView;
 	float4x4 m_mProj;
@@ -120,7 +121,7 @@ public:
 
 	void init(IGXDevice *pContext, UINT uSize);
 
-	void setLight(IXLight *pLight);
+	void setLight(CXLight *pLight);
 	void process(IXRenderPipeline *pRenderPipeline);
 	void genLPV(bool isDebug = false) override;
 
@@ -150,7 +151,7 @@ private:
 
 	float m_fSize;
 
-	IXLight *m_pLight = NULL;
+	CXLight *m_pLight = NULL;
 
 	float4x4 m_mView;
 	float4x4 m_mProj;
@@ -195,7 +196,7 @@ public:
 	void init(IGXDevice *pContext, UINT uSize);
 
 	void setObserverCamera(ICamera *pCamera);
-	void setLight(IXLight *pLight);
+	void setLight(CXLight *pLight);
 	void process(IXRenderPipeline *pRenderPipeline);
 	void genShadow(IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals) override;
 
@@ -230,7 +231,7 @@ private:
 
 	float m_fSize;
 
-	IXLight *m_pLight = NULL;
+	CXLight *m_pLight = NULL;
 
 	struct
 	{
@@ -276,7 +277,7 @@ public:
 	void init(IGXDevice *pContext, UINT uSize);
 
 	void setObserverCamera(ICamera *pCamera);
-	void setLight(IXLight *pLight);
+	void setLight(CXLight *pLight);
 	void process(IXRenderPipeline *pRenderPipeline);
 	void genLPV(bool isDebug = false) override;
 protected:
@@ -308,7 +309,7 @@ private:
 
 	float m_fSize;
 
-	IXLight *m_pLight = NULL;
+	CXLight *m_pLight = NULL;
 
 	struct
 	{
@@ -348,7 +349,7 @@ public:
 
 	void init(IGXDevice *pDevice, UINT uSize);
 
-	void setLight(IXLight *pLight);
+	void setLight(CXLight *pLight);
 	void process(IXRenderPipeline *pRenderPipeline);
 	void genShadow(IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals) override;
 
@@ -374,7 +375,7 @@ private:
 
 	float m_fSize;
 
-	IXLight *m_pLight = NULL;
+	CXLight *m_pLight = NULL;
 
 	float4x4 m_mView[6];
 	float4x4 m_mProj;
@@ -435,7 +436,7 @@ public:
 
 	void init(IGXDevice *pDevice, UINT uSize);
 
-	void setLight(IXLight *pLight);
+	void setLight(CXLight *pLight);
 	void process(IXRenderPipeline *pRenderPipeline);
 	void genLPV(bool isDebug = false) override;
 
@@ -465,7 +466,7 @@ private:
 
 	float m_fSize;
 
-	IXLight *m_pLight = NULL;
+	CXLight *m_pLight = NULL;
 
 	float4x4 m_mView[6];
 	float4x4 m_mProj;

@@ -68,19 +68,6 @@ public:
 	virtual bool isShadowDynamic() = 0;
 	virtual void setShadowDynamic(bool isDynamic) = 0;
 
-	//@TODO: Remove this method
-	virtual void drawShape(IGXDevice *pDevice) = 0;
-	//@TODO: Remove this method
-	virtual IGXConstantBuffer* getConstants(IGXDevice *pDevice) = 0;
-	//@TODO: Remove this method
-	virtual LIGHT_RENDER_TYPE getRenderType() = 0;
-	//@TODO: Remove this method
-	virtual bool isDirty(LIGHT_RENDER_TYPE type) = 0;
-	//@TODO: Remove this method
-	virtual void markClean(LIGHT_RENDER_TYPE type) = 0;
-	//@TODO: Remove this method
-	virtual void testDirty() = 0;
-
 	virtual IXLightSpot *asSpot() = 0;
 	virtual IXLightSun *asSun() = 0;
 	virtual IXLightPoint *asPoint() = 0;

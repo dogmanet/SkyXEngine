@@ -108,7 +108,7 @@ void CShadowMap::init(IGXDevice *pContext, UINT uSize)
 	m_pCameraShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_cameraShaderData.vs));
 }
 
-void CShadowMap::setLight(IXLight *pLight)
+void CShadowMap::setLight(CXLight *pLight)
 {
 	m_pLight = pLight;
 }
@@ -123,7 +123,7 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
-	IXLightSpot *pSpotLight = m_pLight->asSpot();
+	CXLightSpot *pSpotLight = (CXLightSpot*)m_pLight;
 
 	//! @todo remove double with Light::updateFrustum()
 	float3 vPos = pSpotLight->getPosition();
@@ -366,7 +366,7 @@ void CReflectiveShadowMap::init(IGXDevice *pContext, UINT uSize)
 	m_pCameraShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_cameraShaderData.vs));
 }
 
-void CReflectiveShadowMap::setLight(IXLight *pLight)
+void CReflectiveShadowMap::setLight(CXLight *pLight)
 {
 	m_pLight = pLight;
 }
@@ -381,7 +381,7 @@ void CReflectiveShadowMap::process(IXRenderPipeline *pRenderPipeline)
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
-	IXLightSpot *pSpotLight = m_pLight->asSpot();
+	CXLightSpot *pSpotLight = (CXLightSpot*)m_pLight;
 
 	//! @todo remove double with Light::updateFrustum()
 	float3 vPos = pSpotLight->getPosition();
@@ -551,7 +551,7 @@ void CShadowPSSM::init(IGXDevice *pContext, UINT uSize)
 	m_pCameraShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_cameraShaderData.vs));
 }
 
-void CShadowPSSM::setLight(IXLight *pLight)
+void CShadowPSSM::setLight(CXLight *pLight)
 {
 	m_pLight = pLight;
 }
@@ -566,7 +566,7 @@ void CShadowPSSM::process(IXRenderPipeline *pRenderPipeline)
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
-	IXLightSun *pSunLight = m_pLight->asSun();
+	CXLightSun *pSunLight = (CXLightSun*)m_pLight;
 
 
 	//! @todo remove double with Light::updateFrustum()
@@ -619,7 +619,7 @@ void CShadowPSSM::updateFrustums()
 {
 	assert(m_pCamera);
 
-	IXLightSun *pSunLight = m_pLight->asSun();
+	CXLightSun *pSunLight = (CXLightSun*)m_pLight;
 	float3 vLightDir = pSunLight->getDirection() * LIGHTS_DIR_BASE;
 	float3 vUpDir = pSunLight->getDirection() * float3(1.0f, 0.0f, 0.0f);
 
@@ -876,7 +876,7 @@ void CReflectiveShadowSun::init(IGXDevice *pContext, UINT uSize)
 	m_pCameraShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_cameraShaderData.vs));
 }
 
-void CReflectiveShadowSun::setLight(IXLight *pLight)
+void CReflectiveShadowSun::setLight(CXLight *pLight)
 {
 	m_pLight = pLight;
 }
@@ -891,7 +891,7 @@ void CReflectiveShadowSun::process(IXRenderPipeline *pRenderPipeline)
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
-	IXLightSun *pSunLight = m_pLight->asSun();
+	CXLightSun *pSunLight = (CXLightSun*)m_pLight;
 
 
 	//! @todo remove double with Light::updateFrustum()
@@ -955,7 +955,7 @@ void CReflectiveShadowSun::updateFrustum()
 {
 	assert(m_pCamera);
 
-	IXLightSun *pSunLight = m_pLight->asSun();
+	CXLightSun *pSunLight = (CXLightSun*)m_pLight;
 	float3 vLightDir = pSunLight->getDirection() * LIGHTS_DIR_BASE;
 	float3 vUpDir = pSunLight->getDirection() * float3(1.0f, 0.0f, 0.0f);
 
@@ -1123,7 +1123,7 @@ void CShadowCubeMap::init(IGXDevice *pDevice, UINT uSize)
 	m_pCameraShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_cameraShaderData.vs));
 }
 
-void CShadowCubeMap::setLight(IXLight *pLight)
+void CShadowCubeMap::setLight(CXLight *pLight)
 {
 	m_pLight = pLight;
 }
@@ -1138,7 +1138,7 @@ void CShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
-	IXLightPoint *pPointLight = m_pLight->asPoint();
+	CXLightPoint *pPointLight = (CXLightPoint*)m_pLight;
 
 	float3 vPos = pPointLight->getPosition();
 
@@ -1358,7 +1358,7 @@ void CReflectiveShadowCubeMap::init(IGXDevice *pDevice, UINT uSize)
 	m_pCameraShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_cameraShaderData.vs));
 }
 
-void CReflectiveShadowCubeMap::setLight(IXLight *pLight)
+void CReflectiveShadowCubeMap::setLight(CXLight *pLight)
 {
 	m_pLight = pLight;
 }
@@ -1373,7 +1373,7 @@ void CReflectiveShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
-	IXLightPoint *pPointLight = m_pLight->asPoint();
+	CXLightPoint *pPointLight = (CXLightPoint*)m_pLight;
 
 	float3 vPos = pPointLight->getPosition();
 
