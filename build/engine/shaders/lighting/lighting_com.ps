@@ -6,13 +6,9 @@ lighting_blend.ps
 
 #include <struct.h>
 #include <mtrl.h>
+#include <const.h>
 
 //##########################################################################
-
-cbuffer CDataScene: register(b3)
-{
-	float4 g_vNearFarInvWinSize;
-};
 
 cbuffer perLight: register(b0)
 {
@@ -22,11 +18,6 @@ cbuffer perLight: register(b0)
 	float4 g_vLightSpotDirection;
 	float2 g_vLightSpotInnerOuterAngles;
 #endif
-};
-
-cbuffer perFrame: register(b1)
-{
-	float3 g_vPosCam;
 };
 
 
@@ -142,8 +133,13 @@ float4 main(VSO_ResPos IN):SV_TARGET
 	float4 vParam = g_txParameters.Sample(g_sPointClamp, IN.vTexUV);
 	float fDepth = g_txDepthView.Sample(g_sPointClamp, IN.vTexUV).r;
 	
-	float4 vPosition = float4(g_vPosCam.xyz + IN.vWorldRay * fDepth, 1.0);
+	float4 vPosition = float4(g_vObserverPosCam.xyz + IN.vWorldRay * fDepth, 1.0);
 	float3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
+	
+	// return(float4(g_vObserverPosCam.xyz, 1.0f));
+	// return(float4(frac(vPosition.zzz), 1.0f));
+	// return(float4((float3)fDepth, 1.0f));
+	// return(float4(frac(IN.vWorldRay), 1.0f));
 	
 	float fF0 = vNormals.w;
 	float fRoughness = lerp(PARAM_LIGHTING_ROUGHNESS_MIN, PARAM_LIGHTING_ROUGHNESS_MAX, vParam.x);
@@ -177,7 +173,7 @@ float4 main(VSO_ResPos IN):SV_TARGET
 	fShadow *= saturate(fNdotD - g_vLightSpotInnerOuterAngles.y) / (g_vLightSpotInnerOuterAngles.x - g_vLightSpotInnerOuterAngles.y);
 #endif
 	
-	float3 vVertexToEye = normalize(g_vPosCam.xyz - vPosition.xyz);
+	float3 vVertexToEye = normalize(g_vObserverPosCam.xyz - vPosition.xyz);
 	
 	float fNdotL = dot(vNormalPixel, vLigth);
 	

@@ -29,7 +29,7 @@ CLightDirectional::CLightDirectional(CEntityManager *pMgr):BaseClass(pMgr)
 		{
 			m_fInnerAngle = m_fOuterAngle;
 		}
-		m_pLight = m_pLightSpot = m_pLightSystem->createSpot();
+		m_pLight = m_pLightSpot = m_pLightSystem->newSpot();
 		//m_pLight->setDistance(m_fDist);
 		m_pLight->setColor(m_vColor);
 		m_pLightSpot->setDirection(SMQuaternion(-SM_PI, 'z'));

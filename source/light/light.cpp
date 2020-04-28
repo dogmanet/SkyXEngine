@@ -129,7 +129,7 @@ void CXLight::drawShape(IGXDevice *pDevice)
 
 		IGXContext *pCtx = pDevice->getThreadContext();
 
-		pCtx->setVSConstant(m_pVSData);
+		pCtx->setVSConstant(m_pVSData, SCR_OBJECT);
 
 		m_pShape->draw();
 	}
@@ -407,7 +407,7 @@ void CXLightSpot::updatePSConstants(IGXDevice *pDevice)
 
 SMMATRIX CXLightSpot::getWorldTM()
 {
-	float fAngleScale = cosf(m_fInnerAngle * 0.5f) * sqrtf(2.0f);
+	float fAngleScale = tanf(m_fOuterAngle * 0.5f);
 
 	return(SMMatrixScaling(float3(fAngleScale, 1.0f, fAngleScale)) * SMMatrixScaling(float3(getMaxDistance())) * m_qDirection.GetMatrix() * SMMatrixTranslation(m_vPosition));
 }

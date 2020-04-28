@@ -7,13 +7,7 @@ lighting_gi.ps
 #include <lpv.h>
 #include <struct.h>
 #include <mtrl.h>
-
-//##########################################################################
-
-cbuffer perFrame: register(b1)
-{
-	float3 g_vViewPos;
-};
+#include <const.h>
 
 //##########################################################################
 
@@ -38,12 +32,12 @@ PSO_Lbuffer main(VSO_ResPos IN)
 	float fMetallic = vParams.y;
 	
 	float3 vOrigin = float3(0, 0, 0); // Центр сетки
-	float3 vPosition = g_vViewPos + IN.vWorldRay * fDepth; // Мировая позиция пиксела
+	float3 vPosition = g_vObserverPosCam + IN.vWorldRay * fDepth; // Мировая позиция пиксела
 	
 	
 	float3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
 	
-	float3 vReflectDir = -normalize(reflect(g_vViewPos - vPosition, vNormalPixel));
+	float3 vReflectDir = -normalize(reflect(g_vObserverPosCam - vPosition, vNormalPixel));
 	
 	// OUT.vAmdient.xyz = lerp(vAlbedo.xyz, GetPixelLight(vPosition, vNormalPixel) * vAlbedo.xyz, vAlbedo.w);
 	OUT.vAmdient.xyz = lerp(vAlbedo.xyz, GetPixelLight(vPosition, lerp(vNormalPixel, vReflectDir, fMetallic)) * vAlbedo.xyz, vAlbedo.w);

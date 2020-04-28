@@ -171,7 +171,7 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 	}*/
 }
 
-void CShadowMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals)
+void CShadowMap::genShadow(IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals)
 {
 	if(!m_pDevice)
 	{
@@ -180,8 +180,8 @@ void CShadowMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDepth
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
-	const float c_fTexWidth = (float)pShadowMap->getWidth();
-	const float c_fTexHeight = (float)pShadowMap->getHeight();
+	// const float c_fTexWidth = (float)pShadowMap->getWidth();
+	// const float c_fTexHeight = (float)pShadowMap->getHeight();
 
 //	IGXSurface *pRenderSurf, *pBackBuf;
 //	pRenderSurf = pShadowMap->getMipmap(0);
@@ -606,10 +606,10 @@ void CShadowPSSM::process(IXRenderPipeline *pRenderPipeline)
 
 	pCtx->setColorTarget(NULL);
 
-	if(GetAsyncKeyState('U') < 0)
+	/*if(GetAsyncKeyState('U') < 0)
 	{
 		m_pDevice->saveTextureToFile("pssm_depth.dds", m_pDepthMap);
-	}
+	}*/
 }
 
 #define PSSM_LIGHT_NEAR 0.1f
@@ -730,7 +730,7 @@ void CShadowPSSM::updateFrustums()
 	m_pShaderDataGS->update(&m_shaderData.gs);
 }
 
-void CShadowPSSM::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals)
+void CShadowPSSM::genShadow(IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals)
 {
 	if(!m_pDevice)
 	{
@@ -743,8 +743,8 @@ void CShadowPSSM::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDept
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
-	const float c_fTexWidth = (float)pShadowMap->getWidth();
-	const float c_fTexHeight = (float)pShadowMap->getHeight();
+	// const float c_fTexWidth = (float)pShadowMap->getWidth();
+	// const float c_fTexHeight = (float)pShadowMap->getHeight();
 
 	//	IGXSurface *pRenderSurf, *pBackBuf;
 	//	pRenderSurf = pShadowMap->getMipmap(0);
@@ -943,12 +943,12 @@ void CReflectiveShadowSun::process(IXRenderPipeline *pRenderPipeline)
 	pCtx->setColorTarget(NULL, 1);
 	pCtx->setColorTarget(NULL, 2);
 
-	/*if(GetAsyncKeyState('U') < 0)
+	if(GetAsyncKeyState('U') < 0)
 	{
 		m_pDevice->saveTextureToFile("sm_depth.dds", m_pDepthMap);
 		m_pDevice->saveTextureToFile("sm_normal.dds", m_pNormalMap);
 		m_pDevice->saveTextureToFile("sm_flux.dds", m_pFluxMap);
-	}*/
+	}
 }
 
 void CReflectiveShadowSun::updateFrustum()
@@ -1198,14 +1198,14 @@ void CShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 	}*/
 }
 
-void CShadowCubeMap::genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals)
+void CShadowCubeMap::genShadow(IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals)
 {
 	if(!m_pDevice)
 	{
 		return;
 	}
-	const float c_fTexWidth = (float)pShadowMap->getWidth();
-	const float c_fTexHeight = (float)pShadowMap->getHeight();
+	// const float c_fTexWidth = (float)pShadowMap->getWidth();
+	// const float c_fTexHeight = (float)pShadowMap->getHeight();
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 

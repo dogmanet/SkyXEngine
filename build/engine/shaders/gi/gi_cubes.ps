@@ -14,13 +14,6 @@ Texture3D g_txIllumRed: register(t0);
 Texture3D g_txIllumGreen: register(t1);
 Texture3D g_txIllumBlue: register(t2);
 
-cbuffer b8: register(b8)
-{
-	// float4x4 mV;
-	float4x4 g_mVP;
-	float4 g_vPosCam;
-};
-
 //##########################################################################
 
 float4 main(GSO_GICubes IN):COLOR0

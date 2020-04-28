@@ -1,5 +1,6 @@
 
 #include <lpv.h>
+#include <const.h>
 
 cbuffer perLight: register(b7)
 {
@@ -9,18 +10,6 @@ cbuffer perLight: register(b7)
 	float4 g_vLightSpotDirection;
 	float2 g_vLightSpotInnerOuterAngles;
 #endif
-};
-
-/* cbuffer b6 :register(b6)
-{
-	float4x4 g_mInvVP[6];
-}; */
-
-cbuffer b8: register(b8)
-{
-	// float4x4 mV;
-	float4x4 g_mVP;
-	float4 g_vPosCam;
 };
 
 struct VS_IN
@@ -132,7 +121,7 @@ GS_IN main(VS_IN input)
 	GS_IN output1 = (GS_IN)0;
 	// rsmTexel.positionWS = float4(((float2)rsmCoords + 0.5f) / (float2)RSMsize * 2.0 - 1.0, 0.0f, 1.0);
 	// rsmTexel.positionWS = float4(float3((float)(input.posIndex % 512), 0.0f, (float)(input.posIndex / 512)) / 512, 1.0);
-	output1.cellIndex = mul(float4(rsmTexel.positionWS, 1.0), g_mVP);
+	output1.cellIndex = mul(float4(rsmTexel.positionWS, 1.0), g_mObserverVP);
 	return(output1);
 #endif
 	

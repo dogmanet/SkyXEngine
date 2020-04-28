@@ -19,6 +19,12 @@
     <ClCompile Include="..\..\..\source\light\LightSystem.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\light\shadow.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\light\ShadowCache.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -45,6 +51,12 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\light\LightSystem.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\light\ShadowCache.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\light\shadow.h">
       <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>

@@ -24,7 +24,7 @@ class IXRenderPipeline: public IXUnknown
 public:
 	virtual void resize(UINT uWidth, UINT uHeight, bool isWindowed = true) = 0;
 
-	virtual void renderFrame() = 0;
+	virtual void renderFrame(float fDeltaTime) = 0;
 	virtual void endFrame() = 0;
 	virtual void updateVisibility() = 0;
 

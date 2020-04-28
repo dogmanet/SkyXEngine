@@ -20,7 +20,7 @@ CLightPoint::CLightPoint(CEntityManager * pMgr):BaseClass(pMgr)
 {
 	if(m_pLightSystem)
 	{
-		m_pLight = m_pLightSystem->createPoint();
+		m_pLight = m_pLightSystem->newPoint();
 		//m_pLight->setDistance(m_fDist);
 		m_pLight->setColor(float4(m_vColor, m_fDist));
 	}

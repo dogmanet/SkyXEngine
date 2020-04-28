@@ -139,7 +139,7 @@ void COcclusionCuller::_update()
 				UINT uLightKey = x * OCCLUSION_BUFFER_HEIGHT + y;
 				if(m_apTemp.size() <= uLightKey)
 				{
-					m_apTemp[uLightKey] = m_pLightSystem->createPoint();
+					m_apTemp[uLightKey] = m_pLightSystem->newPoint();
 					m_apTemp[uLightKey]->setColor(float3(1.0f, 0.0f, 0.0f));
 				}
 

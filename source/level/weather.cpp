@@ -180,7 +180,7 @@ CWeather::CWeather(IXLightSystem *pLightSystem):
 
 	if(m_pLightSystem)
 	{
-		m_pLightThunderbolt = m_pLightSystem->createPoint();
+		m_pLightThunderbolt = m_pLightSystem->newPoint();
 		m_pLightThunderbolt->setColor(float4(1.0f, 1.0f, 1.0f, 200.0f));
 		m_pLightThunderbolt->setEnabled(false);
 	}

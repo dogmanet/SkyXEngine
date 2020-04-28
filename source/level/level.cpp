@@ -231,7 +231,7 @@ void CLevel::load(const char *szName, bool isGame)
 
 			if(m_pLightSystem)
 			{
-				m_pSun = m_pLightSystem->createSun();
+				m_pSun = m_pLightSystem->newSun();
 				m_pSun->setPosition(float3(60.0f, 60.0f, 0));
 				m_pSun->setColor(float4(1.0f, 1.0f, 1.0f, 100.0f));
 			}

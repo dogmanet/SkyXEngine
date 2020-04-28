@@ -1,5 +1,6 @@
 
 #include <lpv.h>
+#include <const.h>
 
 cbuffer perLight: register(b7)
 {
@@ -13,14 +14,7 @@ cbuffer perLight: register(b7)
 
 cbuffer b6 :register(b6)
 {
-	float4x4 g_mInvVP;
-};
-
-cbuffer b8: register(b8)
-{
-	// float4x4 mV;
-	float4x4 g_mVP;
-	float4 g_vPosCam;
+	float4x4 g_mLightInvVP;
 };
 
 struct VS_IN
@@ -68,7 +62,7 @@ RsmTexel GetRsmTexel(int2 coords, uint2 vTexSize)
 	tx.normalWS = rsmWsNorMap.Load(int3(coords, 0)).xyz * 2.0 - 1.0;
 	vScreenSpace.y *= -1.0;
 	
-	float4 vWS = mul(vScreenSpace, g_mInvVP);
+	float4 vWS = mul(vScreenSpace, g_mLightInvVP);
 	tx.positionWS = vWS.xyz / vWS.w;
 	
 #ifndef IS_SUN
@@ -100,7 +94,7 @@ GS_IN main(VS_IN input)
 	GS_IN output1 = (GS_IN)0;
 	// rsmTexel.positionWS = float4(((float2)rsmCoords + 0.5f) / (float2)RSMsize * 2.0 - 1.0, 0.0f, 1.0);
 	// rsmTexel.positionWS = float4(float3((float)(input.posIndex % 512), 0.0f, (float)(input.posIndex / 512)) / 512, 1.0);
-	output1.cellIndex = mul(float4(rsmTexel.positionWS, 1.0), g_mVP);
+	output1.cellIndex = mul(float4(rsmTexel.positionWS, 1.0), g_mObserverVP);
 	return(output1);
 #endif
 	

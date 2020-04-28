@@ -55,7 +55,7 @@ cbuffer perShadow: register(b6)
 {
 	float4x4 g_mMatrixTextureV[6];
 	float4x4 g_mMatrixTextureP[6];
-	float4 vSizeBoundNearFar;
+	float4 g_vSizeBoundNearFar;
 };
 
 SamplerComparisonState g_sComparisonLinearClamp: register(s1);
@@ -71,9 +71,9 @@ float4 main(VSO_ResPos IN): COLOR0
 	float fShadow = 1.0f;
 	float fDepth = g_txDepthView.Sample(g_sPointClamp, IN.vTexUV).r;
 	float3 vNormalWS = normalize(NormalDecode(g_txNormals.Sample(g_sPointClamp, IN.vTexUV).xyz).xyz);
-	float4 vPixelPosWS = float4(g_vPosCam + IN.vWorldRay * fDepth, 1.f);
+	float4 vPixelPosWS = float4(g_vObserverPosCam + IN.vWorldRay * fDepth, 1.f);
 	
-	float delta = 1.0f / vSizeBoundNearFar.x;
+	float delta = 1.0f / g_vSizeBoundNearFar.x;
 		
 	[unroll]for(int split = 0; split < NUM_SPLITS; split++)   
 	{
@@ -93,18 +93,18 @@ float4 main(VSO_ResPos IN): COLOR0
 				float3 vNormalLS = normalize(mul(float4(vNormalWS, 0.0f), g_mMatrixTextureV[split]).xyz);
 				
 				// Locate corresponding light space shadow map grid center
-				float2 index = floor(vTexCoord.xy * vSizeBoundNearFar.xx);
+				float2 index = floor(vTexCoord.xy * g_vSizeBoundNearFar.xx);
 				
 				// Normalized coordinate in [0,1]
 				float2 nlsGridCenter = 2.0f * delta * (index + float2(0.5f, 0.5f)); // Normalized eye space grid center --- [0,1]
 				
 				// Unnormalized coordinate in [-lightLeft,lightLeft]
-				float2 lsGridCenter = vSizeBoundNearFar.y * (2.0f * nlsGridCenter - float2(1.0f, 1.0f));
+				float2 lsGridCenter = g_vSizeBoundNearFar.y * (2.0f * nlsGridCenter - float2(1.0f, 1.0f));
 				
 				/** Define light ray **/
 				// Light ray direction in light space
-				// float3 lsGridLineDir = normalize(float3(lsGridCenter, -vSizeBoundNearFar.z)); // Light space grid line direction    
-				float3 lsGridLineDir = normalize(float3(0.0f, 0.0f, -vSizeBoundNearFar.z)); // Light space grid line direction    
+				// float3 lsGridLineDir = normalize(float3(lsGridCenter, -g_vSizeBoundNearFar.z)); // Light space grid line direction    
+				float3 lsGridLineDir = normalize(float3(0.0f, 0.0f, -g_vSizeBoundNearFar.z)); // Light space grid line direction    
 				
 				/** Plane ray intersection **/
 				// Locate the potential occluder for the shading fragment
@@ -124,8 +124,8 @@ float4 main(VSO_ResPos IN): COLOR0
 				float SMDepth = g_txDepthShadow.Sample(g_sPointClamp, cubeCoord).r;
 				// A and B are computed bnased on light near and far planes.
 				// They can be retrieved directly from light projection matrix
-				float A = vSizeBoundNearFar.w * g_mMatrixTextureP[split][2][2];
-				float B = vSizeBoundNearFar.w * g_mMatrixTextureP[split][3][2];    
+				float A = g_vSizeBoundNearFar.w * g_mMatrixTextureP[split][2][2];
+				float B = g_vSizeBoundNearFar.w * g_mMatrixTextureP[split][3][2];    
 				float adaptiveDepthBias = 0.5f * pow(1.0f - A - 2.0f * SMDepth, 2) * constantBias / B; 
 				
 				

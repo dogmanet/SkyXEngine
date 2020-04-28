@@ -5,14 +5,10 @@
 #include <xcommon/IXRenderPipeline.h>
 #include <common/array.h>
 #include <light/IXLightSystem.h>
-#include "ShadowCache.h"
 #include <xUI/IXUI.h>
 #include "OcclusionCuller.h"
 
 #define MAX_TRANSPARENCY_CLIP_PANES 4
-#define LPV_CASCADES_COUNT 3
-#define LPV_GRID_SIZE 32
-#define LPV_STEP_COUNT 6
 
 class CRenderPipeline: public IXRenderPipeline
 {
@@ -24,7 +20,7 @@ public:
 
 	void updateVisibility() override;
 
-	void renderFrame() override;
+	void renderFrame(float fDeltaTime) override;
 	void endFrame() override;
 
 	SX_ALIGNED_OP_MEM2();
@@ -45,10 +41,6 @@ protected:
 	void renderTransparent() override;
 	void renderPostprocessFinal() override;
 	void renderEditor2D() override;
-
-	void showGICubes();
-
-	void toneMapping();
 
 protected:
 	UINT getIndexForStage(X_RENDER_STAGE stage);
@@ -94,13 +86,7 @@ protected:
 
 	//! Буфер освещения
 	IGXTexture2D *m_pLightAmbientDiffuse = NULL;
-	//! Буфер яркости
-	IGXTexture2D *m_pLightLuminance = NULL;
-	IGXTexture2D *m_pLightLuminance32 = NULL;
-	IGXTexture2D *m_pLightLuminance1 = NULL;
-	IGXTexture2D *m_pAdaptedLuminance[2];
-	UINT m_uCurrAdaptedLuminanceTarget = 0;
-
+	
 	//! Буфер освещения
 	IGXTexture2D *m_pLightTotal = NULL;
 
@@ -121,14 +107,7 @@ protected:
 	} m_frameShaderData;
 	IGXConstantBuffer *m_pFrameShaderData = NULL;
 
-	struct
-	{
-		float fAdaptationSpeed;
-		float fBaseValue;
-		float _padding[2];
-	} m_toneMappingShaderData;
-	IGXConstantBuffer *m_pToneMappingShaderData = NULL;
-
+	
 	struct
 	{
 		/*struct
@@ -144,61 +123,14 @@ protected:
 
 	struct
 	{
-		struct
-		{
-			//SMMATRIX mV;
-			SMMATRIX mVP;
-			float3 vPosCam;
-			SMMATRIX mInvVP;
-		} vs;
-		//float4 vNearFarLayers;
+		SMMATRIX mVP;
+		float3 vPosCam;
+		SMMATRIX mInvVP;
+		SMMATRIX mInvV;
+		float2 vNearFar;
+		float3 vParamProj;
 	} m_cameraShaderData;
-	IGXConstantBuffer *m_pCameraShaderDataVS = NULL;
-	//IGXConstantBuffer *m_pCameraShaderDataPS = NULL;
-
-	struct
-	{
-		struct
-		{
-			float4 vCenterSize[LPV_CASCADES_COUNT]; // xyz: center / size; w: world size of cell in meters
-		} vs;
-		//float4 vNearFarLayers;
-	} m_lpvCentersShaderData;
-	IGXConstantBuffer *m_pLPVcentersShaderData = NULL;
-	IGXConstantBuffer *m_pLPVcurrentCascadeShaderData = NULL;
-
-	struct
-	{
-		struct
-		{
-			SMMATRIX mVP;
-			SMMATRIX mViewInv;
-			float2 vNearFar;
-			float3 vParamProj;
-		} vs;
-		struct
-		{
-			float3 vViewPos;
-		} ps;
-	} m_lightingShaderData;
-	IGXConstantBuffer *m_pLightingShaderDataVS = NULL;
-	IGXConstantBuffer *m_pLightingShaderDataPS = NULL;
-
-	//###################################
-	
-	CShadowCache *m_pShadowCache = NULL;
-
-	struct
-	{
-		struct
-		{
-			SMMATRIX mVP; // dummy
-			SMMATRIX mViewInv;
-			float2 vNearFar;
-			float3 vParamProj;
-		} vs;
-	} m_shadowShaderData;
-	IGXConstantBuffer *m_pShadowShaderDataVS = NULL;
+	IGXConstantBuffer *m_pCameraShaderData = NULL;
 
 	//###################################
 
@@ -260,27 +192,6 @@ protected:
 	IGXTexture2D *m_pRefractiveTextureWrite = NULL;
 
 	IGXTexture2D *m_pSceneTexture = NULL;
-
-	//###################################
-	
-	struct LPVcascade
-	{
-		IGXTexture3D *pGIAccumRed = NULL;
-		IGXTexture3D *pGIAccumGreen = NULL;
-		IGXTexture3D *pGIAccumBlue = NULL;
-
-		IGXTexture3D *pGIAccumRed2 = NULL;
-		IGXTexture3D *pGIAccumGreen2 = NULL;
-		IGXTexture3D *pGIAccumBlue2 = NULL;
-	} m_aLPVs[3];
-
-	IGXRenderBuffer *m_pGICubesRB = NULL;
-	UINT m_uGICubesCount = 0;
-	ID m_idGICubesShader = -1;
-
-	ID m_idLightBoundShader = -1;
-	ID m_idLPVPropagateShader = -1;
-	ID m_idLuminanceReductionShader = -1;
 
 	//###################################
 

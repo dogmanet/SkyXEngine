@@ -296,7 +296,8 @@ bool CEngine::runFrame()
 
 			Core_PStartSection(PERF_SECTION_RENDER);
 			pRenderContext->getThreadContext()->beginFrame();
-			pRenderPipeline->renderFrame();
+			//! @todo use actual value
+			pRenderPipeline->renderFrame(0.016f);
 			pRenderContext->getThreadContext()->endFrame();
 			Core_PEndSection(PERF_SECTION_RENDER);
 

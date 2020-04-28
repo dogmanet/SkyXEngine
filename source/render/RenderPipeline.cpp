@@ -13,7 +13,6 @@ namespace gdata
 
 //! При изменении базовых шейдеров отредактировать https://wiki.skyxengine.com/index.php?title=Стандартные_шейдеры_материалов
 
-#define LUMINANCE_BUFFER_SIZE 1024
 
 CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	m_pDevice(pDevice)
@@ -530,16 +529,15 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	//GXFMT_G32R32F; // 64bpp; GXFMT_R32F
 	m_pGBufferDepth = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F);
 
+	if(m_pLightSystem)
+	{
+		m_pLightSystem->setRenderPipeline(this);
+		m_pLightSystem->setGBuffer(m_pGBufferColor, m_pGBufferNormals, m_pGBufferParams, m_pGBufferDepth);
+	}
 
 	m_pLightAmbientDiffuse = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F);
 	
-	m_pLightLuminance = m_pDevice->createTexture2D(LUMINANCE_BUFFER_SIZE, LUMINANCE_BUFFER_SIZE, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R16F);
-
-	m_pLightLuminance32 = m_pDevice->createTexture2D(32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_R16F);
-	m_pLightLuminance1 = m_pDevice->createTexture2D(1, 1, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_R16F);
-	m_pAdaptedLuminance[0] = m_pDevice->createTexture2D(1, 1, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_R16F);
-	m_pAdaptedLuminance[1] = m_pDevice->createTexture2D(1, 1, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_R16F);
-
+	
 	m_pLightTotal = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F);
 	
 	m_pRefractiveTextures[0] = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A16B16G16R16F);
@@ -569,78 +567,11 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	//m_pSceneShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData));
 	m_pSceneShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData));
 
-	m_pCameraShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_cameraShaderData.vs));
-
-	m_pLPVcentersShaderData = m_pDevice->createConstantBuffer(sizeof(m_lpvCentersShaderData.vs));
-	m_pLPVcurrentCascadeShaderData = m_pDevice->createConstantBuffer(sizeof(float4_t));
-
-	m_pLightingShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_lightingShaderData.vs));
-	m_pLightingShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_lightingShaderData.ps));
+	m_pCameraShaderData = m_pDevice->createConstantBuffer(sizeof(m_cameraShaderData));
 
 	m_pFrameShaderData = m_pDevice->createConstantBuffer(sizeof(m_frameShaderData));
 
-	m_pToneMappingShaderData = m_pDevice->createConstantBuffer(sizeof(m_toneMappingShaderData));
-
-	{
-		const UINT uSize = 32;
-		m_uGICubesCount = uSize * uSize * uSize;
-		float3_t *pData = new float3_t[m_uGICubesCount];
-		float fHalf = (float)uSize / 2.0f;
-		for(UINT x = 0; x < uSize; ++x)
-		{
-			for(UINT y = 0; y < uSize; ++y)
-			{
-				for(UINT z = 0; z < uSize; ++z)
-				{
-					pData[x + y * uSize + z * uSize * uSize] = (float3)(float3((float)x, (float)y, (float)z) - float3(fHalf));
-				}
-			}
-		}		
-		IGXVertexBuffer *pVB = m_pDevice->createVertexBuffer(sizeof(float3_t) * m_uGICubesCount, GXBUFFER_USAGE_STATIC, pData);
-		mem_delete_a(pData);
-
-		GXVertexElement oLayout[] =
-		{
-			{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
-			GX_DECL_END()
-		};
-
-		IGXVertexDeclaration *pVD = m_pDevice->createVertexDeclaration(oLayout);
-		m_pGICubesRB = m_pDevice->createRenderBuffer(1, &pVB, pVD);
-		mem_release(pVD);
-		mem_release(pVB);
-
-		ID idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gi_cubes.vs");
-		ID idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gi_cubes.ps");
-		ID idGS = SGCore_ShaderLoad(SHADER_TYPE_GEOMETRY, "gi_cubes.gs");
-		m_idGICubesShader = SGCore_ShaderCreateKit(idVS, idPS, idGS);
-	}
-
-//#define TIDX(x, y, z) (x + y * 32 + z * 32 * 32)
-	for(UINT i = 0; i < 3; ++i)
-	{
-		m_aLPVs[i].pGIAccumRed = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
-		m_aLPVs[i].pGIAccumGreen = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
-		m_aLPVs[i].pGIAccumBlue = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
-		
-		m_aLPVs[i].pGIAccumRed2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
-		m_aLPVs[i].pGIAccumGreen2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
-		m_aLPVs[i].pGIAccumBlue2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
-
-	}
-//#undef TIDX
-
-	m_idLightBoundShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "lighting_bound.vs"), -1);
-	// m_idLightBoundShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "lighting_bound.vs"), 
-	// 	SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_bound_debug.ps"));
-
-	m_idLPVPropagateShader = SGCore_ShaderCreateKit(-1, -1, -1, SGCore_ShaderLoad(SHADER_TYPE_COMPUTE, "gi_propagation.cs"));
-
-	m_idLuminanceReductionShader = SGCore_ShaderCreateKit(-1, -1, -1, SGCore_ShaderLoad(SHADER_TYPE_COMPUTE, "hdr_reduction.cs"));
-
-	m_pShadowCache = new CShadowCache(this, m_pMaterialSystem);
-	m_pShadowShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_shadowShaderData.vs));
-
+	
 	
 	newVisData(&m_pMainCameraVisibility);
 	m_pMainCameraOcclusionCuller = new COcclusionCuller();
@@ -666,8 +597,6 @@ CRenderPipeline::~CRenderPipeline()
 
 	mem_release(m_pRefractionScene);
 
-	mem_release(m_pToneMappingShaderData);
-
 	mem_release(m_pTransparencyShaderClipPlanes);
 
 	mem_release(m_pMainCameraOcclusionCuller);
@@ -676,13 +605,7 @@ CRenderPipeline::~CRenderPipeline()
 	//mem_release(m_pSceneShaderDataVS);
 	mem_release(m_pSceneShaderDataPS);
 
-	mem_release(m_pCameraShaderDataVS);
-
-	mem_release(m_pLPVcentersShaderData);
-	mem_release(m_pLPVcurrentCascadeShaderData);
-
-	mem_release(m_pLightingShaderDataVS);
-	mem_release(m_pLightingShaderDataPS);
+	mem_release(m_pCameraShaderData);
 
 	mem_release(m_pGBufferColor);
 	mem_release(m_pGBufferNormals);
@@ -690,12 +613,7 @@ CRenderPipeline::~CRenderPipeline()
 	mem_release(m_pGBufferDepth);
 
 	mem_release(m_pLightAmbientDiffuse);
-	mem_release(m_pLightLuminance);
 
-	mem_release(m_pLightLuminance32);
-	mem_release(m_pLightLuminance1);
-	mem_release(m_pAdaptedLuminance[0]);
-	mem_release(m_pAdaptedLuminance[1]);
 
 	mem_release(m_pFrameShaderData);
 
@@ -705,22 +623,6 @@ CRenderPipeline::~CRenderPipeline()
 
 	mem_release(m_pDepthStencilStateNoZWrite);
 	mem_release(m_pDepthStencilStateNoZ);
-
-	mem_release(m_pGICubesRB);
-
-	for(UINT i = 0; i < 3; ++i)
-	{
-		mem_release(m_aLPVs[i].pGIAccumRed);
-		mem_release(m_aLPVs[i].pGIAccumGreen);
-		mem_release(m_aLPVs[i].pGIAccumBlue);
-
-		mem_release(m_aLPVs[i].pGIAccumRed2);
-		mem_release(m_aLPVs[i].pGIAccumGreen2);
-		mem_release(m_aLPVs[i].pGIAccumBlue2);
-	}
-
-	mem_delete(m_pShadowCache);
-	mem_release(m_pShadowShaderDataVS);
 }
 
 void CRenderPipeline::resize(UINT uWidth, UINT uHeight, bool isWindowed)
@@ -731,16 +633,15 @@ void CRenderPipeline::resize(UINT uWidth, UINT uHeight, bool isWindowed)
 	m_isWindowed = isWindowed;
 }
 
-void CRenderPipeline::renderFrame()
+void CRenderPipeline::renderFrame(float fDeltaTime)
 {
-	UINT timeDelta = 16;
 	static const int *r_final_image = GET_PCVAR_INT("r_final_image");
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 	IGXSurface *pBackBuf = pCtx->getColorTarget();
 	IGXSurface *pSceneBuf = NULL;
 
-	m_frameShaderData.fFrameTime = (float)timeDelta / 1000.0f;
+	m_frameShaderData.fFrameTime = fDeltaTime;
 	m_pFrameShaderData->update(&m_frameShaderData);
 
 	pCtx->setVSConstant(m_pFrameShaderData, SCR_FRAME);
@@ -751,13 +652,19 @@ void CRenderPipeline::renderFrame()
 	//m_pDevice->setVertexShaderConstant(m_pSceneShaderDataVS, SCR_SCENE);
 	pCtx->setPSConstant(m_pSceneShaderDataPS, SCR_SCENE);
 
-	m_cameraShaderData.vs.mVP = SMMatrixTranspose(gdata::mCamView * gdata::mCamProj);
-	m_cameraShaderData.vs.mInvVP = SMMatrixInverse(NULL, m_cameraShaderData.vs.mVP);
-	m_cameraShaderData.vs.vPosCam = gdata::vConstCurrCamPos;
-	m_pCameraShaderDataVS->update(&m_cameraShaderData.vs);
-	pCtx->setVSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
-	pCtx->setPSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
-
+	m_cameraShaderData.mVP = SMMatrixTranspose(gdata::mCamView * gdata::mCamProj);
+	m_cameraShaderData.mInvVP = SMMatrixInverse(NULL, m_cameraShaderData.mVP);
+	m_cameraShaderData.mInvV = SMMatrixTranspose(SMMatrixInverse(NULL, gdata::mCamView));
+	m_cameraShaderData.vPosCam = gdata::vConstCurrCamPos;
+	m_cameraShaderData.vNearFar = gdata::vNearFar;
+	m_cameraShaderData.vParamProj = float3_t((float)m_uOutWidth, (float)m_uOutHeight, gdata::fProjFov);
+	m_pCameraShaderData->update(&m_cameraShaderData);
+	pCtx->setVSConstant(m_pCameraShaderData, SCR_CAMERA);
+	pCtx->setPSConstant(m_pCameraShaderData, SCR_CAMERA);
+	pCtx->setVSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
+	pCtx->setGSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
+	pCtx->setPSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
+	
 	renderPrepare();
 
 	Core_PStartSection(PERF_SECTION_MRT);
@@ -780,10 +687,10 @@ void CRenderPipeline::renderFrame()
 		goto end;
 	}
 
-	renderGI();
-
 	if(m_pLightSystem)
 	{
+		m_pLightSystem->renderGI(m_pLightTotal, m_pLightAmbientDiffuse);
+
 		if(*r_final_image == DS_RT_AMBIENTDIFF)
 		{
 			showTexture(m_pLightAmbientDiffuse);
@@ -811,14 +718,15 @@ void CRenderPipeline::renderFrame()
 	{
 		pCtx->setColorTarget(pBackBuf);
 
-		toneMapping();
+		m_pLightSystem->renderToneMapping(m_pLightAmbientDiffuse);
 
-		if(*r_final_image == DS_RT_LUMINANCE)
-		{
-			showTexture(m_pLightLuminance);
-			// showTexture(m_pLightLuminance32);
-			goto end;
-		}
+	//! @todo reimplement me!
+	//	if(*r_final_image == DS_RT_LUMINANCE)
+	//	{
+	//		showTexture(m_pLightLuminance);
+	//		// showTexture(m_pLightLuminance32);
+	//		goto end;
+	//	}
 
 		//showTexture(m_pLightAmbientDiffuse);
 	}
@@ -854,10 +762,9 @@ end:
 	mem_release(pBackBuf);
 	mem_release(pSceneBuf);
 
-	const bool *dev_lpv_cubes = GET_PCVAR_BOOL("dev_lpv_cubes");
-	if(*dev_lpv_cubes)
+	if(m_pLightSystem)
 	{
-		showGICubes();
+		m_pLightSystem->renderDebug();
 	}
 
 	Core_PStartSection(PERF_SECTION_RENDER_INFO);
@@ -886,10 +793,9 @@ void CRenderPipeline::updateVisibility()
 
 	if(m_pLightSystem)
 	{
-		float3 vCamPos;
-		gdata::pCamera->getPosition(&vCamPos);
-		//! @todo: fix grid center pos!
-		m_pLightSystem->updateVisibility(gdata::pCamera, float3(-16.0f, -16.0f, -16.0f) + vCamPos, float3(16.0f, 16.0f, 16.0f) + vCamPos);
+		//! @todo move to CRenderPipeline::setFrameObserverCamera() method
+		m_pLightSystem->setFrameObserverCamera(gdata::pCamera);
+		m_pLightSystem->updateVisibility();
 	}
 }
 
@@ -927,131 +833,6 @@ void CRenderPipeline::newVisData(IXRenderableVisibility **ppVisibility)
 	*ppVisibility = pVisibility;
 }
 
-void CRenderPipeline::showGICubes()
-{
-	IGXContext *pCtx = m_pDevice->getThreadContext();
-
-	pCtx->setPrimitiveTopology(GXPT_POINTLIST);
-	pCtx->setRenderBuffer(m_pGICubesRB);
-	SGCore_ShaderBind(m_idGICubesShader);
-	pCtx->setGSConstant(m_pLightingShaderDataVS, 1);
-	pCtx->setDepthStencilState(m_pDepthStencilStateDefault);
-	pCtx->setSamplerState(gdata::rstates::pSamplerPointClamp, 0);
-
-	pCtx->setVSConstant(m_pLPVcurrentCascadeShaderData, 10);
-	pCtx->setGSConstant(m_pLPVcurrentCascadeShaderData, 10);
-	pCtx->setPSConstant(m_pLPVcurrentCascadeShaderData, 10);
-
-	for(UINT i = 2; i < 3; ++i)
-	{
-		float4_t vTmp((float)i + 0.5f);  // just to be sure
-		m_pLPVcurrentCascadeShaderData->update(&vTmp);
-
-		pCtx->setPSTexture(m_aLPVs[i].pGIAccumRed2, 0);
-		pCtx->setPSTexture(m_aLPVs[i].pGIAccumGreen2, 1);
-		pCtx->setPSTexture(m_aLPVs[i].pGIAccumBlue2, 2);
-
-		pCtx->drawPrimitive(0, m_uGICubesCount);
-	}
-	
-
-	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
-
-	pCtx->setPSTexture(NULL, 0);
-	pCtx->setPSTexture(NULL, 1);
-	pCtx->setPSTexture(NULL, 2);
-}
-
-void CRenderPipeline::toneMapping()
-{
-	Core_PStartSection(PERF_SECTION_TONEMAPPING);
-	static const float *hdr_adapted_coef = GET_PCVAR_FLOAT("hdr_adapted_coef");
-	static const float *hdr_base_value = GET_PCVAR_FLOAT("hdr_base_value");
-	
-	//! @todo update only on change
-	m_toneMappingShaderData.fAdaptationSpeed = *hdr_adapted_coef;
-	m_toneMappingShaderData.fBaseValue = *hdr_base_value;
-	m_pToneMappingShaderData->update(&m_toneMappingShaderData);
-
-	//	SGCore_ToneMappingCom(timeDelta, (hdr_adapted_coef ? (*hdr_adapted_coef) : 0.03f));
-	IGXContext *pCtx = m_pDevice->getThreadContext();
-
-	pCtx->setPSConstant(m_pToneMappingShaderData, 8);
-
-	IGXSurface *pBackBuf = pCtx->getColorTarget();
-
-	IGXSurface *pRT = m_pLightLuminance->asRenderTarget();
-	pCtx->setColorTarget(pRT);
-	mem_release(pRT);
-
-	pCtx->setPSTexture(m_pLightAmbientDiffuse);
-	pCtx->setSamplerState(gdata::rstates::pSamplerLinearClamp, 0);
-
-	IGXDepthStencilSurface *pDSSurface = pCtx->getDepthStencilSurface();
-	pCtx->unsetDepthStencilSurface();
-
-	SGCore_ShaderBind(gdata::shaders_id::kit::idHDRinitLuminance);
-	SGCore_ScreenQuadDraw();
-	SGCore_ShaderUnBind();
-
-	pCtx->setColorTarget(pBackBuf);
-
-	// Reduction
-	{
-		SGCore_ShaderBind(m_idLuminanceReductionShader);
-
-		pCtx->setCSTexture(m_pLightLuminance, 0);
-		pCtx->setCSUnorderedAccessView(m_pLightLuminance32, 0);
-		pCtx->computeDispatch(32, 32, 1);
-		pCtx->setCSUnorderedAccessView(NULL, 0);
-		pCtx->setCSTexture(NULL, 0);
-
-		pCtx->setCSTexture(m_pLightLuminance32, 0);
-		pCtx->setCSUnorderedAccessView(m_pLightLuminance1, 0);
-		pCtx->computeDispatch(1, 1, 1);
-		pCtx->setCSUnorderedAccessView(NULL, 0);
-		pCtx->setCSTexture(NULL, 0);
-
-		SGCore_ShaderUnBind();
-	}
-
-	// Adaptation
-	{
-		// m_pLightLuminance1
-		pCtx->setPSTexture(m_pAdaptedLuminance[!m_uCurrAdaptedLuminanceTarget]);
-		pCtx->setPSTexture(m_pLightLuminance1, 1);
-		IGXSurface *pAdaptedLuminanceBuf = m_pAdaptedLuminance[m_uCurrAdaptedLuminanceTarget]->asRenderTarget();
-		pCtx->setColorTarget(pAdaptedLuminanceBuf);
-		mem_release(pAdaptedLuminanceBuf);
-		
-		SGCore_ShaderBind(gdata::shaders_id::kit::idHDRAdaptLuminance);
-
-		SGCore_ScreenQuadDraw();
-
-		SGCore_ShaderUnBind();
-	}
-
-
-	pCtx->setColorTarget(pBackBuf);
-	mem_release(pBackBuf);
-
-	{
-		pCtx->setSamplerState(gdata::rstates::pSamplerPointClamp, 0);
-		pCtx->setPSTexture(m_pLightAmbientDiffuse);
-		pCtx->setPSTexture(m_pAdaptedLuminance[m_uCurrAdaptedLuminanceTarget], 1);
-		pCtx->setPSTexture(m_pLightLuminance1, 2);
-		SGCore_ShaderBind(gdata::shaders_id::kit::idHDRToneMapping);
-
-		SGCore_ScreenQuadDraw();
-
-		SGCore_ShaderUnBind(); 
-	}
-
-	pCtx->setDepthStencilSurface(pDSSurface);
-	m_uCurrAdaptedLuminanceTarget = !m_uCurrAdaptedLuminanceTarget;
-
-	Core_PEndSection(PERF_SECTION_TONEMAPPING);
-}
 
 void CRenderPipeline::renderPrepare()
 {
@@ -1121,493 +902,15 @@ void CRenderPipeline::renderGBuffer()
 void CRenderPipeline::renderShadows()
 {
 	IGXContext *pCtx = m_pDevice->getThreadContext();
-
+	//m_pMaterialSystem->bindRenderPass(m_pRenderPassShadow);
 	rfunc::SetRenderSceneFilter();
 	pCtx->setSamplerState(gdata::rstates::pSamplerPointClamp, 1);
 }
 void CRenderPipeline::renderGI()
 {
-	if(!m_pLightSystem)
-	{
-		return;
-	}
-
-
-	IGXContext *pCtx = m_pDevice->getThreadContext();
-
-	IGXDepthStencilSurface *pOldDSSurface = pCtx->getDepthStencilSurface();
-
-	UINT uCounts[LIGHT_TYPE__COUNT] = {0};
-	for(int i = 0, l = m_pLightSystem->getCount(); i < l; ++i)
-	{
-		++uCounts[m_pLightSystem->getLight(i)->getType()];
-	}
-	m_pShadowCache->setLightsCount(uCounts[LIGHT_TYPE_POINT], uCounts[LIGHT_TYPE_SPOT], uCounts[LIGHT_TYPE_SUN] != 0);
-	m_pShadowCache->setRSMLightsCount(uCounts[LIGHT_TYPE_POINT], uCounts[LIGHT_TYPE_SPOT], uCounts[LIGHT_TYPE_SUN] != 0);
-
-	m_pShadowCache->setObserverCamera(gdata::pCamera);
-
-	m_pShadowCache->nextFrame();
-
-	IGXSurface *pAmbientSurf, *pBackBuf;
-	pAmbientSurf = m_pLightAmbientDiffuse->getMipmap();
-
-	pBackBuf = pCtx->getColorTarget();
-
-	pCtx->setColorTarget(pAmbientSurf);
-
-	//очищаем рт и стенсил
-	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_STENCIL);
-
 	rfunc::SetRenderSceneFilter();
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassIllumination);
 	renderStage(XRS_GI);
-
-	m_pMaterialSystem->bindRenderPass(m_pRenderPassShadow);
-	m_lightingShaderData.vs.mViewInv = SMMatrixTranspose(SMMatrixInverse(NULL, gdata::mCamView));
-	m_lightingShaderData.vs.mVP = SMMatrixTranspose(gdata::mCamView * gdata::mCamProj);
-	m_lightingShaderData.vs.vNearFar = gdata::vNearFar;
-	m_lightingShaderData.vs.vParamProj = float3_t((float)m_uOutWidth, (float)m_uOutHeight, gdata::fProjFov);
-	m_pLightingShaderDataVS->update(&m_lightingShaderData.vs);
-
-	m_lightingShaderData.ps.vViewPos = gdata::vConstCurrCamPos;
-	m_pLightingShaderDataPS->update(&m_lightingShaderData.ps.vViewPos);
-
-	float3 vCamDir;
-	gdata::pCamera->getLook(&vCamDir);
-
-	const float c_aLPVsizes[] = {
-		//0.5f,
-		//1.0f,
-		//2.0f
-
-		1.0f,
-		2.0f,
-		4.0f
-	};
-
-	m_lpvCentersShaderData.vs.vCenterSize[0] = float4(gdata::vConstCurrCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * c_aLPVsizes[0], c_aLPVsizes[0]);
-	m_lpvCentersShaderData.vs.vCenterSize[1] = float4(gdata::vConstCurrCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * c_aLPVsizes[1], c_aLPVsizes[1]);
-	m_lpvCentersShaderData.vs.vCenterSize[2] = float4(gdata::vConstCurrCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * c_aLPVsizes[2], c_aLPVsizes[2]);
-	m_pLPVcentersShaderData->update(&m_lpvCentersShaderData.vs);
-
-	/*
-	vs:
-		cbuffer0: (per light)
-		- g_mW
-		cbuffer1: (per frame)
-		- g_mVP
-		- g_mViewInv
-		- g_vNearFar
-		- g_vParamProj
-
-	ps:
-		cbuffer0: (per light)
-		- g_vLightPos
-		- g_vLightColor
-		- g_vLightPowerDistShadow
-		cbuffer1: (per frame)
-		- g_vViewPos
-
-
-	{
-		render shadowmaps
-		render direct light with shadows
-		inject VPLs into LPV grid
-	}
-	*/
-	
-	// Определим список лампочек, которые будут участвовать в текущем кадре
-	IXLight *pLight;
-	for(int i = 0, l = m_pLightSystem->getCount(); i < l; ++i)
-	{
-		pLight = m_pLightSystem->getLight(i);
-
-		//если свет виден фрустуму камеры (это надо было заранее просчитать) и если свет включен
-		if(pLight->isEnabled() && pLight->getRenderType() != LRT_NONE)
-		{
-			if(pLight->getRenderType() & LRT_LPV)
-			{
-				m_pShadowCache->addRSMLight(pLight);
-			}
-			if(pLight->getRenderType() & LRT_LIGHT)
-			{
-				m_pShadowCache->addLight(pLight);
-			}
-		}
-	}
-
-	static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
-	static const float *r_near = GET_PCVAR_FLOAT("r_near");
-	static const float *r_far = GET_PCVAR_FLOAT("r_far");
-
-// 	float4x4 &mCamView = gdata::mCamView;
-// 	// Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mCamView);
-// 	m_shadowShaderData.vs.mViewInv = SMMatrixTranspose(SMMatrixInverse(NULL, mCamView));
-// 	m_shadowShaderData.vs.vNearFar = gdata::vNearFar; // float2(*r_near, *r_far);
-// 	m_shadowShaderData.vs.vParamProj = float3((float)m_uOutWidth, (float)m_uOutHeight, gdata::fProjFov); // *r_default_fov);
-// 	m_pShadowShaderDataVS->update(&m_shadowShaderData.vs);
-
-	//@TODO: убрать это
-	//Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &m_shadowShaderData.ps.vPosCam);
-	//m_pShadowShaderDataPS->update(&m_shadowShaderData.ps);
-	
-
-	//m_pDevice->setPixelShaderConstant(m_pShadowShaderDataPS, 7);
-
-	pCtx->setRasterizerState(gdata::rstates::pRasterizerConservative);
-
-	pCtx->setVSConstant(m_pCameraShaderDataVS, 8);
-	pCtx->setPSConstant(m_pCameraShaderDataVS, 8);
-	
-	UINT uShadowCount = 0;
-	while((uShadowCount = m_pShadowCache->processNextBunch()))
-	{
-		pCtx->setColorTarget(pAmbientSurf);
-		pCtx->setDepthStencilSurface(pOldDSSurface);
-		pCtx->setBlendState(gdata::rstates::pBlendAlphaOneOne);
-
-		pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
-		pCtx->setPSConstant(m_pLightingShaderDataPS, 1);
-
-		IBaseShadowMap *pShadow = NULL;
-
-		//render direct light with shadows
-		for(UINT i = 0; i < uShadowCount; ++i)
-		{
-			pLight = m_pShadowCache->getLight(i);
-			pShadow = m_pShadowCache->getShadow(i);
-			
-			//если не глобальный источник
-			if(pLight->getType() != LIGHT_TYPE_SUN)
-			{
-				//помечаем в стенсил буфере пиксели  которые входят в ограничивающий объем света, чтобы их осветить
-				pCtx->setRasterizerState(gdata::rstates::pRasterizerCullNone);
-				pCtx->setStencilRef(0);
-				pCtx->setDepthStencilState(gdata::rstates::pDepthStencilStateLightBound);
-
-				//отрисовка ограничивающего объема
-				SGCore_ShaderBind(m_idLightBoundShader);
-				pLight->drawShape(m_pDevice);
-				
-				pCtx->setStencilRef(255);
-				pCtx->setDepthStencilState(gdata::rstates::pDepthStencilStateLightShadowNonGlobal);
-			}
-			else
-			{
-				//иначе это глобальный источник, отключаем стенсил тест
-				pCtx->setDepthStencilState(gdata::rstates::pDepthStencilStateLightShadowGlobal);
-			}
-
-			pCtx->setRasterizerState(NULL);
-
-
-
-			//pCtx->setVSConstant(m_pShadowShaderDataVS, 1);
-			pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
-
-			pCtx->setBlendState(gdata::rstates::pBlendRed);
-			pShadow->genShadow(m_pShadow, m_pGBufferDepth, m_pGBufferNormals);
-			pCtx->setBlendState(gdata::rstates::pBlendAlphaOneOne);
-			pCtx->setColorTarget(pAmbientSurf);
-
-		//	pCtx->setPSTexture(m_pShadow, 4);
-			//idshaderkit = gdata::shaders_id::kit::idComLightingShadow;
-			ID idshaderkit = -1;
-			switch(pLight->getType())
-			{
-			case LIGHT_TYPE_SPOT:
-				idshaderkit = gdata::shaders_id::kit::idComLightingSpotShadow;
-				break;
-			case LIGHT_TYPE_POINT: 
-				idshaderkit = gdata::shaders_id::kit::idComLightingShadow;
-				break;
-			case LIGHT_TYPE_SUN:
-				idshaderkit = gdata::shaders_id::kit::idComLightingPSSMShadow;
-				break;
-			default:
-				assert(!"Unknown light type!");
-			}
-
-			pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
-			
-			//теперь когда будем считать освещение надо сбросить значения в стенсил буфере, чтобы каждый кадр не чистить
-			//если стенсил тест прошел успешно, устанавливаем значнеие в нуль
-			if(pLight->getType() != LIGHT_TYPE_SUN)
-			{
-				pCtx->setDepthStencilState(gdata::rstates::pDepthStencilStateLightClear);
-			}
-
-			IGXConstantBuffer *pLightConstants = pLight->getConstants(m_pDevice);
-			pCtx->setPSConstant(pLightConstants);
-			mem_release(pLightConstants);
-
-			SGCore_ShaderBind(idshaderkit);
-
-			pCtx->setSamplerState(gdata::rstates::pSamplerPointClamp, 0);
-			
-			pCtx->setPSTexture(m_pGBufferColor);
-			pCtx->setPSTexture(m_pGBufferNormals, 1);
-			pCtx->setPSTexture(m_pGBufferParams, 2);
-			pCtx->setPSTexture(m_pGBufferDepth, 3);
-			//m_pDevice->setTexture(SGCore_GbufferGetRT(DS_RT_ADAPTEDLUM), 5);
-
-			SGCore_ScreenQuadDraw();
-		}
-
-
-		//pCtx->setSamplerState(gdata::rstates::pSamplerLinearWrap, 0);
-		//pCtx->setSamplerState(gdata::rstates::pSamplerLinearWrap, 1);
-	}
-
-	pCtx->setVSConstant(m_pLPVcentersShaderData, 9);
-	pCtx->setPSConstant(m_pLPVcentersShaderData, 9);
-
-	bool isFirstRun[3] = {true, true, true};
-	while((uShadowCount = m_pShadowCache->processNextRSMBunch()))
-	{
-		pCtx->setVSConstant(m_pLPVcurrentCascadeShaderData, 10);
-		pCtx->setPSConstant(m_pLPVcurrentCascadeShaderData, 10);
-
-		pCtx->setDepthStencilSurface(pOldDSSurface);
-		pCtx->setBlendState(gdata::rstates::pBlendAlphaOneOne);
-
-		pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
-		pCtx->setPSConstant(m_pLightingShaderDataPS, 1);
-
-		IGXDepthStencilSurface *pOldSurface = pCtx->getDepthStencilSurface();
-		pCtx->unsetDepthStencilSurface();
-
-		IBaseReflectiveShadowMap *pShadow = NULL;
-
-		for(UINT i = 0; i < 3; ++i)
-		{
-			float4_t vTmp((float)i + 0.5f); // just to be sure
-			m_pLPVcurrentCascadeShaderData->update(&vTmp);
-
-			IGXSurface *pLPVRed = m_aLPVs[i].pGIAccumRed->asRenderTarget();
-			IGXSurface *pLPVGreen = m_aLPVs[i].pGIAccumGreen->asRenderTarget();
-			IGXSurface *pLPVBlue = m_aLPVs[i].pGIAccumBlue->asRenderTarget();
-
-			//m_pDevice->setColorTarget(pAmbientSurf);
-			pCtx->setColorTarget(pLPVRed);
-			pCtx->setColorTarget(pLPVGreen, 1);
-			pCtx->setColorTarget(pLPVBlue, 2);
-
-			mem_release(pLPVRed);
-			mem_release(pLPVGreen);
-			mem_release(pLPVBlue);
-
-			if(isFirstRun[i])
-			{
-				pCtx->clear(GX_CLEAR_COLOR);
-				isFirstRun[i] = false;
-			}
-
-			//inject VPLs into LPV grid
-			for(UINT j = 0; j < uShadowCount; ++j)
-			{
-				pShadow = m_pShadowCache->getRSMShadow(j);
-				pShadow->genLPV();
-			}
-
-			pCtx->setColorTarget(NULL);
-			pCtx->setColorTarget(NULL, 1);
-			pCtx->setColorTarget(NULL, 2);
-		}
-
-		const bool *dev_lpv_points = GET_PCVAR_BOOL("dev_lpv_points");
-		if(*dev_lpv_points)
-		{
-			auto pTarget = m_pGBufferColor->asRenderTarget();
-			pCtx->setColorTarget(pAmbientSurf);
-			mem_release(pTarget);
-			for(UINT i = 0; i < uShadowCount; ++i)
-			{
-				pShadow = m_pShadowCache->getRSMShadow(i);
-				pShadow->genLPV(true);
-			}
-			pCtx->setColorTarget(NULL);
-		}
-
-		pCtx->setDepthStencilSurface(pOldSurface);
-		mem_release(pOldSurface);
-
-		//break;
-	}
-	for(UINT i = 0; i < 3; ++i)
-	{
-		if(isFirstRun[i])
-		{
-			IGXSurface *pLPVRed =   m_aLPVs[i].pGIAccumRed->asRenderTarget();
-			IGXSurface *pLPVGreen = m_aLPVs[i].pGIAccumGreen->asRenderTarget();
-			IGXSurface *pLPVBlue =  m_aLPVs[i].pGIAccumBlue->asRenderTarget();
-
-			pCtx->setColorTarget(pLPVRed);
-			pCtx->setColorTarget(pLPVGreen, 1);
-			pCtx->setColorTarget(pLPVBlue, 2);
-
-			mem_release(pLPVRed);
-			mem_release(pLPVGreen);
-			mem_release(pLPVBlue);
-
-			pCtx->clear(GX_CLEAR_COLOR);
-			isFirstRun[i] = false;
-
-			pCtx->setColorTarget(NULL);
-			pCtx->setColorTarget(NULL, 1);
-			pCtx->setColorTarget(NULL, 2);
-		}
-	}
-
-	SGCore_ShaderUnBind();
-
-	mem_release(pOldDSSurface);
-
-	pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
-	pCtx->setPSConstant(m_pLightingShaderDataPS, 1);
-
-	{
-		SGCore_ShaderBind(m_idLPVPropagateShader);
-		UINT uStepCount[] = {4, 6, 8};
-
-		//for(UINT k = 0; k < 1000; ++k)
-		//{
-			for(UINT j = 0; j < 3; ++j)
-			{
-				for(UINT i = 0; i < uStepCount[j]; ++i)
-				{
-					pCtx->setCSTexture(m_aLPVs[j].pGIAccumRed, 0);
-					pCtx->setCSTexture(m_aLPVs[j].pGIAccumGreen, 1);
-					pCtx->setCSTexture(m_aLPVs[j].pGIAccumBlue, 2);
-
-					pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumRed2, 0);
-					pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumGreen2, 1);
-					pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumBlue2, 2);
-
-					pCtx->computeDispatch(4, 4, 32);
-
-					pCtx->setCSUnorderedAccessView(NULL, 0);
-					pCtx->setCSUnorderedAccessView(NULL, 1);
-					pCtx->setCSUnorderedAccessView(NULL, 2);
-
-					pCtx->setCSTexture(NULL, 0);
-					pCtx->setCSTexture(NULL, 1);
-					pCtx->setCSTexture(NULL, 2);
-
-
-					pCtx->setCSTexture(m_aLPVs[j].pGIAccumRed2, 0);
-					pCtx->setCSTexture(m_aLPVs[j].pGIAccumGreen2, 1);
-					pCtx->setCSTexture(m_aLPVs[j].pGIAccumBlue2, 2);
-
-					pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumRed, 0);
-					pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumGreen, 1);
-					pCtx->setCSUnorderedAccessView(m_aLPVs[j].pGIAccumBlue, 2);
-
-					pCtx->computeDispatch(4, 4, 32);
-
-					pCtx->setCSUnorderedAccessView(NULL, 0);
-					pCtx->setCSUnorderedAccessView(NULL, 1);
-					pCtx->setCSUnorderedAccessView(NULL, 2);
-
-					pCtx->setCSTexture(NULL, 0);
-					pCtx->setCSTexture(NULL, 1);
-					pCtx->setCSTexture(NULL, 2);
-				}
-			}
-		//}
-
-		SGCore_ShaderUnBind();
-	}
-	
-
-	{
-		pCtx->setColorTarget(pAmbientSurf);
-		//gdata::pDXDevice->setRasterizerState(NULL);
-		pCtx->setRasterizerState(gdata::rstates::pRasterizerCullNone);
-		pCtx->setBlendState(gdata::rstates::pBlendAlphaOneOne);
-		pCtx->setDepthStencilState(gdata::rstates::pDepthStencilStateLightShadowGlobal);
-
-		pCtx->setPSConstant(m_pLightingShaderDataPS, 1);
-
-		//ID idshader = gdata::shaders_id::ps::idComLightingGI;
-		ID idshaderkit = gdata::shaders_id::kit::idComLightingGI;
-
-		//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vViewPos", &gdata::vConstCurrCamPos);
-
-	//	pCtx->setPSConstant(m_pCameraShaderDataVS, 8);
-
-		SGCore_ShaderBind(idshaderkit);
-
-		pCtx->setSamplerState(gdata::rstates::pSamplerPointClamp, 0);
-		pCtx->setSamplerState(gdata::rstates::pSamplerLinearBorder, 1);
-
-		pCtx->setPSTexture(m_pGBufferDepth);
-		pCtx->setPSTexture(m_pGBufferNormals, 1);
-		pCtx->setPSTexture(m_pGBufferColor, 2);
-		pCtx->setPSTexture(m_pGBufferParams, 3);
-		for(UINT i = 0; i < 3; ++i)
-		{
-			pCtx->setPSTexture(m_aLPVs[i].pGIAccumRed,   4 + i);
-			pCtx->setPSTexture(m_aLPVs[i].pGIAccumGreen, 7 + i);
-			pCtx->setPSTexture(m_aLPVs[i].pGIAccumBlue,  10 + i);
-		}
-
-		SGCore_ScreenQuadDraw();
-
-		pCtx->setPSTexture(NULL, 2);
-		pCtx->setPSTexture(NULL, 3);
-		pCtx->setPSTexture(NULL, 4);
-
-		SGCore_ShaderUnBind();
-		pCtx->setSamplerState(gdata::rstates::pSamplerLinearClamp, 1);
-	}
-
-
-
-	pCtx->setDepthStencilState(gdata::rstates::pDepthStencilStateNoZ);
-	pCtx->setRasterizerState(NULL);
-	pCtx->setBlendState(NULL);
-	
-	//pCtx->setColorTarget(NULL, 1);
-	
-	mem_release(pAmbientSurf);
-
-	//-------------------------------
-
-	//теперь необходимо все смешать чтобы получить итоговую освещенную картинку
-	//{{
-	
-	pCtx->setSamplerState(gdata::rstates::pSamplerPointClamp, 0);
-	pCtx->setSamplerState(gdata::rstates::pSamplerLinearClamp, 1);
-
-	IGXSurface *pComLightSurf = m_pLightTotal->getMipmap();
-	pCtx->setColorTarget(pComLightSurf);
-
-	//очищаем рт (в старой версии было многопроходное смешивание)
-	pCtx->clear(GX_CLEAR_COLOR);
-
-	pCtx->setPSTexture(m_pGBufferColor);
-	pCtx->setPSTexture(m_pLightAmbientDiffuse, 1);
-	//pCtx->setPSTexture(m_pLightSpecular, 2);
-	pCtx->setPSTexture(m_pGBufferNormals, 3);
-	pCtx->setPSTexture(m_pGBufferDepth, 4);
-	//gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_ADAPTEDLUM), 4);
-	pCtx->setPSTexture(m_pGBufferParams, 5);
-
-	SGCore_ShaderBind(gdata::shaders_id::kit::idBlendAmbientSpecDiffColor);
-
-	SGCore_ScreenQuadDraw();
-
-	mem_release(pComLightSurf);
-	//}}
-
-	SGCore_ShaderUnBind();
-
-	pCtx->setColorTarget(pBackBuf);
-	mem_release(pBackBuf);
-
-	//Sleep(16);
 }
 void CRenderPipeline::renderPostprocessMain()
 {
@@ -1627,7 +930,7 @@ void CRenderPipeline::renderTransparent()
 	IGXSurface *pBackBuff = pCtx->getColorTarget();
 
 	//pCtx->setPSConstant(m_pSceneShaderDataPS, SCR_SCENE);
-	pCtx->setVSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
+	pCtx->setVSConstant(m_pCameraShaderData, SCR_CAMERA);
 	rfunc::SetRenderSceneFilter();
 
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassTransparency);
@@ -1644,12 +947,13 @@ void CRenderPipeline::renderTransparent()
 	pCtx->setPSTexture(m_pGBufferDepth, 2);
 //	pCtx->setPSTexture(m_pGBufferParams, 3);
 
-	for(UINT i = 0; i < 3; ++i)
-	{
-		pCtx->setPSTexture(m_aLPVs[i].pGIAccumRed, 5 + i);
-		pCtx->setPSTexture(m_aLPVs[i].pGIAccumGreen, 8 + i);
-		pCtx->setPSTexture(m_aLPVs[i].pGIAccumBlue, 11 + i);
-	}
+	//! @todo implement me!
+	// for(UINT i = 0; i < 3; ++i)
+	// {
+	// 	pCtx->setPSTexture(m_aLPVs[i].pGIAccumRed, 5 + i);
+	// 	pCtx->setPSTexture(m_aLPVs[i].pGIAccumGreen, 8 + i);
+	// 	pCtx->setPSTexture(m_aLPVs[i].pGIAccumBlue, 11 + i);
+	// }
 
 	m_iRefractiveSource = -1;
 	IGXSurface *pSceneTarget = m_pSceneTexture->asRenderTarget();
@@ -2241,10 +1545,13 @@ void CRenderPipeline::renderEditor2D()
 	float3 vCamPos;
 	SRender_GetCamera()->getPosition(&vCamPos);
 
-	m_cameraShaderData.vs.mVP = SMMatrixTranspose(mVP);
-	m_cameraShaderData.vs.vPosCam = vCamPos;
-	m_pCameraShaderDataVS->update(&m_cameraShaderData.vs);
-	m_pDevice->getThreadContext()->setVSConstant(m_pCameraShaderDataVS, SCR_CAMERA);
+	m_cameraShaderData.mVP = SMMatrixTranspose(mVP);
+	m_cameraShaderData.vPosCam = vCamPos;
+	m_pCameraShaderData->update(&m_cameraShaderData);
+	m_pDevice->getThreadContext()->setVSConstant(m_pCameraShaderData, SCR_CAMERA);
+	m_pDevice->getThreadContext()->setVSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
+	m_pDevice->getThreadContext()->setPSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
+	m_pDevice->getThreadContext()->setGSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
 
 	renderStage(XRS_EDITOR_2D);
 }

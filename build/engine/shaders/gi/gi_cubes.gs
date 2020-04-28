@@ -5,21 +5,7 @@ terrax_colored.vs
 */
 
 #include <struct.h>
-
-//##########################################################################
-
-cbuffer perFrame: register(b1)
-{
-	float4x4 g_mVP;
-	float4x4 g_mViewInv;
-	float2 g_vNearFar;
-	float3 g_vParamProj;
-};
-
-/* cbuffer b10: register(b10)
-{
-	float4 g_vCurrentCascade;
-}; */
+#include <const.h>
 
 //##########################################################################
 
@@ -34,14 +20,14 @@ void main(point VSO_GICubes input[1], inout TriangleStream<GSO_GICubes> OutputSt
 	float3 vCenter = input[0].vPosition.xyz;
 	
 	const GSO_GICubes vertices[8] = {
-		{mul(input[0].vPosition + float4(fSize, fSize, fSize, 0), g_mVP),    float3(fNormal, fNormal, fNormal),    vCenter},// 0
-		{mul(input[0].vPosition + float4(fSize, -fSize, fSize, 0), g_mVP),   float3(fNormal, -fNormal, fNormal),   vCenter},// 1
-		{mul(input[0].vPosition + float4(fSize, fSize, -fSize, 0), g_mVP),   float3(fNormal, fNormal, -fNormal),   vCenter},// 2
-		{mul(input[0].vPosition + float4(fSize, -fSize, -fSize, 0), g_mVP),  float3(fNormal, -fNormal, -fNormal),  vCenter},// 3
-		{mul(input[0].vPosition + float4(-fSize, -fSize, -fSize, 0), g_mVP), float3(-fNormal, -fNormal, -fNormal), vCenter},// 4
-		{mul(input[0].vPosition + float4(-fSize, -fSize, fSize, 0), g_mVP),  float3(-fNormal, -fNormal, fNormal),  vCenter},// 5
-		{mul(input[0].vPosition + float4(-fSize, fSize, fSize, 0), g_mVP),   float3(-fNormal, fNormal, fNormal),   vCenter},// 6
-		{mul(input[0].vPosition + float4(-fSize, fSize, -fSize, 0), g_mVP),  float3(-fNormal, fNormal, -fNormal),  vCenter}// 7
+		{mul(input[0].vPosition + float4(fSize, fSize, fSize, 0), g_mObserverVP),    float3(fNormal, fNormal, fNormal),    vCenter},// 0
+		{mul(input[0].vPosition + float4(fSize, -fSize, fSize, 0), g_mObserverVP),   float3(fNormal, -fNormal, fNormal),   vCenter},// 1
+		{mul(input[0].vPosition + float4(fSize, fSize, -fSize, 0), g_mObserverVP),   float3(fNormal, fNormal, -fNormal),   vCenter},// 2
+		{mul(input[0].vPosition + float4(fSize, -fSize, -fSize, 0), g_mObserverVP),  float3(fNormal, -fNormal, -fNormal),  vCenter},// 3
+		{mul(input[0].vPosition + float4(-fSize, -fSize, -fSize, 0), g_mObserverVP), float3(-fNormal, -fNormal, -fNormal), vCenter},// 4
+		{mul(input[0].vPosition + float4(-fSize, -fSize, fSize, 0), g_mObserverVP),  float3(-fNormal, -fNormal, fNormal),  vCenter},// 5
+		{mul(input[0].vPosition + float4(-fSize, fSize, fSize, 0), g_mObserverVP),   float3(-fNormal, fNormal, fNormal),   vCenter},// 6
+		{mul(input[0].vPosition + float4(-fSize, fSize, -fSize, 0), g_mObserverVP),  float3(-fNormal, fNormal, -fNormal),  vCenter}// 7
 	};
 
 	OutputStream.Append(vertices[0]);

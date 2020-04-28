@@ -9,16 +9,6 @@ terrax_colored.vs
 
 //##########################################################################
 
-cbuffer perFrame: register(b1)
-{
-	float4x4 g_mVP;
-	float4x4 g_mViewInv;
-	float2 g_vNearFar;
-	float3 g_vParamProj;
-};
-
-//##########################################################################
-
 VSO_GICubes main(VSI_GICubes IN)
 {
 	uint uCurrentCascade = g_vCurrentCascade.x;

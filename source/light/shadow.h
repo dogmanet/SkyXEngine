@@ -24,7 +24,7 @@ class IXTexture;
 class IBaseShadowMap
 {
 public:
-	virtual void genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals) = 0;
+	virtual void genShadow(IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals) = 0;
 };
 
 //##########################################################################
@@ -51,7 +51,7 @@ public:
 
 	void setLight(IXLight *pLight);
 	void process(IXRenderPipeline *pRenderPipeline);
-	void genShadow(IGXTexture2D *shadowmap, IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals) override;
+	void genShadow(IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals) override;
 
 private:
 	IGXDevice *m_pDevice = NULL;
@@ -197,7 +197,7 @@ public:
 	void setObserverCamera(ICamera *pCamera);
 	void setLight(IXLight *pLight);
 	void process(IXRenderPipeline *pRenderPipeline);
-	void genShadow(IGXTexture2D *shadowmap, IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals) override;
+	void genShadow(IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals) override;
 
 protected:
 	void updateFrustums();
@@ -350,7 +350,7 @@ public:
 
 	void setLight(IXLight *pLight);
 	void process(IXRenderPipeline *pRenderPipeline);
-	void genShadow(IGXTexture2D *pShadowMap, IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals) override;
+	void genShadow(IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals) override;
 
 private:
 	IGXDevice *m_pDevice = NULL;

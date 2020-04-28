@@ -12,6 +12,17 @@ const.h
 	float4 vWinSize;
 	float4 vNearFarLayers;
 }; */
+cbuffer CDataObserverCamera: register(b5)
+{
+	// float4x4 mV;
+	float4x4 g_mObserverVP;
+	float4 g_vObserverPosCam;
+	float4x4 g_mObserverInvVP;
+	float4x4 g_mObserverInvV;
+	
+	float4 g_vObserverNearFar;
+	float3 g_vObserverParamProj;
+};
 cbuffer CDataFrame: register(b4)
 {
 	float g_fFrameTime;
@@ -26,6 +37,10 @@ cbuffer CDataCamera: register(b2)
 	float4x4 g_mVP;
 	float4 g_vPosCam;
 	float4x4 g_mInvVP;
+	float4x4 g_mInvV;
+	
+	float4 g_vNearFar;
+	float3 g_vParamProj;
 };
 cbuffer CDataObject: register(b1)
 {
@@ -33,13 +48,13 @@ cbuffer CDataObject: register(b1)
 	// float4x4 g_mWV;
 	// float4x4 g_mWVP;
 };
-cbuffer CDataMaterial: register(b0)
+/* cbuffer CDataMaterial: register(b0)
 {
 	float4 g_vUserVS;
 	float4 g_vUserPS;
 	float4 g_vDestColor;
 	float4 g_vNearFarLayers;
-};
+}; */
 
 
 

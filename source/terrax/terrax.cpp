@@ -235,9 +235,9 @@ public:
 		m_pOldPipeline->resize(uWidth, uHeight, isWindowed);
 	}
 
-	void renderFrame() override
+	void renderFrame(float fDeltaTime) override
 	{
-		m_pOldPipeline->renderFrame();
+		m_pOldPipeline->renderFrame(fDeltaTime);
 		
 		IGXContext *pDXDevice = getDevice()->getThreadContext();
 		pDXDevice->setDepthStencilState(NULL);
@@ -426,7 +426,7 @@ int main(int argc, char **argv)
 	pEngine->getCore()->execCmd("gmode editor");
 	pEngine->getCore()->execCmd("exec ../config_editor.cfg");
 	CRenderPipeline *pPipeline = new CRenderPipeline(Core_GetIXCore());
-	 XInitGuiWindow(false);
+	XInitGuiWindow(false);
 
 	RECT rcTopLeft;
 	GetClientRect(g_hTopLeftWnd, &rcTopLeft);

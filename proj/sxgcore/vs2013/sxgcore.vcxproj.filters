@@ -53,9 +53,6 @@
     <ClInclude Include="..\..\..\source\common\string.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\common\file_utils.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\common\string_utils.h">
       <Filter>Header</Filter>
     </ClInclude>

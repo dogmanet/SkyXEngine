@@ -192,6 +192,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\source\light\plugin_main.cpp" />
+    <ClCompile Include="..\..\..\source\light\shadow.cpp" />
+    <ClCompile Include="..\..\..\source\light\ShadowCache.cpp" />
     <ClCompile Include="..\..\..\source\light\sxlight.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -206,6 +208,8 @@
     <ClInclude Include="..\..\..\source\light\IXLightSystem.h" />
     <ClInclude Include="..\..\..\source\light\light.h" />
     <ClInclude Include="..\..\..\source\light\ml_data.h" />
+    <ClInclude Include="..\..\..\source\light\shadow.h" />
+    <ClInclude Include="..\..\..\source\light\ShadowCache.h" />
     <ClInclude Include="..\..\..\source\light\sxlight.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
