@@ -11,14 +11,18 @@ class CRenderableVisibility: public IXRenderableVisibility
 public:
 	CRenderableVisibility(ID idPlugin, CAnimatedModelProvider *m_pProviderAnimated, CDynamicModelProvider *m_pProviderDynamic);
 
-	ID getPluginId();
+	ID getPluginId() const override;
 
-	void setOcclusionCuller(IXOcclusionCuller *pOcclusionCuller);
+	void setOcclusionCuller(IXOcclusionCuller *pOcclusionCuller) override;
 
-	void updateForCamera(ICamera *pCamera, const IXRenderableVisibility *pReference = NULL);
+	void updateForCamera(ICamera *pCamera, const IXRenderableVisibility *pReference = NULL) override;
 
-	void updateForFrustum(const IFrustum *pFrustum, const IXRenderableVisibility *pReference = NULL);
+	void updateForFrustum(const IFrustum *pFrustum, const IXRenderableVisibility *pReference = NULL) override;
 	
+	void append(const IXRenderableVisibility *pOther) override;
+
+	void substract(const IXRenderableVisibility *pOther) override;
+
 	struct item_s
 	{
 		bool isVisible = false;

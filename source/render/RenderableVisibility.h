@@ -9,16 +9,21 @@ public:
 	CRenderableVisibility(ID idPlugin, UINT uRenderSystems);
 	~CRenderableVisibility();
 
-	ID getPluginId();
+	ID getPluginId() const override;
 
-	void setOcclusionCuller(IXOcclusionCuller *pOcclusionCuller);
+	void setOcclusionCuller(IXOcclusionCuller *pOcclusionCuller) override;
 
-	void updateForCamera(ICamera *pCamera, const IXRenderableVisibility *pReference = NULL);
+	void updateForCamera(ICamera *pCamera, const IXRenderableVisibility *pReference = NULL) override;
 
-	void updateForFrustum(const IFrustum *pFrustum, const IXRenderableVisibility *pReference = NULL);
+	void updateForFrustum(const IFrustum *pFrustum, const IXRenderableVisibility *pReference = NULL) override;
 
 	IXRenderableVisibility *getVisibility(ID id);
+	const IXRenderableVisibility *getVisibility(ID id) const;
 	void setVisibility(ID id, IXRenderableVisibility *pVisibility);
+
+	void append(const IXRenderableVisibility *pOther) override;
+
+	void substract(const IXRenderableVisibility *pOther) override;
 
 protected:
 	IXRenderableVisibility **m_ppVisibilities;

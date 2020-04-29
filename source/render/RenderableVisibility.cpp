@@ -17,7 +17,7 @@ CRenderableVisibility::~CRenderableVisibility()
 	mem_delete_a(m_ppVisibilities);
 }
 
-ID CRenderableVisibility::getPluginId()
+ID CRenderableVisibility::getPluginId() const
 {
 	return(m_idPlugin);
 }
@@ -76,6 +76,13 @@ IXRenderableVisibility *CRenderableVisibility::getVisibility(ID id)
 	return(m_ppVisibilities[id]);
 }
 
+const IXRenderableVisibility *CRenderableVisibility::getVisibility(ID id) const
+{
+	assert(ID_VALID(id) && (UINT)id < m_uRenderSystems);
+
+	return(m_ppVisibilities[id]);
+}
+
 void CRenderableVisibility::setVisibility(ID id, IXRenderableVisibility *pVisibility)
 {
 	assert(ID_VALID(id) && (UINT)id < m_uRenderSystems);
@@ -87,5 +94,33 @@ void CRenderableVisibility::setVisibility(ID id, IXRenderableVisibility *pVisibi
 	if(pVisibility)
 	{
 		pVisibility->AddRef();
+	}
+}
+
+void CRenderableVisibility::append(const IXRenderableVisibility *pOther_)
+{
+	assert(pOther_->getPluginId() == getPluginId());
+	const CRenderableVisibility *pOther = (const CRenderableVisibility*)pOther_;
+
+	for(UINT i = 0; i < m_uRenderSystems; ++i)
+	{
+		if(m_ppVisibilities[i])
+		{
+			m_ppVisibilities[i]->append(pOther->getVisibility(i));
+		}
+	}
+}
+
+void CRenderableVisibility::substract(const IXRenderableVisibility *pOther_)
+{
+	assert(pOther_->getPluginId() == getPluginId());
+	const CRenderableVisibility *pOther = (const CRenderableVisibility*)pOther_;
+
+	for(UINT i = 0; i < m_uRenderSystems; ++i)
+	{
+		if(m_ppVisibilities[i])
+		{
+			m_ppVisibilities[i]->substract(pOther->getVisibility(i));
+		}
 	}
 }

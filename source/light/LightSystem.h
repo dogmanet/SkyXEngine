@@ -114,7 +114,7 @@ protected:
 	ID m_idComLightingShadow = -1;
 	ID m_idComLightingSpotShadow = -1;
 	ID m_idComLightingPSSMShadow = -1;
-	ID m_idComLightingGI = -1;
+	ID m_idComLightingGI[LPV_CASCADES_COUNT];
 
 	ID m_idHDRinitLuminance = -1;
 	ID m_idHDRAdaptLuminance = -1;

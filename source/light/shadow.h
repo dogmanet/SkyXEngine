@@ -182,7 +182,6 @@ private:
 
 //##########################################################################
 
-#define PSSM_MAX_SPLITS 6
 class CShadowPSSM: public IBaseShadowMap
 {
 public:
@@ -215,6 +214,7 @@ private:
 
 	IGXTextureCube *m_pDepthMap = NULL;
 
+#if 0
 	struct Split
 	{
 		SX_ALIGNED_OP_MEM2();
@@ -224,6 +224,7 @@ private:
 		float4x4 mProj;
 	};
 	Split m_splits[PSSM_MAX_SPLITS];
+#endif
 
 	float4x4 m_mScaleBiasMat;
 	float m_fBias = 0.0001f;
@@ -235,10 +236,6 @@ private:
 
 	struct
 	{
-		struct
-		{
-			SMMATRIX mVP[PSSM_MAX_SPLITS];
-		} gs;
 		struct
 		{
 			SMMATRIX mMatrixTextureV[PSSM_MAX_SPLITS];

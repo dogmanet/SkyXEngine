@@ -19,6 +19,10 @@ See the license in LICENSE
 
 #include "IXLight.h"
 
+#define PSSM_MAX_SPLITS 6
+#define PSSM_LIGHT_NEAR 0.1f
+#define PSSM_LIGHT_FAR 5000.0f
+
 class CLightSystem;
 class CXLight: public virtual IXLight
 {
@@ -52,7 +56,7 @@ public:
 
 	float getMaxDistance();
 
-	virtual void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax);
+	virtual void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV);
 	IXRenderableVisibility *getVisibility() override;
 	LIGHT_RENDER_TYPE getRenderType()
 	{
@@ -126,7 +130,7 @@ public:
 
 	void updateFrustum() override;
 
-	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax) override;
+	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV) override;
 
 protected:
 	void updatePSConstants(IGXDevice *pDevice);
@@ -140,7 +144,7 @@ public:
 	SX_ALIGNED_OP_MEM2();
 
 	CXLightSun(CLightSystem *pLightSystem);
-	void XMETHODCALLTYPE Release();
+	~CXLightSun();
 
 	SMQuaternion getDirection();
 	void setDirection(const SMQuaternion &qDirection);
@@ -148,7 +152,27 @@ public:
 	float getMaxDistance();
 	void setMaxDistance(float fMax);
 
-	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax) override;
+	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV) override;
+
+	void updateFrustum() override;
+
+	void setCamera(ICamera *pCamera);
+
+	const SMMATRIX* getPSSMVPs() const;
+	void getReflectiveVP(SMMATRIX *pView, SMMATRIX *pProj) const;
+
+	IXRenderableVisibility* getReflectiveVisibility();
+
+	struct Split
+	{
+		SX_ALIGNED_OP_MEM2();
+
+		float2 vNearFar;
+		float4x4 mView;
+		float4x4 mProj;
+	};
+
+	const Split* getPSSMsplits() const;
 
 protected:
 	void updatePSConstants(IGXDevice *pDevice);
@@ -157,6 +181,19 @@ protected:
 	SMQuaternion m_qDirection;
 
 	float m_fMaxDistance = 1000.0f;
+
+	ICamera *m_pCamera = NULL;
+
+	Split m_splits[PSSM_MAX_SPLITS];
+
+	SMMATRIX m_mVPs[PSSM_MAX_SPLITS];
+	SMMATRIX m_mReflectiveView;
+	SMMATRIX m_mReflectiveProj;
+
+	IFrustum *m_pPSSMFrustum[PSSM_MAX_SPLITS - 1];
+	IFrustum *m_pReflectiveFrustum = NULL;
+	IXRenderableVisibility *m_pReflectiveVisibility = NULL;
+	IXRenderableVisibility *m_pTempVisibility = NULL;
 };
 
 class CXLightSpot: public CXLight, public virtual IXLightSpot
@@ -174,7 +211,7 @@ public:
 
 	SMMATRIX getWorldTM();
 
-	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax) override;
+	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV) override;
 protected:
 	void updatePSConstants(IGXDevice *pDevice);
 	void updateFrustum() override;

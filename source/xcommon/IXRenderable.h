@@ -21,7 +21,7 @@ class IFrustum;
 class IXRenderableVisibility: public IXUnknown
 {
 public:
-	virtual ID getPluginId() = 0;
+	virtual ID getPluginId() const = 0;
 
 	//! Установка отсекателя по перекрытию
 	virtual void setOcclusionCuller(IXOcclusionCuller *pOcclusionCuller) = 0;
@@ -36,6 +36,12 @@ public:
 	    Возвращает ID задачи из менеджера задач для отслеживания завершения внутренних задач
 	*/
 //	virtual ID updateForCameraThreaded(ICamera *pCamera) = 0;
+
+	//! Добввление к текущему набору видимости другого набора
+	virtual void append(const IXRenderableVisibility *pOther) = 0;
+
+	//! Вычитание из текущего набора видимости другого набора
+	virtual void substract(const IXRenderableVisibility *pOther) = 0;
 };
 
 struct XTransparentObject

@@ -547,7 +547,7 @@ void CShadowPSSM::init(IGXDevice *pContext, UINT uSize)
 
 	
 	m_pShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_shaderData.ps));
-	m_pShaderDataGS = m_pDevice->createConstantBuffer(sizeof(m_shaderData.gs));
+	m_pShaderDataGS = m_pDevice->createConstantBuffer(sizeof(SMMATRIX) * PSSM_MAX_SPLITS);
 	m_pCameraShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_cameraShaderData.vs));
 }
 
@@ -602,7 +602,7 @@ void CShadowPSSM::process(IXRenderPipeline *pRenderPipeline)
 	mem_release(pLightConstants);
 
 	pRenderPipeline->renderShadows();
-	pRenderPipeline->renderStage(XRS_SHADOWS, NULL); // m_pLight->getVisibility());
+	pRenderPipeline->renderStage(XRS_SHADOWS, m_pLight->getVisibility());
 
 	pCtx->setColorTarget(NULL);
 
@@ -612,122 +612,11 @@ void CShadowPSSM::process(IXRenderPipeline *pRenderPipeline)
 	}*/
 }
 
-#define PSSM_LIGHT_NEAR 0.1f
-#define PSSM_LIGHT_FAR 5000.0f
-
 void CShadowPSSM::updateFrustums()
 {
-	assert(m_pCamera);
-
 	CXLightSun *pSunLight = (CXLightSun*)m_pLight;
-	float3 vLightDir = pSunLight->getDirection() * LIGHTS_DIR_BASE;
-	float3 vUpDir = pSunLight->getDirection() * float3(1.0f, 0.0f, 0.0f);
-
-	static const float *r_near = GET_PCVAR_FLOAT("r_near");
-	static const float *r_far = GET_PCVAR_FLOAT("r_far");
-	static const float *r_pssm_max_distance = GET_PCVAR_FLOAT("r_pssm_max_distance");
 	
-	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
-	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
-	static const float *r_effective_fov = GET_PCVAR_FLOAT("r_default_fov");
-	static const int *r_pssm_splits = GET_PCVAR_INT("r_pssm_splits");
-	if(*r_pssm_splits < 1)
-	{
-		Core_0SetCVarInt("r_pssm_splits", 1);
-	}
-	else if(*r_pssm_splits > PSSM_MAX_SPLITS)
-	{
-		Core_0SetCVarInt("r_pssm_splits", PSSM_MAX_SPLITS);
-	}
-
-	float fSplitWeight = 0.8f;
-	float fShadowDistance = min(*r_pssm_max_distance, *r_far);
-
-	float fMaxDistanceSun = pSunLight->getMaxDistance();
-	if(fShadowDistance > fMaxDistanceSun)
-	{
-		fShadowDistance = fMaxDistanceSun;
-	}
-
-	float aSplitDistances[PSSM_MAX_SPLITS];
-	for(int i = 0; i < *r_pssm_splits; ++i)
-	{
-		float f = (i + 1.0f) / *r_pssm_splits;
-		float fLogDistance = *r_near * pow(fShadowDistance / *r_near, f);
-		float fUniformDistance = *r_near + (fShadowDistance - *r_near) * f;
-		aSplitDistances[i] = lerpf(fUniformDistance, fLogDistance, fSplitWeight);
-
-		if(i == 0)
-		{
-			m_splits[i].vNearFar = float2(*r_near, aSplitDistances[i]);
-		}
-		else
-		{
-			m_splits[i].vNearFar = float2(aSplitDistances[i - 1], aSplitDistances[i]);
-		}
-	}
-
-
-	float3 vStart;
-	m_pCamera->getPosition(&vStart);
-	float3 vDir;
-	m_pCamera->getLook(&vDir);
-	vDir = SMVector3Normalize(vDir);
-	float3 vRight;
-	m_pCamera->getRight(&vRight);
-	float3 vUp;
-	m_pCamera->getUp(&vUp);
-	float fAspectRatio = (float)*r_win_width / (float)*r_win_height;
-	float fFovTan = tanf(*r_effective_fov * 0.5f);
-	for(int i = 0; i < *r_pssm_splits; ++i)
-	{
-		Split &split = m_splits[i];
-
-		float3 vNearCenter = vStart + vDir * split.vNearFar.x;
-		float3 vFarCenter = vStart + vDir * split.vNearFar.y;
-
-		float fNearHalfHeight = fFovTan * split.vNearFar.x;
-		float fFarHalfHeight = fFovTan * split.vNearFar.y;
-
-		float fNearHalfWidth = fNearHalfHeight * fAspectRatio;
-		float fFarHalfWidth = fFarHalfHeight * fAspectRatio;
-
-		float3 vA = vNearCenter - vUp * fNearHalfHeight + vRight * fNearHalfWidth;
-		float3 vB = vFarCenter + vUp * fFarHalfHeight - vRight * fFarHalfWidth;
-		float3 vC = vFarCenter - vUp * fFarHalfHeight + vRight * fFarHalfWidth;
-
-		float3 vCenter = SMTriangleCircumcenter3(vA, vB, vC);
- 
-
-		float fRadius = SMVector3Length(vCenter - vA);
-		//float fRadius1 = SMVector3Length(vCenter - vB);
-		//float fRadius2 = SMVector3Length(vCenter - vC);
-		
-		// vCenter.mmv = _mm_round_ps(vCenter, _MM_ROUND_NEAREST);
-
-		SMMATRIX mLight(SMMatrixTranspose(SMMATRIX(
-			float4(SMVector3Cross(vUpDir, vLightDir)),
-			float4(vUpDir),
-			float4(vLightDir),
-			float4(0.0f, 0.0f, 0.0f, 1.0f)
-			)));
-		SMMATRIX mLightInv = SMMatrixInverse(NULL, mLight);
-
-		vCenter = SMVector3Transform(vCenter, mLight);
-		float fStep = (fRadius * 2.0f / m_fSize);
-		vCenter.x -= fmodf(vCenter.x, fStep);
-		vCenter.y -= fmodf(vCenter.y, fStep);
-
-		vCenter = SMVector3Transform(vCenter, mLightInv);
-
-		float fMaxDistance = PSSM_LIGHT_FAR;
-
-		split.mProj = SMMatrixOrthographicLH(fRadius * 2.0f, fRadius * 2.0f, PSSM_LIGHT_NEAR, fMaxDistance);
-		split.mView = SMMatrixLookToLH(vCenter - vLightDir * (fMaxDistance /*- fRadius * 2*/ * 0.5f), vLightDir, vUpDir);
-
-		m_shaderData.gs.mVP[i] = SMMatrixTranspose(split.mView * split.mProj);
-	}
-	m_pShaderDataGS->update(&m_shaderData.gs);
+	m_pShaderDataGS->update(pSunLight->getPSSMVPs());
 }
 
 void CShadowPSSM::genShadow(IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferNormals)
@@ -740,6 +629,8 @@ void CShadowPSSM::genShadow(IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferN
 	// static const float *r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 	// static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	// static const float *r_far = GET_PCVAR_FLOAT("r_far");
+
+	CXLightSun *pSunLight = (CXLightSun*)m_pLight;
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
@@ -764,12 +655,14 @@ void CShadowPSSM::genShadow(IGXTexture2D *pGBufferDepth, IGXTexture2D *pGBufferN
 	//pCtx->setPSTexture(ms_pRandomTexture, 2);
 	pCtx->setPSTexture(pGBufferNormals, 3);
 
+	const CXLightSun::Split *pSplits = pSunLight->getPSSMsplits();
+
 	SMMATRIX tmp = SMMatrixTranspose(m_mScaleBiasMat);
 	for(int i = 0; i < PSSM_MAX_SPLITS; ++i)
 	{
 		//m_shaderData.ps.mMatrixTextureV[i] = tmp * m_shaderData.gs.mVP[i];
-		m_shaderData.ps.mMatrixTextureV[i] = SMMatrixTranspose(m_splits[i].mView);
-		m_shaderData.ps.mMatrixTextureP[i] = SMMatrixTranspose(m_splits[i].mProj * m_mScaleBiasMat);
+		m_shaderData.ps.mMatrixTextureV[i] = SMMatrixTranspose(pSplits[i].mView);
+		m_shaderData.ps.mMatrixTextureP[i] = SMMatrixTranspose(pSplits[i].mProj * m_mScaleBiasMat);
 	}
 	//m_shaderData.ps.vPixelMapSizeBias = float3(m_fBlurPixel / m_fSize, m_fSize, m_fBias);
 	m_shaderData.ps.vSizeBoundNearFar = float4(m_fSize, PSSM_LIGHT_NEAR * tanf(0.001f), PSSM_LIGHT_NEAR, PSSM_LIGHT_FAR);
@@ -937,60 +830,26 @@ void CReflectiveShadowSun::process(IXRenderPipeline *pRenderPipeline)
 
 	//m_pLight->setPSConstants(m_pDevice, 5);
 	pRenderPipeline->renderShadows();
-	pRenderPipeline->renderStage(XRS_SHADOWS, NULL); // m_pLight->getVisibility());
+	pRenderPipeline->renderStage(XRS_SHADOWS, ((CXLightSun*)m_pLight)->getReflectiveVisibility());
 
 	pCtx->setColorTarget(NULL);
 	pCtx->setColorTarget(NULL, 1);
 	pCtx->setColorTarget(NULL, 2);
 
+	/*
 	if(GetAsyncKeyState('U') < 0)
 	{
 		m_pDevice->saveTextureToFile("sm_depth.dds", m_pDepthMap);
 		m_pDevice->saveTextureToFile("sm_normal.dds", m_pNormalMap);
 		m_pDevice->saveTextureToFile("sm_flux.dds", m_pFluxMap);
 	}
+	*/
 }
 
 void CReflectiveShadowSun::updateFrustum()
 {
-	assert(m_pCamera);
-
-	CXLightSun *pSunLight = (CXLightSun*)m_pLight;
-	float3 vLightDir = pSunLight->getDirection() * LIGHTS_DIR_BASE;
-	float3 vUpDir = pSunLight->getDirection() * float3(1.0f, 0.0f, 0.0f);
-
-	float3 vStart;
-	m_pCamera->getPosition(&vStart);
-	float3 vDir;
-	m_pCamera->getLook(&vDir);
-	vDir = SMVector3Normalize(vDir);
-
-	//! @todo: fix grid center pos!
-	float3 vGridCenter = vStart;
-	//float fGridRadius = sqrtf(16.0f * 16.0f * 3.0f);
-	float fGridRadius = sqrtf(64.0f * 64.0f * 3.0f);
-
-	SMMATRIX mLight(SMMatrixTranspose(SMMATRIX(
-		float4(SMVector3Cross(vUpDir, vLightDir)),
-		float4(vUpDir),
-		float4(vLightDir),
-		float4(0.0f, 0.0f, 0.0f, 1.0f)
-		)));
-	SMMATRIX mLightInv = SMMatrixInverse(NULL, mLight);
-
-	vGridCenter = SMVector3Transform(vGridCenter, mLight);
-	float fStep = (fGridRadius * 2.0f / m_fSize);
-	vGridCenter.x -= fmodf(vGridCenter.x, fStep);
-	vGridCenter.y -= fmodf(vGridCenter.y, fStep);
-
-	vGridCenter = SMVector3Transform(vGridCenter, mLightInv);
-
-	float fMaxDistance = PSSM_LIGHT_FAR;
-
-	m_mProj = SMMatrixOrthographicLH(fGridRadius * 2.0f, fGridRadius * 2.0f, PSSM_LIGHT_NEAR, fMaxDistance);
-	m_mView = SMMatrixLookToLH(vGridCenter - vLightDir * (fMaxDistance /*- fRadius * 2*/ * 0.5f), vLightDir, vUpDir);
+	((CXLightSun*)m_pLight)->getReflectiveVP(&m_mView, &m_mProj);
 }
-
 
 void CReflectiveShadowSun::genLPV(bool isDebug)
 {

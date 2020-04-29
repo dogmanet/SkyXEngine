@@ -10,7 +10,7 @@ CRenderableVisibility::CRenderableVisibility(ID idPlugin, CAnimatedModelProvider
 {
 }
 
-ID CRenderableVisibility::getPluginId()
+ID CRenderableVisibility::getPluginId() const
 {
 	return(m_idPlugin);
 }
@@ -30,12 +30,96 @@ void CRenderableVisibility::updateForFrustum(const IFrustum *pFrustum, const IXR
 	CRenderableVisibility *pRef = NULL;
 	if(pReference)
 	{
-		assert(((IXRenderableVisibility*)pReference)->getPluginId() == -1);
+		assert(((IXRenderableVisibility*)pReference)->getPluginId() == getPluginId());
 		pRef = (CRenderableVisibility*)pReference;
 	}
 
 	m_pProviderAnimated->computeVisibility(pFrustum, this, pRef);
 	m_pProviderDynamic->computeVisibility(pFrustum, this, pRef);
+}
+
+void CRenderableVisibility::append(const IXRenderableVisibility *pOther_)
+{
+	assert(((IXRenderableVisibility*)pOther_)->getPluginId() == getPluginId());
+	const CRenderableVisibility *pOther = (const CRenderableVisibility*)pOther_;
+
+	item_s *pItem;
+	const item_s *pOtherItem;
+	for(UINT i = 0, l = pOther->m_aItems.size(); i < l; ++i)
+	{
+		pOtherItem = &pOther->m_aItems[i];
+		if(pOtherItem->isVisible)
+		{
+			pItem = &m_aItems[i];
+			if(pItem->isVisible)
+			{
+				if(pOtherItem->uLod < pItem->uLod)
+				{
+					pItem->uLod = pOtherItem->uLod;
+				}
+			}
+			else
+			{
+				pItem->isTransparent = pOtherItem->isTransparent;
+				pItem->isVisible = true;
+				pItem->uLod = pOtherItem->uLod;
+			}
+		}
+	}
+
+	for(UINT i = 0, l = pOther->m_aItemsDynamic.size(); i < l; ++i)
+	{
+		pOtherItem = &pOther->m_aItemsDynamic[i];
+		if(pOtherItem->isVisible)
+		{
+			pItem = &m_aItemsDynamic[i];
+			if(pItem->isVisible)
+			{
+				if(pOtherItem->uLod < pItem->uLod)
+				{
+					pItem->uLod = pOtherItem->uLod;
+				}
+			}
+			else
+			{
+				pItem->isTransparent = pOtherItem->isTransparent;
+				pItem->isVisible = true;
+				pItem->uLod = pOtherItem->uLod;
+			}
+		}
+	}
+
+	//! @todo implement for transparency too!
+}
+
+void CRenderableVisibility::substract(const IXRenderableVisibility *pOther_)
+{
+	assert(((IXRenderableVisibility*)pOther_)->getPluginId() == getPluginId());
+	const CRenderableVisibility *pOther = (const CRenderableVisibility*)pOther_;
+
+	item_s *pItem;
+	const item_s *pOtherItem;
+	for(UINT i = 0, l = pOther->m_aItems.size(); i < l; ++i)
+	{
+		pOtherItem = &pOther->m_aItems[i];
+		pItem = &m_aItems[i];
+		if(pItem->isVisible && pOtherItem->isVisible)
+		{
+			pItem->isVisible = false;
+		}
+	}
+
+	for(UINT i = 0, l = pOther->m_aItemsDynamic.size(); i < l; ++i)
+	{
+		pOtherItem = &pOther->m_aItemsDynamic[i];
+		pItem = &m_aItemsDynamic[i];
+		if(pItem->isVisible && pOtherItem->isVisible)
+		{
+			pItem->isVisible = false;
+		}
+	}
+
+	//! @todo implement for transparency too!
 }
 
 void CRenderableVisibility::setItemCount(UINT uCount)

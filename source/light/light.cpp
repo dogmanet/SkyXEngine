@@ -181,11 +181,11 @@ float CXLight::getMaxDistance()
 	return(SMVector3Length2(m_vColor));
 }
 
-void CXLight::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax)
+void CXLight::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV)
 {
 	updateFrustum();
 
-	if(m_pFrustum->boxInFrustum(&vLPVmin, &vLPVmax))
+	if(useLPV && m_pFrustum->boxInFrustum(&vLPVmin, &vLPVmax))
 	{
 		m_renderType |= LRT_LPV;
 	}
@@ -250,7 +250,7 @@ void CXLightPoint::updateFrustum()
 	m_pFrustum->update(planes, true);
 }
 
-void CXLightPoint::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax)
+void CXLightPoint::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV)
 {
 	m_renderType = LRT_NONE;
 	
@@ -260,7 +260,7 @@ void CXLightPoint::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin,
 		m_renderType |= LRT_LIGHT;
 	}
 
-	CXLight::updateVisibility(pMainCamera, vLPVmin, vLPVmax);
+	CXLight::updateVisibility(pMainCamera, vLPVmin, vLPVmax, useLPV);
 }
 
 //##########################################################################
@@ -269,15 +269,33 @@ CXLightSun::CXLightSun(CLightSystem *pLightSystem):
 	CXLight(pLightSystem)
 {
 	m_type = LIGHT_TYPE_SUN;
+
+	IXRenderPipeline *pPipeline;
+	Core_GetIXCore()->getRenderPipeline(&pPipeline);
+	pPipeline->newVisData(&m_pReflectiveVisibility);
+	pPipeline->newVisData(&m_pTempVisibility);
+	mem_release(pPipeline);
+
+	m_pReflectiveFrustum = SGCore_CrFrustum();
+
+	for(UINT i = 0; i < PSSM_MAX_SPLITS; ++i)
+	{
+		m_pPSSMFrustum[i] = SGCore_CrFrustum();
+	}
 }
 
-void CXLightSun::Release()
+CXLightSun::~CXLightSun()
 {
-	--m_uRefCount;
-	if(!m_uRefCount)
+	mem_release(m_pReflectiveFrustum);
+	mem_release(m_pReflectiveVisibility);
+	mem_release(m_pTempVisibility);
+
+	for(UINT i = 0; i < PSSM_MAX_SPLITS; ++i)
 	{
-		m_pLightSystem->destroySun(this);
+		mem_release(m_pPSSMFrustum[i]);
 	}
+
+	m_pLightSystem->destroySun(this);
 }
 
 SMQuaternion CXLightSun::getDirection()
@@ -301,6 +319,7 @@ void CXLightSun::updatePSConstants(IGXDevice *pDevice)
 	{
 		m_pPSData = pDevice->createConstantBuffer(sizeof(m_dataPS));
 	}
+
 	m_dataPS.vLightColor = float4(m_vColor, SMVector3Length2(m_vColor));
 	m_dataPS.vLightPos = float4(m_qDirection * -LIGHTS_DIR_BASE, m_fShadowIntensity);
 	m_pPSData->update(&m_dataPS);
@@ -316,19 +335,225 @@ void CXLightSun::setMaxDistance(float fMax)
 	m_fMaxDistance = fMax;
 }
 
-void CXLightSun::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax)
+void CXLightSun::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV)
 {
 	m_renderType = LRT_LIGHT | LRT_LPV;
-#if 0
-	m_renderType = LRT_NONE;
 
-	float3 vOrigin = getPosition();
-	if(pMainCamera->getFrustum()->sphereInFrustum(&vOrigin, getMaxDistance()))
+	CXLight::updateVisibility(pMainCamera, vLPVmin, vLPVmax, useLPV);
+	
+	static const int *lpv_cascades_count = GET_PCVAR_INT("lpv_cascades_count");
+
+	if(lpv_cascades_count > 0)
 	{
-		m_renderType |= LRT_LIGHT;
+		m_pReflectiveVisibility->updateForFrustum(m_pReflectiveFrustum);
 	}
-#endif
-	CXLight::updateVisibility(pMainCamera, vLPVmin, vLPVmax);
+
+	static const int *r_pssm_splits = GET_PCVAR_INT("r_pssm_splits");
+
+	for(UINT i = 1; i < *r_pssm_splits; ++i)
+	{
+		m_pTempVisibility->updateForFrustum(m_pPSSMFrustum[i - 1]);
+		m_pVisibility->append(m_pTempVisibility);
+	}
+}
+
+void CXLightSun::updateFrustum()
+{
+	assert(m_pCamera);
+	
+	float3 vLightDir = getDirection() * LIGHTS_DIR_BASE;
+	float3 vUpDir = getDirection() * float3(1.0f, 0.0f, 0.0f);
+
+	float3 vStart;
+	m_pCamera->getPosition(&vStart);
+	float3 vDir;
+	m_pCamera->getLook(&vDir);
+	vDir = SMVector3Normalize(vDir);
+	float3 vRight;
+	m_pCamera->getRight(&vRight);
+	float3 vUp;
+	m_pCamera->getUp(&vUp);
+
+	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
+	static const float *r_effective_fov = GET_PCVAR_FLOAT("r_default_fov");
+
+	float fAspectRatio = (float)*r_win_width / (float)*r_win_height;
+	float fFovTan = tanf(*r_effective_fov * 0.5f);
+
+	{
+		static const float *s_pfRPSSMQuality = GET_PCVAR_FLOAT("r_pssm_quality");
+		const float fSize = 512.0f * *s_pfRPSSMQuality;
+
+
+		
+		static const float *r_near = GET_PCVAR_FLOAT("r_near");
+		static const float *r_far = GET_PCVAR_FLOAT("r_far");
+		static const float *r_pssm_max_distance = GET_PCVAR_FLOAT("r_pssm_max_distance");
+
+		static const int *r_pssm_splits = GET_PCVAR_INT("r_pssm_splits");
+		if(*r_pssm_splits < 1)
+		{
+			Core_0SetCVarInt("r_pssm_splits", 1);
+		}
+		else if(*r_pssm_splits > PSSM_MAX_SPLITS)
+		{
+			Core_0SetCVarInt("r_pssm_splits", PSSM_MAX_SPLITS);
+		}
+
+		float fSplitWeight = 0.8f;
+		float fShadowDistance = min(*r_pssm_max_distance, *r_far);
+
+		float fMaxDistanceSun = getMaxDistance();
+		if(fShadowDistance > fMaxDistanceSun)
+		{
+			fShadowDistance = fMaxDistanceSun;
+		}
+
+		float aSplitDistances[PSSM_MAX_SPLITS];
+		for(int i = 0; i < *r_pssm_splits; ++i)
+		{
+			float f = (i + 1.0f) / *r_pssm_splits;
+			float fLogDistance = *r_near * pow(fShadowDistance / *r_near, f);
+			float fUniformDistance = *r_near + (fShadowDistance - *r_near) * f;
+			aSplitDistances[i] = lerpf(fUniformDistance, fLogDistance, fSplitWeight);
+
+			if(i == 0)
+			{
+				m_splits[i].vNearFar = float2(*r_near, aSplitDistances[i]);
+			}
+			else
+			{
+				m_splits[i].vNearFar = float2(aSplitDistances[i - 1], aSplitDistances[i]);
+			}
+		}
+
+
+		
+		for(int i = 0; i < *r_pssm_splits; ++i)
+		{
+			Split &split = m_splits[i];
+
+			float3 vNearCenter = vStart + vDir * split.vNearFar.x;
+			float3 vFarCenter = vStart + vDir * split.vNearFar.y;
+
+			float fNearHalfHeight = fFovTan * split.vNearFar.x;
+			float fFarHalfHeight = fFovTan * split.vNearFar.y;
+
+			float fNearHalfWidth = fNearHalfHeight * fAspectRatio;
+			float fFarHalfWidth = fFarHalfHeight * fAspectRatio;
+
+			float3 vA = vNearCenter - vUp * fNearHalfHeight + vRight * fNearHalfWidth;
+			float3 vB = vFarCenter + vUp * fFarHalfHeight - vRight * fFarHalfWidth;
+			float3 vC = vFarCenter - vUp * fFarHalfHeight + vRight * fFarHalfWidth;
+
+			float3 vCenter = SMTriangleCircumcenter3(vA, vB, vC);
+
+
+			float fRadius = SMVector3Length(vCenter - vA);
+
+			SMMATRIX mLight(SMMatrixTranspose(SMMATRIX(
+				float4(SMVector3Cross(vUpDir, vLightDir)),
+				float4(vUpDir),
+				float4(vLightDir),
+				float4(0.0f, 0.0f, 0.0f, 1.0f)
+				)));
+			SMMATRIX mLightInv = SMMatrixInverse(NULL, mLight);
+
+			vCenter = SMVector3Transform(vCenter, mLight);
+			float fStep = (fRadius * 2.0f / fSize);
+			vCenter.x -= fmodf(vCenter.x, fStep);
+			vCenter.y -= fmodf(vCenter.y, fStep);
+
+			vCenter = SMVector3Transform(vCenter, mLightInv);
+
+			float fMaxDistance = PSSM_LIGHT_FAR;
+
+			split.mProj = SMMatrixOrthographicLH(fRadius * 2.0f, fRadius * 2.0f, PSSM_LIGHT_NEAR, fMaxDistance);
+			split.mView = SMMatrixLookToLH(vCenter - vLightDir * (fMaxDistance /*- fRadius * 2*/ * 0.5f), vLightDir, vUpDir);
+
+			m_mVPs[i] = SMMatrixTranspose(split.mView * split.mProj);
+
+			if(i == 0)
+			{
+				m_pFrustum->update(&split.mView, &split.mProj);
+			}
+			else
+			{
+				m_pPSSMFrustum[i - 1]->update(&split.mView, &split.mProj);
+			}
+		}
+	}
+
+	static const int *lpv_cascades_count = GET_PCVAR_INT("lpv_cascades_count");
+	int iCascades = *lpv_cascades_count;
+	if(iCascades < 0)
+	{
+		iCascades = 0;
+	}
+	if(iCascades > LPV_CASCADES_COUNT)
+	{
+		iCascades = LPV_CASCADES_COUNT;
+	}
+
+	if(iCascades)
+	{
+		static const float *lpv_size_2 = GET_PCVAR_FLOAT("lpv_size_2");
+		
+		float3 vGridCenter = vStart + vDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * *lpv_size_2;
+		//float fGridRadius = sqrtf(16.0f * 16.0f * 3.0f);
+		float fDim = 16.0f * *lpv_size_2;
+		float fGridRadius = sqrtf(fDim * fDim * 3.0f);
+
+
+		SMMATRIX mLight(SMMatrixTranspose(SMMATRIX(
+			float4(SMVector3Cross(vUpDir, vLightDir)),
+			float4(vUpDir),
+			float4(vLightDir),
+			float4(0.0f, 0.0f, 0.0f, 1.0f)
+			)));
+		SMMATRIX mLightInv = SMMatrixInverse(NULL, mLight);
+
+		vGridCenter = SMVector3Transform(vGridCenter, mLight);
+		float fStep = (fGridRadius * 2.0f / (float)RSM_SUN_SIZE);
+		vGridCenter.x -= fmodf(vGridCenter.x, fStep);
+		vGridCenter.y -= fmodf(vGridCenter.y, fStep);
+
+		vGridCenter = SMVector3Transform(vGridCenter, mLightInv);
+
+		float fMaxDistance = PSSM_LIGHT_FAR;
+
+		m_mReflectiveProj = SMMatrixOrthographicLH(fGridRadius * 2.0f, fGridRadius * 2.0f, PSSM_LIGHT_NEAR, fMaxDistance);
+		m_mReflectiveView = SMMatrixLookToLH(vGridCenter - vLightDir * (fMaxDistance /*- fRadius * 2*/ * 0.5f), vLightDir, vUpDir);
+
+		m_pReflectiveFrustum->update(&m_mReflectiveView, &m_mReflectiveProj);
+	}
+}
+
+void CXLightSun::setCamera(ICamera *pCamera)
+{
+	m_pCamera = pCamera;
+}
+
+const SMMATRIX* CXLightSun::getPSSMVPs() const
+{
+	return(m_mVPs);
+}
+
+const CXLightSun::Split* CXLightSun::getPSSMsplits() const
+{
+	return(m_splits);
+}
+
+IXRenderableVisibility* CXLightSun::getReflectiveVisibility()
+{
+	return(m_pReflectiveVisibility);
+}
+
+void CXLightSun::getReflectiveVP(SMMATRIX *pView, SMMATRIX *pProj) const
+{
+	*pView = m_mReflectiveView;
+	*pProj = m_mReflectiveProj;
 }
 
 //##########################################################################
@@ -425,7 +650,7 @@ void CXLightSpot::updateFrustum()
 	m_pFrustum->update(&mView, &mProj);
 }
 
-void CXLightSpot::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax)
+void CXLightSpot::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV)
 {
 	m_renderType = LRT_NONE;
 
@@ -436,5 +661,5 @@ void CXLightSpot::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, 
 		m_renderType |= LRT_LIGHT;
 	}
 
-	CXLight::updateVisibility(pMainCamera, vLPVmin, vLPVmax);
+	CXLight::updateVisibility(pMainCamera, vLPVmin, vLPVmax, useLPV);
 }

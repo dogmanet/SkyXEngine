@@ -32,6 +32,11 @@ private:
 CLightSystem::CLightSystem(IXCore *pCore):
 	m_pCore(pCore)
 {
+	Core_0RegisterCVarFloat("lpv_size_0", 1.0f, "Коэфициент размера первого каскада LPV");
+	Core_0RegisterCVarFloat("lpv_size_1", 2.0f, "Коэфициент размера второго каскада LPV");
+	Core_0RegisterCVarFloat("lpv_size_2", 4.0f, "Коэфициент размера третьего каскада LPV");
+	Core_0RegisterCVarInt("lpv_cascades_count", 3, "Количество активных каскадов LPV [0;3]");
+
 	m_pLevelListener = new CLevelLoadListener(this, pCore);
 
 	m_pLevelChannel = pCore->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID);
@@ -198,7 +203,13 @@ CLightSystem::CLightSystem(IXCore *pCore):
 		m_idComLightingSpotShadow = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_spot_shadow.ps", Defines_IS_SPOT_SHADOWED));
 		m_idComLightingPSSMShadow = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_pssm_shadow.ps", Defines_IS_PSSM_SHADOWED));
 
-		m_idComLightingGI = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_gi.ps"));
+		// LPV_CASCADES_COUNT - iCascades
+		GXMacro Defines_LPV_CASCADE_3[] = {{"LPV_START_CASCADE", "0"}, {0, 0}};
+		m_idComLightingGI[2] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_gi.ps", 0, Defines_LPV_CASCADE_3));
+		GXMacro Defines_LPV_CASCADE_2[] = {{"LPV_START_CASCADE", "1"}, {0, 0}};
+		m_idComLightingGI[1] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_gi.ps", 0, Defines_LPV_CASCADE_2));
+		GXMacro Defines_LPV_CASCADE_1[] = {{"LPV_START_CASCADE", "2"}, {0, 0}};
+		m_idComLightingGI[0] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_gi.ps", 0, Defines_LPV_CASCADE_1));
 
 		m_idHDRinitLuminance = SGCore_ShaderCreateKit(idScreenOut, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "hdr_luminance.ps"));
 		m_idHDRAdaptLuminance = SGCore_ShaderCreateKit(idScreenOut, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "hdr_adapt.ps"));
@@ -351,7 +362,6 @@ void CLightSystem::destroySun(IXLightSun *pLight)
 {
 	assert(m_pSun == pLight);
 	_deleteLight(m_pSun);
-	mem_delete(m_pSun);
 }
 void CLightSystem::destroyPoint(IXLightPoint *_pLight)
 {
@@ -404,16 +414,37 @@ void XMETHODCALLTYPE CLightSystem::updateVisibility()
 
 	float3 vCamPos;
 	m_pMainCamera->getPosition(&vCamPos);
+	float3 vCamDir;
+	m_pMainCamera->getLook(&vCamDir);
 
-	//! @todo fix this values!
-	float3 vLPVmin = float3(-16.0f, -16.0f, -16.0f) + vCamPos;
-	float3 vLPVmax = float3(16.0f, 16.0f, 16.0f) + vCamPos;
+	static const float *lpv_size_2 = GET_PCVAR_FLOAT("lpv_size_2");
+	static const int *lpv_cascades_count = GET_PCVAR_INT("lpv_cascades_count");
+
+	int iCascades = *lpv_cascades_count;
+	if(iCascades < 0)
+	{
+		iCascades = 0;
+	}
+	if(iCascades > LPV_CASCADES_COUNT)
+	{
+		iCascades = LPV_CASCADES_COUNT;
+	}
+	
+	float3 vLPVmin;
+	float3 vLPVmax;
+	if(iCascades)
+	{
+		vLPVmin = vLPVmax = vCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * *lpv_size_2;
+
+		vLPVmin += float3(-16.0f, -16.0f, -16.0f) * *lpv_size_2;
+		vLPVmax += float3(16.0f, 16.0f, 16.0f) * *lpv_size_2;
+	}
 
 	for(UINT i = 0, l = m_aLights.size(); i < l; ++i)
 	{
 		if(m_aLights[i]->isEnabled())
 		{
-			m_aLights[i]->updateVisibility(m_pMainCamera, vLPVmin, vLPVmax);
+			m_aLights[i]->updateVisibility(m_pMainCamera, vLPVmin, vLPVmax, iCascades > 0);
 		}
 	}
 }
@@ -423,14 +454,24 @@ void XMETHODCALLTYPE CLightSystem::setFrameObserverCamera(ICamera *pMainCamera)
 	//! @todo uncomment me!
 	// pMainCamera->AddRef();
 	m_pMainCamera = pMainCamera;
+	if(m_pSun)
+	{
+		m_pSun->setCamera(pMainCamera);
+	}
 }
 
 void XMETHODCALLTYPE CLightSystem::setGBuffer(IGXTexture2D *pColor, IGXTexture2D *pNormals, IGXTexture2D *pParams, IGXTexture2D *pDepth)
 {
+	mem_release(m_pGBufferColor);
+	mem_release(m_pGBufferNormals);
+	mem_release(m_pGBufferParams);
+	mem_release(m_pGBufferDepth);
+
 	pColor->AddRef();
 	pNormals->AddRef();
 	pParams->AddRef();
 	pDepth->AddRef();
+
 	m_pGBufferColor = pColor;
 	m_pGBufferNormals = pNormals;
 	m_pGBufferParams = pParams;
@@ -476,7 +517,7 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 	//очищаем рт и стенсил
 	pCtx->clear(GX_CLEAR_COLOR);
 	//	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_STENCIL);
-	
+
 	m_pRenderPipeline->renderGI();
 
 	float3 vCamDir;
@@ -484,15 +525,25 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 	float3 vCamPos;
 	m_pMainCamera->getPosition(&vCamPos);
 
+	static const float *lpv_size_0 = GET_PCVAR_FLOAT("lpv_size_0");
+	static const float *lpv_size_1 = GET_PCVAR_FLOAT("lpv_size_1");
+	static const float *lpv_size_2 = GET_PCVAR_FLOAT("lpv_size_2");
+	static const int *lpv_cascades_count = GET_PCVAR_INT("lpv_cascades_count");
+
+	int iCascades = *lpv_cascades_count;
+	if(iCascades < 0)
+	{
+		iCascades = 0;
+	}
+	if(iCascades > LPV_CASCADES_COUNT)
+	{
+		iCascades = LPV_CASCADES_COUNT;
+	}
 
 	const float c_aLPVsizes[] = {
-		//0.5f,
-		//1.0f,
-		//2.0f
-
-		1.0f,
-		2.0f,
-		4.0f
+		*lpv_size_0,
+		*lpv_size_1,
+		*lpv_size_2
 	};
 
 	m_lpvCentersShaderData.vs.vCenterSize[0] = float4(vCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * c_aLPVsizes[0], c_aLPVsizes[0]);
@@ -500,31 +551,6 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 	m_lpvCentersShaderData.vs.vCenterSize[2] = float4(vCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * c_aLPVsizes[2], c_aLPVsizes[2]);
 	m_pLPVcentersShaderData->update(&m_lpvCentersShaderData.vs);
 
-	/*
-	vs:
-	cbuffer0: (per light)
-	- g_mW
-	cbuffer1: (per frame)
-	- g_mVP
-	- g_mViewInv
-	- g_vNearFar
-	- g_vParamProj
-
-	ps:
-	cbuffer0: (per light)
-	- g_vLightPos
-	- g_vLightColor
-	- g_vLightPowerDistShadow
-	cbuffer1: (per frame)
-	- g_vViewPos
-
-
-	{
-	render shadowmaps
-	render direct light with shadows
-	inject VPLs into LPV grid
-	}
-	*/
 
 	// Определим список лампочек, которые будут участвовать в текущем кадре
 	CXLight *pLight;
@@ -550,24 +576,8 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
-	// 	float4x4 &mCamView = gdata::mCamView;
-	// 	// Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEW, &mCamView);
-	// 	m_shadowShaderData.vs.mViewInv = SMMatrixTranspose(SMMatrixInverse(NULL, mCamView));
-	// 	m_shadowShaderData.vs.vNearFar = gdata::vNearFar; // float2(*r_near, *r_far);
-	// 	m_shadowShaderData.vs.vParamProj = float3((float)m_uOutWidth, (float)m_uOutHeight, gdata::fProjFov); // *r_default_fov);
-	// 	m_pShadowShaderDataVS->update(&m_shadowShaderData.vs);
-
-	//@TODO: убрать это
-	//Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &m_shadowShaderData.ps.vPosCam);
-	//m_pShadowShaderDataPS->update(&m_shadowShaderData.ps);
-
-
-	//m_pDevice->setPixelShaderConstant(m_pShadowShaderDataPS, 7);
 
 	pCtx->setRasterizerState(m_pRasterizerConservative);
-
-	//pCtx->setVSConstant(m_pCameraShaderDataVS, 8);
-	//pCtx->setPSConstant(m_pCameraShaderDataVS, 8);
 
 	UINT uShadowCount = 0;
 	while((uShadowCount = m_pShadowCache->processNextBunch()))
@@ -575,9 +585,6 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 		pCtx->setColorTarget(pAmbientSurf);
 		pCtx->setDepthStencilSurface(pOldDSSurface);
 		pCtx->setBlendState(m_pBlendAlphaOneOne);
-
-	//	pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
-	//	pCtx->setPSConstant(m_pLightingShaderDataPS, 1);
 
 		IBaseShadowMap *pShadow = NULL;
 
@@ -611,10 +618,6 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 			pCtx->setRasterizerState(NULL);
 
 
-
-			//pCtx->setVSConstant(m_pShadowShaderDataVS, 1);
-		//	pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
-
 			pCtx->setBlendState(m_pBlendRed);
 			pShadow->genShadow(m_pGBufferDepth, m_pGBufferNormals);
 			pCtx->setBlendState(m_pBlendAlphaOneOne);
@@ -637,8 +640,6 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 			default:
 				assert(!"Unknown light type!");
 			}
-
-		//	pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
 
 			//теперь когда будем считать освещение надо сбросить значения в стенсил буфере, чтобы каждый кадр не чистить
 			//если стенсил тест прошел успешно, устанавливаем значнеие в нуль
@@ -663,17 +664,13 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 
 			SGCore_ScreenQuadDraw();
 		}
-
-
-		//pCtx->setSamplerState(gdata::rstates::pSamplerLinearWrap, 0);
-		//pCtx->setSamplerState(gdata::rstates::pSamplerLinearWrap, 1);
 	}
 
 	pCtx->setVSConstant(m_pLPVcentersShaderData, 9);
 	pCtx->setPSConstant(m_pLPVcentersShaderData, 9);
 
 	bool isFirstRun[3] = {true, true, true};
-	while((uShadowCount = m_pShadowCache->processNextRSMBunch()))
+	while(iCascades && (uShadowCount = m_pShadowCache->processNextRSMBunch()))
 	{
 		pCtx->setVSConstant(m_pLPVcurrentCascadeShaderData, 10);
 		pCtx->setPSConstant(m_pLPVcurrentCascadeShaderData, 10);
@@ -681,15 +678,15 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 		pCtx->setDepthStencilSurface(pOldDSSurface);
 		pCtx->setBlendState(m_pBlendAlphaOneOne);
 
-	//	pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
-	//	pCtx->setPSConstant(m_pLightingShaderDataPS, 1);
+		//	pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
+		//	pCtx->setPSConstant(m_pLightingShaderDataPS, 1);
 
 		IGXDepthStencilSurface *pOldSurface = pCtx->getDepthStencilSurface();
 		pCtx->unsetDepthStencilSurface();
 
 		IBaseReflectiveShadowMap *pShadow = NULL;
 
-		for(UINT i = 0; i < 3; ++i)
+		for(UINT i = LPV_CASCADES_COUNT - iCascades; i < LPV_CASCADES_COUNT; ++i)
 		{
 			float4_t vTmp((float)i + 0.5f); // just to be sure
 			m_pLPVcurrentCascadeShaderData->update(&vTmp);
@@ -744,38 +741,42 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 
 		//break;
 	}
-	for(UINT i = 0; i < 3; ++i)
+
+	bool isClean[3] = {0};
+	if(iCascades)
 	{
-		if(isFirstRun[i])
+		for(UINT i = 0; i < 3; ++i)
 		{
-			IGXSurface *pLPVRed = m_aLPVs[i].pGIAccumRed->asRenderTarget();
-			IGXSurface *pLPVGreen = m_aLPVs[i].pGIAccumGreen->asRenderTarget();
-			IGXSurface *pLPVBlue = m_aLPVs[i].pGIAccumBlue->asRenderTarget();
+			if(isFirstRun[i])
+			{
+				IGXSurface *pLPVRed = m_aLPVs[i].pGIAccumRed->asRenderTarget();
+				IGXSurface *pLPVGreen = m_aLPVs[i].pGIAccumGreen->asRenderTarget();
+				IGXSurface *pLPVBlue = m_aLPVs[i].pGIAccumBlue->asRenderTarget();
 
-			pCtx->setColorTarget(pLPVRed);
-			pCtx->setColorTarget(pLPVGreen, 1);
-			pCtx->setColorTarget(pLPVBlue, 2);
+				pCtx->setColorTarget(pLPVRed);
+				pCtx->setColorTarget(pLPVGreen, 1);
+				pCtx->setColorTarget(pLPVBlue, 2);
 
-			mem_release(pLPVRed);
-			mem_release(pLPVGreen);
-			mem_release(pLPVBlue);
+				mem_release(pLPVRed);
+				mem_release(pLPVGreen);
+				mem_release(pLPVBlue);
 
-			pCtx->clear(GX_CLEAR_COLOR);
-			isFirstRun[i] = false;
+				pCtx->clear(GX_CLEAR_COLOR);
+				isFirstRun[i] = false;
 
-			pCtx->setColorTarget(NULL);
-			pCtx->setColorTarget(NULL, 1);
-			pCtx->setColorTarget(NULL, 2);
+				pCtx->setColorTarget(NULL);
+				pCtx->setColorTarget(NULL, 1);
+				pCtx->setColorTarget(NULL, 2);
+
+				isClean[i] = true;
+			}
 		}
 	}
-
 	SGCore_ShaderUnBind();
 
 	mem_release(pOldDSSurface);
 
-	//pCtx->setVSConstant(m_pLightingShaderDataVS, 1);
-	//pCtx->setPSConstant(m_pLightingShaderDataPS, 1);
-
+	if(iCascades)
 	{
 		SGCore_ShaderBind(m_idLPVPropagateShader);
 		UINT uStepCount[] = {4, 6, 8};
@@ -784,6 +785,10 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 		//{
 		for(UINT j = 0; j < 3; ++j)
 		{
+			if(isClean[j])
+			{
+				continue;
+			}
 			for(UINT i = 0; i < uStepCount[j]; ++i)
 			{
 				pCtx->setCSTexture(m_aLPVs[j].pGIAccumRed, 0);
@@ -830,6 +835,7 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 	}
 
 
+	if(iCascades)
 	{
 		pCtx->setColorTarget(pAmbientSurf);
 		//gdata::pDXDevice->setRasterizerState(NULL);
@@ -837,13 +843,7 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 		pCtx->setBlendState(m_pBlendAlphaOneOne);
 		pCtx->setDepthStencilState(m_pDepthStencilStateLightShadowGlobal);
 
-		//pCtx->setPSConstant(m_pLightingShaderDataPS, 1);
-
-		ID idshaderkit = m_idComLightingGI;
-
-		//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, idshader, "g_vViewPos", &gdata::vConstCurrCamPos);
-
-		//	pCtx->setPSConstant(m_pCameraShaderDataVS, 8);
+		ID idshaderkit = m_idComLightingGI[iCascades - 1];
 
 		SGCore_ShaderBind(idshaderkit);
 
