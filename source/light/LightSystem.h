@@ -18,6 +18,8 @@ public:
 	CLightSystem(IXCore *pCore);
 	~CLightSystem();
 
+	SX_ALIGNED_OP_MEM2();
+
 	IXLightSun* XMETHODCALLTYPE newSun() override;
 	IXLightSun* XMETHODCALLTYPE getSun() override;
 	void destroySun(IXLightSun *pLight);
