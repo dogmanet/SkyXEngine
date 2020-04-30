@@ -150,6 +150,9 @@ public:
 	void XMETHODCALLTYPE setBlurred(bool bValue) override;
 	bool XMETHODCALLTYPE isBlurred() const override;
 
+	void XMETHODCALLTYPE setEmissive(bool bValue) override;
+	bool XMETHODCALLTYPE isEmissive() const override;
+
 	void XMETHODCALLTYPE setShader(const char *szShader) override;
 	const char* XMETHODCALLTYPE getShader() const override;
 	XMaterialShaderHandler* XMETHODCALLTYPE getShaderHandler() const override;
@@ -280,6 +283,7 @@ private:
 	CMaterialFlag *m_pTransparent = NULL;
 	CMaterialFlag *m_pRefractive = NULL;
 	CMaterialFlag *m_pBlurred = NULL;
+	CMaterialFlag *m_pEmissive = NULL;
 };
 
 class CMaterialSystem: public IXMaterialSystem

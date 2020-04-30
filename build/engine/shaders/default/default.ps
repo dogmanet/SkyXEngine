@@ -47,13 +47,15 @@ XMaterial MainGBuffer(PSI_XMaterial IN)
 XMaterial MainIllimination(PSI_XMaterial IN)
 {
 	XMaterial OUT = XMATERIAL_LOAD_DEFAULTS();
+#ifdef HAS_EMISSION
 	
+#ifdef HAS_EMISSIVE_MAP
+	float4 fColor = g_txEmissive.Sample(g_sScene, IN.vTexUV);
+#else
 	float4 fColor = g_txBase.Sample(g_sScene, IN.vTexUV);
-	// float4 fColor = IN.vPos;
-#ifdef HAS_ALPHATEST
-	clip(fColor.a - g_xMaterialConstants.pbr_alphatest_threshold);
 #endif
-	OUT.vEmissiveColor = fColor.xyz;
+
+	OUT.vEmissiveColor = fColor.xyz * fColor.w * g_xMaterialConstants.em_multiplier;
 	
 #ifdef HAS_NORMALMAP
 	OUT.vNormal = MixNormalMicro(IN.vNormal, 
@@ -63,6 +65,7 @@ XMaterial MainIllimination(PSI_XMaterial IN)
 	OUT.vNormal = IN.vNormal;
 #endif
 
+#endif
 	
 	return(OUT);
 }

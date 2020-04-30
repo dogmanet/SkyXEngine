@@ -209,6 +209,10 @@ const IXResourceModel * XMETHODCALLTYPE CDynamicModel::getResource(UINT uIndex)
 
 void XMETHODCALLTYPE CDynamicModel::render(UINT uLod, bool isTransparent)
 {
+	render(uLod, isTransparent, false);
+}
+void CDynamicModel::render(UINT uLod, bool isTransparent, bool isEmissiveOnly)
+{
 	if(!m_pDevice || !m_isEnabled || !m_pWorldBuffer)
 	{
 		return;
@@ -223,7 +227,7 @@ void XMETHODCALLTYPE CDynamicModel::render(UINT uLod, bool isTransparent)
 	m_pProvider->bindVertexFormat();
 
 	m_pDevice->getThreadContext()->setVSConstant(m_pWorldBuffer, 1 /* SCR_OBJECT */);
-	m_pShared->render(m_uSkin, uLod, m_vColor, isTransparent);
+	m_pShared->render(m_uSkin, uLod, m_vColor, isTransparent, isEmissiveOnly);
 }
 
 CDynamicModelShared* CDynamicModel::getShared()
@@ -250,6 +254,10 @@ SMPLANE CDynamicModel::getPSP(UINT uLod, UINT uPlane) const
 bool CDynamicModel::hasTransparentSubsets(UINT uLod) const
 {
 	return(m_pShared->hasTransparentSubsets(m_uSkin, uLod));
+}
+bool CDynamicModel::hasEmissiveSubsets(UINT uLod) const
+{
+	return(m_pShared->hasEmissiveSubsets(m_uSkin, uLod));
 }
 
 IXMaterial* CDynamicModel::getTransparentMaterial(UINT uLod)

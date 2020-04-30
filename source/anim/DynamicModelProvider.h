@@ -41,6 +41,7 @@ public:
 	IGXVertexDeclaration *getVertexDeclaration();
 
 	void render(bool isTransparent, CRenderableVisibility *pVisibility = NULL);
+	void renderEmissive(CRenderableVisibility *pVisibility);
 	void computeVisibility(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference=NULL);
 
 	void getLevelSize(const XEventLevelSize *pData);
@@ -58,6 +59,7 @@ public:
 
 	void bindVertexFormat();
 protected:
+	void onMaterialEmissivityChanged(const IXMaterial *pMaterial);
 	void onMaterialTransparencyChanged(const IXMaterial *pMaterial);
 
 	CMaterialChangedEventListener *m_pMaterialChangedEventListener;

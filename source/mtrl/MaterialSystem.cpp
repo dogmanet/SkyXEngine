@@ -2197,6 +2197,7 @@ CMaterial::CMaterial(CMaterialSystem *pMaterialSystem, const char *szName):
 	m_pTransparent = createFlag("transparent", XEventMaterialChanged::TYPE_TRANSPARENCY);
 	m_pRefractive = createFlag("refractive", XEventMaterialChanged::TYPE_REFRACTIVITY);
 	m_pBlurred = createFlag("blurred", XEventMaterialChanged::TYPE_BLURRED);
+	m_pEmissive = createFlag("emissive", XEventMaterialChanged::TYPE_EMISSIVITY);
 
 	setShader("Default");
 }
@@ -2247,6 +2248,17 @@ void XMETHODCALLTYPE CMaterial::setRefractive(bool bValue)
 bool XMETHODCALLTYPE CMaterial::isRefractive() const
 {
 	return(m_pRefractive->get());
+}
+
+void XMETHODCALLTYPE CMaterial::setEmissive(bool bValue)
+{
+	m_pEmissive->set(bValue);
+
+	notifyChanged(XEventMaterialChanged::TYPE_EMISSIVITY);
+}
+bool XMETHODCALLTYPE CMaterial::isEmissive() const
+{
+	return(m_pEmissive->get());
 }
 
 void XMETHODCALLTYPE CMaterial::setBlurred(bool bValue)

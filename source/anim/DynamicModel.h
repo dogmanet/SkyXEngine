@@ -41,6 +41,7 @@ public:
 	const IXResourceModel* XMETHODCALLTYPE getResource(UINT uIndex = 0) override;
 
 	void XMETHODCALLTYPE render(UINT uLod, bool isTransparent) override;
+	void render(UINT uLod, bool isTransparent, bool isEmissiveOnly);
 
 	CDynamicModelShared* getShared();
 	void initGPUresources();
@@ -48,6 +49,7 @@ public:
 	UINT getPSPcount(UINT uLod) const;
 	SMPLANE getPSP(UINT uLod, UINT uPlane) const;
 	bool hasTransparentSubsets(UINT uLod) const;
+	bool hasEmissiveSubsets(UINT uLod) const;
 	IXMaterial* getTransparentMaterial(UINT uLod);
 protected:
 	CDynamicModelProvider *m_pProvider;

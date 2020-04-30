@@ -28,6 +28,7 @@ public:
 		bool isVisible = false;
 		UINT uLod = 0;
 		bool isTransparent = false;
+		bool isEmissive = false;
 	};
 
 	struct TransparentModel

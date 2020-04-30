@@ -61,6 +61,7 @@ void CRenderableVisibility::append(const IXRenderableVisibility *pOther_)
 			else
 			{
 				pItem->isTransparent = pOtherItem->isTransparent;
+				pItem->isEmissive = pOtherItem->isEmissive;
 				pItem->isVisible = true;
 				pItem->uLod = pOtherItem->uLod;
 			}

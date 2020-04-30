@@ -23,6 +23,10 @@ void CMaterialChangedEventListener::onEvent(const XEventMaterialChanged *pData)
 	{
 		m_pProvider->onMaterialTransparencyChanged(pData->pMaterial);
 	}
+	if(pData->type == XEventMaterialChanged::TYPE_EMISSIVITY)
+	{
+		m_pProvider->onMaterialEmissivityChanged(pData->pMaterial);
+	}
 }
 /*
 //##########################################################################
@@ -113,6 +117,7 @@ public:
 
 				if(pItem->isVisible)
 				{
+					pItem->isEmissive = pMdl->hasEmissiveSubsets(pItem->uLod);
 					pItem->isTransparent = pMdl->hasTransparentSubsets(pItem->uLod);
 					if(pItem->isTransparent)
 					{
@@ -347,6 +352,23 @@ void CDynamicModelProvider::render(bool isTransparent, CRenderableVisibility *pV
 	m_pMaterialSystem->bindVS(NULL);
 }
 
+void CDynamicModelProvider::renderEmissive(CRenderableVisibility *pVisibility)
+{
+	bindVertexFormat();
+	for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
+	{
+		auto pItem = pVisibility->getItemDynamic(i);
+		if(pItem->isVisible)
+		{
+			if(pItem->isEmissive)
+			{
+				m_apModels[i]->render(pItem->uLod, pItem->isTransparent, pItem->isEmissive);
+			}
+		}
+	}
+	m_pMaterialSystem->bindVS(NULL);
+}
+
 void CDynamicModelProvider::computeVisibility(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)
 {
 	pVisibility->setItemCountDynamic(m_apModels.size());
@@ -370,6 +392,7 @@ void CDynamicModelProvider::computeVisibility(const IFrustum *pFrustum, CRendera
 			if(pItem->isVisible)
 			{
 				pItem->isTransparent = pMdl->hasTransparentSubsets(pItem->uLod);
+				pItem->isEmissive = pMdl->hasEmissiveSubsets(pItem->uLod);
 				if(pItem->isTransparent)
 				{
 					IXMaterial *pMaterial = pMdl->getTransparentMaterial(pItem->uLod);
@@ -471,6 +494,17 @@ void CDynamicModelProvider::onMaterialTransparencyChanged(const IXMaterial *pMat
 		if(*i.second)
 		{
 			(*i.second)->onMaterialTransparencyChanged(pMaterial);
+		}
+	}
+}
+
+void CDynamicModelProvider::onMaterialEmissivityChanged(const IXMaterial *pMaterial)
+{
+	for(auto i = m_mModels.begin(); i; i++)
+	{
+		if(*i.second)
+		{
+			(*i.second)->onMaterialEmissivityChanged(pMaterial);
 		}
 	}
 }

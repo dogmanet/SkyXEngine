@@ -26,15 +26,17 @@ public:
 	float3 getLocalBoundMin() const;
 	float3 getLocalBoundMax() const;
 
-	void render(UINT uSkin, UINT uLod, const float4_t &vColor, bool isTransparent);
+	void render(UINT uSkin, UINT uLod, const float4_t &vColor, bool isTransparent, bool isEmissiveOnly = false);
 
 	void initGPUresources();
 	bool isReady() const;
 
 	bool hasTransparentSubsets(UINT uSkin, UINT uLod);
+	bool hasEmissiveSubsets(UINT uSkin, UINT uLod);
 	IXMaterial* getTransparentMaterial(UINT uSkin, UINT uLod);
 
 	void onMaterialTransparencyChanged(const IXMaterial *pMaterial);
+	void onMaterialEmissivityChanged(const IXMaterial *pMaterial);
 	float3 getTransparentBoundMin(UINT uSkin, UINT uLod) const;
 	float3 getTransparentBoundMax(UINT uSkin, UINT uLod) const;
 
@@ -64,6 +66,7 @@ protected:
 	UINT m_uMaterialCount = 0;
 	UINT m_uSkinCount = 0;
 	bool *m_isTransparent = NULL; //!< По количеству скинов, истина если есть прозрачные материалы в любом сабсете
+	bool *m_isEmissive = NULL; //!< По количеству скинов, истина если есть светящиеся материалы в любом сабсете
 
 	XPT_TOPOLOGY m_topology = XPT_TRIANGLELIST;
 
