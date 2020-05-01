@@ -362,6 +362,7 @@ void CLightSystem::destroySun(IXLightSun *pLight)
 {
 	assert(m_pSun == pLight);
 	_deleteLight(m_pSun);
+	m_pSun = NULL;
 }
 void CLightSystem::destroyPoint(IXLightPoint *_pLight)
 {
