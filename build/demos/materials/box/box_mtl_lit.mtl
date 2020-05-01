@@ -1,0 +1,6 @@
+[axe_Metallic]
+shader = Default
+tex.txBase = mtl_box_big.dds
+flag.emissive = 1
+tex.txEmissive = box_mtl_lit.dds
+prop.em_multiplier = 1.0f

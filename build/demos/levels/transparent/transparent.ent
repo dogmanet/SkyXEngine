@@ -23,8 +23,36 @@ flags = 0
 classname = prop_static
 auto_physbox = 1
 
-[meta]
-count = 10
+[ent_10]
+type_shadow = 1
+shadow_intensity = 1.000000
+rotation = 0.229104 0.124787 -0.290361 0.920668
+parent = 
+origin = -16.763458 11.002231 1.500001
+name = 
+linked_to = 
+flags = 0
+dist = 10.000000
+color = 2.000000 1.500000 1.000000
+classname = light_sun
+OnTurnOn = 
+OnTurnOff = 
+
+[ent_11]
+use_trimesh = 0
+skin = 0
+scale = 1.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = -21.840677 0.000000 -16.020668
+name = 
+model = meshes/box/box_mtl_lit.dse
+is_static = 1
+glow_color_ref = 
+glow_color = 0.000000 0.000000 0.000000
+flags = 0
+classname = prop_static
+auto_physbox = 1
 
 [ent_2]
 use_trimesh = 0
@@ -153,3 +181,6 @@ glow_color = 0.000000 0.000000 0.000000
 flags = 0
 classname = prop_static
 auto_physbox = 1
+
+[meta]
+count = 12

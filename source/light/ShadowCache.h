@@ -121,6 +121,7 @@ protected:
 	{
 	private:
 		IXRenderPipeline *m_pRenderPipeline;
+		//! @fixme this should be properly aligned!
 		Array<T> m_aMaps;
 		Array<T*> m_aMapsQueue;
 		LIGHT_RENDER_TYPE m_renderType;

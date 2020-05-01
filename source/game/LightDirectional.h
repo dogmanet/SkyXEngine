@@ -46,7 +46,7 @@ public:
 	float getRadiusTop() const { return m_fRadiusTop; };
 	
 protected:
-	void onSync();
+	void onSync() override;
 
 	float m_fOuterAngle = SM_PI * 0.4f;
 	float m_fInnerAngle = SM_PI * 0.4f * 0.7f;
