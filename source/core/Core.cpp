@@ -461,20 +461,20 @@ void XMETHODCALLTYPE CCore::waitForLoop(ID id)
 
 //##########################################################################
 
-C SXCORE_API IXCore* XCoreInit(const char *szName)
+EXTERN_C SXCORE_API IXCore* XCoreInit(const char *szName)
 {
 	return(g_pCore = new CCore(szName));
 }
 
-C SXCORE_API void XCoreStart()
+EXTERN_C SXCORE_API void XCoreStart()
 {
 	g_pTaskManager->start();
 }
-C SXCORE_API void XCoreStop()
+EXTERN_C SXCORE_API void XCoreStop()
 {
 	g_pTaskManager->stop();
 }
-C SXCORE_API void XCoreAddTask(ITask *pTask)
+EXTERN_C SXCORE_API void XCoreAddTask(ITask *pTask)
 {
 	g_pTaskManager->addTask(pTask);
 }

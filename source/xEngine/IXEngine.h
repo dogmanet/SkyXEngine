@@ -14,7 +14,7 @@
 #else
 #	define XAPI
 #endif
-#define C extern "C"
+#define EXTERN_C extern "C"
 
 class IXEngine;
 class ICamera;
@@ -41,7 +41,7 @@ public:
 	virtual IXCore* XMETHODCALLTYPE getCore() = 0;
 };
 
-C XAPI LPSTR* CommandLineToArgvA(LPSTR lpCmdline, int *numargs);
-C XAPI IXEngine* XEngineInit(int argc, char **argv, const char *szName);
+EXTERN_C XAPI LPSTR* CommandLineToArgvA(LPSTR lpCmdline, int *numargs);
+EXTERN_C XAPI IXEngine* XEngineInit(int argc, char **argv, const char *szName);
 
 #endif

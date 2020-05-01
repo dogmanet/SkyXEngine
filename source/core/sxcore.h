@@ -32,7 +32,7 @@ See the license in LICENSE
 #else
 #	define SXCORE_API
 #endif
-#define C extern "C"
+#define EXTERN_C extern "C"
 
 #include <io.h>
 #include <fcntl.h>
@@ -74,10 +74,10 @@ enum CORE_TASK_FLAG
 
 //! @FIXME: Убрать это!
 class ITask;
-C SXCORE_API IXCore* XCoreInit(const char *szName);
-C SXCORE_API void XCoreStart();
-C SXCORE_API void XCoreStop();
-C SXCORE_API void XCoreAddTask(ITask *pTask);
+EXTERN_C SXCORE_API IXCore* XCoreInit(const char *szName);
+EXTERN_C SXCORE_API void XCoreStart();
+EXTERN_C SXCORE_API void XCoreStop();
+EXTERN_C SXCORE_API void XCoreAddTask(ITask *pTask);
 
 //! возвращает версию ядра
 SX_LIB_API long Core_0GetVersion();

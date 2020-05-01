@@ -12,7 +12,7 @@
 #else
 #	define XWAPI
 #endif
-#define C extern "C"
+#define EXTERN_C extern "C"
 
 enum XWINDOW_FLAG
 {
@@ -92,6 +92,6 @@ public:
 	virtual bool XMETHODCALLTYPE processMessages(UINT uMaxMessages = 0) = 0;
 };
 
-C XWAPI IXWindowSystem* XWindowInit();
+EXTERN_C XWAPI IXWindowSystem* XWindowInit();
 
 #endif

@@ -48,7 +48,7 @@ bool XMETHODCALLTYPE CWindowSystem::processMessages(UINT uMaxMessages)
 	return(true);
 }
 
-C XWAPI IXWindowSystem* XWindowInit()
+EXTERN_C XWAPI IXWindowSystem* XWindowInit()
 {
 	return(new CWindowSystem());
 }

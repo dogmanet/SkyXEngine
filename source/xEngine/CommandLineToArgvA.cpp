@@ -30,7 +30,7 @@
 * - in unquoted strings, the first quote opens the quoted string and the
 *   remaining consecutive quotes follow the above rule.
 */
-C XAPI LPSTR* CommandLineToArgvA(LPSTR lpCmdline, int *numargs)
+EXTERN_C XAPI LPSTR* CommandLineToArgvA(LPSTR lpCmdline, int *numargs)
 {
 	DWORD argc;
 	LPSTR *argv;

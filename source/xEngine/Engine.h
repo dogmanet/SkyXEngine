@@ -4,6 +4,12 @@
 #include "IXEngine.h"
 #include <xUI/IXUI.h>
 
+// #define USE_BREAKPAD
+
+#ifdef USE_BREAKPAD
+#	include <breakpad/src/client/windows/handler/exception_handler.h>
+#endif
+
 enum WANT_RESIZE
 {
 	WR_NONE = 0x0000,
@@ -48,6 +54,10 @@ protected:
 	WANT_RESIZE m_wantResize = WR_NONE;
 
 	IXUI *m_pXUI = NULL;
+
+#ifdef USE_BREAKPAD
+	google_breakpad::ExceptionHandler *m_pBreakpadHandler = NULL;
+#endif
 };
 
 DEFINE_ENUM_FLAG_OPERATORS(WANT_RESIZE);

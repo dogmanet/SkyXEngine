@@ -12,6 +12,12 @@
 #	pragma comment(lib, "sxcore.lib")
 #endif
 
+#ifdef USE_BREAKPAD
+#	pragma comment(lib, "crash_generation_client.lib")
+#	pragma comment(lib, "exception_handler.lib")
+#	pragma comment(lib, "common.lib")
+#endif
+
 class CMainLoopTask: public ITaskImpl<ITask>
 {
 public:
@@ -35,6 +41,32 @@ protected:
 
 //##########################################################################
 
+#ifdef USE_BREAKPAD
+static bool HandleCrashDump(const wchar_t *wszDumpPath, const wchar_t* wszMinidumpId, void* pContext, EXCEPTION_POINTERS* pExInfo, MDRawAssertionInfo* pAssertion, bool isSucceeded)
+{
+	wchar_t *pCrashReporter = (wchar_t*)pContext;
+	if(isSucceeded)
+	{
+		wcscat(pCrashReporter, wszMinidumpId);
+		STARTUPINFOW info = {sizeof(info)};
+		PROCESS_INFORMATION processInfo;
+		if(CreateProcessW(NULL, pCrashReporter, NULL, NULL, TRUE, 0, NULL, NULL, &info, &processInfo))
+		{
+			CloseHandle(processInfo.hProcess);
+			CloseHandle(processInfo.hThread);
+		}
+	}
+	else
+	{
+		MessageBoxW(NULL, L"Program has crashed. Failed to write crashdump.", L"Crashed!", MB_OK | MB_ICONSTOP);
+	}
+	//MessageBoxW(NULL, wszMinidumpId, pCrashReporter, MB_OK | MB_ICONSTOP);
+	return(true);
+}
+#endif
+
+//##########################################################################
+
 CEngine::CEngine(int argc, char **argv, const char *szName)
 {
 	srand((UINT)time(0));
@@ -51,8 +83,39 @@ CEngine::CEngine(int argc, char **argv, const char *szName)
 		dirname(szPath);
 		strcat(szPath, "gamesource/");
 		BOOL ret = SetCurrentDirectoryA(szPath);
-		int a = 0;
 	}
+
+#ifdef USE_BREAKPAD
+	{
+		static wchar_t szPath[MAX_PATH];
+		GetModuleFileNameW(NULL, szPath, MAX_PATH);
+		int iLastPos = -1;
+		for(size_t i = 0, l = wcslen(szPath); i < l; ++i)
+		{
+			if(szPath[i] == L'/' || szPath[i] == L'\\')
+			{
+				iLastPos = (int)i;
+			}
+		}
+		if(iLastPos >= 0)
+		{
+			szPath[iLastPos + 1] = 0;
+		}
+		wcscat(szPath, L"crashreporter.exe "); // Keep last space!
+		
+		CreateDirectoryA("../crashdmp", NULL);
+		m_pBreakpadHandler = new google_breakpad::ExceptionHandler(
+			L"../crashdmp/",
+			NULL,
+			HandleCrashDump,
+			szPath,
+			google_breakpad::ExceptionHandler::HANDLER_ALL,
+			MiniDumpNormal,
+			L"",
+			NULL);
+	}
+#endif
+
 
 	m_pCore = XCoreInit(szName);
 	INIT_OUTPUT_STREAM(m_pCore);
@@ -82,6 +145,10 @@ CEngine::~CEngine()
 	SGCore_AKill();
 	//SSInput_AKill();
 	mem_delete(m_pCore);
+
+#ifdef USE_BREAKPAD
+	mem_delete(m_pBreakpadHandler);
+#endif
 }
 
 bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCallback *pCallback)
@@ -553,7 +620,7 @@ void CEngine::onRWinBorderlessChanged()
 
 //##########################################################################
 
-C XAPI IXEngine* XEngineInit(int argc, char **argv, const char *szName)
+EXTERN_C XAPI IXEngine* XEngineInit(int argc, char **argv, const char *szName)
 {
 	return(new CEngine(argc, argv, szName));
 }
