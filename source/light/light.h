@@ -30,6 +30,8 @@ public:
 	CXLight(CLightSystem *pLightSystem);
 	~CXLight();
 
+	SX_ALIGNED_OP_MEM2();
+
 	LIGHT_TYPE getType();
 
 	float3 getColor();
@@ -141,8 +143,6 @@ protected:
 class CXLightSun: public CXLight, public virtual IXLightSun
 {
 public:
-	SX_ALIGNED_OP_MEM2();
-
 	CXLightSun(CLightSystem *pLightSystem);
 	~CXLightSun();
 
