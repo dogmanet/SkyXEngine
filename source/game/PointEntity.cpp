@@ -15,3 +15,4 @@ BEGIN_PROPTABLE(CPointEntity)
 END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CPointEntity, base_point);
+REGISTER_ENTITY(CPointEntity, info_landmark);

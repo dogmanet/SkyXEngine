@@ -249,6 +249,9 @@
     <ClCompile Include="..\..\..\source\game\LightSun.cpp">
       <Filter>Source Files\ents\light</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\TriggerTeleport.cpp">
+      <Filter>Source Files\ents\triggers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -433,6 +436,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\LightSun.h">
       <Filter>Header Files\ents\light</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\TriggerTeleport.h">
+      <Filter>Header Files\ents\triggers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
