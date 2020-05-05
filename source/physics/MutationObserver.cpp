@@ -67,8 +67,7 @@ void XMETHODCALLTYPE CMutationObserver::setHalfExtents(const float3 &vHalfExtent
 void CMutationObserver::onModelChanged(const XEventModelChanged *pEvent)
 {
 	float3 vPos = pEvent->pModel->getPosition();
-	if(SMAABBIntersectAABB(m_vPosition - m_vHalfExtents, m_vPosition + m_vHalfExtents,
-		vPos + pEvent->pModel->getLocalBoundMin(), vPos + pEvent->pModel->getLocalBoundMax()))
+	if(SMAABBIntersectAABB(SMAABB(m_vPosition - m_vHalfExtents, m_vPosition + m_vHalfExtents), pEvent->pModel->getLocalBound() + vPos))
 	{
 		m_wasTriggered = true;
 	}

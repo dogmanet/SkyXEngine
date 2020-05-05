@@ -1059,6 +1059,10 @@ float3 CAnimatedModelShared::getLocalBoundMax() const
 {
 	return(m_vLocalMax);
 }
+SMAABB CAnimatedModelShared::getLocalBound() const
+{
+	return(SMAABB(m_vLocalMin, m_vLocalMax));
+}
 
 void CAnimatedModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor)
 {

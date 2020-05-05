@@ -145,6 +145,12 @@ float3 XMETHODCALLTYPE CDynamicModel::getLocalBoundMax() const
 
 	return(m_vLocalMax);
 }
+SMAABB XMETHODCALLTYPE CDynamicModel::getLocalBound() const
+{
+	_updateAABB();
+
+	return(SMAABB(m_vLocalMin, m_vLocalMax));
+}
 
 void CDynamicModel::_updateAABB() const
 {

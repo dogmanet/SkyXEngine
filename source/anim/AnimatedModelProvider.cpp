@@ -213,7 +213,7 @@ void CAnimatedModelProvider::computeVisibility(const IFrustum *pFrustum, CRender
 		{
 			float3 vDelta = pMdl->getPosition();
 			pVisibility->getItem(i)->isVisible = (pReference ? pReference->getItem(i)->isVisible : true)
-				&& pFrustum->boxInFrustum(&float3(pMdl->getLocalBoundMin() + vDelta), &float3(pMdl->getLocalBoundMax() + vDelta));
+				&& pFrustum->boxInFrustum(pMdl->getLocalBound() + vDelta);
 		}
 		else
 		{

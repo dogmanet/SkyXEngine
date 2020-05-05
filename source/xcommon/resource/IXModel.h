@@ -30,6 +30,7 @@ public:
 
 	virtual float3 XMETHODCALLTYPE getLocalBoundMin() const = 0;
 	virtual float3 XMETHODCALLTYPE getLocalBoundMax() const = 0;
+	virtual SMAABB XMETHODCALLTYPE getLocalBound() const = 0;
 
 	virtual float4 XMETHODCALLTYPE getColor() const = 0;
 	virtual void XMETHODCALLTYPE setColor(const float4 &vColor) = 0;

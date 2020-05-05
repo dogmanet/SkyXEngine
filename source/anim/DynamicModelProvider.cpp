@@ -113,7 +113,7 @@ public:
 			{
 				float3 vDelta = pMdl->getPosition();
 				pItem->isVisible = (m_pReference ? m_pReference->getItemDynamic(i)->isVisible : true)
-					&& m_pFrustum->boxInFrustum(&float3(pMdl->getLocalBoundMin() + vDelta), &float3(pMdl->getLocalBoundMax() + vDelta));
+					&& m_pFrustum->boxInFrustum(pMdl->getLocalBound() + vDelta);
 
 				if(pItem->isVisible)
 				{

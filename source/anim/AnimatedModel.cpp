@@ -148,6 +148,12 @@ float3 XMETHODCALLTYPE CAnimatedModel::getLocalBoundMax() const
 
 	return(m_vLocalMax);
 }
+SMAABB XMETHODCALLTYPE CAnimatedModel::getLocalBound() const
+{
+	_updateAABB();
+
+	return(SMAABB(m_vLocalMin, m_vLocalMax));
+}
 
 void CAnimatedModel::_updateAABB() const
 {

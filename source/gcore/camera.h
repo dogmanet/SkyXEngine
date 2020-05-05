@@ -28,6 +28,7 @@ public:
 
 	bool sphereInFrustumAbs(const float3 *pPount, float fRadius) const override;
 	bool boxInFrustum(const float3 *pMin, const float3 *pMax) const override;
+	bool boxInFrustum(const SMAABB &aabb) const override;
 
 	bool frustumInFrustum(const IFrustum *pOther) const override;
 

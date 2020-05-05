@@ -32,6 +32,7 @@ public:
 
 	float3 XMETHODCALLTYPE getLocalBoundMin() const override;
 	float3 XMETHODCALLTYPE getLocalBoundMax() const override;
+	SMAABB XMETHODCALLTYPE getLocalBound() const override;
 
 	float4 XMETHODCALLTYPE getColor() const override;
 	void XMETHODCALLTYPE setColor(const float4 &vColor) override;

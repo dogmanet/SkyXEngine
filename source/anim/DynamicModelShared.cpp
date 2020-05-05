@@ -340,10 +340,13 @@ float3 CDynamicModelShared::getLocalBoundMin() const
 {
 	return(m_vLocalMin);
 }
-
 float3 CDynamicModelShared::getLocalBoundMax() const
 {
 	return(m_vLocalMax);
+}
+SMAABB CDynamicModelShared::getLocalBound() const
+{
+	return(SMAABB(m_vLocalMin, m_vLocalMax));
 }
 
 void CDynamicModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor, bool isTransparent, bool isEmissiveOnly)

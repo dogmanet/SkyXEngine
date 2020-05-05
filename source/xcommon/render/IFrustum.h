@@ -34,6 +34,7 @@ public:
 
 	//! находится ли параллелепипед (описанный точками экстремума) во фрустуме
 	virtual bool boxInFrustum(const float3 *pMin, const float3 *pMax) const = 0;
+	virtual bool boxInFrustum(const SMAABB &aabb) const = 0;
 
 	//! находится ли параллелепипед (описанный точками экстремума) во фрустуме
 	virtual bool frustumInFrustum(const IFrustum *pOther) const = 0;

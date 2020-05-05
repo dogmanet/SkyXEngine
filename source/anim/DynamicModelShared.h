@@ -25,6 +25,7 @@ public:
 
 	float3 getLocalBoundMin() const;
 	float3 getLocalBoundMax() const;
+	SMAABB getLocalBound() const;
 
 	void render(UINT uSkin, UINT uLod, const float4_t &vColor, bool isTransparent, bool isEmissiveOnly = false);
 

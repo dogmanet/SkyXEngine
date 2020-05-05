@@ -130,6 +130,11 @@ bool CFrustum::sphereInFrustumAbs(const float3 *point, float radius) const
 	return true;
 }
 
+bool CFrustum::boxInFrustum(const SMAABB &aabb) const
+{
+	return(boxInFrustum(&aabb.vMin, &aabb.vMax));
+}
+
 bool CFrustum::boxInFrustum(const float3 *min, const float3 *max) const
 {
 	for(register int p = 0; p < 6; ++p)
