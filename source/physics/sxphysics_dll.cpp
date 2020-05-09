@@ -196,11 +196,18 @@ SX_LIB_API void SPhysics_DisableSimulation()
 SX_LIB_API void SPhysics_BuildHull(btConvexHullShape *pIn, btVector3 **ppOut, int *pNumVertices)
 {
 	btShapeHull tmpHull(pIn);
-	tmpHull.buildHull(0);
-	*pNumVertices = tmpHull.numVertices();
-	*ppOut = new btVector3[*pNumVertices];
-	memcpy(*ppOut, tmpHull.getVertexPointer(), sizeof(btVector3)* *pNumVertices);
-	//return(new btConvexHullShape((const btScalar*)tmpHull.getVertexPointer(), tmpHull.numVertices(), sizeof(btVector3)));
+	if(tmpHull.buildHull(0))
+	{
+		*pNumVertices = tmpHull.numVertices();
+		*ppOut = new btVector3[*pNumVertices];
+		memcpy(*ppOut, tmpHull.getVertexPointer(), sizeof(btVector3)* *pNumVertices);
+		//return(new btConvexHullShape((const btScalar*)tmpHull.getVertexPointer(), tmpHull.numVertices(), sizeof(btVector3)));
+	}
+	else
+	{
+		*pNumVertices = 0;
+		*ppOut = NULL;
+	}
 }
 
 SX_LIB_API void SPhysics_ReleaseHull(btVector3 *pData, int iNumVertices)

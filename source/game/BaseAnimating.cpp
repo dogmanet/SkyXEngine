@@ -317,7 +317,14 @@ void CBaseAnimating::initPhysics()
 					{
 						pData[i] *= m_fBaseScale;
 					}
-					pLocalShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
+					if(iVertexCount)
+					{
+						pLocalShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
+					}
+					else
+					{
+						LibReport(REPORT_MSG_LEVEL_WARNING, "Failed to build convex hull for model '%s'!\n", m_szModelFile);
+					}
 					SPhysics_ReleaseHull(pData, iVertexCount);
 
 
