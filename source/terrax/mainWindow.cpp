@@ -939,6 +939,34 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			g_isPropWindowVisible = TRUE;
 			break;
 
+		case ID_VIEW_CENTERONSELECTION:
+			if(g_xState.bHasSelection)
+			{
+				float3 vCenterPos = (g_xState.vSelectionBoundMax + g_xState.vSelectionBoundMin) * 0.5f;
+				for(UINT i = 1; i < 4; ++i)
+				{
+					ICamera *pCamera = g_xConfig.m_pViewportCamera[i];
+					float3 vCamPos;
+					pCamera->getPosition(&vCamPos);
+
+					switch(g_xConfig.m_x2DView[i])
+					{
+					case X2D_TOP:
+						vCamPos = float3(vCenterPos.x, vCamPos.y, vCenterPos.z);
+						break;
+					case X2D_FRONT:
+						vCamPos = float3(vCenterPos.x, vCenterPos.y, vCamPos.z);
+						break;
+					case X2D_SIDE:
+						vCamPos = float3(vCamPos.x, vCenterPos.y, vCenterPos.z);
+						break;
+					}
+
+					pCamera->setPosition(&vCamPos);
+				}
+			}
+			break;
+
 		case IDC_CMB_TYPE:
 			{
 				int iSel = ComboBox_GetCurSel(g_hComboTypesWnd);
