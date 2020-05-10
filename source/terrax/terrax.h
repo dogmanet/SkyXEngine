@@ -182,6 +182,7 @@ extern CTerraXState g_xState;
 
 extern BOOL g_is3DRotating;
 extern BOOL g_is3DPanning;
+extern BOOL g_is2DPanning;
 
 void XResetLevel();
 bool XSaveLevel(const char *szNewName=NULL, bool bForcePrompt = false);

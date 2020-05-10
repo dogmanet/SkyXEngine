@@ -69,6 +69,8 @@ BOOL g_isYResizeable = TRUE;
 BOOL g_is3DRotating = FALSE;
 BOOL g_is3DPanning = FALSE;
 
+BOOL g_is2DPanning = FALSE;
+
 BOOL g_isPropWindowVisible = FALSE;
 CPropertyWindow *g_pPropWindow = NULL;
 
@@ -1081,7 +1083,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			// Post a WM_SIZE message to redraw the windows
 			PostMessage(hWnd, WM_SIZE, 0, 0);
 		}
-
 		break;
 
 	case WM_MOUSEMOVE:
@@ -1838,8 +1839,26 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		break;
 	}
 
+	case WM_MBUTTONDOWN:
+		if(hWnd != g_hTopLeftWnd)
+		{
+			g_is2DPanning = TRUE;
+			SetCapture(hWnd);
+			SSInput_SetEnable(true);
+		}
+		break;
+
+	case WM_MBUTTONUP:
+		if(hWnd != g_hTopLeftWnd)
+		{
+			g_is2DPanning = FALSE;
+			SSInput_SetEnable(false);
+			ReleaseCapture();
+		}
+		break;
+
 	case WM_MOUSEMOVE:
-		if(!g_is3DRotating && !g_is3DPanning)
+		if(!g_is3DRotating && !g_is3DPanning && !g_is2DPanning)
 		{
 			if(hWnd == g_hTopRightWnd)
 			{
@@ -1898,6 +1917,30 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				g_xState.m_vViewportBorders[g_xState.activeWindow] = float4(vTopLeft.x, vTopLeft.y, vBottomRight.x, vBottomRight.y);
 
 				g_xState.vWorldMousePos = (float2)(fCamWorld + vDelta * fViewScale);
+
+				/*if(g_is2DPanning)
+				{
+					// vWorldDelta
+					ICamera *pCamera = g_xConfig.m_pViewportCamera[g_xState.activeWindow];
+
+					float3 vWorldDelta = (g_xState.vMousePos - g_v2DPanningStartMouse) * fViewScale;
+
+					float3 vWorldDelta3D;
+					switch(xCurView)
+					{
+					case X2D_TOP:
+						vWorldDelta3D = float3(vWorldDelta.x, 0.0f, -vWorldDelta.y);
+						break;
+					case X2D_FRONT:
+						vWorldDelta3D = float3(vWorldDelta.x, -vWorldDelta.y, 0.0f);
+						break;
+					case X2D_SIDE:
+						vWorldDelta3D = float3(0.0f, -vWorldDelta.y, vWorldDelta.x);
+						break;
+					}
+					float3 vPos = g_v2DPanningStart - vWorldDelta3D;
+					pCamera->setPosition(&vPos);
+				}*/
 
 				if(s_pMoveCmd || s_pScaleCmd || s_pRotateCmd)
 				{

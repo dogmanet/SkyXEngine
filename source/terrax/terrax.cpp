@@ -104,7 +104,7 @@ public:
 			::DispatchMessage(&msg);
 		}
 
-		if(g_is3DRotating || g_is3DPanning)
+		if(g_is3DRotating || g_is3DPanning || g_is2DPanning)
 		{
 			int x, y;
 			SSInput_GetMouseDelta(&x, &y);
@@ -140,60 +140,91 @@ public:
 				vPos += vUp * -dy * 10.0f + vRight * dx * 10.0f;
 				pCamera->setPosition(&vPos);
 			}
+			else if(g_is2DPanning)
+			{
+				// vWorldDelta
+				ICamera *pCamera = g_xConfig.m_pViewportCamera[g_xState.activeWindow];
+				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+				float3 vWorldDelta = float2(-(float)x, (float)y) * g_xConfig.m_fViewportScale[g_xState.activeWindow];
 
-			float3 dir;
-			static float s_fSpeed = 0;
-			float fMaxSpeed = 10.0f; //@TODO: CVar this!
-			float fMaxSpeedBoost = 40.0f; //@TODO: CVar this!
-			float fAccelTime = 0.5f; //@TODO: CVar this!
-			if(GetAsyncKeyState(VK_SHIFT) < 0)
-			{
-				fMaxSpeed = fMaxSpeedBoost;
-			}
-			float fAccel = fMaxSpeed / fAccelTime;
-			bool mov = false;
-			//! @FIXME add actial timeDelta
-			//float dt = (float)timeDelta * 0.001f;
-			float dt = (float)16 * 0.001f;
-			if(GetAsyncKeyState('W') < 0)
-			{
-				dir.z += 1.0f;
-				mov = true;
-			}
-			if(GetAsyncKeyState('S') < 0)
-			{
-				dir.z -= 1.0f;
-				mov = true;
-			}
-			if(GetAsyncKeyState('A') < 0)
-			{
-				dir.x -= 1.0f;
-				mov = true;
-			}
-			if(GetAsyncKeyState('D') < 0)
-			{
-				dir.x += 1.0f;
-				mov = true;
-			}
+				// printf("%5d, %5d\n", x, y);
 
-			if(mov)
-			{
-				s_fSpeed += fAccel * dt;
-				if(s_fSpeed > fMaxSpeed)
+				float3 vWorldDelta3D;
+				switch(xCurView)
 				{
-					s_fSpeed = fMaxSpeed;
+				case X2D_TOP:
+					vWorldDelta3D = float3(vWorldDelta.x, 0.0f, vWorldDelta.y);
+					break;
+				case X2D_FRONT:
+					vWorldDelta3D = float3(vWorldDelta.x, vWorldDelta.y, 0.0f);
+					break;
+				case X2D_SIDE:
+					vWorldDelta3D = float3(0.0f, vWorldDelta.y, vWorldDelta.x);
+					break;
 				}
-				float3 vPos, vDir, vRight;
+
+				float3 vPos;
 				pCamera->getPosition(&vPos);
-				pCamera->getLook(&vDir);
-				pCamera->getRight(&vRight);
-				dir = SMVector3Normalize(dir) * dt * s_fSpeed;
-				vPos += vDir * dir.z + vRight * dir.x;
+				vPos = vPos + vWorldDelta3D;
 				pCamera->setPosition(&vPos);
 			}
-			else
+
+			if(g_is3DPanning || g_is3DRotating)
 			{
-				s_fSpeed = 0;
+				float3 dir;
+				static float s_fSpeed = 0;
+				float fMaxSpeed = 10.0f; //@TODO: CVar this!
+				float fMaxSpeedBoost = 40.0f; //@TODO: CVar this!
+				float fAccelTime = 0.5f; //@TODO: CVar this!
+				if(GetAsyncKeyState(VK_SHIFT) < 0)
+				{
+					fMaxSpeed = fMaxSpeedBoost;
+				}
+				float fAccel = fMaxSpeed / fAccelTime;
+				bool mov = false;
+				//! @FIXME add actial timeDelta
+				//float dt = (float)timeDelta * 0.001f;
+				float dt = (float)16 * 0.001f;
+				if(GetAsyncKeyState('W') < 0)
+				{
+					dir.z += 1.0f;
+					mov = true;
+				}
+				if(GetAsyncKeyState('S') < 0)
+				{
+					dir.z -= 1.0f;
+					mov = true;
+				}
+				if(GetAsyncKeyState('A') < 0)
+				{
+					dir.x -= 1.0f;
+					mov = true;
+				}
+				if(GetAsyncKeyState('D') < 0)
+				{
+					dir.x += 1.0f;
+					mov = true;
+				}
+
+				if(mov)
+				{
+					s_fSpeed += fAccel * dt;
+					if(s_fSpeed > fMaxSpeed)
+					{
+						s_fSpeed = fMaxSpeed;
+					}
+					float3 vPos, vDir, vRight;
+					pCamera->getPosition(&vPos);
+					pCamera->getLook(&vDir);
+					pCamera->getRight(&vRight);
+					dir = SMVector3Normalize(dir) * dt * s_fSpeed;
+					vPos += vDir * dir.z + vRight * dir.x;
+					pCamera->setPosition(&vPos);
+				}
+				else
+				{
+					s_fSpeed = 0;
+				}
 			}
 		}
 
@@ -658,6 +689,8 @@ int main(int argc, char **argv)
 		}
 	});
 	
+	Core_SetOutPtr();
+
 	//SGCore_SkyBoxLoadTex("sky_2_cube.dds");
 	//SGCore_SkyBoxLoadTex("sky_hdr.dds");
 	//SGCore_SkyBoxLoadTex("sky_test_cube.dds");
