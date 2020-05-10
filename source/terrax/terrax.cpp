@@ -1553,19 +1553,20 @@ bool XIsMouseInSelection(X_WINDOW_POS wnd)
 		return(false);
 	}
 	const float2_t &fMPos = g_xState.vWorldMousePos;
+	float fMargin = g_xConfig.m_fViewportScale[wnd] * 5.0f;
 	switch(g_xConfig.m_x2DView[wnd])
 	{
 	case X2D_TOP:
-		return(fMPos.x >= g_xState.vSelectionBoundMin.x && fMPos.x <= g_xState.vSelectionBoundMax.x && 
-			fMPos.y >= g_xState.vSelectionBoundMin.z && fMPos.y <= g_xState.vSelectionBoundMax.z);
+		return(fMPos.x >= g_xState.vSelectionBoundMin.x - fMargin && fMPos.x <= g_xState.vSelectionBoundMax.x + fMargin &&
+			fMPos.y >= g_xState.vSelectionBoundMin.z - fMargin && fMPos.y <= g_xState.vSelectionBoundMax.z + fMargin);
 
 	case X2D_FRONT:
-		return(fMPos.x >= g_xState.vSelectionBoundMin.x && fMPos.x <= g_xState.vSelectionBoundMax.x &&
-			fMPos.y >= g_xState.vSelectionBoundMin.y && fMPos.y <= g_xState.vSelectionBoundMax.y);
+		return(fMPos.x >= g_xState.vSelectionBoundMin.x - fMargin && fMPos.x <= g_xState.vSelectionBoundMax.x + fMargin &&
+			fMPos.y >= g_xState.vSelectionBoundMin.y - fMargin && fMPos.y <= g_xState.vSelectionBoundMax.y + fMargin);
 
 	case X2D_SIDE:
-		return(fMPos.x >= g_xState.vSelectionBoundMin.z && fMPos.x <= g_xState.vSelectionBoundMax.z &&
-			fMPos.y >= g_xState.vSelectionBoundMin.y && fMPos.y <= g_xState.vSelectionBoundMax.y);
+		return(fMPos.x >= g_xState.vSelectionBoundMin.z - fMargin && fMPos.x <= g_xState.vSelectionBoundMax.z + fMargin &&
+			fMPos.y >= g_xState.vSelectionBoundMin.y - fMargin && fMPos.y <= g_xState.vSelectionBoundMax.y + fMargin);
 	}
 	return(false);
 }
