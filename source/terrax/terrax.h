@@ -209,6 +209,8 @@ bool XIsMouseInSelection(X_WINDOW_POS wnd);
 
 void XUpdatePropWindow();
 
+float3 XSnapToGrid(const float3 &vPos);
+
 extern IXEngine *g_pEngine;
 
 #endif

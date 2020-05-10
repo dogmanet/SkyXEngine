@@ -855,6 +855,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			XCheckMenuItem(g_hMenu, ID_VIEW_GRID, g_xConfig.m_bShowGrid);
 			break;
 
+		case ID_LEVEL_SNAPTOGRID:
+			g_xConfig.m_bSnapGrid = !g_xConfig.m_bSnapGrid;
+			XUpdateStatusGrid();
+			break;
+
 		case ID_EDIT_UNDO:
 			if(IsEditMessage())
 			{
@@ -1770,7 +1775,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						vStartPos = float3(0.0f, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
 						break;
 					}
-					s_pMoveCmd->setStartPos(vStartPos);
+					s_pMoveCmd->setStartPos(XSnapToGrid(vStartPos));
 					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 					{
 						if(g_pLevelObjects[i]->isSelected())
@@ -1806,6 +1811,8 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					g_xState.vCreateOrigin = float3(g_xState.vCreateOrigin.x, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
 					break;
 				}
+
+				g_xState.vCreateOrigin = XSnapToGrid(g_xState.vCreateOrigin);
 			}
 			break;
 		}
@@ -1958,6 +1965,8 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						break;
 					}
 
+					vCurPos = XSnapToGrid(vCurPos);
+
 					if(s_pMoveCmd)
 					{
 						s_pMoveCmd->setCurrentPos(vCurPos);
@@ -2069,6 +2078,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					g_xState.vCreateOrigin = float3(g_xState.vCreateOrigin.x, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
 					break;
 				}
+				g_xState.vCreateOrigin = XSnapToGrid(g_xState.vCreateOrigin);
 			}
 			return(TRUE);
 		}
@@ -2246,6 +2256,80 @@ BOOL XCheckMenuItem(HMENU hMenu, UINT uIDCheckItem, bool bCheck)
 	mii.fMask = MIIM_STATE;
 	mii.fState = bCheck ? MFS_CHECKED : MFS_UNCHECKED;
 	return(SetMenuItemInfoA(hMenu, uIDCheckItem, FALSE, &mii));
+}
+
+float3 XSnapToGrid(const float3 &vPos)
+{
+	if(g_xConfig.m_bSnapGrid)
+	{
+		float fGridStep = -1.0f;
+		switch(g_xConfig.m_gridStep)
+		{
+		case GRID_STEP_1CM:
+			fGridStep = 0.01f;
+			break;
+		case GRID_STEP_2CM:
+			fGridStep = 0.02f;
+			break;
+		case GRID_STEP_5CM:
+			fGridStep = 0.05f;
+			break;
+		case GRID_STEP_10CM:
+			fGridStep = 0.1f;
+			break;
+		case GRID_STEP_20CM:
+			fGridStep = 0.2f;
+			break;
+		case GRID_STEP_50CM:
+			fGridStep = 0.5f;
+			break;
+		case GRID_STEP_1M:
+			fGridStep = 1.0f;
+			break;
+		case GRID_STEP_2M:
+			fGridStep = 2.0f;
+			break;
+		case GRID_STEP_5M:
+			fGridStep = 5.0f;
+			break;
+		case GRID_STEP_10M:
+			fGridStep = 10.0f;
+			break;
+		case GRID_STEP_20M:
+			fGridStep = 20.0f;
+			break;
+		case GRID_STEP_50M:
+			fGridStep = 50.0f;
+			break;
+		}
+
+		if(fGridStep > 0.0f)
+		{
+			float3 vDelta(
+				fmodf(vPos.x, fGridStep),
+				fmodf(vPos.y, fGridStep),
+				fmodf(vPos.z, fGridStep)
+				);
+			if(vDelta.x > 0.5f)
+			{
+				vDelta.x -= fGridStep;
+			}
+			if(vDelta.y > 0.5f)
+			{
+				vDelta.y -= fGridStep;
+			}
+			if(vDelta.z > 0.5f)
+			{
+				vDelta.z -= fGridStep;
+			}
+
+			return(vPos - vDelta);
+		}
+	}
+	else
+	{
+		return(vPos);
+	}
 }
 
 void XUpdateStatusGrid()

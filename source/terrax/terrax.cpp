@@ -104,6 +104,11 @@ public:
 			::DispatchMessage(&msg);
 		}
 
+		static time_point tPrev = std::chrono::high_resolution_clock::now();
+		time_point tNow = std::chrono::high_resolution_clock::now();
+		float fDeltaTime = (float)std::chrono::duration_cast<std::chrono::microseconds>(tNow - tPrev).count() * 0.000001f;
+		tPrev = tNow;
+
 		if(g_is3DRotating || g_is3DPanning || g_is2DPanning)
 		{
 			int x, y;
@@ -182,9 +187,6 @@ public:
 				}
 				float fAccel = fMaxSpeed / fAccelTime;
 				bool mov = false;
-				//! @FIXME add actial timeDelta
-				//float dt = (float)timeDelta * 0.001f;
-				float dt = (float)16 * 0.001f;
 				if(GetAsyncKeyState('W') < 0)
 				{
 					dir.z += 1.0f;
@@ -208,7 +210,7 @@ public:
 
 				if(mov)
 				{
-					s_fSpeed += fAccel * dt;
+					s_fSpeed += fAccel * fDeltaTime;
 					if(s_fSpeed > fMaxSpeed)
 					{
 						s_fSpeed = fMaxSpeed;
@@ -217,7 +219,7 @@ public:
 					pCamera->getPosition(&vPos);
 					pCamera->getLook(&vDir);
 					pCamera->getRight(&vRight);
-					dir = SMVector3Normalize(dir) * dt * s_fSpeed;
+					dir = SMVector3Normalize(dir) * fDeltaTime * s_fSpeed;
 					vPos += vDir * dir.z + vRight * dir.x;
 					pCamera->setPosition(&vPos);
 				}
