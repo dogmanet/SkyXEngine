@@ -77,6 +77,9 @@ CShadowCache::CShadowCache(IXRenderPipeline *pRenderPipeline, IXMaterialSystem *
 	//rasterizerDesc.cullMode = GXCULL_FRONT;
 	//rasterizerDesc.useConservativeRasterization = true;
 	m_pRasterizerConservative = m_pRenderPipeline->getDevice()->createRasterizerState(&rasterizerDesc);
+
+	rasterizerDesc.cullMode = GXCULL_FRONT;
+	m_pRasterizerCullFront = m_pRenderPipeline->getDevice()->createRasterizerState(&rasterizerDesc);
 }
 CShadowCache::~CShadowCache()
 {
@@ -84,6 +87,8 @@ CShadowCache::~CShadowCache()
 	mem_delete(m_pShadowSizeCvarListener);
 	mem_delete(m_pShadowPSSM);
 	mem_delete(m_pReflectiveShadowSun);
+	mem_release(m_pRasterizerCullFront);
+	mem_release(m_pRasterizerConservative);
 }
 
 void CShadowCache::setLightsCount(UINT uPoints, UINT uSpots, bool hasGlobal)
@@ -249,7 +254,7 @@ UINT CShadowCache::processNextBunch()
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mOldProj);
 
 	m_pRenderPipeline->getDevice()->getThreadContext()->setDepthStencilState(NULL);
-	m_pRenderPipeline->getDevice()->getThreadContext()->setRasterizerState(m_pRasterizerConservative);
+	m_pRenderPipeline->getDevice()->getThreadContext()->setRasterizerState(m_pRasterizerCullFront);
 
 	bool isSomeFound = false;
 	if(m_isFirstBunch)

@@ -152,7 +152,7 @@ void CShadowMap::process(IXRenderPipeline *pRenderPipeline)
 	pCtx->setColorTarget(pDepthSurface);
 	pCtx->setColorTarget(NULL, 1);
 	pCtx->setColorTarget(NULL, 2);
-	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, float4(1.0f, 1.0f, 1.0f, 1.0f));
 	
 	mem_release(pDepthSurface);
 	
@@ -410,7 +410,7 @@ void CReflectiveShadowMap::process(IXRenderPipeline *pRenderPipeline)
 	pCtx->setColorTarget(pDepthSurface);
 	pCtx->setColorTarget(NULL, 1);
 	pCtx->setColorTarget(NULL, 2);
-	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, float4(1.0f, 1.0f, 1.0f, 1.0f));
 
 	pCtx->setColorTarget(pFluxSurface, 0);
 	pCtx->setColorTarget(pNormalSurface, 1);
@@ -592,7 +592,7 @@ void CShadowPSSM::process(IXRenderPipeline *pRenderPipeline)
 	pCtx->setColorTarget(pDepthSurface);
 	pCtx->setColorTarget(NULL, 1);
 	pCtx->setColorTarget(NULL, 2);
-	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, float4(1.0f, 1.0f, 1.0f, 1.0f));
 
 	mem_release(pDepthSurface);
 
@@ -814,7 +814,7 @@ void CReflectiveShadowSun::process(IXRenderPipeline *pRenderPipeline)
 	pCtx->setColorTarget(pDepthSurface);
 	pCtx->setColorTarget(NULL, 1);
 	pCtx->setColorTarget(NULL, 2);
-	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, float4(1.0f, 1.0f, 1.0f, 1.0f));
 
 	pCtx->setColorTarget(pFluxSurface, 0);
 	pCtx->setColorTarget(pNormalSurface, 1);
@@ -1035,7 +1035,7 @@ void CShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 	pCtx->setColorTarget(pDepthSurface);
 	pCtx->setColorTarget(NULL, 1);
 	pCtx->setColorTarget(NULL, 2);
-	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, float4(pPointLight->getMaxDistance() * pPointLight->getMaxDistance()));
 	
 	mem_release(pDepthSurface);
 	
@@ -1272,7 +1272,7 @@ void CReflectiveShadowCubeMap::process(IXRenderPipeline *pRenderPipeline)
 	pCtx->setColorTarget(pDepthSurface);
 	pCtx->setColorTarget(NULL, 1);
 	pCtx->setColorTarget(NULL, 2);
-	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, GX_COLOR_ARGB(255, 255, 255, 255));
+	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, float4(pPointLight->getMaxDistance() * pPointLight->getMaxDistance()));
 
 	pCtx->setColorTarget(pFluxSurface, 0);
 	pCtx->setColorTarget(pNormalSurface, 1);

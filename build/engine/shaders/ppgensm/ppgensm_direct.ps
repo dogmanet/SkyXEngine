@@ -92,10 +92,13 @@ float4 main(VSO_ResPos IN):COLOR0
 	// float fScaleFactor = min(1.0 / cosTheta, 100);
 	// float fScaleFactor = 1.0f;
 	
-	float fBias0 = (lf - fDepthLight0 * (lf - ln)) * (lf - fDepthLight0 * (lf - ln)) / (lf * ln * (lf - ln)) * lf * 0.0008f * fScaleFactor;
-	float fBiasX = (lf - fDepthLightX * (lf - ln)) * (lf - fDepthLightX * (lf - ln)) / (lf * ln * (lf - ln)) * lf * 0.0008f * fScaleFactor - fBias0;
-	float fBiasY = (lf - fDepthLightY * (lf - ln)) * (lf - fDepthLightY * (lf - ln)) / (lf * ln * (lf - ln)) * lf * 0.0008f * fScaleFactor - fBias0;
+	// float fBias0 = (lf - fDepthLight0 * (lf - ln)) * (lf - fDepthLight0 * (lf - ln)) / (lf * ln * (lf - ln)) * lf * 0.0008f * fScaleFactor;
+	// float fBiasX = (lf - fDepthLightX * (lf - ln)) * (lf - fDepthLightX * (lf - ln)) / (lf * ln * (lf - ln)) * lf * 0.0008f * fScaleFactor - fBias0;
+	// float fBiasY = (lf - fDepthLightY * (lf - ln)) * (lf - fDepthLightY * (lf - ln)) / (lf * ln * (lf - ln)) * lf * 0.0008f * fScaleFactor - fBias0;
 	
+	float fBias0 = 0.0f;
+	float fBiasX = 0.0f;
+	float fBiasY = 0.0f;
 	
 	// float fD = vPixelMapSizeBias.x * 0.5f * (1.0f - fDepth) / g_vLightColorPower.w;
 	// fBias = fD * sqrt(1.0f / (cosTheta * cosTheta) - 1.0f);

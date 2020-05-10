@@ -142,7 +142,8 @@ float4 main(VSO_ResPos IN): COLOR0
 				/** Check the visibility **/
 				// fShadow = SMDepth < actualDepth + actualBias ? 0.0f : 1.0f;    
 				
-				fShadow = g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, cubeCoord, actualDepth + actualBias);
+				// fShadow = g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, cubeCoord, actualDepth + actualBias);
+				fShadow = g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, cubeCoord, vTexCoord.z);
 				
 				break;
 			}

@@ -53,6 +53,7 @@ protected:
 	ICamera *m_pCamera = NULL;
 
 	IGXRasterizerState *m_pRasterizerConservative = NULL;
+	IGXRasterizerState *m_pRasterizerCullFront = NULL;
 
 	UINT m_uCurrentFrame = 0;
 	Array<CXLight*> m_aFrameLights;
