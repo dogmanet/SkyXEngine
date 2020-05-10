@@ -9,7 +9,8 @@
 #ifdef IS_SUN
 #define LPV_POINT_WEIGHT (256.0f * 256.0f * 2.0f / (float)(LPV_POINT_COUNT * LPV_POINT_COUNT))
 #else
-#define LPV_POINT_WEIGHT (256.0f / (float)(LPV_POINT_COUNT * LPV_POINT_COUNT))
+// #define LPV_POINT_WEIGHT (256.0f / (float)(LPV_POINT_COUNT * LPV_POINT_COUNT))
+#define LPV_POINT_WEIGHT (1.0f / LPV_POINT_COUNT)
 #endif
 
 // #ifdef IS_SUN

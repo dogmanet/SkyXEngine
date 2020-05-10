@@ -39,7 +39,7 @@ struct RsmTexel
 
 float Luminance(RsmTexel rsmTexel)
 {
-	return((rsmTexel.flux.r * 0.299f + rsmTexel.flux.g * 0.587f + rsmTexel.flux.b * 0.114f)/*  + max(0.0f, dot(rsmTexel.normalWS, -g_vLightSpotDirection.xyz)) */);
+	return(dot(rsmTexel.flux.xyz, float3(0.298f, 0.585f, 0.117f))/*  + max(0.0f, dot(rsmTexel.normalWS, -g_vLightSpotDirection.xyz)) */);
 }
 
 RsmTexel GetRsmTexel(int3 coords, uint2 vTexSize)
@@ -94,8 +94,11 @@ RsmTexel GetRsmTexel(int3 coords, uint2 vTexSize)
 	// tx.flux *= saturate(fNdotD - g_vLightSpotInnerOuterAngles.y) / (g_vLightSpotInnerOuterAngles.x - g_vLightSpotInnerOuterAngles.y);
 	
 	float fDistance = distance(tx.positionWS, g_vLightPosShadow.xyz);
-	float fInvDistance = 1.f - (fDistance/g_vLightColorPower.w);
-	tx.flux *= fInvDistance * fInvDistance;
+	// float fInvDistance = 1.f - (fDistance/g_vLightColorPower.w);
+	// tx.flux *= fInvDistance * fInvDistance;
+
+	float fAttenuation = saturate((1.0f / fDistance) * (1.f - (fDistance/g_vLightColorPower.w)) * (1 + fDistance * fDistance));
+	tx.flux *= fAttenuation;
 
 #ifndef _DEBUG
 	tx.positionWS += (tx.normalWS * POSWS_BIAS_NORMAL);

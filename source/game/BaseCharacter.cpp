@@ -109,12 +109,12 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	m_flashlight = (CLightDirectional*)CREATE_ENTITY("light_directional", m_pMgr);
 	//m_flashlight->setPos(getPos() + float3(0.f, 0.1f, 0.f));
 	m_flashlight->setPos(m_pHeadEnt->getPos() + float3(0.0f, 0.1f, 0.1f));
-	m_flashlight->setOrient(m_pHeadEnt->getOrient() * SMQuaternion(SM_PIDIV2, 'x'));
+	m_flashlight->setOrient(m_pHeadEnt->getOrient() * SMQuaternion(SM_PIDIV2 - SMToRadian(5.0f), 'x'));
 	m_flashlight->setParent(m_pHeadEnt);
 	m_flashlight->setDist(20.f);
 	m_flashlight->setOuterAngle(SMToRadian(30)); // 60
 	m_flashlight->setInnerAngle(SMToRadian(10));
-	m_flashlight->setColor(float3(3.5, 3.5, 3.5));
+	m_flashlight->setColor(float3(1.0f, 0.95f, 0.65f));
 	//m_flashlight->setShadowType(-1);
 	m_flashlight->setShadowType(1);
 	m_flashlight->setEnable(false);

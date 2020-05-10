@@ -153,12 +153,14 @@ float4 main(VSO_ResPos IN):SV_TARGET
 #else
 	float fDistance = distance(vPosition.xyz, g_vLightPosShadow.xyz);
 	
-	float fInvDistance = 1.f - (fDistance/g_vLightColorPower.w);
+	// float fInvDistance = 1.f - (fDistance/g_vLightColorPower.w);
 	
-	[branch]if(fInvDistance < 0.0)
-		fInvDistance = 0.0;
+	// [branch]if(fInvDistance < 0.0)
+		// fInvDistance = 0.0;
 	
-	float fAttenuation = fInvDistance * fInvDistance;
+	// float fAttenuation = fInvDistance * fInvDistance;
+	// float fAttenuation = 1.0f / (1.0f + fDistance * fDistance);
+	float fAttenuation = saturate((1.0f / fDistance) * (1.f - (fDistance/g_vLightColorPower.w)));
 	
 	float3 vLigth = normalize(g_vLightPosShadow.xyz - vPosition.xyz);
 #endif
@@ -170,7 +172,7 @@ float4 main(VSO_ResPos IN):SV_TARGET
 
 #ifdef IS_SPOT
 	float fNdotD = dot(-vLigth, g_vLightSpotDirection.xyz);
-	fShadow *= saturate(fNdotD - g_vLightSpotInnerOuterAngles.y) / (g_vLightSpotInnerOuterAngles.x - g_vLightSpotInnerOuterAngles.y);
+	fShadow *= saturate((fNdotD - g_vLightSpotInnerOuterAngles.y) / (g_vLightSpotInnerOuterAngles.x - g_vLightSpotInnerOuterAngles.y));
 #endif
 	
 	float3 vVertexToEye = normalize(g_vObserverPosCam.xyz - vPosition.xyz);

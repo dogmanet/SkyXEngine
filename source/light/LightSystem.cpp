@@ -403,7 +403,7 @@ IMesh* CLightSystem::getShapeCone()
 {
 	if(!m_pShapeCone)
 	{
-		SGCore_FCreateCone(0.0f, 1.0f, 1.0f, &m_pShapeCone, 16);
+		SGCore_FCreateCone(0.0f, 1.0f / cosf(SM_PI / 16.0f), 1.0f, &m_pShapeCone, 16);
 	}
 	m_pShapeCone->AddRef();
 	return(m_pShapeCone);
