@@ -146,6 +146,9 @@ public:
 	virtual void XMETHODCALLTYPE setFlag(const char *szFlag, bool isSet) = 0;
 	virtual bool XMETHODCALLTYPE getFlag(const char *szFlag) = 0;
 	virtual IMaterialFlag* XMETHODCALLTYPE getFlagHandler(const char *szFlag) = 0;
+
+	//! Перезагружает все материалы
+	virtual void XMETHODCALLTYPE reloadAll() = 0;
 };
 
 #endif

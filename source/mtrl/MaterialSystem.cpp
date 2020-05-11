@@ -57,6 +57,8 @@ CMaterialSystem::CMaterialSystem()
 		}
 	}
 
+	Core_0RegisterConcmdCls("mtl_reload", this, (SXCONCMDCLS)&CMaterialSystem::reloadAll, "Перезагружает все материалы");
+
 	m_pNotifyChannel = Core_GetIXCore()->getEventChannel<XEventMaterialChanged>(EVENT_MATERIAL_CHANGED_GUID);
 
 	loadTexture("textures/dev/dev_null.dds", &m_pDefaultTexture);
@@ -81,7 +83,34 @@ void XMETHODCALLTYPE CMaterialSystem::loadMaterial(const char *szName, IXMateria
 		return/*(true)*/;
 	}
 
+	m_mapMaterials[sName] = NULL;
+	m_mapMaterials.KeyExists(sName, &pNode);
 
+	CMaterial *pNewMaterial = new CMaterial(this, pNode->Key.c_str());
+	*ppMaterial = pNewMaterial;
+	m_mapMaterials[sName] = pNewMaterial;
+
+	if(!loadMaterial(szName, pNewMaterial))
+	{
+		pNewMaterial->setShader(szDefaultShader ? szDefaultShader : "Default");
+		pNewMaterial->setTexture("txBase", szName);
+	}
+}
+bool XMETHODCALLTYPE CMaterialSystem::getMaterial(const char *szName, IXMaterial **ppMaterial)
+{
+	const AssotiativeArray<String, CMaterial*>::Node *pNode;
+	if(m_mapMaterials.KeyExists(szName, &pNode) && *(pNode->Val))
+	{
+		*ppMaterial = *(pNode->Val);
+		(*ppMaterial)->AddRef();
+		return(true);
+	}
+
+	return(false);
+}
+
+bool CMaterialSystem::loadMaterial(const char *szName, CMaterial *pMaterial)
+{
 	UINT uFileNameLength = 0;
 	bool isFound = false;
 	UINT i, l;
@@ -102,37 +131,20 @@ void XMETHODCALLTYPE CMaterialSystem::loadMaterial(const char *szName, IXMateria
 		m_aMaterialProxies[i]->resolveName(szName, szFileName, &uFileNameLength);
 	}
 
-	m_mapMaterials[sName] = NULL;
-	m_mapMaterials.KeyExists(sName, &pNode);
-
-	CMaterial *pNewMaterial = NULL;
-
-	// ID id = SMtrl_MtlLoad2(szName, pDefaultShaders, uVariantCount, pVariantsDesc);
-	pNewMaterial = new CMaterial(this, pNode->Key.c_str());
-	*ppMaterial = pNewMaterial;
-	m_mapMaterials[sName] = pNewMaterial;
-
-	if(!loadMaterialFromFile(szFileName, pNewMaterial))
+	if(loadMaterialFromFile(szFileName, pMaterial))
 	{
-		pNewMaterial->setShader(szDefaultShader ? szDefaultShader : "Default");
-		pNewMaterial->setTexture("txBase", szName);
-	}
-	else
-	{
-		pNewMaterial->setProxy(m_aMaterialProxies[i]);
-	}
-}
-bool XMETHODCALLTYPE CMaterialSystem::getMaterial(const char *szName, IXMaterial **ppMaterial)
-{
-	const AssotiativeArray<String, CMaterial*>::Node *pNode;
-	if(m_mapMaterials.KeyExists(szName, &pNode) && *(pNode->Val))
-	{
-		*ppMaterial = *(pNode->Val);
-		(*ppMaterial)->AddRef();
+		pMaterial->setProxy(m_aMaterialProxies[i]);
 		return(true);
 	}
-
 	return(false);
+}
+
+void XMETHODCALLTYPE CMaterialSystem::reloadAll()
+{
+	for(AssotiativeArray<String, CMaterial*>::Iterator i = m_mapMaterials.begin(); i; i++)
+	{
+		loadMaterial(i.first->c_str(), *(i.second));
+	}
 }
 
 const char* GetFileExtension(const char *szName)

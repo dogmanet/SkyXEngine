@@ -294,6 +294,8 @@ public:
 
 	void XMETHODCALLTYPE loadMaterial(const char *szName, IXMaterial **ppMaterial, const char *szDefaultShader = NULL) override;
 	bool XMETHODCALLTYPE getMaterial(const char *szName, IXMaterial **ppMaterial) override;
+	void XMETHODCALLTYPE reloadAll() override;
+	bool loadMaterial(const char *szName, CMaterial *pMaterial);
 
 	bool XMETHODCALLTYPE loadTexture(const char *szName, IXTexture **ppTexture) override;
 	bool XMETHODCALLTYPE getTexture(const char *szName, IXTexture **ppTexture) override;
