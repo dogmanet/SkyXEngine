@@ -7,7 +7,12 @@ XMaterial MainGBuffer(PSI_XMaterial IN)
 	float2 vBaseUV = IN.vTexUV * g_xMaterialConstants.terrain_base_scale;
 	float2 vMaskUV = IN.vTexUV * g_xMaterialConstants.terrain_mask_scale;
 	
-	float4 vMask = g_txMask.Sample(g_sScene, vMaskUV);
+	float4 vMask = g_txMask.Sample(g_sScene, vMaskUV) * float4(
+		g_xMaterialConstants.terrain_mask_mult_0, 
+		g_xMaterialConstants.terrain_mask_mult_1, 
+		g_xMaterialConstants.terrain_mask_mult_2, 
+		g_xMaterialConstants.terrain_mask_mult_3
+	);
 	
 	float4 vBaseColor = g_txBase.Sample(g_sScene, vBaseUV);
 	

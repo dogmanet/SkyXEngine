@@ -306,6 +306,11 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XMATERIAL_PARAM_RANGE("Detail scale", "terrain_detail_scale", 0.0f, 100.0f, 10.0f),
 			XMATERIAL_PARAM_RANGE("Mask scale", "terrain_mask_scale", 0.0f, 100.0f, 1.0f),
 
+			XMATERIAL_PARAM_RANGE("Detail texture 0 multiplier", "terrain_mask_mult_0", 0.0f, 1.0f, 1.0f),
+			XMATERIAL_PARAM_RANGE("Detail texture 1 multiplier", "terrain_mask_mult_1", 0.0f, 1.0f, 1.0f),
+			XMATERIAL_PARAM_RANGE("Detail texture 2 multiplier", "terrain_mask_mult_2", 0.0f, 1.0f, 1.0f),
+			XMATERIAL_PARAM_RANGE("Detail texture 3 multiplier", "terrain_mask_mult_3", 0.0f, 1.0f, 1.0f),
+
 			//XMATERIAL_PARAM_TEXTURE_OPT("Normal map", "txNormals", "HAS_NORMALMAP"),
 			//XMATERIAL_PARAM_GROUP(NULL, "HAS_NORMALMAP"),
 			//	XMATERIAL_PARAM_RANGE("Normalmap weight", "nm_weight", -1.0f, 1.0f, 1.0f),
