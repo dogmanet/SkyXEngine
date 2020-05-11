@@ -1243,6 +1243,8 @@ void GameData::render()
 	IGXDevice *pDev = SGCore_GetDXDevice();
 	++g_uFrameCount;
 	
+	static const int *r_stats = GET_PCVAR_INT("r_stats");
+
 	static int64_t s_uTime = Core_TimeTotalMlsGetU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	int64_t uTime = Core_TimeTotalMlsGetU(Core_RIntGet(G_RI_INT_TIMER_RENDER));
 	if(uTime - s_uTime > 1000)
@@ -1251,7 +1253,7 @@ void GameData::render()
 		s_uTime = uTime;
 		g_uFrameCount = 0;
 	}
-	if(pDev)
+	if(pDev && *r_stats)
 	{
 		const GXFrameStats *pFrameStats = pDev->getThreadContext()->getFrameStats();
 		const GXAdapterMemoryStats *pMemoryStats = pDev->getMemoryStats();
@@ -1273,39 +1275,46 @@ void GameData::render()
 			float3 vPlayerPos = m_pPlayer->getPos();
 
 			static wchar_t wszStats[512];
-			swprintf_s(wszStats, L"FPS: %u\n"
-				L"GPU: %s\n"
-				L"Total memory: %uMB\n"
-				L"Used memory: %.3fMB; (T: %.3fMB; RT: %.3fMB; VB: %.3fMB, IB: %.3fMB, SC: %.3fKB)\n"
-				L"Uploaded bytes: %u; (T: %u; VB: %u, IB: %u, SC: %u)\n"
-				L"Shader switches: %u\n"
-				L"Count poly: %u\n"
-				L"Count DIP: %u\n"
-				L"Player pos: %.3f %.3f %.3f"
-				, g_uFPS,
+			if(*r_stats == 2)
+			{
+				swprintf_s(wszStats, L"FPS: %u\n"
+					L"GPU: %s\n"
+					L"Total memory: %uMB\n"
+					L"Used memory: %.3fMB; (T: %.3fMB; RT: %.3fMB; VB: %.3fMB, IB: %.3fMB, SC: %.3fKB)\n"
+					L"Uploaded bytes: %u; (T: %u; VB: %u, IB: %u, SC: %u)\n"
+					L"Shader switches: %u\n"
+					L"Count poly: %u\n"
+					L"Count DIP: %u\n"
+					L"Player pos: %.3f %.3f %.3f"
+					, g_uFPS,
 
-				pAdapterDesc->szDescription,
-				pAdapterDesc->sizeTotalMemory / 1024 / 1024,
+					pAdapterDesc->szDescription,
+					pAdapterDesc->sizeTotalMemory / 1024 / 1024,
 
-				(float)(pMemoryStats->sizeIndexBufferBytes + pMemoryStats->sizeRenderTargetBytes + pMemoryStats->sizeShaderConstBytes + pMemoryStats->sizeTextureBytes + pMemoryStats->sizeVertexBufferBytes) / 1024.0f / 1024.0f,
-				(float)pMemoryStats->sizeTextureBytes / 1024.0f / 1024.0f,
-				(float)pMemoryStats->sizeRenderTargetBytes / 1024.0f / 1024.0f,
-				(float)pMemoryStats->sizeVertexBufferBytes / 1024.0f / 1024.0f,
-				(float)pMemoryStats->sizeIndexBufferBytes / 1024.0f / 1024.0f,
-				(float)pMemoryStats->sizeShaderConstBytes / 1024.0f,
+					(float)(pMemoryStats->sizeIndexBufferBytes + pMemoryStats->sizeRenderTargetBytes + pMemoryStats->sizeShaderConstBytes + pMemoryStats->sizeTextureBytes + pMemoryStats->sizeVertexBufferBytes) / 1024.0f / 1024.0f,
+					(float)pMemoryStats->sizeTextureBytes / 1024.0f / 1024.0f,
+					(float)pMemoryStats->sizeRenderTargetBytes / 1024.0f / 1024.0f,
+					(float)pMemoryStats->sizeVertexBufferBytes / 1024.0f / 1024.0f,
+					(float)pMemoryStats->sizeIndexBufferBytes / 1024.0f / 1024.0f,
+					(float)pMemoryStats->sizeShaderConstBytes / 1024.0f,
 
-				pFrameStats->uUploadedBuffersIndices + pFrameStats->uUploadedBuffersTextures + pFrameStats->uUploadedBuffersVertexes + pFrameStats->uUploadedBuffersShaderConst,
-				pFrameStats->uUploadedBuffersTextures,
-				pFrameStats->uUploadedBuffersVertexes,
-				pFrameStats->uUploadedBuffersIndices,
-				pFrameStats->uUploadedBuffersShaderConst,
+					pFrameStats->uUploadedBuffersIndices + pFrameStats->uUploadedBuffersTextures + pFrameStats->uUploadedBuffersVertexes + pFrameStats->uUploadedBuffersShaderConst,
+					pFrameStats->uUploadedBuffersTextures,
+					pFrameStats->uUploadedBuffersVertexes,
+					pFrameStats->uUploadedBuffersIndices,
+					pFrameStats->uUploadedBuffersShaderConst,
 
-				pFrameStats->uShaderSwitches,
-				pFrameStats->uPolyCount,
-				pFrameStats->uDIPcount,
+					pFrameStats->uShaderSwitches,
+					pFrameStats->uPolyCount,
+					pFrameStats->uDIPcount,
 
-				vPlayerPos.x, vPlayerPos.y, vPlayerPos.z
-				);
+					vPlayerPos.x, vPlayerPos.y, vPlayerPos.z
+					);
+			}
+			else if(*r_stats == 1)
+			{
+				swprintf_s(wszStats, L"FPS: %u", g_uFPS);
+			}
 
 			RenderText(wszStats);
 		}

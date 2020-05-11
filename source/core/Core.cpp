@@ -33,7 +33,7 @@ CCore::CCore(const char *szName)
 	Core_0RegisterCVarBool("g_time_run", true, "Запущено ли игровое время?", FCVAR_NOTIFY_OLD);
 	Core_0RegisterCVarFloat("g_time_speed", 1.f, "Скорость/соотношение течения игрового времени", FCVAR_NOTIFY_OLD);
 	Core_0RegisterCVarBool("dbg_config_save", false, "Отладочный вывод процесса сохранения конфига");
-	Core_0RegisterCVarInt("r_stats", 1, "Показывать ли статистику? 0 - нет, 1 - fps и игровое время, 2 - показать полностью");
+	Core_0RegisterCVarInt("r_stats", 0, "Показывать ли статистику? 0 - нет, 1 - fps и игровое время, 2 - показать полностью");
 
 	Core_0RegisterConcmd("on_g_time_run_change", []()
 	{
