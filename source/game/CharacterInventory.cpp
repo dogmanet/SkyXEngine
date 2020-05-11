@@ -111,6 +111,7 @@ void CCharacterInventory::putItems(const char *szClassName, int iCount)
 			{
 				if((m_ppSlots[i] = (CBaseItem*)CREATE_ENTITY(szClassName, m_pOwner->getManager())))
 				{
+					m_ppSlots[i]->setMode(IIM_INVENTORY);
 					int iCanAdd = m_ppSlots[i]->m_iInvStackMaxSize - m_ppSlots[i]->m_iInvStackCurSize;
 					if(iCanAdd > 0)
 					{
@@ -173,6 +174,7 @@ void CCharacterInventory::putItem(CBaseItem *pItem)
 				{
 					if((m_ppSlots[i] = (CBaseItem*)CREATE_ENTITY(pItem->getClassName(), m_pOwner->getManager())))
 					{
+						m_ppSlots[i]->setMode(IIM_INVENTORY);
 						int iCanAdd = m_ppSlots[i]->m_iInvStackMaxSize - m_ppSlots[i]->m_iInvStackCurSize;
 						if(iCanAdd > 0)
 						{
@@ -197,6 +199,7 @@ void CCharacterInventory::putItem(CBaseItem *pItem)
 				else
 				{
 					m_ppSlots[i] = pItem;
+					pItem->setMode(IIM_INVENTORY);
 					break;
 				}
 			}

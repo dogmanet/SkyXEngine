@@ -252,6 +252,9 @@
     <ClCompile Include="..\..\..\source\game\TriggerTeleport.cpp">
       <Filter>Source Files\ents\triggers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\TriggerItemUse.cpp">
+      <Filter>Source Files\ents\triggers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -438,6 +441,9 @@
       <Filter>Header Files\ents\light</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\TriggerTeleport.h">
+      <Filter>Header Files\ents\triggers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\TriggerItemUse.h">
       <Filter>Header Files\ents\triggers</Filter>
     </ClInclude>
   </ItemGroup>

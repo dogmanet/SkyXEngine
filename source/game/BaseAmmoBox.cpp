@@ -27,8 +27,8 @@ REGISTER_ENTITY_NOLISTING(CBaseAmmoBox, base_ammobox);
 CBaseAmmoBox::CBaseAmmoBox(CEntityManager * pMgr):
 	BaseClass(pMgr)
 {
-	m_bPickable = false;
-	m_bInvStackable = false;
+	//m_bPickable = false;
+	//m_bInvStackable = false;
 }
 
 void CBaseAmmoBox::onUse(CBaseEntity *pUser)

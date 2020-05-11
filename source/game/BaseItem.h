@@ -26,6 +26,8 @@ enum INVENTORY_ITEM_MODE
 	IIM_EQUIPPED   //! В руках
 };
 
+class CTriggerItemUse;
+
 //! Базовый класс предмета инвентаря
 class CBaseItem: public CBaseAnimating
 {
@@ -44,6 +46,8 @@ public:
 
 	void setHandsResource(IXResourceModelAnimated *pResource);
 
+	void setPos(const float3 &pos);
+
 protected:
 	virtual void onModeChanged(INVENTORY_ITEM_MODE oldMode, INVENTORY_ITEM_MODE newMode);
 	void onSetViewModel(const char *mdl);
@@ -51,8 +55,8 @@ protected:
 	void onSync() override;
 
 	void setScale(float fScale) override;
-
-	const char * m_szInvName; //!< Имя, отображаемое в инвентаре
+	
+	const char *m_szInvName; //!< Имя, отображаемое в инвентаре
 	bool m_bInvStackable; //!< Можно ли хранить несколько итемов в одной ячейке
 	int m_iInvStackCurSize; //!< Количество итемов в стеке
 	int m_iInvStackMaxSize; //!< Максимальное количество итемов в стеке
@@ -62,11 +66,17 @@ protected:
 	output_t m_onPickUp;
 	output_t m_onDrop;
 
+	CTriggerItemUse *m_pTriggerUse = NULL;
+
 	INVENTORY_ITEM_MODE m_inventoryMode = IIM_WORLD;
 	IXAnimatedModel *m_pViewModel = NULL;
 	IXResourceModelAnimated *m_pViewModelResource = NULL;
 	const char * m_szViewModelFile = NULL;
 	IXResourceModelAnimated *m_pHandsModelResource = NULL;
+
+private:
+
+	void onIsPickableChanged(bool isPickable);
 };
 
 #endif

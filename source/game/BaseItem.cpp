@@ -6,6 +6,7 @@ See the license in LICENSE
 
 #include "BaseItem.h"
 #include "BaseCharacter.h"
+#include "TriggerItemUse.h"
 #include <xcommon/resource/IXResourceManager.h>
 
 /*! \skydocent base_item
@@ -24,7 +25,7 @@ BEGIN_PROPTABLE(CBaseItem)
 	//! Масса одного объекта, кг
 	DEFINE_FIELD_FLOAT(m_iInvWeight, PDFF_NOEDIT | PDFF_NOEXPORT, "inv_weight", "", EDITOR_NONE)
 	//! Можно ли поднимать объект
-	DEFINE_FIELD_BOOL(m_bPickable, PDFF_NOEDIT | PDFF_NOEXPORT, "inv_pickable", "", EDITOR_NONE)
+	DEFINE_FIELD_BOOLFN(m_bPickable, PDFF_NOEDIT | PDFF_NOEXPORT, "inv_pickable", "", onIsPickableChanged, EDITOR_NONE)
 
 	DEFINE_OUTPUT(m_onPickUp, "OnPickUp", "On pickup")
 	DEFINE_OUTPUT(m_onDrop, "OnDrop", "On drop")
@@ -42,6 +43,13 @@ CBaseItem::CBaseItem(CEntityManager * pMgr):
 	m_iInvWeight(0.0f),
 	m_bPickable(true)
 {
+	if(m_bPickable)
+	{
+		m_pTriggerUse = (CTriggerItemUse*)CREATE_ENTITY("trigger_itemuse", m_pMgr);
+		m_pTriggerUse->setItem(this);
+		m_pTriggerUse->setModel("meshes/dev/item_trigger.dse");
+		m_pTriggerUse->setPos(getPos());
+	}
 }
 
 CBaseItem::~CBaseItem()
@@ -49,6 +57,10 @@ CBaseItem::~CBaseItem()
 	mem_release(m_pViewModel);
 	mem_release(m_pViewModelResource);
 	mem_release(m_pHandsModelResource);
+	if(m_pTriggerUse)
+	{
+		REMOVE_ENTITY(m_pTriggerUse);
+	}
 }
 
 float CBaseItem::getWeight()
@@ -107,10 +119,22 @@ void CBaseItem::onModeChanged(INVENTORY_ITEM_MODE oldMode, INVENTORY_ITEM_MODE n
 	if(newMode == IIM_WORLD)
 	{
 		initPhysics();
+		if(m_bPickable && !m_pTriggerUse)
+		{
+			m_pTriggerUse = (CTriggerItemUse*)CREATE_ENTITY("trigger_itemuse", m_pMgr);
+			m_pTriggerUse->setItem(this);
+			m_pTriggerUse->setModel("meshes/dev/item_trigger.dse");
+			m_pTriggerUse->setPos(getPos());
+		}
 	}
 	else
 	{
 		releasePhysics();
+		if(m_pTriggerUse)
+		{
+			REMOVE_ENTITY(m_pTriggerUse);
+			m_pTriggerUse = NULL;
+		}
 	}
 }
 
@@ -190,4 +214,31 @@ void CBaseItem::onSync()
 		m_pViewModel->setPosition(getPos());
 		m_pViewModel->setOrientation(getOrient());
 	}
+}
+
+void CBaseItem::setPos(const float3 &pos)
+{
+	BaseClass::setPos(pos);
+
+	if(m_pTriggerUse)
+	{
+		m_pTriggerUse->setPos(getPos());
+	}
+}
+
+void CBaseItem::onIsPickableChanged(bool isPickable)
+{
+	if(isPickable && !m_pTriggerUse)
+	{
+		m_pTriggerUse = (CTriggerItemUse*)CREATE_ENTITY("trigger_itemuse", m_pMgr);
+		m_pTriggerUse->setItem(this);
+		m_pTriggerUse->setModel("meshes/dev/item_trigger.dse");
+		m_pTriggerUse->setPos(getPos());
+	}
+	else if(!isPickable && m_pTriggerUse)
+	{
+		REMOVE_ENTITY(m_pTriggerUse);
+		m_pTriggerUse = NULL;
+	}
+	m_bPickable = isPickable;
 }

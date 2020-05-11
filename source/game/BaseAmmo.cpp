@@ -68,8 +68,8 @@ CBaseAmmo::CBaseAmmo(CEntityManager * pMgr):
 	m_fArmorPiercing(0.0f),
 	m_fNextBarrierDepth(0.0f)
 {
-	m_bPickable = false;
-	m_bInvStackable = false;
+	//m_bPickable = false;
+	//m_bInvStackable = false;
 }
 
 void CBaseAmmo::fire(const float3 &vStart, const float3 &vDir, CBaseCharacter *pAttacker)

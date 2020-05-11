@@ -235,6 +235,7 @@
     <ClCompile Include="..\..\..\source\game\PointEntity.cpp" />
     <ClCompile Include="..\..\..\source\game\Tracer.cpp" />
     <ClCompile Include="..\..\..\source\game\TriggerHurt.cpp" />
+    <ClCompile Include="..\..\..\source\game\TriggerItemUse.cpp" />
     <ClCompile Include="..\..\..\source\game\TriggerTeleport.cpp" />
     <ClCompile Include="..\..\..\source\game\ZombieHands.cpp" />
   </ItemGroup>
@@ -299,6 +300,7 @@
     <ClInclude Include="..\..\..\source\game\TakeDamageInfo.h" />
     <ClInclude Include="..\..\..\source\game\Tracer.h" />
     <ClInclude Include="..\..\..\source\game\TriggerHurt.h" />
+    <ClInclude Include="..\..\..\source\game\TriggerItemUse.h" />
     <ClInclude Include="..\..\..\source\game\TriggerTeleport.h" />
     <ClInclude Include="..\..\..\source\game\ZombieHands.h" />
   </ItemGroup>

@@ -1140,11 +1140,13 @@ GameData::GameData(HWND hWnd, bool isGame):
 		pTool->setMode(IIM_EQUIPPED);
 
 		CBaseAmmo *pAmmo = (CBaseAmmo*)CREATE_ENTITY("ammo_5.45x39ps", m_pMgr);
+		pAmmo->setMode(IIM_INVENTORY);
 		pTool->chargeAmmo(pAmmo);
 
 		m_pPlayer->getInventory()->putItems("ammo_5.45x39ps", 60);
 
 		CBaseMag *pMag = (CBaseMag*)CREATE_ENTITY("mag_ak74_30", m_pMgr);
+		pMag->setMode(IIM_INVENTORY);
 		pMag->load(30);
 		((CBaseWeapon*)pTool)->attachMag(pMag);
 
