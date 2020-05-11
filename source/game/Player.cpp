@@ -396,7 +396,7 @@ void CPlayer::_ccmd_slot_on(int argc, const char ** argv)
 {
 	if(argc != 2)
 	{
-		printf("Usage: \n    debug_slot_move <direction>\n    direction: ox oy oz rx ry rz\n");
+		printf("Usage: \n    debug_slot_move [<direction>|dump|len]\n    direction: ox oy oz rx ry rz\n");
 	}
 	if(argv[1][0] == 'o')
 	{
@@ -419,6 +419,10 @@ void CPlayer::_ccmd_slot_on(int argc, const char ** argv)
 	else if(!strcmp(argv[1], "dump"))
 	{
 		m_iDSM = DSM_PRINT;
+	}
+	else if(!strcmp(argv[1], "len"))
+	{
+		m_iDSM = DSM_LEN;
 	}
 }
 

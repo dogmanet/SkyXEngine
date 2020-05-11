@@ -29,6 +29,13 @@ BEGIN_PROPTABLE(CBaseTool)
 	DEFINE_FIELD_VECTOR(m_vSlotPosAim, PDFF_NOEDIT | PDFF_NOEXPORT, "slot_offset_aim", "", EDITOR_NONE)
 	//! Вращение визуальной модели в прицеливании
 	DEFINE_FIELD_ANGLES(m_qSlotRotAim, PDFF_NOEDIT | PDFF_NOEXPORT, "slot_rotation_aim", "", EDITOR_NONE)
+	//! Смещение визуальной модели при приближении к стене
+	DEFINE_FIELD_VECTOR(m_vSlotPosClose, PDFF_NOEDIT | PDFF_NOEXPORT, "slot_offset_close", "", EDITOR_NONE)
+	//! Вращение визуальной модели при приближении к стене
+	DEFINE_FIELD_ANGLES(m_qSlotRotClose, PDFF_NOEDIT | PDFF_NOEXPORT, "slot_rotation_close", "", EDITOR_NONE)
+
+	//! Расстояние от центра модели до кончика ствола
+	DEFINE_FIELD_FLOAT(m_fCenterLength, PDFF_NOEDIT | PDFF_NOEXPORT, "center_length", "", EDITOR_NONE)
 	
 	//! Разрешить прицеливание
 	DEFINE_FIELD_INT(m_iZoomable, PDFF_NOEDIT | PDFF_NOEXPORT, "zoomable", "", EDITOR_NONE)
@@ -61,7 +68,6 @@ CBaseTool::CBaseTool(CEntityManager * pMgr):
 	m_bCanUse(true),
 	m_fZoomTime(0.0f),
 	m_fReloadTime(0.0f),
-	m_fZoomProgress(0.0f),
 	m_iZoomable(1),
 	m_iSoundAction1(-1),
 	m_iSoundAction2(-1),
@@ -179,13 +185,13 @@ void CBaseTool::dbgMove(int dir, float dy)
 	switch(dir)
 	{
 	case DSM_POS_X:
-		m_vOffsetPos.x += dy;
+		m_vSlotPosResult.x += dy;
 		break;
 	case DSM_POS_Y:
-		m_vOffsetPos.y += dy;
+		m_vSlotPosResult.y += dy;
 		break;
 	case DSM_POS_Z:
-		m_vOffsetPos.z += dy;
+		m_vSlotPosResult.z += dy;
 		break;
 	case DSM_ROT_X:
 		m_qSlotRotResult = m_qSlotRotResult * SMQuaternion(dy, 'x');
@@ -196,12 +202,17 @@ void CBaseTool::dbgMove(int dir, float dy)
 	case DSM_ROT_Z:
 		m_qSlotRotResult = m_qSlotRotResult * SMQuaternion(dy, 'z');
 		break;
+	case DSM_LEN:
+		m_fCenterLength += dy;
+		break;
 
 	case DSM_PRINT:
-		printf(COLOR_GREEN "offset: " COLOR_LGREEN "%f %f %f\n"
-			COLOR_GREEN "orient: " COLOR_LGREEN "%f %f %f %f\n" COLOR_RESET
+		printf(COLOR_GREEN "slot_offset = " COLOR_LGREEN "%f %f %f\n"
+			COLOR_GREEN "slot_rotation = " COLOR_LGREEN "%f %f %f %f\n"
+			COLOR_GREEN "center_length = " COLOR_LGREEN "%f\n" COLOR_RESET
 			, m_vOffsetPos.x, m_vOffsetPos.y, m_vOffsetPos.z
-			, m_qSlotRotResult.x, m_qSlotRotResult.y, m_qSlotRotResult.z, m_qSlotRotResult.w);
+			, m_qSlotRotResult.x, m_qSlotRotResult.y, m_qSlotRotResult.z, m_qSlotRotResult.w
+			, m_fCenterLength);
 		break;
 	}
 }
@@ -217,6 +228,7 @@ void CBaseTool::onSync()
 	{
 		m_vOffsetOrient = m_qSlotRotResult;
 	}
+	m_vOffsetPos = m_vSlotPosResult;
 	BaseClass::onSync();
 	if(m_pModel && m_pModel->asAnimatedModel())
 	{
@@ -230,6 +242,19 @@ void CBaseTool::onSync()
 
 void CBaseTool::_update(float dt)
 {
+	if(m_inventoryMode == IIM_EQUIPPED && m_fCenterLength > 0.4f /* player capsule radius */) 
+	{
+		// raycast towards to check if
+		float3 start = m_pParent->getPos();
+		float3 dir = m_pParent->getOrient() * float3(0.0f, 0.0f, 1.0f);
+		float3 end = start + dir * m_fCenterLength;
+		btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
+		SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+
+		m_isClose = cb.hasHit();
+	}
+
+	bool needRezoom = false;
 	float speed = 1.0f / m_fZoomTime;
 	if(m_bInSecondaryAction && m_iZoomable)
 	{
@@ -240,7 +265,7 @@ void CBaseTool::_update(float dt)
 			{
 				m_fZoomProgress = 1.0f;
 			}
-			_rezoom();
+			needRezoom = true;
 		}
 	}
 	else
@@ -252,8 +277,38 @@ void CBaseTool::_update(float dt)
 			{
 				m_fZoomProgress = 0.0f;
 			}
-			_rezoom();
+			needRezoom = true;
 		}
+	}
+
+	if(m_isClose)
+	{
+		if(m_fCloseProgress < 1.0f)
+		{
+			m_fCloseProgress += dt * speed;
+			if(m_fCloseProgress > 1.0f)
+			{
+				m_fCloseProgress = 1.0f;
+			}
+			needRezoom = true;
+		}
+	}
+	else
+	{
+		if(m_fCloseProgress > 0.0f)
+		{
+			m_fCloseProgress -= dt * speed;
+			if(m_fCloseProgress < 0.0f)
+			{
+				m_fCloseProgress = 0.0f;
+			}
+			needRezoom = true;
+		}
+	}
+
+	if(needRezoom)
+	{
+		_rezoom();
 	}
 }
 
@@ -267,9 +322,9 @@ void CBaseTool::setParent(CBaseEntity * pEnt, int attachment)
 void CBaseTool::_rezoom()
 {
 	const float * r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
-	m_vOffsetPos = (float3)vlerp(m_vSlotPos, m_vSlotPosAim, m_fZoomProgress);
+	m_vSlotPosResult = (float3)vlerp(vlerp(m_vSlotPos, m_vSlotPosClose, m_fCloseProgress), m_vSlotPosAim, m_fZoomProgress);
 	//m_vWpnShakeAngles
-	m_qSlotRotResult = SMquaternionSlerp(m_qSlotRot, m_qSlotRotAim, m_fZoomProgress);
+	m_qSlotRotResult = SMquaternionSlerp(SMquaternionSlerp(m_qSlotRot, m_qSlotRotClose, m_fCloseProgress), m_qSlotRotAim, m_fZoomProgress);
 	if(m_pOwner && m_pOwner->getClassName() && !fstrcmp(m_pOwner->getClassName(), "player"))
 	{
 		((CPlayer*)m_pOwner)->getCamera()->getCamera()->setFOV(SMToRadian(vlerp(*r_default_fov, *r_default_fov - 10.0f, m_fZoomProgress)));

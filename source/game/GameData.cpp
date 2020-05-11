@@ -1267,6 +1267,8 @@ void GameData::render()
 			s_oldMemoryStats = *pMemoryStats;
 
 			const GXAdapterDesc *pAdapterDesc = pDev->getAdapterDesc();
+			
+			float3 vPlayerPos = m_pPlayer->getPos();
 
 			static wchar_t wszStats[512];
 			swprintf_s(wszStats, L"FPS: %u\n"
@@ -1277,6 +1279,7 @@ void GameData::render()
 				L"Shader switches: %u\n"
 				L"Count poly: %u\n"
 				L"Count DIP: %u\n"
+				L"Player pos: %.3f %.3f %.3f"
 				, g_uFPS,
 
 				pAdapterDesc->szDescription,
@@ -1297,7 +1300,9 @@ void GameData::render()
 
 				pFrameStats->uShaderSwitches,
 				pFrameStats->uPolyCount,
-				pFrameStats->uDIPcount
+				pFrameStats->uDIPcount,
+
+				vPlayerPos.x, vPlayerPos.y, vPlayerPos.z
 				);
 
 			RenderText(wszStats);

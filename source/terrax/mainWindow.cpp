@@ -2354,10 +2354,7 @@ float3 XSnapToGrid(const float3 &vPos)
 			return(vPos - vDelta);
 		}
 	}
-	else
-	{
-		return(vPos);
-	}
+	return(vPos);
 }
 
 void XUpdateStatusGrid()

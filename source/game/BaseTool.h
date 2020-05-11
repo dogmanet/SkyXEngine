@@ -24,6 +24,7 @@ enum
 	DSM_ROT_X,
 	DSM_ROT_Y,
 	DSM_ROT_Z,
+	DSM_LEN,
 	DSM_PRINT
 };
 
@@ -87,7 +88,11 @@ protected:
 
 	float m_fZoomTime;
 
-	float m_fZoomProgress;
+	float m_fZoomProgress = 0.0f;
+	float m_fCloseProgress = 0.0f;
+
+	float m_fCenterLength = 0.0f;
+	bool m_isClose = false;
 
 	void _allowUse(float dt)
 	{
@@ -101,8 +106,11 @@ protected:
 
 	float3_t m_vSlotPos;
 	float3_t m_vSlotPosAim;
+	float3_t m_vSlotPosClose;
+	float3_t m_vSlotPosResult;
 	SMQuaternion m_qSlotRot;
 	SMQuaternion m_qSlotRotAim;
+	SMQuaternion m_qSlotRotClose;
 	SMQuaternion m_qSlotRotResult;
 
 	int m_iZoomable;

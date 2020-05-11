@@ -48,6 +48,8 @@ slot_offset = 0.0620000102 -0.0239999797 0.0879999697
 slot_rotation = 0.00766652822 0.729397118 -0.0193332434 0.683774292
 slot_offset_aim = -0.046000 0.006000 -0.046000
 slot_rotation_aim = 0.006448 0.700236 0.006386 0.713854
+slot_offset_close = 0.069526 -0.328797 0.014623
+slot_rotation_close = 0.396721 0.587765 -0.432353 0.556971
 max_distance = 1350.0
 inv_weight = 3.07
 ammos = "ammo_5.45x39ps"
@@ -57,6 +59,8 @@ addon_mags = "mag_ak74_30"
 addon_handlers = ""
 zoom_time = 0.125
 zoomable = 1
+
+center_length = 0.65
 
 aiming_range = 200 ; м, дистанция пристрелки
 
