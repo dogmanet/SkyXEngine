@@ -46,6 +46,8 @@ protected:
 
 	Array<X_PROP_FIELD> m_aFields;
 	AssotiativeArray<String, String> m_msPropCache;
+	const char *m_aszFlags[16];
+
 
 	void _iniFieldList();
 };

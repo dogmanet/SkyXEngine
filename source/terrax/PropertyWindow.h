@@ -90,6 +90,9 @@ protected:
 	ICallback *m_pCallback = NULL;
 
 	const char *szCurrentFileType = NULL;
+
+	UINT m_uCurrentFlags = 0;
+	const char *m_szFlagsField = NULL;
 };
 
 #endif

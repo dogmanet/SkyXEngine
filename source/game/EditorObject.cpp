@@ -40,6 +40,12 @@ void CEditorObject::_iniFieldList()
 	proptable_t *pTable = CEntityFactoryMap::GetInstance()->getPropTable(m_szClassName);
 	propdata_t *pField = NULL;
 	X_PROP_FIELD xField;
+
+	for(UINT i = 0; i < 16; ++i)
+	{
+		m_aszFlags[i] = NULL;
+	}
+
 	while(pTable)
 	{
 		for(int i = 0; i < pTable->numFields; ++i)
@@ -78,7 +84,8 @@ void CEditorObject::_iniFieldList()
 					}
 					break;
 				case PDE_FLAGS:
-					continue;
+					xField.editorType = XPET_FLAGS;
+					xField.pEditorData = m_aszFlags;
 					break;
 				case PDE_TEXTFIELD:
 					xField.editorType = XPET_TEXT; 
@@ -89,6 +96,18 @@ void CEditorObject::_iniFieldList()
 				xField.szName = pField->szEdName;
 
 				m_aFields.push_back(xField);
+			}
+
+			if(pField->type == PDF_FLAG && pField->flags)
+			{
+				UINT uFlag = (UINT)pField->flags >> 16;
+				uFlag = (UINT)lroundf(log2f((float)uFlag));
+				assert(uFlag < 16);
+
+				if(!m_aszFlags[uFlag])
+				{
+					m_aszFlags[uFlag] = pField->szEdName;
+				}
 			}
 		}
 

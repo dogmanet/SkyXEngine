@@ -130,8 +130,10 @@ public:
 	{
 		if(m_pPropsCmd)
 		{
-			m_pPropsCmd->undo();
-			mem_delete(m_pPropsCmd);
+			CCommandProperties *pPropsCmd = m_pPropsCmd;
+			m_pPropsCmd = NULL;
+			pPropsCmd->undo();
+			mem_delete(pPropsCmd);
 		}
 	}
 	void onApply()
