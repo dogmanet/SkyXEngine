@@ -74,6 +74,7 @@ int CCharacterInventory::consumeItems(const char *szClassName, int iCount)
 			}
 		}
 	}
+	m_pOwner->onInventoryChanged();
 	return(iConsumed);
 }
 
@@ -133,6 +134,7 @@ void CCharacterInventory::putItems(const char *szClassName, int iCount)
 			}
 		}
 	}
+	m_pOwner->onInventoryChanged();
 }
 
 void CCharacterInventory::putItem(CBaseItem *pItem)
@@ -209,6 +211,8 @@ void CCharacterInventory::putItem(CBaseItem *pItem)
 		sprintf(str, "Найден предмет: %s", pItem->m_szInvName);
 		pHUD->chatMsg(str);
 	}
+
+	m_pOwner->onInventoryChanged();
 }
 
 int CCharacterInventory::getSlotCount() const

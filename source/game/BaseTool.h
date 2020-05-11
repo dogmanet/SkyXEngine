@@ -75,6 +75,8 @@ public:
 
 	virtual void stopAction();
 
+	virtual void updateHUDinfo();
+
 protected:
 
 	bool isValidAmmo(CBaseSupply *pAmmo);

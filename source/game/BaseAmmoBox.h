@@ -24,9 +24,11 @@ class CBaseAmmoBox: public CBaseItem
 public:
 	ThisClass(CEntityManager * pMgr);
 
-	int m_iMaxItems; //!< Максимальное количество предметов, которые бокс может выдать
-	int m_iCurItems; //!< Сколько осталось
-	int m_iItemsPerUse; //!< Сколько выдавать за раз
+	void onUse(CBaseEntity *pUser);
+
+	int m_iMaxItems = 0; //!< Максимальное количество предметов, которые бокс может выдать
+	int m_iCurItems = -1; //!< Сколько осталось
+	int m_iItemsPerUse = 1; //!< Сколько выдавать за раз
 
 	const char * m_szAmmoType; //!< Тип предметов для выдачи
 };

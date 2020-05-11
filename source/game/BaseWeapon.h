@@ -93,6 +93,8 @@ public:
 
 	//! Подсоединить магазин
 	void attachMag(CBaseMag * pMag);
+
+	void updateHUDinfo();
 protected:
 
 	//! Распределение гаусса вектора vDir в телесном угле fSpread

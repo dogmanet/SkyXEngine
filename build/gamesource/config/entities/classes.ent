@@ -18,8 +18,8 @@ is_bursting = 0 ; разрывная
 [ammobox_5.45x39ps]
 base_class = base_ammobox
 show_in_listing = 1
-model = "models/ammobox/ammobox_generic.dse"
-max_items = 0
+model = "meshes/boxes/box_mtl_small.dse"
+max_items = 360
 items_per_use = 60
 item_class = "ammo_5.45x39ps"
 scale = 0.01

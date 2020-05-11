@@ -521,11 +521,20 @@ void CBaseWeapon::attachMag(CBaseMag * pMag)
 			m_pMag->load(-m_pMag->getLoad());
 		}
 	}
-	CHUDcontroller * pHUD = ((CBaseCharacter*)getOwner())->getHUDcontroller();
-	if(pHUD)
+
+	updateHUDinfo();
+}
+
+void CBaseWeapon::updateHUDinfo()
+{
+	if(m_pOwner)
 	{
-		pHUD->setWeaponMaxLoad((m_pMag ? m_pMag->getCapacity() : 0)/* + m_iCapacity*/);
-		pHUD->setWeaponCurrentLoad((m_pMag ? m_pMag->getLoad() : 0) + m_iCurrentLoad);
-		pHUD->setWeaponMaxAmmo(((CBaseCharacter*)m_pOwner)->getInventory()->getItemCount(m_szLoadedAmmo));
+		CHUDcontroller * pHUD = ((CBaseCharacter*)m_pOwner)->getHUDcontroller();
+		if(pHUD)
+		{
+			pHUD->setWeaponMaxLoad((m_pMag ? m_pMag->getCapacity() : 0)/* + m_iCapacity*/);
+			pHUD->setWeaponCurrentLoad((m_pMag ? m_pMag->getLoad() : 0) + m_iCurrentLoad);
+			pHUD->setWeaponMaxAmmo(((CBaseCharacter*)m_pOwner)->getInventory()->getItemCount(m_szLoadedAmmo));
+		}
 	}
 }

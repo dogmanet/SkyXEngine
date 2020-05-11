@@ -5,6 +5,7 @@ See the license in LICENSE
 ***********************************************************/
 
 #include "BaseAmmoBox.h"
+#include "BaseCharacter.h"
 
 /*! \skydocent base_ammobox
 Базовый класс коробки с припасами. При использовании, выдает игроку items_per_use объектов item_class, если внутри содержится достаточно
@@ -24,11 +25,32 @@ END_PROPTABLE()
 REGISTER_ENTITY_NOLISTING(CBaseAmmoBox, base_ammobox);
 
 CBaseAmmoBox::CBaseAmmoBox(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	m_iMaxItems(0),
-	m_iCurItems(0),
-	m_iItemsPerUse(1)
+	BaseClass(pMgr)
 {
 	m_bPickable = false;
 	m_bInvStackable = false;
+}
+
+void CBaseAmmoBox::onUse(CBaseEntity *pUser)
+{
+	if(m_iCurItems < 0)
+	{
+		m_iCurItems = m_iMaxItems;
+	}
+	if(m_iMaxItems <= 0)
+	{
+		m_iCurItems = m_iItemsPerUse;
+	}
+
+	CBaseCharacter *pCharacter = (CBaseCharacter*)pUser;
+
+	int iItemsToUse = min(m_iCurItems, m_iItemsPerUse);
+	if(iItemsToUse)
+	{
+		pCharacter->getInventory()->putItems(m_szAmmoType, iItemsToUse);
+		m_iCurItems -= iItemsToUse;
+	}
+	// FIRE_OUTPUT(m_onPickUp, pUser);
+
+	BaseClass::onUse(pUser);
 }

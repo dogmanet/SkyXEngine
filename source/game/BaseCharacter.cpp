@@ -551,3 +551,11 @@ void CBaseCharacter::use(bool start)
 		}
 	}
 }
+
+void CBaseCharacter::onInventoryChanged()
+{
+	if(m_pActiveTool)
+	{
+		m_pActiveTool->updateHUDinfo();
+	}
+}

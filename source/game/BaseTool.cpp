@@ -392,3 +392,7 @@ float CBaseTool::getMaxDistance() const
 void CBaseTool::stopAction()
 {
 }
+
+void CBaseTool::updateHUDinfo()
+{
+}

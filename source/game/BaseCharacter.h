@@ -70,6 +70,7 @@ public:
 
 	float getAimRange();
 
+	void onInventoryChanged();
 
 	//! Получает рассчитанный для текущего оружия коэффициент разброса (с учетом задержки сведения)
 	float getCurrentSpread();
