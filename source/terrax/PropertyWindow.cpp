@@ -343,6 +343,7 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 
 			if(GetOpenFileNameW(&ofn))
 			{
+				IFileSystem *pFS = Core_GetIXCore()->getFileSystem();
 				wchar_t *str = szFile;
 				while(*str)
 				{
@@ -352,28 +353,31 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 					}
 					++str;
 				}
-				wchar_t szCurDir[1024];
-				GetCurrentDirectoryW(1024, szCurDir);
-				str = szCurDir;
-				while(*str)
+
+				bool isFound = false;
+				for(UINT i = 0, l = pFS->getRootCount(); i < l && !isFound; ++i)
 				{
-					if(*str == L'\\')
+					const char *szDir = pFS->getRoot(i);
+					//printf("%s\n", szDir);
+					str = szFile;
+					while(*str && *szDir && *str == *szDir)
 					{
-						*str = L'/';
+						++str; ++szDir;
 					}
-					++str;
+					if(str[0] == L'/')
+					{
+						++str;
+					}
+					if(!*szDir)
+					{
+						isFound = true;
+					}
+				}
+				if(!isFound)
+				{
+					str = szFile;
 				}
 
-				str = szFile;
-				wchar_t *szDir = szCurDir;
-				while(*str && *szDir && *str == *szDir)
-				{
-					++str; ++szDir;
-				}
-				if(str[0] == L'/')
-				{
-					++str;
-				}
 
 				HWND hEditWnd = GetDlgItem(m_phEditors[m_editorActive], IDC_OPE_FILE);
 				SetWindowTextW(hEditWnd, str);
