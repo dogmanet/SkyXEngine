@@ -409,9 +409,28 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 				{
 					param = fields[3];
 				}
-				if(1 != sscanf(fields[2], "%f", &pOutput->pOutputs[curr].fDelay))
+				float fDelayFrom;
+				float fDelayTo;
+				switch(sscanf(fields[2], "%f-%f", &fDelayFrom, &fDelayTo))
 				{
+				case 1:
+					fDelayTo = fDelayFrom;
+					break;
+				case 2:
+					break;
+				default:
 					printf(COLOR_LRED "Unable to parse output delay '%s' ent %s\n" COLOR_RESET, name, m_szName);
+					continue;
+				}
+				pOutput->pOutputs[curr].fDelay = fDelayFrom;
+				pOutput->pOutputs[curr].fDelayTo = fDelayTo;
+				if(fDelayFrom < fDelayTo)
+				{
+					pOutput->pOutputs[curr].useRandomDelay = true;
+				}
+				if(fDelayFrom > fDelayTo)
+				{
+					printf(COLOR_LRED "Unable to parse output delay '%s' ent %s. min delay cannot be more than max delay\n" COLOR_RESET, name, m_szName);
 					continue;
 				}
 
@@ -495,7 +514,26 @@ bool CBaseEntity::getKV(const char * name, char * out, int bufsize)
 					*szOutBuf = ',';
 					++szOutBuf;
 				}
-				int c = _snprintf(szOutBuf, bufsize - iWritten, "%s:%s:%f:%s", pOutput->pOutputs[i].szTargetName, pOutput->pOutputs[i].szTargetInput, pOutput->pOutputs[i].fDelay, pOutput->pOutputs[i].szTargetData ? pOutput->pOutputs[i].szTargetData : "");
+				int c;
+				if(pOutput->pOutputs[i].useRandomDelay)
+				{
+					c = _snprintf(szOutBuf, bufsize - iWritten, "%s:%s:%f-%f:%s", 
+						pOutput->pOutputs[i].szTargetName, 
+						pOutput->pOutputs[i].szTargetInput, 
+						pOutput->pOutputs[i].fDelay,
+						pOutput->pOutputs[i].fDelayTo,
+						pOutput->pOutputs[i].szTargetData ? pOutput->pOutputs[i].szTargetData : ""
+						);
+				}
+				else
+				{
+					c = _snprintf(szOutBuf, bufsize - iWritten, "%s:%s:%f:%s", 
+						pOutput->pOutputs[i].szTargetName, 
+						pOutput->pOutputs[i].szTargetInput, 
+						pOutput->pOutputs[i].fDelay, 
+						pOutput->pOutputs[i].szTargetData ? pOutput->pOutputs[i].szTargetData : ""
+						);
+				}
 				iWritten += c + 1;
 				szOutBuf += c;
 				//iBufSize += 1 + _snprintf(NULL, 0, "%s:%s:%f:%s", pOutput->pOutputs[i].szTargetName, pOutput->pOutputs[i].szTargetInput, pOutput->pOutputs[i].fDelay, pOutput->pOutputs[i].szTargetData ? pOutput->pOutputs[i].szTargetData : "");

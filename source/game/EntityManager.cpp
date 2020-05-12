@@ -847,7 +847,7 @@ void CEntityManager::setOutputTimeout(named_output_t *pOutput, inputdata_t *pDat
 	t.data = *pData;
 
 	t.fStartTime = t.fNextTime = std::chrono::high_resolution_clock::now();
-	t.fNextTime += std::chrono::microseconds((long long)(pOutput->fDelay * 1000000.0f));
+	t.fNextTime += std::chrono::microseconds((long long)((pOutput->useRandomDelay ? randf(pOutput->fDelay, pOutput->fDelayTo) : pOutput->fDelay) * 1000000.0f));
 
 	m_vOutputTimeout.push_back(t);
 }

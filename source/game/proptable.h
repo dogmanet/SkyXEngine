@@ -229,6 +229,8 @@ struct input_t
 struct named_output_t
 {
 	float fDelay = 0.0f;
+	float fDelayTo = 0.0f;
+	bool useRandomDelay = false;
 	const char *szTargetName = NULL;
 	const char *szTargetInput = NULL;
 	const char *szTargetData = NULL;

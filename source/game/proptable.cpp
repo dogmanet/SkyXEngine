@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -94,7 +94,7 @@ void output_t::fire(CBaseEntity *pInflictor, CBaseEntity *pActivator)
 	data.pInflictor = pInflictor;
 	for(int i = 0; i < iOutCount; ++i)
 	{
-		if(pOutputs[i].fDelay == 0.0f)
+		if(pOutputs[i].fDelay == 0.0f && !pOutputs[i].useRandomDelay)
 		{
 			for(int j = 0; j < pOutputs[i].iOutCount; ++j)
 			{
