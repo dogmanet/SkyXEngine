@@ -21,6 +21,7 @@ See the license in LICENSE
 #include "BaseAmmo.h"
 #include "BaseMag.h"
 #include "FuncTrain.h"
+#include "LogicAuto.h"
 
 #include <common/file_utils.h>
 
@@ -329,6 +330,13 @@ void XMETHODCALLTYPE CLevelLoadTask::onFinished()
 		Core_0ConsoleExecCmd("gmode ingame");
 		Core_0ConsoleExecCmd("spawn");
 	}
+
+	CBaseEntity *pEnt = NULL;
+	while((pEnt = GameData::m_pMgr->findEntityByClass("logic_auto", pEnt)))
+	{
+		((CLogicAuto*)pEnt)->activate();
+	}
+
 	mem_release(g_pLevelLoadTask);
 }
 

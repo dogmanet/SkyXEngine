@@ -201,6 +201,7 @@
     <ClCompile Include="..\..\..\source\game\LightDirectional.cpp" />
     <ClCompile Include="..\..\..\source\game\LightPoint.cpp" />
     <ClCompile Include="..\..\..\source\game\LightSun.cpp" />
+    <ClCompile Include="..\..\..\source\game\LogicAuto.cpp" />
     <ClCompile Include="..\..\..\source\game\LogicRelay.cpp" />
     <ClCompile Include="..\..\..\source\game\NPCBase.cpp" />
     <ClCompile Include="..\..\..\source\game\NPCZombie.cpp" />
@@ -259,6 +260,7 @@
     <ClInclude Include="..\..\..\source\game\HUDcontroller.h" />
     <ClInclude Include="..\..\..\source\game\IGameState.h" />
     <ClInclude Include="..\..\..\source\game\LightSun.h" />
+    <ClInclude Include="..\..\..\source\game\LogicAuto.h" />
     <ClInclude Include="..\..\..\source\game\LogicRelay.h" />
     <ClInclude Include="..\..\..\source\game\PropBreakable.h" />
     <ClInclude Include="..\..\..\source\game\PropButton.h" />

@@ -255,6 +255,9 @@
     <ClCompile Include="..\..\..\source\game\TriggerItemUse.cpp">
       <Filter>Source Files\ents\triggers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\LogicAuto.cpp">
+      <Filter>Source Files\ents\logic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -445,6 +448,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\TriggerItemUse.h">
       <Filter>Header Files\ents\triggers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\LogicAuto.h">
+      <Filter>Header Files\ents\logic</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
