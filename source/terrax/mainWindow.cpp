@@ -1778,6 +1778,10 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 							}
 							bUse = true;
 						}
+						if(sel)
+						{
+							break;
+						}
 					}
 
 					if(bUse)
