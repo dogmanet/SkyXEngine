@@ -35,6 +35,7 @@ enum PDF_TYPE
 	PDF_INT,
 	PDF_FLOAT,
 	PDF_VECTOR,
+	PDF_VECTOR4,
 	PDF_BOOL,
 	PDF_STRING,
 	PDF_ANGLES,
@@ -81,6 +82,7 @@ enum ENT_FLAG
 typedef int CBaseEntity::*fieldtype;
 
 typedef void (CBaseEntity::*PFNFIELDSETV3)(const float3&);
+typedef void (CBaseEntity::*PFNFIELDSETV4)(const float4&);
 typedef void (CBaseEntity::*PFNFIELDSETF)(float);
 typedef void (CBaseEntity::*PFNFIELDSETSZ)(const char*);
 typedef void (CBaseEntity::*PFNFIELDSETI)(int);
@@ -95,6 +97,10 @@ union PFNFIELDSET
 	}
 	PFNFIELDSET(PFNFIELDSETV3 arg):
 		v3(arg)
+	{
+	}
+	PFNFIELDSET(PFNFIELDSETV4 arg):
+		v4(arg)
 	{
 	}
 	PFNFIELDSET(PFNFIELDSETF arg):
@@ -122,6 +128,7 @@ union PFNFIELDSET
 	{
 	}
 	PFNFIELDSETV3 v3;
+	PFNFIELDSETV4 v4;
 	PFNFIELDSETF f;
 	PFNFIELDSETSZ sz;
 	PFNFIELDSETI i;
@@ -158,6 +165,7 @@ struct inputdata_t
 	}
 	parameter;
 	float3_t v3Parameter;
+	float4_t v4Parameter;
 };
 
 typedef void(CBaseEntity::*input_func)(inputdata_t * pInputData);
@@ -361,23 +369,25 @@ const char * GetEmptyString();
 #define EDITOR_YESNO EDITOR_COMBOBOX COMBO_OPTION("Yes", "1") COMBO_OPTION("No", "0") EDITOR_COMBO_END()
 #define EDITOR_MODEL EDITOR_FILEFIELD FILE_OPTION("Select model", "dse") EDITOR_FILE_END()
 
-#define DEFINE_FIELD_STRING(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_STRING, flags, keyname, edname, editor
-#define DEFINE_FIELD_VECTOR(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_VECTOR, flags, keyname, edname, editor
-#define DEFINE_FIELD_ANGLES(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_ANGLES, flags, keyname, edname, editor
-#define DEFINE_FIELD_INT(field, flags, keyname, edname, editor)    , {(fieldtype)&DataClass::field, PDF_INT,    flags, keyname, edname, editor
-#define DEFINE_FIELD_FLOAT(field, flags, keyname, edname, editor)  , {(fieldtype)&DataClass::field, PDF_FLOAT,  flags, keyname, edname, editor
-#define DEFINE_FIELD_BOOL(field, flags, keyname, edname, editor)   , {(fieldtype)&DataClass::field, PDF_BOOL,   flags, keyname, edname, editor
-#define DEFINE_FIELD_ENTITY(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_ENTITY, flags, keyname, edname, editor
-#define DEFINE_FIELD_PARENT(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_PARENT, flags, keyname, edname, editor
-#define DEFINE_FIELD_FLAGS(field, flags, keyname, edname, editor)  , {(fieldtype)&DataClass::field, PDF_FLAGS,  flags, keyname, edname, editor
+#define DEFINE_FIELD_STRING(field, flags, keyname, edname, editor)  , {(fieldtype)&DataClass::field, PDF_STRING,  flags, keyname, edname, editor
+#define DEFINE_FIELD_VECTOR(field, flags, keyname, edname, editor)  , {(fieldtype)&DataClass::field, PDF_VECTOR,  flags, keyname, edname, editor
+#define DEFINE_FIELD_VECTOR4(field, flags, keyname, edname, editor) , {(fieldtype)&DataClass::field, PDF_VECTOR4, flags, keyname, edname, editor
+#define DEFINE_FIELD_ANGLES(field, flags, keyname, edname, editor)  , {(fieldtype)&DataClass::field, PDF_ANGLES,  flags, keyname, edname, editor
+#define DEFINE_FIELD_INT(field, flags, keyname, edname, editor)     , {(fieldtype)&DataClass::field, PDF_INT,     flags, keyname, edname, editor
+#define DEFINE_FIELD_FLOAT(field, flags, keyname, edname, editor)   , {(fieldtype)&DataClass::field, PDF_FLOAT,   flags, keyname, edname, editor
+#define DEFINE_FIELD_BOOL(field, flags, keyname, edname, editor)    , {(fieldtype)&DataClass::field, PDF_BOOL,    flags, keyname, edname, editor
+#define DEFINE_FIELD_ENTITY(field, flags, keyname, edname, editor)  , {(fieldtype)&DataClass::field, PDF_ENTITY,  flags, keyname, edname, editor
+#define DEFINE_FIELD_PARENT(field, flags, keyname, edname, editor)  , {(fieldtype)&DataClass::field, PDF_PARENT,  flags, keyname, edname, editor
+#define DEFINE_FIELD_FLAGS(field, flags, keyname, edname, editor)   , {(fieldtype)&DataClass::field, PDF_FLAGS,   flags, keyname, edname, editor
 
-#define DEFINE_FIELD_STRINGFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_STRING, flags, keyname, edname, (void(CBaseEntity::*)(const char*))&ThisClass::fn, editor
-#define DEFINE_FIELD_VECTORFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_VECTOR, flags, keyname, edname, (void(CBaseEntity::*)(const float3&))&ThisClass::fn, editor
-#define DEFINE_FIELD_ANGLESFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_ANGLES, flags, keyname, edname, (void(CBaseEntity::*)(const SMQuaternion&))&ThisClass::fn, editor
-#define DEFINE_FIELD_INTFN(field, flags, keyname, edname, fn, editor)    , {(fieldtype)&DataClass::field, PDF_INT,    flags, keyname, edname, (void(CBaseEntity::*)(int))&ThisClass::fn, editor
-#define DEFINE_FIELD_FLOATFN(field, flags, keyname, edname, fn, editor)  , {(fieldtype)&DataClass::field, PDF_FLOAT,  flags, keyname, edname, (void(CBaseEntity::*)(float))&ThisClass::fn, editor
-#define DEFINE_FIELD_BOOLFN(field, flags, keyname, edname, fn, editor)   , {(fieldtype)&DataClass::field, PDF_BOOL,   flags, keyname, edname, (void(CBaseEntity::*)(bool))&ThisClass::fn, editor
-#define DEFINE_FIELD_ENTITYFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_ENTITY, flags, keyname, edname, (void(CBaseEntity::*)(CBaseEntity*))&ThisClass::fn, editor
+#define DEFINE_FIELD_STRINGFN(field, flags, keyname, edname, fn, editor)  , {(fieldtype)&DataClass::field, PDF_STRING,  flags, keyname, edname, (void(CBaseEntity::*)(const char*))&ThisClass::fn, editor
+#define DEFINE_FIELD_VECTORFN(field, flags, keyname, edname, fn, editor)  , {(fieldtype)&DataClass::field, PDF_VECTOR,  flags, keyname, edname, (void(CBaseEntity::*)(const float3&))&ThisClass::fn, editor
+#define DEFINE_FIELD_VECTOR4FN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_VECTOR4, flags, keyname, edname, (void(CBaseEntity::*)(const float4&))&ThisClass::fn, editor
+#define DEFINE_FIELD_ANGLESFN(field, flags, keyname, edname, fn, editor)  , {(fieldtype)&DataClass::field, PDF_ANGLES,  flags, keyname, edname, (void(CBaseEntity::*)(const SMQuaternion&))&ThisClass::fn, editor
+#define DEFINE_FIELD_INTFN(field, flags, keyname, edname, fn, editor)     , {(fieldtype)&DataClass::field, PDF_INT,     flags, keyname, edname, (void(CBaseEntity::*)(int))&ThisClass::fn, editor
+#define DEFINE_FIELD_FLOATFN(field, flags, keyname, edname, fn, editor)   , {(fieldtype)&DataClass::field, PDF_FLOAT,   flags, keyname, edname, (void(CBaseEntity::*)(float))&ThisClass::fn, editor
+#define DEFINE_FIELD_BOOLFN(field, flags, keyname, edname, fn, editor)    , {(fieldtype)&DataClass::field, PDF_BOOL,    flags, keyname, edname, (void(CBaseEntity::*)(bool))&ThisClass::fn, editor
+#define DEFINE_FIELD_ENTITYFN(field, flags, keyname, edname, fn, editor)  , {(fieldtype)&DataClass::field, PDF_ENTITY,  flags, keyname, edname, (void(CBaseEntity::*)(CBaseEntity*))&ThisClass::fn, editor
 //#define DEFINE_FIELD_PARENTFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_PARENT, flags, keyname, edname, fn, editor
 //#define DEFINE_FIELD_FLAGSFN(field, flags, keyname, edname, fn, editor)  , {(fieldtype)&DataClass::field, PDF_FLAGS,  flags, keyname, edname, fn, editor
 

@@ -21,7 +21,7 @@ CLightSun::CLightSun(CEntityManager * pMgr):BaseClass(pMgr)
 	if(m_pLightSystem)
 	{
 		m_pLight = m_pSun = m_pLightSystem->newSun();
-		m_pLight->setColor(float4(m_vColor, m_fDist));
+		m_pLight->setColor(float4(float3(m_vColor) * m_vColor.w, m_fDist));
 	}
 }
 

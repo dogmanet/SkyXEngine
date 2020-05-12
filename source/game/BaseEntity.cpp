@@ -220,6 +220,7 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 		return(false);
 	}
 	float3_t f3;
+	float4_t f4;
 	SMQuaternion q;
 	int d;
 	float f;
@@ -266,6 +267,27 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 				this->*((float3_t ThisClass::*)field->pField) = f3;
 			}
 			return(true);
+		}
+		return(false);
+	case PDF_VECTOR4:
+		{
+			int iPrm = sscanf(value, "%f %f %f %f", &f4.x, &f4.y, &f4.z, &f4.w);
+			if(iPrm > 2)
+			{
+				if(iPrm == 3)
+				{
+					f4.w = 1.0f;
+				}
+				if(field->fnSet.v4)
+				{
+					(this->*(field->fnSet.v4))(f4);
+				}
+				else
+				{
+					this->*((float4_t ThisClass::*)field->pField) = f4;
+				}
+				return(true);
+			}
 		}
 		return(false);
 	case PDF_BOOL:
@@ -430,6 +452,9 @@ bool CBaseEntity::getKV(const char * name, char * out, int bufsize)
 		break;
 	case PDF_VECTOR:
 		sprintf_s(out, bufsize, "%f %f %f", (this->*((float3_t ThisClass::*)field->pField)).x, (this->*((float3_t CBaseEntity::*)field->pField)).y, (this->*((float3_t CBaseEntity::*)field->pField)).z);
+		break;
+	case PDF_VECTOR4:
+		sprintf_s(out, bufsize, "%f %f %f %f", (this->*((float4_t ThisClass::*)field->pField)).x, (this->*((float4_t CBaseEntity::*)field->pField)).y, (this->*((float4_t CBaseEntity::*)field->pField)).z, (this->*((float4_t CBaseEntity::*)field->pField)).w);
 		break;
 	case PDF_BOOL:
 		sprintf_s(out, bufsize, "%d", this->*((bool ThisClass::*)field->pField) ? 1 : 0);
@@ -710,6 +735,7 @@ void CBaseEntity::updateOutputs()
 						pOut->pOutputs[c].data.type = pField->type;
 						{
 							float3_t f3;
+							float4_t f4;
 							SMQuaternion q;
 							int d;
 							float f;
@@ -739,6 +765,20 @@ void CBaseEntity::updateOutputs()
 								{
 									pOut->pOutputs[c].data.v3Parameter = f3;
 									bParsed = true;
+								}
+								break;
+							case PDF_VECTOR4:
+								{
+									int iPrm = sscanf(value, "%f %f %f %f", &f4.x, &f4.y, &f4.z, &f4.w);
+									if(iPrm > 2)
+									{
+										if(iPrm == 3)
+										{
+											f4.w = 1.0f;
+										}
+										pOut->pOutputs[c].data.v4Parameter = f4;
+										bParsed = true;
+									}
 								}
 								break;
 							case PDF_BOOL:

@@ -29,13 +29,13 @@ public:
 
 	void toggleEnable();
 
-	void setColor(const float3 &vColor)
+	void setColor(const float4 &vColor)
 	{
 		m_vColor = vColor;
 	}
-	const float3_t& getColor() const
+	const float4_t& getColor() const
 	{
-		return m_vColor;
+		return(m_vColor);
 	}
 
 	void setDist(float fDist)
@@ -87,7 +87,7 @@ public:
 protected:
 	IXLight *m_pLight = NULL;
 
-	float3_t m_vColor;
+	float4_t m_vColor;
 	float m_fDist;
 	//float m_fShadowDist;
 	int m_iShadowType;

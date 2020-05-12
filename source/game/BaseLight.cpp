@@ -12,7 +12,7 @@ See the license in LICENSE
 
 BEGIN_PROPTABLE(CBaseLight)
 	//! Цвет
-	DEFINE_FIELD_VECTOR(m_vColor, 0, "color", "Color", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_VECTOR4(m_vColor, 0, "color", "Color", EDITOR_TEXTFIELD)
 	//! Дальность
 	DEFINE_FIELD_FLOAT(m_fDist, 0, "dist", "Distance", EDITOR_TEXTFIELD)
 	//! Дальность дальняя
@@ -48,10 +48,10 @@ REGISTER_ENTITY_NOLISTING(CBaseLight, base_light);
 CBaseLight::CBaseLight(CEntityManager * pMgr):
 BaseClass(pMgr)
 {
-	m_vColor = float3(1, 1, 1);
+	m_vColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
 	m_fDist = 10;
 	m_iShadowType = 1;
-	m_fShadowIntensity = 1;
+	m_fShadowIntensity = 1.0f;
 }
 
 CBaseLight::~CBaseLight()
@@ -75,7 +75,7 @@ void CBaseLight::onSync()
 	{
 		m_pLight->setEnabled(m_isEnable);
 		m_pLight->setPosition(m_vPosition);
-		m_pLight->setColor(m_vColor);
+		m_pLight->setColor(float3(m_vColor) * m_vColor.w);
 		m_pLight->setShadowIntencity(m_fShadowIntensity);
 		m_pLight->setShadowDynamic(m_iShadowType != 0);
 	}
@@ -151,7 +151,7 @@ bool CBaseLight::getMainColor(float3_t *pOut)
 {
 	if(pOut)
 	{
-		*pOut = m_vColor;
+		*pOut = (float3)m_vColor;
 	}
 	return(m_isEnable);
 }
