@@ -1,4 +1,4 @@
-#include "Core.h"
+﻿#include "Core.h"
 #include <common/file_utils.h>
 #include "AsyncFileReader.h"
 #include "AsyncTaskRunner.h"
@@ -18,6 +18,7 @@
 #include "ResourceTexture.h"
 
 #include "Config.h"
+#include "Buffer.h"
 
 extern CTimeManager *g_pTimers;
 extern CPerfMon *g_pPerfMon;
@@ -30,10 +31,10 @@ CCore::CCore(const char *szName)
 	ConsoleRegisterCmds();
 	CvarInitSystem(this);
 
-	Core_0RegisterCVarBool("g_time_run", true, "Запущено ли игровое время?", FCVAR_NOTIFY_OLD);
-	Core_0RegisterCVarFloat("g_time_speed", 1.f, "Скорость/соотношение течения игрового времени", FCVAR_NOTIFY_OLD);
-	Core_0RegisterCVarBool("dbg_config_save", false, "Отладочный вывод процесса сохранения конфига");
-	Core_0RegisterCVarInt("r_stats", 0, "Показывать ли статистику? 0 - нет, 1 - fps и игровое время, 2 - показать полностью");
+	Core_0RegisterCVarBool("g_time_run", true, "Р—Р°РїСѓС‰РµРЅРѕ Р»Рё РёРіСЂРѕРІРѕРµ РІСЂРµРјСЏ?", FCVAR_NOTIFY_OLD);
+	Core_0RegisterCVarFloat("g_time_speed", 1.f, "РЎРєРѕСЂРѕСЃС‚СЊ/СЃРѕРѕС‚РЅРѕС€РµРЅРёРµ С‚РµС‡РµРЅРёСЏ РёРіСЂРѕРІРѕРіРѕ РІСЂРµРјРµРЅРё", FCVAR_NOTIFY_OLD);
+	Core_0RegisterCVarBool("dbg_config_save", false, "РћС‚Р»Р°РґРѕС‡РЅС‹Р№ РІС‹РІРѕРґ РїСЂРѕС†РµСЃСЃР° СЃРѕС…СЂР°РЅРµРЅРёСЏ РєРѕРЅС„РёРіР°");
+	Core_0RegisterCVarInt("r_stats", 0, "РџРѕРєР°Р·С‹РІР°С‚СЊ Р»Рё СЃС‚Р°С‚РёСЃС‚РёРєСѓ? 0 - РЅРµС‚, 1 - fps Рё РёРіСЂРѕРІРѕРµ РІСЂРµРјСЏ, 2 - РїРѕРєР°Р·Р°С‚СЊ РїРѕР»РЅРѕСЃС‚СЊСЋ");
 
 	Core_0RegisterConcmd("on_g_time_run_change", []()
 	{
@@ -431,6 +432,11 @@ bool XMETHODCALLTYPE CCore::isOnMainThread()
 IXConfig* XMETHODCALLTYPE CCore::newConfig()
 {
 	return(new CXConfig());
+}
+
+IXBuffer* XMETHODCALLTYPE CCore::newBuffer()
+{
+	return(new CBuffer());
 }
 
 const char** XMETHODCALLTYPE CCore::getPCVarString(const char *szName)

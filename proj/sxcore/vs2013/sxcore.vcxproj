@@ -76,6 +76,7 @@
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\core\AsyncFileReader.h" />
     <ClInclude Include="..\..\..\source\core\AsyncTaskRunner.h" />
+    <ClInclude Include="..\..\..\source\core\Buffer.h" />
     <ClInclude Include="..\..\..\source\core\FileExtPathsIterator.h" />
     <ClInclude Include="..\..\..\source\core\FileExtsIterator.h" />
     <ClInclude Include="..\..\..\source\core\FileInMemory.h" />
@@ -107,11 +108,14 @@
     <ClInclude Include="..\..\..\source\xcommon\IAsyncTaskRunner.h" />
     <ClInclude Include="..\..\..\source\xcommon\IFileSystem.h" />
     <ClInclude Include="..\..\..\source\xcommon\IPluginManager.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXAudioCodec.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXBuffer.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXConfig.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXCore.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXModelLoader.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXPlugin.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXRenderable.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXSoundSystem.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXTextureLoader.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXTextureProxy.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXUpdatable.h" />

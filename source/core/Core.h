@@ -1,4 +1,4 @@
-#ifndef __CORE_H
+﻿#ifndef __CORE_H
 #define __CORE_H
 
 #include "sxcore.h"
@@ -43,7 +43,8 @@ public:
 	ID XMETHODCALLTYPE getThreadId() override; 
 	bool XMETHODCALLTYPE isOnMainThread() override;
 	
-	IXConfig* XMETHODCALLTYPE CCore::newConfig() override;
+	IXConfig* XMETHODCALLTYPE newConfig() override;
+	IXBuffer* XMETHODCALLTYPE newBuffer() override;
 
 	const char** XMETHODCALLTYPE getPCVarString(const char *szName) override;
 	const int* XMETHODCALLTYPE getPCVarInt(const char *szName) override;

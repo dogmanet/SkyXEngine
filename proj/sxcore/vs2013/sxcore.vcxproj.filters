@@ -272,5 +272,17 @@
     <ClInclude Include="..\..\..\source\xcommon\IXConfig.h">
       <Filter>Header\xcommon</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IXAudioCodec.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IXSoundSystem.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IXBuffer.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\Buffer.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

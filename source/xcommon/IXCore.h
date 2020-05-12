@@ -1,4 +1,4 @@
-#ifndef __IXCORE_H
+﻿#ifndef __IXCORE_H
 #define __IXCORE_H
 
 #include <gdefines.h>
@@ -8,6 +8,7 @@
 #include "XEvents.h"
 #include "IXRenderPipeline.h"
 #include "IXConfig.h"
+#include "IXBuffer.h"
 
 #include <fcntl.h>
 #include <io.h>
@@ -41,6 +42,7 @@ public:
 	virtual bool XMETHODCALLTYPE isOnMainThread() = 0;
 
 	virtual IXConfig* XMETHODCALLTYPE newConfig() = 0;
+	virtual IXBuffer* XMETHODCALLTYPE newBuffer() = 0;
 
 	virtual const char** XMETHODCALLTYPE getPCVarString(const char *szName) = 0;
 	virtual const int* XMETHODCALLTYPE getPCVarInt(const char *szName) = 0;
@@ -112,8 +114,8 @@ class CCoreOutPtr
 	FILE *m_fOut;
 };
 
-/*! Устанавливает поток вывода. Для работы консоли
-\warning Должна быть инлайнова, чтобы выполняться в контексте вызывающей библиотеки
+/*! РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РїРѕС‚РѕРє РІС‹РІРѕРґР°. Р”Р»СЏ СЂР°Р±РѕС‚С‹ РєРѕРЅСЃРѕР»Рё
+\warning Р”РѕР»Р¶РЅР° Р±С‹С‚СЊ РёРЅР»Р°Р№РЅРѕРІР°, С‡С‚РѕР±С‹ РІС‹РїРѕР»РЅСЏС‚СЊСЃСЏ РІ РєРѕРЅС‚РµРєСЃС‚Рµ РІС‹Р·С‹РІР°СЋС‰РµР№ Р±РёР±Р»РёРѕС‚РµРєРё
 */
 __inline void Core_SetOutPtr(IXCore *pCore)
 {
