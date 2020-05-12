@@ -16,8 +16,11 @@ protected:
 	static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static INT_PTR CALLBACK PropDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static INT_PTR CALLBACK EditorDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK EditEnterDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static INT_PTR CALLBACK ClassListWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	
+	static WNDPROC m_defEditProc;
+
 	void onSelChanged();
 	void onPropListChanged();
 	void filterClassList(const char *szFilter);

@@ -15,6 +15,8 @@ static UINT g_uEditorDlgIds[] = {
 
 static_assert(ARRAYSIZE(g_uEditorDlgIds) == XPET__LAST, "g_uEditorDlgIds must match X_PROP_EDITOR_TYPE");
 
+WNDPROC CPropertyWindow::m_defEditProc = NULL;
+
 CPropertyWindow::CPropertyWindow(HINSTANCE hInstance, HWND hMainWnd):
 	m_hInstance(hInstance)
 {
@@ -98,6 +100,20 @@ INT_PTR CALLBACK CPropertyWindow::EditorDlgProc(HWND hWnd, UINT msg, WPARAM wPar
 	return(FALSE);
 }
 
+LRESULT CALLBACK CPropertyWindow::EditEnterDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch(msg)
+	{
+	case WM_CHAR:
+		if(wParam == 13)
+		{
+			SendMessage(GetParent(hWnd), WM_COMMAND, MAKEWPARAM(IDC_OPE_FILE, EN_KILLFOCUS), (LPARAM)hWnd);
+			return(0);
+		}
+	}
+	return((LRESULT)CallWindowProc((WNDPROC)m_defEditProc, hWnd, msg, wParam, lParam));
+}
+
 INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch(msg)
@@ -169,6 +185,9 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 			GetWindowRect(hEditorArea, &rcDisplay);
 			MapWindowPoints(HWND_DESKTOP, m_hPropTabs[0], (LPPOINT)&rcDisplay, 2);
 			ShowWindow(hEditorArea, SW_HIDE);
+
+			int aiTextIds[] = {IDC_OPE_TEXT, IDC_OPE_FILE};
+
 			for(int i = 0; i < XPET__LAST; ++i)
 			{
 				if(g_uEditorDlgIds[i] == ~0u)
@@ -179,8 +198,22 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 				{
 					m_phEditors[i] = CreateDialog(m_hInstance, MAKEINTRESOURCE(g_uEditorDlgIds[i]), m_hPropTabs[0], EditorDlgProc);
 					SetWindowPos(m_phEditors[i], HWND_TOP, rcDisplay.left, rcDisplay.top, 0, 0, SWP_NOSIZE);
+
+					for(int j = 0, jl = ARRAYSIZE(aiTextIds); j < jl; ++j)
+					{
+						HWND wnd = GetDlgItem(m_phEditors[i], aiTextIds[j]);
+						if(wnd)
+						{
+							if(!m_defEditProc)
+							{
+								m_defEditProc = (WNDPROC)GetWindowLongPtr(wnd, GWLP_WNDPROC);
+							}
+							SetWindowLongPtr(wnd, GWLP_WNDPROC, (LPARAM)EditEnterDlgProc);
+						}
+					}
 				}
 			}
+
 			//ShowWindow(m_phEditors[XPET__LAST - 1], SW_SHOW);
 			break;
 		}
@@ -265,22 +298,26 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 			if(LOWORD(wParam) == IDC_OPE_TEXT || LOWORD(wParam) == IDC_OPE_FILE)
 			{
 				HWND hEdit = (HWND)lParam;
-				int iValLen = Edit_GetTextLength(hEdit) + 1;
-				char *szValue = (char*)alloca(sizeof(char) * iValLen);
-				Edit_GetText(hEdit, szValue, iValLen);
 
-				int iSel = ListView_GetNextItem(m_hPropListWnd, -1, LVNI_SELECTED);
-				LVITEM lvItem;
-				memset(&lvItem, 0, sizeof(lvItem));
-				lvItem.iItem = iSel;
-				lvItem.mask = LVIF_PARAM;
-				ListView_GetItem(m_hPropListWnd, &lvItem);
-				prop_s *pField = &m_aPropFields[AAString((char*)lvItem.lParam)];
-
-				setPropFieldValue(pField->field.szKey, szValue);
-				if(m_pCallback)
+				if(GetParent(hEdit) == m_phEditors[m_editorActive])
 				{
-					m_pCallback->onPropertyChanged(pField->field.szKey, szValue);
+					int iValLen = Edit_GetTextLength(hEdit) + 1;
+					char *szValue = (char*)alloca(sizeof(char) * iValLen);
+					Edit_GetText(hEdit, szValue, iValLen);
+
+					int iSel = ListView_GetNextItem(m_hPropListWnd, -1, LVNI_SELECTED);
+					LVITEM lvItem;
+					memset(&lvItem, 0, sizeof(lvItem));
+					lvItem.iItem = iSel;
+					lvItem.mask = LVIF_PARAM;
+					ListView_GetItem(m_hPropListWnd, &lvItem);
+					prop_s *pField = &m_aPropFields[AAString((char*)lvItem.lParam)];
+
+					setPropFieldValue(pField->field.szKey, szValue);
+					if(m_pCallback)
+					{
+						m_pCallback->onPropertyChanged(pField->field.szKey, szValue);
+					}
 				}
 			}
 			break;
