@@ -193,6 +193,7 @@
     <ClCompile Include="..\..\..\source\game\EditorObject.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityFactory.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityManager.cpp" />
+    <ClCompile Include="..\..\..\source\game\FuncRotating.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncTrain.cpp" />
     <ClCompile Include="..\..\..\source\game\GameData.cpp" />
     <ClCompile Include="..\..\..\source\game\GameStateManager.cpp" />
@@ -254,6 +255,7 @@
     <ClInclude Include="..\..\..\source\game\BaseCharacter.h" />
     <ClInclude Include="..\..\..\source\game\Editable.h" />
     <ClInclude Include="..\..\..\source\game\EditorObject.h" />
+    <ClInclude Include="..\..\..\source\game\FuncRotating.h" />
     <ClInclude Include="..\..\..\source\game\GameStateManager.h" />
     <ClInclude Include="..\..\..\source\game\CharacterInventory.h" />
     <ClInclude Include="..\..\..\source\game\GameStates.h" />

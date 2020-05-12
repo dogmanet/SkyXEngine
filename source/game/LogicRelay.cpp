@@ -1,29 +1,29 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 #include "LogicRelay.h"
 
 /*! \skydocent logic_relay
-Логическое реле
+Р›РѕРіРёС‡РµСЃРєРѕРµ СЂРµР»Рµ
 */
 
 BEGIN_PROPTABLE(CLogicRelay)
-	//! Включить
+	//! Р’РєР»СЋС‡РёС‚СЊ
 	DEFINE_INPUT(turnOn, "turnOn", "Turn On", PDF_NONE)
-	//! Выключить
+	//! Р’С‹РєР»СЋС‡РёС‚СЊ
 	DEFINE_INPUT(turnOff, "turnOff", "Turn Off", PDF_NONE)
-	//! Переключить
-	DEFINE_INPUT(trigger, "toggle", "Toggle", PDF_NONE)
-	//! Активировать
+	//! РџРµСЂРµРєР»СЋС‡РёС‚СЊ
+	DEFINE_INPUT(toggle, "toggle", "Toggle", PDF_NONE)
+	//! РђРєС‚РёРІРёСЂРѕРІР°С‚СЊ
 	DEFINE_INPUT(trigger, "trigger", "Trigger", PDF_NONE)
 
-	//! При активации
+	//! РџСЂРё Р°РєС‚РёРІР°С†РёРё
 	DEFINE_OUTPUT(m_onTrigger, "OnTrigger", "On Trigger")
 
-	//! Изначально выключен
+	//! РР·РЅР°С‡Р°Р»СЊРЅРѕ РІС‹РєР»СЋС‡РµРЅ
 	DEFINE_FLAG(LOGIC_START_DISABLED, "Start Disabled")
 END_PROPTABLE()
 

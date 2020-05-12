@@ -79,6 +79,12 @@
     <Filter Include="Source Files\ents\light">
       <UniqueIdentifier>{3dda0cb3-d81b-45fc-8363-50ac9baa15bc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ents\func">
+      <UniqueIdentifier>{29dd7f8f-4ab8-403e-bd62-d51fa29afd0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ents\func">
+      <UniqueIdentifier>{3fdacd35-e08d-4b3e-abf1-c8a507663ac7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp">
@@ -257,6 +263,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\LogicAuto.cpp">
       <Filter>Source Files\ents\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\FuncRotating.cpp">
+      <Filter>Source Files\ents\func</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -451,6 +460,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\LogicAuto.h">
       <Filter>Header Files\ents\logic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\FuncRotating.h">
+      <Filter>Header Files\ents\func</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
