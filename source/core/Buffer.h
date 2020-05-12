@@ -1,4 +1,4 @@
-﻿/*****************************************************
+/*****************************************************
 Copyright © DogmaNet Team, 2020
 Site: dogmanet.ru
 See the license in LICENSE

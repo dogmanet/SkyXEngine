@@ -353,7 +353,7 @@ void CXLightSun::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, c
 
 	static const int *r_pssm_splits = GET_PCVAR_INT("r_pssm_splits");
 
-	for(UINT i = 1; i < *r_pssm_splits; ++i)
+	for(int i = 1; i < *r_pssm_splits; ++i)
 	{
 		m_pTempVisibility->updateForFrustum(m_pPSSMFrustum[i - 1]);
 		m_pVisibility->append(m_pTempVisibility);
