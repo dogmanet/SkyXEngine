@@ -7,3 +7,6 @@
 [submodule "sdks/graphix"]
 	path = sdks/graphix
 	url = https://dev.ds-servers.com/sip/graphix.git
+[submodule "sdks/mital"]
+	path = sdks/mital
+	url = https://dev.ds-servers.com/sip/mital.git
