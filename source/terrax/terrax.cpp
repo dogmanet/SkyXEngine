@@ -241,7 +241,7 @@ public:
 protected:
 };
 
-class CRenderPipeline: public IXRenderPipeline
+class CRenderPipeline: public IXUnknownImplementation<IXRenderPipeline>
 {
 public:
 	CRenderPipeline(IXCore *pCore):

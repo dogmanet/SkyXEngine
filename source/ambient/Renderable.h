@@ -5,10 +5,12 @@
 
 #include "SkyBox.h"
 
-class CRenderable: public IXRenderable
+class CRenderable: public IXUnknownImplementation<IXRenderable>
 {
 public:
 	CRenderable(ID idPlugin, CSkyBox *pSkyBox);
+
+	XIMPLEMENT_VERSION(IXRENDERABLE_VERSION);
 
 	//! Возвращает поддерживаемые стадии рендера
 	X_RENDER_STAGE XMETHODCALLTYPE getStages() override;
@@ -37,6 +39,12 @@ public:
 	void XMETHODCALLTYPE newVisData(IXRenderableVisibility **ppVisibility) override;
 
 	IXMaterialSystem *getMaterialSystem();
+
+	bool XMETHODCALLTYPE isVisThreadOptimized() override
+	{
+		return(false);
+	}
+
 protected:
 	IGXDevice *m_pDevice = NULL;
 	IXMaterialSystem *m_pMaterialSystem = NULL;

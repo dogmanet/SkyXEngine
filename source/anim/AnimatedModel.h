@@ -4,7 +4,7 @@
 #include <xcommon/resource/IXModel.h>
 #include "AnimatedModelShared.h"
 
-class CAnimatedModel: public IXAnimatedModel
+class CAnimatedModel: public IXUnknownImplementation<IXAnimatedModel>
 {
 public:
 	CAnimatedModel(CAnimatedModelProvider *pProvider, CAnimatedModelShared *pShared);

@@ -54,7 +54,7 @@ protected:
 	CSkyBox *m_pSkyBox;
 };
 
-class CAmbientPlugin: public IXPlugin
+class CAmbientPlugin: public IXUnknownImplementation<IXPlugin>
 {
 public:	
 	void XMETHODCALLTYPE startup(IXCore *pCore) override

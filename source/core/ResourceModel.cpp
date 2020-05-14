@@ -28,7 +28,7 @@ void XMETHODCALLTYPE CResourceModel::Release()
 	{
 		m_pManager->onResourceModelRelease(this);
 	}
-	IXResourceModel::Release();
+	IXUnknownVirtualImplementation<IXResourceModel>::Release();
 }
 
 void CResourceModel::setFileName(const char *szFilename)

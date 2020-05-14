@@ -212,7 +212,7 @@ void EndMap()
 	g_pLevelChannel->broadcastEvent(&evLevel);
 };
 
-class CLevelLoadTask: public IAsyncTask
+class CLevelLoadTask: public IXUnknownImplementation<IAsyncTask>
 {
 public:
 	CLevelLoadTask(const char *szLevelName)

@@ -12,7 +12,7 @@ See the license in LICENSE
 //##########################################################################
 
 //! реализация интерфейса IXBuffer
-class CBuffer : public IXBuffer
+class CBuffer: public IXUnknownImplementation<IXBuffer>
 {
 public:
 	~CBuffer(){ free(); }

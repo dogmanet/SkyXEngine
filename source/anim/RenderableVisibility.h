@@ -6,7 +6,7 @@
 class CAnimatedModelProvider;
 class CDynamicModelProvider;
 class CDynamicModel;
-class CRenderableVisibility: public IXRenderableVisibility
+class CRenderableVisibility: public IXUnknownImplementation<IXRenderableVisibility>
 {
 public:
 	CRenderableVisibility(ID idPlugin, CAnimatedModelProvider *m_pProviderAnimated, CDynamicModelProvider *m_pProviderDynamic);

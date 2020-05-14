@@ -7,7 +7,7 @@
 // Интерфейс для работы с плагинами движка
 
 
-class CPluginManager: public IPluginManager
+class CPluginManager: public IXUnknownImplementation<IPluginManager>
 {
 public:
 	~CPluginManager();

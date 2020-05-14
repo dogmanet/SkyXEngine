@@ -10,7 +10,7 @@ See the license in LICENSE
 #include "sxgcore.h"
 
 //класс описывающий фрустум
-class CFrustum: public IFrustum
+class CFrustum: public IXUnknownImplementation<IFrustum>
 {
 public:
 	SX_ALIGNED_OP_MEM2();

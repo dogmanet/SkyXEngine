@@ -6,10 +6,12 @@
 #include "AnimatedModelProvider.h"
 #include "DynamicModelProvider.h"
 
-class CRenderable: public IXRenderable
+class CRenderable: public IXUnknownImplementation<IXRenderable>
 {
 public:
 	CRenderable(ID idPlugin, CAnimatedModelProvider *pProviderAnimated, CDynamicModelProvider *pProviderDynamic);
+
+	XIMPLEMENT_VERSION(IXRENDERABLE_VERSION);
 
 	//! Возвращает поддерживаемые стадии рендера
 	X_RENDER_STAGE XMETHODCALLTYPE getStages() override;
@@ -33,6 +35,11 @@ public:
 
 	//! Создает новый объект просчета видимости для системы
 	void XMETHODCALLTYPE newVisData(IXRenderableVisibility **ppVisibility) override;
+
+	bool XMETHODCALLTYPE isVisThreadOptimized() override
+	{
+		return(false);
+	}
 
 	IXMaterialSystem* getMaterialSystem();
 protected:

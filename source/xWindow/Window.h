@@ -3,7 +3,7 @@
 
 #include "IXWindowSystem.h"
 
-class CWindow: public IXWindow
+class CWindow: public IXUnknownImplementation<IXWindow>
 {
 public:
 	CWindow(HINSTANCE hInst, UINT uId, const XWINDOW_DESC *pWindowDesc, IXWindowCallback *pCallback = NULL, IXWindow *pParent = NULL);

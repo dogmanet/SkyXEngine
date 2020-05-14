@@ -4,7 +4,7 @@
 #include <xcommon/resource/IXModelProvider.h>
 #include "Core.h"
 
-class CModelProvider: public IXModelProvider
+class CModelProvider: public IXUnknownImplementation<IXModelProvider>
 {
 public:
 	CModelProvider(CCore *pCore);

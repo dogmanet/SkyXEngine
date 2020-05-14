@@ -4,7 +4,7 @@
 #include <xcommon/IXMaterialProxy.h>
 #include <xcommon/IFileSystem.h>
 
-class CMaterialProxy: public IXMaterialProxy
+class CMaterialProxy: public IXUnknownImplementation<IXMaterialProxy>
 {
 public:
 	CMaterialProxy(IFileSystem *pFileSystem);

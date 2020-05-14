@@ -105,9 +105,6 @@
     <ClCompile Include="..\..\..\source\game\PathCorner.cpp">
       <Filter>Source Files\ents</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\game\FuncTrain.cpp">
-      <Filter>Source Files\ents</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\game\GameData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -267,6 +264,9 @@
     <ClCompile Include="..\..\..\source\game\FuncRotating.cpp">
       <Filter>Source Files\ents\func</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\FuncTrain.cpp">
+      <Filter>Source Files\ents\func</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -282,9 +282,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\PathCorner.h">
-      <Filter>Header Files\ents</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\game\FuncTrain.h">
       <Filter>Header Files\ents</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\GameData.h">
@@ -462,6 +459,9 @@
       <Filter>Header Files\ents\logic</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\FuncRotating.h">
+      <Filter>Header Files\ents\func</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\FuncTrain.h">
       <Filter>Header Files\ents\func</Filter>
     </ClInclude>
   </ItemGroup>

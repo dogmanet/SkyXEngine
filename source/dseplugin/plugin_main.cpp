@@ -2,7 +2,7 @@
 #include "ModelLoader.h"
 
 
-class CDSEPlugin: public IXPlugin
+class CDSEPlugin: public IXUnknownImplementation<IXPlugin>
 {
 public:
 	void XMETHODCALLTYPE startup(IXCore *pCore) override

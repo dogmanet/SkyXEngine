@@ -24,7 +24,7 @@ public:
 };
 
 template<class T>
-class ITaskImpl: public T
+class ITaskImpl: public IXUnknownImplementation<T>
 {
 public:
 	ITaskImpl<T>(UINT uFlags = CORE_TASK_FLAG_MAINTHREAD_REPEATING):

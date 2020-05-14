@@ -15,7 +15,7 @@
 #include "LogicExpression.h"
 
 class CMaterialSystem;
-class CTexture: public IXTexture
+class CTexture: public IXUnknownImplementation<IXTexture>
 {
 public:
 	CTexture(CMaterialSystem *pMaterialSystem, IXResourceTexture *m_pResource);
@@ -129,7 +129,7 @@ private:
 	CMaterialSystem *m_pMaterialSystem = NULL;
 };
 
-class CMaterial: public IXMaterial
+class CMaterial: public IXUnknownImplementation<IXMaterial>
 {
 public:
 	friend class CMaterialProperty;
@@ -286,7 +286,7 @@ private:
 	CMaterialFlag *m_pEmissive = NULL;
 };
 
-class CMaterialSystem: public IXMaterialSystem
+class CMaterialSystem: public IXUnknownImplementation<IXMaterialSystem>
 {
 public:
 	CMaterialSystem();

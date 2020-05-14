@@ -25,7 +25,7 @@ namespace gui
 	class CTextureManager;
 	class CTexture;
 	class IFontManager;
-	class CDesktopStack: public IDesktopStack
+	class CDesktopStack: public IXUnknownImplementation<IDesktopStack>
 	{
 	public:
 		SX_ALIGNED_OP_MEM2();
@@ -156,7 +156,7 @@ namespace gui
 		IGXConstantBuffer *m_pVSTransformConstant = NULL;
 	};
 
-	class CGUI: public IGUI
+	class CGUI: public IXUnknownImplementation<IGUI>
 	{
 	public:
 		SX_ALIGNED_OP_MEM2();

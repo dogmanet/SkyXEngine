@@ -1896,8 +1896,7 @@ CTexture::~CTexture()
 
 void XMETHODCALLTYPE CTexture::Release()
 {
-	--m_uRefCount;
-	if(!m_uRefCount)
+	if(!--m_uRefCount)
 	{
 		m_pMaterialSystem->onTextureRelease(this);
 	}
@@ -2156,7 +2155,7 @@ void XMETHODCALLTYPE CGlobalFlag::set(bool bValue)
 //#############################################################################
 
 template<typename T>
-class CKeyIterator: public IKeyIterator
+class CKeyIterator: public IXUnknownImplementation<IKeyIterator>
 {
 public:
 	//template<typename T>

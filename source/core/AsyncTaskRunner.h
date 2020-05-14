@@ -6,7 +6,7 @@
 #include <xcommon/XEvents.h>
 
 class CAsyncTask;
-class CAsyncTaskRunner: public IAsyncTaskRunner
+class CAsyncTaskRunner: public IXUnknownImplementation<IAsyncTaskRunner>
 {
 public:
 	CAsyncTaskRunner(IXCore *pCore);

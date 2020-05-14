@@ -13,7 +13,7 @@ class CPerfMon;
 class CTimeManager;
 class CTaskManager;
 
-class CCore: public IXCore
+class CCore: public IXUnknownImplementation<IXCore>
 {
 public:
 	CCore(const char *szName);

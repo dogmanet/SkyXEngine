@@ -435,7 +435,7 @@ protected:
 	ID m_idPlugin;
 };
 
-class CStaticGeomPlugin: public IXPlugin
+class CStaticGeomPlugin: public IXUnknownImplementation<IXPlugin>
 {
 public:
 	~CStaticGeomPlugin()

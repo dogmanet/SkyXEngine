@@ -27,7 +27,7 @@ protected:
 //##########################################################################
 
 class CXUI;
-class CUIWindow: public IUIWindow
+class CUIWindow: public IXUnknownImplementation<IUIWindow>
 {
 public:
 	friend class CWindowCallback;

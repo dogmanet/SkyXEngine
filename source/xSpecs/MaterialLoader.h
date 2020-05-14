@@ -4,7 +4,7 @@
 #include <xcommon/IXMaterialLoader.h>
 #include <xcommon/IXCore.h>
 
-class CMaterialLoader: public IXMaterialLoader
+class CMaterialLoader: public IXUnknownImplementation<IXMaterialLoader>
 {
 public:
 	CMaterialLoader(IXCore *pCore);

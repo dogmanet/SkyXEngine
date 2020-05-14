@@ -215,8 +215,7 @@ CXLightPoint::CXLightPoint(CLightSystem *pLightSystem):
 
 void CXLightPoint::Release()
 {
-	--m_uRefCount;
-	if(!m_uRefCount)
+	if(!--m_uRefCount)
 	{
 		m_pLightSystem->destroyPoint(this);
 	}
@@ -569,8 +568,7 @@ CXLightSpot::CXLightSpot(CLightSystem *pLightSystem):CXLight(pLightSystem)
 
 void CXLightSpot::Release()
 {
-	--m_uRefCount;
-	if(!m_uRefCount)
+	if(!--m_uRefCount)
 	{
 		m_pLightSystem->destroySpot(this);
 	}

@@ -5,7 +5,7 @@
 #include <common/string.h>
 
 class CResourceManager;
-class CResourceModel: public virtual IXResourceModel
+class CResourceModel: public virtual IXUnknownVirtualImplementation<IXResourceModel>
 {
 public:
 	CResourceModel(CResourceManager *pMgr);

@@ -49,7 +49,7 @@ struct Pair
     int pathId;
 };
 
-class CFileSystem final : public IFileSystem
+class CFileSystem final: public IXUnknownImplementation<IFileSystem>
 {
 public:
     CFileSystem();

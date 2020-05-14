@@ -5,7 +5,7 @@
 
 class CResourceManager;
 template<class T>
-class CResourceTextureImpl: public T
+class CResourceTextureImpl: public IXUnknownImplementation<T>
 {
 public:
 	typedef CResourceTextureImpl<T> BaseClass;

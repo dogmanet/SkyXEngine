@@ -9,7 +9,7 @@
 #include "RenderableVisibility.h"
 #include <common/ConcurrentQueue.h>
 
-class CAnimatedModelProvider: public IXAnimatedModelProvider
+class CAnimatedModelProvider: public IXUnknownImplementation<IXAnimatedModelProvider>
 {
 public:
 	CAnimatedModelProvider(IXCore *pCore);

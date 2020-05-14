@@ -10,7 +10,7 @@
 
 #define MAX_TRANSPARENCY_CLIP_PANES 4
 
-class CRenderPipeline: public IXRenderPipeline
+class CRenderPipeline: public IXUnknownImplementation<IXRenderPipeline>
 {
 public:
 	CRenderPipeline(IGXDevice *pDevice);

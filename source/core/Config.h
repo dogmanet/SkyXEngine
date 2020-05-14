@@ -152,7 +152,7 @@ protected:
 	void modify(AssotiativeArray<CConfigString, CSection> & sections, AssotiativeArray<CConfigString, CValue> & values, CConfigString IncName);
 };
 
-class CXConfig: public IXConfig
+class CXConfig: public IXUnknownImplementation<IXConfig>
 {
 public:
 	CXConfig();

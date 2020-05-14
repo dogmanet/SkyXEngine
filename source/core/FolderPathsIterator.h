@@ -8,7 +8,7 @@ See the license in LICENSE
 
 #include "FileSystem.h"
 
-class CFolderPathsIterator final : public IFileIterator
+class CFolderPathsIterator final: public IXUnknownImplementation<IFileIterator>
 {
 private:
 

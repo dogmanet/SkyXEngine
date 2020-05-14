@@ -4,7 +4,7 @@
 #include <xcommon/IXTextureProxy.h>
 #include <xcommon/IFileSystem.h>
 
-class CTextureProxy: public IXTextureProxy
+class CTextureProxy: public IXUnknownImplementation<IXTextureProxy>
 {
 public:
 	CTextureProxy(IFileSystem *pFileSystem);

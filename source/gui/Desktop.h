@@ -7,7 +7,7 @@
 
 namespace gui
 {
-	class CDesktop: public IDesktop
+	class CDesktop: public IXUnknownImplementation<IDesktop>
 	{
 	public:
 		CDesktop(CDesktopStack *pDecktopStack, const StringW &sName);

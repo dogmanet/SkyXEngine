@@ -16,7 +16,7 @@ protected:
 	CMutationObserver *m_pObserver;
 };
 
-class CMutationObserver: public IXMutationObserver
+class CMutationObserver: public IXUnknownImplementation<IXMutationObserver>
 {
 public:
 	CMutationObserver(IXCore *pCore);

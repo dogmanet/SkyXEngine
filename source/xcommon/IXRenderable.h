@@ -56,11 +56,6 @@ struct XTransparentObject
 class IXRenderable: public IXUnknown
 {
 public:
-	virtual UINT XMETHODCALLTYPE getVersion()
-	{
-		return(IXRENDERABLE_VERSION);
-	}
-
 	//! Возвращает поддерживаемые стадии рендера
 	virtual X_RENDER_STAGE XMETHODCALLTYPE getStages() = 0;
 
@@ -84,10 +79,7 @@ public:
 	virtual void XMETHODCALLTYPE newVisData(_out IXRenderableVisibility **ppVisibility) = 0;
 
 	//! Оптимизирован ли алгоритм расчета видимости для параллельного выполнения?
-	virtual bool XMETHODCALLTYPE isVisThreadOptimized()
-	{
-		return(false);
-	}
+	virtual bool XMETHODCALLTYPE isVisThreadOptimized() = 0;
 };
 
 #endif

@@ -4,7 +4,7 @@
 #include <xcommon/IXModelLoader.h>
 #include "ModelFile.h"
 
-class CModelLoader: public IXModelLoader
+class CModelLoader: public IXUnknownImplementation<IXModelLoader>
 {
 public:
 	UINT XMETHODCALLTYPE getVersion() override;

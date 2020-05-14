@@ -4,7 +4,7 @@
 #include <xcommon/IXUpdatable.h>
 #include "SkyBox.h"
 
-class CUpdatable: public IXUpdatable
+class CUpdatable: public IXUnknownImplementation<IXUpdatable>
 {
 public:
 	CUpdatable(CSkyBox *pSkyBox);

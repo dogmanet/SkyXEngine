@@ -2,7 +2,7 @@
 #include "LightSystem.h"
 
 
-class CLightSystemPlugin: public IXPlugin
+class CLightSystemPlugin: public IXUnknownImplementation<IXPlugin>
 {
 public:
 	void XMETHODCALLTYPE startup(IXCore *pCore) override

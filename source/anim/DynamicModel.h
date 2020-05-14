@@ -4,7 +4,7 @@
 #include <xcommon/resource/IXModel.h>
 #include "DynamicModelShared.h"
 
-class CDynamicModel: public IXDynamicModel
+class CDynamicModel: public IXUnknownImplementation<IXDynamicModel>
 {
 public:
 	CDynamicModel(CDynamicModelProvider *pProvider, CDynamicModelShared *pShared);

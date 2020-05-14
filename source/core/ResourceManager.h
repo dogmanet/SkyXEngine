@@ -9,7 +9,7 @@
 
 class CResourceModel;
 
-class CResourceManager: public IXResourceManager
+class CResourceManager: public IXUnknownImplementation<IXResourceManager>
 {
 public:
 	CResourceManager(IXCore *pCore);

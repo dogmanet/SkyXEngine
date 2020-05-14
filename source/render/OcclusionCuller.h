@@ -7,7 +7,7 @@
 #define OCCLUSION_BUFFER_WIDTH 16
 #define OCCLUSION_BUFFER_HEIGHT 16
 
-class COcclusionCuller: public IXOcclusionCuller
+class COcclusionCuller: public IXUnknownImplementation<IXOcclusionCuller>
 {
 public:
 	COcclusionCuller();

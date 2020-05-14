@@ -7,7 +7,7 @@
 #include <BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h>
 
 template<class T>
-class CCollisionObject: public T
+class CCollisionObject: public IXUnknownImplementation<T>
 {
 public:
 	typedef CCollisionObject<T> BaseClass;

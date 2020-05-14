@@ -118,12 +118,19 @@ public:
 		void commit();
 	};
 
-	class CRenderable: public IXRenderable
+	class CRenderable: public IXUnknownImplementation<IXRenderable>
 	{
 	public:
 		CRenderable(CPhyWorld *pWorld):
 			m_pWorld(pWorld)
 		{
+		}
+
+		XIMPLEMENT_VERSION(IXRENDERABLE_VERSION); 
+
+		bool XMETHODCALLTYPE isVisThreadOptimized() override
+		{
+			return(false);
 		}
 
 		X_RENDER_STAGE XMETHODCALLTYPE getStages() override

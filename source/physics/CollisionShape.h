@@ -8,7 +8,7 @@
 btCollisionShape* GetCollisionShape(ICollisionShape *pShape);
 
 template<class T>
-class CCollisionShape: public T
+class CCollisionShape: public IXUnknownImplementation<T>
 {
 public:
 	typedef CCollisionShape<T> BaseClass;

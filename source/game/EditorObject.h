@@ -7,7 +7,7 @@
 #include <common/array.h>
 
 class CEditable;
-class CEditorObject: public IXEditorObject
+class CEditorObject: public IXUnknownImplementation<IXEditorObject>
 {
 	DECLARE_CLASS(CEditorObject, IXEditorObject);
 public:

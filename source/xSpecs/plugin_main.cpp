@@ -4,7 +4,7 @@
 #include "MaterialLoader.h"
 
 
-class CSXEPlugin: public IXPlugin
+class CSXEPlugin: public IXUnknownImplementation<IXPlugin>
 {
 public:
 	void XMETHODCALLTYPE startup(IXCore *pCore) override

@@ -3,7 +3,7 @@
 
 #include <xcommon/IXRenderable.h>
 
-class CRenderableVisibility: public IXRenderableVisibility
+class CRenderableVisibility: public IXUnknownImplementation<IXRenderableVisibility>
 {
 public:
 	CRenderableVisibility(ID idPlugin, UINT uRenderSystems);

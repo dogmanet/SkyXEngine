@@ -4,7 +4,7 @@
 #include <xcommon/resource/IXResourceModel.h>
 
 template<class T>
-class IModelPhysboxImplementation: public T
+class IModelPhysboxImplementation: public IXUnknownImplementation<T>
 {
 public:
 	const IModelPhysboxBox * XMETHODCALLTYPE asBox() const override

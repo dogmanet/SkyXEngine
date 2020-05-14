@@ -19,7 +19,7 @@ enum WANT_RESIZE
 	WR_BORDERLESS = 0x0008
 };
 
-class CEngine: public IXEngine
+class CEngine: public IXUnknownImplementation<IXEngine>
 {
 	friend class CMainLoopTask;
 public:

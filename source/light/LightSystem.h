@@ -12,7 +12,7 @@
 #define LUMINANCE_BUFFER_SIZE 1024
 
 class CLevelLoadListener;
-class CLightSystem: public IXLightSystem
+class CLightSystem: public IXUnknownImplementation<IXLightSystem>
 {
 public:
 	CLightSystem(IXCore *pCore);

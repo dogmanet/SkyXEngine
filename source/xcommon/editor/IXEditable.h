@@ -22,11 +22,6 @@ public:
 	virtual UINT getClassCount() = 0;
 	virtual const char *getClass(UINT id) = 0;
 
-	virtual UINT XMETHODCALLTYPE getVersion()
-	{
-		return(IXEDITABLE_VERSION);
-	}
-
 	virtual void startup(IGXDevice *pDevice) = 0;
 	virtual void shutdown() = 0;
 };

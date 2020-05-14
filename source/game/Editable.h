@@ -6,13 +6,15 @@
 #include <xcommon/IXCore.h>
 #include "GameData.h"
 
-class CEditable: public IXEditable
+class CEditable: public IXUnknownImplementation<IXEditable>
 {
 	friend class CEditorObject;
 
 public:
 	CEditable(IXCore *pCore);
 	~CEditable();
+
+	XIMPLEMENT_VERSION(IXEDITABLE_VERSION);
 
 	UINT getObjectCount() override;
 	IXEditorObject* getObject(UINT id) override;

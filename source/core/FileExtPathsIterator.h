@@ -8,7 +8,7 @@ See the license in LICENSE
 
 #include "FileSystem.h"
 
-class CFileExtrPathsIterator final : public IFileIterator
+class CFileExtrPathsIterator final: public IXUnknownImplementation<IFileIterator>
 {
 private:
     Array<String>* m_paths;

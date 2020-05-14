@@ -3,7 +3,7 @@
 
 #include "FileSystem.h"
 
-class CFileExtsIterator final : public IFileIterator
+class CFileExtsIterator final: public IXUnknownImplementation<IFileIterator>
 {
 private:
     String m_sPath;

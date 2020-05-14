@@ -5,7 +5,7 @@
 #include "AnimatedModelProvider.h"
 #include "DynamicModelProvider.h"
 
-class CUpdatable: public IXUpdatable
+class CUpdatable: public IXUnknownImplementation<IXUpdatable>
 {
 public:
 	CUpdatable(CAnimatedModelProvider *pAnimatedModelProvider, CDynamicModelProvider *pDynamicModelProvider);

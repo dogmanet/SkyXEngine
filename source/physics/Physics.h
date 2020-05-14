@@ -3,7 +3,7 @@
 
 #include "IXPhysics.h"
 
-class CPhysics: public IXPhysics
+class CPhysics: public IXUnknownImplementation<IXPhysics>
 {
 public:
 	IBoxShape* XMETHODCALLTYPE newBoxShape(const float3 &vHalfExtents) override;

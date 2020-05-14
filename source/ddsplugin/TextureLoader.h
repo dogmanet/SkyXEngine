@@ -5,7 +5,7 @@
 #include <xcommon/IFileSystem.h>
 #include "DDSFile.h"
 
-class CTextureLoader: public IXTextureLoader
+class CTextureLoader: public IXUnknownImplementation<IXTextureLoader>
 {
 public:
 	CTextureLoader(IFileSystem *pFileSystem);

@@ -2,7 +2,7 @@
 #include "TextureLoader.h"
 
 
-class CDDSPlugin: public IXPlugin
+class CDDSPlugin: public IXUnknownImplementation<IXPlugin>
 {
 public:
 	void XMETHODCALLTYPE startup(IXCore *pCore) override

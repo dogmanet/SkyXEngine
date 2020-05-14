@@ -3,7 +3,7 @@
 
 #include "IXWindowSystem.h"
 
-class CWindowSystem: public IXWindowSystem
+class CWindowSystem: public IXUnknownImplementation<IXWindowSystem>
 {
 public:
 	IXWindow* XMETHODCALLTYPE createWindow(const XWINDOW_DESC *pWindowDesc, IXWindowCallback *pCallback = NULL, IXWindow *pParent = NULL) override;

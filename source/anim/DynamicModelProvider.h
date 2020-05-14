@@ -21,7 +21,7 @@ protected:
 	CDynamicModelProvider *m_pProvider;
 };
 
-class CDynamicModelProvider: public IXDynamicModelProvider
+class CDynamicModelProvider: public IXUnknownImplementation<IXDynamicModelProvider>
 {
 public:
 	friend class CMaterialChangedEventListener;

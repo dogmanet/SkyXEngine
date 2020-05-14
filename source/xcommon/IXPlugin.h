@@ -10,7 +10,7 @@
 public:                                                                                                   \
 	cls##Imp(ID id):m_id(id){}                                                                            \
 	ID XMETHODCALLTYPE getID()override{return(m_id);}                                                     \
-	UINT XMETHODCALLTYPE getVersion()override{return(IXPLUGIN_VERSION);}                                  \
+	XIMPLEMENT_VERSION(IXPLUGIN_VERSION);                                                                 \
 	void XMETHODCALLTYPE startup(IXCore *pCore)override{INIT_OUTPUT_STREAM(pCore); cls::startup(pCore);}  \
 protected:                                                                                                \
 	ID m_id;                                                                                              \
@@ -19,7 +19,6 @@ protected:                                                                      
 class IXPlugin: public IXUnknown
 {
 public:
-	virtual UINT XMETHODCALLTYPE getVersion() = 0;
 	virtual ID XMETHODCALLTYPE getID() = 0;
 
 	virtual UINT XMETHODCALLTYPE getInterfaceCount() = 0;

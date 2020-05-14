@@ -6,7 +6,7 @@
 #include <gui/guimain.h>
 
 class CUIWindow;
-class CXUI : public IXUI
+class CXUI: public IXUnknownImplementation<IXUI>
 {
 public:
 	CXUI(IGXDevice *pDev, IXWindowSystem *pWindowSystem, gui::IGUI *pGUI);

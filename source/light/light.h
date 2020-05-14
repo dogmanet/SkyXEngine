@@ -24,7 +24,7 @@ See the license in LICENSE
 #define PSSM_LIGHT_FAR 5000.0f
 
 class CLightSystem;
-class CXLight: public virtual IXLight
+class CXLight: public virtual IXUnknownVirtualImplementation<IXLight>
 {
 public:
 	CXLight(CLightSystem *pLightSystem);

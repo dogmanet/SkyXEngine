@@ -5,7 +5,7 @@
 #include "Task.h"
 
 class CIOTask;
-class CAsyncFileReader: public IAsyncFileReader
+class CAsyncFileReader: public IXUnknownImplementation<IAsyncFileReader>
 {
 public:
 	CAsyncFileReader(IXCore *pCore);
