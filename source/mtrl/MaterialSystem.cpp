@@ -143,7 +143,10 @@ void XMETHODCALLTYPE CMaterialSystem::reloadAll()
 {
 	for(AssotiativeArray<String, CMaterial*>::Iterator i = m_mapMaterials.begin(); i; i++)
 	{
-		loadMaterial(i.first->c_str(), *(i.second));
+		if(*(i.second))
+		{
+			loadMaterial(i.first->c_str(), *(i.second));
+		}
 	}
 }
 
