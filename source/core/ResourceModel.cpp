@@ -20,15 +20,8 @@ CResourceModel::~CResourceModel()
 	{
 		mem_release(m_asGibs[i]);
 	}
-}
 
-void XMETHODCALLTYPE CResourceModel::Release()
-{
-	if(m_uRefCount == 1)
-	{
-		m_pManager->onResourceModelRelease(this);
-	}
-	IXUnknownVirtualImplementation<IXResourceModel>::Release();
+	m_pManager->onResourceModelRelease(this);
 }
 
 void CResourceModel::setFileName(const char *szFilename)

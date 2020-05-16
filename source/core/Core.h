@@ -53,9 +53,9 @@ public:
 
 	ID XMETHODCALLTYPE forLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize = 0) override;
 	void XMETHODCALLTYPE waitForLoop(ID id) override;
-
-protected:
+	
 	IBaseEventChannel* getEventChannelInternal(const XGUID &guid) override;
+protected:
 
 	CPluginManager *m_pPluginManager = NULL;
 	CFileSystem *m_pFileSystem = NULL;

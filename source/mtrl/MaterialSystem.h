@@ -20,7 +20,6 @@ class CTexture: public IXUnknownImplementation<IXTexture>
 public:
 	CTexture(CMaterialSystem *pMaterialSystem, IXResourceTexture *m_pResource);
 	~CTexture();
-	void XMETHODCALLTYPE Release() override;
 	void XMETHODCALLTYPE getAPITexture(IGXBaseTexture **ppTexture, UINT uFrame = 0) override;
 	bool XMETHODCALLTYPE isReady() const override;
 
@@ -51,6 +50,9 @@ protected:
 	UINT m_uWidth = 1;
 	UINT m_uHeight = 1;
 	UINT m_uDepth = 1;
+
+private:
+	void XMETHODCALLTYPE FinalRelease() override;
 };
 
 class CMaterial;

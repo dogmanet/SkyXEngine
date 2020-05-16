@@ -213,12 +213,9 @@ CXLightPoint::CXLightPoint(CLightSystem *pLightSystem):
 	m_pShape = pLightSystem->getShapeSphere();
 }
 
-void CXLightPoint::Release()
+void XMETHODCALLTYPE CXLightPoint::FinalRelease()
 {
-	if(!--m_uRefCount)
-	{
-		m_pLightSystem->destroyPoint(this);
-	}
+	m_pLightSystem->destroyPoint(this);
 }
 
 void CXLightPoint::updatePSConstants(IGXDevice *pDevice)
@@ -566,12 +563,9 @@ CXLightSpot::CXLightSpot(CLightSystem *pLightSystem):CXLight(pLightSystem)
 	m_pShape = pLightSystem->getShapeCone();
 }
 
-void CXLightSpot::Release()
+void XMETHODCALLTYPE CXLightSpot::FinalRelease()
 {
-	if(!--m_uRefCount)
-	{
-		m_pLightSystem->destroySpot(this);
-	}
+	m_pLightSystem->destroySpot(this);
 }
 
 float CXLightSpot::getInnerAngle()

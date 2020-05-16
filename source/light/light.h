@@ -128,7 +128,6 @@ class CXLightPoint: public CXLight, public virtual IXLightPoint
 public:
 	CXLightPoint(CLightSystem *pLightSystem);
 
-	void XMETHODCALLTYPE Release();
 
 	void updateFrustum() override;
 
@@ -138,6 +137,9 @@ protected:
 	void updatePSConstants(IGXDevice *pDevice);
 
 	_base_light_data_ps m_dataPS;
+
+private:
+	void XMETHODCALLTYPE FinalRelease() override;
 };
 
 class CXLightSun: public CXLight, public virtual IXLightSun
@@ -200,7 +202,6 @@ class CXLightSpot: public CXLight, public virtual IXLightSpot
 {
 public:
 	CXLightSpot(CLightSystem *pLightSystem);
-	void XMETHODCALLTYPE Release();
 
 	float getInnerAngle();
 	void setInnerAngle(float fAngle);
@@ -226,6 +227,9 @@ protected:
 	float m_fOuterAngle = SM_PIDIV2;
 	float m_fInnerAngle = SM_PIDIV4;
 	SMQuaternion m_qDirection;
+
+private:
+	void XMETHODCALLTYPE FinalRelease() override;
 };
 
 #pragma warning(pop)

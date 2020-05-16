@@ -70,7 +70,7 @@ void CFuncRotating::updateFlags()
 {
 	BaseClass::updateFlags();
 
-	m_isReversed = (getFlags() & FUNC_ROTATING_REVERSE_DIRECTION);
+	m_isReversed = !!(getFlags() & FUNC_ROTATING_REVERSE_DIRECTION);
 
 	if(getFlags() & FUNC_ROTATING_START_ENABLED)
 	{

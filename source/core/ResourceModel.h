@@ -11,8 +11,6 @@ public:
 	CResourceModel(CResourceManager *pMgr);
 	~CResourceModel();
 
-	void XMETHODCALLTYPE Release();
-
 	UINT XMETHODCALLTYPE getPhysboxCount() const override;
 	const IModelPhysbox * XMETHODCALLTYPE getPhysbox(UINT uPart) const override;
 	int XMETHODCALLTYPE getPhysboxBone(UINT uPart) const override;

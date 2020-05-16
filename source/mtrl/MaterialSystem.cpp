@@ -1897,12 +1897,9 @@ CTexture::~CTexture()
 	mem_delete_a(m_ppGXTexture);
 }
 
-void XMETHODCALLTYPE CTexture::Release()
+void XMETHODCALLTYPE CTexture::FinalRelease()
 {
-	if(!--m_uRefCount)
-	{
-		m_pMaterialSystem->onTextureRelease(this);
-	}
+	m_pMaterialSystem->onTextureRelease(this);
 }
 
 void XMETHODCALLTYPE CTexture::getAPITexture(IGXBaseTexture **ppTexture, UINT uFrame)
