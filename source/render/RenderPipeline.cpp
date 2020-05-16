@@ -1,4 +1,4 @@
-#include "RenderPipeline.h"
+﻿#include "RenderPipeline.h"
 
 #include <core/sxcore.h>
 
@@ -450,6 +450,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XMATERIAL_STATIC_FLAG("transparent", true),
 			// parameter name, texture name
 			XMATERIAL_PARAM_TEXTURE("Base texture", "txBase"),
+			XMATERIAL_PARAM_RANGE("Transparency multiplier", "tp_multiplier", 0.0f, 1.0f, 1.0f),
 			// parameter name, define_if_supplied
 			XMATERIAL_PARAM_TEXTURE_OPT("Normal map", "txNormals", "HAS_NORMALMAP"),
 			XMATERIAL_PARAM_GROUP(NULL, "HAS_NORMALMAP"),

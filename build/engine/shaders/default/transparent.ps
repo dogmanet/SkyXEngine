@@ -4,6 +4,7 @@ XMaterial MainTransparency(PSI_XMaterial IN)
 	XMaterial OUT = XMATERIAL_LOAD_DEFAULTS();
 	
 	float4 vColor = g_txBase.Sample(g_sScene, IN.vTexUV);
+	vColor.w *= g_xMaterialConstants.tp_multiplier;
 	// float4 fColor = IN.vPos;
 #ifdef HAS_ALPHATEST
 	clip(vColor.a - g_xMaterialConstants.pbr_alphatest_threshold);
