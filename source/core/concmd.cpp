@@ -584,6 +584,42 @@ void cmd_cvarlist(int argc, const char ** argv)
 	DumpCVars();
 }
 
+void DumpCCommands()
+{
+	int iLenName = 0;
+
+	for(AssotiativeArray<String, ConCmd>::Iterator i = g_mCmds.begin(); i; i++)
+	{
+		ConCmd * pCmd = i.second;
+		int len = (int)i.first->length();
+		if(iLenName < len)
+		{
+			iLenName = len;
+		}
+	}
+	char szRow[128];
+	sprintf(szRow, COLOR_LGREEN " %%%ds " COLOR_GRAY "| " COLOR_GREEN " %%s" COLOR_RESET "\n", iLenName);
+	printf(szRow, "Name", "Description");
+	char tmpName[64];
+	for(AssotiativeArray<String, ConCmd>::Iterator i = g_mCmds.begin(); i; i++)
+	{
+		ConCmd * pCmd = i.second;
+		sprintf(tmpName, "%s", i.first->c_str());
+		int j;
+		for(j = i.first->length(); j < iLenName; ++j)
+		{
+			tmpName[j] = ' ';
+		}
+		tmpName[j] = 0;
+		printf(szRow, tmpName, pCmd->szDesc ? pCmd->szDesc : "");
+	}
+}
+
+void cmd_cmdlist(int argc, const char ** argv)
+{
+	DumpCCommands();
+}
+
 void ConsoleRegisterCmds()
 {
 	Core_0RegisterConcmdArg("echo", echo, "Echoes all parameters to console");
@@ -593,6 +629,7 @@ void ConsoleRegisterCmds()
 	Core_0RegisterConcmdArg("cvar_handle", cvar_handle, "Handle to show or set cvar value");
 	Core_0RegisterConcmdArg("help", cmd_help, "Handle to show command description");
 	Core_0RegisterConcmdArg("cvarlist", cmd_cvarlist, "List all CVars");
+	Core_0RegisterConcmdArg("cmdlist", cmd_cmdlist, "List all Commands");
 	Core_0RegisterConcmd("perf_dump", cmd_perf_dump, "Show perfMon stats");
 
 	Core_0RegisterCVarInt("con_width", 80, "Ширина окна консоли");
