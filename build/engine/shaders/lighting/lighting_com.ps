@@ -59,9 +59,19 @@ float D_Get(float roughness, float NdotH)
 	return ((1.0f/(PI * a2 * NdotH2 * NdotH2 + 0.001)) * exp((NdotH2 - 1.0f) / ( a2 * NdotH2)));///(1.f+roughness);
 }
 
+float GGX_Distribution(float alpha, float cosThetaNH)
+{
+    float alpha2 = alpha * alpha;
+    float NH_sqr = saturate(cosThetaNH * cosThetaNH);
+    float den = NH_sqr * alpha2 + (1.0 - NH_sqr);
+    // float den = cosThetaNH * cosThetaNH * (alpha2 - 1.0f) + 1.0f;
+    return alpha2 / ( PI * den * den );
+}
+
 //! Коэффициент френеля
 float4 F_Get(float4 f0, float HdotV)
 {
+	// return(1);
     return (f0 + (1.0 - f0) * pow((1.0 - HdotV), 5));
 }
 
@@ -77,6 +87,7 @@ float4 GetSpecular(float fRoughness, float4 fF0, float fNdotL, float3 vV, float3
 	float fLdotV = dot(vL, vV);
 	float fNdotV = dot(vN, vV);
 	
+	float fAlpha = fRoughness * fRoughness;
 	
 	
 	// float3 vHalfVector = normalize(vV + vL);
@@ -88,9 +99,13 @@ float4 GetSpecular(float fRoughness, float4 fF0, float fNdotL, float3 vV, float3
 	
 	float2 tmp = abs(float2(fNdotL, fNdotV));
 	
-	float D = D_Get(fRoughness, fNdotH);
+	// float D = D_Get(fRoughness, fNdotH);
+	float D = GGX_Distribution(fAlpha, fNdotH);
 	float4 F = F_Get(fF0, fVdotH);
-	return ((D*F) / (2.0f * lerp(2 * tmp.x * tmp.y, tmp.x + tmp.y, fRoughness) + 0.001f));
+	// float4 F = F_Get(fF0, fNdotV);
+	// float4 F = F_Get(fF0, dot(vL, normalize(vV + vL)));
+	// float4 F = F_Get(fF0, dot(normalize(vV + vL), vV));
+	return ((D*F) / (2.0f * lerp(2 * tmp.x * tmp.y, tmp.x + tmp.y, fAlpha) + 0.001f));
 	
 	/* 
 	float3 vHalfVector = normalize(vV + vL);
@@ -105,6 +120,7 @@ float4 GetSpecular(float fRoughness, float4 fF0, float fNdotL, float3 vV, float3
 	return ((D*G*F) / (4.0f*fNdotL*fNdotV+0.001f));
 	*/
 }
+
 
 //#############################################################################
 
@@ -182,6 +198,10 @@ float4 main(VSO_ResPos IN):SV_TARGET
 	float4 vSpecular = (float4)0;
 	float fDiffuse = 0;
 		
+		
+	vSpecular = max(0.0f, GetSpecular(fRoughness, float4(vAlbedo.xyz, fF0), fNdotL, vVertexToEye, vLigth, vNormalPixel));
+	
+	
 	[branch]if(fNdotL < 0.0f)
 	{
 		// [branch]if(fThickness < 0.99f)
@@ -201,8 +221,6 @@ float4 main(VSO_ResPos IN):SV_TARGET
 	else
 	{
 		fDiffuse = fNdotL / PI;
-		
-		vSpecular = max(0.0f, GetSpecular(fRoughness, float4(vAlbedo.xyz, fF0), fNdotL, vVertexToEye, vLigth.xyz, vNormalPixel));
 	}
 
 	// 
@@ -214,7 +232,24 @@ float4 main(VSO_ResPos IN):SV_TARGET
 	// float fDiffuse = 1.0f;
 	
 	// OUT.xyz = lerp(vAlbedo.xyz, g_vLightColorPower.xyz * lerp(vAlbedo.xyz * fDiffuse + vSpecular.www, vSpecular.xyz, fMetallic) * fAttenuation * fShadow, vAlbedo.w);
-	OUT.xyz = (g_vLightColorPower.xyz * lerp(vAlbedo.xyz * fDiffuse + vSpecular.www, vSpecular.xyz, fMetallic) * fAttenuation * fShadow) * vAlbedo.w;
+	
+	
+	// OUT.xyz = (g_vLightColorPower.xyz * lerp(vAlbedo.xyz * fDiffuse + vSpecular.www, vSpecular.xyz, fMetallic) * fAttenuation * fShadow) * vAlbedo.w;
+	
+	
+	// {
+		float3 vHalfVector = normalize(vVertexToEye + vLigth);
+		// float fNdotH = dot(vN, vHalfVector);
+		float fVdotH = dot(vVertexToEye, vHalfVector);
+		// float fVLlen = length(vVertexToEye + vLigth);
+		// float fVdotH = 0.5f * fVLlen; 
+	// }
+	float F = F_Get(fF0, fVdotH).x;
+	float diffK = 1.0f - F;
+
+// return(fVdotH);
+	
+	OUT.xyz = (g_vLightColorPower.xyz * lerp(vAlbedo.xyz * fDiffuse/*  * diffK */ + vSpecular.www, vSpecular.xyz, fMetallic) * fAttenuation * fShadow) * vAlbedo.w;
 	
 	OUT.w = 1.0f;
 	return OUT;
