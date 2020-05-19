@@ -1,0 +1,245 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\ogg">
+      <UniqueIdentifier>{3161e3af-c487-407c-a09f-0415df0168c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vorbis">
+      <UniqueIdentifier>{ded0f542-8993-4e37-b61f-afb82d885d6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ogg">
+      <UniqueIdentifier>{ecf1c738-c1d5-4391-a3ec-feb065970500}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\vorbis">
+      <UniqueIdentifier>{54e411d1-e39c-4620-932d-bb56ebd4c9c6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\sdks\ogg\include\ogg\ogg.h">
+      <Filter>Header Files\ogg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\ogg\include\ogg\os_types.h">
+      <Filter>Header Files\ogg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\ogg\src\crctable.h">
+      <Filter>Header Files\ogg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\include\vorbis\vorbisfile.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\backends.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\bitrate.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\codebook.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\codec_internal.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\envelope.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\highlevel.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\lookup.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\lookup_data.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\lpc.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\lsp.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\masking.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\mdct.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\misc.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\psy.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\registry.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\scales.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\smallft.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\window.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\os.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\include\vorbis\codec.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\floor_all.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\books\floor\floor_books.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\psych_11.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\psych_16.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\psych_44.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\psych_8.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\books\coupled\res_books_stereo.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\books\uncoupled\res_books_uncoupled.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\residue_8.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\residue_16.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\residue_44.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\residue_44u.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\setup_11.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\setup_16.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\setup_22.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\setup_32.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\setup_44.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\setup_44u.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\setup_X.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\lib\modes\setup_8.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\sdks\vorbis\include\vorbis\vorbisenc.h">
+      <Filter>Header Files\vorbis</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\sdks\ogg\src\framing.c">
+      <Filter>Source Files\ogg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\ogg\src\bitwise.c">
+      <Filter>Source Files\ogg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\vorbisfile.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\analysis.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\bitrate.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\block.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\codebook.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\envelope.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\floor0.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\floor1.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\info.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\lookup.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\lpc.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\lsp.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\mapping0.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\mdct.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\psy.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\registry.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\res0.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\sharedbook.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\smallft.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\synthesis.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\window.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\sdks\vorbis\lib\vorbisenc.c">
+      <Filter>Source Files\vorbis</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\sdks\ogg\win32\ogg.def">
+      <Filter>Source Files\ogg</Filter>
+    </None>
+  </ItemGroup>
+</Project>

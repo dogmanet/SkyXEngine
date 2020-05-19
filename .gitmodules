@@ -10,3 +10,9 @@
 [submodule "sdks/mital"]
 	path = sdks/mital
 	url = https://dev.ds-servers.com/sip/mital.git
+[submodule "sdks/ogg"]
+	path = sdks/ogg
+	url = https://dev.ds-servers.com/sip/ogg.git
+[submodule "sdks/vorbis"]
+	path = sdks/vorbis
+	url = https://dev.ds-servers.com/sip/vorbis.git

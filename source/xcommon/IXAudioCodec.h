@@ -73,7 +73,7 @@ class IXAudioCodecTarget: public IXUnknown
 {
 public:
 
-	virtual void getDesc(AudioRawDesc *pDesc) const = 0;
+	virtual void XMETHODCALLTYPE getDesc(AudioRawDesc *pDesc) const = 0;
 
 	//************************************************************************
 
