@@ -5,17 +5,11 @@ See the license in LICENSE
 *****************************************************/
 
 #include <xcommon/IXPlugin.h>
-#include "AudioCodecOgg.h"
-
-#if defined(_DEBUG)
-#pragma comment(lib, "ogg-vorbis_d.lib")
-#else
-#pragma comment(lib, "ogg-vorbis.lib")
-#endif
+#include "AudioCodecWave.h"
 
 //##########################################################################
 
-class CAudioCodecOggPlugin: public IXUnknownImplementation<IXPlugin>
+class CAudioCodecWav: public IXUnknownImplementation<IXPlugin>
 {
 public:
 	void XMETHODCALLTYPE startup(IXCore *pCore) override
@@ -47,10 +41,10 @@ public:
 	{
 		if (guid == IXAUDIOCODEC_GUID)
 		{
-			return(new CAudioCodecOgg());
+			return(new CAudioCodecWave());
 		}
 		return(NULL);
 	}
 };
 
-DECLARE_XPLUGIN(CAudioCodecOggPlugin);
+DECLARE_XPLUGIN(CAudioCodecWav);

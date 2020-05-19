@@ -1,29 +1,46 @@
-/*****************************************************
+﻿/*****************************************************
 Copyright © DogmaNet Team, 2020
 Site: dogmanet.ru
 See the license in LICENSE
 *****************************************************/
 
-#ifndef __AUDIOCODECOGG_H
-#define __AUDIOCODECOGG_H
+#ifndef __AUDIOCODECWAV_H
+#define __AUDIOCODECWAV_H
 
 #include <xcommon/IXAudioCodec.h>
-
-#include <vorbis/codec.h>
-#include <vorbis/vorbisfile.h>
-#include <vorbis/vorbisenc.h>
-
 #include <common/string.h>
 
-//! количество байт на семпл
-#define OGG_BYTES_PER_SAMPLE 2
+//##########################################################################
 
+enum WAVE_FORMAT
+{
+	WAVE_FORMAT_PCM_INT = 1,
+	WAVE_FORMAT_PCM_FLOAT = 3,
+};
 
-class CAudioCodecOgg: public IXUnknownImplementation<IXAudioCodec>
+struct CWaveHeader
+{
+	char	aRiff[4];
+	uint32_t	uRiffChunkSize;
+	char	aFormat[4];
+	char	aFormatChunkId[4];
+	uint32_t	uFormatChunkSize;
+	int16_t	i16FormatCode;
+	int16_t	i16Channels;
+	int32_t	iSampleRate;
+	int32_t	iBytesPerSec;
+	int16_t	i16BlockAlign;
+	int16_t	i16BitsPerSample;
+	char aData[4];
+	uint32_t uDataChunkSize;
+};
+
+//##########################################################################
+
+class CAudioCodecWave: public IXUnknownImplementation<IXAudioCodec>
 {
 public:
-	CAudioCodecOgg();
-	~CAudioCodecOgg(){}
+	CAudioCodecWave();
 
 	virtual const char* XMETHODCALLTYPE getFormat() const override;
 	virtual const char* XMETHODCALLTYPE getExt(UINT uIndex=0) const override;
@@ -32,30 +49,29 @@ public:
 	virtual bool XMETHODCALLTYPE canSave(UINT uIndex=0) const override;
 
 protected:
-	ov_callbacks m_oCB;
 	Array<String> m_aExts;
 };
 
 //##########################################################################
 
-class CAudioCodecTargetOgg: public IXUnknownImplementation<IXAudioCodecTarget>
+class CAudioCodecTargetWave: public IXUnknownImplementation<IXAudioCodecTarget>
 {
 public:
-	~CAudioCodecTargetOgg();
+	~CAudioCodecTargetWave();
 	virtual void XMETHODCALLTYPE getDesc(AudioRawDesc *pDesc) const override;
 	virtual int64_t XMETHODCALLTYPE getPos() const override;
-	virtual void XMETHODCALLTYPE setPos(int64_t iPos) override;
+	virtual void XMETHODCALLTYPE setPos(int64_t uPos) override;
 	virtual size_t XMETHODCALLTYPE decode(int64_t iPos, uint64_t uLen, void **ppData) override;
 	virtual bool XMETHODCALLTYPE encode(IXBuffer *pBufferPCM, AudioRawDesc *pOutDesc) override;
 
 protected:
 
-	friend CAudioCodecOgg;
+	friend CAudioCodecWave;
 
-	void init(FILE *pFile, OggVorbis_File *pVoFile, AudioRawDesc *pDesc, bool forSave);
+	void init(FILE *pFile, CWaveHeader *pHeader, AudioRawDesc *pDesc, bool forSave);
 
 	FILE *m_pFile = NULL;
-	OggVorbis_File *m_pVoFile;
+	CWaveHeader m_oHeader;
 	AudioRawDesc m_oDesc;
 	bool m_forSave = false;
 };
