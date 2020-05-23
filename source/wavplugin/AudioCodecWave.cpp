@@ -3,14 +3,15 @@
 
 //##########################################################################
 
-CAudioCodecWave::CAudioCodecWave()
+CAudioCodecWave::CAudioCodecWave(IFileSystem *pFileSystem)
 {
+	m_pFileSystem = pFileSystem;
 	m_aExts.push_back("wav");
 }
 
 bool XMETHODCALLTYPE CAudioCodecWave::open(const char *szFile, const char *szArg, IXAudioCodecTarget **ppTarget, bool forSave)
 {
-	FILE *pFile = fopen(szFile, (forSave ? "wb" : "rb"));
+	IFile *pFile = m_pFileSystem->openFile(szFile, (forSave ? FILE_MODE_WRITE : FILE_MODE_READ));
 
 	if (!pFile || !ppTarget)
 		return false;
@@ -20,10 +21,10 @@ bool XMETHODCALLTYPE CAudioCodecWave::open(const char *szFile, const char *szArg
 
 	if(!forSave)
 	{
-		uint32_t uCurrPos = ftell(pFile);
-		fseek(pFile, 0, SEEK_SET);
-		fread(&oHeader, 1, sizeof(CWaveHeader), pFile);
-		fseek(pFile, 0, uCurrPos);
+		size_t uCurrPos = pFile->getPos();
+		pFile->setPos(0);
+		pFile->readBin(&oHeader, sizeof(CWaveHeader));
+		pFile->setPos(uCurrPos);
 
 		bool can =
 				memcmp(oHeader.aRiff, "RIFF", 4) == 0 &&
@@ -33,7 +34,7 @@ bool XMETHODCALLTYPE CAudioCodecWave::open(const char *szFile, const char *szArg
 
 		if(!can)
 		{
-			fclose(pFile);
+			mem_release(pFile);
 			return false;
 		}
 
@@ -87,12 +88,12 @@ UINT XMETHODCALLTYPE CAudioCodecWave::getExtCount() const
 
 CAudioCodecTargetWave::~CAudioCodecTargetWave()
 {
-	fclose(m_pFile);
+	mem_release(m_pFile);
 }
 
 //**************************************************************************
 
-void CAudioCodecTargetWave::init(FILE *pFile, CWaveHeader *pHeader, AudioRawDesc *pDesc, bool forSave)
+void CAudioCodecTargetWave::init(IFile *pFile, CWaveHeader *pHeader, AudioRawDesc *pDesc, bool forSave)
 {
 	m_pFile = pFile;
 
@@ -122,7 +123,7 @@ int64_t XMETHODCALLTYPE CAudioCodecTargetWave::getPos() const
 	if(!m_pFile || m_forSave)
 		return 0;
 
-	return ftell(m_pFile) - sizeof(CWaveHeader);
+	return m_pFile->getPos() - sizeof(CWaveHeader);
 }
 
 //**************************************************************************
@@ -132,7 +133,7 @@ void XMETHODCALLTYPE CAudioCodecTargetWave::setPos(int64_t iPos)
 	if(!m_pFile || m_forSave)
 		return;
 
-	fseek(m_pFile, sizeof(CWaveHeader) + iPos, SEEK_SET);
+	m_pFile->setPos(sizeof(CWaveHeader) + iPos);
 }
 
 //**************************************************************************
@@ -144,7 +145,7 @@ size_t XMETHODCALLTYPE CAudioCodecTargetWave::decode(int64_t iPos, uint64_t uLen
 
 	setPos(iPos);
 
-	size_t sizeRead = fread(*ppData, 1, uLen, m_pFile);
+	size_t sizeRead = m_pFile->readBin(*ppData, uLen);
 
 	return sizeRead;
 }
@@ -156,7 +157,7 @@ bool XMETHODCALLTYPE CAudioCodecTargetWave::encode(IXBuffer *pBufferPCM, AudioRa
 	if (!pBufferPCM || !pOutDesc)
 		return false;
 
-	fseek(m_pFile, 0, SEEK_SET);
+	m_pFile->setPos(0);
 
 	CWaveHeader oOutHeader;
 	oOutHeader.iSampleRate = pOutDesc->uSampleRate;
@@ -173,8 +174,8 @@ bool XMETHODCALLTYPE CAudioCodecTargetWave::encode(IXBuffer *pBufferPCM, AudioRa
 	oOutHeader.i16FormatCode = (pOutDesc->fmtSample > AUDIO_SAMPLE_FMT_SINT32 ? WAVE_FORMAT_PCM_FLOAT : WAVE_FORMAT_PCM_INT);
 	oOutHeader.uFormatChunkSize = 16;
 
-	fwrite(&oOutHeader, sizeof(oOutHeader), 1, m_pFile);
-	fwrite(pBufferPCM->get(), 1, pBufferPCM->size(), m_pFile);
+	m_pFile->writeBin(&oOutHeader, sizeof(oOutHeader));
+	m_pFile->writeBin(pBufferPCM->get(), pBufferPCM->size());
 
 	return true;
 }

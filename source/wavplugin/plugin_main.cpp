@@ -14,6 +14,7 @@ class CAudioCodecWav: public IXUnknownImplementation<IXPlugin>
 public:
 	void XMETHODCALLTYPE startup(IXCore *pCore) override
 	{
+		m_pCore = pCore;
 	}
 
 	void XMETHODCALLTYPE shutdown() override
@@ -41,10 +42,13 @@ public:
 	{
 		if (guid == IXAUDIOCODEC_GUID)
 		{
-			return(new CAudioCodecWave());
+			return(new CAudioCodecWave(m_pCore->getFileSystem()));
 		}
 		return(NULL);
 	}
+
+protected:
+	IXCore *m_pCore = NULL;
 };
 
 DECLARE_XPLUGIN(CAudioCodecWav);

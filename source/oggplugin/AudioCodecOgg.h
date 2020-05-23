@@ -15,15 +15,21 @@ See the license in LICENSE
 
 #include <common/string.h>
 
+#include <xcommon/IFileSystem.h>
+#include <core/IFile.h>
+
 //! количество байт на семпл
 #define OGG_BYTES_PER_SAMPLE 2
 
+//##########################################################################
 
 class CAudioCodecOgg: public IXUnknownImplementation<IXAudioCodec>
 {
 public:
-	CAudioCodecOgg();
+	CAudioCodecOgg(IFileSystem *pFileSystem);
 	~CAudioCodecOgg(){}
+
+	XIMPLEMENT_VERSION(IXAUDIOCODEC_VERSION);
 
 	virtual const char* XMETHODCALLTYPE getFormat() const override;
 	virtual const char* XMETHODCALLTYPE getExt(UINT uIndex=0) const override;
@@ -34,6 +40,7 @@ public:
 protected:
 	ov_callbacks m_oCB;
 	Array<String> m_aExts;
+	IFileSystem *m_pFileSystem = NULL;
 };
 
 //##########################################################################
@@ -52,9 +59,9 @@ protected:
 
 	friend CAudioCodecOgg;
 
-	void init(FILE *pFile, OggVorbis_File *pVoFile, AudioRawDesc *pDesc, bool forSave);
+	void init(IFile *pFile, OggVorbis_File *pVoFile, AudioRawDesc *pDesc, bool forSave);
 
-	FILE *m_pFile = NULL;
+	IFile *m_pFile = NULL;
 	OggVorbis_File *m_pVoFile;
 	AudioRawDesc m_oDesc;
 	bool m_forSave = false;

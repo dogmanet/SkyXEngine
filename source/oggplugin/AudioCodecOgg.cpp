@@ -3,44 +3,75 @@
 
 //##########################################################################
 
-size_t OggCallbackRead(void *ptr, size_t size, size_t nmemb, void *datasource)
+size_t OggCallbackRead(void *pDataDest, size_t size, size_t nmemb, void *pDataFile)
 {
-	FILE* f = (FILE*)datasource;
-	return fread(ptr, 1, size * nmemb, f);
+	IFile *pFile = (IFile*)pDataFile;
+	return pFile->readBin(pDataDest, size * nmemb);
 }
 
-int OggCallbackClose(void* datasource)
+//**************************************************************************
+
+int OggCallbackClose(void *pDataFile)
 {
-	FILE* f = (FILE*)datasource;
-	fclose(f);
+	IFile *pFile = (IFile*)pDataFile;
+	//эту функци. вызывает ov_clear, но надо чтобы владалец обьекта сам закрывал файл
+	//mem_release(pFile);
 	return 0;
 }
 
-int OggCallbackSeek(void *datasource, ogg_int64_t offset, int whence)
+//**************************************************************************
+
+int OggCallbackSeek(void *pDataFile, ogg_int64_t offset, int whence)
 {
-	FILE* f = (FILE*)datasource;
+	IFile *pFile = (IFile*)pDataFile;
 	switch (whence)
 	{
-	case SEEK_SET: return fseek(f, offset, SEEK_SET);
-	case SEEK_CUR: return fseek(f, offset, SEEK_CUR);
-	case SEEK_END: return fseek(f, offset, SEEK_END);
-	default: return -1;
+	case SEEK_SET:
+	{
+		if (offset < 0 || offset > pFile->getSize())
+			return 1;
+		pFile->setPos(offset);
+		return 0;
+	}
+	case SEEK_CUR:
+	{
+		size_t uPos = pFile->getPos() + offset;
+		if (uPos < 0 || uPos > pFile->getSize())
+			return 1;
+
+		pFile->setPos(uPos);
+		return 0;
+	}
+	case SEEK_END:
+	{
+		size_t uPos = pFile->getSize() + offset;
+		if (uPos < 0 || uPos > pFile->getSize())
+			return 1;
+
+		pFile->setPos(uPos);
+		return 0;
+	}
+	default: 
+		return -1;
 	}
 	return 1;
 }
 
-long OggCallbackTell(void* datasource)
+//**************************************************************************
+
+long OggCallbackTell(void *pDataFile)
 {
-	FILE* f = (FILE*)datasource;
-	return ftell(f);
+	IFile *pFile = (IFile*)pDataFile;
+	return pFile->getPos();
 }
 
 //##########################################################################
 //##########################################################################
 //##########################################################################
 
-CAudioCodecOgg::CAudioCodecOgg()
+CAudioCodecOgg::CAudioCodecOgg(IFileSystem *pFileSystem)
 {
+	m_pFileSystem = pFileSystem;
 	m_oCB.close_func = OggCallbackClose;
 	m_oCB.read_func = OggCallbackRead;
 	m_oCB.seek_func = OggCallbackSeek;
@@ -68,7 +99,7 @@ UINT XMETHODCALLTYPE CAudioCodecOgg::getExtCount() const
 
 bool XMETHODCALLTYPE CAudioCodecOgg::open(const char *szFile, const char *szArg, IXAudioCodecTarget **ppTarget, bool forSave)
 {
-	FILE *pFile = fopen(szFile, (forSave ? "wb" : "rb"));
+	IFile *pFile = m_pFileSystem->openFile(szFile, (forSave ? FILE_MODE_WRITE : FILE_MODE_READ));
 
 	if (!pFile || !ppTarget)
 		return false;
@@ -126,11 +157,13 @@ CAudioCodecTargetOgg::~CAudioCodecTargetOgg()
 		ov_clear(m_pVoFile);
 		mem_delete(m_pVoFile);
 	}
+
+	mem_release(m_pFile);
 }
 
 //**************************************************************************
 
-void CAudioCodecTargetOgg::init(FILE *pFile, OggVorbis_File *pVoFile, AudioRawDesc *pDesc, bool forSave)
+void CAudioCodecTargetOgg::init(IFile *pFile, OggVorbis_File *pVoFile, AudioRawDesc *pDesc, bool forSave)
 {
 	m_pFile = pFile;
 	m_pVoFile = pVoFile;
@@ -287,20 +320,31 @@ bool XMETHODCALLTYPE CAudioCodecTargetOgg::encode(IXBuffer *pBufferPCM, AudioRaw
 		iRetCode = ogg_stream_flush(&oOggStream, &oOggPage);
 		if(iRetCode == 0)
 			break;
-		fwrite(oOggPage.header, 1, oOggPage.header_len, m_pFile);
-		fwrite(oOggPage.body, 1, oOggPage.body_len, m_pFile);
+		m_pFile->writeBin(oOggPage.header, oOggPage.header_len);
+		m_pFile->writeBin(oOggPage.body, oOggPage.body_len);
 	}
 
 	//**************************************************
 	// инициализация семплов
 
+	
 	//количество блоков семплов (количество каналов * байт на семпл)
 	int iCountBlocks = uSize/ (pOutDesc->u8BlockAlign);
 
+	//по сколько блоков записывать за один раз
+	int iPartBlocks = 1024;
+
+	//количество уже записанных блоков
+	int iCountReadedBlocks = 0;
+
+	/*в общем процесс записи сэмлов выглядит как показано в закомментированном коде ниже
+		но так делать не надо, потому что внутри vorbis_analysis_wrote выделяется память на стеке по общему количеству блоков
+		это может привести к переполнению стека
+	*/
 	/* получаем выделенный массив (по количеству каналов) массивов (по количеству семплов)
 		aaBuffer[iChannel][iSample]
 	*/
-	float **aaBuffer = vorbis_analysis_buffer(&oVoMainState, iCountBlocks);
+	/*float **aaBuffer = vorbis_analysis_buffer(&oVoMainState, iCountBlocks);
 
 	//заполняем выделенный float массив нормализованными данными [-1.0, 1.0]
 	for(int i = 0; i < iCountBlocks ; ++i)
@@ -313,7 +357,33 @@ bool XMETHODCALLTYPE CAudioCodecTargetOgg::encode(IXBuffer *pBufferPCM, AudioRaw
 	}
 
 	//сообщаем кодировщику что поступили данные для записи
-	vorbis_analysis_wrote(&oVoMainState, iCountBlocks);
+	vorbis_analysis_wrote(&oVoMainState, iCountBlocks);*/
+
+	//циклом (частями) передаем данные кодировщику
+	while (iCountReadedBlocks < iCountBlocks)
+	{
+		//количество уже прочитанных сэмплов
+		uint32_t uCountReadedSamples = (iCountReadedBlocks*pOutDesc->u8Channels);
+		
+		//количество блоков для текущей итерации
+		int iCurrBlocks = iPartBlocks;
+		if (iCountBlocks - iCountReadedBlocks < iPartBlocks)
+			iCurrBlocks = iCountBlocks - iCountReadedBlocks;
+
+		float **aaBuffer = vorbis_analysis_buffer(&oVoMainState, iCurrBlocks);
+
+		for (int i = 0; i < iCurrBlocks; ++i)
+		{
+			for (int iChannels = 0; iChannels<pOutDesc->u8Channels; ++iChannels)
+			{
+				int16_t i16Sample = ((int16_t*)pData)[uCountReadedSamples + i];
+				aaBuffer[iChannels][i] = float(i16Sample) / 32768.f;
+			}
+		}
+
+		vorbis_analysis_wrote(&oVoMainState, iCurrBlocks);
+		iCountReadedBlocks += iCurrBlocks;
+	}
 
 
 	//**************************************************
@@ -325,8 +395,10 @@ bool XMETHODCALLTYPE CAudioCodecTargetOgg::encode(IXBuffer *pBufferPCM, AudioRaw
 		/*разбивка несжатых данных на блоки, если не удалось, тогда сообщаем что данных больше не будет
 		 если не сообщить об этом, то не все данные будут записаны, не получится дойти до конца битового потока, потому что запись идет постраничная и последняя неполня страница не будет записана
 		*/
-		if(vorbis_analysis_blockout(&oVoMainState, &oVoDataBlock)!=1)
+		if (vorbis_analysis_blockout(&oVoMainState, &oVoDataBlock) != 1)
+		{
 			vorbis_analysis_wrote(&oVoMainState, 0);
+		}
 
 		//поиск режима кодирования и отправка блока на кодировку
 		vorbis_analysis(&oVoDataBlock, NULL);
@@ -344,8 +416,9 @@ bool XMETHODCALLTYPE CAudioCodecTargetOgg::encode(IXBuffer *pBufferPCM, AudioRaw
 				int result=ogg_stream_pageout(&oOggStream, &oOggPage);
 				if(result==0)
 					break;
-				fwrite(oOggPage.header, 1, oOggPage.header_len, m_pFile);
-				fwrite(oOggPage.body, 1, oOggPage.body_len, m_pFile);
+
+				m_pFile->writeBin(oOggPage.header, oOggPage.header_len);
+				m_pFile->writeBin(oOggPage.body, oOggPage.body_len);
 
 				//если все записано (находимся в конце битового потока), сообщаем о завершении
 				if(ogg_page_eos(&oOggPage))
