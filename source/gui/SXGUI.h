@@ -49,9 +49,9 @@ namespace gui
 		IDesktop* getDesktopA(const char *name) override;
 		IDesktop* getDesktopW(const WCHAR *name) override;
 
-		void registerCallback(const char *cbName, GUI_CALLBACK cb) override;
+		void registerCallback(const char *cbName, GUI_CALLBACK cb, void *pUserData = NULL) override;
 
-		void registerCallbackDefault(GUI_CALLBACK_WC cb, BOOL greedy = FALSE) override;
+		void registerCallbackDefault(GUI_CALLBACK_WC cb, BOOL greedy = FALSE, void *pUserData = NULL) override;
 
 		GUI_CALLBACK getCallbackByName(const char *cbName) override;
 		GUI_CALLBACK getCallbackByName(const StringW &cbName) override;
@@ -143,9 +143,21 @@ namespace gui
 		bool m_bShowCursor = true;
 		AssotiativeArray<StringW, IDesktop*> m_mDesktops;
 
-		AssotiativeArray<StringW, /* Array< */GUI_CALLBACK/* > */> m_mCallbacks;
-		Array<GUI_CALLBACK_WC> m_mCallbacksDefaults;
-		Array<GUI_CALLBACK_WC> m_mCallbacksDefaultsWC;
+		struct SimpleCallback
+		{
+			GUI_CALLBACK fn;
+			void *pUserData;
+		};
+
+		struct DefaultCallback
+		{
+			GUI_CALLBACK_WC fn;
+			void *pUserData;
+		};
+
+		AssotiativeArray<StringW, /* Array< */SimpleCallback/* > */> m_mCallbacks;
+		Array<DefaultCallback> m_mCallbacksDefaults;
+		Array<DefaultCallback> m_mCallbacksDefaultsWC;
 		
 		IGXVertexBuffer *m_pQuadVerticesXYZ;
 		IGXVertexBuffer *m_pQuadVerticesXYZTex16;
@@ -154,6 +166,11 @@ namespace gui
 		IGXRenderBuffer *m_pQuadRenderXYZTex16;
 
 		IGXConstantBuffer *m_pVSTransformConstant = NULL;
+
+
+
+		SimpleCallback* getFullCallbackByName(const char *cbName);
+		SimpleCallback* getFullCallbackByName(const StringW &cbName);
 	};
 
 	class CGUI: public IXUnknownImplementation<IGUI>

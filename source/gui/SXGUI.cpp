@@ -609,20 +609,20 @@ namespace gui
 		return(NULL);
 	}
 
-	void CDesktopStack::registerCallback(const char *cbName, GUI_CALLBACK cb)
+	void CDesktopStack::registerCallback(const char *cbName, GUI_CALLBACK cb, void *pUserData)
 	{
 		if(cb)
 		{
 			//mCallbacks[StringW(String(cbName))].push_back(cb);
-			m_mCallbacks[StringW(String(cbName))] = cb;
+			m_mCallbacks[StringW(String(cbName))] = {cb, pUserData};
 		}
 	}
 
-	void CDesktopStack::registerCallbackDefault(GUI_CALLBACK_WC cb, BOOL greedy)
+	void CDesktopStack::registerCallbackDefault(GUI_CALLBACK_WC cb, BOOL greedy, void *pUserData)
 	{
 		if(cb)
 		{
-			(greedy ? m_mCallbacksDefaults : m_mCallbacksDefaultsWC).push_back(cb);
+			(greedy ? m_mCallbacksDefaults : m_mCallbacksDefaultsWC).push_back({cb, pUserData});
 		}
 	}
 
@@ -671,21 +671,40 @@ namespace gui
 		return(m_pDevice);
 	}
 
-	GUI_CALLBACK CDesktopStack::getCallbackByName(const char *_cbName)
+	GUI_CALLBACK CDesktopStack::getCallbackByName(const char *cbName)
 	{
-		StringW cbName = String(_cbName);
-		if(m_mCallbacks.KeyExists(cbName))
+		SimpleCallback *pCB = getFullCallbackByName(cbName);
+		if(pCB)
 		{
-			return(m_mCallbacks[cbName]);
+			return(pCB->fn);
 		}
 		return(NULL);
 	}
 
 	GUI_CALLBACK CDesktopStack::getCallbackByName(const StringW &cbName)
 	{
+		SimpleCallback *pCB = getFullCallbackByName(cbName);
+		if(pCB)
+		{
+			return(pCB->fn);
+		}
+		return(NULL);
+	}
+
+	CDesktopStack::SimpleCallback* CDesktopStack::getFullCallbackByName(const char *_cbName)
+	{
+		StringW cbName = String(_cbName);
 		if(m_mCallbacks.KeyExists(cbName))
 		{
-			return(m_mCallbacks[cbName]);
+			return(&m_mCallbacks[cbName]);
+		}
+		return(NULL);
+	}
+	CDesktopStack::SimpleCallback* CDesktopStack::getFullCallbackByName(const StringW &cbName)
+	{
+		if(m_mCallbacks.KeyExists(cbName))
+		{
+			return(&m_mCallbacks[cbName]);
 		}
 		return(NULL);
 	}
@@ -804,21 +823,28 @@ namespace gui
 
 	void CDesktopStack::execCallback(const StringW &cmd, IEvent *ev)
 	{
-		GUI_CALLBACK cb = getCallbackByName(cmd);
+		DefaultCallback *pDefCB;
+		SimpleCallback *cb = getFullCallbackByName(cmd);
 		if(cb)
 		{
-			cb(ev);
+			ev->pCallbackData = cb->pUserData;
+			cb->fn(ev);
 		}
 		else
 		{
+			
 			for(UINT i = 0, l = m_mCallbacksDefaults.size(); i < l; ++i)
 			{
-				m_mCallbacksDefaults[i](cmd.c_str(), ev);
+				pDefCB = &m_mCallbacksDefaults[i];
+				ev->pCallbackData = pDefCB->pUserData;
+				pDefCB->fn(cmd.c_str(), ev);
 			}
 		}
 		for(UINT i = 0, l = m_mCallbacksDefaultsWC.size(); i < l; ++i)
 		{
-			m_mCallbacksDefaultsWC[i](cmd.c_str(), ev);
+			pDefCB = &m_mCallbacksDefaultsWC[i];
+			ev->pCallbackData = pDefCB->pUserData;
+			pDefCB->fn(cmd.c_str(), ev);
 		}
 	}
 
