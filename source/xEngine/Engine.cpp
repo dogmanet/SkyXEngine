@@ -6,6 +6,8 @@
 
 #include "SkyXEngine.h"
 
+#include <xcommon/IXSoundSystem.h>
+
 #ifdef _DEBUG
 #	pragma comment(lib, "sxcore_d.lib")
 #else
@@ -196,6 +198,20 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	// init render
 	SRender_0Create("sxrender", (HWND)hWindow, NULL, false);
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB render initialized\n");
+
+
+	// init sound
+	AudioRawDesc oAudioDesc;
+	oAudioDesc.u8Channels = 2;
+	oAudioDesc.fmtSample = AUDIO_SAMPLE_FMT_SINT16;
+	oAudioDesc.uSampleRate = 44100;
+	oAudioDesc.calc();
+
+	IXSoundSystem *pSound = dynamic_cast<IXSoundSystem*>(m_pCore->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
+	IXSoundLayer *pMasterLayer = pSound->createMasterLayer(&oAudioDesc, "master");
+	pMasterLayer->play(true);
+	//pMasterLayer->newSoundPlayer("sounds/guitar_10.ogg", SOUND_DTYPE_2D)->play();
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB sound initialized\n");
 
 
 	// init game
