@@ -210,7 +210,21 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	IXSoundSystem *pSound = dynamic_cast<IXSoundSystem*>(m_pCore->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
 	IXSoundLayer *pMasterLayer = pSound->createMasterLayer(&oAudioDesc, "master");
 	pMasterLayer->play(true);
-	//pMasterLayer->newSoundPlayer("sounds/guitar_10.ogg", SOUND_DTYPE_2D)->play();
+	/*IXSoundPlayer *pPlayer = pMasterLayer->newSoundPlayer("sounds/guitar_10.ogg", SOUND_DTYPE_2D);
+	pPlayer->play();*/
+	/*IXSoundEmitter *pEmitter = pMasterLayer->newSoundEmitter("sounds/ak74_shoot.ogg", SOUND_DTYPE_2D);
+	pEmitter->play();
+
+	while (1)
+	{
+		if (GetAsyncKeyState('I'))
+		{
+			pEmitter->play();
+			Sleep(100);
+		}
+	}*/
+
+
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB sound initialized\n");
 
 

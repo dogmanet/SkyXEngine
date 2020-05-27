@@ -27,6 +27,8 @@ CSoundLayer::~CSoundLayer()
 	mem_release_del(m_pPrimaryBuffer);
 }
 
+//**************************************************************************
+
 bool CSoundLayer::init(CSoundSystem *pSoundSystem, CSoundLayer *pParent, const AudioRawDesc *pDesc, const char *szName)
 {
 	if (!pDesc || !pSoundSystem)
@@ -52,6 +54,8 @@ bool CSoundLayer::init(CSoundSystem *pSoundSystem, CSoundLayer *pParent, const A
 	return true;
 }
 
+//**************************************************************************
+
 void CSoundLayer::addLayer(CSoundLayer *pLayer, const char *szName)
 {
 	m_mapLayers[szName] = pLayer;
@@ -68,6 +72,8 @@ void CSoundLayer::delLayer(CSoundLayer *pLayer)
 		}
 	}
 }
+
+//**************************************************************************
 
 void CSoundLayer::addSound(CSoundPlayer *pSound, const char *szName)
 {
@@ -86,6 +92,8 @@ void CSoundLayer::delSound(CSoundPlayer *pSound)
 	}
 }
 
+//**************************************************************************
+
 void XMETHODCALLTYPE CSoundLayer::getDesc(AudioRawDesc *pDesc) const
 {
 	if (!m_pPrimaryBuffer)
@@ -94,10 +102,14 @@ void XMETHODCALLTYPE CSoundLayer::getDesc(AudioRawDesc *pDesc) const
 	m_pPrimaryBuffer->getDesc(pDesc);
 }
 
+//**************************************************************************
+
 const char* XMETHODCALLTYPE CSoundLayer::getName() const
 {
 	return m_sName.c_str();
 }
+
+//**************************************************************************
 
 IXSoundLayer* XMETHODCALLTYPE CSoundLayer::findLayer(const char *szName)
 {
@@ -118,7 +130,7 @@ IXSoundLayer* XMETHODCALLTYPE CSoundLayer::findLayer(const char *szName)
 	return pFound;
 }
 
-
+//**************************************************************************
 
 uint32_t CSoundLayer::getStreamChunkSize(AudioRawDesc *pDesc) const
 {
@@ -129,6 +141,8 @@ IAudioBuffer* CSoundLayer::createAudioBuffer(AB_TYPE type, const AudioRawDesc *p
 {
 	return m_pPrimaryBuffer->createAudioBuffer(type, pDesc);
 }
+
+//**************************************************************************
 
 IXSoundLayer* XMETHODCALLTYPE CSoundLayer::newSoundLayer(const AudioRawDesc *pDesc, const char *szName)
 {
@@ -148,8 +162,15 @@ IXSoundLayer* XMETHODCALLTYPE CSoundLayer::newSoundLayer(const AudioRawDesc *pDe
 
 IXSoundEmitter* XMETHODCALLTYPE CSoundLayer::newSoundEmitter(const char *szName, SOUND_DTYPE dtype)
 {
+	if (!szName)
+		return NULL;
+
+	IXAudioCodecTarget *pCodecTarget = m_pSoundSystem->getCodecTarget(szName);
+	if (!pCodecTarget)
+		return NULL;
+
 	CSoundEmitter *pEmitter = new CSoundEmitter();
-	pEmitter->create(szName, this, m_pSoundSystem);
+	pEmitter->create(this, pCodecTarget);
 	return pEmitter;
 }
 
@@ -166,13 +187,19 @@ IXSoundPlayer* XMETHODCALLTYPE CSoundLayer::newSoundPlayer(const char *szName, S
 		return pSound->newInstance();
 	}
 
+	IXAudioCodecTarget *pCodecTarget = m_pSoundSystem->getCodecTarget(szName);
+	if (!pCodecTarget)
+		return NULL;
+	
 	pSound = new CSoundPlayer();
-	pSound->create(szName, this, m_pSoundSystem);
+	pSound->create(this, pCodecTarget);
 
 	addSound(pSound, szName);
 
 	return pSound;
 }
+
+//##########################################################################
 
 void XMETHODCALLTYPE CSoundLayer::play(bool canPlay)
 {

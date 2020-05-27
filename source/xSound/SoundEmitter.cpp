@@ -10,11 +10,13 @@ CSoundEmitter::~CSoundEmitter()
 {
 	for (int i = 0, il = m_aInstances.size(); i<il; ++i)
 	{
-		m_aInstances[i]->Release();
+		mem_release(m_aInstances[i]);
 	}
 
-	m_pAB->Release();
+	mem_release(m_pAB);
 }
+
+//**************************************************************************
 
 void XMETHODCALLTYPE CSoundEmitter::play()
 {
@@ -38,21 +40,20 @@ void XMETHODCALLTYPE CSoundEmitter::play()
 	m_aInstances.push_back(pInst);
 }
 
-bool CSoundEmitter::create(const char *szPath, CSoundLayer *pLayer, CSoundSystem *pSoundSystem)
+//**************************************************************************
+
+bool CSoundEmitter::create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget)
 {
-	if (!pSoundSystem || !pLayer)
+	if (!pCodecTarget || !pLayer)
 		return false;
 
-	CSoundLoader *pLoader = new CSoundLoader();
-	pLoader->init(pSoundSystem);
-	m_pSoundSystem = pSoundSystem;
 	AudioRawDesc oDesc;
-	pLoader->load(szPath, &oDesc);
+	pCodecTarget->getDesc(&oDesc);
 	m_pLayer = pLayer;
 
 	m_pAB = pLayer->createAudioBuffer(AB_TYPE_SECOND, &oDesc);
 	BYTE *pData = new BYTE[oDesc.uSize];
-	pLoader->getPCM((void**)&pData, oDesc.uSize, 0);
+	pCodecTarget->decode(0, oDesc.uSize, (void**)&pData);
 
 	BYTE *pData2;
 	m_pAB->lock(AB_LOCK_WRITE, (void**)&pData2);
@@ -60,7 +61,7 @@ bool CSoundEmitter::create(const char *szPath, CSoundLayer *pLayer, CSoundSystem
 	m_pAB->unlock();
 
 	mem_delete_a(pData);
-	mem_delete(pLoader);
+	mem_release(pCodecTarget);
 
 	m_pAB->setLoop(AB_LOOP_NONE);
 

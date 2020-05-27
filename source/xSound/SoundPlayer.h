@@ -45,7 +45,7 @@ protected:
 
 	void update();
 
-	bool create(const char *szPath, CSoundLayer *pLayer, CSoundSystem *pSoundSystem);
+	bool create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget);
 
 	//! возвращает текущую позицию проигрывания звука в байтах
 	uint32_t getPosBytes() const;
@@ -66,8 +66,8 @@ protected:
 	//! длина звука в секундах
 	uint32_t m_fLengthMls = 0;
 
-	//! загрузчик
-	CSoundLoader *m_pLoader = NULL;
+	//! кодек
+	IXAudioCodecTarget *m_pCodecTarget = NULL;
 
 	//! данные потоковой загрузки
 	CStreamData *m_pStream = NULL;

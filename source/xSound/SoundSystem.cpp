@@ -78,13 +78,21 @@ IXCore* CSoundSystem::getCore() const
 	return m_pXCore;
 }
 
-IXAudioCodecTarget* CSoundSystem::getCodecTarget(const char *szPath)
+IXAudioCodecTarget* CSoundSystem::getCodecTarget(const char *szName)
 {
 	if(!m_pMasterLayer)
 		return NULL;
 
-	if(!szPath)
+	if (!szName)
 		return NULL;
+
+	const char *szPath = szName;
+
+	if (!m_pXCore->getFileSystem()->fileExists(szPath))
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "File '%s' not found\n", szPath);
+		return NULL;
+	}
 
 	IXAudioCodec *pCodec = NULL;
 	IXAudioCodecTarget *pTarget = NULL;
@@ -100,7 +108,10 @@ IXAudioCodecTarget* CSoundSystem::getCodecTarget(const char *szPath)
 	}
 
 	if(!pCodec || !pTarget)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unsupported audio format '%s'\n", szPath);
 		return NULL;
+	}
 
 	AudioRawDesc oDescMaster, oDescSnd, oDescCache;
 	m_pMasterLayer->getDesc(&oDescMaster);

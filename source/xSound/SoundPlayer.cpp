@@ -10,9 +10,11 @@ CSoundPlayer::~CSoundPlayer()
 {
 	mem_release_del(m_pAB);
 
-	mem_delete(m_pLoader);
+	mem_delete(m_pCodecTarget);
 	mem_delete(m_pStream);
 }
+
+//**************************************************************************
 
 CSoundPlayer* CSoundPlayer::newInstance()
 {
@@ -32,26 +34,27 @@ CSoundPlayer* CSoundPlayer::newInstance()
 	return pPlayer;
 }
 
-bool CSoundPlayer::create(const char *szPath, CSoundLayer *pLayer, CSoundSystem *pSoundSystem)
+//**************************************************************************
+
+bool CSoundPlayer::create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget)
 {
-	if (!pSoundSystem || !pLayer)
+	if (!pCodecTarget || !pLayer)
 		return false;
 
-	m_pLoader = new CSoundLoader();
-	m_pLoader->init(pSoundSystem);
-	m_pSoundSystem = pSoundSystem;
+	m_pLayer = pLayer;
+	m_pCodecTarget = pCodecTarget;
 	AudioRawDesc oDesc;
-	m_pLoader->load(szPath, &oDesc);
+	pCodecTarget->getDesc(&oDesc);
 	m_uLengthBytes = oDesc.uSize;
 	m_fLengthMls = (uint32_t)(double(oDesc.uSize * 1000) / double(oDesc.uBytesPerSec));
-	m_pLayer = pLayer;
-	uint32_t uChunkSize = pLayer->getStreamChunkSize(&oDesc);
+	
+	uint32_t uChunkSize = m_pLayer->getStreamChunkSize(&oDesc);
 
 
 	if (oDesc.uSize / uChunkSize > STREAM_COUNT_MIN_PARTS)
 	{
 		oDesc.uSize = uChunkSize * 4;
-		m_pAB = pLayer->createAudioBuffer(AB_TYPE_SECOND, &oDesc);
+		m_pAB = m_pLayer->createAudioBuffer(AB_TYPE_SECOND, &oDesc);
 		m_pStream = new CStreamData();
 		m_pStream->uPartSize = oDesc.uSize / STREAM_DATA_COUNT_PARTS;
 		m_pStream->oData.uSize = m_pStream->uPartSize;
@@ -65,9 +68,9 @@ bool CSoundPlayer::create(const char *szPath, CSoundLayer *pLayer, CSoundSystem 
 	}
 	else
 	{
-		m_pAB = pLayer->createAudioBuffer(AB_TYPE_SECOND, &oDesc);
+		m_pAB = m_pLayer->createAudioBuffer(AB_TYPE_SECOND, &oDesc);
 		BYTE *pData = new BYTE[oDesc.uSize];
-		m_pLoader->getPCM((void**)&pData, oDesc.uSize, 0);
+		m_pCodecTarget->decode(0, oDesc.uSize, (void**)&pData);
 
 		BYTE *pData2;
 		m_pAB->lock(AB_LOCK_WRITE, (void**)&pData2);
@@ -82,7 +85,7 @@ bool CSoundPlayer::create(const char *szPath, CSoundLayer *pLayer, CSoundSystem 
 	return true;
 }
 
-//**************************************************************************
+//##########################################################################
 
 void XMETHODCALLTYPE CSoundPlayer::play()
 {
@@ -93,6 +96,8 @@ void XMETHODCALLTYPE CSoundPlayer::play()
 	m_state = SOUND_STATE_PLAY;
 }
 
+//**************************************************************************
+
 void XMETHODCALLTYPE CSoundPlayer::resume()
 {
 	if (!m_pLayer->isPlaying() || m_state != SOUND_STATE_PAUSE)
@@ -101,11 +106,15 @@ void XMETHODCALLTYPE CSoundPlayer::resume()
 	m_pAB->play(true);
 }
 
+//**************************************************************************
+
 void XMETHODCALLTYPE CSoundPlayer::pause()
 {
 	m_pAB->play(false);
 	m_state = SOUND_STATE_PAUSE;
 }
+
+//**************************************************************************
 
 void XMETHODCALLTYPE CSoundPlayer::stop()
 {
@@ -114,10 +123,14 @@ void XMETHODCALLTYPE CSoundPlayer::stop()
 	m_state = SOUND_STATE_STOP;
 }
 
+//**************************************************************************
+
 bool XMETHODCALLTYPE CSoundPlayer::isPlaying() const
 {
 	return m_pAB->isPlaying();
 }
+
+//##########################################################################
 
 void XMETHODCALLTYPE CSoundPlayer::setLoop(SOUND_LOOP loop)
 {
@@ -126,10 +139,14 @@ void XMETHODCALLTYPE CSoundPlayer::setLoop(SOUND_LOOP loop)
 		m_pAB->setLoop((AB_LOOP)m_loop);
 }
 
+//**************************************************************************
+
 SOUND_LOOP XMETHODCALLTYPE CSoundPlayer::getLoop() const
 {
 	return m_loop;
 }
+
+//##########################################################################
 
 float XMETHODCALLTYPE CSoundPlayer::getTime() const
 {
@@ -144,6 +161,8 @@ float XMETHODCALLTYPE CSoundPlayer::getTime() const
 
 	return float(uPos) / 1000.f;
 }
+
+//**************************************************************************
 
 void XMETHODCALLTYPE CSoundPlayer::setTime(float fTime)
 {
@@ -160,10 +179,14 @@ void XMETHODCALLTYPE CSoundPlayer::setTime(float fTime)
 		m_pAB->setPos(uPosBytes);
 }
 
+//**************************************************************************
+
 float XMETHODCALLTYPE CSoundPlayer::getLength() const
 {
 	return double(m_fLengthMls) / 1000.f;
 }
+
+//##########################################################################
 
 void CSoundPlayer::setPosStream(uint32_t uPos)
 {
@@ -177,12 +200,12 @@ void CSoundPlayer::setPosStream(uint32_t uPos)
 	m_pStream->uNumLoader = uParts * uCountParts + uCurrPart;
 
 	uint32_t uPosLoader = uPos - (uCurrPart * m_pStream->uPartSize);
-	m_pLoader->setPos(uPosLoader);
+	m_pCodecTarget->setPos(uPosLoader);
 	for (int i = 0; i < STREAM_DATA_COUNT_PARTS; ++i)
 	{
 		if (i >= uCurrPart)
 		{
-			size_t sizeRead = m_pLoader->getPCM((void**)&(m_pStream->oData.pData), m_pStream->oData.uSize, -1);
+			size_t sizeRead = m_pCodecTarget->decode(m_pCodecTarget->getPos(), m_pStream->oData.uSize, (void**)&(m_pStream->oData.pData));
 			if (sizeRead <= 0)
 				continue;
 
@@ -216,6 +239,8 @@ uint32_t CSoundPlayer::getPosBytes() const
 	return uPos;
 }
 
+//##########################################################################
+
 uint32_t uMax = 0;
 
 void CSoundPlayer::update()
@@ -224,12 +249,12 @@ void CSoundPlayer::update()
 		return;
 
 	uint32_t uGPosBytes = getPosBytes();
-	uint32_t uGPosBytes2 = m_pLoader->getPos();
+	uint32_t uGPosBytes2 = m_pCodecTarget->getPos();
 
 	if (uMax < uGPosBytes)
 	{
 		uMax = uGPosBytes;
-		printf("uMax = %d\n", uMax);
+		//printf("uMax = %d\n", uMax);
 	}
 
 	if (uGPosBytes >= m_uLengthBytes)
@@ -238,7 +263,7 @@ void CSoundPlayer::update()
 			m_pAB->play(false);
 		else
 		{
-			m_pLoader->setPos(0);
+			m_pCodecTarget->setPos(0);
 			m_pStream->uNumLoader = 0;
 		}
 	}
@@ -259,7 +284,7 @@ void CSoundPlayer::update()
 				m_pStream->aParts[i].isPlay = false;
 				m_pStream->aParts[i].isLoaded = false;
 
-				size_t sizeRead = m_pLoader->getPCM((void**)&(m_pStream->oData.pData), m_pStream->oData.uSize, -1);
+				size_t sizeRead = m_pCodecTarget->decode(m_pCodecTarget->getPos(), m_pStream->oData.uSize, (void**)&(m_pStream->oData.pData));
 				if (sizeRead == 0)
 					continue;
 

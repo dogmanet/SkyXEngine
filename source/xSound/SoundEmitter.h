@@ -27,7 +27,7 @@ protected:
 
 	friend CSoundLayer;
 
-	bool create(const char *szPath, CSoundLayer *pLayer, CSoundSystem *pSoundSystem);
+	bool create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget);
 
 	Array<IAudioBuffer*> m_aInstances;
 };

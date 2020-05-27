@@ -46,7 +46,7 @@ public:
 
 	virtual void XMETHODCALLTYPE update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp) override;
 
-	IXAudioCodecTarget* getCodecTarget(const char *szPath);
+	IXAudioCodecTarget* getCodecTarget(const char *szName);
 
 	IXCore* getCore() const;
 
