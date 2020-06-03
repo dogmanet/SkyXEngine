@@ -170,10 +170,10 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	oAudioDesc.uSampleRate = 44100;
 	oAudioDesc.calc();
 
-	/*IXSoundSystem *pSound = (IXSoundSystem*)(m_pCore->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
+	IXSoundSystem *pSound = (IXSoundSystem*)(m_pCore->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
 	IXSoundLayer *pMasterLayer = pSound->createMasterLayer(&oAudioDesc, "master");
 	pMasterLayer->play(true);
-	IXSoundPlayer *pPlayer = pMasterLayer->newSoundPlayer("sounds/guitar_10.ogg", SOUND_DTYPE_2D);
+	/*IXSoundPlayer *pPlayer = pMasterLayer->newSoundPlayer("sounds/guitar_10.ogg", SOUND_DTYPE_2D);
 	pPlayer->play();*/
 	/*IXSoundEmitter *pEmitter = pMasterLayer->newSoundEmitter("sounds/ak74_shoot.ogg", SOUND_DTYPE_2D);
 	pEmitter->play();*/
@@ -186,7 +186,7 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 			Sleep(100);
 		}
 	}*/
-
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB sound initialized\n");
 
 
 
@@ -231,8 +231,6 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 
 	
 
-
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB sound initialized\n");
 
 
 	// init game

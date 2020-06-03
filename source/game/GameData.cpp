@@ -1184,7 +1184,7 @@ GameData::~GameData()
 	for(int i = 0; i < MPT_COUNT; ++i)
 	{
 		// @TODO: SSCore_SndDelete3dInst()
-		mem_delete_a(m_pidFootstepSound[i]);
+		mem_delete_a(m_aFootstepSound[i]);
 	}
 }
 
@@ -1394,55 +1394,65 @@ void GameData::playFootstepSound(MTLTYPE_PHYSIC mtl_type, const float3 &f3Pos)
 	{
 		return;
 	}
-	ID idSound = m_pidFootstepSound[mtl_type][rand() % iCount];
-	SSCore_SndInstancePlay3d(idSound, false, false, (float3*)&f3Pos);
+	/*ID idSound = m_pidFootstepSound[mtl_type][rand() % iCount];
+	SSCore_SndInstancePlay3d(idSound, false, false, (float3*)&f3Pos);*/
+	IXSoundEmitter *pEmitter = m_aFootstepSound[mtl_type][rand() % iCount];
+	if (pEmitter)
+		pEmitter->play();
 }
 
 void GameData::loadFoostepsSounds()
 {
 	Array<const char*> aSounds[MPT_COUNT];
 
-	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("actor/step/default1.ogg");
-	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("actor/step/default2.ogg");
-	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("actor/step/default3.ogg");
-	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("actor/step/default4.ogg");
+	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("sounds/actor/step/default1.ogg");
+	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("sounds/actor/step/default2.ogg");
+	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("sounds/actor/step/default3.ogg");
+	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("sounds/actor/step/default4.ogg");
 
-	aSounds[MTLTYPE_PHYSIC_METAL].push_back("actor/step/metal_plate1.ogg");
-	aSounds[MTLTYPE_PHYSIC_METAL].push_back("actor/step/metal_plate2.ogg");
-	aSounds[MTLTYPE_PHYSIC_METAL].push_back("actor/step/metal_plate3.ogg");
-	aSounds[MTLTYPE_PHYSIC_METAL].push_back("actor/step/metal_plate4.ogg");
+	aSounds[MTLTYPE_PHYSIC_METAL].push_back("sounds/actor/step/metal_plate1.ogg");
+	aSounds[MTLTYPE_PHYSIC_METAL].push_back("sounds/actor/step/metal_plate2.ogg");
+	aSounds[MTLTYPE_PHYSIC_METAL].push_back("sounds/actor/step/metal_plate3.ogg");
+	aSounds[MTLTYPE_PHYSIC_METAL].push_back("sounds/actor/step/metal_plate4.ogg");
 
-	aSounds[MTLTYPE_PHYSIC_TREE].push_back("actor/step/new_wood1.ogg");
-	aSounds[MTLTYPE_PHYSIC_TREE].push_back("actor/step/new_wood2.ogg");
-	aSounds[MTLTYPE_PHYSIC_TREE].push_back("actor/step/new_wood3.ogg");
-	aSounds[MTLTYPE_PHYSIC_TREE].push_back("actor/step/new_wood4.ogg");
+	aSounds[MTLTYPE_PHYSIC_TREE].push_back("sounds/actor/step/new_wood1.ogg");
+	aSounds[MTLTYPE_PHYSIC_TREE].push_back("sounds/actor/step/new_wood2.ogg");
+	aSounds[MTLTYPE_PHYSIC_TREE].push_back("sounds/actor/step/new_wood3.ogg");
+	aSounds[MTLTYPE_PHYSIC_TREE].push_back("sounds/actor/step/new_wood4.ogg");
 
-	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("actor/step/earth1.ogg");
-	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("actor/step/earth2.ogg");
-	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("actor/step/earth3.ogg");
-	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("actor/step/earth4.ogg");
+	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("sounds/actor/step/earth1.ogg");
+	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("sounds/actor/step/earth2.ogg");
+	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("sounds/actor/step/earth3.ogg");
+	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("sounds/actor/step/earth4.ogg");
 
-	aSounds[MTLTYPE_PHYSIC_WATER].push_back("actor/step/t_water1.ogg");
-	aSounds[MTLTYPE_PHYSIC_WATER].push_back("actor/step/t_water2.ogg");
+	aSounds[MTLTYPE_PHYSIC_WATER].push_back("sounds/actor/step/t_water1.ogg");
+	aSounds[MTLTYPE_PHYSIC_WATER].push_back("sounds/actor/step/t_water2.ogg");
 
-	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("actor/step/grass1.ogg");
-	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("actor/step/grass2.ogg");
-	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("actor/step/grass3.ogg");
-	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("actor/step/grass4.ogg");
+	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("sounds/actor/step/grass1.ogg");
+	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("sounds/actor/step/grass2.ogg");
+	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("sounds/actor/step/grass3.ogg");
+	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("sounds/actor/step/grass4.ogg");
 
 	//aSounds[MTLTYPE_PHYSIC_GLASS].push_back("actor/step/.ogg");
 	//aSounds[MTLTYPE_PHYSIC_PLASTIC].push_back("actor/step/.ogg");
 	//aSounds[MTLTYPE_PHYSIC_FLESH].push_back("actor/step/.ogg");
+
+	IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
+	IXSoundLayer *pMasterLayer = pSound->findLayer("master");
+
+	if (!pMasterLayer)
+		return;
 
 	for(int i = 0; i < MPT_COUNT; ++i)
 	{
 		Array<const char*> *paSounds = &aSounds[i];
 		int jl = paSounds->size();
 		m_iFootstepSoundCount[i] = jl;
-		m_pidFootstepSound[i] = jl ? new ID[jl] : NULL;
+		m_aFootstepSound[i] = (jl ? new IXSoundEmitter*[jl] : NULL);
 		for(int j = 0; j < jl; ++j)
 		{
-			m_pidFootstepSound[i][j] = SSCore_SndCreate3dInst(paSounds[0][j], SX_SOUND_CHANNEL_GAME, 100);
+			m_aFootstepSound[i][j] = pMasterLayer->newSoundEmitter(paSounds[0][j], SOUND_DTYPE_3D);
+			//m_aFootstepSound[i][j] = SSCore_SndCreate3dInst(paSounds[0][j], SX_SOUND_CHANNEL_GAME, 100);
 		}
 	}
 }
