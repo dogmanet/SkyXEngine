@@ -45,11 +45,15 @@ CSoundSystem::~CSoundSystem()
 	mem_release(m_pMasterLayer);
 }
 
+//**************************************************************************
+
 void XMETHODCALLTYPE CSoundSystem::update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
 	if(m_pMasterLayer)
 		m_pMasterLayer->update();
 }
+
+//**************************************************************************
 
 IXSoundLayer* XMETHODCALLTYPE CSoundSystem::createMasterLayer(const AudioRawDesc *pDesc, const char *szName)
 {
@@ -73,10 +77,14 @@ IXSoundLayer* XMETHODCALLTYPE CSoundSystem::createMasterLayer(const AudioRawDesc
 	return pLayer;
 }
 
+//**************************************************************************
+
 IXCore* CSoundSystem::getCore() const
 {
 	return m_pXCore;
 }
+
+//**************************************************************************
 
 IXAudioCodecTarget* CSoundSystem::getCodecTarget(const char *szName)
 {
@@ -121,6 +129,7 @@ IXAudioCodecTarget* CSoundSystem::getCodecTarget(const char *szName)
 	if(oDescSnd.uSampleRate == oDescMaster.uSampleRate)
 		return pTarget;
 
+
 	//если кодек может сохранять, тогда пересохраняем файл
 	if(pCodec->canSave())
 	{
@@ -156,8 +165,11 @@ IXAudioCodecTarget* CSoundSystem::getCodecTarget(const char *szName)
 
 	//ищем первый попавшийся кодек который может записывать
 	IXAudioCodec *pFullCodec = getCodecSave();
-	if(!pFullCodec)
+	if (!pFullCodec)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Not found codec for coding, file '%s' does not match of parameters master buffer\n", szPath);
 		return NULL;
+	}
 
 	//создаем путь до файла в кэше
 	String sCachePath = String(SOUND_CACHE) + "/"+ szPath;
@@ -226,6 +238,8 @@ IXAudioCodecTarget* CSoundSystem::getCodecTarget(const char *szName)
 	return pTarget2;
 }
 
+//**************************************************************************
+
 void CSoundSystem::addCodec(const char *szFmt, IXAudioCodec *pCodec)
 {
 	if(!szFmt || !pCodec)
@@ -234,15 +248,21 @@ void CSoundSystem::addCodec(const char *szFmt, IXAudioCodec *pCodec)
 	m_mapCodecs[szFmt] = pCodec;
 }
 
+//**************************************************************************
+
 IAudioBufferEx* CSoundSystem::createMasterBuffer(AudioRawDesc *pDesc)
 {
 	return m_pAudio->createMasterBuffer(pDesc);
 }
 
+//**************************************************************************
+
 bool CSoundSystem::supportedDesc(const AudioRawDesc *pDesc, AB_TYPE type)
 {
 	return m_pAudio->supportedDesc(pDesc, type);
 }
+
+//**************************************************************************
 
 IXSoundLayer* XMETHODCALLTYPE CSoundSystem::findLayer(const char *szName)
 {
@@ -254,6 +274,8 @@ IXSoundLayer* XMETHODCALLTYPE CSoundSystem::findLayer(const char *szName)
 
 	return m_pMasterLayer->findLayer(szName);
 }
+
+//**************************************************************************
 
 IXAudioCodec* CSoundSystem::getCodecSave()
 {

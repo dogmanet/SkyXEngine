@@ -161,6 +161,35 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	SSInput_0Create("sxinput", (HWND)hWindow, false);
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB input initialized\n");
 
+
+
+	// init sound
+	AudioRawDesc oAudioDesc;
+	oAudioDesc.u8Channels = 2;
+	oAudioDesc.fmtSample = AUDIO_SAMPLE_FMT_SINT16;
+	oAudioDesc.uSampleRate = 44100;
+	oAudioDesc.calc();
+
+	/*IXSoundSystem *pSound = (IXSoundSystem*)(m_pCore->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
+	IXSoundLayer *pMasterLayer = pSound->createMasterLayer(&oAudioDesc, "master");
+	pMasterLayer->play(true);
+	IXSoundPlayer *pPlayer = pMasterLayer->newSoundPlayer("sounds/guitar_10.ogg", SOUND_DTYPE_2D);
+	pPlayer->play();*/
+	/*IXSoundEmitter *pEmitter = pMasterLayer->newSoundEmitter("sounds/ak74_shoot.ogg", SOUND_DTYPE_2D);
+	pEmitter->play();*/
+
+	/*while (1)
+	{
+		if (GetAsyncKeyState('I'))
+		{
+			pEmitter->play();
+			Sleep(100);
+		}
+	}*/
+
+
+
+
 	// init graphics
 	Core_0RegisterCVarInt("r_win_width", 800, "Размер окна по горизонтали (в пикселях)", FCVAR_NOTIFY_OLD);
 	Core_0RegisterCVarInt("r_win_height", 600, "Размер окна по вертикали (в пикселях)", FCVAR_NOTIFY_OLD);
@@ -200,29 +229,7 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB render initialized\n");
 
 
-	// init sound
-	AudioRawDesc oAudioDesc;
-	oAudioDesc.u8Channels = 2;
-	oAudioDesc.fmtSample = AUDIO_SAMPLE_FMT_SINT16;
-	oAudioDesc.uSampleRate = 44100;
-	oAudioDesc.calc();
-
-	IXSoundSystem *pSound = dynamic_cast<IXSoundSystem*>(m_pCore->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
-	IXSoundLayer *pMasterLayer = pSound->createMasterLayer(&oAudioDesc, "master");
-	pMasterLayer->play(true);
-	/*IXSoundPlayer *pPlayer = pMasterLayer->newSoundPlayer("sounds/guitar_10.ogg", SOUND_DTYPE_2D);
-	pPlayer->play();*/
-	/*IXSoundEmitter *pEmitter = pMasterLayer->newSoundEmitter("sounds/ak74_shoot.ogg", SOUND_DTYPE_2D);
-	pEmitter->play();
-
-	while (1)
-	{
-		if (GetAsyncKeyState('I'))
-		{
-			pEmitter->play();
-			Sleep(100);
-		}
-	}*/
+	
 
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB sound initialized\n");

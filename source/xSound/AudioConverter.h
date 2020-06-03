@@ -18,6 +18,11 @@ inline bool AudioResampling(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, Au
 	if (pToDesc->uSampleRate == pInDesc->uSampleRate)
 		return false;
 
+	/*pOut->alloc(pInDesc->uSize);
+	memcpy(pOut->get(), pIn, pInDesc->uSize);
+	return true;*/
+
+
 	BYTE *pSrcData = 0;
 
 	if (pOut->size() > 0)
