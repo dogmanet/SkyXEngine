@@ -123,6 +123,7 @@ CEngine::CEngine(int argc, char **argv, const char *szName)
 	INIT_OUTPUT_STREAM(m_pCore);
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB core initialized\n");
 
+	m_pObserverChangedEventChannel = m_pCore->getEventChannel<XEventObserverChanged>(EVENT_OBSERVER_CHANGED_GUID);
 
 	Core_0RegisterCVarString("engine_version", SKYXENGINE_VERSION, "Текущая версия движка", FCVAR_READONLY);
 
@@ -382,8 +383,13 @@ bool CEngine::runFrame()
 
 		if(pRenderContext)
 		{
-			SRender_SetCamera(m_pCallback->getCameraForFrame());
+			ICamera *pCamera = m_pCallback->getCameraForFrame();
+			SRender_SetCamera(pCamera);
 			SRender_UpdateView();
+
+			XEventObserverChanged ev;
+			ev.pCamera = pCamera;
+			m_pObserverChangedEventChannel->broadcastEvent(&ev);
 
 			IXRenderPipeline *pRenderPipeline;
 			m_pCore->getRenderPipeline(&pRenderPipeline);

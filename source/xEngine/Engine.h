@@ -55,6 +55,8 @@ protected:
 
 	IXUI *m_pXUI = NULL;
 
+	IEventChannel<XEventObserverChanged> *m_pObserverChangedEventChannel = NULL;
+
 #ifdef USE_BREAKPAD
 	google_breakpad::ExceptionHandler *m_pBreakpadHandler = NULL;
 #endif
