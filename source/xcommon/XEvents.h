@@ -222,4 +222,14 @@ struct XEventCvarChanged
 	const void *pCvar;
 };
 
+
+// {5CEC2355-1F1E-4A1D-8E69-5B92850B62D2}
+#define EVENT_OBSERVER_CHANGED_GUID DEFINE_XGUID(0x5cec2355, 0x1f1e, 0x4a1d, 0x8e, 0x69, 0x5b, 0x92, 0x85, 0xb, 0x62, 0xd2)
+
+class ICamera;
+struct XEventObserverChanged
+{
+	ICamera *pCamera;
+};
+
 #endif
