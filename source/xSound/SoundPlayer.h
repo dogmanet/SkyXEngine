@@ -51,11 +51,14 @@ protected:
 	uint32_t getPosBytes() const;
 
 	/*! установка позиции при потоковом воспроизведении
-	@param uPos позиция в байтах
+		@param uPos позиция в байтах
 	*/
 	void setPosStream(uint32_t uPos);
 
 	//************************************************************************
+
+	//! аудио буфер
+	IAudioBuffer *m_pAB = NULL;
 
 	//! зацикливать ли воспроизведение
 	SOUND_LOOP m_loop = SOUND_LOOP_NONE;

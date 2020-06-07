@@ -8,36 +8,72 @@
 
 CSoundEmitter::~CSoundEmitter()
 {
-	for (int i = 0, il = m_aInstances.size(); i<il; ++i)
-	{
-		mem_release(m_aInstances[i]);
-	}
+	m_pLayer->delSndEmitter(this);
 
-	mem_release(m_pAB);
+}
+
+//**************************************************************************
+
+CSoundEmitter* CSoundEmitter::newInstance()
+{
+	CSoundEmitter *pEmitter = new CSoundEmitter();
+
+	pEmitter->m_aInstances[0].pAB = m_aInstances[0].pAB->newInstance();
+	pEmitter->m_dtype = this->m_dtype;
+	pEmitter->m_state = SOUND_STATE_STOP;
+	pEmitter->m_sName = this->m_sName;
+	pEmitter->m_pLayer = this->m_pLayer;
+	pEmitter->m_fDist = this->m_fDist;
+	pEmitter->m_vWorldPos = this->m_vWorldPos;
+	return pEmitter;
 }
 
 //**************************************************************************
 
 void XMETHODCALLTYPE CSoundEmitter::play()
 {
-	if (!(m_pAB->isPlaying()))
-	{
-		m_pAB->play(true);
+	//если родительский слой не проигрывается, тогда не запускаем проигрывание
+	if (!m_pLayer->isPlaying())
 		return;
-	}
 
+	//проход по массиву инстансов звука, если есть первый попавшийся не проигрываемые тогда его проигрываем
 	for (int i = 0, il = m_aInstances.size(); i<il; ++i)
 	{
-		if (!(m_aInstances[i]->isPlaying()))
+		if (!(m_aInstances[i].pAB->isPlaying()))
 		{
-			m_aInstances[i]->play(true);
+			m_aInstances[i].pAB->setVolume(m_fVolume);
+			m_aInstances[i].pAB->play(true);
 			return;
 		}
 	}
 
-	IAudioBuffer *pInst = m_pAB->newInstance();
+	//если пришли сюда, значит нет свободных инстансов, создаем новый и проигрыаем
+	IAudioBuffer *pInst = m_aInstances[0].pAB->newInstance();
+	pInst->setVolume(m_fVolume);
 	pInst->play(true);
 	m_aInstances.push_back(pInst);
+}
+
+//**************************************************************************
+
+void CSoundEmitter::resume()
+{
+	//если инстансы проигрывались тогда включаем проигрывание
+	for (int i = 0, il = m_aInstances.size(); i < il; ++i)
+	{
+		if(m_aInstances[i].isPlaying)
+			m_aInstances[i].pAB->play(true);
+	}
+}
+
+void CSoundEmitter::pause()
+{
+	//записываем состояния инстансов и останавливаем
+	for (int i = 0, il = m_aInstances.size(); i < il; ++i)
+	{
+		m_aInstances[i].isPlaying = m_aInstances[i].pAB->isPlaying();
+		m_aInstances[i].pAB->play(false);
+	}
 }
 
 //**************************************************************************
@@ -51,19 +87,21 @@ bool CSoundEmitter::create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget
 	pCodecTarget->getDesc(&oDesc);
 	m_pLayer = pLayer;
 
-	m_pAB = pLayer->createAudioBuffer(AB_TYPE_SECOND, &oDesc);
+	IAudioBuffer *pAB = pLayer->createAudioBuffer(AB_TYPE_SECOND, &oDesc);
 	BYTE *pData = new BYTE[oDesc.uSize];
 	pCodecTarget->decode(0, oDesc.uSize, (void**)&pData);
 
 	BYTE *pData2;
-	m_pAB->lock(AB_LOCK_WRITE, (void**)&pData2);
+	pAB->lock(AB_LOCK_WRITE, (void**)&pData2);
 	memcpy(pData2, pData, oDesc.uSize);
-	m_pAB->unlock();
+	pAB->unlock();
 
 	mem_delete_a(pData);
 	mem_release(pCodecTarget);
 
-	m_pAB->setLoop(AB_LOOP_NONE);
+	pAB->setLoop(AB_LOOP_NONE);
+
+	m_aInstances.push_back(Instance(pAB));
 
 	return true;
 }

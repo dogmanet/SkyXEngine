@@ -189,7 +189,7 @@ int64_t XMETHODCALLTYPE CAudioCodecTargetOgg::getPos() const
 	if (!m_pFile || !m_pVoFile)
 		return 0;
 
-	return ov_pcm_tell(m_pVoFile);
+	return ov_pcm_tell(m_pVoFile)*OGG_BYTES_PER_SAMPLE;
 }
 
 //**************************************************************************
@@ -199,7 +199,7 @@ void XMETHODCALLTYPE CAudioCodecTargetOgg::setPos(int64_t iPos)
 	if (!m_pFile || !m_pVoFile)
 		return;
 
-	ov_pcm_seek(m_pVoFile, iPos);
+	ov_pcm_seek(m_pVoFile, iPos / OGG_BYTES_PER_SAMPLE);
 }
 
 //**************************************************************************

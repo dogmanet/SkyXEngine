@@ -8,6 +8,7 @@
 
 CSoundPlayer::~CSoundPlayer()
 {
+	m_pLayer->delSndPlayer(this);
 	mem_release_del(m_pAB);
 
 	mem_delete(m_pCodecTarget);
@@ -31,6 +32,8 @@ CSoundPlayer* CSoundPlayer::newInstance()
 	pPlayer->m_state = SOUND_STATE_STOP;
 	pPlayer->m_sName = this->m_sName;
 	pPlayer->m_pLayer = this->m_pLayer;
+	pPlayer->m_fDist = this->m_fDist;
+	pPlayer->m_vWorldPos = this->m_vWorldPos;
 	return pPlayer;
 }
 
@@ -197,7 +200,7 @@ void CSoundPlayer::setPosStream(uint32_t uPos)
 
 	uint32_t uPosAB = (uPos - (uParts * m_pStream->uPartSize * uCountParts));
 	uint32_t uCurrPart = uPosAB / m_pStream->uPartSize;
-	m_pStream->uNumLoader = uParts * uCountParts + uCurrPart;
+	m_pStream->uCountPlayed = uParts * uCountParts + uCurrPart;
 
 	uint32_t uPosLoader = uPos - (uCurrPart * m_pStream->uPartSize);
 	m_pCodecTarget->setPos(uPosLoader);
@@ -215,7 +218,6 @@ void CSoundPlayer::setPosStream(uint32_t uPos)
 			m_pAB->unlock();
 
 			m_pStream->aParts[i].isLoaded = true;
-			++(m_pStream->uNumLoader);
 		}
 		else
 		{
@@ -234,38 +236,37 @@ uint32_t CSoundPlayer::getPosBytes() const
 	uint32_t uPos = m_pAB->getPos();
 
 	if (m_pStream)
-		uPos = (uint64_t(uPos) + uint64_t(m_pStream->uPartSize) * uint64_t(m_pStream->uNumLoader));
+		uPos = (uint64_t(uPos) + uint64_t(m_pStream->uPartSize) * uint64_t(m_pStream->uCountPlayed));
 
 	return uPos;
 }
 
 //##########################################################################
 
-uint32_t uMax = 0;
-
 void CSoundPlayer::update()
 {
+	if (!m_pLayer->isPlaying())
+		return;
+
 	if (!m_pStream)
 		return;
 
 	uint32_t uGPosBytes = getPosBytes();
 	uint32_t uGPosBytes2 = m_pCodecTarget->getPos();
 
+	/*static uint32_t uMax = 0;
 	if (uMax < uGPosBytes)
 	{
 		uMax = uGPosBytes;
-		//printf("uMax = %d\n", uMax);
-	}
+		printf("uMax = %d\n", uMax);
+	}*/
 
 	if (uGPosBytes >= m_uLengthBytes)
 	{
 		if (m_loop == AB_LOOP_NONE)
 			m_pAB->play(false);
 		else
-		{
-			m_pCodecTarget->setPos(0);
-			m_pStream->uNumLoader = 0;
-		}
+			setTime(0.f);
 	}
 
 	if (!isPlaying())
@@ -285,6 +286,7 @@ void CSoundPlayer::update()
 				m_pStream->aParts[i].isLoaded = false;
 
 				size_t sizeRead = m_pCodecTarget->decode(m_pCodecTarget->getPos(), m_pStream->oData.uSize, (void**)&(m_pStream->oData.pData));
+				++(m_pStream->uCountPlayed);
 				if (sizeRead == 0)
 					continue;
 
@@ -295,7 +297,6 @@ void CSoundPlayer::update()
 				m_pAB->unlock();
 
 				m_pStream->aParts[i].isLoaded = true;
-				++(m_pStream->uNumLoader);
 			}
 		}
 	}

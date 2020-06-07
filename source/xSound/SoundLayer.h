@@ -43,14 +43,22 @@ protected:
 
 	friend CSoundSystem;
 	friend CSoundPlayer;
+	friend CSoundEmitter;
 
 	bool init(CSoundSystem *pSoundSystem, CSoundLayer *pParent, const AudioRawDesc *pDesc, const char *szName);
 
-	void addLayer(CSoundLayer *pLayer, const char *szName);
-	void delLayer(CSoundLayer *pLayer);
+	//************************************************************************
 
-	void addSound(CSoundPlayer *pSound, const char *szName);
-	void delSound(CSoundPlayer *pSound);
+	void addLayer(CSoundLayer *pLayer, const char *szName);
+	void delLayer(const CSoundLayer *pLayer);
+
+	void addSndPlayer(CSoundPlayer *pSndPlayer, const char *szName);
+	void delSndPlayer(const CSoundPlayer *pSndPlayer);
+
+	void addSndEmitter(CSoundEmitter *pSndEmitter, const char *szName);
+	void delSndEmitter(const CSoundEmitter *pSndEmitter);
+
+	//************************************************************************
 
 	//! соответствует ли описание (его критические элементы) аудио буфера первичному буферу
 	bool matchPrimaryLayer(const AudioRawDesc *pDesc);
@@ -74,6 +82,9 @@ protected:
 
 	typedef AssotiativeArray<String, CSoundPlayer*> mapsoundplayer;
 	mapsoundplayer m_mapSndPlayers;
+
+	typedef AssotiativeArray<String, CSoundEmitter*> mapsoundemitter;
+	mapsoundemitter m_mapSndEmitters;
 };
 
 #endif

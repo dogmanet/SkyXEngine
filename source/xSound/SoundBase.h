@@ -47,8 +47,11 @@ protected:
 
 	//************************************************************************
 
+	float m_fVolume = 1.f;
+	float m_fPan = 0.f;
+
 	//! аудио буфер
-	IAudioBuffer *m_pAB = NULL;
+	//IAudioBuffer *m_pAB = NULL;
 
 	//! дистанция слышимости
 	float m_fDist = 0.f;
@@ -68,7 +71,7 @@ protected:
 	//! слой владелец
 	CSoundLayer *m_pLayer = NULL;
 
-	CSoundSystem *m_pSoundSystem = NULL;
+	//CSoundSystem *m_pSoundSystem = NULL;
 };
 
 #endif

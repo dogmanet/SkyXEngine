@@ -19,9 +19,19 @@ class CSoundEmitter : public CSoundBase, public virtual IXSoundEmitter
 {
 public:
 	~CSoundEmitter();
+
+	//! создание нового инстанса CSoundEmitter
+	CSoundEmitter* newInstance();
+
 	virtual void XMETHODCALLTYPE play() override;
 
-	void update();
+	//! продолжить проигрывание инстансов, если они проигрывались
+	void resume();
+
+	//! остановка проигрывания
+	void pause();
+
+	//void update();
 
 protected:
 
@@ -29,7 +39,16 @@ protected:
 
 	bool create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget);
 
-	Array<IAudioBuffer*> m_aInstances;
+	struct Instance
+	{
+		Instance() = default;
+		Instance(IAudioBuffer *pBuffer) { pAB = pBuffer; }
+		~Instance() { mem_release(pAB); }
+		IAudioBuffer *pAB = NULL;
+		bool isPlaying = false;
+	};
+
+	Array<Instance> m_aInstances;
 };
 
 #endif

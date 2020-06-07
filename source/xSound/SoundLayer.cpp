@@ -12,16 +12,23 @@ CSoundLayer::~CSoundLayer()
 	if (m_pParent)
 		m_pParent->delLayer(this);
 
-	for (maplayer::Iterator i = m_mapLayers.begin(); i != m_mapLayers.end(); i++)
+	for (maplayer::Iterator i = m_mapLayers.begin(); i; i++)
 	{
-		m_mapLayers[i.first]->Release();
+		mem_release(m_mapLayers[i.first]);
 		m_mapLayers.erase(i.first);
 	}
 
-	for (mapsoundplayer::Iterator i = m_mapSndPlayers.begin(); i != m_mapSndPlayers.end(); i++)
+	for (mapsoundplayer::Iterator i = m_mapSndPlayers.begin(); i; i++)
 	{
-		m_mapSndPlayers[i.first]->Release();
+		mem_release(m_mapSndPlayers[i.first]);
 		m_mapSndPlayers.erase(i.first);
+	}
+
+	int iCount0 = m_mapSndEmitters.Size();
+	for (mapsoundemitter::Iterator i = m_mapSndEmitters.begin(); i; i++)
+	{
+		mem_release(m_mapSndEmitters[i.first]);
+		m_mapSndEmitters.erase(i.first);
 	}
 
 	mem_release_del(m_pPrimaryBuffer);
@@ -61,9 +68,9 @@ void CSoundLayer::addLayer(CSoundLayer *pLayer, const char *szName)
 	m_mapLayers[szName] = pLayer;
 }
 
-void CSoundLayer::delLayer(CSoundLayer *pLayer)
+void CSoundLayer::delLayer(const CSoundLayer *pLayer)
 {
-	for (maplayer::Iterator i = m_mapLayers.begin(); i != m_mapLayers.end(); i++)
+	for (maplayer::Iterator i = m_mapLayers.begin(); i; i++)
 	{
 		if (m_mapLayers[i.first] == pLayer)
 		{
@@ -75,21 +82,44 @@ void CSoundLayer::delLayer(CSoundLayer *pLayer)
 
 //**************************************************************************
 
-void CSoundLayer::addSound(CSoundPlayer *pSound, const char *szName)
+void CSoundLayer::addSndPlayer(CSoundPlayer *pSndPlayer, const char *szName)
 {
-	m_mapSndPlayers[szName] = pSound;
+	m_mapSndPlayers[szName] = pSndPlayer;
 }
 
-void CSoundLayer::delSound(CSoundPlayer *pSound)
+void CSoundLayer::delSndPlayer(const CSoundPlayer *pSndPlayer)
 {
-	for (mapsoundplayer::Iterator i = m_mapSndPlayers.begin(); i != m_mapSndPlayers.end(); i++)
+	for (mapsoundplayer::Iterator i = m_mapSndPlayers.begin(); i; i++)
 	{
-		if (m_mapSndPlayers[i.first] == pSound)
+		if (m_mapSndPlayers[i.first] == pSndPlayer)
 		{
 			m_mapSndPlayers.erase(i.first);
 			break;
 		}
 	}
+}
+
+//**************************************************************************
+
+void CSoundLayer::addSndEmitter(CSoundEmitter *pSndEmitter, const char *szName)
+{
+	m_mapSndEmitters[szName] = pSndEmitter;
+}
+
+void CSoundLayer::delSndEmitter(const CSoundEmitter *pSndEmitter)
+{
+	int iCount0 = m_mapSndEmitters.Size();
+	for (mapsoundemitter::Iterator i = m_mapSndEmitters.begin(); i; i++)
+	{
+		if (m_mapSndEmitters[i.first] == pSndEmitter)
+		{
+			m_mapSndEmitters[i.first] = NULL;
+			m_mapSndEmitters.erase(i.first);
+			break;
+		}
+	}
+	int iCount1 = m_mapSndEmitters.Size();
+	int qwerty = 0;
 }
 
 //**************************************************************************
@@ -121,7 +151,7 @@ IXSoundLayer* XMETHODCALLTYPE CSoundLayer::findLayer(const char *szName)
 
 	IXSoundLayer *pFound = NULL;
 
-	for (maplayer::Iterator i = m_mapLayers.begin(); i != m_mapLayers.end(); i++)
+	for (maplayer::Iterator i = m_mapLayers.begin(); i; i++)
 	{
 		if ((pFound = m_mapLayers[i.first]->findLayer(szName)))
 			break;
@@ -165,12 +195,25 @@ IXSoundEmitter* XMETHODCALLTYPE CSoundLayer::newSoundEmitter(const char *szName,
 	if (!szName)
 		return NULL;
 
-	IXAudioCodecTarget *pCodecTarget = m_pSoundSystem->getCodecTarget(szName);
-	if (!pCodecTarget)
-		return NULL;
+	CSoundEmitter *pEmitter = NULL;
 
-	CSoundEmitter *pEmitter = new CSoundEmitter();
-	pEmitter->create(this, pCodecTarget);
+	if (m_mapSndEmitters.KeyExists(szName))
+	{
+		CSoundEmitter *pEmitterOrigin = m_mapSndEmitters[szName];
+		pEmitter = pEmitterOrigin->newInstance();
+	}
+	else
+	{
+		IXAudioCodecTarget *pCodecTarget = m_pSoundSystem->getCodecTarget(szName);
+		if (!pCodecTarget)
+			return NULL;
+
+		pEmitter = new CSoundEmitter();
+		pEmitter->create(this, pCodecTarget);
+	}
+
+	addSndEmitter(pEmitter, szName);
+
 	return pEmitter;
 }
 
@@ -179,24 +222,26 @@ IXSoundPlayer* XMETHODCALLTYPE CSoundLayer::newSoundPlayer(const char *szName, S
 	if (!szName)
 		return NULL;
 
-	CSoundPlayer *pSound = NULL;
+	CSoundPlayer *pPlayer = NULL;
 
 	if (m_mapSndPlayers.KeyExists(szName))
 	{
-		pSound = m_mapSndPlayers[szName];
-		return pSound->newInstance();
+		pPlayer = m_mapSndPlayers[szName];
+		//return pPlayer->newInstance();
+	}
+	else
+	{
+		IXAudioCodecTarget *pCodecTarget = m_pSoundSystem->getCodecTarget(szName);
+		if (!pCodecTarget)
+			return NULL;
+
+		pPlayer = new CSoundPlayer();
+		pPlayer->create(this, pCodecTarget);
 	}
 
-	IXAudioCodecTarget *pCodecTarget = m_pSoundSystem->getCodecTarget(szName);
-	if (!pCodecTarget)
-		return NULL;
-	
-	pSound = new CSoundPlayer();
-	pSound->create(this, pCodecTarget);
+	addSndPlayer(pPlayer, szName);
 
-	addSound(pSound, szName);
-
-	return pSound;
+	return pPlayer;
 }
 
 //##########################################################################
@@ -208,15 +253,23 @@ void XMETHODCALLTYPE CSoundLayer::play(bool canPlay)
 
 	m_isPlaying = canPlay;
 
-	for (maplayer::Iterator i = m_mapLayers.begin(); i != m_mapLayers.end(); i++)
+	for (maplayer::Iterator i = m_mapLayers.begin(); i; i++)
 		m_mapLayers[i.first]->play(canPlay);
 
-	for (mapsoundplayer::Iterator i = m_mapSndPlayers.begin(); i != m_mapSndPlayers.end(); i++)
+	for (mapsoundplayer::Iterator i = m_mapSndPlayers.begin(); i; i++)
 	{
 		if (canPlay)
 			m_mapSndPlayers[i.first]->resume();
 		else
 			m_mapSndPlayers[i.first]->pause();
+	}
+
+	for (mapsoundemitter::Iterator i = m_mapSndEmitters.begin(); i; i++)
+	{
+		if (canPlay)
+			m_mapSndEmitters[i.first]->resume();
+		else
+			m_mapSndEmitters[i.first]->pause();
 	}
 
 	m_pPrimaryBuffer->play(canPlay);
@@ -229,10 +282,10 @@ bool XMETHODCALLTYPE CSoundLayer::isPlaying() const
 
 void CSoundLayer::update()
 {
-	for (maplayer::Iterator i = m_mapLayers.begin(); i != m_mapLayers.end(); i++)
+	for (maplayer::Iterator i = m_mapLayers.begin(); i; i++)
 		m_mapLayers[i.first]->update();
 
-	for (mapsoundplayer::Iterator i = m_mapSndPlayers.begin(); i != m_mapLayers.end(); i++)
+	for (mapsoundplayer::Iterator i = m_mapSndPlayers.begin(); i; i++)
 		m_mapSndPlayers[i.first]->update();
 }
 

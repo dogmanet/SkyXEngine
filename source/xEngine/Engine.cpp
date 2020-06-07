@@ -174,17 +174,30 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	IXSoundLayer *pMasterLayer = pSound->createMasterLayer(&oAudioDesc, "master");
 	pMasterLayer->play(true);
 	/*IXSoundPlayer *pPlayer = pMasterLayer->newSoundPlayer("sounds/guitar_10.ogg", SOUND_DTYPE_2D);
-	pPlayer->play();*/
-	/*IXSoundEmitter *pEmitter = pMasterLayer->newSoundEmitter("sounds/ak74_shoot.ogg", SOUND_DTYPE_2D);
-	pEmitter->play();*/
+	//pPlayer->setLoop(SOUND_LOOP_SIMPLE);
+	pPlayer->play();
+	IXSoundEmitter *pEmitter = pMasterLayer->newSoundEmitter("sounds/ak74_shoot.ogg", SOUND_DTYPE_2D);
+	//pEmitter->play();
 
-	/*while (1)
+	IXSoundEmitter *pEmitter2 = pMasterLayer->newSoundEmitter("sounds/ak74_shoot.ogg", SOUND_DTYPE_2D);
+	//pEmitter2->play();
+
+	while (1)
 	{
 		if (GetAsyncKeyState('I'))
 		{
-			pEmitter->play();
+			pEmitter2->play();
 			Sleep(100);
 		}
+
+		if (GetAsyncKeyState('Q'))
+			pMasterLayer->play(false);
+		
+		if (GetAsyncKeyState('W'))
+			pMasterLayer->play(true);
+
+		float3 v;
+		pSound->update(v,v,v);
 	}*/
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB sound initialized\n");
 

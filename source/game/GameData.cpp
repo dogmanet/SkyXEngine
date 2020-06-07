@@ -1183,7 +1183,9 @@ GameData::~GameData()
 
 	for(int i = 0; i < MPT_COUNT; ++i)
 	{
-		// @TODO: SSCore_SndDelete3dInst()
+		int iCount = m_iFootstepSoundCount[i];
+		for (int j = 0; j < iCount; ++j)
+			mem_release(m_aFootstepSound[i][j]);
 		mem_delete_a(m_aFootstepSound[i]);
 	}
 }
