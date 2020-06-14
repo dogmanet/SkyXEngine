@@ -54,7 +54,7 @@ protected:
 	//IAudioBuffer *m_pAB = NULL;
 
 	//! дистанция слышимости
-	float m_fDist = 0.f;
+	float m_fDist = 10.f;
 
 	//! мировая позиция звука
 	float3 m_vWorldPos;

@@ -49,8 +49,12 @@ CSoundSystem::~CSoundSystem()
 
 void XMETHODCALLTYPE CSoundSystem::update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
+	std::lock_guard<std::mutex> guard(m_oMutexUpdate);
+
 	if(m_pMasterLayer)
-		m_pMasterLayer->update();
+		m_pMasterLayer->update(vListenerPos, vListenerDir, vListenerUp);
+
+	m_vObserverPos = vListenerPos; m_vObserverLook = vListenerDir; m_vObserverUp = vListenerUp;
 }
 
 //**************************************************************************

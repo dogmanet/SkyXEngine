@@ -37,7 +37,9 @@ public:
 	uint32_t getStreamChunkSize(AudioRawDesc *pDesc) const;
 	IAudioBuffer* createAudioBuffer(AB_TYPE type, const AudioRawDesc *pDesc);
 
-	void update();
+	void update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp);
+
+	void getObserverParam(float3 *pPos, float3 *pLook, float3 *pUp);
 
 protected:
 

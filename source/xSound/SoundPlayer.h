@@ -12,6 +12,7 @@ See the license in LICENSE
 #include <mital.h>
 
 #include "SoundTypes.h"
+#include "SoundSystem.h"
 
 //##########################################################################
 
@@ -43,9 +44,9 @@ protected:
 
 	friend CSoundLayer;
 
-	void update();
+	void update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp);
 
-	bool create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget);
+	bool create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_DTYPE dtype);
 
 	//! возвращает текущую позицию проигрывания звука в байтах
 	uint32_t getPosBytes() const;

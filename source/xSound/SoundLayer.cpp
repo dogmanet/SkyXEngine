@@ -209,7 +209,7 @@ IXSoundEmitter* XMETHODCALLTYPE CSoundLayer::newSoundEmitter(const char *szName,
 			return NULL;
 
 		pEmitter = new CSoundEmitter();
-		pEmitter->create(this, pCodecTarget);
+		pEmitter->create(this, pCodecTarget, dtype);
 	}
 
 	addSndEmitter(pEmitter, szName);
@@ -236,7 +236,7 @@ IXSoundPlayer* XMETHODCALLTYPE CSoundLayer::newSoundPlayer(const char *szName, S
 			return NULL;
 
 		pPlayer = new CSoundPlayer();
-		pPlayer->create(this, pCodecTarget);
+		pPlayer->create(this, pCodecTarget, dtype);
 	}
 
 	addSndPlayer(pPlayer, szName);
@@ -280,13 +280,21 @@ bool XMETHODCALLTYPE CSoundLayer::isPlaying() const
 	return m_isPlaying;
 }
 
-void CSoundLayer::update()
+void CSoundLayer::update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
 	for (maplayer::Iterator i = m_mapLayers.begin(); i; i++)
-		m_mapLayers[i.first]->update();
+		m_mapLayers[i.first]->update(vListenerPos, vListenerDir, vListenerUp);
 
 	for (mapsoundplayer::Iterator i = m_mapSndPlayers.begin(); i; i++)
-		m_mapSndPlayers[i.first]->update();
+		m_mapSndPlayers[i.first]->update(vListenerPos, vListenerDir, vListenerUp);
+
+	for (mapsoundemitter::Iterator i = m_mapSndEmitters.begin(); i; i++)
+		m_mapSndEmitters[i.first]->update(vListenerPos, vListenerDir, vListenerUp);
+}
+
+void CSoundLayer::getObserverParam(float3 *pPos, float3 *pLook, float3 *pUp)
+{
+	m_pSoundSystem->getObserverParam(pPos, pLook, pUp);
 }
 
 bool CSoundLayer::matchPrimaryLayer(const AudioRawDesc *pDesc)

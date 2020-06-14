@@ -21,7 +21,7 @@ See the license in LICENSE
 
 //##########################################################################
 
-inline float Com3DPan(float3 &vSnd, float3 &vListenerPos, float3 &vListenerDir, float3 &vListenerUp)
+inline float Com3DPan(const float3 &vSnd, const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
 	float3 side = SMVector3Cross(vListenerUp, vListenerDir);
 	SMVector3Normalize(side);
@@ -32,11 +32,21 @@ inline float Com3DPan(float3 &vSnd, float3 &vListenerPos, float3 &vListenerDir, 
 	return pan;
 }
 
+inline void Com3D(IAudioBuffer *pAB, float fDist, const float3 &vSnd, const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
+{
+	float fPan = Com3DPan(vSnd, vListenerPos, vListenerDir, vListenerUp);
+	float fVolume = 1.f - saturatef(SMVector3Distance(vSnd, vListenerPos) / fDist);
+	fPan = lerpf(fPan, 0.f, fVolume);
+	pAB->setPan(fPan);
+	pAB->setVolume(fVolume);
+}
+
 //##########################################################################
 
 class CSoundSystem: public IXUnknownImplementation<IXSoundSystem>
 {
 public:
+	SX_ALIGNED_OP_MEM
 
 	CSoundSystem(IXCore *pXCore);
 	~CSoundSystem();
@@ -49,6 +59,14 @@ public:
 	IXAudioCodecTarget* getCodecTarget(const char *szName);
 
 	IXCore* getCore() const;
+
+	void getObserverParam(float3 *pPos, float3 *pLook, float3 *pUp)
+	{
+		while (!m_oMutexUpdate.try_lock()){}
+		m_oMutexUpdate.unlock();
+		
+		*pPos = m_vObserverPos; *pLook = m_vObserverLook; *pUp = m_vObserverUp;
+	}
 
 protected:
 
@@ -69,6 +87,9 @@ protected:
 
 	typedef AssotiativeArray<String, IXAudioCodec*> mapcodec;
 	mapcodec m_mapCodecs;
+
+	float3 m_vObserverPos, m_vObserverLook, m_vObserverUp;
+	std::mutex m_oMutexUpdate;
 };
 
 #endif

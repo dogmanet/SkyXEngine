@@ -39,11 +39,12 @@ CSoundPlayer* CSoundPlayer::newInstance()
 
 //**************************************************************************
 
-bool CSoundPlayer::create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget)
+bool CSoundPlayer::create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_DTYPE dtype)
 {
 	if (!pCodecTarget || !pLayer)
 		return false;
 
+	m_dtype = dtype;
 	m_pLayer = pLayer;
 	m_pCodecTarget = pCodecTarget;
 	AudioRawDesc oDesc;
@@ -95,6 +96,10 @@ void XMETHODCALLTYPE CSoundPlayer::play()
 	if (!m_pLayer->isPlaying())
 		return;
 
+	float3 vPos, vLook, vUp;
+	m_pLayer->getObserverParam(&vPos, &vLook, &vUp);
+
+	Com3D(m_pAB, m_fDist, m_vWorldPos, vPos, vLook, vUp);
 	m_pAB->play(true);
 	m_state = SOUND_STATE_PLAY;
 }
@@ -243,10 +248,15 @@ uint32_t CSoundPlayer::getPosBytes() const
 
 //##########################################################################
 
-void CSoundPlayer::update()
+void CSoundPlayer::update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
 	if (!m_pLayer->isPlaying())
 		return;
+
+	if (m_dtype == SOUND_DTYPE_3D)
+	{
+		Com3D(m_pAB, m_fDist, m_vWorldPos, vListenerPos, vListenerDir, vListenerUp);
+	}
 
 	if (!m_pStream)
 		return;

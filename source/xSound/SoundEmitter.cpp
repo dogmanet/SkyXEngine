@@ -36,22 +36,31 @@ void XMETHODCALLTYPE CSoundEmitter::play()
 	if (!m_pLayer->isPlaying())
 		return;
 
+	float3 vPos, vLook, vUp;
+	m_pLayer->getObserverParam(&vPos, &vLook, &vUp);
+
+	IAudioBuffer *pAB = NULL;
+
 	//проход по массиву инстансов звука, если есть первый попавшийся не проигрываемые тогда его проигрываем
 	for (int i = 0, il = m_aInstances.size(); i<il; ++i)
 	{
 		if (!(m_aInstances[i].pAB->isPlaying()))
 		{
-			m_aInstances[i].pAB->setVolume(m_fVolume);
-			m_aInstances[i].pAB->play(true);
-			return;
+			pAB = m_aInstances[i].pAB;
+			continue;
 		}
 	}
 
-	//если пришли сюда, значит нет свободных инстансов, создаем новый и проигрыаем
-	IAudioBuffer *pInst = m_aInstances[0].pAB->newInstance();
-	pInst->setVolume(m_fVolume);
-	pInst->play(true);
-	m_aInstances.push_back(pInst);
+	if (!pAB)
+	{
+		//если пришли сюда, значит нет свободных инстансов, создаем новый и проигрыаем
+		IAudioBuffer *pInst = m_aInstances[0].pAB->newInstance();
+		pAB = pInst;
+		m_aInstances.push_back(pInst);
+	}
+
+	Com3D(pAB, m_fDist, m_vWorldPos, vPos, vLook, vUp);
+	pAB->play(true);
 }
 
 //**************************************************************************
@@ -78,11 +87,12 @@ void CSoundEmitter::pause()
 
 //**************************************************************************
 
-bool CSoundEmitter::create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget)
+bool CSoundEmitter::create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_DTYPE dtype)
 {
 	if (!pCodecTarget || !pLayer)
 		return false;
 
+	m_dtype = dtype;
 	AudioRawDesc oDesc;
 	pCodecTarget->getDesc(&oDesc);
 	m_pLayer = pLayer;
@@ -104,4 +114,20 @@ bool CSoundEmitter::create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget
 	m_aInstances.push_back(Instance(pAB));
 
 	return true;
+}
+
+//##########################################################################
+
+void CSoundEmitter::update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
+{
+	if (m_dtype == SOUND_DTYPE_2D)
+		return;
+
+	for (int i = 0, il = m_aInstances.size(); i < il; ++i)
+	{
+		if (m_aInstances[i].pAB->isPlaying())
+		{
+			Com3D(m_aInstances[i].pAB, m_fDist, m_vWorldPos, vListenerPos, vListenerDir, vListenerUp);
+		}
+	}
 }

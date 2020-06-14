@@ -174,10 +174,11 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	IXSoundSystem *pSound = (IXSoundSystem*)(m_pCore->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
 	IXSoundLayer *pMasterLayer = pSound->createMasterLayer(&oAudioDesc, "master");
 	pMasterLayer->play(true);
-	/*IXSoundPlayer *pPlayer = pMasterLayer->newSoundPlayer("sounds/guitar_10.ogg", SOUND_DTYPE_2D);
-	//pPlayer->setLoop(SOUND_LOOP_SIMPLE);
-	pPlayer->play();
-	IXSoundEmitter *pEmitter = pMasterLayer->newSoundEmitter("sounds/ak74_shoot.ogg", SOUND_DTYPE_2D);
+	/*IXSoundPlayer *pPlayer = pMasterLayer->newSoundPlayer("sounds/guitar_10.ogg", SOUND_DTYPE_3D);
+	pPlayer->setWorldPos(float3(-11.084, 0.435, -18.707));
+	pPlayer->setLoop(SOUND_LOOP_SIMPLE);
+	pPlayer->play();*/
+	/*IXSoundEmitter *pEmitter = pMasterLayer->newSoundEmitter("sounds/ak74_shoot.ogg", SOUND_DTYPE_2D);
 	//pEmitter->play();
 
 	IXSoundEmitter *pEmitter2 = pMasterLayer->newSoundEmitter("sounds/ak74_shoot.ogg", SOUND_DTYPE_2D);

@@ -12,6 +12,7 @@ See the license in LICENSE
 #include <mital.h>
 
 #include "SoundTypes.h"
+#include "SoundSystem.h"
 
 //##########################################################################
 
@@ -31,13 +32,13 @@ public:
 	//! остановка проигрывания
 	void pause();
 
-	//void update();
+	void update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp);
 
 protected:
 
 	friend CSoundLayer;
 
-	bool create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget);
+	bool create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_DTYPE dtype);
 
 	struct Instance
 	{
