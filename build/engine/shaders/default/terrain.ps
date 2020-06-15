@@ -84,7 +84,9 @@ XMaterial MainGBuffer(PSI_XMaterial IN)
 	OUT.fThickness = vParams.z;
 	OUT.fAO = vParams.w;
 	
-	OUT.vNormal = MixNormalMicro(IN.vNormal, vNormal);
+	//OUT.vNormal = MixNormalMicro(IN.vNormal, vNormal);
+	OUT.vNormal = MixNormalMicro(vNormal, IN.vTangent, IN.vBinormal, IN.vNormal);
+	//OUT.vNormal = normalize((IN.vNormal + float3(vNormal.xy,IN.vNormal.z)));
 	
 	OUT.f0 = 0.004;
 	

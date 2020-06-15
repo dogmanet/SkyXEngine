@@ -26,9 +26,9 @@ XMaterial MainGBuffer(PSI_XMaterial IN)
 #endif
 
 #ifdef HAS_NORMALMAP
-	OUT.vNormal = MixNormalMicro(IN.vNormal, 
-		Color2Normal(g_txNormals.Sample(g_sScene, IN.vTexUV).xyz) * g_xMaterialConstants.nm_weight
-	);
+	float3 vNormalMap = Color2Normal(g_txNormals.Sample(g_sScene, IN.vTexUV).xyz) * g_xMaterialConstants.nm_weight;
+	OUT.vNormal = MixNormalMicro(vNormalMap, IN.vTangent, IN.vBinormal, IN.vNormal);
+	//OUT.vNormal = normalize((IN.vNormal + float3(vNormalMap.xy,IN.vNormal.z)));
 #else
 	OUT.vNormal = IN.vNormal;
 #endif
@@ -58,9 +58,8 @@ XMaterial MainIllimination(PSI_XMaterial IN)
 	OUT.vEmissiveColor = fColor.xyz * fColor.w * g_xMaterialConstants.em_multiplier;
 	
 #ifdef HAS_NORMALMAP
-	OUT.vNormal = MixNormalMicro(IN.vNormal, 
-		Color2Normal(g_txNormals.Sample(g_sScene, IN.vTexUV).xyz) * g_xMaterialConstants.nm_weight
-	);
+	float3 vNormalMap = Color2Normal(g_txNormals.Sample(g_sScene, IN.vTexUV).xyz) * g_xMaterialConstants.nm_weight;
+	OUT.vNormal = MixNormalMicro(vNormalMap, IN.vTangent, IN.vBinormal, IN.vNormal);
 #else
 	OUT.vNormal = IN.vNormal;
 #endif
