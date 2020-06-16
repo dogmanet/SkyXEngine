@@ -11,6 +11,7 @@
 #include <xcommon/resource/IXModelProvider.h>
 #include <xcommon/resource/IXResourceManager.h>
 #include <xcommon/resource/IXResourceModel.h>
+#include <xcommon/IXAudioCodec.h>
 #endif
 
 
@@ -60,6 +61,28 @@ CResourceManager::CResourceManager(IXCore *pCore):
 					m_mapTextureLoaders[sExt].push_back(pLoader);
 					m_aTextureExts.push_back({pLoader->getExtText(i), pLoader->getExt(i)});
 					LibReport(REPORT_MSG_LEVEL_NOTICE, " Ext: " COLOR_LCYAN "%s" COLOR_RESET ": " COLOR_WHITE "%s" COLOR_RESET "\n", pLoader->getExt(i), pLoader->getExtText(i));
+				}
+				LibReport(REPORT_MSG_LEVEL_NOTICE, " \n");
+			}
+		}
+	}
+
+	{
+		IXAudioCodec *pAudioCodec;
+		UINT ic = 0;
+		while ((pAudioCodec = (IXAudioCodec*)pPluginManager->getInterface(IXAUDIOCODEC_GUID, ic++)))
+		{
+			if (pAudioCodec->getVersion() == IXAUDIOCODEC_VERSION)
+			{
+				//LibReport(REPORT_MSG_LEVEL_NOTICE, "Registered sound loader:\n %s\n By %s\n %s\n", pAudioCodec->getDescription(), pAudioCodec->getAuthor(), pAudioCodec->getCopyright());
+
+				for (UINT i = 0, l = pAudioCodec->getExtCount(); i < l; ++i)
+				{
+					AAString sExt;
+					sExt.setName(pAudioCodec->getExt(i));
+					strlwr(const_cast<char*>(sExt.getName()));
+					m_aSoundExts.push_back({ pAudioCodec->getExt(i), pAudioCodec->getExt(i) });
+					LibReport(REPORT_MSG_LEVEL_NOTICE, " Ext: " COLOR_LCYAN "%s" COLOR_RESET ": " COLOR_WHITE "%s" COLOR_RESET "\n", pAudioCodec->getExt(i), pAudioCodec->getExt(i));
 				}
 				LibReport(REPORT_MSG_LEVEL_NOTICE, " \n");
 			}
@@ -339,7 +362,21 @@ void XMETHODCALLTYPE CResourceManager::addModel(const char *szName, IXResourceMo
 	pResource->setFileName(m_mpModels.TmpNode->Key.c_str());
 }
 
+//##########################################################################
 
+UINT XMETHODCALLTYPE CResourceManager::getSoundSupportedFormats()
+{
+	return(m_aSoundExts.size());
+}
+
+const XFormatName* XMETHODCALLTYPE CResourceManager::getSoundSupportedFormat(UINT uIndex)
+{
+	assert(uIndex < m_aSoundExts.size());
+
+	return(&m_aSoundExts[uIndex]);
+}
+
+//##########################################################################
 
 
 

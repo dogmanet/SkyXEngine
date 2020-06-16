@@ -54,6 +54,9 @@ public:
 		}
 	}
 
+	UINT XMETHODCALLTYPE getSoundSupportedFormats() override;
+	const XFormatName* XMETHODCALLTYPE getSoundSupportedFormat(UINT uIndex) override;
+
 protected:
 	IXCore *m_pCore;
 
@@ -69,6 +72,8 @@ protected:
 	Array<XFormatName> m_aTextureExts;
 
 	const char* getExtension(const char *szName);
+
+	Array<XFormatName> m_aSoundExts;
 };
 
 #endif

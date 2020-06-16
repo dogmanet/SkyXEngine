@@ -93,6 +93,7 @@ void CSoundLayer::delSndPlayer(const CSoundPlayer *pSndPlayer)
 	{
 		if (m_mapSndPlayers[i.first] == pSndPlayer)
 		{
+			m_mapSndPlayers[i.first] = NULL;
 			m_mapSndPlayers.erase(i.first);
 			break;
 		}
@@ -226,7 +227,8 @@ IXSoundPlayer* XMETHODCALLTYPE CSoundLayer::newSoundPlayer(const char *szName, S
 
 	if (m_mapSndPlayers.KeyExists(szName))
 	{
-		pPlayer = m_mapSndPlayers[szName];
+		if (m_mapSndPlayers[szName])
+			pPlayer = m_mapSndPlayers[szName];
 		//return pPlayer->newInstance();
 	}
 	else
@@ -283,13 +285,22 @@ bool XMETHODCALLTYPE CSoundLayer::isPlaying() const
 void CSoundLayer::update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
 	for (maplayer::Iterator i = m_mapLayers.begin(); i; i++)
-		m_mapLayers[i.first]->update(vListenerPos, vListenerDir, vListenerUp);
+	{
+		if (m_mapLayers[i.first])
+			m_mapLayers[i.first]->update(vListenerPos, vListenerDir, vListenerUp);
+	}
 
 	for (mapsoundplayer::Iterator i = m_mapSndPlayers.begin(); i; i++)
-		m_mapSndPlayers[i.first]->update(vListenerPos, vListenerDir, vListenerUp);
+	{
+		if (m_mapSndPlayers[i.first])
+			m_mapSndPlayers[i.first]->update(vListenerPos, vListenerDir, vListenerUp);
+	}
 
 	for (mapsoundemitter::Iterator i = m_mapSndEmitters.begin(); i; i++)
-		m_mapSndEmitters[i.first]->update(vListenerPos, vListenerDir, vListenerUp);
+	{
+		if (m_mapSndEmitters[i.first])
+			m_mapSndEmitters[i.first]->update(vListenerPos, vListenerDir, vListenerUp);
+	}
 }
 
 void CSoundLayer::getObserverParam(float3 *pPos, float3 *pLook, float3 *pUp)

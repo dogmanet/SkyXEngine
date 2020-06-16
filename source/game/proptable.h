@@ -370,6 +370,7 @@ const char * GetEmptyString();
 
 #define EDITOR_YESNO EDITOR_COMBOBOX COMBO_OPTION("Yes", "1") COMBO_OPTION("No", "0") EDITOR_COMBO_END()
 #define EDITOR_MODEL EDITOR_FILEFIELD FILE_OPTION("Select model", "dse") EDITOR_FILE_END()
+#define EDITOR_SOUND EDITOR_FILEFIELD FILE_OPTION("Select sound", "ogg") EDITOR_FILE_END()
 
 #define DEFINE_FIELD_STRING(field, flags, keyname, edname, editor)  , {(fieldtype)&DataClass::field, PDF_STRING,  flags, keyname, edname, editor
 #define DEFINE_FIELD_VECTOR(field, flags, keyname, edname, editor)  , {(fieldtype)&DataClass::field, PDF_VECTOR,  flags, keyname, edname, editor

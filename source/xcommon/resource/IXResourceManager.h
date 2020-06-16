@@ -45,6 +45,9 @@ public:
 	virtual IXResourceTexture2D* XMETHODCALLTYPE newResourceTexture2D() = 0;
 	virtual IXResourceTextureCube* XMETHODCALLTYPE newResourceTextureCube() = 0;
 	virtual void XMETHODCALLTYPE addTexture(const char *szName, IXResourceTexture *pTexture) = 0;
+
+	virtual UINT XMETHODCALLTYPE getSoundSupportedFormats() = 0;
+	virtual const XFormatName* XMETHODCALLTYPE getSoundSupportedFormat(UINT uIndex) = 0;
 };
 
 #endif
