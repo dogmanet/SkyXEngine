@@ -9,6 +9,8 @@ See the license in LICENSE
 
 #include <xcommon/IXAudioCodec.h>
 #include <common/string.h>
+#include <xcommon/IFileSystem.h>
+#include <core/IFile.h>
 
 //##########################################################################
 
@@ -40,7 +42,9 @@ struct CWaveHeader
 class CAudioCodecWave: public IXUnknownImplementation<IXAudioCodec>
 {
 public:
-	CAudioCodecWave();
+	CAudioCodecWave(IFileSystem *pFileSystem);
+
+	XIMPLEMENT_VERSION(IXAUDIOCODEC_VERSION);
 
 	virtual const char* XMETHODCALLTYPE getFormat() const override;
 	virtual const char* XMETHODCALLTYPE getExt(UINT uIndex=0) const override;
@@ -50,6 +54,7 @@ public:
 
 protected:
 	Array<String> m_aExts;
+	IFileSystem *m_pFileSystem = NULL;
 };
 
 //##########################################################################
@@ -68,9 +73,9 @@ protected:
 
 	friend CAudioCodecWave;
 
-	void init(FILE *pFile, CWaveHeader *pHeader, AudioRawDesc *pDesc, bool forSave);
+	void init(IFile *pFile, CWaveHeader *pHeader, AudioRawDesc *pDesc, bool forSave);
 
-	FILE *m_pFile = NULL;
+	IFile *m_pFile = NULL;
 	CWaveHeader m_oHeader;
 	AudioRawDesc m_oDesc;
 	bool m_forSave = false;

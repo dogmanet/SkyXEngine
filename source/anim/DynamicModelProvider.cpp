@@ -188,8 +188,6 @@ CDynamicModelProvider::~CDynamicModelProvider()
 	mem_release(m_pOpaqueQuery);
 	mem_release(m_pTransparentQuery);
 	mem_release(m_pSelfillumQuery);
-	mem_release(m_pObjectType);
-	mem_release(m_pScene);
 }
 
 IGXVertexDeclaration *CDynamicModelProvider::getVertexDeclaration()

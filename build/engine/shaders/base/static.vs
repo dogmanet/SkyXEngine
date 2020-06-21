@@ -45,10 +45,15 @@ VSO_SceneCommon main(VSI_Geometry IN
 	// OUT.vPosition = float4(IN.vPosition, 1.0f);
 
 	OUT.vNormal = RotateVec(qRot, IN.vNormal);
+	OUT.vTangent  = RotateVec(qRot, IN.vTangent);
+	OUT.vBinormal = RotateVec(qRot, IN.vBinormal);
 	// OUT.vNormal = IN.vNormal;
 #else
 	OUT.vPosition = mul(float4(IN.vPosition, 1.0f), g_mW);
-	OUT.vNormal = mul(IN.vNormal, (float3x3)g_mW);
+	OUT.vNormal = /*normalize(*/mul(IN.vNormal, (float3x3)g_mW)/*)*/;
+	OUT.vTangent  = /*normalize(*/mul(IN.vTangent, (float3x3)g_mW)/*)*/;
+	OUT.vBinormal = /*normalize(*/mul(IN.vBinormal, (float3x3)g_mW)/*)*/;
+
 #endif
 
 	

@@ -353,11 +353,28 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 			}
 			else if(!fstrcmp(szCurrentFileType, "sound"))
 			{
-				szTmp += swprintf(szTmp, L"All supported formats") + 1;
+				/*szTmp += swprintf(szTmp, L"All supported formats") + 1;
 				szTmp += swprintf(szTmp, L"*.ogg") + 1;
 
 				szTmp += swprintf(szTmp, L"Ogg Vorbis (*.ogg)") + 1;
-				szTmp += swprintf(szTmp, L"*.ogg") + 1;
+				szTmp += swprintf(szTmp, L"*.ogg") + 1;*/
+
+				auto pMgr = Core_GetIXCore()->getResourceManager();
+				UINT uFormatCount = pMgr->getSoundSupportedFormats();
+
+				szTmp += swprintf(szTmp, L"All supported formats") + 1;
+				for (UINT i = 0; i < uFormatCount; ++i)
+				{
+					auto pFmt = pMgr->getSoundSupportedFormat(i);
+					szTmp += swprintf(szTmp, L"*.%S;", pFmt->szExtension);
+				}
+				szTmp[-1] = 0;
+				for (UINT i = 0; i < uFormatCount; ++i)
+				{
+					auto pFmt = pMgr->getSoundSupportedFormat(i);
+					szTmp += swprintf(szTmp, L"%S (*.%S)", pFmt->szDescription, pFmt->szExtension) + 1;
+					szTmp += swprintf(szTmp, L"*.%S", pFmt->szExtension) + 1;
+				}
 			}
 			else
 			{

@@ -267,6 +267,9 @@
     <ClCompile Include="..\..\..\source\game\FuncTrain.cpp">
       <Filter>Source Files\ents\func</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SoundPlayer.cpp">
+      <Filter>Header Files\ents</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -463,6 +466,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\FuncTrain.h">
       <Filter>Header Files\ents\func</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SoundPlayer.h">
+      <Filter>Header Files\ents</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -26,6 +26,9 @@
 #define AB_BUTTON_HEIGHT        40
 #define OBJECT_TREE_HEIGHT      300
 
+
+#define WM_SETTITLEASYNC (WM_USER + 1)
+
 #include "Grid.h"
 
 enum X_VIEWPORT_LAYOUT

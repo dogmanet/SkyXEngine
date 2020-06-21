@@ -2182,6 +2182,10 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		DeleteObject(hcRotate);
 		break;
 
+	case WM_SETTITLEASYNC:
+		SetWindowTextA(hWnd, (LPCSTR)lParam);
+		break;
+
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
@@ -2276,7 +2280,7 @@ void XInitViewportLayout(X_VIEWPORT_LAYOUT layout)
 		break;
 	}
 	
-	SendMessage(g_hWndMain, WM_COMMAND, MAKEWPARAM(ID_VIEW_AUTOSIZEVIEWS, 0), 0);
+	PostMessage(g_hWndMain, WM_COMMAND, MAKEWPARAM(ID_VIEW_AUTOSIZEVIEWS, 0), 0);
 
 	g_xConfig.m_xViewportLayout = layout;
 	SetMenuItemInfoA(g_hMenu, uMenuId, FALSE, &mii);

@@ -192,9 +192,15 @@ float GetLerpFactorDetail(float fDistance)
 }
 
 //! смешивание макронормали (модели) с микронормалью (из normal map)
-float3 MixNormalMicro(float3 vMacroNormal, float3 vMicroNormal)
+/*float3 MixNormalMicro(float3 vMacroNormal, float3 vMicroNormal)
 {
 	return normalize((vMacroNormal + float3(vMicroNormal.xy,vMacroNormal.z)));
+}*/
+
+float3 MixNormalMicro(float3 vNormalMap, float3 vTangent, float3 vBinormal, float3 vNormal)
+{
+	float3x3 mTBN = float3x3(vTangent, vBinormal, vNormal);
+	return normalize(mul(vNormalMap, mTBN));
 }
 
 //! смешивание 2 детальных текстур по маске, где r канал маски для первой детальной текстуры, а g для второй

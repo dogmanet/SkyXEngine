@@ -1609,7 +1609,7 @@ bool XIsMouseInSelection(X_WINDOW_POS wnd)
 void XUpdateWindowTitle()
 {
 	const char *szLevelName = g_sLevelName.c_str();
-	char szCaption[256];
+	static char szCaption[256];
 	bool isDirty = g_pUndoManager->isDirty();
 	if(szLevelName && szLevelName[0])
 	{
@@ -1619,5 +1619,6 @@ void XUpdateWindowTitle()
 	{
 		sprintf(szCaption, "%s%s | %s", MAIN_WINDOW_TITLE, isDirty ? " - *" : "", SKYXENGINE_VERSION4EDITORS);
 	}
-	SetWindowText(g_hWndMain, szCaption);
+	PostMessageA(g_hWndMain, WM_SETTITLEASYNC, 0, (LPARAM)szCaption);
+	// SetWindowText(g_hWndMain, szCaption);
 }
