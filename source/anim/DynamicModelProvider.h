@@ -9,6 +9,8 @@
 #include "RenderableVisibility.h"
 #include <common/ConcurrentQueue.h>
 #include <xcommon/XEvents.h>
+#include <xcommon/IXScene.h>
+#include <common/queue.h>
 
 class CDynamicModelProvider;
 class CMaterialChangedEventListener: public IEventListener<XEventMaterialChanged>
@@ -33,6 +35,7 @@ public:
 
 	void onSharedModelReady(CDynamicModelShared *pShared);
 	void onSharedModelRelease(CDynamicModelShared *pShared);
+	void onSharedModelFeaturesChanged(CDynamicModelShared *pShared);
 	void onModelRelease(CDynamicModel *pModel);
 	IXMaterialSystem* getMaterialSystem();
 	IGXDevice* getDevice();
@@ -44,9 +47,12 @@ public:
 	void renderEmissive(CRenderableVisibility *pVisibility);
 	void computeVisibility(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference=NULL);
 
+	void render(Array<CDynamicModel*> &aRenderList, XMODEL_FEATURE bmWhat);
+
 	void getLevelSize(const XEventLevelSize *pData);
 
 	void update();
+	void sync();
 
 	void scheduleSharedGPUinit(CDynamicModelShared *pShared);
 	void scheduleModelGPUinit(CDynamicModel *pModel);
@@ -57,7 +63,13 @@ public:
 
 	void notifyModelChanged(CDynamicModel *pModel, XEventModelChanged::TYPE type);
 
-	void bindVertexFormat();
+	void bindVertexFormat(bool forInstancing = false);
+
+	IXSceneObjectType* getSceneObjectType();
+
+	IXSceneFeature* getFeature(XMODEL_FEATURE bmFeature);
+
+	void enqueueModelDelete(CDynamicModel* pModel);
 protected:
 	void onMaterialEmissivityChanged(const IXMaterial *pMaterial);
 	void onMaterialTransparencyChanged(const IXMaterial *pMaterial);
@@ -75,11 +87,23 @@ protected:
 	IXCore *m_pCore;
 	IGXDevice *m_pRenderContext = NULL;
 
-	CConcurrentQueue<CDynamicModelShared*> m_queueGPUinitShared;
-	CConcurrentQueue<CDynamicModel*> m_queueGPUinitModel;
+	Queue<CDynamicModelShared*> m_queueGPUinitShared;
+	Queue<CDynamicModel*> m_queueGPUinitModel;
 
 	IXMaterialSystem *m_pMaterialSystem = NULL;
 	XVertexShaderHandler *m_pVertexShaderHandler = NULL;
+	XVertexShaderHandler *m_pVertexShaderInstancedHandler = NULL;
+
+	IXScene *m_pScene = NULL;
+	IXSceneObjectType *m_pObjectType = NULL;
+	IXSceneFeature *m_pFeatureOpaque = NULL;
+	IXSceneFeature *m_pFeatureTransparent = NULL;
+	IXSceneFeature *m_pFeatureSelfillum = NULL;
+	IXSceneQuery *m_pOpaqueQuery = NULL;
+	IXSceneQuery *m_pTransparentQuery = NULL;
+	IXSceneQuery *m_pSelfillumQuery = NULL;
+
+	Queue<CDynamicModel*> m_qModelDelete;
 };
 
 #endif

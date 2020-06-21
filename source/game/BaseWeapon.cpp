@@ -37,7 +37,7 @@ BEGIN_PROPTABLE(CBaseWeapon)
 	//! Патронов в отсечке
 	DEFINE_FIELD_INT(m_iCutoffSize, PDFF_NOEDIT | PDFF_NOEXPORT, "cutoff_size", "", EDITOR_NONE)
 	//! Текущий режим стрельбы
-	DEFINE_FIELD_INT(m_fireMode, PDFF_NOEDIT, "fire_mode", "", EDITOR_NONE)
+	DEFINE_FIELD_ENUM(FIRE_MODE, m_fireMode, PDFF_NOEDIT, "fire_mode", "", EDITOR_NONE)
 
 	//! Звук извлечения
 	DEFINE_FIELD_STRING(m_szSndDraw, PDFF_NOEDIT | PDFF_NOEXPORT, "snd_draw", "", EDITOR_NONE)
@@ -86,7 +86,7 @@ BEGIN_PROPTABLE(CBaseWeapon)
 	DEFINE_FIELD_FLOAT(m_fAimingRange, PDFF_NOEDIT | PDFF_NOEXPORT, "aiming_range", "", EDITOR_NONE)
 
 	//! тип нарезки ствола: 0 - гладкоствольное; -1 - левая; 1 - правая
-	DEFINE_FIELD_INT(m_rifleType, PDFF_NOEDIT | PDFF_NOEXPORT, "rifle_type", "", EDITOR_NONE)
+	DEFINE_FIELD_ENUM(RIFLE_TYPE, m_rifleType, PDFF_NOEDIT | PDFF_NOEXPORT, "rifle_type", "", EDITOR_NONE)
 	//! шаг нарезки ствола (мм)
 	DEFINE_FIELD_FLOAT(m_fRifleStep, PDFF_NOEDIT | PDFF_NOEXPORT, "rifle_step", "", EDITOR_NONE)
 END_PROPTABLE()

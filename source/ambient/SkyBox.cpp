@@ -17,7 +17,7 @@ public:
 
 	virtual void onEvent(const XEventCvarChanged *pEvent)
 	{
-		static const float *r_far = m_pCore->getPCVarFloat("r_far");
+		static const float *r_far = m_pCore->getConsole()->getPCVarFloat("r_far");
 		if(pEvent->pCvar == r_far)
 		{
 			m_pSkyBox->updateBuffers();
@@ -111,7 +111,7 @@ void CSkyBox::updateBuffers()
 {
 	mem_release(m_pRenderBuffer);
 
-	static const float * r_far = m_pCore->getPCVarFloat("r_far");
+	static const float * r_far = m_pCore->getConsole()->getPCVarFloat("r_far");
 
 	float fFar = *r_far * 0.57735f;
 

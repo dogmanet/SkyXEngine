@@ -736,7 +736,7 @@ void CAnimatedModel::fillBoneMatrix()
 	m_isBoneMatrixReFilled = true;
 }
 
-void XMETHODCALLTYPE CAnimatedModel::render(UINT uLod, bool isTransparent)
+void XMETHODCALLTYPE CAnimatedModel::render(UINT uLod, XMODEL_FEATURE bmFeatures)
 {
 	if(!m_pDevice || !m_isEnabled || !m_pWorldBuffer)
 	{

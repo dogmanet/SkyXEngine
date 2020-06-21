@@ -51,6 +51,31 @@ public:
 	void getListing(const char **pszOut, int size);
 
 	const char* getClassNamePtr(const char *szClassName);
+
+	static bool IsEntityOfClass(CBaseEntity *pEnt, const char *szClassName);
+
+	template<typename T>
+	static bool IsEntityOfClass(CBaseEntity *pEnt)
+	{
+		static_assert(std::is_base_of<CBaseEntity, T>::value, "T must be subclass of CBaseEntity");
+
+		proptable_t *pPropTable0 = T::SGetPropTable();
+
+		proptable_t *pPropTable1 = pEnt->getPropTable();
+
+		do
+		{
+			if(pPropTable0 == pPropTable1)
+			{
+				return(true);
+			}
+
+			pPropTable1 = pPropTable1->pBaseProptable;
+		}
+		while(pPropTable1);
+
+		return(false);
+	}
 private:
 	IEntityFactory* getFactory(const char *szName);
 	AssotiativeArray<AAString, IEntityFactory*> m_mFactories;

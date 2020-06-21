@@ -65,10 +65,10 @@ namespace gui
 		virtual IDesktop* getDesktopW(const WCHAR *name) = 0;
 
 		//Регистрация обработчика
-		virtual void registerCallback(const char *cbName, GUI_CALLBACK cb) = 0;
+		virtual void registerCallback(const char *cbName, GUI_CALLBACK cb, void *pUserData = NULL) = 0;
 
 		//Регистрация обработчика по умолчанию
-		virtual void registerCallbackDefault(GUI_CALLBACK_WC cb, BOOL greedy = FALSE) = 0;
+		virtual void registerCallbackDefault(GUI_CALLBACK_WC cb, BOOL greedy = FALSE, void *pUserData = NULL) = 0;
 
 		virtual GUI_CALLBACK getCallbackByName(const char *cbName) = 0;
 		virtual GUI_CALLBACK getCallbackByName(const StringW &cbName) = 0;

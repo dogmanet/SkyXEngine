@@ -5,7 +5,7 @@
 #include "AnimatedModelProvider.h"
 #include "DynamicModelProvider.h"
 
-class CLevelSizeEventListener: public IEventListener<XEventLevelSize>
+class CLevelSizeEventListener final: public IEventListener<XEventLevelSize>
 {
 public:
 	CLevelSizeEventListener(CAnimatedModelProvider *pAnimatedModelProvider, CDynamicModelProvider *pDynamicModelProvider):
@@ -27,11 +27,10 @@ protected:
 class CDSEPlugin: public IXUnknownImplementation<IXPlugin>
 {
 public:
-	void XMETHODCALLTYPE startup(IXCore *pCore) override
+	void init()
 	{
-		m_pCore = pCore;
-		m_pAnimatedModelProvider = new CAnimatedModelProvider(pCore);
-		m_pDynamicModelProvider = new CDynamicModelProvider(pCore);
+		m_pAnimatedModelProvider = new CAnimatedModelProvider(m_pCore);
+		m_pDynamicModelProvider = new CDynamicModelProvider(m_pCore);
 		m_pRenderable = new CRenderable(getID(), m_pAnimatedModelProvider, m_pDynamicModelProvider);
 		m_pUpdatable = new CUpdatable(m_pAnimatedModelProvider, m_pDynamicModelProvider);
 		m_pLevelSizeEventListener = new CLevelSizeEventListener(m_pAnimatedModelProvider, m_pDynamicModelProvider);
@@ -39,9 +38,17 @@ public:
 		m_pCore->getEventChannel<XEventLevelSize>(EVENT_LEVEL_GET_SIZE_GUID)->addListener(m_pLevelSizeEventListener);
 	}
 
+	void XMETHODCALLTYPE startup(IXCore *pCore) override
+	{
+		m_pCore = pCore;
+	}
+
 	void XMETHODCALLTYPE shutdown() override
 	{
-		m_pCore->getEventChannel<XEventLevelSize>(EVENT_LEVEL_GET_SIZE_GUID)->removeListener(m_pLevelSizeEventListener);
+		if(m_pLevelSizeEventListener)
+		{
+			m_pCore->getEventChannel<XEventLevelSize>(EVENT_LEVEL_GET_SIZE_GUID)->removeListener(m_pLevelSizeEventListener);
+		}
 		mem_delete(m_pLevelSizeEventListener);
 		mem_delete(m_pRenderable);
 		mem_delete(m_pUpdatable);
@@ -53,7 +60,7 @@ public:
 	{
 		return(4);
 	}
-	const XGUID * XMETHODCALLTYPE getInterfaceGUID(UINT id) override
+	const XGUID* XMETHODCALLTYPE getInterfaceGUID(UINT id) override
 	{
 		static XGUID s_guid;
 		switch(id)
@@ -75,22 +82,42 @@ public:
 		}
 		return(&s_guid);
 	}
-	IXUnknown * XMETHODCALLTYPE getInterface(const XGUID &guid) override
+	IXUnknown* XMETHODCALLTYPE getInterface(const XGUID &guid) override
 	{
 		if(guid == IXRENDERABLE_GUID)
 		{
+			if(!m_pRenderable)
+			{
+				init();
+			}
+			m_pRenderable->AddRef();
 			return(m_pRenderable);
 		}
 		if(guid == IXUPDATABLE_GUID)
 		{
+			if(!m_pUpdatable)
+			{
+				init();
+			}
+			m_pUpdatable->AddRef();
 			return(m_pUpdatable);
 		}
 		if(guid == IXANIMATEDMODELPROVIDER_GUID)
 		{
+			if(!m_pAnimatedModelProvider)
+			{
+				init();
+			}
+			m_pAnimatedModelProvider->AddRef();
 			return(m_pAnimatedModelProvider);
 		}
 		if(guid == IXDYNAMICMODELPROVIDER_GUID)
 		{
+			if(!m_pDynamicModelProvider)
+			{
+				init();
+			}
+			m_pDynamicModelProvider->AddRef();
 			return(m_pDynamicModelProvider);
 		}
 		return(NULL);

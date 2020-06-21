@@ -9,6 +9,8 @@ See the license in LICENSE
 #include <render/render_func.h>
 
 #include "RenderPipeline.h"
+#include "Scene.h"
+#include "Updatable.h"
 
 #define SXRENDER_VERSION 1
 
@@ -71,9 +73,14 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 
 		//***********************
 
+		CScene *pScene = new CScene(Core_GetIXCore());
+		Core_GetIXCore()->getPluginManager()->registerInterface(IXSCENE_GUID, pScene);
+
+		CUpdatable *pUpdatable = new CUpdatable(pScene);
+		Core_GetIXCore()->getPluginManager()->registerInterface(IXUPDATABLE_GUID, pUpdatable);
+
 		g_pPipeline = new CRenderPipeline(SGCore_GetDXDevice());
 		Core_GetIXCore()->setRenderPipeline(g_pPipeline);
-
 	}
 	else
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);

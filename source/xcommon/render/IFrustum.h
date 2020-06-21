@@ -10,31 +10,31 @@ class IFrustum: public IXUnknown
 public:
 	//! обновление фрустума, на вход матрицы по которым необходимо построить фрустум
 	virtual void update(
-		const float4x4 *pView,	//<! видовая матрица
-		const float4x4 *pProj	//<! проекционная матрица
+		const float4x4 &mView,	//<! видовая матрица
+		const float4x4 &mProj	//<! проекционная матрица
 	) = 0;
 
 	virtual void update(const SMPLANE *pPlanes, bool isNormalized = false) = 0;
 
 	//! находится ли точка во фрустуме
-	virtual bool pointInFrustum(const float3 *pPoint) const = 0;
+	virtual bool pointInFrustum(const float3 &vPoint) const = 0;
 
 	//! находится ли треугольник во фрутстуме
-	virtual bool polyInFrustum(const float3 *pPoint1, const float3 *pPoint2, const float3 *pPoint3) const = 0;
+	virtual bool polyInFrustum(const float3 &vPoint1, const float3 &vPoint2, const float3 &vPoint3) const = 0;
 
 	//! находится ли полигон во фрустуме полностью
-	virtual bool polyInFrustumAbs(const float3 *pPoint1, const float3 *pPoint2, const float3 *pPoint3) const = 0;
+	virtual bool polyInFrustumAbs(const float3 &vPoint1, const float3 &vPoint2, const float3 &vPoint3) const = 0;
 
 
 	//! находится ли полигон во фрустуме
-	virtual bool sphereInFrustum(const float3 *pPoint, float fRadius) const = 0;
+	virtual bool sphereInFrustum(const float3 &vPoint, float fRadius) const = 0;
 
 	//! находится ли сфера во фрустуме полностью
-	virtual bool sphereInFrustumAbs(const float3 *pPoint, float fRadius) const = 0;
+	virtual bool sphereInFrustumAbs(const float3 &vPoint, float fRadius) const = 0;
 
-	//! находится ли параллелепипед (описанный точками экстремума) во фрустуме
-	virtual bool boxInFrustum(const float3 *pMin, const float3 *pMax) const = 0;
-	virtual bool boxInFrustum(const SMAABB &aabb) const = 0;
+	//! находится ли параллелепипед (описанный точками экстремума) во фрустуме. isStrict задает строгий режим проверки (AABB должен полностью входить в фрустум) иначе отслеживается частичное пересечение
+	virtual bool boxInFrustum(const float3 &vMin, const float3 &vMax, bool *pIsStrict = NULL) const = 0;
+	virtual bool boxInFrustum(const SMAABB &aabb, bool *pIsStrict = NULL) const = 0;
 
 	//! находится ли параллелепипед (описанный точками экстремума) во фрустуме
 	virtual bool frustumInFrustum(const IFrustum *pOther) const = 0;

@@ -27,6 +27,7 @@ See the license in LICENSE
 
 #include <xcommon/XEvents.h>
 #include <xcommon/IAsyncTaskRunner.h>
+#include <xcommon/IXScene.h>
 
 #include "Editable.h"
 
@@ -611,6 +612,12 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 	Core_0RegisterConcmd("spawn", ccmd_spawn);
 	Core_0RegisterConcmd("observe", ccmd_observe);
+
+	Core_0RegisterConcmd("bvh_height", [](){
+		IXScene *pScene = (IXScene*)Core_GetIXCore()->getPluginManager()->getInterface(IXSCENE_GUID);
+		UINT uDepth = pScene->getTreeHeight();
+		printf("BVH tree height: %u\n", uDepth);
+	});
 
 	//Core_0RegisterCVarFloat("r_default_fov", 45.0f, "Default FOV value");
 	Core_0RegisterCVarBool("cl_mode_editor", false, "Editor control mode");

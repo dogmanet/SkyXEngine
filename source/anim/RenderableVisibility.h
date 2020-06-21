@@ -6,7 +6,7 @@
 class CAnimatedModelProvider;
 class CDynamicModelProvider;
 class CDynamicModel;
-class CRenderableVisibility: public IXUnknownImplementation<IXRenderableVisibility>
+class CRenderableVisibility final: public IXUnknownImplementation<IXRenderableVisibility>
 {
 public:
 	CRenderableVisibility(ID idPlugin, CAnimatedModelProvider *m_pProviderAnimated, CDynamicModelProvider *m_pProviderDynamic);
@@ -43,21 +43,31 @@ public:
 	void setItemCount(UINT uCount);
 	item_s* getItem(UINT uIndex);
 
-	void setItemCountDynamic(UINT uCount);
-	item_s* getItemDynamic(UINT uIndex, bool forceCreate=true);
-
+	void setItemTransparentCountDynamic(UINT uCount);
 	void resetItemTransparentDynamic();
 	void addItemTransparentDynamic(const TransparentModel &mdl);
 	UINT getItemTransparentDynamicCount();
 	TransparentModel* getItemTransparentDynamic(UINT uIndex);
+
+	void setRenderList(void **ppData, UINT uCount);
+	void setTransparentList(void **ppData, UINT uCount);
+	void setSelfillumList(void **ppData, UINT uCount);
+
+	Array<CDynamicModel*>& getRenderList();
+	Array<CDynamicModel*>& getTransparentList();
+	Array<CDynamicModel*>& getSelfillumList();
+
 protected:
 	ID m_idPlugin;
 	CAnimatedModelProvider* m_pProviderAnimated;
 	CDynamicModelProvider* m_pProviderDynamic;
 
 	Array<item_s> m_aItems;
-	Array<item_s> m_aItemsDynamic;
 	Array<TransparentModel> m_aItemsDynamicTransparent;
+
+	Array<CDynamicModel*> m_aRenderList;
+	Array<CDynamicModel*> m_aTransparentList;
+	Array<CDynamicModel*> m_aSelfillumList;
 };
 
 #endif

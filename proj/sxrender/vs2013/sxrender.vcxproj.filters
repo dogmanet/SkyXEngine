@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\xcommon">
+      <UniqueIdentifier>{9cfb51b4-aa0f-4d59-8ff2-f38c438a7086}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\render\gdata.h">
@@ -42,6 +45,18 @@
     <ClInclude Include="..\..\..\source\render\OcclusionCuller.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IXRenderable.h">
+      <Filter>Header Files\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IXRenderPipeline.h">
+      <Filter>Header Files\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\render\Scene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\render\Updatable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\render\gdata.cpp">
@@ -69,6 +84,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\render\OcclusionCuller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\render\Scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\render\Updatable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

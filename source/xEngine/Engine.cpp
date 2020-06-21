@@ -233,7 +233,7 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	// init updatable
 	m_pCore->initUpdatable();
 
-	getCore()->execCmd("exec ../config_sys.cfg");
+	getCore()->getConsole()->execCommand("exec ../config_sys.cfg");
 
 	return(true);
 }
@@ -256,7 +256,7 @@ bool XMETHODCALLTYPE CEngine::initServer()
 	// init updatable
 	Core_GetIXCore()->initUpdatable();
 
-	getCore()->execCmd("exec ../config_sys.cfg");
+	getCore()->getConsole()->execCommand("exec ../config_sys.cfg");
 
 	return(true);
 }

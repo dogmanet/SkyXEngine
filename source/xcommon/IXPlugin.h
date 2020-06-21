@@ -6,7 +6,7 @@
 #define X_PLUGIN_ENTRYPOINT XPluginMain
 #define X_PLUGIN_API extern "C" __declspec(dllexport)
 #define IXPLUGIN_VERSION 1
-#define DECLARE_XPLUGIN(cls) class cls##Imp:public cls{                                                   \
+#define DECLARE_XPLUGIN(cls) class cls##Imp final: public cls{                                            \
 public:                                                                                                   \
 	cls##Imp(ID id):m_id(id){}                                                                            \
 	ID XMETHODCALLTYPE getID()override{return(m_id);}                                                     \

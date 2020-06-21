@@ -94,7 +94,7 @@ SX_LIB_API void Core_0ExecCommandLine();
 //! Выполняет консольные команды из командной строки
 SX_LIB_API const char *Core_0GetCommandLineArg(const char *szArg, const char *szDefault = NULL);
 
-SX_LIB_API IXCore *Core_GetIXCore();
+SX_LIB_API XDEPRECATED IXCore *Core_GetIXCore();
 
 
 //! установка своего обработчика вывода отладочной информации
@@ -397,10 +397,10 @@ SX_LIB_API int64_t Core_TimeTotalMcsGetU(ID id);
 !@{*/
 
 //! создать экземпляр класса IFile
-SX_LIB_API IFile* Core_CrFile(); 
+SX_LIB_API XDEPRECATED IFile* Core_CrFile();
 
 //! открыть файл
-SX_LIB_API IFile* Core_OpFile(const char* szPath, int iType); 
+SX_LIB_API XDEPRECATED IFile* Core_OpFile(const char* szPath, int iType);
 
 //!@}
 
@@ -442,10 +442,10 @@ struct ISXConfig : public IBaseObject
 @{*/
 
 //! создать файл экземпляр класса ISXLConfig
-SX_LIB_API ISXConfig* Core_CrConfig(); 
+SX_LIB_API XDEPRECATED ISXConfig* Core_CrConfig();
 
 //! открыть файл конфигов
-SX_LIB_API ISXConfig* Core_OpConfig(const char* path);
+SX_LIB_API XDEPRECATED ISXConfig* Core_OpConfig(const char* path);
 
 //!@}
 
@@ -461,13 +461,13 @@ class ConCmdStub{}; /*!< Класс-заглушка, для определен�
 typedef void(ConCmdStub::* SXCONCMDCLS)(); /*!< Тип метода для регистрации команды-члена класса без аргументов */
 typedef void(ConCmdStub::* SXCONCMDCLSARG)(int argc, const char ** argv); /*!< Тип метода для регистрации команды-члена класса с аргументами */
 
-SX_LIB_API void Core_0RegisterConcmd(char * name, SXCONCMD cmd, const char * desc = NULL); //!< Регистрация консольной функции без аргументов
-SX_LIB_API void Core_0RegisterConcmdArg(char * name, SXCONCMDARG cmd, const char * desc = NULL); //!< Регистрация консольной функции с аргументами
-SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, const SXCONCMDCLS &cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса без аргументов
-SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, const SXCONCMDCLSARG &cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса с аргументами
+SX_LIB_API XDEPRECATED void Core_0RegisterConcmd(const char * name, SXCONCMD cmd, const char * desc = NULL); //!< Регистрация консольной функции без аргументов
+SX_LIB_API XDEPRECATED void Core_0RegisterConcmdArg(const char * name, SXCONCMDARG cmd, const char * desc = NULL); //!< Регистрация консольной функции с аргументами
+SX_LIB_API XDEPRECATED void Core_0RegisterConcmdCls(const char * name, void * pObject, const SXCONCMDCLS &cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса без аргументов
+SX_LIB_API XDEPRECATED void Core_0RegisterConcmdClsArg(const char * name, void * pObject, const SXCONCMDCLSARG &cmd, const char * desc = NULL); //!< Регистрация консольной функции-члена класса с аргументами
 
 SX_LIB_API void Core_0ConsoleUpdate(); //!< Обновление консоли, выполнение буфера команд
-SX_LIB_API void Core_0ConsoleExecCmd(const char * format, ...); //!< Добавление команды на исполнение в буфер команд
+SX_LIB_API XDEPRECATED void Core_0ConsoleExecCmd(const char * format, ...); //!< Добавление команды на исполнение в буфер команд
 
 SX_LIB_API UINT_PTR Core_ConsoleGetOutHandler();
 
@@ -540,17 +540,17 @@ __inline void Core_SetOutPtr()
 !@{*/
 
 //! Флаги кваров
-enum CVAR_FLAG
+/*enum CVAR_FLAG
 {
 	FCVAR_NONE       = 0x00, //!< нет
 	FCVAR_CHEAT      = 0x01, //!< Изменение этой переменной с дефолтного значения разрешено только в режиме разработки
 	FCVAR_READONLY   = 0x02,  //!< Только для чтения
 	FCVAR_NOTIFY_OLD = 0x04, //!< Оповещать об изменениях
 	FCVAR_NOTIFY     = 0x08  //!< Оповещать об изменениях
-};
+};*/
 
 //! Регистрирует строковую переменную
-SX_LIB_API void Core_0RegisterCVarString(
+SX_LIB_API XDEPRECATED void Core_0RegisterCVarString(
 	const char * name, //!< Имя квара
 	const char * value,  //!< значение по умолчанию
 	const char * desc=NULL, //!< краткое описание
@@ -558,7 +558,7 @@ SX_LIB_API void Core_0RegisterCVarString(
 	);
 
 //! Регистрирует целую переменную
-SX_LIB_API void Core_0RegisterCVarInt(
+SX_LIB_API XDEPRECATED void Core_0RegisterCVarInt(
 	const char * name, //!< Имя квара
 	int value,  //!< значение по умолчанию
 	const char * desc = NULL, //!< краткое описание
@@ -566,7 +566,7 @@ SX_LIB_API void Core_0RegisterCVarInt(
 	);
 
 //! Регистрирует дробную переменную
-SX_LIB_API void Core_0RegisterCVarFloat(
+SX_LIB_API XDEPRECATED void Core_0RegisterCVarFloat(
 	const char * name, //!< Имя квара
 	float value,  //!< значение по умолчанию
 	const char * desc = NULL, //!< краткое описание
@@ -574,7 +574,7 @@ SX_LIB_API void Core_0RegisterCVarFloat(
 	);
 
 //! Регистрирует логическую переменную
-SX_LIB_API void Core_0RegisterCVarBool(
+SX_LIB_API XDEPRECATED void Core_0RegisterCVarBool(
 	const char * name, //!< Имя квара
 	bool value,  //!< значение по умолчанию
 	const char * desc = NULL, //!< краткое описание
@@ -582,45 +582,45 @@ SX_LIB_API void Core_0RegisterCVarBool(
 	);
 
 //! Регистрирует указатель
-SX_LIB_API void Core_0RegisterCVarPointer(
+SX_LIB_API XDEPRECATED void Core_0RegisterCVarPointer(
 	const char * name, //!< Имя квара
 	UINT_PTR value  //!< значение по умолчанию
 	);
 
 //! Получает указатель на значение строкового квара. При отсутствии квара запрошенного типа возвращает NULL
-SX_LIB_API const char ** Core_0GetPCVarString(const char * name);
+SX_LIB_API XDEPRECATED const char ** Core_0GetPCVarString(const char * name);
 #define GET_PCVAR_STRING(k) Core_0GetPCVarString(k)
 
 //! Получает указатель на значение целочисленного квара. При отсутствии квара запрошенного типа возвращает NULL
-SX_LIB_API const int * Core_0GetPCVarInt(const char * name);
+SX_LIB_API XDEPRECATED const int * Core_0GetPCVarInt(const char * name);
 #define GET_PCVAR_INT(k) Core_0GetPCVarInt(k)
 
 //! Получает указатель на значение дробного квара. При отсутствии квара запрошенного типа возвращает NULL
-SX_LIB_API const float * Core_0GetPCVarFloat(const char * name);
+SX_LIB_API XDEPRECATED const float * Core_0GetPCVarFloat(const char * name);
 #define GET_PCVAR_FLOAT(k) Core_0GetPCVarFloat(k)
 
 //! Получает указатель на значение логического квара. При отсутствии квара запрошенного типа возвращает NULL
-SX_LIB_API const bool * Core_0GetPCVarBool(const char * name);
+SX_LIB_API XDEPRECATED const bool * Core_0GetPCVarBool(const char * name);
 #define GET_PCVAR_BOOL(k) Core_0GetPCVarBool(k)
 
 //! Получает указатель по имени. При отсутствии квара запрошенного типа возвращает NULL
-SX_LIB_API UINT_PTR * Core_0GetPCVarPointer(const char * name);
+SX_LIB_API XDEPRECATED UINT_PTR * Core_0GetPCVarPointer(const char * name);
 #define GET_PCVAR_POINTER(k) Core_0GetPCVarPointer(k)
 
 //! Устанавливает новое значение квара. Должен существовать
-SX_LIB_API void Core_0SetCVarString(const char * name, const char * value);
+SX_LIB_API XDEPRECATED void Core_0SetCVarString(const char * name, const char * value);
 
 //! Устанавливает новое значение квара. Должен существовать
-SX_LIB_API void Core_0SetCVarInt(const char * name, int value);
+SX_LIB_API XDEPRECATED void Core_0SetCVarInt(const char * name, int value);
 
 //! Устанавливает новое значение квара. Должен существовать
-SX_LIB_API void Core_0SetCVarFloat(const char * name, float value);
+SX_LIB_API XDEPRECATED void Core_0SetCVarFloat(const char * name, float value);
 
 //! Устанавливает новое значение квара. Должен существовать
-SX_LIB_API void Core_0SetCVarBool(const char * name, bool value);
+SX_LIB_API XDEPRECATED void Core_0SetCVarBool(const char * name, bool value);
 
 //! Получает значение квара в виде строки
-SX_LIB_API void Core_0GetCVarAsString(const char * name, char * szOut, int iMaxLength);
+SX_LIB_API XDEPRECATED void Core_0GetCVarAsString(const char * name, char * szOut, int iMaxLength);
 
 
 //!@}

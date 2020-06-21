@@ -56,6 +56,8 @@ namespace gui
 		int clientY = 0;
 		int offsetX = 0;
 		int offsetY = 0;
+
+		void *pCallbackData = NULL;
 	};
 };
 

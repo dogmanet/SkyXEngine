@@ -206,7 +206,7 @@ void CBaseAnimating::onSync()
 	//	m_pRigidBody->getWorldTransform().setOrigin(F3_BTVEC(getPos()));
 	//	m_pRigidBody->getWorldTransform().setRotation(Q4_BTQUAT(getOrient()));
 	}
-	if(m_pModel)
+	if(m_pModel && m_pModel->isEnabled())
 	{
 		m_pModel->setPosition(getPos());
 		m_pModel->setOrientation(getOrient());
@@ -280,9 +280,9 @@ void CBaseAnimating::initPhysics()
 				btVector3 *pData;
 				int iVertexCount;
 				SPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
-				for(int i = 0; i < iVertexCount; ++i)
+				for(int j = 0; j < iVertexCount; ++j)
 				{
-					pData[i] *= m_fBaseScale;
+					pData[j] *= m_fBaseScale;
 				}
 				pLocalShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
 				SPhysics_ReleaseHull(pData, iVertexCount);
@@ -661,7 +661,6 @@ void CBaseAnimating::renderEditor(bool is3D)
 {
 	if(m_pModel)
 	{
-		m_pModel->render(0, false);
-		m_pModel->render(0, true);
+		m_pModel->render(0, MF_OPAQUE | MF_TRANSPARENT);
 	}
 }

@@ -1,4 +1,4 @@
-﻿#include "RenderPipeline.h"
+#include "RenderPipeline.h"
 
 #include <core/sxcore.h>
 

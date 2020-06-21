@@ -141,7 +141,7 @@ bool CMaterialSystem::loadMaterial(const char *szName, CMaterial *pMaterial)
 
 void XMETHODCALLTYPE CMaterialSystem::reloadAll()
 {
-	for(AssotiativeArray<String, CMaterial*>::Iterator i = m_mapMaterials.begin(); i; i++)
+	for(AssotiativeArray<String, CMaterial*>::Iterator i = m_mapMaterials.begin(); i; ++i)
 	{
 		if(*(i.second))
 		{
@@ -1076,7 +1076,7 @@ static void ParseTexturesConstants(Array<CMaterialSystem::MaterialProperty> &aPr
 
 void CMaterialSystem::updateReferences()
 {
-	for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; i++)
+	for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; ++i)
 	{
 		VertexFormatData *pFormat = i.second;
 		for(UINT j = 0, jl = m_aGeometryShaders.size(); j < jl; ++j)
@@ -1144,7 +1144,7 @@ void CMaterialSystem::updateReferences()
 		}
 	}
 
-	for(AssotiativeArray<String, MaterialShader>::Iterator i = m_mMaterialShaders.begin(); i; i++)
+	for(AssotiativeArray<String, MaterialShader>::Iterator i = m_mMaterialShaders.begin(); i; ++i)
 	{
 		MaterialShader *pShader = i.second;
 		
@@ -1431,7 +1431,7 @@ void CMaterialSystem::updateReferences()
 #if 1
 	if(m_isMateriallesRenderPassDirty)
 	{
-		for(AssotiativeArray<String, RenderPass>::Iterator i = m_mRenderPasses.begin(); i; i++)
+		for(AssotiativeArray<String, RenderPass>::Iterator i = m_mRenderPasses.begin(); i; ++i)
 		{
 			RenderPass *pRP = i.second;
 			if(!pRP->bSkipMaterialShader)
@@ -1444,7 +1444,7 @@ void CMaterialSystem::updateReferences()
 
 			UINT uOldSize = aVariantDefines.size();
 
-			for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; i++)
+			for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; ++i)
 			{
 				VertexFormatData *pFormat = i.second;
 				pRP->aPassFormats[pFormat->uID].aPassVariants.clearFast();
@@ -1489,7 +1489,7 @@ void CMaterialSystem::updateReferences()
 
 void CMaterialSystem::cleanData() 
 {
-	for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; i++)
+	for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; ++i)
 	{
 		for(UINT j = 0, jl = i.second->aDecl.size(); j < jl; ++j)
 		{
@@ -1535,7 +1535,7 @@ void CMaterialSystem::cleanData()
 		m_poolGSdata.Delete(m_aGeometryShaders[i]);
 	}
 
-	for(AssotiativeArray<String, RenderPass>::Iterator i = m_mRenderPasses.begin(); i; i++)
+	for(AssotiativeArray<String, RenderPass>::Iterator i = m_mRenderPasses.begin(); i; ++i)
 	{
 		RenderPass *pPass = i.second;
 		free((void*)pPass->szName);
@@ -1576,7 +1576,7 @@ void CMaterialSystem::cleanData()
 		}
 	}
 
-	for(AssotiativeArray<String, MaterialShader>::Iterator i = m_mMaterialShaders.begin(); i; i++)
+	for(AssotiativeArray<String, MaterialShader>::Iterator i = m_mMaterialShaders.begin(); i; ++i)
 	{
 		MaterialShader *pShader = i.second;
 		free((void*)pShader->szName);
@@ -1686,7 +1686,7 @@ void CMaterialSystem::onGlobalFlagChanged(CGlobalFlag *pFlag)
 	Array<XMaterialShaderHandler*> aShaders;
 	const char *szFlag = pFlag->getName();
 
-	for(AssotiativeArray<String, MaterialShader>::Iterator i = m_mMaterialShaders.begin(); i; i++)
+	for(AssotiativeArray<String, MaterialShader>::Iterator i = m_mMaterialShaders.begin(); i; ++i)
 	{
 		bool isFound = false;
 		for(UINT j = 0, jl = i.second->aProperties.size(); j < jl; ++j)
@@ -1722,7 +1722,7 @@ void CMaterialSystem::onGlobalFlagChanged(CGlobalFlag *pFlag)
 
 	if(aShaders.size())
 	{
-		for(AssotiativeArray<String, CMaterial*>::Iterator i = m_mapMaterials.begin(); i; i)
+		for(AssotiativeArray<String, CMaterial*>::Iterator i = m_mapMaterials.begin(); i; ++i)
 		{
 			if(aShaders.indexOf((*i.second)->getShaderHandler()) >= 0)
 			{
@@ -2222,7 +2222,7 @@ CMaterial::~CMaterial()
 		mem_delete_a(m_aPassCache[i].pConstantsBlob);
 	}
 
-	for(AssotiativeArray<AAString, MaterialTexture>::Iterator i = m_mapTextures.begin(); i; i++)
+	for(AssotiativeArray<AAString, MaterialTexture>::Iterator i = m_mapTextures.begin(); i; ++i)
 	{
 		mem_release(i.second->pTexture);
 	}
@@ -2643,7 +2643,7 @@ void CMaterial::preparePass(UINT uPass)
 
 void CMaterial::clearStaticFlags()
 {
-	for(AssotiativeArray<AAString, CMaterialFlag>::Iterator i = m_mapFlags.begin(); i; i++)
+	for(AssotiativeArray<AAString, CMaterialFlag>::Iterator i = m_mapFlags.begin(); i; ++i)
 	{
 		i.second->clearStatic();
 	}

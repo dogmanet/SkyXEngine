@@ -58,7 +58,7 @@ namespace gui
 
 	void CTextureManager::release()
 	{
-		for(AssotiativeArray<StringW, CTexture*>::Iterator i = m_mTextures.begin(); i != m_mTextures.end(); i++)
+		for(AssotiativeArray<StringW, CTexture*>::Iterator i = m_mTextures.begin(); i; ++i)
 		{
 			(*i.second)->release();
 			mem_delete(*i.second);

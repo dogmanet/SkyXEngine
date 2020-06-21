@@ -78,9 +78,7 @@ public:
 
 //##########################################################################
 
-CTaskManager::CTaskManager(unsigned int numThreads):
-m_isSingleThreaded(false),
-m_isRunning(false)
+CTaskManager::CTaskManager(unsigned int numThreads)
 {
 	m_iNumThreads = numThreads;
 	if(!numThreads)

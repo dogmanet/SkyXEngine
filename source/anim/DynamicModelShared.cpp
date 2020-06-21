@@ -23,8 +23,7 @@ CDynamicModelShared::~CDynamicModelShared()
 	mem_delete_a(m_ppMaterialsBlob);
 	m_pppMaterials = NULL;
 
-	mem_delete_a(m_isTransparent);
-	mem_delete_a(m_isEmissive);
+	mem_delete_a(m_bmFeatures);
 
 	if(m_pDevice)
 	{
@@ -51,6 +50,8 @@ CDynamicModelShared::~CDynamicModelShared()
 		mem_delete_a(m_puTempTotalIndices);
 		mem_delete_a(m_puTempTotalVertices);
 	}
+
+	mem_release(m_pInstanceBuffer);
 }
 void CDynamicModelShared::AddRef()
 {
@@ -58,8 +59,7 @@ void CDynamicModelShared::AddRef()
 }
 void CDynamicModelShared::Release()
 {
-	--m_uRefCount;
-	if(!m_uRefCount)
+	if(!--m_uRefCount)
 	{
 		delete this;
 	}
@@ -76,8 +76,7 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 		m_uMaterialCount = pResource->getMaterialCount();
 		m_uSkinCount = pResource->getSkinCount();
 
-		m_isTransparent = new bool[m_uSkinCount];
-		m_isEmissive = new bool[m_uSkinCount];
+		m_bmFeatures = new XMODEL_FEATURE[m_uSkinCount];
 
 		m_ppMaterialsBlob = new void*[m_uMaterialCount * m_uSkinCount + m_uSkinCount];
 		m_pppMaterials = (IXMaterial***)m_ppMaterialsBlob;
@@ -86,8 +85,7 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 		for(UINT i = 0; i < m_uSkinCount; ++i)
 		{
 			m_pppMaterials[i] = (IXMaterial**)(m_ppMaterialsBlob + m_uSkinCount + m_uMaterialCount * i);
-			bool isTransparent = false;
-			bool isEmissive = false;
+			XMODEL_FEATURE bmFeatures = MF_NONE;
 
 			for(UINT j = 0; j < m_uMaterialCount; ++j)
 			{
@@ -110,17 +108,20 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 				{
 					if(m_pppMaterials[i][j]->isTransparent())
 					{
-						isTransparent = true;
+						bmFeatures |= MF_TRANSPARENT;
+					}
+					else
+					{
+						bmFeatures |= MF_OPAQUE;
 					}
 					if(m_pppMaterials[i][j]->isEmissive())
 					{
-						isEmissive = true;
+						bmFeatures |= MF_SELFILLUM;
 					}
 				}
 			}
-
-			m_isTransparent[i] = isTransparent;
-			m_isEmissive[i] = isEmissive;
+			
+			m_bmFeatures[i] = bmFeatures;
 		}
 	}
 
@@ -207,6 +208,11 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 
 					mem_delete_a(pIndices);
 					mem_delete_a(pVertices);
+
+					if(!m_pInstanceBuffer)
+					{
+						m_pInstanceBuffer = m_pDevice->createConstantBuffer(sizeof(m_instanceData), true);
+					}
 				}
 				else
 				{
@@ -247,6 +253,7 @@ void CDynamicModelShared::onMaterialTransparencyChanged(const IXMaterial *pMater
 	for(UINT i = 0; i < m_uSkinCount; ++i)
 	{
 		bool isTransparent = false;
+		bool isOpaque = false;
 
 		for(UINT j = 0; j < m_uMaterialCount; ++j)
 		{
@@ -256,6 +263,10 @@ void CDynamicModelShared::onMaterialTransparencyChanged(const IXMaterial *pMater
 				{
 					isTransparent = true;
 				}
+				else
+				{
+					isOpaque = true;
+				}
 
 				if(m_pppMaterials[i][j] == pMaterial)
 				{
@@ -264,17 +275,37 @@ void CDynamicModelShared::onMaterialTransparencyChanged(const IXMaterial *pMater
 			}
 		}
 
-		m_isTransparent[i] = isTransparent;
+		if(isTransparent)
+		{
+			m_bmFeatures[i] |= MF_TRANSPARENT;
+		}
+		else
+		{
+			m_bmFeatures[i] &= ~MF_TRANSPARENT;
+		}
+
+		if(isOpaque)
+		{
+			m_bmFeatures[i] |= MF_OPAQUE;
+		}
+		else
+		{
+			m_bmFeatures[i] &= ~MF_OPAQUE;
+		}
 	}
 
 	if(isChanged)
 	{
 		buildPSPs();
+
+		m_pProvider->onSharedModelFeaturesChanged(this);
 	}
 }
 
 void CDynamicModelShared::onMaterialEmissivityChanged(const IXMaterial *pMaterial)
 {
+	bool isChanged = false;
+
 	for(UINT i = 0; i < m_uSkinCount; ++i)
 	{
 		bool isEmissive = false;
@@ -285,9 +316,26 @@ void CDynamicModelShared::onMaterialEmissivityChanged(const IXMaterial *pMateria
 			{
 				isEmissive = true;
 			}
+
+			if(m_pppMaterials[i][j] == pMaterial)
+			{
+				isChanged = true;
+			}
 		}
 
-		m_isEmissive[i] = isEmissive;
+		if(isEmissive)
+		{
+			m_bmFeatures[i] |= MF_SELFILLUM;
+		}
+		else
+		{
+			m_bmFeatures[i] &= ~MF_SELFILLUM;
+		}
+	}
+
+	if(isChanged)
+	{
+		m_pProvider->onSharedModelFeaturesChanged(this);
 	}
 }
 
@@ -313,6 +361,8 @@ void CDynamicModelShared::initGPUresources()
 	mem_delete_a(m_ppTempVertices);
 	mem_delete_a(m_puTempTotalIndices);
 	mem_delete_a(m_puTempTotalVertices);
+
+	m_pInstanceBuffer = m_pDevice->createConstantBuffer(sizeof(m_instanceData), true);
 }
 
 IXResourceModelStatic *CDynamicModelShared::getResource()
@@ -349,8 +399,58 @@ SMAABB CDynamicModelShared::getLocalBound() const
 	return(SMAABB(m_vLocalMin, m_vLocalMax));
 }
 
-void CDynamicModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor, bool isTransparent, bool isEmissiveOnly)
+void CDynamicModelShared::beginInstancing(UINT uSkin, UINT uLod, XMODEL_FEATURE bmWhat)
 {
+	assert(!m_isInstancingEnabled);
+	m_isInstancingEnabled = true;
+	m_iInstanceCount = 0;
+	m_uInstancingSkin = uSkin;
+	m_uInstancingLod = uLod;
+	m_bmInstancingFeatures = bmWhat;
+}
+void CDynamicModelShared::endInstancing()
+{
+	assert(m_isInstancingEnabled);
+
+	if(m_iInstanceCount && m_pInstanceBuffer)
+	{
+		m_pInstanceBuffer->update(m_instanceData, sizeof(m_instanceData[0]) * m_iInstanceCount);
+
+		m_pProvider->bindVertexFormat(true);
+		render(m_uInstancingSkin, m_uInstancingLod, float4(), m_bmInstancingFeatures);
+	}
+
+	m_isInstancingEnabled = false;
+}
+
+void CDynamicModelShared::renderInstanced(const float3 &vPos, const SMQuaternion &qRot, float fScale, const float4_t &vColor)
+{
+	assert(m_isInstancingEnabled);
+
+	m_instanceData[m_iInstanceCount].vPosScale = float4(vPos, fScale);
+	m_instanceData[m_iInstanceCount].qRot = qRot;
+	
+	if(++m_iInstanceCount == MAX_INSTANCES)
+	{
+		endInstancing();
+		beginInstancing(m_uInstancingSkin, m_uInstancingLod, m_bmInstancingFeatures);
+	}
+}
+
+bool CDynamicModelShared::isInstancing()
+{
+	return(m_isInstancingEnabled);
+}
+
+void CDynamicModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor, XMODEL_FEATURE bmFeatures)
+{
+
+	//m_instanceData[MAX_INSTANCES];
+	//IGXConstantBuffer *m_pInstanceBuffer = NULL;
+	//int m_iInstanceCount = 0;
+	//m_isInstancingEnabled
+
+
 	if(!m_pDevice)
 	{
 		return;
@@ -361,16 +461,11 @@ void CDynamicModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor, 
 		uSkin = 0;
 	}
 
-	if(isTransparent && !hasTransparentSubsets(uSkin, uLod))
+	if((getFeatures(uSkin, uLod) & bmFeatures) == 0)
 	{
 		return;
 	}
-
-	if(isEmissiveOnly && !hasEmissiveSubsets(uSkin, uLod))
-	{
-		return;
-	}
-
+	
 	if(uLod >= m_aLods.size())
 	{
 		return;
@@ -382,6 +477,11 @@ void CDynamicModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor, 
 	}
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
+
+	if(m_isInstancingEnabled)
+	{
+		pCtx->setVSConstant(m_pInstanceBuffer, 1 /* SCR_OBJECT */);
+	}
 
 	pCtx->setIndexBuffer(m_ppIndexBuffer[uLod]);
 	pCtx->setRenderBuffer(m_ppRenderBuffer[uLod]);
@@ -402,11 +502,15 @@ void CDynamicModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor, 
 	for(UINT i = 0; i < m_uMaterialCount; ++i)
 	{
 		pSubset = &m_aLods[uLod][i];
-		
-		if(pSubset->uIndexCount != 0 && m_pppMaterials[uSkin][i] 
-			&& (m_pppMaterials[uSkin][i]->isTransparent() == isTransparent)
-			&& (!isEmissiveOnly || m_pppMaterials[uSkin][i]->isEmissive())
+		auto *pMat = m_pppMaterials[uSkin][i];
+		if(pSubset->uIndexCount != 0 
+			&& pMat
+			&& (
+				((bmFeatures & MF_OPAQUE) && !pMat->isTransparent())
+				|| ((bmFeatures & MF_TRANSPARENT) && pMat->isTransparent())
+				|| ((bmFeatures & MF_SELFILLUM) && pMat->isEmissive())
 			)
+		)
 		{
 			m_pMaterialSystem->bindMaterial(m_pppMaterials[uSkin][i]);
 
@@ -420,33 +524,28 @@ void CDynamicModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor, 
 				break;
 			}
 
-			pCtx->drawIndexed(pSubset->uVertexCount, uPrimCount, pSubset->uStartIndex, pSubset->uStartVertex);
+			if(m_isInstancingEnabled)
+			{
+				pCtx->drawIndexedInstanced(m_iInstanceCount, pSubset->uVertexCount, uPrimCount, pSubset->uStartIndex, pSubset->uStartVertex);
+			}
+			else
+			{
+				pCtx->drawIndexed(pSubset->uVertexCount, uPrimCount, pSubset->uStartIndex, pSubset->uStartVertex);
+			}
 		}
 	}
 }
 
-bool CDynamicModelShared::hasTransparentSubsets(UINT uSkin, UINT uLod)
+XMODEL_FEATURE CDynamicModelShared::getFeatures(UINT uSkin, UINT uLod)
 {
 	assert(uSkin < m_uSkinCount);
 	if(uSkin >= m_uSkinCount)
 	{
-		return(false);
+		return(MF_NONE);
 	}
 	//! @todo add uLod support
 
-	return(m_isTransparent[uSkin]);
-}
-
-bool CDynamicModelShared::hasEmissiveSubsets(UINT uSkin, UINT uLod)
-{
-	assert(uSkin < m_uSkinCount);
-	if(uSkin >= m_uSkinCount)
-	{
-		return(false);
-	}
-	//! @todo add uLod support
-
-	return(m_isEmissive[uSkin]);
+	return(m_bmFeatures[uSkin]);
 }
 
 IXMaterial* CDynamicModelShared::getTransparentMaterial(UINT uSkin, UINT uLod)

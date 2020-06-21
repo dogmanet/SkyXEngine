@@ -190,12 +190,12 @@ void CAnimatedModelProvider::render(CRenderableVisibility *pVisibility)
 			auto pItem = pVisibility->getItem(i);
 			if(pItem->isVisible)
 			{
-				m_apModels[i]->render(pItem->uLod, false);
+				m_apModels[i]->render(pItem->uLod, MF_OPAQUE);
 			}
 		}
 		else
 		{
-			m_apModels[i]->render(0, false);
+			m_apModels[i]->render(0, MF_OPAQUE);
 		}
 	}
 	m_pMaterialSystem->bindVS(NULL);

@@ -188,7 +188,7 @@ void CXLight::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, cons
 {
 	updateFrustum();
 
-	if(useLPV && m_pFrustum->boxInFrustum(&vLPVmin, &vLPVmax))
+	if(useLPV && m_pFrustum->boxInFrustum(vLPVmin, vLPVmax))
 	{
 		m_renderType |= LRT_LPV;
 	}
@@ -254,7 +254,7 @@ void CXLightPoint::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin,
 	m_renderType = LRT_NONE;
 	
 	float3 vOrigin = getPosition();
-	if(pMainCamera->getFrustum()->sphereInFrustum(&vOrigin, getMaxDistance()))
+	if(pMainCamera->getFrustum()->sphereInFrustum(vOrigin, getMaxDistance()))
 	{
 		m_renderType |= LRT_LIGHT;
 	}
@@ -475,11 +475,11 @@ void CXLightSun::updateFrustum()
 
 			if(i == 0)
 			{
-				m_pFrustum->update(&split.mView, &split.mProj);
+				m_pFrustum->update(split.mView, split.mProj);
 			}
 			else
 			{
-				m_pPSSMFrustum[i - 1]->update(&split.mView, &split.mProj);
+				m_pPSSMFrustum[i - 1]->update(split.mView, split.mProj);
 			}
 		}
 	}
@@ -525,7 +525,7 @@ void CXLightSun::updateFrustum()
 		m_mReflectiveProj = SMMatrixOrthographicLH(fGridRadius * 2.0f, fGridRadius * 2.0f, PSSM_LIGHT_NEAR, fMaxDistance);
 		m_mReflectiveView = SMMatrixLookToLH(vGridCenter - vLightDir * (fMaxDistance /*- fRadius * 2*/ * 0.5f), vLightDir, vUpDir);
 
-		m_pReflectiveFrustum->update(&m_mReflectiveView, &m_mReflectiveProj);
+		m_pReflectiveFrustum->update(m_mReflectiveView, m_mReflectiveProj);
 	}
 }
 
@@ -642,7 +642,7 @@ void CXLightSpot::updateFrustum()
 	SMMATRIX mView = SMMatrixLookAtLH(vPos, vPos + vDir, vUp);
 	SMMATRIX mProj = SMMatrixPerspectiveFovLH(getOuterAngle(), 1.0f, 0.025f, getMaxDistance());
 
-	m_pFrustum->update(&mView, &mProj);
+	m_pFrustum->update(mView, mProj);
 }
 
 void CXLightSpot::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV)

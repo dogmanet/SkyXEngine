@@ -31,6 +31,8 @@ CCore::CCore(const char *szName)
 	ConsoleRegisterCmds();
 	CvarInitSystem(this);
 
+	m_pConsole = new CConsole();
+
 	Core_0RegisterCVarBool("g_time_run", true, "Запущено ли игровое время?", FCVAR_NOTIFY_OLD);
 	Core_0RegisterCVarFloat("g_time_speed", 1.f, "Скорость/соотношение течения игрового времени", FCVAR_NOTIFY_OLD);
 	Core_0RegisterCVarBool("dbg_config_save", false, "Отладочный вывод процесса сохранения конфига");
@@ -185,10 +187,12 @@ CCore::~CCore()
 	mem_delete(m_pResourceManager);
 	mem_delete(m_pFileSystem);
 	mem_delete(m_pPluginManager);
-	for(AssotiativeArray<XGUID, IBaseEventChannel*>::Iterator i = m_mEventChannels.begin(); i; i++)
+	for(AssotiativeArray<XGUID, IBaseEventChannel*>::Iterator i = m_mEventChannels.begin(); i; ++i)
 	{
 		mem_delete(*i.second);
 	}
+
+	mem_delete(m_pConsole);
 
 	ConsoleDisconnect();
 }
@@ -349,76 +353,6 @@ UINT_PTR XMETHODCALLTYPE CCore::getCrtOutputHandler()
 	return(Core_ConsoleGetOutHandler());
 }
 
-//! @FIXME Remove that!
-extern std::mutex g_conUpdMtx;
-extern CConcurrentQueue<char*> g_vCommandBuffer;
-void XMETHODCALLTYPE CCore::execCmd(const char *szCommand)
-{
-	execCmd2("%s", szCommand);
-}
-void CCore::execCmd2(const char * szFormat, ...)
-{
-	va_list va;
-	va_start(va, szFormat);
-	size_t len = _vscprintf(szFormat, va) + 1;
-	char * buf, *cbuf = NULL;
-	if(len < 4096)
-	{
-		buf = (char*)alloca(len * sizeof(char));
-	}
-	else
-	{
-		cbuf = buf = new char[len];
-	}
-	vsprintf(buf, szFormat, va);
-	va_end(va);
-
-	//g_vCommandBuffer
-
-	char * nl;
-	do
-	{
-		nl = strstr(buf, "\n");
-		if(nl)
-		{
-			*nl = 0;
-			++nl;
-
-			while(isspace(*buf))
-			{
-				++buf;
-			}
-
-			if(!(*buf == '/' && *(buf + 1) == '/') && (len = strlen(buf)))
-			{
-				char * str = new char[len + 1];
-				memcpy(str, buf, len + 1);
-				g_conUpdMtx.lock();
-				g_vCommandBuffer.push(str);
-				g_conUpdMtx.unlock();
-			}
-			buf = nl;
-		}
-	}
-	while(nl);
-
-	while(isspace(*buf))
-	{
-		++buf;
-	}
-
-	if(!(*buf == '/' && *(buf + 1) == '/') && (len = strlen(buf)))
-	{
-		char * str = new char[len + 1];
-		memcpy(str, buf, len + 1);
-		g_conUpdMtx.lock();
-		g_vCommandBuffer.push(str);
-		g_conUpdMtx.unlock();
-	}
-
-	mem_delete_a(cbuf);
-}
-
 ID XMETHODCALLTYPE CCore::getThreadId()
 {
 	return(Core_MGetThreadID());
@@ -439,23 +373,6 @@ IXBuffer* XMETHODCALLTYPE CCore::newBuffer()
 	return(new CBuffer());
 }
 
-const char** XMETHODCALLTYPE CCore::getPCVarString(const char *szName)
-{
-	return(GET_PCVAR_STRING(szName));
-}
-const int* XMETHODCALLTYPE CCore::getPCVarInt(const char *szName)
-{
-	return(GET_PCVAR_INT(szName));
-}
-const float* XMETHODCALLTYPE CCore::getPCVarFloat(const char *szName)
-{
-	return(GET_PCVAR_FLOAT(szName));
-}
-const bool* XMETHODCALLTYPE CCore::getPCVarBool(const char *szName)
-{
-	return(GET_PCVAR_BOOL(szName));
-}
-
 ID XMETHODCALLTYPE CCore::forLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize)
 {
 	return(g_pTaskManager->forLoop(iStart, iEnd, pBody, iMaxChunkSize));
@@ -463,6 +380,11 @@ ID XMETHODCALLTYPE CCore::forLoop(int iStart, int iEnd, const IParallelForBody *
 void XMETHODCALLTYPE CCore::waitForLoop(ID id)
 {
 	g_pTaskManager->waitFor(id);
+}
+
+IXConsole* XMETHODCALLTYPE CCore::getConsole()
+{
+	return(m_pConsole);
 }
 
 //##########################################################################

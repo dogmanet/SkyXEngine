@@ -133,6 +133,8 @@
       <ImportLibrary>../../../libs64/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb64/$(TargetName).pdb</ProgramDatabaseFile>
       <Profile>true</Profile>
+      <StackReserveSize>
+      </StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -201,6 +203,7 @@
     <ClInclude Include="..\..\..\source\anim\Renderable.h" />
     <ClInclude Include="..\..\..\source\anim\RenderableVisibility.h" />
     <ClInclude Include="..\..\..\source\anim\Updatable.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXScene.h" />
     <ClInclude Include="..\..\..\source\xcommon\resource\IXModelProvider.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

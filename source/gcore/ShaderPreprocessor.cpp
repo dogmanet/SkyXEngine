@@ -201,7 +201,7 @@ void CShaderPreprocessor::addIncPath(const String &s)
 
 void CShaderPreprocessor::undefTemp()
 {
-	for(AssotiativeArray<String, _define>::Iterator i = m_mDefs.begin(); i; i++)
+	for(AssotiativeArray<String, _define>::Iterator i = m_mDefs.begin(); i; ++i)
 	{
 		if(i.second->isTemp)
 		{
@@ -1519,7 +1519,7 @@ String CShaderPreprocessor::stringify(const String &expr)
 
 void CShaderPreprocessor::reset()
 {
-	for(AssotiativeArray<String, _define>::Iterator i = m_mDefs.begin(); i; i++)
+	for(AssotiativeArray<String, _define>::Iterator i = m_mDefs.begin(); i; ++i)
 	{
 		i.second->isUndef = true;
 	}
@@ -1540,7 +1540,7 @@ void CShaderPreprocessor::clearIncludeCache()
 UINT CShaderPreprocessor::getIncludesCount()
 {
 	UINT u = 0;
-	for(AssotiativeArray<String, _include>::Iterator i = m_mIncludes.begin(); i; i++)
+	for(AssotiativeArray<String, _include>::Iterator i = m_mIncludes.begin(); i; ++i)
 	{
 		if(i.second->isUsed)
 		{
@@ -1552,7 +1552,7 @@ UINT CShaderPreprocessor::getIncludesCount()
 void CShaderPreprocessor::getIncludes(const char **pszIncludes)
 {
 	UINT u = 0;
-	for(AssotiativeArray<String, _include>::Iterator i = m_mIncludes.begin(); i; i++)
+	for(AssotiativeArray<String, _include>::Iterator i = m_mIncludes.begin(); i; ++i)
 	{
 		if(i.second->isUsed)
 		{

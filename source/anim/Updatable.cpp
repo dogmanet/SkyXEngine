@@ -29,4 +29,5 @@ ID CUpdatable::run(float fDelta)
 void CUpdatable::sync()
 {
 	m_pAnimatedModelProvider->sync();
+	m_pDynamicModelProvider->sync();
 }

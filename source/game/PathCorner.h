@@ -50,7 +50,7 @@ public:
 
 	void setPos(const float3 & pos);
 
-	void setNextPoint(CBaseEntity *pEnt);
+	void setNextPoint(CPathCorner *pEnt);
 
 protected:
 	//! Пересчитывает путь

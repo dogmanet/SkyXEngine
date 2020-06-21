@@ -353,13 +353,19 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 			}
 			else
 			{
+				// check type of pEnt
+				if(field->pfnCheckType && !field->pfnCheckType(pEnt))
+				{
+					LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to set entity field '%s' to entity '%s'. Invalid class. Ent: %s", name, value, m_szName);
+					return(false);
+				}
 				if(field->fnSet.e)
 				{
 					(this->*(field->fnSet.e))(pEnt);
 				}
 				else
 				{
-					this->*((CBaseEntity * ThisClass::*)field->pField) = pEnt;
+					this->*((CBaseEntity* ThisClass::*)field->pField) = pEnt;
 				}
 			}
 			return(true);

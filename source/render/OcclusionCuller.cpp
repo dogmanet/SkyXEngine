@@ -81,7 +81,7 @@ bool XMETHODCALLTYPE COcclusionCuller::isSphereVisible(const float3 &vOrigin, fl
 	return(true);
 }
 
-bool XMETHODCALLTYPE COcclusionCuller::isAABBvisible(const float3 &vMin, const float3 &vMax) const
+bool XMETHODCALLTYPE COcclusionCuller::isAABBvisible(const SMAABB &aabb) const
 {
 	return(true);
 }

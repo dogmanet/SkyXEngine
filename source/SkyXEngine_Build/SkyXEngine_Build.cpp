@@ -151,8 +151,8 @@ int main(int argc, char **argv)
 	// pEngine->initServer();
 
 
-	pEngine->getCore()->execCmd("exec ../config_game.cfg");
-	pEngine->getCore()->execCmd("exec ../config_game_user.cfg");
+	pEngine->getCore()->getConsole()->execCommand("exec ../config_game.cfg");
+	pEngine->getCore()->getConsole()->execCommand("exec ../config_game_user.cfg");
 
 #if 0
 

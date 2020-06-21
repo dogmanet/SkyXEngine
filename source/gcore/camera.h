@@ -17,18 +17,18 @@ public:
 
 	CFrustum();
 
-	void update(const float4x4 *pView, const float4x4 *pProj) override;
+	void update(const float4x4 &mView, const float4x4 &mProj) override;
 	void update(const SMPLANE *pPlanes, bool isNormalized = false) override;
 
-	bool pointInFrustum(const float3 *pPoint) const override;
-	bool polyInFrustum(const float3 *pPount1, const float3 *pPount2, const float3 *pPount3) const override;
-	bool polyInFrustumAbs(const float3 *pPount1, const float3 *pPount2, const float3 *pPount3) const override;
+	bool pointInFrustum(const float3 &vPoint) const override;
+	bool polyInFrustum(const float3 &vPount1, const float3 &vPount2, const float3 &vPount3) const override;
+	bool polyInFrustumAbs(const float3 &vPount1, const float3 &vPount2, const float3 &vPount3) const override;
 
-	bool sphereInFrustum(const float3 *pPount, float fRadius) const override;
+	bool sphereInFrustum(const float3 &vPount, float fRadius) const override;
 
-	bool sphereInFrustumAbs(const float3 *pPount, float fRadius) const override;
-	bool boxInFrustum(const float3 *pMin, const float3 *pMax) const override;
-	bool boxInFrustum(const SMAABB &aabb) const override;
+	bool sphereInFrustumAbs(const float3 &vPount, float fRadius) const override;
+	bool boxInFrustum(const float3 &vMin, const float3 &vMax, bool *pIsStrict = NULL) const override;
+	bool boxInFrustum(const SMAABB &aabb, bool *pIsStrict = NULL) const override;
 
 	bool frustumInFrustum(const IFrustum *pOther) const override;
 

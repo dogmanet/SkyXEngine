@@ -2,9 +2,10 @@
 #define __DYNAMICMODEL_H
 
 #include <xcommon/resource/IXModel.h>
+#include <xcommon/IXScene.h>
 #include "DynamicModelShared.h"
 
-class CDynamicModel: public IXUnknownImplementation<IXDynamicModel>
+class CDynamicModel final: public IXUnknownImplementation<IXDynamicModel>
 {
 public:
 	CDynamicModel(CDynamicModelProvider *pProvider, CDynamicModelShared *pShared);
@@ -41,21 +42,22 @@ public:
 	const IModelPhysbox* XMETHODCALLTYPE getPhysBox(UINT id, UINT uPartIndex = 0) const override;
 	const IXResourceModel* XMETHODCALLTYPE getResource(UINT uIndex = 0) override;
 
-	void XMETHODCALLTYPE render(UINT uLod, bool isTransparent) override;
-	void render(UINT uLod, bool isTransparent, bool isEmissiveOnly);
+	void XMETHODCALLTYPE render(UINT uLod, XMODEL_FEATURE bmFeatures) override;
 
 	CDynamicModelShared* getShared();
 	void initGPUresources();
 
 	UINT getPSPcount(UINT uLod) const;
 	SMPLANE getPSP(UINT uLod, UINT uPlane) const;
-	bool hasTransparentSubsets(UINT uLod) const;
-	bool hasEmissiveSubsets(UINT uLod) const;
+	XMODEL_FEATURE getFeatures(UINT uLod) const;
 	IXMaterial* getTransparentMaterial(UINT uLod);
+
+	void onFeaturesChanged();
 protected:
 	CDynamicModelProvider *m_pProvider;
 	CDynamicModelShared *m_pShared;
 	IGXDevice *m_pDevice;
+	IXSceneObject *m_pSceneObject = NULL;
 
 	IGXConstantBuffer *m_pWorldBuffer = NULL;
 	bool m_isWorldDirty = true;
@@ -72,6 +74,8 @@ protected:
 	mutable float3_t m_vLocalMax;
 
 	void _updateAABB() const;
+
+	void XMETHODCALLTYPE FinalRelease() override;
 };
 
 #endif

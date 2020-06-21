@@ -686,7 +686,7 @@ void CEntityManager::loadDynClasses()
 		}
 		if((baseDefs = CEntityFactoryMap::GetInstance()->getDefaults(baseClass)))
 		{
-			for(EntDefaultsMap::Iterator i = baseDefs->begin(); i; i++)
+			for(EntDefaultsMap::Iterator i = baseDefs->begin(); i; ++i)
 			{
 				defs[0][*i.first] = *i.second;
 			}

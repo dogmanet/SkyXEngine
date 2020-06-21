@@ -11,7 +11,7 @@ AssotiativeArray<String, CVar> g_mCVars;
 AssotiativeArray<String, CVarPtr> g_mCVarPtrs;
 IEventChannel<XEventCvarChanged> *g_pNotifyEventChannel = NULL;
 
-SX_LIB_API void Core_0RegisterCVarString(const char * name, const char * value, const char * desc, int flags)
+SX_LIB_API XDEPRECATED void Core_0RegisterCVarString(const char * name, const char * value, const char * desc, int flags)
 {
 	if(g_mCVars.KeyExists(name))
 	{
@@ -40,7 +40,7 @@ SX_LIB_API void Core_0RegisterCVarString(const char * name, const char * value, 
 	g_mCVars[name] = cv;
 }
 
-SX_LIB_API void Core_0RegisterCVarInt(const char * name, int value, const char * desc, int flags)
+SX_LIB_API XDEPRECATED void Core_0RegisterCVarInt(const char * name, int value, const char * desc, int flags)
 {
 	if(g_mCVars.KeyExists(name))
 	{
@@ -66,7 +66,7 @@ SX_LIB_API void Core_0RegisterCVarInt(const char * name, int value, const char *
 	g_mCVars[name] = cv;
 }
 
-SX_LIB_API void Core_0RegisterCVarFloat(const char * name, float value, const char * desc, int flags)
+SX_LIB_API XDEPRECATED void Core_0RegisterCVarFloat(const char * name, float value, const char * desc, int flags)
 {
 	if(g_mCVars.KeyExists(name))
 	{
@@ -91,7 +91,7 @@ SX_LIB_API void Core_0RegisterCVarFloat(const char * name, float value, const ch
 	g_mCVars[name] = cv;
 }
 
-SX_LIB_API void Core_0RegisterCVarBool(const char * name, bool value, const char * desc, int flags)
+SX_LIB_API XDEPRECATED void Core_0RegisterCVarBool(const char * name, bool value, const char * desc, int flags)
 {
 	if(g_mCVars.KeyExists(name))
 	{
@@ -117,7 +117,7 @@ SX_LIB_API void Core_0RegisterCVarBool(const char * name, bool value, const char
 	g_mCVars[name] = cv;
 }
 
-SX_LIB_API void Core_0RegisterCVarPointer(const char * name, UINT_PTR value)
+SX_LIB_API XDEPRECATED void Core_0RegisterCVarPointer(const char * name, UINT_PTR value)
 {
 	if(g_mCVarPtrs.KeyExists(name))
 	{
@@ -134,7 +134,7 @@ SX_LIB_API void Core_0RegisterCVarPointer(const char * name, UINT_PTR value)
 }
 
 
-SX_LIB_API const char ** Core_0GetPCVarString(const char * name)
+SX_LIB_API XDEPRECATED const char ** Core_0GetPCVarString(const char * name)
 {
 	const AssotiativeArray<String, CVar>::Node * pNode;
 	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_STRING)
@@ -144,7 +144,7 @@ SX_LIB_API const char ** Core_0GetPCVarString(const char * name)
 	return(NULL);
 }
 
-SX_LIB_API const int * Core_0GetPCVarInt(const char * name)
+SX_LIB_API XDEPRECATED const int * Core_0GetPCVarInt(const char * name)
 {
 	const AssotiativeArray<String, CVar>::Node * pNode;
 	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_INT)
@@ -154,7 +154,7 @@ SX_LIB_API const int * Core_0GetPCVarInt(const char * name)
 	return(NULL);
 }
 
-SX_LIB_API const float * Core_0GetPCVarFloat(const char * name)
+SX_LIB_API XDEPRECATED const float * Core_0GetPCVarFloat(const char * name)
 {
 	const AssotiativeArray<String, CVar>::Node * pNode;
 	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_FLOAT)
@@ -164,7 +164,7 @@ SX_LIB_API const float * Core_0GetPCVarFloat(const char * name)
 	return(NULL);
 }
 
-SX_LIB_API const bool * Core_0GetPCVarBool(const char * name)
+SX_LIB_API XDEPRECATED const bool * Core_0GetPCVarBool(const char * name)
 {
 	const AssotiativeArray<String, CVar>::Node * pNode;
 	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_BOOL)
@@ -174,7 +174,7 @@ SX_LIB_API const bool * Core_0GetPCVarBool(const char * name)
 	return(NULL);
 }
 
-SX_LIB_API UINT_PTR * Core_0GetPCVarPointer(const char * name)
+SX_LIB_API XDEPRECATED UINT_PTR * Core_0GetPCVarPointer(const char * name)
 {
 	const AssotiativeArray<String, CVarPtr>::Node * pNode;
 	if(g_mCVarPtrs.KeyExists(name, &pNode))
@@ -185,7 +185,7 @@ SX_LIB_API UINT_PTR * Core_0GetPCVarPointer(const char * name)
 }
 
 
-SX_LIB_API void Core_0SetCVarString(const char * name, const char * value)
+SX_LIB_API XDEPRECATED void Core_0SetCVarString(const char * name, const char * value)
 {
 	const AssotiativeArray<String, CVar>::Node * pNode;
 	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_STRING && !(pNode->Val->flags & FCVAR_READONLY))
@@ -213,7 +213,7 @@ SX_LIB_API void Core_0SetCVarString(const char * name, const char * value)
 	}
 }
 
-SX_LIB_API void Core_0SetCVarInt(const char * name, int value)
+SX_LIB_API XDEPRECATED void Core_0SetCVarInt(const char * name, int value)
 {
 	const AssotiativeArray<String, CVar>::Node * pNode;
 	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_INT && !(pNode->Val->flags & FCVAR_READONLY))
@@ -235,7 +235,7 @@ SX_LIB_API void Core_0SetCVarInt(const char * name, int value)
 	}
 }
 
-SX_LIB_API void Core_0SetCVarFloat(const char * name, float value)
+SX_LIB_API XDEPRECATED void Core_0SetCVarFloat(const char * name, float value)
 {
 	const AssotiativeArray<String, CVar>::Node * pNode;
 	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_FLOAT && !(pNode->Val->flags & FCVAR_READONLY))
@@ -257,7 +257,7 @@ SX_LIB_API void Core_0SetCVarFloat(const char * name, float value)
 	}
 }
 
-SX_LIB_API void Core_0SetCVarBool(const char * name, bool value)
+SX_LIB_API XDEPRECATED void Core_0SetCVarBool(const char * name, bool value)
 {
 	const AssotiativeArray<String, CVar>::Node * pNode;
 	if(g_mCVars.KeyExists(name, &pNode) && pNode->Val->type == CVAR_BOOL && !(pNode->Val->flags & FCVAR_READONLY))
@@ -279,7 +279,7 @@ SX_LIB_API void Core_0SetCVarBool(const char * name, bool value)
 	}
 }
 
-SX_LIB_API void Core_0GetCVarAsString(const char * name, char * szOut, int iMaxLength)
+SX_LIB_API XDEPRECATED void Core_0GetCVarAsString(const char * name, char * szOut, int iMaxLength)
 {
 	const AssotiativeArray<String, CVar>::Node * pNode;
 	if(!g_mCVars.KeyExists(name, &pNode))
@@ -403,7 +403,7 @@ void DumpCVars()
 		iLenType = 6,
 		iLenVal = 10;
 
-	for(AssotiativeArray<String, CVar>::Iterator i = g_mCVars.begin(); i; i++)
+	for(AssotiativeArray<String, CVar>::Iterator i = g_mCVars.begin(); i; ++i)
 	{
 		CVar * pCvar = i.second;
 		int len = (int)i.first->length();
@@ -425,7 +425,7 @@ void DumpCVars()
 	printf(szRow, "Name", "Type", "Value", "Description");
 	char tmp[64];
 	char tmpName[64];
-	for(AssotiativeArray<String, CVar>::Iterator i = g_mCVars.begin(); i; i++)
+	for(AssotiativeArray<String, CVar>::Iterator i = g_mCVars.begin(); i; ++i)
 	{
 		CVar * pCvar = i.second;
 		sprintf(tmpName, "%s", i.first->c_str());

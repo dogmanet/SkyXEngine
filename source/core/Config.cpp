@@ -65,10 +65,10 @@ int CConfig::parse(const char* file)
 	clear();
 	BaseFile = CConfigString(file);
 	FILE * fp = fopen(file, "rb");
-		if(!fp)
-		{
-			return -1;
-		}
+	if(!fp)
+	{
+		return -1;
+	}
 
 	bool bComment = false;
 	bool bPreprocessor = false;
@@ -142,14 +142,14 @@ int CConfig::parse(const char* file)
 					s4 = s4.substr(1, s4.length() - 2);
 				}
 				//printf("%s = %s\n", s1.c_str(), s4.c_str());
-				
+
 				if(!m_mSections.KeyExists(s2))
 				{
 					m_mSections[s2].parent = s3;
 					m_mSections[s2].native = true;
 					if(m_mSections.KeyExists(s3))
 					{
-						for(AssotiativeArray<CConfigString, CValue>::Iterator i = m_mSections[s3].mValues.begin(); i; i++)
+						for(AssotiativeArray<CConfigString, CValue>::Iterator i = m_mSections[s3].mValues.begin(); i; ++i)
 						{
 							m_mSections[s2].mValues[i.first].val = i.second->val;
 						}
@@ -170,7 +170,7 @@ int CConfig::parse(const char* file)
 				int s4len = s4.length();
 				for(int i = 0; i < s4len; ++i)
 				{
-					if (!isspace((unsigned char)s4[i]))
+					if(!isspace((unsigned char)s4[i]))
 					{
 						pos = i;
 					}
@@ -184,7 +184,7 @@ int CConfig::parse(const char* file)
 					m_mSections[s2].native = true;
 					if(m_mSections.KeyExists(s3))
 					{
-						for(AssotiativeArray<CConfigString, CValue>::Iterator i = m_mSections[s3].mValues.begin(); i; i++)
+						for(AssotiativeArray<CConfigString, CValue>::Iterator i = m_mSections[s3].mValues.begin(); i; ++i)
 						{
 							m_mSections[s2].mValues[i.first].val = i.second->val;
 						}
@@ -329,12 +329,12 @@ int CConfig::parse(const char* file)
 
 void CConfig::modify(AssotiativeArray<CConfigString, CSection> & sections, AssotiativeArray<CConfigString, CValue> & values, CConfigString IncName)
 {
-	for(AssotiativeArray<CConfigString, CValue>::Iterator i = m_mFinalValues.begin(); i; i++)
+	for(AssotiativeArray<CConfigString, CValue>::Iterator i = m_mFinalValues.begin(); i; ++i)
 	{
 		values[i.first].val = i.second->val;
 	}
 
-	for (AssotiativeArray<CConfigString, CSection>::Iterator i = m_mSections.begin(); i; i++)
+	for(AssotiativeArray<CConfigString, CSection>::Iterator i = m_mSections.begin(); i; ++i)
 	{
 		if(!sections.KeyExists(i.first))
 		{
@@ -342,7 +342,7 @@ void CConfig::modify(AssotiativeArray<CConfigString, CSection> & sections, Assot
 			sections[i.first].native = false;
 			sections[i.first].Include = IncName;
 		}
-		for(AssotiativeArray<CConfigString, CValue>::Iterator j = m_mSections[i.first].mValues.begin(); j; j++)
+		for(AssotiativeArray<CConfigString, CValue>::Iterator j = m_mSections[i.first].mValues.begin(); j; ++j)
 		{
 			sections[i.first].mValues[j.first].val = j.second->val;
 		}
@@ -362,12 +362,12 @@ int CConfig::parseInclude(CConfigString & file, const CConfigString & dir)
 		inc.pParser->open((dir + file).c_str());
 
 		inc.name = baseName(dir + file);
-/*		if(inc.name == "gl.ltx")
+		/*		if(inc.name == "gl.ltx")
 		{
-			_asm
-			{
-				int 3;
-			};
+		_asm
+		{
+		int 3;
+		};
 		}*/
 		inc.pParser->modify(m_mSections, m_mFinalValues, dir + file);
 		m_vIncludes.push_back(inc);
@@ -390,14 +390,14 @@ const char* CConfig::getKey(const char * section, const char * key)
 {
 	CConfigString keys(key);
 	CConfigString sections(section);
-		if(m_mSections.KeyExists(sections))
+	if(m_mSections.KeyExists(sections))
+	{
+		if(m_mSections[sections].mValues.KeyExists(keys))
 		{
-				if(m_mSections[sections].mValues.KeyExists(keys))
-				{
-					return (m_mSections[sections].mValues[keys].val).c_str();
-				}
-			//return 0;
+			return (m_mSections[sections].mValues[keys].val).c_str();
 		}
+		//return 0;
+	}
 	return 0;
 }
 
@@ -405,18 +405,18 @@ const char* CConfig::getKeyName(const char* section, int key)
 {
 	//CConfigString keys(key);
 	CConfigString sections(section);
-	if (m_mSections.KeyExists(sections))
+	if(m_mSections.KeyExists(sections))
 	{
-		if ((int)m_mSections[sections].mValues.Size() > key)
+		if((int)m_mSections[sections].mValues.Size() > key)
 		{
 			int countiter = 0;
 			AssotiativeArray<CConfigString, CConfig::CValue>::Iterator iter = m_mSections[sections].mValues.begin();
-			for (int i = 0; i < key && iter; i++)
+			for(int i = 0; i < key && iter; ++i)
 			{
-				iter++;
-				countiter++;
+				++iter;
+				++countiter;
 			}
-			if (countiter == key)
+			if(countiter == key)
 				return iter.first->c_str();
 		}
 		return 0;
@@ -430,13 +430,13 @@ const char* CConfig::getSectionName(int num)
 	{
 		int countiter = 0;
 		AssotiativeArray<CConfigString, CConfig::CSection>::Iterator iter = m_mSections.begin();
-		for (int i = 0; i < num && iter; i++)
+		for(int i = 0; i < num && iter; ++i)
 		{
-			iter++;
-			countiter++;
+			++iter;
+			++countiter;
 		}
-			
-		if (countiter == num)
+
+		if(countiter == num)
 			return iter.first->c_str();
 	}
 	return(NULL);
@@ -485,7 +485,7 @@ int CConfig::save()
 		printf(COLOR_GRAY "====== " COLOR_CYAN "CConfig::save() " COLOR_GRAY "======" COLOR_RESET "\n");
 	}
 	int terror = 0;
-	for(AssotiativeArray<CConfigString, CSection>::Iterator i = m_mSections.begin(); i; i++)
+	for(AssotiativeArray<CConfigString, CSection>::Iterator i = m_mSections.begin(); i; ++i)
 	{
 		if(*s_pbDebug)
 		{
@@ -497,7 +497,7 @@ int CConfig::save()
 			{
 				printf(COLOR_YELLOW " modified" COLOR_RESET "\n");
 			}
-			for(AssotiativeArray<CConfigString, CValue>::Iterator j = i.second->mValues.begin(); j; j++)
+			for(AssotiativeArray<CConfigString, CValue>::Iterator j = i.second->mValues.begin(); j; ++j)
 			{
 				if(*s_pbDebug)
 				{
@@ -751,11 +751,11 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 int CConfig::getSectionCount()
 {
 	int c = m_mSections.Size();
-		int size = m_vIncludes.size();
-		for(int i = 0; i < size; ++i)
-		{
-			//m_vIncludes
-			c += m_vIncludes[i].pParser->getSectionCount();
+	int size = m_vIncludes.size();
+	for(int i = 0; i < size; ++i)
+	{
+		//m_vIncludes
+		c += m_vIncludes[i].pParser->getSectionCount();
 	}
 	return(c);
 }
@@ -763,10 +763,10 @@ int CConfig::getSectionCount()
 int CConfig::getKeyCount()
 {
 	int c = m_mFinalValues.Size();
-		int size = m_vIncludes.size();
-		for(int i = 0; i < size; ++i)
-		{
-			c += m_vIncludes[i].pParser->getKeyCount();
+	int size = m_vIncludes.size();
+	for(int i = 0; i < size; ++i)
+	{
+		c += m_vIncludes[i].pParser->getKeyCount();
 	}
 	return(c);
 }
@@ -775,27 +775,27 @@ int CConfig::getKeyCount(const char* section)
 {
 	CConfigString sections(section);
 
-	if (m_mSections.KeyExists(sections))
+	if(m_mSections.KeyExists(sections))
 	{
-			return(m_mSections[sections].mValues.Size());
-		}
-				return -1;
-		}
+		return(m_mSections[sections].mValues.Size());
+	}
+	return -1;
+}
 
 bool CConfig::sectionExists(const char * section)
 {
 	CConfigString sections(section);
 	if(m_mSections.KeyExists(sections))
-			return(true);
+		return(true);
 	return(false);
-//	return(m_mSections.count(section) != 0 && m_mSections[section].native);
+	//	return(m_mSections.count(section) != 0 && m_mSections[section].native);
 }
 
 bool CConfig::keyExists(const char * section, const char * key)
 {
 	CConfigString sections(section);
 	if(m_mSections.KeyExists(sections))
-			return(m_mSections[sections].mValues.KeyExists(key));
+		return(m_mSections[sections].mValues.KeyExists(key));
 	return(false);
 }
 
@@ -808,7 +808,7 @@ void CConfig::Release()
 void CConfig::clear()
 {
 	int size = m_vIncludes.size();
-	for (int i = 0; i < size; ++i)
+	for(int i = 0; i < size; ++i)
 	{
 		mem_release(m_vIncludes[i].pParser);
 		mem_delete(m_vIncludes[i].pParser);

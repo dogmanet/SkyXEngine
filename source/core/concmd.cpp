@@ -49,7 +49,7 @@ char g_szClientPort[8];
 bool CommandConnect();
 void CommandDisconnect();
 
-SX_LIB_API void Core_0RegisterConcmd(char * name, SXCONCMD cmd, const char * desc)
+SX_LIB_API XDEPRECATED void Core_0RegisterConcmd(const char * name, SXCONCMD cmd, const char * desc)
 {
 	ConCmd c;
 	c.type = CMD_DEFAULT;
@@ -63,7 +63,7 @@ SX_LIB_API void Core_0RegisterConcmd(char * name, SXCONCMD cmd, const char * des
 	}
 	g_mCmds[name] = c;
 }
-SX_LIB_API void Core_0RegisterConcmdArg(char * name, SXCONCMDARG cmd, const char * desc)
+SX_LIB_API XDEPRECATED void Core_0RegisterConcmdArg(const char * name, SXCONCMDARG cmd, const char * desc)
 {
 	ConCmd c;
 	c.type = CMD_ARG;
@@ -77,7 +77,7 @@ SX_LIB_API void Core_0RegisterConcmdArg(char * name, SXCONCMDARG cmd, const char
 	}
 	g_mCmds[name] = c;
 }
-SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, const SXCONCMDCLS &cmd, const char * desc)
+SX_LIB_API XDEPRECATED void Core_0RegisterConcmdCls(const char * name, void * pObject, const SXCONCMDCLS &cmd, const char * desc)
 {
 	ConCmd c;
 	c.type = CMD_CLS;
@@ -91,7 +91,7 @@ SX_LIB_API void Core_0RegisterConcmdCls(char * name, void * pObject, const SXCON
 	}
 	g_mCmds[name] = c;
 }
-SX_LIB_API void Core_0RegisterConcmdClsArg(char * name, void * pObject, const SXCONCMDCLSARG &cmd, const char * desc)
+SX_LIB_API XDEPRECATED void Core_0RegisterConcmdClsArg(const char * name, void * pObject, const SXCONCMDCLSARG &cmd, const char * desc)
 {
 	ConCmd c;
 	c.type = CMD_CLS_ARG;
@@ -280,7 +280,7 @@ SX_LIB_API void Core_0ConsoleUpdate()
 
 	//execute command buffer
 }
-SX_LIB_API void Core_0ConsoleExecCmd(const char * format, ...)
+SX_LIB_API XDEPRECATED void Core_0ConsoleExecCmd(const char * format, ...)
 {
 	va_list va;
 	va_start(va, format);
@@ -588,7 +588,7 @@ void DumpCCommands()
 {
 	int iLenName = 0;
 
-	for(AssotiativeArray<String, ConCmd>::Iterator i = g_mCmds.begin(); i; i++)
+	for(AssotiativeArray<String, ConCmd>::Iterator i = g_mCmds.begin(); i; ++i)
 	{
 		ConCmd * pCmd = i.second;
 		int len = (int)i.first->length();
@@ -601,7 +601,7 @@ void DumpCCommands()
 	sprintf(szRow, COLOR_LGREEN " %%%ds " COLOR_GRAY "| " COLOR_GREEN " %%s" COLOR_RESET "\n", iLenName);
 	printf(szRow, "Name", "Description");
 	char tmpName[64];
-	for(AssotiativeArray<String, ConCmd>::Iterator i = g_mCmds.begin(); i; i++)
+	for(AssotiativeArray<String, ConCmd>::Iterator i = g_mCmds.begin(); i; ++i)
 	{
 		ConCmd * pCmd = i.second;
 		sprintf(tmpName, "%s", i.first->c_str());
