@@ -41,7 +41,10 @@ enum SOUND_LOOP
 class IXSoundBase: public IXUnknown
 {
 public:
-	virtual SOUND_DTYPE XMETHODCALLTYPE getType() = 0;
+	virtual SOUND_DTYPE XMETHODCALLTYPE getType() const = 0;
+	virtual void XMETHODCALLTYPE setType(SOUND_DTYPE dtype) = 0;
+
+	virtual const char* XMETHODCALLTYPE getName() const = 0;
 
 	virtual void XMETHODCALLTYPE play() = 0;
 

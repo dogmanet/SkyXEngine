@@ -9,13 +9,18 @@
 CSoundPlayer::~CSoundPlayer()
 {
 	m_pLayer->delSndPlayer(this);
-	mem_release_del(m_pAB);
+	mem_release(m_pAB);
 
 	mem_delete(m_pCodecTarget);
 	mem_delete(m_pStream);
 }
 
 //**************************************************************************
+
+bool CSoundPlayer::canInstance() const
+{
+	return (!m_pStream);
+}
 
 CSoundPlayer* CSoundPlayer::newInstance()
 {
@@ -34,16 +39,18 @@ CSoundPlayer* CSoundPlayer::newInstance()
 	pPlayer->m_pLayer = this->m_pLayer;
 	pPlayer->m_fDist = this->m_fDist;
 	pPlayer->m_vWorldPos = this->m_vWorldPos;
+	pPlayer->m_sName = this->m_sName;
 	return pPlayer;
 }
 
 //**************************************************************************
 
-bool CSoundPlayer::create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_DTYPE dtype)
+bool CSoundPlayer::create(const char* szName, CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_DTYPE dtype)
 {
 	if (!pCodecTarget || !pLayer)
 		return false;
 
+	m_sName = szName;
 	m_dtype = dtype;
 	m_pLayer = pLayer;
 	m_pCodecTarget = pCodecTarget;
@@ -99,7 +106,7 @@ void XMETHODCALLTYPE CSoundPlayer::play()
 	float3 vPos, vLook, vUp;
 	m_pLayer->getObserverParam(&vPos, &vLook, &vUp);
 
-	Com3D(m_pAB, m_fDist, m_vWorldPos, vPos, vLook, vUp);
+	Com3D(m_pAB, m_fDist, m_fVolume, m_vWorldPos, vPos, vLook, vUp);
 	m_pAB->play(true);
 	m_state = SOUND_STATE_PLAY;
 }
@@ -231,6 +238,7 @@ void CSoundPlayer::setPosStream(uint32_t uPos)
 		}
 	}
 
+	m_pAB->setPos(0);
 	int qwerty = 0;
 }
 
@@ -255,7 +263,7 @@ void CSoundPlayer::update(const float3 &vListenerPos, const float3 &vListenerDir
 
 	if (m_dtype == SOUND_DTYPE_3D)
 	{
-		Com3D(m_pAB, m_fDist, m_vWorldPos, vListenerPos, vListenerDir, vListenerUp);
+		Com3D(m_pAB, m_fDist, m_fVolume, m_vWorldPos, vListenerPos, vListenerDir, vListenerUp);
 	}
 
 	if (!m_pStream)

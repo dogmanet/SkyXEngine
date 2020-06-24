@@ -3,9 +3,19 @@
 
 //##########################################################################
 
-SOUND_DTYPE XMETHODCALLTYPE CSoundBase::getType()
+SOUND_DTYPE XMETHODCALLTYPE CSoundBase::getType() const
 {
 	return m_dtype;
+}
+
+void XMETHODCALLTYPE CSoundBase::setType(SOUND_DTYPE dtype)
+{
+	m_dtype = dtype;
+}
+
+const char* XMETHODCALLTYPE CSoundBase::getName() const
+{
+	return m_sName.c_str();
 }
 
 void XMETHODCALLTYPE CSoundBase::setVolume(float fVolume)

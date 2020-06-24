@@ -38,7 +38,7 @@ protected:
 
 	friend CSoundLayer;
 
-	bool create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_DTYPE dtype);
+	bool create(const char* szName, CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_DTYPE dtype);
 
 	struct Instance
 	{
@@ -49,7 +49,7 @@ protected:
 		bool isPlaying = false;
 	};
 
-	Array<Instance> m_aInstances;
+	Array<Instance*> m_aInstances;
 };
 
 #endif

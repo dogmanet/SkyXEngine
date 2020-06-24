@@ -1,12 +1,12 @@
 /*****************************************************
-Copyright © DogmaNet Team, 2020
+Copyright В© DogmaNet Team, 2020
 Site: dogmanet.ru
 See the license in LICENSE
 *****************************************************/
 
 /*!
 	\file
-	Класс звукового плеера
+	РљР»Р°СЃСЃ Р·РІСѓРєРѕРІРѕРіРѕ РїР»РµРµСЂР°
 */
 #ifndef __SOUND_PLAYER_H
 #define __SOUND_PLAYER_H
@@ -14,8 +14,9 @@ See the license in LICENSE
 #include "PointEntity.h"
 #include <xcommon/IXSoundSystem.h>
 
+#define SND_PLAYER_START_PLAYED ENT_FLAG_0
 
-/*! Класс звукового плеера
+/*! РљР»Р°СЃСЃ Р·РІСѓРєРѕРІРѕРіРѕ РїР»РµРµСЂР°
 	\ingroup cpointentity
 */
 class CSoundPlayer : public CPointEntity
@@ -23,7 +24,6 @@ class CSoundPlayer : public CPointEntity
 	DECLARE_CLASS(CSoundPlayer, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	//CSoundPlayer() = default;
 	CSoundPlayer(CEntityManager * pMgr);
 
 	virtual void setSound(const char *szSound);
@@ -35,11 +35,25 @@ public:
 	void play();
 
 protected:
+
+	void updateFlags() override;
+
+	void turnOn(inputdata_t *pInputdata);
+	void turnOff(inputdata_t *pInputdata);
+
+	//########################################################################
+
+	output_t m_onTurnOn;
+	output_t m_onTurnOff;
 	
 	IXSoundPlayer *m_pPlayer = NULL;
 	const char *m_szPathSound = "";
+	int m_iLoop = SOUND_LOOP_NONE;
 
 	float m_fDist = 10.f;
+	float m_fVolume = 1.f;
+	
+	int m_iType = SOUND_DTYPE_3D;
 };
 
 #endif

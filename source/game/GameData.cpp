@@ -1407,7 +1407,10 @@ void GameData::playFootstepSound(MTLTYPE_PHYSIC mtl_type, const float3 &f3Pos)
 	SSCore_SndInstancePlay3d(idSound, false, false, (float3*)&f3Pos);*/
 	IXSoundEmitter *pEmitter = m_aFootstepSound[mtl_type][rand() % iCount];
 	if (pEmitter)
+	{
+		pEmitter->setWorldPos(f3Pos);
 		pEmitter->play();
+	}
 }
 
 void GameData::loadFoostepsSounds()

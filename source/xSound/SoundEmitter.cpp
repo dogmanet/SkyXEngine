@@ -10,6 +10,10 @@ CSoundEmitter::~CSoundEmitter()
 {
 	m_pLayer->delSndEmitter(this);
 
+	for (int i = 0; i < m_aInstances.size(); ++i)
+	{
+		mem_delete(m_aInstances[i]);
+	}
 }
 
 //**************************************************************************
@@ -18,7 +22,7 @@ CSoundEmitter* CSoundEmitter::newInstance()
 {
 	CSoundEmitter *pEmitter = new CSoundEmitter();
 
-	pEmitter->m_aInstances[0].pAB = m_aInstances[0].pAB->newInstance();
+	pEmitter->m_aInstances[0]->pAB = m_aInstances[0]->pAB->newInstance();
 	pEmitter->m_dtype = this->m_dtype;
 	pEmitter->m_state = SOUND_STATE_STOP;
 	pEmitter->m_sName = this->m_sName;
@@ -44,9 +48,9 @@ void XMETHODCALLTYPE CSoundEmitter::play()
 	//проход по массиву инстансов звука, если есть первый попавшийся не проигрываемые тогда его проигрываем
 	for (int i = 0, il = m_aInstances.size(); i<il; ++i)
 	{
-		if (!(m_aInstances[i].pAB->isPlaying()))
+		if (!(m_aInstances[i]->pAB->isPlaying()))
 		{
-			pAB = m_aInstances[i].pAB;
+			pAB = m_aInstances[i]->pAB;
 			continue;
 		}
 	}
@@ -54,12 +58,12 @@ void XMETHODCALLTYPE CSoundEmitter::play()
 	if (!pAB)
 	{
 		//если пришли сюда, значит нет свободных инстансов, создаем новый и проигрыаем
-		IAudioBuffer *pInst = m_aInstances[0].pAB->newInstance();
+		IAudioBuffer *pInst = m_aInstances[0]->pAB->newInstance();
 		pAB = pInst;
-		m_aInstances.push_back(pInst);
+		m_aInstances.push_back(new Instance(pInst));
 	}
 
-	Com3D(pAB, m_fDist, m_vWorldPos, vPos, vLook, vUp);
+	Com3D(pAB, m_fDist, m_fVolume, m_vWorldPos, vPos, vLook, vUp);
 	pAB->play(true);
 }
 
@@ -70,8 +74,8 @@ void CSoundEmitter::resume()
 	//если инстансы проигрывались тогда включаем проигрывание
 	for (int i = 0, il = m_aInstances.size(); i < il; ++i)
 	{
-		if(m_aInstances[i].isPlaying)
-			m_aInstances[i].pAB->play(true);
+		if (m_aInstances[i]->isPlaying)
+			m_aInstances[i]->pAB->play(true);
 	}
 }
 
@@ -80,18 +84,19 @@ void CSoundEmitter::pause()
 	//записываем состояния инстансов и останавливаем
 	for (int i = 0, il = m_aInstances.size(); i < il; ++i)
 	{
-		m_aInstances[i].isPlaying = m_aInstances[i].pAB->isPlaying();
-		m_aInstances[i].pAB->play(false);
+		m_aInstances[i]->isPlaying = m_aInstances[i]->pAB->isPlaying();
+		m_aInstances[i]->pAB->play(false);
 	}
 }
 
 //**************************************************************************
 
-bool CSoundEmitter::create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_DTYPE dtype)
+bool CSoundEmitter::create(const char* szName, CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_DTYPE dtype)
 {
 	if (!pCodecTarget || !pLayer)
 		return false;
 
+	m_sName = szName;
 	m_dtype = dtype;
 	AudioRawDesc oDesc;
 	pCodecTarget->getDesc(&oDesc);
@@ -111,7 +116,7 @@ bool CSoundEmitter::create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget
 
 	pAB->setLoop(AB_LOOP_NONE);
 
-	m_aInstances.push_back(Instance(pAB));
+	m_aInstances.push_back(new Instance(pAB));
 
 	return true;
 }
@@ -125,9 +130,9 @@ void CSoundEmitter::update(const float3 &vListenerPos, const float3 &vListenerDi
 
 	for (int i = 0, il = m_aInstances.size(); i < il; ++i)
 	{
-		if (m_aInstances[i].pAB->isPlaying())
+		if (m_aInstances[i]->pAB->isPlaying())
 		{
-			Com3D(m_aInstances[i].pAB, m_fDist, m_vWorldPos, vListenerPos, vListenerDir, vListenerUp);
+			Com3D(m_aInstances[i]->pAB, m_fDist, m_fVolume, m_vWorldPos, vListenerPos, vListenerDir, vListenerUp);
 		}
 	}
 }

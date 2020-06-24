@@ -23,7 +23,10 @@ public:
 
 	SX_ALIGNED_OP_MEM
 
-	virtual SOUND_DTYPE XMETHODCALLTYPE getType() final;
+	virtual SOUND_DTYPE XMETHODCALLTYPE getType() const final;
+	virtual void XMETHODCALLTYPE setType(SOUND_DTYPE dtype) final;
+
+	virtual const char* XMETHODCALLTYPE getName() const final;
 
 	virtual void XMETHODCALLTYPE setVolume(float fVolume) final;
 	virtual float XMETHODCALLTYPE getVolume() const final;

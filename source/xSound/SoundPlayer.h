@@ -23,6 +23,7 @@ public:
 
 		~CSoundPlayer();
 
+	bool canInstance() const;
 	CSoundPlayer* newInstance();
 
 	virtual void XMETHODCALLTYPE play() override;
@@ -46,7 +47,7 @@ protected:
 
 	void update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp);
 
-	bool create(CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_DTYPE dtype);
+	bool create(const char* szName, CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_DTYPE dtype);
 
 	//! возвращает текущую позицию проигрывания звука в байтах
 	uint32_t getPosBytes() const;

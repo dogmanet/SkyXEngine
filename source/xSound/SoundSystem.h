@@ -32,13 +32,13 @@ inline float Com3DPan(const float3 &vSnd, const float3 &vListenerPos, const floa
 	return pan;
 }
 
-inline void Com3D(IAudioBuffer *pAB, float fDist, const float3 &vSnd, const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
+inline void Com3D(IAudioBuffer *pAB, float fDist, float m_fVolume, const float3 &vSnd, const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
 	float fPan = Com3DPan(vSnd, vListenerPos, vListenerDir, vListenerUp);
 	float fVolume = 1.f - saturatef(SMVector3Distance(vSnd, vListenerPos) / fDist);
 	fPan = lerpf(fPan, 0.f, fVolume);
 	pAB->setPan(fPan);
-	pAB->setVolume(fVolume);
+	pAB->setVolume(fVolume*m_fVolume);
 }
 
 //##########################################################################
