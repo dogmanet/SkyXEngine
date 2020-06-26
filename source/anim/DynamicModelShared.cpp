@@ -126,6 +126,8 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 	}
 
 	{
+		bool useDelayInit = false;
+
 		UINT uLodCount = m_pResource->getLodCount();
 		m_aLods.resizeFast(uLodCount);
 		if(m_pDevice)
@@ -224,7 +226,7 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 					m_puTempTotalIndices[i] = uTotalIndices;
 					m_puTempTotalVertices[i] = uTotalVertices;
 
-					m_pProvider->scheduleSharedGPUinit(this);
+					useDelayInit = true;
 				}
 
 			}
@@ -235,6 +237,11 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 			//printf("Min: %.2f, %.2f, %.2f; Max: %.2f, %.2f, %.2f\n", m_vLocalMin.x, m_vLocalMin.y, m_vLocalMin.z, m_vLocalMax.x, m_vLocalMax.y, m_vLocalMax.z);
 		}
 
+
+		if(useDelayInit)
+		{
+			m_pProvider->scheduleSharedGPUinit(this);
+		}
 	}
 
 	for(UINT m = 0, ml = pResource->getPhysboxCount(); m < ml; ++m)
@@ -244,6 +251,7 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 
 	buildPSPs();
 	
+
 	return(true);
 }
 
