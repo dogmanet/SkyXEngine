@@ -545,11 +545,9 @@ ID CShaderManager::existsPathMacro(SHADER_TYPE type, const char *szPath, GXMacro
 	{
 		for(int i = 0; i < m_aVS.size(); ++i)
 		{
-			if(strcmp(m_aVS[i]->m_szPath, szPath) == 0)
+			if(m_aVS[i]->isSame(szPath, aMacros))
 			{
-				idShader = i;
-				pShaderMacro = m_aVS[i]->m_aMacros;
-				break;
+				return(i);
 			}
 		}
 	}
@@ -557,11 +555,9 @@ ID CShaderManager::existsPathMacro(SHADER_TYPE type, const char *szPath, GXMacro
 	{
 		for(int i = 0; i < m_aPS.size(); ++i)
 		{
-			if(strcmp(m_aPS[i]->m_szPath, szPath) == 0)
+			if(m_aPS[i]->isSame(szPath, aMacros))
 			{
-				idShader = i;
-				pShaderMacro = m_aPS[i]->m_aMacros;
-				break;
+				return(i);
 			}
 		}
 	}
@@ -569,11 +565,9 @@ ID CShaderManager::existsPathMacro(SHADER_TYPE type, const char *szPath, GXMacro
 	{
 		for(int i = 0; i < m_aGS.size(); ++i)
 		{
-			if(strcmp(m_aGS[i]->m_szPath, szPath) == 0)
+			if(m_aGS[i]->isSame(szPath, aMacros))
 			{
-				idShader = i;
-				pShaderMacro = m_aGS[i]->m_aMacros;
-				break;
+				return(i);
 			}
 		}
 	}
@@ -581,58 +575,13 @@ ID CShaderManager::existsPathMacro(SHADER_TYPE type, const char *szPath, GXMacro
 	{
 		for(int i = 0; i < m_aCS.size(); ++i)
 		{
-			if(strcmp(m_aCS[i]->m_szPath, szPath) == 0)
+			if(m_aCS[i]->isSame(szPath, aMacros))
 			{
-				idShader = i;
-				pShaderMacro = m_aCS[i]->m_aMacros;
-				break;
+				return(i);
 			}
 		}
 	}
 
-	if(ID_VALID(idShader))
-	{
-		GXMacro def = {NULL, NULL};
-		if(!aMacros)
-		{
-			aMacros = &def;
-		}
-		UINT i = 0, j;
-		bool bFound = false;
-		while(aMacros[i].szName)
-		{
-			j = 0;
-			bFound = false;
-			while(pShaderMacro[j].szName)
-			{
-				if(!strcmp(aMacros[i].szName, pShaderMacro[j].szName))
-				{
-					if(strcmp(aMacros[i].szDefinition, pShaderMacro[j].szDefinition))
-					{
-						return(-1);
-					}
-					bFound = true;
-					break;
-				}
-				++j;
-			}
-			if(!bFound)
-			{
-				return(-1);
-			}
-			++i;
-		}
-		j = 0;
-		while(pShaderMacro[j].szName)
-		{
-			++j;
-		}
-		if(i != j)
-		{
-			return(-1);
-		}
-		return(idShader);
-	}
 	return(-1);
 }
 
@@ -658,7 +607,7 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, GXMacro *aMacro
 
 	if(!ID_VALID(id))
 	{
-		ScopedLock lock(m_mxLock);
+		ScopedSpinLock lock(m_spLock);
 
 		CShader *pShader = 0;
 		if(type == SHADER_TYPE_VERTEX)
@@ -725,7 +674,7 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, GXMacro *aMacro
 
 void CShaderManager::allLoad(bool bReload)
 {
-	ScopedLock lock(m_mxLock);
+	ScopedSpinLock lock(m_spLock);
 
 	if(m_aVS.size() == m_iLastAllLoadVS && m_aPS.size() == m_iLastAllLoadPS && m_aGS.size() == m_iLastAllLoadGS && m_aCS.size() == m_iLastAllLoadCS)
 		return;
