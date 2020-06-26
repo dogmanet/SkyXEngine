@@ -19,6 +19,7 @@ See the license in LICENSE
 
 #include <xcommon/editor/IXEditorObject.h>
 #include <xcommon/editor/IXEditable.h>
+#include <xcommon/IXRenderable.h>
 #include <mtrl/IXMaterialSystem.h>
 #include "UndoManager.h"
 #include "Tools.h"
@@ -257,9 +258,20 @@ public:
 			//m_pRenderPassGeometry2D = m_pMaterialSystem->getRenderPass("xGBuffer");
 			m_pRenderPassGeometry2D = m_pMaterialSystem->registerRenderPass("xEditor2D", "terrax/geom2d.ps", NULL, NULL, NULL, NULL, true);
 		}
+
+		m_pCameraVisibility[0] = NULL;
+		for(UINT i = 0; i < 3; ++i)
+		{
+			newVisData(&m_pCameraVisibility[i + 1]);
+		}
 	}
 	~CRenderPipeline()
 	{
+		for(UINT i = 0; i < 3; ++i)
+		{
+			mem_release(m_pCameraVisibility[i + 1]);
+		}
+
 		m_pCore->setRenderPipeline(m_pOldPipeline);
 		mem_release(m_pOldPipeline);
 	}
@@ -288,6 +300,9 @@ public:
 		ICamera **pCameras = g_xConfig.m_pViewportCamera + 1;
 		float *fScales = g_xConfig.m_fViewportScale + 1;
 		X_2D_VIEW *views = g_xConfig.m_x2DView + 1;
+		IXRenderableVisibility **pCameraVisibility = m_pCameraVisibility + 1;
+
+		//[i + 1]
 		//ICamera *p3DCamera = SRender_GetCamera();
 		pDXDevice->setSamplerState(NULL, 0);
 		//#############################################################################
@@ -319,6 +334,8 @@ public:
 			Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &mProj);
 			Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(mView * mProj));
 
+			pCameras[i]->updateFrustum(&mProj);
+
 			g_pCameraConstantBuffer->update(&SMMatrixIdentity);
 			pDXDevice->setVSConstant(g_pCameraConstantBuffer, SCR_OBJECT);
 
@@ -327,7 +344,7 @@ public:
 
 			XRender2D(views[i], fScales[i], true);
 
-			renderEditor2D();
+			renderEditor2D(pCameraVisibility[i]);
 
 			Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
 			pDXDevice->setVSConstant(g_pCameraConstantBuffer, SCR_OBJECT);
@@ -366,6 +383,11 @@ public:
 	void updateVisibility() override
 	{
 		m_pOldPipeline->updateVisibility();
+
+		for(UINT i = 0; i < 3; ++i)
+		{
+			m_pCameraVisibility[i + 1]->updateForCamera(g_xConfig.m_pViewportCamera[i + 1]);
+		}
 	}
 
 	void renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility = NULL) override
@@ -413,9 +435,9 @@ public:
 	{
 		m_pOldPipeline->renderPostprocessFinal();
 	}
-	void renderEditor2D() override
+	void renderEditor2D(IXRenderableVisibility *pVisibility) override
 	{
-		m_pOldPipeline->renderEditor2D();
+		m_pOldPipeline->renderEditor2D(pVisibility);
 	}
 
 	IXCore *m_pCore;
@@ -423,6 +445,8 @@ public:
 	IXMaterialSystem *m_pMaterialSystem = NULL;
 
 	XRenderPassHandler *m_pRenderPassGeometry2D = NULL;
+
+	IXRenderableVisibility *m_pCameraVisibility[4];
 };
 
 #if defined(_WINDOWS)

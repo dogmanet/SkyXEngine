@@ -1527,8 +1527,13 @@ void CRenderPipeline::renderPostprocessFinal()
 
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassPostprocess);
 }
-void CRenderPipeline::renderEditor2D()
+void CRenderPipeline::renderEditor2D(IXRenderableVisibility *pVisibility)
 {
+	if(!pVisibility)
+	{
+		pVisibility = m_pMainCameraVisibility;
+	}
+
 	SMMATRIX mVP;
 	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mVP);
 	float3 vCamPos;
@@ -1542,7 +1547,7 @@ void CRenderPipeline::renderEditor2D()
 	m_pDevice->getThreadContext()->setPSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
 	m_pDevice->getThreadContext()->setGSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
 
-	renderStage(XRS_EDITOR_2D);
+	renderStage(XRS_EDITOR_2D, pVisibility);
 }
 
 IXUI* CRenderPipeline::getXUI()

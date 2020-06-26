@@ -40,7 +40,7 @@ protected:
 	void renderPostprocessMain() override;
 	void renderTransparent() override;
 	void renderPostprocessFinal() override;
-	void renderEditor2D() override;
+	void renderEditor2D(IXRenderableVisibility *pVisibility = NULL) override;
 
 protected:
 	UINT getIndexForStage(X_RENDER_STAGE stage);

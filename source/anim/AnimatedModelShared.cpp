@@ -536,6 +536,8 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 
 		if(m_pDevice)
 		{
+			bool useDelayedInit = false;
+
 			m_ppRenderBuffer = new IGXRenderBuffer*[m_uLodCount];
 			m_ppIndexBuffer = new IGXIndexBuffer*[m_uLodCount];
 
@@ -558,10 +560,13 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 					m_puTempTotalIndices[i] = aLodIndexCount[i];
 					m_puTempTotalVertices[i] = aLodVertexCount[i];
 
-					m_pProvider->scheduleSharedGPUinit(this);
+					useDelayedInit = true;
 				}
+			}
 
-
+			if(useDelayedInit)
+			{
+				m_pProvider->scheduleSharedGPUinit(this);
 			}
 		}
 			
