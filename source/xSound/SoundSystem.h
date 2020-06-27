@@ -56,6 +56,8 @@ public:
 
 	virtual void XMETHODCALLTYPE update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp) override;
 
+	//########################################################################
+
 	IXAudioCodecTarget* getCodecTarget(const char *szName);
 
 	IXCore* getCore() const;
@@ -77,6 +79,8 @@ protected:
 
 	void addCodec(const char *szFmt, IXAudioCodec *pCodec);
 
+	//########################################################################
+
 	IXCore *m_pXCore = NULL;
 
 	IAudio *m_pAudio = NULL;
@@ -85,8 +89,8 @@ protected:
 
 	CSoundLayer *m_pMasterLayer = NULL;
 
-	typedef AssotiativeArray<String, IXAudioCodec*> mapcodec;
-	mapcodec m_mapCodecs;
+	typedef AssotiativeArray<String, IXAudioCodec*> MapCodec;
+	MapCodec m_mapCodecs;
 
 	float3 m_vObserverPos, m_vObserverLook, m_vObserverUp;
 	std::mutex m_oMutexUpdate;

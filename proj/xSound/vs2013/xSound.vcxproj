@@ -121,7 +121,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb64/$(TargetName).pdb</ProgramDatabaseFile>
-      <ImportLibrary>../../../libs64/$(TargetName)_d.lib</ImportLibrary>
+      <ImportLibrary>../../../libs64/$(TargetName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

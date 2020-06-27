@@ -16,9 +16,16 @@ CSoundEmitter::~CSoundEmitter()
 	}
 }
 
+//##########################################################################
+
+bool CSoundEmitter::canInstance() const
+{
+	return true;
+}
+
 //**************************************************************************
 
-CSoundEmitter* CSoundEmitter::newInstance()
+CSoundBase* CSoundEmitter::newInstance()
 {
 	CSoundEmitter *pEmitter = new CSoundEmitter();
 
@@ -32,7 +39,7 @@ CSoundEmitter* CSoundEmitter::newInstance()
 	return pEmitter;
 }
 
-//**************************************************************************
+//##########################################################################
 
 void XMETHODCALLTYPE CSoundEmitter::play()
 {

@@ -21,18 +21,25 @@ class CSoundEmitter : public CSoundBase, public virtual IXSoundEmitter
 public:
 	~CSoundEmitter();
 
-	//! создание нового инстанса CSoundEmitter
-	CSoundEmitter* newInstance();
+	//########################################################################
+
+	bool canInstance() const override;
+
+	CSoundBase* newInstance() override;
+
+	void update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp) override;
+
+	//########################################################################
 
 	virtual void XMETHODCALLTYPE play() override;
+
+	//########################################################################
 
 	//! продолжить проигрывание инстансов, если они проигрывались
 	void resume();
 
 	//! остановка проигрывания
 	void pause();
-
-	void update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp);
 
 protected:
 

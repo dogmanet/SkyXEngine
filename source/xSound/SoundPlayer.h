@@ -21,33 +21,41 @@ class CSoundPlayer : public CSoundBase, public virtual IXSoundPlayer
 public:
 	SX_ALIGNED_OP_MEM
 
-		~CSoundPlayer();
+	~CSoundPlayer();
 
-	bool canInstance() const;
-	CSoundPlayer* newInstance();
+	//########################################################################
 
-	virtual void XMETHODCALLTYPE play() override;
-	virtual void XMETHODCALLTYPE resume() override;
-	virtual void XMETHODCALLTYPE pause() override;
-	virtual void XMETHODCALLTYPE stop() override;
+	bool canInstance() const override;
 
-	virtual bool XMETHODCALLTYPE isPlaying() const override;
+	CSoundBase* newInstance() override;
 
-	virtual SOUND_LOOP XMETHODCALLTYPE getLoop() const override;
-	virtual void XMETHODCALLTYPE setLoop(SOUND_LOOP loop) override;
+	void update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp) override;
 
-	virtual float XMETHODCALLTYPE getTime() const override;
-	virtual void XMETHODCALLTYPE setTime(float fTime) override;
+	//########################################################################
 
-	virtual float XMETHODCALLTYPE getLength() const override;
+	void XMETHODCALLTYPE setType(SOUND_DTYPE dtype);
+
+	void XMETHODCALLTYPE play() override;
+	void XMETHODCALLTYPE resume() override;
+	void XMETHODCALLTYPE pause() override;
+	void XMETHODCALLTYPE stop() override;
+
+	bool XMETHODCALLTYPE isPlaying() const override;
+
+	SOUND_LOOP XMETHODCALLTYPE getLoop() const override;
+	void XMETHODCALLTYPE setLoop(SOUND_LOOP loop) override;
+
+	float XMETHODCALLTYPE getTime() const override;
+	void XMETHODCALLTYPE setTime(float fTime) override;
+
+	float XMETHODCALLTYPE getLength() const override;
 
 protected:
 
 	friend CSoundLayer;
 
-	void update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp);
-
 	bool create(const char* szName, CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_DTYPE dtype);
+
 
 	//! возвращает текущую позицию проигрывания звука в байтах
 	uint32_t getPosBytes() const;
@@ -57,7 +65,7 @@ protected:
 	*/
 	void setPosStream(uint32_t uPos);
 
-	//************************************************************************
+	//########################################################################
 
 	//! аудио буфер
 	IAudioBuffer *m_pAB = NULL;

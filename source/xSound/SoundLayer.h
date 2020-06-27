@@ -34,6 +34,8 @@ public:
 
 	virtual void XMETHODCALLTYPE getDesc(AudioRawDesc *pDesc) const override;
 
+	//########################################################################
+
 	uint32_t getStreamChunkSize(AudioRawDesc *pDesc) const;
 	IAudioBuffer* createAudioBuffer(AB_TYPE type, const AudioRawDesc *pDesc);
 
@@ -67,6 +69,8 @@ protected:
 
 	void setStateLayers(SOUND_STATE state);
 	void setStateSounds(SOUND_STATE state);
+
+	//########################################################################
 
 	SOUND_STATE m_state = SOUND_STATE_STOP;
 

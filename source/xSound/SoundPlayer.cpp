@@ -22,7 +22,7 @@ bool CSoundPlayer::canInstance() const
 	return (!m_pStream);
 }
 
-CSoundPlayer* CSoundPlayer::newInstance()
+CSoundBase* CSoundPlayer::newInstance()
 {
 	if (m_pStream)
 		return NULL;
@@ -94,6 +94,15 @@ bool CSoundPlayer::create(const char* szName, CSoundLayer *pLayer, IXAudioCodecT
 	setTime(0);
 
 	return true;
+}
+
+//##########################################################################
+
+void XMETHODCALLTYPE CSoundPlayer::setType(SOUND_DTYPE dtype)
+{
+	m_pAB->setPan(m_fPan);
+	m_pAB->setVolume(m_fVolume);
+	m_dtype = dtype;
 }
 
 //##########################################################################
@@ -262,9 +271,9 @@ void CSoundPlayer::update(const float3 &vListenerPos, const float3 &vListenerDir
 		return;
 
 	if (m_dtype == SOUND_DTYPE_3D)
-	{
 		Com3D(m_pAB, m_fDist, m_fVolume, m_vWorldPos, vListenerPos, vListenerDir, vListenerUp);
-	}
+	else
+		int qwerty = 0;
 
 	if (!m_pStream)
 		return;

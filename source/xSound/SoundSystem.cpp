@@ -110,7 +110,7 @@ IXAudioCodecTarget* CSoundSystem::getCodecTarget(const char *szName)
 	IXAudioCodecTarget *pTarget = NULL;
 	IXAudioCodecTarget *pTarget2 = NULL;
 
-	for(mapcodec::Iterator i = m_mapCodecs.begin(); i; ++i)
+	for (MapCodec::Iterator i = m_mapCodecs.begin(); i; ++i)
 	{
 		if(m_mapCodecs[i.first]->open(szPath, "", &pTarget, false))
 		{
@@ -283,7 +283,7 @@ IXSoundLayer* XMETHODCALLTYPE CSoundSystem::findLayer(const char *szName)
 
 IXAudioCodec* CSoundSystem::getCodecSave()
 {
-	for (mapcodec::Iterator i = m_mapCodecs.begin(); i; ++i)
+	for (MapCodec::Iterator i = m_mapCodecs.begin(); i; ++i)
 	{
 		if (m_mapCodecs[i.first]->canSave())
 			return m_mapCodecs[i.first];

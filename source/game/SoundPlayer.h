@@ -14,25 +14,30 @@ See the license in LICENSE
 #include "PointEntity.h"
 #include <xcommon/IXSoundSystem.h>
 
+//##########################################################################
+
+//! Флаг автостарта проигрывания звука
 #define SND_PLAYER_START_PLAYED ENT_FLAG_0
+
+//! Флаг установки ambient типа звуку
+#define SND_PLAYER_TYPE_AMBIENT ENT_FLAG_1
+
+//##########################################################################
 
 /*! Класс звукового плеера
 	\ingroup cpointentity
 */
-class CSoundPlayer : public CPointEntity
+class CSoundPlayer: public CPointEntity
 {
 	DECLARE_CLASS(CSoundPlayer, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
 	CSoundPlayer(CEntityManager * pMgr);
+	~CSoundPlayer();
 
 	virtual void setSound(const char *szSound);
 
 	void onSync() override;
-
-	void stop();
-	
-	void play();
 
 protected:
 
@@ -53,7 +58,7 @@ protected:
 	float m_fDist = 10.f;
 	float m_fVolume = 1.f;
 	
-	int m_iType = SOUND_DTYPE_3D;
+	//int m_iType = SOUND_DTYPE_3D;
 };
 
 #endif

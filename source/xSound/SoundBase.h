@@ -23,38 +23,45 @@ public:
 
 	SX_ALIGNED_OP_MEM
 
-	virtual SOUND_DTYPE XMETHODCALLTYPE getType() const final;
-	virtual void XMETHODCALLTYPE setType(SOUND_DTYPE dtype) final;
+	//########################################################################
 
-	virtual const char* XMETHODCALLTYPE getName() const final;
+	//! можно ли инстанцировать?
+	virtual bool canInstance() const = 0;
 
-	virtual void XMETHODCALLTYPE setVolume(float fVolume) final;
-	virtual float XMETHODCALLTYPE getVolume() const final;
+	/*! создает и возвращает новую копию
+		@note нельзя инстанцировать объекты где есть потоковая загрузка
+	*/
+	virtual CSoundBase* newInstance() = 0;
 
-	virtual void XMETHODCALLTYPE setPan(float fPan) final;
-	virtual float XMETHODCALLTYPE getPan() const final;
+	//! обновление звука
+	virtual void update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp) = 0;
 
-	virtual const float3& XMETHODCALLTYPE getWorldPos() const final;
-	virtual void XMETHODCALLTYPE setWorldPos(const float3 &vPos) final;
+	//########################################################################
 
-	virtual float XMETHODCALLTYPE getDistance() const final;
-	virtual void XMETHODCALLTYPE setDistance(float fDist) final;
+	SOUND_DTYPE XMETHODCALLTYPE getType() const override;
+	void XMETHODCALLTYPE setType(SOUND_DTYPE dtype) override;
+
+	const char* XMETHODCALLTYPE getName() const override;
+
+	void XMETHODCALLTYPE setVolume(float fVolume) override;
+	float XMETHODCALLTYPE getVolume() const override;
+
+	void XMETHODCALLTYPE setPan(float fPan) override;
+	float XMETHODCALLTYPE getPan() const override;
+
+	const float3& XMETHODCALLTYPE getWorldPos() const override;
+	void XMETHODCALLTYPE setWorldPos(const float3 &vPos) override;
+
+	float XMETHODCALLTYPE getDistance() const override;
+	void XMETHODCALLTYPE setDistance(float fDist) override;
 
 protected:
 
-	friend CSoundLayer;
-
-	void update();
-
-	bool create(SOUND_DTYPE type, const char *szName, CSoundLayer *pLayer, CSoundSystem *pSoundSystem);
-
-	//************************************************************************
-
+	//! громкость [0.0, 1.0]
 	float m_fVolume = 1.f;
-	float m_fPan = 0.f;
 
-	//! аудио буфер
-	//IAudioBuffer *m_pAB = NULL;
+	//! панорамирование (смещение между ушами слушателя) [-1.0, 1.0] <=> [L, R]
+	float m_fPan = 0.f;
 
 	//! дистанция слышимости
 	float m_fDist = 10.f;
@@ -73,8 +80,6 @@ protected:
 
 	//! слой владелец
 	CSoundLayer *m_pLayer = NULL;
-
-	//CSoundSystem *m_pSoundSystem = NULL;
 };
 
 #endif
