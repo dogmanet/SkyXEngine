@@ -3,6 +3,8 @@
 #include "AudioConverter.h"
 
 #include "SoundLayer.h"
+#include "SoundEmitter.h"
+#include "SoundPlayer.h"
 
 #include <ctime>
 #include <sys/stat.h>
@@ -49,13 +51,132 @@ CSoundSystem::~CSoundSystem()
 
 void XMETHODCALLTYPE CSoundSystem::update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
-	std::lock_guard<std::mutex> guard(m_oMutexUpdate);
+	//ScopedSpinLock lock(m_oSpinLockUpdate);
 
 	if(m_pMasterLayer)
 		m_pMasterLayer->update(vListenerPos, vListenerDir, vListenerUp);
 
 	m_vObserverPos = vListenerPos; m_vObserverLook = vListenerDir; m_vObserverUp = vListenerUp;
+
+	SndQueueMsg oMsg;
+	while (m_queue.pop(&oMsg))
+	{
+		switch (oMsg.type)
+		{
+		case SND_QUEUE_MSG_TYPE_SND_NEW:
+		{
+			if (oMsg.pEmitter)
+				oMsg.pLayer->addSndEmitter(oMsg.pEmitter);
+			else if (oMsg.pPlayer)
+				oMsg.pLayer->addSndPlayer(oMsg.pPlayer);
+			break;
+		}
+		case SND_QUEUE_MSG_TYPE_SND_DELETE:
+		{
+			if (oMsg.pEmitter)
+				oMsg.pLayer->delSndEmitter(oMsg.pEmitter);
+			else if (oMsg.pPlayer)
+				oMsg.pLayer->delSndPlayer(oMsg.pPlayer);
+			break;
+		}
+		case SND_QUEUE_MSG_TYPE_SND_PLAY:
+		{
+			if (oMsg.arg.state == SOUND_STATE_PLAY)
+			{
+				if (oMsg.pEmitter) 
+					oMsg.pEmitter->_play();
+				else if (oMsg.pPlayer) 
+					oMsg.pPlayer->_play();
+			}
+			else if (oMsg.arg.state == SOUND_STATE_PAUSE)
+			{
+				if (oMsg.pEmitter)
+					oMsg.pEmitter->_pause();
+				else if (oMsg.pPlayer)
+					oMsg.pPlayer->_pause();
+			}
+			else if (oMsg.arg.state == SOUND_STATE_STOP)
+			{
+				if (oMsg.pPlayer)
+					oMsg.pPlayer->_stop();
+			}
+
+			break;
+		}
+		case SND_QUEUE_MSG_TYPE_SND_RESUME:
+		{
+			if (oMsg.pEmitter)
+				oMsg.pEmitter->_resume();
+			else if (oMsg.pPlayer)
+				oMsg.pPlayer->_resume();
+			break;
+		}
+		case SND_QUEUE_MSG_TYPE_SND_LOOP:
+		{
+			if (oMsg.pPlayer)
+				oMsg.pPlayer->_setLoop(oMsg.arg.loop);
+			break;
+		}
+		case SND_QUEUE_MSG_TYPE_SND_SPACE:
+		{
+			if (oMsg.pEmitter)
+				oMsg.pEmitter->_setSpace(oMsg.arg.space);
+			else if (oMsg.pPlayer)
+				oMsg.pPlayer->_setSpace(oMsg.arg.space);
+			break;
+		}
+		case SND_QUEUE_MSG_TYPE_SND_PAN:
+		{
+			if (oMsg.pEmitter)
+				oMsg.pEmitter->_setPan(oMsg.arg.f);
+			else if (oMsg.pPlayer)
+				oMsg.pPlayer->_setPan(oMsg.arg.f);
+			break;
+		}
+		case SND_QUEUE_MSG_TYPE_SND_VOLUME:
+		{
+			if (oMsg.pEmitter)
+				oMsg.pEmitter->_setVolume(oMsg.arg.f);
+			else if (oMsg.pPlayer)
+				oMsg.pPlayer->_setVolume(oMsg.arg.f);
+			break;
+		}
+		case SND_QUEUE_MSG_TYPE_SND_POS:
+		{
+			float3 vPos(oMsg.arg.vector[0], oMsg.arg.vector[1], oMsg.arg.vector[2]);
+			if (oMsg.pEmitter)
+				oMsg.pEmitter->_setWorldPos(vPos);
+			else if (oMsg.pPlayer)
+				oMsg.pPlayer->_setWorldPos(vPos);
+			break;
+		}
+		case SND_QUEUE_MSG_TYPE_SND_DIST:
+		{
+			if (oMsg.pEmitter)
+				oMsg.pEmitter->_setDistance(oMsg.arg.f);
+			else if (oMsg.pPlayer)
+				oMsg.pPlayer->_setDistance(oMsg.arg.f);
+			break;
+		}
+		case SND_QUEUE_MSG_TYPE_SND_TIME:
+		{
+			if (oMsg.pPlayer)
+				oMsg.pPlayer->_setTime(oMsg.arg.f);
+			break;
+		}
+
+		default:
+			break;
+		}
+	}
 }
+
+/*void CSoundSystem::getObserverParam(float3 *pPos, float3 *pLook, float3 *pUp)
+{
+	ScopedSpinLock lock(m_oSpinLockUpdate);
+
+	*pPos = m_vObserverPos; *pLook = m_vObserverLook; *pUp = m_vObserverUp;
+}*/
 
 //**************************************************************************
 
@@ -64,12 +185,15 @@ IXSoundLayer* XMETHODCALLTYPE CSoundSystem::createMasterLayer(const AudioRawDesc
 	if(m_pMasterLayer)
 		return m_pMasterLayer;
 
-	if(!pDesc)
+	if (!pDesc)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Not found audio buffer description");
 		return NULL;
+	}
 
 	if (!supportedDesc(pDesc, AB_TYPE_PRIMARY))
 	{
-		printf("unsupported audio buffer description");
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unsupported audio buffer description");
 		return NULL;
 	}
 
@@ -129,7 +253,7 @@ IXAudioCodecTarget* CSoundSystem::getCodecTarget(const char *szName)
 	m_pMasterLayer->getDesc(&oDescMaster);
 	pTarget->getDesc(&oDescSnd);
 
-	//если звук соответствует требования мастер буфера, тогда не надо конвертировать, возвращает целевой кодек
+	//если звук соответствует требованиям мастер буфера, тогда не надо конвертировать, возвращает целевой кодек
 	if(oDescSnd.uSampleRate == oDescMaster.uSampleRate)
 		return pTarget;
 

@@ -7,6 +7,10 @@ See the license in LICENSE
 #ifndef __SOUNDEMITTER_H
 #define __SOUNDEMITTER_H
 
+#ifdef _MSC_VER
+#pragma warning(disable : 4250)
+#endif
+
 #include <xcommon/IXSoundSystem.h>
 #include "SoundBase.h"
 #include <mital.h>
@@ -19,6 +23,8 @@ See the license in LICENSE
 class CSoundEmitter : public CSoundBase, public virtual IXSoundEmitter
 {
 public:
+	SX_ALIGNED_OP_MEM
+
 	~CSoundEmitter();
 
 	//########################################################################
@@ -31,7 +37,7 @@ public:
 
 	//########################################################################
 
-	virtual void XMETHODCALLTYPE play() override;
+	void XMETHODCALLTYPE play() override;
 
 	//########################################################################
 
@@ -44,8 +50,20 @@ public:
 protected:
 
 	friend CSoundLayer;
+	friend CSoundSystem;
 
-	bool create(const char* szName, CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_DTYPE dtype);
+	bool create(const char* szName, CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_SPACE space);
+
+	void _play();
+	void _resume();
+	void _pause();
+	void _setSpace(SOUND_SPACE space);
+	void _setVolume(float fVolume);
+	void _setPan(float fPan);
+	void _setWorldPos(const float3 &vPos);
+	void _setDistance(float fDist);
+
+	//#########################################################################
 
 	struct Instance
 	{
@@ -56,7 +74,11 @@ protected:
 		bool isPlaying = false;
 	};
 
+	//#########################################################################
+
 	Array<Instance*> m_aInstances;
+
+	float3 m_vListenerPos, m_vListenerDir, m_vListenerUp;
 };
 
 #endif

@@ -8,7 +8,14 @@
 
 CSoundPlayer::~CSoundPlayer()
 {
-	m_pLayer->delSndPlayer(this);
+	//m_pLayer->delSndPlayer(this);
+
+	SndQueueMsg oMsg;
+	oMsg.type = SND_QUEUE_MSG_TYPE_SND_DELETE;
+	oMsg.pPlayer = this;
+	oMsg.pLayer = m_pLayer;
+	m_pLayer->addMessage(oMsg);
+
 	mem_release(m_pAB);
 
 	mem_delete(m_pCodecTarget);
@@ -33,7 +40,7 @@ CSoundBase* CSoundPlayer::newInstance()
 	pPlayer->m_uLengthBytes = this->m_uLengthBytes;
 	pPlayer->m_fLengthMls = this->m_fLengthMls;
 	pPlayer->m_loop = this->m_loop;
-	pPlayer->m_dtype = this->m_dtype;
+	pPlayer->m_space = this->m_space;
 	pPlayer->m_state = SOUND_STATE_STOP;
 	pPlayer->m_sName = this->m_sName;
 	pPlayer->m_pLayer = this->m_pLayer;
@@ -45,13 +52,13 @@ CSoundBase* CSoundPlayer::newInstance()
 
 //**************************************************************************
 
-bool CSoundPlayer::create(const char* szName, CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_DTYPE dtype)
+bool CSoundPlayer::create(const char* szName, CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_SPACE space)
 {
 	if (!pCodecTarget || !pLayer)
 		return false;
 
 	m_sName = szName;
-	m_dtype = dtype;
+	m_space = space;
 	m_pLayer = pLayer;
 	m_pCodecTarget = pCodecTarget;
 	AudioRawDesc oDesc;
@@ -98,53 +105,55 @@ bool CSoundPlayer::create(const char* szName, CSoundLayer *pLayer, IXAudioCodecT
 
 //##########################################################################
 
-void XMETHODCALLTYPE CSoundPlayer::setType(SOUND_DTYPE dtype)
+/*void XMETHODCALLTYPE CSoundPlayer::setType(SOUND_DTYPE space)
 {
-	m_pAB->setPan(m_fPan);
-	m_pAB->setVolume(m_fVolume);
-	m_dtype = dtype;
-}
+	QueueMsg oMsg;
+	oMsg.type = QUEUE_MSG_TYPE_DTYPE;
+	oMsg.arg.dtype = dtype;
+	m_oQueue.push(oMsg);
+}*/
 
 //##########################################################################
 
 void XMETHODCALLTYPE CSoundPlayer::play()
 {
-	if (!m_pLayer->isPlaying())
-		return;
-
-	float3 vPos, vLook, vUp;
-	m_pLayer->getObserverParam(&vPos, &vLook, &vUp);
-
-	Com3D(m_pAB, m_fDist, m_fVolume, m_vWorldPos, vPos, vLook, vUp);
-	m_pAB->play(true);
-	m_state = SOUND_STATE_PLAY;
+	SndQueueMsg oMsg;
+	oMsg.type = SND_QUEUE_MSG_TYPE_SND_PLAY;
+	oMsg.arg.state = SOUND_STATE_PLAY;
+	oMsg.pPlayer = this;
+	m_pLayer->addMessage(oMsg);
 }
 
 //**************************************************************************
 
 void XMETHODCALLTYPE CSoundPlayer::resume()
 {
-	if (!m_pLayer->isPlaying() || m_state != SOUND_STATE_PAUSE)
-		return;
-
-	m_pAB->play(true);
+	SndQueueMsg oMsg;
+	oMsg.type = SND_QUEUE_MSG_TYPE_SND_RESUME;
+	oMsg.pPlayer = this;
+	m_pLayer->addMessage(oMsg);
 }
 
 //**************************************************************************
 
 void XMETHODCALLTYPE CSoundPlayer::pause()
 {
-	m_pAB->play(false);
-	m_state = SOUND_STATE_PAUSE;
+	SndQueueMsg oMsg;
+	oMsg.type = SND_QUEUE_MSG_TYPE_SND_PLAY;
+	oMsg.arg.state = SOUND_STATE_PAUSE;
+	oMsg.pPlayer = this;
+	m_pLayer->addMessage(oMsg);
 }
 
 //**************************************************************************
 
 void XMETHODCALLTYPE CSoundPlayer::stop()
 {
-	m_pAB->play(false);
-	setTime(0.f);
-	m_state = SOUND_STATE_STOP;
+	SndQueueMsg oMsg;
+	oMsg.type = SND_QUEUE_MSG_TYPE_SND_PLAY;
+	oMsg.arg.state = SOUND_STATE_STOP;
+	oMsg.pPlayer = this;
+	m_pLayer->addMessage(oMsg);
 }
 
 //**************************************************************************
@@ -158,9 +167,11 @@ bool XMETHODCALLTYPE CSoundPlayer::isPlaying() const
 
 void XMETHODCALLTYPE CSoundPlayer::setLoop(SOUND_LOOP loop)
 {
-	m_loop = loop;
-	if (!m_pStream)
-		m_pAB->setLoop((AB_LOOP)m_loop);
+	SndQueueMsg oMsg;
+	oMsg.type = SND_QUEUE_MSG_TYPE_SND_LOOP;
+	oMsg.arg.loop = loop;
+	oMsg.pPlayer = this;
+	m_pLayer->addMessage(oMsg);
 }
 
 //**************************************************************************
@@ -190,17 +201,10 @@ float XMETHODCALLTYPE CSoundPlayer::getTime() const
 
 void XMETHODCALLTYPE CSoundPlayer::setTime(float fTime)
 {
-	AudioRawDesc oDesc;
-	m_pAB->getDesc(&oDesc);
-	uint32_t uPosBytes = (uint64_t(fTime * 1000.f) * uint64_t(oDesc.uBytesPerSec)) / uint64_t(1000);
-
-	if (m_uLengthBytes < uPosBytes)
-		return;
-
-	if (m_pStream)
-		setPosStream(uPosBytes);
-	else
-		m_pAB->setPos(uPosBytes);
+	SndQueueMsg oMsg;
+	oMsg.type = SND_QUEUE_MSG_TYPE_SND_TIME;
+	oMsg.arg.f = fTime;
+	m_pLayer->addMessage(oMsg);
 }
 
 //**************************************************************************
@@ -267,10 +271,48 @@ uint32_t CSoundPlayer::getPosBytes() const
 
 void CSoundPlayer::update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
+	m_vListenerPos = vListenerPos;
+	m_vListenerDir = vListenerDir;
+	m_vListenerUp = vListenerUp;
+
+	/*QueueMsg oMsg;
+	while (m_oQueue.pop(&oMsg))
+	{
+		switch (oMsg.type)
+		{
+		case QUEUE_MSG_TYPE_PLAY:
+		{
+			if (oMsg.arg.state == SOUND_STATE_PLAY)
+				_play();
+			else if (oMsg.arg.state == SOUND_STATE_PAUSE)
+				_pause();
+			else if (oMsg.arg.state == SOUND_STATE_STOP)
+				_stop();
+
+			break;
+		}
+		case QUEUE_MSG_TYPE_RESUME:
+			_resume();
+			break;
+		case QUEUE_MSG_TYPE_LOOP:
+			_setLoop(oMsg.arg.loop);
+			break;
+		case QUEUE_MSG_TYPE_DTYPE:
+			_setType(oMsg.arg.dtype);
+			break;
+		case QUEUE_MSG_TYPE_TIME:
+			_setTime(oMsg.arg.fTime);
+			break;
+
+		default:
+			break;
+		}
+	}*/
+
 	if (!m_pLayer->isPlaying())
 		return;
 
-	if (m_dtype == SOUND_DTYPE_3D)
+	if (m_space == SOUND_SPACE_3D)
 		Com3D(m_pAB, m_fDist, m_fVolume, m_vWorldPos, vListenerPos, vListenerDir, vListenerUp);
 	else
 		int qwerty = 0;
@@ -293,7 +335,7 @@ void CSoundPlayer::update(const float3 &vListenerPos, const float3 &vListenerDir
 		if (m_loop == AB_LOOP_NONE)
 			m_pAB->play(false);
 		else
-			setTime(0.f);
+			_setTime(0.f);
 	}
 
 	if (!isPlaying())
@@ -327,4 +369,67 @@ void CSoundPlayer::update(const float3 &vListenerPos, const float3 &vListenerDir
 			}
 		}
 	}
+}
+
+//##########################################################################
+//##########################################################################
+
+void CSoundPlayer::_setSpace(SOUND_SPACE space)
+{
+	m_pAB->setPan(m_fPan);
+	m_pAB->setVolume(m_fVolume);
+	m_space = space;
+}
+
+void CSoundPlayer::_play()
+{
+	if (!m_pLayer->isPlaying())
+		return;
+
+	Com3D(m_pAB, m_fDist, m_fVolume, m_vWorldPos, m_vListenerPos, m_vListenerDir, m_vListenerUp);
+	m_pAB->play(true);
+	m_state = SOUND_STATE_PLAY;
+}
+
+void CSoundPlayer::_resume()
+{
+	if (!m_pLayer->isPlaying() || m_state != SOUND_STATE_PAUSE)
+		return;
+
+	m_pAB->play(true);
+}
+
+void CSoundPlayer::_pause()
+{
+	m_pAB->play(false);
+	m_state = SOUND_STATE_PAUSE;
+}
+
+void CSoundPlayer::_stop()
+{
+	m_pAB->play(false);
+	_setTime(0.f);
+	m_state = SOUND_STATE_STOP;
+}
+
+void CSoundPlayer::_setLoop(SOUND_LOOP loop)
+{
+	m_loop = loop;
+	if (!m_pStream)
+		m_pAB->setLoop((AB_LOOP)m_loop);
+}
+
+void CSoundPlayer::_setTime(float fTime)
+{
+	AudioRawDesc oDesc;
+	m_pAB->getDesc(&oDesc);
+	uint32_t uPosBytes = (uint64_t(fTime * 1000.f) * uint64_t(oDesc.uBytesPerSec)) / uint64_t(1000);
+
+	if (m_uLengthBytes < uPosBytes)
+		return;
+
+	if (m_pStream)
+		setPosStream(uPosBytes);
+	else
+		m_pAB->setPos(uPosBytes);
 }
