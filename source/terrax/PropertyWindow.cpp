@@ -39,6 +39,7 @@ void CPropertyWindow::show()
 void CPropertyWindow::hide()
 {
 	ShowWindow(m_hDlgWnd, SW_HIDE);
+	ShowWindow(m_phEditors[m_editorActive], SW_HIDE);
 }
 bool CPropertyWindow::isVisible()
 {
