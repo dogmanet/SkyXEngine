@@ -115,6 +115,9 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Profile>true</Profile>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>SkyXEngine.exe.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -136,6 +139,9 @@
       <Profile>true</Profile>
       <StackReserveSize>10485760</StackReserveSize>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>SkyXEngine.exe.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -157,6 +163,9 @@
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb/$(TargetName).pdb</ProgramDatabaseFile>
       <AdditionalOptions>/NODEFAULTLIB:LIBCMTD.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>SkyXEngine.exe.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -178,6 +187,9 @@
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb64/$(TargetName).pdb</ProgramDatabaseFile>
       <AdditionalOptions>/NODEFAULTLIB:LIBCMTD.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>SkyXEngine.exe.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\SkyXEngine_Build\SkyXEngine_Build.cpp" />
