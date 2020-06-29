@@ -11,6 +11,8 @@ See the license in LICENSE
 #include <common/string.h>
 #include <common/path_utils.h>
 #include <common/math.h>
+#include <common/spinlock.h>
+#include <common/queue.h>
 
 #include <xcommon/IXCore.h>
 #include <xcommon/IPluginManager.h>
@@ -62,13 +64,9 @@ public:
 
 	IXCore* getCore() const;
 
-	void getObserverParam(float3 *pPos, float3 *pLook, float3 *pUp)
-	{
-		while (!m_oMutexUpdate.try_lock()){}
-		m_oMutexUpdate.unlock();
-		
-		*pPos = m_vObserverPos; *pLook = m_vObserverLook; *pUp = m_vObserverUp;
-	}
+	//void getObserverParam(float3 *pPos, float3 *pLook, float3 *pUp);
+
+	void addMessage(SndQueueMsg &oMsg) { m_queue.push(oMsg); }
 
 protected:
 
@@ -80,6 +78,8 @@ protected:
 	void addCodec(const char *szFmt, IXAudioCodec *pCodec);
 
 	//########################################################################
+
+	Queue<SndQueueMsg> m_queue;
 
 	IXCore *m_pXCore = NULL;
 
@@ -93,7 +93,7 @@ protected:
 	MapCodec m_mapCodecs;
 
 	float3 m_vObserverPos, m_vObserverLook, m_vObserverUp;
-	std::mutex m_oMutexUpdate;
+	//SpinLock m_oSpinLockUpdate;
 };
 
 #endif

@@ -1463,7 +1463,7 @@ void GameData::loadFoostepsSounds()
 		m_aFootstepSound[i] = (jl ? new IXSoundEmitter*[jl] : NULL);
 		for(int j = 0; j < jl; ++j)
 		{
-			m_aFootstepSound[i][j] = pMasterLayer->newSoundEmitter(paSounds[0][j], SOUND_DTYPE_3D);
+			m_aFootstepSound[i][j] = pMasterLayer->newSoundEmitter(paSounds[0][j], SOUND_SPACE_3D);
 			//m_aFootstepSound[i][j] = SSCore_SndCreate3dInst(paSounds[0][j], SX_SOUND_CHANNEL_GAME, 100);
 		}
 	}

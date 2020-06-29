@@ -78,8 +78,8 @@ void CSoundPlayer::setSound(const char *szSound)
 		IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
 		IXSoundLayer *pMasterLayer = pSound->findLayer("master");
 
-		SOUND_DTYPE dtype = (getFlags() & SND_PLAYER_TYPE_AMBIENT ? SOUND_DTYPE_2D : SOUND_DTYPE_3D);
-		m_pPlayer = pMasterLayer->newSoundPlayer(szSound, dtype);
+		SOUND_SPACE space = (getFlags() & SND_PLAYER_TYPE_AMBIENT ? SOUND_SPACE_2D : SOUND_SPACE_3D);
+		m_pPlayer = pMasterLayer->newSoundPlayer(szSound, space);
 
 		if (m_pPlayer)
 		{
@@ -149,10 +149,10 @@ void CSoundPlayer::updateFlags()
 	
 	if (getFlags() & SND_PLAYER_TYPE_AMBIENT)
 	{
-		m_pPlayer->setType(SOUND_DTYPE_2D);
+		m_pPlayer->setSpace(SOUND_SPACE_2D);
 		/*m_pPlayer->setPan(0.f);
 		m_pPlayer->setVolume(m_fVolume);*/
 	}
 	else
-		m_pPlayer->setType(SOUND_DTYPE_3D);
+		m_pPlayer->setSpace(SOUND_SPACE_3D);
 }

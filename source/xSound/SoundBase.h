@@ -38,8 +38,10 @@ public:
 
 	//########################################################################
 
-	SOUND_DTYPE XMETHODCALLTYPE getType() const override;
-	void XMETHODCALLTYPE setType(SOUND_DTYPE dtype) override;
+	SOUND_TYPE XMETHODCALLTYPE getType() const;
+
+	SOUND_SPACE XMETHODCALLTYPE getSpace() const;
+	void XMETHODCALLTYPE setSpace(SOUND_SPACE space);
 
 	const char* XMETHODCALLTYPE getName() const override;
 
@@ -49,13 +51,23 @@ public:
 	void XMETHODCALLTYPE setPan(float fPan) override;
 	float XMETHODCALLTYPE getPan() const override;
 
-	const float3& XMETHODCALLTYPE getWorldPos() const override;
 	void XMETHODCALLTYPE setWorldPos(const float3 &vPos) override;
+	const float3& XMETHODCALLTYPE getWorldPos() const override;
 
-	float XMETHODCALLTYPE getDistance() const override;
 	void XMETHODCALLTYPE setDistance(float fDist) override;
+	float XMETHODCALLTYPE getDistance() const override;
 
 protected:
+
+	virtual void _setSpace(SOUND_SPACE space);
+	virtual void _setVolume(float fVolume);
+	virtual void _setPan(float fPan);
+	virtual void _setWorldPos(const float3 &vPos);
+	virtual void _setDistance(float fDist);
+
+	//########################################################################
+
+	SOUND_TYPE m_type;
 
 	//! громкость [0.0, 1.0]
 	float m_fVolume = 1.f;
@@ -70,7 +82,7 @@ protected:
 	float3 m_vWorldPos;
 
 	//! тип звука
-	SOUND_DTYPE m_dtype = SOUND_DTYPE_2D;
+	SOUND_SPACE m_space = SOUND_SPACE_2D;
 
 	//! состояние проигрывания
 	SOUND_STATE m_state = SOUND_STATE_STOP;
