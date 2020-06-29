@@ -22,6 +22,7 @@ struct X_PROP_FIELD
 	X_PROP_EDITOR_TYPE editorType;
 	const void *pEditorData;
 	const char *szHelp;
+	bool isGeneric;
 };
 
 class IXEditorObject: public IXUnknown

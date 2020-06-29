@@ -36,8 +36,12 @@
 #include "CommandDelete.h"
 #include "CommandCreate.h"
 #include "CommandProperties.h"
+#include "CommandPaste.h"
 
 #include "PropertyWindow.h"
+
+#define CLIPBOARD_FILE "TerraX.clipboard"
+char g_szClipboardFile[MAX_PATH + sizeof(CLIPBOARD_FILE)];
 
 #include <gui/guimain.h>
 
@@ -297,7 +301,10 @@ BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	XCheckMenuItem(g_hMenu, ID_VIEW_GRID, g_xConfig.m_bShowGrid);
 
-	return TRUE;
+	GetTempPathA(sizeof(g_szClipboardFile), g_szClipboardFile);
+	strcat(g_szClipboardFile, CLIPBOARD_FILE);
+
+	return(TRUE);
 }
 
 bool IsEditMessage()
@@ -385,6 +392,256 @@ LRESULT CALLBACK StatusBarWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 		LocalFree(hloc);
 	}
 	return(CallWindowProc(g_pfnStatusBarOldWndproc, hWnd, message, wParam, lParam));
+}
+
+static void DeleteSelection()
+{
+	CCommandDelete *pDelCmd = new CCommandDelete();
+	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+	{
+		if(g_pLevelObjects[i]->isSelected())
+		{
+			pDelCmd->addObject(i);
+		}
+	}
+	XExecCommand(pDelCmd);
+}
+
+static void ToClipboard(bool isCut = false)
+{
+	IXConfig *pConfig = g_pEngine->getCore()->newConfig();
+	pConfig->open(g_szClipboardFile);
+	pConfig->clear();
+
+	UINT uCount = 0;
+	char szSection[64], szTmp[64];
+
+	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+	{
+		IXEditorObject *pObj = g_pLevelObjects[i];
+		if(pObj->isSelected())
+		{
+			sprintf(szSection, "obj_%u_type", uCount);
+			pConfig->set("meta", szSection, pObj->getTypeName());
+
+			sprintf(szSection, "obj_%u_class", uCount);
+			pConfig->set("meta", szSection, pObj->getClassName());
+
+			float3_t vTmp = pObj->getPos();
+			sprintf(szSection, "obj_%u_pos", uCount);
+			sprintf(szTmp, "%f %f %f", vTmp.x, vTmp.y, vTmp.z);
+			pConfig->set("meta", szSection, szTmp);
+
+			vTmp = pObj->getScale();
+			sprintf(szSection, "obj_%u_scale", uCount);
+			sprintf(szTmp, "%f %f %f", vTmp.x, vTmp.y, vTmp.z);
+			pConfig->set("meta", szSection, szTmp);
+
+			SMQuaternion qTmp = pObj->getOrient();
+			sprintf(szSection, "obj_%u_orient", uCount);
+			sprintf(szTmp, "%f %f %f %f", qTmp.x, qTmp.y, qTmp.z, qTmp.w);
+			pConfig->set("meta", szSection, szTmp);
+
+			sprintf(szSection, "obj_%u", uCount);
+
+
+			for(UINT i = 0, l = pObj->getProperyCount(); i < l; ++i)
+			{
+				const X_PROP_FIELD *pField = pObj->getPropertyMeta(i);
+
+				if(!pField->isGeneric)
+				{
+					pConfig->set(szSection, pField->szKey, pObj->getKV(pField->szKey));
+				}
+			}
+
+			++uCount;
+		}
+	}
+
+	sprintf(szSection, "%u", uCount);
+	pConfig->set("meta", "count", szSection);
+
+	sprintf(szSection, "%f %f %f", g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMin.y, g_xState.vSelectionBoundMin.z);
+	pConfig->set("meta", "aabb_min", szSection);
+	sprintf(szSection, "%f %f %f", g_xState.vSelectionBoundMax.x, g_xState.vSelectionBoundMax.y, g_xState.vSelectionBoundMax.z);
+	pConfig->set("meta", "aabb_max", szSection);
+
+	pConfig->save();
+	mem_release(pConfig);
+
+	if(isCut)
+	{
+		DeleteSelection();
+	}
+}
+
+static float GetPasteCenter(char axis, X_WINDOW_POS skipPos)
+{
+	for(UINT i = 0; i < 4; ++i)
+	{
+		if(i != skipPos)
+		{
+			X_2D_VIEW x2dView = g_xConfig.m_x2DView[i];
+			float3 vCamPos;
+			g_xConfig.m_pViewportCamera[i]->getPosition(&vCamPos);
+			switch(axis)
+			{
+			case 'x':
+				if(x2dView == X2D_TOP || x2dView == X2D_FRONT)
+				{
+					return(vCamPos.x);
+				}
+				break;
+
+			case 'y':
+				if(x2dView == X2D_FRONT || x2dView == X2D_SIDE)
+				{
+					return(vCamPos.y);
+				}
+				break;
+
+			case 'z':
+				if(x2dView == X2D_TOP || x2dView == X2D_SIDE)
+				{
+					return(vCamPos.z);
+				}
+				break;
+
+			default:
+				assert(!"Invalid axis");
+			}
+		}
+	}
+
+	return(0.0f);
+}
+
+static float3 GetPasteCenter()
+{
+	X_2D_VIEW x2dView = g_xConfig.m_x2DView[g_xState.activeWindow];
+
+	float3 vPos;
+
+	switch(x2dView)
+	{
+	case X2D_TOP:
+		vPos.x = g_xState.vWorldMousePos.x;
+		vPos.y = GetPasteCenter('y', g_xState.activeWindow);
+		vPos.z = g_xState.vWorldMousePos.y;
+		break;
+
+	case X2D_FRONT:
+		vPos.x = g_xState.vWorldMousePos.x;
+		vPos.y = g_xState.vWorldMousePos.y;
+		vPos.z = GetPasteCenter('z', g_xState.activeWindow);
+		break;
+
+	case X2D_SIDE:
+		vPos.x = GetPasteCenter('x', g_xState.activeWindow);
+		vPos.y = g_xState.vWorldMousePos.y;
+		vPos.z = g_xState.vWorldMousePos.x;
+		break;
+
+	default:
+		vPos.x = GetPasteCenter('x', XWP_TOP_LEFT);
+		vPos.y = GetPasteCenter('y', XWP_TOP_LEFT);
+		vPos.z = GetPasteCenter('z', XWP_TOP_LEFT);
+		break;
+	}
+
+	return(vPos);
+}
+
+static void FromClipboard()
+{
+	IXConfig *pConfig = g_pEngine->getCore()->newConfig();
+	if(pConfig->open(g_szClipboardFile))
+	{
+		const char *szVal = pConfig->getKey("meta", "count");
+		if(szVal)
+		{
+			UINT uCount = 0;
+			sscanf(szVal, "%u", &uCount);
+
+			SMAABB aabb;
+
+			szVal = pConfig->getKey("meta", "aabb_min");
+			if(szVal)
+			{
+				sscanf(szVal, "%f %f %f", &aabb.vMin.x, &aabb.vMin.y, &aabb.vMin.z);
+			}
+			szVal = pConfig->getKey("meta", "aabb_max");
+			if(szVal)
+			{
+				sscanf(szVal, "%f %f %f", &aabb.vMax.x, &aabb.vMax.y, &aabb.vMax.z);
+			}
+
+			aabb.vMax = SMVectorMax(aabb.vMin, aabb.vMax);
+			float3 vClipboardCenter = (aabb.vMin + aabb.vMax) * 0.5f;
+			float3 vPasteCenter = GetPasteCenter();
+			float3 vDelta = vPasteCenter - vClipboardCenter;
+
+			float3 vPos, vScale;
+			SMQuaternion qRot;
+
+			CCommandPaste *pCmd = new CCommandPaste();
+
+			char szSection[64];
+			for(UINT i = 0; i < uCount; ++i)
+			{
+				sprintf(szSection, "obj_%u_type", i);
+				const char *szTypeName = pConfig->getKey("meta", szSection);
+				sprintf(szSection, "obj_%u_class", i);
+				const char *szClassName = pConfig->getKey("meta", szSection);
+
+				if(!szTypeName || !szClassName)
+				{
+					continue;
+				}
+
+				sprintf(szSection, "obj_%u_pos", i);
+				const char *szTmp = pConfig->getKey("meta", szSection);
+				if(szTmp)
+				{
+					sscanf(szTmp, "%f %f %f", &vPos.x, &vPos.y, &vPos.z);
+				}
+
+				sprintf(szSection, "obj_%u_scale", i);
+				szTmp = pConfig->getKey("meta", szSection);
+				if(szTmp)
+				{
+					sscanf(szTmp, "%f %f %f", &vScale.x, &vScale.y, &vScale.z);
+				}
+
+				sprintf(szSection, "obj_%u_orient", i);
+				szTmp = pConfig->getKey("meta", szSection);
+				if(szTmp)
+				{
+					sscanf(szTmp, "%f %f %f %f", &qRot.x, &qRot.y, &qRot.z, &qRot.w);
+				}
+
+				sprintf(szSection, "obj_%u", i);
+
+
+				UINT uObj = pCmd->addObject(szTypeName, szClassName, vPos + vDelta, vScale, qRot);
+
+				for(UINT j = 0, jl = pConfig->getKeyCount(szSection); j < jl; ++j)
+				{
+					const char *szKey = pConfig->getKeyName(szSection, j);
+					const char *szValue = pConfig->getKey(szSection, szKey);
+
+					pCmd->setKV(uObj, szKey, szValue);
+				}
+			}
+
+			XExecCommand(pCmd);
+		}
+	}
+
+	// create objects
+
+	mem_release(pConfig);
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -654,6 +911,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			EnableMenuItem(hMenu, ID_EDIT_UNDO, MF_ENABLED);
 			EnableMenuItem(hMenu, ID_EDIT_REDO, MF_ENABLED);
 		}
+		else
+		{
+			bool hasSelection = g_xState.bHasSelection;
+
+			HMENU hMenu = (HMENU)wParam;
+			EnableMenuItem(hMenu, ID_EDIT_CUT, hasSelection ? MF_ENABLED : MF_DISABLED);
+			EnableMenuItem(hMenu, ID_EDIT_COPY, hasSelection ? MF_ENABLED : MF_DISABLED);
+			EnableMenuItem(hMenu, ID_EDIT_DELETE, hasSelection ? MF_ENABLED : MF_DISABLED);
+			EnableMenuItem(hMenu, ID_EDIT_PASTE, GetFileAttributesA(g_szClipboardFile) != ~0 ? MF_ENABLED : MF_DISABLED);
+		}
 		XUpdateUndoRedo();
 
 		break;
@@ -886,6 +1153,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SendMessage(GetFocus(), WM_COPY, 0, 0);
 				break;
 			}
+			
+			ToClipboard();
 			break;
 
 		case ID_EDIT_CUT:
@@ -894,6 +1163,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SendMessage(GetFocus(), WM_CUT, 0, 0);
 				break;
 			}
+			
+			ToClipboard(true);
 			break;
 
 		case ID_EDIT_PASTE:
@@ -901,6 +1172,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				SendMessage(GetFocus(), WM_PASTE, 0, 0);
 				break;
+			}
+			else
+			{
+				FromClipboard();
 			}
 			break;
 
@@ -914,15 +1189,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			}
 
-			CCommandDelete *pDelCmd = new CCommandDelete();
-			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-			{
-				if(g_pLevelObjects[i]->isSelected())
-				{
-					pDelCmd->addObject(i);
-				}
-			}
-			XExecCommand(pDelCmd);
+			DeleteSelection();
+
 			break;
 		}
 

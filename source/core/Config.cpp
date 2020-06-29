@@ -816,7 +816,18 @@ void CConfig::clear()
 	m_vIncludes.clear();
 	m_mFinalValues.clear();
 	m_mSections.clear();
-	BaseFile = "\0";
+	BaseFile = "";
+}
+void CConfig::clear2()
+{
+	auto tmp = BaseFile;
+	clear();
+	BaseFile = tmp;
+	FILE *pF = fopen(BaseFile.c_str(), "wb");
+	if(pF)
+	{
+		fclose(pF);
+	}
 }
 
 AssotiativeArray<CConfigString, CConfig::CSection> * CConfig::getSections()
@@ -851,6 +862,10 @@ bool XMETHODCALLTYPE CXConfig::open(const char *szPath)
 bool XMETHODCALLTYPE CXConfig::save()
 {
 	return(m_pConfig->save() == 0);
+}
+void XMETHODCALLTYPE CXConfig::clear()
+{
+	m_pConfig->clear2();
 }
 
 const char* XMETHODCALLTYPE CXConfig::getKey(const char *szSection, const char *szKey)

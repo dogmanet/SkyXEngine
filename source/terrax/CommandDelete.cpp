@@ -28,7 +28,7 @@ bool CCommandDelete::undo()
 		pObj->pObject->setOrient(pObj->qRotate);
 
 		pObj->pObject->preSetup();
-		for(auto i = pObj->mKeyValues.begin(); i; i++)
+		for(auto i = pObj->mKeyValues.begin(); i; ++i)
 		{
 			pObj->pObject->setKV(i.first->c_str(), i.second->c_str());
 		}

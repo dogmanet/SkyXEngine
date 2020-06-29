@@ -110,6 +110,7 @@ public:
 
 	void Release();
 	void clear();
+	void clear2();
 
 	AssotiativeArray<CConfigString, CSection> * getSections();
 
@@ -160,6 +161,7 @@ public:
 
 	bool XMETHODCALLTYPE open(const char *szPath) override;
 	bool XMETHODCALLTYPE save() override;
+	void XMETHODCALLTYPE clear() override;
 
 	const char* XMETHODCALLTYPE getKey(const char *szSection, const char *szKey) override;
 	const char* XMETHODCALLTYPE getKeyName(const char *szSection, UINT uIndex) override;

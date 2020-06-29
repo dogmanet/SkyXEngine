@@ -8,7 +8,7 @@ bool CCommandProperties::exec()
 		pObj = &m_aObjects[j];
 
 		pObj->pObject->preSetup();
-		for(auto i = pObj->mKeyValues.begin(); i; i++)
+		for(auto i = pObj->mKeyValues.begin(); i; ++i)
 		{
 			if(i.second->isChanged)
 			{
@@ -28,7 +28,7 @@ bool CCommandProperties::undo()
 		pObj = &m_aObjects[j];
 
 		pObj->pObject->preSetup();
-		for(auto i = pObj->mKeyValues.begin(); i; i++)
+		for(auto i = pObj->mKeyValues.begin(); i; ++i)
 		{
 			if(i.second->isChanged)
 			{

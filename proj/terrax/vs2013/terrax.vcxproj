@@ -206,6 +206,7 @@
     <ClCompile Include="..\..\..\source\terrax\CommandCreate.cpp" />
     <ClCompile Include="..\..\..\source\terrax\CommandDelete.cpp" />
     <ClCompile Include="..\..\..\source\terrax\CommandMove.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\CommandPaste.cpp" />
     <ClCompile Include="..\..\..\source\terrax\CommandProperties.cpp" />
     <ClCompile Include="..\..\..\source\terrax\CommandRotate.cpp" />
     <ClCompile Include="..\..\..\source\terrax\CommandScale.cpp" />
@@ -232,6 +233,7 @@
     <ClInclude Include="..\..\..\source\terrax\CommandCreate.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandDelete.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandMove.h" />
+    <ClInclude Include="..\..\..\source\terrax\CommandPaste.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandProperties.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandRotate.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandScale.h" />
