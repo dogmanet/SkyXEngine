@@ -24,6 +24,32 @@ protected:
 	CDynamicModelProvider *m_pDynamicModelProvider;
 };
 
+class CLoadLevelEventListener final: public IEventListener<XEventLevel>
+{
+public:
+	CLoadLevelEventListener(CRenderable *pRenderable):
+		m_pRenderable(pRenderable)
+	{}
+	void onEvent(const XEventLevel *pData)
+	{
+		switch(pData->type)
+		{
+		case XEventLevel::TYPE_LOAD_BEGIN:
+			m_pRenderable->setEnabled(false);
+			break;
+		case XEventLevel::TYPE_LOAD_END:
+			m_pRenderable->setEnabled(true);
+			break;
+
+		default:
+			break;
+		}
+	}
+
+protected:
+	CRenderable *m_pRenderable;
+};
+
 class CDSEPlugin: public IXUnknownImplementation<IXPlugin>
 {
 public:
@@ -34,8 +60,10 @@ public:
 		m_pRenderable = new CRenderable(getID(), m_pAnimatedModelProvider, m_pDynamicModelProvider);
 		m_pUpdatable = new CUpdatable(m_pAnimatedModelProvider, m_pDynamicModelProvider);
 		m_pLevelSizeEventListener = new CLevelSizeEventListener(m_pAnimatedModelProvider, m_pDynamicModelProvider);
+		m_pLevelLoadEventListener = new CLoadLevelEventListener(m_pRenderable);
 
 		m_pCore->getEventChannel<XEventLevelSize>(EVENT_LEVEL_GET_SIZE_GUID)->addListener(m_pLevelSizeEventListener);
+		m_pCore->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->addListener(m_pLevelLoadEventListener);
 	}
 
 	void XMETHODCALLTYPE startup(IXCore *pCore) override
@@ -130,6 +158,7 @@ protected:
 	CAnimatedModelProvider *m_pAnimatedModelProvider = NULL;
 	CDynamicModelProvider *m_pDynamicModelProvider = NULL;
 	CLevelSizeEventListener *m_pLevelSizeEventListener = NULL;
+	CLoadLevelEventListener *m_pLevelLoadEventListener = NULL;
 };
 
 DECLARE_XPLUGIN(CDSEPlugin);
