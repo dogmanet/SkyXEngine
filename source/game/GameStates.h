@@ -4,26 +4,28 @@
 #include "IGameState.h"
 #include <gui/guimain.h>
 
-class CMainMenuGameState: public IGameState
+class CMainMenuGameState final: public IGameState
 {
 public:
 	CMainMenuGameState();
 	~CMainMenuGameState();
-	void activate();
+	void activate() override;
+	void deactivate() override;
 
 protected:
-	gui::IDesktop * m_pDesktop;
+	gui::IDesktop *m_pDesktop;
 };
 
-class CIngameMenuGameState: public IGameState
+class CIngameMenuGameState final: public IGameState
 {
 public:
 	CIngameMenuGameState();
 	~CIngameMenuGameState();
-	void activate();
+	void activate() override;
+	void deactivate() override;
 
 protected:
-	gui::IDesktop * m_pDesktop;
+	gui::IDesktop *m_pDesktop;
 };
 
 class CIngameGameState: public IGameState

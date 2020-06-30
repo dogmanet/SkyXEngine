@@ -27,15 +27,27 @@ void CMainMenuGameState::activate()
 {
 	GameData::m_pGUIStack->setActiveDesktop(m_pDesktop);
 
-	if (GameData::m_pGameLayer)
-		GameData::m_pGameLayer->play(false);
-
-	if (GameData::m_pGuiLayer)
+	if(GameData::m_pGuiLayer)
 	{
 		GameData::m_pGuiLayer->play(true);
 
-		if (GameData::m_pSoundPlayer)
+		if(GameData::m_pSoundPlayer)
+		{
 			GameData::m_pSoundPlayer->play();
+		}
+	}
+}
+
+void CMainMenuGameState::deactivate()
+{
+	if(GameData::m_pGuiLayer)
+	{
+		GameData::m_pGuiLayer->play(false);
+
+		if(GameData::m_pSoundPlayer)
+		{
+			GameData::m_pSoundPlayer->stop();
+		}
 	}
 }
 
@@ -61,6 +73,31 @@ CIngameMenuGameState::~CIngameMenuGameState()
 void CIngameMenuGameState::activate()
 {
 	GameData::m_pGUIStack->setActiveDesktop(m_pDesktop);
+
+	if(GameData::m_pGuiLayer)
+	{
+		GameData::m_pGuiLayer->play(true);
+
+		if(GameData::m_pSoundPlayer)
+		{
+			GameData::m_pSoundPlayer->play();
+		}
+	}
+}
+
+void CIngameMenuGameState::deactivate()
+{
+	GameData::m_pGUIStack->setActiveDesktop(m_pDesktop);
+
+	if(GameData::m_pGuiLayer)
+	{
+		GameData::m_pGuiLayer->play(false);
+
+		if(GameData::m_pSoundPlayer)
+		{
+			GameData::m_pSoundPlayer->stop();
+		}
+	}
 }
 
 //##########################################################################
@@ -76,15 +113,9 @@ void CIngameGameState::activate()
 	SSInput_SetEnable(true);
 	SPhysics_EnableSimulation();
 
-	if (GameData::m_pGameLayer)
-		GameData::m_pGameLayer->play(true);
-
-	if (GameData::m_pGuiLayer)
+	if(GameData::m_pGameLayer)
 	{
-		GameData::m_pGuiLayer->play(false);
-
-		if (GameData::m_pSoundPlayer)
-			GameData::m_pSoundPlayer->stop();
+		GameData::m_pGameLayer->play(true);
 	}
 }
 
@@ -96,15 +127,9 @@ void CIngameGameState::deactivate()
 	SSInput_SetEnable(false);
 	SPhysics_DisableSimulation();
 
-	if (GameData::m_pGameLayer)
-		GameData::m_pGameLayer->play(false);
-
-	if (GameData::m_pGuiLayer)
+	if(GameData::m_pGameLayer)
 	{
-		GameData::m_pGuiLayer->play(true);
-
-		if (GameData::m_pSoundPlayer)
-			GameData::m_pSoundPlayer->play();
+		GameData::m_pGameLayer->play(false);
 	}
 }
 
