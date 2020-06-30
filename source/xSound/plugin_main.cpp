@@ -68,6 +68,7 @@ public:
 	}
 	void shutdown() override
 	{
+		m_pSoundSystem->update(float3(), float3(), float3());
 		mem_release(m_pSoundSystem);
 	}
 

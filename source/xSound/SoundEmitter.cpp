@@ -8,18 +8,21 @@
 
 CSoundEmitter::~CSoundEmitter()
 {
-	//m_pLayer->delSndEmitter(this);
-
-	SndQueueMsg oMsg;
-	oMsg.type = SND_QUEUE_MSG_TYPE_SND_DELETE;
-	oMsg.pEmitter = this;
-	oMsg.pLayer = m_pLayer;
-	m_pLayer->addMessage(oMsg);
-
 	for (auto i = 0u, il = m_aInstances.size(); i < il; ++i)
 	{
 		mem_delete(m_aInstances[i]);
 	}
+
+	mem_release(m_pLayer);
+}
+
+void XMETHODCALLTYPE CSoundEmitter::FinalRelease()
+{
+	SndQueueMsg oMsg;
+	oMsg.type = SND_QUEUE_MSG_TYPE_SND_DELETE;
+	oMsg.pEmitter = this;
+	oMsg.pOwner = m_pLayer;
+	m_pLayer->addMessage(oMsg);
 }
 
 //##########################################################################
@@ -103,6 +106,7 @@ bool CSoundEmitter::create(const char* szName, CSoundLayer *pLayer, IXAudioCodec
 	pAB->setLoop(AB_LOOP_NONE);
 
 	m_aInstances.push_back(new Instance(pAB));
+	pLayer->AddRef();
 
 	return true;
 }

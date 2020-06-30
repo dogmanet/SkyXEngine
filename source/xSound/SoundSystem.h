@@ -64,9 +64,7 @@ public:
 
 	IXCore* getCore() const;
 
-	//void getObserverParam(float3 *pPos, float3 *pLook, float3 *pUp);
-
-	void addMessage(SndQueueMsg &oMsg) { m_queue.push(oMsg); }
+	void addMessage(SndQueueMsg &oMsg);
 
 protected:
 
@@ -93,7 +91,8 @@ protected:
 	MapCodec m_mapCodecs;
 
 	float3 m_vObserverPos, m_vObserverLook, m_vObserverUp;
-	//SpinLock m_oSpinLockUpdate;
+	
+	SpinLock m_oSpinLockUpdate;
 };
 
 #endif

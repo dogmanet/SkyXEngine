@@ -47,12 +47,18 @@ public:
 	//! остановка проигрывания
 	void pause();
 
+private:
+	virtual void XMETHODCALLTYPE FinalRelease() override;
+
 protected:
 
 	friend CSoundLayer;
 	friend CSoundSystem;
 
 	bool create(const char* szName, CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_SPACE space);
+
+	//**********************************************************************
+	// функции сообщений
 
 	void _play();
 	void _resume();
@@ -65,6 +71,7 @@ protected:
 
 	//#########################################################################
 
+	//! инстанс звукового обьекта
 	struct Instance
 	{
 		Instance() = default;
@@ -76,8 +83,10 @@ protected:
 
 	//#########################################################################
 
+	//! массив инстансов
 	Array<Instance*> m_aInstances;
 
+	//! параметры слушателя
 	float3 m_vListenerPos, m_vListenerDir, m_vListenerUp;
 };
 

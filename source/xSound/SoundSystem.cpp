@@ -44,15 +44,20 @@ CSoundSystem::CSoundSystem(IXCore *pXCore)
 
 CSoundSystem::~CSoundSystem()
 {
-	mem_release(m_pMasterLayer);
+	//mem_release(m_pMasterLayer);
+	m_pMasterLayer->Release2();
+	update(float3(), float3(), float3());
 }
 
 //**************************************************************************
 
+void CSoundSystem::addMessage(SndQueueMsg &oMsg)
+{
+	m_queue.push(oMsg); 
+}
+
 void XMETHODCALLTYPE CSoundSystem::update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
-	//ScopedSpinLock lock(m_oSpinLockUpdate);
-
 	if(m_pMasterLayer)
 		m_pMasterLayer->update(vListenerPos, vListenerDir, vListenerUp);
 
@@ -66,17 +71,17 @@ void XMETHODCALLTYPE CSoundSystem::update(const float3 &vListenerPos, const floa
 		case SND_QUEUE_MSG_TYPE_SND_NEW:
 		{
 			if (oMsg.pEmitter)
-				oMsg.pLayer->addSndEmitter(oMsg.pEmitter);
+				oMsg.pOwner->addSndEmitter(oMsg.pEmitter);
 			else if (oMsg.pPlayer)
-				oMsg.pLayer->addSndPlayer(oMsg.pPlayer);
+				oMsg.pOwner->addSndPlayer(oMsg.pPlayer);
 			break;
 		}
 		case SND_QUEUE_MSG_TYPE_SND_DELETE:
 		{
 			if (oMsg.pEmitter)
-				oMsg.pLayer->delSndEmitter(oMsg.pEmitter);
+				oMsg.pOwner->delSndEmitter(oMsg.pEmitter);
 			else if (oMsg.pPlayer)
-				oMsg.pLayer->delSndPlayer(oMsg.pPlayer);
+				oMsg.pOwner->delSndPlayer(oMsg.pPlayer);
 			break;
 		}
 		case SND_QUEUE_MSG_TYPE_SND_PLAY:
@@ -164,19 +169,31 @@ void XMETHODCALLTYPE CSoundSystem::update(const float3 &vListenerPos, const floa
 				oMsg.pPlayer->_setTime(oMsg.arg.f);
 			break;
 		}
+		case SND_QUEUE_MSG_TYPE_LAYER_NEW:
+		{
+			if (oMsg.pOwner && oMsg.pLayer)
+				oMsg.pOwner->addLayer(oMsg.pLayer);
+			break;
+		}
+		case SND_QUEUE_MSG_TYPE_LAYER_DELETE:
+		{
+			if (oMsg.pOwner && oMsg.pLayer)
+				oMsg.pOwner->delLayer(oMsg.pLayer);
+			break;
+		}
+
+		case SND_QUEUE_MSG_TYPE_LAYER_PLAY:
+		{
+			if (oMsg.pLayer)
+				oMsg.pLayer->_play(oMsg.arg.b);
+			break;
+		}
 
 		default:
 			break;
 		}
 	}
 }
-
-/*void CSoundSystem::getObserverParam(float3 *pPos, float3 *pLook, float3 *pUp)
-{
-	ScopedSpinLock lock(m_oSpinLockUpdate);
-
-	*pPos = m_vObserverPos; *pLook = m_vObserverLook; *pUp = m_vObserverUp;
-}*/
 
 //**************************************************************************
 
@@ -415,4 +432,3 @@ IXAudioCodec* CSoundSystem::getCodecSave()
 
 	return NULL;
 }
-

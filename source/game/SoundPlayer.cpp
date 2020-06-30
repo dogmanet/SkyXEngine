@@ -22,15 +22,10 @@ DEFINE_FIELD_FLOAT(m_fDist, 0, "distance", "Hearing distance", EDITOR_TEXTFIELD)
 
 //! Зацикливание
 DEFINE_FIELD_INT(m_iLoop, 0, "loop", "Loop", EDITOR_COMBOBOX)
-	COMBO_OPTION("None", "0")			//!< Нет
+	COMBO_OPTION("None", "0")		//!< Нет
 	COMBO_OPTION("Simple", "1")		//!< Простое (могут быть пустоты на стыках конца с началом)
 	COMBO_OPTION("Seamless", "2")	//!< Непрерывное (пустот не будет, все будет заполнено звуком)
 EDITOR_COMBO_END()
-
-/*DEFINE_FIELD_INT(m_iType, 0, "type", "Type", EDITOR_COMBOBOX)
-	COMBO_OPTION("2D", "0")
-	COMBO_OPTION("3D", "1")
-EDITOR_COMBO_END()*/
 
 //! Включить
 DEFINE_INPUT(turnOn, "turnOn", "Turn On", PDF_NONE)
@@ -76,10 +71,10 @@ void CSoundPlayer::setSound(const char *szSound)
 	{
 		mem_release(m_pPlayer);
 		IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
-		IXSoundLayer *pMasterLayer = pSound->findLayer("master");
+		IXSoundLayer *pGameLayer = pSound->findLayer("xGame");
 
 		SOUND_SPACE space = (getFlags() & SND_PLAYER_TYPE_AMBIENT ? SOUND_SPACE_2D : SOUND_SPACE_3D);
-		m_pPlayer = pMasterLayer->newSoundPlayer(szSound, space);
+		m_pPlayer = pGameLayer->newSoundPlayer(szSound, space);
 
 		if (m_pPlayer)
 		{
@@ -109,12 +104,6 @@ void CSoundPlayer::onSync()
 
 	if (m_pPlayer->getVolume() != m_fVolume)
 		m_pPlayer->setVolume(m_fVolume);
-
-	/*if (m_iType != m_pPlayer->getType())
-	{
-		m_pPlayer->setType((SOUND_DTYPE)m_iType);
-		m_pPlayer->setPan(0.f);
-	}*/
 }
 
 //##########################################################################

@@ -53,6 +53,9 @@ public:
 
 	float XMETHODCALLTYPE getLength() const override;
 
+private:
+	virtual void XMETHODCALLTYPE FinalRelease() override;
+
 protected:
 
 	friend CSoundLayer;
@@ -68,7 +71,8 @@ protected:
 	*/
 	void setPosStream(uint32_t uPos);
 
-	//########################################################################
+	//**********************************************************************
+	// функции сообщений
 
 	void _setSpace(SOUND_SPACE space);
 	void _play();
@@ -79,31 +83,6 @@ protected:
 	void _setTime(float fTime);
 
 	//########################################################################
-
-	/*enum QUEUE_MSG_TYPE
-	{
-		QUEUE_MSG_TYPE_PLAY,
-		QUEUE_MSG_TYPE_RESUME,
-		QUEUE_MSG_TYPE_LOOP,
-		QUEUE_MSG_TYPE_DTYPE,
-		QUEUE_MSG_TYPE_TIME
-	};
-
-	struct QueueMsg
-	{
-		QUEUE_MSG_TYPE type;
-		union
-		{
-			float fTime;
-			SOUND_DTYPE dtype;
-			SOUND_LOOP loop;
-			SOUND_STATE state;
-		} arg;
-	};
-
-	//########################################################################
-
-	Queue<QueueMsg> m_oQueue;*/
 
 	//! аудио буфер
 	IAudioBuffer *m_pAB = NULL;
@@ -123,8 +102,7 @@ protected:
 	//! данные потоковой загрузки
 	CStreamData *m_pStream = NULL;
 
-	SpinLock m_oSpinLockPlay;
-
+	//! параметры слушателя
 	float3 m_vListenerPos, m_vListenerDir, m_vListenerUp;
 };
 

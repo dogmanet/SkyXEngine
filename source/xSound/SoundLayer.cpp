@@ -9,25 +9,11 @@
 
 CSoundLayer::~CSoundLayer()
 {
-	if (m_pParent)
-		m_pParent->delLayer(this);
-
-	for (MapLayer::Iterator i = m_mapLayers.begin(); i; ++i)
-	{
-		mem_release(m_mapLayers[i.first]);
-		m_mapLayers.erase(i.first);
-	}
-
+	m_mapLayers.clear();
 
 	for(MapPlayer::Iterator i = m_mapSndPlayers.begin(); i; ++i)
 	{
 		ArrayPlayer *oAP = i.second;
-		//while (oAP->size())
-		for (auto k = 0u, kl = oAP->size(); k < kl; ++k)
-		{
-			CSoundPlayer *pPlayer = oAP->get(k);
-			mem_release(pPlayer);
-		}
 		oAP->clear();
 	}
 	m_mapSndPlayers.clear();
@@ -35,17 +21,40 @@ CSoundLayer::~CSoundLayer()
 	for (MapEmitter::Iterator i = m_mapSndEmitters.begin(); i; ++i)
 	{
 		ArrayEmitter *oAE = i.second;
-		//while (oAE->size())
-		for (auto k = 0u, kl = oAE->size(); k < kl; ++k)
-		{
-			CSoundEmitter *pEmitter = oAE->get(k);
-			mem_release(pEmitter);
-		}
 		oAE->clear();
 	}
 	m_mapSndEmitters.clear();
 
 	mem_release(m_pPrimaryBuffer);
+	mem_release(m_pParent);
+}
+
+//**************************************************************************
+
+void XMETHODCALLTYPE CSoundLayer::FinalRelease()
+{
+	if (m_pParent)
+	{
+		SndQueueMsg oMsg;
+		oMsg.type = SND_QUEUE_MSG_TYPE_LAYER_DELETE;
+		oMsg.pLayer = this;
+		oMsg.pOwner = m_pParent;
+		m_pParent->addMessage(oMsg);
+	}
+	else
+	{
+		mem_del(this);
+	}
+}
+
+//**************************************************************************
+
+void CSoundLayer::Release2()
+{
+	for (MapLayer::Iterator i = m_mapLayers.begin(); i; ++i)
+		m_mapLayers[i.first]->Release2();
+	
+	Release();
 }
 
 //**************************************************************************
@@ -60,26 +69,32 @@ bool CSoundLayer::init(CSoundSystem *pSoundSystem, CSoundLayer *pParent, const A
 		return false;
 	}
 
+	m_sName = szName;
+	m_pParent = pParent;
+	m_pSoundSystem = pSoundSystem;
+
 	AudioRawDesc oDesc = *pDesc;
 	oDesc.uSize = 0;
 
 	if (pParent == NULL)
 		m_pPrimaryBuffer = pSoundSystem->createMasterBuffer(&oDesc);
 	else
-		m_pPrimaryBuffer = dynamic_cast<IAudioBufferEx*>(createAudioBuffer(AB_TYPE_PRIMARY, &oDesc));
+		m_pPrimaryBuffer = dynamic_cast<IAudioBufferEx*>(pParent->createAudioBuffer(AB_TYPE_PRIMARY, &oDesc));
 
-	m_sName = szName;
-	m_pParent = pParent;
-	m_pSoundSystem = pSoundSystem;
+	if (m_pParent)
+		m_pParent->AddRef();
 
 	return true;
 }
 
 //**************************************************************************
 
-void CSoundLayer::addLayer(CSoundLayer *pLayer, const char *szName)
+void CSoundLayer::addLayer(CSoundLayer *pLayer)
 {
-	m_mapLayers[szName] = pLayer;
+	if (m_pSoundSystem->findLayer(pLayer->getName()))
+		LibReport(REPORT_MSG_LEVEL_FATAL, "Layer name '%s' exists", pLayer->getName());
+
+	m_mapLayers[pLayer->getName()] = pLayer;
 }
 
 void CSoundLayer::delLayer(const CSoundLayer *pLayer)
@@ -92,11 +107,13 @@ void CSoundLayer::delLayer(const CSoundLayer *pLayer)
 			break;
 		}
 	}
+
+	mem_delete(pLayer);
 }
 
 //**************************************************************************
 
-void CSoundLayer::addSndPlayer(CSoundPlayer *pSndPlayer/*, const char *szName*/)
+void CSoundLayer::addSndPlayer(CSoundPlayer *pSndPlayer)
 {
 	m_mapSndPlayers[pSndPlayer->getName()].push_back(pSndPlayer);
 }
@@ -113,11 +130,13 @@ void CSoundLayer::delSndPlayer(const CSoundPlayer *pSndPlayer)
 		if (oAP->get(i) == pSndPlayer)
 			m_mapSndPlayers[szName].erase(i);
 	}
+
+	mem_delete(pSndPlayer);
 }
 
 //**************************************************************************
 
-void CSoundLayer::addSndEmitter(CSoundEmitter *pSndEmitter/*, const char *szName*/)
+void CSoundLayer::addSndEmitter(CSoundEmitter *pSndEmitter)
 {
 	m_mapSndEmitters[pSndEmitter->getName()].push_back(pSndEmitter);
 }
@@ -134,6 +153,8 @@ void CSoundLayer::delSndEmitter(const CSoundEmitter *pSndEmitter)
 		if (oAE->get(i) == pSndEmitter)
 			m_mapSndEmitters[szName].erase(i);
 	}
+
+	mem_delete(pSndEmitter);
 }
 
 //**************************************************************************
@@ -186,7 +207,7 @@ IAudioBuffer* CSoundLayer::createAudioBuffer(AB_TYPE type, const AudioRawDesc *p
 	return m_pPrimaryBuffer->createAudioBuffer(type, pDesc);
 }
 
-//**************************************************************************
+//##########################################################################
 
 IXSoundLayer* XMETHODCALLTYPE CSoundLayer::newSoundLayer(const AudioRawDesc *pDesc, const char *szName)
 {
@@ -199,10 +220,16 @@ IXSoundLayer* XMETHODCALLTYPE CSoundLayer::newSoundLayer(const AudioRawDesc *pDe
 	CSoundLayer *pLayer = new CSoundLayer();
 	pLayer->init(m_pSoundSystem, this, pDesc, szName);
 
-	addLayer(pLayer, szName);
+	SndQueueMsg oMsg;
+	oMsg.type = SND_QUEUE_MSG_TYPE_LAYER_NEW;
+	oMsg.pLayer = pLayer;
+	oMsg.pOwner = this;
+	m_pSoundSystem->addMessage(oMsg);
 
 	return pLayer;
 }
+
+//**************************************************************************
 
 IXSoundEmitter* XMETHODCALLTYPE CSoundLayer::newSoundEmitter(const char *szName, SOUND_SPACE space)
 {
@@ -213,14 +240,12 @@ IXSoundEmitter* XMETHODCALLTYPE CSoundLayer::newSoundEmitter(const char *szName,
 
 	if (m_mapSndEmitters.KeyExists(szName) && m_mapSndEmitters[szName].size() > 0)
 	{
-		/*CSoundEmitter *pEmitterOrigin = m_mapSndEmitters[szName];
-		pEmitter = pEmitterOrigin->newInstance();*/
-
-		pEmitter = static_cast<CSoundEmitter*>(m_mapSndEmitters[szName][0]->newInstance());
-		/*addSndEmitter(pEmitter, szName);
-		return pEmitter;*/
+		CSoundEmitter *pEmitterOrigin = m_mapSndEmitters[szName][0];
+		if (pEmitterOrigin->canInstance())
+			pEmitter = static_cast<CSoundEmitter*>(pEmitterOrigin->newInstance());
 	}
-	else
+	
+	if (!pEmitter)
 	{
 		IXAudioCodecTarget *pCodecTarget = m_pSoundSystem->getCodecTarget(szName);
 		if (!pCodecTarget)
@@ -230,16 +255,16 @@ IXSoundEmitter* XMETHODCALLTYPE CSoundLayer::newSoundEmitter(const char *szName,
 		pEmitter->create(szName, this, pCodecTarget, space);
 	}
 
-	//addSndEmitter(pEmitter/*, szName*/);
-
 	SndQueueMsg oMsg;
 	oMsg.type = SND_QUEUE_MSG_TYPE_SND_NEW;
 	oMsg.pEmitter = pEmitter;
-	oMsg.pLayer = this;
+	oMsg.pOwner = this;
 	m_pSoundSystem->addMessage(oMsg);
 
 	return pEmitter;
 }
+
+//**************************************************************************
 
 IXSoundPlayer* XMETHODCALLTYPE CSoundLayer::newSoundPlayer(const char *szName, SOUND_SPACE space)
 {
@@ -265,12 +290,10 @@ IXSoundPlayer* XMETHODCALLTYPE CSoundLayer::newSoundPlayer(const char *szName, S
 		pPlayer->create(szName, this, pCodecTarget, space);
 	}
 
-	//addSndPlayer(pPlayer/*, szName*/);
-
 	SndQueueMsg oMsg;
 	oMsg.type = SND_QUEUE_MSG_TYPE_SND_NEW;
 	oMsg.pPlayer = pPlayer;
-	oMsg.pLayer = this;
+	oMsg.pOwner = this;
 	m_pSoundSystem->addMessage(oMsg);
 
 	return pPlayer;
@@ -280,45 +303,21 @@ IXSoundPlayer* XMETHODCALLTYPE CSoundLayer::newSoundPlayer(const char *szName, S
 
 void XMETHODCALLTYPE CSoundLayer::play(bool canPlay)
 {
-	if (m_isPlaying == canPlay || (m_pParent && !m_pParent->isPlaying() && canPlay))
-		return;
-
-	m_isPlaying = canPlay;
-
-	for (MapLayer::Iterator i = m_mapLayers.begin(); i; ++i)
-		m_mapLayers[i.first]->play(canPlay);
-
-	for(MapPlayer::Iterator i = m_mapSndPlayers.begin(); i; ++i)
-	{
-		ArrayPlayer *oAP = i.second;
-		for(int k = 0, kl = oAP->size(); k < kl; ++k)
-		{
-			if(canPlay)
-				oAP->get(k)->resume();
-			else
-				oAP->get(k)->pause();
-		}
-	}
-
-	for (MapEmitter::Iterator i = m_mapSndEmitters.begin(); i; ++i)
-	{
-		ArrayEmitter *oAE = i.second;
-		for (int k = 0, kl = oAE->size(); k < kl; ++k)
-		{
-			if (canPlay)
-				oAE->get(k)->resume();
-			else
-				oAE->get(k)->pause();
-		}
-	}
-
-	m_pPrimaryBuffer->play(canPlay);
+	SndQueueMsg oMsg;
+	oMsg.type = SND_QUEUE_MSG_TYPE_LAYER_PLAY;
+	oMsg.pLayer = this;
+	oMsg.arg.b = canPlay;
+	addMessage(oMsg);
 }
+
+//**************************************************************************
 
 bool XMETHODCALLTYPE CSoundLayer::isPlaying() const
 {
 	return m_isPlaying;
 }
+
+//##########################################################################
 
 void CSoundLayer::update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
@@ -343,15 +342,14 @@ void CSoundLayer::update(const float3 &vListenerPos, const float3 &vListenerDir,
 	}
 }
 
+//**************************************************************************
+
 void CSoundLayer::addMessage(SndQueueMsg &oMsg) 
 {
 	m_pSoundSystem->addMessage(oMsg); 
 }
 
-/*void CSoundLayer::getObserverParam(float3 *pPos, float3 *pLook, float3 *pUp)
-{
-	m_pSoundSystem->getObserverParam(pPos, pLook, pUp);
-}*/
+//##########################################################################
 
 bool CSoundLayer::matchPrimaryLayer(const AudioRawDesc *pDesc)
 {
@@ -362,4 +360,44 @@ bool CSoundLayer::matchPrimaryLayer(const AudioRawDesc *pDesc)
 	m_pPrimaryBuffer->getDesc(&oPrimaryDesc);
 
 	return (oPrimaryDesc.uSampleRate == pDesc->uSampleRate);
+}
+
+//##########################################################################
+//##########################################################################
+
+void CSoundLayer::_play(bool canPlay)
+{
+	if (m_isPlaying == canPlay || (m_pParent && !m_pParent->isPlaying() && canPlay))
+		return;
+
+	m_isPlaying = canPlay;
+
+	for (MapLayer::Iterator i = m_mapLayers.begin(); i; ++i)
+		m_mapLayers[i.first]->play(canPlay);
+
+	for (MapPlayer::Iterator i = m_mapSndPlayers.begin(); i; ++i)
+	{
+		ArrayPlayer *oAP = i.second;
+		for (int k = 0, kl = oAP->size(); k < kl; ++k)
+		{
+			if (canPlay)
+				oAP->get(k)->resume();
+			else
+				oAP->get(k)->pause();
+		}
+	}
+
+	for (MapEmitter::Iterator i = m_mapSndEmitters.begin(); i; ++i)
+	{
+		ArrayEmitter *oAE = i.second;
+		for (int k = 0, kl = oAE->size(); k < kl; ++k)
+		{
+			if (canPlay)
+				oAE->get(k)->resume();
+			else
+				oAE->get(k)->pause();
+		}
+	}
+
+	m_pPrimaryBuffer->play(canPlay);
 }

@@ -43,7 +43,14 @@ public:
 
 	void addMessage(SndQueueMsg &oMsg);
 
-	//void getObserverParam(float3 *pPos, float3 *pLook, float3 *pUp);
+	/*! релиз слоя 
+		все внутренние слои тоже будут зарелизены, 
+		сначала релизяться дочерние слои и только потом целевой
+	*/
+	void Release2();
+
+private:
+	virtual void XMETHODCALLTYPE FinalRelease() override;
 
 protected:
 
@@ -54,15 +61,19 @@ protected:
 	bool init(CSoundSystem *pSoundSystem, CSoundLayer *pParent, const AudioRawDesc *pDesc, const char *szName);
 
 	//************************************************************************
+	// функции добавления/удаления обьектов в массивы
+	// при удалении из массива произойдет mem_delete удаляемого обьекта
 
-	void addLayer(CSoundLayer *pLayer, const char *szName);
+	void addLayer(CSoundLayer *pLayer);
 	void delLayer(const CSoundLayer *pLayer);
 
-	void addSndPlayer(CSoundPlayer *pSndPlayer/*, const char *szName*/);
+	void addSndPlayer(CSoundPlayer *pSndPlayer);
 	void delSndPlayer(const CSoundPlayer *pSndPlayer);
 
-	void addSndEmitter(CSoundEmitter *pSndEmitter/*, const char *szName*/);
+	void addSndEmitter(CSoundEmitter *pSndEmitter);
 	void delSndEmitter(const CSoundEmitter *pSndEmitter);
+
+	void _play(bool canPlay);
 
 	//************************************************************************
 

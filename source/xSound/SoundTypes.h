@@ -70,6 +70,8 @@ struct SndQueueMsg
 	CSoundEmitter *pEmitter = NULL;
 	CSoundPlayer *pPlayer = NULL;
 	CSoundLayer *pLayer = NULL;
+
+	CSoundLayer *pOwner = NULL;
 };
 
 #endif
