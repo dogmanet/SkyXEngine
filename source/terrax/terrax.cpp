@@ -896,9 +896,9 @@ int main(int argc, char **argv)
 	mem_delete(pPipeline);
 	mem_release(g_pCameraConstantBuffer);
 	mem_delete(g_pGrid);
-	mem_delete(g_pUndoManager);
 	//SkyXEngine_Kill();
 	mem_release(pEngine);
+	mem_delete(g_pUndoManager);
 	return result;
 }
 

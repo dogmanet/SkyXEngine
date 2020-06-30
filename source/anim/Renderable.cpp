@@ -20,6 +20,11 @@ UINT XMETHODCALLTYPE CRenderable::getPriorityForStage(X_RENDER_STAGE stage)
 
 void XMETHODCALLTYPE CRenderable::renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility)
 {
+	if(!m_isEnabled)
+	{
+		return;
+	}
+
 	CRenderableVisibility *pVis = NULL;
 	if(pVisibility)
 	{

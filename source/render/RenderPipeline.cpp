@@ -25,6 +25,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	Core_0RegisterCVarBool("dev_lpv_cubes", false, "Отображать сетку LPV");
 	Core_0RegisterCVarBool("dev_lpv_points", false, "Отображать VPL при инъекции в LPV");
 
+	Core_0RegisterCVarBool("r_clear_color", false, "Очищать буфер перед выводом кадра");
+
 	Core_0RegisterCVarFloat("hdr_adapted_coef", 0.3f, "Коэфициент привыкания к освещению (0,1] (медлено, быстро)");
 	Core_0RegisterCVarFloat("hdr_base_value", 0.2f, "Базовое значение для тонмаппинга  (0,0.5] (темно, ярко)");
 	
@@ -829,6 +831,8 @@ void CRenderPipeline::renderGBuffer()
 {
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
+	static const bool *r_clear_color = GET_PCVAR_BOOL("r_clear_color");
+
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassGBuffer);
 
 	pCtx->setRasterizerState(NULL);
@@ -859,7 +863,7 @@ void CRenderPipeline::renderGBuffer()
 
 	pCtx->setColorTarget(pColorSurf);
 	//pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, RENDER_DEFAUL_BACKGROUND_COLOR, 0.0f);
-	pCtx->clear(GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, RENDER_DEFAUL_BACKGROUND_COLOR, 0.0f);
+	pCtx->clear(GX_CLEAR_DEPTH | GX_CLEAR_STENCIL | (*r_clear_color ? GX_CLEAR_COLOR : 0), RENDER_DEFAUL_BACKGROUND_COLOR, 0.0f);
 
 	pCtx->setColorTarget(pNormalSurf, 1);
 	pCtx->setColorTarget(pParamSurf, 2);

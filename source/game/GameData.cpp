@@ -1187,6 +1187,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 }
 GameData::~GameData()
 {
+	EndMap();
+
 	mem_release(g_pAsyncTaskRunner);
 	//mem_delete(g_pRagdoll);
 	mem_delete(g_pEditable);

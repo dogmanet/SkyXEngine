@@ -42,10 +42,17 @@ public:
 	}
 
 	IXMaterialSystem* getMaterialSystem();
+
+	void setEnabled(bool set)
+	{
+		m_isEnabled = set;
+	}
 protected:
 	IGXDevice *m_pDevice = NULL;
 	IXMaterialSystem *m_pMaterialSystem = NULL;
 	ID m_idPlugin = -1;
+
+	bool m_isEnabled = true;
 
 	CAnimatedModelProvider *m_pAnimatedModelProvider = NULL;
 	CDynamicModelProvider *m_pDynamicModelProvider = NULL;

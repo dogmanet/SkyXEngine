@@ -108,6 +108,42 @@ SX_LIB_API XDEPRECATED void Core_0RegisterConcmdClsArg(const char * name, void *
 
 Mutex g_conUpdMtx;
 
+class CAlias;
+void Core_0RegisterConcmdAlias(const char *name, CAlias *pAlias, const char * desc);
+void ConsoleExecInternal(char * cmd);
+class CAlias final
+{
+public:
+	CAlias(const char *szName, const char *szDesc):
+		m_sName(szName),
+		m_sDesc(szDesc ? szDesc : "")
+	{
+	}
+
+	void execute()
+	{
+		for(UINT i = 0, l = m_aCommands.size(); i < l; ++i)
+		{
+			char *szStr = strdupa(m_aCommands[i].c_str());
+			ConsoleExecInternal(szStr);
+		}
+	}
+	void addCommand(const char *str)
+	{
+		m_aCommands.push_back(str);
+	}
+
+	void reg()
+	{
+		Core_0RegisterConcmdAlias(m_sName.c_str(), this, m_sDesc.c_str());
+	}
+private:
+	String m_sName;
+	String m_sDesc;
+	Array<String> m_aCommands;
+};
+CAlias *g_pNewAlias = NULL;
+
 void ConsoleExecInternal(char * cmd, char * args)
 {
 	const AssotiativeArray<String, ConCmd>::Node * pNode;
@@ -242,6 +278,12 @@ void ConsoleExecInternal(char * cmd, char * args)
 }
 void ConsoleExecInternal(char * cmd)
 {
+	if(g_pNewAlias && fstrcmp(cmd, "endalias"))
+	{
+		g_pNewAlias->addCommand(cmd);
+		return;
+	}
+
 	char * space = cmd;
 	while((*++space) && !isspace(*space));
 	if(*space)
@@ -342,6 +384,41 @@ SX_LIB_API XDEPRECATED void Core_0ConsoleExecCmd(const char * format, ...)
 
 	mem_delete_a(cbuf);
 }
+
+
+void Core_0RegisterConcmdAlias(const char *name, CAlias *pAlias, const char * desc)
+{
+	String sName(name);
+
+	ConCmd c;
+	c.type = CMD_CLS;
+	c.cls = (ConCmdStub*)pAlias;
+	c.cmd.clscmd = (SXCONCMDCLS)&CAlias::execute;
+	c.szDesc = NULL;
+	c.isAlias = true;
+	if(desc)
+	{
+		c.szDesc = new char[strlen(desc) + 1];
+		strcpy(c.szDesc, desc);
+	}
+
+	const AssotiativeArray<String, ConCmd>::Node *pNode;
+	if(g_mCmds.KeyExists(sName, &pNode))
+	{
+		if(pNode->Val->isAlias)
+		{
+			CAlias *ptr = (CAlias*)pNode->Val->cls;
+			mem_delete(ptr);
+		}
+		if(pNode->Val->szDesc)
+		{
+			mem_delete_a(pNode->Val->szDesc);
+		}
+	}
+
+	g_mCmds[sName] = c;
+}
+
 
 void echo(int argc, const char ** argv)
 {
@@ -620,6 +697,33 @@ void cmd_cmdlist(int argc, const char ** argv)
 	DumpCCommands();
 }
 
+void cmd_alias(int argc, const char **argv)
+{
+	if(argc == 2 || argc == 3)
+	{
+		if(g_pNewAlias)
+		{
+			printf(COLOR_RED "Cannot create nested alias! Removing previous!\n" COLOR_RESET);
+			mem_delete(g_pNewAlias);
+		}
+		g_pNewAlias = new CAlias(argv[1], argc == 3 ? argv[2] : NULL);
+	}
+	else
+	{
+		printf(COLOR_GREEN "Usage:\n    " COLOR_LGREEN "alias <name> [<description>]" COLOR_GREEN " - Create new alias\n" COLOR_RESET);
+	}
+}
+void cmd_endalias()
+{
+	if(!g_pNewAlias)
+	{
+		printf(COLOR_RED "No alias was started!\n" COLOR_RESET);
+		return;
+	}
+	g_pNewAlias->reg();
+	g_pNewAlias = NULL;
+}
+
 void ConsoleRegisterCmds()
 {
 	Core_0RegisterConcmdArg("echo", echo, "Echoes all parameters to console");
@@ -631,6 +735,8 @@ void ConsoleRegisterCmds()
 	Core_0RegisterConcmdArg("cvarlist", cmd_cvarlist, "List all CVars");
 	Core_0RegisterConcmdArg("cmdlist", cmd_cmdlist, "List all Commands");
 	Core_0RegisterConcmd("perf_dump", cmd_perf_dump, "Show perfMon stats");
+	Core_0RegisterConcmdArg("alias", cmd_alias, "Begin alias creation");
+	Core_0RegisterConcmd("endalias", cmd_endalias, "End alias creation");
 
 	Core_0RegisterCVarInt("con_width", 80, "Ширина окна консоли");
 	Core_0RegisterCVarInt("con_height", 25, "Высота окна консоли");
