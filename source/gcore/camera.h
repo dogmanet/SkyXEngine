@@ -53,8 +53,6 @@ private:
 class CCamera: public ICamera
 {
 public:
-	CCamera();
-	~CCamera();
 	void Release()
 	{
 		delete this;
@@ -98,13 +96,13 @@ public:
 protected:
 	CFrustum m_oFrustum;	//!< фрустум этой камеры
 
-	float3 m_vRight;
-	float3 m_vUp;
-	float3 m_vLook;
+	float3 m_vRight = float3(1.0f, 0.0f, 0.0f);
+	float3 m_vUp = float3(0.0f, 1.0f, 0.0f);
+	float3 m_vLook = float3(0.0f, 0.0f, 1.0f);
 
-	float3 m_vPosition;
+	float3 m_vPosition = float3(0.0f, 0.0f, 0.0f);
 
-	float3_t m_vPitchYawRoll;
+	float3_t m_vPitchYawRoll = float3(0.0f, 0.0f, 0.0f);
 
 	float4x4 m_mView;
 

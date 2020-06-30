@@ -365,23 +365,6 @@ float3 CFrustum::getCenter() const
 
 //##########################################################################
 
-CCamera::CCamera()
-{
-	m_vPosition = float3(0.0f, 0.0f, 0.0f);
-	m_vRight = float3(1.0f, 0.0f, 0.0f);
-	m_vUp = float3(0.0f, 1.0f, 0.0f);
-	m_vLook = float3(0.0f, 0.0f, 1.0f);
-
-	m_oFrustum = CFrustum();
-
-	m_vPitchYawRoll = float3_t(0, 0, 0);
-}
-
-CCamera::~CCamera()
-{
-
-}
-
 void CCamera::posLeftRight(float units)
 {
 	m_vPosition += float3(m_vRight.x, 0.0f, m_vRight.z) * units;
