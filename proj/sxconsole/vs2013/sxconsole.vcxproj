@@ -168,6 +168,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\sxconsole\ColorPrint.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="sxconsole.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="console.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
