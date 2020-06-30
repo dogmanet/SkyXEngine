@@ -26,6 +26,17 @@ CMainMenuGameState::~CMainMenuGameState()
 void CMainMenuGameState::activate()
 {
 	GameData::m_pGUIStack->setActiveDesktop(m_pDesktop);
+
+	if (GameData::m_pGameLayer)
+		GameData::m_pGameLayer->play(false);
+
+	if (GameData::m_pGuiLayer)
+	{
+		GameData::m_pGuiLayer->play(true);
+
+		if (GameData::m_pSoundPlayer)
+			GameData::m_pSoundPlayer->play();
+	}
 }
 
 //##########################################################################
@@ -64,6 +75,17 @@ void CIngameGameState::activate()
 	SSCore_ChannelPlay(SX_SOUND_CHANNEL_GAME);
 	SSInput_SetEnable(true);
 	SPhysics_EnableSimulation();
+
+	if (GameData::m_pGameLayer)
+		GameData::m_pGameLayer->play(true);
+
+	if (GameData::m_pGuiLayer)
+	{
+		GameData::m_pGuiLayer->play(false);
+
+		if (GameData::m_pSoundPlayer)
+			GameData::m_pSoundPlayer->stop();
+	}
 }
 
 void CIngameGameState::deactivate()
@@ -73,6 +95,17 @@ void CIngameGameState::deactivate()
 	SSCore_ChannelStop(SX_SOUND_CHANNEL_GAME);
 	SSInput_SetEnable(false);
 	SPhysics_DisableSimulation();
+
+	if (GameData::m_pGameLayer)
+		GameData::m_pGameLayer->play(false);
+
+	if (GameData::m_pGuiLayer)
+	{
+		GameData::m_pGuiLayer->play(true);
+
+		if (GameData::m_pSoundPlayer)
+			GameData::m_pSoundPlayer->play();
+	}
 }
 
 //##########################################################################

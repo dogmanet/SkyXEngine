@@ -43,6 +43,9 @@ CGameStateManager* GameData::m_pGameStateManager;
 gui::dom::IDOMnode* GameData::m_pCell;
 IXLightSystem* GameData::m_pLightSystem;
 bool GameData::m_isLevelLoaded = false;
+IXSoundPlayer* GameData::m_pSoundPlayer = NULL;
+IXSoundLayer* GameData::m_pGameLayer = NULL;
+IXSoundLayer* GameData::m_pGuiLayer = NULL;
 CEditable* g_pEditable = NULL;
 //gui::IDesktop *GameData::m_pStatsUI;
 
@@ -358,6 +361,16 @@ const char* XMETHODCALLTYPE CLevelLoadTask::getName()
 GameData::GameData(HWND hWnd, bool isGame):
 	m_hWnd(hWnd)
 {
+	IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
+	m_pGameLayer = pSound->findLayer("xGame");
+	m_pGuiLayer = pSound->findLayer("xGUI");
+	if (m_pGuiLayer)
+	{
+		m_pSoundPlayer = m_pGuiLayer->newSoundPlayer("sounds/dip.wav", SOUND_SPACE_2D);
+		m_pSoundPlayer->setLoop(SOUND_LOOP_SIMPLE);
+	}
+	pSound->update(float3(), float3(), float3());
+
 	loadFoostepsSounds();
 	isGame = true;
 	m_isGame = isGame;
@@ -1450,9 +1463,9 @@ void GameData::loadFoostepsSounds()
 	//aSounds[MTLTYPE_PHYSIC_FLESH].push_back("actor/step/.ogg");
 
 	IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
-	IXSoundLayer *pMasterLayer = pSound->findLayer("master");
+	IXSoundLayer *pGameLayer = pSound->findLayer("xGame");
 
-	if (!pMasterLayer)
+	if (!pGameLayer)
 		return;
 
 	for(int i = 0; i < MPT_COUNT; ++i)
@@ -1463,7 +1476,7 @@ void GameData::loadFoostepsSounds()
 		m_aFootstepSound[i] = (jl ? new IXSoundEmitter*[jl] : NULL);
 		for(int j = 0; j < jl; ++j)
 		{
-			m_aFootstepSound[i][j] = pMasterLayer->newSoundEmitter(paSounds[0][j], SOUND_SPACE_3D);
+			m_aFootstepSound[i][j] = pGameLayer->newSoundEmitter(paSounds[0][j], SOUND_SPACE_3D);
 			//m_aFootstepSound[i][j] = SSCore_SndCreate3dInst(paSounds[0][j], SX_SOUND_CHANNEL_GAME, 100);
 		}
 	}

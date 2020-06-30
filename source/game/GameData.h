@@ -32,6 +32,9 @@ public:
 	static CHUDcontroller * m_pHUDcontroller;
 	static CGameStateManager * m_pGameStateManager;
 	static IXLightSystem *m_pLightSystem;
+	static IXSoundLayer *m_pGameLayer;
+	static IXSoundLayer *m_pGuiLayer;
+	static IXSoundPlayer *m_pSoundPlayer;
 	HWND m_hWnd;
 
 	CCrosshair * m_pCrosshair;
