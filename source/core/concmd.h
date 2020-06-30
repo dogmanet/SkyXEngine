@@ -22,14 +22,15 @@ enum ConCmdType
 struct ConCmd
 {
 	ConCmdType type;
-	ConCmdStub * cls;
+	ConCmdStub *cls;
 	union
 	{
-		void * cmd;
+		void *cmd;
 		SXCONCMDCLS clscmd;
 		SXCONCMDCLSARG clscmdarg;
 	} cmd;
-	char * szDesc;
+	char *szDesc;
+	bool isAlias = false;
 };
 
 bool ConsoleConnect(const char *szName = 0, bool bNewInstance = false);
