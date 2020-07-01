@@ -7,7 +7,7 @@
 #include <common/array.h>
 
 class CEditable;
-class CEditorObject: public IXUnknownImplementation<IXEditorObject>
+class CEditorObject final: public IXUnknownImplementation<IXEditorObject>
 {
 	DECLARE_CLASS(CEditorObject, IXEditorObject);
 public:
@@ -15,28 +15,30 @@ public:
 	CEditorObject(CEditable *pEditable, CBaseEntity *pEntity);
 	~CEditorObject();
 
-	void setPos(const float3_t &pos);
-	void setOrient(const SMQuaternion &orient);
-	void setScale(const float3_t &pos);
+	void setPos(const float3_t &pos) override;
+	void setOrient(const SMQuaternion &orient) override;
+	void setScale(const float3_t &pos) override;
 
-	void getBound(float3 *pvMin, float3 *pvMax);
+	void getBound(float3 *pvMin, float3 *pvMax) override;
 
-	void renderSelection(bool is3D);
+	void renderSelection(bool is3D) override;
 
-	bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl);
+	bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl) override;
 
-	void remove();
-	void create();
-	void preSetup();
-	void postSetup();
+	void remove() override;
+	void create() override;
+	void preSetup() override;
+	void postSetup() override;
 
-	void setKV(const char *szKey, const char *szValue);
-	const char *getKV(const char *szKey);
-	const X_PROP_FIELD *getPropertyMeta(UINT uKey);
-	UINT getProperyCount();
+	void resync();
 
-	const char *getTypeName();
-	const char *getClassName();
+	void setKV(const char *szKey, const char *szValue) override;
+	const char *getKV(const char *szKey) override;
+	const X_PROP_FIELD *getPropertyMeta(UINT uKey) override;
+	UINT getProperyCount() override;
+
+	const char *getTypeName() override;
+	const char *getClassName() override;
 
 protected:
 	CBaseEntity *m_pEntity = NULL;
@@ -48,8 +50,9 @@ protected:
 	AssotiativeArray<String, String> m_msPropCache;
 	const char *m_aszFlags[16];
 
-
 	void _iniFieldList();
+
+	ID m_idEnt = -1;
 };
 
 #endif

@@ -7,7 +7,8 @@
 
 CEditorObject::CEditorObject(CEditable *pEditable, CBaseEntity *pEntity):
 	m_pEditable(pEditable),
-	m_pEntity(pEntity)
+	m_pEntity(pEntity),
+	m_idEnt(pEntity->getId())
 {
 	assert(pEntity);
 
@@ -32,7 +33,7 @@ CEditorObject::CEditorObject(CEditable *pEditable, const char *szClassName):
 
 CEditorObject::~CEditorObject()
 {
-	
+	m_pEditable->removeObject(this);
 }
 
 void CEditorObject::_iniFieldList()
@@ -205,6 +206,7 @@ void CEditorObject::remove()
 	}
 	REMOVE_ENTITY(m_pEntity);
 	m_pEntity = NULL;
+	m_idEnt = -1;
 }
 void CEditorObject::preSetup()
 {
@@ -219,11 +221,21 @@ void CEditorObject::create()
 	assert(!m_pEntity);
 	m_pEntity = CREATE_ENTITY(m_szClassName, GameData::m_pMgr);
 
+	m_idEnt = m_pEntity->getId();
+
 	m_pEntity->setFlags(m_pEntity->getFlags() | EF_LEVEL | EF_EXPORT);
 
 	setPos(getPos());
 	setOrient(getOrient());
 	setScale(getScale());
+}
+
+void CEditorObject::resync()
+{
+	if(ID_VALID(m_idEnt))
+	{
+		m_pEntity = GameData::m_pMgr->getById(m_idEnt);
+	}
 }
 
 void CEditorObject::setKV(const char *szKey, const char *szValue)

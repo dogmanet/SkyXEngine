@@ -63,7 +63,7 @@ UINT CEditable::getObjectCount()
 	}
 	return(uResult);
 }
-IXEditorObject *CEditable::getObject(UINT id)
+IXEditorObject* CEditable::getObject(UINT id)
 {
 	UINT uResult = 0;
 	CBaseEntity *pEnt;
@@ -73,7 +73,9 @@ IXEditorObject *CEditable::getObject(UINT id)
 		{
 			if(uResult == id)
 			{
-				return(new CEditorObject(this, pEnt));
+				CEditorObject *pObj = new CEditorObject(this, pEnt);
+				m_aObjects.push_back(pObj);
+				return(pObj);
 			}
 			++uResult;
 		}
@@ -81,7 +83,26 @@ IXEditorObject *CEditable::getObject(UINT id)
 	
 	return(NULL);
 }
-IXEditorObject *CEditable::newObject(const char *szClassName)
+IXEditorObject* CEditable::newObject(const char *szClassName)
 {
-	return(new CEditorObject(this, szClassName));
+	CEditorObject *pObj = new CEditorObject(this, szClassName);
+	m_aObjects.push_back(pObj);
+	return(pObj);
+}
+
+void CEditable::removeObject(CEditorObject *pObject)
+{
+	int idx = m_aObjects.indexOf(pObject);
+	if(idx >= 0)
+	{
+		m_aObjects.erase(idx);
+	}
+}
+
+void CEditable::resync()
+{
+	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
+	{
+		m_aObjects[i]->resync();
+	}
 }

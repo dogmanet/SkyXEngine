@@ -6,6 +6,9 @@
 #include <score/sxscore.h>
 #include <input/sxinput.h>
 
+#include "Editable.h"
+
+extern CEditable *g_pEditable;
 
 CMainMenuGameState::CMainMenuGameState()
 {
@@ -155,6 +158,11 @@ void CIngameGameState::deactivate()
 	if(*dev_reset_world_on_run)
 	{
 		GameData::m_pMgr->dispatchBaseline(m_pBaseLine);
+
+		if(g_pEditable)
+		{
+			g_pEditable->resync();
+		}
 	}
 }
 

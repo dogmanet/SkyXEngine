@@ -6,7 +6,7 @@
 #include <xcommon/IXCore.h>
 #include "GameData.h"
 
-class CEditable: public IXUnknownImplementation<IXEditable>
+class CEditable final: public IXUnknownImplementation<IXEditable>
 {
 	friend class CEditorObject;
 
@@ -36,6 +36,8 @@ public:
 
 	void startup(IGXDevice *pDevice) override;
 	void shutdown() override;
+	
+	void resync();
 
 protected:
 	IGXDevice *m_pDevice = NULL;
@@ -47,6 +49,10 @@ protected:
 	IXTexture *m_pWhiteTexture = NULL;
 
 	const char **m_pszClassList = NULL;
+
+	Array<CEditorObject*> m_aObjects;
+
+	void removeObject(CEditorObject *pObject);
 };
 
 #endif
