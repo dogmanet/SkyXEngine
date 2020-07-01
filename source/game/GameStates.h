@@ -4,6 +4,8 @@
 #include "IGameState.h"
 #include <gui/guimain.h>
 
+class CBaseline;
+
 class CMainMenuGameState final: public IGameState
 {
 public:
@@ -28,18 +30,21 @@ protected:
 	gui::IDesktop *m_pDesktop;
 };
 
-class CIngameGameState: public IGameState
+class CIngameGameState final: public IGameState
 {
 public:
-	void activate();
-	void deactivate();
+	void activate() override;
+	void deactivate() override;
+
+private:
+	CBaseline *m_pBaseLine = NULL;
 };
 
-class CEditorState: public IGameState
+class CEditorState final: public IGameState
 {
 public:
-	void activate();
-	void deactivate();
+	void activate() override;
+	void deactivate() override;
 };
 
 #endif

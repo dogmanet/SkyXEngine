@@ -470,5 +470,8 @@
     <ClInclude Include="..\..\..\source\game\SoundPlayer.h">
       <Filter>Header Files\ents</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\game\Baseline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -12,7 +12,8 @@ See the license in LICENSE
 #include <gdefines.h>
 #include <common/array.h>
 #include <chrono>
-#include <mutex>
+#include <xcommon/XEvents.h>
+#include <xcommon/IXCore.h>
 
 #include "proptable.h"
 
@@ -67,8 +68,25 @@ struct timeout_output_t
 	inputdata_t data;
 };
 
+class CBaseline;
+
 class CEntityManager
 {
+	class CCVarEventListener: public IEventListener<XEventCvarChanged>
+	{
+	public:
+		CCVarEventListener(CEntityManager *pMgr, IXCore *pCore):
+			m_pMgr(pMgr),
+			m_pCore(pCore)
+		{}
+
+		void onEvent(const XEventCvarChanged *pEvent) override;
+
+	private:
+		CEntityManager *m_pMgr;
+		IXCore *m_pCore;
+	};
+
 	friend class CBaseEntity;
 	friend class CEntityFactoryMap;
 public:
@@ -113,6 +131,17 @@ public:
 	void setEditorMode(bool isEditor = true);
 	bool isEditorMode();
 
+	void setTimeRunning(bool set);
+
+	CBaseline* createBaseline(ID forceId = -1);
+	CBaseline* getBaseline(ID id);
+	void dispatchBaseline(CBaseline *pBaseline);
+
+#if 0
+	void serializeBaseline(CBaseline *pBaseline, INETbuff *pBuf);
+	CBaseline *deserializeBaseline(ID id, INETbuff *pBuf);
+#endif
+
 protected:
 	ID reg(CBaseEntity *pEnt);
 	void unreg(ID ent);
@@ -131,16 +160,25 @@ protected:
 	Array<ID> m_vFreeInterval;
 	Array<ID> m_vFreeTimeout;
 
-	int m_iThreadNum;
+	int m_iThreadNum = 1;
 
 	//! @warning это нужно хранить в течение работы проги, т.к. таблицы дефолтов ссылаются напрямую на этот объект
-	ISXConfig *m_pDefaultsConf;
-	ISXConfig *m_pDynClassConf;
+	ISXConfig *m_pDefaultsConf = NULL;
+	ISXConfig *m_pDynClassConf = NULL;
 
 	bool m_isEditorMode = false;
 
-	std::mutex m_mxTimeout;
-	std::mutex m_mxInterval;
+	SpinLock m_mxTimeout;
+	SpinLock m_mxInterval;
+
+	bool m_isTimeRunning = false;
+	time_point m_tStopPoint = std::chrono::high_resolution_clock::now();
+	CCVarEventListener m_cvarListener;
+
+	Array<CBaseline*> m_aBaselines;
+
+private:
+	void finalRemove();
 };
 
 #endif

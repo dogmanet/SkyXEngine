@@ -13,11 +13,17 @@ public:
 	{
 		switch(pEvent->type)
 		{
+		case XEventLevel::TYPE_LOAD_BEGIN:
+			m_pLightSystem->setEnabled(false);
+			break;
+
 		case XEventLevel::TYPE_LOAD_END:
 			XEventLevelSize levelSize;
 			m_pLevelSizeChannel->broadcastEvent(&levelSize);
 
 			m_pLightSystem->setLevelSize(levelSize.vMin, levelSize.vMax);
+
+			m_pLightSystem->setEnabled(true);
 			break;
 		}
 	}
@@ -413,6 +419,11 @@ void XMETHODCALLTYPE CLightSystem::updateVisibility()
 {
 	assert(m_pMainCamera);
 
+	if(!m_isEnabled)
+	{
+		return;
+	}
+
 	float3 vCamPos;
 	m_pMainCamera->getPosition(&vCamPos);
 	float3 vCamDir;
@@ -492,6 +503,11 @@ void XMETHODCALLTYPE CLightSystem::setRenderPipeline(IXRenderPipeline *pRenderPi
 
 void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTexture2D *pTempBuffer)
 {
+	if(!m_isEnabled)
+	{
+		return;
+	}
+
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	IGXDepthStencilSurface *pOldDSSurface = pCtx->getDepthStencilSurface();

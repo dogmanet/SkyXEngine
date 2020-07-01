@@ -47,6 +47,11 @@ public:
 	void XMETHODCALLTYPE renderToneMapping(IGXTexture2D *pSourceLight) override;
 	void XMETHODCALLTYPE renderDebug() override;
 
+	void setEnabled(bool set)
+	{
+		m_isEnabled = set;
+	}
+
 protected:
 	void showGICubes();
 
@@ -175,6 +180,8 @@ protected:
 	IGXTexture2D *m_pLightLuminance1 = NULL;
 	IGXTexture2D *m_pAdaptedLuminance[2];
 	UINT m_uCurrAdaptedLuminanceTarget = 0;
+
+	bool m_isEnabled = true;
 };
 
 #endif

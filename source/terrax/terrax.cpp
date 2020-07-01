@@ -83,8 +83,70 @@ class CEngineCallback: public IXEngineCallback
 public:
 	void XMETHODCALLTYPE onGraphicsResize(UINT uWidth, UINT uHeight, bool isFullscreen, bool isBorderless, IXEngine *pEngine) override
 	{
-		XReleaseViewports();
-		XInitViewports();
+		static const bool *terrax_detach_3d = NULL;
+		if(!terrax_detach_3d && m_pCore)
+		{
+			terrax_detach_3d = m_pCore->getConsole()->getPCVarBool("terrax_detach_3d");
+		}
+
+		if(terrax_detach_3d && *terrax_detach_3d)
+		{
+			RECT rc = {0, 0, (int)uWidth, (int)uHeight};
+
+			HMONITOR monitor = MonitorFromWindow(g_hTopLeftWnd, MONITOR_DEFAULTTONEAREST);
+			MONITORINFO info;
+			info.cbSize = sizeof(MONITORINFO);
+			GetMonitorInfo(monitor, &info);
+			bool bForceNoBorder = (rc.right - rc.left == info.rcMonitor.right - info.rcMonitor.left
+				&& rc.bottom - rc.top == info.rcMonitor.bottom - info.rcMonitor.top);
+
+
+			SetClassLong(g_hTopLeftWnd, GCL_STYLE, GetClassLong(g_hTopLeftWnd, GCL_STYLE) | CS_NOCLOSE);
+
+			DWORD wndStyle = GetWindowLong(g_hTopLeftWnd, GWL_STYLE) | WS_MINIMIZEBOX | WS_SYSMENU;
+
+			if(isFullscreen || isBorderless || bForceNoBorder)
+			{
+				wndStyle &= ~(WS_SYSMENU | WS_CAPTION | WS_MAXIMIZE | WS_MINIMIZE | WS_THICKFRAME);
+			}
+			else
+			{
+				wndStyle |= WS_CAPTION | WS_THICKFRAME;
+				wndStyle &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
+			}
+
+			SetWindowLong(g_hTopLeftWnd, GWL_STYLE, wndStyle);
+
+
+			AdjustWindowRect(&rc, wndStyle, false);
+
+			UINT uSWPflags = SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER;
+
+
+			int iPosX = 0;
+			int iPosY = 0;
+			if(!(isFullscreen || isBorderless))
+			{
+				iPosX = (GetSystemMetrics(SM_CXSCREEN) - (rc.right - rc.left)) / 2;
+				iPosY = (GetSystemMetrics(SM_CYSCREEN) - (rc.bottom - rc.top)) / 2;
+			}
+			RECT rcOld;
+			GetWindowRect(g_hTopLeftWnd, &rcOld);
+
+
+			if(rcOld.right - rcOld.left != rc.right - rc.left || rcOld.bottom - rcOld.top != rc.bottom - rc.top)
+			{
+				uSWPflags &= ~SWP_NOSIZE;
+				//SetWindowPos(m_hWnd, HWND_TOP, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+			}
+
+			SetWindowPos(g_hTopLeftWnd, HWND_TOP, iPosX, iPosY, rc.right - rc.left, rc.bottom - rc.top, uSWPflags);
+		}
+		else
+		{
+			XReleaseViewports();
+			XInitViewports();
+		}
 	}
 
 	bool XMETHODCALLTYPE processWindowMessages() override
@@ -236,10 +298,22 @@ public:
 
 	ICamera* XMETHODCALLTYPE getCameraForFrame() override
 	{
+		static const bool *terrax_detach_3d = m_pCore->getConsole()->getPCVarBool("terrax_detach_3d");
+		if(*terrax_detach_3d)
+		{
+			return(SGame_GetActiveCamera());
+		}
+		
 		return(g_xConfig.m_pViewportCamera[XWP_TOP_LEFT]);
 	}
 
+	void setCore(IXCore *pCore)
+	{
+		m_pCore = pCore;
+	}
+
 protected:
+	IXCore *m_pCore = NULL;
 };
 
 class CRenderPipeline: public IXUnknownImplementation<IXRenderPipeline>
@@ -284,6 +358,13 @@ public:
 	void renderFrame(float fDeltaTime) override
 	{
 		m_pOldPipeline->renderFrame(fDeltaTime);
+
+		static const bool *terrax_detach_3d = m_pCore->getConsole()->getPCVarBool("terrax_detach_3d");
+
+		if(*terrax_detach_3d)
+		{
+			return;
+		}
 		
 		IGXContext *pDXDevice = getDevice()->getThreadContext();
 		pDXDevice->setDepthStencilState(g_pDSDefault);
@@ -384,8 +465,22 @@ public:
 	{
 		m_pOldPipeline->updateVisibility();
 
+		static const bool *terrax_detach_3d = m_pCore->getConsole()->getPCVarBool("terrax_detach_3d");
+
+		if(*terrax_detach_3d)
+		{
+			return;
+		}
+
+		HWND hWnds[] = {g_hTopRightWnd, g_hBottomLeftWnd, g_hBottomRightWnd};
+
 		for(UINT i = 0; i < 3; ++i)
 		{
+			if(!IsWindowVisible(hWnds[i]))
+			{
+				continue;
+			}
+
 			m_pCameraVisibility[i + 1]->updateForCamera(g_xConfig.m_pViewportCamera[i + 1]);
 		}
 	}
@@ -449,6 +544,55 @@ public:
 	IXRenderableVisibility *m_pCameraVisibility[4];
 };
 
+class CCVarEventListener: public IEventListener<XEventCvarChanged>
+{
+public:
+	CCVarEventListener(IXCore *pCore):
+		m_pCore(pCore)
+	{}
+	void onEvent(const XEventCvarChanged *pEvent) override
+	{
+		static const bool *terrax_detach_3d = m_pCore->getConsole()->getPCVarBool("terrax_detach_3d");
+
+		if(terrax_detach_3d == pEvent->pCvar)
+		{
+			if(*terrax_detach_3d)
+			{
+				ShowWindow(g_hTopLeftWnd, SW_HIDE);
+				m_lOldStyle = GetWindowLongA(g_hTopLeftWnd, GWL_STYLE);
+				SetParent(g_hTopLeftWnd, NULL);
+				SetWindowLongA(g_hTopLeftWnd, GWL_STYLE, WS_OVERLAPPED | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+				SetWindowTextA(g_hTopLeftWnd, "SkyXEngine");
+
+				m_lOldExStyle = GetWindowLongA(g_hTopLeftWnd, GWL_EXSTYLE);
+				SetWindowLongA(g_hTopLeftWnd, GWL_EXSTYLE, 0);
+
+				SetWindowPos(g_hTopLeftWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOMOVE);
+
+				EnableWindow(g_hWndMain, FALSE);
+			}
+			else
+			{
+				EnableWindow(g_hWndMain, TRUE);
+
+				ShowWindow(g_hTopLeftWnd, SW_HIDE);
+				SetParent(g_hTopLeftWnd, g_hWndMain);
+				SetWindowLongA(g_hTopLeftWnd, GWL_STYLE, m_lOldStyle);
+				SetWindowLongA(g_hTopLeftWnd, GWL_EXSTYLE, m_lOldExStyle);
+				SetWindowPos(g_hTopLeftWnd, HWND_TOP, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOMOVE);
+				PostMessage(g_hWndMain, WM_SIZE, 0, 0);
+
+				ShowCursor(TRUE);
+			}
+		}
+	}
+
+private:
+	IXCore *m_pCore;
+	LONG m_lOldStyle;
+	LONG m_lOldExStyle;
+};
+
 #if defined(_WINDOWS)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
@@ -481,10 +625,16 @@ int main(int argc, char **argv)
 	g_pEngine = pEngine;
 	CEngineCallback engineCb;
 	pEngine->initGraphics((XWINDOW_OS_HANDLE)g_hTopLeftWnd, &engineCb);
+	engineCb.setCore(pEngine->getCore());
+	pEngine->getCore()->getConsole()->registerCVar("terrax_detach_3d", false, "", FCVAR_NOTIFY);
 	pEngine->getCore()->getConsole()->execCommand("gmode editor");
 	pEngine->getCore()->getConsole()->execCommand("exec ../config_editor.cfg");
 	CRenderPipeline *pPipeline = new CRenderPipeline(Core_GetIXCore());
 	XInitGuiWindow(false);
+
+	CCVarEventListener cvarListener(pEngine->getCore());
+	auto *pChannel = pEngine->getCore()->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID);
+	pChannel->addListener(&cvarListener);
 
 	RECT rcTopLeft;
 	GetClientRect(g_hTopLeftWnd, &rcTopLeft);
@@ -889,6 +1039,8 @@ int main(int argc, char **argv)
 		g_pEditableSystems[ic]->shutdown();
 	}
 	XReleaseViewports();
+
+	pChannel->removeListener(&cvarListener);
 
 	mem_release(g_pDashedMaterial);
 	mem_release(g_pDSNoZ);

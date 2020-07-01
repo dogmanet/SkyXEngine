@@ -1307,6 +1307,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case ID_FILE_EXIT:
 			PostMessage(hWnd, WM_CLOSE, 0, 0);
 			break;
+
+		case ID_LEVEL_RUN:
+			g_pEngine->getCore()->getConsole()->execCommand("run_level");
+			break;
 		}
 		break;
 

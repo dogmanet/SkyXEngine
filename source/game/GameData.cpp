@@ -639,6 +639,9 @@ GameData::GameData(HWND hWnd, bool isGame):
 	Core_0RegisterCVarFloat("cl_mousesense", 2.0f, "Mouse sense value");
 	Core_0RegisterCVarBool("cl_invert_y", false, "Invert Y axis");
 
+	Core_0RegisterCVarBool("dev_reset_world_on_run", false, "Reset world on level run");
+		
+
 	Core_0RegisterCVarBool("cl_bob", true, "View bobbing");
 	Core_0RegisterCVarFloat("cl_bob_walk_y", 0.1f, "View bobbing walk y amplitude");
 	Core_0RegisterCVarFloat("cl_bob_walk_x", 0.1f, "View bobbing walk strafe amplitude");

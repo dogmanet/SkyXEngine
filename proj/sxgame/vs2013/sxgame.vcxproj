@@ -248,6 +248,7 @@
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\game\BaseHandle.h" />
     <ClInclude Include="..\..\..\source\game\BaseLight.h" />
+    <ClInclude Include="..\..\..\source\game\Baseline.h" />
     <ClInclude Include="..\..\..\source\game\BaseMag.h" />
     <ClInclude Include="..\..\..\source\game\BaseScope.h" />
     <ClInclude Include="..\..\..\source\game\BaseSilencer.h" />
