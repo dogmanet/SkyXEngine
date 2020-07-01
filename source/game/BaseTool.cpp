@@ -60,6 +60,31 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseTool, base_tool);
 
+
+class btKinematicClosestNotMeRayResultCallback: public btCollisionWorld::ClosestRayResultCallback
+{
+public:
+	btKinematicClosestNotMeRayResultCallback(btCollisionObject* me, const btVector3&	rayFromWorld, const btVector3&	rayToWorld): btCollisionWorld::ClosestRayResultCallback(rayFromWorld, rayToWorld)
+	{
+		m_me = me;
+		m_shapeInfo = {-1, -1};
+	}
+
+	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
+	{
+		if(rayResult.m_collisionObject == m_me)
+			return 1.0;
+		if(rayResult.m_localShapeInfo)
+		{
+			m_shapeInfo = *rayResult.m_localShapeInfo;
+		}
+		return ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
+	}
+	btCollisionWorld::LocalShapeInfo m_shapeInfo;
+protected:
+	btCollisionObject* m_me;
+};
+
 CBaseTool::CBaseTool(CEntityManager * pMgr):
 	BaseClass(pMgr),
 	m_bInPrimaryAction(false),
@@ -248,7 +273,7 @@ void CBaseTool::_update(float dt)
 		float3 start = m_pParent->getPos();
 		float3 dir = m_pParent->getOrient() * float3(0.0f, 0.0f, 1.0f);
 		float3 end = start + dir * m_fCenterLength;
-		btCollisionWorld::ClosestRayResultCallback cb(F3_BTVEC(start), F3_BTVEC(end));
+		btKinematicClosestNotMeRayResultCallback cb(((CBaseCharacter*)m_pOwner)->getBtCollisionObject(), F3_BTVEC(start), F3_BTVEC(end));
 		SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
 
 		m_isClose = cb.hasHit();
