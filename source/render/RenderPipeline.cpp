@@ -1105,10 +1105,11 @@ void CRenderPipeline::renderTransparencyBSP(XTransparentBSPNode *pNode, XTranspa
 		pFirst = pNode->pFront;
 		pSecond = pNode->pBack;
 	}
-	if(pNode->iPSP >= 0)
+	if(pNode->iPSP >= 0 && uPlaneCount < MAX_TRANSPARENCY_CLIP_PANES)
 	{
 		pPSPs[pNode->iPSP].isRenderFront = !isInFront;
 		puPlanesStack[uPlaneCount++] = (UINT)pNode->iPSP;
+		// assert(uPlaneCount <= MAX_TRANSPARENCY_CLIP_PANES);
 	}
 	if(pFirst)
 	{

@@ -658,6 +658,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static BOOL xSizing;
 	static BOOL ySizing;
 
+	static bool shouldShowProps = false;
 
 	static float fCoeffWidth = 0.0f;
 	static float fCoeffHeight = 0.0f;
@@ -836,18 +837,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_SIZE:
 	{
+#if 0
 		if(g_isPropWindowVisible)
 		{
 			if(wParam == SIZE_MINIMIZED)
 			{
 				g_isPropWindowVisible = g_pPropWindow->isVisible();
 				g_pPropWindow->hide();
+				shouldShowProps = g_isPropWindowVisible;
 			}
-			else if(wParam == SIZE_RESTORED)
+			else if(wParam == SIZE_RESTORED && shouldShowProps)
 			{
 				g_pPropWindow->show();
+				shouldShowProps = false;
 			}
 		}
+#endif
 		GetClientRect(hWnd, &rect);
 
 		rect.top += MARGIN_TOP;
