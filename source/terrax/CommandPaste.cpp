@@ -37,7 +37,7 @@ bool CCommandPaste::exec()
 			pObj->pObject->setKV(i.first->c_str(), i.second->c_str());
 		}
 		pObj->pObject->postSetup();
-
+		pObj->pObject->AddRef();
 		g_pLevelObjects.push_back(pObj->pObject);
 	}
 	XUpdatePropWindow();
@@ -51,6 +51,7 @@ bool CCommandPaste::undo()
 		pObj = &m_aObjects[i];
 
 		pObj->pObject->remove();
+		pObj->pObject->Release();
 		g_pLevelObjects.erase(g_pLevelObjects.size() - 1);
 	}
 
