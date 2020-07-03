@@ -1,7 +1,7 @@
 #ifndef __IXTEXTURELOADER_H
 #define __IXTEXTURELOADER_H
 
-#include <gdefines.h>
+#include <xcommon/IXLoaderBase.h>
 #include <core/IFile.h>
 #include <xcommon/resource/IXResourceTexture.h>
 
@@ -32,16 +32,9 @@ struct XTextureInfo
 	UINT uMipCount;
 };
 
-class IXTextureLoader: public IXUnknown
+class IXTextureLoader: public IXLoaderBase
 {
 public:
-	virtual UINT XMETHODCALLTYPE getExtCount() const = 0;
-	virtual const char* XMETHODCALLTYPE getExt(UINT uIndex) const = 0;
-	virtual const char* XMETHODCALLTYPE getExtText(UINT uIndex) const = 0;
-	virtual const char* XMETHODCALLTYPE getAuthor() const = 0;
-	virtual const char* XMETHODCALLTYPE getCopyright() const = 0;
-	virtual const char* XMETHODCALLTYPE getDescription() const = 0;
-
 	virtual bool XMETHODCALLTYPE open(const char *szFileName, const char *szArg) = 0;
 	virtual GXTEXTURE_TYPE XMETHODCALLTYPE getType() const = 0;
 	virtual bool XMETHODCALLTYPE loadAs2D(IXResourceTexture2D *pResource) = 0;
