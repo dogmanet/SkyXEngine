@@ -294,7 +294,7 @@ void rfunc::UpdateView()
 {
 	gdata::InitAllMatrix();
 
-	gdata::pCamera->getViewMatrix(&gdata::mCamView);
+	gdata::mCamView = gdata::pCamera->getViewMatrix();
 
 	Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 	Core_RMatrixSet(G_RI_MATRIX_VIEW, &gdata::mCamView);
@@ -302,8 +302,8 @@ void rfunc::UpdateView()
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(gdata::mCamView * gdata::mLightProj));
 	Core_RMatrixSet(G_RI_MATRIX_TRANSP_VIEWPROJ, &SMMatrixTranspose(gdata::mCamView * gdata::mLightProj));
 
-	gdata::pCamera->getPosition(&gdata::vConstCurrCamPos);
-	gdata::pCamera->getLook(&gdata::vConstCurrCamDir);
+	gdata::vConstCurrCamPos = gdata::pCamera->getPosition();
+	gdata::vConstCurrCamDir = gdata::pCamera->getLook();
 
 	Core_RFloat3Set(G_RI_FLOAT3_OBSERVER_POSITION, &gdata::vConstCurrCamPos);
 	Core_RFloat3Set(G_RI_FLOAT3_OBSERVER_DIRECTION, &gdata::vConstCurrCamDir);
@@ -316,7 +316,7 @@ void rfunc::UpdateView()
 	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FAR, gdata::vNearFar.y);
 	Core_RFloatSet(G_RI_FLOAT_OBSERVER_FOV, gdata::fProjFov);*/
 
-	gdata::pCamera->updateFrustum(&gdata::mCamProj);
+	gdata::pCamera->updateFrustum(gdata::mCamProj);
 
 #if 0
 	if (gdata::idDefaultGeomArr < 0 || !SGeom_VisCaclObjExists(gdata::idDefaultGeomArr))

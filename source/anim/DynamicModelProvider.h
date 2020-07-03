@@ -45,7 +45,7 @@ public:
 
 	void render(bool isTransparent, CRenderableVisibility *pVisibility = NULL);
 	void renderEmissive(CRenderableVisibility *pVisibility);
-	void computeVisibility(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference=NULL);
+	void computeVisibility(const IXFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference=NULL);
 
 	void render(Array<CDynamicModel*> &aRenderList, XMODEL_FEATURE bmWhat);
 

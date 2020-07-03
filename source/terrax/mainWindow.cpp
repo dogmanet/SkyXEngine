@@ -483,8 +483,7 @@ static float GetPasteCenter(char axis, X_WINDOW_POS skipPos)
 		if(i != skipPos)
 		{
 			X_2D_VIEW x2dView = g_xConfig.m_x2DView[i];
-			float3 vCamPos;
-			g_xConfig.m_pViewportCamera[i]->getPosition(&vCamPos);
+			float3 vCamPos = g_xConfig.m_pViewportCamera[i]->getPosition();
 			switch(axis)
 			{
 			case 'x':
@@ -1221,8 +1220,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				for(UINT i = 1; i < 4; ++i)
 				{
 					ICamera *pCamera = g_xConfig.m_pViewportCamera[i];
-					float3 vCamPos;
-					pCamera->getPosition(&vCamPos);
+					float3 vCamPos = pCamera->getPosition();
 
 					switch(g_xConfig.m_x2DView[i])
 					{
@@ -1237,7 +1235,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 						break;
 					}
 
-					pCamera->setPosition(&vCamPos);
+					pCamera->setPosition(vCamPos);
 				}
 			}
 			break;
@@ -1518,10 +1516,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				// pCamera = g_pTopLeftCamera;
 				pCamera = g_xConfig.m_pViewportCamera[XWP_TOP_LEFT];
-				float3 vLook, vPos;
-				pCamera->getLook(&vLook);
-				pCamera->getPosition(&vPos);
-				pCamera->setPosition(&(float3)(vPos + vLook * (float)GET_WHEEL_DELTA_WPARAM(wParam) / (float)WHEEL_DELTA * 0.5f));
+				float3 vLook = pCamera->getLook();
+				float3 vPos = pCamera->getPosition();
+				pCamera->setPosition(vPos + vLook * (float)GET_WHEEL_DELTA_WPARAM(wParam) / (float)WHEEL_DELTA * 0.5f);
 				pCamera = NULL;
 				hTargetWnd = g_hTopLeftWnd;
 			}
@@ -1559,8 +1556,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			float2 vCenter((float)(rc.left + rc.right) * 0.5f, (float)(rc.top + rc.bottom) * 0.5f);
 			float2 vDelta = (float2((float)pt.x, (float)pt.y) - vCenter) * float2(1.0f, -1.0f);
 			float2 vWorldPt;
-			float3 vCamPos;
-			pCamera->getPosition(&vCamPos);
+			float3 vCamPos = pCamera->getPosition();
 			switch(x2dView)
 			{
 			case X2D_TOP:
@@ -1578,13 +1574,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			switch(x2dView)
 			{
 			case X2D_TOP:
-				pCamera->setPosition(&float3(vWorldPt.x, vCamPos.y, vWorldPt.y));
+				pCamera->setPosition(float3(vWorldPt.x, vCamPos.y, vWorldPt.y));
 				break;
 			case X2D_FRONT:
-				pCamera->setPosition(&float3(vWorldPt.x, vWorldPt.y, vCamPos.z));
+				pCamera->setPosition(float3(vWorldPt.x, vWorldPt.y, vCamPos.z));
 				break;
 			case X2D_SIDE:
-				pCamera->setPosition(&float3(vCamPos.x, vWorldPt.y, vWorldPt.x));
+				pCamera->setPosition(float3(vCamPos.x, vWorldPt.y, vWorldPt.x));
 				break;
 			}
 			*pfOldScale = fNewScale;
@@ -2207,8 +2203,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
 				float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
 
-				float3 fCamWorld;
-				pCamera->getPosition(&fCamWorld);
+				float3 fCamWorld = pCamera->getPosition();
 				switch(xCurView)
 				{
 				case X2D_TOP:
@@ -2431,18 +2426,18 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			switch(LOWORD(wParam))
 			{
 			case ID_2D_TOP:
-				pTargetCam->setPosition(&X2D_TOP_POS);
-				pTargetCam->setOrientation(&X2D_TOP_ROT);
+				pTargetCam->setPosition(X2D_TOP_POS);
+				pTargetCam->setOrientation(X2D_TOP_ROT);
 				*pX2DView = X2D_TOP;
 				break;
 			case ID_2D_FRONT:
-				pTargetCam->setPosition(&X2D_FRONT_POS);
-				pTargetCam->setOrientation(&X2D_FRONT_ROT);
+				pTargetCam->setPosition(X2D_FRONT_POS);
+				pTargetCam->setOrientation(X2D_FRONT_ROT);
 				*pX2DView = X2D_FRONT;
 				break;
 			case ID_2D_SIDE:
-				pTargetCam->setPosition(&X2D_SIDE_POS);
-				pTargetCam->setOrientation(&X2D_SIDE_ROT);
+				pTargetCam->setPosition(X2D_SIDE_POS);
+				pTargetCam->setOrientation(X2D_SIDE_ROT);
 				*pX2DView = X2D_SIDE;
 				break;
 			}

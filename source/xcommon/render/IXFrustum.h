@@ -1,11 +1,11 @@
-#ifndef __IFRUSTUM_H
-#define __IFRUSTUM_H
+#ifndef __IXFRUSTUM_H
+#define __IXFRUSTUM_H
 
 #include <gdefines.h>
 #include <common/math.h>
 
 //! класс описывающий фрустум
-class IFrustum: public IXUnknown
+class IXFrustum: public IXUnknown
 {
 public:
 	//! обновление фрустума, на вход матрицы по которым необходимо построить фрустум
@@ -37,7 +37,7 @@ public:
 	virtual bool boxInFrustum(const SMAABB &aabb, bool *pIsStrict = NULL) const = 0;
 
 	//! находится ли параллелепипед (описанный точками экстремума) во фрустуме
-	virtual bool frustumInFrustum(const IFrustum *pOther) const = 0;
+	virtual bool frustumInFrustum(const IXFrustum *pOther) const = 0;
 
 
 	//! возвращает координаты точки фрустума, iNumPoint = [0,7]

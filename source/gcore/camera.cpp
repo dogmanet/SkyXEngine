@@ -275,7 +275,7 @@ bool CFrustum::boxInFrustum(const float3 &vMin, const float3 &vMax, bool *pIsStr
 	return(isVisible);
 }
 
-bool CFrustum::frustumInFrustum(const IFrustum *pOther) const
+bool CFrustum::frustumInFrustum(const IXFrustum *pOther) const
 {
 	for(register int p = 0; p < 6; ++p)
 	{
@@ -365,143 +365,64 @@ float3 CFrustum::getCenter() const
 
 //##########################################################################
 
-void CCamera::posLeftRight(float units)
+CCamera::CCamera():
+	m_pFrustum(new CFrustum())
+{}
+CCamera::~CCamera()
 {
-	m_vPosition += float3(m_vRight.x, 0.0f, m_vRight.z) * units;
-	//LastVal.x = units;
+	mem_release(m_pFrustum);
 }
 
-void CCamera::posUpDown(float units)
+void CCamera::setOrientation(const SMQuaternion &q)
 {
-	m_vPosition.y += m_vUp.y * units;
-}
-
-void CCamera::posFrontBack(float units)
-{
-	m_vPosition += float3(m_vLook.x, 0.0f, m_vLook.z) * units;
-	//LastVal.z = units;
-}
-
-
-void CCamera::rotUpDown(float angle)
-{
-	m_vPitchYawRoll.x -= angle;
-	if(m_vPitchYawRoll.x > SM_PIDIV2)
-	{
-		m_vPitchYawRoll.x = SM_PIDIV2;
-	}
-	else if(m_vPitchYawRoll.x < -SM_PIDIV2)
-	{
-		m_vPitchYawRoll.x = -SM_PIDIV2;
-	}
-
-	updateView();
-}
-
-void CCamera::rotRightLeft(float angle)
-{
-	m_vPitchYawRoll.y -= angle;
-	while(m_vPitchYawRoll.y < 0.0f)
-	{
-		m_vPitchYawRoll.y += SM_2PI;
-	}
-	while(m_vPitchYawRoll.y > SM_2PI)
-	{
-		m_vPitchYawRoll.y -= SM_2PI;
-	}
-
-	updateView();
-}
-
-void CCamera::roll(float angle)
-{
-	m_vPitchYawRoll.z -= angle;
-	updateView();
-}
-
-void CCamera::updateView()
-{
-	SMQuaternion q = SMQuaternion(m_vPitchYawRoll.x, 'x')
-		* SMQuaternion(m_vPitchYawRoll.y, 'y')
-		* SMQuaternion(m_vPitchYawRoll.z, 'z');
+	m_qRotation = q;
+	m_vPitchYawRoll = SMMatrixToEuler(q.GetMatrix());
 
 	m_vRight = q * float3(1.0f, 0.0f, 0.0f);
 	m_vUp = q * float3(0.0f, 1.0f, 0.0f);
 	m_vLook = q * float3(0.0f, 0.0f, 1.0f);
 }
 
-void CCamera::setOrientation(const SMQuaternion *q)
+const SMQuaternion& CCamera::getOrientation()
 {
-	m_vPitchYawRoll = SMMatrixToEuler(q->GetMatrix());
-
-	m_vRight = (*q) * float3(1.0f, 0.0f, 0.0f);
-	m_vUp = (*q) * float3(0.0f, 1.0f, 0.0f);
-	m_vLook = (*q) * float3(0.0f, 0.0f, 1.0f);
+	return(m_qRotation);
 }
 
-
-void CCamera::getViewMatrix(float4x4* view_matrix)
+const SMMATRIX& CCamera::getViewMatrix() const
 {
 	m_mView = SMMatrixLookToLH(m_vPosition, m_vLook, m_vUp);
-	*view_matrix = m_mView;// SMMatrixLookToLH(m_vPosition, m_vLook, m_vUp);
+	return(m_mView);
 }
 
 
-void CCamera::getPosition(float3* pos) const
+const float3& CCamera::getPosition() const
 {
-	*pos = m_vPosition;
+	return(m_vPosition);
 }
 
-void CCamera::setPosition(const float3* pos)
+void CCamera::setPosition(const float3 &vPos)
 {
-	m_vPosition = *pos;
+	m_vPosition = vPos;
 }
 
-
-void CCamera::getDirection(float3* dir) const
+const float3& CCamera::getRight() const
 {
-	*dir = m_vLook;
+	return(m_vRight);
 }
 
-/*void CCamera::setDirection(const float3* dir)
+const float3& CCamera::getUp() const
 {
-m_vLook = *dir;
-}*/
-
-
-void CCamera::getRight(float3* right) const
-{
-	*right = m_vRight;
+	return(m_vUp);
 }
 
-void CCamera::getUp(float3* up) const
+const float3& CCamera::getLook() const
 {
-	*up = m_vUp;
+	return(m_vLook);
 }
 
-void CCamera::getLook(float3* look) const
+const float3& CCamera::getRotation() const
 {
-	*look = m_vLook;
-}
-
-void CCamera::getRotation(float3* rot) const
-{
-	*rot = m_vPitchYawRoll;
-}
-
-float CCamera::getRotationX() const
-{
-	return m_vPitchYawRoll.x;
-}
-
-float CCamera::getRotationY() const
-{
-	return m_vPitchYawRoll.y;
-}
-
-float CCamera::getRotationZ() const
-{
-	return m_vPitchYawRoll.z;
+	return(m_vPitchYawRoll);
 }
 
 void CCamera::setFOV(float fov)
@@ -514,12 +435,13 @@ float CCamera::getFOV() const
 	return(m_fFOV);
 }
 
-void CCamera::updateFrustum(const float4x4 *pProjection)
+void CCamera::updateFrustum(const SMMATRIX &mProjection)
 {
-	m_oFrustum.update(m_mView, *pProjection);
+	m_pFrustum->update(getViewMatrix(), mProjection);
 }
 
-const IFrustum* CCamera::getFrustum()
+IXFrustum* CCamera::getFrustum()
 {
-	return &m_oFrustum;
+	m_pFrustum->AddRef();
+	return(m_pFrustum);
 }

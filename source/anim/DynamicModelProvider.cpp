@@ -95,7 +95,7 @@ protected:
 class CVisUpdate: public IParallelForBody
 {
 public:
-	CVisUpdate(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference, Array<CDynamicModel*> &m_apModels):
+	CVisUpdate(const IXFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference, Array<CDynamicModel*> &m_apModels):
 		m_pFrustum(pFrustum),
 		m_pVisibility(pVisibility),
 		m_pReference(pReference),
@@ -147,7 +147,7 @@ public:
 	};
 
 protected:
-	const IFrustum *m_pFrustum;
+	const IXFrustum *m_pFrustum;
 	CRenderableVisibility *m_pVisibility;
 	CRenderableVisibility *m_pReference;
 	Array<CDynamicModel*> &m_apModels;
@@ -527,7 +527,7 @@ void CDynamicModelProvider::renderEmissive(CRenderableVisibility *pVisibility)
 	render(pVisibility->getSelfillumList(), MF_SELFILLUM);
 }
 
-void CDynamicModelProvider::computeVisibility(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)
+void CDynamicModelProvider::computeVisibility(const IXFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)
 {
 	void **ppData;
 	UINT uCount = m_pOpaqueQuery->execute(pFrustum, &ppData);

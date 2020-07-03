@@ -201,7 +201,7 @@ void CAnimatedModelProvider::render(CRenderableVisibility *pVisibility)
 	m_pMaterialSystem->bindVS(NULL);
 }
 
-void CAnimatedModelProvider::computeVisibility(const IFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)
+void CAnimatedModelProvider::computeVisibility(const IXFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)
 {
 	pVisibility->setItemCount(m_apModels.size());
 

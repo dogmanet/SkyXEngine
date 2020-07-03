@@ -10,7 +10,7 @@ See the license in LICENSE
 #include "sxgcore.h"
 
 //класс описывающий фрустум
-class CFrustum: public IXUnknownImplementation<IFrustum>
+class CFrustum: public IXUnknownImplementation<IXFrustum>
 {
 public:
 	SX_ALIGNED_OP_MEM2();
@@ -30,7 +30,7 @@ public:
 	bool boxInFrustum(const float3 &vMin, const float3 &vMax, bool *pIsStrict = NULL) const override;
 	bool boxInFrustum(const SMAABB &aabb, bool *pIsStrict = NULL) const override;
 
-	bool frustumInFrustum(const IFrustum *pOther) const override;
+	bool frustumInFrustum(const IXFrustum *pOther) const override;
 
 	float3 getPoint(int iNumPoint) const override;
 	float3 getCenter() const override;
@@ -53,48 +53,38 @@ private:
 class CCamera: public ICamera
 {
 public:
-	void Release()
+	CCamera();
+	~CCamera();
+
+	void Release() override
 	{
 		delete this;
 	}
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM2();
 
-		void posLeftRight(float fUnits);//влево/вправо
-	void posUpDown(float fUnits);	//вверх/вниз
-	void posFrontBack(float fUnits);//вперед/назад
+	void setOrientation(const SMQuaternion &qOrientation) override;
 
-	void rotUpDown(float fAngle);	//вращение вверх/вниз
-	void rotRightLeft(float fAngle);//вращение вправо/влево
-	void roll(float fAngle);		//крен
-	void setOrientation(const SMQuaternion *pQuaternion);
+	const SMQuaternion& getOrientation() override;
 
-	void getViewMatrix(float4x4 *pMatrix);//получаем матрицу вида
+	const SMMATRIX& getViewMatrix() const override;//получаем матрицу вида
 
-	void getPosition(float3 *pPos) const;
-	void setPosition(const float3 *pPos);
+	const float3& getPosition() const override;
+	void setPosition(const float3 &vPos) override;
 
-	void getDirection(float3 *pDir) const;
-	//void setDirection(const float3 *pDir);
+	const float3& getRight() const override;
+	const float3& getUp() const override;
+	const float3& getLook() const override;
 
-	void getRight(float3 *pRight) const;
-	void getUp(float3 *pUp) const;
-	void getLook(float3 *pLook) const;
-	void getRotation(float3 *pRot) const;
+	const float3& getRotation() const override;//?
 
-	float getRotationX() const;
-	float getRotationY() const;
-	float getRotationZ() const;
+	void setFOV(float fFOV) override;
+	float getFOV() const override;
 
-	void setFOV(float fFOV);
-	float getFOV() const;
-
-	void updateView();
-
-	void updateFrustum(const float4x4 *pmProjection);
-	const IFrustum* getFrustum();
+	void updateFrustum(const SMMATRIX &mProjection) override;
+	IXFrustum* getFrustum() override;
 
 protected:
-	CFrustum m_oFrustum;	//!< фрустум этой камеры
+	CFrustum *m_pFrustum;	//!< фрустум этой камеры
 
 	float3 m_vRight = float3(1.0f, 0.0f, 0.0f);
 	float3 m_vUp = float3(0.0f, 1.0f, 0.0f);
@@ -102,9 +92,11 @@ protected:
 
 	float3 m_vPosition = float3(0.0f, 0.0f, 0.0f);
 
-	float3_t m_vPitchYawRoll = float3(0.0f, 0.0f, 0.0f);
+	float3 m_vPitchYawRoll = float3(0.0f, 0.0f, 0.0f);
 
-	float4x4 m_mView;
+	SMQuaternion m_qRotation;
+
+	mutable float4x4 m_mView;
 
 	float m_fFOV;
 };

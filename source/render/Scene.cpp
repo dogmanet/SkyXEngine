@@ -95,7 +95,7 @@ CSceneQuery::~CSceneQuery()
 {
 }
 
-UINT XMETHODCALLTYPE CSceneQuery::execute(const IFrustum *pFrustum, void ***pppObjects, IXOcclusionCuller *pOcclusionCuller)
+UINT XMETHODCALLTYPE CSceneQuery::execute(const IXFrustum *pFrustum, void ***pppObjects, IXOcclusionCuller *pOcclusionCuller)
 {
 	m_aQueryResponse.clearFast();
 
@@ -112,7 +112,7 @@ UINT XMETHODCALLTYPE CSceneQuery::execute(const IFrustum *pFrustum, void ***pppO
 	return(m_aQueryResponse.size());
 }
 
-void CSceneQuery::queryObjectsInternal(CSceneNode *pNode, const IFrustum *pFrustum, bool isFullyVisible, IXOcclusionCuller *pOcclusionCuller)
+void CSceneQuery::queryObjectsInternal(CSceneNode *pNode, const IXFrustum *pFrustum, bool isFullyVisible, IXOcclusionCuller *pOcclusionCuller)
 {
 	if(!pNode)
 	{

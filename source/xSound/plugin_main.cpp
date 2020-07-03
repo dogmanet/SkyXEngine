@@ -32,9 +32,9 @@ public:
 	void onEvent(const XEventObserverChanged *pData) override
 	{
 		std::lock_guard<std::mutex> guard(m_oMutex);
-		pData->pCamera->getPosition(&m_vPos);
-		pData->pCamera->getUp(&m_vUp);
-		pData->pCamera->getLook(&m_vLook);
+		m_vPos = pData->pCamera->getPosition();
+		m_vUp = pData->pCamera->getUp();
+		m_vLook = pData->pCamera->getLook();
 	}
 
 	void getObserverParam(float3 *pPos, float3 *pLook, float3 *pUp)

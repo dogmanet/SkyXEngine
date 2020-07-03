@@ -424,10 +424,8 @@ void XMETHODCALLTYPE CLightSystem::updateVisibility()
 		return;
 	}
 
-	float3 vCamPos;
-	m_pMainCamera->getPosition(&vCamPos);
-	float3 vCamDir;
-	m_pMainCamera->getLook(&vCamDir);
+	float3 vCamPos = m_pMainCamera->getPosition();
+	float3 vCamDir = m_pMainCamera->getLook();
 
 	static const float *lpv_size_2 = GET_PCVAR_FLOAT("lpv_size_2");
 	static const int *lpv_cascades_count = GET_PCVAR_INT("lpv_cascades_count");
@@ -537,10 +535,8 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 
 	m_pRenderPipeline->renderGI();
 
-	float3 vCamDir;
-	m_pMainCamera->getLook(&vCamDir);
-	float3 vCamPos;
-	m_pMainCamera->getPosition(&vCamPos);
+	float3 vCamDir = m_pMainCamera->getLook();
+	float3 vCamPos = m_pMainCamera->getPosition();
 
 	static const float *lpv_size_0 = GET_PCVAR_FLOAT("lpv_size_0");
 	static const float *lpv_size_1 = GET_PCVAR_FLOAT("lpv_size_1");

@@ -197,16 +197,15 @@ public:
 					m_vPitchYawRoll.y -= SM_2PI;
 				}
 
-				pCamera->setOrientation(&(SMQuaternion(m_vPitchYawRoll.x, 'x') * SMQuaternion(m_vPitchYawRoll.z, 'z') * SMQuaternion(m_vPitchYawRoll.y, 'y')));
+				pCamera->setOrientation(SMQuaternion(m_vPitchYawRoll.x, 'x') * SMQuaternion(m_vPitchYawRoll.z, 'z') * SMQuaternion(m_vPitchYawRoll.y, 'y'));
 			}
 			else if(g_is3DPanning)
 			{
-				float3 vPos, vUp, vRight;
-				pCamera->getPosition(&vPos);
-				pCamera->getUp(&vUp);
-				pCamera->getRight(&vRight);
+				float3 vPos = pCamera->getPosition();
+				float3 vUp = pCamera->getUp();
+				float3 vRight = pCamera->getRight();
 				vPos += vUp * -dy * 10.0f + vRight * dx * 10.0f;
-				pCamera->setPosition(&vPos);
+				pCamera->setPosition(vPos);
 			}
 			else if(g_is2DPanning)
 			{
@@ -231,10 +230,7 @@ public:
 					break;
 				}
 
-				float3 vPos;
-				pCamera->getPosition(&vPos);
-				vPos = vPos + vWorldDelta3D;
-				pCamera->setPosition(&vPos);
+				pCamera->setPosition(pCamera->getPosition() + vWorldDelta3D);
 			}
 
 			if(g_is3DPanning || g_is3DRotating)
@@ -278,13 +274,12 @@ public:
 					{
 						s_fSpeed = fMaxSpeed;
 					}
-					float3 vPos, vDir, vRight;
-					pCamera->getPosition(&vPos);
-					pCamera->getLook(&vDir);
-					pCamera->getRight(&vRight);
+					float3 vPos = pCamera->getPosition();
+					float3 vDir = pCamera->getLook();
+					float3 vRight = pCamera->getRight();
 					dir = SMVector3Normalize(dir) * fDeltaTime * s_fSpeed;
 					vPos += vDir * dir.z + vRight * dir.x;
-					pCamera->setPosition(&vPos);
+					pCamera->setPosition(vPos);
 				}
 				else
 				{
@@ -407,15 +402,14 @@ public:
 			pDXDevice->setDepthStencilState(g_pDSNoZ);
  			pDXDevice->setBlendState(NULL);
 			SMMATRIX mProj = SMMatrixOrthographicLH((float)pBackBuffer->getWidth() * fScales[i], (float)pBackBuffer->getHeight() * fScales[i], 1.0f, 2000.0f);
-			SMMATRIX mView;
-			pCameras[i]->getViewMatrix(&mView);
+			SMMATRIX mView = pCameras[i]->getViewMatrix();
 			Core_RMatrixSet(G_RI_MATRIX_OBSERVER_VIEW, &mView);
 			Core_RMatrixSet(G_RI_MATRIX_VIEW, &mView);
 			Core_RMatrixSet(G_RI_MATRIX_OBSERVER_PROJ, &mProj);
 			Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &mProj);
 			Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(mView * mProj));
 
-			pCameras[i]->updateFrustum(&mProj);
+			pCameras[i]->updateFrustum(mProj);
 
 			g_pCameraConstantBuffer->update(&SMMatrixIdentity);
 			pDXDevice->setVSConstant(g_pCameraConstantBuffer, SCR_OBJECT);
@@ -742,17 +736,18 @@ int main(int argc, char **argv)
 					{
 						if(sscanf(szVal, "%f %f %f", &vec.x, &vec.y, &vec.z) == 3)
 						{
-							g_xConfig.m_pViewportCamera[i]->setPosition(&vec);
+							g_xConfig.m_pViewportCamera[i]->setPosition(vec);
 						}
 					}
 
-					sprintf_s(szKey, "cam%u_dir", i);
+					SMQuaternion q;
+					sprintf_s(szKey, "cam%u_rot", i);
 					szVal = pCfg->getKey("terrax", szKey);
 					if(szVal)
 					{
-						if(sscanf(szVal, "%f %f %f", &vec.x, &vec.y, &vec.z) == 3)
+						if(sscanf(szVal, "%f %f %f %f", &q.x, &q.y, &q.z, &q.w) == 4)
 						{
-							g_xConfig.m_pViewportCamera[i]->setOrientation(&(SMQuaternion(vec.x, 'x') * SMQuaternion(vec.y, 'y') * SMQuaternion(vec.z, 'z')));
+							g_xConfig.m_pViewportCamera[i]->setOrientation(q);
 						}
 					}
 
@@ -819,14 +814,14 @@ int main(int argc, char **argv)
 				for(UINT i = 0; i < 4; ++i)
 				{
 					float3 vec;
-					g_xConfig.m_pViewportCamera[i]->getPosition(&vec);
+					vec = g_xConfig.m_pViewportCamera[i]->getPosition();
 					sprintf_s(szVal, "%f %f %f", vec.x, vec.y, vec.z);
 					sprintf_s(szKey, "cam%u_pos", i);
 					pCfg->set("terrax", szKey, szVal);
 
-					g_xConfig.m_pViewportCamera[i]->getRotation(&vec);
-					sprintf_s(szVal, "%f %f %f", vec.x, vec.y, vec.z);
-					sprintf_s(szKey, "cam%u_dir", i);
+					SMQuaternion q = g_xConfig.m_pViewportCamera[i]->getOrientation();
+					sprintf_s(szVal, "%f %f %f %f", q.x, q.y, q.z, q.w);
+					sprintf_s(szKey, "cam%u_rot", i);
 					pCfg->set("terrax", szKey, szVal);
 
 					sprintf_s(szVal, "%f", g_xConfig.m_fViewportScale[i]);
@@ -880,16 +875,16 @@ int main(int argc, char **argv)
 	g_xConfig.m_pViewportCamera[XWP_TOP_LEFT]->setFOV(*r_default_fov);
 
 	g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT] = SGCore_CrCamera();
-	g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT]->setPosition(&X2D_TOP_POS);
-	g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT]->setOrientation(&X2D_TOP_ROT);
+	g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT]->setPosition(X2D_TOP_POS);
+	g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT]->setOrientation(X2D_TOP_ROT);
 
 	g_xConfig.m_pViewportCamera[XWP_BOTTOM_LEFT] = SGCore_CrCamera();
-	g_xConfig.m_pViewportCamera[XWP_BOTTOM_LEFT]->setPosition(&X2D_SIDE_POS);
-	g_xConfig.m_pViewportCamera[XWP_BOTTOM_LEFT]->setOrientation(&X2D_SIDE_ROT);
+	g_xConfig.m_pViewportCamera[XWP_BOTTOM_LEFT]->setPosition(X2D_SIDE_POS);
+	g_xConfig.m_pViewportCamera[XWP_BOTTOM_LEFT]->setOrientation(X2D_SIDE_ROT);
 
 	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT] = SGCore_CrCamera();
-	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT]->setPosition(&X2D_FRONT_POS);
-	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT]->setOrientation(&X2D_FRONT_ROT);
+	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT]->setPosition(X2D_FRONT_POS);
+	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT]->setOrientation(X2D_FRONT_ROT);
 
 
 //	SkyXEngine_RunGenPreview();
@@ -1728,7 +1723,7 @@ bool XRayCast(X_WINDOW_POS wnd)
 	{
 		return(false);
 	}
-	g_xConfig.m_pViewportCamera[wnd]->getPosition(&vCamPos);
+	vCamPos = g_xConfig.m_pViewportCamera[wnd]->getPosition();
 	switch(g_xConfig.m_x2DView[wnd])
 	{
 	case X2D_NONE:

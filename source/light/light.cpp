@@ -254,10 +254,12 @@ void CXLightPoint::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin,
 	m_renderType = LRT_NONE;
 	
 	float3 vOrigin = getPosition();
-	if(pMainCamera->getFrustum()->sphereInFrustum(vOrigin, getMaxDistance()))
+	IXFrustum *pFrustum = pMainCamera->getFrustum();
+	if(pFrustum->sphereInFrustum(vOrigin, getMaxDistance()))
 	{
 		m_renderType |= LRT_LIGHT;
 	}
+	mem_release(pFrustum);
 
 	CXLight::updateVisibility(pMainCamera, vLPVmin, vLPVmax, useLPV);
 }
@@ -363,15 +365,10 @@ void CXLightSun::updateFrustum()
 	float3 vLightDir = getDirection() * LIGHTS_DIR_BASE;
 	float3 vUpDir = getDirection() * float3(1.0f, 0.0f, 0.0f);
 
-	float3 vStart;
-	m_pCamera->getPosition(&vStart);
-	float3 vDir;
-	m_pCamera->getLook(&vDir);
-	vDir = SMVector3Normalize(vDir);
-	float3 vRight;
-	m_pCamera->getRight(&vRight);
-	float3 vUp;
-	m_pCamera->getUp(&vUp);
+	float3 vStart = m_pCamera->getPosition();
+	float3 vDir = SMVector3Normalize(m_pCamera->getLook());
+	float3 vRight = m_pCamera->getRight();
+	float3 vUp = m_pCamera->getUp();
 
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
@@ -651,10 +648,12 @@ void CXLightSpot::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, 
 
 	updateFrustum();
 	float3 vOrigin = getPosition();
-	if(pMainCamera->getFrustum()->frustumInFrustum(m_pFrustum))
+	IXFrustum *pFrustum = pMainCamera->getFrustum();
+	if(pFrustum->frustumInFrustum(m_pFrustum))
 	{
 		m_renderType |= LRT_LIGHT;
 	}
+	mem_release(pFrustum);
 
 	CXLight::updateVisibility(pMainCamera, vLPVmin, vLPVmax, useLPV);
 }

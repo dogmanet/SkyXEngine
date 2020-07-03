@@ -275,45 +275,45 @@ SX_LIB_API const CPerfRecord *Core_PGetRecords(ID idThread, int *piRecordCount);
 #define CORE_REGISTRY_SIZE 64	
 
 //! установка значения в регистр bool типа
-SX_LIB_API void Core_RBoolSet(int id, bool val);	
+SX_LIB_API XDEPRECATED void Core_RBoolSet(int id, bool val);
 
 //! получение значения из регистра bool типа
-SX_LIB_API bool Core_RBoolGet(int id);		
+SX_LIB_API XDEPRECATED bool Core_RBoolGet(int id);
 
 
 //! установка значения в регистр int32_t типа
-SX_LIB_API void Core_RIntSet(int id, int32_t val);	
+SX_LIB_API XDEPRECATED void Core_RIntSet(int id, int32_t val);
 
 //! получение значения из регистра int32_t типа
-SX_LIB_API int32_t Core_RIntGet(int id);			
+SX_LIB_API XDEPRECATED int32_t Core_RIntGet(int id);
 
 
 //! установка значения в регистр float32_t типа
-SX_LIB_API void Core_RFloatSet(int id, float32_t val);	
+SX_LIB_API XDEPRECATED void Core_RFloatSet(int id, float32_t val);
 
 //! получение значения из регистра float32_t типа
-SX_LIB_API float32_t Core_RFloatGet(int id);			
+SX_LIB_API XDEPRECATED float32_t Core_RFloatGet(int id);
 
 
 //! установка значения в регистр float4x4 типа
-SX_LIB_API void Core_RMatrixSet(int id, float4x4* val);	
+SX_LIB_API XDEPRECATED void Core_RMatrixSet(int id, float4x4* val);
 
 //! получение значения из регистра float4x4 типа
-SX_LIB_API void Core_RMatrixGet(int id, float4x4* val);	
+SX_LIB_API XDEPRECATED void Core_RMatrixGet(int id, float4x4* val);
 
 
 //! установка значения в регистр float3 типа
-SX_LIB_API void Core_RFloat3Set(int id, float3* val);	
+SX_LIB_API XDEPRECATED void Core_RFloat3Set(int id, float3* val);
 
 //! получение значения из регистра float3 типа
-SX_LIB_API void Core_RFloat3Get(int id, float3* val);	
+SX_LIB_API XDEPRECATED void Core_RFloat3Get(int id, float3* val);
 
 
 //! установка значения в регистр string типа
-SX_LIB_API void Core_RStringSet(int id, const char *val);	
+SX_LIB_API XDEPRECATED void Core_RStringSet(int id, const char *val);
 
 //! получение значения из регистра string типа
-SX_LIB_API const char* Core_RStringGet(int id);				
+SX_LIB_API XDEPRECATED const char* Core_RStringGet(int id);
 
 //! @}
 

@@ -112,7 +112,7 @@ protected:
 	IGXConstantBuffer *m_pPSData = NULL;
 
 
-	IFrustum *m_pFrustum = NULL;
+	IXFrustum *m_pFrustum = NULL;
 	IXRenderableVisibility *m_pVisibility = NULL;
 	LIGHT_RENDER_TYPE m_renderType = LRT_NONE;
 	LIGHT_RENDER_TYPE m_dirty = LRT_ALL;
@@ -192,8 +192,8 @@ protected:
 	SMMATRIX m_mReflectiveView;
 	SMMATRIX m_mReflectiveProj;
 
-	IFrustum *m_pPSSMFrustum[PSSM_MAX_SPLITS - 1];
-	IFrustum *m_pReflectiveFrustum = NULL;
+	IXFrustum *m_pPSSMFrustum[PSSM_MAX_SPLITS - 1];
+	IXFrustum *m_pReflectiveFrustum = NULL;
 	IXRenderableVisibility *m_pReflectiveVisibility = NULL;
 	IXRenderableVisibility *m_pTempVisibility = NULL;
 };

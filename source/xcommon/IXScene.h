@@ -2,7 +2,7 @@
 #define __IXSCENE_H
 
 #include <gdefines.h>
-#include "render/IFrustum.h"
+#include "render/IXFrustum.h"
 
 class IXOcclusionCuller;
 
@@ -64,7 +64,7 @@ public:
 		в pppObjects записывается указатель на массив пользовательских указателей найденных объектов
 		@threadsafe sync
 	*/
-	virtual UINT XMETHODCALLTYPE execute(const IFrustum *pFrustum, void ***pppObjects, IXOcclusionCuller *pOcclusionCuller = NULL) = 0;
+	virtual UINT XMETHODCALLTYPE execute(const IXFrustum *pFrustum, void ***pppObjects, IXOcclusionCuller *pOcclusionCuller = NULL) = 0;
 
 	/*!
 		Устанавливает операцию выборки

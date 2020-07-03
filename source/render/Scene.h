@@ -87,7 +87,7 @@ public:
 	CSceneQuery(CScene *pScene, CSceneObjectType *pObjectType);
 	~CSceneQuery();
 
-	UINT XMETHODCALLTYPE execute(const IFrustum *pFrustum, void ***pppObjects, IXOcclusionCuller *pOcclusionCuller = NULL) override;
+	UINT XMETHODCALLTYPE execute(const IXFrustum *pFrustum, void ***pppObjects, IXOcclusionCuller *pOcclusionCuller = NULL) override;
 
 	void XMETHODCALLTYPE setOP(XSCENE_QUERY_OP op) override;
 
@@ -102,7 +102,7 @@ private:
 	NodeFeature m_bmSet = 0;
 	NodeFeature m_bmUnset = 0;
 
-	void queryObjectsInternal(CSceneNode *pNode, const IFrustum *pFrustum, bool isFullyVisible = false, IXOcclusionCuller *pOcclusionCuller = NULL);
+	void queryObjectsInternal(CSceneNode *pNode, const IXFrustum *pFrustum, bool isFullyVisible = false, IXOcclusionCuller *pOcclusionCuller = NULL);
 	bool testFeatures(NodeFeature bmFeatures, bool isStrict = true);
 };
 

@@ -1049,8 +1049,7 @@ void CRenderPipeline::renderTransparent()
 		}
 		//m_poolTransparencyBSPobjects
 
-		float3 vCamPos;
-		gdata::pCamera->getPosition(&vCamPos);
+		float3 vCamPos = gdata::pCamera->getPosition();
 
 		// Построение дерева
 		XTransparentBSPNode *pRootNode = m_poolTransparencyBSPnodes.Alloc();
@@ -1541,8 +1540,7 @@ void CRenderPipeline::renderEditor2D(IXRenderableVisibility *pVisibility)
 
 	SMMATRIX mVP;
 	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mVP);
-	float3 vCamPos;
-	SRender_GetCamera()->getPosition(&vCamPos);
+	float3 vCamPos = SRender_GetCamera()->getPosition();
 
 	m_cameraShaderData.mVP = SMMatrixTranspose(mVP);
 	m_cameraShaderData.vPosCam = vCamPos;

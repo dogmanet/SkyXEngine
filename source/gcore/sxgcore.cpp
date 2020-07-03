@@ -235,7 +235,7 @@ SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3 *pMin, const float3 *
 
 //##########################################################################
 
-SX_LIB_API IFrustum* SGCore_CrFrustum()
+SX_LIB_API IXFrustum* SGCore_CrFrustum()
 {
 	return new CFrustum();
 }

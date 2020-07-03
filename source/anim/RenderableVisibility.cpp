@@ -22,10 +22,12 @@ void CRenderableVisibility::setOcclusionCuller(IXOcclusionCuller *pOcclusionCull
 
 void CRenderableVisibility::updateForCamera(ICamera *pCamera, const IXRenderableVisibility *pReference)
 {
-	updateForFrustum(pCamera->getFrustum(), pReference);
+	IXFrustum *pFrustum = pCamera->getFrustum();
+	updateForFrustum(pFrustum, pReference);
+	mem_release(pFrustum);
 }
 
-void CRenderableVisibility::updateForFrustum(const IFrustum *pFrustum, const IXRenderableVisibility *pReference)
+void CRenderableVisibility::updateForFrustum(const IXFrustum *pFrustum, const IXRenderableVisibility *pReference)
 {
 	CRenderableVisibility *pRef = NULL;
 	if(pReference)

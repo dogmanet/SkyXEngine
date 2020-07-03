@@ -74,6 +74,8 @@ public:
 
 	void respawn();
 	
+	void setOrient(const SMQuaternion &q) override;
+
 protected:
 	//! Камера
 	CPointCamera * m_pCamera;
