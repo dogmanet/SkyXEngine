@@ -1601,6 +1601,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		PostQuitMessage(0);
 		break;
 
+	case WM_SETTITLEASYNC:
+		SetWindowTextA(hWnd, (LPCSTR)lParam);
+		break;
+
 	case WM_CLOSE:
 		if(g_pUndoManager->isDirty())
 		{
@@ -2452,10 +2456,6 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		DeleteObject(hcSizeNWSE);
 		DeleteObject(hcSizeNESW);
 		DeleteObject(hcRotate);
-		break;
-
-	case WM_SETTITLEASYNC:
-		SetWindowTextA(hWnd, (LPCSTR)lParam);
 		break;
 
 	default:
