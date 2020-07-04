@@ -384,7 +384,7 @@ bool CEntityManager::exportList(const char * file)
 	proptable_t * pTbl;
 	int ic = 0;
 
-	conf->set("meta", "count", "0");
+	// conf->set("meta", "count", "0");
 
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
@@ -1125,7 +1125,7 @@ void CEntityManager::dispatchBaseline(CBaseline *pBaseline)
 			pEnt->setKV("rotation", pNode->Val->c_str());
 		}
 
-		pEnt->setFlags(pEnt->getFlags() | EF_LEVEL);
+		pEnt->setFlags(pEnt->getFlags() | EF_LEVEL | EF_EXPORT);
 	}
 
 	const char *key;
