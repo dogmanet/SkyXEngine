@@ -20,6 +20,7 @@ See the license in LICENSE
 #include <xcommon/editor/IXEditorObject.h>
 #include <xcommon/editor/IXEditable.h>
 #include <xcommon/IXRenderable.h>
+#include <xcommon/resource/IXResourceManager.h>
 #include <mtrl/IXMaterialSystem.h>
 #include "UndoManager.h"
 #include "Tools.h"
@@ -77,6 +78,7 @@ IGXTexture2D *g_pDashedMaterial = NULL;
 void XReleaseViewports();
 void XInitViewports();
 void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
+void XExportToObj(const char *szMdl);
 
 class CEngineCallback: public IXEngineCallback
 {
@@ -623,6 +625,17 @@ int main(int argc, char **argv)
 	pEngine->getCore()->getConsole()->registerCVar("terrax_detach_3d", false, "", FCVAR_NOTIFY);
 	pEngine->getCore()->getConsole()->execCommand("gmode editor");
 	pEngine->getCore()->getConsole()->execCommand("exec ../config_editor.cfg");
+
+	pEngine->getCore()->getConsole()->registerCommand("obj_dump", [](int argc, const char **argv){
+		if(argc != 2)
+		{
+			printf("Usage: obj_dump <model>");
+			return;
+		}
+
+		XExportToObj(argv[1]);
+	}, "Export model to obj format");
+
 	CRenderPipeline *pPipeline = new CRenderPipeline(Core_GetIXCore());
 	XInitGuiWindow(false);
 
@@ -1792,4 +1805,119 @@ void XUpdateWindowTitle()
 	}
 	PostMessageA(g_hWndMain, WM_SETTITLEASYNC, 0, (LPARAM)szCaption);
 	// SetWindowText(g_hWndMain, szCaption);
+}
+
+void XExportToObj(const char *szMdl)
+{
+	IXCore *pCore = g_pEngine->getCore();
+	IXResourceManager *pResourceManager = pCore->getResourceManager();
+	IFileSystem *pFileSystem = pCore->getFileSystem();
+
+	IXResourceModel *pResource;
+	IXResourceModelStatic *pResourceStatic;
+	if(!pResourceManager->getModel(szMdl, &pResource))
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to load model '%s'!\n", szMdl);
+		return;
+	}
+	if(!(pResourceStatic = pResource->asStatic()))
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Model '%s' is not a static model. Cannot export!\n", szMdl);
+		mem_release(pResource);
+		return;
+	}
+
+	const char *szBasename = basename(szMdl);
+	char buf[128];
+	
+	sprintf(buf, "export/%s.mtl", szBasename);
+	IFile *pMatFile = pFileSystem->openFile(buf, FILE_MODE_WRITE);
+
+	sprintf(buf, "export/%s.obj", szBasename);
+	IFile *pObjFile = pFileSystem->openFile(buf, FILE_MODE_WRITE);
+	
+
+	pObjFile->writeText("# File was written by " SKYXENGINE_VERSION4EDITORS "\n# Original model: %s\n\nmtllib %s.mtl\no model\n", szMdl, szBasename);
+
+	UINT uSubsets = pResourceStatic->getSubsetCount(0);
+	for(UINT i = 0; i < uSubsets; ++i)
+	{
+		auto *pSubset = pResourceStatic->getSubset(0, i);
+		pObjFile->writeText("\n# Subset %u\n", i);
+		for(UINT j = 0; j < pSubset->iVertexCount; ++j)
+		{
+			auto &v = pSubset->pVertices[j];
+
+			pObjFile->writeText("v %f %f %f\nvt %f %f\nvn %f %f %f\n", 
+				v.vPos.x, v.vPos.y, v.vPos.z,
+				v.vTex.x, v.vTex.y,
+				v.vNorm.x, v.vNorm.y, v.vNorm.z
+				);
+		}
+	}
+	// XPT_TRIANGLELIST
+	//XPT_TRIANGLESTRIP
+	UINT uFaceOffset = 1;
+	XPT_TOPOLOGY topology = pResourceStatic->getPrimitiveTopology();
+	for(UINT i = 0; i < uSubsets; ++i)
+	{
+		auto *pSubset = pResourceStatic->getSubset(0, i);
+		pObjFile->writeText("\n# Subset %u\ng subset_%u\nusemtl mtl_%u\ns off\n", i, i, pSubset->iMaterialID);
+		
+		if(topology == XPT_TRIANGLELIST)
+		{
+			for(UINT j = 0; j < pSubset->iIndexCount; j += 3)
+			{
+				UINT a = pSubset->pIndices[j] + uFaceOffset;
+				UINT b = pSubset->pIndices[j + 1] + uFaceOffset;
+				UINT c = pSubset->pIndices[j + 2] + uFaceOffset;
+				pObjFile->writeText("f %u/%u/%u %u/%u/%u %u/%u/%u\n",
+					a, a, a,
+					b, b, b,
+					c, c, c
+					);
+			}
+		}
+		else if(topology == XPT_TRIANGLESTRIP)
+		{
+			for(UINT j = 0; j < pSubset->iIndexCount - 2; ++j)
+			{
+				UINT a = pSubset->pIndices[j] + uFaceOffset;
+				UINT b = pSubset->pIndices[j + 1] + uFaceOffset;
+				UINT c = pSubset->pIndices[j + 2] + uFaceOffset;
+				pObjFile->writeText("f %u/%u/%u %u/%u/%u %u/%u/%u\n",
+					a, a, a,
+					b, b, b,
+					c, c, c
+					);
+			}
+		}
+		else
+		{
+			assert(!"Unknown topology!");
+		}
+
+		uFaceOffset += pSubset->iVertexCount;
+	}
+
+	UINT uMatCount = pResourceStatic->getMaterialCount();
+	for(UINT i = 0; i < uMatCount; ++i)
+	{
+		const char *szMtl = pResourceStatic->getMaterial(i);
+
+		pMatFile->writeText("newmtl mtl_%u\n", i);
+
+		if(szMtl)
+		{
+			pMatFile->writeText("  map_Kd %s.dds\n", szMtl);
+		}
+
+		pMatFile->writeText("\n");
+	}
+
+	mem_release(pMatFile);
+	mem_release(pObjFile);
+	mem_release(pResource);
+
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "%s was written\n", buf);
 }
