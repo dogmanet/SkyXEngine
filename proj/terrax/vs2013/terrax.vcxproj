@@ -229,7 +229,6 @@
     <ClInclude Include="..\..\..\source\editors_utils\axes_helper.h" />
     <ClInclude Include="..\..\..\source\gdefines.h" />
     <ClInclude Include="..\..\..\source\SkyXEngine.h" />
-    <ClInclude Include="..\..\..\source\terrax\Command.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandCreate.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandDelete.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandMove.h" />

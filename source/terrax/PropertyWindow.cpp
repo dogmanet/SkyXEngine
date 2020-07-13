@@ -6,6 +6,51 @@
 #include <commctrl.h>
 #include <Commdlg.h>
 
+class CEditorPropertyTabCallback final: public IXEditorPropertyTabCallback
+{
+public:
+	CEditorPropertyTabCallback(CPropertyWindow *pPropertyWindow, IXEditorPropertyTab *pTab):
+		m_pPropertyWindow(pPropertyWindow),
+		m_pTab(pTab)
+	{
+	}
+	~CEditorPropertyTabCallback()
+	{
+		m_pTab->setCallback(NULL);
+	}
+
+	void XMETHODCALLTYPE onAdd() override
+	{
+		m_pPropertyWindow->onAddTab(this);
+	}
+	void XMETHODCALLTYPE onRemove() override
+	{
+		m_pPropertyWindow->onRemoveTab(this);
+	}
+
+	IXEditorPropertyTab* getTab()
+	{
+		return(m_pTab);
+	}
+
+	void setTabIndex(int id)
+	{
+		m_iTabId = id;
+	}
+
+	int getTabIndex()
+	{
+		return(m_iTabId);
+	}
+
+private:
+	CPropertyWindow *m_pPropertyWindow;
+	IXEditorPropertyTab *m_pTab;
+	int m_iTabId = -1;
+};
+
+//##########################################################################
+
 static UINT g_uEditorDlgIds[] = {
 	IDD_PROPEDIT_TEXT,
 	IDD_PROPEDIT_FILE,
@@ -21,13 +66,18 @@ CPropertyWindow::CPropertyWindow(HINSTANCE hInstance, HWND hMainWnd):
 	m_hInstance(hInstance)
 {
 	CreateDialogParamA(m_hInstance, MAKEINTRESOURCE(IDD_DIALOG1), hMainWnd, DlgProc, (LPARAM)this);
-	show();
+	// show();
 
 	// SetWindowPos(m_hDlgWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 }
 
 CPropertyWindow::~CPropertyWindow()
 {
+	for(UINT i = 0, l = m_aCustomTabs.size(); i < l; ++i)
+	{
+		mem_delete(m_aCustomTabs[i]);
+	}
+
 	DestroyWindow(m_hDlgWnd);
 }
 
@@ -106,13 +156,33 @@ LRESULT CALLBACK CPropertyWindow::EditEnterDlgProc(HWND hWnd, UINT msg, WPARAM w
 	switch(msg)
 	{
 	case WM_CHAR:
-		if(wParam == 13)
+		if(wParam == VK_RETURN)
 		{
 			SendMessage(GetParent(hWnd), WM_COMMAND, MAKEWPARAM(IDC_OPE_FILE, EN_KILLFOCUS), (LPARAM)hWnd);
 			return(0);
 		}
 	}
-	return((LRESULT)CallWindowProc((WNDPROC)m_defEditProc, hWnd, msg, wParam, lParam));
+	return(CallWindowProc(m_defEditProc, hWnd, msg, wParam, lParam));
+}
+
+LRESULT CALLBACK CPropertyWindow::ClassListWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	CPropertyWindow *pThis = (CPropertyWindow*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+	switch(message)
+	{
+	case WM_KEYDOWN:
+		switch(wParam)
+		{
+		case VK_ESCAPE:
+		case VK_RETURN:
+			ComboBox_ShowDropdown(GetParent(hWnd), FALSE);
+			SetFocus(pThis->m_hDlgWnd);
+			break;
+		}
+		break;
+	}
+
+	return(CallWindowProc(pThis->m_pfnClassListOldWndproc, hWnd, message, wParam, lParam));
 }
 
 INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -129,10 +199,9 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 			TabCtrl_InsertItem(m_hTabControl, 0, &ti);
 			ti.pszText = "Flags";
 			TabCtrl_InsertItem(m_hTabControl, 1, &ti);
-			ti.pszText = "Outputs";
-			TabCtrl_InsertItem(m_hTabControl, 2, &ti);
+			// ti.pszText = "Outputs";
+			// TabCtrl_InsertItem(m_hTabControl, 2, &ti);
 			TabCtrl_SetCurSel(m_hTabControl, 0);
-
 
 			RECT rcDisplay = {0};
 			GetWindowRect(m_hTabControl, &rcDisplay);
@@ -141,15 +210,20 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 
 			m_hPropTabs[0] = CreateDialog(m_hInstance, MAKEINTRESOURCE(IDD_OP_PROPS), m_hDlgWnd, PropDlgProc);
 			m_hPropTabs[1] = CreateDialog(m_hInstance, MAKEINTRESOURCE(IDD_OP_FLAGS), m_hDlgWnd, PropDlgProc);
-			m_hPropTabs[2] = CreateDialog(m_hInstance, MAKEINTRESOURCE(IDD_OP_OUTPUTS), m_hDlgWnd, NULL);
+			// m_hPropTabs[2] = CreateDialog(m_hInstance, MAKEINTRESOURCE(IDD_OP_OUTPUTS), m_hDlgWnd, NULL);
 
 			const int iXDelta = -3;
 
-			for(int i = 0; i < 3; ++i)
-			{
-				SetWindowPos(m_hPropTabs[i], HWND_TOP, rcDisplay.left + iXDelta, rcDisplay.top, rcDisplay.right - rcDisplay.left - iXDelta, rcDisplay.bottom - rcDisplay.top, 0);
-			}
+			m_iTabX = rcDisplay.left + iXDelta;
+			m_iTabY = rcDisplay.top;
+			m_iTabCX = rcDisplay.right - rcDisplay.left - iXDelta;
+			m_iTabCY = rcDisplay.bottom - rcDisplay.top;
 
+			for(UINT i = 0, l = m_hPropTabs.size(); i < l; ++i)
+			{
+				SetWindowPos(m_hPropTabs[i], HWND_TOP, m_iTabX, m_iTabY, m_iTabCX, m_iTabCY, 0);
+			}
+			
 			onSelChanged();
 
 			m_hNoPropsText = GetDlgItem(m_hDlgWnd, IDC_NO_PROPS);
@@ -487,26 +561,6 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 	return(TRUE);
 }
 
-INT_PTR CALLBACK CPropertyWindow::ClassListWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	CPropertyWindow *pThis = (CPropertyWindow*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-	switch(message)
-	{
-	case WM_KEYDOWN:
-		switch(wParam)
-		{
-		case VK_ESCAPE:
-		case VK_RETURN:
-			ComboBox_ShowDropdown(GetParent(hWnd), FALSE);
-			SetFocus(pThis->m_hDlgWnd);
-			break;
-		}
-		break;
-	}
-
-	return(CallWindowProc(pThis->m_pfnClassListOldWndproc, hWnd, message, wParam, lParam));
-}
-
 void CPropertyWindow::onPropListChanged()
 {
 	if(ListView_GetSelectedCount(m_hPropListWnd))
@@ -529,15 +583,39 @@ void CPropertyWindow::onSelChanged()
 {
 	int iSel = TabCtrl_GetCurSel(m_hTabControl);
 
-	if(m_hCurrentTab != NULL)
-	{
-		ShowWindow(m_hCurrentTab, FALSE);
-	}
-
-	m_hCurrentTab = m_hPropTabs[iSel];
 	if(m_hCurrentTab)
 	{
-		ShowWindow(m_hCurrentTab, TRUE);
+		ShowWindow(m_hCurrentTab, SW_HIDE);
+		m_hCurrentTab = NULL;
+	}
+	if(m_pCurrentTab)
+	{
+		m_pCurrentTab->hide();
+		m_pCurrentTab = NULL;
+	}
+
+	if(iSel < m_hPropTabs.size())
+	{
+		m_hCurrentTab = m_hPropTabs[iSel];
+	}
+	else
+	{
+		int i = m_aCustomTabs.indexOf(iSel, [](CEditorPropertyTabCallback *pTab, int iSel){
+			return(pTab->getTabIndex() == iSel);
+		});
+		if(i >= 0)
+		{
+			m_pCurrentTab = m_aCustomTabs[i]->getTab();
+		}
+	}
+
+	if(m_hCurrentTab)
+	{
+		ShowWindow(m_hCurrentTab, SW_SHOWNORMAL);
+	}
+	if(m_pCurrentTab)
+	{
+		m_pCurrentTab->show();
 	}
 }
 
@@ -705,4 +783,56 @@ void CPropertyWindow::setClassName(const char *szClassName)
 void CPropertyWindow::allowClassChange(bool bAllow)
 {
 	ComboBox_Enable(m_hClassListWnd, bAllow ? 1 : 0);
+}
+
+void CPropertyWindow::addCustomTab(IXEditorPropertyTab *pTab)
+{
+	assert(m_iTabX);
+
+	CEditorPropertyTabCallback *pCB = new CEditorPropertyTabCallback(this, pTab);
+
+	m_aCustomTabs.push_back(pCB);
+	pTab->init(m_hDlgWnd, m_iTabX, m_iTabY, m_iTabCX, m_iTabCY);
+	pTab->setCallback(pCB);
+}
+
+void CPropertyWindow::onAddTab(CEditorPropertyTabCallback *pTabCB)
+{
+	IXEditorPropertyTab *pTab = pTabCB->getTab();
+
+	TCITEM ti;
+	ti.mask = TCIF_TEXT;
+	ti.pszText = strdupa(pTab->getTitle());
+	int idx = TabCtrl_InsertItem(m_hTabControl, TabCtrl_GetItemCount(m_hTabControl), &ti);
+	pTabCB->setTabIndex(idx);
+}
+void CPropertyWindow::onRemoveTab(CEditorPropertyTabCallback *pTabCB)
+{
+	if(m_pCurrentTab == pTabCB->getTab())
+	{
+		TabCtrl_SetCurSel(m_hTabControl, 0);
+		onSelChanged();
+	}
+
+	int iDel = pTabCB->getTabIndex();
+	TabCtrl_DeleteItem(m_hTabControl, iDel);
+	pTabCB->setTabIndex(-1);
+
+	for(UINT i = 0, l = m_aCustomTabs.size(); i < l; ++i)
+	{
+		pTabCB = m_aCustomTabs[i];
+		if(pTabCB->getTabIndex() > iDel)
+		{
+			pTabCB->setTabIndex(pTabCB->getTabIndex() - 1);
+		}
+	}
+}
+
+UINT CPropertyWindow::getCustomTabCount()
+{
+	return(m_aCustomTabs.size());
+}
+IXEditorPropertyTab* CPropertyWindow::getCustomTab(UINT idx)
+{
+	return(m_aCustomTabs[idx]->getTab());
 }

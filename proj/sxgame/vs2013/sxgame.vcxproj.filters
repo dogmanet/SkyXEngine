@@ -85,6 +85,12 @@
     <Filter Include="Header Files\ents\func">
       <UniqueIdentifier>{3fdacd35-e08d-4b3e-abf1-c8a507663ac7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\editor">
+      <UniqueIdentifier>{266c89a5-0d76-4e9f-86f6-0713e97b3cf8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\editor">
+      <UniqueIdentifier>{f23b9b06-41e2-4b4a-bea2-958de42c4a10}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp">
@@ -240,12 +246,6 @@
     <ClCompile Include="..\..\..\source\game\PropStatic.cpp">
       <Filter>Source Files\ents\props</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\game\Editable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\game\EditorObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\game\TriggerHurt.cpp">
       <Filter>Source Files\ents\triggers</Filter>
     </ClCompile>
@@ -269,6 +269,18 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\SoundPlayer.cpp">
       <Filter>Header Files\ents</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\Editable.cpp">
+      <Filter>Source Files\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\EditorExtension.cpp">
+      <Filter>Source Files\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\EditorObject.cpp">
+      <Filter>Source Files\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\EditorOutputsTab.cpp">
+      <Filter>Source Files\editor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -440,12 +452,6 @@
     <ClInclude Include="..\..\..\source\game\PropStatic.h">
       <Filter>Header Files\ents\props</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\game\Editable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\game\EditorObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\game\TriggerHurt.h">
       <Filter>Header Files\ents\triggers</Filter>
     </ClInclude>
@@ -473,5 +479,25 @@
     <ClInclude Include="..\..\..\source\game\Baseline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\game\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\EditorObject.h">
+      <Filter>Header Files\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\Editable.h">
+      <Filter>Header Files\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\EditorExtension.h">
+      <Filter>Header Files\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\EditorOutputsTab.h">
+      <Filter>Header Files\editor</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\source\game\sxgame.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

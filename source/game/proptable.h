@@ -28,6 +28,16 @@ class CBaseEntity;
 #define ENT_FLAG_14 0x40000000
 #define ENT_FLAG_15 0x80000000
 
+#define ENT_OUTPUT_PARAM_NONE "<none>"
+
+#define ENT_SPECIAL_NAME_MARKER "!"
+#define ENT_IS_NAME_SPECIAL(name) (name[0] == ENT_SPECIAL_NAME_MARKER[0])
+
+#define ENT_SPECIAL_NAME_THIS (ENT_SPECIAL_NAME_MARKER "this")
+#define ENT_SPECIAL_NAME_PARENT (ENT_SPECIAL_NAME_MARKER "parent")
+
+static_assert(sizeof(ENT_SPECIAL_NAME_MARKER) == 2, "ENT_SPECIAL_NAME_MARKER must be exactly one character!");
+
 //! типы полей данных
 enum PDF_TYPE
 {
@@ -261,6 +271,7 @@ struct named_output_t
 	const char *szTargetName = NULL;
 	const char *szTargetInput = NULL;
 	const char *szTargetData = NULL;
+	int iFireLimit = -1;
 
 	int iOutCount = 0;
 	input_t *pOutputs = NULL;

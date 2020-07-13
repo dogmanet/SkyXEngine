@@ -7,12 +7,19 @@
 #pragma comment(lib, "sxmtrl.lib")
 #endif
 
-CEditable::CEditable(IXCore *pCore)
+CEditable::CEditable(IXCore *pCore):
+	m_pCore(pCore),
+	m_pEditorExtension(new CEditorExtension(this))
 {
-	m_pCore = pCore;
 }
 
-void CEditable::startup(IGXDevice *pDevice)
+CEditable::~CEditable()
+{
+	shutdown();
+	mem_delete(m_pEditorExtension);
+}
+
+void XMETHODCALLTYPE CEditable::startup(IGXDevice *pDevice)
 {
 	m_pDevice = pDevice;
 
@@ -45,12 +52,7 @@ void CEditable::shutdown()
 	mem_release(m_pRSWireframe);
 }
 
-CEditable::~CEditable()
-{
-	shutdown();
-}
-
-UINT CEditable::getObjectCount()
+UINT XMETHODCALLTYPE CEditable::getObjectCount()
 {
 	UINT uResult = 0;
 	CBaseEntity *pEnt;
@@ -63,7 +65,7 @@ UINT CEditable::getObjectCount()
 	}
 	return(uResult);
 }
-IXEditorObject* CEditable::getObject(UINT id)
+IXEditorObject* XMETHODCALLTYPE CEditable::getObject(UINT id)
 {
 	UINT uResult = 0;
 	CBaseEntity *pEnt;
@@ -83,7 +85,7 @@ IXEditorObject* CEditable::getObject(UINT id)
 	
 	return(NULL);
 }
-IXEditorObject* CEditable::newObject(const char *szClassName)
+IXEditorObject* XMETHODCALLTYPE CEditable::newObject(const char *szClassName)
 {
 	CEditorObject *pObj = new CEditorObject(this, szClassName);
 	m_aObjects.push_back(pObj);
@@ -105,4 +107,9 @@ void CEditable::resync()
 	{
 		m_aObjects[i]->resync();
 	}
+}
+
+void CEditable::onSelectionChanged(CEditorObject *pObject)
+{
+	m_pEditorExtension->onSelectionChanged(pObject);
 }

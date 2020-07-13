@@ -1,25 +1,30 @@
 #ifndef _COMMAND_CREATE_H_
 #define _COMMAND_CREATE_H_
 
-#include "Command.h"
+#include <xcommon/editor/IXEditorExtension.h>
 #include "terrax.h"
 
 #include <common/assotiativearray.h>
 #include <common/string.h>
 #include <xcommon/editor/IXEditable.h>
 
-class CCommandCreate: public CCommand
+class CCommandCreate final: public IXUnknownImplementation<IXEditorCommand>
 {
 public:
 	CCommandCreate(const float3_t vPos, const char *szTypeName, const char *szClassName, bool useRandomScaleYaw=false);
 	~CCommandCreate();
 
-	bool exec();
-	bool undo();
+	bool XMETHODCALLTYPE exec() override;
+	bool XMETHODCALLTYPE undo() override;
 
-	const char *getText()
+	const char* XMETHODCALLTYPE getText() override
 	{
 		return("create");
+	}
+
+	bool XMETHODCALLTYPE isEmpty() override
+	{
+		return(false);
 	}
 
 protected:

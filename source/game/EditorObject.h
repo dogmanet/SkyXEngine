@@ -15,30 +15,57 @@ public:
 	CEditorObject(CEditable *pEditable, CBaseEntity *pEntity);
 	~CEditorObject();
 
-	void setPos(const float3_t &pos) override;
-	void setOrient(const SMQuaternion &orient) override;
-	void setScale(const float3_t &pos) override;
+	void XMETHODCALLTYPE setPos(const float3_t &pos) override;
+	void XMETHODCALLTYPE setOrient(const SMQuaternion &orient) override;
+	void XMETHODCALLTYPE setScale(const float3_t &pos) override;
 
-	void getBound(float3 *pvMin, float3 *pvMax) override;
+	void XMETHODCALLTYPE getBound(float3 *pvMin, float3 *pvMax) override;
 
-	void renderSelection(bool is3D) override;
+	void XMETHODCALLTYPE renderSelection(bool is3D) override;
 
-	bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl) override;
+	bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl) override;
 
-	void remove() override;
-	void create() override;
-	void preSetup() override;
-	void postSetup() override;
+	void XMETHODCALLTYPE remove() override;
+	void XMETHODCALLTYPE create() override;
+	void XMETHODCALLTYPE preSetup() override;
+	void XMETHODCALLTYPE postSetup() override;
 
 	void resync();
 
-	void setKV(const char *szKey, const char *szValue) override;
-	const char *getKV(const char *szKey) override;
-	const X_PROP_FIELD *getPropertyMeta(UINT uKey) override;
-	UINT getProperyCount() override;
+	void XMETHODCALLTYPE setKV(const char *szKey, const char *szValue) override;
+	const char* XMETHODCALLTYPE getKV(const char *szKey) override;
+	const X_PROP_FIELD* XMETHODCALLTYPE getPropertyMeta(UINT uKey) override;
+	UINT XMETHODCALLTYPE getProperyCount() override;
 
-	const char *getTypeName() override;
-	const char *getClassName() override;
+	const char* XMETHODCALLTYPE getTypeName() override;
+	const char* XMETHODCALLTYPE getClassName() override;
+
+
+
+	float3_t XMETHODCALLTYPE getPos() override
+	{
+		return(m_vPos);
+	}
+
+	SMQuaternion XMETHODCALLTYPE getOrient() override
+	{
+		return(m_qRot);
+	}
+	float3_t XMETHODCALLTYPE getScale() override
+	{
+		return(m_vScale);
+	}
+
+	bool XMETHODCALLTYPE isSelected() override
+	{
+		return(m_isSelected);
+	}
+	void XMETHODCALLTYPE setSelected(bool set) override;
+
+	CBaseEntity* getEnt()
+	{
+		return(m_pEntity);
+	}
 
 protected:
 	CBaseEntity *m_pEntity = NULL;
@@ -53,6 +80,13 @@ protected:
 	void _iniFieldList();
 
 	ID m_idEnt = -1;
+
+protected:
+	bool m_isSelected = false;
+
+	float3_t m_vPos;
+	SMQuaternion m_qRot;
+	float3_t m_vScale = float3_t(1.0f, 1.0f, 1.0f);
 };
 
 #endif

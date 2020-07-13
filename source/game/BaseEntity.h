@@ -141,14 +141,16 @@ public:
 
 	virtual void renderEditor(bool is3D);
 
+
+	CBaseEntity *getEntByName(const char *szName, CBaseEntity *pStartFrom);
+	int countEntByName(const char *szName);
+
 private:
 	void setClassName(const char * name);
 	void setDefaults();
 
 	const char * m_szClassName;
 
-	CBaseEntity *getEntByName(const char *szName, CBaseEntity *pStartFrom);
-	int countEntByName(const char *szName);
 
 protected:
 	virtual void _cleanup();

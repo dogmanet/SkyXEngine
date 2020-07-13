@@ -1,16 +1,16 @@
 #ifndef _COMMAND_SCALE_H_
 #define _COMMAND_SCALE_H_
 
-#include "Command.h"
+#include <xcommon/editor/IXEditorExtension.h>
 #include "terrax.h"
 
-class CCommandScale: public CCommand
+class CCommandScale final: public IXUnknownImplementation<IXEditorCommand>
 {
 public:
-	bool exec();
-	bool undo();
+	bool XMETHODCALLTYPE exec() override;
+	bool XMETHODCALLTYPE undo() override;
 
-	const char *getText()
+	const char* XMETHODCALLTYPE getText() override
 	{
 		return("scale");
 	}
@@ -21,6 +21,11 @@ public:
 	void setTransformDir(X_DIR dir);
 
 	void setCurrentPos(const float3 &vPos);
+
+	bool XMETHODCALLTYPE isEmpty() override
+	{
+		return(false);
+	}
 
 protected:
 	struct _scale_obj

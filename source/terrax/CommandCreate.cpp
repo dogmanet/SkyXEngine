@@ -29,7 +29,7 @@ CCommandCreate::~CCommandCreate()
 	mem_release(m_pObject);
 }
 
-bool CCommandCreate::exec()
+bool XMETHODCALLTYPE CCommandCreate::exec()
 {
 	if(!m_pObject)
 	{
@@ -47,7 +47,7 @@ bool CCommandCreate::exec()
 	XUpdatePropWindow();
 	return(true);
 }
-bool CCommandCreate::undo()
+bool XMETHODCALLTYPE CCommandCreate::undo()
 {
 	m_pObject->remove();
 	g_pLevelObjects.erase(g_pLevelObjects.size() - 1);

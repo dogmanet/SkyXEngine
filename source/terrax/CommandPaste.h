@@ -1,7 +1,7 @@
 #ifndef _COMMAND_PASTE_H_
 #define _COMMAND_PASTE_H_
 
-#include "Command.h"
+#include <xcommon/editor/IXEditorExtension.h>
 #include "terrax.h"
 
 #include <common/assotiativearray.h>
@@ -9,17 +9,22 @@
 #include <xcommon/editor/IXEditable.h>
 #include "CommandSelect.h"
 
-class CCommandPaste: public CCommand
+class CCommandPaste final: public IXUnknownImplementation<IXEditorCommand>
 {
 public:
 	~CCommandPaste();
 
-	bool exec();
-	bool undo();
+	bool XMETHODCALLTYPE exec() override;
+	bool XMETHODCALLTYPE undo() override;
 
-	const char *getText()
+	const char* XMETHODCALLTYPE getText() override
 	{
 		return("paste");
+	}
+
+	bool XMETHODCALLTYPE isEmpty() override
+	{
+		return(false);
 	}
 
 	UINT addObject(const char *szTypeName, const char *szClassName, const float3 &vPos, const float3 &vScale, const SMQuaternion &qRotate);

@@ -1,6 +1,6 @@
 #include "CommandRotate.h"
 
-bool CCommandRotate::exec()
+bool XMETHODCALLTYPE CCommandRotate::exec()
 {
 	_rot_obj *pObj;
 	bool moved = false;
@@ -13,7 +13,7 @@ bool CCommandRotate::exec()
 	}
 	return(moved);
 }
-bool CCommandRotate::undo()
+bool XMETHODCALLTYPE CCommandRotate::undo()
 {
 	_rot_obj *pObj;
 	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)

@@ -78,7 +78,8 @@ BOOL g_is2DPanning = FALSE;
 BOOL g_isPropWindowVisible = FALSE;
 CPropertyWindow *g_pPropWindow = NULL;
 
-extern HACCEL g_hAccelTable;
+extern HACCEL g_hAccelTableMain;
+extern HACCEL g_hAccelTableEdit;
 
 HMENU g_hMenu = NULL;
 
@@ -108,29 +109,16 @@ void XUpdateUndoRedo();
 class CPropertyCallback: public CPropertyWindow::ICallback
 {
 public:
-	void onClassChanged(const char *szNewClassName)
+	void onClassChanged(const char *szNewClassName) override
 	{
 
 	}
-	bool onPropertyChanged(const char *szKey, const char *szValue)
+	bool onPropertyChanged(const char *szKey, const char *szValue) override
 	{
-		if(!m_pPropsCmd)
-		{
-			m_pPropsCmd = new CCommandProperties(); 
-			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-			{
-				IXEditorObject *pObj = g_pLevelObjects[i];
-				if(pObj->isSelected())
-				{
-					m_pPropsCmd->addObject(i);
-				}
-			}
-		}
-
 		m_pPropsCmd->setKV(szKey, szValue);
 		return(true);
 	}
-	void onCancel()
+	void onCancel() override
 	{
 		if(m_pPropsCmd)
 		{
@@ -140,13 +128,38 @@ public:
 			mem_delete(pPropsCmd);
 		}
 	}
-	void onApply()
+	void onApply() override
 	{
 		if(m_pPropsCmd)
 		{
 			CCommandProperties *pPropsCmd = m_pPropsCmd;
 			m_pPropsCmd = NULL;
-			g_pUndoManager->execCommand(pPropsCmd);
+			XExecCommand(pPropsCmd);
+			//g_pUndoManager->execCommand(pPropsCmd);
+		}
+	}
+
+	void start()
+	{
+		onApply();
+		
+		m_pPropsCmd = new CCommandProperties();
+		for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+		{
+			IXEditorObject *pObj = g_pLevelObjects[i];
+			if(pObj->isSelected())
+			{
+				m_pPropsCmd->addObject(i);
+			}
+		}
+
+		for(UINT i = 0, l = g_pPropWindow->getCustomTabCount(); i < l; ++i)
+		{
+			auto *pTab = g_pPropWindow->getCustomTab(i);
+			if(pTab->isEnabled())
+			{
+				m_pPropsCmd->addInnerCommand(pTab->startNewCommand());
+			}
 		}
 	}
 protected:
@@ -292,12 +305,12 @@ BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
 		ret_val = GetLastError();
 		return FALSE;
 	}
+	ShowWindow(g_hWndMain, nCmdShow == SW_SHOWDEFAULT ? SW_MAXIMIZE : nCmdShow);
 
-	ShowWindow(g_hWndMain, nCmdShow);
-//	ShowWindow(g_hWndMain, SW_MAXIMIZE);
 	UpdateWindow(g_hWndMain);
 
-	g_hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR1));
+	g_hAccelTableMain = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR1));
+	g_hAccelTableEdit = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCELERATOR2));
 
 	XCheckMenuItem(g_hMenu, ID_VIEW_GRID, g_xConfig.m_bShowGrid);
 
@@ -313,6 +326,14 @@ bool IsEditMessage()
 	char className[6];
 	GetClassName(hFocused, className, 6);
 	return(hFocused && !strcasecmp(className, "edit"));
+}
+
+bool IsButtonMessage()
+{
+	HWND hFocused = GetFocus();
+	char className[8];
+	GetClassName(hFocused, className, 8);
+	return(hFocused && !strcasecmp(className, "button"));
 }
 
 WNDPROC g_pfnTreeOldWndproc;
@@ -816,6 +837,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			TreeView_InsertItem(g_hObjectTreeWnd, &tvis);
 		}
 
+
+		g_pPropWindow = new CPropertyWindow(hInst, hWnd);
+		g_pPropWindow->clearClassList();
+		g_pPropWindow->setCallback(&g_propertyCallback);
+
 		return FALSE;
 	}
 		break;
@@ -1030,16 +1056,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case ID_VIEW_AUTOSIZEVIEWS:
-
-			if(HIWORD(wParam) == 1)
-			{
-				if(IsEditMessage())
-				{
-					SendMessage(GetFocus(), EM_SETSEL, 0, -1);
-					break;
-				}
-			}
-
 			GetClientRect(hWnd, &rect);
 
 			rect.top += MARGIN_TOP;
@@ -1083,14 +1099,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case IDC_ESCAPE:
-			if(IsEditMessage())
-			{
-				HWND hEdit = GetFocus();
-				SendMessage(hEdit, WM_KEYDOWN, VK_ESCAPE, 0);
-				SendMessage(hEdit, WM_KEYUP, VK_ESCAPE, 0);
-				break;
-			}
-			//! no break here!
 		case IDC_AB_ARROW:
 			CheckDlgButton(hWnd, IDC_AB_ARROW, TRUE);
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, FALSE);
@@ -1134,81 +1142,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case ID_EDIT_UNDO:
-			if(IsEditMessage())
-			{
-				SendMessage(GetFocus(), EM_UNDO, 0, 0);
-				break;
-			}
 			g_pUndoManager->undo();
 			break;
 
 		case ID_EDIT_REDO:
-			if(IsEditMessage())
-			{
-				SendMessage(GetFocus(), EM_UNDO, 0, 0);
-				break;
-			}
 			g_pUndoManager->redo();
 			break;
 
 		case ID_EDIT_COPY:
-			if(IsEditMessage())
-			{
-				SendMessage(GetFocus(), WM_COPY, 0, 0);
-				break;
-			}
-			
 			ToClipboard();
 			break;
 
 		case ID_EDIT_CUT:
-			if(IsEditMessage())
-			{
-				SendMessage(GetFocus(), WM_CUT, 0, 0);
-				break;
-			}
-			
 			ToClipboard(true);
 			break;
 
 		case ID_EDIT_PASTE:
-			if(IsEditMessage())
-			{
-				SendMessage(GetFocus(), WM_PASTE, 0, 0);
-				break;
-			}
-			else
-			{
-				FromClipboard();
-			}
+			FromClipboard();
 			break;
 
 		case ID_EDIT_DELETE:
-		{
-			if(IsEditMessage())
-			{
-				//SendMessage(GetFocus(), WM_CLEAR, 0, 0);
-				SendMessage(GetFocus(), WM_KEYDOWN, VK_DELETE, 0);
-				SendMessage(GetFocus(), WM_KEYUP, VK_DELETE, 0);
-				break;
-			}
-
 			DeleteSelection();
-
 			break;
-		}
 
 		case ID_EDIT_PROPERTIES:
-			if(g_pPropWindow)
-			{
-				g_pPropWindow->show();
-			}
-			else
-			{
-				g_pPropWindow = new CPropertyWindow(hInst, g_hWndMain);
-				g_pPropWindow->clearClassList();
-				g_pPropWindow->setCallback(&g_propertyCallback);
-			}
+			g_pPropWindow->show();
+
 			XUpdatePropWindow();
 			g_isPropWindowVisible = TRUE;
 			break;
@@ -1265,14 +1224,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case IDC_RETURN:
-			if(IsEditMessage())
-			{
-				SendMessage(GetFocus(), WM_KEYDOWN, VK_RETURN, 0);
-				SendMessage(GetFocus(), WM_KEYUP, VK_RETURN, 0);
-				SendMessage(GetFocus(), WM_CHAR, VK_RETURN, 0);
-				break;
-			}
-			//! No break here!
 		case IDC_CTRL_RETURN:
 			if(g_xState.bCreateMode)
 			{
@@ -2741,11 +2692,7 @@ void XUpdateUndoRedo()
 
 void XUpdatePropWindow()
 {
-	if(!g_pPropWindow)
-	{
-		return;
-	}
-	g_propertyCallback.onApply();
+	g_propertyCallback.start();
 
 	const char *szFirstType = NULL;
 	const char *szFirstClass = NULL;
@@ -2841,7 +2788,7 @@ void XUpdatePropWindow()
 		if(!bDifferentClasses)
 		{
 			//@TODO: uncomment this
-			//g_pPropWindow->allowClassChange(true);
+			g_pPropWindow->allowClassChange(true);
 			g_pPropWindow->setClassName(szFirstClass);
 		}
 		else

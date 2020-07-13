@@ -127,9 +127,6 @@
     <ClInclude Include="..\..\..\source\terrax\Grid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\terrax\Command.h">
-      <Filter>Header Files\cmd</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\terrax\UndoManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>

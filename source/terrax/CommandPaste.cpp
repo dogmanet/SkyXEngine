@@ -3,7 +3,7 @@
 
 extern AssotiativeArray<AAString, IXEditable*> g_mEditableSystems;
 
-bool CCommandPaste::exec()
+bool XMETHODCALLTYPE CCommandPaste::exec()
 {
 	if(!m_pCommandSelect)
 	{
@@ -43,7 +43,7 @@ bool CCommandPaste::exec()
 	XUpdatePropWindow();
 	return(m_aObjects.size());
 }
-bool CCommandPaste::undo()
+bool XMETHODCALLTYPE CCommandPaste::undo()
 {
 	_paste_obj *pObj;
 	for(int i = m_aObjects.size() - 1; i >= 0; --i)

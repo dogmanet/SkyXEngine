@@ -1,6 +1,6 @@
 #include "CommandDelete.h"
 
-bool CCommandDelete::exec()
+bool XMETHODCALLTYPE CCommandDelete::exec()
 {
 	_del_obj *pObj;
 	for(int i = m_aObjects.size() - 1; i >= 0; --i)
@@ -13,7 +13,7 @@ bool CCommandDelete::exec()
 	XUpdatePropWindow();
 	return(m_aObjects.size());
 }
-bool CCommandDelete::undo()
+bool XMETHODCALLTYPE CCommandDelete::undo()
 {
 	_del_obj *pObj;
 	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)

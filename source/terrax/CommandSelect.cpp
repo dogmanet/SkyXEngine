@@ -1,6 +1,6 @@
 #include "CommandSelect.h"
 
-bool CCommandSelect::exec()
+bool XMETHODCALLTYPE CCommandSelect::exec()
 {
 	for(UINT i = 0, l = m_aidSelected.size(); i < l; ++i)
 	{
@@ -13,7 +13,7 @@ bool CCommandSelect::exec()
 	XUpdatePropWindow();
 	return(true);
 }
-bool CCommandSelect::undo()
+bool XMETHODCALLTYPE CCommandSelect::undo()
 {
 	for(UINT i = 0, l = m_aidSelected.size(); i < l; ++i)
 	{

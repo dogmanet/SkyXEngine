@@ -7,24 +7,12 @@
 #include <common/assotiativearray.h>
 #include <common/string.h>
 #include <common/aastring.h>
+#include <xcommon/editor/IXEditorExtension.h>
 #include "terrax.h"
 
+class CEditorPropertyTabCallback;
 class CPropertyWindow
 {
-protected:
-	INT_PTR CALLBACK dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK PropDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK EditorDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK EditEnterDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	static INT_PTR CALLBACK ClassListWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	
-	static WNDPROC m_defEditProc;
-
-	void onSelChanged();
-	void onPropListChanged();
-	void filterClassList(const char *szFilter);
-	void initEditor(X_PROP_EDITOR_TYPE type, const void *pData, const char *szValue);
 public:
 	CPropertyWindow(HINSTANCE hInstance, HWND hMainWnd);
 	~CPropertyWindow();
@@ -43,6 +31,8 @@ public:
 	void setClassName(const char *szClassName);
 	void allowClassChange(bool bAllow);
 
+	void addCustomTab(IXEditorPropertyTab *pTab);
+
 	class ICallback
 	{
 	public:
@@ -57,12 +47,34 @@ public:
 		m_pCallback = pCallback;
 	}
 
+	void onAddTab(CEditorPropertyTabCallback *pTabCB);
+	void onRemoveTab(CEditorPropertyTabCallback *pTabCB);
+
+	UINT getCustomTabCount();
+	IXEditorPropertyTab* getCustomTab(UINT idx);
+
 protected:
+	INT_PTR CALLBACK dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK PropDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK EditorDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK EditEnterDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK ClassListWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	
+	void onSelChanged();
+	void onPropListChanged();
+	void filterClassList(const char *szFilter);
+	void initEditor(X_PROP_EDITOR_TYPE type, const void *pData, const char *szValue);
+
+protected:
+
+	static WNDPROC m_defEditProc;
 
 	HINSTANCE m_hInstance;
 	HWND m_hDlgWnd;
 	HWND m_hTabControl;
 	HWND m_hCurrentTab = NULL;
+	IXEditorPropertyTab *m_pCurrentTab = NULL;
 	Array<HWND> m_hPropTabs;
 
 	HWND m_hClassListWnd = NULL;
@@ -96,6 +108,13 @@ protected:
 
 	UINT m_uCurrentFlags = 0;
 	const char *m_szFlagsField = NULL;
+
+
+	Array<CEditorPropertyTabCallback*> m_aCustomTabs;
+	int m_iTabX = 0;
+	int m_iTabY = 0;
+	int m_iTabCX = 0;
+	int m_iTabCY = 0;
 };
 
 #endif

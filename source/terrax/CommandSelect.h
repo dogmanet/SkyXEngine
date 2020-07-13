@@ -1,19 +1,24 @@
 #ifndef _COMMAND_SELECT_H_
 #define _COMMAND_SELECT_H_
 
-#include "Command.h"
+#include <xcommon/editor/IXEditorExtension.h>
 #include "terrax.h"
 
-class CCommandSelect: public CCommand
+class CCommandSelect final: public IXUnknownImplementation<IXEditorCommand>
 {
 public:
-	bool exec();
-	bool undo();
+	bool XMETHODCALLTYPE exec() override;
+	bool XMETHODCALLTYPE undo() override;
 
-	const char *getText();
+	const char* XMETHODCALLTYPE getText() override;
 
 	void addSelected(ID idObject);
 	void addDeselected(ID idObject);
+
+	bool XMETHODCALLTYPE isEmpty() override
+	{
+		return(false);
+	}
 
 protected:
 	Array<ID> m_aidSelected;

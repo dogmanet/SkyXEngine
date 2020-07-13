@@ -1,18 +1,23 @@
 #ifndef _COMMAND_ROTATE_H_
 #define _COMMAND_ROTATE_H_
 
-#include "Command.h"
+#include <xcommon/editor/IXEditorExtension.h>
 #include "terrax.h"
 
-class CCommandRotate: public CCommand
+class CCommandRotate final: public IXUnknownImplementation<IXEditorCommand>
 {
 public:
-	bool exec();
-	bool undo();
+	bool XMETHODCALLTYPE exec() override;
+	bool XMETHODCALLTYPE undo() override;
 
-	const char *getText()
+	const char* XMETHODCALLTYPE getText() override
 	{
 		return("rotate");
+	}
+
+	bool XMETHODCALLTYPE isEmpty() override
+	{
+		return(false);
 	}
 
 	void addObject(ID idObject);

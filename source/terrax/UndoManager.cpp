@@ -40,13 +40,13 @@ void CUndoManager::reset()
 {
 	for(UINT i = 0, l = m_stackRedo.size(); i < l; ++i)
 	{
-		mem_delete(m_stackRedo[i]);
+		mem_release(m_stackRedo[i]);
 	}
 	m_stackRedo.clearFast();
 
 	for(UINT i = 0, l = m_stackUndo.size(); i < l; ++i)
 	{
-		mem_delete(m_stackUndo[i]);
+		mem_release(m_stackUndo[i]);
 	}
 	m_stackUndo.clearFast();
 
@@ -58,7 +58,7 @@ void CUndoManager::flushRedo()
 {
 	for(UINT i = 0, l = m_stackRedo.size(); i < l; ++i)
 	{
-		mem_delete(m_stackRedo[i]);
+		mem_release(m_stackRedo[i]);
 	}
 	m_stackRedo.clearFast();
 
@@ -68,16 +68,16 @@ void CUndoManager::flushRedo()
 	}
 }
 
-bool CUndoManager::execCommand(CCommand *pCommand)
+bool CUndoManager::execCommand(IXEditorCommand *pCommand)
 {
-	if(pCommand->exec())
+	if(!pCommand->isEmpty() && pCommand->exec())
 	{
 		flushRedo();
 		m_stackUndo.push_back(pCommand);
 		XUpdateWindowTitle();
 		return(true);
 	}
-	mem_delete(pCommand);
+	mem_release(pCommand);
 	return(false);
 }
 bool CUndoManager::undo()
@@ -87,7 +87,7 @@ bool CUndoManager::undo()
 		return(false);
 	}
 
-	CCommand *pCmd = m_stackUndo[m_stackUndo.size() - 1];
+	IXEditorCommand *pCmd = m_stackUndo[m_stackUndo.size() - 1];
 	if(pCmd->undo())
 	{
 		m_stackUndo.erase(m_stackUndo.size() - 1);
@@ -104,7 +104,7 @@ bool CUndoManager::redo()
 		return(false);
 	}
 
-	CCommand *pCmd = m_stackRedo[m_stackRedo.size() - 1];
+	IXEditorCommand *pCmd = m_stackRedo[m_stackRedo.size() - 1];
 	if(pCmd->exec())
 	{
 		m_stackRedo.erase(m_stackRedo.size() - 1);

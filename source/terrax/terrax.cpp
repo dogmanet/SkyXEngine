@@ -16,6 +16,7 @@ See the license in LICENSE
 
 #include "terrax.h"
 #include "Grid.h"
+#include "PropertyWindow.h"
 
 #include <xcommon/editor/IXEditorObject.h>
 #include <xcommon/editor/IXEditable.h>
@@ -39,6 +40,8 @@ extern HWND g_hWndMain;
 CGrid *g_pGrid = NULL;
 CTerraXRenderStates g_xRenderStates;
 
+extern CPropertyWindow *g_pPropWindow;
+
 ATOM XRegisterClass(HINSTANCE hInstance);
 BOOL XInitInstance(HINSTANCE, int);
 void XInitGuiWindow(bool pre);
@@ -58,7 +61,8 @@ String g_sLevelName;
 
 void XUpdateWindowTitle();
 
-HACCEL g_hAccelTable = NULL;
+HACCEL g_hAccelTableMain = NULL;
+HACCEL g_hAccelTableEdit = NULL;
 IXEngine *g_pEngine = NULL;
 
 IGXConstantBuffer *g_pCameraConstantBuffer = NULL;
@@ -79,6 +83,8 @@ void XReleaseViewports();
 void XInitViewports();
 void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
 void XExportToObj(const char *szMdl);
+bool IsEditMessage();
+bool IsButtonMessage();
 
 class CEngineCallback: public IXEngineCallback
 {
@@ -155,18 +161,47 @@ public:
 	{
 		MSG msg = {0};
 
-		while(::PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		char className[32];
+
+		while(PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 		{
 			if(msg.message == WM_QUIT)
 			{
 				return(false);
 			}
-			if(g_hAccelTable && TranslateAccelerator(GetParent((HWND)SGCore_GetHWND()), g_hAccelTable, &msg))
+			if(IsEditMessage())
+			{
+				if(TranslateAccelerator(GetParent((HWND)SGCore_GetHWND()), g_hAccelTableEdit, &msg))
+				{
+					continue;
+				}
+			}
+			else if(GetActiveWindow() == g_hWndMain)
+			{
+				if(TranslateAccelerator(GetParent((HWND)SGCore_GetHWND()), g_hAccelTableMain, &msg))
+				{
+					continue;
+				}
+			}
+
+			HWND hWnd = msg.hwnd;
+			while(hWnd)
+			{
+				RealGetWindowClass(hWnd, className, sizeof(className));
+				if(!strcmp(className, "#32770"))
+				{
+					break;
+				}
+				hWnd = GetParent(hWnd);
+			}
+
+			if(hWnd && IsDialogMessage(hWnd, &msg))
 			{
 				continue;
 			}
-			::TranslateMessage(&msg);
-			::DispatchMessage(&msg);
+
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
 		}
 
 		static time_point tPrev = std::chrono::high_resolution_clock::now();
@@ -682,6 +717,15 @@ int main(int argc, char **argv)
 			pEditable->startup(SGCore_GetDXDevice());
 
 			ComboBox_AddString(g_hComboTypesWnd, pEditable->getName());
+
+			IXEditorExtension *pExt = pEditable->getEditorExtension();
+			if(pExt)
+			{
+				for(UINT i = 0, l = pExt->getPropertyTabCount(); i < l; ++i)
+				{
+					g_pPropWindow->addCustomTab(pExt->getPropertyTab(i));
+				}
+			}
 
 			g_mEditableSystems[AAString(pEditable->getName())] = pEditable;
 		}
@@ -1592,12 +1636,12 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 
 void XLoadLevel(const char *szName)
 {
-	Core_0ConsoleExecCmd("map %s", szName);	
+	g_pEngine->getCore()->getConsole()->execCommand2("map %s", szName);
 }
 
 void XResetLevel()
 {
-	Core_0ConsoleExecCmd("endmap");
+	g_pEngine->getCore()->getConsole()->execCommand("endmap");
 }
 
 bool XSaveLevel(const char *szNewName, bool bForcePrompt)
@@ -1694,7 +1738,7 @@ void XDrawBorder(GXCOLOR color, const float3_t &vA, const float3_t &vB, const fl
 }
 
 void XUpdateUndoRedo();
-bool XExecCommand(CCommand *pCommand)
+bool XExecCommand(IXEditorCommand *pCommand)
 {
 	if(g_pUndoManager->execCommand(pCommand))
 	{
