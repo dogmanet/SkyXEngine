@@ -32,5 +32,5 @@ void CLogicAuto::activate()
 
 void CLogicAuto::doTrigger(float fDT)
 {
-	FIRE_OUTPUT(m_onTrigger, NULL);
+	FIRE_OUTPUT(m_onTrigger, this);
 }

@@ -1651,6 +1651,8 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 	static HCURSOR hcSizeNWSE = NULL;
 	static HCURSOR hcRotate = NULL;
 
+	static bool s_wasSelectionChanged = false;
+
 	static const int *r_final_image = GET_PCVAR_INT("r_final_image");
 	if(!r_final_image)
 	{
@@ -1682,284 +1684,23 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		break;
 
 	case WM_LBUTTONUP:
-	{
-		if(g_is3DRotating)
 		{
-			g_is3DRotating = FALSE;
-			SSInput_SetEnable(false);
-			ReleaseCapture();
-			break;
-		}
-		if(g_xState.isFrameSelect)
-		{
-			g_xState.isFrameSelect = false;
-			ReleaseCapture();
-
-			if(memcmp(&g_xState.vWorldMousePos, &g_xState.vFrameSelectStart, sizeof(float2_t)))
+			if(g_is3DRotating)
 			{
-				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
-
-				CCommandSelect *pCmd = new CCommandSelect();
-				bool bUse = false;
-				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-				{
-					IXEditorObject *pObj = g_pLevelObjects[i];
-					float3_t vPos = pObj->getPos();
-					bool sel = false;
-					switch(xCurView)
-					{
-					case X2D_TOP:
-						sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
-							&& ((vPos.z > g_xState.vWorldMousePos.y && vPos.z <= g_xState.vFrameSelectStart.y) || (vPos.z < g_xState.vWorldMousePos.y && vPos.z >= g_xState.vFrameSelectStart.y));
-						break;
-					case X2D_FRONT:
-						sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
-							&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
-						break;
-					case X2D_SIDE:
-						sel = ((vPos.z > g_xState.vWorldMousePos.x && vPos.z <= g_xState.vFrameSelectStart.x) || (vPos.z < g_xState.vWorldMousePos.x && vPos.z >= g_xState.vFrameSelectStart.x))
-							&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
-						break;
-					}
-					if(wParam & MK_CONTROL)
-					{
-						if(sel && !pObj->isSelected())
-						{
-							//pObj->setSelected(true);
-							bUse = true;
-							pCmd->addSelected(i);
-						}
-					}
-					else
-					{
-						if(!pObj->isSelected() && sel)
-						{
-							bUse = true;
-							pCmd->addSelected(i);
-							//pObj->setSelected(sel);
-						}
-						else if(pObj->isSelected() && !sel)
-						{
-							bUse = true;
-							pCmd->addDeselected(i);
-							//pObj->setSelected(sel);
-						}
-					}
-				}
-
-				if(bUse)
-				{
-					if(!g_xState.bHasSelection)
-					{
-						g_xState.xformType = X2DXF_SCALE;
-					}
-					XExecCommand(pCmd);
-				}
+				g_is3DRotating = FALSE;
+				SSInput_SetEnable(false);
+				ReleaseCapture();
+				break;
 			}
-		}
-		else if(s_pMoveCmd)
-		{
-			ReleaseCapture();
-			if(!XExecCommand(s_pMoveCmd) && g_xState.bHasSelection)
+			if(g_xState.isFrameSelect)
 			{
-				g_xState.xformType = (X_2DXFORM_TYPE)((g_xState.xformType + 1) % X2DXF__LAST);
-			}
-			s_pMoveCmd = NULL;
-		}
-		else if(s_pScaleCmd)
-		{
-			ReleaseCapture();
-			XExecCommand(s_pScaleCmd);
-			s_pScaleCmd = NULL;
-		}
-		else if(s_pRotateCmd)
-		{
-			ReleaseCapture();
-			XExecCommand(s_pRotateCmd);
-			s_pRotateCmd = NULL;
-		}
+				g_xState.isFrameSelect = false;
+				ReleaseCapture();
 
-		POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
-		GetClientRect(hWnd, &rect);
-		if(pt.x > rect.left && pt.x < rect.left + 20
-			&& pt.y > rect.top && pt.y < rect.top + 20)
-		{
-			int iActiveMenu = -1;
-			X_2D_VIEW x2dView = g_xConfig.m_x2DView[g_xState.activeWindow];
-			if(hWnd == g_hTopLeftWnd)
-			{
-				switch(*r_final_image)
+				if(memcmp(&g_xState.vWorldMousePos, &g_xState.vFrameSelectStart, sizeof(float2_t)))
 				{
-				case DS_RT_COLOR:
-					iActiveMenu = ID_3D_TEXTURED;
-					break;
-				case DS_RT_NORMAL:
-					iActiveMenu = ID_3D_NORMALS;
-					break;
-				case DS_RT_PARAM:
-					iActiveMenu = ID_3D_PARAMETERS;
-					break;
-				case DS_RT_AMBIENTDIFF:
-					iActiveMenu = ID_3D_AMBIENTDIFFUSE;
-					break;
-				case DS_RT_LUMINANCE:
-					iActiveMenu = ID_3D_SPECULAR;
-					break;
-				case DS_RT_SCENELIGHT:
-					iActiveMenu = ID_3D_LIGHTINGSCENE;
-					break;
-				case DS_RT_DEPTH:
-					iActiveMenu = ID_3D_3DDEPTH;
-					break;
-				}
-			}
-			else
-			{
-				switch(x2dView)
-				{
-				case X2D_TOP:
-					iActiveMenu = ID_2D_TOP;
-					break;
-				case X2D_FRONT:
-					iActiveMenu = ID_2D_FRONT;
-					break;
-				case X2D_SIDE:
-					iActiveMenu = ID_2D_SIDE;
-					break;
-				}
-			}
-			DisplayContextMenu(hWnd, pt, IDR_MENU2, hWnd == g_hTopLeftWnd ? 0 : 1, iActiveMenu);
-		}
-	}
-		break;
+					X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
 
-	case WM_LBUTTONDOWN:
-	{
-		POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
-		GetClientRect(hWnd, &rect);
-		if(pt.x > rect.left && pt.x < rect.left + 20
-			&& pt.y > rect.top && pt.y < rect.top + 20)
-		{
-			break;
-		}
-
-		if(hWnd != g_hTopLeftWnd)
-		{
-			if(Button_GetCheck(g_hABArrowButton))
-			{
-				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
-				float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
-				
-				const float fWorldSize = 3.5f * fViewScale;
-
-				if(g_xState.bHasSelection)
-				{
-					float fScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
-					float fPtSize = 3.0f * fScale;
-					float fPtMargin = 7.0f * fScale;
-					float2 vSelectionCenter;
-					float4 vBorder;
-
-					const float2_t &fMPos = g_xState.vWorldMousePos;
-					float3 vStartPos;
-					float3 vMask;
-
-					switch(g_xConfig.m_x2DView[g_xState.activeWindow])
-					{
-					case X2D_TOP:
-						vBorder = float4(g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMin.z,
-							g_xState.vSelectionBoundMax.x, g_xState.vSelectionBoundMax.z);
-						vSelectionCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
-							g_xState.vSelectionBoundMin.z + g_xState.vSelectionBoundMax.z) * 0.5f;
-						vStartPos = float3(fMPos.x, 0.0f, fMPos.y);
-						vMask = float3(1.0f, 0.0f, 1.0f);
-						break;
-					case X2D_FRONT:
-						vBorder = float4(g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMin.y,
-							g_xState.vSelectionBoundMax.x, g_xState.vSelectionBoundMax.y);
-						vSelectionCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
-							g_xState.vSelectionBoundMin.y + g_xState.vSelectionBoundMax.y) * 0.5f;
-						vStartPos = float3(fMPos.x, fMPos.y, 0.0f);
-						vMask = float3(1.0f, 1.0f, 0.0f);
-						break;
-					case X2D_SIDE:
-						vBorder = float4(g_xState.vSelectionBoundMin.z, g_xState.vSelectionBoundMin.y,
-							g_xState.vSelectionBoundMax.z, g_xState.vSelectionBoundMax.y);
-						vSelectionCenter = float2(g_xState.vSelectionBoundMin.z + g_xState.vSelectionBoundMax.z,
-							g_xState.vSelectionBoundMin.y + g_xState.vSelectionBoundMax.y) * 0.5f;
-						vStartPos = float3(0.0f, fMPos.y, fMPos.x);
-						vMask = float3(0.0f, 1.0f, 1.0f);
-						break;
-					}
-
-					// bottom center
-					float2_t vCenters[] = {
-						{vSelectionCenter.x, vBorder.y - fPtMargin}, // bottom center
-						{vBorder.z + fPtMargin, vSelectionCenter.y}, // center right
-						{vSelectionCenter.x, vBorder.w + fPtMargin}, // top center
-						{vBorder.x - fPtMargin, vSelectionCenter.y}, // center left
-						{vBorder.x - fPtMargin, vBorder.y - fPtMargin}, // bottom left
-						{vBorder.z + fPtMargin, vBorder.y - fPtMargin}, // bottom right
-						{vBorder.z + fPtMargin, vBorder.w + fPtMargin}, // top right
-						{vBorder.x - fPtMargin, vBorder.w + fPtMargin} // top left
-					};
-					bool bHandled = false;
-					HCURSOR hcs[] = {hcSizeNS, hcSizeWE, hcSizeNS, hcSizeWE, hcSizeNESW, hcSizeNWSE, hcSizeNESW, hcSizeNWSE};
-					X_DIR dirs[][8] = {
-						// X2D_TOP (x/z)
-						{XDIR_Z_NEG, XDIR_X_POS, XDIR_Z_POS, XDIR_X_NEG, XDIR_Z_NEG | XDIR_X_NEG, XDIR_Z_NEG | XDIR_X_POS, XDIR_Z_POS | XDIR_X_POS, XDIR_Z_POS | XDIR_X_NEG},
-						// X2D_FRONT (x/y)
-						{XDIR_Y_NEG, XDIR_X_POS, XDIR_Y_POS, XDIR_X_NEG, XDIR_Y_NEG | XDIR_X_NEG, XDIR_Y_NEG | XDIR_X_POS, XDIR_Y_POS | XDIR_X_POS, XDIR_Y_POS | XDIR_X_NEG},
-						// X2D_SIDE (z/y)
-						{XDIR_Y_NEG, XDIR_Z_POS, XDIR_Y_POS, XDIR_Z_NEG, XDIR_Y_NEG | XDIR_Z_NEG, XDIR_Y_NEG | XDIR_Z_POS, XDIR_Y_POS | XDIR_Z_POS, XDIR_Y_POS | XDIR_Z_NEG}
-					};
-					for(int i = g_xState.xformType == X2DXF_SCALE ? 0 : 4; i < 8; ++i)
-					{
-						if(fabsf(fMPos.x - vCenters[i].x) <= fPtSize && fabsf(fMPos.y - vCenters[i].y) <= fPtSize)
-						{
-							SetCapture(hWnd);
-
-							if(g_xState.xformType == X2DXF_SCALE)
-							{
-								// create scale command
-								s_pScaleCmd = new CCommandScale();
-								s_pScaleCmd->setStartAABB(g_xState.vSelectionBoundMin, g_xState.vSelectionBoundMax);
-								s_pScaleCmd->setTransformDir(dirs[g_xConfig.m_x2DView[g_xState.activeWindow]][i]);
-								s_pScaleCmd->setStartPos(vStartPos);
-								for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-								{
-									if(g_pLevelObjects[i]->isSelected())
-									{
-										s_pScaleCmd->addObject(i);
-									}
-								}
-							}
-							else if(g_xState.xformType == X2DXF_ROTATE)
-							{
-								// create rotate command
-								s_pRotateCmd = new CCommandRotate();
-								s_pRotateCmd->setStartOrigin((g_xState.vSelectionBoundMax + g_xState.vSelectionBoundMin) * 0.5f * vMask);
-								s_pRotateCmd->setStartPos(vStartPos);
-								for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-								{
-									if(g_pLevelObjects[i]->isSelected())
-									{
-										s_pRotateCmd->addObject(i);
-									}
-								}
-							}
-							bHandled = true;
-							break;
-						}
-					}
-					if(bHandled)
-					{
-						break;
-					}
-				}
-
-				if(!XIsMouseInSelection(g_xState.activeWindow) || (wParam & MK_CONTROL))
-				{
 					CCommandSelect *pCmd = new CCommandSelect();
 					bool bUse = false;
 					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
@@ -1970,128 +1711,392 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						switch(xCurView)
 						{
 						case X2D_TOP:
-							sel = fabsf(vPos.x - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.z - g_xState.vWorldMousePos.y) < fWorldSize;
+							sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
+								&& ((vPos.z > g_xState.vWorldMousePos.y && vPos.z <= g_xState.vFrameSelectStart.y) || (vPos.z < g_xState.vWorldMousePos.y && vPos.z >= g_xState.vFrameSelectStart.y));
 							break;
 						case X2D_FRONT:
-							sel = fabsf(vPos.x - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.y - g_xState.vWorldMousePos.y) < fWorldSize;
+							sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
+								&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
 							break;
 						case X2D_SIDE:
-							sel = fabsf(vPos.z - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.y - g_xState.vWorldMousePos.y) < fWorldSize;
+							sel = ((vPos.z > g_xState.vWorldMousePos.x && vPos.z <= g_xState.vFrameSelectStart.x) || (vPos.z < g_xState.vWorldMousePos.x && vPos.z >= g_xState.vFrameSelectStart.x))
+								&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
 							break;
 						}
 						if(wParam & MK_CONTROL)
 						{
-							if(sel)
+							if(sel && !pObj->isSelected())
 							{
-								if(pObj->isSelected())
-								{
-									pCmd->addDeselected(i);
-								}
-								else
-								{
-									pCmd->addSelected(i);
-								}
+								//pObj->setSelected(true);
 								bUse = true;
+								pCmd->addSelected(i);
 							}
 						}
 						else
 						{
-							if(pObj->isSelected() && !sel)
+							if(!pObj->isSelected() && sel)
 							{
-								pCmd->addDeselected(i);
-							}
-							else if(!pObj->isSelected() && sel)
-							{
+								bUse = true;
 								pCmd->addSelected(i);
+								//pObj->setSelected(sel);
 							}
-							bUse = true;
-						}
-						if(sel)
-						{
-							break;
+							else if(pObj->isSelected() && !sel)
+							{
+								bUse = true;
+								pCmd->addDeselected(i);
+								//pObj->setSelected(sel);
+							}
 						}
 					}
 
 					if(bUse)
 					{
+						if(!g_xState.bHasSelection)
+						{
+							g_xState.xformType = X2DXF_SCALE;
+						}
 						XExecCommand(pCmd);
-						XUpdateSelectionBound();
 					}
 				}
-
-				if(XIsMouseInSelection(g_xState.activeWindow))
+			}
+			else if(s_pMoveCmd)
+			{
+				ReleaseCapture();
+				if(!XExecCommand(s_pMoveCmd) && g_xState.bHasSelection && !s_wasSelectionChanged)
 				{
-					SetCapture(hWnd);
-					SetCursor(hcPtr);
-					s_pMoveCmd = new CCommandMove();
-					float3 vStartPos;
+					g_xState.xformType = (X_2DXFORM_TYPE)((g_xState.xformType + 1) % X2DXF__LAST);
+				}
+				s_pMoveCmd = NULL;
+			}
+			else if(s_pScaleCmd)
+			{
+				ReleaseCapture();
+				XExecCommand(s_pScaleCmd);
+				s_pScaleCmd = NULL;
+			}
+			else if(s_pRotateCmd)
+			{
+				ReleaseCapture();
+				XExecCommand(s_pRotateCmd);
+				s_pRotateCmd = NULL;
+			}
+
+			POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+			GetClientRect(hWnd, &rect);
+			if(pt.x > rect.left && pt.x < rect.left + 20
+				&& pt.y > rect.top && pt.y < rect.top + 20)
+			{
+				int iActiveMenu = -1;
+				X_2D_VIEW x2dView = g_xConfig.m_x2DView[g_xState.activeWindow];
+				if(hWnd == g_hTopLeftWnd)
+				{
+					switch(*r_final_image)
+					{
+					case DS_RT_COLOR:
+						iActiveMenu = ID_3D_TEXTURED;
+						break;
+					case DS_RT_NORMAL:
+						iActiveMenu = ID_3D_NORMALS;
+						break;
+					case DS_RT_PARAM:
+						iActiveMenu = ID_3D_PARAMETERS;
+						break;
+					case DS_RT_AMBIENTDIFF:
+						iActiveMenu = ID_3D_AMBIENTDIFFUSE;
+						break;
+					case DS_RT_LUMINANCE:
+						iActiveMenu = ID_3D_SPECULAR;
+						break;
+					case DS_RT_SCENELIGHT:
+						iActiveMenu = ID_3D_LIGHTINGSCENE;
+						break;
+					case DS_RT_DEPTH:
+						iActiveMenu = ID_3D_3DDEPTH;
+						break;
+					}
+				}
+				else
+				{
+					switch(x2dView)
+					{
+					case X2D_TOP:
+						iActiveMenu = ID_2D_TOP;
+						break;
+					case X2D_FRONT:
+						iActiveMenu = ID_2D_FRONT;
+						break;
+					case X2D_SIDE:
+						iActiveMenu = ID_2D_SIDE;
+						break;
+					}
+				}
+				DisplayContextMenu(hWnd, pt, IDR_MENU2, hWnd == g_hTopLeftWnd ? 0 : 1, iActiveMenu);
+			}
+		}
+		break;
+
+	case WM_LBUTTONDOWN:
+		{
+			s_wasSelectionChanged = false;
+			POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+			GetClientRect(hWnd, &rect);
+			if(pt.x > rect.left && pt.x < rect.left + 20
+				&& pt.y > rect.top && pt.y < rect.top + 20)
+			{
+				break;
+			}
+
+
+			if(hWnd != g_hTopLeftWnd)
+			{
+				if(Button_GetCheck(g_hABArrowButton))
+				{
+					X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+					float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
+				
+					const float fWorldSize = 3.5f * fViewScale;
+
+					if(g_xState.bHasSelection)
+					{
+						float fScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
+						float fPtSize = 3.0f * fScale;
+						float fPtMargin = 7.0f * fScale;
+						float2 vSelectionCenter;
+						float4 vBorder;
+
+						const float2_t &fMPos = g_xState.vWorldMousePos;
+						float3 vStartPos;
+						float3 vMask;
+
+						switch(g_xConfig.m_x2DView[g_xState.activeWindow])
+						{
+						case X2D_TOP:
+							vBorder = float4(g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMin.z,
+								g_xState.vSelectionBoundMax.x, g_xState.vSelectionBoundMax.z);
+							vSelectionCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
+								g_xState.vSelectionBoundMin.z + g_xState.vSelectionBoundMax.z) * 0.5f;
+							vStartPos = float3(fMPos.x, 0.0f, fMPos.y);
+							vMask = float3(1.0f, 0.0f, 1.0f);
+							break;
+						case X2D_FRONT:
+							vBorder = float4(g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMin.y,
+								g_xState.vSelectionBoundMax.x, g_xState.vSelectionBoundMax.y);
+							vSelectionCenter = float2(g_xState.vSelectionBoundMin.x + g_xState.vSelectionBoundMax.x,
+								g_xState.vSelectionBoundMin.y + g_xState.vSelectionBoundMax.y) * 0.5f;
+							vStartPos = float3(fMPos.x, fMPos.y, 0.0f);
+							vMask = float3(1.0f, 1.0f, 0.0f);
+							break;
+						case X2D_SIDE:
+							vBorder = float4(g_xState.vSelectionBoundMin.z, g_xState.vSelectionBoundMin.y,
+								g_xState.vSelectionBoundMax.z, g_xState.vSelectionBoundMax.y);
+							vSelectionCenter = float2(g_xState.vSelectionBoundMin.z + g_xState.vSelectionBoundMax.z,
+								g_xState.vSelectionBoundMin.y + g_xState.vSelectionBoundMax.y) * 0.5f;
+							vStartPos = float3(0.0f, fMPos.y, fMPos.x);
+							vMask = float3(0.0f, 1.0f, 1.0f);
+							break;
+						}
+
+						// bottom center
+						float2_t vCenters[] = {
+							{vSelectionCenter.x, vBorder.y - fPtMargin}, // bottom center
+							{vBorder.z + fPtMargin, vSelectionCenter.y}, // center right
+							{vSelectionCenter.x, vBorder.w + fPtMargin}, // top center
+							{vBorder.x - fPtMargin, vSelectionCenter.y}, // center left
+							{vBorder.x - fPtMargin, vBorder.y - fPtMargin}, // bottom left
+							{vBorder.z + fPtMargin, vBorder.y - fPtMargin}, // bottom right
+							{vBorder.z + fPtMargin, vBorder.w + fPtMargin}, // top right
+							{vBorder.x - fPtMargin, vBorder.w + fPtMargin} // top left
+						};
+						bool bHandled = false;
+						HCURSOR hcs[] = {hcSizeNS, hcSizeWE, hcSizeNS, hcSizeWE, hcSizeNESW, hcSizeNWSE, hcSizeNESW, hcSizeNWSE};
+						X_DIR dirs[][8] = {
+							// X2D_TOP (x/z)
+							{XDIR_Z_NEG, XDIR_X_POS, XDIR_Z_POS, XDIR_X_NEG, XDIR_Z_NEG | XDIR_X_NEG, XDIR_Z_NEG | XDIR_X_POS, XDIR_Z_POS | XDIR_X_POS, XDIR_Z_POS | XDIR_X_NEG},
+							// X2D_FRONT (x/y)
+							{XDIR_Y_NEG, XDIR_X_POS, XDIR_Y_POS, XDIR_X_NEG, XDIR_Y_NEG | XDIR_X_NEG, XDIR_Y_NEG | XDIR_X_POS, XDIR_Y_POS | XDIR_X_POS, XDIR_Y_POS | XDIR_X_NEG},
+							// X2D_SIDE (z/y)
+							{XDIR_Y_NEG, XDIR_Z_POS, XDIR_Y_POS, XDIR_Z_NEG, XDIR_Y_NEG | XDIR_Z_NEG, XDIR_Y_NEG | XDIR_Z_POS, XDIR_Y_POS | XDIR_Z_POS, XDIR_Y_POS | XDIR_Z_NEG}
+						};
+						for(int i = g_xState.xformType == X2DXF_SCALE ? 0 : 4; i < 8; ++i)
+						{
+							if(fabsf(fMPos.x - vCenters[i].x) <= fPtSize && fabsf(fMPos.y - vCenters[i].y) <= fPtSize)
+							{
+								SetCapture(hWnd);
+
+								if(g_xState.xformType == X2DXF_SCALE)
+								{
+									// create scale command
+									s_pScaleCmd = new CCommandScale();
+									s_pScaleCmd->setStartAABB(g_xState.vSelectionBoundMin, g_xState.vSelectionBoundMax);
+									s_pScaleCmd->setTransformDir(dirs[g_xConfig.m_x2DView[g_xState.activeWindow]][i]);
+									s_pScaleCmd->setStartPos(vStartPos);
+									for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+									{
+										if(g_pLevelObjects[i]->isSelected())
+										{
+											s_pScaleCmd->addObject(i);
+										}
+									}
+								}
+								else if(g_xState.xformType == X2DXF_ROTATE)
+								{
+									// create rotate command
+									s_pRotateCmd = new CCommandRotate();
+									s_pRotateCmd->setStartOrigin((g_xState.vSelectionBoundMax + g_xState.vSelectionBoundMin) * 0.5f * vMask);
+									s_pRotateCmd->setStartPos(vStartPos);
+									for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+									{
+										if(g_pLevelObjects[i]->isSelected())
+										{
+											s_pRotateCmd->addObject(i);
+										}
+									}
+								}
+								bHandled = true;
+								break;
+							}
+						}
+						if(bHandled)
+						{
+							break;
+						}
+					}
+
+					if(!XIsMouseInSelection(g_xState.activeWindow) || (wParam & MK_CONTROL))
+					{
+						CCommandSelect *pCmd = new CCommandSelect();
+						bool bUse = false;
+						bool wasSel = false;
+						for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+						{
+							IXEditorObject *pObj = g_pLevelObjects[i];
+							float3_t vPos = pObj->getPos();
+							bool sel = false;
+							switch(xCurView)
+							{
+							case X2D_TOP:
+								sel = fabsf(vPos.x - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.z - g_xState.vWorldMousePos.y) < fWorldSize;
+								break;
+							case X2D_FRONT:
+								sel = fabsf(vPos.x - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.y - g_xState.vWorldMousePos.y) < fWorldSize;
+								break;
+							case X2D_SIDE:
+								sel = fabsf(vPos.z - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.y - g_xState.vWorldMousePos.y) < fWorldSize;
+								break;
+							}
+							if(wParam & MK_CONTROL)
+							{
+								if(sel && !wasSel)
+								{
+									if(pObj->isSelected())
+									{
+										pCmd->addDeselected(i);
+									}
+									else
+									{
+										pCmd->addSelected(i);
+									}
+									bUse = true;
+									wasSel = true;
+								}
+							}
+							else
+							{
+								if(pObj->isSelected() && !sel)
+								{
+									pCmd->addDeselected(i);
+									bUse = true;
+								}
+								else if(!pObj->isSelected() && sel && !wasSel)
+								{
+									pCmd->addSelected(i);
+									bUse = true;
+									wasSel = true;
+								}
+							}
+						}
+
+						if(bUse)
+						{
+							s_wasSelectionChanged = true;
+							XExecCommand(pCmd);
+							XUpdateSelectionBound();
+						}
+					}
+
+					if(XIsMouseInSelection(g_xState.activeWindow))
+					{
+						SetCapture(hWnd);
+						SetCursor(hcPtr);
+						s_pMoveCmd = new CCommandMove();
+						float3 vStartPos;
+						switch(xCurView)
+						{
+						case X2D_TOP:
+							vStartPos = float3(g_xState.vWorldMousePos.x, 0.0f, g_xState.vWorldMousePos.y);
+							break;
+						case X2D_FRONT:
+							vStartPos = float3(g_xState.vWorldMousePos.x, g_xState.vWorldMousePos.y, 0.0f);
+							break;
+						case X2D_SIDE:
+							vStartPos = float3(0.0f, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
+							break;
+						}
+						s_pMoveCmd->setStartPos(XSnapToGrid(vStartPos));
+						for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+						{
+							if(g_pLevelObjects[i]->isSelected())
+							{
+								s_pMoveCmd->addObject(i);
+							}
+						}
+						// if mouse in selected object
+						// start move
+					}
+					else
+					{ // start frame select
+						g_xState.isFrameSelect = true;
+						SetCapture(hWnd);
+						g_xState.vFrameSelectStart = g_xState.vWorldMousePos;
+					}
+				}
+				else if(Button_GetCheck(g_hABCreateButton))
+				{
+					X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+
+					g_xState.bCreateMode = true;
+
 					switch(xCurView)
 					{
 					case X2D_TOP:
-						vStartPos = float3(g_xState.vWorldMousePos.x, 0.0f, g_xState.vWorldMousePos.y);
+						g_xState.vCreateOrigin = float3(g_xState.vWorldMousePos.x, g_xState.vCreateOrigin.y, g_xState.vWorldMousePos.y);
 						break;
 					case X2D_FRONT:
-						vStartPos = float3(g_xState.vWorldMousePos.x, g_xState.vWorldMousePos.y, 0.0f);
+						g_xState.vCreateOrigin = float3(g_xState.vWorldMousePos.x, g_xState.vWorldMousePos.y, g_xState.vCreateOrigin.z);
 						break;
 					case X2D_SIDE:
-						vStartPos = float3(0.0f, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
+						g_xState.vCreateOrigin = float3(g_xState.vCreateOrigin.x, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
 						break;
 					}
-					s_pMoveCmd->setStartPos(XSnapToGrid(vStartPos));
-					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-					{
-						if(g_pLevelObjects[i]->isSelected())
-						{
-							s_pMoveCmd->addObject(i);
-						}
-					}
-					// if mouse in selected object
-					// start move
+
+					g_xState.vCreateOrigin = XSnapToGrid(g_xState.vCreateOrigin);
 				}
-				else
-				{ // start frame select
-					g_xState.isFrameSelect = true;
-					SetCapture(hWnd);
-					g_xState.vFrameSelectStart = g_xState.vWorldMousePos;
-				}
+				break;
 			}
-			else if(Button_GetCheck(g_hABCreateButton))
+
+			if(g_is3DPanning)
 			{
-				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
-
-				g_xState.bCreateMode = true;
-
-				switch(xCurView)
-				{
-				case X2D_TOP:
-					g_xState.vCreateOrigin = float3(g_xState.vWorldMousePos.x, g_xState.vCreateOrigin.y, g_xState.vWorldMousePos.y);
-					break;
-				case X2D_FRONT:
-					g_xState.vCreateOrigin = float3(g_xState.vWorldMousePos.x, g_xState.vWorldMousePos.y, g_xState.vCreateOrigin.z);
-					break;
-				case X2D_SIDE:
-					g_xState.vCreateOrigin = float3(g_xState.vCreateOrigin.x, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
-					break;
-				}
-
-				g_xState.vCreateOrigin = XSnapToGrid(g_xState.vCreateOrigin);
+				break;
 			}
-			break;
+			if(Button_GetCheck(g_hABCameraButton))
+			{
+				g_is3DRotating = TRUE;
+				SetCapture(hWnd);
+				SSInput_SetEnable(true);
+			}
+			//else
 		}
-
-		if(g_is3DPanning)
-		{
-			break;
-		}
-		if(Button_GetCheck(g_hABCameraButton))
-		{
-			g_is3DRotating = TRUE;
-			SetCapture(hWnd);
-			SSInput_SetEnable(true);
-		}
-		//else
 		break;
-	}
 
 	case WM_RBUTTONDOWN:
 	{

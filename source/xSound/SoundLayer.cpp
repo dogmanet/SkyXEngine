@@ -33,7 +33,7 @@ CSoundLayer::~CSoundLayer()
 
 void XMETHODCALLTYPE CSoundLayer::FinalRelease()
 {
-	if (m_pParent)
+	if(m_pParent)
 	{
 		SndQueueMsg oMsg;
 		oMsg.type = SND_QUEUE_MSG_TYPE_LAYER_DELETE;
@@ -43,7 +43,7 @@ void XMETHODCALLTYPE CSoundLayer::FinalRelease()
 	}
 	else
 	{
-		mem_del(this);
+		delete this;
 	}
 }
 

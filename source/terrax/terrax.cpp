@@ -598,7 +598,13 @@ public:
 				m_lOldExStyle = GetWindowLongA(g_hTopLeftWnd, GWL_EXSTYLE);
 				SetWindowLongA(g_hTopLeftWnd, GWL_EXSTYLE, 0);
 
-				SetWindowPos(g_hTopLeftWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOMOVE);
+				SetWindowPos(g_hTopLeftWnd, 
+#ifdef _DEBUG
+					HWND_TOP
+#else
+					HWND_TOPMOST
+#endif
+					, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOMOVE);
 
 				EnableWindow(g_hWndMain, FALSE);
 			}

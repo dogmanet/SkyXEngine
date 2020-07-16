@@ -407,7 +407,7 @@ void CEditorOutputsTab::initSelection()
 	for(UINT i = 0, l = aObjects.size(); i < l; ++i)
 	{
 		pObj = aObjects[i];
-		if(pObj->isSelected())
+		if(pObj->isSelected() && pObj->getEnt())
 		{
 			m_pCurrentCommand->m_aEditorObjects.push_back(pObj);
 			pObj->AddRef();

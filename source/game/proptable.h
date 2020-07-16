@@ -167,6 +167,11 @@ struct prop_editor_t
 };
 
 
+/*! Устанавливает значение строкового свойства
+\note только для внутреннего использования
+*/
+void _setStrVal(const char **to, const char *value);
+
 struct inputdata_t
 {
 	CBaseEntity *pInflictor; //!< Косвенный активатор (вызвавший эту цепочку активаций)
@@ -182,6 +187,8 @@ struct inputdata_t
 	parameter;
 	float3_t v3Parameter;
 	float4_t v4Parameter;
+
+	void setParameter(const inputdata_t &other);
 };
 
 typedef void(CBaseEntity::*input_func)(inputdata_t *pInputData);
@@ -261,6 +268,7 @@ struct input_t
 	input_func fnInput;
 	CBaseEntity *pTarget;
 	inputdata_t data;
+	bool useOverrideData;
 };
 
 struct named_output_t
@@ -286,7 +294,7 @@ struct output_t
 		bDirty(false)
 	{
 	}
-	void fire(CBaseEntity *pInflictor, CBaseEntity *pActivator);
+	void fire(CBaseEntity *pInflictor, CBaseEntity *pActivator, inputdata_t *pInputData = NULL);
 
 	bool bDirty;
 	int iOutCount;
@@ -295,6 +303,7 @@ struct output_t
 };
 
 #define FIRE_OUTPUT(output, inflictor) (output).fire((inflictor), this)
+#define FIRE_OUTPUT_PARAM(output, inflictor, param) (output).fire((inflictor), this, (param))
 
 struct proptable_t
 {

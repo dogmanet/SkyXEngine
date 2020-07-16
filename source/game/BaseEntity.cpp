@@ -676,37 +676,6 @@ CBaseEntity * CBaseEntity::getOwner()
 	return(m_pOwner);
 }
 
-void CBaseEntity::_setStrVal(const char ** to, const char * value)
-{
-	char * str = (char*)*to;
-	if(str && !fstrcmp(str, value))
-	{
-		return;
-	}
-	if(!value[0])
-	{
-		if(str && str != GetEmptyString())
-		{
-			delete[] str;
-		}
-		*to = GetEmptyString();
-	}
-	else
-	{
-		size_t len = strlen(value);
-		if(!str || strlen(str) < len)
-		{
-			if(str && str != GetEmptyString())
-			{
-				delete[] str;
-			}
-			str = new char[len + 1];
-		}
-		memcpy(str, value, sizeof(char)* (len + 1));
-		*to = str;
-	}
-}
-
 CEntityManager * CBaseEntity::getManager()
 {
 	return(m_pMgr);
@@ -758,7 +727,7 @@ void CBaseEntity::updateOutputs()
 
 				for(int j = 0, jl = pOutput->iOutCount; j < jl; ++j)
 				{
-					named_output_t * pOut = &pOutput->pOutputs[j];
+					named_output_t *pOut = &pOutput->pOutputs[j];
 					mem_delete_a(pOut->pOutputs);
 
 					pOut->iOutCount = countEntByName(pOut->szTargetName);
@@ -786,6 +755,7 @@ void CBaseEntity::updateOutputs()
 						pOut->pOutputs[c].fnInput = pField->fnInput;
 						pOut->pOutputs[c].pTarget = pEnt;
 						pOut->pOutputs[c].data.type = pField->type;
+						if((pOut->pOutputs[c].useOverrideData = pOut->szTargetData != NULL))
 						{
 							float3_t f3;
 							float4_t f4;

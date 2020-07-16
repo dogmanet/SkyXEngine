@@ -30,6 +30,9 @@ damage = 100
 [prop_dynamic]
 is_static = 1
 
+[prop_button]
+is_static = 1
+
 [base_ammobox]
 inv_pickable = 0
 inv_stackable = 0

@@ -205,7 +205,10 @@
     <ClCompile Include="..\..\..\source\game\LightPoint.cpp" />
     <ClCompile Include="..\..\..\source\game\LightSun.cpp" />
     <ClCompile Include="..\..\..\source\game\LogicAuto.cpp" />
+    <ClCompile Include="..\..\..\source\game\LogicConsole.cpp" />
+    <ClCompile Include="..\..\..\source\game\LogicEntityExists.cpp" />
     <ClCompile Include="..\..\..\source\game\LogicRelay.cpp" />
+    <ClCompile Include="..\..\..\source\game\LogicStringbuilder.cpp" />
     <ClCompile Include="..\..\..\source\game\NPCBase.cpp" />
     <ClCompile Include="..\..\..\source\game\NPCZombie.cpp" />
     <ClCompile Include="..\..\..\source\game\PathCorner.cpp" />
@@ -269,7 +272,10 @@
     <ClInclude Include="..\..\..\source\game\IGameState.h" />
     <ClInclude Include="..\..\..\source\game\LightSun.h" />
     <ClInclude Include="..\..\..\source\game\LogicAuto.h" />
+    <ClInclude Include="..\..\..\source\game\LogicConsole.h" />
+    <ClInclude Include="..\..\..\source\game\LogicEntityExists.h" />
     <ClInclude Include="..\..\..\source\game\LogicRelay.h" />
+    <ClInclude Include="..\..\..\source\game\LogicStringbuilder.h" />
     <ClInclude Include="..\..\..\source\game\PropBreakable.h" />
     <ClInclude Include="..\..\..\source\game\PropButton.h" />
     <ClInclude Include="..\..\..\source\game\PropDebris.h" />

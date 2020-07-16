@@ -67,20 +67,48 @@ void CEntityManager::update(int thread)
 			//mksdt = std::chrono::duration_cast<std::chrono::microseconds>(tNow - t->fStartTime).count();
 			//(t->pEnt->*(t->func))((float)mksdt / 1000000.0f);
 			to->status = TS_DONE;
+
+			inputdata_t inputData = {0};
+			inputData.pActivator = to->data.pActivator;
+			inputData.pInflictor = to->data.pInflictor;
+
 			for(int j = 0; j < to->pOutput->iOutCount; ++j)
 			{
 				if(!to->pOutput->pOutputs[j].pTarget)
 				{
 					continue;
 				}
-				to->data.parameter = to->pOutput->pOutputs[j].data.parameter;
-				to->data.type = to->pOutput->pOutputs[j].data.type;
-				to->data.v3Parameter = to->pOutput->pOutputs[j].data.v3Parameter;
 
-				(to->pOutput->pOutputs[j].pTarget->*(to->pOutput->pOutputs[j].fnInput))(&to->data);
+				inputData.type = to->pOutput->pOutputs[j].data.type;
+
+				if(inputData.type == PDF_STRING)
+				{
+					inputData.parameter.str = NULL;
+				}
+
+				if(to->pOutput->pOutputs[j].useOverrideData)
+				{
+					inputData.setParameter(to->pOutput->pOutputs[j].data);
+				}
+				else
+				{
+					inputData.setParameter(to->data);
+				}
+
+				(to->pOutput->pOutputs[j].pTarget->*(to->pOutput->pOutputs[j].fnInput))(&inputData);
+
+				if(inputData.type == PDF_STRING && inputData.parameter.str != GetEmptyString())
+				{
+					delete[] inputData.parameter.str;
+				}
 
 				// Update pointer. Array can be reallocated during previous function call
 				to = &m_vOutputTimeout[i];
+			}
+
+			if(to->data.type == PDF_STRING && to->data.parameter.str != GetEmptyString())
+			{
+				delete[] to->data.parameter.str;
 			}
 		}
 	}

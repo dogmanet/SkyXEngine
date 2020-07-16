@@ -536,7 +536,7 @@ void CBaseCharacter::use(bool start)
 	{
 		float3 start = getHead()->getPos();
 		float3 dir = getHead()->getOrient() * float3(0.0f, 0.0f, 1.0f);
-		float3 end = start + dir * 1.5f;
+		float3 end = start + dir * 2.0f;
 
 		btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
 		SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);

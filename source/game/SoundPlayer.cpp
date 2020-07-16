@@ -11,37 +11,37 @@
 
 BEGIN_PROPTABLE(CSoundPlayer)
 
-//! Звуковой файл
-DEFINE_FIELD_STRINGFN(m_szPathSound, 0, "file", "Sound file", setSound, EDITOR_SOUND)
+	//! Звуковой файл
+	DEFINE_FIELD_STRINGFN(m_szPathSound, 0, "file", "Sound file", setSound, EDITOR_SOUND)
 
-//! Громкость
-DEFINE_FIELD_FLOAT(m_fVolume, 0, "volume", "Volume", EDITOR_TEXTFIELD)
+	//! Громкость
+	DEFINE_FIELD_FLOAT(m_fVolume, 0, "volume", "Volume", EDITOR_TEXTFIELD)
 
-//! Дистанция слышимости
-DEFINE_FIELD_FLOAT(m_fDist, 0, "distance", "Hearing distance", EDITOR_TEXTFIELD)
+	//! Дистанция слышимости
+	DEFINE_FIELD_FLOAT(m_fDist, 0, "distance", "Hearing distance", EDITOR_TEXTFIELD)
 
-//! Зацикливание
-DEFINE_FIELD_INT(m_iLoop, 0, "loop", "Loop", EDITOR_COMBOBOX)
-	COMBO_OPTION("None", "0")		//!< Нет
-	COMBO_OPTION("Simple", "1")		//!< Простое (могут быть пустоты на стыках конца с началом)
-	COMBO_OPTION("Seamless", "2")	//!< Непрерывное (пустот не будет, все будет заполнено звуком)
-EDITOR_COMBO_END()
+	//! Зацикливание
+	DEFINE_FIELD_INT(m_iLoop, 0, "loop", "Loop", EDITOR_COMBOBOX)
+		COMBO_OPTION("None", "0")		//!< Нет
+		COMBO_OPTION("Simple", "1")		//!< Простое (могут быть пустоты на стыках конца с началом)
+		COMBO_OPTION("Seamless", "2")	//!< Непрерывное (пустот не будет, все будет заполнено звуком)
+	EDITOR_COMBO_END()
 
-//! Включить
-DEFINE_INPUT(turnOn, "turnOn", "Turn On", PDF_NONE)
-//! Выключить
-DEFINE_INPUT(turnOff, "turnOff", "Turn Off", PDF_NONE)
+	//! Включить
+	DEFINE_INPUT(turnOn, "turnOn", "Turn On", PDF_NONE)
+	//! Выключить
+	DEFINE_INPUT(turnOff, "turnOff", "Turn Off", PDF_NONE)
 
-//! При включении
-DEFINE_OUTPUT(m_onTurnOn, "OnTurnOn", "On Turn On")
-//! При выключении
-DEFINE_OUTPUT(m_onTurnOff, "OnTurnOff", "On Turn Off")
+	//! При включении
+	DEFINE_OUTPUT(m_onTurnOn, "OnTurnOn", "On Turn On")
+	//! При выключении
+	DEFINE_OUTPUT(m_onTurnOff, "OnTurnOff", "On Turn Off")
 
-//! Изначально проигрывается
-DEFINE_FLAG(SND_PLAYER_START_PLAYED, "Play on")
+	//! Изначально проигрывается
+	DEFINE_FLAG(SND_PLAYER_START_PLAYED, "Play on")
 
-//! Тип фонового звука
-DEFINE_FLAG(SND_PLAYER_TYPE_AMBIENT, "Ambient")
+	//! Тип фонового звука
+	DEFINE_FLAG(SND_PLAYER_TYPE_AMBIENT, "Ambient")
 
 END_PROPTABLE()
 

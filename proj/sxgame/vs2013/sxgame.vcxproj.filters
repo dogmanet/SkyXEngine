@@ -91,6 +91,12 @@
     <Filter Include="Header Files\editor">
       <UniqueIdentifier>{f23b9b06-41e2-4b4a-bea2-958de42c4a10}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ents\sound">
+      <UniqueIdentifier>{07a951f2-6bd8-4f83-b972-c4f5c4245610}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents\sound">
+      <UniqueIdentifier>{e57af3ee-3c5c-4c72-8ba2-9eec9262588e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp">
@@ -267,9 +273,6 @@
     <ClCompile Include="..\..\..\source\game\FuncTrain.cpp">
       <Filter>Source Files\ents\func</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\game\SoundPlayer.cpp">
-      <Filter>Header Files\ents</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\game\Editable.cpp">
       <Filter>Source Files\editor</Filter>
     </ClCompile>
@@ -281,6 +284,18 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\EditorOutputsTab.cpp">
       <Filter>Source Files\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\LogicStringbuilder.cpp">
+      <Filter>Source Files\ents\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SoundPlayer.cpp">
+      <Filter>Source Files\ents\sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\LogicConsole.cpp">
+      <Filter>Source Files\ents\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\LogicEntityExists.cpp">
+      <Filter>Source Files\ents\logic</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -473,9 +488,6 @@
     <ClInclude Include="..\..\..\source\game\FuncTrain.h">
       <Filter>Header Files\ents\func</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\game\SoundPlayer.h">
-      <Filter>Header Files\ents</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\game\Baseline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -493,6 +505,18 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\EditorOutputsTab.h">
       <Filter>Header Files\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\LogicStringbuilder.h">
+      <Filter>Header Files\ents\logic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SoundPlayer.h">
+      <Filter>Header Files\ents\sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\LogicConsole.h">
+      <Filter>Header Files\ents\logic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\LogicEntityExists.h">
+      <Filter>Header Files\ents\logic</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
