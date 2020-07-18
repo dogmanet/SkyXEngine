@@ -13,6 +13,10 @@ public:
 
 	IUIWindow* XMETHODCALLTYPE createWindow(const XWINDOW_DESC *pWindowDesc, IUIWindow *pParent = NULL) override;
 
+	IUIButton* XMETHODCALLTYPE createButton(IUIWindow *pParent) override;
+
+	IUITextBox* XMETHODCALLTYPE createTextBox(IUIWindow *pParent) override;
+
 	void onDestroyWindow(CUIWindow *pWindow);
 
 	IXWindowSystem* getWindowSystem();
@@ -28,6 +32,8 @@ private:
 	IGXDevice *m_pDev = NULL;
 	IXWindowSystem *m_pWindowSystem = NULL;
 	gui::IGUI *m_pGUI = NULL;
+
+	ULONG m_elemendID = 0;
 };
 
 #endif

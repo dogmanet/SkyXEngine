@@ -20,18 +20,23 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\xUI\IUICommand.h" />
+    <ClInclude Include="..\..\..\source\xUI\IUITextBox.h" />
     <ClInclude Include="..\..\..\source\xUI\IUIWindow.h" />
     <ClInclude Include="..\..\..\source\xUI\IUIButton.h" />
     <ClInclude Include="..\..\..\source\xUI\IUIControl.h" />
     <ClInclude Include="..\..\..\source\xUI\IXUI.h" />
+    <ClInclude Include="..\..\..\source\xUI\UIClassCommand.h" />
+    <ClInclude Include="..\..\..\source\xUI\UICommand.h" />
     <ClInclude Include="..\..\..\source\xUI\UIControl.h" />
+    <ClInclude Include="..\..\..\source\xUI\UITextBox.h" />
     <ClInclude Include="..\..\..\source\xUI\UIWindow.h" />
     <ClInclude Include="..\..\..\source\xUI\UIButton.h" />
     <ClInclude Include="..\..\..\source\xUI\XUI.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\xUI\UIButton.cpp" />
-    <ClCompile Include="..\..\..\source\xUI\UIControl.cpp" />
+    <ClCompile Include="..\..\..\source\xUI\UITextBox.cpp" />
     <ClCompile Include="..\..\..\source\xUI\UIWindow.cpp" />
     <ClCompile Include="..\..\..\source\xUI\XUI.cpp" />
   </ItemGroup>

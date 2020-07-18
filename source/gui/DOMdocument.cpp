@@ -17,12 +17,16 @@ namespace gui
 	{
 		IDOMnode* CDOMdocument::createNode(const wchar_t *tag)
 		{
-			return(IDOMnodeTag::createNode(tag));
+			CDOMnode* pNode = (CDOMnode*)IDOMnodeTag::createNode(tag);
+			pNode->setDocument(this);
+			return(pNode);
 		}
 
 		IDOMnode* CDOMdocument::createNode(UINT nid)
 		{
-			return(CDOMnode::createNode(nid));
+			CDOMnode* pNode = (CDOMnode*)CDOMnode::createNode(nid);
+			pNode->setDocument(this);
+			return(pNode);
 		}
 
 		void CDOMdocument::setRootNode(IDOMnode *pNode)

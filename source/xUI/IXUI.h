@@ -3,6 +3,7 @@
 
 #include "IUIWindow.h"
 #include "UIButton.h"
+#include "UITextBox.h"
 #include <gui/guimain.h>
 
 // {D3FE7B60-BDE7-4A3F-95D8-2D6A102A42E2}
@@ -12,6 +13,10 @@ class IXUI: public IXUnknown
 {
 public:
 	virtual IUIWindow* XMETHODCALLTYPE createWindow(const XWINDOW_DESC *pWindowDesc, IUIWindow *pParent = NULL) = 0;
+
+	virtual IUIButton* XMETHODCALLTYPE createButton(IUIWindow *pParent) = 0;
+
+	virtual IUITextBox* XMETHODCALLTYPE createTextBox(IUIWindow *pParent) = 0;
 
 	virtual void XMETHODCALLTYPE render() = 0;
 	virtual void XMETHODCALLTYPE present() = 0;

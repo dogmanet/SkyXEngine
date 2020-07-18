@@ -57,6 +57,12 @@ CUIWindow::CUIWindow(CXUI *pXUI, const XWINDOW_DESC *pWindowDesc, IUIWindow *pPa
 	m_pDefaultDesktop = m_pDesktopStack->createDesktopW(L"default", L"main.html");
 	m_pDesktopStack->setActiveDesktop(m_pDefaultDesktop);
 
+	m_pDesktopStack->registerCallbackDefault([](const WCHAR *cb_name, gui::IEvent *ev)
+	{
+		CUIWindow *win = (CUIWindow*)ev->pCallbackData;
+		win->callEventHandler(cb_name, ev);
+	}, true, this);
+
 	m_pXWindowCallback = new CWindowCallback(this, m_pDesktopStack);
 	m_pXWindow = pXUI->getWindowSystem()->createWindow(pWindowDesc, m_pXWindowCallback, pXParent);
 
@@ -126,7 +132,45 @@ const XWINDOW_DESC* XMETHODCALLTYPE CUIWindow::getDesc()
 
 void XMETHODCALLTYPE CUIWindow::addControl(IUIControl *pControl)
 {
+	gui::dom::IDOMdocument *pDocument = getDesktop()->getDocument();
+	gui::dom::IDOMnode *pBody = pDocument->getElementsByTag(L"body")[0][0];
+	pControl->createNode(pDocument, pBody);
 	m_ChildControls.push_back(pControl);
+}
+
+gui::IDesktop* XMETHODCALLTYPE CUIWindow::getDesktop() const
+{
+	return(m_pDefaultDesktop);
+}
+
+IUIControl* XMETHODCALLTYPE CUIWindow::getControlByID(ULONG uid) const
+{
+	int index = m_ChildControls.indexOf(uid, [&](const IUIControl* control, ULONG uid) -> bool{ return control->getElementID() == uid; });
+	return index == -1 ? NULL : m_ChildControls[index];
+}
+
+void CUIWindow::callEventHandler(const WCHAR *cb_name, gui::IEvent *ev)
+{
+	int id = ev->target->getAttribute(L"controld_id").toInt();
+	CUIControl<IUIControl> *control = (CUIControl<IUIControl>*)getControlByID(id);
+
+	switch (ev->type)
+	{
+	case gui::GUI_EVENT_TYPE_CLICK:
+		if (NULL != control->m_pClick)
+		{
+			control->m_pClick->execute();
+		}
+		break;
+	case gui::GUI_EVENT_TYPE_KEYUP:
+		if (NULL != control->m_pKeyUp)
+		{
+			control->m_pKeyUp->execute();
+		}
+		break;
+	default:
+		break;
+	}
 }
 
 IXWindow* CUIWindow::getXWindow()

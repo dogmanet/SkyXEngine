@@ -6,7 +6,7 @@
 class IUICommand : public IXUnknown
 {
 public:
-	virtual void operator()() = 0;
+	virtual void execute() = 0;
 };
 
 #endif

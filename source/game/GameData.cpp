@@ -23,6 +23,8 @@ See the license in LICENSE
 #include "FuncTrain.h"
 #include "LogicAuto.h"
 
+#include "UICalcContainer.h"
+
 #include <common/file_utils.h>
 
 #include <xcommon/XEvents.h>
@@ -1099,6 +1101,15 @@ GameData::GameData(HWND hWnd, bool isGame):
 		wdesc.flags = XWF_BUTTON_CLOSE | XWF_BUTTON_MINIMIZE | XWF_BUTTON_MAXIMIZE | /*XWF_NORESIZE | */XWF_TRANSPARENT;
 		IXUI *pXUI = (IXUI*)Core_GetIXCore()->getPluginManager()->getInterface(IXUI_GUID);
 		IUIWindow *pWindow = pXUI->createWindow(&wdesc);
+	//	IUIButton *pButton = pXUI->createButton(pWindow);
+		IUITextBox *pTextBox = pXUI->createTextBox(pWindow);
+		pWindow->addControl(pTextBox);
+	});
+
+	Core_0RegisterConcmd("calc", []()
+	{
+		IXUI *pXUI = (IXUI*)Core_GetIXCore()->getPluginManager()->getInterface(IXUI_GUID);
+		UICalcContainer* pContainer = new UICalcContainer(pXUI);
 	});
 
 	//gui::IDesktop * pDesk = m_pGUI->createDesktopA("ingame", "ingame.html");

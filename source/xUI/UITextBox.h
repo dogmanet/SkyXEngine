@@ -1,13 +1,13 @@
-#ifndef __UIBUTTON_H
-#define __UIBUTTON_H
+#ifndef __UITEXTBOX_H
+#define __UITEXTBOX_H
 
 #include "UIControl.h"
-#include "IUIButton.h"
+#include "IUITextBox.h"
 
-class CUIButton : public CUIControl<IUIButton>
+class CUITextBox : public CUIControl<IUITextBox>
 {
 public:
-	CUIButton(ULONG uID);
+	CUITextBox(ULONG uID);
 
 	void createNode(gui::dom::IDOMdocument *pDomDocument, gui::dom::IDOMnode *pParentNode) override;
 };

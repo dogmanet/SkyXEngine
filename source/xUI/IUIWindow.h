@@ -3,9 +3,12 @@
 
 #include <xWindow/IXWindowSystem.h>
 #include "IUIControl.h"
+#include <gui/guimain.h>
 
 class IUIWindow: public IXUnknown
 {
+public:
+
 	//! Скрывает окно (остается в таскбаре)
 	virtual void XMETHODCALLTYPE hide() = 0;
 

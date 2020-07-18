@@ -2,7 +2,6 @@
 #define __UIWINDOW_H
 
 #include "IUIWindow.h"
-#include <gui/guimain.h>
 
 class CUIWindow;
 class CWindowCallback: public IXWindowCallback
@@ -50,6 +49,12 @@ public:
 	const XWINDOW_DESC* XMETHODCALLTYPE getDesc() override;
 
 	void XMETHODCALLTYPE addControl(IUIControl *pControl) override;
+
+	gui::IDesktop* XMETHODCALLTYPE getDesktop() const;
+
+	IUIControl* getControlByID(ULONG uid) const;
+
+	void callEventHandler(const WCHAR *cb_name, gui::IEvent *ev);
 
 	IXWindow* getXWindow();
 	void render(IGXContext *pContext);

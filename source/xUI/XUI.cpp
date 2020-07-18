@@ -15,6 +15,20 @@ IUIWindow* XMETHODCALLTYPE CXUI::createWindow(const XWINDOW_DESC *pWindowDesc, I
 	return(pWindow);
 }
 
+IUIButton* XMETHODCALLTYPE CXUI::createButton(IUIWindow *pParent)
+{
+	CUIButton *pButton = new CUIButton(++m_elemendID);
+	pParent->addControl(pButton);
+	return pButton;
+}
+
+IUITextBox* XMETHODCALLTYPE CXUI::createTextBox(IUIWindow *pParent)
+{
+	CUITextBox *pInput = new CUITextBox(++m_elemendID);
+	pParent->addControl(pInput);
+	return pInput;
+}
+
 void CXUI::onDestroyWindow(CUIWindow *pWindow)
 {
 	for(UINT i = 0, l = m_pWindows.size(); i < l; ++i)

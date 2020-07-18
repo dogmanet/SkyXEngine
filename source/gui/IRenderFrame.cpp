@@ -2835,7 +2835,7 @@ namespace gui
 					float op = sinf((float)GetTickCount() * 0.003f);
 					op *= op;
 					color.w = op;
-					SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&color, 1);
+				//	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&color, 1);
 				//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&color, 1));
 					m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(_x - 1.0f, _y, 0.0f));
 				//	DX_CALL(GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ));
@@ -2994,7 +2994,7 @@ namespace gui
 					auto shader = GetGUI()->getShaders()->m_baseColored;
 					SGCore_ShaderBind(shader.m_idShaderKit);
 
-					SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&color, 1);
+				//	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&color, 1);
 				//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&color, 1));
 				//	DX_CALL(GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ));
 					

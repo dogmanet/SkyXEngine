@@ -240,6 +240,7 @@
     <ClCompile Include="..\..\..\source\game\TriggerItemUse.cpp" />
     <ClCompile Include="..\..\..\source\game\TriggerTeleport.cpp" />
     <ClCompile Include="..\..\..\source\game\ZombieHands.cpp" />
+    <ClCompile Include="..\..\..\source\xUI\UICalcContainer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\common\AAString.h" />
@@ -307,6 +308,7 @@
     <ClInclude Include="..\..\..\source\game\TriggerItemUse.h" />
     <ClInclude Include="..\..\..\source\game\TriggerTeleport.h" />
     <ClInclude Include="..\..\..\source\game\ZombieHands.h" />
+    <ClInclude Include="..\..\..\source\xUI\UICalcContainer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
