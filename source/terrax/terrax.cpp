@@ -704,7 +704,7 @@ int main(int argc, char **argv)
 		t, w, w, w, t, t,
 		t, t, w, w, w, t
 	};
-	g_pDashedMaterial = SGCore_GetDXDevice()->createTexture2D(6, 6, 1, 0, GXFMT_A8R8G8B8, colorData);
+	g_pDashedMaterial = SGCore_GetDXDevice()->createTexture2D(6, 6, 1, 0, GXFMT_A8B8G8R8, colorData);
 	//pMaterialSystem->addTexture("dev_dashed", pDashedMaterial);
 	//mem_release(pDashedMaterial);
 

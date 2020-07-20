@@ -560,11 +560,11 @@ GXFORMAT CTextureLoader::getFormat()
 			if(m_ddsHeader.ddspf.RBitMask == 0xff0000 && m_ddsHeader.ddspf.GBitMask == 0xff00 && m_ddsHeader.ddspf.BBitMask == 0xff && m_ddsHeader.ddspf.ABitMask == 0xff000000)
 			{
 				m_bConvertSwapRB = true;
-				return(GXFMT_A8R8G8B8);
+				return(GXFMT_A8B8G8R8);
 			}
 			if(m_ddsHeader.ddspf.RBitMask == 0xff && m_ddsHeader.ddspf.GBitMask == 0xff00 && m_ddsHeader.ddspf.BBitMask == 0xff0000 && m_ddsHeader.ddspf.ABitMask == 0xff000000)
 			{
-				return(GXFMT_A8R8G8B8); // GXFMT_A8B8G8R8
+				return(GXFMT_A8B8G8R8); // GXFMT_A8B8G8R8
 			}
 		}
 	}
@@ -603,7 +603,7 @@ GXFORMAT CTextureLoader::getFormat()
 			{
 			case DXGI_FORMAT_B8G8R8A8_UNORM:
 			case DXGI_FORMAT_R8G8B8A8_UNORM:
-				return(GXFMT_A8R8G8B8);
+				return(GXFMT_A8B8G8R8);
 			case DXGI_FORMAT_B8G8R8X8_UNORM:
 				return(GXFMT_X8R8G8B8);
 			case DXGI_FORMAT_B5G6R5_UNORM:

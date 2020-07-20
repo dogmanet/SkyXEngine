@@ -24,7 +24,7 @@ void XMETHODCALLTYPE CResourceTexture2D::init(UINT uWidth, UINT uHeight, GXFORMA
 
 	m_format = format;
 	m_uFrameCount = uFrameCount;
-	m_uMipmapCount = uMipmapCount;
+	m_uMipmapCount = uMipmapCount == IXRESOURCE_TEXTURE_AUTO_MIPS ? 1 : uMipmapCount;
 	m_uWidth = uWidth;
 	m_uHeight = uHeight;
 
@@ -139,7 +139,7 @@ void XMETHODCALLTYPE CResourceTextureCube::init(UINT uSize, GXFORMAT format, UIN
 
 	m_format = format;
 	m_uFrameCount = uFrameCount;
-	m_uMipmapCount = uMipmapCount;
+	m_uMipmapCount = uMipmapCount == IXRESOURCE_TEXTURE_AUTO_MIPS ? 1 : uMipmapCount;
 	m_uSize = uSize;
 
 	mem_delete_a(pDataBlob);

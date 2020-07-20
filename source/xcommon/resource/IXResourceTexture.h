@@ -48,7 +48,7 @@ public:
 	virtual XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) = 0;
 	virtual const XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) const = 0;
 
-	virtual void XMETHODCALLTYPE init(UINT uWidth, UINT uHeight, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 0) = 0;
+	virtual void XMETHODCALLTYPE init(UINT uWidth, UINT uHeight, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 1) = 0;
 };
 
 // Implemented in core
@@ -60,7 +60,7 @@ public:
 	virtual XImageMip* XMETHODCALLTYPE getMip(GXCUBEMAP_FACES face, UINT uMipmap, UINT uFrame = 0) = 0;
 	virtual const XImageMip* XMETHODCALLTYPE getMip(GXCUBEMAP_FACES face, UINT uMipmap, UINT uFrame = 0) const = 0;
 
-	virtual void XMETHODCALLTYPE init(UINT uSize, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 0) = 0;
+	virtual void XMETHODCALLTYPE init(UINT uSize, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 1) = 0;
 };
 
 

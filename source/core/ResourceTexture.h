@@ -88,7 +88,7 @@ public:
 		case GXFMT_D24S8:
 		case GXFMT_D32:
 		case GXFMT_X8R8G8B8:
-		case GXFMT_A8R8G8B8:
+		case GXFMT_A8B8G8R8:
 			return(32);
 
 		case GXFMT_D16:
@@ -189,7 +189,7 @@ public:
 	UINT XMETHODCALLTYPE getWidth() const override;
 	UINT XMETHODCALLTYPE getHeight() const override;
 
-	void XMETHODCALLTYPE init(UINT uWidth, UINT uHeight, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 0) override;
+	void XMETHODCALLTYPE init(UINT uWidth, UINT uHeight, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 1) override;
 
 	XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) override;
 	const XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) const override;
