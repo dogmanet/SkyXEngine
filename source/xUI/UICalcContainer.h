@@ -31,7 +31,7 @@ private:
 	void operationDiv();
 	void operationMultiply();
 
-	INT64 mbuffRes = 0;
+	int mbuffRes = 0;
 	INT64 mFirstNum = 0;
 	INT64 mSecondNum = 0;
 

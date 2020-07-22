@@ -21,11 +21,12 @@ public:
 
 	void setPosition(float fSizeX, float fSizeY) override
 	{
-		m_pNode->getStyleSelf()->position->set(1);
-		m_pNode->getStyleSelf()->right->setDim(gui::css::ICSSproperty::DIM_PX);
+		m_pNode->getStyleSelf()->position->setExt(gui::css::ICSSproperty::POSITION_ABSOLUTE);
+		m_pNode->getStyleSelf()->left->setDim(gui::css::ICSSproperty::DIM_PX);
 		m_pNode->getStyleSelf()->top->setDim(gui::css::ICSSproperty::DIM_PX);
-		m_pNode->getStyleSelf()->right->set(fSizeX);
+		m_pNode->getStyleSelf()->left->set(fSizeX);
 		m_pNode->getStyleSelf()->top->set(fSizeY);
+		m_pNode->updateStyles();
 	}
 
 	void setSize(float fSizeX, float fSizeY) override

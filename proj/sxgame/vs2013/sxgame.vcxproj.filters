@@ -249,6 +249,27 @@
     <ClCompile Include="..\..\..\source\xUI\UICalcContainer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+	<ClCompile Include="..\..\..\source\game\TriggerHurt.cpp">
+      <Filter>Source Files\ents\triggers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\LightSun.cpp">
+      <Filter>Source Files\ents\light</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\TriggerTeleport.cpp">
+      <Filter>Source Files\ents\triggers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\TriggerItemUse.cpp">
+      <Filter>Source Files\ents\triggers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\LogicAuto.cpp">
+      <Filter>Source Files\ents\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\FuncRotating.cpp">
+      <Filter>Source Files\ents\func</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\FuncTrain.cpp">
+       <Filter>Source Files\ents\func</Filter>
+	</ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -443,6 +464,8 @@
     <ClInclude Include="..\..\..\source\game\FuncRotating.h">
       <Filter>Header Files\ents\func</Filter>
     </ClInclude>
+	<ClInclude Include="..\..\..\source\game\FuncTrain.h">
+	  <Filter>Header Files\ents\func</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

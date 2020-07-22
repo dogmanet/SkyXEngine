@@ -5,12 +5,12 @@ UICalcContainer::UICalcContainer(IXUI* pXUI)
 	XWINDOW_DESC wdesc;
 	wdesc.iPosX = XCW_CENTER;
 	wdesc.iPosY = XCW_CENTER;
-	wdesc.iSizeX = 1280;
-	wdesc.iSizeY = 1024;
+	wdesc.iSizeX = 800;
+	wdesc.iSizeY = 600;
 	wdesc.szTitle = "Calculator";
 	wdesc.flags = XWF_BUTTON_CLOSE | XWF_BUTTON_MINIMIZE | XWF_BUTTON_MAXIMIZE | XWF_TRANSPARENT;
 
-	const wchar_t m_buttonNames[14] = { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '+', '-', '*', '/' };
+	const wchar_t aszButtonNames[] = {L'1', L'2', L'3', L'4', L'5', L'6', L'7', L'8', L'9', L'0', L'+', L'-', L'*', L'/', L'='};
 
 	pCalc = pXUI->createWindow(&wdesc);
 	m_pTextBox = pXUI->createTextBox(pCalc);
@@ -18,19 +18,27 @@ UICalcContainer::UICalcContainer(IXUI* pXUI)
 	mDisplayedStr.appendReserve(30);
 	mCurrOperation.appendReserve(3);
 
-	for (int i = 0; i < 14; ++i)
+	for(int i = 0; i < ARRAYSIZE(aszButtonNames); ++i)
 	{
 		mButtons[i] = pXUI->createButton(pCalc);
-		mButtons[i]->setLabel(StringW(m_buttonNames[i]).c_str());
+		mButtons[i]->setLabel(StringW(aszButtonNames[i]).c_str());
 	}
 	//IUICommand *pCommand = new CUICommand<decltype(&UICalcContainer::inputNumOne)>(/*&UICalcContainer::inputNumOne*/this->inputNumber);
 
 	//IUICommand *pCommand = new CUICommand(F);
 	IUICommand *pCommand = new CUIClassCommand(&UICalcContainer::inputNumOne, this);
 
-	mButtons[0]->setSize(150, 150);
+	// mButtons[0]->setSize(150, 150);
 	mButtons[0]->setClickCommand(pCommand);
-	mButtons[0]->setPosition(100, 100);
+	//mButtons[0]->setPosition(100, 100);
+	for(int i = 0; i < 3; ++i)
+	{
+		for(int j = 0; j < ARRAYSIZE(aszButtonNames) / 3; ++j)
+		{
+			mButtons[j * 3 + i]->setPosition(25 + i * 150, 25 + j * 50);
+			mButtons[j * 3 + i]->setSize(140, 40);
+		}
+	}
 }
 
 void UICalcContainer::inputNumber(int iNum)
@@ -56,19 +64,19 @@ void UICalcContainer::inputOperation(char op)
 	switch (op)
 	{
 	case '+':
-		mCurrOperation = ' + ';
+		mCurrOperation = L" + ";
 		mbuffRes = mFirstNum + mSecondNum;
 		break;
 	case '-':
-		mCurrOperation = ' - ';
+		mCurrOperation = L" - ";
 		mbuffRes = mFirstNum - mSecondNum;
 		break;
 	case '/':
-		mCurrOperation = ' / ';
+		mCurrOperation = L" / ";
 		mbuffRes = mFirstNum / mSecondNum;
 		break;
 	case '*':
-		mCurrOperation = ' * ';
+		mCurrOperation = L" * ";
 		mbuffRes = mFirstNum * mSecondNum;
 		break;
 	}

@@ -2387,10 +2387,12 @@ namespace gui
 				//GetGUI()->getDevice()->SetTransform(D3DTS_WORLD, reinterpret_cast<D3DMATRIX*>(&m));
 				
 				auto shader = GetGUI()->getShaders()->m_baseTexturedColored;
-				SGCore_ShaderBind(shader.m_idShaderKit);
+				
 			//	CTextureManager::bindShader(shText);
 				m_pDoc->getDesktopStack()->getTextureManager()->bindTexture(texWhite);
 				renderSelection();
+
+				SGCore_ShaderBind(shader.m_idShaderKit);
 
 				float4_t vColor = m_pStyle->color->getColor();
 				float4_t vShadowColor = m_pStyle->text_shadow_color->isSet() ? m_pStyle->text_shadow_color->getColor() : vColor;
@@ -2835,6 +2837,11 @@ namespace gui
 					float op = sinf((float)GetTickCount() * 0.003f);
 					op *= op;
 					color.w = op;
+
+					static IGXConstantBuffer *s_pColorConstant = GetGUI()->getDevice()->createConstantBuffer(sizeof(float4));
+					s_pColorConstant->update(&color);
+					pCtx->setPSConstant(s_pColorConstant);
+
 				//	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&color, 1);
 				//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&color, 1));
 					m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(_x - 1.0f, _y, 0.0f));
@@ -2993,6 +3000,10 @@ namespace gui
 
 					auto shader = GetGUI()->getShaders()->m_baseColored;
 					SGCore_ShaderBind(shader.m_idShaderKit);
+
+					static IGXConstantBuffer *s_pColorConstant = GetGUI()->getDevice()->createConstantBuffer(sizeof(float4));
+					s_pColorConstant->update(&color);
+					pCtx->setPSConstant(s_pColorConstant);
 
 				//	SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&color, 1);
 				//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&color, 1));

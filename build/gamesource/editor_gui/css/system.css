@@ -9,13 +9,13 @@ body, button, div, html, iframe, img, label, p, span, checkbox, radio {
 	float: none;
 	}	
 
-body, div, html, p
+body, div, html, p, button
 {
 display: block;
 }
 
 
-button, span	{
+span	{
 
 	display: inline;
 	}
@@ -89,7 +89,6 @@ br {
 
 button
 {
-	display: inline-block;
 	background-color: #c6f0fd10;
 	
 	border-color: #c6f0fd90;
@@ -120,6 +119,8 @@ button
 	//cursor: pointer;
 	
 	
+	overflow-x: visible;
+	overflow-y: visible;
 	
 	transition-property: background-color, border-color, color;
 	transition-duration: 0.2s, 0.2s, 0.2s;
