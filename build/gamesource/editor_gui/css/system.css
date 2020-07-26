@@ -9,7 +9,7 @@ body, button, div, html, iframe, img, label, p, span, checkbox, radio {
 	float: none;
 	}	
 
-body, div, html, p, button
+body, div, html, p, button, input
 {
 display: block;
 }
@@ -155,10 +155,14 @@ button:disabled
 	cursor: default;
 }
 
-input, textarea, password
+textarea, password
 {
 	display: inline-block;
-	background-color: #d2cdc9;
+}
+
+input, textarea, password 
+{
+    background-color: #d2cdc9;
 	
 	border-top-color: #3d3d3d;
 	border-left-color: #3d3d3d;

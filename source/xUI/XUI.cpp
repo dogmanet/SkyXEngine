@@ -29,6 +29,13 @@ IUITextBox* XMETHODCALLTYPE CXUI::createTextBox(IUIWindow *pParent)
 	return pInput;
 }
 
+IUICheckbox* XMETHODCALLTYPE CXUI::createCheckBox(IUIWindow *pParent)
+{
+	IUICheckbox *pCheckBox = new CUICheckBox(++m_elemendID);
+	pParent->addControl(pCheckBox);
+	return pCheckBox;
+}
+
 void CXUI::onDestroyWindow(CUIWindow *pWindow)
 {
 	for(UINT i = 0, l = m_pWindows.size(); i < l; ++i)

@@ -17,6 +17,8 @@ public:
 
 	IUITextBox* XMETHODCALLTYPE createTextBox(IUIWindow *pParent) override;
 
+	IUICheckbox* XMETHODCALLTYPE createCheckBox(IUIWindow *pParent) override;
+
 	void onDestroyWindow(CUIWindow *pWindow);
 
 	IXWindowSystem* getWindowSystem();

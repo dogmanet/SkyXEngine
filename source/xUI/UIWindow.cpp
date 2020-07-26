@@ -154,6 +154,11 @@ void CUIWindow::callEventHandler(const WCHAR *cb_name, gui::IEvent *ev)
 	int id = ev->target->getAttribute(L"controld_id").toInt();
 	CUIControl<IUIControl> *control = (CUIControl<IUIControl>*)getControlByID(id);
 
+	if (NULL == control)
+	{
+		return;
+	}
+
 	switch (ev->type)
 	{
 	case gui::GUI_EVENT_TYPE_CLICK:
