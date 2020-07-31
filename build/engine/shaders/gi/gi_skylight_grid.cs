@@ -21,6 +21,8 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID, uint3 groupThreadID : SV_
 
 	uint uOcclusion = g_uOcclusionMap[cellIndex.x][cellIndex.y][cellIndex.z / 2];
 	
+	uOcclusion = 0x000000FF;
+	
 	if(cellIndex.z % 2)
 	{
 		uOcclusion >>= 16;
@@ -33,7 +35,7 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID, uint3 groupThreadID : SV_
 	[unroll]
 	for(uint i = 0; i < 16; ++i)
 	{
-	//	if(uOcclusion & (1 << i))
+		if(uOcclusion & (1 << i))
 		{
 			vR += g_txMapR[uint2(i, 0)];
 			vG += g_txMapG[uint2(i, 0)];
