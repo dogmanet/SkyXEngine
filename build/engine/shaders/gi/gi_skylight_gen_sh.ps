@@ -1,0 +1,60 @@
+#include <lpv.h>
+
+struct PS_IN
+{
+	float4 vPos :SV_POSITION;
+	float3 vTex :TEXCOORD0;
+};
+
+struct PS_OUT
+{
+	float4 redSH :SV_Target0;
+	float4 greenSH :SV_Target1;
+	float4 blueSH :SV_Target2;
+};
+
+cbuffer b0 :register(b0)
+{
+	uint g_uSkyboxSize;
+	float g_fWeight;
+	float g_fTexOffset;
+};
+
+TextureCube g_txSkyBox: register(t0);
+TextureCube g_txMask: register(t1);
+
+PS_OUT main(PS_IN input)
+{
+	PS_OUT output;
+
+	float4 vColor = g_txSkyBox.Sample(g_sLinearClamp, input.vTex) * g_txMask.Sample(g_sLinearClamp, input.vTex).rrrr;
+	
+	vColor.rgb *= vColor.a * 16.0;
+
+	float4 coeffs = dirToCosineLobe(input.vTex) * g_fWeight;
+	output.redSH = coeffs * vColor.r;
+	output.greenSH = coeffs * vColor.g;
+	output.blueSH = coeffs * vColor.b;
+	
+	return(output);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

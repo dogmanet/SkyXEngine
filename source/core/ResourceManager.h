@@ -50,7 +50,7 @@ public:
 		const char *szName = pTexture->getFileName();
 		if(szName)
 		{
-			m_mpModels[szName] = NULL;
+			m_mpTextures[szName] = NULL;
 		}
 	}
 

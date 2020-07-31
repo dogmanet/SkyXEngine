@@ -195,6 +195,7 @@
     <ClCompile Include="..\..\..\source\game\EditorOutputsTab.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityFactory.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityManager.cpp" />
+    <ClCompile Include="..\..\..\source\game\EnvSkybox.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncRotating.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncTrain.cpp" />
     <ClCompile Include="..\..\..\source\game\GameData.cpp" />
@@ -264,6 +265,7 @@
     <ClInclude Include="..\..\..\source\game\EditorExtension.h" />
     <ClInclude Include="..\..\..\source\game\EditorObject.h" />
     <ClInclude Include="..\..\..\source\game\EditorOutputsTab.h" />
+    <ClInclude Include="..\..\..\source\game\EnvSkybox.h" />
     <ClInclude Include="..\..\..\source\game\FuncRotating.h" />
     <ClInclude Include="..\..\..\source\game\GameStateManager.h" />
     <ClInclude Include="..\..\..\source\game\CharacterInventory.h" />

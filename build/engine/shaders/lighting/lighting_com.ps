@@ -182,7 +182,7 @@ float4 main(VSO_ResPos IN):SV_TARGET
 	float3 vLigth = normalize(g_vLightPosShadow.xyz - vPosition.xyz);
 #endif
 
-	float fShadow = fAO;
+	float fShadow = 1.0;
 #ifdef IS_SHADOWED
 	fShadow *= GenShadow(IN).x;
 #endif

@@ -9,8 +9,6 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
-#include <common/Array.h>
-
 #include <chrono>
 typedef std::chrono::high_resolution_clock::time_point time_point;
 

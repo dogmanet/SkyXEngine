@@ -80,6 +80,10 @@ void CEditorObject::_iniFieldList()
 							{
 								xField.pEditorData = "sound";
 							}
+							else if(!fstrcmp(pKV[0].value, "dds"))
+							{
+								xField.pEditorData = "texture";
+							}
 						}
 						//xField.pEditorData
 					}

@@ -148,9 +148,15 @@ float2 LayerDecode(float fCode)
 #define LayerDecodeType(fCode)(LayerDecode(fCode).y)
 
 //! преобразвоание цвета в нормаль (если конечно цвет содержит нормаль)
-float3 Color2Normal(float3 vColor)
+float3 Color3ToNormal(float3 vColor)
 {
-	return (2.0 * vColor - 1.0);
+	return(2.0 * vColor - 1.0);
+}
+
+float3 Color2ToNormal(float2 vColor)
+{
+	float2 tmp = 2.0 * vColor - 1.0;
+	return(float3(tmp, 1.0 - sqrt(tmp.x * tmp.x + tmp.y * tmp.y)));
 }
 
 //##########################################################################

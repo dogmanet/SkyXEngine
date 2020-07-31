@@ -50,21 +50,31 @@ XMaterial MainGBuffer(PSI_XMaterial IN)
 	
 	
 	float3 vNormal = (float3)0;
+	float fWeight = 0.0;
 #ifdef HAS_NORMALMAP_0
-	vNormal += Color2Normal(g_txNormals0.Sample(g_sScene, vDetailUV).xyz) * g_xMaterialConstants.nm_weight_0 * vMask.x;
+	vNormal += Color2ToNormal(g_txNormals0.Sample(g_sScene, vDetailUV).xy * g_xMaterialConstants.nm_weight_0 * vMask.x);
+	fWeight += 1.0;
 #endif
 
 #ifdef HAS_NORMALMAP_1
-	vNormal += Color2Normal(g_txNormals1.Sample(g_sScene, vDetailUV).xyz) * g_xMaterialConstants.nm_weight_1 * vMask.y;
+	vNormal += Color2ToNormal(g_txNormals1.Sample(g_sScene, vDetailUV).xy * g_xMaterialConstants.nm_weight_1 * vMask.y);
+	fWeight += 1.0;
 #endif
 
 #ifdef HAS_NORMALMAP_2
-	vNormal += Color2Normal(g_txNormals2.Sample(g_sScene, vDetailUV).xyz) * g_xMaterialConstants.nm_weight_2 * vMask.z;
+	vNormal += Color2ToNormal(g_txNormals2.Sample(g_sScene, vDetailUV).xy * g_xMaterialConstants.nm_weight_2 * vMask.z);
+	fWeight += 1.0;
 #endif
 	
 #ifdef HAS_NORMALMAP_3
-	vNormal += Color2Normal(g_txNormals3.Sample(g_sScene, vDetailUV).xyz) * g_xMaterialConstants.nm_weight_3 * vMask.w;
+	vNormal += Color2ToNormal(g_txNormals3.Sample(g_sScene, vDetailUV).xy * g_xMaterialConstants.nm_weight_3 * vMask.w);
+	fWeight += 1.0;
 #endif
+
+	if(fWeight > 0.0)
+	{
+		vNormal /= fWeight;
+	}
 	
 	// float fMixFactor = min(1.0f, length(vMask));
 	float fMixFactor = min(1.0f, dot(vMask, 1.0f));

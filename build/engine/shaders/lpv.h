@@ -92,7 +92,7 @@ float3 GetGridTexCoord(float3 worldPos, uint uCascade)
 float3 GetPixelLight(float3 vPosition, float3 vNormalPixel)
 {
 	// float3 vNormalPixel = normalize(IN.vNormal);
-	float4 SHintensity = dirToSH(-vNormalPixel);
+	float4 SHintensity = dirToSH(vNormalPixel);
 	
 
 	float4 vColorR = (float4)0;

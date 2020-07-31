@@ -451,6 +451,25 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 					szTmp += swprintf(szTmp, L"*.%S", pFmt->szExtension) + 1;
 				}
 			}
+			else if(!fstrcmp(szCurrentFileType, "texture"))
+			{
+				auto pMgr = Core_GetIXCore()->getResourceManager();
+				UINT uFormatCount = pMgr->getTextureSupportedFormats();
+
+				szTmp += swprintf(szTmp, L"All supported formats") + 1;
+				for(UINT i = 0; i < uFormatCount; ++i)
+				{
+					auto pFmt = pMgr->getTextureSupportedFormat(i);
+					szTmp += swprintf(szTmp, L"*.%S;", pFmt->szExtension);
+				}
+				szTmp[-1] = 0;
+				for(UINT i = 0; i < uFormatCount; ++i)
+				{
+					auto pFmt = pMgr->getTextureSupportedFormat(i);
+					szTmp += swprintf(szTmp, L"%S (*.%S)", pFmt->szDescription, pFmt->szExtension) + 1;
+					szTmp += swprintf(szTmp, L"*.%S", pFmt->szExtension) + 1;
+				}
+			}
 			else
 			{
 				szTmp += swprintf(szTmp, L"All files") + 1;

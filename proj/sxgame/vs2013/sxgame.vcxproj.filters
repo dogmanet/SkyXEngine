@@ -97,6 +97,12 @@
     <Filter Include="Source Files\ents\sound">
       <UniqueIdentifier>{e57af3ee-3c5c-4c72-8ba2-9eec9262588e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ents\env">
+      <UniqueIdentifier>{725d7579-9bab-49c3-8c51-65688220ac29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents\env">
+      <UniqueIdentifier>{760364fe-2f6b-4ae1-b2d5-be66133d9184}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp">
@@ -296,6 +302,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\LogicEntityExists.cpp">
       <Filter>Source Files\ents\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\EnvSkybox.cpp">
+      <Filter>Source Files\ents\env</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -517,6 +526,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\LogicEntityExists.h">
       <Filter>Header Files\ents\logic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\EnvSkybox.h">
+      <Filter>Header Files\ents\env</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

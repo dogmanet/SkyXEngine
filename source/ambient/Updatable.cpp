@@ -1,7 +1,7 @@
 #include "Updatable.h"
 
-CUpdatable::CUpdatable(CSkyBox *pSkyBox):
-	m_pSkyBox(pSkyBox)
+CUpdatable::CUpdatable(CAmbient *pAmbient):
+	m_pAmbient(pAmbient)
 {
 	// do nothing
 }
@@ -19,7 +19,7 @@ void CUpdatable::shutdown()
 
 ID CUpdatable::run(float fDelta)
 {
-	m_pSkyBox->update(fDelta);
+	m_pAmbient->update(fDelta);
 
 	return(-1);
 }

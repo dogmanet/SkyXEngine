@@ -505,9 +505,12 @@ bool CTextureLoader::isBlockCompressed(GXFORMAT format)
 	switch(format)
 	{
 	case GXFMT_DXT1:
-	case GXFMT_ATI1N:
 	case GXFMT_DXT3:
 	case GXFMT_DXT5:
+	case GXFMT_DXT1_SRGB:
+	case GXFMT_DXT3_SRGB:
+	case GXFMT_DXT5_SRGB:
+	case GXFMT_ATI1N:
 	case GXFMT_ATI2N:
 		return(true);
 

@@ -2,7 +2,6 @@
 #define __XEVENTS_H
 
 #include <gdefines.h>
-#include <common/math.h>
 
 template<typename T>
 class IEventListener
@@ -230,6 +229,16 @@ class ICamera;
 struct XEventObserverChanged
 {
 	ICamera *pCamera;
+};
+
+
+// {5E77BE25-9855-4E96-ADEA-3F63694DAC82}
+#define EVENT_SKYBOX_CHANGED_GUID DEFINE_XGUID(0x5e77be25, 0x9855, 0x4e96, 0xad, 0xea, 0x3f, 0x63, 0x69, 0x4d, 0xac, 0x82)
+
+class IXTexture;
+struct XEventSkyboxChanged
+{
+	IXTexture *pTexture;
 };
 
 #endif

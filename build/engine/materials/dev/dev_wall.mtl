@@ -1,6 +1,6 @@
 [dev_wall]
 shader = Default
-tex.txBase = dev_wall.dds
+tex.txBase = dev_wall.dds|from_srgb
 tex.txNormals = dev_normal.dds
 
 prop.pbr_roughness = 0.5

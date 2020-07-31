@@ -1265,6 +1265,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case ID_LEVEL_RUN:
 			g_pEngine->getCore()->getConsole()->execCommand("run_level");
 			break;
+
+		case ID_TOOLS_RELOADSHADERS:
+			g_pEngine->getCore()->getConsole()->execCommand("shader_reload");
+			break;
+
+		case ID_TOOLS_RELOADMATERIALS:
+			g_pEngine->getCore()->getConsole()->execCommand("mtl_reload");
+			break;
 		}
 		break;
 

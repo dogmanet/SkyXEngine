@@ -1,5 +1,5 @@
 #include <xcommon/IXPlugin.h>
-#include "SkyBox.h"
+#include "Ambient.h"
 #include "Renderable.h"
 #include "Updatable.h"
 
@@ -61,27 +61,27 @@ public:
 	{
 		m_pCore = pCore;
 
-		m_pSkyBox = new CSkyBox(pCore);
-		m_pRenderable = new CRenderable(getID(), m_pSkyBox);
-		m_pUpdatable = new CUpdatable(m_pSkyBox);
+		m_pAmbient = new CAmbient(pCore);
+		m_pRenderable = new CRenderable(getID(), m_pAmbient);
+		m_pUpdatable = new CUpdatable(m_pAmbient);
 
-		m_pEventListener = new CLevelLoadListener(pCore, getID(), m_pSkyBox);
-		m_pCore->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->addListener(m_pEventListener);
+	//	m_pEventListener = new CLevelLoadListener(pCore, getID(), m_pSkyBox);
+	//	m_pCore->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->addListener(m_pEventListener);
 
 	}
 
 	void XMETHODCALLTYPE shutdown() override
 	{
-		m_pCore->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->removeListener(m_pEventListener);
+	//	m_pCore->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->removeListener(m_pEventListener);
 		mem_delete(m_pEventListener);
 		mem_delete(m_pRenderable);
 		mem_delete(m_pUpdatable);
-		mem_delete(m_pSkyBox);
+		mem_delete(m_pAmbient);
 	}
 
 	UINT XMETHODCALLTYPE getInterfaceCount() override
 	{
-		return(2);
+		return(3);
 	}
 	const XGUID* XMETHODCALLTYPE getInterfaceGUID(UINT id) override
 	{
@@ -93,6 +93,9 @@ public:
 			break;
 		case 1:
 			s_guid = IXRENDERABLE_GUID;
+			break;
+		case 2:
+			s_guid = IXAMBIENT_GUID;
 			break;
 		default:
 			return(NULL);
@@ -109,6 +112,10 @@ public:
 		{
 			return(m_pUpdatable);
 		}
+		if(guid == IXAMBIENT_GUID)
+		{
+			return(m_pAmbient);
+		}
 		return(NULL);
 	}
 
@@ -116,7 +123,7 @@ protected:
 	IXCore *m_pCore = NULL;
 	CLevelLoadListener *m_pEventListener = NULL;
 
-	CSkyBox *m_pSkyBox = NULL;
+	CAmbient *m_pAmbient = NULL;
 	CRenderable *m_pRenderable = NULL;
 	CUpdatable *m_pUpdatable = NULL;
 

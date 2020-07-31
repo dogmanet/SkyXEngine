@@ -47,6 +47,8 @@ public:
 	//! загрузка текстуры
 	void setTexture(const char *szTexture);
 
+	void getTexture(IXTexture **ppTexture);
+
 	//! используется ли?
 	bool isEnabled();
 	//! установить использование
@@ -112,6 +114,8 @@ protected:
 	XVertexShaderHandler *m_pVertexShaderHandler = NULL;
 
 	CRFarCvarListener *m_pRFarCvarListener = NULL;
+
+	IEventChannel<XEventSkyboxChanged> *m_pEventChannel = NULL;
 };
 
 #if 0

@@ -382,6 +382,18 @@ const XFormatName* XMETHODCALLTYPE CResourceManager::getSoundSupportedFormat(UIN
 
 bool XMETHODCALLTYPE CResourceManager::getTexture(const char *szName, IXResourceTexture **ppOut, bool bForceReload)
 {
+	const AssotiativeArray<String, IXResourceTexture*>::Node *pNode1;
+	if(!bForceReload && m_mpTextures.KeyExists(szName, &pNode1))
+	{
+		IXResourceTexture *pOut = (*pNode1->Val);
+		if(pOut)
+		{
+			*ppOut = pOut;
+			pOut->AddRef();
+			return(true);
+		}
+	}
+
 	char *szFileName = strdupa(szName);
 	char *szArg = NULL;
 	char *szPound = strstr(szFileName, "#");
@@ -453,6 +465,7 @@ bool XMETHODCALLTYPE CResourceManager::getTexture(const char *szName, IXResource
 
 		if(pResource)
 		{
+			addTexture(szName, pResource);
 			*ppOut = pResource;
 			return(true);
 		}

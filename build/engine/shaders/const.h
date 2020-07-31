@@ -73,6 +73,11 @@ cbuffer XMaterialConstants: register(b7)
         XMAT_MS_CONST_STRUCT();
     } g_xMaterialConstants;
 };
+#else
+cbuffer CSkyBoxLight: register(b7)
+{
+    float4 g_vSkyBoxLights[16][4][16][3];
+};	
 #endif
 
 

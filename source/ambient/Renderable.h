@@ -3,12 +3,12 @@
 
 #include <xcommon/IXRenderable.h>
 
-#include "SkyBox.h"
+#include "Ambient.h"
 
 class CRenderable: public IXUnknownImplementation<IXRenderable>
 {
 public:
-	CRenderable(ID idPlugin, CSkyBox *pSkyBox);
+	CRenderable(ID idPlugin, CAmbient *pAmbient);
 
 	XIMPLEMENT_VERSION(IXRENDERABLE_VERSION);
 
@@ -51,7 +51,7 @@ protected:
 	ID m_idPlugin = -1;
 
 
-	CSkyBox *m_pSkyBox = NULL;
+	CAmbient *m_pAmbient = NULL;
 };
 
 #endif

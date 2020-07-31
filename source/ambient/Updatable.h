@@ -2,12 +2,12 @@
 #define __UPDATABLE_H
 
 #include <xcommon/IXUpdatable.h>
-#include "SkyBox.h"
+#include "Ambient.h"
 
 class CUpdatable: public IXUnknownImplementation<IXUpdatable>
 {
 public:
-	CUpdatable(CSkyBox *pSkyBox);
+	CUpdatable(CAmbient *pAmbient);
 
 	UINT startup() override;
 	void shutdown() override;
@@ -16,7 +16,7 @@ public:
 	void sync() override;
 
 protected:
-	CSkyBox *m_pSkyBox;
+	CAmbient *m_pAmbient = NULL;
 };
 
 #endif

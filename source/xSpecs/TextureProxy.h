@@ -13,8 +13,10 @@ public:
 
 	const char* XMETHODCALLTYPE getDescription() const override;
 
-	bool XMETHODCALLTYPE resolveName(const char *szName, char *szOutput, UINT *puBufSize) override;
+	bool XMETHODCALLTYPE resolveName(const char *szName, char *szOutput, UINT *puBufSize, bool *pbWantLoad = NULL) override;
 	
+	bool XMETHODCALLTYPE loadTexture(const char *szName, IXResourceTexture **ppOut) override;
+
 protected:
 	IFileSystem *m_pFileSystem;
 

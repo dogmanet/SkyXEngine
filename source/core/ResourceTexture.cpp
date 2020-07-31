@@ -22,6 +22,30 @@ void XMETHODCALLTYPE CResourceTexture2D::init(UINT uWidth, UINT uHeight, GXFORMA
 	assert(uMipmapCount > 0);
 	assert(uFrameCount > 0);
 
+	switch(format)
+	{
+	case GXFMT_DXT1_SRGB:
+		format = GXFMT_DXT1;
+		m_isSRGB = true;
+		break;
+	case GXFMT_DXT3_SRGB:
+		format = GXFMT_DXT3;
+		m_isSRGB = true;
+		break;
+	case GXFMT_DXT5_SRGB:
+		format = GXFMT_DXT5;
+		m_isSRGB = true;
+		break;
+	case GXFMT_X8R8G8B8_SRGB:
+		format = GXFMT_X8R8G8B8;
+		m_isSRGB = true;
+		break;
+	case GXFMT_A8B8G8R8_SRGB:
+		format = GXFMT_A8B8G8R8;
+		m_isSRGB = true;
+		break;
+	}
+
 	m_format = format;
 	m_uFrameCount = uFrameCount;
 	m_uMipmapCount = uMipmapCount == IXRESOURCE_TEXTURE_AUTO_MIPS ? 1 : uMipmapCount;
@@ -102,9 +126,9 @@ XImageMip* XMETHODCALLTYPE CResourceTexture2D::getMip(UINT uMipmap, UINT uFrame)
 const XImageMip* XMETHODCALLTYPE CResourceTexture2D::getMip(UINT uMipmap, UINT uFrame) const
 {
 	assert(m_ppData);
-	assert(m_uMipmapCount < uMipmap);
-	assert(m_uFrameCount < uFrame);
-	if(!m_ppData || m_uMipmapCount >= uMipmap || m_uFrameCount >= uFrame)
+	assert(m_uMipmapCount > uMipmap);
+	assert(m_uFrameCount > uFrame);
+	if(!m_ppData || m_uMipmapCount <= uMipmap || m_uFrameCount <= uFrame)
 	{
 		return(NULL);
 	}
@@ -118,6 +142,28 @@ const IXResourceTexture2D* XMETHODCALLTYPE CResourceTexture2D::as2D() const
 IXResourceTexture2D* XMETHODCALLTYPE CResourceTexture2D::as2D()
 {
 	return(this);
+}
+
+void XMETHODCALLTYPE CResourceTexture2D::clone(IXResourceTexture **ppOut) const
+{
+	IXResourceTexture2D *pRes = m_pManager->newResourceTexture2D();
+	*ppOut = pRes;
+	cloneBaseData((CResourceTextureImpl<CResourceTexture2D>*)pRes);
+	pRes->init(m_uWidth, m_uHeight, m_format, m_uMipmapCount, m_uFrameCount);
+
+	for(UINT i = 0, l = m_uFrameCount; i < l; ++i)
+	{
+		for(UINT j = 0, jl = m_uMipmapCount; j < jl; ++j)
+		{
+			const XImageMip *pSrcMip = getMip(j, i);
+			XImageMip *pDstMip = pRes->getMip(j, i);
+			pDstMip->isWritten = pSrcMip->isWritten;
+			if(pSrcMip->isWritten)
+			{
+				memcpy(pDstMip->pData, pSrcMip->pData, pSrcMip->sizeData);
+			}
+		}
+	}
 }
 
 //##########################################################################
@@ -227,11 +273,36 @@ XImageMip* XMETHODCALLTYPE CResourceTextureCube::getMip(GXCUBEMAP_FACES face, UI
 const XImageMip* XMETHODCALLTYPE CResourceTextureCube::getMip(GXCUBEMAP_FACES face, UINT uMipmap, UINT uFrame) const
 {
 	assert(m_pppData);
-	assert(m_uMipmapCount < uMipmap);
-	assert(m_uFrameCount < uFrame);
-	if(!m_pppData || m_uMipmapCount >= uMipmap || m_uFrameCount >= uFrame)
+	assert(m_uMipmapCount > uMipmap);
+	assert(m_uFrameCount > uFrame);
+	if(!m_pppData || m_uMipmapCount <= uMipmap || m_uFrameCount <= uFrame)
 	{
 		return(NULL);
 	}
 	return(&m_pppData[uFrame][uMipmap][face]);
+}
+
+void XMETHODCALLTYPE CResourceTextureCube::clone(IXResourceTexture **ppOut) const
+{
+	IXResourceTextureCube *pRes = m_pManager->newResourceTextureCube();
+	*ppOut = pRes;
+	cloneBaseData((CResourceTextureImpl<IXResourceTextureCube>*)pRes);
+	pRes->init(m_uSize, m_format, m_uMipmapCount, m_uFrameCount);
+
+	for(UINT i = 0, l = m_uFrameCount; i < l; ++i)
+	{
+		for(UINT j = 0, jl = m_uMipmapCount; j < jl; ++j)
+		{
+			for(UINT k = 0; k < 6; ++k)
+			{
+				const XImageMip *pSrcMip = getMip((GXCUBEMAP_FACES)k, j, i);
+				XImageMip *pDstMip = pRes->getMip((GXCUBEMAP_FACES)k, j, i);
+				pDstMip->isWritten = pSrcMip->isWritten;
+				if(pSrcMip->isWritten)
+				{
+					memcpy(pDstMip->pData, pSrcMip->pData, pSrcMip->sizeData);
+				}
+			}
+		}
+	}
 }

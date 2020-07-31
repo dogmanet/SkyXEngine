@@ -188,7 +188,8 @@ public:
 //! Тип функции вывода отладочной информации
 typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMessage);
 
-#include <cstdio> 
+#include <cstdio>
+#include <cstdarg>
 #if defined(_WINDOWS)
 #	define WIN32_LEAN_AND_MEAN
 #	include <Windows.h>
@@ -197,7 +198,7 @@ typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMes
 #include <common/math.h>
 #include <common/array.h>
 #include <common/assotiativearray.h>
-#include <common/memalloc.h>
+#include <common/MemAlloc.h>
 
 #ifndef GET_X_LPARAM
 #define GET_X_LPARAM(lp)                        ((int)(short)LOWORD(lp))

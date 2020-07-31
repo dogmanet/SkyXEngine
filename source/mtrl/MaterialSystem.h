@@ -8,6 +8,7 @@
 #include <xcommon/IXMaterialLoader.h>
 #include <xcommon/resource/IXResourceManager.h>
 #include <xcommon/resource/IXResourceTexture.h>
+#include <xcommon/IXTextureFilter.h>
 #include <xcommon/XEvents.h>
 #include <common/ConcurrentQueue.h>
 #include <common/aastring.h>
@@ -351,6 +352,7 @@ protected:
 
 	MemAlloc<CTexture> m_poolTextures;
 	Array<IXTextureProxy*> m_aTextureProxies;
+	AssotiativeArray<String, IXTextureFilter*> m_mapTextureFilters;
 	AssotiativeArray<String, CTexture*> m_mpTextures;
 	CConcurrentQueue<CTexture*> m_queueTextureToLoad;
 	IXTexture *m_pDefaultTexture = NULL;

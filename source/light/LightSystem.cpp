@@ -1,5 +1,8 @@
 #include "LightSystem.h"
 
+#include <xcommon/resource/IXResourceManager.h>
+#include <xcommon/IXAmbient.h>
+
 class CLevelLoadListener: public IEventListener<XEventLevel>
 {
 public:
@@ -35,6 +38,26 @@ private:
 
 //##########################################################################
 
+class CSkyboxChangedListener: public IEventListener<XEventSkyboxChanged>
+{
+public:
+	CSkyboxChangedListener(CLightSystem *pLightSystem, IXCore *pCore):
+		m_pLightSystem(pLightSystem)
+	{
+
+	}
+
+	void onEvent(const XEventSkyboxChanged *pEvent) override
+	{
+		m_pLightSystem->setSkybox(pEvent->pTexture);
+	}
+
+private:
+	CLightSystem *m_pLightSystem;
+};
+
+//##########################################################################
+
 CLightSystem::CLightSystem(IXCore *pCore):
 	m_pCore(pCore)
 {
@@ -42,11 +65,15 @@ CLightSystem::CLightSystem(IXCore *pCore):
 	Core_0RegisterCVarFloat("lpv_size_1", 2.0f, "Коэфициент размера второго каскада LPV");
 	Core_0RegisterCVarFloat("lpv_size_2", 4.0f, "Коэфициент размера третьего каскада LPV");
 	Core_0RegisterCVarInt("lpv_cascades_count", 3, "Количество активных каскадов LPV [0;3]");
+	Core_0RegisterCVarInt("pp_ssao", 3, "Рисовать ли эффект ssao? 0 - нет, 1 - на низком качестве, 2 - на среднем, 3 - на высоком");
 
 	m_pLevelListener = new CLevelLoadListener(this, pCore);
-
 	m_pLevelChannel = pCore->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID);
 	m_pLevelChannel->addListener(m_pLevelListener);
+
+	m_pSkyboxChangedListener = new CSkyboxChangedListener(this, pCore);
+	m_pSkyboxChangedChannel = pCore->getEventChannel<XEventSkyboxChanged>(EVENT_SKYBOX_CHANGED_GUID);
+	m_pSkyboxChangedChannel->addListener(m_pSkyboxChangedListener);
 
 	m_pDevice = SGCore_GetDXDevice();
 
@@ -89,6 +116,8 @@ CLightSystem::CLightSystem(IXCore *pCore):
 			m_idGICubesShader = SGCore_ShaderCreateKit(idVS, idPS, idGS);
 		}
 
+		static const int *r_win_width = GET_PCVAR_INT("r_win_width");
+		static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
 		m_pLightLuminance = m_pDevice->createTexture2D(LUMINANCE_BUFFER_SIZE, LUMINANCE_BUFFER_SIZE, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R16F);
 
@@ -114,12 +143,21 @@ CLightSystem::CLightSystem(IXCore *pCore):
 			m_aLPVs[i].pGIAccumBlue2 = m_pDevice->createTexture3D(32, 32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
 		}
 
+		m_pSkyLightR = m_pDevice->createTexture3D(16, 16, 4, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+		m_pSkyLightG = m_pDevice->createTexture3D(16, 16, 4, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+		m_pSkyLightB = m_pDevice->createTexture3D(16, 16, 4, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A32B32G32R32F);
+
+		m_pSkyLightBaseR = m_pDevice->createTexture2D(SKYLIGHT_AREA_COUNT, 1, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A32B32G32R32F);
+		m_pSkyLightBaseG = m_pDevice->createTexture2D(SKYLIGHT_AREA_COUNT, 1, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A32B32G32R32F);
+		m_pSkyLightBaseB = m_pDevice->createTexture2D(SKYLIGHT_AREA_COUNT, 1, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A32B32G32R32F);
+
 		m_idLightBoundShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "lighting_bound.vs"), -1);
 
 		m_idLPVPropagateShader = SGCore_ShaderCreateKit(-1, -1, -1, SGCore_ShaderLoad(SHADER_TYPE_COMPUTE, "gi_propagation.cs"));
 
 		m_idLuminanceReductionShader = SGCore_ShaderCreateKit(-1, -1, -1, SGCore_ShaderLoad(SHADER_TYPE_COMPUTE, "hdr_reduction.cs"));
 
+		m_idSkylightGenGridShader = SGCore_ShaderCreateKit(-1, -1, -1, SGCore_ShaderLoad(SHADER_TYPE_COMPUTE, "gi_skylight_grid.cs"));
 		
 		GXSamplerDesc samplerDesc;
 
@@ -200,26 +238,83 @@ CLightSystem::CLightSystem(IXCore *pCore):
 		ID idScreenOut = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs");
 		ID idResPos = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs", "pp_quad_render_res_pos.vs");
 
-		GXMacro Defines_IS_SHADOWED[] = {{"IS_SHADOWED", ""}, {0, 0}};
-		GXMacro Defines_IS_SPOT_SHADOWED[] = {{"IS_SHADOWED", ""}, {"IS_SPOT", ""}, {0, 0}};
-		GXMacro Defines_IS_PSSM_SHADOWED[] = {{"IS_SHADOWED", ""}, {"IS_PSSM", ""}, {0, 0}};
+		GXMacro Defines_IS_SHADOWED[] = {{"IS_SHADOWED", "1"}, GX_MACRO_END()};
+		GXMacro Defines_IS_SPOT_SHADOWED[] = {{"IS_SHADOWED", "1"}, {"IS_SPOT", "1"}, GX_MACRO_END()};
+		GXMacro Defines_IS_PSSM_SHADOWED[] = {{"IS_SHADOWED", "1"}, {"IS_PSSM", "1"}, GX_MACRO_END()};
 
-		m_idBlendAmbientSpecDiffColor = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_blend.ps"));
+		GXMacro Defines_USE_AO[] = {{"USE_AO", "1"}, GX_MACRO_END()};
+		m_idBlendAmbientSpecDiffColor[0] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_blend.ps"));
+		m_idBlendAmbientSpecDiffColor[1] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_blend.ps", 0, Defines_USE_AO));
 		m_idComLightingShadow = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_shadow.ps", Defines_IS_SHADOWED));
 		m_idComLightingSpotShadow = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_spot_shadow.ps", Defines_IS_SPOT_SHADOWED));
 		m_idComLightingPSSMShadow = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_com.ps", "lighting_com_pssm_shadow.ps", Defines_IS_PSSM_SHADOWED));
 
 		// LPV_CASCADES_COUNT - iCascades
-		GXMacro Defines_LPV_CASCADE_3[] = {{"LPV_START_CASCADE", "0"}, {0, 0}};
-		m_idComLightingGI[2] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_gi.ps", 0, Defines_LPV_CASCADE_3));
-		GXMacro Defines_LPV_CASCADE_2[] = {{"LPV_START_CASCADE", "1"}, {0, 0}};
-		m_idComLightingGI[1] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_gi.ps", 0, Defines_LPV_CASCADE_2));
-		GXMacro Defines_LPV_CASCADE_1[] = {{"LPV_START_CASCADE", "2"}, {0, 0}};
-		m_idComLightingGI[0] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_gi.ps", 0, Defines_LPV_CASCADE_1));
+		GXMacro Defines_LPV_CASCADE_3[] = {{"LPV_START_CASCADE", "0"}, GX_MACRO_END()};
+		GXMacro Defines_LPV_CASCADE_3_AO[] = {{"LPV_START_CASCADE", "0"}, {"USE_AO", "1"}, GX_MACRO_END()};
+		m_idComLightingGI[2][0] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_gi.ps", 0, Defines_LPV_CASCADE_3));
+		m_idComLightingGI[2][1] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_gi.ps", 0, Defines_LPV_CASCADE_3_AO));
+		GXMacro Defines_LPV_CASCADE_2[] = {{"LPV_START_CASCADE", "1"}, GX_MACRO_END()};
+		GXMacro Defines_LPV_CASCADE_2_AO[] = {{"LPV_START_CASCADE", "1"}, {"USE_AO", "1"}, GX_MACRO_END()};
+		m_idComLightingGI[1][0] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_gi.ps", 0, Defines_LPV_CASCADE_2));
+		m_idComLightingGI[1][1] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_gi.ps", 0, Defines_LPV_CASCADE_2_AO));
+		GXMacro Defines_LPV_CASCADE_1[] = {{"LPV_START_CASCADE", "2"}, GX_MACRO_END()};
+		GXMacro Defines_LPV_CASCADE_1_AO[] = {{"LPV_START_CASCADE", "2"}, {"USE_AO", "1"}, GX_MACRO_END()};
+		m_idComLightingGI[0][0] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_gi.ps", 0, Defines_LPV_CASCADE_1));
+		m_idComLightingGI[0][1] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "lighting_gi.ps", 0, Defines_LPV_CASCADE_1_AO));
 
 		m_idHDRinitLuminance = SGCore_ShaderCreateKit(idScreenOut, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "hdr_luminance.ps"));
 		m_idHDRAdaptLuminance = SGCore_ShaderCreateKit(idScreenOut, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "hdr_adapt.ps"));
 		m_idHDRToneMapping = SGCore_ShaderCreateKit(idScreenOut, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "hdr_tonemapping.ps"));
+
+
+		m_idSkylightGenSHShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gi_skylight_gen_sh.vs"), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gi_skylight_gen_sh.ps"));
+
+
+		GXMacro Defines_SSAO_Q_3[] = {{"SSAO_Q_3", ""}, GX_MACRO_END()};
+		m_idSSAOShader[2] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_3.ps", Defines_SSAO_Q_3));
+
+		GXMacro Defines_SSAO_Q_2[] = {{"SSAO_Q_2", ""}, GX_MACRO_END()};
+		m_idSSAOShader[1] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_2.ps", Defines_SSAO_Q_2));
+
+		GXMacro Defines_SSAO_Q_1[] = {{"SSAO_Q_1", ""}, GX_MACRO_END()};
+		m_idSSAOShader[0] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_1.ps", Defines_SSAO_Q_1));
+
+		float3 rnd[24];
+		for(int i = 0; i < 24; i++)
+		{
+			rnd[i] = SMVector3Normalize(float3(randf(-1.0f, 1.0f), randf(-1.0f, 1.0f), randf(-1.0f, 1.0f))) * vlerp(0.1f, 1.0f, (float)i / 24.0f);
+		}
+
+		m_pSSAOrndCB = m_pDevice->createConstantBuffer(sizeof(rnd));
+		m_pSSAOrndCB->update(&rnd);
+
+
+		GXCOLOR aRandomTexture[32 * 32];
+		float4 vRnd;
+		for(UINT i = 0; i < 32 * 32; ++i)
+		{
+			vRnd = float4(SMVector3Normalize(float3(randf(0.0f, 1.0f), randf(0.0f, 1.0f), randf(0.0f, 1.0f))), 1.0f);
+
+			aRandomTexture[i] = GX_COLOR_F4_TO_COLOR(vRnd);
+		}
+
+		m_pRndTexture = m_pDevice->createTexture2D(32, 32, 1, 0, GXFMT_A8B8G8R8, aRandomTexture);
+
+		m_pSSAOTexture = m_pDevice->createTexture2D(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R16F);
+
+		m_pSkyLightGenCB = m_pDevice->createConstantBuffer(sizeof(SkyLightGenSHParam));
+
+		buildSkyLightMasks();
+
+		IXAmbient *pAmbient = (IXAmbient*)m_pCore->getPluginManager()->getInterface(IXAMBIENT_GUID);
+		if(pAmbient)
+		{
+			IXTexture *pTexture = NULL;
+			pAmbient->getSkyboxTexture(&pTexture);
+			setSkybox(pTexture);
+			mem_release(pTexture);
+		}
 	}
 	else
 	{
@@ -243,6 +338,9 @@ CLightSystem::~CLightSystem()
 {
 	m_pLevelChannel->removeListener(m_pLevelListener);
 	mem_delete(m_pLevelListener);
+	m_pSkyboxChangedChannel->removeListener(m_pSkyboxChangedListener);
+	mem_delete(m_pSkyboxChangedListener);
+
 	mem_delete(m_pSun);
 	mem_release(m_pShapeSphere);
 	mem_release(m_pShapeCone);
@@ -299,6 +397,28 @@ CLightSystem::~CLightSystem()
 	mem_release(m_pGBufferNormals);
 	mem_release(m_pGBufferParams);
 	mem_release(m_pGBufferDepth);
+
+	mem_release(m_pSkyboxTexture);
+
+	for(UINT i = 0; i < SKYLIGHT_AREA_COUNT; ++i)
+	{
+		mem_release(m_apSkyboxMask[i]);
+	}
+
+	mem_release(m_pSkyLightR);
+	mem_release(m_pSkyLightG);
+	mem_release(m_pSkyLightB);
+
+	mem_release(m_pSkyLightBaseR);
+	mem_release(m_pSkyLightBaseG);
+	mem_release(m_pSkyLightBaseB);
+
+	mem_release(m_pSkyLightGenCB);
+
+	mem_release(m_pSSAOrndCB);
+
+	mem_release(m_pRndTexture);
+	mem_release(m_pSSAOTexture);
 }
 
 void CLightSystem::setLevelSize(const float3 &vMin, const float3 &vMax)
@@ -506,6 +626,8 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 		return;
 	}
 
+	updateSkylight();
+
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	IGXDepthStencilSurface *pOldDSSurface = pCtx->getDepthStencilSurface();
@@ -559,11 +681,51 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 		*lpv_size_2
 	};
 
-	m_lpvCentersShaderData.vs.vCenterSize[0] = float4(vCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * c_aLPVsizes[0], c_aLPVsizes[0]);
-	m_lpvCentersShaderData.vs.vCenterSize[1] = float4(vCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * c_aLPVsizes[1], c_aLPVsizes[1]);
-	m_lpvCentersShaderData.vs.vCenterSize[2] = float4(vCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * c_aLPVsizes[2], c_aLPVsizes[2]);
-	m_pLPVcentersShaderData->update(&m_lpvCentersShaderData.vs);
+	if(iCascades)
+	{
+		m_lpvCentersShaderData.vs.vCenterSize[0] = float4(vCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * c_aLPVsizes[0], c_aLPVsizes[0]);
+		m_lpvCentersShaderData.vs.vCenterSize[1] = float4(vCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * c_aLPVsizes[1], c_aLPVsizes[1]);
+		m_lpvCentersShaderData.vs.vCenterSize[2] = float4(vCamPos + vCamDir * (LPV_GRID_SIZE / 2 - LPV_STEP_COUNT) * c_aLPVsizes[2], c_aLPVsizes[2]);
+		m_pLPVcentersShaderData->update(&m_lpvCentersShaderData.vs);
+	}
 
+	bool useAO = false;
+
+	{
+		static const int *pp_ssao = GET_PCVAR_INT("pp_ssao");
+		int iSSAO = *pp_ssao;
+		if(iSSAO < 0)
+		{
+			iSSAO = 0;
+		}
+		else if(iSSAO > 3)
+		{
+			iSSAO = 3;
+		}
+		if(iSSAO && (iCascades || m_pSkyboxTexture))
+		{
+			IGXDepthStencilSurface *pOldDS = pCtx->getDepthStencilSurface();
+			pCtx->unsetDepthStencilSurface();
+
+			IGXSurface *pSurf = m_pSSAOTexture->getMipmap();
+			pCtx->setColorTarget(pSurf);
+			mem_release(pSurf);
+
+			pCtx->setPSTexture(m_pRndTexture, 2);
+			pCtx->setPSTexture(m_pGBufferNormals, 3);
+			pCtx->setPSTexture(m_pGBufferDepth, 4);
+
+			m_pDevice->getThreadContext()->setPSConstant(m_pSSAOrndCB, 7);
+
+			SGCore_ShaderBind(m_idSSAOShader[iSSAO - 1]);
+			SGCore_ScreenQuadDraw();
+
+			useAO = true;
+
+			pCtx->setDepthStencilSurface(pOldDS);
+			mem_release(pOldDS);
+		}
+	}
 
 	// Определим список лампочек, которые будут участвовать в текущем кадре
 	CXLight *pLight;
@@ -856,9 +1018,7 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 		pCtx->setBlendState(m_pBlendAlphaOneOne);
 		pCtx->setDepthStencilState(m_pDepthStencilStateLightShadowGlobal);
 
-		ID idshaderkit = m_idComLightingGI[iCascades - 1];
-
-		SGCore_ShaderBind(idshaderkit);
+		SGCore_ShaderBind(m_idComLightingGI[iCascades - 1][useAO ? 1 : 0]);
 
 		pCtx->setSamplerState(m_pSamplerPointClamp, 0);
 		pCtx->setSamplerState(m_pSamplerLinearBorder, 1);
@@ -867,6 +1027,7 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 		pCtx->setPSTexture(m_pGBufferNormals, 1);
 		pCtx->setPSTexture(m_pGBufferColor, 2);
 		pCtx->setPSTexture(m_pGBufferParams, 3);
+		pCtx->setPSTexture(m_pSSAOTexture, 13);
 		for(UINT i = 0; i < 3; ++i)
 		{
 			pCtx->setPSTexture(m_aLPVs[i].pGIAccumRed, 4 + i);
@@ -901,22 +1062,32 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 
 	pCtx->setSamplerState(m_pSamplerPointClamp, 0);
 	pCtx->setSamplerState(m_pSamplerLinearClamp, 1);
+	pCtx->setSamplerState(m_pSamplerLinearWrap, 2);
 
-	IGXSurface *pComLightSurf = pLightTotal->getMipmap();
-	pCtx->setColorTarget(pComLightSurf);
-
+	//m_pSSAOTexture
 	//очищаем рт (в старой версии было многопроходное смешивание)
 	//	pCtx->clear(GX_CLEAR_COLOR);
 
 	pCtx->setPSTexture(m_pGBufferColor);
 	pCtx->setPSTexture(pTempBuffer, 1);
+	//pCtx->setPSTexture(m_pRndTexture, 2);
 	//pCtx->setPSTexture(m_pLightSpecular, 2);
 	pCtx->setPSTexture(m_pGBufferNormals, 3);
 	pCtx->setPSTexture(m_pGBufferDepth, 4);
-	//gdata::pDXDevice->setTexture(SGCore_GbufferGetRT(DS_RT_ADAPTEDLUM), 4);
 	pCtx->setPSTexture(m_pGBufferParams, 5);
 
-	SGCore_ShaderBind(m_idBlendAmbientSpecDiffColor);
+	//
+
+	IGXSurface *pComLightSurf = pLightTotal->getMipmap();
+	pCtx->setColorTarget(pComLightSurf);
+
+	pCtx->setPSTexture(m_pSSAOTexture, 2);
+
+	pCtx->setPSTexture(m_pSkyLightR, 6);
+	pCtx->setPSTexture(m_pSkyLightG, 7);
+	pCtx->setPSTexture(m_pSkyLightB, 8);
+
+	SGCore_ShaderBind(m_idBlendAmbientSpecDiffColor[useAO ? 1 : 0]);
 
 	SGCore_ScreenQuadDraw();
 
@@ -1063,3 +1234,324 @@ void CLightSystem::showGICubes()
 	pCtx->setPSTexture(NULL, 1);
 	pCtx->setPSTexture(NULL, 2);
 }
+
+void CLightSystem::setSkybox(IXTexture *pTexture)
+{
+	mem_release(m_pSkyboxTexture);
+	m_pSkyboxTexture = pTexture;
+	if(pTexture)
+	{
+		m_pSkyboxTexture->AddRef();
+	}
+	m_isSkyboxDirty = true;
+}
+
+void CLightSystem::buildSkyLightMasks()
+{
+	static const float3 s_avDirs[] = {
+		float3( 0.000000f,  1.000000f,  0.000000f),
+		float3( 0.000000f,  0.623191f, -0.782070f),
+		float3(-0.611460f,  0.623208f, -0.487574f),
+		float3(-0.762399f,  0.623228f, -0.174169f),
+		float3(-0.339310f,  0.623245f,  0.704581f),
+		float3( 0.339310f,  0.623245f,  0.704581f),
+		float3( 0.762399f,  0.623228f,  0.174169f),
+		float3( 0.611460f,  0.623208f, -0.487574f),
+		float3( 0.000000f, -0.222892f, -0.974843f),
+		float3(-0.762183f, -0.222906f, -0.607775f),
+		float3(-0.950429f, -0.222886f,  0.216809f),
+		float3(-0.422970f, -0.222901f,  0.878300f),
+		float3( 0.422970f, -0.222901f,  0.878300f),
+		float3( 0.950429f, -0.222886f,  0.216809f),
+		float3( 0.762183f, -0.222906f, -0.607775f),
+		float3( 0.000000f, -1.000000f,  0.000000f),
+	};
+
+	static_assert(ARRAYSIZE(s_avDirs) == SKYLIGHT_AREA_COUNT, "Invalid count!");
+
+	IXResourceTextureCube *apTextures[SKYLIGHT_AREA_COUNT] = {0};
+
+	const int MASK_SIZE = 32;
+
+	for(UINT i = 0; i < SKYLIGHT_AREA_COUNT; ++i)
+	{
+		apTextures[i] = m_pCore->getResourceManager()->newResourceTextureCube();
+
+		apTextures[i]->init(MASK_SIZE, GXFMT_R16F, 1);
+	}
+
+	float fB = -1.0f + 1.0f / MASK_SIZE;
+	float fS = (MASK_SIZE > 1) ? (2.0f * (1.0f - 1.0f / MASK_SIZE) / (MASK_SIZE - 1.0f)) : 0.f;
+	float fPicSize = 1.0f / MASK_SIZE;
+
+
+	float16_t *apData[SKYLIGHT_AREA_COUNT];
+
+	for(UINT face = 0; face < 6; ++face)
+	{
+		for(UINT i = 0; i < ARRAYSIZE(s_avDirs); ++i)
+		{
+			XImageMip *pMip = apTextures[i]->getMip((GXCUBEMAP_FACES)face, 0);
+			pMip->isWritten = true;
+			memset(pMip->pData, 0, pMip->sizeData);
+			apData[i] = (float16_t*)pMip->pData;
+		}
+
+		//const byte *pSrc = pMip->pData;
+		for(UINT y = 0; y < MASK_SIZE; ++y)
+		{
+			const float v = float(y) * fS + fB;
+
+			for(UINT x = 0; x < MASK_SIZE; ++x)
+			{
+				const float u = float(x) * fS + fB;
+
+				float ix, iy, iz;
+				switch(face)
+				{
+				case GXCUBEMAP_FACE_POSITIVE_X:
+					iz = 1.0f - (2.0f * float(x) + 1.0f) * fPicSize;
+					iy = 1.0f - (2.0f * float(y) + 1.0f) * fPicSize;
+					ix = 1.0f;
+					break;
+
+				case GXCUBEMAP_FACE_NEGATIVE_X:
+					iz = -1.0f + (2.0f * float(x) + 1.0f) * fPicSize;
+					iy = 1.0f - (2.0f * float(y) + 1.0f) * fPicSize;
+					ix = -1;
+					break;
+
+				case GXCUBEMAP_FACE_POSITIVE_Y:
+					iz = -1.0f + (2.0f * float(y) + 1.0f) * fPicSize;
+					iy = 1.0f;
+					ix = -1.0f + (2.0f * float(x) + 1.0f) * fPicSize;
+					break;
+
+				case GXCUBEMAP_FACE_NEGATIVE_Y:
+					iz = 1.0f - (2.0f * float(y) + 1.0f) * fPicSize;
+					iy = -1.0f;
+					ix = -1.0f + (2.0f * float(x) + 1.0f) * fPicSize;
+					break;
+
+				case GXCUBEMAP_FACE_POSITIVE_Z:
+					iz = 1.0f;
+					iy = 1.0f - (2.0f * float(y) + 1.0f) * fPicSize;
+					ix = -1.0f + (2.0f * float(x) + 1.0f) * fPicSize;
+					break;
+
+				case GXCUBEMAP_FACE_NEGATIVE_Z:
+					iz = -1.0f;
+					iy = 1.0f - (2.0f * float(y) + 1.0f) * fPicSize;
+					ix = 1.0f - (2.0f * float(x) + 1.0f) * fPicSize;
+					break;
+				}
+
+				float3 dir(ix, iy, iz);
+				dir = SMVector3Normalize(dir);
+
+				float fMax = -1.0f;
+				int iMax = -1;
+				for(UINT i = 0; i < ARRAYSIZE(s_avDirs); ++i)
+				{
+					float fDot = SMVector3Dot(dir, s_avDirs[i]);
+					if(iMax < 0 || fMax < fDot)
+					{
+						iMax = i;
+						fMax = fDot;
+					}
+				}
+
+				apData[iMax][y * MASK_SIZE + x] = 1.0f;
+			}
+		}
+	}
+
+	char tmp[32];
+	IXTexture *pTex;
+	for(UINT i = 0; i < SKYLIGHT_AREA_COUNT; ++i)
+	{
+		sprintf(tmp, "dev_skybox_mask#%u", i);
+		m_pCore->getResourceManager()->addTexture(tmp, apTextures[i]);
+
+		m_pMaterialSystem->loadTexture(tmp, &pTex);
+		pTex->getAPITexture(&m_apSkyboxMask[i]);
+		mem_release(pTex);
+	}
+}
+
+static float GetWeightForSize(UINT uSize)
+{
+	float fSize = (float)uSize;
+
+	float fB = -1.0f + 1.0f / fSize;
+	float fS = (uSize > 1) ? (2.0f*(1.0f - 1.0f / fSize) / (fSize - 1.0f)) : 0.0f;
+
+	float fWt = 0.0f;
+
+	for(UINT face = 0; face < 6; ++face)
+	{
+		for(UINT y = 0; y < uSize; ++y)
+		{
+			const float v = (float)y * fS + fB;
+
+			for(UINT x = 0; x < uSize; ++x)
+			{
+				const float u = (float)x * fS + fB;
+
+				fWt += 1.0f / ((1.0f + u * u + v * v) * sqrtf(1.0f + u * u + v * v));
+			}
+		}
+	}
+
+	return(SM_PI / fWt);
+}
+
+void CLightSystem::updateSkylight()
+{
+	if(!m_isSkyboxDirty)
+	{
+		return;
+	}
+	IGXContext *pCtx = m_pDevice->getThreadContext();
+
+	IGXBaseTexture *pTex;
+	if(m_pSkyboxTexture)
+	{
+		m_pSkyboxTexture->getAPITexture(&pTex);
+
+		if(!pTex)
+		{
+			return;
+		}
+	}
+
+	IGXDepthStencilSurface *pOldDS = pCtx->getDepthStencilSurface();
+	pCtx->unsetDepthStencilSurface();
+
+
+	IGXSurface *pOldRT = pCtx->getColorTarget(0);
+
+	IGXSurface *pRenderTarget = m_pSkyLightBaseR->getMipmap();
+	pCtx->setColorTarget(pRenderTarget, 0);
+	mem_release(pRenderTarget);
+	pRenderTarget = m_pSkyLightBaseG->getMipmap();
+	pCtx->setColorTarget(pRenderTarget, 1);
+	mem_release(pRenderTarget);
+	pRenderTarget = m_pSkyLightBaseB->getMipmap();
+	pCtx->setColorTarget(pRenderTarget, 2);
+	mem_release(pRenderTarget);
+
+	pCtx->clear(GX_CLEAR_COLOR);
+
+
+	if(m_pSkyboxTexture)
+	{
+		SkyLightGenSHParam params = {0};
+		params.uSkyboxSize = m_pSkyboxTexture->getWidth();
+		params.fWeight = GetWeightForSize(params.uSkyboxSize);
+		pCtx->setVSConstant(m_pSkyLightGenCB);
+		pCtx->setPSConstant(m_pSkyLightGenCB);
+
+		SGCore_ShaderBind(m_idSkylightGenSHShader);
+
+		pCtx->setRenderBuffer(NULL);
+		pCtx->setIndexBuffer(NULL);
+		pCtx->setPrimitiveTopology(GXPT_POINTLIST);
+
+		pCtx->setSamplerState(m_pSamplerLinearClamp, 0);
+
+		pCtx->setBlendState(m_pBlendAlphaOneOne);
+
+		pCtx->setPSTexture(pTex, 0);
+		mem_release(pTex);
+		for(UINT i = 0; i < SKYLIGHT_AREA_COUNT; ++i)
+		{
+			pCtx->setPSTexture(m_apSkyboxMask[i], 1);
+
+			params.fTexOffset = (1.0f + (float)(i * 2)) / (float)SKYLIGHT_AREA_COUNT - 1.0f;
+			m_pSkyLightGenCB->update(&params);
+
+			pCtx->drawPrimitive(0, params.uSkyboxSize * params.uSkyboxSize * 6);
+		}
+
+		pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
+
+		//	m_pDevice->saveTextureToFile("skylight_r.dds", m_pSkyLightBaseR);
+		//	m_pDevice->saveTextureToFile("skylight_g.dds", m_pSkyLightBaseG);
+		//	m_pDevice->saveTextureToFile("skylight_b.dds", m_pSkyLightBaseB);
+
+		// 16 probes (rgb(vec4))
+		// 32 x 32 x 6 points additive
+
+		// 3 tex (RGBA32) 16 x 1 (mrt)
+
+		// vtx:
+		// - normal
+		// - pos
+		// - mask?
+
+
+		// 3 tex (RGBA32) 16 x 16 x 4 (probes) from mask
+
+	}
+
+	pCtx->setColorTarget(pOldRT, 0);
+	pCtx->setColorTarget(NULL, 1);
+	pCtx->setColorTarget(NULL, 2);
+	mem_release(pOldRT);
+
+	pCtx->setDepthStencilSurface(pOldDS);
+	mem_release(pOldDS);
+
+	m_isSkyboxDirty = false;
+
+	updateSkylightGrid();
+}
+
+void CLightSystem::updateSkylightGrid()
+{
+	IGXContext *pCtx = m_pDevice->getThreadContext();
+
+	uint16_t buf[16][16][4];
+	if(!m_pSkyLightOcclusionCB)
+	{
+		m_pSkyLightOcclusionCB = m_pDevice->createConstantBuffer(sizeof(buf));
+	}
+
+	for(UINT i = 0; i < 16; ++i)
+	{
+		uint16_t uVal = 1 << i;
+		for(UINT j = 0; j < 16; ++j)
+		{
+			for(UINT k = 0; k < 4; ++k)
+			{
+				buf[i][j][k] = 1024; // rand() & 0xFFFF;
+			}
+		}
+	}
+
+	m_pSkyLightOcclusionCB->update(buf);
+
+	SGCore_ShaderBind(m_idSkylightGenGridShader);
+
+	pCtx->setCSConstant(m_pSkyLightOcclusionCB);
+
+	pCtx->setCSTexture(m_pSkyLightBaseR, 0);
+	pCtx->setCSTexture(m_pSkyLightBaseG, 1);
+	pCtx->setCSTexture(m_pSkyLightBaseB, 2);
+
+	pCtx->setCSUnorderedAccessView(m_pSkyLightR, 0);
+	pCtx->setCSUnorderedAccessView(m_pSkyLightG, 1);
+	pCtx->setCSUnorderedAccessView(m_pSkyLightB, 2);
+
+	pCtx->computeDispatch(1, 1, 4);
+
+	pCtx->setCSUnorderedAccessView(NULL, 0);
+	pCtx->setCSUnorderedAccessView(NULL, 1);
+	pCtx->setCSUnorderedAccessView(NULL, 2);
+
+	pCtx->setCSTexture(NULL, 0);
+	pCtx->setCSTexture(NULL, 1);
+	pCtx->setCSTexture(NULL, 2);
+}
+
