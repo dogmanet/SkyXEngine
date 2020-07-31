@@ -153,9 +153,9 @@ float3 Color3ToNormal(float3 vColor)
 	return(2.0 * vColor - 1.0);
 }
 
-float3 Color2ToNormal(float2 vColor)
+float3 Color2ToNormal(float2 vColor, float fWeight)
 {
-	float2 tmp = 2.0 * vColor - 1.0;
+	float2 tmp = (2.0 * vColor - 1.0) * fWeight;
 	return(float3(tmp, 1.0 - sqrt(tmp.x * tmp.x + tmp.y * tmp.y)));
 }
 
