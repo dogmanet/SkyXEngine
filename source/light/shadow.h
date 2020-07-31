@@ -44,7 +44,7 @@ public:
 	CShadowMap();
 	~CShadowMap();
 
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	static UINT GetMapMemory(UINT uSize);
 
@@ -115,7 +115,7 @@ public:
 	CReflectiveShadowMap();
 	~CReflectiveShadowMap();
 
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	static UINT GetMapMemory(UINT uSize);
 
@@ -188,7 +188,7 @@ public:
 	CShadowPSSM();
 	~CShadowPSSM();
 
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	static UINT GetMapMemory(UINT uSize);
 
@@ -267,7 +267,7 @@ public:
 	CReflectiveShadowSun();
 	~CReflectiveShadowSun();
 
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	static UINT GetMapMemory(UINT uSize);
 
@@ -340,7 +340,7 @@ public:
 	CShadowCubeMap();
 	~CShadowCubeMap();
 
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	static UINT GetMapMemory(UINT uSize);
 
@@ -427,7 +427,7 @@ public:
 	CReflectiveShadowCubeMap();
 	~CReflectiveShadowCubeMap();
 
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	static UINT GetMapMemory(UINT uSize);
 

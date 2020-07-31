@@ -23,7 +23,7 @@ public:
 	CShadowCache(IXRenderPipeline *pRenderPipeline, IXMaterialSystem *pMaterialSystem);
 	~CShadowCache();
 
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	//! Установка количества лампочек, инициализация кэша
 	void setLightsCount(UINT iPoints, UINT iSpots, bool hasGlobal);
@@ -86,7 +86,7 @@ protected:
 		bool shouldProcess = false;
 		CXLight *pLight = NULL;
 
-		SX_ALIGNED_OP_MEM2();
+		SX_ALIGNED_OP_MEM();
 	};
 	
 	struct ReflectiveShadowMap
@@ -114,7 +114,7 @@ protected:
 		bool shouldProcess = false;
 		CXLight *pLight = NULL;
 
-		SX_ALIGNED_OP_MEM2();
+		SX_ALIGNED_OP_MEM();
 	};
 
 

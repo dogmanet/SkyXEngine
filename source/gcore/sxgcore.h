@@ -381,7 +381,7 @@ struct CFrustumPlane
 	float3_t m_vNormal;
 	float m_fDistance;
 
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	CFrustumPlane() = default;
 	CFrustumPlane(const SMPLANE &pPlane)

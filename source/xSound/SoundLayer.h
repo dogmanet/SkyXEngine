@@ -19,7 +19,6 @@ See the license in LICENSE
 class CSoundLayer: public IXUnknownImplementation<IXSoundLayer>
 {
 public:
-
 	~CSoundLayer();
 
 	virtual void XMETHODCALLTYPE play(bool canPlay) override;
@@ -43,12 +42,6 @@ public:
 
 	void addMessage(SndQueueMsg &oMsg);
 
-	/*! релиз слоя 
-		все внутренние слои тоже будут зарелизены, 
-		сначала релизяться дочерние слои и только потом целевой
-	*/
-	void Release2();
-
 private:
 	virtual void XMETHODCALLTYPE FinalRelease() override;
 
@@ -65,7 +58,7 @@ protected:
 	// при удалении из массива произойдет mem_delete удаляемого обьекта
 
 	void addLayer(CSoundLayer *pLayer);
-	void delLayer(const CSoundLayer *pLayer);
+	void delLayer(CSoundLayer *pLayer);
 
 	void addSndPlayer(CSoundPlayer *pSndPlayer);
 	void delSndPlayer(const CSoundPlayer *pSndPlayer);

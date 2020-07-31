@@ -10,7 +10,7 @@ CSoundPlayer::~CSoundPlayer()
 {
 	mem_release(m_pAB);
 
-	mem_delete(m_pCodecTarget);
+	mem_release(m_pCodecTarget);
 	mem_delete(m_pStream);
 
 	mem_release(m_pLayer);
@@ -31,7 +31,7 @@ void XMETHODCALLTYPE CSoundPlayer::FinalRelease()
 
 bool CSoundPlayer::canInstance() const
 {
-	return (!m_pStream);
+	return(!m_pStream);
 }
 
 //**************************************************************************

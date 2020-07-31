@@ -110,7 +110,7 @@ protected:
 		float4 position;   /*!< Позиция */
 		SMQuaternion orient; /*!< Вращение */
 
-		SX_ALIGNED_OP_MEM2();
+		SX_ALIGNED_OP_MEM();
 	};
 
 	ModelBoneShader *m_pBonesBlob = NULL;

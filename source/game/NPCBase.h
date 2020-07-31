@@ -48,7 +48,7 @@ class CNPCBase: public CBaseCharacter
 
 public:
 
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM();
 
 	CNPCBase(CEntityManager * pMgr);
 	~CNPCBase();

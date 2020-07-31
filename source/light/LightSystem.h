@@ -21,7 +21,7 @@ public:
 	CLightSystem(IXCore *pCore);
 	~CLightSystem();
 
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	IXLightSun* XMETHODCALLTYPE newSun() override;
 	IXLightSun* XMETHODCALLTYPE getSun() override;

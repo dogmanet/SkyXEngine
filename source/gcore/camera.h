@@ -13,7 +13,7 @@ See the license in LICENSE
 class CFrustum: public IXUnknownImplementation<IXFrustum>
 {
 public:
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	CFrustum();
 
@@ -60,7 +60,7 @@ public:
 	{
 		delete this;
 	}
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	void setOrientation(const SMQuaternion &qOrientation) override;
 

@@ -23,7 +23,7 @@ public:
 	void renderFrame(float fDeltaTime) override;
 	void endFrame() override;
 
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	void renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility = NULL) override;
 

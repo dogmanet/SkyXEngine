@@ -36,7 +36,7 @@ class CSkyBox
 {
 	friend class CRFarCvarListener;
 public:
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	CSkyBox(IXCore *pCore);
 	~CSkyBox();

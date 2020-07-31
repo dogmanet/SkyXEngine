@@ -21,7 +21,7 @@ class CSoundBase: public IXUnknownVirtualImplementation<IXSoundBase>
 {
 public:
 
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM();
 
 	//########################################################################
 

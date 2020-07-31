@@ -13,9 +13,9 @@ See the license in LICENSE
 
 //##########################################################################
 
-inline bool AudioResampling(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, AudioRawDesc *pToDesc)
+static bool AudioResampling(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, AudioRawDesc *pToDesc)
 {
-	if (pToDesc->uSampleRate == pInDesc->uSampleRate)
+	if(pToDesc->uSampleRate == pInDesc->uSampleRate)
 		return false;
 
 	/*pOut->alloc(pInDesc->uSize);
@@ -25,7 +25,7 @@ inline bool AudioResampling(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, Au
 
 	BYTE *pSrcData = 0;
 
-	if (pOut->size() > 0)
+	if(pOut->size() > 0)
 		pSrcData = pOut->get();
 	else
 		pSrcData = (BYTE*)pIn;
@@ -41,14 +41,14 @@ inline bool AudioResampling(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, Au
 	double fAdd = double(iCountElem) / double(iNewCountElem);
 
 	//проход по каналам
-	for (auto iChannels = 0u; iChannels < pInDesc->u8Channels; ++iChannels)
+	for(auto iChannels = 0u; iChannels < pInDesc->u8Channels; ++iChannels)
 	{
 		int iCurrNewpos = 0;
 		int iLast = 0;
 		uint32_t iKey;
 
 		//проход по количеству семплов в каждом канале
-		for (auto i = 0, il = iNewCountElem / pInDesc->u8Channels; i < il; ++i)
+		for(auto i = 0, il = iNewCountElem / pInDesc->u8Channels; i < il; ++i)
 		{
 			//текущая позиция до которой надо дойти в исходном массиве
 			int iCurr = (int)ceil(fAdd*((i + 1) * pInDesc->u8Channels));
@@ -59,7 +59,7 @@ inline bool AudioResampling(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, Au
 			double fCountMixed = 0;
 
 			//берем данные из исходного массива и смешиваем
-			for (auto k = 0; k < iCount; ++k)
+			for(auto k = 0; k < iCount; ++k)
 			{
 				iKey = iChannels + ((iLast + k) / pInDesc->u8Channels) * pInDesc->u8Channels;
 				iKey = clamp<int>(iKey, 0, iCountElem - 1);
@@ -83,7 +83,7 @@ inline bool AudioResampling(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, Au
 
 	int qwerty = 0;
 
-	if (pOut->size() > 0)
+	if(pOut->size() > 0)
 		pOut->free();
 
 	pOut->alloc(uSize);
@@ -96,7 +96,7 @@ inline bool AudioResampling(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, Au
 
 //**************************************************************************
 
-inline bool AudioRechannels(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, AudioRawDesc *pToDesc)
+static bool AudioRechannels(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, AudioRawDesc *pToDesc)
 {
 	return false;
 	/*BYTE *pSrcData = 0;
@@ -113,14 +113,14 @@ inline bool AudioRechannels(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, Au
 
 //**************************************************************************
 
-inline bool AudioReformat(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, AudioRawDesc *pToDesc)
+static bool AudioReformat(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, AudioRawDesc *pToDesc)
 {
-	if (pInDesc->fmtSample == pToDesc->fmtSample)
+	if(pInDesc->fmtSample == pToDesc->fmtSample)
 		return false;
 
 	BYTE *pSrcData = 0;
 
-	if (pOut->size() > 0)
+	if(pOut->size() > 0)
 		pSrcData = pOut->get();
 	else
 		pSrcData = (BYTE*)pIn;
@@ -129,13 +129,13 @@ inline bool AudioReformat(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, Audi
 	uint32_t uSize = AudioGetFormatBytes(pToDesc->fmtSample) * uCountElem;
 	BYTE *pDestData = new BYTE[uSize];
 
-	for (auto i = 0u; i < uCountElem; ++i)
+	for(auto i = 0u; i < uCountElem; ++i)
 	{
 		double fSample = RawDataRead(pSrcData, i, pInDesc->fmtSample);
 		RawDataWrite(pDestData, i, pToDesc->fmtSample, fSample);
 	}
 
-	if (pOut->size() > 0)
+	if(pOut->size() > 0)
 		pOut->free();
 
 	pOut->alloc(uSize);
@@ -148,15 +148,15 @@ inline bool AudioReformat(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, Audi
 
 //**************************************************************************
 
-inline bool AudioConverter(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, AudioRawDesc *pToDesc)
+static bool AudioConverter(void *pIn, AudioRawDesc *pInDesc, IXBuffer *pOut, AudioRawDesc *pToDesc)
 {
-	if (pInDesc->uSampleRate != pToDesc->uSampleRate)
+	if(pInDesc->uSampleRate != pToDesc->uSampleRate)
 		AudioResampling(pIn, pInDesc, pOut, pToDesc);
 
-	if (pInDesc->u8Channels != pToDesc->u8Channels && pToDesc->u8Channels <= 2 && pToDesc->u8Channels >= 1)
+	if(pInDesc->u8Channels != pToDesc->u8Channels && pToDesc->u8Channels <= 2 && pToDesc->u8Channels >= 1)
 		AudioRechannels(pIn, pInDesc, pOut, pToDesc);
 
-	if (pInDesc->fmtSample != pToDesc->fmtSample)
+	if(pInDesc->fmtSample != pToDesc->fmtSample)
 		AudioReformat(pIn, pInDesc, pOut, pToDesc);
 
 	return true;

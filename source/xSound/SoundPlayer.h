@@ -24,8 +24,6 @@ See the license in LICENSE
 class CSoundPlayer: public CSoundBase, public virtual IXSoundPlayer
 {
 public:
-	SX_ALIGNED_OP_MEM
-
 	~CSoundPlayer();
 
 	//########################################################################
@@ -54,7 +52,7 @@ public:
 	float XMETHODCALLTYPE getLength() const override;
 
 private:
-	virtual void XMETHODCALLTYPE FinalRelease() override;
+	void XMETHODCALLTYPE FinalRelease() override;
 
 protected:
 

@@ -138,7 +138,7 @@ public:
 	CSceneNode(CScene *pScene, CSceneNode *pParent = NULL);
 	~CSceneNode();
 
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	void addObject(CSceneObject *pObject, bool force = false);
 	void removeObject(CSceneObject *pObject);

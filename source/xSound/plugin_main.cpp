@@ -13,10 +13,10 @@
 
 //##########################################################################
 
-class CObserverChangedEventListener : public IEventListener<XEventObserverChanged>
+class CObserverChangedEventListener: public IEventListener<XEventObserverChanged>
 {
 public:
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM();
 
 	CObserverChangedEventListener(IXCore *pCore)
 	{
@@ -31,7 +31,7 @@ public:
 
 	void onEvent(const XEventObserverChanged *pData) override
 	{
-		std::lock_guard<std::mutex> guard(m_oMutex);
+		ScopedSpinLock guard(m_spLock);
 		m_vPos = pData->pCamera->getPosition();
 		m_vUp = pData->pCamera->getUp();
 		m_vLook = pData->pCamera->getLook();
@@ -39,23 +39,21 @@ public:
 
 	void getObserverParam(float3 *pPos, float3 *pLook, float3 *pUp)
 	{
-		std::lock_guard<std::mutex> guard(m_oMutex);
+		ScopedSpinLock guard(m_spLock);
 		*pPos = m_vPos; *pLook = m_vLook; *pUp = m_vUp;
 	}
 
 protected:
 	IEventChannel<XEventObserverChanged> *m_pObserverChangedEventChannel = NULL;
 	float3 m_vPos, m_vLook, m_vUp;
-	std::mutex m_oMutex;
+	SpinLock m_spLock;
 };
 
 //##########################################################################
 
-class CUpdatableSoundSystem : public IXUnknownImplementation<IXUpdatable>
+class CUpdatableSoundSystem: public IXUnknownImplementation<IXUpdatable>
 {
 public:
-	SX_ALIGNED_OP_MEM
-
 	CUpdatableSoundSystem(CSoundSystem *pSoundSystem, CObserverChangedEventListener *pObserverListener)
 	{
 		m_pSoundSystem = pSoundSystem;
@@ -64,7 +62,7 @@ public:
 
 	UINT startup() override
 	{
-		return 1;
+		return(1);
 	}
 	void shutdown() override
 	{
@@ -76,10 +74,10 @@ public:
 	{
 		float3 vPos, vLook, vUp;
 
-		if (m_pObserverListener)
+		if(m_pObserverListener)
 			m_pObserverListener->getObserverParam(&vPos, &vLook, &vUp);
 
-		if (m_pSoundSystem)
+		if(m_pSoundSystem)
 			m_pSoundSystem->update(vPos, vLook, vUp);
 
 		/*if (!m_pEmitter)
@@ -102,7 +100,7 @@ public:
 			}
 		}*/
 
-		return -1;
+		return(-1);
 	}
 
 	void sync() override
@@ -118,7 +116,7 @@ protected:
 
 //##########################################################################
 
-class CSoundSystemPlugin : public IXUnknownImplementation<IXPlugin>
+class CSoundSystemPlugin: public IXUnknownImplementation<IXPlugin>
 {
 public:
 
@@ -156,10 +154,10 @@ public:
 	}
 	IXUnknown* XMETHODCALLTYPE getInterface(const XGUID &guid) override
 	{
-		if (guid == IXSOUNDSYSTEM_GUID)
-			return m_pSoundSystem;
-		else if (guid == IXUPDATABLE_GUID)
-			return m_pUpdatableSoundSystem;
+		if(guid == IXSOUNDSYSTEM_GUID)
+			return(m_pSoundSystem);
+		if(guid == IXUPDATABLE_GUID)
+			return(m_pUpdatableSoundSystem);
 
 		return(NULL);
 	}

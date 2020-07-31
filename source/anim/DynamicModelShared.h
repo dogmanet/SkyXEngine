@@ -13,7 +13,7 @@ class IXMaterialSystem;
 class CDynamicModelShared
 {
 public:
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	CDynamicModelShared(CDynamicModelProvider *pProvider);
 	~CDynamicModelShared();

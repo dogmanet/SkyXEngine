@@ -30,7 +30,7 @@ public:
 	CXLight(CLightSystem *pLightSystem);
 	~CXLight();
 
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	LIGHT_TYPE getType();
 
@@ -167,7 +167,7 @@ public:
 
 	struct Split
 	{
-		SX_ALIGNED_OP_MEM2();
+		SX_ALIGNED_OP_MEM();
 
 		float2 vNearFar;
 		float4x4 mView;

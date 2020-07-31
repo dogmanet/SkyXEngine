@@ -234,7 +234,7 @@ struct CParticlesData
 		m_fColorCoef = 1.f;
 	}
 
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM();
 
 	//**************************************************************************
 

@@ -7,17 +7,13 @@ See the license in LICENSE
 #ifndef __SOUNDSYSTEM_H
 #define __SOUNDSYSTEM_H
 
-#include <common/assotiativearray.h>
-#include <common/string.h>
-#include <common/path_utils.h>
-#include <common/math.h>
-#include <common/spinlock.h>
-#include <common/queue.h>
 
 #include <xcommon/IXCore.h>
 #include <xcommon/IPluginManager.h>
 #include <xcommon/IXSoundSystem.h>
 #include <xcommon/IXAudioCodec.h>
+
+#include <common/queue.h>
 
 #include "SoundTypes.h"
 
@@ -48,7 +44,7 @@ inline void Com3D(IAudioBuffer *pAB, float fDist, float m_fVolume, const float3 
 class CSoundSystem: public IXUnknownImplementation<IXSoundSystem>
 {
 public:
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM();
 
 	CSoundSystem(IXCore *pXCore);
 	~CSoundSystem();

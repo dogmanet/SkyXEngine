@@ -20,10 +20,10 @@ See the license in LICENSE
 
 //##########################################################################
 
-class CSoundEmitter : public CSoundBase, public virtual IXSoundEmitter
+class CSoundEmitter: public CSoundBase, public virtual IXSoundEmitter
 {
 public:
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM();
 
 	~CSoundEmitter();
 
@@ -75,8 +75,14 @@ protected:
 	struct Instance
 	{
 		Instance() = default;
-		Instance(IAudioBuffer *pBuffer) { pAB = pBuffer; }
-		~Instance() { mem_release(pAB); }
+		Instance(IAudioBuffer *pBuffer)
+		{
+			pAB = pBuffer;
+		}
+		~Instance()
+		{
+			mem_release(pAB);
+		}
 		IAudioBuffer *pAB = NULL;
 		bool isPlaying = false;
 	};
