@@ -62,12 +62,12 @@ protected:
 	bool create(const char* szName, CSoundLayer *pLayer, IXAudioCodecTarget *pCodecTarget, SOUND_SPACE space);
 
 	//! возвращает текущую позицию проигрывания звука в байтах
-	uint32_t getPosBytes() const;
+	size_t getPosBytes() const;
 
 	/*! установка позиции при потоковом воспроизведении
 		@param uPos позиция в байтах
 	*/
-	void setPosStream(uint32_t uPos);
+	void setPosStream(size_t uPos);
 
 	//**********************************************************************
 	// функции сообщений
@@ -79,6 +79,8 @@ protected:
 	void _stop();
 	void _setLoop(SOUND_LOOP loop);
 	void _setTime(float fTime);
+
+	void _onLayerPlay(bool yesNo);
 
 	//########################################################################
 

@@ -17,11 +17,11 @@ void CSoundLoader::init(CSoundSystem *pSoundSystem)
 
 bool CSoundLoader::load(const char *szPath, AudioRawDesc *pDesc)
 {
-	if (!m_pSoundSystem)
+	if(!m_pSoundSystem)
 		return false;
 
 	m_pCodecTarget = m_pSoundSystem->getCodecTarget(szPath);
-	if (!m_pCodecTarget)
+	if(!m_pCodecTarget)
 		return false;
 
 	m_pCodecTarget->getDesc(pDesc);
@@ -29,28 +29,28 @@ bool CSoundLoader::load(const char *szPath, AudioRawDesc *pDesc)
 	return true;
 }
 
-size_t CSoundLoader::getPCM(void **ppData, uint32_t uLen, int32_t iPos)
+size_t CSoundLoader::getPCM(void **ppData, size_t uLen, int64_t iPos)
 {
-	if (!can())
+	if(!can())
 		return 0;
 
-	if (iPos < 0)
-		iPos = getPos();
+	if(iPos < 0)
+		iPos = (int64_t)getPos();
 
 	return m_pCodecTarget->decode(iPos, uLen, ppData);
 }
 
-void CSoundLoader::setPos(uint32_t uPos)
+void CSoundLoader::setPos(size_t uPos)
 {
-	if (!can())
+	if(!can())
 		return;
 
 	m_pCodecTarget->setPos(uPos);
 }
 
-int32_t CSoundLoader::getPos() const
+size_t CSoundLoader::getPos() const
 {
-	if (!can())
+	if(!can())
 		return 0;
 
 	return m_pCodecTarget->getPos();

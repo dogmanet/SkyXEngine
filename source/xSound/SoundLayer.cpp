@@ -183,7 +183,7 @@ IXSoundLayer* XMETHODCALLTYPE CSoundLayer::findLayer(const char *szName)
 
 //**************************************************************************
 
-uint32_t CSoundLayer::getStreamChunkSize(AudioRawDesc *pDesc) const
+size_t CSoundLayer::getStreamChunkSize(AudioRawDesc *pDesc) const
 {
 	return m_pPrimaryBuffer->getStreamChunkSize(pDesc);
 }
@@ -300,11 +300,12 @@ void XMETHODCALLTYPE CSoundLayer::play(bool canPlay)
 
 bool XMETHODCALLTYPE CSoundLayer::isPlaying() const
 {
-	return m_isPlaying;
+	return(m_isPlayingTotal);
 }
 
 //##########################################################################
 
+// FIXME никаких итераторов в апдейте!
 void CSoundLayer::update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
 	for(MapLayer::Iterator i = m_mapLayers.begin(); i; ++i)
@@ -351,16 +352,27 @@ bool CSoundLayer::matchPrimaryLayer(const AudioRawDesc *pDesc)
 //##########################################################################
 //##########################################################################
 
-void CSoundLayer::_play(bool canPlay)
+void CSoundLayer::_play(bool canPlay, bool isFromParent)
 {
-	if(m_isPlaying == canPlay || (m_pParent && !m_pParent->isPlaying() && canPlay))
-		return;
+	//if(m_isPlaying == canPlay || (m_pParent && !m_pParent->isPlaying() && canPlay))
+	//	return;
+	//
+	//m_isPlaying = canPlay;
+	if(!isFromParent)
+	{
+		m_isPlaying = canPlay;
+	}
+	bool isPlaying = (!m_pParent || m_pParent->isPlaying()) && m_isPlaying;
 
-	m_isPlaying = canPlay;
+	if(m_isPlayingTotal == isPlaying)
+	{
+		return;
+	}
+	m_isPlayingTotal = isPlaying;
 
 	for(MapLayer::Iterator i = m_mapLayers.begin(); i; ++i)
 	{
-		(*i.second)->_play(canPlay);
+		(*i.second)->_play(isPlaying, true);
 	}
 
 	for(MapPlayer::Iterator i = m_mapSndPlayers.begin(); i; ++i)
@@ -368,10 +380,7 @@ void CSoundLayer::_play(bool canPlay)
 		ArrayPlayer &oAP = *i.second;
 		for(int k = 0, kl = oAP.size(); k < kl; ++k)
 		{
-			if(canPlay)
-				oAP[k]->_resume();
-			else
-				oAP[k]->_pause();
+			oAP[k]->_onLayerPlay(isPlaying);
 		}
 	}
 
@@ -380,12 +389,9 @@ void CSoundLayer::_play(bool canPlay)
 		ArrayEmitter &oAE = *i.second;
 		for(int k = 0, kl = oAE.size(); k < kl; ++k)
 		{
-			if(canPlay)
-				oAE[k]->_resume();
-			else
-				oAE[k]->_pause();
+			oAE[k]->_onLayerPlay(isPlaying);
 		}
 	}
 
-	m_pPrimaryBuffer->play(canPlay);
+	m_pPrimaryBuffer->play(isPlaying);
 }

@@ -69,6 +69,8 @@ protected:
 	void _setWorldPos(const float3 &vPos);
 	void _setDistance(float fDist);
 
+	void _onLayerPlay(bool yesNo);
+
 	//#########################################################################
 
 	//! инстанс звукового обьекта

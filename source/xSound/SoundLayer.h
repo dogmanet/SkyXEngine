@@ -35,7 +35,7 @@ public:
 
 	//########################################################################
 
-	uint32_t getStreamChunkSize(AudioRawDesc *pDesc) const;
+	size_t getStreamChunkSize(AudioRawDesc *pDesc) const;
 	IAudioBuffer* createAudioBuffer(AB_TYPE type, const AudioRawDesc *pDesc);
 
 	void update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp);
@@ -66,7 +66,7 @@ protected:
 	void addSndEmitter(CSoundEmitter *pSndEmitter);
 	void delSndEmitter(const CSoundEmitter *pSndEmitter);
 
-	void _play(bool canPlay);
+	void _play(bool canPlay, bool isFromParent);
 
 	//************************************************************************
 
@@ -78,6 +78,7 @@ protected:
 	SOUND_STATE m_state = SOUND_STATE_STOP;
 
 	bool m_isPlaying = false;
+	bool m_isPlayingTotal = false;
 
 	CSoundLayer *m_pParent = NULL;
 

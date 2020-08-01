@@ -59,9 +59,9 @@ public:
 	/*! загружает звук через подходящий декодер
 	*/
 	bool load(const char *szPath, AudioRawDesc *pDesc);
-	size_t getPCM(void **ppData, uint32_t uLen, int32_t iPos = -1);
-	void setPos(uint32_t uPos);
-	int32_t getPos() const;
+	size_t getPCM(void **ppData, size_t uLen, int64_t iPos = -1);
+	void setPos(size_t uPos);
+	size_t getPos() const;
 
 protected:
 

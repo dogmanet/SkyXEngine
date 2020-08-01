@@ -179,7 +179,7 @@ void XMETHODCALLTYPE CSoundSystem::update(const float3 &vListenerPos, const floa
 		case SND_QUEUE_MSG_TYPE_LAYER_PLAY:
 			{
 				if(oMsg.pLayer)
-					oMsg.pLayer->_play(oMsg.arg.b);
+					oMsg.pLayer->_play(oMsg.arg.b, false);
 				break;
 			}
 

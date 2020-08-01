@@ -189,6 +189,20 @@ void CSoundEmitter::_pause()
 
 //**************************************************************************
 
+void CSoundEmitter::_onLayerPlay(bool yesNo)
+{
+	if(yesNo)
+	{
+		_resume();
+	}
+	else
+	{
+		_pause();
+	}
+}
+
+//**************************************************************************
+
 void CSoundEmitter::_setSpace(SOUND_SPACE space)
 {
 	m_space = space;
