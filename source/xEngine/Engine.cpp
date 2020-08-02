@@ -69,7 +69,8 @@ static bool HandleCrashDump(const wchar_t *wszDumpPath, const wchar_t* wszMinidu
 
 //##########################################################################
 
-#define LTEXT(text) L##text
+#define __LTEXT(text) L##text
+#define LTEXT(text) __LTEXT(text)
 
 CEngine::CEngine(int argc, char **argv, const char *szName)
 {
