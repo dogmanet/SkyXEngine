@@ -69,6 +69,8 @@ static bool HandleCrashDump(const wchar_t *wszDumpPath, const wchar_t* wszMinidu
 
 //##########################################################################
 
+#define LTEXT(text) L##text
+
 CEngine::CEngine(int argc, char **argv, const char *szName)
 {
 	srand((UINT)time(0));
@@ -103,7 +105,7 @@ CEngine::CEngine(int argc, char **argv, const char *szName)
 		{
 			szPath[iLastPos + 1] = 0;
 		}
-		wcscat(szPath, L"crashreporter.exe "); // Keep last space!
+		wcscat(szPath, L"crashreporter.exe =version " LTEXT(SKYXENGINE_VERSION) " -dumpid "); // Keep last space!
 		
 		CreateDirectoryA("../crashdmp", NULL);
 		m_pBreakpadHandler = new google_breakpad::ExceptionHandler(
