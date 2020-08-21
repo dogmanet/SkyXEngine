@@ -199,6 +199,7 @@ typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMes
 #include <common/array.h>
 #include <common/assotiativearray.h>
 #include <common/MemAlloc.h>
+#include <common/EnumReflection.h>
 
 #ifndef GET_X_LPARAM
 #define GET_X_LPARAM(lp)                        ((int)(short)LOWORD(lp))

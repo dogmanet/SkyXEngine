@@ -378,6 +378,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "xSound", "xSound", "{3B9DBC
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tgaplugin", "..\..\tgaplugin\vs2013\tgaplugin.vcxproj", "{1D304E26-D5EC-4AA6-B41A-2246FC359112}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sxgui2", "..\..\sxgui2\vs2013\sxgui2.vcxproj", "{349DE810-592A-42AF-9440-A0B3F46A9229}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -955,6 +957,18 @@ Global
 		{1D304E26-D5EC-4AA6-B41A-2246FC359112}.Release|Win32.Build.0 = Release|Win32
 		{1D304E26-D5EC-4AA6-B41A-2246FC359112}.Release|x64.ActiveCfg = Release|x64
 		{1D304E26-D5EC-4AA6-B41A-2246FC359112}.Release|x64.Build.0 = Release|x64
+		{349DE810-592A-42AF-9440-A0B3F46A9229}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{349DE810-592A-42AF-9440-A0B3F46A9229}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{349DE810-592A-42AF-9440-A0B3F46A9229}.Debug|Win32.ActiveCfg = Debug|Win32
+		{349DE810-592A-42AF-9440-A0B3F46A9229}.Debug|Win32.Build.0 = Debug|Win32
+		{349DE810-592A-42AF-9440-A0B3F46A9229}.Debug|x64.ActiveCfg = Debug|x64
+		{349DE810-592A-42AF-9440-A0B3F46A9229}.Debug|x64.Build.0 = Debug|x64
+		{349DE810-592A-42AF-9440-A0B3F46A9229}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{349DE810-592A-42AF-9440-A0B3F46A9229}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{349DE810-592A-42AF-9440-A0B3F46A9229}.Release|Win32.ActiveCfg = Release|Win32
+		{349DE810-592A-42AF-9440-A0B3F46A9229}.Release|Win32.Build.0 = Release|Win32
+		{349DE810-592A-42AF-9440-A0B3F46A9229}.Release|x64.ActiveCfg = Release|x64
+		{349DE810-592A-42AF-9440-A0B3F46A9229}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1023,5 +1037,6 @@ Global
 		{8D0540EE-F8A5-44AB-8023-AD75251167E4} = {3B9DBCFA-CFB6-459D-BE24-2EECB2E3042C}
 		{3B9DBCFA-CFB6-459D-BE24-2EECB2E3042C} = {4408F4BE-1F9D-4861-881A-AF9869C3D663}
 		{1D304E26-D5EC-4AA6-B41A-2246FC359112} = {7C1F0E50-7A19-4AB4-B559-11EF078F4787}
+		{349DE810-592A-42AF-9440-A0B3F46A9229} = {E6B16854-D4A4-4B56-8E1C-482DD523F205}
 	EndGlobalSection
 EndGlobal
