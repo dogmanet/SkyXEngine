@@ -1,13 +1,13 @@
-#ifndef __UIBUTTON_H
-#define __UIBUTTON_H
+#ifndef __UIPICTURE_H
+#define __UIPICTURE_H
 
 #include "UIControl.h"
-#include "IUIButton.h"
+#include "IUIPicture.h"
 
-class CUIButton : public CUIControl<IUIButton>
+class CUIPicture : public CUIControl<IUIPicture>
 {
 public:
-	CUIButton(ULONG uID);
+	CUIPicture(ULONG uID);
 
 	void XMETHODCALLTYPE createNode(gui::dom::IDOMdocument *pDomDocument, gui::dom::IDOMnode *pParentNode) override;
 

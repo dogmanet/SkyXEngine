@@ -36,6 +36,13 @@ IUICheckbox* XMETHODCALLTYPE CXUI::createCheckBox(IUIWindow *pParent)
 	return pCheckBox;
 }
 
+IUIPicture* XMETHODCALLTYPE CXUI::createPicture(IUIWindow *pParent)
+{
+	CUIPicture *pPicture = new CUIPicture(++m_elemendID);
+	pParent->addControl(pPicture);
+	return pPicture;
+}
+
 void CXUI::onDestroyWindow(CUIWindow *pWindow)
 {
 	for(UINT i = 0, l = m_pWindows.size(); i < l; ++i)

@@ -151,7 +151,7 @@ IUIControl* XMETHODCALLTYPE CUIWindow::getControlByID(ULONG uid) const
 
 void CUIWindow::callEventHandler(const WCHAR *cb_name, gui::IEvent *ev)
 {
-	int id = ev->target->getAttribute(L"controld_id").toInt();
+ 	int id = ev->target->getAttribute(L"controld_id").toInt();
 	CUIControl<IUIControl> *control = (CUIControl<IUIControl>*)getControlByID(id);
 
 	if (NULL == control)

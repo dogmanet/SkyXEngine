@@ -27,23 +27,30 @@ private:
 	void inputNumZero();
 
 	void operationPlus();
-	void operationMenis();
+	void operationMinus();
 	void operationDiv();
 	void operationMultiply();
+	void operationEqually();
+
+	void printDisplayStr();
 
 	int mbuffRes = 0;
-	INT64 mFirstNum = 0;
-	INT64 mSecondNum = 0;
+	int mFirstNum = 0;
+	int mSecondNum = 0;
 
 	IXUI* pXUI = NULL;
 	IUIWindow *pCalc = NULL;
 
 	Array<IUIButton*> mButtons;
+	Array<IUICommand*> mpCommands;
 	IUITextBox *m_pTextBox = NULL;
 
 	StringW mDisplayedStr;
 	StringW mCurrOperation;
 	
+	IUIPicture* pc;
+	IUICheckbox* cb;
+
 	bool bInputNumTwo = false; //Если первая введена то ставим переключатель в true
 };
 

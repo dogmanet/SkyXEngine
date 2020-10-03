@@ -13,7 +13,8 @@ void CUICheckBox::createNode(gui::dom::IDOMdocument *pDomDocument, gui::dom::IDO
 	m_pCheckBox = pDomDocument->createNode(m_wsName.c_str());
 
 	m_pNode->setAttribute(L"controld_id", StringW(m_id));
-	m_pCheckBox->setAttribute(L"onclick", m_wsName + m_id);
+	m_pNode->setAttribute(L"onclick", m_wsName + m_id);
+	//m_pCheckBox->setAttribute(L"onclick", m_wsName + m_id);
 
 	m_pNode->appendChild(m_pCheckBox, true);
 	m_pNode->appendChild(m_pText, true);
@@ -27,5 +28,6 @@ void CUICheckBox::setLabel(const wchar_t *szTitle)
 
 bool CUICheckBox::isChecked()
 {
-	return m_pCheckBox->getAttribute(L"checked").toBool();
+	//! @fixme: добавить enum
+	return m_pCheckBox->pseudoclassExists(1);
 }

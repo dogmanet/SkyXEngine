@@ -5,6 +5,7 @@
 #include "UIButton.h"
 #include "UITextBox.h"
 #include "UICheckbox.h"
+#include "UIPicture.h"
 #include <gui/guimain.h>
 
 // {D3FE7B60-BDE7-4A3F-95D8-2D6A102A42E2}
@@ -20,6 +21,8 @@ public:
 	virtual IUITextBox* XMETHODCALLTYPE createTextBox(IUIWindow *pParent) = 0;
 
 	virtual IUICheckbox* XMETHODCALLTYPE createCheckBox(IUIWindow *pParent) = 0;
+
+	virtual IUIPicture* XMETHODCALLTYPE createPicture(IUIWindow *pParent) = 0;
 
 	virtual void XMETHODCALLTYPE render() = 0;
 	virtual void XMETHODCALLTYPE present() = 0;

@@ -8,7 +8,7 @@
 
 CSoundPlayer::~CSoundPlayer()
 {
-	mem_release_del(m_pAB);
+	mem_release(m_pAB);
 
 	mem_delete(m_pLoader);
 	mem_delete(m_pStream);

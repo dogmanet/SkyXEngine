@@ -19,6 +19,8 @@ public:
 
 	IUICheckbox* XMETHODCALLTYPE createCheckBox(IUIWindow *pParent) override;
 
+	IUIPicture* XMETHODCALLTYPE createPicture(IUIWindow *pParent) override;
+
 	void onDestroyWindow(CUIWindow *pWindow);
 
 	IXWindowSystem* getWindowSystem();

@@ -24,7 +24,7 @@ CSoundLayer::~CSoundLayer()
 		m_mapSndPlayers.erase(i.first);
 	}
 
-	mem_release_del(m_pPrimaryBuffer);
+	mem_release(m_pPrimaryBuffer);
 }
 
 bool CSoundLayer::init(CSoundSystem *pSoundSystem, CSoundLayer *pParent, const AudioRawDesc *pDesc, const char *szName)
