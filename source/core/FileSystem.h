@@ -56,9 +56,9 @@ public:
 
 	UINT addRoot(const char *szPath, int iPriority = -1) override;
 
-    UINT getRootCount() override;
+    UINT getRootCount() const override;
 
-    const char *getRoot(UINT id) override;
+	const char *getRoot(UINT id) const override;
 
     void setWritableRoot(UINT id) override;
 
@@ -134,10 +134,6 @@ private:
     //!Наш текущий ID корневого пути для записи
     //! -1 - значит не установлен
     int m_writableRoot = -1;
-
-    //! ID последнего элемента, который был записан 
-    //! в корневые пути
-    int m_lastRootId = 0;
 };
 
 #endif
