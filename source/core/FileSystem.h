@@ -56,9 +56,9 @@ public:
 
 	UINT addRoot(const char *szPath, int iPriority = -1) override;
 
-    UINT getRootCount() override;
+	UINT getRootCount() const override;
 
-    const char *getRoot(UINT id) override;
+	const char *getRoot(UINT id) const override;
 
     void setWritableRoot(UINT id) override;
 
@@ -94,50 +94,46 @@ public:
      IFile *openFile(const char *szPath, FILE_OPEN_MODE) override;
 
 private:
-    void addPathInPriorityArray(int id, int iPriority);
+	void addPathInPriorityArray(int id, int iPriority);
 
-    //! Метод делает проверку, ведет ли путь к файлу или папке
-    bool isFileOrDirectory(const char *szPath, bool isFile);
+	//! Метод делает проверку, ведет ли путь к файлу или папке
+	bool isFileOrDirectory(const char *szPath, bool isFile);
 
-    Array<String>* getAllvariantsCanonizePath(const char *szPath);
+	Array<String>* getAllvariantsCanonizePath(const char *szPath);
 
-    //!Превращает канонизированный путь в неканонизированный
-    void getNormalPath(const char *szPath, char *outBuff, int iOutMax);
+	//!Превращает канонизированный путь в неканонизированный
+	void getNormalPath(const char *szPath, char *outBuff, int iOutMax);
 
-    //!Сравнивает пути с корнем, и возвращает true если путь - абсолютный и в корне
-    bool isAbsolutePathInRoot(const char *szPath);
+	//!Сравнивает пути с корнем, и возвращает true если путь - абсолютный и в корне
+	bool isAbsolutePathInRoot(const char *szPath);
 
-    //! Возвращает абсолютный канонизированный путь
-    void getAbsoluteCanonizePath(const char *szPath, char *outPath, int iOutMax);
+	//! Возвращает абсолютный канонизированный путь
+	void getAbsoluteCanonizePath(const char *szPath, char *outPath, int iOutMax);
 
-    void getFullPathToBuild(char *buff, int iSize);
+	void getFullPathToBuild(char *buff, int iSize);
 
-    void getFileName(const char *name, char *outName, int iOutBuff);
+	void getFileName(const char *name, char *outName, int iOutBuff);
 
-    //! Вспомогательная функция для конвертирования FILETIME в time_t
-    time_t filetimeToTime_t(const FILETIME& ft);
+	//! Вспомогательная функция для конвертирования FILETIME в time_t
+	time_t filetimeToTime_t(const FILETIME& ft);
 
-    HANDLE getFileHandle(const char *szPath);
+	HANDLE getFileHandle(const char *szPath);
 
-    bool isAbsolutePath(const char* szPath);
+	bool isAbsolutePath(const char* szPath);
 
-    String *copyFile(const char* szPath);
+	String *copyFile(const char* szPath);
 
-    //!корневые пути и приоритет
-    Array<String> m_filePaths;
+	//!корневые пути и приоритет
+	Array<String> m_filePaths;
 
-    //!Полный путь к build
-    char m_pathToBuild[SIZE_PATH];
+	//!Полный путь к build
+	char m_pathToBuild[SIZE_PATH];
 
-    Array<Pair> m_priorityArray;
+	Array<Pair> m_priorityArray;
 
-    //!Наш текущий ID корневого пути для записи
-    //! -1 - значит не установлен
-    int m_writableRoot = -1;
-
-    //! ID последнего элемента, который был записан 
-    //! в корневые пути
-    int m_lastRootId = 0;
+	//!Наш текущий ID корневого пути для записи
+	//! -1 - значит не установлен
+	int m_writableRoot = -1;
 };
 
 #endif

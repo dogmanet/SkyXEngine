@@ -55,8 +55,8 @@ public:
 	 Так же, принимает путь к упакованному архиву с префиксом '@', например "@c:/engine/build/textures.ext" или "@textures.ext" (относительно build)
 	*/
 	virtual UINT addRoot(const char *szPath, int iPriority = -1) = 0;
-	virtual UINT getRootCount() = 0;
-	virtual const char *getRoot(UINT id) = 0;
+	virtual UINT getRootCount() const = 0;
+	virtual const char *getRoot(UINT id) const = 0;
 	/*! Помечает корневой путь путем для записи. По этому пути будут осуществляться все операции создания файлов
 		Путь для записи может быть только один, если явно не задан - используется первый добавленный путь, не являющийся архивом
 	*/
