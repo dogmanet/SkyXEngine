@@ -1,4 +1,4 @@
-SkyXEngine - движок для создания 3D игр с real-time рендером, использует технологии DirectX 9.
+SkyXEngine - движок для создания 3D игр с real-time рендером, использует технологии DirectX 11.
 Автодокументация по использованию: docs/html/index.html 
 Онлайн версия автодокументации: https://doc.skyxengine.com/
 Официальный сайт: https://skyxengine.com/
@@ -50,6 +50,7 @@ Wiki ресурс с обучающими материалами: https://wiki.s
 ----------------------------------------------------------------------------
 
 **!!!Текст ниже, переведен при помощи средства автоматического перевода и может содержать ошибки!!!**
+**!!!The text below was translated using the automatic translation tool and may contain errors!!!**
 
 SkyXEngine - engine for creating 3D games with real-time rendering, uses DirectX 9 technologies.
 Autodocumentation for use: docs / html / index.html
