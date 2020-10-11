@@ -7,7 +7,6 @@
 #include "File.h"
 #include <shellapi.h>
 #include <ShlObj.h>
-#include <iostream>
 
 void CFileSystem::addPathInPriorityArray(int id, int iPriority)
 {

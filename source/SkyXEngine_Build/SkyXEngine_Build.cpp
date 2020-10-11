@@ -159,10 +159,7 @@ int main(int argc, char **argv)
 	IFileSystem *pFS = pEngine->getCore()->getFileSystem();
 	IFile *pFile1 = pFS->openFile("dir/test.txt", FILE_MODE_READ);
 	pFS->addRoot("fs_test", 20);
-	auto id = pFS->addRoot("fs_test2", 20);
-	//pFS->addRoot("fs_test2", 20);
-
-	printf("%s\n", pFS->getRoot(id));
+	pFS->addRoot("fs_test2", 20);
 
 	printf(COLOR_LRED "################# FILESYTEM TEST ##################\n");
 
@@ -183,19 +180,19 @@ int main(int argc, char **argv)
 
     IFileIterator *itFile = pFS->getFileList("dir/dir1");
 
-   /* while (const char *file = itFile->next())
+    while (const char *file = itFile->next())
     {
         printf("%s \n", file);
-    } */
+    } 
 
     printf("########## Folder iterator test ###########################\n");
 
     IFileIterator *itDirectory = pFS->getFolderList("dir/dir1");
 
-   /* while (const char *file = itDirectory->next())
+    while (const char *file = itDirectory->next())
     {
         printf("%s \n", file);
-    } */
+    } 
 
 	printf("###################################################\n" COLOR_RESET);
 
