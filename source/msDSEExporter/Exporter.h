@@ -33,18 +33,38 @@ private:
 	CExporter *m_pExporter;
 };
 
+class IProgress
+{
+public:
+	virtual void setProgress() = 0;
+};
+
 class IExporterCallback
 {
 public:
 	virtual bool canExportTB() = 0;
 
-	virtual UINT getObjectCount() = 0;
-	virtual const char* getObjectTexture(UINT idx) = 0;
-	virtual const char* getObjectLayer(UINT idx) = 0;
-	virtual void getObjectStatic(UINT idx, vertex_static **ppVertices, UINT **ppIndices, UINT *pVertexCount, UINT *pIndexCount) = 0;
-	virtual void getObjectStaticEx(UINT idx, vertex_static_ex **ppVertices, UINT **ppIndices, UINT *pVertexCount, UINT *pIndexCount) = 0;
-	virtual void getObjectAnimated(UINT idx, vertex_animated **ppVertices, UINT **ppIndices, UINT *pVertexCount, UINT *pIndexCount) = 0;
-	virtual void getObjectAnimatedEx(UINT idx, vertex_animated_ex **ppVertices, UINT **ppIndices, UINT *pVertexCount, UINT *pIndexCount) = 0;
+	virtual void prepare(IProgress *pProgress) = 0;
+
+	virtual UINT getLayerCount() = 0;
+	virtual const char* getLayerName(UINT uLayer) = 0;
+	virtual UINT getLayerObjectCount(UINT uLayer) = 0;
+
+	virtual float3 getObjectPosition(UINT uLayer, UINT uObject) = 0;
+	virtual SMQuaternion getObjectRotation(UINT uLayer, UINT uObject) = 0;
+
+	virtual UINT getObjectSubsetCount(UINT uLayer, UINT uObject) = 0;
+	virtual const char* getObjectSubsetTexture(UINT uLayer, UINT uObject, UINT uSubset) = 0;
+
+	virtual UINT getObjectSubsetVertexCount(UINT uLayer, UINT uObject, UINT uSubset) = 0;
+	virtual UINT getObjectSubsetIndexCount(UINT uLayer, UINT uObject, UINT uSubset) = 0;
+
+	virtual UINT* getObjectSubsetIndices(UINT uLayer, UINT uObject, UINT uSubset) = 0;
+
+	virtual vertex_static* getObjectSubsetStaticVertices(UINT uLayer, UINT uObject, UINT uSubset) = 0;
+	virtual vertex_static_ex* getObjectSubsetStaticExVertices(UINT uLayer, UINT uObject, UINT uSubset) = 0;
+	virtual vertex_animated* getObjectSubsetAnimatedVertices(UINT uLayer, UINT uObject, UINT uSubset) = 0;
+	virtual vertex_animated_ex* getObjectSubsetAnimatedExVertices(UINT uLayer, UINT uObject, UINT uSubset) = 0;
 
 	// skeleton
 	// animation
@@ -74,6 +94,10 @@ public:
 	void onActsCommitted();
 	void onActsChanged();
 	void onLodsCommitted();
+
+	void logWarning(const char *szFormat, ...)
+	{
+	}
 
 private:
 	
@@ -121,6 +145,9 @@ private:
 	void clearPhysparts();
 
 	bool checkSettings();
+
+	void prepareFullMesh();
+
 private:
 	HWND m_hDlgWnd = NULL;
 	CExtended *m_pExtended = NULL;

@@ -1,27 +1,25 @@
 #include "stdafx.h"
 #include "GeomDetector.h"
 
-#if 0
-bool CGeomDetector::IsBox(IGameMesh *pMesh, float3_t *pCenter, float3_t *pLWH)
+bool CGeomDetector::IsBox(float3_t *pMesh, UINT uVertexCount, size_t uStride, float3_t *pCenter, float3_t *pLWH)
 {
-	int iVertNumber = pMesh->GetNumberOfVerts();
-	Point3 pt;
-	Point3 ptMin, ptMax;
-	for(int i = 0; i < iVertNumber; ++i)
+	float3 pt;
+	float3 ptMin, ptMax;
+	float3_t *pCur = pMesh;
+	for(UINT i = 0; i < uVertexCount; ++i)
 	{
-		pt = pMesh->GetVertex(i, true);
+		pt = *pCur;
 
-		ptMin.x = min(ptMin.x, pt.x);
-		ptMax.x = max(ptMax.x, pt.x);
-		ptMin.y = min(ptMin.y, pt.y);
-		ptMax.y = max(ptMax.y, pt.y);
-		ptMin.z = min(ptMin.z, pt.z);
-		ptMax.z = max(ptMax.z, pt.z);
+		ptMin = SMVectorMin(ptMin, pt);
+		ptMax = SMVectorMax(ptMax, pt);
+
+		pCur = (float3_t*)((byte*)pCur + uStride);
 	}
 
-	for(int i = 0; i < iVertNumber; ++i)
+	pCur = pMesh;
+	for(UINT i = 0; i < uVertexCount; ++i)
 	{
-		pt = pMesh->GetVertex(i, true);
+		pt = *pCur;
 
 		if(!((pt.x == ptMin.x || pt.x == ptMax.x)
 			&& (pt.y == ptMin.y || pt.y == ptMax.y)
@@ -29,37 +27,33 @@ bool CGeomDetector::IsBox(IGameMesh *pMesh, float3_t *pCenter, float3_t *pLWH)
 		{
 			return(false);
 		}
+
+		pCur = (float3_t*)((byte*)pCur + uStride);
 	}
 
-	pCenter->x = (ptMin.x + ptMax.x) * 0.5f;
-	pCenter->y = (ptMin.y + ptMax.y) * 0.5f;
-	pCenter->z = (ptMin.z + ptMax.z) * 0.5f;
-
-	pLWH->x = (ptMax.x - ptMin.x) * 0.5f;
-	pLWH->y = (ptMax.y - ptMin.y) * 0.5f;
-	pLWH->z = (ptMax.z - ptMin.z) * 0.5f;
+	*pCenter = (float3)((ptMin + ptMax) * 0.5f);
+	*pLWH = (float3)((ptMax - ptMin) * 0.5f);
 
 	return(true);
 }
 
-bool CGeomDetector::IsSphere(IGameMesh *pMesh, float3_t *pCenter, float3_t *pLWH)
+bool CGeomDetector::IsSphere(float3_t *pMesh, UINT uVertexCount, size_t uStride, float3_t *pCenter, float3_t *pLWH)
 {
-	int iVertNumber = pMesh->GetNumberOfVerts();
-	Point3 pt;
-	Point3 ptCenter;
+	float3 pt;
+	float3 ptCenter;
 	float fRadius = 0.0f;
 
-	Point3 ptMin, ptMax;
-	for(int i = 0; i < iVertNumber; ++i)
-	{
-		pt = pMesh->GetVertex(i, true);
 
-		ptMin.x = min(ptMin.x, pt.x);
-		ptMax.x = max(ptMax.x, pt.x);
-		ptMin.y = min(ptMin.y, pt.y);
-		ptMax.y = max(ptMax.y, pt.y);
-		ptMin.z = min(ptMin.z, pt.z);
-		ptMax.z = max(ptMax.z, pt.z);
+	float3 ptMin, ptMax;
+	float3_t *pCur = pMesh;
+	for(UINT i = 0; i < uVertexCount; ++i)
+	{
+		pt = *pCur;
+
+		ptMin = SMVectorMin(ptMin, pt);
+		ptMax = SMVectorMax(ptMax, pt);
+
+		pCur = (float3_t*)((byte*)pCur + uStride);
 	}
 
 	float fx = ptMax.x - ptMin.x;
@@ -77,9 +71,10 @@ bool CGeomDetector::IsSphere(IGameMesh *pMesh, float3_t *pCenter, float3_t *pLWH
 	ptCenter.z = (ptMin.z + ptMax.z) * 0.5f;
 
 	float r21 = fRadius * fRadius, r22;
-	for(int i = 0; i < iVertNumber; ++i)
+	pCur = pMesh;
+	for(UINT i = 0; i < uVertexCount; ++i)
 	{
-		pt = pMesh->GetVertex(i, true) - ptCenter;
+		pt = *pCur - ptCenter;
 
 		r22 = pt.x * pt.x + pt.y * pt.y + pt.z * pt.z;
 
@@ -87,35 +82,32 @@ bool CGeomDetector::IsSphere(IGameMesh *pMesh, float3_t *pCenter, float3_t *pLWH
 		{
 			return(false);
 		}
+		pCur = (float3_t*)((byte*)pCur + uStride);
 	}
 
-	pCenter->x = ptCenter.x;
-	pCenter->y = ptCenter.y;
-	pCenter->z = ptCenter.z;
+	*pCenter = ptCenter;
 
 	pLWH->x = pLWH->y = pLWH->z = fRadius;
 
 	return(true);
 }
 
-bool CGeomDetector::IsCylinder(IGameMesh *pMesh, float3_t *pCenter, float *pHeight, float *pRadius)
+bool CGeomDetector::IsCylinder(float3_t *pMesh, UINT uVertexCount, size_t uStride, float3_t *pCenter, float *pHeight, float *pRadius)
 {
-	int iVertNumber = pMesh->GetNumberOfVerts();
-	Point3 pt;
-	Point3 ptCenter;
+	float3 pt;
+	float3 ptCenter;
 	float fRadius = 0.0f;
 
-	Point3 ptMin, ptMax;
-	for(int i = 0; i < iVertNumber; ++i)
+	float3 ptMin, ptMax;
+	float3_t *pCur = pMesh;
+	for(UINT i = 0; i < uVertexCount; ++i)
 	{
-		pt = pMesh->GetVertex(i, true);
+		pt = *pCur;
 
-		ptMin.x = min(ptMin.x, pt.x);
-		ptMax.x = max(ptMax.x, pt.x);
-		ptMin.y = min(ptMin.y, pt.y);
-		ptMax.y = max(ptMax.y, pt.y);
-		ptMin.z = min(ptMin.z, pt.z);
-		ptMax.z = max(ptMax.z, pt.z);
+		ptMin = SMVectorMin(ptMin, pt);
+		ptMax = SMVectorMax(ptMax, pt);
+
+		pCur = (float3_t*)((byte*)pCur + uStride);
 	}
 
 	float fx = ptMax.x - ptMin.x;
@@ -133,5 +125,3 @@ bool CGeomDetector::IsCylinder(IGameMesh *pMesh, float3_t *pCenter, float *pHeig
 
 	return(false);
 }
-
-#endif

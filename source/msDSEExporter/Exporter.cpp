@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include <process.h>
 
+#include "GeomDetector.h"
+
 #include "Exporter.h"
 
 CActListener::CActListener(CExporter *pExporter):
@@ -574,10 +576,9 @@ void CExporter::doExport()
 
 		if(isFullExport)
 		{
-			clearLods();
-			clearPhysparts();
 
 			// export by layers
+			prepareFullMesh();
 		}
 		else
 		{
@@ -1017,4 +1018,196 @@ bool CExporter::checkSettings()
 	}
 
 	return(true);
+}
+
+void CExporter::prepareFullMesh()
+{
+	clearLods();
+	clearPhysparts();
+
+	bool isStatic = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_STATIC);
+	bool includeTB = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_TBN);
+	bool isTBSupported = m_pCallback->canExportTB();
+
+	UINT uLayerCount = m_pCallback->getLayerCount();
+
+	struct SubsetItem
+	{
+		UINT uVertexCount;
+		UINT uIndexCount;
+		model_vertex *pVertices;
+		UINT *pIndices;
+	};
+
+	struct Subset
+	{
+		const char *szTexture;
+		Array<SubsetItem> aItems;
+	};
+
+	Array<Array<Subset>> aLods; // [iLod][iSubset].aItems[]
+
+	for(UINT i = 0; i < uLayerCount; ++i)
+	{
+		const char *szLayer = m_pCallback->getLayerName(i);
+		UINT uObjectCount = m_pCallback->getLayerObjectCount(i);
+
+		if(!strcmp(szLayer, "#physbox"))
+		{
+			// process physbox
+			for(UINT j = 0; j < uObjectCount; ++j)
+			{
+				// merge all subsets of object
+
+				UINT uVertexCount = 0;
+
+				UINT uSubsetCount = m_pCallback->getObjectSubsetCount(i, j);
+				for(UINT k = 0; k < uSubsetCount; ++k)
+				{
+					uVertexCount += m_pCallback->getObjectSubsetVertexCount(i, j, k);
+				}
+				Array<float3_t> aVertices(uVertexCount);
+
+				for(UINT k = 0; k < uSubsetCount; ++k)
+				{
+					model_vertex *pVertices = NULL;
+					size_t uStride = 0;
+					if(isStatic)
+					{
+						pVertices = m_pCallback->getObjectSubsetStaticVertices(i, j, k);
+						uStride = sizeof(vertex_static);
+					}
+					else
+					{
+						pVertices = m_pCallback->getObjectSubsetAnimatedVertices(i, j, k);
+						uStride = sizeof(vertex_animated);
+					}
+
+					aVertices.push_back(pVertices->Pos);
+					pVertices = (model_vertex*)((byte*)pVertices + uStride);
+				}
+
+				{
+					float3_t vCenter;
+					float3_t vLWH;
+
+					ModelPhyspart physPart = {};
+					if(CGeomDetector::IsBox(aVertices, aVertices.size(), sizeof(float3_t), &vCenter, &vLWH))
+					{ // HT_BOX
+						physPart.type = HT_BOX;
+						physPart.lwh = vLWH;
+						physPart.pos = vCenter; // + world mat
+					}
+					else if(CGeomDetector::IsSphere(aVertices, aVertices.size(), sizeof(float3_t), &vCenter, &vLWH))
+					{ // HT_ELIPSOID
+						physPart.type = HT_ELIPSOID;
+						physPart.lwh = vLWH;
+						physPart.pos = vCenter; // + world mat
+					}
+					else // HT_CONVEX
+					{
+						physPart.type = HT_CONVEX;
+						ModelPhyspartDataConvex *pDataConvex = new ModelPhyspartDataConvex();
+						pDataConvex->iVertCount = aVertices.size();
+						pDataConvex->pVerts = new float3_t[pDataConvex->iVertCount];
+
+						for(UINT k = 0; k < pDataConvex->iVertCount; ++k)
+						{
+							pDataConvex->pVerts[k] = aVertices[k];
+						}
+						physPart.rot.w = 1.0f;
+						physPart.pData = pDataConvex;
+					}
+
+					if(physPart.type != HT_CONVEX)
+					{
+						SMQuaternion q = m_pCallback->getObjectRotation(i, j);
+						physPart.rot = float4(q.x, q.y, q.z, q.w);
+						physPart.pos = m_pCallback->getObjectPosition(i, j);
+					}
+
+					if(isStatic)
+					{
+						physPart.bone_id = -1;
+					}
+					else
+					{
+						physPart.bone_id;
+						//@ TODO Implement me!
+#if 0
+						byte boneIndices[4] = {};
+						float4_t vBoneWeights;
+						for(UINT k = 0; k < uSubsetCount; ++k)
+						{
+							if(isTBSupported && includeTB)
+							{
+								vertex_animated_ex *pVertices = m_pCallback->getObjectSubsetAnimatedExVertices(i, j, k);
+								memcpy(boneIndices, pVertices[0].BoneIndices, sizeof(boneIndices));
+								vBoneWeights = pVertices[0].BoneWeights;
+							}
+							else
+							{
+								vertex_animated *pVertices = m_pCallback->getObjectSubsetAnimatedVertices(i, j, k);
+								memcpy(boneIndices, pVertices[0].BoneIndices, sizeof(boneIndices));
+								vBoneWeights = pVertices[0].BoneWeights;
+							}
+						}
+#endif
+					}
+				}
+			}
+		}
+		else
+		{
+			int iLod = 0;
+			if(szLayer[0] == '#' && !sscanf(szLayer, "#lod%d", &iLod))
+			{
+				logWarning("Unknown layer type '%s', ignoring!\n", szLayer);
+				continue;
+			}
+
+			if(iLod < 0)
+			{
+				logWarning("Invalid LOD index '%d' < 0\n", iLod);
+				continue;
+			}
+
+			// process lod
+			for(UINT j = 0; j < uObjectCount; ++j)
+			{
+				UINT uSubsets = m_pCallback->getObjectSubsetCount(i, j);
+				for(UINT k = 0; k < uSubsets; ++k)
+				{
+					const char *szTexture = m_pCallback->getObjectSubsetTexture(i, j, k);
+					Array<Subset> &aSubsets = aLods[iLod];
+
+					UINT uSubsetIdx = aSubsets.size();
+					for(UINT s = 0; s < uSubsetIdx; ++s)
+					{
+						if(!fstrcmp(aSubsets[s].szTexture, szTexture))
+						{
+							uSubsetIdx = s;
+						}
+					}
+					Subset &ss = aSubsets[uSubsetIdx];
+					ss.szTexture = szTexture;
+
+					SubsetItem ssi = {};
+					ssi.uVertexCount = m_pCallback->getObjectSubsetVertexCount(i, j, k);
+					ssi.uIndexCount = m_pCallback->getObjectSubsetIndexCount(i, j, k);
+					ssi.pVertices = m_pCallback->getObjectSubsetStaticVertices(i, j, k);
+					ssi.pIndices = m_pCallback->getObjectSubsetIndices(i, j, k);
+					ss.aItems.push_back(ssi);
+				}
+			}
+		}
+	}
+
+	for(UINT i = 0, l = aLods.size(); i < l; ++i)
+	{
+
+	}
+
+	// "#physbox"
+	// "#lod%d"
 }
