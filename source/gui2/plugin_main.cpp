@@ -1,5 +1,6 @@
 #include <xcommon/IXPlugin.h>
 #include "GUI.h"
+#include <gui2/CSSLexer.h>
 
 #include "CSSProperty.h""
 
@@ -9,6 +10,8 @@ public:
 	void XMETHODCALLTYPE startup(IXCore *pCore) override
 	{
 		m_pCore = pCore;
+		CCSSLexer lexer;
+		lexer.read("<>");
 	}
 
 	void XMETHODCALLTYPE shutdown() override

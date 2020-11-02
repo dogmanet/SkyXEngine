@@ -3,6 +3,7 @@
 
 #include <gdefines.h>
 #include <xcommon/gui/IXCSSProperty.h>
+#include <common/StreamReader.h>
 
 // https://drafts.csswg.org/css-syntax-3/
 
@@ -259,7 +260,11 @@ enum CSS_LEXEME_TYPE
 	CSS_LEXEME_TYPE_SYM_STAR_EQUAL, // *=
 	CSS_LEXEME_TYPE_SYM_XOR_EQUAL, // ^=
 	CSS_LEXEME_TYPE_SYM_OR_EQUAL, // |=
-	CSS_LEXEME_TYPE_SYM_TILDA_EQUAL // ~=		
+	CSS_LEXEME_TYPE_SYM_TILDA_EQUAL, // ~=		
+	CSS_LEXEME_TYPE_SYM_AT, // @		
+	CSS_LEXEME_TYPE_EXCLAMATION_MARK, // !
+	CSS_LEXEME_TYPE_QUOTE_MARK, // '
+	CSS_LEXEME_TYPE_QUOTATION_MARKS // "
 };
 
 struct CSSLexeme

@@ -238,7 +238,7 @@ public:
 	virtual bool XMETHODCALLTYPE isList() const = 0;
 
 	virtual void XMETHODCALLTYPE setInt(int iVal) = 0;
-	virtual void XMETHODCALLTYPE setFloat(float fVal, XCSS_VAR_DIM d = XCSS_VAR_DIM_NONE) = 0;
+	virtual void XMETHODCALLTYPE setFloat(float fVal, XCSS_VAR_UNIT d = XCSS_VAR_UNIT_NONE) = 0;
 	virtual void XMETHODCALLTYPE setString(const char *szVal) = 0;
 	virtual void XMETHODCALLTYPE setMatrix(const SMMATRIX &mVal) = 0;
 	virtual void XMETHODCALLTYPE setVariant(int enumItem) = 0;
@@ -254,7 +254,7 @@ public:
 	virtual int XMETHODCALLTYPE getPX(int iBase) = 0;
 
 	virtual XCSS_PROPERTY_TYPE XMETHODCALLTYPE getType() const = 0; //?
-	virtual XCSS_VAR_DIM XMETHODCALLTYPE getDim() const = 0;
+	virtual XCSS_VAR_UNIT XMETHODCALLTYPE getDim() const = 0;
 
 	virtual bool XMETHODCALLTYPE isSet() const = 0;
 
@@ -271,7 +271,7 @@ public:
 	virtual void XMETHODCALLTYPE setItemCount(UINT uSize, UINT uListIndex) const = 0;
 
 	virtual void XMETHODCALLTYPE setInt(int iVal, UINT uListIndex, UINT uItemIndex) = 0;
-	virtual void XMETHODCALLTYPE setFloat(float fVal, UINT uListIndex, UINT uItemIndex, XCSS_VAR_DIM d = XCSS_VAR_DIM_NONE) = 0;
+	virtual void XMETHODCALLTYPE setFloat(float fVal, UINT uListIndex, UINT uItemIndex, XCSS_VAR_UNIT d = XCSS_VAR_UNIT_NONE) = 0;
 	virtual void XMETHODCALLTYPE setString(const char *szVal, UINT uListIndex, UINT uItemIndex) = 0;
 	virtual void XMETHODCALLTYPE setMatrix(const SMMATRIX &mVal, UINT uListIndex, UINT uItemIndex) = 0;
 	virtual void XMETHODCALLTYPE setVariant(int enumItem, UINT uListIndex, UINT uItemIndex) = 0;
@@ -284,7 +284,7 @@ public:
 	virtual int XMETHODCALLTYPE getPX(int iBase, UINT uListIndex, UINT uItemIndex) = 0;
 
 	virtual XCSS_PROPERTY_TYPE XMETHODCALLTYPE getType(UINT uListIndex, UINT uItemIndex) const = 0; //?
-	virtual XCSS_VAR_DIM XMETHODCALLTYPE getDim(UINT uListIndex, UINT uItemIndex) const = 0;
+	virtual XCSS_VAR_UNIT XMETHODCALLTYPE getDim(UINT uListIndex, UINT uItemIndex) const = 0;
 };
 
 #endif

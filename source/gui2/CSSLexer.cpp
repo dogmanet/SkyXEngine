@@ -1,5 +1,4 @@
 #include "CSSLexer.h"
-#include <common/StreamReader.h>
 
 CCSSLexer::CCSSLexer()
 {
@@ -153,20 +152,19 @@ void CCSSLexer::read(const char *szCode)
 		case '/':
 			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_SLASH, "/", 1});
 			break;
-
 		case '@':
-			// at-keyword
+			m_aLexemes.push_back({ CSS_LEXEME_TYPE_SYM_AT, "@", 1});
 			break;
-
 		case '!':
 			// !important
+			m_aLexemes.push_back({ CSS_LEXEME_TYPE_EXCLAMATION_MARK, "@", 1 });
 			break;
 
 		case '\'':
-
+			m_aLexemes.push_back({ CSS_LEXEME_TYPE_QUOTE_MARK, "\'", 1 });
 			break;
 		case '"':
-
+			m_aLexemes.push_back({ CSS_LEXEME_TYPE_QUOTATION_MARKS, "\"", 1 });
 			break;
 
 		default:
