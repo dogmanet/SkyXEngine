@@ -27,7 +27,7 @@ void CCSSLexer::read(const char *szCode)
 			chPrev = ch;
 			ch = chNext;
 		}
-		chNext = readChar(reader);
+ 		chNext = readChar(reader);
 
 		if(isComment)
 		{
@@ -168,7 +168,7 @@ void CCSSLexer::read(const char *szCode)
 			break;
 
 		default:
-
+			;
 		}
 	}
 }
@@ -193,6 +193,8 @@ const CSSLexeme* CCSSLexer::getLexeme(UINT id)
 	{
 		return(&m_aLexemes[id]);
 	}
+
+	return(NULL);
 }
 const CSSLexeme* CCSSLexer::getLexemeCurr()
 {
@@ -229,13 +231,13 @@ UINT CCSSLexer::readChar(StreamReader &reader)
 			reader.setCursor(pos);
 		}
 	}
-	else if(ch == '\x0c')
+	else if(ch == 0x0c)
 	{
 		ch = '\n';
 	}
-	else if(ch >= '\xD800' && ch <= '\xDFFF')
+	else if(ch >= 0xD800 && ch <= 0xDFFF)
 	{
-		ch = '\xFFFD';
+		ch = 0xFFFD;
 	}
 	// A surrogate is a code point that is in the range U+D800 to U+DFFF, inclusive. 
 	// replace with U+FFFD REPLACEMENT CHARACTER. 

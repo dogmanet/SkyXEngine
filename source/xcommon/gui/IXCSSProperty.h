@@ -254,7 +254,7 @@ public:
 	virtual int XMETHODCALLTYPE getPX(int iBase) = 0;
 
 	virtual XCSS_PROPERTY_TYPE XMETHODCALLTYPE getType() const = 0; //?
-	virtual XCSS_VAR_UNIT XMETHODCALLTYPE getDim() const = 0;
+	virtual XCSS_VAR_UNIT XMETHODCALLTYPE getUnit() const = 0;
 
 	virtual bool XMETHODCALLTYPE isSet() const = 0;
 

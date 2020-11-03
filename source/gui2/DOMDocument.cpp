@@ -1,3 +1,5 @@
+#if 0
+
 #include "GUIbase.h"
 #include "DOMdocument.h"
 #include "ITEXT.h"
@@ -1787,3 +1789,5 @@ namespace gui
 
 	};
 };
+
+#endif

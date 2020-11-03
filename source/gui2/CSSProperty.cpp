@@ -1,3 +1,5 @@
+#if 0
+
 #include "CSSstyle.h"
 
 #include "DOMdocument.h"
@@ -380,3 +382,5 @@ namespace gui
 		}
 	};
 };
+
+#endif

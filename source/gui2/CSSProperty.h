@@ -33,7 +33,7 @@ struct CSSASTNodeConstInt: public CSSASTNode
 struct CSSASTNodeConstFloat: public CSSASTNode
 {
 	float fValue = 0.0f;
-	XCSS_VAR_DIM dim = XCSS_VAR_DIM_NONE;
+	XCSS_VAR_UNIT dim = XCSS_VAR_UNIT_NONE;
 
 	INIT_CSS_AST_NODE(CSSASTNodeConstFloat, CSSASTNT_CONST_FLOAT);
 };
@@ -92,7 +92,7 @@ public:
 	bool XMETHODCALLTYPE isList() const override;
 
 	void XMETHODCALLTYPE setInt(int iVal) override;
-	void XMETHODCALLTYPE setFloat(float fVal, XCSS_VAR_DIM d = XCSS_VAR_DIM_NONE) override;
+	void XMETHODCALLTYPE setFloat(float fVal, XCSS_VAR_UNIT d = XCSS_VAR_UNIT_NONE) override;
 	void XMETHODCALLTYPE setString(const char *szVal) override;
 	void XMETHODCALLTYPE setMatrix(const SMMATRIX &mVal) override;
 	void XMETHODCALLTYPE setVariant(int enumItem) override;
@@ -108,7 +108,7 @@ public:
 	int XMETHODCALLTYPE getPX(int iBase) override;
 
 	XCSS_PROPERTY_TYPE XMETHODCALLTYPE getType() const override; //?
-	XCSS_VAR_DIM XMETHODCALLTYPE getDim() const override;
+	XCSS_VAR_UNIT XMETHODCALLTYPE getUnit() const override;
 
 	bool XMETHODCALLTYPE isSet() const override;
 
