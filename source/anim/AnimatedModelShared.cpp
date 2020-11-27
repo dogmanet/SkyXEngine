@@ -320,9 +320,9 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 
 			for(UINT j = 0; j < m_uMaterialCount; ++j)
 			{
-				if(aaMaterials[i][j].szName && aaMaterials[i][j].szName[0])
+				if(i == 0 || aaMaterials[i][j].szName && aaMaterials[i][j].szName[0])
 				{
-					m_pMaterialSystem->loadMaterial(aaMaterials[i][j].szName, &m_pppMaterials[i][j]);
+					m_pMaterialSystem->loadMaterial(aaMaterials[i][j].szName ? aaMaterials[i][j].szName : "", &m_pppMaterials[i][j]);
 				}
 				else
 				{
@@ -536,6 +536,8 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 
 		if(m_pDevice)
 		{
+			bool useDelayedInit = false;
+
 			m_ppRenderBuffer = new IGXRenderBuffer*[m_uLodCount];
 			m_ppIndexBuffer = new IGXIndexBuffer*[m_uLodCount];
 
@@ -558,10 +560,13 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 					m_puTempTotalIndices[i] = aLodIndexCount[i];
 					m_puTempTotalVertices[i] = aLodVertexCount[i];
 
-					m_pProvider->scheduleSharedGPUinit(this);
+					useDelayedInit = true;
 				}
+			}
 
-
+			if(useDelayedInit)
+			{
+				m_pProvider->scheduleSharedGPUinit(this);
 			}
 		}
 			

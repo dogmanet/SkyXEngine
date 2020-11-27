@@ -203,7 +203,7 @@ void DecalManager::removeDecal(UINT iDecal)
 
 void DecalManager::clear()
 {
-	for(AssotiativeArray<ID, Array<_DecalMatItem>>::Iterator i = m_MaterialSort.begin(); i; i++)
+	for(AssotiativeArray<ID, Array<_DecalMatItem>>::Iterator i = m_MaterialSort.begin(); i; ++i)
 	{
 		for(int j = 0, lj = i.second->size(); j < lj; ++j)
 		{
@@ -678,7 +678,7 @@ void DecalManager::updateBuffer()
 
 	_DecalTexRange rng;
 	m_iRngs.clear();
-	for(AssotiativeArray<ID, Array<_DecalMatItem>>::Iterator i = m_MaterialSort.begin(); i; i++)
+	for(AssotiativeArray<ID, Array<_DecalMatItem>>::Iterator i = m_MaterialSort.begin(); i; ++i)
 	{
 		for(int j = 0, lj = i.second->size(); j < lj; ++j)
 		{
@@ -708,7 +708,7 @@ void DecalManager::updateBuffer()
 	DecalVertex * pData = (DecalVertex*)alloca(sizeof(DecalVertex) * iVC);
 	
 	iVC = 0;
-	for(AssotiativeArray<ID, Array<_DecalMatItem>>::Iterator i = m_MaterialSort.begin(); i; i++)
+	for(AssotiativeArray<ID, Array<_DecalMatItem>>::Iterator i = m_MaterialSort.begin(); i; ++i)
 	{
 		for(UINT j = 0, l = i.second->size(); j < l; ++j)
 		{

@@ -62,7 +62,7 @@ namespace gui
 
 	void CDesktop::createRenderTarget()
 	{
-		m_pRenderSurface = GetGUI()->getDevice()->createColorTarget(m_iWidth, m_iHeight, GXFMT_A8R8G8B8, GXMULTISAMPLE_4_SAMPLES, false);
+		m_pRenderSurface = GetGUI()->getDevice()->createColorTarget(m_iWidth, m_iHeight, GXFMT_A8B8G8R8, GXMULTISAMPLE_4_SAMPLES, false);
 		m_pDepthStencilSurface = GetGUI()->getDevice()->createDepthStencilSurface(m_iWidth, m_iHeight, GXFMT_D24S8, GXMULTISAMPLE_4_SAMPLES, false);
 
 		m_txFinal = m_pDesktopStack->getTextureManager()->createTexture(StringW(L"@") + m_sName, m_iWidth, m_iHeight, 32, true, NULL, false);

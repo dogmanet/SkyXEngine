@@ -50,9 +50,12 @@ public:
 		const char *szName = pTexture->getFileName();
 		if(szName)
 		{
-			m_mpModels[szName] = NULL;
+			m_mpTextures[szName] = NULL;
 		}
 	}
+
+	UINT XMETHODCALLTYPE getSoundSupportedFormats() override;
+	const XFormatName* XMETHODCALLTYPE getSoundSupportedFormat(UINT uIndex) override;
 
 protected:
 	IXCore *m_pCore;
@@ -69,6 +72,8 @@ protected:
 	Array<XFormatName> m_aTextureExts;
 
 	const char* getExtension(const char *szName);
+
+	Array<XFormatName> m_aSoundExts;
 };
 
 #endif

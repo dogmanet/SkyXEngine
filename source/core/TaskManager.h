@@ -71,7 +71,7 @@ private:
 	std::thread* m_pIOThread;
 	unsigned int m_iNumThreads;
 
-	bool m_isRunning;
+	volatile bool m_isRunning = false;
 
 	TaskList m_TaskList[2]; //!< В главном потоке (синхронно)
 	TaskList m_BackgroundTasks; //!< Фоновые задачи
@@ -95,7 +95,7 @@ private:
 	Condition m_ConditionFor;
 	int m_iNumTasksToWaitFor;
 
-	bool m_isSingleThreaded;
+	bool m_isSingleThreaded = false;
 
 	Array<int> m_aiNumWaitFor;
 };

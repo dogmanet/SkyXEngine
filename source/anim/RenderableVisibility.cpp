@@ -22,10 +22,12 @@ void CRenderableVisibility::setOcclusionCuller(IXOcclusionCuller *pOcclusionCull
 
 void CRenderableVisibility::updateForCamera(ICamera *pCamera, const IXRenderableVisibility *pReference)
 {
-	updateForFrustum(pCamera->getFrustum(), pReference);
+	IXFrustum *pFrustum = pCamera->getFrustum();
+	updateForFrustum(pFrustum, pReference);
+	mem_release(pFrustum);
 }
 
-void CRenderableVisibility::updateForFrustum(const IFrustum *pFrustum, const IXRenderableVisibility *pReference)
+void CRenderableVisibility::updateForFrustum(const IXFrustum *pFrustum, const IXRenderableVisibility *pReference)
 {
 	CRenderableVisibility *pRef = NULL;
 	if(pReference)
@@ -36,6 +38,54 @@ void CRenderableVisibility::updateForFrustum(const IFrustum *pFrustum, const IXR
 
 	m_pProviderAnimated->computeVisibility(pFrustum, this, pRef);
 	m_pProviderDynamic->computeVisibility(pFrustum, this, pRef);
+}
+
+static void SortRenderList(Array<CDynamicModel*> &aList)
+{
+	aList.quickSort([](CDynamicModel *pA, CDynamicModel *pB){
+		if(pA->getShared() == pB->getShared())
+		{
+			return(pA->getSkin() < pB->getSkin());
+		}
+		return(pA->getShared() < pB->getShared());
+	});
+}
+
+static void MergeArrays(Array<CDynamicModel*> &aTo, const Array<CDynamicModel*> &aFrom)
+{
+	if(!aFrom.size())
+	{
+		return;
+	}
+	if(!aTo.size())
+	{
+		aTo = aFrom;
+		return;
+	}
+
+	aTo.append(aFrom);
+	aTo.quickSort();
+
+	for(UINT i = 0, l = aTo.size(); i < l - 1; ++i)
+	{
+		if(aTo[i] == aTo[i + 1])
+		{
+			if(i + 1 == l - 1)
+			{
+				aTo.erase(l - 1); --l;
+			}
+			else
+			{
+				if(aTo[l - 2] == aTo[l - 1])
+				{
+					aTo.erase(l - 1); --l;
+				}
+				aTo[i + 1] = aTo[l - 1];
+			}
+
+			++i;
+		}
+	}
 }
 
 void CRenderableVisibility::append(const IXRenderableVisibility *pOther_)
@@ -67,28 +117,12 @@ void CRenderableVisibility::append(const IXRenderableVisibility *pOther_)
 			}
 		}
 	}
-
-	for(UINT i = 0, l = pOther->m_aItemsDynamic.size(); i < l; ++i)
-	{
-		pOtherItem = &pOther->m_aItemsDynamic[i];
-		if(pOtherItem->isVisible)
-		{
-			pItem = &m_aItemsDynamic[i];
-			if(pItem->isVisible)
-			{
-				if(pOtherItem->uLod < pItem->uLod)
-				{
-					pItem->uLod = pOtherItem->uLod;
-				}
-			}
-			else
-			{
-				pItem->isTransparent = pOtherItem->isTransparent;
-				pItem->isVisible = true;
-				pItem->uLod = pOtherItem->uLod;
-			}
-		}
-	}
+	
+	MergeArrays(m_aRenderList, pOther->m_aRenderList);
+	SortRenderList(m_aRenderList);
+	MergeArrays(m_aTransparentList, pOther->m_aTransparentList);
+	MergeArrays(m_aSelfillumList, pOther->m_aSelfillumList);
+	SortRenderList(m_aSelfillumList);
 
 	//! @todo implement for transparency too!
 }
@@ -104,16 +138,6 @@ void CRenderableVisibility::substract(const IXRenderableVisibility *pOther_)
 	{
 		pOtherItem = &pOther->m_aItems[i];
 		pItem = &m_aItems[i];
-		if(pItem->isVisible && pOtherItem->isVisible)
-		{
-			pItem->isVisible = false;
-		}
-	}
-
-	for(UINT i = 0, l = pOther->m_aItemsDynamic.size(); i < l; ++i)
-	{
-		pOtherItem = &pOther->m_aItemsDynamic[i];
-		pItem = &m_aItemsDynamic[i];
 		if(pItem->isVisible && pOtherItem->isVisible)
 		{
 			pItem->isVisible = false;
@@ -140,25 +164,16 @@ CRenderableVisibility::item_s* CRenderableVisibility::getItem(UINT uIndex)
 	return(&m_aItems[uIndex]);
 }
 
-void CRenderableVisibility::setItemCountDynamic(UINT uCount)
+void CRenderableVisibility::setItemTransparentCountDynamic(UINT uCount)
 {
-	if(m_aItemsDynamic.GetAllocSize() > uCount * 2)
+	if(uCount > 0 && m_aItemsDynamicTransparent.GetAllocSize() > uCount * 2)
 	{
-		m_aItemsDynamic.resize(uCount);
+		m_aItemsDynamicTransparent.resize(uCount);
 	}
 	else
 	{
-		m_aItemsDynamic.resizeFast(uCount);
+		m_aItemsDynamicTransparent.resizeFast(uCount);
 	}
-}
-
-CRenderableVisibility::item_s* CRenderableVisibility::getItemDynamic(UINT uIndex, bool forceCreate)
-{
-	if(forceCreate || uIndex < m_aItemsDynamic.size())
-	{
-		return(&m_aItemsDynamic[uIndex]);
-	}
-	return(NULL);
 }
 
 CRenderableVisibility::TransparentModel* CRenderableVisibility::getItemTransparentDynamic(UINT uIndex)
@@ -179,4 +194,48 @@ void CRenderableVisibility::resetItemTransparentDynamic()
 void CRenderableVisibility::addItemTransparentDynamic(const TransparentModel &mdl)
 {
 	m_aItemsDynamicTransparent.push_back(mdl);
+}
+
+static void SetRenderList(Array<CDynamicModel*> &aList, void **ppData, UINT uCount, bool useSort=true)
+{
+	aList.resizeFast(uCount);
+	if(uCount)
+	{
+		memcpy(&aList[0], ppData, sizeof(void*) * uCount);
+	}
+
+	if(useSort)
+	{
+		SortRenderList(aList);
+	}
+}
+
+void CRenderableVisibility::setRenderList(void **ppData, UINT uCount)
+{
+	SetRenderList(m_aRenderList, ppData, uCount);
+}
+
+void CRenderableVisibility::setTransparentList(void **ppData, UINT uCount)
+{
+	SetRenderList(m_aTransparentList, ppData, uCount, false);
+}
+
+void CRenderableVisibility::setSelfillumList(void **ppData, UINT uCount)
+{
+	SetRenderList(m_aSelfillumList, ppData, uCount);
+}
+
+Array<CDynamicModel*>& CRenderableVisibility::getRenderList()
+{
+	return(m_aRenderList);
+}
+
+Array<CDynamicModel*>& CRenderableVisibility::getSelfillumList()
+{
+	return(m_aSelfillumList);
+}
+
+Array<CDynamicModel*>& CRenderableVisibility::getTransparentList()
+{
+	return(m_aTransparentList);
 }

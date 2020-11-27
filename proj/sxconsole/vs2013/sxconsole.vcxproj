@@ -103,6 +103,9 @@
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb/$(TargetName).pdb</ProgramDatabaseFile>
       <Profile>true</Profile>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>sxconsole.exe.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -121,6 +124,9 @@
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb64/$(TargetName).pdb</ProgramDatabaseFile>
       <Profile>true</Profile>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>sxconsole.exe.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -141,6 +147,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb/$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>sxconsole.exe.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -161,6 +170,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb64/$(TargetName).pdb</ProgramDatabaseFile>
     </Link>
+    <Manifest>
+      <AdditionalManifestFiles>sxconsole.exe.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\sxconsole\ColorPrint.cpp" />
@@ -168,6 +180,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\sxconsole\ColorPrint.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="sxconsole.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="console.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

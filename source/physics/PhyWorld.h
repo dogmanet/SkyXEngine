@@ -135,7 +135,7 @@ public:
 
 		X_RENDER_STAGE XMETHODCALLTYPE getStages() override
 		{
-			return(XRS_POSTPROCESS_MAIN);
+			return(XRS_GBUFFER);
 		}
 
 		UINT XMETHODCALLTYPE getPriorityForStage(X_RENDER_STAGE stage) override

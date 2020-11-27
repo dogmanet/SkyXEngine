@@ -20,7 +20,7 @@ namespace gui
 		void popMatrix();
 		SMMATRIX getCurrentMatrix();
 
-		SX_ALIGNED_OP_MEM2();
+		SX_ALIGNED_OP_MEM();
 
 	protected:
 		CDesktopStack *m_pDesktopStack;

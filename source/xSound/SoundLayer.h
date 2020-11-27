@@ -19,7 +19,6 @@ See the license in LICENSE
 class CSoundLayer: public IXUnknownImplementation<IXSoundLayer>
 {
 public:
-
 	~CSoundLayer();
 
 	virtual void XMETHODCALLTYPE play(bool canPlay) override;
@@ -29,38 +28,57 @@ public:
 	virtual IXSoundLayer* XMETHODCALLTYPE findLayer(const char *szName) override;
 
 	virtual IXSoundLayer* XMETHODCALLTYPE newSoundLayer(const AudioRawDesc *pDesc, const char *szName) override;
-	virtual IXSoundEmitter* XMETHODCALLTYPE newSoundEmitter(const char *szName, SOUND_DTYPE dtype) override;
-	virtual IXSoundPlayer* XMETHODCALLTYPE newSoundPlayer(const char *szName, SOUND_DTYPE dtype) override;
+	virtual IXSoundEmitter* XMETHODCALLTYPE newSoundEmitter(const char *szName, SOUND_SPACE space) override;
+	virtual IXSoundPlayer* XMETHODCALLTYPE newSoundPlayer(const char *szName, SOUND_SPACE space) override;
 
 	virtual void XMETHODCALLTYPE getDesc(AudioRawDesc *pDesc) const override;
 
-	uint32_t getStreamChunkSize(AudioRawDesc *pDesc) const;
+	//########################################################################
+
+	size_t getStreamChunkSize(AudioRawDesc *pDesc) const;
 	IAudioBuffer* createAudioBuffer(AB_TYPE type, const AudioRawDesc *pDesc);
 
-	void update();
+	void update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp);
+
+	void addMessage(SndQueueMsg &oMsg);
+
+private:
+	virtual void XMETHODCALLTYPE FinalRelease() override;
 
 protected:
 
 	friend CSoundSystem;
 	friend CSoundPlayer;
+	friend CSoundEmitter;
 
 	bool init(CSoundSystem *pSoundSystem, CSoundLayer *pParent, const AudioRawDesc *pDesc, const char *szName);
 
-	void addLayer(CSoundLayer *pLayer, const char *szName);
+	//************************************************************************
+	// функции добавления/удаления обьектов в массивы
+	// при удалении из массива произойдет mem_delete удаляемого обьекта
+
+	void addLayer(CSoundLayer *pLayer);
 	void delLayer(CSoundLayer *pLayer);
 
-	void addSound(CSoundPlayer *pSound, const char *szName);
-	void delSound(CSoundPlayer *pSound);
+	void addSndPlayer(CSoundPlayer *pSndPlayer);
+	void delSndPlayer(const CSoundPlayer *pSndPlayer);
+
+	void addSndEmitter(CSoundEmitter *pSndEmitter);
+	void delSndEmitter(const CSoundEmitter *pSndEmitter);
+
+	void _play(bool canPlay, bool isFromParent);
+
+	//************************************************************************
 
 	//! соответствует ли описание (его критические элементы) аудио буфера первичному буферу
 	bool matchPrimaryLayer(const AudioRawDesc *pDesc);
 
-	void setStateLayers(SOUND_STATE state);
-	void setStateSounds(SOUND_STATE state);
+	//########################################################################
 
 	SOUND_STATE m_state = SOUND_STATE_STOP;
 
 	bool m_isPlaying = false;
+	bool m_isPlayingTotal = false;
 
 	CSoundLayer *m_pParent = NULL;
 
@@ -69,11 +87,16 @@ protected:
 
 	String m_sName = "";
 
-	typedef AssotiativeArray<String, CSoundLayer*> maplayer;
-	maplayer m_mapLayers;
+	typedef AssotiativeArray<String, CSoundLayer*> MapLayer;
+	MapLayer m_mapLayers;
 
-	typedef AssotiativeArray<String, CSoundPlayer*> mapsoundplayer;
-	mapsoundplayer m_mapSndPlayers;
+	typedef Array<CSoundPlayer*> ArrayPlayer;
+	typedef AssotiativeArray<String, ArrayPlayer> MapPlayer;
+	MapPlayer m_mapSndPlayers;
+
+	typedef Array<CSoundEmitter*> ArrayEmitter;
+	typedef AssotiativeArray<String, ArrayEmitter> MapEmitter;
+	MapEmitter m_mapSndEmitters;
 };
 
 #endif

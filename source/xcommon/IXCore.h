@@ -9,6 +9,7 @@
 #include "IXRenderPipeline.h"
 #include "IXConfig.h"
 #include "IXBuffer.h"
+#include "IXConsole.h"
 
 #include <fcntl.h>
 #include <io.h>
@@ -31,8 +32,7 @@ public:
 
 	virtual UINT_PTR XMETHODCALLTYPE getCrtOutputHandler() = 0;
 
-	virtual void XMETHODCALLTYPE execCmd(const char *szCommand) = 0;
-	virtual void execCmd2(const char *szFormat, ...) = 0;
+	virtual IXConsole* XMETHODCALLTYPE getConsole() = 0;
 
 	//@FIXME: Remove that!
 	virtual void initUpdatable() = 0;
@@ -43,11 +43,6 @@ public:
 
 	virtual IXConfig* XMETHODCALLTYPE newConfig() = 0;
 	virtual IXBuffer* XMETHODCALLTYPE newBuffer() = 0;
-
-	virtual const char** XMETHODCALLTYPE getPCVarString(const char *szName) = 0;
-	virtual const int* XMETHODCALLTYPE getPCVarInt(const char *szName) = 0;
-	virtual const float* XMETHODCALLTYPE getPCVarFloat(const char *szName) = 0;
-	virtual const bool* XMETHODCALLTYPE getPCVarBool(const char *szName) = 0;
 
 	virtual ID XMETHODCALLTYPE forLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize = 0) = 0;
 	virtual void XMETHODCALLTYPE waitForLoop(ID id) = 0;

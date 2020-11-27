@@ -21,10 +21,12 @@ class IXResourceTexture: public IXUnknown
 public:
 	virtual GXTEXTURE_TYPE XMETHODCALLTYPE getType() const = 0;
 	virtual GXFORMAT XMETHODCALLTYPE getFormat() const = 0;
+	virtual bool XMETHODCALLTYPE isSRGB() const = 0;
 	
 	virtual UINT XMETHODCALLTYPE getFrameCount() const = 0;
 	virtual float XMETHODCALLTYPE getFrameTime() const = 0;
 	virtual void XMETHODCALLTYPE setFrameTime(float fTime) = 0;
+	virtual void XMETHODCALLTYPE setIsSRGB(bool yesNo) = 0;
 
 	virtual UINT XMETHODCALLTYPE getMipmapCount() const = 0;
 
@@ -35,7 +37,9 @@ public:
 	
 	virtual void XMETHODCALLTYPE makeReadOnly() = 0;
 
-	virtual UINT XMETHODCALLTYPE getTextureBytes(GXFORMAT format, UINT uWidth, UINT uHeight) = 0;
+	virtual UINT XMETHODCALLTYPE getTextureBytes(GXFORMAT format, UINT uWidth, UINT uHeight) const = 0;
+
+	virtual void XMETHODCALLTYPE clone(IXResourceTexture **pOut) const = 0;
 };
 
 // Implemented in core
@@ -48,7 +52,7 @@ public:
 	virtual XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) = 0;
 	virtual const XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) const = 0;
 
-	virtual void XMETHODCALLTYPE init(UINT uWidth, UINT uHeight, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 0) = 0;
+	virtual void XMETHODCALLTYPE init(UINT uWidth, UINT uHeight, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 1) = 0;
 };
 
 // Implemented in core
@@ -60,7 +64,7 @@ public:
 	virtual XImageMip* XMETHODCALLTYPE getMip(GXCUBEMAP_FACES face, UINT uMipmap, UINT uFrame = 0) = 0;
 	virtual const XImageMip* XMETHODCALLTYPE getMip(GXCUBEMAP_FACES face, UINT uMipmap, UINT uFrame = 0) const = 0;
 
-	virtual void XMETHODCALLTYPE init(UINT uSize, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 0) = 0;
+	virtual void XMETHODCALLTYPE init(UINT uSize, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 1) = 0;
 };
 
 

@@ -22,10 +22,16 @@ See the license in LICENSE
 
 #define SOUND_CACHE "cache"
 
-enum SOUND_DTYPE
+enum SOUND_TYPE
 {
-	SOUND_DTYPE_2D,
-	SOUND_DTYPE_3D
+	SOUND_TYPE_EMITTER,
+	SOUND_TYPE_PLAYER
+};
+
+enum SOUND_SPACE
+{
+	SOUND_SPACE_2D,
+	SOUND_SPACE_3D
 };
 
 //! тип зацикленности звука
@@ -41,7 +47,12 @@ enum SOUND_LOOP
 class IXSoundBase: public IXUnknown
 {
 public:
-	virtual SOUND_DTYPE XMETHODCALLTYPE getType() = 0;
+	virtual SOUND_TYPE XMETHODCALLTYPE getType() const = 0;
+
+	virtual SOUND_SPACE XMETHODCALLTYPE getSpace() const = 0;
+	virtual void XMETHODCALLTYPE setSpace(SOUND_SPACE space) = 0;
+
+	virtual const char* XMETHODCALLTYPE getName() const = 0;
 
 	virtual void XMETHODCALLTYPE play() = 0;
 
@@ -97,8 +108,8 @@ public:
 	virtual IXSoundLayer* XMETHODCALLTYPE findLayer(const char *szName) = 0;
 
 	virtual IXSoundLayer* XMETHODCALLTYPE newSoundLayer(const AudioRawDesc *pDesc, const char *szName) = 0;
-	virtual IXSoundEmitter* XMETHODCALLTYPE newSoundEmitter(const char *szName, SOUND_DTYPE dtype) = 0;
-	virtual IXSoundPlayer* XMETHODCALLTYPE newSoundPlayer(const char *szName, SOUND_DTYPE dtype) = 0;
+	virtual IXSoundEmitter* XMETHODCALLTYPE newSoundEmitter(const char *szName, SOUND_SPACE space) = 0;
+	virtual IXSoundPlayer* XMETHODCALLTYPE newSoundPlayer(const char *szName, SOUND_SPACE space) = 0;
 
 	virtual void XMETHODCALLTYPE getDesc(AudioRawDesc *pDesc) const = 0;
 };

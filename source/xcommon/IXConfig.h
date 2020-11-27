@@ -22,6 +22,8 @@ public:
 	virtual UINT XMETHODCALLTYPE getKeyCount(const char *szSection) = 0; //!< общее количество ключей в секции
 	virtual bool XMETHODCALLTYPE sectionExists(const char *szSection) = 0; //!< существует ли секция section
 	virtual bool XMETHODCALLTYPE keyExists(const char *szSection, const char *szKey) = 0; //!< существует ли ключ key в секции section
+
+	virtual void XMETHODCALLTYPE clear() = 0; //!< очистить
 };
 
 #endif

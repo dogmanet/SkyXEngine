@@ -1,6 +1,6 @@
 #include "CommandMove.h"
 
-bool CCommandMove::exec()
+bool XMETHODCALLTYPE CCommandMove::exec()
 {
 	_move_obj *pObj;
 	bool moved = false;
@@ -12,7 +12,7 @@ bool CCommandMove::exec()
 	}
 	return(moved);
 }
-bool CCommandMove::undo()
+bool XMETHODCALLTYPE CCommandMove::undo()
 {
 	_move_obj *pObj;
 	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)

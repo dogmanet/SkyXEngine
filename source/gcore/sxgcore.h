@@ -42,7 +42,7 @@ See the license in LICENSE
 
 #include <gdefines.h>
 
-class IFrustum;
+class IXFrustum;
 
 //! \name Базовые функции библиотеки 
 //!@{
@@ -381,7 +381,7 @@ struct CFrustumPlane
 	float3_t m_vNormal;
 	float m_fDistance;
 
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	CFrustumPlane() = default;
 	CFrustumPlane(const SMPLANE &pPlane)
@@ -400,91 +400,48 @@ struct CFrustumPlane
 	}
 };
 
-#include <xcommon/render/IFrustum.h>
+#include <xcommon/render/IXFrustum.h>
 
 //! создать ISXFrustum
-SX_LIB_API IFrustum* SGCore_CrFrustum(); 
+SX_LIB_API IXFrustum* SGCore_CrFrustum(); 
 
 //**************************************************************************
 
 //! камера
-class ICamera : public IBaseObject
+class ICamera: public IBaseObject
 {
 public:
-	virtual ~ICamera(){};
-
-	SX_ALIGNED_OP_MEM
-
-	/*! \name Движение
-	 \note В метрах
-	@{*/
-
-	//! влево/вправо
-	virtual void posLeftRight(float fUnits) = 0;	
-
-	//! вверх/вниз
-	virtual void posUpDown(float fUnits) = 0;		
-
-	//! вперед/назад
-	virtual void posFrontBack(float fUnits) = 0;	
-
-	//!@}
-
-	/*! \name Вращение
-	 \note В радианах
-	@{*/
-
-	//! вращение вверх/вниз
-	virtual void rotUpDown(float fAngle) = 0;		
-
-	//! вращение вправо/влево
-	virtual void rotRightLeft(float fAngle) = 0;	
-
-	//! крен
-	virtual void roll(float fAngle) = 0;			
-
 	//! установить полное вращение
-	virtual void setOrientation(const SMQuaternion *pOrientation) = 0; 
+	virtual void setOrientation(const SMQuaternion &qOrientation) = 0;
 
-	//!@}
+	virtual const SMQuaternion& getOrientation() = 0;
 
 	//! получаем матрицу вида в pMatrix
-	virtual void getViewMatrix(float4x4 *pMatrix) = 0;
+	virtual const SMMATRIX& getViewMatrix() const = 0;
 
 	/*! \name Базис
 	@{
 	*/
 
 	//! в pos записывает текущую позицию в мире
-	virtual void getPosition(float3 *pPos) const = 0;	
+	virtual const float3& getPosition() const = 0;	
 
 	//! устанавливает позицию в мире
-	virtual void setPosition(const float3 *pPos) = 0;	
+	virtual void setPosition(const float3 &vPos) = 0;	
 
 
 	//! в right записывает парвый вектор
-	virtual void getRight(float3 *pRight) const = 0;
+	virtual const float3& getRight() const = 0;
 
 	//! в up записывает верхний вектор
-	virtual void getUp(float3 *vUp) const = 0;		
+	virtual const float3& getUp() const = 0;
 
 	//! в look записывает вектор направление взгляда
-	virtual void getLook(float3 *vLook) const = 0;	
+	virtual const float3& getLook() const = 0;
 
 
 	//! в rot записывает углы поворотов по осям, в радианах
-	virtual void getRotation(float3 *vRot) const = 0;	
-
-	//повроты по осям
-
-	//! возвращает поворот по оси X, в радианах
-	virtual float getRotationX() const = 0;	
-
-	//! возвращает поворот по оси Y, в радианах
-	virtual float getRotationY() const = 0;	
-
-	//! возвращает поворот по оси Z, в радианах
-	virtual float getRotationZ() const = 0;	
+	virtual const float3& getRotation() const = 0;
 
 	//!@}
 
@@ -495,10 +452,10 @@ public:
 	virtual float getFOV() const = 0;	
 
 	//! обновление фрустума камеры
-	virtual void updateFrustum(const float4x4 *mProjection) = 0;
+	virtual void updateFrustum(const float4x4 &mProjection) = 0;
 
 	//! возвращает константный указатель фрустума
-	virtual const IFrustum* getFrustum() = 0;
+	virtual IXFrustum* getFrustum() = 0;
 };
 
 //! создать ISXCamera

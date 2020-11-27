@@ -11,14 +11,17 @@
 #define LPV_STEP_COUNT 6
 #define LUMINANCE_BUFFER_SIZE 1024
 
+#define SKYLIGHT_AREA_COUNT (sizeof(uint16_t) << 3)
+
 class CLevelLoadListener;
+class CSkyboxChangedListener;
 class CLightSystem: public IXUnknownImplementation<IXLightSystem>
 {
 public:
 	CLightSystem(IXCore *pCore);
 	~CLightSystem();
 
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	IXLightSun* XMETHODCALLTYPE newSun() override;
 	IXLightSun* XMETHODCALLTYPE getSun() override;
@@ -47,8 +50,21 @@ public:
 	void XMETHODCALLTYPE renderToneMapping(IGXTexture2D *pSourceLight) override;
 	void XMETHODCALLTYPE renderDebug() override;
 
+	void setEnabled(bool set)
+	{
+		m_isEnabled = set;
+	}
+
+	void setSkybox(IXTexture *pTexture);
+
 protected:
 	void showGICubes();
+
+	void buildSkyLightMasks();
+
+	void updateSkylight();
+
+	void updateSkylightGrid();
 
 protected:
 	CXLightSun *m_pSun = NULL;
@@ -69,6 +85,9 @@ protected:
 
 	IEventChannel<XEventLevel> *m_pLevelChannel = NULL;
 	CLevelLoadListener *m_pLevelListener = NULL;
+
+	IEventChannel<XEventSkyboxChanged> *m_pSkyboxChangedChannel = NULL;
+	CSkyboxChangedListener *m_pSkyboxChangedListener = NULL;
 
 	Array<CXLight*> m_aLights;
 
@@ -110,11 +129,11 @@ protected:
 
 	//###################################
 
-	ID m_idBlendAmbientSpecDiffColor = -1;
+	ID m_idBlendAmbientSpecDiffColor[2];
 	ID m_idComLightingShadow = -1;
 	ID m_idComLightingSpotShadow = -1;
 	ID m_idComLightingPSSMShadow = -1;
-	ID m_idComLightingGI[LPV_CASCADES_COUNT];
+	ID m_idComLightingGI[LPV_CASCADES_COUNT][2];
 
 	ID m_idHDRinitLuminance = -1;
 	ID m_idHDRAdaptLuminance = -1;
@@ -175,6 +194,45 @@ protected:
 	IGXTexture2D *m_pLightLuminance1 = NULL;
 	IGXTexture2D *m_pAdaptedLuminance[2];
 	UINT m_uCurrAdaptedLuminanceTarget = 0;
+
+	bool m_isEnabled = true;
+
+	//###################################
+
+	IXTexture *m_pSkyboxTexture = NULL;
+	bool m_isSkyboxDirty = true;
+	IGXBaseTexture *m_apSkyboxMask[SKYLIGHT_AREA_COUNT];
+
+	ID m_idSkylightGenSHShader = -1;
+	ID m_idSkylightGenGridShader = -1;
+
+	IGXTexture2D *m_pSkyLightBaseR = NULL;
+	IGXTexture2D *m_pSkyLightBaseG = NULL;
+	IGXTexture2D *m_pSkyLightBaseB = NULL;
+
+	IGXTexture3D *m_pSkyLightR = NULL;
+	IGXTexture3D *m_pSkyLightG = NULL;
+	IGXTexture3D *m_pSkyLightB = NULL;
+
+	struct SkyLightGenSHParam
+	{
+		uint32_t uSkyboxSize;
+		float fWeight;
+		float fTexOffset;
+		float _3;
+	};
+
+	IGXConstantBuffer *m_pSkyLightGenCB = NULL;
+	IGXConstantBuffer *m_pSkyLightOcclusionCB = NULL;
+
+	//###################################
+
+	ID m_idSSAOShader[3];
+
+	IGXTexture2D *m_pRndTexture = NULL;
+	IGXTexture2D *m_pSSAOTexture = NULL;
+
+	IGXConstantBuffer *m_pSSAOrndCB = NULL;
 };
 
 #endif

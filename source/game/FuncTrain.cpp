@@ -16,7 +16,7 @@ BEGIN_PROPTABLE(CFuncTrain)
 	DEFINE_FIELD_FLOAT(m_fSpeed, 0, "speed", "Move speed", EDITOR_TEXTFIELD)
 
 	//! path_corner, с которого начнется движение
-	DEFINE_FIELD_ENTITY(m_pStartStop, 0, "start", "Start point", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_ENTITY2(CPathCorner, m_pStartStop, 0, "start", "Start point", EDITOR_TEXTFIELD)
 END_PROPTABLE()
 
 REGISTER_ENTITY(CFuncTrain, func_train);

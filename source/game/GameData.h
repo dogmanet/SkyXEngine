@@ -15,6 +15,7 @@ See the license in LICENSE
 #include "HUDcontroller.h"
 #include "GameStateManager.h"
 #include <light/IXLightSystem.h>
+#include <xcommon/IXSoundSystem.h>
 
 class GameData
 {
@@ -31,6 +32,9 @@ public:
 	static CHUDcontroller * m_pHUDcontroller;
 	static CGameStateManager * m_pGameStateManager;
 	static IXLightSystem *m_pLightSystem;
+	static IXSoundLayer *m_pGameLayer;
+	static IXSoundLayer *m_pGuiLayer;
+	static IXSoundPlayer *m_pSoundPlayer;
 	HWND m_hWnd;
 
 	CCrosshair * m_pCrosshair;
@@ -50,7 +54,8 @@ protected:
 
 	void loadFoostepsSounds();
 
-	ID *m_pidFootstepSound[MPT_COUNT];
+	//ID *m_pidFootstepSound[MPT_COUNT];
+	IXSoundEmitter **m_aFootstepSound[MPT_COUNT];
 	int m_iFootstepSoundCount[MPT_COUNT];
 
 	static void ccmd_forward_on();

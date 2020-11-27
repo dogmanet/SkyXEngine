@@ -21,7 +21,7 @@ BEGIN_PROPTABLE(CPathCorner)
 	DEFINE_FIELD_FLOAT(m_fNewSpeed, 0, "speed", "New speed", EDITOR_TEXTFIELD)
 
 	//! Следующая точка пути
-	DEFINE_FIELD_ENTITYFN(m_pNextStop, 0, "next", "Next stop", setNextPoint, EDITOR_TEXTFIELD)
+	DEFINE_FIELD_ENTITY2FN(CPathCorner, m_pNextStop, 0, "next", "Next stop", setNextPoint, EDITOR_TEXTFIELD)
 
 END_PROPTABLE()
 
@@ -46,9 +46,9 @@ CPathCorner::~CPathCorner()
 	}
 }
 
-void CPathCorner::setNextPoint(CBaseEntity *pEnt)
+void CPathCorner::setNextPoint(CPathCorner *pEnt)
 {
-	CPathCorner *pCur = (CPathCorner*)pEnt;
+	CPathCorner *pCur = pEnt;
 	while(pCur && pCur != this)
 	{
 		pCur = pCur->m_pNextStop;

@@ -1,10 +1,10 @@
 [dev_floor]
 shader = Default
-tex.txBase = dev_floor.dds
-tex.txNormals = dev_floor_normal.dds
+tex.txBase = dev_floor.dds|from_srgb
+tex.txNormals = dev_normal.dds
 
-prop.pbr_roughness = 0.98
-prop.pbr_metallness = 0.59
+prop.pbr_roughness = 0.5
+prop.pbr_metallness = 0
 prop.pbr_thickness = 1
 
 durability = 10.000000

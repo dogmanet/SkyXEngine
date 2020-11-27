@@ -7,13 +7,14 @@
 #include "FileSystem.h"
 #include <xcommon/IXUpdatable.h>
 #include "ResourceManager.h"
+#include "Console.h"
 
 class CModelProvider;
 class CPerfMon;
 class CTimeManager;
 class CTaskManager;
 
-class CCore: public IXUnknownImplementation<IXCore>
+class CCore final: public IXUnknownImplementation<IXCore>
 {
 public:
 	CCore(const char *szName);
@@ -37,8 +38,9 @@ public:
 
 	UINT_PTR XMETHODCALLTYPE getCrtOutputHandler() override; 
 
-	void XMETHODCALLTYPE execCmd(const char *szCommand) override;
-	void execCmd2(const char *szFormat, ...) override;
+	IXConsole* XMETHODCALLTYPE getConsole() override;
+	//void XMETHODCALLTYPE execCmd(const char *szCommand) override;
+	//void execCmd2(const char *szFormat, ...) override;
 
 	ID XMETHODCALLTYPE getThreadId() override; 
 	bool XMETHODCALLTYPE isOnMainThread() override;
@@ -46,10 +48,10 @@ public:
 	IXConfig* XMETHODCALLTYPE newConfig() override;
 	IXBuffer* XMETHODCALLTYPE newBuffer() override;
 
-	const char** XMETHODCALLTYPE getPCVarString(const char *szName) override;
-	const int* XMETHODCALLTYPE getPCVarInt(const char *szName) override;
-	const float* XMETHODCALLTYPE getPCVarFloat(const char *szName) override;
-	const bool* XMETHODCALLTYPE getPCVarBool(const char *szName) override;
+	//const char** XMETHODCALLTYPE getPCVarString(const char *szName) override;
+	//const int* XMETHODCALLTYPE getPCVarInt(const char *szName) override;
+	//const float* XMETHODCALLTYPE getPCVarFloat(const char *szName) override;
+	//const bool* XMETHODCALLTYPE getPCVarBool(const char *szName) override;
 
 	ID XMETHODCALLTYPE forLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize = 0) override;
 	void XMETHODCALLTYPE waitForLoop(ID id) override;
@@ -77,6 +79,8 @@ protected:
 	CPerfMon *m_pPerfMon = NULL;
 	CTimeManager *m_pTimers = NULL;
 	CTaskManager *m_pTaskManager = NULL;
+
+	CConsole *m_pConsole = NULL;
 
 	std::chrono::high_resolution_clock::time_point m_tLastUpdateTime;
 };

@@ -1,21 +1,26 @@
 #ifndef _COMMAND_DELETE_H_
 #define _COMMAND_DELETE_H_
 
-#include "Command.h"
+#include <xcommon/editor/IXEditorExtension.h>
 #include "terrax.h"
 
 #include <common/assotiativearray.h>
 #include <common/string.h>
 
-class CCommandDelete: public CCommand
+class CCommandDelete final: public IXUnknownImplementation<IXEditorCommand>
 {
 public:
-	bool exec();
-	bool undo();
+	bool XMETHODCALLTYPE exec() override;
+	bool XMETHODCALLTYPE undo() override;
 
-	const char *getText()
+	const char* XMETHODCALLTYPE getText() override
 	{
 		return("delete");
+	}
+
+	bool XMETHODCALLTYPE isEmpty() override
+	{
+		return(false);
 	}
 
 	void addObject(ID idObject);

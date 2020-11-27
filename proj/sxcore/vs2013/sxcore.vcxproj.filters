@@ -94,6 +94,9 @@
     <ClCompile Include="..\..\..\source\core\ResourceTexture.cpp">
       <Filter>Source\resource</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\core\Console.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -282,6 +285,12 @@
       <Filter>Header\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\Buffer.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\IXConsole.h">
+      <Filter>Header\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\Console.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

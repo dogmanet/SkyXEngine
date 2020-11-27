@@ -1,6 +1,6 @@
 #include "CommandScale.h"
 
-bool CCommandScale::exec()
+bool XMETHODCALLTYPE CCommandScale::exec()
 {
 	_scale_obj *pObj;
 	bool moved = false;
@@ -13,7 +13,7 @@ bool CCommandScale::exec()
 	}
 	return(moved);
 }
-bool CCommandScale::undo()
+bool XMETHODCALLTYPE CCommandScale::undo()
 {
 	_scale_obj *pObj;
 	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)

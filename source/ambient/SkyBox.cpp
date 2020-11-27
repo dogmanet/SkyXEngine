@@ -17,7 +17,7 @@ public:
 
 	virtual void onEvent(const XEventCvarChanged *pEvent)
 	{
-		static const float *r_far = m_pCore->getPCVarFloat("r_far");
+		static const float *r_far = m_pCore->getConsole()->getPCVarFloat("r_far");
 		if(pEvent->pCvar == r_far)
 		{
 			m_pSkyBox->updateBuffers();
@@ -32,7 +32,8 @@ private:
 //##########################################################################
 
 CSkyBox::CSkyBox(IXCore *pCore):
-	m_pCore(pCore)
+	m_pCore(pCore),
+	m_pEventChannel(pCore->getEventChannel<XEventSkyboxChanged>(EVENT_SKYBOX_CHANGED_GUID))
 {
 	m_pRFarCvarListener = new CRFarCvarListener(m_pCore, this);
 	m_pCore->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID)->addListener(m_pRFarCvarListener);
@@ -105,13 +106,15 @@ void CSkyBox::setMaterialSystem(IXMaterialSystem *pMaterialSystem)
 	m_pMaterialSystem = pMaterialSystem;
 	XVertexFormatHandler *pFormat = m_pMaterialSystem->getVertexFormat("xSky");
 	m_pVertexShaderHandler = m_pMaterialSystem->registerVertexShader(pFormat, "base/skybox.vs");
+
+	setTexture(NULL);
 }
 
 void CSkyBox::updateBuffers()
 {
 	mem_release(m_pRenderBuffer);
 
-	static const float * r_far = m_pCore->getPCVarFloat("r_far");
+	static const float * r_far = m_pCore->getConsole()->getPCVarFloat("r_far");
 
 	float fFar = *r_far * 0.57735f;
 
@@ -141,26 +144,60 @@ void CSkyBox::updateBuffers()
 void CSkyBox::setTexture(const char *szTexture)
 {
 	assert(m_pMaterialSystem);
-	assert(szTexture);
 	
-	IXMaterial *pSky = NULL;
-	m_pMaterialSystem->loadMaterial(szTexture, &pSky, "Sky");
-	mem_release(m_pSky1);
-	m_pSky1 = pSky;
+	//txBase
+	if(!m_pSky1)
+	{
+		m_pMaterialSystem->loadMaterial(szTexture ? szTexture : "sky_default", &m_pSky1, "Sky");
+	}
+	else
+	{
+		m_pSky1->setTexture("txBase", szTexture ? szTexture : "sky_default.dds");
+	}
 
 	if(!m_pSky1)
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - failed load texture '%s'", GEN_MSG_LOCATION, szTexture);
 	}
+	
+	if(m_isEnabled)
+	{
+		XEventSkyboxChanged ev = {0};
+		ev.pTexture = m_pSky1 ? m_pSky1->getTexture("txBase") : NULL;
+		if(ev.pTexture)
+		{
+			ev.pTexture->AddRef();
+		}
+		m_pEventChannel->broadcastEvent(&ev);
+		mem_release(ev.pTexture);
+	}
+}
+
+void CSkyBox::getTexture(IXTexture **ppTexture)
+{
+	*ppTexture = m_pSky1 ? m_pSky1->getTexture("txBase") : NULL;
+	if(*ppTexture)
+	{
+		(*ppTexture)->AddRef();
+	}
 }
 
 bool CSkyBox::isEnabled()
 {
-	return m_isEnabled;
+	return(m_isEnabled);
 }
 void CSkyBox::enable(bool yesNo)
 {
 	m_isEnabled = yesNo;
+
+	XEventSkyboxChanged ev = {0};
+	ev.pTexture = yesNo ? m_pSky1->getTexture("txBase") : NULL;
+	if(ev.pTexture)
+	{
+		ev.pTexture->AddRef();
+	}
+	m_pEventChannel->broadcastEvent(&ev);
+	mem_release(ev.pTexture);
 }
 
 void CSkyBox::changeTexture(const char *texture)

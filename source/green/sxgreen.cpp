@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -226,7 +226,7 @@ SX_LIB_API void SGreen_Clear()
 	g_pGreen->clear();
 }
 
-SX_LIB_API void SGreen_ComVisible(const IFrustum* frustum, const float3 *pViewPos, ID idVisCaclObj)
+SX_LIB_API void SGreen_ComVisible(const IXFrustum* frustum, const float3 *pViewPos, ID idVisCaclObj)
 {
 	GEOM_PRECOND(_VOID);
 	g_pGreen->comArrIndeces(frustum, pViewPos, idVisCaclObj);

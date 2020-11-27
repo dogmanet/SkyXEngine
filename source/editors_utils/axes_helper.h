@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -46,7 +46,7 @@ public:
 	CAxesHelper();
 	~CAxesHelper();
 
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM();
 
 	enum HANDLER_TYPE
 	{

@@ -286,7 +286,7 @@ SX_LIB_API void SGreen_Clear();
 
 //! просчитать видимость всей растительности для фрустума
 SX_LIB_API void SGreen_ComVisible(
-	const IFrustum *pFrustum,	//!< фрустум для которого считаем видимость моделей
+	const IXFrustum *pFrustum,	//!< фрустум для которого считаем видимость моделей
 	const float3 *pViewPos,		//!< позиция источника фрустума чтобы просчитать дистанцию
 	ID idVisCaclObj = 0			//!< идентификатор объекта расчетов видимости для фрустума, создается через #SGreen_AddVisCaclObj, если 0 то считаем в дефолтный
 	);

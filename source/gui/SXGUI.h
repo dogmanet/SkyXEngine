@@ -28,7 +28,7 @@ namespace gui
 	class CDesktopStack: public IXUnknownImplementation<IDesktopStack>
 	{
 	public:
-		SX_ALIGNED_OP_MEM2();
+		SX_ALIGNED_OP_MEM();
 
 		CDesktopStack(CGUI *pGUI, IGXDevice *pDev, const char *szResPath, UINT uWidth, UINT uHeight);
 		~CDesktopStack();
@@ -176,7 +176,7 @@ namespace gui
 	class CGUI: public IXUnknownImplementation<IGUI>
 	{
 	public:
-		SX_ALIGNED_OP_MEM2();
+		SX_ALIGNED_OP_MEM();
 
 		CGUI(IGXDevice *pDev, IXMaterialSystem *pMaterialSystem, IFileSystem *pFileSystem);
 		~CGUI();

@@ -219,19 +219,19 @@ void Core_AGetName(char* name)
 }
 #endif
 
-SX_LIB_API IXCore *Core_GetIXCore()
+SX_LIB_API XDEPRECATED IXCore *Core_GetIXCore()
 {
 	return(g_pCore);
 }
 
 //##########################################################################
 
-IFile* Core_CrFile()
+SX_LIB_API XDEPRECATED IFile* Core_CrFile()
 {
 	return new CFile();
 }
 
-IFile* Core_OpFile(const char *szPath, int iType)
+SX_LIB_API XDEPRECATED IFile* Core_OpFile(const char *szPath, int iType)
 {
 	CFile* pFile = new CFile();
 	pFile->open(szPath, iType);
@@ -299,12 +299,12 @@ SX_LIB_API const char* Core_ResPathGetFullPathByRelIndex2(int iRegisterPath, con
 //##########################################################################
 
 
-ISXConfig*  Core_CrConfig()
+SX_LIB_API XDEPRECATED ISXConfig* Core_CrConfig()
 {
 	return new CConfig();
 }
 
-ISXConfig*  Core_OpConfig(const char* path)
+SX_LIB_API XDEPRECATED ISXConfig* Core_OpConfig(const char* path)
 {
 	CConfig* pConfig = new CConfig();
 	pConfig->open(path);

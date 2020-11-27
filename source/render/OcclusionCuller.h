@@ -7,7 +7,7 @@
 #define OCCLUSION_BUFFER_WIDTH 16
 #define OCCLUSION_BUFFER_HEIGHT 16
 
-class COcclusionCuller: public IXUnknownImplementation<IXOcclusionCuller>
+class COcclusionCuller final: public IXUnknownImplementation<IXOcclusionCuller>
 {
 public:
 	COcclusionCuller();
@@ -21,7 +21,7 @@ public:
 
 	bool XMETHODCALLTYPE isSphereVisible(const float3 &vOrigin, float fRadius) const override;
 
-	bool XMETHODCALLTYPE isAABBvisible(const float3 &vMin, const float3 &vMax) const override;
+	bool XMETHODCALLTYPE isAABBvisible(const SMAABB &aabb) const override;
 
 protected:
 	ICamera *m_pCamera = NULL;

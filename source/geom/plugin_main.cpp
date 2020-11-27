@@ -14,6 +14,14 @@
 //! версия формата файла статики
 #define SX_GEOM_FILE_FORMAT_VERSION 1
 
+struct vertex_static
+{
+	float3_t Pos;  /*!< Позиция */
+	float2_t Tex;  /*!< Текстурные координаты */
+	float3_t Norm; /*!< Нормаль */
+};
+
+
 class CLevelLoadListener: public IEventListener<XEventLevel>
 {
 public:
@@ -61,6 +69,130 @@ public:
 		}
 	}
 
+	// https://dev.ds-servers.com/sip/engine/-/blob/8306303dda397cb047048559a29ea8051822fa04/source/geom/static_geom.cpp
+	bool loadOld(FILE *pFile)
+	{
+		int32_t countgroup = -1;
+		fread(&countgroup, sizeof(int32_t), 1, pFile);
+
+		for(int i = 0; i < countgroup; ++i)
+		{
+			int32_t tmpstrlen;
+			fread(&tmpstrlen, sizeof(int32_t), 1, pFile);
+			fseek(pFile, sizeof(char) * tmpstrlen, SEEK_CUR);
+
+			//записываем количество буферов в подгруппе
+			int32_t countbuffingroup = -1;
+			fread(&countbuffingroup, sizeof(int32_t), 1, pFile);
+
+			for(int k = 0; k < countbuffingroup; ++k)
+			{
+				//записываем количество моделей, которые используют данную подгруппу
+				int32_t countusingmodels;
+				fread(&countusingmodels, sizeof(int32_t), 1, pFile);
+				for(int j = 0; j < countusingmodels; ++j)
+				{
+					fseek(pFile, sizeof(int32_t), SEEK_CUR);
+				}
+
+				int32_t iCountVertex, iCountIndex;
+
+				fread(&iCountVertex, sizeof(int32_t), 1, pFile);
+				fread(&iCountIndex, sizeof(int32_t), 1, pFile);
+
+				fseek(pFile, sizeof(vertex_static)* iCountVertex, SEEK_CUR);
+			}
+		}
+
+		int32_t countmodels;
+		fread(&countmodels, sizeof(int32_t), 1, pFile);
+
+		for(int i = 0; i < countmodels; ++i)
+		{
+			int32_t countsubset;
+			fread(&countsubset, sizeof(int32_t), 1, pFile);
+
+			CBaseEntity *pEntity = SGame_CreateEntity("prop_static");
+
+			int32_t iStrLen = 0;
+			char szStr[1024];
+
+			fread(&iStrLen, sizeof(int32_t), 1, pFile);
+			fread(szStr, sizeof(char), iStrLen, pFile);
+			szStr[iStrLen] = 0;
+			pEntity->setKV("name", szStr);
+
+			fread(&iStrLen, sizeof(int32_t), 1, pFile);
+			strcpy(szStr, "meshes/");
+			fread(szStr + 7, sizeof(char), iStrLen, pFile);
+			szStr[iStrLen + 7] = 0;
+			pEntity->setKV("model", szStr);
+
+			int32_t iCountPoly;
+			fread(&iCountPoly, sizeof(int32_t), 1, pFile);
+
+			//считываем трансформации
+			//{
+			float3 vPosition, vRotation, vScale;
+			fread(&(vPosition.x), sizeof(float), 1, pFile);
+			fread(&(vPosition.y), sizeof(float), 1, pFile);
+			fread(&(vPosition.z), sizeof(float), 1, pFile);
+			pEntity->setPos(vPosition);
+
+			fread(&(vRotation.x), sizeof(float), 1, pFile);
+			fread(&(vRotation.y), sizeof(float), 1, pFile);
+			fread(&(vRotation.z), sizeof(float), 1, pFile);
+			pEntity->setOrient(SMQuaternion(-vRotation.x, 'x') * SMQuaternion(-vRotation.y, 'y') * SMQuaternion(-vRotation.z, 'z'));
+
+			fread(&(vScale.x), sizeof(float), 1, pFile);
+			fread(&(vScale.y), sizeof(float), 1, pFile);
+			fread(&(vScale.z), sizeof(float), 1, pFile);
+			sprintf_s(szStr, "%f", vScale.y);
+			pEntity->setKV("scale", szStr);
+			//}
+
+			pEntity->setKV("use_trimesh", "1");
+
+			fread(&iStrLen, sizeof(int32_t), 1, pFile);
+			if(iStrLen > 0)
+			{
+				fseek(pFile, sizeof(char) * iStrLen, SEEK_SET);
+			}
+
+
+			pEntity->setFlags(pEntity->getFlags() | EF_LEVEL | EF_EXPORT);
+#if 0
+			for(int k = 0; k < countsubset; ++k)
+			{
+				CModel::CSubSet gdb;
+				fread(&gdb, sizeof(CModel::CSubSet), 1, file);
+				m_aAllModels[i]->m_aSubSets.push_back(gdb);
+
+				char tmptex[1024];
+				sprintf(tmptex, "%s.dds", m_aAllGroups[gdb.m_idGroup]->m_sName.c_str());
+				m_aAllModels[i]->m_aIDsTexures[k] = SGCore_MtlLoad(tmptex, MTL_TYPE_GEOM);
+			}
+
+			Array<CSegment**> queue;
+			int tmpcount = 0;
+			queue.push_back(&(m_aAllModels[i]->m_pArrSplits));
+
+			while(queue.size())
+			{
+				loadSplit(queue[0], file, &queue);
+
+				queue.erase(0);
+				++tmpcount;
+			}
+#endif
+
+			break;
+		}
+
+
+		return(false);
+	}
+
 	void loadLevel(const char *szPath)
 	{
 		FILE *pFile = fopen(szPath, "rb");
@@ -79,7 +211,11 @@ public:
 
 		if(ui64Magic != SX_GEOM_MAGIC_NUM)
 		{
-			LibReport(REPORT_MSG_LEVEL_ERROR, "file static geometry [%s] is not static geometry\n", szPath);
+			fseek(pFile, 0, SEEK_SET);
+			if(!loadOld(pFile))
+			{
+				LibReport(REPORT_MSG_LEVEL_ERROR, "file static geometry [%s] is not static geometry\n", szPath);
+			}
 			fclose(pFile);
 			return;
 		}

@@ -353,13 +353,19 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 			}
 			else
 			{
+				// check type of pEnt
+				if(field->pfnCheckType && !field->pfnCheckType(pEnt))
+				{
+					LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to set entity field '%s' to entity '%s'. Invalid class. Ent: %s", name, value, m_szName);
+					return(false);
+				}
 				if(field->fnSet.e)
 				{
 					(this->*(field->fnSet.e))(pEnt);
 				}
 				else
 				{
-					this->*((CBaseEntity * ThisClass::*)field->pField) = pEnt;
+					this->*((CBaseEntity* ThisClass::*)field->pField) = pEnt;
 				}
 			}
 			return(true);
@@ -397,17 +403,22 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 			int curr = 0;
 			for(int i = 0; i < iConns; ++i)
 			{
-				char * fields[4];
-				int iParts = parse_str(parts[i], fields, 4, ':');
-				char * param = NULL;
-				if(iParts != 4 && iParts != 3)
+				char *fields[5];
+				int iParts = parse_str(parts[i], fields, 5, ':');
+				char *param = NULL;
+				if(iParts != 5 && iParts != 4 && iParts != 3)
 				{
 					printf(COLOR_LRED "Unable to parse output '%s' ent %s\n" COLOR_RESET, name, m_szName);
 					continue;
 				}
-				if(iParts == 4)
+				if(iParts >= 4 && fstrcmp(fields[3], ENT_OUTPUT_PARAM_NONE))
 				{
 					param = fields[3];
+				}
+				int iFireLimit = -1;
+				if(iParts >= 5)
+				{
+					sscanf(fields[4], "%d", &iFireLimit);
 				}
 				float fDelayFrom;
 				float fDelayTo;
@@ -437,6 +448,8 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 				pOutput->pOutputs[curr].szTargetName = fields[0];
 				pOutput->pOutputs[curr].szTargetInput = fields[1];
 				pOutput->pOutputs[curr].szTargetData = param;
+				pOutput->pOutputs[curr].iFireLimit = iFireLimit;
+				
 				++curr;
 			}
 			pOutput->iOutCount = curr;
@@ -450,14 +463,14 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 }
 bool CBaseEntity::getKV(const char * name, char * out, int bufsize)
 {
-	propdata_t * field = getField(name);
+	propdata_t *field = getField(name);
 	if(!field)
 	{
 		return(false);
 	}
 	SMQuaternion q;
 	float3_t f3;
-	CBaseEntity * pEnt;
+	CBaseEntity *pEnt;
 	switch(field->type)
 	{
 	case PDF_INT:
@@ -479,7 +492,7 @@ bool CBaseEntity::getKV(const char * name, char * out, int bufsize)
 		sprintf_s(out, bufsize, "%d", this->*((bool ThisClass::*)field->pField) ? 1 : 0);
 		break;
 	case PDF_STRING:
-		sprintf_s(out, bufsize, "%s", this->*((const char * ThisClass::*)field->pField));
+		sprintf_s(out, bufsize, "%s", this->*((const char* ThisClass::*)field->pField));
 		break;
 	case PDF_ANGLES:
 		q = this->*((SMQuaternion ThisClass::*)field->pField);
@@ -517,21 +530,23 @@ bool CBaseEntity::getKV(const char * name, char * out, int bufsize)
 				int c;
 				if(pOutput->pOutputs[i].useRandomDelay)
 				{
-					c = _snprintf(szOutBuf, bufsize - iWritten, "%s:%s:%f-%f:%s", 
+					c = _snprintf(szOutBuf, bufsize - iWritten, "%s:%s:%f-%f:%s:%d", 
 						pOutput->pOutputs[i].szTargetName, 
 						pOutput->pOutputs[i].szTargetInput, 
 						pOutput->pOutputs[i].fDelay,
 						pOutput->pOutputs[i].fDelayTo,
-						pOutput->pOutputs[i].szTargetData ? pOutput->pOutputs[i].szTargetData : ""
+						pOutput->pOutputs[i].szTargetData ? pOutput->pOutputs[i].szTargetData : ENT_OUTPUT_PARAM_NONE,
+						pOutput->pOutputs[i].iFireLimit
 						);
 				}
 				else
 				{
-					c = _snprintf(szOutBuf, bufsize - iWritten, "%s:%s:%f:%s", 
+					c = _snprintf(szOutBuf, bufsize - iWritten, "%s:%s:%f:%s:%d", 
 						pOutput->pOutputs[i].szTargetName, 
 						pOutput->pOutputs[i].szTargetInput, 
 						pOutput->pOutputs[i].fDelay, 
-						pOutput->pOutputs[i].szTargetData ? pOutput->pOutputs[i].szTargetData : ""
+						pOutput->pOutputs[i].szTargetData ? pOutput->pOutputs[i].szTargetData : ENT_OUTPUT_PARAM_NONE,
+						pOutput->pOutputs[i].iFireLimit
 						);
 				}
 				iWritten += c + 1;
@@ -565,7 +580,7 @@ void CBaseEntity::setParent(CBaseEntity * pEnt, int attachment)
 	}
 }
 
-CBaseEntity * CBaseEntity::getParent()
+CBaseEntity* CBaseEntity::getParent()
 {
 	return(m_pParent);
 }
@@ -661,37 +676,6 @@ CBaseEntity * CBaseEntity::getOwner()
 	return(m_pOwner);
 }
 
-void CBaseEntity::_setStrVal(const char ** to, const char * value)
-{
-	char * str = (char*)*to;
-	if(str && !fstrcmp(str, value))
-	{
-		return;
-	}
-	if(!value[0])
-	{
-		if(str && str != GetEmptyString())
-		{
-			delete[] str;
-		}
-		*to = GetEmptyString();
-	}
-	else
-	{
-		size_t len = strlen(value);
-		if(!str || strlen(str) < len)
-		{
-			if(str && str != GetEmptyString())
-			{
-				delete[] str;
-			}
-			str = new char[len + 1];
-		}
-		memcpy(str, value, sizeof(char)* (len + 1));
-		*to = str;
-	}
-}
-
 CEntityManager * CBaseEntity::getManager()
 {
 	return(m_pMgr);
@@ -704,11 +688,11 @@ CEntityManager * CBaseEntity::getManager()
 
 CBaseEntity *CBaseEntity::getEntByName(const char *szName, CBaseEntity *pStartFrom)
 {
-	if(!strcmp(szName, "!this"))
+	if(!strcmp(szName, ENT_SPECIAL_NAME_THIS))
 	{
 		return(pStartFrom ? NULL : this);
 	}
-	if(!strcmp(szName, "!parent"))
+	if(!strcmp(szName, ENT_SPECIAL_NAME_PARENT))
 	{
 		return(pStartFrom ? NULL : getParent());
 	}
@@ -718,11 +702,11 @@ CBaseEntity *CBaseEntity::getEntByName(const char *szName, CBaseEntity *pStartFr
 
 int CBaseEntity::countEntByName(const char *szName)
 {
-	if(!strcmp(szName, "!this"))
+	if(!strcmp(szName, ENT_SPECIAL_NAME_THIS))
 	{
 		return(1);
 	}
-	if(!strcmp(szName, "!parent"))
+	if(!strcmp(szName, ENT_SPECIAL_NAME_PARENT))
 	{
 		return(getParent() ? 1 : 0);
 	}
@@ -743,7 +727,7 @@ void CBaseEntity::updateOutputs()
 
 				for(int j = 0, jl = pOutput->iOutCount; j < jl; ++j)
 				{
-					named_output_t * pOut = &pOutput->pOutputs[j];
+					named_output_t *pOut = &pOutput->pOutputs[j];
 					mem_delete_a(pOut->pOutputs);
 
 					pOut->iOutCount = countEntByName(pOut->szTargetName);
@@ -771,6 +755,7 @@ void CBaseEntity::updateOutputs()
 						pOut->pOutputs[c].fnInput = pField->fnInput;
 						pOut->pOutputs[c].pTarget = pEnt;
 						pOut->pOutputs[c].data.type = pField->type;
+						if((pOut->pOutputs[c].useOverrideData = pOut->szTargetData != NULL))
 						{
 							float3_t f3;
 							float4_t f4;

@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{BAEF8B32-7B84-40BD-AEB8-F082812AD5E9}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{97DAB2B1-9F4D-402F-B449-75A132D46D55}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{C1E99F15-AA7D-489A-A5E6-43C04C48BF10}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\xcommon">
+      <UniqueIdentifier>{0342b61c-3e10-4140-a74d-f41d91e83f5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\xcommon\gui">
+      <UniqueIdentifier>{efbfe9bc-11fa-4871-a722-785a57b2dba6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\gui2\dllmain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui2\plugin_main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\xcommon\gui\IXDesktop.h">
+      <Filter>Header Files\xcommon\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\gui\IXDesktopStack.h">
+      <Filter>Header Files\xcommon\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\gui\IXGUI.h">
+      <Filter>Header Files\xcommon\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\gui\IXDOMDocument.h">
+      <Filter>Header Files\xcommon\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\gui\IXDOMNode.h">
+      <Filter>Header Files\xcommon\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\gui\IXDOMString.h">
+      <Filter>Header Files\xcommon\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\gui\IXHTMLElement.h">
+      <Filter>Header Files\xcommon\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\gui\IXCSS.h">
+      <Filter>Header Files\xcommon\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\gui\IXCSSProperty.h">
+      <Filter>Header Files\xcommon\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\gui\IXCSSSelector.h">
+      <Filter>Header Files\xcommon\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\gui\IXCSSStyle.h">
+      <Filter>Header Files\xcommon\gui</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

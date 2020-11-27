@@ -3,6 +3,27 @@
 #include <xcommon/resource/IXResourceManager.h>
 #include <xcommon/resource/IXResourceTexture.h>
 
+class CTextureSRGBFilter: public IXUnknownImplementation<IXTextureFilter>
+{
+public:
+	const char* XMETHODCALLTYPE getName() const override
+	{
+		return("from_srgb");
+	}
+	const char* XMETHODCALLTYPE getDescription() const override
+	{
+		return("sRGB texture to linear");
+	}
+
+	bool XMETHODCALLTYPE apply(const IXResourceTexture *pResource, const char *szArg, IXResourceTexture **ppOut) override
+	{
+		pResource->clone(ppOut);
+		(*ppOut)->setIsSRGB(true);
+
+		return(true);
+	}
+};
+
 CMaterialSystem::CMaterialSystem()
 {
 	if(SGCore_GetDXDevice())
@@ -26,6 +47,8 @@ CMaterialSystem::CMaterialSystem()
 		}
 	}
 
+	pPluginManager->registerInterface(IXTEXTUREFILTER_GUID, new CTextureSRGBFilter());
+
 	{
 		IXMaterialProxy *pProxy;
 		UINT ic = 0;
@@ -34,6 +57,16 @@ CMaterialSystem::CMaterialSystem()
 			LibReport(REPORT_MSG_LEVEL_NOTICE, "Registered material proxy:\n %s\n\n", pProxy->getDescription());
 
 			m_aMaterialProxies.push_back(pProxy);
+		}
+	}
+
+	{
+		IXTextureFilter *pFilter;
+		UINT ic = 0;
+		while((pFilter = (IXTextureFilter*)pPluginManager->getInterface(IXTEXTUREFILTER_GUID, ic++)))
+		{
+			LibReport(REPORT_MSG_LEVEL_NOTICE, "Registered texture filter:\n Name: " COLOR_LCYAN "%s" COLOR_RESET "\n %s\n\n", pFilter->getName(), pFilter->getDescription());
+			m_mapTextureFilters[String(pFilter->getName())] = pFilter;
 		}
 	}
 
@@ -141,7 +174,7 @@ bool CMaterialSystem::loadMaterial(const char *szName, CMaterial *pMaterial)
 
 void XMETHODCALLTYPE CMaterialSystem::reloadAll()
 {
-	for(AssotiativeArray<String, CMaterial*>::Iterator i = m_mapMaterials.begin(); i; i++)
+	for(AssotiativeArray<String, CMaterial*>::Iterator i = m_mapMaterials.begin(); i; ++i)
 	{
 		if(*(i.second))
 		{
@@ -237,80 +270,144 @@ bool XMETHODCALLTYPE CMaterialSystem::loadTexture(const char *szName, IXTexture 
 		return(true);
 	}
 
+	char *szIdent = strdupa(szName);
+	int iPartCount = parse_str(szIdent, NULL, 0, '|');
+	char **pszParts = (char**)alloca(sizeof(char*) * iPartCount);
+	if(iPartCount)
+	{
+		parse_str(szIdent, pszParts, iPartCount, '|');
+		szName = pszParts[0];
+	}
+
+	IXResourceTexture *pRes = NULL;
+
 	UINT uFileNameLength = 0;
 	bool isFound = false;
+	bool bWantLoad = false;
 	UINT i, l;
 	for(i = 0, l = m_aTextureProxies.size(); i < l; ++i)
 	{
 		IXTextureProxy *pProxy = m_aTextureProxies[i];
-
-		if(pProxy->resolveName(szName, NULL, &uFileNameLength))
+		if(pProxy->resolveName(szName, NULL, &uFileNameLength, &bWantLoad))
 		{
 			isFound = true;
 			break;
 		}
 	}
 
-	char *szFileName = isFound ? ((char*)alloca(sizeof(char) * uFileNameLength)) : strdupa(szName);
-	if(isFound)
+	if(bWantLoad)
 	{
-		m_aTextureProxies[i]->resolveName(szName, szFileName, &uFileNameLength);
+		if(!m_aTextureProxies[i]->loadTexture(szName, &pRes))
+		{
+			pRes = false;
+		}
 	}
 
-	IXResourceTexture *pRes = NULL;
-	bool useStub = false;
-	while(true)
+	const char *szReportName = szName;
+
+	if(!pRes)
 	{
-		if(Core_GetIXCore()->getResourceManager()->getTexture(useStub ? "textures/dev/dev_null.dds" : szFileName, &pRes))
+		char *szFileName = isFound ? ((char*)alloca(sizeof(char) * uFileNameLength)) : strdupa(szName);
+		if(isFound)
 		{
-			UINT uWidth = 0;
-			UINT uHeight = 0;
-			switch(pRes->getType())
-			{
-			case GXTEXTURE_TYPE_2D:
-				{
-					IXResourceTexture2D *pRes2D = pRes->as2D();
-					uWidth = pRes2D->getWidth();
-					uHeight = pRes2D->getHeight();
-				}
-				break;
-			case GXTEXTURE_TYPE_CUBE:
-				{
-					IXResourceTextureCube *pResCube = pRes->asCube();
-					uWidth = uHeight = pResCube->getSize();
-				}
-				break;
-			default:
-				assert(!"Unknown format!");
-			}
-
-			if((uWidth & (uWidth - 1)) != 0 || (uHeight & (uHeight - 1)) != 0)
-			{
-				LibReport(REPORT_MSG_LEVEL_WARNING, "Texture '%s' is non power of two (%ux%u)!\n", szFileName, uWidth, uHeight);
-			}
-			if(pRes->getMipmapCount() == 1)
-			{
-				LibReport(REPORT_MSG_LEVEL_WARNING, "Texture '%s' has no mipmaps!\n", szFileName);
-			}
-
-			//CTexture *pTex = new CTexture(this, pRes);
-			CTexture *pTex = m_poolTextures.Alloc(this, pRes);
-			
-			m_mpTextures[sName] = pTex;
-			pTex->setName(m_mpTextures.TmpNode->Key.c_str());
-
-			*ppTexture = pTex;
-			return(true);
+			m_aTextureProxies[i]->resolveName(szName, szFileName, &uFileNameLength);
 		}
 
-		if(useStub)
-		{
-			LibReport(REPORT_MSG_LEVEL_FATAL, "Unable to load stub texture (textures/dev/dev_null.dds)! Exiting now!\n");
-		}
+		szReportName = szFileName;
 
-		useStub = true;
+		bool useStub = false;
+		while(true)
+		{
+			if(Core_GetIXCore()->getResourceManager()->getTexture(useStub ? "textures/dev/dev_null.dds" : szFileName, &pRes))
+			{
+				break;
+			}
+
+			pRes = NULL;
+
+			if(useStub)
+			{
+				LibReport(REPORT_MSG_LEVEL_FATAL, "Unable to load stub texture (textures/dev/dev_null.dds)! Exiting now!\n");
+			}
+
+			useStub = true;
+		}
 	}
 	
+	if(pRes)
+	{
+		char *pszFilterParts[2];
+		char *szFilter;
+		for(int i = 1; i < iPartCount; ++i)
+		{
+			szFilter = pszParts[i];
+			if(parse_str(szFilter, pszFilterParts, 2, '#') == 1)
+			{
+				pszFilterParts[1] = "";
+			}
+
+			// clone pRes;
+			const AssotiativeArray<String, IXTextureFilter*>::Node *pNode;
+			if(m_mapTextureFilters.KeyExists(String(pszFilterParts[0]), &pNode))
+			{
+				IXResourceTexture *pNewRes = NULL;
+				if((*pNode->Val)->apply(pRes, pszFilterParts[1], &pNewRes))
+				{
+					mem_release(pRes);
+					pRes = pNewRes;
+				}
+				else
+				{
+					LibReport(REPORT_MSG_LEVEL_WARNING, "Texture filter failed '%s' in '%s'", pszFilterParts[0], szName);
+					mem_release(pNewRes);
+				}
+			}
+			else
+			{
+				LibReport(REPORT_MSG_LEVEL_ERROR, "Unknown texture filter '%s' in '%s'", pszFilterParts[0], szName);
+			}
+			// pRes = apply filter pszFilterParts[0] with arg pszFilterParts[1] to pRes
+		}
+
+		UINT uWidth = 0;
+		UINT uHeight = 0;
+		switch(pRes->getType())
+		{
+		case GXTEXTURE_TYPE_2D:
+		{
+			IXResourceTexture2D *pRes2D = pRes->as2D();
+			uWidth = pRes2D->getWidth();
+			uHeight = pRes2D->getHeight();
+		}
+		break;
+		case GXTEXTURE_TYPE_CUBE:
+		{
+			IXResourceTextureCube *pResCube = pRes->asCube();
+			uWidth = uHeight = pResCube->getSize();
+		}
+		break;
+		default:
+			assert(!"Unknown format!");
+		}
+
+		if((uWidth & (uWidth - 1)) != 0 || (uHeight & (uHeight - 1)) != 0)
+		{
+			LibReport(REPORT_MSG_LEVEL_WARNING, "Texture '%s' is non power of two (%ux%u)!\n", szReportName, uWidth, uHeight);
+		}
+		if(pRes->getMipmapCount() == 1)
+		{
+			LibReport(REPORT_MSG_LEVEL_WARNING, "Texture '%s' has no mipmaps!\n", szReportName);
+		}
+
+		//CTexture *pTex = new CTexture(this, pRes);
+		CTexture *pTex = m_poolTextures.Alloc(this, pRes);
+
+		m_mpTextures[sName] = pTex;
+		pTex->setName(m_mpTextures.TmpNode->Key.c_str());
+
+		*ppTexture = pTex;
+	}
+
 	return(false);
 }
 
@@ -1076,7 +1173,7 @@ static void ParseTexturesConstants(Array<CMaterialSystem::MaterialProperty> &aPr
 
 void CMaterialSystem::updateReferences()
 {
-	for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; i++)
+	for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; ++i)
 	{
 		VertexFormatData *pFormat = i.second;
 		for(UINT j = 0, jl = m_aGeometryShaders.size(); j < jl; ++j)
@@ -1144,7 +1241,7 @@ void CMaterialSystem::updateReferences()
 		}
 	}
 
-	for(AssotiativeArray<String, MaterialShader>::Iterator i = m_mMaterialShaders.begin(); i; i++)
+	for(AssotiativeArray<String, MaterialShader>::Iterator i = m_mMaterialShaders.begin(); i; ++i)
 	{
 		MaterialShader *pShader = i.second;
 		
@@ -1431,7 +1528,7 @@ void CMaterialSystem::updateReferences()
 #if 1
 	if(m_isMateriallesRenderPassDirty)
 	{
-		for(AssotiativeArray<String, RenderPass>::Iterator i = m_mRenderPasses.begin(); i; i++)
+		for(AssotiativeArray<String, RenderPass>::Iterator i = m_mRenderPasses.begin(); i; ++i)
 		{
 			RenderPass *pRP = i.second;
 			if(!pRP->bSkipMaterialShader)
@@ -1444,7 +1541,7 @@ void CMaterialSystem::updateReferences()
 
 			UINT uOldSize = aVariantDefines.size();
 
-			for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; i++)
+			for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; ++i)
 			{
 				VertexFormatData *pFormat = i.second;
 				pRP->aPassFormats[pFormat->uID].aPassVariants.clearFast();
@@ -1489,7 +1586,7 @@ void CMaterialSystem::updateReferences()
 
 void CMaterialSystem::cleanData() 
 {
-	for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; i++)
+	for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; ++i)
 	{
 		for(UINT j = 0, jl = i.second->aDecl.size(); j < jl; ++j)
 		{
@@ -1535,7 +1632,7 @@ void CMaterialSystem::cleanData()
 		m_poolGSdata.Delete(m_aGeometryShaders[i]);
 	}
 
-	for(AssotiativeArray<String, RenderPass>::Iterator i = m_mRenderPasses.begin(); i; i++)
+	for(AssotiativeArray<String, RenderPass>::Iterator i = m_mRenderPasses.begin(); i; ++i)
 	{
 		RenderPass *pPass = i.second;
 		free((void*)pPass->szName);
@@ -1576,7 +1673,7 @@ void CMaterialSystem::cleanData()
 		}
 	}
 
-	for(AssotiativeArray<String, MaterialShader>::Iterator i = m_mMaterialShaders.begin(); i; i++)
+	for(AssotiativeArray<String, MaterialShader>::Iterator i = m_mMaterialShaders.begin(); i; ++i)
 	{
 		MaterialShader *pShader = i.second;
 		free((void*)pShader->szName);
@@ -1686,7 +1783,7 @@ void CMaterialSystem::onGlobalFlagChanged(CGlobalFlag *pFlag)
 	Array<XMaterialShaderHandler*> aShaders;
 	const char *szFlag = pFlag->getName();
 
-	for(AssotiativeArray<String, MaterialShader>::Iterator i = m_mMaterialShaders.begin(); i; i++)
+	for(AssotiativeArray<String, MaterialShader>::Iterator i = m_mMaterialShaders.begin(); i; ++i)
 	{
 		bool isFound = false;
 		for(UINT j = 0, jl = i.second->aProperties.size(); j < jl; ++j)
@@ -1722,7 +1819,7 @@ void CMaterialSystem::onGlobalFlagChanged(CGlobalFlag *pFlag)
 
 	if(aShaders.size())
 	{
-		for(AssotiativeArray<String, CMaterial*>::Iterator i = m_mapMaterials.begin(); i; i)
+		for(AssotiativeArray<String, CMaterial*>::Iterator i = m_mapMaterials.begin(); i; ++i)
 		{
 			if(aShaders.indexOf((*i.second)->getShaderHandler()) >= 0)
 			{
@@ -2222,7 +2319,7 @@ CMaterial::~CMaterial()
 		mem_delete_a(m_aPassCache[i].pConstantsBlob);
 	}
 
-	for(AssotiativeArray<AAString, MaterialTexture>::Iterator i = m_mapTextures.begin(); i; i++)
+	for(AssotiativeArray<AAString, MaterialTexture>::Iterator i = m_mapTextures.begin(); i; ++i)
 	{
 		mem_release(i.second->pTexture);
 	}
@@ -2643,7 +2740,7 @@ void CMaterial::preparePass(UINT uPass)
 
 void CMaterial::clearStaticFlags()
 {
-	for(AssotiativeArray<AAString, CMaterialFlag>::Iterator i = m_mapFlags.begin(); i; i++)
+	for(AssotiativeArray<AAString, CMaterialFlag>::Iterator i = m_mapFlags.begin(); i; ++i)
 	{
 		i.second->clearStatic();
 	}

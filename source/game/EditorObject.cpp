@@ -7,7 +7,8 @@
 
 CEditorObject::CEditorObject(CEditable *pEditable, CBaseEntity *pEntity):
 	m_pEditable(pEditable),
-	m_pEntity(pEntity)
+	m_pEntity(pEntity),
+	m_idEnt(pEntity->getId())
 {
 	assert(pEntity);
 
@@ -32,7 +33,7 @@ CEditorObject::CEditorObject(CEditable *pEditable, const char *szClassName):
 
 CEditorObject::~CEditorObject()
 {
-	
+	m_pEditable->removeObject(this);
 }
 
 void CEditorObject::_iniFieldList()
@@ -79,6 +80,10 @@ void CEditorObject::_iniFieldList()
 							{
 								xField.pEditorData = "sound";
 							}
+							else if(!fstrcmp(pKV[0].value, "dds"))
+							{
+								xField.pEditorData = "texture";
+							}
 						}
 						//xField.pEditorData
 					}
@@ -94,6 +99,7 @@ void CEditorObject::_iniFieldList()
 				xField.szHelp = "";
 				xField.szKey = pField->szKey;
 				xField.szName = pField->szEdName;
+				xField.isGeneric = !fstrcmp(pField->szKey, "origin") || !fstrcmp(pField->szKey, "rotation") || !fstrcmp(pField->szKey, "scale");
 
 				m_aFields.push_back(xField);
 			}
@@ -115,32 +121,32 @@ void CEditorObject::_iniFieldList()
 	}
 }
 
-void CEditorObject::setPos(const float3_t &pos)
+void XMETHODCALLTYPE CEditorObject::setPos(const float3_t &pos)
 {
 	if(m_pEntity)
 	{
 		m_pEntity->setPos(pos);
 	}
-	BaseClass::setPos(pos);
+	m_vPos = pos;
 }
 
-void CEditorObject::setScale(const float3_t &pos)
+void XMETHODCALLTYPE CEditorObject::setScale(const float3_t &vScale)
 {
 	//@TODO: Implement me
-	BaseClass::setScale(pos);
+	m_vScale = vScale;
 }
 
-void CEditorObject::setOrient(const SMQuaternion &orient)
+void XMETHODCALLTYPE CEditorObject::setOrient(const SMQuaternion &orient)
 {
 	if(m_pEntity)
 	{
 		m_pEntity->setOrient(orient);
 	}
 
-	BaseClass::setOrient(orient);
+	m_qRot = orient;
 }
 
-void CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
+void XMETHODCALLTYPE CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 {
 	*pvMin = *pvMax = float3();
 	if(m_pEntity)
@@ -157,7 +163,7 @@ void CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 	*pvMax += m_vPos;
 }
 
-void CEditorObject::renderSelection(bool is3D)
+void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D)
 {
 	if(!m_pEntity)
 	{
@@ -190,13 +196,13 @@ void CEditorObject::renderSelection(bool is3D)
 	mem_release(pOldRS);
 }
 
-bool CEditorObject::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl)
+bool XMETHODCALLTYPE CEditorObject::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl)
 {
 	// return(SGeom_TraceBeamId(m_idModel, &vStart, &vEnd, pvOut, pidMtrl));
 	return(false);
 }
 
-void CEditorObject::remove()
+void XMETHODCALLTYPE CEditorObject::remove()
 {
 	if(!m_pEntity)
 	{
@@ -204,19 +210,22 @@ void CEditorObject::remove()
 	}
 	REMOVE_ENTITY(m_pEntity);
 	m_pEntity = NULL;
+	m_idEnt = -1;
 }
-void CEditorObject::preSetup()
+void XMETHODCALLTYPE CEditorObject::preSetup()
 {
 }
-void CEditorObject::postSetup()
+void XMETHODCALLTYPE CEditorObject::postSetup()
 {
 	
 }
 
-void CEditorObject::create()
+void XMETHODCALLTYPE CEditorObject::create()
 {
 	assert(!m_pEntity);
 	m_pEntity = CREATE_ENTITY(m_szClassName, GameData::m_pMgr);
+
+	m_idEnt = m_pEntity->getId();
 
 	m_pEntity->setFlags(m_pEntity->getFlags() | EF_LEVEL | EF_EXPORT);
 
@@ -225,14 +234,22 @@ void CEditorObject::create()
 	setScale(getScale());
 }
 
-void CEditorObject::setKV(const char *szKey, const char *szValue)
+void CEditorObject::resync()
+{
+	if(ID_VALID(m_idEnt))
+	{
+		m_pEntity = GameData::m_pMgr->getById(m_idEnt);
+	}
+}
+
+void XMETHODCALLTYPE CEditorObject::setKV(const char *szKey, const char *szValue)
 {
 	if(m_pEntity)
 	{
 		m_pEntity->setKV(szKey, szValue);
 	}
 }
-const char *CEditorObject::getKV(const char *szKey)
+const char* XMETHODCALLTYPE CEditorObject::getKV(const char *szKey)
 {
 	if(!m_pEntity)
 	{
@@ -246,22 +263,29 @@ const char *CEditorObject::getKV(const char *szKey)
 	m_msPropCache[szKey] = tmp;
 	return(m_msPropCache[szKey].c_str());
 }
-const X_PROP_FIELD *CEditorObject::getPropertyMeta(UINT uKey)
+const X_PROP_FIELD* XMETHODCALLTYPE CEditorObject::getPropertyMeta(UINT uKey)
 {
 	assert(uKey < m_aFields.size());
 
 	return(&m_aFields[uKey]);
 }
-UINT CEditorObject::getProperyCount()
+UINT XMETHODCALLTYPE CEditorObject::getProperyCount()
 {
 	return(m_aFields.size());
 }
 
-const char *CEditorObject::getTypeName()
+const char* XMETHODCALLTYPE CEditorObject::getTypeName()
 {
 	return(m_pEditable->getName());
 }
-const char *CEditorObject::getClassName()
+const char* XMETHODCALLTYPE CEditorObject::getClassName()
 {
 	return(m_szClassName);
+}
+
+void XMETHODCALLTYPE CEditorObject::setSelected(bool set)
+{
+	m_isSelected = set;
+
+	m_pEditable->onSelectionChanged(this);
 }

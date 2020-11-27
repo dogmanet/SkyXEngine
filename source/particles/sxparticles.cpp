@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -327,14 +327,14 @@ SX_LIB_API void SPE_EffectGetRot(ID id, float3 *pRot)
 }
 
 
-SX_LIB_API bool SPE_EffectVisibleCom(ID id, const IFrustum *pFrustum, const float3 *pView)
+SX_LIB_API bool SPE_EffectVisibleCom(ID id, const IXFrustum *pFrustum, const float3 *pView)
 {
 	PE_PRECOND(false);
 
 	return g_pEffects->effectVisibleCom(id, pFrustum, pView);
 }
 
-SX_LIB_API void SPE_EffectVisibleComAll(const IFrustum *pFrustum, const float3 *pView)
+SX_LIB_API void SPE_EffectVisibleComAll(const IXFrustum *pFrustum, const float3 *pView)
 {
 	PE_PRECOND(_VOID);
 

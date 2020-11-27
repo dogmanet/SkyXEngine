@@ -31,6 +31,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\Config.cpp" />
+    <ClCompile Include="..\..\..\source\core\Console.cpp" />
     <ClCompile Include="..\..\..\source\core\Core.cpp" />
     <ClCompile Include="..\..\..\source\core\cvars.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
@@ -77,6 +78,7 @@
     <ClInclude Include="..\..\..\source\core\AsyncFileReader.h" />
     <ClInclude Include="..\..\..\source\core\AsyncTaskRunner.h" />
     <ClInclude Include="..\..\..\source\core\Buffer.h" />
+    <ClInclude Include="..\..\..\source\core\Console.h" />
     <ClInclude Include="..\..\..\source\core\FileExtPathsIterator.h" />
     <ClInclude Include="..\..\..\source\core\FileExtsIterator.h" />
     <ClInclude Include="..\..\..\source\core\FileInMemory.h" />
@@ -111,6 +113,7 @@
     <ClInclude Include="..\..\..\source\xcommon\IXAudioCodec.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXBuffer.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXConfig.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXConsole.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXCore.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXModelLoader.h" />
     <ClInclude Include="..\..\..\source\xcommon\IXPlugin.h" />

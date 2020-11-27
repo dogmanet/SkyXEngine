@@ -724,7 +724,7 @@ namespace gui
 		{
 			return;
 		}
-		for(AssotiativeArray<StringW, IDesktop*>::Iterator i = m_mDesktops.begin(); i; i++)
+		for(AssotiativeArray<StringW, IDesktop*>::Iterator i = m_mDesktops.begin(); i; ++i)
 		{
 			if(dp == *(i.second))
 			{

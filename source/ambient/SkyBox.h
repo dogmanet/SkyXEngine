@@ -36,7 +36,7 @@ class CSkyBox
 {
 	friend class CRFarCvarListener;
 public:
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	CSkyBox(IXCore *pCore);
 	~CSkyBox();
@@ -46,6 +46,8 @@ public:
 
 	//! загрузка текстуры
 	void setTexture(const char *szTexture);
+
+	void getTexture(IXTexture **ppTexture);
 
 	//! используется ли?
 	bool isEnabled();
@@ -112,6 +114,8 @@ protected:
 	XVertexShaderHandler *m_pVertexShaderHandler = NULL;
 
 	CRFarCvarListener *m_pRFarCvarListener = NULL;
+
+	IEventChannel<XEventSkyboxChanged> *m_pEventChannel = NULL;
 };
 
 #if 0

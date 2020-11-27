@@ -512,7 +512,7 @@ void CGreen::computeBB(const CGreenDataVertex &oTrans, CBoundBox &oBox)
 
 //##########################################################################
 
-void CGreen::comArrIndeces(const IFrustum *pFrustum, const float3 *pViewPos, ID idVisCaclObj)
+void CGreen::comArrIndeces(const IXFrustum *pFrustum, const float3 *pViewPos, ID idVisCaclObj)
 {
 	GREEN_PRECOND_IDVISCALCOBJ_ERR(idVisCaclObj);
 
@@ -603,7 +603,7 @@ void CGreen::sort4SplitsFront2Back(const CSegment *pParentSplit, const float3 *p
 	}
 }
 
-void CGreen::comRecArrIndeces(ID idGreen, ID idVisCaclObj, const IFrustum *pFrustum, CSegment **ppSplits, int *iCountCom, CSegment *pCurrSplit, const float3 *pViewPos, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> *pQueue, int iAllCount)
+void CGreen::comRecArrIndeces(ID idGreen, ID idVisCaclObj, const IXFrustum *pFrustum, CSegment **ppSplits, int *iCountCom, CSegment *pCurrSplit, const float3 *pViewPos, Array<CSegment*, GREEN_DEFAULT_RESERVE_COM> *pQueue, int iAllCount)
 {
 	if (idGreen < 0 || m_aGreens.size() < idGreen)
 		return;

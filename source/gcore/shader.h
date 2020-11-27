@@ -64,6 +64,54 @@ struct CShaderImpl: public CShader
 		}
 	}
 
+	bool isSame(const char *szPath, GXMacro *aMacros)
+	{
+		if(!strcmp(m_szPath, szPath))
+		{
+			GXMacro def = {NULL, NULL};
+			if(!aMacros)
+			{
+				aMacros = &def;
+			}
+			UINT i = 0, j;
+			bool bFound = false;
+			while(aMacros[i].szName)
+			{
+				j = 0;
+				bFound = false;
+				while(m_aMacros[j].szName)
+				{
+					if(!strcmp(aMacros[i].szName, m_aMacros[j].szName))
+					{
+						if(strcmp(aMacros[i].szDefinition, m_aMacros[j].szDefinition))
+						{
+							return(false);
+						}
+						bFound = true;
+						break;
+					}
+					++j;
+				}
+				if(!bFound)
+				{
+					return(false);
+				}
+				++i;
+			}
+			j = 0;
+			while(m_aMacros[j].szName)
+			{
+				++j;
+			}
+			if(i != j)
+			{
+				return(false);
+			}
+			return(true);
+		}
+		return(false);
+	}
+
 	T *m_pGXShader;
 };
 
@@ -182,7 +230,7 @@ protected:
 
 	Array<CShaderKit*> m_aShaderKit;
 	
-	mutex m_mxLock;
+	SpinLock m_spLock;
 
 	int m_iLastAllLoadVS = 0;		//! общее количество загруженных vs шейдеров, с прошлого раза
 	int m_iLastAllLoadPS = 0;		//! общее количество загруженных ps шейдеров, с прошлого раза

@@ -42,6 +42,8 @@ report_func g_fnReportf = DefReport;
 GameData * g_pGameData = NULL;
 IMesh* g_pFigureBox = 0;
 
+HINSTANCE g_hInstance = NULL;
+
 #define SG_PRECOND(ret) if(!g_pGameData){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxgame is not init", GEN_MSG_LOCATION);return ret;}
 
 BOOL APIENTRY DllMain(HMODULE hModule,
@@ -52,6 +54,9 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 	switch(ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
+		g_hInstance = hModule;
+		break;
+
 	case DLL_THREAD_ATTACH:
 	case DLL_THREAD_DETACH:
 	case DLL_PROCESS_DETACH:

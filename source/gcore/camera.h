@@ -10,27 +10,27 @@ See the license in LICENSE
 #include "sxgcore.h"
 
 //класс описывающий фрустум
-class CFrustum: public IXUnknownImplementation<IFrustum>
+class CFrustum: public IXUnknownImplementation<IXFrustum>
 {
 public:
-	SX_ALIGNED_OP_MEM2();
+	SX_ALIGNED_OP_MEM();
 
 	CFrustum();
 
-	void update(const float4x4 *pView, const float4x4 *pProj) override;
+	void update(const float4x4 &mView, const float4x4 &mProj) override;
 	void update(const SMPLANE *pPlanes, bool isNormalized = false) override;
 
-	bool pointInFrustum(const float3 *pPoint) const override;
-	bool polyInFrustum(const float3 *pPount1, const float3 *pPount2, const float3 *pPount3) const override;
-	bool polyInFrustumAbs(const float3 *pPount1, const float3 *pPount2, const float3 *pPount3) const override;
+	bool pointInFrustum(const float3 &vPoint) const override;
+	bool polyInFrustum(const float3 &vPount1, const float3 &vPount2, const float3 &vPount3) const override;
+	bool polyInFrustumAbs(const float3 &vPount1, const float3 &vPount2, const float3 &vPount3) const override;
 
-	bool sphereInFrustum(const float3 *pPount, float fRadius) const override;
+	bool sphereInFrustum(const float3 &vPount, float fRadius) const override;
 
-	bool sphereInFrustumAbs(const float3 *pPount, float fRadius) const override;
-	bool boxInFrustum(const float3 *pMin, const float3 *pMax) const override;
-	bool boxInFrustum(const SMAABB &aabb) const override;
+	bool sphereInFrustumAbs(const float3 &vPount, float fRadius) const override;
+	bool boxInFrustum(const float3 &vMin, const float3 &vMax, bool *pIsStrict = NULL) const override;
+	bool boxInFrustum(const SMAABB &aabb, bool *pIsStrict = NULL) const override;
 
-	bool frustumInFrustum(const IFrustum *pOther) const override;
+	bool frustumInFrustum(const IXFrustum *pOther) const override;
 
 	float3 getPoint(int iNumPoint) const override;
 	float3 getCenter() const override;
@@ -55,58 +55,48 @@ class CCamera: public ICamera
 public:
 	CCamera();
 	~CCamera();
-	void Release()
+
+	void Release() override
 	{
 		delete this;
 	}
-	SX_ALIGNED_OP_MEM
+	SX_ALIGNED_OP_MEM();
 
-		void posLeftRight(float fUnits);//влево/вправо
-	void posUpDown(float fUnits);	//вверх/вниз
-	void posFrontBack(float fUnits);//вперед/назад
+	void setOrientation(const SMQuaternion &qOrientation) override;
 
-	void rotUpDown(float fAngle);	//вращение вверх/вниз
-	void rotRightLeft(float fAngle);//вращение вправо/влево
-	void roll(float fAngle);		//крен
-	void setOrientation(const SMQuaternion *pQuaternion);
+	const SMQuaternion& getOrientation() override;
 
-	void getViewMatrix(float4x4 *pMatrix);//получаем матрицу вида
+	const SMMATRIX& getViewMatrix() const override;//получаем матрицу вида
 
-	void getPosition(float3 *pPos) const;
-	void setPosition(const float3 *pPos);
+	const float3& getPosition() const override;
+	void setPosition(const float3 &vPos) override;
 
-	void getDirection(float3 *pDir) const;
-	//void setDirection(const float3 *pDir);
+	const float3& getRight() const override;
+	const float3& getUp() const override;
+	const float3& getLook() const override;
 
-	void getRight(float3 *pRight) const;
-	void getUp(float3 *pUp) const;
-	void getLook(float3 *pLook) const;
-	void getRotation(float3 *pRot) const;
+	const float3& getRotation() const override;//?
 
-	float getRotationX() const;
-	float getRotationY() const;
-	float getRotationZ() const;
+	void setFOV(float fFOV) override;
+	float getFOV() const override;
 
-	void setFOV(float fFOV);
-	float getFOV() const;
-
-	void updateView();
-
-	void updateFrustum(const float4x4 *pmProjection);
-	const IFrustum* getFrustum();
+	void updateFrustum(const SMMATRIX &mProjection) override;
+	IXFrustum* getFrustum() override;
 
 protected:
-	CFrustum m_oFrustum;	//!< фрустум этой камеры
+	CFrustum *m_pFrustum;	//!< фрустум этой камеры
 
-	float3 m_vRight;
-	float3 m_vUp;
-	float3 m_vLook;
+	float3 m_vRight = float3(1.0f, 0.0f, 0.0f);
+	float3 m_vUp = float3(0.0f, 1.0f, 0.0f);
+	float3 m_vLook = float3(0.0f, 0.0f, 1.0f);
 
-	float3 m_vPosition;
+	float3 m_vPosition = float3(0.0f, 0.0f, 0.0f);
 
-	float3_t m_vPitchYawRoll;
+	float3 m_vPitchYawRoll = float3(0.0f, 0.0f, 0.0f);
 
-	float4x4 m_mView;
+	SMQuaternion m_qRotation;
+
+	mutable float4x4 m_mView;
 
 	float m_fFOV;
 };

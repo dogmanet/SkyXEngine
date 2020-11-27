@@ -13,7 +13,7 @@ bool XMETHODCALLTYPE CAudioCodecWave::open(const char *szFile, const char *szArg
 {
 	IFile *pFile = m_pFileSystem->openFile(szFile, (forSave ? FILE_MODE_WRITE : FILE_MODE_READ));
 
-	if (!pFile || !ppTarget)
+	if (!pFile || !ppTarget && (forSave && (!szArg && strcasecmp(szArg, getFormat()) != 0)))
 		return false;
 
 	AudioRawDesc oDesc;

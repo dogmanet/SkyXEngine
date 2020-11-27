@@ -4,6 +4,15 @@
 #include <gdefines.h>
 #include "IXResourceModel.h"
 
+enum XMODEL_FEATURE
+{
+	MF_NONE = 0x0000,
+	MF_OPAQUE = 0x0001,
+	MF_TRANSPARENT = 0x0002,
+	MF_SELFILLUM = 0x0004
+};
+DEFINE_ENUM_FLAG_OPERATORS(XMODEL_FEATURE);
+
 class IXStaticModel;
 class IXDynamicModel;
 class IXAnimatedModel;
@@ -11,9 +20,9 @@ class IXAnimatedModel;
 class IXModel: public IXUnknown
 {
 public:
-	virtual IXAnimatedModel * XMETHODCALLTYPE asAnimatedModel() = 0;
-	virtual IXDynamicModel * XMETHODCALLTYPE asDynamicModel() = 0;
-	virtual IXStaticModel * XMETHODCALLTYPE asStaticModel() = 0;
+	virtual IXAnimatedModel* XMETHODCALLTYPE asAnimatedModel() = 0;
+	virtual IXDynamicModel* XMETHODCALLTYPE asDynamicModel() = 0;
+	virtual IXStaticModel* XMETHODCALLTYPE asStaticModel() = 0;
 
 
 	virtual float3 XMETHODCALLTYPE getPosition() const = 0;
@@ -36,13 +45,13 @@ public:
 	virtual void XMETHODCALLTYPE setColor(const float4 &vColor) = 0;
 
 	virtual UINT XMETHODCALLTYPE getPhysboxCount(UINT uPartIndex = 0) const = 0;
-	virtual const IModelPhysbox * XMETHODCALLTYPE getPhysBox(UINT id, UINT uPartIndex = 0) const = 0;
-	virtual const IXResourceModel * XMETHODCALLTYPE getResource(UINT uIndex = 0) = 0;
+	virtual const IModelPhysbox* XMETHODCALLTYPE getPhysBox(UINT id, UINT uPartIndex = 0) const = 0;
+	virtual const IXResourceModel* XMETHODCALLTYPE getResource(UINT uIndex = 0) = 0;
 
 	virtual bool XMETHODCALLTYPE isEnabled() const = 0;
 	virtual void XMETHODCALLTYPE enable(bool yesNo) = 0;
 
-	virtual void XMETHODCALLTYPE render(UINT uLod, bool isTransparent) = 0;
+	virtual void XMETHODCALLTYPE render(UINT uLod, XMODEL_FEATURE bmFeatures) = 0;
 };
 
 // Implemented in geom plugin
@@ -72,14 +81,14 @@ class IXAnimatedModel: public IXDynamicModel
 {
 public:
 	virtual UINT XMETHODCALLTYPE getPartsCount() const = 0;
-	virtual const char * XMETHODCALLTYPE getPartName(UINT uIndex) const = 0;
+	virtual const char* XMETHODCALLTYPE getPartName(UINT uIndex) const = 0;
 	virtual UINT XMETHODCALLTYPE getPartIndex(const char *szName) = 0;
 	virtual XMODEL_PART_FLAGS XMETHODCALLTYPE getPartFlags(UINT uIndex) const = 0;
 	virtual bool XMETHODCALLTYPE isPartEnabled(UINT uIndex) const = 0;
 	virtual void XMETHODCALLTYPE enablePart(UINT uIndex, bool yesNo) = 0;
 
 	virtual UINT XMETHODCALLTYPE getHitboxCount(UINT uPartIndex = 0) const = 0;
-	virtual const XResourceModelHitbox * XMETHODCALLTYPE getHitbox(UINT id, UINT uPartIndex = 0) const = 0;
+	virtual const XResourceModelHitbox* XMETHODCALLTYPE getHitbox(UINT id, UINT uPartIndex = 0) const = 0;
 
 	/*! Запускает воспроизведения анимации
 		@param[in] szName Имя анимации
@@ -145,7 +154,7 @@ public:
 	/*! Возвращает имя указанной кости
 		@param[in] id Номер кости
 	*/
-	virtual const char * XMETHODCALLTYPE getBoneName(UINT id) const = 0;
+	virtual const char* XMETHODCALLTYPE getBoneName(UINT id) const = 0;
 
 	/*! Проверяет, воспроизводится ли анимация
 	*/
@@ -167,7 +176,7 @@ public:
 	virtual void XMETHODCALLTYPE setController(UINT id, float fValue) = 0;
 
 	virtual UINT XMETHODCALLTYPE getControllersCount() const = 0;
-	virtual const char * XMETHODCALLTYPE getControllerName(UINT id) = 0;
+	virtual const char* XMETHODCALLTYPE getControllerName(UINT id) = 0;
 	virtual UINT XMETHODCALLTYPE getControllerId(const char *szName) = 0;
 
 	// Коллбек на изменение состояния анимации!

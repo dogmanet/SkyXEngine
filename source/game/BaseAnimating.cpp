@@ -38,7 +38,7 @@ BEGIN_PROPTABLE(CBaseAnimating)
 	DEFINE_INPUT(inputPlayActivity, "playActivity", "Play activity", PDF_STRING)
 	DEFINE_INPUT(inputPlayActivityNext, "playActivityNext", "Play activity next", PDF_STRING)
 
-	DEFINE_INPUT(inputSetSkin, "setSkin", "Set skin", PDF_STRING)
+	DEFINE_INPUT(inputSetSkin, "setSkin", "Set skin", PDF_INT)
 END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseAnimating, base_animating);
@@ -206,7 +206,7 @@ void CBaseAnimating::onSync()
 	//	m_pRigidBody->getWorldTransform().setOrigin(F3_BTVEC(getPos()));
 	//	m_pRigidBody->getWorldTransform().setRotation(Q4_BTQUAT(getOrient()));
 	}
-	if(m_pModel)
+	if(m_pModel && m_pModel->isEnabled())
 	{
 		m_pModel->setPosition(getPos());
 		m_pModel->setOrientation(getOrient());
@@ -280,9 +280,9 @@ void CBaseAnimating::initPhysics()
 				btVector3 *pData;
 				int iVertexCount;
 				SPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
-				for(int i = 0; i < iVertexCount; ++i)
+				for(int j = 0; j < iVertexCount; ++j)
 				{
-					pData[i] *= m_fBaseScale;
+					pData[j] *= m_fBaseScale;
 				}
 				pLocalShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
 				SPhysics_ReleaseHull(pData, iVertexCount);
@@ -607,42 +607,18 @@ void CBaseAnimating::inputPlayActivityNext(inputdata_t * pInputdata)
 	playActivityNext(pInputdata->parameter.str);
 }
 
-void CBaseAnimating::inputSetSkin(inputdata_t * pInputdata)
+void CBaseAnimating::inputSetSkin(inputdata_t *pInputdata)
 {
-	int iSkin;
-	switch(pInputdata->type)
-	{
-	case PDF_INT:
-		iSkin = pInputdata->parameter.i;
-		break;
+	assert(pInputdata->type == PDF_INT);
 
-	case PDF_FLOAT:
-		iSkin = (int)pInputdata->parameter.f;
-		break;
-
-	case PDF_BOOL:
-		iSkin = pInputdata->parameter.b ? 1 : 0;
-		break;
-
-	case PDF_STRING:
-		if(sscanf(pInputdata->parameter.str, "%d", &iSkin))
-		{
-			break;
-		}
-
-	default:
-		LibReport(REPORT_MSG_LEVEL_WARNING, "CBaseAnimating::inputSetSkin() expected parameter type int");
-		return;
-	}
-
-	setSkin(iSkin);
+	setSkin(pInputdata->parameter.i);
 }
 
 void CBaseAnimating::setSkin(int iSkin)
 {
-	if(m_pModel && m_pModel->asAnimatedModel())
+	if(m_pModel)
 	{
-		m_pModel->asAnimatedModel()->setSkin(iSkin);
+		m_pModel->setSkin(iSkin);
 	}
 	m_iSkin = iSkin;
 }
@@ -661,7 +637,6 @@ void CBaseAnimating::renderEditor(bool is3D)
 {
 	if(m_pModel)
 	{
-		m_pModel->render(0, false);
-		m_pModel->render(0, true);
+		m_pModel->render(0, MF_OPAQUE | MF_TRANSPARENT);
 	}
 }

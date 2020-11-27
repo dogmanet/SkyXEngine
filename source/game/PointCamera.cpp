@@ -38,6 +38,6 @@ void CPointCamera::onSync()
 {
 	BaseClass::onSync();
 
-	m_pSXC->setPosition(&(float3)m_vPosition);
-	m_pSXC->setOrientation(&m_vOrientation);
+	m_pSXC->setPosition(m_vPosition);
+	m_pSXC->setOrientation(m_vOrientation);
 }

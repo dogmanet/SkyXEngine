@@ -20,7 +20,7 @@ struct ACCENTPOLICY
 	int AnimationId;
 };
 
-typedef BOOL (*WINAPI FNPTRSetWindowCompositionAttribute)(HWND hwnd, WINCOMPATTRDATA* pAttrData);
+// typedef BOOL (WINAPI *FNPTRSetWindowCompositionAttribute)(HWND hwnd, WINCOMPATTRDATA* pAttrData);
 
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {

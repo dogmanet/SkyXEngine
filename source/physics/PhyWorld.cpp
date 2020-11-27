@@ -999,11 +999,11 @@ void CPhyWorld::CDebugDrawer::begin()
 	pCtx->setRenderBuffer(m_pRenderBuffer);
 	pCtx->setPrimitiveTopology(GXPT_LINELIST);
 
-	SMMATRIX mViewProj, mWorld;
-	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
-	Core_RMatrixGet(G_RI_MATRIX_WORLD, &mWorld);
-	m_pVSConstantBuffer->update(&SMMatrixTranspose(mWorld * mViewProj));
-	pCtx->setVSConstant(m_pVSConstantBuffer, 4);
+	// SMMATRIX mViewProj, mWorld;
+	// Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mViewProj);
+	// Core_RMatrixGet(G_RI_MATRIX_WORLD, &mWorld);
+	// m_pVSConstantBuffer->update(&SMMatrixTranspose(mWorld * mViewProj));
+	// pCtx->setVSConstant(m_pVSConstantBuffer, 4);
 }
 
 void CPhyWorld::CDebugDrawer::commit()

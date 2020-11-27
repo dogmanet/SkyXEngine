@@ -1,16 +1,21 @@
 #ifndef _COMMAND_MOVE_H_
 #define _COMMAND_MOVE_H_
 
-#include "Command.h"
+#include <xcommon/editor/IXEditorExtension.h>
 #include "terrax.h"
 
-class CCommandMove: public CCommand
+class CCommandMove final: public IXUnknownImplementation<IXEditorCommand>
 {
 public:
-	bool exec();
-	bool undo();
+	bool XMETHODCALLTYPE exec() override;
+	bool XMETHODCALLTYPE undo() override;
 
-	const char *getText();
+	const char* XMETHODCALLTYPE getText() override;
+
+	bool XMETHODCALLTYPE isEmpty() override
+	{
+		return(false);
+	}
 
 	void addObject(ID idObject);
 	void setStartPos(const float3 &vPos);

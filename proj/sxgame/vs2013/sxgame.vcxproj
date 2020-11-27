@@ -190,9 +190,12 @@
     <ClCompile Include="..\..\..\source\game\crosshair.cpp" />
     <ClCompile Include="..\..\..\source\game\CrosshairManager.cpp" />
     <ClCompile Include="..\..\..\source\game\Editable.cpp" />
+    <ClCompile Include="..\..\..\source\game\EditorExtension.cpp" />
     <ClCompile Include="..\..\..\source\game\EditorObject.cpp" />
+    <ClCompile Include="..\..\..\source\game\EditorOutputsTab.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityFactory.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityManager.cpp" />
+    <ClCompile Include="..\..\..\source\game\EnvSkybox.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncRotating.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncTrain.cpp" />
     <ClCompile Include="..\..\..\source\game\GameData.cpp" />
@@ -203,7 +206,10 @@
     <ClCompile Include="..\..\..\source\game\LightPoint.cpp" />
     <ClCompile Include="..\..\..\source\game\LightSun.cpp" />
     <ClCompile Include="..\..\..\source\game\LogicAuto.cpp" />
+    <ClCompile Include="..\..\..\source\game\LogicConsole.cpp" />
+    <ClCompile Include="..\..\..\source\game\LogicEntityExists.cpp" />
     <ClCompile Include="..\..\..\source\game\LogicRelay.cpp" />
+    <ClCompile Include="..\..\..\source\game\LogicStringbuilder.cpp" />
     <ClCompile Include="..\..\..\source\game\NPCBase.cpp" />
     <ClCompile Include="..\..\..\source\game\NPCZombie.cpp" />
     <ClCompile Include="..\..\..\source\game\PathCorner.cpp" />
@@ -230,6 +236,7 @@
     <ClCompile Include="..\..\..\source\game\BaseTool.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseWeapon.cpp" />
     <ClCompile Include="..\..\..\source\game\SettingsWriter.cpp" />
+    <ClCompile Include="..\..\..\source\game\SoundPlayer.cpp" />
     <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp" />
     <ClCompile Include="..\..\..\source\game\Player.cpp" />
     <ClCompile Include="..\..\..\source\game\PlayerSpawn.cpp" />
@@ -248,6 +255,7 @@
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\game\BaseHandle.h" />
     <ClInclude Include="..\..\..\source\game\BaseLight.h" />
+    <ClInclude Include="..\..\..\source\game\Baseline.h" />
     <ClInclude Include="..\..\..\source\game\BaseMag.h" />
     <ClInclude Include="..\..\..\source\game\BaseScope.h" />
     <ClInclude Include="..\..\..\source\game\BaseSilencer.h" />
@@ -255,7 +263,10 @@
     <ClInclude Include="..\..\..\source\game\BaseTrigger.h" />
     <ClInclude Include="..\..\..\source\game\BaseCharacter.h" />
     <ClInclude Include="..\..\..\source\game\Editable.h" />
+    <ClInclude Include="..\..\..\source\game\EditorExtension.h" />
     <ClInclude Include="..\..\..\source\game\EditorObject.h" />
+    <ClInclude Include="..\..\..\source\game\EditorOutputsTab.h" />
+    <ClInclude Include="..\..\..\source\game\EnvSkybox.h" />
     <ClInclude Include="..\..\..\source\game\FuncRotating.h" />
     <ClInclude Include="..\..\..\source\game\GameStateManager.h" />
     <ClInclude Include="..\..\..\source\game\CharacterInventory.h" />
@@ -264,7 +275,10 @@
     <ClInclude Include="..\..\..\source\game\IGameState.h" />
     <ClInclude Include="..\..\..\source\game\LightSun.h" />
     <ClInclude Include="..\..\..\source\game\LogicAuto.h" />
+    <ClInclude Include="..\..\..\source\game\LogicConsole.h" />
+    <ClInclude Include="..\..\..\source\game\LogicEntityExists.h" />
     <ClInclude Include="..\..\..\source\game\LogicRelay.h" />
+    <ClInclude Include="..\..\..\source\game\LogicStringbuilder.h" />
     <ClInclude Include="..\..\..\source\game\PropBreakable.h" />
     <ClInclude Include="..\..\..\source\game\PropButton.h" />
     <ClInclude Include="..\..\..\source\game\PropDebris.h" />
@@ -297,6 +311,7 @@
     <ClInclude Include="..\..\..\source\game\BaseTool.h" />
     <ClInclude Include="..\..\..\source\game\BaseWeapon.h" />
     <ClInclude Include="..\..\..\source\game\SettingsWriter.h" />
+    <ClInclude Include="..\..\..\source\game\SoundPlayer.h" />
     <ClInclude Include="..\..\..\source\game\sxgame.h" />
     <ClInclude Include="..\..\..\source\game\Player.h" />
     <ClInclude Include="..\..\..\source\game\PlayerSpawn.h" />
@@ -308,7 +323,11 @@
     <ClInclude Include="..\..\..\source\game\TriggerItemUse.h" />
     <ClInclude Include="..\..\..\source\game\TriggerTeleport.h" />
     <ClInclude Include="..\..\..\source\game\ZombieHands.h" />
+    <ClInclude Include="..\..\..\source\game\resource.h" />
     <ClInclude Include="..\..\..\source\xUI\UICalcContainer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\source\game\sxgame.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

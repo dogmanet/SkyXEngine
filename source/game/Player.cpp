@@ -81,13 +81,20 @@ CPlayer::~CPlayer()
 	REMOVE_ENTITY(m_pCamera);
 }
 
+void CPlayer::setOrient(const SMQuaternion &q)
+{
+	m_vPitchYawRoll = SMMatrixToEuler(q.GetMatrix());
+	BaseClass::setOrient(SMQuaternion(m_vPitchYawRoll.y, 'y'));
+	m_pHeadEnt->setOffsetOrient(SMQuaternion(m_vPitchYawRoll.x, 'x') * SMQuaternion(m_vPitchYawRoll.z, 'z'));
+}
+
 void CPlayer::updateInput(float dt)
 {
 	int x, y;
-	static const float * sense = GET_PCVAR_FLOAT("cl_mousesense");
-	static const bool * editor_mode = GET_PCVAR_BOOL("cl_mode_editor");
-	static const bool * grab_cursor = GET_PCVAR_BOOL("cl_grab_cursor");
-	static const bool * invert_y = GET_PCVAR_BOOL("cl_invert_y");
+	static const float *sense = GET_PCVAR_FLOAT("cl_mousesense");
+	static const bool *editor_mode = GET_PCVAR_BOOL("cl_mode_editor");
+	static const bool *grab_cursor = GET_PCVAR_BOOL("cl_grab_cursor");
+	static const bool *invert_y = GET_PCVAR_BOOL("cl_invert_y");
 
 	if(*editor_mode && !SSInput_GetKeyState(SIK_LCONTROL))
 	{
@@ -141,7 +148,7 @@ void CPlayer::updateInput(float dt)
 			//m_vOrientation = SMQuaternion(m_vPitchYawRoll.x, 'x')
 			//	* SMQuaternion(m_vPitchYawRoll.y, 'y')
 			//	* SMQuaternion(m_vPitchYawRoll.z, 'z');
-			setOrient(SMQuaternion(m_vPitchYawRoll.y, 'y'));
+			BaseClass::setOrient(SMQuaternion(m_vPitchYawRoll.y, 'y'));
 			m_pHeadEnt->setOffsetOrient(SMQuaternion(m_vPitchYawRoll.x, 'x') * SMQuaternion(m_vPitchYawRoll.z, 'z'));
 			
 			GameData::m_pHUDcontroller->setPlayerRot(m_vPitchYawRoll);

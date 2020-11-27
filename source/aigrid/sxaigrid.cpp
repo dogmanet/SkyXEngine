@@ -1,6 +1,6 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright Â© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
@@ -429,7 +429,7 @@ SX_LIB_API ID SAIG_GraphPointGetNear(ID idBegin, ID idEnd)
 }
 
 
-SX_LIB_API void SAIG_RenderQuads(const IFrustum *pFrustum, const float3 *pViewPos, float fDist)
+SX_LIB_API void SAIG_RenderQuads(const IXFrustum *pFrustum, const float3 *pViewPos, float fDist)
 {
 	AIG_PRECOND(_VOID);
 

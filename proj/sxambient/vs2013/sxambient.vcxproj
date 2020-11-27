@@ -177,6 +177,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\ambient\Ambient.cpp" />
     <ClCompile Include="..\..\..\source\ambient\plugin_main.cpp" />
     <ClCompile Include="..\..\..\source\ambient\Renderable.cpp" />
     <ClCompile Include="..\..\..\source\ambient\SkyBox.cpp" />
@@ -226,6 +227,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\ambient\Ambient.h" />
     <ClInclude Include="..\..\..\source\ambient\Renderable.h" />
     <ClInclude Include="..\..\..\source\ambient\SkyBox.h" />
     <ClInclude Include="..\..\..\source\ambient\Updatable.h" />
@@ -236,6 +238,7 @@
     <ClInclude Include="..\..\..\source\level\level.h" />
     <ClInclude Include="..\..\..\source\level\sxlevel.h" />
     <ClInclude Include="..\..\..\source\level\Weather.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXAmbient.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

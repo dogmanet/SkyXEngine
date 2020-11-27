@@ -7,16 +7,24 @@ Cмешивание всех текстур для финального изоб
 #include <struct.h>
 #include <mtrl.h>
 #include <const.h>
+#include <lpv.h>
 
 //##########################################################################
 
 Texture2D g_txColor: register(t0);
 Texture2D g_txAmbient: register(t1);
+Texture2D g_txAO :register(t2);
 Texture2D g_txNormals: register(t3);
 Texture2D g_txDepth: register(t4);
 Texture2D g_txParameters: register(t5);
+
 SamplerState g_sPointClamp: register(s0);
-SamplerState g_sLinearClamp: register(s1);
+// SamplerState g_sLinearClamp: register(s1);
+SamplerState g_sLinearWrap: register(s2);
+
+Texture3D g_txSkylightR: register(t6);
+Texture3D g_txSkylightG: register(t7);
+Texture3D g_txSkylightB: register(t8);
 
 // sampler2D g_sColor:register(s0);
 // sampler2D g_sAmbient:register(s1);
@@ -24,6 +32,7 @@ SamplerState g_sLinearClamp: register(s1);
 // sampler2D g_sNormals:register(s3);
 // sampler2D g_sAdaptedLum:register(s4);
 // sampler2D g_sParameters:register(s5);
+
 
 //##########################################################################
 
@@ -93,6 +102,30 @@ float3 GetReflection(float3 texelPosition, float3 texelNormal)
 	// return(fresnel);
 }
 
+int3 GetSkyLightGridPos(float3 worldPos, uint uCascade)
+{
+	return((worldPos - GetGridCenter(uCascade)) / float3(1.0, 2.0, 1.0) + int3(8, 2, 8));
+}
+
+
+float3 GetPixelSkyLight(float3 vPosition, float3 vNormalPixel)
+{
+	float4 SHintensity = dirToSH(vNormalPixel);
+	
+	// float3 vTexCoord = vPosition / float3(16.0, 8.0, 16.0);
+	float3 vTexCoord = float3(0.0, 0.0, 0.0);
+	
+	// float r = max(0.0f, dot(SHintensity, g_vSkyBoxLights[0][0][0][0]));
+	// float g = max(0.0f, dot(SHintensity, g_vSkyBoxLights[0][0][0][1]));
+	// float b = max(0.0f, dot(SHintensity, g_vSkyBoxLights[0][0][0][2]));
+	
+	float r = max(0.0f, dot(SHintensity, g_txSkylightR.Sample(g_sLinearClamp, vTexCoord)));
+	float g = max(0.0f, dot(SHintensity, g_txSkylightG.Sample(g_sLinearClamp, vTexCoord)));
+	float b = max(0.0f, dot(SHintensity, g_txSkylightB.Sample(g_sLinearClamp, vTexCoord)));
+	
+	return(float3(r, g, b) / PI);
+}
+
 // float4 main(VSO_PP IN):COLOR0
 float4 main(VSO_ResPos IN):COLOR0
 {
@@ -101,6 +134,9 @@ float4 main(VSO_ResPos IN):COLOR0
 	float fDepth = g_txDepth.Sample(g_sPointClamp, IN.vTexUV).r;
 	float4 vNormals = g_txNormals.Sample(g_sPointClamp, IN.vTexUV);
 	float4 vParams = g_txParameters.Sample(g_sPointClamp, IN.vTexUV);
+#ifdef USE_AO
+	float3 vAO = g_txAO.Sample(g_sPointClamp, IN.vTexUV).xxx;
+#endif
 	
 	float fF0 = vNormals.w;
 	
@@ -110,8 +146,15 @@ float4 main(VSO_ResPos IN):COLOR0
 	// vColor.rgb += (1.0f - vParams.x) * GetReflection(vPosition.xyz, vNormalPixel) * lerp((float3)(0.1f * fF0), vAlbedo, vParams.y) * vAlbedo.w;
 	vColor.rgb += (1.0f - vParams.x) * GetReflection(vPosition.xyz, vNormalPixel) * lerp((float3)fF0, vAlbedo.xyz, vParams.y) * vAlbedo.w;
 	
+	vColor.rgb += vAlbedo.xyz * GetPixelSkyLight(vPosition.xyz, vNormalPixel) * vAlbedo.w* vParams.w
+#ifdef USE_AO
+	* vAO
+#endif
+;
 	
 	vColor.rgb += vAlbedo.xyz * (1.0f - vAlbedo.w);
+	
+	
 	
 	
 	// float fAdaptedLum = 0.2f;
@@ -119,8 +162,8 @@ float4 main(VSO_ResPos IN):COLOR0
 	// vColor.rgb *= TONE_MAPPING_DENOMENATOR/(fAdaptedLum + TONE_MAPPING_ADAPT_ADD_BIAS);
 	// vColor.rgb /= (fAdaptedLum + vColor.rgb);
 	
-	// return float4(pow(vColor.rgb, 1.0/2.2), vColor.a);
-	return float4(vColor.rgb, vColor.a);
+	return float4(pow(vColor.rgb, 1.0/2.2), vColor.a);
+	// return float4(vColor.rgb, vColor.a);
 	// return float4(GetReflection(vPosition.xyz, vNormalPixel), 1.0f);
 	
 #if 0

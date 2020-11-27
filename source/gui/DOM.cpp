@@ -80,7 +80,7 @@ namespace gui
 				wprintf(L"  ");
 			}
 			wprintf(L"<%s", CDOMnode::getNodeNameById(m_iNodeId).c_str());
-			for(AssotiativeArray<StringW, StringW>::Iterator i = m_mAttributes.begin(); i; i++)
+			for(AssotiativeArray<StringW, StringW>::Iterator i = m_mAttributes.begin(); i; ++i)
 			{
 				wprintf(L" %s=\"%s\"", i.first->c_str(), i.second->c_str());
 			}

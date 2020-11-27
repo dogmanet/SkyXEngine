@@ -30,16 +30,15 @@ See the license in LICENSE
 
 struct model_vertex
 {
-
+	float3_t Pos;      /*!< Позиция */
+	float2_t Tex;      /*!< Текстурные координаты */
+	float3_t Norm;     /*!< Нормаль */
 };
 
 /*! Вертекс для статической модели
 */
 struct vertex_static: public model_vertex
 {
-	float3_t Pos;  /*!< Позиция */
-	float2_t Tex;  /*!< Текстурные координаты */
-	float3_t Norm; /*!< Нормаль */
 };
 
 /*! Вертекс для статической модели расширенный
@@ -51,9 +50,6 @@ struct vertex_static_ex: public model_vertex
 	{
 		Pos = vPos; Tex = vTex; Norm = vNormal; Tangent = vTangent; Binorm = vBinormal;
 	}
-	float3_t Pos;      /*!< Позиция */
-	float2_t Tex;      /*!< Текстурные координаты */
-	float3_t Norm;     /*!< Нормаль */
 	float3_t Tangent;  /*!< Тангент */
 	float3_t Binorm;   /*!< Бинормаль */
 };
@@ -62,22 +58,14 @@ struct vertex_static_ex: public model_vertex
 */
 struct vertex_animated: public model_vertex
 {
-	float3_t Pos;      /*!< Позиция */
-	float2_t Tex;      /*!< Текстурные координаты */
-	float3_t Norm;     /*!< Нормаль */
 	byte BoneIndices[4];  /*!< Индексы костей */
 	float4_t BoneWeights; /*!< Веса костей */
 };
 
 /*! Вертекс для анимированной модели расширенный
 */
-struct vertex_animated_ex: public model_vertex
+struct vertex_animated_ex: public vertex_static_ex
 {
-	float3_t Pos;      /*!< Позиция */
-	float2_t Tex;      /*!< Текстурные координаты */
-	float3_t Norm;     /*!< Нормаль */
-	float3_t Tangent;  /*!< Тангент */
-	float3_t Binorm;   /*!< Бинормаль */
 	byte BoneIndices[4];  /*!< Индексы костей */
 	float4_t BoneWeights; /*!< Веса костей */
 };

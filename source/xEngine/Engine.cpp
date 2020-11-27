@@ -69,6 +69,9 @@ static bool HandleCrashDump(const wchar_t *wszDumpPath, const wchar_t* wszMinidu
 
 //##########################################################################
 
+#define __LTEXT(text) L##text
+#define LTEXT(text) __LTEXT(text)
+
 CEngine::CEngine(int argc, char **argv, const char *szName)
 {
 	srand((UINT)time(0));
@@ -103,7 +106,7 @@ CEngine::CEngine(int argc, char **argv, const char *szName)
 		{
 			szPath[iLastPos + 1] = 0;
 		}
-		wcscat(szPath, L"crashreporter.exe "); // Keep last space!
+		wcscat(szPath, L"crashreporter.exe =version " LTEXT(SKYXENGINE_VERSION) L" -dumpid "); // Keep last space!
 		
 		CreateDirectoryA("../crashdmp", NULL);
 		m_pBreakpadHandler = new google_breakpad::ExceptionHandler(
@@ -123,6 +126,7 @@ CEngine::CEngine(int argc, char **argv, const char *szName)
 	INIT_OUTPUT_STREAM(m_pCore);
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB core initialized\n");
 
+	m_pObserverChangedEventChannel = m_pCore->getEventChannel<XEventObserverChanged>(EVENT_OBSERVER_CHANGED_GUID);
 
 	Core_0RegisterCVarString("engine_version", SKYXENGINE_VERSION, "Текущая версия движка", FCVAR_READONLY);
 
@@ -160,6 +164,55 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	// init input
 	SSInput_0Create("sxinput", (HWND)hWindow, false);
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB input initialized\n");
+
+
+
+	// init sound
+	AudioRawDesc oAudioDesc;
+	oAudioDesc.u8Channels = 2;
+	oAudioDesc.fmtSample = AUDIO_SAMPLE_FMT_SINT16;
+	oAudioDesc.uSampleRate = 44100;
+	oAudioDesc.calc();
+
+	IXSoundSystem *pSound = (IXSoundSystem*)(m_pCore->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
+	IXSoundLayer *pMasterLayer = pSound->createMasterLayer(&oAudioDesc, "master");
+	pMasterLayer->play(true);
+	IXSoundLayer *pGameLayer = pMasterLayer->newSoundLayer(&oAudioDesc, "xGame");
+	IXSoundLayer *pGuiLayer = pMasterLayer->newSoundLayer(&oAudioDesc, "xGUI");
+	pSound->update(float3(), float3(), float3());
+	pGameLayer->play(false);
+	pGuiLayer->play(false);
+	pSound->update(float3(), float3(), float3());
+	/*IXSoundPlayer *pPlayer = pMasterLayer->newSoundPlayer("sounds/guitar_10.ogg", SOUND_DTYPE_3D);
+	pPlayer->setWorldPos(float3(-11.084, 0.435, -18.707));
+	pPlayer->setLoop(SOUND_LOOP_SIMPLE);
+	pPlayer->play();*/
+	/*IXSoundEmitter *pEmitter = pMasterLayer->newSoundEmitter("sounds/ak74_shoot.ogg", SOUND_DTYPE_2D);
+	//pEmitter->play();
+
+	IXSoundEmitter *pEmitter2 = pMasterLayer->newSoundEmitter("sounds/ak74_shoot.ogg", SOUND_DTYPE_2D);
+	//pEmitter2->play();
+
+	while (1)
+	{
+		if (GetAsyncKeyState('I'))
+		{
+			pEmitter2->play();
+			Sleep(100);
+		}
+
+		if (GetAsyncKeyState('Q'))
+			pMasterLayer->play(false);
+		
+		if (GetAsyncKeyState('W'))
+			pMasterLayer->play(true);
+
+		float3 v;
+		pSound->update(v,v,v);
+	}*/
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB sound initialized\n");
+
+
 
 	// init graphics
 	Core_0RegisterCVarInt("r_win_width", 800, "Размер окна по горизонтали (в пикселях)", FCVAR_NOTIFY_OLD);
@@ -200,18 +253,8 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB render initialized\n");
 
 
-	// init sound
-	AudioRawDesc oAudioDesc;
-	oAudioDesc.u8Channels = 2;
-	oAudioDesc.fmtSample = AUDIO_SAMPLE_FMT_SINT16;
-	oAudioDesc.uSampleRate = 44100;
-	oAudioDesc.calc();
+	
 
-	IXSoundSystem *pSound = dynamic_cast<IXSoundSystem*>(m_pCore->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
-	IXSoundLayer *pMasterLayer = pSound->createMasterLayer(&oAudioDesc, "master");
-	pMasterLayer->play(true);
-	//pMasterLayer->newSoundPlayer("sounds/guitar_10.ogg", SOUND_DTYPE_2D)->play();
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB sound initialized\n");
 
 
 	// init game
@@ -249,7 +292,7 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	// init updatable
 	m_pCore->initUpdatable();
 
-	getCore()->execCmd("exec ../config_sys.cfg");
+	getCore()->getConsole()->execCommand("exec ../config_sys.cfg");
 
 	return(true);
 }
@@ -272,7 +315,7 @@ bool XMETHODCALLTYPE CEngine::initServer()
 	// init updatable
 	Core_GetIXCore()->initUpdatable();
 
-	getCore()->execCmd("exec ../config_sys.cfg");
+	getCore()->getConsole()->execCommand("exec ../config_sys.cfg");
 
 	return(true);
 }
@@ -363,8 +406,13 @@ bool CEngine::runFrame()
 
 		if(pRenderContext)
 		{
-			SRender_SetCamera(m_pCallback->getCameraForFrame());
+			ICamera *pCamera = m_pCallback->getCameraForFrame();
+			SRender_SetCamera(pCamera);
 			SRender_UpdateView();
+
+			XEventObserverChanged ev;
+			ev.pCamera = pCamera;
+			m_pObserverChangedEventChannel->broadcastEvent(&ev);
 
 			IXRenderPipeline *pRenderPipeline;
 			m_pCore->getRenderPipeline(&pRenderPipeline);

@@ -11,11 +11,11 @@ XMaterial MainTransparency(PSI_XMaterial IN)
 #endif
 
 #ifdef HAS_NORMALMAP
-	float3 vNormal = Color2Normal(g_txNormals.Sample(g_sScene, IN.vTexUV).xyz) * g_xMaterialConstants.nm_weight;
+	float3 vNormal = Color2ToNormal(g_txNormals.Sample(g_sScene, IN.vTexUV).xy, g_xMaterialConstants.nm_weight);
 	
-	OUT.vNormal = MixNormalMicro(IN.vNormal, vNormal);
+	//OUT.vNormal = MixNormalMicro(IN.vNormal, vNormal);
 	// float2 vDuDv = vNormal.xy;
-	
+	OUT.vNormal = MixNormalMicro(vNormal, IN.vTangent, IN.vBinormal, IN.vNormal);
 	
 #ifdef HAS_REFRACTION
 	// float2 vDuDv = OUT.vNormal.xy;
@@ -84,9 +84,8 @@ XMaterial MainIllimination(PSI_XMaterial IN)
 	OUT.vEmissiveColor = fColor.xyz;
 	
 #ifdef HAS_NORMALMAP
-	OUT.vNormal = MixNormalMicro(IN.vNormal, 
-		Color2Normal(g_txNormals.Sample(g_sScene, IN.vTexUV).xyz) * g_xMaterialConstants.nm_weight
-	);
+	float3 vNormalMap = Color2ToNormal(g_txNormals.Sample(g_sScene, IN.vTexUV).xy, g_xMaterialConstants.nm_weight);
+	OUT.vNormal = MixNormalMicro(vNormalMap, IN.vTangent, IN.vBinormal, IN.vNormal);
 #else
 	OUT.vNormal = IN.vNormal;
 #endif
@@ -110,7 +109,7 @@ XMaterial MainShadow(PSI_XMaterial IN)
 	
 // #ifdef HAS_NORMALMAP
 // 	OUT.vNormal = MixNormalMicro(IN.vNormal, 
-// 		Color2Normal(g_txNormals.Sample(g_sScene, IN.vTexUV).xyz) * g_xMaterialConstants.nm_weight
+// 		Color2ToNormal(g_txNormals.Sample(g_sScene, IN.vTexUV).xy, g_xMaterialConstants.nm_weight)
 // 	);
 // #else
 	OUT.vNormal = IN.vNormal;

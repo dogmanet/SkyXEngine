@@ -16,9 +16,12 @@ See the license in LICENSE
 
 #include "terrax.h"
 #include "Grid.h"
+#include "PropertyWindow.h"
 
 #include <xcommon/editor/IXEditorObject.h>
 #include <xcommon/editor/IXEditable.h>
+#include <xcommon/IXRenderable.h>
+#include <xcommon/resource/IXResourceManager.h>
 #include <mtrl/IXMaterialSystem.h>
 #include "UndoManager.h"
 #include "Tools.h"
@@ -36,6 +39,8 @@ GX_ENABLE_HIGH_PERFORMANCE_DUAL_GPU();
 extern HWND g_hWndMain;
 CGrid *g_pGrid = NULL;
 CTerraXRenderStates g_xRenderStates;
+
+extern CPropertyWindow *g_pPropWindow;
 
 ATOM XRegisterClass(HINSTANCE hInstance);
 BOOL XInitInstance(HINSTANCE, int);
@@ -56,7 +61,8 @@ String g_sLevelName;
 
 void XUpdateWindowTitle();
 
-HACCEL g_hAccelTable = NULL;
+HACCEL g_hAccelTableMain = NULL;
+HACCEL g_hAccelTableEdit = NULL;
 IXEngine *g_pEngine = NULL;
 
 IGXConstantBuffer *g_pCameraConstantBuffer = NULL;
@@ -76,32 +82,126 @@ IGXTexture2D *g_pDashedMaterial = NULL;
 void XReleaseViewports();
 void XInitViewports();
 void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
+void XExportToObj(const char *szMdl);
+bool IsEditMessage();
+bool IsButtonMessage();
 
 class CEngineCallback: public IXEngineCallback
 {
 public:
 	void XMETHODCALLTYPE onGraphicsResize(UINT uWidth, UINT uHeight, bool isFullscreen, bool isBorderless, IXEngine *pEngine) override
 	{
-		XReleaseViewports();
-		XInitViewports();
+		static const bool *terrax_detach_3d = NULL;
+		if(!terrax_detach_3d && m_pCore)
+		{
+			terrax_detach_3d = m_pCore->getConsole()->getPCVarBool("terrax_detach_3d");
+		}
+
+		if(terrax_detach_3d && *terrax_detach_3d)
+		{
+			RECT rc = {0, 0, (int)uWidth, (int)uHeight};
+
+			HMONITOR monitor = MonitorFromWindow(g_hTopLeftWnd, MONITOR_DEFAULTTONEAREST);
+			MONITORINFO info;
+			info.cbSize = sizeof(MONITORINFO);
+			GetMonitorInfo(monitor, &info);
+			bool bForceNoBorder = (rc.right - rc.left == info.rcMonitor.right - info.rcMonitor.left
+				&& rc.bottom - rc.top == info.rcMonitor.bottom - info.rcMonitor.top);
+
+
+			SetClassLong(g_hTopLeftWnd, GCL_STYLE, GetClassLong(g_hTopLeftWnd, GCL_STYLE) | CS_NOCLOSE);
+
+			DWORD wndStyle = GetWindowLong(g_hTopLeftWnd, GWL_STYLE) | WS_MINIMIZEBOX | WS_SYSMENU;
+
+			if(isFullscreen || isBorderless || bForceNoBorder)
+			{
+				wndStyle &= ~(WS_SYSMENU | WS_CAPTION | WS_MAXIMIZE | WS_MINIMIZE | WS_THICKFRAME);
+			}
+			else
+			{
+				wndStyle |= WS_CAPTION | WS_THICKFRAME;
+				wndStyle &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
+			}
+
+			SetWindowLong(g_hTopLeftWnd, GWL_STYLE, wndStyle);
+
+
+			AdjustWindowRect(&rc, wndStyle, false);
+
+			UINT uSWPflags = SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOOWNERZORDER;
+
+
+			int iPosX = 0;
+			int iPosY = 0;
+			if(!(isFullscreen || isBorderless))
+			{
+				iPosX = (GetSystemMetrics(SM_CXSCREEN) - (rc.right - rc.left)) / 2;
+				iPosY = (GetSystemMetrics(SM_CYSCREEN) - (rc.bottom - rc.top)) / 2;
+			}
+			RECT rcOld;
+			GetWindowRect(g_hTopLeftWnd, &rcOld);
+
+
+			if(rcOld.right - rcOld.left != rc.right - rc.left || rcOld.bottom - rcOld.top != rc.bottom - rc.top)
+			{
+				uSWPflags &= ~SWP_NOSIZE;
+				//SetWindowPos(m_hWnd, HWND_TOP, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+			}
+
+			SetWindowPos(g_hTopLeftWnd, HWND_TOP, iPosX, iPosY, rc.right - rc.left, rc.bottom - rc.top, uSWPflags);
+		}
+		else
+		{
+			XReleaseViewports();
+			XInitViewports();
+		}
 	}
 
 	bool XMETHODCALLTYPE processWindowMessages() override
 	{
 		MSG msg = {0};
 
-		while(::PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		char className[32];
+
+		while(PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 		{
 			if(msg.message == WM_QUIT)
 			{
 				return(false);
 			}
-			if(g_hAccelTable && TranslateAccelerator(GetParent((HWND)SGCore_GetHWND()), g_hAccelTable, &msg))
+			if(IsEditMessage())
+			{
+				if(TranslateAccelerator(GetParent((HWND)SGCore_GetHWND()), g_hAccelTableEdit, &msg))
+				{
+					continue;
+				}
+			}
+			else if(GetActiveWindow() == g_hWndMain)
+			{
+				if(TranslateAccelerator(GetParent((HWND)SGCore_GetHWND()), g_hAccelTableMain, &msg))
+				{
+					continue;
+				}
+			}
+
+			HWND hWnd = msg.hwnd;
+			while(hWnd)
+			{
+				RealGetWindowClass(hWnd, className, sizeof(className));
+				if(!strcmp(className, "#32770"))
+				{
+					break;
+				}
+				hWnd = GetParent(hWnd);
+			}
+
+			if(hWnd && IsDialogMessage(hWnd, &msg))
 			{
 				continue;
 			}
-			::TranslateMessage(&msg);
-			::DispatchMessage(&msg);
+
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
 		}
 
 		static time_point tPrev = std::chrono::high_resolution_clock::now();
@@ -134,16 +234,15 @@ public:
 					m_vPitchYawRoll.y -= SM_2PI;
 				}
 
-				pCamera->setOrientation(&(SMQuaternion(m_vPitchYawRoll.x, 'x') * SMQuaternion(m_vPitchYawRoll.z, 'z') * SMQuaternion(m_vPitchYawRoll.y, 'y')));
+				pCamera->setOrientation(SMQuaternion(m_vPitchYawRoll.x, 'x') * SMQuaternion(m_vPitchYawRoll.z, 'z') * SMQuaternion(m_vPitchYawRoll.y, 'y'));
 			}
 			else if(g_is3DPanning)
 			{
-				float3 vPos, vUp, vRight;
-				pCamera->getPosition(&vPos);
-				pCamera->getUp(&vUp);
-				pCamera->getRight(&vRight);
+				float3 vPos = pCamera->getPosition();
+				float3 vUp = pCamera->getUp();
+				float3 vRight = pCamera->getRight();
 				vPos += vUp * -dy * 10.0f + vRight * dx * 10.0f;
-				pCamera->setPosition(&vPos);
+				pCamera->setPosition(vPos);
 			}
 			else if(g_is2DPanning)
 			{
@@ -168,10 +267,7 @@ public:
 					break;
 				}
 
-				float3 vPos;
-				pCamera->getPosition(&vPos);
-				vPos = vPos + vWorldDelta3D;
-				pCamera->setPosition(&vPos);
+				pCamera->setPosition(pCamera->getPosition() + vWorldDelta3D);
 			}
 
 			if(g_is3DPanning || g_is3DRotating)
@@ -215,13 +311,12 @@ public:
 					{
 						s_fSpeed = fMaxSpeed;
 					}
-					float3 vPos, vDir, vRight;
-					pCamera->getPosition(&vPos);
-					pCamera->getLook(&vDir);
-					pCamera->getRight(&vRight);
+					float3 vPos = pCamera->getPosition();
+					float3 vDir = pCamera->getLook();
+					float3 vRight = pCamera->getRight();
 					dir = SMVector3Normalize(dir) * fDeltaTime * s_fSpeed;
 					vPos += vDir * dir.z + vRight * dir.x;
-					pCamera->setPosition(&vPos);
+					pCamera->setPosition(vPos);
 				}
 				else
 				{
@@ -235,10 +330,22 @@ public:
 
 	ICamera* XMETHODCALLTYPE getCameraForFrame() override
 	{
+		static const bool *terrax_detach_3d = m_pCore->getConsole()->getPCVarBool("terrax_detach_3d");
+		if(*terrax_detach_3d)
+		{
+			return(SGame_GetActiveCamera());
+		}
+		
 		return(g_xConfig.m_pViewportCamera[XWP_TOP_LEFT]);
 	}
 
+	void setCore(IXCore *pCore)
+	{
+		m_pCore = pCore;
+	}
+
 protected:
+	IXCore *m_pCore = NULL;
 };
 
 class CRenderPipeline: public IXUnknownImplementation<IXRenderPipeline>
@@ -257,9 +364,20 @@ public:
 			//m_pRenderPassGeometry2D = m_pMaterialSystem->getRenderPass("xGBuffer");
 			m_pRenderPassGeometry2D = m_pMaterialSystem->registerRenderPass("xEditor2D", "terrax/geom2d.ps", NULL, NULL, NULL, NULL, true);
 		}
+
+		m_pCameraVisibility[0] = NULL;
+		for(UINT i = 0; i < 3; ++i)
+		{
+			newVisData(&m_pCameraVisibility[i + 1]);
+		}
 	}
 	~CRenderPipeline()
 	{
+		for(UINT i = 0; i < 3; ++i)
+		{
+			mem_release(m_pCameraVisibility[i + 1]);
+		}
+
 		m_pCore->setRenderPipeline(m_pOldPipeline);
 		mem_release(m_pOldPipeline);
 	}
@@ -272,6 +390,13 @@ public:
 	void renderFrame(float fDeltaTime) override
 	{
 		m_pOldPipeline->renderFrame(fDeltaTime);
+
+		static const bool *terrax_detach_3d = m_pCore->getConsole()->getPCVarBool("terrax_detach_3d");
+
+		if(*terrax_detach_3d)
+		{
+			return;
+		}
 		
 		IGXContext *pDXDevice = getDevice()->getThreadContext();
 		pDXDevice->setDepthStencilState(g_pDSDefault);
@@ -288,6 +413,9 @@ public:
 		ICamera **pCameras = g_xConfig.m_pViewportCamera + 1;
 		float *fScales = g_xConfig.m_fViewportScale + 1;
 		X_2D_VIEW *views = g_xConfig.m_x2DView + 1;
+		IXRenderableVisibility **pCameraVisibility = m_pCameraVisibility + 1;
+
+		//[i + 1]
 		//ICamera *p3DCamera = SRender_GetCamera();
 		pDXDevice->setSamplerState(NULL, 0);
 		//#############################################################################
@@ -311,13 +439,14 @@ public:
 			pDXDevice->setDepthStencilState(g_pDSNoZ);
  			pDXDevice->setBlendState(NULL);
 			SMMATRIX mProj = SMMatrixOrthographicLH((float)pBackBuffer->getWidth() * fScales[i], (float)pBackBuffer->getHeight() * fScales[i], 1.0f, 2000.0f);
-			SMMATRIX mView;
-			pCameras[i]->getViewMatrix(&mView);
+			SMMATRIX mView = pCameras[i]->getViewMatrix();
 			Core_RMatrixSet(G_RI_MATRIX_OBSERVER_VIEW, &mView);
 			Core_RMatrixSet(G_RI_MATRIX_VIEW, &mView);
 			Core_RMatrixSet(G_RI_MATRIX_OBSERVER_PROJ, &mProj);
 			Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &mProj);
 			Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(mView * mProj));
+
+			pCameras[i]->updateFrustum(mProj);
 
 			g_pCameraConstantBuffer->update(&SMMatrixIdentity);
 			pDXDevice->setVSConstant(g_pCameraConstantBuffer, SCR_OBJECT);
@@ -327,7 +456,7 @@ public:
 
 			XRender2D(views[i], fScales[i], true);
 
-			renderEditor2D();
+			renderEditor2D(pCameraVisibility[i]);
 
 			Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
 			pDXDevice->setVSConstant(g_pCameraConstantBuffer, SCR_OBJECT);
@@ -366,6 +495,25 @@ public:
 	void updateVisibility() override
 	{
 		m_pOldPipeline->updateVisibility();
+
+		static const bool *terrax_detach_3d = m_pCore->getConsole()->getPCVarBool("terrax_detach_3d");
+
+		if(*terrax_detach_3d)
+		{
+			return;
+		}
+
+		HWND hWnds[] = {g_hTopRightWnd, g_hBottomLeftWnd, g_hBottomRightWnd};
+
+		for(UINT i = 0; i < 3; ++i)
+		{
+			if(!IsWindowVisible(hWnds[i]))
+			{
+				continue;
+			}
+
+			m_pCameraVisibility[i + 1]->updateForCamera(g_xConfig.m_pViewportCamera[i + 1]);
+		}
 	}
 
 	void renderStage(X_RENDER_STAGE stage, IXRenderableVisibility *pVisibility = NULL) override
@@ -413,9 +561,9 @@ public:
 	{
 		m_pOldPipeline->renderPostprocessFinal();
 	}
-	void renderEditor2D() override
+	void renderEditor2D(IXRenderableVisibility *pVisibility) override
 	{
-		m_pOldPipeline->renderEditor2D();
+		m_pOldPipeline->renderEditor2D(pVisibility);
 	}
 
 	IXCore *m_pCore;
@@ -423,6 +571,63 @@ public:
 	IXMaterialSystem *m_pMaterialSystem = NULL;
 
 	XRenderPassHandler *m_pRenderPassGeometry2D = NULL;
+
+	IXRenderableVisibility *m_pCameraVisibility[4];
+};
+
+class CCVarEventListener: public IEventListener<XEventCvarChanged>
+{
+public:
+	CCVarEventListener(IXCore *pCore):
+		m_pCore(pCore)
+	{}
+	void onEvent(const XEventCvarChanged *pEvent) override
+	{
+		static const bool *terrax_detach_3d = m_pCore->getConsole()->getPCVarBool("terrax_detach_3d");
+
+		if(terrax_detach_3d == pEvent->pCvar)
+		{
+			if(*terrax_detach_3d)
+			{
+				ShowWindow(g_hTopLeftWnd, SW_HIDE);
+				m_lOldStyle = GetWindowLongA(g_hTopLeftWnd, GWL_STYLE);
+				SetParent(g_hTopLeftWnd, NULL);
+				SetWindowLongA(g_hTopLeftWnd, GWL_STYLE, WS_OVERLAPPED | WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+				SetWindowTextA(g_hTopLeftWnd, "SkyXEngine");
+
+				m_lOldExStyle = GetWindowLongA(g_hTopLeftWnd, GWL_EXSTYLE);
+				SetWindowLongA(g_hTopLeftWnd, GWL_EXSTYLE, 0);
+
+				SetWindowPos(g_hTopLeftWnd, 
+#ifdef _DEBUG
+					HWND_TOP
+#else
+					HWND_TOPMOST
+#endif
+					, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOMOVE);
+
+				EnableWindow(g_hWndMain, FALSE);
+			}
+			else
+			{
+				EnableWindow(g_hWndMain, TRUE);
+
+				ShowWindow(g_hTopLeftWnd, SW_HIDE);
+				SetParent(g_hTopLeftWnd, g_hWndMain);
+				SetWindowLongA(g_hTopLeftWnd, GWL_STYLE, m_lOldStyle);
+				SetWindowLongA(g_hTopLeftWnd, GWL_EXSTYLE, m_lOldExStyle);
+				SetWindowPos(g_hTopLeftWnd, HWND_TOP, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOMOVE);
+				PostMessage(g_hWndMain, WM_SIZE, 0, 0);
+
+				ShowCursor(TRUE);
+			}
+		}
+	}
+
+private:
+	IXCore *m_pCore;
+	LONG m_lOldStyle;
+	LONG m_lOldExStyle;
 };
 
 #if defined(_WINDOWS)
@@ -457,15 +662,32 @@ int main(int argc, char **argv)
 	g_pEngine = pEngine;
 	CEngineCallback engineCb;
 	pEngine->initGraphics((XWINDOW_OS_HANDLE)g_hTopLeftWnd, &engineCb);
-	pEngine->getCore()->execCmd("gmode editor");
-	pEngine->getCore()->execCmd("exec ../config_editor.cfg");
+	engineCb.setCore(pEngine->getCore());
+	pEngine->getCore()->getConsole()->registerCVar("terrax_detach_3d", false, "", FCVAR_NOTIFY);
+	pEngine->getCore()->getConsole()->execCommand("gmode editor");
+	pEngine->getCore()->getConsole()->execCommand("exec ../config_editor.cfg");
+
+	pEngine->getCore()->getConsole()->registerCommand("obj_dump", [](int argc, const char **argv){
+		if(argc != 2)
+		{
+			printf("Usage: obj_dump <model>");
+			return;
+		}
+
+		XExportToObj(argv[1]);
+	}, "Export model to obj format");
+
 	CRenderPipeline *pPipeline = new CRenderPipeline(Core_GetIXCore());
 	XInitGuiWindow(false);
+
+	CCVarEventListener cvarListener(pEngine->getCore());
+	auto *pChannel = pEngine->getCore()->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID);
+	pChannel->addListener(&cvarListener);
 
 	RECT rcTopLeft;
 	GetClientRect(g_hTopLeftWnd, &rcTopLeft);
 
-	g_pEngine->getCore()->execCmd2("r_win_width %d\nr_win_height %d", rcTopLeft.right - rcTopLeft.left, rcTopLeft.bottom - rcTopLeft.top);
+	g_pEngine->getCore()->getConsole()->execCommand2("r_win_width %d\nr_win_height %d", rcTopLeft.right - rcTopLeft.left, rcTopLeft.bottom - rcTopLeft.top);
 
 
 	IPluginManager *pPluginManager = Core_GetIXCore()->getPluginManager();
@@ -482,7 +704,7 @@ int main(int argc, char **argv)
 		t, w, w, w, t, t,
 		t, t, w, w, w, t
 	};
-	g_pDashedMaterial = SGCore_GetDXDevice()->createTexture2D(6, 6, 1, 0, GXFMT_A8R8G8B8, colorData);
+	g_pDashedMaterial = SGCore_GetDXDevice()->createTexture2D(6, 6, 1, 0, GXFMT_A8B8G8R8, colorData);
 	//pMaterialSystem->addTexture("dev_dashed", pDashedMaterial);
 	//mem_release(pDashedMaterial);
 
@@ -501,6 +723,15 @@ int main(int argc, char **argv)
 			pEditable->startup(SGCore_GetDXDevice());
 
 			ComboBox_AddString(g_hComboTypesWnd, pEditable->getName());
+
+			IXEditorExtension *pExt = pEditable->getEditorExtension();
+			if(pExt)
+			{
+				for(UINT i = 0, l = pExt->getPropertyTabCount(); i < l; ++i)
+				{
+					g_pPropWindow->addCustomTab(pExt->getPropertyTab(i));
+				}
+			}
 
 			g_mEditableSystems[AAString(pEditable->getName())] = pEditable;
 		}
@@ -568,17 +799,18 @@ int main(int argc, char **argv)
 					{
 						if(sscanf(szVal, "%f %f %f", &vec.x, &vec.y, &vec.z) == 3)
 						{
-							g_xConfig.m_pViewportCamera[i]->setPosition(&vec);
+							g_xConfig.m_pViewportCamera[i]->setPosition(vec);
 						}
 					}
 
-					sprintf_s(szKey, "cam%u_dir", i);
+					SMQuaternion q;
+					sprintf_s(szKey, "cam%u_rot", i);
 					szVal = pCfg->getKey("terrax", szKey);
 					if(szVal)
 					{
-						if(sscanf(szVal, "%f %f %f", &vec.x, &vec.y, &vec.z) == 3)
+						if(sscanf(szVal, "%f %f %f %f", &q.x, &q.y, &q.z, &q.w) == 4)
 						{
-							g_xConfig.m_pViewportCamera[i]->setOrientation(&(SMQuaternion(vec.x, 'x') * SMQuaternion(vec.y, 'y') * SMQuaternion(vec.z, 'z')));
+							g_xConfig.m_pViewportCamera[i]->setOrientation(q);
 						}
 					}
 
@@ -645,14 +877,14 @@ int main(int argc, char **argv)
 				for(UINT i = 0; i < 4; ++i)
 				{
 					float3 vec;
-					g_xConfig.m_pViewportCamera[i]->getPosition(&vec);
+					vec = g_xConfig.m_pViewportCamera[i]->getPosition();
 					sprintf_s(szVal, "%f %f %f", vec.x, vec.y, vec.z);
 					sprintf_s(szKey, "cam%u_pos", i);
 					pCfg->set("terrax", szKey, szVal);
 
-					g_xConfig.m_pViewportCamera[i]->getRotation(&vec);
-					sprintf_s(szVal, "%f %f %f", vec.x, vec.y, vec.z);
-					sprintf_s(szKey, "cam%u_dir", i);
+					SMQuaternion q = g_xConfig.m_pViewportCamera[i]->getOrientation();
+					sprintf_s(szVal, "%f %f %f %f", q.x, q.y, q.z, q.w);
+					sprintf_s(szKey, "cam%u_rot", i);
 					pCfg->set("terrax", szKey, szVal);
 
 					sprintf_s(szVal, "%f", g_xConfig.m_fViewportScale[i]);
@@ -706,16 +938,16 @@ int main(int argc, char **argv)
 	g_xConfig.m_pViewportCamera[XWP_TOP_LEFT]->setFOV(*r_default_fov);
 
 	g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT] = SGCore_CrCamera();
-	g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT]->setPosition(&X2D_TOP_POS);
-	g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT]->setOrientation(&X2D_TOP_ROT);
+	g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT]->setPosition(X2D_TOP_POS);
+	g_xConfig.m_pViewportCamera[XWP_TOP_RIGHT]->setOrientation(X2D_TOP_ROT);
 
 	g_xConfig.m_pViewportCamera[XWP_BOTTOM_LEFT] = SGCore_CrCamera();
-	g_xConfig.m_pViewportCamera[XWP_BOTTOM_LEFT]->setPosition(&X2D_SIDE_POS);
-	g_xConfig.m_pViewportCamera[XWP_BOTTOM_LEFT]->setOrientation(&X2D_SIDE_ROT);
+	g_xConfig.m_pViewportCamera[XWP_BOTTOM_LEFT]->setPosition(X2D_SIDE_POS);
+	g_xConfig.m_pViewportCamera[XWP_BOTTOM_LEFT]->setOrientation(X2D_SIDE_ROT);
 
 	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT] = SGCore_CrCamera();
-	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT]->setPosition(&X2D_FRONT_POS);
-	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT]->setOrientation(&X2D_FRONT_ROT);
+	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT]->setPosition(X2D_FRONT_POS);
+	g_xConfig.m_pViewportCamera[XWP_BOTTOM_RIGHT]->setOrientation(X2D_FRONT_ROT);
 
 
 //	SkyXEngine_RunGenPreview();
@@ -866,15 +1098,17 @@ int main(int argc, char **argv)
 	}
 	XReleaseViewports();
 
+	pChannel->removeListener(&cvarListener);
+
 	mem_release(g_pDashedMaterial);
 	mem_release(g_pDSNoZ);
 	mem_release(g_pDSDefault);
 	mem_delete(pPipeline);
 	mem_release(g_pCameraConstantBuffer);
 	mem_delete(g_pGrid);
-	mem_delete(g_pUndoManager);
 	//SkyXEngine_Kill();
 	mem_release(pEngine);
+	mem_delete(g_pUndoManager);
 	return result;
 }
 
@@ -1408,12 +1642,12 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 
 void XLoadLevel(const char *szName)
 {
-	Core_0ConsoleExecCmd("map %s", szName);	
+	g_pEngine->getCore()->getConsole()->execCommand2("map %s", szName);
 }
 
 void XResetLevel()
 {
-	Core_0ConsoleExecCmd("endmap");
+	g_pEngine->getCore()->getConsole()->execCommand("endmap");
 }
 
 bool XSaveLevel(const char *szNewName, bool bForcePrompt)
@@ -1510,7 +1744,7 @@ void XDrawBorder(GXCOLOR color, const float3_t &vA, const float3_t &vB, const fl
 }
 
 void XUpdateUndoRedo();
-bool XExecCommand(CCommand *pCommand)
+bool XExecCommand(IXEditorCommand *pCommand)
 {
 	if(g_pUndoManager->execCommand(pCommand))
 	{
@@ -1552,7 +1786,7 @@ bool XRayCast(X_WINDOW_POS wnd)
 	{
 		return(false);
 	}
-	g_xConfig.m_pViewportCamera[wnd]->getPosition(&vCamPos);
+	vCamPos = g_xConfig.m_pViewportCamera[wnd]->getPosition();
 	switch(g_xConfig.m_x2DView[wnd])
 	{
 	case X2D_NONE:
@@ -1609,7 +1843,7 @@ bool XIsMouseInSelection(X_WINDOW_POS wnd)
 void XUpdateWindowTitle()
 {
 	const char *szLevelName = g_sLevelName.c_str();
-	char szCaption[256];
+	static char szCaption[256];
 	bool isDirty = g_pUndoManager->isDirty();
 	if(szLevelName && szLevelName[0])
 	{
@@ -1619,5 +1853,121 @@ void XUpdateWindowTitle()
 	{
 		sprintf(szCaption, "%s%s | %s", MAIN_WINDOW_TITLE, isDirty ? " - *" : "", SKYXENGINE_VERSION4EDITORS);
 	}
-	SetWindowText(g_hWndMain, szCaption);
+	PostMessageA(g_hWndMain, WM_SETTITLEASYNC, 0, (LPARAM)szCaption);
+	// SetWindowText(g_hWndMain, szCaption);
+}
+
+void XExportToObj(const char *szMdl)
+{
+	IXCore *pCore = g_pEngine->getCore();
+	IXResourceManager *pResourceManager = pCore->getResourceManager();
+	IFileSystem *pFileSystem = pCore->getFileSystem();
+
+	IXResourceModel *pResource;
+	IXResourceModelStatic *pResourceStatic;
+	if(!pResourceManager->getModel(szMdl, &pResource))
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to load model '%s'!\n", szMdl);
+		return;
+	}
+	if(!(pResourceStatic = pResource->asStatic()))
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Model '%s' is not a static model. Cannot export!\n", szMdl);
+		mem_release(pResource);
+		return;
+	}
+
+	const char *szBasename = basename(szMdl);
+	char buf[128];
+	
+	sprintf(buf, "export/%s.mtl", szBasename);
+	IFile *pMatFile = pFileSystem->openFile(buf, FILE_MODE_WRITE);
+
+	sprintf(buf, "export/%s.obj", szBasename);
+	IFile *pObjFile = pFileSystem->openFile(buf, FILE_MODE_WRITE);
+	
+
+	pObjFile->writeText("# File was written by " SKYXENGINE_VERSION4EDITORS "\n# Original model: %s\n\nmtllib %s.mtl\no model\n", szMdl, szBasename);
+
+	UINT uSubsets = pResourceStatic->getSubsetCount(0);
+	for(UINT i = 0; i < uSubsets; ++i)
+	{
+		auto *pSubset = pResourceStatic->getSubset(0, i);
+		pObjFile->writeText("\n# Subset %u\n", i);
+		for(UINT j = 0; j < pSubset->iVertexCount; ++j)
+		{
+			auto &v = pSubset->pVertices[j];
+
+			pObjFile->writeText("v %f %f %f\nvt %f %f\nvn %f %f %f\n", 
+				v.vPos.x, v.vPos.y, v.vPos.z,
+				v.vTex.x, v.vTex.y,
+				v.vNorm.x, v.vNorm.y, v.vNorm.z
+				);
+		}
+	}
+	// XPT_TRIANGLELIST
+	//XPT_TRIANGLESTRIP
+	UINT uFaceOffset = 1;
+	XPT_TOPOLOGY topology = pResourceStatic->getPrimitiveTopology();
+	for(UINT i = 0; i < uSubsets; ++i)
+	{
+		auto *pSubset = pResourceStatic->getSubset(0, i);
+		pObjFile->writeText("\n# Subset %u\ng subset_%u\nusemtl mtl_%u\ns off\n", i, i, pSubset->iMaterialID);
+		
+		if(topology == XPT_TRIANGLELIST)
+		{
+			for(UINT j = 0; j < pSubset->iIndexCount; j += 3)
+			{
+				UINT a = pSubset->pIndices[j] + uFaceOffset;
+				UINT b = pSubset->pIndices[j + 1] + uFaceOffset;
+				UINT c = pSubset->pIndices[j + 2] + uFaceOffset;
+				pObjFile->writeText("f %u/%u/%u %u/%u/%u %u/%u/%u\n",
+					a, a, a,
+					b, b, b,
+					c, c, c
+					);
+			}
+		}
+		else if(topology == XPT_TRIANGLESTRIP)
+		{
+			for(UINT j = 0; j < pSubset->iIndexCount - 2; ++j)
+			{
+				UINT a = pSubset->pIndices[j] + uFaceOffset;
+				UINT b = pSubset->pIndices[j + 1] + uFaceOffset;
+				UINT c = pSubset->pIndices[j + 2] + uFaceOffset;
+				pObjFile->writeText("f %u/%u/%u %u/%u/%u %u/%u/%u\n",
+					a, a, a,
+					b, b, b,
+					c, c, c
+					);
+			}
+		}
+		else
+		{
+			assert(!"Unknown topology!");
+		}
+
+		uFaceOffset += pSubset->iVertexCount;
+	}
+
+	UINT uMatCount = pResourceStatic->getMaterialCount();
+	for(UINT i = 0; i < uMatCount; ++i)
+	{
+		const char *szMtl = pResourceStatic->getMaterial(i);
+
+		pMatFile->writeText("newmtl mtl_%u\n", i);
+
+		if(szMtl)
+		{
+			pMatFile->writeText("  map_Kd %s.dds\n", szMtl);
+		}
+
+		pMatFile->writeText("\n");
+	}
+
+	mem_release(pMatFile);
+	mem_release(pObjFile);
+	mem_release(pResource);
+
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "%s was written\n", buf);
 }

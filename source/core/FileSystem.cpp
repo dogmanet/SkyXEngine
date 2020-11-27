@@ -10,16 +10,17 @@
 
 void CFileSystem::addPathInPriorityArray(int id, int iPriority)
 {
-    Pair newElement{ iPriority, id };
+	Pair newElement{ iPriority, id };
 
-    if (iPriority == -1)
-    {
-        newElement.priority = m_filePaths.size() > 1 ? m_priorityArray[m_lastRootId].priority : 1;
-    }
-        m_priorityArray.push_back(newElement);
-        m_priorityArray.quickSort([](const Pair &obj, const Pair &obj2) -> bool {return obj.priority < obj2.priority; });
+	//Если приоритет по умолчанию и нет элементов - задаем значение 0 (потому что первый)
+	//Если элементов больше чем 0 то тогда ставим самый большой приоритет из возможных
+	if (iPriority == -1)
+	{
+		UINT size = m_priorityArray.size();
+		newElement.priority = size > 0 ? m_priorityArray[0].priority + 1 : 0;
+	}
 
-        m_lastRootId = id;
+	m_priorityArray.insert(newElement, [](const Pair &obj, const Pair &obj2) -> bool {return obj.priority <= obj2.priority; });
 }
 
 bool CFileSystem::isFileOrDirectory(const char *szPath, bool isFile)
@@ -222,12 +223,12 @@ UINT CFileSystem::addRoot(const char *szPath, int iPriority)
     return m_filePaths.size() - 1;
 }
 
-UINT CFileSystem::getRootCount()
+UINT CFileSystem::getRootCount() const 
 {
     return m_filePaths.size();
 }
 
-const char *CFileSystem::getRoot(UINT id)
+const char *CFileSystem::getRoot(UINT id) const
 {
     FILEID_CHECKED(m_filePaths.size());
 

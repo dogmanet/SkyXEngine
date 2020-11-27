@@ -7,7 +7,7 @@
 #include <common/array.h>
 
 class CEditable;
-class CEditorObject: public IXUnknownImplementation<IXEditorObject>
+class CEditorObject final: public IXUnknownImplementation<IXEditorObject>
 {
 	DECLARE_CLASS(CEditorObject, IXEditorObject);
 public:
@@ -15,28 +15,57 @@ public:
 	CEditorObject(CEditable *pEditable, CBaseEntity *pEntity);
 	~CEditorObject();
 
-	void setPos(const float3_t &pos);
-	void setOrient(const SMQuaternion &orient);
-	void setScale(const float3_t &pos);
+	void XMETHODCALLTYPE setPos(const float3_t &pos) override;
+	void XMETHODCALLTYPE setOrient(const SMQuaternion &orient) override;
+	void XMETHODCALLTYPE setScale(const float3_t &pos) override;
 
-	void getBound(float3 *pvMin, float3 *pvMax);
+	void XMETHODCALLTYPE getBound(float3 *pvMin, float3 *pvMax) override;
 
-	void renderSelection(bool is3D);
+	void XMETHODCALLTYPE renderSelection(bool is3D) override;
 
-	bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl);
+	bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl) override;
 
-	void remove();
-	void create();
-	void preSetup();
-	void postSetup();
+	void XMETHODCALLTYPE remove() override;
+	void XMETHODCALLTYPE create() override;
+	void XMETHODCALLTYPE preSetup() override;
+	void XMETHODCALLTYPE postSetup() override;
 
-	void setKV(const char *szKey, const char *szValue);
-	const char *getKV(const char *szKey);
-	const X_PROP_FIELD *getPropertyMeta(UINT uKey);
-	UINT getProperyCount();
+	void resync();
 
-	const char *getTypeName();
-	const char *getClassName();
+	void XMETHODCALLTYPE setKV(const char *szKey, const char *szValue) override;
+	const char* XMETHODCALLTYPE getKV(const char *szKey) override;
+	const X_PROP_FIELD* XMETHODCALLTYPE getPropertyMeta(UINT uKey) override;
+	UINT XMETHODCALLTYPE getProperyCount() override;
+
+	const char* XMETHODCALLTYPE getTypeName() override;
+	const char* XMETHODCALLTYPE getClassName() override;
+
+
+
+	float3_t XMETHODCALLTYPE getPos() override
+	{
+		return(m_vPos);
+	}
+
+	SMQuaternion XMETHODCALLTYPE getOrient() override
+	{
+		return(m_qRot);
+	}
+	float3_t XMETHODCALLTYPE getScale() override
+	{
+		return(m_vScale);
+	}
+
+	bool XMETHODCALLTYPE isSelected() override
+	{
+		return(m_isSelected);
+	}
+	void XMETHODCALLTYPE setSelected(bool set) override;
+
+	CBaseEntity* getEnt()
+	{
+		return(m_pEntity);
+	}
 
 protected:
 	CBaseEntity *m_pEntity = NULL;
@@ -48,8 +77,16 @@ protected:
 	AssotiativeArray<String, String> m_msPropCache;
 	const char *m_aszFlags[16];
 
-
 	void _iniFieldList();
+
+	ID m_idEnt = -1;
+
+protected:
+	bool m_isSelected = false;
+
+	float3_t m_vPos;
+	SMQuaternion m_qRot;
+	float3_t m_vScale = float3_t(1.0f, 1.0f, 1.0f);
 };
 
 #endif

@@ -19,6 +19,9 @@ CDynamicModel::CDynamicModel(CDynamicModelProvider *pProvider, CDynamicModelShar
 			m_pProvider->scheduleModelGPUinit(this);
 		}
 	}
+
+	m_pSceneObject = m_pProvider->getSceneObjectType()->newObject(getLocalBound() + getPosition(), this);
+	onFeaturesChanged();
 }
 CDynamicModel::~CDynamicModel()
 {
@@ -26,6 +29,7 @@ CDynamicModel::~CDynamicModel()
 	m_pProvider->onModelRelease(this);
 	mem_release(m_pShared);
 	mem_release(m_pWorldBuffer);
+	mem_release(m_pSceneObject);
 }
 
 void CDynamicModel::initGPUresources()
@@ -50,6 +54,16 @@ void XMETHODCALLTYPE CDynamicModel::enable(bool yesNo)
 		return;
 	}
 	m_isEnabled = yesNo;
+
+	if(m_isEnabled && !m_pSceneObject)
+	{
+		m_pSceneObject = m_pProvider->getSceneObjectType()->newObject(getLocalBound() + getPosition(), this);
+		onFeaturesChanged();
+	}
+	if(!m_isEnabled)
+	{
+		mem_release(m_pSceneObject);
+	}
 
 	m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_VISIBILITY);
 }
@@ -81,6 +95,8 @@ void XMETHODCALLTYPE CDynamicModel::setPosition(const float3 &vPos)
 	m_isWorldDirty = true;
 
 	m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_MOVED);
+
+	m_pSceneObject->update(getLocalBound() + getPosition());
 }
 
 SMQuaternion XMETHODCALLTYPE CDynamicModel::getOrientation() const
@@ -98,6 +114,8 @@ void XMETHODCALLTYPE CDynamicModel::setOrientation(const SMQuaternion &qRot)
 	m_isWorldDirty = true;
 
 	m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_MOVED);
+
+	m_pSceneObject->update(getLocalBound() + getPosition());
 }
 
 float XMETHODCALLTYPE CDynamicModel::getScale() const
@@ -115,6 +133,8 @@ void XMETHODCALLTYPE CDynamicModel::setScale(float fScale)
 	m_isWorldDirty = true;
 
 	m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_MOVED);
+
+	m_pSceneObject->update(getLocalBound() + getPosition());
 }
 
 UINT XMETHODCALLTYPE CDynamicModel::getSkin() const
@@ -131,6 +151,8 @@ void XMETHODCALLTYPE CDynamicModel::setSkin(UINT uSkin)
 	m_uSkin = uSkin;
 
 	m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_SKIN);
+
+	onFeaturesChanged();
 }
 
 float3 XMETHODCALLTYPE CDynamicModel::getLocalBoundMin() const
@@ -200,40 +222,43 @@ UINT XMETHODCALLTYPE CDynamicModel::getPhysboxCount(UINT uPartIndex) const
 
 	return(m_pShared->getPhysboxCount());
 }
-const IModelPhysbox * XMETHODCALLTYPE CDynamicModel::getPhysBox(UINT id, UINT uPartIndex) const
+const IModelPhysbox* XMETHODCALLTYPE CDynamicModel::getPhysBox(UINT id, UINT uPartIndex) const
 {
 	assert(uPartIndex == 0);
 
 	return(m_pShared->getPhysBox(id));
 }
-const IXResourceModel * XMETHODCALLTYPE CDynamicModel::getResource(UINT uIndex)
+const IXResourceModel* XMETHODCALLTYPE CDynamicModel::getResource(UINT uIndex)
 {
 	assert(uIndex == 0);
 
 	return(m_pShared->getResource());
 }
 
-void XMETHODCALLTYPE CDynamicModel::render(UINT uLod, bool isTransparent)
-{
-	render(uLod, isTransparent, false);
-}
-void CDynamicModel::render(UINT uLod, bool isTransparent, bool isEmissiveOnly)
+void XMETHODCALLTYPE CDynamicModel::render(UINT uLod, XMODEL_FEATURE bmFeatures)
 {
 	if(!m_pDevice || !m_isEnabled || !m_pWorldBuffer)
 	{
 		return;
 	}
 
-	if(m_isWorldDirty)
+	if(m_pShared->isInstancing())
 	{
-		m_pWorldBuffer->update(&SMMatrixTranspose(SMMatrixScaling(m_fScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition)));
-		m_isWorldDirty = false;
+		m_pShared->renderInstanced(m_vPosition, m_qRotation, m_fScale, m_vColor);
 	}
+	else
+	{
+		if(m_isWorldDirty)
+		{
+			m_pWorldBuffer->update(&SMMatrixTranspose(SMMatrixScaling(m_fScale) * m_qRotation.GetMatrix() * SMMatrixTranslation(m_vPosition)));
+			m_isWorldDirty = false;
+		}
 
-	m_pProvider->bindVertexFormat();
+		m_pProvider->bindVertexFormat();
 
-	m_pDevice->getThreadContext()->setVSConstant(m_pWorldBuffer, 1 /* SCR_OBJECT */);
-	m_pShared->render(m_uSkin, uLod, m_vColor, isTransparent, isEmissiveOnly);
+		m_pDevice->getThreadContext()->setVSConstant(m_pWorldBuffer, 1 /* SCR_OBJECT */);
+		m_pShared->render(m_uSkin, uLod, m_vColor, bmFeatures);
+	}
 }
 
 CDynamicModelShared* CDynamicModel::getShared()
@@ -257,16 +282,45 @@ SMPLANE CDynamicModel::getPSP(UINT uLod, UINT uPlane) const
 	return(plane);
 }
 
-bool CDynamicModel::hasTransparentSubsets(UINT uLod) const
+XMODEL_FEATURE CDynamicModel::getFeatures(UINT uLod) const
 {
-	return(m_pShared->hasTransparentSubsets(m_uSkin, uLod));
-}
-bool CDynamicModel::hasEmissiveSubsets(UINT uLod) const
-{
-	return(m_pShared->hasEmissiveSubsets(m_uSkin, uLod));
+	return(m_pShared->getFeatures(m_uSkin, uLod));
 }
 
 IXMaterial* CDynamicModel::getTransparentMaterial(UINT uLod)
 {
 	return(m_pShared->getTransparentMaterial(m_uSkin, uLod));
+}
+
+void CDynamicModel::onFeaturesChanged()
+{
+	if(m_pSceneObject)
+	{
+		XMODEL_FEATURE bmFeatures = getFeatures(0);
+
+		IXSceneFeature *ppFeatures[4] = {0};
+		int i = 0;
+
+		if(bmFeatures & MF_OPAQUE)
+		{
+			ppFeatures[i++] = m_pProvider->getFeature(MF_OPAQUE);
+		}
+		if(bmFeatures & MF_TRANSPARENT)
+		{
+			ppFeatures[i++] = m_pProvider->getFeature(MF_TRANSPARENT);
+		}
+		if(bmFeatures & MF_SELFILLUM)
+		{
+			ppFeatures[i++] = m_pProvider->getFeature(MF_SELFILLUM);
+		}
+
+		assert(i < ARRAYSIZE(ppFeatures));
+
+		m_pSceneObject->setFeatures(ppFeatures);
+	}
+}
+
+void XMETHODCALLTYPE CDynamicModel::FinalRelease()
+{
+	m_pProvider->enqueueModelDelete(this);
 }

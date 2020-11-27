@@ -300,7 +300,7 @@ namespace gui
 #ifdef _DEBUG
 		void ICSS::debugDumpStyles()
 		{
-			for(AssotiativeArray<StringW, ICSSstyleSet>::Iterator i = m_styleSets.begin(); i; i++)
+			for(AssotiativeArray<StringW, ICSSstyleSet>::Iterator i = m_styleSets.begin(); i; ++i)
 			{
 				wprintf(L"########################################\n");
 				wprintf(L"%s\n", i.first->c_str());
@@ -4072,7 +4072,7 @@ namespace gui
 
 		/*void ICSS::ReloadAllStyles()
 		{
-			for(AssotiativeArray<StringW, ICSSstyleSet>::Iterator i = m_styleSets.begin(); i; i++)
+			for(AssotiativeArray<StringW, ICSSstyleSet>::Iterator i = m_styleSets.begin(); i; ++i)
 			{
 				ICSSstyleSet css(this);
 				css.LoadFromString(*i.first);

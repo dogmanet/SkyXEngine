@@ -7,21 +7,19 @@ See the license in LICENSE
 #ifndef __SOUNDSYSTEM_H
 #define __SOUNDSYSTEM_H
 
-#include <common/assotiativearray.h>
-#include <common/string.h>
-#include <common/path_utils.h>
-#include <common/math.h>
 
 #include <xcommon/IXCore.h>
 #include <xcommon/IPluginManager.h>
 #include <xcommon/IXSoundSystem.h>
 #include <xcommon/IXAudioCodec.h>
 
+#include <common/queue.h>
+
 #include "SoundTypes.h"
 
 //##########################################################################
 
-inline float Com3DPan(float3 &vSnd, float3 &vListenerPos, float3 &vListenerDir, float3 &vListenerUp)
+inline float Com3DPan(const float3 &vSnd, const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
 	float3 side = SMVector3Cross(vListenerUp, vListenerDir);
 	SMVector3Normalize(side);
@@ -32,11 +30,21 @@ inline float Com3DPan(float3 &vSnd, float3 &vListenerPos, float3 &vListenerDir, 
 	return pan;
 }
 
+inline void Com3D(IAudioBuffer *pAB, float fDist, float m_fVolume, const float3 &vSnd, const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
+{
+	float fPan = Com3DPan(vSnd, vListenerPos, vListenerDir, vListenerUp);
+	float fVolume = 1.f - saturatef(SMVector3Distance(vSnd, vListenerPos) / fDist);
+	fPan = lerpf(fPan, 0.f, fVolume);
+	pAB->setPan(fPan);
+	pAB->setVolume(fVolume*m_fVolume);
+}
+
 //##########################################################################
 
 class CSoundSystem: public IXUnknownImplementation<IXSoundSystem>
 {
 public:
+	SX_ALIGNED_OP_MEM();
 
 	CSoundSystem(IXCore *pXCore);
 	~CSoundSystem();
@@ -46,9 +54,13 @@ public:
 
 	virtual void XMETHODCALLTYPE update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp) override;
 
-	IXAudioCodecTarget* getCodecTarget(const char *szPath);
+	//########################################################################
+
+	IXAudioCodecTarget* getCodecTarget(const char *szName);
 
 	IXCore* getCore() const;
+
+	void addMessage(SndQueueMsg &oMsg);
 
 protected:
 
@@ -59,6 +71,10 @@ protected:
 
 	void addCodec(const char *szFmt, IXAudioCodec *pCodec);
 
+	//########################################################################
+
+	Queue<SndQueueMsg> m_queue;
+
 	IXCore *m_pXCore = NULL;
 
 	IAudio *m_pAudio = NULL;
@@ -67,8 +83,12 @@ protected:
 
 	CSoundLayer *m_pMasterLayer = NULL;
 
-	typedef AssotiativeArray<String, IXAudioCodec*> mapcodec;
-	mapcodec m_mapCodecs;
+	typedef AssotiativeArray<String, IXAudioCodec*> MapCodec;
+	MapCodec m_mapCodecs;
+
+	float3 m_vObserverPos, m_vObserverLook, m_vObserverUp;
+	
+	SpinLock m_oSpinLockUpdate;
 };
 
 #endif

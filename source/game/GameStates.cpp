@@ -1,10 +1,14 @@
 #include "GameStates.h"
 
 #include "GameData.h"
+#include "Baseline.h"
 
 #include <score/sxscore.h>
 #include <input/sxinput.h>
 
+#include "Editable.h"
+
+extern CEditable *g_pEditable;
 
 CMainMenuGameState::CMainMenuGameState()
 {
@@ -25,7 +29,32 @@ CMainMenuGameState::~CMainMenuGameState()
 
 void CMainMenuGameState::activate()
 {
+	printf("CMainMenuGameState::activate()\n");
 	GameData::m_pGUIStack->setActiveDesktop(m_pDesktop);
+
+	if(GameData::m_pGuiLayer)
+	{
+		GameData::m_pGuiLayer->play(true);
+
+		if(GameData::m_pSoundPlayer)
+		{
+			GameData::m_pSoundPlayer->play();
+		}
+	}
+}
+
+void CMainMenuGameState::deactivate()
+{
+	printf("CMainMenuGameState::deactivate()\n");
+	if(GameData::m_pGuiLayer)
+	{
+		GameData::m_pGuiLayer->play(false);
+
+		if(GameData::m_pSoundPlayer)
+		{
+			GameData::m_pSoundPlayer->stop();
+		}
+	}
 }
 
 //##########################################################################
@@ -49,13 +78,48 @@ CIngameMenuGameState::~CIngameMenuGameState()
 
 void CIngameMenuGameState::activate()
 {
+	printf("CIngameMenuGameState::activate()\n");
 	GameData::m_pGUIStack->setActiveDesktop(m_pDesktop);
+
+	if(GameData::m_pGuiLayer)
+	{
+		GameData::m_pGuiLayer->play(true);
+
+		if(GameData::m_pSoundPlayer)
+		{
+			GameData::m_pSoundPlayer->play();
+		}
+	}
+}
+
+void CIngameMenuGameState::deactivate()
+{
+	printf("CIngameMenuGameState::deactivate()\n");
+	GameData::m_pGUIStack->setActiveDesktop(m_pDesktop);
+
+	if(GameData::m_pGuiLayer)
+	{
+		GameData::m_pGuiLayer->play(false);
+
+		if(GameData::m_pSoundPlayer)
+		{
+			GameData::m_pSoundPlayer->stop();
+		}
+	}
 }
 
 //##########################################################################
 
 void CIngameGameState::activate()
 {
+	printf("CIngameGameState::activate()\n");
+	static const bool *dev_reset_world_on_run = GET_PCVAR_BOOL("dev_reset_world_on_run");
+
+	if(*dev_reset_world_on_run)
+	{
+		m_pBaseLine = GameData::m_pMgr->createBaseline(m_pBaseLine ? m_pBaseLine->getId() : -1);
+	}
+
 	Core_0ConsoleExecCmd("cl_grab_cursor 1");
 	GameData::m_pHUDcontroller->activate();
 
@@ -64,23 +128,51 @@ void CIngameGameState::activate()
 	SSCore_ChannelPlay(SX_SOUND_CHANNEL_GAME);
 	SSInput_SetEnable(true);
 	SPhysics_EnableSimulation();
+
+	Core_0ConsoleExecCmd("game_time_running 1");
+
+	if(GameData::m_pGameLayer)
+	{
+		GameData::m_pGameLayer->play(true);
+	}
 }
 
 void CIngameGameState::deactivate()
 {
+	printf("CIngameGameState::deactivate()\n");
+	static const bool *dev_reset_world_on_run = GET_PCVAR_BOOL("dev_reset_world_on_run");
+
+	Core_0ConsoleExecCmd("game_time_running 0");
+
 	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
 	Core_TimeWorkingSet(idTimerRender, false);
 	SSCore_ChannelStop(SX_SOUND_CHANNEL_GAME);
 	SSInput_SetEnable(false);
 	SPhysics_DisableSimulation();
+
+	if(GameData::m_pGameLayer)
+	{
+		GameData::m_pGameLayer->play(false);
+	}
+
+	if(*dev_reset_world_on_run)
+	{
+		GameData::m_pMgr->dispatchBaseline(m_pBaseLine);
+
+		if(g_pEditable)
+		{
+			g_pEditable->resync();
+		}
+	}
 }
 
 //##########################################################################
 
 void CEditorState::activate()
 {
-	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
-	Core_TimeWorkingSet(idTimerRender, true);
+	printf("CEditorState::activate()\n");
+//	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
+//	Core_TimeWorkingSet(idTimerRender, true);
 	//SSCore_ChannelPlay(SX_SOUND_CHANNEL_GAME);
 //	SSInput_SetEnable(true);
 
@@ -89,10 +181,11 @@ void CEditorState::activate()
 
 void CEditorState::deactivate()
 {
+	printf("CEditorState::deactivate()\n");
 	GameData::m_pMgr->setEditorMode(false);
 
-	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
-	Core_TimeWorkingSet(idTimerRender, false);
+//	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
+//	Core_TimeWorkingSet(idTimerRender, false);
 	//SSCore_ChannelStop(SX_SOUND_CHANNEL_GAME);
 //	SSInput_SetEnable(false);
 }

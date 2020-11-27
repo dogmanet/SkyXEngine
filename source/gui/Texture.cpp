@@ -35,7 +35,7 @@ namespace gui
 	{
 		CTexture *bt = new CTexture(this);
 
-		if(!(bt->m_pTexture = GetGUI()->getDevice()->createTexture2D(w, h, isRT ? 1 : 0, isRT ? GX_TEXFLAG_RENDERTARGET | (isAutoResizeRT ? GX_TEXFLAG_AUTORESIZE : 0) : 0, GXFMT_A8R8G8B8, pInitData)))
+		if(!(bt->m_pTexture = GetGUI()->getDevice()->createTexture2D(w, h, isRT ? 1 : 0, isRT ? GX_TEXFLAG_RENDERTARGET | (isAutoResizeRT ? GX_TEXFLAG_AUTORESIZE : 0) : 0, GXFMT_A8B8G8R8, pInitData)))
 		{
 			mem_delete(bt);
 			return(NULL);
@@ -58,7 +58,7 @@ namespace gui
 
 	void CTextureManager::release()
 	{
-		for(AssotiativeArray<StringW, CTexture*>::Iterator i = m_mTextures.begin(); i != m_mTextures.end(); i++)
+		for(AssotiativeArray<StringW, CTexture*>::Iterator i = m_mTextures.begin(); i; ++i)
 		{
 			(*i.second)->release();
 			mem_delete(*i.second);

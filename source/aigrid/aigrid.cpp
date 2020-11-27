@@ -2482,7 +2482,7 @@ void CAIGrid::renderBB()
 		m_pBoundBox->draw();
 }
 
-void CAIGrid::renderQuads(const IFrustum * frustum, const float3 * viewpos, float dist)
+void CAIGrid::renderQuads(const IXFrustum * frustum, const float3 * viewpos, float dist)
 {
 	if (!m_useGraphics)
 		return;

@@ -3,7 +3,7 @@
 
 // "/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'" 
 #include <gcore/sxgcore.h>
-#include "Command.h"
+#include <xcommon/editor/IXEditorExtension.h>
 #include <xcommon/editor/IXEditorObject.h>
 #include <common/assotiativearray.h>
 #include <xEngine/IXEngine.h>
@@ -25,6 +25,9 @@
 #define MARGIN_RIGHT            150
 #define AB_BUTTON_HEIGHT        40
 #define OBJECT_TREE_HEIGHT      300
+
+
+#define WM_SETTITLEASYNC (WM_USER + 1)
 
 #include "Grid.h"
 
@@ -200,7 +203,7 @@ extern Array<IXEditorObject*> g_pLevelObjects;
 
 void XDrawBorder(GXCOLOR color, const float3_t &vA, const float3_t &vB, const float3_t &vC, const float3_t &vD, float fViewportScale = 0.01f);
 
-bool XExecCommand(CCommand *pCommand);
+bool XExecCommand(IXEditorCommand *pCommand);
 
 void XUpdateSelectionBound();
 

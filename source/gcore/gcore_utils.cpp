@@ -35,7 +35,12 @@ void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 	m_hLibGXAPI = LoadLibrary(szModuleName);
 	if(!m_hLibGXAPI)
 	{
-		LibReport(REPORT_MSG_LEVEL_FATAL, "%s - unable to load GX: %s\n", GEN_MSG_LOCATION, szModuleName);
+		const char *szMsg = "";
+		if(GetLastError() == ERROR_MOD_NOT_FOUND && !fstrcmp(szModuleName, "gxgapidx11.dll"))
+		{
+			szMsg = "Please check you have d3dx11_43.dll and D3DCompiler_47.dll in your system!\n";
+		}
+		LibReport(REPORT_MSG_LEVEL_FATAL, "%s - unable to load GX: %s; Error: %lu\n%s", GEN_MSG_LOCATION, szModuleName, GetLastError(), szMsg);
 		return;
 	}
 
@@ -43,7 +48,7 @@ void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 	libGXGetInstance = (IGXDevice*(*)())GetProcAddress(m_hLibGXAPI, "GetInstance");
 	if(!libGXGetInstance)
 	{
-		LibReport(REPORT_MSG_LEVEL_FATAL, "%s - %s: Not a GX module!\n", GEN_MSG_LOCATION, szModuleName);
+		LibReport(REPORT_MSG_LEVEL_FATAL, "%s - %s: Not a GX module!; Error: %lu\n", GEN_MSG_LOCATION, szModuleName, GetLastError());
 		return;
 	}
 

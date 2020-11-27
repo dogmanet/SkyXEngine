@@ -101,7 +101,7 @@ bool XMETHODCALLTYPE CAudioCodecOgg::open(const char *szFile, const char *szArg,
 {
 	IFile *pFile = m_pFileSystem->openFile(szFile, (forSave ? FILE_MODE_WRITE : FILE_MODE_READ));
 
-	if (!pFile || !ppTarget)
+	if (!pFile || !ppTarget || (forSave && (!szArg && strcasecmp(szArg, getFormat()) != 0)))
 		return false;
 
 	OggVorbis_File *pVoFile = NULL;
@@ -189,7 +189,7 @@ int64_t XMETHODCALLTYPE CAudioCodecTargetOgg::getPos() const
 	if (!m_pFile || !m_pVoFile)
 		return 0;
 
-	return ov_pcm_tell(m_pVoFile);
+	return ov_pcm_tell(m_pVoFile)*OGG_BYTES_PER_SAMPLE;
 }
 
 //**************************************************************************
@@ -199,7 +199,7 @@ void XMETHODCALLTYPE CAudioCodecTargetOgg::setPos(int64_t iPos)
 	if (!m_pFile || !m_pVoFile)
 		return;
 
-	ov_pcm_seek(m_pVoFile, iPos);
+	ov_pcm_seek(m_pVoFile, iPos / OGG_BYTES_PER_SAMPLE);
 }
 
 //**************************************************************************
@@ -284,15 +284,13 @@ bool XMETHODCALLTYPE CAudioCodecTargetOgg::encode(IXBuffer *pBufferPCM, AudioRaw
 
 	//инициализация кодировщика (статических данных) с переменным битрейтом (variable bitrate)
 	vorbis_info_init(&oVoInfo);
-	iRetCode = vorbis_encode_init_vbr(&oVoInfo, pOutDesc->u8Channels, pOutDesc->uSampleRate, 0.1);
+	if ((iRetCode = vorbis_encode_init_vbr(&oVoInfo, pOutDesc->u8Channels, pOutDesc->uSampleRate, 0.2)))
+		return false;
 
 	/* можно заюзать усредненный битрейт (average bitrate):
-	iRetCode = vorbis_encode_init(&vi,pOutDesc->u8Channels, pOutDesc->uSampleRate,-1,128000,-1);
-	 * но в данной реализации пусть кодировщик сам разбирается :)
+		iRetCode = vorbis_encode_init(&vi,pOutDesc->u8Channels, pOutDesc->uSampleRate,-1,128000,-1);
+		но в данной реализации пусть кодировщик сам разбирается :)
 	*/
-
-	if(iRetCode)
-		return false;
 
 	//инициализируем комментарий
 	vorbis_comment_init(&oVoComment);
@@ -315,11 +313,8 @@ bool XMETHODCALLTYPE CAudioCodecTargetOgg::encode(IXBuffer *pBufferPCM, AudioRaw
 	//**************************************************
 	//сброс заголовков в логический поток данных
 
-	while(!iEndOfStream)
+	while (ogg_stream_flush(&oOggStream, &oOggPage))
 	{
-		iRetCode = ogg_stream_flush(&oOggStream, &oOggPage);
-		if(iRetCode == 0)
-			break;
 		m_pFile->writeBin(oOggPage.header, oOggPage.header_len);
 		m_pFile->writeBin(oOggPage.body, oOggPage.body_len);
 	}
@@ -341,50 +336,27 @@ bool XMETHODCALLTYPE CAudioCodecTargetOgg::encode(IXBuffer *pBufferPCM, AudioRaw
 		но так делать не надо, потому что внутри vorbis_analysis_wrote выделяется память на стеке по общему количеству блоков
 		это может привести к переполнению стека
 	*/
+	/* но разделять на блоки и передавать таким образом данные тоже нельзя
+	*/
 	/* получаем выделенный массив (по количеству каналов) массивов (по количеству семплов)
 		aaBuffer[iChannel][iSample]
 	*/
 	/*float **aaBuffer = vorbis_analysis_buffer(&oVoMainState, iCountBlocks);
+	int iCurrSample = 0;
 
 	//заполняем выделенный float массив нормализованными данными [-1.0, 1.0]
 	for(int i = 0; i < iCountBlocks ; ++i)
 	{
 		for(int iChannels = 0; iChannels<pOutDesc->u8Channels; ++iChannels)
 		{
-			int16_t i16Sample = ((int16_t*)pData)[i];
-			aaBuffer[iChannels][i]=float(i16Sample)/32768.f;
+			iCurrSample = i * pOutDesc->u8Channels + iChannels;
+			int16_t i16Sample = ((int16_t*)pData)[iCurrSample];
+			aaBuffer[iChannels][i] = float(i16Sample) / 32768.f;
 		}
 	}
 
 	//сообщаем кодировщику что поступили данные для записи
 	vorbis_analysis_wrote(&oVoMainState, iCountBlocks);*/
-
-	//циклом (частями) передаем данные кодировщику
-	while (iCountReadedBlocks < iCountBlocks)
-	{
-		//количество уже прочитанных сэмплов
-		uint32_t uCountReadedSamples = (iCountReadedBlocks*pOutDesc->u8Channels);
-		
-		//количество блоков для текущей итерации
-		int iCurrBlocks = iPartBlocks;
-		if (iCountBlocks - iCountReadedBlocks < iPartBlocks)
-			iCurrBlocks = iCountBlocks - iCountReadedBlocks;
-
-		float **aaBuffer = vorbis_analysis_buffer(&oVoMainState, iCurrBlocks);
-
-		for (int i = 0; i < iCurrBlocks; ++i)
-		{
-			for (int iChannels = 0; iChannels<pOutDesc->u8Channels; ++iChannels)
-			{
-				int16_t i16Sample = ((int16_t*)pData)[uCountReadedSamples + i];
-				aaBuffer[iChannels][i] = float(i16Sample) / 32768.f;
-			}
-		}
-
-		vorbis_analysis_wrote(&oVoMainState, iCurrBlocks);
-		iCountReadedBlocks += iCurrBlocks;
-	}
-
 
 	//**************************************************
 	// запись семплов
@@ -392,37 +364,72 @@ bool XMETHODCALLTYPE CAudioCodecTargetOgg::encode(IXBuffer *pBufferPCM, AudioRaw
 	//если еще не дошли до конца битового потока, тогда продолжаем запись
 	while(!iEndOfStream)
 	{
-		/*разбивка несжатых данных на блоки, если не удалось, тогда сообщаем что данных больше не будет
-		 если не сообщить об этом, то не все данные будут записаны, не получится дойти до конца битового потока, потому что запись идет постраничная и последняя неполня страница не будет записана
-		*/
-		if (vorbis_analysis_blockout(&oVoMainState, &oVoDataBlock) != 1)
+		//количество прочитанных семплов
+		uint32_t uCountReadedSamples = (iCountReadedBlocks*pOutDesc->u8Channels);
+		//количество блоков для текущей итерации
+		int iCurrBlocks = iPartBlocks;
+		if (iCountBlocks - iCountReadedBlocks < iPartBlocks)
+			iCurrBlocks = iCountBlocks - iCountReadedBlocks;
+
+		//если есть блоки для записи
+		if (iCurrBlocks > 0)
 		{
+			/* получаем выделенный массив (по количеству каналов) массивов (по количеству семплов)
+				aaBuffer[iChannel][iSample]
+			*/
+			float **aaBuffer = vorbis_analysis_buffer(&oVoMainState, iCurrBlocks);
+			int iCurrSample = 0;
+
+			//запись блоков
+			for (int i = 0; i < iCurrBlocks; ++i)
+			{
+				for (int iChannels = 0; iChannels < pOutDesc->u8Channels; ++iChannels)
+				{
+					iCurrSample = uCountReadedSamples + i * pOutDesc->u8Channels + iChannels;
+					int16_t i16Sample = ((int16_t*)pData)[iCurrSample];
+					aaBuffer[iChannels][i] = float(i16Sample) / 32768.f;
+				}
+			}
+
+			//сообщаем кодировщику что поступили данные для записи
+			vorbis_analysis_wrote(&oVoMainState, iCurrBlocks);
+			iCountReadedBlocks += iCurrBlocks;
+		}
+		else
+		{
+			/* сообщаем что данных больше не будет
+				если не сообщить об этом, то не все данные будут записаны, не получится дойти до конца битового потока, 
+				потому что запись идет постраничная и последняя неполная страница не будет записана
+		 */
 			vorbis_analysis_wrote(&oVoMainState, 0);
 		}
 
-		//поиск режима кодирования и отправка блока на кодировку
-		vorbis_analysis(&oVoDataBlock, NULL);
-		vorbis_bitrate_addblock(&oVoDataBlock);
-
-		//получение следующего доступного пакета
-		while(vorbis_bitrate_flushpacket(&oVoMainState, &oOggPacket))
+		while (vorbis_analysis_blockout(&oVoMainState, &oVoDataBlock) == 1)
 		{
-			//отправка пакета в битовый поток
-			ogg_stream_packetin(&oOggStream, &oOggPacket);
+			//поиск режима кодирования и отправка блока на кодировку
+			vorbis_analysis(&oVoDataBlock, NULL);
+			vorbis_bitrate_addblock(&oVoDataBlock);
 
-			while(!iEndOfStream)
+			//получение следующего доступного пакета
+			while (vorbis_bitrate_flushpacket(&oVoMainState, &oOggPacket))
 			{
-				//формирование пакетов в страницы и отправка в битовый поток
-				int result=ogg_stream_pageout(&oOggStream, &oOggPage);
-				if(result==0)
-					break;
+				//отправка пакета в битовый поток
+				ogg_stream_packetin(&oOggStream, &oOggPacket);
 
-				m_pFile->writeBin(oOggPage.header, oOggPage.header_len);
-				m_pFile->writeBin(oOggPage.body, oOggPage.body_len);
+				while (!iEndOfStream)
+				{
+					//формирование пакетов в страницы и отправка в битовый поток
+					int result = ogg_stream_pageout(&oOggStream, &oOggPage);
+					if (result == 0)
+						break;
 
-				//если все записано (находимся в конце битового потока), сообщаем о завершении
-				if(ogg_page_eos(&oOggPage))
-					iEndOfStream=1;
+					m_pFile->writeBin(oOggPage.header, oOggPage.header_len);
+					m_pFile->writeBin(oOggPage.body, oOggPage.body_len);
+
+					//если все записано (находимся в конце битового потока), сообщаем о завершении
+					if (ogg_page_eos(&oOggPage))
+						iEndOfStream = 1;
+				}
 			}
 		}
 	}

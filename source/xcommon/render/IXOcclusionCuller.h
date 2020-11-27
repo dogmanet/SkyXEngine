@@ -20,8 +20,8 @@ public:
 	//! видна ли сфера
 	virtual bool XMETHODCALLTYPE isSphereVisible(const float3 &vOrigin, float fRadius) const = 0;
 
-	//! находится ли параллелепипед (описанный точками экстремума) во фрустуме
-	virtual bool XMETHODCALLTYPE isAABBvisible(const float3 &vMin, const float3 &vMax) const = 0;
+	//! находится ли параллелепипед во фрустуме
+	virtual bool XMETHODCALLTYPE isAABBvisible(const SMAABB &aabb) const = 0;
 };
 
 #endif

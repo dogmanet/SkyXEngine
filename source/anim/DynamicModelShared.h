@@ -8,9 +8,13 @@
 class CDynamicModelProvider;
 class IXMaterialSystem;
 
+#define MAX_INSTANCES 32
+
 class CDynamicModelShared
 {
 public:
+	SX_ALIGNED_OP_MEM();
+
 	CDynamicModelShared(CDynamicModelProvider *pProvider);
 	~CDynamicModelShared();
 	void AddRef();
@@ -27,13 +31,13 @@ public:
 	float3 getLocalBoundMax() const;
 	SMAABB getLocalBound() const;
 
-	void render(UINT uSkin, UINT uLod, const float4_t &vColor, bool isTransparent, bool isEmissiveOnly = false);
+	void render(UINT uSkin, UINT uLod, const float4_t &vColor, XMODEL_FEATURE bmFeatures);
+	void renderInstanced(const float3 &vPos, const SMQuaternion &qRot, float fScale, const float4_t &vColor);
 
 	void initGPUresources();
 	bool isReady() const;
 
-	bool hasTransparentSubsets(UINT uSkin, UINT uLod);
-	bool hasEmissiveSubsets(UINT uSkin, UINT uLod);
+	XMODEL_FEATURE getFeatures(UINT uSkin, UINT uLod);
 	IXMaterial* getTransparentMaterial(UINT uSkin, UINT uLod);
 
 	void onMaterialTransparencyChanged(const IXMaterial *pMaterial);
@@ -43,10 +47,15 @@ public:
 
 	const Array<float4_t>& getPSPs(UINT uSkin, UINT uLod) const;
 
+	void beginInstancing(UINT uSkin, UINT uLod, XMODEL_FEATURE bmWhat);
+	void endInstancing();
+	bool isInstancing();
+
 protected:
 	void buildPSPs();
 
 protected:
+	//! todo: make it atomic
 	UINT m_uRefCount = 1;
 	IXResourceModelStatic *m_pResource = NULL;
 
@@ -62,12 +71,23 @@ protected:
 	IGXDevice *m_pDevice;
 	IXMaterialSystem *m_pMaterialSystem;
 
+	struct
+	{
+		float4 vPosScale;
+		SMQuaternion qRot;
+	} m_instanceData[MAX_INSTANCES];
+	IGXConstantBuffer *m_pInstanceBuffer = NULL;
+	int m_iInstanceCount = 0;
+	bool m_isInstancingEnabled = false;
+	UINT m_uInstancingSkin = 0;
+	UINT m_uInstancingLod = 0;
+	XMODEL_FEATURE m_bmInstancingFeatures = MF_NONE;
+
 	void **m_ppMaterialsBlob = NULL;
 	IXMaterial ***m_pppMaterials = NULL;
 	UINT m_uMaterialCount = 0;
 	UINT m_uSkinCount = 0;
-	bool *m_isTransparent = NULL; //!< По количеству скинов, истина если есть прозрачные материалы в любом сабсете
-	bool *m_isEmissive = NULL; //!< По количеству скинов, истина если есть светящиеся материалы в любом сабсете
+	XMODEL_FEATURE *m_bmFeatures = NULL; //!< По количеству скинов
 
 	XPT_TOPOLOGY m_topology = XPT_TRIANGLELIST;
 

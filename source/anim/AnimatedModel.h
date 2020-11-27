@@ -83,7 +83,7 @@ public:
 
 	UINT addLayer();
 
-	void XMETHODCALLTYPE render(UINT uLod, bool isTransparent) override;
+	void XMETHODCALLTYPE render(UINT uLod, XMODEL_FEATURE bmFeatures) override;
 	void sync();
 
 	void initGPUresources();
@@ -110,7 +110,7 @@ protected:
 		float4 position;   /*!< Позиция */
 		SMQuaternion orient; /*!< Вращение */
 
-		SX_ALIGNED_OP_MEM2();
+		SX_ALIGNED_OP_MEM();
 	};
 
 	ModelBoneShader *m_pBonesBlob = NULL;
@@ -157,6 +157,8 @@ protected:
 	mutable float3_t m_vLocalMax;
 
 	void _updateAABB() const;
+
+	bool m_wasInitiated = false;
 };
 
 #endif

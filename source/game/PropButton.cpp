@@ -1,45 +1,45 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 #include "PropButton.h"
 
 /*! \skydocent prop_button
-Кнопка
+РљРЅРѕРїРєР°
 */
 
 BEGIN_PROPTABLE(CPropButton)
-	//! Включить
+	//! Р’РєР»СЋС‡РёС‚СЊ
 	DEFINE_INPUT(turnOn, "turnOn", "Turn On", PDF_NONE)
-	//! Выключить
+	//! Р’С‹РєР»СЋС‡РёС‚СЊ
 	DEFINE_INPUT(turnOff, "turnOff", "Turn Off", PDF_NONE)
-	//! Нажать
+	//! РќР°Р¶Р°С‚СЊ
 	DEFINE_INPUT(press, "press", "Press", PDF_NONE)
-	//! Отжать
+	//! РћС‚Р¶Р°С‚СЊ
 	DEFINE_INPUT(pushUp, "pushUp", "Push up", PDF_NONE)
-	//! Вжать
+	//! Р’Р¶Р°С‚СЊ
 	DEFINE_INPUT(pushDown, "pushDown", "Push down", PDF_NONE)
-	//! Переключить
+	//! РџРµСЂРµРєР»СЋС‡РёС‚СЊ
 	DEFINE_INPUT(toggle, "toggle", "Toggle", PDF_NONE)
 
-	//! При нажатии
+	//! РџСЂРё РЅР°Р¶Р°С‚РёРё
 	DEFINE_OUTPUT(m_onPressed, "OnPressed", "On pressed")
-	//! При отжатии
+	//! РџСЂРё РѕС‚Р¶Р°С‚РёРё
 	DEFINE_OUTPUT(m_onPushUp, "OnPushUp", "On push up")
-	//! При вжатии
+	//! РџСЂРё РІР¶Р°С‚РёРё
 	DEFINE_OUTPUT(m_onPushDown, "OnPushDown", "On push down")
-	//! При переключении
+	//! РџСЂРё РїРµСЂРµРєР»СЋС‡РµРЅРёРё
 	DEFINE_OUTPUT(m_onToggle, "OnToggle", "On toggle")
-	//! При попытке нажатия в выключенном состоянии
+	//! РџСЂРё РїРѕРїС‹С‚РєРµ РЅР°Р¶Р°С‚РёСЏ РІ РІС‹РєР»СЋС‡РµРЅРЅРѕРј СЃРѕСЃС‚РѕСЏРЅРёРё
 	DEFINE_OUTPUT(m_onUseDisabled, "OnUseDisabled", "On use disabled")
 
-	//! Изначально выключен
+	//! РР·РЅР°С‡Р°Р»СЊРЅРѕ РІС‹РєР»СЋС‡РµРЅ
 	DEFINE_FLAG(BUTTON_START_DISABLED, "Start Disabled")
-	//! Имеет состояния нажата/отжата
+	//! РРјРµРµС‚ СЃРѕСЃС‚РѕСЏРЅРёСЏ РЅР°Р¶Р°С‚Р°/РѕС‚Р¶Р°С‚Р°
 	DEFINE_FLAG(BUTTON_TOGGLEABLE, "Toggleable")
-	//! Изначально нажата
+	//! РР·РЅР°С‡Р°Р»СЊРЅРѕ РЅР°Р¶Р°С‚Р°
 	DEFINE_FLAG(BUTTON_START_PRESSED, "Start pressed")
 END_PROPTABLE()
 
@@ -140,8 +140,7 @@ void CPropButton::onPostLoad()
 
 void CPropButton::onUse(CBaseEntity *pUser)
 {
-	inputdata_t inputdata;
-	memset(&inputdata, 0, sizeof(inputdata_t));
+	inputdata_t inputdata = {0};
 	inputdata.pActivator = pUser;
 	inputdata.pInflictor = pUser;
 	inputdata.type = PDF_NONE;

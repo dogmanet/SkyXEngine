@@ -29,6 +29,7 @@ See the license in LICENSE
 
 #include <xcommon/XEvents.h>
 #include <xcommon/IAsyncTaskRunner.h>
+#include <xcommon/IXScene.h>
 
 #include "Editable.h"
 
@@ -44,6 +45,9 @@ CGameStateManager* GameData::m_pGameStateManager;
 gui::dom::IDOMnode* GameData::m_pCell;
 IXLightSystem* GameData::m_pLightSystem;
 bool GameData::m_isLevelLoaded = false;
+IXSoundPlayer* GameData::m_pSoundPlayer = NULL;
+IXSoundLayer* GameData::m_pGameLayer = NULL;
+IXSoundLayer* GameData::m_pGuiLayer = NULL;
 CEditable* g_pEditable = NULL;
 //gui::IDesktop *GameData::m_pStatsUI;
 
@@ -359,6 +363,16 @@ const char* XMETHODCALLTYPE CLevelLoadTask::getName()
 GameData::GameData(HWND hWnd, bool isGame):
 	m_hWnd(hWnd)
 {
+	IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
+	m_pGameLayer = pSound->findLayer("xGame");
+	m_pGuiLayer = pSound->findLayer("xGUI");
+	if (m_pGuiLayer)
+	{
+		m_pSoundPlayer = m_pGuiLayer->newSoundPlayer("sounds/dip.wav", SOUND_SPACE_2D);
+		m_pSoundPlayer->setLoop(SOUND_LOOP_SIMPLE);
+	}
+	pSound->update(float3(), float3(), float3());
+
 	loadFoostepsSounds();
 	isGame = true;
 	m_isGame = isGame;
@@ -614,12 +628,21 @@ GameData::GameData(HWND hWnd, bool isGame):
 	Core_0RegisterConcmd("spawn", ccmd_spawn);
 	Core_0RegisterConcmd("observe", ccmd_observe);
 
+	Core_0RegisterConcmd("bvh_height", [](){
+		IXScene *pScene = (IXScene*)Core_GetIXCore()->getPluginManager()->getInterface(IXSCENE_GUID);
+		UINT uDepth = pScene->getTreeHeight();
+		printf("BVH tree height: %u\n", uDepth);
+	});
+
 	//Core_0RegisterCVarFloat("r_default_fov", 45.0f, "Default FOV value");
 	Core_0RegisterCVarBool("cl_mode_editor", false, "Editor control mode");
 	Core_0RegisterCVarBool("cl_grab_cursor", false, "Grab cursor on move");
 	
 	Core_0RegisterCVarFloat("cl_mousesense", 2.0f, "Mouse sense value");
 	Core_0RegisterCVarBool("cl_invert_y", false, "Invert Y axis");
+
+	Core_0RegisterCVarBool("dev_reset_world_on_run", false, "Reset world on level run");
+		
 
 	Core_0RegisterCVarBool("cl_bob", true, "View bobbing");
 	Core_0RegisterCVarFloat("cl_bob_walk_y", 0.1f, "View bobbing walk y amplitude");
@@ -1178,6 +1201,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 }
 GameData::~GameData()
 {
+	EndMap();
+
 	mem_release(g_pAsyncTaskRunner);
 	//mem_delete(g_pRagdoll);
 	mem_delete(g_pEditable);
@@ -1194,8 +1219,10 @@ GameData::~GameData()
 
 	for(int i = 0; i < MPT_COUNT; ++i)
 	{
-		// @TODO: SSCore_SndDelete3dInst()
-		mem_delete_a(m_pidFootstepSound[i]);
+		int iCount = m_iFootstepSoundCount[i];
+		for (int j = 0; j < iCount; ++j)
+			mem_release(m_aFootstepSound[i][j]);
+		mem_delete_a(m_aFootstepSound[i]);
 	}
 }
 
@@ -1405,55 +1432,68 @@ void GameData::playFootstepSound(MTLTYPE_PHYSIC mtl_type, const float3 &f3Pos)
 	{
 		return;
 	}
-	ID idSound = m_pidFootstepSound[mtl_type][rand() % iCount];
-	SSCore_SndInstancePlay3d(idSound, false, false, (float3*)&f3Pos);
+	/*ID idSound = m_pidFootstepSound[mtl_type][rand() % iCount];
+	SSCore_SndInstancePlay3d(idSound, false, false, (float3*)&f3Pos);*/
+	IXSoundEmitter *pEmitter = m_aFootstepSound[mtl_type][rand() % iCount];
+	if (pEmitter)
+	{
+		pEmitter->setWorldPos(f3Pos);
+		pEmitter->play();
+	}
 }
 
 void GameData::loadFoostepsSounds()
 {
 	Array<const char*> aSounds[MPT_COUNT];
 
-	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("actor/step/default1.ogg");
-	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("actor/step/default2.ogg");
-	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("actor/step/default3.ogg");
-	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("actor/step/default4.ogg");
+	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("sounds/actor/step/default1.ogg");
+	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("sounds/actor/step/default2.ogg");
+	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("sounds/actor/step/default3.ogg");
+	aSounds[MTLTYPE_PHYSIC_CONCRETE].push_back("sounds/actor/step/default4.ogg");
 
-	aSounds[MTLTYPE_PHYSIC_METAL].push_back("actor/step/metal_plate1.ogg");
-	aSounds[MTLTYPE_PHYSIC_METAL].push_back("actor/step/metal_plate2.ogg");
-	aSounds[MTLTYPE_PHYSIC_METAL].push_back("actor/step/metal_plate3.ogg");
-	aSounds[MTLTYPE_PHYSIC_METAL].push_back("actor/step/metal_plate4.ogg");
+	aSounds[MTLTYPE_PHYSIC_METAL].push_back("sounds/actor/step/metal_plate1.ogg");
+	aSounds[MTLTYPE_PHYSIC_METAL].push_back("sounds/actor/step/metal_plate2.ogg");
+	aSounds[MTLTYPE_PHYSIC_METAL].push_back("sounds/actor/step/metal_plate3.ogg");
+	aSounds[MTLTYPE_PHYSIC_METAL].push_back("sounds/actor/step/metal_plate4.ogg");
 
-	aSounds[MTLTYPE_PHYSIC_TREE].push_back("actor/step/new_wood1.ogg");
-	aSounds[MTLTYPE_PHYSIC_TREE].push_back("actor/step/new_wood2.ogg");
-	aSounds[MTLTYPE_PHYSIC_TREE].push_back("actor/step/new_wood3.ogg");
-	aSounds[MTLTYPE_PHYSIC_TREE].push_back("actor/step/new_wood4.ogg");
+	aSounds[MTLTYPE_PHYSIC_TREE].push_back("sounds/actor/step/new_wood1.ogg");
+	aSounds[MTLTYPE_PHYSIC_TREE].push_back("sounds/actor/step/new_wood2.ogg");
+	aSounds[MTLTYPE_PHYSIC_TREE].push_back("sounds/actor/step/new_wood3.ogg");
+	aSounds[MTLTYPE_PHYSIC_TREE].push_back("sounds/actor/step/new_wood4.ogg");
 
-	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("actor/step/earth1.ogg");
-	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("actor/step/earth2.ogg");
-	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("actor/step/earth3.ogg");
-	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("actor/step/earth4.ogg");
+	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("sounds/actor/step/earth1.ogg");
+	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("sounds/actor/step/earth2.ogg");
+	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("sounds/actor/step/earth3.ogg");
+	aSounds[MTLTYPE_PHYSIC_GROUD_SAND].push_back("sounds/actor/step/earth4.ogg");
 
-	aSounds[MTLTYPE_PHYSIC_WATER].push_back("actor/step/t_water1.ogg");
-	aSounds[MTLTYPE_PHYSIC_WATER].push_back("actor/step/t_water2.ogg");
+	aSounds[MTLTYPE_PHYSIC_WATER].push_back("sounds/actor/step/t_water1.ogg");
+	aSounds[MTLTYPE_PHYSIC_WATER].push_back("sounds/actor/step/t_water2.ogg");
 
-	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("actor/step/grass1.ogg");
-	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("actor/step/grass2.ogg");
-	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("actor/step/grass3.ogg");
-	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("actor/step/grass4.ogg");
+	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("sounds/actor/step/grass1.ogg");
+	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("sounds/actor/step/grass2.ogg");
+	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("sounds/actor/step/grass3.ogg");
+	aSounds[MTLTYPE_PHYSIC_LEAF_GRASS].push_back("sounds/actor/step/grass4.ogg");
 
 	//aSounds[MTLTYPE_PHYSIC_GLASS].push_back("actor/step/.ogg");
 	//aSounds[MTLTYPE_PHYSIC_PLASTIC].push_back("actor/step/.ogg");
 	//aSounds[MTLTYPE_PHYSIC_FLESH].push_back("actor/step/.ogg");
+
+	IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
+	IXSoundLayer *pGameLayer = pSound->findLayer("xGame");
+
+	if (!pGameLayer)
+		return;
 
 	for(int i = 0; i < MPT_COUNT; ++i)
 	{
 		Array<const char*> *paSounds = &aSounds[i];
 		int jl = paSounds->size();
 		m_iFootstepSoundCount[i] = jl;
-		m_pidFootstepSound[i] = jl ? new ID[jl] : NULL;
+		m_aFootstepSound[i] = (jl ? new IXSoundEmitter*[jl] : NULL);
 		for(int j = 0; j < jl; ++j)
 		{
-			m_pidFootstepSound[i][j] = SSCore_SndCreate3dInst(paSounds[0][j], SX_SOUND_CHANNEL_GAME, 100);
+			m_aFootstepSound[i][j] = pGameLayer->newSoundEmitter(paSounds[0][j], SOUND_SPACE_3D);
+			//m_aFootstepSound[i][j] = SSCore_SndCreate3dInst(paSounds[0][j], SX_SOUND_CHANNEL_GAME, 100);
 		}
 	}
 }

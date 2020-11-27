@@ -81,7 +81,7 @@ bool XMETHODCALLTYPE COcclusionCuller::isSphereVisible(const float3 &vOrigin, fl
 	return(true);
 }
 
-bool XMETHODCALLTYPE COcclusionCuller::isAABBvisible(const float3 &vMin, const float3 &vMax) const
+bool XMETHODCALLTYPE COcclusionCuller::isAABBvisible(const SMAABB &aabb) const
 {
 	return(true);
 }
@@ -96,16 +96,10 @@ void COcclusionCuller::_update()
 		}
 	}
 
-	float3 vStart;
-	m_pCamera->getPosition(&vStart);
-	float3 vDir;
-	m_pCamera->getLook(&vDir);
-	vDir = SMVector3Normalize(vDir);
-	float3 vRight;
-	m_pCamera->getRight(&vRight);
-	float3 vUp;
-	m_pCamera->getUp(&vUp);
-
+	float3 vStart = m_pCamera->getPosition();
+	float3 vDir = SMVector3Normalize(m_pCamera->getLook());
+	float3 vRight = m_pCamera->getRight();
+	float3 vUp = m_pCamera->getUp();
 
 	float3 vCenter = vStart + vDir * m_fFarPlane;
 	float fHalfHeight = tanf(m_fFOV * 0.5f) * m_fFarPlane;

@@ -1,6 +1,6 @@
 #include "CommandProperties.h"
 
-bool CCommandProperties::exec()
+bool XMETHODCALLTYPE CCommandProperties::exec()
 {
 	_prop_obj *pObj;
 	for(UINT j = 0, jl = m_aObjects.size(); j < jl; ++j)
@@ -8,7 +8,7 @@ bool CCommandProperties::exec()
 		pObj = &m_aObjects[j];
 
 		pObj->pObject->preSetup();
-		for(auto i = pObj->mKeyValues.begin(); i; i++)
+		for(auto i = pObj->mKeyValues.begin(); i; ++i)
 		{
 			if(i.second->isChanged)
 			{
@@ -17,10 +17,18 @@ bool CCommandProperties::exec()
 		}
 		pObj->pObject->postSetup();
 	}
+
+	bool isSucceeded = true;
+
+	for(UINT i = 0, l = m_aCustomTabCommands.size(); i < l; ++i)
+	{
+		isSucceeded &= m_aCustomTabCommands[i]->exec();
+	}
+
 	XUpdatePropWindow();
-	return(true);
+	return(isSucceeded);
 }
-bool CCommandProperties::undo()
+bool XMETHODCALLTYPE CCommandProperties::undo()
 {
 	_prop_obj *pObj;
 	for(UINT j = 0, jl = m_aObjects.size(); j < jl; ++j)
@@ -28,7 +36,7 @@ bool CCommandProperties::undo()
 		pObj = &m_aObjects[j];
 
 		pObj->pObject->preSetup();
-		for(auto i = pObj->mKeyValues.begin(); i; i++)
+		for(auto i = pObj->mKeyValues.begin(); i; ++i)
 		{
 			if(i.second->isChanged)
 			{
@@ -37,8 +45,16 @@ bool CCommandProperties::undo()
 		}
 		pObj->pObject->postSetup();
 	}
+
+	bool isSucceeded = true;
+
+	for(UINT i = 0, l = m_aCustomTabCommands.size(); i < l; ++i)
+	{
+		isSucceeded &= m_aCustomTabCommands[i]->undo();
+	}
+
 	XUpdatePropWindow();
-	return(true);
+	return(isSucceeded);
 }
 
 void CCommandProperties::addObject(ID idObject)
@@ -65,5 +81,10 @@ void CCommandProperties::setKV(const char *szKey, const char *szValue)
 		pKV->isChanged = pKV->sOld != pKV->sNew;
 
 		m_aObjects[i].pObject->setKV(szKey, szValue);
+	}
+
+	if(m_aObjects.size())
+	{
+		m_isEmpty = false;
 	}
 }

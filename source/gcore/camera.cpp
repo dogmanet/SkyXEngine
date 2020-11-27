@@ -11,9 +11,9 @@ CFrustum::CFrustum()
 	memset(m_isPointValid, 0, sizeof(m_isPointValid));
 }
 
-void CFrustum::update(const float4x4* view, const float4x4* proj)
+void CFrustum::update(const float4x4 &mView, const float4x4 &mProj)
 {
-	float4x4 matComb = SMMatrixMultiply(*view, *proj);
+	float4x4 matComb = mView *mProj;
 
 	// right (-x)
 	m_aFrustumPlanes[0].m_vNormal.x = matComb._14 - matComb._11;
@@ -74,11 +74,11 @@ void CFrustum::update(const SMPLANE *pPlanes, bool isNormalized)
 	memset(m_isPointValid, 0, sizeof(m_isPointValid));
 }
 
-bool CFrustum::pointInFrustum(const float3 *point) const
+bool CFrustum::pointInFrustum(const float3 &vPoint) const
 {
 	for(int i = 0; i < 6; ++i)
 	{
-		float tmp = SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, *point) + m_aFrustumPlanes[i].m_fDistance;
+		float tmp = SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, vPoint) + m_aFrustumPlanes[i].m_fDistance;
 		if(int(tmp * 1000.0f) <= 0)
 		{
 			return false;
@@ -87,22 +87,22 @@ bool CFrustum::pointInFrustum(const float3 *point) const
 	return true;
 }
 
-bool CFrustum::polyInFrustum(const float3* p1, const float3* p2, const float3* p3) const
+bool CFrustum::polyInFrustum(const float3 &p1, const float3 &p2, const float3 &p3) const
 {
 	/*if(pointInFrustum(p1) || pointInFrustum(p2) || pointInFrustum(p3))
 	return true;*/
 
 	for(int i = 0; i < 6; i++)
 	{
-		if(int((SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, *p1) + m_aFrustumPlanes[i].m_fDistance) * 1000.f) > 0) continue;
-		if(int((SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, *p2) + m_aFrustumPlanes[i].m_fDistance) * 1000.f) > 0) continue;
-		if(int((SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, *p3) + m_aFrustumPlanes[i].m_fDistance) * 1000.f) > 0) continue;
+		if(int((SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, p1) + m_aFrustumPlanes[i].m_fDistance) * 1000.f) > 0) continue;
+		if(int((SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, p2) + m_aFrustumPlanes[i].m_fDistance) * 1000.f) > 0) continue;
+		if(int((SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, p3) + m_aFrustumPlanes[i].m_fDistance) * 1000.f) > 0) continue;
 		return false;
 	}
 	return true;
 }
 
-bool CFrustum::polyInFrustumAbs(const float3* p1, const float3* p2, const float3* p3) const
+bool CFrustum::polyInFrustumAbs(const float3 &p1, const float3 &p2, const float3 &p3) const
 {
 	if(pointInFrustum(p1) && pointInFrustum(p2) && pointInFrustum(p3))
 		return true;
@@ -110,52 +110,172 @@ bool CFrustum::polyInFrustumAbs(const float3* p1, const float3* p2, const float3
 	return false;
 }
 
-bool CFrustum::sphereInFrustum(const float3 *point, float radius) const
+bool CFrustum::sphereInFrustum(const float3 &vPoint, float radius) const
 {
 	for(int i = 0; i<6; ++i)
 	{
-		if(SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, *point) + m_aFrustumPlanes[i].m_fDistance <= -radius)
+		if(SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, vPoint) + m_aFrustumPlanes[i].m_fDistance <= -radius)
 			return false;
 	}
 	return true;
 }
 
-bool CFrustum::sphereInFrustumAbs(const float3 *point, float radius) const
+bool CFrustum::sphereInFrustumAbs(const float3 &vPoint, float radius) const
 {
 	for(int i = 0; i<6; i++)
 	{
-		if(SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, *point) + m_aFrustumPlanes[i].m_fDistance > -radius)
+		if(SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, vPoint) + m_aFrustumPlanes[i].m_fDistance > -radius)
 			return false;
 	}
 	return true;
 }
 
-bool CFrustum::boxInFrustum(const SMAABB &aabb) const
+bool CFrustum::boxInFrustum(const SMAABB &aabb, bool *pIsStrict) const
 {
-	return(boxInFrustum(&aabb.vMin, &aabb.vMax));
+	return(boxInFrustum(aabb.vMin, aabb.vMax, pIsStrict));
 }
-
-bool CFrustum::boxInFrustum(const float3 *min, const float3 *max) const
+#if 0
+static bool BoxInFrustum1(const CFrustumPlane *m_aFrustumPlanes, const float3 &vMin, const float3 &vMax)
 {
 	for(register int p = 0; p < 6; ++p)
 	{
 		auto &plane = m_aFrustumPlanes[p];
-		if(SMVector3Dot(plane.m_vNormal, *min) + plane.m_fDistance > 0) continue;
-		if(SMVector3Dot(plane.m_vNormal, float3(min->x, min->y, max->z)) + plane.m_fDistance > 0) continue;
-		if(SMVector3Dot(plane.m_vNormal, float3(min->x, max->y, min->z)) + plane.m_fDistance > 0) continue;
-		if(SMVector3Dot(plane.m_vNormal, float3(min->x, max->y, max->z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, vMin) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(vMin.x, vMin.y, vMax.z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(vMin.x, vMax.y, vMin.z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(vMin.x, vMax.y, vMax.z)) + plane.m_fDistance > 0) continue;
 
-		if(SMVector3Dot(plane.m_vNormal, float3(max->x, min->y, min->z)) + plane.m_fDistance > 0) continue;
-		if(SMVector3Dot(plane.m_vNormal, float3(max->x, min->y, max->z)) + plane.m_fDistance > 0) continue;
-		if(SMVector3Dot(plane.m_vNormal, float3(max->x, max->y, min->z)) + plane.m_fDistance > 0) continue;
-		if(SMVector3Dot(plane.m_vNormal, *max) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(vMax.x, vMin.y, vMin.z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(vMax.x, vMin.y, vMax.z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(vMax.x, vMax.y, vMin.z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, vMax) + plane.m_fDistance > 0) continue;
+		return(false);
+	}
+	return(true);
+}
+static bool BoxInFrustum2(const CFrustumPlane *m_aFrustumPlanes, const float3 &vMin, const float3 &vMax)
+{
+	bool inside = true;
+
+
+	for(int p = 0; p < 6; ++p)
+	{
+		auto &plane = m_aFrustumPlanes[p];
+		//находим ближайшую к плоскости вершину
+		//проверяем, если она находится за плоскостью, то объект вне врустума
+		float d = SMVector3Sum(SMVectorMax(vMin * plane.m_vNormal, vMax * plane.m_vNormal)) + plane.m_fDistance;
+
+		float d2 = max(vMin.x * plane.m_vNormal.x, vMax.x * plane.m_vNormal.x)
+			+ max(vMin.y * plane.m_vNormal.y, vMax.y * plane.m_vNormal.y)
+			+ max(vMin.z * plane.m_vNormal.z, vMax.z * plane.m_vNormal.z)
+			+ plane.m_fDistance;
+		inside &= d > 0;
+
+		/*if(d < 0.0f)
+		{
+		return(false);
+		}*/
+	}
+	return inside;
+}
+
+
+bool CFrustum::boxInFrustum(const float3 &vMin, const float3 &vMax, bool isStrict) const
+{
+	if(isStrict)
+	{
 		return(false);
 	}
 
+	bool b0 = BoxInFrustum1(m_aFrustumPlanes, vMin, vMax);
+	//bool b1 = BoxInFrustum2(m_aFrustumPlanes, vMin, vMax);
+
+	//assert(b0 == b1);
+
+	//return(b0);
+
+	/*for(register int p = 0; p < 6; ++p)
+	{
+		auto &plane = m_aFrustumPlanes[p];
+		if(SMVector3Dot(plane.m_vNormal, vMin) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(vMin.x, vMin.y, vMax.z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(vMin.x, vMax.y, vMin.z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(vMin.x, vMax.y, vMax.z)) + plane.m_fDistance > 0) continue;
+
+		if(SMVector3Dot(plane.m_vNormal, float3(vMax.x, vMin.y, vMin.z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(vMax.x, vMin.y, vMax.z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, float3(vMax.x, vMax.y, vMin.z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane.m_vNormal, vMax) + plane.m_fDistance > 0) continue;
+		return(false);
+	}
+	return(true);*/
+	auto fn = isStrict ? SMVectorMin : SMVectorMax;
+
+	//bool inside = true;
+
+
+	for(int p = 0; p < 6; ++p)
+	{
+		auto &plane = m_aFrustumPlanes[p];
+		//находим ближайшую к плоскости вершину
+		//проверяем, если она находится за плоскостью, то объект вне врустума
+		float d = SMVector3Sum(fn(vMin * plane.m_vNormal, vMax * plane.m_vNormal)) + plane.m_fDistance;
+
+		float d2 = max(vMin.x * plane.m_vNormal.x, vMax.x * plane.m_vNormal.x)
+			+ max(vMin.y * plane.m_vNormal.y, vMax.y * plane.m_vNormal.y)
+			+ max(vMin.z * plane.m_vNormal.z, vMax.z * plane.m_vNormal.z)
+			+ plane.m_fDistance;
+		//inside &= d > 0;
+
+		if(d <= 0.0f)
+		{
+			assert(!b0);
+			return(false);
+		}
+	}
+	//assert(inside == b0);
+	//return inside;
+
+	assert(b0);
 	return(true);
 }
+#endif
+bool CFrustum::boxInFrustum(const float3 &vMin, const float3 &vMax, bool *pIsStrict) const
+{
+	bool isVisible = true;
+	bool isVisibleStrict = true;
 
-bool CFrustum::frustumInFrustum(const IFrustum *pOther) const
+	for(int p = 0; p < 6; ++p)
+	{
+		auto &plane = m_aFrustumPlanes[p];
+		//находим ближайшую к плоскости вершину
+		//проверяем, если она находится за плоскостью, то объект вне врустума
+		float3 vTmpMin = vMin * plane.m_vNormal;
+		float3 vTmpMax = vMax * plane.m_vNormal;
+		float d = SMVector3Sum(SMVectorMax(vTmpMin, vTmpMax)) + plane.m_fDistance;
+
+		isVisible &= d > 0.0f;
+
+		if(isVisible && pIsStrict)
+		{
+			d = SMVector3Sum(SMVectorMin(vTmpMin, vTmpMax)) + plane.m_fDistance;
+			isVisibleStrict &= d > 0.0f;
+		}
+	}
+
+	//bool b0 = BoxInFrustum1(m_aFrustumPlanes, vMin, vMax);
+
+	//assert(isVisible == b0);
+
+	if(pIsStrict)
+	{
+		*pIsStrict = isVisible && isVisibleStrict;
+	}
+
+	return(isVisible);
+}
+
+bool CFrustum::frustumInFrustum(const IXFrustum *pOther) const
 {
 	for(register int p = 0; p < 6; ++p)
 	{
@@ -245,160 +365,64 @@ float3 CFrustum::getCenter() const
 
 //##########################################################################
 
-CCamera::CCamera()
-{
-	m_vPosition = float3(0.0f, 0.0f, 0.0f);
-	m_vRight = float3(1.0f, 0.0f, 0.0f);
-	m_vUp = float3(0.0f, 1.0f, 0.0f);
-	m_vLook = float3(0.0f, 0.0f, 1.0f);
-
-	m_oFrustum = CFrustum();
-
-	m_vPitchYawRoll = float3_t(0, 0, 0);
-}
-
+CCamera::CCamera():
+	m_pFrustum(new CFrustum())
+{}
 CCamera::~CCamera()
 {
-
+	mem_release(m_pFrustum);
 }
 
-void CCamera::posLeftRight(float units)
+void CCamera::setOrientation(const SMQuaternion &q)
 {
-	m_vPosition += float3(m_vRight.x, 0.0f, m_vRight.z) * units;
-	//LastVal.x = units;
-}
-
-void CCamera::posUpDown(float units)
-{
-	m_vPosition.y += m_vUp.y * units;
-}
-
-void CCamera::posFrontBack(float units)
-{
-	m_vPosition += float3(m_vLook.x, 0.0f, m_vLook.z) * units;
-	//LastVal.z = units;
-}
-
-
-void CCamera::rotUpDown(float angle)
-{
-	m_vPitchYawRoll.x -= angle;
-	if(m_vPitchYawRoll.x > SM_PIDIV2)
-	{
-		m_vPitchYawRoll.x = SM_PIDIV2;
-	}
-	else if(m_vPitchYawRoll.x < -SM_PIDIV2)
-	{
-		m_vPitchYawRoll.x = -SM_PIDIV2;
-	}
-
-	updateView();
-}
-
-void CCamera::rotRightLeft(float angle)
-{
-	m_vPitchYawRoll.y -= angle;
-	while(m_vPitchYawRoll.y < 0.0f)
-	{
-		m_vPitchYawRoll.y += SM_2PI;
-	}
-	while(m_vPitchYawRoll.y > SM_2PI)
-	{
-		m_vPitchYawRoll.y -= SM_2PI;
-	}
-
-	updateView();
-}
-
-void CCamera::roll(float angle)
-{
-	m_vPitchYawRoll.z -= angle;
-	updateView();
-}
-
-void CCamera::updateView()
-{
-	SMQuaternion q = SMQuaternion(m_vPitchYawRoll.x, 'x')
-		* SMQuaternion(m_vPitchYawRoll.y, 'y')
-		* SMQuaternion(m_vPitchYawRoll.z, 'z');
+	m_qRotation = q;
+	m_vPitchYawRoll = SMMatrixToEuler(q.GetMatrix());
 
 	m_vRight = q * float3(1.0f, 0.0f, 0.0f);
 	m_vUp = q * float3(0.0f, 1.0f, 0.0f);
 	m_vLook = q * float3(0.0f, 0.0f, 1.0f);
 }
 
-void CCamera::setOrientation(const SMQuaternion *q)
+const SMQuaternion& CCamera::getOrientation()
 {
-	m_vPitchYawRoll = SMMatrixToEuler(q->GetMatrix());
-
-	m_vRight = (*q) * float3(1.0f, 0.0f, 0.0f);
-	m_vUp = (*q) * float3(0.0f, 1.0f, 0.0f);
-	m_vLook = (*q) * float3(0.0f, 0.0f, 1.0f);
+	return(m_qRotation);
 }
 
-
-void CCamera::getViewMatrix(float4x4* view_matrix)
+const SMMATRIX& CCamera::getViewMatrix() const
 {
 	m_mView = SMMatrixLookToLH(m_vPosition, m_vLook, m_vUp);
-	*view_matrix = m_mView;// SMMatrixLookToLH(m_vPosition, m_vLook, m_vUp);
+	return(m_mView);
 }
 
 
-void CCamera::getPosition(float3* pos) const
+const float3& CCamera::getPosition() const
 {
-	*pos = m_vPosition;
+	return(m_vPosition);
 }
 
-void CCamera::setPosition(const float3* pos)
+void CCamera::setPosition(const float3 &vPos)
 {
-	m_vPosition = *pos;
+	m_vPosition = vPos;
 }
 
-
-void CCamera::getDirection(float3* dir) const
+const float3& CCamera::getRight() const
 {
-	*dir = m_vLook;
+	return(m_vRight);
 }
 
-/*void CCamera::setDirection(const float3* dir)
+const float3& CCamera::getUp() const
 {
-m_vLook = *dir;
-}*/
-
-
-void CCamera::getRight(float3* right) const
-{
-	*right = m_vRight;
+	return(m_vUp);
 }
 
-void CCamera::getUp(float3* up) const
+const float3& CCamera::getLook() const
 {
-	*up = m_vUp;
+	return(m_vLook);
 }
 
-void CCamera::getLook(float3* look) const
+const float3& CCamera::getRotation() const
 {
-	*look = m_vLook;
-}
-
-void CCamera::getRotation(float3* rot) const
-{
-	*rot = m_vPitchYawRoll;
-}
-
-float CCamera::getRotationX() const
-{
-	return m_vPitchYawRoll.x;
-}
-
-float CCamera::getRotationY() const
-{
-	return m_vPitchYawRoll.y;
-}
-
-float CCamera::getRotationZ() const
-{
-	return m_vPitchYawRoll.z;
+	return(m_vPitchYawRoll);
 }
 
 void CCamera::setFOV(float fov)
@@ -411,12 +435,13 @@ float CCamera::getFOV() const
 	return(m_fFOV);
 }
 
-void CCamera::updateFrustum(const float4x4 *pProjection)
+void CCamera::updateFrustum(const SMMATRIX &mProjection)
 {
-	m_oFrustum.update(&m_mView, pProjection);
+	m_pFrustum->update(getViewMatrix(), mProjection);
 }
 
-const IFrustum* CCamera::getFrustum()
+IXFrustum* CCamera::getFrustum()
 {
-	return &m_oFrustum;
+	m_pFrustum->AddRef();
+	return(m_pFrustum);
 }

@@ -42,12 +42,19 @@ cbuffer CDataCamera: register(b2)
 	float4 g_vNearFar;
 	float3 g_vParamProj;
 };
+#ifdef USE_INSTANCING
+cbuffer CInstanceData: register(b1)
+{
+	float4 g_instanceData[MAX_INSTANCES * 2];
+};
+#else
 cbuffer CDataObject: register(b1)
 {
 	float4x4 g_mW;
 	// float4x4 g_mWV;
 	// float4x4 g_mWVP;
 };
+#endif
 /* cbuffer CDataMaterial: register(b0)
 {
 	float4 g_vUserVS;
@@ -66,6 +73,11 @@ cbuffer XMaterialConstants: register(b7)
         XMAT_MS_CONST_STRUCT();
     } g_xMaterialConstants;
 };
+#else
+cbuffer CSkyBoxLight: register(b7)
+{
+    float4 g_vSkyBoxLights[16][4][16][3];
+};	
 #endif
 
 

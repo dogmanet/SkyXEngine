@@ -138,7 +138,7 @@ struct IBaseObject
 
 /*! Общий базовый интерфейс. Базовый интерфейс, от него происходит наследование во всех интерфейсах
  \note для удаления объекта вызвать Release, после сего объект будет уничтожен, но адрес не обнулится
- \note для удаления и обнуления использовать #mem_release_del
+ \note для удаления и обнуления использовать #mem_release
 */
 struct IBaseObject 
 {
@@ -188,7 +188,8 @@ public:
 //! Тип функции вывода отладочной информации
 typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMessage);
 
-#include <cstdio> 
+#include <cstdio>
+#include <cstdarg>
 #if defined(_WINDOWS)
 #	define WIN32_LEAN_AND_MEAN
 #	include <Windows.h>
@@ -197,7 +198,8 @@ typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMes
 #include <common/math.h>
 #include <common/array.h>
 #include <common/assotiativearray.h>
-#include <common/memalloc.h>
+#include <common/MemAlloc.h>
+#include <common/EnumReflection.h>
 
 #ifndef GET_X_LPARAM
 #define GET_X_LPARAM(lp)                        ((int)(short)LOWORD(lp))

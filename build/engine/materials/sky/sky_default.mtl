@@ -1,0 +1,5 @@
+[sky_hdr_hl2]
+
+shader = Sky
+tex.txBase = sky_default.dds
+; tex.txBase = sky_day03_02.dds

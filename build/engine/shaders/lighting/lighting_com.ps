@@ -158,7 +158,8 @@ float4 main(VSO_ResPos IN):SV_TARGET
 	// return(float4(frac(IN.vWorldRay), 1.0f));
 	
 	float fF0 = vNormals.w;
-	float fRoughness = lerp(PARAM_LIGHTING_ROUGHNESS_MIN, PARAM_LIGHTING_ROUGHNESS_MAX, vParam.x);
+	// float fRoughness = lerp(PARAM_LIGHTING_ROUGHNESS_MIN, PARAM_LIGHTING_ROUGHNESS_MAX, vParam.x);
+	float fRoughness = vParam.x;
 	float fMetallic = vParam.y;
 	float fThickness = vParam.z;
 	float fAO = vParam.w;
@@ -181,7 +182,7 @@ float4 main(VSO_ResPos IN):SV_TARGET
 	float3 vLigth = normalize(g_vLightPosShadow.xyz - vPosition.xyz);
 #endif
 
-	float fShadow = fAO;
+	float fShadow = 1.0;
 #ifdef IS_SHADOWED
 	fShadow *= GenShadow(IN).x;
 #endif

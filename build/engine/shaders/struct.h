@@ -68,6 +68,8 @@ struct VSI_Geometry
 	float3 vPosition	:POSITION0;
 	float2 vTexUV	:TEXCOORD0;
 	float3 vNormal	:NORMAL0;
+	float3 vTangent	: TANGENT0;
+	float3 vBinormal	: BINORMAL0;
 };
 
 
@@ -112,6 +114,8 @@ struct VSO_SceneCommon
 	float2 vTexUV	:TEXCOORD0;
 	float3 vNormal	:TEXCOORD1;
 	float4 vPos		:TEXCOORD2;
+	float3 vTangent	:TEXCOORD3;
+	float3 vBinormal	:TEXCOORD4;
 };
 
 struct GSO_SceneShadows

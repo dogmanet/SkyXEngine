@@ -1,4 +1,4 @@
-﻿#include "RenderPipeline.h"
+#include "RenderPipeline.h"
 
 #include <core/sxcore.h>
 
@@ -25,6 +25,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	Core_0RegisterCVarBool("dev_lpv_cubes", false, "Отображать сетку LPV");
 	Core_0RegisterCVarBool("dev_lpv_points", false, "Отображать VPL при инъекции в LPV");
 
+	Core_0RegisterCVarBool("r_clear_color", false, "Очищать буфер перед выводом кадра");
+
 	Core_0RegisterCVarFloat("hdr_adapted_coef", 0.3f, "Коэфициент привыкания к освещению (0,1] (медлено, быстро)");
 	Core_0RegisterCVarFloat("hdr_base_value", 0.2f, "Базовое значение для тонмаппинга  (0,0.5] (темно, ярко)");
 	
@@ -33,6 +35,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		{"vTexUV", GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
 		{"vNormal", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1},
 		{"vPos", GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD2},
+		{"vTangent", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD3},
+		{"vBinormal", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD4},
 		XVERTEX_OUTPUT_DECL_END()
 	};
 	XVertexFormatHandler *pVertexFormatSceneGeneric = m_pMaterialSystem->registerVertexFormat("xSceneGeneric", voelGeneric);
@@ -533,11 +537,11 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 
 	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
-	m_pGBufferColor = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8);
+	m_pGBufferColor = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8B8G8R8);
 	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
-	m_pGBufferNormals = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8);
+	m_pGBufferNormals = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8B8G8R8);
 	//GXFMT_A16B16G16R16F; // 64bpp; GXFMT_A8R8G8B8
-	m_pGBufferParams = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8R8G8B8);
+	m_pGBufferParams = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8B8G8R8);
 	//GXFMT_G32R32F; // 64bpp; GXFMT_R32F
 	m_pGBufferDepth = m_pDevice->createTexture2D(m_uOutWidth, m_uOutHeight, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R32F);
 
@@ -827,6 +831,8 @@ void CRenderPipeline::renderGBuffer()
 {
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
+	static const bool *r_clear_color = GET_PCVAR_BOOL("r_clear_color");
+
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassGBuffer);
 
 	pCtx->setRasterizerState(NULL);
@@ -857,7 +863,7 @@ void CRenderPipeline::renderGBuffer()
 
 	pCtx->setColorTarget(pColorSurf);
 	//pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, RENDER_DEFAUL_BACKGROUND_COLOR, 0.0f);
-	pCtx->clear(GX_CLEAR_DEPTH | GX_CLEAR_STENCIL, RENDER_DEFAUL_BACKGROUND_COLOR, 0.0f);
+	pCtx->clear(GX_CLEAR_DEPTH | GX_CLEAR_STENCIL | (*r_clear_color ? GX_CLEAR_COLOR : 0), RENDER_DEFAUL_BACKGROUND_COLOR, 0.0f);
 
 	pCtx->setColorTarget(pNormalSurf, 1);
 	pCtx->setColorTarget(pParamSurf, 2);
@@ -1043,8 +1049,7 @@ void CRenderPipeline::renderTransparent()
 		}
 		//m_poolTransparencyBSPobjects
 
-		float3 vCamPos;
-		gdata::pCamera->getPosition(&vCamPos);
+		float3 vCamPos = gdata::pCamera->getPosition();
 
 		// Построение дерева
 		XTransparentBSPNode *pRootNode = m_poolTransparencyBSPnodes.Alloc();
@@ -1099,10 +1104,11 @@ void CRenderPipeline::renderTransparencyBSP(XTransparentBSPNode *pNode, XTranspa
 		pFirst = pNode->pFront;
 		pSecond = pNode->pBack;
 	}
-	if(pNode->iPSP >= 0)
+	if(pNode->iPSP >= 0 && uPlaneCount < MAX_TRANSPARENCY_CLIP_PANES)
 	{
 		pPSPs[pNode->iPSP].isRenderFront = !isInFront;
 		puPlanesStack[uPlaneCount++] = (UINT)pNode->iPSP;
+		// assert(uPlaneCount <= MAX_TRANSPARENCY_CLIP_PANES);
 	}
 	if(pFirst)
 	{
@@ -1525,12 +1531,16 @@ void CRenderPipeline::renderPostprocessFinal()
 
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassPostprocess);
 }
-void CRenderPipeline::renderEditor2D()
+void CRenderPipeline::renderEditor2D(IXRenderableVisibility *pVisibility)
 {
+	if(!pVisibility)
+	{
+		pVisibility = m_pMainCameraVisibility;
+	}
+
 	SMMATRIX mVP;
 	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mVP);
-	float3 vCamPos;
-	SRender_GetCamera()->getPosition(&vCamPos);
+	float3 vCamPos = SRender_GetCamera()->getPosition();
 
 	m_cameraShaderData.mVP = SMMatrixTranspose(mVP);
 	m_cameraShaderData.vPosCam = vCamPos;
@@ -1540,7 +1550,7 @@ void CRenderPipeline::renderEditor2D()
 	m_pDevice->getThreadContext()->setPSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
 	m_pDevice->getThreadContext()->setGSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
 
-	renderStage(XRS_EDITOR_2D);
+	renderStage(XRS_EDITOR_2D, pVisibility);
 }
 
 IXUI* CRenderPipeline::getXUI()

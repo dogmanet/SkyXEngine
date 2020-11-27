@@ -27,6 +27,22 @@ public:
 	}
 	GXFORMAT XMETHODCALLTYPE getFormat() const override
 	{
+		if(m_isSRGB)
+		{
+			switch(m_format)
+			{
+			case GXFMT_A8B8G8R8:
+				return(GXFMT_A8B8G8R8_SRGB);
+			case GXFMT_X8R8G8B8:
+				return(GXFMT_X8R8G8B8_SRGB);
+			case GXFMT_DXT1:
+				return(GXFMT_DXT1_SRGB);
+			case GXFMT_DXT3:
+				return(GXFMT_DXT3_SRGB);
+			case GXFMT_DXT5:
+				return(GXFMT_DXT5_SRGB);
+			}
+		}
 		return(m_format);
 	}
 	
@@ -70,7 +86,7 @@ public:
 		//! @todo Implement me!
 	}
 
-	UINT getBitsPerPixel(GXFORMAT format)
+	UINT getBitsPerPixel(GXFORMAT format) const
 	{
 		switch(format)
 		{
@@ -88,7 +104,9 @@ public:
 		case GXFMT_D24S8:
 		case GXFMT_D32:
 		case GXFMT_X8R8G8B8:
-		case GXFMT_A8R8G8B8:
+		case GXFMT_A8B8G8R8:
+		case GXFMT_X8R8G8B8_SRGB:
+		case GXFMT_A8B8G8R8_SRGB:
 			return(32);
 
 		case GXFMT_D16:
@@ -97,11 +115,14 @@ public:
 			return(16);
 
 		case GXFMT_DXT1:
+		case GXFMT_DXT1_SRGB:
 		case GXFMT_ATI1N:
 			return(4);
 
 		case GXFMT_DXT3:
 		case GXFMT_DXT5:
+		case GXFMT_DXT3_SRGB:
+		case GXFMT_DXT5_SRGB:
 		case GXFMT_ATI2N:
 			return(8);
 		}
@@ -109,7 +130,7 @@ public:
 		return(0);
 	}
 
-	UINT XMETHODCALLTYPE getTextureBytes(GXFORMAT format, UINT uWidth, UINT uHeight) override
+	UINT XMETHODCALLTYPE getTextureBytes(GXFORMAT format, UINT uWidth, UINT uHeight) const override
 	{
 		bool bc = true;
 		int bcnumBytesPerBlock = 16;
@@ -117,10 +138,13 @@ public:
 		switch(format)
 		{
 		case GXFMT_DXT1:
+		case GXFMT_DXT1_SRGB:
 		case GXFMT_ATI1N:
 			bcnumBytesPerBlock = 8;
 		case GXFMT_DXT3:
 		case GXFMT_DXT5:
+		case GXFMT_DXT3_SRGB:
+		case GXFMT_DXT5_SRGB:
 		case GXFMT_ATI2N:
 			bc = true;
 			break;
@@ -151,6 +175,9 @@ public:
 		case GXFMT_ATI1N:
 		case GXFMT_DXT3:
 		case GXFMT_DXT5:
+		case GXFMT_DXT1_SRGB:
+		case GXFMT_DXT3_SRGB:
+		case GXFMT_DXT5_SRGB:
 		case GXFMT_ATI2N:
 			return(true);
 		}
@@ -167,9 +194,28 @@ public:
 		return(m_szFileName);
 	}
 
+	bool XMETHODCALLTYPE isSRGB() const override
+	{
+		return(m_isSRGB);
+	}
+
+	void XMETHODCALLTYPE setIsSRGB(bool yesNo) override
+	{
+		m_isSRGB = yesNo;
+	}
+
+protected:
+	void cloneBaseData(CResourceTextureImpl *pTo) const
+	{
+		// pTo->setFileName(m_szFileName);
+		pTo->setFrameTime(m_fFrameTime);
+		pTo->setIsSRGB(m_isSRGB);
+	}
+
 protected:
 	GXTEXTURE_TYPE m_type = GXTEXTURE_TYPE_UNKNOWN;
 	GXFORMAT m_format = GXFMT_UNKNOWN;
+	bool m_isSRGB = false;
 	UINT m_uFrameCount = 0;
 	UINT m_uMipmapCount = 0;
 	float m_fFrameTime = 0.0f;
@@ -189,7 +235,7 @@ public:
 	UINT XMETHODCALLTYPE getWidth() const override;
 	UINT XMETHODCALLTYPE getHeight() const override;
 
-	void XMETHODCALLTYPE init(UINT uWidth, UINT uHeight, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 0) override;
+	void XMETHODCALLTYPE init(UINT uWidth, UINT uHeight, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 1) override;
 
 	XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) override;
 	const XImageMip* XMETHODCALLTYPE getMip(UINT uMipmap, UINT uFrame = 0) const override;
@@ -197,7 +243,7 @@ public:
 	const IXResourceTexture2D* XMETHODCALLTYPE as2D() const override;
 	IXResourceTexture2D* XMETHODCALLTYPE as2D() override;
 
-
+	void XMETHODCALLTYPE clone(IXResourceTexture **pOut) const override;
 protected: 
 	UINT m_uWidth = 0;
 	UINT m_uHeight = 0;
@@ -213,7 +259,7 @@ public:
 
 	UINT XMETHODCALLTYPE getSize() const override;
 
-	void XMETHODCALLTYPE init(UINT uSize, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 0) override;
+	void XMETHODCALLTYPE init(UINT uSize, GXFORMAT format, UINT uMipmapCount = IXRESOURCE_TEXTURE_AUTO_MIPS, UINT uFrameCount = 1) override;
 
 	XImageMip* XMETHODCALLTYPE getMip(GXCUBEMAP_FACES face, UINT uMipmap, UINT uFrame = 0) override;
 	const XImageMip* XMETHODCALLTYPE getMip(GXCUBEMAP_FACES face, UINT uMipmap, UINT uFrame = 0) const override;
@@ -221,6 +267,7 @@ public:
 	const IXResourceTextureCube* XMETHODCALLTYPE asCube() const override;
 	IXResourceTextureCube* XMETHODCALLTYPE asCube() override;
 
+	void XMETHODCALLTYPE clone(IXResourceTexture **pOut) const override;
 protected:
 	UINT m_uSize = 0;
 

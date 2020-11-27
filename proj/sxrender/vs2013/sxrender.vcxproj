@@ -187,7 +187,11 @@
     <ClInclude Include="..\..\..\source\render\RenderableVisibility.h" />
     <ClInclude Include="..\..\..\source\render\RenderPipeline.h" />
     <ClInclude Include="..\..\..\source\render\render_func.h" />
+    <ClInclude Include="..\..\..\source\render\Scene.h" />
     <ClInclude Include="..\..\..\source\render\sxrender.h" />
+    <ClInclude Include="..\..\..\source\render\Updatable.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXRenderable.h" />
+    <ClInclude Include="..\..\..\source\xcommon\IXRenderPipeline.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
@@ -198,7 +202,9 @@
     <ClCompile Include="..\..\..\source\render\RenderableVisibility.cpp" />
     <ClCompile Include="..\..\..\source\render\RenderPipeline.cpp" />
     <ClCompile Include="..\..\..\source\render\render_func.cpp" />
+    <ClCompile Include="..\..\..\source\render\Scene.cpp" />
     <ClCompile Include="..\..\..\source\render\sxrender.cpp" />
+    <ClCompile Include="..\..\..\source\render\Updatable.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

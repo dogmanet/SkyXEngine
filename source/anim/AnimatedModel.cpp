@@ -519,6 +519,10 @@ void CAnimatedModel::update(float fDT)
 		layer_s *pLayer = &m_aLayers[i];
 		if(pLayer->isInFade)
 		{
+			if(!m_wasInitiated)
+			{
+				m_wasInitiated = true;
+			}
 			if(pLayer->uFadeCurTime == 0)
 			{
 				memcpy(pLayer->pLastFrameBones, pLayer->pCurrentBones, sizeof(XResourceModelBone) * m_pShared->getBoneCount());
@@ -556,6 +560,10 @@ void CAnimatedModel::update(float fDT)
 
 		if(pLayer->isPlaying/* || pLayer->isDirty*/)
 		{
+			if(!m_wasInitiated)
+			{
+				m_wasInitiated = true;
+			}
 			if(!pLayer->uFrameCount)
 			{
 				pLayer->isPlaying = false;
@@ -663,6 +671,19 @@ void CAnimatedModel::update(float fDT)
 		}
 		//fillBoneMatrix();
 	}
+
+	if(!m_wasInitiated)
+	{
+		m_wasInitiated = true;
+
+		layer_s *pLayer = &m_aLayers[0];
+
+		for(UINT j = 0, jl = m_pShared->getBoneCount(); j < jl; ++j)
+		{
+			pLayer->pCurrentBones[j] = *m_pShared->getBone(j);
+		}
+	}
+
 	fillBoneMatrix();
 }
 
@@ -736,7 +757,7 @@ void CAnimatedModel::fillBoneMatrix()
 	m_isBoneMatrixReFilled = true;
 }
 
-void XMETHODCALLTYPE CAnimatedModel::render(UINT uLod, bool isTransparent)
+void XMETHODCALLTYPE CAnimatedModel::render(UINT uLod, XMODEL_FEATURE bmFeatures)
 {
 	if(!m_pDevice || !m_isEnabled || !m_pWorldBuffer)
 	{

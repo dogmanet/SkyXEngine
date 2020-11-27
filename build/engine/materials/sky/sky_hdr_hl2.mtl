@@ -1,4 +1,0 @@
-[sky_hdr_hl2]
-
-shader = Sky
-tex.txBase = sky_hdr_hl2.dds

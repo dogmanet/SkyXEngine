@@ -43,7 +43,7 @@ public:
 	virtual void renderPostprocessMain() = 0;
 	virtual void renderTransparent() = 0;
 	virtual void renderPostprocessFinal() = 0;
-	virtual void renderEditor2D() = 0;
+	virtual void renderEditor2D(IXRenderableVisibility *pVisibility = NULL) = 0;
 };
 
 #endif

@@ -57,7 +57,7 @@ void CShadowMap::InitDepthStencilSurface(IGXDevice *pContext, UINT uSize)
 		for(int i = 0; i < 16; ++i)
 			aRndColors[i] = GX_COLOR_ARGB(255, rand() % 255, rand() % 255, rand() % 255);
 
-		ms_pRandomTexture = pContext->createTexture2D(4, 4, 1, 0, GXFMT_A8R8G8B8, aRndColors);
+		ms_pRandomTexture = pContext->createTexture2D(4, 4, 1, 0, GXFMT_A8B8G8R8, aRndColors);
 
 		static char tmp[32];
 		sprintf(tmp, "%u", uSize);
@@ -343,9 +343,9 @@ void CReflectiveShadowMap::init(IGXDevice *pContext, UINT uSize)
 	m_pDevice = pContext;
 
 	//GXFMT_A8R8G8B8
-	m_pNormalMap32 = m_pDevice->createTexture2D(32, 32, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
+	m_pNormalMap32 = m_pDevice->createTexture2D(32, 32, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8B8G8R8);
 	//GXFMT_A8R8G8B8
-	m_pFluxMap32 = m_pDevice->createTexture2D(32, 32, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
+	m_pFluxMap32 = m_pDevice->createTexture2D(32, 32, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8B8G8R8);
 	//GXFMT_R32F
 	m_pDepthMap32 = m_pDevice->createTexture2D(32, 32, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R32F);
 
@@ -716,9 +716,9 @@ void CReflectiveShadowSun::init(IGXDevice *pContext, UINT uSize)
 	m_pDevice = pContext;
 
 	//GXFMT_A8R8G8B8
-	m_pNormalMap = m_pDevice->createTexture2D(RSM_SUN_SIZE, RSM_SUN_SIZE, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
+	m_pNormalMap = m_pDevice->createTexture2D(RSM_SUN_SIZE, RSM_SUN_SIZE, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8B8G8R8);
 	//GXFMT_A8R8G8B8
-	m_pFluxMap = m_pDevice->createTexture2D(RSM_SUN_SIZE, RSM_SUN_SIZE, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
+	m_pFluxMap = m_pDevice->createTexture2D(RSM_SUN_SIZE, RSM_SUN_SIZE, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8B8G8R8);
 	//GXFMT_R32F
 	m_pDepthMap = m_pDevice->createTexture2D(RSM_SUN_SIZE, RSM_SUN_SIZE, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R32F);
 
@@ -1194,9 +1194,9 @@ void CReflectiveShadowCubeMap::init(IGXDevice *pDevice, UINT uSize)
 	m_pDevice = pDevice;
 
 	//GXFMT_A8R8G8B8
-	m_pNormalMap32 = m_pDevice->createTextureCube(32, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
+	m_pNormalMap32 = m_pDevice->createTextureCube(32, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8B8G8R8);
 	//GXFMT_A8R8G8B8
-	m_pFluxMap32 = m_pDevice->createTextureCube(32, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8R8G8B8);
+	m_pFluxMap32 = m_pDevice->createTextureCube(32, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8B8G8R8);
 	//GXFMT_R32F
 	m_pDepthMap32 = m_pDevice->createTextureCube(32, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_R32F);
 

@@ -128,7 +128,7 @@ void CEntityFactoryMap::getListing(const char ** pszOut, int size)
 	{
 		size = m_iShowInListCount;
 	}
-	for(AssotiativeArray<AAString, IEntityFactory*>::Iterator i = m_mFactories.begin(); i && j < size; i++)
+	for(AssotiativeArray<AAString, IEntityFactory*>::Iterator i = m_mFactories.begin(); i && j < size; ++i)
 	{
 		if(!(*i.second)->isEditorHidden())
 		{
@@ -145,4 +145,27 @@ const char *CEntityFactoryMap::getClassNamePtr(const char *szClassName)
 		return(pFactory->getClassName());
 	}
 	return(NULL);
+}
+
+bool CEntityFactoryMap::IsEntityOfClass(CBaseEntity *pEnt, const char *szClassName)
+{
+	IEntityFactory * pFactory = GetInstance()->getFactory(szClassName);
+	if(pFactory)
+	{
+		proptable_t *pPropTable0 = pFactory->getPropTable();
+
+		proptable_t *pPropTable1 = pEnt->getPropTable();
+
+		do
+		{
+			if(pPropTable0 == pPropTable1)
+			{
+				return(true);
+			}
+
+			pPropTable1 = pPropTable1->pBaseProptable;
+		}
+		while(pPropTable1);
+	}
+	return(false);
 }

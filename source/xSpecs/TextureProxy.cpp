@@ -15,8 +15,13 @@ const char* XMETHODCALLTYPE CTextureProxy::getDescription() const
 	return("SkyXEngine texture naming system");
 }
 
-bool XMETHODCALLTYPE CTextureProxy::resolveName(const char *szName, char *szOutput, UINT *puBufSize)
+bool XMETHODCALLTYPE CTextureProxy::resolveName(const char *szName, char *szOutput, UINT *puBufSize, bool *pbWantLoad)
 {
+	if(pbWantLoad)
+	{
+		*pbWantLoad = false;
+	}
+
 	const char *szUPos = strstr(szName, "_");
 	if(!szUPos)
 	{
@@ -62,5 +67,10 @@ bool XMETHODCALLTYPE CTextureProxy::resolveName(const char *szName, char *szOutp
 		return(true);
 	}
 
+	return(false);
+}
+
+bool XMETHODCALLTYPE CTextureProxy::loadTexture(const char *szName, IXResourceTexture **ppOut)
+{
 	return(false);
 }

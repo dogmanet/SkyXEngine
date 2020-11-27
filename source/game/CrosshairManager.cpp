@@ -24,7 +24,7 @@ void CCrosshairManager::loadCrosshair(ID id, CCrosshair * pCCrosshair)
 	pCCrosshair->setTexture(desc->pTexture);
 }
 
-void CCrosshairManager::loadConfig(const char * szFile)
+void CCrosshairManager::loadConfig(const char *szFile)
 {
 	ISXConfig * config = Core_OpConfig(szFile);
 	int sections = config->getSectionCount();

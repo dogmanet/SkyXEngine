@@ -148,9 +148,15 @@ float2 LayerDecode(float fCode)
 #define LayerDecodeType(fCode)(LayerDecode(fCode).y)
 
 //! преобразвоание цвета в нормаль (если конечно цвет содержит нормаль)
-float3 Color2Normal(float3 vColor)
+float3 Color3ToNormal(float3 vColor)
 {
-	return (2.0 * vColor - 1.0);
+	return(2.0 * vColor - 1.0);
+}
+
+float3 Color2ToNormal(float2 vColor, float fWeight)
+{
+	float2 tmp = (2.0 * vColor - 1.0) * fWeight;
+	return(float3(tmp, 1.0 - sqrt(tmp.x * tmp.x + tmp.y * tmp.y)));
 }
 
 //##########################################################################
@@ -192,9 +198,15 @@ float GetLerpFactorDetail(float fDistance)
 }
 
 //! смешивание макронормали (модели) с микронормалью (из normal map)
-float3 MixNormalMicro(float3 vMacroNormal, float3 vMicroNormal)
+/*float3 MixNormalMicro(float3 vMacroNormal, float3 vMicroNormal)
 {
 	return normalize((vMacroNormal + float3(vMicroNormal.xy,vMacroNormal.z)));
+}*/
+
+float3 MixNormalMicro(float3 vNormalMap, float3 vTangent, float3 vBinormal, float3 vNormal)
+{
+	float3x3 mTBN = float3x3(vTangent, vBinormal, vNormal);
+	return normalize(mul(vNormalMap, mTBN));
 }
 
 //! смешивание 2 детальных текстур по маске, где r канал маски для первой детальной текстуры, а g для второй
