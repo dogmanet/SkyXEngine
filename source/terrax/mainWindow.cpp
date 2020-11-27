@@ -7,6 +7,7 @@
 #include "resource.h"
 #include <commctrl.h>
 #include <combaseapi.h>
+#include <shellapi.h>
 
 #include <dwmapi.h>
 #pragma comment(lib, "dwmapi.lib")
@@ -1272,6 +1273,44 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		case ID_TOOLS_RELOADMATERIALS:
 			g_pEngine->getCore()->getConsole()->execCommand("mtl_reload");
+			break;
+
+		case ID_HELP_SKYXENGINEWIKI:
+			ShellExecute(0, 0, "https://wiki.skyxengine.com", 0, 0, SW_SHOW);
+			break;
+
+		case ID_HELP_ABOUT:
+			MessageBox(g_hWndMain, SKYXENGINE_VERSION4EDITORS "\nhttps://skyxengine.com\nLicensed under the AGPL-3.0 License\nCopyright (c) DogmaNet Team, 2020", "TerraX Editor " SKYXENGINE_VERSION, MB_OK | MB_ICONINFORMATION);
+			break;
+
+		case ID_EDIT_CLEARSELECTION:
+			{
+				CCommandSelect *pCmdUnselect = new CCommandSelect();
+				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+				{
+					IXEditorObject *pObj = g_pLevelObjects[i];
+					if(pObj->isSelected())
+					{
+						pCmdUnselect->addDeselected(i);
+					}
+				}
+				g_pUndoManager->execCommand(pCmdUnselect);
+			}
+			break;
+
+		case ID_EDIT_SELECTALL:
+			{
+				CCommandSelect *pCmdSelect = new CCommandSelect();
+				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+				{
+					IXEditorObject *pObj = g_pLevelObjects[i];
+					if(!pObj->isSelected())
+					{
+						pCmdSelect->addSelected(i);
+					}
+				}
+				g_pUndoManager->execCommand(pCmdSelect);
+			}
 			break;
 		}
 		break;
@@ -2655,6 +2694,8 @@ void XUpdateStatusGrid()
 
 	sprintf_s(szMsg, "Snap: %s; Grid: %s", g_xConfig.m_bSnapGrid ? "on" : "off", szGrid);
 	SendMessage(g_hStatusWnd, SB_SETTEXT, MAKEWPARAM(4, 0), (LPARAM)szMsg);
+
+	XCheckMenuItem(g_hMenu, ID_LEVEL_SNAPTOGRID, g_xConfig.m_bSnapGrid);
 }
 
 void XUpdateStatusMPos()
