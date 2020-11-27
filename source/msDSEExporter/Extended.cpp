@@ -70,7 +70,7 @@ void CExtended::hide()
 }
 bool CExtended::isVisible()
 {
-	return(IsWindowVisible(m_hDlgWnd));
+	return(IsWindowVisible(m_hDlgWnd) != FALSE);
 }
 
 INT_PTR CALLBACK CExtended::DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)

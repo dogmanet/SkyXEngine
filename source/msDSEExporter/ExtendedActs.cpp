@@ -108,7 +108,7 @@ bool CExtendedActs::invokeEditor(HWND hWnd, LPCTSTR szDefault, LPCTSTR szTitle)
 {
 	m_szEditDefault = szDefault;
 	m_szEditTitle = szTitle;
-	return(DialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG3), hWnd, EditDlgProc, (LPARAM)this));
+	return(DialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG3), hWnd, EditDlgProc, (LPARAM)this) != 0);
 }
 
 void CExtendedActs::init(HWND hWndParent)

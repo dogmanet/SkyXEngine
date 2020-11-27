@@ -339,6 +339,7 @@ void CExporter::tryLoadModel()
 	if(m_hdr.Magick != SX_MODEL_MAGICK)
 	{
 		MessageBox(m_hDlgWnd, "Corrupt model. Invalid magick", "Load error", MB_OK | MB_ICONSTOP);
+		fclose(pf);
 		return;
 	}
 
@@ -915,7 +916,7 @@ void CExporter::writePhysdata(FILE *pf)
 	physData.iPartsOffset = m_hdr2.iPhysicsDataOffset + MODEL_PHYSDATA_STRUCT_SIZE;
 	fwrite(&physData, MODEL_PHYSDATA_STRUCT_SIZE, 1, pf);
 
-	size_t uBaseOffset = physData.iPartsOffset + MODEL_PHYSPART_STRUCT_SIZE * physData.iPhyspartCount;
+	uint64_t uBaseOffset = physData.iPartsOffset + MODEL_PHYSPART_STRUCT_SIZE * physData.iPhyspartCount;
 
 	for(UINT i = 0; i < physData.iPhyspartCount; ++i)
 	{
@@ -1981,7 +1982,7 @@ bool CExporter::invokeEditor(HWND hWnd, LPCTSTR szDefault, LPCTSTR szTitle)
 {
 	m_szEditDefault = szDefault;
 	m_szEditTitle = szTitle;
-	return(DialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG3), hWnd, EditDlgProc, (LPARAM)this));
+	return(DialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG3), hWnd, EditDlgProc, (LPARAM)this) != 0);
 }
 
 INT_PTR CALLBACK CExporter::EditDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)

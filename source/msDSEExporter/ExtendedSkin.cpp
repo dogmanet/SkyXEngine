@@ -245,11 +245,11 @@ void CExtendedSkin::addColumn(LPCTSTR str)
 
 void CExtendedSkin::addOverride(int iSkin, int iColumn, LPCTSTR str)
 {
-	if(m_vvszRows.size() <= iSkin)
+	if((int)m_vvszRows.size() <= iSkin)
 	{
 		m_vvszRows.resize(iSkin + 1);
 	}
-	if(m_vvszRows[iSkin].size() <= iColumn)
+	if((int)m_vvszRows[iSkin].size() <= iColumn)
 	{
 		m_vvszRows[iSkin].resize(iColumn + 1);
 	}
@@ -374,7 +374,7 @@ bool CExtendedSkin::invokeEditor(HWND hWnd, LPCTSTR szDefault, LPCTSTR szTitle)
 {
 	m_szEditDefault = szDefault;
 	m_szEditTitle = szTitle;
-	return(DialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG3), hWnd, SkinsEditDlgProc, (LPARAM)this));
+	return(DialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG3), hWnd, SkinsEditDlgProc, (LPARAM)this) != 0);
 }
 
 void CExtendedSkin::commit()

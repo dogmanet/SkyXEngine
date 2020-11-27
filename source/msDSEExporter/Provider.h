@@ -262,10 +262,10 @@ private:
 
 	struct Object
 	{
-		String sName;
 		float3 vPosition;
 		SMQuaternion qRotation;
 		Array<Subset> aSubsets;
+		String sName;
 	};
 	struct Layer
 	{
