@@ -273,9 +273,11 @@ bool XMETHODCALLTYPE CMaterialSystem::loadTexture(const char *szName, IXTexture 
 	char *szIdent = strdupa(szName);
 	int iPartCount = parse_str(szIdent, NULL, 0, '|');
 	char **pszParts = (char**)alloca(sizeof(char*) * iPartCount);
-	parse_str(szIdent, pszParts, iPartCount, '|');
-
-	szName = pszParts[0];
+	if(iPartCount)
+	{
+		parse_str(szIdent, pszParts, iPartCount, '|');
+		szName = pszParts[0];
+	}
 
 	IXResourceTexture *pRes = NULL;
 

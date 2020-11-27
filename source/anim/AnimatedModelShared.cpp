@@ -320,9 +320,9 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 
 			for(UINT j = 0; j < m_uMaterialCount; ++j)
 			{
-				if(aaMaterials[i][j].szName && aaMaterials[i][j].szName[0])
+				if(i == 0 || aaMaterials[i][j].szName && aaMaterials[i][j].szName[0])
 				{
-					m_pMaterialSystem->loadMaterial(aaMaterials[i][j].szName, &m_pppMaterials[i][j]);
+					m_pMaterialSystem->loadMaterial(aaMaterials[i][j].szName ? aaMaterials[i][j].szName : "", &m_pppMaterials[i][j]);
 				}
 				else
 				{

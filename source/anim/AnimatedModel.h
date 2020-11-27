@@ -157,6 +157,8 @@ protected:
 	mutable float3_t m_vLocalMax;
 
 	void _updateAABB() const;
+
+	bool m_wasInitiated = false;
 };
 
 #endif
