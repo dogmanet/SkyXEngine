@@ -41,6 +41,7 @@
     <ClCompile Include="..\..\..\source\msDSEExporter\ExtendedSkin.cpp" />
     <ClCompile Include="..\..\..\source\msDSEExporter\GeomDetector.cpp" />
     <ClCompile Include="..\..\..\source\msDSEExporter\Plugin.cpp" />
+    <ClCompile Include="..\..\..\source\msDSEExporter\Provider.cpp" />
     <ClCompile Include="..\..\..\source\msDSEExporter\stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -55,6 +56,7 @@
     <ClInclude Include="..\..\..\source\msDSEExporter\GeomDetector.h" />
     <ClInclude Include="..\..\..\source\msDSEExporter\IExtendedTab.h" />
     <ClInclude Include="..\..\..\source\msDSEExporter\Plugin.h" />
+    <ClInclude Include="..\..\..\source\msDSEExporter\Provider.h" />
     <ClInclude Include="..\..\..\source\msDSEExporter\resource.h" />
     <ClInclude Include="..\..\..\source\msDSEExporter\stdafx.h" />
   </ItemGroup>

@@ -11,6 +11,14 @@
 #include "ExtendedActs.h"
 #include "ExtendedLods.h"
 
+//#define SXPROP_EXP_GIBS "SXPROP/EXP_GIBS"
+#define SXPROP_EXP_SCALE "SXPROP/EXP_SCALE"
+//#define SXPROP_EXP_TABI "SXPROP/EXP_TABI"
+//#define SXPROP_EXP_STAT "SXPROP/EXP_STAT"
+//#define SXPROP_EXP_WGHT "SXPROP/EXP_WGHT"
+//#define SXPROP_EXP_SCNT "SXPROP/EXP_SCNT"
+//#define SXPROP_EXP_SKN_PREF "SXPROP/SKN/"
+
 class CExporter;
 class CActListener: public CExtendedActs::IListener
 {
@@ -36,15 +44,16 @@ private:
 class IProgress
 {
 public:
-	virtual void setProgress() = 0;
+	virtual void setProgress(float fProgress) = 0;
 };
 
-class IExporterCallback
+class IExporterProvider
 {
 public:
 	virtual bool canExportTB() = 0;
 
-	virtual void prepare(IProgress *pProgress) = 0;
+	virtual bool prepare(IProgress *pProgress, bool forStaticExport) = 0;
+	virtual bool preapareAnimationTrack(IProgress *pProgress, UINT uStartFrame, UINT uFrameCount) = 0;
 
 	virtual UINT getLayerCount() = 0;
 	virtual const char* getLayerName(UINT uLayer) = 0;
@@ -54,6 +63,7 @@ public:
 	virtual SMQuaternion getObjectRotation(UINT uLayer, UINT uObject) = 0;
 
 	virtual UINT getObjectSubsetCount(UINT uLayer, UINT uObject) = 0;
+	virtual const char* getObjectName(UINT uLayer, UINT uObject) = 0;
 	virtual const char* getObjectSubsetTexture(UINT uLayer, UINT uObject, UINT uSubset) = 0;
 
 	virtual UINT getObjectSubsetVertexCount(UINT uLayer, UINT uObject, UINT uSubset) = 0;
@@ -66,29 +76,45 @@ public:
 	virtual vertex_animated* getObjectSubsetAnimatedVertices(UINT uLayer, UINT uObject, UINT uSubset) = 0;
 	virtual vertex_animated_ex* getObjectSubsetAnimatedExVertices(UINT uLayer, UINT uObject, UINT uSubset) = 0;
 
-	// skeleton
-	// animation
-	// gibs
+	virtual UINT getBonesCount() = 0;
+	virtual const char* getBoneName(UINT uBone) = 0;
+	virtual int getBoneParent(UINT uBone) = 0;
+	virtual float3 getBoneLocalPos(UINT uBone) = 0;
+	virtual SMQuaternion getBoneLocalRot(UINT uBone) = 0;
+
+	virtual float3 getBonePositionAtFrame(UINT uBone, UINT uFrame) = 0;
+	virtual SMQuaternion getBoneRotationAtFrame(UINT uBone, UINT uFrame) = 0;
+
+	virtual bool hasBones() = 0;
+
+	virtual bool getConfigBool(const char *szKey, bool bDefault) = 0;
+	virtual void setConfigBool(const char *szKey, bool bvalue) = 0;
+	virtual float getConfigFloat(const char *szKey, float fDefault) = 0;
+	virtual void setConfigFloat(const char *szKey, float fvalue) = 0;
+	virtual int getConfigInt(const char *szKey, int iDefault) = 0;
+	virtual void setConfigInt(const char *szKey, int ivalue) = 0;
+	virtual void getConfigStr(const char *szKey, char *szOut, int iMaxOut) = 0;
+	virtual void setConfigStr(const char *szKey, const char *szValue) = 0;
 };
 
 class CExporter
 {
 public:
-	CExporter(const char *szFile, bool bSuppressPrompts, IExporterCallback *pCallback);
+	CExporter(const char *szFile, bool bSuppressPrompts, IExporterProvider *pCallback);
 	~CExporter();
 
 	int execute();
 
 	void setFramerate(int iFramerate)
 	{
-		m_iDefaultFramerate = iFramerate;
+		m_iFramerate = iFramerate;
 	}
-	void setEndFrame(int iFrame)
+	void setEndFrame(UINT uFrame)
 	{
-		m_iEndFrame = iFrame;
+		m_uEndFrame = uFrame;
 	}
 
-	void addTexture(const char *szName);
+	UINT addTexture(const char *szName);
 
 public:
 	void onActsCommitted();
@@ -97,12 +123,24 @@ public:
 
 	void logWarning(const char *szFormat, ...)
 	{
+		if(!m_isConsoleAlloced)
+		{
+			m_isConsoleAlloced = AllocConsole();
+			freopen("CONOUT$", "wt", stdout);
+			freopen("CONOUT$", "wt", stderr);
+		}
+
+		va_list va;
+		va_start(va, szFormat);
+		vprintf(szFormat, va);
+		va_end(va);
 	}
 
 private:
 	
 	static INT_PTR CALLBACK DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	INT_PTR CALLBACK dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static INT_PTR CALLBACK EditDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	void updateSectionMesh();
 	void updateSectionAnim();
@@ -134,6 +172,8 @@ private:
 
 	void startExport();
 
+	bool writeFile(const char *szFile, bool isForGib = false);
+
 	static void ProcessThread(void *p);
 	void doExport();
 
@@ -141,12 +181,64 @@ private:
 
 	void performRetopology();
 
-	void clearLods();
+	void clearLods(int iTargetLod = -1);
 	void clearPhysparts();
 
 	bool checkSettings();
 
-	void prepareFullMesh();
+	void preparePhysMesh(bool bIgnoreLayers = false);
+	void prepareLodMesh(int iTargetLod = -1);
+
+	bool prepareSkeleton(bool bOverwriteBindPose);
+
+	void prepareAnimation();
+
+	bool addBone(int iProviderParent, UINT uProviderId, bool bOverwriteBindPose);
+
+	int getNewBoneId(int iProviderId);
+	int getOldBoneId(int iId);
+
+	template<typename T>
+	void fixSubsetBoneIds(T *pVertices, UINT uVertexCount)
+	{
+		for(UINT i = 0; i < uVertexCount; ++i)
+		{
+			for(UINT j = 0; j < 4; ++j)
+			{
+				if(pVertices[i].BoneIndices[j] != 255)
+				{
+					pVertices[i].BoneIndices[j] = (byte)getNewBoneId(pVertices[i].BoneIndices[j]);
+				}
+				else
+				{
+					pVertices[i].BoneIndices[j] = 0;
+				}
+			}
+		}
+	}
+
+	bool invokeEditor(HWND hWnd, LPCTSTR szDefault, LPCTSTR szTitle);
+
+
+	class CProgress final: public IProgress
+	{
+	public:
+		CProgress(HWND hProgressBar);
+		void setProgress(float fProgress) override;
+
+		void setRange(float fMin, float fMax);
+		void setRange(float fMax);
+
+	private:
+		HWND m_hProgressBar;
+		const int mc_iTopRange = 1000;
+
+		float m_fMinRange = 0.0f;
+		float m_fMaxRange = 1.0f;
+	};
+
+//	float3 getBonePosForFrame(UINT uBone, UINT uFrame);
+//	SMQuaternion getBoneRotForFrame(UINT uBone, UINT uFrame);
 
 private:
 	HWND m_hDlgWnd = NULL;
@@ -156,12 +248,35 @@ private:
 
 	bool m_bSuppressPrompts = false;
 
-	HWND m_hProgressBar = NULL;
+	float m_fScale = 1.0f;
 
-	int m_iDefaultFramerate = 30;
-	int m_iEndFrame = 1;
+	int m_iFramerate = 30;
+	UINT m_uStartFrame = 0;
+	UINT m_uEndFrame = 1;
+	bool m_isLooped = false;
+	char m_szAnimationName[MODEL_MAX_NAME];
+	char m_szAnimationActivity[MODEL_MAX_NAME];
+	UINT m_uActivityChance = 1;
 
-	IExporterCallback *m_pCallback = NULL;
+	IExporterProvider *m_pCallback = NULL;
+
+	bool m_isSkeletonReady = false;
+	Array<int> m_aSkeletonRemap; // m_aSkeletonRemap[oldId] = newId
+	Array<int> m_aSkeletonRemapInv; // m_aSkeletonRemap[newId] = oldId
+
+
+	const char *m_szEditDefault = NULL;
+	const char *m_szEditTitle = NULL;
+
+	CProgress *m_pProgress = NULL;
+
+	BOOL m_isConsoleAlloced = FALSE;
+
+
+	/// for gibs
+	int m_iOnlyLayer = -1;
+	int m_iOnlyObject = -1;
+	const char *m_szOnlyLayer = NULL;
 private:
 
 	CExtendedPhys *m_pExtPhys = NULL;
@@ -172,6 +287,8 @@ private:
 
 	CActListener *m_pExtActsListener = NULL;
 	CLodListener *m_pExtLodListener = NULL;
+
+
 private:
 	ModelHeader m_hdr;
 	ModelHeader2 m_hdr2;

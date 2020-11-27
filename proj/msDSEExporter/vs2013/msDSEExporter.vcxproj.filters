@@ -57,6 +57,9 @@
     <ClCompile Include="..\..\..\source\msDSEExporter\ExtendedLods.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\msDSEExporter\Provider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\msDSEExporter\Plugin.h">
@@ -96,6 +99,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\msDSEExporter\ExtendedLods.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\msDSEExporter\Provider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

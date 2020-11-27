@@ -74,22 +74,7 @@ INT_PTR CALLBACK CExtendedActs::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 		switch(LOWORD(wParam))
 		{
 		case IDC_ACT_ADD:
-			{
-				char tmp[127];
-				tmp[0] = 0;
-				if(invokeEditor(hWnd, tmp, "Activity name"))
-				{
-					LV_ITEM item;
-					item.mask = LVIF_TEXT;
-					item.iItem = ListView_GetItemCount(m_hListWnd);
-					item.iSubItem = 0;
-					item.pszText = tmp;
-					item.cchTextMax = static_cast<int>(strlen(item.pszText));
-					ListView_InsertItem(m_hListWnd, &item);
-
-					invokeListener(false);
-				}
-			}
+			promptForNew();
 			break;
 
 		case IDC_ACT_REMOVE:
@@ -282,5 +267,23 @@ void CExtendedActs::invokeListener(bool isCommit)
 		{
 			m_apListeners[i]->onChanged();
 		}
+	}
+}
+
+void CExtendedActs::promptForNew(bool isCommit)
+{
+	char tmp[127];
+	tmp[0] = 0;
+	if(invokeEditor(m_hDlg, tmp, "Activity name"))
+	{
+		LV_ITEM item;
+		item.mask = LVIF_TEXT;
+		item.iItem = ListView_GetItemCount(m_hListWnd);
+		item.iSubItem = 0;
+		item.pszText = tmp;
+		item.cchTextMax = static_cast<int>(strlen(item.pszText));
+		ListView_InsertItem(m_hListWnd, &item);
+
+		invokeListener(isCommit);
 	}
 }

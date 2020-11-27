@@ -29,7 +29,7 @@ void CLodListener::onCommitted()
 }
 
 
-CExporter::CExporter(const char *szFile, bool bSuppressPrompts, IExporterCallback *pCallback):
+CExporter::CExporter(const char *szFile, bool bSuppressPrompts, IExporterProvider *pCallback):
 	m_szFile(szFile),
 	m_bSuppressPrompts(bSuppressPrompts),
 	m_pCallback(pCallback)
@@ -58,6 +58,13 @@ CExporter::CExporter(const char *szFile, bool bSuppressPrompts, IExporterCallbac
 
 CExporter::~CExporter()
 {
+	if(m_isConsoleAlloced)
+	{
+		FreeConsole();
+	}
+
+	mem_delete(m_pProgress);
+
 	m_pExtActs->removeListener(m_pExtActsListener);
 	mem_delete(m_pExtActsListener);
 
@@ -99,9 +106,7 @@ INT_PTR CALLBACK CExporter::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM l
 	switch(msg)
 	{
 	case WM_INITDIALOG:
-		m_hProgressBar = GetDlgItem(m_hDlgWnd, IDC_PROGRESS1);
-		//SendMessage(m_hProgressBar, PBM_SETRANGE, 0, (LPARAM)MAKELONG(0, 1000));
-		//SendMessage(m_hProgressBar, PBM_SETSTEP, (WPARAM)1, 0);
+		m_pProgress = new CProgress(GetDlgItem(m_hDlgWnd, IDC_PROGRESS1));
 		{
 			RECT rc;
 			GetWindowRect(hWnd, &rc);
@@ -126,6 +131,44 @@ INT_PTR CALLBACK CExporter::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM l
 		break;
 
 	case WM_COMMAND:
+		switch(HIWORD(wParam))
+		{
+		case CBN_SELCHANGE:
+			if(LOWORD(wParam) == IDC_ANIMATION_NAME)
+			{
+				HWND hCombo = (HWND)lParam;
+				int len = ComboBox_GetTextLength(hCombo);
+				char *tmp = (char*)alloca(sizeof(char) * (len + 1));
+				ComboBox_GetText(hCombo, tmp, len + 1);
+				tmp[len] = 0;
+				char szTemp[32];
+				for(UINT i = 0, l = m_pExtAnim->getSequenceCount(); i < l; ++i)
+				{
+					const ModelSequence &ms = m_pExtAnim->getSequence(i);
+					if(!strcmp(tmp, ms.name))
+					{
+						CheckDlgButton(m_hDlgWnd, IDC_ANIMATION_LOOP, ms.bLooped ? BST_CHECKED : BST_UNCHECKED);
+
+						sprintf(szTemp, "%d", ms.framerate);
+						SetDlgItemText(m_hDlgWnd, IDC_ANIMATION_SPEED, szTemp);
+
+						sprintf(szTemp, "%u", ms.act_chance);
+						SetDlgItemText(m_hDlgWnd, IDC_ANIMATION_ACTIVITY_CHANCE, szTemp);
+
+						const char *szAct = "";
+						if(ms.activity)
+						{
+							szAct = m_pExtActs->getList()[ms.activity - 1].c_str();
+						}
+						HWND hActivity = GetDlgItem(m_hDlgWnd, IDC_ANIMATION_ACTIVITY);
+						int idx = ComboBox_FindStringExact(hActivity, -1, szAct);
+						ComboBox_SetCurSel(hActivity, idx);
+						break;
+					}
+				}
+			}
+		}
+
 		switch(LOWORD(wParam))
 		{
 		case IDOK:
@@ -148,6 +191,25 @@ INT_PTR CALLBACK CExporter::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM l
 
 		case IDC_EXTENDED:
 			m_pExtended->show();
+			break;
+
+		case IDC_ANIMATION_ACTIVITY_ADD:
+			m_pExtActs->promptForNew(true);
+			break;
+
+		case IDC_ANIMATION_NAME_ADD:
+			// prompt for new name
+			{
+				char tmp[127];
+				tmp[0] = 0;
+				if(invokeEditor(m_hDlgWnd, tmp, "Animation name") && tmp[0])
+				{
+					HWND hCombo = GetDlgItem(m_hDlgWnd, IDC_ANIMATION_NAME);
+
+					int idx = ComboBox_AddString(hCombo, tmp);
+					ComboBox_SetCurSel(hCombo, idx);
+				}
+			}
 			break;
 
 		case IDCANCEL:
@@ -180,7 +242,8 @@ void CExporter::updateSectionMesh()
 		CheckDlgButton(m_hDlgWnd, IDC_MESH_TBN, (m_hdr.iFlags & MODEL_FLAG_HAS_TANGENT_BINORM));
 	}
 
-	EnableWindow(GetDlgItem(m_hDlgWnd, IDC_MESH_STATIC), isChecked && !isStatic);
+	// EnableWindow(GetDlgItem(m_hDlgWnd, IDC_MESH_STATIC), isChecked && !isStatic);
+	EnableWindow(GetDlgItem(m_hDlgWnd, IDC_MESH_STATIC), isChecked && !m_isLoaded);
 	EnableWindow(GetDlgItem(m_hDlgWnd, IDC_MESH_TBN), isChecked && (isFull || !m_isLoaded));
 	EnableWindow(GetDlgItem(m_hDlgWnd, IDC_MESH_FULL), isChecked);
 	EnableWindow(GetDlgItem(m_hDlgWnd, IDC_MESH_LOD), isChecked && !isFull);
@@ -227,20 +290,38 @@ void CExporter::updateSectionGibs()
 void CExporter::loadDefaults()
 {
 	CheckDlgButton(m_hDlgWnd, IDC_MESH_TBN, !m_isLoaded || (m_hdr.iFlags & MODEL_FLAG_HAS_TANGENT_BINORM));
-	CheckDlgButton(m_hDlgWnd, IDC_GIB_OBJECT, TRUE);
-	CheckDlgButton(m_hDlgWnd, IDC_MESH_FULL, TRUE);
-	CheckDlgButton(m_hDlgWnd, IDC_MESH_STATIC, m_isLoaded && (m_hdr.iFlags & MODEL_FLAG_STATIC));
+	CheckDlgButton(m_hDlgWnd, IDC_GIB_OBJECT, BST_CHECKED);
+	CheckDlgButton(m_hDlgWnd, IDC_MESH_FULL, BST_CHECKED);
+	if(m_isLoaded)
+	{
+		CheckDlgButton(m_hDlgWnd, IDC_MESH_STATIC, (m_hdr.iFlags & MODEL_FLAG_STATIC));
+	}
+	else
+	{
+		CheckDlgButton(m_hDlgWnd, IDC_MESH_STATIC, m_pCallback->hasBones());
+	}
 
 	char tmp[32];
-	sprintf(tmp, "%d", m_iDefaultFramerate);
+	sprintf(tmp, "%d", m_iFramerate);
 	SetDlgItemText(m_hDlgWnd, IDC_ANIMATION_FROM, "0");
 	SetDlgItemText(m_hDlgWnd, IDC_ANIMATION_SPEED, tmp);
-	sprintf(tmp, "%d", m_iEndFrame);
+	sprintf(tmp, "%u", m_uEndFrame);
 	SetDlgItemText(m_hDlgWnd, IDC_ANIMATION_TO, tmp);
 
 	updateSectionAnim();
 
 	updateLodList();
+
+
+	HWND hCombo = GetDlgItem(m_hDlgWnd, IDC_ANIMATION_NAME);
+	for(UINT i = 0, l = m_pExtAnim->getSequenceCount(); i < l; ++i)
+	{
+		ComboBox_AddString(hCombo, m_pExtAnim->getSequence(i).name);
+	}
+
+	float fScale = m_pCallback->getConfigFloat(SXPROP_EXP_SCALE, 1.0f);
+	sprintf(tmp, "%g", fScale);
+	SetDlgItemText(m_hDlgWnd, IDC_SCALE, tmp);
 }
 
 void CExporter::tryLoadModel()
@@ -496,7 +577,7 @@ void CExporter::loadControllers(FILE *pf)
 	if(m_hdr2.iControllersCount && m_hdr2.iControllersOffset)
 	{
 		_fseeki64(pf, m_hdr2.iControllersOffset, SEEK_SET);
-		m_aControllers.resize(m_hdr2.iControllersOffset);
+		m_aControllers.resize((UINT)m_hdr2.iControllersOffset);
 		fread(m_aControllers, sizeof(ModelBoneController), m_hdr2.iControllersCount, pf);
 	}
 }
@@ -565,40 +646,228 @@ void CExporter::ProcessThread(void *p)
 
 void CExporter::doExport()
 {
-	if(IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_MESH))
+	bool isStatic = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_STATIC) == BST_CHECKED;
+
+	if(!isStatic && IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_ANIMATION) == BST_CHECKED)
+	{
+		m_pProgress->setRange(0.0f, 0.8f);
+	}
+	else
+	{
+		m_pProgress->setRange(0.0f, 0.9f);
+	}
+
+	if(!m_pCallback->prepare(m_pProgress, isStatic))
+	{
+		if(!m_bSuppressPrompts)
+		{
+			MessageBox(m_hDlgWnd, "Unable to prepare model to export!", "Fatal error!", MB_OK | MB_ICONSTOP);
+		}
+
+		PostMessage(m_hDlgWnd, WM_CLOSE, 0, NULL);
+		return;
+	}
+
+	if(!isStatic && (IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_MESH) == BST_CHECKED || IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_ANIMATION) == BST_CHECKED))
+	{
+		if(!prepareSkeleton(IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_MESH) == BST_CHECKED))
+		{
+			if(!m_bSuppressPrompts)
+			{
+				MessageBox(m_hDlgWnd, "Skeletons is incompatible! Consider to fix skeleton or perform new export!", "Fatal error!", MB_OK | MB_ICONSTOP);
+			}
+
+			PostMessage(m_hDlgWnd, WM_CLOSE, 0, NULL);
+			return;
+		}
+	}
+
+	if(IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_MESH) == BST_CHECKED)
 	{
 		performRetopology();
 		m_hdr2.topology = MDLPT_TRIANGLELIST;
 
-		bool isStatic = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_STATIC);
-		bool includeTB = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_TBN);
-		bool isFullExport = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_FULL);
+		bool includeTB = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_TBN) == BST_CHECKED;
+		bool isFullExport = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_FULL) == BST_CHECKED;
 
 		if(isFullExport)
 		{
+			preparePhysMesh(false);
+			prepareLodMesh();
 
-			// export by layers
-			prepareFullMesh();
+			if(includeTB)
+			{
+				m_hdr.iFlags |= MODEL_FLAG_HAS_TANGENT_BINORM;
+			}
+			else
+			{
+				m_hdr.iFlags &= ~MODEL_FLAG_HAS_TANGENT_BINORM;
+			}
 		}
 		else
 		{
-			// parse lod for export
-			// export ignore layers
+			char tmp[32];
+			GetDlgItemText(m_hDlgWnd, IDC_MESH_LOD, tmp, sizeof(tmp));
+			if(!strcmp(tmp, "Physbox"))
+			{
+				preparePhysMesh(true);
+			}
+			else
+			{
+				int iLod = 0;
+				if(!sscanf(tmp, "Lod #%d", &iLod))
+				{
+					iLod = (int)m_aLods.size();
+				}
+
+				prepareLodMesh(iLod);
+			}
 		}
 	}
-	if(IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_ANIMATION))
+	if(!isStatic && IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_ANIMATION) == BST_CHECKED)
 	{
-	}
-	if(IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_GIBS))
-	{
-	}
+		m_pProgress->setRange(0.9f);
+		if(!m_pCallback->preapareAnimationTrack(m_pProgress, m_uStartFrame, m_uEndFrame - m_uStartFrame))
+		{
+			if(!m_bSuppressPrompts)
+			{
+				MessageBox(m_hDlgWnd, "Unable to prepare animation to export!", "Fatal error!", MB_OK | MB_ICONSTOP);
+			}
 
-	FILE *pf = fopen(m_szFile, "wb");
-	if(!pf)
+			PostMessage(m_hDlgWnd, WM_CLOSE, 0, NULL);
+			return;
+		}
+
+		prepareAnimation();
+	}
+		
+	if(!m_isLoaded)
+	{
+		if(isStatic)
+		{
+			m_hdr.iFlags |= MODEL_FLAG_STATIC;
+		}
+		else
+		{
+			m_hdr.iFlags |= MODEL_FLAG_ANIMATED;
+		}
+	}
+	if(!writeFile(m_szFile))
 	{
 		MessageBox(m_hDlgWnd, "Unable to write file!", "Save error", MB_OK | MB_ICONSTOP);
 		PostMessage(m_hDlgWnd, WM_CLOSE, 0, NULL);
 		return;
+	}
+
+	m_pProgress->setRange(1.0f);
+
+	if(IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_GIBS) == BST_CHECKED)
+	{
+		memset(&m_hdr, 0, sizeof(m_hdr));
+		memset(&m_hdr2, 0, sizeof(m_hdr2));
+		m_hdr.iFlags = MODEL_FLAG_COMPILED | MODEL_FLAG_STATIC | MODEL_FLAG_HAS_TANGENT_BINORM | MODEL_FLAG_NEW_STYLE_DEPS | MODEL_FLAG_NORMALIZED_NORMALS;
+		
+		CheckDlgButton(m_hDlgWnd, IDC_MESH_STATIC, BST_CHECKED);
+		CheckDlgButton(m_hDlgWnd, IDC_MESH_TBN, BST_CHECKED);
+
+		bool isObjectMode = IsDlgButtonChecked(m_hDlgWnd, IDC_GIB_OBJECT) == BST_CHECKED;
+		UINT uTotalGibs = 0;
+
+		UINT uLayerCount = m_pCallback->getLayerCount();
+		for(UINT i = 0; i < uLayerCount; ++i)
+		{
+			if(isObjectMode)
+			{
+				uTotalGibs += m_pCallback->getLayerObjectCount(i);
+			}
+			else
+			{
+				const char *szLayer = m_pCallback->getLayerName(i);
+
+				if(memcmp(szLayer, "#gib", 4) == 0)
+				{
+					++uTotalGibs;
+				}
+			}
+		}
+
+		UINT uProcessedGibs = 0;
+
+		char szGibFile[MAX_PATH];
+		char szBaseFile[MAX_PATH];
+
+		const char *szMask = "%s_gib%02u.dse";
+		if(uTotalGibs > 99)
+		{
+			szMask = "%s_gib%03u.dse";
+		}
+		strcpy(szBaseFile, m_szFile);
+		szBaseFile[strlen(szBaseFile) - 4] = 0;
+
+		clearLods();
+
+		for(UINT i = 0; i < uLayerCount; ++i)
+		{
+			// prepareLodMesh();
+
+			if(isObjectMode)
+			{
+				UINT uObjectCount = m_pCallback->getLayerObjectCount(i);
+				for(UINT j = 0; j < uObjectCount; ++j)
+				{
+					// process one gib
+					m_iOnlyLayer = i;
+					m_iOnlyObject = j;
+					prepareLodMesh(0);
+
+					sprintf(szGibFile, szMask, szBaseFile, uProcessedGibs);
+					if(!writeFile(szGibFile))
+					{
+						logWarning("Unable to write file %s!", szGibFile);
+					}
+
+					m_pProgress->setProgress((float)++uProcessedGibs / (float)uTotalGibs);
+				}
+			}
+			else
+			{
+				const char *szLayer = m_pCallback->getLayerName(i);
+
+				if(memcmp(szLayer, "#gib", 4) == 0)
+				{
+					// process one gib
+					m_szOnlyLayer = szLayer;
+					prepareLodMesh(0);
+
+					sprintf(szGibFile, szMask, szBaseFile, uProcessedGibs);
+					if(!writeFile(szGibFile))
+					{
+						logWarning("Unable to write file %s!", szGibFile);
+					}
+
+					m_pProgress->setProgress((float)++uProcessedGibs / (float)uTotalGibs);
+				}
+			}
+
+		}
+	}
+
+	m_pProgress->setProgress(1.0f);
+
+	if(!m_bSuppressPrompts)
+	{
+		MessageBox(m_hDlgWnd, "Export done!", "DSE Model export", NULL);
+	}
+
+	PostMessage(m_hDlgWnd, WM_CLOSE, 0, NULL);
+}
+
+bool CExporter::writeFile(const char *szFile, bool isForGib)
+{
+	FILE *pf = fopen(szFile, "wb");
+	if(!pf)
+	{
+		return(false);
 	}
 	m_hdr.Magick = SX_MODEL_MAGICK;
 	m_hdr.iVersion = SX_MODEL_VERSION;
@@ -608,15 +877,24 @@ void CExporter::doExport()
 	m_hdr.iSecondHeaderOffset = _ftelli64(pf);
 	fwrite(&m_hdr2, sizeof(m_hdr2), 1, pf);
 
-	writePhysdata(pf);
-	writeMaterials(pf);
-	writeLoDs(pf);
-	writeDeps(pf);
-	writeActivities(pf);
-	writeBones(pf);
-	writeControllers(pf);
-	writeAnimations(pf);
-	writeHitboxes(pf);
+	if(isForGib)
+	{
+		//writePhysdata(pf); //?
+		writeMaterials(pf);
+		writeLoDs(pf);
+	}
+	else
+	{
+		writePhysdata(pf);
+		writeMaterials(pf);
+		writeLoDs(pf);
+		writeDeps(pf);
+		writeActivities(pf);
+		writeBones(pf);
+		writeControllers(pf);
+		writeAnimations(pf);
+		writeHitboxes(pf);
+	}
 
 	_fseeki64(pf, 0, SEEK_SET);
 	fwrite(&m_hdr, sizeof(m_hdr), 1, pf);
@@ -624,17 +902,7 @@ void CExporter::doExport()
 
 	fclose(pf);
 
-	PBM_GETRANGE;
-	PBRANGE rng;
-	SendMessage(m_hProgressBar, PBM_GETRANGE, FALSE, (LPARAM)&rng);
-	SendMessage(m_hProgressBar, PBM_SETPOS, (WPARAM)rng.iHigh, 0);
-
-	if(!m_bSuppressPrompts)
-	{
-		MessageBox(m_hDlgWnd, "Export done!", "DSE Model export", NULL);
-	}
-
-	PostMessage(m_hDlgWnd, WM_CLOSE, 0, NULL);
+	return(true);
 }
 
 void CExporter::writePhysdata(FILE *pf)
@@ -778,8 +1046,11 @@ void CExporter::writeActivities(FILE *pf)
 }
 void CExporter::writeBones(FILE *pf)
 {
+	m_hdr.iBonesOffset = _ftelli64(pf);
 	m_hdr2.iBoneTableOffset = _ftelli64(pf);
+	m_hdr.iBoneCount = m_aBones.size();
 	m_hdr2.iBoneTableCount = m_aBones.size();
+
 	fwrite(m_aBones, sizeof(ModelBoneName), m_hdr2.iBoneTableCount, pf);
 }
 void CExporter::writeControllers(FILE *pf)
@@ -833,7 +1104,7 @@ static TCHAR* FixName(const TCHAR* name)
 }
 
 
-void CExporter::addTexture(const char *szName)
+UINT CExporter::addTexture(const char *szName)
 {
 	char *mapName = FixName(szName);
 	int iDotPos = -1;
@@ -854,11 +1125,16 @@ void CExporter::addTexture(const char *szName)
 
 	const char *szBaseName = basename(mapName);
 
+	if(!m_hdr.iSkinCount)
+	{
+		m_hdr.iSkinCount = 1;
+	}
+
 	for(uint32_t i = 0; i < m_hdr.iMaterialCount; i++)
 	{
 		if(!fstrcmp(m_aasMaterials[0][i].c_str(), szBaseName))
 		{
-			return;
+			return(i);
 		}
 	}
 
@@ -868,6 +1144,8 @@ void CExporter::addTexture(const char *szName)
 	}
 	m_pExtSkin->addColumn(szBaseName);
 	++m_hdr.iMaterialCount;
+
+	return(m_hdr.iMaterialCount - 1);
 }
 
 void CExporter::onActsCommitted()
@@ -970,19 +1248,33 @@ void CExporter::performRetopology()
 	}
 }
 
-void CExporter::clearLods()
+void CExporter::clearLods(int iTargetLod)
 {
-	for(UINT i = 0, l = m_aLods.size(); i < l; ++i)
+	if(iTargetLod < 0)
 	{
-		ModelLoD &lod = m_aLods[i];
+		for(UINT i = 0, l = m_aLods.size(); i < l; ++i)
+		{
+			ModelLoD &lod = m_aLods[i];
+			for(UINT j = 0; j < lod.iSubMeshCount; ++j)
+			{
+				mem_delete_a(lod.pSubLODmeshes[j].pIndices);
+				mem_delete_a(lod.pSubLODmeshes[j].pVertices);
+			}
+			mem_delete_a(lod.pSubLODmeshes);
+		}
+		m_aLods.clearFast();
+	}
+	else if(m_aLods.size() > (UINT)iTargetLod)
+	{
+		ModelLoD &lod = m_aLods[iTargetLod];
 		for(UINT j = 0; j < lod.iSubMeshCount; ++j)
 		{
 			mem_delete_a(lod.pSubLODmeshes[j].pIndices);
 			mem_delete_a(lod.pSubLODmeshes[j].pVertices);
 		}
 		mem_delete_a(lod.pSubLODmeshes);
+		lod.iSubMeshCount = 0;
 	}
-	m_aLods.clearFast();
 }
 
 void CExporter::clearPhysparts()
@@ -1005,7 +1297,7 @@ void CExporter::clearPhysparts()
 
 bool CExporter::checkSettings()
 {
-	if(IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_MESH) && !IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_FULL))
+	if(IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_MESH) == BST_CHECKED && IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_FULL) != BST_CHECKED)
 	{
 		char tmp[32];
 		GetDlgItemText(m_hDlgWnd, IDC_MESH_LOD, tmp, sizeof(tmp));
@@ -1017,42 +1309,180 @@ bool CExporter::checkSettings()
 		}
 	}
 
+	if(IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_ANIMATION) == BST_CHECKED && IsWindowEnabled(GetDlgItem(m_hDlgWnd, IDC_EXPORT_ANIMATION)))
+	{
+		BOOL isFound = FALSE;
+		m_uStartFrame = GetDlgItemInt(m_hDlgWnd, IDC_ANIMATION_FROM, &isFound, FALSE);
+		if(!isFound)
+		{
+			MessageBox(m_hDlgWnd, "Invalid start frame", "Error", MB_OK | MB_ICONSTOP);
+			return(false);
+		}
+		m_uEndFrame = GetDlgItemInt(m_hDlgWnd, IDC_ANIMATION_TO, &isFound, FALSE);
+		if(!isFound || m_uEndFrame <= m_uStartFrame)
+		{
+			MessageBox(m_hDlgWnd, "Invalid end frame", "Error", MB_OK | MB_ICONSTOP);
+			return(false);
+		}
+		m_iFramerate = (int)GetDlgItemInt(m_hDlgWnd, IDC_ANIMATION_SPEED, &isFound, TRUE);
+		if(!isFound)
+		{
+			MessageBox(m_hDlgWnd, "Invalid animation speed", "Error", MB_OK | MB_ICONSTOP);
+			return(false);
+		}
+		m_isLooped = IsDlgButtonChecked(m_hDlgWnd, IDC_ANIMATION_LOOP) == BST_CHECKED;
+
+		m_szAnimationName[0] = 0;
+		GetDlgItemText(m_hDlgWnd, IDC_ANIMATION_NAME, m_szAnimationName, MODEL_MAX_NAME);
+		m_szAnimationName[MODEL_MAX_NAME - 1] = 0;
+		if(!m_szAnimationName[0])
+		{
+			MessageBox(m_hDlgWnd, "Invalid animation name", "Error", MB_OK | MB_ICONSTOP);
+			return(false);
+		}
+
+		m_szAnimationActivity[0] = 0;
+		GetDlgItemText(m_hDlgWnd, IDC_ANIMATION_ACTIVITY, m_szAnimationActivity, MODEL_MAX_NAME);
+		m_szAnimationActivity[MODEL_MAX_NAME - 1] = 0;
+
+		m_uActivityChance = GetDlgItemInt(m_hDlgWnd, IDC_ANIMATION_ACTIVITY_CHANCE, &isFound, FALSE);
+		if(!isFound && m_szAnimationActivity[0])
+		{
+			MessageBox(m_hDlgWnd, "Invalid activity chance", "Error", MB_OK | MB_ICONSTOP);
+			return(false);
+		}
+	}
+
+	char tmp[32];
+	GetDlgItemText(m_hDlgWnd, IDC_SCALE, tmp, sizeof(tmp));
+	tmp[31] = 0;
+
+	if(sscanf(tmp, "%g", &m_fScale) != 1)
+	{
+		MessageBox(m_hDlgWnd, "Invalid scale", "Error", MB_OK | MB_ICONSTOP);
+		return(false);
+	}
+	m_pCallback->setConfigFloat(SXPROP_EXP_SCALE, m_fScale);
+
 	return(true);
 }
 
-void CExporter::prepareFullMesh()
+static void CalcTangentBasis(const float3 &p1, const float3 &p2, const float3 &p3,
+	const float2 &t1, const float2 &t2, const float2 &t3,
+	float3 *pTangent, float3 *pBinormal)
 {
-	clearLods();
+	float3 e1 = p2 - p1;
+	float3 e2 = p3 - p1;
+	float2 et1 = t2 - t1;
+	float2 et2 = t3 - t1;
+	float3 tangent = 0.0f;
+	float3 binormal = 0.0f;
+	float tmp = 0.0;
+	if(fabsf(et1.x*et2.y - et1.y*et2.x)<0.0001f)
+		tmp = 1.0f;
+	else
+		tmp = 1.0f / (et1.x*et2.y - et1.y*et2.x);
+	tangent = (e1 * et2.y - e2 * et1.y) * tmp;
+	binormal = (e2 * et1.x - e1 * et2.x) * tmp;
+
+	*pTangent = SMVector3Normalize(tangent);
+	*pBinormal = SMVector3Normalize(binormal);
+}
+
+template<typename T>
+static Array<T> GenerateTBN(T *pVertices, UINT *pIndices, UINT uVertexCount, UINT uFaceCount)
+{
+	Array<T> aNewVertices;
+
+	for(UINT i = 0; i < uVertexCount; ++i)
+	{
+		pVertices[i].Tangent = float3(0.0f);
+	}
+
+	float3 vBaseNormal;
+	float3 vBaseTangent;
+	float3 vBaseBinormal;
+	T vtx;
+	for(UINT uFace = 0; uFace < uFaceCount; ++uFace)
+	{
+		UINT p[] = {
+			pIndices[uFace * 3 + 0],
+			pIndices[uFace * 3 + 1],
+			pIndices[uFace * 3 + 2]
+		};
+
+		vBaseNormal = SMVector3Normalize(SMVector3Cross(pVertices[p[0]].Pos - pVertices[p[1]].Pos, pVertices[p[0]].Pos - pVertices[p[2]].Pos));
+
+		CalcTangentBasis(pVertices[p[0]].Pos, pVertices[p[1]].Pos, pVertices[p[2]].Pos, pVertices[p[0]].Tex, pVertices[p[1]].Tex, pVertices[p[2]].Tex, &vBaseTangent, &vBaseBinormal);
+
+		for(UINT pt = 0; pt < 3; ++pt)
+		{
+			vtx = pVertices[p[pt]];
+
+			SMQuaternion q(vBaseNormal, vtx.Norm);
+			vtx.Tangent = q * vBaseTangent;
+			vtx.Binorm = q * vBaseBinormal;
+			if(SMVector3Length(pVertices[p[pt]].Tangent) < 0.1f)
+			{
+				pVertices[p[pt]] = vtx;
+			}
+			else if(memcmp(&pVertices[p[pt]], &vtx, sizeof(vtx)))
+			{
+				pIndices[uFace * 3 + pt] = aNewVertices.size() + uVertexCount;
+				aNewVertices.push_back(vtx);
+			}
+		}
+	}
+
+	return(aNewVertices);
+}
+
+template<typename T>
+static bool GetBoneId(T *pVertices, UINT uVertexCount, int *pOut)
+{
+	byte u8Bone = 255;
+	for(UINT s = 0; s < uVertexCount; ++s)
+	{
+		for(UINT t = 0; t < 4; ++t)
+		{
+			if(pVertices[s].BoneIndices[t] != 255)
+			{
+				if(u8Bone == 255)
+				{
+					u8Bone = pVertices[s].BoneIndices[t];
+				}
+				else if(u8Bone != pVertices[s].BoneIndices[t])
+				{
+					return(false);
+				}
+			}
+		}
+	}
+
+	if(pOut)
+	{
+		*pOut = u8Bone == 255 ? -1 : (int)u8Bone;
+	}
+
+	return(true);
+}
+
+void CExporter::preparePhysMesh(bool bIgnoreLayers)
+{
 	clearPhysparts();
 
-	bool isStatic = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_STATIC);
-	bool includeTB = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_TBN);
+	bool isStatic = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_STATIC) == BST_CHECKED;
+	bool includeTB = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_TBN) == BST_CHECKED;
 	bool isTBSupported = m_pCallback->canExportTB();
 
 	UINT uLayerCount = m_pCallback->getLayerCount();
-
-	struct SubsetItem
-	{
-		UINT uVertexCount;
-		UINT uIndexCount;
-		model_vertex *pVertices;
-		UINT *pIndices;
-	};
-
-	struct Subset
-	{
-		const char *szTexture;
-		Array<SubsetItem> aItems;
-	};
-
-	Array<Array<Subset>> aLods; // [iLod][iSubset].aItems[]
 
 	for(UINT i = 0; i < uLayerCount; ++i)
 	{
 		const char *szLayer = m_pCallback->getLayerName(i);
 		UINT uObjectCount = m_pCallback->getLayerObjectCount(i);
 
-		if(!strcmp(szLayer, "#physbox"))
+		if(bIgnoreLayers || !strcmp(szLayer, "#physbox"))
 		{
 			// process physbox
 			for(UINT j = 0; j < uObjectCount; ++j)
@@ -1083,8 +1513,8 @@ void CExporter::prepareFullMesh()
 						uStride = sizeof(vertex_animated);
 					}
 
-					aVertices.push_back(pVertices->Pos);
-					pVertices = (model_vertex*)((byte*)pVertices + uStride);
+					aVertices.push_back((float3)(pVertices->Pos * m_fScale));
+					MOVE_PTR(pVertices, uStride);
 				}
 
 				{
@@ -1132,82 +1562,541 @@ void CExporter::prepareFullMesh()
 					}
 					else
 					{
-						physPart.bone_id;
-						//@ TODO Implement me!
-#if 0
-						byte boneIndices[4] = {};
-						float4_t vBoneWeights;
+						physPart.bone_id = -2;
 						for(UINT k = 0; k < uSubsetCount; ++k)
 						{
+							bool isSuccess = false;
+							int iBone = -1;
 							if(isTBSupported && includeTB)
 							{
-								vertex_animated_ex *pVertices = m_pCallback->getObjectSubsetAnimatedExVertices(i, j, k);
-								memcpy(boneIndices, pVertices[0].BoneIndices, sizeof(boneIndices));
-								vBoneWeights = pVertices[0].BoneWeights;
+								isSuccess = GetBoneId(m_pCallback->getObjectSubsetAnimatedExVertices(i, j, k), m_pCallback->getObjectSubsetVertexCount(i, j, k), &iBone);
 							}
 							else
 							{
-								vertex_animated *pVertices = m_pCallback->getObjectSubsetAnimatedVertices(i, j, k);
-								memcpy(boneIndices, pVertices[0].BoneIndices, sizeof(boneIndices));
-								vBoneWeights = pVertices[0].BoneWeights;
+								isSuccess = GetBoneId(m_pCallback->getObjectSubsetAnimatedVertices(i, j, k), m_pCallback->getObjectSubsetVertexCount(i, j, k), &iBone);
+							}
+
+							if(physPart.bone_id == -2)
+							{
+								physPart.bone_id = iBone;
+							}
+							else if(physPart.bone_id != iBone)
+							{
+								isSuccess = false;
+							}
+
+							if(!isSuccess)
+							{
+								if(!m_bSuppressPrompts)
+								{
+									logWarning("Object: %s. All vertices of physbox should be skinned to the same bone", m_pCallback->getObjectName(i, j));
+								}
+								break;
 							}
 						}
-#endif
+						physPart.bone_id = getNewBoneId(physPart.bone_id);
 					}
 				}
 			}
 		}
-		else
+	}
+}
+
+void CExporter::prepareLodMesh(int iTargetLod)
+{
+	clearLods(iTargetLod);
+
+	bool isStatic = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_STATIC) == BST_CHECKED;
+	bool includeTB = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_TBN) == BST_CHECKED;
+	bool isTBSupported = m_pCallback->canExportTB();
+
+	UINT uLayerCount = m_pCallback->getLayerCount();
+
+	struct SubsetItem
+	{
+		UINT uVertexCount;
+		UINT uIndexCount;
+		model_vertex *pVertices;
+		UINT *pIndices;
+	};
+
+	struct Subset
+	{
+		const char *szTexture;
+		Array<SubsetItem> aItems;
+	};
+
+	Array<Array<Subset>> aLods; // [iLod][iSubset].aItems[]
+	
+	for(UINT i = 0; i < uLayerCount; ++i)
+	{
+		if(m_iOnlyLayer >= 0 && i != m_iOnlyLayer)
 		{
-			int iLod = 0;
-			if(szLayer[0] == '#' && !sscanf(szLayer, "#lod%d", &iLod))
+			continue;
+		}
+		const char *szLayer = m_pCallback->getLayerName(i);
+
+		if(m_szOnlyLayer && fstrcmp(szLayer, m_szOnlyLayer))
+		{
+			continue;
+		}
+
+		UINT uObjectCount = m_pCallback->getLayerObjectCount(i);
+
+		int iLod = 0;
+		if(iTargetLod < 0 && szLayer[0] == '#' && !sscanf(szLayer, "#lod%d", &iLod))
+		{
+			//logWarning("Unknown layer type '%s', ignoring!\n", szLayer);
+			continue;
+		}
+
+		if(iLod < 0)
+		{
+			logWarning("Invalid LOD index '%d' < 0\n", iLod);
+			continue;
+		}
+
+		// process lod
+		for(UINT j = 0; j < uObjectCount; ++j)
+		{
+			if(m_iOnlyObject >= 0 && j != m_iOnlyObject)
 			{
-				logWarning("Unknown layer type '%s', ignoring!\n", szLayer);
 				continue;
 			}
 
-			if(iLod < 0)
+			UINT uSubsets = m_pCallback->getObjectSubsetCount(i, j);
+			for(UINT k = 0; k < uSubsets; ++k)
 			{
-				logWarning("Invalid LOD index '%d' < 0\n", iLod);
-				continue;
-			}
+				const char *szTexture = m_pCallback->getObjectSubsetTexture(i, j, k);
+				Array<Subset> &aSubsets = aLods[iLod];
 
-			// process lod
-			for(UINT j = 0; j < uObjectCount; ++j)
-			{
-				UINT uSubsets = m_pCallback->getObjectSubsetCount(i, j);
-				for(UINT k = 0; k < uSubsets; ++k)
+				UINT uSubsetIdx = aSubsets.size();
+				for(UINT s = 0; s < uSubsetIdx; ++s)
 				{
-					const char *szTexture = m_pCallback->getObjectSubsetTexture(i, j, k);
-					Array<Subset> &aSubsets = aLods[iLod];
-
-					UINT uSubsetIdx = aSubsets.size();
-					for(UINT s = 0; s < uSubsetIdx; ++s)
+					if(!fstrcmp(aSubsets[s].szTexture, szTexture))
 					{
-						if(!fstrcmp(aSubsets[s].szTexture, szTexture))
-						{
-							uSubsetIdx = s;
-						}
+						uSubsetIdx = s;
 					}
-					Subset &ss = aSubsets[uSubsetIdx];
-					ss.szTexture = szTexture;
-
-					SubsetItem ssi = {};
-					ssi.uVertexCount = m_pCallback->getObjectSubsetVertexCount(i, j, k);
-					ssi.uIndexCount = m_pCallback->getObjectSubsetIndexCount(i, j, k);
-					ssi.pVertices = m_pCallback->getObjectSubsetStaticVertices(i, j, k);
-					ssi.pIndices = m_pCallback->getObjectSubsetIndices(i, j, k);
-					ss.aItems.push_back(ssi);
 				}
+				Subset &ss = aSubsets[uSubsetIdx];
+				ss.szTexture = szTexture;
+
+				SubsetItem ssi = {};
+				ssi.uVertexCount = m_pCallback->getObjectSubsetVertexCount(i, j, k);
+				ssi.uIndexCount = m_pCallback->getObjectSubsetIndexCount(i, j, k);
+				if(isStatic)
+				{
+					if(includeTB && isTBSupported)
+					{
+						ssi.pVertices = m_pCallback->getObjectSubsetStaticExVertices(i, j, k);
+					}
+					else
+					{
+						ssi.pVertices = m_pCallback->getObjectSubsetStaticVertices(i, j, k);
+					}
+				}
+				else
+				{
+					if(includeTB && isTBSupported)
+					{
+						ssi.pVertices = m_pCallback->getObjectSubsetAnimatedExVertices(i, j, k);
+					}
+					else
+					{
+						ssi.pVertices = m_pCallback->getObjectSubsetAnimatedVertices(i, j, k);
+					}
+				}
+				ssi.pIndices = m_pCallback->getObjectSubsetIndices(i, j, k);
+				ss.aItems.push_back(ssi);
 			}
 		}
 	}
 
 	for(UINT i = 0, l = aLods.size(); i < l; ++i)
 	{
+		auto &aSubsets = aLods[i];
+		ModelLoD lod;
+		lod.iSubMeshCount = aSubsets.size();
+		lod.pSubLODmeshes = new ModelLoDSubset[lod.iSubMeshCount];
 
+		for(UINT j = 0, jl = aSubsets.size(); j < jl; ++j)
+		{
+			Subset &ss = aSubsets[j];
+
+			UINT uVertexCount = 0;
+			UINT uIndexCount = 0;
+			for(UINT k = 0, kl = ss.aItems.size(); k < kl; ++k)
+			{
+				uVertexCount += ss.aItems[k].uVertexCount;
+				uIndexCount += ss.aItems[k].uIndexCount;
+			}
+
+			UINT *pIndices = new UINT[uIndexCount];
+			model_vertex *pVertices = NULL;
+
+			size_t sizeSrcEl;
+			size_t sizeDstEl;
+			if(isStatic)
+			{
+				if(includeTB)
+				{
+					pVertices = new vertex_static_ex[uVertexCount];
+					sizeDstEl = sizeof(vertex_static_ex);
+					sizeSrcEl = isTBSupported ? sizeof(vertex_static_ex) : sizeof(vertex_static);
+				}
+				else
+				{
+					pVertices = new vertex_static[uVertexCount];
+					sizeDstEl = sizeof(vertex_static);
+					sizeSrcEl = sizeof(vertex_static);
+				}
+			}
+			else
+			{
+				if(includeTB)
+				{
+					pVertices = new vertex_animated_ex[uVertexCount];
+					sizeDstEl = sizeof(vertex_animated_ex);
+					sizeSrcEl = isTBSupported ? sizeof(vertex_animated_ex) : sizeof(vertex_animated);
+				}
+				else
+				{
+					pVertices = new vertex_animated[uVertexCount];
+					sizeDstEl = sizeof(vertex_animated);
+					sizeSrcEl = sizeof(vertex_animated);
+				}
+			}
+
+			UINT *pIdx = pIndices;
+			model_vertex *pDstVtx = pVertices;
+			UINT uVtxOffset = 0;
+			for(UINT k = 0, kl = ss.aItems.size(); k < kl; ++k)
+			{
+				auto &item = ss.aItems[k];
+
+				for(UINT s = 0; s < item.uIndexCount; ++s)
+				{
+					pIdx[s] = item.pIndices[s] + uVtxOffset;
+				}
+
+				model_vertex *pSrcVtx = item.pVertices;
+
+				for(UINT s = 0; s < item.uVertexCount; ++s)
+				{
+					pSrcVtx->Pos = (float3)(pSrcVtx->Pos * m_fScale);
+					pSrcVtx->Norm = SMVector3Normalize(pSrcVtx->Norm);
+
+					memcpy(pDstVtx, pSrcVtx, sizeSrcEl);
+					memset(MovePtr(pDstVtx, sizeSrcEl), 0, sizeDstEl - sizeSrcEl);
+
+					if(!isStatic)
+					{
+						for(UINT t = 0; t < 4; ++t)
+						{
+							((vertex_animated_ex*)pDstVtx)->BoneIndices[t] = ((vertex_animated*)pSrcVtx)->BoneIndices[t];
+						}
+						((vertex_animated_ex*)pDstVtx)->BoneWeights = ((vertex_animated*)pSrcVtx)->BoneWeights;
+					}
+
+					MOVE_PTR(pSrcVtx, sizeSrcEl);
+					MOVE_PTR(pDstVtx, sizeDstEl);
+				}
+
+				pIdx += item.uIndexCount;
+				uVtxOffset += item.uVertexCount;
+			}
+
+			if(includeTB && !isTBSupported)
+			{
+				// generate TBN
+				if(isStatic)
+				{
+					Array<vertex_static_ex> aNewVtx = GenerateTBN((vertex_static_ex*)pVertices, pIndices, uVertexCount, uIndexCount / 3);
+					if(aNewVtx.size())
+					{
+						vertex_static_ex *pNewVtx = new vertex_static_ex[uVertexCount + aNewVtx.size()];
+						memcpy(pNewVtx, pVertices, sizeof(vertex_static_ex) * uVertexCount);
+						memcpy(pNewVtx + uVertexCount, aNewVtx, sizeof(vertex_static_ex) * aNewVtx.size());
+						mem_delete_a(pVertices);
+						pVertices = pNewVtx;
+						uVertexCount += aNewVtx.size();
+					}
+				}
+				else
+				{
+					Array<vertex_animated_ex> aNewVtx = GenerateTBN((vertex_animated_ex*)pVertices, pIndices, uVertexCount, uIndexCount / 3);
+					if(aNewVtx.size())
+					{
+						vertex_animated_ex *pNewVtx = new vertex_animated_ex[uVertexCount + aNewVtx.size()];
+						memcpy(pNewVtx, pVertices, sizeof(vertex_animated_ex) * uVertexCount);
+						memcpy(pNewVtx + uVertexCount, aNewVtx, sizeof(vertex_animated_ex) * aNewVtx.size());
+						mem_delete_a(pVertices);
+						pVertices = pNewVtx;
+						uVertexCount += aNewVtx.size();
+					}
+				}
+			}
+
+			if(!isStatic)
+			{
+				if(includeTB)
+				{
+					fixSubsetBoneIds((vertex_animated_ex*)pVertices, uVertexCount);
+				}
+				else
+				{
+					fixSubsetBoneIds((vertex_animated*)pVertices, uVertexCount);
+				}
+			}
+
+			lod.pSubLODmeshes[j].iVectexCount = uVertexCount;
+			lod.pSubLODmeshes[j].iIndexCount = uIndexCount;
+			lod.pSubLODmeshes[j].iMaterialID = addTexture(ss.szTexture);
+			// TODO check this values!
+			lod.pSubLODmeshes[j].iStartIndex = 0;
+			lod.pSubLODmeshes[j].iStartVertex = 0;
+			lod.pSubLODmeshes[j].pVertices = pVertices;
+			lod.pSubLODmeshes[j].pIndices = pIndices;
+		}
+
+		if(iTargetLod < 0)
+		{
+			m_aLods.push_back(lod);
+		}
+		else
+		{
+			m_aLods[iTargetLod] = lod;
+			break;
+		}
+	}
+}
+
+bool CExporter::prepareSkeleton(bool bOverwriteBindPose)
+{
+	if(m_isSkeletonReady)
+	{
+		return(true);
 	}
 
-	// "#physbox"
-	// "#lod%d"
+	struct MetaBone
+	{
+		int idParent;
+		UINT uProviderBoneId;
+	};
+	UINT uBonesCount = m_pCallback->getBonesCount();
+	Array<MetaBone> aBones(uBonesCount);
+
+	for(UINT i = 0; i < uBonesCount; ++i)
+	{
+		int idParent = m_pCallback->getBoneParent(i);
+		aBones.push_back({idParent, i});
+	}
+
+	aBones.quickSort([](const MetaBone &a, const MetaBone &b){
+		return(a.idParent < b.idParent);
+	});
+	
+	for(UINT i = 0; i < uBonesCount; ++i)
+	{
+		if(!addBone(aBones[i].idParent, aBones[i].uProviderBoneId, bOverwriteBindPose))
+		{
+			return(false);
+		}
+	}
+
+	m_isSkeletonReady = true;
+	return(true);
+}
+
+bool CExporter::addBone(int iProviderParent, UINT uProviderId, bool bOverwriteBindPose)
+{
+	for(UINT i = m_aSkeletonRemap.size(); i <= uProviderId; ++i)
+	{
+		m_aSkeletonRemap[i] = -1;
+	}
+
+	int iParent = -1;
+	if(iProviderParent >= 0)
+	{
+		assert(m_aSkeletonRemap.size() > (UINT)iProviderParent && m_aSkeletonRemap[iProviderParent] >= 0);
+		iParent = m_aSkeletonRemap[iProviderParent];
+	}
+
+	const char *szBoneName = m_pCallback->getBoneName(uProviderId);
+
+	for(UINT i = 0, l = m_aBones.size(); i < l; ++i)
+	{
+		if(!strcmp(m_aBones[i].szName, szBoneName))
+		{
+			if(m_aBones[i].bone.pid == iParent)
+			{
+				m_aSkeletonRemap[uProviderId] = i;
+				m_aSkeletonRemapInv[i] = uProviderId;
+
+				if(bOverwriteBindPose)
+				{
+					m_aBones[i].bone.position = (float3)(m_pCallback->getBoneLocalPos(uProviderId) * m_fScale);
+					m_aBones[i].bone.orient = m_pCallback->getBoneLocalRot(uProviderId);
+				}
+				return(true);
+			}
+			return(false);
+		}
+	}
+
+	ModelBoneName newBone = {};
+	strncpy(newBone.szName, szBoneName, MODEL_MAX_NAME);
+	newBone.szName[MODEL_MAX_NAME - 1] = 0;
+	newBone.bone.id = m_aSkeletonRemap[uProviderId] = m_aBones.size();
+	m_aSkeletonRemapInv[newBone.bone.id] = uProviderId;
+	newBone.bone.pid = iParent;
+	newBone.bone.position = (float3)(m_pCallback->getBoneLocalPos(uProviderId) * m_fScale);
+	newBone.bone.orient = m_pCallback->getBoneLocalRot(uProviderId);
+	m_aBones.push_back(newBone);
+
+	return(true);
+}
+
+int CExporter::getNewBoneId(int iProviderId)
+{
+	if(iProviderId >= 0)
+	{
+		assert(m_aSkeletonRemap.size() > (UINT)iProviderId && m_aSkeletonRemap[iProviderId] >= 0);
+		return(m_aSkeletonRemap[iProviderId]);
+	}
+	return(-1);
+}
+
+int CExporter::getOldBoneId(int iId)
+{
+	if(iId >= 0)
+	{
+		assert(m_aSkeletonRemapInv.size() > (UINT)iId && m_aSkeletonRemapInv[iId] >= 0);
+		return(m_aSkeletonRemapInv[iId]);
+	}
+	return(-1);
+}
+
+bool CExporter::invokeEditor(HWND hWnd, LPCTSTR szDefault, LPCTSTR szTitle)
+{
+	m_szEditDefault = szDefault;
+	m_szEditTitle = szTitle;
+	return(DialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG3), hWnd, EditDlgProc, (LPARAM)this));
+}
+
+INT_PTR CALLBACK CExporter::EditDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	//CSkinEditor *exp = DLGetWindowLongPtr<CSkinEditor*>(hWnd);
+	CExporter *exp = (CExporter*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+	switch(msg)
+	{
+	case WM_INITDIALOG:
+		exp = (CExporter*)lParam;
+		//CenterWindow(hWnd, GetParent(hWnd));
+		//DLSetWindowLongPtr(hWnd, lParam);
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, lParam);
+		//IDC_CUSTOM1
+		//SetWindowText(GetDlgItem(hWnd, IDC_EDIT1), exp->m_szEditDefault);
+		SetWindowText(GetDlgItem(hWnd, IDC_PROMPT2), "");
+		SetWindowText(GetDlgItem(hWnd, IDC_EDIT_PROMPT), exp->m_szEditTitle);
+		{
+			HWND ed1 = GetDlgItem(hWnd, IDC_CUSTOM1);
+			if(ed1)
+			{
+				SetWindowText(ed1, exp->m_szEditDefault);
+				//ed1->SetText(exp->m_szEditDefault);
+				//ed1->GiveFocus();
+				//ReleaseICustEdit(ed1);
+				SetFocus(ed1);
+			}
+		}
+		//SetFocus(GetDlgItem(hWnd, IDC_CUSTOM1));
+		SendMessage(GetDlgItem(hWnd, IDC_CUSTOM1), EM_SETSEL, 0, -1);
+		return(FALSE);
+
+	case WM_COMMAND:
+		//SendMessage(exp->hProgressBar, PBM_SETPOS, 429, 0);
+		switch(LOWORD(wParam))
+		{
+		case IDOK:
+		{
+			// commit changes
+			HWND ed1 = GetDlgItem(hWnd, IDC_CUSTOM1);
+			if(ed1)
+			{
+				GetWindowText(ed1, (LPTSTR)exp->m_szEditDefault, 127);
+				//ed1->GetText((LPTSTR)exp->m_szEditDefault, 127);
+				//ReleaseICustEdit(ed1);
+			}
+			//GetWindowText(GetDlgItem(hWnd, IDC_EDIT1), (LPWSTR)exp->m_szEditDefault, 127);
+			EndDialog(hWnd, 1);
+		}
+		break;
+		case IDCANCEL:
+			EndDialog(hWnd, 0);
+			break;
+		}
+		break;
+	default:
+		return(FALSE);
+	}
+	return(TRUE);
+}
+
+void CExporter::prepareAnimation()
+{
+	ModelSequence ms;
+
+	ms.iNumFrames = m_uEndFrame - m_uStartFrame;
+	ms.m_vmAnimData = new ModelBone*[ms.iNumFrames];
+	for(UINT j = 0; j < ms.iNumFrames; ++j)
+	{
+		ms.m_vmAnimData[j] = new ModelBone[m_aBones.size()];
+
+		for(UINT i = 0, l = m_aBones.size(); i < l; ++i)
+		{
+			ms.m_vmAnimData[j][i] = m_aBones[i].bone;
+			
+			ms.m_vmAnimData[j][i].position = (float3)(m_pCallback->getBonePositionAtFrame(getOldBoneId(i), j) * m_fScale);
+			ms.m_vmAnimData[j][i].orient = m_pCallback->getBoneRotationAtFrame(getOldBoneId(i), j);
+		}
+	}
+	ms.act_chance = m_uActivityChance;
+	ms.bLooped = m_isLooped;
+	ms.framerate = m_iFramerate;
+	strcpy(ms.name, m_szAnimationName);
+
+	auto &aActivities = m_pExtActs->getList();
+	ms.activity = aActivities.indexOf(m_szAnimationActivity, [](const String &a, const char *b){
+		return(!strcmp(a.c_str(), b));
+	});
+
+	m_pExtAnim->addSequence(ms);
+}
+
+//##########################################################################
+
+CExporter::CProgress::CProgress(HWND hProgressBar):
+	m_hProgressBar(hProgressBar)
+{
+	SendMessage(m_hProgressBar, PBM_SETRANGE, 0, (LPARAM)MAKELONG(0, mc_iTopRange));
+	SendMessage(m_hProgressBar, PBM_SETSTEP, (WPARAM)1, 0);
+}
+
+void CExporter::CProgress::setProgress(float fProgress)
+{
+	SendMessage(m_hProgressBar, PBM_SETPOS, (WPARAM)((float)mc_iTopRange * lerpf(m_fMinRange, m_fMaxRange, fProgress)), 0);
+}
+
+void CExporter::CProgress::setRange(float fMin, float fMax)
+{
+	assert(fMin < fMax);
+
+	m_fMinRange = fMin;
+	m_fMaxRange = fMax;
+}
+
+void CExporter::CProgress::setRange(float fMax)
+{
+	setRange(m_fMaxRange, fMax);
 }

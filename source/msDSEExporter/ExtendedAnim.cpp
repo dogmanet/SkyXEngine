@@ -285,7 +285,28 @@ void CExtendedAnim::addSequence(ModelSequence &ms)
 	{
 		sAct = m_asActivities[ms.activity - 1];
 	}
-	m_aSequences.push_back({ms, sAct});
+
+	int idx = m_aSequences.indexOf(ms, [](const Sequence &a, const ModelSequence &b){
+		return(!strcmp(a.ms.name, b.name));
+	});
+	if(idx >= 0)
+	{
+		Sequence &s = m_aSequences[idx];
+		s.toDelete = false;
+		s.sActivity = sAct;
+
+		for(UINT j = 0; j < s.ms.iNumFrames; ++j)
+		{
+			mem_delete_a(s.ms.m_vmAnimData[j]);
+		}
+		mem_delete_a(s.ms.m_vmAnimData);
+
+		s.ms = ms;
+	}
+	else
+	{
+		m_aSequences.push_back({ms, sAct});
+	}
 }
 
 const ModelSequence& CExtendedAnim::getSequence(UINT idx)
@@ -308,7 +329,7 @@ const ModelSequence& CExtendedAnim::getSequence(UINT idx)
 bool CExtendedAnim::invokeEditor(int iItem)
 {
 	m_iEditRow = iItem;
-	return(DialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG5), m_hDlg, EditDlgProc, (LPARAM)this));
+	return(DialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG5), m_hDlg, EditDlgProc, (LPARAM)this) != 0);
 }
 
 INT_PTR CALLBACK CExtendedAnim::EditDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
