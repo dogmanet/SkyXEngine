@@ -3,6 +3,8 @@
 
 #include <xUI/UIWindow.h>
 #include <xUI/IXUI.h>
+#include <xUI/UICommand.h>
+#include <xUI/UIClassCommand.h>
 
 class UICalcContainer : public IXUnknownImplementation<IXUnknown>
 {
@@ -13,34 +15,18 @@ private:
 	void inputNumber(int iNum);
 	void inputOperation(char op);
 
-	void inputNumOne();
-	void inputNumTwo();
-	void inputNumThree();
-	void inputNumFour();
-	void inputNumFive();
-	void inputNumSix();
-	void inputNumSeven();
-	void inputNumEight();
-	void inputNumNine();
-	void inputNumZero();
-
-	void operationPlus();
-	void operationMenis();
-	void operationDiv();
-	void operationMultiply();
-
-	INT64 mbuffRes = 0;
-	INT64 mFirstNum = 0;
-	INT64 mSecondNum = 0;
+	void pressButton();
 
 	IXUI* pXUI = NULL;
 	IUIWindow *pCalc = NULL;
 
 	Array<IUIButton*> mButtons;
+	Array<IUICommand*> mpCommands;
 	IUITextBox *m_pTextBox = NULL;
 
-	String mDisplayedStr;
-	String mCurrOperation;
+	StringW mDisplayedStr;
+	StringW mCurrOperation;
+
 	bool bInputNumTwo = false; //Если первая введена то ставим переключатель в true
 };
 

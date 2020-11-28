@@ -264,9 +264,6 @@
     <ClCompile Include="..\..\..\source\game\EditorObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\xUI\UICalcContainer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\game\TriggerHurt.cpp">
       <Filter>Source Files\ents\triggers</Filter>
     </ClCompile>
@@ -314,6 +311,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\EnvSkybox.cpp">
       <Filter>Source Files\ents\env</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\UICalcContainer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\UIDemoContainer.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -544,6 +547,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\EnvSkybox.h">
       <Filter>Header Files\ents\env</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\UICalcContainer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\UIDemoContainer.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
