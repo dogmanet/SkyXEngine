@@ -209,7 +209,8 @@ void CDynamicModelProvider::setDevice(IGXDevice *pDevice)
 {
 	m_pRenderContext = pDevice;
 
-
+#if 0
+	// 56 bytes
 	GXVertexElement layoutStaticEx[] =
 	{
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
@@ -217,6 +218,17 @@ void CDynamicModelProvider::setDevice(IGXDevice *pDevice)
 		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
 		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT},
 		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL},
+		GX_DECL_END()
+	};
+#endif
+	// 40 bytes/ 28?
+	GXVertexElement layoutStaticEx[] =
+	{
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		{0, 20, GXDECLTYPE_SHORT4N, GXDECLUSAGE_NORMAL},
+		{0, 28, GXDECLTYPE_SHORT4N, GXDECLUSAGE_TANGENT},
+		{0, 36, GXDECLTYPE_SHORT4N, GXDECLUSAGE_BINORMAL},
 		GX_DECL_END()
 	};
 

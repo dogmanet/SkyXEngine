@@ -138,7 +138,7 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 			if(!m_pProvider->getCore()->isOnMainThread())
 			{
 				m_ppTempIndices = new UINT*[uLodCount];
-				m_ppTempVertices = new XResourceModelStaticVertex*[uLodCount];
+				m_ppTempVertices = new XResourceModelStaticVertexGPU*[uLodCount];
 				m_puTempTotalIndices = new UINT[uLodCount];
 				m_puTempTotalVertices = new UINT[uLodCount];
 			}
@@ -157,7 +157,7 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 					uTotalVertices += pSubset->iVertexCount;
 				}
 
-				XResourceModelStaticVertex *pVertices = new XResourceModelStaticVertex[uTotalVertices];
+				XResourceModelStaticVertexGPU *pVertices = new XResourceModelStaticVertexGPU[uTotalVertices];
 				UINT *pIndices = new UINT[uTotalIndices];
 
 				subset_t subset;
@@ -174,7 +174,25 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 							subset.uIndexCount = pSubset->iIndexCount;
 							subset.uVertexCount = pSubset->iVertexCount;
 
-							memcpy(pVertices + subset.uStartVertex, pSubset->pVertices, sizeof(XResourceModelStaticVertex) * pSubset->iVertexCount);
+							//memcpy(pVertices + subset.uStartVertex, pSubset->pVertices, sizeof(XResourceModelStaticVertex) * pSubset->iVertexCount);
+							for(UINT k = 0; k < pSubset->iVertexCount; ++k)
+							{
+#define TO_SHORT(v) ((short)((v) * 32767.0f))
+								auto &dst = (pVertices + subset.uStartVertex)[k];
+								auto &src = pSubset->pVertices[k];
+								dst.vPos = src.vPos;
+								dst.vTex = src.vTex;
+								dst.vNorm[0] = TO_SHORT(src.vNorm.x);
+								dst.vNorm[1] = TO_SHORT(src.vNorm.y);
+								dst.vNorm[2] = TO_SHORT(src.vNorm.z);
+								dst.vTangent[0] = TO_SHORT(src.vTangent.x);
+								dst.vTangent[1] = TO_SHORT(src.vTangent.y);
+								dst.vTangent[2] = TO_SHORT(src.vTangent.z);
+								dst.vBinorm[0] = TO_SHORT(src.vBinorm.x);
+								dst.vBinorm[1] = TO_SHORT(src.vBinorm.y);
+								dst.vBinorm[2] = TO_SHORT(src.vBinorm.z);
+#undef TO_SHORT
+							}
 							memcpy(pIndices + subset.uStartIndex, pSubset->pIndices, sizeof(UINT) * pSubset->iIndexCount);
 
 							m_aLods[i][uMaterial] = subset;
@@ -204,7 +222,7 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 				if(m_pProvider->getCore()->isOnMainThread())
 				{
 					m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer(sizeof(UINT) * uTotalIndices, GXBUFFER_USAGE_STATIC, GXIT_UINT32, pIndices);
-					IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelStaticVertex) * uTotalVertices, GXBUFFER_USAGE_STATIC, pVertices);
+					IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelStaticVertexGPU) * uTotalVertices, GXBUFFER_USAGE_STATIC, pVertices);
 					m_ppRenderBuffer[i] = m_pDevice->createRenderBuffer(1, &pVertexBuffer, m_pProvider->getVertexDeclaration());
 					mem_release(pVertexBuffer);
 
@@ -358,7 +376,7 @@ void CDynamicModelShared::initGPUresources()
 	for(UINT i = 0, l = m_aLods.size(); i < l; ++i)
 	{
 		m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer(sizeof(UINT) * m_puTempTotalIndices[i], GXBUFFER_USAGE_STATIC, GXIT_UINT32, m_ppTempIndices[i]);
-		IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelStaticVertex) * m_puTempTotalVertices[i], GXBUFFER_USAGE_STATIC, m_ppTempVertices[i]);
+		IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelStaticVertexGPU) * m_puTempTotalVertices[i], GXBUFFER_USAGE_STATIC, m_ppTempVertices[i]);
 		m_ppRenderBuffer[i] = m_pDevice->createRenderBuffer(1, &pVertexBuffer, m_pProvider->getVertexDeclaration());
 		mem_release(pVertexBuffer);
 
