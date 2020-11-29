@@ -409,9 +409,11 @@ void CDynamicModelShared::initGPUresources()
 		mem_release(pVertexBuffer);
 
 		mem_delete_a(m_ppTempIndices[i]);
+		mem_delete_a(m_ppTempIndices16[i]);
 		mem_delete_a(m_ppTempVertices[i]);
 	}
 	mem_delete_a(m_ppTempIndices);
+	mem_delete_a(m_ppTempIndices16);
 	mem_delete_a(m_ppTempVertices);
 	mem_delete_a(m_puTempTotalIndices);
 	mem_delete_a(m_puTempTotalVertices);
