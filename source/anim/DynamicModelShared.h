@@ -63,6 +63,7 @@ protected:
 	IGXIndexBuffer **m_ppIndexBuffer = NULL;
 
 	UINT **m_ppTempIndices = NULL;
+	USHORT **m_ppTempIndices16 = NULL;
 	XResourceModelStaticVertexGPU **m_ppTempVertices = NULL;
 	UINT *m_puTempTotalIndices = 0;
 	UINT *m_puTempTotalVertices = 0;
