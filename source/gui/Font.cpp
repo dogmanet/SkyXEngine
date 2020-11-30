@@ -1076,7 +1076,6 @@ namespace gui
 		iVertexCount += lc * lineCount * 4;
 
 		vertex * pVB = new vertex[iVertexCount];
-		UINT * pIB = new UINT[iIndexCount];
 
 		UINT CV = 0,
 			CI = 0;
@@ -1093,14 +1092,6 @@ namespace gui
 
 			if(!iswspace(str[i]))
 			{
-				pIB[CI] = CV + 0; CI++;
-				pIB[CI] = CV + 1; CI++;
-				pIB[CI] = CV + 2; CI++;
-
-				pIB[CI] = CV + 2; CI++;
-				pIB[CI] = CV + 1; CI++;
-				pIB[CI] = CV + 3; CI++;
-
 				/*
 				
 				0--1
@@ -1181,14 +1172,6 @@ namespace gui
 		{
 			if(decoration & DECORATION_OVERLINE)
 			{
-				pIB[CI] = CV + 0; CI++;
-				pIB[CI] = CV + 1; CI++;
-				pIB[CI] = CV + 2; CI++;
-
-				pIB[CI] = CV + 2; CI++;
-				pIB[CI] = CV + 1; CI++;
-				pIB[CI] = CV + 3; CI++;
-
 				pVB[CV].Pos = float3_t(0.0f, alx[i].y, 0.0f);
 				pVB[CV].Tex = float2_t(0.0f, 1.0f);
 				CV++;
@@ -1209,14 +1192,6 @@ namespace gui
 			}
 			if(decoration & DECORATION_UNDERLINE)
 			{
-				pIB[CI] = CV + 0; CI++;
-				pIB[CI] = CV + 1; CI++;
-				pIB[CI] = CV + 2; CI++;
-
-				pIB[CI] = CV + 2; CI++;
-				pIB[CI] = CV + 1; CI++;
-				pIB[CI] = CV + 3; CI++;
-
 				pVB[CV].Pos = float3_t(0.0f, alx[i].y + (float)m_iFontSize - lineHeight, 0.0f);
 				pVB[CV].Tex = float2_t(0.0f, 1.0f);
 				CV++;
@@ -1237,14 +1212,6 @@ namespace gui
 			}
 			if(decoration & DECORATION_LINE_THROUGH)
 			{
-				pIB[CI] = CV + 0; CI++;
-				pIB[CI] = CV + 1; CI++;
-				pIB[CI] = CV + 2; CI++;
-
-				pIB[CI] = CV + 2; CI++;
-				pIB[CI] = CV + 1; CI++;
-				pIB[CI] = CV + 3; CI++;
-
 				pVB[CV].Pos = float3_t(0.0f, alx[i].y + (float)m_iFontSize * 0.5f, 0.0f);
 				pVB[CV].Tex = float2_t(0.0f, 1.0f);
 				CV++;
@@ -1278,10 +1245,9 @@ namespace gui
 		*ppVertexBuffer = GetGUI()->getDevice()->createRenderBuffer(1, &pVertBuffer, GetGUI()->getVertexDeclarations()->m_pXYZTex);
 		mem_release(pVertBuffer);
 
-		*ppIndexBuffer = GetGUI()->getDevice()->createIndexBuffer(sizeof(UINT)* iIndexCount, GXBUFFER_USAGE_STATIC, GXIT_UINT32, pIB);
+		m_pFontManager->getFontIndexBuffer(iIndexCount / 6, ppIndexBuffer);
 
 		mem_delete_a(pVB);
-		mem_delete_a(pIB);
 
 		if(vertexCount)
 		{
@@ -1316,6 +1282,8 @@ namespace gui
 			FT_Done_FreeType(m_pFT);
 			m_pFT = NULL;
 		}
+
+		mem_release(m_pFontIB);
 	}
 
 	CFont* IFontManager::getFont(const WCHAR *szName, UINT size, CFont::STYLE style, int iBlurRadius)
@@ -1331,5 +1299,41 @@ namespace gui
 	FT_Library IFontManager::requestFT()
 	{
 		return(m_pFT);
+	}
+
+	void IFontManager::getFontIndexBuffer(UINT uChars, IGXIndexBuffer **ppIndexBuffer)
+	{
+		assert(uChars < USHRT_MAX / 4);
+
+		if(uChars > m_uFontIBChars)
+		{
+			UINT m_uFontIBChars = 1;
+			while(m_uFontIBChars < uChars)
+			{
+				m_uFontIBChars *= 2;
+			}
+
+
+			USHORT *pIB = new USHORT[m_uFontIBChars * 6];
+
+			UINT CI = 0;
+			for(UINT i = 0; i < m_uFontIBChars; ++i)
+			{
+				pIB[CI++] = i * 4 + 0;
+				pIB[CI++] = i * 4 + 1;
+				pIB[CI++] = i * 4 + 2;
+				pIB[CI++] = i * 4 + 2;
+				pIB[CI++] = i * 4 + 1;
+				pIB[CI++] = i * 4 + 3;
+			}
+
+			mem_release(m_pFontIB);
+			m_pFontIB = GetGUI()->getDevice()->createIndexBuffer(sizeof(USHORT)* m_uFontIBChars * 6, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pIB);
+
+			mem_delete_a(pIB);
+		}
+
+		m_pFontIB->AddRef();
+		*ppIndexBuffer = m_pFontIB;
 	}
 }
