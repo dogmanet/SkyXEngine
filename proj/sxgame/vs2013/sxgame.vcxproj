@@ -236,6 +236,7 @@
     <ClCompile Include="..\..\..\source\game\BaseTool.cpp" />
     <ClCompile Include="..\..\..\source\game\BaseWeapon.cpp" />
     <ClCompile Include="..\..\..\source\game\SettingsWriter.cpp" />
+    <ClCompile Include="..\..\..\source\game\SoundEmitter.cpp" />
     <ClCompile Include="..\..\..\source\game\SoundPlayer.cpp" />
     <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp" />
     <ClCompile Include="..\..\..\source\game\Player.cpp" />
@@ -310,6 +311,7 @@
     <ClInclude Include="..\..\..\source\game\BaseTool.h" />
     <ClInclude Include="..\..\..\source\game\BaseWeapon.h" />
     <ClInclude Include="..\..\..\source\game\SettingsWriter.h" />
+    <ClInclude Include="..\..\..\source\game\SoundEmitter.h" />
     <ClInclude Include="..\..\..\source\game\SoundPlayer.h" />
     <ClInclude Include="..\..\..\source\game\sxgame.h" />
     <ClInclude Include="..\..\..\source\game\Player.h" />

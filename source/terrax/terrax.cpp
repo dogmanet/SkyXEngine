@@ -1669,7 +1669,7 @@ bool XSaveLevel(const char *szNewName, bool bForcePrompt)
 		return(true);
 	}
 	
-	if(!bForcePrompt && g_sLevelName[0])
+	if(!bForcePrompt && g_sLevelName.length())
 	{
 		// g_sLevelName can changed during save process, so pointer will be broken
 		String tmp = g_sLevelName;

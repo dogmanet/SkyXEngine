@@ -306,6 +306,9 @@
     <ClCompile Include="..\..\..\source\game\EnvSkybox.cpp">
       <Filter>Source Files\ents\env</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SoundEmitter.cpp">
+      <Filter>Source Files\ents\sound</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -529,6 +532,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\EnvSkybox.h">
       <Filter>Header Files\ents\env</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SoundEmitter.h">
+      <Filter>Header Files\ents\sound</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -52,8 +52,7 @@ REGISTER_ENTITY(CSoundPlayer, sound_player);
 //##########################################################################
 
 CSoundPlayer::CSoundPlayer(CEntityManager *pMgr):
-	BaseClass(pMgr),
-	m_pPlayer(NULL)
+	BaseClass(pMgr)
 {
 	
 }
@@ -67,7 +66,7 @@ CSoundPlayer::~CSoundPlayer()
 
 void CSoundPlayer::setSound(const char *szSound)
 {
-	if (!m_pPlayer || fstrcmp(m_pPlayer->getName(), szSound) != 0)
+	if(!m_pPlayer || fstrcmp(m_pPlayer->getName(), szSound) != 0)
 	{
 		mem_release(m_pPlayer);
 		IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
@@ -76,13 +75,13 @@ void CSoundPlayer::setSound(const char *szSound)
 		SOUND_SPACE space = (getFlags() & SND_PLAYER_TYPE_AMBIENT ? SOUND_SPACE_2D : SOUND_SPACE_3D);
 		m_pPlayer = pGameLayer->newSoundPlayer(szSound, space);
 
-		if (m_pPlayer)
+		if(m_pPlayer)
 		{
 			_setStrVal(&m_szPathSound, szSound);
 			m_pPlayer->setLoop((SOUND_LOOP)m_iLoop);
 			m_pPlayer->setVolume(m_fVolume);
 
-			if (getFlags() & SND_PLAYER_START_PLAYED)
+			if(getFlags() & SND_PLAYER_START_PLAYED)
 				m_pPlayer->play();
 		}
 	}

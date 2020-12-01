@@ -177,8 +177,8 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	IXSoundSystem *pSound = (IXSoundSystem*)(m_pCore->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
 	IXSoundLayer *pMasterLayer = pSound->createMasterLayer(&oAudioDesc, "master");
 	pMasterLayer->play(true);
-	IXSoundLayer *pGameLayer = pMasterLayer->newSoundLayer(&oAudioDesc, "xGame");
-	IXSoundLayer *pGuiLayer = pMasterLayer->newSoundLayer(&oAudioDesc, "xGUI");
+	IXSoundLayer *pGameLayer = pMasterLayer->newSoundLayer("xGame");
+	IXSoundLayer *pGuiLayer = pMasterLayer->newSoundLayer("xGUI");
 	pSound->update(float3(), float3(), float3());
 	pGameLayer->play(false);
 	pGuiLayer->play(false);

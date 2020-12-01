@@ -7,7 +7,7 @@
 
 bool CSoundLoader::can() const
 {
-	return (bool)m_pCodecTarget;
+	return(m_pCodecTarget != NULL);
 }
 
 void CSoundLoader::init(CSoundSystem *pSoundSystem)

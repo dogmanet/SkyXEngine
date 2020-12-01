@@ -167,7 +167,7 @@ IXSoundLayer* XMETHODCALLTYPE CSoundLayer::findLayer(const char *szName)
 		return this;
 
 	IXSoundLayer *pFound = NULL;
-
+	// TODO use plain array for iteration
 	for(MapLayer::Iterator i = m_mapLayers.begin(); i; ++i)
 	{
 		if(!i.second)
@@ -195,14 +195,19 @@ IAudioBuffer* CSoundLayer::createAudioBuffer(AB_TYPE type, const AudioRawDesc *p
 
 //##########################################################################
 
-IXSoundLayer* XMETHODCALLTYPE CSoundLayer::newSoundLayer(const AudioRawDesc *pDesc, const char *szName)
+IXSoundLayer* XMETHODCALLTYPE CSoundLayer::newSoundLayer(const char *szName, const AudioRawDesc *pDesc)
 {
+	AudioRawDesc desc;
 	if(!pDesc)
-		return NULL;
-
-	if(!matchPrimaryLayer(pDesc))
-		return NULL;
-
+	{
+		pDesc = &desc;
+		m_pPrimaryBuffer->getDesc(&desc);
+	}
+	else if(!matchPrimaryLayer(pDesc))
+	{
+		return(NULL);
+	}
+	
 	CSoundLayer *pLayer = new CSoundLayer();
 	pLayer->init(m_pSoundSystem, this, pDesc, szName);
 

@@ -38,13 +38,13 @@ CSoundBase* CSoundEmitter::newInstance()
 {
 	CSoundEmitter *pEmitter = new CSoundEmitter();
 
-	pEmitter->m_aInstances[0]->pAB = m_aInstances[0]->pAB->newInstance();
-	pEmitter->m_space = this->m_space;
+	pEmitter->m_aInstances.push_back(new Instance(m_aInstances[0]->pAB->newInstance()));
+	pEmitter->m_space = m_space;
 	pEmitter->m_state = SOUND_STATE_STOP;
-	pEmitter->m_sName = this->m_sName;
-	pEmitter->m_pLayer = this->m_pLayer;
-	pEmitter->m_fDist = this->m_fDist;
-	pEmitter->m_vWorldPos = this->m_vWorldPos;
+	pEmitter->m_sName = m_sName;
+	pEmitter->m_pLayer = m_pLayer;
+	pEmitter->m_fDist = m_fDist;
+	pEmitter->m_vWorldPos = m_vWorldPos;
 	return pEmitter;
 }
 

@@ -21,17 +21,17 @@ class CSoundLayer: public IXUnknownImplementation<IXSoundLayer>
 public:
 	~CSoundLayer();
 
-	virtual void XMETHODCALLTYPE play(bool canPlay) override;
-	virtual bool XMETHODCALLTYPE isPlaying() const override;
-	virtual const char* XMETHODCALLTYPE getName() const override;
+	void XMETHODCALLTYPE play(bool canPlay) override;
+	bool XMETHODCALLTYPE isPlaying() const override;
+	const char* XMETHODCALLTYPE getName() const override;
 
-	virtual IXSoundLayer* XMETHODCALLTYPE findLayer(const char *szName) override;
+	IXSoundLayer* XMETHODCALLTYPE findLayer(const char *szName) override;
 
-	virtual IXSoundLayer* XMETHODCALLTYPE newSoundLayer(const AudioRawDesc *pDesc, const char *szName) override;
-	virtual IXSoundEmitter* XMETHODCALLTYPE newSoundEmitter(const char *szName, SOUND_SPACE space) override;
-	virtual IXSoundPlayer* XMETHODCALLTYPE newSoundPlayer(const char *szName, SOUND_SPACE space) override;
+	IXSoundLayer* XMETHODCALLTYPE newSoundLayer(const char *szName, const AudioRawDesc *pDesc = NULL) override;
+	IXSoundEmitter* XMETHODCALLTYPE newSoundEmitter(const char *szName, SOUND_SPACE space) override;
+	IXSoundPlayer* XMETHODCALLTYPE newSoundPlayer(const char *szName, SOUND_SPACE space) override;
 
-	virtual void XMETHODCALLTYPE getDesc(AudioRawDesc *pDesc) const override;
+	void XMETHODCALLTYPE getDesc(AudioRawDesc *pDesc) const override;
 
 	//########################################################################
 

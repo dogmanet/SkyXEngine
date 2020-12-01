@@ -12,12 +12,12 @@ See the license in LICENSE
 extern CPerfMon *g_pPerfMon;
 
 #if defined(_WINDOWS)
-static void SetThreadName(DWORD dwThreadID, const char *threadName)
+static void SetThreadName(HANDLE hThread, const char *threadName)
 {
 	THREADNAME_INFO info;
 	info.dwType = 0x1000;
 	info.szName = threadName;
-	info.dwThreadID = dwThreadID;
+	info.dwThreadID = GetThreadId(hThread);
 	info.dwFlags = 0;
 #pragma warning(push)
 #pragma warning(disable: 6320 6322)
@@ -171,14 +171,14 @@ void CTaskManager::start()
 		std::thread * t = new std::thread(std::bind(&CTaskManager::workerMain, this));
 #if defined(_WINDOWS)
 		sprintf(name, "Worker #%u", i);
-		SetThreadName(GetThreadId(t->native_handle()), name);
+		SetThreadName(t->native_handle(), name);
 #endif
 		m_aThreads.push_back(t);
 	}
 	m_pIOThread = new std::thread(std::bind(&CTaskManager::workerIOMain, this)); 
 #if defined(_WINDOWS)
 	sprintf(name, "Worker IO");
-	SetThreadName(GetThreadId(m_pIOThread->native_handle()), name);
+	SetThreadName(m_pIOThread->native_handle(), name);
 #endif
 
 	sheduleNextBunch();
@@ -245,7 +245,7 @@ void CTaskManager::synchronize()
 
 void CTaskManager::sheduleNextBunch()
 {
-	std::unique_lock<std::mutex> lock(m_mutexSync);
+	std::unique_lock<mutex> lock(m_mutexSync);
 
 	while(m_iNumTasksToWaitFor > 0)
 	{
@@ -294,7 +294,9 @@ void CTaskManager::stop()
 
 void CTaskManager::execute(TaskPtr t)
 {
+	// save time task started
 	t->run();
+	// save time task ended
 
 	if(t->getFlags() & CORE_TASK_FLAG_REPEATING)
 	{
@@ -344,7 +346,7 @@ void CTaskManager::worker(bool bOneRun)
 			if(task->getFlags() & (CORE_TASK_FLAG_FRAME_SYNC/* | CORE_TASK_FLAG_ON_SYNC*/))
 			{
 				{
-					std::lock_guard<std::mutex> lock(m_mutexSync);
+					ScopedLock lock(m_mutexSync);
 					m_iNumTasksToWaitFor -= 1;
 				}
 
@@ -354,7 +356,7 @@ void CTaskManager::worker(bool bOneRun)
 			if(task->getFlags() & CORE_TASK_FLAG_FOR_LOOP)
 			{
 				{
-					std::lock_guard<std::mutex> lock(m_mutexFor);
+					ScopedLock lock(m_mutexFor);
 					m_aiNumWaitFor[((CTaskForLoop*)task)->getID()] -= 1;
 					//m_aiNumWaitFor[std::static_pointer_cast<CTaskForLoop, ITask>(task)->getID()] -= 1;
 				}
@@ -421,7 +423,7 @@ ID CTaskManager::forLoop(int iStart, int iEnd, const IParallelForBody *pBody, in
 
 	ID id = -1;
 	{
-		std::lock_guard<std::mutex> lock(m_mutexFor);
+		ScopedLock lock(m_mutexFor);
 		id = m_aiNumWaitFor.size();
 		m_aiNumWaitFor.push_back(iTaskCount);
 	}

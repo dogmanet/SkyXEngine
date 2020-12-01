@@ -83,14 +83,14 @@ private:
 	unsigned int m_iWriteList;
 
 	typedef std::condition_variable Condition;
-	typedef std::lock_guard<std::mutex> ScopedLock;
+	typedef std::lock_guard<mutex> ScopedLock;
 
-	mutable std::mutex m_mutexSync;
-	mutable std::mutex m_mutexFor;
-	mutable std::mutex m_mutexIOThread;
+	mutable mutex m_mutexSync;
+	mutable mutex m_mutexFor;
+	mutable mutex m_mutexIOThread;
 	Condition m_Condition;
 	Condition m_ConditionIOThread;
-	mutable std::mutex m_mutexWorker;
+	mutable SpinLock m_mutexWorker;
 	Condition m_ConditionWorker;
 	Condition m_ConditionFor;
 	int m_iNumTasksToWaitFor;
