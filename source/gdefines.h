@@ -324,6 +324,10 @@ inline void LibReport(int iLevel, const char *szFormat, ...)
 
 	DefReport(iLevel, SX_LIB_NAME, buf);
 }
+#define LogInfo(...) LibReport(REPORT_MSG_LEVEL_NOTICE, __VA_ARGS__)
+#define LogWarning(...) LibReport(REPORT_MSG_LEVEL_WARNING, __VA_ARGS__)
+#define LogError(...) LibReport(REPORT_MSG_LEVEL_ERROR, __VA_ARGS__)
+#define LogFatal(...) LibReport(REPORT_MSG_LEVEL_FATAL, __VA_ARGS__)
 
 
 #define SX_MAX_THREAD_COUNT 64
