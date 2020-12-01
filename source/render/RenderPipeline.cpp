@@ -685,6 +685,7 @@ void CRenderPipeline::renderFrame(float fDeltaTime)
 
 	Core_PStartSection(PERF_SECTION_MRT);
 	renderGBuffer();
+	pCtx->addTimestamp("gbuffer");
 	Core_PEndSection(PERF_SECTION_MRT);
 
 	switch(*r_final_image)
@@ -718,6 +719,7 @@ void CRenderPipeline::renderFrame(float fDeltaTime)
 
 		pSceneBuf = m_pLightAmbientDiffuse->asRenderTarget();
 		pCtx->setColorTarget(pSceneBuf);
+		pCtx->addTimestamp("gi");
 	}
 	else
 	{
@@ -727,14 +729,18 @@ void CRenderPipeline::renderFrame(float fDeltaTime)
 	showTexture(m_pSceneTexture);
 
 	renderPostprocessMain();
+	pCtx->addTimestamp("post_main");
 	renderTransparent();
+	pCtx->addTimestamp("transparency");
 	renderPostprocessFinal();
+	pCtx->addTimestamp("post_final");
 
 	if(m_pLightSystem)
 	{
 		pCtx->setColorTarget(pBackBuf);
 
 		m_pLightSystem->renderToneMapping(m_pLightAmbientDiffuse);
+		pCtx->addTimestamp("tonemapping");
 
 	//! @todo reimplement me!
 	//	if(*r_final_image == DS_RT_LUMINANCE)
@@ -754,16 +760,19 @@ end:
 	if(m_pLightSystem)
 	{
 		m_pLightSystem->renderDebug();
+		pCtx->addTimestamp("debug");
 	}
 
 	Core_PStartSection(PERF_SECTION_RENDER_INFO);
 	//@FIXME: пока так
 	SGame_RenderHUD();
+	pCtx->addTimestamp("hud");
 	Core_PEndSection(PERF_SECTION_RENDER_INFO);
 	
 	showFrameStats();
 
 	getXUI()->render();
+	pCtx->addTimestamp("ui");
 }
 void CRenderPipeline::endFrame()
 {

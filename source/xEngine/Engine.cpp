@@ -222,6 +222,7 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	Core_0RegisterCVarFloat("r_default_fov", SM_PI * 0.25f, "Дефолтный fov в радианах");
 	Core_0RegisterCVarFloat("r_near", 0.025f, "Ближняя плоскость отсчечения", FCVAR_NOTIFY);
 	Core_0RegisterCVarFloat("r_far", 800.0f, "Дальняя плоскость отсечения (дальность видимости)", FCVAR_NOTIFY);
+	Core_0RegisterCVarInt("dev_gpu_profile_framerate", 0, "Раз в сколько кадров выводить данные профайлинга (0 отключает эту возможность)", FCVAR_NOTIFY);
 
 	Core_0RegisterCVarInt("r_final_image", DS_RT_SCENELIGHT, "Тип финального (выводимого в окно рендера) изображения из перечисления DS_RT");
 
@@ -367,8 +368,8 @@ bool CEngine::runFrame()
 	
 	// draw frame
 	{
-		static IGXDevice *pRenderContext = SGCore_GetDXDevice();
-		if(pRenderContext && (/*!pRenderContext->canBeginFrame() || */!checkResize()))
+		static IGXDevice *pRenderDevice = SGCore_GetDXDevice();
+		if(pRenderDevice && (/*!pRenderContext->canBeginFrame() || */!checkResize()))
 		{
 			goto end;
 		}
@@ -404,8 +405,10 @@ bool CEngine::runFrame()
 		//#############################################################################
 
 
-		if(pRenderContext)
+		if(pRenderDevice)
 		{
+			auto *pCtx = pRenderDevice->getThreadContext();
+
 			ICamera *pCamera = m_pCallback->getCameraForFrame();
 			SRender_SetCamera(pCamera);
 			SRender_UpdateView();
@@ -425,11 +428,15 @@ bool CEngine::runFrame()
 			pRenderPipeline->endFrame();
 			Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
 
+			showProfile();
+
 			Core_PStartSection(PERF_SECTION_RENDER);
-			pRenderContext->getThreadContext()->beginFrame();
+			pCtx->beginFrame();
+			pCtx->addTimestamp("begin");
 			//! @todo use actual value
 			pRenderPipeline->renderFrame(0.016f);
-			pRenderContext->getThreadContext()->endFrame();
+			pCtx->addTimestamp("end");
+			pCtx->endFrame();
 			Core_PEndSection(PERF_SECTION_RENDER);
 
 			mem_release(pRenderPipeline);
@@ -444,6 +451,63 @@ end:
 	Sleep(10);
 finish:
 	return(true);
+}
+
+void CEngine::showProfile()
+{
+	static IGXDevice *pRenderDevice = SGCore_GetDXDevice();
+	static int *dev_gpu_profile_framerate = (int*)GET_PCVAR_INT("dev_gpu_profile_framerate");
+
+	if(*dev_gpu_profile_framerate)
+	{
+		pRenderDevice->enableProfiling(true);
+
+		const GXTimeStamp *pTimeStamps;
+		UINT uTimeStampCount;
+		static UINT uFrames = 0;
+		if(pRenderDevice->getProfilingResults(&pTimeStamps, &uTimeStampCount))
+		{
+			if(++uFrames >= *dev_gpu_profile_framerate && uTimeStampCount >= 2)
+			{
+				uFrames = 0;
+
+				UINT uTotalTicks = pTimeStamps[uTimeStampCount - 1].uTicks - pTimeStamps[0].uTicks;
+				float fTotalTime = (float)uTotalTicks / (float)(pTimeStamps[uTimeStampCount - 1].uDenominator / 1000);
+
+				uint64_t uPrev = 0;
+				float fTime = 0.0f;
+				float fDeltaTime;
+				uint64_t uDeltaTicks;
+				const char *pMarker;
+				for(UINT i = 0; i < uTimeStampCount; ++i)
+				{
+					uDeltaTicks = pTimeStamps[i].uTicks - uPrev;
+					pMarker = (const char*)pTimeStamps[i].pMarker;
+					fDeltaTime = (float)uDeltaTicks / (float)(pTimeStamps[i].uDenominator / 1000);
+
+					bool isInner = pMarker[strlen(pMarker) - 1] == '-';
+					if(isInner)
+					{
+						fTime += fDeltaTime;
+					}
+					else if(fTime > 0.0f)
+					{
+						fDeltaTime += fTime;
+						fTime = 0.0f;
+					}
+
+					LogInfo("%20s = %f ms %5.2f%%  --  %llu ticks\n", pMarker, fDeltaTime, fDeltaTime / fTotalTime * 100, uDeltaTicks);
+					uPrev = pTimeStamps[i].uTicks;
+				}
+				LogInfo("%20s = %f ms %5.2f%%  --  %llu ticks\n", "total", fTotalTime, 100.0f, uTotalTicks);
+				LogInfo(" \n");
+			}
+		}
+	}
+	else
+	{
+		pRenderDevice->enableProfiling(false);
+	}
 }
 
 void CEngine::initPaths()

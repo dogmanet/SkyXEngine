@@ -656,6 +656,7 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 	//	pCtx->clear(GX_CLEAR_COLOR | GX_CLEAR_STENCIL);
 
 	m_pRenderPipeline->renderGI();
+	pCtx->addTimestamp("selfillum -");
 
 	float3 vCamDir = m_pMainCamera->getLook();
 	float3 vCamPos = m_pMainCamera->getPosition();
@@ -724,6 +725,9 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 
 			pCtx->setDepthStencilSurface(pOldDS);
 			mem_release(pOldDS);
+
+
+			pCtx->addTimestamp("ssao -");
 		}
 	}
 
@@ -757,6 +761,7 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 	UINT uShadowCount = 0;
 	while((uShadowCount = m_pShadowCache->processNextBunch()))
 	{
+		pCtx->addTimestamp("shadows -");
 		pCtx->setColorTarget(pAmbientSurf);
 		pCtx->setDepthStencilSurface(pOldDSSurface);
 		pCtx->setBlendState(m_pBlendAlphaOneOne);
@@ -839,6 +844,7 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 
 			SGCore_ScreenQuadDraw();
 		}
+		pCtx->addTimestamp("lights -");
 	}
 
 	pCtx->setVSConstant(m_pLPVcentersShaderData, 9);
@@ -916,6 +922,7 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 
 		//break;
 	}
+	pCtx->addTimestamp("rsm -");
 
 	bool isClean[3] = {0};
 	if(iCascades)
@@ -1006,7 +1013,8 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 		}
 		//}
 
-		SGCore_ShaderUnBind();
+		SGCore_ShaderUnBind(); 
+		pCtx->addTimestamp("lpv_propagate -");
 	}
 
 
@@ -1042,7 +1050,9 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 		pCtx->setPSTexture(NULL, 4);
 
 		SGCore_ShaderUnBind();
-		pCtx->setSamplerState(m_pSamplerLinearClamp, 1);
+		pCtx->setSamplerState(m_pSamplerLinearClamp, 1); 
+		
+		pCtx->addTimestamp("lpv_apply -");
 	}
 
 
@@ -1099,6 +1109,7 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 	pCtx->setColorTarget(pBackBuf);
 	mem_release(pBackBuf);
 
+	pCtx->addTimestamp("final -");
 	//Sleep(16);
 }
 void XMETHODCALLTYPE CLightSystem::renderToneMapping(IGXTexture2D *pSourceLight)
