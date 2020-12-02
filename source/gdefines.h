@@ -260,6 +260,9 @@ typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMes
 
 //! @}
 
+#define CONSOLE_TITLE "\033]0;"
+#define CONSOLE_TITLE_END "\a"
+
 #ifndef DEFAULT_FUNCTION_REPORT 
 #define DEFAULT_FUNCTION_REPORT
 

@@ -520,7 +520,10 @@ class COutPtr
 	}
 	~COutPtr()
 	{
-		fclose(m_fOut);
+		if(m_fOut)
+		{
+			fclose(m_fOut);
+		}
 	}
 
 	FILE *m_fOut;

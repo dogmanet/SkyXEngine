@@ -39,20 +39,21 @@ HANDLE g_hStdOut = NULL;
 COORD g_iOldOutPos;
 ColorPrint * g_pColor;
 
-BOOL g_bRunning = 1;
-SOCKET ClientSocket = INVALID_SOCKET;
+bool g_bRunning = true;
+SOCKET g_iListenSocket = INVALID_SOCKET;
+SOCKET g_iRecvSocket = INVALID_SOCKET;
+SOCKET g_iSendSocket = INVALID_SOCKET;
 
 AnsiColor g_iCurColorFG;
 AnsiColor g_iCurColorBG;
 
+char g_szServerBind[64] = "127.0.0.1";
 int g_iServerPort = 59705;
 char g_szServerPort[8];
-char g_szClientPort[8];
 
 bool g_bExitOnDisconnect = false;
 
 #define DEFAULT_PORT g_szServerPort
-#define COMMAND_PORT g_szClientPort
 
 Mutex mx;
 
@@ -236,7 +237,6 @@ void WriteColored(char ** _buf)
 
 	int clr;
 	bool done = false;
-
 	while(!done)
 	{
 		esc = strstr(buf, "\033");
@@ -246,6 +246,25 @@ void WriteColored(char ** _buf)
 			printf("%s", buf);
 			*esc = '\033';
 			++esc;
+
+			if(esc[0] == ']' && esc[1] == '0' && esc[2] == ';')
+			{
+				char *szEnd = strstr(esc, "\a");
+				if(!szEnd)
+				{
+					*_buf = esc - 1;
+					goto end;
+				}
+				else
+				{
+					*szEnd = 0;
+					buf = szEnd + 1;
+					esc += 3;
+					SetConsoleTitleA(esc);
+					continue;
+				}
+			}
+
 			if(!strstr(esc, "m") && strlen(esc) < 20)
 			{
 				*_buf = esc - 1;
@@ -387,34 +406,67 @@ end:
 	mx.unlock();
 }
 
-bool g_bConnected = true;
+bool g_bConnected = false;
 
-SOCKET ListenSocket = INVALID_SOCKET;
+int iScreenWidth = 0, iScreenHeight = 0;
+
+void threadCommander(void*)
+{
+	int iResult = 0;
+	g_iSendSocket = accept(g_iListenSocket, NULL, NULL);
+	if(g_iSendSocket == INVALID_SOCKET)
+	{
+		SetColor(ANSI_RED);
+		WriteOutput("accept failed with error: %d\n", WSAGetLastError());
+		SetColor(g_pColor->getDefaultFG());
+		return;
+	}
+	closesocket(g_iListenSocket);
+
+	while(g_bConnected)
+	{
+		CONSOLE_SCREEN_BUFFER_INFO csbi;
+		GetConsoleScreenBufferInfo(g_hStdOut, &csbi);
+		int iWidth = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+		int iHeight = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+		if(iWidth != iScreenWidth)
+		{
+			char buf[64];
+			sprintf(buf, "con_width %d\n", iWidth);
+			send(g_iSendSocket, buf, strlen(buf), 0);
+			iScreenWidth = iWidth;
+		}
+		if(iHeight != iScreenHeight)
+		{
+			char buf[64];
+			sprintf(buf, "con_height %d\n", iHeight);
+			send(g_iSendSocket, buf, strlen(buf), 0);
+			iScreenHeight = iHeight;
+		}
+		Sleep(10);
+	}
+
+	iResult = shutdown(g_iSendSocket, SD_SEND);
+	if(iResult == SOCKET_ERROR)
+	{
+		SetColor(ANSI_RED);
+		WriteOutput("shutdown failed with error: %d\n", WSAGetLastError());
+		SetColor(g_pColor->getDefaultFG());
+	}
+	closesocket(g_iSendSocket);
+	g_iSendSocket = INVALID_SOCKET;
+}
 
 void threadServer(void*)
 {
-	WSADATA wsaData;
 	int iResult;
-
-	SOCKET ListenSocket = INVALID_SOCKET;
-	SOCKET _ClientSocket = INVALID_SOCKET;
 
 	struct addrinfo *result = NULL;
 	struct addrinfo hints;
 
 	char recvbuf[DEFAULT_BUFLEN];
 	int recvbuflen = DEFAULT_BUFLEN;
-
-	// Initialize Winsock
-	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if(iResult != 0)
-	{
-		SetColor(ANSI_RED);
-		WriteOutput("WSAStartup failed with error: %d\n", iResult);
-		SetColor(g_pColor->getDefaultFG());
-		return;
-	}
-
+	
 	ZeroMemory(&hints, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
@@ -422,51 +474,47 @@ void threadServer(void*)
 	hints.ai_flags = AI_PASSIVE;
 
 	// Resolve the server address and port
-	iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
+	iResult = getaddrinfo(g_szServerBind, DEFAULT_PORT, &hints, &result);
 	if(iResult != 0)
 	{
 		SetColor(ANSI_RED);
 		WriteOutput("getaddrinfo failed with error: %d\n", iResult);
 		SetColor(g_pColor->getDefaultFG());
-		WSACleanup();
 		return;
 	}
 
 	// Create a SOCKET for connecting to server
-	ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-	if(ListenSocket == INVALID_SOCKET)
+	g_iListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+	if(g_iListenSocket == INVALID_SOCKET)
 	{
 		SetColor(ANSI_RED);
-		WriteOutput("socket failed with error: %ld\n", WSAGetLastError());
+		WriteOutput("socket failed with error: %d\n", WSAGetLastError());
 		SetColor(g_pColor->getDefaultFG());
 		freeaddrinfo(result);
-		WSACleanup();
 		return;
 	}
 
 	// Setup the TCP listening socket
-	iResult = bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
+	iResult = bind(g_iListenSocket, result->ai_addr, (int)result->ai_addrlen);
 	if(iResult == SOCKET_ERROR)
 	{
 		SetColor(ANSI_RED);
 		WriteOutput("bind failed with error: %d\n", WSAGetLastError());
 		SetColor(g_pColor->getDefaultFG());
 		freeaddrinfo(result);
-		closesocket(ListenSocket);
-		WSACleanup();
+		closesocket(g_iListenSocket);
 		return;
 	}
 
 	freeaddrinfo(result);
 
-	iResult = listen(ListenSocket, SOMAXCONN);
+	iResult = listen(g_iListenSocket, SOMAXCONN);
 	if(iResult == SOCKET_ERROR)
 	{
 		SetColor(ANSI_RED);
 		WriteOutput("listen failed with error: %d\n", WSAGetLastError());
 		SetColor(g_pColor->getDefaultFG());
-		closesocket(ListenSocket);
-		WSACleanup();
+		closesocket(g_iListenSocket);
 		return;
 	}
 	SetColor(ANSI_LCYAN);
@@ -477,8 +525,8 @@ void threadServer(void*)
 	int offset = 0;
 	while(g_bRunning)
 	{
-		_ClientSocket = accept(ListenSocket, NULL, NULL);
-		if(_ClientSocket == INVALID_SOCKET)
+		g_iRecvSocket = accept(g_iListenSocket, NULL, NULL);
+		if(g_iRecvSocket == INVALID_SOCKET)
 		{
 			SetColor(ANSI_RED);
 			WriteOutput("accept failed with error: %d\n", WSAGetLastError());
@@ -486,19 +534,20 @@ void threadServer(void*)
 			continue;
 		}
 
-
-		// No longer need server socket
-		closesocket(ListenSocket);
+		g_bConnected = true;
+		
+		_beginthread(threadCommander, 0, 0);
 
 		ClearAll();
 		SetColor(ANSI_LGREEN);
 		WriteOutput("Connected!\n");
 		SetColor(g_pColor->getDefaultFG());
 
+		iScreenWidth = iScreenHeight = 0;
+
 		do
 		{
-
-			iResult = recv(_ClientSocket, recvbuf + offset, recvbuflen - 1 - offset, 0);
+			iResult = recv(g_iRecvSocket, recvbuf + offset, recvbuflen - 1 - offset, 0);
 			if(iResult > 0)
 			{
 				recvbuf[iResult + offset] = 0;
@@ -521,45 +570,33 @@ void threadServer(void*)
 				SetColor(ANSI_RED);
 				WriteOutput("recv failed with error: %d\n", WSAGetLastError());
 				SetColor(g_pColor->getDefaultFG());
-				closesocket(_ClientSocket);
-				_ClientSocket = INVALID_SOCKET;
+				closesocket(g_iRecvSocket);
+				g_iRecvSocket = INVALID_SOCKET;
 				continue;
 			}
 
 		}
 		while(iResult > 0);
+
 		g_bConnected = false;
 		// shutdown the connection since we're done
-		iResult = shutdown(_ClientSocket, SD_SEND);
+		iResult = shutdown(g_iRecvSocket, SD_SEND);
 		if(iResult == SOCKET_ERROR)
 		{
 			SetColor(ANSI_RED);
 			WriteOutput("shutdown failed with error: %d\n", WSAGetLastError());
 			SetColor(g_pColor->getDefaultFG());
-			closesocket(_ClientSocket);
-			_ClientSocket = INVALID_SOCKET;
-			break;
-			continue;
 		}
-		_ClientSocket = INVALID_SOCKET;
-		iResult = shutdown(ClientSocket, SD_SEND);
-		if(iResult == SOCKET_ERROR)
-		{
-			SetColor(ANSI_RED);
-			WriteOutput("shutdown failed with error: %d\n", WSAGetLastError());
-			SetColor(g_pColor->getDefaultFG());
-			closesocket(ClientSocket);
-			ClientSocket = INVALID_SOCKET;
-			break;
-			continue;
-		}
-		ClientSocket = INVALID_SOCKET;
 		break;
 	}
 
+	closesocket(g_iRecvSocket);
+	g_iRecvSocket = INVALID_SOCKET;
 
-	closesocket(_ClientSocket);
-	WSACleanup();
+	if(g_iListenSocket != INVALID_SOCKET)
+	{
+		closesocket(g_iListenSocket);
+	}
 
 	if(g_bExitOnDisconnect)
 	{
@@ -571,197 +608,15 @@ void threadServer(void*)
 	}
 }
 
-void InitCommandChannel(void*)
-{
-	WSADATA wsaData;
-	int iResult;
-
-
-	struct addrinfo *result = NULL;
-	struct addrinfo hints;
-
-//	char recvbuf[DEFAULT_BUFLEN];
-//	int recvbuflen = DEFAULT_BUFLEN;
-
-	// Initialize Winsock
-	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if(iResult != 0)
-	{
-		SetColor(ANSI_RED);
-		WriteOutput("WSAStartup failed with error: %d\n", iResult);
-		SetColor(g_pColor->getDefaultFG());
-		return;
-	}
-
-	ZeroMemory(&hints, sizeof(hints));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-	hints.ai_flags = AI_PASSIVE;
-
-	// Resolve the server address and port
-	iResult = getaddrinfo(NULL, COMMAND_PORT, &hints, &result);
-	if(iResult != 0)
-	{
-		SetColor(ANSI_RED);
-		WriteOutput("getaddrinfo failed with error: %d\n", iResult);
-		SetColor(g_pColor->getDefaultFG());
-		WSACleanup();
-		return;
-	}
-
-	// Create a SOCKET for connecting to server
-	ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-	if(ListenSocket == INVALID_SOCKET)
-	{
-		SetColor(ANSI_RED);
-		WriteOutput("socket failed with error: %ld\n", WSAGetLastError());
-		SetColor(g_pColor->getDefaultFG());
-		freeaddrinfo(result);
-		WSACleanup();
-		return;
-	}
-
-	// Setup the TCP listening socket
-	iResult = bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
-	if(iResult == SOCKET_ERROR)
-	{
-		SetColor(ANSI_RED);
-		WriteOutput("bind failed with error: %d\n", WSAGetLastError());
-		SetColor(g_pColor->getDefaultFG());
-		freeaddrinfo(result);
-		closesocket(ListenSocket);
-		WSACleanup();
-		return;
-	}
-
-	freeaddrinfo(result);
-
-	iResult = listen(ListenSocket, SOMAXCONN);
-	if(iResult == SOCKET_ERROR)
-	{
-		SetColor(ANSI_RED);
-		WriteOutput("listen failed with error: %d\n", WSAGetLastError());
-		SetColor(g_pColor->getDefaultFG());
-		closesocket(ListenSocket);
-		WSACleanup();
-		return;
-	}
-	//SetColor(ANSI_LCYAN);
-	//WriteOutput("\n");
-	//SetColor(g_pColor->getDefaultFG());
-	// Accept a client socket
-	
-	int iScreenWidth, iScreenHeight;
-
-	int offset = 0;
-	while(g_bRunning)
-	{
-		ClientSocket = accept(ListenSocket, NULL, NULL);
-		if(ClientSocket == INVALID_SOCKET)
-		{
-			SetColor(ANSI_RED);
-			//WriteOutput("accept failed with error: %d\n", WSAGetLastError());
-			//SetColor(g_pColor->getDefaultFG());
-			continue;
-		}
-		g_bConnected = true;
-		//SetColor(ANSI_LGREEN);
-		//WriteOutput("Connected!\n");
-		//SetColor(g_pColor->getDefaultFG());
-
-		iScreenWidth = iScreenHeight = 0;
-
-		while(g_bConnected)
-		{
-			CONSOLE_SCREEN_BUFFER_INFO csbi;
-			GetConsoleScreenBufferInfo(g_hStdOut, &csbi);
-			int iWidth = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-			int iHeight = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-			if(iWidth != iScreenWidth)
-			{
-				char buf[64];
-				sprintf(buf, "con_width %d\n", iWidth);
-				send(ClientSocket, buf, strlen(buf), 0);
-				iScreenWidth = iWidth;
-			}
-			if(iHeight != iScreenHeight)
-			{
-				char buf[64];
-				sprintf(buf, "con_height %d\n", iHeight);
-				send(ClientSocket, buf, strlen(buf), 0);
-				iScreenHeight = iHeight;
-			}
-			Sleep(10);
-		}
-
-		/*do
-		{
-
-		iResult = recv(ClientSocket, recvbuf + offset, recvbuflen - 1 - offset, 0);
-		if(iResult > 0)
-		{
-		recvbuf[iResult + offset] = 0;
-		char * buf = recvbuf;
-		WriteColored(&buf);
-		offset = 0;
-		if(buf) // not fully parsed
-		{
-		memmove(recvbuf, buf, (offset = strlen(buf)) + 1);
-		}
-		}
-		else if(iResult == 0)
-		{
-		//	SetColor(ANSI_RED);
-		//	WriteOutput("Connection closed.\n");
-		//	SetColor(g_pColor->getDefaultFG());
-		}
-		else
-		{
-		//	SetColor(ANSI_RED);
-		//	WriteOutput("recv failed with error: %d\n", WSAGetLastError());
-		//	SetColor(g_pColor->getDefaultFG());
-		closesocket(ClientSocket);
-		ClientSocket = INVALID_SOCKET;
-		continue;
-		}
-
-		}
-		while(iResult > 0);*/
-
-		// shutdown the connection since we're done
-		iResult = shutdown(ClientSocket, SD_SEND);
-		if(iResult == SOCKET_ERROR)
-		{
-			SetColor(ANSI_RED);
-			//WriteOutput("shutdown failed with error: %d\n", WSAGetLastError());
-			SetColor(g_pColor->getDefaultFG());
-			closesocket(ClientSocket);
-			ClientSocket = INVALID_SOCKET;
-			continue;
-		}
-		ClientSocket = INVALID_SOCKET;
-	}
-}
-void CloseCommandChannel()
-{
-	// No longer need server socket
-	closesocket(ListenSocket);
-
-
-	closesocket(ClientSocket);
-	WSACleanup();
-}
-
 BOOL WINAPI HandlerRoutine(
 	_In_ DWORD dwCtrlType
 	)
 {
 	if(CTRL_CLOSE_EVENT == dwCtrlType)
 	{
-		if(ClientSocket != INVALID_SOCKET)
+		if(g_iSendSocket != INVALID_SOCKET)
 		{
-			send(ClientSocket, "exit\n", strlen("exit\n"), 0);
+			send(g_iSendSocket, "exit\n", strlen("exit\n"), 0);
 		}
 	}
 	return(FALSE);
@@ -785,31 +640,56 @@ int main(int argc, char ** argv)
 	WriteOutput("SkyXEngine Console\n");
 	SetColor(g_pColor->getDefaultFG());
 
+
+	WSADATA wsaData;
+	int iResult;
+	// Initialize Winsock
+	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if(iResult != 0)
+	{
+		SetColor(ANSI_RED);
+		WriteOutput("WSAStartup failed with error: %d\n", iResult);
+		SetColor(g_pColor->getDefaultFG());
+		return(1);
+	}
+
+
 	g_iHistoryPointer = 0;
 	g_vHistory.push_back({NULL, NULL});
 
-	char szTitle[64];
 
-	if (argc >= 2)
+
+	for(int i = 1; i < argc - 1; ++i)
 	{
-		int iPort = 0;
-		sscanf(argv[1], "%d", &iPort);
-		if (iPort > 0)
+		if(!strcmp(argv[i], "-bind"))
 		{
-			g_bExitOnDisconnect = true;
-			g_iServerPort = iPort;
+			strcpy(g_szServerBind, argv[i + 1]);
+		}
+		else if(!strcmp(argv[i], "-port"))
+		{
+			int iPort = 0;
+			sscanf(argv[i + 1], "%d", &iPort);
+			if(iPort > 0)
+			{
+				g_iServerPort = iPort;
+			}
+		}
+		else if(!strcmp(argv[i], "-exit-on-disconnect"))
+		{
+			int iVal = 0;
+			sscanf(argv[i + 1], "%d", &iVal);
+			if(iVal > 0)
+			{
+				g_bExitOnDisconnect = true;
+			}
 		}
 	}
-	sprintf(szTitle, "sxconsole - %s", argc >= 3 ? argv[2] : "");
-	SetConsoleTitleA(szTitle);
-
+	
 	sprintf(g_szServerPort, "%d", g_iServerPort);
-	sprintf(g_szClientPort, "%d", g_iServerPort + 1);
 	
 	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 
 	_beginthread(threadServer, 0, 0);
-	_beginthread(InitCommandChannel, 0, 0);
 
 	int i = 0;
 
@@ -850,9 +730,9 @@ int main(int argc, char ** argv)
 			putch(g_szUserInp[i] = ch);
 			g_szUserInp[i] = '\n';
 			g_szUserInp[++i] = 0;
-			if(ClientSocket != INVALID_SOCKET)
+			if(g_iSendSocket != INVALID_SOCKET)
 			{
-				send(ClientSocket, g_szUserInp, strlen(g_szUserInp), 0);
+				send(g_iSendSocket, g_szUserInp, strlen(g_szUserInp), 0);
 				WriteOutput("] %s", g_szUserInp);
 				PutHistory();
 			}
@@ -904,8 +784,8 @@ int main(int argc, char ** argv)
 		
 		//g_szUserInp
 	}
-
-	CloseCommandChannel();
+	
+	WSACleanup();
 
 	delete g_pColor;
 	return(0);

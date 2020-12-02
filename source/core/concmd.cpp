@@ -29,11 +29,10 @@ See the license in LICENSE
 
 AssotiativeArray<String, ConCmd> g_mCmds;
 
-SOCKET ConnectSocket = INVALID_SOCKET;
-SOCKET CommandSocket = INVALID_SOCKET;
+SOCKET g_iSendSocket = INVALID_SOCKET;
+SOCKET g_iRecvSocket = INVALID_SOCKET;
 
 #define CONSOLE_PORT g_szServerPort /*!< Стандартный порт для подключения консоли */
-#define COMMAND_PORT g_szClientPort /*!< Стандартный порт для команд */
 
 bool g_bRunning = false;
 bool g_bRunningCmd = false;
@@ -43,11 +42,9 @@ typedef std::mutex Mutex;
 CommandBuffer g_vCommandBuffer;
 Stack<CommandBuffer> g_cbufStack;
 
-char g_szServerPort[8];
-char g_szClientPort[8];
+char g_szServerPort[8] = "59705";
+char g_szServerAddr[255] = "127.0.0.1";
 
-bool CommandConnect();
-void CommandDisconnect();
 
 SX_LIB_API XDEPRECATED void Core_0RegisterConcmd(const char * name, SXCONCMD cmd, const char * desc)
 {
@@ -744,48 +741,116 @@ void ConsoleRegisterCmds()
 
 SX_LIB_API UINT_PTR Core_ConsoleGetOutHandler()
 {
-	return(ConnectSocket);
+	return(g_iSendSocket);
 }
 
-/*!
-@TODO: Handle this with TaskManager
-*/
-void ConsoleRecvTask()
+SOCKET Connect(const char *szAddr, const char *szPort)
 {
-	char recvbuf[2048];
 	int iResult;
-	int recvbuflen = sizeof(recvbuf);
+	struct addrinfo *result = NULL,
+		*ptr = NULL,
+		hints;
 
-	iResult = recv(CommandSocket, recvbuf, recvbuflen - 1, 0);
-	if(iResult > 0)
+	ZeroMemory(&hints, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+
+	// Resolve the server address and port
+	iResult = getaddrinfo(szAddr, szPort, &hints, &result);
+	if(iResult != 0)
 	{
-		recvbuf[iResult] = 0;
-		Core_0ConsoleExecCmd("%s", recvbuf);
+		printf("getaddrinfo failed with error: %d\n", iResult);
+		return(INVALID_SOCKET);
 	}
-	else if(iResult == 0)
+
+	SOCKET iSocket = INVALID_SOCKET;
+
+	// Attempt to connect to an address until one succeeds
+	for(ptr = result; ptr != NULL; ptr = ptr->ai_next)
 	{
-		//printf("Connection closed\n");
-		return;
+
+		// Create a SOCKET for connecting to server
+		iSocket = WSASocketW(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol, NULL, 0, 0);
+		if(iSocket == INVALID_SOCKET)
+		{
+			printf("socket failed with error: %ld\n", WSAGetLastError());
+			return(iSocket);
+		}
+
+		// Connect to server.
+		iResult = connect(iSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+		if(iResult == SOCKET_ERROR)
+		{
+			closesocket(iSocket);
+			iSocket = INVALID_SOCKET;
+			continue;
+		}
+		break;
 	}
-	//else
-	//printf("recv failed with error: %d\n", WSAGetLastError());
+
+	freeaddrinfo(result);
+
+	return(iSocket);
 }
 
 void ConsoleRecv(void*)
 {
-	while(g_bRunningCmd)
+	int iResult;
+	g_iRecvSocket = Connect(g_szServerAddr, CONSOLE_PORT);
+
+	if(g_iRecvSocket == INVALID_SOCKET)
 	{
-		ConsoleRecvTask();
+		printf("Unable to connect to console command channel!\n");
+		return;
 	}
+
+	char recvbuf[2048];
+	int recvbuflen = sizeof(recvbuf);
+
+	while(g_bRunning)
+	{
+		iResult = recv(g_iRecvSocket, recvbuf, recvbuflen - 1, 0);
+		if(iResult > 0)
+		{
+			recvbuf[iResult] = 0;
+			Core_0ConsoleExecCmd("%s", recvbuf);
+		}
+		else if(iResult == 0)
+		{
+			break;
+		}
+	}
+
+	iResult = shutdown(g_iRecvSocket, SD_SEND);
+	if(iResult == SOCKET_ERROR)
+	{
+		printf("shutdown failed with error: %d\n", WSAGetLastError());
+	}
+	closesocket(g_iRecvSocket);
+	g_iRecvSocket = INVALID_SOCKET;
 }
-
-
-int hOut;
-FILE * fOut = NULL;
 
 bool ConsoleConnect(const char *szName, bool bNewInstance)
 {
-	char szNameConsole[64];
+	{
+		const char *szConsole = Core_0GetCommandLineArg("console", "127.0.0.1:59705");
+
+		char *str = strdupa(szConsole);
+		char *parts[2];
+		if(parse_str(str, parts, 2, ':') == 2)
+		{
+			strcpy(CONSOLE_PORT, parts[1]);
+		}
+		strcpy(g_szServerAddr, parts[0]);
+		if(!strcmp(parts[0], "localhost"))
+		{
+			strcpy(g_szServerAddr, "127.0.0.1");
+		}
+	}
+
+	char szConsoleArgs[64];
+	szConsoleArgs[0] = 0;
 
 	char str[MAX_PATH];
 	GetModuleFileNameA(NULL, str, MAX_PATH);
@@ -795,26 +860,19 @@ bool ConsoleConnect(const char *szName, bool bNewInstance)
 		srand((UINT)time(NULL));
 		int port = (rand() % (65536 - 2048) | 1) + 2048;
 		sprintf(g_szServerPort, "%d", port);
-		sprintf(g_szClientPort, "%d", port + 1);
 
-		sprintf(szNameConsole, "%s %s", g_szServerPort, szName);
+		sprintf(szConsoleArgs, "-port %s -exit-on-disconnect 1", g_szServerPort);
 	}
-	else
+	else if(!strcmp(g_szServerAddr, "127.0.0.1") && strcmp(g_szServerPort, "59705"))
 	{
-		int port = 59705;
-		sprintf(g_szServerPort, "%d", port);
-		sprintf(g_szClientPort, "%d", port + 1);
-
-		sprintf(szNameConsole, "0 %s", szName);
+		sprintf(szConsoleArgs, "-port %s -exit-on-disconnect 1", g_szServerPort);
 	}
 
 	if (bNewInstance || !Core_0IsProcessRun("sxconsole.exe"))
-		ShellExecuteA(0, "open", "sxconsole.exe", szNameConsole, dirname(str), SW_SHOWNORMAL);
+		ShellExecuteA(0, "open", "sxconsole.exe", szConsoleArgs, dirname(str), SW_SHOWNORMAL);
 
 	WSADATA wsaData;
-	struct addrinfo *result = NULL,
-		*ptr = NULL,
-		hints;
+
 	char *sendbuf = "Console initialized...\n";
 	//char recvbuf[2048];
 	int iResult;
@@ -828,184 +886,68 @@ bool ConsoleConnect(const char *szName, bool bNewInstance)
 		return(false);
 	}
 
-	ZeroMemory(&hints, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
+	g_iSendSocket = Connect(g_szServerAddr, CONSOLE_PORT);
 
-	// Resolve the server address and port
-	iResult = getaddrinfo("127.0.0.1", CONSOLE_PORT, &hints, &result);
-	if(iResult != 0)
-	{
-		printf("getaddrinfo failed with error: %d\n", iResult);
-		WSACleanup();
-		return(false);
-	}
-
-	// Attempt to connect to an address until one succeeds
-	for(ptr = result; ptr != NULL; ptr = ptr->ai_next)
-	{
-
-		// Create a SOCKET for connecting to server
-		ConnectSocket = WSASocketW(ptr->ai_family, ptr->ai_socktype,
-			ptr->ai_protocol, NULL, 0, 0);
-		if(ConnectSocket == INVALID_SOCKET)
-		{
-			printf("socket failed with error: %ld\n", WSAGetLastError());
-			WSACleanup();
-			return(false);
-		}
-
-		// Connect to server.
-		iResult = connect(ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
-		if(iResult == SOCKET_ERROR)
-		{
-			closesocket(ConnectSocket);
-			ConnectSocket = INVALID_SOCKET;
-			continue;
-		}
-		break;
-	}
-
-	freeaddrinfo(result);
-
-	if(ConnectSocket == INVALID_SOCKET)
+	if(g_iSendSocket == INVALID_SOCKET)
 	{
 		printf("Unable to connect to console!\n");
 		WSACleanup();
+		const char *szConsoleAddr = Core_0GetCommandLineArg("console", NULL);
+		if(szConsoleAddr)
+		{
+			AllocConsole();
+			freopen("CONOUT$", "wt", stdout);
+			freopen("CONOUT$", "wt", stderr);
+			printf("Unable to connect to %s!\n", szConsoleAddr);
+			return(false);
+		}
 		return(ConsoleConnect(szName, true));
 		//return(false);
 	}
 
 	// Send an initial buffer
-	iResult = send(ConnectSocket, sendbuf, (int)strlen(sendbuf), 0);
+	iResult = send(g_iSendSocket, sendbuf, (int)strlen(sendbuf), 0);
 	if(iResult == SOCKET_ERROR)
 	{
 		printf("send failed with error: %d\n", WSAGetLastError());
-		closesocket(ConnectSocket);
-		ConnectSocket = INVALID_SOCKET;
-		WSACleanup();
-		return(false);
+		closesocket(g_iSendSocket);
+		g_iSendSocket = INVALID_SOCKET;
+		goto end;
 	}
 
 	//connected? reopen streams
 
+	// unsigned long block = 1;//+
+	// ioctlsocket(g_iSendSocket, FIONBIO, &block);//+
+	
 	FreeConsole();
 
 	Core_SetOutPtr();
 
 	g_bRunning = true;
-	//_beginthread(ConsoleRecv, 0, 0);
 
-	CommandConnect();
+	_beginthread(ConsoleRecv, 0, 0);
 
 	return(true);
+
+end:
+	WSACleanup();
+	return(false);
 }
 void ConsoleDisconnect()
 {
 
 	g_bRunning = false; 
 
-	int iResult = shutdown(ConnectSocket, SD_SEND);
+	int iResult = shutdown(g_iSendSocket, SD_SEND);
 	if(iResult == SOCKET_ERROR)
 	{
 		printf("shutdown failed with error: %d\n", WSAGetLastError());
 		goto end;
 	}
 end:
-	closesocket(ConnectSocket);
+	closesocket(g_iSendSocket);
 	WSACleanup();
 	//Sleep(1000);
-	CommandDisconnect();
+	//CommandDisconnect();
 }
-
-bool CommandConnect()
-{
-	WSADATA wsaData;
-	struct addrinfo *result = NULL,
-		*ptr = NULL,
-		hints;
-	
-	int iResult;
-	
-
-	// Initialize Winsock
-	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if(iResult != 0)
-	{
-		printf("WSAStartup failed with error: %d\n", iResult);
-		return(false);
-	}
-
-	ZeroMemory(&hints, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-
-	// Resolve the server address and port
-	iResult = getaddrinfo("127.0.0.1", COMMAND_PORT, &hints, &result);
-	if(iResult != 0)
-	{
-		printf("getaddrinfo failed with error: %d\n", iResult);
-		WSACleanup();
-		return(false);
-	}
-
-	// Attempt to connect to an address until one succeeds
-	for(ptr = result; ptr != NULL; ptr = ptr->ai_next)
-	{
-
-		// Create a SOCKET for connecting to server
-		CommandSocket = WSASocketW(ptr->ai_family, ptr->ai_socktype,
-			ptr->ai_protocol, NULL, 0, 0);
-		if(CommandSocket == INVALID_SOCKET)
-		{
-			printf("socket failed with error: %ld\n", WSAGetLastError());
-			WSACleanup();
-			return(false);
-		}
-
-		// Connect to server.
-		iResult = connect(CommandSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
-		if(iResult == SOCKET_ERROR)
-		{
-			closesocket(CommandSocket);
-			CommandSocket = INVALID_SOCKET;
-			continue;
-		}
-		break;
-	}
-
-	freeaddrinfo(result);
-
-	if(CommandSocket == INVALID_SOCKET)
-	{
-		printf("Unable to connect to console!\n");
-		WSACleanup();
-		return(false);
-	}
-
-	g_bRunningCmd = true;
-
-	//Core_MTaskAdd(ConsoleRecvTask, CORE_TASK_FLAG_BACKGROUND_REPEATING);
-	_beginthread(ConsoleRecv, 0, 0);
-
-	return(true);
-}
-void CommandDisconnect()
-{
-	g_bRunningCmd = false;
-
-	int iResult = shutdown(CommandSocket, SD_BOTH);
-	if(iResult == SOCKET_ERROR)
-	{
-		printf("shutdown failed with error: %d\n", WSAGetLastError());
-		closesocket(CommandSocket);
-		WSACleanup();
-		return;
-	}
-	// cleanup
-	closesocket(CommandSocket);
-	//WSACleanup();
-}
-

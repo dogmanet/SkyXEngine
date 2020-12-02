@@ -126,6 +126,8 @@ CEngine::CEngine(int argc, char **argv, const char *szName)
 	INIT_OUTPUT_STREAM(m_pCore);
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB core initialized\n");
 
+	printf(CONSOLE_TITLE "SkyXEngine %s version " SKYXENGINE_VERSION CONSOLE_TITLE_END, szName);
+
 	m_pObserverChangedEventChannel = m_pCore->getEventChannel<XEventObserverChanged>(EVENT_OBSERVER_CHANGED_GUID);
 
 	Core_0RegisterCVarString("engine_version", SKYXENGINE_VERSION, "Текущая версия движка", FCVAR_READONLY);

@@ -30,7 +30,7 @@ CCore::CCore(const char *szName)
 	ConsoleConnect(szName);
 	ConsoleRegisterCmds();
 	CvarInitSystem(this);
-
+	
 	m_pConsole = new CConsole();
 
 	Core_0RegisterCVarBool("g_time_run", true, "Запущено ли игровое время?", FCVAR_NOTIFY_OLD);
