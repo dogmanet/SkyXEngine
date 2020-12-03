@@ -17,6 +17,7 @@
 				<div class="menu-item">Направленные тени</div>				
 				<!-- <div class="menu-item">Размытие теней</div>		 -->
 				<!-- <div class="menu-item">Размытие в движении</div>			 -->
+				<div class="menu-item">Качество отражений</div>			
 				
 				<div class="menu-item bottom" onclick="on_cancel">Назад</div>
 			</div>
@@ -72,6 +73,12 @@
 					<option value="1">Включить</option>
 					<option value="0">Выключить</option>
 				</select> -->
+				<select class="set_item" cvar="pp_sslr">
+					<option value="0">Низкое</option>
+					<option value="1">Среднее</option>
+					<!-- <option value="2.000000">Высокое</option> -->
+					<!-- <option value="4.000000">Очень высокое</option> -->
+				</select>
 				
 				<div class="menu-item bottom" onclick="settings_commit" style="text-align: right;">Применить</div>
 			</div>

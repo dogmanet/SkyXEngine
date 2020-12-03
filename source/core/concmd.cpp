@@ -852,24 +852,34 @@ bool ConsoleConnect(const char *szName, bool bNewInstance)
 	char szConsoleArgs[64];
 	szConsoleArgs[0] = 0;
 
-	char str[MAX_PATH];
-	GetModuleFileNameA(NULL, str, MAX_PATH);
-
+	bool bRunNew = !Core_0IsProcessRun("sxconsole.exe");
 	if(bNewInstance)
 	{
+		bRunNew = true;
 		srand((UINT)time(NULL));
 		int port = (rand() % (65536 - 2048) | 1) + 2048;
 		sprintf(g_szServerPort, "%d", port);
 
 		sprintf(szConsoleArgs, "-port %s -exit-on-disconnect 1", g_szServerPort);
 	}
-	else if(!strcmp(g_szServerAddr, "127.0.0.1") && strcmp(g_szServerPort, "59705"))
+	else if(!strcmp(g_szServerAddr, "127.0.0.1"))
 	{
-		sprintf(szConsoleArgs, "-port %s -exit-on-disconnect 1", g_szServerPort);
+		if(strcmp(g_szServerPort, "59705"))
+		{
+			sprintf(szConsoleArgs, "-port %s -exit-on-disconnect 1", g_szServerPort);
+		}
+	}
+	else
+	{
+		bRunNew = false;
 	}
 
-	if (bNewInstance || !Core_0IsProcessRun("sxconsole.exe"))
+	if(bRunNew)
+	{
+		char str[MAX_PATH];
+		GetModuleFileNameA(NULL, str, MAX_PATH);
 		ShellExecuteA(0, "open", "sxconsole.exe", szConsoleArgs, dirname(str), SW_SHOWNORMAL);
+	}
 
 	WSADATA wsaData;
 

@@ -129,7 +129,7 @@ protected:
 
 	//###################################
 
-	ID m_idBlendAmbientSpecDiffColor[2];
+	ID m_idBlendAmbientSpecDiffColor[2][2];
 	ID m_idComLightingShadow = -1;
 	ID m_idComLightingSpotShadow = -1;
 	ID m_idComLightingPSSMShadow = -1;

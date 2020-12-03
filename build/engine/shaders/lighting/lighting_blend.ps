@@ -26,6 +26,10 @@ Texture3D g_txSkylightR: register(t6);
 Texture3D g_txSkylightG: register(t7);
 Texture3D g_txSkylightB: register(t8);
 
+#ifndef USE_SSLR
+TextureCube g_txEnvmap: register(t9);
+#endif
+
 // sampler2D g_sColor:register(s0);
 // sampler2D g_sAmbient:register(s1);
 // sampler2D g_sSpecDiff:register(s2);
@@ -63,6 +67,9 @@ float3 GetReflection(float3 texelPosition, float3 texelNormal)
 {
 	float3 viewDir = normalize(texelPosition - g_vPosCam.xyz);
 	float3 reflectDir = normalize(reflect(viewDir, texelNormal));
+
+	float fresnel = /* 0.0 +  */2.8 * pow(1+dot(viewDir, texelNormal), 2);
+#ifdef USE_SSLR
 	
 	float3 currentRay = 0;
 
@@ -96,10 +103,13 @@ float3 GetReflection(float3 texelPosition, float3 texelNormal)
 	
 	float error = max(0.0f, 1.0f - max(err.x, err.y));
 	
-	float fresnel = /* 0.0 +  */2.8 * pow(1+dot(viewDir, texelNormal), 2);
 	
 	return(g_txAmbient.Sample(g_sLinearClamp, nuv.xy).xyz * error * fresnel);
 	// return(fresnel);
+#else
+	float4 vSample = g_txEnvmap.Sample(g_sLinearWrap, reflectDir);
+	return(vSample.xyz * vSample.w * 16.0f * fresnel);
+#endif
 }
 
 int3 GetSkyLightGridPos(float3 worldPos, uint uCascade)
