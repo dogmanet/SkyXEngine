@@ -539,16 +539,16 @@ void CDynamicModelProvider::renderEmissive(CRenderableVisibility *pVisibility)
 	render(pVisibility->getSelfillumList(), MF_SELFILLUM);
 }
 
-void CDynamicModelProvider::computeVisibility(const IXFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)
+void CDynamicModelProvider::computeVisibility(const IXFrustum *pFrustum, const float3 &vHintDir, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)
 {
 	void **ppData;
-	UINT uCount = m_pOpaqueQuery->execute(pFrustum, &ppData);
+	UINT uCount = m_pOpaqueQuery->execute(pFrustum, vHintDir, &ppData);
 	pVisibility->setRenderList(ppData, uCount);
 
-	uCount = m_pSelfillumQuery->execute(pFrustum, &ppData);
+	uCount = m_pSelfillumQuery->execute(pFrustum, vHintDir, &ppData);
 	pVisibility->setSelfillumList(ppData, uCount);
 
-	uCount = m_pTransparentQuery->execute(pFrustum, &ppData);
+	uCount = m_pTransparentQuery->execute(pFrustum, vHintDir, &ppData);
 	pVisibility->setTransparentList(ppData, uCount);
 
 	{

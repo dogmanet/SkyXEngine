@@ -67,6 +67,14 @@ public:
 	virtual UINT XMETHODCALLTYPE execute(const IXFrustum *pFrustum, void ***pppObjects, IXOcclusionCuller *pOcclusionCuller = NULL) = 0;
 
 	/*!
+		Выполняет запрос, возвращает количество найденных объектов,
+		в pppObjects записывается указатель на массив пользовательских указателей найденных объектов
+		в vDir задается предпочтительное направление обхода (данное направление лишь подсказка, но не руководство к действию)
+		@threadsafe sync
+	*/
+	virtual UINT XMETHODCALLTYPE execute(const IXFrustum *pFrustum, const float3 &vDir, void ***pppObjects, IXOcclusionCuller *pOcclusionCuller = NULL) = 0;
+
+	/*!
 		Устанавливает операцию выборки
 		@threadsafe none
 	*/

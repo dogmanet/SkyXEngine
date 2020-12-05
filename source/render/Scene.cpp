@@ -86,6 +86,25 @@ void XMETHODCALLTYPE CSceneObject::setFeatures(IXSceneFeature **ppFeatures)
 
 //##########################################################################
 
+static const UINT gcs_puOrders[][BVH_CHILD_COUNT] = {
+	// +x +y +z
+	{13, 4, 10, 12, 1, 3, 9, 14, 16, 22, 0, 5, 7, 11, 15, 19, 21, 2, 6, 17, 18, 23, 25, 8, 20, 24, 26},
+	// +x +y -z
+	{22, 4, 19, 21, 1, 3, 13, 18, 23, 25, 0, 5, 7, 10, 12, 20, 24, 2, 6, 9, 14, 16, 26, 8, 11, 15, 17},
+	// +x -y +z
+	{16, 7, 10, 15, 1, 6, 9, 13, 17, 25, 0, 4, 8, 11, 12, 19, 24, 2, 3, 14, 18, 22, 26, 5, 20, 21, 23},
+	// +x -y -z
+	{25, 7, 19, 24, 1, 6, 16, 18, 22, 26, 0, 4, 8, 10, 15, 20, 21, 2, 3, 9, 13, 17, 23, 5, 11, 12, 14},
+	// -x +y +z
+	{14, 5, 11, 12, 2, 3, 9, 13, 17, 23, 0, 4, 8, 10, 15, 20, 21, 1, 6, 16, 18, 22, 26, 7, 19, 24, 25},
+	// -x +y -z
+	{23, 5, 20, 21, 2, 3, 14, 18, 22, 26, 0, 4, 8, 11 ,12, 19, 24, 1, 6, 9, 13, 17, 25, 7, 10, 15, 16},
+	// -x -y +z
+	{17, 8, 11, 15, 2, 6, 9, 14, 16, 26, 0, 5, 7, 10, 12, 20, 24, 1, 3, 13, 18, 23, 25, 4, 19, 21, 22},
+	// -x -y -z
+	{26, 8, 20, 24, 2, 6, 17, 18, 23, 25, 0, 5, 7, 11, 15, 19, 21, 1, 3, 9, 14, 16, 22, 4, 10, 12, 13}
+};
+
 CSceneQuery::CSceneQuery(CScene *pScene, CSceneObjectType *pObjectType):
 	m_pScene(pScene),
 	m_bmType(pObjectType->getType())
@@ -95,8 +114,19 @@ CSceneQuery::~CSceneQuery()
 {
 }
 
+UINT XMETHODCALLTYPE CSceneQuery::execute(const IXFrustum *pFrustum, const float3 &vDir, void ***pppObjects, IXOcclusionCuller *pOcclusionCuller)
+{
+	pOrder = gcs_puOrders[(vDir.x < 0.0f ? 4 : 0) + (vDir.y < 0.0f ? 2 : 0) + (vDir.z < 0.0f ? 1 : 0)];
+
+	return(execute(pFrustum, pppObjects, pOcclusionCuller));
+}
+
 UINT XMETHODCALLTYPE CSceneQuery::execute(const IXFrustum *pFrustum, void ***pppObjects, IXOcclusionCuller *pOcclusionCuller)
 {
+	if(!pOrder)
+	{
+		pOrder = gcs_puOrders[0];
+	}
 	m_aQueryResponse.clearFast();
 
 	queryObjectsInternal(m_pScene->m_pRootNode, pFrustum);
@@ -140,7 +170,7 @@ void CSceneQuery::queryObjectsInternal(CSceneNode *pNode, const IXFrustum *pFrus
 
 	for(UINT i = 0; i < BVH_CHILD_COUNT; ++i)
 	{
-		queryObjectsInternal(pNode->getChild(i, false), pFrustum, isFullyVisible);
+		queryObjectsInternal(pNode->getChild(pOrder[i], false), pFrustum, isFullyVisible);
 	}
 
 	auto &aObjects = pNode->getObjects();
