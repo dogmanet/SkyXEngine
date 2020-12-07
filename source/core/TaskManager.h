@@ -11,6 +11,7 @@ See the license in LICENSE
 #include <thread>
 #include <algorithm>
 #include <atomic>
+#include <chrono>
 #include "task.h"
 #include "common/ConcurrentQueue.h"
 #include <common/array.h>
@@ -40,6 +41,7 @@ public:
 	~CTaskManager();
 
 	void addTask(TaskPtr task); //< Добавляет задачу в планировщик
+	void addTask(TaskPtr task, std::chrono::steady_clock::time_point tpWhen); //< Добавляет задачу в планировщик
 	void addTaskIO(TaskPtr task); //< Добавляет задачу ввода/вывода
 	void add(THREAD_UPDATE_FUNCTION fnFunc, DWORD dwFlag = CORE_TASK_FLAG_MAINTHREAD_REPEATING); //< Добавляет задачу в планировщик
 
@@ -60,6 +62,7 @@ public:
 private:
 	void workerMain();
 	void workerIOMain();
+	void schedulerMain();
 	void worker(bool bOneRun);
 	void workerIO();
 	void execute(TaskPtr task);
@@ -69,6 +72,7 @@ private:
 
 	Array<std::thread*> m_aThreads;
 	std::thread* m_pIOThread;
+	std::thread* m_pShedulerThread;
 	unsigned int m_iNumThreads;
 
 	volatile bool m_isRunning = false;
@@ -88,8 +92,11 @@ private:
 	mutable mutex m_mutexSync;
 	mutable mutex m_mutexFor;
 	mutable mutex m_mutexIOThread;
+	mutable mutex m_mutexSchedulerThread;
+	mutable SpinLock m_slShedulerArray;
 	Condition m_Condition;
 	Condition m_ConditionIOThread;
+	Condition m_ConditionSchedulerThread;
 	mutable SpinLock m_mutexWorker;
 	Condition m_ConditionWorker;
 	Condition m_ConditionFor;
@@ -98,6 +105,13 @@ private:
 	bool m_isSingleThreaded = false;
 
 	Array<int> m_aiNumWaitFor;
+
+	struct ScheduledTask
+	{
+		TaskPtr pTask;
+		std::chrono::steady_clock::time_point tpRunAt;
+	};
+	Array<ScheduledTask> m_aScheduled;
 };
 
 #endif

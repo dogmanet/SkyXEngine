@@ -112,6 +112,17 @@ void CTaskManager::forceSinglethreaded()
 	m_iNumThreads = 1;
 }
 
+void CTaskManager::addTask(TaskPtr task, std::chrono::steady_clock::time_point tpWhen)
+{
+	{
+		ScopedSpinLock lock(m_slShedulerArray);
+		m_aScheduled.insert({task, tpWhen}, [](const ScheduledTask &a, const ScheduledTask &b){
+			return(a.tpRunAt > b.tpRunAt);
+		});
+	}
+	m_ConditionSchedulerThread.notify_one();
+}
+
 void CTaskManager::addTask(TaskPtr task)
 {
 	unsigned int flags = task->getFlags();
@@ -175,10 +186,15 @@ void CTaskManager::start()
 #endif
 		m_aThreads.push_back(t);
 	}
-	m_pIOThread = new std::thread(std::bind(&CTaskManager::workerIOMain, this)); 
+	m_pIOThread = new std::thread(std::bind(&CTaskManager::workerIOMain, this));
 #if defined(_WINDOWS)
 	sprintf(name, "Worker IO");
 	SetThreadName(m_pIOThread->native_handle(), name);
+#endif
+	m_pShedulerThread = new std::thread(std::bind(&CTaskManager::schedulerMain, this));
+#if defined(_WINDOWS)
+	sprintf(name, "Scheduler");
+	SetThreadName(m_pShedulerThread->native_handle(), name);
 #endif
 
 	sheduleNextBunch();
@@ -268,6 +284,7 @@ void CTaskManager::stop()
 	m_isRunning = false;
 	m_ConditionIOThread.notify_all();
 	m_ConditionWorker.notify_all();
+	m_ConditionSchedulerThread.notify_all();
 	
 	ITask *pStubTask = new CTaskStub();
 	for(int i = 0, l = m_aThreads.size() - 1; i < l; ++i)
@@ -290,17 +307,30 @@ void CTaskManager::stop()
 		m_pIOThread->join();
 		mem_delete(m_pIOThread);
 	}
+	if(m_pShedulerThread)
+	{
+		m_pShedulerThread->join();
+		mem_delete(m_pShedulerThread);
+	}
 }
 
 void CTaskManager::execute(TaskPtr t)
 {
-	// save time task started
+	std::chrono::steady_clock::time_point tpStarted(std::chrono::steady_clock::now());
 	t->run();
-	// save time task ended
+	// std::chrono::steady_clock::time_point tpFinished(std::chrono::steady_clock::now());
 
 	if(t->getFlags() & CORE_TASK_FLAG_REPEATING)
 	{
-		addTask(t);
+		uint64_t uRepeatInterval = t->getRepeatInterval();
+		if(uRepeatInterval)
+		{
+			addTask(t, std::chrono::steady_clock::time_point(tpStarted + std::chrono::microseconds(uRepeatInterval)));
+		}
+		else
+		{
+			addTask(t);
+		}
 	}
 	else
 	{
@@ -318,6 +348,47 @@ void CTaskManager::workerIOMain()
 {
 	srand((UINT)time(0));
 	workerIO();
+}
+
+void CTaskManager::schedulerMain()
+{
+	srand((UINT)time(0));
+	//TaskPtr task;
+
+	ScheduledTask *pScheduledTask = NULL;
+	std::chrono::steady_clock::time_point tpNow, tpWaitUntil;
+	while(m_isRunning)
+	{
+		tpNow = tpWaitUntil = std::chrono::steady_clock::now();
+		{
+			ScopedSpinLock lock(m_slShedulerArray);
+			for(UINT i = 0, l = m_aScheduled.size(); i < l; ++i)
+			{
+				pScheduledTask = &m_aScheduled[i];
+
+				if(pScheduledTask->tpRunAt <= tpNow)
+				{
+					addTask(pScheduledTask->pTask);
+					m_aScheduled.erase(i);
+					--i; --l;
+				}
+				else
+				{
+					tpWaitUntil = pScheduledTask->tpRunAt;
+					break;
+				}
+			}
+		}
+		std::unique_lock<std::mutex> lock(m_mutexSchedulerThread);
+		if(tpWaitUntil != tpNow)
+		{
+			m_ConditionSchedulerThread.wait_until(lock, tpWaitUntil);
+		}
+		else
+		{
+			m_ConditionSchedulerThread.wait(lock);
+		}
+	}
 }
 
 void CTaskManager::worker(bool bOneRun)
