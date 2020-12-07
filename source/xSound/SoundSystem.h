@@ -52,7 +52,7 @@ public:
 	virtual IXSoundLayer* XMETHODCALLTYPE createMasterLayer(const AudioRawDesc *pDesc, const char *szName) override;
 	virtual IXSoundLayer* XMETHODCALLTYPE findLayer(const char *szName) override;
 
-	virtual void XMETHODCALLTYPE update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp) override;
+	virtual void update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp);
 
 	//########################################################################
 

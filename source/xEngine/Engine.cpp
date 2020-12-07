@@ -181,10 +181,8 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	pMasterLayer->play(true);
 	IXSoundLayer *pGameLayer = pMasterLayer->newSoundLayer("xGame");
 	IXSoundLayer *pGuiLayer = pMasterLayer->newSoundLayer("xGUI");
-	pSound->update(float3(), float3(), float3());
 	pGameLayer->play(false);
 	pGuiLayer->play(false);
-	pSound->update(float3(), float3(), float3());
 	/*IXSoundPlayer *pPlayer = pMasterLayer->newSoundPlayer("sounds/guitar_10.ogg", SOUND_DTYPE_3D);
 	pPlayer->setWorldPos(float3(-11.084, 0.435, -18.707));
 	pPlayer->setLoop(SOUND_LOOP_SIMPLE);

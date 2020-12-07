@@ -55,6 +55,7 @@ public:
 
 	ID XMETHODCALLTYPE forLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize = 0) override;
 	void XMETHODCALLTYPE waitForLoop(ID id) override;
+	void XMETHODCALLTYPE addTask(ITask *pTask) override;
 	
 	IBaseEventChannel* getEventChannelInternal(const XGUID &guid) override;
 protected:

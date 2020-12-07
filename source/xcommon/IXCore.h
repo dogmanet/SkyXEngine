@@ -16,6 +16,7 @@
 
 class IPluginManager;
 class IXResourceManager;
+class ITask;
 
 class IXCore: public IXUnknown
 {
@@ -46,6 +47,8 @@ public:
 
 	virtual ID XMETHODCALLTYPE forLoop(int iStart, int iEnd, const IParallelForBody *pBody, int iMaxChunkSize = 0) = 0;
 	virtual void XMETHODCALLTYPE waitForLoop(ID id) = 0;
+
+	virtual void XMETHODCALLTYPE addTask(ITask *pTask) = 0;
 
 	template<typename T> IEventChannel<T> *getEventChannel(const XGUID &guid)
 	{

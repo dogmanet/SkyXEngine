@@ -4,6 +4,7 @@
 #include "SoundSystem.h"
 #include <Audio.h>
 #include <gcore/sxgcore.h>
+#include <core/ITask.h>
 
 #if defined(_DEBUG)
 #pragma comment(lib, "mital_d.lib")
@@ -51,6 +52,43 @@ protected:
 
 //##########################################################################
 
+class CUpdateTask: public ITaskImpl<ITask>
+{
+public:
+	CUpdateTask(CSoundSystem *pSoundSystem, CObserverChangedEventListener *pObserverListener):
+		m_pSoundSystem(pSoundSystem),
+		m_pObserverListener(pObserverListener),
+		ITaskImpl(CORE_TASK_FLAG_BACKGROUND_REPEATING)
+	{
+	}
+
+	~CUpdateTask()
+	{
+		mem_release(m_pSoundSystem);
+	}
+
+	void run() override
+	{
+		float3 vPos, vLook, vUp;
+
+		if(m_pObserverListener)
+			m_pObserverListener->getObserverParam(&vPos, &vLook, &vUp);
+
+		if(m_pSoundSystem)
+			m_pSoundSystem->update(vPos, vLook, vUp);
+	}
+
+	uint64_t getRepeatInterval() override
+	{
+		return(20000); // 20ms
+	}
+
+protected:
+	CSoundSystem *m_pSoundSystem = NULL;
+	CObserverChangedEventListener *m_pObserverListener = NULL;
+};
+
+#if 0
 class CUpdatableSoundSystem: public IXUnknownImplementation<IXUpdatable>
 {
 public:
@@ -113,6 +151,7 @@ protected:
 	CObserverChangedEventListener *m_pObserverListener = NULL;
 	IXSoundEmitter *m_pEmitter = NULL;
 };
+#endif
 
 //##########################################################################
 
@@ -125,7 +164,8 @@ public:
 		m_pCore = pCore;
 		m_pSoundSystem = new CSoundSystem(m_pCore);
 		m_pObserverListener = new CObserverChangedEventListener(m_pCore);
-		m_pUpdatableSoundSystem = new CUpdatableSoundSystem(m_pSoundSystem, m_pObserverListener);
+		m_pCore->addTask(new CUpdateTask(m_pSoundSystem, m_pObserverListener));
+		//m_pUpdatableSoundSystem = new CUpdatableSoundSystem(m_pSoundSystem, m_pObserverListener);
 	}
 
 	void XMETHODCALLTYPE shutdown() override
@@ -134,7 +174,7 @@ public:
 
 	UINT XMETHODCALLTYPE getInterfaceCount() override
 	{
-		return(2);
+		return(1);
 	}
 	const XGUID* XMETHODCALLTYPE getInterfaceGUID(UINT id) override
 	{
@@ -144,9 +184,9 @@ public:
 		case 0:
 			s_guid = IXSOUNDSYSTEM_GUID;
 			break;
-		case 1:
-			s_guid = IXUPDATABLE_GUID;
-			break;
+		//case 1:
+		//	s_guid = IXUPDATABLE_GUID;
+		//	break;
 		default:
 			return(NULL);
 		}
@@ -156,8 +196,8 @@ public:
 	{
 		if(guid == IXSOUNDSYSTEM_GUID)
 			return(m_pSoundSystem);
-		if(guid == IXUPDATABLE_GUID)
-			return(m_pUpdatableSoundSystem);
+		//if(guid == IXUPDATABLE_GUID)
+		//	return(m_pUpdatableSoundSystem);
 
 		return(NULL);
 	}
@@ -165,7 +205,7 @@ public:
 protected:
 	IXCore *m_pCore;
 	CSoundSystem *m_pSoundSystem = NULL;
-	CUpdatableSoundSystem *m_pUpdatableSoundSystem = NULL;
+	//CUpdatableSoundSystem *m_pUpdatableSoundSystem = NULL;
 	CObserverChangedEventListener *m_pObserverListener = NULL;
 };
 

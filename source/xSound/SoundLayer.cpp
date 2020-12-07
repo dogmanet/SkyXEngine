@@ -211,11 +211,13 @@ IXSoundLayer* XMETHODCALLTYPE CSoundLayer::newSoundLayer(const char *szName, con
 	CSoundLayer *pLayer = new CSoundLayer();
 	pLayer->init(m_pSoundSystem, this, pDesc, szName);
 
-	SndQueueMsg oMsg;
-	oMsg.type = SND_QUEUE_MSG_TYPE_LAYER_NEW;
-	oMsg.pLayer = pLayer;
-	oMsg.pOwner = this;
-	m_pSoundSystem->addMessage(oMsg);
+	addLayer(pLayer);
+
+//	SndQueueMsg oMsg;
+//	oMsg.type = SND_QUEUE_MSG_TYPE_LAYER_NEW;
+//	oMsg.pLayer = pLayer;
+//	oMsg.pOwner = this;
+//	m_pSoundSystem->addMessage(oMsg);
 
 	return pLayer;
 }

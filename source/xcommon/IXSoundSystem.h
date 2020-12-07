@@ -120,8 +120,6 @@ public:
 
 	virtual IXSoundLayer* XMETHODCALLTYPE createMasterLayer(const AudioRawDesc *pDesc, const char *szName) = 0;
 	virtual IXSoundLayer* XMETHODCALLTYPE findLayer(const char *szName) = 0;
-
-	virtual void XMETHODCALLTYPE update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp) = 0;
 };
 
 #endif

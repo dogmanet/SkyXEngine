@@ -369,7 +369,6 @@ GameData::GameData(HWND hWnd, bool isGame):
 		m_pSoundPlayer = m_pGuiLayer->newSoundPlayer("sounds/dip.wav", SOUND_SPACE_2D);
 		m_pSoundPlayer->setLoop(SOUND_LOOP_SIMPLE);
 	}
-	pSound->update(float3(), float3(), float3());
 
 	loadFoostepsSounds();
 	isGame = true;
