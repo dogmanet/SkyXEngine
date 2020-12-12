@@ -81,6 +81,10 @@ public:
 	{
 		m_dirty &= ~type;
 	}
+	void markDirty(LIGHT_RENDER_TYPE type)
+	{
+		m_dirty |= type;
+	}
 
 protected:
 	virtual SMMATRIX getWorldTM();
