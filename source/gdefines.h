@@ -133,6 +133,8 @@ struct IBaseObject
 
 #define ID_VALID(id) ((id) >= 0)
 
+#define SAFE_CALL(obj, fn, ...) if(obj){obj->fn(__VA_ARGS__);}
+
 #ifndef IFACEBASEOBJECT
 #define IFACEBASEOBJECT
 

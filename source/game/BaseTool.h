@@ -121,8 +121,8 @@ protected:
 
 	ID m_iMuzzleFlash;
 	ID m_iMuzzleFlash2;
-	ID m_iSoundAction1;
-	ID m_iSoundAction2;
+	IXSoundEmitter *m_pSoundAction1 = NULL;
+	IXSoundEmitter *m_pSoundAction2 = NULL;
 
 	const char * m_szPrimaryActionSound;
 	const char * m_szSecondaryActionSound;

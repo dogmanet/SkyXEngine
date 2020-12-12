@@ -12,7 +12,6 @@ See the license in LICENSE
 #define __SOUND_PLAYER_H
 
 #include "PointEntity.h"
-#include <xcommon/IXSoundSystem.h>
 
 //##########################################################################
 

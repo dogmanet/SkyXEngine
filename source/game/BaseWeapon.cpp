@@ -104,14 +104,7 @@ CBaseWeapon::CBaseWeapon(CEntityManager * pMgr):
 	m_pMag(NULL),
 	m_fireMode(FIRE_MODE_SINGLE),
 	m_iFireModes(0),
-
-	m_idSndDraw(-1),
-	m_idSndHolster(-1),
-	m_idSndShoot(-1),
-	m_idSndEmpty(-1),
-	m_idSndReload(-1),
-	m_idSndSwitch(-1),
-
+	
 	m_iCapacity(1),
 	m_iCurrentLoad(0),
 
@@ -131,33 +124,49 @@ CBaseWeapon::CBaseWeapon(CEntityManager * pMgr):
 	m_bIsWeapon = true;
 }
 
+CBaseWeapon::~CBaseWeapon()
+{
+	mem_release(m_pSndDraw);
+	mem_release(m_pSndHolster);
+	mem_release(m_pSndShoot);
+	mem_release(m_pSndEmpty);
+	mem_release(m_pSndReload);
+	mem_release(m_pSndSwitch);
+}
+
 void CBaseWeapon::onPostLoad()
 {
 	BaseClass::onPostLoad();
 
-	if(m_szSndDraw[0])
+	IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
+	if(pSound)
 	{
-		m_idSndDraw = SSCore_SndCreate3dInst(m_szSndDraw, SX_SOUND_CHANNEL_GAME, 100);
-	}
-	if(m_szSndHolster[0])
-	{
-		m_idSndHolster = SSCore_SndCreate3dInst(m_szSndHolster, SX_SOUND_CHANNEL_GAME, 100);
-	}
-	if(m_szSndShoot[0])
-	{
-		m_idSndShoot = SSCore_SndCreate3dInst(m_szSndShoot, SX_SOUND_CHANNEL_GAME, 100);
-	}
-	if(m_szSndEmpty[0])
-	{
-		m_idSndEmpty = SSCore_SndCreate3dInst(m_szSndEmpty, SX_SOUND_CHANNEL_GAME, 100);
-	}
-	if(m_szSndReload[0])
-	{
-		m_idSndReload = SSCore_SndCreate3dInst(m_szSndReload, SX_SOUND_CHANNEL_GAME, 100);
-	}
-	if(m_szSndSwitch[0])
-	{
-		m_idSndSwitch = SSCore_SndCreate3dInst(m_szSndSwitch, SX_SOUND_CHANNEL_GAME, 100);
+		IXSoundLayer *pGameLayer = pSound->findLayer("xGame");
+
+		if(m_szSndDraw[0])
+		{
+			m_pSndDraw = pGameLayer->newSoundPlayer(m_szSndDraw, SOUND_SPACE_3D);
+		}
+		if(m_szSndHolster[0])
+		{
+			m_pSndHolster = pGameLayer->newSoundPlayer(m_szSndHolster, SOUND_SPACE_3D);
+		}
+		if(m_szSndShoot[0])
+		{
+			m_pSndShoot = pGameLayer->newSoundEmitter(m_szSndShoot, SOUND_SPACE_3D);
+		}
+		if(m_szSndEmpty[0])
+		{
+			m_pSndEmpty = pGameLayer->newSoundPlayer(m_szSndEmpty, SOUND_SPACE_3D);
+		}
+		if(m_szSndReload[0])
+		{
+			m_pSndReload = pGameLayer->newSoundPlayer(m_szSndReload, SOUND_SPACE_3D);
+		}
+		if(m_szSndSwitch[0])
+		{
+			m_pSndSwitch = pGameLayer->newSoundPlayer(m_szSndSwitch, SOUND_SPACE_3D);
+		}
 	}
 }
 
@@ -292,10 +301,8 @@ void CBaseWeapon::reload()
 			}
 			else
 			{
-				if(ID_VALID(m_idSndReload))
-				{
-					SSCore_SndInstancePlay3d(m_idSndReload, false, false, &getPos());
-				}
+				SAFE_CALL(m_pSndReload, setWorldPos, getPos());
+				SAFE_CALL(m_pSndReload, play);
 			}
 
 			CHUDcontroller * pHUD = ((CBaseCharacter*)getOwner())->getHUDcontroller();
@@ -318,10 +325,8 @@ void CBaseWeapon::setFireMode(FIRE_MODE mode)
 	if((m_iFireModes & mode) && canUse())
 	{
 		m_fireMode = mode;
-		if(ID_VALID(m_idSndSwitch))
-		{
-			SSCore_SndInstancePlay3d(m_idSndSwitch, false, false, &getPos());
-		}
+		SAFE_CALL(m_pSndSwitch, setWorldPos, getPos());
+		SAFE_CALL(m_pSndSwitch, play);
 	}
 }
 
@@ -450,10 +455,9 @@ void CBaseWeapon::taskShoot(float dt)
 	}
 	else
 	{
-		if(ID_VALID(m_idSndEmpty))
-		{
-			SSCore_SndInstancePlay3d(m_idSndEmpty, false, false, &getPos());
-		}
+		SAFE_CALL(m_pSndEmpty, setWorldPos, getPos());
+		SAFE_CALL(m_pSndEmpty, play);
+
 		if(ID_VALID(m_idTaskShoot))
 		{
 			CLEAR_INTERVAL(m_idTaskShoot);
@@ -468,10 +472,8 @@ void CBaseWeapon::taskShoot(float dt)
 	{
 		SPE_EffectSetEnable(m_iMuzzleFlash, true);
 	}
-	if(ID_VALID(m_idSndShoot))
-	{
-		SSCore_SndInstancePlay3d(m_idSndShoot, false, false, &getPos());
-	}
+	SAFE_CALL(m_pSndShoot, setWorldPos, getPos());
+	SAFE_CALL(m_pSndShoot, play);
 
 	//((CPlayer*)m_pOwner)->is
 

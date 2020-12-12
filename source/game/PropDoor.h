@@ -1,12 +1,12 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 /*!
 \file
-Дверь
+Р”РІРµСЂСЊ
 */
 
 #ifndef __PROP_DOOR_H
@@ -20,12 +20,12 @@ See the license in LICENSE
 #define DOOR_AUTOCLOSE ENT_FLAG_3
 #define DOOR_FORCE ENT_FLAG_4
 
-//! базовое направление для двери
+//! Р±Р°Р·РѕРІРѕРµ РЅР°РїСЂР°РІР»РµРЅРёРµ РґР»СЏ РґРІРµСЂРё
 #define DOOR_BASE_DIR float3(0, 0, -1.0f)
 
 #define DOOR_MAX_PENETRATION_DEPTH 0.16f
 
-/*! Дверь
+/*! Р”РІРµСЂСЊ
 \ingroup cbaseanimating
 */
 class CPropDoor: public CPropDynamic
@@ -39,7 +39,7 @@ public:
 
 	void onUse(CBaseEntity *pUser);
 
-	//! Устанавливает положение в мире
+	//! РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РїРѕР»РѕР¶РµРЅРёРµ РІ РјРёСЂРµ
 	void setPos(const float3 & pos);
 
 protected:
@@ -74,11 +74,11 @@ protected:
 	float m_fBlockDamage = 100.0f;
 
 	const char * m_szSndClose;
-	ID m_idSndClose = -1;
+	IXSoundPlayer *m_pSndClose = NULL;
 	const char * m_szSndOpen;
-	ID m_idSndOpen = -1;
+	IXSoundPlayer *m_pSndOpen = NULL;
 	const char * m_szSndLocked;
-	ID m_idSndLocked = -1;
+	IXSoundPlayer *m_pSndLocked = NULL;
 
 	bool m_isLocked = false;
 

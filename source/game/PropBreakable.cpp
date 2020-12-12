@@ -29,13 +29,23 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CPropBreakable, prop_breakable);
 
+CPropBreakable::~CPropBreakable()
+{
+	mem_release(m_pSndBreak);
+}
+
 void CPropBreakable::onPostLoad()
 {
 	BaseClass::onPostLoad();
 
-	if(m_szSndBreak[0])
+	IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
+	if(pSound)
 	{
-		m_idSndBreak = SSCore_SndCreate3dInst(m_szSndBreak, SX_SOUND_CHANNEL_GAME, 100);
+		IXSoundLayer *pGameLayer = pSound->findLayer("xGame");
+		if(m_szSndBreak[0])
+		{
+			m_pSndBreak = pGameLayer->newSoundPlayer(m_szSndBreak, SOUND_SPACE_3D);
+		}
 	}
 }
 
@@ -47,10 +57,10 @@ void CPropBreakable::breakInput(inputdata_t * pInputdata)
 void CPropBreakable::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 {
 	FIRE_OUTPUT(m_onBroken, pInflictor);
-	if(ID_VALID(m_idSndBreak))
-	{
-		SSCore_SndInstancePlay3d(m_idSndBreak, false, false, &getPos());
-	}
+
+	SAFE_CALL(m_pSndBreak, setWorldPos, getPos());
+	SAFE_CALL(m_pSndBreak, play);
+
 	if(m_szModelFile)
 	{
 		int len = (int)strlen(m_szModelFile);

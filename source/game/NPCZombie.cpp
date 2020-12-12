@@ -5,7 +5,6 @@ See the license in LICENSE
 ***********************************************************/
 
 #include "NPCZombie.h"
-#include "score/sxscore.h"
 
 #include "GameData.h"
 #include "BaseTool.h"
@@ -33,10 +32,14 @@ CNPCZombie::CNPCZombie(CEntityManager * pMgr) :
 {
 	//m_fSpeedWalk = 0.07f;
 	//m_fSpeedRun = 0.12f;
-
-	m_idSndIdle = SSCore_SndCreate3d("mobs/zombie/zombie_idle_16.ogg", SX_SOUND_CHANNEL_GAME, 0, 30);
-	m_idSndIdle2 = SSCore_SndCreate3d("mobs/zombie/zombie_idle_17.ogg", SX_SOUND_CHANNEL_GAME, 0, 30);
-	m_idSndDeath = SSCore_SndCreate3d("mobs/zombie/zombie_die_1.ogg", SX_SOUND_CHANNEL_GAME, 0, 45);
+	IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
+	if(pSound)
+	{
+		IXSoundLayer *pGameLayer = pSound->findLayer("xGame");
+		m_pSndIdle = pGameLayer->newSoundPlayer("mobs/zombie/zombie_idle_16.ogg", SOUND_SPACE_3D);
+		m_pSndIdle2 = pGameLayer->newSoundPlayer("mobs/zombie/zombie_idle_17.ogg", SOUND_SPACE_3D);
+		m_pSndDeath = pGameLayer->newSoundPlayer("mobs/zombie/zombie_die_1.ogg", SOUND_SPACE_3D);
+	}
 
 	m_pActiveTool = (CBaseTool*)CREATE_ENTITY("wpn_zombie_hands", m_pMgr);
 	m_pActiveTool->setOwner(this);
@@ -50,11 +53,15 @@ CNPCZombie::CNPCZombie(CEntityManager * pMgr) :
 CNPCZombie::~CNPCZombie()
 {
 	REMOVE_ENTITY(m_pActiveTool);
+
+	mem_release(m_pSndIdle);
+	mem_release(m_pSndIdle2);
+	mem_release(m_pSndDeath);
 }
 
 void CNPCZombie::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 {
-	SSCore_SndPlay(m_idSndDeath);
+	SAFE_CALL(m_pSndDeath, play);
 
 	BaseClass::onDeath(pAttacker, pInflictor);
 
@@ -67,9 +74,9 @@ void CNPCZombie::onSync()
 {
 	BaseClass::onSync();
 
-	SSCore_SndSetPosWorld(m_idSndIdle, &getPos());
-	SSCore_SndSetPosWorld(m_idSndIdle2, &getPos());
-	SSCore_SndSetPosWorld(m_idSndDeath, &getPos());
+	SAFE_CALL(m_pSndIdle, setWorldPos, getPos());
+	SAFE_CALL(m_pSndIdle2, setWorldPos, getPos());
+	SAFE_CALL(m_pSndDeath, setWorldPos, getPos());
 }
 
 void CNPCZombie::rotateThink(float dt)

@@ -62,6 +62,7 @@ class CBaseWeapon: public CBaseTool
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();
+	~CBaseWeapon();
 	virtual void onPostLoad();
 
 	virtual void primaryAction(BOOL st);
@@ -129,19 +130,19 @@ protected:
 	int m_iCutoffCurrent;
 
 	// Sounds
-	const char * m_szSndDraw;
-	const char * m_szSndHolster;
-	const char * m_szSndShoot;
-	const char * m_szSndEmpty;
-	const char * m_szSndReload;
-	const char * m_szSndSwitch;
+	const char *m_szSndDraw;
+	const char *m_szSndHolster;
+	const char *m_szSndShoot;
+	const char *m_szSndEmpty;
+	const char *m_szSndReload;
+	const char *m_szSndSwitch;
 
-	ID m_idSndDraw;
-	ID m_idSndHolster;
-	ID m_idSndShoot;
-	ID m_idSndEmpty;
-	ID m_idSndReload;
-	ID m_idSndSwitch;
+	IXSoundPlayer *m_pSndDraw = NULL;
+	IXSoundPlayer *m_pSndHolster = NULL;
+	IXSoundEmitter *m_pSndShoot = NULL;
+	IXSoundPlayer *m_pSndEmpty = NULL;
+	IXSoundPlayer *m_pSndReload = NULL;
+	IXSoundPlayer *m_pSndSwitch = NULL;
 
 	// Shooting
 	float m_fEffectiveDistance;

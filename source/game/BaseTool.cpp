@@ -94,8 +94,6 @@ CBaseTool::CBaseTool(CEntityManager * pMgr):
 	m_fZoomTime(0.0f),
 	m_fReloadTime(0.0f),
 	m_iZoomable(1),
-	m_iSoundAction1(-1),
-	m_iSoundAction2(-1),
 	m_iMuzzleFlash(-1),
 	m_iMuzzleFlash2(-1),
 	m_fMaxDistance(1000.0f),
@@ -110,27 +108,36 @@ CBaseTool::CBaseTool(CEntityManager * pMgr):
 CBaseTool::~CBaseTool()
 {
 	CLEAR_INTERVAL(m_iIvalUpdate);
+
+	mem_release(m_pSoundAction1);
+	mem_release(m_pSoundAction2);
 }
 
 void CBaseTool::onPostLoad()
 {
 	BaseClass::onPostLoad();
 
-	if(m_szPrimaryActionSound[0])
+	IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
+	if(pSound)
 	{
-		m_iSoundAction1 = SSCore_SndCreate3dInst(m_szPrimaryActionSound, SX_SOUND_CHANNEL_GAME, 100);
-	}
-	if(m_szSecondaryActionSound[0])
-	{
-		m_iSoundAction2 = SSCore_SndCreate3dInst(m_szSecondaryActionSound, SX_SOUND_CHANNEL_GAME, 100);
-	}
-	if(m_szPrimaryActionMuzzleflash[0])
-	{
-		m_iMuzzleFlash = SPE_EffectInstanceByName(m_szPrimaryActionMuzzleflash);
-	}
-	if(m_szSecondaryActionMuzzleflash[0])
-	{
-		m_iMuzzleFlash2 = SPE_EffectInstanceByName(m_szSecondaryActionMuzzleflash);
+		IXSoundLayer *pGameLayer = pSound->findLayer("xGame");
+
+		if(m_szPrimaryActionSound[0])
+		{
+			m_pSoundAction1 = pGameLayer->newSoundEmitter(m_szPrimaryActionSound, SOUND_SPACE_3D);
+		}
+		if(m_szSecondaryActionSound[0])
+		{
+			m_pSoundAction2 = pGameLayer->newSoundEmitter(m_szSecondaryActionSound, SOUND_SPACE_3D);
+		}
+		if(m_szPrimaryActionMuzzleflash[0])
+		{
+			m_iMuzzleFlash = SPE_EffectInstanceByName(m_szPrimaryActionMuzzleflash);
+		}
+		if(m_szSecondaryActionMuzzleflash[0])
+		{
+			m_iMuzzleFlash2 = SPE_EffectInstanceByName(m_szSecondaryActionMuzzleflash);
+		}
 	}
 }
 
@@ -154,10 +161,8 @@ void CBaseTool::primaryAction(BOOL st)
 		{
 			SPE_EffectSetEnable(m_iMuzzleFlash, true);
 		}
-		if(ID_VALID(m_iSoundAction1))
-		{
-			SSCore_SndInstancePlay3d(m_iSoundAction1, false, false, &getPos());
-		}
+		SAFE_CALL(m_pSoundAction1, setWorldPos, getPos());
+		SAFE_CALL(m_pSoundAction1, play);
 
 		//((CPlayer*)m_pOwner)->is
 

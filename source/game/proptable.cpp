@@ -94,6 +94,7 @@ void output_t::fire(CBaseEntity *pInflictor, CBaseEntity *pActivator, inputdata_
 	data.pInflictor = pInflictor;
 	for(int i = 0; i < iOutCount; ++i)
 	{
+		data.type = PDF_NONE;
 		if(pOutputs[i].fDelay == 0.0f && !pOutputs[i].useRandomDelay)
 		{
 			for(int j = 0; j < pOutputs[i].iOutCount; ++j)

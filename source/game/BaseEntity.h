@@ -22,7 +22,7 @@ See the license in LICENSE
 #include <common/Math.h>
 #include <core/sxcore.h>
 #include <physics/sxphysics.h>
-#include <score/sxscore.h>
+#include <xcommon/IXSoundSystem.h>
 
 #include "EntityFactory.h"
 #include "EntityManager.h"

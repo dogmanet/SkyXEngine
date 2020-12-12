@@ -9,7 +9,6 @@ See the license in LICENSE
 
 //#include "Ragdoll.h"
 
-#include <score/sxscore.h>
 #include <input/sxinput.h>
 
 #include "Tracer.h"
