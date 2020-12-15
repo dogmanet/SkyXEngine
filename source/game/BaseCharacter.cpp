@@ -117,6 +117,7 @@ CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
 	m_flashlight->setColor(float3(1.0f, 0.95f, 0.65f));
 	//m_flashlight->setShadowType(-1);
 	m_flashlight->setShadowType(1);
+	m_flashlight->setFlags(m_flashlight->getFlags() | LIGHT_INITIALLY_DARK);
 	m_flashlight->setEnable(false);
 
 	m_idTaskSpread = SET_INTERVAL(updateSpread, 1.0f / 30.0f);
