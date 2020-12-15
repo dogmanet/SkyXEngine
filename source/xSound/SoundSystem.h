@@ -85,8 +85,6 @@ protected:
 
 	typedef AssotiativeArray<String, IXAudioCodec*> MapCodec;
 	MapCodec m_mapCodecs;
-
-	float3 m_vObserverPos, m_vObserverLook, m_vObserverUp;
 	
 	SpinLock m_oSpinLockUpdate;
 };

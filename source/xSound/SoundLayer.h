@@ -89,14 +89,17 @@ protected:
 
 	typedef AssotiativeArray<String, CSoundLayer*> MapLayer;
 	MapLayer m_mapLayers;
+	Array<CSoundLayer*> m_aLayers;
 
 	typedef Array<CSoundPlayer*> ArrayPlayer;
 	typedef AssotiativeArray<String, ArrayPlayer> MapPlayer;
 	MapPlayer m_mapSndPlayers;
+	Array<CSoundPlayer*> m_aSndPlayers;
 
 	typedef Array<CSoundEmitter*> ArrayEmitter;
 	typedef AssotiativeArray<String, ArrayEmitter> MapEmitter;
 	MapEmitter m_mapSndEmitters;
+	Array<CSoundEmitter*> m_aSndEmitters;
 };
 
 #endif

@@ -80,7 +80,7 @@ public:
 
 	uint64_t getRepeatInterval() override
 	{
-		return(20000); // 20ms
+		return(50000); // 50ms
 	}
 
 protected:

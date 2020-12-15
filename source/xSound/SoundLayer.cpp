@@ -71,6 +71,7 @@ void CSoundLayer::addLayer(CSoundLayer *pLayer)
 		LibReport(REPORT_MSG_LEVEL_FATAL, "Layer name '%s' exists", pLayer->getName());
 
 	m_mapLayers[pLayer->getName()] = pLayer;
+	m_aLayers.push_back(pLayer);
 }
 
 void CSoundLayer::delLayer(CSoundLayer *pLayer)
@@ -84,6 +85,12 @@ void CSoundLayer::delLayer(CSoundLayer *pLayer)
 		}
 	}
 
+	int idx = m_aLayers.indexOf(pLayer);
+	if(idx >= 0)
+	{
+		m_aLayers.erase(idx);
+	}
+
 	mem_delete(pLayer);
 }
 
@@ -92,6 +99,7 @@ void CSoundLayer::delLayer(CSoundLayer *pLayer)
 void CSoundLayer::addSndPlayer(CSoundPlayer *pSndPlayer)
 {
 	m_mapSndPlayers[pSndPlayer->getName()].push_back(pSndPlayer);
+	m_aSndPlayers.push_back(pSndPlayer);
 }
 
 void CSoundLayer::delSndPlayer(const CSoundPlayer *pSndPlayer)
@@ -101,13 +109,16 @@ void CSoundLayer::delSndPlayer(const CSoundPlayer *pSndPlayer)
 		return;
 
 	ArrayPlayer &oAP = m_mapSndPlayers[szName];
-	for(int i = 0, il = oAP.size(); i < il; ++i)
+	int idx = oAP.indexOf(pSndPlayer);
+	if(idx >= 0)
 	{
-		if(oAP[i] == pSndPlayer)
-		{
-			oAP.erase(i);
-			break;
-		}
+		oAP.erase(idx);
+	} 
+	
+	idx = m_aSndPlayers.indexOf(pSndPlayer);
+	if(idx >= 0)
+	{
+		m_aSndPlayers.erase(idx);
 	}
 
 	mem_delete(pSndPlayer);
@@ -118,6 +129,7 @@ void CSoundLayer::delSndPlayer(const CSoundPlayer *pSndPlayer)
 void CSoundLayer::addSndEmitter(CSoundEmitter *pSndEmitter)
 {
 	m_mapSndEmitters[pSndEmitter->getName()].push_back(pSndEmitter);
+	m_aSndEmitters.push_back(pSndEmitter);
 }
 
 void CSoundLayer::delSndEmitter(const CSoundEmitter *pSndEmitter)
@@ -127,13 +139,16 @@ void CSoundLayer::delSndEmitter(const CSoundEmitter *pSndEmitter)
 		return;
 
 	ArrayEmitter &oAE = m_mapSndEmitters[szName];
-	for(int i = 0, il = oAE.size(); i < il; ++i)
+	int idx = oAE.indexOf(pSndEmitter);
+	if(idx >= 0)
 	{
-		if(oAE[i] == pSndEmitter)
-		{
-			oAE.erase(i);
-			break;
-		}
+		oAE.erase(idx);
+	}
+
+	idx = m_aSndEmitters.indexOf(pSndEmitter);
+	if(idx >= 0)
+	{
+		m_aSndEmitters.erase(idx);
 	}
 
 	mem_delete(pSndEmitter);
@@ -167,14 +182,9 @@ IXSoundLayer* XMETHODCALLTYPE CSoundLayer::findLayer(const char *szName)
 		return this;
 
 	IXSoundLayer *pFound = NULL;
-	// TODO use plain array for iteration
-	for(MapLayer::Iterator i = m_mapLayers.begin(); i; ++i)
+	for(UINT i = 0, l = m_aLayers.size(); i < l; ++i)
 	{
-		if(!i.second)
-		{
-			continue;
-		}
-		if((pFound = (*i.second)->findLayer(szName)))
+		if((pFound = m_aLayers[i]->findLayer(szName)))
 			break;
 	}
 
@@ -312,27 +322,21 @@ bool XMETHODCALLTYPE CSoundLayer::isPlaying() const
 
 //##########################################################################
 
-// FIXME никаких итераторов в апдейте!
 void CSoundLayer::update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
-	for(MapLayer::Iterator i = m_mapLayers.begin(); i; ++i)
+	for(UINT i = 0, l = m_aLayers.size(); i < l; ++i)
 	{
-		if(*i.second)
-			(*i.second)->update(vListenerPos, vListenerDir, vListenerUp);
+		m_aLayers[i]->update(vListenerPos, vListenerDir, vListenerUp);
 	}
 
-	for(MapPlayer::Iterator i = m_mapSndPlayers.begin(); i; ++i)
+	for(UINT i = 0, l = m_aSndPlayers.size(); i < l; ++i)
 	{
-		ArrayPlayer &oAP = *i.second;
-		for(int k = 0, kl = oAP.size(); k < kl; ++k)
-			oAP[k]->update(vListenerPos, vListenerDir, vListenerUp);
+		m_aSndPlayers[i]->update(vListenerPos, vListenerDir, vListenerUp);
 	}
 
-	for(MapEmitter::Iterator i = m_mapSndEmitters.begin(); i; ++i)
+	for(UINT i = 0, l = m_aSndEmitters.size(); i < l; ++i)
 	{
-		ArrayEmitter &oAE = *i.second;
-		for(int k = 0, kl = oAE.size(); k < kl; ++k)
-			oAE[k]->update(vListenerPos, vListenerDir, vListenerUp);
+		m_aSndEmitters[i]->update(vListenerPos, vListenerDir, vListenerUp);
 	}
 }
 
@@ -377,27 +381,19 @@ void CSoundLayer::_play(bool canPlay, bool isFromParent)
 	}
 	m_isPlayingTotal = isPlaying;
 
-	for(MapLayer::Iterator i = m_mapLayers.begin(); i; ++i)
+	for(UINT i = 0, l = m_aLayers.size(); i < l; ++i)
 	{
-		(*i.second)->_play(isPlaying, true);
+		m_aLayers[i]->_play(isPlaying, true);
 	}
 
-	for(MapPlayer::Iterator i = m_mapSndPlayers.begin(); i; ++i)
+	for(UINT i = 0, l = m_aSndPlayers.size(); i < l; ++i)
 	{
-		ArrayPlayer &oAP = *i.second;
-		for(int k = 0, kl = oAP.size(); k < kl; ++k)
-		{
-			oAP[k]->_onLayerPlay(isPlaying);
-		}
+		m_aSndPlayers[i]->_onLayerPlay(isPlaying);
 	}
 
-	for(MapEmitter::Iterator i = m_mapSndEmitters.begin(); i; ++i)
+	for(UINT i = 0, l = m_aSndEmitters.size(); i < l; ++i)
 	{
-		ArrayEmitter &oAE = *i.second;
-		for(int k = 0, kl = oAE.size(); k < kl; ++k)
-		{
-			oAE[k]->_onLayerPlay(isPlaying);
-		}
+		m_aSndEmitters[i]->_onLayerPlay(isPlaying);
 	}
 
 	m_pPrimaryBuffer->play(isPlaying);
