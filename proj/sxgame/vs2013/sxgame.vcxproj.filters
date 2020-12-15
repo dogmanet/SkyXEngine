@@ -309,6 +309,9 @@
     <ClCompile Include="..\..\..\source\game\SoundEmitter.cpp">
       <Filter>Source Files\ents\sound</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\common\guid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
