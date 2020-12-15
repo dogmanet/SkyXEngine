@@ -42,15 +42,10 @@ public:
 
 
 
-	float3_t XMETHODCALLTYPE getPos() override
-	{
-		return(m_vPos);
-	}
+	float3_t XMETHODCALLTYPE getPos() override;
 
-	SMQuaternion XMETHODCALLTYPE getOrient() override
-	{
-		return(m_qRot);
-	}
+	SMQuaternion XMETHODCALLTYPE getOrient() override;
+
 	float3_t XMETHODCALLTYPE getScale() override
 	{
 		return(m_vScale);

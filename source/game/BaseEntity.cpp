@@ -153,12 +153,23 @@ void CBaseEntity::getSphere(float3 * center, float * radius)
 
 void CBaseEntity::setPos(const float3 & pos)
 {
+	CBaseEntity *pParent = NULL;
+	if(m_pParent)
+	{
+		pParent = m_pParent;
+		setParent(NULL);
+	}
 	m_vPosition = pos;
 
 	if(m_pEditorRigidBody)
 	{
 		m_pEditorRigidBody->getWorldTransform().setOrigin(F3_BTVEC(m_vPosition));
 		SPhysics_GetDynWorld()->updateSingleAabb(m_pEditorRigidBody);
+	}
+
+	if(pParent)
+	{
+		setParent(pParent, m_iParentAttachment);
 	}
 }
 
@@ -619,6 +630,8 @@ CBaseEntity* CBaseEntity::getParent()
 
 void CBaseEntity::onSync()
 {
+	m_bSynced = true;
+
 	if(m_pParent)
 	{
 		if(!m_pParent->m_bSynced)
@@ -647,7 +660,6 @@ void CBaseEntity::onSync()
 	//	m_vOrientation = m_pPhysObj->getOrient();
 	//}
 
-	m_bSynced = true;
 }
 
 void CBaseEntity::onPostLoad()

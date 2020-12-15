@@ -146,6 +146,24 @@ void XMETHODCALLTYPE CEditorObject::setOrient(const SMQuaternion &orient)
 	m_qRot = orient;
 }
 
+float3_t XMETHODCALLTYPE CEditorObject::getPos()
+{
+	if(m_pEntity)
+	{
+		m_vPos = m_pEntity->getPos();
+	}
+	return(m_vPos);
+}
+
+SMQuaternion XMETHODCALLTYPE CEditorObject::getOrient()
+{
+	if(m_pEntity)
+	{
+		m_qRot = m_pEntity->getOrient();
+	}
+	return(m_qRot);
+}
+
 void XMETHODCALLTYPE CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 {
 	*pvMin = *pvMax = float3();
