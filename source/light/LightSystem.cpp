@@ -584,9 +584,14 @@ void XMETHODCALLTYPE CLightSystem::updateVisibility()
 
 	for(UINT i = 0, l = m_aLights.size(); i < l; ++i)
 	{
-		if(m_aLights[i]->isEnabled() && m_aLights[i]->isDirty(LRT_ALL))
+		if(m_aLights[i]->isEnabled())
 		{
-			m_aLights[i]->updateVisibility(m_pMainCamera, vLPVmin, vLPVmax, iCascades > 0);
+			m_aLights[i]->testDirty();
+
+			if(m_aLights[i]->isDirty(LRT_ALL))
+			{
+				m_aLights[i]->updateVisibility(m_pMainCamera, vLPVmin, vLPVmax, iCascades > 0);
+			}
 		}
 	}
 }

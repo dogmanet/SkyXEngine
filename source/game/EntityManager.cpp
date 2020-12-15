@@ -272,13 +272,18 @@ void CEntityManager::unreg(ID ent)
 		to = &m_vOutputTimeout[i];
 		if(to->status == TS_WAIT)
 		{
-			to->status = TS_DONE;
+			int iRemoved = 0;
 			for(int j = 0; j < to->pOutput->iOutCount; ++j)
 			{
 				if(to->pOutput->pOutputs[j].pTarget == pEnt)
 				{
 					to->pOutput->pOutputs[j].pTarget = NULL;
+					++iRemoved;
 				}
+			}
+			if(iRemoved == to->pOutput->iOutCount)
+			{
+				to->status = TS_DONE;
 			}
 		}
 	}
