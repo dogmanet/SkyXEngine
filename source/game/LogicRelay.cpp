@@ -29,12 +29,6 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CLogicRelay, logic_relay);
 
-CLogicRelay::CLogicRelay(CEntityManager * pMgr):
-	BaseClass(pMgr)
-{
-	m_isEnabled = true;
-}
-
 void CLogicRelay::turnOn(inputdata_t * pInputdata)
 {
 	m_isEnabled = true;

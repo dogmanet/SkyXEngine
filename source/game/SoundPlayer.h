@@ -31,7 +31,7 @@ class CSoundPlayer: public CPointEntity
 	DECLARE_CLASS(CSoundPlayer, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	CSoundPlayer(CEntityManager * pMgr);
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CSoundPlayer();
 
 	virtual void setSound(const char *szSound);

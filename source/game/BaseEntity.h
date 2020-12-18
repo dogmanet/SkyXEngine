@@ -48,7 +48,7 @@ class SXGAME_EXPORT CBaseEntity
 
 public:
 	//! Конструктор
-	CBaseEntity(CEntityManager * pMgr);
+	CBaseEntity();
 	virtual ~CBaseEntity();
 
 	//! Возвращает имя движкового класса объекта
@@ -58,21 +58,18 @@ public:
 	const char* getName();
 	
 	//! Возвращает баунд объекта
-	virtual void getMinMax(float3 * min, float3 * max);
+	virtual void getMinMax(float3 *min, float3 *max);
 	
 	//! Возвращает баунд сферу объекта
-	virtual void getSphere(float3 * center, float * radius);
+	virtual void getSphere(float3 *center, float *radius);
 
 	//! Устанавливает мировую позицию объекта
-	virtual void setPos(const float3 & pos);
+	virtual void setPos(const float3 &pos);
 	//! Устанавливает относительное смещение объекта
-	virtual void setOffsetPos(const float3 & pos);
+	virtual void setOffsetPos(const float3 &pos);
 	//! Получает мировую позицию объекта
 	float3 getPos();
 	float3 getOffsetPos();
-
-	//! Получает ID объекта в системе
-	ID getId();
 
 	//! Получает флаги объекта
 	UINT getFlags();
@@ -83,9 +80,9 @@ public:
 	SMMATRIX getWorldTM();
 
 	//! Устанавливает вращение объекта
-	virtual void setOrient(const SMQuaternion & q);
+	virtual void setOrient(const SMQuaternion &q);
 	//! Устанавливает относительное вращение объекта
-	virtual void setOffsetOrient(const SMQuaternion & q);
+	virtual void setOffsetOrient(const SMQuaternion &q);
 	//! Возвращает вращение объекта
 	SMQuaternion getOrient();
 
@@ -114,13 +111,13 @@ public:
 
 	virtual void onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor);
 
-	void broadcastMessage(const char * szInputName, inputdata_t inputData, float fRadius);
-	void broadcastMessage(const char * szInputName, float fArg, float fRadius);
-	void broadcastMessage(const char * szInputName, int iArg, float fRadius);
-	void broadcastMessage(const char * szInputName, bool bArg, float fRadius);
-	void broadcastMessage(const char * szInputName, const char *szArg, float fRadius);
-	void broadcastMessage(const char * szInputName, const float3_t &f3Arg, float fRadius);
-	void broadcastMessage(const char * szInputName, float fRadius);
+	void broadcastMessage(const char *szInputName, inputdata_t inputData, float fRadius);
+	void broadcastMessage(const char *szInputName, float fArg, float fRadius);
+	void broadcastMessage(const char *szInputName, int iArg, float fRadius);
+	void broadcastMessage(const char *szInputName, bool bArg, float fRadius);
+	void broadcastMessage(const char *szInputName, const char *szArg, float fRadius);
+	void broadcastMessage(const char *szInputName, const float3_t &f3Arg, float fRadius);
+	void broadcastMessage(const char *szInputName, float fRadius);
 
 	virtual void onUse(CBaseEntity *pUser);
 
@@ -145,19 +142,33 @@ public:
 	CBaseEntity *getEntByName(const char *szName, CBaseEntity *pStartFrom);
 	int countEntByName(const char *szName);
 
+	const XGUID *getGUID()
+	{
+		return(m_pGUID);
+	}
+
 private:
-	void setClassName(const char * name);
+	void setClassName(const char *name);
 	void setDefaults();
 
-	const char * m_szClassName;
+	void setGUID(const XGUID *pGUID)
+	{
+		m_pGUID = pGUID;
+	}
+	void setWorld(CEntityManager *pWorld)
+	{
+		m_pMgr = pWorld;
+	}
 
+	const char *m_szClassName = NULL;
+	const XGUID *m_pGUID = NULL;
 
 protected:
 	virtual void _cleanup();
 	virtual void _initEditorBoxes();
 	virtual void _releaseEditorBoxes();
 
-	CEntityManager * m_pMgr;
+	CEntityManager *m_pMgr = NULL;
 
 	//! Позиция объекта
 	float3_t m_vPosition;
@@ -178,21 +189,21 @@ protected:
 	SMQuaternion m_vOffsetOrient;
 
 	//! Идентификатор в системе
-	ID m_iId;
+	ID m_iId = 0;
 
 	//! Флаги
-	UINT m_iFlags;
+	UINT m_iFlags = 0;
 
 	//! Имя объекта
-	const char * m_szName;
+	const char *m_szName = NULL;
 
 	//! Родитель
-	CBaseEntity * m_pParent;
+	CBaseEntity *m_pParent = NULL;
 	//! Индекс кости родителя
-	int m_iParentAttachment;
+	int m_iParentAttachment = -1;
 
 	//! Владелец
-	CBaseEntity * m_pOwner;
+	CBaseEntity *m_pOwner = NULL;
 
 	//! Вызывается на стадии синхронизации
 	virtual void onSync();
@@ -215,18 +226,18 @@ protected:
 	void updateOutputs();
 	
 	//! здоровье [0,+inf]
-	float m_fHealth;
+	float m_fHealth = 100.0f;
 
 	void takeHealth(float fVal, CBaseEntity *pAttacker, CBaseEntity *pInflictor=NULL);
 
-	bool m_bSynced;
+	bool m_bSynced = false;
 
 
 	//! Для редактора
 	//@{
 	float3_t m_vEditorBoxSize = float3_t(0.16f, 0.16f, 0.16f);
-	btCollisionShape * m_pEditorCollideShape = NULL;
-	btRigidBody * m_pEditorRigidBody = NULL;
+	btCollisionShape *m_pEditorCollideShape = NULL;
+	btRigidBody *m_pEditorRigidBody = NULL;
 	//@}
 
 	IXLightSystem *m_pLightSystem = NULL;

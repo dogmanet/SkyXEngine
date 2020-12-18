@@ -30,15 +30,6 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CBaseTrigger, trigger);
 
-CBaseTrigger::CBaseTrigger(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	m_bEnabled(true),
-	m_pGhostObject(NULL),
-	m_idUpdateInterval(-1)
-{
-	m_idUpdateInterval = SET_INTERVAL(update, 0);
-}
-
 CBaseTrigger::~CBaseTrigger()
 {
 	removePhysBody();
@@ -48,6 +39,9 @@ CBaseTrigger::~CBaseTrigger()
 void CBaseTrigger::onPostLoad()
 {
 	BaseClass::onPostLoad();
+
+	assert(!ID_VALID(m_idUpdateInterval));
+	m_idUpdateInterval = SET_INTERVAL(update, 0);
 
 	if(m_pModel)
 	{

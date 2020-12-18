@@ -21,15 +21,6 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CFuncTrain, func_train);
 
-CFuncTrain::CFuncTrain(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	m_fSpeed(0.0f),
-	m_pStartStop(NULL),
-	m_bRunning(false),
-	m_fCurDist(0.0f)
-{
-}
-
 void CFuncTrain::onPostLoad()
 {
 	BaseClass::onPostLoad();

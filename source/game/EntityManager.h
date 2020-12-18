@@ -122,7 +122,8 @@ public:
 	void entKV(int argc, const char **argv);
 
 	int getCount();
-	CBaseEntity* getById(ID id);
+	CBaseEntity *getById(ID id);
+	CBaseEntity *getByGUID(const XGUID &guid);
 
 	CBaseEntity* cloneEntity(CBaseEntity *pEnt);
 
@@ -143,16 +144,17 @@ public:
 #endif
 
 protected:
-	ID reg(CBaseEntity *pEnt);
-	void unreg(ID ent);
+	const XGUID* reg(CBaseEntity *pEnt, const XGUID *pGUID=NULL);
+	void unreg(CBaseEntity *pEnt);
 
 	void regSync(CBaseEntity *pEnt);
 	void unregSync(CBaseEntity *pEnt);
 
+	Map<XGUID, CBaseEntity*> m_mEnts;
 	Array<CBaseEntity*, 64> m_vEntList;
 	Array<CBaseEntity*, 64> m_vEntSyncList;
 	Array<CBaseEntity*> m_vEntRemoveList;
-	Array<ID> m_vFreeIDs;
+	Array<UINT> m_vFreeIDs;
 
 	Array<timeout_t> m_vTimeout;
 	Array<timeout_t> m_vInterval;

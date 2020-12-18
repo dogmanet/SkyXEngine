@@ -33,7 +33,7 @@ class CNPCZombie: public CNPCBase
 	DECLARE_PROPTABLE();
 
 public:
-	CNPCZombie(CEntityManager * pMgr);
+	DECLARE_CONSTRUCTOR();
 	~CNPCZombie();
 
 	void onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor);

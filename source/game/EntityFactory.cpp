@@ -22,13 +22,14 @@ void CEntityFactoryMap::addFactory(IEntityFactory *pFactory, const char *szName)
 	}
 	m_mFactories[AAString(szName)] = pFactory;
 }
-CBaseEntity* CEntityFactoryMap::create(const char *szName, CEntityManager *pWorld, bool bDelayPostLoad)
+CBaseEntity* CEntityFactoryMap::create(const char *szName, CEntityManager *pWorld, bool bDelayPostLoad, const XGUID *pGUID)
 {
 	IEntityFactory *pFactory = getFactory(szName);
 	if(pFactory)
 	{
 		EntDefaultsMap *defs = pFactory->getDefaults();
-		CBaseEntity *pEnt = pFactory->create(pWorld);
+		CBaseEntity *pEnt = pFactory->create();
+		pWorld->reg(pEnt, pGUID);
 		pEnt->setDefaults();
 		pEnt->setClassName(pFactory->getClassName());
 

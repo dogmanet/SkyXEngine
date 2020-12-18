@@ -22,7 +22,7 @@ class CEntityManager;
 class IEntityFactory
 {
 public:
-	virtual CBaseEntity* create(CEntityManager * pWorld) = 0;
+	virtual CBaseEntity* create() = 0;
 	virtual void destroy(CBaseEntity * pEnt) = 0;
 	virtual const char* getClassName() = 0;
 	virtual proptable_t* getPropTable() = 0;
@@ -39,7 +39,7 @@ public:
 	CEntityFactoryMap();
 
 	void addFactory(IEntityFactory *pFactory, const char *szName);
-	CBaseEntity* create(const char *szName, CEntityManager *pMgr, bool bDelayPostLoad=false);
+	CBaseEntity* create(const char *szName, CEntityManager *pMgr, bool bDelayPostLoad=false, const XGUID *pGUID=NULL);
 	void destroy(CBaseEntity *pEnt);
 
 	static CEntityFactoryMap* GetInstance();
@@ -113,9 +113,9 @@ public:
 		return(newF);
 	}
 
-	CBaseEntity* create(CEntityManager *pWorld) override
+	CBaseEntity* create() override
 	{
-		return(new T(pWorld));
+		return(new T());
 	}
 
 	void destroy(CBaseEntity *pEnt) override

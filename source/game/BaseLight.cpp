@@ -45,15 +45,6 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseLight, base_light);
 
-CBaseLight::CBaseLight(CEntityManager * pMgr):
-BaseClass(pMgr)
-{
-	m_vColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
-	m_fDist = 10;
-	m_iShadowType = 1;
-	m_fShadowIntensity = 1.0f;
-}
-
 CBaseLight::~CBaseLight()
 {
 	if(m_pLinkedTo)

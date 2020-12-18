@@ -29,7 +29,7 @@ class CSoundEmitter: public CPointEntity
 	DECLARE_CLASS(CSoundEmitter, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	CSoundEmitter(CEntityManager * pMgr);
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CSoundEmitter();
 
 	virtual void setSound(const char *szSound);

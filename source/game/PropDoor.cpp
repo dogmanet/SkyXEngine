@@ -68,10 +68,6 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CPropDoor, prop_door);
 
-CPropDoor::CPropDoor(CEntityManager *pMgr):BaseClass(pMgr)
-{
-}
-
 CPropDoor::~CPropDoor()
 {
 	releasePhysics();

@@ -31,7 +31,7 @@ class CBaseAnimating: public CBaseEntity
 
 	friend class CAnimationCallback;
 public:
-	CBaseAnimating(CEntityManager * pMgr);
+	DECLARE_CONSTRUCTOR();
 	~CBaseAnimating();
 
 	void getMinMax(float3 * min, float3 * max);

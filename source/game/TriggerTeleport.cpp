@@ -21,17 +21,6 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CTriggerTeleport, trigger_teleport);
 
-CTriggerTeleport::CTriggerTeleport(CEntityManager * pMgr):
-	BaseClass(pMgr)
-{
-	//m_idHurtInterval = SET_INTERVAL(think, 1000.0f);
-}
-
-CTriggerTeleport::~CTriggerTeleport()
-{
-	//CLEAR_INTERVAL(m_idHurtInterval);
-}
-
 void CTriggerTeleport::onTouchStart(CBaseEntity *pActivator)
 {
 	if(!m_pDestination)

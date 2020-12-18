@@ -16,7 +16,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CLightSun, light_sun);
 
-CLightSun::CLightSun(CEntityManager * pMgr):BaseClass(pMgr)
+CLightSun::CLightSun()
 {
 	if(m_pLightSystem)
 	{

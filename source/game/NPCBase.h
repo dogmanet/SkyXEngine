@@ -47,10 +47,8 @@ class CNPCBase: public CBaseCharacter
 	DECLARE_PROPTABLE();
 
 public:
-
 	SX_ALIGNED_OP_MEM();
-
-	CNPCBase(CEntityManager * pMgr);
+	DECLARE_CONSTRUCTOR();
 	~CNPCBase();
 
 	ID getAIQuad();	//!< id квада аи сетки на котором стоит нпс

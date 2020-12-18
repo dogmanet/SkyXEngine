@@ -16,8 +16,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CPointCamera, point_camera);
 
-CPointCamera::CPointCamera(CEntityManager * pMgr):
-	BaseClass(pMgr)
+CPointCamera::CPointCamera()
 {
 	const float * r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 	m_pSXC = SGCore_CrCamera();

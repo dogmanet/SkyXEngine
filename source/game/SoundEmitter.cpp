@@ -39,12 +39,6 @@ REGISTER_ENTITY(CSoundEmitter, sound_emitter);
 
 //##########################################################################
 
-CSoundEmitter::CSoundEmitter(CEntityManager *pMgr):
-	BaseClass(pMgr)
-{
-	
-}
-
 CSoundEmitter::~CSoundEmitter()
 {
 	mem_release(m_pEmitter);

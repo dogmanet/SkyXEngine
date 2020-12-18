@@ -51,12 +51,6 @@ REGISTER_ENTITY(CSoundPlayer, sound_player);
 
 //##########################################################################
 
-CSoundPlayer::CSoundPlayer(CEntityManager *pMgr):
-	BaseClass(pMgr)
-{
-	
-}
-
 CSoundPlayer::~CSoundPlayer()
 {
 	mem_release(m_pPlayer);

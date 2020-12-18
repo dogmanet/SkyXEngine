@@ -27,16 +27,6 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CPathCorner, path_corner);
 
-CPathCorner::CPathCorner(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	m_type(PCT_SPLINE),
-	m_fNewSpeed(0.0f),
-	m_pNextStop(NULL),
-	m_pPrevStop(NULL),
-	m_fLength(0.0f)
-{
-}
-
 CPathCorner::~CPathCorner()
 {
 	setNextPoint(NULL);

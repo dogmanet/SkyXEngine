@@ -45,14 +45,6 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CPropButton, prop_button);
 
-CPropButton::CPropButton(CEntityManager * pMgr):
-	BaseClass(pMgr)
-{
-	m_isEnabled = true;
-	m_isToggleable = false;
-	m_bState = false;
-}
-
 void CPropButton::turnOn(inputdata_t * pInputdata)
 {
 	m_isEnabled = true;

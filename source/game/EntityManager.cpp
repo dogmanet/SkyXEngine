@@ -234,38 +234,44 @@ void CEntityManager::unloadObjLevel()
 	}
 }
 
-ID CEntityManager::reg(CBaseEntity *pEnt)
+const XGUID* CEntityManager::reg(CBaseEntity *pEnt, const XGUID *pGUID)
 {
-	ID ent;
 	if(!pEnt)
 	{
-		return(-1);
+		return(NULL);
 	}
-	if(m_vFreeIDs.size())
+
+	XGUID guid;
+	if(pGUID)
 	{
-		ent = m_vFreeIDs[0];
-		m_vFreeIDs.erase(0);
-		m_vEntList[ent] = pEnt;
+		guid = *pGUID;
 	}
 	else
 	{
-		ent = m_vEntList.size();
-		m_vEntList.push_back(pEnt);
+		XCreateGUID(&guid);
 	}
-	return(ent);
+
+	m_mEnts[guid] = pEnt;
+
+	const XGUID *pNewGUID = &m_mEnts.TmpNode->Key;
+
+	pEnt->setGUID(pNewGUID);
+	pEnt->setWorld(this);
+
+	m_vEntList.push_back(pEnt);
+
+	return(pNewGUID);
 }
-void CEntityManager::unreg(ID ent)
+void CEntityManager::unreg(CBaseEntity *pEnt)
 {
-	//@TODO: Clear all outputs
-	if(m_vEntList.size() <= (UINT)ent || ent < 0)
-	{
-		return;
-	}
+	assert(pEnt && pEnt->getGUID());
+
+	int iKey = m_vEntList.indexOf(pEnt);
+	assert(iKey >= 0);
+	m_vEntList.erase(iKey);
 
 	timeout_t * t;
 	timeout_output_t * to;
-
-	CBaseEntity *pEnt = m_vEntList[ent];
 
 	for(int i = 0, l = m_vOutputTimeout.size(); i < l; ++i)
 	{
@@ -306,8 +312,7 @@ void CEntityManager::unreg(ID ent)
 		}
 	}
 
-	m_vEntList[ent] = NULL;
-	m_vFreeIDs.push_back(ent);
+	m_mEnts.erase(*pEnt->getGUID());
 }
 
 void CEntityManager::regSync(CBaseEntity *pEnt)
@@ -318,14 +323,9 @@ void CEntityManager::regSync(CBaseEntity *pEnt)
 void CEntityManager::unregSync(CBaseEntity *pEnt)
 {
 	assert(pEnt);
-	for(UINT i = 0, l = m_vEntSyncList.size(); i < l; ++i)
-	{
-		if(m_vEntSyncList[i] == pEnt)
-		{
-			m_vEntSyncList.erase(i);
-			break;
-		}
-	}
+	int iKey = m_vEntSyncList.indexOf(pEnt);
+	assert(iKey >= 0);
+	m_vEntSyncList.erase(iKey);
 }
 
 ID CEntityManager::setTimeout(void(CBaseEntity::*func)(float dt), CBaseEntity *pEnt, float delay)
@@ -412,10 +412,16 @@ bool CEntityManager::exportList(const char * file)
 {
 	ISXConfig * conf = Core_CrConfig();
 	conf->New(file);
-	char buf[4096], sect[32];
+	char buf[4096], sect[64];
 	CBaseEntity * pEnt;
 	proptable_t * pTbl;
 	int ic = 0;
+
+	FILE *fp = fopen(file, "w");
+	if(fp)
+	{
+		fclose(fp);
+	}
 
 	// conf->set("meta", "count", "0");
 
@@ -426,12 +432,13 @@ bool CEntityManager::exportList(const char * file)
 		{
 			continue;
 		}
-		sprintf(sect, "ent_%d", ic);
 
 		if(!(pEnt->getFlags() & EF_EXPORT))
 		{
 			continue;
 		}
+
+		XGUIDToSting(*pEnt->getGUID(), sect, sizeof(sect));
 
 		conf->set(sect, "classname", pEnt->getClassName());
 		pTbl = CEntityFactoryMap::GetInstance()->getPropTable(pEnt->getClassName());
@@ -450,8 +457,8 @@ bool CEntityManager::exportList(const char * file)
 		++ic;
 	}
 
-	sprintf(buf, "%d", ic);
-	conf->set("meta", "count", buf);
+	// sprintf(buf, "%d", ic);
+	// conf->set("meta", "count", buf);
 
 	bool ret = !conf->save();
 	mem_release(conf);
@@ -466,7 +473,7 @@ bool CEntityManager::import(const char * file, bool shouldSendProgress)
 		pEventChannel = Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID);
 	}
 	ISXConfig * conf = Core_CrConfig();
-	char sect[32];
+	const char *sect;
 	CBaseEntity * pEnt = NULL;
 	Array<CBaseEntity*> tmpList;
 
@@ -481,20 +488,13 @@ bool CEntityManager::import(const char * file, bool shouldSendProgress)
 		goto err;
 	}
 
-	if(!conf->keyExists("meta", "count"))
-	{
-		goto err;
-	}
-
-	int ic;
-	if(sscanf(conf->getKey("meta", "count"), "%d", &ic) != 1)
-	{
-		goto err;
-	}
-
+	int ic = conf->getSectionCount();
 	tmpList.reserve(ic);
 
+
+
 	{
+		XGUID guid;
 
 		XEventLevelProgress ev;
 		ev.idPlugin = -3;
@@ -503,64 +503,87 @@ bool CEntityManager::import(const char * file, bool shouldSendProgress)
 		ev.fProgress = 0.0f;
 		for(int i = 0; i < ic; ++i)
 		{
-			sprintf(sect, "ent_%d", i);
-			if(!conf->keyExists(sect, "classname"))
-			{
-				printf(COLOR_LRED "Unable to load entity #%d, classname undefined\n" COLOR_RESET, i);
-				tmpList[i] = NULL;
-				continue;
-			}
-			if(!(pEnt = CREATE_ENTITY_NOPOST(conf->getKey(sect, "classname"), this)))
-			{
-				printf(COLOR_LRED "Unable to load entity #%d, classname '%s' undefined\n" COLOR_RESET, i, conf->getKey(sect, "classname"));
-				tmpList[i] = NULL;
-				continue;
-			}
-			if(conf->keyExists(sect, "name"))
-			{
-				pEnt->setKV("name", conf->getKey(sect, "name"));
-			}
-			if(conf->keyExists(sect, "origin"))
-			{
-				pEnt->setKV("origin", conf->getKey(sect, "origin"));
-			}
-			if(conf->keyExists(sect, "rotation"))
-			{
-				pEnt->setKV("rotation", conf->getKey(sect, "rotation"));
-			}
-			pEnt->setFlags(pEnt->getFlags() | EF_EXPORT | EF_LEVEL);
-			tmpList[i] = pEnt;
+			sect = conf->getSectionName(i);
 
-			if((i & 0xF) == 0 && pEventChannel)
+			if(sect[0] == '{' || (sect[0] == 'e' && sect[1] == 'n' && sect[2] == 't' && sect[3] == '_'))
 			{
-				ev.fProgress = (float)i / (float)ic * 0.1f;
-				pEventChannel->broadcastEvent(&ev);
+				if(!conf->keyExists(sect, "classname"))
+				{
+					printf(COLOR_LRED "Unable to load entity #%d, classname undefined\n" COLOR_RESET, i);
+					tmpList[i] = NULL;
+					continue;
+				}
+
+				XGUID *pGUID = NULL;
+				if(XGUIDFromString(&guid, sect))
+				{
+					pGUID = &guid;
+				}
+
+				if(!(pEnt = CEntityFactoryMap::GetInstance()->create(conf->getKey(sect, "classname"), this, true, pGUID)))
+				{
+					printf(COLOR_LRED "Unable to load entity #%d, classname '%s' undefined\n" COLOR_RESET, i, conf->getKey(sect, "classname"));
+					tmpList[i] = NULL;
+					continue;
+				}
+				if(conf->keyExists(sect, "name"))
+				{
+					pEnt->setKV("name", conf->getKey(sect, "name"));
+				}
+				if(conf->keyExists(sect, "origin"))
+				{
+					pEnt->setKV("origin", conf->getKey(sect, "origin"));
+				}
+				if(conf->keyExists(sect, "rotation"))
+				{
+					pEnt->setKV("rotation", conf->getKey(sect, "rotation"));
+				}
+				pEnt->setFlags(pEnt->getFlags() | EF_EXPORT | EF_LEVEL);
+				tmpList[i] = pEnt;
+
+				if((i & 0xF) == 0 && pEventChannel)
+				{
+					ev.fProgress = (float)i / (float)ic * 0.1f;
+					pEventChannel->broadcastEvent(&ev);
+				}
+			}
+			else
+			{
+				tmpList[i] = NULL;
 			}
 		}
 
 		for(int i = 0; i < ic; ++i)
 		{
-			sprintf(sect, "ent_%d", i);
-			if(!(pEnt = tmpList[i]))
+			sect = conf->getSectionName(i);
+
+			if(sect[0] == '{' || (sect[0] == 'e' && sect[1] == 'n' && sect[2] == 't' && sect[3] == '_'))
 			{
-				continue;
-			}
-			int keyc = conf->getKeyCount(sect);
-			const char * key;
-			for(int j = 0; j < keyc; ++j)
-			{
-				key = conf->getKeyName(sect, j);
-				if(strcmp(key, "classname") && strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
+				if(!(pEnt = tmpList[i]))
 				{
-					pEnt->setKV(key, conf->getKey(sect, key));
+					continue;
+				}
+				int keyc = conf->getKeyCount(sect);
+				const char *key;
+				for(int j = 0; j < keyc; ++j)
+				{
+					key = conf->getKeyName(sect, j);
+					if(strcmp(key, "classname") && strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
+					{
+						pEnt->setKV(key, conf->getKey(sect, key));
+					}
+				}
+				pEnt->onPostLoad();
+
+				if(/*(i & 0xF) == 0 && */pEventChannel)
+				{
+					ev.fProgress = (float)i / (float)ic * 0.9f + 0.1f;
+					pEventChannel->broadcastEvent(&ev);
 				}
 			}
-			pEnt->onPostLoad();
-
-			if(/*(i & 0xF) == 0 && */pEventChannel)
+			else
 			{
-				ev.fProgress = (float)i / (float)ic * 0.9f + 0.1f;
-				pEventChannel->broadcastEvent(&ev);
+				tmpList[i] = NULL;
 			}
 		}
 	}
@@ -770,14 +793,14 @@ void CEntityManager::dumpList(int argc, const char **argv)
 		filter = argv[1];
 	}
 
-	printf(COLOR_GREEN "-----------------------------------------------------\n"
+	printf(COLOR_GREEN "---------------------------------------------------------------------------------------\n"
 		COLOR_GREEN "    Filter: " COLOR_LGREEN "%s\n"
 		COLOR_GREEN "    Total count: " COLOR_LGREEN "%u\n"
-		COLOR_GREEN "-----------------------------------------------------\n"
-		"  id  |          class           |       name       |\n"
-		"------|--------------------------|------------------|\n"
+		COLOR_GREEN "---------------------------------------------------------------------------------------\n"
+		"                  guid                  |          class           |       name       |\n"
+		"----------------------------------------|--------------------------|------------------|\n"
 		, filter, m_vEntList.size());
-
+	char tmp[64];
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
 		CBaseEntity * pEnt = m_vEntList[i];
@@ -787,11 +810,12 @@ void CEntityManager::dumpList(int argc, const char **argv)
 		}
 		if(!filter[0] || strstr(pEnt->getClassName(), filter))
 		{
-			printf(" " COLOR_LGREEN "%-4d" COLOR_GREEN " | " COLOR_LGREEN "%-24s" COLOR_GREEN " | " COLOR_LGREEN "%-16s" COLOR_GREEN " |\n", i, pEnt->getClassName(), pEnt->getName());
+			XGUIDToSting(*pEnt->getGUID(), tmp, sizeof(tmp));
+			printf(" " COLOR_LGREEN "%s" COLOR_GREEN " | " COLOR_LGREEN "%-24s" COLOR_GREEN " | " COLOR_LGREEN "%-16s" COLOR_GREEN " |\n", tmp, pEnt->getClassName(), pEnt->getName());
 		}
 	}
 
-	printf("-----------------------------------------------------\n" COLOR_RESET);
+	printf("---------------------------------------------------------------------------------------\n" COLOR_RESET);
 }
 
 void CEntityManager::entKV(int argc, const char **argv)
@@ -857,6 +881,12 @@ CBaseEntity* CEntityManager::getById(ID id)
 	}
 	CBaseEntity *pEnt = m_vEntList[id];
 	return(pEnt ? (pEnt->getFlags() & EF_REMOVED ? NULL : pEnt) : NULL);
+}
+
+CBaseEntity* CEntityManager::getByGUID(const XGUID &guid)
+{
+	CBaseEntity *const *ppEnt = m_mEnts.at(guid);
+	return(ppEnt ? *ppEnt : NULL);
 }
 
 CBaseEntity* CEntityManager::cloneEntity(CBaseEntity *pOther)
@@ -1044,7 +1074,7 @@ CBaseline* CEntityManager::createBaseline(ID id)
 		if(pEnt && (pEnt->getFlags() & EF_LEVEL) && !(pEnt->getFlags() & EF_REMOVED))
 		{
 			CBaseline::ent_record_s record;
-			record.m_id = pEnt->getId();
+			record.m_guid = *pEnt->getGUID();
 			record.m_sClassname = pEnt->getClassName();
 
 			pDefaults = CEntityFactoryMap::GetInstance()->getDefaults(pEnt->getClassName());
@@ -1095,23 +1125,31 @@ void CEntityManager::dispatchBaseline(CBaseline *pBaseline)
 		return;
 	}
 
+#if 0
 	UINT idMax = pBaseline->m_aRecords[pBaseline->m_aRecords.size() - 1].m_id;
 	if(m_vEntList.size() <= idMax)
 	{
 		m_vEntList.reserve(idMax + 1);
 	}
+#endif
+
+	Array<CBaseEntity*> aPostLoadList(pBaseline->m_aRecords.size());
 
 	const AssotiativeArray<String, String>::Node *pNode;
 	for(int i = 0, l = pBaseline->m_aRecords.size(); i < l; ++i)
 	{
 		CBaseline::ent_record_s *pRecord = &pBaseline->m_aRecords[i];
 
-		if(!(pEnt = CREATE_ENTITY_NOPOST(pRecord->m_sClassname.c_str(), this)))
+		if(!(pEnt = CEntityFactoryMap::GetInstance()->create(pRecord->m_sClassname.c_str(), this, true, &pRecord->m_guid)))
 		{
 			printf(COLOR_LRED "Unable to load entity #%d, classname '%s' undefined\n" COLOR_RESET, i, pRecord->m_sClassname.c_str());
+			aPostLoadList[i] = NULL;
 			continue;
 		}
 
+		aPostLoadList[i] = pEnt;
+
+#if 0
 		if(pEnt->getId() != pRecord->m_id)
 		{
 			m_vEntList[pEnt->getId()] = NULL;
@@ -1144,6 +1182,7 @@ void CEntityManager::dispatchBaseline(CBaseline *pBaseline)
 			m_vEntList[pRecord->m_id] = pEnt;
 			pEnt->m_iId = pRecord->m_id;
 		}
+#endif
 
 		if(pRecord->m_mProps.KeyExists("name", &pNode))
 		{
@@ -1166,25 +1205,23 @@ void CEntityManager::dispatchBaseline(CBaseline *pBaseline)
 	{
 		CBaseline::ent_record_s *pRecord = &pBaseline->m_aRecords[i];
 
-		pEnt = m_vEntList[pRecord->m_id];
-		for(AssotiativeArray<String, String>::Iterator it = pRecord->m_mProps.begin(); it; it++)
+		if((pEnt = aPostLoadList[i]))
 		{
-			key = it.first->c_str();
-
-			if(strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
+			for(AssotiativeArray<String, String>::Iterator it = pRecord->m_mProps.begin(); it; it++)
 			{
-				pEnt->setKV(key, it.second->c_str());
+				key = it.first->c_str();
+
+				if(strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
+				{
+					pEnt->setKV(key, it.second->c_str());
+				}
 			}
 		}
 	}
 
-	for(int i = 1, l = m_vEntList.size(); i < l; ++i)
+	for(UINT i = 0, l = aPostLoadList.size(); i < l; ++i)
 	{
-		pEnt = m_vEntList[i];
-		if(pEnt)
-		{
-			pEnt->onPostLoad();
-		}
+		SAFE_CALL(aPostLoadList[i], onPostLoad);
 	}
 }
 

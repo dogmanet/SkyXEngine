@@ -31,7 +31,7 @@ class CPathCorner: public CPointEntity
 	DECLARE_CLASS(CPathCorner, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	CPathCorner(CEntityManager * pMgr);
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CPathCorner();
 
 	//! получает координаты точки на пути на расстоянии dist от начала
@@ -58,29 +58,29 @@ protected:
 	void onPostLoad();
 
 	//! Тип сглаживания
-	int m_type;
+	int m_type = PCT_SPLINE;
 	//! Новая скорость поезда
-	float m_fNewSpeed;
+	float m_fNewSpeed = 0.0f;
 
 	//! Длина сегмента пути
-	float m_fLength;
+	float m_fLength = 0.0f;
 
 	//! Для расчета сплайна @{
-	float3_t m_fH;
+	float3_t m_fH = 0.0f;
 
-	float3_t m_fCoeffsA;
-	float3_t m_fCoeffsB;
-	float3_t m_fCoeffsC;
-	float3_t m_fCoeffsD;
+	float3_t m_fCoeffsA = 0.0f;
+	float3_t m_fCoeffsB = 0.0f;
+	float3_t m_fCoeffsC = 0.0f;
+	float3_t m_fCoeffsD = 0.0f;
 
-	float3_t m_fDelta;
-	float3_t m_fLambda;
+	float3_t m_fDelta = 0.0f;
+	float3_t m_fLambda = 0.0f;
 	//! @}
 
 	//! Следующая точка
-	CPathCorner * m_pNextStop;
+	CPathCorner *m_pNextStop = NULL;
 	//! Предыдущая точка
-	CPathCorner * m_pPrevStop;
+	CPathCorner *m_pPrevStop = NULL;
 };
 
 #endif

@@ -35,7 +35,7 @@ class CBaseItem: public CBaseAnimating
 	DECLARE_PROPTABLE();
 	friend class CCharacterInventory;
 public:
-	DECLARE_CONSTRUCTOR();
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CBaseItem();
 
 	//! Масса объекта
@@ -54,14 +54,16 @@ protected:
 	void onModelChanged();
 	void onSync() override;
 
+	void onPostLoad() override;
+
 	void setScale(float fScale) override;
 	
 	const char *m_szInvName; //!< Имя, отображаемое в инвентаре
-	bool m_bInvStackable; //!< Можно ли хранить несколько итемов в одной ячейке
-	int m_iInvStackCurSize; //!< Количество итемов в стеке
-	int m_iInvStackMaxSize; //!< Максимальное количество итемов в стеке
-	float m_iInvWeight; //!< Масса объекта
-	bool m_bPickable; //!< Можно ли поднять объект
+	bool m_bInvStackable = true; //!< Можно ли хранить несколько итемов в одной ячейке
+	int m_iInvStackCurSize = 0; //!< Количество итемов в стеке
+	int m_iInvStackMaxSize = 1; //!< Максимальное количество итемов в стеке
+	float m_iInvWeight = 0.0f; //!< Масса объекта
+	bool m_bPickable = true; //!< Можно ли поднять объект
 
 	output_t m_onPickUp;
 	output_t m_onDrop;

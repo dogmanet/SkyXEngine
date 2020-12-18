@@ -74,7 +74,7 @@ protected:
 
 	void _iniFieldList();
 
-	ID m_idEnt = -1;
+	XGUID m_guidEnt;
 
 protected:
 	bool m_isSelected = false;

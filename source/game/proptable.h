@@ -396,8 +396,8 @@ void cls::InitPropData() \
 	} \
 } 
 
-#define DECLARE_TRIVIAL_CONSTRUCTOR() ThisClass(CEntityManager * pMgr):BaseClass(pMgr){}
-#define DECLARE_CONSTRUCTOR() ThisClass(CEntityManager * pMgr);
+#define DECLARE_TRIVIAL_CONSTRUCTOR() ThisClass():BaseClass(){}
+#define DECLARE_CONSTRUCTOR() ThisClass();
 
 const char * GetEmptyString();
 

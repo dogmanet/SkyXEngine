@@ -16,7 +16,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CLightPoint, light_point);
 
-CLightPoint::CLightPoint(CEntityManager * pMgr):BaseClass(pMgr)
+CLightPoint::CLightPoint()
 {
 	if(m_pLightSystem)
 	{

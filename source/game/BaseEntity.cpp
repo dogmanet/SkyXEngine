@@ -58,20 +58,8 @@ void CBaseEntity::setDefaults()
 	}
 }
 
-CBaseEntity::CBaseEntity(CEntityManager * pWorld):
-	m_iId(0),
-	m_iFlags(0),
-	m_pMgr(pWorld),
-	m_szClassName(NULL),
-	m_szName(NULL),
-	m_pParent(NULL),
-	m_iParentAttachment(-1),
-	m_pOwner(NULL),
-	m_fHealth(100.0f)/*,
-	m_vDiscreteLinearVelocity(float3_t(0.0f, 0.0f, 0.0f))*/
-	, m_bSynced(false)
+CBaseEntity::CBaseEntity()
 {
-	m_iId = pWorld->reg(this);
 	m_pLightSystem = GameData::m_pLightSystem;
 }
 
@@ -97,7 +85,7 @@ CBaseEntity::~CBaseEntity()
 {
 	_releaseEditorBoxes();
 
-	m_pMgr->unreg(m_iId);
+	m_pMgr->unreg(this);
 
 	proptable_t * pt = getPropTable();
 	const char * estr = GetEmptyString();
@@ -200,12 +188,6 @@ float3 CBaseEntity::getOffsetPos()
 SMQuaternion CBaseEntity::getOrient()
 {
 	return(m_vOrientation);
-}
-
-
-ID CBaseEntity::getId()
-{
-	return(m_iId);
 }
 
 UINT CBaseEntity::getFlags()

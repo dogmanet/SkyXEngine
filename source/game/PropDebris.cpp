@@ -15,7 +15,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CPropDebris, prop_debris);
 
-CPropDebris::CPropDebris(CEntityManager *pMgr):BaseClass(pMgr)
+CPropDebris::CPropDebris()
 {
 	setCollisionGroup(CG_DEBRIS);
 }

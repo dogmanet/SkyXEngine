@@ -20,11 +20,6 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CLogicAuto, logic_auto);
 
-CLogicAuto::CLogicAuto(CEntityManager * pMgr):
-	BaseClass(pMgr)
-{
-}
-
 void CLogicAuto::activate()
 {
 	SET_TIMEOUT(doTrigger, m_fDelay);

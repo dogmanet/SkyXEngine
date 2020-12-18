@@ -21,7 +21,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CLightDirectional, light_directional);
 
-CLightDirectional::CLightDirectional(CEntityManager *pMgr):BaseClass(pMgr)
+CLightDirectional::CLightDirectional()
 {
 	if(m_pLightSystem)
 	{

@@ -24,7 +24,7 @@ class CBaseLight: public CPointEntity
 	DECLARE_CLASS(CBaseLight, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	DECLARE_CONSTRUCTOR();
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CBaseLight();
 
 	void toggleEnable();
@@ -87,12 +87,12 @@ public:
 protected:
 	IXLight *m_pLight = NULL;
 
-	float4_t m_vColor;
-	float m_fDist;
+	float4_t m_vColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
+	float m_fDist = 10.0f;
 	//float m_fShadowDist;
-	int m_iShadowType;
-	bool m_isEnable;
-	float m_fShadowIntensity;
+	int m_iShadowType = 1;
+	bool m_isEnable = true;
+	float m_fShadowIntensity = 1.0f;
 	CBaseEntity *m_pLinkedTo = NULL;
 
 	Array<CBaseLight*> m_vpLinkedLights;

@@ -45,19 +45,10 @@ protected:
 	btCollisionObject* m_me;
 };
 
-CBaseCharacter::CBaseCharacter(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	m_uMoveDir(PM_OBSERVER),
-	m_vPitchYawRoll(float3_t(0, 0, 0)),
-	m_pActiveTool(NULL),
-	m_fCurrentSpread(0.0f),
-	m_pHitboxBodies(NULL),
-	m_fCapsHeight(1.8f),
-	m_fCapsHeightCrouch(1.2f),
-	m_fCapsRadius(0.4f),
-	m_idQuadLast(-1),
-	m_fCurrentHeight(1.0f)
+void CBaseCharacter::onPostLoad()
 {
+	BaseClass::onPostLoad();
+
 	m_pCollideShape = new btCapsuleShape(m_fCapsRadius, m_fCapsHeight - m_fCapsRadius * 2.0f);
 
 	btTransform startTransform;

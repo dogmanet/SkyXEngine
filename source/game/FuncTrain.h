@@ -23,7 +23,7 @@ class CFuncTrain: public CPointEntity
 	DECLARE_CLASS(CFuncTrain, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	CFuncTrain(CEntityManager * pMgr);
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 
 	//! Остановить
 	void stop();
@@ -35,20 +35,20 @@ protected:
 	void moveFunc(float dt);
 
 	//! Начальная точка движения
-	CPathCorner * m_pStartStop;
+	CPathCorner *m_pStartStop = NULL;
 	//! Текущая точка
-	CPathCorner * m_pCurStop;
+	CPathCorner *m_pCurStop = NULL;
 
 	//! Скорость
-	float m_fSpeed;
+	float m_fSpeed = 0.0f;
 	//! Текущая дистанция от начала пути
-	float m_fCurDist;
+	float m_fCurDist = 0.0f;
 
 	//! Запущен ли
-	bool m_bRunning;
+	bool m_bRunning = false;
 
 	//! ID таймера
-	ID m_iPostIval;
+	ID m_iPostIval = -1;
 };
 
 #endif

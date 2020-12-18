@@ -44,8 +44,7 @@ protected:
 	btCollisionObject* m_me;
 };
 
-CNPCBase::CNPCBase(CEntityManager * pMgr):
-	BaseClass(pMgr),
+CNPCBase::CNPCBase():
 	m_idQuadGoingTo(-1),
 	m_idFindPathInterval(-1),
 	m_idPathFollowInterval(-1),
@@ -112,6 +111,7 @@ void CNPCBase::setPos(const float3 &pos)
 	float3 tpos = pos;
 	m_idQuadCurr = SAIG_QuadGet(&tpos, true);
 
+#if 0
 	if(ID_VALID(m_idQuadCurr))
 	{
 		if(SAIG_QuadGetState(m_idQuadCurr) == AIQUAD_STATE_FREE)
@@ -128,13 +128,13 @@ void CNPCBase::setPos(const float3 &pos)
 				SAIG_QuadSetState(m_idQuadCurr, AIQUAD_STATE_BUSY);
 				SAIG_QuadSetStateWho(m_idQuadCurr, getId());
 				SAIG_QuadGetPos(m_idQuadCurr, &tpos);
-					tpos.y += 0.7f;
-					setPos(tpos);
+				tpos.y += 0.7f;
+				setPos(tpos);
 				return;
-				}
 			}
 		}
-
+	}
+#endif
 	if(ID_VALID(m_idQuadGoingTo))
 	{
 		m_idQuadGoingTo = -1;

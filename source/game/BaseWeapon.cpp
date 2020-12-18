@@ -93,33 +93,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseWeapon, base_weapon);
 
-CBaseWeapon::CBaseWeapon(CEntityManager * pMgr):
-	BaseClass(pMgr),
-
-	m_idTaskShoot(-1),
-
-	m_pSilencer(NULL),
-	m_pScope(NULL),
-	m_pHandle(NULL),
-	m_pMag(NULL),
-	m_fireMode(FIRE_MODE_SINGLE),
-	m_iFireModes(0),
-	
-	m_iCapacity(1),
-	m_iCurrentLoad(0),
-
-	m_fBaseSpread(0.33f),
-	m_fSpreadIdle(0.01f),
-	m_fSpreadCrouch(0.007f),
-	m_fSpreadCrawl(0.001f),
-	m_fSpreadWalk(1.0f),
-	m_fSpreadRun(4.0f),
-	m_fSpreadAirborne(5.0f),
-	m_fSpreadCondition(3.0f),
-	m_fSpreadArm(3.0f),
-	m_fSpreadIronSight(-0.8f),
-
-	m_fAimingRange(100.f)
+CBaseWeapon::CBaseWeapon()
 {
 	m_bIsWeapon = true;
 }

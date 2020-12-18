@@ -21,8 +21,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CNPCZombie, npc_zombie);
 
-CNPCZombie::CNPCZombie(CEntityManager * pMgr) :
-	BaseClass(pMgr),
+CNPCZombie::CNPCZombie():
 	m_stateDanger(NPC_STATE_DANGER_CALM),
 	m_iObserveRotateStep(0),
 	m_idRotateInterval(-1),

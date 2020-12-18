@@ -7,7 +7,6 @@ See the license in LICENSE
 #include <input/sxinput.h>
 #include "Player.h"
 #include "LightDirectional.h"
-#include "BaseTool.h"
 #include "BaseAmmo.h"
 
 #include "BaseWeapon.h"
@@ -29,17 +28,11 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CPlayer, player);
 
-CPlayer::CPlayer(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	m_canJump(true),
-	m_fViewbobStep(0.0f),
-	m_fViewbobY(0.0f),
-	m_fViewbobStrafe(float3_t(0, 0, 0)),
-	m_vWpnShakeAngles(float3_t(0.0f, 0.0f, 0.0f)),
-	m_iDSM(DSM_NONE),
-	m_bCanRespawn(false)
+void CPlayer::onPostLoad()
 {
-	m_pCamera = (CPointCamera*)CREATE_ENTITY("point_camera", pMgr);
+	BaseClass::onPostLoad();
+
+	m_pCamera = (CPointCamera*)CREATE_ENTITY("point_camera", m_pMgr);
 	m_pCamera->setPos(m_pHeadEnt->getPos());
 	m_pCamera->setParent(m_pHeadEnt);
 

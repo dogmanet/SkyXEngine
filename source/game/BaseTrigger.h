@@ -25,7 +25,7 @@ class CBaseTrigger: public CBaseAnimating
 	DECLARE_CLASS(CBaseTrigger, CBaseAnimating);
 	DECLARE_PROPTABLE();
 public:
-	DECLARE_CONSTRUCTOR();
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CBaseTrigger();
 
 	void onSync();
@@ -39,10 +39,10 @@ public:
 	void setOrient(const SMQuaternion & q) override;
 
 protected:
-	bool m_bEnabled;
-	ID m_idUpdateInterval;
+	bool m_bEnabled = true;
+	ID m_idUpdateInterval = -1;
 
-	ID m_idDevMaterial;
+	ID m_idDevMaterial = -1;
 	
 	Array<CBaseEntity*> m_aTouches;
 	Array<CBaseEntity*> m_aNewTouches;
@@ -53,7 +53,7 @@ protected:
 
 	void update(float dt);
 
-	btPairCachingGhostObject *m_pGhostObject;
+	btPairCachingGhostObject *m_pGhostObject = NULL;
 
 	bool m_isModelEnabled = true;
 

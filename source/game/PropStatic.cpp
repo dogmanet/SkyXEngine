@@ -20,8 +20,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOSYNC(CPropStatic, prop_static);
 
-CPropStatic::CPropStatic(CEntityManager *pMgr):
-	BaseClass(pMgr)
+CPropStatic::CPropStatic()
 {
 	m_isStatic = true;
 }

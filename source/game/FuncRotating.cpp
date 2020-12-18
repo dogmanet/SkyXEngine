@@ -19,11 +19,6 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CFuncRotating, func_rotating);
 
-CFuncRotating::CFuncRotating(CEntityManager * pMgr):
-	BaseClass(pMgr)
-{
-}
-
 CFuncRotating::~CFuncRotating()
 {
 	if(ID_VALID(m_idThinkInterval))

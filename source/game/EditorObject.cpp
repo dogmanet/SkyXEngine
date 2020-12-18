@@ -8,7 +8,7 @@
 CEditorObject::CEditorObject(CEditable *pEditable, CBaseEntity *pEntity):
 	m_pEditable(pEditable),
 	m_pEntity(pEntity),
-	m_idEnt(pEntity->getId())
+	m_guidEnt(*pEntity->getGUID())
 {
 	assert(pEntity);
 
@@ -228,7 +228,7 @@ void XMETHODCALLTYPE CEditorObject::remove()
 	}
 	REMOVE_ENTITY(m_pEntity);
 	m_pEntity = NULL;
-	m_idEnt = -1;
+	//m_guidEnt = XGUID();
 }
 void XMETHODCALLTYPE CEditorObject::preSetup()
 {
@@ -241,9 +241,16 @@ void XMETHODCALLTYPE CEditorObject::postSetup()
 void XMETHODCALLTYPE CEditorObject::create()
 {
 	assert(!m_pEntity);
-	m_pEntity = CREATE_ENTITY(m_szClassName, GameData::m_pMgr);
 
-	m_idEnt = m_pEntity->getId();
+	if(m_guidEnt == XGUID())
+	{
+		m_pEntity = CREATE_ENTITY(m_szClassName, GameData::m_pMgr);
+		m_guidEnt = *m_pEntity->getGUID();
+	}
+	else
+	{
+		m_pEntity = CEntityFactoryMap::GetInstance()->create(m_szClassName, GameData::m_pMgr, false, &m_guidEnt);
+	}
 
 	m_pEntity->setFlags(m_pEntity->getFlags() | EF_LEVEL | EF_EXPORT);
 
@@ -254,9 +261,9 @@ void XMETHODCALLTYPE CEditorObject::create()
 
 void CEditorObject::resync()
 {
-	if(ID_VALID(m_idEnt))
+	if(m_pEntity)
 	{
-		m_pEntity = GameData::m_pMgr->getById(m_idEnt);
+		m_pEntity = GameData::m_pMgr->getByGUID(m_guidEnt);
 	}
 }
 

@@ -26,7 +26,7 @@ class CPointCamera: public CPointEntity
 	DECLARE_CLASS(CPointCamera, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	CPointCamera(CEntityManager * pMgr);
+	DECLARE_CONSTRUCTOR();
 	~CPointCamera();
 
 	//! Возвращает объект камеры из графической либы

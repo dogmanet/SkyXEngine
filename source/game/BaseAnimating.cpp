@@ -77,8 +77,7 @@ private:
 
 //##########################################################################
 
-CBaseAnimating::CBaseAnimating(CEntityManager * pMgr):
-	BaseClass(pMgr)
+CBaseAnimating::CBaseAnimating()
 {
 	memset(m_vNextAnim, 0, sizeof(m_vNextAnim));
 	m_pAnimationCallback = new CAnimationCallback(this);

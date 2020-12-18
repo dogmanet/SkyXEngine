@@ -19,6 +19,7 @@ See the license in LICENSE
 #include "BaseCharacter.h"
 #include "PointCamera.h"
 #include "crosshair.h"
+#include "BaseTool.h"
 
 //! Класс игрока  \ingroup cbaseanimating
 class CPlayer: public CBaseCharacter
@@ -26,7 +27,7 @@ class CPlayer: public CBaseCharacter
 	DECLARE_CLASS(CPlayer, CBaseCharacter);
 	DECLARE_PROPTABLE();
 public:
-	CPlayer(CEntityManager * pMgr);
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CPlayer();
 	
 	//! Возвращает камеру игрока
@@ -84,24 +85,26 @@ protected:
 	ID m_iUpdIval;
 
 	//! Может ли прыгать
-	bool m_canJump;
+	bool m_canJump = true;
 
 	//! Для качания камеры @{
-	float m_fViewbobStep;
-	float m_fViewbobY;
-	float3_t m_fViewbobStrafe;
-	float3_t m_vWpnShakeAngles;
+	float m_fViewbobStep = 0.0f;
+	float m_fViewbobY = 0.0f;
+	float3_t m_fViewbobStrafe = float3_t(0.0f, 0.0f, 0.0f);
+	float3_t m_vWpnShakeAngles = float3_t(0.0f, 0.0f, 0.0f);
 	//! @}
 
-	int m_iDSM;
+	int m_iDSM = DSM_NONE;
 
 	//! Перекрестие
-	CCrosshair * m_pCrosshair;
+	CCrosshair *m_pCrosshair = NULL;
 
 	//! Обновляет разброса значение
 	virtual void updateSpread(float dt);
 
-	bool m_bCanRespawn;
+	void onPostLoad() override;
+
+	bool m_bCanRespawn = false;
 };
 
 #endif

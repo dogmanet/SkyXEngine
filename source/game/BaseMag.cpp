@@ -19,10 +19,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseMag, base_mag);
 
-CBaseMag::CBaseMag(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	m_iCapacity(0),
-	m_iCurrentLoad(0)
+CBaseMag::CBaseMag()
 {
 	m_addonType = WPN_ADDON_MAG;
 }

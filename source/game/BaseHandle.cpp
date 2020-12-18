@@ -16,8 +16,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseHandle, base_handle);
 
-CBaseHandle::CBaseHandle(CEntityManager * pMgr):
-	BaseClass(pMgr)
+CBaseHandle::CBaseHandle()
 {
 	m_addonType = WPN_ADDON_HANDLE;
 }

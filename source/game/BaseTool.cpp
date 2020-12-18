@@ -85,24 +85,9 @@ protected:
 	btCollisionObject* m_me;
 };
 
-CBaseTool::CBaseTool(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	m_bInPrimaryAction(false),
-	m_bInSecondaryAction(false),
-	m_bWorldModel(false),
-	m_bCanUse(true),
-	m_fZoomTime(0.0f),
-	m_fReloadTime(0.0f),
-	m_iZoomable(1),
-	m_iMuzzleFlash(-1),
-	m_iMuzzleFlash2(-1),
-	m_fMaxDistance(1000.0f),
-	m_bIsWeapon(false),
-	m_pLoadedAmmo(NULL)
+CBaseTool::CBaseTool()
 {
 	m_bInvStackable = false;
-
-	m_iIvalUpdate = SET_INTERVAL(_update, 0);
 }
 
 CBaseTool::~CBaseTool()
@@ -116,6 +101,8 @@ CBaseTool::~CBaseTool()
 void CBaseTool::onPostLoad()
 {
 	BaseClass::onPostLoad();
+
+	m_iIvalUpdate = SET_INTERVAL(_update, 0);
 
 	IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
 	if(pSound)
