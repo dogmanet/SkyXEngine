@@ -123,27 +123,66 @@ void CEditorObject::_iniFieldList()
 
 void XMETHODCALLTYPE CEditorObject::setPos(const float3_t &pos)
 {
-	if(m_pEntity)
-	{
-		m_pEntity->setPos(pos);
-	}
+	SAFE_CALL(m_pEntity, setPos, pos);
 	m_vPos = pos;
+}
+
+void CEditorObject::setPos(const float3_t &pos, bool isSeparate)
+{
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, true);
+	}
+
+	setPos(pos);
+
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, false);
+	}
 }
 
 void XMETHODCALLTYPE CEditorObject::setScale(const float3_t &vScale)
 {
-	//@TODO: Implement me
+	// TODO Implement me
 	m_vScale = vScale;
+}
+
+void CEditorObject::setScale(const float3_t &vScale, bool isSeparate)
+{
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, true);
+	}
+
+	setScale(vScale);
+
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, false);
+	}
 }
 
 void XMETHODCALLTYPE CEditorObject::setOrient(const SMQuaternion &orient)
 {
-	if(m_pEntity)
-	{
-		m_pEntity->setOrient(orient);
-	}
+	SAFE_CALL(m_pEntity, setOrient, orient);
 
 	m_qRot = orient;
+}
+
+void CEditorObject::setOrient(const SMQuaternion &orient, bool isSeparate)
+{
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, true);
+	}
+
+	setOrient(orient);
+
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, false);
+	}
 }
 
 float3_t XMETHODCALLTYPE CEditorObject::getPos()
@@ -254,9 +293,9 @@ void XMETHODCALLTYPE CEditorObject::create()
 
 	m_pEntity->setFlags(m_pEntity->getFlags() | EF_LEVEL | EF_EXPORT);
 
-	setPos(getPos());
-	setOrient(getOrient());
-	setScale(getScale());
+	setPos(m_vPos, true);
+	setOrient(m_qRot, true);
+	setScale(m_vScale, true);
 }
 
 void CEditorObject::resync()

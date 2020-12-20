@@ -45,6 +45,7 @@ class SXGAME_EXPORT CBaseEntity
 	DECLARE_PROPTABLE();
 
 	friend class CEntityManager;
+	friend class CEntityPointer;
 
 public:
 	//! Конструктор
@@ -139,12 +140,17 @@ public:
 	virtual void renderEditor(bool is3D);
 
 
-	CBaseEntity *getEntByName(const char *szName, CBaseEntity *pStartFrom);
+	CBaseEntity* getEntByName(const char *szName, CBaseEntity *pStartFrom);
 	int countEntByName(const char *szName);
 
-	const XGUID *getGUID()
+	const XGUID* getGUID()
 	{
 		return(m_pGUID);
+	}
+
+	void setSeparateMovement(bool set)
+	{
+		m_isSeparateMovement = set;
 	}
 
 private:
@@ -162,6 +168,24 @@ private:
 
 	const char *m_szClassName = NULL;
 	const XGUID *m_pGUID = NULL;
+
+	SpinLock m_slPointers;
+	Array<CEntityPointer*> m_aPointers;
+	void registerPointer(CEntityPointer *pPtr);
+	void unregisterPointer(CEntityPointer *pPtr);
+	void notifyPointers();
+
+	void onParentSet(CBaseEntity *pNewParent);
+	void onParentUnset(CBaseEntity *pOldParent);
+
+	Array<CBaseEntity*> m_aChildren;
+	SpinLock m_slChildren;
+	void addChild(CBaseEntity *pEnt);
+	void removeChild(CBaseEntity *pEnt);
+
+	bool m_isSeparateMovement = false;
+	bool m_isInOnParentMoved = false;
+	void onParentMoved(bool bAdjustOffsets = false);
 
 protected:
 	virtual void _cleanup();
@@ -198,7 +222,8 @@ protected:
 	const char *m_szName = NULL;
 
 	//! Родитель
-	CBaseEntity *m_pParent = NULL;
+	// CBaseEntity *m_pParent = NULL;
+	CEntityPointer m_pParent;
 	//! Индекс кости родителя
 	int m_iParentAttachment = -1;
 

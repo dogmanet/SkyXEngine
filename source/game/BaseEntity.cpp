@@ -43,15 +43,22 @@ REGISTER_ENTITY_NOLISTING(CBaseEntity, base_entity);
 
 void CBaseEntity::setDefaults()
 {
-	proptable_t * pt = getPropTable();
-	const char * estr = GetEmptyString();
+	proptable_t *pt = getPropTable();
+	const char *estr = GetEmptyString();
 	while(pt)
 	{
 		for(int i = 0; i < pt->numFields; ++i)
 		{
-			if(pt->pData[i].type == PDF_STRING && !(pt->pData[i].flags & PDFF_INPUT))
+			if(!(pt->pData[i].flags & PDFF_INPUT))
 			{
-				this->*((const char * ThisClass::*)pt->pData[i].pField) = estr;
+				if(pt->pData[i].type == PDF_STRING)
+				{
+					this->*((const char* ThisClass::*)pt->pData[i].pField) = estr;
+				}
+				else if(pt->pData[i].type == PDF_PARENT)
+				{
+					(this->*((CEntityPointer ThisClass::*)pt->pData[i].pField)).init(m_pMgr, this);
+				}
 			}
 		}
 		pt = pt->pBaseProptable;
@@ -61,6 +68,9 @@ void CBaseEntity::setDefaults()
 CBaseEntity::CBaseEntity()
 {
 	m_pLightSystem = GameData::m_pLightSystem;
+
+	m_pParent.setLinkEstablishedListener(&CBaseEntity::onParentSet);
+	m_pParent.setLinkBrokenListener(&CBaseEntity::onParentUnset);
 }
 
 /*void CBaseEntity::setDefaults()
@@ -104,6 +114,11 @@ CBaseEntity::~CBaseEntity()
 		}
 		pt = pt->pBaseProptable;
 	}
+
+	if(m_pParent)
+	{
+		m_pParent->removeChild(this);
+	}
 }
 
 void CBaseEntity::setClassName(const char * name)
@@ -139,15 +154,11 @@ void CBaseEntity::getSphere(float3 * center, float * radius)
 		radius = 0;
 }
 
-void CBaseEntity::setPos(const float3 & pos)
+void CBaseEntity::setPos(const float3 &pos)
 {
-	CBaseEntity *pParent = NULL;
-	if(m_pParent)
-	{
-		pParent = m_pParent;
-		setParent(NULL);
-	}
 	m_vPosition = pos;
+
+	onParentMoved(true);
 
 	if(m_pEditorRigidBody)
 	{
@@ -155,9 +166,12 @@ void CBaseEntity::setPos(const float3 & pos)
 		SPhysics_GetDynWorld()->updateSingleAabb(m_pEditorRigidBody);
 	}
 
-	if(pParent)
 	{
-		setParent(pParent, m_iParentAttachment);
+		ScopedSpinLock lock(m_slChildren);
+		for(UINT i = 0, l = m_aChildren.size(); i < l; ++i)
+		{
+			m_aChildren[i]->onParentMoved(m_isSeparateMovement);
+		}
 	}
 }
 
@@ -169,6 +183,16 @@ float3 CBaseEntity::getPos()
 void CBaseEntity::setOrient(const SMQuaternion & q)
 {
 	m_vOrientation = q;
+
+	onParentMoved(true);
+
+	{
+		ScopedSpinLock lock(m_slChildren);
+		for(UINT i = 0, l = m_aChildren.size(); i < l; ++i)
+		{
+			m_aChildren[i]->onParentMoved(m_isSeparateMovement);
+		}
+	}
 }
 void CBaseEntity::setOffsetOrient(const SMQuaternion & q)
 {
@@ -188,6 +212,32 @@ float3 CBaseEntity::getOffsetPos()
 SMQuaternion CBaseEntity::getOrient()
 {
 	return(m_vOrientation);
+}
+
+void CBaseEntity::onParentMoved(bool bAdjustOffsets)
+{
+	if(!m_pParent || m_isInOnParentMoved)
+	{
+		return;
+	}
+
+	m_isInOnParentMoved = true;
+
+	float3 vParentPos = ID_VALID(m_iParentAttachment) ? m_pParent->getAttachmentPos(m_iParentAttachment) : m_pParent->getPos();
+	SMQuaternion qParentOrient = ID_VALID(m_iParentAttachment) ? m_pParent->getAttachmentRot(m_iParentAttachment) : m_pParent->getOrient();
+
+	if(bAdjustOffsets)
+	{
+		m_vOffsetPos = (float3)(qParentOrient.Conjugate() * (m_vPosition - vParentPos));
+		m_vOffsetOrient = m_vOrientation * qParentOrient.Conjugate();
+	}
+	else
+	{
+		setPos(vParentPos + qParentOrient * m_vOffsetPos);
+		setOrient(m_vOffsetOrient * qParentOrient);
+	}
+
+	m_isInOnParentMoved = false;
 }
 
 UINT CBaseEntity::getFlags()
@@ -335,8 +385,10 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 			return(true);
 		}
 		return(false);
-	case PDF_ENTITY:
 	case PDF_PARENT:
+		(this->*((CEntityPointer ThisClass::*)field->pField)).setEntityName(value);
+		break;
+	case PDF_ENTITY:
 		pEnt = m_pMgr->findEntityByName(value);
 		if(pEnt || !value[0])
 		{
@@ -492,9 +544,11 @@ bool CBaseEntity::getKV(const char * name, char * out, int bufsize)
 		//f3 = SMMatrixToEuler(q.GetMatrix());
 		sprintf_s(out, bufsize, "%f %f %f %f", q.x, q.y, q.z, q.w);
 		break;
-	case PDF_ENTITY:
 	case PDF_PARENT:
-		pEnt = this->*((CBaseEntity * ThisClass::*)field->pField);
+		(this->*((CEntityPointer ThisClass::*)field->pField)).getEntityName(out, bufsize);
+		break;
+	case PDF_ENTITY:
+		pEnt = this->*((CBaseEntity* ThisClass::*)field->pField);
 		if(!pEnt)
 		{
 			sprintf_s(out, bufsize, "");
@@ -554,21 +608,45 @@ bool CBaseEntity::getKV(const char * name, char * out, int bufsize)
 	return(true);
 }
 
-void CBaseEntity::setParent(CBaseEntity * pEnt, int attachment)
+void CBaseEntity::onParentSet(CBaseEntity *pNewParent)
+{
+	if(pNewParent)
+	{
+		onParentMoved(true);
+		
+		pNewParent->addChild(this);
+	}
+}
+
+void CBaseEntity::onParentUnset(CBaseEntity *pOldParent)
+{
+	if(pOldParent)
+	{
+		pOldParent->removeChild(this);
+	}
+}
+
+void CBaseEntity::addChild(CBaseEntity *pEnt)
+{
+	ScopedSpinLock lock(m_slChildren);
+	m_aChildren.push_back(pEnt);
+}
+void CBaseEntity::removeChild(CBaseEntity *pEnt)
+{
+	ScopedSpinLock lock(m_slChildren);
+	int idx = m_aChildren.indexOf(pEnt);
+	assert(idx >= 0);
+	if(idx >= 0)
+	{
+		m_aChildren.erase(idx);
+	}
+}
+
+void CBaseEntity::setParent(CBaseEntity *pEnt, int attachment)
 {
 	m_pParent = pEnt;
 	if(pEnt)
 	{
-		if(attachment >= 0)
-		{
-			m_vOffsetPos = (float3)(m_vPosition - m_pParent->getAttachmentPos(attachment));
-			m_vOffsetOrient = m_vOrientation * m_pParent->getAttachmentRot(attachment).Conjugate();
-		}
-		else
-		{
-			m_vOffsetPos = m_pParent->getOrient().Conjugate() * (float3)(m_vPosition - m_pParent->getPos());
-			m_vOffsetOrient = m_vOrientation * m_pParent->getOrient().Conjugate();
-		}
 		m_iParentAttachment = attachment;
 	}
 }
@@ -613,35 +691,6 @@ CBaseEntity* CBaseEntity::getParent()
 void CBaseEntity::onSync()
 {
 	m_bSynced = true;
-
-	if(m_pParent)
-	{
-		if(!m_pParent->m_bSynced)
-		{
-			m_pParent->onSync();
-		}
-		if(m_iParentAttachment >= 0)
-		{
-			m_vPosition = (float3)(m_pParent->getAttachmentPos(m_iParentAttachment) + m_vOffsetPos);
-			m_vOrientation = m_pParent->getAttachmentRot(m_iParentAttachment) * m_vOffsetOrient;
-		}
-		else
-		{
-			m_vPosition = (float3)(m_pParent->getPos() + m_pParent->getOrient() * m_vOffsetPos);
-			m_vOrientation = m_vOffsetOrient * m_pParent->getOrient();
-		}
-		//if(m_pPhysObj)
-		//{
-		//	m_pPhysObj->setPos(m_vPosition);
-		//	m_pPhysObj->setOrient(m_vOrientation);
-		//}
-	}
-	//else if(m_pPhysObj)
-	//{
-	//	m_vPosition = m_pPhysObj->GetPos();
-	//	m_vOrientation = m_pPhysObj->getOrient();
-	//}
-
 }
 
 void CBaseEntity::onPostLoad()
@@ -981,4 +1030,29 @@ float3 CBaseEntity::getEditorBoxSize()
 void CBaseEntity::renderEditor(bool is3D)
 {
 
+}
+
+void CBaseEntity::registerPointer(CEntityPointer *pPtr)
+{
+	ScopedSpinLock lock(m_slPointers);
+	m_aPointers.push_back(pPtr);
+}
+
+void CBaseEntity::unregisterPointer(CEntityPointer *pPtr)
+{
+	ScopedSpinLock lock(m_slPointers);
+	int idx = m_aPointers.indexOf(pPtr);
+	if(idx >= 0)
+	{
+		m_aPointers.erase(idx);
+	}
+}
+
+void CBaseEntity::notifyPointers()
+{
+	ScopedSpinLock lock(m_slPointers);
+	for(UINT i = 0, l = m_aPointers.size(); i < l; ++i)
+	{
+		m_aPointers[i]->onTargetRemoved();
+	}
 }

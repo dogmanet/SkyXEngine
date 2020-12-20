@@ -260,6 +260,11 @@ const XGUID* CEntityManager::reg(CBaseEntity *pEnt, const XGUID *pGUID)
 
 	m_vEntList.push_back(pEnt);
 
+	if(pGUID)
+	{
+		notifyWaitForGUID(*pGUID, pEnt);
+	}
+
 	return(pNewGUID);
 }
 void CEntityManager::unreg(CBaseEntity *pEnt)
@@ -268,7 +273,10 @@ void CEntityManager::unreg(CBaseEntity *pEnt)
 
 	int iKey = m_vEntList.indexOf(pEnt);
 	assert(iKey >= 0);
-	m_vEntList.erase(iKey);
+	UINT uLast = m_vEntList.size() - 1;
+	m_vEntList[iKey] = m_vEntList[uLast];
+	m_vEntList[uLast] = NULL;
+	m_vEntList.erase(uLast);
 
 	timeout_t * t;
 	timeout_output_t * to;
@@ -472,9 +480,9 @@ bool CEntityManager::import(const char * file, bool shouldSendProgress)
 	{
 		pEventChannel = Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID);
 	}
-	ISXConfig * conf = Core_CrConfig();
+	ISXConfig *conf = Core_CrConfig();
 	const char *sect;
-	CBaseEntity * pEnt = NULL;
+	CBaseEntity *pEnt = NULL;
 	Array<CBaseEntity*> tmpList;
 
 	char szFullPath[1024];
@@ -835,6 +843,7 @@ void CEntityManager::entKV(int argc, const char **argv)
 	if(id < 0 || (UINT)id >= m_vEntList.size() || !(pEnt = m_vEntList[id]))
 	{
 		printf(COLOR_LRED "Invalid entity id\n" COLOR_RESET);
+		return;
 	}
 	char buf[128];
 	buf[0] = 0;
@@ -847,7 +856,7 @@ void CEntityManager::entKV(int argc, const char **argv)
 			{
 				for(int i = 0; i < pt->numFields; ++i)
 				{
-					if(pt->pData[i].szKey)
+					if(pt->pData[i].szKey && !(pt->pData[i].flags & PDFF_INPUT))
 					{
 						pEnt->getKV(pt->pData[i].szKey, buf, sizeof(buf));
 						printf("%s = %s\n", pt->pData[i].szKey, buf);
@@ -958,6 +967,8 @@ void CEntityManager::sheduleDestroy(CBaseEntity *pEnt)
 	{
 		pEnt->_releaseEditorBoxes();
 	}
+
+	pEnt->notifyPointers();
 }
 
 void CEntityManager::setEditorMode(bool isEditor)
@@ -1293,3 +1304,44 @@ CBaseline *CEntityManager::deserializeBaseline(ID id, INETbuff *pBuf)
 	return(pBaseline);
 }
 #endif
+
+void CEntityManager::registerWaitForGUID(const XGUID &guid, CEntityPointer *pPtr)
+{
+	ScopedSpinLock lock(m_slWaitingPointers);
+
+	m_maWaitingPointers[guid].push_back(pPtr);
+}
+
+void CEntityManager::unregisterWaitForGUID(const XGUID &guid, CEntityPointer *pPtr)
+{
+	ScopedSpinLock lock(m_slWaitingPointers);
+
+	Array<CEntityPointer*> &list = m_maWaitingPointers[guid];
+
+	int idx = list.indexOf(pPtr);
+	assert(idx >= 0);
+	if(idx >= 0)
+	{
+		list.erase(idx);
+	}
+	if(!list.size())
+	{
+		m_maWaitingPointers.erase(guid);
+	}
+}
+
+void CEntityManager::notifyWaitForGUID(const XGUID &guid, CBaseEntity *pEnt)
+{
+	ScopedSpinLock lock(m_slWaitingPointers);
+
+	const Map<XGUID, Array<CEntityPointer*>>::Node *pNode;
+	if(m_maWaitingPointers.KeyExists(guid, &pNode))
+	{
+		Array<CEntityPointer*> &list = m_maWaitingPointers[guid];
+		for(UINT i = 0, l = list.size(); i < l; ++i)
+		{
+			list[i]->onWaitDone(pEnt);
+		}
+		m_maWaitingPointers.erase(guid);
+	}
+}

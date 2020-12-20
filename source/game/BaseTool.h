@@ -39,7 +39,7 @@ public:
 	DECLARE_CONSTRUCTOR();
 	~CBaseTool();
 
-	virtual void onPostLoad();
+	void onPostLoad() override;
 
 	virtual void primaryAction(BOOL st);
 	virtual void secondaryAction(BOOL st);
@@ -54,7 +54,7 @@ public:
 
 	void dbgMove(int dir, float delta);
 
-	void onSync();
+	void onSync() override;
 
 	void setParent(CBaseEntity * pEnt, int attachment = -1);
 

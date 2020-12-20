@@ -24,7 +24,7 @@ class CPropBreakable: public CPropDynamic
 public:
 	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CPropBreakable();
-	virtual void onPostLoad();
+	void onPostLoad() override;
 
 	void onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor);
 protected:

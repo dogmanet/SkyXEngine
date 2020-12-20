@@ -28,8 +28,8 @@ public:
 	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CBaseTrigger();
 
-	void onSync();
-	void onPostLoad();
+	void onSync() override;
+	void onPostLoad() override;
 
 	void enable();
 	void disable();

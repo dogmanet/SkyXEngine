@@ -55,7 +55,7 @@ public:
 protected:
 	//! Пересчитывает путь
 	void recalcPath(float t);
-	void onPostLoad();
+	void onPostLoad() override;
 
 	//! Тип сглаживания
 	int m_type = PCT_SPLINE;

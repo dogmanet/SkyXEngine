@@ -63,7 +63,7 @@ class CBaseWeapon: public CBaseTool
 public:
 	DECLARE_CONSTRUCTOR();
 	~CBaseWeapon();
-	virtual void onPostLoad();
+	void onPostLoad() override;
 
 	virtual void primaryAction(BOOL st);
 	virtual void secondaryAction(BOOL st);

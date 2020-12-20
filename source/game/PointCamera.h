@@ -35,7 +35,7 @@ public:
 protected:
 	ICamera * m_pSXC;
 
-	void onSync();
+	void onSync() override;
 };
 
 #endif

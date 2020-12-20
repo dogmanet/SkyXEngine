@@ -31,7 +31,7 @@ public:
 	void start();
 
 protected:
-	void onPostLoad();
+	void onPostLoad() override;
 	void moveFunc(float dt);
 
 	//! Начальная точка движения

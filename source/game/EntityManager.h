@@ -89,6 +89,7 @@ class CEntityManager
 
 	friend class CBaseEntity;
 	friend class CEntityFactoryMap;
+	friend class CEntityPointer;
 public:
 	CEntityManager();
 	~CEntityManager();
@@ -181,6 +182,12 @@ protected:
 
 private:
 	void finalRemove();
+
+	Map<XGUID, Array<CEntityPointer*>> m_maWaitingPointers;
+	SpinLock m_slWaitingPointers;
+	void registerWaitForGUID(const XGUID &guid, CEntityPointer *pPtr);
+	void unregisterWaitForGUID(const XGUID &guid, CEntityPointer *pPtr);
+	void notifyWaitForGUID(const XGUID &guid, CBaseEntity *pEnt);
 };
 
 #endif

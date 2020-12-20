@@ -47,7 +47,7 @@ public:
 	//! Обновляет инпут от игрока
 	virtual void updateInput(float dt);
 
-	void onSync();
+	void onSync() override;
 	
 	//! Получает смещения для задержки движения модели оружия при вращении игрока
 	float3_t & getWeaponDeltaAngles();

@@ -99,7 +99,7 @@ protected:
 
 	void setLinkedTo(CBaseEntity *pEnt);
 
-	void onSync();
+	void onSync() override;
 
 	void addLinkedLight(CBaseLight *pEnt);
 	void removeLinkedLight(CBaseLight *pEnt);

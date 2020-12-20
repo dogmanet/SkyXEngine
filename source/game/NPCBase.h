@@ -72,7 +72,7 @@ public:
 	void stopOrientAt();
 
 protected:
-	void onSync();
+	void onSync() override;
 
 	//void think(float fDelta);
 
