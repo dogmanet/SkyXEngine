@@ -103,8 +103,11 @@ void CBaseTrigger::createPhysBody()
 {
 	if(m_pCollideShape)
 	{
+		float3 vPos = getPos();
+		SMQuaternion qRot = getOrient();
+
 		m_pGhostObject = new btPairCachingGhostObject();
-		m_pGhostObject->setWorldTransform(btTransform(Q4_BTQUAT(m_vOrientation), F3_BTVEC(m_vPosition)));
+		m_pGhostObject->setWorldTransform(btTransform(Q4_BTQUAT(qRot), F3_BTVEC(vPos)));
 		m_pGhostObject->setUserPointer(this);
 		m_pGhostObject->setCollisionShape(m_pCollideShape);
 		m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() ^ btCollisionObject::CF_NO_CONTACT_RESPONSE);

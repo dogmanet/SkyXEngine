@@ -239,11 +239,11 @@ void CBaseTool::onSync()
 	if(m_pOwner)
 	{
 		float3_t ang = ((CPlayer*)m_pOwner)->getWeaponDeltaAngles();
-		m_vOffsetOrient = m_qSlotRotResult * SMQuaternion(ang.x, 'x') * SMQuaternion(ang.y, 'y') * SMQuaternion(ang.z, 'z');
+		m_qOffsetOrient = m_qSlotRotResult * SMQuaternion(ang.x, 'x') * SMQuaternion(ang.y, 'y') * SMQuaternion(ang.z, 'z');
 	}
 	else
 	{
-		m_vOffsetOrient = m_qSlotRotResult;
+		m_qOffsetOrient = m_qSlotRotResult;
 	}
 	m_vOffsetPos = m_vSlotPosResult;
 	BaseClass::onSync();

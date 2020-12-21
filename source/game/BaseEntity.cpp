@@ -22,7 +22,7 @@ BEGIN_PROPTABLE_NOBASE(CBaseEntity)
 	//! Позиция в мире
 	DEFINE_FIELD_VECTORFN(m_vPosition, 0, "origin", "Origin", setPos, EDITOR_TEXTFIELD)
 	//! Ориентация в мире, углы эйлера или кватернион
-	DEFINE_FIELD_ANGLES(m_vOrientation, 0, "rotation", "Rotation", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_ANGLESFN(m_qOrientation, 0, "rotation", "Rotation", setOrient, EDITOR_TEXTFIELD)
 	//! Родительский объект в иерархии движения
 	DEFINE_FIELD_PARENT(m_pParent, 0, "parent", "Parent entity", EDITOR_TEXTFIELD)
 	//! Флаги объекта
@@ -182,7 +182,7 @@ float3 CBaseEntity::getPos()
 
 void CBaseEntity::setOrient(const SMQuaternion & q)
 {
-	m_vOrientation = q;
+	m_qOrientation = q;
 
 	onParentMoved(true);
 
@@ -196,7 +196,7 @@ void CBaseEntity::setOrient(const SMQuaternion & q)
 }
 void CBaseEntity::setOffsetOrient(const SMQuaternion & q)
 {
-	m_vOffsetOrient = q;
+	m_qOffsetOrient = q;
 }
 
 void CBaseEntity::setOffsetPos(const float3 & pos)
@@ -211,7 +211,7 @@ float3 CBaseEntity::getOffsetPos()
 
 SMQuaternion CBaseEntity::getOrient()
 {
-	return(m_vOrientation);
+	return(m_qOrientation);
 }
 
 void CBaseEntity::onParentMoved(bool bAdjustOffsets)
@@ -229,12 +229,12 @@ void CBaseEntity::onParentMoved(bool bAdjustOffsets)
 	if(bAdjustOffsets)
 	{
 		m_vOffsetPos = (float3)(qParentOrient.Conjugate() * (m_vPosition - vParentPos));
-		m_vOffsetOrient = m_vOrientation * qParentOrient.Conjugate();
+		m_qOffsetOrient = m_qOrientation * qParentOrient.Conjugate();
 	}
 	else
 	{
 		setPos(vParentPos + qParentOrient * m_vOffsetPos);
-		setOrient(m_vOffsetOrient * qParentOrient);
+		setOrient(m_qOffsetOrient * qParentOrient);
 	}
 
 	m_isInOnParentMoved = false;
@@ -252,7 +252,7 @@ void CBaseEntity::setFlags(UINT f)
 
 SMMATRIX CBaseEntity::getWorldTM()
 {
-	return(m_vOrientation.GetMatrix() * SMMatrixTranslation(m_vPosition));
+	return(m_qOrientation.GetMatrix() * SMMatrixTranslation(m_vPosition));
 }
 
 bool CBaseEntity::setKV(const char * name, const char * value)

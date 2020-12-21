@@ -224,7 +224,7 @@ void CNPCBase::findPathThinker(float fDelta)
 		m_aPathQuads.resize(iCount);
 		SAIG_GridGetPath(m_idQueueFindPath, &(m_aPathQuads[0]), m_aPathQuads.size(), true);
 		SAIG_GridSetColorArr(&(m_aPathQuads[0]), m_ulColor, m_aPathQuads.size());
-		m_vLastPathPos = m_vPosition;
+		m_vLastPathPos = getPos();
 		m_idQueueFindPath = -1;
 
 		CLEAR_INTERVAL(m_idFindPathInterval);
@@ -256,7 +256,7 @@ void CNPCBase::pathFollowThinker(float fDelta)
 
 	float fDirLen = fMoveSpeed * fDelta;
 	float fMovDirLen = fDirLen;
-	float fDist2 = SMVector3Length2(m_vLastPathPos - m_vPosition); // Расстояние между актуальным положением NPC и точкой следования
+	float fDist2 = SMVector3Length2(m_vLastPathPos - getPos()); // Расстояние между актуальным положением NPC и точкой следования
 	
 	if(m_iCurrQuaidInPath < (int)m_aPathQuads.size())
 	{
@@ -296,7 +296,7 @@ void CNPCBase::pathFollowThinker(float fDelta)
 	//m_vPosition = m_vLastPathPos;
 	//m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(m_vLastPathPos));
 
-	float3 vDir = m_vLastPathPos - m_vPosition;
+	float3 vDir = m_vLastPathPos - getPos();
 	float fDist = SMVector3Length(vDir);
 	vDir /= fDist;
 
@@ -315,9 +315,9 @@ void CNPCBase::pathFollowThinker(float fDelta)
 	//SPhysics_GetDynWorld()->getDebugDrawer()->drawLine(F3_BTVEC(m_vLastPathPos), F3_BTVEC(m_vPosition), btVector3(0, 1, 0));
 
 	m_qOrientTo = SMQuaternion(NPC_BASE_DIR, vDir);
-	setOrient(SMquaternionSlerp(m_vOrientation, m_qOrientTo, clampf(fDelta, 0.1f, 1.0f)));
+	setOrient(SMquaternionSlerp(getOrient(), m_qOrientTo, clampf(fDelta, 0.1f, 1.0f)));
 
-	if(SMVector3Length(m_vPosition - m_vLastFramePos) < fDelta * fMoveSpeed * 0.1f) // застряли, похоже
+	if(SMVector3Length(getPos() - m_vLastFramePos) < fDelta * fMoveSpeed * 0.1f) // застряли, похоже
 	{
 		if(bMayJump)
 		{
@@ -346,7 +346,7 @@ void CNPCBase::pathFollowThinker(float fDelta)
 	{
 		m_iStuckCount = 0;
 	}
-	m_vLastFramePos = m_vPosition;
+	m_vLastFramePos = getPos();
 
 	// это последний, дошли!
 	if(m_iCurrQuaidInPath >= (int)m_aPathQuads.size() && fDist < 0.5)

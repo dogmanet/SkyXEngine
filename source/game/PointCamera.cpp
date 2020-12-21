@@ -28,15 +28,21 @@ CPointCamera::~CPointCamera()
 	mem_release(m_pSXC);
 }
 
-ICamera * CPointCamera::getCamera()
+ICamera* CPointCamera::getCamera()
 {
 	return(m_pSXC);
 }
 
-void CPointCamera::onSync()
+void CPointCamera::setPos(const float3 &pos)
 {
-	BaseClass::onSync();
+	BaseClass::setPos(pos);
 
-	m_pSXC->setPosition(m_vPosition);
-	m_pSXC->setOrientation(m_vOrientation);
+	m_pSXC->setPosition(pos);
+}
+
+void CPointCamera::setOrient(const SMQuaternion &q)
+{
+	BaseClass::setOrient(q);
+
+	m_pSXC->setOrientation(q);
 }

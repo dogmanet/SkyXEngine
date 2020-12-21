@@ -293,9 +293,12 @@ void CNPCZombie::randWalk()
 	{*/
 		float rndradius = randf(20.f, 40.f)*0.5f;
 		float3 rndpos;
-		rndpos.x = m_vPosition.x + randf(-rndradius, rndradius);
-		rndpos.y = m_vPosition.y + randf(-rndradius, rndradius);
-		rndpos.z = m_vPosition.z + randf(-rndradius, rndradius);
+
+		float3 vPos = getPos();
+
+		rndpos.x = vPos.x + randf(-rndradius, rndradius);
+		rndpos.y = vPos.y + randf(-rndradius, rndradius);
+		rndpos.z = vPos.z + randf(-rndradius, rndradius);
 
 		//Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &rndpos);
 

@@ -199,19 +199,11 @@ void CEntityManager::sync()
 	//static time_point tOld = std::chrono::high_resolution_clock::now();
 	//float dt;
 	//dt = (float)std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tOld).count() / 1000000.0f;
-	for(int i = 0, l = m_vEntSyncList.size(); i < l; ++i)
-	{
-		pEnt = m_vEntSyncList[i];
-		if(pEnt)
-		{
-			pEnt->m_bSynced = false;
-		}
-	}
 	
 	for(int i = 0, l = m_vEntSyncList.size(); i < l; ++i)
 	{
 		pEnt = m_vEntSyncList[i];
-		if(pEnt && !pEnt->m_bSynced)
+		if(pEnt)
 		{
 			//pEnt->updateDiscreteLinearVelocity(0, dt);
 			pEnt->onSync();

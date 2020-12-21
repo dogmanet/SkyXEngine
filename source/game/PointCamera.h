@@ -30,12 +30,13 @@ public:
 	~CPointCamera();
 
 	//! Возвращает объект камеры из графической либы
-	ICamera * getCamera();
+	ICamera* getCamera();
+
+	void setPos(const float3 &pos) override;
+	void setOrient(const SMQuaternion &q) override;
 
 protected:
-	ICamera * m_pSXC;
-
-	void onSync() override;
+	ICamera *m_pSXC;
 };
 
 #endif

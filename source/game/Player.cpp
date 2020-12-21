@@ -291,7 +291,7 @@ void CPlayer::updateInput(float dt)
 				float sin = cosf(m_fViewbobStep * 2.0f);
 				float sin2 = sinf(m_fViewbobStep);
 				float3 vec(1.0f, 0.0f, 0.0f);
-				vec = m_vOrientation * vec;
+				vec = m_qOrientation * vec;
 				m_fViewbobY = (sin * ((m_uMoveDir & PM_RUN) ? *cl_bob_run_y : *cl_bob_walk_y));
 				m_fViewbobStrafe = (float3)(vec * sin2 * ((m_uMoveDir & PM_RUN) ? *cl_bob_run_x : *cl_bob_walk_x));
 				//m_vOrientation = SMQuaternion(SMToRadian(10) * sinf(m_fViewbobStep), 'z') * m_vOrientation;

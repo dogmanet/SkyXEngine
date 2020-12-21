@@ -42,7 +42,7 @@ public:
 
 protected:
 
-	void onSync();
+	void onSync() override;
 
 	void think(float fDelta);
 	void removeThis(float fDelta);

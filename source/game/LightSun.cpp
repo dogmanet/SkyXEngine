@@ -30,12 +30,9 @@ CLightSun::~CLightSun()
 	mem_release(m_pLight);
 }
 
-void CLightSun::onSync()
+void CLightSun::setOrient(const SMQuaternion &q)
 {
-	BaseClass::onSync();
+	BaseClass::setOrient(q);
 
-	if(m_pSun)
-	{
-		m_pSun->setDirection(m_vOrientation);
-	}
+	SAFE_CALL(m_pSun, setDirection, q);
 }

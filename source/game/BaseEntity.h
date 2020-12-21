@@ -194,23 +194,15 @@ protected:
 
 	CEntityManager *m_pMgr = NULL;
 
+
 	//! Позиция объекта
 	float3_t m_vPosition;
-	
-	/*! Скорость
-	\note вероятно, не используется
-	*/
-	float3_t m_vSpeed;
-	
 	//! вращение
-	SMQuaternion m_vOrientation;
-	//float3_t m_vDiscreteLinearVelocity;
-	//float3_t m_vOldPosition;
-
+	SMQuaternion m_qOrientation;
 	//! Позиция смещения (для иерархической структуры)
 	float3_t m_vOffsetPos;
 	//! Вращение смещения (для иерархической структуры)
-	SMQuaternion m_vOffsetOrient;
+	SMQuaternion m_qOffsetOrient;
 
 	//! Идентификатор в системе
 	ID m_iId = 0;

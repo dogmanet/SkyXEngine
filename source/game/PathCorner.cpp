@@ -99,7 +99,7 @@ void CPathCorner::recalcPath(float t)
 		pCur->m_fLength = SMVector3Length(vec);
 		//pCur->m_fLength = 1.0f;
 		pCur->m_fH = (float3)(vec / pCur->m_fLength);
-		pCur->m_fCoeffsA = pCur->m_pNextStop->m_vPosition;
+		pCur->m_fCoeffsA = pCur->m_pNextStop->getPos();
 
 		pCur = pNext;
 	}
@@ -182,7 +182,7 @@ float3 CPathCorner::getPoint(float dist)
 		}
 		else
 		{
-			return(m_vPosition);
+			return(getPos());
 		}
 	}
 	else if(dist > m_fLength)
@@ -193,7 +193,7 @@ float3 CPathCorner::getPoint(float dist)
 		}
 		else
 		{
-			return(m_vPosition);
+			return(getPos());
 		}
 	}
 	dist -= m_fLength;
@@ -210,7 +210,7 @@ SMQuaternion CPathCorner::getRot(float dist)
 		}
 		else
 		{
-			return(m_vOrientation);
+			return(getOrient());
 		}
 	}
 	else if(dist > m_fLength)
@@ -221,16 +221,16 @@ SMQuaternion CPathCorner::getRot(float dist)
 		}
 		else
 		{
-			return(m_vOrientation);
+			return(getOrient());
 		}
 	}
 	if(m_pNextStop)
 	{
-		return(SMquaternionSlerp(m_vOrientation, m_pNextStop->m_vOrientation, (dist / m_fLength)*(dist / m_fLength) * (3.0f - 2.0f * (dist / m_fLength))));
+		return(SMquaternionSlerp(getOrient(), m_pNextStop->getOrient(), (dist / m_fLength)*(dist / m_fLength) * (3.0f - 2.0f * (dist / m_fLength))));
 	}
 	else
 	{
-		return(m_vOrientation);
+		return(getOrient());
 	}
 }
 

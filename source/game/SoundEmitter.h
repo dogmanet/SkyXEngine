@@ -34,7 +34,10 @@ public:
 
 	virtual void setSound(const char *szSound);
 
-	void onSync() override;
+	void setPos(const float3 &pos) override;
+
+	void setVolume(float fVolume);
+	float getVolume();
 
 protected:
 

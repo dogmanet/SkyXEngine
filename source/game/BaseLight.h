@@ -32,6 +32,7 @@ public:
 	void setColor(const float4 &vColor)
 	{
 		m_vColor = vColor;
+		SAFE_CALL(m_pLight, setColor, float3(m_vColor) * m_vColor.w);
 	}
 	const float4_t& getColor() const
 	{
@@ -59,6 +60,7 @@ public:
 	void setShadowIntensity(float fShadowIntensity)
 	{
 		m_fShadowIntensity = fShadowIntensity;
+		SAFE_CALL(m_pLight, setShadowIntencity, fShadowIntensity);
 	}
 	float getShadowIntensity() const
 	{
@@ -68,6 +70,7 @@ public:
 	void setShadowType(int iShadowType)
 	{
 		m_iShadowType = iShadowType;
+		SAFE_CALL(m_pLight, setShadowDynamic, iShadowType != 0);
 	}
 	int getShadowType() const
 	{
@@ -83,6 +86,8 @@ public:
 	bool getMainColor(float3_t *pOut);
 
 	void updateFlags();
+
+	void setPos(const float3 &pos) override;
 
 protected:
 	IXLight *m_pLight = NULL;

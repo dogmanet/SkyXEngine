@@ -46,13 +46,13 @@ public:
 
 	void setHandsResource(IXResourceModelAnimated *pResource);
 
-	void setPos(const float3 &pos);
+	void setPos(const float3 &pos) override;
+	void setOrient(const SMQuaternion &q) override;
 
 protected:
 	virtual void onModeChanged(INVENTORY_ITEM_MODE oldMode, INVENTORY_ITEM_MODE newMode);
 	void onSetViewModel(const char *mdl);
 	void onModelChanged();
-	void onSync() override;
 
 	void onPostLoad() override;
 

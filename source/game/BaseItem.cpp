@@ -201,25 +201,19 @@ void CBaseItem::onModelChanged()
 	}
 }
 
-void CBaseItem::onSync()
-{
-	BaseClass::onSync();
-	
-	if(m_pViewModel)
-	{
-		m_pViewModel->setPosition(getPos());
-		m_pViewModel->setOrientation(getOrient());
-	}
-}
-
 void CBaseItem::setPos(const float3 &pos)
 {
 	BaseClass::setPos(pos);
 
-	if(m_pTriggerUse)
-	{
-		m_pTriggerUse->setPos(getPos());
-	}
+	SAFE_CALL(m_pViewModel, setPosition, pos);
+	SAFE_CALL(m_pTriggerUse, setPos, pos);
+}
+
+void CBaseItem::setOrient(const SMQuaternion &q)
+{
+	BaseClass::setOrient(q);
+
+	SAFE_CALL(m_pViewModel, setOrientation, q);
 }
 
 void CBaseItem::onIsPickableChanged(bool isPickable)

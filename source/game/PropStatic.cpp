@@ -34,7 +34,10 @@ void CPropStatic::createPhysBody()
 {
 	if(m_pCollideShape)
 	{
-		btDefaultMotionState * motionState = new btDefaultMotionState(btTransform(Q4_BTQUAT(m_vOrientation), F3_BTVEC(m_vPosition)));
+		float3 vPos = getPos();
+		SMQuaternion qRot = getOrient();
+
+		btDefaultMotionState * motionState = new btDefaultMotionState(btTransform(Q4_BTQUAT(qRot), F3_BTVEC(vPos)));
 		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
 			0,                  // mass
 			motionState,        // initial position

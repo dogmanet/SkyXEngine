@@ -381,7 +381,10 @@ void CBaseAnimating::createPhysBody()
 		const float fMass = 1.0f;
 		m_pCollideShape->calculateLocalInertia(fMass, vInertia);
 
-		btDefaultMotionState * motionState = new btDefaultMotionState(btTransform(Q4_BTQUAT(m_vOrientation), F3_BTVEC(m_vPosition)));
+		float3 vPos = getPos();
+		SMQuaternion qRot = getOrient();
+
+		btDefaultMotionState * motionState = new btDefaultMotionState(btTransform(Q4_BTQUAT(qRot), F3_BTVEC(vPos)));
 		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
 			fMass,                  // mass
 			motionState,        // initial position

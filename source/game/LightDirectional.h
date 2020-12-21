@@ -25,32 +25,16 @@ public:
 	DECLARE_CONSTRUCTOR();
 	~CLightDirectional();
 
-	void setOuterAngle(float fAngle)
-	{
-		m_fOuterAngle = fAngle;
-	}
-	float getOuterAngle() const
-	{
-		return m_fOuterAngle;
-	}
-	void setInnerAngle(float fAngle)
-	{
-		m_fInnerAngle = fAngle;
-	}
-	float getInnerAngle() const
-	{
-		return m_fInnerAngle;
-	}
+	void setOuterAngle(float fAngle);
+	float getOuterAngle() const;
+	void setInnerAngle(float fAngle);
+	float getInnerAngle() const;
 
-	void setRadiusTop(float fRadiusTop) { m_fRadiusTop = fRadiusTop; };
-	float getRadiusTop() const { return m_fRadiusTop; };
-	
+	void setOrient(const SMQuaternion &q) override;
+
 protected:
-	void onSync() override;
-
 	float m_fOuterAngle = SM_PI * 0.4f;
 	float m_fInnerAngle = SM_PI * 0.4f * 0.7f;
-	float m_fRadiusTop = 0.01f;
 
 	IXLightSpot *m_pLightSpot = NULL;
 };

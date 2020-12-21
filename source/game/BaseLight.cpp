@@ -12,18 +12,18 @@ See the license in LICENSE
 
 BEGIN_PROPTABLE(CBaseLight)
 	//! Цвет
-	DEFINE_FIELD_VECTOR4(m_vColor, 0, "color", "Color", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_VECTOR4FN(m_vColor, 0, "color", "Color", setColor, EDITOR_TEXTFIELD)
 	//! Дальность
 	DEFINE_FIELD_FLOAT(m_fDist, 0, "dist", "Distance", EDITOR_TEXTFIELD)
 	//! Дальность дальняя
 	//DEFINE_FIELD_FLOAT(m_fShadowDist, 0, "light_far", "Shadow far plane", EDITOR_TEXTFIELD)
 	//! Интенсивность теней
-	DEFINE_FIELD_FLOAT(m_fShadowIntensity, 0, "shadow_intensity", "Shadow intensity", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_FLOATFN(m_fShadowIntensity, 0, "shadow_intensity", "Shadow intensity", setShadowIntensity, EDITOR_TEXTFIELD)
 	//! Связанный свет (повторяет его состояние включения)
 	DEFINE_FIELD_ENTITYFN(m_pLinkedTo, 0, "linked_to", "Linked light to", setLinkedTo, EDITOR_TEXTFIELD)
 
 	//! Тип тени
-	DEFINE_FIELD_INT(m_iShadowType, 0, "type_shadow", "Type shadow", EDITOR_COMBOBOX)
+	DEFINE_FIELD_INTFN(m_iShadowType, 0, "type_shadow", "Type shadow", setShadowType, EDITOR_COMBOBOX)
 		//COMBO_OPTION("None", "-1")   //!< Нет
 		COMBO_OPTION("Static", "0")  //!< Статическая тень
 		COMBO_OPTION("Dynamic", "1") //!< Динамическая тень
@@ -65,10 +65,6 @@ void CBaseLight::onSync()
 	if(m_pLight)
 	{
 		m_pLight->setEnabled(m_isEnable);
-		m_pLight->setPosition(m_vPosition);
-		m_pLight->setColor(float3(m_vColor) * m_vColor.w);
-		m_pLight->setShadowIntencity(m_fShadowIntensity);
-		m_pLight->setShadowDynamic(m_iShadowType != 0);
 	}
 }
 
@@ -199,4 +195,11 @@ void CBaseLight::removeLinkedLight(CBaseLight *pEnt)
 			return;
 		}
 	}
+}
+
+void CBaseLight::setPos(const float3 &pos)
+{
+	BaseClass::setPos(pos);
+
+	SAFE_CALL(m_pLight, setPosition, pos);
 }
