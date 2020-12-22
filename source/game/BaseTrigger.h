@@ -19,16 +19,31 @@ See the license in LICENSE
 
 #include "BaseAnimating.h"
 
+class CBaseTrigger;
+class CPhysicsTickEventListener final: public IEventListener<XEventPhysicsStep>
+{
+public:
+	CPhysicsTickEventListener(CBaseTrigger *pTrigger):
+		m_pTrigger(pTrigger)
+	{
+	}
+	void onEvent(const XEventPhysicsStep *pData) override;
+
+private:
+	CBaseTrigger *m_pTrigger;
+};
+
 //! Базовый класс триггера
 class CBaseTrigger: public CBaseAnimating
 {
 	DECLARE_CLASS(CBaseTrigger, CBaseAnimating);
 	DECLARE_PROPTABLE();
+
+	friend class CPhysicsTickEventListener;
 public:
-	DECLARE_TRIVIAL_CONSTRUCTOR();
+	DECLARE_CONSTRUCTOR();
 	~CBaseTrigger();
 
-	void onSync() override;
 	void onPostLoad() override;
 
 	void enable();
@@ -40,7 +55,6 @@ public:
 
 protected:
 	bool m_bEnabled = true;
-	ID m_idUpdateInterval = -1;
 
 	ID m_idDevMaterial = -1;
 	
@@ -51,7 +65,7 @@ protected:
 	output_t m_onTouchEnd;
 	output_t m_onTouchEndAll;
 
-	void update(float dt);
+	void update();
 
 	btPairCachingGhostObject *m_pGhostObject = NULL;
 
@@ -67,6 +81,13 @@ protected:
 	virtual void onTouchStart(CBaseEntity *pActivator);
 	virtual void onTouchEnd(CBaseEntity *pActivator);
 	virtual void onTouchEndAll(CBaseEntity *pActivator);
+
+private:
+	static IEventChannel<XEventPhysicsStep> *m_pTickEventChannel;
+
+	CPhysicsTickEventListener m_physicsTicker;
+
+	void onPhysicsStep();
 };
 
 #endif

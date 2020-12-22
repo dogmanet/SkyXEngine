@@ -27,46 +27,34 @@ class IEventChannel: public IBaseEventChannel
 public:
 	void addListener(PFNLISTENER fnListener)
 	{
-		for(UINT i = 0, l = m_vListeners.size(); i < l; ++i)
+		if(m_vListeners.indexOf(fnListener) < 0)
 		{
-			if(m_vListeners[i] == fnListener)
-			{
-				return;
-			}
+			m_vListeners.push_back(fnListener);
 		}
-		m_vListeners.push_back(fnListener);
 	}
 	void addListener(IEventListener<T> *pListener)
 	{
-		for(UINT i = 0, l = m_vListeners2.size(); i < l; ++i)
+		if(m_vListeners2.indexOf(pListener) < 0)
 		{
-			if(m_vListeners2[i] == pListener)
-			{
-				return;
-			}
+			m_vListeners2.push_back(pListener);
 		}
-		m_vListeners2.push_back(pListener);
 	}
 	void removeListener(PFNLISTENER fnListener)
 	{
-		for(UINT i = 0, l = m_vListeners.size(); i < l; ++i)
+		int idx = m_vListeners.indexOf(fnListener);
+		if(idx >= 0)
 		{
-			if(m_vListeners[i] == fnListener)
-			{
-				m_vListeners.erase(i);
-				return;
-			}
+			m_vListeners[idx] = m_vListeners[m_vListeners.size() - 1];
+			m_vListeners.erase(m_vListeners.size() - 1);
 		}
 	}
 	void removeListener(IEventListener<T> *pListener)
 	{
-		for(UINT i = 0, l = m_vListeners2.size(); i < l; ++i)
+		int idx = m_vListeners2.indexOf(pListener);
+		if(idx >= 0)
 		{
-			if(m_vListeners2[i] == pListener)
-			{
-				m_vListeners2.erase(i);
-				return;
-			}
+			m_vListeners2[idx] = m_vListeners2[m_vListeners2.size() - 1];
+			m_vListeners2.erase(m_vListeners2.size() - 1);
 		}
 	}
 	void broadcastEvent(const T *pEvent)
@@ -239,6 +227,17 @@ class IXTexture;
 struct XEventSkyboxChanged
 {
 	IXTexture *pTexture;
+};
+
+
+// {1DB80A19-7DFA-4D61-923B-34906590DBB0}
+#define EVENT_PHYSICS_STEP_GUID DEFINE_XGUID(0x1db80a19, 0x7dfa, 0x4d61, 0x92, 0x3b, 0x34, 0x90, 0x65, 0x90, 0xdb, 0xb0)
+
+class IXPhysics;
+struct XEventPhysicsStep
+{
+	IXPhysics *pPhysics;
+	float fTimeStep;
 };
 
 #endif

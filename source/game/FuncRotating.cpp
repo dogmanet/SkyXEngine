@@ -58,7 +58,7 @@ void CFuncRotating::toggle(inputdata_t *pInputdata)
 void CFuncRotating::think(float fDt)
 {
 	float3 fAxis = getOrient() * float3(0.0f, m_isReversed ? -1.0f : 1.0f, 0.0f);
-	setOrient(getOrient() * SMQuaternion(fAxis, m_fSpeed * fDt));
+	setOrient((getOrient() * SMQuaternion(fAxis, m_fSpeed * fDt)).Normalize());
 }
 
 void CFuncRotating::updateFlags()

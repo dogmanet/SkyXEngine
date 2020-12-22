@@ -568,6 +568,8 @@ void CNPCBase::stopOrientAt()
 	}
 }
 
+
+#if 0
 void CNPCBase::onSync()
 {
 	BaseClass::onSync();
@@ -589,7 +591,6 @@ void CNPCBase::onSync()
 	//SMQuaternion rot = m_pHeadEnt->getOrient();
 	//SPhysics_GetDynWorld()->getDebugDrawer()->drawLine(F3_BTVEC(m_pHeadEnt->getPos()), F3_BTVEC(m_pHeadEnt->getPos() + (rot * float3(0,0,1))), btVector3(1,1,1));
 }
-#if 0
 void CNPCBase::gridCheckBeyond()
 {
 	//находим ближайший квад к текущей позиции нпс

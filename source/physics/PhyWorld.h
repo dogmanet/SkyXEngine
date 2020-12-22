@@ -197,6 +197,10 @@ protected:
 
 	bool m_isRunning;
 	int m_iSkipFrames = 3;
+
+	IEventChannel<XEventPhysicsStep> *m_pTickEventChannel = NULL;
+
+	static void TickCallback(btDynamicsWorld *world, btScalar timeStep);
 };
 
 #endif

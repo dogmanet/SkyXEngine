@@ -69,13 +69,11 @@ void CNPCZombie::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 	m_pActiveTool->stopAction();
 }
 
-void CNPCZombie::onSync()
+void CNPCZombie::setPos(const float3 &pos)
 {
-	BaseClass::onSync();
-
-	SAFE_CALL(m_pSndIdle, setWorldPos, getPos());
-	SAFE_CALL(m_pSndIdle2, setWorldPos, getPos());
-	SAFE_CALL(m_pSndDeath, setWorldPos, getPos());
+	SAFE_CALL(m_pSndIdle, setWorldPos, pos);
+	SAFE_CALL(m_pSndIdle2, setWorldPos, pos);
+	SAFE_CALL(m_pSndDeath, setWorldPos, pos);
 }
 
 void CNPCZombie::rotateThink(float dt)

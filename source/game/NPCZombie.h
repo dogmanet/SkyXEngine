@@ -40,10 +40,9 @@ public:
 
 	void dispatchDamage(CTakeDamageInfo &takeDamageInfo);
 
+	void setPos(const float3 & pos) override;
+
 protected:
-
-	void onSync() override;
-
 	void think(float fDelta);
 	void removeThis(float fDelta);
 

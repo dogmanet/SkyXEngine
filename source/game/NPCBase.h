@@ -72,8 +72,6 @@ public:
 	void stopOrientAt();
 
 protected:
-	void onSync() override;
-
 	//void think(float fDelta);
 
 	//! процедура проверки найденности пути
