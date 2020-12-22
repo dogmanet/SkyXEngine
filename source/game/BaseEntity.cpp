@@ -688,11 +688,6 @@ CBaseEntity* CBaseEntity::getParent()
 	}
 }*/
 
-void CBaseEntity::onSync()
-{
-	m_bSynced = true;
-}
-
 void CBaseEntity::onPostLoad()
 {
 	updateOutputs();

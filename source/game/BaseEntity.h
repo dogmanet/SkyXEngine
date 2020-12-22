@@ -223,7 +223,9 @@ protected:
 	CBaseEntity *m_pOwner = NULL;
 
 	//! Вызывается на стадии синхронизации
-	virtual void onSync();
+	virtual void onSync()
+	{
+	}
 	//! Вызывается при создании после установки всех свойств
 	virtual void onPostLoad();
 
@@ -246,8 +248,6 @@ protected:
 	float m_fHealth = 100.0f;
 
 	void takeHealth(float fVal, CBaseEntity *pAttacker, CBaseEntity *pInflictor=NULL);
-
-	bool m_bSynced = false;
 
 
 	//! Для редактора

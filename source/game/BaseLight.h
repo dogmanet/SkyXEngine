@@ -98,17 +98,7 @@ protected:
 	int m_iShadowType = 1;
 	bool m_isEnable = true;
 	float m_fShadowIntensity = 1.0f;
-	CBaseEntity *m_pLinkedTo = NULL;
-
-	Array<CBaseLight*> m_vpLinkedLights;
-
-	void setLinkedTo(CBaseEntity *pEnt);
-
-	void onSync() override;
-
-	void addLinkedLight(CBaseLight *pEnt);
-	void removeLinkedLight(CBaseLight *pEnt);
-
+	
 	void turnOn(inputdata_t * pInputdata);
 	void turnOff(inputdata_t * pInputdata);
 

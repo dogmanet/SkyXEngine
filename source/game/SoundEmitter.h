@@ -32,15 +32,17 @@ public:
 	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CSoundEmitter();
 
-	virtual void setSound(const char *szSound);
+	void setSound(const char *szSound);
 
 	void setPos(const float3 &pos) override;
 
 	void setVolume(float fVolume);
 	float getVolume();
 
-protected:
+	void setDistance(float fDistance);
+	float getDistance();
 
+protected:
 	void updateFlags() override;
 
 	void play(inputdata_t *pInputdata);

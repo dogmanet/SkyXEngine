@@ -22,6 +22,37 @@ See the license in LICENSE
 
 #define BLEND_MAX 4
 
+struct CMotionState: public btMotionState
+{
+private:
+	CBaseEntity *m_pEntity;
+
+public:
+	CMotionState(CBaseEntity *pEntity):
+		m_pEntity(pEntity)
+	{
+	}
+
+	///synchronizes world transform from user to physics
+	void getWorldTransform(btTransform &centerOfMassWorldTrans) const override
+	{
+		float3 vPos = m_pEntity->getPos();
+		SMQuaternion qRot = m_pEntity->getOrient();
+
+		centerOfMassWorldTrans = btTransform(Q4_BTQUAT(qRot), F3_BTVEC(vPos));
+	}
+
+	///synchronizes world transform from physics to user
+	///Bullet only calls the update of worldtransform for active objects
+	void setWorldTransform(const btTransform& centerOfMassWorldTrans) override
+	{
+		const btVector3 &v = centerOfMassWorldTrans.getOrigin();
+		const btQuaternion &q = centerOfMassWorldTrans.getRotation();
+		m_pEntity->setPos(BTVEC_F3(v));
+		m_pEntity->setOrient(BTQUAT_Q4(q));
+	}
+};
+
 class CAnimationCallback;
 //! Анимированный игровой объект
 class CBaseAnimating: public CBaseEntity
@@ -34,16 +65,16 @@ public:
 	DECLARE_CONSTRUCTOR();
 	~CBaseAnimating();
 
-	void getMinMax(float3 * min, float3 * max);
+	void getMinMax(float3 *min, float3 *max);
 	// void getSphere(float3 * center, float * radius);
 
 	virtual void setModel(const char *szMdl);
 	virtual void setScale(float fScale);
 
-	float3 getAttachmentPos(int id);
-	SMQuaternion getAttachmentRot(int id);
+	float3 getAttachmentPos(int id) override;
+	SMQuaternion getAttachmentRot(int id) override;
 
-	void onSync() override;
+	//void onSync() override;
 
 	void playAnimation(const char * name, UINT uFadeTime = 0, UINT slot = 0);
 	void playActivity(const char * name, UINT uFadeTime = 0, UINT slot = 0);
@@ -68,13 +99,13 @@ protected:
 	virtual void _initEditorBoxes();
 	virtual void _releaseEditorBoxes();
 
-	void inputPlayAnim(inputdata_t * pInputdata);
-	void inputPlayAnimNext(inputdata_t * pInputdata);
+	void inputPlayAnim(inputdata_t *pInputdata);
+	void inputPlayAnimNext(inputdata_t *pInputdata);
 
-	void inputPlayActivity(inputdata_t * pInputdata);
-	void inputPlayActivityNext(inputdata_t * pInputdata);
+	void inputPlayActivity(inputdata_t *pInputdata);
+	void inputPlayActivityNext(inputdata_t *pInputdata);
 
-	void inputSetSkin(inputdata_t * pInputdata);
+	void inputSetSkin(inputdata_t *pInputdata);
 
 	IXModel *m_pModel = NULL;
 	const char * m_szModelFile;
@@ -115,6 +146,8 @@ private:
 	COLLISION_GROUP m_collisionGroup = CG_DEFAULT;
 	COLLISION_GROUP m_collisionMask = CG_ALL;
 	CAnimationCallback *m_pAnimationCallback;
+
+	CMotionState m_motionState;
 };
 
 #endif

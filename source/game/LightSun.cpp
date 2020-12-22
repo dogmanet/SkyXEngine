@@ -25,11 +25,6 @@ CLightSun::CLightSun()
 	}
 }
 
-CLightSun::~CLightSun()
-{
-	mem_release(m_pLight);
-}
-
 void CLightSun::setOrient(const SMQuaternion &q)
 {
 	BaseClass::setOrient(q);

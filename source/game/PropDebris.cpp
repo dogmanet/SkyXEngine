@@ -30,7 +30,8 @@ void CPropDebris::sheduleRemove()
 
 void CPropDebris::checkRemove(float fDT)
 {
-	//@TODO: Reimplement me
+	REMOVE_ENTITY(this);
+	// TODO Reimplement me
 #if 0
 	if(!m_pAnimPlayer->isVisibleFor(SX_ANIM_DEFAULT_VISCALCOBJ))
 	{

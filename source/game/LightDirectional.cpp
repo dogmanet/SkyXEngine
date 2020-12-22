@@ -36,11 +36,6 @@ CLightDirectional::CLightDirectional()
 	}
 }
 
-CLightDirectional::~CLightDirectional()
-{
-	mem_release(m_pLight);
-}
-
 void CLightDirectional::setOrient(const SMQuaternion &q)
 {
 	BaseClass::setOrient(q);

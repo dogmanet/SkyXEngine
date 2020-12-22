@@ -34,9 +34,18 @@ public:
 	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CSoundPlayer();
 
-	virtual void setSound(const char *szSound);
+	void setSound(const char *szSound);
 
-	void onSync() override;
+	void setPos(const float3 &pos) override;
+
+	void setVolume(float fVolume);
+	float getVolume();
+
+	void setDistance(float fDistance);
+	float getDistance();
+
+	void setLoop(int iLoop);
+	SOUND_LOOP getLoop();
 
 protected:
 

@@ -77,10 +77,11 @@ private:
 
 //##########################################################################
 
-CBaseAnimating::CBaseAnimating()
+CBaseAnimating::CBaseAnimating():
+	m_motionState(this),
+	m_pAnimationCallback(new CAnimationCallback(this))
 {
 	memset(m_vNextAnim, 0, sizeof(m_vNextAnim));
-	m_pAnimationCallback = new CAnimationCallback(this);
 }
 
 CBaseAnimating::~CBaseAnimating()
@@ -190,32 +191,19 @@ SMQuaternion CBaseAnimating::getAttachmentRot(int id)
 	return(/*getOrient() * */rot);
 }
 
+#if 0
 void CBaseAnimating::onSync()
 {
 	BaseClass::onSync();
-	if(!m_pParent && m_pRigidBody && !m_isStatic)
-	{
-		btVector3 &v = m_pRigidBody->getWorldTransform().getOrigin();
-		setPos(BTVEC_F3(v));
-		btQuaternion &q = m_pRigidBody->getWorldTransform().getRotation();
-		setOrient(BTQUAT_Q4(q));
-	}
-	else if(m_pRigidBody)
-	{
-	//	m_pRigidBody->getWorldTransform().setOrigin(F3_BTVEC(getPos()));
-	//	m_pRigidBody->getWorldTransform().setRotation(Q4_BTQUAT(getOrient()));
-	}
 	if(m_pModel && m_pModel->isEnabled())
 	{
-		m_pModel->setPosition(getPos());
-		m_pModel->setOrientation(getOrient());
-
 		float3_t vGlowColor = m_vGlowColor;
 		//bool isGlowEnabled = m_pEntColorRef ? m_pEntColorRef->getMainColor(&vGlowColor) : m_vGlowColor.x != 0.0f || m_vGlowColor.y != 0.0f || m_vGlowColor.z != 0.0f;
 		m_pModel->setColor(float4(vGlowColor));
 		//m_pAnimPlayer->setGlowEnabled(isGlowEnabled);
 	}
 }
+#endif
 
 void CBaseAnimating::playAnimation(const char * name, UINT iFadeTime, UINT slot)
 {
@@ -381,13 +369,9 @@ void CBaseAnimating::createPhysBody()
 		const float fMass = 1.0f;
 		m_pCollideShape->calculateLocalInertia(fMass, vInertia);
 
-		float3 vPos = getPos();
-		SMQuaternion qRot = getOrient();
-
-		btDefaultMotionState * motionState = new btDefaultMotionState(btTransform(Q4_BTQUAT(qRot), F3_BTVEC(vPos)));
 		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
 			fMass,                  // mass
-			motionState,        // initial position
+			&m_motionState,        // initial position
 			m_pCollideShape,    // collision shape of body
 			vInertia  // local inertia
 			);
@@ -452,15 +436,15 @@ COLLISION_GROUP CBaseAnimating::getCollisionGroup()
 	return(m_collisionGroup);
 }
 
-void CBaseAnimating::setPos(const float3 & pos)
+void CBaseAnimating::setPos(const float3 &pos)
 {
 	BaseClass::setPos(pos);
 	if(m_pRigidBody)
 	{
-		m_pRigidBody->getWorldTransform().setOrigin(F3_BTVEC(pos));
-
 		SPhysics_GetDynWorld()->updateSingleAabb(m_pRigidBody);
 	}
+
+	SAFE_CALL(m_pModel, setPosition, pos);
 }
 
 void CBaseAnimating::setOrient(const SMQuaternion & q)
@@ -468,10 +452,10 @@ void CBaseAnimating::setOrient(const SMQuaternion & q)
 	BaseClass::setOrient(q);
 	if(m_pRigidBody)
 	{
-		m_pRigidBody->getWorldTransform().setRotation(Q4_BTQUAT(q));
-
 		SPhysics_GetDynWorld()->updateSingleAabb(m_pRigidBody);
 	}
+
+	SAFE_CALL(m_pModel, setOrientation, q);
 }
 
 void CBaseAnimating::_cleanup()

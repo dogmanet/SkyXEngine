@@ -21,13 +21,7 @@ CLightPoint::CLightPoint()
 	if(m_pLightSystem)
 	{
 		m_pLight = m_pLightSystem->newPoint();
-		//m_pLight->setDistance(m_fDist);
 		m_pLight->setColor(float4(float3(m_vColor) * m_vColor.w, m_fDist));
 	}
-}
-
-CLightPoint::~CLightPoint()
-{
-	mem_release(m_pLight);
 }
 

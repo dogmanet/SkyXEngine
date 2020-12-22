@@ -23,7 +23,6 @@ class CLightDirectional: public CBaseLight
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();
-	~CLightDirectional();
 
 	void setOuterAngle(float fAngle);
 	float getOuterAngle() const;
