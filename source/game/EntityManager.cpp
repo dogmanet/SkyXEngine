@@ -417,10 +417,14 @@ bool CEntityManager::exportList(const char * file)
 	proptable_t * pTbl;
 	int ic = 0;
 
-	FILE *fp = fopen(file, "w");
-	if(fp)
+	if(m_isOldImported)
 	{
-		fclose(fp);
+		FILE *fp = fopen(file, "w");
+		if(fp)
+		{
+			fclose(fp);
+		}
+		m_isOldImported = false;
 	}
 
 	// conf->set("meta", "count", "0");
@@ -491,7 +495,7 @@ bool CEntityManager::import(const char * file, bool shouldSendProgress)
 	int ic = conf->getSectionCount();
 	tmpList.reserve(ic);
 
-
+	m_isOldImported = conf->getKeyCount("meta") != 0;
 
 	{
 		XGUID guid;

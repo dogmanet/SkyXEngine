@@ -188,6 +188,8 @@ private:
 	void registerWaitForGUID(const XGUID &guid, CEntityPointer *pPtr);
 	void unregisterWaitForGUID(const XGUID &guid, CEntityPointer *pPtr);
 	void notifyWaitForGUID(const XGUID &guid, CBaseEntity *pEnt);
+
+	bool m_isOldImported = false;
 };
 
 #endif
