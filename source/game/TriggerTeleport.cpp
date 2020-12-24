@@ -14,9 +14,9 @@ See the license in LICENSE
 
 BEGIN_PROPTABLE(CTriggerTeleport)
 	//! Локальный маркер для относительных координат
-	DEFINE_FIELD_ENTITY(m_pLandmark, PDFF_NONE, "landmark", "Landmark object", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_ENTITY(CBaseEntity, m_pLandmark, PDFF_NONE, "landmark", "Landmark object", EDITOR_TEXTFIELD)
 	//! Цель
-	DEFINE_FIELD_ENTITY(m_pDestination, PDFF_NONE, "destination", "Destination landmark object", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_ENTITY(CBaseEntity, m_pDestination, PDFF_NONE, "destination", "Destination landmark object", EDITOR_TEXTFIELD)
 END_PROPTABLE()
 
 REGISTER_ENTITY(CTriggerTeleport, trigger_teleport);

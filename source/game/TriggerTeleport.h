@@ -31,8 +31,8 @@ protected:
 	virtual void onTouchStart(CBaseEntity *pActivator) override;
 
 private:
-	CBaseEntity *m_pLandmark = NULL;
-	CBaseEntity *m_pDestination = NULL;
+	CEntityPointer<CBaseEntity> m_pLandmark;
+	CEntityPointer<CBaseEntity> m_pDestination;
 };
 
 #endif

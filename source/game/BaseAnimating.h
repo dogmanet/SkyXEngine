@@ -113,7 +113,7 @@ protected:
 	bool m_isStatic = false;
 	bool m_useAutoPhysbox = true;
 
-	CBaseEntity *m_pEntColorRef = NULL;
+	CEntityPointer<CBaseEntity> m_pEntColorRef;
 	float3_t m_vGlowColor;
 
 	virtual void initPhysics();

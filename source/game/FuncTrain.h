@@ -12,8 +12,7 @@ See the license in LICENSE
 #define __FUNC_TRAIN_H
 
 #include "PointEntity.h"
-
-class CPathCorner;
+#include "PathCorner.h"
 
 /*! Поезда класс
 \ingroup cpointentity
@@ -35,7 +34,7 @@ protected:
 	void moveFunc(float dt);
 
 	//! Начальная точка движения
-	CPathCorner *m_pStartStop = NULL;
+	CEntityPointer<CPathCorner> m_pStartStop;
 	//! Текущая точка
 	CPathCorner *m_pCurStop = NULL;
 

@@ -45,6 +45,8 @@ class SXGAME_EXPORT CBaseEntity
 	DECLARE_PROPTABLE();
 
 	friend class CEntityManager;
+
+	template<typename T>
 	friend class CEntityPointer;
 
 public:
@@ -170,9 +172,9 @@ private:
 	const XGUID *m_pGUID = NULL;
 
 	SpinLock m_slPointers;
-	Array<CEntityPointer*> m_aPointers;
-	void registerPointer(CEntityPointer *pPtr);
-	void unregisterPointer(CEntityPointer *pPtr);
+	Array<IEntityPointer*> m_aPointers;
+	void registerPointer(IEntityPointer *pPtr);
+	void unregisterPointer(IEntityPointer *pPtr);
 	void notifyPointers();
 
 	void onParentSet(CBaseEntity *pNewParent);
@@ -215,12 +217,12 @@ protected:
 
 	//! Родитель
 	// CBaseEntity *m_pParent = NULL;
-	CEntityPointer m_pParent;
+	CEntityPointer<CBaseEntity> m_pParent;
 	//! Индекс кости родителя
 	int m_iParentAttachment = -1;
 
 	//! Владелец
-	CBaseEntity *m_pOwner = NULL;
+	CEntityPointer<CBaseEntity> m_pOwner;
 
 	//! Вызывается на стадии синхронизации
 	virtual void onSync()

@@ -230,7 +230,7 @@ void CBaseWeapon::secondaryAction(BOOL st)
 	m_bInSecondaryAction = st != FALSE;
 	if(m_iZoomable)
 	{
-		((CPlayer*)m_pOwner)->getCrosshair()->enable(!st);
+		((CPlayer*)m_pOwner.getEntity())->getCrosshair()->enable(!st);
 	}
 }
 
@@ -254,7 +254,7 @@ void CBaseWeapon::reload()
 			printf(COLOR_MAGENTA "Mag full!\n" COLOR_RESET);
 			return;
 		}
-		int count = ((CBaseCharacter*)m_pOwner)->getInventory()->consumeItems(m_szLoadedAmmo, iWantLoad);
+		int count = ((CBaseCharacter*)m_pOwner.getEntity())->getInventory()->consumeItems(m_szLoadedAmmo, iWantLoad);
 		if(count)
 		{
 			bool isFast = m_iCapacity == m_iCurrentLoad;
@@ -283,7 +283,7 @@ void CBaseWeapon::reload()
 			if(pHUD)
 			{
 				pHUD->setWeaponCurrentLoad((m_pMag ? m_pMag->getLoad() : 0) + m_iCurrentLoad);
-				pHUD->setWeaponMaxAmmo(((CBaseCharacter*)m_pOwner)->getInventory()->getItemCount(m_szLoadedAmmo));
+				pHUD->setWeaponMaxAmmo(((CBaseCharacter*)m_pOwner.getEntity())->getInventory()->getItemCount(m_szLoadedAmmo));
 			}
 		}
 		else
@@ -505,12 +505,12 @@ void CBaseWeapon::updateHUDinfo()
 {
 	if(m_pOwner)
 	{
-		CHUDcontroller * pHUD = ((CBaseCharacter*)m_pOwner)->getHUDcontroller();
+		CHUDcontroller *pHUD = ((CBaseCharacter*)m_pOwner.getEntity())->getHUDcontroller();
 		if(pHUD)
 		{
 			pHUD->setWeaponMaxLoad((m_pMag ? m_pMag->getCapacity() : 0)/* + m_iCapacity*/);
 			pHUD->setWeaponCurrentLoad((m_pMag ? m_pMag->getLoad() : 0) + m_iCurrentLoad);
-			pHUD->setWeaponMaxAmmo(((CBaseCharacter*)m_pOwner)->getInventory()->getItemCount(m_szLoadedAmmo));
+			pHUD->setWeaponMaxAmmo(((CBaseCharacter*)m_pOwner.getEntity())->getInventory()->getItemCount(m_szLoadedAmmo));
 		}
 	}
 }

@@ -22,7 +22,7 @@ BEGIN_PROPTABLE(CBaseAnimating)
 	DEFINE_FIELD_FLOATFN(m_fBaseScale, 0, "scale", "Scale", setScale, EDITOR_TEXTFIELD)
 
 	//! Объект референса для цвета свечения
-	DEFINE_FIELD_ENTITY(m_pEntColorRef, 0, "glow_color_ref", "Glow color reference", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_ENTITY(CBaseEntity, m_pEntColorRef, 0, "glow_color_ref", "Glow color reference", EDITOR_TEXTFIELD)
 	//! Цвет свечения
 	DEFINE_FIELD_VECTOR(m_vGlowColor, 0, "glow_color", "Glow color", EDITOR_TEXTFIELD)
 

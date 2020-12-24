@@ -24,11 +24,11 @@ BEGIN_PROPTABLE_NOBASE(CBaseEntity)
 	//! Ориентация в мире, углы эйлера или кватернион
 	DEFINE_FIELD_ANGLESFN(m_qOrientation, 0, "rotation", "Rotation", setOrient, EDITOR_TEXTFIELD)
 	//! Родительский объект в иерархии движения
-	DEFINE_FIELD_PARENT(m_pParent, 0, "parent", "Parent entity", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_ENTITY(CBaseEntity, m_pParent, 0, "parent", "Parent entity", EDITOR_TEXTFIELD)
 	//! Флаги объекта
 	DEFINE_FIELD_FLAGS(m_iFlags, 0, "flags", "Flags", EDITOR_FLAGS)
 	//! Объект-владелец
-	DEFINE_FIELD_ENTITY(m_pOwner, PDFF_NOEXPORT | PDFF_NOEDIT, "owner", "", EDITOR_NONE)
+	DEFINE_FIELD_ENTITY(CBaseEntity, m_pOwner, PDFF_NOEXPORT | PDFF_NOEDIT, "owner", "", EDITOR_NONE)
 	//! Здоровье
 	DEFINE_FIELD_FLOAT(m_fHealth, PDFF_NOEXPORT | PDFF_NOEDIT, "health", "", EDITOR_NONE)
 
@@ -55,9 +55,9 @@ void CBaseEntity::setDefaults()
 				{
 					this->*((const char* ThisClass::*)pt->pData[i].pField) = estr;
 				}
-				else if(pt->pData[i].type == PDF_PARENT)
+				else if(pt->pData[i].type == PDF_ENTITY)
 				{
-					(this->*((CEntityPointer ThisClass::*)pt->pData[i].pField)).init(m_pMgr, this);
+					(this->*((CEntityPointer<CBaseEntity> ThisClass::*)pt->pData[i].pField)).init(m_pMgr, this);
 				}
 			}
 		}
@@ -385,37 +385,9 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 			return(true);
 		}
 		return(false);
-	case PDF_PARENT:
-		(this->*((CEntityPointer ThisClass::*)field->pField)).setEntityName(value);
-		break;
 	case PDF_ENTITY:
-		pEnt = m_pMgr->findEntityByName(value);
-		if(pEnt || !value[0])
-		{
-			if(field->type == PDF_PARENT)
-			{
-				setParent(pEnt);
-			}
-			else
-			{
-				// check type of pEnt
-				if(field->pfnCheckType && !field->pfnCheckType(pEnt))
-				{
-					LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to set entity field '%s' to entity '%s'. Invalid class. Ent: %s", name, value, m_szName);
-					return(false);
-				}
-				if(field->fnSet.e)
-				{
-					(this->*(field->fnSet.e))(pEnt);
-				}
-				else
-				{
-					this->*((CBaseEntity* ThisClass::*)field->pField) = pEnt;
-				}
-			}
-			return(true);
-		}
-		return(false);
+		(this->*((CEntityPointer<CBaseEntity> ThisClass::*)field->pField)).setEntityName(value);
+		return(true);
 	case PDF_FLAGS:
 		if(1 == sscanf(value, "%d", &d))
 		{
@@ -544,19 +516,8 @@ bool CBaseEntity::getKV(const char * name, char * out, int bufsize)
 		//f3 = SMMatrixToEuler(q.GetMatrix());
 		sprintf_s(out, bufsize, "%f %f %f %f", q.x, q.y, q.z, q.w);
 		break;
-	case PDF_PARENT:
-		(this->*((CEntityPointer ThisClass::*)field->pField)).getEntityName(out, bufsize);
-		break;
 	case PDF_ENTITY:
-		pEnt = this->*((CBaseEntity* ThisClass::*)field->pField);
-		if(!pEnt)
-		{
-			sprintf_s(out, bufsize, "");
-		}
-		else
-		{
-			sprintf_s(out, bufsize, "%s", pEnt->getName());
-		}
+		(this->*((CEntityPointer<CBaseEntity> ThisClass::*)field->pField)).getEntityName(out, bufsize);
 		break;
 	case PDF_OUTPUT:
 		{
@@ -1027,13 +988,13 @@ void CBaseEntity::renderEditor(bool is3D)
 
 }
 
-void CBaseEntity::registerPointer(CEntityPointer *pPtr)
+void CBaseEntity::registerPointer(IEntityPointer *pPtr)
 {
 	ScopedSpinLock lock(m_slPointers);
 	m_aPointers.push_back(pPtr);
 }
 
-void CBaseEntity::unregisterPointer(CEntityPointer *pPtr)
+void CBaseEntity::unregisterPointer(IEntityPointer *pPtr)
 {
 	ScopedSpinLock lock(m_slPointers);
 	int idx = m_aPointers.indexOf(pPtr);

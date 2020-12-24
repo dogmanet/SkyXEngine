@@ -89,6 +89,7 @@ class CEntityManager
 
 	friend class CBaseEntity;
 	friend class CEntityFactoryMap;
+	template<typename T>
 	friend class CEntityPointer;
 public:
 	CEntityManager();
@@ -183,10 +184,10 @@ protected:
 private:
 	void finalRemove();
 
-	Map<XGUID, Array<CEntityPointer*>> m_maWaitingPointers;
+	Map<XGUID, Array<IEntityPointer*>> m_maWaitingPointers;
 	SpinLock m_slWaitingPointers;
-	void registerWaitForGUID(const XGUID &guid, CEntityPointer *pPtr);
-	void unregisterWaitForGUID(const XGUID &guid, CEntityPointer *pPtr);
+	void registerWaitForGUID(const XGUID &guid, IEntityPointer *pPtr);
+	void unregisterWaitForGUID(const XGUID &guid, IEntityPointer *pPtr);
 	void notifyWaitForGUID(const XGUID &guid, CBaseEntity *pEnt);
 
 	bool m_isOldImported = false;

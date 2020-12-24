@@ -21,11 +21,18 @@ BEGIN_PROPTABLE(CPathCorner)
 	DEFINE_FIELD_FLOAT(m_fNewSpeed, 0, "speed", "New speed", EDITOR_TEXTFIELD)
 
 	//! Следующая точка пути
-	DEFINE_FIELD_ENTITY2FN(CPathCorner, m_pNextStop, 0, "next", "Next stop", setNextPoint, EDITOR_TEXTFIELD)
+	DEFINE_FIELD_ENTITY(CPathCorner, m_pNextStop, 0, "next", "Next stop", EDITOR_TEXTFIELD)
+
+	DEFINE_FIELD_ENTITY(CPathCorner, m_pPrevStop, PDFF_NOEDIT | PDFF_NOEXPORT, "prev", "Prev stop", EDITOR_NONE)
 
 END_PROPTABLE()
 
 REGISTER_ENTITY(CPathCorner, path_corner);
+
+CPathCorner::CPathCorner()
+{
+	m_pNextStop.setLinkEstablishedListener(&CPathCorner::setNextPoint);
+}
 
 CPathCorner::~CPathCorner()
 {

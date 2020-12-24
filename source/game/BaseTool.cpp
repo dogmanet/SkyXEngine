@@ -179,7 +179,7 @@ void CBaseTool::secondaryAction(BOOL st)
 	m_bInSecondaryAction = st != FALSE;
 	if(m_iZoomable)
 	{
-		((CPlayer*)m_pOwner)->getCrosshair()->enable(!st);
+		((CPlayer*)m_pOwner.getEntity())->getCrosshair()->enable(!st);
 	}
 }
 
@@ -238,7 +238,7 @@ void CBaseTool::onSync()
 {
 	if(m_pOwner)
 	{
-		float3_t ang = ((CPlayer*)m_pOwner)->getWeaponDeltaAngles();
+		float3_t ang = ((CPlayer*)m_pOwner.getEntity())->getWeaponDeltaAngles();
 		m_qOffsetOrient = m_qSlotRotResult * SMQuaternion(ang.x, 'x') * SMQuaternion(ang.y, 'y') * SMQuaternion(ang.z, 'z');
 	}
 	else
@@ -265,7 +265,7 @@ void CBaseTool::_update(float dt)
 		float3 start = m_pParent->getPos();
 		float3 dir = m_pParent->getOrient() * float3(0.0f, 0.0f, 1.0f);
 		float3 end = start + dir * m_fCenterLength;
-		btKinematicClosestNotMeRayResultCallback cb(((CBaseCharacter*)m_pOwner)->getBtCollisionObject(), F3_BTVEC(start), F3_BTVEC(end));
+		btKinematicClosestNotMeRayResultCallback cb(((CBaseCharacter*)m_pOwner.getEntity())->getBtCollisionObject(), F3_BTVEC(start), F3_BTVEC(end));
 		SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
 
 		m_isClose = cb.hasHit();
@@ -344,7 +344,7 @@ void CBaseTool::_rezoom()
 	m_qSlotRotResult = SMquaternionSlerp(SMquaternionSlerp(m_qSlotRot, m_qSlotRotClose, m_fCloseProgress), m_qSlotRotAim, m_fZoomProgress);
 	if(m_pOwner && m_pOwner->getClassName() && !fstrcmp(m_pOwner->getClassName(), "player"))
 	{
-		((CPlayer*)m_pOwner)->getCamera()->getCamera()->setFOV(SMToRadian(vlerp(*r_default_fov, *r_default_fov - 10.0f, m_fZoomProgress)));
+		((CPlayer*)m_pOwner.getEntity())->getCamera()->getCamera()->setFOV(SMToRadian(vlerp(*r_default_fov, *r_default_fov - 10.0f, m_fZoomProgress)));
 	}
 }
 

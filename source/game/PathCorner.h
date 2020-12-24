@@ -31,7 +31,7 @@ class CPathCorner: public CPointEntity
 	DECLARE_CLASS(CPathCorner, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	DECLARE_TRIVIAL_CONSTRUCTOR();
+	DECLARE_CONSTRUCTOR();
 	~CPathCorner();
 
 	//! получает координаты точки на пути на расстоянии dist от начала
@@ -78,9 +78,9 @@ protected:
 	//! @}
 
 	//! Следующая точка
-	CPathCorner *m_pNextStop = NULL;
+	CEntityPointer<CPathCorner> m_pNextStop;
 	//! Предыдущая точка
-	CPathCorner *m_pPrevStop = NULL;
+	CEntityPointer<CPathCorner> m_pPrevStop;
 };
 
 #endif

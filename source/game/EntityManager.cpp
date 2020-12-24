@@ -1301,18 +1301,18 @@ CBaseline *CEntityManager::deserializeBaseline(ID id, INETbuff *pBuf)
 }
 #endif
 
-void CEntityManager::registerWaitForGUID(const XGUID &guid, CEntityPointer *pPtr)
+void CEntityManager::registerWaitForGUID(const XGUID &guid, IEntityPointer *pPtr)
 {
 	ScopedSpinLock lock(m_slWaitingPointers);
 
 	m_maWaitingPointers[guid].push_back(pPtr);
 }
 
-void CEntityManager::unregisterWaitForGUID(const XGUID &guid, CEntityPointer *pPtr)
+void CEntityManager::unregisterWaitForGUID(const XGUID &guid, IEntityPointer *pPtr)
 {
 	ScopedSpinLock lock(m_slWaitingPointers);
 
-	Array<CEntityPointer*> &list = m_maWaitingPointers[guid];
+	Array<IEntityPointer*> &list = m_maWaitingPointers[guid];
 
 	int idx = list.indexOf(pPtr);
 	assert(idx >= 0);
@@ -1330,10 +1330,10 @@ void CEntityManager::notifyWaitForGUID(const XGUID &guid, CBaseEntity *pEnt)
 {
 	ScopedSpinLock lock(m_slWaitingPointers);
 
-	const Map<XGUID, Array<CEntityPointer*>>::Node *pNode;
+	const Map<XGUID, Array<IEntityPointer*>>::Node *pNode;
 	if(m_maWaitingPointers.KeyExists(guid, &pNode))
 	{
-		Array<CEntityPointer*> &list = m_maWaitingPointers[guid];
+		Array<IEntityPointer*> &list = m_maWaitingPointers[guid];
 		for(UINT i = 0, l = list.size(); i < l; ++i)
 		{
 			list[i]->onWaitDone(pEnt);

@@ -196,7 +196,6 @@
     <ClCompile Include="..\..\..\source\game\EditorOutputsTab.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityFactory.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityManager.cpp" />
-    <ClCompile Include="..\..\..\source\game\EntityPointer.cpp" />
     <ClCompile Include="..\..\..\source\game\EnvSkybox.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncRotating.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncTrain.cpp" />

@@ -40,11 +40,20 @@ void CEditorObject::_iniFieldList()
 {
 	proptable_t *pTable = CEntityFactoryMap::GetInstance()->getPropTable(m_szClassName);
 	propdata_t *pField = NULL;
-	X_PROP_FIELD xField;
+	X_PROP_FIELD xField = {};
 
 	for(UINT i = 0; i < 16; ++i)
 	{
 		m_aszFlags[i] = NULL;
+	}
+
+	{
+		xField.editorType = XPET_TEXT; 
+		xField.szHelp = "";
+		xField.szKey = "guid";
+		xField.szName = "GUID";
+
+		m_aFields.push_back(xField);
 	}
 
 	while(pTable)
@@ -322,7 +331,14 @@ const char* XMETHODCALLTYPE CEditorObject::getKV(const char *szKey)
 
 	char tmp[4096];
 
-	m_pEntity->getKV(szKey, tmp, sizeof(tmp));
+	if(!fstrcmp(szKey, "guid"))
+	{
+		XGUIDToSting(*m_pEntity->getGUID(), tmp, sizeof(tmp));
+	}
+	else
+	{
+		m_pEntity->getKV(szKey, tmp, sizeof(tmp));
+	}
 
 	m_msPropCache[szKey] = tmp;
 	return(m_msPropCache[szKey].c_str());
