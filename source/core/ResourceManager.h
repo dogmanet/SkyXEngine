@@ -50,7 +50,7 @@ public:
 		const char *szName = pTexture->getFileName();
 		if(szName)
 		{
-			m_mpTextures[szName] = NULL;
+			m_mpTextures.erase(szName);
 		}
 	}
 
@@ -60,14 +60,14 @@ public:
 protected:
 	IXCore *m_pCore;
 
-	AssotiativeArray<AAString, Array<IXModelLoader*>> m_mapModelLoaders;
-	AssotiativeArray<String, IXResourceModel*> m_mpModels;
+	Map<AAString, Array<IXModelLoader*>> m_mapModelLoaders;
+	Map<String, IXResourceModel*> m_mpModels;
 	
 	Array<XFormatName> m_aModelExts;
 
 
-	AssotiativeArray<AAString, Array<IXTextureLoader*>> m_mapTextureLoaders;
-	AssotiativeArray<String, IXResourceTexture*> m_mpTextures;
+	Map<AAString, Array<IXTextureLoader*>> m_mapTextureLoaders;
+	Map<String, IXResourceTexture*> m_mpTextures;
 
 	Array<XFormatName> m_aTextureExts;
 

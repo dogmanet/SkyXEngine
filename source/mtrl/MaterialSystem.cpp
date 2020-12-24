@@ -109,7 +109,7 @@ void XMETHODCALLTYPE CMaterialSystem::loadMaterial(const char *szName, IXMateria
 	String sName(szName);
 
 	const AssotiativeArray<String, CMaterial*>::Node *pNode;
-	if(m_mapMaterials.KeyExists(sName, &pNode) && *(pNode->Val))
+	if(m_mapMaterials.KeyExists(sName, &pNode))
 	{
 		*ppMaterial = *(pNode->Val);
 		(*ppMaterial)->AddRef();
@@ -132,7 +132,7 @@ void XMETHODCALLTYPE CMaterialSystem::loadMaterial(const char *szName, IXMateria
 bool XMETHODCALLTYPE CMaterialSystem::getMaterial(const char *szName, IXMaterial **ppMaterial)
 {
 	const AssotiativeArray<String, CMaterial*>::Node *pNode;
-	if(m_mapMaterials.KeyExists(szName, &pNode) && *(pNode->Val))
+	if(m_mapMaterials.KeyExists(szName, &pNode))
 	{
 		*ppMaterial = *(pNode->Val);
 		(*ppMaterial)->AddRef();
@@ -176,10 +176,7 @@ void XMETHODCALLTYPE CMaterialSystem::reloadAll()
 {
 	for(AssotiativeArray<String, CMaterial*>::Iterator i = m_mapMaterials.begin(); i; ++i)
 	{
-		if(*(i.second))
-		{
-			loadMaterial(i.first->c_str(), *(i.second));
-		}
+		loadMaterial(i.first->c_str(), *(i.second));
 	}
 }
 
@@ -263,7 +260,7 @@ bool XMETHODCALLTYPE CMaterialSystem::loadTexture(const char *szName, IXTexture 
 	String sName(szName);
 
 	const AssotiativeArray<String, CTexture*>::Node *pNode;
-	if(m_mpTextures.KeyExists(sName, &pNode) && *(pNode->Val))
+	if(m_mpTextures.KeyExists(sName, &pNode))
 	{
 		*ppTexture = *(pNode->Val);
 		(*ppTexture)->AddRef();
@@ -414,7 +411,7 @@ bool XMETHODCALLTYPE CMaterialSystem::loadTexture(const char *szName, IXTexture 
 bool XMETHODCALLTYPE CMaterialSystem::getTexture(const char *szName, IXTexture **ppTexture)
 {
 	const AssotiativeArray<String, CTexture*>::Node *pNode;
-	if(m_mpTextures.KeyExists(szName, &pNode) && *(pNode->Val))
+	if(m_mpTextures.KeyExists(szName, &pNode))
 	{
 		*ppTexture = *(pNode->Val);
 		(*ppTexture)->AddRef();
@@ -660,7 +657,7 @@ void CMaterialSystem::onTextureRelease(CTexture *pTexture)
 {
 	assert(pTexture);
 
-	m_mpTextures[pTexture->getName()] = NULL;
+	m_mpTextures.erase(pTexture->getName());
 
 	m_poolTextures.Delete(pTexture);
 }
@@ -669,7 +666,7 @@ void CMaterialSystem::onMaterialRelease(CMaterial *pMaterial)
 {
 	assert(pMaterial);
 
-	m_mapMaterials[pMaterial->getName()] = NULL;
+	m_mapMaterials.erase(pMaterial->getName());
 }
 
 void CMaterialSystem::queueTextureUpload(CTexture *pTexture)
