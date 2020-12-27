@@ -167,8 +167,6 @@ void CEntityManager::finalRemove()
 
 void CEntityManager::sync()
 {
-	CBaseEntity * pEnt;
-
 	finalRemove();
 
 	for(int i = 0, l = m_vTimeout.size(); i < l; ++i)
@@ -200,16 +198,6 @@ void CEntityManager::sync()
 	//float dt;
 	//dt = (float)std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tOld).count() / 1000000.0f;
 	
-	for(int i = 0, l = m_vEntSyncList.size(); i < l; ++i)
-	{
-		pEnt = m_vEntSyncList[i];
-		if(pEnt)
-		{
-			//pEnt->updateDiscreteLinearVelocity(0, dt);
-			pEnt->onSync();
-			//pEnt->updateDiscreteLinearVelocity(1, dt);
-		}
-	}
 	//tOld = std::chrono::high_resolution_clock::now();
 }
 
@@ -313,19 +301,6 @@ void CEntityManager::unreg(CBaseEntity *pEnt)
 	}
 
 	m_mEnts.erase(*pEnt->getGUID());
-}
-
-void CEntityManager::regSync(CBaseEntity *pEnt)
-{
-	assert(pEnt);
-	m_vEntSyncList.push_back(pEnt);
-}
-void CEntityManager::unregSync(CBaseEntity *pEnt)
-{
-	assert(pEnt);
-	int iKey = m_vEntSyncList.indexOf(pEnt);
-	assert(iKey >= 0);
-	m_vEntSyncList.erase(iKey);
 }
 
 ID CEntityManager::setTimeout(void(CBaseEntity::*func)(float dt), CBaseEntity *pEnt, float delay)

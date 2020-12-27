@@ -54,8 +54,6 @@ public:
 
 	void dbgMove(int dir, float delta);
 
-	void onSync() override;
-
 	void setParent(CBaseEntity * pEnt, int attachment = -1);
 
 	//! Этот инструмент - оружие
@@ -76,6 +74,8 @@ public:
 	virtual void stopAction();
 
 	virtual void updateHUDinfo();
+
+	void setShakeRotation(const SMQuaternion &q);
 
 protected:
 
@@ -103,6 +103,8 @@ protected:
 
 	void _update(float dt);
 	void _rezoom();
+
+	void updateTransform();
 
 	float m_fReloadTime = 0.0f;
 
@@ -138,6 +140,8 @@ protected:
 
 	//! Этот инструмент - оружие
 	bool m_bIsWeapon = false;
+
+	SMQuaternion m_qShakeRotation;
 };
 
 #endif

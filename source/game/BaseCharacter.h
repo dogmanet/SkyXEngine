@@ -42,13 +42,29 @@ enum PLAYER_MOVE
 
 class CHUDcontroller;
 
+class CBaseCharacter;
+class CCharacterPhysicsTickEventListener final: public IEventListener<XEventPhysicsStep>
+{
+public:
+	CCharacterPhysicsTickEventListener(CBaseCharacter *pTrigger):
+		m_pCharacter(pTrigger)
+	{
+	}
+	void onEvent(const XEventPhysicsStep *pData) override;
+
+private:
+	CBaseCharacter *m_pCharacter;
+};
+
 //! Класс игрока  \ingroup cbaseanimating
 class CBaseCharacter: public CBaseAnimating
 {
 	DECLARE_CLASS(CBaseCharacter, CBaseAnimating);
 	DECLARE_PROPTABLE();
+
+	friend class CCharacterPhysicsTickEventListener;
 public:
-	DECLARE_TRIVIAL_CONSTRUCTOR();
+	DECLARE_CONSTRUCTOR();
 	~CBaseCharacter();
 
 	//! Запускает/останавливает первичную атаку
@@ -82,8 +98,6 @@ public:
 	void initHitboxes();
 	void releaseHitboxes();
 	void updateHitboxes();
-
-	void onSync() override;
 
 	void initPhysics();
 	void releasePhysics();
@@ -167,6 +181,13 @@ protected:
 	float m_fCurrentHeight = 1.0f;
 
 	IXResourceModelAnimated *m_pHandsModelResource = NULL;
+
+	virtual float3 getHeadOffset();
+
+private:
+	static IEventChannel<XEventPhysicsStep> *m_pTickEventChannel;
+	CCharacterPhysicsTickEventListener m_physicsTicker;
+	void onPhysicsStep();
 };
 
 #endif

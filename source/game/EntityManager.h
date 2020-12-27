@@ -149,12 +149,8 @@ protected:
 	const XGUID* reg(CBaseEntity *pEnt, const XGUID *pGUID=NULL);
 	void unreg(CBaseEntity *pEnt);
 
-	void regSync(CBaseEntity *pEnt);
-	void unregSync(CBaseEntity *pEnt);
-
 	Map<XGUID, CBaseEntity*> m_mEnts;
 	Array<CBaseEntity*, 64> m_vEntList;
-	Array<CBaseEntity*, 64> m_vEntSyncList;
 	Array<CBaseEntity*> m_vEntRemoveList;
 	Array<UINT> m_vFreeIDs;
 

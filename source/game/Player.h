@@ -46,8 +46,6 @@ public:
 
 	//! Обновляет инпут от игрока
 	virtual void updateInput(float dt);
-
-	void onSync() override;
 	
 	//! Получает смещения для задержки движения модели оружия при вращении игрока
 	float3_t & getWeaponDeltaAngles();
@@ -105,6 +103,8 @@ protected:
 	void onPostLoad() override;
 
 	bool m_bCanRespawn = false;
+
+	float3 getHeadOffset() override;
 };
 
 #endif

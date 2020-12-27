@@ -61,11 +61,6 @@ CBaseEntity* CEntityFactoryMap::create(const char *szName, CEntityManager *pWorl
 			pEnt->_initEditorBoxes();
 		}
 
-		if(pFactory->isSyncable())
-		{
-			pWorld->regSync(pEnt);
-		}
-
 		return(pEnt);
 	}
 	return(NULL);
@@ -77,10 +72,6 @@ void CEntityFactoryMap::destroy(CBaseEntity *pEnt)
 		IEntityFactory *pFactory = getFactory(pEnt->getClassName());
 		if(pFactory)
 		{
-			if(pFactory->isSyncable())
-			{
-				pEnt->m_pMgr->unregSync(pEnt);
-			}
 			return(pFactory->destroy(pEnt));
 		}
 	}

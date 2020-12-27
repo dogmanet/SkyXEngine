@@ -594,7 +594,7 @@ INT_PTR CALLBACK CEditorOutputsTab::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, 
 				if(pNMLV->hdr.idFrom == IDC_LIST_OUTPUTS && !m_isSkipUpdate && (pNMLV->uChanged & LVIF_STATE) && ((pNMLV->uNewState ^ pNMLV->uOldState) & LVIS_SELECTED))
 				{
 					Row *pRow = &m_pCurrentCommand->m_aRows[pNMLV->iItem];
-					pRow->isSelected = pNMLV->uNewState & LVIS_SELECTED;
+					pRow->isSelected = (pNMLV->uNewState & LVIS_SELECTED) != 0;
 
 					updateButtons();
 				}

@@ -89,6 +89,9 @@ public:
 	//! Возвращает вращение объекта
 	SMQuaternion getOrient();
 
+	void setXform(const float3 &vPos, const SMQuaternion &q);
+	void setOffsetXform(const float3 &vPos, const SMQuaternion &q);
+
 	//! Устанавливает свойство объекта
 	virtual bool setKV(const char *name, const char *value);
 	//! Получает свойство объекта
@@ -224,10 +227,6 @@ protected:
 	//! Владелец
 	CEntityPointer<CBaseEntity> m_pOwner;
 
-	//! Вызывается на стадии синхронизации
-	virtual void onSync()
-	{
-	}
 	//! Вызывается при создании после установки всех свойств
 	virtual void onPostLoad();
 

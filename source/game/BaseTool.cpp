@@ -232,8 +232,11 @@ void CBaseTool::dbgMove(int dir, float dy)
 			, m_fCenterLength);
 		break;
 	}
+
+	updateTransform();
 }
 
+#if 0
 void CBaseTool::onSync()
 {
 	if(m_pOwner)
@@ -255,6 +258,18 @@ void CBaseTool::onSync()
 		//pos = m_vOrientation * float3(0, 0, 1);
 		SPE_EffectSetRotQ(m_iMuzzleFlash, m_vOrientation);
 	}
+}
+#endif
+
+void CBaseTool::setShakeRotation(const SMQuaternion &q)
+{
+	m_qShakeRotation = q;
+	updateTransform();
+}
+
+void CBaseTool::updateTransform()
+{
+	setOffsetXform(m_vSlotPosResult, m_qSlotRotResult * m_qShakeRotation);
 }
 
 void CBaseTool::_update(float dt)
@@ -346,6 +361,7 @@ void CBaseTool::_rezoom()
 	{
 		((CPlayer*)m_pOwner.getEntity())->getCamera()->getCamera()->setFOV(SMToRadian(vlerp(*r_default_fov, *r_default_fov - 10.0f, m_fZoomProgress)));
 	}
+	updateTransform();
 }
 
 bool CBaseTool::isWeapon() const

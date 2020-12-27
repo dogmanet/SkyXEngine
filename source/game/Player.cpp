@@ -95,7 +95,8 @@ void CPlayer::updateInput(float dt)
 		return;
 	}
 
-	m_vWpnShakeAngles = (float3)(m_vWpnShakeAngles * 0.4f);
+	// m_vWpnShakeAngles = (float3)(m_vWpnShakeAngles * 0.4f);
+	m_vWpnShakeAngles = (float3)(m_vWpnShakeAngles / (1.05f + dt));
 
 	if(!*editor_mode || SSInput_GetKeyState(SIM_LBUTTON))
 	{
@@ -313,6 +314,8 @@ void CPlayer::updateInput(float dt)
 
 	}
 
+	m_pActiveTool->setShakeRotation(SMQuaternion(m_vWpnShakeAngles.x, 'x') * SMQuaternion(m_vWpnShakeAngles.y, 'y') * SMQuaternion(m_vWpnShakeAngles.z, 'z'));
+
 #ifndef _SERVER
 	if(*grab_cursor && (!*editor_mode || SSInput_GetKeyState(SIM_LBUTTON)))
 	{
@@ -345,17 +348,17 @@ CPointCamera * CPlayer::getCamera()
 	return(m_pCamera);
 }
 
-void CPlayer::onSync()
+float3 CPlayer::getHeadOffset()
 {
-	BaseClass::onSync();
+	float3 vOffset = BaseClass::getHeadOffset();
 
-	if(m_uMoveDir & PM_OBSERVER)
+	if(!(m_uMoveDir & PM_OBSERVER))
 	{
-		return;
+		vOffset.y += m_fViewbobY;
+		vOffset += m_fViewbobStrafe;
 	}
 
-	m_vPosition.y += m_fViewbobY;
-	m_vPosition = (float3)(m_vPosition + m_fViewbobStrafe);
+	return(vOffset);
 }
 
 void CPlayer::observe()

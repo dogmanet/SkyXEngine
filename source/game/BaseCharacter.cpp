@@ -21,6 +21,8 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseCharacter, base_character);
 
+IEventChannel<XEventPhysicsStep> *CBaseCharacter::m_pTickEventChannel = NULL;
+
 class btKinematicClosestNotMeRayResultCallback: public btCollisionWorld::ClosestRayResultCallback
 {
 public:
@@ -44,6 +46,20 @@ public:
 protected:
 	btCollisionObject* m_me;
 };
+
+void CCharacterPhysicsTickEventListener::onEvent(const XEventPhysicsStep *pData)
+{
+	m_pCharacter->onPhysicsStep();
+}
+
+CBaseCharacter::CBaseCharacter():
+	m_physicsTicker(this)
+{
+	if(!m_pTickEventChannel)
+	{
+		m_pTickEventChannel = Core_GetIXCore()->getEventChannel<XEventPhysicsStep>(EVENT_PHYSICS_STEP_GUID);
+	}
+}
 
 void CBaseCharacter::onPostLoad()
 {
@@ -114,10 +130,14 @@ void CBaseCharacter::onPostLoad()
 	m_idTaskSpread = SET_INTERVAL(updateSpread, 1.0f / 30.0f);
 
 	m_pInventory = new CCharacterInventory(this);
+
+	m_pTickEventChannel->addListener(&m_physicsTicker);
 }
 
 CBaseCharacter::~CBaseCharacter()
 {
+	m_pTickEventChannel->removeListener(&m_physicsTicker);
+
 	CLEAR_INTERVAL(m_idTaskSpread);
 	REMOVE_ENTITY(m_pHeadEnt);
 	REMOVE_ENTITY(m_flashlight);
@@ -428,10 +448,15 @@ void CBaseCharacter::releaseHitboxes()
 	mem_delete_a(m_pHitboxBodies);
 }
 
-void CBaseCharacter::onSync()
+float3 CBaseCharacter::getHeadOffset()
 {
-	BaseClass::onSync();
+	float3 vHeadOffset; // = m_pHeadEnt->getOffsetPos();
+	vHeadOffset.y = m_fCapsHeight * m_fCurrentHeight - 0.1f;
+	return(vHeadOffset);
+}
 
+void CBaseCharacter::onPhysicsStep()
+{
 	updateHitboxes();
 
 	if(m_uMoveDir & PM_OBSERVER)
@@ -439,13 +464,11 @@ void CBaseCharacter::onSync()
 		return;
 	}
 	btTransform &trans = m_pGhostObject->getWorldTransform();
-	m_vPosition = (float3)(float3(trans.getOrigin().x(), trans.getOrigin().y() - m_fCapsHeight * m_fCurrentHeight * 0.5f, trans.getOrigin().z()));
+	setPos(float3(trans.getOrigin().x(), trans.getOrigin().y() - m_fCapsHeight * m_fCurrentHeight * 0.5f, trans.getOrigin().z()));
 
-	float3 vHeadOffset = m_pHeadEnt->getOffsetPos();
-	vHeadOffset.y = m_fCapsHeight * m_fCurrentHeight - 0.1f;
-	m_pHeadEnt->setOffsetPos(vHeadOffset);
+	m_pHeadEnt->setOffsetPos(getHeadOffset());
 
-
+#if 0
 	//находим текущий квад аи сетки на котором находится игрок
 	ID idq = SAIG_QuadGet(&float3(m_vPosition), true);
 	//если нашли
@@ -468,6 +491,7 @@ void CBaseCharacter::onSync()
 
 		m_idQuadCurr = idq;
 	}
+#endif
 }
 
 void CBaseCharacter::initPhysics()

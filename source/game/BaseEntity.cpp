@@ -197,11 +197,32 @@ void CBaseEntity::setOrient(const SMQuaternion & q)
 void CBaseEntity::setOffsetOrient(const SMQuaternion & q)
 {
 	m_qOffsetOrient = q;
+	onParentMoved();
 }
 
 void CBaseEntity::setOffsetPos(const float3 & pos)
 {
 	m_vOffsetPos = pos;
+	onParentMoved();
+}
+
+void CBaseEntity::setXform(const float3 &vPos, const SMQuaternion &q)
+{
+	bool bOld = m_isInOnParentMoved;
+	m_isInOnParentMoved = true;
+	setPos(vPos);
+	m_isInOnParentMoved = bOld;
+
+	setOrient(q);
+}
+void CBaseEntity::setOffsetXform(const float3 &vPos, const SMQuaternion &q)
+{
+	bool bOld = m_isInOnParentMoved;
+	m_isInOnParentMoved = true;
+	setOffsetPos(vPos);
+	m_isInOnParentMoved = bOld;
+
+	setOffsetOrient(q);
 }
 
 float3 CBaseEntity::getOffsetPos()
@@ -267,7 +288,6 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 	SMQuaternion q;
 	int d;
 	float f;
-	CBaseEntity * pEnt;
 	switch(field->type)
 	{
 	case PDF_INT:
@@ -487,7 +507,6 @@ bool CBaseEntity::getKV(const char * name, char * out, int bufsize)
 	}
 	SMQuaternion q;
 	float3_t f3;
-	CBaseEntity *pEnt;
 	switch(field->type)
 	{
 	case PDF_INT:
