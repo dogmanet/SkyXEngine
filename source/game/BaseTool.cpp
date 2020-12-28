@@ -227,7 +227,7 @@ void CBaseTool::dbgMove(int dir, float dy)
 		printf(COLOR_GREEN "slot_offset = " COLOR_LGREEN "%f %f %f\n"
 			COLOR_GREEN "slot_rotation = " COLOR_LGREEN "%f %f %f %f\n"
 			COLOR_GREEN "center_length = " COLOR_LGREEN "%f\n" COLOR_RESET
-			, m_vOffsetPos.x, m_vOffsetPos.y, m_vOffsetPos.z
+			, m_vSlotPosResult.x, m_vSlotPosResult.y, m_vSlotPosResult.z
 			, m_qSlotRotResult.x, m_qSlotRotResult.y, m_qSlotRotResult.z, m_qSlotRotResult.w
 			, m_fCenterLength);
 		break;
@@ -239,16 +239,6 @@ void CBaseTool::dbgMove(int dir, float dy)
 #if 0
 void CBaseTool::onSync()
 {
-	if(m_pOwner)
-	{
-		float3_t ang = ((CPlayer*)m_pOwner.getEntity())->getWeaponDeltaAngles();
-		m_qOffsetOrient = m_qSlotRotResult * SMQuaternion(ang.x, 'x') * SMQuaternion(ang.y, 'y') * SMQuaternion(ang.z, 'z');
-	}
-	else
-	{
-		m_qOffsetOrient = m_qSlotRotResult;
-	}
-	m_vOffsetPos = m_vSlotPosResult;
 	BaseClass::onSync();
 	if(m_pModel && m_pModel->asAnimatedModel())
 	{

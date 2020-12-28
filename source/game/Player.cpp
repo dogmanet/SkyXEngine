@@ -203,7 +203,7 @@ void CPlayer::updateInput(float dt)
 
 		if(m_uMoveDir & PM_OBSERVER)
 		{
-			m_vPosition = (float3)(m_vPosition + m_pHeadEnt->getOrient() * (SMVector3Normalize(dir) * dt));
+			setPos(getPos() + m_pHeadEnt->getOrient() * (SMVector3Normalize(dir) * dt));
 		}
 		else
 		{
@@ -292,7 +292,7 @@ void CPlayer::updateInput(float dt)
 				float sin = cosf(m_fViewbobStep * 2.0f);
 				float sin2 = sinf(m_fViewbobStep);
 				float3 vec(1.0f, 0.0f, 0.0f);
-				vec = m_qOrientation * vec;
+				vec = getOrient() * vec;
 				m_fViewbobY = (sin * ((m_uMoveDir & PM_RUN) ? *cl_bob_run_y : *cl_bob_walk_y));
 				m_fViewbobStrafe = (float3)(vec * sin2 * ((m_uMoveDir & PM_RUN) ? *cl_bob_run_x : *cl_bob_walk_x));
 				//m_vOrientation = SMQuaternion(SMToRadian(10) * sinf(m_fViewbobStep), 'z') * m_vOrientation;
@@ -310,7 +310,7 @@ void CPlayer::updateInput(float dt)
 			m_vWpnShakeAngles.x = clampf(m_vWpnShakeAngles.x, -fMaxAng, fMaxAng);
 		}
 
-		GameData::m_pHUDcontroller->setPlayerPos(m_vPosition);
+		GameData::m_pHUDcontroller->setPlayerPos(getPos());
 
 	}
 
@@ -387,7 +387,7 @@ void CPlayer::spawn()
 			m_pCrosshair->enable();
 
 			GameData::m_pHUDcontroller->setPlayerRot(m_vPitchYawRoll);
-			GameData::m_pHUDcontroller->setPlayerPos(m_vPosition);
+			GameData::m_pHUDcontroller->setPlayerPos(getPos());
 			GameData::m_pHUDcontroller->setPlayerHealth(m_fHealth);
 			return;
 		}

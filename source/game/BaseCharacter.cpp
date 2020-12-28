@@ -76,7 +76,8 @@ void CBaseCharacter::onPostLoad()
 
 	//btTransform startTransform;
 	startTransform.setIdentity();
-	startTransform.setOrigin(F3_BTVEC(m_vPosition + float3(0.0f, m_fCapsHeight * 0.5f, 0.0f)));
+	float3 vPos = getPos() + float3(0.0f, m_fCapsHeight * 0.5f, 0.0f);
+	startTransform.setOrigin(F3_BTVEC(vPos));
 	//startTransform.setOrigin(btVector3(0, 12, 10));
 
 	m_pGhostObject = new btPairCachingGhostObject();

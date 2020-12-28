@@ -192,22 +192,23 @@ private:
 	bool m_isInOnParentMoved = false;
 	void onParentMoved(bool bAdjustOffsets = false);
 
+
+	//! Позиция объекта
+	float3_t m_vPosition;
+	//! вращение
+	SMQuaternion m_qOrientation;
+
+	//! Позиция смещения (для иерархической структуры)
+	float3_t m_vOffsetPos;
+	//! Вращение смещения (для иерархической структуры)
+	SMQuaternion m_qOffsetOrient;
+
 protected:
 	virtual void _cleanup();
 	virtual void _initEditorBoxes();
 	virtual void _releaseEditorBoxes();
 
 	CEntityManager *m_pMgr = NULL;
-
-
-	//! Позиция объекта
-	float3_t m_vPosition;
-	//! вращение
-	SMQuaternion m_qOrientation;
-	//! Позиция смещения (для иерархической структуры)
-	float3_t m_vOffsetPos;
-	//! Вращение смещения (для иерархической структуры)
-	SMQuaternion m_qOffsetOrient;
 
 	//! Идентификатор в системе
 	ID m_iId = 0;
