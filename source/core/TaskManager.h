@@ -93,7 +93,6 @@ private:
 	mutable mutex m_mutexFor;
 	mutable mutex m_mutexIOThread;
 	mutable mutex m_mutexSchedulerThread;
-	mutable SpinLock m_slShedulerArray;
 	Condition m_Condition;
 	Condition m_ConditionIOThread;
 	Condition m_ConditionSchedulerThread;

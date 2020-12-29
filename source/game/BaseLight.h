@@ -24,7 +24,7 @@ class CBaseLight: public CPointEntity
 	DECLARE_CLASS(CBaseLight, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	DECLARE_CONSTRUCTOR();
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CBaseLight();
 
 	void toggleEnable();
@@ -32,6 +32,7 @@ public:
 	void setColor(const float4 &vColor)
 	{
 		m_vColor = vColor;
+		SAFE_CALL(m_pLight, setColor, float3(m_vColor) * m_vColor.w);
 	}
 	const float4_t& getColor() const
 	{
@@ -59,6 +60,7 @@ public:
 	void setShadowIntensity(float fShadowIntensity)
 	{
 		m_fShadowIntensity = fShadowIntensity;
+		SAFE_CALL(m_pLight, setShadowIntencity, fShadowIntensity);
 	}
 	float getShadowIntensity() const
 	{
@@ -68,6 +70,7 @@ public:
 	void setShadowType(int iShadowType)
 	{
 		m_iShadowType = iShadowType;
+		SAFE_CALL(m_pLight, setShadowDynamic, iShadowType != 0);
 	}
 	int getShadowType() const
 	{
@@ -84,26 +87,18 @@ public:
 
 	void updateFlags();
 
+	void setPos(const float3 &pos) override;
+
 protected:
 	IXLight *m_pLight = NULL;
 
-	float4_t m_vColor;
-	float m_fDist;
+	float4_t m_vColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
+	float m_fDist = 10.0f;
 	//float m_fShadowDist;
-	int m_iShadowType;
-	bool m_isEnable;
-	float m_fShadowIntensity;
-	CBaseEntity *m_pLinkedTo = NULL;
-
-	Array<CBaseLight*> m_vpLinkedLights;
-
-	void setLinkedTo(CBaseEntity *pEnt);
-
-	void onSync();
-
-	void addLinkedLight(CBaseLight *pEnt);
-	void removeLinkedLight(CBaseLight *pEnt);
-
+	int m_iShadowType = 1;
+	bool m_isEnable = true;
+	float m_fShadowIntensity = 1.0f;
+	
 	void turnOn(inputdata_t * pInputdata);
 	void turnOff(inputdata_t * pInputdata);
 

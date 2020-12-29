@@ -22,7 +22,7 @@ class CBaseAmmoBox: public CBaseItem
 	DECLARE_CLASS(CBaseAmmoBox, CBaseItem);
 	DECLARE_PROPTABLE();
 public:
-	ThisClass(CEntityManager * pMgr);
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 
 	void onUse(CBaseEntity *pUser);
 

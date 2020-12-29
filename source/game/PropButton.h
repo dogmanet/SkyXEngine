@@ -1,12 +1,12 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright ¬© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 /*!
 \file
- ÌÓÔÍ‡
+–ö–Ω–æ–ø–∫–∞
 */
 
 #ifndef __PROP_BUTTON_H
@@ -18,7 +18,7 @@ See the license in LICENSE
 #define BUTTON_TOGGLEABLE ENT_FLAG_1
 #define BUTTON_START_PRESSED ENT_FLAG_2
 
-/*!  ÌÓÔÍ‡
+/*! –ö–Ω–æ–ø–∫–∞
 \ingroup cbaseanimating
 */
 class CPropButton: public CPropDynamic
@@ -26,19 +26,19 @@ class CPropButton: public CPropDynamic
 	DECLARE_CLASS(CPropButton, CPropDynamic);
 	DECLARE_PROPTABLE();
 public:
-	DECLARE_CONSTRUCTOR();
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 
 	void onUse(CBaseEntity *pUser);
 
 protected:
-	void turnOn(inputdata_t * pInputdata);
-	void turnOff(inputdata_t * pInputdata);
-	void press(inputdata_t * pInputdata);
-	void pushUp(inputdata_t * pInputdata);
-	void pushDown(inputdata_t * pInputdata);
-	void toggle(inputdata_t * pInputdata);
+	void turnOn(inputdata_t *pInputdata);
+	void turnOff(inputdata_t *pInputdata);
+	void press(inputdata_t *pInputdata);
+	void pushUp(inputdata_t *pInputdata);
+	void pushDown(inputdata_t *pInputdata);
+	void toggle(inputdata_t *pInputdata);
 
-	void onPostLoad();
+	void onPostLoad() override;
 
 	output_t m_onPressed;
 	output_t m_onPushUp;
@@ -46,10 +46,10 @@ protected:
 	output_t m_onToggle;
 	output_t m_onUseDisabled;
 
-	bool m_isEnabled;
-	bool m_isToggleable;
+	bool m_isEnabled = true;
+	bool m_isToggleable = false;
 
-	bool m_bState;
+	bool m_bState = false;
 };
 
 #endif

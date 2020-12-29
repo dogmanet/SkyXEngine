@@ -94,9 +94,12 @@ void XMETHODCALLTYPE CDynamicModel::setPosition(const float3 &vPos)
 	m_vPosition = vPos;
 	m_isWorldDirty = true;
 
-	m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_MOVED);
+	if(m_isEnabled)
+	{
+		m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_MOVED);
 
-	m_pSceneObject->update(getLocalBound() + getPosition());
+		m_pSceneObject->update(getLocalBound() + getPosition());
+	}
 }
 
 SMQuaternion XMETHODCALLTYPE CDynamicModel::getOrientation() const
@@ -113,9 +116,12 @@ void XMETHODCALLTYPE CDynamicModel::setOrientation(const SMQuaternion &qRot)
 	m_isLocalAABBvalid = false;
 	m_isWorldDirty = true;
 
-	m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_MOVED);
+	if(m_isEnabled)
+	{
+		m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_MOVED);
 
-	m_pSceneObject->update(getLocalBound() + getPosition());
+		m_pSceneObject->update(getLocalBound() + getPosition());
+	}
 }
 
 float XMETHODCALLTYPE CDynamicModel::getScale() const
@@ -132,9 +138,12 @@ void XMETHODCALLTYPE CDynamicModel::setScale(float fScale)
 	m_isLocalAABBvalid = false;
 	m_isWorldDirty = true;
 
-	m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_MOVED);
+	if(m_isEnabled)
+	{
+		m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_MOVED);
 
-	m_pSceneObject->update(getLocalBound() + getPosition());
+		m_pSceneObject->update(getLocalBound() + getPosition());
+	}
 }
 
 UINT XMETHODCALLTYPE CDynamicModel::getSkin() const

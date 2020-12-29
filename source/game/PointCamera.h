@@ -26,16 +26,17 @@ class CPointCamera: public CPointEntity
 	DECLARE_CLASS(CPointCamera, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	CPointCamera(CEntityManager * pMgr);
+	DECLARE_CONSTRUCTOR();
 	~CPointCamera();
 
 	//! Возвращает объект камеры из графической либы
-	ICamera * getCamera();
+	ICamera* getCamera();
+
+	void setPos(const float3 &pos) override;
+	void setOrient(const SMQuaternion &q) override;
 
 protected:
-	ICamera * m_pSXC;
-
-	void onSync();
+	ICamera *m_pSXC;
 };
 
 #endif

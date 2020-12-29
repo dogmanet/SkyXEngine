@@ -33,9 +33,10 @@ class CPropDoor: public CPropDynamic
 	DECLARE_CLASS(CPropDoor, CPropDynamic);
 	DECLARE_PROPTABLE();
 public:
-	DECLARE_CONSTRUCTOR();
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CPropDoor();
-	virtual void onPostLoad();
+
+	void onPostLoad() override;
 
 	void onUse(CBaseEntity *pUser);
 

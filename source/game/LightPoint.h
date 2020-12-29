@@ -23,7 +23,6 @@ class CLightPoint: public CBaseLight
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();
-	~CLightPoint();
 };
 
 #endif

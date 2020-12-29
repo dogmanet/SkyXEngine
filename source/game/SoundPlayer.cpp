@@ -15,13 +15,13 @@ BEGIN_PROPTABLE(CSoundPlayer)
 	DEFINE_FIELD_STRINGFN(m_szPathSound, 0, "file", "Sound file", setSound, EDITOR_SOUND)
 
 	//! Громкость
-	DEFINE_FIELD_FLOAT(m_fVolume, 0, "volume", "Volume", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_FLOATFN(m_fVolume, 0, "volume", "Volume", setVolume, EDITOR_TEXTFIELD)
 
 	//! Дистанция слышимости
-	DEFINE_FIELD_FLOAT(m_fDist, 0, "distance", "Hearing distance", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_FLOATFN(m_fDist, 0, "distance", "Hearing distance", setDistance, EDITOR_TEXTFIELD)
 
 	//! Зацикливание
-	DEFINE_FIELD_INT(m_iLoop, 0, "loop", "Loop", EDITOR_COMBOBOX)
+	DEFINE_FIELD_INTFN(m_iLoop, 0, "loop", "Loop", setLoop, EDITOR_COMBOBOX)
 		COMBO_OPTION("None", "0")		//!< Нет
 		COMBO_OPTION("Simple", "1")		//!< Простое (могут быть пустоты на стыках конца с началом)
 		COMBO_OPTION("Seamless", "2")	//!< Непрерывное (пустот не будет, все будет заполнено звуком)
@@ -51,12 +51,6 @@ REGISTER_ENTITY(CSoundPlayer, sound_player);
 
 //##########################################################################
 
-CSoundPlayer::CSoundPlayer(CEntityManager *pMgr):
-	BaseClass(pMgr)
-{
-	
-}
-
 CSoundPlayer::~CSoundPlayer()
 {
 	mem_release(m_pPlayer);
@@ -66,8 +60,10 @@ CSoundPlayer::~CSoundPlayer()
 
 void CSoundPlayer::setSound(const char *szSound)
 {
-	if(!m_pPlayer || fstrcmp(m_pPlayer->getName(), szSound) != 0)
+	if(!m_pPlayer || fstrcmp(m_szPathSound, szSound) != 0)
 	{
+		_setStrVal(&m_szPathSound, szSound);
+
 		mem_release(m_pPlayer);
 		IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
 		IXSoundLayer *pGameLayer = pSound->findLayer("xGame");
@@ -77,9 +73,10 @@ void CSoundPlayer::setSound(const char *szSound)
 
 		if(m_pPlayer)
 		{
-			_setStrVal(&m_szPathSound, szSound);
 			m_pPlayer->setLoop((SOUND_LOOP)m_iLoop);
 			m_pPlayer->setVolume(m_fVolume);
+			m_pPlayer->setDistance(m_fDist);
+			m_pPlayer->setWorldPos(getPos());
 
 			if(getFlags() & SND_PLAYER_START_PLAYED)
 				m_pPlayer->play();
@@ -89,20 +86,43 @@ void CSoundPlayer::setSound(const char *szSound)
 
 //##########################################################################
 
-void CSoundPlayer::onSync()
+void CSoundPlayer::setPos(const float3 &pos)
 {
-	BaseClass::onSync();
-	if (!m_pPlayer)
-		return;
+	BaseClass::setPos(pos);
 
-	float3 vPos = getPos();
-	m_pPlayer->setWorldPos(vPos);
+	SAFE_CALL(m_pPlayer, setWorldPos, pos);
+}
 
-	if (m_pPlayer->getLoop() != (SOUND_LOOP)m_iLoop)
-		m_pPlayer->setLoop((SOUND_LOOP)m_iLoop);
+void CSoundPlayer::setVolume(float fVolume)
+{
+	m_fVolume = fVolume;
 
-	if (m_pPlayer->getVolume() != m_fVolume)
-		m_pPlayer->setVolume(m_fVolume);
+	SAFE_CALL(m_pPlayer, setVolume, fVolume);
+}
+float CSoundPlayer::getVolume()
+{
+	return(m_fVolume);
+}
+
+void CSoundPlayer::setDistance(float fDistance)
+{
+	m_fDist = fDistance;
+
+	SAFE_CALL(m_pPlayer, setDistance, fDistance);
+}
+float CSoundPlayer::getDistance()
+{
+	return(m_fDist);
+}
+
+void CSoundPlayer::setLoop(int iLoop)
+{
+	m_iLoop = iLoop;
+	SAFE_CALL(m_pPlayer, setLoop, (SOUND_LOOP)iLoop);
+}
+SOUND_LOOP CSoundPlayer::getLoop()
+{
+	return((SOUND_LOOP)m_iLoop);
 }
 
 //##########################################################################

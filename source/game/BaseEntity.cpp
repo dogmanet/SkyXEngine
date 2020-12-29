@@ -18,17 +18,17 @@ See the license in LICENSE
 
 BEGIN_PROPTABLE_NOBASE(CBaseEntity)
 	//! Имя объекта
-	DEFINE_FIELD_STRING(m_szName, 0, "name", "Name", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_STRINGFN(m_szName, 0, "name", "Name", setName, EDITOR_TEXTFIELD)
 	//! Позиция в мире
 	DEFINE_FIELD_VECTORFN(m_vPosition, 0, "origin", "Origin", setPos, EDITOR_TEXTFIELD)
 	//! Ориентация в мире, углы эйлера или кватернион
-	DEFINE_FIELD_ANGLES(m_vOrientation, 0, "rotation", "Rotation", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_ANGLESFN(m_qOrientation, 0, "rotation", "Rotation", setOrient, EDITOR_TEXTFIELD)
 	//! Родительский объект в иерархии движения
-	DEFINE_FIELD_PARENT(m_pParent, 0, "parent", "Parent entity", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_ENTITY(CBaseEntity, m_pParent, 0, "parent", "Parent entity", EDITOR_TEXTFIELD)
 	//! Флаги объекта
 	DEFINE_FIELD_FLAGS(m_iFlags, 0, "flags", "Flags", EDITOR_FLAGS)
 	//! Объект-владелец
-	DEFINE_FIELD_ENTITY(m_pOwner, PDFF_NOEXPORT | PDFF_NOEDIT, "owner", "", EDITOR_NONE)
+	DEFINE_FIELD_ENTITY(CBaseEntity, m_pOwner, PDFF_NOEXPORT | PDFF_NOEDIT, "owner", "", EDITOR_NONE)
 	//! Здоровье
 	DEFINE_FIELD_FLOAT(m_fHealth, PDFF_NOEXPORT | PDFF_NOEDIT, "health", "", EDITOR_NONE)
 
@@ -43,36 +43,34 @@ REGISTER_ENTITY_NOLISTING(CBaseEntity, base_entity);
 
 void CBaseEntity::setDefaults()
 {
-	proptable_t * pt = getPropTable();
-	const char * estr = GetEmptyString();
+	proptable_t *pt = getPropTable();
+	const char *estr = GetEmptyString();
 	while(pt)
 	{
 		for(int i = 0; i < pt->numFields; ++i)
 		{
-			if(pt->pData[i].type == PDF_STRING && !(pt->pData[i].flags & PDFF_INPUT))
+			if(!(pt->pData[i].flags & PDFF_INPUT))
 			{
-				this->*((const char * ThisClass::*)pt->pData[i].pField) = estr;
+				if(pt->pData[i].type == PDF_STRING)
+				{
+					this->*((const char* ThisClass::*)pt->pData[i].pField) = estr;
+				}
+				else if(pt->pData[i].type == PDF_ENTITY)
+				{
+					(this->*((CEntityPointer<CBaseEntity> ThisClass::*)pt->pData[i].pField)).init(this);
+				}
 			}
 		}
 		pt = pt->pBaseProptable;
 	}
 }
 
-CBaseEntity::CBaseEntity(CEntityManager * pWorld):
-	m_iId(0),
-	m_iFlags(0),
-	m_pMgr(pWorld),
-	m_szClassName(NULL),
-	m_szName(NULL),
-	m_pParent(NULL),
-	m_iParentAttachment(-1),
-	m_pOwner(NULL),
-	m_fHealth(100.0f)/*,
-	m_vDiscreteLinearVelocity(float3_t(0.0f, 0.0f, 0.0f))*/
-	, m_bSynced(false)
+CBaseEntity::CBaseEntity()
 {
-	m_iId = pWorld->reg(this);
 	m_pLightSystem = GameData::m_pLightSystem;
+
+	m_pParent.setLinkEstablishedListener(&CBaseEntity::onParentSet);
+	m_pParent.setLinkBrokenListener(&CBaseEntity::onParentUnset);
 }
 
 /*void CBaseEntity::setDefaults()
@@ -97,7 +95,7 @@ CBaseEntity::~CBaseEntity()
 {
 	_releaseEditorBoxes();
 
-	m_pMgr->unreg(m_iId);
+	m_pMgr->unreg(this);
 
 	proptable_t * pt = getPropTable();
 	const char * estr = GetEmptyString();
@@ -116,6 +114,11 @@ CBaseEntity::~CBaseEntity()
 		}
 		pt = pt->pBaseProptable;
 	}
+
+	if(m_pParent)
+	{
+		m_pParent->removeChild(this);
+	}
 }
 
 void CBaseEntity::setClassName(const char * name)
@@ -123,12 +126,12 @@ void CBaseEntity::setClassName(const char * name)
 	m_szClassName = name;
 }
 
-const char * CBaseEntity::getName()
+const char* CBaseEntity::getName()
 {
 	return(m_szName);
 }
 
-const char * CBaseEntity::getClassName()
+const char* CBaseEntity::getClassName()
 {
 	return(m_szClassName);
 }
@@ -151,15 +154,11 @@ void CBaseEntity::getSphere(float3 * center, float * radius)
 		radius = 0;
 }
 
-void CBaseEntity::setPos(const float3 & pos)
+void CBaseEntity::setPos(const float3 &pos)
 {
-	CBaseEntity *pParent = NULL;
-	if(m_pParent)
-	{
-		pParent = m_pParent;
-		setParent(NULL);
-	}
 	m_vPosition = pos;
+
+	onParentMoved(true);
 
 	if(m_pEditorRigidBody)
 	{
@@ -167,9 +166,12 @@ void CBaseEntity::setPos(const float3 & pos)
 		SPhysics_GetDynWorld()->updateSingleAabb(m_pEditorRigidBody);
 	}
 
-	if(pParent)
 	{
-		setParent(pParent, m_iParentAttachment);
+		ScopedSpinLock lock(m_slChildren);
+		for(UINT i = 0, l = m_aChildren.size(); i < l; ++i)
+		{
+			m_aChildren[i]->onParentMoved(m_isSeparateMovement);
+		}
 	}
 }
 
@@ -180,16 +182,47 @@ float3 CBaseEntity::getPos()
 
 void CBaseEntity::setOrient(const SMQuaternion & q)
 {
-	m_vOrientation = q;
+	m_qOrientation = q;
+
+	onParentMoved(true);
+
+	{
+		ScopedSpinLock lock(m_slChildren);
+		for(UINT i = 0, l = m_aChildren.size(); i < l; ++i)
+		{
+			m_aChildren[i]->onParentMoved(m_isSeparateMovement);
+		}
+	}
 }
 void CBaseEntity::setOffsetOrient(const SMQuaternion & q)
 {
-	m_vOffsetOrient = q;
+	m_qOffsetOrient = q;
+	onParentMoved();
 }
 
 void CBaseEntity::setOffsetPos(const float3 & pos)
 {
 	m_vOffsetPos = pos;
+	onParentMoved();
+}
+
+void CBaseEntity::setXform(const float3 &vPos, const SMQuaternion &q)
+{
+	bool bOld = m_isInOnParentMoved;
+	m_isInOnParentMoved = true;
+	setPos(vPos);
+	m_isInOnParentMoved = bOld;
+
+	setOrient(q);
+}
+void CBaseEntity::setOffsetXform(const float3 &vPos, const SMQuaternion &q)
+{
+	bool bOld = m_isInOnParentMoved;
+	m_isInOnParentMoved = true;
+	setOffsetPos(vPos);
+	m_isInOnParentMoved = bOld;
+
+	setOffsetOrient(q);
 }
 
 float3 CBaseEntity::getOffsetPos()
@@ -199,13 +232,33 @@ float3 CBaseEntity::getOffsetPos()
 
 SMQuaternion CBaseEntity::getOrient()
 {
-	return(m_vOrientation);
+	return(m_qOrientation);
 }
 
-
-ID CBaseEntity::getId()
+void CBaseEntity::onParentMoved(bool bAdjustOffsets)
 {
-	return(m_iId);
+	if(!m_pParent || m_isInOnParentMoved)
+	{
+		return;
+	}
+
+	m_isInOnParentMoved = true;
+
+	float3 vParentPos = ID_VALID(m_iParentAttachment) ? m_pParent->getAttachmentPos(m_iParentAttachment) : m_pParent->getPos();
+	SMQuaternion qParentOrient = ID_VALID(m_iParentAttachment) ? m_pParent->getAttachmentRot(m_iParentAttachment) : m_pParent->getOrient();
+
+	if(bAdjustOffsets)
+	{
+		m_vOffsetPos = (float3)(qParentOrient.Conjugate() * (m_vPosition - vParentPos));
+		m_qOffsetOrient = m_qOrientation * qParentOrient.Conjugate();
+	}
+	else
+	{
+		setPos(vParentPos + qParentOrient * m_vOffsetPos);
+		setOrient(m_qOffsetOrient * qParentOrient);
+	}
+
+	m_isInOnParentMoved = false;
 }
 
 UINT CBaseEntity::getFlags()
@@ -220,7 +273,7 @@ void CBaseEntity::setFlags(UINT f)
 
 SMMATRIX CBaseEntity::getWorldTM()
 {
-	return(m_vOrientation.GetMatrix() * SMMatrixTranslation(m_vPosition));
+	return(m_qOrientation.GetMatrix() * SMMatrixTranslation(m_vPosition));
 }
 
 bool CBaseEntity::setKV(const char * name, const char * value)
@@ -235,7 +288,6 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 	SMQuaternion q;
 	int d;
 	float f;
-	CBaseEntity * pEnt;
 	switch(field->type)
 	{
 	case PDF_INT:
@@ -354,34 +406,8 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 		}
 		return(false);
 	case PDF_ENTITY:
-	case PDF_PARENT:
-		pEnt = m_pMgr->findEntityByName(value);
-		if(pEnt || !value[0])
-		{
-			if(field->type == PDF_PARENT)
-			{
-				setParent(pEnt);
-			}
-			else
-			{
-				// check type of pEnt
-				if(field->pfnCheckType && !field->pfnCheckType(pEnt))
-				{
-					LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to set entity field '%s' to entity '%s'. Invalid class. Ent: %s", name, value, m_szName);
-					return(false);
-				}
-				if(field->fnSet.e)
-				{
-					(this->*(field->fnSet.e))(pEnt);
-				}
-				else
-				{
-					this->*((CBaseEntity* ThisClass::*)field->pField) = pEnt;
-				}
-			}
-			return(true);
-		}
-		return(false);
+		(this->*((CEntityPointer<CBaseEntity> ThisClass::*)field->pField)).setEntityName(value);
+		return(true);
 	case PDF_FLAGS:
 		if(1 == sscanf(value, "%d", &d))
 		{
@@ -402,14 +428,13 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 			iConns = parse_str(str, parts, iConns, ',');
 
 			output_t *pOutput = &(this->*((output_t ThisClass::*)field->pField));
-			mem_delete_a(pOutput->pOutputs);
 			{
 				char *pTmpData = (char*)pOutput->pData;
 				mem_delete_a(pTmpData);
 			}
 			pOutput->pData = str;
-			pOutput->pOutputs = new named_output_t[iConns];
-			pOutput->bDirty = true;
+			pOutput->aOutputs.clearFast();
+			pOutput->aOutputs.reserve(iConns);
 
 			int curr = 0;
 			for(int i = 0; i < iConns; ++i)
@@ -444,11 +469,13 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 					printf(COLOR_LRED "Unable to parse output delay '%s' ent %s\n" COLOR_RESET, name, m_szName);
 					continue;
 				}
-				pOutput->pOutputs[curr].fDelay = fDelayFrom;
-				pOutput->pOutputs[curr].fDelayTo = fDelayTo;
+				named_output_t &out = pOutput->aOutputs[curr];
+
+				out.fDelay = fDelayFrom;
+				out.fDelayTo = fDelayTo;
 				if(fDelayFrom < fDelayTo)
 				{
-					pOutput->pOutputs[curr].useRandomDelay = true;
+					out.useRandomDelay = true;
 				}
 				if(fDelayFrom > fDelayTo)
 				{
@@ -456,14 +483,15 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 					continue;
 				}
 
-				pOutput->pOutputs[curr].szTargetName = fields[0];
-				pOutput->pOutputs[curr].szTargetInput = fields[1];
-				pOutput->pOutputs[curr].szTargetData = param;
-				pOutput->pOutputs[curr].iFireLimit = iFireLimit;
+				out.szTargetName = fields[0];
+				out.szTargetInput = fields[1];
+				out.szTargetData = param;
+				out.iFireLimit = iFireLimit;
 				
+				out.init(this);
+
 				++curr;
 			}
-			pOutput->iOutCount = curr;
 		}
 		// target_name:input:delay:parameter\n<repeat>
 		return(false);
@@ -481,7 +509,6 @@ bool CBaseEntity::getKV(const char * name, char * out, int bufsize)
 	}
 	SMQuaternion q;
 	float3_t f3;
-	CBaseEntity *pEnt;
 	switch(field->type)
 	{
 	case PDF_INT:
@@ -511,53 +538,46 @@ bool CBaseEntity::getKV(const char * name, char * out, int bufsize)
 		sprintf_s(out, bufsize, "%f %f %f %f", q.x, q.y, q.z, q.w);
 		break;
 	case PDF_ENTITY:
-	case PDF_PARENT:
-		pEnt = this->*((CBaseEntity * ThisClass::*)field->pField);
-		if(!pEnt)
-		{
-			sprintf_s(out, bufsize, "");
-		}
-		else
-		{
-			sprintf_s(out, bufsize, "%s", pEnt->getName());
-		}
+		(this->*((CEntityPointer<CBaseEntity> ThisClass::*)field->pField)).getEntityName(out, bufsize);
 		break;
 	case PDF_OUTPUT:
 		{
 			output_t *pOutput = &(this->*((output_t ThisClass::*)field->pField));
 			int iWritten = 0;
 			char * szOutBuf = out;
-			if(pOutput->iOutCount == 0)
+			*out = 0;
+			if(pOutput->aOutputs.size() == 0)
 			{
 				*out = 0;
 			}
-			for(int i = 0; i < pOutput->iOutCount; ++i)
+			for(UINT i = 0, l = pOutput->aOutputs.size(); i < l; ++i)
 			{
+				named_output_t &out = pOutput->aOutputs[i];
 				if(i > 0)
 				{
 					*szOutBuf = ',';
 					++szOutBuf;
 				}
 				int c;
-				if(pOutput->pOutputs[i].useRandomDelay)
+				if(out.useRandomDelay)
 				{
 					c = _snprintf(szOutBuf, bufsize - iWritten, "%s:%s:%f-%f:%s:%d", 
-						pOutput->pOutputs[i].szTargetName, 
-						pOutput->pOutputs[i].szTargetInput, 
-						pOutput->pOutputs[i].fDelay,
-						pOutput->pOutputs[i].fDelayTo,
-						pOutput->pOutputs[i].szTargetData ? pOutput->pOutputs[i].szTargetData : ENT_OUTPUT_PARAM_NONE,
-						pOutput->pOutputs[i].iFireLimit
+						out.szTargetName, 
+						out.szTargetInput, 
+						out.fDelay,
+						out.fDelayTo,
+						out.szTargetData ? out.szTargetData : ENT_OUTPUT_PARAM_NONE,
+						out.iFireLimit
 						);
 				}
 				else
 				{
 					c = _snprintf(szOutBuf, bufsize - iWritten, "%s:%s:%f:%s:%d", 
-						pOutput->pOutputs[i].szTargetName, 
-						pOutput->pOutputs[i].szTargetInput, 
-						pOutput->pOutputs[i].fDelay, 
-						pOutput->pOutputs[i].szTargetData ? pOutput->pOutputs[i].szTargetData : ENT_OUTPUT_PARAM_NONE,
-						pOutput->pOutputs[i].iFireLimit
+						out.szTargetName, 
+						out.szTargetInput, 
+						out.fDelay, 
+						out.szTargetData ? out.szTargetData : ENT_OUTPUT_PARAM_NONE,
+						out.iFireLimit
 						);
 				}
 				iWritten += c + 1;
@@ -572,21 +592,45 @@ bool CBaseEntity::getKV(const char * name, char * out, int bufsize)
 	return(true);
 }
 
-void CBaseEntity::setParent(CBaseEntity * pEnt, int attachment)
+void CBaseEntity::onParentSet(CBaseEntity *pNewParent)
+{
+	if(pNewParent)
+	{
+		onParentMoved(true);
+		
+		pNewParent->addChild(this);
+	}
+}
+
+void CBaseEntity::onParentUnset(CBaseEntity *pOldParent)
+{
+	if(pOldParent)
+	{
+		pOldParent->removeChild(this);
+	}
+}
+
+void CBaseEntity::addChild(CBaseEntity *pEnt)
+{
+	ScopedSpinLock lock(m_slChildren);
+	m_aChildren.push_back(pEnt);
+}
+void CBaseEntity::removeChild(CBaseEntity *pEnt)
+{
+	ScopedSpinLock lock(m_slChildren);
+	int idx = m_aChildren.indexOf(pEnt);
+	assert(idx >= 0);
+	if(idx >= 0)
+	{
+		m_aChildren.erase(idx);
+	}
+}
+
+void CBaseEntity::setParent(CBaseEntity *pEnt, int attachment)
 {
 	m_pParent = pEnt;
 	if(pEnt)
 	{
-		if(attachment >= 0)
-		{
-			m_vOffsetPos = (float3)(m_vPosition - m_pParent->getAttachmentPos(attachment));
-			m_vOffsetOrient = m_vOrientation * m_pParent->getAttachmentRot(attachment).Conjugate();
-		}
-		else
-		{
-			m_vOffsetPos = m_pParent->getOrient().Conjugate() * (float3)(m_vPosition - m_pParent->getPos());
-			m_vOffsetOrient = m_vOrientation * m_pParent->getOrient().Conjugate();
-		}
 		m_iParentAttachment = attachment;
 	}
 }
@@ -628,43 +672,8 @@ CBaseEntity* CBaseEntity::getParent()
 	}
 }*/
 
-void CBaseEntity::onSync()
-{
-	m_bSynced = true;
-
-	if(m_pParent)
-	{
-		if(!m_pParent->m_bSynced)
-		{
-			m_pParent->onSync();
-		}
-		if(m_iParentAttachment >= 0)
-		{
-			m_vPosition = (float3)(m_pParent->getAttachmentPos(m_iParentAttachment) + m_vOffsetPos);
-			m_vOrientation = m_pParent->getAttachmentRot(m_iParentAttachment) * m_vOffsetOrient;
-		}
-		else
-		{
-			m_vPosition = (float3)(m_pParent->getPos() + m_pParent->getOrient() * m_vOffsetPos);
-			m_vOrientation = m_vOffsetOrient * m_pParent->getOrient();
-		}
-		//if(m_pPhysObj)
-		//{
-		//	m_pPhysObj->setPos(m_vPosition);
-		//	m_pPhysObj->setOrient(m_vOrientation);
-		//}
-	}
-	//else if(m_pPhysObj)
-	//{
-	//	m_vPosition = m_pPhysObj->GetPos();
-	//	m_vOrientation = m_pPhysObj->getOrient();
-	//}
-
-}
-
 void CBaseEntity::onPostLoad()
 {
-	updateOutputs();
 	updateFlags();
 }
 
@@ -724,126 +733,6 @@ int CBaseEntity::countEntByName(const char *szName)
 	}
 
 	return(m_pMgr->countEntityByName(szName));
-}
-
-void CBaseEntity::updateOutputs()
-{
-	proptable_t * pt = getPropTable();
-	while(pt)
-	{
-		for(int i = 0; i < pt->numFields; ++i)
-		{
-			if(pt->pData[i].type == PDF_OUTPUT)
-			{
-				output_t *pOutput = &(this->*((output_t ThisClass::*)pt->pData[i].pField));
-
-				for(int j = 0, jl = pOutput->iOutCount; j < jl; ++j)
-				{
-					named_output_t *pOut = &pOutput->pOutputs[j];
-					mem_delete_a(pOut->pOutputs);
-
-					pOut->iOutCount = countEntByName(pOut->szTargetName);
-					if(!pOut->iOutCount)
-					{
-						printf(COLOR_CYAN "Broken output target '%s' source '%s'.'%s'\n" COLOR_RESET, pOut->szTargetName, getClassName(), m_szName);
-						continue;
-					}
-					pOut->pOutputs = new input_t[pOut->iOutCount];
-					memset(pOut->pOutputs, 0, sizeof(input_t) * pOut->iOutCount);
-
-
-					CBaseEntity * pEnt = NULL;
-					int c = 0;
-					while((pEnt = getEntByName(pOut->szTargetName, pEnt)))
-					{
-						propdata_t * pField = pEnt->getField(pOut->szTargetInput);
-						if(!pField || !(pField->flags & PDFF_INPUT))
-						{
-							printf(COLOR_CYAN "Class '%s' has no input '%s', obj '%s'\n" COLOR_RESET, pEnt->getClassName(), pOut->szTargetInput, pOut->szTargetName);
-							--pOut->iOutCount;
-							continue;
-						}
-
-						pOut->pOutputs[c].fnInput = pField->fnInput;
-						pOut->pOutputs[c].pTarget = pEnt;
-						pOut->pOutputs[c].data.type = pField->type;
-						if((pOut->pOutputs[c].useOverrideData = pOut->szTargetData != NULL))
-						{
-							float3_t f3;
-							float4_t f4;
-							SMQuaternion q;
-							int d;
-							float f;
-							const char * value = pOut->szTargetData;
-							bool bParsed = false;
-							switch(pField->type)
-							{
-							case PDF_NONE:
-								bParsed = true;
-								break;
-							case PDF_INT:
-								if(1 == sscanf(value, "%d", &d))
-								{
-									pOut->pOutputs[c].data.parameter.i = d;
-									bParsed = true;
-								}
-								break;
-							case PDF_FLOAT:
-								if(1 == sscanf(value, "%f", &f))
-								{
-									pOut->pOutputs[c].data.parameter.f = f;
-									bParsed = true;
-								}
-								break;
-							case PDF_VECTOR:
-								if(3 == sscanf(value, "%f %f %f", &f3.x, &f3.y, &f3.z))
-								{
-									pOut->pOutputs[c].data.v3Parameter = f3;
-									bParsed = true;
-								}
-								break;
-							case PDF_VECTOR4:
-								{
-									int iPrm = sscanf(value, "%f %f %f %f", &f4.x, &f4.y, &f4.z, &f4.w);
-									if(iPrm > 2)
-									{
-										if(iPrm == 3)
-										{
-											f4.w = 1.0f;
-										}
-										pOut->pOutputs[c].data.v4Parameter = f4;
-										bParsed = true;
-									}
-								}
-								break;
-							case PDF_BOOL:
-								if(1 == sscanf(value, "%d", &d))
-								{
-									pOut->pOutputs[c].data.parameter.b = d != 0;
-									bParsed = true;
-								}
-								break;
-							case PDF_STRING:
-								_setStrVal(&pOut->pOutputs[c].data.parameter.str, value);
-								bParsed = true;
-								break;
-							}
-
-							if(!bParsed)
-							{
-								printf(COLOR_CYAN "Cannot parse input parameter '%s', class '%s', input '%s', obj '%s'\n" COLOR_RESET, value, pEnt->getClassName(), pOut->szTargetInput, pOut->szTargetName);
-								--pOut->iOutCount;
-								continue;
-							}
-						}
-
-						++c;
-					}
-				}
-			}
-		}
-		pt = pt->pBaseProptable;
-	}
 }
 
 void CBaseEntity::dispatchDamage(CTakeDamageInfo &takeDamageInfo)
@@ -999,4 +888,38 @@ float3 CBaseEntity::getEditorBoxSize()
 void CBaseEntity::renderEditor(bool is3D)
 {
 
+}
+
+void CBaseEntity::registerPointer(IEntityPointer *pPtr)
+{
+	ScopedSpinLock lock(m_slPointers);
+	m_aPointers.push_back(pPtr);
+}
+
+void CBaseEntity::unregisterPointer(IEntityPointer *pPtr)
+{
+	ScopedSpinLock lock(m_slPointers);
+	int idx = m_aPointers.indexOf(pPtr);
+	if(idx >= 0)
+	{
+		m_aPointers.erase(idx);
+	}
+}
+
+void CBaseEntity::notifyPointers()
+{
+	ScopedSpinLock lock(m_slPointers);
+	for(UINT i = 0, l = m_aPointers.size(); i < l; ++i)
+	{
+		m_aPointers[i]->onTargetRemoved(this);
+	}
+}
+
+void CBaseEntity::setName(const char *szName)
+{
+	if(fstrcmp(m_szName, szName))
+	{
+		m_pMgr->onEntityNameChanged(this, m_szName, szName);
+		_setStrVal(&m_szName, szName);
+	}
 }

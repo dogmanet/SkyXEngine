@@ -106,6 +106,10 @@ CPhyWorld::CPhyWorld():
 
 	m_pDynamicsWorld->getSolverInfo().m_numIterations = 30;
 
+	// typedef void (*btInternalTickCallback)(btDynamicsWorld *world, btScalar timeStep);
+
+	m_pDynamicsWorld->setInternalTickCallback(TickCallback, this);
+
 	//btCreateDefaultTaskScheduler();
 	static CTaskScheduler taskSheduler;
 	btSetTaskScheduler(&taskSheduler);
@@ -126,6 +130,8 @@ CPhyWorld::CPhyWorld():
 	btSetCustomEnterProfileZoneFunc(CProfileManager::Start_Profile);
 	btSetCustomLeaveProfileZoneFunc(CProfileManager::Stop_Profile);
 
+	m_pTickEventChannel = Core_GetIXCore()->getEventChannel<XEventPhysicsStep>(EVENT_PHYSICS_STEP_GUID);
+	
 #if 0
 	Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->addListener([](const XEventLevel *pData)
 	{
@@ -851,6 +857,17 @@ void CPhyWorld::enableSimulation()
 {
 	m_isRunning = true;
 	m_iSkipFrames = 3;
+}
+
+void CPhyWorld::TickCallback(btDynamicsWorld *world, btScalar timeStep)
+{
+	CPhyWorld *pThis = (CPhyWorld*)world->getWorldUserInfo();
+
+	XEventPhysicsStep ev;
+	ev.fTimeStep = timeStep;
+	ev.pPhysics = NULL;
+
+	pThis->m_pTickEventChannel->broadcastEvent(&ev);
 }
 
 //##############################################################

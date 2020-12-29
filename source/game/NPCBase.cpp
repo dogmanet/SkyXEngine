@@ -44,8 +44,7 @@ protected:
 	btCollisionObject* m_me;
 };
 
-CNPCBase::CNPCBase(CEntityManager * pMgr):
-	BaseClass(pMgr),
+CNPCBase::CNPCBase():
 	m_idQuadGoingTo(-1),
 	m_idFindPathInterval(-1),
 	m_idPathFollowInterval(-1),
@@ -112,6 +111,7 @@ void CNPCBase::setPos(const float3 &pos)
 	float3 tpos = pos;
 	m_idQuadCurr = SAIG_QuadGet(&tpos, true);
 
+#if 0
 	if(ID_VALID(m_idQuadCurr))
 	{
 		if(SAIG_QuadGetState(m_idQuadCurr) == AIQUAD_STATE_FREE)
@@ -128,13 +128,13 @@ void CNPCBase::setPos(const float3 &pos)
 				SAIG_QuadSetState(m_idQuadCurr, AIQUAD_STATE_BUSY);
 				SAIG_QuadSetStateWho(m_idQuadCurr, getId());
 				SAIG_QuadGetPos(m_idQuadCurr, &tpos);
-					tpos.y += 0.7f;
-					setPos(tpos);
+				tpos.y += 0.7f;
+				setPos(tpos);
 				return;
-				}
 			}
 		}
-
+	}
+#endif
 	if(ID_VALID(m_idQuadGoingTo))
 	{
 		m_idQuadGoingTo = -1;
@@ -224,7 +224,7 @@ void CNPCBase::findPathThinker(float fDelta)
 		m_aPathQuads.resize(iCount);
 		SAIG_GridGetPath(m_idQueueFindPath, &(m_aPathQuads[0]), m_aPathQuads.size(), true);
 		SAIG_GridSetColorArr(&(m_aPathQuads[0]), m_ulColor, m_aPathQuads.size());
-		m_vLastPathPos = m_vPosition;
+		m_vLastPathPos = getPos();
 		m_idQueueFindPath = -1;
 
 		CLEAR_INTERVAL(m_idFindPathInterval);
@@ -256,7 +256,7 @@ void CNPCBase::pathFollowThinker(float fDelta)
 
 	float fDirLen = fMoveSpeed * fDelta;
 	float fMovDirLen = fDirLen;
-	float fDist2 = SMVector3Length2(m_vLastPathPos - m_vPosition); // Расстояние между актуальным положением NPC и точкой следования
+	float fDist2 = SMVector3Length2(m_vLastPathPos - getPos()); // Расстояние между актуальным положением NPC и точкой следования
 	
 	if(m_iCurrQuaidInPath < (int)m_aPathQuads.size())
 	{
@@ -296,7 +296,7 @@ void CNPCBase::pathFollowThinker(float fDelta)
 	//m_vPosition = m_vLastPathPos;
 	//m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(m_vLastPathPos));
 
-	float3 vDir = m_vLastPathPos - m_vPosition;
+	float3 vDir = m_vLastPathPos - getPos();
 	float fDist = SMVector3Length(vDir);
 	vDir /= fDist;
 
@@ -315,9 +315,9 @@ void CNPCBase::pathFollowThinker(float fDelta)
 	//SPhysics_GetDynWorld()->getDebugDrawer()->drawLine(F3_BTVEC(m_vLastPathPos), F3_BTVEC(m_vPosition), btVector3(0, 1, 0));
 
 	m_qOrientTo = SMQuaternion(NPC_BASE_DIR, vDir);
-	setOrient(SMquaternionSlerp(m_vOrientation, m_qOrientTo, clampf(fDelta, 0.1f, 1.0f)));
+	setOrient(SMquaternionSlerp(getOrient(), m_qOrientTo, clampf(fDelta, 0.1f, 1.0f)));
 
-	if(SMVector3Length(m_vPosition - m_vLastFramePos) < fDelta * fMoveSpeed * 0.1f) // застряли, похоже
+	if(SMVector3Length(getPos() - m_vLastFramePos) < fDelta * fMoveSpeed * 0.1f) // застряли, похоже
 	{
 		if(bMayJump)
 		{
@@ -346,7 +346,7 @@ void CNPCBase::pathFollowThinker(float fDelta)
 	{
 		m_iStuckCount = 0;
 	}
-	m_vLastFramePos = m_vPosition;
+	m_vLastFramePos = getPos();
 
 	// это последний, дошли!
 	if(m_iCurrQuaidInPath >= (int)m_aPathQuads.size() && fDist < 0.5)
@@ -568,6 +568,8 @@ void CNPCBase::stopOrientAt()
 	}
 }
 
+
+#if 0
 void CNPCBase::onSync()
 {
 	BaseClass::onSync();
@@ -589,7 +591,6 @@ void CNPCBase::onSync()
 	//SMQuaternion rot = m_pHeadEnt->getOrient();
 	//SPhysics_GetDynWorld()->getDebugDrawer()->drawLine(F3_BTVEC(m_pHeadEnt->getPos()), F3_BTVEC(m_pHeadEnt->getPos() + (rot * float3(0,0,1))), btVector3(1,1,1));
 }
-#if 0
 void CNPCBase::gridCheckBeyond()
 {
 	//находим ближайший квад к текущей позиции нпс

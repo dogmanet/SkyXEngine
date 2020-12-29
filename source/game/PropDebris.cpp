@@ -15,7 +15,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CPropDebris, prop_debris);
 
-CPropDebris::CPropDebris(CEntityManager *pMgr):BaseClass(pMgr)
+CPropDebris::CPropDebris()
 {
 	setCollisionGroup(CG_DEBRIS);
 }
@@ -30,7 +30,8 @@ void CPropDebris::sheduleRemove()
 
 void CPropDebris::checkRemove(float fDT)
 {
-	//@TODO: Reimplement me
+	REMOVE_ENTITY(this);
+	// TODO Reimplement me
 #if 0
 	if(!m_pAnimPlayer->isVisibleFor(SX_ANIM_DEFAULT_VISCALCOBJ))
 	{

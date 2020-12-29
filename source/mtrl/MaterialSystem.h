@@ -353,7 +353,7 @@ protected:
 	MemAlloc<CTexture> m_poolTextures;
 	Array<IXTextureProxy*> m_aTextureProxies;
 	AssotiativeArray<String, IXTextureFilter*> m_mapTextureFilters;
-	AssotiativeArray<String, CTexture*> m_mpTextures;
+	Map<String, CTexture*> m_mpTextures;
 	CConcurrentQueue<CTexture*> m_queueTextureToLoad;
 	IXTexture *m_pDefaultTexture = NULL;
 
@@ -366,7 +366,7 @@ protected:
 	Array<IXMaterialProxy*> m_aMaterialProxies;
 	AssotiativeArray<AAString, Array<MaterialLoader>> m_mapMaterialLoaders;
 	Array<XFormatName> m_aMaterialExts;
-	AssotiativeArray<String, CMaterial*> m_mapMaterials;
+	Map<String, CMaterial*> m_mapMaterials;
 
 	IEventChannel<XEventMaterialChanged> *m_pNotifyChannel = NULL;
 

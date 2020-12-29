@@ -61,17 +61,6 @@ protected:
 	btCollisionObject* m_me;
 };
 
-CBaseAmmo::CBaseAmmo(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	m_fStartSpeed(0.0f),
-	m_fBulletMass(0.0f),
-	m_fArmorPiercing(0.0f),
-	m_fNextBarrierDepth(0.0f)
-{
-	//m_bPickable = false;
-	//m_bInvStackable = false;
-}
-
 void CBaseAmmo::fire(const float3 &vStart, const float3 &vDir, CBaseCharacter *pAttacker)
 {
 	extern CTracer *g_pTracer;

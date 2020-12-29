@@ -8,7 +8,7 @@
 CEditorObject::CEditorObject(CEditable *pEditable, CBaseEntity *pEntity):
 	m_pEditable(pEditable),
 	m_pEntity(pEntity),
-	m_idEnt(pEntity->getId())
+	m_guidEnt(*pEntity->getGUID())
 {
 	assert(pEntity);
 
@@ -40,11 +40,20 @@ void CEditorObject::_iniFieldList()
 {
 	proptable_t *pTable = CEntityFactoryMap::GetInstance()->getPropTable(m_szClassName);
 	propdata_t *pField = NULL;
-	X_PROP_FIELD xField;
+	X_PROP_FIELD xField = {};
 
 	for(UINT i = 0; i < 16; ++i)
 	{
 		m_aszFlags[i] = NULL;
+	}
+
+	{
+		xField.editorType = XPET_TEXT; 
+		xField.szHelp = "";
+		xField.szKey = "guid";
+		xField.szName = "GUID";
+
+		m_aFields.push_back(xField);
 	}
 
 	while(pTable)
@@ -123,27 +132,66 @@ void CEditorObject::_iniFieldList()
 
 void XMETHODCALLTYPE CEditorObject::setPos(const float3_t &pos)
 {
-	if(m_pEntity)
-	{
-		m_pEntity->setPos(pos);
-	}
+	SAFE_CALL(m_pEntity, setPos, pos);
 	m_vPos = pos;
+}
+
+void CEditorObject::setPos(const float3_t &pos, bool isSeparate)
+{
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, true);
+	}
+
+	setPos(pos);
+
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, false);
+	}
 }
 
 void XMETHODCALLTYPE CEditorObject::setScale(const float3_t &vScale)
 {
-	//@TODO: Implement me
+	// TODO Implement me
 	m_vScale = vScale;
+}
+
+void CEditorObject::setScale(const float3_t &vScale, bool isSeparate)
+{
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, true);
+	}
+
+	setScale(vScale);
+
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, false);
+	}
 }
 
 void XMETHODCALLTYPE CEditorObject::setOrient(const SMQuaternion &orient)
 {
-	if(m_pEntity)
-	{
-		m_pEntity->setOrient(orient);
-	}
+	SAFE_CALL(m_pEntity, setOrient, orient);
 
 	m_qRot = orient;
+}
+
+void CEditorObject::setOrient(const SMQuaternion &orient, bool isSeparate)
+{
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, true);
+	}
+
+	setOrient(orient);
+
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, false);
+	}
 }
 
 float3_t XMETHODCALLTYPE CEditorObject::getPos()
@@ -228,7 +276,7 @@ void XMETHODCALLTYPE CEditorObject::remove()
 	}
 	REMOVE_ENTITY(m_pEntity);
 	m_pEntity = NULL;
-	m_idEnt = -1;
+	//m_guidEnt = XGUID();
 }
 void XMETHODCALLTYPE CEditorObject::preSetup()
 {
@@ -241,22 +289,29 @@ void XMETHODCALLTYPE CEditorObject::postSetup()
 void XMETHODCALLTYPE CEditorObject::create()
 {
 	assert(!m_pEntity);
-	m_pEntity = CREATE_ENTITY(m_szClassName, GameData::m_pMgr);
 
-	m_idEnt = m_pEntity->getId();
+	if(m_guidEnt == XGUID())
+	{
+		m_pEntity = CREATE_ENTITY(m_szClassName, GameData::m_pMgr);
+		m_guidEnt = *m_pEntity->getGUID();
+	}
+	else
+	{
+		m_pEntity = CEntityFactoryMap::GetInstance()->create(m_szClassName, GameData::m_pMgr, false, &m_guidEnt);
+	}
 
 	m_pEntity->setFlags(m_pEntity->getFlags() | EF_LEVEL | EF_EXPORT);
 
-	setPos(getPos());
-	setOrient(getOrient());
-	setScale(getScale());
+	setPos(m_vPos, true);
+	setOrient(m_qRot, true);
+	setScale(m_vScale, true);
 }
 
 void CEditorObject::resync()
 {
-	if(ID_VALID(m_idEnt))
+	if(m_pEntity)
 	{
-		m_pEntity = GameData::m_pMgr->getById(m_idEnt);
+		m_pEntity = GameData::m_pMgr->getByGUID(m_guidEnt);
 	}
 }
 
@@ -276,7 +331,14 @@ const char* XMETHODCALLTYPE CEditorObject::getKV(const char *szKey)
 
 	char tmp[4096];
 
-	m_pEntity->getKV(szKey, tmp, sizeof(tmp));
+	if(!fstrcmp(szKey, "guid"))
+	{
+		XGUIDToSting(*m_pEntity->getGUID(), tmp, sizeof(tmp));
+	}
+	else
+	{
+		m_pEntity->getKV(szKey, tmp, sizeof(tmp));
+	}
 
 	m_msPropCache[szKey] = tmp;
 	return(m_msPropCache[szKey].c_str());

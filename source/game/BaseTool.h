@@ -39,7 +39,7 @@ public:
 	DECLARE_CONSTRUCTOR();
 	~CBaseTool();
 
-	virtual void onPostLoad();
+	void onPostLoad() override;
 
 	virtual void primaryAction(BOOL st);
 	virtual void secondaryAction(BOOL st);
@@ -53,8 +53,6 @@ public:
 	void setIsWorldModel(bool b);
 
 	void dbgMove(int dir, float delta);
-
-	void onSync();
 
 	void setParent(CBaseEntity * pEnt, int attachment = -1);
 
@@ -77,18 +75,20 @@ public:
 
 	virtual void updateHUDinfo();
 
+	void setShakeRotation(const SMQuaternion &q);
+
 protected:
 
 	bool isValidAmmo(CBaseSupply *pAmmo);
 
-	bool m_bInPrimaryAction;
-	bool m_bInSecondaryAction;
+	bool m_bInPrimaryAction = false;
+	bool m_bInSecondaryAction = false;
 
-	bool m_bWorldModel;
+	bool m_bWorldModel = false;
 
-	bool m_bCanUse;
+	bool m_bCanUse = true;
 
-	float m_fZoomTime;
+	float m_fZoomTime = 0.0f;
 
 	float m_fZoomProgress = 0.0f;
 	float m_fCloseProgress = 0.0f;
@@ -104,7 +104,9 @@ protected:
 	void _update(float dt);
 	void _rezoom();
 
-	float m_fReloadTime;
+	void updateTransform();
+
+	float m_fReloadTime = 0.0f;
 
 	float3_t m_vSlotPos;
 	float3_t m_vSlotPosAim;
@@ -115,29 +117,31 @@ protected:
 	SMQuaternion m_qSlotRotClose;
 	SMQuaternion m_qSlotRotResult;
 
-	int m_iZoomable;
+	int m_iZoomable = 1;
 
 	ID m_iIvalUpdate;
 
-	ID m_iMuzzleFlash;
-	ID m_iMuzzleFlash2;
+	ID m_iMuzzleFlash = -1;
+	ID m_iMuzzleFlash2 = -1;
 	IXSoundEmitter *m_pSoundAction1 = NULL;
 	IXSoundEmitter *m_pSoundAction2 = NULL;
 
-	const char * m_szPrimaryActionSound;
-	const char * m_szSecondaryActionSound;
+	const char *m_szPrimaryActionSound = NULL;
+	const char *m_szSecondaryActionSound = NULL;
 
-	const char * m_szPrimaryActionMuzzleflash;
-	const char * m_szSecondaryActionMuzzleflash;
+	const char *m_szPrimaryActionMuzzleflash = NULL;
+	const char *m_szSecondaryActionMuzzleflash = NULL;
 
-	const char * m_szUsableAmmos;
-	const char * m_szLoadedAmmo;
-	CBaseSupply * m_pLoadedAmmo;
+	const char *m_szUsableAmmos = NULL;
+	const char *m_szLoadedAmmo = NULL;
+	CBaseSupply *m_pLoadedAmmo = NULL;
 
-	float m_fMaxDistance;
+	float m_fMaxDistance = 1000.0f;
 
 	//! Этот инструмент - оружие
-	bool m_bIsWeapon;
+	bool m_bIsWeapon = false;
+
+	SMQuaternion m_qShakeRotation;
 };
 
 #endif

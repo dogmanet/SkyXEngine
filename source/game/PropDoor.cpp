@@ -68,10 +68,6 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CPropDoor, prop_door);
 
-CPropDoor::CPropDoor(CEntityManager *pMgr):BaseClass(pMgr)
-{
-}
-
 CPropDoor::~CPropDoor()
 {
 	releasePhysics();
@@ -221,8 +217,11 @@ void CPropDoor::createPhysBody()
 {
 	if(m_pCollideShape)
 	{
+		float3 vPos = getPos();
+		SMQuaternion qRot = getOrient();
+
 		m_pGhostObject = new btPairCachingGhostObject();
-		m_pGhostObject->setWorldTransform(btTransform(Q4_BTQUAT(m_vOrientation), F3_BTVEC(m_vPosition)));
+		m_pGhostObject->setWorldTransform(btTransform(Q4_BTQUAT(qRot), F3_BTVEC(vPos)));
 		m_pGhostObject->setCollisionShape(m_pCollideShape);
 		m_pGhostObject->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
 		m_pGhostObject->setUserPointer(this);
@@ -269,7 +268,7 @@ void CPropDoor::createPhysBody()
 			m_fDistance = fMax - fMin;
 		}
 
-		m_vStartPos = m_vPosition;
+		m_vStartPos = vPos;
 		m_vEndPos = (float3)(m_vStartPos + vDir * m_fDistance);
 
 		if(m_bState)

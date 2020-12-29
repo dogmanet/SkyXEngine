@@ -19,17 +19,32 @@ See the license in LICENSE
 
 #include "BaseAnimating.h"
 
+class CBaseTrigger;
+class CPhysicsTickEventListener final: public IEventListener<XEventPhysicsStep>
+{
+public:
+	CPhysicsTickEventListener(CBaseTrigger *pTrigger):
+		m_pTrigger(pTrigger)
+	{
+	}
+	void onEvent(const XEventPhysicsStep *pData) override;
+
+private:
+	CBaseTrigger *m_pTrigger;
+};
+
 //! Базовый класс триггера
 class CBaseTrigger: public CBaseAnimating
 {
 	DECLARE_CLASS(CBaseTrigger, CBaseAnimating);
 	DECLARE_PROPTABLE();
+
+	friend class CPhysicsTickEventListener;
 public:
 	DECLARE_CONSTRUCTOR();
 	~CBaseTrigger();
 
-	void onSync();
-	void onPostLoad();
+	void onPostLoad() override;
 
 	void enable();
 	void disable();
@@ -39,10 +54,9 @@ public:
 	void setOrient(const SMQuaternion & q) override;
 
 protected:
-	bool m_bEnabled;
-	ID m_idUpdateInterval;
+	bool m_bEnabled = true;
 
-	ID m_idDevMaterial;
+	ID m_idDevMaterial = -1;
 	
 	Array<CBaseEntity*> m_aTouches;
 	Array<CBaseEntity*> m_aNewTouches;
@@ -51,9 +65,9 @@ protected:
 	output_t m_onTouchEnd;
 	output_t m_onTouchEndAll;
 
-	void update(float dt);
+	void update();
 
-	btPairCachingGhostObject *m_pGhostObject;
+	btPairCachingGhostObject *m_pGhostObject = NULL;
 
 	bool m_isModelEnabled = true;
 
@@ -67,6 +81,13 @@ protected:
 	virtual void onTouchStart(CBaseEntity *pActivator);
 	virtual void onTouchEnd(CBaseEntity *pActivator);
 	virtual void onTouchEndAll(CBaseEntity *pActivator);
+
+private:
+	static IEventChannel<XEventPhysicsStep> *m_pTickEventChannel;
+
+	CPhysicsTickEventListener m_physicsTicker;
+
+	void onPhysicsStep();
 };
 
 #endif

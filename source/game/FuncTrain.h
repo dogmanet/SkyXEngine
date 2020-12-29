@@ -12,8 +12,7 @@ See the license in LICENSE
 #define __FUNC_TRAIN_H
 
 #include "PointEntity.h"
-
-class CPathCorner;
+#include "PathCorner.h"
 
 /*! Поезда класс
 \ingroup cpointentity
@@ -23,7 +22,7 @@ class CFuncTrain: public CPointEntity
 	DECLARE_CLASS(CFuncTrain, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	CFuncTrain(CEntityManager * pMgr);
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 
 	//! Остановить
 	void stop();
@@ -31,24 +30,24 @@ public:
 	void start();
 
 protected:
-	void onPostLoad();
+	void onPostLoad() override;
 	void moveFunc(float dt);
 
 	//! Начальная точка движения
-	CPathCorner * m_pStartStop;
+	CEntityPointer<CPathCorner> m_pStartStop;
 	//! Текущая точка
-	CPathCorner * m_pCurStop;
+	CPathCorner *m_pCurStop = NULL;
 
 	//! Скорость
-	float m_fSpeed;
+	float m_fSpeed = 0.0f;
 	//! Текущая дистанция от начала пути
-	float m_fCurDist;
+	float m_fCurDist = 0.0f;
 
 	//! Запущен ли
-	bool m_bRunning;
+	bool m_bRunning = false;
 
 	//! ID таймера
-	ID m_iPostIval;
+	ID m_iPostIval = -1;
 };
 
 #endif
