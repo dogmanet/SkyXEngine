@@ -91,6 +91,7 @@ class CEntityManager
 	friend class CEntityFactoryMap;
 	template<typename T>
 	friend class CEntityPointer;
+	friend class CEntityList;
 public:
 	CEntityManager();
 	~CEntityManager();
@@ -187,6 +188,12 @@ private:
 	void notifyWaitForGUID(const XGUID &guid, CBaseEntity *pEnt);
 
 	bool m_isOldImported = false;
+
+	SpinLock m_slWaitingLists;
+	Map<String, Array<CEntityList*>> m_maWaitingLists;
+	void registerWaitForName(const char *szName, CEntityList *pList);
+	void unregisterWaitForName(const char *szName, CEntityList *pList);
+	void onEntityNameChanged(CBaseEntity *pEnt, const char *szOldName, const char *szNewName);
 };
 
 #endif

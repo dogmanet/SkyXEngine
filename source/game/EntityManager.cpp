@@ -72,30 +72,31 @@ void CEntityManager::update(int thread)
 			inputData.pActivator = to->data.pActivator;
 			inputData.pInflictor = to->data.pInflictor;
 
-			for(int j = 0; j < to->pOutput->iOutCount; ++j)
+			for(UINT j = 0, jl = to->pOutput->aOutputs.size(); j < jl; ++j)
 			{
-				if(!to->pOutput->pOutputs[j].pTarget)
+				input_t &out = to->pOutput->aOutputs[j];
+				if(!out.pTarget)
 				{
 					continue;
 				}
 
-				inputData.type = to->pOutput->pOutputs[j].data.type;
+				inputData.type = out.data.type;
 
 				if(inputData.type == PDF_STRING)
 				{
 					inputData.parameter.str = NULL;
 				}
 
-				if(to->pOutput->pOutputs[j].useOverrideData)
+				if(out.useOverrideData)
 				{
-					inputData.setParameter(to->pOutput->pOutputs[j].data);
+					inputData.setParameter(out.data);
 				}
 				else
 				{
 					inputData.setParameter(to->data);
 				}
 
-				(to->pOutput->pOutputs[j].pTarget->*(to->pOutput->pOutputs[j].fnInput))(&inputData);
+				(out.pTarget->*(out.fnInput))(&inputData);
 
 				if(inputData.type == PDF_STRING && inputData.parameter.str != GetEmptyString())
 				{
@@ -243,6 +244,10 @@ const XGUID* CEntityManager::reg(CBaseEntity *pEnt, const XGUID *pGUID)
 	if(pGUID)
 	{
 		notifyWaitForGUID(*pGUID, pEnt);
+
+		char tmp[64];
+		XGUIDToSting(*pGUID, tmp, sizeof(tmp));
+		onEntityNameChanged(pEnt, "", tmp);
 	}
 
 	return(pNewGUID);
@@ -266,16 +271,18 @@ void CEntityManager::unreg(CBaseEntity *pEnt)
 		to = &m_vOutputTimeout[i];
 		if(to->status == TS_WAIT)
 		{
-			int iRemoved = 0;
-			for(int j = 0; j < to->pOutput->iOutCount; ++j)
+			UINT iRemoved = 0;
+			for(UINT j = 0, jl = to->pOutput->aOutputs.size(); j < jl; ++j)
 			{
-				if(to->pOutput->pOutputs[j].pTarget == pEnt)
+				input_t &out = to->pOutput->aOutputs[j];
+
+				if(out.pTarget == pEnt)
 				{
-					to->pOutput->pOutputs[j].pTarget = NULL;
+					out.pTarget = NULL;
 					++iRemoved;
 				}
 			}
-			if(iRemoved == to->pOutput->iOutCount)
+			if(iRemoved == to->pOutput->aOutputs.size())
 			{
 				to->status = TS_DONE;
 			}
@@ -1314,5 +1321,49 @@ void CEntityManager::notifyWaitForGUID(const XGUID &guid, CBaseEntity *pEnt)
 			list[i]->onWaitDone(pEnt);
 		}
 		m_maWaitingPointers.erase(guid);
+	}
+}
+
+void CEntityManager::registerWaitForName(const char *szName, CEntityList *pList)
+{
+	ScopedSpinLock lock(m_slWaitingLists);
+
+	Array<CEntityList*> &list = m_maWaitingLists[szName];
+
+	assert(list.indexOf(pList) < 0);
+
+	list.push_back(pList);
+}
+void CEntityManager::unregisterWaitForName(const char *szName, CEntityList *pList)
+{
+	ScopedSpinLock lock(m_slWaitingLists);
+
+	Array<CEntityList*> &list = m_maWaitingLists[szName];
+
+	int idx = list.indexOf(pList);
+	assert(idx >= 0);
+	list[idx] = list[list.size() - 1];
+	list.erase(list.size() - 1);
+}
+
+void CEntityManager::onEntityNameChanged(CBaseEntity *pEnt, const char *szOldName, const char *szNewName)
+{
+	const Map<String, Array<CEntityList*>>::Node *pNode;
+	if(szOldName[0] && m_maWaitingLists.KeyExists(szOldName, &pNode))
+	{
+		Array<CEntityList*> &list = *pNode->Val;
+		for(UINT i = 0, l = list.size(); i < l; ++i)
+		{
+			list[i]->removeEntity(pEnt);
+		}
+	}
+
+	if(szNewName[0] && m_maWaitingLists.KeyExists(szNewName, &pNode))
+	{
+		Array<CEntityList*> &list = *pNode->Val;
+		for(UINT i = 0, l = list.size(); i < l; ++i)
+		{
+			list[i]->addEntity(pEnt);
+		}
 	}
 }

@@ -9,6 +9,7 @@ See the license in LICENSE
 
 #include <common/Math.h>
 #include "EntityPointer.h"
+#include "EntityList.h"
 
 class CBaseEntity;
 
@@ -278,25 +279,64 @@ struct named_output_t
 	const char *szTargetData = NULL;
 	int iFireLimit = -1;
 
-	int iOutCount = 0;
-	input_t *pOutputs = NULL;
+	CEntityList listTargets;
+	Array<input_t> aOutputs;
+	// int iOutCount = 0;
+	// input_t *pOutputs = NULL;
+
+	void init(CBaseEntity *pThisEntity);
+	void onEntityAdded(CBaseEntity *pEnt);
+	void onEntityRemoved(CBaseEntity *pEnt);
+
+	class OnLinkEstablished final: public IEntityPointerEvent
+	{
+	public:
+		OnLinkEstablished(named_output_t *pOut):
+			m_pOut(pOut)
+		{
+		}
+		void onEvent(CBaseEntity *pEnt) override
+		{
+			m_pOut->onEntityAdded(pEnt);
+		}
+	private:
+		named_output_t *m_pOut;
+	};
+	class OnLinkBroken final: public IEntityPointerEvent
+	{
+	public:
+		OnLinkBroken(named_output_t *pOut):
+			m_pOut(pOut)
+		{
+		}
+		void onEvent(CBaseEntity *pEnt) override
+		{
+			m_pOut->onEntityRemoved(pEnt);
+		}
+	private:
+		named_output_t *m_pOut;
+	};
+
+	OnLinkEstablished onLinkEstablished;
+	OnLinkBroken onLinkBroken;
+
+	named_output_t():
+		onLinkEstablished(this),
+		onLinkBroken(this)
+	{
+		listTargets.setLinkEstablishedListener(&onLinkEstablished);
+		listTargets.setLinkBrokenListener(&onLinkBroken);
+	}
 };
 
 struct output_t
 {
-	output_t():
-		iOutCount(0),
-		pOutputs(NULL),
-		pData(NULL),
-		bDirty(false)
-	{
-	}
 	void fire(CBaseEntity *pInflictor, CBaseEntity *pActivator, inputdata_t *pInputData = NULL);
-
-	bool bDirty;
-	int iOutCount;
-	named_output_t * pOutputs;
-	void * pData;
+	
+	// bool bDirty = false;
+	// int iOutCount = 0;
+	Array<named_output_t> aOutputs;
+	void *pData = NULL;
 };
 
 #define FIRE_OUTPUT(output, inflictor) (output).fire((inflictor), this)

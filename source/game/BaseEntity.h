@@ -48,7 +48,7 @@ class SXGAME_EXPORT CBaseEntity
 
 	template<typename T>
 	friend class CEntityPointer;
-
+	friend class CEntityList;
 public:
 	//! Конструктор
 	CBaseEntity();
@@ -158,6 +158,8 @@ public:
 		m_isSeparateMovement = set;
 	}
 
+	void setName(const char *szName);
+
 private:
 	void setClassName(const char *name);
 	void setDefaults();
@@ -203,22 +205,18 @@ private:
 	//! Вращение смещения (для иерархической структуры)
 	SMQuaternion m_qOffsetOrient;
 
+	//! Имя объекта
+	const char *m_szName = NULL;
+
+	//! Флаги
+	UINT m_iFlags = 0;
 protected:
 	virtual void _cleanup();
 	virtual void _initEditorBoxes();
 	virtual void _releaseEditorBoxes();
 
 	CEntityManager *m_pMgr = NULL;
-
-	//! Идентификатор в системе
-	ID m_iId = 0;
-
-	//! Флаги
-	UINT m_iFlags = 0;
-
-	//! Имя объекта
-	const char *m_szName = NULL;
-
+	
 	//! Родитель
 	// CBaseEntity *m_pParent = NULL;
 	CEntityPointer<CBaseEntity> m_pParent;
@@ -236,16 +234,6 @@ protected:
 	//! Получает вращение для кости
 	virtual SMQuaternion getAttachmentRot(int id);
 
-//	/*! Устанавливает значение строкового свойства
-//	\note только для внутреннего использования
-//	*/
-//	void _setStrVal(const char ** to, const char * value);
-
-	/*! Обновляет выходы
-	\note только для внутреннего использования
-	*/
-	void updateOutputs();
-	
 	//! здоровье [0,+inf]
 	float m_fHealth = 100.0f;
 

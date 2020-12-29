@@ -18,7 +18,7 @@ See the license in LICENSE
 
 BEGIN_PROPTABLE_NOBASE(CBaseEntity)
 	//! Имя объекта
-	DEFINE_FIELD_STRING(m_szName, 0, "name", "Name", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_STRINGFN(m_szName, 0, "name", "Name", setName, EDITOR_TEXTFIELD)
 	//! Позиция в мире
 	DEFINE_FIELD_VECTORFN(m_vPosition, 0, "origin", "Origin", setPos, EDITOR_TEXTFIELD)
 	//! Ориентация в мире, углы эйлера или кватернион
@@ -57,7 +57,7 @@ void CBaseEntity::setDefaults()
 				}
 				else if(pt->pData[i].type == PDF_ENTITY)
 				{
-					(this->*((CEntityPointer<CBaseEntity> ThisClass::*)pt->pData[i].pField)).init(m_pMgr, this);
+					(this->*((CEntityPointer<CBaseEntity> ThisClass::*)pt->pData[i].pField)).init(this);
 				}
 			}
 		}
@@ -126,12 +126,12 @@ void CBaseEntity::setClassName(const char * name)
 	m_szClassName = name;
 }
 
-const char * CBaseEntity::getName()
+const char* CBaseEntity::getName()
 {
 	return(m_szName);
 }
 
-const char * CBaseEntity::getClassName()
+const char* CBaseEntity::getClassName()
 {
 	return(m_szClassName);
 }
@@ -428,14 +428,13 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 			iConns = parse_str(str, parts, iConns, ',');
 
 			output_t *pOutput = &(this->*((output_t ThisClass::*)field->pField));
-			mem_delete_a(pOutput->pOutputs);
 			{
 				char *pTmpData = (char*)pOutput->pData;
 				mem_delete_a(pTmpData);
 			}
 			pOutput->pData = str;
-			pOutput->pOutputs = new named_output_t[iConns];
-			pOutput->bDirty = true;
+			pOutput->aOutputs.clearFast();
+			pOutput->aOutputs.reserve(iConns);
 
 			int curr = 0;
 			for(int i = 0; i < iConns; ++i)
@@ -470,11 +469,13 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 					printf(COLOR_LRED "Unable to parse output delay '%s' ent %s\n" COLOR_RESET, name, m_szName);
 					continue;
 				}
-				pOutput->pOutputs[curr].fDelay = fDelayFrom;
-				pOutput->pOutputs[curr].fDelayTo = fDelayTo;
+				named_output_t &out = pOutput->aOutputs[curr];
+
+				out.fDelay = fDelayFrom;
+				out.fDelayTo = fDelayTo;
 				if(fDelayFrom < fDelayTo)
 				{
-					pOutput->pOutputs[curr].useRandomDelay = true;
+					out.useRandomDelay = true;
 				}
 				if(fDelayFrom > fDelayTo)
 				{
@@ -482,14 +483,15 @@ bool CBaseEntity::setKV(const char * name, const char * value)
 					continue;
 				}
 
-				pOutput->pOutputs[curr].szTargetName = fields[0];
-				pOutput->pOutputs[curr].szTargetInput = fields[1];
-				pOutput->pOutputs[curr].szTargetData = param;
-				pOutput->pOutputs[curr].iFireLimit = iFireLimit;
+				out.szTargetName = fields[0];
+				out.szTargetInput = fields[1];
+				out.szTargetData = param;
+				out.iFireLimit = iFireLimit;
 				
+				out.init(this);
+
 				++curr;
 			}
-			pOutput->iOutCount = curr;
 		}
 		// target_name:input:delay:parameter\n<repeat>
 		return(false);
@@ -543,37 +545,39 @@ bool CBaseEntity::getKV(const char * name, char * out, int bufsize)
 			output_t *pOutput = &(this->*((output_t ThisClass::*)field->pField));
 			int iWritten = 0;
 			char * szOutBuf = out;
-			if(pOutput->iOutCount == 0)
+			*out = 0;
+			if(pOutput->aOutputs.size() == 0)
 			{
 				*out = 0;
 			}
-			for(int i = 0; i < pOutput->iOutCount; ++i)
+			for(UINT i = 0, l = pOutput->aOutputs.size(); i < l; ++i)
 			{
+				named_output_t &out = pOutput->aOutputs[i];
 				if(i > 0)
 				{
 					*szOutBuf = ',';
 					++szOutBuf;
 				}
 				int c;
-				if(pOutput->pOutputs[i].useRandomDelay)
+				if(out.useRandomDelay)
 				{
 					c = _snprintf(szOutBuf, bufsize - iWritten, "%s:%s:%f-%f:%s:%d", 
-						pOutput->pOutputs[i].szTargetName, 
-						pOutput->pOutputs[i].szTargetInput, 
-						pOutput->pOutputs[i].fDelay,
-						pOutput->pOutputs[i].fDelayTo,
-						pOutput->pOutputs[i].szTargetData ? pOutput->pOutputs[i].szTargetData : ENT_OUTPUT_PARAM_NONE,
-						pOutput->pOutputs[i].iFireLimit
+						out.szTargetName, 
+						out.szTargetInput, 
+						out.fDelay,
+						out.fDelayTo,
+						out.szTargetData ? out.szTargetData : ENT_OUTPUT_PARAM_NONE,
+						out.iFireLimit
 						);
 				}
 				else
 				{
 					c = _snprintf(szOutBuf, bufsize - iWritten, "%s:%s:%f:%s:%d", 
-						pOutput->pOutputs[i].szTargetName, 
-						pOutput->pOutputs[i].szTargetInput, 
-						pOutput->pOutputs[i].fDelay, 
-						pOutput->pOutputs[i].szTargetData ? pOutput->pOutputs[i].szTargetData : ENT_OUTPUT_PARAM_NONE,
-						pOutput->pOutputs[i].iFireLimit
+						out.szTargetName, 
+						out.szTargetInput, 
+						out.fDelay, 
+						out.szTargetData ? out.szTargetData : ENT_OUTPUT_PARAM_NONE,
+						out.iFireLimit
 						);
 				}
 				iWritten += c + 1;
@@ -670,7 +674,6 @@ CBaseEntity* CBaseEntity::getParent()
 
 void CBaseEntity::onPostLoad()
 {
-	updateOutputs();
 	updateFlags();
 }
 
@@ -730,126 +733,6 @@ int CBaseEntity::countEntByName(const char *szName)
 	}
 
 	return(m_pMgr->countEntityByName(szName));
-}
-
-void CBaseEntity::updateOutputs()
-{
-	proptable_t * pt = getPropTable();
-	while(pt)
-	{
-		for(int i = 0; i < pt->numFields; ++i)
-		{
-			if(pt->pData[i].type == PDF_OUTPUT)
-			{
-				output_t *pOutput = &(this->*((output_t ThisClass::*)pt->pData[i].pField));
-
-				for(int j = 0, jl = pOutput->iOutCount; j < jl; ++j)
-				{
-					named_output_t *pOut = &pOutput->pOutputs[j];
-					mem_delete_a(pOut->pOutputs);
-
-					pOut->iOutCount = countEntByName(pOut->szTargetName);
-					if(!pOut->iOutCount)
-					{
-						printf(COLOR_CYAN "Broken output target '%s' source '%s'.'%s'\n" COLOR_RESET, pOut->szTargetName, getClassName(), m_szName);
-						continue;
-					}
-					pOut->pOutputs = new input_t[pOut->iOutCount];
-					memset(pOut->pOutputs, 0, sizeof(input_t) * pOut->iOutCount);
-
-
-					CBaseEntity * pEnt = NULL;
-					int c = 0;
-					while((pEnt = getEntByName(pOut->szTargetName, pEnt)))
-					{
-						propdata_t * pField = pEnt->getField(pOut->szTargetInput);
-						if(!pField || !(pField->flags & PDFF_INPUT))
-						{
-							printf(COLOR_CYAN "Class '%s' has no input '%s', obj '%s'\n" COLOR_RESET, pEnt->getClassName(), pOut->szTargetInput, pOut->szTargetName);
-							--pOut->iOutCount;
-							continue;
-						}
-
-						pOut->pOutputs[c].fnInput = pField->fnInput;
-						pOut->pOutputs[c].pTarget = pEnt;
-						pOut->pOutputs[c].data.type = pField->type;
-						if((pOut->pOutputs[c].useOverrideData = pOut->szTargetData != NULL))
-						{
-							float3_t f3;
-							float4_t f4;
-							SMQuaternion q;
-							int d;
-							float f;
-							const char * value = pOut->szTargetData;
-							bool bParsed = false;
-							switch(pField->type)
-							{
-							case PDF_NONE:
-								bParsed = true;
-								break;
-							case PDF_INT:
-								if(1 == sscanf(value, "%d", &d))
-								{
-									pOut->pOutputs[c].data.parameter.i = d;
-									bParsed = true;
-								}
-								break;
-							case PDF_FLOAT:
-								if(1 == sscanf(value, "%f", &f))
-								{
-									pOut->pOutputs[c].data.parameter.f = f;
-									bParsed = true;
-								}
-								break;
-							case PDF_VECTOR:
-								if(3 == sscanf(value, "%f %f %f", &f3.x, &f3.y, &f3.z))
-								{
-									pOut->pOutputs[c].data.v3Parameter = f3;
-									bParsed = true;
-								}
-								break;
-							case PDF_VECTOR4:
-								{
-									int iPrm = sscanf(value, "%f %f %f %f", &f4.x, &f4.y, &f4.z, &f4.w);
-									if(iPrm > 2)
-									{
-										if(iPrm == 3)
-										{
-											f4.w = 1.0f;
-										}
-										pOut->pOutputs[c].data.v4Parameter = f4;
-										bParsed = true;
-									}
-								}
-								break;
-							case PDF_BOOL:
-								if(1 == sscanf(value, "%d", &d))
-								{
-									pOut->pOutputs[c].data.parameter.b = d != 0;
-									bParsed = true;
-								}
-								break;
-							case PDF_STRING:
-								_setStrVal(&pOut->pOutputs[c].data.parameter.str, value);
-								bParsed = true;
-								break;
-							}
-
-							if(!bParsed)
-							{
-								printf(COLOR_CYAN "Cannot parse input parameter '%s', class '%s', input '%s', obj '%s'\n" COLOR_RESET, value, pEnt->getClassName(), pOut->szTargetInput, pOut->szTargetName);
-								--pOut->iOutCount;
-								continue;
-							}
-						}
-
-						++c;
-					}
-				}
-			}
-		}
-		pt = pt->pBaseProptable;
-	}
 }
 
 void CBaseEntity::dispatchDamage(CTakeDamageInfo &takeDamageInfo)
@@ -1028,6 +911,15 @@ void CBaseEntity::notifyPointers()
 	ScopedSpinLock lock(m_slPointers);
 	for(UINT i = 0, l = m_aPointers.size(); i < l; ++i)
 	{
-		m_aPointers[i]->onTargetRemoved();
+		m_aPointers[i]->onTargetRemoved(this);
+	}
+}
+
+void CBaseEntity::setName(const char *szName)
+{
+	if(fstrcmp(m_szName, szName))
+	{
+		m_pMgr->onEntityNameChanged(this, m_szName, szName);
+		_setStrVal(&m_szName, szName);
 	}
 }

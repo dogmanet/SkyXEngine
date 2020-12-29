@@ -427,9 +427,9 @@ void CEditorOutputsTab::initSelection()
 						propdata_t *pField = pEnt->getField(pPropData->szKey);
 						output_t *pOutput = &(pEnt->*((output_t CBaseEntity::*)pField->pField));
 						
-						for(int i = 0; i < pOutput->iOutCount; ++i)
+						for(int i = 0, l = pOutput->aOutputs.size(); i < l; ++i)
 						{
-							const named_output_t &namedOutput = pOutput->pOutputs[i];
+							const named_output_t &namedOutput = pOutput->aOutputs[i];
 
 							int idx = m_pCurrentCommand->m_aRows.indexOf(namedOutput, [&](const Row &row, const named_output_t &out){
 								return(

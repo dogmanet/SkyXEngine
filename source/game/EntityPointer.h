@@ -9,8 +9,14 @@ class IEntityPointer
 	friend class CEntityManager;
 
 private:
-	virtual void onTargetRemoved() = 0;
+	virtual void onTargetRemoved(CBaseEntity *pEnt) = 0;
 	virtual void onWaitDone(CBaseEntity *pEnt) = 0;
+};
+
+class IEntityPointerEvent
+{
+public:
+	virtual void onEvent(CBaseEntity *pEnt) = 0;
 };
 
 class CBaseEntity;
@@ -47,7 +53,7 @@ public:
 			}
 		}
 
-		CBaseEntity *pEnt = m_pMgr->findEntityByName(szName);
+		CBaseEntity *pEnt = ((CBaseEntity*)m_pThisEntity)->getEntByName(szName, NULL);
 
 		if(pEnt)
 		{
@@ -68,7 +74,7 @@ public:
 	//! Установка GUID
 	void setEntityGUID(const XGUID &guid)
 	{
-		CBaseEntity *pEnt = m_pMgr->getByGUID(guid);
+		CBaseEntity *pEnt = ((CBaseEntity*)m_pThisEntity)->m_pMgr->getByGUID(guid);
 		
 		if(pEnt)
 		{
@@ -128,7 +134,7 @@ public:
 	{
 		if(m_pEntity && m_pEntity->getName()[0])
 		{
-			if(m_pMgr->countEntityByName(m_pEntity->getName()) == 1)
+			if(((CBaseEntity*)m_pThisEntity)->m_pMgr->countEntityByName(m_pEntity->getName()) == 1)
 			{
 				strncpy(szOutput, m_pEntity->getName(), iBufSize);
 				szOutput[iBufSize - 1] = 0;
@@ -187,20 +193,29 @@ public:
 
 		m_pfnOnLinkEstablished = (void(CBaseEntity::*)(T*))func;
 	}
+
+	void setLinkBrokenListener(IEntityPointerEvent *pFunc)
+	{
+		m_pOnLinkBroken = pFunc;
+	}
+	void setLinkEstablishedListener(IEntityPointerEvent *pFunc)
+	{
+		m_pOnLinkEstablished = pFunc;
+	}
 	
 private:
 	XGUID m_guid;
 	T *m_pEntity = NULL;
-	CEntityManager *m_pMgr = NULL;
 	CBaseEntity *m_pThisEntity = NULL;
 	bool(*m_pfnCheckEntityType)(CBaseEntity*) = NULL;
 
-	void(CBaseEntity::*m_pfnOnLinkBroken)(T*) = NULL;
 	void(CBaseEntity::*m_pfnOnLinkEstablished)(T*) = NULL;
+	void(CBaseEntity::*m_pfnOnLinkBroken)(T*) = NULL;
+	IEntityPointerEvent *m_pOnLinkEstablished = NULL;
+	IEntityPointerEvent *m_pOnLinkBroken = NULL;
 
-	void init(CEntityManager *pWorld, CBaseEntity *pThisEntity)
+	void init(CBaseEntity *pThisEntity)
 	{
-		m_pMgr = pWorld;
 		m_pThisEntity = pThisEntity;
 	}
 
@@ -209,6 +224,10 @@ private:
 		if(m_pfnOnLinkBroken)
 		{
 			(m_pThisEntity->*m_pfnOnLinkBroken)(pOldEnt);
+		}
+		if(m_pOnLinkBroken)
+		{
+			m_pOnLinkBroken->onEvent(pOldEnt);
 		}
 	}
 	void onLinkEstablished(T *pNewEnt)
@@ -219,9 +238,15 @@ private:
 		{
 			(m_pThisEntity->*m_pfnOnLinkEstablished)(pNewEnt);
 		}
+		if(m_pOnLinkEstablished)
+		{
+			m_pOnLinkEstablished->onEvent(pNewEnt);
+		}
 	}
-	void onTargetRemoved() override
+	void onTargetRemoved(CBaseEntity *pEnt) override
 	{
+		assert(pEnt == m_pEntity);
+
 		onLinkBroken(NULL);
 		m_pEntity = NULL;
 		registerWait();
@@ -232,7 +257,7 @@ private:
 	{
 		if(!m_isWaiting)
 		{
-			m_pMgr->registerWaitForGUID(m_guid, this);
+			((CBaseEntity*)m_pThisEntity)->m_pMgr->registerWaitForGUID(m_guid, this);
 			m_isWaiting = true;
 		}
 	}
@@ -240,7 +265,7 @@ private:
 	{
 		if(m_isWaiting)
 		{
-			m_pMgr->unregisterWaitForGUID(m_guid, this);
+			((CBaseEntity*)m_pThisEntity)->m_pMgr->unregisterWaitForGUID(m_guid, this);
 			m_isWaiting = false;
 		}
 	}
