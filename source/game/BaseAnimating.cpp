@@ -441,7 +441,7 @@ void CBaseAnimating::setPos(const float3 &pos)
 	BaseClass::setPos(pos);
 	if(m_pRigidBody)
 	{
-		SPhysics_GetDynWorld()->updateSingleAabb(m_pRigidBody);
+		SPhysics_UpdateSingleAABB(m_pRigidBody);
 	}
 
 	SAFE_CALL(m_pModel, setPosition, pos);
@@ -452,7 +452,7 @@ void CBaseAnimating::setOrient(const SMQuaternion & q)
 	BaseClass::setOrient(q);
 	if(m_pRigidBody)
 	{
-		SPhysics_GetDynWorld()->updateSingleAabb(m_pRigidBody);
+		SPhysics_UpdateSingleAABB(m_pRigidBody);
 	}
 
 	SAFE_CALL(m_pModel, setOrientation, q);

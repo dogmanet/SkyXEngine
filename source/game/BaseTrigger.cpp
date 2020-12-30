@@ -244,7 +244,7 @@ void CBaseTrigger::setPos(const float3 & pos)
 	{
 		m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(pos));
 
-		SPhysics_GetDynWorld()->updateSingleAabb(m_pGhostObject);
+		SPhysics_UpdateSingleAABB(m_pGhostObject);
 	}
 }
 
@@ -255,7 +255,7 @@ void CBaseTrigger::setOrient(const SMQuaternion & q)
 	{
 		m_pGhostObject->getWorldTransform().setRotation(Q4_BTQUAT(q));
 
-		SPhysics_GetDynWorld()->updateSingleAabb(m_pGhostObject);
+		SPhysics_UpdateSingleAABB(m_pGhostObject);
 	}
 }
 

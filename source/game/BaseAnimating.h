@@ -48,8 +48,7 @@ public:
 	{
 		const btVector3 &v = centerOfMassWorldTrans.getOrigin();
 		const btQuaternion &q = centerOfMassWorldTrans.getRotation();
-		m_pEntity->setPos(BTVEC_F3(v));
-		m_pEntity->setOrient(BTQUAT_Q4(q));
+		m_pEntity->setXform(BTVEC_F3(v), BTQUAT_Q4(q));
 	}
 };
 

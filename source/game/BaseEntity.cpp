@@ -163,7 +163,7 @@ void CBaseEntity::setPos(const float3 &pos)
 	if(m_pEditorRigidBody)
 	{
 		m_pEditorRigidBody->getWorldTransform().setOrigin(F3_BTVEC(m_vPosition));
-		SPhysics_GetDynWorld()->updateSingleAabb(m_pEditorRigidBody);
+		SPhysics_UpdateSingleAABB(m_pEditorRigidBody);
 	}
 
 	{

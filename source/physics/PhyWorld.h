@@ -56,6 +56,8 @@ public:
 	void addShape(btRigidBody * pBody, int group, int mask);
 	void removeShape(btRigidBody * pBody);
 
+	void updateSingleAABB(btCollisionObject* colObj);
+
 #if 0
 	void loadGeom(const char * file=NULL);
 	void unloadGeom();
@@ -177,6 +179,8 @@ protected:
 	btSequentialImpulseConstraintSolverMt * m_pSolver;
 	btDiscreteDynamicsWorldMt * m_pDynamicsWorld;
 	btGhostPairCallback * m_pGHostPairCallback;
+
+	bool m_isUpdating = false;
 
 	const bool * m_bDebugDraw;
 	CDebugDrawer * m_pDebugDrawer;

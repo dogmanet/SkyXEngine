@@ -59,11 +59,11 @@ public:
 	}
 	void broadcastEvent(const T *pEvent)
 	{
-		for(UINT i = 0, l = m_vListeners.size(); i < l; ++i)
+		for(UINT i = 0; i < m_vListeners.size(); ++i)
 		{
 			m_vListeners[i](pEvent);
 		}
-		for(UINT i = 0, l = m_vListeners2.size(); i < l; ++i)
+		for(UINT i = 0; i < m_vListeners2.size(); ++i)
 		{
 			m_vListeners2[i]->onEvent(pEvent);
 		}

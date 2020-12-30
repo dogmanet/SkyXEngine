@@ -151,6 +151,12 @@ SX_LIB_API btDiscreteDynamicsWorldMt * SPhysics_GetDynWorld()
 	return(g_pWorld->getBtWorld());
 }
 
+SX_LIB_API void SPhysics_UpdateSingleAABB(btCollisionObject* colObj)
+{
+	SP_PRECOND(_VOID);
+	g_pWorld->updateSingleAABB(colObj);
+}
+
 #if 0
 SX_LIB_API bool SPhysics_ImportGeom(const char * file)
 {

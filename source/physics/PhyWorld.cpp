@@ -223,7 +223,10 @@ void CPhyWorld::update(int thread)
 	}
 
 	//printf("%.3fs\n", (float)(time1 - time0) / 1000.0f);
+
+	m_isUpdating = true;
 	m_pDynamicsWorld->stepSimulation((float)(time1 - time0) / 1000.0f, 2, 1.0f / 60.0f);
+	m_isUpdating = false;
 
 	time0 = time1;
 }
@@ -246,6 +249,14 @@ void CPhyWorld::removeShape(btRigidBody * pBody)
 	if(pBody)
 	{
 		m_pDynamicsWorld->removeRigidBody(pBody);
+	}
+}
+
+void CPhyWorld::updateSingleAABB(btCollisionObject* colObj)
+{
+	if(!m_isUpdating)
+	{
+		m_pDynamicsWorld->updateSingleAabb(colObj);
 	}
 }
 
