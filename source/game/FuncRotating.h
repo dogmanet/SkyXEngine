@@ -11,7 +11,7 @@ class CFuncRotating: public CPointEntity
 	DECLARE_CLASS(CFuncRotating, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	DECLARE_CONSTRUCTOR();
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CFuncRotating();
 	
 protected:

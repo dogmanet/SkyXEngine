@@ -34,14 +34,14 @@ class CBaseWeaponAddon: public CBaseItem
 	DECLARE_CLASS(CBaseWeaponAddon, CBaseItem);
 	DECLARE_PROPTABLE();
 public:
-	DECLARE_CONSTRUCTOR();
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 
 	//! Получить тип навеса
 	WPN_ADDON getType() const;
 
 protected:
 	//! Тип навеса
-	WPN_ADDON m_addonType;
+	WPN_ADDON m_addonType = WPN_ADDON_NONE;
 };
 
 #endif

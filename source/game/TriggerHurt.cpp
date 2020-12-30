@@ -21,12 +21,6 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CTriggerHurt, trigger_hurt);
 
-CTriggerHurt::CTriggerHurt(CEntityManager * pMgr):
-	BaseClass(pMgr)
-{
-	//m_idHurtInterval = SET_INTERVAL(think, 1000.0f);
-}
-
 CTriggerHurt::~CTriggerHurt()
 {
 	CLEAR_INTERVAL(m_idHurtInterval);

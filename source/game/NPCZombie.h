@@ -33,17 +33,16 @@ class CNPCZombie: public CNPCBase
 	DECLARE_PROPTABLE();
 
 public:
-	CNPCZombie(CEntityManager * pMgr);
+	DECLARE_CONSTRUCTOR();
 	~CNPCZombie();
 
 	void onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor);
 
 	void dispatchDamage(CTakeDamageInfo &takeDamageInfo);
 
+	void setPos(const float3 & pos) override;
+
 protected:
-
-	void onSync();
-
 	void think(float fDelta);
 	void removeThis(float fDelta);
 

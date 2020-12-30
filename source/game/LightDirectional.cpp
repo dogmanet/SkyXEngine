@@ -14,14 +14,12 @@ BEGIN_PROPTABLE(CLightDirectional)
 	//! Внешний угол
 	DEFINE_FIELD_FLOAT(m_fOuterAngle, 0, "angle", "Outer angle", EDITOR_TEXTFIELD)
 	//! Внутренний угол
-	DEFINE_FIELD_FLOAT(m_fInnerAngle, 0, "inner_angle", "Inner angle", EDITOR_TEXTFIELD)
-	//! Верхний радиус
-	DEFINE_FIELD_FLOAT(m_fRadiusTop, 0, "radius_top", "Radius top", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_FLOATFN(m_fInnerAngle, 0, "inner_angle", "Inner angle", setInnerAngle, EDITOR_TEXTFIELD)
 END_PROPTABLE()
 
 REGISTER_ENTITY(CLightDirectional, light_directional);
 
-CLightDirectional::CLightDirectional(CEntityManager *pMgr):BaseClass(pMgr)
+CLightDirectional::CLightDirectional()
 {
 	if(m_pLightSystem)
 	{
@@ -38,24 +36,30 @@ CLightDirectional::CLightDirectional(CEntityManager *pMgr):BaseClass(pMgr)
 	}
 }
 
-CLightDirectional::~CLightDirectional()
+void CLightDirectional::setOrient(const SMQuaternion &q)
 {
-	mem_release(m_pLight);
+	BaseClass::setOrient(q);
+
+	SAFE_CALL(m_pLightSpot, setDirection, q);
 }
 
-void CLightDirectional::onSync()
+void CLightDirectional::setOuterAngle(float fAngle)
 {
-	BaseClass::onSync();
+	m_fOuterAngle = fAngle;
 
-	if(m_pLightSpot)
-	{
-		m_pLightSpot->setDirection(m_vOrientation);
-		m_pLightSpot->setOuterAngle(m_fOuterAngle);
-		m_pLightSpot->setInnerAngle(m_fInnerAngle);
-	}
-#if 0
-	if (SLight_GetTopRadius(m_idLight) != m_fRadiusTop)
-		SLight_SetTopRadius(m_idLight, m_fRadiusTop);
-#endif
+	SAFE_CALL(m_pLightSpot, setOuterAngle, fAngle);
 }
+float CLightDirectional::getOuterAngle() const
+{
+	return m_fOuterAngle;
+}
+void CLightDirectional::setInnerAngle(float fAngle)
+{
+	m_fInnerAngle = fAngle;
 
+	SAFE_CALL(m_pLightSpot, setInnerAngle, fAngle);
+}
+float CLightDirectional::getInnerAngle() const
+{
+	return m_fInnerAngle;
+}

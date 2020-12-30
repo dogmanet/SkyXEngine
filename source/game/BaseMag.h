@@ -28,8 +28,8 @@ public:
 	int getCapacity();
 	void load(int count);
 protected:
-	int m_iCapacity;
-	int m_iCurrentLoad;
+	int m_iCapacity = 0;
+	int m_iCurrentLoad = 0;
 };
 
 #endif

@@ -23,10 +23,10 @@ class CLightSun: public CBaseLight
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();
-	~CLightSun();
+
+	void setOrient(const SMQuaternion &q) override;
 
 protected:
-	void onSync() override;
 	IXLightSun *m_pSun = NULL;
 };
 

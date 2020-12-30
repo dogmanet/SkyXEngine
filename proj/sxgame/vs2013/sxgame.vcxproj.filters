@@ -312,6 +312,9 @@
     <ClCompile Include="..\..\..\source\common\guid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\EntityList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -538,6 +541,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\SoundEmitter.h">
       <Filter>Header Files\ents\sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\EntityPointer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\EntityList.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

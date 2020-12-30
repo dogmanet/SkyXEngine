@@ -22,14 +22,13 @@ class CEntityManager;
 class IEntityFactory
 {
 public:
-	virtual CBaseEntity* create(CEntityManager * pWorld) = 0;
+	virtual CBaseEntity* create() = 0;
 	virtual void destroy(CBaseEntity * pEnt) = 0;
 	virtual const char* getClassName() = 0;
 	virtual proptable_t* getPropTable() = 0;
 	virtual bool isEditorHidden() = 0;
 	virtual EntDefaultsMap* getDefaults() = 0;
 	virtual IEntityFactory* copy(const char * szName, bool showInListing) = 0;
-	virtual bool isSyncable() = 0;
 };
 
 class CEntityFactoryMap
@@ -39,7 +38,7 @@ public:
 	CEntityFactoryMap();
 
 	void addFactory(IEntityFactory *pFactory, const char *szName);
-	CBaseEntity* create(const char *szName, CEntityManager *pMgr, bool bDelayPostLoad=false);
+	CBaseEntity* create(const char *szName, CEntityManager *pMgr, bool bDelayPostLoad=false, const XGUID *pGUID=NULL);
 	void destroy(CBaseEntity *pEnt);
 
 	static CEntityFactoryMap* GetInstance();
@@ -86,12 +85,11 @@ template <class T>
 class CEntityFactory: public IEntityFactory
 {
 public:
-	CEntityFactory(const char * szName, bool showInListing, bool isSyncable=true)
+	CEntityFactory(const char * szName, bool showInListing)
 	{
 		m_bShowInListing = showInListing;
 		m_szClassName = szName;
 		m_pPropTable = T::SGetPropTable();
-		m_isSyncable = isSyncable;
 		CEntityFactoryMap::GetInstance()->addFactory(this, szName);
 	}
 
@@ -113,9 +111,9 @@ public:
 		return(newF);
 	}
 
-	CBaseEntity* create(CEntityManager *pWorld) override
+	CBaseEntity* create() override
 	{
-		return(new T(pWorld));
+		return(new T());
 	}
 
 	void destroy(CBaseEntity *pEnt) override
@@ -141,11 +139,6 @@ public:
 		return(!m_bShowInListing);
 	}
 
-	bool isSyncable() override
-	{
-		return(m_isSyncable);
-	}
-
 	EntDefaultsMap* getDefaults() override
 	{
 		return(&m_mDefaults);
@@ -155,16 +148,12 @@ private:
 	const char * m_szClassName;
 	proptable_t * m_pPropTable;
 	bool m_bShowInListing;
-	bool m_isSyncable;
 	EntDefaultsMap m_mDefaults;
 	Array<CEntityFactory<T>*> m_vDerivatives;
 };
 
 #define REGISTER_ENTITY(cls, name) \
 	CEntityFactory<cls> ent_ ## name ## _factory(#name, 1)
-
-#define REGISTER_ENTITY_NOSYNC(cls, name) \
-	CEntityFactory<cls> ent_ ## name ## _factory(#name, 1, 0)
 
 #define REGISTER_ENTITY_NOLISTING(cls, name) \
 	CEntityFactory<cls> ent_ ## name ## _factory(#name, 0)

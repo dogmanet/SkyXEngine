@@ -16,8 +16,11 @@ public:
 	~CEditorObject();
 
 	void XMETHODCALLTYPE setPos(const float3_t &pos) override;
+	void setPos(const float3_t &pos, bool isSeparate);
 	void XMETHODCALLTYPE setOrient(const SMQuaternion &orient) override;
-	void XMETHODCALLTYPE setScale(const float3_t &pos) override;
+	void setOrient(const SMQuaternion &orient, bool isSeparate);
+	void XMETHODCALLTYPE setScale(const float3_t &scale) override;
+	void setScale(const float3_t &scale, bool isSeparate);
 
 	void XMETHODCALLTYPE getBound(float3 *pvMin, float3 *pvMax) override;
 
@@ -74,7 +77,7 @@ protected:
 
 	void _iniFieldList();
 
-	ID m_idEnt = -1;
+	XGUID m_guidEnt;
 
 protected:
 	bool m_isSelected = false;

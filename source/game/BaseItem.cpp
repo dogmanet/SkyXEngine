@@ -35,17 +35,13 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseItem, base_item);
 
-CBaseItem::CBaseItem(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	m_bInvStackable(true),
-	m_iInvStackCurSize(0),
-	m_iInvStackMaxSize(1),
-	m_iInvWeight(0.0f),
-	m_bPickable(true)
+void CBaseItem::onPostLoad()
 {
-	if(m_bPickable)
+	BaseClass::onPostLoad();
+
+	if(m_bPickable && !m_pTriggerUse)
 	{
-		m_pTriggerUse = (CTriggerItemUse*)CREATE_ENTITY("trigger_itemuse", m_pMgr);
+		m_pTriggerUse = (CTriggerItemUse *)CREATE_ENTITY("trigger_itemuse", m_pMgr);
 		m_pTriggerUse->setItem(this);
 		m_pTriggerUse->setModel("meshes/dev/item_trigger.dse");
 		m_pTriggerUse->setPos(getPos());
@@ -205,25 +201,19 @@ void CBaseItem::onModelChanged()
 	}
 }
 
-void CBaseItem::onSync()
-{
-	BaseClass::onSync();
-	
-	if(m_pViewModel)
-	{
-		m_pViewModel->setPosition(getPos());
-		m_pViewModel->setOrientation(getOrient());
-	}
-}
-
 void CBaseItem::setPos(const float3 &pos)
 {
 	BaseClass::setPos(pos);
 
-	if(m_pTriggerUse)
-	{
-		m_pTriggerUse->setPos(getPos());
-	}
+	SAFE_CALL(m_pViewModel, setPosition, pos);
+	SAFE_CALL(m_pTriggerUse, setPos, pos);
+}
+
+void CBaseItem::setOrient(const SMQuaternion &q)
+{
+	BaseClass::setOrient(q);
+
+	SAFE_CALL(m_pViewModel, setOrientation, q);
 }
 
 void CBaseItem::onIsPickableChanged(bool isPickable)

@@ -37,7 +37,9 @@ enum SOUND_LOOP
 {
 	SOUND_LOOP_NONE = 0,
 	SOUND_LOOP_SIMPLE = 1,
-	SOUND_LOOP_SEAMLESS = 2
+	SOUND_LOOP_SEAMLESS = 2,
+
+	SOUND_LOOP_FORCE_DWORD = 0x7fffffff  /* force 32-bit size enum */
 };
 
 //##########################################################################

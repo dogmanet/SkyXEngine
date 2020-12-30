@@ -16,7 +16,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CLightSun, light_sun);
 
-CLightSun::CLightSun(CEntityManager * pMgr):BaseClass(pMgr)
+CLightSun::CLightSun()
 {
 	if(m_pLightSystem)
 	{
@@ -25,17 +25,9 @@ CLightSun::CLightSun(CEntityManager * pMgr):BaseClass(pMgr)
 	}
 }
 
-CLightSun::~CLightSun()
+void CLightSun::setOrient(const SMQuaternion &q)
 {
-	mem_release(m_pLight);
-}
+	BaseClass::setOrient(q);
 
-void CLightSun::onSync()
-{
-	BaseClass::onSync();
-
-	if(m_pSun)
-	{
-		m_pSun->setDirection(m_vOrientation);
-	}
+	SAFE_CALL(m_pSun, setDirection, q);
 }

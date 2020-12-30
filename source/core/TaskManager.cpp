@@ -115,7 +115,7 @@ void CTaskManager::forceSinglethreaded()
 void CTaskManager::addTask(TaskPtr task, std::chrono::steady_clock::time_point tpWhen)
 {
 	{
-		ScopedSpinLock lock(m_slShedulerArray);
+		ScopedLock lock(m_mutexSchedulerThread);
 		m_aScheduled.insert({task, tpWhen}, [](const ScheduledTask &a, const ScheduledTask &b){
 			return(a.tpRunAt > b.tpRunAt);
 		});
@@ -360,26 +360,25 @@ void CTaskManager::schedulerMain()
 	while(m_isRunning)
 	{
 		tpNow = tpWaitUntil = std::chrono::steady_clock::now();
-		{
-			ScopedSpinLock lock(m_slShedulerArray);
-			for(UINT i = 0, l = m_aScheduled.size(); i < l; ++i)
-			{
-				pScheduledTask = &m_aScheduled[i];
 
-				if(pScheduledTask->tpRunAt <= tpNow)
-				{
-					addTask(pScheduledTask->pTask);
-					m_aScheduled.erase(i);
-					--i; --l;
-				}
-				else
-				{
-					tpWaitUntil = pScheduledTask->tpRunAt;
-					break;
-				}
+		std::unique_lock<std::mutex> lock(m_mutexSchedulerThread);
+		for(UINT i = 0, l = m_aScheduled.size(); i < l; ++i)
+		{
+			pScheduledTask = &m_aScheduled[i];
+
+			if(pScheduledTask->tpRunAt <= tpNow)
+			{
+				addTask(pScheduledTask->pTask);
+				m_aScheduled.erase(i);
+				--i; --l;
+			}
+			else
+			{
+				tpWaitUntil = pScheduledTask->tpRunAt;
+				break;
 			}
 		}
-		std::unique_lock<std::mutex> lock(m_mutexSchedulerThread);
+
 		if(tpWaitUntil != tpNow)
 		{
 			m_ConditionSchedulerThread.wait_until(lock, tpWaitUntil);

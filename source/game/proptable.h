@@ -8,6 +8,8 @@ See the license in LICENSE
 #define __PROPTABLE_H
 
 #include <common/Math.h>
+#include "EntityPointer.h"
+#include "EntityList.h"
 
 class CBaseEntity;
 
@@ -50,7 +52,6 @@ enum PDF_TYPE
 	PDF_STRING,
 	PDF_ANGLES,
 	PDF_ENTITY,
-	PDF_PARENT,
 	PDF_FLAGS,
 
 	PDF_FLAG,
@@ -192,7 +193,6 @@ struct inputdata_t
 };
 
 typedef void(CBaseEntity::*input_func)(inputdata_t *pInputData);
-typedef bool(*PFNCHECKENTTYPE)(CBaseEntity*);
 
 struct propdata_t
 {
@@ -204,7 +204,7 @@ struct propdata_t
 		szEdName(NULL),
 		editor({})
 	{}
-	propdata_t(fieldtype f, PDF_TYPE t, int fl, const char *key, const char *edname, PFNCHECKENTTYPE pfnCheckType, prop_editor_t ed):
+	propdata_t(fieldtype f, PDF_TYPE t, int fl, const char *key, const char *edname, prop_editor_t ed):
 		pField(f),
 		type(t),
 		flags(fl),
@@ -212,7 +212,7 @@ struct propdata_t
 		szEdName(edname),
 		editor(ed)
 	{}
-	propdata_t(fieldtype f, PDF_TYPE t, int fl, const char *key, const char *edname, PFNFIELDSET _fnSet, PFNCHECKENTTYPE pfnCheckType, prop_editor_t ed):
+	propdata_t(fieldtype f, PDF_TYPE t, int fl, const char *key, const char *edname, PFNFIELDSET _fnSet, prop_editor_t ed):
 		pField(f),
 		type(t),
 		flags(fl),
@@ -240,8 +240,6 @@ struct propdata_t
 	const char * szEdName;
 	prop_editor_t editor;
 	PFNFIELDSET fnSet;
-
-	PFNCHECKENTTYPE pfnCheckType = NULL;
 
 	template<typename T>
 	static fieldtype ToFieldType(T arg)
@@ -281,25 +279,64 @@ struct named_output_t
 	const char *szTargetData = NULL;
 	int iFireLimit = -1;
 
-	int iOutCount = 0;
-	input_t *pOutputs = NULL;
+	CEntityList listTargets;
+	Array<input_t> aOutputs;
+	// int iOutCount = 0;
+	// input_t *pOutputs = NULL;
+
+	void init(CBaseEntity *pThisEntity);
+	void onEntityAdded(CBaseEntity *pEnt);
+	void onEntityRemoved(CBaseEntity *pEnt);
+
+	class OnLinkEstablished final: public IEntityPointerEvent
+	{
+	public:
+		OnLinkEstablished(named_output_t *pOut):
+			m_pOut(pOut)
+		{
+		}
+		void onEvent(CBaseEntity *pEnt) override
+		{
+			m_pOut->onEntityAdded(pEnt);
+		}
+	private:
+		named_output_t *m_pOut;
+	};
+	class OnLinkBroken final: public IEntityPointerEvent
+	{
+	public:
+		OnLinkBroken(named_output_t *pOut):
+			m_pOut(pOut)
+		{
+		}
+		void onEvent(CBaseEntity *pEnt) override
+		{
+			m_pOut->onEntityRemoved(pEnt);
+		}
+	private:
+		named_output_t *m_pOut;
+	};
+
+	OnLinkEstablished onLinkEstablished;
+	OnLinkBroken onLinkBroken;
+
+	named_output_t():
+		onLinkEstablished(this),
+		onLinkBroken(this)
+	{
+		listTargets.setLinkEstablishedListener(&onLinkEstablished);
+		listTargets.setLinkBrokenListener(&onLinkBroken);
+	}
 };
 
 struct output_t
 {
-	output_t():
-		iOutCount(0),
-		pOutputs(NULL),
-		pData(NULL),
-		bDirty(false)
-	{
-	}
 	void fire(CBaseEntity *pInflictor, CBaseEntity *pActivator, inputdata_t *pInputData = NULL);
-
-	bool bDirty;
-	int iOutCount;
-	named_output_t * pOutputs;
-	void * pData;
+	
+	// bool bDirty = false;
+	// int iOutCount = 0;
+	Array<named_output_t> aOutputs;
+	void *pData = NULL;
 };
 
 #define FIRE_OUTPUT(output, inflictor) (output).fire((inflictor), this)
@@ -396,8 +433,8 @@ void cls::InitPropData() \
 	} \
 } 
 
-#define DECLARE_TRIVIAL_CONSTRUCTOR() ThisClass(CEntityManager * pMgr):BaseClass(pMgr){}
-#define DECLARE_CONSTRUCTOR() ThisClass(CEntityManager * pMgr);
+#define DECLARE_TRIVIAL_CONSTRUCTOR() ThisClass():BaseClass(){}
+#define DECLARE_CONSTRUCTOR() ThisClass();
 
 const char * GetEmptyString();
 
@@ -420,36 +457,31 @@ const char * GetEmptyString();
 #define EDITOR_SOUND EDITOR_FILEFIELD FILE_OPTION("Select sound", "ogg") EDITOR_FILE_END()
 #define EDITOR_TEXTURE EDITOR_FILEFIELD FILE_OPTION("Select texture", "dds") EDITOR_FILE_END()
 
-#define DEFINE_FIELD_STRING(field, flags, keyname, edname, editor)              , {propdata_t::ToFieldType<const char* DataClass::*>(&DataClass::field),  PDF_STRING,  flags, keyname, edname, NULL,                                     editor
-#define DEFINE_FIELD_VECTOR(field, flags, keyname, edname, editor)              , {propdata_t::ToFieldType<float3_t DataClass::*>(&DataClass::field),     PDF_VECTOR,  flags, keyname, edname, NULL,                                     editor
-#define DEFINE_FIELD_VECTOR4(field, flags, keyname, edname, editor)             , {propdata_t::ToFieldType<float4_t DataClass::*>(&DataClass::field),     PDF_VECTOR4, flags, keyname, edname, NULL,                                     editor
-#define DEFINE_FIELD_ANGLES(field, flags, keyname, edname, editor)              , {propdata_t::ToFieldType<SMQuaternion DataClass::*>(&DataClass::field), PDF_ANGLES,  flags, keyname, edname, NULL,                                     editor
-#define DEFINE_FIELD_INT(field, flags, keyname, edname, editor)                 , {propdata_t::ToFieldType<int DataClass::*>(&DataClass::field),          PDF_INT,     flags, keyname, edname, NULL,                                     editor
-#define DEFINE_FIELD_ENUM(type, field, flags, keyname, edname, editor)          , {propdata_t::ToFieldType<type DataClass::*>(&DataClass::field),         PDF_INT,     flags, keyname, edname, NULL,                                     editor
-#define DEFINE_FIELD_FLOAT(field, flags, keyname, edname, editor)               , {propdata_t::ToFieldType<float DataClass::*>(&DataClass::field),        PDF_FLOAT,   flags, keyname, edname, NULL,                                     editor
-#define DEFINE_FIELD_BOOL(field, flags, keyname, edname, editor)                , {propdata_t::ToFieldType<bool DataClass::*>(&DataClass::field),         PDF_BOOL,    flags, keyname, edname, NULL,                                     editor
-#define DEFINE_FIELD_ENTITY(field, flags, keyname, edname, editor)              , {propdata_t::ToFieldType<CBaseEntity* DataClass::*>(&DataClass::field), PDF_ENTITY,  flags, keyname, edname, NULL,                                     editor
-#define DEFINE_FIELD_ENTITY2(type, field, flags, keyname, edname, editor)       , {propdata_t::ToFieldType<type* DataClass::*>(&DataClass::field),        PDF_ENTITY,  flags, keyname, edname, CEntityFactoryMap::IsEntityOfClass<type>, editor
-#define DEFINE_FIELD_PARENT(field, flags, keyname, edname, editor)              , {propdata_t::ToFieldType<CBaseEntity* DataClass::*>(&DataClass::field), PDF_PARENT,  flags, keyname, edname, NULL,                                     editor
-#define DEFINE_FIELD_FLAGS(field, flags, keyname, edname, editor)               , {propdata_t::ToFieldType<UINT DataClass::*>(&DataClass::field),         PDF_FLAGS,   flags, keyname, edname, NULL,                                     editor
+#define DEFINE_FIELD_STRING(field, flags, keyname, edname, editor)              , {propdata_t::ToFieldType<const char* DataClass::*>(&DataClass::field),          PDF_STRING,  flags, keyname, edname, editor
+#define DEFINE_FIELD_VECTOR(field, flags, keyname, edname, editor)              , {propdata_t::ToFieldType<float3_t DataClass::*>(&DataClass::field),             PDF_VECTOR,  flags, keyname, edname, editor
+#define DEFINE_FIELD_VECTOR4(field, flags, keyname, edname, editor)             , {propdata_t::ToFieldType<float4_t DataClass::*>(&DataClass::field),             PDF_VECTOR4, flags, keyname, edname, editor
+#define DEFINE_FIELD_ANGLES(field, flags, keyname, edname, editor)              , {propdata_t::ToFieldType<SMQuaternion DataClass::*>(&DataClass::field),         PDF_ANGLES,  flags, keyname, edname, editor
+#define DEFINE_FIELD_INT(field, flags, keyname, edname, editor)                 , {propdata_t::ToFieldType<int DataClass::*>(&DataClass::field),                  PDF_INT,     flags, keyname, edname, editor
+#define DEFINE_FIELD_ENUM(type, field, flags, keyname, edname, editor)          , {propdata_t::ToFieldType<type DataClass::*>(&DataClass::field),                 PDF_INT,     flags, keyname, edname, editor
+#define DEFINE_FIELD_FLOAT(field, flags, keyname, edname, editor)               , {propdata_t::ToFieldType<float DataClass::*>(&DataClass::field),                PDF_FLOAT,   flags, keyname, edname, editor
+#define DEFINE_FIELD_BOOL(field, flags, keyname, edname, editor)                , {propdata_t::ToFieldType<bool DataClass::*>(&DataClass::field),                 PDF_BOOL,    flags, keyname, edname, editor
+#define DEFINE_FIELD_ENTITY(type, field, flags, keyname, edname, editor)        , {propdata_t::ToFieldType<CEntityPointer<type> DataClass::*>(&DataClass::field), PDF_ENTITY,  flags, keyname, edname, editor
+#define DEFINE_FIELD_FLAGS(field, flags, keyname, edname, editor)               , {propdata_t::ToFieldType<UINT DataClass::*>(&DataClass::field),                 PDF_FLAGS,   flags, keyname, edname, editor
 
-#define DEFINE_FIELD_STRINGFN(field, flags, keyname, edname, fn, editor)        , {propdata_t::ToFieldType<const char* DataClass::*>(&DataClass::field),  PDF_STRING,  flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, const char*>(&DataClass::fn),         NULL,                                     editor
-#define DEFINE_FIELD_VECTORFN(field, flags, keyname, edname, fn, editor)        , {propdata_t::ToFieldType<float3_t DataClass::*>(&DataClass::field),     PDF_VECTOR,  flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, const float3&>(&DataClass::fn),       NULL,                                     editor
-#define DEFINE_FIELD_VECTOR4FN(field, flags, keyname, edname, fn, editor)       , {propdata_t::ToFieldType<float4_t DataClass::*>(&DataClass::field),     PDF_VECTOR4, flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, const float4&>(&DataClass::fn),       NULL,                                     editor
-#define DEFINE_FIELD_ANGLESFN(field, flags, keyname, edname, fn, editor)        , {propdata_t::ToFieldType<SMQuaternion DataClass::*>(&DataClass::field), PDF_ANGLES,  flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, const SMQuaternion&>(&DataClass::fn), NULL,                                     editor
-#define DEFINE_FIELD_INTFN(field, flags, keyname, edname, fn, editor)           , {propdata_t::ToFieldType<int DataClass::*>(&DataClass::field),          PDF_INT,     flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, int>(&DataClass::fn),                 NULL,                                     editor
-#define DEFINE_FIELD_ENUMFN(type, field, flags, keyname, edname, fn, editor)    , {propdata_t::ToFieldType<type DataClass::*>(&DataClass::field),         PDF_INT,     flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, int>(&DataClass::fn),                 NULL,                                     editor
-#define DEFINE_FIELD_FLOATFN(field, flags, keyname, edname, fn, editor)         , {propdata_t::ToFieldType<float DataClass::*>(&DataClass::field),        PDF_FLOAT,   flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, float>(&DataClass::fn),               NULL,                                     editor
-#define DEFINE_FIELD_BOOLFN(field, flags, keyname, edname, fn, editor)          , {propdata_t::ToFieldType<bool DataClass::*>(&DataClass::field),         PDF_BOOL,    flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, bool>(&DataClass::fn),                NULL,                                     editor
-#define DEFINE_FIELD_ENTITYFN(field, flags, keyname, edname, fn, editor)        , {propdata_t::ToFieldType<CBaseEntity* DataClass::*>(&DataClass::field), PDF_ENTITY,  flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, CBaseEntity*>(&DataClass::fn),        NULL,                                     editor
-#define DEFINE_FIELD_ENTITY2FN(type, field, flags, keyname, edname, fn, editor) , {propdata_t::ToFieldType<type* DataClass::*>(&DataClass::field),        PDF_ENTITY,  flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, type*>(&DataClass::fn),               CEntityFactoryMap::IsEntityOfClass<type>, editor
-//#define DEFINE_FIELD_PARENTFN(field, flags, keyname, edname, fn, editor) , {(fieldtype)&DataClass::field, PDF_PARENT, flags, keyname, edname, fn, editor
+#define DEFINE_FIELD_STRINGFN(field, flags, keyname, edname, fn, editor)        , {propdata_t::ToFieldType<const char* DataClass::*>(&DataClass::field),          PDF_STRING,  flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, const char*>(&DataClass::fn),         editor
+#define DEFINE_FIELD_VECTORFN(field, flags, keyname, edname, fn, editor)        , {propdata_t::ToFieldType<float3_t DataClass::*>(&DataClass::field),             PDF_VECTOR,  flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, const float3&>(&DataClass::fn),       editor
+#define DEFINE_FIELD_VECTOR4FN(field, flags, keyname, edname, fn, editor)       , {propdata_t::ToFieldType<float4_t DataClass::*>(&DataClass::field),             PDF_VECTOR4, flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, const float4&>(&DataClass::fn),       editor
+#define DEFINE_FIELD_ANGLESFN(field, flags, keyname, edname, fn, editor)        , {propdata_t::ToFieldType<SMQuaternion DataClass::*>(&DataClass::field),         PDF_ANGLES,  flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, const SMQuaternion&>(&DataClass::fn), editor
+#define DEFINE_FIELD_INTFN(field, flags, keyname, edname, fn, editor)           , {propdata_t::ToFieldType<int DataClass::*>(&DataClass::field),                  PDF_INT,     flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, int>(&DataClass::fn),                 editor
+#define DEFINE_FIELD_ENUMFN(type, field, flags, keyname, edname, fn, editor)    , {propdata_t::ToFieldType<type DataClass::*>(&DataClass::field),                 PDF_INT,     flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, int>(&DataClass::fn),                 editor
+#define DEFINE_FIELD_FLOATFN(field, flags, keyname, edname, fn, editor)         , {propdata_t::ToFieldType<float DataClass::*>(&DataClass::field),                PDF_FLOAT,   flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, float>(&DataClass::fn),               editor
+#define DEFINE_FIELD_BOOLFN(field, flags, keyname, edname, fn, editor)          , {propdata_t::ToFieldType<bool DataClass::*>(&DataClass::field),                 PDF_BOOL,    flags, keyname, edname, propdata_t::ToPFNFieldSet<DataClass, bool>(&DataClass::fn),                editor
 //#define DEFINE_FIELD_FLAGSFN(field, flags, keyname, edname, fn, editor)  , {(fieldtype)&DataClass::field, PDF_FLAGS,  flags, keyname, edname, fn, editor
 
 #define DEFINE_INPUT(method, keyname, edname, argtype)   , {propdata_t::ToInputFunc<void(DataClass::*)(inputdata_t*)>(&DataClass::method), argtype, PDFF_NOEDIT | PDFF_INPUT, keyname, edname, EDITOR_NONE
-#define DEFINE_OUTPUT(field, keyname, edname)            , {propdata_t::ToFieldType<output_t DataClass::*>(&DataClass::field), PDF_OUTPUT, PDFF_NOEDIT | PDFF_OUTPUT, keyname, edname, NULL, EDITOR_NONE
+#define DEFINE_OUTPUT(field, keyname, edname)            , {propdata_t::ToFieldType<output_t DataClass::*>(&DataClass::field), PDF_OUTPUT, PDFF_NOEDIT | PDFF_OUTPUT, keyname, edname, EDITOR_NONE
 #define DEFINE_MESSAGE(method, keyname, edname, argtype) , {propdata_t::ToInputFunc<void(DataClass::*)(inputdata_t*)>(&DataClass::method), argtype, PDFF_NOEDIT | PDFF_MESSAGE, keyname, edname, EDITOR_NONE
 
-#define DEFINE_FLAG(value, edname)                       , {(fieldtype)NULL, PDF_FLAG, value, NULL, edname, NULL, EDITOR_FLAGS
+#define DEFINE_FLAG(value, edname)                       , {(fieldtype)NULL, PDF_FLAG, value, NULL, edname, EDITOR_FLAGS
 
 #endif

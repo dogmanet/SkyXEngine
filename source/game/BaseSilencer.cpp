@@ -16,8 +16,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseSilencer, base_silencer);
 
-CBaseSilencer::CBaseSilencer(CEntityManager * pMgr):
-	BaseClass(pMgr)
+CBaseSilencer::CBaseSilencer()
 {
 	m_addonType = WPN_ADDON_SILENCER;
 }

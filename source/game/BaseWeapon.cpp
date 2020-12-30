@@ -93,33 +93,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseWeapon, base_weapon);
 
-CBaseWeapon::CBaseWeapon(CEntityManager * pMgr):
-	BaseClass(pMgr),
-
-	m_idTaskShoot(-1),
-
-	m_pSilencer(NULL),
-	m_pScope(NULL),
-	m_pHandle(NULL),
-	m_pMag(NULL),
-	m_fireMode(FIRE_MODE_SINGLE),
-	m_iFireModes(0),
-	
-	m_iCapacity(1),
-	m_iCurrentLoad(0),
-
-	m_fBaseSpread(0.33f),
-	m_fSpreadIdle(0.01f),
-	m_fSpreadCrouch(0.007f),
-	m_fSpreadCrawl(0.001f),
-	m_fSpreadWalk(1.0f),
-	m_fSpreadRun(4.0f),
-	m_fSpreadAirborne(5.0f),
-	m_fSpreadCondition(3.0f),
-	m_fSpreadArm(3.0f),
-	m_fSpreadIronSight(-0.8f),
-
-	m_fAimingRange(100.f)
+CBaseWeapon::CBaseWeapon()
 {
 	m_bIsWeapon = true;
 }
@@ -256,7 +230,7 @@ void CBaseWeapon::secondaryAction(BOOL st)
 	m_bInSecondaryAction = st != FALSE;
 	if(m_iZoomable)
 	{
-		((CPlayer*)m_pOwner)->getCrosshair()->enable(!st);
+		((CPlayer*)m_pOwner.getEntity())->getCrosshair()->enable(!st);
 	}
 }
 
@@ -280,7 +254,7 @@ void CBaseWeapon::reload()
 			printf(COLOR_MAGENTA "Mag full!\n" COLOR_RESET);
 			return;
 		}
-		int count = ((CBaseCharacter*)m_pOwner)->getInventory()->consumeItems(m_szLoadedAmmo, iWantLoad);
+		int count = ((CBaseCharacter*)m_pOwner.getEntity())->getInventory()->consumeItems(m_szLoadedAmmo, iWantLoad);
 		if(count)
 		{
 			bool isFast = m_iCapacity == m_iCurrentLoad;
@@ -309,7 +283,7 @@ void CBaseWeapon::reload()
 			if(pHUD)
 			{
 				pHUD->setWeaponCurrentLoad((m_pMag ? m_pMag->getLoad() : 0) + m_iCurrentLoad);
-				pHUD->setWeaponMaxAmmo(((CBaseCharacter*)m_pOwner)->getInventory()->getItemCount(m_szLoadedAmmo));
+				pHUD->setWeaponMaxAmmo(((CBaseCharacter*)m_pOwner.getEntity())->getInventory()->getItemCount(m_szLoadedAmmo));
 			}
 		}
 		else
@@ -531,12 +505,12 @@ void CBaseWeapon::updateHUDinfo()
 {
 	if(m_pOwner)
 	{
-		CHUDcontroller * pHUD = ((CBaseCharacter*)m_pOwner)->getHUDcontroller();
+		CHUDcontroller *pHUD = ((CBaseCharacter*)m_pOwner.getEntity())->getHUDcontroller();
 		if(pHUD)
 		{
 			pHUD->setWeaponMaxLoad((m_pMag ? m_pMag->getCapacity() : 0)/* + m_iCapacity*/);
 			pHUD->setWeaponCurrentLoad((m_pMag ? m_pMag->getLoad() : 0) + m_iCurrentLoad);
-			pHUD->setWeaponMaxAmmo(((CBaseCharacter*)m_pOwner)->getInventory()->getItemCount(m_szLoadedAmmo));
+			pHUD->setWeaponMaxAmmo(((CBaseCharacter*)m_pOwner.getEntity())->getInventory()->getItemCount(m_szLoadedAmmo));
 		}
 	}
 }

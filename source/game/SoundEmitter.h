@@ -29,15 +29,20 @@ class CSoundEmitter: public CPointEntity
 	DECLARE_CLASS(CSoundEmitter, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	CSoundEmitter(CEntityManager * pMgr);
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CSoundEmitter();
 
-	virtual void setSound(const char *szSound);
+	void setSound(const char *szSound);
 
-	void onSync() override;
+	void setPos(const float3 &pos) override;
+
+	void setVolume(float fVolume);
+	float getVolume();
+
+	void setDistance(float fDistance);
+	float getDistance();
 
 protected:
-
 	void updateFlags() override;
 
 	void play(inputdata_t *pInputdata);

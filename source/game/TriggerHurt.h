@@ -25,7 +25,7 @@ class CTriggerHurt: public CBaseTrigger
 	DECLARE_CLASS(CTriggerHurt, CBaseTrigger);
 	DECLARE_PROPTABLE();
 public:
-	DECLARE_CONSTRUCTOR();
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 	~CTriggerHurt();
 
 protected:

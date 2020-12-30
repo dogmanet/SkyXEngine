@@ -21,8 +21,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CNPCZombie, npc_zombie);
 
-CNPCZombie::CNPCZombie(CEntityManager * pMgr) :
-	BaseClass(pMgr),
+CNPCZombie::CNPCZombie():
 	m_stateDanger(NPC_STATE_DANGER_CALM),
 	m_iObserveRotateStep(0),
 	m_idRotateInterval(-1),
@@ -70,13 +69,11 @@ void CNPCZombie::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 	m_pActiveTool->stopAction();
 }
 
-void CNPCZombie::onSync()
+void CNPCZombie::setPos(const float3 &pos)
 {
-	BaseClass::onSync();
-
-	SAFE_CALL(m_pSndIdle, setWorldPos, getPos());
-	SAFE_CALL(m_pSndIdle2, setWorldPos, getPos());
-	SAFE_CALL(m_pSndDeath, setWorldPos, getPos());
+	SAFE_CALL(m_pSndIdle, setWorldPos, pos);
+	SAFE_CALL(m_pSndIdle2, setWorldPos, pos);
+	SAFE_CALL(m_pSndDeath, setWorldPos, pos);
 }
 
 void CNPCZombie::rotateThink(float dt)
@@ -294,9 +291,12 @@ void CNPCZombie::randWalk()
 	{*/
 		float rndradius = randf(20.f, 40.f)*0.5f;
 		float3 rndpos;
-		rndpos.x = m_vPosition.x + randf(-rndradius, rndradius);
-		rndpos.y = m_vPosition.y + randf(-rndradius, rndradius);
-		rndpos.z = m_vPosition.z + randf(-rndradius, rndradius);
+
+		float3 vPos = getPos();
+
+		rndpos.x = vPos.x + randf(-rndradius, rndradius);
+		rndpos.y = vPos.y + randf(-rndradius, rndradius);
+		rndpos.z = vPos.z + randf(-rndradius, rndradius);
 
 		//Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &rndpos);
 

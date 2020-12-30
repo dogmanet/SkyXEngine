@@ -26,7 +26,7 @@ class CBaseAmmo: public CBaseSupply
 	DECLARE_CLASS(CBaseAmmo, CBaseSupply);
 	DECLARE_PROPTABLE();
 public:
-	DECLARE_CONSTRUCTOR();
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 
 	//! Стреляет пулю
 	void fire(const float3 &vStart, const float3 &vDir, CBaseCharacter *pAttacker=NULL);
@@ -41,15 +41,15 @@ public:
 protected:
 
 	//! Начальная скорость
-	float m_fStartSpeed;
+	float m_fStartSpeed = 0.0f;
 	//! Масса пули
-	float m_fBulletMass;
+	float m_fBulletMass = 0.0f;
 	//! Бронебойность
-	float m_fArmorPiercing;
+	float m_fArmorPiercing = 0.0f;
 	//! Экспансивная?
-	bool m_isExpansive;
+	bool m_isExpansive = false;
 	//! Разрывная?
-	bool m_isBursting;
+	bool m_isBursting = false;
 
 	struct HitPoint
 	{
@@ -72,7 +72,7 @@ protected:
 	bool canHole(float fDurability, float fCurrentSpeed, float *pfNewSpeed);
 
 	//! Хранит толщину препятствия во время расчета выстрела. Изменяется во время полета от препятствия к препятствию
-	float m_fNextBarrierDepth;
+	float m_fNextBarrierDepth = 0.0f;
 
 	void fire(const float3 &vStart, const float3 &vDir, CBaseCharacter *pAttacker, float fSpeed);
 };

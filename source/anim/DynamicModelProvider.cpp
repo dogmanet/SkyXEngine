@@ -300,7 +300,7 @@ void CDynamicModelProvider::onSharedModelReady(CDynamicModelShared *pShared)
 }
 void CDynamicModelProvider::onSharedModelRelease(CDynamicModelShared *pShared)
 {
-	m_mModels[pShared->getResource()] = NULL;
+	m_mModels.erase(pShared->getResource());
 }
 void CDynamicModelProvider::onSharedModelFeaturesChanged(CDynamicModelShared *pShared)
 {

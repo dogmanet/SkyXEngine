@@ -573,7 +573,9 @@ GameData::GameData(HWND hWnd, bool isGame):
 		CBaseEntity *pEnt;
 		if(sscanf(argv[1], "%p", &pEnt))
 		{
-			LibReport(REPORT_MSG_LEVEL_WARNING, "Ent: id:%d; cls:'%s'; name:'%s'\n", pEnt->getId(), pEnt->getClassName(), pEnt->getName());
+			char tmp[64];
+			XGUIDToSting(*pEnt->getGUID(), tmp, sizeof(tmp));
+			LibReport(REPORT_MSG_LEVEL_WARNING, "Ent: guid:%s; cls:'%s'; name:'%s'\n", tmp, pEnt->getClassName(), pEnt->getName());
 		}
 	});
 	
@@ -1322,7 +1324,7 @@ void GameData::render()
 					, g_uFPS,
 
 					pAdapterDesc->szDescription,
-					pAdapterDesc->sizeTotalMemory / 1024 / 1024,
+					(UINT)(pAdapterDesc->sizeTotalMemory / 1024 / 1024),
 
 					(float)(pMemoryStats->sizeIndexBufferBytes + pMemoryStats->sizeRenderTargetBytes + pMemoryStats->sizeShaderConstBytes + pMemoryStats->sizeTextureBytes + pMemoryStats->sizeVertexBufferBytes) / 1024.0f / 1024.0f,
 					(float)pMemoryStats->sizeTextureBytes / 1024.0f / 1024.0f,

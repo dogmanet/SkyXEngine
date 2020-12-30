@@ -92,8 +92,8 @@ CResourceManager::CResourceManager(IXCore *pCore):
 
 bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceModel **ppOut, bool bForceReload)
 {
-	const AssotiativeArray<String, IXResourceModel*>::Node *pNode1;
-	if(!bForceReload && m_mpModels.KeyExists(szName, &pNode1) && (*pNode1->Val))
+	const Map<String, IXResourceModel*>::Node *pNode1;
+	if(!bForceReload && m_mpModels.KeyExists(szName, &pNode1))
 	{
 		(*pNode1->Val)->AddRef();
 		*ppOut = *pNode1->Val;
@@ -112,7 +112,7 @@ bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceMo
 	strlwr(szLowcaseExt);
 
 	CResourceModel *pResource = NULL;
-	const AssotiativeArray<AAString, Array<IXModelLoader*>>::Node *pNode;
+	const Map<AAString, Array<IXModelLoader*>>::Node *pNode;
 	if(m_mapModelLoaders.KeyExists(AAString(szLowcaseExt), &pNode))
 	{
 		auto &aLoaders = *pNode->Val;
@@ -284,7 +284,7 @@ bool XMETHODCALLTYPE CResourceManager::getModelInfo(const char *szName, XModelIn
 	char *szLowcaseExt = strdupa(szExt);
 	strlwr(szLowcaseExt);
 
-	const AssotiativeArray<AAString, Array<IXModelLoader*>>::Node *pNode;
+	const Map<AAString, Array<IXModelLoader*>>::Node *pNode;
 	if(m_mapModelLoaders.KeyExists(AAString(szLowcaseExt), &pNode))
 	{
 		auto &aLoaders = *pNode->Val;
@@ -330,7 +330,7 @@ void CResourceManager::onResourceModelRelease(CResourceModel *pResource)
 {
 	if(pResource->getFileName())
 	{
-		m_mpModels[pResource->getFileName()] = NULL;
+		m_mpModels.erase(pResource->getFileName());
 	}
 }
 
@@ -382,16 +382,13 @@ const XFormatName* XMETHODCALLTYPE CResourceManager::getSoundSupportedFormat(UIN
 
 bool XMETHODCALLTYPE CResourceManager::getTexture(const char *szName, IXResourceTexture **ppOut, bool bForceReload)
 {
-	const AssotiativeArray<String, IXResourceTexture*>::Node *pNode1;
+	const Map<String, IXResourceTexture*>::Node *pNode1;
 	if(!bForceReload && m_mpTextures.KeyExists(szName, &pNode1))
 	{
 		IXResourceTexture *pOut = (*pNode1->Val);
-		if(pOut)
-		{
-			*ppOut = pOut;
-			pOut->AddRef();
-			return(true);
-		}
+		*ppOut = pOut;
+		pOut->AddRef();
+		return(true);
 	}
 
 	char *szFileName = strdupa(szName);
@@ -414,7 +411,7 @@ bool XMETHODCALLTYPE CResourceManager::getTexture(const char *szName, IXResource
 	char *szLowcaseExt = strdupa(szExt);
 	strlwr(szLowcaseExt);
 
-	const AssotiativeArray<AAString, Array<IXTextureLoader*>>::Node *pNode;
+	const Map<AAString, Array<IXTextureLoader*>>::Node *pNode;
 	if(m_mapTextureLoaders.KeyExists(AAString(szLowcaseExt), &pNode))
 	{
 		auto &aLoaders = *pNode->Val;
@@ -541,7 +538,7 @@ bool XMETHODCALLTYPE CResourceManager::getTextureInfo(const char *szName, XTextu
 	char *szLowcaseExt = strdupa(szExt);
 	strlwr(szLowcaseExt);
 
-	const AssotiativeArray<AAString, Array<IXTextureLoader*>>::Node *pNode;
+	const Map<AAString, Array<IXTextureLoader*>>::Node *pNode;
 	if(m_mapTextureLoaders.KeyExists(AAString(szLowcaseExt), &pNode))
 	{
 		auto &aLoaders = *pNode->Val;

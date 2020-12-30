@@ -16,7 +16,7 @@ class CBaseline
 
 	struct ent_record_s
 	{
-		UINT m_id;
+		XGUID m_guid;
 		String m_sClassname;
 		AssotiativeArray<String, String> m_mProps;
 	};
