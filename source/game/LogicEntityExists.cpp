@@ -20,7 +20,7 @@ BEGIN_PROPTABLE(CLogicEntityExists)
 	DEFINE_OUTPUT(m_onTest, "OnTest", "On test")
 END_PROPTABLE()
 
-REGISTER_ENTITY(CLogicEntityExists, logic_entity_exists);
+REGISTER_ENTITY(CLogicEntityExists, logic_entity_exists, REC_ICON("dev_logic_entity_exist"));
 
 void CLogicEntityExists::setEntityName(inputdata_t *pInputdata)
 {

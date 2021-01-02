@@ -14,7 +14,7 @@ BEGIN_PROPTABLE(CLightPoint)
 	// empty
 END_PROPTABLE()
 
-REGISTER_ENTITY(CLightPoint, light_point);
+REGISTER_ENTITY(CLightPoint, light_point, REC_ICON("dev_light_point"));
 
 CLightPoint::CLightPoint()
 {

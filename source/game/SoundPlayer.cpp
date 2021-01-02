@@ -47,7 +47,7 @@ END_PROPTABLE()
 
 //**************************************************************************
 
-REGISTER_ENTITY(CSoundPlayer, sound_player);
+REGISTER_ENTITY(CSoundPlayer, sound_player, REC_ICON("dev_sound_player"));
 
 //##########################################################################
 

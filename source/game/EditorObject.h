@@ -65,9 +65,15 @@ public:
 		return(m_pEntity);
 	}
 
+	IXTexture* XMETHODCALLTYPE getIcon() override
+	{
+		return(m_pIcon);
+	}
+
 protected:
 	CBaseEntity *m_pEntity = NULL;
 	const char *m_szClassName = NULL;
+	IXTexture *m_pIcon = NULL;
 
 	CEditable *m_pEditable;
 

@@ -25,6 +25,7 @@ struct X_PROP_FIELD
 	bool isGeneric;
 };
 
+class IXTexture;
 class IXEditorObject: public IXUnknown
 {
 public:
@@ -58,6 +59,8 @@ public:
 
 	virtual const char* XMETHODCALLTYPE getTypeName() = 0;
 	virtual const char* XMETHODCALLTYPE getClassName() = 0;
+
+	virtual IXTexture* XMETHODCALLTYPE getIcon() = 0;
 };
 
 

@@ -17,7 +17,7 @@ BEGIN_PROPTABLE(CLightDirectional)
 	DEFINE_FIELD_FLOATFN(m_fInnerAngle, 0, "inner_angle", "Inner angle", setInnerAngle, EDITOR_TEXTFIELD)
 END_PROPTABLE()
 
-REGISTER_ENTITY(CLightDirectional, light_directional);
+REGISTER_ENTITY(CLightDirectional, light_directional, REC_ICON("dev_light_directional"));
 
 CLightDirectional::CLightDirectional()
 {

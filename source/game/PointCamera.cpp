@@ -14,7 +14,7 @@ BEGIN_PROPTABLE(CPointCamera)
 // empty
 END_PROPTABLE()
 
-REGISTER_ENTITY(CPointCamera, point_camera);
+REGISTER_ENTITY(CPointCamera, point_camera, REC_ICON("dev_point_camera"));
 
 CPointCamera::CPointCamera()
 {

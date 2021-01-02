@@ -35,7 +35,7 @@ END_PROPTABLE()
 
 //**************************************************************************
 
-REGISTER_ENTITY(CSoundEmitter, sound_emitter);
+REGISTER_ENTITY(CSoundEmitter, sound_emitter, REC_ICON("dev_sound_emitter"));
 
 //##########################################################################
 

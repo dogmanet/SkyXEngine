@@ -148,6 +148,7 @@ void named_output_t::onEntityAdded(CBaseEntity *pEnt)
 	if(!pField || !(pField->flags & PDFF_INPUT))
 	{
 		printf(COLOR_CYAN "Class '%s' has no input '%s', obj '%s'\n" COLOR_RESET, pEnt->getClassName(), szTargetInput, szTargetName);
+		return;
 	}
 
 	input_t &out = aOutputs[aOutputs.size()];

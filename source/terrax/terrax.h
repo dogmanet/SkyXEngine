@@ -160,6 +160,11 @@ struct CTerraXRenderStates
 	IGXIndexBuffer *pHandler3DIB;
 	IGXRenderBuffer *pHandler3DRB;
 
+	IGXVertexBuffer *pIconVB;
+	IGXIndexBuffer *pIcon3DIB;
+	IGXRenderBuffer *pIcon3DRB;
+	ID idIconShaderKit = -1;
+
 	IGXVertexBuffer *pTransformHandlerVB;
 	IGXRenderBuffer *pTransformHandlerRB;
 	IGXIndexBuffer *pTransformHandlerScaleIB;
@@ -168,6 +173,7 @@ struct CTerraXRenderStates
 
 	IGXRenderBuffer *pCreateCrossRB;
 
+	IGXSamplerState *pSamplerLinearClamp;
 };
 extern CTerraXRenderStates g_xRenderStates;
 

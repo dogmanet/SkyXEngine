@@ -27,7 +27,7 @@ BEGIN_PROPTABLE(CLogicRelay)
 	DEFINE_FLAG(LOGIC_START_DISABLED, "Start Disabled")
 END_PROPTABLE()
 
-REGISTER_ENTITY(CLogicRelay, logic_relay);
+REGISTER_ENTITY(CLogicRelay, logic_relay, REC_ICON("dev_logic_relay"));
 
 void CLogicRelay::turnOn(inputdata_t * pInputdata)
 {

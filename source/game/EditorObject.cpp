@@ -34,6 +34,7 @@ CEditorObject::CEditorObject(CEditable *pEditable, const char *szClassName):
 CEditorObject::~CEditorObject()
 {
 	m_pEditable->removeObject(this);
+	mem_release(m_pIcon);
 }
 
 void CEditorObject::_iniFieldList()
@@ -127,6 +128,21 @@ void CEditorObject::_iniFieldList()
 		}
 
 		pTable = pTable->pBaseProptable;
+	}
+
+
+	IEntityFactory *pFactory = CEntityFactoryMap::GetInstance()->getFactory(m_szClassName);
+	if(pFactory)
+	{
+		const char *szIcon = pFactory->getKV("icon");
+		if(szIcon)
+		{
+			IXMaterialSystem *pMatSys = (IXMaterialSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID);
+			if(pMatSys)
+			{
+				pMatSys->loadTexture(szIcon, &m_pIcon);
+			}
+		}
 	}
 }
 

@@ -22,7 +22,7 @@ BEGIN_PROPTABLE(CEnvSkybox)
 	DEFINE_FLAG(SKYBOX_DISABLED, "Initially dark")
 END_PROPTABLE()
 
-REGISTER_ENTITY(CEnvSkybox, env_skybox);
+REGISTER_ENTITY(CEnvSkybox, env_skybox, REC_ICON("dev_env_skybox"));
 
 CEnvSkybox::CEnvSkybox()
 {

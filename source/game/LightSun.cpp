@@ -14,7 +14,7 @@ BEGIN_PROPTABLE(CLightSun)
 	// empty
 END_PROPTABLE()
 
-REGISTER_ENTITY(CLightSun, light_sun);
+REGISTER_ENTITY(CLightSun, light_sun, REC_ICON("dev_light_sun"));
 
 CLightSun::CLightSun()
 {

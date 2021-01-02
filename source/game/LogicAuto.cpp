@@ -18,7 +18,7 @@ BEGIN_PROPTABLE(CLogicAuto)
 	DEFINE_FIELD_FLOAT(m_fDelay, PDFF_NONE, "delay", "Delay before trigger", EDITOR_TIMEFIELD)
 END_PROPTABLE()
 
-REGISTER_ENTITY(CLogicAuto, logic_auto);
+REGISTER_ENTITY(CLogicAuto, logic_auto, REC_ICON("dev_logic_auto"));
 
 void CLogicAuto::activate()
 {

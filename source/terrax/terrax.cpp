@@ -1012,6 +1012,8 @@ int main(int argc, char **argv)
 	USHORT pHandlerIndices[] = {0, 1, 2, 3, 4, 5, 6, 7};
 	g_xRenderStates.pHandlerIB = pDevice->createIndexBuffer(sizeof(USHORT)* 8, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pHandlerIndices);
 
+	g_xRenderStates.idIconShaderKit = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_icon.vs"), g_xRenderStates.idTexturedShaderPS);
+
 	float3_t cubeData[] = {
 		{-0.5f, -0.5f, -0.5f},
 		{-0.5f, -0.5f, 0.5f},
@@ -1035,6 +1037,27 @@ int main(int argc, char **argv)
 	USHORT pHandler3DIndices[] = {0, 1, 0, 2, 0, 4, 6, 4, 6, 2, 6, 7, 5, 4, 5, 7, 5, 1, 3, 7, 3, 1, 3, 2};
 	g_xRenderStates.pHandler3DIB = pDevice->createIndexBuffer(sizeof(USHORT) * 24, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pHandler3DIndices);
 
+	// Object icons
+	GXVertexElement oLayoutIcon[] =
+	{
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD, GXDECLSPEC_PER_VERTEX_DATA},
+		{1, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1, GXDECLSPEC_PER_INSTANCE_DATA},
+		GX_DECL_END()
+	};
+	pVD = pDevice->createVertexDeclaration(oLayoutIcon);
+	g_xRenderStates.pIconVB = pDevice->createVertexBuffer((sizeof(float3_t) + sizeof(float2_t)) * 4, GXBUFFER_USAGE_STREAM);
+	IGXVertexBuffer *ppIconVB3D[] = {g_xRenderStates.pIconVB, g_xRenderStates.pHandlerInstanceVB};
+	g_xRenderStates.pIcon3DRB = pDevice->createRenderBuffer(2, ppIconVB3D, pVD);
+	mem_release(pVD);
+
+	USHORT pIcon3DIndices[] = {0, 1, 2, 0, 2, 3};
+	g_xRenderStates.pIcon3DIB = pDevice->createIndexBuffer(sizeof(USHORT) * 6, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pIcon3DIndices);
+
+	GXSamplerDesc samplerDesc;
+	samplerDesc.addressU = samplerDesc.addressV = samplerDesc.addressW = GXTEXTURE_ADDRESS_CLAMP;
+	samplerDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
+	g_xRenderStates.pSamplerLinearClamp = pDevice->createSamplerState(&samplerDesc);
 
 	{
 		// Transform handlers
@@ -1263,6 +1286,7 @@ void XRender3D()
 			if(pvData)
 			{
 				g_xRenderStates.pHandlerInstanceVB->unlock();
+				pvData = NULL;
 			}
 			if(uHandlerCount)
 			{
@@ -1279,6 +1303,107 @@ void XRender3D()
 
 		pCtx->setRasterizerState(pOldRS);
 		mem_release(pOldRS);
+
+		{
+			struct IconVertex
+			{
+				float3_t vPos;
+				float2_t vTex;
+			};
+
+			float3 vUp = g_xConfig.m_pViewportCamera[XWP_TOP_LEFT]->getUp() * 0.1f;
+			float3 vRight = g_xConfig.m_pViewportCamera[XWP_TOP_LEFT]->getRight() * 0.1f;
+
+			IconVertex *pvIconData;
+			if(g_xRenderStates.pIconVB->lock((void**)&pvIconData, GXBL_WRITE))
+			{
+				pvIconData[0].vPos = float3(-vRight - vUp);
+				pvIconData[0].vTex = float2_t(0.0f, 1.0f);
+				pvIconData[1].vPos = float3(-vRight + vUp);
+				pvIconData[1].vTex = float2_t(0.0f, 0.0f);
+				pvIconData[2].vPos = float3(vRight + vUp);
+				pvIconData[2].vTex = float2_t(1.0f, 0.0f);
+				pvIconData[3].vPos = float3(vRight - vUp);
+				pvIconData[3].vTex = float2_t(1.0f, 1.0f);
+				g_xRenderStates.pIconVB->unlock();
+			}
+
+
+			s_pColorBuffer->update(&float4(1.0f, 1.0f, 1.0f, 1.0f));
+			pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
+			SGCore_ShaderBind(g_xRenderStates.idIconShaderKit);
+			pCtx->setIndexBuffer(g_xRenderStates.pIcon3DIB);
+			pCtx->setRenderBuffer(g_xRenderStates.pIcon3DRB);
+			pCtx->setSamplerState(g_xRenderStates.pSamplerLinearClamp, 0);
+
+			struct Icon
+			{
+				IXTexture *pTexture;
+				float3_t vPos;
+			};
+			Array<Icon> aIcons;
+			Icon icon;
+			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+			{
+				if((icon.pTexture = g_pLevelObjects[i]->getIcon()))
+				{
+					icon.vPos = g_pLevelObjects[i]->getPos();
+					aIcons.push_back(icon);
+				}
+			}
+			aIcons.quickSort([](const Icon &a, const Icon &b){
+				return(a.pTexture < b.pTexture);
+			});
+
+			UINT uIconCount = 0;
+			IXTexture *pTexture = aIcons.size() ? aIcons[0].pTexture : NULL;
+			bool bForceDraw = false;
+			for(UINT i = 0, l = aIcons.size(); i < l; ++i)
+			{
+				if(!pvData)
+				{
+					if(g_xRenderStates.pHandlerInstanceVB->lock((void**)&pvData, GXBL_WRITE))
+					{
+						IGXBaseTexture *pTex = NULL;
+						aIcons[i].pTexture->getAPITexture(&pTex);
+						pCtx->setPSTexture(pTex);
+						mem_release(pTex);
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				if(pTexture == aIcons[i].pTexture)
+				{
+					pvData[uIconCount++] = aIcons[i].vPos;
+				}
+				else
+				{
+					pTexture = aIcons[i].pTexture;
+					bForceDraw = true;
+					--i;
+				}
+				if(bForceDraw || uIconCount == X_MAX_HANDLERS_PER_DIP)
+				{
+					g_xRenderStates.pHandlerInstanceVB->unlock();
+					pCtx->drawIndexedInstanced(uIconCount, 8, 12, 0, 0);
+					pvData = NULL;
+					uIconCount = 0;
+				}
+			}
+			if(pvData)
+			{
+				g_xRenderStates.pHandlerInstanceVB->unlock();
+				pvData = NULL;
+			}
+			if(uIconCount)
+			{
+				pCtx->drawIndexedInstanced(uIconCount, 8, 12, 0, 0);
+			}
+			pCtx->setSamplerState(NULL, 0);
+		}
 	}
 }
 

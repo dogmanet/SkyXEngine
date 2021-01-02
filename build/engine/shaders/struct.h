@@ -339,6 +339,14 @@ struct VSI_TXHandler
 	float3 vInstPos	:TEXCOORD0;
 };
 
+struct VSI_TXIcon 
+{
+	float3 vPosition	:POSITION0;
+	float2 vTexUV	:TEXCOORD0;
+	
+	float3 vInstPos	:TEXCOORD1;
+};
+
 struct VSI_DbgColorvertex
 {
 	float3 vPosition	:POSITION0;
