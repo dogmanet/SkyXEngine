@@ -2,6 +2,7 @@
 
 //#include <render/sxrender.h>
 #include <mtrl/sxmtrl.h>
+#include <xcommon/resource/IXResourceManager.h>
 
 #include "Editable.h"
 
@@ -35,6 +36,7 @@ CEditorObject::~CEditorObject()
 {
 	m_pEditable->removeObject(this);
 	mem_release(m_pIcon);
+	mem_release(m_pModel);
 }
 
 void CEditorObject::_iniFieldList()
@@ -143,12 +145,35 @@ void CEditorObject::_iniFieldList()
 				pMatSys->loadTexture(szIcon, &m_pIcon);
 			}
 		}
+
+		const char *szModel = pFactory->getKV("model");
+		if(szModel)
+		{
+			IXResourceManager *pResourceManager = Core_GetIXCore()->getResourceManager();
+			IXModelProvider *pProvider = (IXModelProvider*)Core_GetIXCore()->getPluginManager()->getInterface(IXMODELPROVIDER_GUID);
+
+			IXResourceModel *pResource;
+			if(pResourceManager->getModel(szModel, &pResource))
+			{
+				IXDynamicModel *pModel;
+				if(pProvider->createDynamicModel(pResource, &pModel))
+				{
+					m_pModel = pModel;
+					m_pModel->setPosition(getPos());
+					m_pModel->setOrientation(getOrient());
+				}
+				mem_release(pResource);
+			}
+		}
+
+		//m_pModel
 	}
 }
 
 void XMETHODCALLTYPE CEditorObject::setPos(const float3_t &pos)
 {
 	SAFE_CALL(m_pEntity, setPos, pos);
+	SAFE_CALL(m_pModel, setPosition, pos);
 	m_vPos = pos;
 }
 
@@ -191,6 +216,7 @@ void CEditorObject::setScale(const float3_t &vScale, bool isSeparate)
 void XMETHODCALLTYPE CEditorObject::setOrient(const SMQuaternion &orient)
 {
 	SAFE_CALL(m_pEntity, setOrient, orient);
+	SAFE_CALL(m_pModel, setOrientation, orient);
 
 	m_qRot = orient;
 }
@@ -215,6 +241,7 @@ float3_t XMETHODCALLTYPE CEditorObject::getPos()
 	if(m_pEntity)
 	{
 		m_vPos = m_pEntity->getPos();
+		SAFE_CALL(m_pModel, setPosition, m_vPos);
 	}
 	return(m_vPos);
 }
@@ -224,6 +251,7 @@ SMQuaternion XMETHODCALLTYPE CEditorObject::getOrient()
 	if(m_pEntity)
 	{
 		m_qRot = m_pEntity->getOrient();
+		SAFE_CALL(m_pModel, setOrientation, m_qRot);
 	}
 	return(m_qRot);
 }
@@ -231,14 +259,20 @@ SMQuaternion XMETHODCALLTYPE CEditorObject::getOrient()
 void XMETHODCALLTYPE CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 {
 	*pvMin = *pvMax = float3();
-	if(m_pEntity)
-	{
-		m_pEntity->getMinMax(pvMin, pvMax);
-	}
+
+	SAFE_CALL(m_pEntity, getMinMax, pvMin, pvMax);
 
 	if(SMVector3Length2(*pvMax - *pvMin) < 0.0001f)
 	{
-		*pvMin = -(*pvMax = float3(0.1f, 0.1f, 0.1f));
+		if(m_pModel)
+		{
+			*pvMin = m_pModel->getLocalBoundMin();
+			*pvMax = m_pModel->getLocalBoundMax();
+		}
+		else
+		{
+			*pvMin = -(*pvMax = float3(0.1f));
+		}
 	}
 
 	*pvMin += m_vPos;
@@ -266,11 +300,14 @@ void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D)
 	{
 		pCtx->setBlendFactor(GX_COLOR_ARGB(70, 255, 0, 0));
 		m_pEntity->renderEditor(is3D);
+
+		SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
 	}
 
 	pCtx->setRasterizerState(m_pEditable->m_pRSWireframe);
 	pCtx->setBlendFactor(GX_COLOR_ARGB(255, 255, 255, 0));
 	m_pEntity->renderEditor(is3D);
+	SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
 
 	pCtx->setBlendState(pOldBlendState);
 	pCtx->setRasterizerState(pOldRS);
@@ -384,4 +421,18 @@ void XMETHODCALLTYPE CEditorObject::setSelected(bool set)
 	m_isSelected = set;
 
 	m_pEditable->onSelectionChanged(this);
+}
+
+void XMETHODCALLTYPE CEditorObject::setSimulationMode(bool set)
+{
+	SAFE_CALL(m_pModel, enable, !set);
+}
+
+bool XMETHODCALLTYPE CEditorObject::hasVisualModel()
+{
+	float3 vMin, vMax;
+
+	SAFE_CALL(m_pEntity, getMinMax, &vMin, &vMax);
+
+	return(SMVector3Length2(vMax - vMin) >= 0.0001f || m_pModel);
 }

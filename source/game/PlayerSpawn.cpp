@@ -23,4 +23,4 @@ BEGIN_PROPTABLE(CPlayerSpawn)
 
 END_PROPTABLE()
 
-REGISTER_ENTITY(CPlayerSpawn, info_player_spawn);
+REGISTER_ENTITY(CPlayerSpawn, info_player_spawn, REC_MODEL("meshes/dev/playerstart.dse"));

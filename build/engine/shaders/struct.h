@@ -339,6 +339,14 @@ struct VSI_TXHandler
 	float3 vInstPos	:TEXCOORD0;
 };
 
+struct VSI_TXBound 
+{
+	float3 vPosition  :POSITION0;
+	
+	float3 vInstPos   :TEXCOORD0;
+	float3 vInstSize  :TEXCOORD1;
+};
+
 struct VSI_TXIcon 
 {
 	float3 vPosition	:POSITION0;

@@ -156,6 +156,7 @@ struct CTerraXRenderStates
 	IGXRenderBuffer *pHandlerRB;
 	ID idHandlerShaderVS = -1;
 	ID idHandlerShaderKit = -1;
+	ID idBoundShaderKit = -1;
 
 	IGXIndexBuffer *pHandler3DIB;
 	IGXRenderBuffer *pHandler3DRB;

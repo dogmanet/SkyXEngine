@@ -7,6 +7,7 @@
 #include <common/array.h>
 
 class CEditable;
+class IXDynamicModel;
 class CEditorObject final: public IXUnknownImplementation<IXEditorObject>
 {
 	DECLARE_CLASS(CEditorObject, IXEditorObject);
@@ -70,10 +71,15 @@ public:
 		return(m_pIcon);
 	}
 
+	void XMETHODCALLTYPE setSimulationMode(bool set) override;
+
+	bool XMETHODCALLTYPE hasVisualModel() override;
+
 protected:
 	CBaseEntity *m_pEntity = NULL;
 	const char *m_szClassName = NULL;
 	IXTexture *m_pIcon = NULL;
+	IXDynamicModel *m_pModel = NULL;
 
 	CEditable *m_pEditable;
 

@@ -607,6 +607,11 @@ public:
 					, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOMOVE);
 
 				EnableWindow(g_hWndMain, FALSE);
+
+				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+				{
+					g_pLevelObjects[i]->setSimulationMode(true);
+				}
 			}
 			else
 			{
@@ -620,6 +625,11 @@ public:
 				PostMessage(g_hWndMain, WM_SIZE, 0, 0);
 
 				ShowCursor(TRUE);
+
+				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+				{
+					g_pLevelObjects[i]->setSimulationMode(false);
+				}
 			}
 		}
 	}
@@ -1004,11 +1014,12 @@ int main(int argc, char **argv)
 	};
 	pVD = pDevice->createVertexDeclaration(oLayoutHandler);
 	g_xRenderStates.pHandlerVB = pDevice->createVertexBuffer(sizeof(float3_t) * 8, GXBUFFER_USAGE_STREAM);
-	g_xRenderStates.pHandlerInstanceVB = pDevice->createVertexBuffer(sizeof(float3_t) * X_MAX_HANDLERS_PER_DIP, GXBUFFER_USAGE_STREAM);
+	g_xRenderStates.pHandlerInstanceVB = pDevice->createVertexBuffer(sizeof(float3_t) * 2 * X_MAX_HANDLERS_PER_DIP, GXBUFFER_USAGE_STREAM);
 	IGXVertexBuffer *ppVB[] = {g_xRenderStates.pHandlerVB, g_xRenderStates.pHandlerInstanceVB};
 	g_xRenderStates.pHandlerRB = pDevice->createRenderBuffer(2, ppVB, pVD);
 	g_xRenderStates.idHandlerShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_handler.vs");
 	g_xRenderStates.idHandlerShaderKit = SGCore_ShaderCreateKit(g_xRenderStates.idHandlerShaderVS, g_xRenderStates.idColoredShaderPS);
+	g_xRenderStates.idBoundShaderKit = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_bound.vs"), g_xRenderStates.idColoredShaderPS);
 	USHORT pHandlerIndices[] = {0, 1, 2, 3, 4, 5, 6, 7};
 	g_xRenderStates.pHandlerIB = pDevice->createIndexBuffer(sizeof(USHORT)* 8, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pHandlerIndices);
 
@@ -1024,10 +1035,21 @@ int main(int argc, char **argv)
 		{0.5f, 0.5f, -0.5f},
 		{0.5f, 0.5f, 0.5f}
 	};
-	for(UINT i = 0; i < 8; ++i)
+	// for(UINT i = 0; i < 8; ++i)
+	// {
+	// 	cubeData[i] = (float3)(cubeData[i] * 0.16f);
+	// }
+
+	GXVertexElement oLayoutHandler3D[] =
 	{
-		cubeData[i] = (float3)(cubeData[i] * 0.16f);
-	}
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
+		{1, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD, GXDECLSPEC_PER_INSTANCE_DATA},
+		{1, 12, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD2, GXDECLSPEC_PER_INSTANCE_DATA},
+		GX_DECL_END()
+	};
+
+	mem_release(pVD);
+	pVD = pDevice->createVertexDeclaration(oLayoutHandler3D);
 	IGXVertexBuffer *pHandler3DVB = pDevice->createVertexBuffer(sizeof(float3_t) * 8, GXBUFFER_USAGE_STATIC, cubeData);
 	IGXVertexBuffer *ppVB3D[] = {pHandler3DVB, g_xRenderStates.pHandlerInstanceVB};
 	g_xRenderStates.pHandler3DRB = pDevice->createRenderBuffer(2, ppVB3D, pVD);
@@ -1245,12 +1267,19 @@ void XRender3D()
 		pCtx->setPSConstant(s_pColorBuffer);
 
 		pCtx->setPrimitiveTopology(GXPT_LINELIST);
-		SGCore_ShaderBind(g_xRenderStates.idHandlerShaderKit);
+		SGCore_ShaderBind(g_xRenderStates.idBoundShaderKit);
+		//SGCore_ShaderBind(g_xRenderStates.idHandlerShaderKit);
 		pCtx->setIndexBuffer(g_xRenderStates.pHandler3DIB);
 
 		s_pColorBuffer->update(&float4(1.0f, 0.0f, 1.0f, 1.0f));
 
-		float3_t *pvData;
+		struct BoundVertex
+		{
+			float3_t vPos;
+			float3_t vSize;
+		};
+
+		BoundVertex *pvData;
 
 		pCtx->setRenderBuffer(g_xRenderStates.pHandler3DRB);
 		for(bool isSelected = false;; isSelected = true)
@@ -1265,7 +1294,7 @@ void XRender3D()
 				{
 				continue;
 				}*/
-				if(isSelected != g_pLevelObjects[i]->isSelected())
+				if(isSelected != g_pLevelObjects[i]->isSelected() || (!isSelected && (g_pLevelObjects[i]->hasVisualModel() || g_pLevelObjects[i]->getIcon())))
 				{
 					continue;
 				}
@@ -1273,8 +1302,10 @@ void XRender3D()
 				{
 					break;
 				}
+				float3 vMin, vMax;
+				g_pLevelObjects[i]->getBound(&vMin, &vMax);
 
-				pvData[uHandlerCount++] = vPos;
+				pvData[uHandlerCount++] = {(float3)((vMax + vMin) * 0.5f), (float3)(vMax - vMin)};
 				if(uHandlerCount == X_MAX_HANDLERS_PER_DIP)
 				{
 					g_xRenderStates.pHandlerInstanceVB->unlock();
@@ -1355,14 +1386,16 @@ void XRender3D()
 				return(a.pTexture < b.pTexture);
 			});
 
+			float3_t *pvData2 = NULL;
+
 			UINT uIconCount = 0;
 			IXTexture *pTexture = aIcons.size() ? aIcons[0].pTexture : NULL;
 			bool bForceDraw = false;
 			for(UINT i = 0, l = aIcons.size(); i < l; ++i)
 			{
-				if(!pvData)
+				if(!pvData2)
 				{
-					if(g_xRenderStates.pHandlerInstanceVB->lock((void**)&pvData, GXBL_WRITE))
+					if(g_xRenderStates.pHandlerInstanceVB->lock((void**)&pvData2, GXBL_WRITE))
 					{
 						IGXBaseTexture *pTex = NULL;
 						aIcons[i].pTexture->getAPITexture(&pTex);
@@ -1377,7 +1410,7 @@ void XRender3D()
 
 				if(pTexture == aIcons[i].pTexture)
 				{
-					pvData[uIconCount++] = aIcons[i].vPos;
+					pvData2[uIconCount++] = aIcons[i].vPos;
 				}
 				else
 				{
@@ -1385,18 +1418,18 @@ void XRender3D()
 					bForceDraw = true;
 					--i;
 				}
-				if(bForceDraw || uIconCount == X_MAX_HANDLERS_PER_DIP)
+				if(bForceDraw || uIconCount == X_MAX_HANDLERS_PER_DIP * 2)
 				{
 					g_xRenderStates.pHandlerInstanceVB->unlock();
 					pCtx->drawIndexedInstanced(uIconCount, 8, 12, 0, 0);
-					pvData = NULL;
+					pvData2 = NULL;
 					uIconCount = 0;
 				}
 			}
-			if(pvData)
+			if(pvData2)
 			{
 				g_xRenderStates.pHandlerInstanceVB->unlock();
-				pvData = NULL;
+				pvData2 = NULL;
 			}
 			if(uIconCount)
 			{
@@ -1504,7 +1537,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 					}
 
 					pvData[uHandlerCount++] = vPos;
-					if(uHandlerCount == X_MAX_HANDLERS_PER_DIP)
+					if(uHandlerCount == X_MAX_HANDLERS_PER_DIP * 2)
 					{
 						g_xRenderStates.pHandlerInstanceVB->unlock();
 						pCtx->drawIndexedInstanced(uHandlerCount, 8, 4, 0, 0);

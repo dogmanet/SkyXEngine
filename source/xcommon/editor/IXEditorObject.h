@@ -61,6 +61,10 @@ public:
 	virtual const char* XMETHODCALLTYPE getClassName() = 0;
 
 	virtual IXTexture* XMETHODCALLTYPE getIcon() = 0;
+
+	virtual void XMETHODCALLTYPE setSimulationMode(bool set) = 0;
+
+	virtual bool XMETHODCALLTYPE hasVisualModel() = 0;
 };
 
 

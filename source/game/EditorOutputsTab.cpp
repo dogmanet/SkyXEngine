@@ -341,7 +341,7 @@ void CEditorOutputsTab::initSelection()
 		{
 			for(UINT j = 0, jl = m_aOutputs.size(); j < jl; ++j)
 			{
-				if(aTmpOutputs.indexOf(m_aOutputs[i], [](const char *a, const char *b){
+				if(aTmpOutputs.indexOf(m_aOutputs[j], [](const char *a, const char *b){
 					return(!fstrcmp(a, b));
 				}) < 0)
 				{
