@@ -1688,6 +1688,16 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		return(TRUE);
 	}
 
+	static const bool *terrax_detach_3d = GET_PCVAR_BOOL("terrax_detach_3d");
+	if(!terrax_detach_3d)
+	{
+		terrax_detach_3d = GET_PCVAR_BOOL("terrax_detach_3d");
+	}
+	else if(*terrax_detach_3d)
+	{
+		return(DefWindowProc(hWnd, message, wParam, lParam));
+	}
+
 	PAINTSTRUCT ps;
 	HDC hdc;
 	RECT rect; 
