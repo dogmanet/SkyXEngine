@@ -29,6 +29,7 @@ See the license in LICENSE
 
 #define G_RI_MATRIX_OBSERVER_VIEW	5	/*!< матрица вида камеры наблюдателя */
 #define G_RI_MATRIX_OBSERVER_PROJ	6	/*!< матрица проекции камеры наблюдателя */
+#define G_RI_MATRIX_OBSERVER_VIEWPROJ	8	/*!< матрица проекции камеры наблюдателя */
 
 //@DEPRECATED: оно надо вообще?
 #define G_RI_MATRIX_LIGHT_PROJ		7	/*!< матрица проекции для света */

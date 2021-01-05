@@ -87,6 +87,8 @@ public:
 	void sync();
 
 	void initGPUresources();
+
+	bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, bool isRayInWorldSpace = true) override;
 protected:
 	CAnimatedModelProvider *m_pProvider;
 	CAnimatedModelShared *m_pShared;

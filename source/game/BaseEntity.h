@@ -160,6 +160,11 @@ public:
 
 	void setName(const char *szName);
 
+	virtual bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, bool isRayInWorldSpace = true)
+	{
+		return(false);
+	}
+
 private:
 	void setClassName(const char *name);
 	void setDefaults();

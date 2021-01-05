@@ -792,3 +792,26 @@ void CAnimatedModel::sync()
 	m_pRenderFrameBones = m_pNextFrameBones;
 	m_pNextFrameBones = tmp;
 }
+
+bool XMETHODCALLTYPE CAnimatedModel::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, bool isRayInWorldSpace)
+{
+	float3 vRayStart = vStart;
+	float3 vRayEnd = vEnd;
+	if(isRayInWorldSpace)
+	{
+		float fInvScale = 1.0f / getScale();
+		float3 vDir = getOrientation().Conjugate() * (vEnd - vStart) * fInvScale;
+		vRayStart = (getOrientation().Conjugate() * (vRayStart - getPosition())) * fInvScale;
+		vRayEnd = vRayStart + vDir;
+	}
+
+	// FIXME implement in more accurate way
+
+	if(SMRayIntersectAABB(SMAABB(m_vLocalMin, m_vLocalMax), vRayStart, vRayEnd - vRayStart))
+	{
+		*pvOut = isRayInWorldSpace ? getPosition() : float3(0.0f);
+		return(true);
+	}
+
+	return(false);
+}

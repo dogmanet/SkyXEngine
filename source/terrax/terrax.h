@@ -10,7 +10,6 @@
 
 #define MAIN_WINDOW_TITLE      "TerraX"
 #define MAIN_WINDOW_CLASS      "X Main Window"
-#define GUI_WINDOW_CLASS       "X GUI Window"
 #define RENDER_WINDOW_CLASS    "X Viewport Window"
 #define WIDTH_ADJUST			2
 
@@ -199,6 +198,10 @@ bool XSaveLevel(const char *szNewName=NULL, bool bForcePrompt = false);
 void XLoadLevel(const char *szName);
 void XRender3D();
 void XRender2D(X_2D_VIEW view, float fScale, bool preScene);
+
+void XFrameRun(float fDeltaTime);
+
+#define XSELECT_STEP_DELAY 0.5f
 
 struct XBorderVertex
 {

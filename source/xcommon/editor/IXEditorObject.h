@@ -45,7 +45,7 @@ public:
 
 	virtual void XMETHODCALLTYPE renderSelection(bool is3D) = 0;
 
-	virtual bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl) = 0;
+	virtual bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, ID *pidMtrl = NULL) = 0;
 
 	virtual void XMETHODCALLTYPE remove() = 0;
 	virtual void XMETHODCALLTYPE create() = 0;

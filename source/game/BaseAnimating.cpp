@@ -621,8 +621,14 @@ void CBaseAnimating::_releaseEditorBoxes()
 
 void CBaseAnimating::renderEditor(bool is3D)
 {
-	if(m_pModel)
+	SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
+}
+
+bool CBaseAnimating::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, bool isRayInWorldSpace)
+{
+	if(m_pModel && m_pModel->isEnabled())
 	{
-		m_pModel->render(0, MF_OPAQUE | MF_TRANSPARENT);
+		return(m_pModel->rayTest(vStart, vEnd, pvOut, isRayInWorldSpace));
 	}
+	return(false);
 }

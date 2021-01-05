@@ -98,7 +98,6 @@ extern String g_sLevelName;
 
 // Forward declarations of functions included in this code module:
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-LRESULT CALLBACK GuiWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK RenderWndProc(HWND, UINT, WPARAM, LPARAM);
 void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheckItem = -1);
 void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
@@ -200,6 +199,7 @@ ATOM XRegisterClass(HINSTANCE hInstance)
 		return(FALSE);
 	}
 
+	wcex.style |= CS_DBLCLKS;
 	// Intilaizing the class for the viewport window
 	wcex.lpfnWndProc = RenderWndProc;
 	hBrush = CreateSolidBrush(RGB(255, 255, 255));
@@ -211,79 +211,7 @@ ATOM XRegisterClass(HINSTANCE hInstance)
 		return(FALSE);
 	}
 
-
-	
-	//DeleteObject(hBrush);
-
-
-	// Intilaizing the class for the gui window
-	wcex.lpfnWndProc = GuiWndProc;
-	hBrush = CreateSolidBrush(RGB(0, 0, 0));
-	wcex.hbrBackground = (HBRUSH)hBrush;
-	wcex.lpszClassName = GUI_WINDOW_CLASS;
-
-	if(!RegisterClassEx(&wcex))
-	{
-		return(FALSE);
-	}
-
 	return(TRUE);
-}
-
-void XInitGuiWindow(bool pre)
-{
-#if 0
-	if(pre)
-	{
-		g_pGuiWnd = CreateWindowA(GUI_WINDOW_CLASS, "Material editor", WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_WIDTH, WINDOW_HEIGHT, NULL, NULL, hInst, NULL);
-		ShowWindow(g_pGuiWnd, SW_SHOW);
-		UpdateWindow(g_pGuiWnd);
-
-		//DWM_BLURBEHIND dwmBlur = {0};
-		//dwmBlur.dwFlags = DWM_BB_ENABLE;
-		//dwmBlur.fEnable = TRUE;
-		//
-		//DwmEnableBlurBehindWindow(g_pGuiWnd, &dwmBlur);
-
-		MARGINS margins = {-1};
-
-		// Extend the frame across the whole window.
-		DwmExtendFrameIntoClientArea(g_pGuiWnd, &margins);
-	}
-	else
-	{
-		HMODULE hDLL = LoadLibrary("sxgui"
-#ifdef _DEBUG
-			"_d"
-#endif
-			".dll");
-		if(!hDLL)
-		{
-			LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to load sxgui"
-#ifdef _DEBUG
-				"_d"
-#endif
-				".dll");
-		}
-
-		gui::PFNINITINSTANCE pfnGUIInit;
-		pfnGUIInit = (gui::PFNINITINSTANCE)GetProcAddress(hDLL, "InitInstance");
-
-		if(!pfnGUIInit)
-		{
-			LibReport(REPORT_MSG_LEVEL_ERROR, "The procedure entry point InitInstance could not be located in the dynamic link library sxgui.dll");
-		}
-
-		g_pGUI = pfnGUIInit(SGCore_GetDXDevice(), "./editor_gui/", g_pGuiWnd);
-
-		g_pGUI->pushDesktop(g_pGUI->createDesktopA("main", "main.html"));
-	}
-#endif
-}
-
-void XGuiRender()
-{
-	//g_pGUI->render();
 }
 
 BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
@@ -1634,52 +1562,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return(0);
 }
 
-LRESULT CALLBACK GuiWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+struct SelectItem
 {
-	RECT rect;
-	PAINTSTRUCT ps;
-	HDC hdc;
-	
-	static float fCoeffWidth = 0.0f;
-	static float fCoeffHeight = 0.0f;
-	static int iLeftWidth = 0;
-	static int iTopHeight = 0;
-
-	IMSG msg;
-	msg.lParam = lParam;
-	msg.wParam = wParam;
-	msg.message = message;
-
-	// SSInput_AddMsg(msg);
-
-
-	//if(g_pGUI && !g_pGUI->putMessage(message, wParam, lParam))
-	//{
-		//return(TRUE);
-	//}
-
-	switch(message)
-	{
-	case WM_SIZE:
-		{
-			static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
-
-			if(!r_resize)
-			{
-				r_resize = (int*)GET_PCVAR_INT("r_resize");
-			}
-
-			if(r_resize)
-			{
-				*r_resize = 1;
-			}
-		}
-		break;
-	default:
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	}
-	return 0;
-}
+	float fDist2;
+	UINT uObj;
+};
+Array<SelectItem> g_aRaytracedItems;
+CCommandSelect *g_pSelectCmd = NULL;
+float g_fSelectDeltaTime = 0.0f;
+UINT g_uSelectedIndex = 0;
+bool g_isSelectionCtrl = false;
 
 LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -1837,6 +1729,12 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				XExecCommand(s_pRotateCmd);
 				s_pRotateCmd = NULL;
 			}
+			else if(g_pSelectCmd)
+			{
+				ReleaseCapture();
+				XExecCommand(g_pSelectCmd);
+				g_pSelectCmd = NULL;
+			}
 
 			POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 			GetClientRect(hWnd, &rect);
@@ -1892,6 +1790,10 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		}
 		break;
 
+	case WM_LBUTTONDBLCLK:
+		SendMessage(g_hWndMain, WM_COMMAND, MAKEWPARAM(ID_EDIT_PROPERTIES, 0), NULL);
+		break;
+
 	case WM_LBUTTONDOWN:
 		{
 			s_wasSelectionChanged = false;
@@ -1904,7 +1806,73 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			}
 
 
-			if(hWnd != g_hTopLeftWnd)
+			if(hWnd == g_hTopLeftWnd)
+			{
+				if(Button_GetCheck(g_hABArrowButton))
+				{
+					RECT rc;
+					GetWindowRect(hWnd, &rc);
+					float2 vWinSize((float)(rc.right - rc.left), (float)(rc.bottom - rc.top));
+					
+					// transform by matrix
+					SMMATRIX mViewProj;
+					Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEWPROJ, &mViewProj);
+					SMMATRIX mInvVP = SMMatrixInverse(NULL, mViewProj);
+
+					float3 vScreenPos(g_xState.vMousePos / vWinSize, 0.0f);
+					vScreenPos = vScreenPos * float3(2.0f, -2.0f, 1.0f) - float3(1.0f, -1.0f, 0.0f);
+					vScreenPos.z = -1.0f;
+					vScreenPos.w = 1.0f;
+
+
+					float3 vRayStart = vScreenPos * mInvVP;
+					vRayStart /= vRayStart.w;
+
+					vScreenPos.z = 1.0f;
+					float3 vRayDir = vScreenPos * mInvVP;
+					vRayDir /= vRayDir.w;
+					vRayDir = SMVector3Normalize(vRayDir - vRayStart);
+					// printf("%.2f, %.2f, %.2f\n", vRayStart.x, vRayStart.y, vRayStart.z);
+					// printf("%.2f, %.2f, %.2f\n\n", vRayEnd.x, vRayEnd.y, vRayEnd.z);
+
+					float3 vRayEnd = vRayStart + vRayDir * 1000.0f;
+
+					g_aRaytracedItems.clearFast();
+					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+					{
+						if(!g_pLevelObjects[i]->hasVisualModel())
+						{
+							float3 vPos = g_pLevelObjects[i]->getPos();
+							float fDist2 = SMDistancePointBeam2(vPos, vRayStart, vRayDir);
+							if(fDist2 < 0.1f * 0.1f)
+							{
+								g_aRaytracedItems.push_back({SMVector3Length2(vRayStart - vPos), i});
+							}
+						}
+						else
+						{
+							float3 vPos;
+							if(g_pLevelObjects[i]->rayTest(vRayStart, vRayEnd, &vPos))
+							{
+								g_aRaytracedItems.push_back({SMVector3Length2(vRayStart - vPos), i});
+							}
+						}
+					}
+
+					g_aRaytracedItems.quickSort([](const SelectItem &a, const SelectItem &b){
+						return(a.fDist2 < b.fDist2);
+					});
+
+					g_pSelectCmd = new CCommandSelect();
+					SetCapture(hWnd);
+					g_fSelectDeltaTime = XSELECT_STEP_DELAY;
+					g_uSelectedIndex = ~0;
+					g_isSelectionCtrl = GetKeyState(VK_CONTROL) < 0;
+
+					XFrameRun(0.0f);
+				}
+			}
+			else
 			{
 				if(Button_GetCheck(g_hABArrowButton))
 				{
@@ -2306,7 +2274,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			}
 			XUpdateStatusMPos();
 
-			if(Button_GetCheck(g_hABArrowButton) && !s_pMoveCmd && !s_pScaleCmd && !s_pRotateCmd)
+			if(Button_GetCheck(g_hABArrowButton) && !s_pMoveCmd && !s_pScaleCmd && !s_pRotateCmd && g_xState.activeWindow != XWP_TOP_LEFT)
 			{
 				if(XIsMouseInSelection(g_xState.activeWindow))
 				{
@@ -2475,6 +2443,62 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 	return 0;
+}
+
+void XFrameRun(float fDeltaTime)
+{
+	if(g_pSelectCmd)
+	{
+		g_fSelectDeltaTime += fDeltaTime;
+
+		if(g_fSelectDeltaTime >= XSELECT_STEP_DELAY)
+		{
+			g_fSelectDeltaTime = fmodf(g_fSelectDeltaTime, XSELECT_STEP_DELAY);
+
+			if(g_uSelectedIndex == ~0 && !g_isSelectionCtrl)
+			{
+				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+				{
+					if(g_pLevelObjects[i]->isSelected())
+					{
+						g_pLevelObjects[i]->setSelected(false);
+						g_pSelectCmd->addDeselected(i);
+					}
+				}
+			}
+
+			if(g_aRaytracedItems.size())
+			{
+				if(g_uSelectedIndex != ~0)
+				{
+					if(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->isSelected())
+					{
+						g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(false);
+						g_pSelectCmd->addDeselected(g_aRaytracedItems[g_uSelectedIndex].uObj);
+					}
+					else
+					{
+						g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(true);
+						g_pSelectCmd->addSelected(g_aRaytracedItems[g_uSelectedIndex].uObj);
+					}
+				}
+
+				++g_uSelectedIndex;
+				g_uSelectedIndex %= g_aRaytracedItems.size();
+
+				if(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->isSelected())
+				{
+					g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(false);
+					g_pSelectCmd->addDeselected(g_aRaytracedItems[g_uSelectedIndex].uObj);
+				}
+				else
+				{
+					g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(true);
+					g_pSelectCmd->addSelected(g_aRaytracedItems[g_uSelectedIndex].uObj);
+				}
+			}
+		}
+	}
 }
 
 void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheckItem)

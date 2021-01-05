@@ -317,7 +317,21 @@ void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D)
 
 bool XMETHODCALLTYPE CEditorObject::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl)
 {
-	// return(SGeom_TraceBeamId(m_idModel, &vStart, &vEnd, pvOut, pidMtrl));
+	//SMAABBIN
+	float3 vMin, vMax;
+	getBound(&vMin, &vMax);
+	if(SMRayIntersectAABB(SMAABB(vMin, vMax), vStart, vEnd - vStart))
+	{
+		if(m_pModel)
+		{
+			return(m_pModel->rayTest(vStart, vEnd, pvOut));
+		}
+		else if(m_pEntity)
+		{
+			return(m_pEntity->rayTest(vStart, vEnd, pvOut));
+		}
+	}
+	
 	return(false);
 }
 
@@ -329,6 +343,7 @@ void XMETHODCALLTYPE CEditorObject::remove()
 	}
 	REMOVE_ENTITY(m_pEntity);
 	m_pEntity = NULL;
+	SAFE_CALL(m_pModel, enable, false);
 	//m_guidEnt = XGUID();
 }
 void XMETHODCALLTYPE CEditorObject::preSetup()
@@ -358,6 +373,8 @@ void XMETHODCALLTYPE CEditorObject::create()
 	setPos(m_vPos, true);
 	setOrient(m_qRot, true);
 	setScale(m_vScale, true);
+
+	SAFE_CALL(m_pModel, enable, true);
 }
 
 void CEditorObject::resync()

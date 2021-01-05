@@ -333,3 +333,46 @@ void XMETHODCALLTYPE CDynamicModel::FinalRelease()
 {
 	m_pProvider->enqueueModelDelete(this);
 }
+
+bool XMETHODCALLTYPE CDynamicModel::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, bool isRayInWorldSpace)
+{
+	float3 vRayStart = vStart;
+	float3 vRayEnd = vEnd;
+	if(isRayInWorldSpace)
+	{
+		float fInvScale = 1.0f / getScale();
+		float3 vDir = getOrientation().Conjugate() * (vEnd - vStart) * fInvScale;
+		vRayStart = (getOrientation().Conjugate() * (vRayStart - getPosition())) * fInvScale;
+		vRayEnd = vRayStart + vDir;
+	}
+
+	auto *pResource = m_pShared->getResource();
+
+	UINT uLods = pResource->getLodCount();
+	if(!uLods)
+	{
+		return(false);
+	}
+
+	for(UINT i = 0, l = pResource->getSubsetCount(uLods - 1); i < l; ++i)
+	{
+		auto *pSubset = pResource->getSubset(uLods - 1, i);
+		for(UINT j = 0; j < pSubset->iIndexCount; j += 3)
+		{
+			if(SMTriangleIntersectLine(
+				pSubset->pVertices[pSubset->pIndices[j]].vPos,
+				pSubset->pVertices[pSubset->pIndices[j + 1]].vPos,
+				pSubset->pVertices[pSubset->pIndices[j + 2]].vPos,
+				vRayStart, vRayEnd, pvOut))
+			{
+				if(isRayInWorldSpace)
+				{
+					*pvOut = getOrientation() * (*pvOut * getScale()) + getPosition();
+				}
+				return(true);
+			}
+		}
+	}
+
+	return(false);
+}

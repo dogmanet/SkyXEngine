@@ -44,7 +44,6 @@ extern CPropertyWindow *g_pPropWindow;
 
 ATOM XRegisterClass(HINSTANCE hInstance);
 BOOL XInitInstance(HINSTANCE, int);
-void XInitGuiWindow(bool pre);
 
 Array<IXEditable*> g_pEditableSystems;
 Array<IXEditorObject*> g_pLevelObjects;
@@ -324,6 +323,8 @@ public:
 				}
 			}
 		}
+
+		XFrameRun(fDeltaTime);
 
 		return(true);
 	}
@@ -665,8 +666,6 @@ int main(int argc, char **argv)
 		return(1);
 	}
 
-	 XInitGuiWindow(true);
-
 	//SkyXEngine_Init(g_hTopLeftWnd, g_hWndMain, lpCmdLine);
 	IXEngine *pEngine = XEngineInit(argc, argv, "TerraX");
 	g_pEngine = pEngine;
@@ -688,7 +687,6 @@ int main(int argc, char **argv)
 	}, "Export model to obj format");
 
 	CRenderPipeline *pPipeline = new CRenderPipeline(Core_GetIXCore());
-	XInitGuiWindow(false);
 
 	CCVarEventListener cvarListener(pEngine->getCore());
 	auto *pChannel = pEngine->getCore()->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID);
