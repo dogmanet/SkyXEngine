@@ -334,8 +334,12 @@ void XMETHODCALLTYPE CDynamicModel::FinalRelease()
 	m_pProvider->enqueueModelDelete(this);
 }
 
-bool XMETHODCALLTYPE CDynamicModel::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, bool isRayInWorldSpace)
+bool XMETHODCALLTYPE CDynamicModel::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, float3 *pvNormal, bool isRayInWorldSpace, bool bReturnNearestPoint)
 {
+	if(!pvOut)
+	{
+		bReturnNearestPoint = false;
+	}
 	float3 vRayStart = vStart;
 	float3 vRayEnd = vEnd;
 	if(isRayInWorldSpace)
@@ -354,25 +358,91 @@ bool XMETHODCALLTYPE CDynamicModel::rayTest(const float3 &vStart, const float3 &
 		return(false);
 	}
 
-	for(UINT i = 0, l = pResource->getSubsetCount(uLods - 1); i < l; ++i)
+	if(bReturnNearestPoint)
 	{
-		auto *pSubset = pResource->getSubset(uLods - 1, i);
-		for(UINT j = 0; j < pSubset->iIndexCount; j += 3)
+		float fNearestDistance = FLT_MAX;
+		UINT uNearestIndex = ~0;
+		UINT uNearestSubset = ~0;
+		float3 vOut;
+
+		for(UINT i = 0, l = pResource->getSubsetCount(uLods - 1); i < l; ++i)
 		{
-			if(SMTriangleIntersectLine(
-				pSubset->pVertices[pSubset->pIndices[j]].vPos,
-				pSubset->pVertices[pSubset->pIndices[j + 1]].vPos,
-				pSubset->pVertices[pSubset->pIndices[j + 2]].vPos,
-				vRayStart, vRayEnd, pvOut))
+			auto *pSubset = pResource->getSubset(uLods - 1, i);
+			for(UINT j = 0; j < pSubset->iIndexCount; j += 3)
 			{
+				float3 vA = pSubset->pVertices[pSubset->pIndices[j]].vPos;
+				float3 vB = pSubset->pVertices[pSubset->pIndices[j + 1]].vPos;
+				float3 vC = pSubset->pVertices[pSubset->pIndices[j + 2]].vPos;
+				if(SMTriangleIntersectLine(
+					vA, vB, vC,
+					vRayStart, vRayEnd, &vOut))
+				{
+					float fDistance = SMVector3Length2(vOut - vRayStart);
+					if(fDistance < fNearestDistance)
+					{
+						fNearestDistance = fDistance;
+						*pvOut = vOut;
+						uNearestIndex = j;
+						uNearestSubset = i;
+					}
+				}
+			}
+		}
+
+		if(uNearestIndex != ~0)
+		{
+			if(isRayInWorldSpace)
+			{
+				*pvOut = getOrientation() * (*pvOut * getScale()) + getPosition();
+			}
+			if(pvNormal)
+			{
+				auto *pSubset = pResource->getSubset(uLods - 1, uNearestSubset);
+
+				float3 vA = pSubset->pVertices[pSubset->pIndices[uNearestIndex]].vPos;
+				float3 vB = pSubset->pVertices[pSubset->pIndices[uNearestIndex + 1]].vPos;
+				float3 vC = pSubset->pVertices[pSubset->pIndices[uNearestIndex + 2]].vPos;
+
+				*pvNormal = SMVector3Normalize(SMVector3Cross((vB - vA), (vC - vB)));
 				if(isRayInWorldSpace)
 				{
-					*pvOut = getOrientation() * (*pvOut * getScale()) + getPosition();
+					*pvNormal = getOrientation() * *pvNormal;
 				}
-				return(true);
+			}
+			return(true);
+		}
+	}
+	else
+	{
+		for(UINT i = 0, l = pResource->getSubsetCount(uLods - 1); i < l; ++i)
+		{
+			auto *pSubset = pResource->getSubset(uLods - 1, i);
+			for(UINT j = 0; j < pSubset->iIndexCount; j += 3)
+			{
+				float3 vA = pSubset->pVertices[pSubset->pIndices[j]].vPos;
+				float3 vB = pSubset->pVertices[pSubset->pIndices[j + 1]].vPos;
+				float3 vC = pSubset->pVertices[pSubset->pIndices[j + 2]].vPos;
+				if(SMTriangleIntersectLine(
+					vA, vB, vC,
+					vRayStart, vRayEnd, pvOut))
+				{
+					if(isRayInWorldSpace && pvOut)
+					{
+						*pvOut = getOrientation() * (*pvOut * getScale()) + getPosition();
+					}
+					if(pvNormal)
+					{
+						*pvNormal = SMVector3Normalize(SMVector3Cross((vB - vA), (vC - vB)));
+						if(isRayInWorldSpace)
+						{
+							*pvNormal = getOrientation() * *pvNormal;
+						}
+					}
+					return(true);
+				}
 			}
 		}
 	}
-
+	
 	return(false);
 }

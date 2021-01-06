@@ -315,7 +315,7 @@ void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D)
 	mem_release(pOldRS);
 }
 
-bool XMETHODCALLTYPE CEditorObject::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl)
+bool XMETHODCALLTYPE CEditorObject::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, float3 *pvNormal, ID *pidMtrl, bool bReturnNearestPoint)
 {
 	//SMAABBIN
 	float3 vMin, vMax;
@@ -324,11 +324,11 @@ bool XMETHODCALLTYPE CEditorObject::rayTest(const float3 &vStart, const float3 &
 	{
 		if(m_pModel)
 		{
-			return(m_pModel->rayTest(vStart, vEnd, pvOut));
+			return(m_pModel->rayTest(vStart, vEnd, pvOut, pvNormal, true, bReturnNearestPoint));
 		}
 		else if(m_pEntity)
 		{
-			return(m_pEntity->rayTest(vStart, vEnd, pvOut));
+			return(m_pEntity->rayTest(vStart, vEnd, pvOut, pvNormal, true, bReturnNearestPoint));
 		}
 	}
 	

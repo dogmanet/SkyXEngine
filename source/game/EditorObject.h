@@ -27,7 +27,7 @@ public:
 
 	void XMETHODCALLTYPE renderSelection(bool is3D) override;
 
-	bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, ID *pidMtrl = NULL) override;
+	bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, float3 *pvNormal = NULL, ID *pidMtrl = NULL, bool bReturnNearestPoint = false) override;
 
 	void XMETHODCALLTYPE remove() override;
 	void XMETHODCALLTYPE create() override;

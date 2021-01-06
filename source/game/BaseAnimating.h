@@ -92,7 +92,7 @@ public:
 
 	void renderEditor(bool is3D) override;
 
-	bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, bool isRayInWorldSpace = true) override;
+	bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, float3 *pvNormal = NULL, bool isRayInWorldSpace = true, bool bReturnNearestPoint = false) override;
 
 protected:
 	virtual void _initEditorBoxes();

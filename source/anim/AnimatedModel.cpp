@@ -793,7 +793,7 @@ void CAnimatedModel::sync()
 	m_pNextFrameBones = tmp;
 }
 
-bool XMETHODCALLTYPE CAnimatedModel::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, bool isRayInWorldSpace)
+bool XMETHODCALLTYPE CAnimatedModel::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, float3 *pvNormal, bool isRayInWorldSpace, bool bReturnNearestPoint)
 {
 	float3 vRayStart = vStart;
 	float3 vRayEnd = vEnd;
@@ -809,7 +809,14 @@ bool XMETHODCALLTYPE CAnimatedModel::rayTest(const float3 &vStart, const float3 
 
 	if(SMRayIntersectAABB(SMAABB(m_vLocalMin, m_vLocalMax), vRayStart, vRayEnd - vRayStart))
 	{
-		*pvOut = isRayInWorldSpace ? getPosition() : float3(0.0f);
+		if(pvOut)
+		{
+			*pvOut = isRayInWorldSpace ? getPosition() : float3(0.0f);
+		}
+		if(pvNormal)
+		{
+			*pvNormal = vRayStart - vRayEnd;
+		}
 		return(true);
 	}
 

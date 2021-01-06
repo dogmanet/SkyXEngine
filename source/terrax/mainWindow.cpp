@@ -593,6 +593,38 @@ static void FromClipboard()
 	mem_release(pConfig);
 }
 
+static CCommandCreate* CreateObjectAtPosition(const float3 &vPos, bool bDeselectAll)
+{
+	int iSel1 = ComboBox_GetCurSel(g_hComboTypesWnd);
+	int iLen1 = ComboBox_GetLBTextLen(g_hComboTypesWnd, iSel1);
+	char *szTypeName = (char*)alloca(sizeof(char)* (iLen1 + 1));
+	ComboBox_GetLBText(g_hComboTypesWnd, iSel1, szTypeName);
+
+	int iSel2 = ComboBox_GetCurSel(g_hComboClassesWnd);
+	int iLen2 = ComboBox_GetLBTextLen(g_hComboClassesWnd, iSel2);
+	char *szClassName = (char*)alloca(sizeof(char)* (iLen2 + 1));
+	ComboBox_GetLBText(g_hComboClassesWnd, iSel2, szClassName);
+
+	if(bDeselectAll)
+	{
+		CCommandSelect *pCmdUnselect = new CCommandSelect();
+		for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+		{
+			IXEditorObject *pObj = g_pLevelObjects[i];
+			if(pObj->isSelected())
+			{
+				pCmdUnselect->addDeselected(i);
+			}
+		}
+		g_pUndoManager->execCommand(pCmdUnselect);
+	}
+
+	CCommandCreate *pCmd = new CCommandCreate(vPos, szTypeName, szClassName, Button_GetCheck(g_hCheckboxRandomScaleYawWnd));
+	g_pUndoManager->execCommand(pCmd);
+
+	return(pCmd);
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	RECT rect;
@@ -1156,32 +1188,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDC_CTRL_RETURN:
 			if(g_xState.bCreateMode)
 			{
-				int iSel1 = ComboBox_GetCurSel(g_hComboTypesWnd);
-				int iLen1 = ComboBox_GetLBTextLen(g_hComboTypesWnd, iSel1);
-				char *szTypeName = (char*)alloca(sizeof(char)* (iLen1 + 1));
-				ComboBox_GetLBText(g_hComboTypesWnd, iSel1, szTypeName);
-
-				int iSel2 = ComboBox_GetCurSel(g_hComboClassesWnd);
-				int iLen2 = ComboBox_GetLBTextLen(g_hComboClassesWnd, iSel2);
-				char *szClassName = (char*)alloca(sizeof(char)* (iLen2 + 1));
-				ComboBox_GetLBText(g_hComboClassesWnd, iSel2, szClassName);
-
-				if(GetKeyState(VK_CONTROL) >= 0)
-				{
-					CCommandSelect *pCmdUnselect = new CCommandSelect();
-					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-					{
-						IXEditorObject *pObj = g_pLevelObjects[i];
-						if(pObj->isSelected())
-						{
-							pCmdUnselect->addDeselected(i);
-						}
-					}
-					g_pUndoManager->execCommand(pCmdUnselect);
-				}
-
-				CCommandCreate *pCmd = new CCommandCreate(g_xState.vCreateOrigin, szTypeName, szClassName, Button_GetCheck(g_hCheckboxRandomScaleYawWnd));
-				g_pUndoManager->execCommand(pCmd);
+				CreateObjectAtPosition(g_xState.vCreateOrigin, GetKeyState(VK_CONTROL) >= 0);
 
 				g_xState.bCreateMode = false;
 			}
@@ -1791,9 +1798,12 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		break;
 
 	case WM_LBUTTONDBLCLK:
-		SendMessage(g_hWndMain, WM_COMMAND, MAKEWPARAM(ID_EDIT_PROPERTIES, 0), NULL);
-		break;
-
+		if(hWnd == g_hTopLeftWnd && Button_GetCheck(g_hABArrowButton))
+		{
+			SendMessage(g_hWndMain, WM_COMMAND, MAKEWPARAM(ID_EDIT_PROPERTIES, 0), NULL);
+			break;
+		}
+		// NO BREAK!
 	case WM_LBUTTONDOWN:
 		{
 			s_wasSelectionChanged = false;
@@ -1808,35 +1818,36 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 			if(hWnd == g_hTopLeftWnd)
 			{
+				RECT rc;
+				GetWindowRect(hWnd, &rc);
+				float2 vWinSize((float)(rc.right - rc.left), (float)(rc.bottom - rc.top));
+
+				// transform by matrix
+				SMMATRIX mViewProj;
+				Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEWPROJ, &mViewProj);
+				SMMATRIX mInvVP = SMMatrixInverse(NULL, mViewProj);
+
+				float3 vScreenPos(g_xState.vMousePos / vWinSize, 0.0f);
+				vScreenPos = vScreenPos * float3(2.0f, -2.0f, 1.0f) - float3(1.0f, -1.0f, 0.0f);
+				vScreenPos.z = -1.0f;
+				vScreenPos.w = 1.0f;
+
+
+				float3 vRayStart = vScreenPos * mInvVP;
+				vRayStart /= vRayStart.w;
+
+				vScreenPos.z = 1.0f;
+				float3 vRayDir = vScreenPos * mInvVP;
+				vRayDir /= vRayDir.w;
+				vRayDir = SMVector3Normalize(vRayDir - vRayStart);
+				// printf("%.2f, %.2f, %.2f\n", vRayStart.x, vRayStart.y, vRayStart.z);
+				// printf("%.2f, %.2f, %.2f\n\n", vRayEnd.x, vRayEnd.y, vRayEnd.z);
+
+				float3 vRayEnd = vRayStart + vRayDir * 1000.0f;
+
+
 				if(Button_GetCheck(g_hABArrowButton))
 				{
-					RECT rc;
-					GetWindowRect(hWnd, &rc);
-					float2 vWinSize((float)(rc.right - rc.left), (float)(rc.bottom - rc.top));
-					
-					// transform by matrix
-					SMMATRIX mViewProj;
-					Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEWPROJ, &mViewProj);
-					SMMATRIX mInvVP = SMMatrixInverse(NULL, mViewProj);
-
-					float3 vScreenPos(g_xState.vMousePos / vWinSize, 0.0f);
-					vScreenPos = vScreenPos * float3(2.0f, -2.0f, 1.0f) - float3(1.0f, -1.0f, 0.0f);
-					vScreenPos.z = -1.0f;
-					vScreenPos.w = 1.0f;
-
-
-					float3 vRayStart = vScreenPos * mInvVP;
-					vRayStart /= vRayStart.w;
-
-					vScreenPos.z = 1.0f;
-					float3 vRayDir = vScreenPos * mInvVP;
-					vRayDir /= vRayDir.w;
-					vRayDir = SMVector3Normalize(vRayDir - vRayStart);
-					// printf("%.2f, %.2f, %.2f\n", vRayStart.x, vRayStart.y, vRayStart.z);
-					// printf("%.2f, %.2f, %.2f\n\n", vRayEnd.x, vRayEnd.y, vRayEnd.z);
-
-					float3 vRayEnd = vRayStart + vRayDir * 1000.0f;
-
 					g_aRaytracedItems.clearFast();
 					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 					{
@@ -1870,6 +1881,74 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					g_isSelectionCtrl = GetKeyState(VK_CONTROL) < 0;
 
 					XFrameRun(0.0f);
+				}
+				else if(Button_GetCheck(g_hABCreateButton))
+				{
+					struct SelectItem2
+					{
+						float fDist2;
+						float3 vPos;
+						float3 vNorm;
+					};
+					static Array<SelectItem2> s_aRaytracedItems;
+
+					float3 vPos, vNorm;
+					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+					{
+						if(g_pLevelObjects[i]->hasVisualModel())
+						{
+							if(g_pLevelObjects[i]->rayTest(vRayStart, vRayEnd, &vPos, &vNorm, NULL, true))
+							{
+								s_aRaytracedItems.push_back({SMVector3Length2(vRayStart - vPos), vPos, vNorm});
+							}
+						}
+					}
+
+					s_aRaytracedItems.quickSort([](const SelectItem2 &a, const SelectItem2 &b){
+						return(a.fDist2 < b.fDist2);
+					});
+
+					if(s_aRaytracedItems.size())
+					{
+						vPos = s_aRaytracedItems[0].vPos;
+						vNorm = SMVector3Normalize(s_aRaytracedItems[0].vNorm);
+
+						IXEditorObject *pObj = CreateObjectAtPosition(vPos, GetKeyState(VK_CONTROL) >= 0)->getObject();
+						float3 vMin, vMax;
+						pObj->getBound(&vMin, &vMax);
+
+						float3 avPoints[] = {
+							float3(vMin),
+							float3(vMin.x, vMin.y, vMax.z),
+							float3(vMin.x, vMax.y, vMin.z),
+							float3(vMin.x, vMax.y, vMax.z),
+							float3(vMax.x, vMin.y, vMin.z),
+							float3(vMax.x, vMin.y, vMax.z),
+							float3(vMax.x, vMax.y, vMin.z),
+							float3(vMax),
+						};
+						printf("%.2f, %.2f, %.2f\n", vNorm.x, vNorm.y, vNorm.z);
+
+						float fProj = FLT_MAX;
+						for(UINT i = 0, l = ARRAYSIZE(avPoints); i < l; ++i)
+						{
+							float fTmp = SMVector3Dot(avPoints[i], vNorm);
+							printf("%.2f\n", fTmp);
+							if(fTmp < fProj)
+							{
+								fProj = fTmp;
+							}
+						}
+
+						fProj = SMVector3Dot(vPos, vNorm) - fProj;
+						printf("%.2f, %.2f, %.2f\n%.2f, %.2f, %.2f\n%.2f, %.2f, %.2f\n%f\n\n", vPos.x, vPos.y, vPos.z, vMin.x, vMin.y, vMin.z, vMax.x, vMax.y, vMax.z, fProj);
+						if(fProj > 0)
+						{
+							pObj->setPos((float3)(vPos + vNorm * fProj));
+						}
+
+						s_aRaytracedItems.clearFast();
+					}
 				}
 			}
 			else

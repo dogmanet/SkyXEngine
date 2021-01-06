@@ -88,7 +88,7 @@ public:
 
 	void initGPUresources();
 
-	bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, bool isRayInWorldSpace = true) override;
+	bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, float3 *pvNormal = NULL, bool isRayInWorldSpace = true, bool bReturnNearestPoint = false) override;
 protected:
 	CAnimatedModelProvider *m_pProvider;
 	CAnimatedModelShared *m_pShared;

@@ -624,11 +624,11 @@ void CBaseAnimating::renderEditor(bool is3D)
 	SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
 }
 
-bool CBaseAnimating::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, bool isRayInWorldSpace)
+bool CBaseAnimating::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, float3 *pvNormal, bool isRayInWorldSpace, bool bReturnNearestPoint)
 {
 	if(m_pModel && m_pModel->isEnabled())
 	{
-		return(m_pModel->rayTest(vStart, vEnd, pvOut, isRayInWorldSpace));
+		return(m_pModel->rayTest(vStart, vEnd, pvOut, pvNormal, isRayInWorldSpace, bReturnNearestPoint));
 	}
 	return(false);
 }
