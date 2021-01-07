@@ -1,7 +1,7 @@
 #include "FolderPathsIterator.h"
 
-CFolderPathsIterator::CFolderPathsIterator(Array<String> *paths, const String &path)
-: m_paths(paths), m_sPath(path)
+CFolderPathsIterator::CFolderPathsIterator(Array<String> *paths, const String &sPath)
+: m_paths(paths), m_sPath(sPath)
 {
 
 }

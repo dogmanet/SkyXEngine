@@ -1,7 +1,7 @@
 #include "FileExtPathsIterator.h"
 
-CFileExtrPathsIterator::CFileExtrPathsIterator(Array<String> *paths, const String &s_path, const char *szExt)
-: m_paths(paths), m_szExt(szExt), m_sPath(s_path)
+CFileExtrPathsIterator::CFileExtrPathsIterator(Array<String> *paths, const String &sPath, const char *szExt)
+: m_paths(paths), m_szExt(szExt), m_sPath(sPath)
 {}
 
 const char *CFileExtrPathsIterator::next()

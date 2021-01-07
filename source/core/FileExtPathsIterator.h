@@ -22,7 +22,7 @@ private:
     HANDLE m_handle = nullptr;
 
 public:
-    CFileExtrPathsIterator(Array<String> *paths, const String &s_path, const char *szExt = nullptr);
+	CFileExtrPathsIterator(Array<String> *paths, const String &sPath, const char *szExt = nullptr);
 
     const char* XMETHODCALLTYPE next() override;
 

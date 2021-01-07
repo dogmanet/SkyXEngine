@@ -22,7 +22,7 @@ private:
     HANDLE m_handle = nullptr;
 
 public:
-    CFolderPathsIterator(Array<String> *paths, const String &path);
+	CFolderPathsIterator(Array<String> *paths, const String &sPath);
 
     const char* XMETHODCALLTYPE next() override;
 
