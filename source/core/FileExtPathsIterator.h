@@ -13,6 +13,8 @@ class CFileExtrPathsIterator final: public IXUnknownImplementation<IFileIterator
 private:
     Array<String>* m_paths;
     String m_pathStr;
+	String m_sPath;
+	AssotiativeArray<String, int> m_mapExistPath;
 
     int index = 0;
     const char *m_szExt;
@@ -20,7 +22,7 @@ private:
     HANDLE m_handle = nullptr;
 
 public:
-    CFileExtrPathsIterator(Array<String> *paths, const char *szExt = nullptr);
+	CFileExtrPathsIterator(Array<String> *paths, const String &sPath, const char *szExt = nullptr);
 
     const char* XMETHODCALLTYPE next() override;
 

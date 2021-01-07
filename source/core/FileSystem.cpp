@@ -348,8 +348,10 @@ IFileIterator *CFileSystem::getFolderList(const char *szPath)
     }
 
     Array<String>* paths = getAllvariantsCanonizePath(szPath);
+	String path(szPath);
+	ADD_SLASH(path);
 
-    return paths ? new CFolderPathsIterator(paths) : nullptr;
+	return paths ? new CFolderPathsIterator(paths, path) : nullptr;
 }
 
 IFileIterator *CFileSystem::getFileList(const char *szPath, const char *szExt)
@@ -360,8 +362,10 @@ IFileIterator *CFileSystem::getFileList(const char *szPath, const char *szExt)
     }
     
     Array<String>* paths = getAllvariantsCanonizePath(szPath);
+	String path(szPath);
+	ADD_SLASH(path);
 
-    return paths ? new CFileExtrPathsIterator(paths, szExt) : nullptr;
+	return paths ? new CFileExtrPathsIterator(paths, path, szExt) : nullptr;
 }
 
 IFileIterator *CFileSystem::getFileList(const char *szPath, const char **szExts, int extsCount)
