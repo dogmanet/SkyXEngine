@@ -43,6 +43,11 @@ See the license in LICENSE
 
 #define MEMCCPY_ERROR(buff) memcpy(buff, "\0", 1);
 
+#define ADD_SLASH(string) if(string[string.length() - 1] != '/') \
+{ \
+	string += '/'; \
+}
+
 struct Pair
 {
     int priority;

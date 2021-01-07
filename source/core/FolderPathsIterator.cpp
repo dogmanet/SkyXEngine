@@ -1,7 +1,7 @@
 #include "FolderPathsIterator.h"
 
-CFolderPathsIterator::CFolderPathsIterator(Array<String> *paths)
-: m_paths(paths)
+CFolderPathsIterator::CFolderPathsIterator(Array<String> *paths, const String &path)
+: m_paths(paths), m_sPath(path)
 {
 
 }
@@ -35,8 +35,17 @@ const char *CFolderPathsIterator::next()
                 //Берет только имена директорий
                 if (flag != INVALID_FILE_ATTRIBUTES && flag & FILE_ATTRIBUTE_DIRECTORY)
                 {
-                    //Возвращаем полный путь к директории
-                    return m_pathStr.c_str();
+					m_pathStr = (m_sPath + FindFileData.cFileName);
+					if (m_mapExistPath.KeyExists(m_pathStr))
+					{
+						continue;
+					}
+					else
+					{
+						//Возвращаем относительный путь к директории
+						m_mapExistPath[m_pathStr] = index;
+						return m_pathStr.c_str();
+					}
                 }
             }
             FIND_CLOSE(m_handle);

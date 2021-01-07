@@ -1,7 +1,7 @@
 #include "FileExtPathsIterator.h"
 
-CFileExtrPathsIterator::CFileExtrPathsIterator(Array<String> *paths, const char *szExt)
-: m_paths(paths), m_szExt(szExt)
+CFileExtrPathsIterator::CFileExtrPathsIterator(Array<String> *paths, const String &s_path, const char *szExt)
+: m_paths(paths), m_szExt(szExt), m_sPath(s_path)
 {}
 
 const char *CFileExtrPathsIterator::next()
@@ -14,16 +14,14 @@ const char *CFileExtrPathsIterator::next()
     while (index < size)
     {
         //Если указали расширение файла - то добавляем его к имени пути, иначе ищем все файлы
-        String fileName = m_szExt == nullptr ? ((*m_paths)[index] + "*.*") : ((*m_paths)[index] + "*." + *m_szExt);
+        String fileName = m_szExt == nullptr ? ((*m_paths)[index] + "*.*") : ((*m_paths)[index] + "*." + m_szExt);
 
         //Проверяем указатель, если m_handle пустой, то ищем первый файл с расширением szExts
         hf = INVALID_OR_NULL(m_handle) ? FindFirstFile(fileName.c_str(), &FindFileData) : m_handle;
 
         if (hf != INVALID_HANDLE_VALUE)
         {
-            //Если указатель на файл валидный, то проверяем все отфильтрованные файлы по порядку
-            while (FindNextFile(hf, &FindFileData) != 0)
-            {
+            do {
                 //Сохраняем HANDLE файла, что бы можно было продожлить с того места
                 m_handle = hf;
 
@@ -33,10 +31,20 @@ const char *CFileExtrPathsIterator::next()
 
                 if (flag != INVALID_FILE_ATTRIBUTES && !(flag & FILE_ATTRIBUTE_DIRECTORY))
                 {
-                    //Возвращаем полный путь, вместе с именем файла и расширением
-                    return m_pathStr.c_str();
+					m_pathStr = (m_sPath + FindFileData.cFileName);
+					if (m_mapExistPath.KeyExists(m_pathStr))
+					{
+						continue;
+					} 
+					else
+					{
+						//Возвращаем относительный путь, вместе с именем файла и расширением
+						m_mapExistPath[m_pathStr] = index;
+						return m_pathStr.c_str();
+					}
                 }
-            }
+				//Если указатель на файл валидный, то проверяем все отфильтрованные файлы по порядку
+			} while (FindNextFile(hf, &FindFileData) != 0);
             ++index;
             FIND_CLOSE(m_handle);
         }
