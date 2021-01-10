@@ -48,9 +48,9 @@ const char *CFolderPathsIterator::next()
 					}
                 }
             }
-            FIND_CLOSE(m_handle);
-            ++index;
         }
+		FIND_CLOSE(m_handle);
+		++index;
     }
 
     //Если вообще не нашли файлов возвращаем nullptr

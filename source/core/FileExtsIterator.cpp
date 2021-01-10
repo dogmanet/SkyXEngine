@@ -26,8 +26,8 @@ const char *CFileExtsIterator::next()
 
                 return m_pathStr.c_str();
             }
-            ++m_currentExt;
         }
+		++m_currentExt;
     }
 
     return nullptr;
