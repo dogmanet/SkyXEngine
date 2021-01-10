@@ -45,9 +45,9 @@ const char *CFileExtrPathsIterator::next()
                 }
 				//Если указатель на файл валидный, то проверяем все отфильтрованные файлы по порядку
 			} while (FindNextFile(hf, &FindFileData) != 0);
-            ++index;
-            FIND_CLOSE(m_handle);
         }
+		++index;
+		FIND_CLOSE(m_handle);
     }
 
     //Если вообще не нашли файлов возвращаем nullptr
