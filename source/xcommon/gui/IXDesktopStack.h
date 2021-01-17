@@ -21,8 +21,8 @@ public:
 	virtual bool XMETHODCALLTYPE newDesktop(const char *szName, const char *szFile, IXDesktop **ppOut) = 0;
 
 	//Установка активного Desktop'а
-	virtual void XMETHODCALLTYPE setActiveDesktop(IXDesktop *pDesktop, bool clearStack = true) = 0;
-	virtual void XMETHODCALLTYPE setActiveDesktop(const char *name) = 0;
+	virtual bool XMETHODCALLTYPE setActiveDesktop(IXDesktop *pDesktop, bool clearStack = true) = 0;
+	virtual bool XMETHODCALLTYPE setActiveDesktop(const char *name) = 0;
 
 	//Получить текущий активный Desktop
 	virtual void XMETHODCALLTYPE getActiveDesktop(IXDesktop **ppOut) = 0;
@@ -31,8 +31,8 @@ public:
 	virtual void XMETHODCALLTYPE getDesktop(const char *szName, IXDesktop **ppOut) = 0;
 
 	virtual void XMETHODCALLTYPE messageBox(const char *szTitle, const char *szText, ...) = 0;
-	virtual void XMETHODCALLTYPE pushDesktop(IXDesktop *pDesktop) = 0;
-	virtual void XMETHODCALLTYPE popDesktop(IXDesktop **ppOut = NULL) = 0;
+	virtual bool XMETHODCALLTYPE pushDesktop(IXDesktop *pDesktop) = 0;
+	virtual bool XMETHODCALLTYPE popDesktop(IXDesktop **ppOut = NULL) = 0;
 };
 
 #endif

@@ -1,0 +1,514 @@
+# plain properties
+align-content: normal | <baseline-position> | <content-distribution> | <overflow-position>? <content-position>
+align-items: normal | stretch | <baseline-position> | [ <overflow-position>? <self-position> ]
+align-self: auto | normal | stretch | <baseline-position> | <overflow-position>? <self-position>
+animation-delay: <time>#
+animation-direction: <single-animation-direction>#
+animation-duration: <time>#
+animation-fill-mode: <single-animation-fill-mode>#
+animation-name: [ none | <keyframes-name> ]#
+animation-play-state: <single-animation-play-state>#
+animation-timing-function: <timing-function>#
+backdrop-filter: none | <filter-function-list>
+backface-visibility: visible | hidden
+background-attachment: <attachment>#
+background-blend-mode: <blend-mode>#
+background-clip: <box>#
+background-color: <color>
+background-image: <bg-image>#
+background-origin: <box>#
+background-position: <bg-position>#
+background-repeat: <repeat-style>#
+background-size: <bg-size>#
+block-size: <'width'>
+border-block-end-color: <'border-top-color'>
+border-block-end-style: <'border-top-style'>
+border-block-end-width: <'border-top-width'>
+border-block-start-color: <'border-top-color'>
+border-block-start-style: <'border-top-style'>
+border-block-start-width: <'border-top-width'>
+border-bottom-color: <'border-top-color'>
+border-bottom-left-radius: <length-percentage>{1,2}
+border-bottom-right-radius: <length-percentage>{1,2}
+border-bottom-style: <line-style>
+border-bottom-width: <line-width>
+border-collapse: collapse | separate
+border-end-end-radius: <length-percentage>{1,2}
+border-end-start-radius: <length-percentage>{1,2}
+border-image-outset: [ <length> | <number> ]{1,4}
+border-image-repeat: [ stretch | repeat | round | space ]{1,2}
+border-image-slice: <number-percentage>{1,4} && fill?
+border-image-source: none | <image>
+border-image-width: [ <length-percentage> | <number> | auto ]{1,4}
+border-inline-end-color: <'border-top-color'>
+border-inline-end-style: <'border-top-style'>
+border-inline-end-width: <'border-top-width'>
+border-inline-start-color: <'border-top-color'>
+border-inline-start-style: <'border-top-style'>
+border-inline-start-width: <'border-top-width'>
+border-left-color: <'border-top-color'>
+border-left-style: <line-style>
+border-left-width: <line-width>
+border-right-color: <'border-top-color'>
+border-right-style: <line-style>
+border-right-width: <line-width>
+border-spacing: <length> <length>?
+border-start-end-radius: <length-percentage>{1,2}
+border-start-start-radius: <length-percentage>{1,2}
+border-top-color: <'border-top-color'>
+border-top-left-radius: <length-percentage>{1,2}
+border-top-right-radius: <length-percentage>{1,2}
+border-top-style: <line-style>
+border-top-width: <line-width>
+bottom: <length> | <percentage> | auto
+box-decoration-break: slice | clone
+box-shadow: none | <shadow>#
+box-sizing: content-box | border-box
+break-after: auto | avoid | always | all | avoid-page | page | left | right | recto | verso | avoid-column | column | avoid-region | region
+break-before: auto | avoid | always | all | avoid-page | page | left | right | recto | verso | avoid-column | column | avoid-region | region
+break-inside: auto | avoid | avoid-page | avoid-column | avoid-region
+caption-side: top | bottom | block-start | block-end | inline-start | inline-end
+caret-color: auto | <color>
+clear: none | left | right | both | inline-start | inline-end
+clip: <shape> | auto
+clip-path: <clip-source> | [ <basic-shape> || <geometry-box> ] | none
+color: <color>
+color-adjust: economy | exact
+column-count: <integer> | auto
+column-fill: auto | balance | balance-all
+column-gap: normal | <length-percentage>
+column-rule-color: <color>
+column-rule-style: <'border-style'>
+column-rule-width: <'border-width'>
+column-span: none | all
+column-width: <length> | auto
+contain: none | strict | content | [ size || layout || style || paint ]
+content: normal | none | [ <content-replacement> | <content-list> ] [/ <string> ]?
+counter-increment: [ <custom-ident> <integer>? ]+ | none
+counter-reset: [ <custom-ident> <integer>? ]+ | none
+counter-set: [ <custom-ident> <integer>? ]+ | none
+cursor: [ [ <url> [ <x> <y> ]? , ]* [ auto | default | none | context-menu | help | pointer | progress | wait | cell | crosshair | text | vertical-text | alias | copy | move | no-drop | not-allowed | e-resize | n-resize | ne-resize | nw-resize | s-resize | se-resize | sw-resize | w-resize | ew-resize | ns-resize | nesw-resize | nwse-resize | col-resize | row-resize | all-scroll | zoom-in | zoom-out | grab | grabbing ] ]
+direction: ltr | rtl
+display: [ <display-outside> || <display-inside> ] | <display-listitem> | <display-internal> | <display-box> | <display-legacy>
+empty-cells: show | hide
+filter: none | <filter-function-list>
+flex-basis: content | <'width'>
+flex-direction: row | row-reverse | column | column-reverse
+flex-grow: <number>
+flex-shrink: <number>
+flex-wrap: nowrap | wrap | wrap-reverse
+float: left | right | none | inline-start | inline-end
+font-family: [ <family-name> | <generic-family> ]#
+font-feature-settings: normal | <feature-tag-value>#
+font-kerning: auto | normal | none
+font-language-override: normal | <string>
+font-optical-sizing: auto | none
+font-size: <absolute-size> | <relative-size> | <length-percentage>
+font-size-adjust: none | <number>
+font-stretch: <font-stretch-absolute>
+font-style: normal | italic | oblique <angle>?
+font-synthesis: none | [ weight || style ]
+font-variant-alternates: normal | [ stylistic( <feature-value-name> ) || historical-forms || styleset( <feature-value-name># ) || character-variant( <feature-value-name># ) || swash( <feature-value-name> ) || ornaments( <feature-value-name> ) || annotation( <feature-value-name> ) ]
+font-variant-caps: normal | small-caps | all-small-caps | petite-caps | all-petite-caps | unicase | titling-caps
+font-variant-east-asian: normal | [ <east-asian-variant-values> || <east-asian-width-values> || ruby ]
+font-variant-ligatures: normal | none | [ <common-lig-values> || <discretionary-lig-values> || <historical-lig-values> || <contextual-alt-values> ]
+font-variant-numeric: normal | [ <numeric-figure-values> || <numeric-spacing-values> || <numeric-fraction-values> || ordinal || slashed-zero ]
+font-variant-position: normal | sub | super
+font-variation-settings: normal | [ <string> <number> ]#
+font-weight: <font-weight-absolute> | bolder | lighter
+grid-auto-columns: <track-size>+
+grid-auto-flow: [ row | column ] || dense
+grid-auto-rows: <track-size>+
+grid-column-end: <grid-line>
+grid-column-start: <grid-line>
+grid-row-end: <grid-line>
+grid-row-start: <grid-line>
+grid-template-areas: none | <string>+
+grid-template-columns: none | <track-list> | <auto-track-list> | subgrid <line-name-list>?
+grid-template-rows: none | <track-list> | <auto-track-list> | subgrid <line-name-list>?
+hanging-punctuation: none | [ first || [ force-end | allow-end ] || last ]
+height: auto | <length> | <percentage> | min-content | max-content | fit-content(<length-percentage>)
+hyphens: none | manual | auto
+inline-size: <'width'>
+inset-block-end: <'top'>
+inset-block-start: <'top'>
+inset-inline-end: <'top'>
+inset-inline-start: <'top'>
+isolation: auto | isolate
+justify-content: normal | <content-distribution> | <overflow-position>? [ <content-position> | left | right ]
+justify-items: normal | stretch | <baseline-position> | <overflow-position>? [ <self-position> | left | right ] | legacy | legacy && [ left | right | center ]
+justify-self: auto | normal | stretch | <baseline-position> | <overflow-position>? [ <self-position> | left | right ]
+left: <length> | <percentage> | auto
+letter-spacing: normal | <length>
+line-break: auto | loose | normal | strict | anywhere
+line-height: normal | <number> | <length> | <percentage>
+list-style-image: <url> | none
+list-style-position: inside | outside
+list-style-type: <counter-style> | <string> | none
+margin-block-end: <'margin-left'>
+margin-block-start: <'margin-left'>
+margin-bottom: <length> | <percentage> | auto
+margin-inline-end: <'margin-left'>
+margin-inline-start: <'margin-left'>
+margin-left: <length> | <percentage> | auto
+margin-right: <length> | <percentage> | auto
+margin-top: <length> | <percentage> | auto
+mask-*: ???
+max-block-size: <'max-width'>
+max-height: auto | <length> | <percentage> | min-content | max-content | fit-content(<length-percentage>)
+max-inline-size: <'max-width'>
+max-width: auto | <length> | <percentage> | min-content | max-content | fit-content(<length-percentage>)
+min-block-size: <'max-width'>
+min-height: auto | <length> | <percentage> | min-content | max-content | fit-content(<length-percentage>)
+min-inline-size: <'max-width'>
+min-width: auto | <length> | <percentage> | min-content | max-content | fit-content(<length-percentage>)
+mix-blend-mode: <blend-mode>
+object-fit: fill | contain | cover | none | scale-down
+object-position: <position>
+offset-anchor: auto | <position>
+offset-distance: <length-percentage>
+offset-path: none | ray( [ <angle> && <size>? && contain? ] ) | <path()> | <url> | [ <basic-shape> || <geometry-box> ]
+offset-rotate: [ auto | reverse ] || <angle>
+opacity: <alpha-value>
+order: <integer>
+orphans: <integer>
+outline-color: <color> | invert
+outline-offset: <length>
+outline-style: auto | <'border-style'>
+outline-width: <line-width>
+overflow-anchor: auto | none
+overflow-block: visible | hidden | clip | scroll | auto
+overflow-inline: visible | hidden | clip | scroll | auto
+overflow-wrap: normal | break-word | anywhere
+overflow-x: visible | hidden | clip | scroll | auto
+overflow-y: visible | hidden | clip | scroll | auto
+overscroll-behavior-block: contain | none | auto
+overscroll-behavior-inline: contain | none | auto
+overscroll-behavior-x: contain | none | auto
+overscroll-behavior-y: contain | none | auto
+padding-block-end: <'padding-left'>
+padding-block-start: <'padding-left'>
+padding-bottom: <length> | <percentage> | auto
+padding-inline-end: <'padding-left'>
+padding-inline-start: <'padding-left'>
+padding-left: <length> | <percentage> | auto
+padding-right: <length> | <percentage> | auto
+padding-top: <length> | <percentage> | auto
+perspective: none | <length>
+perspective-origin: <position>
+pointer-events: auto | none | visiblePainted | visibleFill | visibleStroke | visible | painted | fill | stroke | all | inherit
+position: static | relative | absolute | sticky | fixed
+quotes: none | auto | [ <string> <string> ]+
+resize: none | both | horizontal | vertical | block | inline
+right: <length> | <percentage> | auto
+rotate: none | <angle> | [ x | y | z | <number>{3} ] && <angle>
+row-gap: normal | <length-percentage>
+scale: none | <number>{1,3}
+scroll-behavior: auto | smooth
+scroll-margin-block-end: <length>
+scroll-margin-block-start: <length>
+scroll-margin-bottom: <length>
+scroll-margin-inline-end: <length>
+scroll-margin-inline-start: <length>
+scroll-margin-left: <length>
+scroll-margin-right: <length>
+scroll-margin-top: <length>
+scroll-padding-block-end: auto | <length-percentage>
+scroll-padding-block-start: auto | <length-percentage>
+scroll-padding-bottom: auto | <length-percentage>
+scroll-padding-inline-end: auto | <length-percentage>
+scroll-padding-inline-start: auto | <length-percentage>
+scroll-padding-left: auto | <length-percentage>
+scroll-padding-right: auto | <length-percentage>
+scroll-padding-top: auto | <length-percentage>
+scroll-snap-align: [ none | start | end | center ]{1,2}
+scroll-snap-stop: normal | always
+scroll-snap-type: none | [ x | y | block | inline | both ] [ mandatory | proximity ]?
+tab-size: <integer> | <length>
+table-layout: auto | fixed
+text-align: start | end | left | right | center | justify | match-parent
+text-align-last: auto | start | end | left | right | center | justify
+text-combine-upright: none | all | [ digits <integer>? ]
+text-decoration-color: <color>
+text-decoration-line: none | [ underline || overline || line-through || blink ] | spelling-error | grammar-error
+text-decoration-skip-ink: auto | all | none
+text-decoration-style: solid | double | dotted | dashed | wavy
+text-decoration-thickness: auto | from-font | <length> | <percentage>
+text-emphasis-color: <color>
+text-emphasis-position: [ over | under ] && [ right | left ]
+text-emphasis-style: none | [ [ filled | open ] || [ dot | circle | double-circle | triangle | sesame ] ] | <string>
+text-indent: <length-percentage> && hanging? && each-line?
+text-justify: auto | inter-character | inter-word | none
+text-orientation: mixed | upright | sideways
+text-overflow: [ clip | ellipsis | <string> ]{1,2}
+text-rendering: auto | optimizeSpeed | optimizeLegibility | geometricPrecision
+text-shadow: none | <shadow-t>#
+text-transform: none | capitalize | uppercase | lowercase | full-width | full-size-kana
+text-underline-offset: auto | <length> | <percentage>
+text-underline-position: auto | from-font | [ under || [ left | right ] ]
+top: <length> | <percentage> | auto
+touch-action: auto | none | [ [ pan-x | pan-left | pan-right ] || [ pan-y | pan-up | pan-down ] || pinch-zoom ] | manipulation
+transform: none | <transform-list>
+transform-box: content-box | border-box | fill-box | stroke-box | view-box
+transform-origin: [ <length-percentage> | left | center | right | top | bottom ] | [ [ <length-percentage> | left | center | right ] && [ <length-percentage> | top | center | bottom ] ] <length>?
+transform-style: flat | preserve-3d
+transition-delay: <time>#
+transition-duration: <time>#
+transition-property: none | <single-transition-property>#
+transition-timing-function: <timing-function>#
+translate: none | <length-percentage> [ <length-percentage> <length>? ]?
+unicode-bidi: normal | embed | isolate | bidi-override | isolate-override | plaintext
+visibility: visible | hidden | collapse
+white-space: normal | pre | nowrap | pre-wrap | pre-line | break-spaces
+widows: <integer>
+width: auto | <length> | <percentage> | min-content | max-content | fit-content(<length-percentage>)
+will-change: auto | <animateable-feature>#
+word-break: normal | break-all | keep-all | break-word
+word-spacing: normal | <length-percentage>
+word-wrap: normal | break-word | anywhere
+writing-mode: horizontal-tb | vertical-rl | vertical-lr | sideways-rl | sideways-lr
+z-index: auto | <integer>
+
+# shorthand properties
+animation: <single-animation>#
+background: [ <bg-layer> , ]* <final-bg-layer>
+border: <line-width> || <line-style> || <color>
+border-block: <'border-top-width'> || <'border-top-style'> || <'color'>
+border-block-color: <'border-top-color'>{1,2}
+border-block-end: <'border-top-width'> || <'border-top-style'> || <'color'>
+border-block-start: <'border-top-width'> || <'border-top-style'> || <'color'>
+border-block-style: <'border-top-style'>
+border-block-width: <'border-top-width'>
+border-bottom: <line-width> || <line-style> || <color>
+border-color: <color>{1,4}
+border-image: <'border-image-source'> || <'border-image-slice'> [ / <'border-image-width'> | / <'border-image-width'>? / <'border-image-outset'> ]? || <'border-image-repeat'>
+border-inline: <'border-top-width'> || <'border-top-style'> || <'color'>
+border-inline-end: <'border-top-width'> || <'border-top-style'> || <'color'>
+border-inline-start: <'border-top-width'> || <'border-top-style'> || <'color'>
+border-inline-color: <'border-top-color'>{1,2}
+border-inline-style: <'border-top-style'>
+border-inline-width: <'border-top-width'>
+border-left: <line-width> || <line-style> || <color>
+border-radius: <length-percentage>{1,4} [ / <length-percentage>{1,4} ]?
+border-right: <line-width> || <line-style> || <color>
+border-style: <line-style>{1,4}
+border-top: <line-width> || <line-style> || <color>
+border-width: <line-width>{1,4}
+column-rule: <'column-rule-width'> || <'column-rule-style'> || <'column-rule-color'>
+columns: <'column-width'> || <'column-count'>
+flex: none | [ <'flex-grow'> <'flex-shrink'>? || <'flex-basis'> ]
+flex-flow: <'flex-direction'> || <'flex-wrap'>
+font: [ [ <'font-style'> || <font-variant-css21> || <'font-weight'> || <'font-stretch'> ]? <'font-size'> [ / <'line-height'> ]? <'font-family'> ] | caption | icon | menu | message-box | small-caption | status-bar
+font-variant: normal | none | [ <common-lig-values> || <discretionary-lig-values> || <historical-lig-values> || <contextual-alt-values> || stylistic( <feature-value-name> ) || historical-forms || styleset( <feature-value-name># ) || character-variant( <feature-value-name># ) || swash( <feature-value-name> ) || ornaments( <feature-value-name> ) || annotation( <feature-value-name> ) || [ small-caps | all-small-caps | petite-caps | all-petite-caps | unicase | titling-caps ] || <numeric-figure-values> || <numeric-spacing-values> || <numeric-fraction-values> || ordinal || slashed-zero || <east-asian-variant-values> || <east-asian-width-values> || ruby ]
+gap: <'row-gap'> <'column-gap'>?
+grid: <'grid-template'> | <'grid-template-rows'> / [ auto-flow && dense? ] <'grid-auto-columns'>? | [ auto-flow && dense? ] <'grid-auto-rows'>? / <'grid-template-columns'>
+grid-area: <grid-line> [ / <grid-line> ]{0,3}
+grid-column: <grid-line> [ / <grid-line> ]?
+grid-row: <grid-line> [ / <grid-line> ]?
+grid-template: none | [ <'grid-template-rows'> / <'grid-template-columns'> ] | [ <line-names>? <string> <track-size>? <line-names>? ]+ [ / <explicit-track-list> ]?
+inset: <'top'>{1,4}
+inset-block: <'top'>{1,2}
+inset-inline: <'top'>{1,2}
+list-style: <'list-style-type'> || <'list-style-position'> || <'list-style-image'>
+margin: [ <length> | <percentage> | auto ]{1,4}
+margin-block: <'margin-left'>{1,2}
+margin-inline: <'margin-left'>{1,2}
+offset: [ <'offset-position'>? [ <'offset-path'> [ <'offset-distance'> || <'offset-rotate'> ]? ]? ]! [ / <'offset-anchor'> ]?
+outline: [ <'outline-color'> || <'outline-style'> || <'outline-width'> ]
+overflow: [ visible | hidden | clip | scroll | auto ]{1,2}
+overscroll-behavior: [ contain | none | auto ]{1,2}
+padding: [ <length> | <percentage> | auto ]{1,4}
+padding-block: <'padding-left'>{1,2}
+padding-inline: <'padding-left'>{1,2}
+place-content: <'align-content'> <'justify-content'>?
+place-items: <'align-items'> <'justify-items'>?
+place-self: <'align-self'> <'justify-self'>?
+scroll-margin: <length>{1,4}
+scroll-margin-block: <length>{1,2}
+scroll-margin-inline: <length>{1,2}
+scroll-padding: [ auto | <length-percentage> ]{1,4}
+scroll-padding-block: [ auto | <length-percentage> ]{1,2}
+scroll-padding-inline: [ auto | <length-percentage> ]{1,2}
+scrollbar-color: auto | dark | light | <color>{2}
+scrollbar-width: auto | thin | none
+shape-image-threshold: <alpha-value>
+shape-margin: <length-percentage>
+shape-outside: none | <shape-box> || <basic-shape> | <image>
+text-decoration: <'text-decoration-line'> || <'text-decoration-style'> || <'text-decoration-color'> || <'text-decoration-thickness'>
+text-emphasis: <'text-emphasis-style'> || <'text-emphasis-color'>
+transition: <single-transition>#
+
+#definitions
+<baseline-position> = [ first | last ]? baseline
+<content-distribution> = space-between | space-around | space-evenly | stretch
+<overflow-position> = unsafe | safe
+<content-position> = center | start | end | flex-start | flex-end
+<self-position> = center | start | end | self-start | self-end | flex-start | flex-end
+<self-position> = center | start | end | self-start | self-end | flex-start | flex-end
+<single-animation> = <time> || <timing-function> || <time> || <single-animation-iteration-count> || <single-animation-direction> || <single-animation-fill-mode> || <single-animation-play-state> || [ none | <keyframes-name> ]
+<timing-function> = linear | <cubic-bezier-timing-function> | <step-timing-function>
+<single-animation-iteration-count> = infinite | <number>
+<single-animation-direction> = normal | reverse | alternate | alternate-reverse
+<single-animation-fill-mode> = none | forwards | backwards | both
+<single-animation-play-state> = running | paused
+<keyframes-name> = <custom-ident> | <string>
+<cubic-bezier-timing-function> = ease | ease-in | ease-out | ease-in-out | cubic-bezier(<number[0,1]>, <number>, <number[0,1]>, <number>)
+<step-timing-function> = step-start | step-end | steps(<integer>[, <step-position>]?)
+<step-position> = jump-start | jump-end | jump-none | jump-both | start | end
+<filter-function-list> = [ <filter-function> | <url> ]+
+<filter-function> = <blur()> | <brightness()> | <contrast()> | <drop-shadow()> | <grayscale()> | <hue-rotate()> | <invert()> | <opacity()> | <saturate()> | <sepia()>
+<blur()> = blur( <length> )
+<brightness()> = brightness( <number-percentage> )
+<contrast()> = contrast( [ <number-percentage> ] )
+<drop-shadow()> = drop-shadow( <length>{2,3} <color>? )
+<grayscale()> = grayscale( <number-percentage> )
+<hue-rotate()> = hue-rotate( <angle> )
+<invert()> = invert( <number-percentage> )
+<opacity()> = opacity( [ <number-percentage> ] )
+<saturate()> = saturate( <number-percentage> )
+<sepia()> = sepia( <number-percentage> )
+<number-percentage> = <number> | <percentage>
+<color> = <rgb()> | <rgba()> | <hsl()> | <hsla()> | <hex-color> | <named-color> | currentcolor | <deprecated-system-color>
+<rgb()> = rgb( <percentage>{3} [ / <alpha-value> ]? ) | rgb( <number>{3} [ / <alpha-value> ]? ) | rgb( <percentage>#{3} , <alpha-value>? ) | rgb( <number>#{3} , <alpha-value>? )
+<rgba()> = rgba( <percentage>{3} [ / <alpha-value> ]? ) | rgba( <number>{3} [ / <alpha-value> ]? ) | rgba( <percentage>#{3} , <alpha-value>? ) | rgba( <number>#{3} , <alpha-value>? )
+<hsl()> = hsl( <hue> <percentage> <percentage> [ / <alpha-value> ]? ) | hsl( <hue>, <percentage>, <percentage>, <alpha-value>? )
+<hsla()> = hsla( <hue> <percentage> <percentage> [ / <alpha-value> ]? ) | hsla( <hue>, <percentage>, <percentage>, <alpha-value>? )
+<alpha-value> = <number> | <percentage>
+<hue> = <number> | <angle>
+<bg-layer> = <bg-image> || <bg-position> [ / <bg-size> ]? || <repeat-style> || <attachment> || <box> || <box>
+<final-bg-layer> = <'background-color'> || <bg-image> || <bg-position> [ / <bg-size> ]? || <repeat-style> || <attachment> || <box> || <box>
+<bg-image> = none | <image>
+<bg-position> = [ [ left | center | right | top | bottom | <length-percentage> ] | [ left | center | right | <length-percentage> ] [ top | center | bottom | <length-percentage> ] | [ center | [ left | right ] <length-percentage>? ] && [ center | [ top | bottom ] <length-percentage>? ] ]
+<bg-size> = [ <length-percentage> | auto ]{1,2} | cover | contain
+<repeat-style> = repeat-x | repeat-y | [ repeat | space | round | no-repeat ]{1,2}
+<attachment> = scroll | fixed | local
+<box> = border-box | padding-box | content-box
+<image> = <url> | <image()> | <image-set()> | <element()> | <paint()> | <cross-fade()> | <gradient>
+<length-percentage> = <length> | <percentage>
+<image()> = image( <image-tags>? [ <image-src>? , <color>? ]! )
+<image-set()> = image-set( <image-set-option># )
+<element()> = element( <id-selector> )
+<paint()> = paint( <ident>, <declaration-value>? )
+<cross-fade()> = cross-fade( <cf-mixing-image> , <cf-final-image>? )
+<gradient> = <linear-gradient()> | <repeating-linear-gradient()> | <radial-gradient()> | <repeating-radial-gradient()> | <conic-gradient()> 
+<image-tags> = ltr | rtl
+<image-src> = <url> | <string>
+<image-set-option> = [ <image> | <string> ] <resolution>
+<id-selector> = <hash-token>
+<cf-mixing-image> = <percentage>? && <image>
+<cf-final-image> = <image> | <color>
+<linear-gradient()> = linear-gradient( [ <angle> | to <side-or-corner> ]? , <color-stop-list> )
+<repeating-linear-gradient()> = repeating-linear-gradient( [ <angle> | to <side-or-corner> ]? , <color-stop-list> )
+<radial-gradient()> = radial-gradient( [ <ending-shape> || <size> ]? [ at <position> ]? , <color-stop-list> )
+<repeating-radial-gradient()> = repeating-radial-gradient( [ <ending-shape> || <size> ]? [ at <position> ]? , <color-stop-list> )
+<conic-gradient()> = conic-gradient( [ from <angle> ]? [ at <position> ]?, <angular-color-stop-list> )
+<side-or-corner> = [ left | right ] || [ top | bottom ]
+<color-stop-list> = [ <linear-color-stop> [, <linear-color-hint>]? ]# , <linear-color-stop>
+<ending-shape> = circle | ellipse
+<size> = closest-side | farthest-side | closest-corner | farthest-corner | <length> | <length-percentage>{2}
+<position> = [ [ left | center | right ] || [ top | center | bottom ] | [ left | center | right | <length-percentage> ] [ top | center | bottom | <length-percentage> ]? | [ [ left | right ] <length-percentage> ] && [ [ top | bottom ] <length-percentage> ] ]
+<angular-color-stop-list> = [ <angular-color-stop> [, <angular-color-hint>]? ]# , <angular-color-stop>
+<linear-color-stop> = <color> <color-stop-length>?
+<linear-color-hint> = <length-percentage>
+<angular-color-stop> = <color> && <color-stop-angle>?
+<angular-color-hint> = <angle-percentage>
+<color-stop-length> = <length-percentage>{1,2}
+<color-stop-angle> = <angle-percentage>{1,2}
+<angle-percentage> = <angle> | <percentage>
+<blend-mode> = normal | multiply | screen | overlay | darken | lighten | color-dodge | color-burn | hard-light | soft-light | difference | exclusion | hue | saturation | color | luminosity
+<line-width> = <length> | thin | medium | thick
+<line-style> = none | hidden | dotted | dashed | solid | double | groove | ridge | inset | outset
+<shadow> = inset? && <length>{2,4} && <color>?
+<shape> = rect(<top>, <right>, <bottom>, <left>)
+<clip-source> = <url>
+<basic-shape> = <inset()> | <circle()> | <ellipse()> | <polygon()> | <path()>
+<geometry-box> = <shape-box> | fill-box | stroke-box | view-box
+<inset()> = inset( <length-percentage>{1,4} [ round <'border-radius'> ]? )
+<circle()> = circle( [ <shape-radius> ]? [ at <position> ]? )
+<ellipse()> = ellipse( [ <shape-radius>{2} ]? [ at <position> ]? )
+<polygon()> = polygon( <fill-rule>? , [ <length-percentage> <length-percentage> ]# )
+<path()> = path( [ <fill-rule>, ]? <string> )
+<shape-box> = <box> | margin-box
+<fill-rule> = nonzero | evenodd
+<content-replacement> = <image>
+<content-list> = [ <string> | contents | <image> | <quote> | <target> | <leader()> ]+
+<quote> = open-quote | close-quote | no-open-quote | no-close-quote
+<target> = <target-counter()> | <target-counters()> | <target-text()>
+<leader()> = leader( <leader-type> )
+<target-counter()> = target-counter( [ <string> | <url> ] , <custom-ident> , <counter-style>? )
+<target-counters()> = target-counters( [ <string> | <url> ] , <custom-ident> , <string> , <counter-style>? )
+<target-text()> = target-text( [ <string> | <url> ] , [ content | before | after | first-letter ]? )
+<leader-type> = dotted | solid | space | <string>
+<counter-style> = <counter-style-name> | symbols()
+<counter-style-name> = <custom-ident>
+<display-outside> = block | inline | run-in
+<display-inside> = flow | flow-root | table | flex | grid | ruby
+<display-listitem> = <display-outside>? && [ flow | flow-root ]? && list-item
+<display-internal> = table-row-group | table-header-group | table-footer-group | table-row | table-cell | table-column-group | table-column | table-caption | ruby-base | ruby-text | ruby-base-container | ruby-text-container
+<display-box> = contents | none
+<display-legacy> = inline-block | inline-list-item | inline-table | inline-flex | inline-grid
+<font-variant-css21> = [ normal | small-caps ]
+<family-name> = <string> | <custom-ident>+
+<generic-family> = serif | sans-serif | cursive | fantasy | monospace
+<feature-tag-value> = <string> [ <integer> | on | off ]?
+<absolute-size> = xx-small | x-small | small | medium | large | x-large | xx-large | xxx-large
+<relative-size> = larger | smaller
+<font-stretch-absolute> = normal | ultra-condensed | extra-condensed | condensed | semi-condensed | semi-expanded | expanded | extra-expanded | ultra-expanded | <percentage>
+<common-lig-values> = [ common-ligatures | no-common-ligatures ]
+<discretionary-lig-values> = [ discretionary-ligatures | no-discretionary-ligatures ]
+<historical-lig-values> = [ historical-ligatures | no-historical-ligatures ]
+<contextual-alt-values> = [ contextual | no-contextual ]
+<feature-value-name> = <custom-ident>
+<numeric-figure-values> = [ lining-nums | oldstyle-nums ]
+<numeric-spacing-values> = [ proportional-nums | tabular-nums ]
+<numeric-fraction-values> = [ diagonal-fractions | stacked-fractions ]
+<east-asian-variant-values> = [ jis78 | jis83 | jis90 | jis04 | simplified | traditional ]
+<east-asian-width-values> = [ full-width | proportional-width ]
+<font-weight-absolute> = normal | bold | <number[1,1000]>
+<grid-line> = auto | <custom-ident> | [ <integer> && <custom-ident>? ] | [ span && [ <integer> || <custom-ident> ] ]
+<track-size> = <track-breadth> | minmax( <inflexible-breadth> , <track-breadth> ) | fit-content( [ <length> | <percentage> ] )
+<track-breadth> = <length-percentage> | <flex> | min-content | max-content | auto
+<inflexible-breadth> = <length> | <percentage> | min-content | max-content | auto
+<line-names> = '[' <custom-ident>* ']'
+<explicit-track-list> = [ <line-names>? <track-size> ]+ <line-names>?
+<track-list> = [ <line-names>? [ <track-size> | <track-repeat> ] ]+ <line-names>?
+<auto-track-list> = [ <line-names>? [ <fixed-size> | <fixed-repeat> ] ]* <line-names>? <auto-repeat>
+[ <line-names>? [ <fixed-size> | <fixed-repeat> ] ]* <line-names>?
+<line-name-list> = [ <line-names> | <name-repeat> ]+
+<fixed-size> = <fixed-breadth> | minmax( <fixed-breadth> , <track-breadth> ) | minmax( <inflexible-breadth> , <fixed-breadth> )
+<fixed-repeat> = repeat( [ <positive-integer> ] , [ <line-names>? <fixed-size> ]+ <line-names>? )
+<auto-repeat> = repeat( [ auto-fill | auto-fit ] , [ <line-names>? <fixed-size> ]+ <line-names>? )
+<fixed-breadth> = <length-percentage>
+<path()> = path( [ <fill-rule>, ]? <string> )
+<inset()> = inset( <length-percentage>{1,4} [ round <'border-radius'> ]? )
+<circle()> = circle( [ <shape-radius> ]? [ at <position> ]? )
+<ellipse()> = ellipse( [ <shape-radius>{2} ]? [ at <position> ]? )
+<polygon()> = polygon( <fill-rule>? , [ <length-percentage> <length-percentage> ]# )
+<shape-radius> = <length-percentage> | closest-side | farthest-side
+<shadow-t> = [ <length>{2,3} && <color>? ]
+<transform-list> = <transform-function>+
+<transform-function> = <matrix()> | <translate()> | <translateX()> | <translateY()> | <scale()> | <scaleX()> | <scaleY()> | <rotate()> | <skew()> | <skewX()> | <skewY()> | <matrix3d()> | <translate3d()> | <translateZ()> | <scale3d()> | <scaleZ()> | <rotate3d()> | <rotateX()> | <rotateY()> | <rotateZ()> | <perspective()>
+<matrix()> = matrix( <number>#{6} )
+<translate()> = translate( <length-percentage> , <length-percentage>? )
+<translateX()> = translateX( <length-percentage> )
+<translateY()> = translateY( <length-percentage> )
+<scale()> = scale( <number> , <number>? )
+<scaleX()> = scaleX( <number> )
+<scaleY()> = scaleY( <number> )
+<rotate()> = rotate( [ <angle> | <zero> ] )
+<skew()> = skew( [ <angle> | <zero> ] , [ <angle> | <zero> ]? )
+<skewX()> = skewX( [ <angle> | <zero> ] )
+<skewY()> = skewY( [ <angle> | <zero> ] )
+<matrix3d()> = matrix3d( <number>#{16} )
+<translate3d()> = translate3d( <length-percentage> , <length-percentage> , <length> )
+<translateZ()> = translateZ( <length> )
+<scale3d()> = scale3d( <number> , <number> , <number> )
+<scaleZ()> = scaleZ( <number> )
+<rotate3d()> = rotate3d( <number> , <number> , <number> , [ <angle> | <zero> ] )
+<rotateX()> = rotateX( [ <angle> | <zero> ] )
+<rotateY()> = rotateY( [ <angle> | <zero> ] )
+<rotateZ()> = rotateZ( [ <angle> | <zero> ] )
+<perspective()> = perspective( <length> )
+<single-transition> = [ none | <single-transition-property> ] || <time> || <timing-function> || <time>
+<single-transition-property> = all | <custom-ident>
+<animateable-feature> = scroll-position | contents | <custom-ident>

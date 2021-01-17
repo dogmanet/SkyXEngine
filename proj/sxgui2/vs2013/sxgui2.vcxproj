@@ -19,10 +19,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\gui2\CSSLexer.cpp" />
+    <ClCompile Include="..\..\..\source\gui2\CSSProperty.cpp" />
+    <ClCompile Include="..\..\..\source\gui2\Desktop.cpp" />
+    <ClCompile Include="..\..\..\source\gui2\DesktopStack.cpp" />
     <ClCompile Include="..\..\..\source\gui2\dllmain.cpp" />
+    <ClCompile Include="..\..\..\source\gui2\DOMDocument.cpp" />
     <ClCompile Include="..\..\..\source\gui2\plugin_main.cpp" />
+    <ClCompile Include="..\..\..\source\gui2\GUI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\gui2\CSSLexer.h" />
+    <ClInclude Include="..\..\..\source\gui2\CSSProperty.h" />
+    <ClInclude Include="..\..\..\source\gui2\Desktop.h" />
+    <ClInclude Include="..\..\..\source\gui2\DesktopStack.h" />
+    <ClInclude Include="..\..\..\source\gui2\DOMDocument.h" />
+    <ClInclude Include="..\..\..\source\gui2\GUI.h" />
     <ClInclude Include="..\..\..\source\xcommon\gui\IXCSS.h" />
     <ClInclude Include="..\..\..\source\xcommon\gui\IXCSSProperty.h" />
     <ClInclude Include="..\..\..\source\xcommon\gui\IXCSSSelector.h" />
@@ -128,7 +140,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ImportLibrary>../../../libs/$(TargetName)_d.lib</ImportLibrary>
+      <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb/$(TargetName).pdb</ProgramDatabaseFile>
       <Profile>true</Profile>
     </Link>
@@ -147,7 +159,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ImportLibrary>../../../libs64/$(TargetName)_d.lib</ImportLibrary>
+      <ImportLibrary>../../../libs64/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb64/$(TargetName).pdb</ProgramDatabaseFile>
       <Profile>true</Profile>
     </Link>
