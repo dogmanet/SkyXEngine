@@ -961,7 +961,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 				szText = "";
 			}
 
-			wsprintfW(str, L"<div class=\"cctable_section\">%s</div>", CMB2WC(szText));
+			wsprintfW(str, L"<div class=\"cctable_section\">%s</div>", (const wchar_t*)CMB2WC(szText));
 			pNode->appendHTML(str);
 
 			for(int j = 0, jl = pConfig->getKeyCount(szSectionName); j < jl; ++j)
