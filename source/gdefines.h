@@ -288,7 +288,7 @@ inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, .
 #endif
 inline void DefReport(int iLevel, const char *szLibName, const char *szMessage)
 {
-	if(szMessage[0] != ' ' && szMessage[0] != '\t')
+	if(!isspace(szMessage[0]))
 	{
 		printf(COLOR_GREEN "%s" COLOR_RESET ": ", szLibName);
 	}
