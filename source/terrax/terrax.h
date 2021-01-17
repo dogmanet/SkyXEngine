@@ -29,6 +29,7 @@
 #define WM_SETTITLEASYNC (WM_USER + 1)
 
 #include "Grid.h"
+#include "MaterialBrowser.h"
 
 enum X_VIEWPORT_LAYOUT
 {
@@ -181,6 +182,7 @@ extern CTerraXConfig g_xConfig;
 
 extern CTerraXState g_xState;
 
+extern CMaterialBrowser *g_pMaterialBrowser;
 
 #define X2D_TOP_POS float3(0.0f, 1000.0f, 0.0f)
 #define X2D_TOP_ROT SMQuaternion(-SM_PIDIV2, 'x')

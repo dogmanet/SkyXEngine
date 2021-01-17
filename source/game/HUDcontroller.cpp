@@ -97,7 +97,7 @@ void CHUDcontroller::loadMap(const char *szName)
 		
 		m_pMinimapPan->getStyleSelf()->width->set((m_vLevelMax.x - m_vLevelMin.x) * m_fMapScale);
 		m_pMinimapPan->getStyleSelf()->height->set((m_vLevelMax.z - m_vLevelMin.z) * m_fMapScale);
-		m_pMinimapPan->getStyleSelf()->background_image->set(StringW(String(szMapFile)));
+		m_pMinimapPan->getStyleSelf()->background_image->set(StringW(CMB2WC(szMapFile)));
 		m_pMinimapPan->updateStyles();
 	}
 }
@@ -190,7 +190,7 @@ void CHUDcontroller::chatMsg(const char *msg)
 	
 	if(m_pChatLog)
 	{
-		m_pChatLog->appendHTML(StringW(L"<div>")+StringW(String(msg))+L"</div>");
+		m_pChatLog->appendHTML(StringW(L"<div>") + CMB2WC(msg) + L"</div>");
 		while((int)m_pChatLog->getChilds()->size() > *s_iChatLines)
 		{
 			m_pChatLog->removeChild(m_pChatLog->getChilds()[0][0]);

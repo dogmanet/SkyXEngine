@@ -332,6 +332,12 @@ struct VSO_TXColored
 	float4 vPosition	:POSITION;
 };
 
+struct VSO_TXColored2
+{
+	float4 vPosition	:POSITION;
+	float4 vColor	:TEXCOORD0;
+};
+
 struct VSI_TXHandler 
 {
 	float3 vPosition	:POSITION0;
@@ -353,6 +359,35 @@ struct VSI_TXIcon
 	float2 vTexUV	:TEXCOORD0;
 	
 	float3 vInstPos	:TEXCOORD1;
+};
+
+struct VSI_TXMatFrame
+{
+	float2 vPosition :POSITION0;
+	float2 vScaleFactor :TEXCOORD0;
+	float4 vColor :TEXCOORD1;
+	float fHighlightFactor :TEXCOORD2;
+	float fTitleFactor :TEXCOORD3;
+};
+
+struct VSI_TXMatInner
+{
+	float2 vPosition :POSITION0;
+	float2 vScaleFactor :TEXCOORD0;
+	float2 vTexUV :TEXCOORD1;
+};
+
+struct VSI_GUIText
+{
+	float2 vPosition :POSITION0;
+	float2 vTexUV :TEXCOORD0;
+};
+
+struct VSI_TXScrollbar
+{
+	float2 vPosition :POSITION0;
+	float2 vScaleFactor :TEXCOORD0;
+	float4 vMarker :TEXCOORD1;
 };
 
 struct VSI_DbgColorvertex

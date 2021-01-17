@@ -149,6 +149,14 @@ public:
 
 	//! Перезагружает все материалы
 	virtual void XMETHODCALLTYPE reloadAll() = 0;
+
+	//! Сканирует директории на наличие материалов и формирует кэш
+	virtual void XMETHODCALLTYPE scanMaterials() = 0;
+
+	virtual UINT XMETHODCALLTYPE getScannedMaterialsCount() = 0;
+	virtual const char* XMETHODCALLTYPE getScannedMaterial(UINT uIdx, IXMaterial **ppOut, bool *pisTexture = NULL, bool *pisTranslated = NULL) = 0;
+
+	virtual bool XMETHODCALLTYPE isMaterialLoaded(const char *szName) = 0;
 };
 
 #endif

@@ -43,6 +43,15 @@
     <ClCompile Include="..\..\..\source\gui2\CSSLexer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\gui2\Font.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\gui2\FontManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\common\string.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\xcommon\gui\IXDesktop.h">
@@ -94,6 +103,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\gui2\CSSLexer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\gui\IXFontManager.h">
+      <Filter>Header Files\xcommon\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui2\Font.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui2\FontManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

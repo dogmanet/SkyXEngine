@@ -449,7 +449,7 @@ public:
 
 			pCameras[i]->updateFrustum(mProj);
 
-			g_pCameraConstantBuffer->update(&SMMatrixIdentity);
+			g_pCameraConstantBuffer->update(&SMMatrixIdentity());
 			pDXDevice->setVSConstant(g_pCameraConstantBuffer, SCR_OBJECT);
 
 			Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
@@ -464,6 +464,10 @@ public:
 			XRender2D(views[i], fScales[i], false);
 			mem_release(pBackBuffer);
 		}
+
+
+
+		g_pMaterialBrowser->render();
 
 		/*
 		IGXSurface *pBackBuffer = g_pGuiSwapChain->getColorTarget();
@@ -492,6 +496,8 @@ public:
 				p2DSwapChains[i]->swapBuffers();
 			}
 		}
+
+		g_pMaterialBrowser->swapBuffers();
 	}
 	void updateVisibility() override
 	{
@@ -701,6 +707,8 @@ int main(int argc, char **argv)
 	IPluginManager *pPluginManager = Core_GetIXCore()->getPluginManager();
 
 	IXMaterialSystem *pMaterialSystem = (IXMaterialSystem*)pPluginManager->getInterface(IXMATERIALSYSTEM_GUID);
+
+	pMaterialSystem->scanMaterials();
 
 	GXCOLOR w = GX_COLOR_ARGB(255, 255, 255, 255);
 	GXCOLOR t = GX_COLOR_ARGB(0, 255, 255, 255);
@@ -1130,6 +1138,8 @@ int main(int argc, char **argv)
 	g_pDSNoZ = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
 
 	XInitViewports();
+
+	g_pMaterialBrowser->initGraphics(SGCore_GetDXDevice());
 
 	g_pCameraConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(SMMATRIX));
 

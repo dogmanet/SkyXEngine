@@ -49,6 +49,8 @@ char g_szClipboardFile[MAX_PATH + sizeof(CLIPBOARD_FILE)];
 extern Array<IXEditorObject*> g_pLevelObjects;
 extern AssotiativeArray<AAString, IXEditable*> g_mEditableSystems;
 
+CMaterialBrowser *g_pMaterialBrowser = NULL;
+
 // Global Variables:
 HINSTANCE hInst;								// current instance
 HWND g_hWndMain = NULL;
@@ -183,7 +185,7 @@ ATOM XRegisterClass(HINSTANCE hInstance)
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
-	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_SPLITTER_WND));
+	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON_LOGO));
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
 
 	hBrush = CreateSolidBrush(RGB(240, 240, 240));
@@ -803,6 +805,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		g_pPropWindow->clearClassList();
 		g_pPropWindow->setCallback(&g_propertyCallback);
 
+		g_pMaterialBrowser = new CMaterialBrowser(hInst, hWnd);
+
 		return FALSE;
 	}
 		break;
@@ -1132,6 +1136,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			XUpdatePropWindow();
 			g_isPropWindowVisible = TRUE;
 			break;
+
+		case ID_MAT_BROWSER:
+			g_pMaterialBrowser->browse(NULL);
+			break;
+
 
 		case ID_VIEW_CENTERONSELECTION:
 			if(g_xState.bHasSelection)
@@ -2578,6 +2587,8 @@ void XFrameRun(float fDeltaTime)
 			}
 		}
 	}
+
+	g_pMaterialBrowser->update(fDeltaTime);
 }
 
 void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheckItem)

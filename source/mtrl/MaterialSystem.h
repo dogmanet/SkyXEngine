@@ -237,22 +237,24 @@ protected:
 
 	void updateShader();
 
-private:
-	const char *m_szName = NULL;
-
+protected:
 	struct MaterialTexture
 	{
 		String sName;
 		IXTexture *pTexture = NULL;
 		// UINT uSlot = UINT_MAX;
 	};
+	AssotiativeArray<AAString, MaterialTexture> m_mapTextures;
+
+private:
+	const char *m_szName = NULL;
+
 
 	String m_sShader;
 	XMaterialShaderHandler *m_pShader = NULL;
 
 	AssotiativeArray<AAString, CMaterialProperty> m_mapProperties;
 	AssotiativeArray<AAString, CMaterialFlag> m_mapFlags;
-	AssotiativeArray<AAString, MaterialTexture> m_mapTextures;
 	Array<CMaterialProperty*> m_aProperties;
 
 	struct MaterialPass
@@ -289,7 +291,40 @@ private:
 	CMaterialFlag *m_pEmissive = NULL;
 };
 
-class CMaterialSystem: public IXUnknownImplementation<IXMaterialSystem>
+class CMaterialInfo: public CMaterial
+{
+public:
+	CMaterialInfo(CMaterialSystem *pMaterialSystem, const char *szName):
+		CMaterial(pMaterialSystem, szName)
+	{
+	}
+
+	void XMETHODCALLTYPE setTexture(const char *szKey, const char *szTexture) override
+	{
+		assert(strlen(szKey) < AAS_MAXLEN);
+
+		const AssotiativeArray<AAString, MaterialTexture>::Node *pNode;
+		if(m_mapTextures.KeyExists(szKey, &pNode))
+		{
+			if(!fstrcmp(pNode->Val->sName.c_str(), szTexture))
+			{
+				return;
+			}
+			pNode->Val->sName = szTexture;
+		}
+		else
+		{
+			AAString sKey;
+			sKey.setName(szKey);
+			m_mapTextures[sKey].sName = szTexture;
+			m_mapTextures[sKey].pTexture = NULL;
+		}
+	}
+};
+
+class IFileSystem;
+
+class CMaterialSystem final: public IXUnknownImplementation<IXMaterialSystem>
 {
 public:
 	CMaterialSystem();
@@ -340,6 +375,13 @@ public:
 	void notifyChanged(XEventMaterialChanged *pEvent);
 
 	bool saveMaterial(CMaterial *pMaterial);
+
+	void XMETHODCALLTYPE scanMaterials() override;
+
+	UINT XMETHODCALLTYPE getScannedMaterialsCount() override;
+	const char* XMETHODCALLTYPE getScannedMaterial(UINT uIdx, IXMaterial **ppOut, bool *pisTexture = NULL, bool *pisTranslated = NULL) override;
+
+	bool XMETHODCALLTYPE isMaterialLoaded(const char *szName) override;
 
 protected:
 	struct CObjectData
@@ -616,6 +658,21 @@ protected:
 
 	bool loadMaterialFromFile(const char *szName, CMaterial *pMaterial);
 	CGlobalFlag* createFlag(const char *szName);
+
+private:
+
+	struct ScanItem
+	{
+		String sName;
+		bool isTranslated;
+		bool isTexture;
+		CMaterialInfo *pMatInfo;
+	};
+
+	Array<ScanItem> m_aScanCache;
+
+	void scanForExtension(IFileSystem *pFS, const char *szDir, const char *szExt, Map<String, bool> &mapFiles, bool isTexture);
+	void clearScanCache();
 };
 
 #endif

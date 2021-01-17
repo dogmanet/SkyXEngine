@@ -4,6 +4,13 @@
 #include <gdefines.h>
 #include "resource/IXResourceTexture.h"
 
+class IXTextureProxyScanList: public IXUnknown
+{
+public:
+	virtual UINT XMETHODCALLTYPE getCount() const = 0;
+	virtual const char* XMETHODCALLTYPE getItem(UINT uIdx, const char **pszFileName = NULL) const = 0;
+};
+
 // {BD03E0C0-7589-4162-8130-5CD770581EE3}
 #define IXTEXTUREPROXY_GUID DEFINE_XGUID(0xbd03e0c0, 0x7589, 0x4162, 0x81, 0x30, 0x5c, 0xd7, 0x70, 0x58, 0x1e, 0xe3)
 #define IXTEXTUREPROXY_VERSION 2
@@ -22,6 +29,8 @@ public:
 
 	//! Выполняет загрузку текстуры, вызывается только если метод resolveName записал истинное значение по адресу pbWantLoad
 	virtual bool XMETHODCALLTYPE loadTexture(const char *szName, IXResourceTexture **ppOut) = 0;
+
+	virtual bool XMETHODCALLTYPE scanForTextures(IXTextureProxyScanList **ppOut) = 0;
 };
 
 #endif

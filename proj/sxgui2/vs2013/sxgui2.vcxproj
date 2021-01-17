@@ -19,12 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\gui2\CSSLexer.cpp" />
     <ClCompile Include="..\..\..\source\gui2\CSSProperty.cpp" />
     <ClCompile Include="..\..\..\source\gui2\Desktop.cpp" />
     <ClCompile Include="..\..\..\source\gui2\DesktopStack.cpp" />
     <ClCompile Include="..\..\..\source\gui2\dllmain.cpp" />
     <ClCompile Include="..\..\..\source\gui2\DOMDocument.cpp" />
+    <ClCompile Include="..\..\..\source\gui2\Font.cpp" />
+    <ClCompile Include="..\..\..\source\gui2\FontManager.cpp" />
     <ClCompile Include="..\..\..\source\gui2\plugin_main.cpp" />
     <ClCompile Include="..\..\..\source\gui2\GUI.cpp" />
   </ItemGroup>
@@ -34,6 +37,8 @@
     <ClInclude Include="..\..\..\source\gui2\Desktop.h" />
     <ClInclude Include="..\..\..\source\gui2\DesktopStack.h" />
     <ClInclude Include="..\..\..\source\gui2\DOMDocument.h" />
+    <ClInclude Include="..\..\..\source\gui2\Font.h" />
+    <ClInclude Include="..\..\..\source\gui2\FontManager.h" />
     <ClInclude Include="..\..\..\source\gui2\GUI.h" />
     <ClInclude Include="..\..\..\source\xcommon\gui\IXCSS.h" />
     <ClInclude Include="..\..\..\source\xcommon\gui\IXCSSProperty.h" />
@@ -44,6 +49,7 @@
     <ClInclude Include="..\..\..\source\xcommon\gui\IXDOMDocument.h" />
     <ClInclude Include="..\..\..\source\xcommon\gui\IXDOMNode.h" />
     <ClInclude Include="..\..\..\source\xcommon\gui\IXDOMString.h" />
+    <ClInclude Include="..\..\..\source\xcommon\gui\IXFontManager.h" />
     <ClInclude Include="..\..\..\source\xcommon\gui\IXGUI.h" />
     <ClInclude Include="..\..\..\source\xcommon\gui\IXHTMLElement.h" />
   </ItemGroup>
@@ -100,14 +106,14 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/plugins/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source;</IncludePath>
-    <LibraryPath>;../../../libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source;../../../sdks/freetype-2.10.0/include;</IncludePath>
+    <LibraryPath>;../../../libs;$(LibraryPath);../../../sdks/freetype-2.10.0/objs/Win32/Debug Static/;</LibraryPath>
     <SourcePath>../../../source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)_d</TargetName>
-    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source;</IncludePath>
-    <LibraryPath>;../../../libs64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source;../../../sdks/freetype-2.10.0/include;</IncludePath>
+    <LibraryPath>;../../../libs64;$(LibraryPath);../../../sdks/freetype-2.10.0/objs/x64/Debug Static/;</LibraryPath>
     <SourcePath>../../../source;$(SourcePath)</SourcePath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin64/plugins/</OutDir>
@@ -115,13 +121,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/plugins/</OutDir>
-    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source;</IncludePath>
-    <LibraryPath>;../../../libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source;../../../sdks/freetype-2.10.0/include;</IncludePath>
+    <LibraryPath>;../../../libs;$(LibraryPath);../../../sdks/freetype-2.10.0/objs/Win32/Release Static/;</LibraryPath>
     <SourcePath>../../../source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source;</IncludePath>
-    <LibraryPath>;../../../libs64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source;../../../sdks/freetype-2.10.0/include;</IncludePath>
+    <LibraryPath>;../../../libs64;$(LibraryPath);../../../sdks/freetype-2.10.0/objs/x64/Release Static;</LibraryPath>
     <SourcePath>../../../source;$(SourcePath)</SourcePath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin64/plugins/</OutDir>

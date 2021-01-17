@@ -195,6 +195,7 @@ typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMes
 #if defined(_WINDOWS)
 #	define WIN32_LEAN_AND_MEAN
 #	include <Windows.h>
+#	include <common/MB2WC.h>
 #endif
 
 #include <common/math.h>

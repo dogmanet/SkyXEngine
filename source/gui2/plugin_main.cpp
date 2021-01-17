@@ -2,7 +2,8 @@
 #include "GUI.h"
 #include <gui2/CSSLexer.h>
 
-#include "CSSProperty.h""
+#include "CSSProperty.h"
+#include "FontManager.h"
 
 class CGUIPlugin: public IXUnknownImplementation<IXPlugin>
 {
@@ -20,7 +21,7 @@ public:
 
 	UINT XMETHODCALLTYPE getInterfaceCount() override
 	{
-		return(0);
+		return(1);
 	}
 	const XGUID* XMETHODCALLTYPE getInterfaceGUID(UINT id) override
 	{
@@ -28,6 +29,9 @@ public:
 		switch(id)
 		{
 		case 0:
+			s_guid = IXFONTMANAGER_GUID;
+			break;
+		case 1:
 			s_guid = IXGUI_GUID;
 			break;
 		default:
@@ -40,6 +44,14 @@ public:
 		if(guid == IXGUI_GUID)
 		{
 			return(new CGUI());
+		}
+		if(guid == IXFONTMANAGER_GUID)
+		{
+			IXRenderPipeline *pRP;
+			m_pCore->getRenderPipeline(&pRP);
+			IGXDevice *pDev = pRP->getDevice();
+			mem_release(pRP);
+			return(new CFontManager(pDev, m_pCore->getFileSystem()));
 		}
 		return(NULL);
 	}

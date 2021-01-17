@@ -542,11 +542,11 @@ namespace gui
 	
 	IDesktop* CDesktopStack::createDesktopA(const char *name, const char *file)
 	{
-		IDesktop *d = new CDesktop(this, StringW(String(name)));
+		IDesktop *d = new CDesktop(this, StringW(CMB2WC(name)));
 		d->setWidth(m_iScreenWidth);
 		d->setHeight(m_iScreenHeight);
 		d->updateSize();
-		d->loadFromFile(StringW(String(file)).c_str());
+		d->loadFromFile(CMB2WC(file));
 		m_mDesktops[String(name)] = d;
 		return(d);
 	}
@@ -614,7 +614,7 @@ namespace gui
 		if(cb)
 		{
 			//mCallbacks[StringW(String(cbName))].push_back(cb);
-			m_mCallbacks[StringW(String(cbName))] = {cb, pUserData};
+			m_mCallbacks[StringW(CMB2WC(cbName))] = {cb, pUserData};
 		}
 	}
 

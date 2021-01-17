@@ -214,7 +214,9 @@
     <ClCompile Include="..\..\..\source\terrax\Grid.cpp" />
     <ClCompile Include="..\..\..\source\terrax\LevelOpenDialog.cpp" />
     <ClCompile Include="..\..\..\source\terrax\mainWindow.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\MaterialBrowser.cpp" />
     <ClCompile Include="..\..\..\source\terrax\PropertyWindow.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\ScrollBar.cpp" />
     <ClCompile Include="..\..\..\source\terrax\terrax.cpp" />
     <ClCompile Include="..\..\..\source\terrax\Tools.cpp" />
     <ClCompile Include="..\..\..\source\terrax\UndoManager.cpp" />
@@ -238,7 +240,9 @@
     <ClInclude Include="..\..\..\source\terrax\CommandScale.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandSelect.h" />
     <ClInclude Include="..\..\..\source\terrax\LevelOpenDialog.h" />
+    <ClInclude Include="..\..\..\source\terrax\MaterialBrowser.h" />
     <ClInclude Include="..\..\..\source\terrax\PropertyWindow.h" />
+    <ClInclude Include="..\..\..\source\terrax\ScrollBar.h" />
     <ClInclude Include="..\..\..\source\terrax\Tools.h" />
     <ClInclude Include="..\..\..\source\terrax\UndoManager.h" />
     <ClInclude Include="..\..\..\source\terrax\Grid.h" />
