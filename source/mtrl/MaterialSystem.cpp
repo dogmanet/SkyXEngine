@@ -91,6 +91,7 @@ CMaterialSystem::CMaterialSystem()
 	}
 
 	Core_0RegisterConcmdCls("mtl_reload", this, (SXCONCMDCLS)&CMaterialSystem::reloadAll, "Перезагружает все материалы");
+	Core_0RegisterCVarBool("mat_editorial", false, "Render editorial materials");
 
 	m_pNotifyChannel = Core_GetIXCore()->getEventChannel<XEventMaterialChanged>(EVENT_MATERIAL_CHANGED_GUID);
 
@@ -446,13 +447,21 @@ void XMETHODCALLTYPE CMaterialSystem::setWorld(const SMMATRIX &mWorld)
 	SGCore_GetDXDevice()->getThreadContext()->setVSConstant(m_pObjectConstantBuffer, SCR_OBJECT);
 	//SGCore_GetDXDevice()->setPixelShaderConstant(m_pObjectConstantBuffer, SCR_OBJECT);
 }
-void XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
+bool XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 {
+	static const bool *mat_editorial = GET_PCVAR_BOOL("mat_editorial");
+	CMaterial *pMat = (CMaterial*)pMaterial;
+
+	if(!*mat_editorial && pMat && pMat->isEditorial())
+	{
+		return(false);
+	}
+
 	if(m_pCurrentRP && m_pCurrentRP->bSkipMaterialShader)
 	{
 		if(!m_pCurrentVS)
 		{
-			return;
+			return(false);
 		}
 
 		MaterialVariantVS *pVS = &m_pCurrentRP->aPassFormats[m_pCurrentVS->pVertexFormat->uID].aPassVariants[m_uCurrentRPvariant].aVertexShaders[m_pCurrentVS->uID];
@@ -468,10 +477,9 @@ void XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 
 		SGCore_ShaderBind(idShaderSet);
 
-		return;
+		return(true);
 	}
 
-	CMaterial *pMat = (CMaterial*)pMaterial;
 	if(pMaterial)
 	{
 		MaterialShader *pShader = (MaterialShader*)pMat->getShaderHandler();
@@ -637,9 +645,11 @@ void XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 				}
 			}
 
-			return;
+			return(true);
 		}
 	}
+
+	return(false);
 
 	// SMtrl_MtlRender(pMaterial ? pMat->getId() : 0, NULL);
 	// SGCore_MtlSet(pMat->getId(), NULL);
@@ -2497,6 +2507,7 @@ CMaterial::CMaterial(CMaterialSystem *pMaterialSystem, const char *szName):
 	m_pRefractive = createFlag("refractive", XEventMaterialChanged::TYPE_REFRACTIVITY);
 	m_pBlurred = createFlag("blurred", XEventMaterialChanged::TYPE_BLURRED);
 	m_pEmissive = createFlag("emissive", XEventMaterialChanged::TYPE_EMISSIVITY);
+	m_pEditorial = createFlag("editorial", XEventMaterialChanged::TYPE_EDITORIAL);
 
 	setShader("Default");
 }
@@ -2558,6 +2569,17 @@ void XMETHODCALLTYPE CMaterial::setEmissive(bool bValue)
 bool XMETHODCALLTYPE CMaterial::isEmissive() const
 {
 	return(m_pEmissive->get());
+}
+
+void XMETHODCALLTYPE CMaterial::setEditorial(bool bValue)
+{
+	m_pEditorial->set(bValue);
+
+	notifyChanged(XEventMaterialChanged::TYPE_EDITORIAL);
+}
+bool XMETHODCALLTYPE CMaterial::isEditorial() const
+{
+	return(m_pEditorial->get());
 }
 
 void XMETHODCALLTYPE CMaterial::setBlurred(bool bValue)

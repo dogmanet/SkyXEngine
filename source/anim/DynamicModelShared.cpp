@@ -568,25 +568,27 @@ void CDynamicModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor, 
 			)
 		)
 		{
-			m_pMaterialSystem->bindMaterial(m_pppMaterials[uSkin][i]);
+			if(m_pMaterialSystem->bindMaterial(m_pppMaterials[uSkin][i]))
+			{
 
-			switch(m_topology)
-			{
-			case XPT_TRIANGLELIST:
-				uPrimCount = pSubset->uIndexCount / 3;
-				break;
-			case XPT_TRIANGLESTRIP:
-				uPrimCount = pSubset->uIndexCount - 2;
-				break;
-			}
+				switch(m_topology)
+				{
+				case XPT_TRIANGLELIST:
+					uPrimCount = pSubset->uIndexCount / 3;
+					break;
+				case XPT_TRIANGLESTRIP:
+					uPrimCount = pSubset->uIndexCount - 2;
+					break;
+				}
 
-			if(m_isInstancingEnabled)
-			{
-				pCtx->drawIndexedInstanced(m_iInstanceCount, pSubset->uVertexCount, uPrimCount, pSubset->uStartIndex, pSubset->uStartVertex);
-			}
-			else
-			{
-				pCtx->drawIndexed(pSubset->uVertexCount, uPrimCount, pSubset->uStartIndex, pSubset->uStartVertex);
+				if(m_isInstancingEnabled)
+				{
+					pCtx->drawIndexedInstanced(m_iInstanceCount, pSubset->uVertexCount, uPrimCount, pSubset->uStartIndex, pSubset->uStartVertex);
+				}
+				else
+				{
+					pCtx->drawIndexed(pSubset->uVertexCount, uPrimCount, pSubset->uStartIndex, pSubset->uStartVertex);
+				}
 			}
 		}
 	}

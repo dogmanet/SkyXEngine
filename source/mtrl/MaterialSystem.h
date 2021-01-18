@@ -189,6 +189,10 @@ public:
 
 	bool XMETHODCALLTYPE save() override;
 	
+
+	void XMETHODCALLTYPE setEditorial(bool bValue) override;
+	bool XMETHODCALLTYPE isEditorial() const override;
+
 	bool isDirty() const
 	{
 		return(m_pCurrentPass->isDirty);
@@ -289,6 +293,7 @@ private:
 	CMaterialFlag *m_pRefractive = NULL;
 	CMaterialFlag *m_pBlurred = NULL;
 	CMaterialFlag *m_pEmissive = NULL;
+	CMaterialFlag *m_pEditorial = NULL;
 };
 
 class CMaterialInfo: public CMaterial
@@ -339,7 +344,7 @@ public:
 	bool XMETHODCALLTYPE getTexture(const char *szName, IXTexture **ppTexture) override;
 	//void XMETHODCALLTYPE addTexture(const char *szName, IGXTexture2D *pTexture) override;
 
-	void XMETHODCALLTYPE bindMaterial(IXMaterial *pMaterial) override;
+	bool XMETHODCALLTYPE bindMaterial(IXMaterial *pMaterial) override;
 	void XMETHODCALLTYPE bindTexture(IXTexture *pTexture, UINT slot = 0) override;
 	void XMETHODCALLTYPE setWorld(const SMMATRIX &mWorld) override;
 

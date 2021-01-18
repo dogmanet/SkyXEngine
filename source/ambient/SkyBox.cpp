@@ -257,34 +257,35 @@ void CSkyBox::render()
 
 	float4x4 World = SMMatrixTranspose(m_mMatRotation/* * SMMatrixTranslation(pos->x, pos->y, pos->z)*/);
 	m_pMaterialSystem->bindVS(m_pVertexShaderHandler);
-	m_pMaterialSystem->bindMaterial(m_pSky1);
+	if(m_pMaterialSystem->bindMaterial(m_pSky1))
+	{
 #if 0
-	if (/*m_isChangingMainTex*/m_isChanging)
-	{
-		m_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex2));
-		m_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex1), 1);
-	}
-	else
-	{
-		m_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex1));
-		m_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex2), 1);
-	}
+		if (/*m_isChangingMainTex*/m_isChanging)
+		{
+			m_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex2));
+			m_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex1), 1);
+		}
+		else
+		{
+			m_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex1));
+			m_pDevice->setTexture(SGCore_LoadTexGetTexCube(m_idTex2), 1);
+		}
 #endif
 
-	//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &WVP);
-	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vColor", &m_vColor);
-	//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_fBlendFactor", &m_fBlendFactor); 
-	
-	//static ID s_idShader = SGCore_ShaderCreateKit(m_idVS, m_idPS);
-	//SGCore_ShaderBind(s_idShader);
+		//SGCore_ShaderSetVRF(SHADER_TYPE_VERTEX, m_idVS, "g_mWVP", &WVP);
+		//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_vColor", &m_vColor);
+		//SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, m_idPS, "g_fBlendFactor", &m_fBlendFactor); 
 
-	IGXContext *pCtx = m_pDevice->getThreadContext();
+		//static ID s_idShader = SGCore_ShaderCreateKit(m_idVS, m_idPS);
+		//SGCore_ShaderBind(s_idShader);
 
-	pCtx->setIndexBuffer(m_pIndeces);
-	pCtx->setRenderBuffer(m_pRenderBuffer);
-	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
-	pCtx->drawIndexed(8, 12, 0, 0);
+		IGXContext *pCtx = m_pDevice->getThreadContext();
 
+		pCtx->setIndexBuffer(m_pIndeces);
+		pCtx->setRenderBuffer(m_pRenderBuffer);
+		pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
+		pCtx->drawIndexed(8, 12, 0, 0);
+	}
 	m_pSky1->Release();
 	//SGCore_ShaderUnBind();
 };

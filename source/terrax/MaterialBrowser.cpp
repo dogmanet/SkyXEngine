@@ -991,7 +991,7 @@ void CMaterialBrowser::filter()
 
 		if(strcasestr(szName, szFilter))
 		{
-			bool isTransparent = pMat && pMat->getFlag("transparent");
+			bool isTransparent = pMat && pMat->isTransparent();
 			bool isOpaque = !isTransparent;
 
 			if(
@@ -1006,7 +1006,7 @@ void CMaterialBrowser::filter()
 				(
 					isIncludeOpaque && isOpaque ||
 					isIncludeTransparent && isTransparent ||
-					isIncludeSelfillum && (pMat && pMat->getFlag("emissive"))
+					isIncludeSelfillum && (pMat && pMat->isEmissive())
 				) && (
 					!isOnlyUsed || m_pMaterialSystem->isMaterialLoaded(szName)
 				)

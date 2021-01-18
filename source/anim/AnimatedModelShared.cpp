@@ -1155,8 +1155,10 @@ void CAnimatedModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor)
 
 		if(subset.uIndexCount != 0)
 		{
-			m_pMaterialSystem->bindMaterial(m_pppMaterials[uSkin][i]);
-			pCtx->drawIndexed(subset.uVertexCount, subset.uIndexCount / 3, subset.uStartIndex, subset.uStartVertex);
+			if(m_pMaterialSystem->bindMaterial(m_pppMaterials[uSkin][i]))
+			{
+				pCtx->drawIndexed(subset.uVertexCount, subset.uIndexCount / 3, subset.uStartIndex, subset.uStartVertex);
+			}
 		}
 	}
 }

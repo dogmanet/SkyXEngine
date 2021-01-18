@@ -165,6 +165,7 @@ struct XEventMaterialChanged
 		TYPE_FLAG,
 		TYPE_SHADER,
 		TYPE_EMISSIVITY,
+		TYPE_EDITORIAL,
 		// ...
 	} type;
 	IXMaterial *pMaterial;
