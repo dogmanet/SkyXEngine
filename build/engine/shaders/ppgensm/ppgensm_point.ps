@@ -61,7 +61,7 @@ float4 main(VSO_ResPos IN):COLOR0
 	
 	
 	
-	float4 vPosition = float4(g_vPosCam + IN.vWorldRay * fDepth, 1.0);
+	float4 vPosition = float4(g_vPosCam.xyz + IN.vWorldRay * fDepth, 1.0);
 	
 	float3 vDir = vPosition.xyz - g_vLightPosShadow.xyz;
 	// return(frac(vPosition.z));

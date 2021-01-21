@@ -61,7 +61,7 @@ float4 main(VSO_ResPos IN):COLOR0
 	//g_txDepthShadow.Sample(g_sLinearClamp, IN.vTexUV)
 	
 	float fDepth = g_txDepthView.Sample(g_sPointClamp, IN.vTexUV).r;
-	float4 vPixelPos = float4(g_vObserverPosCam + IN.vWorldRay * fDepth,1.f);
+	float4 vPixelPos = float4(g_vObserverPosCam.xyz + IN.vWorldRay * fDepth,1.f);
 	float4 vTexCoord = mul(vPixelPos, g_mMatrixTexture);
 	vTexCoord.xyz = vTexCoord.xyz / vTexCoord.w;
 	

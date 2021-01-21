@@ -71,7 +71,7 @@ float4 main(VSO_ResPos IN): COLOR0
 	float fShadow = 1.0f;
 	float fDepth = g_txDepthView.Sample(g_sPointClamp, IN.vTexUV).r;
 	float3 vNormalWS = normalize(NormalDecode(g_txNormals.Sample(g_sPointClamp, IN.vTexUV).xyz).xyz);
-	float4 vPixelPosWS = float4(g_vObserverPosCam + IN.vWorldRay * fDepth, 1.f);
+	float4 vPixelPosWS = float4(g_vObserverPosCam.xyz + IN.vWorldRay * fDepth, 1.f);
 	
 	float delta = 1.0f / g_vSizeBoundNearFar.x;
 		
