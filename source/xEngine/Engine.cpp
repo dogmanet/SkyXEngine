@@ -354,15 +354,17 @@ int XMETHODCALLTYPE CEngine::start()
 
 bool CEngine::runFrame()
 {
+	Core_0ConsoleUpdate();
+
 	if(m_pCallback && !m_pCallback->processWindowMessages())
 	{
 		return(false);
 	}
 	
+
 	SGCore_ShaderAllLoad();
 
 	Core_TimesUpdate();
-	Core_0ConsoleUpdate();
 
 	SSInput_Update();
 	
