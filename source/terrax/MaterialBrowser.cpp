@@ -219,6 +219,9 @@ INT_PTR CALLBACK CMaterialBrowser::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, L
 				initViewport();
 			}
 			InvalidateRect(hWnd, &rc, TRUE);
+
+			m_uFontGenStart = ~0;
+			m_uFontGenEnd = ~0;
 		}
 		break;
 
