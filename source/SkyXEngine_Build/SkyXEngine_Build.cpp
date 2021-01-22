@@ -154,7 +154,7 @@ int main(int argc, char **argv)
 	pEngine->getCore()->getConsole()->execCommand("exec ../config_game.cfg");
 	pEngine->getCore()->getConsole()->execCommand("exec ../config_game_user.cfg");
 
-#if 0
+#if 1
 
 	IFileSystem *pFS = pEngine->getCore()->getFileSystem();
 	IFile *pFile1 = pFS->openFile("dir/test.txt", FILE_MODE_READ);
@@ -163,7 +163,7 @@ int main(int argc, char **argv)
 
 	printf(COLOR_LRED "################# FILESYTEM TEST ##################\n");
 
-	IFile *pFile = pFS->openFile("dir/test.txt", FILE_MODE_READ);
+/*	IFile *pFile = pFS->openFile("dir/test.txt", FILE_MODE_READ);
 	if(pFile)
 	{
 		char *pData = (char*)alloca(sizeof(char) * (pFile->getSize() + 1));
@@ -192,7 +192,16 @@ int main(int argc, char **argv)
     while (const char *file = itDirectory->next())
     {
         printf("%s \n", file);
-    } 
+    } */
+
+	printf("########## Recursive iterator test ###########################\n");
+
+	IFileIterator *itRecursive = pFS->getFileListRecursive("F:/engine/build/fs_test2");
+
+	while (const char *file = itRecursive->next())
+	{
+		printf("%s \n", file); 
+	}
 
 	printf("###################################################\n" COLOR_RESET);
 

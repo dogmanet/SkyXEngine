@@ -4,6 +4,7 @@
 #include "FileExtPathsIterator.h"
 #include "FolderIterator.h"
 #include "FolderPathsIterator.h"
+#include "FileRecursiveExtIterator.h"
 #include "File.h"
 #include <shellapi.h>
 #include <ShlObj.h>
@@ -375,7 +376,15 @@ IFileIterator *CFileSystem::getFileList(const char *szPath, const char **szExts,
 
 IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char *szExt = 0)
 {
-    assert(!"No Implementation");
+	if (isAbsolutePath(szPath))
+	{
+		return new FileRecursiveExtIterator(szPath, szExt);
+	}
+
+	Array<String>* paths = getAllvariantsCanonizePath(szPath);
+	String path(szPath);
+	ADD_SLASH(path);
+
     return nullptr;
 }
 
