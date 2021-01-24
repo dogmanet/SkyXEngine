@@ -9,7 +9,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #ifdef _DEBUG
-#	pragma comment(lib, "freetype.lib"
+#	pragma comment(lib, "freetype.lib")
 #else
 #	pragma comment(lib, "freetype.lib")
 #endif
