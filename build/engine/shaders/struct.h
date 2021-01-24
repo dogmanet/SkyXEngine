@@ -316,6 +316,21 @@ struct VSI_TXTextured
 	float2 vTexUV	:TEXCOORD0;
 };
 
+struct VSI_DevLines
+{
+	float4 vPosition :POSITION0;
+	float4 vColor :TEXCOORD0;
+	float3 vDir :TEXCOORD1;
+	float2 vTexUV :TEXCOORD2;
+};
+
+struct VSO_DevLines
+{
+	float4 vPosition :POSITION;
+	float4 vColor :TEXCOORD1;
+	float2 vTexUV :TEXCOORD0;
+};
+
 struct VSO_TXTextured
 {
 	float4 vPosition	:POSITION;

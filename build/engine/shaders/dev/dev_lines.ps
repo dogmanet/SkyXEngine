@@ -1,0 +1,29 @@
+
+/*
+dev_lines.ps
+*/
+
+#include <struct.h>
+
+//##########################################################################
+
+SamplerState g_sSampler :register(s0);
+
+Texture2D g_txDiffuse :register(t0);
+
+//##########################################################################
+
+float4 main(VSO_DevLines IN):COLOR0
+{
+#ifdef USE_TEXTURE
+	float4 vFinalColor = g_txDiffuse.Sample(g_sSampler, IN.vTexUV);
+	return(vFinalColor * IN.vColor);
+#else
+	return(IN.vColor);
+#endif
+	// half4 vFinalColor = g_txDiffuse.Sample(g_sSampler, IN.vTexUV);
+	// clip(vFinalColor.a - 0.5);
+	// vFinalColor *= g_vColor;
+	// return(vFinalColor);
+	return(IN.vColor);
+}

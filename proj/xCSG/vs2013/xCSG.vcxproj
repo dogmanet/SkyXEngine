@@ -18,10 +18,15 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\xCSG\dllmain.cpp" />
+    <ClCompile Include="..\..\..\source\xCSG\plugin_main.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{7F0ACED1-6E16-4DD3-800E-0C50150897C2}</ProjectGuid>
+    <ProjectGuid>{CD470440-2CC2-42BA-8B94-2B1C72125FE3}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>sxrender</RootNamespace>
+    <RootNamespace>xCSG</RootNamespace>
+    <ProjectName>xCSG</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -68,33 +73,33 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/bin/</OutDir>
+    <OutDir>../../../build/bin/plugins/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
-    <SourcePath>$(VC_SourcePath);../../../source</SourcePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSdk_LibraryPath_x86);../../../libs</LibraryPath>
-    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source;</IncludePath>
+    <LibraryPath>;../../../libs;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)_d</TargetName>
-    <SourcePath>$(VC_SourcePath);../../../source</SourcePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSdk_LibraryPath_x64);../../../libs64</LibraryPath>
-    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source;</IncludePath>
+    <LibraryPath>;../../../libs64;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(SourcePath)</SourcePath>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/bin64/</OutDir>
+    <OutDir>../../../build/bin64/plugins/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/bin/</OutDir>
-    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSdk_LibraryPath_x86);../../../libs</LibraryPath>
-    <SourcePath>$(VC_SourcePath);../../../source</SourcePath>
+    <OutDir>../../../build/bin/plugins/</OutDir>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source;</IncludePath>
+    <LibraryPath>;../../../libs;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSdk_LibraryPath_x64);../../../libs64</LibraryPath>
-    <SourcePath>$(VC_SourcePath);../../../source</SourcePath>
+    <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source;</IncludePath>
+    <LibraryPath>;../../../libs64;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(SourcePath)</SourcePath>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/bin64/</OutDir>
+    <OutDir>../../../build/bin64/plugins/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -102,7 +107,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;SX_DLL;_DEBUG;_WINDOWS;_USRDLL;SXRENDER_EXPORTS;%(PreprocessorDefinitions);SX_LIB_NAME="RENDER"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;SX_LIB_NAME="xCSG";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
@@ -112,7 +117,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb/$(TargetName).pdb</ProgramDatabaseFile>
-      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
@@ -122,7 +126,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN64;_CRT_SECURE_NO_WARNINGS;SX_DLL;_DEBUG;_WINDOWS;_USRDLL;SXRENDER_EXPORTS;%(PreprocessorDefinitions);SX_LIB_NAME="RENDER"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;SX_LIB_NAME="xCSG";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
@@ -130,21 +134,20 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ImportLibrary>../../../libs64/$(TargetName).lib</ImportLibrary>
+      <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb64/$(TargetName).pdb</ProgramDatabaseFile>
-      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <Profile>true</Profile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;SXRENDER_EXPORTS;SX_DLL;%(PreprocessorDefinitions);SX_LIB_NAME="RENDER"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;SX_LIB_NAME="xCSG";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
@@ -153,19 +156,19 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb/$(TargetName).pdb</ProgramDatabaseFile>
+      <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN64;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;_USRDLL;SXRENDER_EXPORTS;SX_DLL;%(PreprocessorDefinitions);SX_LIB_NAME="RENDER"</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;SX_LIB_NAME="xCSG";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
     </ClCompile>
@@ -174,44 +177,10 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <ImportLibrary>../../../libs64/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb64/$(TargetName).pdb</ProgramDatabaseFile>
+      <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\source\common\file_utils.h" />
-    <ClInclude Include="..\..\..\source\common\string.h" />
-    <ClInclude Include="..\..\..\source\common\string_utils.h" />
-    <ClInclude Include="..\..\..\source\render\gdata.h" />
-    <ClInclude Include="..\..\..\source\render\GizmoRenderer.h" />
-    <ClInclude Include="..\..\..\source\render\OcclusionCuller.h" />
-    <ClInclude Include="..\..\..\source\render\RenderableVisibility.h" />
-    <ClInclude Include="..\..\..\source\render\RenderPipeline.h" />
-    <ClInclude Include="..\..\..\source\render\RenderUtils.h" />
-    <ClInclude Include="..\..\..\source\render\render_func.h" />
-    <ClInclude Include="..\..\..\source\render\Scene.h" />
-    <ClInclude Include="..\..\..\source\render\sxrender.h" />
-    <ClInclude Include="..\..\..\source\render\Updatable.h" />
-    <ClInclude Include="..\..\..\source\xcommon\IXRenderable.h" />
-    <ClInclude Include="..\..\..\source\xcommon\IXRenderPipeline.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
-    <ClCompile Include="..\..\..\source\common\string.cpp" />
-    <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
-    <ClCompile Include="..\..\..\source\render\gdata.cpp" />
-    <ClCompile Include="..\..\..\source\render\GizmoRenderer.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Disabled</Optimization>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\render\OcclusionCuller.cpp" />
-    <ClCompile Include="..\..\..\source\render\RenderableVisibility.cpp" />
-    <ClCompile Include="..\..\..\source\render\RenderPipeline.cpp" />
-    <ClCompile Include="..\..\..\source\render\RenderUtils.cpp" />
-    <ClCompile Include="..\..\..\source\render\render_func.cpp" />
-    <ClCompile Include="..\..\..\source\render\Scene.cpp" />
-    <ClCompile Include="..\..\..\source\render\sxrender.cpp" />
-    <ClCompile Include="..\..\..\source\render\Updatable.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

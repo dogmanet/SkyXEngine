@@ -22,6 +22,7 @@ See the license in LICENSE
 #include <xcommon/editor/IXEditable.h>
 #include <xcommon/IXRenderable.h>
 #include <xcommon/resource/IXResourceManager.h>
+#include <xcommon/render/IXRenderUtils.h>
 #include <mtrl/IXMaterialSystem.h>
 #include "UndoManager.h"
 #include "Tools.h"
@@ -371,9 +372,39 @@ public:
 		{
 			newVisData(&m_pCameraVisibility[i + 1]);
 		}
+
+		IXRenderUtils *pUtils = (IXRenderUtils*)pPluginManager->getInterface(IXRENDERUTILS_GUID);
+		pUtils->newGizmoRenderer(&m_pTestRenderer);
+
+		IXTexture *pLineTexture;
+		m_pMaterialSystem->loadTexture("dev_line", &pLineTexture);
+		IGXBaseTexture *pGXTexture;
+		pLineTexture->getAPITexture(&pGXTexture);
+		m_pTestRenderer->setTexture(pGXTexture);
+		mem_release(pGXTexture);
+		mem_release(pLineTexture);
+
+		m_pTestRenderer->setColor(float4(1.0f, 0.0f, 0.0f, 1.0f));
+		m_pTestRenderer->setLineWidth(0.04f);
+		m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
+		m_pTestRenderer->lineTo(float3(1.0f, 0.0f, 0.0f));
+		m_pTestRenderer->setColor(float4(0.0f, 1.0f, 0.0f, 1.0f));
+		m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
+		m_pTestRenderer->lineTo(float3(0.0f, 1.0f, 0.0f));
+		m_pTestRenderer->setColor(float4(0.0f, 0.0f, 1.0f, 1.0f));
+		m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
+		m_pTestRenderer->lineTo(float3(0.0f, 0.0f, 1.0f));
+
+		// m_pTestRenderer->setColor(float4(1.0f, 1.0f, 1.0f, 1.0f));
+		// m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 3.0f));
+		// m_pTestRenderer->lineTo(float3(1.0f, 0.0f, 3.0f));
+		// m_pTestRenderer->lineTo(float3(1.0f, 1.0f, 3.0f));
+		// m_pTestRenderer->lineTo(float3(1.0f, 1.0f, 4.0f));
 	}
 	~CRenderPipeline()
 	{
+		mem_release(m_pTestRenderer);
+
 		for(UINT i = 0; i < 3; ++i)
 		{
 			mem_release(m_pCameraVisibility[i + 1]);
@@ -405,6 +436,8 @@ public:
 		m_pMaterialSystem->bindRenderPass(m_pRenderPassGeometry2D);
 
 		XRender3D();
+
+		m_pTestRenderer->render(false);
 
 		//#############################################################################
 		HWND hWnds[] = {g_hTopRightWnd, g_hBottomLeftWnd, g_hBottomRightWnd};
@@ -462,6 +495,10 @@ public:
 			Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
 			pDXDevice->setVSConstant(g_pCameraConstantBuffer, SCR_OBJECT);
 			XRender2D(views[i], fScales[i], false);
+
+
+			m_pTestRenderer->render(true);
+
 			mem_release(pBackBuffer);
 		}
 
@@ -580,6 +617,8 @@ public:
 	XRenderPassHandler *m_pRenderPassGeometry2D = NULL;
 
 	IXRenderableVisibility *m_pCameraVisibility[4];
+
+	IXGizmoRenderer *m_pTestRenderer = NULL;
 };
 
 class CCVarEventListener: public IEventListener<XEventCvarChanged>
