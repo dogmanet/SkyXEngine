@@ -613,7 +613,7 @@ void CMaterialBrowser::initViewport()
 	float fWidth = (float)m_uPanelWidth;
 	float fHeight = (float)m_uPanelHeight;
 
-	SMMATRIX mProj = SMMatrixOrthographicLH(fWidth, fHeight, 1.0f, 2000.0f);
+	SMMATRIX mProj = SMMatrixTranslation(-0.5f, -0.5f, 0.0f) * SMMatrixOrthographicLH(fWidth, fHeight, 1.0f, 2000.0f);
 	SMMATRIX mView = SMMatrixLookToLH(float3(fWidth * 0.5f, -fHeight * 0.5f, -1.0f), float3(0.0f, 0.0f, 1.0f), float3(0.0f, 1.0f, 0.0f));
 
 	if(!m_pTransformCB)
