@@ -133,6 +133,11 @@ private:
 		UINT uQuads;
 		UINT uTitleWidth;
 		XFontVertex *pVertices;
+
+		UINT uCurrentFrame;
+		UINT uTotalFrames;
+		float fFrameTime;
+		float fCurrentTime;
 	};
 
 	Array<MaterialItem> m_aMaterials;

@@ -1,0 +1,3 @@
+[fire_tiled_a]
+shader = Transparent
+tex.txBase = fire_tiled_a.dds

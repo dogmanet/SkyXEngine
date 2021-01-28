@@ -542,7 +542,7 @@ void CMaterialBrowser::render()
 
 					SGCore_ShaderBind(m_idInnerShader);
 
-					item.pTexture->getAPITexture(&pTexture);
+					item.pTexture->getAPITexture(&pTexture, item.uCurrentFrame);
 					pCtx->setPSTexture(pTexture);
 					mem_release(pTexture);
 
@@ -1058,29 +1058,32 @@ void CMaterialBrowser::preload()
 		MaterialItem &item = m_aMaterials[i];
 		if((int)item.uYpos >= iYStart && item.uYpos <= iYEnd)
 		{
-			m_aCharRects.resizeFast(item.sName.length());
-			
-			xfbp.pVertices = NULL;
-			xfbp.pCharRects = m_aCharRects;
-			m_pFont->buildString(item.sName.c_str(), xfbp, &xfsm);
-			item.pVertices = new XFontVertex[xfsm.uVertexCount];
-			xfbp.pVertices = item.pVertices;
-			m_pFont->buildString(item.sName.c_str(), xfbp, &xfsm);
-
-			UINT ch;
-			XCharRect *cr = m_aCharRects;
-			for(UINT j = 0; j < xfsm.uQuadCount; ++j)
+			if(!item.pVertices)
 			{
-				ch = cr->uChar;
-				
-				if(cr->iLeft > uMaxTitle)
+				m_aCharRects.resizeFast(item.sName.length());
+
+				xfbp.pVertices = NULL;
+				xfbp.pCharRects = m_aCharRects;
+				m_pFont->buildString(item.sName.c_str(), xfbp, &xfsm);
+				item.pVertices = new XFontVertex[xfsm.uVertexCount];
+				xfbp.pVertices = item.pVertices;
+				m_pFont->buildString(item.sName.c_str(), xfbp, &xfsm);
+
+				UINT ch;
+				XCharRect *cr = m_aCharRects;
+				for(UINT j = 0; j < xfsm.uQuadCount; ++j)
 				{
-					break;
+					ch = cr->uChar;
+
+					if(cr->iLeft > uMaxTitle)
+					{
+						break;
+					}
+					item.uTitleWidth = cr->iRight;
+					++cr;
 				}
-				item.uTitleWidth = cr->iRight;
-				++cr;
+				item.uQuads = cr - m_aCharRects;
 			}
-			item.uQuads = cr - m_aCharRects;
 			uTotalQuads += item.uQuads;
 
 			if(uStartItem == ~0)
@@ -1182,6 +1185,16 @@ void CMaterialBrowser::preload()
 					m_pMaterialSystem->loadTexture(item.sName.c_str(), &item.pTexture);
 				}
 
+				item.uCurrentFrame = 0;
+				item.uTotalFrames = 1;
+				item.fCurrentTime = 0.0f;
+
+				if(item.pTexture)
+				{
+					item.uTotalFrames = item.pTexture->getNumFrames();
+					item.fFrameTime = item.pTexture->getFrameTime();
+				}
+
 				if(std::chrono::steady_clock::now() > tp)
 				{
 					break;
@@ -1208,6 +1221,22 @@ void CMaterialBrowser::update(float dt)
 	}
 
 	m_pScrollBar->update(dt);
+
+	for(UINT i = 0, l = m_aMaterials.size(); i < l; ++i)
+	{
+		MaterialItem &item = m_aMaterials[i];
+		if(item.pTexture && item.uTotalFrames > 1)
+		{
+			item.fCurrentTime += dt;
+			if(item.fCurrentTime > item.fFrameTime)
+			{
+				item.fCurrentTime -= item.fFrameTime;
+
+				++item.uCurrentFrame;
+				item.uCurrentFrame %= item.uTotalFrames;
+			}
+		}
+	}
 }
 
 void CMaterialBrowser::scheduleFilterIn(float fSeconds)
