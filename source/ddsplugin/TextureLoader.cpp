@@ -64,6 +64,19 @@ void XMETHODCALLTYPE CTextureLoader::getInfo(XTextureInfo *pTextureInfo)
 	if(m_ddsHeader.flags & DDS_HEADER_FLAGS_MIPMAP)
 	{
 		pTextureInfo->uMipCount = m_ddsHeader.mipMapCount;
+		if(m_iXFrames != 1 || m_iYFrames != 1)
+		{
+			UINT uMaxMips = 1;
+			UINT uSize = min(pTextureInfo->uWidth, pTextureInfo->uHeight);
+			while((uSize >>= 1))
+			{
+				++uMaxMips;
+			}
+			if(uMaxMips < pTextureInfo->uMipCount)
+			{
+				pTextureInfo->uMipCount = uMaxMips;
+			}
+		}
 	}
 }
 
@@ -376,7 +389,7 @@ bool XMETHODCALLTYPE CTextureLoader::loadAs2D(IXResourceTexture2D *pResource)
 						byte *pDest = pMip->pData;
 						for(int row = 0; row < iRowCount; ++row)
 						{
-							memcpy(pDest, pData + sizeRow * row + sizeRowFrame * x, sizeRowFrame);
+							memcpy(pDest, pData + sizeRow * (row + iRowCount * y) + sizeRowFrame * x, sizeRowFrame);
 							pDest += sizeRowFrame;
 						}
 
