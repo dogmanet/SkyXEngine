@@ -26,7 +26,7 @@ bool XMETHODCALLTYPE CTextureProxy::resolveName(const char *szName, char *szOutp
 
 		for(UINT j = 0, jl = file.aRecords.size(); j < jl; ++j)
 		{
-			if(!strcmp(file.aRecords[j].szName, szName))
+			if(!strcasecmp(file.aRecords[j].szName, szName))
 			{
 				size_t sizeBuf = file.sName.length() + 1 + strlen(szName) + 1; // "#", "\0"
 				char *szFullPath = (char*)alloca(sizeof(char) * sizeBuf);

@@ -25,7 +25,7 @@
     <ClCompile Include="..\..\..\source\wadplugin\TextureProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\src\engine\source\common\string.cpp">
+    <ClCompile Include="..\..\..\source\common\string.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

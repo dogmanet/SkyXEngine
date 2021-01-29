@@ -1,4 +1,4 @@
-﻿#ifndef __WADFILE_H
+#ifndef __WADFILE_H
 #define __WADFILE_H
 
 #include <gdefines.h>
