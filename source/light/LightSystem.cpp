@@ -733,6 +733,8 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 			pCtx->setPSTexture(m_pGBufferNormals, 3);
 			pCtx->setPSTexture(m_pGBufferDepth, 4);
 
+			pCtx->setSamplerState(m_pSamplerLinearWrap, 2);
+
 			m_pDevice->getThreadContext()->setPSConstant(m_pSSAOrndCB, 7);
 
 			SGCore_ShaderBind(m_idSSAOShader[iSSAO - 1]);

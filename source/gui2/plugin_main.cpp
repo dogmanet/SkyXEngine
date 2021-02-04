@@ -51,7 +51,7 @@ public:
 			m_pCore->getRenderPipeline(&pRP);
 			IGXDevice *pDev = pRP->getDevice();
 			mem_release(pRP);
-			return(new CFontManager(pDev, m_pCore->getFileSystem()));
+			return(new CFontManager(m_pCore, pDev, m_pCore->getFileSystem()));
 		}
 		return(NULL);
 	}

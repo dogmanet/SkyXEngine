@@ -386,6 +386,8 @@ public:
 
 		m_pTestRenderer->setColor(float4(1.0f, 0.0f, 0.0f, 1.0f));
 		m_pTestRenderer->setLineWidth(0.04f);
+		//m_pTestRenderer->setLineWidth(20.0f);
+		m_pTestRenderer->setLineWidth(3.0f);
 		m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
 		m_pTestRenderer->lineTo(float3(1.0f, 0.0f, 0.0f));
 		m_pTestRenderer->setColor(float4(0.0f, 1.0f, 0.0f, 1.0f));
@@ -395,7 +397,24 @@ public:
 		m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
 		m_pTestRenderer->lineTo(float3(0.0f, 0.0f, 1.0f));
 
-		// m_pTestRenderer->setColor(float4(1.0f, 1.0f, 1.0f, 1.0f));
+
+#if 0
+		m_pTestRenderer->drawEllipsoid(float3(2.0f, 2.0f, 2.0f), float3(0.5f, 3.0f, 0.5f));
+		m_pTestRenderer->setLineWidth(5.0f);
+		m_pTestRenderer->setColor(float4(1.0f, 1.0f, 1.0f, 1.0f));
+		m_pTestRenderer->drawAABB(SMAABB(float3(2.0f, 2.0f, 2.0f), float3(3.0f, 4.0f, 5.0f)));
+
+		m_pMaterialSystem->loadTexture("dev_trigger", &pLineTexture);
+		pLineTexture->getAPITexture(&pGXTexture);
+		m_pTestRenderer->setTexture(NULL);
+		mem_release(pGXTexture);
+		mem_release(pLineTexture);
+
+
+		m_pTestRenderer->setPointSize(10.0f);
+		m_pTestRenderer->setPointMode(XGPM_ROUND);
+		m_pTestRenderer->drawPoint(float3(1.0f, 1.0f, 1.0f));
+#endif
 		// m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 3.0f));
 		// m_pTestRenderer->lineTo(float3(1.0f, 0.0f, 3.0f));
 		// m_pTestRenderer->lineTo(float3(1.0f, 1.0f, 3.0f));

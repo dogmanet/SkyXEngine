@@ -672,7 +672,7 @@ void CRenderPipeline::renderFrame(float fDeltaTime)
 	m_cameraShaderData.mInvVP = SMMatrixInverse(NULL, m_cameraShaderData.mVP);
 	m_cameraShaderData.mInvV = SMMatrixTranspose(SMMatrixInverse(NULL, gdata::mCamView));
 	m_cameraShaderData.vPosCam = gdata::vConstCurrCamPos;
-	m_cameraShaderData.vNearFar = gdata::vNearFar;
+	m_cameraShaderData.vNearFarInvWinSize = float4(gdata::vNearFar, 1.0f / (float)m_uOutWidth, 1.0f / (float)m_uOutHeight);
 	m_cameraShaderData.vParamProj = float3_t((float)m_uOutWidth, (float)m_uOutHeight, gdata::fProjFov);
 	m_pCameraShaderData->update(&m_cameraShaderData);
 	pCtx->setVSConstant(m_pCameraShaderData, SCR_CAMERA);
@@ -1547,14 +1547,29 @@ void CRenderPipeline::renderEditor2D(IXRenderableVisibility *pVisibility)
 		pVisibility = m_pMainCameraVisibility;
 	}
 
-	SMMATRIX mVP;
-	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mVP);
-	float3 vCamPos = SRender_GetCamera()->getPosition();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
+	IGXSurface *pTarget = pCtx->getColorTarget();
+	
 
+	SMMATRIX mVP, mV;
+	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mVP);
+	Core_RMatrixGet(G_RI_MATRIX_VIEW, &mV);
+
+	float3 vCamPos = SRender_GetCamera()->getPosition();
+	
 	m_cameraShaderData.mVP = SMMatrixTranspose(mVP);
+	m_cameraShaderData.mInvVP = SMMatrixInverse(NULL, m_cameraShaderData.mVP);
+	m_cameraShaderData.mInvV = SMMatrixTranspose(SMMatrixInverse(NULL, mV));
 	m_cameraShaderData.vPosCam = vCamPos;
+
+	m_cameraShaderData.vNearFarInvWinSize = float4(gdata::vNearFar, 1.0f / (float)pTarget->getWidth(), 1.0f / (float)pTarget->getHeight());
+	m_cameraShaderData.vParamProj = float3((float)pTarget->getWidth(), (float)pTarget->getHeight(), gdata::fProjFov);
+
+	mem_release(pTarget);
+
 	m_pCameraShaderData->update(&m_cameraShaderData);
 	m_pDevice->getThreadContext()->setVSConstant(m_pCameraShaderData, SCR_CAMERA);
+	m_pDevice->getThreadContext()->setPSConstant(m_pCameraShaderData, SCR_CAMERA);
 	m_pDevice->getThreadContext()->setVSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
 	m_pDevice->getThreadContext()->setPSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
 	m_pDevice->getThreadContext()->setGSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);

@@ -1,6 +1,7 @@
 #include "FontManager.h"
+#include <xcommon/IPluginManager.h>
 
-CFontManager::CFontManager(IGXDevice *pDev, IFileSystem *pFileSystem):
+CFontManager::CFontManager(IXCore *pCore, IGXDevice *pDev, IFileSystem *pFileSystem):
 	m_pDev(pDev),
 	m_pFileSystem(pFileSystem)
 {
@@ -18,6 +19,8 @@ CFontManager::CFontManager(IGXDevice *pDev, IFileSystem *pFileSystem):
 		GX_DECL_END()
 	};
 	m_pVertexDeclaration = m_pDev->createVertexDeclaration(oLayout);
+
+	m_pRenderUtils = (IXRenderUtils*)pCore->getPluginManager()->getInterface(IXRENDERUTILS_GUID);
 }
 
 CFontManager::~CFontManager()
@@ -29,7 +32,6 @@ CFontManager::~CFontManager()
 	}
 
 	mem_release(m_pVertexDeclaration);
-	mem_release(m_pFontIB);
 }
 
 bool XMETHODCALLTYPE CFontManager::getFont(IXFont **ppOut, const char *szFile, UINT uSize, XFONT_STYLE style, int iBlurRadius)
@@ -69,38 +71,7 @@ FT_Library CFontManager::requestFT()
 
 void XMETHODCALLTYPE CFontManager::getFontIndexBuffer(UINT uChars, IGXIndexBuffer **ppIndexBuffer)
 {
-	assert(uChars < USHRT_MAX / 4);
-
-	if(uChars > m_uFontIBChars)
-	{
-		UINT m_uFontIBChars = 1;
-		while(m_uFontIBChars < uChars)
-		{
-			m_uFontIBChars *= 2;
-		}
-
-
-		USHORT *pIB = new USHORT[m_uFontIBChars * 6];
-
-		UINT CI = 0;
-		for(UINT i = 0; i < m_uFontIBChars; ++i)
-		{
-			pIB[CI++] = i * 4 + 0;
-			pIB[CI++] = i * 4 + 1;
-			pIB[CI++] = i * 4 + 2;
-			pIB[CI++] = i * 4 + 2;
-			pIB[CI++] = i * 4 + 1;
-			pIB[CI++] = i * 4 + 3;
-		}
-
-		mem_release(m_pFontIB);
-		m_pFontIB = m_pDev->createIndexBuffer(sizeof(USHORT)* m_uFontIBChars * 6, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pIB);
-
-		mem_delete_a(pIB);
-	}
-
-	m_pFontIB->AddRef();
-	*ppIndexBuffer = m_pFontIB;
+	m_pRenderUtils->getQuadIndexBuffer(uChars, ppIndexBuffer);
 }
 
 void XMETHODCALLTYPE CFontManager::getFontVertexDeclaration(IGXVertexDeclaration **ppVertexDeclaration)

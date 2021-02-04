@@ -1,93 +1,151 @@
 #include "GizmoRenderer.h"
 #include <gcore/sxgcore.h>
+#include "gdata.h"
+#include "RenderUtils.h"
 
-CGizmoRenderer::CGizmoRenderer(IGXDevice *pDev):
-	m_pDev(pDev)
+std::atomic_uint CGizmoRenderer::s_uResRefCount{0};
+IGXVertexDeclaration *CGizmoRenderer::s_pPointsVD = NULL;
+IGXBlendState *CGizmoRenderer::s_pBlendAlpha = NULL;
+IGXDepthStencilState *CGizmoRenderer::s_pDSState3D = NULL;
+IGXDepthStencilState *CGizmoRenderer::s_pDSState2D = NULL;
+IGXDepthStencilState *CGizmoRenderer::s_pDSStateNoZ = NULL;
+bool CGizmoRenderer::s_isShadersLoaded = false;
+ID CGizmoRenderer::s_idShaders[2][2][2]; // [isTextured][is3D][isFixed]
+
+CGizmoRenderer::CGizmoRenderer(CRenderUtils *pRenderUtils, IGXDevice *pDev):
+	m_pRenderUtils(pRenderUtils),
+	m_pDev(pDev),
+	m_lineRenderer(pDev)
 {
-	GXVertexElement oLayout[] =
+	add_ref(m_pRenderUtils);
+
+	if(!s_uResRefCount)
 	{
-		{0, 0, GXDECLTYPE_FLOAT4, GXDECLUSAGE_POSITION},
-		{0, 16, GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD},
-		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1},
-		{0, 44, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD2},
-		GX_DECL_END()
-	};
-	m_pLinesVD = m_pDev->createVertexDeclaration(oLayout);
+		GXVertexElement oLayout[] =
+		{
+			{0, 0, GXDECLTYPE_FLOAT4, GXDECLUSAGE_POSITION},
+			{0, 16, GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD},
+			{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD2},
+			GX_DECL_END()
+		};
+		s_pPointsVD = m_pDev->createVertexDeclaration(oLayout);
 
-	m_idLinesShaderColored = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs"), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_lines.ps"));
-	
-	GXMacro aMacro[] = {
-		{"USE_TEXTURE", "1"},
-		GX_MACRO_END()
-	};
-	m_idLinesShaderTextured = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs"), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_lines.ps", NULL, aMacro));
+		GXBlendDesc blendDesc;
+		blendDesc.renderTarget[0].useBlend = true;
+		blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
+		blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
+		s_pBlendAlpha = pDev->createBlendState(&blendDesc);
 
-	GXBlendDesc blendDesc;
-	blendDesc.renderTarget[0].useBlend = true;
-	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
-	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
-	m_pBlendAlpha = pDev->createBlendState(&blendDesc);
+		GXDepthStencilDesc dsDesc;
+		dsDesc.useDepthWrite = false;
+		s_pDSState2D = pDev->createDepthStencilState(&dsDesc);
 
-	GXDepthStencilDesc dsDesc;
-	dsDesc.useDepthWrite = false;
-	m_pDSState2D = pDev->createDepthStencilState(&dsDesc);
+		dsDesc.cmpFuncDepth = GXCMP_GREATER_EQUAL;
+		s_pDSState3D = pDev->createDepthStencilState(&dsDesc);
 
-	dsDesc.cmpFuncDepth = GXCMP_GREATER_EQUAL;
-	m_pDSState3D = pDev->createDepthStencilState(&dsDesc);
+		dsDesc.useDepthTest = false;
+		s_pDSStateNoZ = pDev->createDepthStencilState(&dsDesc);
+	}
+
+	++s_uResRefCount;
+
+	if(!s_isShadersLoaded)
+	{
+		s_isShadersLoaded = true;
+
+		GXMacro aMacro1[] = {
+			{"IS_ORTHO", "1"},
+			GX_MACRO_END()
+		};
+		GXMacro aMacro2[] = {
+			{"IS_FIXED", "1"},
+			GX_MACRO_END()
+		};
+		GXMacro aMacro3[] = {
+			{"IS_ORTHO", "1"},
+			{"IS_FIXED", "1"},
+			GX_MACRO_END()
+		};
+		s_idShaders[0][1][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs"), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps"));
+		s_idShaders[0][1][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs", 0, aMacro2), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps"));
+		s_idShaders[0][0][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs", 0, aMacro1), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps"));
+		s_idShaders[0][0][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs", 0, aMacro3), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps"));
+
+		GXMacro aMacro[] = {
+			{"USE_TEXTURE", "1"},
+			GX_MACRO_END()
+		};
+		s_idShaders[1][1][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs"), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps", NULL, aMacro));
+		s_idShaders[1][1][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs", 0, aMacro2), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps", NULL, aMacro));
+		s_idShaders[1][0][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs", 0, aMacro1), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps", NULL, aMacro));
+		s_idShaders[1][0][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs", 0, aMacro3), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps", NULL, aMacro));
+	}
+
+
+	m_pRightVecCB = pDev->createConstantBuffer(sizeof(float3));
 }
 CGizmoRenderer::~CGizmoRenderer()
 {
-	mem_release(m_pBlendAlpha);
-	mem_release(m_pDSState2D);
-	mem_release(m_pDSState3D);
+	mem_release(m_pRenderUtils);
+	mem_release(m_pRightVecCB);
 
-	mem_release(m_pLinesVD);
-	mem_release(m_pLinesRB);
-	mem_release(m_pLinesVB);
-	//mem_release(m_pLinesIB);
+	if(--s_uResRefCount)
+	{
+		mem_release(s_pBlendAlpha);
+		mem_release(s_pDSState2D);
+		mem_release(s_pDSState3D);
+		mem_release(s_pDSStateNoZ);
+		mem_release(s_pPointsVD);
+	}
 
+	mem_release(m_pPointsRB);
+	mem_release(m_pPointsVB);
+	mem_release(m_pPointsIB);
 }
 
 void XMETHODCALLTYPE CGizmoRenderer::reset()
 {
+	m_lineRenderer.reset();
+	m_isDirty = true;
+	m_aPoints.clearFast();
+
+	mem_release(m_pCurrentTexture);
+	m_isCurrentTextureDirty = true;
 	for(UINT i = 0, l = m_aTextures.size(); i < l; ++i)
 	{
 		mem_release(m_aTextures[i]);
 	}
-
-	m_aVertices.clearFast();
 	m_aTextures.clearFast();
-	m_isLinesDirty = true;
-
-	m_uLineCount = 0;
-	m_uLineSegmentCount = 0;
 }
-void XMETHODCALLTYPE CGizmoRenderer::render(bool isOrtho)
+void XMETHODCALLTYPE CGizmoRenderer::render(bool isOrtho, bool useConstantSize, bool useDepthTest)
 {
-	if(m_isLinesDirty)
+	m_lineRenderer.render(isOrtho, useConstantSize, useDepthTest);
+
+	if(m_isDirty)
 	{
-		m_isLinesDirty = false;
+		m_isDirty = false;
 
-		// update buffers
-		UINT uVertexCount = m_uLineSegmentCount * 4 + (m_uLineCount - 1) * 2;
-		if(m_uLinesVBSize < uVertexCount)
+		UINT uVertexCount = m_aPoints.size() * 4;
+		if(m_uPointsVBSize < uVertexCount)
 		{
-			m_uLinesVBSize = uVertexCount;
-			mem_release(m_pLinesVB);
-			mem_release(m_pLinesRB);
+			m_uPointsVBSize = uVertexCount;
+			mem_release(m_pPointsVB);
+			mem_release(m_pPointsRB);
 
-			m_pLinesVB = m_pDev->createVertexBuffer(sizeof(LineVertex) * uVertexCount, GXBUFFER_USAGE_DYNAMIC);
-			m_pLinesRB = m_pDev->createRenderBuffer(1, &m_pLinesVB, m_pLinesVD);
+			m_pPointsVB = m_pDev->createVertexBuffer(sizeof(PointVertex) * uVertexCount, GXBUFFER_USAGE_DYNAMIC);
+			m_pPointsRB = m_pDev->createRenderBuffer(1, &m_pPointsVB, s_pPointsVD);
 		}
 
-		m_aLineRanges.clearFast();
 
+		m_aPointRanges.clearFast();
+
+		UINT uMaxQuadCount = 0;
 		UINT uVC = 0;
-		LineVertex *pVertices;
-		if(m_pLinesVB->lock((void**)&pVertices, GXBL_WRITE))
+		PointVertex *pVertices;
+		if(m_pPointsVB->lock((void**)&pVertices, GXBL_WRITE))
 		{
 			byte u8TexIdx;
-			m_aLineRanges.reserve(m_aTextures.size() + 1);
+			m_aPointRanges.reserve(m_aTextures.size() + 1);
 			for(int i = -1, l = m_aTextures.size(); i < l; ++i)
 			{
 				if(i == -1)
@@ -99,95 +157,80 @@ void XMETHODCALLTYPE CGizmoRenderer::render(bool isOrtho)
 					u8TexIdx = i;
 				}
 
-				LineRange &lr = m_aLineRanges[m_aLineRanges.size()];
+				PointRange &lr = m_aPointRanges[m_aPointRanges.size()];
 				lr.u8Texture = u8TexIdx;
 
 				lr.uStartVtx = uVC;
-				bool isFirst = true;
-				// 0123|34|4567|78|891011
-				for(UINT j = 0, jl = m_aVertices.size(); j < jl; ++j)
+				for(UINT j = 0, jl = m_aPoints.size(); j < jl; ++j)
 				{
-					LinePoint &pt = m_aVertices[j];
+					Point &pt = m_aPoints[j];
 					if(pt.u8Texture == u8TexIdx)
 					{
-						if(pt.isStart)
-						{
-							if(!isFirst)
-							{
-								pVertices[uVC] = pVertices[uVC - 1];
-								++uVC;
-
-
-								pt.vtx.vTexUV = float2_t(0.0f, 0.0f);
-								pVertices[uVC++] = pt.vtx;
-							}
-						}
-						else
-						{
-							LinePoint &ptPrev = m_aVertices[j - 1];
-							
-							// add 4 vertices
-							ptPrev.vtx.vTexUV = float2_t(0.0f, 0.0f);
-							pVertices[uVC] = ptPrev.vtx;
-							pVertices[uVC].vDir = pt.vtx.vDir;
-							++uVC;
-							ptPrev.vtx.vTexUV = float2_t(0.0f, 1.0f);
-							pVertices[uVC] = ptPrev.vtx;
-							pVertices[uVC].vDir = pt.vtx.vDir;
-							++uVC;
-
-							pt.vtx.vTexUV = float2_t(1.0f, 0.0f);
-							pVertices[uVC++] = pt.vtx;
-							pt.vtx.vTexUV = float2_t(1.0f, 1.0f);
-							pVertices[uVC++] = pt.vtx;
-						}
-
-						isFirst = false;
+						float fPM = pt.mode == XGPM_SQUARE ? 0.0f : 1.0f;
+						pt.vtx.vTexUVMode = float3_t(0.0f, 1.0f, fPM);
+						pVertices[uVC++] = pt.vtx;
+						pt.vtx.vTexUVMode = float3_t(0.0f, 0.0f, fPM);
+						pVertices[uVC++] = pt.vtx;
+						pt.vtx.vTexUVMode = float3_t(1.0f, 1.0f, fPM);
+						pVertices[uVC++] = pt.vtx;
+						pt.vtx.vTexUVMode = float3_t(1.0f, 0.0f, fPM);
+						pVertices[uVC++] = pt.vtx;
 					}
 				}
 
-				if(uVC > lr.uStartVtx + 2)
+				if(uVC > lr.uStartVtx)
 				{
-					lr.uTriangleCount = uVC - lr.uStartVtx - 2;
+					lr.uQuadCount = (uVC - lr.uStartVtx) / 4;
+					if(lr.uQuadCount > uMaxQuadCount)
+					{
+						uMaxQuadCount = lr.uQuadCount;
+					}
 				}
 				else
 				{
-					m_aLineRanges.erase(m_aLineRanges.size() - 1);
+					m_aPointRanges.erase(m_aPointRanges.size() - 1);
 				}
 			}
 
-			m_pLinesVB->unlock();
+			m_pPointsVB->unlock();
 		}
 
 		assert(uVC == uVertexCount);
-	}
 
+		mem_release(m_pPointsIB);
+		m_pRenderUtils->getQuadIndexBuffer(uMaxQuadCount, &m_pPointsIB);
+	}
 
 	IGXContext *pCtx = m_pDev->getThreadContext();
 	
 	IGXRasterizerState *pRS = pCtx->getRasterizerState();
 	pCtx->setRasterizerState(NULL);
 	IGXBlendState *pBS = pCtx->getBlendState();
-	pCtx->setBlendState(m_pBlendAlpha);
+	pCtx->setBlendState(s_pBlendAlpha);
 	IGXDepthStencilState *pDS = pCtx->getDepthStencilState();
-	pCtx->setDepthStencilState(isOrtho ? m_pDSState2D : m_pDSState3D);
+	pCtx->setDepthStencilState(isOrtho ? s_pDSState2D : s_pDSState3D);
+	
+	float3 vRight = gdata::pCamera->getRight();
+	m_pRightVecCB->update(&vRight);
+	pCtx->setVSConstant(m_pRightVecCB, 6);
 
-	pCtx->setPrimitiveTopology(GXPT_TRIANGLESTRIP);
-	for(UINT i = 0, l = m_aLineRanges.size(); i < l; ++i)
+	pCtx->setRenderBuffer(m_pPointsRB);
+	pCtx->setIndexBuffer(m_pPointsIB);
+
+	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
+	for(UINT i = 0, l = m_aPointRanges.size(); i < l; ++i)
 	{
-		pCtx->setRenderBuffer(m_pLinesRB);
-
-		LineRange &lr = m_aLineRanges[i];
-		SGCore_ShaderBind(lr.u8Texture == 0xFF ? m_idLinesShaderColored : m_idLinesShaderTextured);
+		PointRange &lr = m_aPointRanges[i];
+		SGCore_ShaderBind(s_idShaders[lr.u8Texture != 0xFF ? 1 : 0][isOrtho ? 0 : 1][useConstantSize ? 1 : 0]);
 
 		if(lr.u8Texture != 0xFF)
 		{
 			pCtx->setPSTexture(m_aTextures[lr.u8Texture]);
 		}
-		pCtx->drawPrimitive(lr.uStartVtx, lr.uTriangleCount);
+		pCtx->drawIndexed(lr.uQuadCount * 4, lr.uQuadCount * 2, 0, lr.uStartVtx);
 	}
 	SGCore_ShaderUnBind();
-	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
+
 
 	pCtx->setRasterizerState(pRS);
 	mem_release(pRS);
@@ -200,66 +243,38 @@ void XMETHODCALLTYPE CGizmoRenderer::render(bool isOrtho)
 
 void XMETHODCALLTYPE CGizmoRenderer::setLineWidth(float fWidth)
 {
-	m_fCurrentLineWidth = fWidth;
+	m_lineRenderer.setWidth(fWidth);
 }
 
 void XMETHODCALLTYPE CGizmoRenderer::setColor(const float4 &vColor)
 {
 	m_vCurrentColor = vColor;
+	m_lineRenderer.setColor(vColor);
 }
 
 void XMETHODCALLTYPE CGizmoRenderer::setTexture(IGXBaseTexture *pTexture)
 {
-	m_pCurrentTexture = pTexture;
+	m_lineRenderer.setTexture(pTexture);
 
-	if(pTexture)
+	if(m_pCurrentTexture == pTexture)
 	{
-		int idx = m_aTextures.indexOf(pTexture);
-		if(idx < 0)
-		{
-			idx = m_aTextures.size();
-			m_aTextures.push_back(pTexture);
-			pTexture->AddRef();
-		}
-		m_u8CurrentTexture = idx;
+		return;
 	}
-	else
-	{
-		m_u8CurrentTexture = 0xFF;
-	}
+	add_ref(pTexture);
+	mem_release(m_pCurrentTexture);
+	m_pCurrentTexture = pTexture;
+	m_isCurrentTextureDirty = true;
 }
 
 
 void XMETHODCALLTYPE CGizmoRenderer::jumpTo(const float3 &vPos)
 {
-	m_isLineStart = true;
-	m_vNextLineStart = vPos;
-	m_vLastPointColor = m_vCurrentColor;
+	m_lineRenderer.jumpTo(vPos);
 }
 
 void XMETHODCALLTYPE CGizmoRenderer::lineTo(const float3 &vPos)
 {
-	LineVertex vtx;
-	vtx.vDir = (float3)(vPos - m_vNextLineStart);
-	if(m_isLineStart)
-	{
-		vtx.vPosWidth = float4(m_vNextLineStart, m_fCurrentLineWidth);
-		vtx.vColor = m_vLastPointColor;
-		m_aVertices.push_back({vtx, m_u8CurrentTexture, true});
-		m_isLineStart = false;
-		++m_uLineCount;
-	}
-
-	vtx.vPosWidth = float4(vPos, m_fCurrentLineWidth);
-	vtx.vColor = m_vCurrentColor;
-	m_aVertices.push_back({vtx, m_u8CurrentTexture, false});
-
-	++m_uLineSegmentCount;
-
-	m_vNextLineStart = vPos;
-	m_vLastPointColor = m_vCurrentColor;
-
-	m_isLinesDirty = true;
+	m_lineRenderer.lineTo(vPos);
 }
 
 
@@ -275,6 +290,14 @@ void XMETHODCALLTYPE CGizmoRenderer::setPointMode(XGIZMO_POINT_MODE pointMode)
 
 void XMETHODCALLTYPE CGizmoRenderer::drawPoint(const float3 &vPos)
 {
+	Point &pt = m_aPoints[m_aPoints.size()];
+	PointVertex &vtx = pt.vtx;
+	vtx.vPosWidth = float4(vPos, m_fCurrentPointSize);
+	pt.mode = m_pointMode;
+	pt.u8Texture = getTextureId();
+	vtx.vColor = m_vCurrentColor;
+
+	m_isDirty = true;
 }
 
 
@@ -298,7 +321,75 @@ void XMETHODCALLTYPE CGizmoRenderer::drawAABB(const SMAABB &aabb)
 	lineTo(float3(aabb.vMax.x, aabb.vMin.y, aabb.vMax.z));
 }
 
-
-void XMETHODCALLTYPE CGizmoRenderer::drawEllipsoid(const float3 &vPos, const float3 vSize)
+void XMETHODCALLTYPE CGizmoRenderer::drawEllipsoid(const float3 &vPos, const float3 &vSize)
 {
+	const int nSides = 16;
+	const int nSlices = 8;
+
+	float fUpStep = SM_PIDIV2 / (float)nSlices;
+	float fRoundStep = SM_2PI / (float)nSides;
+
+	for(int i = 0; i < nSlices; ++i)
+	{
+		float3 vec = SMQuaternion(fUpStep * (float)i, 'z') * float3(1.0f, 0.0f, 0.0f);
+
+		jumpTo(vec * vSize + vPos);
+		for(int j = 0; j <= nSides; ++j)
+		{
+			lineTo(SMQuaternion(fRoundStep * (float)j, 'y') * vec * vSize + vPos);
+		}
+
+		if(i)
+		{
+			vec.y *= -1.0f;
+			jumpTo(vec * vSize + vPos);
+			for(int j = 0; j <= nSides; ++j)
+			{
+				lineTo(SMQuaternion(fRoundStep * (float)j, 'y') * vec * vSize + vPos);
+			}
+		}
+	}
+
+	for(int j = 0; j < nSides; ++j)
+	{
+		
+		for(int i = -nSlices; i <= nSlices; ++i)
+		{
+			float3 vec = SMQuaternion(fUpStep * (float)i, 'z') * SMQuaternion(fRoundStep * (float)j, 'y') * float3(1.0f, 0.0f, 0.0f) * vSize + vPos;
+			if(i == -nSlices)
+			{
+				jumpTo(vec);
+			}
+			else
+			{
+				lineTo(vec);
+			}
+		}
+	}
+}
+
+byte CGizmoRenderer::getTextureId()
+{
+	if(m_isCurrentTextureDirty)
+	{
+		m_isCurrentTextureDirty = false;
+
+		if(m_pCurrentTexture)
+		{
+			int idx = m_aTextures.indexOf(m_pCurrentTexture);
+			if(idx < 0)
+			{
+				idx = m_aTextures.size();
+				m_aTextures.push_back(m_pCurrentTexture);
+				add_ref(m_pCurrentTexture);
+			}
+			m_u8CurrentTexture = idx;
+		}
+		else
+		{
+			m_u8CurrentTexture = 0xFF;
+		}
+	}
+
+	return(m_u8CurrentTexture);
 }

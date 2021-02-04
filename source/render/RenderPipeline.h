@@ -127,7 +127,7 @@ protected:
 		float3 vPosCam;
 		SMMATRIX mInvVP;
 		SMMATRIX mInvV;
-		float2 vNearFar;
+		float4 vNearFarInvWinSize;
 		float3 vParamProj;
 	} m_cameraShaderData;
 	IGXConstantBuffer *m_pCameraShaderData = NULL;

@@ -6,7 +6,15 @@
 class CRenderUtils final: public IXUnknownImplementation<IXRenderUtils>
 {
 public:
-	void XMETHODCALLTYPE newGizmoRenderer(IXGizmoRenderer **ppOut) const override;
+	~CRenderUtils();
+
+	void XMETHODCALLTYPE newGizmoRenderer(IXGizmoRenderer **ppOut) override;
+	void XMETHODCALLTYPE newLineRenderer(IXLineRenderer **ppOut) override;
+	void XMETHODCALLTYPE getQuadIndexBuffer(UINT uQuads, IGXIndexBuffer **ppIndexBuffer) override;
+
+private:
+	UINT m_uQuadIBSize = 0;
+	IGXIndexBuffer *m_pQuadIB = NULL;
 };
 
 #endif

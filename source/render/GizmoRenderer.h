@@ -2,15 +2,18 @@
 #define __GIZMORENDERER_H
 
 #include <xcommon/render/IXRenderUtils.h>
+#include "LineRenderer.h"
+
+class CRenderUtils;
 
 class CGizmoRenderer final: public IXUnknownImplementation<IXGizmoRenderer>
 {
 public:
-	CGizmoRenderer(IGXDevice *pDev);
+	CGizmoRenderer(CRenderUtils *pRenderUtils, IGXDevice *pDev);
 	~CGizmoRenderer();
 
 	void XMETHODCALLTYPE reset() override;
-	void XMETHODCALLTYPE render(bool isOrtho) override;
+	void XMETHODCALLTYPE render(bool isOrtho, bool useConstantSize = true, bool useDepthTest = true) override;
 
 	void XMETHODCALLTYPE setLineWidth(float fWidth) override;
 
@@ -28,66 +31,69 @@ public:
 
 	void XMETHODCALLTYPE drawAABB(const SMAABB &aabb) override;
 
-	void XMETHODCALLTYPE drawEllipsoid(const float3 &vPos, const float3 vSize) override;
+	void XMETHODCALLTYPE drawEllipsoid(const float3 &vPos, const float3 &vSize) override;
 
 private:
 	IGXDevice *m_pDev;
+	CRenderUtils *m_pRenderUtils;
 
-	IGXBlendState *m_pBlendAlpha = NULL;
-	IGXDepthStencilState *m_pDSState3D = NULL;
-	IGXDepthStencilState *m_pDSState2D = NULL;
+	static std::atomic_uint s_uResRefCount;
+	static IGXBlendState *s_pBlendAlpha;
+	static IGXDepthStencilState *s_pDSState3D;
+	static IGXDepthStencilState *s_pDSState2D;
+	static IGXDepthStencilState *s_pDSStateNoZ;
 
 	IGXBaseTexture *m_pCurrentTexture = NULL;
 	byte m_u8CurrentTexture = 0xFF;
+	bool m_isCurrentTextureDirty = false;
 	float4_t m_vCurrentColor = float4_t(0.0f, 0.0f, 0.0f, 1.0f);
-	float4_t m_vLastPointColor = float4_t(0.0f, 0.0f, 0.0f, 1.0f);
-	float m_fCurrentLineWidth = 1.0f;
 	float m_fCurrentPointSize = 1.0f;
 	XGIZMO_POINT_MODE m_pointMode = XGPM_SQUARE;
+	Array<IGXBaseTexture*> m_aTextures;
 
-	struct LineVertex
+	CLineRenderer m_lineRenderer;
+
+	bool m_isDirty = false;
+
+
+	struct PointVertex
 	{
 		float4_t vPosWidth;
 		float4_t vColor;
-		float3_t vDir;
-		float2_t vTexUV;
+		float3_t vTexUVMode;
 	};
 
-	struct LinePoint
+	struct Point
 	{
-		LineVertex vtx;
+		PointVertex vtx;
+		XGIZMO_POINT_MODE mode;
 		byte u8Texture;
-		byte isStart;
 	};
 
-	struct LineRange
+	struct PointRange
 	{
 		byte u8Texture;
 		UINT uStartVtx;
-		UINT uTriangleCount;
+		UINT uQuadCount;
 	};
 
-	Array<LineRange> m_aLineRanges;
-	Array<IGXBaseTexture*> m_aTextures;
-	Array<LinePoint> m_aVertices;
-	float3_t m_vNextLineStart;
-	bool m_isLineStart = true;
+	Array<Point> m_aPoints;
+	Array<PointRange> m_aPointRanges;
 
-	UINT m_uLineCount = 0;
-	UINT m_uLineSegmentCount = 0;
+	UINT m_uPointCount = 0;
 
-	UINT m_uLinesVBSize = 0;
-	IGXVertexDeclaration *m_pLinesVD = NULL;
-	IGXRenderBuffer *m_pLinesRB = NULL;
-	IGXVertexBuffer *m_pLinesVB = NULL;
-	bool m_isLinesDirty = false;
+	UINT m_uPointsVBSize = 0;
+	static IGXVertexDeclaration *s_pPointsVD;
+	IGXRenderBuffer *m_pPointsRB = NULL;
+	IGXVertexBuffer *m_pPointsVB = NULL;
+	IGXIndexBuffer *m_pPointsIB = NULL;
 
-	ID m_idLinesShaderColored = -1;
-	ID m_idLinesShaderTextured = -1;
-	//IGXIndexBuffer *m_pLinesIB = NULL;
-
+	IGXConstantBuffer *m_pRightVecCB = NULL;
+	static bool s_isShadersLoaded;
+	static ID s_idShaders[2][2][2]; // [isTextured][is3D][isFixed]
 private:
 	//void prepareLinesIB();
+	byte getTextureId();
 };
 
 #endif

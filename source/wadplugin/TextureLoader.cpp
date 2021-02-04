@@ -243,16 +243,18 @@ bool CTextureLoader::loadIndexedRGB(UINT uMip, UINT uFrame, byte *aPalette, IXRe
 				// g = aPalette[ci + 1];
 				// b = aPalette[ci + 2];
 
-				*pData = aPalette[(UINT)ci * 3 + 2]; ++pData;
-				*pData = aPalette[(UINT)ci * 3 + 1]; ++pData;
-				*pData = aPalette[(UINT)ci * 3 + 0]; ++pData;
-
 				if(m_format == GXFMT_X8R8G8B8)
 				{
+					*pData = aPalette[(UINT)ci * 3 + 2]; ++pData;
+					*pData = aPalette[(UINT)ci * 3 + 1]; ++pData;
+					*pData = aPalette[(UINT)ci * 3 + 0]; ++pData;
 					*pData = 0xFF; ++pData;
 				}
 				else
 				{
+					*pData = aPalette[(UINT)ci * 3 + 0]; ++pData;
+					*pData = aPalette[(UINT)ci * 3 + 1]; ++pData;
+					*pData = aPalette[(UINT)ci * 3 + 2]; ++pData;
 					*pData = ci == 255 ? 0x00 : 0xFF; ++pData;
 				}
 			}

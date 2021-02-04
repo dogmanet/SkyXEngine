@@ -17,7 +17,7 @@ public:
 	//! 
 	virtual void XMETHODCALLTYPE reset() = 0;
 	//! 
-	virtual void XMETHODCALLTYPE render(bool isOrtho) = 0;
+	virtual void XMETHODCALLTYPE render(bool isOrtho, bool useConstantSize = true, bool useDepthTest = true) = 0;
 
 	//! 
 	virtual void XMETHODCALLTYPE setLineWidth(float fWidth) = 0;
@@ -45,9 +45,32 @@ public:
 	virtual void XMETHODCALLTYPE drawAABB(const SMAABB &aabb) = 0;
 
 	//! 
-	virtual void XMETHODCALLTYPE drawEllipsoid(const float3 &vPos, const float3 vSize) = 0;
+	virtual void XMETHODCALLTYPE drawEllipsoid(const float3 &vPos, const float3 &vSize) = 0;
 };
 
+//! 
+class IXLineRenderer: public IXUnknown
+{
+public:
+	//! 
+	virtual void XMETHODCALLTYPE reset() = 0;
+	//! 
+	virtual void XMETHODCALLTYPE render(bool isOrtho, bool useConstantSize = true, bool useDepthTest = true) = 0;
+
+	//! 
+	virtual void XMETHODCALLTYPE setWidth(float fWidth) = 0;
+
+	//! 
+	virtual void XMETHODCALLTYPE setColor(const float4 &vColor) = 0;
+
+	//! 
+	virtual void XMETHODCALLTYPE setTexture(IGXBaseTexture *pTexture) = 0;
+
+	//! 
+	virtual void XMETHODCALLTYPE jumpTo(const float3 &vPos) = 0;
+	//! 
+	virtual void XMETHODCALLTYPE lineTo(const float3 &vPos) = 0;
+};
 
 
 // {D4025713-43EC-4A55-8989-0639379F981F}
@@ -59,7 +82,10 @@ class IXRenderUtils: public IXUnknown
 {
 public:
 	//! 
-	virtual void XMETHODCALLTYPE newGizmoRenderer(IXGizmoRenderer **ppOut) const = 0;
+	virtual void XMETHODCALLTYPE newGizmoRenderer(IXGizmoRenderer **ppOut) = 0;
+	virtual void XMETHODCALLTYPE newLineRenderer(IXLineRenderer **ppOut) = 0;
+
+	virtual void XMETHODCALLTYPE getQuadIndexBuffer(UINT uQuads, IGXIndexBuffer **ppIndexBuffer) = 0;
 };
 
 

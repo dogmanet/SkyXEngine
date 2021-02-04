@@ -12,7 +12,7 @@ See the license in LICENSE
 
 BEGIN_PROPTABLE(CLightDirectional)
 	//! Внешний угол
-	DEFINE_FIELD_FLOAT(m_fOuterAngle, 0, "angle", "Outer angle", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_FLOATFN(m_fOuterAngle, 0, "angle", "Outer angle", setOuterAngle, EDITOR_TEXTFIELD)
 	//! Внутренний угол
 	DEFINE_FIELD_FLOATFN(m_fInnerAngle, 0, "inner_angle", "Inner angle", setInnerAngle, EDITOR_TEXTFIELD)
 END_PROPTABLE()

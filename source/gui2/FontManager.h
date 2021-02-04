@@ -3,6 +3,8 @@
 
 #include <xcommon/gui/IXFontManager.h>
 #include <xcommon/IFileSystem.h>
+#include <xcommon/render/IXRenderUtils.h>
+#include <xcommon/IXCore.h>
 
 #include "Font.h"
 
@@ -17,7 +19,7 @@
 class CFontManager final: public IXUnknownImplementation<IXFontManager>
 {
 public:
-	CFontManager(IGXDevice *pDev, IFileSystem *pFileSystem);
+	CFontManager(IXCore *pCore, IGXDevice *pDev, IFileSystem *pFileSystem);
 	~CFontManager();
 
 	bool XMETHODCALLTYPE getFont(IXFont **ppOut, const char *szFile, UINT uSize, XFONT_STYLE style = XFONT_STYLE_NONE, int iBlurRadius = 0) override;
@@ -40,8 +42,7 @@ private:
 	IGXVertexDeclaration *m_pVertexDeclaration = NULL;
 	AssotiativeArray<String, CFont> m_mFonts;
 
-	UINT m_uFontIBChars = 0;
-	IGXIndexBuffer *m_pFontIB = NULL;
+	IXRenderUtils *m_pRenderUtils = NULL;
 
 private:
 	void scanFonts();
