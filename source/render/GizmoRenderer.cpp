@@ -126,6 +126,11 @@ void XMETHODCALLTYPE CGizmoRenderer::render(bool isOrtho, bool useConstantSize, 
 		m_isDirty = false;
 
 		UINT uVertexCount = m_aPoints.size() * 4;
+		m_aPointRanges.clearFast();
+		if(!uVertexCount)
+		{
+			return;
+		}
 		if(m_uPointsVBSize < uVertexCount)
 		{
 			m_uPointsVBSize = uVertexCount;
@@ -137,7 +142,7 @@ void XMETHODCALLTYPE CGizmoRenderer::render(bool isOrtho, bool useConstantSize, 
 		}
 
 
-		m_aPointRanges.clearFast();
+		
 
 		UINT uMaxQuadCount = 0;
 		UINT uVC = 0;

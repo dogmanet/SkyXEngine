@@ -52,14 +52,6 @@ enum X_2D_VIEW
 	X2D_SIDE   // z/y
 };
 
-enum X_WINDOW_POS
-{
-	XWP_TOP_LEFT,
-	XWP_TOP_RIGHT,
-	XWP_BOTTOM_LEFT,
-	XWP_BOTTOM_RIGHT
-};
-
 
 enum X_2DXFORM_TYPE
 {

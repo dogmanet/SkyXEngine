@@ -115,11 +115,23 @@ void XMETHODCALLTYPE CLineRenderer::render(bool isOrtho, bool useConstantSize, b
 	{
 		m_isLinesDirty = false;
 
+		if(!m_uLineCount)
+		{
+			m_aLineRanges.clearFast();
+			return;
+		}
+
 		// update buffers
 		UINT uVertexCount = m_uLineSegmentCount * 4 + (m_uLineCount - 1) * 2;
+		if(!uVertexCount)
+		{
+			m_aLineRanges.clearFast();
+			return;
+		}
 		if(m_uLinesVBSize < uVertexCount)
 		{
 			m_uLinesVBSize = uVertexCount;
+			printf("Resizing to %u\n", m_uLinesVBSize);
 			mem_release(m_pLinesVB);
 			mem_release(m_pLinesRB);
 
