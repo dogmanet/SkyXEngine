@@ -1,17 +1,13 @@
 #include "FileRecursiveExtPathsIterator.h"
 
-FileRecursiveExtPathsIterator::FileRecursiveExtPathsIterator(const char *szPath, const char *szExts)
-: m_sPath(szPath), m_szExt(szExts)
+FileRecursiveExtPathsIterator::FileRecursiveExtPathsIterator(Array<String> &paths, String &sBasePath, const char *szExt)
+	: m_szExt(szExt)
 {
-	char symbol = szPath[strlen(szPath) - 1];
+	this->canonizePaths(paths);
+	this->canonizePath(sBasePath);
 
-	/*Дело в том что абсолютный путь к файлу может не иметь символ "/"
-	или "\\" на конце строки, и, если его не будет путь будет некорректен*/
-	if (symbol != '\\' && symbol != '/')
-	{
-		m_sPath += '/';
-	}
-	m_basePath = m_sPath;
+	this->m_sPaths = paths;
+	this->m_sBasePath = sBasePath;
 }
 
 const char *FileRecursiveExtPathsIterator::next()
@@ -19,55 +15,74 @@ const char *FileRecursiveExtPathsIterator::next()
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hf;
 
-	do{
-		//Если указали расширение файла - то добавляем его к имени пути, иначе ищем все файлы
-		String fileName = m_szExt == nullptr ? (m_sPath + "*.*") : (m_sPath + "*." + *m_szExt);
+	UINT maxPathIndex = m_sPaths.size();
+	while (pathIndex < maxPathIndex)
+	{
+		m_currentFullPath = !m_currentFullPath.length() ? m_sPaths[pathIndex] : m_currentFullPath;
+		do {
+			//Если указали расширение файла - то добавляем его к имени пути, иначе ищем все файлы
+			String fileName = m_szExt == nullptr ? (m_sPaths[pathIndex] + "*.*") : (m_sPaths[pathIndex] + "*." + *m_szExt);
 
-		//Проверяем указатель, если m_handle пустой, то ищем первый файл с расширением szExts
-		hf = INVALID_OR_NULL(m_handle) ? FindFirstFile(fileName.c_str(), &FindFileData) : m_handle;
+			//Проверяем указатель, если m_handle пустой, то ищем первый файл с расширением szExts
+			hf = INVALID_OR_NULL(m_handle) ? FindFirstFile(fileName.c_str(), &FindFileData) : m_handle;
 
-		if (hf != INVALID_HANDLE_VALUE)
-		{
-			//Если указатель на файл валидный, то проверяем все отфильтрованные файлы по порядку
-			while (FindNextFile(hf, &FindFileData) != 0)
+			if (hf != INVALID_HANDLE_VALUE)
 			{
-				//Сохраняем HANDLE файла, что бы можно было продожлить с того места
-				m_handle = hf;
+				
+				do {
+					//Сохраняем HANDLE файла, что бы можно было продожлить с того места
+					m_handle = hf;
 
-				m_pathStr = m_sPath + FindFileData.cFileName;
+					String fullName = m_sPaths[pathIndex] + FindFileData.cFileName;
 
-				DWORD flag = GetFileAttributes(m_pathStr.c_str());
+					DWORD flag = GetFileAttributes(fullName.c_str());
 
-				if (!strcmp(FindFileData.cFileName, "..") || !strcmp(FindFileData.cFileName, "."))
+					if (!strcmp(FindFileData.cFileName, "..") || !strcmp(FindFileData.cFileName, "."))
+					{
+						continue;
+					}
+
+					if (flag != INVALID_FILE_ATTRIBUTES && (flag & FILE_ATTRIBUTE_DIRECTORY))
+					{
+						m_folderList.push_back(fullName + '/');
+						continue;
+					}
+
+					if (flag != INVALID_FILE_ATTRIBUTES && !(flag & FILE_ATTRIBUTE_DIRECTORY))
+					{
+						//Если это файл - получаем относительный путь и ищем его в списке
+						m_pathStr = strstr(fullName.c_str(), m_sBasePath.c_str());
+						//m_pathStr = m_sBasePath + FindFileData.cFileName;
+						if (m_mapExistPath.KeyExists(m_pathStr))
+						{
+							continue;
+						} 
+						else
+						{
+							m_mapExistPath[m_pathStr] = pathIndex;
+							return m_pathStr.c_str();
+						}
+					}
+					//Если указатель на файл валидный, то проверяем все отфильтрованные файлы по порядку
+				} while (FindNextFile(hf, &FindFileData) != 0);
+
+				if (m_folderList.size() != 0)
 				{
-					continue;
+					UINT index = 0;
+					m_sPaths[pathIndex] = m_folderList[index];
+					m_folderList.erase(index);	
+					m_handle = NULL;
 				}
-
-				if (flag != INVALID_FILE_ATTRIBUTES && (flag & FILE_ATTRIBUTE_DIRECTORY))
+				else
 				{
-					m_folderList.push_back(m_pathStr + '/');
-				}
-
-				if (flag != INVALID_FILE_ATTRIBUTES && !(flag & FILE_ATTRIBUTE_DIRECTORY))
-				{
-					//Возвращаем полный путь, вместе с именем файла и расширением
-					return m_pathStr.c_str();
+					m_sPaths[pathIndex] = m_currentFullPath;
 				}
 			}
-
-			if (m_folderList.size() != 0)
-			{
-				UINT index = 0;
-				m_sPath = m_folderList[index];
-				m_folderList.erase(index);
-				m_handle = NULL;
-			} 
-			else
-			{
-				m_sPath = m_basePath;
-			}
-		}
-	} while (m_sPath != m_basePath);
+		} while (m_sPaths[pathIndex] != m_currentFullPath);
+		++pathIndex;
+		m_currentFullPath.release();
+		m_handle = NULL;
+	}
 
 	//Если вообще не нашли файлов возвращаем nullptr
 	return nullptr;
@@ -75,6 +90,12 @@ const char *FileRecursiveExtPathsIterator::next()
 
 void FileRecursiveExtPathsIterator::reset()
 {
+	if (m_sPaths.size() < pathIndex) 
+		m_sPaths[pathIndex] = m_currentFullPath;
+
+	m_currentFullPath.release();
+	m_mapExistPath.clear();
+	pathIndex = 0;
 	CLOSE_HANDLE(m_handle);
 }
 

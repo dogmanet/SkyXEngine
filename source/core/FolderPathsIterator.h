@@ -6,14 +6,14 @@ See the license in LICENSE
 #ifndef __FOLDER_PATHS_ITERATOR_H
 #define __FOLDER_PATHS_ITERATOR_H
 
-#include "FileSystem.h"
+#include "CBaseFileIterator.h"
 
-class CFolderPathsIterator final: public IXUnknownImplementation<IFileIterator>
+class CFolderPathsIterator final : public CBaseFileIterator
 {
 private:
 
-    Array<String>* m_paths;
-	String m_sPath;
+    Array<String> m_paths;
+	String m_sBasePath;
     String m_pathStr;
 	AssotiativeArray<String, int> m_mapExistPath;
 
@@ -22,7 +22,7 @@ private:
     HANDLE m_handle = nullptr;
 
 public:
-	CFolderPathsIterator(Array<String> *paths, const String &sPath);
+	CFolderPathsIterator(Array<String> &paths, String &sBasePath);
 
     const char* XMETHODCALLTYPE next() override;
 

@@ -11,11 +11,7 @@
 // {38158042-092E-46F1-AD86-EA119E774D1F}
 #define IFILESYSTEM_GUID DEFINE_GUID(0x38158042, 0x92e, 0x46f1, 0xad, 0x86, 0xea, 0x11, 0x9e, 0x77, 0x4d, 0x1f)
 
-#define SIZE_PATH 4096
-
 #define FILE_NOT_FOUND ((size_t)-1)
-
-#define INVALID_OR_NULL(handle) ((handle) == NULL || (handle) == INVALID_HANDLE_VALUE)
 
 //! типы списков для #getFileList
 enum FILE_TYPE

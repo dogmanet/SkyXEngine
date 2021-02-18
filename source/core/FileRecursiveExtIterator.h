@@ -1,9 +1,9 @@
 #ifndef __FILE_RECURSIVE_EXT_ITERATOR_H
 #define __FILE_RECURSIVE_EXT_ITERATOR_H
 
-#include "FileSystem.h"
+#include "CBaseFileIterator.h"
 
-class FileRecursiveExtIterator final : public IXUnknownImplementation<IFileIterator>
+class FileRecursiveExtIterator final : public CBaseFileIterator
 {
 private:
 	String m_basePath;

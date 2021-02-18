@@ -1,16 +1,9 @@
 #include "FileRecursiveExtIterator.h"
 
 FileRecursiveExtIterator::FileRecursiveExtIterator(const char *szPath, const char *szExts)
-: m_sPath(szPath), m_szExt(szExts)
+: m_szExt(szExts)
 {
-	char symbol = szPath[strlen(szPath) - 1];
-
-	/*Дело в том что абсолютный путь к файлу может не иметь символ "/"
-	или "\\" на конце строки, и, если его не будет путь будет некорректен*/
-	if (symbol != '\\' && symbol != '/')
-	{
-		m_sPath += '/';
-	}
+	this->canonizePath(m_sPath);
 	m_basePath = m_sPath;
 }
 
@@ -75,6 +68,7 @@ const char *FileRecursiveExtIterator::next()
 
 void FileRecursiveExtIterator::reset()
 {
+	m_sPath = m_basePath;
 	CLOSE_HANDLE(m_handle);
 }
 

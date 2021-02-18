@@ -5,6 +5,7 @@
 #include "FolderIterator.h"
 #include "FolderPathsIterator.h"
 #include "FileRecursiveExtIterator.h"
+#include "FileRecursiveExtPathsIterator.h"
 #include "File.h"
 #include <shellapi.h>
 #include <ShlObj.h>
@@ -40,30 +41,21 @@ bool CFileSystem::isFileOrDirectory(const char *szPath, bool isFile)
     return (flag != INVALID_FILE_ATTRIBUTES) && (isFile ? !(flag & FILE_ATTRIBUTE_DIRECTORY) : (flag & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-Array<String>* CFileSystem::getAllvariantsCanonizePath(const char *szPath)
+void CFileSystem::getAllvariantsCanonizePath(const char *szPath, Array<String> &container)
 {
-    Array<String>* paths = new Array<String>();
 
-    for (int i = 0, I = m_filePaths.size(); i < I; ++i)
-    {
-        String buff = m_filePaths[i];
-        buff += '/';
-        buff += szPath;
-        buff += '/'; // <- оптимизация buffObj
+	for (int i = 0, I = m_filePaths.size(); i < I; ++i)
+	{
+		String buff = m_filePaths[i];
+		buff += '/';
+		buff += szPath;
+		buff += '/'; // <- оптимизация buffObj
 
-        if (isDirectory(buff.c_str()))
-        {
-            paths->push_back(buff);
-        }
-    }
-
-    //Если путей нет - тогда очищаем за собой массив и возвращаем nullptr
-    if (!paths->size())
-    {
-        mem_delete(paths);
-    }
-
-    return paths;
+		if (isDirectory(buff.c_str()))
+		{
+			container.push_back(buff);
+		}
+	}
 }
 
 void CFileSystem::getNormalPath(const char *szPath, char *outBuff, int iOutMax)
@@ -348,11 +340,11 @@ IFileIterator *CFileSystem::getFolderList(const char *szPath)
         return new CFolderIterator(szPath);
     }
 
-    Array<String>* paths = getAllvariantsCanonizePath(szPath);
-	String path(szPath);
-	ADD_SLASH(path);
+	Array<String> paths;
+	getAllvariantsCanonizePath(szPath, paths);
+	String basePath(szPath);
 
-	return paths ? new CFolderPathsIterator(paths, path) : nullptr;
+	return paths.size() ? new CFolderPathsIterator(paths, basePath) : nullptr;
 }
 
 IFileIterator *CFileSystem::getFileList(const char *szPath, const char *szExt)
@@ -362,11 +354,11 @@ IFileIterator *CFileSystem::getFileList(const char *szPath, const char *szExt)
         return new CFileExtIterator(szPath, szExt);
     }
     
-    Array<String>* paths = getAllvariantsCanonizePath(szPath);
-	String path(szPath);
-	ADD_SLASH(path);
+	Array<String> paths; 
+	getAllvariantsCanonizePath(szPath, paths);
+	String basePath(szPath);
 
-	return paths ? new CFileExtrPathsIterator(paths, path, szExt) : nullptr;
+	return paths.size() ? new CFileExtrPathsIterator(paths, basePath, szExt) : nullptr;
 }
 
 IFileIterator *CFileSystem::getFileList(const char *szPath, const char **szExts, int extsCount)
@@ -381,11 +373,11 @@ IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char 
 		return new FileRecursiveExtIterator(szPath, szExt);
 	}
 
-	Array<String>* paths = getAllvariantsCanonizePath(szPath);
-	String path(szPath);
-	ADD_SLASH(path);
+	Array<String> paths;
+	getAllvariantsCanonizePath(szPath, paths);
+	String basePath(szPath);
 
-    return nullptr;
+	return paths.size() ? new FileRecursiveExtPathsIterator(paths, basePath, szExt) : nullptr;
 }
 
 IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char **szExts, int extsCount)

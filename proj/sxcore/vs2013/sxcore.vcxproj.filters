@@ -103,6 +103,9 @@
     <ClCompile Include="..\..\..\source\core\FileRecursiveExtPathsIterator.cpp">
       <Filter>Source\FileSystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\core\CBaseFileIterator.cpp">
+      <Filter>Source\FileSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
@@ -303,6 +306,9 @@
       <Filter>Header\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\FileRecursiveExtPathsIterator.h">
+      <Filter>Header\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\CBaseFileIterator.h">
       <Filter>Header\FileSystem</Filter>
     </ClInclude>
   </ItemGroup>

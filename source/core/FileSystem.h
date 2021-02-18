@@ -43,10 +43,9 @@ See the license in LICENSE
 
 #define MEMCCPY_ERROR(buff) memcpy(buff, "\0", 1);
 
-#define ADD_SLASH(string) if(string[string.length() - 1] != '/') \
-{ \
-	string += '/'; \
-}
+#define SIZE_PATH 4096
+
+#define INVALID_OR_NULL(handle) ((handle) == NULL || (handle) == INVALID_HANDLE_VALUE)
 
 struct Pair
 {
@@ -104,7 +103,7 @@ private:
 	//! Метод делает проверку, ведет ли путь к файлу или папке
 	bool isFileOrDirectory(const char *szPath, bool isFile);
 
-	Array<String>* getAllvariantsCanonizePath(const char *szPath);
+	void getAllvariantsCanonizePath(const char *szPath, Array<String> &container);
 
 	//!Превращает канонизированный путь в неканонизированный
 	void getNormalPath(const char *szPath, char *outBuff, int iOutMax);
