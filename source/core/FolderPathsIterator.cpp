@@ -22,11 +22,10 @@ const char *CFolderPathsIterator::next()
 
         if (hf != INVALID_HANDLE_VALUE)
         {
-            while (FindNextFile(hf, &FindFileData) != 0)
-            {
+            do {
                 m_handle = hf;
 
-				m_pathStr = (*m_paths)[index] + FindFileData.cFileName;
+				m_pathStr = (m_paths)[index] + FindFileData.cFileName;
 
                 DWORD flag = GetFileAttributes(m_pathStr.c_str());
 
@@ -50,7 +49,7 @@ const char *CFolderPathsIterator::next()
 						return m_pathStr.c_str();
 					}
                 }
-            }
+			} while (FindNextFile(hf, &FindFileData) != 0);
         }
 		FIND_CLOSE(m_handle);
 		++index;

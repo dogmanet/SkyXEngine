@@ -20,8 +20,7 @@ const char *FileRecursiveExtPathsIterator::next()
 	{
 		m_currentFullPath = !m_currentFullPath.length() ? m_sPaths[pathIndex] : m_currentFullPath;
 		do {
-			//Если указали расширение файла - то добавляем его к имени пути, иначе ищем все файлы
-			String fileName = m_szExt == nullptr ? (m_sPaths[pathIndex] + "*.*") : (m_sPaths[pathIndex] + "*." + *m_szExt);
+			String fileName = m_sPaths[pathIndex] + "*.*";
 
 			//Проверяем указатель, если m_handle пустой, то ищем первый файл с расширением szExts
 			hf = INVALID_OR_NULL(m_handle) ? FindFirstFile(fileName.c_str(), &FindFileData) : m_handle;
@@ -45,6 +44,12 @@ const char *FileRecursiveExtPathsIterator::next()
 					if (flag != INVALID_FILE_ATTRIBUTES && (flag & FILE_ATTRIBUTE_DIRECTORY))
 					{
 						m_folderList.push_back(fullName + '/');
+						continue;
+					}
+
+					//Если указали расширение файла - то добавляем его к имени пути, иначе ищем все файлы
+					if (m_szExt != nullptr && !strstr(FindFileData.cFileName, m_szExt))
+					{
 						continue;
 					}
 

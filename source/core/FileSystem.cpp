@@ -2,7 +2,6 @@
 #include "FileExtIterator.h"
 #include "FileExtsIterator.h"
 #include "FileExtPathsIterator.h"
-#include "FolderIterator.h"
 #include "FolderPathsIterator.h"
 #include "FileRecursiveExtIterator.h"
 #include "FileRecursiveExtPathsIterator.h"
@@ -335,14 +334,17 @@ time_t CFileSystem::getFileModifyTime(const char *szPath)
 
 IFileIterator *CFileSystem::getFolderList(const char *szPath)
 {
-    if (isAbsolutePath(szPath))
-    {
-        return new CFolderIterator(szPath);
-    }
-
 	Array<String> paths;
-	getAllvariantsCanonizePath(szPath, paths);
 	String basePath(szPath);
+
+	if (!isAbsolutePath(szPath)) 
+	{
+		getAllvariantsCanonizePath(szPath, paths);
+	} 
+	else
+	{
+		paths.push_back(szPath);
+	}
 
 	return paths.size() ? new CFolderPathsIterator(paths, basePath) : nullptr;
 }
