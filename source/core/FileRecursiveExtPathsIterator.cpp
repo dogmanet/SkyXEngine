@@ -1,6 +1,6 @@
 #include "FileRecursiveExtPathsIterator.h"
 
-FileRecursiveExtPathsIterator::FileRecursiveExtPathsIterator(Array<String> &paths, String &sBasePath, const char *szExt)
+CFileRecursiveExtPathsIterator::CFileRecursiveExtPathsIterator(Array<String> &paths, String &sBasePath, const char *szExt)
 	: m_szExt(szExt)
 {
 	this->canonizePaths(paths);
@@ -10,7 +10,7 @@ FileRecursiveExtPathsIterator::FileRecursiveExtPathsIterator(Array<String> &path
 	this->m_sBasePath = sBasePath;
 }
 
-const char *FileRecursiveExtPathsIterator::next()
+const char *CFileRecursiveExtPathsIterator::next()
 {
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hf;
@@ -93,7 +93,7 @@ const char *FileRecursiveExtPathsIterator::next()
 	return nullptr;
 }
 
-void FileRecursiveExtPathsIterator::reset()
+void CFileRecursiveExtPathsIterator::reset()
 {
 	if (m_sPaths.size() < pathIndex) 
 		m_sPaths[pathIndex] = m_currentFullPath;
@@ -104,7 +104,7 @@ void FileRecursiveExtPathsIterator::reset()
 	CLOSE_HANDLE(m_handle);
 }
 
-FileRecursiveExtPathsIterator::~FileRecursiveExtPathsIterator()
+CFileRecursiveExtPathsIterator::~CFileRecursiveExtPathsIterator()
 {
 	CLOSE_HANDLE(m_handle);
 }

@@ -44,7 +44,6 @@
     <ClCompile Include="..\..\..\source\core\FIleExtPathsIterator.cpp" />
     <ClCompile Include="..\..\..\source\core\FileExtsIterator.cpp" />
     <ClCompile Include="..\..\..\source\core\FileInMemory.cpp" />
-    <ClCompile Include="..\..\..\source\core\FileRecursiveExtIterator.cpp" />
     <ClCompile Include="..\..\..\source\core\FileRecursiveExtPathsIterator.cpp" />
     <ClCompile Include="..\..\..\source\core\FileSystem.cpp" />
     <ClCompile Include="..\..\..\source\core\FolderPathsIterator.cpp" />
@@ -89,7 +88,6 @@
     <ClInclude Include="..\..\..\source\core\Core.h" />
     <ClInclude Include="..\..\..\source\core\cvars.h" />
     <ClInclude Include="..\..\..\source\core\File.h" />
-    <ClInclude Include="..\..\..\source\core\FileRecursiveExtIterator.h" />
     <ClInclude Include="..\..\..\source\core\FileRecursiveExtPathsIterator.h" />
     <ClInclude Include="..\..\..\source\core\FileSystem.h" />
     <ClInclude Include="..\..\..\source\core\FolderPathsIterator.h" />

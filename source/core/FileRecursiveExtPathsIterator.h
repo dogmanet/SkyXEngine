@@ -1,9 +1,14 @@
+/***********************************************************
+Copyright © Vitaliy Buturlin, Evgeny Danilovich, Ivan Dokunov, 2021
+See the license in LICENSE
+***********************************************************/
+
 #ifndef __FILE_RECURSIVE_EXT_PATHS_ITERATOR_H
 #define __FILE_RECURSIVE_EXT_PATHS_ITERATOR_H
 
 #include "CBaseFileIterator.h"
 
-class FileRecursiveExtPathsIterator final : public CBaseFileIterator
+class CFileRecursiveExtPathsIterator final : public CBaseFileIterator
 {
 private:
 	Array<String> m_folderList;
@@ -20,13 +25,13 @@ private:
     HANDLE m_handle = nullptr;
 
 public:
-	FileRecursiveExtPathsIterator(Array<String> &paths, String &sBasePath, const char *szExt);
+	CFileRecursiveExtPathsIterator(Array<String> &paths, String &sBasePath, const char *szExt);
 
     const char* XMETHODCALLTYPE next() override;
 
     void XMETHODCALLTYPE reset() override;
 
-	~FileRecursiveExtPathsIterator();
+	~CFileRecursiveExtPathsIterator();
 };
 
 #endif

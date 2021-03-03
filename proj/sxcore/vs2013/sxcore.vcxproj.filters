@@ -91,9 +91,6 @@
     <ClCompile Include="..\..\..\source\core\Console.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\core\FileRecursiveExtIterator.cpp">
-      <Filter>Source\FileSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\core\FileRecursiveExtPathsIterator.cpp">
       <Filter>Source\FileSystem</Filter>
     </ClCompile>
@@ -289,9 +286,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\Console.h">
       <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\FileRecursiveExtIterator.h">
-      <Filter>Header\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\FileRecursiveExtPathsIterator.h">
       <Filter>Header\FileSystem</Filter>
