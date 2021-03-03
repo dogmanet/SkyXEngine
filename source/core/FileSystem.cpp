@@ -366,7 +366,19 @@ IFileIterator *CFileSystem::getFileList(const char *szPath, const char *szExt)
 
 IFileIterator *CFileSystem::getFileList(const char *szPath, const char **szExts, int extsCount)
 {
-    return new CFileExtsIterator(szPath, szExts, extsCount);
+	Array<String> paths;
+	String basePath(szPath);
+
+	if (!isAbsolutePath(szPath))
+	{
+		getAllvariantsCanonizePath(szPath, paths);
+	}
+	else
+	{
+		paths.push_back(szPath);
+	}
+
+	return paths.size() ? new CFileExtsIterator(paths, basePath, szExts, extsCount) : nullptr;
 }
 
 IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char *szExt = 0)

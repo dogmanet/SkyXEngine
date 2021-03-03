@@ -12,10 +12,18 @@ void CBaseFileIterator::canonizePath(String &sPath)
 	}
 }
 
-void CBaseFileIterator::canonizePaths(Array<String> &sPaths)
+void CBaseFileIterator::canonizePaths(Array<String> &paths)
 {
-	for (int i = 0, I = sPaths.size(); i < I; ++i)
+	for (int i = 0, I = paths.size(); i < I; ++i)
 	{
-		canonizePath(sPaths[i]);
+		canonizePath(paths[i]);
+	}
+}
+
+void CBaseFileIterator::fillExtensionsArray(Array<String> &extsArray, const char **exts, int iExtsSize)
+{
+	for (int i = 0; i < iExtsSize; ++i)
+	{
+		extsArray.push_back(exts[i]);
 	}
 }

@@ -8,7 +8,9 @@ class CBaseFileIterator : public IXUnknownImplementation<IFileIterator>
 public:
 	void canonizePath(String &sPath);
 
-	void canonizePaths(Array<String> &sPaths);
+	void canonizePaths(Array<String> &paths);
+
+	void fillExtensionsArray(Array<String> &extsArray, const char **exts, int iExtsSize);
 };
 
 #endif 
