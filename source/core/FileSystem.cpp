@@ -1,5 +1,4 @@
 #include "FileSystem.h"
-#include "FileExtIterator.h"
 #include "FileExtsIterator.h"
 #include "FileExtPathsIterator.h"
 #include "FolderPathsIterator.h"
@@ -351,16 +350,20 @@ IFileIterator *CFileSystem::getFolderList(const char *szPath)
 
 IFileIterator *CFileSystem::getFileList(const char *szPath, const char *szExt)
 {
-    if (isAbsolutePath(szPath))
-    {
-        return new CFileExtIterator(szPath, szExt);
-    }
-    
-	Array<String> paths; 
-	getAllvariantsCanonizePath(szPath, paths);
+	Array<String> paths;
 	String basePath(szPath);
 
+	if (!isAbsolutePath(szPath))
+	{
+		getAllvariantsCanonizePath(szPath, paths);
+	}
+	else
+	{
+		paths.push_back(szPath);
+	}
+
 	return paths.size() ? new CFileExtrPathsIterator(paths, basePath, szExt) : nullptr;
+
 }
 
 IFileIterator *CFileSystem::getFileList(const char *szPath, const char **szExts, int extsCount)

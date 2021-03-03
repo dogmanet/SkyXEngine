@@ -64,9 +64,6 @@
     <ClCompile Include="..\..\..\source\core\ModelProvider.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\core\FileExtIterator.cpp">
-      <Filter>Source\FileSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\core\FileExtsIterator.cpp">
       <Filter>Source\FileSystem</Filter>
     </ClCompile>
@@ -241,9 +238,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\ITask.h">
       <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\FileExtIterator.h">
-      <Filter>Header\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\FileExtsIterator.h">
       <Filter>Header\FileSystem</Filter>

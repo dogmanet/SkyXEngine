@@ -48,7 +48,7 @@ const char *FileRecursiveExtPathsIterator::next()
 					}
 
 					//Если указали расширение файла - то добавляем его к имени пути, иначе ищем все файлы
-					if (m_szExt != nullptr && !strstr(FindFileData.cFileName, m_szExt))
+					if (m_szExt != NULL && !strstr(FindFileData.cFileName, m_szExt))
 					{
 						continue;
 					}

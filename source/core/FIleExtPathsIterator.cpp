@@ -19,8 +19,7 @@ const char *CFileExtrPathsIterator::next()
 
     while (index < size)
     {
-        //Если указали расширение файла - то добавляем его к имени пути, иначе ищем все файлы
-		String fileName = m_szExt == nullptr ? (m_paths[index] + "*.*") : (m_paths[index] + "*." + m_szExt);
+		String fileName = (m_paths[index] + "*.*");
 
         //Проверяем указатель, если m_handle пустой, то ищем первый файл с расширением szExts
         hf = INVALID_OR_NULL(m_handle) ? FindFirstFile(fileName.c_str(), &FindFileData) : m_handle;
@@ -34,6 +33,11 @@ const char *CFileExtrPathsIterator::next()
 				m_pathStr = m_paths[index] + FindFileData.cFileName;
 
                 DWORD flag = GetFileAttributes(m_pathStr.c_str());
+
+				if (m_szExt != NULL && !strstr(FindFileData.cFileName, m_szExt))
+				{
+					continue;
+				}
 
                 if (flag != INVALID_FILE_ATTRIBUTES && !(flag & FILE_ATTRIBUTE_DIRECTORY))
                 {
