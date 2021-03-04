@@ -1,6 +1,5 @@
 #include "FileSystem.h"
 #include "FileExtsIterator.h"
-#include "FileExtPathsIterator.h"
 #include "FolderPathsIterator.h"
 #include "FileRecursiveExtPathsIterator.h"
 #include "File.h"
@@ -361,7 +360,8 @@ IFileIterator *CFileSystem::getFileList(const char *szPath, const char *szExt)
 		paths.push_back(szPath);
 	}
 
-	return paths.size() ? new CFileExtrPathsIterator(paths, basePath, szExt) : nullptr;
+	const char *exts[] = { szExt };
+	return paths.size() ? new CFileExtsIterator(paths, basePath, exts, 1) : nullptr;
 }
 
 IFileIterator *CFileSystem::getFileList(const char *szPath, const char **szExts, int extsCount)

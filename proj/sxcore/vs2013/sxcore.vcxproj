@@ -41,7 +41,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\file.cpp" />
-    <ClCompile Include="..\..\..\source\core\FIleExtPathsIterator.cpp" />
     <ClCompile Include="..\..\..\source\core\FileExtsIterator.cpp" />
     <ClCompile Include="..\..\..\source\core\FileInMemory.cpp" />
     <ClCompile Include="..\..\..\source\core\FileRecursiveExtPathsIterator.cpp" />
@@ -80,7 +79,6 @@
     <ClInclude Include="..\..\..\source\core\Buffer.h" />
     <ClInclude Include="..\..\..\source\core\CBaseFileIterator.h" />
     <ClInclude Include="..\..\..\source\core\Console.h" />
-    <ClInclude Include="..\..\..\source\core\FileExtPathsIterator.h" />
     <ClInclude Include="..\..\..\source\core\FileExtsIterator.h" />
     <ClInclude Include="..\..\..\source\core\FileInMemory.h" />
     <ClInclude Include="..\..\..\source\core\concmd.h" />

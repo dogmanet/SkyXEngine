@@ -79,9 +79,6 @@
     <ClCompile Include="..\..\..\source\core\AsyncTaskRunner.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\core\FIleExtPathsIterator.cpp">
-      <Filter>Source\FileSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\core\FolderPathsIterator.cpp">
       <Filter>Source\FileSystem</Filter>
     </ClCompile>
@@ -250,9 +247,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\AsyncTaskRunner.h">
       <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\FileExtPathsIterator.h">
-      <Filter>Header\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\FolderPathsIterator.h">
       <Filter>Header\FileSystem</Filter>
