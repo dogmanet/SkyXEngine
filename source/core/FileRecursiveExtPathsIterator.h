@@ -26,7 +26,7 @@ private:
     HANDLE m_handle = nullptr;
 
 public:
-	CFileRecursiveExtPathsIterator(Array<String> &paths, String &sBasePath, const char **szExt, int iExtSize);
+	CFileRecursiveExtPathsIterator(Array<String> &paths, String &sBasePath, const char **szExts, int iExtSize);
 
     const char* XMETHODCALLTYPE next() override;
 

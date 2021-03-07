@@ -37,5 +37,5 @@ bool CBaseFileIterator::findExtensionsInPath(const char *szPath, const Array<Str
 			return true;
 		}
 	}
-	return false;
+	return exts.size() ? false : true;
 }
