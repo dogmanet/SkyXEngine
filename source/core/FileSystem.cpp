@@ -348,20 +348,8 @@ IFileIterator *CFileSystem::getFolderList(const char *szPath)
 
 IFileIterator *CFileSystem::getFileList(const char *szPath, const char *szExt)
 {
-	Array<String> paths;
-	String basePath(szPath);
-
-	if (!isAbsolutePath(szPath))
-	{
-		getAllvariantsCanonizePath(szPath, paths);
-	}
-	else
-	{
-		paths.push_back(szPath);
-	}
-
 	const char *exts[] = { szExt };
-	return paths.size() ? new CFileExtsIterator(paths, basePath, exts, 1) : nullptr;
+	return this->getFileList(szPath, exts, 1);
 }
 
 IFileIterator *CFileSystem::getFileList(const char *szPath, const char **szExts, int extsCount)
@@ -383,6 +371,12 @@ IFileIterator *CFileSystem::getFileList(const char *szPath, const char **szExts,
 
 IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char *szExt = 0)
 {
+	const char *exts[] = { szExt };
+	return this->getFileListRecursive(szPath, exts, 1);
+}
+
+IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char **szExts, int extsCount)
+{
 	Array<String> paths;
 	String basePath(szPath);
 
@@ -395,13 +389,7 @@ IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char 
 		paths.push_back(szPath);
 	}
 
-	return paths.size() ? new CFileRecursiveExtPathsIterator(paths, basePath, szExt) : nullptr;
-}
-
-IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char **szExts, int extsCount)
-{
-    assert(!"No Implementation");
-    return nullptr;
+	return paths.size() ? new CFileRecursiveExtPathsIterator(paths, basePath, szExts, extsCount) : nullptr;
 }
 
 bool CFileSystem::createDirectory(const char *szPath)

@@ -1,10 +1,10 @@
 #include "FileRecursiveExtPathsIterator.h"
 
-CFileRecursiveExtPathsIterator::CFileRecursiveExtPathsIterator(Array<String> &paths, String &sBasePath, const char *szExt)
-	: m_szExt(szExt)
+CFileRecursiveExtPathsIterator::CFileRecursiveExtPathsIterator(Array<String> &paths, String &sBasePath, const char **szExts, int iExtSize)
 {
 	this->canonizePaths(paths);
 	this->canonizePath(sBasePath);
+	this->fillExtensionsArray(m_exts, szExts, iExtSize);
 
 	this->m_sPaths = paths;
 	this->m_sBasePath = sBasePath;
@@ -47,14 +47,12 @@ const char *CFileRecursiveExtPathsIterator::next()
 						continue;
 					}
 
-					//Если указали расширение файла - то добавляем его к имени пути, иначе ищем все файлы
-					if (m_szExt != NULL && !strstr(FindFileData.cFileName, m_szExt))
-					{
-						continue;
-					}
-
 					if (flag != INVALID_FILE_ATTRIBUTES && !(flag & FILE_ATTRIBUTE_DIRECTORY))
 					{
+						if (!this->findExtensionsInPath(FindFileData.cFileName, m_exts))
+						{
+							continue;
+						}
 						//Если это файл - получаем относительный путь и ищем его в списке
 						m_pathStr = strstr(fullName.c_str(), m_sBasePath.c_str());
 						//m_pathStr = m_sBasePath + FindFileData.cFileName;

@@ -27,3 +27,15 @@ void CBaseFileIterator::fillExtensionsArray(Array<String> &extsArray, const char
 		extsArray.push_back(exts[i]);
 	}
 }
+
+bool CBaseFileIterator::findExtensionsInPath(const char *szPath, const Array<String> &exts)
+{
+	for (int i = 0, I = exts.size(); i < I; ++i)
+	{
+		if (strstr(szPath, exts[i].c_str()) != NULL)
+		{
+			return true;
+		}
+	}
+	return false;
+}

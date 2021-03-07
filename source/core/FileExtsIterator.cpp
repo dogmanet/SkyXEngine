@@ -37,11 +37,7 @@ const char *CFileExtsIterator::next()
 
 				if (flag != INVALID_FILE_ATTRIBUTES && !(flag & FILE_ATTRIBUTE_DIRECTORY))
 				{
-					char *pos = NULL;
-					while (m_currentExt < sizeExt && (pos = strstr(FindFileData.cFileName, m_exts[m_currentExt++].c_str())) != NULL);
-					m_currentExt = 0;
-
-					if (pos == NULL)
+					if (!this->findExtensionsInPath(FindFileData.cFileName, m_exts))
 					{
 						continue;
 					}

@@ -11,6 +11,8 @@ public:
 	void canonizePaths(Array<String> &paths);
 
 	void fillExtensionsArray(Array<String> &extsArray, const char **exts, int iExtsSize);
+
+	bool findExtensionsInPath(const char *szPath, const Array<String> &exts);
 };
 
 #endif 
