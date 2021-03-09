@@ -64,9 +64,6 @@
     <ClCompile Include="..\..\..\source\core\ModelProvider.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\core\FileExtIterator.cpp">
-      <Filter>Source\FileSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\core\FileExtsIterator.cpp">
       <Filter>Source\FileSystem</Filter>
     </ClCompile>
@@ -82,12 +79,6 @@
     <ClCompile Include="..\..\..\source\core\AsyncTaskRunner.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\core\FIleExtPathsIterator.cpp">
-      <Filter>Source\FileSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\core\FolderIterator.cpp">
-      <Filter>Source\FileSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\core\FolderPathsIterator.cpp">
       <Filter>Source\FileSystem</Filter>
     </ClCompile>
@@ -96,6 +87,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\Console.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\FileRecursiveExtPathsIterator.cpp">
+      <Filter>Source\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\CBaseFileIterator.cpp">
+      <Filter>Source\FileSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -236,9 +233,6 @@
     <ClInclude Include="..\..\..\source\core\ITask.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\core\FileExtIterator.h">
-      <Filter>Header\FileSystem</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\core\FileExtsIterator.h">
       <Filter>Header\FileSystem</Filter>
     </ClInclude>
@@ -253,12 +247,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\AsyncTaskRunner.h">
       <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\FileExtPathsIterator.h">
-      <Filter>Header\FileSystem</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\FolderIterator.h">
-      <Filter>Header\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\FolderPathsIterator.h">
       <Filter>Header\FileSystem</Filter>
@@ -292,6 +280,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\Console.h">
       <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\FileRecursiveExtPathsIterator.h">
+      <Filter>Header\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\CBaseFileIterator.h">
+      <Filter>Header\FileSystem</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -52,124 +52,36 @@ void CCSSLexer::read(const char *szCode)
 		UINT uLen;
 		*/
 		
-		switch(ch)
+	/*	switch(ch)
 		{
-		case ':':
-			if(chNext == ':')
-			{
-				m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_PAAMAYIM_NEKUDOTAYIM, "::", 2});
-			}
-			else
-			{
-				m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_COLON, ":", 1});
-			}
-			break;
-		case '$':
-			if(chNext == '=')
-			{
-				m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_DOLLAR_EQUAL, "$=", 2});
-			}
-			break;
-		case '*':
-			if(chNext == '=')
-			{
-				m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_STAR_EQUAL, "*=", 2});
-			}
-			else
-			{
-				m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_STAR, "*", 1});
-			}
-			break;
-		case '^':
-			if(chNext == '=')
-			{
-				m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_XOR_EQUAL, "^=", 2});
-			}
-			break;
-		case '|':
-			if(chNext == '=')
-			{
-				m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_OR_EQUAL, "|=", 2});
-			}
-			else
-			{
-				m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_OR, "|", 1});
-			}
-			break;
-		case '~':
-			if(chNext == '=')
-			{
-				m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_TILDA_EQUAL, "~=", 2});
-			}
-			else
-			{
-				m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_TILDA, "~", 1});
-			}
-			break;
-
-		case '=':
-			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_EQUAL, "=", 1});
-			break;
-		case '(':
-			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_OPEN_CURLY_BRACKET, "(", 1});
-			break;
-		case ')':
-			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_CLOSE_CURLY_BRACKET, ")", 1});
-			break;
-		case '{':
-			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_OPEN_BRACE, "{", 1});
-			break;
-		case '}':
-			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_CLOSE_BRACE, "}", 1});
-			break;
-		case '[':
-			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_OPEN_SQUARE_BRACKET, "[", 1});
-			break;
-		case ']':
-			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_CLOSE_SQUARE_BRACKET, "]", 1});
-			break;
-		case ',':
-			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_COMMA, ",", 1});
-			break;
-		case '.':
-			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_DOT, ".", 1});
-			break;
-		case ';':
-			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_SEMICOLON, ";", 1});
-			break;
-		case '#':
-			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_HASH, "#", 1});
-			break;
-		case '>':
-			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_NEXT, ">", 1});
-			break;
-		case '+':
-			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_PLUS, "+", 1});
-			break;
-		case '-':
-			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_MINUS, "-", 1});
-			break;
-		case '/':
-			m_aLexemes.push_back({CSS_LEXEME_TYPE_SYM_SLASH, "/", 1});
-			break;
-		case '@':
-			m_aLexemes.push_back({ CSS_LEXEME_TYPE_SYM_AT, "@", 1});
-			break;
-		case '!':
-			// !important
-			m_aLexemes.push_back({ CSS_LEXEME_TYPE_EXCLAMATION_MARK, "@", 1 });
-			break;
-
-		case '\'':
-			m_aLexemes.push_back({ CSS_LEXEME_TYPE_QUOTE_MARK, "\'", 1 });
-			break;
-		case '"':
-			m_aLexemes.push_back({ CSS_LEXEME_TYPE_QUOTATION_MARKS, "\"", 1 });
-			break;
-
-		default:
-			;
-		}
+			case ';':
+				CSS_TOKEN_TYPE_SEMICOLON_TOKEN;
+				break;
+			case ':':
+				CSS_TOKEN_TYPE_COLON_TOKEN;
+				break;
+			case ',':
+				CSS_TOKEN_TYPE_COMMA_TOKEN;
+				break;
+			case '{':
+				CSS_TOKEN_TYPE_OPEN_BRACE;
+				break;
+			case '}':
+				CSS_TOKEN_TYPE_CLOSE_BRACE;
+				break;
+			case '(':
+				CSS_TOKEN_TYPE_OPEN_CURLY_BRACKET;
+				break;
+			case ')':
+				CSS_TOKEN_TYPE_CLOSE_CURLY_BRACKET;
+				break;
+			case '[':
+				CSS_TOKEN_TYPE_OPEN_SQUARE_BRACKET;
+				break;
+			case ']':
+				CSS_TOKEN_TYPE_CLOSE_SQUARE_BRACKET;
+				break;
+		} */
 	}
 }
 
