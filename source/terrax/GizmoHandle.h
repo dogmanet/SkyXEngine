@@ -21,6 +21,11 @@ public:
 
 	void draw(IXGizmoRenderer *pGRBoth, IXGizmoRenderer *pGR2D, IXGizmoRenderer *pGR3D);
 
+	float getOnscreenSize() const
+	{
+		return(7.0f);
+	}
+
 private:
 	CEditor *m_pEditor;
 

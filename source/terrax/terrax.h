@@ -30,6 +30,7 @@
 
 #include "Grid.h"
 #include "MaterialBrowser.h"
+#include "Editor.h"
 
 enum X_VIEWPORT_LAYOUT
 {
@@ -106,6 +107,8 @@ struct CTerraXConfig
 struct CTerraXState
 {
 	X_WINDOW_POS activeWindow = XWP_TOP_LEFT;
+	HWND hActiveWnd = NULL;
+	float2 vWinSize;
 	float2_t vMousePos;
 	float2_t vWorldMousePos;
 	float4_t m_vViewportBorders[4];
@@ -122,6 +125,11 @@ struct CTerraXState
 
 	bool bCreateMode = false;
 	float3 vCreateOrigin;
+
+	float3 vWorldRayStart;
+	float3 vWorldRayDir;
+
+	float3 vBestPlaneNormal;
 };
 
 #define X_MAX_HANDLERS_PER_DIP 512
@@ -175,6 +183,8 @@ extern CTerraXConfig g_xConfig;
 extern CTerraXState g_xState;
 
 extern CMaterialBrowser *g_pMaterialBrowser;
+
+extern CEditor *g_pEditor;
 
 #define X2D_TOP_POS float3(0.0f, 1000.0f, 0.0f)
 #define X2D_TOP_ROT SMQuaternion(-SM_PIDIV2, 'x')

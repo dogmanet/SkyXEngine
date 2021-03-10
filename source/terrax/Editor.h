@@ -38,6 +38,10 @@ public:
 		m_isDirty = true;
 	}
 
+	void onMouseMove();
+	void onMouseDown();
+	void onMouseUp();
+
 private:
 #define GTO(gt) Array<CGizmo##gt*> m_aGizmos##gt;
 	GIZMO_TYPES();
@@ -46,6 +50,9 @@ private:
 	IXGizmoRenderer *m_pGizmoRendererBoth = NULL;
 	IXGizmoRenderer *m_pGizmoRenderer2D = NULL;
 	IXGizmoRenderer *m_pGizmoRenderer3D = NULL;
+
+	CGizmoHandle *m_pSelectedHandle = NULL;
+	bool m_isCapturing = false;
 
 	bool m_isDirty = false;
 };

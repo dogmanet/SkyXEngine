@@ -38,6 +38,6 @@ void CGizmoHandle::draw(IXGizmoRenderer *pGRBoth, IXGizmoRenderer *pGR2D, IXGizm
 {
 	pGRBoth->setPointMode(XGPM_SQUARE);
 	pGRBoth->setColor(float4(1.0f));
-	pGRBoth->setPointSize(10.0f);
+	pGRBoth->setPointSize(getOnscreenSize());
 	pGRBoth->drawPoint(m_vPos);
 }

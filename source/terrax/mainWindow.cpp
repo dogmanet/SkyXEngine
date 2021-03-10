@@ -1589,6 +1589,144 @@ float g_fSelectDeltaTime = 0.0f;
 UINT g_uSelectedIndex = 0;
 bool g_isSelectionCtrl = false;
 
+static void XTrackMouse(HWND hWnd, LPARAM lParam)
+{
+	HWND hCapWnd = GetCapture();
+	if(hCapWnd)
+	{
+		hWnd = hCapWnd;
+	}
+	else
+	{
+		g_xState.hActiveWnd = hWnd;
+
+		if(hWnd == g_hTopRightWnd)
+		{
+			g_xState.activeWindow = XWP_TOP_RIGHT;
+		}
+		else if(hWnd == g_hBottomLeftWnd)
+		{
+			g_xState.activeWindow = XWP_BOTTOM_LEFT;
+		}
+		else if(hWnd == g_hBottomRightWnd)
+		{
+			g_xState.activeWindow = XWP_BOTTOM_RIGHT;
+		}
+		else
+		{
+			g_xState.activeWindow = XWP_TOP_LEFT;
+		}
+	}
+
+	g_xState.vMousePos = {(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam)};
+
+	ICamera *pCamera = g_xConfig.m_pViewportCamera[g_xState.activeWindow];
+	if(!pCamera)
+	{
+		return;
+	}
+
+	RECT rc;
+	GetWindowRect(hWnd, &rc);
+	float2 vWinSize((float)(rc.right - rc.left), (float)(rc.bottom - rc.top));
+	g_xState.vWinSize = vWinSize;
+
+	if(g_xState.activeWindow == XWP_TOP_LEFT)
+	{
+		// transform by matrix
+		SMMATRIX mViewProj;
+		Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEWPROJ, &mViewProj);
+		SMMATRIX mInvVP = SMMatrixInverse(NULL, mViewProj);
+
+		float3 vScreenPos(g_xState.vMousePos / vWinSize, 0.0f);
+		vScreenPos = vScreenPos * float3(2.0f, -2.0f, 1.0f) - float3(1.0f, -1.0f, 0.0f);
+		vScreenPos.z = -1.0f;
+		vScreenPos.w = 1.0f;
+
+
+		float3 vRayStart = vScreenPos * mInvVP;
+		vRayStart /= vRayStart.w;
+
+		vScreenPos.z = 1.0f;
+		float3 vRayDir = vScreenPos * mInvVP;
+		vRayDir /= vRayDir.w;
+		vRayDir = SMVector3Normalize(vRayDir - vRayStart);
+
+		g_xState.vWorldRayStart = vRayStart;
+		g_xState.vWorldRayDir = vRayDir;
+
+		float3 avNormals[] = {
+			float3(1.0f, 0.0f, 0.0f),
+			float3(0.0f, 1.0f, 0.0f),
+			float3(0.0f, 0.0f, 1.0f)
+		};
+
+		float fBestCos = -1.0f;
+		for(int i = 0; i < ARRAYSIZE(avNormals); ++i)
+		{
+			float fCos = fabsf(SMVector3Dot(avNormals[i], vRayDir));
+			if(fCos > fBestCos)
+			{
+				fBestCos = fCos;
+				g_xState.vBestPlaneNormal = avNormals[i];
+			}
+		}
+	}
+	else
+	{
+		float3 fCamWorld = pCamera->getPosition();
+
+		X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+		float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
+
+		switch(xCurView)
+		{
+		case X2D_TOP:
+			fCamWorld = float3(fCamWorld.x, fCamWorld.z, 0.0f);
+			g_xState.vWorldRayDir = float3(0.0f, -1.0f, 0.0f);
+			g_xState.vBestPlaneNormal = -g_xState.vWorldRayDir;
+			break;
+		case X2D_FRONT:
+			fCamWorld = float3(fCamWorld.x, fCamWorld.y, 0.0f);
+			g_xState.vWorldRayDir = float3(0.0f, 0.0f, 1.0f);
+			g_xState.vBestPlaneNormal = g_xState.vWorldRayDir;
+			break;
+		case X2D_SIDE:
+			fCamWorld = float3(fCamWorld.z, fCamWorld.y, 0.0f);
+			g_xState.vWorldRayDir = float3(-1.0f, 0.0f, 0.0f);
+			g_xState.vBestPlaneNormal = -g_xState.vWorldRayDir;
+			break;
+		}
+
+		RECT rc;
+		GetClientRect(hWnd, &rc);
+
+		float2 vCenter((float)(rc.left + rc.right) * 0.5f, (float)(rc.top + rc.bottom) * 0.5f);
+		float2 vDelta = (g_xState.vMousePos - vCenter) * float2(1.0f, -1.0f);
+
+		float2 vSize = vWinSize;
+		vSize *= 0.5f * fViewScale;
+		float2 vTopLeft = fCamWorld - vSize;
+		float2 vBottomRight = fCamWorld + vSize;
+		g_xState.m_vViewportBorders[g_xState.activeWindow] = float4(vTopLeft.x, vTopLeft.y, vBottomRight.x, vBottomRight.y);
+
+		g_xState.vWorldMousePos = (float2)(fCamWorld + vDelta * fViewScale);
+
+		switch(xCurView)
+		{
+		case X2D_TOP:
+			g_xState.vWorldRayStart = float3(g_xState.vWorldMousePos.x, fCamWorld.y, g_xState.vWorldMousePos.y);
+			break;
+		case X2D_FRONT:
+			g_xState.vWorldRayStart = float3(g_xState.vWorldMousePos.x, g_xState.vWorldMousePos.y, fCamWorld.z);
+			break;
+		case X2D_SIDE:
+			g_xState.vWorldRayStart = float3(fCamWorld.x, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
+			break;
+		}
+	}
+}
+
 LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if(g_pEngine && g_pEngine->onMessage(message, wParam, lParam))
@@ -1752,6 +1890,8 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				g_pSelectCmd = NULL;
 			}
 
+			g_pEditor->onMouseUp();
+
 			POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 			GetClientRect(hWnd, &rect);
 			if(pt.x > rect.left && pt.x < rect.left + 20
@@ -1824,6 +1964,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				break;
 			}
 
+			XTrackMouse(hWnd, lParam);
 
 			if(hWnd == g_hTopLeftWnd)
 			{
@@ -1959,6 +2100,8 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						s_aRaytracedItems.clearFast();
 					}
 				}
+
+				g_pEditor->onMouseDown();
 			}
 			else
 			{
@@ -2194,6 +2337,8 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 					g_xState.vCreateOrigin = XSnapToGrid(g_xState.vCreateOrigin);
 				}
+
+				g_pEditor->onMouseDown();
 				break;
 			}
 
@@ -2206,7 +2351,9 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				g_is3DRotating = TRUE;
 				SetCapture(hWnd);
 				SSInput_SetEnable(true);
+				break;
 			}
+
 			//else
 		}
 		break;
@@ -2247,33 +2394,21 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 	case WM_MOUSEMOVE:
 		if(!g_is3DRotating && !g_is3DPanning && !g_is2DPanning)
 		{
-			if(hWnd == g_hTopRightWnd)
-			{
-				g_xState.activeWindow = XWP_TOP_RIGHT;
-			}
-			else if(hWnd == g_hBottomLeftWnd)
-			{
-				g_xState.activeWindow = XWP_BOTTOM_LEFT;
-			}
-			else if(hWnd == g_hBottomRightWnd)
-			{
-				g_xState.activeWindow = XWP_BOTTOM_RIGHT;
-			}
-			else
-			{
-				g_xState.activeWindow = XWP_TOP_LEFT;
-			}
+			XTrackMouse(hWnd, lParam);
+			
 
-			g_xState.vMousePos = {(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam)};
+			
 
 			if(g_xState.activeWindow != XWP_TOP_LEFT)
 			{
+				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+#if 0
 				ICamera *pCamera = g_xConfig.m_pViewportCamera[g_xState.activeWindow];
 				if(!pCamera)
 				{
 					break;
 				}
-				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+				
 				float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
 
 				float3 fCamWorld = pCamera->getPosition();
@@ -2303,7 +2438,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				g_xState.m_vViewportBorders[g_xState.activeWindow] = float4(vTopLeft.x, vTopLeft.y, vBottomRight.x, vBottomRight.y);
 
 				g_xState.vWorldMousePos = (float2)(fCamWorld + vDelta * fViewScale);
-
+#endif
 				/*if(g_is2DPanning)
 				{
 					// vWorldDelta
@@ -2459,6 +2594,8 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				}
 				g_xState.vCreateOrigin = XSnapToGrid(g_xState.vCreateOrigin);
 			}
+
+			g_pEditor->onMouseMove();
 			return(TRUE);
 		}
 		break;

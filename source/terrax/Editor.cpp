@@ -12,7 +12,7 @@ CEditor::CEditor(IXCore *pCore)
 	IXEditorGizmoRadius *pRadius;
 
 	newGizmoHandle(&pHandle);
-	newGizmoRadius(&pRadius);
+	//newGizmoRadius(&pRadius);
 }
 
 CEditor::~CEditor()
@@ -70,5 +70,90 @@ void CEditor::render(bool is3D)
 	else
 	{
 		m_pGizmoRenderer2D->render(true);
+	}
+}
+
+void CEditor::onMouseMove()
+{
+
+	if(m_isCapturing)
+	{
+		return;
+	}
+
+	// raycast to handlers
+	X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+	/*
+	
+				
+		const float fWorldSize = 3.5f * fViewScale;
+	*/
+	float3 vRayStart, vRayDir;
+	vRayStart = g_xState.vWorldRayStart;
+	vRayDir = g_xState.vWorldRayDir;
+
+	CGizmoHandle *pGizmo, *pSelectedGizmo = NULL;
+	float fDist2, fMinDist2 = FLT_MAX;
+	for(UINT i = 0, l = m_aGizmosHandle.size(); i < l; ++i)
+	{
+		pGizmo = m_aGizmosHandle[i];
+		fDist2 = SMDistancePointBeam2(pGizmo->getPos(), vRayStart, vRayDir);
+		if(fDist2 < fMinDist2)
+		{
+			pSelectedGizmo = pGizmo;
+			fMinDist2 = fDist2;
+		}
+	}
+	if(pSelectedGizmo)
+	{
+		if(g_xState.activeWindow == XWP_TOP_LEFT)
+		{
+			SMMATRIX mViewProj;
+			Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEWPROJ, &mViewProj);
+
+			float3 vScreenPos = pSelectedGizmo->getPos() * mViewProj;
+			vScreenPos /= vScreenPos.w;
+			vScreenPos = (vScreenPos + float3(1.0f, -1.0f, 0.0f))* float3(0.5f, -0.5f, 1.0f) * g_xState.vWinSize;
+			// check for distance
+
+			float2 vec = float2(vScreenPos.x, vScreenPos.y) - g_xState.vMousePos;
+			if(pSelectedGizmo->getOnscreenSize() < SMVector2Dot(vec, vec))
+			{
+				return;
+			}
+
+		}
+		else
+		{
+			float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
+			float fWorldSize = pSelectedGizmo->getOnscreenSize() * fViewScale;
+			if(fMinDist2 > fWorldSize)
+			{
+				return;
+			}
+		}
+
+		// set cursor
+		SetCursor(LoadCursor(NULL, IDC_CROSS));
+	}
+	m_pSelectedHandle = pSelectedGizmo;
+}
+void CEditor::onMouseDown()
+{
+	if(m_pSelectedHandle)
+	{
+		SetCapture(g_xState.hActiveWnd);
+		m_isCapturing = true;
+
+	}
+}
+void CEditor::onMouseUp()
+{
+	if(m_isCapturing)
+	{
+		m_isCapturing = false;
+		ReleaseCapture();
+
+
 	}
 }
