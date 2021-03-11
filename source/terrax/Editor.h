@@ -39,7 +39,7 @@ public:
 	}
 
 	void onMouseMove();
-	void onMouseDown();
+	bool onMouseDown();
 	void onMouseUp();
 
 private:

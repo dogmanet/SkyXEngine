@@ -26,10 +26,27 @@ public:
 		return(7.0f);
 	}
 
+	void setBestPlaneNormal(const float3_t &vNormal)
+	{
+		m_vBestPlaneNormal = vNormal;
+	}
+	void setWorldRay(const float3 &vRayOrigin, const float3 &vRayDir);
+	void setTracking(bool isTracking);
+
 private:
 	CEditor *m_pEditor;
 
 	float3_t m_vPos;
+
+	float3_t m_vBestPlaneNormal;
+
+	SMPLANE m_planeBase;
+
+	bool m_isTracking = false;
+
+private:
+
+	void drawGrid(IXGizmoRenderer *pGR3D);
 };
 
 #endif

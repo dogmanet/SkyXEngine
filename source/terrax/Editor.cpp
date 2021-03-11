@@ -78,16 +78,12 @@ void CEditor::onMouseMove()
 
 	if(m_isCapturing)
 	{
+		m_pSelectedHandle->setWorldRay(g_xState.vWorldRayStart, g_xState.vWorldRayDir);
 		return;
 	}
 
 	// raycast to handlers
-	X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
-	/*
 	
-				
-		const float fWorldSize = 3.5f * fViewScale;
-	*/
 	float3 vRayStart, vRayDir;
 	vRayStart = g_xState.vWorldRayStart;
 	vRayDir = g_xState.vWorldRayDir;
@@ -117,8 +113,11 @@ void CEditor::onMouseMove()
 			// check for distance
 
 			float2 vec = float2(vScreenPos.x, vScreenPos.y) - g_xState.vMousePos;
-			if(pSelectedGizmo->getOnscreenSize() < SMVector2Dot(vec, vec))
+			float fSize = pSelectedGizmo->getOnscreenSize();
+			fSize = fSize * fSize;
+			if(fSize < SMVector2Dot(vec, vec))
 			{
+				m_pSelectedHandle = NULL;
 				return;
 			}
 
@@ -127,8 +126,10 @@ void CEditor::onMouseMove()
 		{
 			float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
 			float fWorldSize = pSelectedGizmo->getOnscreenSize() * fViewScale;
+			fWorldSize = fWorldSize * fWorldSize;
 			if(fMinDist2 > fWorldSize)
 			{
+				m_pSelectedHandle = NULL;
 				return;
 			}
 		}
@@ -138,14 +139,20 @@ void CEditor::onMouseMove()
 	}
 	m_pSelectedHandle = pSelectedGizmo;
 }
-void CEditor::onMouseDown()
+bool CEditor::onMouseDown()
 {
 	if(m_pSelectedHandle)
 	{
 		SetCapture(g_xState.hActiveWnd);
 		m_isCapturing = true;
 
+		m_pSelectedHandle->setBestPlaneNormal(g_xState.vBestPlaneNormal);
+		m_pSelectedHandle->setTracking(true);
+
+		return(true);
 	}
+
+	return(false);
 }
 void CEditor::onMouseUp()
 {
@@ -153,7 +160,7 @@ void CEditor::onMouseUp()
 	{
 		m_isCapturing = false;
 		ReleaseCapture();
-
+		m_pSelectedHandle->setTracking(false);
 
 	}
 }

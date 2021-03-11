@@ -2101,7 +2101,10 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					}
 				}
 
-				g_pEditor->onMouseDown();
+				if(!Button_GetCheck(g_hABCameraButton))
+				{
+					g_pEditor->onMouseDown();
+				}
 			}
 			else
 			{
@@ -2216,6 +2219,11 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						{
 							break;
 						}
+					}
+
+					if(g_pEditor->onMouseDown())
+					{
+						break;
 					}
 
 					if(!XIsMouseInSelection(g_xState.activeWindow) || (wParam & MK_CONTROL))
@@ -2337,8 +2345,10 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 					g_xState.vCreateOrigin = XSnapToGrid(g_xState.vCreateOrigin);
 				}
-
-				g_pEditor->onMouseDown();
+				else
+				{
+					g_pEditor->onMouseDown();
+				}
 				break;
 			}
 
