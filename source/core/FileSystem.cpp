@@ -6,6 +6,24 @@
 #include <shellapi.h>
 #include <ShlObj.h>
 
+template <typename T>
+IFileIterator *CFileSystem::getListIterator(const char *szPath, const char **szExts, int extsCount)
+{
+	Array<String> paths;
+	String basePath(szPath);
+
+	if (!isAbsolutePath(szPath))
+	{
+		getAllvariantsCanonizePath(szPath, paths);
+	}
+	else
+	{
+		paths.push_back(szPath);
+	}
+
+	return paths.size() ? new T(paths, basePath, szExts, extsCount) : nullptr;
+}
+
 void CFileSystem::addPathInPriorityArray(int id, int iPriority)
 {
 	Pair newElement{ iPriority, id };
@@ -349,47 +367,23 @@ IFileIterator *CFileSystem::getFolderList(const char *szPath)
 IFileIterator *CFileSystem::getFileList(const char *szPath, const char *szExt)
 {
 	const char *exts[] = { szExt };
-	return this->getFileList(szPath, exts, 1);
+	return getFileList(szPath, exts, 1);
 }
 
 IFileIterator *CFileSystem::getFileList(const char *szPath, const char **szExts, int extsCount)
 {
-	Array<String> paths;
-	String basePath(szPath);
-
-	if (!isAbsolutePath(szPath))
-	{
-		getAllvariantsCanonizePath(szPath, paths);
-	}
-	else
-	{
-		paths.push_back(szPath);
-	}
-
-	return paths.size() ? new CFileExtsIterator(paths, basePath, szExts, extsCount) : nullptr;
+	return getListIterator<CFileExtsIterator>(szPath, szExts, extsCount);
 }
 
 IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char *szExt = 0)
 {
 	const char *exts[] = { szExt };
-	return this->getFileListRecursive(szPath, exts, 1);
+	return getFileListRecursive(szPath, exts, 1);
 }
 
 IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char **szExts, int extsCount)
 {
-	Array<String> paths;
-	String basePath(szPath);
-
-	if (!isAbsolutePath(szPath))
-	{
-		getAllvariantsCanonizePath(szPath, paths);
-	}
-	else
-	{
-		paths.push_back(szPath);
-	}
-
-	return paths.size() ? new CFileRecursiveExtPathsIterator(paths, basePath, szExts, extsCount) : nullptr;
+	return getListIterator<CFileRecursiveExtPathsIterator>(szPath, szExts, extsCount);
 }
 
 bool CFileSystem::createDirectory(const char *szPath)
