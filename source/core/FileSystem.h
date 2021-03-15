@@ -98,6 +98,9 @@ public:
      IFile *openFile(const char *szPath, FILE_OPEN_MODE) override;
 
 private:
+	template <typename T>
+	IFileIterator *getListIterator(const char *szPath, const char **szExts, int extsCount);
+
 	void addPathInPriorityArray(int id, int iPriority);
 
 	//! Метод делает проверку, ведет ли путь к файлу или папке
