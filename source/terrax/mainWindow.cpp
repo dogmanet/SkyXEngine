@@ -2842,50 +2842,57 @@ BOOL XCheckMenuItem(HMENU hMenu, UINT uIDCheckItem, bool bCheck)
 	return(SetMenuItemInfoA(hMenu, uIDCheckItem, FALSE, &mii));
 }
 
+float XGetGridStep()
+{
+	float fGridStep = -1.0f;
+	switch(g_xConfig.m_gridStep)
+	{
+	case GRID_STEP_1CM:
+		fGridStep = 0.01f;
+		break;
+	case GRID_STEP_2CM:
+		fGridStep = 0.02f;
+		break;
+	case GRID_STEP_5CM:
+		fGridStep = 0.05f;
+		break;
+	case GRID_STEP_10CM:
+		fGridStep = 0.1f;
+		break;
+	case GRID_STEP_20CM:
+		fGridStep = 0.2f;
+		break;
+	case GRID_STEP_50CM:
+		fGridStep = 0.5f;
+		break;
+	case GRID_STEP_1M:
+		fGridStep = 1.0f;
+		break;
+	case GRID_STEP_2M:
+		fGridStep = 2.0f;
+		break;
+	case GRID_STEP_5M:
+		fGridStep = 5.0f;
+		break;
+	case GRID_STEP_10M:
+		fGridStep = 10.0f;
+		break;
+	case GRID_STEP_20M:
+		fGridStep = 20.0f;
+		break;
+	case GRID_STEP_50M:
+		fGridStep = 50.0f;
+		break;
+	}
+
+	return(fGridStep);
+}
+
 float3 XSnapToGrid(const float3 &vPos)
 {
 	if(g_xConfig.m_bSnapGrid)
 	{
-		float fGridStep = -1.0f;
-		switch(g_xConfig.m_gridStep)
-		{
-		case GRID_STEP_1CM:
-			fGridStep = 0.01f;
-			break;
-		case GRID_STEP_2CM:
-			fGridStep = 0.02f;
-			break;
-		case GRID_STEP_5CM:
-			fGridStep = 0.05f;
-			break;
-		case GRID_STEP_10CM:
-			fGridStep = 0.1f;
-			break;
-		case GRID_STEP_20CM:
-			fGridStep = 0.2f;
-			break;
-		case GRID_STEP_50CM:
-			fGridStep = 0.5f;
-			break;
-		case GRID_STEP_1M:
-			fGridStep = 1.0f;
-			break;
-		case GRID_STEP_2M:
-			fGridStep = 2.0f;
-			break;
-		case GRID_STEP_5M:
-			fGridStep = 5.0f;
-			break;
-		case GRID_STEP_10M:
-			fGridStep = 10.0f;
-			break;
-		case GRID_STEP_20M:
-			fGridStep = 20.0f;
-			break;
-		case GRID_STEP_50M:
-			fGridStep = 50.0f;
-			break;
-		}
+		float fGridStep = XGetGridStep();
 
 		if(fGridStep > 0.0f)
 		{

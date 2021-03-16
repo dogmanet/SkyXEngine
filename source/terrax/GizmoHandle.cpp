@@ -1,5 +1,6 @@
 #include "GizmoHandle.h"
 #include "Editor.h"
+#include "terrax.h"
 
 CGizmoHandle::CGizmoHandle(CEditor *pEditor):
 	m_pEditor(pEditor)
@@ -86,12 +87,61 @@ void CGizmoHandle::drawGrid(IXGizmoRenderer *pGR3D)
 	vB = SMVector3Cross(vT, vN);
 	vT = SMVector3Cross(vN, vB);
 
-	pGR3D->jumpTo(m_vPos);
-	pGR3D->lineTo(m_vPos + vT);
-	pGR3D->jumpTo(m_vPos);
-	pGR3D->lineTo(m_vPos + vB);
-	pGR3D->jumpTo(m_vPos);
-	pGR3D->lineTo(m_vPos - vB);
-	pGR3D->jumpTo(m_vPos);
-	pGR3D->lineTo(m_vPos - vT);
+	float3 vOrigin;
+	if(m_planeBase.intersectLine(&vOrigin, vN * -1000.0f, vN * 1000.0f))
+	{
+		float fGridStep = XGetGridStep();
+		if(fGridStep > 0.0f)
+		{
+			SMMATRIX m(SMMatrixTranspose(SMMATRIX(
+				float4(vT, 0.0f),
+				float4(vB, 0.0f),
+				float4(vN, 0.0f),
+				float4(0.0f, 0.0f, 0.0f, 1.0f)
+				)));
+			SMMATRIX mInv = SMMatrixInverse(NULL, m);
+
+			float3 vGridCenter = m_vPos * m;
+			vGridCenter.x -= fmodf(vGridCenter.x, fGridStep);
+			vGridCenter.y -= fmodf(vGridCenter.y, fGridStep);
+
+			//vGridCenter = vGridCenter * mInv;
+
+			pGR3D->setLineWidth(1.0f);
+
+			const int iSize = 10;
+
+			float fInvMax = 1.0f / SMVector3Length2(float3((float)iSize, (float)iSize, 0.0f) * fGridStep);
+
+			float3 vPt;
+			for(int i = -iSize; i <= iSize; ++i)
+			{
+				vPt = float3(vGridCenter + float3((float)i, (float)-iSize, 0.0f) * fGridStep) * mInv;
+				pGR3D->setColor(float4(1.0f, 1.0f, 1.0f, 1.0f - SMVector3Length2(vPt - m_vPos) * fInvMax));
+				pGR3D->jumpTo(vPt);
+
+				vPt = float3(vGridCenter + float3((float)i, 0.0f, 0.0f) * fGridStep) * mInv;
+				pGR3D->setColor(float4(1.0f, 1.0f, 1.0f, 1.0f - SMVector3Length2(vPt - m_vPos) * fInvMax));
+				pGR3D->lineTo(vPt);
+
+				vPt = float3(vGridCenter + float3((float)i, (float)iSize, 0.0f) * fGridStep) * mInv;
+				pGR3D->setColor(float4(1.0f, 1.0f, 1.0f, 1.0f - SMVector3Length2(vPt - m_vPos) * fInvMax));
+				pGR3D->lineTo(vPt);
+			}
+			for(int j = -iSize; j <= iSize; ++j)
+			{
+				vPt = float3(vGridCenter + float3((float)-iSize, (float)j, 0.0f) * fGridStep) * mInv;
+				pGR3D->setColor(float4(1.0f, 1.0f, 1.0f, 1.0f - SMVector3Length2(vPt - m_vPos) * fInvMax));
+				pGR3D->jumpTo(vPt);
+
+				vPt = float3(vGridCenter + float3(0.0f, (float)j, 0.0f) * fGridStep) * mInv;
+				pGR3D->setColor(float4(1.0f, 1.0f, 1.0f, 1.0f - SMVector3Length2(vPt - m_vPos) * fInvMax));
+				pGR3D->lineTo(vPt);
+
+				vPt = float3(vGridCenter + float3((float)iSize, (float)j, 0.0f) * fGridStep) * mInv;
+				pGR3D->setColor(float4(1.0f, 1.0f, 1.0f, 1.0f - SMVector3Length2(vPt - m_vPos) * fInvMax));
+				pGR3D->lineTo(vPt);
+			}
+		}
+	}
 }

@@ -93,7 +93,7 @@ void CEditor::onMouseMove()
 	for(UINT i = 0, l = m_aGizmosHandle.size(); i < l; ++i)
 	{
 		pGizmo = m_aGizmosHandle[i];
-		fDist2 = SMDistancePointBeam2(pGizmo->getPos(), vRayStart, vRayDir);
+		fDist2 = SMDistancePointLine2(pGizmo->getPos(), vRayStart, vRayDir);
 		if(fDist2 < fMinDist2)
 		{
 			pSelectedGizmo = pGizmo;
