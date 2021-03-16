@@ -43,6 +43,9 @@
     <ClCompile Include="..\..\..\source\gui2\CSSLexer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\gui2\CSSLeherAlgoritm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\xcommon\gui\IXDesktop.h">
@@ -94,6 +97,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\gui2\CSSLexer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\gui2\CSSLeherAlgoritm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

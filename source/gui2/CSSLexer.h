@@ -295,6 +295,7 @@ private:
 	UINT readChar(StreamReader &reader);
 private:
 	Array<CSSLexeme> m_aLexemes;
+	Array<CSSToken*> m_aLexemes2;
 	UINT m_uCurrLexeme = 0;
 
 };

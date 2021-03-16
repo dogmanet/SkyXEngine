@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\gui2\CSSLeherAlgoritm.cpp" />
     <ClCompile Include="..\..\..\source\gui2\CSSLexer.cpp" />
     <ClCompile Include="..\..\..\source\gui2\CSSProperty.cpp" />
     <ClCompile Include="..\..\..\source\gui2\Desktop.cpp" />
@@ -29,6 +30,7 @@
     <ClCompile Include="..\..\..\source\gui2\GUI.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\gui2\CSSLeherAlgoritm.h" />
     <ClInclude Include="..\..\..\source\gui2\CSSLexer.h" />
     <ClInclude Include="..\..\..\source\gui2\CSSProperty.h" />
     <ClInclude Include="..\..\..\source\gui2\Desktop.h" />
