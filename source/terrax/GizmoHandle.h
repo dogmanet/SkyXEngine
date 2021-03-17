@@ -17,7 +17,7 @@ public:
 
 	void XMETHODCALLTYPE lockInPlane(const float3_t &vPlaneNormal) override;
 	void XMETHODCALLTYPE lockInDir(const float3_t &vDir) override;
-	void XMETHODCALLTYPE unLock(const float3_t &vDir) override;
+	void XMETHODCALLTYPE unLock() override;
 
 	void draw(IXGizmoRenderer *pGRBoth, IXGizmoRenderer *pGR2D, IXGizmoRenderer *pGR3D);
 
@@ -40,9 +40,15 @@ private:
 
 	float3_t m_vBestPlaneNormal;
 
+	bool m_isLockedNormal = false;
+	float3_t m_vLockNormal;
+
 	SMPLANE m_planeBase;
 
 	bool m_isTracking = false;
+
+	SMMATRIX m_mLocal;
+	SMMATRIX m_mInvLocal;
 
 private:
 

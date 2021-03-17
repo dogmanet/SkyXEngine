@@ -29,7 +29,7 @@ class IXEditorGizmoHandle: public IXEditorGizmo
 public:
 	virtual void XMETHODCALLTYPE lockInPlane(const float3_t &vPlaneNormal) = 0;
 	virtual void XMETHODCALLTYPE lockInDir(const float3_t &vDir) = 0;
-	virtual void XMETHODCALLTYPE unLock(const float3_t &vDir) = 0;
+	virtual void XMETHODCALLTYPE unLock() = 0;
 };
 
 class IXEditorGizmoMove: public IXEditorGizmo
