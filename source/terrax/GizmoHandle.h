@@ -6,7 +6,7 @@
 //#include "terrax.h"
 
 class CEditor;
-class CGizmoHandle: public IXUnknownImplementation<IXEditorGizmoHandle>
+class CGizmoHandle final: public IXUnknownImplementation<IXEditorGizmoHandle>
 {
 public:
 	CGizmoHandle(CEditor *pEditor);
@@ -33,6 +33,13 @@ public:
 	void setWorldRay(const float3 &vRayOrigin, const float3 &vRayDir);
 	void setTracking(bool isTracking);
 
+	void XMETHODCALLTYPE setCallback(IXEditorGizmoHandleCallback *pCallback) override
+	{
+		m_pCallback = pCallback;
+	}
+
+	bool wantHandle(const float3 &vRayOrigin, const float3 &vRayDir);
+
 private:
 	CEditor *m_pEditor;
 
@@ -41,6 +48,7 @@ private:
 	float3_t m_vBestPlaneNormal;
 
 	bool m_isLockedNormal = false;
+	bool m_isLockedDir = false;
 	float3_t m_vLockNormal;
 
 	SMPLANE m_planeBase;
@@ -50,9 +58,12 @@ private:
 	SMMATRIX m_mLocal;
 	SMMATRIX m_mInvLocal;
 
+	IXEditorGizmoHandleCallback *m_pCallback = NULL;
+
 private:
 
 	void drawGrid(IXGizmoRenderer *pGR3D);
+	void drawRay(IXGizmoRenderer *pGR3D);
 };
 
 #endif

@@ -11,8 +11,12 @@ CEditor::CEditor(IXCore *pCore)
 	IXEditorGizmoHandle *pHandle;
 	IXEditorGizmoRadius *pRadius;
 
-	newGizmoHandle(&pHandle);
-	//newGizmoRadius(&pRadius);
+	//newGizmoHandle(&pHandle);
+
+	//pHandle->lockInPlane(float3_t(1.0f, 1.0f, 1.0f));
+	//pHandle->lockInDir(float3_t(1.0f, 1.0f, 1.0f));
+	//m_aGizmosHandle[0]->lockInPlane
+	newGizmoRadius(&pRadius);
 }
 
 CEditor::~CEditor()
@@ -94,7 +98,7 @@ void CEditor::onMouseMove()
 	{
 		pGizmo = m_aGizmosHandle[i];
 		fDist2 = SMDistancePointLine2(pGizmo->getPos(), vRayStart, vRayDir);
-		if(fDist2 < fMinDist2)
+		if(fDist2 < fMinDist2 && pGizmo->wantHandle(vRayStart, vRayDir))
 		{
 			pSelectedGizmo = pGizmo;
 			fMinDist2 = fDist2;
