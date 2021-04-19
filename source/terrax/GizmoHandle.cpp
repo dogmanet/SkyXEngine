@@ -42,14 +42,18 @@ void XMETHODCALLTYPE CGizmoHandle::lockInDir(const float3_t &vDir)
 void XMETHODCALLTYPE CGizmoHandle::unLock()
 {
 	m_isLockedNormal = false;
+	m_isLockedDir = false;
 }
 
 void CGizmoHandle::draw(IXGizmoRenderer *pGRBoth, IXGizmoRenderer *pGR2D, IXGizmoRenderer *pGR3D)
 {
-	pGRBoth->setPointMode(XGPM_SQUARE);
-	pGRBoth->setColor(float4(1.0f));
-	pGRBoth->setPointSize(getOnscreenSize());
-	pGRBoth->drawPoint(m_vPos);
+	if(m_isRendered)
+	{
+		pGRBoth->setPointMode(XGPM_SQUARE);
+		pGRBoth->setColor(float4(1.0f));
+		pGRBoth->setPointSize(getOnscreenSize());
+		pGRBoth->drawPoint(m_vPos);
+	}
 
 	if(m_isLockedDir)
 	{
@@ -95,7 +99,7 @@ void CGizmoHandle::setWorldRay(const float3 &vRayOrigin, const float3 &vRayDir)
 		SMCrossLines(vRayOrigin, vRayDir, m_vPos, m_vLockNormal, NULL, &vNewPos);
 
 		float fGridStep = XGetGridStep();
-		if(fGridStep > 0.0f)
+		if(fGridStep > 0.0f && g_xConfig.m_bSnapGrid)
 		{
 			// world center in projection on the line
 			float3 o = vNewPos + m_vLockNormal * SMVector3Dot(-vNewPos, m_vLockNormal);
@@ -121,7 +125,7 @@ void CGizmoHandle::setWorldRay(const float3 &vRayOrigin, const float3 &vRayDir)
 		float3 vPoint;
 		if(m_planeBase.intersectLine(&vPoint, vRayOrigin - vDir, vRayOrigin + vDir))
 		{
-			float3 vT, vB, vN = SMVector2Normalize(m_planeBase);
+			float3 vT, vB, vN = SMVector3Normalize(m_planeBase);
 			if(fabsf(SMVector3Dot(vN, float3(0.0f, 1.0f, 0.0f))) > 0.9f)
 			{
 				vT = float3(1.0f, 0.0f, 0.0f);

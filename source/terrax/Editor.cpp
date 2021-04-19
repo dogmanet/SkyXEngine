@@ -8,15 +8,18 @@ CEditor::CEditor(IXCore *pCore)
 	pUtils->newGizmoRenderer(&m_pGizmoRenderer3D);
 	pUtils->newGizmoRenderer(&m_pGizmoRendererBoth);
 
-	IXEditorGizmoHandle *pHandle;
-	IXEditorGizmoRadius *pRadius;
+	//IXEditorGizmoHandle *pHandle;
+	//IXEditorGizmoRadius *pRadius;
+	//IXEditorGizmoMove *pMove;
+
+	//newGizmoMove(&pMove);
 
 	//newGizmoHandle(&pHandle);
 
 	//pHandle->lockInPlane(float3_t(1.0f, 1.0f, 1.0f));
 	//pHandle->lockInDir(float3_t(1.0f, 1.0f, 1.0f));
 	//m_aGizmosHandle[0]->lockInPlane
-	newGizmoRadius(&pRadius);
+	//newGizmoRadius(&pRadius);
 }
 
 CEditor::~CEditor()
@@ -63,13 +66,20 @@ void CEditor::render(bool is3D)
 		}
 		GIZMO_TYPES();
 #undef GTO
-
 	}
 
 	m_pGizmoRendererBoth->render(!is3D);
 	if(is3D)
 	{
 		m_pGizmoRenderer3D->render(false);
+
+		ICamera *pCamera;
+		getCameraForView(XWP_TOP_LEFT, &pCamera);
+		if(SMVector3Length2(pCamera->getPosition() - m_vOldCamPos) > 0.1f)
+		{
+			m_vOldCamPos = pCamera->getPosition();
+			setDirty();
+		}
 	}
 	else
 	{
@@ -79,19 +89,47 @@ void CEditor::render(bool is3D)
 
 void CEditor::onMouseMove()
 {
-
 	if(m_isCapturing)
 	{
-		m_pSelectedHandle->setWorldRay(g_xState.vWorldRayStart, g_xState.vWorldRayDir);
+		SAFE_CALL(m_pSelectedHandle, setWorldRay, g_xState.vWorldRayStart, g_xState.vWorldRayDir);
+		SAFE_CALL(m_pSelectedMove, setWorldRay, g_xState.vWorldRayStart, g_xState.vWorldRayDir);
 		return;
 	}
 
-	// raycast to handlers
-	
+	m_pSelectedHandle = NULL;
+	m_pSelectedMove = NULL;
+
 	float3 vRayStart, vRayDir;
 	vRayStart = g_xState.vWorldRayStart;
 	vRayDir = g_xState.vWorldRayDir;
 
+	if(g_xState.activeWindow == XWP_TOP_LEFT)
+	{
+		// raycast to transform gizmos
+		CGizmoMove *pGizmo, *pSelectedGizmo = NULL;
+		float fDist2, fMinDist2 = FLT_MAX;
+		for(UINT i = 0, l = m_aGizmosMove.size(); i < l; ++i)
+		{
+			pGizmo = m_aGizmosMove[i];
+			fDist2 = SMVector3Length2(pGizmo->getPos() - vRayStart);
+			if(fDist2 < fMinDist2 && pGizmo->wantHandle(vRayStart, vRayDir))
+			{
+				pSelectedGizmo = pGizmo;
+				fMinDist2 = fDist2;
+			}
+		}
+
+		if(pSelectedGizmo)
+		{
+			SetCursor(LoadCursor(NULL, IDC_SIZEALL));
+			m_pSelectedHandle = NULL;
+			m_pSelectedMove = pSelectedGizmo;
+			return;
+		}
+	}
+
+	// raycast to handlers
+	
 	CGizmoHandle *pGizmo, *pSelectedGizmo = NULL;
 	float fDist2, fMinDist2 = FLT_MAX;
 	for(UINT i = 0, l = m_aGizmosHandle.size(); i < l; ++i)
@@ -145,13 +183,16 @@ void CEditor::onMouseMove()
 }
 bool CEditor::onMouseDown()
 {
-	if(m_pSelectedHandle)
+	if(m_pSelectedHandle || m_pSelectedMove)
 	{
 		SetCapture(g_xState.hActiveWnd);
 		m_isCapturing = true;
 
-		m_pSelectedHandle->setBestPlaneNormal(g_xState.vBestPlaneNormal);
-		m_pSelectedHandle->setTracking(true);
+		SAFE_CALL(m_pSelectedHandle, setBestPlaneNormal, g_xState.vBestPlaneNormal);
+		SAFE_CALL(m_pSelectedHandle, setTracking, true);
+		SAFE_CALL(m_pSelectedMove, setTracking, true);
+
+		onMouseMove();
 
 		return(true);
 	}
@@ -164,7 +205,7 @@ void CEditor::onMouseUp()
 	{
 		m_isCapturing = false;
 		ReleaseCapture();
-		m_pSelectedHandle->setTracking(false);
-
+		SAFE_CALL(m_pSelectedHandle, setTracking, false);
+		SAFE_CALL(m_pSelectedMove, setTracking, false);
 	}
 }

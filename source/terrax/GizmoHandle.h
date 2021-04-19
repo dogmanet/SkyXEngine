@@ -40,6 +40,11 @@ public:
 
 	bool wantHandle(const float3 &vRayOrigin, const float3 &vRayDir);
 
+	void setRendered(bool set)
+	{
+		m_isRendered = set;
+	}
+
 private:
 	CEditor *m_pEditor;
 
@@ -59,6 +64,8 @@ private:
 	SMMATRIX m_mInvLocal;
 
 	IXEditorGizmoHandleCallback *m_pCallback = NULL;
+
+	bool m_isRendered = true;
 
 private:
 

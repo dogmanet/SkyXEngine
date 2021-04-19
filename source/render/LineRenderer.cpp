@@ -8,7 +8,7 @@ IGXDepthStencilState *CLineRenderer::s_pDSState2D = NULL;
 IGXDepthStencilState *CLineRenderer::s_pDSStateNoZ = NULL;
 IGXVertexDeclaration *CLineRenderer::s_pLinesVD = NULL;
 bool CLineRenderer::s_isShadersLoaded = false;
-ID CLineRenderer::s_idShaders[2][2][2]; // [isTextured][is3D][isFixed]
+ID CLineRenderer::s_idShaders[2][2][2][2]; // [isTextured][is3D][isFixed][isBackward]
 
 CLineRenderer::CLineRenderer(IGXDevice *pDev):
 	m_pDev(pDev)
@@ -60,19 +60,47 @@ CLineRenderer::CLineRenderer(IGXDevice *pDev):
 			{"IS_FIXED", "1"},
 			GX_MACRO_END()
 		};
-		s_idShaders[0][1][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs"), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_lines.ps"));
-		s_idShaders[0][1][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro2), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_lines.ps"));
-		s_idShaders[0][0][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro1), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_lines.ps"));
-		s_idShaders[0][0][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro3), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_lines.ps"));
+
+		GXMacro aMacro4[] = {
+			{"IS_BACKWARD", "1"},
+			GX_MACRO_END()
+		};
+		ID idPixelForward = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_lines.ps");
+		ID idPixelBackward = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_lines.ps", NULL, aMacro4);
+
+		s_idShaders[0][1][0][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs"), idPixelForward);
+		s_idShaders[0][1][1][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro2), idPixelForward);
+		s_idShaders[0][0][0][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro1), idPixelForward);
+		s_idShaders[0][0][1][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro3), idPixelForward);
+
+		s_idShaders[0][1][0][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs"), idPixelBackward);
+		s_idShaders[0][1][1][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro2), idPixelBackward);
+		s_idShaders[0][0][0][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro1), idPixelBackward);
+		s_idShaders[0][0][1][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro3), idPixelBackward);
+
 
 		GXMacro aMacro[] = {
 			{"USE_TEXTURE", "1"},
 			GX_MACRO_END()
 		};
-		s_idShaders[1][1][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs"), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_lines.ps", NULL, aMacro));
-		s_idShaders[1][1][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro2), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_lines.ps", NULL, aMacro));
-		s_idShaders[1][0][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro1), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_lines.ps", NULL, aMacro));
-		s_idShaders[1][0][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro3), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_lines.ps", NULL, aMacro));
+		GXMacro aMacro5[] = {
+			{"USE_TEXTURE", "1"},
+			{"IS_BACKWARD", "1"},
+			GX_MACRO_END()
+		};
+
+		ID idPixelTexForward = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_lines.ps", NULL, aMacro);
+		ID idPixelTexBackward = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_lines.ps", NULL, aMacro5);
+
+		s_idShaders[1][1][0][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs"), idPixelTexForward);
+		s_idShaders[1][1][1][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro2), idPixelTexForward);
+		s_idShaders[1][0][0][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro1), idPixelTexForward);
+		s_idShaders[1][0][1][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro3), idPixelTexForward);
+
+		s_idShaders[1][1][0][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs"), idPixelTexBackward);
+		s_idShaders[1][1][1][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro2), idPixelTexBackward);
+		s_idShaders[1][0][0][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro1), idPixelTexBackward);
+		s_idShaders[1][0][1][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_lines.vs", 0, aMacro3), idPixelTexBackward);
 	}
 }
 CLineRenderer::~CLineRenderer()
@@ -237,13 +265,25 @@ void XMETHODCALLTYPE CLineRenderer::render(bool isOrtho, bool useConstantSize, b
 	for(UINT i = 0, l = m_aLineRanges.size(); i < l; ++i)
 	{
 		LineRange &lr = m_aLineRanges[i];
-		SGCore_ShaderBind(s_idShaders[lr.u8Texture != 0xFF ? 1 : 0][isOrtho ? 0 : 1][useConstantSize ? 1 : 0]);
+		SGCore_ShaderBind(s_idShaders[lr.u8Texture != 0xFF ? 1 : 0][isOrtho ? 0 : 1][useConstantSize ? 1 : 0][0]);
 		
 		if(lr.u8Texture != 0xFF)
 		{
 			pCtx->setPSTexture(m_aTextures[lr.u8Texture]);
 		}
-		pCtx->drawPrimitive(lr.uStartVtx, lr.uTriangleCount);
+		if(useDepthTest)
+		{
+			SGCore_ShaderBind(s_idShaders[lr.u8Texture != 0xFF ? 1 : 0][isOrtho ? 0 : 1][useConstantSize ? 1 : 0][0]);
+			pCtx->setDepthStencilState(isOrtho ? s_pDSState2D : s_pDSState3D);
+			pCtx->drawPrimitive(lr.uStartVtx, lr.uTriangleCount);
+			SGCore_ShaderBind(s_idShaders[lr.u8Texture != 0xFF ? 1 : 0][isOrtho ? 0 : 1][useConstantSize ? 1 : 0][1]);
+			pCtx->setDepthStencilState(isOrtho ? s_pDSState3D : s_pDSState2D);
+			pCtx->drawPrimitive(lr.uStartVtx, lr.uTriangleCount);
+		}
+		else
+		{
+			pCtx->drawPrimitive(lr.uStartVtx, lr.uTriangleCount);
+		}
 	}
 	SGCore_ShaderUnBind();
 	pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);

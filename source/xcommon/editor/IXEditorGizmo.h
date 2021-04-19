@@ -51,9 +51,17 @@ public:
 	virtual void XMETHODCALLTYPE setCallback(IXEditorGizmoHandleCallback *pCallback) = 0;
 };
 
+class IXEditorGizmoMove;
+class IXEditorGizmoMoveCallback
+{
+public:
+	virtual void XMETHODCALLTYPE moveTo(const float3 &vNewPos, IXEditorGizmoMove *pGizmo) = 0;
+};
+
 class IXEditorGizmoMove: public IXEditorGizmo
 {
 public:
+	virtual void XMETHODCALLTYPE setCallback(IXEditorGizmoMoveCallback *pCallback) = 0;
 };
 
 class IXEditorGizmoRotate: public IXEditorGizmo

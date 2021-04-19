@@ -46,6 +46,20 @@ public:
 
 	//! 
 	virtual void XMETHODCALLTYPE drawEllipsoid(const float3 &vPos, const float3 &vSize) = 0;
+
+
+	//! 
+	virtual void XMETHODCALLTYPE drawPoly(
+		const float3_t &vPosA,
+		const float3_t &vPosB,
+		const float3_t &vPosC) = 0;
+	virtual void XMETHODCALLTYPE drawPoly(
+		const float3_t &vPosA,
+		const float3_t &vPosB,
+		const float3_t &vPosC,
+		const float4_t &vColorA,
+		const float4_t &vColorB,
+		const float4_t &vColorC) = 0;
 };
 
 //! 

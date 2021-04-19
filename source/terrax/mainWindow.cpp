@@ -1998,6 +1998,11 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 				if(Button_GetCheck(g_hABArrowButton))
 				{
+					if(g_pEditor->onMouseDown())
+					{
+						break;
+					}
+
 					g_aRaytracedItems.clearFast();
 					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 					{

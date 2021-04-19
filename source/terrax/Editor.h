@@ -43,7 +43,7 @@ public:
 	void onMouseUp();
 
 private:
-#define GTO(gt) Array<CGizmo##gt*> m_aGizmos##gt;
+#define GTO(gt) Array<CGizmo##gt*> m_aGizmos##gt; CGizmo##gt *m_pSelected##gt = NULL;
 	GIZMO_TYPES();
 #undef GTO
 
@@ -51,10 +51,11 @@ private:
 	IXGizmoRenderer *m_pGizmoRenderer2D = NULL;
 	IXGizmoRenderer *m_pGizmoRenderer3D = NULL;
 
-	CGizmoHandle *m_pSelectedHandle = NULL;
 	bool m_isCapturing = false;
 
 	bool m_isDirty = false;
+
+	float3_t m_vOldCamPos;
 };
 
 #endif
