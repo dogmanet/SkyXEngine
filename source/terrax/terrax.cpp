@@ -28,7 +28,7 @@ See the license in LICENSE
 #include "Tools.h"
 
 #include <xEngine/IXEngine.h>
-
+#include "Editor.h"
 #ifdef _DEBUG
 #	pragma comment(lib, "xEngine_d.lib")
 #else
@@ -42,6 +42,11 @@ CGrid *g_pGrid = NULL;
 CTerraXRenderStates g_xRenderStates;
 
 extern CPropertyWindow *g_pPropWindow;
+
+CEditor *g_pEditor;
+
+IXEditorGizmoMove *g_pGizmoMove = NULL;
+IXEditorGizmoRotate *g_pGizmoRotate = NULL;
 
 ATOM XRegisterClass(HINSTANCE hInstance);
 BOOL XInitInstance(HINSTANCE, int);
@@ -456,6 +461,8 @@ public:
 
 		XRender3D();
 
+		g_pEditor->render(true);
+
 		m_pTestRenderer->render(false);
 
 		//#############################################################################
@@ -474,7 +481,7 @@ public:
 		//#############################################################################
 
 		XUpdateSelectionBound();
-
+		XUpdateGizmos();
 
 		for(int i = 0; i < 3; ++i)
 		{
@@ -515,7 +522,7 @@ public:
 			pDXDevice->setVSConstant(g_pCameraConstantBuffer, SCR_OBJECT);
 			XRender2D(views[i], fScales[i], false);
 
-
+			g_pEditor->render(false);
 			m_pTestRenderer->render(true);
 
 			mem_release(pBackBuffer);
@@ -751,6 +758,14 @@ int main(int argc, char **argv)
 	}, "Export model to obj format");
 
 	CRenderPipeline *pPipeline = new CRenderPipeline(Core_GetIXCore());
+	g_pEditor = new CEditor(Core_GetIXCore());
+
+	g_pEditor->newGizmoMove(&g_pGizmoMove);
+	g_pEditor->newGizmoRotate(&g_pGizmoRotate);
+	g_pGizmoMove->enable(false);
+	g_pGizmoRotate->enable(false);
+	g_pGizmoMove->setCallback(&g_gizmoMoveCallback);
+	g_pGizmoRotate->setCallback(&g_gizmoRotateCallback);
 
 	CCVarEventListener cvarListener(pEngine->getCore());
 	auto *pChannel = pEngine->getCore()->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID);

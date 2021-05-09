@@ -33,6 +33,18 @@ public:
 
 	void XMETHODCALLTYPE drawEllipsoid(const float3 &vPos, const float3 &vSize) override;
 
+	void XMETHODCALLTYPE drawPoly(
+		const float3_t &vPosA,
+		const float3_t &vPosB,
+		const float3_t &vPosC) override;
+	void XMETHODCALLTYPE drawPoly(
+		const float3_t &vPosA,
+		const float3_t &vPosB,
+		const float3_t &vPosC,
+		const float4_t &vColorA,
+		const float4_t &vColorB,
+		const float4_t &vColorC) override;
+
 private:
 	IGXDevice *m_pDev;
 	CRenderUtils *m_pRenderUtils;
@@ -88,9 +100,15 @@ private:
 	IGXVertexBuffer *m_pPointsVB = NULL;
 	IGXIndexBuffer *m_pPointsIB = NULL;
 
+	UINT m_uTrisVBSize = 0;
+	IGXRenderBuffer *m_pTrisRB = NULL;
+	IGXVertexBuffer *m_pTrisVB = NULL;
+
 	IGXConstantBuffer *m_pRightVecCB = NULL;
 	static bool s_isShadersLoaded;
 	static ID s_idShaders[2][2][2]; // [isTextured][is3D][isFixed]
+
+	Array<PointVertex> m_aPolyVertices;
 private:
 	//void prepareLinesIB();
 	byte getTextureId();
