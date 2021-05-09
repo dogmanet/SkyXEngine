@@ -98,6 +98,9 @@ extern Array<IXEditable*> g_pEditableSystems;
 
 extern String g_sLevelName;
 
+CGizmoMoveCallback g_gizmoMoveCallback;
+CGizmoRotateCallback g_gizmoRotateCallback;
+
 // Forward declarations of functions included in this code module:
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK RenderWndProc(HWND, UINT, WPARAM, LPARAM);
@@ -1069,17 +1072,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, FALSE);
 			CheckDlgButton(hWnd, IDC_AB_CREATE, FALSE);
 			g_xState.bCreateMode = false;
+			XUpdateGizmos();
 			break;
 		case IDC_AB_CAMERA:
 			CheckDlgButton(hWnd, IDC_AB_ARROW, FALSE);
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, TRUE);
 			CheckDlgButton(hWnd, IDC_AB_CREATE, FALSE);
 			g_xState.bCreateMode = false;
+			XUpdateGizmos();
 			break;
 		case IDC_AB_CREATE:
 			CheckDlgButton(hWnd, IDC_AB_ARROW, FALSE);
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, FALSE);
 			CheckDlgButton(hWnd, IDC_AB_CREATE, TRUE);
+			XUpdateGizmos();
 			break;
 
 		case ID_GRIDSIZE_SMALLER:
@@ -1857,6 +1863,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						if(!g_xState.bHasSelection)
 						{
 							g_xState.xformType = X2DXF_SCALE;
+							XUpdateGizmos();
 						}
 						XExecCommand(pCmd);
 					}
@@ -1868,6 +1875,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				if(!XExecCommand(s_pMoveCmd) && g_xState.bHasSelection && !s_wasSelectionChanged)
 				{
 					g_xState.xformType = (X_2DXFORM_TYPE)((g_xState.xformType + 1) % X2DXF__LAST);
+					XUpdateGizmos();
 				}
 				s_pMoveCmd = NULL;
 			}
@@ -3145,4 +3153,85 @@ void XUpdatePropWindow()
 		g_pPropWindow->addPropField(&i.second->xPropField, i.second->szValue);
 	}
 
+}
+
+void XUpdateGizmos()
+{
+	if(Button_GetCheck(g_hABArrowButton) && g_xState.bHasSelection)
+	{
+		float3 vPos = (g_xState.vSelectionBoundMin + g_xState.vSelectionBoundMax) * 0.5f;
+		g_pGizmoMove->setPos(vPos);
+		g_pGizmoRotate->setPos(vPos);
+		
+		g_pGizmoMove->enable(g_xState.xformType == X2DXF_SCALE);
+		g_pGizmoRotate->enable(g_xState.xformType == X2DXF_ROTATE);
+	}
+	else
+	{
+		g_pGizmoMove->enable(false);
+		g_pGizmoRotate->enable(false);
+	}
+}
+
+
+
+
+void XMETHODCALLTYPE CGizmoMoveCallback::moveTo(const float3 &vNewPos, IXEditorGizmoMove *pGizmo)
+{
+	m_pCmd->setCurrentPos(vNewPos);
+	pGizmo->setPos(vNewPos);
+}
+void XMETHODCALLTYPE CGizmoMoveCallback::onStart(IXEditorGizmoMove *pGizmo)
+{
+	m_pCmd = new CCommandMove();
+	m_pCmd->setStartPos(pGizmo->getPos());
+	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+	{
+		if(g_pLevelObjects[i]->isSelected())
+		{
+			m_pCmd->addObject(i);
+		}
+	}
+}
+void XMETHODCALLTYPE CGizmoMoveCallback::onEnd(IXEditorGizmoMove *pGizmo)
+{
+	XExecCommand(m_pCmd);
+	m_pCmd = NULL;
+}
+
+void XMETHODCALLTYPE CGizmoRotateCallback::onRotate(const float3_t &vAxis, float fAngle, IXEditorGizmoRotate *pGizmo)
+{
+	pGizmo->setDeltaAngle(fAngle);
+	m_pCmd->setCurrentPos(pGizmo->getPos() + pGizmo->getOrient() * m_vOffset);
+}
+void XMETHODCALLTYPE CGizmoRotateCallback::onStart(const float3_t &vAxis, IXEditorGizmoRotate *pGizmo)
+{
+	float3 vStartOffset;
+	if(fabsf(SMVector3Dot(vAxis, float3(0.0f, 1.0f, 0.0))) > 0.9f)
+	{
+		vStartOffset = float3(1.0f, 0.0f, 0.0f);
+	}
+	else
+	{
+		vStartOffset = float3(0.0f, 1.0f, 0.0f);
+	}
+	m_vOffset = vStartOffset = SMVector3Normalize(SMVector3Cross(vAxis, vStartOffset));
+
+	m_pCmd = new CCommandRotate();
+	m_pCmd->setStartOrigin(pGizmo->getPos());
+	m_pCmd->setStartPos(pGizmo->getPos() + vStartOffset);
+	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+	{
+		if(g_pLevelObjects[i]->isSelected())
+		{
+			m_pCmd->addObject(i);
+		}
+	}
+
+	pGizmo->setOrient(SMQuaternion());
+}
+void XMETHODCALLTYPE CGizmoRotateCallback::onEnd(IXEditorGizmoRotate *pGizmo)
+{
+	XExecCommand(m_pCmd);
+	m_pCmd = NULL;
 }

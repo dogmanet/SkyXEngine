@@ -6,11 +6,17 @@
 //#include "terrax.h"
 
 class CEditor;
-class CGizmoRotate: public IXUnknownImplementation<IXEditorGizmoRotate>
+class CGizmoRotate final: public IXUnknownImplementation<IXEditorGizmoRotate>
 {
 public:
 	CGizmoRotate(CEditor *pEditor);
 	~CGizmoRotate();
+
+	void XMETHODCALLTYPE enable(bool yesNo) override;
+	bool XMETHODCALLTYPE isEnabled() override
+	{
+		return(m_isEnabled);
+	}
 
 	void XMETHODCALLTYPE setPos(const float3_t &vPos) override;
 	const float3_t& XMETHODCALLTYPE getPos() override;
@@ -46,6 +52,7 @@ private:
 
 private:
 	CEditor *m_pEditor;
+	bool m_isEnabled = true;
 
 	float3_t m_vPos;
 

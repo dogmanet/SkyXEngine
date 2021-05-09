@@ -14,6 +14,15 @@ CGizmoHandle::~CGizmoHandle()
 	m_pEditor->setDirty();
 }
 
+void XMETHODCALLTYPE CGizmoHandle::enable(bool yesNo)
+{
+	if(m_isEnabled != yesNo)
+	{
+		m_isEnabled = yesNo;
+		m_pEditor->setDirty();
+	}
+}
+
 void XMETHODCALLTYPE CGizmoHandle::setPos(const float3_t &vPos)
 {
 	m_vPos = vPos;
@@ -180,6 +189,12 @@ void CGizmoHandle::setTracking(bool isTracking)
 		{
 			m_planeBase = SMPLANE(m_vBestPlaneNormal, m_vPos);
 		}
+
+		SAFE_CALL(m_pCallback, onStart, this);
+	}
+	else
+	{
+		SAFE_CALL(m_pCallback, onEnd, this);
 	}
 
 	m_pEditor->setDirty();

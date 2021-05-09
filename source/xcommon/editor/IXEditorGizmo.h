@@ -6,6 +6,9 @@
 class IXEditorGizmo: public IXUnknown
 {
 public:
+	virtual void XMETHODCALLTYPE enable(bool yesNo) = 0;
+	virtual bool XMETHODCALLTYPE isEnabled() = 0;
+
 	virtual void XMETHODCALLTYPE setPos(const float3_t &vPos) = 0;
 	virtual const float3_t& XMETHODCALLTYPE getPos() = 0;
 
@@ -18,6 +21,8 @@ class IXEditorGizmoRadiusCallback
 {
 public:
 	virtual void XMETHODCALLTYPE onChange(float fNewRadius, IXEditorGizmoRadius *pGizmo) = 0;
+	virtual void XMETHODCALLTYPE onStart(IXEditorGizmoRadius *pGizmo) = 0;
+	virtual void XMETHODCALLTYPE onEnd(IXEditorGizmoRadius *pGizmo) = 0;
 };
 
 //! Имеет заданый радиус
@@ -38,6 +43,8 @@ class IXEditorGizmoHandleCallback
 {
 public:
 	virtual void XMETHODCALLTYPE moveTo(const float3 &vNewPos, IXEditorGizmoHandle *pGizmo) = 0;
+	virtual void XMETHODCALLTYPE onStart(IXEditorGizmoHandle *pGizmo) = 0;
+	virtual void XMETHODCALLTYPE onEnd(IXEditorGizmoHandle *pGizmo) = 0;
 };
 
 //! Перемещается в 2d, либо в 3d в заданной плоскости, либо вдоль заданного вектора
@@ -56,6 +63,8 @@ class IXEditorGizmoMoveCallback
 {
 public:
 	virtual void XMETHODCALLTYPE moveTo(const float3 &vNewPos, IXEditorGizmoMove *pGizmo) = 0;
+	virtual void XMETHODCALLTYPE onStart(IXEditorGizmoMove *pGizmo) = 0;
+	virtual void XMETHODCALLTYPE onEnd(IXEditorGizmoMove *pGizmo) = 0;
 };
 
 class IXEditorGizmoMove: public IXEditorGizmo
@@ -76,6 +85,8 @@ public:
 		@param fAngle Угол вращения
 	*/
 	virtual void XMETHODCALLTYPE onRotate(const float3_t &vAxis, float fAngle, IXEditorGizmoRotate *pGizmo) = 0;
+	virtual void XMETHODCALLTYPE onStart(const float3_t &vAxis, IXEditorGizmoRotate *pGizmo) = 0;
+	virtual void XMETHODCALLTYPE onEnd(IXEditorGizmoRotate *pGizmo) = 0;
 };
 
 class IXEditorGizmoRotate: public IXEditorGizmo

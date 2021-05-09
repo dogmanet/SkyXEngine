@@ -24,6 +24,15 @@ CGizmoMove::~CGizmoMove()
 	m_pEditor->setDirty();
 }
 
+void XMETHODCALLTYPE CGizmoMove::enable(bool yesNo)
+{
+	if(m_isEnabled != yesNo)
+	{
+		m_isEnabled = yesNo;
+		m_pEditor->setDirty();
+	}
+}
+
 void XMETHODCALLTYPE CGizmoMove::setPos(const float3_t &vPos)
 {
 	m_vPos = vPos;
@@ -103,6 +112,11 @@ void CGizmoMove::setTracking(bool isTracking)
 
 		m_isFirstMov = true;
 		m_fFixedScale = -1.0f;
+		SAFE_CALL(m_pCallback, onStart, this);
+	}
+	else
+	{
+		SAFE_CALL(m_pCallback, onEnd, this);
 	}
 	m_isTracking = isTracking;
 	m_pHandle->setTracking(isTracking);

@@ -11,6 +11,8 @@ class CMoveHandleCallback: public IXEditorGizmoHandleCallback
 public:
 	CMoveHandleCallback(CGizmoMove *pMove);
 	void XMETHODCALLTYPE moveTo(const float3 &vNewPos, IXEditorGizmoHandle *pGizmo) override;
+	void XMETHODCALLTYPE onStart(IXEditorGizmoHandle *pGizmo) override{}
+	void XMETHODCALLTYPE onEnd(IXEditorGizmoHandle *pGizmo) override{}
 
 private:
 	CGizmoMove *m_pGizmo;
@@ -23,6 +25,12 @@ class CGizmoMove final: public IXUnknownImplementation<IXEditorGizmoMove>
 public:
 	CGizmoMove(CEditor *pEditor);
 	~CGizmoMove();
+
+	void XMETHODCALLTYPE enable(bool yesNo) override;
+	bool XMETHODCALLTYPE isEnabled() override
+	{
+		return(m_isEnabled);
+	}
 
 	void XMETHODCALLTYPE setPos(const float3_t &vPos) override;
 	const float3_t& XMETHODCALLTYPE getPos() override;
@@ -54,6 +62,8 @@ private:
 	IXEditorGizmoMoveCallback *m_pCallback = NULL;
 
 	float3_t m_vPos;
+
+	bool m_isEnabled = true;
 
 	bool m_isTracking = false;
 	bool m_isFirstMov = false;

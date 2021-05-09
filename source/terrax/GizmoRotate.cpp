@@ -11,6 +11,15 @@ CGizmoRotate::~CGizmoRotate()
 	m_pEditor->onGizmoRemoved(this);
 }
 
+void XMETHODCALLTYPE CGizmoRotate::enable(bool yesNo)
+{
+	if(m_isEnabled != yesNo)
+	{
+		m_isEnabled = yesNo;
+		m_pEditor->setDirty();
+	}
+}
+
 void XMETHODCALLTYPE CGizmoRotate::setPos(const float3_t &vPos)
 {
 	m_vPos = vPos;
@@ -99,7 +108,7 @@ void CGizmoRotate::draw(IXGizmoRenderer *pGRBoth, IXGizmoRenderer *pGR2D, IXGizm
 		pGR3D->setColor(float4_t(1.0f, 1.0f, 0.0f, 1.0f));
 		pGR3D->jumpTo(m_vBasePoint);
 		pGR3D->lineTo(m_vPos);
-		pGR3D->lineTo(SMQuaternion(m_vCurDir, m_fCurrentRotation) * (m_vBasePoint - m_vPos));
+		pGR3D->lineTo(SMQuaternion(m_vCurDir, m_fCurrentRotation) * (m_vBasePoint - m_vPos) + m_vPos);
 
 		pGR3D->setLineWidth(1.0f);
 		pGR3D->setColor(float4_t(1.0f, 1.0f, 0.0f, 0.5f));
@@ -223,14 +232,14 @@ bool CGizmoRotate::intersectMove(const float3 &vStart, const float3 &vRayDir)
 
 	for(int i = 0; i < iDirsCount; ++i)
 	{
-		SMPLANE p(pvDirs[i], m_vPos);
-		if(p.intersectLine(&vPt, vRayOrigin, end) && SMVector3Dot(vRayOrigin - m_vPos, vPt - m_vPos) >= 0.0f)
+		SMPLANE p(pvDirs[i], float3());
+		if(p.intersectLine(&vPt, vRayOrigin, end) && SMVector3Dot(vRayOrigin, vPt) >= 0.0f)
 		{
-			fDist = fabsf(SMVector3Distance(vPt, m_vPos) - fSize);
+			fDist = fabsf(SMVector3Length(vPt) - fSize);
 			vCamDir2 = SMVector3Length2(vRayOrigin - vPt);
 			if(fDist < fDelta && vCamDir2 < vCamDirMax)
 			{
-				m_vLastPoint = m_vBasePoint = (float3)((vPt - m_vPos) * fScale + m_vPos);
+				m_vLastPoint = m_vBasePoint = (float3)(vPt * fScale + m_vPos);
 				vCamDirMax = vCamDir2;
 				m_currentAxe = (HANDLER_AXE)(iAxeBasis + i);
 			}
@@ -279,10 +288,12 @@ void CGizmoRotate::setTracking(bool isTracking)
 			m_vLockAxis
 		};
 		m_vCurDir = avDirs[m_currentAxe];
+		SAFE_CALL(m_pCallback, onStart, m_vCurDir, this);
 	}
 	else
 	{
 		setOrient(getOrient());
+		SAFE_CALL(m_pCallback, onEnd, this);
 	}
 	m_isTracking = isTracking;
 	m_pEditor->setDirty();

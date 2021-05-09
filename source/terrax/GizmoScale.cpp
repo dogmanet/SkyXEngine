@@ -10,6 +10,15 @@ CGizmoScale::~CGizmoScale()
 	m_pEditor->onGizmoRemoved(this);
 }
 
+void XMETHODCALLTYPE CGizmoScale::enable(bool yesNo)
+{
+	if(m_isEnabled != yesNo)
+	{
+		m_isEnabled = yesNo;
+		m_pEditor->setDirty();
+	}
+}
+
 void XMETHODCALLTYPE CGizmoScale::setPos(const float3_t &vPos)
 {
 	m_vPos = vPos;

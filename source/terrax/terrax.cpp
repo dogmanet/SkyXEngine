@@ -45,6 +45,9 @@ extern CPropertyWindow *g_pPropWindow;
 
 CEditor *g_pEditor;
 
+IXEditorGizmoMove *g_pGizmoMove = NULL;
+IXEditorGizmoRotate *g_pGizmoRotate = NULL;
+
 ATOM XRegisterClass(HINSTANCE hInstance);
 BOOL XInitInstance(HINSTANCE, int);
 
@@ -478,7 +481,7 @@ public:
 		//#############################################################################
 
 		XUpdateSelectionBound();
-
+		XUpdateGizmos();
 
 		for(int i = 0; i < 3; ++i)
 		{
@@ -756,6 +759,13 @@ int main(int argc, char **argv)
 
 	CRenderPipeline *pPipeline = new CRenderPipeline(Core_GetIXCore());
 	g_pEditor = new CEditor(Core_GetIXCore());
+
+	g_pEditor->newGizmoMove(&g_pGizmoMove);
+	g_pEditor->newGizmoRotate(&g_pGizmoRotate);
+	g_pGizmoMove->enable(false);
+	g_pGizmoRotate->enable(false);
+	g_pGizmoMove->setCallback(&g_gizmoMoveCallback);
+	g_pGizmoRotate->setCallback(&g_gizmoRotateCallback);
 
 	CCVarEventListener cvarListener(pEngine->getCore());
 	auto *pChannel = pEngine->getCore()->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID);

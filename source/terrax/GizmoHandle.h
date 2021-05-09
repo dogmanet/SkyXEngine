@@ -12,6 +12,12 @@ public:
 	CGizmoHandle(CEditor *pEditor);
 	~CGizmoHandle();
 
+	void XMETHODCALLTYPE enable(bool yesNo) override;
+	bool XMETHODCALLTYPE isEnabled() override
+	{
+		return(m_isEnabled);
+	}
+
 	void XMETHODCALLTYPE setPos(const float3_t &vPos) override;
 	const float3_t& XMETHODCALLTYPE getPos() override;
 
@@ -47,6 +53,7 @@ public:
 
 private:
 	CEditor *m_pEditor;
+	bool m_isEnabled = true;
 
 	float3_t m_vPos;
 

@@ -186,6 +186,10 @@ extern CMaterialBrowser *g_pMaterialBrowser;
 
 extern CEditor *g_pEditor;
 
+
+extern IXEditorGizmoMove *g_pGizmoMove;
+extern IXEditorGizmoRotate *g_pGizmoRotate;
+
 #define X2D_TOP_POS float3(0.0f, 1000.0f, 0.0f)
 #define X2D_TOP_ROT SMQuaternion(-SM_PIDIV2, 'x')
 #define X2D_FRONT_POS float3(0.0f, 0.0f, -1000.0f)
@@ -225,10 +229,39 @@ bool XRayCast(X_WINDOW_POS wnd);
 bool XIsMouseInSelection(X_WINDOW_POS wnd);
 
 void XUpdatePropWindow();
+void XUpdateGizmos();
 
 float XGetGridStep();
 float3 XSnapToGrid(const float3 &vPos);
 
 extern IXEngine *g_pEngine;
+
+class CCommandMove;
+class CGizmoMoveCallback: public IXEditorGizmoMoveCallback
+{
+public:
+	void XMETHODCALLTYPE moveTo(const float3 &vNewPos, IXEditorGizmoMove *pGizmo) override;
+	void XMETHODCALLTYPE onStart(IXEditorGizmoMove *pGizmo) override;
+	void XMETHODCALLTYPE onEnd(IXEditorGizmoMove *pGizmo) override;
+
+private:
+	CCommandMove *m_pCmd = NULL;
+};
+
+class CCommandRotate;
+class CGizmoRotateCallback: public IXEditorGizmoRotateCallback
+{
+public:
+	void XMETHODCALLTYPE onRotate(const float3_t &vAxis, float fAngle, IXEditorGizmoRotate *pGizmo) override;
+	void XMETHODCALLTYPE onStart(const float3_t &vAxis, IXEditorGizmoRotate *pGizmo) override;
+	void XMETHODCALLTYPE onEnd(IXEditorGizmoRotate *pGizmo) override;
+
+private:
+	CCommandRotate *m_pCmd = NULL;
+	float3_t m_vOffset;
+};
+
+extern CGizmoMoveCallback g_gizmoMoveCallback;
+extern CGizmoRotateCallback g_gizmoRotateCallback;
 
 #endif

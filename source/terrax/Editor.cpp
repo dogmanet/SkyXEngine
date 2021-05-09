@@ -65,7 +65,10 @@ void CEditor::render(bool is3D)
 
 #define GTO(gt) for(UINT i = 0, l = m_aGizmos##gt.size(); i < l; ++i)\
 		{\
-			m_aGizmos##gt[i]->draw(m_pGizmoRendererBoth, m_pGizmoRenderer2D, m_pGizmoRenderer3D);\
+			if(m_aGizmos##gt[i]->isEnabled()) \
+			{\
+				m_aGizmos##gt[i]->draw(m_pGizmoRendererBoth, m_pGizmoRenderer2D, m_pGizmoRenderer3D);\
+			}\
 		}
 		GIZMO_TYPES();
 #undef GTO
@@ -117,11 +120,14 @@ void CEditor::onMouseMove()
 			for(UINT i = 0, l = m_aGizmosMove.size(); i < l; ++i)
 			{
 				pGizmo = m_aGizmosMove[i];
-				fDist2 = SMVector3Length2(pGizmo->getPos() - vRayStart);
-				if(fDist2 < fMinDist2 && pGizmo->wantHandle(vRayStart, vRayDir))
+				if(pGizmo->isEnabled())
 				{
-					pSelectedGizmo = pGizmo;
-					fMinDist2 = fDist2;
+					fDist2 = SMVector3Length2(pGizmo->getPos() - vRayStart);
+					if(fDist2 < fMinDist2 && pGizmo->wantHandle(vRayStart, vRayDir))
+					{
+						pSelectedGizmo = pGizmo;
+						fMinDist2 = fDist2;
+					}
 				}
 			}
 
@@ -140,11 +146,14 @@ void CEditor::onMouseMove()
 			for(UINT i = 0, l = m_aGizmosRotate.size(); i < l; ++i)
 			{
 				pGizmo = m_aGizmosRotate[i];
-				fDist2 = SMVector3Length2(pGizmo->getPos() - vRayStart);
-				if(fDist2 < fMinDist2 && pGizmo->wantHandle(vRayStart, vRayDir))
+				if(pGizmo->isEnabled())
 				{
-					pSelectedGizmo = pGizmo;
-					fMinDist2 = fDist2;
+					fDist2 = SMVector3Length2(pGizmo->getPos() - vRayStart);
+					if(fDist2 < fMinDist2 && pGizmo->wantHandle(vRayStart, vRayDir))
+					{
+						pSelectedGizmo = pGizmo;
+						fMinDist2 = fDist2;
+					}
 				}
 			}
 
@@ -165,11 +174,14 @@ void CEditor::onMouseMove()
 	for(UINT i = 0, l = m_aGizmosHandle.size(); i < l; ++i)
 	{
 		pGizmo = m_aGizmosHandle[i];
-		fDist2 = SMDistancePointLine2(pGizmo->getPos(), vRayStart, vRayDir);
-		if(fDist2 < fMinDist2 && pGizmo->wantHandle(vRayStart, vRayDir))
+		if(pGizmo->isEnabled())
 		{
-			pSelectedGizmo = pGizmo;
-			fMinDist2 = fDist2;
+			fDist2 = SMDistancePointLine2(pGizmo->getPos(), vRayStart, vRayDir);
+			if(fDist2 < fMinDist2 && pGizmo->wantHandle(vRayStart, vRayDir))
+			{
+				pSelectedGizmo = pGizmo;
+				fMinDist2 = fDist2;
+			}
 		}
 	}
 	if(pSelectedGizmo)

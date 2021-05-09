@@ -34,6 +34,20 @@ CGizmoRadius::~CGizmoRadius()
 	m_pEditor->setDirty();
 }
 
+void XMETHODCALLTYPE CGizmoRadius::enable(bool yesNo)
+{
+	if(m_isEnabled != yesNo)
+	{
+		m_isEnabled = yesNo;
+		m_pEditor->setDirty();
+
+		for(UINT i = 0; i < ARRAYSIZE(m_apHandles); ++i)
+		{
+			m_apHandles[i]->enable(yesNo);
+		}
+	}
+}
+
 void XMETHODCALLTYPE CGizmoRadius::setPos(const float3_t &vPos)
 {
 	m_vPos = vPos;
@@ -136,3 +150,11 @@ void XMETHODCALLTYPE CHandleCallback::moveTo(const float3 &vNewPos, IXEditorGizm
 	m_pGizmo->setRadius(SMVector3Length(m_pGizmo->m_vPos - vNewPos), true);
 }
 
+void XMETHODCALLTYPE CHandleCallback::onStart(IXEditorGizmoHandle *pHandle)
+{
+	SAFE_CALL(m_pGizmo->m_pCallback, onStart, m_pGizmo);
+}
+void XMETHODCALLTYPE CHandleCallback::onEnd(IXEditorGizmoHandle *pHandle)
+{
+	SAFE_CALL(m_pGizmo->m_pCallback, onEnd, m_pGizmo);
+}
