@@ -64,9 +64,30 @@ public:
 	virtual void XMETHODCALLTYPE setCallback(IXEditorGizmoMoveCallback *pCallback) = 0;
 };
 
+class IXEditorGizmoRotate;
+class IXEditorGizmoRotateCallback
+{
+public:
+	/*! Вызывается при изменении угла вращения.
+		Для обновления отображаемого состояния требуется вызвать setDeltaAngle у pGizmo. 
+		Можно передать полученное значение, либо скорректированное, например ограниченное требуемым порогом.
+
+		@param vAxis Ось вращения
+		@param fAngle Угол вращения
+	*/
+	virtual void XMETHODCALLTYPE onRotate(const float3_t &vAxis, float fAngle, IXEditorGizmoRotate *pGizmo) = 0;
+};
+
 class IXEditorGizmoRotate: public IXEditorGizmo
 {
 public:
+	virtual void XMETHODCALLTYPE setDeltaAngle(float fAngle) = 0;
+	virtual float XMETHODCALLTYPE getDeltaAngle() = 0;
+
+	virtual void XMETHODCALLTYPE setOrient(const SMQuaternion &q) = 0;
+	virtual SMQuaternion XMETHODCALLTYPE getOrient() = 0;
+
+	virtual void XMETHODCALLTYPE setCallback(IXEditorGizmoRotateCallback *pCallback) = 0;
 };
 
 class IXEditorGizmoScale: public IXEditorGizmo

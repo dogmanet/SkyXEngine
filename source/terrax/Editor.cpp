@@ -11,7 +11,10 @@ CEditor::CEditor(IXCore *pCore)
 	//IXEditorGizmoHandle *pHandle;
 	//IXEditorGizmoRadius *pRadius;
 	//IXEditorGizmoMove *pMove;
+	//IXEditorGizmoRotate *pRotate;
 
+
+	//newGizmoRotate(&pRotate);
 	//newGizmoMove(&pMove);
 
 	//newGizmoHandle(&pHandle);
@@ -93,11 +96,13 @@ void CEditor::onMouseMove()
 	{
 		SAFE_CALL(m_pSelectedHandle, setWorldRay, g_xState.vWorldRayStart, g_xState.vWorldRayDir);
 		SAFE_CALL(m_pSelectedMove, setWorldRay, g_xState.vWorldRayStart, g_xState.vWorldRayDir);
+		SAFE_CALL(m_pSelectedRotate, setWorldRay, g_xState.vWorldRayStart, g_xState.vWorldRayDir);
 		return;
 	}
 
 	m_pSelectedHandle = NULL;
 	m_pSelectedMove = NULL;
+	m_pSelectedRotate = NULL;
 
 	float3 vRayStart, vRayDir;
 	vRayStart = g_xState.vWorldRayStart;
@@ -106,25 +111,50 @@ void CEditor::onMouseMove()
 	if(g_xState.activeWindow == XWP_TOP_LEFT)
 	{
 		// raycast to transform gizmos
-		CGizmoMove *pGizmo, *pSelectedGizmo = NULL;
-		float fDist2, fMinDist2 = FLT_MAX;
-		for(UINT i = 0, l = m_aGizmosMove.size(); i < l; ++i)
 		{
-			pGizmo = m_aGizmosMove[i];
-			fDist2 = SMVector3Length2(pGizmo->getPos() - vRayStart);
-			if(fDist2 < fMinDist2 && pGizmo->wantHandle(vRayStart, vRayDir))
+			CGizmoMove *pGizmo, *pSelectedGizmo = NULL;
+			float fDist2, fMinDist2 = FLT_MAX;
+			for(UINT i = 0, l = m_aGizmosMove.size(); i < l; ++i)
 			{
-				pSelectedGizmo = pGizmo;
-				fMinDist2 = fDist2;
+				pGizmo = m_aGizmosMove[i];
+				fDist2 = SMVector3Length2(pGizmo->getPos() - vRayStart);
+				if(fDist2 < fMinDist2 && pGizmo->wantHandle(vRayStart, vRayDir))
+				{
+					pSelectedGizmo = pGizmo;
+					fMinDist2 = fDist2;
+				}
+			}
+
+			if(pSelectedGizmo)
+			{
+				SetCursor(LoadCursor(NULL, IDC_SIZEALL));
+				//m_pSelectedHandle = NULL;
+				m_pSelectedMove = pSelectedGizmo;
+				return;
 			}
 		}
 
-		if(pSelectedGizmo)
 		{
-			SetCursor(LoadCursor(NULL, IDC_SIZEALL));
-			m_pSelectedHandle = NULL;
-			m_pSelectedMove = pSelectedGizmo;
-			return;
+			CGizmoRotate *pGizmo, *pSelectedGizmo = NULL;
+			float fDist2, fMinDist2 = FLT_MAX;
+			for(UINT i = 0, l = m_aGizmosRotate.size(); i < l; ++i)
+			{
+				pGizmo = m_aGizmosRotate[i];
+				fDist2 = SMVector3Length2(pGizmo->getPos() - vRayStart);
+				if(fDist2 < fMinDist2 && pGizmo->wantHandle(vRayStart, vRayDir))
+				{
+					pSelectedGizmo = pGizmo;
+					fMinDist2 = fDist2;
+				}
+			}
+
+			if(pSelectedGizmo)
+			{
+				SetCursor(LoadCursor(NULL, IDC_SIZEALL));
+				//m_pSelectedHandle = NULL;
+				m_pSelectedRotate = pSelectedGizmo;
+				return;
+			}
 		}
 	}
 
@@ -183,7 +213,7 @@ void CEditor::onMouseMove()
 }
 bool CEditor::onMouseDown()
 {
-	if(m_pSelectedHandle || m_pSelectedMove)
+	if(m_pSelectedHandle || m_pSelectedMove || m_pSelectedRotate)
 	{
 		SetCapture(g_xState.hActiveWnd);
 		m_isCapturing = true;
@@ -191,6 +221,7 @@ bool CEditor::onMouseDown()
 		SAFE_CALL(m_pSelectedHandle, setBestPlaneNormal, g_xState.vBestPlaneNormal);
 		SAFE_CALL(m_pSelectedHandle, setTracking, true);
 		SAFE_CALL(m_pSelectedMove, setTracking, true);
+		SAFE_CALL(m_pSelectedRotate, setTracking, true);
 
 		onMouseMove();
 
@@ -207,5 +238,6 @@ void CEditor::onMouseUp()
 		ReleaseCapture();
 		SAFE_CALL(m_pSelectedHandle, setTracking, false);
 		SAFE_CALL(m_pSelectedMove, setTracking, false);
+		SAFE_CALL(m_pSelectedRotate, setTracking, false);
 	}
 }
