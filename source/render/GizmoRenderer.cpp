@@ -101,6 +101,9 @@ CGizmoRenderer::~CGizmoRenderer()
 	mem_release(m_pPointsRB);
 	mem_release(m_pPointsVB);
 	mem_release(m_pPointsIB);
+
+	mem_release(m_pTrisRB);
+	mem_release(m_pTrisVB);
 }
 
 void XMETHODCALLTYPE CGizmoRenderer::reset()
@@ -116,6 +119,8 @@ void XMETHODCALLTYPE CGizmoRenderer::reset()
 		mem_release(m_aTextures[i]);
 	}
 	m_aTextures.clearFast();
+
+	m_aPolyVertices.clearFast();
 }
 void XMETHODCALLTYPE CGizmoRenderer::render(bool isOrtho, bool useConstantSize, bool useDepthTest)
 {
@@ -126,79 +131,103 @@ void XMETHODCALLTYPE CGizmoRenderer::render(bool isOrtho, bool useConstantSize, 
 		m_isDirty = false;
 
 		UINT uVertexCount = m_aPoints.size() * 4;
-		if(m_uPointsVBSize < uVertexCount)
-		{
-			m_uPointsVBSize = uVertexCount;
-			mem_release(m_pPointsVB);
-			mem_release(m_pPointsRB);
-
-			m_pPointsVB = m_pDev->createVertexBuffer(sizeof(PointVertex) * uVertexCount, GXBUFFER_USAGE_DYNAMIC);
-			m_pPointsRB = m_pDev->createRenderBuffer(1, &m_pPointsVB, s_pPointsVD);
-		}
-
-
 		m_aPointRanges.clearFast();
-
-		UINT uMaxQuadCount = 0;
-		UINT uVC = 0;
-		PointVertex *pVertices;
-		if(m_pPointsVB->lock((void**)&pVertices, GXBL_WRITE))
+		if(uVertexCount)
 		{
-			byte u8TexIdx;
-			m_aPointRanges.reserve(m_aTextures.size() + 1);
-			for(int i = -1, l = m_aTextures.size(); i < l; ++i)
+			if(m_uPointsVBSize < uVertexCount)
 			{
-				if(i == -1)
-				{
-					u8TexIdx = 0xFF;
-				}
-				else
-				{
-					u8TexIdx = i;
-				}
+				m_uPointsVBSize = uVertexCount;
+				mem_release(m_pPointsVB);
+				mem_release(m_pPointsRB);
 
-				PointRange &lr = m_aPointRanges[m_aPointRanges.size()];
-				lr.u8Texture = u8TexIdx;
-
-				lr.uStartVtx = uVC;
-				for(UINT j = 0, jl = m_aPoints.size(); j < jl; ++j)
-				{
-					Point &pt = m_aPoints[j];
-					if(pt.u8Texture == u8TexIdx)
-					{
-						float fPM = pt.mode == XGPM_SQUARE ? 0.0f : 1.0f;
-						pt.vtx.vTexUVMode = float3_t(0.0f, 1.0f, fPM);
-						pVertices[uVC++] = pt.vtx;
-						pt.vtx.vTexUVMode = float3_t(0.0f, 0.0f, fPM);
-						pVertices[uVC++] = pt.vtx;
-						pt.vtx.vTexUVMode = float3_t(1.0f, 1.0f, fPM);
-						pVertices[uVC++] = pt.vtx;
-						pt.vtx.vTexUVMode = float3_t(1.0f, 0.0f, fPM);
-						pVertices[uVC++] = pt.vtx;
-					}
-				}
-
-				if(uVC > lr.uStartVtx)
-				{
-					lr.uQuadCount = (uVC - lr.uStartVtx) / 4;
-					if(lr.uQuadCount > uMaxQuadCount)
-					{
-						uMaxQuadCount = lr.uQuadCount;
-					}
-				}
-				else
-				{
-					m_aPointRanges.erase(m_aPointRanges.size() - 1);
-				}
+				m_pPointsVB = m_pDev->createVertexBuffer(sizeof(PointVertex) * uVertexCount, GXBUFFER_USAGE_DYNAMIC);
+				m_pPointsRB = m_pDev->createRenderBuffer(1, &m_pPointsVB, s_pPointsVD);
 			}
 
-			m_pPointsVB->unlock();
+			UINT uMaxQuadCount = 0;
+			UINT uVC = 0;
+			PointVertex *pVertices;
+			if(m_pPointsVB->lock((void**)&pVertices, GXBL_WRITE))
+			{
+				byte u8TexIdx;
+				m_aPointRanges.reserve(m_aTextures.size() + 1);
+				for(int i = -1, l = m_aTextures.size(); i < l; ++i)
+				{
+					if(i == -1)
+					{
+						u8TexIdx = 0xFF;
+					}
+					else
+					{
+						u8TexIdx = i;
+					}
+
+					PointRange &lr = m_aPointRanges[m_aPointRanges.size()];
+					lr.u8Texture = u8TexIdx;
+
+					lr.uStartVtx = uVC;
+					for(UINT j = 0, jl = m_aPoints.size(); j < jl; ++j)
+					{
+						Point &pt = m_aPoints[j];
+						if(pt.u8Texture == u8TexIdx)
+						{
+							float fPM = pt.mode == XGPM_SQUARE ? 0.0f : 1.0f;
+							pt.vtx.vTexUVMode = float3_t(0.0f, 1.0f, fPM);
+							pVertices[uVC++] = pt.vtx;
+							pt.vtx.vTexUVMode = float3_t(0.0f, 0.0f, fPM);
+							pVertices[uVC++] = pt.vtx;
+							pt.vtx.vTexUVMode = float3_t(1.0f, 1.0f, fPM);
+							pVertices[uVC++] = pt.vtx;
+							pt.vtx.vTexUVMode = float3_t(1.0f, 0.0f, fPM);
+							pVertices[uVC++] = pt.vtx;
+						}
+					}
+
+					if(uVC > lr.uStartVtx)
+					{
+						lr.uQuadCount = (uVC - lr.uStartVtx) / 4;
+						if(lr.uQuadCount > uMaxQuadCount)
+						{
+							uMaxQuadCount = lr.uQuadCount;
+						}
+					}
+					else
+					{
+						m_aPointRanges.erase(m_aPointRanges.size() - 1);
+					}
+				}
+
+				m_pPointsVB->unlock();
+			}
+
+			assert(uVC == uVertexCount);
+
+			mem_release(m_pPointsIB);
+			m_pRenderUtils->getQuadIndexBuffer(uMaxQuadCount, &m_pPointsIB);
 		}
 
-		assert(uVC == uVertexCount);
+		/////////////////////////////////////////////////////
 
-		mem_release(m_pPointsIB);
-		m_pRenderUtils->getQuadIndexBuffer(uMaxQuadCount, &m_pPointsIB);
+		uVertexCount = m_aPolyVertices.size();
+		if(uVertexCount)
+		{
+			if(m_uTrisVBSize < uVertexCount)
+			{
+				m_uTrisVBSize = uVertexCount;
+				mem_release(m_pTrisRB);
+				mem_release(m_pTrisVB);
+
+				m_pTrisVB = m_pDev->createVertexBuffer(sizeof(PointVertex) * uVertexCount, GXBUFFER_USAGE_DYNAMIC);
+				m_pTrisRB = m_pDev->createRenderBuffer(1, &m_pTrisVB, s_pPointsVD);
+			}
+
+			PointVertex *pVertices;
+			if(m_pTrisVB->lock((void**)&pVertices, GXBL_WRITE))
+			{
+				memcpy(pVertices, m_aPolyVertices, sizeof(PointVertex) * uVertexCount);
+				m_pTrisVB->unlock();
+			}
+		}
 	}
 
 	IGXContext *pCtx = m_pDev->getThreadContext();
@@ -229,8 +258,14 @@ void XMETHODCALLTYPE CGizmoRenderer::render(bool isOrtho, bool useConstantSize, 
 		}
 		pCtx->drawIndexed(lr.uQuadCount * 4, lr.uQuadCount * 2, 0, lr.uStartVtx);
 	}
-	SGCore_ShaderUnBind();
 
+	if(m_aPolyVertices.size())
+	{
+		pCtx->setRenderBuffer(m_pTrisRB);
+		SGCore_ShaderBind(s_idShaders[0][isOrtho ? 0 : 1][/*useConstantSize ? 1 : */0]);
+		pCtx->drawPrimitive(0, m_aPolyVertices.size() / 3);
+	}
+	SGCore_ShaderUnBind();
 
 	pCtx->setRasterizerState(pRS);
 	mem_release(pRS);
@@ -392,4 +427,30 @@ byte CGizmoRenderer::getTextureId()
 	}
 
 	return(m_u8CurrentTexture);
+}
+
+void XMETHODCALLTYPE CGizmoRenderer::drawPoly(
+	const float3_t &vPosA,
+	const float3_t &vPosB,
+	const float3_t &vPosC)
+{
+	drawPoly(vPosA, vPosB, vPosC, m_vCurrentColor, m_vCurrentColor, m_vCurrentColor);
+}
+void XMETHODCALLTYPE CGizmoRenderer::drawPoly(
+	const float3_t &vPosA,
+	const float3_t &vPosB,
+	const float3_t &vPosC,
+	const float4_t &vColorA,
+	const float4_t &vColorB,
+	const float4_t &vColorC)
+{
+	m_aPolyVertices.push_back({float4(vPosA, 1.0f), vColorA, float3(float2_t(0.5f, 0.5f), 0.0f)});
+	m_aPolyVertices.push_back({float4(vPosB, 1.0f), vColorB, float3(float2_t(0.5f, 0.5f), 0.0f)});
+	m_aPolyVertices.push_back({float4(vPosC, 1.0f), vColorC, float3(float2_t(0.5f, 0.5f), 0.0f)});
+
+	m_aPolyVertices.push_back({float4(vPosA, 1.0f), vColorA, float3(float2_t(0.5f, 0.5f), 0.0f)});
+	m_aPolyVertices.push_back({float4(vPosC, 1.0f), vColorC, float3(float2_t(0.5f, 0.5f), 0.0f)});
+	m_aPolyVertices.push_back({float4(vPosB, 1.0f), vColorB, float3(float2_t(0.5f, 0.5f), 0.0f)});
+
+	m_isDirty = true;
 }

@@ -74,7 +74,7 @@ private:
 	bool m_isLinesDirty = false;
 
 	static bool s_isShadersLoaded;
-	static ID s_idShaders[2][2][2]; // [isTextured][is3D][isFixed]
+	static ID s_idShaders[2][2][2][2]; // [isTextured][is3D][isFixed][isBackward]
 
 private:
 	byte getTextureId();
