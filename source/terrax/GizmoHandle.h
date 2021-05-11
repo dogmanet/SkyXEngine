@@ -51,6 +51,8 @@ public:
 		m_isRendered = set;
 	}
 
+	SX_ALIGNED_OP_MEM();
+
 private:
 	CEditor *m_pEditor;
 	bool m_isEnabled = true;
