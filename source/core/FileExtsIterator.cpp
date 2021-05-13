@@ -15,12 +15,14 @@ const char *CFileExtsIterator::next()
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hf;
 
+	memset(FindFileData.cFileName, '\0', MAX_PATH);
+
 	int size = m_paths.size();
 	int sizeExt = m_exts.size();
 
 	while (index < size)
 	{
-		String fileName = (m_paths[index] + "*.*");
+		const String &fileName = (m_paths[index] + "*.*");
 
 		//Проверяем указатель, если m_handle пустой, то ищем первый файл с расширением szExts
 		hf = INVALID_OR_NULL(m_handle) ? FindFirstFile(fileName.c_str(), &FindFileData) : m_handle;
@@ -37,7 +39,7 @@ const char *CFileExtsIterator::next()
 
 				if (flag != INVALID_FILE_ATTRIBUTES && !(flag & FILE_ATTRIBUTE_DIRECTORY))
 				{
-					if (!this->findExtensionsInPath(FindFileData.cFileName, m_exts))
+					if (!findExtensionsInPath(FindFileData.cFileName, m_exts))
 					{
 						continue;
 					}

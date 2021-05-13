@@ -1957,15 +1957,15 @@ bool CMaterialSystem::saveMaterial(CMaterial *pMaterial)
 
 void CMaterialSystem::scanForExtension(IFileSystem *pFS, const char *szDir, const char *szExt, Map<String, bool> &mapFiles, bool isTexture)
 {
-	IFileIterator *pIter = pFS->getFileList(szDir, szExt);
-	if(pIter)
+	IFileIterator *pIter = pFS->getFileListRecursive(szDir, szExt);
+	if (pIter)
 	{
 		const char *szFile;
-		while((szFile = pIter->next()))
+		while ((szFile = pIter->next()))
 		{
 			//printf("=%s\n", szFile);
 
-			if(!mapFiles.KeyExists(szFile))
+			if (!mapFiles.KeyExists(szFile))
 			{
 				ScanItem &item = m_aScanCache[m_aScanCache.size()];
 				item.sName = szFile;
@@ -1975,17 +1975,6 @@ void CMaterialSystem::scanForExtension(IFileSystem *pFS, const char *szDir, cons
 		}
 	}
 	mem_release(pIter); 
-	
-	pIter = pFS->getFolderList(szDir);
-	if(pIter)
-	{
-		const char *szNewDir;
-		while((szNewDir = pIter->next()))
-		{
-			scanForExtension(pFS, szNewDir, szExt, mapFiles, isTexture);
-		}
-	}
-	mem_release(pIter);
 }
 
 void XMETHODCALLTYPE CMaterialSystem::scanMaterials()
