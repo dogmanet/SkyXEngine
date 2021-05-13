@@ -15,6 +15,8 @@ const char *CFileRecursiveExtPathsIterator::next()
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hf;
 
+	memset(FindFileData.cFileName, '\0', MAX_PATH);
+
 	UINT maxPathIndex = m_sPaths.size();
 	while (pathIndex < maxPathIndex)
 	{
@@ -36,7 +38,7 @@ const char *CFileRecursiveExtPathsIterator::next()
 
 					DWORD flag = GetFileAttributes(fullName.c_str());
 
-					if (!strcmp(FindFileData.cFileName, "..") || !strcmp(FindFileData.cFileName, "."))
+					if (emptyOrRepeatPath(FindFileData.cFileName))
 					{
 						continue;
 					}
@@ -49,7 +51,7 @@ const char *CFileRecursiveExtPathsIterator::next()
 
 					if (flag != INVALID_FILE_ATTRIBUTES && !(flag & FILE_ATTRIBUTE_DIRECTORY))
 					{
-						if (!this->findExtensionsInPath(FindFileData.cFileName, m_exts))
+						if (!findExtensionsInPath(FindFileData.cFileName, m_exts))
 						{
 							continue;
 						}
