@@ -86,7 +86,7 @@ public:
     IFileIterator *getFileList(const char *szPath, const char **szExts, int extsCount) override;
 
     //! No implementation
-     IFileIterator *getFileListRecursive(const char *szPath,  const char *szExt)  override;
+     IFileIterator *getFileListRecursive(const char *szPath,  const char *szExt = 0)  override;
     
     //! No implementation
      IFileIterator *getFileListRecursive(const char *szPath, const char **szExts, int extsCount) override;
