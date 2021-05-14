@@ -15,7 +15,7 @@ const char *CFileExtsIterator::next()
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hf;
 
-	memset(FindFileData.cFileName, '\0', MAX_PATH);
+	FindFileData.cFileName[0] = '\0';
 
 	int size = m_paths.size();
 	int sizeExt = m_exts.size();

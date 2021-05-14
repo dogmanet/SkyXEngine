@@ -1958,10 +1958,10 @@ bool CMaterialSystem::saveMaterial(CMaterial *pMaterial)
 void CMaterialSystem::scanForExtension(IFileSystem *pFS, const char *szDir, const char *szExt, Map<String, bool> &mapFiles, bool isTexture)
 {
 	IFileIterator *pIter = pFS->getFileListRecursive(szDir, szExt);
-	if (pIter)
+	if(pIter)
 	{
 		const char *szFile;
-		while ((szFile = pIter->next()))
+		while((szFile = pIter->next()))
 		{
 			//printf("=%s\n", szFile);
 

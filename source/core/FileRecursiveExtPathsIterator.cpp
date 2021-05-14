@@ -15,7 +15,7 @@ const char *CFileRecursiveExtPathsIterator::next()
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hf;
 
-	memset(FindFileData.cFileName, '\0', MAX_PATH);
+	FindFileData.cFileName[0] = '\0';
 
 	UINT maxPathIndex = m_sPaths.size();
 	while (pathIndex < maxPathIndex)
