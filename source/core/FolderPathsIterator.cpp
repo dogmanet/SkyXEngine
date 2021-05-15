@@ -14,6 +14,8 @@ const char *CFolderPathsIterator::next()
     WIN32_FIND_DATA FindFileData;
     HANDLE hf;
 
+	FindFileData.cFileName[0] = '\0';
+
 	UINT size = m_paths.size();
 
     while (index < size)
@@ -29,7 +31,7 @@ const char *CFolderPathsIterator::next()
 
                 DWORD flag = GetFileAttributes(m_pathStr.c_str());
 
-                if (!strcmp(FindFileData.cFileName, "..") || !strcmp(FindFileData.cFileName, "."))
+				if (emptyOrRepeatPath(FindFileData.cFileName))
                 {
                     continue;
                 }

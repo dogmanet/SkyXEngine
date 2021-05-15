@@ -375,7 +375,7 @@ IFileIterator *CFileSystem::getFileList(const char *szPath, const char **szExts,
 	return getListIterator<CFileExtsIterator>(szPath, szExts, extsCount);
 }
 
-IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char *szExt = 0)
+IFileIterator *CFileSystem::getFileListRecursive(const char *szPath, const char *szExt)
 {
 	const char *exts[] = { szExt };
 	return getFileListRecursive(szPath, exts, 1);
