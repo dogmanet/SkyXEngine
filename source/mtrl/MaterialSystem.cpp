@@ -1965,7 +1965,7 @@ void CMaterialSystem::scanForExtension(IFileSystem *pFS, const char *szDir, cons
 		{
 			//printf("=%s\n", szFile);
 
-			if (!mapFiles.KeyExists(szFile))
+			if(!mapFiles.KeyExists(szFile))
 			{
 				ScanItem &item = m_aScanCache[m_aScanCache.size()];
 				item.sName = szFile;
