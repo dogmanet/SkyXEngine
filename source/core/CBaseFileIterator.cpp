@@ -24,7 +24,10 @@ void CBaseFileIterator::fillExtensionsArray(Array<String> &extsArray, const char
 {
 	for (int i = 0; i < iExtsSize; ++i)
 	{
-		extsArray.push_back(exts[i]);
+		if (exts[i])
+		{
+			extsArray.push_back(exts[i]);
+		}
 	}
 }
 
@@ -38,4 +41,9 @@ bool CBaseFileIterator::findExtensionsInPath(const char *szPath, const Array<Str
 		}
 	}
 	return !exts.size();
+}
+
+bool CBaseFileIterator::emptyOrRepeatPath(const char * szPath)
+{
+	return !strcmp(szPath, "..") || !strcmp(szPath, ".") || !strcmp(szPath, "");
 }

@@ -13,6 +13,8 @@ public:
 	void fillExtensionsArray(Array<String> &extsArray, const char **exts, int iExtsSize);
 
 	bool findExtensionsInPath(const char *szPath, const Array<String> &exts);
+
+	bool emptyOrRepeatPath(const char *szPath);
 };
 
 #endif 
