@@ -78,6 +78,8 @@ BOOL g_is3DPanning = FALSE;
 
 BOOL g_is2DPanning = FALSE;
 
+HWND g_hToolbarWnd = NULL;
+
 BOOL g_isPropWindowVisible = FALSE;
 CPropertyWindow *g_pPropWindow = NULL;
 
@@ -110,6 +112,7 @@ BOOL XCheckMenuItem(HMENU hMenu, UINT uIDCheckItem, bool bCheck);
 void XUpdateStatusGrid();
 void XUpdateStatusMPos();
 void XUpdateUndoRedo();
+HWND CreateToolbar(HWND hWndParent);
 
 class CPropertyCallback: public CPropertyWindow::ICallback
 {
@@ -803,12 +806,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			TreeView_InsertItem(g_hObjectTreeWnd, &tvis);
 		}
 
+		g_hToolbarWnd = CreateToolbar(hWnd);
+
+
 
 		g_pPropWindow = new CPropertyWindow(hInst, hWnd);
 		g_pPropWindow->clearClassList();
 		g_pPropWindow->setCallback(&g_propertyCallback);
 
 		g_pMaterialBrowser = new CMaterialBrowser(hInst, hWnd);
+
+		XSetXformType(X2DXF_SCALE);
 
 		return FALSE;
 	}
@@ -1261,6 +1269,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 				g_pUndoManager->execCommand(pCmdSelect);
 			}
+			break;
+
+		case ID_XFORM_TRANSLATE:
+			if(!GetCapture())
+			{
+				XSetXformType(X2DXF_SCALE);
+			}
+			break;
+		case ID_XFORM_NONE:
+			XSetXformType(X2DXF_NONE);
+			break;
+		case ID_XFORM_ROTATE:
+			XSetXformType(X2DXF_ROTATE);
 			break;
 		}
 		break;
@@ -1862,8 +1883,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					{
 						if(!g_xState.bHasSelection)
 						{
-							g_xState.xformType = X2DXF_SCALE;
-							XUpdateGizmos();
+							XSetXformType(X2DXF_SCALE);
 						}
 						XExecCommand(pCmd);
 					}
@@ -1874,8 +1894,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				ReleaseCapture();
 				if(!XExecCommand(s_pMoveCmd) && g_xState.bHasSelection && !s_wasSelectionChanged)
 				{
-					g_xState.xformType = (X_2DXFORM_TYPE)((g_xState.xformType + 1) % X2DXF__LAST);
-					XUpdateGizmos();
+					XSetXformType((X_2DXFORM_TYPE)((g_xState.xformType + 1) % X2DXF__LAST));
 				}
 				s_pMoveCmd = NULL;
 			}
@@ -2189,13 +2208,13 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 							// X2D_SIDE (z/y)
 							{XDIR_Y_NEG, XDIR_Z_POS, XDIR_Y_POS, XDIR_Z_NEG, XDIR_Y_NEG | XDIR_Z_NEG, XDIR_Y_NEG | XDIR_Z_POS, XDIR_Y_POS | XDIR_Z_POS, XDIR_Y_POS | XDIR_Z_NEG}
 						};
-						for(int i = g_xState.xformType == X2DXF_SCALE ? 0 : 4; i < 8; ++i)
+						for(int i = g_xState.xformType == X2DXF_SCALE || g_xState.xformType == X2DXF_NONE ? 0 : 4; i < 8; ++i)
 						{
 							if(fabsf(fMPos.x - vCenters[i].x) <= fPtSize && fabsf(fMPos.y - vCenters[i].y) <= fPtSize)
 							{
 								SetCapture(hWnd);
 
-								if(g_xState.xformType == X2DXF_SCALE)
+								if(g_xState.xformType == X2DXF_SCALE || g_xState.xformType == X2DXF_NONE)
 								{
 									// create scale command
 									s_pScaleCmd = new CCommandScale();
@@ -2571,11 +2590,11 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						{vBorder.x - fPtMargin, vBorder.w + fPtMargin} // top left
 					};
 					HCURSOR hcs[] = {hcSizeNS, hcSizeWE, hcSizeNS, hcSizeWE, hcSizeNESW, hcSizeNWSE, hcSizeNESW, hcSizeNWSE};
-					for(int i = (g_xState.xformType == X2DXF_SCALE) ? 0 : 4; i < 8; ++i)
+					for(int i = (g_xState.xformType == X2DXF_SCALE || g_xState.xformType == X2DXF_NONE) ? 0 : 4; i < 8; ++i)
 					{
 						if(fabsf(fMPos.x - vCenters[i].x) <= fPtSize && fabsf(fMPos.y - vCenters[i].y) <= fPtSize)
 						{
-							if(g_xState.xformType == X2DXF_SCALE)
+							if(g_xState.xformType == X2DXF_SCALE || g_xState.xformType == X2DXF_NONE)
 							{
 								SetCursor(hcs[i]);
 							}
@@ -3234,4 +3253,105 @@ void XMETHODCALLTYPE CGizmoRotateCallback::onEnd(IXEditorGizmoRotate *pGizmo)
 {
 	XExecCommand(m_pCmd);
 	m_pCmd = NULL;
+}
+
+HIMAGELIST g_hImageList = NULL;
+
+void CheckToolbarButton(int iCmd, BOOL isChecked)
+{
+	SendMessage(g_hToolbarWnd, TB_CHECKBUTTON, iCmd, MAKELPARAM(isChecked, 0));
+}
+
+void CheckXformButton(X_2DXFORM_TYPE type, bool isChecked)
+{
+	int iCmd = 0;
+	switch(type)
+	{
+	case X2DXF_NONE:
+		iCmd = ID_XFORM_NONE;
+		break;
+	case X2DXF_SCALE:
+		iCmd = ID_XFORM_TRANSLATE;
+		break;
+	case X2DXF_ROTATE:
+		iCmd = ID_XFORM_ROTATE;
+		break;
+	}
+
+	CheckToolbarButton(iCmd, isChecked);
+}
+
+HWND CreateToolbar(HWND hWndParent)
+{
+	// Declare and initialize local constants.
+	const int ImageListID = 0;
+	const int numButtons = 4;
+	const int bitmapSize = 16;
+
+	const DWORD buttonStyles = BTNS_AUTOSIZE;
+
+	// Create the toolbar.
+	HWND hWndToolbar = CreateWindowEx(0, TOOLBARCLASSNAME, NULL,
+		WS_CHILD | TBSTYLE_WRAPABLE | TBSTYLE_LIST | TBSTYLE_FLAT, 0, 0, 0, 0,
+		hWndParent, NULL, hInst, NULL);
+
+	//SetWindowLong(hWndToolbar, GWL_EXSTYLE, GetWindowLong(hWndToolbar, GWL_EXSTYLE) | TBSTYLE_EX_MIXEDBUTTONS);
+
+	if(hWndToolbar == NULL)
+		return NULL;
+
+	// Create the image list.
+	g_hImageList = ImageList_Create(bitmapSize, bitmapSize - 1,   // Dimensions of individual bitmaps.
+		ILC_COLOR16 | ILC_MASK,   // Ensures transparent background.
+		numButtons, 0);
+
+	HBITMAP hbToolbar = LoadBitmap(hInst, MAKEINTRESOURCE(IDR_TOOLBAR1));
+	HBITMAP hbToolbarA = LoadBitmap(hInst, MAKEINTRESOURCE(IDR_TOOLBAR_A));
+	ImageList_Add(g_hImageList, hbToolbar, hbToolbarA);
+	DeleteBitmap(hbToolbar);
+	DeleteBitmap(hbToolbarA);
+
+	// Set the image list.
+	SendMessage(hWndToolbar, TB_SETIMAGELIST,
+		(WPARAM)ImageListID,
+		(LPARAM)g_hImageList);
+
+	// Load the button images.
+	//SendMessage(hWndToolbar, TB_LOADIMAGES,
+	//	(WPARAM)TB_LOADIMAGES,
+	//	(LPARAM)HINST_COMMCTRL);
+
+	TBBUTTON tbButtons[] =
+	{
+		{MAKELONG(0, ImageListID), ID_XFORM_NONE, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Handle (Q)"},
+		{MAKELONG(1, ImageListID), ID_XFORM_TRANSLATE, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Move (W)"},
+		{MAKELONG(2, ImageListID), ID_XFORM_ROTATE, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Rotate (R)"},
+		{0, 0, TBSTATE_ENABLED, BTNS_SEP, 0L, 0},
+		{MAKELONG(3, ImageListID), ID_LEVEL_RUN, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Run (F5)"}
+	};
+
+	// Add buttons.
+	SendMessage(hWndToolbar, TB_BUTTONSTRUCTSIZE, (WPARAM)sizeof(TBBUTTON), 0);
+	SendMessage(hWndToolbar, TB_ADDBUTTONS, (WPARAM)ARRAYSIZE(tbButtons), (LPARAM)&tbButtons);
+
+	// Resize the toolbar, and then show it.
+	SendMessage(hWndToolbar, TB_AUTOSIZE, 0, 0);
+	SendMessage(hWndToolbar, TB_SETEXTENDEDSTYLE, 0, (LPARAM)TBSTYLE_EX_MIXEDBUTTONS);
+	ShowWindow(hWndToolbar, TRUE);
+
+	return hWndToolbar;
+}
+
+void XSetXformType(X_2DXFORM_TYPE type)
+{
+	CheckXformButton(g_xState.xformType, false);
+	g_xState.xformType = type;
+	CheckXformButton(g_xState.xformType, true);
+	// emit event
+
+	XEventEditorXformType ev = {};
+	ev.newXformType = type;
+	g_pXformEventChannel->broadcastEvent(&ev);
+
+	XUpdateGizmos();
 }

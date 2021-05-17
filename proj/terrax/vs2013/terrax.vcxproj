@@ -305,6 +305,7 @@
     <Image Include="..\..\..\source\terrax\resource\sel_z.bmp" />
     <Image Include="..\..\..\source\terrax\resource\sun.bmp" />
     <Image Include="..\..\..\source\terrax\resource\toolbar1.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\toolbar2.bmp" />
     <Image Include="resource\ab_arrow.bmp" />
     <Image Include="resource\ab_arrow.png" />
     <Image Include="resource\ab_camera.bmp" />

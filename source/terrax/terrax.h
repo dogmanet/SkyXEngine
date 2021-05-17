@@ -54,15 +54,6 @@ enum X_2D_VIEW
 };
 
 
-enum X_2DXFORM_TYPE
-{
-	X2DXF_SCALE = 0,
-	X2DXF_ROTATE,
-
-
-	X2DXF__LAST
-};
-
 enum X_DIR
 {
 	XDIR_X_POS = 0x00000001,
@@ -234,6 +225,8 @@ void XUpdateGizmos();
 float XGetGridStep();
 float3 XSnapToGrid(const float3 &vPos);
 
+void XSetXformType(X_2DXFORM_TYPE type);
+
 extern IXEngine *g_pEngine;
 
 class CCommandMove;
@@ -263,5 +256,6 @@ private:
 
 extern CGizmoMoveCallback g_gizmoMoveCallback;
 extern CGizmoRotateCallback g_gizmoRotateCallback;
+extern IEventChannel<XEventEditorXformType> *g_pXformEventChannel;
 
 #endif

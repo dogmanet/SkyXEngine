@@ -64,6 +64,8 @@ extern HWND g_hComboTypesWnd;
 
 String g_sLevelName;
 
+IEventChannel<XEventEditorXformType> *g_pXformEventChannel = NULL;
+
 void XUpdateWindowTitle();
 
 HACCEL g_hAccelTableMain = NULL;
@@ -770,6 +772,8 @@ int main(int argc, char **argv)
 	CCVarEventListener cvarListener(pEngine->getCore());
 	auto *pChannel = pEngine->getCore()->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID);
 	pChannel->addListener(&cvarListener);
+
+	g_pXformEventChannel = pEngine->getCore()->getEventChannel<XEventEditorXformType>(EVENT_EDITOR_XFORM_TYPE_GUID);
 
 	RECT rcTopLeft;
 	GetClientRect(g_hTopLeftWnd, &rcTopLeft);
@@ -1720,7 +1724,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			{
 				UINT uCV = 0;
 
-				if(g_xState.xformType == X2DXF_SCALE)
+				if(g_xState.xformType == X2DXF_SCALE || g_xState.xformType == X2DXF_NONE)
 				{
 					float3 vCenter(vSelectionCenter.x, 0.0f, vBorder.y - fPtMargin);
 					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
@@ -1841,7 +1845,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			pCtx->setRenderBuffer(g_xRenderStates.pTransformHandlerRB);
 			s_pColorBuffer->update(&float4(1.0f, 1.0f, 1.0f, 1.0f));
 			pCtx->setPSConstant(s_pColorBuffer);
-			if(g_xState.xformType == X2DXF_SCALE)
+			if(g_xState.xformType == X2DXF_SCALE || g_xState.xformType == X2DXF_NONE)
 			{
 				pCtx->setIndexBuffer(g_xRenderStates.pTransformHandlerScaleIB);
 				pCtx->drawIndexed(32, 16, 0, 0);

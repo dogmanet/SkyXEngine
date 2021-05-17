@@ -241,4 +241,23 @@ struct XEventPhysicsStep
 	float fTimeStep;
 };
 
+
+// @FIXME move that somewhere else
+// {2C5F63CB-4CFE-46D1-9AB9-B8B028E96C97}
+#define EVENT_EDITOR_XFORM_TYPE_GUID DEFINE_XGUID(0x2c5f63cb, 0x4cfe, 0x46d1, 0x9a, 0xb9, 0xb8, 0xb0, 0x28, 0xe9, 0x6c, 0x97)
+
+enum X_2DXFORM_TYPE
+{
+	X2DXF_NONE = -1,
+	X2DXF_SCALE = 0,
+	X2DXF_ROTATE,
+
+
+	X2DXF__LAST
+};
+struct XEventEditorXformType
+{
+	X_2DXFORM_TYPE newXformType;
+};
+
 #endif

@@ -444,6 +444,9 @@
     <Image Include="..\..\..\source\terrax\resource\ab_create.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\..\..\source\terrax\resource\toolbar2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\Users\admin\AppData\Local\VirtualStore\Program Files\1023.cur">
