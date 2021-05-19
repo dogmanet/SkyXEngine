@@ -775,6 +775,8 @@ int main(int argc, char **argv)
 
 	g_pXformEventChannel = pEngine->getCore()->getEventChannel<XEventEditorXformType>(EVENT_EDITOR_XFORM_TYPE_GUID);
 
+	XSetXformType(X2DXF_SCALE);
+
 	RECT rcTopLeft;
 	GetClientRect(g_hTopLeftWnd, &rcTopLeft);
 

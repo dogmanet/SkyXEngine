@@ -816,8 +816,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		g_pMaterialBrowser = new CMaterialBrowser(hInst, hWnd);
 
-		XSetXformType(X2DXF_SCALE);
-
 		return FALSE;
 	}
 		break;
