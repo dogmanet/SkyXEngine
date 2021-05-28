@@ -16,6 +16,9 @@ public:
 	UINT XMETHODCALLTYPE getPropertyTabCount() override;
 	IXEditorPropertyTab* XMETHODCALLTYPE getPropertyTab(UINT uId) override;
 
+	UINT XMETHODCALLTYPE getToolCount() override;
+	bool XMETHODCALLTYPE getTool(UINT uId, IXEditorTool **ppOut) override;
+
 	void onSelectionChanged(CEditorObject *pObject);
 
 private:

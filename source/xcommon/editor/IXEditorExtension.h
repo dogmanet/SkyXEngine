@@ -58,7 +58,7 @@ public:
 
 
 	virtual bool XMETHODCALLTYPE onMouseDown(UINT uXpos, UINT uYpos, X_WINDOW_POS winPos) = 0;
-	virtual void XMETHODCALLTYPE onMouseMove(UINT uXpos, UINT uYpos, X_WINDOW_POS winPos) = 0;
+	virtual bool XMETHODCALLTYPE onMouseMove(UINT uXpos, UINT uYpos, X_WINDOW_POS winPos) = 0;
 	virtual void XMETHODCALLTYPE onMouseUp() = 0;
 
 	// virtual bool XMETHODCALLTYPE onMouseEvent(UINT msg, WPARAM wParam, LPARAM lParam, ) = 0;
@@ -75,8 +75,8 @@ public:
 	virtual UINT XMETHODCALLTYPE getPropertyTabCount() = 0;
 	virtual IXEditorPropertyTab* XMETHODCALLTYPE getPropertyTab(UINT uId) = 0;
 
-	//virtual UINT XMETHODCALLTYPE getToolCount() = 0;
-	//virtual bool XMETHODCALLTYPE getTool(UINT uId, IXEditorTool **ppOut) = 0;
+	virtual UINT XMETHODCALLTYPE getToolCount() = 0;
+	virtual bool XMETHODCALLTYPE getTool(UINT uId, IXEditorTool **ppOut) = 0;
 };
 
 #endif
