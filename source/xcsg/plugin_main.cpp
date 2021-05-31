@@ -1,5 +1,5 @@
 #include <xcommon/IXPlugin.h>
-
+#include "Editable.h"
 
 class CCSGPlugin: public IXUnknownImplementation<IXPlugin>
 {
@@ -15,16 +15,16 @@ public:
 
 	UINT XMETHODCALLTYPE getInterfaceCount() override
 	{
-		return(0);
+		return(1);
 	}
 	const XGUID* XMETHODCALLTYPE getInterfaceGUID(UINT id) override
 	{
 		static XGUID s_guid;
 		switch(id)
 		{
-		//case 0:
-		//	s_guid = IXTEXTUREPROXY_GUID;
-		//	break;
+		case 0:
+			s_guid = IXEDITABLE_GUID;
+			break;
 		//case 1:
 		//	s_guid = IXMATERIALPROXY_GUID;
 		//	break;
@@ -38,10 +38,10 @@ public:
 	}
 	IXUnknown* XMETHODCALLTYPE getInterface(const XGUID &guid) override
 	{
-		//if(guid == IXTEXTUREPROXY_GUID)
-		//{
-		//	return(new CTextureProxy(m_pCore->getFileSystem()));
-		//}
+		if(guid == IXEDITABLE_GUID)
+		{
+			return(new CEditable(m_pCore));
+		}
 		//if(guid == IXMATERIALPROXY_GUID)
 		//{
 		//	return(new CMaterialProxy(m_pCore->getFileSystem()));
