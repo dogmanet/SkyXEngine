@@ -23,6 +23,7 @@
 #define MARGIN_LEFT             50
 #define MARGIN_RIGHT            150
 #define AB_BUTTON_HEIGHT        40
+#define AB_BUTTON_WIDTH         MARGIN_LEFT
 #define OBJECT_TREE_HEIGHT      300
 
 

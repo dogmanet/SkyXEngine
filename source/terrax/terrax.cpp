@@ -810,6 +810,7 @@ int main(int argc, char **argv)
 
 	UINT ic = 0;
 	IXEditable *pEditable;
+	IXEditorTool *pTool;
 	while((pEditable = (IXEditable*)pPluginManager->getInterface(IXEDITABLE_GUID, ic++)))
 	{
 		if(pEditable->getVersion() == IXEDITABLE_VERSION)
@@ -825,6 +826,14 @@ int main(int argc, char **argv)
 				for(UINT i = 0, l = pExt->getPropertyTabCount(); i < l; ++i)
 				{
 					g_pPropWindow->addCustomTab(pExt->getPropertyTab(i));
+				}
+
+				for(UINT i = 0, l = pExt->getToolCount(); i < l; ++i)
+				{
+					if(pExt->getTool(i, &pTool))
+					{
+						XInitTool(pTool);
+					}
 				}
 			}
 
