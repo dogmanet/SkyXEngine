@@ -225,6 +225,8 @@ void XUpdateGizmos();
 float XGetGridStep();
 float3 XSnapToGrid(const float3 &vPos);
 
+void XInitTool(IXEditorTool *pTool);
+
 void XSetXformType(X_2DXFORM_TYPE type);
 
 extern IXEngine *g_pEngine;

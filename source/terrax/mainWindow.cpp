@@ -3353,3 +3353,8 @@ void XSetXformType(X_2DXFORM_TYPE type)
 
 	XUpdateGizmos();
 }
+
+void XInitTool(IXEditorTool *pTool)
+{
+
+}
