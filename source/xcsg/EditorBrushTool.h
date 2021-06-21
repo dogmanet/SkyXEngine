@@ -16,6 +16,7 @@ public:
 
 	void* XMETHODCALLTYPE getIcon() override;
 	const char* XMETHODCALLTYPE getTitle() override;
+	XAccelItem XMETHODCALLTYPE getAccel() override;
 
 	void XMETHODCALLTYPE activate() override;
 	void XMETHODCALLTYPE deactivate() override;
@@ -24,8 +25,8 @@ public:
 	bool XMETHODCALLTYPE wantMouse3D() override;
 
 
-	bool XMETHODCALLTYPE onMouseDown(UINT uXpos, UINT uYpos, X_WINDOW_POS winPos) override;
-	bool XMETHODCALLTYPE onMouseMove(UINT uXpos, UINT uYpos, X_WINDOW_POS winPos) override;
+	bool XMETHODCALLTYPE onMouseDown() override;
+	bool XMETHODCALLTYPE onMouseMove() override;
 	void XMETHODCALLTYPE onMouseUp() override;
 
 private:

@@ -42,6 +42,11 @@ const char* XMETHODCALLTYPE CEditorBrushTool::getTitle()
 {
 	return("Brush tool");
 }
+XAccelItem XMETHODCALLTYPE CEditorBrushTool::getAccel()
+{
+	XAccelItem xaf = {XAF_SHIFT | XAF_VIRTKEY, 'B'};
+	return(xaf);
+}
 
 void XMETHODCALLTYPE CEditorBrushTool::activate()
 {
@@ -60,11 +65,11 @@ bool XMETHODCALLTYPE CEditorBrushTool::wantMouse3D()
 }
 
 
-bool XMETHODCALLTYPE CEditorBrushTool::onMouseDown(UINT uXpos, UINT uYpos, X_WINDOW_POS winPos)
+bool XMETHODCALLTYPE CEditorBrushTool::onMouseDown()
 {
 	return(false);
 }
-bool XMETHODCALLTYPE CEditorBrushTool::onMouseMove(UINT uXpos, UINT uYpos, X_WINDOW_POS winPos)
+bool XMETHODCALLTYPE CEditorBrushTool::onMouseMove()
 {
 	return(false);
 }

@@ -178,7 +178,6 @@ extern CMaterialBrowser *g_pMaterialBrowser;
 
 extern CEditor *g_pEditor;
 
-
 extern IXEditorGizmoMove *g_pGizmoMove;
 extern IXEditorGizmoRotate *g_pGizmoRotate;
 
@@ -227,6 +226,8 @@ float XGetGridStep();
 float3 XSnapToGrid(const float3 &vPos);
 
 void XInitTool(IXEditorTool *pTool);
+
+void XInitCustomAccel();
 
 void XSetXformType(X_2DXFORM_TYPE type);
 

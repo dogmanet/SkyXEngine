@@ -103,6 +103,10 @@ extern Array<IXEditable*> g_pEditableSystems;
 
 extern String g_sLevelName;
 
+Array<IXEditorTool*> g_apTools;
+IXEditorTool *g_pCurrentTool = NULL;
+UINT g_uCurrentTool = IDC_AB_ARROW;
+
 CGizmoMoveCallback g_gizmoMoveCallback;
 CGizmoRotateCallback g_gizmoRotateCallback;
 
@@ -937,9 +941,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_COMMAND:
-		if(LOWORD(wParam) >= IDC_AB_FIRST && LOWORD(wParam) >= IDC_AB_LAST)
+		if(LOWORD(wParam) >= IDC_AB_FIRST && LOWORD(wParam) < IDC_AB_FIRST + g_apTools.size())
 		{
-			//
+			IXEditorTool *pNewTool = g_apTools[LOWORD(wParam) - IDC_AB_FIRST];
+			if(pNewTool != g_pCurrentTool)
+			{
+				SAFE_CALL(g_pCurrentTool, deactivate);
+				mem_release(g_pCurrentTool);
+				add_ref(pNewTool);
+				g_pCurrentTool = pNewTool;
+				SAFE_CALL(g_pCurrentTool, activate);
+
+				CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
+				g_uCurrentTool = LOWORD(wParam);
+				CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
+
+				g_xState.bCreateMode = false;
+				XUpdateGizmos();
+			}
 		}
 		switch(LOWORD(wParam))
 		{
@@ -1085,23 +1104,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		case IDC_ESCAPE:
 		case IDC_AB_ARROW:
-			CheckDlgButton(hWnd, IDC_AB_ARROW, TRUE);
-			CheckDlgButton(hWnd, IDC_AB_CAMERA, FALSE);
-			CheckDlgButton(hWnd, IDC_AB_CREATE, FALSE);
+			SAFE_CALL(g_pCurrentTool, deactivate);
+			mem_release(g_pCurrentTool);
+			CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
+			g_uCurrentTool = IDC_AB_ARROW;
+			CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
 			g_xState.bCreateMode = false;
 			XUpdateGizmos();
 			break;
 		case IDC_AB_CAMERA:
-			CheckDlgButton(hWnd, IDC_AB_ARROW, FALSE);
-			CheckDlgButton(hWnd, IDC_AB_CAMERA, TRUE);
-			CheckDlgButton(hWnd, IDC_AB_CREATE, FALSE);
+			SAFE_CALL(g_pCurrentTool, deactivate);
+			mem_release(g_pCurrentTool);
+			CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
+			g_uCurrentTool = IDC_AB_CAMERA;
+			CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
 			g_xState.bCreateMode = false;
 			XUpdateGizmos();
 			break;
 		case IDC_AB_CREATE:
-			CheckDlgButton(hWnd, IDC_AB_ARROW, FALSE);
-			CheckDlgButton(hWnd, IDC_AB_CAMERA, FALSE);
-			CheckDlgButton(hWnd, IDC_AB_CREATE, TRUE);
+			SAFE_CALL(g_pCurrentTool, deactivate);
+			mem_release(g_pCurrentTool);
+			CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
+			g_uCurrentTool = IDC_AB_CREATE;
+			CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
 			XUpdateGizmos();
 			break;
 
@@ -1824,6 +1849,14 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 	case WM_LBUTTONUP:
 		{
+			if(g_pCurrentTool &&
+				(g_xState.activeWindow == XWP_TOP_LEFT && g_pCurrentTool->wantMouse3D() ||
+				g_xState.activeWindow != XWP_TOP_LEFT && g_pCurrentTool->wantMouse2D())
+				)
+			{
+				g_pCurrentTool->onMouseUp();
+			}
+
 			if(g_is3DRotating)
 			{
 				g_is3DRotating = FALSE;
@@ -2001,6 +2034,15 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			}
 
 			XTrackMouse(hWnd, lParam);
+
+			if(g_pCurrentTool &&
+				(g_xState.activeWindow == XWP_TOP_LEFT && g_pCurrentTool->wantMouse3D() ||
+				g_xState.activeWindow != XWP_TOP_LEFT && g_pCurrentTool->wantMouse2D()) &&
+				g_pCurrentTool->onMouseDown()
+				)
+			{
+				break;
+			}
 
 			if(hWnd == g_hTopLeftWnd)
 			{
@@ -2547,6 +2589,15 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				}
 			}
 			XUpdateStatusMPos();
+
+			if(g_pCurrentTool &&
+				(g_xState.activeWindow == XWP_TOP_LEFT && g_pCurrentTool->wantMouse3D() || 
+				g_xState.activeWindow != XWP_TOP_LEFT && g_pCurrentTool->wantMouse2D()) &&
+				g_pCurrentTool->onMouseMove()
+			)
+			{
+				return(TRUE);
+			}
 
 			if(Button_GetCheck(g_hABArrowButton) && !s_pMoveCmd && !s_pScaleCmd && !s_pRotateCmd && g_xState.activeWindow != XWP_TOP_LEFT)
 			{
@@ -3365,20 +3416,62 @@ void XSetXformType(X_2DXFORM_TYPE type)
 	XUpdateGizmos();
 }
 
+Array<XAccelItem> g_aAccel;
 void XInitTool(IXEditorTool *pTool)
 {
-	static UINT s_uCurrentId = 0;
 	HWND hBtn = CreateWindow("Button", "", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON | BS_BITMAP | BS_PUSHLIKE | BS_CHECKBOX,
-		g_uABNextLeft, g_uABNextTop, AB_BUTTON_WIDTH, AB_BUTTON_HEIGHT, g_hWndMain, (HMENU)(IDC_AB_FIRST + s_uCurrentId), hInst, NULL
+		g_uABNextLeft, g_uABNextTop, AB_BUTTON_WIDTH, AB_BUTTON_HEIGHT, g_hWndMain, (HMENU)(IDC_AB_FIRST + g_apTools.size()), hInst, NULL
 	);
 	{
 		SetWindowTheme(hBtn, L" ", L" ");
 		HBITMAP hBitmap = (HBITMAP)pTool->getIcon();
-		if(hBitmap)
+		if(hBitmap) 
 		{
 			SendMessage(hBtn, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
 		}
 	}
-	++s_uCurrentId;
+	g_aAccel.push_back(pTool->getAccel());
+	g_apTools.push_back(pTool);
 	g_uABNextTop += AB_BUTTON_HEIGHT;
+}
+
+void XInitCustomAccel()
+{
+	if(!g_aAccel.size())
+	{
+		return;
+	}
+	int nAccel = CopyAcceleratorTable(g_hAccelTableMain, NULL, 0);
+	Array<ACCEL> aAccel;
+	aAccel.resize(nAccel);
+	CopyAcceleratorTable(g_hAccelTableMain, aAccel, nAccel);
+
+	for(UINT i = 0, l = g_aAccel.size(); i < l; ++i)
+	{
+		ACCEL a = {};
+		XAccelItem &itm = g_aAccel[i];
+		if(itm.flags & XAF_ALT)
+		{
+			a.fVirt |= FALT;
+		}
+		if(itm.flags & XAF_CTRL)
+		{
+			a.fVirt |= FCONTROL;
+		}
+		if(itm.flags & XAF_SHIFT)
+		{
+			a.fVirt |= FSHIFT;
+		}
+		if(itm.flags & XAF_VIRTKEY)
+		{
+			a.fVirt |= FVIRTKEY;
+		}
+		a.key = itm.uKey;
+		a.cmd = IDC_AB_FIRST + i;
+
+		aAccel.push_back(a);
+	}
+
+	DestroyAcceleratorTable(g_hAccelTableMain);
+	g_hAccelTableMain = CreateAcceleratorTable(aAccel, aAccel.size());
 }

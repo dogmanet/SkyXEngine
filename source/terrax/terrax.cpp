@@ -840,6 +840,7 @@ int main(int argc, char **argv)
 			g_mEditableSystems[AAString(pEditable->getName())] = pEditable;
 		}
 	}
+	XInitCustomAccel();
 	if(g_pEditableSystems.size() > 0)
 	{
 		ComboBox_SetCurSel(g_hComboTypesWnd, 0);
