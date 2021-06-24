@@ -230,13 +230,11 @@ void CShadowCache::nextFrame()
 
 void CShadowCache::addLight(CXLight *pLight)
 {
-	pLight->testDirty();
 	m_aFrameLights.push_back(pLight);
 }
 
 void CShadowCache::addRSMLight(CXLight *pLight)
 {
-	pLight->testDirty();
 	m_aFrameRSMLights.push_back(pLight);
 }
 

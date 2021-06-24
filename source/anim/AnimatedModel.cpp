@@ -542,7 +542,7 @@ void CAnimatedModel::update(float fDT)
 			float delta = (float)pLayer->uFadeCurTime / (float)pLayer->uFadeTime;
 			for(UINT j = 0, jl = m_pShared->getBoneCount(); j < jl; ++j)
 			{
-				pLayer->pCurrentBones[j].orient = SMquaternionSlerp(pLayer->pLastFrameBones[j].orient, pCurAnim->m_ppSequenceData[frame][j].orient * m_pBoneControllers[j].orient, delta).Normalize();
+				pLayer->pCurrentBones[j].orient = SMquaternionSlerp(pLayer->pLastFrameBones[j].orient, pCurAnim->m_ppSequenceData[frame][j].orient * m_pBoneControllers[j].orient, delta)/*.Normalize()*/;
 				pLayer->pCurrentBones[j].position = (float3_t)(pLayer->pLastFrameBones[j].position + (pCurAnim->m_ppSequenceData[frame][j].position + m_pBoneControllers[j].position - pLayer->pLastFrameBones[j].position) * delta);
 			}
 			fillBoneMatrix();
@@ -665,7 +665,7 @@ void CAnimatedModel::update(float fDT)
 			
 			for(UINT j = 0, jl = m_pShared->getBoneCount(); j < jl; ++j)
 			{
-				pLayer->pCurrentBones[j].orient = (SMquaternionSlerp(pCurAnim->m_ppSequenceData[pLayer->iCurrentFrame][j].orient, pCurAnim->m_ppSequenceData[nextFrame][j].orient, delta) * m_pBoneControllers[j].orient).Normalize();
+				pLayer->pCurrentBones[j].orient = (SMquaternionSlerp(pCurAnim->m_ppSequenceData[pLayer->iCurrentFrame][j].orient, pCurAnim->m_ppSequenceData[nextFrame][j].orient, delta) * m_pBoneControllers[j].orient);
 				pLayer->pCurrentBones[j].position = (float3_t)(pCurAnim->m_ppSequenceData[pLayer->iCurrentFrame][j].position + (pCurAnim->m_ppSequenceData[nextFrame][j].position - pCurAnim->m_ppSequenceData[pLayer->iCurrentFrame][j].position) * delta + m_pBoneControllers[j].position);
 			}
 		}
@@ -740,7 +740,7 @@ void CAnimatedModel::fillBoneMatrix()
 		if(/*!m_pIsBoneWorld[0][i] && */iParent != -1)
 		{
 			assert(iParent >= 0 && (UINT)iParent < l);
-			m_pNextFrameBones[i].orient = (m_pNextFrameBones[i].orient * m_pNextFrameBones[iParent].orient).Normalize();
+			m_pNextFrameBones[i].orient = (m_pNextFrameBones[i].orient * m_pNextFrameBones[iParent].orient);
 			m_pNextFrameBones[i].position = (float4)(float4(m_pNextFrameBones[iParent].orient * (float3)m_pNextFrameBones[i].position, 1.0f) + m_pNextFrameBones[iParent].position);
 		}
 	}
@@ -791,4 +791,34 @@ void CAnimatedModel::sync()
 	ModelBoneShader * tmp = m_pRenderFrameBones;
 	m_pRenderFrameBones = m_pNextFrameBones;
 	m_pNextFrameBones = tmp;
+}
+
+bool XMETHODCALLTYPE CAnimatedModel::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, float3 *pvNormal, bool isRayInWorldSpace, bool bReturnNearestPoint)
+{
+	float3 vRayStart = vStart;
+	float3 vRayEnd = vEnd;
+	if(isRayInWorldSpace)
+	{
+		float fInvScale = 1.0f / getScale();
+		float3 vDir = getOrientation().Conjugate() * (vEnd - vStart) * fInvScale;
+		vRayStart = (getOrientation().Conjugate() * (vRayStart - getPosition())) * fInvScale;
+		vRayEnd = vRayStart + vDir;
+	}
+
+	// FIXME implement in more accurate way
+
+	if(SMRayIntersectAABB(SMAABB(m_vLocalMin, m_vLocalMax), vRayStart, vRayEnd - vRayStart))
+	{
+		if(pvOut)
+		{
+			*pvOut = isRayInWorldSpace ? getPosition() : float3(0.0f);
+		}
+		if(pvNormal)
+		{
+			*pvNormal = vRayStart - vRayEnd;
+		}
+		return(true);
+	}
+
+	return(false);
 }

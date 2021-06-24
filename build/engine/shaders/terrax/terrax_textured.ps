@@ -23,6 +23,7 @@ cbuffer perFrame: register(b0)
 half4 main(VSO_TXTextured IN):COLOR0
 {
 	half4 vFinalColor = g_txDiffuse.Sample(g_sSampler, IN.vTexUV);
+	clip(vFinalColor.a - 0.5);
 	vFinalColor *= g_vColor;
 	return(vFinalColor);
 }

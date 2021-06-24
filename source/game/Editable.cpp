@@ -1,12 +1,6 @@
 #include "Editable.h"
 #include "EditorObject.h"
 
-#if defined(_DEBUG)
-#pragma comment(lib, "sxmtrl_d.lib")
-#else
-#pragma comment(lib, "sxmtrl.lib")
-#endif
-
 CEditable::CEditable(IXCore *pCore):
 	m_pCore(pCore),
 	m_pEditorExtension(new CEditorExtension(this))

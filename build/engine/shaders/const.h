@@ -20,7 +20,7 @@ cbuffer CDataObserverCamera: register(b5)
 	float4x4 g_mObserverInvVP;
 	float4x4 g_mObserverInvV;
 	
-	float4 g_vObserverNearFar;
+	float4 g_vObserverNearFar; // invWinSize
 	float3 g_vObserverParamProj;
 };
 cbuffer CDataFrame: register(b4)

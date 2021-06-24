@@ -12,12 +12,12 @@ See the license in LICENSE
 extern CPerfMon *g_pPerfMon;
 
 #if defined(_WINDOWS)
-static void SetThreadName(DWORD dwThreadID, const char *threadName)
+static void SetThreadName(HANDLE hThread, const char *threadName)
 {
 	THREADNAME_INFO info;
 	info.dwType = 0x1000;
 	info.szName = threadName;
-	info.dwThreadID = dwThreadID;
+	info.dwThreadID = GetThreadId(hThread);
 	info.dwFlags = 0;
 #pragma warning(push)
 #pragma warning(disable: 6320 6322)
@@ -112,6 +112,17 @@ void CTaskManager::forceSinglethreaded()
 	m_iNumThreads = 1;
 }
 
+void CTaskManager::addTask(TaskPtr task, std::chrono::steady_clock::time_point tpWhen)
+{
+	{
+		ScopedLock lock(m_mutexSchedulerThread);
+		m_aScheduled.insert({task, tpWhen}, [](const ScheduledTask &a, const ScheduledTask &b){
+			return(a.tpRunAt > b.tpRunAt);
+		});
+	}
+	m_ConditionSchedulerThread.notify_one();
+}
+
 void CTaskManager::addTask(TaskPtr task)
 {
 	unsigned int flags = task->getFlags();
@@ -171,14 +182,19 @@ void CTaskManager::start()
 		std::thread * t = new std::thread(std::bind(&CTaskManager::workerMain, this));
 #if defined(_WINDOWS)
 		sprintf(name, "Worker #%u", i);
-		SetThreadName(GetThreadId(t->native_handle()), name);
+		SetThreadName(t->native_handle(), name);
 #endif
 		m_aThreads.push_back(t);
 	}
-	m_pIOThread = new std::thread(std::bind(&CTaskManager::workerIOMain, this)); 
+	m_pIOThread = new std::thread(std::bind(&CTaskManager::workerIOMain, this));
 #if defined(_WINDOWS)
 	sprintf(name, "Worker IO");
-	SetThreadName(GetThreadId(m_pIOThread->native_handle()), name);
+	SetThreadName(m_pIOThread->native_handle(), name);
+#endif
+	m_pShedulerThread = new std::thread(std::bind(&CTaskManager::schedulerMain, this));
+#if defined(_WINDOWS)
+	sprintf(name, "Scheduler");
+	SetThreadName(m_pShedulerThread->native_handle(), name);
 #endif
 
 	sheduleNextBunch();
@@ -245,7 +261,7 @@ void CTaskManager::synchronize()
 
 void CTaskManager::sheduleNextBunch()
 {
-	std::unique_lock<std::mutex> lock(m_mutexSync);
+	std::unique_lock<mutex> lock(m_mutexSync);
 
 	while(m_iNumTasksToWaitFor > 0)
 	{
@@ -268,6 +284,7 @@ void CTaskManager::stop()
 	m_isRunning = false;
 	m_ConditionIOThread.notify_all();
 	m_ConditionWorker.notify_all();
+	m_ConditionSchedulerThread.notify_all();
 	
 	ITask *pStubTask = new CTaskStub();
 	for(int i = 0, l = m_aThreads.size() - 1; i < l; ++i)
@@ -290,15 +307,30 @@ void CTaskManager::stop()
 		m_pIOThread->join();
 		mem_delete(m_pIOThread);
 	}
+	if(m_pShedulerThread)
+	{
+		m_pShedulerThread->join();
+		mem_delete(m_pShedulerThread);
+	}
 }
 
 void CTaskManager::execute(TaskPtr t)
 {
+	std::chrono::steady_clock::time_point tpStarted(std::chrono::steady_clock::now());
 	t->run();
+	// std::chrono::steady_clock::time_point tpFinished(std::chrono::steady_clock::now());
 
 	if(t->getFlags() & CORE_TASK_FLAG_REPEATING)
 	{
-		addTask(t);
+		uint64_t uRepeatInterval = t->getRepeatInterval();
+		if(uRepeatInterval)
+		{
+			addTask(t, std::chrono::steady_clock::time_point(tpStarted + std::chrono::microseconds(uRepeatInterval)));
+		}
+		else
+		{
+			addTask(t);
+		}
 	}
 	else
 	{
@@ -316,6 +348,46 @@ void CTaskManager::workerIOMain()
 {
 	srand((UINT)time(0));
 	workerIO();
+}
+
+void CTaskManager::schedulerMain()
+{
+	srand((UINT)time(0));
+	//TaskPtr task;
+
+	ScheduledTask *pScheduledTask = NULL;
+	std::chrono::steady_clock::time_point tpNow, tpWaitUntil;
+	while(m_isRunning)
+	{
+		tpNow = tpWaitUntil = std::chrono::steady_clock::now();
+
+		std::unique_lock<std::mutex> lock(m_mutexSchedulerThread);
+		for(UINT i = 0, l = m_aScheduled.size(); i < l; ++i)
+		{
+			pScheduledTask = &m_aScheduled[i];
+
+			if(pScheduledTask->tpRunAt <= tpNow)
+			{
+				addTask(pScheduledTask->pTask);
+				m_aScheduled.erase(i);
+				--i; --l;
+			}
+			else
+			{
+				tpWaitUntil = pScheduledTask->tpRunAt;
+				break;
+			}
+		}
+
+		if(tpWaitUntil != tpNow)
+		{
+			m_ConditionSchedulerThread.wait_until(lock, tpWaitUntil);
+		}
+		else
+		{
+			m_ConditionSchedulerThread.wait(lock);
+		}
+	}
 }
 
 void CTaskManager::worker(bool bOneRun)
@@ -344,7 +416,7 @@ void CTaskManager::worker(bool bOneRun)
 			if(task->getFlags() & (CORE_TASK_FLAG_FRAME_SYNC/* | CORE_TASK_FLAG_ON_SYNC*/))
 			{
 				{
-					std::lock_guard<std::mutex> lock(m_mutexSync);
+					ScopedLock lock(m_mutexSync);
 					m_iNumTasksToWaitFor -= 1;
 				}
 
@@ -354,7 +426,7 @@ void CTaskManager::worker(bool bOneRun)
 			if(task->getFlags() & CORE_TASK_FLAG_FOR_LOOP)
 			{
 				{
-					std::lock_guard<std::mutex> lock(m_mutexFor);
+					ScopedLock lock(m_mutexFor);
 					m_aiNumWaitFor[((CTaskForLoop*)task)->getID()] -= 1;
 					//m_aiNumWaitFor[std::static_pointer_cast<CTaskForLoop, ITask>(task)->getID()] -= 1;
 				}
@@ -421,7 +493,7 @@ ID CTaskManager::forLoop(int iStart, int iEnd, const IParallelForBody *pBody, in
 
 	ID id = -1;
 	{
-		std::lock_guard<std::mutex> lock(m_mutexFor);
+		ScopedLock lock(m_mutexFor);
 		id = m_aiNumWaitFor.size();
 		m_aiNumWaitFor.push_back(iTaskCount);
 	}

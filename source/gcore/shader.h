@@ -221,8 +221,6 @@ public:
 	void getPath(SHADER_TYPE type, ID idShader, char *szPath);
 
 protected:
-	const char* getTextResultLoad(int iResult);
-
 	Array<CShaderVS*> m_aVS;	//!< массивы vs шейдеров
 	Array<CShaderPS*> m_aPS;	//!< массивы ps шейдеров
 	Array<CShaderGS*> m_aGS;	//!< массивы gs шейдеров

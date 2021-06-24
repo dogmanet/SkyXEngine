@@ -115,6 +115,9 @@ public:
 
 	virtual void XMETHODCALLTYPE setEmissive(bool bValue) = 0;
 	virtual bool XMETHODCALLTYPE isEmissive() const = 0;
+
+	virtual void XMETHODCALLTYPE setEditorial(bool bValue) = 0;
+	virtual bool XMETHODCALLTYPE isEditorial() const = 0;
 };
 
 #endif

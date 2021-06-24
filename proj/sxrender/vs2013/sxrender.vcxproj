@@ -183,9 +183,12 @@
     <ClInclude Include="..\..\..\source\common\string.h" />
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
     <ClInclude Include="..\..\..\source\render\gdata.h" />
+    <ClInclude Include="..\..\..\source\render\GizmoRenderer.h" />
+    <ClInclude Include="..\..\..\source\render\LineRenderer.h" />
     <ClInclude Include="..\..\..\source\render\OcclusionCuller.h" />
     <ClInclude Include="..\..\..\source\render\RenderableVisibility.h" />
     <ClInclude Include="..\..\..\source\render\RenderPipeline.h" />
+    <ClInclude Include="..\..\..\source\render\RenderUtils.h" />
     <ClInclude Include="..\..\..\source\render\render_func.h" />
     <ClInclude Include="..\..\..\source\render\Scene.h" />
     <ClInclude Include="..\..\..\source\render\sxrender.h" />
@@ -198,9 +201,14 @@
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\render\gdata.cpp" />
+    <ClCompile Include="..\..\..\source\render\GizmoRenderer.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Disabled</Optimization>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\render\LineRenderer.cpp" />
     <ClCompile Include="..\..\..\source\render\OcclusionCuller.cpp" />
     <ClCompile Include="..\..\..\source\render\RenderableVisibility.cpp" />
     <ClCompile Include="..\..\..\source\render\RenderPipeline.cpp" />
+    <ClCompile Include="..\..\..\source\render\RenderUtils.cpp" />
     <ClCompile Include="..\..\..\source\render\render_func.cpp" />
     <ClCompile Include="..\..\..\source\render\Scene.cpp" />
     <ClCompile Include="..\..\..\source\render\sxrender.cpp" />

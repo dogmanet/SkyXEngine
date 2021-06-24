@@ -21,6 +21,9 @@ public:
 	virtual void stopRepeating() = 0;
 
 	virtual UINT getFlags() = 0;
+
+	// in microseconds
+	virtual uint64_t getRepeatInterval() = 0;
 };
 
 template<class T>
@@ -40,6 +43,11 @@ public:
 	UINT getFlags() override
 	{
 		return(m_uFlags);
+	}
+
+	uint64_t getRepeatInterval() override
+	{
+		return(0);
 	}
 
 private:

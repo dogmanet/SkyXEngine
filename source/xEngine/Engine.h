@@ -47,6 +47,8 @@ protected:
 
 	bool checkResize();
 
+	void showProfile();
+
 	IXEngineCallback *m_pCallback = NULL;
 
 	IXCore *m_pCore = NULL;

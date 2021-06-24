@@ -246,13 +246,11 @@ SX_LIB_API CBaseEntity *SGame_EntGetByName(const char *szName, ID idStart = 0);
 
 SX_LIB_API BOOL SGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam);
 
-/*! Копирует объект, возвращает ID копии
-*/
-SX_LIB_API ID SGame_EntClone(ID idSrc);
-
+#if 0
 /*! Находит объект по пересечению с лучем, в режиме редактора так же находит точечные объекты, в режиме игры - нет
 */
 SX_LIB_API ID SGame_EntGetByRay(const float3 &vStart, const float3 &vDir, float3 *pHitPos = NULL);
+#endif
 
 #endif
 

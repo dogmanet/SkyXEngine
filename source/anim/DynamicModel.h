@@ -53,6 +53,8 @@ public:
 	IXMaterial* getTransparentMaterial(UINT uLod);
 
 	void onFeaturesChanged();
+
+	bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, float3 *pvNormal = NULL, bool isRayInWorldSpace = true, bool bReturnNearestPoint = false) override;
 protected:
 	CDynamicModelProvider *m_pProvider;
 	CDynamicModelShared *m_pShared;

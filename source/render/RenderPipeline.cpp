@@ -672,7 +672,7 @@ void CRenderPipeline::renderFrame(float fDeltaTime)
 	m_cameraShaderData.mInvVP = SMMatrixInverse(NULL, m_cameraShaderData.mVP);
 	m_cameraShaderData.mInvV = SMMatrixTranspose(SMMatrixInverse(NULL, gdata::mCamView));
 	m_cameraShaderData.vPosCam = gdata::vConstCurrCamPos;
-	m_cameraShaderData.vNearFar = gdata::vNearFar;
+	m_cameraShaderData.vNearFarInvWinSize = float4(gdata::vNearFar, 1.0f / (float)m_uOutWidth, 1.0f / (float)m_uOutHeight);
 	m_cameraShaderData.vParamProj = float3_t((float)m_uOutWidth, (float)m_uOutHeight, gdata::fProjFov);
 	m_pCameraShaderData->update(&m_cameraShaderData);
 	pCtx->setVSConstant(m_pCameraShaderData, SCR_CAMERA);
@@ -685,6 +685,7 @@ void CRenderPipeline::renderFrame(float fDeltaTime)
 
 	Core_PStartSection(PERF_SECTION_MRT);
 	renderGBuffer();
+	pCtx->addTimestamp("gbuffer");
 	Core_PEndSection(PERF_SECTION_MRT);
 
 	switch(*r_final_image)
@@ -718,6 +719,7 @@ void CRenderPipeline::renderFrame(float fDeltaTime)
 
 		pSceneBuf = m_pLightAmbientDiffuse->asRenderTarget();
 		pCtx->setColorTarget(pSceneBuf);
+		pCtx->addTimestamp("gi");
 	}
 	else
 	{
@@ -727,14 +729,18 @@ void CRenderPipeline::renderFrame(float fDeltaTime)
 	showTexture(m_pSceneTexture);
 
 	renderPostprocessMain();
+	pCtx->addTimestamp("post_main");
 	renderTransparent();
+	pCtx->addTimestamp("transparency");
 	renderPostprocessFinal();
+	pCtx->addTimestamp("post_final");
 
 	if(m_pLightSystem)
 	{
 		pCtx->setColorTarget(pBackBuf);
 
 		m_pLightSystem->renderToneMapping(m_pLightAmbientDiffuse);
+		pCtx->addTimestamp("tonemapping");
 
 	//! @todo reimplement me!
 	//	if(*r_final_image == DS_RT_LUMINANCE)
@@ -754,16 +760,19 @@ end:
 	if(m_pLightSystem)
 	{
 		m_pLightSystem->renderDebug();
+		pCtx->addTimestamp("debug");
 	}
 
 	Core_PStartSection(PERF_SECTION_RENDER_INFO);
 	//@FIXME: пока так
 	SGame_RenderHUD();
+	pCtx->addTimestamp("hud");
 	Core_PEndSection(PERF_SECTION_RENDER_INFO);
 	
 	showFrameStats();
 
 	getXUI()->render();
+	pCtx->addTimestamp("ui");
 }
 void CRenderPipeline::endFrame()
 {
@@ -1538,14 +1547,29 @@ void CRenderPipeline::renderEditor2D(IXRenderableVisibility *pVisibility)
 		pVisibility = m_pMainCameraVisibility;
 	}
 
-	SMMATRIX mVP;
-	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mVP);
-	float3 vCamPos = SRender_GetCamera()->getPosition();
+	IGXContext *pCtx = m_pDevice->getThreadContext();
+	IGXSurface *pTarget = pCtx->getColorTarget();
+	
 
+	SMMATRIX mVP, mV;
+	Core_RMatrixGet(G_RI_MATRIX_VIEWPROJ, &mVP);
+	Core_RMatrixGet(G_RI_MATRIX_VIEW, &mV);
+
+	float3 vCamPos = SRender_GetCamera()->getPosition();
+	
 	m_cameraShaderData.mVP = SMMatrixTranspose(mVP);
+	m_cameraShaderData.mInvVP = SMMatrixInverse(NULL, m_cameraShaderData.mVP);
+	m_cameraShaderData.mInvV = SMMatrixTranspose(SMMatrixInverse(NULL, mV));
 	m_cameraShaderData.vPosCam = vCamPos;
+
+	m_cameraShaderData.vNearFarInvWinSize = float4(gdata::vNearFar, 1.0f / (float)pTarget->getWidth(), 1.0f / (float)pTarget->getHeight());
+	m_cameraShaderData.vParamProj = float3((float)pTarget->getWidth(), (float)pTarget->getHeight(), gdata::fProjFov);
+
+	mem_release(pTarget);
+
 	m_pCameraShaderData->update(&m_cameraShaderData);
 	m_pDevice->getThreadContext()->setVSConstant(m_pCameraShaderData, SCR_CAMERA);
+	m_pDevice->getThreadContext()->setPSConstant(m_pCameraShaderData, SCR_CAMERA);
 	m_pDevice->getThreadContext()->setVSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
 	m_pDevice->getThreadContext()->setPSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
 	m_pDevice->getThreadContext()->setGSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);

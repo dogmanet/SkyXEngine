@@ -173,6 +173,8 @@ namespace gui
 			return(m_wsResourceDir);
 		}
 
+		void getFontIndexBuffer(UINT uChars, IGXIndexBuffer **ppIndexBuffer);
+
 	protected:
 		StringW m_wsResourceDir; 
 		CTextureManager *m_pTextureManager;
@@ -180,6 +182,9 @@ namespace gui
 		AssotiativeArray<StringW, CFont> m_mFonts;
 
 		FT_Library m_pFT;
+
+		UINT m_uFontIBChars = 0;
+		IGXIndexBuffer *m_pFontIB = NULL;
 	};
 
 };

@@ -592,7 +592,7 @@ void CPropertyWindow::onPropListChanged()
 		ListView_GetItem(m_hPropListWnd, &lvItem);
 		prop_s *pField = &m_aPropFields[AAString((char*)lvItem.lParam)];
 		
-		SetDlgItemTextW(m_hPropTabs[0], IDC_OP_HELP, pField->field.szHelp ? StringW(String(pField->field.szHelp)).c_str() : L"");
+		SetDlgItemTextW(m_hPropTabs[0], IDC_OP_HELP, pField->field.szHelp ? CMB2WC(pField->field.szHelp): L"");
 
 		initEditor(pField->field.editorType, pField->field.pEditorData, pField->sValue.c_str());
 	}

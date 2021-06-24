@@ -8,7 +8,7 @@
 
 // {7EC7E7F7-E0BE-4CB7-ABFE-9FC0C10880A5}
 #define IXMATERIALSYSTEM_GUID DEFINE_XGUID(0x7ec7e7f7, 0xe0be, 0x4cb7, 0xab, 0xfe, 0x9f, 0xc0, 0xc1, 0x8, 0x80, 0xa5)
-#define IXMATERIALSYSTEM_VERSION 3
+#define IXMATERIALSYSTEM_VERSION 4
 
 struct XVertexOutputElement
 {
@@ -115,7 +115,7 @@ public:
 	//virtual void XMETHODCALLTYPE addTexture(const char *szName, IGXTexture2D *pTexture) = 0;
 
 	//! Установить материал для отрисовки
-	virtual void XMETHODCALLTYPE bindMaterial(IXMaterial *pMaterial) = 0;
+	virtual bool XMETHODCALLTYPE bindMaterial(IXMaterial *pMaterial) = 0;
 
 	//! Установить мировую матрицу для отрисовки
 	virtual void XMETHODCALLTYPE setWorld(const SMMATRIX &mWorld) = 0;
@@ -149,6 +149,14 @@ public:
 
 	//! Перезагружает все материалы
 	virtual void XMETHODCALLTYPE reloadAll() = 0;
+
+	//! Сканирует директории на наличие материалов и формирует кэш
+	virtual void XMETHODCALLTYPE scanMaterials() = 0;
+
+	virtual UINT XMETHODCALLTYPE getScannedMaterialsCount() = 0;
+	virtual const char* XMETHODCALLTYPE getScannedMaterial(UINT uIdx, IXMaterial **ppOut, bool *pisTexture = NULL, bool *pisTranslated = NULL) = 0;
+
+	virtual bool XMETHODCALLTYPE isMaterialLoaded(const char *szName) = 0;
 };
 
 #endif

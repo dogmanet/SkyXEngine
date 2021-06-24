@@ -1,0 +1,19 @@
+
+/*
+terrax_textured.ps
+*/
+
+#include <struct.h>
+
+//##########################################################################
+
+SamplerState g_sSampler :register(s0);
+
+Texture2D g_txDiffuse :register(t0);
+
+//##########################################################################
+
+float4 main(VSO_TXTextured IN):COLOR0
+{
+	return(g_txDiffuse.Sample(g_sSampler, IN.vTexUV));
+}

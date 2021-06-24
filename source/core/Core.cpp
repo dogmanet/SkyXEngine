@@ -30,7 +30,7 @@ CCore::CCore(const char *szName)
 	ConsoleConnect(szName);
 	ConsoleRegisterCmds();
 	CvarInitSystem(this);
-
+	
 	m_pConsole = new CConsole();
 
 	Core_0RegisterCVarBool("g_time_run", true, "Запущено ли игровое время?", FCVAR_NOTIFY_OLD);
@@ -380,6 +380,11 @@ ID XMETHODCALLTYPE CCore::forLoop(int iStart, int iEnd, const IParallelForBody *
 void XMETHODCALLTYPE CCore::waitForLoop(ID id)
 {
 	g_pTaskManager->waitFor(id);
+}
+
+void XMETHODCALLTYPE CCore::addTask(ITask *pTask)
+{
+	g_pTaskManager->addTask(pTask);
 }
 
 IXConsole* XMETHODCALLTYPE CCore::getConsole()

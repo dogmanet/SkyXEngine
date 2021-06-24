@@ -8,14 +8,12 @@ See the license in LICENSE
 #define __IXSOUNDSYSTEM_H
 
 #include <gdefines.h>
-#include <common/math.h>
 #include <common/AudioRawDesc.h>
 
 //##########################################################################
 
 // {8FF4F913-5EA1-4EE6-8C06-73D8A49EBC22}
 #define IXSOUNDSYSTEM_GUID DEFINE_XGUID(0x8ff4f913, 0x5ea1, 0x4ee6, 0x8c, 0x6, 0x73, 0xd8, 0xa4, 0x9e, 0xbc, 0x22)
-
 #define IXSOUNDSYSTEM_VERSION 2
 
 //##########################################################################
@@ -39,7 +37,9 @@ enum SOUND_LOOP
 {
 	SOUND_LOOP_NONE = 0,
 	SOUND_LOOP_SIMPLE = 1,
-	SOUND_LOOP_SEAMLESS = 2
+	SOUND_LOOP_SEAMLESS = 2,
+
+	SOUND_LOOP_FORCE_DWORD = 0x7fffffff  /* force 32-bit size enum */
 };
 
 //##########################################################################
@@ -107,7 +107,7 @@ public:
 
 	virtual IXSoundLayer* XMETHODCALLTYPE findLayer(const char *szName) = 0;
 
-	virtual IXSoundLayer* XMETHODCALLTYPE newSoundLayer(const AudioRawDesc *pDesc, const char *szName) = 0;
+	virtual IXSoundLayer* XMETHODCALLTYPE newSoundLayer(const char *szName, const AudioRawDesc *pDesc = NULL) = 0;
 	virtual IXSoundEmitter* XMETHODCALLTYPE newSoundEmitter(const char *szName, SOUND_SPACE space) = 0;
 	virtual IXSoundPlayer* XMETHODCALLTYPE newSoundPlayer(const char *szName, SOUND_SPACE space) = 0;
 
@@ -122,8 +122,6 @@ public:
 
 	virtual IXSoundLayer* XMETHODCALLTYPE createMasterLayer(const AudioRawDesc *pDesc, const char *szName) = 0;
 	virtual IXSoundLayer* XMETHODCALLTYPE findLayer(const char *szName) = 0;
-
-	virtual void XMETHODCALLTYPE update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp) = 0;
 };
 
 #endif

@@ -459,11 +459,11 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 		}
 
 		UINT **ppIndices = new UINT*[m_uLodCount];
-		XResourceModelAnimatedVertex **ppVertices = new XResourceModelAnimatedVertex*[m_uLodCount];
+		XResourceModelAnimatedVertexGPU **ppVertices = new XResourceModelAnimatedVertexGPU*[m_uLodCount];
 		for(UINT i = 0; i < m_uLodCount; ++i)
 		{
 			ppIndices[i] = new UINT[aLodIndexCount[i]];
-			ppVertices[i] = new XResourceModelAnimatedVertex[aLodVertexCount[i]];
+			ppVertices[i] = new XResourceModelAnimatedVertexGPU[aLodVertexCount[i]];
 		}
 
 
@@ -494,9 +494,35 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 						{
 							// append subset to lod (group by materialId)
 
-							//memcpy(&ppIndices[uLod][subset.uStartIndex], pSubset->pIndices, sizeof(UINT) * pSubset->iIndexCount);
-							memcpy(&ppVertices[uLod][subset.uStartVertex], pSubset->pVertices, sizeof(XResourceModelAnimatedVertex) * pSubset->iVertexCount);
+							//memcpy(&ppVertices[uLod][subset.uStartVertex], pSubset->pVertices, sizeof(XResourceModelAnimatedVertex) * pSubset->iVertexCount);
+							for(UINT k = 0; k < pSubset->iVertexCount; ++k)
+							{
+#define TO_SHORT(v) ((short)((v) * 32767.0f))
+								auto &dst = (ppVertices[uLod] + subset.uStartVertex)[k];
+								auto &src = pSubset->pVertices[k];
+								dst.vPos = src.vPos;
+								dst.vTex = src.vTex;
+								dst.vNorm[0] = TO_SHORT(src.vNorm.x);
+								dst.vNorm[1] = TO_SHORT(src.vNorm.y);
+								dst.vNorm[2] = TO_SHORT(src.vNorm.z);
+								dst.vTangent[0] = TO_SHORT(src.vTangent.x);
+								dst.vTangent[1] = TO_SHORT(src.vTangent.y);
+								dst.vTangent[2] = TO_SHORT(src.vTangent.z);
+								dst.vBinorm[0] = TO_SHORT(src.vBinorm.x);
+								dst.vBinorm[1] = TO_SHORT(src.vBinorm.y);
+								dst.vBinorm[2] = TO_SHORT(src.vBinorm.z);
+								for(UINT k = 0; k < 4; ++k)
+								{
+									dst.u8BoneIndices[k] = src.u8BoneIndices[k];
+								}
+								dst.vBoneWeights[0] = (byte)(src.vBoneWeights.x * 255.0f);
+								dst.vBoneWeights[1] = (byte)(src.vBoneWeights.y * 255.0f);
+								dst.vBoneWeights[2] = (byte)(src.vBoneWeights.z * 255.0f);
+								dst.vBoneWeights[3] = (byte)(src.vBoneWeights.w * 255.0f);
+#undef TO_SHORT
+							}
 
+							//memcpy(&ppIndices[uLod][subset.uStartIndex], pSubset->pIndices, sizeof(UINT) * pSubset->iIndexCount);
 							UINT uIndexDelta = aLodVertexCount[uLod];
 							for(UINT j = 0; j < pSubset->iIndexCount; ++j)
 							{
@@ -506,7 +532,7 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 							//@TODO: optimize that!!!
 							for(UINT j = 0; j < pSubset->iVertexCount; ++j)
 							{
-								XResourceModelAnimatedVertex &vtx = ppVertices[uLod][subset.uStartVertex + j];
+								XResourceModelAnimatedVertexGPU &vtx = ppVertices[uLod][subset.uStartVertex + j];
 								for(UINT k = 0; k < 4; ++k)
 								{
 									vtx.u8BoneIndices[k] = getBoneId(aSubsets[i].pResource->getBoneName(vtx.u8BoneIndices[k]));
@@ -546,7 +572,7 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 				if(m_pProvider->getCore()->isOnMainThread())
 				{
 					m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer(sizeof(UINT) * aLodIndexCount[i], GXBUFFER_USAGE_STATIC, GXIT_UINT32, ppIndices[i]);
-					IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelAnimatedVertex) * aLodVertexCount[i], GXBUFFER_USAGE_STATIC, ppVertices[i]);
+					IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelAnimatedVertexGPU) * aLodVertexCount[i], GXBUFFER_USAGE_STATIC, ppVertices[i]);
 					m_ppRenderBuffer[i] = m_pDevice->createRenderBuffer(1, &pVertexBuffer, m_pProvider->getVertexDeclaration());
 					mem_release(pVertexBuffer);
 				}
@@ -680,7 +706,7 @@ void CAnimatedModelShared::initGPUresources()
 	for(UINT i = 0; i < m_uLodCount; ++i)
 	{
 		m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer(sizeof(UINT) * m_puTempTotalIndices[i], GXBUFFER_USAGE_STATIC, GXIT_UINT32, m_ppTempIndices[i]);
-		IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelAnimatedVertex) * m_puTempTotalVertices[i], GXBUFFER_USAGE_STATIC, m_ppTempVertices[i]);
+		IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelAnimatedVertexGPU) * m_puTempTotalVertices[i], GXBUFFER_USAGE_STATIC, m_ppTempVertices[i]);
 		m_ppRenderBuffer[i] = m_pDevice->createRenderBuffer(1, &pVertexBuffer, m_pProvider->getVertexDeclaration());
 		mem_release(pVertexBuffer);
 
@@ -1129,8 +1155,10 @@ void CAnimatedModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor)
 
 		if(subset.uIndexCount != 0)
 		{
-			m_pMaterialSystem->bindMaterial(m_pppMaterials[uSkin][i]);
-			pCtx->drawIndexed(subset.uVertexCount, subset.uIndexCount / 3, subset.uStartIndex, subset.uStartVertex);
+			if(m_pMaterialSystem->bindMaterial(m_pppMaterials[uSkin][i]))
+			{
+				pCtx->drawIndexed(subset.uVertexCount, subset.uIndexCount / 3, subset.uStartIndex, subset.uStartVertex);
+			}
 		}
 	}
 }

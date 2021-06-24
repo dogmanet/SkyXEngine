@@ -106,6 +106,10 @@ CPhyWorld::CPhyWorld():
 
 	m_pDynamicsWorld->getSolverInfo().m_numIterations = 30;
 
+	// typedef void (*btInternalTickCallback)(btDynamicsWorld *world, btScalar timeStep);
+
+	m_pDynamicsWorld->setInternalTickCallback(TickCallback, this);
+
 	//btCreateDefaultTaskScheduler();
 	static CTaskScheduler taskSheduler;
 	btSetTaskScheduler(&taskSheduler);
@@ -126,6 +130,8 @@ CPhyWorld::CPhyWorld():
 	btSetCustomEnterProfileZoneFunc(CProfileManager::Start_Profile);
 	btSetCustomLeaveProfileZoneFunc(CProfileManager::Stop_Profile);
 
+	m_pTickEventChannel = Core_GetIXCore()->getEventChannel<XEventPhysicsStep>(EVENT_PHYSICS_STEP_GUID);
+	
 #if 0
 	Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->addListener([](const XEventLevel *pData)
 	{
@@ -217,7 +223,10 @@ void CPhyWorld::update(int thread)
 	}
 
 	//printf("%.3fs\n", (float)(time1 - time0) / 1000.0f);
+
+	m_isUpdating = true;
 	m_pDynamicsWorld->stepSimulation((float)(time1 - time0) / 1000.0f, 2, 1.0f / 60.0f);
+	m_isUpdating = false;
 
 	time0 = time1;
 }
@@ -240,6 +249,14 @@ void CPhyWorld::removeShape(btRigidBody * pBody)
 	if(pBody)
 	{
 		m_pDynamicsWorld->removeRigidBody(pBody);
+	}
+}
+
+void CPhyWorld::updateSingleAABB(btCollisionObject* colObj)
+{
+	if(!m_isUpdating)
+	{
+		m_pDynamicsWorld->updateSingleAabb(colObj);
 	}
 }
 
@@ -851,6 +868,17 @@ void CPhyWorld::enableSimulation()
 {
 	m_isRunning = true;
 	m_iSkipFrames = 3;
+}
+
+void CPhyWorld::TickCallback(btDynamicsWorld *world, btScalar timeStep)
+{
+	CPhyWorld *pThis = (CPhyWorld*)world->getWorldUserInfo();
+
+	XEventPhysicsStep ev;
+	ev.fTimeStep = timeStep;
+	ev.pPhysics = NULL;
+
+	pThis->m_pTickEventChannel->broadcastEvent(&ev);
 }
 
 //##############################################################

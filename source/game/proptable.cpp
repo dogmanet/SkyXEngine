@@ -81,7 +81,7 @@ prop_editor_t _GetEditorFilefield(int start, ...)
 	return(out);
 }
 
-const char * GetEmptyString()
+const char* GetEmptyString()
 {
 	static const char * str = "";
 	return(str);
@@ -92,29 +92,31 @@ void output_t::fire(CBaseEntity *pInflictor, CBaseEntity *pActivator, inputdata_
 	inputdata_t data = {0};
 	data.pActivator = pActivator;
 	data.pInflictor = pInflictor;
-	for(int i = 0; i < iOutCount; ++i)
+	for(UINT i = 0, l = aOutputs.size(); i < l; ++i)
 	{
-		if(pOutputs[i].fDelay == 0.0f && !pOutputs[i].useRandomDelay)
+		named_output_t &out = aOutputs[i];
+		data.type = PDF_NONE;
+		if(out.fDelay == 0.0f && !out.useRandomDelay)
 		{
-			for(int j = 0; j < pOutputs[i].iOutCount; ++j)
+			for(int j = 0, jl = out.aOutputs.size(); j < jl; ++j)
 			{
-				data.type = pOutputs[i].pOutputs[j].data.type;
+				data.type = out.aOutputs[j].data.type;
 				
 				if(data.type == PDF_STRING)
 				{
 					data.parameter.str = NULL;
 				}
 
-				if(pOutputs[i].pOutputs[j].useOverrideData)
+				if(out.aOutputs[j].useOverrideData)
 				{
-					data.setParameter(pOutputs[i].pOutputs[j].data);
+					data.setParameter(out.aOutputs[j].data);
 				}
 				else if(pInputData)
 				{
 					data.setParameter(*pInputData);
 				}
 
-				(pOutputs[i].pOutputs[j].pTarget->*(pOutputs[i].pOutputs[j].fnInput))(&data);
+				(out.aOutputs[j].pTarget->*(out.aOutputs[j].fnInput))(&data);
 
 				if(data.type == PDF_STRING && data.parameter.str != GetEmptyString())
 				{
@@ -129,11 +131,121 @@ void output_t::fire(CBaseEntity *pInflictor, CBaseEntity *pActivator, inputdata_
 				data.type = pInputData->type;
 				data.setParameter(*pInputData);
 			}
-			pActivator->getManager()->setOutputTimeout(&pOutputs[i], &data);
+			pActivator->getManager()->setOutputTimeout(&out, &data);
 		}
 	}
 }
 
+void named_output_t::init(CBaseEntity *pThisEntity)
+{
+	listTargets.init(pThisEntity);
+	listTargets.setEntityName(szTargetName);
+}
+
+void named_output_t::onEntityAdded(CBaseEntity *pEnt)
+{
+	propdata_t * pField = pEnt->getField(szTargetInput);
+	if(!pField || !(pField->flags & PDFF_INPUT))
+	{
+		printf(COLOR_CYAN "Class '%s' has no input '%s', obj '%s'\n" COLOR_RESET, pEnt->getClassName(), szTargetInput, szTargetName);
+		return;
+	}
+
+	input_t &out = aOutputs[aOutputs.size()];
+
+	out.fnInput = pField->fnInput;
+	out.pTarget = pEnt;
+	memset(&out.data, 0, sizeof(out.data));
+	out.data.type = pField->type;
+	if((out.useOverrideData = szTargetData != NULL))
+	{
+		float3_t f3;
+		float4_t f4;
+		SMQuaternion q;
+		int d;
+		float f;
+		const char *value = szTargetData;
+		bool bParsed = false;
+		switch(pField->type)
+		{
+		case PDF_NONE:
+			bParsed = true;
+			break;
+		case PDF_INT:
+			if(1 == sscanf(value, "%d", &d))
+			{
+				out.data.parameter.i = d;
+				bParsed = true;
+			}
+			break;
+		case PDF_FLOAT:
+			if(1 == sscanf(value, "%f", &f))
+			{
+				out.data.parameter.f = f;
+				bParsed = true;
+			}
+			break;
+		case PDF_VECTOR:
+			if(3 == sscanf(value, "%f %f %f", &f3.x, &f3.y, &f3.z))
+			{
+				out.data.v3Parameter = f3;
+				bParsed = true;
+			}
+			break;
+		case PDF_VECTOR4:
+			{
+				int iPrm = sscanf(value, "%f %f %f %f", &f4.x, &f4.y, &f4.z, &f4.w);
+				if(iPrm > 2)
+				{
+					if(iPrm == 3)
+					{
+						f4.w = 1.0f;
+					}
+					out.data.v4Parameter = f4;
+					bParsed = true;
+				}
+			}
+			break;
+		case PDF_BOOL:
+			if(1 == sscanf(value, "%d", &d))
+			{
+				out.data.parameter.b = d != 0;
+				bParsed = true;
+			}
+			break;
+		case PDF_STRING:
+			_setStrVal(&out.data.parameter.str, value);
+			bParsed = true;
+			break;
+		}
+
+		if(!bParsed)
+		{
+			printf(COLOR_CYAN "Cannot parse input parameter '%s', class '%s', input '%s', obj '%s'\n" COLOR_RESET, value, pEnt->getClassName(), szTargetInput, szTargetName);
+			aOutputs.erase(aOutputs.size() - 1);
+		}
+	}
+}
+void named_output_t::onEntityRemoved(CBaseEntity *pEnt)
+{
+	int idx = aOutputs.indexOf(pEnt, [](const input_t &a, CBaseEntity *b){
+		return(a.pTarget == b);
+	});
+	assert(idx >= 0);
+	if(idx >= 0)
+	{
+		if(aOutputs[idx].useOverrideData && aOutputs[idx].data.type == PDF_STRING)
+		{
+			const char *estr = GetEmptyString();
+			if(estr != aOutputs[idx].data.parameter.str)
+			{
+				mem_delete_a(aOutputs[idx].data.parameter.str);
+			}
+		}
+		aOutputs[idx] = aOutputs[aOutputs.size() - 1];
+		aOutputs.erase(aOutputs.size() - 1);
+	}
+}
 
 void _setStrVal(const char **to, const char *value)
 {

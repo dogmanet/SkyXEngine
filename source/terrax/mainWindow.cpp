@@ -49,6 +49,8 @@ char g_szClipboardFile[MAX_PATH + sizeof(CLIPBOARD_FILE)];
 extern Array<IXEditorObject*> g_pLevelObjects;
 extern AssotiativeArray<AAString, IXEditable*> g_mEditableSystems;
 
+CMaterialBrowser *g_pMaterialBrowser = NULL;
+
 // Global Variables:
 HINSTANCE hInst;								// current instance
 HWND g_hWndMain = NULL;
@@ -76,6 +78,8 @@ BOOL g_is3DPanning = FALSE;
 
 BOOL g_is2DPanning = FALSE;
 
+HWND g_hToolbarWnd = NULL;
+
 BOOL g_isPropWindowVisible = FALSE;
 CPropertyWindow *g_pPropWindow = NULL;
 
@@ -96,9 +100,11 @@ extern Array<IXEditable*> g_pEditableSystems;
 
 extern String g_sLevelName;
 
+CGizmoMoveCallback g_gizmoMoveCallback;
+CGizmoRotateCallback g_gizmoRotateCallback;
+
 // Forward declarations of functions included in this code module:
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-LRESULT CALLBACK GuiWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK RenderWndProc(HWND, UINT, WPARAM, LPARAM);
 void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheckItem = -1);
 void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
@@ -106,6 +112,7 @@ BOOL XCheckMenuItem(HMENU hMenu, UINT uIDCheckItem, bool bCheck);
 void XUpdateStatusGrid();
 void XUpdateStatusMPos();
 void XUpdateUndoRedo();
+HWND CreateToolbar(HWND hWndParent);
 
 class CPropertyCallback: public CPropertyWindow::ICallback
 {
@@ -184,7 +191,7 @@ ATOM XRegisterClass(HINSTANCE hInstance)
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = hInstance;
-	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_SPLITTER_WND));
+	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICON_LOGO));
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
 
 	hBrush = CreateSolidBrush(RGB(240, 240, 240));
@@ -200,6 +207,7 @@ ATOM XRegisterClass(HINSTANCE hInstance)
 		return(FALSE);
 	}
 
+	wcex.style |= CS_DBLCLKS;
 	// Intilaizing the class for the viewport window
 	wcex.lpfnWndProc = RenderWndProc;
 	hBrush = CreateSolidBrush(RGB(255, 255, 255));
@@ -211,79 +219,7 @@ ATOM XRegisterClass(HINSTANCE hInstance)
 		return(FALSE);
 	}
 
-
-	
-	//DeleteObject(hBrush);
-
-
-	// Intilaizing the class for the gui window
-	wcex.lpfnWndProc = GuiWndProc;
-	hBrush = CreateSolidBrush(RGB(0, 0, 0));
-	wcex.hbrBackground = (HBRUSH)hBrush;
-	wcex.lpszClassName = GUI_WINDOW_CLASS;
-
-	if(!RegisterClassEx(&wcex))
-	{
-		return(FALSE);
-	}
-
 	return(TRUE);
-}
-
-void XInitGuiWindow(bool pre)
-{
-#if 0
-	if(pre)
-	{
-		g_pGuiWnd = CreateWindowA(GUI_WINDOW_CLASS, "Material editor", WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_WIDTH, WINDOW_HEIGHT, NULL, NULL, hInst, NULL);
-		ShowWindow(g_pGuiWnd, SW_SHOW);
-		UpdateWindow(g_pGuiWnd);
-
-		//DWM_BLURBEHIND dwmBlur = {0};
-		//dwmBlur.dwFlags = DWM_BB_ENABLE;
-		//dwmBlur.fEnable = TRUE;
-		//
-		//DwmEnableBlurBehindWindow(g_pGuiWnd, &dwmBlur);
-
-		MARGINS margins = {-1};
-
-		// Extend the frame across the whole window.
-		DwmExtendFrameIntoClientArea(g_pGuiWnd, &margins);
-	}
-	else
-	{
-		HMODULE hDLL = LoadLibrary("sxgui"
-#ifdef _DEBUG
-			"_d"
-#endif
-			".dll");
-		if(!hDLL)
-		{
-			LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to load sxgui"
-#ifdef _DEBUG
-				"_d"
-#endif
-				".dll");
-		}
-
-		gui::PFNINITINSTANCE pfnGUIInit;
-		pfnGUIInit = (gui::PFNINITINSTANCE)GetProcAddress(hDLL, "InitInstance");
-
-		if(!pfnGUIInit)
-		{
-			LibReport(REPORT_MSG_LEVEL_ERROR, "The procedure entry point InitInstance could not be located in the dynamic link library sxgui.dll");
-		}
-
-		g_pGUI = pfnGUIInit(SGCore_GetDXDevice(), "./editor_gui/", g_pGuiWnd);
-
-		g_pGUI->pushDesktop(g_pGUI->createDesktopA("main", "main.html"));
-	}
-#endif
-}
-
-void XGuiRender()
-{
-	//g_pGUI->render();
 }
 
 BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
@@ -665,6 +601,38 @@ static void FromClipboard()
 	mem_release(pConfig);
 }
 
+static CCommandCreate* CreateObjectAtPosition(const float3 &vPos, bool bDeselectAll)
+{
+	int iSel1 = ComboBox_GetCurSel(g_hComboTypesWnd);
+	int iLen1 = ComboBox_GetLBTextLen(g_hComboTypesWnd, iSel1);
+	char *szTypeName = (char*)alloca(sizeof(char)* (iLen1 + 1));
+	ComboBox_GetLBText(g_hComboTypesWnd, iSel1, szTypeName);
+
+	int iSel2 = ComboBox_GetCurSel(g_hComboClassesWnd);
+	int iLen2 = ComboBox_GetLBTextLen(g_hComboClassesWnd, iSel2);
+	char *szClassName = (char*)alloca(sizeof(char)* (iLen2 + 1));
+	ComboBox_GetLBText(g_hComboClassesWnd, iSel2, szClassName);
+
+	if(bDeselectAll)
+	{
+		CCommandSelect *pCmdUnselect = new CCommandSelect();
+		for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+		{
+			IXEditorObject *pObj = g_pLevelObjects[i];
+			if(pObj->isSelected())
+			{
+				pCmdUnselect->addDeselected(i);
+			}
+		}
+		g_pUndoManager->execCommand(pCmdUnselect);
+	}
+
+	CCommandCreate *pCmd = new CCommandCreate(vPos, szTypeName, szClassName, Button_GetCheck(g_hCheckboxRandomScaleYawWnd));
+	g_pUndoManager->execCommand(pCmd);
+
+	return(pCmd);
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	RECT rect;
@@ -838,10 +806,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			TreeView_InsertItem(g_hObjectTreeWnd, &tvis);
 		}
 
+		g_hToolbarWnd = CreateToolbar(hWnd);
+
+
 
 		g_pPropWindow = new CPropertyWindow(hInst, hWnd);
 		g_pPropWindow->clearClassList();
 		g_pPropWindow->setCallback(&g_propertyCallback);
+
+		g_pMaterialBrowser = new CMaterialBrowser(hInst, hWnd);
 
 		return FALSE;
 	}
@@ -1105,17 +1078,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, FALSE);
 			CheckDlgButton(hWnd, IDC_AB_CREATE, FALSE);
 			g_xState.bCreateMode = false;
+			XUpdateGizmos();
 			break;
 		case IDC_AB_CAMERA:
 			CheckDlgButton(hWnd, IDC_AB_ARROW, FALSE);
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, TRUE);
 			CheckDlgButton(hWnd, IDC_AB_CREATE, FALSE);
 			g_xState.bCreateMode = false;
+			XUpdateGizmos();
 			break;
 		case IDC_AB_CREATE:
 			CheckDlgButton(hWnd, IDC_AB_ARROW, FALSE);
 			CheckDlgButton(hWnd, IDC_AB_CAMERA, FALSE);
 			CheckDlgButton(hWnd, IDC_AB_CREATE, TRUE);
+			XUpdateGizmos();
 			break;
 
 		case ID_GRIDSIZE_SMALLER:
@@ -1173,6 +1149,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			g_isPropWindowVisible = TRUE;
 			break;
 
+		case ID_MAT_BROWSER:
+			g_pMaterialBrowser->browse(NULL);
+			break;
+
+
 		case ID_VIEW_CENTERONSELECTION:
 			if(g_xState.bHasSelection)
 			{
@@ -1228,32 +1209,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDC_CTRL_RETURN:
 			if(g_xState.bCreateMode)
 			{
-				int iSel1 = ComboBox_GetCurSel(g_hComboTypesWnd);
-				int iLen1 = ComboBox_GetLBTextLen(g_hComboTypesWnd, iSel1);
-				char *szTypeName = (char*)alloca(sizeof(char)* (iLen1 + 1));
-				ComboBox_GetLBText(g_hComboTypesWnd, iSel1, szTypeName);
-
-				int iSel2 = ComboBox_GetCurSel(g_hComboClassesWnd);
-				int iLen2 = ComboBox_GetLBTextLen(g_hComboClassesWnd, iSel2);
-				char *szClassName = (char*)alloca(sizeof(char)* (iLen2 + 1));
-				ComboBox_GetLBText(g_hComboClassesWnd, iSel2, szClassName);
-
-				if(GetKeyState(VK_CONTROL) >= 0)
-				{
-					CCommandSelect *pCmdUnselect = new CCommandSelect();
-					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-					{
-						IXEditorObject *pObj = g_pLevelObjects[i];
-						if(pObj->isSelected())
-						{
-							pCmdUnselect->addDeselected(i);
-						}
-					}
-					g_pUndoManager->execCommand(pCmdUnselect);
-				}
-
-				CCommandCreate *pCmd = new CCommandCreate(g_xState.vCreateOrigin, szTypeName, szClassName, Button_GetCheck(g_hCheckboxRandomScaleYawWnd));
-				g_pUndoManager->execCommand(pCmd);
+				CreateObjectAtPosition(g_xState.vCreateOrigin, GetKeyState(VK_CONTROL) >= 0);
 
 				g_xState.bCreateMode = false;
 			}
@@ -1311,6 +1267,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 				g_pUndoManager->execCommand(pCmdSelect);
 			}
+			break;
+
+		case ID_XFORM_TRANSLATE:
+			if(!GetCapture())
+			{
+				XSetXformType(X2DXF_SCALE);
+			}
+			break;
+		case ID_XFORM_NONE:
+			XSetXformType(X2DXF_NONE);
+			break;
+		case ID_XFORM_ROTATE:
+			XSetXformType(X2DXF_ROTATE);
 			break;
 		}
 		break;
@@ -1634,51 +1603,153 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return(0);
 }
 
-LRESULT CALLBACK GuiWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+struct SelectItem
 {
-	RECT rect;
-	PAINTSTRUCT ps;
-	HDC hdc;
-	
-	static float fCoeffWidth = 0.0f;
-	static float fCoeffHeight = 0.0f;
-	static int iLeftWidth = 0;
-	static int iTopHeight = 0;
+	float fDist2;
+	UINT uObj;
+};
+Array<SelectItem> g_aRaytracedItems;
+CCommandSelect *g_pSelectCmd = NULL;
+float g_fSelectDeltaTime = 0.0f;
+UINT g_uSelectedIndex = 0;
+bool g_isSelectionCtrl = false;
 
-	IMSG msg;
-	msg.lParam = lParam;
-	msg.wParam = wParam;
-	msg.message = message;
-
-	// SSInput_AddMsg(msg);
-
-
-	//if(g_pGUI && !g_pGUI->putMessage(message, wParam, lParam))
-	//{
-		//return(TRUE);
-	//}
-
-	switch(message)
+static void XTrackMouse(HWND hWnd, LPARAM lParam)
+{
+	HWND hCapWnd = GetCapture();
+	if(hCapWnd)
 	{
-	case WM_SIZE:
+		hWnd = hCapWnd;
+	}
+	else
+	{
+		g_xState.hActiveWnd = hWnd;
+
+		if(hWnd == g_hTopRightWnd)
 		{
-			static int *r_resize = (int*)GET_PCVAR_INT("r_resize");
+			g_xState.activeWindow = XWP_TOP_RIGHT;
+		}
+		else if(hWnd == g_hBottomLeftWnd)
+		{
+			g_xState.activeWindow = XWP_BOTTOM_LEFT;
+		}
+		else if(hWnd == g_hBottomRightWnd)
+		{
+			g_xState.activeWindow = XWP_BOTTOM_RIGHT;
+		}
+		else
+		{
+			g_xState.activeWindow = XWP_TOP_LEFT;
+		}
+	}
 
-			if(!r_resize)
-			{
-				r_resize = (int*)GET_PCVAR_INT("r_resize");
-			}
+	g_xState.vMousePos = {(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam)};
 
-			if(r_resize)
+	ICamera *pCamera = g_xConfig.m_pViewportCamera[g_xState.activeWindow];
+	if(!pCamera)
+	{
+		return;
+	}
+
+	RECT rc;
+	GetWindowRect(hWnd, &rc);
+	float2 vWinSize((float)(rc.right - rc.left), (float)(rc.bottom - rc.top));
+	g_xState.vWinSize = vWinSize;
+
+	if(g_xState.activeWindow == XWP_TOP_LEFT)
+	{
+		// transform by matrix
+		SMMATRIX mViewProj;
+		Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEWPROJ, &mViewProj);
+		SMMATRIX mInvVP = SMMatrixInverse(NULL, mViewProj);
+
+		float3 vScreenPos(g_xState.vMousePos / vWinSize, 0.0f);
+		vScreenPos = vScreenPos * float3(2.0f, -2.0f, 1.0f) - float3(1.0f, -1.0f, 0.0f);
+		vScreenPos.z = -1.0f;
+		vScreenPos.w = 1.0f;
+
+
+		float3 vRayStart = vScreenPos * mInvVP;
+		vRayStart /= vRayStart.w;
+
+		vScreenPos.z = 1.0f;
+		float3 vRayDir = vScreenPos * mInvVP;
+		vRayDir /= vRayDir.w;
+		vRayDir = SMVector3Normalize(vRayDir - vRayStart);
+
+		g_xState.vWorldRayStart = vRayStart;
+		g_xState.vWorldRayDir = vRayDir;
+
+		float3 avNormals[] = {
+			float3(1.0f, 0.0f, 0.0f),
+			float3(0.0f, 1.0f, 0.0f),
+			float3(0.0f, 0.0f, 1.0f)
+		};
+
+		float fBestCos = -1.0f;
+		for(int i = 0; i < ARRAYSIZE(avNormals); ++i)
+		{
+			float fCos = fabsf(SMVector3Dot(avNormals[i], vRayDir));
+			if(fCos > fBestCos)
 			{
-				*r_resize = 1;
+				fBestCos = fCos;
+				g_xState.vBestPlaneNormal = avNormals[i];
 			}
 		}
-		break;
-	default:
-		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
-	return 0;
+	else
+	{
+		float3 fCamWorld = pCamera->getPosition();
+
+		X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+		float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
+
+		switch(xCurView)
+		{
+		case X2D_TOP:
+			fCamWorld = float3(fCamWorld.x, fCamWorld.z, 0.0f);
+			g_xState.vWorldRayDir = float3(0.0f, -1.0f, 0.0f);
+			g_xState.vBestPlaneNormal = -g_xState.vWorldRayDir;
+			break;
+		case X2D_FRONT:
+			fCamWorld = float3(fCamWorld.x, fCamWorld.y, 0.0f);
+			g_xState.vWorldRayDir = float3(0.0f, 0.0f, 1.0f);
+			g_xState.vBestPlaneNormal = g_xState.vWorldRayDir;
+			break;
+		case X2D_SIDE:
+			fCamWorld = float3(fCamWorld.z, fCamWorld.y, 0.0f);
+			g_xState.vWorldRayDir = float3(-1.0f, 0.0f, 0.0f);
+			g_xState.vBestPlaneNormal = -g_xState.vWorldRayDir;
+			break;
+		}
+
+		RECT rc;
+		GetClientRect(hWnd, &rc);
+
+		float2 vCenter((float)(rc.left + rc.right) * 0.5f, (float)(rc.top + rc.bottom) * 0.5f);
+		float2 vDelta = (g_xState.vMousePos - vCenter) * float2(1.0f, -1.0f);
+
+		float2 vSize = vWinSize;
+		vSize *= 0.5f * fViewScale;
+		float2 vTopLeft = fCamWorld - vSize;
+		float2 vBottomRight = fCamWorld + vSize;
+		g_xState.m_vViewportBorders[g_xState.activeWindow] = float4(vTopLeft.x, vTopLeft.y, vBottomRight.x, vBottomRight.y);
+
+		g_xState.vWorldMousePos = (float2)(fCamWorld + vDelta * fViewScale);
+
+		switch(xCurView)
+		{
+		case X2D_TOP:
+			g_xState.vWorldRayStart = float3(g_xState.vWorldMousePos.x, fCamWorld.y, g_xState.vWorldMousePos.y);
+			break;
+		case X2D_FRONT:
+			g_xState.vWorldRayStart = float3(g_xState.vWorldMousePos.x, g_xState.vWorldMousePos.y, fCamWorld.z);
+			break;
+		case X2D_SIDE:
+			g_xState.vWorldRayStart = float3(fCamWorld.x, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
+			break;
+		}
+	}
 }
 
 LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -1686,6 +1757,16 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 	if(g_pEngine && g_pEngine->onMessage(message, wParam, lParam))
 	{
 		return(TRUE);
+	}
+
+	static const bool *terrax_detach_3d = GET_PCVAR_BOOL("terrax_detach_3d");
+	if(!terrax_detach_3d)
+	{
+		terrax_detach_3d = GET_PCVAR_BOOL("terrax_detach_3d");
+	}
+	else if(*terrax_detach_3d)
+	{
+		return(DefWindowProc(hWnd, message, wParam, lParam));
 	}
 
 	PAINTSTRUCT ps;
@@ -1800,7 +1881,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					{
 						if(!g_xState.bHasSelection)
 						{
-							g_xState.xformType = X2DXF_SCALE;
+							XSetXformType(X2DXF_SCALE);
 						}
 						XExecCommand(pCmd);
 					}
@@ -1811,7 +1892,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				ReleaseCapture();
 				if(!XExecCommand(s_pMoveCmd) && g_xState.bHasSelection && !s_wasSelectionChanged)
 				{
-					g_xState.xformType = (X_2DXFORM_TYPE)((g_xState.xformType + 1) % X2DXF__LAST);
+					XSetXformType((X_2DXFORM_TYPE)((g_xState.xformType + 1) % X2DXF__LAST));
 				}
 				s_pMoveCmd = NULL;
 			}
@@ -1827,6 +1908,14 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				XExecCommand(s_pRotateCmd);
 				s_pRotateCmd = NULL;
 			}
+			else if(g_pSelectCmd)
+			{
+				ReleaseCapture();
+				XExecCommand(g_pSelectCmd);
+				g_pSelectCmd = NULL;
+			}
+
+			g_pEditor->onMouseUp();
 
 			POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 			GetClientRect(hWnd, &rect);
@@ -1882,6 +1971,13 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		}
 		break;
 
+	case WM_LBUTTONDBLCLK:
+		if(hWnd == g_hTopLeftWnd && Button_GetCheck(g_hABArrowButton))
+		{
+			SendMessage(g_hWndMain, WM_COMMAND, MAKEWPARAM(ID_EDIT_PROPERTIES, 0), NULL);
+			break;
+		}
+		// NO BREAK!
 	case WM_LBUTTONDOWN:
 		{
 			s_wasSelectionChanged = false;
@@ -1893,8 +1989,154 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				break;
 			}
 
+			XTrackMouse(hWnd, lParam);
 
-			if(hWnd != g_hTopLeftWnd)
+			if(hWnd == g_hTopLeftWnd)
+			{
+				RECT rc;
+				GetWindowRect(hWnd, &rc);
+				float2 vWinSize((float)(rc.right - rc.left), (float)(rc.bottom - rc.top));
+
+				// transform by matrix
+				SMMATRIX mViewProj;
+				Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEWPROJ, &mViewProj);
+				SMMATRIX mInvVP = SMMatrixInverse(NULL, mViewProj);
+
+				float3 vScreenPos(g_xState.vMousePos / vWinSize, 0.0f);
+				vScreenPos = vScreenPos * float3(2.0f, -2.0f, 1.0f) - float3(1.0f, -1.0f, 0.0f);
+				vScreenPos.z = -1.0f;
+				vScreenPos.w = 1.0f;
+
+
+				float3 vRayStart = vScreenPos * mInvVP;
+				vRayStart /= vRayStart.w;
+
+				vScreenPos.z = 1.0f;
+				float3 vRayDir = vScreenPos * mInvVP;
+				vRayDir /= vRayDir.w;
+				vRayDir = SMVector3Normalize(vRayDir - vRayStart);
+				// printf("%.2f, %.2f, %.2f\n", vRayStart.x, vRayStart.y, vRayStart.z);
+				// printf("%.2f, %.2f, %.2f\n\n", vRayEnd.x, vRayEnd.y, vRayEnd.z);
+
+				float3 vRayEnd = vRayStart + vRayDir * 1000.0f;
+
+
+				if(Button_GetCheck(g_hABArrowButton))
+				{
+					if(g_pEditor->onMouseDown())
+					{
+						break;
+					}
+
+					g_aRaytracedItems.clearFast();
+					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+					{
+						if(!g_pLevelObjects[i]->hasVisualModel())
+						{
+							float3 vPos = g_pLevelObjects[i]->getPos();
+							float fDist2 = SMDistancePointBeam2(vPos, vRayStart, vRayDir);
+							if(fDist2 < 0.1f * 0.1f)
+							{
+								g_aRaytracedItems.push_back({SMVector3Length2(vRayStart - vPos), i});
+							}
+						}
+						else
+						{
+							float3 vPos;
+							if(g_pLevelObjects[i]->rayTest(vRayStart, vRayEnd, &vPos))
+							{
+								g_aRaytracedItems.push_back({SMVector3Length2(vRayStart - vPos), i});
+							}
+						}
+					}
+
+					g_aRaytracedItems.quickSort([](const SelectItem &a, const SelectItem &b){
+						return(a.fDist2 < b.fDist2);
+					});
+
+					g_pSelectCmd = new CCommandSelect();
+					SetCapture(hWnd);
+					g_fSelectDeltaTime = XSELECT_STEP_DELAY;
+					g_uSelectedIndex = ~0;
+					g_isSelectionCtrl = GetKeyState(VK_CONTROL) < 0;
+
+					XFrameRun(0.0f);
+				}
+				else if(Button_GetCheck(g_hABCreateButton))
+				{
+					struct SelectItem2
+					{
+						float fDist2;
+						float3 vPos;
+						float3 vNorm;
+					};
+					static Array<SelectItem2> s_aRaytracedItems;
+
+					float3 vPos, vNorm;
+					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+					{
+						if(g_pLevelObjects[i]->hasVisualModel())
+						{
+							if(g_pLevelObjects[i]->rayTest(vRayStart, vRayEnd, &vPos, &vNorm, NULL, true))
+							{
+								s_aRaytracedItems.push_back({SMVector3Length2(vRayStart - vPos), vPos, vNorm});
+							}
+						}
+					}
+
+					s_aRaytracedItems.quickSort([](const SelectItem2 &a, const SelectItem2 &b){
+						return(a.fDist2 < b.fDist2);
+					});
+
+					if(s_aRaytracedItems.size())
+					{
+						vPos = s_aRaytracedItems[0].vPos;
+						vNorm = SMVector3Normalize(s_aRaytracedItems[0].vNorm);
+
+						IXEditorObject *pObj = CreateObjectAtPosition(vPos, GetKeyState(VK_CONTROL) >= 0)->getObject();
+						float3 vMin, vMax;
+						pObj->getBound(&vMin, &vMax);
+
+						float3 avPoints[] = {
+							float3(vMin),
+							float3(vMin.x, vMin.y, vMax.z),
+							float3(vMin.x, vMax.y, vMin.z),
+							float3(vMin.x, vMax.y, vMax.z),
+							float3(vMax.x, vMin.y, vMin.z),
+							float3(vMax.x, vMin.y, vMax.z),
+							float3(vMax.x, vMax.y, vMin.z),
+							float3(vMax),
+						};
+						printf("%.2f, %.2f, %.2f\n", vNorm.x, vNorm.y, vNorm.z);
+
+						float fProj = FLT_MAX;
+						for(UINT i = 0, l = ARRAYSIZE(avPoints); i < l; ++i)
+						{
+							float fTmp = SMVector3Dot(avPoints[i], vNorm);
+							printf("%.2f\n", fTmp);
+							if(fTmp < fProj)
+							{
+								fProj = fTmp;
+							}
+						}
+
+						fProj = SMVector3Dot(vPos, vNorm) - fProj;
+						printf("%.2f, %.2f, %.2f\n%.2f, %.2f, %.2f\n%.2f, %.2f, %.2f\n%f\n\n", vPos.x, vPos.y, vPos.z, vMin.x, vMin.y, vMin.z, vMax.x, vMax.y, vMax.z, fProj);
+						if(fProj > 0)
+						{
+							pObj->setPos((float3)(vPos + vNorm * fProj));
+						}
+
+						s_aRaytracedItems.clearFast();
+					}
+				}
+
+				if(!Button_GetCheck(g_hABCameraButton))
+				{
+					g_pEditor->onMouseDown();
+				}
+			}
+			else
 			{
 				if(Button_GetCheck(g_hABArrowButton))
 				{
@@ -1964,13 +2206,13 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 							// X2D_SIDE (z/y)
 							{XDIR_Y_NEG, XDIR_Z_POS, XDIR_Y_POS, XDIR_Z_NEG, XDIR_Y_NEG | XDIR_Z_NEG, XDIR_Y_NEG | XDIR_Z_POS, XDIR_Y_POS | XDIR_Z_POS, XDIR_Y_POS | XDIR_Z_NEG}
 						};
-						for(int i = g_xState.xformType == X2DXF_SCALE ? 0 : 4; i < 8; ++i)
+						for(int i = g_xState.xformType == X2DXF_SCALE || g_xState.xformType == X2DXF_NONE ? 0 : 4; i < 8; ++i)
 						{
 							if(fabsf(fMPos.x - vCenters[i].x) <= fPtSize && fabsf(fMPos.y - vCenters[i].y) <= fPtSize)
 							{
 								SetCapture(hWnd);
 
-								if(g_xState.xformType == X2DXF_SCALE)
+								if(g_xState.xformType == X2DXF_SCALE || g_xState.xformType == X2DXF_NONE)
 								{
 									// create scale command
 									s_pScaleCmd = new CCommandScale();
@@ -2007,6 +2249,11 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						{
 							break;
 						}
+					}
+
+					if(g_pEditor->onMouseDown())
+					{
+						break;
 					}
 
 					if(!XIsMouseInSelection(g_xState.activeWindow) || (wParam & MK_CONTROL))
@@ -2128,6 +2375,10 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 					g_xState.vCreateOrigin = XSnapToGrid(g_xState.vCreateOrigin);
 				}
+				else
+				{
+					g_pEditor->onMouseDown();
+				}
 				break;
 			}
 
@@ -2140,7 +2391,9 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				g_is3DRotating = TRUE;
 				SetCapture(hWnd);
 				SSInput_SetEnable(true);
+				break;
 			}
+
 			//else
 		}
 		break;
@@ -2181,33 +2434,21 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 	case WM_MOUSEMOVE:
 		if(!g_is3DRotating && !g_is3DPanning && !g_is2DPanning)
 		{
-			if(hWnd == g_hTopRightWnd)
-			{
-				g_xState.activeWindow = XWP_TOP_RIGHT;
-			}
-			else if(hWnd == g_hBottomLeftWnd)
-			{
-				g_xState.activeWindow = XWP_BOTTOM_LEFT;
-			}
-			else if(hWnd == g_hBottomRightWnd)
-			{
-				g_xState.activeWindow = XWP_BOTTOM_RIGHT;
-			}
-			else
-			{
-				g_xState.activeWindow = XWP_TOP_LEFT;
-			}
+			XTrackMouse(hWnd, lParam);
+			
 
-			g_xState.vMousePos = {(float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam)};
+			
 
 			if(g_xState.activeWindow != XWP_TOP_LEFT)
 			{
+				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+#if 0
 				ICamera *pCamera = g_xConfig.m_pViewportCamera[g_xState.activeWindow];
 				if(!pCamera)
 				{
 					break;
 				}
-				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+				
 				float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
 
 				float3 fCamWorld = pCamera->getPosition();
@@ -2237,7 +2478,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				g_xState.m_vViewportBorders[g_xState.activeWindow] = float4(vTopLeft.x, vTopLeft.y, vBottomRight.x, vBottomRight.y);
 
 				g_xState.vWorldMousePos = (float2)(fCamWorld + vDelta * fViewScale);
-
+#endif
 				/*if(g_is2DPanning)
 				{
 					// vWorldDelta
@@ -2296,7 +2537,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			}
 			XUpdateStatusMPos();
 
-			if(Button_GetCheck(g_hABArrowButton) && !s_pMoveCmd && !s_pScaleCmd && !s_pRotateCmd)
+			if(Button_GetCheck(g_hABArrowButton) && !s_pMoveCmd && !s_pScaleCmd && !s_pRotateCmd && g_xState.activeWindow != XWP_TOP_LEFT)
 			{
 				if(XIsMouseInSelection(g_xState.activeWindow))
 				{
@@ -2347,11 +2588,11 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						{vBorder.x - fPtMargin, vBorder.w + fPtMargin} // top left
 					};
 					HCURSOR hcs[] = {hcSizeNS, hcSizeWE, hcSizeNS, hcSizeWE, hcSizeNESW, hcSizeNWSE, hcSizeNESW, hcSizeNWSE};
-					for(int i = (g_xState.xformType == X2DXF_SCALE) ? 0 : 4; i < 8; ++i)
+					for(int i = (g_xState.xformType == X2DXF_SCALE || g_xState.xformType == X2DXF_NONE) ? 0 : 4; i < 8; ++i)
 					{
 						if(fabsf(fMPos.x - vCenters[i].x) <= fPtSize && fabsf(fMPos.y - vCenters[i].y) <= fPtSize)
 						{
-							if(g_xState.xformType == X2DXF_SCALE)
+							if(g_xState.xformType == X2DXF_SCALE || g_xState.xformType == X2DXF_NONE)
 							{
 								SetCursor(hcs[i]);
 							}
@@ -2393,6 +2634,8 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				}
 				g_xState.vCreateOrigin = XSnapToGrid(g_xState.vCreateOrigin);
 			}
+
+			g_pEditor->onMouseMove();
 			return(TRUE);
 		}
 		break;
@@ -2465,6 +2708,64 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 	return 0;
+}
+
+void XFrameRun(float fDeltaTime)
+{
+	if(g_pSelectCmd)
+	{
+		g_fSelectDeltaTime += fDeltaTime;
+
+		if(g_fSelectDeltaTime >= XSELECT_STEP_DELAY)
+		{
+			g_fSelectDeltaTime = fmodf(g_fSelectDeltaTime, XSELECT_STEP_DELAY);
+
+			if(g_uSelectedIndex == ~0 && !g_isSelectionCtrl)
+			{
+				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+				{
+					if(g_pLevelObjects[i]->isSelected())
+					{
+						g_pLevelObjects[i]->setSelected(false);
+						g_pSelectCmd->addDeselected(i);
+					}
+				}
+			}
+
+			if(g_aRaytracedItems.size())
+			{
+				if(g_uSelectedIndex != ~0)
+				{
+					if(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->isSelected())
+					{
+						g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(false);
+						g_pSelectCmd->addDeselected(g_aRaytracedItems[g_uSelectedIndex].uObj);
+					}
+					else
+					{
+						g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(true);
+						g_pSelectCmd->addSelected(g_aRaytracedItems[g_uSelectedIndex].uObj);
+					}
+				}
+
+				++g_uSelectedIndex;
+				g_uSelectedIndex %= g_aRaytracedItems.size();
+
+				if(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->isSelected())
+				{
+					g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(false);
+					g_pSelectCmd->addDeselected(g_aRaytracedItems[g_uSelectedIndex].uObj);
+				}
+				else
+				{
+					g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(true);
+					g_pSelectCmd->addSelected(g_aRaytracedItems[g_uSelectedIndex].uObj);
+				}
+			}
+		}
+	}
+
+	g_pMaterialBrowser->update(fDeltaTime);
 }
 
 void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheckItem)
@@ -2571,50 +2872,57 @@ BOOL XCheckMenuItem(HMENU hMenu, UINT uIDCheckItem, bool bCheck)
 	return(SetMenuItemInfoA(hMenu, uIDCheckItem, FALSE, &mii));
 }
 
+float XGetGridStep()
+{
+	float fGridStep = -1.0f;
+	switch(g_xConfig.m_gridStep)
+	{
+	case GRID_STEP_1CM:
+		fGridStep = 0.01f;
+		break;
+	case GRID_STEP_2CM:
+		fGridStep = 0.02f;
+		break;
+	case GRID_STEP_5CM:
+		fGridStep = 0.05f;
+		break;
+	case GRID_STEP_10CM:
+		fGridStep = 0.1f;
+		break;
+	case GRID_STEP_20CM:
+		fGridStep = 0.2f;
+		break;
+	case GRID_STEP_50CM:
+		fGridStep = 0.5f;
+		break;
+	case GRID_STEP_1M:
+		fGridStep = 1.0f;
+		break;
+	case GRID_STEP_2M:
+		fGridStep = 2.0f;
+		break;
+	case GRID_STEP_5M:
+		fGridStep = 5.0f;
+		break;
+	case GRID_STEP_10M:
+		fGridStep = 10.0f;
+		break;
+	case GRID_STEP_20M:
+		fGridStep = 20.0f;
+		break;
+	case GRID_STEP_50M:
+		fGridStep = 50.0f;
+		break;
+	}
+
+	return(fGridStep);
+}
+
 float3 XSnapToGrid(const float3 &vPos)
 {
 	if(g_xConfig.m_bSnapGrid)
 	{
-		float fGridStep = -1.0f;
-		switch(g_xConfig.m_gridStep)
-		{
-		case GRID_STEP_1CM:
-			fGridStep = 0.01f;
-			break;
-		case GRID_STEP_2CM:
-			fGridStep = 0.02f;
-			break;
-		case GRID_STEP_5CM:
-			fGridStep = 0.05f;
-			break;
-		case GRID_STEP_10CM:
-			fGridStep = 0.1f;
-			break;
-		case GRID_STEP_20CM:
-			fGridStep = 0.2f;
-			break;
-		case GRID_STEP_50CM:
-			fGridStep = 0.5f;
-			break;
-		case GRID_STEP_1M:
-			fGridStep = 1.0f;
-			break;
-		case GRID_STEP_2M:
-			fGridStep = 2.0f;
-			break;
-		case GRID_STEP_5M:
-			fGridStep = 5.0f;
-			break;
-		case GRID_STEP_10M:
-			fGridStep = 10.0f;
-			break;
-		case GRID_STEP_20M:
-			fGridStep = 20.0f;
-			break;
-		case GRID_STEP_50M:
-			fGridStep = 50.0f;
-			break;
-		}
+		float fGridStep = XGetGridStep();
 
 		if(fGridStep > 0.0f)
 		{
@@ -2862,4 +3170,186 @@ void XUpdatePropWindow()
 		g_pPropWindow->addPropField(&i.second->xPropField, i.second->szValue);
 	}
 
+}
+
+void XUpdateGizmos()
+{
+	if(Button_GetCheck(g_hABArrowButton) && g_xState.bHasSelection)
+	{
+		float3 vPos = (g_xState.vSelectionBoundMin + g_xState.vSelectionBoundMax) * 0.5f;
+		g_pGizmoMove->setPos(vPos);
+		g_pGizmoRotate->setPos(vPos);
+		
+		g_pGizmoMove->enable(g_xState.xformType == X2DXF_SCALE);
+		g_pGizmoRotate->enable(g_xState.xformType == X2DXF_ROTATE);
+	}
+	else
+	{
+		g_pGizmoMove->enable(false);
+		g_pGizmoRotate->enable(false);
+	}
+}
+
+
+
+
+void XMETHODCALLTYPE CGizmoMoveCallback::moveTo(const float3 &vNewPos, IXEditorGizmoMove *pGizmo)
+{
+	m_pCmd->setCurrentPos(vNewPos);
+	pGizmo->setPos(vNewPos);
+}
+void XMETHODCALLTYPE CGizmoMoveCallback::onStart(IXEditorGizmoMove *pGizmo)
+{
+	m_pCmd = new CCommandMove();
+	m_pCmd->setStartPos(pGizmo->getPos());
+	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+	{
+		if(g_pLevelObjects[i]->isSelected())
+		{
+			m_pCmd->addObject(i);
+		}
+	}
+}
+void XMETHODCALLTYPE CGizmoMoveCallback::onEnd(IXEditorGizmoMove *pGizmo)
+{
+	XExecCommand(m_pCmd);
+	m_pCmd = NULL;
+}
+
+void XMETHODCALLTYPE CGizmoRotateCallback::onRotate(const float3_t &vAxis, float fAngle, IXEditorGizmoRotate *pGizmo)
+{
+	pGizmo->setDeltaAngle(fAngle);
+	m_pCmd->setCurrentPos(pGizmo->getPos() + pGizmo->getOrient() * m_vOffset);
+}
+void XMETHODCALLTYPE CGizmoRotateCallback::onStart(const float3_t &vAxis, IXEditorGizmoRotate *pGizmo)
+{
+	float3 vStartOffset;
+	if(fabsf(SMVector3Dot(vAxis, float3(0.0f, 1.0f, 0.0))) > 0.9f)
+	{
+		vStartOffset = float3(1.0f, 0.0f, 0.0f);
+	}
+	else
+	{
+		vStartOffset = float3(0.0f, 1.0f, 0.0f);
+	}
+	m_vOffset = vStartOffset = SMVector3Normalize(SMVector3Cross(vAxis, vStartOffset));
+
+	m_pCmd = new CCommandRotate();
+	m_pCmd->setStartOrigin(pGizmo->getPos());
+	m_pCmd->setStartPos(pGizmo->getPos() + vStartOffset);
+	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+	{
+		if(g_pLevelObjects[i]->isSelected())
+		{
+			m_pCmd->addObject(i);
+		}
+	}
+
+	pGizmo->setOrient(SMQuaternion());
+}
+void XMETHODCALLTYPE CGizmoRotateCallback::onEnd(IXEditorGizmoRotate *pGizmo)
+{
+	XExecCommand(m_pCmd);
+	m_pCmd = NULL;
+}
+
+HIMAGELIST g_hImageList = NULL;
+
+void CheckToolbarButton(int iCmd, BOOL isChecked)
+{
+	SendMessage(g_hToolbarWnd, TB_CHECKBUTTON, iCmd, MAKELPARAM(isChecked, 0));
+}
+
+void CheckXformButton(X_2DXFORM_TYPE type, bool isChecked)
+{
+	int iCmd = 0;
+	switch(type)
+	{
+	case X2DXF_NONE:
+		iCmd = ID_XFORM_NONE;
+		break;
+	case X2DXF_SCALE:
+		iCmd = ID_XFORM_TRANSLATE;
+		break;
+	case X2DXF_ROTATE:
+		iCmd = ID_XFORM_ROTATE;
+		break;
+	}
+
+	CheckToolbarButton(iCmd, isChecked);
+}
+
+HWND CreateToolbar(HWND hWndParent)
+{
+	// Declare and initialize local constants.
+	const int ImageListID = 0;
+	const int numButtons = 4;
+	const int bitmapSize = 16;
+
+	const DWORD buttonStyles = BTNS_AUTOSIZE;
+
+	// Create the toolbar.
+	HWND hWndToolbar = CreateWindowEx(0, TOOLBARCLASSNAME, NULL,
+		WS_CHILD | TBSTYLE_WRAPABLE | TBSTYLE_LIST | TBSTYLE_FLAT, 0, 0, 0, 0,
+		hWndParent, NULL, hInst, NULL);
+
+	//SetWindowLong(hWndToolbar, GWL_EXSTYLE, GetWindowLong(hWndToolbar, GWL_EXSTYLE) | TBSTYLE_EX_MIXEDBUTTONS);
+
+	if(hWndToolbar == NULL)
+		return NULL;
+
+	// Create the image list.
+	g_hImageList = ImageList_Create(bitmapSize, bitmapSize - 1,   // Dimensions of individual bitmaps.
+		ILC_COLOR16 | ILC_MASK,   // Ensures transparent background.
+		numButtons, 0);
+
+	HBITMAP hbToolbar = LoadBitmap(hInst, MAKEINTRESOURCE(IDR_TOOLBAR1));
+	HBITMAP hbToolbarA = LoadBitmap(hInst, MAKEINTRESOURCE(IDR_TOOLBAR_A));
+	ImageList_Add(g_hImageList, hbToolbar, hbToolbarA);
+	DeleteBitmap(hbToolbar);
+	DeleteBitmap(hbToolbarA);
+
+	// Set the image list.
+	SendMessage(hWndToolbar, TB_SETIMAGELIST,
+		(WPARAM)ImageListID,
+		(LPARAM)g_hImageList);
+
+	// Load the button images.
+	//SendMessage(hWndToolbar, TB_LOADIMAGES,
+	//	(WPARAM)TB_LOADIMAGES,
+	//	(LPARAM)HINST_COMMCTRL);
+
+	TBBUTTON tbButtons[] =
+	{
+		{MAKELONG(0, ImageListID), ID_XFORM_NONE, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Handle (Q)"},
+		{MAKELONG(1, ImageListID), ID_XFORM_TRANSLATE, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Move (W)"},
+		{MAKELONG(2, ImageListID), ID_XFORM_ROTATE, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Rotate (R)"},
+		{0, 0, TBSTATE_ENABLED, BTNS_SEP, 0L, 0},
+		{MAKELONG(3, ImageListID), ID_LEVEL_RUN, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Run (F5)"}
+	};
+
+	// Add buttons.
+	SendMessage(hWndToolbar, TB_BUTTONSTRUCTSIZE, (WPARAM)sizeof(TBBUTTON), 0);
+	SendMessage(hWndToolbar, TB_ADDBUTTONS, (WPARAM)ARRAYSIZE(tbButtons), (LPARAM)&tbButtons);
+
+	// Resize the toolbar, and then show it.
+	SendMessage(hWndToolbar, TB_AUTOSIZE, 0, 0);
+	SendMessage(hWndToolbar, TB_SETEXTENDEDSTYLE, 0, (LPARAM)TBSTYLE_EX_MIXEDBUTTONS);
+	ShowWindow(hWndToolbar, TRUE);
+
+	return hWndToolbar;
+}
+
+void XSetXformType(X_2DXFORM_TYPE type)
+{
+	CheckXformButton(g_xState.xformType, false);
+	g_xState.xformType = type;
+	CheckXformButton(g_xState.xformType, true);
+	// emit event
+
+	XEventEditorXformType ev = {};
+	ev.newXformType = type;
+	g_pXformEventChannel->broadcastEvent(&ev);
+
+	XUpdateGizmos();
 }

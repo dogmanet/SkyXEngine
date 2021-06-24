@@ -138,7 +138,8 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 			if(!m_pProvider->getCore()->isOnMainThread())
 			{
 				m_ppTempIndices = new UINT*[uLodCount];
-				m_ppTempVertices = new XResourceModelStaticVertex*[uLodCount];
+				m_ppTempIndices16 = new USHORT*[uLodCount];
+				m_ppTempVertices = new XResourceModelStaticVertexGPU*[uLodCount];
 				m_puTempTotalIndices = new UINT[uLodCount];
 				m_puTempTotalVertices = new UINT[uLodCount];
 			}
@@ -150,6 +151,8 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 				UINT uTotalIndices = 0;
 				UINT uTotalVertices = 0;
 
+				GXINDEXTYPE indexType = GXIT_UINT32;
+
 				for(UINT j = 0, jl = m_pResource->getSubsetCount(i); j < jl; ++j)
 				{
 					auto pSubset = m_pResource->getSubset(i, j);
@@ -157,8 +160,22 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 					uTotalVertices += pSubset->iVertexCount;
 				}
 
-				XResourceModelStaticVertex *pVertices = new XResourceModelStaticVertex[uTotalVertices];
-				UINT *pIndices = new UINT[uTotalIndices];
+				if(uTotalVertices <= USHRT_MAX)
+				{
+					indexType = GXIT_UINT16;
+				}
+
+				XResourceModelStaticVertexGPU *pVertices = new XResourceModelStaticVertexGPU[uTotalVertices];
+				UINT *pIndices = NULL;
+				USHORT *pIndices16 = NULL;
+				if(indexType == GXIT_UINT16)
+				{
+					pIndices16 = new USHORT[uTotalIndices];
+				}
+				else
+				{
+					pIndices = new UINT[uTotalIndices];
+				}
 
 				subset_t subset;
 				for(UINT uMaterial = 0; uMaterial < m_uMaterialCount; ++uMaterial)
@@ -174,8 +191,36 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 							subset.uIndexCount = pSubset->iIndexCount;
 							subset.uVertexCount = pSubset->iVertexCount;
 
-							memcpy(pVertices + subset.uStartVertex, pSubset->pVertices, sizeof(XResourceModelStaticVertex) * pSubset->iVertexCount);
-							memcpy(pIndices + subset.uStartIndex, pSubset->pIndices, sizeof(UINT) * pSubset->iIndexCount);
+							//memcpy(pVertices + subset.uStartVertex, pSubset->pVertices, sizeof(XResourceModelStaticVertex) * pSubset->iVertexCount);
+							for(UINT k = 0; k < pSubset->iVertexCount; ++k)
+							{
+#define TO_SHORT(v) ((short)((v) * 32767.0f))
+								auto &dst = (pVertices + subset.uStartVertex)[k];
+								auto &src = pSubset->pVertices[k];
+								dst.vPos = src.vPos;
+								dst.vTex = src.vTex;
+								dst.vNorm[0] = TO_SHORT(src.vNorm.x);
+								dst.vNorm[1] = TO_SHORT(src.vNorm.y);
+								dst.vNorm[2] = TO_SHORT(src.vNorm.z);
+								dst.vTangent[0] = TO_SHORT(src.vTangent.x);
+								dst.vTangent[1] = TO_SHORT(src.vTangent.y);
+								dst.vTangent[2] = TO_SHORT(src.vTangent.z);
+								dst.vBinorm[0] = TO_SHORT(src.vBinorm.x);
+								dst.vBinorm[1] = TO_SHORT(src.vBinorm.y);
+								dst.vBinorm[2] = TO_SHORT(src.vBinorm.z);
+#undef TO_SHORT
+							}
+							if(indexType == GXIT_UINT16)
+							{
+								for(UINT k = 0; k < pSubset->iIndexCount; ++k)
+								{
+									(pIndices16 + subset.uStartIndex)[k] = pSubset->pIndices[k];
+								}
+							}
+							else
+							{
+								memcpy(pIndices + subset.uStartIndex, pSubset->pIndices, sizeof(UINT) * pSubset->iIndexCount);
+							}
 
 							m_aLods[i][uMaterial] = subset;
 
@@ -203,8 +248,8 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 
 				if(m_pProvider->getCore()->isOnMainThread())
 				{
-					m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer(sizeof(UINT) * uTotalIndices, GXBUFFER_USAGE_STATIC, GXIT_UINT32, pIndices);
-					IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelStaticVertex) * uTotalVertices, GXBUFFER_USAGE_STATIC, pVertices);
+					m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer((indexType == GXIT_UINT16 ? sizeof(USHORT) : sizeof(UINT)) * uTotalIndices, GXBUFFER_USAGE_STATIC, indexType, indexType == GXIT_UINT16 ? (void*)pIndices16 : (void*)pIndices);
+					IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelStaticVertexGPU) * uTotalVertices, GXBUFFER_USAGE_STATIC, pVertices);
 					m_ppRenderBuffer[i] = m_pDevice->createRenderBuffer(1, &pVertexBuffer, m_pProvider->getVertexDeclaration());
 					mem_release(pVertexBuffer);
 
@@ -222,6 +267,7 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 					m_ppRenderBuffer[i] = NULL;
 
 					m_ppTempIndices[i] = pIndices;
+					m_ppTempIndices16[i] = pIndices16;
 					m_ppTempVertices[i] = pVertices;
 					m_puTempTotalIndices[i] = uTotalIndices;
 					m_puTempTotalVertices[i] = uTotalVertices;
@@ -357,15 +403,17 @@ void CDynamicModelShared::initGPUresources()
 
 	for(UINT i = 0, l = m_aLods.size(); i < l; ++i)
 	{
-		m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer(sizeof(UINT) * m_puTempTotalIndices[i], GXBUFFER_USAGE_STATIC, GXIT_UINT32, m_ppTempIndices[i]);
-		IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelStaticVertex) * m_puTempTotalVertices[i], GXBUFFER_USAGE_STATIC, m_ppTempVertices[i]);
+		m_ppIndexBuffer[i] = m_pDevice->createIndexBuffer((m_ppTempIndices[i] ? sizeof(UINT) : sizeof(USHORT)) * m_puTempTotalIndices[i], GXBUFFER_USAGE_STATIC, m_ppTempIndices[i] ? GXIT_UINT32 : GXIT_UINT16, m_ppTempIndices[i] ? (void*)m_ppTempIndices[i] : (void*)m_ppTempIndices16[i]);
+		IGXVertexBuffer *pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(XResourceModelStaticVertexGPU) * m_puTempTotalVertices[i], GXBUFFER_USAGE_STATIC, m_ppTempVertices[i]);
 		m_ppRenderBuffer[i] = m_pDevice->createRenderBuffer(1, &pVertexBuffer, m_pProvider->getVertexDeclaration());
 		mem_release(pVertexBuffer);
 
 		mem_delete_a(m_ppTempIndices[i]);
+		mem_delete_a(m_ppTempIndices16[i]);
 		mem_delete_a(m_ppTempVertices[i]);
 	}
 	mem_delete_a(m_ppTempIndices);
+	mem_delete_a(m_ppTempIndices16);
 	mem_delete_a(m_ppTempVertices);
 	mem_delete_a(m_puTempTotalIndices);
 	mem_delete_a(m_puTempTotalVertices);
@@ -520,25 +568,27 @@ void CDynamicModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor, 
 			)
 		)
 		{
-			m_pMaterialSystem->bindMaterial(m_pppMaterials[uSkin][i]);
+			if(m_pMaterialSystem->bindMaterial(m_pppMaterials[uSkin][i]))
+			{
 
-			switch(m_topology)
-			{
-			case XPT_TRIANGLELIST:
-				uPrimCount = pSubset->uIndexCount / 3;
-				break;
-			case XPT_TRIANGLESTRIP:
-				uPrimCount = pSubset->uIndexCount - 2;
-				break;
-			}
+				switch(m_topology)
+				{
+				case XPT_TRIANGLELIST:
+					uPrimCount = pSubset->uIndexCount / 3;
+					break;
+				case XPT_TRIANGLESTRIP:
+					uPrimCount = pSubset->uIndexCount - 2;
+					break;
+				}
 
-			if(m_isInstancingEnabled)
-			{
-				pCtx->drawIndexedInstanced(m_iInstanceCount, pSubset->uVertexCount, uPrimCount, pSubset->uStartIndex, pSubset->uStartVertex);
-			}
-			else
-			{
-				pCtx->drawIndexed(pSubset->uVertexCount, uPrimCount, pSubset->uStartIndex, pSubset->uStartVertex);
+				if(m_isInstancingEnabled)
+				{
+					pCtx->drawIndexedInstanced(m_iInstanceCount, pSubset->uVertexCount, uPrimCount, pSubset->uStartIndex, pSubset->uStartVertex);
+				}
+				else
+				{
+					pCtx->drawIndexed(pSubset->uVertexCount, uPrimCount, pSubset->uStartIndex, pSubset->uStartVertex);
+				}
 			}
 		}
 	}

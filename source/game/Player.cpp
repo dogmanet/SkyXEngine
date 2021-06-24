@@ -7,7 +7,6 @@ See the license in LICENSE
 #include <input/sxinput.h>
 #include "Player.h"
 #include "LightDirectional.h"
-#include "BaseTool.h"
 #include "BaseAmmo.h"
 
 #include "BaseWeapon.h"
@@ -29,17 +28,11 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CPlayer, player);
 
-CPlayer::CPlayer(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	m_canJump(true),
-	m_fViewbobStep(0.0f),
-	m_fViewbobY(0.0f),
-	m_fViewbobStrafe(float3_t(0, 0, 0)),
-	m_vWpnShakeAngles(float3_t(0.0f, 0.0f, 0.0f)),
-	m_iDSM(DSM_NONE),
-	m_bCanRespawn(false)
+void CPlayer::onPostLoad()
 {
-	m_pCamera = (CPointCamera*)CREATE_ENTITY("point_camera", pMgr);
+	BaseClass::onPostLoad();
+
+	m_pCamera = (CPointCamera*)CREATE_ENTITY("point_camera", m_pMgr);
 	m_pCamera->setPos(m_pHeadEnt->getPos());
 	m_pCamera->setParent(m_pHeadEnt);
 
@@ -102,7 +95,8 @@ void CPlayer::updateInput(float dt)
 		return;
 	}
 
-	m_vWpnShakeAngles = (float3)(m_vWpnShakeAngles * 0.4f);
+	// m_vWpnShakeAngles = (float3)(m_vWpnShakeAngles * 0.4f);
+	m_vWpnShakeAngles = (float3)(m_vWpnShakeAngles / (1.05f + dt));
 
 	if(!*editor_mode || SSInput_GetKeyState(SIM_LBUTTON))
 	{
@@ -209,7 +203,7 @@ void CPlayer::updateInput(float dt)
 
 		if(m_uMoveDir & PM_OBSERVER)
 		{
-			m_vPosition = (float3)(m_vPosition + m_pHeadEnt->getOrient() * (SMVector3Normalize(dir) * dt));
+			setPos(getPos() + m_pHeadEnt->getOrient() * (SMVector3Normalize(dir) * dt));
 		}
 		else
 		{
@@ -298,7 +292,7 @@ void CPlayer::updateInput(float dt)
 				float sin = cosf(m_fViewbobStep * 2.0f);
 				float sin2 = sinf(m_fViewbobStep);
 				float3 vec(1.0f, 0.0f, 0.0f);
-				vec = m_vOrientation * vec;
+				vec = getOrient() * vec;
 				m_fViewbobY = (sin * ((m_uMoveDir & PM_RUN) ? *cl_bob_run_y : *cl_bob_walk_y));
 				m_fViewbobStrafe = (float3)(vec * sin2 * ((m_uMoveDir & PM_RUN) ? *cl_bob_run_x : *cl_bob_walk_x));
 				//m_vOrientation = SMQuaternion(SMToRadian(10) * sinf(m_fViewbobStep), 'z') * m_vOrientation;
@@ -316,9 +310,11 @@ void CPlayer::updateInput(float dt)
 			m_vWpnShakeAngles.x = clampf(m_vWpnShakeAngles.x, -fMaxAng, fMaxAng);
 		}
 
-		GameData::m_pHUDcontroller->setPlayerPos(m_vPosition);
+		GameData::m_pHUDcontroller->setPlayerPos(getPos());
 
 	}
+
+	m_pActiveTool->setShakeRotation(SMQuaternion(m_vWpnShakeAngles.x, 'x') * SMQuaternion(m_vWpnShakeAngles.y, 'y') * SMQuaternion(m_vWpnShakeAngles.z, 'z'));
 
 #ifndef _SERVER
 	if(*grab_cursor && (!*editor_mode || SSInput_GetKeyState(SIM_LBUTTON)))
@@ -352,17 +348,17 @@ CPointCamera * CPlayer::getCamera()
 	return(m_pCamera);
 }
 
-void CPlayer::onSync()
+float3 CPlayer::getHeadOffset()
 {
-	BaseClass::onSync();
+	float3 vOffset = BaseClass::getHeadOffset();
 
-	if(m_uMoveDir & PM_OBSERVER)
+	if(!(m_uMoveDir & PM_OBSERVER))
 	{
-		return;
+		vOffset.y += m_fViewbobY;
+		vOffset += m_fViewbobStrafe;
 	}
 
-	m_vPosition.y += m_fViewbobY;
-	m_vPosition = (float3)(m_vPosition + m_fViewbobStrafe);
+	return(vOffset);
 }
 
 void CPlayer::observe()
@@ -391,7 +387,7 @@ void CPlayer::spawn()
 			m_pCrosshair->enable();
 
 			GameData::m_pHUDcontroller->setPlayerRot(m_vPitchYawRoll);
-			GameData::m_pHUDcontroller->setPlayerPos(m_vPosition);
+			GameData::m_pHUDcontroller->setPlayerPos(getPos());
 			GameData::m_pHUDcontroller->setPlayerHealth(m_fHealth);
 			return;
 		}

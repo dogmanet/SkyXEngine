@@ -211,10 +211,18 @@
     <ClCompile Include="..\..\..\source\terrax\CommandRotate.cpp" />
     <ClCompile Include="..\..\..\source\terrax\CommandScale.cpp" />
     <ClCompile Include="..\..\..\source\terrax\CommandSelect.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\Editor.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\GizmoHandle.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\GizmoMove.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\GizmoRadius.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\GizmoRotate.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\GizmoScale.cpp" />
     <ClCompile Include="..\..\..\source\terrax\Grid.cpp" />
     <ClCompile Include="..\..\..\source\terrax\LevelOpenDialog.cpp" />
     <ClCompile Include="..\..\..\source\terrax\mainWindow.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\MaterialBrowser.cpp" />
     <ClCompile Include="..\..\..\source\terrax\PropertyWindow.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\ScrollBar.cpp" />
     <ClCompile Include="..\..\..\source\terrax\terrax.cpp" />
     <ClCompile Include="..\..\..\source\terrax\Tools.cpp" />
     <ClCompile Include="..\..\..\source\terrax\UndoManager.cpp" />
@@ -237,14 +245,25 @@
     <ClInclude Include="..\..\..\source\terrax\CommandRotate.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandScale.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandSelect.h" />
+    <ClInclude Include="..\..\..\source\terrax\Editor.h" />
+    <ClInclude Include="..\..\..\source\terrax\GizmoHandle.h" />
+    <ClInclude Include="..\..\..\source\terrax\GizmoMove.h" />
+    <ClInclude Include="..\..\..\source\terrax\GizmoRadius.h" />
+    <ClInclude Include="..\..\..\source\terrax\GizmoRotate.h" />
+    <ClInclude Include="..\..\..\source\terrax\GizmoScale.h" />
     <ClInclude Include="..\..\..\source\terrax\LevelOpenDialog.h" />
+    <ClInclude Include="..\..\..\source\terrax\MaterialBrowser.h" />
     <ClInclude Include="..\..\..\source\terrax\PropertyWindow.h" />
+    <ClInclude Include="..\..\..\source\terrax\ScrollBar.h" />
     <ClInclude Include="..\..\..\source\terrax\Tools.h" />
     <ClInclude Include="..\..\..\source\terrax\UndoManager.h" />
     <ClInclude Include="..\..\..\source\terrax\Grid.h" />
     <ClInclude Include="..\..\..\source\terrax\resource.h" />
     <ClInclude Include="..\..\..\source\terrax\terrax.h" />
     <ClInclude Include="..\..\..\source\xcommon\editor\IXEditable.h" />
+    <ClInclude Include="..\..\..\source\xcommon\editor\IXEditor.h" />
+    <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorExtension.h" />
+    <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorGizmo.h" />
     <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorObject.h" />
   </ItemGroup>
   <ItemGroup>
@@ -286,6 +305,7 @@
     <Image Include="..\..\..\source\terrax\resource\sel_z.bmp" />
     <Image Include="..\..\..\source\terrax\resource\sun.bmp" />
     <Image Include="..\..\..\source\terrax\resource\toolbar1.bmp" />
+    <Image Include="..\..\..\source\terrax\resource\toolbar2.bmp" />
     <Image Include="resource\ab_arrow.bmp" />
     <Image Include="resource\ab_arrow.png" />
     <Image Include="resource\ab_camera.bmp" />

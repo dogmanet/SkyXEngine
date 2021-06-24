@@ -25,15 +25,14 @@ class CTriggerTeleport: public CBaseTrigger
 	DECLARE_CLASS(CTriggerTeleport, CBaseTrigger);
 	DECLARE_PROPTABLE();
 public:
-	DECLARE_CONSTRUCTOR();
-	~CTriggerTeleport();
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 
 protected:
 	virtual void onTouchStart(CBaseEntity *pActivator) override;
 
 private:
-	CBaseEntity *m_pLandmark = NULL;
-	CBaseEntity *m_pDestination = NULL;
+	CEntityPointer<CBaseEntity> m_pLandmark;
+	CEntityPointer<CBaseEntity> m_pDestination;
 };
 
 #endif

@@ -205,6 +205,10 @@ protected:
 			{
 				m_aMapsQueue[uMap]->isDirty = true;
 				m_aMapsQueue[uMap]->shouldProcess = true;
+				if(m_aMapsQueue[uMap]->pLight)
+				{
+					m_aMapsQueue[uMap]->pLight->markDirty(m_renderType);
+				}
 				m_aMapsQueue[uMap]->pLight = m_aFrameLights[i];
 				m_aFrameLights.erase(i);
 				return(true);

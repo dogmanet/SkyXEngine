@@ -26,6 +26,10 @@ Texture3D g_txSkylightR: register(t6);
 Texture3D g_txSkylightG: register(t7);
 Texture3D g_txSkylightB: register(t8);
 
+#ifndef USE_SSLR
+TextureCube g_txEnvmap: register(t9);
+#endif
+
 // sampler2D g_sColor:register(s0);
 // sampler2D g_sAmbient:register(s1);
 // sampler2D g_sSpecDiff:register(s2);
@@ -63,6 +67,9 @@ float3 GetReflection(float3 texelPosition, float3 texelNormal)
 {
 	float3 viewDir = normalize(texelPosition - g_vPosCam.xyz);
 	float3 reflectDir = normalize(reflect(viewDir, texelNormal));
+
+	float fresnel = /* 0.0 +  */2.8 * pow(1+dot(viewDir, texelNormal), 2);
+#ifdef USE_SSLR
 	
 	float3 currentRay = 0;
 
@@ -96,10 +103,13 @@ float3 GetReflection(float3 texelPosition, float3 texelNormal)
 	
 	float error = max(0.0f, 1.0f - max(err.x, err.y));
 	
-	float fresnel = /* 0.0 +  */2.8 * pow(1+dot(viewDir, texelNormal), 2);
 	
 	return(g_txAmbient.Sample(g_sLinearClamp, nuv.xy).xyz * error * fresnel);
 	// return(fresnel);
+#else
+	float4 vSample = g_txEnvmap.Sample(g_sLinearWrap, reflectDir);
+	return(vSample.xyz * vSample.w * 16.0f * fresnel);
+#endif
 }
 
 int3 GetSkyLightGridPos(float3 worldPos, uint uCascade)
@@ -119,9 +129,13 @@ float3 GetPixelSkyLight(float3 vPosition, float3 vNormalPixel)
 	// float g = max(0.0f, dot(SHintensity, g_vSkyBoxLights[0][0][0][1]));
 	// float b = max(0.0f, dot(SHintensity, g_vSkyBoxLights[0][0][0][2]));
 	
-	float r = max(0.0f, dot(SHintensity, g_txSkylightR.Sample(g_sLinearClamp, vTexCoord)));
-	float g = max(0.0f, dot(SHintensity, g_txSkylightG.Sample(g_sLinearClamp, vTexCoord)));
-	float b = max(0.0f, dot(SHintensity, g_txSkylightB.Sample(g_sLinearClamp, vTexCoord)));
+	// float r = max(0.0f, dot(SHintensity, g_txSkylightR.Sample(g_sLinearClamp, vTexCoord)));
+	// float g = max(0.0f, dot(SHintensity, g_txSkylightG.Sample(g_sLinearClamp, vTexCoord)));
+	// float b = max(0.0f, dot(SHintensity, g_txSkylightB.Sample(g_sLinearClamp, vTexCoord)));
+	
+	float r = max(0.0f, dot(SHintensity, g_txSkylightR.Load((int4)0)));
+	float g = max(0.0f, dot(SHintensity, g_txSkylightG.Load((int4)0)));
+	float b = max(0.0f, dot(SHintensity, g_txSkylightB.Load((int4)0)));
 	
 	return(float3(r, g, b) / PI);
 }
@@ -161,8 +175,10 @@ float4 main(VSO_ResPos IN):COLOR0
 	
 	// vColor.rgb *= TONE_MAPPING_DENOMENATOR/(fAdaptedLum + TONE_MAPPING_ADAPT_ADD_BIAS);
 	// vColor.rgb /= (fAdaptedLum + vColor.rgb);
-	
+#pragma warning(push)
+#pragma warning(disable: 3571)
 	return float4(pow(vColor.rgb, 1.0/2.2), vColor.a);
+#pragma warning(pop)
 	// return float4(vColor.rgb, vColor.a);
 	// return float4(GetReflection(vPosition.xyz, vNormalPixel), 1.0f);
 	

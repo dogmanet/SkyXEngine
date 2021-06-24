@@ -312,6 +312,15 @@
     <ClCompile Include="..\..\..\source\game\EnvSkybox.cpp">
       <Filter>Source Files\ents\env</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\SoundEmitter.cpp">
+      <Filter>Source Files\ents\sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\common\guid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\EntityList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\source\game\UICalcContainer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -547,6 +556,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\EnvSkybox.h">
       <Filter>Header Files\ents\env</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\SoundEmitter.h">
+      <Filter>Header Files\ents\sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\EntityPointer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\EntityList.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\UICalcContainer.h">
       <Filter>Header Files</Filter>

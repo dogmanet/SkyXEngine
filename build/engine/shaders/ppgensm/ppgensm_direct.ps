@@ -53,7 +53,7 @@ Texture2D g_txDepthShadow: register(t4);
 
 //##########################################################################
 
-float4 main(VSO_ResPos IN):COLOR0
+float4 main(VSO_ResPos IN, float fThickness):COLOR0
 {
 	float fShadow = 0.0f;
 	float3 vNormal = normalize(NormalDecode(g_txNormals.Sample(g_sPointClamp, IN.vTexUV).xyz).xyz);
@@ -61,7 +61,7 @@ float4 main(VSO_ResPos IN):COLOR0
 	//g_txDepthShadow.Sample(g_sLinearClamp, IN.vTexUV)
 	
 	float fDepth = g_txDepthView.Sample(g_sPointClamp, IN.vTexUV).r;
-	float4 vPixelPos = float4(g_vObserverPosCam + IN.vWorldRay * fDepth,1.f);
+	float4 vPixelPos = float4(g_vObserverPosCam.xyz + IN.vWorldRay * fDepth,1.f);
 	float4 vTexCoord = mul(vPixelPos, g_mMatrixTexture);
 	vTexCoord.xyz = vTexCoord.xyz / vTexCoord.w;
 	
@@ -103,7 +103,7 @@ float4 main(VSO_ResPos IN):COLOR0
 	// float fD = vPixelMapSizeBias.x * 0.5f * (1.0f - fDepth) / g_vLightColorPower.w;
 	// fBias = fD * sqrt(1.0f / (cosTheta * cosTheta) - 1.0f);
 	// float fCompareTo = vTexCoord.z - fBias * 10.0f;
-	float fCompareTo = vTexCoord.z - fBias0;
+	float fCompareTo = vTexCoord.z - fBias0 - (1.0f - fThickness) * 0.0005f;
 	// float fCompareTo = vTexCoord.z - fBias0 - fBiasX - fBiasY;
 	
 	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy, fCompareTo);

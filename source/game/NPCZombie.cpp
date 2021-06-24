@@ -5,7 +5,6 @@ See the license in LICENSE
 ***********************************************************/
 
 #include "NPCZombie.h"
-#include "score/sxscore.h"
 
 #include "GameData.h"
 #include "BaseTool.h"
@@ -22,8 +21,7 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CNPCZombie, npc_zombie);
 
-CNPCZombie::CNPCZombie(CEntityManager * pMgr) :
-	BaseClass(pMgr),
+CNPCZombie::CNPCZombie():
 	m_stateDanger(NPC_STATE_DANGER_CALM),
 	m_iObserveRotateStep(0),
 	m_idRotateInterval(-1),
@@ -33,10 +31,14 @@ CNPCZombie::CNPCZombie(CEntityManager * pMgr) :
 {
 	//m_fSpeedWalk = 0.07f;
 	//m_fSpeedRun = 0.12f;
-
-	m_idSndIdle = SSCore_SndCreate3d("mobs/zombie/zombie_idle_16.ogg", SX_SOUND_CHANNEL_GAME, 0, 30);
-	m_idSndIdle2 = SSCore_SndCreate3d("mobs/zombie/zombie_idle_17.ogg", SX_SOUND_CHANNEL_GAME, 0, 30);
-	m_idSndDeath = SSCore_SndCreate3d("mobs/zombie/zombie_die_1.ogg", SX_SOUND_CHANNEL_GAME, 0, 45);
+	IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
+	if(pSound)
+	{
+		IXSoundLayer *pGameLayer = pSound->findLayer("xGame");
+		m_pSndIdle = pGameLayer->newSoundPlayer("mobs/zombie/zombie_idle_16.ogg", SOUND_SPACE_3D);
+		m_pSndIdle2 = pGameLayer->newSoundPlayer("mobs/zombie/zombie_idle_17.ogg", SOUND_SPACE_3D);
+		m_pSndDeath = pGameLayer->newSoundPlayer("mobs/zombie/zombie_die_1.ogg", SOUND_SPACE_3D);
+	}
 
 	m_pActiveTool = (CBaseTool*)CREATE_ENTITY("wpn_zombie_hands", m_pMgr);
 	m_pActiveTool->setOwner(this);
@@ -50,11 +52,15 @@ CNPCZombie::CNPCZombie(CEntityManager * pMgr) :
 CNPCZombie::~CNPCZombie()
 {
 	REMOVE_ENTITY(m_pActiveTool);
+
+	mem_release(m_pSndIdle);
+	mem_release(m_pSndIdle2);
+	mem_release(m_pSndDeath);
 }
 
 void CNPCZombie::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 {
-	SSCore_SndPlay(m_idSndDeath);
+	SAFE_CALL(m_pSndDeath, play);
 
 	BaseClass::onDeath(pAttacker, pInflictor);
 
@@ -63,13 +69,11 @@ void CNPCZombie::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 	m_pActiveTool->stopAction();
 }
 
-void CNPCZombie::onSync()
+void CNPCZombie::setPos(const float3 &pos)
 {
-	BaseClass::onSync();
-
-	SSCore_SndSetPosWorld(m_idSndIdle, &getPos());
-	SSCore_SndSetPosWorld(m_idSndIdle2, &getPos());
-	SSCore_SndSetPosWorld(m_idSndDeath, &getPos());
+	SAFE_CALL(m_pSndIdle, setWorldPos, pos);
+	SAFE_CALL(m_pSndIdle2, setWorldPos, pos);
+	SAFE_CALL(m_pSndDeath, setWorldPos, pos);
 }
 
 void CNPCZombie::rotateThink(float dt)
@@ -287,9 +291,12 @@ void CNPCZombie::randWalk()
 	{*/
 		float rndradius = randf(20.f, 40.f)*0.5f;
 		float3 rndpos;
-		rndpos.x = m_vPosition.x + randf(-rndradius, rndradius);
-		rndpos.y = m_vPosition.y + randf(-rndradius, rndradius);
-		rndpos.z = m_vPosition.z + randf(-rndradius, rndradius);
+
+		float3 vPos = getPos();
+
+		rndpos.x = vPos.x + randf(-rndradius, rndradius);
+		rndpos.y = vPos.y + randf(-rndradius, rndradius);
+		rndpos.z = vPos.z + randf(-rndradius, rndradius);
 
 		//Core_RFloat3Get(G_RI_FLOAT3_OBSERVER_POSITION, &rndpos);
 

@@ -1,7 +1,7 @@
 #ifndef __IXDOMSTRING_H
 #define __IXDOMSTRING_H
 
-#include "IXDesktopStack.h"
+#include <gdefines.h>
 
 class IXDOMString: public IXUnknown
 {

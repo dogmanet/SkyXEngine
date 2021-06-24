@@ -31,6 +31,18 @@
     <Filter Include="Header Files\xcommon\editor">
       <UniqueIdentifier>{81d2d00c-f54c-4a00-b031-b027a9b3036f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\gizmos">
+      <UniqueIdentifier>{80d54d67-b3fd-4b43-8dfe-daba79748a69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gizmos">
+      <UniqueIdentifier>{a091ae94-e2c8-4cc7-a994-8294563b4fb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\windows">
+      <UniqueIdentifier>{03c32344-dcf6-430f-8da8-220d0b7caaf5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\windows">
+      <UniqueIdentifier>{2d94b0eb-3675-4281-b388-3b96f0e630e9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\terrax\terrax.cpp">
@@ -78,20 +90,44 @@
     <ClCompile Include="..\..\..\source\terrax\CommandCreate.cpp">
       <Filter>Source Files\cmd</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\terrax\PropertyWindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\terrax\CommandProperties.cpp">
       <Filter>Source Files\cmd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\terrax\LevelOpenDialog.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\terrax\Tools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\terrax\CommandPaste.cpp">
       <Filter>Source Files\cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\ScrollBar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\Editor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\GizmoHandle.cpp">
+      <Filter>Source Files\gizmos</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\GizmoMove.cpp">
+      <Filter>Source Files\gizmos</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\GizmoRadius.cpp">
+      <Filter>Source Files\gizmos</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\GizmoRotate.cpp">
+      <Filter>Source Files\gizmos</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\GizmoScale.cpp">
+      <Filter>Source Files\gizmos</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\MaterialBrowser.cpp">
+      <Filter>Source Files\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\LevelOpenDialog.cpp">
+      <Filter>Source Files\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\PropertyWindow.cpp">
+      <Filter>Source Files\windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -154,20 +190,53 @@
     <ClInclude Include="..\..\..\source\terrax\CommandCreate.h">
       <Filter>Header Files\cmd</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\terrax\PropertyWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\terrax\CommandProperties.h">
       <Filter>Header Files\cmd</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\terrax\LevelOpenDialog.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\terrax\Tools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\terrax\CommandPaste.h">
       <Filter>Header Files\cmd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\ScrollBar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\editor\IXEditor.h">
+      <Filter>Header Files\xcommon\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorGizmo.h">
+      <Filter>Header Files\xcommon\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorExtension.h">
+      <Filter>Header Files\xcommon\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\Editor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\GizmoHandle.h">
+      <Filter>Header Files\gizmos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\GizmoMove.h">
+      <Filter>Header Files\gizmos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\GizmoRadius.h">
+      <Filter>Header Files\gizmos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\GizmoRotate.h">
+      <Filter>Header Files\gizmos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\GizmoScale.h">
+      <Filter>Header Files\gizmos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\PropertyWindow.h">
+      <Filter>Header Files\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\MaterialBrowser.h">
+      <Filter>Header Files\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\LevelOpenDialog.h">
+      <Filter>Header Files\windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -373,6 +442,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\..\..\source\terrax\resource\ab_create.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\terrax\resource\toolbar2.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

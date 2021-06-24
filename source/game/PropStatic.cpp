@@ -18,10 +18,9 @@ BEGIN_PROPTABLE(CPropStatic)
 	EDITOR_COMBO_END()
 END_PROPTABLE()
 
-REGISTER_ENTITY_NOSYNC(CPropStatic, prop_static);
+REGISTER_ENTITY(CPropStatic, prop_static);
 
-CPropStatic::CPropStatic(CEntityManager *pMgr):
-	BaseClass(pMgr)
+CPropStatic::CPropStatic()
 {
 	m_isStatic = true;
 }
@@ -35,7 +34,10 @@ void CPropStatic::createPhysBody()
 {
 	if(m_pCollideShape)
 	{
-		btDefaultMotionState * motionState = new btDefaultMotionState(btTransform(Q4_BTQUAT(m_vOrientation), F3_BTVEC(m_vPosition)));
+		float3 vPos = getPos();
+		SMQuaternion qRot = getOrient();
+
+		btDefaultMotionState * motionState = new btDefaultMotionState(btTransform(Q4_BTQUAT(qRot), F3_BTVEC(vPos)));
 		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
 			0,                  // mass
 			motionState,        // initial position

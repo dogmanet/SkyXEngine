@@ -1,4 +1,4 @@
 [dev_trigger]
 shader = Transparent
 tex.txBase = dev_trigger.dds
-
+flag.editorial = 1

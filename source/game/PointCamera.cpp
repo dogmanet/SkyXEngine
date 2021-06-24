@@ -14,10 +14,9 @@ BEGIN_PROPTABLE(CPointCamera)
 // empty
 END_PROPTABLE()
 
-REGISTER_ENTITY(CPointCamera, point_camera);
+REGISTER_ENTITY(CPointCamera, point_camera, REC_ICON("dev_point_camera"));
 
-CPointCamera::CPointCamera(CEntityManager * pMgr):
-	BaseClass(pMgr)
+CPointCamera::CPointCamera()
 {
 	const float * r_default_fov = GET_PCVAR_FLOAT("r_default_fov");
 	m_pSXC = SGCore_CrCamera();
@@ -29,15 +28,21 @@ CPointCamera::~CPointCamera()
 	mem_release(m_pSXC);
 }
 
-ICamera * CPointCamera::getCamera()
+ICamera* CPointCamera::getCamera()
 {
 	return(m_pSXC);
 }
 
-void CPointCamera::onSync()
+void CPointCamera::setPos(const float3 &pos)
 {
-	BaseClass::onSync();
+	BaseClass::setPos(pos);
 
-	m_pSXC->setPosition(m_vPosition);
-	m_pSXC->setOrientation(m_vOrientation);
+	m_pSXC->setPosition(pos);
+}
+
+void CPointCamera::setOrient(const SMQuaternion &q)
+{
+	BaseClass::setOrient(q);
+
+	m_pSXC->setOrientation(q);
 }

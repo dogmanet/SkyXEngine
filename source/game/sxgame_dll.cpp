@@ -379,19 +379,7 @@ SX_LIB_API BOOL SGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam)
 	return(GameData::m_pGUIStack->putMessage(message, wParam, lParam));
 }
 
-SX_LIB_API ID SGame_EntClone(ID idSrc)
-{
-	SG_PRECOND(-1);
-	CBaseEntity *pEnt = GameData::m_pMgr->cloneEntity(GameData::m_pMgr->getById(idSrc));
-
-	if(!pEnt)
-	{
-		return(-1);
-	}
-
-	return(pEnt->getId());
-}
-
+#if 0
 SX_LIB_API ID SGame_EntGetByRay(const float3 &vStart, const float3 &vDir, float3 *pHitPos)
 {
 	SG_PRECOND(-1);
@@ -416,3 +404,4 @@ SX_LIB_API ID SGame_EntGetByRay(const float3 &vStart, const float3 &vDir, float3
 	}
 	return(-1);
 }
+#endif

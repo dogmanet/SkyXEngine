@@ -62,7 +62,8 @@ class CBaseWeapon: public CBaseTool
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_CONSTRUCTOR();
-	virtual void onPostLoad();
+	~CBaseWeapon();
+	void onPostLoad() override;
 
 	virtual void primaryAction(BOOL st);
 	virtual void secondaryAction(BOOL st);
@@ -103,67 +104,67 @@ protected:
 	//! Задача стрельбы
 	virtual void taskShoot(float dt);
 
-	ID m_idTaskShoot;
+	ID m_idTaskShoot = -1;
 
 	// Compatible addons
-	const char * m_szAddonScopes;
-	const char * m_szAddonSilencers;
-	const char * m_szAddonMags;
-	const char * m_szAddonHandlers;
+	const char *m_szAddonScopes = NULL;
+	const char *m_szAddonSilencers = NULL;
+	const char *m_szAddonMags = NULL;
+	const char *m_szAddonHandlers = NULL;
 
 	// Addons
-	CBaseSilencer * m_pSilencer;
-	CBaseScope * m_pScope;
-	CBaseHandle * m_pHandle;
-	CBaseMag * m_pMag;
+	CBaseSilencer *m_pSilencer = NULL;
+	CBaseScope *m_pScope = NULL;
+	CBaseHandle *m_pHandle = NULL;
+	CBaseMag *m_pMag = NULL;
 
 	// Fire modes
-	FIRE_MODE m_fireMode;
-	int m_iFireModes;
-	const char * m_szFireModes;
-	int m_iSingleRate;
-	int m_iBurstRate;
-	int m_iCutoffRate;
-	int m_iCutoffSize;
+	FIRE_MODE m_fireMode = FIRE_MODE_SINGLE;
+	int m_iFireModes = 0;
+	const char *m_szFireModes = NULL;
+	int m_iSingleRate = 1;
+	int m_iBurstRate = 1;
+	int m_iCutoffRate = 1;
+	int m_iCutoffSize = 1;
 
-	int m_iCutoffCurrent;
+	int m_iCutoffCurrent = 0;
 
 	// Sounds
-	const char * m_szSndDraw;
-	const char * m_szSndHolster;
-	const char * m_szSndShoot;
-	const char * m_szSndEmpty;
-	const char * m_szSndReload;
-	const char * m_szSndSwitch;
+	const char *m_szSndDraw = NULL;
+	const char *m_szSndHolster = NULL;
+	const char *m_szSndShoot = NULL;
+	const char *m_szSndEmpty = NULL;
+	const char *m_szSndReload = NULL;
+	const char *m_szSndSwitch = NULL;
 
-	ID m_idSndDraw;
-	ID m_idSndHolster;
-	ID m_idSndShoot;
-	ID m_idSndEmpty;
-	ID m_idSndReload;
-	ID m_idSndSwitch;
+	IXSoundPlayer *m_pSndDraw = NULL;
+	IXSoundPlayer *m_pSndHolster = NULL;
+	IXSoundEmitter *m_pSndShoot = NULL;
+	IXSoundPlayer *m_pSndEmpty = NULL;
+	IXSoundPlayer *m_pSndReload = NULL;
+	IXSoundPlayer *m_pSndSwitch = NULL;
 
 	// Shooting
-	float m_fEffectiveDistance;
-	RIFLE_TYPE m_rifleType;
-	float m_fRifleStep;
-	float m_fAimingRange;
+	float m_fEffectiveDistance = 1000.0f;
+	RIFLE_TYPE m_rifleType = RIFLE_TYPE_UNRIFLED;
+	float m_fRifleStep = 0.0f;
+	float m_fAimingRange = 100.0f;
 
 	// Without mag
-	int m_iCapacity;
-	int m_iCurrentLoad;
+	int m_iCapacity = 1;
+	int m_iCurrentLoad = 0;
 
 	// Spread
-	float m_fBaseSpread;
-	float m_fSpreadIdle;
-	float m_fSpreadCrouch;
-	float m_fSpreadCrawl;
-	float m_fSpreadWalk;
-	float m_fSpreadRun;
-	float m_fSpreadAirborne;
-	float m_fSpreadCondition;
-	float m_fSpreadArm;
-	float m_fSpreadIronSight;
+	float m_fBaseSpread = 0.33f;
+	float m_fSpreadIdle = 0.01f;
+	float m_fSpreadCrouch = 0.007f;
+	float m_fSpreadCrawl = 0.001f;
+	float m_fSpreadWalk = 1.0f;
+	float m_fSpreadRun = 4.0f;
+	float m_fSpreadAirborne = 5.0f;
+	float m_fSpreadCondition = 3.0f;
+	float m_fSpreadArm = 3.0f;
+	float m_fSpreadIronSight = -0.8f;
 };
 
 #endif

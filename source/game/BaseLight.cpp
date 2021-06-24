@@ -12,18 +12,16 @@ See the license in LICENSE
 
 BEGIN_PROPTABLE(CBaseLight)
 	//! Цвет
-	DEFINE_FIELD_VECTOR4(m_vColor, 0, "color", "Color", EDITOR_TEXTFIELD)
+	DEFINE_FIELD_VECTOR4FN(m_vColor, 0, "color", "Color", setColor, EDITOR_TEXTFIELD)
 	//! Дальность
 	DEFINE_FIELD_FLOAT(m_fDist, 0, "dist", "Distance", EDITOR_TEXTFIELD)
 	//! Дальность дальняя
 	//DEFINE_FIELD_FLOAT(m_fShadowDist, 0, "light_far", "Shadow far plane", EDITOR_TEXTFIELD)
 	//! Интенсивность теней
-	DEFINE_FIELD_FLOAT(m_fShadowIntensity, 0, "shadow_intensity", "Shadow intensity", EDITOR_TEXTFIELD)
-	//! Связанный свет (повторяет его состояние включения)
-	DEFINE_FIELD_ENTITYFN(m_pLinkedTo, 0, "linked_to", "Linked light to", setLinkedTo, EDITOR_TEXTFIELD)
+	DEFINE_FIELD_FLOATFN(m_fShadowIntensity, 0, "shadow_intensity", "Shadow intensity", setShadowIntensity, EDITOR_TEXTFIELD)
 
 	//! Тип тени
-	DEFINE_FIELD_INT(m_iShadowType, 0, "type_shadow", "Type shadow", EDITOR_COMBOBOX)
+	DEFINE_FIELD_INTFN(m_iShadowType, 0, "type_shadow", "Type shadow", setShadowType, EDITOR_COMBOBOX)
 		//COMBO_OPTION("None", "-1")   //!< Нет
 		COMBO_OPTION("Static", "0")  //!< Статическая тень
 		COMBO_OPTION("Dynamic", "1") //!< Динамическая тень
@@ -45,21 +43,9 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseLight, base_light);
 
-CBaseLight::CBaseLight(CEntityManager * pMgr):
-BaseClass(pMgr)
-{
-	m_vColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
-	m_fDist = 10;
-	m_iShadowType = 1;
-	m_fShadowIntensity = 1.0f;
-}
-
 CBaseLight::~CBaseLight()
 {
-	if(m_pLinkedTo)
-	{
-		((CBaseLight*)m_pLinkedTo)->removeLinkedLight(this);
-	}
+	mem_release(m_pLight);
 }
 
 void CBaseLight::toggleEnable()
@@ -67,31 +53,13 @@ void CBaseLight::toggleEnable()
 	setEnable(!m_isEnable);
 }
 
-void CBaseLight::onSync()
-{
-	BaseClass::onSync();
-
-	if(m_pLight)
-	{
-		m_pLight->setEnabled(m_isEnable);
-		m_pLight->setPosition(m_vPosition);
-		m_pLight->setColor(float3(m_vColor) * m_vColor.w);
-		m_pLight->setShadowIntencity(m_fShadowIntensity);
-		m_pLight->setShadowDynamic(m_iShadowType != 0);
-	}
-}
-
-
 void CBaseLight::turnOn(inputdata_t * pInputdata)
 {
 	if(!m_isEnable)
 	{
 		m_isEnable = true;
+		SAFE_CALL(m_pLight, setEnabled, m_isEnable);
 		FIRE_OUTPUT(m_onTurnOn, pInputdata->pInflictor);
-	}
-	for(int i = 0, l = m_vpLinkedLights.size(); i < l; ++i)
-	{
-		m_vpLinkedLights[i]->turnOn(pInputdata);
 	}
 }
 
@@ -100,11 +68,8 @@ void CBaseLight::turnOff(inputdata_t * pInputdata)
 	if(m_isEnable)
 	{
 		m_isEnable = false;
+		SAFE_CALL(m_pLight, setEnabled, m_isEnable);
 		FIRE_OUTPUT(m_onTurnOff, pInputdata->pInflictor);
-	}
-	for(int i = 0, l = m_vpLinkedLights.size(); i < l; ++i)
-	{
-		m_vpLinkedLights[i]->turnOff(pInputdata);
 	}
 }
 
@@ -113,17 +78,14 @@ void CBaseLight::setEnable(bool isEnable)
 	if(!m_isEnable && isEnable)
 	{
 		m_isEnable = isEnable;
+		SAFE_CALL(m_pLight, setEnabled, m_isEnable);
 		FIRE_OUTPUT(m_onTurnOn, this);
 	}
 	else if(m_isEnable && !isEnable)
 	{
 		m_isEnable = isEnable;
+		SAFE_CALL(m_pLight, setEnabled, m_isEnable);
 		FIRE_OUTPUT(m_onTurnOff, this);
-	}
-
-	for(int i = 0, l = m_vpLinkedLights.size(); i < l; ++i)
-	{
-		m_vpLinkedLights[i]->setEnable(isEnable);
 	}
 }
 
@@ -132,19 +94,7 @@ void CBaseLight::updateFlags()
 	BaseClass::updateFlags();
 
 	m_isEnable = !(getFlags() & LIGHT_INITIALLY_DARK);
-
-	for(int i = 0, l = m_vpLinkedLights.size(); i < l; ++i)
-	{
-		if(m_isEnable)
-		{
-			m_vpLinkedLights[i]->setFlags(m_vpLinkedLights[i]->getFlags() & ~LIGHT_INITIALLY_DARK);
-		}
-		else
-		{
-			m_vpLinkedLights[i]->setFlags(m_vpLinkedLights[i]->getFlags() | LIGHT_INITIALLY_DARK);
-		}
-		m_vpLinkedLights[i]->updateFlags();
-	}
+	SAFE_CALL(m_pLight, setEnabled, m_isEnable);
 }
 
 bool CBaseLight::getMainColor(float3_t *pOut)
@@ -156,56 +106,9 @@ bool CBaseLight::getMainColor(float3_t *pOut)
 	return(m_isEnable);
 }
 
-void CBaseLight::setLinkedTo(CBaseEntity *pEnt)
+void CBaseLight::setPos(const float3 &pos)
 {
-	if(m_pLinkedTo)
-	{
-		((CBaseLight*)m_pLinkedTo)->removeLinkedLight(this);
-	}
-	m_pLinkedTo = pEnt;
-	if(m_pLinkedTo)
-	{
-		((CBaseLight*)m_pLinkedTo)->addLinkedLight(this);
-		if((((CBaseLight*)m_pLinkedTo)->getFlags() & LIGHT_INITIALLY_DARK))
-		{
-			setFlags(getFlags() | LIGHT_INITIALLY_DARK);
-		}
-		else
-		{
-			setFlags(getFlags() & ~LIGHT_INITIALLY_DARK);
-		}
-		updateFlags();
-	}
-}
+	BaseClass::setPos(pos);
 
-void CBaseLight::addLinkedLight(CBaseLight *pEnt)
-{
-	if(!pEnt)
-	{
-		return;
-	}
-	for(int i = 0, l = m_vpLinkedLights.size(); i < l; ++i)
-	{
-		if(m_vpLinkedLights[i] == pEnt)
-		{
-			return;
-		}
-	}
-	m_vpLinkedLights.push_back(pEnt);
-}
-
-void CBaseLight::removeLinkedLight(CBaseLight *pEnt)
-{
-	if(!pEnt)
-	{
-		return;
-	}
-	for(int i = 0, l = m_vpLinkedLights.size(); i < l; ++i)
-	{
-		if(m_vpLinkedLights[i] == pEnt)
-		{
-			m_vpLinkedLights.erase(i);
-			return;
-		}
-	}
+	SAFE_CALL(m_pLight, setPosition, pos);
 }

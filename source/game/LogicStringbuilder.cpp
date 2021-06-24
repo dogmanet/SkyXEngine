@@ -24,7 +24,7 @@ BEGIN_PROPTABLE(CLogicStringbuilder)
 	DEFINE_INPUT(outValue, "outValue", "Out value", PDF_NONE)
 END_PROPTABLE()
 
-REGISTER_ENTITY(CLogicStringbuilder, logic_stringbuilder);
+REGISTER_ENTITY(CLogicStringbuilder, logic_stringbuilder, REC_ICON("dev_logic_stringbuilder"));
 
 void CLogicStringbuilder::reset(inputdata_t *pInputdata)
 {

@@ -184,7 +184,7 @@ float4 main(VSO_ResPos IN):SV_TARGET
 
 	float fShadow = 1.0;
 #ifdef IS_SHADOWED
-	fShadow *= GenShadow(IN).x;
+	fShadow *= GenShadow(IN, fThickness).x;
 #endif
 
 #ifdef IS_SPOT
@@ -209,6 +209,8 @@ float4 main(VSO_ResPos IN):SV_TARGET
 		// {
 			fNdotL *= -1.0f;
 			fDiffuse = (1.0f - fThickness) * fNdotL / PI;
+			// fShadow += fThickness;
+			// fShadow = max(fShadow, 1.0f - fThickness);
 			
 			float _Power = 4.0f;
 			float _Scale = 1.0f;

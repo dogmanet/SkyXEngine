@@ -2,13 +2,14 @@
 
 //#include <render/sxrender.h>
 #include <mtrl/sxmtrl.h>
+#include <xcommon/resource/IXResourceManager.h>
 
 #include "Editable.h"
 
 CEditorObject::CEditorObject(CEditable *pEditable, CBaseEntity *pEntity):
 	m_pEditable(pEditable),
 	m_pEntity(pEntity),
-	m_idEnt(pEntity->getId())
+	m_guidEnt(*pEntity->getGUID())
 {
 	assert(pEntity);
 
@@ -34,17 +35,28 @@ CEditorObject::CEditorObject(CEditable *pEditable, const char *szClassName):
 CEditorObject::~CEditorObject()
 {
 	m_pEditable->removeObject(this);
+	mem_release(m_pIcon);
+	mem_release(m_pModel);
 }
 
 void CEditorObject::_iniFieldList()
 {
 	proptable_t *pTable = CEntityFactoryMap::GetInstance()->getPropTable(m_szClassName);
 	propdata_t *pField = NULL;
-	X_PROP_FIELD xField;
+	X_PROP_FIELD xField = {};
 
 	for(UINT i = 0; i < 16; ++i)
 	{
 		m_aszFlags[i] = NULL;
+	}
+
+	{
+		xField.editorType = XPET_TEXT; 
+		xField.szHelp = "";
+		xField.szKey = "guid";
+		xField.szName = "GUID";
+
+		m_aFields.push_back(xField);
 	}
 
 	while(pTable)
@@ -119,44 +131,148 @@ void CEditorObject::_iniFieldList()
 
 		pTable = pTable->pBaseProptable;
 	}
+
+
+	IEntityFactory *pFactory = CEntityFactoryMap::GetInstance()->getFactory(m_szClassName);
+	if(pFactory)
+	{
+		const char *szIcon = pFactory->getKV("icon");
+		if(szIcon)
+		{
+			IXMaterialSystem *pMatSys = (IXMaterialSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID);
+			if(pMatSys)
+			{
+				pMatSys->loadTexture(szIcon, &m_pIcon);
+			}
+		}
+
+		const char *szModel = pFactory->getKV("model");
+		if(szModel)
+		{
+			IXResourceManager *pResourceManager = Core_GetIXCore()->getResourceManager();
+			IXModelProvider *pProvider = (IXModelProvider*)Core_GetIXCore()->getPluginManager()->getInterface(IXMODELPROVIDER_GUID);
+
+			IXResourceModel *pResource;
+			if(pResourceManager->getModel(szModel, &pResource))
+			{
+				IXDynamicModel *pModel;
+				if(pProvider->createDynamicModel(pResource, &pModel))
+				{
+					m_pModel = pModel;
+					m_pModel->setPosition(getPos());
+					m_pModel->setOrientation(getOrient());
+				}
+				mem_release(pResource);
+			}
+		}
+
+		//m_pModel
+	}
 }
 
 void XMETHODCALLTYPE CEditorObject::setPos(const float3_t &pos)
 {
-	if(m_pEntity)
-	{
-		m_pEntity->setPos(pos);
-	}
+	SAFE_CALL(m_pEntity, setPos, pos);
+	SAFE_CALL(m_pModel, setPosition, pos);
 	m_vPos = pos;
+}
+
+void CEditorObject::setPos(const float3_t &pos, bool isSeparate)
+{
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, true);
+	}
+
+	setPos(pos);
+
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, false);
+	}
 }
 
 void XMETHODCALLTYPE CEditorObject::setScale(const float3_t &vScale)
 {
-	//@TODO: Implement me
+	// TODO Implement me
 	m_vScale = vScale;
+}
+
+void CEditorObject::setScale(const float3_t &vScale, bool isSeparate)
+{
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, true);
+	}
+
+	setScale(vScale);
+
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, false);
+	}
 }
 
 void XMETHODCALLTYPE CEditorObject::setOrient(const SMQuaternion &orient)
 {
-	if(m_pEntity)
-	{
-		m_pEntity->setOrient(orient);
-	}
+	SAFE_CALL(m_pEntity, setOrient, orient);
+	SAFE_CALL(m_pModel, setOrientation, orient);
 
 	m_qRot = orient;
+}
+
+void CEditorObject::setOrient(const SMQuaternion &orient, bool isSeparate)
+{
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, true);
+	}
+
+	setOrient(orient);
+
+	if(isSeparate)
+	{
+		SAFE_CALL(m_pEntity, setSeparateMovement, false);
+	}
+}
+
+float3_t XMETHODCALLTYPE CEditorObject::getPos()
+{
+	if(m_pEntity)
+	{
+		m_vPos = m_pEntity->getPos();
+		SAFE_CALL(m_pModel, setPosition, m_vPos);
+	}
+	return(m_vPos);
+}
+
+SMQuaternion XMETHODCALLTYPE CEditorObject::getOrient()
+{
+	if(m_pEntity)
+	{
+		m_qRot = m_pEntity->getOrient();
+		SAFE_CALL(m_pModel, setOrientation, m_qRot);
+	}
+	return(m_qRot);
 }
 
 void XMETHODCALLTYPE CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 {
 	*pvMin = *pvMax = float3();
-	if(m_pEntity)
-	{
-		m_pEntity->getMinMax(pvMin, pvMax);
-	}
+
+	SAFE_CALL(m_pEntity, getMinMax, pvMin, pvMax);
 
 	if(SMVector3Length2(*pvMax - *pvMin) < 0.0001f)
 	{
-		*pvMin = -(*pvMax = float3(0.1f, 0.1f, 0.1f));
+		if(m_pModel)
+		{
+			*pvMin = m_pModel->getLocalBoundMin();
+			*pvMax = m_pModel->getLocalBoundMax();
+		}
+		else
+		{
+			*pvMin = -(*pvMax = float3(0.1f));
+		}
 	}
 
 	*pvMin += m_vPos;
@@ -184,11 +300,14 @@ void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D)
 	{
 		pCtx->setBlendFactor(GX_COLOR_ARGB(70, 255, 0, 0));
 		m_pEntity->renderEditor(is3D);
+
+		SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
 	}
 
 	pCtx->setRasterizerState(m_pEditable->m_pRSWireframe);
 	pCtx->setBlendFactor(GX_COLOR_ARGB(255, 255, 255, 0));
 	m_pEntity->renderEditor(is3D);
+	SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
 
 	pCtx->setBlendState(pOldBlendState);
 	pCtx->setRasterizerState(pOldRS);
@@ -196,9 +315,23 @@ void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D)
 	mem_release(pOldRS);
 }
 
-bool XMETHODCALLTYPE CEditorObject::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl)
+bool XMETHODCALLTYPE CEditorObject::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, float3 *pvNormal, ID *pidMtrl, bool bReturnNearestPoint)
 {
-	// return(SGeom_TraceBeamId(m_idModel, &vStart, &vEnd, pvOut, pidMtrl));
+	//SMAABBIN
+	float3 vMin, vMax;
+	getBound(&vMin, &vMax);
+	if(SMRayIntersectAABB(SMAABB(vMin, vMax), vStart, vEnd - vStart))
+	{
+		if(m_pModel)
+		{
+			return(m_pModel->rayTest(vStart, vEnd, pvOut, pvNormal, true, bReturnNearestPoint));
+		}
+		else if(m_pEntity)
+		{
+			return(m_pEntity->rayTest(vStart, vEnd, pvOut, pvNormal, true, bReturnNearestPoint));
+		}
+	}
+	
 	return(false);
 }
 
@@ -210,7 +343,8 @@ void XMETHODCALLTYPE CEditorObject::remove()
 	}
 	REMOVE_ENTITY(m_pEntity);
 	m_pEntity = NULL;
-	m_idEnt = -1;
+	SAFE_CALL(m_pModel, enable, false);
+	//m_guidEnt = XGUID();
 }
 void XMETHODCALLTYPE CEditorObject::preSetup()
 {
@@ -223,22 +357,31 @@ void XMETHODCALLTYPE CEditorObject::postSetup()
 void XMETHODCALLTYPE CEditorObject::create()
 {
 	assert(!m_pEntity);
-	m_pEntity = CREATE_ENTITY(m_szClassName, GameData::m_pMgr);
 
-	m_idEnt = m_pEntity->getId();
+	if(m_guidEnt == XGUID())
+	{
+		m_pEntity = CREATE_ENTITY(m_szClassName, GameData::m_pMgr);
+		m_guidEnt = *m_pEntity->getGUID();
+	}
+	else
+	{
+		m_pEntity = CEntityFactoryMap::GetInstance()->create(m_szClassName, GameData::m_pMgr, false, &m_guidEnt);
+	}
 
 	m_pEntity->setFlags(m_pEntity->getFlags() | EF_LEVEL | EF_EXPORT);
 
-	setPos(getPos());
-	setOrient(getOrient());
-	setScale(getScale());
+	setPos(m_vPos, true);
+	setOrient(m_qRot, true);
+	setScale(m_vScale, true);
+
+	SAFE_CALL(m_pModel, enable, true);
 }
 
 void CEditorObject::resync()
 {
-	if(ID_VALID(m_idEnt))
+	if(m_pEntity)
 	{
-		m_pEntity = GameData::m_pMgr->getById(m_idEnt);
+		m_pEntity = GameData::m_pMgr->getByGUID(m_guidEnt);
 	}
 }
 
@@ -258,7 +401,14 @@ const char* XMETHODCALLTYPE CEditorObject::getKV(const char *szKey)
 
 	char tmp[4096];
 
-	m_pEntity->getKV(szKey, tmp, sizeof(tmp));
+	if(!fstrcmp(szKey, "guid"))
+	{
+		XGUIDToSting(*m_pEntity->getGUID(), tmp, sizeof(tmp));
+	}
+	else
+	{
+		m_pEntity->getKV(szKey, tmp, sizeof(tmp));
+	}
 
 	m_msPropCache[szKey] = tmp;
 	return(m_msPropCache[szKey].c_str());
@@ -288,4 +438,18 @@ void XMETHODCALLTYPE CEditorObject::setSelected(bool set)
 	m_isSelected = set;
 
 	m_pEditable->onSelectionChanged(this);
+}
+
+void XMETHODCALLTYPE CEditorObject::setSimulationMode(bool set)
+{
+	SAFE_CALL(m_pModel, enable, !set);
+}
+
+bool XMETHODCALLTYPE CEditorObject::hasVisualModel()
+{
+	float3 vMin, vMax;
+
+	SAFE_CALL(m_pEntity, getMinMax, &vMin, &vMax);
+
+	return(SMVector3Length2(vMax - vMin) >= 0.0001f || m_pModel);
 }

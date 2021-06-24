@@ -22,12 +22,13 @@ See the license in LICENSE
 #include <xcommon/editor/IXEditable.h>
 #include <xcommon/IXRenderable.h>
 #include <xcommon/resource/IXResourceManager.h>
+#include <xcommon/render/IXRenderUtils.h>
 #include <mtrl/IXMaterialSystem.h>
 #include "UndoManager.h"
 #include "Tools.h"
 
 #include <xEngine/IXEngine.h>
-
+#include "Editor.h"
 #ifdef _DEBUG
 #	pragma comment(lib, "xEngine_d.lib")
 #else
@@ -42,9 +43,13 @@ CTerraXRenderStates g_xRenderStates;
 
 extern CPropertyWindow *g_pPropWindow;
 
+CEditor *g_pEditor;
+
+IXEditorGizmoMove *g_pGizmoMove = NULL;
+IXEditorGizmoRotate *g_pGizmoRotate = NULL;
+
 ATOM XRegisterClass(HINSTANCE hInstance);
 BOOL XInitInstance(HINSTANCE, int);
-void XInitGuiWindow(bool pre);
 
 Array<IXEditable*> g_pEditableSystems;
 Array<IXEditorObject*> g_pLevelObjects;
@@ -58,6 +63,8 @@ CUndoManager *g_pUndoManager = NULL;
 extern HWND g_hComboTypesWnd;
 
 String g_sLevelName;
+
+IEventChannel<XEventEditorXformType> *g_pXformEventChannel = NULL;
 
 void XUpdateWindowTitle();
 
@@ -325,6 +332,8 @@ public:
 			}
 		}
 
+		XFrameRun(fDeltaTime);
+
 		return(true);
 	}
 
@@ -370,9 +379,58 @@ public:
 		{
 			newVisData(&m_pCameraVisibility[i + 1]);
 		}
+
+		IXRenderUtils *pUtils = (IXRenderUtils*)pPluginManager->getInterface(IXRENDERUTILS_GUID);
+		pUtils->newGizmoRenderer(&m_pTestRenderer);
+
+		IXTexture *pLineTexture;
+		m_pMaterialSystem->loadTexture("dev_line", &pLineTexture);
+		IGXBaseTexture *pGXTexture;
+		pLineTexture->getAPITexture(&pGXTexture);
+		m_pTestRenderer->setTexture(pGXTexture);
+		mem_release(pGXTexture);
+		mem_release(pLineTexture);
+
+		m_pTestRenderer->setColor(float4(1.0f, 0.0f, 0.0f, 1.0f));
+		m_pTestRenderer->setLineWidth(0.04f);
+		//m_pTestRenderer->setLineWidth(20.0f);
+		m_pTestRenderer->setLineWidth(3.0f);
+		m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
+		m_pTestRenderer->lineTo(float3(1.0f, 0.0f, 0.0f));
+		m_pTestRenderer->setColor(float4(0.0f, 1.0f, 0.0f, 1.0f));
+		m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
+		m_pTestRenderer->lineTo(float3(0.0f, 1.0f, 0.0f));
+		m_pTestRenderer->setColor(float4(0.0f, 0.0f, 1.0f, 1.0f));
+		m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
+		m_pTestRenderer->lineTo(float3(0.0f, 0.0f, 1.0f));
+
+
+#if 0
+		m_pTestRenderer->drawEllipsoid(float3(2.0f, 2.0f, 2.0f), float3(0.5f, 3.0f, 0.5f));
+		m_pTestRenderer->setLineWidth(5.0f);
+		m_pTestRenderer->setColor(float4(1.0f, 1.0f, 1.0f, 1.0f));
+		m_pTestRenderer->drawAABB(SMAABB(float3(2.0f, 2.0f, 2.0f), float3(3.0f, 4.0f, 5.0f)));
+
+		m_pMaterialSystem->loadTexture("dev_trigger", &pLineTexture);
+		pLineTexture->getAPITexture(&pGXTexture);
+		m_pTestRenderer->setTexture(NULL);
+		mem_release(pGXTexture);
+		mem_release(pLineTexture);
+
+
+		m_pTestRenderer->setPointSize(10.0f);
+		m_pTestRenderer->setPointMode(XGPM_ROUND);
+		m_pTestRenderer->drawPoint(float3(1.0f, 1.0f, 1.0f));
+#endif
+		// m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 3.0f));
+		// m_pTestRenderer->lineTo(float3(1.0f, 0.0f, 3.0f));
+		// m_pTestRenderer->lineTo(float3(1.0f, 1.0f, 3.0f));
+		// m_pTestRenderer->lineTo(float3(1.0f, 1.0f, 4.0f));
 	}
 	~CRenderPipeline()
 	{
+		mem_release(m_pTestRenderer);
+
 		for(UINT i = 0; i < 3; ++i)
 		{
 			mem_release(m_pCameraVisibility[i + 1]);
@@ -405,6 +463,10 @@ public:
 
 		XRender3D();
 
+		g_pEditor->render(true);
+
+		m_pTestRenderer->render(false);
+
 		//#############################################################################
 		HWND hWnds[] = {g_hTopRightWnd, g_hBottomLeftWnd, g_hBottomRightWnd};
 		IGXSwapChain *p2DSwapChains[] = {g_pTopRightSwapChain, g_pBottomLeftSwapChain, g_pBottomRightSwapChain};
@@ -421,7 +483,7 @@ public:
 		//#############################################################################
 
 		XUpdateSelectionBound();
-
+		XUpdateGizmos();
 
 		for(int i = 0; i < 3; ++i)
 		{
@@ -448,7 +510,7 @@ public:
 
 			pCameras[i]->updateFrustum(mProj);
 
-			g_pCameraConstantBuffer->update(&SMMatrixIdentity);
+			g_pCameraConstantBuffer->update(&SMMatrixIdentity());
 			pDXDevice->setVSConstant(g_pCameraConstantBuffer, SCR_OBJECT);
 
 			Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
@@ -461,8 +523,16 @@ public:
 			Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
 			pDXDevice->setVSConstant(g_pCameraConstantBuffer, SCR_OBJECT);
 			XRender2D(views[i], fScales[i], false);
+
+			g_pEditor->render(false);
+			m_pTestRenderer->render(true);
+
 			mem_release(pBackBuffer);
 		}
+
+
+
+		g_pMaterialBrowser->render();
 
 		/*
 		IGXSurface *pBackBuffer = g_pGuiSwapChain->getColorTarget();
@@ -491,6 +561,8 @@ public:
 				p2DSwapChains[i]->swapBuffers();
 			}
 		}
+
+		g_pMaterialBrowser->swapBuffers();
 	}
 	void updateVisibility() override
 	{
@@ -573,6 +645,8 @@ public:
 	XRenderPassHandler *m_pRenderPassGeometry2D = NULL;
 
 	IXRenderableVisibility *m_pCameraVisibility[4];
+
+	IXGizmoRenderer *m_pTestRenderer = NULL;
 };
 
 class CCVarEventListener: public IEventListener<XEventCvarChanged>
@@ -607,6 +681,11 @@ public:
 					, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOSIZE | SWP_NOMOVE);
 
 				EnableWindow(g_hWndMain, FALSE);
+
+				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+				{
+					g_pLevelObjects[i]->setSimulationMode(true);
+				}
 			}
 			else
 			{
@@ -620,6 +699,11 @@ public:
 				PostMessage(g_hWndMain, WM_SIZE, 0, 0);
 
 				ShowCursor(TRUE);
+
+				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+				{
+					g_pLevelObjects[i]->setSimulationMode(false);
+				}
 			}
 		}
 	}
@@ -655,8 +739,6 @@ int main(int argc, char **argv)
 		return(1);
 	}
 
-	 XInitGuiWindow(true);
-
 	//SkyXEngine_Init(g_hTopLeftWnd, g_hWndMain, lpCmdLine);
 	IXEngine *pEngine = XEngineInit(argc, argv, "TerraX");
 	g_pEngine = pEngine;
@@ -678,11 +760,22 @@ int main(int argc, char **argv)
 	}, "Export model to obj format");
 
 	CRenderPipeline *pPipeline = new CRenderPipeline(Core_GetIXCore());
-	XInitGuiWindow(false);
+	g_pEditor = new CEditor(Core_GetIXCore());
+
+	g_pEditor->newGizmoMove(&g_pGizmoMove);
+	g_pEditor->newGizmoRotate(&g_pGizmoRotate);
+	g_pGizmoMove->enable(false);
+	g_pGizmoRotate->enable(false);
+	g_pGizmoMove->setCallback(&g_gizmoMoveCallback);
+	g_pGizmoRotate->setCallback(&g_gizmoRotateCallback);
 
 	CCVarEventListener cvarListener(pEngine->getCore());
 	auto *pChannel = pEngine->getCore()->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID);
 	pChannel->addListener(&cvarListener);
+
+	g_pXformEventChannel = pEngine->getCore()->getEventChannel<XEventEditorXformType>(EVENT_EDITOR_XFORM_TYPE_GUID);
+
+	XSetXformType(X2DXF_SCALE);
 
 	RECT rcTopLeft;
 	GetClientRect(g_hTopLeftWnd, &rcTopLeft);
@@ -693,6 +786,8 @@ int main(int argc, char **argv)
 	IPluginManager *pPluginManager = Core_GetIXCore()->getPluginManager();
 
 	IXMaterialSystem *pMaterialSystem = (IXMaterialSystem*)pPluginManager->getInterface(IXMATERIALSYSTEM_GUID);
+
+	pMaterialSystem->scanMaterials();
 
 	GXCOLOR w = GX_COLOR_ARGB(255, 255, 255, 255);
 	GXCOLOR t = GX_COLOR_ARGB(0, 255, 255, 255);
@@ -1004,13 +1099,16 @@ int main(int argc, char **argv)
 	};
 	pVD = pDevice->createVertexDeclaration(oLayoutHandler);
 	g_xRenderStates.pHandlerVB = pDevice->createVertexBuffer(sizeof(float3_t) * 8, GXBUFFER_USAGE_STREAM);
-	g_xRenderStates.pHandlerInstanceVB = pDevice->createVertexBuffer(sizeof(float3_t) * X_MAX_HANDLERS_PER_DIP, GXBUFFER_USAGE_STREAM);
+	g_xRenderStates.pHandlerInstanceVB = pDevice->createVertexBuffer(sizeof(float3_t) * 2 * X_MAX_HANDLERS_PER_DIP, GXBUFFER_USAGE_STREAM);
 	IGXVertexBuffer *ppVB[] = {g_xRenderStates.pHandlerVB, g_xRenderStates.pHandlerInstanceVB};
 	g_xRenderStates.pHandlerRB = pDevice->createRenderBuffer(2, ppVB, pVD);
 	g_xRenderStates.idHandlerShaderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_handler.vs");
 	g_xRenderStates.idHandlerShaderKit = SGCore_ShaderCreateKit(g_xRenderStates.idHandlerShaderVS, g_xRenderStates.idColoredShaderPS);
+	g_xRenderStates.idBoundShaderKit = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_bound.vs"), g_xRenderStates.idColoredShaderPS);
 	USHORT pHandlerIndices[] = {0, 1, 2, 3, 4, 5, 6, 7};
 	g_xRenderStates.pHandlerIB = pDevice->createIndexBuffer(sizeof(USHORT)* 8, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pHandlerIndices);
+
+	g_xRenderStates.idIconShaderKit = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "terrax_icon.vs"), g_xRenderStates.idTexturedShaderPS);
 
 	float3_t cubeData[] = {
 		{-0.5f, -0.5f, -0.5f},
@@ -1022,10 +1120,21 @@ int main(int argc, char **argv)
 		{0.5f, 0.5f, -0.5f},
 		{0.5f, 0.5f, 0.5f}
 	};
-	for(UINT i = 0; i < 8; ++i)
+	// for(UINT i = 0; i < 8; ++i)
+	// {
+	// 	cubeData[i] = (float3)(cubeData[i] * 0.16f);
+	// }
+
+	GXVertexElement oLayoutHandler3D[] =
 	{
-		cubeData[i] = (float3)(cubeData[i] * 0.16f);
-	}
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
+		{1, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD, GXDECLSPEC_PER_INSTANCE_DATA},
+		{1, 12, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD2, GXDECLSPEC_PER_INSTANCE_DATA},
+		GX_DECL_END()
+	};
+
+	mem_release(pVD);
+	pVD = pDevice->createVertexDeclaration(oLayoutHandler3D);
 	IGXVertexBuffer *pHandler3DVB = pDevice->createVertexBuffer(sizeof(float3_t) * 8, GXBUFFER_USAGE_STATIC, cubeData);
 	IGXVertexBuffer *ppVB3D[] = {pHandler3DVB, g_xRenderStates.pHandlerInstanceVB};
 	g_xRenderStates.pHandler3DRB = pDevice->createRenderBuffer(2, ppVB3D, pVD);
@@ -1035,6 +1144,27 @@ int main(int argc, char **argv)
 	USHORT pHandler3DIndices[] = {0, 1, 0, 2, 0, 4, 6, 4, 6, 2, 6, 7, 5, 4, 5, 7, 5, 1, 3, 7, 3, 1, 3, 2};
 	g_xRenderStates.pHandler3DIB = pDevice->createIndexBuffer(sizeof(USHORT) * 24, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pHandler3DIndices);
 
+	// Object icons
+	GXVertexElement oLayoutIcon[] =
+	{
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_VERTEX_DATA},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD, GXDECLSPEC_PER_VERTEX_DATA},
+		{1, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD1, GXDECLSPEC_PER_INSTANCE_DATA},
+		GX_DECL_END()
+	};
+	pVD = pDevice->createVertexDeclaration(oLayoutIcon);
+	g_xRenderStates.pIconVB = pDevice->createVertexBuffer((sizeof(float3_t) + sizeof(float2_t)) * 4, GXBUFFER_USAGE_STREAM);
+	IGXVertexBuffer *ppIconVB3D[] = {g_xRenderStates.pIconVB, g_xRenderStates.pHandlerInstanceVB};
+	g_xRenderStates.pIcon3DRB = pDevice->createRenderBuffer(2, ppIconVB3D, pVD);
+	mem_release(pVD);
+
+	USHORT pIcon3DIndices[] = {0, 1, 2, 0, 2, 3};
+	g_xRenderStates.pIcon3DIB = pDevice->createIndexBuffer(sizeof(USHORT) * 6, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pIcon3DIndices);
+
+	GXSamplerDesc samplerDesc;
+	samplerDesc.addressU = samplerDesc.addressV = samplerDesc.addressW = GXTEXTURE_ADDRESS_CLAMP;
+	samplerDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
+	g_xRenderStates.pSamplerLinearClamp = pDevice->createSamplerState(&samplerDesc);
 
 	{
 		// Transform handlers
@@ -1087,6 +1217,8 @@ int main(int argc, char **argv)
 	g_pDSNoZ = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
 
 	XInitViewports();
+
+	g_pMaterialBrowser->initGraphics(SGCore_GetDXDevice());
 
 	g_pCameraConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(SMMATRIX));
 
@@ -1222,12 +1354,19 @@ void XRender3D()
 		pCtx->setPSConstant(s_pColorBuffer);
 
 		pCtx->setPrimitiveTopology(GXPT_LINELIST);
-		SGCore_ShaderBind(g_xRenderStates.idHandlerShaderKit);
+		SGCore_ShaderBind(g_xRenderStates.idBoundShaderKit);
+		//SGCore_ShaderBind(g_xRenderStates.idHandlerShaderKit);
 		pCtx->setIndexBuffer(g_xRenderStates.pHandler3DIB);
 
 		s_pColorBuffer->update(&float4(1.0f, 0.0f, 1.0f, 1.0f));
 
-		float3_t *pvData;
+		struct BoundVertex
+		{
+			float3_t vPos;
+			float3_t vSize;
+		};
+
+		BoundVertex *pvData;
 
 		pCtx->setRenderBuffer(g_xRenderStates.pHandler3DRB);
 		for(bool isSelected = false;; isSelected = true)
@@ -1242,7 +1381,7 @@ void XRender3D()
 				{
 				continue;
 				}*/
-				if(isSelected != g_pLevelObjects[i]->isSelected())
+				if(isSelected != g_pLevelObjects[i]->isSelected() || (!isSelected && (g_pLevelObjects[i]->hasVisualModel() || g_pLevelObjects[i]->getIcon())))
 				{
 					continue;
 				}
@@ -1250,8 +1389,10 @@ void XRender3D()
 				{
 					break;
 				}
+				float3 vMin, vMax;
+				g_pLevelObjects[i]->getBound(&vMin, &vMax);
 
-				pvData[uHandlerCount++] = vPos;
+				pvData[uHandlerCount++] = {(float3)((vMax + vMin) * 0.5f), (float3)(vMax - vMin)};
 				if(uHandlerCount == X_MAX_HANDLERS_PER_DIP)
 				{
 					g_xRenderStates.pHandlerInstanceVB->unlock();
@@ -1263,6 +1404,7 @@ void XRender3D()
 			if(pvData)
 			{
 				g_xRenderStates.pHandlerInstanceVB->unlock();
+				pvData = NULL;
 			}
 			if(uHandlerCount)
 			{
@@ -1279,6 +1421,109 @@ void XRender3D()
 
 		pCtx->setRasterizerState(pOldRS);
 		mem_release(pOldRS);
+
+		{
+			struct IconVertex
+			{
+				float3_t vPos;
+				float2_t vTex;
+			};
+
+			float3 vUp = g_xConfig.m_pViewportCamera[XWP_TOP_LEFT]->getUp() * 0.1f;
+			float3 vRight = g_xConfig.m_pViewportCamera[XWP_TOP_LEFT]->getRight() * 0.1f;
+
+			IconVertex *pvIconData;
+			if(g_xRenderStates.pIconVB->lock((void**)&pvIconData, GXBL_WRITE))
+			{
+				pvIconData[0].vPos = float3(-vRight - vUp);
+				pvIconData[0].vTex = float2_t(0.0f, 1.0f);
+				pvIconData[1].vPos = float3(-vRight + vUp);
+				pvIconData[1].vTex = float2_t(0.0f, 0.0f);
+				pvIconData[2].vPos = float3(vRight + vUp);
+				pvIconData[2].vTex = float2_t(1.0f, 0.0f);
+				pvIconData[3].vPos = float3(vRight - vUp);
+				pvIconData[3].vTex = float2_t(1.0f, 1.0f);
+				g_xRenderStates.pIconVB->unlock();
+			}
+
+
+			s_pColorBuffer->update(&float4(1.0f, 1.0f, 1.0f, 1.0f));
+			pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
+			SGCore_ShaderBind(g_xRenderStates.idIconShaderKit);
+			pCtx->setIndexBuffer(g_xRenderStates.pIcon3DIB);
+			pCtx->setRenderBuffer(g_xRenderStates.pIcon3DRB);
+			pCtx->setSamplerState(g_xRenderStates.pSamplerLinearClamp, 0);
+
+			struct Icon
+			{
+				IXTexture *pTexture;
+				float3_t vPos;
+			};
+			Array<Icon> aIcons;
+			Icon icon;
+			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+			{
+				if((icon.pTexture = g_pLevelObjects[i]->getIcon()))
+				{
+					icon.vPos = g_pLevelObjects[i]->getPos();
+					aIcons.push_back(icon);
+				}
+			}
+			aIcons.quickSort([](const Icon &a, const Icon &b){
+				return(a.pTexture < b.pTexture);
+			});
+
+			float3_t *pvData2 = NULL;
+
+			UINT uIconCount = 0;
+			IXTexture *pTexture = aIcons.size() ? aIcons[0].pTexture : NULL;
+			bool bForceDraw = false;
+			for(UINT i = 0, l = aIcons.size(); i < l; ++i)
+			{
+				if(!pvData2)
+				{
+					if(g_xRenderStates.pHandlerInstanceVB->lock((void**)&pvData2, GXBL_WRITE))
+					{
+						IGXBaseTexture *pTex = NULL;
+						aIcons[i].pTexture->getAPITexture(&pTex);
+						pCtx->setPSTexture(pTex);
+						mem_release(pTex);
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				if(pTexture == aIcons[i].pTexture)
+				{
+					pvData2[uIconCount++] = aIcons[i].vPos;
+				}
+				else
+				{
+					pTexture = aIcons[i].pTexture;
+					bForceDraw = true;
+					--i;
+				}
+				if(bForceDraw || uIconCount == X_MAX_HANDLERS_PER_DIP * 2)
+				{
+					g_xRenderStates.pHandlerInstanceVB->unlock();
+					pCtx->drawIndexedInstanced(uIconCount, 8, 12, 0, 0);
+					pvData2 = NULL;
+					uIconCount = 0;
+				}
+			}
+			if(pvData2)
+			{
+				g_xRenderStates.pHandlerInstanceVB->unlock();
+				pvData2 = NULL;
+			}
+			if(uIconCount)
+			{
+				pCtx->drawIndexedInstanced(uIconCount, 8, 12, 0, 0);
+			}
+			pCtx->setSamplerState(NULL, 0);
+		}
 	}
 }
 
@@ -1379,7 +1624,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 					}
 
 					pvData[uHandlerCount++] = vPos;
-					if(uHandlerCount == X_MAX_HANDLERS_PER_DIP)
+					if(uHandlerCount == X_MAX_HANDLERS_PER_DIP * 2)
 					{
 						g_xRenderStates.pHandlerInstanceVB->unlock();
 						pCtx->drawIndexedInstanced(uHandlerCount, 8, 4, 0, 0);
@@ -1481,7 +1726,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			{
 				UINT uCV = 0;
 
-				if(g_xState.xformType == X2DXF_SCALE)
+				if(g_xState.xformType == X2DXF_SCALE || g_xState.xformType == X2DXF_NONE)
 				{
 					float3 vCenter(vSelectionCenter.x, 0.0f, vBorder.y - fPtMargin);
 					pvData[uCV++] = (float3)(vCenter + float3(-fPtSize, 0.0f, -fPtSize));
@@ -1602,7 +1847,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			pCtx->setRenderBuffer(g_xRenderStates.pTransformHandlerRB);
 			s_pColorBuffer->update(&float4(1.0f, 1.0f, 1.0f, 1.0f));
 			pCtx->setPSConstant(s_pColorBuffer);
-			if(g_xState.xformType == X2DXF_SCALE)
+			if(g_xState.xformType == X2DXF_SCALE || g_xState.xformType == X2DXF_NONE)
 			{
 				pCtx->setIndexBuffer(g_xRenderStates.pTransformHandlerScaleIB);
 				pCtx->drawIndexed(32, 16, 0, 0);
@@ -1669,7 +1914,7 @@ bool XSaveLevel(const char *szNewName, bool bForcePrompt)
 		return(true);
 	}
 	
-	if(!bForcePrompt && g_sLevelName[0])
+	if(!bForcePrompt && g_sLevelName.length())
 	{
 		// g_sLevelName can changed during save process, so pointer will be broken
 		String tmp = g_sLevelName;

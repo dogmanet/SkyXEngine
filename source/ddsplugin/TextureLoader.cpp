@@ -64,6 +64,19 @@ void XMETHODCALLTYPE CTextureLoader::getInfo(XTextureInfo *pTextureInfo)
 	if(m_ddsHeader.flags & DDS_HEADER_FLAGS_MIPMAP)
 	{
 		pTextureInfo->uMipCount = m_ddsHeader.mipMapCount;
+		if(m_iXFrames != 1 || m_iYFrames != 1)
+		{
+			UINT uMaxMips = 1;
+			UINT uSize = min(pTextureInfo->uWidth, pTextureInfo->uHeight);
+			while((uSize >>= 1))
+			{
+				++uMaxMips;
+			}
+			if(uMaxMips < pTextureInfo->uMipCount)
+			{
+				pTextureInfo->uMipCount = uMaxMips;
+			}
+		}
 	}
 }
 
@@ -91,14 +104,14 @@ bool XMETHODCALLTYPE CTextureLoader::open(const char *szFileName, const char *sz
 	if(uMagick != DDS_MAGIC)
 	{
 		LibReport(REPORT_MSG_LEVEL_WARNING, "Invalid magick number '%s'\n", szFileName);
-		mem_release(pFile);
+		mem_release(m_pCurrentFile);
 		return(false);
 	}
 
 	if(pFile->readBin(&m_ddsHeader, sizeof(m_ddsHeader)) != sizeof(m_ddsHeader))
 	{
 		LibReport(REPORT_MSG_LEVEL_WARNING, "Invalid file header '%s'\n", szFileName);
-		mem_release(pFile);
+		mem_release(m_pCurrentFile);
 		return(false);
 	}
 	m_hasDXT10Header = (m_ddsHeader.ddspf.flags & DDS_FOURCC) && m_ddsHeader.ddspf.fourCC == MAKEFOURCC('D', 'X', '1', '0');
@@ -106,7 +119,7 @@ bool XMETHODCALLTYPE CTextureLoader::open(const char *szFileName, const char *sz
 	if(m_hasDXT10Header && pFile->readBin(&m_dxt10Header, sizeof(m_dxt10Header)) != sizeof(m_dxt10Header))
 	{
 		LibReport(REPORT_MSG_LEVEL_WARNING, "Invalid file header 10 '%s'\n", szFileName);
-		mem_release(pFile);
+		mem_release(m_pCurrentFile);
 		return(false);
 	}
 
@@ -114,7 +127,7 @@ bool XMETHODCALLTYPE CTextureLoader::open(const char *szFileName, const char *sz
 	if(m_format == GXFMT_UNKNOWN)
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "Unsuported texture format '%s'\n", szFileName);
-		mem_release(pFile);
+		mem_release(m_pCurrentFile);
 		return(false);
 	}
 
@@ -376,7 +389,7 @@ bool XMETHODCALLTYPE CTextureLoader::loadAs2D(IXResourceTexture2D *pResource)
 						byte *pDest = pMip->pData;
 						for(int row = 0; row < iRowCount; ++row)
 						{
-							memcpy(pDest, pData + sizeRow * row + sizeRowFrame * x, sizeRowFrame);
+							memcpy(pDest, pData + sizeRow * (row + iRowCount * y) + sizeRowFrame * x, sizeRowFrame);
 							pDest += sizeRowFrame;
 						}
 

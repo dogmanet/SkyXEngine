@@ -455,6 +455,8 @@ CShaderManager::CShaderManager()
 {
 	m_pPreprocessor = new CShaderPreprocessor(Core_GetIXCore()->getFileSystem());
 	m_pPreprocessor->addIncPath("shaders/");
+
+	Core_GetIXCore()->getConsole()->registerCVar("dev_shader_info", 1, "Shader loading verbosity: 0: no info; 1: progressbar; 2: details");
 }
 
 CShaderManager::~CShaderManager()
@@ -484,7 +486,7 @@ CShaderManager::~CShaderManager()
 }
 
 
-const char* CShaderManager::getTextResultLoad(int iResult)
+static const char* GetTextResultLoad(int iResult)
 {
 	switch(iResult)
 	{
@@ -672,6 +674,72 @@ ID CShaderManager::preLoad(SHADER_TYPE type, const char *szPath, GXMacro *aMacro
 	return(id);
 }
 
+template<typename T>
+static void LoadArray(Array<T*> &aList, const char *szType, CShaderPreprocessor *pPreprocessor)
+{
+	const char *szResult;
+
+	static const int *dev_shader_info = GET_PCVAR_INT("dev_shader_info");
+	static const int *con_width = GET_PCVAR_INT("con_width");
+	int iShaderInfo = *dev_shader_info;
+	int iConWidth = *con_width - 6 - (int)strlen(szType);
+
+	UINT uCountForLoad = 0;
+	if(iShaderInfo == 1)
+	{
+		for(UINT i = 0, l = aList.size(); i < l; ++i)
+		{
+			if(!aList[i]->m_pGXShader)
+			{
+				++uCountForLoad;
+			}
+		}
+	}
+	
+	UINT uCountLoaded = 0;
+
+	char *tmp = (char*)alloca(sizeof(char) * (iConWidth + 1));
+
+	for(UINT i = 0, l = aList.size(); i < l; ++i)
+	{
+		T *pShader = aList[i];
+		if(pShader->m_pGXShader)
+		{
+			continue;
+		}
+		szResult = GetTextResultLoad(LoadShader(pPreprocessor, Core_GetIXCore()->getFileSystem(), pShader->m_szPath, pShader, pShader->m_aMacros));
+		++uCountLoaded;
+
+		if(iShaderInfo == 2)
+		{
+			LibReport(REPORT_MSG_LEVEL_NOTICE, "  %s id [" COLOR_LCYAN "%d" COLOR_RESET "], file [" COLOR_LCYAN "%s" COLOR_RESET "], result [%s] \n", szType, i, pShader->m_szPath, szResult);
+		}
+		else if(iShaderInfo == 1)
+		{
+			int iCount = (int)(roundf((((float)uCountLoaded / (float)uCountForLoad) * (float)iConWidth)) + 0.5f);
+			UINT j;
+			for(j = 0; j < iCount; ++j)
+			{
+				tmp[j] = '=';
+			}
+			if(j && j != iConWidth)
+			{
+				tmp[j - 1] = '>';
+			}
+			for(; j < iConWidth; ++j)
+			{
+				tmp[j] = ' ';
+			}
+			tmp[iConWidth] = 0;
+			LogInfo("\r%s: [%s]", szType, tmp);
+		}
+	}
+	if(iShaderInfo == 1 && uCountLoaded)
+	{
+		LogInfo("\n");
+	}
+}
+
 void CShaderManager::allLoad(bool bReload)
 {
 	ScopedSpinLock lock(m_spLock);
@@ -685,49 +753,28 @@ void CShaderManager::allLoad(bool bReload)
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "Loading shaders\n");
 	}
 
-	const char *szResult;
+	static const int *dev_shader_info = GET_PCVAR_INT("dev_shader_info");
+	int iShaderInfo = *dev_shader_info;
 
-	for(UINT i = 0, l = m_aVS.size(); i < l; ++i)
+	LoadArray(m_aVS, "VS", m_pPreprocessor);
+	if(iShaderInfo == 2)
 	{
-		CShaderVS *pShader = m_aVS[i];
-		if(pShader->m_pGXShader)
-			continue;
-		szResult = getTextResultLoad(LoadShader(m_pPreprocessor, Core_GetIXCore()->getFileSystem(), pShader->m_szPath, pShader, pShader->m_aMacros));
-		LibReport(REPORT_MSG_LEVEL_NOTICE, "  VS id [" COLOR_LCYAN "%d" COLOR_RESET "], file [" COLOR_LCYAN "%s" COLOR_RESET "], result [%s] \n", i, pShader->m_szPath, szResult);
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
 	}
 
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
-
-	for(UINT i = 0, l = m_aPS.size(); i < l; ++i)
+	LoadArray(m_aPS, "PS", m_pPreprocessor);
+	if(iShaderInfo == 2)
 	{
-		CShaderPS *pShader = m_aPS[i];
-		if(pShader->m_pGXShader)
-			continue;
-		szResult = getTextResultLoad(LoadShader(m_pPreprocessor, Core_GetIXCore()->getFileSystem(), pShader->m_szPath, pShader, pShader->m_aMacros));
-		LibReport(REPORT_MSG_LEVEL_NOTICE, "  PS id [" COLOR_LCYAN "%d" COLOR_RESET "], file[" COLOR_LCYAN "%s" COLOR_RESET "], result [%s] \n", i, pShader->m_szPath, szResult);
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
 	}
 
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
-
-	for(UINT i = 0, l = m_aGS.size(); i < l; ++i)
+	LoadArray(m_aGS, "GS", m_pPreprocessor);
+	if(iShaderInfo == 2)
 	{
-		CShaderGS *pShader = m_aGS[i];
-		if(pShader->m_pGXShader)
-			continue;
-		szResult = getTextResultLoad(LoadShader(m_pPreprocessor, Core_GetIXCore()->getFileSystem(), pShader->m_szPath, pShader, pShader->m_aMacros));
-		LibReport(REPORT_MSG_LEVEL_NOTICE, "  GS id [" COLOR_LCYAN "%d" COLOR_RESET "], file[" COLOR_LCYAN "%s" COLOR_RESET "], result [%s] \n", i, pShader->m_szPath, szResult);
+		LibReport(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
 	}
 
-	LibReport(REPORT_MSG_LEVEL_NOTICE, "  -------\n");
-
-	for(UINT i = 0, l = m_aCS.size(); i < l; ++i)
-	{
-		CShaderCS *pShader = m_aCS[i];
-		if(pShader->m_pGXShader)
-			continue;
-		szResult = getTextResultLoad(LoadShader(m_pPreprocessor, Core_GetIXCore()->getFileSystem(), pShader->m_szPath, pShader, pShader->m_aMacros));
-		LibReport(REPORT_MSG_LEVEL_NOTICE, "  CS id [" COLOR_LCYAN "%d" COLOR_RESET "], file[" COLOR_LCYAN "%s" COLOR_RESET "], result [%s] \n", i, pShader->m_szPath, szResult);
-	}
+	LoadArray(m_aCS, "CS", m_pPreprocessor);
 
 	m_iLastAllLoadVS = m_aVS.size();
 	m_iLastAllLoadPS = m_aPS.size();

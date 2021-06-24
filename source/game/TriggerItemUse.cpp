@@ -17,12 +17,6 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CTriggerItemUse, trigger_itemuse);
 
-CTriggerItemUse::CTriggerItemUse(CEntityManager * pMgr):
-	BaseClass(pMgr)
-{
-	//m_idHurtInterval = SET_INTERVAL(think, 1000.0f);
-}
-
 void CTriggerItemUse::setItem(CBaseItem *pItem)
 {
 	m_pItem = pItem;

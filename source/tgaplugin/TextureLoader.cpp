@@ -82,7 +82,7 @@ bool XMETHODCALLTYPE CTextureLoader::open(const char *szFileName, const char *sz
 	if(pFile->readBin(&m_tgaHeader, sizeof(m_tgaHeader)) != sizeof(m_tgaHeader))
 	{
 		LibReport(REPORT_MSG_LEVEL_WARNING, "Invalid file header '%s'\n", szFileName);
-		mem_release(pFile);
+		mem_release(m_pCurrentFile);
 		return(false);
 	}
 
@@ -90,14 +90,14 @@ bool XMETHODCALLTYPE CTextureLoader::open(const char *szFileName, const char *sz
 	if(m_format == GXFMT_UNKNOWN)
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "Unsuported texture format '%s'\n", szFileName);
-		mem_release(pFile);
+		mem_release(m_pCurrentFile);
 		return(false);
 	}
 
 	if(m_tgaHeader.datatypecode == 0)
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "Texture has no image data '%s'\n", szFileName);
-		mem_release(pFile);
+		mem_release(m_pCurrentFile);
 		return(false);
 	}
 

@@ -48,15 +48,11 @@ void CSoundSystem::addMessage(SndQueueMsg &oMsg)
 	m_queue.push(oMsg);
 }
 
-void XMETHODCALLTYPE CSoundSystem::update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
+void CSoundSystem::update(const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
 	if(m_pMasterLayer)
 		m_pMasterLayer->update(vListenerPos, vListenerDir, vListenerUp);
-
-	m_vObserverPos = vListenerPos; 
-	m_vObserverLook = vListenerDir; 
-	m_vObserverUp = vListenerUp;
-
+	
 	SndQueueMsg oMsg;
 	while(m_queue.pop(&oMsg))
 	{

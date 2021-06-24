@@ -98,6 +98,15 @@ struct XResourceModelStaticVertex
 	float3_t vBinorm;   /*!< Бинормаль */
 };
 
+struct XResourceModelStaticVertexGPU
+{
+	float3_t vPos;			/*!< Позиция */
+	float2_t vTex;      /*!< Текстурные координаты */
+	short vNorm[4];     /*!< Нормаль */
+	short vTangent[4];  /*!< Тангент */
+	short vBinorm[4];   /*!< Бинормаль */
+};
+
 struct XResourceModelStaticSubset
 {
 	uint32_t iMaterialID = 0; //!< Идентификатор материала
@@ -116,6 +125,17 @@ struct XResourceModelAnimatedVertex
 	float3_t vBinorm;   /*!< Бинормаль */
 	byte u8BoneIndices[4];  /*!< Индексы костей */
 	float4_t vBoneWeights; /*!< Веса костей */
+};
+
+struct XResourceModelAnimatedVertexGPU
+{
+	float3_t vPos;      /*!< Позиция */
+	float2_t vTex;      /*!< Текстурные координаты */
+	short vNorm[4];     /*!< Нормаль */
+	short vTangent[4];  /*!< Тангент */
+	short vBinorm[4];   /*!< Бинормаль */
+	byte u8BoneIndices[4];  /*!< Индексы костей */
+	byte vBoneWeights[4]; /*!< Веса костей */
 };
 
 struct XResourceModelAnimatedSubset

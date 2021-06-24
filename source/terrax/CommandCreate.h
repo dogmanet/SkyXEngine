@@ -27,6 +27,11 @@ public:
 		return(false);
 	}
 
+	IXEditorObject* getObject()
+	{
+		return(m_pObject);
+	}
+
 protected:
 	float3_t m_vPos;
 	SMQuaternion m_qOrient;

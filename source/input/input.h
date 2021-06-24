@@ -92,6 +92,8 @@ private:
 
 	bool m_bEnabled = false;
 
+	bool m_isFirstRIM = true;
+
 	void(*m_pfnCallback)(const char *szKey);
 	bool m_bDisableOnNextKeyPress;
 

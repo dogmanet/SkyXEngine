@@ -260,6 +260,8 @@ void SXInput::setEnable(bool bEnable)
 		msg.message = WM_KILLFOCUS;
 		msg.lParam = msg.wParam = 0;
 		QueueMsg(msg);
+
+		m_isFirstRIM = true;
 	}
 
 	m_bEnabled = bEnable;
@@ -513,8 +515,35 @@ void SXInput::QueueMsg(const IMSG & msg)
 		{
 			if(raw.header.dwType == RIM_TYPEMOUSE)
 			{
-				mdelta.x += raw.data.mouse.lLastX;
-				mdelta.y += raw.data.mouse.lLastY;
+				const RAWMOUSE &rawMouse = raw.data.mouse;
+				if(rawMouse.usFlags & MOUSE_MOVE_ABSOLUTE)
+				{
+					bool isVirtualDesktop = rawMouse.usFlags & MOUSE_VIRTUAL_DESKTOP;
+
+					int width = GetSystemMetrics(isVirtualDesktop ? SM_CXVIRTUALSCREEN : SM_CXSCREEN);
+					int height = GetSystemMetrics(isVirtualDesktop ? SM_CYVIRTUALSCREEN : SM_CYSCREEN);
+
+					int absoluteX = int((rawMouse.lLastX / 65535.0f) * width);
+					int absoluteY = int((rawMouse.lLastY / 65535.0f) * height);
+
+					static int s_iLastX = 0, s_iLastY = 0;
+					if(m_isFirstRIM)
+					{
+						m_isFirstRIM = false;
+					}
+					else
+					{
+						mdelta.x += absoluteX - s_iLastX;
+						mdelta.y += absoluteY - s_iLastY;
+					}
+					s_iLastX = absoluteX;
+					s_iLastY = absoluteY;
+				}
+				else if(rawMouse.lLastX != 0 || rawMouse.lLastY != 0)
+				{
+					mdelta.x += rawMouse.lLastX;
+					mdelta.y += rawMouse.lLastY;
+				}
 			}
 		}
 		return;

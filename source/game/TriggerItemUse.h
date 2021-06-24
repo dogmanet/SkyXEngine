@@ -26,7 +26,7 @@ class CTriggerItemUse: public CBaseTrigger
 	DECLARE_CLASS(CTriggerItemUse, CBaseTrigger);
 	DECLARE_PROPTABLE();
 public:
-	DECLARE_CONSTRUCTOR();
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 
 	void setItem(CBaseItem *pItem);
 

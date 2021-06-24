@@ -107,6 +107,8 @@ SX_LIB_API ID SPhysics_GetMtlID(const btCollisionObject *pBody, const btCollisio
 
 SX_LIB_API btDiscreteDynamicsWorldMt * SPhysics_GetDynWorld();
 
+SX_LIB_API void SPhysics_UpdateSingleAABB(btCollisionObject* colObj);
+
 /*! Запускает симуляцию
 */
 SX_LIB_API void SPhysics_EnableSimulation();

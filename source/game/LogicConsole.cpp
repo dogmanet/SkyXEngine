@@ -21,7 +21,7 @@ BEGIN_PROPTABLE(CLogicConsole)
 	DEFINE_INPUT(sendError, "sendError", "Send error", PDF_STRING)
 END_PROPTABLE()
 
-REGISTER_ENTITY(CLogicConsole, logic_console);
+REGISTER_ENTITY(CLogicConsole, logic_console, REC_ICON("dev_logic_console"));
 
 void CLogicConsole::setAutoNewLine(inputdata_t *pInputdata)
 {

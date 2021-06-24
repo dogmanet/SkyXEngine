@@ -139,8 +139,10 @@ GS_IN main(VS_IN input)
 	float3 brightestCellIndex = 0;
 	float maxLuminance = 0;
 	{
+		[unroll]
 		for(uint y = 0; y < KERNEL_SIZE; y += STEP_SIZE)
 		{
+			[unroll]
 			for(uint x = 0; x < KERNEL_SIZE; x += STEP_SIZE)
 			{
 				int3 texIdx = rsmCoords.xyz + int3(x, y, 0);
@@ -158,8 +160,10 @@ GS_IN main(VS_IN input)
 
 	RsmTexel result = (RsmTexel)0;
 	float numSamples = 0;
+	[unroll]
 	for(uint y = 0; y < KERNEL_SIZE; y += STEP_SIZE)
 	{
+		[unroll]
 		for(uint x = 0; x < KERNEL_SIZE; x += STEP_SIZE)
 		{
 			int3 texIdx = rsmCoords.xyz + int3(x, y, 0);

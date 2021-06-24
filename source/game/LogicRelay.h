@@ -1,12 +1,12 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 /*!
 \file
-Логическое реле
+Р›РѕРіРёС‡РµСЃРєРѕРµ СЂРµР»Рµ
 */
 
 #ifndef __LOGIC_RELAY_H
@@ -16,7 +16,7 @@ See the license in LICENSE
 
 #define LOGIC_START_DISABLED ENT_FLAG_0
 
-/*! Логическое реле
+/*! Р›РѕРіРёС‡РµСЃРєРѕРµ СЂРµР»Рµ
 \ingroup cpointentity
 */
 class CLogicRelay: public CPointEntity
@@ -24,7 +24,7 @@ class CLogicRelay: public CPointEntity
 	DECLARE_CLASS(CLogicRelay, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	DECLARE_CONSTRUCTOR();
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 	
 protected:
 	void turnOn(inputdata_t * pInputdata);
@@ -32,11 +32,11 @@ protected:
 	void trigger(inputdata_t * pInputdata);
 	void toggle(inputdata_t * pInputdata);
 
-	void onPostLoad();
+	void onPostLoad() override;
 
 	output_t m_onTrigger;
 
-	bool m_isEnabled;
+	bool m_isEnabled = true;
 };
 
 #endif

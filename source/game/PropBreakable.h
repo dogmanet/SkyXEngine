@@ -1,12 +1,12 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 /*!
 \file
-Разбиваемй объект
+Р Р°Р·Р±РёРІР°РµРјР№ РѕР±СЉРµРєС‚
 */
 
 #ifndef __PROP_BREAKABLE_H
@@ -14,7 +14,7 @@ See the license in LICENSE
 
 #include "PropDynamic.h"
 
-/*! Разбиваемый объект
+/*! Р Р°Р·Р±РёРІР°РµРјС‹Р№ РѕР±СЉРµРєС‚
 \ingroup cbaseanimating
 */
 class CPropBreakable: public CPropDynamic
@@ -23,7 +23,8 @@ class CPropBreakable: public CPropDynamic
 	DECLARE_PROPTABLE();
 public:
 	DECLARE_TRIVIAL_CONSTRUCTOR();
-	virtual void onPostLoad();
+	~CPropBreakable();
+	void onPostLoad() override;
 
 	void onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor);
 protected:
@@ -32,7 +33,7 @@ protected:
 	output_t m_onBroken;
 
 	const char * m_szSndBreak;
-	ID m_idSndBreak = -1;
+	IXSoundPlayer *m_pSndBreak = NULL;
 };
 
 #endif

@@ -7,6 +7,7 @@
 #include <common/array.h>
 
 class CEditable;
+class IXDynamicModel;
 class CEditorObject final: public IXUnknownImplementation<IXEditorObject>
 {
 	DECLARE_CLASS(CEditorObject, IXEditorObject);
@@ -16,14 +17,17 @@ public:
 	~CEditorObject();
 
 	void XMETHODCALLTYPE setPos(const float3_t &pos) override;
+	void setPos(const float3_t &pos, bool isSeparate);
 	void XMETHODCALLTYPE setOrient(const SMQuaternion &orient) override;
-	void XMETHODCALLTYPE setScale(const float3_t &pos) override;
+	void setOrient(const SMQuaternion &orient, bool isSeparate);
+	void XMETHODCALLTYPE setScale(const float3_t &scale) override;
+	void setScale(const float3_t &scale, bool isSeparate);
 
 	void XMETHODCALLTYPE getBound(float3 *pvMin, float3 *pvMax) override;
 
 	void XMETHODCALLTYPE renderSelection(bool is3D) override;
 
-	bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl) override;
+	bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, float3 *pvNormal = NULL, ID *pidMtrl = NULL, bool bReturnNearestPoint = false) override;
 
 	void XMETHODCALLTYPE remove() override;
 	void XMETHODCALLTYPE create() override;
@@ -42,15 +46,10 @@ public:
 
 
 
-	float3_t XMETHODCALLTYPE getPos() override
-	{
-		return(m_vPos);
-	}
+	float3_t XMETHODCALLTYPE getPos() override;
 
-	SMQuaternion XMETHODCALLTYPE getOrient() override
-	{
-		return(m_qRot);
-	}
+	SMQuaternion XMETHODCALLTYPE getOrient() override;
+
 	float3_t XMETHODCALLTYPE getScale() override
 	{
 		return(m_vScale);
@@ -67,9 +66,20 @@ public:
 		return(m_pEntity);
 	}
 
+	IXTexture* XMETHODCALLTYPE getIcon() override
+	{
+		return(m_pIcon);
+	}
+
+	void XMETHODCALLTYPE setSimulationMode(bool set) override;
+
+	bool XMETHODCALLTYPE hasVisualModel() override;
+
 protected:
 	CBaseEntity *m_pEntity = NULL;
 	const char *m_szClassName = NULL;
+	IXTexture *m_pIcon = NULL;
+	IXDynamicModel *m_pModel = NULL;
 
 	CEditable *m_pEditable;
 
@@ -79,7 +89,7 @@ protected:
 
 	void _iniFieldList();
 
-	ID m_idEnt = -1;
+	XGUID m_guidEnt;
 
 protected:
 	bool m_isSelected = false;

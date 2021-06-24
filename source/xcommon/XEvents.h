@@ -27,55 +27,43 @@ class IEventChannel: public IBaseEventChannel
 public:
 	void addListener(PFNLISTENER fnListener)
 	{
-		for(UINT i = 0, l = m_vListeners.size(); i < l; ++i)
+		if(m_vListeners.indexOf(fnListener) < 0)
 		{
-			if(m_vListeners[i] == fnListener)
-			{
-				return;
-			}
+			m_vListeners.push_back(fnListener);
 		}
-		m_vListeners.push_back(fnListener);
 	}
 	void addListener(IEventListener<T> *pListener)
 	{
-		for(UINT i = 0, l = m_vListeners2.size(); i < l; ++i)
+		if(m_vListeners2.indexOf(pListener) < 0)
 		{
-			if(m_vListeners2[i] == pListener)
-			{
-				return;
-			}
+			m_vListeners2.push_back(pListener);
 		}
-		m_vListeners2.push_back(pListener);
 	}
 	void removeListener(PFNLISTENER fnListener)
 	{
-		for(UINT i = 0, l = m_vListeners.size(); i < l; ++i)
+		int idx = m_vListeners.indexOf(fnListener);
+		if(idx >= 0)
 		{
-			if(m_vListeners[i] == fnListener)
-			{
-				m_vListeners.erase(i);
-				return;
-			}
+			m_vListeners[idx] = m_vListeners[m_vListeners.size() - 1];
+			m_vListeners.erase(m_vListeners.size() - 1);
 		}
 	}
 	void removeListener(IEventListener<T> *pListener)
 	{
-		for(UINT i = 0, l = m_vListeners2.size(); i < l; ++i)
+		int idx = m_vListeners2.indexOf(pListener);
+		if(idx >= 0)
 		{
-			if(m_vListeners2[i] == pListener)
-			{
-				m_vListeners2.erase(i);
-				return;
-			}
+			m_vListeners2[idx] = m_vListeners2[m_vListeners2.size() - 1];
+			m_vListeners2.erase(m_vListeners2.size() - 1);
 		}
 	}
 	void broadcastEvent(const T *pEvent)
 	{
-		for(UINT i = 0, l = m_vListeners.size(); i < l; ++i)
+		for(UINT i = 0; i < m_vListeners.size(); ++i)
 		{
 			m_vListeners[i](pEvent);
 		}
-		for(UINT i = 0, l = m_vListeners2.size(); i < l; ++i)
+		for(UINT i = 0; i < m_vListeners2.size(); ++i)
 		{
 			m_vListeners2[i]->onEvent(pEvent);
 		}
@@ -177,6 +165,7 @@ struct XEventMaterialChanged
 		TYPE_FLAG,
 		TYPE_SHADER,
 		TYPE_EMISSIVITY,
+		TYPE_EDITORIAL,
 		// ...
 	} type;
 	IXMaterial *pMaterial;
@@ -239,6 +228,36 @@ class IXTexture;
 struct XEventSkyboxChanged
 {
 	IXTexture *pTexture;
+};
+
+
+// {1DB80A19-7DFA-4D61-923B-34906590DBB0}
+#define EVENT_PHYSICS_STEP_GUID DEFINE_XGUID(0x1db80a19, 0x7dfa, 0x4d61, 0x92, 0x3b, 0x34, 0x90, 0x65, 0x90, 0xdb, 0xb0)
+
+class IXPhysics;
+struct XEventPhysicsStep
+{
+	IXPhysics *pPhysics;
+	float fTimeStep;
+};
+
+
+// @FIXME move that somewhere else
+// {2C5F63CB-4CFE-46D1-9AB9-B8B028E96C97}
+#define EVENT_EDITOR_XFORM_TYPE_GUID DEFINE_XGUID(0x2c5f63cb, 0x4cfe, 0x46d1, 0x9a, 0xb9, 0xb8, 0xb0, 0x28, 0xe9, 0x6c, 0x97)
+
+enum X_2DXFORM_TYPE
+{
+	X2DXF_NONE = -1,
+	X2DXF_SCALE = 0,
+	X2DXF_ROTATE,
+
+
+	X2DXF__LAST
+};
+struct XEventEditorXformType
+{
+	X_2DXFORM_TYPE newXformType;
 };
 
 #endif

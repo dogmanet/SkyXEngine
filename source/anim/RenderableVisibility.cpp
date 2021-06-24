@@ -22,8 +22,16 @@ void CRenderableVisibility::setOcclusionCuller(IXOcclusionCuller *pOcclusionCull
 
 void CRenderableVisibility::updateForCamera(ICamera *pCamera, const IXRenderableVisibility *pReference)
 {
+	CRenderableVisibility *pRef = NULL;
+	if(pReference)
+	{
+		assert(((IXRenderableVisibility*)pReference)->getPluginId() == getPluginId());
+		pRef = (CRenderableVisibility*)pReference;
+	}
+
 	IXFrustum *pFrustum = pCamera->getFrustum();
-	updateForFrustum(pFrustum, pReference);
+	m_pProviderAnimated->computeVisibility(pFrustum, this, pRef);
+	m_pProviderDynamic->computeVisibility(pFrustum, pCamera->getLook(), this, pRef);
 	mem_release(pFrustum);
 }
 
@@ -37,7 +45,7 @@ void CRenderableVisibility::updateForFrustum(const IXFrustum *pFrustum, const IX
 	}
 
 	m_pProviderAnimated->computeVisibility(pFrustum, this, pRef);
-	m_pProviderDynamic->computeVisibility(pFrustum, this, pRef);
+	m_pProviderDynamic->computeVisibility(pFrustum, float3(), this, pRef);
 }
 
 static void SortRenderList(Array<CDynamicModel*> &aList)

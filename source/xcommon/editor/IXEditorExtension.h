@@ -1,7 +1,7 @@
 #ifndef __XEDITOR_EXTENSION_H
 #define __XEDITOR_EXTENSION_H
 
-#include <gdefines.h>
+#include "IXEditor.h"
 
 class IXEditorCommand: public IXUnknown
 {
@@ -43,6 +43,29 @@ public:
 
 //##########################################################################
 
+class IXEditorTool: public IXUnknown
+{
+public:
+	// HBITMAP for now
+	virtual void* XMETHODCALLTYPE getIcon() = 0;
+	virtual const char* XMETHODCALLTYPE getTitle() = 0;
+
+	virtual void XMETHODCALLTYPE activate() = 0;
+	virtual void XMETHODCALLTYPE deactivate() = 0;
+
+	virtual bool XMETHODCALLTYPE wantMouse2D() = 0;
+	virtual bool XMETHODCALLTYPE wantMouse3D() = 0;
+
+
+	virtual bool XMETHODCALLTYPE onMouseDown(UINT uXpos, UINT uYpos, X_WINDOW_POS winPos) = 0;
+	virtual void XMETHODCALLTYPE onMouseMove(UINT uXpos, UINT uYpos, X_WINDOW_POS winPos) = 0;
+	virtual void XMETHODCALLTYPE onMouseUp() = 0;
+
+	// virtual bool XMETHODCALLTYPE onMouseEvent(UINT msg, WPARAM wParam, LPARAM lParam, ) = 0;
+};
+
+//##########################################################################
+
 class IXEditorExtension: public IXUnknown
 {
 public:
@@ -51,6 +74,9 @@ public:
 
 	virtual UINT XMETHODCALLTYPE getPropertyTabCount() = 0;
 	virtual IXEditorPropertyTab* XMETHODCALLTYPE getPropertyTab(UINT uId) = 0;
+
+	//virtual UINT XMETHODCALLTYPE getToolCount() = 0;
+	//virtual bool XMETHODCALLTYPE getTool(UINT uId, IXEditorTool **ppOut) = 0;
 };
 
 #endif

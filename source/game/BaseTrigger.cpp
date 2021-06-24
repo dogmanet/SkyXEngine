@@ -30,19 +30,20 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CBaseTrigger, trigger);
 
-CBaseTrigger::CBaseTrigger(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	m_bEnabled(true),
-	m_pGhostObject(NULL),
-	m_idUpdateInterval(-1)
+IEventChannel<XEventPhysicsStep> *CBaseTrigger::m_pTickEventChannel = NULL;
+
+CBaseTrigger::CBaseTrigger():
+	m_physicsTicker(this)
 {
-	m_idUpdateInterval = SET_INTERVAL(update, 0);
+	if(!m_pTickEventChannel)
+	{
+		m_pTickEventChannel = Core_GetIXCore()->getEventChannel<XEventPhysicsStep>(EVENT_PHYSICS_STEP_GUID);
+	}
 }
 
 CBaseTrigger::~CBaseTrigger()
 {
 	removePhysBody();
-	CLEAR_INTERVAL(m_idUpdateInterval);
 }
 
 void CBaseTrigger::onPostLoad()
@@ -61,10 +62,10 @@ void CBaseTrigger::enable()
 	if(!m_bEnabled)
 	{
 		m_bEnabled = true;
-		m_idUpdateInterval = SET_INTERVAL(update, 0);
 		if(m_pGhostObject)
 		{
 			SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_TRIGGER, CG_CHARACTER);
+			m_pTickEventChannel->addListener(&m_physicsTicker);
 		}
 	}
 }
@@ -73,9 +74,9 @@ void CBaseTrigger::disable()
 	if(m_bEnabled)
 	{
 		m_bEnabled = false;
-		CLEAR_INTERVAL(m_idUpdateInterval);
 		if(m_pGhostObject)
 		{
+			m_pTickEventChannel->removeListener(&m_physicsTicker);
 			SPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
 		}
 	}
@@ -92,15 +93,15 @@ void CBaseTrigger::toggle()
 	}
 }
 
-void CBaseTrigger::inEnable(inputdata_t * pInputdata)
+void CBaseTrigger::inEnable(inputdata_t *pInputdata)
 {
 	enable();
 }
-void CBaseTrigger::inDisable(inputdata_t * pInputdata)
+void CBaseTrigger::inDisable(inputdata_t *pInputdata)
 {
 	disable();
 }
-void CBaseTrigger::inToggle(inputdata_t * pInputdata)
+void CBaseTrigger::inToggle(inputdata_t *pInputdata)
 {
 	toggle();
 }
@@ -109,13 +110,17 @@ void CBaseTrigger::createPhysBody()
 {
 	if(m_pCollideShape)
 	{
+		float3 vPos = getPos();
+		SMQuaternion qRot = getOrient();
+
 		m_pGhostObject = new btPairCachingGhostObject();
-		m_pGhostObject->setWorldTransform(btTransform(Q4_BTQUAT(m_vOrientation), F3_BTVEC(m_vPosition)));
+		m_pGhostObject->setWorldTransform(btTransform(Q4_BTQUAT(qRot), F3_BTVEC(vPos)));
 		m_pGhostObject->setUserPointer(this);
 		m_pGhostObject->setCollisionShape(m_pCollideShape);
 		m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() ^ btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
 		SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_TRIGGER, CG_CHARACTER);
+		m_pTickEventChannel->addListener(&m_physicsTicker);
 	}
 }
 
@@ -124,6 +129,7 @@ void CBaseTrigger::removePhysBody()
 	if(m_pGhostObject)
 	{
 		SPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
+		m_pTickEventChannel->removeListener(&m_physicsTicker);
 		mem_delete(m_pGhostObject);
 	}
 }
@@ -141,16 +147,17 @@ void CBaseTrigger::onTouchEndAll(CBaseEntity *pActivator)
 	FIRE_OUTPUT(m_onTouchEndAll, pActivator);
 }
 
-void CBaseTrigger::onSync()
+void CBaseTrigger::onPhysicsStep()
 {
-	BaseClass::onSync();
-
-	static const bool *dev_show_triggers = GET_PCVAR_BOOL("dev_show_triggers");
-
-	if(m_pModel && *dev_show_triggers != m_isModelEnabled)
 	{
-		m_isModelEnabled = *dev_show_triggers;
-		m_pModel->enable(m_isModelEnabled);
+		// TODO move this!
+		static const bool *dev_show_triggers = GET_PCVAR_BOOL("dev_show_triggers");
+
+		if(m_pModel && *dev_show_triggers != m_isModelEnabled)
+		{
+			m_isModelEnabled = *dev_show_triggers;
+			m_pModel->enable(m_isModelEnabled);
+		}
 	}
 
 	if(!m_pGhostObject || !m_bEnabled)
@@ -193,17 +200,12 @@ void CBaseTrigger::onSync()
 		}
 	}
 	//m_pGhostObject->getOverlappingObject(0);
-	//printf("%d\n", m_iTouches);
+
+	update();
 }
 
-void CBaseTrigger::update(float dt)
+void CBaseTrigger::update()
 {
-	if(!m_bEnabled)
-	{
-		return;
-	}
-
-	
 	bool bFound;
 	for(int i = 0, l = m_aNewTouches.size(); i < l; ++i)
 	{
@@ -212,7 +214,8 @@ void CBaseTrigger::update(float dt)
 		{
 			if(m_aNewTouches[i] == m_aTouches[j])
 			{
-				m_aTouches[j] = NULL;
+				m_aTouches[j] = m_aTouches[jl - 1];
+				m_aTouches.erase(jl - 1);
 				bFound = true;
 				break;
 			}
@@ -222,16 +225,11 @@ void CBaseTrigger::update(float dt)
 			onTouchStart(m_aNewTouches[i]);
 		}
 	}
-	CBaseEntity * pLastTouch = NULL;
 	for(int j = 0, jl = m_aTouches.size(); j < jl; ++j)
 	{
-		if(m_aTouches[j])
-		{
-			onTouchEnd(m_aTouches[j]);
-			pLastTouch = m_aTouches[j];
-		}
+		onTouchEnd(m_aTouches[j]);
 	}
-	if(pLastTouch && !m_aNewTouches.size())
+	if(m_aTouches.size() && !m_aNewTouches.size())
 	{
 		onTouchEndAll(m_aTouches[0]);
 	}
@@ -246,7 +244,7 @@ void CBaseTrigger::setPos(const float3 & pos)
 	{
 		m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(pos));
 
-		SPhysics_GetDynWorld()->updateSingleAabb(m_pGhostObject);
+		SPhysics_UpdateSingleAABB(m_pGhostObject);
 	}
 }
 
@@ -257,6 +255,11 @@ void CBaseTrigger::setOrient(const SMQuaternion & q)
 	{
 		m_pGhostObject->getWorldTransform().setRotation(Q4_BTQUAT(q));
 
-		SPhysics_GetDynWorld()->updateSingleAabb(m_pGhostObject);
+		SPhysics_UpdateSingleAABB(m_pGhostObject);
 	}
+}
+
+void CPhysicsTickEventListener::onEvent(const XEventPhysicsStep *pData)
+{
+	m_pTrigger->onPhysicsStep();
 }

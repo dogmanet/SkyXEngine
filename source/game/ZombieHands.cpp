@@ -5,11 +5,11 @@
 #include "Tracer.h"
 
 /*! \skydocent wpn_zombie_hands
-Ðóêè çîìáè
+Ð ÑƒÐºÐ¸ Ð·Ð¾Ð¼Ð±Ð¸
 */
 
 BEGIN_PROPTABLE(CZombieHands)
-	//! Íàíîñèìûé óðîí
+	//! ÐÐ°Ð½Ð¾ÑÐ¸Ð¼Ñ‹Ð¹ ÑƒÑ€Ð¾Ð½
 	DEFINE_FIELD_FLOAT(m_fDamage, PDFF_NOEDIT | PDFF_NOEXPORT, "damage", "", EDITOR_NONE)
 END_PROPTABLE()
 
@@ -49,10 +49,8 @@ void CZombieHands::taskShoot(float dt)
 	pOwner->playActivity("ACT_SHOOT", 200);
 	pOwner->playActivityNext("ACT_IDLE", 200);
 
-	if(ID_VALID(m_idSndShoot))
-	{
-		SSCore_SndInstancePlay3d(m_idSndShoot, false, false, &getPos());
-	}
+	SAFE_CALL(m_pSndShoot, setWorldPos, getPos());
+	SAFE_CALL(m_pSndShoot, play);
 
 	m_idActualShootTimeout = SET_TIMEOUT(actualShoot, 0.6f);
 }

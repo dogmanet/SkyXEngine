@@ -4,84 +4,287 @@
 #include <gdefines.h>
 
 XENUM(XCSS_PROPERTY_TYPE,
-	XCPT_UNSET = 0,
-	XCPT_INHERIT,
-	XCPT_INITIAL,
-	XCPT_VAR_INT,
-	XCPT_VAR_FLOAT,
-	XCPT_VAR_STRING,
-	XCPT_VAR_MATRIX,
-	XCPT_ENUM_VARIANT
+	XCSS_PROPERTY_TYPE_UNSET = 0,
+	XCSS_PROPERTY_TYPE_INHERIT,
+	XCSS_PROPERTY_TYPE_INITIAL,
+	XCSS_PROPERTY_TYPE_VAR_INT,
+	XCSS_PROPERTY_TYPE_VAR_FLOAT,
+	XCSS_PROPERTY_TYPE_VAR_STRING,
+	XCSS_PROPERTY_TYPE_VAR_MATRIX,
+	XCSS_PROPERTY_TYPE_ENUM_VARIANT
 );
 
-XENUM(XCSS_VAR_DIM,
-	XCSS_VAR_DIM_NONE,
-	XCSS_VAR_DIM_PX,
-	XCSS_VAR_DIM_EM,
-	XCSS_VAR_DIM_MM,
-	XCSS_VAR_DIM_PC,
-	XCSS_VAR_DIM_PT
+XENUM(XCSS_VAR_UNIT,
+	XCSS_VAR_UNIT_NONE,
+	XCSS_VAR_UNIT_PCT, //%
 
-	// deg
-	// rad
-	// grad
-	// turn
+	// https://developer.mozilla.org/en-US/docs/Web/CSS/length
+	// Font-relative lengths
+	XCSS_VAR_UNIT_CH,
+	XCSS_VAR_UNIT_EM,
+	XCSS_VAR_UNIT_EX,
+	XCSS_VAR_UNIT_LH,
+	XCSS_VAR_UNIT_REM,
+	XCSS_VAR_UNIT_RLH,
+
+	// Viewport-percentage lengths
+	XCSS_VAR_UNIT_VH,
+	XCSS_VAR_UNIT_VW,
+	XCSS_VAR_UNIT_VMIN,
+	XCSS_VAR_UNIT_VMAX,
+
+	// Absolute length units
+	XCSS_VAR_UNIT_PX,
+	XCSS_VAR_UNIT_CM,
+	XCSS_VAR_UNIT_MM,
+	XCSS_VAR_UNIT_Q,
+	XCSS_VAR_UNIT_IN,
+	XCSS_VAR_UNIT_PC,
+	XCSS_VAR_UNIT_PT,
+
+	// https://developer.mozilla.org/en-US/docs/Web/CSS/resolution
+	XCSS_VAR_UNIT_DPI,
+	XCSS_VAR_UNIT_DPCM,
+	XCSS_VAR_UNIT_DPPX,
+	XCSS_VAR_UNIT_X = XCSS_VAR_UNIT_DPPX,
+
+	// https://developer.mozilla.org/en-US/docs/Web/CSS/flex_value
+	XCSS_VAR_UNIT_FR,
+
+	// https://developer.mozilla.org/en-US/docs/Web/CSS/time
+	XCSS_VAR_UNIT_S,
+	XCSS_VAR_UNIT_MS,
+
+	// https://developer.mozilla.org/en-US/docs/Web/CSS/frequency
+	XCSS_VAR_UNIT_HZ,
+	XCSS_VAR_UNIT_KHZ,
+
+	// https://developer.mozilla.org/en-US/docs/Web/CSS/angle
+	XCSS_VAR_UNIT_DEG,
+	XCSS_VAR_UNIT_RAD,
+	XCSS_VAR_UNIT_GRAD,
+	XCSS_VAR_UNIT_TURN
 );
 
+//##########################################################################
+
+/*
+
+XENUM(XCSS_PROP_DISPLAY,
+	XCSS_PROP_DISPLAY_NONE,
+	XCSS_PROP_DISPLAY_BLOCK,
+	XCSS_PROP_DISPLAY_INLINE,
+	XCSS_PROP_DISPLAY_INLINE_BLOCK,
+	XCSS_PROP_DISPLAY_LIST_ITEM,
+	XCSS_PROP_DISPLAY_TABLE,
+	XCSS_PROP_DISPLAY_TABLE_CAPTION,
+	XCSS_PROP_DISPLAY_TABLE_COLUMN,
+	XCSS_PROP_DISPLAY_TABLE_ROW,
+	XCSS_PROP_DISPLAY_TABLE_CELL
+);
+
+XENUM(XCSS_PROP_VISIBILITY,
+	XCSS_PROP_VISIBILITY_VISIBLE,
+	XCSS_PROP_VISIBILITY_HIDDEN
+);
+
+XENUM(XCSS_PROP_POSITION,
+	XCSS_PROP_POSITION_STATIC,
+	XCSS_PROP_POSITION_ABSOLUTE,
+	XCSS_PROP_POSITION_RELATIVE,
+	XCSS_PROP_POSITION_FIXED
+);
+
+XENUM(XCSS_PROP_FLOAT,
+	XCSS_PROP_FLOAT_NONE,
+	XCSS_PROP_FLOAT_LEFT,
+	XCSS_PROP_FLOAT_RIGHT
+);
+
+XENUM(XCSS_PROP_BACKGROUND_ATTACHMENT,
+	XCSS_PROP_BACKGROUND_ATTACHMENT_SCROLL,
+	XCSS_PROP_BACKGROUND_ATTACHMENT_LOCAL,
+	XCSS_PROP_BACKGROUND_ATTACHMENT_FIXED
+);
+
+XENUM(XCSS_PROP_BACKGROUND_REPEAT,
+	XCSS_PROP_BACKGROUND_REPEAT_NO_REPEAT = 0,
+	XCSS_PROP_BACKGROUND_REPEAT_REPEAT_X = 1,
+	XCSS_PROP_BACKGROUND_REPEAT_REPEAT_Y = 2,
+	XCSS_PROP_BACKGROUND_REPEAT_REPEAT = 3 // == BACKGROUND_REPEAT_REPEAT_X | BACKGROUND_REPEAT_REPEAT_Y
+);
+
+XENUM(XCSS_PROP_BORDER_STYLE,
+	XCSS_PROP_BORDER_STYLE_NONE,
+	XCSS_PROP_BORDER_STYLE_INSET,
+	XCSS_PROP_BORDER_STYLE_OUTSET,
+	XCSS_PROP_BORDER_STYLE_DASHED,
+	XCSS_PROP_BORDER_STYLE_DOTTED,
+	XCSS_PROP_BORDER_STYLE_DOUBLE,
+	XCSS_PROP_BORDER_STYLE_GROOVE,
+	XCSS_PROP_BORDER_STYLE_RIDGE,
+	XCSS_PROP_BORDER_STYLE_SOLID
+);
+
+XENUM(XCSS_PROP__GUI_BORDER_METHOD,
+	XCSS_PROP__GUI_BORDER_METHOD_RADIUS,
+	XCSS_PROP__GUI_BORDER_METHOD_CUT
+);
+
+XENUM(XCSS_PROP_CURSOR,
+	XCSS_PROP_CURSOR_AUTO,
+	XCSS_PROP_CURSOR_CELL,
+	XCSS_PROP_CURSOR_COL_RESIZE,
+	XCSS_PROP_CURSOR_COPY,
+	XCSS_PROP_CURSOR_CROSSHAIR,
+	XCSS_PROP_CURSOR_DEFAULT,
+	XCSS_PROP_CURSOR_E_RESIZE,
+	XCSS_PROP_CURSOR_EW_RESIZE,
+	XCSS_PROP_CURSOR_HELP,
+	XCSS_PROP_CURSOR_MOVE,
+	XCSS_PROP_CURSOR_N_RESIZE,
+	XCSS_PROP_CURSOR_NE_RESIZE,
+	XCSS_PROP_CURSOR_NESW_RESIZE,
+	XCSS_PROP_CURSOR_NO_DROP,
+	XCSS_PROP_CURSOR_NONE,
+	XCSS_PROP_CURSOR_NOT_ALLOWED,
+	XCSS_PROP_CURSOR_NS_RESIZE,
+	XCSS_PROP_CURSOR_NW_RESIZE,
+	XCSS_PROP_CURSOR_NWSE_RESIZE,
+	XCSS_PROP_CURSOR_POINTER,
+	XCSS_PROP_CURSOR_PROGRESS,
+	XCSS_PROP_CURSOR_ROW_RESIZE,
+	XCSS_PROP_CURSOR_S_RESIZE,
+	XCSS_PROP_CURSOR_SE_RESIZE,
+	XCSS_PROP_CURSOR_SW_RESIZE,
+	XCSS_PROP_CURSOR_TEXT,
+	XCSS_PROP_CURSOR_VERTICAL_TEXT,
+	XCSS_PROP_CURSOR_W_RESIZE,
+	XCSS_PROP_CURSOR_WAIT,
+	XCSS_PROP_CURSOR_INHERIT,
+	XCSS_PROP_CURSOR_GRAB,
+	XCSS_PROP_CURSOR_GRABBING,
+	XCSS_PROP_CURSOR_ZOOM_IN,
+	XCSS_PROP_CURSOR_ZOOM_OUT,
+	XCSS_PROP_CURSOR_ALIAS,
+	XCSS_PROP_CURSOR_ALL_SCROLL
+);
+
+XENUM(XCSS_PROP_DIRECTION,
+	XCSS_PROP_DIRECTION_LTR,
+	XCSS_PROP_DIRECTION_RTL
+);
+
+XENUM(XCSS_PROP_FONT_STYLE,
+	XCSS_PROP_FONT_STYLE_NORMAL,
+	XCSS_PROP_FONT_STYLE_ITALIC
+);
+
+XENUM(XCSS_PROP_FONT_WEIGHT,
+	XCSS_PROP_FONT_WEIGHT_NORMAL,
+	XCSS_PROP_FONT_WEIGHT_BOLD
+);
+
+XENUM(XCSS_PROP_TEXT_ALIGN,
+	XCSS_PROP_TEXT_ALIGN_LEFT,
+	XCSS_PROP_TEXT_ALIGN_RIGHT,
+	XCSS_PROP_TEXT_ALIGN_CENTER
+);
+
+XENUM(XCSS_PROP_TEXT_DECORATION_LINE,
+	XCSS_PROP_TEXT_DECORATION_LINE_NONE,
+	XCSS_PROP_TEXT_DECORATION_LINE_UNDERLINE,
+	XCSS_PROP_TEXT_DECORATION_LINE_LINE_THROUGH,
+	XCSS_PROP_TEXT_DECORATION_LINE_OVERLINE
+);
+
+XENUM(XCSS_PROP_OVERFLOW,
+	XCSS_PROP_OVERFLOW_AUTO,
+	XCSS_PROP_OVERFLOW_HIDDEN,
+	XCSS_PROP_OVERFLOW_SCROLL,
+	XCSS_PROP_OVERFLOW_VISIBLE
+);
+
+XENUM(XCSS_PROP__GUI_TEXT_APPEARANCE,
+	XCSS_PROP__GUI_TEXT_APPEARANCE_MULTI_LINE,
+	XCSS_PROP__GUI_TEXT_APPEARANCE_ONE_LINE
+);
+
+XENUM(XCSS_PROP__GUI_TEXT_CURSOR,
+	XCSS_PROP__GUI_TEXT_CURSOR_HIDE,
+	XCSS_PROP__GUI_TEXT_CURSOR_SHOW
+);
+
+XENUM(XCSS_PROP__GUI_TEXT_FORMAT,
+	XCSS_PROP__GUI_TEXT_FORMAT_DEFAULT,
+	XCSS_PROP__GUI_TEXT_FORMAT_PREFORMATTED
+);
+
+XENUM(XCSS_PROP_TIMING_FUNCTION,
+	XCSS_PROP_TIMING_FUNCTION_EASE = 0,
+	XCSS_PROP_TIMING_FUNCTION_EASE_IN,
+	XCSS_PROP_TIMING_FUNCTION_EASE_OUT,
+	XCSS_PROP_TIMING_FUNCTION_EASE_IN_OUT,
+	XCSS_PROP_TIMING_FUNCTION_LINEAR,
+	XCSS_PROP_TIMING_FUNCTION_STEP_START,
+	XCSS_PROP_TIMING_FUNCTION_STEP_END
+);
+*/
+//##########################################################################
 
 class IXCSSProperty: public IXUnknown
 {
 public:
-	virtual bool isList() const = 0;
+	virtual bool XMETHODCALLTYPE isList() const = 0;
 
-	virtual void setInt(int iVal, XCSS_VAR_DIM d = XCSS_VAR_DIM_NONE) = 0;
-	virtual void setFloat(float fVal, XCSS_VAR_DIM d = XCSS_VAR_DIM_NONE) = 0;
-	virtual void setString(const char *szVal) = 0;
-	virtual void setMatrix(const SMMATRIX &mVal) = 0;
-	virtual void setVariant(int enumItem) = 0;
+	virtual void XMETHODCALLTYPE setInt(int iVal) = 0;
+	virtual void XMETHODCALLTYPE setFloat(float fVal, XCSS_VAR_UNIT d = XCSS_VAR_UNIT_NONE) = 0;
+	virtual void XMETHODCALLTYPE setString(const char *szVal) = 0;
+	virtual void XMETHODCALLTYPE setMatrix(const SMMATRIX &mVal) = 0;
+	virtual void XMETHODCALLTYPE setVariant(int enumItem) = 0;
 
-	virtual void setFromCSS(const char *szCSSString) = 0;
+	virtual void XMETHODCALLTYPE setFromCSS(const char *szCSSString) = 0;
 
 
-	virtual int getInt() const = 0;
-	virtual float getFloat() const = 0;
-	virtual const char* getString() const = 0;
-	virtual const SMMATRIX& getMatrix() const = 0;
-	virtual float4_t getColor() const = 0;
-	virtual int getPX(int iBase) = 0;
+	virtual int XMETHODCALLTYPE getInt() const = 0;
+	virtual float XMETHODCALLTYPE getFloat() const = 0;
+	virtual const char* XMETHODCALLTYPE getString() const = 0;
+	virtual const SMMATRIX& XMETHODCALLTYPE getMatrix() const = 0;
+	virtual float4_t XMETHODCALLTYPE getColor() const = 0;
+	virtual int XMETHODCALLTYPE getPX(int iBase) = 0;
 
-	virtual XCSS_PROPERTY_TYPE getType() const = 0; //?
-	virtual XCSS_VAR_DIM getDim() const = 0;
+	virtual XCSS_PROPERTY_TYPE XMETHODCALLTYPE getType() const = 0; //?
+	virtual XCSS_VAR_UNIT XMETHODCALLTYPE getUnit() const = 0;
 
-	virtual bool isSet() const = 0;
+	virtual bool XMETHODCALLTYPE isSet() const = 0;
 
-	virtual void unset() = 0;
+	virtual void XMETHODCALLTYPE unset() = 0;
 
 };
 
 class IXCSSListProperty: public IXCSSProperty
 {
 public:
-	virtual UINT getListSize() const = 0;
-	virtual void setListSize(UINT uSize) const = 0;
-	virtual UINT getItemCount(UINT uListIndex) const = 0;
-	virtual void setItemCount(UINT uSize, UINT uListIndex) const = 0;
+	virtual UINT XMETHODCALLTYPE getListSize() const = 0;
+	virtual void XMETHODCALLTYPE setListSize(UINT uSize) const = 0;
+	virtual UINT XMETHODCALLTYPE getItemCount(UINT uListIndex) const = 0;
+	virtual void XMETHODCALLTYPE setItemCount(UINT uSize, UINT uListIndex) const = 0;
 
-	virtual void setInt(int iVal, UINT uListIndex, UINT uItemIndex, XCSS_VAR_DIM d = XCSS_VAR_DIM_NONE) = 0;
-	virtual void setFloat(float fVal, UINT uListIndex, UINT uItemIndex, XCSS_VAR_DIM d = XCSS_VAR_DIM_NONE) = 0;
-	virtual void setString(const char *szVal, UINT uListIndex, UINT uItemIndex) = 0;
-	virtual void setMatrix(const SMMATRIX &mVal, UINT uListIndex, UINT uItemIndex) = 0;
-	virtual void setVariant(int enumItem, UINT uListIndex, UINT uItemIndex) = 0;
+	virtual void XMETHODCALLTYPE setInt(int iVal, UINT uListIndex, UINT uItemIndex) = 0;
+	virtual void XMETHODCALLTYPE setFloat(float fVal, UINT uListIndex, UINT uItemIndex, XCSS_VAR_UNIT d = XCSS_VAR_UNIT_NONE) = 0;
+	virtual void XMETHODCALLTYPE setString(const char *szVal, UINT uListIndex, UINT uItemIndex) = 0;
+	virtual void XMETHODCALLTYPE setMatrix(const SMMATRIX &mVal, UINT uListIndex, UINT uItemIndex) = 0;
+	virtual void XMETHODCALLTYPE setVariant(int enumItem, UINT uListIndex, UINT uItemIndex) = 0;
 	
-	virtual int getInt(UINT uListIndex, UINT uItemIndex) const = 0;
-	virtual float getFloat(UINT uListIndex, UINT uItemIndex) const = 0;
-	virtual const char* getString(UINT uListIndex, UINT uItemIndex) const = 0;
-	virtual const SMMATRIX& getMatrix(UINT uListIndex, UINT uItemIndex) const = 0;
-	virtual float4_t getColor(UINT uListIndex, UINT uItemIndex) const = 0;
-	virtual int getPX(int iBase, UINT uListIndex, UINT uItemIndex) = 0;
+	virtual int XMETHODCALLTYPE getInt(UINT uListIndex, UINT uItemIndex) const = 0;
+	virtual float XMETHODCALLTYPE getFloat(UINT uListIndex, UINT uItemIndex) const = 0;
+	virtual const char* XMETHODCALLTYPE getString(UINT uListIndex, UINT uItemIndex) const = 0;
+	virtual const SMMATRIX& XMETHODCALLTYPE getMatrix(UINT uListIndex, UINT uItemIndex) const = 0;
+	virtual float4_t XMETHODCALLTYPE getColor(UINT uListIndex, UINT uItemIndex) const = 0;
+	virtual int XMETHODCALLTYPE getPX(int iBase, UINT uListIndex, UINT uItemIndex) = 0;
 
-	virtual XCSS_PROPERTY_TYPE getType(UINT uListIndex, UINT uItemIndex) const = 0; //?
-	virtual XCSS_VAR_DIM getDim(UINT uListIndex, UINT uItemIndex) const = 0;
+	virtual XCSS_PROPERTY_TYPE XMETHODCALLTYPE getType(UINT uListIndex, UINT uItemIndex) const = 0; //?
+	virtual XCSS_VAR_UNIT XMETHODCALLTYPE getDim(UINT uListIndex, UINT uItemIndex) const = 0;
 };
 
 #endif

@@ -189,6 +189,10 @@ public:
 
 	bool XMETHODCALLTYPE save() override;
 	
+
+	void XMETHODCALLTYPE setEditorial(bool bValue) override;
+	bool XMETHODCALLTYPE isEditorial() const override;
+
 	bool isDirty() const
 	{
 		return(m_pCurrentPass->isDirty);
@@ -237,22 +241,24 @@ protected:
 
 	void updateShader();
 
-private:
-	const char *m_szName = NULL;
-
+protected:
 	struct MaterialTexture
 	{
 		String sName;
 		IXTexture *pTexture = NULL;
 		// UINT uSlot = UINT_MAX;
 	};
+	AssotiativeArray<AAString, MaterialTexture> m_mapTextures;
+
+private:
+	const char *m_szName = NULL;
+
 
 	String m_sShader;
 	XMaterialShaderHandler *m_pShader = NULL;
 
 	AssotiativeArray<AAString, CMaterialProperty> m_mapProperties;
 	AssotiativeArray<AAString, CMaterialFlag> m_mapFlags;
-	AssotiativeArray<AAString, MaterialTexture> m_mapTextures;
 	Array<CMaterialProperty*> m_aProperties;
 
 	struct MaterialPass
@@ -287,9 +293,43 @@ private:
 	CMaterialFlag *m_pRefractive = NULL;
 	CMaterialFlag *m_pBlurred = NULL;
 	CMaterialFlag *m_pEmissive = NULL;
+	CMaterialFlag *m_pEditorial = NULL;
 };
 
-class CMaterialSystem: public IXUnknownImplementation<IXMaterialSystem>
+class CMaterialInfo: public CMaterial
+{
+public:
+	CMaterialInfo(CMaterialSystem *pMaterialSystem, const char *szName):
+		CMaterial(pMaterialSystem, szName)
+	{
+	}
+
+	void XMETHODCALLTYPE setTexture(const char *szKey, const char *szTexture) override
+	{
+		assert(strlen(szKey) < AAS_MAXLEN);
+
+		const AssotiativeArray<AAString, MaterialTexture>::Node *pNode;
+		if(m_mapTextures.KeyExists(szKey, &pNode))
+		{
+			if(!fstrcmp(pNode->Val->sName.c_str(), szTexture))
+			{
+				return;
+			}
+			pNode->Val->sName = szTexture;
+		}
+		else
+		{
+			AAString sKey;
+			sKey.setName(szKey);
+			m_mapTextures[sKey].sName = szTexture;
+			m_mapTextures[sKey].pTexture = NULL;
+		}
+	}
+};
+
+class IFileSystem;
+
+class CMaterialSystem final: public IXUnknownImplementation<IXMaterialSystem>
 {
 public:
 	CMaterialSystem();
@@ -304,7 +344,7 @@ public:
 	bool XMETHODCALLTYPE getTexture(const char *szName, IXTexture **ppTexture) override;
 	//void XMETHODCALLTYPE addTexture(const char *szName, IGXTexture2D *pTexture) override;
 
-	void XMETHODCALLTYPE bindMaterial(IXMaterial *pMaterial) override;
+	bool XMETHODCALLTYPE bindMaterial(IXMaterial *pMaterial) override;
 	void XMETHODCALLTYPE bindTexture(IXTexture *pTexture, UINT slot = 0) override;
 	void XMETHODCALLTYPE setWorld(const SMMATRIX &mWorld) override;
 
@@ -341,6 +381,13 @@ public:
 
 	bool saveMaterial(CMaterial *pMaterial);
 
+	void XMETHODCALLTYPE scanMaterials() override;
+
+	UINT XMETHODCALLTYPE getScannedMaterialsCount() override;
+	const char* XMETHODCALLTYPE getScannedMaterial(UINT uIdx, IXMaterial **ppOut, bool *pisTexture = NULL, bool *pisTranslated = NULL) override;
+
+	bool XMETHODCALLTYPE isMaterialLoaded(const char *szName) override;
+
 protected:
 	struct CObjectData
 	{
@@ -353,7 +400,7 @@ protected:
 	MemAlloc<CTexture> m_poolTextures;
 	Array<IXTextureProxy*> m_aTextureProxies;
 	AssotiativeArray<String, IXTextureFilter*> m_mapTextureFilters;
-	AssotiativeArray<String, CTexture*> m_mpTextures;
+	Map<String, CTexture*> m_mpTextures;
 	CConcurrentQueue<CTexture*> m_queueTextureToLoad;
 	IXTexture *m_pDefaultTexture = NULL;
 
@@ -366,7 +413,7 @@ protected:
 	Array<IXMaterialProxy*> m_aMaterialProxies;
 	AssotiativeArray<AAString, Array<MaterialLoader>> m_mapMaterialLoaders;
 	Array<XFormatName> m_aMaterialExts;
-	AssotiativeArray<String, CMaterial*> m_mapMaterials;
+	Map<String, CMaterial*> m_mapMaterials;
 
 	IEventChannel<XEventMaterialChanged> *m_pNotifyChannel = NULL;
 
@@ -616,6 +663,21 @@ protected:
 
 	bool loadMaterialFromFile(const char *szName, CMaterial *pMaterial);
 	CGlobalFlag* createFlag(const char *szName);
+
+private:
+
+	struct ScanItem
+	{
+		String sName;
+		bool isTranslated;
+		bool isTexture;
+		CMaterialInfo *pMatInfo;
+	};
+
+	Array<ScanItem> m_aScanCache;
+
+	void scanForExtension(IFileSystem *pFS, const char *szDir, const char *szExt, Map<String, bool> &mapFiles, bool isTexture);
+	void clearScanCache();
 };
 
 #endif

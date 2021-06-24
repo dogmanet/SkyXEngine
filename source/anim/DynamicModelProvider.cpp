@@ -209,7 +209,8 @@ void CDynamicModelProvider::setDevice(IGXDevice *pDevice)
 {
 	m_pRenderContext = pDevice;
 
-
+#if 0
+	// 56 bytes
 	GXVertexElement layoutStaticEx[] =
 	{
 		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
@@ -217,6 +218,17 @@ void CDynamicModelProvider::setDevice(IGXDevice *pDevice)
 		{0, 20, GXDECLTYPE_FLOAT3, GXDECLUSAGE_NORMAL},
 		{0, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TANGENT},
 		{0, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_BINORMAL},
+		GX_DECL_END()
+	};
+#endif
+	// 40 bytes/ 28?
+	GXVertexElement layoutStaticEx[] =
+	{
+		{0, 0, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION},
+		{0, 12, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD},
+		{0, 20, GXDECLTYPE_SHORT4N, GXDECLUSAGE_NORMAL},
+		{0, 28, GXDECLTYPE_SHORT4N, GXDECLUSAGE_TANGENT},
+		{0, 36, GXDECLTYPE_SHORT4N, GXDECLUSAGE_BINORMAL},
 		GX_DECL_END()
 	};
 
@@ -288,7 +300,7 @@ void CDynamicModelProvider::onSharedModelReady(CDynamicModelShared *pShared)
 }
 void CDynamicModelProvider::onSharedModelRelease(CDynamicModelShared *pShared)
 {
-	m_mModels[pShared->getResource()] = NULL;
+	m_mModels.erase(pShared->getResource());
 }
 void CDynamicModelProvider::onSharedModelFeaturesChanged(CDynamicModelShared *pShared)
 {
@@ -527,16 +539,16 @@ void CDynamicModelProvider::renderEmissive(CRenderableVisibility *pVisibility)
 	render(pVisibility->getSelfillumList(), MF_SELFILLUM);
 }
 
-void CDynamicModelProvider::computeVisibility(const IXFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)
+void CDynamicModelProvider::computeVisibility(const IXFrustum *pFrustum, const float3 &vHintDir, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)
 {
 	void **ppData;
-	UINT uCount = m_pOpaqueQuery->execute(pFrustum, &ppData);
+	UINT uCount = m_pOpaqueQuery->execute(pFrustum, vHintDir, &ppData);
 	pVisibility->setRenderList(ppData, uCount);
 
-	uCount = m_pSelfillumQuery->execute(pFrustum, &ppData);
+	uCount = m_pSelfillumQuery->execute(pFrustum, vHintDir, &ppData);
 	pVisibility->setSelfillumList(ppData, uCount);
 
-	uCount = m_pTransparentQuery->execute(pFrustum, &ppData);
+	uCount = m_pTransparentQuery->execute(pFrustum, vHintDir, &ppData);
 	pVisibility->setTransparentList(ppData, uCount);
 
 	{

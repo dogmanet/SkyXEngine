@@ -25,6 +25,7 @@ struct X_PROP_FIELD
 	bool isGeneric;
 };
 
+class IXTexture;
 class IXEditorObject: public IXUnknown
 {
 public:
@@ -44,7 +45,7 @@ public:
 
 	virtual void XMETHODCALLTYPE renderSelection(bool is3D) = 0;
 
-	virtual bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, ID *pidMtrl) = 0;
+	virtual bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, float3 *pvNormal = NULL, ID *pidMtrl = NULL, bool bReturnNearestPoint = false) = 0;
 
 	virtual void XMETHODCALLTYPE remove() = 0;
 	virtual void XMETHODCALLTYPE create() = 0;
@@ -58,6 +59,12 @@ public:
 
 	virtual const char* XMETHODCALLTYPE getTypeName() = 0;
 	virtual const char* XMETHODCALLTYPE getClassName() = 0;
+
+	virtual IXTexture* XMETHODCALLTYPE getIcon() = 0;
+
+	virtual void XMETHODCALLTYPE setSimulationMode(bool set) = 0;
+
+	virtual bool XMETHODCALLTYPE hasVisualModel() = 0;
 };
 
 

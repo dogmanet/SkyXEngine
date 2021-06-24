@@ -186,6 +186,6 @@ public:
 	virtual UINT XMETHODCALLTYPE getLength() = 0;
 	virtual bool XMETHODCALLTYPE nextNode(IXDOMElement **ppOut) = 0;
 	virtual void XMETHODCALLTYPE reset() = 0;
-}
+};
 
 #endif

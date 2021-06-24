@@ -33,17 +33,16 @@ class CNPCZombie: public CNPCBase
 	DECLARE_PROPTABLE();
 
 public:
-	CNPCZombie(CEntityManager * pMgr);
+	DECLARE_CONSTRUCTOR();
 	~CNPCZombie();
 
 	void onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor);
 
 	void dispatchDamage(CTakeDamageInfo &takeDamageInfo);
 
+	void setPos(const float3 & pos) override;
+
 protected:
-
-	void onSync();
-
 	void think(float fDelta);
 	void removeThis(float fDelta);
 
@@ -53,9 +52,9 @@ protected:
 	//virtual void initPhysics();
 
 	void randWalk();
-	ID m_idSndIdle;
-	ID m_idSndIdle2;
-	ID m_idSndDeath;
+	IXSoundPlayer *m_pSndIdle = NULL;
+	IXSoundPlayer *m_pSndIdle2 = NULL;
+	IXSoundPlayer *m_pSndDeath = NULL;
 
 	NPC_STATE_DANGER m_stateDanger;
 	float3_t m_vLastDangerPos;

@@ -133,6 +133,8 @@ struct IBaseObject
 
 #define ID_VALID(id) ((id) >= 0)
 
+#define SAFE_CALL(obj, fn, ...) if(obj){obj->fn(__VA_ARGS__);}
+
 #ifndef IFACEBASEOBJECT
 #define IFACEBASEOBJECT
 
@@ -193,6 +195,7 @@ typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMes
 #if defined(_WINDOWS)
 #	define WIN32_LEAN_AND_MEAN
 #	include <Windows.h>
+#	include <common/MB2WC.h>
 #endif
 
 #include <common/math.h>
@@ -260,6 +263,9 @@ typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMes
 
 //! @}
 
+#define CONSOLE_TITLE "\033]0;"
+#define CONSOLE_TITLE_END "\a"
+
 #ifndef DEFAULT_FUNCTION_REPORT 
 #define DEFAULT_FUNCTION_REPORT
 
@@ -282,7 +288,7 @@ inline void DefReport(int iLevel, const char *szLibName, const char *szFormat, .
 #endif
 inline void DefReport(int iLevel, const char *szLibName, const char *szMessage)
 {
-	if(szMessage[0] != ' ' && szMessage[0] != '\t')
+	if(!isspace(szMessage[0]))
 	{
 		printf(COLOR_GREEN "%s" COLOR_RESET ": ", szLibName);
 	}
@@ -324,6 +330,10 @@ inline void LibReport(int iLevel, const char *szFormat, ...)
 
 	DefReport(iLevel, SX_LIB_NAME, buf);
 }
+#define LogInfo(...) LibReport(REPORT_MSG_LEVEL_NOTICE, __VA_ARGS__)
+#define LogWarning(...) LibReport(REPORT_MSG_LEVEL_WARNING, __VA_ARGS__)
+#define LogError(...) LibReport(REPORT_MSG_LEVEL_ERROR, __VA_ARGS__)
+#define LogFatal(...) LibReport(REPORT_MSG_LEVEL_FATAL, __VA_ARGS__)
 
 
 #define SX_MAX_THREAD_COUNT 64

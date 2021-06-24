@@ -99,12 +99,12 @@ rifle_step = 200 ; шаг нарезки, мм
 
 
 ; звуки
-snd_draw         = "wpn/ak74_draw.ogg" ; Достать
-snd_holster      = "wpn/generic_holster.ogg" ; Убрать
-snd_shoot        = "wpn/ak74_shoot2.ogg" ; Стрелять
-snd_empty        = "wpn/gen_empty.ogg" ; Пустой
-snd_reload       = "wpn/ak74_reload.ogg" ; Перезарядка
-snd_switch       = "wpn/generic_close.ogg" ; Переключение режима
+snd_draw         = "sounds/wpn/ak74_draw.ogg" ; Достать
+snd_holster      = "sounds/wpn/generic_holster.ogg" ; Убрать
+snd_shoot        = "sounds/wpn/ak74_shoot2.ogg" ; Стрелять
+snd_empty        = "sounds/wpn/gen_empty.ogg" ; Пустой
+snd_reload       = "sounds/wpn/ak74_reload.ogg" ; Перезарядка
+snd_switch       = "sounds/wpn/generic_close.ogg" ; Переключение режима
 
 ;прочность
 durability_max = 350000

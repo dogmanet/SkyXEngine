@@ -300,6 +300,7 @@ void rfunc::UpdateView()
 	Core_RMatrixSet(G_RI_MATRIX_VIEW, &gdata::mCamView);
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &gdata::mLightProj);
 	Core_RMatrixSet(G_RI_MATRIX_VIEWPROJ, &(gdata::mCamView * gdata::mLightProj));
+	Core_RMatrixSet(G_RI_MATRIX_OBSERVER_VIEWPROJ, &(gdata::mCamView * gdata::mCamProj));
 	Core_RMatrixSet(G_RI_MATRIX_TRANSP_VIEWPROJ, &SMMatrixTranspose(gdata::mCamView * gdata::mLightProj));
 
 	gdata::vConstCurrCamPos = gdata::pCamera->getPosition();

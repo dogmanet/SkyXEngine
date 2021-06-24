@@ -94,9 +94,12 @@ void XMETHODCALLTYPE CDynamicModel::setPosition(const float3 &vPos)
 	m_vPosition = vPos;
 	m_isWorldDirty = true;
 
-	m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_MOVED);
+	if(m_isEnabled)
+	{
+		m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_MOVED);
 
-	m_pSceneObject->update(getLocalBound() + getPosition());
+		m_pSceneObject->update(getLocalBound() + getPosition());
+	}
 }
 
 SMQuaternion XMETHODCALLTYPE CDynamicModel::getOrientation() const
@@ -113,9 +116,12 @@ void XMETHODCALLTYPE CDynamicModel::setOrientation(const SMQuaternion &qRot)
 	m_isLocalAABBvalid = false;
 	m_isWorldDirty = true;
 
-	m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_MOVED);
+	if(m_isEnabled)
+	{
+		m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_MOVED);
 
-	m_pSceneObject->update(getLocalBound() + getPosition());
+		m_pSceneObject->update(getLocalBound() + getPosition());
+	}
 }
 
 float XMETHODCALLTYPE CDynamicModel::getScale() const
@@ -132,9 +138,12 @@ void XMETHODCALLTYPE CDynamicModel::setScale(float fScale)
 	m_isLocalAABBvalid = false;
 	m_isWorldDirty = true;
 
-	m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_MOVED);
+	if(m_isEnabled)
+	{
+		m_pProvider->notifyModelChanged(this, XEventModelChanged::TYPE_MOVED);
 
-	m_pSceneObject->update(getLocalBound() + getPosition());
+		m_pSceneObject->update(getLocalBound() + getPosition());
+	}
 }
 
 UINT XMETHODCALLTYPE CDynamicModel::getSkin() const
@@ -323,4 +332,117 @@ void CDynamicModel::onFeaturesChanged()
 void XMETHODCALLTYPE CDynamicModel::FinalRelease()
 {
 	m_pProvider->enqueueModelDelete(this);
+}
+
+bool XMETHODCALLTYPE CDynamicModel::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, float3 *pvNormal, bool isRayInWorldSpace, bool bReturnNearestPoint)
+{
+	if(!pvOut)
+	{
+		bReturnNearestPoint = false;
+	}
+	float3 vRayStart = vStart;
+	float3 vRayEnd = vEnd;
+	if(isRayInWorldSpace)
+	{
+		float fInvScale = 1.0f / getScale();
+		float3 vDir = getOrientation().Conjugate() * (vEnd - vStart) * fInvScale;
+		vRayStart = (getOrientation().Conjugate() * (vRayStart - getPosition())) * fInvScale;
+		vRayEnd = vRayStart + vDir;
+	}
+
+	auto *pResource = m_pShared->getResource();
+
+	UINT uLods = pResource->getLodCount();
+	if(!uLods)
+	{
+		return(false);
+	}
+
+	if(bReturnNearestPoint)
+	{
+		float fNearestDistance = FLT_MAX;
+		UINT uNearestIndex = ~0;
+		UINT uNearestSubset = ~0;
+		float3 vOut;
+
+		for(UINT i = 0, l = pResource->getSubsetCount(uLods - 1); i < l; ++i)
+		{
+			auto *pSubset = pResource->getSubset(uLods - 1, i);
+			for(UINT j = 0; j < pSubset->iIndexCount; j += 3)
+			{
+				float3 vA = pSubset->pVertices[pSubset->pIndices[j]].vPos;
+				float3 vB = pSubset->pVertices[pSubset->pIndices[j + 1]].vPos;
+				float3 vC = pSubset->pVertices[pSubset->pIndices[j + 2]].vPos;
+				if(SMTriangleIntersectLine(
+					vA, vB, vC,
+					vRayStart, vRayEnd, &vOut))
+				{
+					float fDistance = SMVector3Length2(vOut - vRayStart);
+					if(fDistance < fNearestDistance)
+					{
+						fNearestDistance = fDistance;
+						*pvOut = vOut;
+						uNearestIndex = j;
+						uNearestSubset = i;
+					}
+				}
+			}
+		}
+
+		if(uNearestIndex != ~0)
+		{
+			if(isRayInWorldSpace)
+			{
+				*pvOut = getOrientation() * (*pvOut * getScale()) + getPosition();
+			}
+			if(pvNormal)
+			{
+				auto *pSubset = pResource->getSubset(uLods - 1, uNearestSubset);
+
+				float3 vA = pSubset->pVertices[pSubset->pIndices[uNearestIndex]].vPos;
+				float3 vB = pSubset->pVertices[pSubset->pIndices[uNearestIndex + 1]].vPos;
+				float3 vC = pSubset->pVertices[pSubset->pIndices[uNearestIndex + 2]].vPos;
+
+				*pvNormal = SMVector3Normalize(SMVector3Cross((vB - vA), (vC - vB)));
+				if(isRayInWorldSpace)
+				{
+					*pvNormal = getOrientation() * *pvNormal;
+				}
+			}
+			return(true);
+		}
+	}
+	else
+	{
+		for(UINT i = 0, l = pResource->getSubsetCount(uLods - 1); i < l; ++i)
+		{
+			auto *pSubset = pResource->getSubset(uLods - 1, i);
+			for(UINT j = 0; j < pSubset->iIndexCount; j += 3)
+			{
+				float3 vA = pSubset->pVertices[pSubset->pIndices[j]].vPos;
+				float3 vB = pSubset->pVertices[pSubset->pIndices[j + 1]].vPos;
+				float3 vC = pSubset->pVertices[pSubset->pIndices[j + 2]].vPos;
+				if(SMTriangleIntersectLine(
+					vA, vB, vC,
+					vRayStart, vRayEnd, pvOut))
+				{
+					if(isRayInWorldSpace && pvOut)
+					{
+						*pvOut = getOrientation() * (*pvOut * getScale()) + getPosition();
+					}
+					if(pvNormal)
+					{
+						*pvNormal = SMVector3Normalize(SMVector3Cross((vB - vA), (vC - vB)));
+						if(isRayInWorldSpace)
+						{
+							*pvNormal = getOrientation() * *pvNormal;
+						}
+					}
+					return(true);
+				}
+			}
+		}
+	}
+	
+	return(false);
 }

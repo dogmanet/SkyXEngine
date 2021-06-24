@@ -24,13 +24,6 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseAmmoBox, base_ammobox);
 
-CBaseAmmoBox::CBaseAmmoBox(CEntityManager * pMgr):
-	BaseClass(pMgr)
-{
-	//m_bPickable = false;
-	//m_bInvStackable = false;
-}
-
 void CBaseAmmoBox::onUse(CBaseEntity *pUser)
 {
 	if(m_iCurItems < 0)

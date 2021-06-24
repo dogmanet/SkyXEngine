@@ -42,13 +42,29 @@ enum PLAYER_MOVE
 
 class CHUDcontroller;
 
+class CBaseCharacter;
+class CCharacterPhysicsTickEventListener final: public IEventListener<XEventPhysicsStep>
+{
+public:
+	CCharacterPhysicsTickEventListener(CBaseCharacter *pTrigger):
+		m_pCharacter(pTrigger)
+	{
+	}
+	void onEvent(const XEventPhysicsStep *pData) override;
+
+private:
+	CBaseCharacter *m_pCharacter;
+};
+
 //! Класс игрока  \ingroup cbaseanimating
 class CBaseCharacter: public CBaseAnimating
 {
 	DECLARE_CLASS(CBaseCharacter, CBaseAnimating);
 	DECLARE_PROPTABLE();
+
+	friend class CCharacterPhysicsTickEventListener;
 public:
-	CBaseCharacter(CEntityManager * pMgr);
+	DECLARE_CONSTRUCTOR();
 	~CBaseCharacter();
 
 	//! Запускает/останавливает первичную атаку
@@ -83,8 +99,6 @@ public:
 	void releaseHitboxes();
 	void updateHitboxes();
 
-	void onSync();
-
 	void initPhysics();
 	void releasePhysics();
 
@@ -118,26 +132,28 @@ public:
 		return(m_pHandsModelResource);
 	}
 
+	void onPostLoad() override;
+
 protected:
 	//! Фонарик
 	CLightDirectional* m_flashlight;
 
 	//! Текущее движение
-	UINT m_uMoveDir;
+	UINT m_uMoveDir = PM_OBSERVER;
 
 	//! Текущий инструмент в руках
-	CBaseTool * m_pActiveTool;
+	CBaseTool *m_pActiveTool = NULL;
 
 	//! Для физики @{
-	btCollisionShape * m_pCollideShape;
-	btRigidBody * m_pRigidBody;
-	btPairCachingGhostObject * m_pGhostObject;
-	btKinematicCharacterController * m_pCharacter;
-	btRigidBody ** m_pHitboxBodies;
+	btCollisionShape *m_pCollideShape = NULL;
+	btRigidBody *m_pRigidBody = NULL;
+	btPairCachingGhostObject *m_pGhostObject = NULL;
+	btKinematicCharacterController *m_pCharacter = NULL;
+	btRigidBody **m_pHitboxBodies = NULL;
 	//! @}
 
 	//! Углы вращения игрока
-	float3_t m_vPitchYawRoll;
+	float3_t m_vPitchYawRoll = float3_t(0, 0, 0);
 
 	//! Мгновенное значение коэффициента разброса
 	float getMomentSpread();
@@ -149,22 +165,29 @@ protected:
 	virtual void updateSpread(float dt);
 
 	//! Действующее значение разброса
-	float m_fCurrentSpread;
+	float m_fCurrentSpread = 0.0f;
 
-	CCharacterInventory * m_pInventory;
+	CCharacterInventory *m_pInventory = NULL;
 
-	ID m_idQuadCurr;	//!< текущий квад аи сетки на котором стоит игрок
-	ID m_idQuadLast;	//!< Последний валидный квад аи сетки на котором стоял игрок
+	ID m_idQuadCurr = -1;	//!< текущий квад аи сетки на котором стоит игрок
+	ID m_idQuadLast = -1;	//!< Последний валидный квад аи сетки на котором стоял игрок
 
-	float m_fCapsHeight;
-	float m_fCapsHeightCrouch;
-	float m_fCapsRadius;
+	float m_fCapsHeight = 1.8f;
+	float m_fCapsHeightCrouch = 1.2f;
+	float m_fCapsRadius = 0.4f;
 
-	CPointEntity * m_pHeadEnt;
+	CPointEntity *m_pHeadEnt = NULL;
 
-	float m_fCurrentHeight;
+	float m_fCurrentHeight = 1.0f;
 
 	IXResourceModelAnimated *m_pHandsModelResource = NULL;
+
+	virtual float3 getHeadOffset();
+
+private:
+	static IEventChannel<XEventPhysicsStep> *m_pTickEventChannel;
+	CCharacterPhysicsTickEventListener m_physicsTicker;
+	void onPhysicsStep();
 };
 
 #endif

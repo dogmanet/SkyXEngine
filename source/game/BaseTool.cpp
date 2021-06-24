@@ -85,52 +85,46 @@ protected:
 	btCollisionObject* m_me;
 };
 
-CBaseTool::CBaseTool(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	m_bInPrimaryAction(false),
-	m_bInSecondaryAction(false),
-	m_bWorldModel(false),
-	m_bCanUse(true),
-	m_fZoomTime(0.0f),
-	m_fReloadTime(0.0f),
-	m_iZoomable(1),
-	m_iSoundAction1(-1),
-	m_iSoundAction2(-1),
-	m_iMuzzleFlash(-1),
-	m_iMuzzleFlash2(-1),
-	m_fMaxDistance(1000.0f),
-	m_bIsWeapon(false),
-	m_pLoadedAmmo(NULL)
+CBaseTool::CBaseTool()
 {
 	m_bInvStackable = false;
-
-	m_iIvalUpdate = SET_INTERVAL(_update, 0);
 }
 
 CBaseTool::~CBaseTool()
 {
 	CLEAR_INTERVAL(m_iIvalUpdate);
+
+	mem_release(m_pSoundAction1);
+	mem_release(m_pSoundAction2);
 }
 
 void CBaseTool::onPostLoad()
 {
 	BaseClass::onPostLoad();
 
-	if(m_szPrimaryActionSound[0])
+	m_iIvalUpdate = SET_INTERVAL(_update, 0);
+
+	IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
+	if(pSound)
 	{
-		m_iSoundAction1 = SSCore_SndCreate3dInst(m_szPrimaryActionSound, SX_SOUND_CHANNEL_GAME, 100);
-	}
-	if(m_szSecondaryActionSound[0])
-	{
-		m_iSoundAction2 = SSCore_SndCreate3dInst(m_szSecondaryActionSound, SX_SOUND_CHANNEL_GAME, 100);
-	}
-	if(m_szPrimaryActionMuzzleflash[0])
-	{
-		m_iMuzzleFlash = SPE_EffectInstanceByName(m_szPrimaryActionMuzzleflash);
-	}
-	if(m_szSecondaryActionMuzzleflash[0])
-	{
-		m_iMuzzleFlash2 = SPE_EffectInstanceByName(m_szSecondaryActionMuzzleflash);
+		IXSoundLayer *pGameLayer = pSound->findLayer("xGame");
+
+		if(m_szPrimaryActionSound[0])
+		{
+			m_pSoundAction1 = pGameLayer->newSoundEmitter(m_szPrimaryActionSound, SOUND_SPACE_3D);
+		}
+		if(m_szSecondaryActionSound[0])
+		{
+			m_pSoundAction2 = pGameLayer->newSoundEmitter(m_szSecondaryActionSound, SOUND_SPACE_3D);
+		}
+		if(m_szPrimaryActionMuzzleflash[0])
+		{
+			m_iMuzzleFlash = SPE_EffectInstanceByName(m_szPrimaryActionMuzzleflash);
+		}
+		if(m_szSecondaryActionMuzzleflash[0])
+		{
+			m_iMuzzleFlash2 = SPE_EffectInstanceByName(m_szSecondaryActionMuzzleflash);
+		}
 	}
 }
 
@@ -154,10 +148,8 @@ void CBaseTool::primaryAction(BOOL st)
 		{
 			SPE_EffectSetEnable(m_iMuzzleFlash, true);
 		}
-		if(ID_VALID(m_iSoundAction1))
-		{
-			SSCore_SndInstancePlay3d(m_iSoundAction1, false, false, &getPos());
-		}
+		SAFE_CALL(m_pSoundAction1, setWorldPos, getPos());
+		SAFE_CALL(m_pSoundAction1, play);
 
 		//((CPlayer*)m_pOwner)->is
 
@@ -187,7 +179,7 @@ void CBaseTool::secondaryAction(BOOL st)
 	m_bInSecondaryAction = st != FALSE;
 	if(m_iZoomable)
 	{
-		((CPlayer*)m_pOwner)->getCrosshair()->enable(!st);
+		((CPlayer*)m_pOwner.getEntity())->getCrosshair()->enable(!st);
 	}
 }
 
@@ -235,25 +227,18 @@ void CBaseTool::dbgMove(int dir, float dy)
 		printf(COLOR_GREEN "slot_offset = " COLOR_LGREEN "%f %f %f\n"
 			COLOR_GREEN "slot_rotation = " COLOR_LGREEN "%f %f %f %f\n"
 			COLOR_GREEN "center_length = " COLOR_LGREEN "%f\n" COLOR_RESET
-			, m_vOffsetPos.x, m_vOffsetPos.y, m_vOffsetPos.z
+			, m_vSlotPosResult.x, m_vSlotPosResult.y, m_vSlotPosResult.z
 			, m_qSlotRotResult.x, m_qSlotRotResult.y, m_qSlotRotResult.z, m_qSlotRotResult.w
 			, m_fCenterLength);
 		break;
 	}
+
+	updateTransform();
 }
 
+#if 0
 void CBaseTool::onSync()
 {
-	if(m_pOwner)
-	{
-		float3_t ang = ((CPlayer*)m_pOwner)->getWeaponDeltaAngles();
-		m_vOffsetOrient = m_qSlotRotResult * SMQuaternion(ang.x, 'x') * SMQuaternion(ang.y, 'y') * SMQuaternion(ang.z, 'z');
-	}
-	else
-	{
-		m_vOffsetOrient = m_qSlotRotResult;
-	}
-	m_vOffsetPos = m_vSlotPosResult;
 	BaseClass::onSync();
 	if(m_pModel && m_pModel->asAnimatedModel())
 	{
@@ -264,6 +249,18 @@ void CBaseTool::onSync()
 		SPE_EffectSetRotQ(m_iMuzzleFlash, m_vOrientation);
 	}
 }
+#endif
+
+void CBaseTool::setShakeRotation(const SMQuaternion &q)
+{
+	m_qShakeRotation = q;
+	updateTransform();
+}
+
+void CBaseTool::updateTransform()
+{
+	setOffsetXform(m_vSlotPosResult, m_qSlotRotResult * m_qShakeRotation);
+}
 
 void CBaseTool::_update(float dt)
 {
@@ -273,7 +270,7 @@ void CBaseTool::_update(float dt)
 		float3 start = m_pParent->getPos();
 		float3 dir = m_pParent->getOrient() * float3(0.0f, 0.0f, 1.0f);
 		float3 end = start + dir * m_fCenterLength;
-		btKinematicClosestNotMeRayResultCallback cb(((CBaseCharacter*)m_pOwner)->getBtCollisionObject(), F3_BTVEC(start), F3_BTVEC(end));
+		btKinematicClosestNotMeRayResultCallback cb(((CBaseCharacter*)m_pOwner.getEntity())->getBtCollisionObject(), F3_BTVEC(start), F3_BTVEC(end));
 		SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
 
 		m_isClose = cb.hasHit();
@@ -352,8 +349,9 @@ void CBaseTool::_rezoom()
 	m_qSlotRotResult = SMquaternionSlerp(SMquaternionSlerp(m_qSlotRot, m_qSlotRotClose, m_fCloseProgress), m_qSlotRotAim, m_fZoomProgress);
 	if(m_pOwner && m_pOwner->getClassName() && !fstrcmp(m_pOwner->getClassName(), "player"))
 	{
-		((CPlayer*)m_pOwner)->getCamera()->getCamera()->setFOV(SMToRadian(vlerp(*r_default_fov, *r_default_fov - 10.0f, m_fZoomProgress)));
+		((CPlayer*)m_pOwner.getEntity())->getCamera()->getCamera()->setFOV(SMToRadian(vlerp(*r_default_fov, *r_default_fov - 10.0f, m_fZoomProgress)));
 	}
+	updateTransform();
 }
 
 bool CBaseTool::isWeapon() const

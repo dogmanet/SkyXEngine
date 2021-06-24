@@ -11,6 +11,7 @@ See the license in LICENSE
 #include "RenderPipeline.h"
 #include "Scene.h"
 #include "Updatable.h"
+#include "RenderUtils.h"
 
 #define SXRENDER_VERSION 1
 
@@ -78,6 +79,9 @@ SX_LIB_API void SRender_0Create(const char *szName, HWND hWnd3D, HWND hWndParent
 
 		CUpdatable *pUpdatable = new CUpdatable(pScene);
 		Core_GetIXCore()->getPluginManager()->registerInterface(IXUPDATABLE_GUID, pUpdatable);
+
+		CRenderUtils *pRenderUtils = new CRenderUtils();
+		Core_GetIXCore()->getPluginManager()->registerInterface(IXRENDERUTILS_GUID, pRenderUtils);
 
 		g_pPipeline = new CRenderPipeline(SGCore_GetDXDevice());
 		Core_GetIXCore()->setRenderPipeline(g_pPipeline);

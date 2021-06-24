@@ -23,7 +23,7 @@ effective_distance = 2
 spread_base       	= 10    ;угол (в градусах) базовой дисперсии оружия (оружия, зажатого в тисках)
 
 ; звуки
-snd_shoot        = "mobs/zombie/zombie_attack_1.ogg" ; Стрелять
+snd_shoot        = "sounds/mobs/zombie/zombie_attack_1.ogg" ; Стрелять
 
 damage = 100
 

@@ -3,7 +3,6 @@
 #include "GameData.h"
 #include "Baseline.h"
 
-#include <score/sxscore.h>
 #include <input/sxinput.h>
 
 #include "Editable.h"
@@ -125,16 +124,13 @@ void CIngameGameState::activate()
 
 	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
 	Core_TimeWorkingSet(idTimerRender, true);
-	SSCore_ChannelPlay(SX_SOUND_CHANNEL_GAME);
+//	SSCore_ChannelPlay(SX_SOUND_CHANNEL_GAME);
 	SSInput_SetEnable(true);
 	SPhysics_EnableSimulation();
 
 	Core_0ConsoleExecCmd("game_time_running 1");
 
-	if(GameData::m_pGameLayer)
-	{
-		GameData::m_pGameLayer->play(true);
-	}
+	SAFE_CALL(GameData::m_pGameLayer, play, true);
 }
 
 void CIngameGameState::deactivate()
@@ -146,14 +142,11 @@ void CIngameGameState::deactivate()
 
 	ID idTimerRender = Core_RIntGet(G_RI_INT_TIMER_GAME);
 	Core_TimeWorkingSet(idTimerRender, false);
-	SSCore_ChannelStop(SX_SOUND_CHANNEL_GAME);
+//	SSCore_ChannelStop(SX_SOUND_CHANNEL_GAME);
 	SSInput_SetEnable(false);
 	SPhysics_DisableSimulation();
 
-	if(GameData::m_pGameLayer)
-	{
-		GameData::m_pGameLayer->play(false);
-	}
+	SAFE_CALL(GameData::m_pGameLayer, play, false);
 
 	if(*dev_reset_world_on_run)
 	{

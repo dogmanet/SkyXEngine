@@ -9,7 +9,6 @@ See the license in LICENSE
 
 //#include "Ragdoll.h"
 
-#include <score/sxscore.h>
 #include <input/sxinput.h>
 
 #include "Tracer.h"
@@ -372,7 +371,6 @@ GameData::GameData(HWND hWnd, bool isGame):
 		m_pSoundPlayer = m_pGuiLayer->newSoundPlayer("sounds/dip.wav", SOUND_SPACE_2D);
 		m_pSoundPlayer->setLoop(SOUND_LOOP_SIMPLE);
 	}
-	pSound->update(float3(), float3(), float3());
 
 	loadFoostepsSounds();
 	isGame = true;
@@ -578,7 +576,9 @@ GameData::GameData(HWND hWnd, bool isGame):
 		CBaseEntity *pEnt;
 		if(sscanf(argv[1], "%p", &pEnt))
 		{
-			LibReport(REPORT_MSG_LEVEL_WARNING, "Ent: id:%d; cls:'%s'; name:'%s'\n", pEnt->getId(), pEnt->getClassName(), pEnt->getName());
+			char tmp[64];
+			XGUIDToSting(*pEnt->getGUID(), tmp, sizeof(tmp));
+			LibReport(REPORT_MSG_LEVEL_WARNING, "Ent: guid:%s; cls:'%s'; name:'%s'\n", tmp, pEnt->getClassName(), pEnt->getName());
 		}
 	});
 	
@@ -708,7 +708,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 	m_pGUIStack->registerCallback("exit_prompt", [](gui::IEvent * ev){
 		if(ev->key == KEY_ESCAPE || ev->key == KEY_LBUTTON)
 		{
-			GameData::m_pGUIStack->messageBox(StringW(String("Вы действительно хотите выйти?")).c_str(), L"", StringW(String("Да")).c_str(), L"on_exit", StringW(String("Нет")).c_str(), L"on_cancel", NULL);
+			GameData::m_pGUIStack->messageBox(CMB2WC("Вы действительно хотите выйти?"), L"", (const wchar_t*)CMB2WC("Да"), L"on_exit", (const wchar_t*)CMB2WC("Нет"), L"on_cancel", NULL);
 		}
 	});
 	m_pGUIStack->registerCallback("dial_loadlevel", [](gui::IEvent * ev){
@@ -733,7 +733,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		{
 			LibReport(REPORT_MSG_LEVEL_NOTICE, "Level: %s, dir: %s\n", levelInfo.m_szLocalName, levelInfo.m_szName);
 
-			StringW text = StringW(L"<radio name=\"map\" class=\"menu-item\" onclick=\"loadlevel_select\" has_preview=\"") + (levelInfo.m_bHasPreview ? L"1" : L"0") + L"\" level_name=\"" + StringW(String(levelInfo.m_szName)) + L"\">" + StringW(String(levelInfo.m_szLocalName)) + L"</radio>";
+			StringW text = StringW(L"<radio name=\"map\" class=\"menu-item\" onclick=\"loadlevel_select\" has_preview=\"") + (levelInfo.m_bHasPreview ? L"1" : L"0") + L"\" level_name=\"" + CMB2WC(levelInfo.m_szName) + L"\">" + CMB2WC(levelInfo.m_szLocalName) + L"</radio>";
 
 			gui::dom::IDOMnodeCollection newItems = pLoadLevelDesktop->createFromText(text);
 			for(UINT i = 0, l = newItems.size(); i < l; i++)
@@ -787,7 +787,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 	m_pGUIStack->registerCallback("mainmenu_prompt", [](gui::IEvent * ev){
 		if(ev->key == KEY_ESCAPE || ev->key == KEY_LBUTTON)
 		{
-			GameData::m_pGUIStack->messageBox(StringW(String("Вы действительно хотите выйти в главное меню?")).c_str(), StringW(String("Весь несохраненный прогресс будет утерян.")).c_str(), StringW(String("Да")).c_str(), L"to_mainmenu", StringW(String("Нет")).c_str(), L"on_cancel", NULL);
+			GameData::m_pGUIStack->messageBox(CMB2WC("Вы действительно хотите выйти в главное меню?"), CMB2WC("Весь несохраненный прогресс будет утерян."), (const wchar_t*)CMB2WC("Да"), L"to_mainmenu", (const wchar_t*)CMB2WC("Нет"), L"on_cancel", NULL);
 		}
 	});
 	m_pGUIStack->registerCallback("to_mainmenu", [](gui::IEvent * ev){
@@ -964,7 +964,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 				szText = "";
 			}
 
-			wsprintfW(str, L"<div class=\"cctable_section\">%s</div>", StringW(String(szText)).c_str());
+			wsprintfW(str, L"<div class=\"cctable_section\">%s</div>", (const wchar_t*)CMB2WC(szText));
 			pNode->appendHTML(str);
 
 			for(int j = 0, jl = pConfig->getKeyCount(szSectionName); j < jl; ++j)
@@ -994,10 +994,10 @@ GameData::GameData(HWND hWnd, bool isGame):
 					}
 				}
 
-				wsCmd = StringW(String(szCmd));
-				wsText = StringW(String(szText));
-				wsKey0 = StringW(String(szKey[0]));
-				wsKey1 = StringW(String(szKey[1]));
+				wsCmd = CMB2WC(szCmd);
+				wsText = CMB2WC(szText);
+				wsKey0 = CMB2WC(szKey[0]);
+				wsKey1 = CMB2WC(szKey[1]);
 
 				wsprintfW(str, L"<div class=\"cctable_row\" cmd=\"%s\">"
 					L"<div class=\"cctable_left cctable_cell\">%s</div>"
@@ -1040,12 +1040,12 @@ GameData::GameData(HWND hWnd, bool isGame):
 			return;
 		}
 		GameData::m_pGUIStack->messageBox(
-			StringW(String("Переназначить")).c_str(), 
-			StringW(String("Нажмите клавишу, которую вы хотите назначить для данного действия."
-			"Для отмены нажмите ESC")).c_str(),
-			StringW(String("Удалить")).c_str(),
+			CMB2WC("Переназначить"),
+			CMB2WC("Нажмите клавишу, которую вы хотите назначить для данного действия."
+			"Для отмены нажмите ESC"),
+			(const wchar_t*)CMB2WC("Удалить"),
 			L"bind_del",
-			StringW(String("Отмена")).c_str(),
+			(const wchar_t*)CMB2WC("Отмена"),
 			L"bind_cancel",
 			NULL
 		);
@@ -1060,7 +1060,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 			printf("%s\n", szKey);
 			GameData::m_pGUIStack->popDesktop();
 
-			StringW wsNewKey = StringW(String(szKey));
+			StringW wsNewKey = CMB2WC(szKey);
 
 
 
@@ -1252,7 +1252,7 @@ void GameData::update()
 			auto pText = pDesktop->getDocument()->getElementById(L"text");
 			if(pText)
 			{
-				pText->setText(StringW(String(g_pLevelLoadTask->getName())), TRUE);
+				pText->setText(StringW(CMB2WC(g_pLevelLoadTask->getName())), TRUE);
 			}
 		}
 
@@ -1341,7 +1341,7 @@ void GameData::render()
 					, g_uFPS,
 
 					pAdapterDesc->szDescription,
-					pAdapterDesc->sizeTotalMemory / 1024 / 1024,
+					(UINT)(pAdapterDesc->sizeTotalMemory / 1024 / 1024),
 
 					(float)(pMemoryStats->sizeIndexBufferBytes + pMemoryStats->sizeRenderTargetBytes + pMemoryStats->sizeShaderConstBytes + pMemoryStats->sizeTextureBytes + pMemoryStats->sizeVertexBufferBytes) / 1024.0f / 1024.0f,
 					(float)pMemoryStats->sizeTextureBytes / 1024.0f / 1024.0f,

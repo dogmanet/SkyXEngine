@@ -14,7 +14,8 @@ cbuffer b0 :register(b0)
 	uint g_uOcclusionMap[16][16][4 / 2];
 };
 
-[numthreads(16, 16, 1)]
+[numthreads(1, 1, 1)]
+// [numthreads(16, 16, 1)]
 void main(uint3 dispatchThreadID: SV_DispatchThreadID, uint3 groupThreadID : SV_GroupThreadID)
 {
 	uint3 cellIndex = dispatchThreadID.xzy;

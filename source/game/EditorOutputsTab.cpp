@@ -341,7 +341,7 @@ void CEditorOutputsTab::initSelection()
 		{
 			for(UINT j = 0, jl = m_aOutputs.size(); j < jl; ++j)
 			{
-				if(aTmpOutputs.indexOf(m_aOutputs[i], [](const char *a, const char *b){
+				if(aTmpOutputs.indexOf(m_aOutputs[j], [](const char *a, const char *b){
 					return(!fstrcmp(a, b));
 				}) < 0)
 				{
@@ -427,9 +427,9 @@ void CEditorOutputsTab::initSelection()
 						propdata_t *pField = pEnt->getField(pPropData->szKey);
 						output_t *pOutput = &(pEnt->*((output_t CBaseEntity::*)pField->pField));
 						
-						for(int i = 0; i < pOutput->iOutCount; ++i)
+						for(int i = 0, l = pOutput->aOutputs.size(); i < l; ++i)
 						{
-							const named_output_t &namedOutput = pOutput->pOutputs[i];
+							const named_output_t &namedOutput = pOutput->aOutputs[i];
 
 							int idx = m_pCurrentCommand->m_aRows.indexOf(namedOutput, [&](const Row &row, const named_output_t &out){
 								return(
@@ -594,7 +594,7 @@ INT_PTR CALLBACK CEditorOutputsTab::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, 
 				if(pNMLV->hdr.idFrom == IDC_LIST_OUTPUTS && !m_isSkipUpdate && (pNMLV->uChanged & LVIF_STATE) && ((pNMLV->uNewState ^ pNMLV->uOldState) & LVIS_SELECTED))
 				{
 					Row *pRow = &m_pCurrentCommand->m_aRows[pNMLV->iItem];
-					pRow->isSelected = pNMLV->uNewState & LVIS_SELECTED;
+					pRow->isSelected = (pNMLV->uNewState & LVIS_SELECTED) != 0;
 
 					updateButtons();
 				}

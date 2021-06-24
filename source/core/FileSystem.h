@@ -43,6 +43,10 @@ See the license in LICENSE
 
 #define MEMCCPY_ERROR(buff) memcpy(buff, "\0", 1);
 
+#define SIZE_PATH 4096
+
+#define INVALID_OR_NULL(handle) ((handle) == NULL || (handle) == INVALID_HANDLE_VALUE)
+
 struct Pair
 {
     int priority;
@@ -82,7 +86,7 @@ public:
     IFileIterator *getFileList(const char *szPath, const char **szExts, int extsCount) override;
 
     //! No implementation
-     IFileIterator *getFileListRecursive(const char *szPath,  const char *szExt)  override;
+     IFileIterator *getFileListRecursive(const char *szPath,  const char *szExt = 0)  override;
     
     //! No implementation
      IFileIterator *getFileListRecursive(const char *szPath, const char **szExts, int extsCount) override;
@@ -94,12 +98,15 @@ public:
      IFile *openFile(const char *szPath, FILE_OPEN_MODE) override;
 
 private:
+	template <typename T>
+	IFileIterator *getListIterator(const char *szPath, const char **szExts, int extsCount);
+
 	void addPathInPriorityArray(int id, int iPriority);
 
 	//! Метод делает проверку, ведет ли путь к файлу или папке
 	bool isFileOrDirectory(const char *szPath, bool isFile);
 
-	Array<String>* getAllvariantsCanonizePath(const char *szPath);
+	void getAllvariantsCanonizePath(const char *szPath, Array<String> &container);
 
 	//!Превращает канонизированный путь в неканонизированный
 	void getNormalPath(const char *szPath, char *outBuff, int iOutMax);

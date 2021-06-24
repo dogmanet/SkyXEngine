@@ -68,13 +68,13 @@ END_PROPTABLE()
 
 REGISTER_ENTITY(CPropDoor, prop_door);
 
-CPropDoor::CPropDoor(CEntityManager *pMgr):BaseClass(pMgr)
-{
-}
-
 CPropDoor::~CPropDoor()
 {
 	releasePhysics();
+
+	mem_release(m_pSndClose);
+	mem_release(m_pSndOpen);
+	mem_release(m_pSndLocked);
 }
 
 void CPropDoor::onPostLoad()
@@ -84,17 +84,23 @@ void CPropDoor::onPostLoad()
 
 	BaseClass::onPostLoad();
 
-	if(m_szSndClose[0])
+	IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
+	if(pSound)
 	{
-		m_idSndClose = SSCore_SndCreate3dInst(m_szSndClose, SX_SOUND_CHANNEL_GAME, 100);
-	}
-	if(m_szSndOpen[0])
-	{
-		m_idSndOpen = SSCore_SndCreate3dInst(m_szSndOpen, SX_SOUND_CHANNEL_GAME, 100);
-	}
-	if(m_szSndLocked[0])
-	{
-		m_idSndLocked = SSCore_SndCreate3dInst(m_szSndLocked, SX_SOUND_CHANNEL_GAME, 100);
+		IXSoundLayer *pGameLayer = pSound->findLayer("xGame");
+
+		if(m_szSndClose[0])
+		{
+			m_pSndClose = pGameLayer->newSoundPlayer(m_szSndClose, SOUND_SPACE_3D);
+		}
+		if(m_szSndOpen[0])
+		{
+			m_pSndOpen = pGameLayer->newSoundPlayer(m_szSndOpen, SOUND_SPACE_3D);
+		}
+		if(m_szSndLocked[0])
+		{
+			m_pSndLocked = pGameLayer->newSoundPlayer(m_szSndLocked, SOUND_SPACE_3D);
+		}
 	}
 }
 
@@ -103,10 +109,9 @@ void CPropDoor::inputOpen(inputdata_t * pInputdata)
 	if(m_isLocked)
 	{
 		FIRE_OUTPUT(m_onUseLocked, pInputdata->pInflictor);
-		if(ID_VALID(m_idSndLocked))
-		{
-			SSCore_SndInstancePlay3d(m_idSndLocked, false, false, &getPos());
-		}
+
+		SAFE_CALL(m_pSndLocked, setWorldPos, getPos());
+		SAFE_CALL(m_pSndLocked, play);
 		return;
 	}
 	if(m_bState)
@@ -121,10 +126,9 @@ void CPropDoor::inputOpen(inputdata_t * pInputdata)
 
 	m_pInflictor = pInputdata->pInflictor;
 	FIRE_OUTPUT(m_onOpen, pInputdata->pInflictor);
-	if(ID_VALID(m_idSndOpen))
-	{
-		SSCore_SndInstancePlay3d(m_idSndOpen, false, false, &getPos());
-	}
+
+	SAFE_CALL(m_pSndOpen, setWorldPos, getPos());
+	SAFE_CALL(m_pSndOpen, play);
 
 	m_isOpening = true;
 	m_idThinkInterval = SET_INTERVAL(think, 0);
@@ -134,10 +138,9 @@ void CPropDoor::inputClose(inputdata_t * pInputdata)
 	if(m_isLocked)
 	{
 		FIRE_OUTPUT(m_onUseLocked, pInputdata->pInflictor);
-		if(ID_VALID(m_idSndLocked))
-		{
-			SSCore_SndInstancePlay3d(m_idSndLocked, false, false, &getPos());
-		}
+
+		SAFE_CALL(m_pSndLocked, setWorldPos, getPos());
+		SAFE_CALL(m_pSndLocked, play);
 		return;
 	}
 	if(!m_bState)
@@ -158,10 +161,9 @@ void CPropDoor::inputClose(inputdata_t * pInputdata)
 
 	m_pInflictor = pInputdata->pInflictor;
 	FIRE_OUTPUT(m_onClose, pInputdata->pInflictor);
-	if(ID_VALID(m_idSndClose))
-	{
-		SSCore_SndInstancePlay3d(m_idSndClose, false, false, &getPos());
-	}
+
+	SAFE_CALL(m_pSndClose, setWorldPos, getPos());
+	SAFE_CALL(m_pSndClose, play);
 
 	m_isClosing = true;
 	m_idThinkInterval = SET_INTERVAL(think, 0);
@@ -215,8 +217,11 @@ void CPropDoor::createPhysBody()
 {
 	if(m_pCollideShape)
 	{
+		float3 vPos = getPos();
+		SMQuaternion qRot = getOrient();
+
 		m_pGhostObject = new btPairCachingGhostObject();
-		m_pGhostObject->setWorldTransform(btTransform(Q4_BTQUAT(m_vOrientation), F3_BTVEC(m_vPosition)));
+		m_pGhostObject->setWorldTransform(btTransform(Q4_BTQUAT(qRot), F3_BTVEC(vPos)));
 		m_pGhostObject->setCollisionShape(m_pCollideShape);
 		m_pGhostObject->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
 		m_pGhostObject->setUserPointer(this);
@@ -263,7 +268,7 @@ void CPropDoor::createPhysBody()
 			m_fDistance = fMax - fMin;
 		}
 
-		m_vStartPos = m_vPosition;
+		m_vStartPos = vPos;
 		m_vEndPos = (float3)(m_vStartPos + vDir * m_fDistance);
 
 		if(m_bState)

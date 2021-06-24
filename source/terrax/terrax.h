@@ -10,7 +10,6 @@
 
 #define MAIN_WINDOW_TITLE      "TerraX"
 #define MAIN_WINDOW_CLASS      "X Main Window"
-#define GUI_WINDOW_CLASS       "X GUI Window"
 #define RENDER_WINDOW_CLASS    "X Viewport Window"
 #define WIDTH_ADJUST			2
 
@@ -30,6 +29,8 @@
 #define WM_SETTITLEASYNC (WM_USER + 1)
 
 #include "Grid.h"
+#include "MaterialBrowser.h"
+#include "Editor.h"
 
 enum X_VIEWPORT_LAYOUT
 {
@@ -52,23 +53,6 @@ enum X_2D_VIEW
 	X2D_SIDE   // z/y
 };
 
-enum X_WINDOW_POS
-{
-	XWP_TOP_LEFT,
-	XWP_TOP_RIGHT,
-	XWP_BOTTOM_LEFT,
-	XWP_BOTTOM_RIGHT
-};
-
-
-enum X_2DXFORM_TYPE
-{
-	X2DXF_SCALE = 0,
-	X2DXF_ROTATE,
-
-
-	X2DXF__LAST
-};
 
 enum X_DIR
 {
@@ -114,6 +98,8 @@ struct CTerraXConfig
 struct CTerraXState
 {
 	X_WINDOW_POS activeWindow = XWP_TOP_LEFT;
+	HWND hActiveWnd = NULL;
+	float2 vWinSize;
 	float2_t vMousePos;
 	float2_t vWorldMousePos;
 	float4_t m_vViewportBorders[4];
@@ -130,6 +116,11 @@ struct CTerraXState
 
 	bool bCreateMode = false;
 	float3 vCreateOrigin;
+
+	float3 vWorldRayStart;
+	float3 vWorldRayDir;
+
+	float3 vBestPlaneNormal;
 };
 
 #define X_MAX_HANDLERS_PER_DIP 512
@@ -156,9 +147,15 @@ struct CTerraXRenderStates
 	IGXRenderBuffer *pHandlerRB;
 	ID idHandlerShaderVS = -1;
 	ID idHandlerShaderKit = -1;
+	ID idBoundShaderKit = -1;
 
 	IGXIndexBuffer *pHandler3DIB;
 	IGXRenderBuffer *pHandler3DRB;
+
+	IGXVertexBuffer *pIconVB;
+	IGXIndexBuffer *pIcon3DIB;
+	IGXRenderBuffer *pIcon3DRB;
+	ID idIconShaderKit = -1;
 
 	IGXVertexBuffer *pTransformHandlerVB;
 	IGXRenderBuffer *pTransformHandlerRB;
@@ -168,6 +165,7 @@ struct CTerraXRenderStates
 
 	IGXRenderBuffer *pCreateCrossRB;
 
+	IGXSamplerState *pSamplerLinearClamp;
 };
 extern CTerraXRenderStates g_xRenderStates;
 
@@ -175,6 +173,13 @@ extern CTerraXConfig g_xConfig;
 
 extern CTerraXState g_xState;
 
+extern CMaterialBrowser *g_pMaterialBrowser;
+
+extern CEditor *g_pEditor;
+
+
+extern IXEditorGizmoMove *g_pGizmoMove;
+extern IXEditorGizmoRotate *g_pGizmoRotate;
 
 #define X2D_TOP_POS float3(0.0f, 1000.0f, 0.0f)
 #define X2D_TOP_ROT SMQuaternion(-SM_PIDIV2, 'x')
@@ -192,6 +197,10 @@ bool XSaveLevel(const char *szNewName=NULL, bool bForcePrompt = false);
 void XLoadLevel(const char *szName);
 void XRender3D();
 void XRender2D(X_2D_VIEW view, float fScale, bool preScene);
+
+void XFrameRun(float fDeltaTime);
+
+#define XSELECT_STEP_DELAY 0.5f
 
 struct XBorderVertex
 {
@@ -211,9 +220,42 @@ bool XRayCast(X_WINDOW_POS wnd);
 bool XIsMouseInSelection(X_WINDOW_POS wnd);
 
 void XUpdatePropWindow();
+void XUpdateGizmos();
 
+float XGetGridStep();
 float3 XSnapToGrid(const float3 &vPos);
 
+void XSetXformType(X_2DXFORM_TYPE type);
+
 extern IXEngine *g_pEngine;
+
+class CCommandMove;
+class CGizmoMoveCallback: public IXEditorGizmoMoveCallback
+{
+public:
+	void XMETHODCALLTYPE moveTo(const float3 &vNewPos, IXEditorGizmoMove *pGizmo) override;
+	void XMETHODCALLTYPE onStart(IXEditorGizmoMove *pGizmo) override;
+	void XMETHODCALLTYPE onEnd(IXEditorGizmoMove *pGizmo) override;
+
+private:
+	CCommandMove *m_pCmd = NULL;
+};
+
+class CCommandRotate;
+class CGizmoRotateCallback: public IXEditorGizmoRotateCallback
+{
+public:
+	void XMETHODCALLTYPE onRotate(const float3_t &vAxis, float fAngle, IXEditorGizmoRotate *pGizmo) override;
+	void XMETHODCALLTYPE onStart(const float3_t &vAxis, IXEditorGizmoRotate *pGizmo) override;
+	void XMETHODCALLTYPE onEnd(IXEditorGizmoRotate *pGizmo) override;
+
+private:
+	CCommandRotate *m_pCmd = NULL;
+	float3_t m_vOffset;
+};
+
+extern CGizmoMoveCallback g_gizmoMoveCallback;
+extern CGizmoRotateCallback g_gizmoRotateCallback;
+extern IEventChannel<XEventEditorXformType> *g_pXformEventChannel;
 
 #endif

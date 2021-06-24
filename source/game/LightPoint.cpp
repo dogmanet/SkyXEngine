@@ -14,20 +14,14 @@ BEGIN_PROPTABLE(CLightPoint)
 	// empty
 END_PROPTABLE()
 
-REGISTER_ENTITY(CLightPoint, light_point);
+REGISTER_ENTITY(CLightPoint, light_point, REC_ICON("dev_light_point"));
 
-CLightPoint::CLightPoint(CEntityManager * pMgr):BaseClass(pMgr)
+CLightPoint::CLightPoint()
 {
 	if(m_pLightSystem)
 	{
 		m_pLight = m_pLightSystem->newPoint();
-		//m_pLight->setDistance(m_fDist);
 		m_pLight->setColor(float4(float3(m_vColor) * m_vColor.w, m_fDist));
 	}
-}
-
-CLightPoint::~CLightPoint()
-{
-	mem_release(m_pLight);
 }
 

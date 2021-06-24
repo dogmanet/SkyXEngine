@@ -8,7 +8,7 @@ class CLogicAuto: public CPointEntity
 	DECLARE_CLASS(CLogicAuto, CPointEntity);
 	DECLARE_PROPTABLE();
 public:
-	DECLARE_CONSTRUCTOR();
+	DECLARE_TRIVIAL_CONSTRUCTOR();
 	
 	void activate();
 

@@ -72,30 +72,31 @@ void CEntityManager::update(int thread)
 			inputData.pActivator = to->data.pActivator;
 			inputData.pInflictor = to->data.pInflictor;
 
-			for(int j = 0; j < to->pOutput->iOutCount; ++j)
+			for(UINT j = 0, jl = to->pOutput->aOutputs.size(); j < jl; ++j)
 			{
-				if(!to->pOutput->pOutputs[j].pTarget)
+				input_t &out = to->pOutput->aOutputs[j];
+				if(!out.pTarget)
 				{
 					continue;
 				}
 
-				inputData.type = to->pOutput->pOutputs[j].data.type;
+				inputData.type = out.data.type;
 
 				if(inputData.type == PDF_STRING)
 				{
 					inputData.parameter.str = NULL;
 				}
 
-				if(to->pOutput->pOutputs[j].useOverrideData)
+				if(out.useOverrideData)
 				{
-					inputData.setParameter(to->pOutput->pOutputs[j].data);
+					inputData.setParameter(out.data);
 				}
 				else
 				{
 					inputData.setParameter(to->data);
 				}
 
-				(to->pOutput->pOutputs[j].pTarget->*(to->pOutput->pOutputs[j].fnInput))(&inputData);
+				(out.pTarget->*(out.fnInput))(&inputData);
 
 				if(inputData.type == PDF_STRING && inputData.parameter.str != GetEmptyString())
 				{
@@ -167,8 +168,6 @@ void CEntityManager::finalRemove()
 
 void CEntityManager::sync()
 {
-	CBaseEntity * pEnt;
-
 	finalRemove();
 
 	for(int i = 0, l = m_vTimeout.size(); i < l; ++i)
@@ -199,25 +198,7 @@ void CEntityManager::sync()
 	//static time_point tOld = std::chrono::high_resolution_clock::now();
 	//float dt;
 	//dt = (float)std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tOld).count() / 1000000.0f;
-	for(int i = 0, l = m_vEntSyncList.size(); i < l; ++i)
-	{
-		pEnt = m_vEntSyncList[i];
-		if(pEnt)
-		{
-			pEnt->m_bSynced = false;
-		}
-	}
 	
-	for(int i = 0, l = m_vEntSyncList.size(); i < l; ++i)
-	{
-		pEnt = m_vEntSyncList[i];
-		if(pEnt && !pEnt->m_bSynced)
-		{
-			//pEnt->updateDiscreteLinearVelocity(0, dt);
-			pEnt->onSync();
-			//pEnt->updateDiscreteLinearVelocity(1, dt);
-		}
-	}
 	//tOld = std::chrono::high_resolution_clock::now();
 }
 
@@ -234,51 +215,76 @@ void CEntityManager::unloadObjLevel()
 	}
 }
 
-ID CEntityManager::reg(CBaseEntity *pEnt)
+const XGUID* CEntityManager::reg(CBaseEntity *pEnt, const XGUID *pGUID)
 {
-	ID ent;
 	if(!pEnt)
 	{
-		return(-1);
+		return(NULL);
 	}
-	if(m_vFreeIDs.size())
+
+	XGUID guid;
+	if(pGUID)
 	{
-		ent = m_vFreeIDs[0];
-		m_vFreeIDs.erase(0);
-		m_vEntList[ent] = pEnt;
+		guid = *pGUID;
 	}
 	else
 	{
-		ent = m_vEntList.size();
-		m_vEntList.push_back(pEnt);
+		XCreateGUID(&guid);
 	}
-	return(ent);
-}
-void CEntityManager::unreg(ID ent)
-{
-	//@TODO: Clear all outputs
-	if(m_vEntList.size() <= (UINT)ent || ent < 0)
+
+	m_mEnts[guid] = pEnt;
+
+	const XGUID *pNewGUID = &m_mEnts.TmpNode->Key;
+
+	pEnt->setGUID(pNewGUID);
+	pEnt->setWorld(this);
+
+	m_vEntList.push_back(pEnt);
+
+	if(pGUID)
 	{
-		return;
+		notifyWaitForGUID(*pGUID, pEnt);
+
+		char tmp[64];
+		XGUIDToSting(*pGUID, tmp, sizeof(tmp));
+		onEntityNameChanged(pEnt, "", tmp);
 	}
+
+	return(pNewGUID);
+}
+void CEntityManager::unreg(CBaseEntity *pEnt)
+{
+	assert(pEnt && pEnt->getGUID());
+
+	int iKey = m_vEntList.indexOf(pEnt);
+	assert(iKey >= 0);
+	UINT uLast = m_vEntList.size() - 1;
+	m_vEntList[iKey] = m_vEntList[uLast];
+	m_vEntList[uLast] = NULL;
+	m_vEntList.erase(uLast);
 
 	timeout_t * t;
 	timeout_output_t * to;
-
-	CBaseEntity *pEnt = m_vEntList[ent];
 
 	for(int i = 0, l = m_vOutputTimeout.size(); i < l; ++i)
 	{
 		to = &m_vOutputTimeout[i];
 		if(to->status == TS_WAIT)
 		{
-			to->status = TS_DONE;
-			for(int j = 0; j < to->pOutput->iOutCount; ++j)
+			UINT iRemoved = 0;
+			for(UINT j = 0, jl = to->pOutput->aOutputs.size(); j < jl; ++j)
 			{
-				if(to->pOutput->pOutputs[j].pTarget == pEnt)
+				input_t &out = to->pOutput->aOutputs[j];
+
+				if(out.pTarget == pEnt)
 				{
-					to->pOutput->pOutputs[j].pTarget = NULL;
+					out.pTarget = NULL;
+					++iRemoved;
 				}
+			}
+			if(iRemoved == to->pOutput->aOutputs.size())
+			{
+				to->status = TS_DONE;
 			}
 		}
 	}
@@ -301,26 +307,7 @@ void CEntityManager::unreg(ID ent)
 		}
 	}
 
-	m_vEntList[ent] = NULL;
-	m_vFreeIDs.push_back(ent);
-}
-
-void CEntityManager::regSync(CBaseEntity *pEnt)
-{
-	assert(pEnt);
-	m_vEntSyncList.push_back(pEnt);
-}
-void CEntityManager::unregSync(CBaseEntity *pEnt)
-{
-	assert(pEnt);
-	for(UINT i = 0, l = m_vEntSyncList.size(); i < l; ++i)
-	{
-		if(m_vEntSyncList[i] == pEnt)
-		{
-			m_vEntSyncList.erase(i);
-			break;
-		}
-	}
+	m_mEnts.erase(*pEnt->getGUID());
 }
 
 ID CEntityManager::setTimeout(void(CBaseEntity::*func)(float dt), CBaseEntity *pEnt, float delay)
@@ -407,10 +394,20 @@ bool CEntityManager::exportList(const char * file)
 {
 	ISXConfig * conf = Core_CrConfig();
 	conf->New(file);
-	char buf[4096], sect[32];
+	char buf[4096], sect[64];
 	CBaseEntity * pEnt;
 	proptable_t * pTbl;
 	int ic = 0;
+
+	if(m_isOldImported)
+	{
+		FILE *fp = fopen(file, "w");
+		if(fp)
+		{
+			fclose(fp);
+		}
+		m_isOldImported = false;
+	}
 
 	// conf->set("meta", "count", "0");
 
@@ -421,12 +418,13 @@ bool CEntityManager::exportList(const char * file)
 		{
 			continue;
 		}
-		sprintf(sect, "ent_%d", ic);
 
 		if(!(pEnt->getFlags() & EF_EXPORT))
 		{
 			continue;
 		}
+
+		XGUIDToSting(*pEnt->getGUID(), sect, sizeof(sect));
 
 		conf->set(sect, "classname", pEnt->getClassName());
 		pTbl = CEntityFactoryMap::GetInstance()->getPropTable(pEnt->getClassName());
@@ -445,8 +443,8 @@ bool CEntityManager::exportList(const char * file)
 		++ic;
 	}
 
-	sprintf(buf, "%d", ic);
-	conf->set("meta", "count", buf);
+	// sprintf(buf, "%d", ic);
+	// conf->set("meta", "count", buf);
 
 	bool ret = !conf->save();
 	mem_release(conf);
@@ -460,9 +458,9 @@ bool CEntityManager::import(const char * file, bool shouldSendProgress)
 	{
 		pEventChannel = Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID);
 	}
-	ISXConfig * conf = Core_CrConfig();
-	char sect[32];
-	CBaseEntity * pEnt = NULL;
+	ISXConfig *conf = Core_CrConfig();
+	const char *sect;
+	CBaseEntity *pEnt = NULL;
 	Array<CBaseEntity*> tmpList;
 
 	char szFullPath[1024];
@@ -476,20 +474,13 @@ bool CEntityManager::import(const char * file, bool shouldSendProgress)
 		goto err;
 	}
 
-	if(!conf->keyExists("meta", "count"))
-	{
-		goto err;
-	}
-
-	int ic;
-	if(sscanf(conf->getKey("meta", "count"), "%d", &ic) != 1)
-	{
-		goto err;
-	}
-
+	int ic = conf->getSectionCount();
 	tmpList.reserve(ic);
 
+	m_isOldImported = conf->getKeyCount("meta") != 0;
+
 	{
+		XGUID guid;
 
 		XEventLevelProgress ev;
 		ev.idPlugin = -3;
@@ -498,64 +489,87 @@ bool CEntityManager::import(const char * file, bool shouldSendProgress)
 		ev.fProgress = 0.0f;
 		for(int i = 0; i < ic; ++i)
 		{
-			sprintf(sect, "ent_%d", i);
-			if(!conf->keyExists(sect, "classname"))
-			{
-				printf(COLOR_LRED "Unable to load entity #%d, classname undefined\n" COLOR_RESET, i);
-				tmpList[i] = NULL;
-				continue;
-			}
-			if(!(pEnt = CREATE_ENTITY_NOPOST(conf->getKey(sect, "classname"), this)))
-			{
-				printf(COLOR_LRED "Unable to load entity #%d, classname '%s' undefined\n" COLOR_RESET, i, conf->getKey(sect, "classname"));
-				tmpList[i] = NULL;
-				continue;
-			}
-			if(conf->keyExists(sect, "name"))
-			{
-				pEnt->setKV("name", conf->getKey(sect, "name"));
-			}
-			if(conf->keyExists(sect, "origin"))
-			{
-				pEnt->setKV("origin", conf->getKey(sect, "origin"));
-			}
-			if(conf->keyExists(sect, "rotation"))
-			{
-				pEnt->setKV("rotation", conf->getKey(sect, "rotation"));
-			}
-			pEnt->setFlags(pEnt->getFlags() | EF_EXPORT | EF_LEVEL);
-			tmpList[i] = pEnt;
+			sect = conf->getSectionName(i);
 
-			if((i & 0xF) == 0 && pEventChannel)
+			if(sect[0] == '{' || (sect[0] == 'e' && sect[1] == 'n' && sect[2] == 't' && sect[3] == '_'))
 			{
-				ev.fProgress = (float)i / (float)ic * 0.1f;
-				pEventChannel->broadcastEvent(&ev);
+				if(!conf->keyExists(sect, "classname"))
+				{
+					printf(COLOR_LRED "Unable to load entity #%d, classname undefined\n" COLOR_RESET, i);
+					tmpList[i] = NULL;
+					continue;
+				}
+
+				XGUID *pGUID = NULL;
+				if(XGUIDFromString(&guid, sect))
+				{
+					pGUID = &guid;
+				}
+
+				if(!(pEnt = CEntityFactoryMap::GetInstance()->create(conf->getKey(sect, "classname"), this, true, pGUID)))
+				{
+					printf(COLOR_LRED "Unable to load entity #%d, classname '%s' undefined\n" COLOR_RESET, i, conf->getKey(sect, "classname"));
+					tmpList[i] = NULL;
+					continue;
+				}
+				if(conf->keyExists(sect, "name"))
+				{
+					pEnt->setKV("name", conf->getKey(sect, "name"));
+				}
+				if(conf->keyExists(sect, "origin"))
+				{
+					pEnt->setKV("origin", conf->getKey(sect, "origin"));
+				}
+				if(conf->keyExists(sect, "rotation"))
+				{
+					pEnt->setKV("rotation", conf->getKey(sect, "rotation"));
+				}
+				pEnt->setFlags(pEnt->getFlags() | EF_EXPORT | EF_LEVEL);
+				tmpList[i] = pEnt;
+
+				if((i & 0xF) == 0 && pEventChannel)
+				{
+					ev.fProgress = (float)i / (float)ic * 0.1f;
+					pEventChannel->broadcastEvent(&ev);
+				}
+			}
+			else
+			{
+				tmpList[i] = NULL;
 			}
 		}
 
 		for(int i = 0; i < ic; ++i)
 		{
-			sprintf(sect, "ent_%d", i);
-			if(!(pEnt = tmpList[i]))
+			sect = conf->getSectionName(i);
+
+			if(sect[0] == '{' || (sect[0] == 'e' && sect[1] == 'n' && sect[2] == 't' && sect[3] == '_'))
 			{
-				continue;
-			}
-			int keyc = conf->getKeyCount(sect);
-			const char * key;
-			for(int j = 0; j < keyc; ++j)
-			{
-				key = conf->getKeyName(sect, j);
-				if(strcmp(key, "classname") && strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
+				if(!(pEnt = tmpList[i]))
 				{
-					pEnt->setKV(key, conf->getKey(sect, key));
+					continue;
+				}
+				int keyc = conf->getKeyCount(sect);
+				const char *key;
+				for(int j = 0; j < keyc; ++j)
+				{
+					key = conf->getKeyName(sect, j);
+					if(strcmp(key, "classname") && strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
+					{
+						pEnt->setKV(key, conf->getKey(sect, key));
+					}
+				}
+				pEnt->onPostLoad();
+
+				if(/*(i & 0xF) == 0 && */pEventChannel)
+				{
+					ev.fProgress = (float)i / (float)ic * 0.9f + 0.1f;
+					pEventChannel->broadcastEvent(&ev);
 				}
 			}
-			pEnt->onPostLoad();
-
-			if(/*(i & 0xF) == 0 && */pEventChannel)
+			else
 			{
-				ev.fProgress = (float)i / (float)ic * 0.9f + 0.1f;
-				pEventChannel->broadcastEvent(&ev);
+				tmpList[i] = NULL;
 			}
 		}
 	}
@@ -765,14 +779,14 @@ void CEntityManager::dumpList(int argc, const char **argv)
 		filter = argv[1];
 	}
 
-	printf(COLOR_GREEN "-----------------------------------------------------\n"
+	printf(COLOR_GREEN "---------------------------------------------------------------------------------------\n"
 		COLOR_GREEN "    Filter: " COLOR_LGREEN "%s\n"
 		COLOR_GREEN "    Total count: " COLOR_LGREEN "%u\n"
-		COLOR_GREEN "-----------------------------------------------------\n"
-		"  id  |          class           |       name       |\n"
-		"------|--------------------------|------------------|\n"
+		COLOR_GREEN "---------------------------------------------------------------------------------------\n"
+		"                  guid                  |          class           |       name       |\n"
+		"----------------------------------------|--------------------------|------------------|\n"
 		, filter, m_vEntList.size());
-
+	char tmp[64];
 	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
 	{
 		CBaseEntity * pEnt = m_vEntList[i];
@@ -782,11 +796,12 @@ void CEntityManager::dumpList(int argc, const char **argv)
 		}
 		if(!filter[0] || strstr(pEnt->getClassName(), filter))
 		{
-			printf(" " COLOR_LGREEN "%-4d" COLOR_GREEN " | " COLOR_LGREEN "%-24s" COLOR_GREEN " | " COLOR_LGREEN "%-16s" COLOR_GREEN " |\n", i, pEnt->getClassName(), pEnt->getName());
+			XGUIDToSting(*pEnt->getGUID(), tmp, sizeof(tmp));
+			printf(" " COLOR_LGREEN "%s" COLOR_GREEN " | " COLOR_LGREEN "%-24s" COLOR_GREEN " | " COLOR_LGREEN "%-16s" COLOR_GREEN " |\n", tmp, pEnt->getClassName(), pEnt->getName());
 		}
 	}
 
-	printf("-----------------------------------------------------\n" COLOR_RESET);
+	printf("---------------------------------------------------------------------------------------\n" COLOR_RESET);
 }
 
 void CEntityManager::entKV(int argc, const char **argv)
@@ -806,6 +821,7 @@ void CEntityManager::entKV(int argc, const char **argv)
 	if(id < 0 || (UINT)id >= m_vEntList.size() || !(pEnt = m_vEntList[id]))
 	{
 		printf(COLOR_LRED "Invalid entity id\n" COLOR_RESET);
+		return;
 	}
 	char buf[128];
 	buf[0] = 0;
@@ -818,7 +834,7 @@ void CEntityManager::entKV(int argc, const char **argv)
 			{
 				for(int i = 0; i < pt->numFields; ++i)
 				{
-					if(pt->pData[i].szKey)
+					if(pt->pData[i].szKey && !(pt->pData[i].flags & PDFF_INPUT))
 					{
 						pEnt->getKV(pt->pData[i].szKey, buf, sizeof(buf));
 						printf("%s = %s\n", pt->pData[i].szKey, buf);
@@ -852,6 +868,12 @@ CBaseEntity* CEntityManager::getById(ID id)
 	}
 	CBaseEntity *pEnt = m_vEntList[id];
 	return(pEnt ? (pEnt->getFlags() & EF_REMOVED ? NULL : pEnt) : NULL);
+}
+
+CBaseEntity* CEntityManager::getByGUID(const XGUID &guid)
+{
+	CBaseEntity *const *ppEnt = m_mEnts.at(guid);
+	return(ppEnt ? *ppEnt : NULL);
 }
 
 CBaseEntity* CEntityManager::cloneEntity(CBaseEntity *pOther)
@@ -923,6 +945,8 @@ void CEntityManager::sheduleDestroy(CBaseEntity *pEnt)
 	{
 		pEnt->_releaseEditorBoxes();
 	}
+
+	pEnt->notifyPointers();
 }
 
 void CEntityManager::setEditorMode(bool isEditor)
@@ -1039,7 +1063,7 @@ CBaseline* CEntityManager::createBaseline(ID id)
 		if(pEnt && (pEnt->getFlags() & EF_LEVEL) && !(pEnt->getFlags() & EF_REMOVED))
 		{
 			CBaseline::ent_record_s record;
-			record.m_id = pEnt->getId();
+			record.m_guid = *pEnt->getGUID();
 			record.m_sClassname = pEnt->getClassName();
 
 			pDefaults = CEntityFactoryMap::GetInstance()->getDefaults(pEnt->getClassName());
@@ -1090,23 +1114,31 @@ void CEntityManager::dispatchBaseline(CBaseline *pBaseline)
 		return;
 	}
 
+#if 0
 	UINT idMax = pBaseline->m_aRecords[pBaseline->m_aRecords.size() - 1].m_id;
 	if(m_vEntList.size() <= idMax)
 	{
 		m_vEntList.reserve(idMax + 1);
 	}
+#endif
+
+	Array<CBaseEntity*> aPostLoadList(pBaseline->m_aRecords.size());
 
 	const AssotiativeArray<String, String>::Node *pNode;
 	for(int i = 0, l = pBaseline->m_aRecords.size(); i < l; ++i)
 	{
 		CBaseline::ent_record_s *pRecord = &pBaseline->m_aRecords[i];
 
-		if(!(pEnt = CREATE_ENTITY_NOPOST(pRecord->m_sClassname.c_str(), this)))
+		if(!(pEnt = CEntityFactoryMap::GetInstance()->create(pRecord->m_sClassname.c_str(), this, true, &pRecord->m_guid)))
 		{
 			printf(COLOR_LRED "Unable to load entity #%d, classname '%s' undefined\n" COLOR_RESET, i, pRecord->m_sClassname.c_str());
+			aPostLoadList[i] = NULL;
 			continue;
 		}
 
+		aPostLoadList[i] = pEnt;
+
+#if 0
 		if(pEnt->getId() != pRecord->m_id)
 		{
 			m_vEntList[pEnt->getId()] = NULL;
@@ -1139,6 +1171,7 @@ void CEntityManager::dispatchBaseline(CBaseline *pBaseline)
 			m_vEntList[pRecord->m_id] = pEnt;
 			pEnt->m_iId = pRecord->m_id;
 		}
+#endif
 
 		if(pRecord->m_mProps.KeyExists("name", &pNode))
 		{
@@ -1161,25 +1194,23 @@ void CEntityManager::dispatchBaseline(CBaseline *pBaseline)
 	{
 		CBaseline::ent_record_s *pRecord = &pBaseline->m_aRecords[i];
 
-		pEnt = m_vEntList[pRecord->m_id];
-		for(AssotiativeArray<String, String>::Iterator it = pRecord->m_mProps.begin(); it; it++)
+		if((pEnt = aPostLoadList[i]))
 		{
-			key = it.first->c_str();
-
-			if(strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
+			for(AssotiativeArray<String, String>::Iterator it = pRecord->m_mProps.begin(); it; it++)
 			{
-				pEnt->setKV(key, it.second->c_str());
+				key = it.first->c_str();
+
+				if(strcmp(key, "origin") && strcmp(key, "name") && strcmp(key, "rotation"))
+				{
+					pEnt->setKV(key, it.second->c_str());
+				}
 			}
 		}
 	}
 
-	for(int i = 1, l = m_vEntList.size(); i < l; ++i)
+	for(UINT i = 0, l = aPostLoadList.size(); i < l; ++i)
 	{
-		pEnt = m_vEntList[i];
-		if(pEnt)
-		{
-			pEnt->onPostLoad();
-		}
+		SAFE_CALL(aPostLoadList[i], onPostLoad);
 	}
 }
 
@@ -1251,3 +1282,88 @@ CBaseline *CEntityManager::deserializeBaseline(ID id, INETbuff *pBuf)
 	return(pBaseline);
 }
 #endif
+
+void CEntityManager::registerWaitForGUID(const XGUID &guid, IEntityPointer *pPtr)
+{
+	ScopedSpinLock lock(m_slWaitingPointers);
+
+	m_maWaitingPointers[guid].push_back(pPtr);
+}
+
+void CEntityManager::unregisterWaitForGUID(const XGUID &guid, IEntityPointer *pPtr)
+{
+	ScopedSpinLock lock(m_slWaitingPointers);
+
+	Array<IEntityPointer*> &list = m_maWaitingPointers[guid];
+
+	int idx = list.indexOf(pPtr);
+	assert(idx >= 0);
+	if(idx >= 0)
+	{
+		list.erase(idx);
+	}
+	if(!list.size())
+	{
+		m_maWaitingPointers.erase(guid);
+	}
+}
+
+void CEntityManager::notifyWaitForGUID(const XGUID &guid, CBaseEntity *pEnt)
+{
+	ScopedSpinLock lock(m_slWaitingPointers);
+
+	const Map<XGUID, Array<IEntityPointer*>>::Node *pNode;
+	if(m_maWaitingPointers.KeyExists(guid, &pNode))
+	{
+		Array<IEntityPointer*> &list = m_maWaitingPointers[guid];
+		for(UINT i = 0, l = list.size(); i < l; ++i)
+		{
+			list[i]->onWaitDone(pEnt);
+		}
+		m_maWaitingPointers.erase(guid);
+	}
+}
+
+void CEntityManager::registerWaitForName(const char *szName, CEntityList *pList)
+{
+	ScopedSpinLock lock(m_slWaitingLists);
+
+	Array<CEntityList*> &list = m_maWaitingLists[szName];
+
+	assert(list.indexOf(pList) < 0);
+
+	list.push_back(pList);
+}
+void CEntityManager::unregisterWaitForName(const char *szName, CEntityList *pList)
+{
+	ScopedSpinLock lock(m_slWaitingLists);
+
+	Array<CEntityList*> &list = m_maWaitingLists[szName];
+
+	int idx = list.indexOf(pList);
+	assert(idx >= 0);
+	list[idx] = list[list.size() - 1];
+	list.erase(list.size() - 1);
+}
+
+void CEntityManager::onEntityNameChanged(CBaseEntity *pEnt, const char *szOldName, const char *szNewName)
+{
+	const Map<String, Array<CEntityList*>>::Node *pNode;
+	if(szOldName[0] && m_maWaitingLists.KeyExists(szOldName, &pNode))
+	{
+		Array<CEntityList*> &list = *pNode->Val;
+		for(UINT i = 0, l = list.size(); i < l; ++i)
+		{
+			list[i]->removeEntity(pEnt);
+		}
+	}
+
+	if(szNewName[0] && m_maWaitingLists.KeyExists(szNewName, &pNode))
+	{
+		Array<CEntityList*> &list = *pNode->Val;
+		for(UINT i = 0, l = list.size(); i < l; ++i)
+		{
+			list[i]->addEntity(pEnt);
+		}
+	}
+}

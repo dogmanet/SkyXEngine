@@ -21,20 +21,17 @@ BEGIN_PROPTABLE(CPathCorner)
 	DEFINE_FIELD_FLOAT(m_fNewSpeed, 0, "speed", "New speed", EDITOR_TEXTFIELD)
 
 	//! Следующая точка пути
-	DEFINE_FIELD_ENTITY2FN(CPathCorner, m_pNextStop, 0, "next", "Next stop", setNextPoint, EDITOR_TEXTFIELD)
+	DEFINE_FIELD_ENTITY(CPathCorner, m_pNextStop, 0, "next", "Next stop", EDITOR_TEXTFIELD)
+
+	DEFINE_FIELD_ENTITY(CPathCorner, m_pPrevStop, PDFF_NOEDIT | PDFF_NOEXPORT, "prev", "Prev stop", EDITOR_NONE)
 
 END_PROPTABLE()
 
 REGISTER_ENTITY(CPathCorner, path_corner);
 
-CPathCorner::CPathCorner(CEntityManager * pMgr):
-	BaseClass(pMgr),
-	m_type(PCT_SPLINE),
-	m_fNewSpeed(0.0f),
-	m_pNextStop(NULL),
-	m_pPrevStop(NULL),
-	m_fLength(0.0f)
+CPathCorner::CPathCorner()
 {
+	m_pNextStop.setLinkEstablishedListener(&CPathCorner::setNextPoint);
 }
 
 CPathCorner::~CPathCorner()
@@ -109,7 +106,7 @@ void CPathCorner::recalcPath(float t)
 		pCur->m_fLength = SMVector3Length(vec);
 		//pCur->m_fLength = 1.0f;
 		pCur->m_fH = (float3)(vec / pCur->m_fLength);
-		pCur->m_fCoeffsA = pCur->m_pNextStop->m_vPosition;
+		pCur->m_fCoeffsA = pCur->m_pNextStop->getPos();
 
 		pCur = pNext;
 	}
@@ -192,7 +189,7 @@ float3 CPathCorner::getPoint(float dist)
 		}
 		else
 		{
-			return(m_vPosition);
+			return(getPos());
 		}
 	}
 	else if(dist > m_fLength)
@@ -203,7 +200,7 @@ float3 CPathCorner::getPoint(float dist)
 		}
 		else
 		{
-			return(m_vPosition);
+			return(getPos());
 		}
 	}
 	dist -= m_fLength;
@@ -220,7 +217,7 @@ SMQuaternion CPathCorner::getRot(float dist)
 		}
 		else
 		{
-			return(m_vOrientation);
+			return(getOrient());
 		}
 	}
 	else if(dist > m_fLength)
@@ -231,16 +228,16 @@ SMQuaternion CPathCorner::getRot(float dist)
 		}
 		else
 		{
-			return(m_vOrientation);
+			return(getOrient());
 		}
 	}
 	if(m_pNextStop)
 	{
-		return(SMquaternionSlerp(m_vOrientation, m_pNextStop->m_vOrientation, (dist / m_fLength)*(dist / m_fLength) * (3.0f - 2.0f * (dist / m_fLength))));
+		return(SMquaternionSlerp(getOrient(), m_pNextStop->getOrient(), (dist / m_fLength)*(dist / m_fLength) * (3.0f - 2.0f * (dist / m_fLength))));
 	}
 	else
 	{
-		return(m_vOrientation);
+		return(getOrient());
 	}
 }
 

@@ -91,6 +91,7 @@ CMaterialSystem::CMaterialSystem()
 	}
 
 	Core_0RegisterConcmdCls("mtl_reload", this, (SXCONCMDCLS)&CMaterialSystem::reloadAll, "Перезагружает все материалы");
+	Core_0RegisterCVarBool("mat_editorial", false, "Render editorial materials");
 
 	m_pNotifyChannel = Core_GetIXCore()->getEventChannel<XEventMaterialChanged>(EVENT_MATERIAL_CHANGED_GUID);
 
@@ -102,6 +103,9 @@ CMaterialSystem::~CMaterialSystem()
 	mem_release(m_pDefaultTexture);
 
 	cleanData();
+
+	clearScanCache();
+
 }
 
 void XMETHODCALLTYPE CMaterialSystem::loadMaterial(const char *szName, IXMaterial **ppMaterial, const char *szDefaultShader)
@@ -109,7 +113,7 @@ void XMETHODCALLTYPE CMaterialSystem::loadMaterial(const char *szName, IXMateria
 	String sName(szName);
 
 	const AssotiativeArray<String, CMaterial*>::Node *pNode;
-	if(m_mapMaterials.KeyExists(sName, &pNode) && *(pNode->Val))
+	if(m_mapMaterials.KeyExists(sName, &pNode))
 	{
 		*ppMaterial = *(pNode->Val);
 		(*ppMaterial)->AddRef();
@@ -132,7 +136,7 @@ void XMETHODCALLTYPE CMaterialSystem::loadMaterial(const char *szName, IXMateria
 bool XMETHODCALLTYPE CMaterialSystem::getMaterial(const char *szName, IXMaterial **ppMaterial)
 {
 	const AssotiativeArray<String, CMaterial*>::Node *pNode;
-	if(m_mapMaterials.KeyExists(szName, &pNode) && *(pNode->Val))
+	if(m_mapMaterials.KeyExists(szName, &pNode))
 	{
 		*ppMaterial = *(pNode->Val);
 		(*ppMaterial)->AddRef();
@@ -166,7 +170,10 @@ bool CMaterialSystem::loadMaterial(const char *szName, CMaterial *pMaterial)
 
 	if(loadMaterialFromFile(szFileName, pMaterial))
 	{
-		pMaterial->setProxy(m_aMaterialProxies[i]);
+		if(isFound)
+		{
+			pMaterial->setProxy(m_aMaterialProxies[i]);
+		}
 		return(true);
 	}
 	return(false);
@@ -176,10 +183,7 @@ void XMETHODCALLTYPE CMaterialSystem::reloadAll()
 {
 	for(AssotiativeArray<String, CMaterial*>::Iterator i = m_mapMaterials.begin(); i; ++i)
 	{
-		if(*(i.second))
-		{
-			loadMaterial(i.first->c_str(), *(i.second));
-		}
+		loadMaterial(i.first->c_str(), *(i.second));
 	}
 }
 
@@ -263,7 +267,7 @@ bool XMETHODCALLTYPE CMaterialSystem::loadTexture(const char *szName, IXTexture 
 	String sName(szName);
 
 	const AssotiativeArray<String, CTexture*>::Node *pNode;
-	if(m_mpTextures.KeyExists(sName, &pNode) && *(pNode->Val))
+	if(m_mpTextures.KeyExists(sName, &pNode))
 	{
 		*ppTexture = *(pNode->Val);
 		(*ppTexture)->AddRef();
@@ -414,7 +418,7 @@ bool XMETHODCALLTYPE CMaterialSystem::loadTexture(const char *szName, IXTexture 
 bool XMETHODCALLTYPE CMaterialSystem::getTexture(const char *szName, IXTexture **ppTexture)
 {
 	const AssotiativeArray<String, CTexture*>::Node *pNode;
-	if(m_mpTextures.KeyExists(szName, &pNode) && *(pNode->Val))
+	if(m_mpTextures.KeyExists(szName, &pNode))
 	{
 		*ppTexture = *(pNode->Val);
 		(*ppTexture)->AddRef();
@@ -443,13 +447,21 @@ void XMETHODCALLTYPE CMaterialSystem::setWorld(const SMMATRIX &mWorld)
 	SGCore_GetDXDevice()->getThreadContext()->setVSConstant(m_pObjectConstantBuffer, SCR_OBJECT);
 	//SGCore_GetDXDevice()->setPixelShaderConstant(m_pObjectConstantBuffer, SCR_OBJECT);
 }
-void XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
+bool XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 {
+	static const bool *mat_editorial = GET_PCVAR_BOOL("mat_editorial");
+	CMaterial *pMat = (CMaterial*)pMaterial;
+
+	if(!*mat_editorial && pMat && pMat->isEditorial())
+	{
+		return(false);
+	}
+
 	if(m_pCurrentRP && m_pCurrentRP->bSkipMaterialShader)
 	{
 		if(!m_pCurrentVS)
 		{
-			return;
+			return(false);
 		}
 
 		MaterialVariantVS *pVS = &m_pCurrentRP->aPassFormats[m_pCurrentVS->pVertexFormat->uID].aPassVariants[m_uCurrentRPvariant].aVertexShaders[m_pCurrentVS->uID];
@@ -465,10 +477,9 @@ void XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 
 		SGCore_ShaderBind(idShaderSet);
 
-		return;
+		return(true);
 	}
 
-	CMaterial *pMat = (CMaterial*)pMaterial;
 	if(pMaterial)
 	{
 		MaterialShader *pShader = (MaterialShader*)pMat->getShaderHandler();
@@ -634,9 +645,11 @@ void XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 				}
 			}
 
-			return;
+			return(true);
 		}
 	}
+
+	return(false);
 
 	// SMtrl_MtlRender(pMaterial ? pMat->getId() : 0, NULL);
 	// SGCore_MtlSet(pMat->getId(), NULL);
@@ -660,7 +673,7 @@ void CMaterialSystem::onTextureRelease(CTexture *pTexture)
 {
 	assert(pTexture);
 
-	m_mpTextures[pTexture->getName()] = NULL;
+	m_mpTextures.erase(pTexture->getName());
 
 	m_poolTextures.Delete(pTexture);
 }
@@ -669,7 +682,7 @@ void CMaterialSystem::onMaterialRelease(CMaterial *pMaterial)
 {
 	assert(pMaterial);
 
-	m_mapMaterials[pMaterial->getName()] = NULL;
+	m_mapMaterials.erase(pMaterial->getName());
 }
 
 void CMaterialSystem::queueTextureUpload(CTexture *pTexture)
@@ -1942,6 +1955,183 @@ bool CMaterialSystem::saveMaterial(CMaterial *pMaterial)
 	return(false);
 }
 
+void CMaterialSystem::scanForExtension(IFileSystem *pFS, const char *szDir, const char *szExt, Map<String, bool> &mapFiles, bool isTexture)
+{
+	IFileIterator *pIter = pFS->getFileListRecursive(szDir, szExt);
+	if(pIter)
+	{
+		const char *szFile;
+		while((szFile = pIter->next()))
+		{
+			//printf("=%s\n", szFile);
+
+			if(!mapFiles.KeyExists(szFile))
+			{
+				ScanItem &item = m_aScanCache[m_aScanCache.size()];
+				item.sName = szFile;
+				item.isTranslated = false;
+				item.isTexture = isTexture;
+			}
+		}
+	}
+	mem_release(pIter); 
+}
+
+void XMETHODCALLTYPE CMaterialSystem::scanMaterials()
+{
+	clearScanCache();
+	Array<ScanItem> &aItems = m_aScanCache;
+	
+	IFileSystem *pFS = Core_GetIXCore()->getFileSystem();
+
+	Map<String, bool> mapMaterials;
+	Map<String, bool> mapFiles;
+
+	const char *szKey, *szFile;
+	for(UINT i = 0, l = m_aMaterialProxies.size(); i < l; ++i)
+	{
+		IXMaterialProxy *pProxy = m_aMaterialProxies[i];
+		IXMaterialProxyScanList *pList = NULL;
+
+		if(pProxy->scanForMaterials(&pList))
+		{
+			aItems.reserve(aItems.size() + pList->getCount());
+
+			for(UINT j = 0, jl = pList->getCount(); j < jl; ++j)
+			{
+				szKey = pList->getItem(j, &szFile);
+
+				ScanItem &item = aItems[aItems.size()];
+				item.sName = szKey;
+				item.isTranslated = true;
+				item.isTexture = false;
+
+				mapFiles[szFile] = true;
+				mapMaterials[szKey] = true;
+			}
+
+			mem_release(pList);
+		}
+	}
+
+	// scan for supported material extensions
+	for(auto i = m_mapMaterialLoaders.begin(); i; ++i)
+	{
+		scanForExtension(pFS, "materials", i.first->getName(), mapFiles, false);
+	}
+
+	for(UINT i = 0, l = m_aTextureProxies.size(); i < l; ++i)
+	{
+		IXTextureProxy *pProxy = m_aTextureProxies[i];
+		IXTextureProxyScanList *pList = NULL;
+
+		if(pProxy->scanForTextures(&pList))
+		{
+			aItems.reserve(aItems.size() + pList->getCount());
+
+			for(UINT j = 0, jl = pList->getCount(); j < jl; ++j)
+			{
+				szKey = pList->getItem(j, &szFile);
+
+				if(!mapMaterials.KeyExists(szKey))
+				{
+					ScanItem &item = aItems[aItems.size()];
+					item.sName = szKey;
+					item.isTranslated = true;
+					item.isTexture = true;
+				}
+
+				mapFiles[szFile] = true;
+			}
+
+			mem_release(pList);
+		}
+	}
+
+	// scan for supported texture extensions
+	IXResourceManager *pResourceManager = Core_GetIXCore()->getResourceManager();
+	for(UINT i = 0, l = pResourceManager->getTextureSupportedFormats(); i < l; ++i)
+	{
+		scanForExtension(pFS, "textures", pResourceManager->getTextureSupportedFormat(i)->szExtension, mapFiles, true);
+	}
+
+	CMaterialInfo *pNewMaterial = NULL;
+	for(UINT i = 0, l = aItems.size(); i < l; ++i)
+	{
+		ScanItem &item = aItems[i];
+		// printf(": %s\n", item.sName.c_str());
+
+		if(!pNewMaterial)
+		{
+			pNewMaterial = new CMaterialInfo(this, item.sName.c_str());
+		}
+
+		if(!item.isTexture && loadMaterial(item.sName.c_str(), pNewMaterial))
+		{
+			item.pMatInfo = pNewMaterial;
+			pNewMaterial = NULL;
+		}
+		else
+		{
+			item.pMatInfo = NULL;
+		}
+	}
+
+	mem_delete(pNewMaterial);
+
+	aItems.quickSort([](const ScanItem &a, const ScanItem &b){
+		return(strcasecmp(a.sName.c_str(), b.sName.c_str()) < 0);
+	});
+}
+
+void CMaterialSystem::clearScanCache()
+{
+	for(UINT i = 0, l = m_aScanCache.size(); i < l; ++i)
+	{
+		mem_release(m_aScanCache[i].pMatInfo);
+	}
+	m_aScanCache.clearFast();
+}
+
+UINT XMETHODCALLTYPE CMaterialSystem::getScannedMaterialsCount()
+{
+	return(m_aScanCache.size());
+}
+const char* XMETHODCALLTYPE CMaterialSystem::getScannedMaterial(UINT uIdx, IXMaterial **ppOut, bool *pisTexture, bool *pisTranslated)
+{
+	assert(uIdx < m_aScanCache.size());
+
+	if(uIdx >= m_aScanCache.size())
+	{
+		return(NULL);
+	}
+
+	ScanItem &item = m_aScanCache[uIdx];
+
+	if(ppOut)
+	{
+		SAFE_CALL(item.pMatInfo, AddRef);
+		*ppOut = item.pMatInfo;
+	}
+
+	if(pisTexture)
+	{
+		*pisTexture = item.isTexture;
+	}
+
+	if(pisTranslated)
+	{
+		*pisTranslated = item.isTranslated;
+	}
+
+	return(item.sName.c_str());
+}
+
+bool XMETHODCALLTYPE CMaterialSystem::isMaterialLoaded(const char *szName)
+{
+	return(m_mapMaterials.KeyExists(szName));
+}
+
 //#############################################################################
 
 CTexture::CTexture(CMaterialSystem *pMaterialSystem, IXResourceTexture *m_pResource):
@@ -2306,6 +2496,7 @@ CMaterial::CMaterial(CMaterialSystem *pMaterialSystem, const char *szName):
 	m_pRefractive = createFlag("refractive", XEventMaterialChanged::TYPE_REFRACTIVITY);
 	m_pBlurred = createFlag("blurred", XEventMaterialChanged::TYPE_BLURRED);
 	m_pEmissive = createFlag("emissive", XEventMaterialChanged::TYPE_EMISSIVITY);
+	m_pEditorial = createFlag("editorial", XEventMaterialChanged::TYPE_EDITORIAL);
 
 	setShader("Default");
 }
@@ -2367,6 +2558,17 @@ void XMETHODCALLTYPE CMaterial::setEmissive(bool bValue)
 bool XMETHODCALLTYPE CMaterial::isEmissive() const
 {
 	return(m_pEmissive->get());
+}
+
+void XMETHODCALLTYPE CMaterial::setEditorial(bool bValue)
+{
+	m_pEditorial->set(bValue);
+
+	notifyChanged(XEventMaterialChanged::TYPE_EDITORIAL);
+}
+bool XMETHODCALLTYPE CMaterial::isEditorial() const
+{
+	return(m_pEditorial->get());
 }
 
 void XMETHODCALLTYPE CMaterial::setBlurred(bool bValue)
