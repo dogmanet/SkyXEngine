@@ -14,6 +14,8 @@ class CResourceManager: public IXUnknownImplementation<IXResourceManager>
 public:
 	CResourceManager(IXCore *pCore);
 
+	void initPlugins();
+
 	bool XMETHODCALLTYPE getModel(const char *szName, IXResourceModel **ppOut, bool bForceReload = false) override;
 	bool XMETHODCALLTYPE getModelStatic(const char *szName, IXResourceModelStatic **ppOut, bool bForceReload = false) override;
 	bool XMETHODCALLTYPE getModelAnimated(const char *szName, IXResourceModelAnimated **ppOut, bool bForceReload = false) override;

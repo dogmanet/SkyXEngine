@@ -14,10 +14,13 @@
 #include <xcommon/IXAudioCodec.h>
 #endif
 
-
-
 CResourceManager::CResourceManager(IXCore *pCore):
 	m_pCore(pCore)
+{
+
+}
+
+void CResourceManager::initPlugins()
 {
 	IPluginManager *pPluginManager = m_pCore->getPluginManager();
 

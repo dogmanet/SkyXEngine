@@ -258,9 +258,12 @@ void CCore::loadPlugins()
 			printf(COLOR_LRED "ERROR!" COLOR_RESET "\n");
 		}
 	}
-	m_pPluginManager->invokeStartup(this);
 
 	m_pResourceManager = new CResourceManager(this);
+
+	m_pPluginManager->invokeStartup(this);
+
+	m_pResourceManager->initPlugins();
 }
 
 void XMETHODCALLTYPE CCore::getRenderPipeline(IXRenderPipeline **ppRenderPipeline)
