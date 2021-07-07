@@ -53,8 +53,38 @@ CCore::CCore(const char *szName)
 
 	m_pFileSystem = new CFileSystem();
 	m_pFileSystem->addRoot("engine");
-	m_pFileSystem->addRoot("gamesource");
-	m_pFileSystem->addRoot("demos");
+
+	IXConfig *pConfig = newConfig();
+	if(pConfig->open("../roots.ini"))
+	{
+		char sect[32];
+		for(UINT i = 0;; ++i)
+		{
+			sprintf(sect, "path_%u", i);
+			UINT uKeys = pConfig->getKeyCount(sect);
+			if(!uKeys)
+			{
+				break;
+			}
+
+			int iPriority = -1;
+			const char *szPriority = pConfig->getKey(sect, "priority");
+			if(szPriority)
+			{
+				sscanf(szPriority, "%d", &iPriority);
+			}
+
+			const char *szPath = pConfig->getKey(sect, "path");
+			if(szPath)
+			{
+				m_pFileSystem->addRoot(szPath, iPriority);
+			}
+		}
+	}
+	mem_release(pConfig);
+
+	//m_pFileSystem->addRoot("gamesource");
+	//m_pFileSystem->addRoot("demos");
 	UINT uGamePathId = m_pFileSystem->addRoot("local");
 	m_pFileSystem->setWritableRoot(uGamePathId);
 

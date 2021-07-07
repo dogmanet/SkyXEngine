@@ -779,7 +779,7 @@ int CConfig::getKeyCount(const char* section)
 	{
 		return(m_mSections[sections].mValues.Size());
 	}
-	return -1;
+	return 0;
 }
 
 bool CConfig::sectionExists(const char * section)
