@@ -544,7 +544,7 @@ void CSceneNode::growExtents(const SMAABB &aabb)
 	{
 		if(pNode->m_isExtentsCorrect)
 		{
-			m_aabb = SMAABBConvex(m_aabb, aabb);
+			pNode->m_aabb = SMAABBConvex(pNode->m_aabb, aabb);
 		}
 		pNode = pNode->m_pParent;
 	}
@@ -1190,7 +1190,10 @@ void CScene::sync()
 			break;
 
 		case UpdateItem::REMOVE:
-			m_poolObjects.Delete(item.pObject);
+			{
+				ScopedSpinLock lock(m_lockPoolObjects);
+				m_poolObjects.Delete(item.pObject);
+			}
 			break;
 
 		case UpdateItem::UPDATE:
