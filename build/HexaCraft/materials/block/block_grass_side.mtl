@@ -1,0 +1,4 @@
+[block_grass_side]
+shader = Default
+tex.txBase = block_grass_side.dds
+tex.txNormals = block_grass_side_normal.dds

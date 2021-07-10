@@ -1,0 +1,5 @@
+[block_grass_top]
+shader = Default
+tex.txBase = block_grass_top.dds
+tex.txNormals = block_grass_top_normal.dds
+; prop.nm_weight = 10

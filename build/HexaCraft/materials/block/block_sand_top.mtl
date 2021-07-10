@@ -1,0 +1,4 @@
+[block_sand_top]
+shader = Default
+tex.txBase = block_sand_top.dds
+tex.txNormals = block_sand_top_normal.dds

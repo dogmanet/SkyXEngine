@@ -1,0 +1,223 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\dllmain.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\BaseBlock.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\DScoder.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\DSHCbaseBlockTool.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\BlockAir.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\BlockGrass.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\BlockSand.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\Chunk.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\ChunkManager.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\DSHCLOD.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\DSHCplayer.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\HuffmanCoder.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\RLEcoder.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\SolidBlock.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\PerlinNoise.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\plugin_main.cpp" />
+    <ClCompile Include="..\..\..\source\HexaCraft\Updatable.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\HexaCraft\BaseBlock.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\DScoder.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\BaseBlockTool.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\BlockAir.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\BlockGrass.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\blockID.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\BlockSand.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\Chunk.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\ChunkManager.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\defines.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\DSHCinventory.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\DSHCLOD.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\DSHCplayer.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\HuffmanCoder.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\RLEcoder.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\SolidBlock.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\PerlinNoise.h" />
+    <ClInclude Include="..\..\..\source\HexaCraft\Updatable.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{710455A1-DC10-40FC-BCDB-F09B5E6EE4A1}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>HexaCraft</RootNamespace>
+    <ProjectName>HexaCraft</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>../../../build/bin/plugins/</OutDir>
+    <TargetName>$(ProjectName)_d</TargetName>
+    <IncludePath>$(IncludePath);../../../sdks/;../../../sdks/bullet3/src;$(WindowsSdk_IncludePath);../../../source;</IncludePath>
+    <LibraryPath>;../../../libs;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(SourcePath)</SourcePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>$(ProjectName)_d</TargetName>
+    <IncludePath>$(IncludePath);../../../sdks/;../../../sdks/bullet3/src;$(WindowsSdk_IncludePath);../../../source;</IncludePath>
+    <LibraryPath>;../../../libs64;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(SourcePath)</SourcePath>
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>../../../build/bin64/plugins/</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>../../../build/bin/plugins/</OutDir>
+    <IncludePath>$(IncludePath);../../../sdks/;../../../sdks/bullet3/src;$(WindowsSdk_IncludePath);../../../source;</IncludePath>
+    <LibraryPath>;../../../libs;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(SourcePath)</SourcePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(IncludePath);../../../sdks/;../../../sdks/bullet3/src;$(WindowsSdk_IncludePath);../../../source;</IncludePath>
+    <LibraryPath>;../../../libs64;$(LibraryPath)</LibraryPath>
+    <SourcePath>../../../source;$(SourcePath)</SourcePath>
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>../../../build/bin64/plugins/</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;SX_LIB_NAME="HC";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
+      <ProgramDatabaseFile>$(ProjectDir)../../../pdb/$(TargetName).pdb</ProgramDatabaseFile>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN64;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;SX_LIB_NAME="HC";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
+      <ProgramDatabaseFile>$(ProjectDir)../../../pdb64/$(TargetName).pdb</ProgramDatabaseFile>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;SX_LIB_NAME="HC";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDatabaseFile>$(ProjectDir)../../../pdb/$(TargetName).pdb</ProgramDatabaseFile>
+      <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN64;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;SX_LIB_NAME="HC";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <TreatSpecificWarningsAsErrors>4316</TreatSpecificWarningsAsErrors>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ProgramDatabaseFile>$(ProjectDir)../../../pdb64/$(TargetName).pdb</ProgramDatabaseFile>
+      <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
