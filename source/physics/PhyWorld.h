@@ -25,6 +25,8 @@ See the license in LICENSE
 #include <common/Math.h>
 #include <mtrl/sxmtrl.h>
 
+#include <common/queue.h>
+
 #define PHY_MAT_FILE_MAGICK 3630267958475905107
 
 #pragma pack(push,1)
@@ -180,7 +182,7 @@ protected:
 	btDiscreteDynamicsWorldMt * m_pDynamicsWorld;
 	btGhostPairCallback * m_pGHostPairCallback;
 
-	bool m_isUpdating = false;
+	std::atomic_bool m_isUpdating;
 
 	const bool * m_bDebugDraw;
 	CDebugDrawer * m_pDebugDrawer;
@@ -205,6 +207,8 @@ protected:
 	IEventChannel<XEventPhysicsStep> *m_pTickEventChannel = NULL;
 
 	static void TickCallback(btDynamicsWorld *world, btScalar timeStep);
+
+	SpinLock m_slUpdate;
 };
 
 #endif

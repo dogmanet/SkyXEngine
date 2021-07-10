@@ -104,6 +104,8 @@ protected:
 	IXSceneQuery *m_pSelfillumQuery = NULL;
 
 	Queue<CDynamicModel*> m_qModelDelete;
+
+	SpinLock m_slModels;
 };
 
 #endif

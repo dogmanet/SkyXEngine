@@ -250,11 +250,17 @@ void CDynamicModelProvider::setDevice(IGXDevice *pDevice)
 bool XMETHODCALLTYPE CDynamicModelProvider::createModel(IXResourceModel *pResource, IXDynamicModel **ppModel)
 {
 	CDynamicModelShared *pShared = NULL;
+	CDynamicModelShared **ppShared = NULL;
 
-	const AssotiativeArray<IXResourceModel*, CDynamicModelShared*>::Node *pNode;
-	if(m_mModels.KeyExists(pResource, &pNode))
 	{
-		pShared = *(pNode->Val);
+		ScopedSpinLock lock(m_slModels);
+		const AssotiativeArray<IXResourceModel*, CDynamicModelShared*>::Node *pNode;
+		if(m_mModels.KeyExists(pResource, &pNode))
+		{
+			pShared = *(pNode->Val);
+		}
+
+		ppShared = &m_mModels[pResource];
 	}
 
 	if(!pShared)
@@ -270,7 +276,7 @@ bool XMETHODCALLTYPE CDynamicModelProvider::createModel(IXResourceModel *pResour
 			mem_delete(pShared);
 			return(false);
 		}
-		m_mModels[pResource] = pShared;
+		*ppShared = pShared;
 	}
 	else
 	{
@@ -300,6 +306,7 @@ void CDynamicModelProvider::onSharedModelReady(CDynamicModelShared *pShared)
 }
 void CDynamicModelProvider::onSharedModelRelease(CDynamicModelShared *pShared)
 {
+	ScopedSpinLock lock(m_slModels);
 	m_mModels.erase(pShared->getResource());
 }
 void CDynamicModelProvider::onSharedModelFeaturesChanged(CDynamicModelShared *pShared)
@@ -709,6 +716,8 @@ void CDynamicModelProvider::scheduleModelGPUinit(CDynamicModel *pModel)
 
 void CDynamicModelProvider::onMaterialTransparencyChanged(const IXMaterial *pMaterial)
 {
+	ScopedSpinLock lock(m_slModels);
+
 	for(auto i = m_mModels.begin(); i; i++)
 	{
 		if(*i.second)
@@ -720,6 +729,8 @@ void CDynamicModelProvider::onMaterialTransparencyChanged(const IXMaterial *pMat
 
 void CDynamicModelProvider::onMaterialEmissivityChanged(const IXMaterial *pMaterial)
 {
+	ScopedSpinLock lock(m_slModels);
+
 	for(auto i = m_mModels.begin(); i; i++)
 	{
 		if(*i.second)

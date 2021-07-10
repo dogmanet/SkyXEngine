@@ -83,6 +83,7 @@ CPhyWorld::CPhyWorld():
 	m_isRunning(false)
 {
 	printf("Initializing physics engine...   ");
+	m_isUpdating = false;
 	m_pBroadphase = new btDbvtBroadphase();
 	m_pCollisionConfiguration = new btDefaultCollisionConfiguration();
 	m_pDispatcher = new btCollisionDispatcherMt(m_pCollisionConfiguration);
@@ -225,7 +226,10 @@ void CPhyWorld::update(int thread)
 	//printf("%.3fs\n", (float)(time1 - time0) / 1000.0f);
 
 	m_isUpdating = true;
-	m_pDynamicsWorld->stepSimulation((float)(time1 - time0) / 1000.0f, 2, 1.0f / 60.0f);
+	{
+		ScopedSpinLock lock(m_slUpdate);
+		m_pDynamicsWorld->stepSimulation((float)(time1 - time0) / 1000.0f, 2, 1.0f / 60.0f);
+	}
 	m_isUpdating = false;
 
 	time0 = time1;
@@ -234,13 +238,15 @@ void CPhyWorld::sync()
 {
 }
 
-void CPhyWorld::addShape(btRigidBody * pBody)
+void CPhyWorld::addShape(btRigidBody *pBody)
 {
+	ScopedSpinLock lock(m_slUpdate);
 	m_pDynamicsWorld->addRigidBody(pBody);
 }
 
 void CPhyWorld::addShape(btRigidBody * pBody, int group, int mask)
 {
+	ScopedSpinLock lock(m_slUpdate);
 	m_pDynamicsWorld->addRigidBody(pBody, group, mask);
 }
 
@@ -248,6 +254,7 @@ void CPhyWorld::removeShape(btRigidBody * pBody)
 {
 	if(pBody)
 	{
+		ScopedSpinLock lock(m_slUpdate);			
 		m_pDynamicsWorld->removeRigidBody(pBody);
 	}
 }
@@ -880,6 +887,7 @@ void CPhyWorld::TickCallback(btDynamicsWorld *world, btScalar timeStep)
 
 	pThis->m_pTickEventChannel->broadcastEvent(&ev);
 }
+
 
 //##############################################################
 

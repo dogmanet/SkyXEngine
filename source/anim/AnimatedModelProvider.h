@@ -52,6 +52,8 @@ protected:
 
 	IXMaterialSystem *m_pMaterialSystem = NULL;
 	XVertexShaderHandler *m_pVertexShaderHandler = NULL;
+
+	SpinLock m_slModels;
 };
 
 #endif

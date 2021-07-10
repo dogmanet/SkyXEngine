@@ -76,8 +76,12 @@ bool XMETHODCALLTYPE CAnimatedModelProvider::createModel(UINT uResourceCount, IX
 			pMinPtr = ppResources[i];
 		}
 	}
-
-	auto &aModels = m_mModels[pMinPtr];
+	Array<CAnimatedModelShared*> *paModels = NULL;
+	{
+		ScopedSpinLock lock(m_slModels);
+		paModels = &m_mModels[pMinPtr];
+	}
+	auto &aModels = *paModels;
 
 	CAnimatedModelShared *pShared = NULL;
 	for(UINT i = 0, l = aModels.size(); i < l; ++i)
@@ -115,6 +119,8 @@ bool XMETHODCALLTYPE CAnimatedModelProvider::createModel(UINT uResourceCount, IX
 
 void CAnimatedModelProvider::onSharedModelRelease(CAnimatedModelShared *pShared)
 {
+	ScopedSpinLock lock(m_slModels);
+
 	auto &aModels = m_mModels[pShared->getResources()[0]];
 
 	for(UINT i = 0, l = aModels.size(); i < l; ++i)
