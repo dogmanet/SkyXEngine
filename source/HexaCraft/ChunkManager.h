@@ -76,6 +76,7 @@ public:
 	void setLevelName(const char *szName)
 	{
 		m_sLevelName = szName;
+		loadState();
 	}
 
 	const char* getLevelName()
@@ -141,6 +142,10 @@ public:
 	void setCameraPos(const float3 &vPos);
 
 private:
+	void saveState();
+	void loadState();
+
+private:
 	IXCore *m_pCore;
 
 	IXResourceManager *m_pResourceManager = NULL;
@@ -154,6 +159,8 @@ private:
 
 	int64_t m_iXplayer = 0;
 	int64_t m_iZplayer = 0;
+
+	float3_t m_vCameraPos;
 
 	//int64_t m_iXshift = 0;
 	//int64_t m_iZshift = 0;
@@ -171,6 +178,9 @@ private:
 	IAsyncTaskRunner *m_pTaskRunner = NULL;
 	CUpdateTask m_updateTask;
 	std::atomic_bool m_isDone;
+
+
+	CBaseEntity *m_pSpawnPoint = NULL;
 };
 
 #endif

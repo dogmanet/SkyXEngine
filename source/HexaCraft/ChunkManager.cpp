@@ -450,6 +450,8 @@ void CChunkManager::saveAll()
 			SAFE_CALL(m_aapChunks[i][j], save);
 		}
 	}
+
+	saveState();
 }
 
 void CChunkManager::preLoad()
@@ -808,6 +810,8 @@ fXcur += HC_R * 1.5;
 
 void CChunkManager::setCameraPos(const float3 &vPos)
 {
+	m_vCameraPos = vPos;
+
 	m_pTaskRunner->runCallbacks();
 
 	int64_t x, z;
@@ -827,6 +831,98 @@ void CChunkManager::setCameraPos(const float3 &vPos)
 	}
 }
 
+void CChunkManager::saveState()
+{
+	/*int64_t m_iXdelta = 0;
+	int64_t m_iZdelta = 0;
+
+	int64_t m_iXplayer = 0;
+	int64_t m_iZplayer = 0;
+	
+	m_vCameraPos
+	*/
+
+	char szPath[256], szVal[256];
+	sprintf(szPath, "levels/%s/hcState.ini", m_sLevelName);
+
+	IXConfig *pConfig = m_pCore->newConfig();
+	pConfig->open(szPath);
+
+	const char *szSection = "state";
+
+	sprintf(szVal, "%f %f %f", m_vCameraPos.x, m_vCameraPos.y - 1.6f, m_vCameraPos.z);
+	pConfig->set(szSection, "vCamPos", szVal);
+
+	sprintf(szVal, "%lld", m_iXdelta);
+	pConfig->set(szSection, "iXdelta", szVal);
+
+	sprintf(szVal, "%lld", m_iZdelta);
+	pConfig->set(szSection, "iZdelta", szVal);
+
+	sprintf(szVal, "%lld", m_iXplayer);
+	pConfig->set(szSection, "iXplayer", szVal);
+
+	sprintf(szVal, "%lld", m_iZplayer);
+	pConfig->set(szSection, "iZplayer", szVal);
+
+	pConfig->save();
+
+	mem_release(pConfig);
+}
+void CChunkManager::loadState()
+{
+	if(!m_pSpawnPoint)
+	{
+		m_pSpawnPoint = SGame_CreateEntity("info_player_spawn");
+	}
+
+	char szPath[256];
+	sprintf(szPath, "levels/%s/hcState.ini", m_sLevelName);
+
+	const char *szSection = "state", *szVal;
+	IXConfig *pConfig = m_pCore->newConfig();
+	if(pConfig->open(szPath))
+	{
+		szVal = pConfig->getKey(szSection, "vCamPos");
+		m_vCameraPos = float3_t();
+		if(szVal)
+		{
+			sscanf(szVal, "%f %f %f", &m_vCameraPos.x, &m_vCameraPos.y, &m_vCameraPos.z);
+		}
+
+		szVal = pConfig->getKey(szSection, "iXdelta");
+		m_iXdelta = 0;
+		if(szVal)
+		{
+			sscanf(szVal, "%lld", &m_iXdelta);
+		}
+
+		szVal = pConfig->getKey(szSection, "iZdelta");
+		m_iZdelta = 0;
+		if(szVal)
+		{
+			sscanf(szVal, "%lld", &m_iZdelta);
+		}
+
+		szVal = pConfig->getKey(szSection, "iXplayer");
+		m_iXplayer = 0;
+		if(szVal)
+		{
+			sscanf(szVal, "%lld", &m_iXplayer);
+		}
+
+		szVal = pConfig->getKey(szSection, "iZplayer");
+		m_iZplayer = 0;
+		if(szVal)
+		{
+			sscanf(szVal, "%lld", &m_iZplayer);
+		}
+
+		m_pSpawnPoint->setPos(m_vCameraPos);
+	}
+
+	mem_release(pConfig);
+}
 
 //##########################################################################
 
