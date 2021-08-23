@@ -25,6 +25,9 @@
     <ClCompile Include="..\..\..\source\xcsg\EditorExtension.cpp" />
     <ClCompile Include="..\..\..\source\xcsg\EditorObject.cpp" />
     <ClCompile Include="..\..\..\source\xcsg\EditorBrushTool.cpp" />
+    <ClCompile Include="..\..\..\source\xcsg\Outline.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Disabled</Optimization>
+    </ClCompile>
     <ClCompile Include="..\..\..\source\xCSG\plugin_main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -32,6 +35,7 @@
     <ClInclude Include="..\..\..\source\xcsg\EditorExtension.h" />
     <ClInclude Include="..\..\..\source\xcsg\EditorObject.h" />
     <ClInclude Include="..\..\..\source\xcsg\EditorBrushTool.h" />
+    <ClInclude Include="..\..\..\source\xcsg\Outline.h" />
     <ClInclude Include="..\..\..\source\xcsg\resource.h" />
   </ItemGroup>
   <ItemGroup>

@@ -12,6 +12,20 @@ enum X_WINDOW_POS
 	XWP_BOTTOM_RIGHT
 };
 
+struct TerraXState
+{
+	X_WINDOW_POS activeWindow = XWP_TOP_LEFT;
+	float2 vWinSize;
+	float2_t vMousePos;
+	float2_t vWorldMousePos;
+	float3_t vResolvedWorldMousePos;
+
+	float3 vWorldRayStart;
+	float3 vWorldRayDir;
+
+	float3 vBestPlaneNormal;
+};
+
 //##########################################################################
 
 // {84ECF1FC-4C03-4EB9-BC39-D991B83F73BA}
@@ -29,6 +43,10 @@ public:
 	virtual void XMETHODCALLTYPE newGizmoMove(IXEditorGizmoMove **ppOut) = 0;
 	virtual void XMETHODCALLTYPE newGizmoRotate(IXEditorGizmoRotate **ppOut) = 0;
 	virtual void XMETHODCALLTYPE newGizmoScale(IXEditorGizmoScale **ppOut) = 0;
+
+	virtual const TerraXState* XMETHODCALLTYPE getState() = 0;
+
+	virtual bool XMETHODCALLTYPE getKeyState(UINT key) = 0;
 };
 
 

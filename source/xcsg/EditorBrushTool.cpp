@@ -9,19 +9,28 @@
 #include "EditorObject.h"
 #include "Editable.h"
 
+#include <xcommon/IPluginManager.h>
+
 extern HINSTANCE g_hInstance;
 
 //##########################################################################
 
-CEditorBrushTool::CEditorBrushTool(CEditable *pEditable):
-	m_pEditable(pEditable)
+CEditorBrushTool::CEditorBrushTool(CEditable *pEditable, IXEditor *pEditor):
+	m_pEditable(pEditable),
+	m_pEditor(pEditor)
 {
 	m_hBitmap = LoadBitmap(g_hInstance, MAKEINTRESOURCE(IDB_BITMAP1));
+
+	IXRenderUtils *pUtils = (IXRenderUtils*)pEditable->getCore()->getPluginManager()->getInterface(IXRENDERUTILS_GUID);
+	pUtils->newGizmoRenderer(&m_pRenderer);
 }
 CEditorBrushTool::~CEditorBrushTool()
 {
 	DeleteBitmap(m_hBitmap);
 	//mem_release(m_pCurrentCommand);
+
+	mem_release(m_pRenderer);
+	mem_delete(m_pNewOutline);
 
 	//if(m_hDlg)
 	//{
@@ -50,14 +59,18 @@ XAccelItem XMETHODCALLTYPE CEditorBrushTool::getAccel()
 
 void XMETHODCALLTYPE CEditorBrushTool::activate()
 {
+	m_isActive = true;
+	SAFE_CALL(m_pNewOutline, activate);
 }
 void XMETHODCALLTYPE CEditorBrushTool::deactivate()
 {
+	m_isActive = false;
+	SAFE_CALL(m_pNewOutline, deactivate);
 }
 
 bool XMETHODCALLTYPE CEditorBrushTool::wantMouse2D()
 {
-	return(false);
+	return(true);
 }
 bool XMETHODCALLTYPE CEditorBrushTool::wantMouse3D()
 {
@@ -67,12 +80,42 @@ bool XMETHODCALLTYPE CEditorBrushTool::wantMouse3D()
 
 bool XMETHODCALLTYPE CEditorBrushTool::onMouseDown()
 {
-	return(false);
+	if(!m_pNewOutline)
+	{
+		m_pNewOutline = new COutline(m_pEditor, m_pRenderer);
+		m_pNewOutline->setPlane(m_pEditor->getState()->vBestPlaneNormal);
+	}
+
+	m_isMouseDown = true;
+
+	return(true);
 }
 bool XMETHODCALLTYPE CEditorBrushTool::onMouseMove()
 {
+	if(m_pNewOutline)
+	{
+		m_pNewOutline->setMouse(m_pEditor->getState()->vResolvedWorldMousePos);
+
+		return(true);
+	}
 	return(false);
 }
 void XMETHODCALLTYPE CEditorBrushTool::onMouseUp()
 {
+	if(m_isMouseDown)
+	{
+		m_isMouseDown = false;
+
+		m_pNewOutline->setMouse(m_pEditor->getState()->vResolvedWorldMousePos);
+
+		m_pNewOutline->addPoint();
+	}
+}
+
+void CEditorBrushTool::render(bool is3D)
+{
+	if(m_isActive)
+	{
+		SAFE_CALL(m_pNewOutline, render, is3D);
+	}
 }

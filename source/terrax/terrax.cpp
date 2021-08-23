@@ -56,6 +56,8 @@ Array<IXEditorObject*> g_pLevelObjects;
 AssotiativeArray<AAString, IXEditable*> g_mEditableSystems;
 //SGeom_GetCountModels()
 
+Array<IXEditorExtension*> g_apExtensions;
+
 static IGXVertexBuffer *g_pBorderVertexBuffer;
 static IGXRenderBuffer *g_pBorderRenderBuffer;
 
@@ -761,6 +763,7 @@ int main(int argc, char **argv)
 
 	CRenderPipeline *pPipeline = new CRenderPipeline(Core_GetIXCore());
 	g_pEditor = new CEditor(Core_GetIXCore());
+	Core_GetIXCore()->getPluginManager()->registerInterface(IXEDITOR_GUID, g_pEditor);
 
 	g_pEditor->newGizmoMove(&g_pGizmoMove);
 	g_pEditor->newGizmoRotate(&g_pGizmoRotate);
@@ -823,6 +826,8 @@ int main(int argc, char **argv)
 			IXEditorExtension *pExt = pEditable->getEditorExtension();
 			if(pExt)
 			{
+				g_apExtensions.push_back(pExt);
+
 				for(UINT i = 0, l = pExt->getPropertyTabCount(); i < l; ++i)
 				{
 					g_pPropWindow->addCustomTab(pExt->getPropertyTab(i));

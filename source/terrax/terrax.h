@@ -96,13 +96,9 @@ struct CTerraXConfig
 	X_VIEWPORT_LAYOUT m_xViewportLayout = XVIEW_2X2;
 };
 
-struct CTerraXState
+struct CTerraXState: public TerraXState
 {
-	X_WINDOW_POS activeWindow = XWP_TOP_LEFT;
 	HWND hActiveWnd = NULL;
-	float2 vWinSize;
-	float2_t vMousePos;
-	float2_t vWorldMousePos;
 	float4_t m_vViewportBorders[4];
 
 	bool isFrameSelect = false;
@@ -117,11 +113,6 @@ struct CTerraXState
 
 	bool bCreateMode = false;
 	float3 vCreateOrigin;
-
-	float3 vWorldRayStart;
-	float3 vWorldRayDir;
-
-	float3 vBestPlaneNormal;
 };
 
 #define X_MAX_HANDLERS_PER_DIP 512

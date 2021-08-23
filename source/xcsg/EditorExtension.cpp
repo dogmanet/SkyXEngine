@@ -2,9 +2,9 @@
 #include "EditorObject.h"
 #include "Editable.h"
 
-CEditorExtension::CEditorExtension(CEditable *pEditable):
+CEditorExtension::CEditorExtension(CEditable *pEditable, IXEditor *pEditor):
 	m_pEditable(pEditable),
-	m_pBrushTool(new CEditorBrushTool(pEditable))
+	m_pBrushTool(new CEditorBrushTool(pEditable, pEditor))
 {
 }
 CEditorExtension::~CEditorExtension()
@@ -35,6 +35,11 @@ bool XMETHODCALLTYPE CEditorExtension::getTool(UINT uId, IXEditorTool **ppOut)
 		return(true);
 	}
 	return(false);
+}
+
+void XMETHODCALLTYPE CEditorExtension::render(bool is3D)
+{
+	m_pBrushTool->render(is3D);
 }
 
 //void CEditorExtension::onSelectionChanged(CEditorObject *pObject)

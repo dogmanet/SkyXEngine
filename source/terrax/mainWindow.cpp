@@ -514,7 +514,7 @@ static float3 GetPasteCenter()
 		break;
 	}
 
-	return(vPos);
+	return(XSnapToGrid(vPos));
 }
 
 static void FromClipboard()
@@ -1785,6 +1785,8 @@ static void XTrackMouse(HWND hWnd, LPARAM lParam)
 			g_xState.vWorldRayStart = float3(fCamWorld.x, g_xState.vWorldMousePos.y, g_xState.vWorldMousePos.x);
 			break;
 		}
+
+		g_xState.vResolvedWorldMousePos = GetPasteCenter();
 	}
 }
 
@@ -2035,14 +2037,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 			XTrackMouse(hWnd, lParam);
 
-			if(g_pCurrentTool &&
-				(g_xState.activeWindow == XWP_TOP_LEFT && g_pCurrentTool->wantMouse3D() ||
-				g_xState.activeWindow != XWP_TOP_LEFT && g_pCurrentTool->wantMouse2D()) &&
-				g_pCurrentTool->onMouseDown()
-				)
-			{
-				break;
-			}
+			
 
 			if(hWnd == g_hTopLeftWnd)
 			{
@@ -2184,9 +2179,9 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					}
 				}
 
-				if(!Button_GetCheck(g_hABCameraButton))
+				if(!Button_GetCheck(g_hABCameraButton) && g_pEditor->onMouseDown())
 				{
-					g_pEditor->onMouseDown();
+					break;
 				}
 			}
 			else
@@ -2428,25 +2423,36 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 					g_xState.vCreateOrigin = XSnapToGrid(g_xState.vCreateOrigin);
 				}
-				else
+				else if(g_pEditor->onMouseDown())
 				{
-					g_pEditor->onMouseDown();
+					break;
 				}
-				break;
+				//break;
 			}
 
-			if(g_is3DPanning)
+			if(g_pCurrentTool &&
+				(g_xState.activeWindow == XWP_TOP_LEFT && g_pCurrentTool->wantMouse3D() ||
+				g_xState.activeWindow != XWP_TOP_LEFT && g_pCurrentTool->wantMouse2D()) &&
+				g_pCurrentTool->onMouseDown()
+				)
 			{
 				break;
 			}
-			if(Button_GetCheck(g_hABCameraButton))
-			{
-				g_is3DRotating = TRUE;
-				SetCapture(hWnd);
-				SSInput_SetEnable(true);
-				break;
-			}
 
+			if(hWnd == g_hTopLeftWnd)
+			{
+				if(g_is3DPanning)
+				{
+					break;
+				}
+				if(Button_GetCheck(g_hABCameraButton))
+				{
+					g_is3DRotating = TRUE;
+					SetCapture(hWnd);
+					SSInput_SetEnable(true);
+					break;
+				}
+			}
 			//else
 		}
 		break;
@@ -2590,15 +2596,6 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			}
 			XUpdateStatusMPos();
 
-			if(g_pCurrentTool &&
-				(g_xState.activeWindow == XWP_TOP_LEFT && g_pCurrentTool->wantMouse3D() || 
-				g_xState.activeWindow != XWP_TOP_LEFT && g_pCurrentTool->wantMouse2D()) &&
-				g_pCurrentTool->onMouseMove()
-			)
-			{
-				return(TRUE);
-			}
-
 			if(Button_GetCheck(g_hABArrowButton) && !s_pMoveCmd && !s_pScaleCmd && !s_pRotateCmd && g_xState.activeWindow != XWP_TOP_LEFT)
 			{
 				if(XIsMouseInSelection(g_xState.activeWindow))
@@ -2698,6 +2695,16 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			}
 
 			g_pEditor->onMouseMove();
+
+			if(g_pCurrentTool &&
+				(g_xState.activeWindow == XWP_TOP_LEFT && g_pCurrentTool->wantMouse3D() ||
+				g_xState.activeWindow != XWP_TOP_LEFT && g_pCurrentTool->wantMouse2D()) &&
+				g_pCurrentTool->onMouseMove()
+				)
+			{
+				return(TRUE);
+			}
+
 			return(TRUE);
 		}
 		break;

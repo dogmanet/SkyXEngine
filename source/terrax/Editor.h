@@ -42,6 +42,10 @@ public:
 	bool onMouseDown();
 	void onMouseUp();
 
+	const TerraXState* XMETHODCALLTYPE getState() override;
+
+	bool XMETHODCALLTYPE getKeyState(UINT key) override;
+
 private:
 #define GTO(gt) Array<CGizmo##gt*> m_aGizmos##gt; CGizmo##gt *m_pSelected##gt = NULL;
 	GIZMO_TYPES();

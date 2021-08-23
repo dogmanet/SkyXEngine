@@ -21,6 +21,10 @@ public:
 
 	void onSelectionChanged(CEditorObject *pObject);
 
+	void XMETHODCALLTYPE render(bool is3D) override
+	{
+	}
+
 private:
 	CEditorOutputsTab *m_pOutputsTab = NULL;
 

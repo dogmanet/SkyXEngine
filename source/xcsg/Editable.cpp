@@ -1,10 +1,12 @@
 #include "Editable.h"
 #include "EditorObject.h"
+#include <xcommon/IPluginManager.h>
 
 CEditable::CEditable(IXCore *pCore):
-	m_pCore(pCore),
-	m_pEditorExtension(new CEditorExtension(this))
+	m_pCore(pCore)
 {
+	IXEditor *pEditor = (IXEditor*)pCore->getPluginManager()->getInterface(IXEDITOR_GUID);
+	m_pEditorExtension = new CEditorExtension(this, pEditor);
 }
 
 CEditable::~CEditable()

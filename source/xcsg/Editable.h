@@ -51,6 +51,11 @@ public:
 		return(m_aObjects);
 	}
 
+	IXCore* getCore()
+	{
+		return(m_pCore);
+	}
+
 protected:
 	IGXDevice *m_pDevice = NULL;
 	IXCore *m_pCore = NULL;

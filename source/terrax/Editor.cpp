@@ -74,6 +74,13 @@ void CEditor::render(bool is3D)
 #undef GTO
 	}
 
+	extern Array<IXEditorExtension*> g_apExtensions;
+
+	for(UINT i = 0, l = g_apExtensions.size(); i < l; ++i)
+	{
+		g_apExtensions[i]->render(is3D);
+	}
+
 	m_pGizmoRendererBoth->render(!is3D);
 	if(is3D)
 	{
@@ -252,4 +259,27 @@ void CEditor::onMouseUp()
 		SAFE_CALL(m_pSelectedMove, setTracking, false);
 		SAFE_CALL(m_pSelectedRotate, setTracking, false);
 	}
+}
+
+const TerraXState* XMETHODCALLTYPE CEditor::getState()
+{
+	return(&g_xState);
+}
+
+bool XMETHODCALLTYPE CEditor::getKeyState(UINT key)
+{
+	switch(key)
+	{
+	case SIK_CONTROL:
+		key = VK_CONTROL;
+		break;
+	case SIK_LCONTROL:
+		key = VK_LCONTROL;
+		break;
+	case SIK_RCONTROL:
+		key = VK_RCONTROL;
+		break;
+	assert(!"Unsupported now!");
+	}
+	return(GetKeyState(key) < 0);
 }

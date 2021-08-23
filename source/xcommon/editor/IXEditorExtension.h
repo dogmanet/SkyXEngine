@@ -94,6 +94,8 @@ public:
 
 	virtual UINT XMETHODCALLTYPE getToolCount() = 0;
 	virtual bool XMETHODCALLTYPE getTool(UINT uId, IXEditorTool **ppOut) = 0;
+
+	virtual void XMETHODCALLTYPE render(bool is3D) = 0;
 };
 
 #endif

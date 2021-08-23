@@ -4,6 +4,7 @@
 #include <xcommon/editor/IXEditable.h>
 #include <mtrl/IXMaterialSystem.h>
 #include <xcommon/IXCore.h>
+#include "Outline.h"
 
 class CEditable;
 //class CEditorObject;
@@ -11,7 +12,7 @@ class CEditable;
 class CEditorBrushTool final: public IXUnknownImplementation<IXEditorTool>
 {
 public:
-	CEditorBrushTool(CEditable *pEditable);
+	CEditorBrushTool(CEditable *pEditable, IXEditor *pEditor);
 	~CEditorBrushTool();
 
 	void* XMETHODCALLTYPE getIcon() override;
@@ -29,10 +30,20 @@ public:
 	bool XMETHODCALLTYPE onMouseMove() override;
 	void XMETHODCALLTYPE onMouseUp() override;
 
+	void render(bool is3D);
+
 private:
 	CEditable *m_pEditable;
+	IXEditor *m_pEditor;
 
 	HBITMAP m_hBitmap;
+
+	IXGizmoRenderer *m_pRenderer = NULL;
+	COutline *m_pNewOutline = NULL;
+
+	bool m_isActive = false;
+
+	bool m_isMouseDown = false;
 };
 
 #endif

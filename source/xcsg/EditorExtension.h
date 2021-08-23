@@ -9,7 +9,7 @@
 class CEditorExtension final: public IXUnknownImplementation<IXEditorExtension>
 {
 public:
-	CEditorExtension(CEditable *pEditable);
+	CEditorExtension(CEditable *pEditable, IXEditor *pEditor);
 	~CEditorExtension();
 
 	UINT XMETHODCALLTYPE getPropertyTabCount() override;
@@ -17,6 +17,8 @@ public:
 
 	UINT XMETHODCALLTYPE getToolCount() override;
 	bool XMETHODCALLTYPE getTool(UINT uId, IXEditorTool **ppOut) override;
+
+	void XMETHODCALLTYPE render(bool is3D) override;
 
 	//void onSelectionChanged(CEditorObject *pObject);
 
