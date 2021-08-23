@@ -580,6 +580,10 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
 	m_pBlendStateAlpha = m_pDevice->createBlendState(&blendDesc);
 
+	blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_ONE;
+	blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_ONE;
+	m_pBlendStateAdditive = m_pDevice->createBlendState(&blendDesc);
+
 	//m_pSceneShaderDataVS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData));
 	m_pSceneShaderDataPS = m_pDevice->createConstantBuffer(sizeof(m_sceneShaderData));
 
@@ -636,6 +640,7 @@ CRenderPipeline::~CRenderPipeline()
 	mem_release(m_pLightTotal);
 
 	mem_release(m_pBlendStateAlpha);
+	mem_release(m_pBlendStateAdditive);
 
 	mem_release(m_pDepthStencilStateNoZWrite);
 	mem_release(m_pDepthStencilStateNoZ);
@@ -916,6 +921,8 @@ void CRenderPipeline::renderGI()
 }
 void CRenderPipeline::renderPostprocessMain()
 {
+	renderFog();
+
 	rfunc::SetRenderSceneFilter();
 
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassPostprocess);
@@ -1621,4 +1628,34 @@ void CRenderPipeline::showFrameStats()
 	//@FIXME: Пока так
 	SGame_Render();
 	Core_PEndSection(PERF_SECTION_RENDER_INFO);
+}
+
+void CRenderPipeline::renderFog()
+{
+	IGXContext *pCtx = m_pDevice->getThreadContext();
+
+	IGXSurface *pBackBuff = pCtx->getColorTarget();
+
+	IGXDepthStencilState *pOldState = pCtx->getDepthStencilState();
+	pCtx->setDepthStencilState(m_pDepthStencilStateNoZ);
+
+	IGXSurface *pSceneTarget = m_pSceneTexture->asRenderTarget();
+	pCtx->setColorTarget(pSceneTarget);
+	mem_release(pSceneTarget);
+
+	pCtx->setBlendState(m_pBlendStateAlpha);
+
+	pCtx->setSamplerState(gdata::rstates::pSamplerPointClamp, 1);
+
+	pCtx->setPSTexture(m_pGBufferDepth, 4);
+	SGCore_ShaderBind(gdata::shaders_id::kit::idScreenFog);
+	SGCore_ScreenQuadDraw();
+
+	pCtx->setBlendState(NULL);
+
+	pCtx->setDepthStencilState(pOldState);
+	mem_release(pOldState);
+
+	pCtx->setColorTarget(pBackBuff);
+	mem_release(pBackBuff);
 }

@@ -1,0 +1,86 @@
+
+/*
+ppe_fog.ps
+*/
+
+#include <struct.h>
+#include <mtrl.h>
+#include <const.h>
+
+//##########################################################################
+
+SamplerState g_sPointClamp: register(s1);
+
+// Texture2D g_txNoise :register(t2);
+// Texture2D g_txNormals :register(t3);
+Texture2D g_txDepth :register(t4);
+
+//##########################################################################
+
+float cVolFogHeightDensityAtViewer = 1.0f;
+
+// #define atmosphereScale								vfParams.x
+// #define volFogHeightDensityAtViewer 	half(vfParams.y)
+// #define fogDensity										half(vfParams.z)
+// #define artistTweakDensityOffset			half(vfParams.w)
+// #define atmosphereScale								0.1f
+// #define volFogHeightDensityAtViewer 	0.01f
+// #define artistTweakDensityOffset			5.0f
+#define atmosphereScale								0.4f
+#define volFogHeightDensityAtViewer 	0.15f
+#define artistTweakDensityOffset			0.8f
+
+float ComputeVolumetricFog(in float3 vWorldPos, in float3 cameraToWorldPos) 
+{  //cVolFogHeightDensityAtViewer = exp(-cHeightFalloff * vfViewPos.z); 
+	half fogInt = 1.h;
+
+	static const float c_slopeThreshold = 0.01f;
+	if(abs(cameraToWorldPos.y) > c_slopeThreshold)
+	// if(abs(vWorldPos.y) > c_slopeThreshold)
+	{
+		float t = atmosphereScale * cameraToWorldPos.y;
+		// float t = atmosphereScale * (vWorldPos.y - 215.0f);
+#if PS3 // NOTE: can easily become #INF in following 'exp' instr, ok for other platforms
+		t = max(t, -13.f);
+#endif
+		fogInt *= (1.f - exp(-t)) / t;
+	}
+
+	// NOTE: volFogHeightDensityAtViewer = log2(e) * fogDensity * exp( -atmosphereScale * ( vfViewPos.z - waterLevel ) );
+	half l = length(cameraToWorldPos);
+	half u = l * volFogHeightDensityAtViewer;
+	fogInt = fogInt * u - artistTweakDensityOffset;
+
+	half f = saturate(exp2(-fogInt));
+	return(1.0f - f);
+
+	/* half r = saturate(l * vfRampParams.x + vfRampParams.y);
+	r = r * (2-r);
+	//r = smoothstep(0, 1, r);
+	r = r * vfRampParams.z + vfRampParams.w;
+	f = (1-f) * r;
+	return(1-f); */
+} 
+
+//##########################################################################
+
+
+/* cbuffer b7: register(b7)
+{
+	float4 g_aRndVectors[24];
+};
+ */
+
+
+//##########################################################################
+
+float4 main(VSO_ResPos IN):COLOR0
+{
+	float fDepth = g_txDepth.Sample(g_sPointClamp, IN.vTexUV).r;
+	float3 vPosition = float3(g_vObserverPosCam.xyz + IN.vWorldRay * fDepth);
+	
+	float fFog = ComputeVolumetricFog(vPosition, vPosition - g_vObserverPosCam.xyz);
+	
+	// return(float4(1.0f, 1.0f, 1.0f, fFog));
+	return(fFog);
+}

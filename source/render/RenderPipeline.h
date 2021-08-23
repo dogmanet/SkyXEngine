@@ -50,6 +50,11 @@ protected:
 
 	IXUI* getXUI();
 
+
+	void renderFog();
+
+protected:
+
 	struct _render_sys
 	{
 		IXRenderable *pRenderable;
@@ -97,6 +102,7 @@ protected:
 	IGXDepthStencilState *m_pDepthStencilStateNoZWrite = NULL;
 	IGXDepthStencilState *m_pDepthStencilStateNoZ = NULL;
 	IGXBlendState *m_pBlendStateAlpha = NULL;
+	IGXBlendState *m_pBlendStateAdditive = NULL;
 
 	IXMaterialSystem *m_pMaterialSystem = NULL;
 

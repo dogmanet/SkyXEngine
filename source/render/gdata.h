@@ -101,6 +101,7 @@ namespace gdata
 		namespace kit
 		{
 			extern ID idScreenOut;
+			extern ID idScreenFog;
 		};
 	};
 

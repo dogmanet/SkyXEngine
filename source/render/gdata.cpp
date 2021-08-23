@@ -45,6 +45,7 @@ namespace gdata
 		namespace kit
 		{
 			ID idScreenOut;
+			ID idScreenFog;
 		};
 	};
 
@@ -92,6 +93,7 @@ void gdata::InitAllMatrix()
 void gdata::shaders_id::InitAllShaders()
 {
 	gdata::shaders_id::kit::idScreenOut = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs"), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps"));
+	gdata::shaders_id::kit::idScreenFog = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_res_pos.vs"), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_fog.ps"));
 	
 	GXDepthStencilDesc dsDesc;
 
