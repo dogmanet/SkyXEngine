@@ -44,7 +44,10 @@ public:
 
 	const TerraXState* XMETHODCALLTYPE getState() override;
 
-	bool XMETHODCALLTYPE getKeyState(UINT key) override;
+	X_2D_VIEW XMETHODCALLTYPE getViewForWindow(X_WINDOW_POS winPos) override;
+	float XMETHODCALLTYPE getViewScale(X_WINDOW_POS winPos) override;
+	bool XMETHODCALLTYPE getGridSnapState() override;
+	float XMETHODCALLTYPE getGridStep() override;
 
 private:
 #define GTO(gt) Array<CGizmo##gt*> m_aGizmos##gt; CGizmo##gt *m_pSelected##gt = NULL;

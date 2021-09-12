@@ -70,13 +70,12 @@ public:
 	virtual void XMETHODCALLTYPE activate() = 0;
 	virtual void XMETHODCALLTYPE deactivate() = 0;
 
-	virtual bool XMETHODCALLTYPE wantMouse2D() = 0;
-	virtual bool XMETHODCALLTYPE wantMouse3D() = 0;
-
-
-	virtual bool XMETHODCALLTYPE onMouseDown() = 0;
+	virtual bool XMETHODCALLTYPE onMouseDown(bool isPrimary) = 0;
 	virtual bool XMETHODCALLTYPE onMouseMove() = 0;
-	virtual void XMETHODCALLTYPE onMouseUp() = 0;
+	virtual void XMETHODCALLTYPE onMouseUp(bool isPrimary) = 0;
+
+	virtual bool XMETHODCALLTYPE onKeyDown(UINT uKey) = 0;
+	virtual void XMETHODCALLTYPE onKeyUp(UINT uKey) = 0;
 
 	// virtual bool XMETHODCALLTYPE onMouseEvent(UINT msg, WPARAM wParam, LPARAM lParam, ) = 0;
 };

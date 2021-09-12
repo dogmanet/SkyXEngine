@@ -449,7 +449,7 @@ void CXLightSun::updateFrustum()
 			float fRadius = SMVector3Length(vCenter - vA);
 
 			SMMATRIX mLight(SMMatrixTranspose(SMMATRIX(
-				float4(SMVector3Cross(vUpDir, vLightDir)),
+				float4(SMVector3Normalize(SMVector3Cross(vUpDir, vLightDir))),
 				float4(vUpDir),
 				float4(vLightDir),
 				float4(0.0f, 0.0f, 0.0f, 1.0f)
@@ -503,7 +503,7 @@ void CXLightSun::updateFrustum()
 
 
 		SMMATRIX mLight(SMMatrixTranspose(SMMATRIX(
-			float4(SMVector3Cross(vUpDir, vLightDir)),
+			float4(SMVector3Normalize(SMVector3Cross(vUpDir, vLightDir))),
 			float4(vUpDir),
 			float4(vLightDir),
 			float4(0.0f, 0.0f, 0.0f, 1.0f)

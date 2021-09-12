@@ -1,6 +1,7 @@
 #ifndef __XKEYCODES_H
 #define __XKEYCODES_H
 
+#define SXI_KEYMAP_SIZE 256
 
 /*! \defgroup sxinput_code_keyboard Коды клавиш клавиатуры
  \ingroup sxinput

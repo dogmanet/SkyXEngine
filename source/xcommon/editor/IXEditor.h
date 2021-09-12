@@ -26,6 +26,14 @@ struct TerraXState
 	float3 vBestPlaneNormal;
 };
 
+enum X_2D_VIEW
+{
+	X2D_NONE = -1, // 3d view
+	X2D_TOP,   // x/z
+	X2D_FRONT, // x/y
+	X2D_SIDE   // z/y
+};
+
 //##########################################################################
 
 // {84ECF1FC-4C03-4EB9-BC39-D991B83F73BA}
@@ -46,7 +54,10 @@ public:
 
 	virtual const TerraXState* XMETHODCALLTYPE getState() = 0;
 
-	virtual bool XMETHODCALLTYPE getKeyState(UINT key) = 0;
+	virtual X_2D_VIEW XMETHODCALLTYPE getViewForWindow(X_WINDOW_POS winPos) = 0;
+	virtual float XMETHODCALLTYPE getViewScale(X_WINDOW_POS winPos) = 0;
+	virtual bool XMETHODCALLTYPE getGridSnapState() = 0;
+	virtual float XMETHODCALLTYPE getGridStep() = 0;
 };
 
 

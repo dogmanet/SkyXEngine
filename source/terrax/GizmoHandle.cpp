@@ -143,7 +143,7 @@ void CGizmoHandle::setWorldRay(const float3 &vRayOrigin, const float3 &vRayDir)
 			{
 				vT = float3(0.0f, 1.0f, 0.0f);
 			}
-			vB = SMVector3Cross(vT, vN);
+			vB = SMVector3Normalize(SMVector3Cross(vT, vN));
 			vT = SMVector3Cross(vN, vB);
 
 			float fGridStep = XGetGridStep();

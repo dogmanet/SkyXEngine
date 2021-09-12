@@ -97,6 +97,17 @@ bool IsButtonMessage();
 
 class CEngineCallback: public IXEngineCallback
 {
+	struct SXIKD
+	{
+		UINT repeatCount : 16;
+		UINT scanCode : 8;
+		UINT isExtended : 1;
+		UINT reserved : 4;
+		UINT contextCode : 1;
+		UINT previousState : 1;
+		UINT transitionState : 1;
+	};
+
 public:
 	void XMETHODCALLTYPE onGraphicsResize(UINT uWidth, UINT uHeight, bool isFullscreen, bool isBorderless, IXEngine *pEngine) override
 	{
@@ -187,6 +198,57 @@ public:
 			}
 			else if(GetActiveWindow() == g_hWndMain)
 			{
+				if(g_pCurrentTool)
+				{
+					if(msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN)
+					{
+						bool isHandled = false;
+						SXIKD * pikd;
+						pikd = (SXIKD*)&msg.lParam;
+
+						UINT key = pikd->scanCode + (pikd->isExtended ? 128 : 0);
+
+						if(key < SXI_KEYMAP_SIZE && g_pCurrentTool->onKeyDown(key))
+						{
+							isHandled = true;
+						}
+						if(
+							((key == SIK_LSHIFT || key == SIK_RSHIFT) && (key = SIK_SHIFT))
+							|| ((key == SIK_LALT || key == SIK_RALT) && (key = SIK_ALT))
+							|| ((key == SIK_LCONTROL || key == SIK_RCONTROL) && (key = SIK_CONTROL))
+							&& g_pCurrentTool->onKeyDown(key)
+							)
+						{
+							isHandled = true;
+						}
+						if(isHandled)
+						{
+							continue;
+						}
+					}
+
+					if(msg.message == WM_KEYUP || msg.message == WM_SYSKEYUP)
+					{
+						SXIKD * pikd;
+						pikd = (SXIKD*)&msg.lParam;
+
+						UINT key = pikd->scanCode + (pikd->isExtended ? 128 : 0);
+
+						if(key < SXI_KEYMAP_SIZE)
+						{
+							g_pCurrentTool->onKeyUp(key);
+						}
+						if(
+							((key == SIK_LSHIFT || key == SIK_RSHIFT) && (key = SIK_SHIFT))
+							|| ((key == SIK_LALT || key == SIK_RALT) && (key = SIK_ALT))
+							|| ((key == SIK_LCONTROL || key == SIK_RCONTROL) && (key = SIK_CONTROL))
+							)
+						{
+							g_pCurrentTool->onKeyUp(key);
+						}
+					}
+				}
+
 				if(TranslateAccelerator(GetParent((HWND)SGCore_GetHWND()), g_hAccelTableMain, &msg))
 				{
 					continue;

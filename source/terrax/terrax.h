@@ -46,15 +46,6 @@ extern HWND g_hTopLeftWnd;
 extern HWND g_hBottomRightWnd;
 extern HWND g_hBottomLeftWnd;
 
-enum X_2D_VIEW
-{
-	X2D_NONE = -1,
-	X2D_TOP,   // x/z
-	X2D_FRONT, // x/y
-	X2D_SIDE   // z/y
-};
-
-
 enum X_DIR
 {
 	XDIR_X_POS = 0x00000001,
@@ -182,6 +173,8 @@ extern IXEditorGizmoRotate *g_pGizmoRotate;
 extern BOOL g_is3DRotating;
 extern BOOL g_is3DPanning;
 extern BOOL g_is2DPanning;
+
+extern IXEditorTool *g_pCurrentTool;
 
 void XResetLevel();
 bool XSaveLevel(const char *szNewName=NULL, bool bForcePrompt = false);

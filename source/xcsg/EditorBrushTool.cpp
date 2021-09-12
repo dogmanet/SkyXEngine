@@ -68,18 +68,23 @@ void XMETHODCALLTYPE CEditorBrushTool::deactivate()
 	SAFE_CALL(m_pNewOutline, deactivate);
 }
 
-bool XMETHODCALLTYPE CEditorBrushTool::wantMouse2D()
-{
-	return(true);
-}
-bool XMETHODCALLTYPE CEditorBrushTool::wantMouse3D()
-{
-	return(false);
-}
 
 
-bool XMETHODCALLTYPE CEditorBrushTool::onMouseDown()
+
+bool XMETHODCALLTYPE CEditorBrushTool::onMouseDown(bool isPrimary)
 {
+	if(m_pEditor->getViewForWindow(m_pEditor->getState()->activeWindow) == X2D_NONE)
+	{
+		return(false);
+	}
+	if(!isPrimary)
+	{
+		if(m_pNewOutline)
+		{
+			m_pNewOutline->closePath();
+		}
+		return(false);
+	}
 	if(!m_pNewOutline)
 	{
 		m_pNewOutline = new COutline(m_pEditor, m_pRenderer);
@@ -92,6 +97,11 @@ bool XMETHODCALLTYPE CEditorBrushTool::onMouseDown()
 }
 bool XMETHODCALLTYPE CEditorBrushTool::onMouseMove()
 {
+	if(m_pEditor->getViewForWindow(m_pEditor->getState()->activeWindow) == X2D_NONE)
+	{
+		return(false);
+	}
+
 	if(m_pNewOutline)
 	{
 		m_pNewOutline->setMouse(m_pEditor->getState()->vResolvedWorldMousePos);
@@ -100,7 +110,7 @@ bool XMETHODCALLTYPE CEditorBrushTool::onMouseMove()
 	}
 	return(false);
 }
-void XMETHODCALLTYPE CEditorBrushTool::onMouseUp()
+void XMETHODCALLTYPE CEditorBrushTool::onMouseUp(bool isPrimary)
 {
 	if(m_isMouseDown)
 	{
@@ -109,6 +119,46 @@ void XMETHODCALLTYPE CEditorBrushTool::onMouseUp()
 		m_pNewOutline->setMouse(m_pEditor->getState()->vResolvedWorldMousePos);
 
 		m_pNewOutline->addPoint();
+	}
+}
+
+bool XMETHODCALLTYPE CEditorBrushTool::onKeyDown(UINT uKey)
+{
+	if(uKey == SIK_CONTROL)
+	{
+		SAFE_CALL(m_pNewOutline, setCtrlState, true);
+	}
+	else if(uKey == SIK_DELETE)
+	{
+		if(m_pNewOutline)
+		{
+			m_pNewOutline->deleteSelected();
+			return(true);
+		}
+	}
+	else if(uKey == SIK_ESCAPE)
+	{
+		if(m_pNewOutline)
+		{
+			if(!m_pNewOutline->isClosed())
+			{
+				m_pNewOutline->closePath();
+			}
+			else
+			{
+				mem_delete(m_pNewOutline);
+			}
+			return(true);
+		}
+	}
+
+	return(false);
+}
+void XMETHODCALLTYPE CEditorBrushTool::onKeyUp(UINT uKey)
+{
+	if(uKey == SIK_CONTROL)
+	{
+		SAFE_CALL(m_pNewOutline, setCtrlState, false);
 	}
 }
 

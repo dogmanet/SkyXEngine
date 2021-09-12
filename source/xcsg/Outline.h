@@ -30,6 +30,30 @@ private:
 
 //##########################################################################
 
+class CContour
+{
+public:
+	UINT getPointCount() const
+	{
+		return(m_aPoints.size());
+	}
+	UINT getPoint(UINT uIdx) const
+	{
+		return(m_aPoints[uIdx % m_aPoints.size()]);
+	}
+	//bool isSegmentInternal(UINT uIdx) const;
+
+	void setPoints(Array<UINT> &pts)
+	{
+		m_aPoints.swap(pts);
+	}
+
+private:
+	Array<UINT> m_aPoints;
+};
+
+//##########################################################################
+
 class COutline
 {
 public:
@@ -50,10 +74,30 @@ public:
 	void onHandleClick(IXEditorGizmoHandle *pHandle);
 	void onHandleMove(const float3 &vNewPos, IXEditorGizmoHandle *pHandle);
 
-private:
 	void closePath();
 
+	void setCtrlState(bool state)
+	{
+		m_isCtrlPressed = state;
+	}
+
+	void deleteSelected();
+
+	bool isClosed()
+	{
+		return(m_isClosed);
+	}
+private:
+
 	bool isValid();
+
+	void buildContours();
+	void buildContoursRecursive(const Array<UINT> &aIn);
+
+	void fixVertexOrder();
+
+	//bool canUsePoint(const Array<UINT> &aIn, UINT uPoint, UINT uPrevPoint0, UINT uPrevPoint1);
+	bool checkPoint(const Array<UINT> &aIn, UINT uPoint, UINT uNextPoint);
 
 private:
 	
@@ -76,7 +120,11 @@ private:
 	bool m_isClosed = false;
 	bool m_isDirty = false;
 
+	bool m_isCtrlPressed = false;
+
 	COutlinePointCallback m_callBack;
+
+	Array<CContour> m_aContours;
 };
 
 #endif

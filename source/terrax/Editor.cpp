@@ -266,20 +266,22 @@ const TerraXState* XMETHODCALLTYPE CEditor::getState()
 	return(&g_xState);
 }
 
-bool XMETHODCALLTYPE CEditor::getKeyState(UINT key)
+X_2D_VIEW XMETHODCALLTYPE CEditor::getViewForWindow(X_WINDOW_POS winPos)
 {
-	switch(key)
-	{
-	case SIK_CONTROL:
-		key = VK_CONTROL;
-		break;
-	case SIK_LCONTROL:
-		key = VK_LCONTROL;
-		break;
-	case SIK_RCONTROL:
-		key = VK_RCONTROL;
-		break;
-	assert(!"Unsupported now!");
-	}
-	return(GetKeyState(key) < 0);
+	return(g_xConfig.m_x2DView[winPos]);
+}
+
+float XMETHODCALLTYPE CEditor::getViewScale(X_WINDOW_POS winPos)
+{
+	return(g_xConfig.m_fViewportScale[winPos]);
+}
+
+bool XMETHODCALLTYPE CEditor::getGridSnapState()
+{
+	return(g_xConfig.m_bSnapGrid);
+}
+
+float XMETHODCALLTYPE CEditor::getGridStep()
+{
+	return(XGetGridStep());
 }

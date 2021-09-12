@@ -1847,17 +1847,14 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			ReleaseCapture();
 			g_is3DPanning = FALSE;
 		}
+
+		SAFE_CALL(g_pCurrentTool, onMouseUp, false);
+
 		break;
 
 	case WM_LBUTTONUP:
 		{
-			if(g_pCurrentTool &&
-				(g_xState.activeWindow == XWP_TOP_LEFT && g_pCurrentTool->wantMouse3D() ||
-				g_xState.activeWindow != XWP_TOP_LEFT && g_pCurrentTool->wantMouse2D())
-				)
-			{
-				g_pCurrentTool->onMouseUp();
-			}
+			SAFE_CALL(g_pCurrentTool, onMouseUp, true);
 
 			if(g_is3DRotating)
 			{
@@ -2430,11 +2427,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				//break;
 			}
 
-			if(g_pCurrentTool &&
-				(g_xState.activeWindow == XWP_TOP_LEFT && g_pCurrentTool->wantMouse3D() ||
-				g_xState.activeWindow != XWP_TOP_LEFT && g_pCurrentTool->wantMouse2D()) &&
-				g_pCurrentTool->onMouseDown()
-				)
+			if(g_pCurrentTool && g_pCurrentTool->onMouseDown(true))
 			{
 				break;
 			}
@@ -2459,6 +2452,11 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 	case WM_RBUTTONDOWN:
 	{
+		if(g_pCurrentTool && g_pCurrentTool->onMouseDown(false))
+		{
+			break;
+		}
+
 		if(hWnd != g_hTopLeftWnd || g_is3DRotating)
 		{
 			break;
@@ -2491,6 +2489,8 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		break;
 
 	case WM_MOUSEMOVE:
+		//SetFocus(g_hWndMain);
+
 		if(!g_is3DRotating && !g_is3DPanning && !g_is2DPanning)
 		{
 			XTrackMouse(hWnd, lParam);
@@ -2696,11 +2696,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 			g_pEditor->onMouseMove();
 
-			if(g_pCurrentTool &&
-				(g_xState.activeWindow == XWP_TOP_LEFT && g_pCurrentTool->wantMouse3D() ||
-				g_xState.activeWindow != XWP_TOP_LEFT && g_pCurrentTool->wantMouse2D()) &&
-				g_pCurrentTool->onMouseMove()
-				)
+			if(g_pCurrentTool && g_pCurrentTool->onMouseMove())
 			{
 				return(TRUE);
 			}
@@ -2774,9 +2770,9 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		break;
 
 	default:
-		return DefWindowProc(hWnd, message, wParam, lParam);
+		return(DefWindowProc(hWnd, message, wParam, lParam));
 	}
-	return 0;
+	return(0);
 }
 
 void XFrameRun(float fDeltaTime)

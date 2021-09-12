@@ -52,7 +52,7 @@ void CGizmoRotate::draw(IXGizmoRenderer *pGRBoth, IXGizmoRenderer *pGR2D, IXGizm
 		float3 vI = m_vBasePoint - m_vPos;
 		fSize = SMVector3Length(vI)/* * fScale*/;
 		vI = SMVector3Normalize(vI);
-		float3 vJ = SMVector3Cross(m_vCurDir, vI);
+		float3 vJ = SMVector3Normalize(SMVector3Cross(m_vCurDir, vI));
 
 		float3 vPos;
 		float fArg;
@@ -262,7 +262,7 @@ void CGizmoRotate::setWorldRay(const float3 &vRayOrigin, const float3 &vRayDir)
 		float fAngle = SMVector3Dot(vA, vB);
 		fAngle = acosf(fAngle);
 
-		if(SMVector3Dot(SMVector3Cross(vA, vB), m_vCurDir) < 0.0f)
+		if(SMVector3Dot(SMVector3Normalize(SMVector3Cross(vA, vB)), m_vCurDir) < 0.0f)
 		{
 			fAngle = SM_2PI - fAngle;
 		}

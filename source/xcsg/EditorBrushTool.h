@@ -22,13 +22,12 @@ public:
 	void XMETHODCALLTYPE activate() override;
 	void XMETHODCALLTYPE deactivate() override;
 
-	bool XMETHODCALLTYPE wantMouse2D() override;
-	bool XMETHODCALLTYPE wantMouse3D() override;
-
-
-	bool XMETHODCALLTYPE onMouseDown() override;
+	bool XMETHODCALLTYPE onMouseDown(bool isPrimary) override;
 	bool XMETHODCALLTYPE onMouseMove() override;
-	void XMETHODCALLTYPE onMouseUp() override;
+	void XMETHODCALLTYPE onMouseUp(bool isPrimary) override;
+
+	bool XMETHODCALLTYPE onKeyDown(UINT uKey) override;
+	void XMETHODCALLTYPE onKeyUp(UINT uKey) override;
 
 	void render(bool is3D);
 
