@@ -88,6 +88,8 @@ IGXDepthStencilState *g_pDSDefault;
 
 IGXTexture2D *g_pDashedMaterial = NULL;
 
+IXGizmoRenderer *g_pSelectionRenderer = NULL;
+
 void XReleaseViewports();
 void XInitViewports();
 void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
@@ -445,29 +447,29 @@ public:
 		}
 
 		IXRenderUtils *pUtils = (IXRenderUtils*)pPluginManager->getInterface(IXRENDERUTILS_GUID);
-		pUtils->newGizmoRenderer(&m_pTestRenderer);
+		pUtils->newGizmoRenderer(&g_pSelectionRenderer);
+		pUtils->newGizmoRenderer(&m_pAxesRenderer);
 
 		IXTexture *pLineTexture;
 		m_pMaterialSystem->loadTexture("dev_line", &pLineTexture);
 		IGXBaseTexture *pGXTexture;
 		pLineTexture->getAPITexture(&pGXTexture);
-		m_pTestRenderer->setTexture(pGXTexture);
+		m_pAxesRenderer->setTexture(pGXTexture);
 		mem_release(pGXTexture);
 		mem_release(pLineTexture);
 
-		m_pTestRenderer->setColor(float4(1.0f, 0.0f, 0.0f, 1.0f));
-		m_pTestRenderer->setLineWidth(0.04f);
+		m_pAxesRenderer->setColor(float4(1.0f, 0.0f, 0.0f, 1.0f));
+		m_pAxesRenderer->setLineWidth(0.04f);
 		//m_pTestRenderer->setLineWidth(20.0f);
-		m_pTestRenderer->setLineWidth(3.0f);
-		m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
-		m_pTestRenderer->lineTo(float3(1.0f, 0.0f, 0.0f));
-		m_pTestRenderer->setColor(float4(0.0f, 1.0f, 0.0f, 1.0f));
-		m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
-		m_pTestRenderer->lineTo(float3(0.0f, 1.0f, 0.0f));
-		m_pTestRenderer->setColor(float4(0.0f, 0.0f, 1.0f, 1.0f));
-		m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
-		m_pTestRenderer->lineTo(float3(0.0f, 0.0f, 1.0f));
-
+		m_pAxesRenderer->setLineWidth(3.0f);
+		m_pAxesRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
+		m_pAxesRenderer->lineTo(float3(1.0f, 0.0f, 0.0f));
+		m_pAxesRenderer->setColor(float4(0.0f, 1.0f, 0.0f, 1.0f));
+		m_pAxesRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
+		m_pAxesRenderer->lineTo(float3(0.0f, 1.0f, 0.0f));
+		m_pAxesRenderer->setColor(float4(0.0f, 0.0f, 1.0f, 1.0f));
+		m_pAxesRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
+		m_pAxesRenderer->lineTo(float3(0.0f, 0.0f, 1.0f));
 
 #if 0
 		m_pTestRenderer->drawEllipsoid(float3(2.0f, 2.0f, 2.0f), float3(0.5f, 3.0f, 0.5f));
@@ -493,7 +495,8 @@ public:
 	}
 	~CRenderPipeline()
 	{
-		mem_release(m_pTestRenderer);
+		//mem_release(m_pTestRenderer);
+		mem_release(g_pSelectionRenderer);
 
 		for(UINT i = 0; i < 3; ++i)
 		{
@@ -529,7 +532,7 @@ public:
 
 		g_pEditor->render(true);
 
-		m_pTestRenderer->render(false);
+		m_pAxesRenderer->render(false);
 
 		//#############################################################################
 		HWND hWnds[] = {g_hTopRightWnd, g_hBottomLeftWnd, g_hBottomRightWnd};
@@ -589,7 +592,7 @@ public:
 			XRender2D(views[i], fScales[i], false);
 
 			g_pEditor->render(false);
-			m_pTestRenderer->render(true);
+			m_pAxesRenderer->render(true);
 
 			mem_release(pBackBuffer);
 		}
@@ -710,7 +713,7 @@ public:
 
 	IXRenderableVisibility *m_pCameraVisibility[4];
 
-	IXGizmoRenderer *m_pTestRenderer = NULL;
+	IXGizmoRenderer *m_pAxesRenderer = NULL;
 };
 
 class CCVarEventListener: public IEventListener<XEventCvarChanged>
@@ -1355,18 +1358,27 @@ void XReleaseViewports()
 	mem_release(g_pGuiDepthStencilSurface);
 }
 
+
+bool g_isRenderedSelection3D = false;
+
 void XRender3D()
 {
 	IGXDevice *pDevice = SGCore_GetDXDevice();
 	IGXContext *pCtx = pDevice->getThreadContext();
 
+	g_pSelectionRenderer->reset();
+
+	g_isRenderedSelection3D = true;
+
 	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 	{
 		if(g_pLevelObjects[i]->isSelected())
 		{
-			g_pLevelObjects[i]->renderSelection(true);
+			g_pLevelObjects[i]->renderSelection(true, g_pSelectionRenderer);
 		}
 	}
+
+	g_pSelectionRenderer->render(false, false);
 
 	if(g_xState.isFrameSelect)
 	{
@@ -1458,7 +1470,8 @@ void XRender3D()
 				{
 				continue;
 				}*/
-				if(isSelected != g_pLevelObjects[i]->isSelected() || (!isSelected && (g_pLevelObjects[i]->hasVisualModel() || g_pLevelObjects[i]->getIcon())))
+				//if(isSelected != g_pLevelObjects[i]->isSelected() || (!isSelected && (g_pLevelObjects[i]->hasVisualModel() || g_pLevelObjects[i]->getIcon())))
+				if(g_pLevelObjects[i]->hasVisualModel() || isSelected != g_pLevelObjects[i]->isSelected() || (!isSelected && g_pLevelObjects[i]->getIcon()))
 				{
 					continue;
 				}
@@ -1640,13 +1653,21 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 	{
 		static IGXConstantBuffer *s_pColorBuffer = pDevice->createConstantBuffer(sizeof(float4));
 
-		for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+		if(g_isRenderedSelection3D)
 		{
-			if(g_pLevelObjects[i]->isSelected())
+			g_pSelectionRenderer->reset();
+
+			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 			{
-				g_pLevelObjects[i]->renderSelection(false);
+				if(g_pLevelObjects[i]->isSelected())
+				{
+					g_pLevelObjects[i]->renderSelection(false, g_pSelectionRenderer);
+				}
 			}
+
+			g_isRenderedSelection3D = false;
 		}
+		g_pSelectionRenderer->render(true);
 
 		// Draw handlers
 		if(g_pLevelObjects.size())

@@ -21,7 +21,7 @@ public:
 	}
 
 	void addObject(ID idObject);
-	void setStartOrigin(const float3 &vOrigin);
+	void setStartOrigin(const float3 &vOrigin, const float3 &vAxis);
 	void setStartPos(const float3 &vPos);
 
 	void setCurrentPos(const float3 &vPos, bool useSnap=false);
@@ -38,6 +38,7 @@ protected:
 	Array<_rot_obj> m_aObjects;
 	float3_t m_vOrigin;
 	float3_t m_vStartPos;
+	float3_t m_vAxis;
 };
 
 #endif

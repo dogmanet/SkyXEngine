@@ -2276,7 +2276,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 								{
 									// create rotate command
 									s_pRotateCmd = new CCommandRotate();
-									s_pRotateCmd->setStartOrigin((g_xState.vSelectionBoundMax + g_xState.vSelectionBoundMin) * 0.5f * vMask);
+									s_pRotateCmd->setStartOrigin((g_xState.vSelectionBoundMax + g_xState.vSelectionBoundMin) * 0.5f * vMask, float3(1.0f) - vMask);
 									s_pRotateCmd->setStartPos(vStartPos);
 									for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 									{
@@ -3243,7 +3243,10 @@ void XUpdateGizmos()
 	{
 		float3 vPos = (g_xState.vSelectionBoundMin + g_xState.vSelectionBoundMax) * 0.5f;
 		g_pGizmoMove->setPos(vPos);
-		g_pGizmoRotate->setPos(vPos);
+		if(!g_gizmoRotateCallback.isActive())
+		{
+			g_pGizmoRotate->setPos(vPos);
+		}
 		
 		g_pGizmoMove->enable(g_xState.xformType == X2DXF_SCALE);
 		g_pGizmoRotate->enable(g_xState.xformType == X2DXF_ROTATE);
@@ -3300,7 +3303,7 @@ void XMETHODCALLTYPE CGizmoRotateCallback::onStart(const float3_t &vAxis, IXEdit
 	m_vOffset = vStartOffset = SMVector3Normalize(SMVector3Cross(vAxis, vStartOffset));
 
 	m_pCmd = new CCommandRotate();
-	m_pCmd->setStartOrigin(pGizmo->getPos());
+	m_pCmd->setStartOrigin(pGizmo->getPos(), vAxis);
 	m_pCmd->setStartPos(pGizmo->getPos() + vStartOffset);
 	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 	{

@@ -744,6 +744,35 @@ void COutline::fixVertexOrder()
 	}
 }
 
+UINT COutline::getContourCount() const
+{
+	assert(m_isClosed);
+
+	return(m_aContours.size());
+}
+const CContour& COutline::getContour(UINT idx) const
+{
+	assert(m_isClosed && idx < m_aContours.size());
+
+	return(m_aContours[idx]);
+}
+
+UINT COutline::getPointCount() const
+{
+	return(m_aPoints.size());
+}
+const float3_t& COutline::getPoint(UINT idx) const
+{
+	assert(idx < m_aPoints.size());
+
+	return(m_aPoints[idx].vPos);
+}
+
+const float3_t& COutline::getNormal() const
+{
+	return(m_vNormal);
+}
+
 //##########################################################################
 
 void XMETHODCALLTYPE COutlinePointCallback::moveTo(const float3 &vNewPos, IXEditorGizmoHandle *pGizmo)

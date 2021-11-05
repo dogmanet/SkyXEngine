@@ -6,160 +6,41 @@
 
 #include "Editable.h"
 
-CEditorObject::CEditorObject(CEditable *pEditable, const char *szClassName):
+CEditorObject::CEditorObject(CEditable *pEditable):
 	m_pEditable(pEditable)
 {
 	//m_szClassName = CEntityFactoryMap::GetInstance()->getClassNamePtr(szClassName);
 	//assert(m_szClassName);
-
-	_iniFieldList();
 }
 
 CEditorObject::~CEditorObject()
 {
 	m_pEditable->removeObject(this);
-	//mem_release(m_pIcon);
-	//mem_release(m_pModel);
+	
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	{
+		mem_delete(m_aBrushes[i]);
+	}
 }
 
-void CEditorObject::_iniFieldList()
-{
-#if 0
-	proptable_t *pTable = CEntityFactoryMap::GetInstance()->getPropTable(m_szClassName);
-	propdata_t *pField = NULL;
-	X_PROP_FIELD xField = {};
-
-	for(UINT i = 0; i < 16; ++i)
-	{
-		m_aszFlags[i] = NULL;
-	}
-
-	{
-		xField.editorType = XPET_TEXT; 
-		xField.szHelp = "";
-		xField.szKey = "guid";
-		xField.szName = "GUID";
-
-		m_aFields.push_back(xField);
-	}
-
-	while(pTable)
-	{
-		for(int i = 0; i < pTable->numFields; ++i)
-		{
-			pField = &pTable->pData[i];
-			if(
-				!(pField->flags & (PDFF_INPUT | PDFF_MESSAGE | PDFF_NOEDIT | PDFF_OUTPUT))
-				&& pField->szKey 
-				&& pField->szEdName
-				&& pField->editor.type != PDE_NONE
-				)
-			{
-				switch(pField->editor.type)
-				{
-				case PDE_COMBOBOX:
-					xField.editorType = XPET_COMBO;
-					xField.pEditorData = pField->editor.pData;
-					break;
-				case PDE_FILEFIELD:
-					xField.editorType = XPET_FILE;
-					xField.pEditorData = NULL;
-					{
-						editor_kv *pKV = (editor_kv*)pField->editor.pData;
-						if(pKV && pKV[0].value)
-						{
-							if(!fstrcmp(pKV[0].value, "dse"))
-							{
-								xField.pEditorData = "model";
-							}
-							else if(!fstrcmp(pKV[0].value, "ogg"))
-							{
-								xField.pEditorData = "sound";
-							}
-							else if(!fstrcmp(pKV[0].value, "dds"))
-							{
-								xField.pEditorData = "texture";
-							}
-						}
-						//xField.pEditorData
-					}
-					break;
-				case PDE_FLAGS:
-					xField.editorType = XPET_FLAGS;
-					xField.pEditorData = m_aszFlags;
-					break;
-				case PDE_TEXTFIELD:
-					xField.editorType = XPET_TEXT; 
-					break;
-				}
-				xField.szHelp = "";
-				xField.szKey = pField->szKey;
-				xField.szName = pField->szEdName;
-				xField.isGeneric = !fstrcmp(pField->szKey, "origin") || !fstrcmp(pField->szKey, "rotation") || !fstrcmp(pField->szKey, "scale");
-
-				m_aFields.push_back(xField);
-			}
-
-			if(pField->type == PDF_FLAG && pField->flags)
-			{
-				UINT uFlag = (UINT)pField->flags >> 16;
-				uFlag = (UINT)lroundf(log2f((float)uFlag));
-				assert(uFlag < 16);
-
-				if(!m_aszFlags[uFlag])
-				{
-					m_aszFlags[uFlag] = pField->szEdName;
-				}
-			}
-		}
-
-		pTable = pTable->pBaseProptable;
-	}
-
-
-	IEntityFactory *pFactory = CEntityFactoryMap::GetInstance()->getFactory(m_szClassName);
-	if(pFactory)
-	{
-		const char *szIcon = pFactory->getKV("icon");
-		if(szIcon)
-		{
-			IXMaterialSystem *pMatSys = (IXMaterialSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID);
-			if(pMatSys)
-			{
-				pMatSys->loadTexture(szIcon, &m_pIcon);
-			}
-		}
-
-		const char *szModel = pFactory->getKV("model");
-		if(szModel)
-		{
-			IXResourceManager *pResourceManager = Core_GetIXCore()->getResourceManager();
-			IXModelProvider *pProvider = (IXModelProvider*)Core_GetIXCore()->getPluginManager()->getInterface(IXMODELPROVIDER_GUID);
-
-			IXResourceModel *pResource;
-			if(pResourceManager->getModel(szModel, &pResource))
-			{
-				IXDynamicModel *pModel;
-				if(pProvider->createDynamicModel(pResource, &pModel))
-				{
-					m_pModel = pModel;
-					m_pModel->setPosition(getPos());
-					m_pModel->setOrientation(getOrient());
-				}
-				mem_release(pResource);
-			}
-		}
-
-		//m_pModel
-	}
-#endif
-}
 
 void XMETHODCALLTYPE CEditorObject::setPos(const float3_t &pos)
 {
 	//SAFE_CALL(m_pEntity, setPos, pos);
 	//SAFE_CALL(m_pModel, setPosition, pos);
+	float3 vOffset = pos - m_vPos;
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	{
+		m_aBrushes[i]->move(vOffset);
+	}
 	m_vPos = pos;
+}
+
+void CEditorObject::fixPos()
+{
+	float3 vMin, vMax;
+	getBound(&vMin, &vMax);
+	m_vPos = (float3)((vMin + vMax) * 0.5f);
 }
 
 void CEditorObject::setPos(const float3_t &pos, bool isSeparate)
@@ -181,6 +62,7 @@ void XMETHODCALLTYPE CEditorObject::setScale(const float3_t &vScale)
 {
 	// TODO Implement me
 	m_vScale = vScale;
+	printf("%.2f, %.2f, %.2f\n", vScale.x, vScale.y, vScale.z);
 }
 
 void CEditorObject::setScale(const float3_t &vScale, bool isSeparate)
@@ -202,6 +84,12 @@ void XMETHODCALLTYPE CEditorObject::setOrient(const SMQuaternion &orient)
 {
 	//SAFE_CALL(m_pEntity, setOrient, orient);
 	//SAFE_CALL(m_pModel, setOrientation, orient);
+
+	SMQuaternion qOffset = m_qRot.Conjugate() * orient;
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	{
+		m_aBrushes[i]->rotate(m_vPos, qOffset);
+	}
 
 	m_qRot = orient;
 }
@@ -245,27 +133,23 @@ void XMETHODCALLTYPE CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 {
 	*pvMin = *pvMax = float3();
 
-	//SAFE_CALL(m_pEntity, getMinMax, pvMin, pvMax);
-
-	if(SMVector3Length2(*pvMax - *pvMin) < 0.0001f)
+	SMAABB aabb = m_aBrushes[0]->getAABB();
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
 	{
-		//if(m_pModel)
-		//{
-		//	*pvMin = m_pModel->getLocalBoundMin();
-		//	*pvMax = m_pModel->getLocalBoundMax();
-		//}
-		//else
-		{
-			*pvMin = -(*pvMax = float3(0.1f));
-		}
+		aabb = SMAABBConvex(aabb, m_aBrushes[i]->getAABB());
 	}
 
-	*pvMin += m_vPos;
-	*pvMax += m_vPos;
+	*pvMin = aabb.vMin;
+	*pvMax = aabb.vMax;
 }
 
-void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D)
+void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer)
 {
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	{
+		m_aBrushes[i]->renderSelection(is3D, pGizmoRenderer);
+	}
+
 #if 0
 	if(!m_pEntity)
 	{
@@ -304,37 +188,64 @@ void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D)
 
 bool XMETHODCALLTYPE CEditorObject::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, float3 *pvNormal, ID *pidMtrl, bool bReturnNearestPoint)
 {
-#if 0
-	//SMAABBIN
 	float3 vMin, vMax;
 	getBound(&vMin, &vMax);
 	if(SMRayIntersectAABB(SMAABB(vMin, vMax), vStart, vEnd - vStart))
 	{
-		if(m_pModel)
+		if(bReturnNearestPoint)
 		{
-			return(m_pModel->rayTest(vStart, vEnd, pvOut, pvNormal, true, bReturnNearestPoint));
+			float3 vOut, vNormal, *pNormal = NULL;
+			if(pNormal)
+			{
+				pNormal = &vNormal;
+			}
+
+			bool isFound = false;
+			float fDist, fDist2 = FLT_MAX;
+			for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+			{
+				if(m_aBrushes[i]->rayTest(vStart, vEnd, &vOut, pNormal, true, bReturnNearestPoint) &&
+					(fDist = SMVector3Length2(vStart - vOut)) < fDist2
+				)
+				{
+					fDist2 = fDist;
+					isFound = true;
+				}
+			}
+
+			if(isFound)
+			{
+				if(pvOut)
+				{
+					*pvOut = vOut;
+				}
+				if(pvNormal)
+				{
+					*pvNormal = vNormal;
+				}
+				return(true);
+			}
 		}
-		else if(m_pEntity)
+		else
 		{
-			return(m_pEntity->rayTest(vStart, vEnd, pvOut, pvNormal, true, bReturnNearestPoint));
+			for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+			{
+				if(m_aBrushes[i]->rayTest(vStart, vEnd, pvOut, pvNormal, true, bReturnNearestPoint))
+				{
+					return(true);
+				}
+			}
 		}
 	}
-#endif
 	return(false);
 }
 
 void XMETHODCALLTYPE CEditorObject::remove()
 {
-#if 0
-	if(!m_pEntity)
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
 	{
-		return;
+		m_aBrushes[i]->enable(false);
 	}
-	REMOVE_ENTITY(m_pEntity);
-	m_pEntity = NULL;
-	SAFE_CALL(m_pModel, enable, false);
-#endif
-	//m_guidEnt = XGUID();
 }
 void XMETHODCALLTYPE CEditorObject::preSetup()
 {
@@ -346,35 +257,10 @@ void XMETHODCALLTYPE CEditorObject::postSetup()
 
 void XMETHODCALLTYPE CEditorObject::create()
 {
-#if 0
-	assert(!m_pEntity);
-
-	if(m_guidEnt == XGUID())
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
 	{
-		m_pEntity = CREATE_ENTITY(m_szClassName, GameData::m_pMgr);
-		m_guidEnt = *m_pEntity->getGUID();
+		m_aBrushes[i]->enable(true);
 	}
-	else
-	{
-		m_pEntity = CEntityFactoryMap::GetInstance()->create(m_szClassName, GameData::m_pMgr, false, &m_guidEnt);
-	}
-
-	m_pEntity->setFlags(m_pEntity->getFlags() | EF_LEVEL | EF_EXPORT);
-
-	setPos(m_vPos, true);
-	setOrient(m_qRot, true);
-	setScale(m_vScale, true);
-
-	SAFE_CALL(m_pModel, enable, true);
-#endif
-}
-
-void CEditorObject::resync()
-{
-	//if(m_pEntity)
-	//{
-	//	m_pEntity = GameData::m_pMgr->getByGUID(m_guidEnt);
-	//}
 }
 
 void XMETHODCALLTYPE CEditorObject::setKV(const char *szKey, const char *szValue)
@@ -408,13 +294,12 @@ const char* XMETHODCALLTYPE CEditorObject::getKV(const char *szKey)
 }
 const X_PROP_FIELD* XMETHODCALLTYPE CEditorObject::getPropertyMeta(UINT uKey)
 {
-	assert(uKey < m_aFields.size());
-
-	return(&m_aFields[uKey]);
+	assert(false);
+	return(NULL);
 }
 UINT XMETHODCALLTYPE CEditorObject::getProperyCount()
 {
-	return(m_aFields.size());
+	return(0);
 }
 
 const char* XMETHODCALLTYPE CEditorObject::getTypeName()
@@ -423,7 +308,7 @@ const char* XMETHODCALLTYPE CEditorObject::getTypeName()
 }
 const char* XMETHODCALLTYPE CEditorObject::getClassName()
 {
-	return(m_szClassName);
+	return("Brush");
 }
 
 void XMETHODCALLTYPE CEditorObject::setSelected(bool set)
@@ -440,12 +325,10 @@ void XMETHODCALLTYPE CEditorObject::setSimulationMode(bool set)
 
 bool XMETHODCALLTYPE CEditorObject::hasVisualModel()
 {
-#if 0
-	float3 vMin, vMax;
+	return(true);
+}
 
-	SAFE_CALL(m_pEntity, getMinMax, &vMin, &vMax);
-
-	return(SMVector3Length2(vMax - vMin) >= 0.0001f || m_pModel);
-#endif
-	return(false);
+void CEditorObject::addBrush(CBrushMesh *pBrushMesh)
+{
+	m_aBrushes.push_back(pBrushMesh);
 }

@@ -41,6 +41,8 @@ enum X_2D_VIEW
 #define IXEDITOR_VERSION 1
 
 class ICamera;
+class IXEditorObject;
+class IXEditorCommand;
 class IXEditor: public IXUnknown
 {
 public:
@@ -58,6 +60,14 @@ public:
 	virtual float XMETHODCALLTYPE getViewScale(X_WINDOW_POS winPos) = 0;
 	virtual bool XMETHODCALLTYPE getGridSnapState() = 0;
 	virtual float XMETHODCALLTYPE getGridStep() = 0;
+
+	//! Available only in undo/redo context!
+	virtual void XMETHODCALLTYPE addObject(IXEditorObject *pObject) = 0;
+	virtual void XMETHODCALLTYPE removeObject(IXEditorObject *pObject) = 0;
+
+	virtual bool XMETHODCALLTYPE execCommand(IXEditorCommand *pCmd) = 0;
+
+
 };
 
 

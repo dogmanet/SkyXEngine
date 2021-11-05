@@ -279,7 +279,7 @@ void XMETHODCALLTYPE CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 	*pvMax += m_vPos;
 }
 
-void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D)
+void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer)
 {
 	if(!m_pEntity)
 	{

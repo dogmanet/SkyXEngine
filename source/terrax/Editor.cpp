@@ -1,5 +1,6 @@
 #include "Editor.h"
 #include "terrax.h"
+#include "UndoManager.h"
 
 CEditor::CEditor(IXCore *pCore)
 {
@@ -284,4 +285,41 @@ bool XMETHODCALLTYPE CEditor::getGridSnapState()
 float XMETHODCALLTYPE CEditor::getGridStep()
 {
 	return(XGetGridStep());
+}
+
+void XMETHODCALLTYPE CEditor::addObject(IXEditorObject *pObject)
+{
+	extern CUndoManager *g_pUndoManager;
+	assert(pObject);
+	assert(g_pUndoManager->isInCommandContext());
+	if(!g_pUndoManager->isInCommandContext())
+	{
+		LibReport(REPORT_MSG_LEVEL_FATAL, "CEditor::addObject() is only available in undo/redo context!");
+	}
+
+	g_pLevelObjects.push_back(pObject);
+	add_ref(pObject);
+}
+
+void XMETHODCALLTYPE CEditor::removeObject(IXEditorObject *pObject)
+{
+	extern CUndoManager *g_pUndoManager;
+	assert(g_pUndoManager->isInCommandContext());
+	if(!g_pUndoManager->isInCommandContext())
+	{
+		LibReport(REPORT_MSG_LEVEL_FATAL, "CEditor::removeObject() is only available in undo/redo context!");
+	}
+
+	assert(pObject == g_pLevelObjects[g_pLevelObjects.size() - 1]);
+
+	g_pLevelObjects.erase(g_pLevelObjects.size() - 1);
+
+	mem_release(pObject);
+}
+
+bool XMETHODCALLTYPE CEditor::execCommand(IXEditorCommand *pCmd)
+{
+	extern CUndoManager *g_pUndoManager;
+
+	return(g_pUndoManager->execCommand(pCmd));
 }

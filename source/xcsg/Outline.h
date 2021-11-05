@@ -87,9 +87,19 @@ public:
 	{
 		return(m_isClosed);
 	}
-private:
 
 	bool isValid();
+
+	UINT getContourCount() const;
+	const CContour& getContour(UINT idx) const;
+
+	UINT getPointCount() const;
+	const float3_t& getPoint(UINT idx) const;
+
+	const float3_t& getNormal() const;
+
+private:
+
 
 	void buildContours();
 	void buildContoursRecursive(const Array<UINT> &aIn);

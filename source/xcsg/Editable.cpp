@@ -56,9 +56,10 @@ IXEditorObject* XMETHODCALLTYPE CEditable::getObject(UINT id)
 }
 IXEditorObject* XMETHODCALLTYPE CEditable::newObject(const char *szClassName)
 {
-	CEditorObject *pObj = new CEditorObject(this, szClassName);
-	m_aObjects.push_back(pObj);
-	return(pObj);
+	return(NULL);
+	//CEditorObject *pObj = new CEditorObject(this, szClassName);
+	//m_aObjects.push_back(pObj);
+	//return(pObj);
 }
 
 void CEditable::removeObject(CEditorObject *pObject)

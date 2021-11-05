@@ -2,16 +2,18 @@
 #define __EDITOROBJECT_H
 
 #include <xcommon/editor/IXEditorObject.h>
-#include <common/string.h>
-#include <common/array.h>
+//#include <common/string.h>
+//#include <common/array.h>
+#include "BrushMesh.h"
+#include "Outline.h"
 
 class CEditable;
-class IXDynamicModel;
+//class IXDynamicModel;
 class CEditorObject final: public IXUnknownImplementation<IXEditorObject>
 {
 	DECLARE_CLASS(CEditorObject, IXEditorObject);
 public:
-	CEditorObject(CEditable *pEditable, const char *szClassName);
+	CEditorObject(CEditable *pEditable);
 	//CEditorObject(CEditable *pEditable, CBaseEntity *pEntity);
 	~CEditorObject();
 
@@ -24,7 +26,7 @@ public:
 
 	void XMETHODCALLTYPE getBound(float3 *pvMin, float3 *pvMax) override;
 
-	void XMETHODCALLTYPE renderSelection(bool is3D) override;
+	void XMETHODCALLTYPE renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer) override;
 
 	bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, float3 *pvNormal = NULL, ID *pidMtrl = NULL, bool bReturnNearestPoint = false) override;
 
@@ -32,8 +34,6 @@ public:
 	void XMETHODCALLTYPE create() override;
 	void XMETHODCALLTYPE preSetup() override;
 	void XMETHODCALLTYPE postSetup() override;
-
-	void resync();
 
 	void XMETHODCALLTYPE setKV(const char *szKey, const char *szValue) override;
 	const char* XMETHODCALLTYPE getKV(const char *szKey) override;
@@ -69,21 +69,16 @@ public:
 
 	bool XMETHODCALLTYPE hasVisualModel() override;
 
-protected:
-	const char *m_szClassName = NULL;
-	IXDynamicModel *m_pModel = NULL;
+	void addBrush(CBrushMesh *pBrushMesh);
 
+
+	void fixPos();
+
+private:
 	CEditable *m_pEditable;
 
-	Array<X_PROP_FIELD> m_aFields;
-	AssotiativeArray<String, String> m_msPropCache;
-	const char *m_aszFlags[16];
+	Array<CBrushMesh*> m_aBrushes;
 
-	void _iniFieldList();
-
-	XGUID m_guidEnt;
-
-protected:
 	bool m_isSelected = false;
 
 	float3_t m_vPos;

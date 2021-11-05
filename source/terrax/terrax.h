@@ -237,6 +237,11 @@ public:
 	void XMETHODCALLTYPE onStart(const float3_t &vAxis, IXEditorGizmoRotate *pGizmo) override;
 	void XMETHODCALLTYPE onEnd(IXEditorGizmoRotate *pGizmo) override;
 
+	bool isActive()
+	{
+		return(m_pCmd != NULL);
+	}
+
 private:
 	CCommandRotate *m_pCmd = NULL;
 	float3_t m_vOffset;

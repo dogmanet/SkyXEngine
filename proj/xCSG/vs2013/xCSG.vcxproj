@@ -20,6 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\xcsg\BrushMesh.cpp" />
+    <ClCompile Include="..\..\..\source\xcsg\CommandCreate.cpp" />
     <ClCompile Include="..\..\..\source\xCSG\dllmain.cpp" />
     <ClCompile Include="..\..\..\source\xcsg\Editable.cpp" />
     <ClCompile Include="..\..\..\source\xcsg\EditorExtension.cpp" />
@@ -31,6 +33,8 @@
     <ClCompile Include="..\..\..\source\xCSG\plugin_main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\xcsg\BrushMesh.h" />
+    <ClInclude Include="..\..\..\source\xcsg\CommandCreate.h" />
     <ClInclude Include="..\..\..\source\xcsg\Editable.h" />
     <ClInclude Include="..\..\..\source\xcsg\EditorExtension.h" />
     <ClInclude Include="..\..\..\source\xcsg\EditorObject.h" />

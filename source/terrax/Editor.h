@@ -49,6 +49,11 @@ public:
 	bool XMETHODCALLTYPE getGridSnapState() override;
 	float XMETHODCALLTYPE getGridStep() override;
 
+	void XMETHODCALLTYPE addObject(IXEditorObject *pObject) override;
+	void XMETHODCALLTYPE removeObject(IXEditorObject *pObject) override;
+
+	bool XMETHODCALLTYPE execCommand(IXEditorCommand *pCmd) override;
+
 private:
 #define GTO(gt) Array<CGizmo##gt*> m_aGizmos##gt; CGizmo##gt *m_pSelected##gt = NULL;
 	GIZMO_TYPES();

@@ -260,7 +260,7 @@ void CGizmoRotate::setWorldRay(const float3 &vRayOrigin, const float3 &vRayDir)
 		float3 vA = SMVector3Normalize(vPos - m_vPos);
 		float3 vB = SMVector3Normalize(m_vBasePoint - m_vPos);
 		float fAngle = SMVector3Dot(vA, vB);
-		fAngle = acosf(fAngle);
+		fAngle = safe_acosf(fAngle);
 
 		if(SMVector3Dot(SMVector3Normalize(SMVector3Cross(vA, vB)), m_vCurDir) < 0.0f)
 		{

@@ -5,6 +5,7 @@
 #include <mtrl/IXMaterialSystem.h>
 #include <xcommon/IXCore.h>
 #include "Outline.h"
+#include "BrushMesh.h"
 
 class CEditable;
 //class CEditorObject;

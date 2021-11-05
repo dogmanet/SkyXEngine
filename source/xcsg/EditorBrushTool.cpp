@@ -8,6 +8,7 @@
 #include "resource.h"
 #include "EditorObject.h"
 #include "Editable.h"
+#include "CommandCreate.h"
 
 #include <xcommon/IPluginManager.h>
 
@@ -143,11 +144,35 @@ bool XMETHODCALLTYPE CEditorBrushTool::onKeyDown(UINT uKey)
 			if(!m_pNewOutline->isClosed())
 			{
 				m_pNewOutline->closePath();
+				if(!m_pNewOutline->isClosed())
+				{
+					mem_delete(m_pNewOutline);
+				}
 			}
 			else
 			{
 				mem_delete(m_pNewOutline);
 			}
+			return(true);
+		}
+	}
+	else if(uKey == SIK_ENTER || uKey == SIK_NUMPADENTER)
+	{
+		if(m_pNewOutline && m_pNewOutline->isClosed() && m_pNewOutline->isValid())
+		{
+			// create brush with default height
+			CEditorObject *pObject = new CEditorObject(m_pEditable);
+			for(UINT i = 0, l = m_pNewOutline->getContourCount(); i < l; ++i)
+			{
+				pObject->addBrush(new CBrushMesh(m_pEditable->getCore(), m_pNewOutline, i));
+			}
+			mem_delete(m_pNewOutline);
+			
+			pObject->fixPos();
+
+			CCommandCreate *pCmd = new CCommandCreate(m_pEditor, pObject);
+			m_pEditor->execCommand(pCmd);
+
 			return(true);
 		}
 	}
