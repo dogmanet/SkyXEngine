@@ -36,7 +36,8 @@ bool XMETHODCALLTYPE CCommandCreate::exec()
 		m_pObject = m_pEditable->newObject(m_sClassName.c_str());
 	}
 	m_pObject->setPos(m_vPos);
-	m_pObject->setScale(float3(m_fScale));
+	//! @TODO Implement random scale?
+	//m_pObject->setScale(float3(m_fScale));
 	m_pObject->setOrient(m_qOrient);
 	m_pObject->setSelected(true);
 	m_pObject->create();

@@ -78,6 +78,8 @@ SX_LIB_API void SPhysics_0Create()
 	g_pWorld = new CPhyWorld();
 	g_pPhysics = new CPhysics();
 
+	Core_GetIXCore()->getPluginManager()->registerInterface(IXPHYSICS_GUID, g_pPhysics);
+
 	Core_0RegisterConcmd("perf_physics", SPhysics_DumpStats);
 }
 SX_LIB_API void SPhysics_AKill()

@@ -31,9 +31,10 @@ void CCommandRotate::addObject(ID idObject)
 	SMQuaternion qOrient = g_pLevelObjects[idObject]->getOrient();
 	m_aObjects.push_back({idObject, vPos, vPos, qOrient, qOrient});
 }
-void CCommandRotate::setStartOrigin(const float3 &vOrigin)
+void CCommandRotate::setStartOrigin(const float3 &vOrigin, const float3 &vAxis)
 {
 	m_vOrigin = vOrigin;
+	m_vAxis = vAxis;
 }
 void CCommandRotate::setStartPos(const float3 &vPos)
 {
@@ -42,9 +43,17 @@ void CCommandRotate::setStartPos(const float3 &vPos)
 
 void CCommandRotate::setCurrentPos(const float3 &vPos, bool useSnap)
 {
-	float3 v1 = m_vStartPos - m_vOrigin;
-	float3 v2 = vPos - m_vOrigin;
-	SMQuaternion q(v1, v2);
+	float3 v1 = SMVector3Normalize(m_vStartPos - m_vOrigin);
+	float3 v2 = SMVector3Normalize(vPos - m_vOrigin);
+	SMQuaternion q;
+	if(v1 == -v2)
+	{
+		q = SMQuaternion(m_vAxis, SM_PI);
+	}
+	else
+	{
+		q = SMQuaternion(v1, v2);
+	}
 
 
 	_rot_obj *pObj;

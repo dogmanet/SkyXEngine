@@ -24,7 +24,7 @@ public:
 
 	bool XMETHODCALLTYPE isEmpty() override
 	{
-		return(false);
+		return(m_aObjects.size() == 0);
 	}
 
 	UINT addObject(const char *szTypeName, const char *szClassName, const float3 &vPos, const float3 &vScale, const SMQuaternion &qRotate);

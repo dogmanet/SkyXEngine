@@ -46,6 +46,7 @@
     <ClCompile Include="..\..\..\source\core\FileRecursiveExtPathsIterator.cpp" />
     <ClCompile Include="..\..\..\source\core\FileSystem.cpp" />
     <ClCompile Include="..\..\..\source\core\FolderPathsIterator.cpp" />
+    <ClCompile Include="..\..\..\source\core\JSON.cpp" />
     <ClCompile Include="..\..\..\source\core\ModelPhysbox.cpp" />
     <ClCompile Include="..\..\..\source\core\ModelProvider.cpp" />
     <ClCompile Include="..\..\..\source\core\PerfMon.cpp" />
@@ -91,6 +92,7 @@
     <ClInclude Include="..\..\..\source\core\FolderPathsIterator.h" />
     <ClInclude Include="..\..\..\source\core\IFile.h" />
     <ClInclude Include="..\..\..\source\core\ITask.h" />
+    <ClInclude Include="..\..\..\source\core\JSON.h" />
     <ClInclude Include="..\..\..\source\core\ModelPhysbox.h" />
     <ClInclude Include="..\..\..\source\core\ModelProvider.h" />
     <ClInclude Include="..\..\..\source\core\PerfMon.h" />

@@ -7,8 +7,8 @@ See the license in LICENSE
 #define __FILESYSTEM_H
 
 #include <xcommon/IFileSystem.h>
-#include <cassert>
-#include <map>
+//#include <cassert>
+//#include <map>
 
 #define CLOSE_HANDLE(handle) if (handle != INVALID_HANDLE_VALUE && handle != nullptr) \
 {\

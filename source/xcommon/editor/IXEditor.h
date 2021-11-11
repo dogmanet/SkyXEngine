@@ -12,6 +12,28 @@ enum X_WINDOW_POS
 	XWP_BOTTOM_RIGHT
 };
 
+struct TerraXState
+{
+	X_WINDOW_POS activeWindow = XWP_TOP_LEFT;
+	float2 vWinSize;
+	float2_t vMousePos;
+	float2_t vWorldMousePos;
+	float3_t vResolvedWorldMousePos;
+
+	float3 vWorldRayStart;
+	float3 vWorldRayDir;
+
+	float3 vBestPlaneNormal;
+};
+
+enum X_2D_VIEW
+{
+	X2D_NONE = -1, // 3d view
+	X2D_TOP,   // x/z
+	X2D_FRONT, // x/y
+	X2D_SIDE   // z/y
+};
+
 //##########################################################################
 
 // {84ECF1FC-4C03-4EB9-BC39-D991B83F73BA}
@@ -19,6 +41,8 @@ enum X_WINDOW_POS
 #define IXEDITOR_VERSION 1
 
 class ICamera;
+class IXEditorObject;
+class IXEditorCommand;
 class IXEditor: public IXUnknown
 {
 public:
@@ -29,6 +53,23 @@ public:
 	virtual void XMETHODCALLTYPE newGizmoMove(IXEditorGizmoMove **ppOut) = 0;
 	virtual void XMETHODCALLTYPE newGizmoRotate(IXEditorGizmoRotate **ppOut) = 0;
 	virtual void XMETHODCALLTYPE newGizmoScale(IXEditorGizmoScale **ppOut) = 0;
+
+	virtual const TerraXState* XMETHODCALLTYPE getState() = 0;
+
+	virtual X_2D_VIEW XMETHODCALLTYPE getViewForWindow(X_WINDOW_POS winPos) = 0;
+	virtual float XMETHODCALLTYPE getViewScale(X_WINDOW_POS winPos) = 0;
+	virtual bool XMETHODCALLTYPE getGridSnapState() = 0;
+	virtual float XMETHODCALLTYPE getGridStep() = 0;
+
+	//! Available only in undo/redo context!
+	virtual void XMETHODCALLTYPE addObject(IXEditorObject *pObject) = 0;
+	virtual void XMETHODCALLTYPE removeObject(IXEditorObject *pObject) = 0;
+
+	virtual bool XMETHODCALLTYPE execCommand(IXEditorCommand *pCmd) = 0;
+
+	virtual const char* XMETHODCALLTYPE getCurrentMaterial() = 0;
+
+
 };
 
 

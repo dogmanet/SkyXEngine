@@ -9,8 +9,6 @@ See the license in LICENSE
 
 #include <queue>
 
-#define SXI_KEYMAP_SIZE 256
-
 //элемент карты ввода
 struct IKM
 {

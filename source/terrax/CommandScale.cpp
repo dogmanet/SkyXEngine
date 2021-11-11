@@ -8,7 +8,7 @@ bool XMETHODCALLTYPE CCommandScale::exec()
 	{
 		pObj = &m_aObjects[i];
 		g_pLevelObjects[pObj->idObject]->setPos(pObj->vEndPos);
-		g_pLevelObjects[pObj->idObject]->setScale(pObj->vEndScale);
+		g_pLevelObjects[pObj->idObject]->setSize(pObj->vEndScale);
 		moved = moved || memcmp(&pObj->vEndPos, &pObj->vStartPos, sizeof(pObj->vStartPos)) || memcmp(&pObj->vEndScale, &pObj->vStartScale, sizeof(pObj->vStartScale));
 	}
 	return(moved);
@@ -20,7 +20,7 @@ bool XMETHODCALLTYPE CCommandScale::undo()
 	{
 		pObj = &m_aObjects[i];
 		g_pLevelObjects[pObj->idObject]->setPos(pObj->vStartPos);
-		g_pLevelObjects[pObj->idObject]->setScale(pObj->vStartScale);
+		g_pLevelObjects[pObj->idObject]->setSize(pObj->vStartScale);
 	}
 	return(true);
 }
@@ -28,7 +28,9 @@ bool XMETHODCALLTYPE CCommandScale::undo()
 void CCommandScale::addObject(ID idObject)
 {
 	float3_t vPos = g_pLevelObjects[idObject]->getPos();
-	float3_t vScale = g_pLevelObjects[idObject]->getScale();
+	float3 vMin, vMax;
+	g_pLevelObjects[idObject]->getBound(&vMin, &vMax);
+	float3 vScale = vMax - vMin;
 	m_aObjects.push_back({idObject, vPos, vPos, vScale, vScale});
 }
 void CCommandScale::setStartAABB(const float3 &vAABBmin, const float3 &vAABBmax)
@@ -78,68 +80,83 @@ void CCommandScale::setStartPos(const float3 &vPos)
 	}
 }
 
+static void CheckMinSize(float *pOut)
+{
+	float fGridStep = XGetGridStep();
+	if(*pOut < 0.001f)
+	{
+		if(g_xConfig.m_bSnapGrid && fGridStep > 0.0f)
+		{
+			*pOut = fGridStep;
+		}
+		else
+		{
+			*pOut = 0.001f;
+		}
+	}
+	
+}
+
 void CCommandScale::setCurrentPos(const float3 &_vPos)
 {
-	float3 vPos = m_vDelta + _vPos;
-	float3 vPosCoeff(1.0f, 1.0f, 1.0f);
+	float3 vPos = XSnapToGrid(m_vDelta + _vPos);
+	float3 vPosCoeff;
+	float3 vBoxSize = m_vBoundMax - m_vBoundMin;
+	float3 vNewBox = vBoxSize;
 	float3 vPosOrigin = m_vBoundMin;
+	float fGridStep = XGetGridStep();
 	if(m_xDir & (XDIR_X_POS | XDIR_X_NEG))
 	{
 		if(m_xDir & XDIR_X_NEG)
 		{
 			vPosOrigin.x = m_vBoundMax.x;
-			vPosCoeff.x = vPosOrigin.x - vPos.x;
+			vNewBox.x = vPosOrigin.x - vPos.x;
 		}
 		else
 		{
-			vPosCoeff.x = vPos.x - vPosOrigin.x;
+			vNewBox.x = vPos.x - vPosOrigin.x;
 		}
-		if(vPosCoeff.x < 0.01f)
-		{
-			vPosCoeff.x = 0.01f;
-		}
-		vPosCoeff.x = vPosCoeff.x / (m_vBoundMax.x - m_vBoundMin.x);
+		CheckMinSize(&vNewBox.x);
 	}
 	if(m_xDir & (XDIR_Y_POS | XDIR_Y_NEG))
 	{
 		if(m_xDir & XDIR_Y_NEG)
 		{
 			vPosOrigin.y = m_vBoundMax.y;
-			vPosCoeff.y = vPosOrigin.y - vPos.y;
+			vNewBox.y = vPosOrigin.y - vPos.y;
 		}
 		else
 		{
-			vPosCoeff.y = vPos.y - vPosOrigin.y;
+			vNewBox.y = vPos.y - vPosOrigin.y;
 		}
-		if(vPosCoeff.y < 0.01f)
-		{
-			vPosCoeff.y = 0.01f;
-		}
-		vPosCoeff.y = vPosCoeff.y / (m_vBoundMax.y - m_vBoundMin.y);
+		CheckMinSize(&vNewBox.y);
+		//vPosCoeff.y = vNewBox.y / (m_vBoundMax.y - m_vBoundMin.y);
 	}
 	if(m_xDir & (XDIR_Z_POS | XDIR_Z_NEG))
 	{
 		if(m_xDir & XDIR_Z_NEG)
 		{
 			vPosOrigin.z = m_vBoundMax.z;
-			vPosCoeff.z = vPosOrigin.z - vPos.z;
+			vNewBox.z = vPosOrigin.z - vPos.z;
 		}
 		else
 		{
-			vPosCoeff.z = vPos.z - vPosOrigin.z;
+			vNewBox.z = vPos.z - vPosOrigin.z;
 		}
-		if(vPosCoeff.z < 0.01f)
-		{
-			vPosCoeff.z = 0.01f;
-		}
-		vPosCoeff.z = vPosCoeff.z / (m_vBoundMax.z - m_vBoundMin.z);
+		CheckMinSize(&vNewBox.z);
+		//vPosCoeff.z = vNewBox.z / (m_vBoundMax.z - m_vBoundMin.z);
 	}
+	vPosCoeff = vNewBox / vBoxSize;
+
+	//printf("%.3f, %.3f, %.3f\n", vPosCoeff.x, vPosCoeff.y, vPosCoeff.z);
 
 	_scale_obj *pObj;
 	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
 	{
 		pObj = &m_aObjects[i];
 		pObj->vEndPos = (float3)(vPosOrigin + (pObj->vStartPos - vPosOrigin) * vPosCoeff);
+
+#if 0
 		SMQuaternion quat = g_pLevelObjects[pObj->idObject]->getOrient().Conjugate();
 		float3 pc = (quat * vPosCoeff);
 		if(pc.x < 0.0f)
@@ -155,8 +172,9 @@ void CCommandScale::setCurrentPos(const float3 &_vPos)
 			pc.z = -1.0f * pc.z;
 		}
 		pObj->vEndScale = (float3)(pObj->vStartScale * pc);
-
+#endif
+		pObj->vEndScale = (float3)(pObj->vStartScale * vPosCoeff);
 		g_pLevelObjects[pObj->idObject]->setPos(pObj->vEndPos);
-		g_pLevelObjects[pObj->idObject]->setScale(pObj->vEndScale);
+		g_pLevelObjects[pObj->idObject]->setSize(pObj->vEndScale);
 	}
 }

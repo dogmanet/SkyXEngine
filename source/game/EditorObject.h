@@ -20,12 +20,12 @@ public:
 	void setPos(const float3_t &pos, bool isSeparate);
 	void XMETHODCALLTYPE setOrient(const SMQuaternion &orient) override;
 	void setOrient(const SMQuaternion &orient, bool isSeparate);
-	void XMETHODCALLTYPE setScale(const float3_t &scale) override;
-	void setScale(const float3_t &scale, bool isSeparate);
+	void XMETHODCALLTYPE setSize(const float3_t &vSize) override;
+	//void setScale(const float3_t &scale, bool isSeparate);
 
 	void XMETHODCALLTYPE getBound(float3 *pvMin, float3 *pvMax) override;
 
-	void XMETHODCALLTYPE renderSelection(bool is3D) override;
+	void XMETHODCALLTYPE renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer) override;
 
 	bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, float3 *pvNormal = NULL, ID *pidMtrl = NULL, bool bReturnNearestPoint = false) override;
 
@@ -49,11 +49,6 @@ public:
 	float3_t XMETHODCALLTYPE getPos() override;
 
 	SMQuaternion XMETHODCALLTYPE getOrient() override;
-
-	float3_t XMETHODCALLTYPE getScale() override
-	{
-		return(m_vScale);
-	}
 
 	bool XMETHODCALLTYPE isSelected() override
 	{
@@ -96,7 +91,7 @@ protected:
 
 	float3_t m_vPos;
 	SMQuaternion m_qRot;
-	float3_t m_vScale = float3_t(1.0f, 1.0f, 1.0f);
+	//float3_t m_vScale = float3_t(1.0f, 1.0f, 1.0f);
 };
 
 #endif

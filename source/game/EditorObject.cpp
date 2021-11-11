@@ -18,8 +18,6 @@ CEditorObject::CEditorObject(CEditable *pEditable, CBaseEntity *pEntity):
 	_iniFieldList();
 
 	m_vPos = pEntity->getPos();
-	//@TODO: fix me
-	m_vScale = float3(1.0f);
 	m_qRot = pEntity->getOrient();
 }
 
@@ -192,13 +190,13 @@ void CEditorObject::setPos(const float3_t &pos, bool isSeparate)
 	}
 }
 
-void XMETHODCALLTYPE CEditorObject::setScale(const float3_t &vScale)
+void XMETHODCALLTYPE CEditorObject::setSize(const float3_t &vSize)
 {
 	// TODO Implement me
-	m_vScale = vScale;
+	//m_vScale = vScale;
 }
 
-void CEditorObject::setScale(const float3_t &vScale, bool isSeparate)
+/*void CEditorObject::setScale(const float3_t &vScale, bool isSeparate)
 {
 	if(isSeparate)
 	{
@@ -211,7 +209,7 @@ void CEditorObject::setScale(const float3_t &vScale, bool isSeparate)
 	{
 		SAFE_CALL(m_pEntity, setSeparateMovement, false);
 	}
-}
+}*/
 
 void XMETHODCALLTYPE CEditorObject::setOrient(const SMQuaternion &orient)
 {
@@ -279,7 +277,7 @@ void XMETHODCALLTYPE CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 	*pvMax += m_vPos;
 }
 
-void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D)
+void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer)
 {
 	if(!m_pEntity)
 	{
@@ -372,7 +370,7 @@ void XMETHODCALLTYPE CEditorObject::create()
 
 	setPos(m_vPos, true);
 	setOrient(m_qRot, true);
-	setScale(m_vScale, true);
+	//setScale(m_vScale, true);
 
 	SAFE_CALL(m_pModel, enable, true);
 }

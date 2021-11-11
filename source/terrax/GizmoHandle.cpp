@@ -59,7 +59,7 @@ void CGizmoHandle::draw(IXGizmoRenderer *pGRBoth, IXGizmoRenderer *pGR2D, IXGizm
 	if(m_isRendered)
 	{
 		pGRBoth->setPointMode(XGPM_SQUARE);
-		pGRBoth->setColor(float4(1.0f));
+		pGRBoth->setColor(m_vColor);
 		pGRBoth->setPointSize(getOnscreenSize());
 		pGRBoth->drawPoint(m_vPos);
 	}
@@ -143,7 +143,7 @@ void CGizmoHandle::setWorldRay(const float3 &vRayOrigin, const float3 &vRayDir)
 			{
 				vT = float3(0.0f, 1.0f, 0.0f);
 			}
-			vB = SMVector3Cross(vT, vN);
+			vB = SMVector3Normalize(SMVector3Cross(vT, vN));
 			vT = SMVector3Cross(vN, vB);
 
 			float fGridStep = XGetGridStep();
@@ -319,5 +319,15 @@ void CGizmoHandle::drawRay(IXGizmoRenderer *pGR3D)
 			pGR3D->setColor(float4(1.0f, 1.0f, 1.0f, 1.0f - fabsf(i) / (float)iSize));
 			pGR3D->drawPoint(vOrigin + m_vLockNormal * (float)i * fGridStep);
 		}
+	}
+}
+
+void XMETHODCALLTYPE CGizmoHandle::setColor(const float4_t &vColor)
+{
+	m_vColor = vColor;
+
+	if(m_isEnabled)
+	{
+		m_pEditor->setDirty();
 	}
 }

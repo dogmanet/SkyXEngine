@@ -22,6 +22,15 @@ IXEditorPropertyTab* XMETHODCALLTYPE CEditorExtension::getPropertyTab(UINT uId)
 	return(m_pOutputsTab);
 }
 
+UINT XMETHODCALLTYPE CEditorExtension::getToolCount()
+{
+	return(0);
+}
+bool XMETHODCALLTYPE CEditorExtension::getTool(UINT uId, IXEditorTool **ppOut)
+{
+	return(false);
+}
+
 void CEditorExtension::onSelectionChanged(CEditorObject *pObject)
 {
 	auto &aObjects = m_pEditable->getObjects();

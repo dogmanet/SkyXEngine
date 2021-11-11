@@ -42,6 +42,20 @@ public:
 	bool onMouseDown();
 	void onMouseUp();
 
+	const TerraXState* XMETHODCALLTYPE getState() override;
+
+	X_2D_VIEW XMETHODCALLTYPE getViewForWindow(X_WINDOW_POS winPos) override;
+	float XMETHODCALLTYPE getViewScale(X_WINDOW_POS winPos) override;
+	bool XMETHODCALLTYPE getGridSnapState() override;
+	float XMETHODCALLTYPE getGridStep() override;
+
+	void XMETHODCALLTYPE addObject(IXEditorObject *pObject) override;
+	void XMETHODCALLTYPE removeObject(IXEditorObject *pObject) override;
+
+	bool XMETHODCALLTYPE execCommand(IXEditorCommand *pCmd) override;
+
+	const char* XMETHODCALLTYPE getCurrentMaterial() override;
+
 private:
 #define GTO(gt) Array<CGizmo##gt*> m_aGizmos##gt; CGizmo##gt *m_pSelected##gt = NULL;
 	GIZMO_TYPES();

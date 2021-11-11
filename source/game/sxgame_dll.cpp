@@ -353,7 +353,8 @@ SX_LIB_API CBaseEntity *SGame_EntGetByName(const char *szName, ID idStart)
 
 SX_LIB_API BOOL SGame_AddWMsg(UINT message, WPARAM wParam, LPARAM lParam)
 {
-	if(!GameData::m_pGUI)
+	static const bool * pbHudDraw = GET_PCVAR_BOOL("hud_draw");
+	if(!GameData::m_pGUI || !*pbHudDraw)
 	{
 		return(TRUE);
 	}

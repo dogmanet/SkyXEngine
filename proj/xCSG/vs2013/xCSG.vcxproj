@@ -19,8 +19,36 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\xcsg\BrushMesh.cpp" />
+    <ClCompile Include="..\..\..\source\xcsg\CommandCreate.cpp" />
     <ClCompile Include="..\..\..\source\xCSG\dllmain.cpp" />
+    <ClCompile Include="..\..\..\source\xcsg\Editable.cpp" />
+    <ClCompile Include="..\..\..\source\xcsg\EditorExtension.cpp" />
+    <ClCompile Include="..\..\..\source\xcsg\EditorObject.cpp" />
+    <ClCompile Include="..\..\..\source\xcsg\EditorBrushTool.cpp" />
+    <ClCompile Include="..\..\..\source\xcsg\Outline.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Disabled</Optimization>
+    </ClCompile>
     <ClCompile Include="..\..\..\source\xCSG\plugin_main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\xcsg\BrushMesh.h" />
+    <ClInclude Include="..\..\..\source\xcsg\CommandCreate.h" />
+    <ClInclude Include="..\..\..\source\xcsg\Editable.h" />
+    <ClInclude Include="..\..\..\source\xcsg\EditorExtension.h" />
+    <ClInclude Include="..\..\..\source\xcsg\EditorObject.h" />
+    <ClInclude Include="..\..\..\source\xcsg\EditorBrushTool.h" />
+    <ClInclude Include="..\..\..\source\xcsg\Outline.h" />
+    <ClInclude Include="..\..\..\source\xcsg\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\source\xcsg\xcsg.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\source\xcsg\bitmap1.bmp" />
+    <Image Include="..\..\..\source\xcsg\resource\ab_block.bmp" />
+    <Image Include="resource\ab_block.bmp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CD470440-2CC2-42BA-8B94-2B1C72125FE3}</ProjectGuid>

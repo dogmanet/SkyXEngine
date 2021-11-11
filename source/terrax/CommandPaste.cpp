@@ -29,7 +29,7 @@ bool XMETHODCALLTYPE CCommandPaste::exec()
 		pObj->pObject->create();
 
 		pObj->pObject->setPos(pObj->vPos);
-		pObj->pObject->setScale(pObj->vScale);
+		pObj->pObject->setSize(pObj->vScale);
 		pObj->pObject->setOrient(pObj->qRotate);
 		pObj->pObject->preSetup();
 		for(auto i = pObj->mKeyValues.begin(); i; ++i)
@@ -76,11 +76,16 @@ UINT CCommandPaste::addObject(const char *szTypeName, const char *szClassName, c
 	if(!g_mEditableSystems.KeyExists(AAString(szTypeName), &pNode))
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "Unknown object type %s, skipping!", szTypeName);
-		return(~0u);
+		return(UINT_MAX);
 	}
 
 	_paste_obj obj;
 	obj.pObject = (*(pNode->Val))->newObject(szClassName);
+	if(!obj.pObject)
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Cannot create object type %s/%s, skipping!", szTypeName, szClassName);
+		return(UINT_MAX);
+	}
 	obj.vPos = vPos;
 	obj.vScale = vScale;
 	obj.qRotate = qRotate;
