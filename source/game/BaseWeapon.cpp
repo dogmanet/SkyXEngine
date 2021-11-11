@@ -382,7 +382,7 @@ float3 CBaseWeapon::applySpread(const float3 &vDir, float fSpread)
 	else
 	{
 		vRight = SMVector3Normalize(SMVector3Cross(vDir, float3((0.0f, 0.0f, 1.0f))));
-		vUp = SMVector2Normalize(SMVector3Cross(vRight, vDir));
+		vUp = SMVector3Normalize(SMVector3Cross(vRight, vDir));
 	}
 
 

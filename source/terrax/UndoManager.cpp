@@ -70,48 +70,57 @@ void CUndoManager::flushRedo()
 
 bool CUndoManager::execCommand(IXEditorCommand *pCommand)
 {
+	m_isInCommandContext = true;
 	if(!pCommand->isEmpty() && pCommand->exec())
 	{
+		m_isInCommandContext = false;
 		flushRedo();
 		m_stackUndo.push_back(pCommand);
 		XUpdateWindowTitle();
 		return(true);
 	}
+	m_isInCommandContext = false;
 	mem_release(pCommand);
 	return(false);
 }
 bool CUndoManager::undo()
 {
-	if(!canUndo())
+	if(!canUndo() || isInCommandContext())
 	{
 		return(false);
 	}
 
 	IXEditorCommand *pCmd = m_stackUndo[m_stackUndo.size() - 1];
+	m_isInCommandContext = true;
 	if(pCmd->undo())
 	{
+		m_isInCommandContext = false;
 		m_stackUndo.erase(m_stackUndo.size() - 1);
 		m_stackRedo.push_back(pCmd);
 		XUpdateWindowTitle();
 		return(true);
 	}
+	m_isInCommandContext = false;
 	return(false);
 }
 bool CUndoManager::redo()
 {
-	if(!canRedo())
+	if(!canRedo() || isInCommandContext())
 	{
 		return(false);
 	}
 
 	IXEditorCommand *pCmd = m_stackRedo[m_stackRedo.size() - 1];
+	m_isInCommandContext = true;
 	if(pCmd->exec())
 	{
+		m_isInCommandContext = false;
 		m_stackRedo.erase(m_stackRedo.size() - 1);
 		m_stackUndo.push_back(pCmd);
 		XUpdateWindowTitle();
 		return(true);
 	}
+	m_isInCommandContext = false;
 	return(false);
 }
 
@@ -124,4 +133,9 @@ void CUndoManager::makeClean()
 {
 	m_iLastSaveIndex = m_stackUndo.size();
 	XUpdateWindowTitle();
+}
+
+bool CUndoManager::isInCommandContext()
+{
+	return(m_isInCommandContext);
 }

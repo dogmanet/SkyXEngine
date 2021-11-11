@@ -56,6 +56,8 @@ public:
 	virtual void XMETHODCALLTYPE unLock() = 0;
 
 	virtual void XMETHODCALLTYPE setCallback(IXEditorGizmoHandleCallback *pCallback) = 0;
+
+	virtual void XMETHODCALLTYPE setColor(const float4_t &vColor) = 0;
 };
 
 class IXEditorGizmoMove;

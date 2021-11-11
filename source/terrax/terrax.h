@@ -11,6 +11,7 @@
 #define MAIN_WINDOW_TITLE      "TerraX"
 #define MAIN_WINDOW_CLASS      "X Main Window"
 #define RENDER_WINDOW_CLASS    "X Viewport Window"
+#define RENDER_NONINTERACTIVE_WINDOW_CLASS    "XRenderPanel"
 #define WIDTH_ADJUST			2
 
 #define	WINDOW_WIDTH			800
@@ -23,6 +24,7 @@
 #define MARGIN_LEFT             50
 #define MARGIN_RIGHT            150
 #define AB_BUTTON_HEIGHT        40
+#define AB_BUTTON_WIDTH         MARGIN_LEFT
 #define OBJECT_TREE_HEIGHT      300
 
 
@@ -44,15 +46,9 @@ extern HWND g_hTopRightWnd;
 extern HWND g_hTopLeftWnd;
 extern HWND g_hBottomRightWnd;
 extern HWND g_hBottomLeftWnd;
+extern HWND g_hCurMatWnd;
 
-enum X_2D_VIEW
-{
-	X2D_NONE = -1,
-	X2D_TOP,   // x/z
-	X2D_FRONT, // x/y
-	X2D_SIDE   // z/y
-};
-
+extern bool g_isCurMatDirty;
 
 enum X_DIR
 {
@@ -95,13 +91,9 @@ struct CTerraXConfig
 	X_VIEWPORT_LAYOUT m_xViewportLayout = XVIEW_2X2;
 };
 
-struct CTerraXState
+struct CTerraXState: public TerraXState
 {
-	X_WINDOW_POS activeWindow = XWP_TOP_LEFT;
 	HWND hActiveWnd = NULL;
-	float2 vWinSize;
-	float2_t vMousePos;
-	float2_t vWorldMousePos;
 	float4_t m_vViewportBorders[4];
 
 	bool isFrameSelect = false;
@@ -116,11 +108,6 @@ struct CTerraXState
 
 	bool bCreateMode = false;
 	float3 vCreateOrigin;
-
-	float3 vWorldRayStart;
-	float3 vWorldRayDir;
-
-	float3 vBestPlaneNormal;
 };
 
 #define X_MAX_HANDLERS_PER_DIP 512
@@ -177,7 +164,6 @@ extern CMaterialBrowser *g_pMaterialBrowser;
 
 extern CEditor *g_pEditor;
 
-
 extern IXEditorGizmoMove *g_pGizmoMove;
 extern IXEditorGizmoRotate *g_pGizmoRotate;
 
@@ -192,6 +178,8 @@ extern BOOL g_is3DRotating;
 extern BOOL g_is3DPanning;
 extern BOOL g_is2DPanning;
 
+extern IXEditorTool *g_pCurrentTool;
+
 void XResetLevel();
 bool XSaveLevel(const char *szNewName=NULL, bool bForcePrompt = false);
 void XLoadLevel(const char *szName);
@@ -199,6 +187,9 @@ void XRender3D();
 void XRender2D(X_2D_VIEW view, float fScale, bool preScene);
 
 void XFrameRun(float fDeltaTime);
+
+void XGetCurMatInfo(IXMaterial **ppMat, IXTexture **ppTex);
+const char* XGetCurMat();
 
 #define XSELECT_STEP_DELAY 0.5f
 
@@ -225,6 +216,10 @@ void XUpdateGizmos();
 float XGetGridStep();
 float3 XSnapToGrid(const float3 &vPos);
 
+void XInitTool(IXEditorTool *pTool);
+
+void XInitCustomAccel();
+
 void XSetXformType(X_2DXFORM_TYPE type);
 
 extern IXEngine *g_pEngine;
@@ -248,6 +243,11 @@ public:
 	void XMETHODCALLTYPE onRotate(const float3_t &vAxis, float fAngle, IXEditorGizmoRotate *pGizmo) override;
 	void XMETHODCALLTYPE onStart(const float3_t &vAxis, IXEditorGizmoRotate *pGizmo) override;
 	void XMETHODCALLTYPE onEnd(IXEditorGizmoRotate *pGizmo) override;
+
+	bool isActive()
+	{
+		return(m_pCmd != NULL);
+	}
 
 private:
 	CCommandRotate *m_pCmd = NULL;

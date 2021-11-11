@@ -21,6 +21,7 @@ See the license in LICENSE
 
 inline float Com3DPan(const float3 &vSnd, const float3 &vListenerPos, const float3 &vListenerDir, const float3 &vListenerUp)
 {
+	// @todo should these vectors be normalized?
 	float3 side = SMVector3Cross(vListenerUp, vListenerDir);
 	SMVector3Normalize(side);
 	float x = SMVector3Dot(vSnd - vListenerPos, side);

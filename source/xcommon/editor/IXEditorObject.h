@@ -26,6 +26,7 @@ struct X_PROP_FIELD
 };
 
 class IXTexture;
+class IXGizmoRenderer;
 class IXEditorObject: public IXUnknown
 {
 public:
@@ -35,15 +36,15 @@ public:
 	virtual SMQuaternion XMETHODCALLTYPE getOrient() = 0;
 	virtual void XMETHODCALLTYPE setOrient(const SMQuaternion &orient) = 0;
 
-	virtual float3_t XMETHODCALLTYPE getScale() = 0;
-	virtual void XMETHODCALLTYPE setScale(const float3_t &vScale) = 0;
+	//virtual float3_t XMETHODCALLTYPE getScale() = 0;
+	virtual void XMETHODCALLTYPE setSize(const float3_t &vSize) = 0;
 
 	virtual void XMETHODCALLTYPE getBound(float3 *pvMin, float3 *pvMax) = 0;
 
 	virtual bool XMETHODCALLTYPE isSelected() = 0;
 	virtual void XMETHODCALLTYPE setSelected(bool set) = 0;
 
-	virtual void XMETHODCALLTYPE renderSelection(bool is3D) = 0;
+	virtual void XMETHODCALLTYPE renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer) = 0;
 
 	virtual bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, float3 *pvNormal = NULL, ID *pidMtrl = NULL, bool bReturnNearestPoint = false) = 0;
 

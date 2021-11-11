@@ -24,11 +24,15 @@ public:
 
 	bool isDirty();
 	void makeClean();
+
+	bool isInCommandContext();
 protected:
 	Array<IXEditorCommand*> m_stackUndo;
 	Array<IXEditorCommand*> m_stackRedo;
 
 	int m_iLastSaveIndex = 0;
+
+	bool m_isInCommandContext = false;
 };
 
 #endif

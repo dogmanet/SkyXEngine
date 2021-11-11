@@ -56,6 +56,8 @@ Array<IXEditorObject*> g_pLevelObjects;
 AssotiativeArray<AAString, IXEditable*> g_mEditableSystems;
 //SGeom_GetCountModels()
 
+Array<IXEditorExtension*> g_apExtensions;
+
 static IGXVertexBuffer *g_pBorderVertexBuffer;
 static IGXRenderBuffer *g_pBorderRenderBuffer;
 
@@ -77,14 +79,18 @@ IGXSwapChain *g_pTopRightSwapChain = NULL;
 IGXSwapChain *g_pBottomLeftSwapChain = NULL;
 IGXSwapChain *g_pBottomRightSwapChain = NULL;
 IGXSwapChain *g_pGuiSwapChain = NULL;
+IGXSwapChain *g_pCurMatSwapChain = NULL;
 IGXDepthStencilSurface *g_pTopRightDepthStencilSurface = NULL;
 IGXDepthStencilSurface *g_pBottomLeftDepthStencilSurface = NULL;
 IGXDepthStencilSurface *g_BottomRightDepthStencilSurface = NULL;
 IGXDepthStencilSurface *g_pGuiDepthStencilSurface = NULL;
+//IGXDepthStencilSurface *g_pCurMatDepthStencilSurface = NULL;
 IGXDepthStencilState *g_pDSNoZ;
 IGXDepthStencilState *g_pDSDefault;
 
 IGXTexture2D *g_pDashedMaterial = NULL;
+
+IXGizmoRenderer *g_pSelectionRenderer = NULL;
 
 void XReleaseViewports();
 void XInitViewports();
@@ -92,9 +98,21 @@ void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
 void XExportToObj(const char *szMdl);
 bool IsEditMessage();
 bool IsButtonMessage();
+void XInitMBCallback(IXMaterialSystem *pMatSys);
 
 class CEngineCallback: public IXEngineCallback
 {
+	struct SXIKD
+	{
+		UINT repeatCount : 16;
+		UINT scanCode : 8;
+		UINT isExtended : 1;
+		UINT reserved : 4;
+		UINT contextCode : 1;
+		UINT previousState : 1;
+		UINT transitionState : 1;
+	};
+
 public:
 	void XMETHODCALLTYPE onGraphicsResize(UINT uWidth, UINT uHeight, bool isFullscreen, bool isBorderless, IXEngine *pEngine) override
 	{
@@ -185,6 +203,57 @@ public:
 			}
 			else if(GetActiveWindow() == g_hWndMain)
 			{
+				if(g_pCurrentTool)
+				{
+					if(msg.message == WM_KEYDOWN || msg.message == WM_SYSKEYDOWN)
+					{
+						bool isHandled = false;
+						SXIKD * pikd;
+						pikd = (SXIKD*)&msg.lParam;
+
+						UINT key = pikd->scanCode + (pikd->isExtended ? 128 : 0);
+
+						if(key < SXI_KEYMAP_SIZE && g_pCurrentTool->onKeyDown(key))
+						{
+							isHandled = true;
+						}
+						if(
+							((key == SIK_LSHIFT || key == SIK_RSHIFT) && (key = SIK_SHIFT))
+							|| ((key == SIK_LALT || key == SIK_RALT) && (key = SIK_ALT))
+							|| ((key == SIK_LCONTROL || key == SIK_RCONTROL) && (key = SIK_CONTROL))
+							&& g_pCurrentTool->onKeyDown(key)
+							)
+						{
+							isHandled = true;
+						}
+						if(isHandled)
+						{
+							continue;
+						}
+					}
+
+					if(msg.message == WM_KEYUP || msg.message == WM_SYSKEYUP)
+					{
+						SXIKD * pikd;
+						pikd = (SXIKD*)&msg.lParam;
+
+						UINT key = pikd->scanCode + (pikd->isExtended ? 128 : 0);
+
+						if(key < SXI_KEYMAP_SIZE)
+						{
+							g_pCurrentTool->onKeyUp(key);
+						}
+						if(
+							((key == SIK_LSHIFT || key == SIK_RSHIFT) && (key = SIK_SHIFT))
+							|| ((key == SIK_LALT || key == SIK_RALT) && (key = SIK_ALT))
+							|| ((key == SIK_LCONTROL || key == SIK_RCONTROL) && (key = SIK_CONTROL))
+							)
+						{
+							g_pCurrentTool->onKeyUp(key);
+						}
+					}
+				}
+
 				if(TranslateAccelerator(GetParent((HWND)SGCore_GetHWND()), g_hAccelTableMain, &msg))
 				{
 					continue;
@@ -381,29 +450,29 @@ public:
 		}
 
 		IXRenderUtils *pUtils = (IXRenderUtils*)pPluginManager->getInterface(IXRENDERUTILS_GUID);
-		pUtils->newGizmoRenderer(&m_pTestRenderer);
+		pUtils->newGizmoRenderer(&g_pSelectionRenderer);
+		pUtils->newGizmoRenderer(&m_pAxesRenderer);
 
 		IXTexture *pLineTexture;
 		m_pMaterialSystem->loadTexture("dev_line", &pLineTexture);
 		IGXBaseTexture *pGXTexture;
 		pLineTexture->getAPITexture(&pGXTexture);
-		m_pTestRenderer->setTexture(pGXTexture);
+		m_pAxesRenderer->setTexture(pGXTexture);
 		mem_release(pGXTexture);
 		mem_release(pLineTexture);
 
-		m_pTestRenderer->setColor(float4(1.0f, 0.0f, 0.0f, 1.0f));
-		m_pTestRenderer->setLineWidth(0.04f);
+		m_pAxesRenderer->setColor(float4(1.0f, 0.0f, 0.0f, 1.0f));
+		m_pAxesRenderer->setLineWidth(0.04f);
 		//m_pTestRenderer->setLineWidth(20.0f);
-		m_pTestRenderer->setLineWidth(3.0f);
-		m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
-		m_pTestRenderer->lineTo(float3(1.0f, 0.0f, 0.0f));
-		m_pTestRenderer->setColor(float4(0.0f, 1.0f, 0.0f, 1.0f));
-		m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
-		m_pTestRenderer->lineTo(float3(0.0f, 1.0f, 0.0f));
-		m_pTestRenderer->setColor(float4(0.0f, 0.0f, 1.0f, 1.0f));
-		m_pTestRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
-		m_pTestRenderer->lineTo(float3(0.0f, 0.0f, 1.0f));
-
+		m_pAxesRenderer->setLineWidth(3.0f);
+		m_pAxesRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
+		m_pAxesRenderer->lineTo(float3(1.0f, 0.0f, 0.0f));
+		m_pAxesRenderer->setColor(float4(0.0f, 1.0f, 0.0f, 1.0f));
+		m_pAxesRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
+		m_pAxesRenderer->lineTo(float3(0.0f, 1.0f, 0.0f));
+		m_pAxesRenderer->setColor(float4(0.0f, 0.0f, 1.0f, 1.0f));
+		m_pAxesRenderer->jumpTo(float3(0.0f, 0.0f, 0.0f));
+		m_pAxesRenderer->lineTo(float3(0.0f, 0.0f, 1.0f));
 
 #if 0
 		m_pTestRenderer->drawEllipsoid(float3(2.0f, 2.0f, 2.0f), float3(0.5f, 3.0f, 0.5f));
@@ -426,10 +495,14 @@ public:
 		// m_pTestRenderer->lineTo(float3(1.0f, 0.0f, 3.0f));
 		// m_pTestRenderer->lineTo(float3(1.0f, 1.0f, 3.0f));
 		// m_pTestRenderer->lineTo(float3(1.0f, 1.0f, 4.0f));
+
+		m_idScreenOutShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs"), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps"));
+
 	}
 	~CRenderPipeline()
 	{
-		mem_release(m_pTestRenderer);
+		//mem_release(m_pTestRenderer);
+		mem_release(g_pSelectionRenderer);
 
 		for(UINT i = 0; i < 3; ++i)
 		{
@@ -465,7 +538,7 @@ public:
 
 		g_pEditor->render(true);
 
-		m_pTestRenderer->render(false);
+		m_pAxesRenderer->render(false);
 
 		//#############################################################################
 		HWND hWnds[] = {g_hTopRightWnd, g_hBottomLeftWnd, g_hBottomRightWnd};
@@ -525,7 +598,7 @@ public:
 			XRender2D(views[i], fScales[i], false);
 
 			g_pEditor->render(false);
-			m_pTestRenderer->render(true);
+			m_pAxesRenderer->render(true);
 
 			mem_release(pBackBuffer);
 		}
@@ -533,6 +606,8 @@ public:
 
 
 		g_pMaterialBrowser->render();
+
+		renderCurrentMaterial();
 
 		/*
 		IGXSurface *pBackBuffer = g_pGuiSwapChain->getColorTarget();
@@ -638,6 +713,72 @@ public:
 		m_pOldPipeline->renderEditor2D(pVisibility);
 	}
 
+	void renderCurrentMaterial()
+	{
+		if(g_isCurMatDirty)
+		{
+			g_isCurMatDirty = false;
+
+			//////////////////////////////////////////////////////
+
+			IGXSurface *pTarget = g_pCurMatSwapChain->getColorTarget();
+
+			IGXContext *pCtx = getDevice()->getThreadContext();
+			IGXSurface *pOldRT = pCtx->getColorTarget();
+			pCtx->setColorTarget(pTarget);
+			mem_release(pTarget);
+			IGXDepthStencilSurface *pOldDS = pCtx->getDepthStencilSurface();
+			pCtx->unsetDepthStencilSurface();
+
+			pCtx->clear(GX_CLEAR_COLOR, float4(0, 0, 0, 0));
+
+			pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
+			pCtx->setRasterizerState(NULL);
+			pCtx->setBlendState(g_xRenderStates.pBlendAlpha);
+
+
+			{
+				IXMaterial *pMat = NULL;
+				IXTexture *pTex = NULL;
+
+				XGetCurMatInfo(&pMat, &pTex);
+
+				if(!pMat || !pMat->isTransparent())
+				{
+					pCtx->setBlendState(NULL);
+				}
+
+				SGCore_ShaderBind(m_idScreenOutShader);
+
+				IGXBaseTexture *pTexture = NULL;
+
+				pTex->getAPITexture(&pTexture, /*item.uCurrentFrame*/ 0);
+				pCtx->setPSTexture(pTexture);
+				mem_release(pTexture);
+
+				SGCore_ScreenQuadDraw();
+
+				SGCore_ShaderUnBind();
+			}
+
+
+
+			pCtx->setDepthStencilSurface(pOldDS);
+			mem_release(pOldDS);
+			pCtx->setColorTarget(pOldRT);
+			mem_release(pOldRT);
+
+			
+
+
+
+			/////////////////////////////////////////////////////
+
+			g_pCurMatSwapChain->swapBuffers();
+		}
+			// g_pCurMatSwapChain
+	}
+
 	IXCore *m_pCore;
 	IXRenderPipeline *m_pOldPipeline = NULL;
 	IXMaterialSystem *m_pMaterialSystem = NULL;
@@ -646,7 +787,9 @@ public:
 
 	IXRenderableVisibility *m_pCameraVisibility[4];
 
-	IXGizmoRenderer *m_pTestRenderer = NULL;
+	IXGizmoRenderer *m_pAxesRenderer = NULL;
+
+	ID m_idScreenOutShader = -1;
 };
 
 class CCVarEventListener: public IEventListener<XEventCvarChanged>
@@ -761,6 +904,7 @@ int main(int argc, char **argv)
 
 	CRenderPipeline *pPipeline = new CRenderPipeline(Core_GetIXCore());
 	g_pEditor = new CEditor(Core_GetIXCore());
+	Core_GetIXCore()->getPluginManager()->registerInterface(IXEDITOR_GUID, g_pEditor);
 
 	g_pEditor->newGizmoMove(&g_pGizmoMove);
 	g_pEditor->newGizmoRotate(&g_pGizmoRotate);
@@ -789,6 +933,8 @@ int main(int argc, char **argv)
 
 	pMaterialSystem->scanMaterials();
 
+	XInitMBCallback(pMaterialSystem);
+
 	GXCOLOR w = GX_COLOR_ARGB(255, 255, 255, 255);
 	GXCOLOR t = GX_COLOR_ARGB(0, 255, 255, 255);
 	GXCOLOR colorData[] = {
@@ -810,6 +956,7 @@ int main(int argc, char **argv)
 
 	UINT ic = 0;
 	IXEditable *pEditable;
+	IXEditorTool *pTool;
 	while((pEditable = (IXEditable*)pPluginManager->getInterface(IXEDITABLE_GUID, ic++)))
 	{
 		if(pEditable->getVersion() == IXEDITABLE_VERSION)
@@ -822,15 +969,26 @@ int main(int argc, char **argv)
 			IXEditorExtension *pExt = pEditable->getEditorExtension();
 			if(pExt)
 			{
+				g_apExtensions.push_back(pExt);
+
 				for(UINT i = 0, l = pExt->getPropertyTabCount(); i < l; ++i)
 				{
 					g_pPropWindow->addCustomTab(pExt->getPropertyTab(i));
+				}
+
+				for(UINT i = 0, l = pExt->getToolCount(); i < l; ++i)
+				{
+					if(pExt->getTool(i, &pTool))
+					{
+						XInitTool(pTool);
+					}
 				}
 			}
 
 			g_mEditableSystems[AAString(pEditable->getName())] = pEditable;
 		}
 	}
+	XInitCustomAccel();
 	if(g_pEditableSystems.size() > 0)
 	{
 		ComboBox_SetCurSel(g_hComboTypesWnd, 0);
@@ -946,7 +1104,7 @@ int main(int argc, char **argv)
 			g_pLevelObjects.clear();
 
 
-			g_pUndoManager->reset();
+			SAFE_CALL(g_pUndoManager, reset);
 
 			XUpdateWindowTitle();
 			break;
@@ -1218,6 +1376,11 @@ int main(int argc, char **argv)
 
 	XInitViewports();
 
+	IGXDevice *pContext = SGCore_GetDXDevice();
+	RECT rc;
+	GetClientRect(g_hCurMatWnd, &rc);
+	g_pCurMatSwapChain = pContext->createSwapChain(rc.right - rc.left, rc.bottom - rc.top, g_hCurMatWnd);
+
 	g_pMaterialBrowser->initGraphics(SGCore_GetDXDevice());
 
 	g_pCameraConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(SMMATRIX));
@@ -1228,6 +1391,7 @@ int main(int argc, char **argv)
 	{
 		g_pEditableSystems[ic]->shutdown();
 	}
+	mem_release(g_pCurMatSwapChain);
 	XReleaseViewports();
 
 	pChannel->removeListener(&cvarListener);
@@ -1239,8 +1403,8 @@ int main(int argc, char **argv)
 	mem_release(g_pCameraConstantBuffer);
 	mem_delete(g_pGrid);
 	//SkyXEngine_Kill();
-	mem_release(pEngine);
 	mem_delete(g_pUndoManager);
+	mem_release(pEngine);
 	return result;
 }
 
@@ -1278,18 +1442,27 @@ void XReleaseViewports()
 	mem_release(g_pGuiDepthStencilSurface);
 }
 
+
+bool g_isRenderedSelection3D = false;
+
 void XRender3D()
 {
 	IGXDevice *pDevice = SGCore_GetDXDevice();
 	IGXContext *pCtx = pDevice->getThreadContext();
 
+	g_pSelectionRenderer->reset();
+
+	g_isRenderedSelection3D = true;
+
 	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 	{
 		if(g_pLevelObjects[i]->isSelected())
 		{
-			g_pLevelObjects[i]->renderSelection(true);
+			g_pLevelObjects[i]->renderSelection(true, g_pSelectionRenderer);
 		}
 	}
+
+	g_pSelectionRenderer->render(false, false);
 
 	if(g_xState.isFrameSelect)
 	{
@@ -1381,7 +1554,8 @@ void XRender3D()
 				{
 				continue;
 				}*/
-				if(isSelected != g_pLevelObjects[i]->isSelected() || (!isSelected && (g_pLevelObjects[i]->hasVisualModel() || g_pLevelObjects[i]->getIcon())))
+				//if(isSelected != g_pLevelObjects[i]->isSelected() || (!isSelected && (g_pLevelObjects[i]->hasVisualModel() || g_pLevelObjects[i]->getIcon())))
+				if(g_pLevelObjects[i]->hasVisualModel() || isSelected != g_pLevelObjects[i]->isSelected() || (!isSelected && g_pLevelObjects[i]->getIcon()))
 				{
 					continue;
 				}
@@ -1563,13 +1737,21 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 	{
 		static IGXConstantBuffer *s_pColorBuffer = pDevice->createConstantBuffer(sizeof(float4));
 
-		for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+		if(g_isRenderedSelection3D)
 		{
-			if(g_pLevelObjects[i]->isSelected())
+			g_pSelectionRenderer->reset();
+
+			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 			{
-				g_pLevelObjects[i]->renderSelection(false);
+				if(g_pLevelObjects[i]->isSelected())
+				{
+					g_pLevelObjects[i]->renderSelection(false, g_pSelectionRenderer);
+				}
 			}
+
+			g_isRenderedSelection3D = false;
 		}
+		g_pSelectionRenderer->render(true);
 
 		// Draw handlers
 		if(g_pLevelObjects.size())
@@ -2089,7 +2271,7 @@ void XUpdateWindowTitle()
 {
 	const char *szLevelName = g_sLevelName.c_str();
 	static char szCaption[256];
-	bool isDirty = g_pUndoManager->isDirty();
+	bool isDirty = g_pUndoManager ? g_pUndoManager->isDirty() : false;
 	if(szLevelName && szLevelName[0])
 	{
 		sprintf(szCaption, "%s - [%s]%s | %s", MAIN_WINDOW_TITLE, szLevelName, isDirty ? "*" : "", SKYXENGINE_VERSION4EDITORS);

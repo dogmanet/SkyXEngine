@@ -191,11 +191,11 @@ public:
 		return(m_pCollisionObject->getCcdMotionThreshold());
 	}
 
-	IRigidBody* XMETHODCALLTYPE asRigidBody() const override
+	IRigidBody* XMETHODCALLTYPE asRigidBody() override
 	{
 		return(NULL);
 	}
-	IGhostObject* XMETHODCALLTYPE asGhostObject() const override
+	IGhostObject* XMETHODCALLTYPE asGhostObject() override
 	{
 		return(NULL);
 	}
@@ -238,6 +238,11 @@ public:
 	void XMETHODCALLTYPE setAngularVelocity(const float3 &vAngularVelocity) override;
 
 	btRigidBody* getBtRigidBody();
+
+	IRigidBody* XMETHODCALLTYPE asRigidBody() override
+	{
+		return(this);
+	}
 
 protected:
 
@@ -306,6 +311,11 @@ public:
 
 	btGhostObject* getBtGhostObject();
 
+
+	IGhostObject* XMETHODCALLTYPE asGhostObject() override
+	{
+		return(this);
+	}
 protected:
 	btGhostObject *m_pGhostObject = NULL;
 	bool m_isPairCaching;

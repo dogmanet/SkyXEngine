@@ -796,7 +796,13 @@ void CPropertyWindow::initEditor(X_PROP_EDITOR_TYPE type, const void *pData, con
 
 void CPropertyWindow::setClassName(const char *szClassName)
 {
-	ComboBox_SetCurSel(m_hClassListWnd, ComboBox_FindStringExact(m_hClassListWnd, -1, szClassName));
+	int idx = ComboBox_FindStringExact(m_hClassListWnd, -1, szClassName);
+	if(idx == -1 && szClassName[0])
+	{
+		addClass(szClassName);
+		idx = ComboBox_FindStringExact(m_hClassListWnd, -1, szClassName);
+	}
+	ComboBox_SetCurSel(m_hClassListWnd, idx);
 }
 
 void CPropertyWindow::allowClassChange(bool bAllow)

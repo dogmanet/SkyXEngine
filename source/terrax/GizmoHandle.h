@@ -51,6 +51,8 @@ public:
 		m_isRendered = set;
 	}
 
+	void XMETHODCALLTYPE setColor(const float4_t &vColor) override;
+
 	SX_ALIGNED_OP_MEM();
 
 private:
@@ -75,6 +77,8 @@ private:
 	IXEditorGizmoHandleCallback *m_pCallback = NULL;
 
 	bool m_isRendered = true;
+
+	float4_t m_vColor = float4_t(1.0f, 1.0f, 1.0f, 1.0f);
 
 private:
 

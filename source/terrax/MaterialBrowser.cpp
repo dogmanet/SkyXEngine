@@ -322,6 +322,7 @@ void CMaterialBrowser::browse(IMaterialBrowserCallback *pCallback)
 {
 	m_pCallback = pCallback;
 	ShowWindow(m_hDlgWnd, SW_SHOWNA);
+	SetFocus(m_hDlgWnd);
 }
 
 void CMaterialBrowser::registerClass()
@@ -1164,14 +1165,14 @@ void CMaterialBrowser::preload()
 			{
 				if(item.pMaterial)
 				{
+					IKeyIterator *pIter = NULL;
 					const char *szTexture = item.pMaterial->getTextureName("txBase");
 					if(!szTexture)
 					{
-						IKeyIterator *pIter = item.pMaterial->getTexturesIterator();
+						pIter = item.pMaterial->getTexturesIterator();
 						if(pIter)
 						{
 							szTexture = pIter->getCurrent();
-							mem_release(pIter);
 						}
 					}
 
@@ -1179,6 +1180,8 @@ void CMaterialBrowser::preload()
 					{
 						m_pMaterialSystem->loadTexture(szTexture, &item.pTexture);
 					}
+
+					mem_release(pIter);
 				}
 				else
 				{

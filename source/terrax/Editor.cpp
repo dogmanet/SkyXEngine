@@ -1,5 +1,6 @@
 #include "Editor.h"
 #include "terrax.h"
+#include "UndoManager.h"
 
 CEditor::CEditor(IXCore *pCore)
 {
@@ -72,6 +73,13 @@ void CEditor::render(bool is3D)
 		}
 		GIZMO_TYPES();
 #undef GTO
+	}
+
+	extern Array<IXEditorExtension*> g_apExtensions;
+
+	for(UINT i = 0, l = g_apExtensions.size(); i < l; ++i)
+	{
+		g_apExtensions[i]->render(is3D);
 	}
 
 	m_pGizmoRendererBoth->render(!is3D);
@@ -252,4 +260,71 @@ void CEditor::onMouseUp()
 		SAFE_CALL(m_pSelectedMove, setTracking, false);
 		SAFE_CALL(m_pSelectedRotate, setTracking, false);
 	}
+}
+
+const TerraXState* XMETHODCALLTYPE CEditor::getState()
+{
+	return(&g_xState);
+}
+
+X_2D_VIEW XMETHODCALLTYPE CEditor::getViewForWindow(X_WINDOW_POS winPos)
+{
+	return(g_xConfig.m_x2DView[winPos]);
+}
+
+float XMETHODCALLTYPE CEditor::getViewScale(X_WINDOW_POS winPos)
+{
+	return(g_xConfig.m_fViewportScale[winPos]);
+}
+
+bool XMETHODCALLTYPE CEditor::getGridSnapState()
+{
+	return(g_xConfig.m_bSnapGrid);
+}
+
+float XMETHODCALLTYPE CEditor::getGridStep()
+{
+	return(XGetGridStep());
+}
+
+void XMETHODCALLTYPE CEditor::addObject(IXEditorObject *pObject)
+{
+	extern CUndoManager *g_pUndoManager;
+	assert(pObject);
+	assert(g_pUndoManager->isInCommandContext());
+	if(!g_pUndoManager->isInCommandContext())
+	{
+		LibReport(REPORT_MSG_LEVEL_FATAL, "CEditor::addObject() is only available in undo/redo context!");
+	}
+
+	g_pLevelObjects.push_back(pObject);
+	add_ref(pObject);
+}
+
+void XMETHODCALLTYPE CEditor::removeObject(IXEditorObject *pObject)
+{
+	extern CUndoManager *g_pUndoManager;
+	assert(g_pUndoManager->isInCommandContext());
+	if(!g_pUndoManager->isInCommandContext())
+	{
+		LibReport(REPORT_MSG_LEVEL_FATAL, "CEditor::removeObject() is only available in undo/redo context!");
+	}
+
+	assert(pObject == g_pLevelObjects[g_pLevelObjects.size() - 1]);
+
+	g_pLevelObjects.erase(g_pLevelObjects.size() - 1);
+
+	mem_release(pObject);
+}
+
+bool XMETHODCALLTYPE CEditor::execCommand(IXEditorCommand *pCmd)
+{
+	extern CUndoManager *g_pUndoManager;
+
+	return(g_pUndoManager->execCommand(pCmd));
+}
+
+const char* XMETHODCALLTYPE CEditor::getCurrentMaterial()
+{
+	return(XGetCurMat());
 }
