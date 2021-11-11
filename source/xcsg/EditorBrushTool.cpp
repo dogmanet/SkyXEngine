@@ -160,11 +160,19 @@ bool XMETHODCALLTYPE CEditorBrushTool::onKeyDown(UINT uKey)
 	{
 		if(m_pNewOutline && m_pNewOutline->isClosed() && m_pNewOutline->isValid())
 		{
+			const char *szMat = m_pEditor->getCurrentMaterial();
 			// create brush with default height
+
+			float fHeight = m_pEditor->getGridStep();
+			if(fHeight <= 0.0f)
+			{
+				fHeight = 0.2f;
+			}
+
 			CEditorObject *pObject = new CEditorObject(m_pEditable);
 			for(UINT i = 0, l = m_pNewOutline->getContourCount(); i < l; ++i)
 			{
-				pObject->addBrush(new CBrushMesh(m_pEditable->getCore(), m_pNewOutline, i));
+				pObject->addBrush(new CBrushMesh(m_pEditable->getCore(), m_pNewOutline, i, szMat, fHeight));
 			}
 			mem_delete(m_pNewOutline);
 			

@@ -9,6 +9,7 @@
 CEditorObject::CEditorObject(CEditable *pEditable):
 	m_pEditable(pEditable)
 {
+	pEditable->onObjectCreated(this);
 	//m_szClassName = CEntityFactoryMap::GetInstance()->getClassNamePtr(szClassName);
 	//assert(m_szClassName);
 }
@@ -43,40 +44,18 @@ void CEditorObject::fixPos()
 	m_vPos = (float3)((vMin + vMax) * 0.5f);
 }
 
-void CEditorObject::setPos(const float3_t &pos, bool isSeparate)
+void XMETHODCALLTYPE CEditorObject::setSize(const float3_t &vSize)
 {
-	if(isSeparate)
+	float3 vMin, vMax;
+	getBound(&vMin, &vMax);
+
+	float3 vRelativeSize = vSize / (vMax - vMin);
+
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
 	{
-		//SAFE_CALL(m_pEntity, setSeparateMovement, true);
-	}
+		//const SMAABB &aabb = m_aBrushes[i]->getAABB();
 
-	setPos(pos);
-
-	if(isSeparate)
-	{
-		//SAFE_CALL(m_pEntity, setSeparateMovement, false);
-	}
-}
-
-void XMETHODCALLTYPE CEditorObject::setScale(const float3_t &vScale)
-{
-	// TODO Implement me
-	m_vScale = vScale;
-	printf("%.2f, %.2f, %.2f\n", vScale.x, vScale.y, vScale.z);
-}
-
-void CEditorObject::setScale(const float3_t &vScale, bool isSeparate)
-{
-	if(isSeparate)
-	{
-		//SAFE_CALL(m_pEntity, setSeparateMovement, true);
-	}
-
-	setScale(vScale);
-
-	if(isSeparate)
-	{
-		//SAFE_CALL(m_pEntity, setSeparateMovement, false);
+		m_aBrushes[i]->resize(m_vPos, /*(aabb.vMax - aabb.vMin) * */vRelativeSize);
 	}
 }
 
@@ -92,21 +71,6 @@ void XMETHODCALLTYPE CEditorObject::setOrient(const SMQuaternion &orient)
 	}
 
 	m_qRot = orient;
-}
-
-void CEditorObject::setOrient(const SMQuaternion &orient, bool isSeparate)
-{
-	if(isSeparate)
-	{
-		//SAFE_CALL(m_pEntity, setSeparateMovement, true);
-	}
-
-	setOrient(orient);
-
-	if(isSeparate)
-	{
-		//SAFE_CALL(m_pEntity, setSeparateMovement, false);
-	}
 }
 
 float3_t XMETHODCALLTYPE CEditorObject::getPos()
@@ -132,6 +96,11 @@ SMQuaternion XMETHODCALLTYPE CEditorObject::getOrient()
 void XMETHODCALLTYPE CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 {
 	*pvMin = *pvMax = float3();
+
+	if(!m_aBrushes.size())
+	{
+		return;
+	}
 
 	SMAABB aabb = m_aBrushes[0]->getAABB();
 	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
@@ -265,13 +234,89 @@ void XMETHODCALLTYPE CEditorObject::create()
 
 void XMETHODCALLTYPE CEditorObject::setKV(const char *szKey, const char *szValue)
 {
+	if(!fstrcmp(szKey, "brush"))
+	{
+		IXJSON *pJSON = (IXJSON*)m_pEditable->getCore()->getPluginManager()->getInterface(IXJSON_GUID);
+		IXJSONItem *pRoot;
+		if(pJSON->parse(szValue, &pRoot))
+		{
+			setKV(szKey, pRoot);
+			
+			mem_release(pRoot);
+		}
+
+		fixPos();
+	}
 	//if(m_pEntity)
 	//{
 	//	m_pEntity->setKV(szKey, szValue);
 	//}
 }
+
+void CEditorObject::setKV(const char *szKey, IXJSONItem *pValue)
+{
+	if(!fstrcmp(szKey, "brush"))
+	{
+		IXJSONArray *pArray = pValue->asArray();
+		if(pArray)
+		{
+			for(UINT i = m_aBrushes.size(), l = pArray->size(); i < l; ++i)
+			{
+				m_aBrushes[i] = new CBrushMesh(m_pEditable->getCore());
+			}
+
+			for(UINT i = pArray->size(), l = m_aBrushes.size(); i < l; ++i)
+			{
+				mem_delete(m_aBrushes[i]);
+			}
+
+			m_aBrushes.resize(pArray->size());
+
+			for(UINT i = 0, l = pArray->size(); i < l; ++i)
+			{
+				if(!m_aBrushes[i]->deserialize(pArray->at(i)->asObject()))
+				{
+					mem_delete(m_aBrushes[i]);
+				}
+			}
+
+			for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+			{
+				if(!m_aBrushes[i])
+				{
+					m_aBrushes.erase(i);
+					--i; --l;
+				}
+			}
+		}
+
+
+		fixPos();
+	}
+}
+
 const char* XMETHODCALLTYPE CEditorObject::getKV(const char *szKey)
 {
+	if(!fstrcmp(szKey, "brush"))
+	{
+		m_aSerializedState.clearFast();
+		m_aSerializedState.push_back('[');
+		for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+		{
+			if(i != 0)
+			{
+				m_aSerializedState.push_back(',');
+			}
+
+			m_aBrushes[i]->serialize(&m_aSerializedState);
+		}
+		m_aSerializedState.push_back(']');
+		m_aSerializedState.push_back(0);
+
+		return(m_aSerializedState);
+	}
+
+
 	//if(!m_pEntity)
 	{
 		return(NULL);
@@ -294,12 +339,17 @@ const char* XMETHODCALLTYPE CEditorObject::getKV(const char *szKey)
 }
 const X_PROP_FIELD* XMETHODCALLTYPE CEditorObject::getPropertyMeta(UINT uKey)
 {
-	assert(false);
+	static X_PROP_FIELD s_prop0 = {"brush", "brush", XPET_TEXT};
+	switch(uKey)
+	{
+	case 0:
+		return(&s_prop0);
+	}
 	return(NULL);
 }
 UINT XMETHODCALLTYPE CEditorObject::getProperyCount()
 {
-	return(0);
+	return(1);
 }
 
 const char* XMETHODCALLTYPE CEditorObject::getTypeName()

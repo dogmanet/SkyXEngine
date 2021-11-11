@@ -79,10 +79,12 @@ IGXSwapChain *g_pTopRightSwapChain = NULL;
 IGXSwapChain *g_pBottomLeftSwapChain = NULL;
 IGXSwapChain *g_pBottomRightSwapChain = NULL;
 IGXSwapChain *g_pGuiSwapChain = NULL;
+IGXSwapChain *g_pCurMatSwapChain = NULL;
 IGXDepthStencilSurface *g_pTopRightDepthStencilSurface = NULL;
 IGXDepthStencilSurface *g_pBottomLeftDepthStencilSurface = NULL;
 IGXDepthStencilSurface *g_BottomRightDepthStencilSurface = NULL;
 IGXDepthStencilSurface *g_pGuiDepthStencilSurface = NULL;
+//IGXDepthStencilSurface *g_pCurMatDepthStencilSurface = NULL;
 IGXDepthStencilState *g_pDSNoZ;
 IGXDepthStencilState *g_pDSDefault;
 
@@ -96,6 +98,7 @@ void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
 void XExportToObj(const char *szMdl);
 bool IsEditMessage();
 bool IsButtonMessage();
+void XInitMBCallback(IXMaterialSystem *pMatSys);
 
 class CEngineCallback: public IXEngineCallback
 {
@@ -492,6 +495,9 @@ public:
 		// m_pTestRenderer->lineTo(float3(1.0f, 0.0f, 3.0f));
 		// m_pTestRenderer->lineTo(float3(1.0f, 1.0f, 3.0f));
 		// m_pTestRenderer->lineTo(float3(1.0f, 1.0f, 4.0f));
+
+		m_idScreenOutShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs"), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps"));
+
 	}
 	~CRenderPipeline()
 	{
@@ -601,6 +607,8 @@ public:
 
 		g_pMaterialBrowser->render();
 
+		renderCurrentMaterial();
+
 		/*
 		IGXSurface *pBackBuffer = g_pGuiSwapChain->getColorTarget();
 		pDXDevice->setColorTarget(pBackBuffer);
@@ -705,6 +713,72 @@ public:
 		m_pOldPipeline->renderEditor2D(pVisibility);
 	}
 
+	void renderCurrentMaterial()
+	{
+		if(g_isCurMatDirty)
+		{
+			g_isCurMatDirty = false;
+
+			//////////////////////////////////////////////////////
+
+			IGXSurface *pTarget = g_pCurMatSwapChain->getColorTarget();
+
+			IGXContext *pCtx = getDevice()->getThreadContext();
+			IGXSurface *pOldRT = pCtx->getColorTarget();
+			pCtx->setColorTarget(pTarget);
+			mem_release(pTarget);
+			IGXDepthStencilSurface *pOldDS = pCtx->getDepthStencilSurface();
+			pCtx->unsetDepthStencilSurface();
+
+			pCtx->clear(GX_CLEAR_COLOR, float4(0, 0, 0, 0));
+
+			pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
+			pCtx->setRasterizerState(NULL);
+			pCtx->setBlendState(g_xRenderStates.pBlendAlpha);
+
+
+			{
+				IXMaterial *pMat = NULL;
+				IXTexture *pTex = NULL;
+
+				XGetCurMatInfo(&pMat, &pTex);
+
+				if(!pMat || !pMat->isTransparent())
+				{
+					pCtx->setBlendState(NULL);
+				}
+
+				SGCore_ShaderBind(m_idScreenOutShader);
+
+				IGXBaseTexture *pTexture = NULL;
+
+				pTex->getAPITexture(&pTexture, /*item.uCurrentFrame*/ 0);
+				pCtx->setPSTexture(pTexture);
+				mem_release(pTexture);
+
+				SGCore_ScreenQuadDraw();
+
+				SGCore_ShaderUnBind();
+			}
+
+
+
+			pCtx->setDepthStencilSurface(pOldDS);
+			mem_release(pOldDS);
+			pCtx->setColorTarget(pOldRT);
+			mem_release(pOldRT);
+
+			
+
+
+
+			/////////////////////////////////////////////////////
+
+			g_pCurMatSwapChain->swapBuffers();
+		}
+			// g_pCurMatSwapChain
+	}
+
 	IXCore *m_pCore;
 	IXRenderPipeline *m_pOldPipeline = NULL;
 	IXMaterialSystem *m_pMaterialSystem = NULL;
@@ -714,6 +788,8 @@ public:
 	IXRenderableVisibility *m_pCameraVisibility[4];
 
 	IXGizmoRenderer *m_pAxesRenderer = NULL;
+
+	ID m_idScreenOutShader = -1;
 };
 
 class CCVarEventListener: public IEventListener<XEventCvarChanged>
@@ -856,6 +932,8 @@ int main(int argc, char **argv)
 	IXMaterialSystem *pMaterialSystem = (IXMaterialSystem*)pPluginManager->getInterface(IXMATERIALSYSTEM_GUID);
 
 	pMaterialSystem->scanMaterials();
+
+	XInitMBCallback(pMaterialSystem);
 
 	GXCOLOR w = GX_COLOR_ARGB(255, 255, 255, 255);
 	GXCOLOR t = GX_COLOR_ARGB(0, 255, 255, 255);
@@ -1026,7 +1104,7 @@ int main(int argc, char **argv)
 			g_pLevelObjects.clear();
 
 
-			g_pUndoManager->reset();
+			SAFE_CALL(g_pUndoManager, reset);
 
 			XUpdateWindowTitle();
 			break;
@@ -1298,6 +1376,11 @@ int main(int argc, char **argv)
 
 	XInitViewports();
 
+	IGXDevice *pContext = SGCore_GetDXDevice();
+	RECT rc;
+	GetClientRect(g_hCurMatWnd, &rc);
+	g_pCurMatSwapChain = pContext->createSwapChain(rc.right - rc.left, rc.bottom - rc.top, g_hCurMatWnd);
+
 	g_pMaterialBrowser->initGraphics(SGCore_GetDXDevice());
 
 	g_pCameraConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(SMMATRIX));
@@ -1308,6 +1391,7 @@ int main(int argc, char **argv)
 	{
 		g_pEditableSystems[ic]->shutdown();
 	}
+	mem_release(g_pCurMatSwapChain);
 	XReleaseViewports();
 
 	pChannel->removeListener(&cvarListener);
@@ -1319,8 +1403,8 @@ int main(int argc, char **argv)
 	mem_release(g_pCameraConstantBuffer);
 	mem_delete(g_pGrid);
 	//SkyXEngine_Kill();
-	mem_release(pEngine);
 	mem_delete(g_pUndoManager);
+	mem_release(pEngine);
 	return result;
 }
 
@@ -2187,7 +2271,7 @@ void XUpdateWindowTitle()
 {
 	const char *szLevelName = g_sLevelName.c_str();
 	static char szCaption[256];
-	bool isDirty = g_pUndoManager->isDirty();
+	bool isDirty = g_pUndoManager ? g_pUndoManager->isDirty() : false;
 	if(szLevelName && szLevelName[0])
 	{
 		sprintf(szCaption, "%s - [%s]%s | %s", MAIN_WINDOW_TITLE, szLevelName, isDirty ? "*" : "", SKYXENGINE_VERSION4EDITORS);

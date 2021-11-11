@@ -18,11 +18,8 @@ public:
 	~CEditorObject();
 
 	void XMETHODCALLTYPE setPos(const float3_t &pos) override;
-	void setPos(const float3_t &pos, bool isSeparate);
 	void XMETHODCALLTYPE setOrient(const SMQuaternion &orient) override;
-	void setOrient(const SMQuaternion &orient, bool isSeparate);
-	void XMETHODCALLTYPE setScale(const float3_t &scale) override;
-	void setScale(const float3_t &scale, bool isSeparate);
+	void XMETHODCALLTYPE setSize(const float3_t &vSize) override;
 
 	void XMETHODCALLTYPE getBound(float3 *pvMin, float3 *pvMax) override;
 
@@ -36,6 +33,7 @@ public:
 	void XMETHODCALLTYPE postSetup() override;
 
 	void XMETHODCALLTYPE setKV(const char *szKey, const char *szValue) override;
+	void setKV(const char *szKey, IXJSONItem *pValue);
 	const char* XMETHODCALLTYPE getKV(const char *szKey) override;
 	const X_PROP_FIELD* XMETHODCALLTYPE getPropertyMeta(UINT uKey) override;
 	UINT XMETHODCALLTYPE getProperyCount() override;
@@ -48,12 +46,7 @@ public:
 	float3_t XMETHODCALLTYPE getPos() override;
 
 	SMQuaternion XMETHODCALLTYPE getOrient() override;
-
-	float3_t XMETHODCALLTYPE getScale() override
-	{
-		return(m_vScale);
-	}
-
+	
 	bool XMETHODCALLTYPE isSelected() override
 	{
 		return(m_isSelected);
@@ -83,7 +76,8 @@ private:
 
 	float3_t m_vPos;
 	SMQuaternion m_qRot;
-	float3_t m_vScale = float3_t(1.0f, 1.0f, 1.0f);
+
+	Array<char> m_aSerializedState;
 };
 
 #endif

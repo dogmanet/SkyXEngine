@@ -23,9 +23,9 @@ bool XMETHODCALLTYPE CCommandDelete::undo()
 
 		pObj->pObject->create();
 
-		pObj->pObject->setPos(pObj->vPos);
-		pObj->pObject->setScale(pObj->vScale);
-		pObj->pObject->setOrient(pObj->qRotate);
+		/*pObj->pObject->setPos(pObj->vPos);
+		pObj->pObject->setSize(pObj->vSize);
+		pObj->pObject->setOrient(pObj->qRotate);*/
 
 		pObj->pObject->preSetup();
 		for(auto i = pObj->mKeyValues.begin(); i; ++i)
@@ -57,9 +57,12 @@ void CCommandDelete::addObject(ID idObject)
 		obj.mKeyValues[szKey] = obj.pObject->getKV(szKey);
 	}
 
+	/*float3 vMin, vMax;
+	obj.pObject->getBound(&vMin, &vMax);
+
 	obj.vPos = obj.pObject->getPos();
-	obj.vScale = obj.pObject->getScale();
-	obj.qRotate = obj.pObject->getOrient();
+	obj.vSize = (float3)(vMax - vMin);
+	obj.qRotate = obj.pObject->getOrient();*/
 
 	m_aObjects.push_back(obj);
 }

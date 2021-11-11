@@ -191,10 +191,10 @@ BOOL EnumLevels(CLevelInfo *pInfo)
 
 void EndMap()
 {
-	if(!GameData::m_isLevelLoaded)
-	{
-		return;
-	}
+	//if(!GameData::m_isLevelLoaded)
+	//{
+	//	return;
+	//}
 
 	if(!GameData::m_pMgr->isEditorMode())
 	{
@@ -1402,7 +1402,7 @@ void GameData::renderHUD()
 
 	if(m_pGUI)
 	{
-		const bool * pbHudDraw = GET_PCVAR_BOOL("hud_draw");
+		static const bool * pbHudDraw = GET_PCVAR_BOOL("hud_draw");
 		if(*pbHudDraw)
 		{
 			m_pGUIStack->render();

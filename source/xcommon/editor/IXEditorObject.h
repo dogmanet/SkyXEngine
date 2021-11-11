@@ -36,8 +36,8 @@ public:
 	virtual SMQuaternion XMETHODCALLTYPE getOrient() = 0;
 	virtual void XMETHODCALLTYPE setOrient(const SMQuaternion &orient) = 0;
 
-	virtual float3_t XMETHODCALLTYPE getScale() = 0;
-	virtual void XMETHODCALLTYPE setScale(const float3_t &vScale) = 0;
+	//virtual float3_t XMETHODCALLTYPE getScale() = 0;
+	virtual void XMETHODCALLTYPE setSize(const float3_t &vSize) = 0;
 
 	virtual void XMETHODCALLTYPE getBound(float3 *pvMin, float3 *pvMax) = 0;
 

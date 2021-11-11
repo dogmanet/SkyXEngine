@@ -32,9 +32,10 @@ protected:
 		IXEditorObject *pObject;
 		AssotiativeArray<String, String> mKeyValues;
 
-		float3_t vPos;
-		float3_t vScale;
-		SMQuaternion qRotate;
+
+		/*float3_t vPos;
+		float3_t vSize;
+		SMQuaternion qRotate;*/
 	};
 	Array<_del_obj> m_aObjects;
 };

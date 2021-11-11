@@ -4,24 +4,39 @@
 #include <xcommon/IPluginManager.h>
 
 
-CBrushMesh::CBrushMesh(IXCore *pCore, COutline *pOutline, UINT uContour):
+CBrushMesh::CBrushMesh(IXCore *pCore, COutline *pOutline, UINT uContour, const char *szMat, float fHeight):
 	m_pCore(pCore)
 {
 	//m_pHandle[0] = NULL;
 	//m_pHandle[1] = NULL;
 	//m_aMaterials.push_back("LAB1_FLOOR4");
 	//m_aMaterials.push_back("C1A3WALL04");
-	m_aMaterials.push_back("dev_floor");
-	m_aMaterials.push_back("dev_wall");
+	// m_aMaterials.push_back("dev_floor");
+	// m_aMaterials.push_back("dev_wall");
+
+
+	m_pPhysics = (IXPhysics*)m_pCore->getPluginManager()->getInterface(IXPHYSICS_GUID);
+
+	m_aMaterials.push_back(szMat);
 
 	//m_aMaterials.push_back("block_grass_top");
 	//m_aMaterials.push_back("block_grass_side");
-	setupFromOutline(pOutline, uContour);
+	setupFromOutline(pOutline, uContour, fHeight);
 
+}
+
+CBrushMesh::CBrushMesh(IXCore *pCore):
+	m_pCore(pCore)
+{
 }
 
 CBrushMesh::~CBrushMesh()
 {
+	if(m_pRigidBody)
+	{
+		m_pPhysics->removeCollisionObject(m_pRigidBody);
+		mem_release(m_pRigidBody);
+	}
 	mem_release(m_pModel);
 }
 
@@ -122,7 +137,7 @@ void CBrushMesh::buildModel()
 	{
 		if(aSubsets[i].aIndices.size())
 		{
-			pResource->setMaterial(i, 0, m_aMaterials[i]);
+			pResource->setMaterial(i, 0, m_aMaterials[i].c_str());
 			++uSubsets;
 		}
 	}
@@ -168,6 +183,22 @@ void CBrushMesh::buildModel()
 	IXModelProvider *pProvider = (IXModelProvider*)m_pCore->getPluginManager()->getInterface(IXMODELPROVIDER_GUID);
 	pProvider->createStaticModel(pResource, &m_pModel);
 	mem_release(pResource);
+
+	if(m_pRigidBody)
+	{
+		m_pPhysics->removeCollisionObject(m_pRigidBody);
+		mem_release(m_pRigidBody);
+	}
+
+	IConvexHullShape *pShape = m_pPhysics->newConvexHullShape(m_aVertices.size(), m_aVertices, sizeof(float3_t), false);
+
+	XRIDIGBODY_DESC desc = {};
+	desc.fMass = 0.0f;
+	desc.pCollisionShape = pShape;
+	m_pRigidBody = m_pPhysics->newRigidBody(&desc);
+	mem_release(pShape);
+
+	m_pPhysics->addCollisionObject(m_pRigidBody, CG_STATIC, CG_STATIC_MASK);
 }
 
 static float3 GetTangent(const float3 &vNormal)
@@ -179,19 +210,20 @@ static float3 GetTangent(const float3 &vNormal)
 	return(float3(0.0f, -1.0f, 0.0f));
 }
 
-void CBrushMesh::setupFromOutline(COutline *pOutline, UINT uContour)
+void CBrushMesh::setupFromOutline(COutline *pOutline, UINT uContour, float fHeight)
 {
 	const CContour &c = pOutline->getContour(uContour);
+	UINT uOutlinePts = pOutline->getPointCount();
 	UINT uPts = c.getPointCount();
 
-	const float c_fDefaultWidth = 1.2f;
+	//const float c_fDefaultWidth = 1.2f;
 
 	m_aVertices.resize(uPts * 2);
 	m_aEdges.resize(uPts * 3);
 	m_aFaces.resize(uPts + 2);
 
 	float3 vNormal = pOutline->getNormal();
-	float3 vOffset = vNormal * c_fDefaultWidth;
+	float3 vOffset = vNormal * fHeight;
 
 
 	Face &f1 = m_aFaces[uPts + 0];
@@ -218,17 +250,22 @@ void CBrushMesh::setupFromOutline(COutline *pOutline, UINT uContour)
 
 	for(UINT i = 0; i < uPts; ++i)
 	{
+		bool isInternal = (c.getPoint(i) + 1) % uOutlinePts != c.getPoint(i + 1);
+
 		Edge &e = m_aEdges[i];
 		e.uVertex[0] = i;
 		e.uVertex[1] = (i + 1) % uPts;
+		e.isInternal = isInternal;
 
 		Edge &e2 = m_aEdges[i + uPts];
 		e2.uVertex[0] = i + uPts;
 		e2.uVertex[1] = (i + 1) % uPts + uPts;
+		e2.isInternal = isInternal;
 
 		Edge &e3 = m_aEdges[i + uPts * 2];
 		e3.uVertex[0] = i;
 		e3.uVertex[1] = i + uPts;
+		e3.isInternal = false;
 
 		// m_aVertices[i] = pOutline->getPoint(c.getPoint(i));
 		// m_aVertices[i + uPts] = (float3)(m_aVertices[i] + vOffset);
@@ -252,7 +289,7 @@ void CBrushMesh::setupFromOutline(COutline *pOutline, UINT uContour)
 		f.vNormal = SMVector3Normalize(SMVector3Cross(v0, v1));
 		f.texInfo.vT = GetTangent(f.vNormal);
 		f.texInfo.vS = SMVector3Cross(f.texInfo.vT, f.vNormal);
-		f.texInfo.uMatId = 1;
+		f.texInfo.uMatId = 0; //1;
 
 		f1.aEdges.push_back(i);
 		f2.aEdges.push_back((uPts - i - 1) + uPts);
@@ -293,6 +330,11 @@ void CBrushMesh::move(const float3 &vOffset)
 		m_aVertices[i] = (float3)(m_aVertices[i] + vOffset);
 	}
 
+	if(m_pRigidBody)
+	{
+		m_pRigidBody->setPosition(m_pRigidBody->getPosition() + vOffset);
+	}
+
 	m_aabb = m_aabb + vOffset;
 }
 
@@ -302,6 +344,12 @@ void CBrushMesh::rotate(const float3 &vOrigin, const SMQuaternion &qOffset)
 	{
 		m_pModel->setOrientation(m_pModel->getOrientation() * qOffset);
 		m_pModel->setPosition(qOffset * (m_pModel->getPosition() - vOrigin) + vOrigin);
+	}
+
+	if(m_pRigidBody)
+	{
+		m_pRigidBody->setRotation(m_pRigidBody->getRotation() * qOffset);
+		m_pRigidBody->setPosition(qOffset * (m_pRigidBody->getPosition() - vOrigin) + vOrigin);
 	}
 
 	for(UINT i = 0, l = m_aVertices.size(); i < l; ++i)
@@ -323,6 +371,20 @@ void CBrushMesh::rotate(const float3 &vOrigin, const SMQuaternion &qOffset)
 
 }
 
+void CBrushMesh::resize(const float3 &vOrigin, const float3 &vRelativeSize)
+{
+	for(UINT i = 0, l = m_aVertices.size(); i < l; ++i)
+	{
+		m_aVertices[i] = (float3)(vRelativeSize * (m_aVertices[i] - vOrigin) + vOrigin);
+	}
+
+	//! @TODO: texture shift???
+
+	buildModel();
+
+	m_isBoundDirty = true;
+}
+
 bool CBrushMesh::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, float3 *pvNormal, bool isRayInWorldSpace, bool bReturnNearestPoint)
 {
 	if(m_pModel)
@@ -335,13 +397,16 @@ bool CBrushMesh::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut
 
 void CBrushMesh::renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer)
 {
-	pGizmoRenderer->setColor(float4(1.0f, 0.0f, 0.0f, 1.0f));
-	pGizmoRenderer->setLineWidth(is3D ? 0.04f : 1.0f);
+	pGizmoRenderer->setColor(float4(1.0f, 1.0f, 0.0f, 1.0f));
+	pGizmoRenderer->setLineWidth(is3D ? 0.02f : 1.0f);
 	for(UINT i = 0, l = m_aEdges.size(); i < l; ++i)
 	{
 		Edge &e = m_aEdges[i];
-		pGizmoRenderer->jumpTo(m_aVertices[e.uVertex[0]]);
-		pGizmoRenderer->lineTo(m_aVertices[e.uVertex[1]]);
+		if(!e.isInternal)
+		{
+			pGizmoRenderer->jumpTo(m_aVertices[e.uVertex[0]]);
+			pGizmoRenderer->lineTo(m_aVertices[e.uVertex[1]]);
+		}
 	}
 
 	if(is3D)
@@ -391,4 +456,261 @@ void CBrushMesh::renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer)
 			}
 		}
 	}
+}
+
+void CBrushMesh::serialize(Array<char> *paData)
+{
+	char tmp[64];
+	paData->append("{\"v\":[");
+	for(UINT i = 0, l = m_aVertices.size(); i < l; ++i)
+	{
+		const float3_t &v = m_aVertices[i];
+		sprintf(tmp, "%s[%g,%g,%g]", i == 0 ? "" : ",", v.x, v.y, v.z);
+		paData->append(tmp);
+	}
+	paData->append("],\"e\":[");
+	for(UINT i = 0, l = m_aEdges.size(); i < l; ++i)
+	{
+		const Edge &e = m_aEdges[i];
+		sprintf(tmp, "%s[%u,%u,%u]", i == 0 ? "" : ",", e.uVertex[0], e.uVertex[1], e.isInternal ? 1 : 0);
+		paData->append(tmp);
+	}
+	paData->append("],\"f\":[");
+	for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
+	{
+		const Face &f = m_aFaces[i];
+		const TextureInfo &t = f.texInfo;
+		if(i != 0)
+		{
+			paData->push_back(',');
+		}
+		paData->append("{\"t\":{");
+		sprintf(tmp, "\"s\":[%g,%g,%g,%g],\"t\":[%g,%g,%g,%g],\"m\":%u", 
+			t.vS.x, t.vS.y, t.vS.z, t.fSShift,
+			t.vT.x, t.vT.y, t.vT.z, t.fTShift,
+			t.uMatId
+			);
+		paData->append(tmp);
+		paData->append("},\"e\":[");
+		for(UINT j = 0, jl = f.aEdges.size(); j < jl; ++j)
+		{
+			sprintf(tmp, "%s%u", j == 0 ? "" : ",", f.aEdges[j]);
+			paData->append(tmp);
+		}
+		paData->append("],\"n\":[");
+		sprintf(tmp, "%g,%g,%g", f.vNormal.x, f.vNormal.y, f.vNormal.z);
+		paData->append(tmp);
+		paData->append("]}");
+
+		// sprintf(tmp, "%s[%u,%u,%u]", i == 0 ? "" : ",", e.uVertex[0], e.uVertex[1], e.isInternal ? 1 : 0);
+		// paData->append(tmp);
+	}
+	paData->append("],\"m\":[");
+	for(UINT i = 0, l = m_aMaterials.size(); i < l; ++i)
+	{
+		if(i != 0)
+		{
+			paData->push_back(',');
+		}
+		paData->push_back('"');
+		paData->append(m_aMaterials[i].c_str());
+		paData->push_back('"');
+	}
+	paData->append("]");
+	paData->append("}");
+	// m_aVertices
+}
+
+bool CBrushMesh::deserialize(IXJSONObject *pData)
+{
+	assert(pData);
+	if(!pData)
+	{
+		return(false);
+	}
+
+	IXJSONArray *pArr, *pVec;
+	IXJSONObject *pFace, *pTI;
+	int64_t a, b, c;
+
+	for(UINT i = 0, l = pData->size(); i < l; ++i)
+	{
+		const char *pKey = pData->getKey(i);
+		switch(pKey[0])
+		{
+		case 'v':
+			pArr = pData->at(i)->asArray();
+			if(pArr)
+			{
+				m_aVertices.resize(pArr->size());
+				for(UINT j = 0, jl = pArr->size(); j < jl; ++j)
+				{
+					pVec = pArr->at(j)->asArray();
+					if(!pVec || pVec->size() != 3)
+					{
+						return(false);
+					}
+
+					float3_t &vec = m_aVertices[j];
+
+					if(!(pVec->at(0)->getFloat(&vec.x) &&
+						pVec->at(1)->getFloat(&vec.y) &&
+						pVec->at(2)->getFloat(&vec.z)))
+					{
+						return(false);
+					}
+				}
+			}
+			break;
+		case 'e':
+			pArr = pData->at(i)->asArray();
+			if(pArr)
+			{
+				m_aEdges.resize(pArr->size());
+				for(UINT j = 0, jl = pArr->size(); j < jl; ++j)
+				{
+					pVec = pArr->at(j)->asArray();
+					if(!pVec || pVec->size() != 3)
+					{
+						return(false);
+					}
+
+					Edge &e = m_aEdges[j];
+					if(!(pVec->at(0)->getInt64(&a) &&
+						pVec->at(1)->getInt64(&b) &&
+						pVec->at(2)->getInt64(&c)))
+					{
+						return(false);
+					}
+
+					e.uVertex[0] = a;
+					e.uVertex[1] = b;
+					e.isInternal = c;
+				}
+			}
+			break;
+		case 'f':
+			pArr = pData->at(i)->asArray();
+			if(pArr)
+			{
+				m_aFaces.resize(pArr->size());
+				for(UINT j = 0, jl = pArr->size(); j < jl; ++j)
+				{
+					pFace = pArr->at(j)->asObject();
+					if(!pFace)
+					{
+						return(false);
+					}
+					Face &f = m_aFaces[j];
+
+					for(UINT k = 0, kl = pFace->size(); k < kl; ++k)
+					{
+						pKey = pFace->getKey(k);
+						switch(pKey[0])
+						{
+						case 't':
+							// s t m
+							pTI = pFace->at(k)->asObject();
+							if(!pTI)
+							{
+								return(false);
+							}
+
+							for(UINT s = 0, sl = pTI->size(); s < sl; ++s)
+							{
+								pKey = pTI->getKey(s);
+								switch(pKey[0])
+								{
+								case 's':
+								case 't':
+									pVec = pTI->at(s)->asArray();
+									if(!pVec || pVec->size() != 4)
+									{
+										return(false);
+									}
+
+									{
+										float3_t &vec = pKey[0] == 's' ? f.texInfo.vS : f.texInfo.vT;
+										float &fShift = pKey[0] == 's' ? f.texInfo.fSShift : f.texInfo.fTShift;
+
+										if(!(pVec->at(0)->getFloat(&vec.x) &&
+											pVec->at(1)->getFloat(&vec.y) &&
+											pVec->at(2)->getFloat(&vec.z) &&
+											pVec->at(3)->getFloat(&fShift)))
+										{
+											return(false);
+										}
+									}
+
+									break;
+								case 'm':
+									if(!pTI->at(s)->getInt64(&a))
+									{
+										return(false);
+									}
+									f.texInfo.uMatId = (UINT)a;
+									break;
+								}
+							}
+
+							break;
+
+						case 'e':
+							pVec = pFace->at(k)->asArray();
+							if(!pVec || pVec->size() < 3)
+							{
+								return(false);
+							}
+							f.aEdges.resize(pVec->size());
+							for(UINT s = 0, sl = pVec->size(); s < sl; ++s)
+							{
+								if(!pVec->at(s)->getInt64(&a))
+								{
+									return(false);
+								}
+								f.aEdges[s] = (UINT)a;
+							}
+
+							break;
+
+						case 'n':
+							pVec = pFace->at(k)->asArray();
+							if(!pVec || pVec->size() != 3)
+							{
+								return(false);
+							}
+
+							float3_t &vec = f.vNormal;
+
+							if(!(pVec->at(0)->getFloat(&vec.x) &&
+								pVec->at(1)->getFloat(&vec.y) &&
+								pVec->at(2)->getFloat(&vec.z)))
+							{
+								return(false);
+							}
+							break;
+						}
+					}
+				}
+			}
+			break;
+		case 'm':
+			pArr = pData->at(i)->asArray();
+			if(pArr)
+			{
+				m_aMaterials.resize(pArr->size());
+				for(UINT j = 0, jl = pArr->size(); j < jl; ++j)
+				{
+					m_aMaterials[j] = pArr->at(j)->getString();
+				}
+			}
+			break;
+		}
+	}
+
+	buildModel();
+
+	m_isBoundDirty = true;
+
+	return(true);
 }

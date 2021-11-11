@@ -54,6 +54,8 @@ public:
 
 	bool XMETHODCALLTYPE execCommand(IXEditorCommand *pCmd) override;
 
+	const char* XMETHODCALLTYPE getCurrentMaterial() override;
+
 private:
 #define GTO(gt) Array<CGizmo##gt*> m_aGizmos##gt; CGizmo##gt *m_pSelected##gt = NULL;
 	GIZMO_TYPES();

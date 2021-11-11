@@ -2,8 +2,9 @@
 #define __IFILESYSTEM_H
 
 #include <gdefines.h>
-#include <common/array.h>
+//#include <common/array.h>
 #include <common/string.h>
+#include <core/IFile.h>
 
 // Интерфейс для работы с файловой системой (в том числе с упакованными архивами в будущем)
 // Может производить поиск по нескольким корневым путям
@@ -43,7 +44,7 @@ public:
 	virtual const char* XMETHODCALLTYPE next() = 0;
 };
 
-class IFile;
+//class IFile;
 class IFileSystem: public IXUnknown
 {
 public:

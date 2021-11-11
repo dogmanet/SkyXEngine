@@ -2,290 +2,296 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="..\..\..\source\core\concmd.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\sxcore.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\cvars.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\sxcore_dll.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\time.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\Task.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\TaskManager.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\Config.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\common\string.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\common\file_utils.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\common\string_utils.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\PerfMon.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\PluginManager.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\Core.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\AsyncFileReader.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\ResourceModel.cpp">
-      <Filter>Source\resource</Filter>
+      <Filter>Sources\resource</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\ResourceModelStatic.cpp">
-      <Filter>Source\resource</Filter>
+      <Filter>Sources\resource</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\ResourceModelAnimated.cpp">
-      <Filter>Source\resource</Filter>
+      <Filter>Sources\resource</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\ResourceManager.cpp">
-      <Filter>Source\resource</Filter>
+      <Filter>Sources\resource</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\ModelPhysbox.cpp">
-      <Filter>Source\resource</Filter>
+      <Filter>Sources\resource</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\ModelProvider.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\FileExtsIterator.cpp">
-      <Filter>Source\FileSystem</Filter>
+      <Filter>Sources\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\file.cpp">
-      <Filter>Source\FileSystem</Filter>
+      <Filter>Sources\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\FileSystem.cpp">
-      <Filter>Source\FileSystem</Filter>
+      <Filter>Sources\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\FileInMemory.cpp">
-      <Filter>Source\FileSystem</Filter>
+      <Filter>Sources\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\AsyncTaskRunner.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\FolderPathsIterator.cpp">
-      <Filter>Source\FileSystem</Filter>
+      <Filter>Sources\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\ResourceTexture.cpp">
-      <Filter>Source\resource</Filter>
+      <Filter>Sources\resource</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\Console.cpp">
-      <Filter>Source</Filter>
+      <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\FileRecursiveExtPathsIterator.cpp">
-      <Filter>Source\FileSystem</Filter>
+      <Filter>Sources\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\core\CBaseFileIterator.cpp">
-      <Filter>Source\FileSystem</Filter>
+      <Filter>Sources\FileSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\JSON.cpp">
+      <Filter>Sources</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Source">
-      <UniqueIdentifier>{5b1e1912-b2f9-475f-b56f-b2d75c8cd146}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header">
+    <Filter Include="Headers">
       <UniqueIdentifier>{1aa4f2a9-fb4e-4db2-9c07-3aec1d9541d0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header\xcommon">
+    <Filter Include="Headers\xcommon">
       <UniqueIdentifier>{b6ba7904-f9bb-4d17-b1f2-333d42a52b50}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header\resource">
+    <Filter Include="Headers\resource">
       <UniqueIdentifier>{4d67fb1e-021a-4a83-a90b-3d4f3b7f45c7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\resource">
+    <Filter Include="Headers\FileSystem">
+      <UniqueIdentifier>{445611bf-f56a-4d14-91e3-6f93aa9a36a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{5b1e1912-b2f9-475f-b56f-b2d75c8cd146}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\resource">
       <UniqueIdentifier>{ba70a1c2-d8e0-4210-a869-0663935c727a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\FileSystem">
+    <Filter Include="Sources\FileSystem">
       <UniqueIdentifier>{c75fa556-f27b-43be-ae1c-c6bea640758b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header\FileSystem">
-      <UniqueIdentifier>{445611bf-f56a-4d14-91e3-6f93aa9a36a6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\core\concmd.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\sxcore.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\cvars.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\Task.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\TaskManager.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\time.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\File.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\Config.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\string.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\file_utils.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\string_utils.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\ConcurrentQueue.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\PerfMon.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IXPlugin.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IXRenderable.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IXTextureLoader.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IXUpdatable.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IXModelLoader.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\PluginManager.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IAsyncFileReader.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IAsyncTaskRunner.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IPluginManager.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IXCore.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IFileSystem.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\Core.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\AsyncFileReader.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\list.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\resource\IXResourceManager.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\resource\IXResourceModel.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\resource\IXModel.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\resource\IXModelProvider.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\ResourceModel.h">
-      <Filter>Header\resource</Filter>
+      <Filter>Headers\resource</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\ResourceModelAnimated.h">
-      <Filter>Header\resource</Filter>
+      <Filter>Headers\resource</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\ResourceModelStatic.h">
-      <Filter>Header\resource</Filter>
+      <Filter>Headers\resource</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\ResourceManager.h">
-      <Filter>Header\resource</Filter>
+      <Filter>Headers\resource</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\ModelPhysbox.h">
-      <Filter>Header\resource</Filter>
+      <Filter>Headers\resource</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\ModelProvider.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\ITask.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\FileExtsIterator.h">
-      <Filter>Header\FileSystem</Filter>
+      <Filter>Headers\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\FileInMemory.h">
-      <Filter>Header\FileSystem</Filter>
+      <Filter>Headers\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\FileSystem.h">
-      <Filter>Header\FileSystem</Filter>
+      <Filter>Headers\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\IFile.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\AsyncTaskRunner.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\FolderPathsIterator.h">
-      <Filter>Header\FileSystem</Filter>
+      <Filter>Headers\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\resource\IXResourceTexture.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\ResourceTexture.h">
-      <Filter>Header\resource</Filter>
+      <Filter>Headers\resource</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IXTextureProxy.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IXConfig.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IXAudioCodec.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IXSoundSystem.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IXBuffer.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\Buffer.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IXConsole.h">
-      <Filter>Header\xcommon</Filter>
+      <Filter>Headers\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\Console.h">
-      <Filter>Header</Filter>
+      <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\FileRecursiveExtPathsIterator.h">
-      <Filter>Header\FileSystem</Filter>
+      <Filter>Headers\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\CBaseFileIterator.h">
-      <Filter>Header\FileSystem</Filter>
+      <Filter>Headers\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\JSON.h">
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

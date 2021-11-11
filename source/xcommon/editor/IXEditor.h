@@ -67,6 +67,8 @@ public:
 
 	virtual bool XMETHODCALLTYPE execCommand(IXEditorCommand *pCmd) = 0;
 
+	virtual const char* XMETHODCALLTYPE getCurrentMaterial() = 0;
+
 
 };
 

@@ -61,6 +61,9 @@ CCore::CCore(const char *szName)
 	m_pModelProvider = new CModelProvider(this);
 	m_pPluginManager->registerInterface(IXMODELPROVIDER_GUID, m_pModelProvider);
 	
+	m_pJSON = new CJSON();
+	m_pPluginManager->registerInterface(IXJSON_GUID, m_pJSON);
+
 	g_pPerfMon = m_pPerfMon = new CPerfMon();
 	g_pTimers = m_pTimers = new CTimeManager();
 
@@ -182,6 +185,8 @@ CCore::~CCore()
 
 	mem_delete(m_pTimers);
 	mem_delete(m_pPerfMon);
+
+	mem_delete(m_pJSON);
 
 	mem_delete(m_pModelProvider);
 	mem_delete(m_pResourceManager);

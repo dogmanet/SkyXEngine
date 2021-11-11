@@ -56,6 +56,15 @@ public:
 		return(m_pCore);
 	}
 
+	void save(const char *szLevelName);
+	void load(const char *szLevelName, ID idPlugin);
+	void unload();
+
+	void onObjectCreated(CEditorObject *pObj)
+	{
+		m_aObjects.push_back(pObj);
+	}
+
 protected:
 	IGXDevice *m_pDevice = NULL;
 	IXCore *m_pCore = NULL;

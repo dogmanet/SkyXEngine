@@ -11,6 +11,7 @@
 #define MAIN_WINDOW_TITLE      "TerraX"
 #define MAIN_WINDOW_CLASS      "X Main Window"
 #define RENDER_WINDOW_CLASS    "X Viewport Window"
+#define RENDER_NONINTERACTIVE_WINDOW_CLASS    "XRenderPanel"
 #define WIDTH_ADJUST			2
 
 #define	WINDOW_WIDTH			800
@@ -45,6 +46,9 @@ extern HWND g_hTopRightWnd;
 extern HWND g_hTopLeftWnd;
 extern HWND g_hBottomRightWnd;
 extern HWND g_hBottomLeftWnd;
+extern HWND g_hCurMatWnd;
+
+extern bool g_isCurMatDirty;
 
 enum X_DIR
 {
@@ -183,6 +187,9 @@ void XRender3D();
 void XRender2D(X_2D_VIEW view, float fScale, bool preScene);
 
 void XFrameRun(float fDeltaTime);
+
+void XGetCurMatInfo(IXMaterial **ppMat, IXTexture **ppTex);
+const char* XGetCurMat();
 
 #define XSELECT_STEP_DELAY 0.5f
 

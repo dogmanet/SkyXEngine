@@ -59,8 +59,8 @@ public:
 	virtual void XMETHODCALLTYPE setCCDmotionThreshold(float fRadius) = 0;
 	virtual float XMETHODCALLTYPE getCCDmotionThreshold() const = 0;
 
-	virtual IRigidBody* XMETHODCALLTYPE asRigidBody() const = 0;
-	virtual IGhostObject* XMETHODCALLTYPE asGhostObject() const = 0;
+	virtual IRigidBody* XMETHODCALLTYPE asRigidBody() = 0;
+	virtual IGhostObject* XMETHODCALLTYPE asGhostObject() = 0;
 };
 
 struct XRIDIGBODY_DESC

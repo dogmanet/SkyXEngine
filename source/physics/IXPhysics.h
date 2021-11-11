@@ -40,6 +40,10 @@ typedef enum PHY_ScalarType
 	PHY_UCHAR
 } PHY_ScalarType;
 */
+
+// {B80CD682-53BF-4173-AD21-20983C524784}
+#define IXPHYSICS_GUID DEFINE_XGUID(0xb80cd682, 0x53bf, 0x4173, 0xad, 0x21, 0x20, 0x98, 0x3c, 0x52, 0x47, 0x84)
+
 class IXPhysics: public IXUnknown
 {
 public:

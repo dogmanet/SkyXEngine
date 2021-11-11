@@ -323,3 +323,8 @@ bool XMETHODCALLTYPE CEditor::execCommand(IXEditorCommand *pCmd)
 
 	return(g_pUndoManager->execCommand(pCmd));
 }
+
+const char* XMETHODCALLTYPE CEditor::getCurrentMaterial()
+{
+	return(XGetCurMat());
+}

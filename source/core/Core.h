@@ -8,6 +8,7 @@
 #include <xcommon/IXUpdatable.h>
 #include "ResourceManager.h"
 #include "Console.h"
+#include "JSON.h"
 
 class CModelProvider;
 class CPerfMon;
@@ -80,6 +81,8 @@ protected:
 	CPerfMon *m_pPerfMon = NULL;
 	CTimeManager *m_pTimers = NULL;
 	CTaskManager *m_pTaskManager = NULL;
+
+	CJSON *m_pJSON = NULL;
 
 	CConsole *m_pConsole = NULL;
 
