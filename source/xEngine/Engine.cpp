@@ -469,11 +469,11 @@ void CEngine::showProfile()
 		static UINT uFrames = 0;
 		if(pRenderDevice->getProfilingResults(&pTimeStamps, &uTimeStampCount))
 		{
-			if(++uFrames >= *dev_gpu_profile_framerate && uTimeStampCount >= 2)
+			if(++uFrames >= (UINT)*dev_gpu_profile_framerate && uTimeStampCount >= 2)
 			{
 				uFrames = 0;
 
-				UINT uTotalTicks = pTimeStamps[uTimeStampCount - 1].uTicks - pTimeStamps[0].uTicks;
+				uint64_t uTotalTicks = pTimeStamps[uTimeStampCount - 1].uTicks - pTimeStamps[0].uTicks;
 				float fTotalTime = (float)uTotalTicks / (float)(pTimeStamps[uTimeStampCount - 1].uDenominator / 1000);
 
 				uint64_t uPrev = 0;

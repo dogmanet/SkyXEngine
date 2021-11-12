@@ -78,8 +78,6 @@ public:
 
 	void onLevelEvent(const XEventLevel *pData)
 	{
-		char szPathLevel[1024];
-
 		switch(pData->type)
 		{
 		case XEventLevel::TYPE_LOAD:
