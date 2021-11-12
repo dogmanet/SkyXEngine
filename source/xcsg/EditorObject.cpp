@@ -290,8 +290,9 @@ void CEditorObject::setKV(const char *szKey, IXJSONItem *pValue)
 			}
 		}
 
-
+		float3_t vOldPos = getPos();
 		fixPos();
+		setPos(vOldPos);
 	}
 }
 

@@ -28,6 +28,7 @@ CBrushMesh::CBrushMesh(IXCore *pCore, COutline *pOutline, UINT uContour, const c
 CBrushMesh::CBrushMesh(IXCore *pCore):
 	m_pCore(pCore)
 {
+	m_pPhysics = (IXPhysics*)m_pCore->getPluginManager()->getInterface(IXPHYSICS_GUID);
 }
 
 CBrushMesh::~CBrushMesh()
