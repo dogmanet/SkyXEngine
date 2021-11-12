@@ -461,7 +461,7 @@ void CBrushMesh::renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer)
 
 void CBrushMesh::serialize(Array<char> *paData)
 {
-	char tmp[64];
+	char tmp[256];
 	paData->append("{\"v\":[");
 	for(UINT i = 0, l = m_aVertices.size(); i < l; ++i)
 	{
