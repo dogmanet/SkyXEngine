@@ -236,10 +236,20 @@ bool COutline::isValid()
 				return(false);
 			}
 
+			p2 = j;
+			p3 = (j + 1) % l;
+
+			float fCos = fabsf(SMVector3Dot(
+				SMVector3Normalize(m_aPoints[p0].vPos - m_aPoints[p1].vPos),
+				SMVector3Normalize(m_aPoints[p2].vPos - m_aPoints[p3].vPos)
+				));
+			if(fabsf(fCos - 1.0f) <= FLT_EPSILON)
+			{
+				return(false);
+			}
+
 			if(j > i + 1)
 			{
-				p2 = j;
-				p3 = (j + 1) % l;
 				if(p0 == p3)
 				{
 					continue;
