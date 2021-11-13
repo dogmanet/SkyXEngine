@@ -33,7 +33,7 @@ public:
 	void XMETHODCALLTYPE postSetup() override;
 
 	void XMETHODCALLTYPE setKV(const char *szKey, const char *szValue) override;
-	void setKV(const char *szKey, IXJSONItem *pValue);
+	void setKV(const char *szKey, IXJSONItem *pValue, bool bSkipFixPos = false);
 	const char* XMETHODCALLTYPE getKV(const char *szKey) override;
 	const X_PROP_FIELD* XMETHODCALLTYPE getPropertyMeta(UINT uKey) override;
 	UINT XMETHODCALLTYPE getProperyCount() override;

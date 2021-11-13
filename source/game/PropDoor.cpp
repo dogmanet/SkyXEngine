@@ -225,6 +225,7 @@ void CPropDoor::createPhysBody()
 		m_pGhostObject->setCollisionShape(m_pCollideShape);
 		m_pGhostObject->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
 		m_pGhostObject->setUserPointer(this);
+		m_pGhostObject->setUserIndex(1);
 		
 		SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_DOOR, CG_CHARACTER | CG_DEFAULT);
 
@@ -395,13 +396,16 @@ bool CPropDoor::testPenetration()
 					hasContact = true;
 					const btCollisionObject *pObject = (obj0 == m_pGhostObject) ? obj1 : obj0;
 
-					CBaseEntity *pEnt = (CBaseEntity*)pObject->getUserPointer();
-					if(pEnt)
+					if(pObject->getUserPointer() && pObject->getUserIndex() == 1)
 					{
-						CTakeDamageInfo takeDamageInfo(this, m_fBlockDamage);
-						takeDamageInfo.m_pInflictor = this;
+						CBaseEntity *pEnt = (CBaseEntity*)pObject->getUserPointer();
+						if(pEnt)
+						{
+							CTakeDamageInfo takeDamageInfo(this, m_fBlockDamage);
+							takeDamageInfo.m_pInflictor = this;
 
-						pEnt->dispatchDamage(takeDamageInfo);
+							pEnt->dispatchDamage(takeDamageInfo);
+						}
 					}
 				}
 			}

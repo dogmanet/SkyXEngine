@@ -31,6 +31,7 @@ public:
 	{
 		m_pCollisionObject = pObject;
 		m_pCollisionObject->setUserPointer((ICollisionObject*)this);
+		m_pCollisionObject->setUserIndex(2);
 	}
 
 	XCOLLISION_OBJECT_TYPE XMETHODCALLTYPE getType() const override

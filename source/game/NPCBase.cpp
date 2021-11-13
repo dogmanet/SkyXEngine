@@ -407,7 +407,7 @@ float CNPCBase::canSee(CBaseEntity *pOther)
 	cb.m_collisionFilterMask = CG_ALL & ~(CG_DEBRIS | CG_TRIGGER | CG_CHARACTER);
 	SPhysics_GetDynWorld()->rayTest(F3_BTVEC(m_pHeadEnt->getPos()), F3_BTVEC(pOther->getPos()), cb);
 
-	if(cb.hasHit())
+	if(cb.hasHit() && cb.m_collisionObject->getUserPointer() && cb.m_collisionObject->getUserIndex() == 1)
 	{
 		CBaseEntity *pEnt = (CBaseEntity*)cb.m_collisionObject->getUserPointer();
 		if(!pEnt || pEnt != pOther)

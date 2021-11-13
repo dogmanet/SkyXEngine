@@ -192,7 +192,7 @@ void CBaseAmmo::fire(const float3 &_vStart, const float3 &_vDir, CBaseCharacter 
 					
 					float fEnergyDelta = m_fBulletMass * 0.001f * 0.5f * (fSpeed * fSpeed - fNewSpeed * fNewSpeed);
 					
-					if(aHitPoints[i].pCollisionObject->getUserPointer())
+					if(aHitPoints[i].pCollisionObject->getUserPointer() && aHitPoints[i].pCollisionObject->getUserIndex() == 1)
 					{
 						CTakeDamageInfo takeDamageInfo(pAttacker, fEnergyDelta);
 						takeDamageInfo.m_pInflictor = getParent();

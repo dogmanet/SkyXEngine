@@ -116,6 +116,7 @@ void CBaseTrigger::createPhysBody()
 		m_pGhostObject = new btPairCachingGhostObject();
 		m_pGhostObject->setWorldTransform(btTransform(Q4_BTQUAT(qRot), F3_BTVEC(vPos)));
 		m_pGhostObject->setUserPointer(this);
+		m_pGhostObject->setUserIndex(1);
 		m_pGhostObject->setCollisionShape(m_pCollideShape);
 		m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() ^ btCollisionObject::CF_NO_CONTACT_RESPONSE);
 
@@ -187,11 +188,14 @@ void CBaseTrigger::onPhysicsStep()
 						? manifoldArray[0]->getBody1()
 						: manifoldArray[0]->getBody0();
 
-					CBaseEntity *pEnt = (CBaseEntity*)pObject->getUserPointer();
-					if(pEnt)
+					if(pObject->getUserPointer() && pObject->getUserIndex() == 1)
 					{
-						m_aNewTouches.push_back(pEnt);
-						//printf("touched %s\n", pEnt->getClassName());
+						CBaseEntity *pEnt = (CBaseEntity*)pObject->getUserPointer();
+						if(pEnt)
+						{
+							m_aNewTouches.push_back(pEnt);
+							//printf("touched %s\n", pEnt->getClassName());
+						}
 					}
 					break;
 				}

@@ -49,6 +49,7 @@ void CPropStatic::createPhysBody()
 
 		//m_pRigidBody->setFriction(100.0f);
 		m_pRigidBody->setUserPointer(this);
+		m_pRigidBody->setUserIndex(1);
 		int colGroup = CG_STATIC;
 		int colMask = CG_STATIC_MASK;
 		SPhysics_AddShapeEx(m_pRigidBody, colGroup, colMask);

@@ -253,7 +253,7 @@ void XMETHODCALLTYPE CEditorObject::setKV(const char *szKey, const char *szValue
 	//}
 }
 
-void CEditorObject::setKV(const char *szKey, IXJSONItem *pValue)
+void CEditorObject::setKV(const char *szKey, IXJSONItem *pValue, bool bSkipFixPos)
 {
 	if(!fstrcmp(szKey, "brush"))
 	{
@@ -292,7 +292,10 @@ void CEditorObject::setKV(const char *szKey, IXJSONItem *pValue)
 
 		float3_t vOldPos = getPos();
 		fixPos();
-		setPos(vOldPos);
+		if(!bSkipFixPos)
+		{
+			setPos(vOldPos);
+		}
 	}
 }
 

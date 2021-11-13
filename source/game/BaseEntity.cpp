@@ -866,6 +866,7 @@ void CBaseEntity::_initEditorBoxes()
 	m_pEditorRigidBody = new btRigidBody(rigidBodyCI);
 	//m_pEditorRigidBody->getInvMass();
 	m_pEditorRigidBody->setUserPointer(this);
+	m_pEditorRigidBody->setUserIndex(1);
 
 	SPhysics_AddShapeEx(m_pEditorRigidBody, CG_DEFAULT, CG_BULLETFIRE);
 }

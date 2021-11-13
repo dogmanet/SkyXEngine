@@ -99,6 +99,7 @@ protected:
 	{
 		m_pCollisionShape = pCollisionShape;
 		pCollisionShape->setUserPointer((ICollisionShape*)this);
+		pCollisionShape->setUserIndex(2);
 	}
 
 private:

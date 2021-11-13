@@ -104,6 +104,8 @@ void CEditable::save(const char *szLevelName)
 	{
 		CEditorObject *pObj = m_aObjects[i];
 		pFile->writeText("\t%s{\n", i == 0 ? "" : ",");
+		//float3_t vPos = pObj->getPos();
+		//pFile->writeText("\t\t\"_origin\": [%g,%g,%g]\n", vPos.x, vPos.y, vPos.z);
 		for(UINT j = 0, jl = pObj->getProperyCount(); j < jl; ++j)
 		{
 			const char *pKey = pObj->getPropertyMeta(j)->szKey;
@@ -170,7 +172,7 @@ void CEditable::load(const char *szLevelName, ID idPlugin)
 								CEditorObject *pObj = new CEditorObject(this);
 								for(UINT k = 0, kl = pBrushObj->size(); k < kl; ++k)
 								{
-									pObj->setKV(pBrushObj->getKey(k), pBrushObj->at(k));
+									pObj->setKV(pBrushObj->getKey(k), pBrushObj->at(k), true);
 								}
 							}
 						}

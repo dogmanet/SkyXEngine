@@ -399,7 +399,7 @@ bool CEntityManager::exportList(const char * file)
 	proptable_t * pTbl;
 	int ic = 0;
 
-	if(m_isOldImported)
+	//if(m_isOldImported)
 	{
 		FILE *fp = fopen(file, "w");
 		if(fp)

@@ -89,6 +89,7 @@ void CBaseCharacter::onPostLoad()
 	m_pGhostObject->setCollisionShape(m_pCollideShape);
 	m_pGhostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT | btCollisionObject::CF_KINEMATIC_OBJECT);
 	m_pGhostObject->setUserPointer(this);
+	m_pGhostObject->setUserIndex(1);
 
 	m_pHeadEnt = (CPointEntity*)CREATE_ENTITY("base_point", m_pMgr);
 	m_pHeadEnt->setPos(getPos() + float3(0.0f, m_fCapsHeight - 0.1f, 0.0f));
@@ -375,6 +376,7 @@ void CBaseCharacter::initHitboxes()
 			);
 		btRigidBody * pRigidBody = new btRigidBody(rigidBodyCI);
 		pRigidBody->setUserPointer(this);
+		pRigidBody->setUserIndex(1);
 
 		pRigidBody->setAngularFactor(0.0f);
 		pRigidBody->setLinearFactor(btVector3(0.0f, 0.0f, 0.0f));
@@ -558,7 +560,7 @@ void CBaseCharacter::use(bool start)
 		btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
 		SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
 
-		if(cb.hasHit())
+		if(cb.hasHit() && cb.m_collisionObject->getUserPointer() && cb.m_collisionObject->getUserIndex() == 1)
 		{
 			CBaseEntity *pEnt = (CBaseEntity*)cb.m_collisionObject->getUserPointer();
 			if(pEnt)

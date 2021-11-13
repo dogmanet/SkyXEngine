@@ -85,8 +85,8 @@ void CBrushMesh::buildModel()
 			XResourceModelStaticVertex vtx = {};
 			vtx.vNorm = face.vNormal;
 			vtx.vTangent = texInfo.vS;
-			vtx.vBinorm = SMVector3Normalize(SMVector3Cross(vtx.vNorm, vtx.vTangent));
-			vtx.vTangent = SMVector3Normalize(SMVector3Cross(vtx.vBinorm, vtx.vNorm));
+			vtx.vBinorm = SMVector3Normalize(SMVector3Cross(vtx.vTangent, vtx.vNorm));
+			vtx.vTangent = SMVector3Normalize(SMVector3Cross(vtx.vNorm, vtx.vBinorm));
 
 			if(isFirst)
 			{
@@ -336,6 +336,13 @@ void CBrushMesh::move(const float3 &vOffset)
 		m_pRigidBody->setPosition(m_pRigidBody->getPosition() + vOffset);
 	}
 
+	for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
+	{
+		Face &f = m_aFaces[i];
+		f.texInfo.fSShift -= SMVector3Dot(f.texInfo.vS, vOffset);
+		f.texInfo.fTShift -= SMVector3Dot(f.texInfo.vT, vOffset);
+	}
+
 	m_aabb = m_aabb + vOffset;
 }
 
@@ -380,6 +387,13 @@ void CBrushMesh::resize(const float3 &vOrigin, const float3 &vRelativeSize)
 	}
 
 	//! @TODO: texture shift???
+
+	for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
+	{
+		Face &f = m_aFaces[i];
+		f.texInfo.vS = (float3)(f.texInfo.vS / SMVector3Dot(vRelativeSize, SMVector3Normalize(f.texInfo.vS)));
+		f.texInfo.vT = (float3)(f.texInfo.vT / SMVector3Dot(vRelativeSize, SMVector3Normalize(f.texInfo.vT)));
+	}
 
 	buildModel();
 

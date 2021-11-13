@@ -380,6 +380,7 @@ void CBaseAnimating::createPhysBody()
 
 		//m_pRigidBody->setFriction(100.0f);
 		m_pRigidBody->setUserPointer(this);
+		m_pRigidBody->setUserIndex(1);
 		int colGroup = m_collisionGroup;
 		int colMask = m_collisionMask;
 		if(m_isStatic)

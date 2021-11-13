@@ -78,7 +78,7 @@ void CZombieHands::actualShoot(float dt)
 	{
 		SXDecals_ShootDecal(DECAL_TYPE_BLOOD_BIG, BTVEC_F3(cb.m_hitPointWorld), BTVEC_F3(cb.m_hitNormalWorld));
 
-		if(cb.m_collisionObject->getUserPointer())
+		if(cb.m_collisionObject->getUserPointer() && cb.m_collisionObject->getUserIndex() == 1)
 		{
 			CTakeDamageInfo takeDamageInfo(pOwner, m_fDamage);
 			takeDamageInfo.m_pInflictor = this;
