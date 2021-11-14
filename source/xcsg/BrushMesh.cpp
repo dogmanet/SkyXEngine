@@ -288,29 +288,42 @@ void CBrushMesh::setupFromOutline(COutline *pOutline, UINT uContour, float fHeig
 		// m_aVertices[i] = pOutline->getPoint(c.getPoint(i));
 		// m_aVertices[i + uPts] = (float3)(m_aVertices[i] + vOffset);
 
-		Face &f = m_aFaces[i];
-		f.aEdges.reserve(4);
-		f.aEdges.push_back(i + uPts * 2);
-		f.aEdges.push_back(i + uPts);
-		f.aEdges.push_back((i + 1) % uPts + uPts * 2);
-		f.aEdges.push_back(i);
+		if(!isInternal)
+		{
+			Face &f = m_aFaces[i];
+			f.aEdges.reserve(4);
+			f.aEdges.push_back(i + uPts * 2);
+			f.aEdges.push_back(i + uPts);
+			f.aEdges.push_back((i + 1) % uPts + uPts * 2);
+			f.aEdges.push_back(i);
 
-		float3 v1 = (e3.uVertex[0] == e2.uVertex[0] || e3.uVertex[0] == e2.uVertex[1])
-			? m_aVertices[e3.uVertex[1]] - m_aVertices[e3.uVertex[0]]
-			: m_aVertices[e3.uVertex[0]] - m_aVertices[e3.uVertex[1]];
+			float3 v1 = (e3.uVertex[0] == e2.uVertex[0] || e3.uVertex[0] == e2.uVertex[1])
+				? m_aVertices[e3.uVertex[1]] - m_aVertices[e3.uVertex[0]]
+				: m_aVertices[e3.uVertex[0]] - m_aVertices[e3.uVertex[1]];
 
-		float3 v0 = (e2.uVertex[0] == e3.uVertex[0] || e2.uVertex[0] == e3.uVertex[1])
-			? m_aVertices[e2.uVertex[1]] - m_aVertices[e2.uVertex[0]]
-			: m_aVertices[e2.uVertex[0]] - m_aVertices[e2.uVertex[1]];
+			float3 v0 = (e2.uVertex[0] == e3.uVertex[0] || e2.uVertex[0] == e3.uVertex[1])
+				? m_aVertices[e2.uVertex[1]] - m_aVertices[e2.uVertex[0]]
+				: m_aVertices[e2.uVertex[0]] - m_aVertices[e2.uVertex[1]];
 
-		f.texInfo = {};
-		f.vNormal = SMVector3Normalize(SMVector3Cross(v0, v1));
-		f.texInfo.vT = GetTangent(f.vNormal);
-		f.texInfo.vS = SMVector3Cross(f.texInfo.vT, f.vNormal);
-		f.texInfo.uMatId = 0; //1;
+			f.texInfo = {};
+			f.vNormal = SMVector3Normalize(SMVector3Cross(v0, v1));
+			f.texInfo.vT = GetTangent(f.vNormal);
+			f.texInfo.vS = SMVector3Cross(f.texInfo.vT, f.vNormal);
+			f.texInfo.uMatId = 0; //1;
+		}
 
 		f1.aEdges.push_back(i);
 		f2.aEdges.push_back((uPts - i - 1) + uPts);
+	}
+
+	for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
+	{
+		if(m_aFaces[i].aEdges.size() == 0)
+		{
+			m_aFaces.erase(i);
+			--i;
+			--l;
+		}
 	}
 
 	buildModel();
