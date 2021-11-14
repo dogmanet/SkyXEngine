@@ -6,6 +6,8 @@
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h>
 
+#include "Physics.h"
+
 template<class T>
 class CCollisionObject: public IXUnknownImplementation<T>
 {
@@ -32,6 +34,11 @@ public:
 		m_pCollisionObject = pObject;
 		m_pCollisionObject->setUserPointer((ICollisionObject*)this);
 		m_pCollisionObject->setUserIndex(2);
+	}
+
+	btCollisionObject* getBtCollisionObject()
+	{
+		return(m_pCollisionObject);
 	}
 
 	XCOLLISION_OBJECT_TYPE XMETHODCALLTYPE getType() const override
@@ -96,6 +103,7 @@ public:
 	void XMETHODCALLTYPE setPosition(const float3 &vPosition) override
 	{
 		m_pCollisionObject->getWorldTransform().setOrigin(F3_BTVEC(vPosition));
+		SAFE_CALL(m_pPhysWorld, updateSingleAABB, this);
 	}
 	float3 XMETHODCALLTYPE getPosition() const override
 	{
@@ -106,6 +114,7 @@ public:
 	void XMETHODCALLTYPE setRotation(const SMQuaternion &qRotation) override
 	{
 		m_pCollisionObject->getWorldTransform().setRotation(Q4_BTQUAT(qRotation));
+		SAFE_CALL(m_pPhysWorld, updateSingleAABB, this);
 	}
 	SMQuaternion XMETHODCALLTYPE getRotation() const override
 	{
@@ -201,9 +210,20 @@ public:
 		return(NULL);
 	}
 
+	void setPhysWorld(CPhysics *pPhyWorld)
+	{
+		m_pPhysWorld = pPhyWorld;
+	}
+
+	CPhysics* getPhysWorld() const
+	{
+		return(m_pPhysWorld);
+	}
+
 private:
 	btCollisionObject *m_pCollisionObject = NULL;
 	void *m_pUser = NULL;
+	CPhysics *m_pPhysWorld = NULL;
 	XCOLLISION_OBJECT_TYPE m_type;
 };
 

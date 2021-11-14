@@ -79,6 +79,7 @@ private:
 
 	SMAABB m_aabb;
 	bool m_isBoundDirty = true;
+	bool m_isPhysicsLoaded = false;
 };
 
 #endif

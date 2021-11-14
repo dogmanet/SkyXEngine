@@ -49,7 +49,7 @@ void XMETHODCALLTYPE CPhysics::addCollisionObject(ICollisionObject *pCollisionOb
 {
 	assert(pCollisionObject);
 
-	pCollisionObject->AddRef();
+	add_ref(pCollisionObject);
 
 	switch(pCollisionObject->getType())
 	{
@@ -57,10 +57,18 @@ void XMETHODCALLTYPE CPhysics::addCollisionObject(ICollisionObject *pCollisionOb
 		assert(!"Invalid type!");
 		break;
 	case XCOT_RIGID_BODY:
-		SPhysics_GetDynWorld()->addRigidBody(((CRigidBody*)pCollisionObject->asRigidBody())->getBtRigidBody(), iCollisionGroup, iCollisionMask);
+		{
+			CRigidBody *pBody = (CRigidBody*)pCollisionObject->asRigidBody();
+			pBody->setPhysWorld(this);
+			SPhysics_GetDynWorld()->addRigidBody(pBody->getBtRigidBody(), iCollisionGroup, iCollisionMask);
+		}
 		break;
 	case XCOT_GHOST_OBJECT:
-		SPhysics_GetDynWorld()->addCollisionObject(((CGhostObject*)pCollisionObject->asGhostObject())->getBtGhostObject(), iCollisionGroup, iCollisionMask);
+		{
+			CGhostObject *pGhost = (CGhostObject*)pCollisionObject->asGhostObject();
+			pGhost->setPhysWorld(this);
+			SPhysics_GetDynWorld()->addCollisionObject(pGhost->getBtGhostObject(), iCollisionGroup, iCollisionMask);
+		}
 		break;
 	default:
 		assert(!"Unknown type!");
@@ -70,21 +78,36 @@ void XMETHODCALLTYPE CPhysics::removeCollisionObject(ICollisionObject *pCollisio
 {
 	assert(pCollisionObject);
 
-	pCollisionObject->Release();
-
 	switch(pCollisionObject->getType())
 	{
 	case XCOT_INVALID:
 		assert(!"Invalid type!");
 		break;
 	case XCOT_RIGID_BODY:
-		SPhysics_GetDynWorld()->removeRigidBody(((CRigidBody*)pCollisionObject->asRigidBody())->getBtRigidBody());
+		{
+			CRigidBody *pBody = (CRigidBody*)pCollisionObject->asRigidBody();
+			assert(pBody->getPhysWorld());
+			if(pBody->getPhysWorld())
+			{
+				pBody->setPhysWorld(NULL);
+				SPhysics_GetDynWorld()->removeRigidBody(pBody->getBtRigidBody());
+			}
+		}
 		break;
 	case XCOT_GHOST_OBJECT:
-		SPhysics_GetDynWorld()->removeCollisionObject(((CGhostObject*)pCollisionObject->asGhostObject())->getBtGhostObject());
+		{
+			CGhostObject *pGhost = (CGhostObject*)pCollisionObject->asGhostObject();
+			assert(pGhost->getPhysWorld());
+			if(pGhost->getPhysWorld())
+			{
+				pGhost->setPhysWorld(NULL);
+				SPhysics_GetDynWorld()->removeCollisionObject(pGhost->getBtGhostObject());
+			}
+		}
 		break;
 	default:
 		assert(!"Unknown type!");
 	}
+	mem_release(pCollisionObject);
 }
 

@@ -2,6 +2,7 @@
 #define __XPHYSICS_H
 
 #include "IXPhysics.h"
+//#include "CollisionObject.h"
 
 class CPhysics: public IXUnknownImplementation<IXPhysics>
 {
@@ -20,6 +21,14 @@ public:
 
 	void XMETHODCALLTYPE addCollisionObject(ICollisionObject *pCollisionObject, int iCollisionGroup = CG_DEFAULT, int iCollisionMask = CG_ALL) override;
 	void XMETHODCALLTYPE removeCollisionObject(ICollisionObject *pCollisionObject) override;
+
+	template<class T>
+	void updateSingleAABB(T *pObj)
+	{
+		SPhysics_GetDynWorld()->updateSingleAabb(pObj->getBtCollisionObject());
+	}
+
+private:
 };
 
 #endif

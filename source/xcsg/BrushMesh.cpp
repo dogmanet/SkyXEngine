@@ -33,17 +33,33 @@ CBrushMesh::CBrushMesh(IXCore *pCore):
 
 CBrushMesh::~CBrushMesh()
 {
-	if(m_pRigidBody)
+	if(m_pRigidBody && m_isPhysicsLoaded)
 	{
 		m_pPhysics->removeCollisionObject(m_pRigidBody);
-		mem_release(m_pRigidBody);
 	}
+	mem_release(m_pRigidBody);
 	mem_release(m_pModel);
 }
 
 void CBrushMesh::enable(bool yesNo)
 {
 	SAFE_CALL(m_pModel, enable, yesNo);
+	if(m_pRigidBody)
+	{
+		if(yesNo)
+		{
+			if(!m_isPhysicsLoaded)
+			{
+				m_pPhysics->addCollisionObject(m_pRigidBody, CG_STATIC, CG_STATIC_MASK);
+				m_isPhysicsLoaded = true;
+			}
+		}
+		else if(m_isPhysicsLoaded)
+		{
+			m_pPhysics->removeCollisionObject(m_pRigidBody);
+			m_isPhysicsLoaded = false;
+		}
+	}
 }
 
 void CBrushMesh::buildModel()
@@ -185,11 +201,11 @@ void CBrushMesh::buildModel()
 	pProvider->createStaticModel(pResource, &m_pModel);
 	mem_release(pResource);
 
-	if(m_pRigidBody)
+	if(m_pRigidBody && m_isPhysicsLoaded)
 	{
 		m_pPhysics->removeCollisionObject(m_pRigidBody);
-		mem_release(m_pRigidBody);
 	}
+	mem_release(m_pRigidBody);
 
 	IConvexHullShape *pShape = m_pPhysics->newConvexHullShape(m_aVertices.size(), m_aVertices, sizeof(float3_t), false);
 
@@ -200,6 +216,7 @@ void CBrushMesh::buildModel()
 	mem_release(pShape);
 
 	m_pPhysics->addCollisionObject(m_pRigidBody, CG_STATIC, CG_STATIC_MASK);
+	m_isPhysicsLoaded = true;
 }
 
 static float3 GetTangent(const float3 &vNormal)
