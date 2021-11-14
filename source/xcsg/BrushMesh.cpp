@@ -368,11 +368,18 @@ void CBrushMesh::rotate(const float3 &vOrigin, const SMQuaternion &qOffset)
 	for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
 	{
 		Face &f = m_aFaces[i];
+
+		f.texInfo.fSShift += SMVector3Dot(f.texInfo.vS, vOrigin);
+		f.texInfo.fTShift += SMVector3Dot(f.texInfo.vT, vOrigin);
+
 		f.vNormal = qOffset * f.vNormal;
 		f.texInfo.vS = qOffset * f.texInfo.vS;
 		f.texInfo.vT = qOffset * f.texInfo.vT;
-		//! @TODO: texture shift???
+
+		f.texInfo.fSShift -= SMVector3Dot(f.texInfo.vS, vOrigin);
+		f.texInfo.fTShift -= SMVector3Dot(f.texInfo.vT, vOrigin);
 	}
+
 
 	m_isBoundDirty = true;
 
@@ -386,14 +393,14 @@ void CBrushMesh::resize(const float3 &vOrigin, const float3 &vRelativeSize)
 		m_aVertices[i] = (float3)(vRelativeSize * (m_aVertices[i] - vOrigin) + vOrigin);
 	}
 
-	//! @TODO: texture shift???
+	//! TODO: add support for texture scale lock
 
-	for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
+	/*for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
 	{
 		Face &f = m_aFaces[i];
-		f.texInfo.vS = (float3)(f.texInfo.vS / SMVector3Dot(vRelativeSize, SMVector3Normalize(f.texInfo.vS)));
-		f.texInfo.vT = (float3)(f.texInfo.vT / SMVector3Dot(vRelativeSize, SMVector3Normalize(f.texInfo.vT)));
-	}
+		f.texInfo.vS = (float3)(f.texInfo.vS / vRelativeSize);
+		f.texInfo.vT = (float3)(f.texInfo.vT / vRelativeSize);
+	}*/
 
 	buildModel();
 
