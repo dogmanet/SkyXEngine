@@ -690,7 +690,7 @@ void CDynamicModelShared::buildPSPs()
 						}
 						else
 						{
-							if(1.0f - fabsf(SMVector2Dot(vNormal, vFirstNormal)) > c_fEpsilon)
+							if(1.0f - fabsf(SMVector3Dot(vNormal, vFirstNormal)) > c_fEpsilon)
 							{
 								isGood = false;
 								break;
