@@ -78,6 +78,11 @@ public:
 
 	void onLevelEvent(const XEventLevel *pData)
 	{
+		//! TODO Do not create CEditable in game mode!
+		if(!m_pEditable)
+		{
+			m_pEditable = new CEditable(m_pCore);
+		}
 		switch(pData->type)
 		{
 		case XEventLevel::TYPE_LOAD:
