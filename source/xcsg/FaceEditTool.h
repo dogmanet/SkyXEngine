@@ -1,20 +1,21 @@
-#ifndef __EDITOR_BRUSH_TOOL_H
-#define __EDITOR_BRUSH_TOOL_H
+#ifndef __FACE_EDIT_TOOL_H
+#define __FACE_EDIT_TOOL_H
 
 #include <xcommon/editor/IXEditable.h>
 #include <mtrl/IXMaterialSystem.h>
 #include <xcommon/IXCore.h>
-#include "Outline.h"
-#include "BrushMesh.h"
+//#include "Outline.h"
+//#include "BrushMesh.h"
+#include "FaceEdit.h"
 
 class CEditable;
 //class CEditorObject;
 
-class CEditorBrushTool final: public IXUnknownImplementation<IXEditorTool>
+class CFaceEditTool final: public IXUnknownImplementation<IXEditorTool>
 {
 public:
-	CEditorBrushTool(CEditable *pEditable, IXEditor *pEditor);
-	~CEditorBrushTool();
+	CFaceEditTool(CEditable *pEditable, IXEditor *pEditor);
+	~CFaceEditTool();
 
 	void* XMETHODCALLTYPE getIcon() override;
 	const char* XMETHODCALLTYPE getTitle() override;
@@ -32,24 +33,24 @@ public:
 
 	void render(bool is3D);
 
-
 	bool XMETHODCALLTYPE wantDrawSelection(bool is3D) override
 	{
-		return(false);
+		return(is3D);
 	}
 
 private:
 	CEditable *m_pEditable;
 	IXEditor *m_pEditor;
 
+	CFaceEdit *m_pFaceEdit;
+
 	HBITMAP m_hBitmap;
 
 	IXGizmoRenderer *m_pRenderer = NULL;
-	COutline *m_pNewOutline = NULL;
 
 	bool m_isActive = false;
 
-	bool m_isMouseDown = false;
+	//bool m_isMouseDown = false;
 };
 
 #endif

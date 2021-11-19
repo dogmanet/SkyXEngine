@@ -129,6 +129,9 @@
     <ClCompile Include="..\..\..\source\terrax\PropertyWindow.cpp">
       <Filter>Source Files\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\EditorMaterialBrowser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\terrax\terrax.rc">
@@ -237,6 +240,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\terrax\LevelOpenDialog.h">
       <Filter>Header Files\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorMaterialBrowser.h">
+      <Filter>Header Files\xcommon\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\EditorMaterialBrowser.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

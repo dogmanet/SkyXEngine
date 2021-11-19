@@ -324,7 +324,13 @@ bool XMETHODCALLTYPE CEditor::execCommand(IXEditorCommand *pCmd)
 	return(g_pUndoManager->execCommand(pCmd));
 }
 
-const char* XMETHODCALLTYPE CEditor::getCurrentMaterial()
+void* XMETHODCALLTYPE CEditor::getMainWindow()
 {
-	return(XGetCurMat());
+	extern HWND g_hWndMain;
+	return(g_hWndMain);
+}
+
+bool XMETHODCALLTYPE CEditor::isKeyPressed(UINT uKey)
+{
+	return(XIsKeyPressed(uKey));
 }

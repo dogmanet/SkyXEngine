@@ -188,9 +188,6 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene);
 
 void XFrameRun(float fDeltaTime);
 
-void XGetCurMatInfo(IXMaterial **ppMat, IXTexture **ppTex);
-const char* XGetCurMat();
-
 #define XSELECT_STEP_DELAY 0.5f
 
 struct XBorderVertex
@@ -221,6 +218,8 @@ void XInitTool(IXEditorTool *pTool);
 void XInitCustomAccel();
 
 void XSetXformType(X_2DXFORM_TYPE type);
+
+bool XIsKeyPressed(UINT uKey);
 
 extern IXEngine *g_pEngine;
 
@@ -254,8 +253,44 @@ private:
 	float3_t m_vOffset;
 };
 
+class CMatBrowserCallback: public IMaterialBrowserCallback
+{
+public:
+	~CMatBrowserCallback()
+	{
+		//! FIXME fix release order!
+		//mem_release(m_pMat);
+		//mem_release(m_pTex);
+	}
+
+	void init(IXMaterialSystem *pMatSys);
+	void onSelected(const char *szName) override;
+	void onCancel() override
+	{
+	}
+
+	void getInfo(IXMaterial **ppMat, IXTexture **ppTex);
+
+	void pushHistory(const char *szMat);
+
+	const char* getSelection();
+
+	UINT getRecentMaterialCount();
+	const char* getRecentMaterial(UINT idx);
+
+private:
+	String m_sSelected;
+	IXMaterialSystem *m_pMaterialSystem = NULL;
+
+	IXMaterial *m_pMat = NULL;
+	IXTexture *m_pTex = NULL;
+
+	Array<char> m_aTemp;
+};
+
 extern CGizmoMoveCallback g_gizmoMoveCallback;
 extern CGizmoRotateCallback g_gizmoRotateCallback;
 extern IEventChannel<XEventEditorXformType> *g_pXformEventChannel;
+extern CMatBrowserCallback g_matBrowserCallback;
 
 #endif

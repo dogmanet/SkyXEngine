@@ -163,7 +163,7 @@ bool XMETHODCALLTYPE CEditorObject::rayTest(const float3 &vStart, const float3 &
 	{
 		if(bReturnNearestPoint)
 		{
-			float3 vOut, vNormal, *pNormal = NULL;
+			float3 vOut, vMinOut, vNormal, *pNormal = NULL;
 			if(pNormal)
 			{
 				pNormal = &vNormal;
@@ -177,6 +177,7 @@ bool XMETHODCALLTYPE CEditorObject::rayTest(const float3 &vStart, const float3 &
 					(fDist = SMVector3Length2(vStart - vOut)) < fDist2
 				)
 				{
+					vMinOut = vOut;
 					fDist2 = fDist;
 					isFound = true;
 				}
@@ -186,7 +187,7 @@ bool XMETHODCALLTYPE CEditorObject::rayTest(const float3 &vStart, const float3 &
 			{
 				if(pvOut)
 				{
-					*pvOut = vOut;
+					*pvOut = vMinOut;
 				}
 				if(pvNormal)
 				{
@@ -215,6 +216,7 @@ void XMETHODCALLTYPE CEditorObject::remove()
 	{
 		m_aBrushes[i]->enable(false);
 	}
+	m_isVisible = false;
 }
 void XMETHODCALLTYPE CEditorObject::preSetup()
 {
@@ -230,6 +232,7 @@ void XMETHODCALLTYPE CEditorObject::create()
 	{
 		m_aBrushes[i]->enable(true);
 	}
+	m_isVisible = true;
 }
 
 void XMETHODCALLTYPE CEditorObject::setKV(const char *szKey, const char *szValue)
@@ -386,3 +389,128 @@ void CEditorObject::addBrush(CBrushMesh *pBrushMesh)
 {
 	m_aBrushes.push_back(pBrushMesh);
 }
+
+bool CEditorObject::findFace(const float3 &vRayStart, const float3 &vRayDir, UINT *puFace, float3 *pvFacePoint)
+{
+	float3 vOut, vMinOut;
+	
+	bool isFound = false;
+	float fDist, fDist2 = FLT_MAX;
+	UINT uFaceId, uMinFaceId, uFaceOffset = 0;
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	{
+		if(m_aBrushes[i]->findFace(vRayStart, vRayDir, &uFaceId, &vOut) &&
+			(fDist = SMVector3Length2(vRayStart - vOut)) < fDist2
+			)
+		{
+			uMinFaceId = uFaceId + uFaceOffset;
+			vMinOut = vOut;
+			fDist2 = fDist;
+			isFound = true;
+		}
+
+		uFaceOffset += m_aBrushes[i]->getFaceCount();
+	}
+
+	if(isFound)
+	{
+		if(puFace)
+		{
+			*puFace = uMinFaceId;
+		}
+		if(pvFacePoint)
+		{
+			*pvFacePoint = vMinOut;
+		}
+		return(true);
+	}
+
+	return(false);
+}
+
+UINT CEditorObject::getFaceCount() const
+{
+	UINT uFaceCount = 0;
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	{
+		uFaceCount += m_aBrushes[i]->getFaceCount();
+	}
+	return(uFaceCount);
+}
+
+void CEditorObject::renderFace(IXGizmoRenderer *pRenderer, UINT uFace)
+{
+	UINT uFaceCount;
+	CBrushMesh *pBrush;
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	{
+		pBrush = m_aBrushes[i];
+		uFaceCount = pBrush->getFaceCount();
+		if(uFace >= uFaceCount)
+		{
+			uFace -= uFaceCount;
+			continue;
+		}
+
+		pBrush->renderFace(pRenderer, uFace);
+		break;
+	}
+}
+
+void CEditorObject::getFaceInfo(UINT uFace, BrushFace *pOut)
+{
+	UINT uFaceCount;
+	CBrushMesh *pBrush;
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	{
+		pBrush = m_aBrushes[i];
+		uFaceCount = pBrush->getFaceCount();
+		if(uFace >= uFaceCount)
+		{
+			uFace -= uFaceCount;
+			continue;
+		}
+
+		pBrush->getFaceInfo(uFace, pOut);
+		break;
+	}
+}
+
+void CEditorObject::setFaceInfo(UINT uFace, const BrushFace &brushFace)
+{
+	UINT uFaceCount;
+	CBrushMesh *pBrush;
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	{
+		pBrush = m_aBrushes[i];
+		uFaceCount = pBrush->getFaceCount();
+		if(uFace >= uFaceCount)
+		{
+			uFace -= uFaceCount;
+			continue;
+		}
+
+		pBrush->setFaceInfo(uFace, brushFace);
+		break;
+	}
+}
+
+void CEditorObject::getFaceExtents(UINT uFace, Extents extents)
+{
+	UINT uFaceCount;
+	CBrushMesh *pBrush;
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	{
+		pBrush = m_aBrushes[i];
+		uFaceCount = pBrush->getFaceCount();
+		if(uFace >= uFaceCount)
+		{
+			uFace -= uFaceCount;
+			continue;
+		}
+
+		pBrush->getFaceExtents(uFace, extents);
+		break;
+	}
+}
+

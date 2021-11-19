@@ -4,11 +4,14 @@
 
 CEditorExtension::CEditorExtension(CEditable *pEditable, IXEditor *pEditor):
 	m_pEditable(pEditable),
-	m_pBrushTool(new CEditorBrushTool(pEditable, pEditor))
+	m_pBrushTool(new CEditorBrushTool(pEditable, pEditor)),
+	m_pFaceEditTool(new CFaceEditTool(pEditable, pEditor))
 {
+
 }
 CEditorExtension::~CEditorExtension()
 {
+	mem_release(m_pFaceEditTool);
 	mem_release(m_pBrushTool);
 }
 
@@ -23,7 +26,7 @@ IXEditorPropertyTab* XMETHODCALLTYPE CEditorExtension::getPropertyTab(UINT uId)
 
 UINT XMETHODCALLTYPE CEditorExtension::getToolCount()
 {
-	return(1);
+	return(2);
 }
 bool XMETHODCALLTYPE CEditorExtension::getTool(UINT uId, IXEditorTool **ppOut)
 {
@@ -33,6 +36,11 @@ bool XMETHODCALLTYPE CEditorExtension::getTool(UINT uId, IXEditorTool **ppOut)
 		add_ref(m_pBrushTool);
 		*ppOut = m_pBrushTool;
 		return(true);
+
+	case 1:
+		add_ref(m_pFaceEditTool);
+		*ppOut = m_pFaceEditTool;
+		return(true);
 	}
 	return(false);
 }
@@ -40,6 +48,7 @@ bool XMETHODCALLTYPE CEditorExtension::getTool(UINT uId, IXEditorTool **ppOut)
 void XMETHODCALLTYPE CEditorExtension::render(bool is3D)
 {
 	m_pBrushTool->render(is3D);
+	m_pFaceEditTool->render(is3D);
 }
 
 //void CEditorExtension::onSelectionChanged(CEditorObject *pObject)

@@ -189,128 +189,114 @@ protected:
 	CCommandProperties *m_pPropsCmd = NULL;
 };
 
+//#############################################################################
 
-class CMatBrowserCallback: public IMaterialBrowserCallback
+void CMatBrowserCallback::init(IXMaterialSystem *pMatSys)
 {
-public:
-	~CMatBrowserCallback()
+	m_pMaterialSystem = pMatSys;
+	if(m_pMaterialSystem->getScannedMaterialsCount())
 	{
-		//! FIXME fix release order!
-		//mem_release(m_pMat);
-		//mem_release(m_pTex);
+		onSelected(m_pMaterialSystem->getScannedMaterial(0, NULL));
 	}
-
-	void init(IXMaterialSystem *pMatSys)
+	else
 	{
-		m_pMaterialSystem = pMatSys;
-		if(m_pMaterialSystem->getScannedMaterialsCount())
-		{
-			onSelected(m_pMaterialSystem->getScannedMaterial(0, NULL));
-		}
-		else
-		{
-			onSelected("dev_null");
-		}
+		onSelected("dev_null");
 	}
-	void onSelected(const char *szName) override
+}
+void CMatBrowserCallback::onSelected(const char *szName)
+{
+	pushHistory(szName);
+
+	m_sSelected = szName;
+
+	mem_release(m_pMat);
+	mem_release(m_pTex);
+	IKeyIterator *pIter = NULL;
+
+	m_pMaterialSystem->loadMaterial(szName, &m_pMat);
+
+	const char *szTexture = m_pMat->getTextureName("txBase");
+	if(!szTexture)
 	{
-		pushHistory(szName);
-
-		m_sSelected = szName;
-
-		mem_release(m_pMat);
-		mem_release(m_pTex);
-		IKeyIterator *pIter = NULL;
-
-		m_pMaterialSystem->loadMaterial(szName, &m_pMat);
-
-		const char *szTexture = m_pMat->getTextureName("txBase");
-		if(!szTexture)
+		pIter = m_pMat->getTexturesIterator();
+		if(pIter)
 		{
-			pIter = m_pMat->getTexturesIterator();
-			if(pIter)
-			{
-				szTexture = pIter->getCurrent();
-			}
-		}
-
-		if(szTexture)
-		{
-			m_pMaterialSystem->loadTexture(szTexture, &m_pTex);
-		}
-
-		mem_release(pIter);
-
-		if(m_pTex)
-		{
-			UINT w = m_pTex->getWidth();
-			UINT h = m_pTex->getHeight();
-
-			char tmp[64];
-			sprintf(tmp, "%ux%u", w, h);
-			SetWindowText(g_hStaticCurrentMatSizeWnd, tmp);
-		}
-
-		g_isCurMatDirty = true;
-	}
-	void onCancel() override{}
-
-	void getInfo(IXMaterial **ppMat, IXTexture **ppTex)
-	{
-		add_ref(m_pMat);
-		*ppMat = m_pMat;
-		add_ref(m_pTex);
-		*ppTex = m_pTex;
-	}
-
-	void pushHistory(const char *szMat)
-	{
-		int idx = ComboBox_FindStringExact(g_hComboCurrentMatWnd, -1, szMat);
-
-		if(idx >= 0)
-		{
-			ComboBox_DeleteString(g_hComboCurrentMatWnd, idx);
-		}
-		ComboBox_InsertString(g_hComboCurrentMatWnd, 0, szMat);
-		ComboBox_SetCurSel(g_hComboCurrentMatWnd, 0);
-
-		if(ComboBox_GetCount(g_hComboCurrentMatWnd) > 20)
-		{
-			ComboBox_DeleteString(g_hComboCurrentMatWnd, 20);
+			szTexture = pIter->getCurrent();
 		}
 	}
 
-	const char* getSelection()
+	if(szTexture)
 	{
-		return(m_sSelected.c_str());
+		m_pMaterialSystem->loadTexture(szTexture, &m_pTex);
 	}
 
-private:
-	String m_sSelected;
-	IXMaterialSystem *m_pMaterialSystem = NULL;
+	mem_release(pIter);
 
-	IXMaterial *m_pMat = NULL;
-	IXTexture *m_pTex = NULL;
-};
+	if(m_pTex)
+	{
+		UINT w = m_pTex->getWidth();
+		UINT h = m_pTex->getHeight();
+
+		char tmp[64];
+		sprintf(tmp, "%ux%u", w, h);
+		SetWindowText(g_hStaticCurrentMatSizeWnd, tmp);
+	}
+
+	g_isCurMatDirty = true;
+}
+
+void CMatBrowserCallback::getInfo(IXMaterial **ppMat, IXTexture **ppTex)
+{
+	add_ref(m_pMat);
+	*ppMat = m_pMat;
+	add_ref(m_pTex);
+	*ppTex = m_pTex;
+}
+
+void CMatBrowserCallback::pushHistory(const char *szMat)
+{
+	int idx = ComboBox_FindStringExact(g_hComboCurrentMatWnd, -1, szMat);
+
+	if(idx >= 0)
+	{
+		ComboBox_DeleteString(g_hComboCurrentMatWnd, idx);
+	}
+	ComboBox_InsertString(g_hComboCurrentMatWnd, 0, szMat);
+	ComboBox_SetCurSel(g_hComboCurrentMatWnd, 0);
+
+	if(ComboBox_GetCount(g_hComboCurrentMatWnd) > 20)
+	{
+		ComboBox_DeleteString(g_hComboCurrentMatWnd, 20);
+	}
+}
+
+const char* CMatBrowserCallback::getSelection()
+{
+	return(m_sSelected.c_str());
+}
+
+UINT CMatBrowserCallback::getRecentMaterialCount()
+{
+	return(ComboBox_GetCount(g_hComboCurrentMatWnd));
+}
+const char* CMatBrowserCallback::getRecentMaterial(UINT idx)
+{
+	int iLen = ComboBox_GetLBTextLen(g_hComboCurrentMatWnd, idx);
+	char *szMatName = (char*)alloca(sizeof(char)* (iLen + 1));
+	ComboBox_GetLBText(g_hComboCurrentMatWnd, idx, szMatName);
+
+	m_aTemp.clearFast();
+	m_aTemp.reserve(iLen + 1);
+	m_aTemp.append(szMatName);
+	m_aTemp.push_back(0);
+	return(m_aTemp);
+}
+
+//#############################################################################
 
 CMatBrowserCallback g_matBrowserCallback;
 
 CPropertyCallback g_propertyCallback;
-
-void XInitMBCallback(IXMaterialSystem *pMatSys)
-{
-	g_matBrowserCallback.init(pMatSys);
-}
-
-void XGetCurMatInfo(IXMaterial **ppMat, IXTexture **ppTex)
-{
-	g_matBrowserCallback.getInfo(ppMat, ppTex);
-}
-
-const char* XGetCurMat()
-{
-	return(g_matBrowserCallback.getSelection());
-}
 
 ATOM XRegisterClass(HINSTANCE hInstance)
 {
@@ -923,7 +909,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			SetWindowFont(g_hStaticCurrentMatWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
 		}
 
-		g_hComboCurrentMatWnd = CreateWindowExA(0, WC_COMBOBOX, "", WS_VISIBLE | WS_CHILD | WS_BORDER | /*CBS_SORT | */CBS_DROPDOWNLIST | CBS_HASSTRINGS, rect.right, rect.top + 15, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, (HMENU)ID_CMB_MAT, hInst, NULL);
+		g_hComboCurrentMatWnd = CreateWindowExA(WS_EX_RIGHT, WC_COMBOBOX, "", WS_VISIBLE | WS_CHILD | WS_BORDER | /*CBS_SORT | */CBS_DROPDOWNLIST | CBS_HASSTRINGS, rect.right, rect.top + 15, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, (HMENU)ID_CMB_MAT, hInst, NULL);
 		{
 			SetWindowFont(g_hComboCurrentMatWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
 
@@ -1134,7 +1120,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_COMMAND:
-		if(LOWORD(wParam) >= IDC_AB_FIRST && LOWORD(wParam) < IDC_AB_FIRST + g_apTools.size())
+		if(LOWORD(wParam) >= IDC_AB_FIRST && LOWORD(wParam) < IDC_AB_FIRST + g_apTools.size() && !g_is3DRotating && !g_is3DPanning)
 		{
 			IXEditorTool *pNewTool = g_apTools[LOWORD(wParam) - IDC_AB_FIRST];
 			if(pNewTool != g_pCurrentTool)
@@ -1297,30 +1283,39 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		case IDC_ESCAPE:
 		case IDC_AB_ARROW:
-			SAFE_CALL(g_pCurrentTool, deactivate);
-			mem_release(g_pCurrentTool);
-			CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
-			g_uCurrentTool = IDC_AB_ARROW;
-			CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
-			g_xState.bCreateMode = false;
-			XUpdateGizmos();
+			if(!g_is3DRotating && !g_is3DPanning)
+			{
+				SAFE_CALL(g_pCurrentTool, deactivate);
+				mem_release(g_pCurrentTool);
+				CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
+				g_uCurrentTool = IDC_AB_ARROW;
+				CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
+				g_xState.bCreateMode = false;
+				XUpdateGizmos();
+			}
 			break;
 		case IDC_AB_CAMERA:
-			SAFE_CALL(g_pCurrentTool, deactivate);
-			mem_release(g_pCurrentTool);
-			CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
-			g_uCurrentTool = IDC_AB_CAMERA;
-			CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
-			g_xState.bCreateMode = false;
-			XUpdateGizmos();
+			if(!g_is3DRotating && !g_is3DPanning)
+			{
+				SAFE_CALL(g_pCurrentTool, deactivate);
+				mem_release(g_pCurrentTool);
+				CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
+				g_uCurrentTool = IDC_AB_CAMERA;
+				CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
+				g_xState.bCreateMode = false;
+				XUpdateGizmos();
+			}
 			break;
 		case IDC_AB_CREATE:
-			SAFE_CALL(g_pCurrentTool, deactivate);
-			mem_release(g_pCurrentTool);
-			CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
-			g_uCurrentTool = IDC_AB_CREATE;
-			CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
-			XUpdateGizmos();
+			if(!g_is3DRotating && !g_is3DPanning)
+			{
+				SAFE_CALL(g_pCurrentTool, deactivate);
+				mem_release(g_pCurrentTool);
+				CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
+				g_uCurrentTool = IDC_AB_CREATE;
+				CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
+				XUpdateGizmos();
+			}
 			break;
 
 		case ID_GRIDSIZE_SMALLER:

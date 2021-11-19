@@ -297,7 +297,7 @@ void COutline::onHandleClick(IXEditorGizmoHandle *pHandle)
 		closePath();
 	}
 	
-	if(m_isCtrlPressed)
+	if(m_pEditor->isKeyPressed(SIK_CONTROL))
 	{
 		m_aPoints[idx].isSelected = !m_aPoints[idx].isSelected;
 		m_aPoints[idx].pHandle->setColor(float4_t(1.0f, 1.0f, m_aPoints[idx].isSelected ? 0.0f : 1.0f, 1.0f));

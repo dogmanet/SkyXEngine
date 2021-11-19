@@ -20,7 +20,7 @@ CEditorBrushTool::CEditorBrushTool(CEditable *pEditable, IXEditor *pEditor):
 	m_pEditable(pEditable),
 	m_pEditor(pEditor)
 {
-	m_hBitmap = LoadBitmap(g_hInstance, MAKEINTRESOURCE(IDB_BITMAP1));
+	m_hBitmap = LoadBitmap(g_hInstance, MAKEINTRESOURCE(IDB_AB_BLOCK));
 
 	IXRenderUtils *pUtils = (IXRenderUtils*)pEditable->getCore()->getPluginManager()->getInterface(IXRENDERUTILS_GUID);
 	pUtils->newGizmoRenderer(&m_pRenderer);
@@ -125,11 +125,7 @@ void XMETHODCALLTYPE CEditorBrushTool::onMouseUp(bool isPrimary)
 
 bool XMETHODCALLTYPE CEditorBrushTool::onKeyDown(UINT uKey)
 {
-	if(uKey == SIK_CONTROL)
-	{
-		SAFE_CALL(m_pNewOutline, setCtrlState, true);
-	}
-	else if(uKey == SIK_DELETE)
+	if(uKey == SIK_DELETE)
 	{
 		if(m_pNewOutline)
 		{
@@ -160,7 +156,7 @@ bool XMETHODCALLTYPE CEditorBrushTool::onKeyDown(UINT uKey)
 	{
 		if(m_pNewOutline && m_pNewOutline->isClosed() && m_pNewOutline->isValid())
 		{
-			const char *szMat = m_pEditor->getCurrentMaterial();
+			const char *szMat = m_pEditor->getMaterialBrowser()->getCurrentMaterial();
 			// create brush with default height
 
 			float fHeight = m_pEditor->getGridStep();
@@ -189,10 +185,6 @@ bool XMETHODCALLTYPE CEditorBrushTool::onKeyDown(UINT uKey)
 }
 void XMETHODCALLTYPE CEditorBrushTool::onKeyUp(UINT uKey)
 {
-	if(uKey == SIK_CONTROL)
-	{
-		SAFE_CALL(m_pNewOutline, setCtrlState, false);
-	}
 }
 
 void CEditorBrushTool::render(bool is3D)

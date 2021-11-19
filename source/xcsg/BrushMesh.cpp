@@ -109,15 +109,15 @@ void CBrushMesh::buildModel()
 				isFirst = false;
 
 				vtx.vPos = m_aVertices[edge.uVertex[0]];
-				vtx.vTex.x = (SMVector3Dot(vtx.vPos, texInfo.vS) + texInfo.fSShift);
-				vtx.vTex.y = (SMVector3Dot(vtx.vPos, texInfo.vT) + texInfo.fTShift);
+				vtx.vTex.x = (SMVector3Dot(vtx.vPos, texInfo.vS) / texInfo.fSScale + texInfo.fSShift);
+				vtx.vTex.y = (SMVector3Dot(vtx.vPos, texInfo.vT) / texInfo.fTScale + texInfo.fTShift);
 
 				uFirstIdx = subset.aVertices.size();
 				subset.aVertices.push_back(vtx);
 
 				vtx.vPos = m_aVertices[edge.uVertex[1]];
-				vtx.vTex.x = (SMVector3Dot(vtx.vPos, texInfo.vS) + texInfo.fSShift);
-				vtx.vTex.y = (SMVector3Dot(vtx.vPos, texInfo.vT) + texInfo.fTShift);
+				vtx.vTex.x = (SMVector3Dot(vtx.vPos, texInfo.vS) / texInfo.fSScale + texInfo.fSShift);
+				vtx.vTex.y = (SMVector3Dot(vtx.vPos, texInfo.vT) / texInfo.fTScale + texInfo.fTShift);
 
 				uNextIdx = subset.aVertices.size();
 				subset.aVertices.push_back(vtx);
@@ -128,8 +128,8 @@ void CBrushMesh::buildModel()
 			else
 			{
 				vtx.vPos = m_aVertices[edge.uVertex[1]];
-				vtx.vTex.x = (SMVector3Dot(vtx.vPos, texInfo.vS) + texInfo.fSShift);
-				vtx.vTex.y = (SMVector3Dot(vtx.vPos, texInfo.vT) + texInfo.fTShift);
+				vtx.vTex.x = (SMVector3Dot(vtx.vPos, texInfo.vS) / texInfo.fSScale + texInfo.fSShift);
+				vtx.vTex.y = (SMVector3Dot(vtx.vPos, texInfo.vT) / texInfo.fTScale + texInfo.fTShift);
 
 				subset.aIndices.push_back(uFirstIdx);
 				subset.aIndices.push_back(uNextIdx);
@@ -219,13 +219,32 @@ void CBrushMesh::buildModel()
 	m_isPhysicsLoaded = true;
 }
 
-static float3 GetTangent(const float3 &vNormal)
+float3 CBrushMesh::GetNearestAxis(const float3 &vNormal)
+{
+	float3 vTmp = SMVectorAbs(vNormal);
+	if(vTmp.y >= vTmp.x && vTmp.y >= vTmp.z)
+	{
+		return(float3(0.0f, vNormal.y / vTmp.y, 0.0f));
+	}
+	else if(vTmp.x >= vTmp.y && vTmp.x >= vTmp.z)
+	{
+		return(float3(vNormal.x / vTmp.x, 0.0f, 0.0f));
+	}
+	return(float3(0.0f, 0.0f, vNormal.z / vTmp.z));
+}
+
+float3 CBrushMesh::GetTangent(const float3 &vNormal)
 {
 	if(fabsf(SMVector3Dot(vNormal, float3(0.0f, 1.0f, 0.0f))) > cosf(SM_PIDIV4))
 	{
 		return(float3(0.0f, 0.0f, 1.0f));
 	}
 	return(float3(0.0f, -1.0f, 0.0f));
+}
+
+float3 CBrushMesh::ProjectToFace(const float3 &vNormal, const float3 &vIn)
+{
+	return(vIn - SMVector3Dot(vIn, vNormal) * vNormal);
 }
 
 void CBrushMesh::setupFromOutline(COutline *pOutline, UINT uContour, float fHeight)
@@ -251,11 +270,15 @@ void CBrushMesh::setupFromOutline(COutline *pOutline, UINT uContour, float fHeig
 	f2.texInfo = {};
 	f1.vNormal = (float3)-vNormal;
 	f2.vNormal = vNormal;
-	f1.texInfo.vT = GetTangent(f1.vNormal);
-	f1.texInfo.vS = SMVector3Cross(f1.texInfo.vT, f1.vNormal);
-	
-	f2.texInfo.vT = GetTangent(f2.vNormal);
-	f2.texInfo.vS = SMVector3Cross(f2.texInfo.vT, f2.vNormal);
+	f1.texInfo.vT = GetTangent(GetNearestAxis(f1.vNormal));
+	f1.texInfo.vS = SMVector3Cross(f1.texInfo.vT, GetNearestAxis(f1.vNormal));
+	f1.texInfo.fSScale = 1.0f;
+	f1.texInfo.fTScale = 1.0f;
+
+	f2.texInfo.vT = GetTangent(GetNearestAxis(f2.vNormal));
+	f2.texInfo.vS = SMVector3Cross(f2.texInfo.vT, GetNearestAxis(f2.vNormal));
+	f2.texInfo.fSScale = 1.0f;
+	f2.texInfo.fTScale = 1.0f;
 
 	f1.aEdges.reserve(uPts);
 	f2.aEdges.reserve(uPts);
@@ -307,8 +330,10 @@ void CBrushMesh::setupFromOutline(COutline *pOutline, UINT uContour, float fHeig
 
 			f.texInfo = {};
 			f.vNormal = SMVector3Normalize(SMVector3Cross(v0, v1));
-			f.texInfo.vT = GetTangent(f.vNormal);
-			f.texInfo.vS = SMVector3Cross(f.texInfo.vT, f.vNormal);
+			f.texInfo.vT = GetTangent(GetNearestAxis(f.vNormal));
+			f.texInfo.vS = SMVector3Cross(f.texInfo.vT, GetNearestAxis(f.vNormal));
+			f.texInfo.fSScale = 1.0f;
+			f.texInfo.fTScale = 1.0f;
 			f.texInfo.uMatId = 0; //1;
 		}
 
@@ -468,46 +493,32 @@ void CBrushMesh::renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer)
 		for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
 		{
 			Face &face = m_aFaces[i];
-
-			bool isFirst = true;
-			UINT uLastVtx = UINT_MAX;
-
-			float3 vA, vB, vC, vS;
+			float3 vS;
 
 			vS = face.vNormal * 0.005f;
 
-			Edge &e0 = m_aEdges[face.aEdges[0]];
-			Edge &e1 = m_aEdges[face.aEdges[1]];
-			if(e0.uVertex[0] == e1.uVertex[0] || e0.uVertex[0] == e1.uVertex[1])
-			{
-				std::swap(e0.uVertex[0], e0.uVertex[1]);
-			}
-
-			for(UINT j = 0, jl = face.aEdges.size() - 1; j < jl; ++j)
-			{
-				Edge edge = m_aEdges[face.aEdges[j]];
-				if(edge.uVertex[0] != uLastVtx && uLastVtx != UINT_MAX)
-				{
-					std::swap(edge.uVertex[0], edge.uVertex[1]);
-				}
-				uLastVtx = edge.uVertex[1];
-
-				if(isFirst)
-				{
-					isFirst = false;
-
-					vA = m_aVertices[edge.uVertex[0]] + vS;
-					vB = m_aVertices[edge.uVertex[1]] + vS;
-				}
-				else
-				{
-					vC = m_aVertices[edge.uVertex[1]] + vS;
-					pGizmoRenderer->drawPoly(vA, vB, vC);
-					vB = vC;
-				}
-			}
+			triangulateFace(i, [&](const float3 &vA, const float3 &vB, const float3 &vC){
+				pGizmoRenderer->drawPoly((float3)(vA + vS), (float3)(vB + vS), (float3)(vC + vS));
+				return(true);
+			});
 		}
 	}
+}
+
+void CBrushMesh::renderFace(IXGizmoRenderer *pGizmoRenderer, UINT uFace)
+{
+	assert(uFace < m_aFaces.size());
+	//pGizmoRenderer->setColor(float4(1.0f, 0.0f, 0.0f, 0.15f));
+
+	Face &face = m_aFaces[uFace];
+	float3 vS;
+
+	vS = face.vNormal * 0.005f;
+
+	triangulateFace(uFace, [&](const float3 &vA, const float3 &vB, const float3 &vC){
+		pGizmoRenderer->drawPoly((float3)(vA + vS), (float3)(vB + vS), (float3)(vC + vS));
+		return(true);
+	});
 }
 
 void CBrushMesh::serialize(Array<char> *paData)
@@ -537,9 +548,9 @@ void CBrushMesh::serialize(Array<char> *paData)
 			paData->push_back(',');
 		}
 		paData->append("{\"t\":{");
-		sprintf(tmp, "\"s\":[%g,%g,%g,%g],\"t\":[%g,%g,%g,%g],\"m\":%u", 
-			t.vS.x, t.vS.y, t.vS.z, t.fSShift,
-			t.vT.x, t.vT.y, t.vT.z, t.fTShift,
+		sprintf(tmp, "\"s\":[%g,%g,%g,%g,%g],\"t\":[%g,%g,%g,%g,%g],\"m\":%u", 
+			t.vS.x, t.vS.y, t.vS.z, t.fSShift, t.fSScale,
+			t.vT.x, t.vT.y, t.vT.z, t.fTShift, t.fTScale,
 			t.uMatId
 			);
 		paData->append(tmp);
@@ -635,9 +646,9 @@ bool CBrushMesh::deserialize(IXJSONObject *pData)
 						return(false);
 					}
 
-					e.uVertex[0] = a;
-					e.uVertex[1] = b;
-					e.isInternal = c;
+					e.uVertex[0] = (UINT)a;
+					e.uVertex[1] = (UINT)b;
+					e.isInternal = c != 0;
 				}
 			}
 			break;
@@ -676,7 +687,7 @@ bool CBrushMesh::deserialize(IXJSONObject *pData)
 								case 's':
 								case 't':
 									pVec = pTI->at(s)->asArray();
-									if(!pVec || pVec->size() != 4)
+									if(!pVec || (pVec->size() != 4 && pVec->size() != 5))
 									{
 										return(false);
 									}
@@ -684,6 +695,7 @@ bool CBrushMesh::deserialize(IXJSONObject *pData)
 									{
 										float3_t &vec = pKey[0] == 's' ? f.texInfo.vS : f.texInfo.vT;
 										float &fShift = pKey[0] == 's' ? f.texInfo.fSShift : f.texInfo.fTShift;
+										float &fScale = pKey[0] == 's' ? f.texInfo.fSScale : f.texInfo.fTScale;
 
 										if(!(pVec->at(0)->getFloat(&vec.x) &&
 											pVec->at(1)->getFloat(&vec.y) &&
@@ -691,6 +703,15 @@ bool CBrushMesh::deserialize(IXJSONObject *pData)
 											pVec->at(3)->getFloat(&fShift)))
 										{
 											return(false);
+										}
+
+										if(pVec->size() == 5)
+										{
+											pVec->at(4)->getFloat(&fScale);
+										}
+										else
+										{
+											fScale = 1.0f;
 										}
 									}
 
@@ -765,4 +786,153 @@ bool CBrushMesh::deserialize(IXJSONObject *pData)
 	m_isBoundDirty = true;
 
 	return(true);
+}
+
+bool CBrushMesh::findFace(const float3 &vRayStart, const float3 &vRayDir, UINT *puFace, float3 *pvFacePoint)
+{
+	if(!m_aVertices.size())
+	{
+		return(false);
+	}
+
+	float3 vA, vB, vC, vOut;
+
+	float3 vRayEnd = vRayStart + (SMVector3Length(vRayStart - m_aVertices[0]) + SMVector3Length(m_aabb.vMax - m_aabb.vMin) + 1.0f) * SMVector3Normalize(vRayDir);
+	for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
+	{
+		Face &face = m_aFaces[i];
+
+		if(SMVector3Dot(face.vNormal, vRayDir) > 0.0f)
+		{
+			continue;
+		}
+
+
+		if(!triangulateFace(i, [&](const float3 &vA, const float3 &vB, const float3 &vC){
+			if(SMTriangleIntersectLine(vA, vB, vC, vRayStart, vRayEnd, &vOut))
+			{
+				if(puFace)
+				{
+					*puFace = i;
+				}
+				if(pvFacePoint)
+				{
+					*pvFacePoint = vOut;
+				}
+				return(false);
+			}
+			return(true);
+		}))
+		{
+			return(true);
+		}
+	}
+	return(false);
+}
+
+UINT CBrushMesh::getFaceCount() const
+{
+	return(m_aFaces.size());
+}
+
+void CBrushMesh::getFaceInfo(UINT uFace, BrushFace *pOut)
+{
+	assert(uFace < m_aFaces.size());
+
+	Face &f = m_aFaces[uFace];
+
+	pOut->vN = f.vNormal;
+	pOut->vS = f.texInfo.vS;
+	pOut->vT = f.texInfo.vT;
+	pOut->fSShift = f.texInfo.fSShift;
+	pOut->fTShift = f.texInfo.fTShift;
+	pOut->fSScale = f.texInfo.fSScale;
+	pOut->fTScale = f.texInfo.fTScale;
+	pOut->szMaterial = m_aMaterials[f.texInfo.uMatId].c_str();
+}
+
+void CBrushMesh::setFaceInfo(UINT uFace, const BrushFace &brushFace)
+{
+	assert(uFace < m_aFaces.size());
+
+	Face &f = m_aFaces[uFace];
+
+	f.texInfo.vS = brushFace.vS;
+	f.texInfo.vT = brushFace.vT;
+	f.texInfo.fSShift = brushFace.fSShift;
+	f.texInfo.fTShift = brushFace.fTShift;
+	f.texInfo.fSScale = brushFace.fSScale;
+	f.texInfo.fTScale = brushFace.fTScale;
+
+	if(fstrcmp(m_aMaterials[f.texInfo.uMatId].c_str(), brushFace.szMaterial))
+	{
+		int idx = m_aMaterials.indexOf(brushFace.szMaterial, [](const String &a, const char *b){
+			return(!strcmp(a.c_str(), b));
+		});
+		if(idx < 0)
+		{
+			idx = (int)m_aMaterials.size();
+			m_aMaterials.push_back(brushFace.szMaterial);
+		}
+		f.texInfo.uMatId = (UINT)idx;
+	}
+
+	buildModel();
+}
+
+void CBrushMesh::BuildExtents(Extents extents, const float3 &vC)
+{
+	if(vC.x < extents[GXCUBEMAP_FACE_NEGATIVE_X].x)
+	{
+		extents[GXCUBEMAP_FACE_NEGATIVE_X] = vC;
+	}
+
+	if(vC.x > extents[GXCUBEMAP_FACE_POSITIVE_X].x)
+	{
+		extents[GXCUBEMAP_FACE_POSITIVE_X] = vC;
+	}
+
+	if(vC.y < extents[GXCUBEMAP_FACE_NEGATIVE_Y].y)
+	{
+		extents[GXCUBEMAP_FACE_NEGATIVE_Y] = vC;
+	}
+
+	if(vC.y > extents[GXCUBEMAP_FACE_POSITIVE_Y].y)
+	{
+		extents[GXCUBEMAP_FACE_POSITIVE_Y] = vC;
+	}
+
+	if(vC.z < extents[GXCUBEMAP_FACE_NEGATIVE_Z].z)
+	{
+		extents[GXCUBEMAP_FACE_NEGATIVE_Z] = vC;
+	}
+
+	if(vC.z > extents[GXCUBEMAP_FACE_POSITIVE_Z].z)
+	{
+		extents[GXCUBEMAP_FACE_POSITIVE_Z] = vC;
+	}
+}
+
+void CBrushMesh::getFaceExtents(UINT uFace, Extents extents)
+{
+	assert(uFace < m_aFaces.size());
+
+	SMAABB aabb;
+	UINT i = 0;
+	triangulateFace(uFace, [&](const float3 &vA, const float3 &vB, const float3 &vC){
+		if(i == 0)
+		{
+			for(UINT j = 0; j < 6; ++j)
+			{
+				extents[j] = vA;
+			}
+			
+			BuildExtents(extents, vB);
+		}
+
+		BuildExtents(extents, vC);
+
+		++i;
+		return(true);
+	});
 }

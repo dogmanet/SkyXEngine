@@ -76,11 +76,6 @@ public:
 
 	void closePath();
 
-	void setCtrlState(bool state)
-	{
-		m_isCtrlPressed = state;
-	}
-
 	void deleteSelected();
 
 	bool isClosed()
@@ -129,8 +124,6 @@ private:
 
 	bool m_isClosed = false;
 	bool m_isDirty = false;
-
-	bool m_isCtrlPressed = false;
 
 	COutlinePointCallback m_callBack;
 

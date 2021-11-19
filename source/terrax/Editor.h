@@ -9,6 +9,7 @@
 #include "GizmoMove.h"
 #include "GizmoRotate.h"
 #include "GizmoScale.h"
+#include "EditorMaterialBrowser.h"
 
 #define GIZMO_TYPES() \
 	GTO(Handle)\
@@ -54,7 +55,14 @@ public:
 
 	bool XMETHODCALLTYPE execCommand(IXEditorCommand *pCmd) override;
 
-	const char* XMETHODCALLTYPE getCurrentMaterial() override;
+	void* XMETHODCALLTYPE getMainWindow() override;
+
+	IXEditorMaterialBrowser* XMETHODCALLTYPE getMaterialBrowser() override
+	{
+		return(&m_matBrowser);
+	}
+
+	bool XMETHODCALLTYPE isKeyPressed(UINT uKey) override;
 
 private:
 #define GTO(gt) Array<CGizmo##gt*> m_aGizmos##gt; CGizmo##gt *m_pSelected##gt = NULL;
@@ -70,6 +78,8 @@ private:
 	bool m_isDirty = false;
 
 	float3_t m_vOldCamPos;
+
+	CEditorMaterialBrowser m_matBrowser;
 };
 
 #endif

@@ -3,6 +3,7 @@
 
 #include <gdefines.h>
 #include "IXEditorGizmo.h"
+#include "IXEditorMaterialBrowser.h"
 
 enum X_WINDOW_POS
 {
@@ -67,8 +68,12 @@ public:
 
 	virtual bool XMETHODCALLTYPE execCommand(IXEditorCommand *pCmd) = 0;
 
-	virtual const char* XMETHODCALLTYPE getCurrentMaterial() = 0;
+	virtual IXEditorMaterialBrowser* XMETHODCALLTYPE getMaterialBrowser() = 0;
 
+	virtual bool XMETHODCALLTYPE isKeyPressed(UINT uKey) = 0;
+
+	// HWND for now
+	virtual void* XMETHODCALLTYPE getMainWindow() = 0;
 
 };
 

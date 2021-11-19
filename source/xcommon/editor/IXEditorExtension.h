@@ -77,6 +77,8 @@ public:
 	virtual bool XMETHODCALLTYPE onKeyDown(UINT uKey) = 0;
 	virtual void XMETHODCALLTYPE onKeyUp(UINT uKey) = 0;
 
+	virtual bool XMETHODCALLTYPE wantDrawSelection(bool is3D) = 0;
+
 	// virtual bool XMETHODCALLTYPE onMouseEvent(UINT msg, WPARAM wParam, LPARAM lParam, ) = 0;
 };
 

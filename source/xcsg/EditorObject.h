@@ -7,6 +7,7 @@
 #include "BrushMesh.h"
 #include "Outline.h"
 
+
 class CEditable;
 //class IXDynamicModel;
 class CEditorObject final: public IXUnknownImplementation<IXEditorObject>
@@ -67,6 +68,22 @@ public:
 
 	void fixPos();
 
+	bool findFace(const float3 &vRayStart, const float3 &vRayDir, UINT *puFace, float3 *pvFacePoint = NULL);
+
+	bool isVisible() const
+	{
+		return(m_isVisible);
+	}
+
+	UINT getFaceCount() const;
+
+	void renderFace(IXGizmoRenderer *pRenderer, UINT uFace);
+
+	void getFaceInfo(UINT uFace, BrushFace *pOut);
+	void setFaceInfo(UINT uFace, const BrushFace &brushFace);
+
+	void getFaceExtents(UINT uFace, Extents extents);
+
 private:
 	CEditable *m_pEditable;
 
@@ -78,6 +95,8 @@ private:
 	SMQuaternion m_qRot;
 
 	Array<char> m_aSerializedState;
+
+	bool m_isVisible = true;
 };
 
 #endif

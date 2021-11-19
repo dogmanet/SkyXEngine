@@ -212,6 +212,7 @@
     <ClCompile Include="..\..\..\source\terrax\CommandScale.cpp" />
     <ClCompile Include="..\..\..\source\terrax\CommandSelect.cpp" />
     <ClCompile Include="..\..\..\source\terrax\Editor.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\EditorMaterialBrowser.cpp" />
     <ClCompile Include="..\..\..\source\terrax\GizmoHandle.cpp" />
     <ClCompile Include="..\..\..\source\terrax\GizmoMove.cpp" />
     <ClCompile Include="..\..\..\source\terrax\GizmoRadius.cpp" />
@@ -246,6 +247,7 @@
     <ClInclude Include="..\..\..\source\terrax\CommandScale.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandSelect.h" />
     <ClInclude Include="..\..\..\source\terrax\Editor.h" />
+    <ClInclude Include="..\..\..\source\terrax\EditorMaterialBrowser.h" />
     <ClInclude Include="..\..\..\source\terrax\GizmoHandle.h" />
     <ClInclude Include="..\..\..\source\terrax\GizmoMove.h" />
     <ClInclude Include="..\..\..\source\terrax\GizmoRadius.h" />
@@ -264,6 +266,7 @@
     <ClInclude Include="..\..\..\source\xcommon\editor\IXEditor.h" />
     <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorExtension.h" />
     <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorGizmo.h" />
+    <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorMaterialBrowser.h" />
     <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorObject.h" />
   </ItemGroup>
   <ItemGroup>

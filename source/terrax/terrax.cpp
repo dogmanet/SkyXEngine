@@ -98,7 +98,6 @@ void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
 void XExportToObj(const char *szMdl);
 bool IsEditMessage();
 bool IsButtonMessage();
-void XInitMBCallback(IXMaterialSystem *pMatSys);
 
 class CEngineCallback: public IXEngineCallback
 {
@@ -114,6 +113,11 @@ class CEngineCallback: public IXEngineCallback
 	};
 
 public:
+	CEngineCallback()
+	{
+		memset(m_aKeyStates, 0, sizeof(m_aKeyStates));
+	}
+
 	void XMETHODCALLTYPE onGraphicsResize(UINT uWidth, UINT uHeight, bool isFullscreen, bool isBorderless, IXEngine *pEngine) override
 	{
 		static const bool *terrax_detach_3d = NULL;
@@ -213,18 +217,25 @@ public:
 
 						UINT key = pikd->scanCode + (pikd->isExtended ? 128 : 0);
 
-						if(key < SXI_KEYMAP_SIZE && g_pCurrentTool->onKeyDown(key))
+						if(key < SXI_KEYMAP_SIZE)
 						{
-							isHandled = true;
+							m_aKeyStates[key] = true;
+							if(g_pCurrentTool->onKeyDown(key))
+							{
+								isHandled = true;
+							}
 						}
 						if(
 							((key == SIK_LSHIFT || key == SIK_RSHIFT) && (key = SIK_SHIFT))
 							|| ((key == SIK_LALT || key == SIK_RALT) && (key = SIK_ALT))
 							|| ((key == SIK_LCONTROL || key == SIK_RCONTROL) && (key = SIK_CONTROL))
-							&& g_pCurrentTool->onKeyDown(key)
 							)
 						{
-							isHandled = true;
+							m_aKeyStates[key] = true;
+							if(g_pCurrentTool->onKeyDown(key))
+							{
+								isHandled = true;
+							}
 						}
 						if(isHandled)
 						{
@@ -241,6 +252,7 @@ public:
 
 						if(key < SXI_KEYMAP_SIZE)
 						{
+							m_aKeyStates[key] = false;
 							g_pCurrentTool->onKeyUp(key);
 						}
 						if(
@@ -249,6 +261,7 @@ public:
 							|| ((key == SIK_LCONTROL || key == SIK_RCONTROL) && (key = SIK_CONTROL))
 							)
 						{
+							m_aKeyStates[key] = false;
 							g_pCurrentTool->onKeyUp(key);
 						}
 					}
@@ -422,8 +435,17 @@ public:
 		m_pCore = pCore;
 	}
 
+	bool isKeyPressed(UINT key)
+	{
+		assert(key < SXI_KEYMAP_SIZE);
+
+		return(m_aKeyStates[key]);
+	}
+
 protected:
 	IXCore *m_pCore = NULL;
+
+	bool m_aKeyStates[SXI_KEYMAP_SIZE];
 };
 
 class CRenderPipeline: public IXUnknownImplementation<IXRenderPipeline>
@@ -741,7 +763,7 @@ public:
 				IXMaterial *pMat = NULL;
 				IXTexture *pTex = NULL;
 
-				XGetCurMatInfo(&pMat, &pTex);
+				g_matBrowserCallback.getInfo(&pMat, &pTex);
 
 				if(!pMat || !pMat->isTransparent())
 				{
@@ -759,6 +781,9 @@ public:
 				SGCore_ScreenQuadDraw();
 
 				SGCore_ShaderUnBind();
+
+				mem_release(pMat);
+				mem_release(pTex);
 			}
 
 
@@ -857,6 +882,13 @@ private:
 	LONG m_lOldExStyle;
 };
 
+CEngineCallback *g_pEngineCallback = NULL;
+
+bool XIsKeyPressed(UINT uKey)
+{
+	return(g_pEngineCallback->isKeyPressed(uKey));
+}
+
 #if defined(_WINDOWS)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
@@ -886,6 +918,7 @@ int main(int argc, char **argv)
 	IXEngine *pEngine = XEngineInit(argc, argv, "TerraX");
 	g_pEngine = pEngine;
 	CEngineCallback engineCb;
+	g_pEngineCallback = &engineCb;
 	pEngine->initGraphics((XWINDOW_OS_HANDLE)g_hTopLeftWnd, &engineCb);
 	engineCb.setCore(pEngine->getCore());
 	pEngine->getCore()->getConsole()->registerCVar("terrax_detach_3d", false, "", FCVAR_NOTIFY);
@@ -933,7 +966,7 @@ int main(int argc, char **argv)
 
 	pMaterialSystem->scanMaterials();
 
-	XInitMBCallback(pMaterialSystem);
+	g_matBrowserCallback.init(pMaterialSystem);
 
 	GXCOLOR w = GX_COLOR_ARGB(255, 255, 255, 255);
 	GXCOLOR t = GX_COLOR_ARGB(0, 255, 255, 255);
@@ -1450,19 +1483,23 @@ void XRender3D()
 	IGXDevice *pDevice = SGCore_GetDXDevice();
 	IGXContext *pCtx = pDevice->getThreadContext();
 
-	g_pSelectionRenderer->reset();
-
 	g_isRenderedSelection3D = true;
 
-	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+	if(!g_pCurrentTool || !g_pCurrentTool->wantDrawSelection(true))
 	{
-		if(g_pLevelObjects[i]->isSelected())
-		{
-			g_pLevelObjects[i]->renderSelection(true, g_pSelectionRenderer);
-		}
-	}
+		g_pSelectionRenderer->reset();
 
-	g_pSelectionRenderer->render(false, false);
+
+		for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+		{
+			if(g_pLevelObjects[i]->isSelected())
+			{
+				g_pLevelObjects[i]->renderSelection(true, g_pSelectionRenderer);
+			}
+		}
+
+		g_pSelectionRenderer->render(false, false);
+	}
 
 	if(g_xState.isFrameSelect)
 	{
@@ -1737,21 +1774,24 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 	{
 		static IGXConstantBuffer *s_pColorBuffer = pDevice->createConstantBuffer(sizeof(float4));
 
-		if(g_isRenderedSelection3D)
+		if(!g_pCurrentTool || !g_pCurrentTool->wantDrawSelection(false))
 		{
-			g_pSelectionRenderer->reset();
-
-			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+			if(g_isRenderedSelection3D)
 			{
-				if(g_pLevelObjects[i]->isSelected())
-				{
-					g_pLevelObjects[i]->renderSelection(false, g_pSelectionRenderer);
-				}
-			}
+				g_pSelectionRenderer->reset();
 
-			g_isRenderedSelection3D = false;
+				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+				{
+					if(g_pLevelObjects[i]->isSelected())
+					{
+						g_pLevelObjects[i]->renderSelection(false, g_pSelectionRenderer);
+					}
+				}
+
+				g_isRenderedSelection3D = false;
+			}
+			g_pSelectionRenderer->render(true);
 		}
-		g_pSelectionRenderer->render(true);
 
 		// Draw handlers
 		if(g_pLevelObjects.size())
