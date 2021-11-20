@@ -55,6 +55,9 @@
     <ClCompile Include="..\..\..\source\xcsg\FaceEditTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\xcsg\CommandFaceEdit.cpp">
+      <Filter>Source Files\cmd</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\xcsg\EditorExtension.h">
@@ -86,6 +89,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcsg\FaceEditTool.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcsg\CommandFaceEdit.h">
+      <Filter>Header Files\cmd</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -53,7 +53,7 @@ public:
 	UINT getFaceCount() const;
 
 	void getFaceInfo(UINT uFace, BrushFace *pOut);
-	void setFaceInfo(UINT uFace, const BrushFace &brushFace);
+	void setFaceInfo(UINT uFace, const BrushFace &brushFace, bool bRebuild = true);
 
 	static float3 GetNearestAxis(const float3 &vNormal);
 	static float3 GetTangent(const float3 &vNormal);
@@ -63,7 +63,7 @@ public:
 	void getFaceExtents(UINT uFace, Extents extents);
 
 private:
-	void buildModel();
+	void buildModel(bool bBuildPhysbox = true);
 	void setupFromOutline(COutline *pOutline, UINT uContour, float fHeight);
 
 

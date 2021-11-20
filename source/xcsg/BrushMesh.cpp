@@ -62,7 +62,7 @@ void CBrushMesh::enable(bool yesNo)
 	}
 }
 
-void CBrushMesh::buildModel()
+void CBrushMesh::buildModel(bool bBuildPhysbox)
 {
 	struct Subset
 	{
@@ -201,22 +201,25 @@ void CBrushMesh::buildModel()
 	pProvider->createStaticModel(pResource, &m_pModel);
 	mem_release(pResource);
 
-	if(m_pRigidBody && m_isPhysicsLoaded)
+	if(bBuildPhysbox)
 	{
-		m_pPhysics->removeCollisionObject(m_pRigidBody);
+		if(m_pRigidBody && m_isPhysicsLoaded)
+		{
+			m_pPhysics->removeCollisionObject(m_pRigidBody);
+		}
+		mem_release(m_pRigidBody);
+
+		IConvexHullShape *pShape = m_pPhysics->newConvexHullShape(m_aVertices.size(), m_aVertices, sizeof(float3_t), false);
+
+		XRIDIGBODY_DESC desc = {};
+		desc.fMass = 0.0f;
+		desc.pCollisionShape = pShape;
+		m_pRigidBody = m_pPhysics->newRigidBody(&desc);
+		mem_release(pShape);
+
+		m_pPhysics->addCollisionObject(m_pRigidBody, CG_STATIC, CG_STATIC_MASK);
+		m_isPhysicsLoaded = true;
 	}
-	mem_release(m_pRigidBody);
-
-	IConvexHullShape *pShape = m_pPhysics->newConvexHullShape(m_aVertices.size(), m_aVertices, sizeof(float3_t), false);
-
-	XRIDIGBODY_DESC desc = {};
-	desc.fMass = 0.0f;
-	desc.pCollisionShape = pShape;
-	m_pRigidBody = m_pPhysics->newRigidBody(&desc);
-	mem_release(pShape);
-
-	m_pPhysics->addCollisionObject(m_pRigidBody, CG_STATIC, CG_STATIC_MASK);
-	m_isPhysicsLoaded = true;
 }
 
 float3 CBrushMesh::GetNearestAxis(const float3 &vNormal)
@@ -851,7 +854,7 @@ void CBrushMesh::getFaceInfo(UINT uFace, BrushFace *pOut)
 	pOut->szMaterial = m_aMaterials[f.texInfo.uMatId].c_str();
 }
 
-void CBrushMesh::setFaceInfo(UINT uFace, const BrushFace &brushFace)
+void CBrushMesh::setFaceInfo(UINT uFace, const BrushFace &brushFace, bool bRebuild)
 {
 	assert(uFace < m_aFaces.size());
 
@@ -877,7 +880,10 @@ void CBrushMesh::setFaceInfo(UINT uFace, const BrushFace &brushFace)
 		f.texInfo.uMatId = (UINT)idx;
 	}
 
-	buildModel();
+	if(bRebuild)
+	{
+		buildModel(false);
+	}
 }
 
 void CBrushMesh::BuildExtents(Extents extents, const float3 &vC)

@@ -9,6 +9,8 @@
 #include "EditorObject.h"
 //#include "terrax.h"
 
+#include "CommandFaceEdit.h"
+
 CFaceEdit::CFaceEdit(CEditable *pEditable, IXEditor *pEditor, HINSTANCE hInstance, HWND hMainWnd):
 	m_hInstance(hInstance),
 	m_hMainWnd(hMainWnd),
@@ -94,6 +96,8 @@ INT_PTR CFaceEdit::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			SendMessage(GetDlgItem(m_hDlgWnd, IDC_ROTATION_SPIN), UDM_SETRANGE, 0, MAKELPARAM(359, 0));
 
+			EnableWindow(GetDlgItem(m_hDlgWnd, IDC_REPLACE), FALSE);
+
 			//SendMessage(GetDlgItem(m_hDlgWnd, IDC_SHIFT_S_SPIN), UDM_SETRANGE, 0, MAKELPARAM(1, 0));
 			
 
@@ -170,9 +174,13 @@ INT_PTR CFaceEdit::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case IDC_APPLY:
-			for(UINT i = 0, l = m_aSelectedFaces.size(); i < l; ++i)
 			{
-				assignMaterial(m_aSelectedFaces[i], true);
+				CCommandFaceEdit *pCmd = new CCommandFaceEdit();
+				for(UINT i = 0, l = m_aSelectedFaces.size(); i < l; ++i)
+				{
+					assignMaterial(m_aSelectedFaces[i], true, pCmd);
+				}
+				m_pEditor->execCommand(pCmd);
 			}
 			break;
 
@@ -765,10 +773,16 @@ void CFaceEdit::syncUI()
 	m_bSkipChanges = false;
 }
 
-void CFaceEdit::assignMaterial(const FaceDesc &fd, bool useValues)
+void CFaceEdit::assignMaterial(const FaceDesc &fd, bool useValues, CCommandFaceEdit *pCmd_)
 {
 	BrushFace oldFace;
 	fd.pObject->getFaceInfo(fd.uFace, &oldFace);
+
+	CCommandFaceEdit *pCmd = pCmd_;
+	if(!pCmd)
+	{
+		pCmd = new CCommandFaceEdit();
+	}
 
 	if(useValues)
 	{
@@ -806,12 +820,19 @@ void CFaceEdit::assignMaterial(const FaceDesc &fd, bool useValues)
 		oldFace.szMaterial = m_sCurrentMat.c_str();
 	}
 
-	fd.pObject->setFaceInfo(fd.uFace, oldFace);
+	pCmd->addFace(fd, oldFace);
+
+	if(!pCmd_)
+	{
+		m_pEditor->execCommand(pCmd);
+	}
 }
 
 void CFaceEdit::applyValues()
 {
 	BrushFace oldFace;
+
+	CCommandFaceEdit *pCmd = new CCommandFaceEdit();
 
 	for(UINT i = 0, l = m_aSelectedFaces.size(); i < l; ++i)
 	{
@@ -852,15 +873,17 @@ void CFaceEdit::applyValues()
 
 		//oldFace.szMaterial = m_sCurrentMat.c_str();
 
-		fd.pObject->setFaceInfo(fd.uFace, oldFace);
+		pCmd->addFace(fd, oldFace);
 	}
 
-	
+	m_pEditor->execCommand(pCmd);
 }
 
 void CFaceEdit::alignFace()
 {
 	BrushFace oldFace;
+
+	CCommandFaceEdit *pCmd = new CCommandFaceEdit();
 
 	for(UINT i = 0, l = m_aSelectedFaces.size(); i < l; ++i)
 	{
@@ -878,14 +901,18 @@ void CFaceEdit::alignFace()
 			m_currentSettings = oldFace;
 		}
 
-		fd.pObject->setFaceInfo(fd.uFace, oldFace);
+		pCmd->addFace(fd, oldFace);
 	}
+
+	m_pEditor->execCommand(pCmd);
 
 	validateStates();
 }
 void CFaceEdit::alignWorld()
 {
 	BrushFace oldFace;
+
+	CCommandFaceEdit *pCmd = new CCommandFaceEdit();
 
 	for(UINT i = 0, l = m_aSelectedFaces.size(); i < l; ++i)
 	{
@@ -904,8 +931,10 @@ void CFaceEdit::alignWorld()
 			m_currentSettings = oldFace;
 		}
 
-		fd.pObject->setFaceInfo(fd.uFace, oldFace);
+		pCmd->addFace(fd, oldFace);
 	}
+
+	m_pEditor->execCommand(pCmd);
 
 	validateStates();
 }
@@ -937,6 +966,8 @@ void CFaceEdit::justify(int how, bool isAllAsOne)
 			}
 		}
 	}
+
+	CCommandFaceEdit *pCmd = new CCommandFaceEdit();
 
 	for(UINT i = 0, l = m_aSelectedFaces.size(); i < l; ++i)
 	{
@@ -1025,8 +1056,10 @@ void CFaceEdit::justify(int how, bool isAllAsOne)
 			syncUI();
 		}
 
-		fd.pObject->setFaceInfo(fd.uFace, oldFace);
+		pCmd->addFace(fd, oldFace);
 	}
+
+	m_pEditor->execCommand(pCmd);
 
 	validateStates();
 }
@@ -1097,7 +1130,9 @@ void CFaceEdit::alignFaceToView(const FaceDesc &fd)
 	oldFace.fSShift = SMVector3Dot(oldFace.vS, vPos);
 	oldFace.fTShift = SMVector3Dot(oldFace.vT, vPos);
 
-	fd.pObject->setFaceInfo(fd.uFace, oldFace);
+	CCommandFaceEdit *pCmd = new CCommandFaceEdit();
+	pCmd->addFace(fd, oldFace);
+	m_pEditor->execCommand(pCmd);
 
 	if(isFaceSelected(fd))
 	{

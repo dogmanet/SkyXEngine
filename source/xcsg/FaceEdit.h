@@ -23,6 +23,28 @@ enum FACE_EDIT_MODE
 	FEM_ALIGN_TO_VIEW = 16
 };
 
+enum VALID_VALUES
+{
+	VV_NONE = 0,
+	VV_SCALE_S = 1,
+	VV_SCALE_T = 2,
+	VV_SHIFT_S = 4,
+	VV_SHIFT_T = 8,
+	VV_ANGLE = 16,
+	VV_MATERIAL = 32,
+
+	VV_ALL = 0xFF
+};
+XDEFINE_ENUM_FLAG_OPERATORS(VALID_VALUES);
+
+struct FaceDesc
+{
+	CEditorObject *pObject;
+	UINT uFace;
+};
+
+//#############################################################################
+
 class CFaceEdit;
 class CMaterialBrowserCallback: public IXEditorMaterialBrowserCallback
 {
@@ -42,23 +64,8 @@ private:
 
 //#############################################################################
 
-enum VALID_VALUES
-{
-	VV_NONE = 0,
-	VV_SCALE_S = 1,
-	VV_SCALE_T = 2,
-	VV_SHIFT_S = 4,
-	VV_SHIFT_T = 8,
-	VV_ANGLE = 16,
-	VV_MATERIAL = 32,
-
-	VV_ALL = 0xFF
-};
-XDEFINE_ENUM_FLAG_OPERATORS(VALID_VALUES);
-
-//#############################################################################
-
 class IXGizmoRenderer;
+class CCommandFaceEdit;
 class CFaceEdit final
 {
 public:
@@ -105,13 +112,6 @@ private:
 
 	ID m_idScreenOutShader = -1;
 
-
-	struct FaceDesc
-	{
-		CEditorObject *pObject;
-		UINT uFace;
-	};
-
 	Array<FaceDesc> m_aSelectedFaces;
 
 	bool m_isMaskHidden = false;
@@ -121,7 +121,7 @@ private:
 	IXMaterial *m_pMat = NULL;
 	IXTexture *m_pTex = NULL;
 
-	BrushFace m_currentSettings = {};
+	BrushFace m_currentSettings;
 	float m_fCurrentAngle = 0.0f;
 
 	String m_sCurrentMat;
@@ -152,7 +152,7 @@ private:
 	void syncRecentMaterials();
 
 	void pickFace(const FaceDesc &fd);
-	void assignMaterial(const FaceDesc &fd, bool useValues);
+	void assignMaterial(const FaceDesc &fd, bool useValues, CCommandFaceEdit *pCmd = NULL);
 
 	void syncUI();
 
