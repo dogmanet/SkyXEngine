@@ -10,7 +10,7 @@ See the license in LICENSE
 #include <particles/sxparticles.h>
 #include <mtrl/sxmtrl.h>
 #include <decals/sxdecals.h>
-#include <BulletCollision/NarrowPhaseCollision/btRaycastCallback.h>
+//#include <BulletCollision/NarrowPhaseCollision/btRaycastCallback.h>
 
 /*! \skydocent base_ammo
 Базовый класс для патронов
@@ -30,36 +30,6 @@ BEGIN_PROPTABLE(CBaseAmmo)
 END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CBaseAmmo, base_ammo);
-
-struct AllHitsNotMeRayResultCallback: public btCollisionWorld::AllHitsRayResultCallback
-{
-	AllHitsNotMeRayResultCallback(btCollisionObject* me, const btVector3&	rayFromWorld, const btVector3&	rayToWorld):
-		AllHitsRayResultCallback(rayFromWorld, rayToWorld)
-	{
-		m_me = me;
-	}
-
-	virtual	btScalar	addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
-	{
-		//printf("%f\n", rayResult.m_hitFraction);
-		if(rayResult.m_collisionObject == m_me)
-		{
-			return 1.0;
-		}
-		if(rayResult.m_localShapeInfo)
-		{
-			m_shapeInfos.push_back(*rayResult.m_localShapeInfo);
-		}
-		else
-		{
-			m_shapeInfos.push_back({-1, -1});
-		}
-		return(AllHitsRayResultCallback::addSingleResult(rayResult, normalInWorldSpace));
-	}
-	Array<btCollisionWorld::LocalShapeInfo> m_shapeInfos;
-protected:
-	btCollisionObject* m_me;
-};
 
 void CBaseAmmo::fire(const float3 &vStart, const float3 &vDir, CBaseCharacter *pAttacker)
 {
@@ -98,30 +68,31 @@ void CBaseAmmo::fire(const float3 &_vStart, const float3 &_vDir, CBaseCharacter 
 			isY0set = true;
 			fSpeedY0 = fSpeed * (vDir.y / SMVector3Length(vDir));
 		}
-		AllHitsNotMeRayResultCallback cb(pAttacker ? pAttacker->getBtCollisionObject() : NULL, F3_BTVEC(vStart), F3_BTVEC(end));
-		cb.m_collisionFilterGroup = CG_BULLETFIRE;
-		cb.m_collisionFilterMask = CG_ALL & ~(CG_DEBRIS | CG_TRIGGER | CG_CHARACTER);
-		cb.m_flags |= btTriangleRaycastCallback::kF_FilterBackfaces;
-		SPhysics_GetDynWorld()->rayTest(F3_BTVEC(vStart), F3_BTVEC(end), cb);
+		CAllHitsNotMeRayResultCallback cb(pAttacker ? pAttacker->getBtCollisionObject() : NULL);
+		//cb.m_flags |= btTriangleRaycastCallback::kF_FilterBackfaces;
+		GetPhysWorld()->rayTest(vStart, end, &cb, CG_BULLETFIRE, CG_ALL & ~(CG_DEBRIS | CG_TRIGGER | CG_CHARACTER));
 
 		g_pTracer->lineTo(vStart, 0.0f);
 		//g_pTracer->begin(vStart);
 		if(cb.hasHit())
 		{
-			AllHitsNotMeRayResultCallback cbBack(pAttacker ? pAttacker->getBtCollisionObject() : NULL, F3_BTVEC(end), F3_BTVEC(vStart));
-			cbBack.m_flags |= btTriangleRaycastCallback::kF_FilterBackfaces;
-			SPhysics_GetDynWorld()->rayTest(F3_BTVEC(end), F3_BTVEC(vStart), cbBack);
+			CAllHitsNotMeRayResultCallback cbBack(pAttacker ? pAttacker->getBtCollisionObject() : NULL);
+			cbBack.m_aResults.reserve(cb.m_aResults.size());
+			//cbBack.m_flags |= btTriangleRaycastCallback::kF_FilterBackfaces;
+			GetPhysWorld()->rayTest(end, vStart, &cbBack, CG_BULLETFIRE, CG_ALL & ~(CG_DEBRIS | CG_TRIGGER | CG_CHARACTER));
 
 			Array<HitPoint> aHitPoints;
-			aHitPoints.reserve(cb.m_hitFractions.size() + cbBack.m_hitFractions.size());
+			aHitPoints.reserve(cb.m_aResults.size() + cbBack.m_aResults.size());
 
-			for(int i = 0, l = cb.m_hitFractions.size(); i < l; ++i)
+			for(int i = 0, l = cb.m_aResults.size(); i < l; ++i)
 			{
-				aHitPoints.push_back({BTVEC_F3(cb.m_hitPointWorld[i]), BTVEC_F3(cb.m_hitNormalWorld[i]), cb.m_collisionObjects[i], cb.m_hitFractions[i], false, cb.m_shapeInfos[i]});
+				XRayResult &r = cb.m_aResults[i];
+				aHitPoints.push_back({r.vHitPoint, r.vHitNormal, r.pCollisionObject, r.fHitFraction, false});
 			}
-			for(int i = 0, l = cbBack.m_hitFractions.size(); i < l; ++i)
+			for(int i = 0, l = cbBack.m_aResults.size(); i < l; ++i)
 			{
-				aHitPoints.push_back({BTVEC_F3(cbBack.m_hitPointWorld[i]), BTVEC_F3(cbBack.m_hitNormalWorld[i]), cbBack.m_collisionObjects[i], 1.0f - cbBack.m_hitFractions[i], true, cbBack.m_shapeInfos[i]});
+				XRayResult &r = cbBack.m_aResults[i];
+				aHitPoints.push_back({r.vHitPoint, r.vHitNormal, r.pCollisionObject, 1.0f - r.fHitFraction, true});
 			}
 
 			aHitPoints.quickSort([](const HitPoint &a, const HitPoint &b)
@@ -131,7 +102,7 @@ void CBaseAmmo::fire(const float3 &_vStart, const float3 &_vDir, CBaseCharacter 
 			for(int i = 0, l = aHitPoints.size(); i < l; ++i)
 			{
 
-				ID idMtl = SPhysics_GetMtlID(aHitPoints[i].pCollisionObject, &aHitPoints[i].shapeInfo);
+				ID idMtl = -1; // SPhysics_GetMtlID(aHitPoints[i].pCollisionObject, &aHitPoints[i].shapeInfo);
 				if(ID_VALID(idMtl) && !aHitPoints[i].isExit)
 				{
 					float fHitChance = SMtrl_MtlGetHitChance(idMtl);
@@ -192,7 +163,7 @@ void CBaseAmmo::fire(const float3 &_vStart, const float3 &_vDir, CBaseCharacter 
 					
 					float fEnergyDelta = m_fBulletMass * 0.001f * 0.5f * (fSpeed * fSpeed - fNewSpeed * fNewSpeed);
 					
-					if(aHitPoints[i].pCollisionObject->getUserPointer() && aHitPoints[i].pCollisionObject->getUserIndex() == 1)
+					if(aHitPoints[i].pCollisionObject->getUserPointer() && aHitPoints[i].pCollisionObject->getUserTypeId() == 1)
 					{
 						CTakeDamageInfo takeDamageInfo(pAttacker, fEnergyDelta);
 						takeDamageInfo.m_pInflictor = getParent();
@@ -404,7 +375,7 @@ bool CBaseAmmo::canHole(float fDurability, float fCurrentSpeed, float *pfNewSpee
 {
 	// based on m_fNextBarrierDepth
 
-	if(m_fNextBarrierDepth < SIMD_EPSILON)
+	if(m_fNextBarrierDepth < FLT_EPSILON)
 	{
 		//*pfNewSpeed = fCurrentSpeed;
 		//return(true);

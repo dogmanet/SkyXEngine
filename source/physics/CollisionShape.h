@@ -3,9 +3,9 @@
 
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
-#include "ICollisionObject.h"
+#include "IXCollisionObject.h"
 
-btCollisionShape* GetCollisionShape(ICollisionShape *pShape);
+btCollisionShape* GetCollisionShape(IXCollisionShape *pShape);
 
 template<class T>
 class CCollisionShape: public IXUnknownImplementation<T>
@@ -32,6 +32,15 @@ public:
 		return(BTVEC_F3(vInertia));
 	}
 
+	SMAABB XMETHODCALLTYPE getAABB() const override
+	{
+		btTransform xForm;
+		btVector3 bvMin, bvMax;
+		xForm.setIdentity();
+		m_pCollisionShape->getAabb(xForm, bvMin, bvMax);
+		return(SMAABB(BTVEC_F3(bvMin), BTVEC_F3(bvMax)));
+	}
+
 	void XMETHODCALLTYPE setMargin(float fMargin) override
 	{
 		m_pCollisionShape->setMargin(fMargin);
@@ -50,40 +59,58 @@ public:
 		return(m_pUserPointer);
 	}
 
+	void XMETHODCALLTYPE setUserTypeId(int iUser) override
+	{
+		m_iUserTypeId = iUser;
+	}
+	int XMETHODCALLTYPE getUserTypeId() const override
+	{
+		return(m_iUserTypeId);
+	}
+
+	void XMETHODCALLTYPE setUserIndex(int iUser) override
+	{
+		m_iUserIndex = iUser;
+	}
+	int XMETHODCALLTYPE getUserIndex() const override
+	{
+		return(m_iUserIndex);
+	}
+	
 	XSHAPE_TYPE XMETHODCALLTYPE getType() const override
 	{
 		return(m_type);
 	}
 
-	ICompoundShape* XMETHODCALLTYPE asCompound() override
+	IXCompoundShape* XMETHODCALLTYPE asCompound() override
 	{
 		return(NULL);
 	}
-	IBoxShape* XMETHODCALLTYPE asBox() override
+	IXBoxShape* XMETHODCALLTYPE asBox() override
 	{
 		return(NULL);
 	}
-	ISphereShape* XMETHODCALLTYPE asSphere() override
+	IXSphereShape* XMETHODCALLTYPE asSphere() override
 	{
 		return(NULL);
 	}
-	ICapsuleShape* XMETHODCALLTYPE asCapsule() override
+	IXCapsuleShape* XMETHODCALLTYPE asCapsule() override
 	{
 		return(NULL);
 	}
-	ICylinderShape* XMETHODCALLTYPE asCylinder() override
+	IXCylinderShape* XMETHODCALLTYPE asCylinder() override
 	{
 		return(NULL);
 	}
-	IStaticPlaneShape* XMETHODCALLTYPE asStaticPlane() override
+	IXStaticPlaneShape* XMETHODCALLTYPE asStaticPlane() override
 	{
 		return(NULL);
 	}
-	IConvexHullShape* XMETHODCALLTYPE asConvexHull() override
+	IXConvexHullShape* XMETHODCALLTYPE asConvexHull() override
 	{
 		return(NULL);
 	}
-	ITrimeshShape* XMETHODCALLTYPE asTrimesh() override
+	IXTrimeshShape* XMETHODCALLTYPE asTrimesh() override
 	{
 		return(NULL);
 	}
@@ -98,7 +125,7 @@ protected:
 	void setShape(btCollisionShape *pCollisionShape)
 	{
 		m_pCollisionShape = pCollisionShape;
-		pCollisionShape->setUserPointer((ICollisionShape*)this);
+		pCollisionShape->setUserPointer((IXCollisionShape*)this);
 		pCollisionShape->setUserIndex(2);
 	}
 
@@ -106,23 +133,27 @@ private:
 	XSHAPE_TYPE m_type;
 	void *m_pUserPointer = NULL;
 	btCollisionShape *m_pCollisionShape = NULL;
+	int m_iUserTypeId = -1;
+	int m_iUserIndex = -1;
 };
 
-class CCompoundShape: public CCollisionShape<ICompoundShape>
+//#############################################################################
+
+class CCompoundShape: public CCollisionShape<IXCompoundShape>
 {
 public:
 	CCompoundShape(UINT uShapes = 0);
 	~CCompoundShape();
 
-	void XMETHODCALLTYPE addChildShape(ICollisionShape *pShape, const float3 &vLocalPos, const SMQuaternion &qLocalRot) override;
+	void XMETHODCALLTYPE addChildShape(IXCollisionShape *pShape, const float3 &vLocalPos, const SMQuaternion &qLocalRot) override;
 
 	UINT XMETHODCALLTYPE getChildCount() const override;
-	ICollisionShape* XMETHODCALLTYPE getShape(UINT uIndex) override;
+	IXCollisionShape* XMETHODCALLTYPE getShape(UINT uIndex) override;
 
 	void XMETHODCALLTYPE setChildTransform(UINT uChildIndex, const float3 &vLocalPos, const SMQuaternion &qLocalRot, bool shouldRecalculateLocalAabb = true) override;
 	void XMETHODCALLTYPE recalculateLocalAabb() override;
 
-	ICompoundShape* XMETHODCALLTYPE asCompound() override
+	IXCompoundShape* XMETHODCALLTYPE asCompound() override
 	{
 		return(this);
 	}
@@ -131,9 +162,9 @@ private:
 	btCompoundShape *m_pShape;
 };
 
+//#############################################################################
 
-
-class CBoxShape: public CCollisionShape<IBoxShape>
+class CBoxShape: public CCollisionShape<IXBoxShape>
 {
 public:
 	CBoxShape(const float3 &vHalfExtents);
@@ -141,7 +172,7 @@ public:
 
 	float3 XMETHODCALLTYPE getHalfExtents(bool useMargin = false) const override;
 
-	IBoxShape* XMETHODCALLTYPE asBox() override
+	IXBoxShape* XMETHODCALLTYPE asBox() override
 	{
 		return(this);
 	}
@@ -150,7 +181,9 @@ private:
 	btBoxShape *m_pShape;
 };
 
-class CSphereShape: public CCollisionShape<ISphereShape>
+//#############################################################################
+
+class CSphereShape: public CCollisionShape<IXSphereShape>
 {
 public:
 	CSphereShape(float fRadius);
@@ -158,7 +191,7 @@ public:
 
 	float XMETHODCALLTYPE getRadius() const override;
 
-	ISphereShape* XMETHODCALLTYPE asSphere() override
+	IXSphereShape* XMETHODCALLTYPE asSphere() override
 	{
 		return(this);
 	}
@@ -167,7 +200,9 @@ private:
 	btSphereShape *m_pShape;
 };
 
-class CCapsuleShape: public CCollisionShape<ICapsuleShape>
+//#############################################################################
+
+class CCapsuleShape: public CCollisionShape<IXCapsuleShape>
 {
 public:
 	CCapsuleShape(float fRadius, float fHeight);
@@ -176,7 +211,7 @@ public:
 	float XMETHODCALLTYPE getRadius() const override;
 	float XMETHODCALLTYPE getHeight() const override;
 
-	ICapsuleShape* XMETHODCALLTYPE asCapsule() override
+	IXCapsuleShape* XMETHODCALLTYPE asCapsule() override
 	{
 		return(this);
 	}
@@ -184,7 +219,9 @@ private:
 	btCapsuleShape *m_pShape;
 };
 
-class CCylinderShape: public CCollisionShape<ICylinderShape>
+//#############################################################################
+
+class CCylinderShape: public CCollisionShape<IXCylinderShape>
 {
 public:
 	CCylinderShape(float fRadius, float fHeight);
@@ -193,7 +230,7 @@ public:
 	float XMETHODCALLTYPE getRadius() const override;
 	float XMETHODCALLTYPE getHeight() const override;
 
-	ICylinderShape* XMETHODCALLTYPE asCylinder() override
+	IXCylinderShape* XMETHODCALLTYPE asCylinder() override
 	{
 		return(this);
 	}
@@ -202,7 +239,9 @@ private:
 	btCylinderShape *m_pShape;
 };
 
-class CStaticPlaneShape: public CCollisionShape<IStaticPlaneShape>
+//#############################################################################
+
+class CStaticPlaneShape: public CCollisionShape<IXStaticPlaneShape>
 {
 public:
 	CStaticPlaneShape(const SMPLANE &plane);
@@ -210,7 +249,7 @@ public:
 
 	SMPLANE XMETHODCALLTYPE getPlane() const override;
 
-	IStaticPlaneShape* XMETHODCALLTYPE asStaticPlane() override
+	IXStaticPlaneShape* XMETHODCALLTYPE asStaticPlane() override
 	{
 		return(this);
 	}
@@ -219,19 +258,23 @@ private:
 	btStaticPlaneShape *m_pShape;
 };
 
+//#############################################################################
+
 /*class CTerrainShape: public CCollisionShape<ITerrainShape>
 {
 public:
 
 };*/
 
-class CConvexHullShape: public CCollisionShape<IConvexHullShape>
+//#############################################################################
+
+class CConvexHullShape: public CCollisionShape<IXConvexHullShape>
 {
 public:
 	CConvexHullShape(UINT uPoints, const float3_t *pPoints, byte u8Stride = sizeof(float3_t), bool bOptimize = true);
 	~CConvexHullShape();
 
-	IConvexHullShape* XMETHODCALLTYPE asConvexHull() override
+	IXConvexHullShape* XMETHODCALLTYPE asConvexHull() override
 	{
 		return(this);
 	}
@@ -239,13 +282,15 @@ private:
 	btConvexHullShape *m_pShape;
 };
 
-class CTrimeshShape: public CCollisionShape<ITrimeshShape>
+//#############################################################################
+
+class CTrimeshShape: public CCollisionShape<IXTrimeshShape>
 {
 public:
 	CTrimeshShape(UINT uVertices, const float3_t *pVertices, UINT uIndices, UINT *pIndices, byte u8Stride = sizeof(float3_t));
 	~CTrimeshShape();
 	
-	ITrimeshShape* XMETHODCALLTYPE asTrimesh() override
+	IXTrimeshShape* XMETHODCALLTYPE asTrimesh() override
 	{
 		return(this);
 	}

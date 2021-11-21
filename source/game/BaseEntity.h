@@ -21,9 +21,9 @@ See the license in LICENSE
 #include <gdefines.h>
 #include <common/Math.h>
 #include <core/sxcore.h>
-#include <physics/sxphysics.h>
+#include <physics/IXPhysics.h>
 #include <xcommon/IXSoundSystem.h>
-
+#include "physics_util.h"
 #include "EntityFactory.h"
 #include "EntityManager.h"
 
@@ -140,8 +140,6 @@ public:
 	//! Обновляет действие флагов в режиме редактора уровня
 	virtual void updateFlags(){}
 
-	virtual float3 getEditorBoxSize();
-
 	virtual void renderEditor(bool is3D);
 
 
@@ -217,8 +215,6 @@ private:
 	UINT m_iFlags = 0;
 protected:
 	virtual void _cleanup();
-	virtual void _initEditorBoxes();
-	virtual void _releaseEditorBoxes();
 
 	CEntityManager *m_pMgr = NULL;
 	
@@ -243,15 +239,7 @@ protected:
 	float m_fHealth = 100.0f;
 
 	void takeHealth(float fVal, CBaseEntity *pAttacker, CBaseEntity *pInflictor=NULL);
-
-
-	//! Для редактора
-	//@{
-	float3_t m_vEditorBoxSize = float3_t(0.16f, 0.16f, 0.16f);
-	btCollisionShape *m_pEditorCollideShape = NULL;
-	btRigidBody *m_pEditorRigidBody = NULL;
-	//@}
-
+	
 	IXLightSystem *m_pLightSystem = NULL;
 };
 

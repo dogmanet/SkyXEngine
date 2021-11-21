@@ -940,12 +940,7 @@ void CEntityManager::sheduleDestroy(CBaseEntity *pEnt)
 	}
 	pEnt->setFlags(pEnt->getFlags() | EF_REMOVED);
 	m_vEntRemoveList.push_back(pEnt);
-
-	if(m_isEditorMode)
-	{
-		pEnt->_releaseEditorBoxes();
-	}
-
+	
 	pEnt->notifyPointers();
 }
 
@@ -956,23 +951,6 @@ void CEntityManager::setEditorMode(bool isEditor)
 		return;
 	}
 	m_isEditorMode = isEditor;
-
-	for(int i = 0, l = m_vEntList.size(); i < l; ++i)
-	{
-		CBaseEntity * pEnt = m_vEntList[i];
-		if(!pEnt)
-		{
-			continue;
-		}
-		if(isEditor)
-		{
-			pEnt->_initEditorBoxes();
-		}
-		else
-		{
-			pEnt->_releaseEditorBoxes();
-		}
-	}
 }
 
 bool CEntityManager::isEditorMode()

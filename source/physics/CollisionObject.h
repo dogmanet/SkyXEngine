@@ -1,12 +1,14 @@
 #ifndef __COLLISIONOBJECT_H
 #define __COLLISIONOBJECT_H
 
-#include "ICollisionObject.h"
+#include "IXCollisionObject.h"
 
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h>
 
 #include "Physics.h"
+#include "PhyWorld.h"
+#include "CollisionShape.h"
 
 template<class T>
 class CCollisionObject: public IXUnknownImplementation<T>
@@ -24,7 +26,7 @@ public:
 		btCollisionShape *pBtShape = m_pCollisionObject->getCollisionShape();
 		if(pBtShape)
 		{
-			((ICollisionShape*)pBtShape->getUserPointer())->Release();
+			((IXCollisionShape*)pBtShape->getUserPointer())->Release();
 		}
 		mem_delete(m_pCollisionObject);
 	}
@@ -32,7 +34,7 @@ public:
 	void setCollisionObject(btCollisionObject *pObject)
 	{
 		m_pCollisionObject = pObject;
-		m_pCollisionObject->setUserPointer((ICollisionObject*)this);
+		m_pCollisionObject->setUserPointer((IXCollisionObject*)this);
 		m_pCollisionObject->setUserIndex(2);
 	}
 
@@ -46,21 +48,21 @@ public:
 		return(m_type);
 	}
 
-	void XMETHODCALLTYPE setCollisionShape(ICollisionShape *pCollisionShape) override
+	void XMETHODCALLTYPE setCollisionShape(IXCollisionShape *pCollisionShape) override
 	{
-		pCollisionShape->AddRef();
+		add_ref(pCollisionShape);
 
 		btCollisionShape *pBtShape = m_pCollisionObject->getCollisionShape();
 		if(pBtShape)
 		{
-			((ICollisionShape*)pBtShape->getUserPointer())->Release();
+			((IXCollisionShape*)pBtShape->getUserPointer())->Release();
 		}
 
 		pBtShape = GetCollisionShape(pCollisionShape);
 
 		m_pCollisionObject->setCollisionShape(pBtShape);
 	}
-	ICollisionShape* XMETHODCALLTYPE getCollisionShape() override
+	IXCollisionShape* XMETHODCALLTYPE getCollisionShape() override
 	{
 		btCollisionShape *pBtShape = m_pCollisionObject->getCollisionShape();
 		if(!pBtShape)
@@ -68,8 +70,8 @@ public:
 			return(NULL);
 		}
 
-		ICollisionShape *pShape = (ICollisionShape*)pBtShape->getUserPointer();
-		pShape->AddRef();
+		IXCollisionShape *pShape = (IXCollisionShape*)pBtShape->getUserPointer();
+		add_ref(pShape);
 		return(pShape);
 	}
 
@@ -174,6 +176,16 @@ public:
 		return(f);
 	}
 
+	bool XMETHODCALLTYPE hasContactResponse() const override
+	{
+		return(m_pCollisionObject->hasContactResponse());
+	}
+
+	bool XMETHODCALLTYPE isStaticOrKinematic() const override
+	{
+		return(m_pCollisionObject->isStaticOrKinematicObject());
+	}
+
 	void XMETHODCALLTYPE setUserPointer(void *pUser) override
 	{
 		m_pUser = pUser;
@@ -181,6 +193,24 @@ public:
 	void* XMETHODCALLTYPE getUserPointer() const override
 	{
 		return(m_pUser);
+	}
+
+	void XMETHODCALLTYPE setUserTypeId(int iUser) override
+	{
+		m_iUserTypeId = iUser;
+	}
+	int XMETHODCALLTYPE getUserTypeId() const override
+	{
+		return(m_iUserTypeId);
+	}
+
+	void XMETHODCALLTYPE setUserIndex(int iUser) override
+	{
+		m_iUserIndex = iUser;
+	}
+	int XMETHODCALLTYPE getUserIndex() const override
+	{
+		return(m_iUserIndex);
 	}
 
 	void XMETHODCALLTYPE setCCDsweptSphereRadius(float fRadius) override
@@ -201,21 +231,47 @@ public:
 		return(m_pCollisionObject->getCcdMotionThreshold());
 	}
 
-	IRigidBody* XMETHODCALLTYPE asRigidBody() override
+	SMAABB XMETHODCALLTYPE getAABB() const override
+	{
+		btVector3 bvMin, bvMax;
+		m_pCollisionObject->getCollisionShape()->getAabb(m_pCollisionObject->getWorldTransform(), bvMin, bvMax);
+		return(SMAABB(BTVEC_F3(bvMin), BTVEC_F3(bvMax)));
+	}
+
+	COLLISION_GROUP XMETHODCALLTYPE getFilterGroup() const override
+	{
+		btBroadphaseProxy *pProxy = m_pCollisionObject->getBroadphaseHandle();
+		if(pProxy)
+		{
+			return((COLLISION_GROUP)pProxy->m_collisionFilterGroup);
+		}
+		return(CG_NONE);
+	}
+	COLLISION_GROUP XMETHODCALLTYPE getFilterMask() const override
+	{
+		btBroadphaseProxy *pProxy = m_pCollisionObject->getBroadphaseHandle();
+		if(pProxy)
+		{
+			return((COLLISION_GROUP)pProxy->m_collisionFilterMask);
+		}
+		return(CG_NONE);
+	}
+
+	IXRigidBody* XMETHODCALLTYPE asRigidBody() override
 	{
 		return(NULL);
 	}
-	IGhostObject* XMETHODCALLTYPE asGhostObject() override
+	IXGhostObject* XMETHODCALLTYPE asGhostObject() override
 	{
 		return(NULL);
 	}
 
-	void setPhysWorld(CPhysics *pPhyWorld)
+	void setPhysWorld(CPhyWorld *pPhyWorld)
 	{
 		m_pPhysWorld = pPhyWorld;
 	}
 
-	CPhysics* getPhysWorld() const
+	CPhyWorld* getPhysWorld() const
 	{
 		return(m_pPhysWorld);
 	}
@@ -223,14 +279,18 @@ public:
 private:
 	btCollisionObject *m_pCollisionObject = NULL;
 	void *m_pUser = NULL;
-	CPhysics *m_pPhysWorld = NULL;
+	CPhyWorld *m_pPhysWorld = NULL;
 	XCOLLISION_OBJECT_TYPE m_type;
+	int m_iUserTypeId = -1;
+	int m_iUserIndex = -1;
 };
 
-class CRigidBody: public CCollisionObject<IRigidBody>
+//#############################################################################
+
+class CRigidBody final: public CCollisionObject<IXRigidBody>
 {
 public:
-	CRigidBody(const XRIDIGBODY_DESC *pDesc);
+	CRigidBody(const XRIDIGBODY_DESC &desc);
 
 	void XMETHODCALLTYPE setDamping(float fLinearDamping, float fAngularDamping) override;
 	float XMETHODCALLTYPE getLinearDamping() const override;
@@ -260,17 +320,52 @@ public:
 
 	btRigidBody* getBtRigidBody();
 
-	IRigidBody* XMETHODCALLTYPE asRigidBody() override
+	IXRigidBody* XMETHODCALLTYPE asRigidBody() override
 	{
 		return(this);
 	}
 
-protected:
-
+private:
 	btRigidBody *m_pRigidBody = NULL;
+
+	struct CMotionState: public btMotionState
+	{
+	private:
+		IXRigidBodyMotionCallback *m_pCallback;
+		btTransform m_xform;
+
+	public:
+		CMotionState(IXRigidBodyMotionCallback *pCallback, const float3_t &v, const SMQuaternion &q):
+			m_pCallback(pCallback),
+			m_xform(btTransform(Q4_BTQUAT(q), F3_BTVEC(v)))
+		{
+		}
+
+		///synchronizes world transform from user to physics
+		void getWorldTransform(btTransform &centerOfMassWorldTrans) const override
+		{
+			centerOfMassWorldTrans = m_xform;
+		}
+
+		///synchronizes world transform from physics to user
+		///Bullet only calls the update of worldtransform for active objects
+		void setWorldTransform(const btTransform& centerOfMassWorldTrans) override
+		{
+			if(m_pCallback)
+			{
+				const btVector3 &v = centerOfMassWorldTrans.getOrigin();
+				const btQuaternion &q = centerOfMassWorldTrans.getRotation();
+				m_pCallback->setWorldTransform(BTVEC_F3(v), BTQUAT_Q4(q));
+			}
+		}
+	};
+
+	CMotionState m_motionState;
 };
 
-class CContactManifoldPoint: public IContactManifoldPoint
+//#############################################################################
+
+class CContactManifoldPoint: public IXContactManifoldPoint
 {
 public:
 	float XMETHODCALLTYPE getDistance() const override;
@@ -289,11 +384,13 @@ protected:
 	btManifoldPoint *m_pBtPoint = NULL;
 };
 
-class CContactManifold: public IContactManifold
+//#############################################################################
+
+class CContactManifold: public IXContactManifold
 {
 public:
 	UINT XMETHODCALLTYPE getContactCount() const override;
-	IContactManifoldPoint* XMETHODCALLTYPE getContact(UINT uIndex) const override;
+	IXContactManifoldPoint* XMETHODCALLTYPE getContact(UINT uIndex) const override;
 
 	void setBtManifold(btPersistentManifold *pManifold);
 
@@ -302,14 +399,16 @@ protected:
 	mutable CContactManifoldPoint m_tempPoint;
 };
 
-class CCollisionPair: public ICollisionPair
+//#############################################################################
+
+class CCollisionPair: public IXCollisionPair
 {
 public:
-	ICollisionObject* XMETHODCALLTYPE getObject0() override;
-	ICollisionObject* XMETHODCALLTYPE getObject1() override;
+	IXCollisionObject* XMETHODCALLTYPE getObject0() override;
+	IXCollisionObject* XMETHODCALLTYPE getObject1() override;
 
 	UINT XMETHODCALLTYPE getContactManifoldCount() const override;
-	IContactManifold* XMETHODCALLTYPE getContactManifold(UINT uIndex) const override;
+	IXContactManifold* XMETHODCALLTYPE getContactManifold(UINT uIndex) const override;
 
 	void setBtPair(btBroadphasePair *pPair);
 protected:
@@ -318,22 +417,24 @@ protected:
 	mutable CContactManifold m_contactManifold;
 };
 
-class CGhostObject: public CCollisionObject<IGhostObject>
+//#############################################################################
+
+class CGhostObject: public CCollisionObject<IXGhostObject>
 {
 public:
 	CGhostObject(bool isPairCaching);
 	~CGhostObject();
 
 	UINT XMETHODCALLTYPE getOverlappingObjectCount() const override;
-	ICollisionObject* XMETHODCALLTYPE getOverlappingObject(UINT uIndex) const override;
+	IXCollisionObject* XMETHODCALLTYPE getOverlappingObject(UINT uIndex) const override;
 
 	UINT XMETHODCALLTYPE getOverlappingPairCount() const override;
-	ICollisionPair* XMETHODCALLTYPE getOverlappingPair(UINT uIndex) const override;
+	IXCollisionPair* XMETHODCALLTYPE getOverlappingPair(UINT uIndex) const override;
 
 	btGhostObject* getBtGhostObject();
 
 
-	IGhostObject* XMETHODCALLTYPE asGhostObject() override
+	IXGhostObject* XMETHODCALLTYPE asGhostObject() override
 	{
 		return(this);
 	}

@@ -26,6 +26,7 @@ See the license in LICENSE
 #include <mtrl/sxmtrl.h>
 
 #include <common/queue.h>
+#include "sxphysics.h"
 
 #define PHY_MAT_FILE_MAGICK 3630267958475905107
 
@@ -44,7 +45,7 @@ struct PhyMatFile
 };
 #pragma pack(pop)
 
-class CPhyWorld
+class CPhyWorld final: public IXUnknownImplementation<IXPhysicsWorld>
 {
 public:
 	CPhyWorld();
@@ -53,12 +54,6 @@ public:
 	void setThreadNum(int tnum);
 	void update(int thread = 0);
 	void sync();
-
-	void addShape(btRigidBody * pBody);
-	void addShape(btRigidBody * pBody, int group, int mask);
-	void removeShape(btRigidBody * pBody);
-
-	void updateSingleAABB(btCollisionObject* colObj);
 
 #if 0
 	void loadGeom(const char * file=NULL);
@@ -173,8 +168,19 @@ public:
 	protected:
 		CPhyWorld *m_pWorld;
 	};
+	
+	void XMETHODCALLTYPE addCollisionObject(IXCollisionObject *pCollisionObject, COLLISION_GROUP collisionGroup = CG_DEFAULT, COLLISION_GROUP collisionMask = CG_ALL) override;
+	void XMETHODCALLTYPE removeCollisionObject(IXCollisionObject *pCollisionObject) override;
 
-protected:
+	void XMETHODCALLTYPE rayTest(const float3 &vFrom, const float3 &vTo, IXRayCallback *pCallback, COLLISION_GROUP collisionGroup = CG_DEFAULT, COLLISION_GROUP collisionMask = CG_ALL) override;
+
+	template<class T>
+	void updateSingleAABB(T *pObj)
+	{
+		updateSingleAABB(pObj, pObj->getBtCollisionObject());
+	}
+
+private:
 	btDefaultCollisionConfiguration * m_pCollisionConfiguration;
 	btCollisionDispatcherMt * m_pDispatcher;
 	btBroadphaseInterface * m_pBroadphase;
@@ -208,7 +214,29 @@ protected:
 
 	static void TickCallback(btDynamicsWorld *world, btScalar timeStep);
 
-	SpinLock m_slUpdate;
+	enum QUEUE_ITEM_TYPE
+	{
+		QIT_ADD_COLLISION_OBJECT,
+		QIT_REMOVE_COLLISION_OBJECT,
+		QIT_UPDATE_SINGLE_AABB
+	};
+
+	struct QueueItem
+	{
+		QUEUE_ITEM_TYPE type;
+		IXCollisionObject *pObj;
+		int iGroup;
+		int iMask;
+		btCollisionObject *pBtObj;
+	};
+
+	Queue<QueueItem> m_queue;
+
+private:
+	void enqueue(QueueItem &&item);
+	void runQueue();
+
+	void updateSingleAABB(IXCollisionObject *pObj, btCollisionObject *pBtObj);
 };
 
 #endif

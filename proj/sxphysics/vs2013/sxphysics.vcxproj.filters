@@ -45,6 +45,9 @@
     <ClCompile Include="..\..\..\source\physics\MutationObserver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\physics\CharacterController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\physics\sxphysics.h">
@@ -62,12 +65,6 @@
     <ClInclude Include="..\..\..\source\common\string_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\physics\ICollisionShape.h">
-      <Filter>Header Files\xcommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\physics\ICollisionObject.h">
-      <Filter>Header Files\xcommon</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\physics\CollisionShape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -84,6 +81,18 @@
       <Filter>Header Files\xcommon</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\physics\MutationObserver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\physics\IXCollisionObject.h">
+      <Filter>Header Files\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\physics\IXCollisionShape.h">
+      <Filter>Header Files\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\physics\IXCharacterController.h">
+      <Filter>Header Files\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\physics\CharacterController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

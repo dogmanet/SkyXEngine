@@ -67,7 +67,8 @@ protected:
 
 	void update();
 
-	btPairCachingGhostObject *m_pGhostObject = NULL;
+	//btPairCachingGhostObject *m_pGhostObject = NULL;
+	IXGhostObject *m_pGhostObject = NULL;
 
 	bool m_isModelEnabled = true;
 

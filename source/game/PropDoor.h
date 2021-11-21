@@ -57,7 +57,7 @@ protected:
 	void stop();
 
 	bool testPenetration();
-	bool needsCollision(const btCollisionObject* body0, const btCollisionObject* body1);
+	bool needsCollision(const IXCollisionObject *body0, const IXCollisionObject *body1);
 
 	output_t m_onClose;
 	output_t m_onClosed;
@@ -85,7 +85,7 @@ protected:
 
 	bool m_bState = false;
 
-	btPairCachingGhostObject * m_pGhostObject = NULL;
+	IXGhostObject *m_pGhostObject = NULL;
 
 private:
 	float m_fDistance = 0.0f;

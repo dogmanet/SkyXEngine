@@ -9,10 +9,62 @@ See the license in LICENSE
 
 #include "sxphysics.h"
 
+#include "CollisionObject.h"
+
 //#include <BulletDynamics/MLCPSolvers/btDantzigSolver.h>
 //#include <BulletDynamics/MLCPSolvers/btMLCPSolver.h>
 
 #include <../Extras/Serialize/BulletWorldImporter/btBulletWorldImporter.h>
+
+
+struct XRayResultCallback: public btCollisionWorld::RayResultCallback
+{
+	XRayResultCallback(IXRayCallback *pCallback, const btVector3 &rayFromWorld, const btVector3 &rayToWorld):
+		m_pCallback(pCallback),
+		m_rayFromWorld(rayFromWorld),
+		m_rayToWorld(rayToWorld)
+	{
+		m_result._reserved = NULL;
+	}
+
+	IXRayCallback *m_pCallback;
+
+	btVector3 m_rayFromWorld;//used to calculate hitPointWorld from hitFraction
+	btVector3 m_rayToWorld;
+
+	btVector3 m_hitNormalWorld;
+	btVector3 m_hitPointWorld;
+
+	XRayResult m_result;
+
+	btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace) override
+	{
+		//caller already does the filter on the m_closestHitFraction
+		btAssert(rayResult.m_hitFraction <= m_closestHitFraction);
+
+		m_closestHitFraction = rayResult.m_hitFraction;
+		m_collisionObject = rayResult.m_collisionObject;
+		if(normalInWorldSpace)
+		{
+			m_hitNormalWorld = rayResult.m_hitNormalLocal;
+		}
+		else
+		{
+			///need to transform normal into worldspace
+			m_hitNormalWorld = m_collisionObject->getWorldTransform().getBasis() * rayResult.m_hitNormalLocal;
+		}
+		m_hitPointWorld.setInterpolate3(m_rayFromWorld, m_rayToWorld, rayResult.m_hitFraction);
+
+		m_result.vHitPoint = BTVEC_F3(m_hitPointWorld);
+		m_result.vHitNormal = BTVEC_F3(m_hitPointWorld);
+		m_result.pCollisionObject = m_collisionObject->getUserIndex() == 2 ? (IXCollisionObject*)m_collisionObject->getUserPointer() : NULL;
+		m_result.fHitFraction = rayResult.m_hitFraction;
+
+		return(m_pCallback->addSingleResult(m_result));
+	}
+};
+
+//#############################################################################
 
 class CTaskScheduler: public btITaskScheduler
 {
@@ -68,6 +120,8 @@ public:
 		return(body.sumLoop(iBegin, iEnd));
 	}
 };
+
+//#############################################################################
 
 CPhyWorld::CPhyWorld():
 	m_pGeomStaticCollideMesh(NULL),
@@ -206,6 +260,8 @@ void CPhyWorld::setThreadNum(int tnum)
 }
 void CPhyWorld::update(int thread)
 {
+	runQueue();
+
 	if(!m_isRunning)
 	{
 		return;
@@ -226,45 +282,15 @@ void CPhyWorld::update(int thread)
 	//printf("%.3fs\n", (float)(time1 - time0) / 1000.0f);
 
 	m_isUpdating = true;
-	{
-		ScopedSpinLock lock(m_slUpdate);
-		m_pDynamicsWorld->stepSimulation((float)(time1 - time0) / 1000.0f, 2, 1.0f / 60.0f);
-	}
+	
+	m_pDynamicsWorld->stepSimulation((float)(time1 - time0) / 1000.0f, 2, 1.0f / 60.0f);
+	
 	m_isUpdating = false;
 
 	time0 = time1;
 }
 void CPhyWorld::sync()
 {
-}
-
-void CPhyWorld::addShape(btRigidBody *pBody)
-{
-	ScopedSpinLock lock(m_slUpdate);
-	m_pDynamicsWorld->addRigidBody(pBody);
-}
-
-void CPhyWorld::addShape(btRigidBody * pBody, int group, int mask)
-{
-	ScopedSpinLock lock(m_slUpdate);
-	m_pDynamicsWorld->addRigidBody(pBody, group, mask);
-}
-
-void CPhyWorld::removeShape(btRigidBody * pBody)
-{
-	if(pBody)
-	{
-		ScopedSpinLock lock(m_slUpdate);			
-		m_pDynamicsWorld->removeRigidBody(pBody);
-	}
-}
-
-void CPhyWorld::updateSingleAABB(btCollisionObject* colObj)
-{
-	if(!m_isUpdating)
-	{
-		m_pDynamicsWorld->updateSingleAabb(colObj);
-	}
 }
 
 #if 0
@@ -888,6 +914,136 @@ void CPhyWorld::TickCallback(btDynamicsWorld *world, btScalar timeStep)
 	pThis->m_pTickEventChannel->broadcastEvent(&ev);
 }
 
+void CPhyWorld::enqueue(QueueItem &&item)
+{
+	m_queue.emplace(std::move(item));
+
+	if(Core_GetIXCore()->isOnMainThread() && !m_isUpdating)
+	{
+		runQueue();
+	}
+	else
+	{
+		int a =0;
+	}
+}
+void CPhyWorld::runQueue()
+{
+	QueueItem i;
+
+	while(m_queue.pop(&i))
+	{
+		switch(i.type)
+		{
+		case QIT_ADD_COLLISION_OBJECT:
+			switch(i.pObj->getType())
+			{
+			case XCOT_INVALID:
+				assert(!"Invalid type!");
+				break;
+			case XCOT_RIGID_BODY:
+				{
+					CRigidBody *pBody = (CRigidBody*)i.pObj->asRigidBody();
+					pBody->setPhysWorld(this);
+					m_pDynamicsWorld->addRigidBody(pBody->getBtRigidBody(), i.iGroup, i.iMask);
+				}
+				break;
+			case XCOT_GHOST_OBJECT:
+				{
+					CGhostObject *pGhost = (CGhostObject*)i.pObj->asGhostObject();
+					pGhost->setPhysWorld(this);
+					m_pDynamicsWorld->addCollisionObject(pGhost->getBtGhostObject(), i.iGroup, i.iMask);
+				}
+				break;
+			default:
+				assert(!"Unknown type!");
+			}
+			break;
+
+		case QIT_REMOVE_COLLISION_OBJECT:
+			switch(i.pObj->getType())
+			{
+			case XCOT_INVALID:
+				assert(!"Invalid type!");
+				break;
+			case XCOT_RIGID_BODY:
+				{
+					CRigidBody *pBody = (CRigidBody*)i.pObj->asRigidBody();
+					assert(pBody->getPhysWorld());
+					if(pBody->getPhysWorld())
+					{
+						pBody->setPhysWorld(NULL);
+						m_pDynamicsWorld->removeRigidBody(pBody->getBtRigidBody());
+					}
+				}
+				break;
+			case XCOT_GHOST_OBJECT:
+				{
+					CGhostObject *pGhost = (CGhostObject*)i.pObj->asGhostObject();
+					assert(pGhost->getPhysWorld());
+					if(pGhost->getPhysWorld())
+					{
+						pGhost->setPhysWorld(NULL);
+						m_pDynamicsWorld->removeCollisionObject(pGhost->getBtGhostObject());
+					}
+				}
+				break;
+			default:
+				assert(!"Unknown type!");
+			}
+			i.pObj->Release();
+			break;
+
+		case QIT_UPDATE_SINGLE_AABB:
+			if(i.pBtObj->getBroadphaseHandle())
+			{
+				m_pDynamicsWorld->updateSingleAabb(i.pBtObj);
+			}
+			break;
+		}
+		mem_release(i.pObj);
+	}
+}
+
+void XMETHODCALLTYPE CPhyWorld::addCollisionObject(IXCollisionObject *pCollisionObject, COLLISION_GROUP collisionGroup, COLLISION_GROUP collisionMask)
+{
+	assert(pCollisionObject);
+
+	// One ref for world, the second for queue
+	add_ref(pCollisionObject);
+	add_ref(pCollisionObject);
+	enqueue({QIT_ADD_COLLISION_OBJECT, pCollisionObject, collisionGroup, collisionMask});
+
+	
+}
+void XMETHODCALLTYPE CPhyWorld::removeCollisionObject(IXCollisionObject *pCollisionObject)
+{
+	if(!pCollisionObject)
+	{
+		return;
+	}
+	
+	add_ref(pCollisionObject);
+	enqueue({QIT_REMOVE_COLLISION_OBJECT, pCollisionObject});
+}
+
+void XMETHODCALLTYPE CPhyWorld::rayTest(const float3 &vFrom, const float3 &vTo, IXRayCallback *pCallback, COLLISION_GROUP collisionGroup, COLLISION_GROUP collisionMask)
+{
+	btVector3 from(F3_BTVEC(vFrom));
+	btVector3 to(F3_BTVEC(vTo));
+	XRayResultCallback cb(pCallback, from, to);
+
+	cb.m_collisionFilterGroup = collisionGroup;
+	cb.m_collisionFilterMask = collisionMask;
+
+	m_pDynamicsWorld->rayTest(from, to, cb);
+}
+
+void CPhyWorld::updateSingleAABB(IXCollisionObject *pObj, btCollisionObject *pBtObj)
+{
+	add_ref(pObj);
+	enqueue({QIT_UPDATE_SINGLE_AABB, pObj, 0, 0, pBtObj});
+}
 
 //##############################################################
 

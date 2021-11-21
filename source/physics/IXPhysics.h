@@ -1,33 +1,10 @@
 #ifndef __IXPHYSICS_H
 #define __IXPHYSICS_H
 
-#include "ICollisionShape.h"
-#include "ICollisionObject.h"
-
-
-#define BIT(n) (1 << (n))
-enum COLLISION_GROUP
-{
-	CG_NONE = 0,
-	// BEGIN --- Do not change ---
-	CG_DEFAULT = BIT(0),
-	CG_STATIC = BIT(1),
-	CG_KINEMATIC = BIT(2),
-	CG_DEBRIS = BIT(3),
-	CG_TRIGGER = BIT(4),
-	CG_CHARACTER = BIT(5),
-	// END --- Do not change ---
-
-	CG_WATER = BIT(6),
-	CG_HITBOX = BIT(7),
-	CG_BULLETFIRE = BIT(8),
-	CG_NPCVIEW = BIT(9),
-	CG_DOOR = BIT(10),
-
-	CG_ALL = 0xFFFFFFFF
-};
-
-#define CG_STATIC_MASK (CG_ALL ^ (CG_DOOR | CG_HITBOX | CG_STATIC | CG_TRIGGER | CG_WATER))
+#include "IXCollisionShape.h"
+#include "IXCollisionObject.h"
+#include "IXCharacterController.h"
+#include "IXCharacterController.h"
 
 /*
 typedef enum PHY_ScalarType
@@ -41,36 +18,64 @@ typedef enum PHY_ScalarType
 } PHY_ScalarType;
 */
 
+struct XRayResult
+{
+	float3_t vHitPoint;
+	float3_t vHitNormal;
+	IXCollisionObject *pCollisionObject;
+	void *_reserved;
+	float fHitFraction;
+};
+
+class IXRayCallback
+{
+public:
+	virtual float XMETHODCALLTYPE addSingleResult(const XRayResult &result) = 0;
+};
+
+//#############################################################################
+
+class IXPhysicsWorld: public IXUnknown
+{
+public:
+	virtual void XMETHODCALLTYPE addCollisionObject(IXCollisionObject *pCollisionObject, COLLISION_GROUP collisionGroup = CG_DEFAULT, COLLISION_GROUP collisionMask = CG_ALL) = 0;
+	virtual void XMETHODCALLTYPE removeCollisionObject(IXCollisionObject *pCollisionObject) = 0;
+
+	virtual void XMETHODCALLTYPE rayTest(const float3 &vFrom, const float3 &vTo, IXRayCallback *pCallback, COLLISION_GROUP collisionGroup = CG_DEFAULT, COLLISION_GROUP collisionMask = CG_ALL) = 0;
+	// add/remove action
+	// convexSweepTest
+	// add/remove constraint
+};
+
+//#############################################################################
+
 // {B80CD682-53BF-4173-AD21-20983C524784}
 #define IXPHYSICS_GUID DEFINE_XGUID(0xb80cd682, 0x53bf, 0x4173, 0xad, 0x21, 0x20, 0x98, 0x3c, 0x52, 0x47, 0x84)
 
 class IXPhysics: public IXUnknown
 {
 public:
-	virtual IBoxShape* XMETHODCALLTYPE newBoxShape(const float3 &vHalfExtents) = 0;
-	virtual ISphereShape* XMETHODCALLTYPE newSphereShape(float fRadius) = 0;
-	virtual ICapsuleShape* XMETHODCALLTYPE newCapsuleShape(float fRadius, float fHeight) = 0;
-	virtual ICylinderShape* XMETHODCALLTYPE newCylinderShape(float fRadius, float fHeight) = 0;
-	virtual IStaticPlaneShape* XMETHODCALLTYPE newStaticPlaneShape(const SMPLANE &plane) = 0;
-	/*virtual ITerrainShape* XMETHODCALLTYPE newTerrainShape(int heightStickWidth, int heightStickLength,
+	virtual void XMETHODCALLTYPE newBoxShape(const float3 &vHalfExtents, IXBoxShape **ppOut) = 0;
+	virtual void XMETHODCALLTYPE newSphereShape(float fRadius, IXSphereShape **ppOut) = 0;
+	virtual void XMETHODCALLTYPE newCapsuleShape(float fRadius, float fHeight, IXCapsuleShape **ppOut) = 0;
+	virtual void XMETHODCALLTYPE newCylinderShape(float fRadius, float fHeight, IXCylinderShape **ppOut) = 0;
+	virtual void XMETHODCALLTYPE newStaticPlaneShape(const SMPLANE &plane, IXStaticPlaneShape **ppOut) = 0;
+	/*virtual void XMETHODCALLTYPE newTerrainShape(int heightStickWidth, int heightStickLength,
 		const void* heightfieldData, float heightScale,
 		float minHeight, float maxHeight,
 		char upAxis / * x/y/z * /, PHY_ScalarType heightDataType,
-		bool flipQuadEdges) = 0;*/
-	virtual IConvexHullShape* XMETHODCALLTYPE newConvexHullShape(UINT uPoints, const float3_t *pPoints, byte u8Stride = sizeof(float3_t), bool bOptimize = true) = 0;
-	virtual ITrimeshShape* XMETHODCALLTYPE newTrimeshShape(UINT uVertices, const float3_t *pVertices, UINT uIndices, UINT *pIndices, byte u8Stride = sizeof(float3_t)) = 0;
-	virtual ICompoundShape* XMETHODCALLTYPE newCompoundShape(UINT uShapes = 0) = 0;
+		bool flipQuadEdges, 
+		ITerrainShape **ppOut) = 0;*/
+	virtual void XMETHODCALLTYPE newConvexHullShape(UINT uPoints, const float3_t *pPoints, IXConvexHullShape **ppOut, byte u8Stride = sizeof(float3_t), bool bOptimize = true) = 0;
+	virtual void XMETHODCALLTYPE newTrimeshShape(UINT uVertices, const float3_t *pVertices, UINT uIndices, UINT *pIndices, IXTrimeshShape **ppOut, byte u8Stride = sizeof(float3_t)) = 0;
+	virtual void XMETHODCALLTYPE newCompoundShape(IXCompoundShape **ppOut, UINT uShapes = 0) = 0;
 	
-	virtual IRigidBody* XMETHODCALLTYPE newRigidBody(const XRIDIGBODY_DESC *pDesc) = 0;
-	virtual IGhostObject* XMETHODCALLTYPE newGhostObject(bool isPairCaching = true) = 0;
+	virtual void XMETHODCALLTYPE newRigidBody(const XRIDIGBODY_DESC &desc, IXRigidBody **ppOut) = 0;
+	virtual void XMETHODCALLTYPE newGhostObject(IXGhostObject **ppOut, bool isPairCaching = true) = 0;
 
-	virtual void XMETHODCALLTYPE addCollisionObject(ICollisionObject *pCollisionObject, int iCollisionGroup = CG_DEFAULT, int iCollisionMask = CG_ALL) = 0;
-	virtual void XMETHODCALLTYPE removeCollisionObject(ICollisionObject *pCollisionObject) = 0;
+	virtual void XMETHODCALLTYPE newCharacterController(IXGhostObject *pGhostObject, float fStepHeight, IXCharacterController **ppOut) = 0;
 
-	// add/remove action
-	// rayTest
-	// convexSweepTest
-	// add/remove constraint
+	virtual IXPhysicsWorld* XMETHODCALLTYPE getWorld(void *pReserved = NULL) = 0;
 };
 
 #endif

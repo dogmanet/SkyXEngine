@@ -35,7 +35,7 @@ CBrushMesh::~CBrushMesh()
 {
 	if(m_pRigidBody && m_isPhysicsLoaded)
 	{
-		m_pPhysics->removeCollisionObject(m_pRigidBody);
+		m_pPhysics->getWorld()->removeCollisionObject(m_pRigidBody);
 	}
 	mem_release(m_pRigidBody);
 	mem_release(m_pModel);
@@ -50,13 +50,13 @@ void CBrushMesh::enable(bool yesNo)
 		{
 			if(!m_isPhysicsLoaded)
 			{
-				m_pPhysics->addCollisionObject(m_pRigidBody, CG_STATIC, CG_STATIC_MASK);
+				m_pPhysics->getWorld()->addCollisionObject(m_pRigidBody, CG_STATIC, CG_STATIC_MASK);
 				m_isPhysicsLoaded = true;
 			}
 		}
 		else if(m_isPhysicsLoaded)
 		{
-			m_pPhysics->removeCollisionObject(m_pRigidBody);
+			m_pPhysics->getWorld()->removeCollisionObject(m_pRigidBody);
 			m_isPhysicsLoaded = false;
 		}
 	}
@@ -205,19 +205,19 @@ void CBrushMesh::buildModel(bool bBuildPhysbox)
 	{
 		if(m_pRigidBody && m_isPhysicsLoaded)
 		{
-			m_pPhysics->removeCollisionObject(m_pRigidBody);
+			m_pPhysics->getWorld()->removeCollisionObject(m_pRigidBody);
 		}
 		mem_release(m_pRigidBody);
 
-		IConvexHullShape *pShape = m_pPhysics->newConvexHullShape(m_aVertices.size(), m_aVertices, sizeof(float3_t), false);
+		IXConvexHullShape *pShape;
+		m_pPhysics->newConvexHullShape(m_aVertices.size(), m_aVertices, &pShape, sizeof(float3_t), false);
 
-		XRIDIGBODY_DESC desc = {};
-		desc.fMass = 0.0f;
+		XRIDIGBODY_DESC desc;
 		desc.pCollisionShape = pShape;
-		m_pRigidBody = m_pPhysics->newRigidBody(&desc);
+		m_pPhysics->newRigidBody(desc, &m_pRigidBody);
 		mem_release(pShape);
 
-		m_pPhysics->addCollisionObject(m_pRigidBody, CG_STATIC, CG_STATIC_MASK);
+		m_pPhysics->getWorld()->addCollisionObject(m_pRigidBody, CG_STATIC, CG_STATIC_MASK);
 		m_isPhysicsLoaded = true;
 	}
 }

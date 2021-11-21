@@ -220,14 +220,15 @@ void CPropDoor::createPhysBody()
 		float3 vPos = getPos();
 		SMQuaternion qRot = getOrient();
 
-		m_pGhostObject = new btPairCachingGhostObject();
-		m_pGhostObject->setWorldTransform(btTransform(Q4_BTQUAT(qRot), F3_BTVEC(vPos)));
+		GetPhysics()->newGhostObject(&m_pGhostObject, true);
+		m_pGhostObject->setPosition(vPos);
+		m_pGhostObject->setRotation(qRot);
 		m_pGhostObject->setCollisionShape(m_pCollideShape);
-		m_pGhostObject->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
+		m_pGhostObject->setCollisionFlags(XCF_KINEMATIC_OBJECT);
 		m_pGhostObject->setUserPointer(this);
-		m_pGhostObject->setUserIndex(1);
+		m_pGhostObject->setUserTypeId(1);
 		
-		SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_DOOR, CG_CHARACTER | CG_DEFAULT);
+		GetPhysWorld()->addCollisionObject(m_pGhostObject, CG_DOOR, CG_CHARACTER | CG_DEFAULT);
 
 		//m_pGhostObject->activate();
 		//m_pGhostObject->setActivationState(DISABLE_DEACTIVATION);
@@ -240,25 +241,22 @@ void CPropDoor::createPhysBody()
 		}
 		else
 		{
-			btVector3 bvMin, bvMax;
-			m_pCollideShape->getAabb(m_pGhostObject->getWorldTransform(), bvMin, bvMax);
-			float3 vMin = BTVEC_F3(bvMin);
-			float3 vMax = BTVEC_F3(bvMax);
+			SMAABB aabb = m_pGhostObject->getAABB();
 
-			vMin += float3(m_pCollideShape->getMargin());
-			vMax -= float3(m_pCollideShape->getMargin());
+			aabb.vMin += float3(m_pCollideShape->getMargin());
+			aabb.vMax -= float3(m_pCollideShape->getMargin());
 
 			float4 v0(
-				SMVector3Dot(float3(vMin.x, vMin.y, vMin.z), vDir),
-				SMVector3Dot(float3(vMin.x, vMin.y, vMax.z), vDir),
-				SMVector3Dot(float3(vMin.x, vMax.y, vMin.z), vDir),
-				SMVector3Dot(float3(vMin.x, vMax.y, vMax.z), vDir)
+				SMVector3Dot(float3(aabb.vMin.x, aabb.vMin.y, aabb.vMin.z), vDir),
+				SMVector3Dot(float3(aabb.vMin.x, aabb.vMin.y, aabb.vMax.z), vDir),
+				SMVector3Dot(float3(aabb.vMin.x, aabb.vMax.y, aabb.vMin.z), vDir),
+				SMVector3Dot(float3(aabb.vMin.x, aabb.vMax.y, aabb.vMax.z), vDir)
 			);
 			float4 v1(
-				SMVector3Dot(float3(vMax.x, vMin.y, vMin.z), vDir),
-				SMVector3Dot(float3(vMax.x, vMin.y, vMax.z), vDir),
-				SMVector3Dot(float3(vMax.x, vMax.y, vMin.z), vDir),
-				SMVector3Dot(float3(vMax.x, vMax.y, vMax.z), vDir)
+				SMVector3Dot(float3(aabb.vMax.x, aabb.vMin.y, aabb.vMin.z), vDir),
+				SMVector3Dot(float3(aabb.vMax.x, aabb.vMin.y, aabb.vMax.z), vDir),
+				SMVector3Dot(float3(aabb.vMax.x, aabb.vMax.y, aabb.vMin.z), vDir),
+				SMVector3Dot(float3(aabb.vMax.x, aabb.vMax.y, aabb.vMax.z), vDir)
 			);
 			float4 v4Min = SMVectorMin(v0, v1);
 			float4 v4Max = SMVectorMax(v0, v1);
@@ -283,8 +281,8 @@ void CPropDoor::removePhysBody()
 {
 	if(m_pGhostObject)
 	{
-		SPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
-		mem_delete(m_pGhostObject);
+		GetPhysWorld()->removeCollisionObject(m_pGhostObject);
+		mem_release(m_pGhostObject);
 	}
 
 	BaseClass::removePhysBody();
@@ -349,25 +347,22 @@ void CPropDoor::setPos(const float3 & pos)
 	BaseClass::setPos(pos);
 	if(m_pGhostObject)
 	{
-		m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(pos));
+		m_pGhostObject->setPosition(pos);
 		//m_pGhostObject->setInterpolationLinearVelocity(btVector3(-0.02f, 0.0f, 0.0f));
 	}
 }
 
 bool CPropDoor::testPenetration()
 {
-	btManifoldArray manifoldArray;
-
 	bool hasContact = false;
 
-	for(int i = 0; i < m_pGhostObject->getOverlappingPairCache()->getNumOverlappingPairs(); ++i)
+	for(UINT i = 0, l = m_pGhostObject->getOverlappingPairCount(); i < l; ++i)
 	{
-		manifoldArray.resize(0);
 
-		btBroadphasePair* collisionPair = &m_pGhostObject->getOverlappingPairCache()->getOverlappingPairArray()[i];
+		IXCollisionPair *collisionPair = m_pGhostObject->getOverlappingPair(i);
 		
-		btCollisionObject* obj0 = static_cast<btCollisionObject*>(collisionPair->m_pProxy0->m_clientObject);
-		btCollisionObject* obj1 = static_cast<btCollisionObject*>(collisionPair->m_pProxy1->m_clientObject);
+		IXCollisionObject* obj0 = collisionPair->getObject0();
+		IXCollisionObject* obj1 = collisionPair->getObject1();
 
 		if((obj0 && !obj0->hasContactResponse()) || (obj1 && !obj1->hasContactResponse()))
 			continue;
@@ -375,28 +370,22 @@ bool CPropDoor::testPenetration()
 		if(!needsCollision(obj0, obj1))
 			continue;
 
-		btBroadphasePair *pCollisionPair = SPhysics_GetDynWorld()->getPairCache()->findPair(collisionPair->m_pProxy0, collisionPair->m_pProxy1);
-
-		if(pCollisionPair->m_algorithm)
-			pCollisionPair->m_algorithm->getAllContactManifolds(manifoldArray);
-
-
-		for(int j = 0; j<manifoldArray.size(); j++)
+		for(UINT j = 0, jl = collisionPair->getContactManifoldCount(); j < jl; ++j)
 		{
-			btPersistentManifold* manifold = manifoldArray[j];
+			IXContactManifold *manifold = collisionPair->getContactManifold(j);
 			//btScalar directionSign = manifold->getBody0() == m_pGhostObject ? btScalar(-1.0) : btScalar(1.0);
-			for(int p = 0; p<manifold->getNumContacts(); p++)
+			for(UINT p = 0, pl = manifold->getContactCount(); p<pl; ++p)
 			{
-				const btManifoldPoint &pt = manifold->getContactPoint(p);
+				const IXContactManifoldPoint *pt = manifold->getContact(p);
 
-				btScalar dist = pt.getDistance();
+				float dist = pt->getDistance();
 
 				if(dist < -DOOR_MAX_PENETRATION_DEPTH)
 				{
 					hasContact = true;
-					const btCollisionObject *pObject = (obj0 == m_pGhostObject) ? obj1 : obj0;
+					const IXCollisionObject *pObject = (obj0 == m_pGhostObject) ? obj1 : obj0;
 
-					if(pObject->getUserPointer() && pObject->getUserIndex() == 1)
+					if(pObject->getUserPointer() && pObject->getUserTypeId() == 1)
 					{
 						CBaseEntity *pEnt = (CBaseEntity*)pObject->getUserPointer();
 						if(pEnt)
@@ -434,10 +423,10 @@ bool CPropDoor::testPenetration()
 	return(false);
 }
 
-bool CPropDoor::needsCollision(const btCollisionObject* body0, const btCollisionObject* body1)
+bool CPropDoor::needsCollision(const IXCollisionObject *body0, const IXCollisionObject *body1)
 {
-	bool collides = (body0->getBroadphaseHandle()->m_collisionFilterGroup & body1->getBroadphaseHandle()->m_collisionFilterMask) != 0;
-	collides = collides && (body1->getBroadphaseHandle()->m_collisionFilterGroup & body0->getBroadphaseHandle()->m_collisionFilterMask);
+	bool collides = (body0->getFilterGroup() & body1->getFilterMask()) != 0;
+	collides = collides && (body1->getFilterGroup() & body0->getFilterMask());
 	return(collides);
 }
 

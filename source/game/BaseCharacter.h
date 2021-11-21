@@ -91,7 +91,7 @@ public:
 	//! Получает рассчитанный для текущего оружия коэффициент разброса (с учетом задержки сведения)
 	float getCurrentSpread();
 
-	btCollisionObject *getBtCollisionObject() const
+	IXCollisionObject *getBtCollisionObject() const
 	{
 		return(m_pGhostObject);
 	}
@@ -145,11 +145,11 @@ protected:
 	CBaseTool *m_pActiveTool = NULL;
 
 	//! Для физики @{
-	btCollisionShape *m_pCollideShape = NULL;
-	btRigidBody *m_pRigidBody = NULL;
-	btPairCachingGhostObject *m_pGhostObject = NULL;
-	btKinematicCharacterController *m_pCharacter = NULL;
-	btRigidBody **m_pHitboxBodies = NULL;
+	IXCapsuleShape *m_pCollideShape = NULL;
+	IXRigidBody *m_pRigidBody = NULL;
+	IXGhostObject *m_pGhostObject = NULL;
+	IXCharacterController *m_pCharacter = NULL;
+	IXRigidBody **m_pHitboxBodies = NULL;
 	//! @}
 
 	//! Углы вращения игрока

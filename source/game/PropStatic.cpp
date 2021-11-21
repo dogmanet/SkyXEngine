@@ -37,32 +37,27 @@ void CPropStatic::createPhysBody()
 		float3 vPos = getPos();
 		SMQuaternion qRot = getOrient();
 
-		btDefaultMotionState * motionState = new btDefaultMotionState(btTransform(Q4_BTQUAT(qRot), F3_BTVEC(vPos)));
-		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
-			0,                  // mass
-			motionState,        // initial position
-			m_pCollideShape,    // collision shape of body
-			btVector3(0, 0, 0)  // local inertia
-			);
-		m_pRigidBody = new btRigidBody(rigidBodyCI);
-		//m_pRigidBody->getInvMass();
+		XRIDIGBODY_DESC rigidBodyDesc;
+		rigidBodyDesc.pCollisionShape = m_pCollideShape;
+		rigidBodyDesc.vStartWorldPosition = vPos;
+		rigidBodyDesc.qStartWorldRotation = qRot;
 
+		GetPhysics()->newRigidBody(rigidBodyDesc, &m_pRigidBody);
+		
 		//m_pRigidBody->setFriction(100.0f);
 		m_pRigidBody->setUserPointer(this);
-		m_pRigidBody->setUserIndex(1);
-		int colGroup = CG_STATIC;
-		int colMask = CG_STATIC_MASK;
-		SPhysics_AddShapeEx(m_pRigidBody, colGroup, colMask);
+		m_pRigidBody->setUserTypeId(1);
+		GetPhysWorld()->addCollisionObject(m_pRigidBody, CG_STATIC, CG_STATIC_MASK);
 
-		m_pRigidBody->setLinearFactor(btVector3(0.0f, 0.0f, 0.0f));
-		m_pRigidBody->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
+		m_pRigidBody->setLinearFactor(float3(0.0f, 0.0f, 0.0f));
+		m_pRigidBody->setAngularFactor(float3(0.0f, 0.0f, 0.0f));
 	}
 }
 
 void CPropStatic::removePhysBody()
 {
-	SPhysics_RemoveShape(m_pRigidBody);
-	mem_delete(m_pRigidBody);
+	GetPhysWorld()->removeCollisionObject(m_pRigidBody);
+	mem_release(m_pRigidBody);
 }
 
 void CPropStatic::initPhysics()
@@ -88,25 +83,25 @@ void CPropStatic::initPhysics()
 		return;
 	}
 
-	btCompoundShape *pShape = new btCompoundShape(true, uShapesCount);
+	IXCompoundShape *pShape;
+	GetPhysics()->newCompoundShape(&pShape, uShapesCount);
 
 	auto pResource = m_pModel->getResource()->asStatic();
 	UINT uUsedLod = pResource->getLodCount() - 1;
 	for(UINT i = 0, l = pResource->getSubsetCount(uUsedLod); i < l; ++i)
 	{
-		btCollisionShape *pLocalShape = NULL;
+		IXTrimeshShape *pLocalShape = NULL;
 		auto pSubset = pResource->getSubset(uUsedLod, i);
 
-		pLocalShape = SPhysics_CreateTrimeshShape(pSubset);
-		
+		GetPhysics()->newTrimeshShape(pSubset->iVertexCount, (float3_t*)pSubset->pVertices, pSubset->iIndexCount, pSubset->pIndices, &pLocalShape, sizeof(pSubset->pVertices[0]));
+
 		if(pLocalShape)
 		{
-			pLocalShape->setLocalScaling(btVector3(m_fBaseScale, m_fBaseScale, m_fBaseScale));
-			btTransform localTransform;
-			localTransform.setIdentity();
-			pShape->addChildShape(localTransform, pLocalShape);
+			pLocalShape->setLocalScaling(m_fBaseScale);
+			pShape->addChildShape(pLocalShape, float3(), SMQuaternion());
 		}
 	}
+	pShape->recalculateLocalAabb();
 
 	m_pCollideShape = pShape;
 	createPhysBody();
@@ -115,23 +110,8 @@ void CPropStatic::initPhysics()
 void CPropStatic::releasePhysics()
 {
 	removePhysBody();
-	if(m_pCollideShape)
-	{
-		btCompoundShape *pShape = (btCompoundShape*)m_pCollideShape;
-		for(UINT i = 0, l = pShape->getNumChildShapes(); i < l; ++i)
-		{
-			auto pChild = pShape->getChildShape(i);
-			if(pChild->getShapeType() == TRIANGLE_MESH_SHAPE_PROXYTYPE)
-			{
 
-			}
-			else
-			{
-				mem_delete(pChild);
-			}
-		}
-		mem_delete(m_pCollideShape);
-	}
+	mem_release(m_pCollideShape);
 }
 
 void CPropStatic::onSetUseTrimesh(int iVal)

@@ -283,6 +283,7 @@
     <ClInclude Include="..\..\..\source\game\LogicEntityExists.h" />
     <ClInclude Include="..\..\..\source\game\LogicRelay.h" />
     <ClInclude Include="..\..\..\source\game\LogicStringbuilder.h" />
+    <ClInclude Include="..\..\..\source\game\physics_util.h" />
     <ClInclude Include="..\..\..\source\game\PropBreakable.h" />
     <ClInclude Include="..\..\..\source\game\PropButton.h" />
     <ClInclude Include="..\..\..\source\game\PropDebris.h" />

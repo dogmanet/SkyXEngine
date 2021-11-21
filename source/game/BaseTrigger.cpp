@@ -64,7 +64,7 @@ void CBaseTrigger::enable()
 		m_bEnabled = true;
 		if(m_pGhostObject)
 		{
-			SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_TRIGGER, CG_CHARACTER);
+			GetPhysWorld()->addCollisionObject(m_pGhostObject, CG_TRIGGER, CG_CHARACTER);
 			m_pTickEventChannel->addListener(&m_physicsTicker);
 		}
 	}
@@ -77,7 +77,7 @@ void CBaseTrigger::disable()
 		if(m_pGhostObject)
 		{
 			m_pTickEventChannel->removeListener(&m_physicsTicker);
-			SPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
+			GetPhysWorld()->removeCollisionObject(m_pGhostObject);
 		}
 	}
 }
@@ -113,26 +113,28 @@ void CBaseTrigger::createPhysBody()
 		float3 vPos = getPos();
 		SMQuaternion qRot = getOrient();
 
-		m_pGhostObject = new btPairCachingGhostObject();
-		m_pGhostObject->setWorldTransform(btTransform(Q4_BTQUAT(qRot), F3_BTVEC(vPos)));
+		GetPhysics()->newGhostObject(&m_pGhostObject);
+		m_pGhostObject->setPosition(vPos);
+		m_pGhostObject->setRotation(qRot);
 		m_pGhostObject->setUserPointer(this);
-		m_pGhostObject->setUserIndex(1);
+		m_pGhostObject->setUserTypeId(1);
 		m_pGhostObject->setCollisionShape(m_pCollideShape);
-		m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() ^ btCollisionObject::CF_NO_CONTACT_RESPONSE);
+		m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() ^ XCF_NO_CONTACT_RESPONSE);
 
-		SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_TRIGGER, CG_CHARACTER);
+		GetPhysWorld()->addCollisionObject(m_pGhostObject, CG_TRIGGER, CG_CHARACTER);
 		m_pTickEventChannel->addListener(&m_physicsTicker);
+		m_bEnabled = true;
 	}
 }
 
 void CBaseTrigger::removePhysBody()
 {
-	if(m_pGhostObject)
+	if(m_pGhostObject && m_bEnabled)
 	{
-		SPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
+		GetPhysWorld()->removeCollisionObject(m_pGhostObject);
 		m_pTickEventChannel->removeListener(&m_physicsTicker);
-		mem_delete(m_pGhostObject);
 	}
+	mem_release(m_pGhostObject);
 }
 
 void CBaseTrigger::onTouchStart(CBaseEntity *pActivator)
@@ -167,40 +169,31 @@ void CBaseTrigger::onPhysicsStep()
 	}
 	m_aNewTouches.clearFast();
 
-	btManifoldArray manifoldArray;
-	btBroadphasePairArray &pairArray = m_pGhostObject->getOverlappingPairCache()->getOverlappingPairArray();
-	int iTouches = pairArray.size();
-	for(int i = 0; i < iTouches; ++i)
+	for(UINT i = 0, l = m_pGhostObject->getOverlappingPairCount(); i < l; ++i)
 	{
-		const btBroadphasePair &pair = pairArray[i];
-		btBroadphasePair *pCollisionPair = SPhysics_GetDynWorld()->getPairCache()->findPair(pair.m_pProxy0, pair.m_pProxy1);
-		
-		if(pCollisionPair && pCollisionPair->m_algorithm)
+		IXCollisionPair *pair = m_pGhostObject->getOverlappingPair(i);
+				
+		for(UINT j = 0, jl = pair->getContactManifoldCount(); j < jl; ++j)
 		{
-			manifoldArray.resize(0);
-			pCollisionPair->m_algorithm->getAllContactManifolds(manifoldArray);
-
-			for(int j = 0, jl = manifoldArray.size(); j < jl; ++j)
+			IXContactManifold *pManifold = pair->getContactManifold(j);
+			if(pManifold->getContactCount() > 0)
 			{
-				if(manifoldArray[j]->getNumContacts() > 0)
-				{
-					const btCollisionObject *pObject = (manifoldArray[0]->getBody0() == m_pGhostObject)
-						? manifoldArray[0]->getBody1()
-						: manifoldArray[0]->getBody0();
+				IXCollisionObject *p0 = pair->getObject0();
+				IXCollisionObject *p1 = pair->getObject1();
 
-					if(pObject->getUserPointer() && pObject->getUserIndex() == 1)
+				const IXCollisionObject *pObject = p0 == m_pGhostObject ? p1 : p0;
+
+				if(pObject->getUserPointer() && pObject->getUserTypeId() == 1)
+				{
+					CBaseEntity *pEnt = (CBaseEntity*)pObject->getUserPointer();
+					if(pEnt)
 					{
-						CBaseEntity *pEnt = (CBaseEntity*)pObject->getUserPointer();
-						if(pEnt)
-						{
-							m_aNewTouches.push_back(pEnt);
-							//printf("touched %s\n", pEnt->getClassName());
-						}
+						m_aNewTouches.push_back(pEnt);
+						//printf("touched %s\n", pEnt->getClassName());
 					}
-					break;
 				}
+				break;
 			}
-			//printf("m=%d ", manifoldArray.size());
 		}
 	}
 	//m_pGhostObject->getOverlappingObject(0);
@@ -241,26 +234,18 @@ void CBaseTrigger::update()
 }
 
 
-void CBaseTrigger::setPos(const float3 & pos)
+void CBaseTrigger::setPos(const float3 &pos)
 {
 	BaseClass::setPos(pos);
-	if(m_pGhostObject)
-	{
-		m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(pos));
 
-		SPhysics_UpdateSingleAABB(m_pGhostObject);
-	}
+	SAFE_CALL(m_pGhostObject, setPosition, pos);
 }
 
-void CBaseTrigger::setOrient(const SMQuaternion & q)
+void CBaseTrigger::setOrient(const SMQuaternion &q)
 {
 	BaseClass::setOrient(q);
-	if(m_pGhostObject)
-	{
-		m_pGhostObject->getWorldTransform().setRotation(Q4_BTQUAT(q));
 
-		SPhysics_UpdateSingleAABB(m_pGhostObject);
-	}
+	SAFE_CALL(m_pGhostObject, setRotation, q);
 }
 
 void CPhysicsTickEventListener::onEvent(const XEventPhysicsStep *pData)

@@ -10,7 +10,7 @@ See the license in LICENSE
 #include "sxgame.h"
 #include <core/sxcore.h>
 #include <gcore/sxgcore.h>
-#include <BulletCollision/NarrowPhaseCollision/btRaycastCallback.h>
+//#include <BulletCollision/NarrowPhaseCollision/btRaycastCallback.h>
 
 #include "EntityManager.h"
 

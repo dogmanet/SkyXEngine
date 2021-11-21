@@ -55,10 +55,10 @@ protected:
 	{
 		float3_t vPosition;
 		float3_t vNormal;
-		const btCollisionObject *pCollisionObject;
+		const IXCollisionObject *pCollisionObject;
 		float fFraction;
 		bool isExit;
-		btCollisionWorld::LocalShapeInfo shapeInfo;
+		//btCollisionWorld::LocalShapeInfo shapeInfo;
 	};
 
 	//! Рисует декаль в точке попадания

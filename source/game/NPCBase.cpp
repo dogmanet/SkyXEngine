@@ -20,30 +20,6 @@ END_PROPTABLE()
 
 REGISTER_ENTITY_NOLISTING(CNPCBase, npc_base);
 
-class CClosestNotMeRayResultCallback: public btCollisionWorld::ClosestRayResultCallback
-{
-public:
-	CClosestNotMeRayResultCallback(btCollisionObject* me, const btVector3&	rayFromWorld, const btVector3&	rayToWorld): btCollisionWorld::ClosestRayResultCallback(rayFromWorld, rayToWorld)
-	{
-		m_me = me;
-		m_shapeInfo = {-1, -1};
-	}
-
-	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
-	{
-		if(rayResult.m_collisionObject == m_me)
-			return 1.0;
-		if(rayResult.m_localShapeInfo)
-		{
-			m_shapeInfo = *rayResult.m_localShapeInfo;
-		}
-		return ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
-	}
-	btCollisionWorld::LocalShapeInfo m_shapeInfo;
-protected:
-	btCollisionObject* m_me;
-};
-
 CNPCBase::CNPCBase():
 	m_idQuadGoingTo(-1),
 	m_idFindPathInterval(-1),
@@ -308,7 +284,7 @@ void CNPCBase::pathFollowThinker(float fDelta)
 	bool bMayJump = vDir.y > m_fStepHeight && m_pCharacter->canJump();
 	
 	vDir.y = 0.0f;
-	m_pCharacter->setWalkDirection(F3_BTVEC(vDir * fMovDirLen));
+	m_pCharacter->setWalkDirection(vDir * fMovDirLen);
 	//g_pTracer2->begin(m_vPosition, 1);
 	//g_pTracer2->lineTo(m_vPosition + vDir * fMovDirLen, 1);
 	//g_pTracer2->end();
@@ -363,7 +339,7 @@ void CNPCBase::stopMotion(bool runIdleAnim)
 		playActivity("ACT_IDLE", 300);
 	}
 
-	m_pCharacter->setWalkDirection(btVector3(0, 0, 0));
+	m_pCharacter->setWalkDirection(float3(0, 0, 0));
 
 	CLEAR_INTERVAL(m_idPathFollowInterval);
 	m_idPathFollowInterval = -1;
@@ -402,16 +378,14 @@ float CNPCBase::canSee(CBaseEntity *pOther)
 		return(0.0f);
 }
 
-	CClosestNotMeRayResultCallback cb(getBtCollisionObject(), F3_BTVEC(m_pHeadEnt->getPos()), F3_BTVEC(pOther->getPos()));
-	cb.m_collisionFilterGroup = CG_NPCVIEW;
-	cb.m_collisionFilterMask = CG_ALL & ~(CG_DEBRIS | CG_TRIGGER | CG_CHARACTER);
-	SPhysics_GetDynWorld()->rayTest(F3_BTVEC(m_pHeadEnt->getPos()), F3_BTVEC(pOther->getPos()), cb);
+	CClosestNotMeRayResultCallback cb(getBtCollisionObject());
+	GetPhysWorld()->rayTest(m_pHeadEnt->getPos(), pOther->getPos(), &cb, CG_NPCVIEW, CG_ALL & ~(CG_DEBRIS | CG_TRIGGER | CG_CHARACTER));
 
-	if(cb.hasHit() && cb.m_collisionObject->getUserPointer() && cb.m_collisionObject->getUserIndex() == 1)
+	if(cb.hasHit() && cb.m_result.pCollisionObject->getUserPointer() && cb.m_result.pCollisionObject->getUserTypeId() == 1)
 	{
-		CBaseEntity *pEnt = (CBaseEntity*)cb.m_collisionObject->getUserPointer();
+		CBaseEntity *pEnt = (CBaseEntity*)cb.m_result.pCollisionObject->getUserPointer();
 		if(!pEnt || pEnt != pOther)
-{
+		{
 			return(0.0f);
 		}
 	}

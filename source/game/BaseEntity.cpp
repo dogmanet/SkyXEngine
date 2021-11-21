@@ -93,8 +93,6 @@ CBaseEntity::CBaseEntity()
 
 CBaseEntity::~CBaseEntity()
 {
-	_releaseEditorBoxes();
-
 	m_pMgr->unreg(this);
 
 	proptable_t * pt = getPropTable();
@@ -159,12 +157,6 @@ void CBaseEntity::setPos(const float3 &pos)
 	m_vPosition = pos;
 
 	onParentMoved(true);
-
-	if(m_pEditorRigidBody)
-	{
-		m_pEditorRigidBody->getWorldTransform().setOrigin(F3_BTVEC(m_vPosition));
-		SPhysics_UpdateSingleAABB(m_pEditorRigidBody);
-	}
 
 	{
 		ScopedSpinLock lock(m_slChildren);
@@ -844,46 +836,6 @@ void CBaseEntity::_cleanup()
 
 void CBaseEntity::onUse(CBaseEntity *pUser)
 {
-}
-
-void CBaseEntity::_initEditorBoxes()
-{
-	if(m_pEditorRigidBody)
-	{
-		return;
-	}
-
-	float3 vBoxHalfSize = m_vEditorBoxSize * 0.5f;
-	m_pEditorCollideShape = new btBoxShape(F3_BTVEC(vBoxHalfSize));
-
-	btDefaultMotionState * motionState = new btDefaultMotionState(btTransform(Q4_BTQUAT(SMQuaternion()), F3_BTVEC(m_vPosition)));
-	btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
-		0,                  // mass
-		motionState,        // initial position
-		m_pEditorCollideShape,    // collision shape of body
-		btVector3(0,0,0)  // local inertia
-		);
-	m_pEditorRigidBody = new btRigidBody(rigidBodyCI);
-	//m_pEditorRigidBody->getInvMass();
-	m_pEditorRigidBody->setUserPointer(this);
-	m_pEditorRigidBody->setUserIndex(1);
-
-	SPhysics_AddShapeEx(m_pEditorRigidBody, CG_DEFAULT, CG_BULLETFIRE);
-}
-
-void CBaseEntity::_releaseEditorBoxes()
-{
-	if(m_pEditorRigidBody)
-	{
-		SPhysics_RemoveShape(m_pEditorRigidBody);
-	}
-	mem_delete(m_pEditorRigidBody);
-	mem_delete(m_pEditorCollideShape);
-}
-
-float3 CBaseEntity::getEditorBoxSize()
-{
-	return(m_vEditorBoxSize);
 }
 
 void CBaseEntity::renderEditor(bool is3D)

@@ -56,10 +56,6 @@ CBaseEntity* CEntityFactoryMap::create(const char *szName, CEntityManager *pWorl
 		{
 			pEnt->onPostLoad();
 		}
-		if(pWorld->isEditorMode())
-		{
-			pEnt->_initEditorBoxes();
-		}
 
 		return(pEnt);
 	}

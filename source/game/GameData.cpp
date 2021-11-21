@@ -70,6 +70,8 @@ static IGXSamplerState *g_pTextSamplerState = NULL;
 static IGXDepthStencilState *g_pTextDepthState = NULL;
 static UINT g_uFrameCount = 0;
 static UINT g_uFPS = 0;
+static IXPhysics *g_pPhysics = NULL;
+static IXPhysicsWorld *g_pPhysWorld = NULL;
 
 //##########################################################################
 
@@ -87,6 +89,15 @@ static void RenderText(const wchar_t *szText)
 
 	g_pFont->buildString(szText, gui::IFont::DECORATION_NONE, gui::IFont::TEXT_ALIGN_LEFT,
 		&g_pTextRenderBuffer, &g_pTextIndexBuffer, &g_uVertexCount, &g_uIndexCount, NULL, *r_win_width, 0, 0);
+}
+
+IXPhysics* GetPhysics()
+{
+	return(g_pPhysics);
+}
+IXPhysicsWorld* GetPhysWorld()
+{
+	return(g_pPhysWorld);
 }
 
 //##########################################################################
@@ -460,6 +471,8 @@ GameData::GameData(HWND hWnd, bool isGame):
 	});
 
 	m_pLightSystem = (IXLightSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXLIGHTSYSTEM_GUID);
+	g_pPhysics = (IXPhysics*)Core_GetIXCore()->getPluginManager()->getInterface(IXPHYSICS_GUID);
+	g_pPhysWorld = g_pPhysics->getWorld();
 
 	if(m_pLightSystem && false)
 	{

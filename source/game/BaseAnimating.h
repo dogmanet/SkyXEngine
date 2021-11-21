@@ -22,35 +22,24 @@ See the license in LICENSE
 
 #define BLEND_MAX 4
 
-struct CMotionState: public btMotionState
+class CBaseAnimating;
+
+class CMotionState: public IXRigidBodyMotionCallback
 {
 private:
-	CBaseEntity *m_pEntity;
+	CBaseAnimating *m_pEntity;
 
 public:
-	CMotionState(CBaseEntity *pEntity):
+	CMotionState(CBaseAnimating *pEntity):
 		m_pEntity(pEntity)
 	{
 	}
-
-	///synchronizes world transform from user to physics
-	void getWorldTransform(btTransform &centerOfMassWorldTrans) const override
-	{
-		float3 vPos = m_pEntity->getPos();
-		SMQuaternion qRot = m_pEntity->getOrient();
-
-		centerOfMassWorldTrans = btTransform(Q4_BTQUAT(qRot), F3_BTVEC(vPos));
-	}
-
+	
 	///synchronizes world transform from physics to user
-	///Bullet only calls the update of worldtransform for active objects
-	void setWorldTransform(const btTransform& centerOfMassWorldTrans) override
-	{
-		const btVector3 &v = centerOfMassWorldTrans.getOrigin();
-		const btQuaternion &q = centerOfMassWorldTrans.getRotation();
-		m_pEntity->setXform(BTVEC_F3(v), BTQUAT_Q4(q));
-	}
+	void setWorldTransform(const float3 &vPos, const SMQuaternion &q) override;
 };
+
+//##########################################################################
 
 class CAnimationCallback;
 //! Анимированный игровой объект
@@ -60,6 +49,7 @@ class CBaseAnimating: public CBaseEntity
 	DECLARE_PROPTABLE();
 
 	friend class CAnimationCallback;
+	friend class CMotionState;
 public:
 	DECLARE_CONSTRUCTOR();
 	~CBaseAnimating();
@@ -84,7 +74,7 @@ public:
 	bool playingAnimations(const char* name);
 	void setPos(const float3 & pos) override;
 	void setOrient(const SMQuaternion & q) override;
-
+	
 	void setSkin(int iSkin);
 	
 	void setCollisionGroup(COLLISION_GROUP group, COLLISION_GROUP mask = CG_ALL);
@@ -120,8 +110,8 @@ protected:
 	virtual void createPhysBody();
 	virtual void removePhysBody();
 
-	btCollisionShape *m_pCollideShape = NULL;
-	btRigidBody *m_pRigidBody = NULL;
+	IXCollisionShape *m_pCollideShape = NULL;
+	IXRigidBody *m_pRigidBody = NULL;
 
 	virtual void _cleanup();
 
@@ -147,6 +137,11 @@ private:
 	CAnimationCallback *m_pAnimationCallback;
 
 	CMotionState m_motionState;
+
+	bool m_bTransformFromCallback = false;
+private:
+
+	void _setXform(const float3 &vPos, const SMQuaternion &q);
 };
 
 #endif

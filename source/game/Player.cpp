@@ -91,7 +91,7 @@ void CPlayer::updateInput(float dt)
 
 	if(*editor_mode && !SSInput_GetKeyState(SIK_LCONTROL))
 	{
-		m_pCharacter->setWalkDirection(btVector3(0.0f, 0.0f, 0.0f));
+		m_pCharacter->setWalkDirection(float3(0.0f, 0.0f, 0.0f));
 		return;
 	}
 
@@ -199,7 +199,7 @@ void CPlayer::updateInput(float dt)
 				m_fCurrentHeight = 1.0f;
 			}
 		}
-		m_pCollideShape->setLocalScaling(btVector3(1.0f, m_fCurrentHeight, 1.0f));
+		m_pCollideShape->setLocalScaling(float3(1.0f, m_fCurrentHeight, 1.0f));
 
 		if(m_uMoveDir & PM_OBSERVER)
 		{
@@ -234,7 +234,7 @@ void CPlayer::updateInput(float dt)
 				m_canJump = true;
 			}
 			// m_pCharacter->setWalkDirection(F3_BTVEC(dir));
-			m_pCharacter->setVelocityForTimeInterval(F3_BTVEC(dir), dt);
+			m_pCharacter->setVelocityForTimeInterval(dir, dt);
 			
 
 			static const bool * cl_bob = GET_PCVAR_BOOL("cl_bob");
@@ -300,7 +300,7 @@ void CPlayer::updateInput(float dt)
 
 
 			//m_vWpnShakeAngles
-			float3 vel = BTVEC_F3(m_pCharacter->getLinearVelocity());
+			float3 vel = m_pCharacter->getLinearVelocity();
 			//printf("%f, %f, %f\n", vel.x, vel.y, vel.z);
 			//vel = getDiscreteLinearVelocity();
 			//printf("%f, %f, %f\n", vel.x, vel.y, vel.z);
@@ -476,8 +476,8 @@ void CPlayer::respawn()
 	{
 		m_fHealth = 100.0f;
 
-		SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
-		SPhysics_GetDynWorld()->addAction(m_pCharacter);
+		GetPhysWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
+		m_pCharacter->registerInWorld(GetPhysWorld());
 		spawn();
 	}
 }

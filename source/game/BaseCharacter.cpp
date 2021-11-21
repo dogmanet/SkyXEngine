@@ -23,30 +23,6 @@ REGISTER_ENTITY_NOLISTING(CBaseCharacter, base_character);
 
 IEventChannel<XEventPhysicsStep> *CBaseCharacter::m_pTickEventChannel = NULL;
 
-class btKinematicClosestNotMeRayResultCallback: public btCollisionWorld::ClosestRayResultCallback
-{
-public:
-	btKinematicClosestNotMeRayResultCallback(btCollisionObject* me, const btVector3&	rayFromWorld, const btVector3&	rayToWorld): btCollisionWorld::ClosestRayResultCallback(rayFromWorld, rayToWorld)
-	{
-		m_me = me;
-		m_shapeInfo = {-1, -1};
-	}
-
-	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
-	{
-		if(rayResult.m_collisionObject == m_me)
-			return 1.0;
-		if(rayResult.m_localShapeInfo)
-		{
-			m_shapeInfo = *rayResult.m_localShapeInfo;
-		}
-		return ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
-	}
-	btCollisionWorld::LocalShapeInfo m_shapeInfo;
-protected:
-	btCollisionObject* m_me;
-};
-
 void CCharacterPhysicsTickEventListener::onEvent(const XEventPhysicsStep *pData)
 {
 	m_pCharacter->onPhysicsStep();
@@ -65,54 +41,49 @@ void CBaseCharacter::onPostLoad()
 {
 	BaseClass::onPostLoad();
 
-	m_pCollideShape = new btCapsuleShape(m_fCapsRadius, m_fCapsHeight - m_fCapsRadius * 2.0f);
+	GetPhysics()->newCapsuleShape(m_fCapsRadius, m_fCapsHeight - m_fCapsRadius * 2.0f, &m_pCollideShape);
 
-	btTransform startTransform;
-	startTransform.setIdentity();
 
 	//((btCompoundShape*)m_pCollideShape)->addChildShape(startTransform, m_pCollideShapeBottom);
 	//startTransform.setOrigin(btVector3(0.0f, m_fCapsHeight * 0.5f, 0.0f));
 	//((btCompoundShape*)m_pCollideShape)->addChildShape(startTransform, m_pCollideShapeTop);
 
 	//btTransform startTransform;
-	startTransform.setIdentity();
-	float3 vPos = getPos() + float3(0.0f, m_fCapsHeight * 0.5f, 0.0f);
-	startTransform.setOrigin(F3_BTVEC(vPos));
+
+	float3 vStartPos = getPos() + float3(0.0f, m_fCapsHeight * 0.5f, 0.0f);
 	//startTransform.setOrigin(btVector3(0, 12, 10));
 
-	m_pGhostObject = new btPairCachingGhostObject();
-	void *p1 = m_pGhostObject;
-	void *p2 = &m_pGhostObject->getWorldTransform();
-	printf(COLOR_LRED "p1: 0x%p; p2: 0x%p" COLOR_RESET "\n", p1, p2);
-	m_pGhostObject->setWorldTransform(startTransform);
+	GetPhysics()->newGhostObject(&m_pGhostObject);
+
+	m_pGhostObject->setPosition(vStartPos);
 	//sweepBP->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
 	m_pGhostObject->setCollisionShape(m_pCollideShape);
-	m_pGhostObject->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT | btCollisionObject::CF_KINEMATIC_OBJECT);
+	m_pGhostObject->setCollisionFlags(XCF_CHARACTER_OBJECT | XCF_KINEMATIC_OBJECT);
 	m_pGhostObject->setUserPointer(this);
-	m_pGhostObject->setUserIndex(1);
+	m_pGhostObject->setUserTypeId(1);
 
 	m_pHeadEnt = (CPointEntity*)CREATE_ENTITY("base_point", m_pMgr);
 	m_pHeadEnt->setPos(getPos() + float3(0.0f, m_fCapsHeight - 0.1f, 0.0f));
 	m_pHeadEnt->setOrient(getOrient());
 	m_pHeadEnt->setParent(this);
 
-	btScalar stepHeight = 0.4f;
-	m_pCharacter = new btKinematicCharacterController(m_pGhostObject, (btConvexShape*)m_pCollideShape, stepHeight, btVector3(0.0f, 1.0f, 0.0f));
+	float stepHeight = 0.4f;
+	GetPhysics()->newCharacterController(m_pGhostObject, stepHeight, &m_pCharacter);
 	m_pCharacter->setMaxJumpHeight(0.60f);
 	m_pCharacter->setJumpSpeed(3.50f);
 	//m_pCharacter->setJumpSpeed(3.5f);
-	m_pCharacter->setGravity(btVector3(0, -10.0f, 0));
+	m_pCharacter->setGravity(float3(0, -10.0f, 0));
 	//m_pCharacter->setGravity(1.0f);
 	m_pCharacter->setFallSpeed(300.0f);
 	//m_pCharacter->setFallSpeed(30.0f);
 	m_pCharacter->setMaxPenetrationDepth(0.1f);
-	m_pGhostObject->setWorldTransform(startTransform);
+	//m_pGhostObject->setWorldTransform(startTransform);
 
-	SPhysics_GetDynWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
+	GetPhysWorld()->addCollisionObject(m_pGhostObject, CG_CHARACTER, CG_ALL & ~(CG_DEBRIS | CG_HITBOX | CG_WATER));
 
 	//m_pGhostObject->setCollisionFlags(m_pGhostObject->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 
-	SPhysics_GetDynWorld()->addAction(m_pCharacter);
+	m_pCharacter->registerInWorld(GetPhysWorld());
 
 
 	m_flashlight = (CLightDirectional*)CREATE_ENTITY("light_directional", m_pMgr);
@@ -145,9 +116,9 @@ CBaseCharacter::~CBaseCharacter()
 	REMOVE_ENTITY(m_flashlight);
 	mem_delete(m_pInventory);
 
-	mem_delete(m_pCharacter);
-	mem_delete(m_pGhostObject);
-	mem_delete(m_pCollideShape);
+	mem_release(m_pCharacter);
+	mem_release(m_pGhostObject);
+	mem_release(m_pCollideShape);
 
 	mem_release(m_pHandsModelResource);
 
@@ -224,13 +195,13 @@ void CBaseCharacter::playFootstepsSound()
 		{
 			float3 start = getPos() + float3(0.0f, 0.5f, 0.0f),
 				end = start + float3(0.0f, -2.0f, 0.0f);
-			btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
-			SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+			CClosestNotMeRayResultCallback cb(m_pGhostObject);
+			GetPhysWorld()->rayTest(start, end, &cb);
 
 			if(cb.hasHit()/* && cb.m_shapeInfo.m_shapePart == 0 && cb.m_shapeInfo.m_triangleIndex >= 0*/)
 			{
-				MTLTYPE_PHYSIC type = (MTLTYPE_PHYSIC)SPhysics_GetMtlType(cb.m_collisionObject, &cb.m_shapeInfo);
-				g_pGameData->playFootstepSound(type, BTVEC_F3(cb.m_hitPointWorld));
+				MTLTYPE_PHYSIC type = MTLTYPE_PHYSIC_DEFAULT; // (MTLTYPE_PHYSIC)SPhysics_GetMtlType(cb.m_collisionObject, &cb.m_shapeInfo);
+				g_pGameData->playFootstepSound(type, cb.m_result.vHitPoint);
 			}
 		}
 	}
@@ -239,7 +210,7 @@ void CBaseCharacter::playFootstepsSound()
 void CBaseCharacter::setPos(const float3 & pos)
 {
 	BaseClass::setPos(pos);
-	m_pGhostObject->getWorldTransform().setOrigin(F3_BTVEC(pos + float3(0.0f, (m_fCurrentHeight * m_fCapsHeight) * 0.5f, 0.0f)));
+	m_pGhostObject->setPosition(pos + float3(0.0f, (m_fCurrentHeight * m_fCapsHeight) * 0.5f, 0.0f));
 }
 
 float CBaseCharacter::getAimRange()
@@ -248,12 +219,12 @@ float CBaseCharacter::getAimRange()
 	float3 dir = getHead()->getOrient() * float3(0.0f, 0.0f, 1.0f);
 	float3 end = start + dir * 1000.0f;
 
-	btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
-	SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+	CClosestNotMeRayResultCallback cb(m_pGhostObject);
+	GetPhysWorld()->rayTest(start, end, &cb);
 
 	if(cb.hasHit())
 	{
-		return(SMVector3Length(BTVEC_F3(cb.m_hitPointWorld) - start));
+		return(SMVector3Length(cb.m_result.vHitPoint - start));
 	}
 	return(-1.0f);
 }
@@ -338,52 +309,58 @@ void CBaseCharacter::initHitboxes()
 	auto pAnimatedModel = m_pModel->asAnimatedModel();
 
 	int l = pAnimatedModel->getHitboxCount();
-	m_pHitboxBodies = new btRigidBody*[l];
+	m_pHitboxBodies = new IXRigidBody*[l];
 
 	const XResourceModelHitbox * hb;
 	for(int i = 0; i < l; ++i)
 	{
 		hb = pAnimatedModel->getHitbox(i);
-		btCollisionShape *pShape;
+		IXCollisionShape *pShape;
 		switch(hb->type)
 		{
 		case XHT_BOX:
-			pShape = new btBoxShape(F3_BTVEC(hb->lwh * 0.5f));
+			IXBoxShape *pBox;
+			GetPhysics()->newBoxShape(hb->lwh * 0.5f, &pBox);
+			pShape = pBox;
 			break;
 		case XHT_CAPSULE:
-			pShape = new btCapsuleShape(hb->lwh.y * 0.5f, hb->lwh.z);
+			IXCapsuleShape *pCaps;
+			GetPhysics()->newCapsuleShape(hb->lwh.y * 0.5f, hb->lwh.z, &pCaps);
+			pShape = pCaps;
 			break;
 		case XHT_CYLINDER:
-			pShape = new btCylinderShape(F3_BTVEC(hb->lwh * 0.5f));
+			IXCylinderShape *pCyl;
+			GetPhysics()->newCylinderShape(hb->lwh.x * 0.5f, hb->lwh.y * 0.5f, &pCyl);
+			pShape = pCyl;
 			break;
 		case XHT_SPHERE:
-			pShape = new btSphereShape(hb->lwh.x);
+			IXSphereShape *pSphere;
+			GetPhysics()->newSphereShape(hb->lwh.x, &pSphere);
+			pShape = pSphere;
 			break;
 		default:
 			assert(!"Not supported here!");
 		}
-		btVector3 vInertia;
+		
 		const float fMass = 1.0f;
-		pShape->calculateLocalInertia(fMass, vInertia);
 
-		btDefaultMotionState * motionState = new btDefaultMotionState();
+		XRIDIGBODY_DESC desc;
+		desc.fMass = fMass;
+		desc.vLocalInertia = pShape->calculateLocalInertia(fMass);
+		desc.pCollisionShape = pShape;
+		
+		IXRigidBody *pRigidBody;
+		GetPhysics()->newRigidBody(desc, &pRigidBody);
 
-		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
-			fMass,                  // mass
-			motionState,        // initial position
-			pShape,    // collision shape of body
-			vInertia  // local inertia
-			);
-		btRigidBody * pRigidBody = new btRigidBody(rigidBodyCI);
 		pRigidBody->setUserPointer(this);
-		pRigidBody->setUserIndex(1);
+		pRigidBody->setUserTypeId(1);
 
 		pRigidBody->setAngularFactor(0.0f);
-		pRigidBody->setLinearFactor(btVector3(0.0f, 0.0f, 0.0f));
+		pRigidBody->setLinearFactor(float3(0.0f, 0.0f, 0.0f));
 
-		pRigidBody->setCollisionFlags(pRigidBody->getCollisionFlags() | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
+		pRigidBody->setCollisionFlags(pRigidBody->getCollisionFlags() | XCF_DISABLE_VISUALIZE_OBJECT);
 
-		SPhysics_AddShapeEx(pRigidBody, CG_HITBOX, CG_BULLETFIRE);
+		GetPhysWorld()->addCollisionObject(pRigidBody, CG_HITBOX, CG_BULLETFIRE);
 		m_pHitboxBodies[i] = pRigidBody;
 	}
 
@@ -437,15 +414,8 @@ void CBaseCharacter::releaseHitboxes()
 
 	for(int i = 0, l = pAnimatedModel->getHitboxCount(); i < l; ++i)
 	{
-		SPhysics_RemoveShape(m_pHitboxBodies[i]);
-
-		btMotionState * motionState = m_pHitboxBodies[i]->getMotionState();
-
-		mem_delete(motionState);
-
-		btCollisionShape * pShape = m_pHitboxBodies[i]->getCollisionShape();
-		mem_delete(pShape);
-		mem_delete(m_pHitboxBodies[i]);
+		GetPhysWorld()->removeCollisionObject(m_pHitboxBodies[i]);
+		mem_release(m_pHitboxBodies[i]);
 	}
 
 	mem_delete_a(m_pHitboxBodies);
@@ -466,8 +436,8 @@ void CBaseCharacter::onPhysicsStep()
 	{
 		return;
 	}
-	btTransform &trans = m_pGhostObject->getWorldTransform();
-	setPos(float3(trans.getOrigin().x(), trans.getOrigin().y() - m_fCapsHeight * m_fCurrentHeight * 0.5f, trans.getOrigin().z()));
+	float3 vPos = m_pGhostObject->getPosition();
+	setPos(vPos - float3(0.0f, m_fCapsHeight * m_fCurrentHeight * 0.5f, 0.0f));
 
 	m_pHeadEnt->setOffsetPos(getHeadOffset());
 
@@ -520,8 +490,8 @@ void CBaseCharacter::onDeath(CBaseEntity *pAttacker, CBaseEntity *pInflictor)
 		m_idQuadCurr = -1;
 	}
 
-	SPhysics_GetDynWorld()->removeCollisionObject(m_pGhostObject);
-	SPhysics_GetDynWorld()->removeAction(m_pCharacter);
+	GetPhysWorld()->removeCollisionObject(m_pGhostObject);
+	m_pCharacter->unregisterInWorld();
 
 	cancelNextAnimation();
 
@@ -557,12 +527,12 @@ void CBaseCharacter::use(bool start)
 		float3 dir = getHead()->getOrient() * float3(0.0f, 0.0f, 1.0f);
 		float3 end = start + dir * 2.0f;
 
-		btKinematicClosestNotMeRayResultCallback cb(m_pGhostObject, F3_BTVEC(start), F3_BTVEC(end));
-		SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+		CClosestNotMeRayResultCallback cb(m_pGhostObject);
+		GetPhysWorld()->rayTest(start, end, &cb);
 
-		if(cb.hasHit() && cb.m_collisionObject->getUserPointer() && cb.m_collisionObject->getUserIndex() == 1)
+		if(cb.hasHit() && cb.m_result.pCollisionObject->getUserPointer() && cb.m_result.pCollisionObject->getUserTypeId() == 1)
 		{
-			CBaseEntity *pEnt = (CBaseEntity*)cb.m_collisionObject->getUserPointer();
+			CBaseEntity *pEnt = (CBaseEntity*)cb.m_result.pCollisionObject->getUserPointer();
 			if(pEnt)
 			{
 				pEnt->onUse(this);

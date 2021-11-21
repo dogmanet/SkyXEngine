@@ -1,6 +1,6 @@
 #include "CollisionShape.h"
 
-btCollisionShape* GetCollisionShape(ICollisionShape *pShape)
+btCollisionShape* GetCollisionShape(IXCollisionShape *pShape)
 {
 	btCollisionShape *pBtShape = NULL;
 	switch(pShape->getType())
@@ -60,14 +60,14 @@ CCompoundShape::~CCompoundShape()
 {
 	for(UINT i = 0, l = m_pShape->getNumChildShapes(); i < l; ++i)
 	{
-		((ICollisionShape*)m_pShape->getChildShape(i)->getUserPointer())->Release();
+		((IXCollisionShape*)m_pShape->getChildShape(i)->getUserPointer())->Release();
 	}
 	mem_delete(m_pShape);
 }
 
-void XMETHODCALLTYPE CCompoundShape::addChildShape(ICollisionShape *pShape, const float3 &vLocalPos, const SMQuaternion &qLocalRot)
+void XMETHODCALLTYPE CCompoundShape::addChildShape(IXCollisionShape *pShape, const float3 &vLocalPos, const SMQuaternion &qLocalRot)
 {
-	pShape->AddRef();
+	add_ref(pShape);
 	btCollisionShape *pBtShape = GetCollisionShape(pShape);
 
 	btTransform xForm(Q4_BTQUAT(qLocalRot), F3_BTVEC(vLocalPos));
@@ -78,7 +78,7 @@ UINT XMETHODCALLTYPE CCompoundShape::getChildCount() const
 {
 	return(m_pShape->getNumChildShapes());
 }
-ICollisionShape* XMETHODCALLTYPE CCompoundShape::getShape(UINT uIndex)
+IXCollisionShape* XMETHODCALLTYPE CCompoundShape::getShape(UINT uIndex)
 {
 	btCollisionShape *pShape = m_pShape->getChildShape(uIndex);
 	if(!pShape)
@@ -86,7 +86,7 @@ ICollisionShape* XMETHODCALLTYPE CCompoundShape::getShape(UINT uIndex)
 		return(NULL);
 	}
 
-	ICollisionShape *pOut = (ICollisionShape*)pShape->getUserPointer();
+	IXCollisionShape *pOut = (IXCollisionShape*)pShape->getUserPointer();
 	if(pOut)
 	{
 		pOut->AddRef();

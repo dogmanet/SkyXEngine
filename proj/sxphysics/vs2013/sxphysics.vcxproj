@@ -176,6 +176,7 @@
     <ClCompile Include="..\..\..\source\common\file_utils.cpp" />
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
+    <ClCompile Include="..\..\..\source\physics\CharacterController.cpp" />
     <ClCompile Include="..\..\..\source\physics\CollisionObject.cpp" />
     <ClCompile Include="..\..\..\source\physics\CollisionShape.cpp" />
     <ClCompile Include="..\..\..\source\physics\MutationObserver.cpp" />
@@ -187,10 +188,12 @@
     <ClInclude Include="..\..\..\source\common\file_utils.h" />
     <ClInclude Include="..\..\..\source\common\string.h" />
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
+    <ClInclude Include="..\..\..\source\physics\CharacterController.h" />
     <ClInclude Include="..\..\..\source\physics\CollisionObject.h" />
     <ClInclude Include="..\..\..\source\physics\CollisionShape.h" />
-    <ClInclude Include="..\..\..\source\physics\ICollisionObject.h" />
-    <ClInclude Include="..\..\..\source\physics\ICollisionShape.h" />
+    <ClInclude Include="..\..\..\source\physics\IXCharacterController.h" />
+    <ClInclude Include="..\..\..\source\physics\IXCollisionObject.h" />
+    <ClInclude Include="..\..\..\source\physics\IXCollisionShape.h" />
     <ClInclude Include="..\..\..\source\physics\IXPhysics.h" />
     <ClInclude Include="..\..\..\source\physics\MutationObserver.h" />
     <ClInclude Include="..\..\..\source\physics\PhyWorld.h" />

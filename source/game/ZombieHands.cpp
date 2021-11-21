@@ -16,30 +16,6 @@ END_PROPTABLE()
 REGISTER_ENTITY_NOLISTING(CZombieHands, wpn_zombie_hands);
 
 
-class btKinematicClosestNotMeRayResultCallback: public btCollisionWorld::ClosestRayResultCallback
-{
-public:
-	btKinematicClosestNotMeRayResultCallback(btCollisionObject* me, const btVector3&	rayFromWorld, const btVector3&	rayToWorld): btCollisionWorld::ClosestRayResultCallback(rayFromWorld, rayToWorld)
-	{
-		m_me = me;
-		m_shapeInfo = {-1, -1};
-	}
-
-	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
-	{
-		if(rayResult.m_collisionObject == m_me)
-			return 1.0;
-		if(rayResult.m_localShapeInfo)
-		{
-			m_shapeInfo = *rayResult.m_localShapeInfo;
-		}
-		return ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
-	}
-	btCollisionWorld::LocalShapeInfo m_shapeInfo;
-protected:
-	btCollisionObject* m_me;
-};
-
 void CZombieHands::taskShoot(float dt)
 {
 	extern CTracer *g_pTracer;
@@ -67,8 +43,8 @@ void CZombieHands::actualShoot(float dt)
 	dir = applySpread(dir, SMToRadian(pOwner->getCurrentSpread()));
 
 	float3 end = start + dir * m_fEffectiveDistance;
-	btKinematicClosestNotMeRayResultCallback cb(pOwner->getBtCollisionObject(), F3_BTVEC(start), F3_BTVEC(end));
-	SPhysics_GetDynWorld()->rayTest(F3_BTVEC(start), F3_BTVEC(end), cb);
+	CClosestNotMeRayResultCallback cb(pOwner->getBtCollisionObject());
+	GetPhysWorld()->rayTest(start, end, &cb);
 
 	//g_pTracer->begin(start);
 	//g_pTracer->lineTo(end);
@@ -78,12 +54,12 @@ void CZombieHands::actualShoot(float dt)
 	{
 		SXDecals_ShootDecal(DECAL_TYPE_BLOOD_BIG, BTVEC_F3(cb.m_hitPointWorld), BTVEC_F3(cb.m_hitNormalWorld));
 
-		if(cb.m_collisionObject->getUserPointer() && cb.m_collisionObject->getUserIndex() == 1)
+		if(cb.m_result.pCollisionObject->getUserPointer() && cb.m_result.pCollisionObject->getUserTypeId() == 1)
 		{
 			CTakeDamageInfo takeDamageInfo(pOwner, m_fDamage);
 			takeDamageInfo.m_pInflictor = this;
 
-			((CBaseEntity*)cb.m_collisionObject->getUserPointer())->dispatchDamage(takeDamageInfo);
+			((CBaseEntity*)cb.m_result.pCollisionObject->getUserPointer())->dispatchDamage(takeDamageInfo);
 		}
 	}
 }

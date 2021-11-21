@@ -3,11 +3,13 @@
 #include "Editable.h"
 
 CEditorExtension::CEditorExtension(CEditable *pEditable, IXEditor *pEditor):
-	m_pEditable(pEditable),
-	m_pBrushTool(new CEditorBrushTool(pEditable, pEditor)),
-	m_pFaceEditTool(new CFaceEditTool(pEditable, pEditor))
+	m_pEditable(pEditable)
 {
-
+	if(pEditor)
+	{
+		m_pBrushTool = new CEditorBrushTool(pEditable, pEditor);
+		m_pFaceEditTool = new CFaceEditTool(pEditable, pEditor);
+	}
 }
 CEditorExtension::~CEditorExtension()
 {

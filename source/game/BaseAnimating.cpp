@@ -77,6 +77,13 @@ private:
 
 //##########################################################################
 
+void CMotionState::setWorldTransform(const float3 &vPos, const SMQuaternion &q)
+{
+	m_pEntity->_setXform(vPos, q);
+}
+
+//##########################################################################
+
 CBaseAnimating::CBaseAnimating():
 	m_motionState(this),
 	m_pAnimationCallback(new CAnimationCallback(this))
@@ -240,49 +247,47 @@ void CBaseAnimating::initPhysics()
 	UINT uShapesCount = m_pModel->getPhysboxCount();
 
 
-	btCompoundShape *pShape = new btCompoundShape(true, uShapesCount);
+	IXCompoundShape *pShape;
+	GetPhysics()->newCompoundShape(&pShape, uShapesCount);
 	for(UINT i = 0; i < uShapesCount; ++i)
 	{
 		auto pPhysbox = m_pModel->getPhysBox(i);
-		btCollisionShape *pLocalShape = NULL;
+		IXCollisionShape *pLocalShape = NULL;
 		switch(pPhysbox->getType())
 		{
 		case XPBT_BOX:
-			pLocalShape = new btBoxShape(F3_BTVEC(pPhysbox->asBox()->getSize()) * m_fBaseScale);
+			IXBoxShape *pBox;
+			GetPhysics()->newBoxShape(pPhysbox->asBox()->getSize(), &pBox);
+			pLocalShape = pBox;
 			break;
 		case XPBT_SPHERE:
-			pLocalShape = new btSphereShape(pPhysbox->asSphere()->getRadius() * m_fBaseScale);
+			IXSphereShape *pSphere;
+			GetPhysics()->newSphereShape(pPhysbox->asSphere()->getRadius(), &pSphere);
+			pLocalShape = pSphere;
 			break;
 		case XPBT_CAPSULE:
-			pLocalShape = new btCapsuleShape(pPhysbox->asCapsule()->getRadius() * m_fBaseScale, pPhysbox->asCapsule()->getHeight() * m_fBaseScale);
+			IXCapsuleShape *pCaps;
+			GetPhysics()->newCapsuleShape(pPhysbox->asCapsule()->getRadius(), pPhysbox->asCapsule()->getHeight(), &pCaps);
+			pLocalShape = pCaps;
 			break;
 		case XPBT_CYLINDER:
-			pLocalShape = new btCylinderShape(btVector3(pPhysbox->asCylinder()->getRadius(), pPhysbox->asCylinder()->getHeight() * 0.5f, pPhysbox->asCylinder()->getRadius()) * m_fBaseScale);
+			IXCylinderShape *pCyl;
+			GetPhysics()->newCylinderShape(pPhysbox->asCylinder()->getRadius(), pPhysbox->asCylinder()->getHeight(), &pCyl);
+			pLocalShape = pCyl;
 			break;
 		case XPBT_CONVEX:
-			{
-				auto pConvex = pPhysbox->asConvex();
-				btConvexHullShape tmpShape((float*)pConvex->getData(), pConvex->getVertexCount(), sizeof(float3_t));
-				tmpShape.setMargin(0);
-				btVector3 *pData;
-				int iVertexCount;
-				SPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
-				for(int j = 0; j < iVertexCount; ++j)
-				{
-					pData[j] *= m_fBaseScale;
-				}
-				pLocalShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
-				SPhysics_ReleaseHull(pData, iVertexCount);
-			}
+			IXConvexHullShape *pConvexHull;
+			GetPhysics()->newConvexHullShape(pPhysbox->asConvex()->getVertexCount(), pPhysbox->asConvex()->getData(), &pConvexHull);
+			pLocalShape = pConvexHull;
 			break;
 		}
 
 		if(pLocalShape)
 		{
-			btTransform localTransform(Q4_BTQUAT(pPhysbox->getOrientation()), F3_BTVEC(pPhysbox->getPosition()) * m_fBaseScale);
-			pShape->addChildShape(localTransform, pLocalShape);
+			pShape->addChildShape(pLocalShape, pPhysbox->getPosition(), pPhysbox->getOrientation());
 		}
 	}
+
 	if(!uShapesCount && m_useAutoPhysbox)
 	{
 		{
@@ -292,9 +297,12 @@ void CBaseAnimating::initPhysics()
 				UINT uUsedLod = pResource->getLodCount() - 1;
 				for(UINT i = 0, l = pResource->getSubsetCount(uUsedLod); i < l; ++i)
 				{
-					btCollisionShape *pLocalShape = NULL;
+					IXConvexHullShape *pLocalShape = NULL;
 					auto pSubset = pResource->getSubset(uUsedLod, i);
 
+					GetPhysics()->newConvexHullShape(pSubset->iVertexCount, (float3_t*)pSubset->pVertices, &pLocalShape, sizeof(pSubset->pVertices[0]));
+
+#if 0
 					btConvexHullShape tmpShape((float*)pSubset->pVertices, pSubset->iVertexCount, sizeof(pSubset->pVertices[0]));
 					tmpShape.setMargin(0);
 					btVector3 *pData;
@@ -313,13 +321,11 @@ void CBaseAnimating::initPhysics()
 						LibReport(REPORT_MSG_LEVEL_WARNING, "Failed to build convex hull for model '%s'!\n", m_szModelFile);
 					}
 					SPhysics_ReleaseHull(pData, iVertexCount);
-
+#endif
 
 					if(pLocalShape)
 					{
-						btTransform localTransform;
-						localTransform.setIdentity();
-						pShape->addChildShape(localTransform, pLocalShape);
+						pShape->addChildShape(pLocalShape, float3(), SMQuaternion());
 					}
 				}
 			}
@@ -331,32 +337,21 @@ void CBaseAnimating::initPhysics()
 				UINT uUsedLod = pResource->getLodCount() - 1;
 				for(UINT i = 0, l = pResource->getSubsetCount(uUsedLod); i < l; ++i)
 				{
-					btCollisionShape *pLocalShape = NULL;
+					IXConvexHullShape *pLocalShape = NULL;
 					auto pSubset = pResource->getSubset(uUsedLod, i);
 
-					btConvexHullShape tmpShape((float*)pSubset->pVertices, pSubset->iVertexCount, sizeof(pSubset->pVertices[0]));
-					tmpShape.setMargin(0);
-					btVector3 *pData;
-					int iVertexCount;
-					SPhysics_BuildHull(&tmpShape, &pData, &iVertexCount);
-					for(int i = 0; i < iVertexCount; ++i)
-					{
-						pData[i] *= m_fBaseScale;
-					}
-					pLocalShape = new btConvexHullShape((float*)pData, iVertexCount, sizeof(btVector3));
-					SPhysics_ReleaseHull(pData, iVertexCount);
-
+					GetPhysics()->newConvexHullShape(pSubset->iVertexCount, (float3_t*)pSubset->pVertices, &pLocalShape, sizeof(pSubset->pVertices[0]));
 
 					if(pLocalShape)
 					{
-						btTransform localTransform;
-						localTransform.setIdentity();
-						pShape->addChildShape(localTransform, pLocalShape);
+						pShape->addChildShape(pLocalShape, float3(), SMQuaternion());
 					}
 				}
 			}
 		}
 	}
+	pShape->setLocalScaling(m_fBaseScale);
+	pShape->recalculateLocalAabb();
 	m_pCollideShape = pShape;
 	createPhysBody();
 }
@@ -365,57 +360,49 @@ void CBaseAnimating::createPhysBody()
 {
 	if(m_pCollideShape)
 	{
-		btVector3 vInertia;
 		const float fMass = 1.0f;
-		m_pCollideShape->calculateLocalInertia(fMass, vInertia);
 
-		btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(
-			fMass,                  // mass
-			&m_motionState,        // initial position
-			m_pCollideShape,    // collision shape of body
-			vInertia  // local inertia
-			);
-		m_pRigidBody = new btRigidBody(rigidBodyCI);
-		//m_pRigidBody->getInvMass();
+		XRIDIGBODY_DESC desc;
+		desc.vLocalInertia = m_pCollideShape->calculateLocalInertia(fMass);
+		desc.fMass = fMass;
+		desc.pMotionCallback = &m_motionState;
+		desc.vStartWorldPosition = getPos();
+		desc.qStartWorldRotation = getOrient();
+		desc.pCollisionShape = m_pCollideShape;
+
+		GetPhysics()->newRigidBody(desc, &m_pRigidBody);
 
 		//m_pRigidBody->setFriction(100.0f);
 		m_pRigidBody->setUserPointer(this);
-		m_pRigidBody->setUserIndex(1);
-		int colGroup = m_collisionGroup;
-		int colMask = m_collisionMask;
+		m_pRigidBody->setUserTypeId(1);
+		COLLISION_GROUP colGroup = m_collisionGroup;
+		COLLISION_GROUP colMask = m_collisionMask;
 		if(m_isStatic)
 		{
 			colGroup = CG_STATIC;
 			colMask = CG_STATIC_MASK;
 		}
-		SPhysics_AddShapeEx(m_pRigidBody, colGroup, colMask);
+		GetPhysWorld()->addCollisionObject(m_pRigidBody, colGroup, colMask);
 
 		if(m_isStatic)
 		{
-			m_pRigidBody->setLinearFactor(btVector3(0.0f, 0.0f, 0.0f));
-			m_pRigidBody->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
+			m_pRigidBody->setLinearFactor(float3(0.0f, 0.0f, 0.0f));
+			m_pRigidBody->setAngularFactor(float3(0.0f, 0.0f, 0.0f));
 		}
 	}
 }
 
 void CBaseAnimating::removePhysBody()
 {
-	SPhysics_RemoveShape(m_pRigidBody);
-	mem_delete(m_pRigidBody);
+	GetPhysWorld()->removeCollisionObject(m_pRigidBody);
+	mem_release(m_pRigidBody);
 }
 
 void CBaseAnimating::releasePhysics()
 {
 	removePhysBody();
-	if(m_pCollideShape)
-	{
-		btCompoundShape *pShape = (btCompoundShape*)m_pCollideShape;
-		for(UINT i = 0, l = pShape->getNumChildShapes(); i < l; ++i)
-		{
-			delete pShape->getChildShape(i);
-		}
-		mem_delete(m_pCollideShape);
-	}
+	
+	mem_release(m_pCollideShape);
 }
 
 void CBaseAnimating::setCollisionGroup(COLLISION_GROUP group, COLLISION_GROUP mask)
@@ -428,8 +415,8 @@ void CBaseAnimating::setCollisionGroup(COLLISION_GROUP group, COLLISION_GROUP ma
 	m_collisionMask = mask;
 	if(m_pRigidBody)
 	{
-		SPhysics_RemoveShape(m_pRigidBody);
-		SPhysics_AddShapeEx(m_pRigidBody, m_collisionGroup, m_collisionMask);
+		GetPhysWorld()->removeCollisionObject(m_pRigidBody);
+		GetPhysWorld()->addCollisionObject(m_pRigidBody, m_collisionGroup, m_collisionMask);
 	}
 }
 COLLISION_GROUP CBaseAnimating::getCollisionGroup()
@@ -440,20 +427,22 @@ COLLISION_GROUP CBaseAnimating::getCollisionGroup()
 void CBaseAnimating::setPos(const float3 &pos)
 {
 	BaseClass::setPos(pos);
-	if(m_pRigidBody)
+
+	if(!m_bTransformFromCallback)
 	{
-		SPhysics_UpdateSingleAABB(m_pRigidBody);
+		SAFE_CALL(m_pRigidBody, setPosition, pos);
 	}
 
 	SAFE_CALL(m_pModel, setPosition, pos);
 }
 
-void CBaseAnimating::setOrient(const SMQuaternion & q)
+void CBaseAnimating::setOrient(const SMQuaternion &q)
 {
 	BaseClass::setOrient(q);
-	if(m_pRigidBody)
+
+	if(!m_bTransformFromCallback)
 	{
-		SPhysics_UpdateSingleAABB(m_pRigidBody);
+		SAFE_CALL(m_pRigidBody, setRotation, q);
 	}
 
 	SAFE_CALL(m_pModel, setOrientation, q);
@@ -535,19 +524,19 @@ void CBaseAnimating::onIsStaticChange(bool isStatic)
 	{
 		if(isStatic)
 		{
-			m_pRigidBody->setLinearFactor(btVector3(0.0f, 0.0f, 0.0f));
-			m_pRigidBody->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
+			m_pRigidBody->setLinearFactor(float3(0.0f, 0.0f, 0.0f));
+			m_pRigidBody->setAngularFactor(float3(0.0f, 0.0f, 0.0f));
 
-			SPhysics_RemoveShape(m_pRigidBody);
-			SPhysics_AddShapeEx(m_pRigidBody, CG_STATIC, CG_STATIC_MASK);
+			GetPhysWorld()->removeCollisionObject(m_pRigidBody);
+			GetPhysWorld()->addCollisionObject(m_pRigidBody, CG_STATIC, CG_STATIC_MASK);
 		}
 		else
 		{
-			m_pRigidBody->setLinearFactor(btVector3(1.0f, 1.0f, 1.0f));
-			m_pRigidBody->setAngularFactor(btVector3(1.0f, 1.0f, 1.0f));
+			m_pRigidBody->setLinearFactor(float3(1.0f, 1.0f, 1.0f));
+			m_pRigidBody->setAngularFactor(float3(1.0f, 1.0f, 1.0f));
 
-			SPhysics_RemoveShape(m_pRigidBody);
-			SPhysics_AddShapeEx(m_pRigidBody, m_collisionGroup, m_collisionMask);
+			GetPhysWorld()->removeCollisionObject(m_pRigidBody);
+			GetPhysWorld()->addCollisionObject(m_pRigidBody, m_collisionGroup, m_collisionMask);
 		}
 	}
 	m_isStatic = isStatic;
@@ -632,4 +621,12 @@ bool CBaseAnimating::rayTest(const float3 &vStart, const float3 &vEnd, float3 *p
 		return(m_pModel->rayTest(vStart, vEnd, pvOut, pvNormal, isRayInWorldSpace, bReturnNearestPoint));
 	}
 	return(false);
+}
+
+void CBaseAnimating::_setXform(const float3 &vPos, const SMQuaternion &q)
+{
+	m_bTransformFromCallback = true;
+	setPos(vPos);
+	setOrient(q);
+	m_bTransformFromCallback = false;
 }

@@ -1,6 +1,8 @@
 #ifndef __TAKEDAMAGEINFO_H
 #define __TAKEDAMAGEINFO_H
 
+#include <xcommon/resource/IXResourceModel.h>
+
 class CBaseEntity;
 
 enum DAMAGE_TYPE

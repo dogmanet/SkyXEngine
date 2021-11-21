@@ -2,112 +2,64 @@
 #include "CollisionShape.h"
 #include "CollisionObject.h"
 #include "sxphysics.h"
+#include "PhyWorld.h"
+#include "CharacterController.h"
 
-IBoxShape* XMETHODCALLTYPE CPhysics::newBoxShape(const float3 &vHalfExtents)
+CPhysics::CPhysics(CPhyWorld *pDefaultWorld):
+	m_pDefaultWorld(pDefaultWorld)
 {
-	return(new CBoxShape(vHalfExtents));
-}
-ISphereShape* XMETHODCALLTYPE CPhysics::newSphereShape(float fRadius)
-{
-	return(new CSphereShape(fRadius));
-}
-ICapsuleShape* XMETHODCALLTYPE CPhysics::newCapsuleShape(float fRadius, float fHeight)
-{
-	return(new CCapsuleShape(fRadius, fHeight));
-}
-ICylinderShape* XMETHODCALLTYPE CPhysics::newCylinderShape(float fRadius, float fHeight)
-{
-	return(new CCylinderShape(fRadius, fHeight));
-}
-IStaticPlaneShape* XMETHODCALLTYPE CPhysics::newStaticPlaneShape(const SMPLANE &plane)
-{
-	return(new CStaticPlaneShape(plane));
-}
-IConvexHullShape* XMETHODCALLTYPE CPhysics::newConvexHullShape(UINT uPoints, const float3_t *pPoints, byte u8Stride, bool bOptimize)
-{
-	return(new CConvexHullShape(uPoints, pPoints, u8Stride, bOptimize));
-}
-ITrimeshShape* XMETHODCALLTYPE CPhysics::newTrimeshShape(UINT uVertices, const float3_t *pVertices, UINT uIndices, UINT *pIndices, byte u8Stride)
-{
-	return(new CTrimeshShape(uVertices, pVertices, uIndices, pIndices, u8Stride));
-}
-ICompoundShape* XMETHODCALLTYPE CPhysics::newCompoundShape(UINT uShapes)
-{
-	return(new CCompoundShape(uShapes));
 }
 
-IRigidBody* XMETHODCALLTYPE CPhysics::newRigidBody(const XRIDIGBODY_DESC *pDesc)
+void XMETHODCALLTYPE CPhysics::newBoxShape(const float3 &vHalfExtents, IXBoxShape **ppOut)
 {
-	return(new CRigidBody(pDesc));
+	*ppOut = new CBoxShape(vHalfExtents);
 }
-IGhostObject* XMETHODCALLTYPE CPhysics::newGhostObject(bool isPairCaching)
+void XMETHODCALLTYPE CPhysics::newSphereShape(float fRadius, IXSphereShape **ppOut)
 {
-	return(new CGhostObject(isPairCaching));
+	*ppOut = new CSphereShape(fRadius);
 }
-
-void XMETHODCALLTYPE CPhysics::addCollisionObject(ICollisionObject *pCollisionObject, int iCollisionGroup, int iCollisionMask)
+void XMETHODCALLTYPE CPhysics::newCapsuleShape(float fRadius, float fHeight, IXCapsuleShape **ppOut)
 {
-	assert(pCollisionObject);
-
-	add_ref(pCollisionObject);
-
-	switch(pCollisionObject->getType())
-	{
-	case XCOT_INVALID:
-		assert(!"Invalid type!");
-		break;
-	case XCOT_RIGID_BODY:
-		{
-			CRigidBody *pBody = (CRigidBody*)pCollisionObject->asRigidBody();
-			pBody->setPhysWorld(this);
-			SPhysics_GetDynWorld()->addRigidBody(pBody->getBtRigidBody(), iCollisionGroup, iCollisionMask);
-		}
-		break;
-	case XCOT_GHOST_OBJECT:
-		{
-			CGhostObject *pGhost = (CGhostObject*)pCollisionObject->asGhostObject();
-			pGhost->setPhysWorld(this);
-			SPhysics_GetDynWorld()->addCollisionObject(pGhost->getBtGhostObject(), iCollisionGroup, iCollisionMask);
-		}
-		break;
-	default:
-		assert(!"Unknown type!");
-	}
+	*ppOut = new CCapsuleShape(fRadius, fHeight);
 }
-void XMETHODCALLTYPE CPhysics::removeCollisionObject(ICollisionObject *pCollisionObject)
+void XMETHODCALLTYPE CPhysics::newCylinderShape(float fRadius, float fHeight, IXCylinderShape **ppOut)
 {
-	assert(pCollisionObject);
-
-	switch(pCollisionObject->getType())
-	{
-	case XCOT_INVALID:
-		assert(!"Invalid type!");
-		break;
-	case XCOT_RIGID_BODY:
-		{
-			CRigidBody *pBody = (CRigidBody*)pCollisionObject->asRigidBody();
-			assert(pBody->getPhysWorld());
-			if(pBody->getPhysWorld())
-			{
-				pBody->setPhysWorld(NULL);
-				SPhysics_GetDynWorld()->removeRigidBody(pBody->getBtRigidBody());
-			}
-		}
-		break;
-	case XCOT_GHOST_OBJECT:
-		{
-			CGhostObject *pGhost = (CGhostObject*)pCollisionObject->asGhostObject();
-			assert(pGhost->getPhysWorld());
-			if(pGhost->getPhysWorld())
-			{
-				pGhost->setPhysWorld(NULL);
-				SPhysics_GetDynWorld()->removeCollisionObject(pGhost->getBtGhostObject());
-			}
-		}
-		break;
-	default:
-		assert(!"Unknown type!");
-	}
-	mem_release(pCollisionObject);
+	*ppOut = new CCylinderShape(fRadius, fHeight);
+}
+void XMETHODCALLTYPE CPhysics::newStaticPlaneShape(const SMPLANE &plane, IXStaticPlaneShape **ppOut)
+{
+	*ppOut = new CStaticPlaneShape(plane);
+}
+void XMETHODCALLTYPE CPhysics::newConvexHullShape(UINT uPoints, const float3_t *pPoints, IXConvexHullShape **ppOut, byte u8Stride, bool bOptimize)
+{
+	*ppOut = new CConvexHullShape(uPoints, pPoints, u8Stride, bOptimize);
+}
+void XMETHODCALLTYPE CPhysics::newTrimeshShape(UINT uVertices, const float3_t *pVertices, UINT uIndices, UINT *pIndices, IXTrimeshShape **ppOut, byte u8Stride)
+{
+	*ppOut = new CTrimeshShape(uVertices, pVertices, uIndices, pIndices, u8Stride);
+}
+void XMETHODCALLTYPE CPhysics::newCompoundShape(IXCompoundShape **ppOut, UINT uShapes)
+{
+	*ppOut = new CCompoundShape(uShapes);
 }
 
+void XMETHODCALLTYPE CPhysics::newRigidBody(const XRIDIGBODY_DESC &desc, IXRigidBody **ppOut)
+{
+	*ppOut = new CRigidBody(desc);
+}
+void XMETHODCALLTYPE CPhysics::newGhostObject(IXGhostObject **ppOut, bool isPairCaching)
+{
+	*ppOut = new CGhostObject(isPairCaching);
+}
+
+void XMETHODCALLTYPE CPhysics::newCharacterController(IXGhostObject *pGhostObject, float fStepHeight, IXCharacterController **ppOut)
+{
+	*ppOut = new CCharacterController(pGhostObject, fStepHeight);
+}
+
+IXPhysicsWorld* XMETHODCALLTYPE CPhysics::getWorld(void *pReserved)
+{
+	assert(pReserved == NULL);
+
+	return(m_pDefaultWorld);
+}

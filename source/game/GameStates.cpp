@@ -4,6 +4,7 @@
 #include "Baseline.h"
 
 #include <input/sxinput.h>
+#include <physics/sxphysics.h>
 
 #include "Editable.h"
 

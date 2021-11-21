@@ -124,7 +124,7 @@ private:
 	IXStaticModel *m_pModel = NULL;
 	IXCore *m_pCore = NULL;
 	IXPhysics *m_pPhysics = NULL;
-	IRigidBody *m_pRigidBody = NULL;
+	IXRigidBody *m_pRigidBody = NULL;
 	bool m_isFinalized = false;
 
 	struct Edge

@@ -1,7 +1,33 @@
-#ifndef __ICOLLISIONOBJECT_H
-#define __ICOLLISIONOBJECT_H
+#ifndef __IXCOLLISIONOBJECT_H
+#define __IXCOLLISIONOBJECT_H
 
-#include "ICollisionShape.h"
+#include "IXCollisionShape.h"
+
+#define BIT(n) (1 << (n))
+enum COLLISION_GROUP
+{
+	CG_NONE = 0,
+	// BEGIN --- Do not change ---
+	CG_DEFAULT = BIT(0),
+	CG_STATIC = BIT(1),
+	CG_KINEMATIC = BIT(2),
+	CG_DEBRIS = BIT(3),
+	CG_TRIGGER = BIT(4),
+	CG_CHARACTER = BIT(5),
+	// END --- Do not change ---
+
+	CG_WATER = BIT(6),
+	CG_HITBOX = BIT(7),
+	CG_BULLETFIRE = BIT(8),
+	CG_NPCVIEW = BIT(9),
+	CG_DOOR = BIT(10),
+
+	CG_ALL = 0xFFFFFFFF
+};
+XDEFINE_ENUM_FLAG_OPERATORS(COLLISION_GROUP);
+
+#define CG_STATIC_MASK (CG_ALL ^ (CG_DOOR | CG_HITBOX | CG_STATIC | CG_TRIGGER | CG_WATER))
+
 
 enum XCOLLISION_FLAGS
 {
@@ -21,16 +47,16 @@ enum XCOLLISION_OBJECT_TYPE
 	XCOT_GHOST_OBJECT,
 };
 
-class IRigidBody;
-class IGhostObject;
+class IXRigidBody;
+class IXGhostObject;
 
-class ICollisionObject: public IXUnknown
+class IXCollisionObject: public IXUnknown
 {
 public:
 	virtual XCOLLISION_OBJECT_TYPE XMETHODCALLTYPE getType() const = 0;
 
-	virtual void XMETHODCALLTYPE setCollisionShape(ICollisionShape *pCollisionShape) = 0;
-	virtual ICollisionShape* XMETHODCALLTYPE getCollisionShape() = 0;
+	virtual void XMETHODCALLTYPE setCollisionShape(IXCollisionShape *pCollisionShape) = 0;
+	virtual IXCollisionShape* XMETHODCALLTYPE getCollisionShape() = 0;
 
 	virtual void XMETHODCALLTYPE setFriction(float fFriction) = 0;
 	virtual float XMETHODCALLTYPE getFriction() const = 0;
@@ -50,8 +76,17 @@ public:
 	virtual void XMETHODCALLTYPE setCollisionFlags(XCOLLISION_FLAGS flags) = 0;
 	virtual XCOLLISION_FLAGS XMETHODCALLTYPE getCollisionFlags() const = 0;
 
+	virtual bool XMETHODCALLTYPE hasContactResponse() const = 0;
+	virtual bool XMETHODCALLTYPE isStaticOrKinematic() const = 0;
+
 	virtual void XMETHODCALLTYPE setUserPointer(void *pUser) = 0;
 	virtual void* XMETHODCALLTYPE getUserPointer() const = 0;
+
+	virtual void XMETHODCALLTYPE setUserTypeId(int iUser) = 0;
+	virtual int XMETHODCALLTYPE getUserTypeId() const = 0;
+
+	virtual void XMETHODCALLTYPE setUserIndex(int iUser) = 0;
+	virtual int XMETHODCALLTYPE getUserIndex() const = 0;
 
 	virtual void XMETHODCALLTYPE setCCDsweptSphereRadius(float fRadius) = 0;
 	virtual float XMETHODCALLTYPE getCCDsweptSphereRadius() const = 0;
@@ -59,8 +94,21 @@ public:
 	virtual void XMETHODCALLTYPE setCCDmotionThreshold(float fRadius) = 0;
 	virtual float XMETHODCALLTYPE getCCDmotionThreshold() const = 0;
 
-	virtual IRigidBody* XMETHODCALLTYPE asRigidBody() = 0;
-	virtual IGhostObject* XMETHODCALLTYPE asGhostObject() = 0;
+	virtual SMAABB XMETHODCALLTYPE getAABB() const = 0;
+
+	virtual COLLISION_GROUP XMETHODCALLTYPE getFilterGroup() const = 0;
+	virtual COLLISION_GROUP XMETHODCALLTYPE getFilterMask() const = 0;
+
+	virtual IXRigidBody* XMETHODCALLTYPE asRigidBody() = 0;
+	virtual IXGhostObject* XMETHODCALLTYPE asGhostObject() = 0;
+};
+
+//#############################################################################
+
+class IXRigidBodyMotionCallback
+{
+public:
+	virtual void XMETHODCALLTYPE setWorldTransform(const float3 &vPos, const SMQuaternion &q) = 0;
 };
 
 struct XRIDIGBODY_DESC
@@ -68,7 +116,8 @@ struct XRIDIGBODY_DESC
 	float fMass = 0.0f;
 	float3_t vStartWorldPosition;
 	SMQuaternion qStartWorldRotation;
-	ICollisionShape *pCollisionShape = NULL;
+	IXCollisionShape *pCollisionShape = NULL;
+	IXRigidBodyMotionCallback *pMotionCallback = NULL;
 	float3_t vLocalInertia;
 
 	float fLinearDamping = 0.0f;
@@ -84,7 +133,7 @@ struct XRIDIGBODY_DESC
 	float fAngularSleepingThreshold = 1.0f;
 };
 
-class IRigidBody: public ICollisionObject
+class IXRigidBody: public IXCollisionObject
 {
 public:
 	virtual void XMETHODCALLTYPE setDamping(float fLinearDamping, float fAngularDamping) = 0;
@@ -114,8 +163,9 @@ public:
 	virtual void XMETHODCALLTYPE setAngularVelocity(const float3 &vAngularVelocity) = 0;
 };
 
+//#############################################################################
 
-class IContactManifoldPoint
+class IXContactManifoldPoint
 {
 public:
 	virtual float XMETHODCALLTYPE getDistance() const = 0;
@@ -129,31 +179,37 @@ public:
 	virtual float3 XMETHODCALLTYPE getWorldNormalB() const = 0;
 };
 
-class IContactManifold
+//#############################################################################
+
+class IXContactManifold
 {
 public:
 	virtual UINT XMETHODCALLTYPE getContactCount() const = 0;
-	virtual IContactManifoldPoint* XMETHODCALLTYPE getContact(UINT uIndex) const = 0;
+	virtual IXContactManifoldPoint* XMETHODCALLTYPE getContact(UINT uIndex) const = 0;
 };
 
-class ICollisionPair
+//#############################################################################
+
+class IXCollisionPair
 {
 public:
-	virtual ICollisionObject* XMETHODCALLTYPE getObject0() = 0;
-	virtual ICollisionObject* XMETHODCALLTYPE getObject1() = 0;
+	virtual IXCollisionObject* XMETHODCALLTYPE getObject0() = 0;
+	virtual IXCollisionObject* XMETHODCALLTYPE getObject1() = 0;
 
 	virtual UINT XMETHODCALLTYPE getContactManifoldCount() const = 0;
-	virtual IContactManifold* XMETHODCALLTYPE getContactManifold(UINT uIndex) const = 0;
+	virtual IXContactManifold* XMETHODCALLTYPE getContactManifold(UINT uIndex) const = 0;
 };
 
-class IGhostObject: public ICollisionObject
+//#############################################################################
+
+class IXGhostObject: public IXCollisionObject
 {
 public:
 	virtual UINT XMETHODCALLTYPE getOverlappingObjectCount() const = 0;
-	virtual ICollisionObject* XMETHODCALLTYPE getOverlappingObject(UINT uIndex) const = 0;
+	virtual IXCollisionObject* XMETHODCALLTYPE getOverlappingObject(UINT uIndex) const = 0;
 
 	virtual UINT XMETHODCALLTYPE getOverlappingPairCount() const = 0;
-	virtual ICollisionPair* XMETHODCALLTYPE getOverlappingPair(UINT uIndex) const = 0;
+	virtual IXCollisionPair* XMETHODCALLTYPE getOverlappingPair(UINT uIndex) const = 0;
 };
 
 #endif
