@@ -1,7 +1,7 @@
 #ifndef __COLLISIONOBJECT_H
 #define __COLLISIONOBJECT_H
 
-#include "IXCollisionObject.h"
+#include <xcommon/physics/IXCollisionObject.h>
 
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h>
@@ -324,6 +324,8 @@ public:
 	{
 		return(this);
 	}
+
+	SX_ALIGNED_OP_MEM();
 
 private:
 	btRigidBody *m_pRigidBody = NULL;

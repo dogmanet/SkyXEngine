@@ -191,15 +191,15 @@
     <ClInclude Include="..\..\..\source\physics\CharacterController.h" />
     <ClInclude Include="..\..\..\source\physics\CollisionObject.h" />
     <ClInclude Include="..\..\..\source\physics\CollisionShape.h" />
-    <ClInclude Include="..\..\..\source\physics\IXCharacterController.h" />
-    <ClInclude Include="..\..\..\source\physics\IXCollisionObject.h" />
-    <ClInclude Include="..\..\..\source\physics\IXCollisionShape.h" />
-    <ClInclude Include="..\..\..\source\physics\IXPhysics.h" />
     <ClInclude Include="..\..\..\source\physics\MutationObserver.h" />
     <ClInclude Include="..\..\..\source\physics\PhyWorld.h" />
     <ClInclude Include="..\..\..\source\physics\sxphysics.h" />
     <ClInclude Include="..\..\..\source\physics\Physics.h" />
-    <ClInclude Include="..\..\..\source\xcommon\IXMutationObserver.h" />
+    <ClInclude Include="..\..\..\source\xcommon\physics\IXCharacterController.h" />
+    <ClInclude Include="..\..\..\source\xcommon\physics\IXCollisionObject.h" />
+    <ClInclude Include="..\..\..\source\xcommon\physics\IXCollisionShape.h" />
+    <ClInclude Include="..\..\..\source\xcommon\physics\IXMutationObserver.h" />
+    <ClInclude Include="..\..\..\source\xcommon\physics\IXPhysics.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

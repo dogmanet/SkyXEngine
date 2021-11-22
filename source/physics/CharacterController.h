@@ -1,7 +1,7 @@
 #ifndef __CHARACTERCONTROLLER_H
 #define __CHARACTERCONTROLLER_H
 
-#include "IXCharacterController.h"
+#include <xcommon/physics/IXCharacterController.h>
 //#include "CollisionObject.h"
 #include "sxphysics.h"
 

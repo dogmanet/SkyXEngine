@@ -387,11 +387,7 @@ bool CEngine::runFrame()
 		Core_PEndSection(PERF_SECTION_PHYS_UPDATE);
 
 		//#############################################################################
-
-		Core_PStartSection(PERF_SECTION_PHYS_SYNC);
-		SPhysics_Sync();
-		Core_PEndSection(PERF_SECTION_PHYS_SYNC);
-
+		
 		Core_PStartSection(PERF_SECTION_GAME_SYNC);
 		SGame_Sync();
 		Core_PEndSection(PERF_SECTION_GAME_SYNC);

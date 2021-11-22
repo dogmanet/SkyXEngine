@@ -13,12 +13,6 @@ See the license in LICENSE
 #pragma comment(lib, "sxgcore.lib")
 #endif
 
-#if defined(_DEBUG)
-#pragma comment(lib, "sxphysics_d.lib")
-#else
-#pragma comment(lib, "sxphysics.lib")
-#endif
-
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
 	LPVOID lpReserved

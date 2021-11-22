@@ -1,7 +1,7 @@
 #ifndef __MUTATIONOBSERVER_H
 #define __MUTATIONOBSERVER_H
 
-#include <xcommon/IXMutationObserver.h>
+#include <xcommon/physics/IXMutationObserver.h>
 #include <xcommon/XEvents.h>
 #include <xcommon/IXCore.h>
 

@@ -68,7 +68,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
+    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../libs</LibraryPath>
     <SourcePath>$(VC_SourcePath);../../../source;../../../sdks/bullet3/src</SourcePath>
     <OutDir>../../../build/bin/plugins/</OutDir>
@@ -77,21 +77,21 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>$(ProjectName)_d</TargetName>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
+    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);../../../libs64</LibraryPath>
     <SourcePath>$(VC_SourcePath);../../../source;../../../sdks/bullet3/src</SourcePath>
     <OutDir>../../../build/bin64/plugins/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
+    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../libs</LibraryPath>
     <SourcePath>$(VC_SourcePath);../../../source;../../../sdks/bullet3/src;</SourcePath>
     <OutDir>../../../build/bin/plugins/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;../../../sdks/bullet3/src</IncludePath>
+    <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);../../../libs64</LibraryPath>
     <SourcePath>$(VC_SourcePath);../../../source;../../../sdks/bullet3/src;</SourcePath>
     <OutDir>../../../build/bin64/plugins/</OutDir>

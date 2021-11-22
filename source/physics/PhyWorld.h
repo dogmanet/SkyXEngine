@@ -51,26 +51,12 @@ public:
 	CPhyWorld();
 	~CPhyWorld();
 
-	void setThreadNum(int tnum);
-	void update(int thread = 0);
-	void sync();
+	void update();
 
-#if 0
-	void loadGeom(const char * file=NULL);
-	void unloadGeom();
-
-	bool importGeom(const char * file);
-	bool exportGeom(const char * file);
-#endif
-
-	void disableSimulation();
-	void enableSimulation();
+	void XMETHODCALLTYPE disableSimulation() override;
+	void XMETHODCALLTYPE enableSimulation() override;
 
 	void render();
-
-	MTLTYPE_PHYSIC getMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
-	
-	ID getMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo);
 
 	btDiscreteDynamicsWorldMt * getBtWorld()
 	{
@@ -181,33 +167,19 @@ public:
 	}
 
 private:
-	btDefaultCollisionConfiguration * m_pCollisionConfiguration;
-	btCollisionDispatcherMt * m_pDispatcher;
-	btBroadphaseInterface * m_pBroadphase;
-	btSequentialImpulseConstraintSolverMt * m_pSolver;
-	btDiscreteDynamicsWorldMt * m_pDynamicsWorld;
-	btGhostPairCallback * m_pGHostPairCallback;
+	btDefaultCollisionConfiguration *m_pCollisionConfiguration;
+	btCollisionDispatcherMt *m_pDispatcher;
+	btBroadphaseInterface *m_pBroadphase;
+	btSequentialImpulseConstraintSolverMt *m_pSolver;
+	btDiscreteDynamicsWorldMt *m_pDynamicsWorld;
+	btGhostPairCallback *m_pGHostPairCallback;
 
 	std::atomic_bool m_isUpdating;
 
-	const bool * m_bDebugDraw;
-	CDebugDrawer * m_pDebugDrawer;
+	const bool *m_bDebugDraw;
+	CDebugDrawer *m_pDebugDrawer;
 
-	// физические формы для статической геометрии уровня
-	btTriangleMesh * m_pGeomStaticCollideMesh;
-	btCollisionShape * m_pGeomStaticCollideShape;
-	btRigidBody * m_pGeomStaticRigidBody;
-	//MTLTYPE_PHYSIC *m_pGeomMtlTypes;
-	ID *m_pGeomMtlIDs;
-	int m_iGeomFacesCount;
-	int m_iGeomModelCount;
-
-	btCollisionShape ** m_ppGreenStaticCollideShape;
-	btRigidBody *** m_pppGreenStaticRigidBody;
-	int m_iGreenShapes;
-	int * m_piGreenTotal;
-
-	bool m_isRunning;
+	bool m_isRunning = false;
 	int m_iSkipFrames = 3;
 
 	IEventChannel<XEventPhysicsStep> *m_pTickEventChannel = NULL;

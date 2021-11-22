@@ -3,7 +3,7 @@
 
 #include <btBulletDynamicsCommon.h>
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
-#include "IXCollisionObject.h"
+#include <xcommon/physics/IXCollisionObject.h>
 
 btCollisionShape* GetCollisionShape(IXCollisionShape *pShape);
 

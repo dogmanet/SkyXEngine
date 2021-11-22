@@ -4,7 +4,6 @@
 #include "Baseline.h"
 
 #include <input/sxinput.h>
-#include <physics/sxphysics.h>
 
 #include "Editable.h"
 
@@ -127,7 +126,7 @@ void CIngameGameState::activate()
 	Core_TimeWorkingSet(idTimerRender, true);
 //	SSCore_ChannelPlay(SX_SOUND_CHANNEL_GAME);
 	SSInput_SetEnable(true);
-	SPhysics_EnableSimulation();
+	GetPhysWorld()->enableSimulation();
 
 	Core_0ConsoleExecCmd("game_time_running 1");
 
@@ -145,7 +144,7 @@ void CIngameGameState::deactivate()
 	Core_TimeWorkingSet(idTimerRender, false);
 //	SSCore_ChannelStop(SX_SOUND_CHANNEL_GAME);
 	SSInput_SetEnable(false);
-	SPhysics_DisableSimulation();
+	GetPhysWorld()->disableSimulation();
 
 	SAFE_CALL(GameData::m_pGameLayer, play, false);
 

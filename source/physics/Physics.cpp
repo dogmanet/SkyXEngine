@@ -4,6 +4,7 @@
 #include "sxphysics.h"
 #include "PhyWorld.h"
 #include "CharacterController.h"
+#include "MutationObserver.h"
 
 CPhysics::CPhysics(CPhyWorld *pDefaultWorld):
 	m_pDefaultWorld(pDefaultWorld)
@@ -55,6 +56,11 @@ void XMETHODCALLTYPE CPhysics::newGhostObject(IXGhostObject **ppOut, bool isPair
 void XMETHODCALLTYPE CPhysics::newCharacterController(IXGhostObject *pGhostObject, float fStepHeight, IXCharacterController **ppOut)
 {
 	*ppOut = new CCharacterController(pGhostObject, fStepHeight);
+}
+
+void XMETHODCALLTYPE CPhysics::newMutationObserver(IXMutationObserver **ppOut)
+{
+	*ppOut = new CMutationObserver(Core_GetIXCore());
 }
 
 IXPhysicsWorld* XMETHODCALLTYPE CPhysics::getWorld(void *pReserved)

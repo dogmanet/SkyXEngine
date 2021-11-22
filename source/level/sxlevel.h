@@ -24,7 +24,6 @@ See the license in LICENSE
 #pragma comment(lib, "sxaigrid_d.lib")
 #pragma comment(lib, "sxparticles_d.lib")
 #pragma comment(lib, "sxpp_d.lib")
-#pragma comment(lib, "sxphysics_d.lib")
 #pragma comment(lib, "sxdecals_d.lib")
 #else
 #pragma comment(lib, "sxgcore.lib")
@@ -33,17 +32,15 @@ See the license in LICENSE
 #pragma comment(lib, "sxaigrid.lib")
 #pragma comment(lib, "sxparticles.lib")
 #pragma comment(lib, "sxpp.lib")
-#pragma comment(lib, "sxphysics.lib")
 #pragma comment(lib, "sxdecals.lib")
 #endif
 
 #include <gcore/sxgcore.h>
-#include <score/sxscore.h>
 #include <green/sxgreen.h>
 #include <aigrid/sxaigrid.h>
 #include <particles/sxparticles.h>
 #include <pp/sxpp.h>
-#include <physics/sxphysics.h>
+//#include <physics/sxphysics.h>
 
 #ifdef SX_DLL
 #undef SX_LIB_API

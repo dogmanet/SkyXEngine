@@ -1,7 +1,7 @@
 #ifndef __PHYSICS_UTIL_H
 #define __PHYSICS_UTIL_H
 
-#include <physics/IXPhysics.h>
+#include <xcommon/physics/IXPhysics.h>
 
 IXPhysics* GetPhysics();
 IXPhysicsWorld* GetPhysWorld();
@@ -13,7 +13,7 @@ public:
 	{
 		m_result.pCollisionObject = NULL;
 	}
-	float addSingleResult(const XRayResult &result) override
+	float XMETHODCALLTYPE addSingleResult(const XRayResult &result) override
 	{
 		m_result = result;
 
@@ -39,7 +39,7 @@ public:
 		m_result.pCollisionObject = NULL;
 	}
 
-	float addSingleResult(const XRayResult &result) override
+	float XMETHODCALLTYPE addSingleResult(const XRayResult &result) override
 	{
 		if(result.pCollisionObject == m_me)
 		{
@@ -70,7 +70,7 @@ public:
 		m_me = me;
 	}
 
-	float addSingleResult(const XRayResult &result) override
+	float XMETHODCALLTYPE addSingleResult(const XRayResult &result) override
 	{
 		if(result.pCollisionObject == m_me)
 		{
@@ -96,7 +96,7 @@ public:
 class CAllHitsResultCallback: public IXRayCallback
 {
 public:
-	float addSingleResult(const XRayResult &result) override
+	float XMETHODCALLTYPE addSingleResult(const XRayResult &result) override
 	{
 		m_aResults.push_back(result);
 

@@ -5,6 +5,7 @@
 #include "IXCollisionObject.h"
 #include "IXCharacterController.h"
 #include "IXCharacterController.h"
+#include "IXMutationObserver.h"
 
 /*
 typedef enum PHY_ScalarType
@@ -42,6 +43,10 @@ public:
 	virtual void XMETHODCALLTYPE removeCollisionObject(IXCollisionObject *pCollisionObject) = 0;
 
 	virtual void XMETHODCALLTYPE rayTest(const float3 &vFrom, const float3 &vTo, IXRayCallback *pCallback, COLLISION_GROUP collisionGroup = CG_DEFAULT, COLLISION_GROUP collisionMask = CG_ALL) = 0;
+	
+	virtual void XMETHODCALLTYPE disableSimulation() = 0;
+	virtual void XMETHODCALLTYPE enableSimulation() = 0;
+
 	// add/remove action
 	// convexSweepTest
 	// add/remove constraint
@@ -74,6 +79,8 @@ public:
 	virtual void XMETHODCALLTYPE newGhostObject(IXGhostObject **ppOut, bool isPairCaching = true) = 0;
 
 	virtual void XMETHODCALLTYPE newCharacterController(IXGhostObject *pGhostObject, float fStepHeight, IXCharacterController **ppOut) = 0;
+
+	virtual void XMETHODCALLTYPE newMutationObserver(IXMutationObserver **ppOut) = 0;
 
 	virtual IXPhysicsWorld* XMETHODCALLTYPE getWorld(void *pReserved = NULL) = 0;
 };

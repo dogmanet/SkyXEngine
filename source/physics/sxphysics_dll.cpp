@@ -14,8 +14,6 @@ See the license in LICENSE
 #include <core/sxcore.h>
 #include <BulletCollision/CollisionShapes/btShapeHull.h>
 
-#include "MutationObserver.h"
-
 #if defined(_DEBUG)
 #	pragma comment(lib, "sxcore_d.lib")
 #	pragma comment(lib, "sxmtrl_d.lib")
@@ -89,54 +87,14 @@ SX_LIB_API void SPhysics_AKill()
 	mem_delete(g_pWorld);
 }
 
-SX_LIB_API void SPhysics_Update(int thread)
+SX_LIB_API void SPhysics_Update()
 {
 	SP_PRECOND(_VOID);
-	g_pWorld->update(thread);
-}
-
-SX_LIB_API void SPhysics_Sync()
-{
-	SP_PRECOND(_VOID);
-	g_pWorld->sync();
+	g_pWorld->update();
 }
 
 SX_LIB_API btDiscreteDynamicsWorldMt* SPhysics_GetDynWorld()
 {
 	SP_PRECOND(NULL);
 	return(g_pWorld->getBtWorld());
-}
-
-
-SX_LIB_API int SPhysics_GetMtlType(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
-{
-	SP_PRECOND(MTLTYPE_PHYSIC_DEFAULT);
-
-	return(g_pWorld->getMtlType(pBody, pShapeInfo));
-}
-
-SX_LIB_API ID SPhysics_GetMtlID(const btCollisionObject *pBody, const btCollisionWorld::LocalShapeInfo *pShapeInfo)
-{
-	SP_PRECOND(-1);
-
-	return(g_pWorld->getMtlID(pBody, pShapeInfo));
-}
-
-SX_LIB_API void SPhysics_EnableSimulation()
-{
-	SP_PRECOND(_VOID);
-
-	g_pWorld->enableSimulation();
-}
-
-SX_LIB_API void SPhysics_DisableSimulation()
-{
-	SP_PRECOND(_VOID);
-
-	g_pWorld->disableSimulation();
-}
-
-SX_LIB_API IXMutationObserver* SPhysics_NewMutationObserver()
-{
-	return(new CMutationObserver(Core_GetIXCore()));
 }

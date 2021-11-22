@@ -1,7 +1,7 @@
 #ifndef __XPHYSICS_H
 #define __XPHYSICS_H
 
-#include "IXPhysics.h"
+#include <xcommon/physics/IXPhysics.h>
 //#include "CollisionObject.h"
 
 class CPhyWorld;
@@ -23,6 +23,8 @@ public:
 	void XMETHODCALLTYPE newGhostObject(IXGhostObject **ppOut, bool isPairCaching = true) override;
 
 	void XMETHODCALLTYPE newCharacterController(IXGhostObject *pGhostObject, float fStepHeight, IXCharacterController **ppOut) override;
+
+	void XMETHODCALLTYPE newMutationObserver(IXMutationObserver **ppOut) override;
 
 	IXPhysicsWorld* XMETHODCALLTYPE getWorld(void *pReserved = NULL) override;
 

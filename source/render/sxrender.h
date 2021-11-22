@@ -45,7 +45,7 @@ See the license in LICENSE
 
 //##########################################################################
 
-/*! \defgroup sxrender_render_def render_def - дефайны/контсанты рендера
+/*! \defgroup sxrender_render_def render_def - дефайны/константы рендера
 \ingroup sxrender
 @{*/
 

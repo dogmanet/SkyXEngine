@@ -7,7 +7,7 @@
 #include <xcommon/IXCore.h>
 #include <xcommon/IXJSON.h>
 #include "Outline.h"
-#include <physics/IXPhysics.h>
+#include <xcommon/physics/IXPhysics.h>
 
 struct BrushFace
 {

@@ -21,7 +21,7 @@ See the license in LICENSE
 #include <gdefines.h>
 #include <common/Math.h>
 #include <core/sxcore.h>
-#include <physics/IXPhysics.h>
+#include <xcommon/physics/IXPhysics.h>
 #include <xcommon/IXSoundSystem.h>
 #include "physics_util.h"
 #include "EntityFactory.h"

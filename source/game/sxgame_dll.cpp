@@ -10,7 +10,6 @@ See the license in LICENSE
 #include "sxgame.h"
 #include <core/sxcore.h>
 #include <gcore/sxgcore.h>
-//#include <BulletCollision/NarrowPhaseCollision/btRaycastCallback.h>
 
 #include "EntityManager.h"
 
@@ -23,13 +22,11 @@ See the license in LICENSE
 #	pragma comment(lib, "sxcore_d.lib")
 #	pragma comment(lib, "sxgcore_d.lib")
 #	pragma comment(lib, "sxinput_d.lib")
-#	pragma comment(lib, "sxphysics_d.lib")
 #	pragma comment(lib, "sxmtrl_d.lib")
 #else
 #	pragma comment(lib, "sxcore.lib")
 #	pragma comment(lib, "sxgcore.lib")
 #	pragma comment(lib, "sxinput.lib")
-#	pragma comment(lib, "sxphysics.lib")
 #	pragma comment(lib, "sxmtrl.lib")
 #endif
 

@@ -7,7 +7,7 @@ See the license in LICENSE
 #include "light.h"
 #include "LightSystem.h"
 #include <xcommon/IXRenderable.h>
-#include <physics/sxphysics.h>
+#include <xcommon/physics/IXPhysics.h>
 
 
 //##########################################################################
@@ -22,7 +22,7 @@ CXLight::CXLight(CLightSystem *pLightSystem):
 	mem_release(pPipeline);
 
 	m_pFrustum = SGCore_CrFrustum();
-	m_pMutationObserver = SPhysics_NewMutationObserver();
+	((IXPhysics*)Core_GetIXCore()->getPluginManager()->getInterface(IXPHYSICS_GUID))->newMutationObserver(&m_pMutationObserver);
 }
 CXLight::~CXLight()
 {

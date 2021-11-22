@@ -36,7 +36,7 @@ public:
 	}
 	
 	///synchronizes world transform from physics to user
-	void setWorldTransform(const float3 &vPos, const SMQuaternion &q) override;
+	void XMETHODCALLTYPE setWorldTransform(const float3 &vPos, const SMQuaternion &q) override;
 };
 
 //##########################################################################

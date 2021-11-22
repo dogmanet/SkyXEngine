@@ -68,32 +68,32 @@
     <ClInclude Include="..\..\..\source\physics\CollisionShape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\physics\IXPhysics.h">
-      <Filter>Header Files\xcommon</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\physics\Physics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\physics\CollisionObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\xcommon\IXMutationObserver.h">
-      <Filter>Header Files\xcommon</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\physics\MutationObserver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\physics\IXCollisionObject.h">
-      <Filter>Header Files\xcommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\physics\IXCollisionShape.h">
-      <Filter>Header Files\xcommon</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\physics\IXCharacterController.h">
-      <Filter>Header Files\xcommon</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\physics\CharacterController.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\physics\IXCollisionObject.h">
+      <Filter>Header Files\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\physics\IXCollisionShape.h">
+      <Filter>Header Files\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\physics\IXPhysics.h">
+      <Filter>Header Files\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\physics\IXCharacterController.h">
+      <Filter>Header Files\xcommon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\physics\IXMutationObserver.h">
+      <Filter>Header Files\xcommon</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

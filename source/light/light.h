@@ -13,7 +13,7 @@ See the license in LICENSE
 #include <common/Math.h>
 #include <common/Array.h>
 #include <graphix/graphix.h>
-#include <xcommon/IXMutationObserver.h>
+#include <xcommon/physics/IXMutationObserver.h>
 
 #include <gcore/sxgcore.h>
 
