@@ -431,13 +431,19 @@ LRESULT CALLBACK ClassesComboWndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 {
 	if(message == WM_MOUSEWHEEL)
 	{
-		RECT rc;
-		GetClientRect(hWnd, &rc);
-		POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
-		if(pt.x < rc.left || pt.x > rc.right || pt.y < rc.top || pt.y > rc.bottom)
+		COMBOBOXINFO info = {sizeof(COMBOBOXINFO)};
+		GetComboBoxInfo(hWnd, &info);
+
+		if(!IsWindowVisible(info.hwndList))
 		{
-			SendMessage(g_hWndMain, message, wParam, lParam);
-			return(0);
+			RECT rc;
+			GetClientRect(hWnd, &rc);
+			POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+			if(pt.x < rc.left || pt.x > rc.right || pt.y < rc.top || pt.y > rc.bottom)
+			{
+				SendMessage(g_hWndMain, message, wParam, lParam);
+				return(0);
+			}
 		}
 	}
 	return(CallWindowProc(g_pfnClassesComboOldWndproc, hWnd, message, wParam, lParam));
@@ -960,7 +966,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			SetWindowFont(g_hStaticClassesWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
 		}
 
-		g_hComboClassesWnd = CreateWindowExA(0, WC_COMBOBOX, "", WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_SORT | CBS_DROPDOWNLIST | CBS_HASSTRINGS, rect.right, rect.top + 15 + 25 + MARGIN_RIGHT + 15 + 25 + 10 + 15 + 15 + 25, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, (HMENU)IDC_CMB_CLASS, hInst, NULL);
+		g_hComboClassesWnd = CreateWindowExA(0, WC_COMBOBOX, "", WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_SORT | CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_VSCROLL, rect.right, rect.top + 15 + 25 + MARGIN_RIGHT + 15 + 25 + 10 + 15 + 15 + 25, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, hWnd, (HMENU)IDC_CMB_CLASS, hInst, NULL);
 		{
 			SetWindowFont(g_hComboClassesWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
 
