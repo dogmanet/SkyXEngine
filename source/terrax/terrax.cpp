@@ -64,6 +64,8 @@ static IGXRenderBuffer *g_pBorderRenderBuffer;
 CUndoManager *g_pUndoManager = NULL;
 extern HWND g_hComboTypesWnd;
 
+extern bool g_bViewportCaptionDirty[4];
+
 String g_sLevelName;
 
 IEventChannel<XEventEditorXformType> *g_pXformEventChannel = NULL;
@@ -457,6 +459,8 @@ public:
 		pCore->getRenderPipeline(&m_pOldPipeline);
 		pCore->setRenderPipeline(this);
 
+		memset(m_pViewportCaptionRB, 0, sizeof(m_pViewportCaptionRB));
+
 		IPluginManager *pPluginManager = pCore->getPluginManager();
 		m_pMaterialSystem = (IXMaterialSystem*)pPluginManager->getInterface(IXMATERIALSYSTEM_GUID);
 
@@ -520,6 +524,13 @@ public:
 
 		m_idScreenOutShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs"), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "pp_quad_render.ps"));
 
+		m_idTextShader = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_text.vs"), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_main.ps"));
+
+		m_pTextColorCB = getDevice()->createConstantBuffer(sizeof(float4_t));
+		m_pTextColorCB->update(&float4_t(198.0f / 255.0f, 240.0f / 255.0f, 253.0f / 255.0f, 1.0f));
+		m_pTextOffsetCB = getDevice()->createConstantBuffer(sizeof(float4_t));
+
+		initViewportCaptions();
 	}
 	~CRenderPipeline()
 	{
@@ -529,10 +540,18 @@ public:
 		for(UINT i = 0; i < 3; ++i)
 		{
 			mem_release(m_pCameraVisibility[i + 1]);
+			mem_release(m_pViewportCaptionRB[i]);
 		}
+
+		mem_release(m_pViewportCaptionIB);
+
+		mem_release(m_pTextColorCB);
+		mem_release(m_pTextOffsetCB);
 
 		m_pCore->setRenderPipeline(m_pOldPipeline);
 		mem_release(m_pOldPipeline);
+
+		mem_release(m_pFont);
 	}
 
 	void resize(UINT uWidth, UINT uHeight, bool isWindowed = true) override
@@ -622,6 +641,8 @@ public:
 			g_pEditor->render(false);
 			m_pAxesRenderer->render(true);
 
+			drawViewportCaption(i);
+
 			mem_release(pBackBuffer);
 		}
 
@@ -699,6 +720,8 @@ public:
 	{
 		m_pOldPipeline->newVisData(ppVisibility);
 	}
+
+	
 
 //protected:
 
@@ -804,6 +827,111 @@ public:
 			// g_pCurMatSwapChain
 	}
 
+	void initViewportCaptions()
+	{
+		m_pFontManager = (IXFontManager*)Core_GetIXCore()->getPluginManager()->getInterface(IXFONTMANAGER_GUID);
+		if(!m_pFontManager)
+		{
+			return;
+		}
+		IGXVertexDeclaration *pVD = NULL;
+		m_pFontManager->getFont(&m_pFont, "gui/fonts/tahoma.ttf", 10);
+		m_pFontManager->getFontVertexDeclaration(&pVD);
+
+		XFontBuildParams xfbp;
+		XFontStringMetrics xfsm = {};
+
+		// X_2D_VIEW
+
+		const char *aszCaptions[] = {
+			"Top (x/z)",
+			"Front (x/y)",
+			"Side (z/y)"
+		};
+
+		IGXDevice *pDev = getDevice();
+
+		UINT uMaxLen = 0;
+
+		for(UINT i = 0, l = ARRAYSIZE(aszCaptions); i < l; ++i)
+		{
+			xfbp.pVertices = NULL;
+			m_pFont->buildString(aszCaptions[i], xfbp, &xfsm);
+			xfbp.pVertices = (XFontVertex*)alloca(sizeof(XFontVertex) * xfsm.uVertexCount);
+			m_pFont->buildString(aszCaptions[i], xfbp, &xfsm);
+
+			XFontGPUVertex *pBuffer = (XFontGPUVertex*)alloca(sizeof(XFontGPUVertex) * xfsm.uVertexCount);
+
+			for(UINT j = 0; j < xfsm.uVertexCount; ++j)
+			{
+				pBuffer[j] = xfbp.pVertices[j];
+				pBuffer[j].vPos.y *= -1.0f;
+			}
+
+			m_uViewportCaptionQuadCount[i] = xfsm.uVertexCount / 4;
+
+			IGXVertexBuffer *pVB = pDev->createVertexBuffer(sizeof(XFontGPUVertex) * xfsm.uVertexCount, GXBUFFER_USAGE_STATIC, pBuffer);
+
+			m_pViewportCaptionRB[i] = pDev->createRenderBuffer(1, &pVB, pVD);
+
+			mem_release(pVB);
+
+			UINT uLen = (UINT)strlen(aszCaptions[i]);
+			if(uLen > uMaxLen)
+			{
+				uMaxLen = uLen;
+			}
+		}
+
+		m_pFontManager->getFontIndexBuffer(uMaxLen, &m_pViewportCaptionIB);
+	}
+
+	void drawViewportCaption(int iView)
+	{
+		iView = g_xConfig.m_x2DView[iView + 1];
+		if(!m_pViewportCaptionRB[iView])
+		{
+			return;
+		}
+
+		IGXContext *pCtx = getDevice()->getThreadContext();
+
+		pCtx->setPrimitiveTopology(GXPT_TRIANGLELIST);
+		pCtx->setRasterizerState(NULL);
+		IGXDepthStencilSurface *pOldDS = pCtx->getDepthStencilSurface();
+		pCtx->unsetDepthStencilSurface();
+		pCtx->setBlendState(g_xRenderStates.pBlendAlpha);
+
+		IGXSurface *pTarget = pCtx->getColorTarget();
+
+		float fWidth = (float)pTarget->getWidth();
+		float fHeight = (float)pTarget->getHeight();
+		mem_release(pTarget);
+
+		SMMATRIX mProj = SMMatrixTranslation(-0.5f, -0.5f, 0.0f) * SMMatrixOrthographicLH(fWidth, fHeight, 1.0f, 2000.0f);
+		SMMATRIX mView = SMMatrixLookToLH(float3(fWidth * 0.5f, -fHeight * 0.5f, -1.0f), float3(0.0f, 0.0f, 1.0f), float3(0.0f, 1.0f, 0.0f));
+
+		g_pCameraConstantBuffer->update(&SMMatrixTranspose(mView * mProj));
+
+		pCtx->setVSConstant(g_pCameraConstantBuffer, SCR_CAMERA);
+
+		IGXTexture2D *pTex;
+		m_pFont->getTexture(0, &pTex);
+		pCtx->setPSTexture(pTex);
+		mem_release(pTex);
+		pCtx->setRenderBuffer(m_pViewportCaptionRB[iView]);
+		pCtx->setIndexBuffer(m_pViewportCaptionIB);
+		pCtx->setPSConstant(m_pTextColorCB);
+		m_pTextOffsetCB->update(&float4_t(0.0f, 0.0f, 0.0f, 0.0f));
+		pCtx->setVSConstant(m_pTextOffsetCB, 6);
+		SGCore_ShaderBind(m_idTextShader);
+		pCtx->drawIndexed(m_uViewportCaptionQuadCount[iView] * 4, m_uViewportCaptionQuadCount[iView] * 2);
+		SGCore_ShaderUnBind();
+
+		pCtx->setDepthStencilSurface(pOldDS);
+		mem_release(pOldDS);
+	}
+
 	IXCore *m_pCore;
 	IXRenderPipeline *m_pOldPipeline = NULL;
 	IXMaterialSystem *m_pMaterialSystem = NULL;
@@ -815,6 +943,16 @@ public:
 	IXGizmoRenderer *m_pAxesRenderer = NULL;
 
 	ID m_idScreenOutShader = -1;
+	ID m_idTextShader = -1;
+
+	IXFontManager *m_pFontManager = NULL;
+	IXFont *m_pFont = NULL;
+	
+	IGXRenderBuffer *m_pViewportCaptionRB[3];
+	UINT m_uViewportCaptionQuadCount[3];
+	IGXIndexBuffer *m_pViewportCaptionIB = NULL;
+	IGXConstantBuffer *m_pTextColorCB = NULL;
+	IGXConstantBuffer *m_pTextOffsetCB = NULL;
 };
 
 class CCVarEventListener: public IEventListener<XEventCvarChanged>
@@ -1118,6 +1256,7 @@ int main(int argc, char **argv)
 						int iVal = 0;
 						if(sscanf(szVal, "%d", &iVal) && iVal >= -1 && iVal <= 2)
 						{
+							g_bViewportCaptionDirty[i] = true;
 							g_xConfig.m_x2DView[i] = (X_2D_VIEW)iVal;
 						}
 					}
@@ -1417,6 +1556,11 @@ int main(int argc, char **argv)
 	g_pMaterialBrowser->initGraphics(SGCore_GetDXDevice());
 
 	g_pCameraConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(SMMATRIX));
+
+	for(UINT i = 0; i < 4; ++i)
+	{
+		g_bViewportCaptionDirty[i] = true;
+	}
 
 	int result = pEngine->start();
 

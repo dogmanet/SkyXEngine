@@ -102,6 +102,8 @@ gui::IGUI *g_pGUI = NULL;
 CTerraXConfig g_xConfig;
 CTerraXState g_xState;
 
+bool g_bViewportCaptionDirty[4];
+
 extern CUndoManager *g_pUndoManager;
 
 extern Array<IXEditable*> g_pEditableSystems;
@@ -2178,7 +2180,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 		POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 		GetClientRect(hWnd, &rect);
-		if(pt.x > rect.left && pt.x < rect.left + 20
+		if(pt.x > rect.left && pt.x < rect.left + 40
 			&& pt.y > rect.top && pt.y < rect.top + 20)
 		{
 			int iActiveMenu = -1;
@@ -2955,7 +2957,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		{
 			ICamera *pTargetCam = g_xConfig.m_pViewportCamera[g_xState.activeWindow];
 			X_2D_VIEW *pX2DView = &g_xConfig.m_x2DView[g_xState.activeWindow];
-
+			g_bViewportCaptionDirty[g_xState.activeWindow] = true;
 			switch(LOWORD(wParam))
 			{
 			case ID_2D_TOP:
