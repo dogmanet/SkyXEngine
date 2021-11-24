@@ -50,6 +50,8 @@ public:
 	//static gui::IDesktop *m_pStatsUI;
 	static bool m_isLevelLoaded;
 
+	static void SetCustomCamera(CPointCamera *pCamera);
+
 protected:
 
 	void loadFoostepsSounds();

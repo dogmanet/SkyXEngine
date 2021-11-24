@@ -17,6 +17,11 @@ BEGIN_PROPTABLE(CFuncTrain)
 
 	//! path_corner, с которого начнется движение
 	DEFINE_FIELD_ENTITY(CPathCorner, m_pStartStop, 0, "start", "Start point", EDITOR_TEXTFIELD)
+
+	//! запустить
+	DEFINE_INPUT(inStart, "in_start", "Start", PDF_NONE)
+	//! остановить
+	DEFINE_INPUT(inStop, "stop", "Stop", PDF_NONE)
 END_PROPTABLE()
 
 REGISTER_ENTITY(CFuncTrain, func_train);
@@ -27,9 +32,18 @@ void CFuncTrain::onPostLoad()
 	m_pCurStop = m_pStartStop;
 	if(m_pStartStop)
 	{
-	//	setPos(m_pStartStop->getPos());
-	//	setOrient(m_pStartStop->getOrient());
+		//setPos(m_pStartStop->getPos());
+		//setOrient(m_pStartStop->getOrient());
 	}
+}
+
+void CFuncTrain::inStart(inputdata_t *pInputdata)
+{
+	start();
+}
+void CFuncTrain::inStop(inputdata_t *pInputdata)
+{
+	stop();
 }
 
 void CFuncTrain::stop()

@@ -1444,6 +1444,18 @@ void GameData::playFootstepSound(MTLTYPE_PHYSIC mtl_type, const float3 &f3Pos)
 	}
 }
 
+void GameData::SetCustomCamera(CPointCamera *pCamera)
+{
+	if(pCamera)
+	{
+		m_pActiveCamera = pCamera;
+	}
+	else
+	{
+		m_pActiveCamera = m_pPlayer->getCamera();
+	}
+}
+
 void GameData::loadFoostepsSounds()
 {
 	Array<const char*> aSounds[MPT_COUNT];

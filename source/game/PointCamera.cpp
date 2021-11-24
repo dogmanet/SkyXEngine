@@ -5,13 +5,17 @@ See the license in LICENSE
 ***********************************************************/
 
 #include "PointCamera.h"
+#include "GameData.h"
 
 /*! \skydocent point_camera
 Камера
 */
 
 BEGIN_PROPTABLE(CPointCamera)
-// empty
+	//! Вывести на экран
+	DEFINE_INPUT(inActivate, "activate", "Activate", PDF_NONE)
+	//! вернуть как было
+	DEFINE_INPUT(inDeactivate, "deactivate", "Deactivate", PDF_NONE)
 END_PROPTABLE()
 
 REGISTER_ENTITY(CPointCamera, point_camera, REC_ICON("dev_point_camera"));
@@ -45,4 +49,14 @@ void CPointCamera::setOrient(const SMQuaternion &q)
 	BaseClass::setOrient(q);
 
 	m_pSXC->setOrientation(q);
+}
+
+void CPointCamera::inActivate(inputdata_t *pInputdata)
+{
+	GameData::SetCustomCamera(this);
+}
+
+void CPointCamera::inDeactivate(inputdata_t *pInputdata)
+{
+	GameData::SetCustomCamera(NULL);
 }

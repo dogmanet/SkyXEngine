@@ -35,7 +35,11 @@ public:
 	void setPos(const float3 &pos) override;
 	void setOrient(const SMQuaternion &q) override;
 
-protected:
+private:
+	void inActivate(inputdata_t *pInputdata);
+	void inDeactivate(inputdata_t *pInputdata);
+
+private:
 	ICamera *m_pSXC;
 };
 

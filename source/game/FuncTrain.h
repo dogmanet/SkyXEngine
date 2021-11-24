@@ -33,6 +33,9 @@ protected:
 	void onPostLoad() override;
 	void moveFunc(float dt);
 
+	void inStart(inputdata_t *pInputdata);
+	void inStop(inputdata_t *pInputdata);
+
 	//! Начальная точка движения
 	CEntityPointer<CPathCorner> m_pStartStop;
 	//! Текущая точка
