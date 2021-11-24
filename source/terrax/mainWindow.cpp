@@ -1130,6 +1130,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		if(LOWORD(wParam) >= IDC_AB_FIRST && LOWORD(wParam) < IDC_AB_FIRST + g_apTools.size() && !g_is3DRotating && !g_is3DPanning)
 		{
+			Button_SetCheck(g_hABCameraButton, BST_UNCHECKED);
+
 			IXEditorTool *pNewTool = g_apTools[LOWORD(wParam) - IDC_AB_FIRST];
 			if(pNewTool != g_pCurrentTool)
 			{
@@ -1291,38 +1293,59 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		case IDC_ESCAPE:
 		case IDC_AB_ARROW:
-			if(!g_is3DRotating && !g_is3DPanning)
+			if(!g_is3DRotating && !g_is3DPanning && g_uCurrentTool != IDC_AB_ARROW)
 			{
-				SAFE_CALL(g_pCurrentTool, deactivate);
-				mem_release(g_pCurrentTool);
-				CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
-				g_uCurrentTool = IDC_AB_ARROW;
-				CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
-				g_xState.bCreateMode = false;
-				XUpdateGizmos();
+				if(g_uCurrentTool != IDC_AB_CAMERA && Button_GetCheck(g_hABCameraButton) == BST_CHECKED)
+				{
+					CheckDlgButton(hWnd, IDC_AB_CAMERA, BST_UNCHECKED);
+				}
+				else
+				{
+					SAFE_CALL(g_pCurrentTool, deactivate);
+					mem_release(g_pCurrentTool);
+					CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
+					g_uCurrentTool = IDC_AB_ARROW;
+					CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
+					g_xState.bCreateMode = false;
+					XUpdateGizmos();
+				}
 			}
 			break;
 		case IDC_AB_CAMERA:
-			if(!g_is3DRotating && !g_is3DPanning)
+			if(!g_is3DRotating && !g_is3DPanning && g_uCurrentTool != IDC_AB_CAMERA)
 			{
-				SAFE_CALL(g_pCurrentTool, deactivate);
-				mem_release(g_pCurrentTool);
-				CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
-				g_uCurrentTool = IDC_AB_CAMERA;
-				CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
-				g_xState.bCreateMode = false;
-				XUpdateGizmos();
+				if(g_uCurrentTool == IDC_AB_ARROW)
+				{
+					SAFE_CALL(g_pCurrentTool, deactivate);
+					mem_release(g_pCurrentTool);
+					CheckDlgButton(hWnd, g_uCurrentTool, BST_UNCHECKED);
+					g_uCurrentTool = IDC_AB_CAMERA;
+					CheckDlgButton(hWnd, g_uCurrentTool, BST_CHECKED);
+					g_xState.bCreateMode = false;
+					XUpdateGizmos();
+				}
+				else
+				{
+					// toggle camera
+					bool isCamera = Button_GetCheck(g_hABCameraButton) == BST_CHECKED;
+					Button_SetCheck(g_hABCameraButton, isCamera ? BST_UNCHECKED : BST_CHECKED);
+				}
+				
 			}
 			break;
 		case IDC_AB_CREATE:
 			if(!g_is3DRotating && !g_is3DPanning)
 			{
-				SAFE_CALL(g_pCurrentTool, deactivate);
-				mem_release(g_pCurrentTool);
-				CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
-				g_uCurrentTool = IDC_AB_CREATE;
-				CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
-				XUpdateGizmos();
+				Button_SetCheck(g_hABCameraButton, BST_UNCHECKED);
+				if(g_uCurrentTool != IDC_AB_CREATE)
+				{
+					SAFE_CALL(g_pCurrentTool, deactivate);
+					mem_release(g_pCurrentTool);
+					CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
+					g_uCurrentTool = IDC_AB_CREATE;
+					CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
+					XUpdateGizmos();
+				}
 			}
 			break;
 
@@ -2653,7 +2676,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			//break;
 		}
 
-		if(g_pCurrentTool && g_pCurrentTool->onMouseDown(true))
+		if(!Button_GetCheck(g_hABCameraButton) && g_pCurrentTool && g_pCurrentTool->onMouseDown(true))
 		{
 			break;
 		}
@@ -2678,7 +2701,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 	case WM_RBUTTONDOWN:
 	{
-		if(g_pCurrentTool && g_pCurrentTool->onMouseDown(false))
+		if(!Button_GetCheck(g_hABCameraButton) && g_pCurrentTool && g_pCurrentTool->onMouseDown(false))
 		{
 			break;
 		}
