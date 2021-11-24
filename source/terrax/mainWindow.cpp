@@ -2023,6 +2023,18 @@ static void XTrackMouse(HWND hWnd, LPARAM lParam)
 	}
 }
 
+void XDisableCurrentTool()
+{
+	Button_SetCheck(g_hABCameraButton, BST_UNCHECKED);
+	SAFE_CALL(g_pCurrentTool, deactivate);
+	mem_release(g_pCurrentTool);
+	CheckDlgButton(g_hWndMain, g_uCurrentTool, FALSE);
+	g_uCurrentTool = IDC_AB_ARROW;
+	CheckDlgButton(g_hWndMain, g_uCurrentTool, TRUE);
+	g_xState.bCreateMode = false;
+	XUpdateGizmos();
+}
+
 LRESULT CALLBACK RenderNoninteractiveWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	//return(DefWindowProc(hWnd, message, wParam, lParam));

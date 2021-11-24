@@ -57,6 +57,8 @@ public:
 
 	void* XMETHODCALLTYPE getMainWindow() override;
 
+	void XMETHODCALLTYPE disableCurrentTool() override;
+
 	IXEditorMaterialBrowser* XMETHODCALLTYPE getMaterialBrowser() override
 	{
 		return(&m_matBrowser);

@@ -75,6 +75,8 @@ public:
 	// HWND for now
 	virtual void* XMETHODCALLTYPE getMainWindow() = 0;
 
+	virtual void XMETHODCALLTYPE disableCurrentTool() = 0;
+
 };
 
 

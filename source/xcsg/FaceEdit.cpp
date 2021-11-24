@@ -234,7 +234,8 @@ INT_PTR CFaceEdit::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_CLOSE:
-		ShowWindow(m_hDlgWnd, SW_HIDE);
+		// ShowWindow(m_hDlgWnd, SW_HIDE);
+		m_pEditor->disableCurrentTool();
 		break;
 
 	case WM_NOTIFY:

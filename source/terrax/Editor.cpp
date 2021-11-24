@@ -330,6 +330,13 @@ void* XMETHODCALLTYPE CEditor::getMainWindow()
 	return(g_hWndMain);
 }
 
+void XDisableCurrentTool();
+
+void XMETHODCALLTYPE CEditor::disableCurrentTool()
+{
+	XDisableCurrentTool();
+}
+
 bool XMETHODCALLTYPE CEditor::isKeyPressed(UINT uKey)
 {
 	return(XIsKeyPressed(uKey));
