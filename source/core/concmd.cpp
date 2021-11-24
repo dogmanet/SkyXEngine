@@ -186,7 +186,7 @@ void ConsoleExecInternal(char * cmd, char * args)
 		bool IsReading = false;
 		for(; *args; ++args)
 		{
-			if(isspace(*args))
+			if(isspace((unsigned char)*args))
 			{
 				if(IsReading)
 				{
@@ -282,7 +282,7 @@ void ConsoleExecInternal(char * cmd)
 	}
 
 	char * space = cmd;
-	while((*++space) && !isspace(*space));
+	while((*++space) && !isspace((unsigned char)*space));
 	if(*space)
 	{
 		*space = 0;
@@ -347,7 +347,7 @@ SX_LIB_API XDEPRECATED void Core_0ConsoleExecCmd(const char * format, ...)
 			*nl = 0;
 			++nl;
 
-			while(isspace(*buf))
+			while(isspace((unsigned char)*buf))
 			{
 				++buf;
 			}
@@ -365,7 +365,7 @@ SX_LIB_API XDEPRECATED void Core_0ConsoleExecCmd(const char * format, ...)
 	}
 	while(nl);
 
-	while(isspace(*buf))
+	while(isspace((unsigned char)*buf))
 	{
 		++buf;
 	}

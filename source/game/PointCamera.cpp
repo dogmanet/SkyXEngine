@@ -29,6 +29,7 @@ CPointCamera::CPointCamera()
 
 CPointCamera::~CPointCamera()
 {
+	GameData::UnsetCustomCamera(this);
 	mem_release(m_pSXC);
 }
 
@@ -58,5 +59,5 @@ void CPointCamera::inActivate(inputdata_t *pInputdata)
 
 void CPointCamera::inDeactivate(inputdata_t *pInputdata)
 {
-	GameData::SetCustomCamera(NULL);
+	GameData::UnsetCustomCamera(this);
 }

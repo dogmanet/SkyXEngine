@@ -37,9 +37,15 @@ void CSettingsWriter::loadFile(const char *szFile)
 
 	while(*cur)
 	{
-		while(*cur && isspace(*cur)){++cur;}
+		while(*cur && isspace((unsigned char)*cur))
+		{
+			++cur;
+		}
 		szFirst = cur;
-		while(*cur && !isspace(*cur)){++cur;}
+		while(*cur && !isspace((unsigned char)*cur))
+		{
+			++cur;
+		}
 		if(*cur == '\r' || *cur == '\n')
 		{
 			*cur = 0;
@@ -49,7 +55,10 @@ void CSettingsWriter::loadFile(const char *szFile)
 		{
 			*cur = 0; ++cur;
 		}
-		while(*cur && isspace(*cur)){++cur;}
+		while(*cur && isspace((unsigned char)*cur))
+		{
+			++cur;
+		}
 		szSecond = cur;
 		while(*cur && !(*cur == '\r' || *cur == '\n'))
 		{
@@ -66,9 +75,15 @@ void CSettingsWriter::loadFile(const char *szFile)
 		else
 		{
 			char *cur2 = szSecond;
-			while(*cur2 && !isspace(*cur2)){++cur2;}
+			while(*cur2 && !isspace((unsigned char)*cur2))
+			{
+				++cur2;
+			}
 			if(*cur2){*cur2 = 0; ++cur2;}
-			while(*cur2 && isspace(*cur2)){++cur2;}
+			while(*cur2 && isspace((unsigned char)*cur2))
+			{
+				++cur2;
+			}
 			m_mBindList[szSecond] = cur2;
 		}
 	}

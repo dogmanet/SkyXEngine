@@ -343,12 +343,22 @@ namespace gui
 		});
 		CHECK_0();
 		int ss = 0;
+		int maxW = -1;
+		int maxH = -1;
 		for(UINT i = 0; i < list.size(); i++)
 		{
 			//printf("%d ", list[i].h);
 			if(!list[i].like)
 			{
 				ss += (list[i].w + 2 + (m_bEmulateBold ? 1 : 0)) * (list[i].h + 2);
+				if(maxW < list[i].w)
+				{
+					maxW = list[i].w;
+				}
+				if(maxH < list[i].h)
+				{
+					maxH = list[i].h;
+				}
 			}
 		}
 		CHECK_0();
@@ -361,13 +371,13 @@ namespace gui
 		int width = pow2;
 		int height = pow2;
 
-		if(height / 2 * width > ss)
+		if(height / 2 * width > ss && height / 2 >= maxH)
 		{
 			height /= 2;
 			if(!place(list, width, height))
 			{
 				height *= 2;
-				if(width / 2 * height > ss)
+				if(width / 2 * height > ss && width / 2 >= maxW)
 				{
 					width /= 2;
 					if(!place(list, width, height))
@@ -384,7 +394,7 @@ namespace gui
 		}
 		else
 		{
-			if(width / 2 * height > ss)
+			if(width / 2 * height > ss && width / 2 >= maxW)
 			{
 				width /= 2;
 				if(!place(list, width, height))

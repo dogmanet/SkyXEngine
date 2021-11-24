@@ -1456,6 +1456,14 @@ void GameData::SetCustomCamera(CPointCamera *pCamera)
 	}
 }
 
+void GameData::UnsetCustomCamera(CPointCamera *pCamera)
+{
+	if(pCamera == m_pActiveCamera)
+	{
+		m_pActiveCamera = m_pPlayer->getCamera();
+	}
+}
+
 void GameData::loadFoostepsSounds()
 {
 	Array<const char*> aSounds[MPT_COUNT];

@@ -73,7 +73,7 @@ void CConsole::execCommand2(const char *szFormat, ...)
 			*nl = 0;
 			++nl;
 
-			while(isspace(*buf))
+			while(isspace((unsigned char)*buf))
 			{
 				++buf;
 			}
@@ -91,7 +91,7 @@ void CConsole::execCommand2(const char *szFormat, ...)
 	}
 	while(nl);
 
-	while(isspace(*buf))
+	while(isspace((unsigned char)*buf))
 	{
 		++buf;
 	}

@@ -51,6 +51,7 @@ public:
 	static bool m_isLevelLoaded;
 
 	static void SetCustomCamera(CPointCamera *pCamera);
+	static void UnsetCustomCamera(CPointCamera *pCamera);
 
 protected:
 

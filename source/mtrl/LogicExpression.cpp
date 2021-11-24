@@ -68,7 +68,7 @@ bool CLogicExpression::setExpression(const char *szExpression)
 			}
 			szTokenStart = NULL;
 		}
-		if(isspace(ch))
+		if(isspace((unsigned char)ch))
 		{
 			continue;
 		}
