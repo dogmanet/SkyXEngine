@@ -1,5 +1,13 @@
 #include "CommandScale.h"
 
+CCommandScale::~CCommandScale()
+{
+	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
+	{
+		mem_release(m_aObjects[i].pObj);
+	}
+}
+
 bool XMETHODCALLTYPE CCommandScale::exec()
 {
 	_scale_obj *pObj;
@@ -7,8 +15,8 @@ bool XMETHODCALLTYPE CCommandScale::exec()
 	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
 	{
 		pObj = &m_aObjects[i];
-		g_pLevelObjects[pObj->idObject]->setPos(pObj->vEndPos);
-		g_pLevelObjects[pObj->idObject]->setSize(pObj->vEndScale);
+		pObj->pObj->setPos(pObj->vEndPos);
+		pObj->pObj->setSize(pObj->vEndScale);
 		moved = moved || memcmp(&pObj->vEndPos, &pObj->vStartPos, sizeof(pObj->vStartPos)) || memcmp(&pObj->vEndScale, &pObj->vStartScale, sizeof(pObj->vStartScale));
 	}
 	return(moved);
@@ -19,19 +27,20 @@ bool XMETHODCALLTYPE CCommandScale::undo()
 	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
 	{
 		pObj = &m_aObjects[i];
-		g_pLevelObjects[pObj->idObject]->setPos(pObj->vStartPos);
-		g_pLevelObjects[pObj->idObject]->setSize(pObj->vStartScale);
+		pObj->pObj->setPos(pObj->vStartPos);
+		pObj->pObj->setSize(pObj->vStartScale);
 	}
 	return(true);
 }
 
-void CCommandScale::addObject(ID idObject)
+void CCommandScale::addObject(IXEditorObject *pObj)
 {
-	float3_t vPos = g_pLevelObjects[idObject]->getPos();
+	add_ref(pObj);
+	float3_t vPos = pObj->getPos();
 	float3 vMin, vMax;
-	g_pLevelObjects[idObject]->getBound(&vMin, &vMax);
+	pObj->getBound(&vMin, &vMax);
 	float3 vScale = vMax - vMin;
-	m_aObjects.push_back({idObject, vPos, vPos, vScale, vScale});
+	m_aObjects.push_back({pObj, vPos, vPos, vScale, vScale});
 }
 void CCommandScale::setStartAABB(const float3 &vAABBmin, const float3 &vAABBmax)
 {
@@ -174,7 +183,7 @@ void CCommandScale::setCurrentPos(const float3 &_vPos)
 		pObj->vEndScale = (float3)(pObj->vStartScale * pc);
 #endif
 		pObj->vEndScale = (float3)(pObj->vStartScale * vPosCoeff);
-		g_pLevelObjects[pObj->idObject]->setPos(pObj->vEndPos);
-		g_pLevelObjects[pObj->idObject]->setSize(pObj->vEndScale);
+		pObj->pObj->setPos(pObj->vEndPos);
+		pObj->pObj->setSize(pObj->vEndScale);
 	}
 }

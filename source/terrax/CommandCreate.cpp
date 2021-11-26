@@ -43,7 +43,7 @@ bool XMETHODCALLTYPE CCommandCreate::exec()
 	m_pObject->create();
 
 	g_pLevelObjects.push_back(m_pObject);
-	m_pObject->AddRef();
+	add_ref(m_pObject);
 
 	XUpdatePropWindow();
 	return(true);
@@ -51,7 +51,12 @@ bool XMETHODCALLTYPE CCommandCreate::exec()
 bool XMETHODCALLTYPE CCommandCreate::undo()
 {
 	m_pObject->remove();
-	g_pLevelObjects.erase(g_pLevelObjects.size() - 1);
+	int idx = g_pLevelObjects.indexOf(m_pObject);
+	if(idx >= 0)
+	{
+		mem_release(g_pLevelObjects[idx]);
+		g_pLevelObjects.erase(idx);
+	}
 
 	XUpdatePropWindow();
 	return(true);

@@ -1,5 +1,13 @@
 #include "CommandRotate.h"
 
+CCommandRotate::~CCommandRotate()
+{
+	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
+	{
+		mem_release(m_aObjects[i].pObj);
+	}
+}
+
 bool XMETHODCALLTYPE CCommandRotate::exec()
 {
 	_rot_obj *pObj;
@@ -7,8 +15,8 @@ bool XMETHODCALLTYPE CCommandRotate::exec()
 	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
 	{
 		pObj = &m_aObjects[i];
-		g_pLevelObjects[pObj->idObject]->setPos(pObj->vEndPos);
-		g_pLevelObjects[pObj->idObject]->setOrient(pObj->vEndOrient);
+		pObj->pObj->setPos(pObj->vEndPos);
+		pObj->pObj->setOrient(pObj->vEndOrient);
 		moved = moved || memcmp(&pObj->vEndPos, &pObj->vStartPos, sizeof(pObj->vStartPos)) || memcmp(&pObj->vEndOrient, &pObj->vStartOrient, sizeof(pObj->vStartOrient));
 	}
 	return(moved);
@@ -19,17 +27,18 @@ bool XMETHODCALLTYPE CCommandRotate::undo()
 	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
 	{
 		pObj = &m_aObjects[i];
-		g_pLevelObjects[pObj->idObject]->setPos(pObj->vStartPos);
-		g_pLevelObjects[pObj->idObject]->setOrient(pObj->vStartOrient);
+		pObj->pObj->setPos(pObj->vStartPos);
+		pObj->pObj->setOrient(pObj->vStartOrient);
 	}
 	return(true);
 }
 
-void CCommandRotate::addObject(ID idObject)
+void CCommandRotate::addObject(IXEditorObject *pObj)
 {
-	float3_t vPos = g_pLevelObjects[idObject]->getPos();
-	SMQuaternion qOrient = g_pLevelObjects[idObject]->getOrient();
-	m_aObjects.push_back({idObject, vPos, vPos, qOrient, qOrient});
+	add_ref(pObj);
+	float3_t vPos = pObj->getPos();
+	SMQuaternion qOrient = pObj->getOrient();
+	m_aObjects.push_back({pObj, vPos, vPos, qOrient, qOrient});
 }
 void CCommandRotate::setStartOrigin(const float3 &vOrigin, const float3 &vAxis)
 {
@@ -64,7 +73,7 @@ void CCommandRotate::setCurrentPos(const float3 &vPos, bool useSnap)
 
 		pObj->vEndOrient = pObj->vStartOrient * q;
 
-		g_pLevelObjects[pObj->idObject]->setPos(pObj->vEndPos);
-		g_pLevelObjects[pObj->idObject]->setOrient(pObj->vEndOrient);
+		pObj->pObj->setPos(pObj->vEndPos);
+		pObj->pObj->setOrient(pObj->vEndOrient);
 	}
 }

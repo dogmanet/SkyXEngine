@@ -7,6 +7,8 @@
 class CCommandRotate final: public IXUnknownImplementation<IXEditorCommand>
 {
 public:
+	~CCommandRotate();
+
 	bool XMETHODCALLTYPE exec() override;
 	bool XMETHODCALLTYPE undo() override;
 
@@ -20,7 +22,7 @@ public:
 		return(false);
 	}
 
-	void addObject(ID idObject);
+	void addObject(IXEditorObject *pObj);
 	void setStartOrigin(const float3 &vOrigin, const float3 &vAxis);
 	void setStartPos(const float3 &vPos);
 
@@ -29,7 +31,7 @@ public:
 protected:
 	struct _rot_obj
 	{
-		ID idObject;
+		IXEditorObject *pObj;
 		float3_t vStartPos;
 		float3_t vEndPos;
 		SMQuaternion vStartOrient;

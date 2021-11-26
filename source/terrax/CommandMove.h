@@ -7,6 +7,8 @@
 class CCommandMove final: public IXUnknownImplementation<IXEditorCommand>
 {
 public:
+	~CCommandMove();
+
 	bool XMETHODCALLTYPE exec() override;
 	bool XMETHODCALLTYPE undo() override;
 
@@ -17,7 +19,7 @@ public:
 		return(false);
 	}
 
-	void addObject(ID idObject);
+	void addObject(IXEditorObject *pObj);
 	void setStartPos(const float3 &vPos);
 
 	void setCurrentPos(const float3 &vPos);
@@ -25,7 +27,7 @@ public:
 protected:
 	struct _move_obj
 	{
-		ID idObject;
+		IXEditorObject *pObj;
 		float3_t vStartPos;
 		float3_t vEndPos;
 	};

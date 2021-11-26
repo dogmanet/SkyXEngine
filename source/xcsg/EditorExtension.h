@@ -6,6 +6,7 @@
 #include <xcommon/IXCore.h>
 #include "EditorBrushTool.h"
 #include "FaceEditTool.h"
+#include "ClipTool.h"
 
 class CEditorExtension final: public IXUnknownImplementation<IXEditorExtension>
 {
@@ -26,6 +27,7 @@ public:
 private:
 	CEditorBrushTool *m_pBrushTool = NULL;
 	CFaceEditTool *m_pFaceEditTool = NULL;
+	CClipTool *m_pClipTool = NULL;
 
 	CEditable *m_pEditable = NULL;
 };

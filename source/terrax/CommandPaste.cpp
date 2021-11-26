@@ -13,7 +13,7 @@ bool XMETHODCALLTYPE CCommandPaste::exec()
 		{
 			if(g_pLevelObjects[i]->isSelected())
 			{
-				m_pCommandSelect->addDeselected(i);
+				m_pCommandSelect->addDeselected(g_pLevelObjects[i]);
 			}
 		}
 	}
@@ -37,7 +37,7 @@ bool XMETHODCALLTYPE CCommandPaste::exec()
 			pObj->pObject->setKV(i.first->c_str(), i.second->c_str());
 		}
 		pObj->pObject->postSetup();
-		pObj->pObject->AddRef();
+		add_ref(pObj->pObject);
 		g_pLevelObjects.push_back(pObj->pObject);
 	}
 	XUpdatePropWindow();
@@ -51,8 +51,12 @@ bool XMETHODCALLTYPE CCommandPaste::undo()
 		pObj = &m_aObjects[i];
 
 		pObj->pObject->remove();
-		pObj->pObject->Release();
-		g_pLevelObjects.erase(g_pLevelObjects.size() - 1);
+		int idx = g_pLevelObjects.indexOf(pObj->pObject);
+		if(idx >= 0)
+		{
+			mem_release(g_pLevelObjects[idx]);
+			g_pLevelObjects.erase(idx);
+		}
 	}
 
 	m_pCommandSelect->undo();

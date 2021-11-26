@@ -65,6 +65,26 @@ public:
 		m_aObjects.push_back(pObj);
 	}
 
+	void setClipPlane(CLIP_PLANE_STATE state, const SMPLANE &plane)
+	{
+		setClipPlane(state);
+		m_clipPlane = plane;
+	}
+	void setClipPlane(CLIP_PLANE_STATE state)
+	{
+		m_clipPlaneState = state;
+	}
+
+	CLIP_PLANE_STATE getClipPlaneState() const
+	{
+		return(m_clipPlaneState);
+	}
+
+	const SMPLANE& getClipPlane() const
+	{
+		return(m_clipPlane);
+	}
+
 protected:
 	IGXDevice *m_pDevice = NULL;
 	IXCore *m_pCore = NULL;
@@ -79,6 +99,9 @@ protected:
 	void removeObject(CEditorObject *pObject);
 
 	CEditorExtension *m_pEditorExtension = NULL;
+
+	CLIP_PLANE_STATE m_clipPlaneState = CPS_NONE;
+	SMPLANE m_clipPlane;
 };
 
 #endif

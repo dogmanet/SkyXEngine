@@ -310,11 +310,15 @@ void XMETHODCALLTYPE CEditor::removeObject(IXEditorObject *pObject)
 		LibReport(REPORT_MSG_LEVEL_FATAL, "CEditor::removeObject() is only available in undo/redo context!");
 	}
 
-	assert(pObject == g_pLevelObjects[g_pLevelObjects.size() - 1]);
+	//assert(pObject == g_pLevelObjects[g_pLevelObjects.size() - 1]);
 
-	g_pLevelObjects.erase(g_pLevelObjects.size() - 1);
-
-	mem_release(pObject);
+	int idx = g_pLevelObjects.indexOf(pObject);
+	assert(idx >= 0);
+	if(idx >= 0)
+	{
+		mem_release(g_pLevelObjects[idx]);
+		g_pLevelObjects.erase(idx);
+	}
 }
 
 bool XMETHODCALLTYPE CEditor::execCommand(IXEditorCommand *pCmd)

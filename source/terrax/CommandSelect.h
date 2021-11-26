@@ -7,13 +7,15 @@
 class CCommandSelect final: public IXUnknownImplementation<IXEditorCommand>
 {
 public:
+	~CCommandSelect();
+
 	bool XMETHODCALLTYPE exec() override;
 	bool XMETHODCALLTYPE undo() override;
 
 	const char* XMETHODCALLTYPE getText() override;
 
-	void addSelected(ID idObject);
-	void addDeselected(ID idObject);
+	void addSelected(IXEditorObject *pObj);
+	void addDeselected(IXEditorObject *pObj);
 
 	bool XMETHODCALLTYPE isEmpty() override
 	{
@@ -21,8 +23,8 @@ public:
 	}
 
 protected:
-	Array<ID> m_aidSelected;
-	Array<ID> m_aidDeselected;
+	Array<IXEditorObject*> m_aidSelected;
+	Array<IXEditorObject*> m_aidDeselected;
 };
 
 #endif

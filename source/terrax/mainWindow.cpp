@@ -174,7 +174,7 @@ public:
 			IXEditorObject *pObj = g_pLevelObjects[i];
 			if(pObj->isSelected())
 			{
-				m_pPropsCmd->addObject(i);
+				m_pPropsCmd->addObject(pObj);
 			}
 		}
 
@@ -501,7 +501,7 @@ static void DeleteSelection()
 	{
 		if(g_pLevelObjects[i]->isSelected())
 		{
-			pDelCmd->addObject(i);
+			pDelCmd->addObject(g_pLevelObjects[i]);
 		}
 	}
 	XExecCommand(pDelCmd);
@@ -779,7 +779,7 @@ static CCommandCreate* CreateObjectAtPosition(const float3 &vPos, bool bDeselect
 			IXEditorObject *pObj = g_pLevelObjects[i];
 			if(pObj->isSelected())
 			{
-				pCmdUnselect->addDeselected(i);
+				pCmdUnselect->addDeselected(pObj);
 			}
 		}
 		g_pUndoManager->execCommand(pCmdUnselect);
@@ -1147,6 +1147,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				g_xState.bCreateMode = false;
 				XUpdateGizmos();
+			}
+			else
+			{
+				SAFE_CALL(g_pCurrentTool, onNextMode);
 			}
 		}
 		switch(LOWORD(wParam))
@@ -1516,7 +1520,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					IXEditorObject *pObj = g_pLevelObjects[i];
 					if(pObj->isSelected())
 					{
-						pCmdUnselect->addDeselected(i);
+						pCmdUnselect->addDeselected(pObj);
 					}
 				}
 				g_pUndoManager->execCommand(pCmdUnselect);
@@ -1531,7 +1535,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					IXEditorObject *pObj = g_pLevelObjects[i];
 					if(!pObj->isSelected())
 					{
-						pCmdSelect->addSelected(i);
+						pCmdSelect->addSelected(pObj);
 					}
 				}
 				g_pUndoManager->execCommand(pCmdSelect);
@@ -2159,7 +2163,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						{
 							//pObj->setSelected(true);
 							bUse = true;
-							pCmd->addSelected(i);
+							pCmd->addSelected(pObj);
 						}
 					}
 					else
@@ -2167,13 +2171,13 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						if(!pObj->isSelected() && sel)
 						{
 							bUse = true;
-							pCmd->addSelected(i);
+							pCmd->addSelected(pObj);
 							//pObj->setSelected(sel);
 						}
 						else if(pObj->isSelected() && !sel)
 						{
 							bUse = true;
-							pCmd->addDeselected(i);
+							pCmd->addDeselected(pObj);
 							//pObj->setSelected(sel);
 						}
 					}
@@ -2529,7 +2533,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 								{
 									if(g_pLevelObjects[i]->isSelected())
 									{
-										s_pScaleCmd->addObject(i);
+										s_pScaleCmd->addObject(g_pLevelObjects[i]);
 									}
 								}
 							}
@@ -2543,7 +2547,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 								{
 									if(g_pLevelObjects[i]->isSelected())
 									{
-										s_pRotateCmd->addObject(i);
+										s_pRotateCmd->addObject(g_pLevelObjects[i]);
 									}
 								}
 							}
@@ -2590,11 +2594,11 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 							{
 								if(pObj->isSelected())
 								{
-									pCmd->addDeselected(i);
+									pCmd->addDeselected(pObj);
 								}
 								else
 								{
-									pCmd->addSelected(i);
+									pCmd->addSelected(pObj);
 								}
 								bUse = true;
 								wasSel = true;
@@ -2604,12 +2608,12 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						{
 							if(pObj->isSelected() && !sel)
 							{
-								pCmd->addDeselected(i);
+								pCmd->addDeselected(pObj);
 								bUse = true;
 							}
 							else if(!pObj->isSelected() && sel && !wasSel)
 							{
-								pCmd->addSelected(i);
+								pCmd->addSelected(pObj);
 								bUse = true;
 								wasSel = true;
 							}
@@ -2647,7 +2651,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					{
 						if(g_pLevelObjects[i]->isSelected())
 						{
-							s_pMoveCmd->addObject(i);
+							s_pMoveCmd->addObject(g_pLevelObjects[i]);
 						}
 					}
 					// if mouse in selected object
@@ -3054,7 +3058,7 @@ void XFrameRun(float fDeltaTime)
 					if(g_pLevelObjects[i]->isSelected())
 					{
 						g_pLevelObjects[i]->setSelected(false);
-						g_pSelectCmd->addDeselected(i);
+						g_pSelectCmd->addDeselected(g_pLevelObjects[i]);
 					}
 				}
 			}
@@ -3066,12 +3070,12 @@ void XFrameRun(float fDeltaTime)
 					if(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->isSelected())
 					{
 						g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(false);
-						g_pSelectCmd->addDeselected(g_aRaytracedItems[g_uSelectedIndex].uObj);
+						g_pSelectCmd->addDeselected(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]);
 					}
 					else
 					{
 						g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(true);
-						g_pSelectCmd->addSelected(g_aRaytracedItems[g_uSelectedIndex].uObj);
+						g_pSelectCmd->addSelected(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]);
 					}
 				}
 
@@ -3081,12 +3085,12 @@ void XFrameRun(float fDeltaTime)
 				if(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->isSelected())
 				{
 					g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(false);
-					g_pSelectCmd->addDeselected(g_aRaytracedItems[g_uSelectedIndex].uObj);
+					g_pSelectCmd->addDeselected(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]);
 				}
 				else
 				{
 					g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(true);
-					g_pSelectCmd->addSelected(g_aRaytracedItems[g_uSelectedIndex].uObj);
+					g_pSelectCmd->addSelected(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]);
 				}
 			}
 		}
@@ -3536,7 +3540,7 @@ void XMETHODCALLTYPE CGizmoMoveCallback::onStart(IXEditorGizmoMove *pGizmo)
 	{
 		if(g_pLevelObjects[i]->isSelected())
 		{
-			m_pCmd->addObject(i);
+			m_pCmd->addObject(g_pLevelObjects[i]);
 		}
 	}
 }
@@ -3571,7 +3575,7 @@ void XMETHODCALLTYPE CGizmoRotateCallback::onStart(const float3_t &vAxis, IXEdit
 	{
 		if(g_pLevelObjects[i]->isSelected())
 		{
-			m_pCmd->addObject(i);
+			m_pCmd->addObject(g_pLevelObjects[i]);
 		}
 	}
 

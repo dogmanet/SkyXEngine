@@ -3,6 +3,8 @@
 #include <xcommon/resource/IXModelProvider.h>
 #include <xcommon/IPluginManager.h>
 
+#undef SMIsZero
+#define SMIsZero(ff) (fabsf(ff) < 0.0001f)
 
 CBrushMesh::CBrushMesh(IXCore *pCore, COutline *pOutline, UINT uContour, const char *szMat, float fHeight):
 	m_pCore(pCore)
@@ -74,6 +76,10 @@ void CBrushMesh::buildModel(bool bBuildPhysbox)
 	for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
 	{
 		Face &face = m_aFaces[i];
+		if(face.isInternal)
+		{
+			continue;
+		}
 		TextureInfo &texInfo = face.texInfo;
 		Subset &subset = aSubsets[texInfo.uMatId];
 
@@ -277,11 +283,13 @@ void CBrushMesh::setupFromOutline(COutline *pOutline, UINT uContour, float fHeig
 	f1.texInfo.vS = SMVector3Cross(f1.texInfo.vT, GetNearestAxis(f1.vNormal));
 	f1.texInfo.fSScale = 1.0f;
 	f1.texInfo.fTScale = 1.0f;
+	f1.isInternal = false;
 
 	f2.texInfo.vT = GetTangent(GetNearestAxis(f2.vNormal));
 	f2.texInfo.vS = SMVector3Cross(f2.texInfo.vT, GetNearestAxis(f2.vNormal));
 	f2.texInfo.fSScale = 1.0f;
 	f2.texInfo.fTScale = 1.0f;
+	f2.isInternal = false;
 
 	f1.aEdges.reserve(uPts);
 	f2.aEdges.reserve(uPts);
@@ -314,9 +322,10 @@ void CBrushMesh::setupFromOutline(COutline *pOutline, UINT uContour, float fHeig
 		// m_aVertices[i] = pOutline->getPoint(c.getPoint(i));
 		// m_aVertices[i + uPts] = (float3)(m_aVertices[i] + vOffset);
 
-		if(!isInternal)
+		//if(!isInternal)
 		{
 			Face &f = m_aFaces[i];
+			f.isInternal = isInternal;
 			f.aEdges.reserve(4);
 			f.aEdges.push_back(i + uPts * 2);
 			f.aEdges.push_back(i + uPts);
@@ -475,17 +484,104 @@ bool CBrushMesh::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut
 	return(false);
 }
 
-void CBrushMesh::renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer)
+void CBrushMesh::renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer, CLIP_PLANE_STATE clipPlaneState, const SMPLANE &clipPlane)
 {
-	pGizmoRenderer->setColor(float4(1.0f, 1.0f, 0.0f, 1.0f));
-	pGizmoRenderer->setLineWidth(is3D ? 0.02f : 1.0f);
+	const float4 c_vLineSplit = float4(1.0f, 1.0f, 1.0f, 1.0f);
+	const float4 c_vLineNormal = clipPlaneState == CPS_TWOSIDE ? c_vLineSplit : float4(1.0f, 1.0f, 0.0f, 1.0f);
+	pGizmoRenderer->setColor(c_vLineNormal);
+	pGizmoRenderer->setLineWidth(is3D ? 0.02f : clipPlaneState == CPS_NONE ? 1.0f : 2.0f);
+	float3 p0, p1, p2;
 	for(UINT i = 0, l = m_aEdges.size(); i < l; ++i)
 	{
 		Edge &e = m_aEdges[i];
 		if(!e.isInternal)
 		{
-			pGizmoRenderer->jumpTo(m_aVertices[e.uVertex[0]]);
-			pGizmoRenderer->lineTo(m_aVertices[e.uVertex[1]]);
+			if(clipPlaneState != CPS_ONESIDE)
+			{
+				pGizmoRenderer->jumpTo(m_aVertices[e.uVertex[0]]);
+				pGizmoRenderer->lineTo(m_aVertices[e.uVertex[1]]);
+			}
+			else
+			{
+				p0 = m_aVertices[e.uVertex[0]];
+				p1 = m_aVertices[e.uVertex[1]];
+
+				if(!SMIsZero(SMVector3Dot(p0 - p1, clipPlane)) && clipPlane.intersectLine(&p2, p0, p1))
+				{
+					float fDist = SMVector4Dot(float4(p0, 1.0f), clipPlane);
+					bool f = fDist > 0.0f;
+					if(SMIsZero(fDist))
+					{
+						fDist = SMVector4Dot(float4(p1, 1.0f), clipPlane);
+						f = fDist < 0.0f;
+					}
+					pGizmoRenderer->setColor(f ? c_vLineSplit : c_vLineNormal);
+					pGizmoRenderer->jumpTo(p0);
+					pGizmoRenderer->lineTo(p2);
+					pGizmoRenderer->setColor(!f ? c_vLineSplit : c_vLineNormal);
+					pGizmoRenderer->jumpTo(p2);
+					pGizmoRenderer->lineTo(p1);
+				}
+				else
+				{
+					float fDist = SMVector4Dot(float4(p0, 1.0f), clipPlane);
+					bool f = fDist >= 0.0f;
+					if(SMIsZero(fDist))
+					{
+						fDist = SMVector4Dot(float4(p1, 1.0f), clipPlane);
+						f = fDist >= 0.0f;
+					}
+
+					pGizmoRenderer->setColor(f ? c_vLineSplit : c_vLineNormal);
+					pGizmoRenderer->jumpTo(p0);
+					pGizmoRenderer->lineTo(p1);
+				}
+			}
+		}
+	}
+
+	if(clipPlaneState != CPS_NONE)
+	{
+		// draw new edges
+		for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
+		{
+			Face &face = m_aFaces[i];
+			if(face.isInternal)
+			{
+				continue;
+			}
+
+			if(SMIsZero(1.0f - fabsf(SMVector3Dot(face.vNormal, clipPlane))))
+			{
+				continue;
+			}
+
+			float3 p0, p1;
+			bool isFound0 = false;
+			bool isFound1 = false;
+			for(UINT j = 0, jl = face.aEdges.size(); j < jl; ++j)
+			{
+				Edge edge = m_aEdges[face.aEdges[j]];
+				if(clipPlane.intersectLine(isFound0 ? &p1 : &p0, m_aVertices[edge.uVertex[0]], m_aVertices[edge.uVertex[1]]))
+				{
+					if(isFound0 && !SMIsZero(SMVector3Length2(p0 - p1)))
+					{
+						isFound1 = true;
+						break;
+					}
+					else
+					{
+						isFound0 = true;
+					}
+				}
+			}
+
+			if(isFound1)
+			{
+				pGizmoRenderer->setColor(c_vLineSplit);
+				pGizmoRenderer->jumpTo(p0);
+				pGizmoRenderer->lineTo(p1);
+			}
 		}
 	}
 
@@ -496,6 +592,10 @@ void CBrushMesh::renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer)
 		for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
 		{
 			Face &face = m_aFaces[i];
+			if(face.isInternal)
+			{
+				continue;
+			}
 			float3 vS;
 
 			vS = face.vNormal * 0.005f;
@@ -566,7 +666,10 @@ void CBrushMesh::serialize(Array<char> *paData)
 		paData->append("],\"n\":[");
 		sprintf(tmp, "%g,%g,%g", f.vNormal.x, f.vNormal.y, f.vNormal.z);
 		paData->append(tmp);
-		paData->append("]}");
+		paData->append("],\"i\":");
+		sprintf(tmp, "%d", f.isInternal ? 1 : 0);
+		paData->append(tmp);
+		paData->append("}");
 
 		// sprintf(tmp, "%s[%u,%u,%u]", i == 0 ? "" : ",", e.uVertex[0], e.uVertex[1], e.isInternal ? 1 : 0);
 		// paData->append(tmp);
@@ -668,6 +771,7 @@ bool CBrushMesh::deserialize(IXJSONObject *pData)
 						return(false);
 					}
 					Face &f = m_aFaces[j];
+					f.isInternal = false;
 
 					for(UINT k = 0, kl = pFace->size(); k < kl; ++k)
 					{
@@ -755,15 +859,21 @@ bool CBrushMesh::deserialize(IXJSONObject *pData)
 							{
 								return(false);
 							}
-
-							float3_t &vec = f.vNormal;
-
-							if(!(pVec->at(0)->getFloat(&vec.x) &&
-								pVec->at(1)->getFloat(&vec.y) &&
-								pVec->at(2)->getFloat(&vec.z)))
+							else
 							{
-								return(false);
+								float3_t &vec = f.vNormal;
+
+								if(!(pVec->at(0)->getFloat(&vec.x) &&
+									pVec->at(1)->getFloat(&vec.y) &&
+									pVec->at(2)->getFloat(&vec.z)))
+								{
+									return(false);
+								}
 							}
+							break;
+
+						case 'i':
+							f.isInternal = pFace->at(k)->asBool();
 							break;
 						}
 					}
@@ -804,6 +914,11 @@ bool CBrushMesh::findFace(const float3 &vRayStart, const float3 &vRayDir, UINT *
 	for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
 	{
 		Face &face = m_aFaces[i];
+
+		if(face.isInternal)
+		{
+			continue;
+		}
 
 		if(SMVector3Dot(face.vNormal, vRayDir) > 0.0f)
 		{
@@ -941,4 +1056,709 @@ void CBrushMesh::getFaceExtents(UINT uFace, Extents extents)
 		++i;
 		return(true);
 	});
+}
+
+int CBrushMesh::classify(const SMPLANE &plane)
+{
+	int res = -2, cls;
+	float fDist;
+
+	for(UINT i = 0, l = m_aVertices.size(); i < l; ++i)
+	{
+		fDist = SMVector4Dot(float4(m_aVertices[i], 1.0f), plane);
+		if(SMIsZero(fDist))
+		{
+			continue;
+		}
+		cls = fDist > 0.0f ? 1 : -1;
+		if(res == -2)
+		{
+			res = cls;
+		}
+		else if(res != cls)
+		{
+			return(0);
+		}
+	}
+
+	return(res);
+}
+
+bool CBrushMesh::findInternalFace(Array<float3_t> &aDest)
+{
+	for(UINT i = 0, l = m_aEdges.size(); i < l; ++i)
+	{
+		Edge &e = m_aEdges[i];
+
+		if(e.isInternal)
+		{
+			UINT uCurEdge = i;
+			UINT uPrevEdge2 = i;
+			UINT uStartEdge = i;
+			UINT uPrevEdge = i;
+
+			aDest.push_back(m_aVertices[e.uVertex[0]]);
+			aDest.push_back(m_aVertices[e.uVertex[1]]);
+
+			UINT iCounter = 0;
+
+			e.isInternal = false;
+
+			while((uCurEdge = findNeighbourEdge(uCurEdge, uPrevEdge2)) != uStartEdge)
+			{
+				uPrevEdge2 = uPrevEdge;
+				Edge &e0 = m_aEdges[uPrevEdge];
+				Edge &e1 = m_aEdges[uCurEdge];
+
+				e1.isInternal = false;
+
+				if(e0.uVertex[0] == e1.uVertex[0] || e0.uVertex[1] == e1.uVertex[0])
+				{
+					aDest.push_back(m_aVertices[e1.uVertex[1]]);
+				}
+				else
+				{
+					aDest.push_back(m_aVertices[e1.uVertex[0]]);
+				}
+
+				if(++iCounter > m_aEdges.size())
+				{
+					break;
+				}
+
+				uPrevEdge = uCurEdge;
+			}
+			
+			if(iCounter > m_aEdges.size())
+			{
+				LibReport(REPORT_MSG_LEVEL_WARNING, "CBrushMesh::findInternalFace(): cycle detected!\n");
+				return(false);
+			}
+
+			assert(SMIsZero(SMVector3Length2(aDest[0] - aDest[aDest.size() - 1])) || SMIsZero(SMVector3Length2(aDest[1] - aDest[aDest.size() - 1])));
+
+			aDest.erase(aDest.size() - 1);
+
+			return(true);
+		}
+	}
+
+	return(false);
+}
+
+UINT CBrushMesh::findNeighbourEdge(UINT uEdge, UINT uSkipEdge)
+{
+	Edge &e0 = m_aEdges[uEdge];
+	float3 vNormal;
+	bool useNormal = false;
+	if(uEdge != uSkipEdge)
+	{
+		useNormal = true;
+		Edge &eS = m_aEdges[uSkipEdge];
+		vNormal = SMVector3Cross(m_aVertices[e0.uVertex[0]] - m_aVertices[e0.uVertex[1]], m_aVertices[eS.uVertex[0]] - m_aVertices[eS.uVertex[1]]);
+	}
+
+	for(UINT i = 0, l = m_aEdges.size(); i < l; ++i)
+	{
+		if(i != uEdge && i != uSkipEdge)
+		{
+			Edge &e1 = m_aEdges[i];
+
+			if(e0.uVertex[0] == e1.uVertex[0]
+				|| e0.uVertex[0] == e1.uVertex[1]
+				|| e0.uVertex[1] == e1.uVertex[0]
+				|| e0.uVertex[1] == e1.uVertex[1])
+			{
+				if(useNormal && !SMIsZero(SMVector3Dot(vNormal, m_aVertices[e1.uVertex[0]] - m_aVertices[e1.uVertex[1]])))
+				{
+					continue;
+				}
+
+				bool isFaceFound = false;
+				for(UINT j = 0, jl = m_aFaces.size(); j < jl; ++j)
+				{
+					Face &f = m_aFaces[j];
+					if(f.isInternal)
+					{
+						continue;
+					}
+					if(f.aEdges.indexOf(uEdge) >= 0 && f.aEdges.indexOf(i) >= 0)
+					{
+						isFaceFound = true;
+						break;
+					}
+				}
+				if(!isFaceFound)
+				{
+					return(i);
+				}
+			}
+		}
+	}
+	assert(!"Something wrong!");
+	return(UINT_MAX);
+}
+
+bool CBrushMesh::fillInternalFace(const Array<float3_t> &aSrc)
+{
+	assert(aSrc.size() >= 3);
+
+	Array<UINT> aVertices;
+	for(UINT i = 0, l = aSrc.size(); i < l; ++i)
+	{
+		int idx = m_aVertices.indexOf(aSrc[i], [](const float3_t &a, const float3 &b){
+			return(SMIsZero(SMVector3Length2(a - b)));
+		});
+		if(idx < 0)
+		{
+			return(false);
+		}
+
+		aVertices.push_back((UINT)idx);
+	}
+
+	Face f;
+	bool isInternalFound = false;
+	for(UINT i = 0, l = aVertices.size(); i < l; ++i)
+	{
+		UINT v0 = aVertices[i];
+
+		for(UINT k = i + 1; k < l; ++k)
+		{
+			UINT v1 = aVertices[k];
+
+			for(UINT j = 0, jl = m_aEdges.size(); j < jl; ++j)
+			{
+				Edge &e = m_aEdges[j];
+				if(e.uVertex[0] == v0 && e.uVertex[1] == v1 || e.uVertex[0] == v1 && e.uVertex[1] == v0)
+				{
+					if(e.isInternal)
+					{
+						isInternalFound = true;
+					}
+					e.isInternal = false;
+					f.aEdges.push_back(j);
+					break;
+				}
+			}
+		}
+	}
+
+	for(UINT i = 0, l = f.aEdges.size(); i < l; ++i)
+	{
+		Edge &e0 = m_aEdges[f.aEdges[i]];
+		for(UINT j = i + 1; j < l; ++j)
+		{
+			Edge &e1 = m_aEdges[f.aEdges[j]];
+			if(e0.uVertex[0] == e1.uVertex[0]
+				|| e0.uVertex[0] == e1.uVertex[1]
+				|| e0.uVertex[1] == e1.uVertex[0]
+				|| e0.uVertex[1] == e1.uVertex[1])
+			{
+				if(j != i + 1)
+				{
+					UINT tmp = f.aEdges[j];
+					f.aEdges[j] = f.aEdges[i + 1];
+					f.aEdges[i + 1] = tmp;
+				}
+				break;
+			}
+		}
+	}
+
+	fora(i, m_aFaces)
+	{
+		Face &f0 = m_aFaces[i];
+		if(f0.isInternal && f0.aEdges.size() == f.aEdges.size())
+		{
+			bool isFound = true;
+			fora(j, f0.aEdges)
+			{
+				if(f.aEdges.indexOf(f0.aEdges[j]) < 0)
+				{
+					isFound = false;
+					break;
+				}
+			}
+			if(isFound)
+			{
+				f0.isInternal = false;
+				break;
+			}
+		}
+	}
+
+	buildModel(false);
+
+	return(true);
+
+	{
+		Edge &e0 = m_aEdges[f.aEdges[0]];
+		Edge &e1 = m_aEdges[f.aEdges[1]];
+
+		UINT uCenter = e0.uVertex[0] == e1.uVertex[0] || e0.uVertex[0] == e1.uVertex[1] ? e0.uVertex[0] : e0.uVertex[1];
+		float3 vPos = m_aVertices[uCenter];
+		float3 v0 = m_aVertices[e0.uVertex[0] == uCenter ? e0.uVertex[1] : e0.uVertex[0]];
+		float3 v1 = m_aVertices[e1.uVertex[0] == uCenter ? e1.uVertex[1] : e1.uVertex[0]];
+
+		float3 vInternal;
+		fora(i, m_aVertices)
+		{
+			bool isFound = false;
+			fora(k, f.aEdges)
+			{
+				Edge &e = m_aEdges[f.aEdges[k]];
+				if(i == e.uVertex[0] || i == e.uVertex[1])
+				{
+					isFound = true;
+					break;
+				}
+			}
+
+			if(!isFound)
+			{
+				vInternal = m_aVertices[i] - vPos;
+			}
+		}
+
+		f.vNormal = SMVector3Normalize(SMVector3Cross(v1 - vPos, v0 - vPos));
+
+		if(SMVector3Dot(f.vNormal, vInternal) > 0.0f)
+		{
+			f.vNormal = (float3)-f.vNormal;
+
+			Array<UINT> aNewEdges(f.aEdges.size());
+			for(int i = (int)f.aEdges.size() - 1; i >= 0; --i)
+			{
+				aNewEdges.push_back(f.aEdges[i]);
+			}
+			f.aEdges.swap(aNewEdges);
+		}
+	}
+
+	/*Array<UINT> aNewEdges(f.aEdges.size());
+	for(int i = (int)f.aEdges.size() - 1; i >= 0; --i)
+	{
+		aNewEdges.push_back(f.aEdges[i]);
+	}
+	f.aEdges.swap(aNewEdges);
+
+	float3 v0 = aSrc[0] - aSrc[1];
+	float3 v1 = aSrc[0] - aSrc[2];
+	*/
+	f.texInfo = {};
+	//f.vNormal = SMVector3Normalize(SMVector3Cross(v0, v1));
+	f.texInfo.vT = GetTangent(GetNearestAxis(f.vNormal));
+	f.texInfo.vS = SMVector3Cross(f.texInfo.vT, GetNearestAxis(f.vNormal));
+	f.texInfo.fSScale = 1.0f;
+	f.texInfo.fTScale = 1.0f;
+	f.texInfo.uMatId = 0;
+
+	buildModel(false);
+
+	return(true);
+}
+
+int CBrushMesh::classifyFace(UINT uFace, const SMPLANE &plane)
+{
+	int res = -2, cls;
+	float fDist;
+
+	Face &f = m_aFaces[uFace];
+
+	for(UINT i = 0, l = f.aEdges.size(); i < l; ++i)
+	{
+		Edge &e = m_aEdges[f.aEdges[i]];
+		for(UINT j = 0; j < 2; ++j)
+		{
+			fDist = SMVector4Dot(float4(m_aVertices[e.uVertex[j]], 1.0f), plane);
+			if(SMIsZero(fDist))
+			{
+				continue;
+			}
+			cls = fDist > 0.0f ? 1 : -1;
+			if(res == -2)
+			{
+				res = cls;
+			}
+			else if(res != cls)
+			{
+				return(0);
+			}
+		}
+	}
+
+	return(res);
+}
+
+void CBrushMesh::dropFace(UINT uFace)
+{
+	UINT uOldMat = m_aFaces[uFace].texInfo.uMatId;
+	m_aFaces.erase(uFace);
+
+	for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
+	{
+		if(!m_aFaces[i].isInternal && m_aFaces[i].texInfo.uMatId == uOldMat)
+		{
+			return;
+		}
+	}
+
+	m_aMaterials.erase(uOldMat);
+	if(uOldMat != m_aMaterials.size())
+	{
+		for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
+		{
+			Face &f = m_aFaces[i];
+			if(f.texInfo.uMatId > uOldMat)
+			{
+				--f.texInfo.uMatId;
+			}
+		}
+	}
+}
+
+int CBrushMesh::classifyEdge(UINT uEdge, const SMPLANE &plane)
+{
+	Edge &e = m_aEdges[uEdge];
+
+	float f0 = SMVector4Dot(float4(m_aVertices[e.uVertex[0]], 1.0f), plane);
+	float f1 = SMVector4Dot(float4(m_aVertices[e.uVertex[1]], 1.0f), plane);
+
+	bool z0 = SMIsZero(f0);
+	bool z1 = SMIsZero(f1);
+
+	if(z0 || z1)
+	{
+		// 1 or -1
+		return((z0 && f1 > 0.0f || z1 && f0 > 0.0f) ? 1 : -1);
+	}
+
+	// 0 or 2 or -2
+	
+	if(f0 > 0.0f && f1 > 0.0f)
+	{
+		return(2);
+	}
+	if(f0 < 0.0f && f1 < 0.0f)
+	{
+		return(-2);
+	}
+
+	return(0);
+}
+
+UINT CBrushMesh::findOrAddVertex(const float3 &v)
+{
+	int idx = m_aVertices.indexOf(v, [](const float3_t &a, const float3 &b){
+		return(SMIsZero(SMVector3Length2(a - b)));
+	});
+	if(idx < 0)
+	{
+		idx = m_aVertices.size();
+		m_aVertices.push_back(v);
+	}
+
+	return(idx);
+}
+
+UINT CBrushMesh::findOrAddEdge(const float3 &vA, const float3 &vB)
+{
+	UINT u0 = findOrAddVertex(vA);
+	UINT u1 = findOrAddVertex(vB);
+
+	for(UINT i = 0, l = m_aEdges.size(); i < l; ++i)
+	{
+		Edge &e = m_aEdges[i];
+		if(e.uVertex[0] == u0 && e.uVertex[1] == u1 || e.uVertex[0] == u1 && e.uVertex[1] == u0)
+		{
+			return(i);
+		}
+	}
+
+	m_aEdges.push_back({{u0, u1}});
+	return(m_aEdges.size() - 1);
+}
+
+void CBrushMesh::cleanupUnreferencedEdges()
+{
+	Array<bool> aUsed(false, m_aEdges.size());
+
+	fora(i, m_aFaces)
+	{
+		Face &f = m_aFaces[i];
+		fora(j, f.aEdges)
+		{
+			aUsed[f.aEdges[j]] = true;
+		}
+	}
+
+	for(int i = (int)aUsed.size() - 1; i >= 0; --i)
+	{
+		if(!aUsed[i])
+		{
+			fora(j, m_aFaces)
+			{
+				Face &f = m_aFaces[j];
+				fora(k, f.aEdges)
+				{
+					if(f.aEdges[k] > i)
+					{
+						--f.aEdges[k];
+					}
+				}
+			}
+			m_aEdges.erase(i);
+		}
+	}
+}
+void CBrushMesh::cleanupUnreferencedVertices()
+{
+	Array<bool> aUsed(false, m_aVertices.size());
+
+	fora(i, m_aEdges)
+	{
+		Edge &e = m_aEdges[i];
+		aUsed[e.uVertex[0]] = true;
+		aUsed[e.uVertex[1]] = true;
+	}
+
+	for(int i = (int)aUsed.size() - 1; i >= 0; --i)
+	{
+		if(!aUsed[i])
+		{
+			fora(j, m_aEdges)
+			{
+				Edge &e = m_aEdges[j];
+				if(e.uVertex[0] > i)
+				{
+					--e.uVertex[0];
+				}
+				if(e.uVertex[1] > i)
+				{
+					--e.uVertex[1];
+				}
+			}
+
+			m_aVertices.erase(i);
+		}
+	}
+}
+
+bool CBrushMesh::clip(const SMPLANE &plane)
+{
+	int cls;
+	float3 v0, v1, vPos;
+
+	for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
+	{
+		cls = classifyFace(i, plane);
+
+		if(cls == 0)
+		{
+			Face &f = m_aFaces[i];
+
+			int iInsPos = -1;
+
+			float3 avNewEdge[2];
+			UINT uNewVtxCount = 0;
+
+			bool isStartInside = false;
+			cls = classifyEdge(f.aEdges[0], plane);
+			if(cls < 0)
+			{
+				isStartInside = true;
+			}
+			else if(cls == 0)
+			{
+				cls = classifyEdge(f.aEdges[1], plane);
+				if(cls > 0)
+				{
+					isStartInside = true;
+				}
+				else if(cls == 0)
+				{
+					cls = classifyEdge(f.aEdges[2], plane);
+					if(cls < 0)
+					{
+						isStartInside = true;
+					}
+				}
+			}
+
+			for(UINT j = 0, jl = f.aEdges.size(); j < jl; ++j)
+			{
+				Edge &e = m_aEdges[f.aEdges[j]];
+
+				cls = classifyEdge(f.aEdges[j], plane);
+				if(cls <= 0)
+				{
+					if(cls == 0)
+					{
+						// split edge, replace with new
+						v0 = m_aVertices[e.uVertex[0]];
+						v1 = m_aVertices[e.uVertex[1]];
+						plane.intersectLine(&vPos, v0, v1);
+
+						bool isEdgeInternal = e.isInternal;
+
+						if(SMVector4Dot(float4(v0, 1.0f), plane) > 0.0f)
+						{
+							f.aEdges[j] = findOrAddEdge(v0, vPos);
+						}
+						else
+						{
+							f.aEdges[j] = findOrAddEdge(v1, vPos);
+						}
+
+						if(isEdgeInternal)
+						{
+							m_aEdges[f.aEdges[j]].isInternal = true;
+						}
+
+						avNewEdge[uNewVtxCount++] = vPos;
+						if(iInsPos < 0)
+						{
+							iInsPos = (int)j + (isStartInside ? 0 : 1);
+						}
+					}
+					else
+					{
+						if(cls == -1)
+						{
+							vPos;
+							v0 = m_aVertices[e.uVertex[0]];
+							v1 = m_aVertices[e.uVertex[1]];
+
+							if(SMIsZero(SMVector4Dot(float4(v0, 1.0f), plane)))
+							{
+								vPos = v0;
+							}
+							else
+							{
+								vPos = v1;
+							}
+
+							avNewEdge[uNewVtxCount++] = vPos;
+							if(iInsPos < 0)
+							{
+								iInsPos = (int)j;
+							}
+						}
+						f.aEdges.erase(j);
+						--j;
+						--jl;
+					}
+				}
+
+				/*if(uNewVtxCount == 2)
+				{
+					break;
+				}*/
+			}
+
+			assert(uNewVtxCount == 2);
+			assert(iInsPos >= 0);
+
+			// insert new edge avNewEdge at iInsPos
+			UINT uNewEdge = findOrAddEdge(avNewEdge[0], avNewEdge[1]);
+			if(f.isInternal)
+			{
+				m_aEdges[uNewEdge].isInternal = true;
+			}
+			f.aEdges.insert(uNewEdge, iInsPos);
+		}
+		else if(cls < 0)
+		{
+			dropFace(i);
+			--i;
+			--l;
+		}
+	}
+
+	cleanupUnreferencedEdges();
+	cleanupUnreferencedVertices();
+
+	// insert new face
+	Face &f = m_aFaces[m_aFaces.size()];
+	f.isInternal = false;
+
+	for(UINT i = 0, l = m_aEdges.size(); i < l; ++i)
+	{
+		Edge &e = m_aEdges[i];
+		v0 = m_aVertices[e.uVertex[0]];
+		v1 = m_aVertices[e.uVertex[1]];
+
+		if(SMIsZero(SMVector4Dot(float4(v0, 1.0f), plane)) && SMIsZero(SMVector4Dot(float4(v1, 1.0f), plane)))
+		{
+			f.aEdges.push_back(i);
+		}
+	}
+
+	assert(f.aEdges.size() >= 3);
+
+	if(f.aEdges.size() < 3)
+	{
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CBrushMesh::clip(): f.aEdges.size() < 3\n");
+		return(false);
+	}
+
+	for(UINT i = 0, l = f.aEdges.size(); i < l; ++i)
+	{
+		Edge &e0 = m_aEdges[f.aEdges[i]];
+		for(UINT j = i + 1; j < l; ++j)
+		{
+			Edge &e1 = m_aEdges[f.aEdges[j]];
+			if(e0.uVertex[0] == e1.uVertex[0]
+				|| e0.uVertex[0] == e1.uVertex[1]
+				|| e0.uVertex[1] == e1.uVertex[0]
+				|| e0.uVertex[1] == e1.uVertex[1])
+			{
+				if(j != i + 1)
+				{
+					UINT tmp = f.aEdges[j];
+					f.aEdges[j] = f.aEdges[i + 1];
+					f.aEdges[i + 1] = tmp;
+				}
+				break;
+			}
+		}
+	}
+	
+
+	//f.vNormal = (float3)-plane;
+	Edge &e0 = m_aEdges[f.aEdges[0]];
+	Edge &e1 = m_aEdges[f.aEdges[1]];
+
+	UINT uCenter = e0.uVertex[0] == e1.uVertex[0] || e0.uVertex[0] == e1.uVertex[1] ? e0.uVertex[0] : e0.uVertex[1];
+	vPos = m_aVertices[uCenter];
+	v0 = m_aVertices[e0.uVertex[0] == uCenter ? e0.uVertex[1] : e0.uVertex[0]];
+	v1 = m_aVertices[e1.uVertex[0] == uCenter ? e1.uVertex[1] : e1.uVertex[0]];
+
+	f.vNormal = SMVector3Normalize(SMVector3Cross(v1 - vPos, v0 - vPos));
+
+	if(SMVector3Dot(f.vNormal, plane) > 0.0f)
+	{
+		f.vNormal = (float3)-f.vNormal;
+
+		Array<UINT> aNewEdges(f.aEdges.size());
+		for(int i = (int)f.aEdges.size() - 1; i >= 0; --i)
+		{
+			aNewEdges.push_back(f.aEdges[i]);
+		}
+		f.aEdges.swap(aNewEdges);
+	}
+
+	f.texInfo = {};
+	f.texInfo.vT = GetTangent(GetNearestAxis(f.vNormal));
+	f.texInfo.vS = SMVector3Cross(f.texInfo.vT, GetNearestAxis(f.vNormal));
+	f.texInfo.fSScale = 1.0f;
+	f.texInfo.fTScale = 1.0f;
+	f.texInfo.uMatId = 0;
+	
+
+	m_isBoundDirty = true;
+	buildModel();
+
+	return(true);
 }

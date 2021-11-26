@@ -1,5 +1,36 @@
 #include "CommandProperties.h"
 
+CCommandProperties::~CCommandProperties()
+{
+	for(UINT i = 0, l = m_aCustomTabCommands.size(); i < l; ++i)
+	{
+		mem_release(m_aCustomTabCommands[i]);
+	}
+
+	for(UINT j = 0, jl = m_aObjects.size(); j < jl; ++j)
+	{
+		mem_release(m_aObjects[j].pObject);
+	}
+}
+
+bool XMETHODCALLTYPE CCommandProperties::isEmpty()
+{
+	if(!m_isEmpty)
+	{
+		return(false);
+	}
+
+	for(UINT i = 0, l = m_aCustomTabCommands.size(); i < l; ++i)
+	{
+		if(!m_aCustomTabCommands[i]->isEmpty())
+		{
+			return(false);
+		}
+	}
+
+	return(true);
+}
+
 bool XMETHODCALLTYPE CCommandProperties::exec()
 {
 	_prop_obj *pObj;
@@ -57,10 +88,11 @@ bool XMETHODCALLTYPE CCommandProperties::undo()
 	return(isSucceeded);
 }
 
-void CCommandProperties::addObject(ID idObject)
+void CCommandProperties::addObject(IXEditorObject *pObj)
 {
 	_prop_obj obj;
-	obj.pObject = g_pLevelObjects[idObject];
+	add_ref(pObj);
+	obj.pObject = pObj;
 
 	UINT uKeyCount = obj.pObject->getProperyCount();
 	for(UINT i = 0; i < uKeyCount; ++i)

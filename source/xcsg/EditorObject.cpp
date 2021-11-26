@@ -116,7 +116,7 @@ void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D, IXGizmoRenderer *
 {
 	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
 	{
-		m_aBrushes[i]->renderSelection(is3D, pGizmoRenderer);
+		m_aBrushes[i]->renderSelection(is3D, pGizmoRenderer, m_pEditable->getClipPlaneState(), m_pEditable->getClipPlane());
 	}
 
 #if 0
@@ -237,13 +237,17 @@ void XMETHODCALLTYPE CEditorObject::create()
 
 void XMETHODCALLTYPE CEditorObject::setKV(const char *szKey, const char *szValue)
 {
+	setKV(szKey, szValue, false);
+}
+void CEditorObject::setKV(const char *szKey, const char *szValue, bool bSkipFixPos)
+{
 	if(!fstrcmp(szKey, "brush"))
 	{
 		IXJSON *pJSON = (IXJSON*)m_pEditable->getCore()->getPluginManager()->getInterface(IXJSON_GUID);
 		IXJSONItem *pRoot;
 		if(pJSON->parse(szValue, &pRoot))
 		{
-			setKV(szKey, pRoot);
+			setKV(szKey, pRoot, bSkipFixPos);
 			
 			mem_release(pRoot);
 		}
@@ -514,3 +518,84 @@ void CEditorObject::getFaceExtents(UINT uFace, Extents extents)
 	}
 }
 
+int CEditorObject::classify(const SMPLANE &plane)
+{
+	int res, cls;
+	CBrushMesh *pBrush;
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	{
+		pBrush = m_aBrushes[i];
+		cls = pBrush->classify(plane);
+
+		if(cls == 0)
+		{
+			return(0);
+		}
+
+		if(i == 0)
+		{
+			res = cls;
+		}
+		else if(res != cls)
+		{
+			return(0);
+		}
+	}
+
+	return(res);
+}
+
+bool CEditorObject::clip(const SMPLANE &plane)
+{
+	int cls;
+	CBrushMesh *pBrush;
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	{
+		pBrush = m_aBrushes[i];
+		cls = pBrush->classify(plane);
+
+		if(cls < 0)
+		{
+			removeBrush(i);
+			--i;
+			--l;
+		}
+	}
+
+	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	{
+		pBrush = m_aBrushes[i];
+		cls = pBrush->classify(plane);
+
+		if(cls == 0)
+		{
+			pBrush->clip(plane);
+		}
+	}
+
+	fixPos();
+
+	return(m_aBrushes.size() != 0);
+}
+
+void CEditorObject::removeBrush(UINT idx)
+{
+	Array<float3_t> aVertices;
+
+	CBrushMesh *pBrush = m_aBrushes[idx];
+
+	while(pBrush->findInternalFace(aVertices))
+	{
+		for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+		{
+			if(i != idx && m_aBrushes[i]->fillInternalFace(aVertices))
+			{
+				break;
+			}
+		}
+		aVertices.clearFast();
+	}
+
+	mem_delete(m_aBrushes[idx]);
+	m_aBrushes.erase(idx);
+}

@@ -7,6 +7,8 @@
 class CCommandScale final: public IXUnknownImplementation<IXEditorCommand>
 {
 public:
+	~CCommandScale();
+
 	bool XMETHODCALLTYPE exec() override;
 	bool XMETHODCALLTYPE undo() override;
 
@@ -15,7 +17,7 @@ public:
 		return("scale");
 	}
 
-	void addObject(ID idObject);
+	void addObject(IXEditorObject *pObj);
 	void setStartAABB(const float3 &vAABBmin, const float3 &vAABBmax);
 	void setStartPos(const float3 &vPos);
 	void setTransformDir(X_DIR dir);
@@ -30,7 +32,7 @@ public:
 protected:
 	struct _scale_obj
 	{
-		ID idObject;
+		IXEditorObject *pObj;
 		float3_t vStartPos;
 		float3_t vEndPos;
 		float3_t vStartScale;

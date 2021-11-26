@@ -10,6 +10,8 @@
 class CCommandDelete final: public IXUnknownImplementation<IXEditorCommand>
 {
 public:
+	~CCommandDelete();
+
 	bool XMETHODCALLTYPE exec() override;
 	bool XMETHODCALLTYPE undo() override;
 
@@ -23,15 +25,14 @@ public:
 		return(false);
 	}
 
-	void addObject(ID idObject);
+	void addObject(IXEditorObject *pObj);
 
 protected:
 	struct _del_obj
 	{
-		ID idObject;
 		IXEditorObject *pObject;
 		AssotiativeArray<String, String> mKeyValues;
-
+		bool wasSelected;
 
 		/*float3_t vPos;
 		float3_t vSize;

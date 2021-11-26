@@ -21,6 +21,8 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\xcsg\BrushMesh.cpp" />
+    <ClCompile Include="..\..\..\source\xcsg\ClipTool.cpp" />
+    <ClCompile Include="..\..\..\source\xcsg\CommandClip.cpp" />
     <ClCompile Include="..\..\..\source\xcsg\CommandCreate.cpp" />
     <ClCompile Include="..\..\..\source\xcsg\CommandFaceEdit.cpp" />
     <ClCompile Include="..\..\..\source\xCSG\dllmain.cpp" />
@@ -37,6 +39,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\xcsg\BrushMesh.h" />
+    <ClInclude Include="..\..\..\source\xcsg\ClipTool.h" />
+    <ClInclude Include="..\..\..\source\xcsg\CommandClip.h" />
     <ClInclude Include="..\..\..\source\xcsg\CommandCreate.h" />
     <ClInclude Include="..\..\..\source\xcsg\CommandFaceEdit.h" />
     <ClInclude Include="..\..\..\source\xcsg\Editable.h" />
@@ -55,9 +59,11 @@
     <Image Include="..\..\..\source\xcsg\bitmap1.bmp" />
     <Image Include="..\..\..\source\xcsg\resource\ab_block.bmp" />
     <Image Include="..\..\..\source\xcsg\resource\ab_block2.bmp" />
+    <Image Include="..\..\..\source\xcsg\resource\ab_cut.bmp" />
     <Image Include="..\..\..\source\xcsg\resource\ab_face_edit.bmp" />
     <Image Include="resource\ab_block.bmp" />
     <Image Include="resource\ab_block2.bmp" />
+    <Image Include="resource\ab_cut.bmp" />
     <Image Include="resource\ab_face_edit.bmp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

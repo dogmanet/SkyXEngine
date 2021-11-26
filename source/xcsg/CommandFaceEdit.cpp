@@ -24,7 +24,7 @@ bool XMETHODCALLTYPE CCommandFaceEdit::undo()
 	{
 		ModFace &f = m_aFaces[i];
 
-		f.newBrushFace.szMaterial = m_aMaterials[f.uOldMat].c_str();
+		f.oldBrushFace.szMaterial = m_aMaterials[f.uOldMat].c_str();
 
 		f.faceDesc.pObject->setFaceInfo(f.faceDesc.uFace, f.oldBrushFace);
 	}

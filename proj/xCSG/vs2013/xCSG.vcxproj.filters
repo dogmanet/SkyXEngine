@@ -58,6 +58,12 @@
     <ClCompile Include="..\..\..\source\xcsg\CommandFaceEdit.cpp">
       <Filter>Source Files\cmd</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\xcsg\ClipTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\xcsg\CommandClip.cpp">
+      <Filter>Source Files\cmd</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\xcsg\EditorExtension.h">
@@ -93,6 +99,12 @@
     <ClInclude Include="..\..\..\source\xcsg\CommandFaceEdit.h">
       <Filter>Header Files\cmd</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\xcsg\ClipTool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcsg\CommandClip.h">
+      <Filter>Header Files\cmd</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\xcsg\xcsg.rc">
@@ -119,6 +131,12 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="..\..\..\source\xcsg\resource\ab_face_edit.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resource\ab_cut.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\source\xcsg\resource\ab_cut.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

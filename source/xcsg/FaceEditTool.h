@@ -38,6 +38,10 @@ public:
 		return(is3D);
 	}
 
+	void XMETHODCALLTYPE onNextMode() override
+	{
+	}
+
 private:
 	CEditable *m_pEditable;
 	IXEditor *m_pEditor;

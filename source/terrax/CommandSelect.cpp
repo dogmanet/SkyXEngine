@@ -1,14 +1,26 @@
 #include "CommandSelect.h"
 
+CCommandSelect::~CCommandSelect()
+{
+	for(UINT i = 0, l = m_aidSelected.size(); i < l; ++i)
+	{
+		mem_release(m_aidSelected[i]);
+	}
+	for(UINT i = 0, l = m_aidDeselected.size(); i < l; ++i)
+	{
+		mem_release(m_aidDeselected[i]);
+	}
+}
+
 bool XMETHODCALLTYPE CCommandSelect::exec()
 {
 	for(UINT i = 0, l = m_aidSelected.size(); i < l; ++i)
 	{
-		g_pLevelObjects[m_aidSelected[i]]->setSelected(true);
+		m_aidSelected[i]->setSelected(true);
 	}
 	for(UINT i = 0, l = m_aidDeselected.size(); i < l; ++i)
 	{
-		g_pLevelObjects[m_aidDeselected[i]]->setSelected(false);
+		m_aidDeselected[i]->setSelected(false);
 	}
 	XUpdatePropWindow();
 	return(true);
@@ -17,57 +29,53 @@ bool XMETHODCALLTYPE CCommandSelect::undo()
 {
 	for(UINT i = 0, l = m_aidSelected.size(); i < l; ++i)
 	{
-		g_pLevelObjects[m_aidSelected[i]]->setSelected(false);
+		m_aidSelected[i]->setSelected(false);
 	}
 	for(UINT i = 0, l = m_aidDeselected.size(); i < l; ++i)
 	{
-		g_pLevelObjects[m_aidDeselected[i]]->setSelected(true);
+		m_aidDeselected[i]->setSelected(true);
 	}
 
 	XUpdatePropWindow();
 	return(true);
 }
 
-const char *CCommandSelect::getText()
+const char* CCommandSelect::getText()
 {
 	return("select");
 }
 
-void CCommandSelect::addSelected(ID idObject)
+void CCommandSelect::addSelected(IXEditorObject *pObj)
 {
-	for(UINT i = 0, l = m_aidDeselected.size(); i < l; ++i)
+	add_ref(pObj);
+
+	int idx = m_aidDeselected.indexOf(pObj);
+	if(idx >= 0)
 	{
-		if(m_aidDeselected[i] == idObject)
-		{
-			m_aidDeselected.erase(i);
-			break;
-		}
+		mem_release(m_aidDeselected[idx]);
+		m_aidDeselected.erase(idx);
 	}
-	for(UINT i = 0, l = m_aidSelected.size(); i < l; ++i)
+	
+	idx = m_aidSelected.indexOf(pObj);
+	if(idx < 0)
 	{
-		if(m_aidSelected[i] == idObject)
-		{
-			return;
-		}
+		m_aidSelected.push_back(pObj);
 	}
-	m_aidSelected.push_back(idObject);
 }
-void CCommandSelect::addDeselected(ID idObject)
+void CCommandSelect::addDeselected(IXEditorObject *pObj)
 {
-	for(UINT i = 0, l = m_aidSelected.size(); i < l; ++i)
+	add_ref(pObj);
+
+	int idx = m_aidSelected.indexOf(pObj);
+	if(idx >= 0)
 	{
-		if(m_aidSelected[i] == idObject)
-		{
-			m_aidSelected.erase(i);
-			break;
-		}
+		mem_release(m_aidSelected[idx]);
+		m_aidSelected.erase(idx);
 	}
-	for(UINT i = 0, l = m_aidDeselected.size(); i < l; ++i)
+
+	idx = m_aidDeselected.indexOf(pObj);
+	if(idx < 0)
 	{
-		if(m_aidDeselected[i] == idObject)
-		{
-			return;
-		}
+		m_aidDeselected.push_back(pObj);
 	}
-	m_aidDeselected.push_back(idObject);
 }

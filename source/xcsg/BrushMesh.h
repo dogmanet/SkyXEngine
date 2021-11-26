@@ -23,6 +23,13 @@ struct BrushFace
 
 typedef float3_t Extents[6];
 
+enum CLIP_PLANE_STATE
+{
+	CPS_NONE,
+	CPS_ONESIDE,
+	CPS_TWOSIDE
+};
+
 class CBrushMesh
 {
 public:
@@ -41,7 +48,7 @@ public:
 
 	bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, float3 *pvNormal = NULL, bool isRayInWorldSpace = true, bool bReturnNearestPoint = false);
 
-	void renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer);
+	void renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer, CLIP_PLANE_STATE clipPlaneState, const SMPLANE &clipPlane);
 	void renderFace(IXGizmoRenderer *pGizmoRenderer, UINT uFace);
 
 	void serialize(Array<char> *paData);
@@ -61,6 +68,13 @@ public:
 	static void BuildExtents(Extents extents, const float3 &vC);
 
 	void getFaceExtents(UINT uFace, Extents extents);
+
+	int classify(const SMPLANE &plane);
+
+	bool clip(const SMPLANE &plane);
+
+	bool findInternalFace(Array<float3_t> &aDest);
+	bool fillInternalFace(const Array<float3_t> &aSrc);
 
 private:
 	void buildModel(bool bBuildPhysbox = true);
@@ -119,6 +133,19 @@ private:
 		return(true);
 	}
 
+	UINT findNeighbourEdge(UINT uEdge, UINT uSkipEdge);
+
+	int classifyFace(UINT uFace, const SMPLANE &plane);
+	int classifyEdge(UINT uEdge, const SMPLANE &plane);
+
+	UINT findOrAddEdge(const float3 &vA, const float3 &vB);
+	UINT findOrAddVertex(const float3 &v);
+
+	void cleanupUnreferencedEdges();
+	void cleanupUnreferencedVertices();
+
+	void dropFace(UINT uFace);
+
 private:
 	//IXEditorGizmoHandle *m_pHandle[2];
 	IXStaticModel *m_pModel = NULL;
@@ -151,6 +178,7 @@ private:
 		TextureInfo texInfo;
 		Array<UINT> aEdges;
 		float3_t vNormal;
+		bool isInternal;
 	};
 
 	Array<float3_t> m_aVertices;

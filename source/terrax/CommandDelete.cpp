@@ -1,14 +1,28 @@
 #include "CommandDelete.h"
 
+CCommandDelete::~CCommandDelete()
+{
+	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
+	{
+		mem_release(m_aObjects[i].pObject);
+	}
+}
+
 bool XMETHODCALLTYPE CCommandDelete::exec()
 {
 	_del_obj *pObj;
 	for(int i = m_aObjects.size() - 1; i >= 0; --i)
 	{
 		pObj = &m_aObjects[i];
-
+		pObj->pObject->setSelected(false);
 		pObj->pObject->remove();
-		g_pLevelObjects.erase(pObj->idObject);
+
+		int idx = g_pLevelObjects.indexOf(pObj->pObject);
+		if(idx >= 0)
+		{
+			mem_release(g_pLevelObjects[idx]);
+			g_pLevelObjects.erase(idx);
+		}
 	}
 	XUpdatePropWindow();
 	return(m_aObjects.size());
@@ -19,7 +33,6 @@ bool XMETHODCALLTYPE CCommandDelete::undo()
 	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
 	{
 		pObj = &m_aObjects[i];
-
 
 		pObj->pObject->create();
 
@@ -34,21 +47,21 @@ bool XMETHODCALLTYPE CCommandDelete::undo()
 		}
 		pObj->pObject->postSetup();
 
-		for(UINT i = g_pLevelObjects.size(); i > pObj->idObject; --i)
-		{
-			g_pLevelObjects[i] = g_pLevelObjects[i - 1];
-		}
-		g_pLevelObjects[pObj->idObject] = pObj->pObject;
+		add_ref(pObj->pObject);
+		g_pLevelObjects.push_back(pObj->pObject);
+
+		pObj->pObject->setSelected(pObj->wasSelected);
 	}
 	XUpdatePropWindow();
 	return(true);
 }
 
-void CCommandDelete::addObject(ID idObject)
+void CCommandDelete::addObject(IXEditorObject *pObj)
 {
 	_del_obj obj;
-	obj.idObject = idObject;
-	obj.pObject = g_pLevelObjects[idObject];
+	add_ref(pObj);
+	obj.pObject = pObj;
+	obj.wasSelected = obj.pObject->isSelected();
 
 	UINT uKeyCount = obj.pObject->getProperyCount();
 	for(UINT i = 0; i < uKeyCount; ++i)

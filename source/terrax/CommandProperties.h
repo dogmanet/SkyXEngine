@@ -10,41 +10,19 @@
 class CCommandProperties final: public IXUnknownImplementation<IXEditorCommand>
 {
 public:
-	~CCommandProperties()
-	{
-		for(UINT i = 0, l = m_aCustomTabCommands.size(); i < l; ++i)
-		{
-			mem_release(m_aCustomTabCommands[i]);
-		}
-	}
+	~CCommandProperties();
 
 	bool XMETHODCALLTYPE exec() override;
 	bool XMETHODCALLTYPE undo() override;
 
-	bool XMETHODCALLTYPE isEmpty() override
-	{
-		if(!m_isEmpty)
-		{
-			return(false);
-		}
-
-		for(UINT i = 0, l = m_aCustomTabCommands.size(); i < l; ++i)
-		{
-			if(!m_aCustomTabCommands[i]->isEmpty())
-			{
-				return(false);
-			}
-		}
-
-		return(true);
-	}
+	bool XMETHODCALLTYPE isEmpty() override;
 
 	const char* XMETHODCALLTYPE getText() override
 	{
 		return("change props");
 	}
 
-	void addObject(ID idObject);
+	void addObject(IXEditorObject *pObj);
 	void setKV(const char *szKey, const char *szValue);
 
 	void addInnerCommand(IXEditorCommand *pCmd)
