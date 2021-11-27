@@ -27,6 +27,8 @@ public:
 		return(false);
 	}
 
+	SX_ALIGNED_OP_MEM();
+
 protected:
 	IXEditor *m_pEditor = NULL;
 	CEditable *m_pEditable = NULL;

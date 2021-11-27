@@ -64,6 +64,8 @@ public:
 
 	void onPosChanged();
 
+	SX_ALIGNED_OP_MEM();
+
 private:
 	CEditable *m_pEditable;
 	IXEditor *m_pEditor;

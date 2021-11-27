@@ -85,6 +85,8 @@ public:
 		return(m_clipPlane);
 	}
 
+	SX_ALIGNED_OP_MEM();
+
 protected:
 	IGXDevice *m_pDevice = NULL;
 	IXCore *m_pCore = NULL;
