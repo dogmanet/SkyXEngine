@@ -236,8 +236,8 @@ void CBaseEntity::onParentMoved(bool bAdjustOffsets)
 
 	m_isInOnParentMoved = true;
 
-	float3 vParentPos = ID_VALID(m_iParentAttachment) ? m_pParent->getAttachmentPos(m_iParentAttachment) : m_pParent->getPos();
-	SMQuaternion qParentOrient = ID_VALID(m_iParentAttachment) ? m_pParent->getAttachmentRot(m_iParentAttachment) : m_pParent->getOrient();
+	float3 vParentPos = ID_VALID(m_iParentAttachment) ? m_pParent->getAttachmentPos(m_iParentAttachment) : m_pParent->m_vPosition;
+	SMQuaternion qParentOrient = ID_VALID(m_iParentAttachment) ? m_pParent->getAttachmentRot(m_iParentAttachment) : m_pParent->m_qOrientation;
 
 	if(bAdjustOffsets)
 	{

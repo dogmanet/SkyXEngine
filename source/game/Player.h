@@ -75,6 +75,8 @@ public:
 	
 	void setOrient(const SMQuaternion &q) override;
 
+	SMQuaternion getOrient() override;
+
 protected:
 	//! Камера
 	CPointCamera * m_pCamera;

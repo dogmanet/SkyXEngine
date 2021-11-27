@@ -87,7 +87,7 @@ public:
 	//! Устанавливает относительное вращение объекта
 	virtual void setOffsetOrient(const SMQuaternion &q);
 	//! Возвращает вращение объекта
-	SMQuaternion getOrient();
+	virtual SMQuaternion getOrient();
 
 	void setXform(const float3 &vPos, const SMQuaternion &q);
 	void setOffsetXform(const float3 &vPos, const SMQuaternion &q);

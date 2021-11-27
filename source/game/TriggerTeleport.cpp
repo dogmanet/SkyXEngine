@@ -23,12 +23,14 @@ REGISTER_ENTITY(CTriggerTeleport, trigger_teleport);
 
 void CTriggerTeleport::onTouchStart(CBaseEntity *pActivator)
 {
+	BaseClass::onTouchStart(pActivator);
+
 	if(!m_pDestination)
 	{
 		return;
 	}
 	CBaseEntity *pEnt = pActivator;
-	if(pEnt->getParent())
+	while(pEnt->getParent())
 	{
 		pEnt = pEnt->getParent();
 	}

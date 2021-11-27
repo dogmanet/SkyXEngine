@@ -74,11 +74,51 @@ CPlayer::~CPlayer()
 	REMOVE_ENTITY(m_pCamera);
 }
 
+static float GetAngleBetweenVectors(const float3 &v1, const float3 &v2, const float3 &vRotationAxis)
+{
+	float fAngle = SMVector3Dot(v1, v2);
+
+	if(SMVector3Dot(SMVector3Normalize(SMVector3Cross(v1, v2)), vRotationAxis) < 0.0f)
+	{
+		fAngle = SM_2PI - fAngle;
+	}
+
+	return(fAngle);
+}
+
 void CPlayer::setOrient(const SMQuaternion &q)
 {
-	m_vPitchYawRoll = SMMatrixToEuler(q.GetMatrix());
+	float3 vBase(0.0f, 0.0f, 1.0f);
+	float3 vDir = q * vBase;
+	float3 vUp = float3(0.0f, 1.0f, 0.0f);
+	float fAng = SMVector3Dot(vUp, vDir);
+	if(SMIsZero(1.0f - fabsf(fAng)))
+	{
+		m_vPitchYawRoll.x = SM_PIDIV2 * fAng;
+		m_vPitchYawRoll.y = GetAngleBetweenVectors(q * -vUp, vBase, vUp);
+	}
+	else
+	{
+		float3 vRotAxis = SMVector3Cross(vDir, vUp);
+		float3 vProjected = SMVector3Normalize(vDir - SMVector3Dot(vDir, vUp) * vUp);
+
+		m_vPitchYawRoll.x = SMRightAngleBetweenVectors(vProjected, vDir, vRotAxis);
+		m_vPitchYawRoll.y = SMRightAngleBetweenVectors(vProjected, vBase, vUp);
+
+		if(m_vPitchYawRoll.x > SM_PIDIV2)
+		{
+			m_vPitchYawRoll.x -= SM_2PI;
+		}
+	}
+
+	//m_vPitchYawRoll = SMMatrixToEuler(q.GetMatrix());
 	BaseClass::setOrient(SMQuaternion(m_vPitchYawRoll.y, 'y'));
 	m_pHeadEnt->setOffsetOrient(SMQuaternion(m_vPitchYawRoll.x, 'x') * SMQuaternion(m_vPitchYawRoll.z, 'z'));
+}
+
+SMQuaternion CPlayer::getOrient()
+{
+	return(m_pHeadEnt->getOrient());
 }
 
 void CPlayer::updateInput(float dt)

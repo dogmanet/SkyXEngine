@@ -28,7 +28,7 @@ public:
 	DECLARE_TRIVIAL_CONSTRUCTOR();
 
 protected:
-	virtual void onTouchStart(CBaseEntity *pActivator) override;
+	void onTouchStart(CBaseEntity *pActivator) override;
 
 private:
 	CEntityPointer<CBaseEntity> m_pLandmark;
