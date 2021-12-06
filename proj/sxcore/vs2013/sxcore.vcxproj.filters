@@ -91,11 +91,11 @@
     <ClCompile Include="..\..\..\source\core\FileRecursiveExtPathsIterator.cpp">
       <Filter>Sources\FileSystem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\core\CBaseFileIterator.cpp">
-      <Filter>Sources\FileSystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\core\JSON.cpp">
       <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\core\BaseFileIterator.cpp">
+      <Filter>Sources\FileSystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -287,11 +287,11 @@
     <ClInclude Include="..\..\..\source\core\FileRecursiveExtPathsIterator.h">
       <Filter>Headers\FileSystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\core\CBaseFileIterator.h">
-      <Filter>Headers\FileSystem</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\core\JSON.h">
       <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\BaseFileIterator.h">
+      <Filter>Headers\FileSystem</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

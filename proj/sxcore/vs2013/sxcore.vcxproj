@@ -24,7 +24,7 @@
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
     <ClCompile Include="..\..\..\source\core\AsyncFileReader.cpp" />
     <ClCompile Include="..\..\..\source\core\AsyncTaskRunner.cpp" />
-    <ClCompile Include="..\..\..\source\core\CBaseFileIterator.cpp" />
+    <ClCompile Include="..\..\..\source\core\BaseFileIterator.cpp" />
     <ClCompile Include="..\..\..\source\core\concmd.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
@@ -78,7 +78,7 @@
     <ClInclude Include="..\..\..\source\core\AsyncFileReader.h" />
     <ClInclude Include="..\..\..\source\core\AsyncTaskRunner.h" />
     <ClInclude Include="..\..\..\source\core\Buffer.h" />
-    <ClInclude Include="..\..\..\source\core\CBaseFileIterator.h" />
+    <ClInclude Include="..\..\..\source\core\BaseFileIterator.h" />
     <ClInclude Include="..\..\..\source\core\Console.h" />
     <ClInclude Include="..\..\..\source\core\FileExtsIterator.h" />
     <ClInclude Include="..\..\..\source\core\FileInMemory.h" />

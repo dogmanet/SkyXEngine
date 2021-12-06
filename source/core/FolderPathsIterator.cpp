@@ -11,7 +11,7 @@ CFolderPathsIterator::CFolderPathsIterator(Array<String> &paths, String &sBasePa
 
 const char *CFolderPathsIterator::next()
 {
-    WIN32_FIND_DATA FindFileData;
+    WIN32_FIND_DATAW FindFileData;
     HANDLE hf;
 
 	FindFileData.cFileName[0] = '\0';
@@ -20,18 +20,18 @@ const char *CFolderPathsIterator::next()
 
     while (index < size)
     {
-		hf = INVALID_OR_NULL(m_handle) ? FindFirstFile((m_paths[index] + "*.*").c_str(), &FindFileData) : m_handle;
+		hf = INVALID_OR_NULL(m_handle) ? FindFirstFileW(CMB2WC((m_paths[index] + "*.*").c_str()), &FindFileData) : m_handle;
 
         if (hf != INVALID_HANDLE_VALUE)
         {
             do {
                 m_handle = hf;
 
-				m_pathStr = (m_paths)[index] + FindFileData.cFileName;
+				m_pathStr = (m_paths)[index] + CWC2MB(FindFileData.cFileName);
 
-                DWORD flag = GetFileAttributes(m_pathStr.c_str());
+				DWORD flag = GetFileAttributesW(CMB2WC(m_pathStr.c_str()));
 
-				if (emptyOrRepeatPath(FindFileData.cFileName))
+				if (emptyOrRepeatPath(CWC2MB(FindFileData.cFileName)))
                 {
                     continue;
                 }
@@ -39,7 +39,7 @@ const char *CFolderPathsIterator::next()
                 //Берет только имена директорий
                 if (flag != INVALID_FILE_ATTRIBUTES && flag & FILE_ATTRIBUTE_DIRECTORY)
                 {
-					m_pathStr = (m_sBasePath + FindFileData.cFileName);
+					m_pathStr = (m_sBasePath + CWC2MB(FindFileData.cFileName));
 					if (m_mapExistPath.KeyExists(m_pathStr))
 					{
 						continue;
@@ -51,7 +51,7 @@ const char *CFolderPathsIterator::next()
 						return m_pathStr.c_str();
 					}
                 }
-			} while (FindNextFile(hf, &FindFileData) != 0);
+			} while (FindNextFileW(hf, &FindFileData) != 0);
         }
 		FIND_CLOSE(m_handle);
 		++index;

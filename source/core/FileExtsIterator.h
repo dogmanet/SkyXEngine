@@ -6,7 +6,7 @@ See the license in LICENSE
 #ifndef __FILE_EXST_ITERATOR_H
 #define __FILE_EXST_ITERATOR_H
 
-#include "CBaseFileIterator.h"
+#include "BaseFileIterator.h"
 
 class CFileExtsIterator final : public CBaseFileIterator
 {

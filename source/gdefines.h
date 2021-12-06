@@ -203,6 +203,7 @@ typedef void(*report_func) (int iLevel, const char *szLibName, const char *szMes
 #include <common/assotiativearray.h>
 #include <common/MemAlloc.h>
 #include <common/EnumReflection.h>
+#include <common/CWC2MB.h>
 
 #include <xcommon/input/XKeyCodes.h>
 

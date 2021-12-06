@@ -1,4 +1,4 @@
-#include "CBaseFileIterator.h"
+#include "BaseFileIterator.h"
 
 void CBaseFileIterator::canonizePath(String &sPath)
 {

@@ -6,7 +6,7 @@ See the license in LICENSE
 #ifndef __FOLDER_PATHS_ITERATOR_H
 #define __FOLDER_PATHS_ITERATOR_H
 
-#include "CBaseFileIterator.h"
+#include "BaseFileIterator.h"
 
 class CFolderPathsIterator final : public CBaseFileIterator
 {

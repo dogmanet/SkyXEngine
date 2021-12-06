@@ -12,7 +12,7 @@ CFileRecursiveExtPathsIterator::CFileRecursiveExtPathsIterator(Array<String> &pa
 
 const char *CFileRecursiveExtPathsIterator::next()
 {
-	WIN32_FIND_DATA FindFileData;
+	WIN32_FIND_DATAW FindFileData;
 	HANDLE hf;
 
 	FindFileData.cFileName[0] = '\0';
@@ -25,7 +25,7 @@ const char *CFileRecursiveExtPathsIterator::next()
 			String fileName = m_sPaths[pathIndex] + "*.*";
 
 			//Проверяем указатель, если m_handle пустой, то ищем первый файл с расширением szExts
-			hf = INVALID_OR_NULL(m_handle) ? FindFirstFile(fileName.c_str(), &FindFileData) : m_handle;
+			hf = INVALID_OR_NULL(m_handle) ? FindFirstFileW(CMB2WC(fileName.c_str()), &FindFileData) : m_handle;
 
 			if (hf != INVALID_HANDLE_VALUE)
 			{
@@ -34,11 +34,11 @@ const char *CFileRecursiveExtPathsIterator::next()
 					//Сохраняем HANDLE файла, что бы можно было продожлить с того места
 					m_handle = hf;
 
-					String fullName = m_sPaths[pathIndex] + FindFileData.cFileName;
+					String fullName = m_sPaths[pathIndex] + CWC2MB(FindFileData.cFileName);
 
-					DWORD flag = GetFileAttributes(fullName.c_str());
+					DWORD flag = GetFileAttributesW(CMB2WC(fullName.c_str()));
 
-					if (emptyOrRepeatPath(FindFileData.cFileName))
+					if (emptyOrRepeatPath(CWC2MB(FindFileData.cFileName)))
 					{
 						continue;
 					}
@@ -51,13 +51,13 @@ const char *CFileRecursiveExtPathsIterator::next()
 
 					if (flag != INVALID_FILE_ATTRIBUTES && !(flag & FILE_ATTRIBUTE_DIRECTORY))
 					{
-						if (!findExtensionsInPath(FindFileData.cFileName, m_exts))
+						if (!findExtensionsInPath(CWC2MB(FindFileData.cFileName), m_exts))
 						{
 							continue;
 						}
 						//Если это файл - получаем относительный путь и ищем его в списке
 						m_pathStr = strstr(fullName.c_str(), m_sBasePath.c_str());
-						//m_pathStr = m_sBasePath + FindFileData.cFileName;
+
 						if (m_mapExistPath.KeyExists(m_pathStr))
 						{
 							continue;
@@ -69,7 +69,7 @@ const char *CFileRecursiveExtPathsIterator::next()
 						}
 					}
 					//Если указатель на файл валидный, то проверяем все отфильтрованные файлы по порядку
-				} while (FindNextFile(hf, &FindFileData) != 0);
+				} while (FindNextFileW(hf, &FindFileData) != 0);
 
 				if (m_folderList.size() != 0)
 				{
