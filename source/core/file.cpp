@@ -27,9 +27,9 @@ void CFile::Release()
 
 int CFile::open(const char *szPath, int iType)
 {
-    const char *szMode = (iType == CORE_FILE_BIN) ? "rb" : "r+";
+    const wchar_t *szMode = (iType == CORE_FILE_BIN) ? L"rb" : L"r+";
 
-    m_pFile = fopen(szPath, szMode);
+	m_pFile = _wfopen(CMB2WC(szPath), szMode);
 		if(!m_pFile)
 			return -1;
 	return 0;
@@ -37,9 +37,9 @@ int CFile::open(const char *szPath, int iType)
 
 int CFile::create(const char *szPath, int iType)
 {
-    const char *szMode = (iType == CORE_FILE_BIN) ? "wb" : "w";
+	const wchar_t *szMode = (iType == CORE_FILE_BIN) ? L"wb" : L"w";
 
-    m_pFile = fopen(szPath, szMode);
+	m_pFile = _wfopen(CMB2WC(szPath), szMode);
 	if (!m_pFile)
 		return -1;
 	return 0;
@@ -47,7 +47,7 @@ int CFile::create(const char *szPath, int iType)
 
 int CFile::add(const char *szPath, int iType)
 {
-	m_pFile = fopen(szPath, (iType == CORE_FILE_BIN) ? "rb+" : "r+");
+	m_pFile = _wfopen(CMB2WC(szPath), (iType == CORE_FILE_BIN) ? L"rb+" : L"r+");
 	if(m_pFile)
 	{
 		_fseeki64(m_pFile, 0, SEEK_END);
@@ -55,7 +55,7 @@ int CFile::add(const char *szPath, int iType)
 	}
 	else
 	{
-		m_pFile = fopen(szPath, (iType == CORE_FILE_BIN) ? "wb+" : "w+");
+		m_pFile = _wfopen(CMB2WC(szPath), (iType == CORE_FILE_BIN) ? L"wb+" : L"w+");
 		if(m_pFile)
 		{
 			return(0);

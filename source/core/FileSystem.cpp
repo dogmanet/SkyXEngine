@@ -49,7 +49,7 @@ bool CFileSystem::isFileOrDirectory(const char *szPath, bool isFile)
         return false;
     }
 
-    DWORD flag = GetFileAttributes(path);
+    DWORD flag = GetFileAttributesW(CMB2WC(path));
 
     //Проверка на то куда имено ведет путь - к файлу или папке
     return (flag != INVALID_FILE_ATTRIBUTES) && (isFile ? !(flag & FILE_ATTRIBUTE_DIRECTORY) : (flag & FILE_ATTRIBUTE_DIRECTORY));
@@ -57,7 +57,6 @@ bool CFileSystem::isFileOrDirectory(const char *szPath, bool isFile)
 
 void CFileSystem::getAllvariantsCanonizePath(const char *szPath, Array<String> &container)
 {
-
 	for (int i = 0, I = m_filePaths.size(); i < I; ++i)
 	{
 		String buff = m_filePaths[i];
@@ -143,15 +142,15 @@ void CFileSystem::getFullPathToBuild(char *buff, int iSize)
 
 void CFileSystem::getFileName(const char *name, char *outName, int iOutBuff)
 {
-    WIN32_FIND_DATAA wfd;
-    HANDLE hFind = FindFirstFile(name, &wfd);
+    WIN32_FIND_DATAW wfd;
+	HANDLE hFind = FindFirstFileW(CMB2WC(name), &wfd);
 
     if (hFind != INVALID_HANDLE_VALUE)
     {
         FIND_CLOSE(hFind);
 
         //Если размера буфера хватает - то записываем имя файла, если нет то записываем в [0] '\0'
-        iOutBuff > MAX_PATH ? memcpy(outName, wfd.cFileName, MAX_PATH) : MEMCCPY_ERROR(outName);
+		iOutBuff > MAX_PATH ? memcpy(outName, CWC2MB(wfd.cFileName), MAX_PATH) : MEMCCPY_ERROR(outName);
     }
 }
 
@@ -391,7 +390,7 @@ bool CFileSystem::createDirectory(const char *szPath)
     char path[SIZE_PATH];
     getNormalPath(szPath, path, SIZE_PATH);
 
-    return SHCreateDirectoryEx(nullptr, path, nullptr) == NO_ERROR;
+	return SHCreateDirectoryExW(nullptr, CMB2WC(path), nullptr) == NO_ERROR;
 }
 
 bool CFileSystem::deleteDirectory(const char *szPath)
@@ -399,20 +398,20 @@ bool CFileSystem::deleteDirectory(const char *szPath)
     char path[SIZE_PATH];
     getNormalPath(szPath, path, SIZE_PATH);
 
-    SHFILEOPSTRUCT file_op = {
+    SHFILEOPSTRUCTW file_op = {
         NULL,
         FO_DELETE,
-        path,
-        "",
+		CMB2WC(path),
+        L"",
         FOF_NOCONFIRMATION |
         FOF_NOERRORUI |
         FOF_SILENT,
         false,
         0,
-        "" };
+        L"" };
 
     // Если вернуло не 0, то все плохо
-    return SHFileOperation(&file_op) == NO_ERROR;
+    return SHFileOperationW(&file_op) == NO_ERROR;
 }
 
 IFile *CFileSystem::openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ)

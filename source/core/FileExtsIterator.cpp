@@ -12,7 +12,7 @@ CFileExtsIterator::CFileExtsIterator(Array<String> &paths, String &sBasePath, co
 
 const char *CFileExtsIterator::next()
 {
-	WIN32_FIND_DATA FindFileData;
+	WIN32_FIND_DATAW FindFileData;
 	HANDLE hf;
 
 	FindFileData.cFileName[0] = '\0';
@@ -25,7 +25,7 @@ const char *CFileExtsIterator::next()
 		const String &fileName = (m_paths[index] + "*.*");
 
 		//Проверяем указатель, если m_handle пустой, то ищем первый файл с расширением szExts
-		hf = INVALID_OR_NULL(m_handle) ? FindFirstFile(fileName.c_str(), &FindFileData) : m_handle;
+		hf = INVALID_OR_NULL(m_handle) ? FindFirstFileW(CMB2WC(fileName.c_str()), &FindFileData) : m_handle;
 
 		if (hf != INVALID_HANDLE_VALUE)
 		{
@@ -33,18 +33,18 @@ const char *CFileExtsIterator::next()
 				//Сохраняем HANDLE файла, что бы можно было продожлить с того места
 				m_handle = hf;
 
-				m_pathStr = m_paths[index] + FindFileData.cFileName;
+				m_pathStr = m_paths[index] + CWC2MB(FindFileData.cFileName);
 
-				DWORD flag = GetFileAttributes(m_pathStr.c_str());
+				DWORD flag = GetFileAttributesW(CMB2WC(m_pathStr.c_str()));
 
 				if (flag != INVALID_FILE_ATTRIBUTES && !(flag & FILE_ATTRIBUTE_DIRECTORY))
 				{
-					if (!findExtensionsInPath(FindFileData.cFileName, m_exts))
+					if (!findExtensionsInPath(CWC2MB(FindFileData.cFileName), m_exts))
 					{
 						continue;
 					}
 
-					m_pathStr = (m_sBasePath + FindFileData.cFileName);
+					m_pathStr = (m_sBasePath + CWC2MB(FindFileData.cFileName));
 					if (m_mapExistPath.KeyExists(m_pathStr))
 					{
 						continue;
@@ -57,7 +57,7 @@ const char *CFileExtsIterator::next()
 					}
 				}
 				//Если указатель на файл валидный, то проверяем все отфильтрованные файлы по порядку
-			} while (FindNextFile(hf, &FindFileData) != 0);
+			} while (FindNextFileW(hf, &FindFileData) != 0);
 		}
 		++index;
 		FIND_CLOSE(m_handle);
