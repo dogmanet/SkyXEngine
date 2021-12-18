@@ -64,6 +64,12 @@
     <ClCompile Include="..\..\..\source\xcsg\CommandClip.cpp">
       <Filter>Source Files\cmd</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\common\guid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\xcsg\EditorModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\xcsg\EditorExtension.h">
@@ -104,6 +110,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcsg\CommandClip.h">
       <Filter>Header Files\cmd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcsg\EditorModel.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

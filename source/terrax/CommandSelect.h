@@ -9,6 +9,13 @@ class CCommandSelect final: public IXUnknownImplementation<IXEditorCommand>
 public:
 	~CCommandSelect();
 
+	enum IGNORE_GROUP_MODE
+	{
+		IGM_NONE,
+		IGM_ENABLE,
+		IGM_DISABLE
+	};
+
 	bool XMETHODCALLTYPE exec() override;
 	bool XMETHODCALLTYPE undo() override;
 
@@ -17,14 +24,22 @@ public:
 	void addSelected(IXEditorObject *pObj);
 	void addDeselected(IXEditorObject *pObj);
 
-	bool XMETHODCALLTYPE isEmpty() override
+	void setIGMode(IGNORE_GROUP_MODE mode)
 	{
-		return(false);
+		m_igmode = mode;
 	}
 
+	bool XMETHODCALLTYPE isEmpty() override;
+
 protected:
-	Array<IXEditorObject*> m_aidSelected;
-	Array<IXEditorObject*> m_aidDeselected;
+	struct SelObj
+	{
+		IXEditorObject *pObj;
+		bool bToSelect;
+	};
+
+	Array<SelObj> m_aObjects;
+	IGNORE_GROUP_MODE m_igmode = IGM_NONE;
 };
 
 #endif

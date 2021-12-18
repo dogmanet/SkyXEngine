@@ -70,6 +70,11 @@ public:
 
 	bool XMETHODCALLTYPE hasVisualModel() override;
 
+	const XGUID* XMETHODCALLTYPE getGUID() override
+	{
+		return(&m_guidEnt);
+	}
+
 protected:
 	CBaseEntity *m_pEntity = NULL;
 	const char *m_szClassName = NULL;

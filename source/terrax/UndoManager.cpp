@@ -62,7 +62,7 @@ void CUndoManager::flushRedo()
 	}
 	m_stackRedo.clearFast();
 
-	if(m_iLastSaveIndex > m_stackUndo.size())
+	if(m_iLastSaveIndex > m_stackUndo.size()) 
 	{
 		m_iLastSaveIndex = -1;
 	}
@@ -70,21 +70,65 @@ void CUndoManager::flushRedo()
 
 bool CUndoManager::execCommand(IXEditorCommand *pCommand)
 {
-	m_isInCommandContext = true;
+	Array<IXEditorCommand*> *pOldAttachedCommands = m_pAttachedCommands;
+	Array<IXEditorCommand*> aAttachedCommands;
+	m_pAttachedCommands = &aAttachedCommands;
+	++m_isInCommandContext;
 	if(!pCommand->isEmpty() && pCommand->exec())
 	{
-		m_isInCommandContext = false;
+
+		if(aAttachedCommands.size())
+		{
+			// create new command container
+			CCommandContainer *pContainer = new CCommandContainer();
+			pContainer->addCommand(pCommand);
+			fora(i, aAttachedCommands)
+			{
+				aAttachedCommands[i]->exec();
+				pContainer->addCommand(aAttachedCommands[i]);
+			}
+			m_stackUndo.push_back(pContainer);
+		}
+		else
+		{
+			m_stackUndo.push_back(pCommand);
+		}
+
+		--m_isInCommandContext;
 		flushRedo();
-		m_stackUndo.push_back(pCommand);
+
 		XUpdateWindowTitle();
+		m_pAttachedCommands = pOldAttachedCommands;
 		return(true);
 	}
-	m_isInCommandContext = false;
+	--m_isInCommandContext;
+	fora(i, aAttachedCommands)
+	{
+		mem_release(aAttachedCommands[i]);
+	}
 	mem_release(pCommand);
+	m_pAttachedCommands = pOldAttachedCommands;
 	return(false);
+}
+void CUndoManager::attachCommand(IXEditorCommand *pCommand)
+{
+	if(!m_pAttachedCommands)
+	{
+		if(isInCommandContext())
+		{
+			mem_release(pCommand);
+			return;
+		}
+		LibReport(REPORT_MSG_LEVEL_FATAL, "CUndoManager::attachCommand() is only available in exec context!");
+	}
+
+	add_ref(pCommand);
+	m_pAttachedCommands->push_back(pCommand);
 }
 bool CUndoManager::undo()
 {
+	assert(!isInCommandContext());
+
 	if(!canUndo() || isInCommandContext())
 	{
 		return(false);
@@ -105,6 +149,8 @@ bool CUndoManager::undo()
 }
 bool CUndoManager::redo()
 {
+	assert(!isInCommandContext());
+
 	if(!canRedo() || isInCommandContext())
 	{
 		return(false);
@@ -138,4 +184,48 @@ void CUndoManager::makeClean()
 bool CUndoManager::isInCommandContext()
 {
 	return(m_isInCommandContext);
+}
+
+//#############################################################################
+
+CCommandContainer::~CCommandContainer()
+{
+	fora(i, m_aCommands)
+	{
+		mem_release(m_aCommands[i]);
+	}
+}
+
+bool XMETHODCALLTYPE CCommandContainer::exec()
+{
+	bool isSuccess = true;
+	fora(i, m_aCommands)
+	{
+		isSuccess &= m_aCommands[i]->exec();
+	}
+	return(isSuccess);
+}
+bool XMETHODCALLTYPE CCommandContainer::undo()
+{
+	bool isSuccess = true;
+	for(int i = m_aCommands.size() - 1; i >= 0; --i)
+	{
+		isSuccess &= m_aCommands[i]->undo();
+	}
+	return(isSuccess);
+}
+
+bool XMETHODCALLTYPE CCommandContainer::isEmpty()
+{
+	return(false);
+}
+
+const char* XMETHODCALLTYPE CCommandContainer::getText()
+{
+	return(m_aCommands[0]->getText());
+}
+
+void CCommandContainer::addCommand(IXEditorCommand *pCommand)
+{
+	m_aCommands.push_back(pCommand);
 }

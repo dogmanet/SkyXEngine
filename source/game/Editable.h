@@ -52,6 +52,29 @@ public:
 		return(m_aObjects);
 	}
 
+	bool XMETHODCALLTYPE canProduceModel() override
+	{
+		return(false);
+	}
+	bool XMETHODCALLTYPE buildModelFromSelection(IXEditorModel **ppOut) override
+	{
+		return(false);
+	}
+	bool XMETHODCALLTYPE newModel(IXEditorModel **ppOut) override
+	{
+		return(false);
+	}
+	UINT XMETHODCALLTYPE getModelCount() override
+	{
+		return(0);
+	}
+	bool XMETHODCALLTYPE getModel(UINT id, IXEditorModel **ppOut) override
+	{
+		return(false);
+	}
+
+	bool XMETHODCALLTYPE canUseModel(const char *szClass) override;
+
 protected:
 	IGXDevice *m_pDevice = NULL;
 	IXCore *m_pCore = NULL;

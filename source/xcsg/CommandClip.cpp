@@ -1,5 +1,6 @@
 #include "CommandClip.h"
 #include "Editable.h"
+#include "EditorModel.h"
 
 CCommandClip::CCommandClip(IXEditor *pEditor, CEditable *pEditable):
 	m_pEditor(pEditor),
@@ -32,7 +33,9 @@ CCommandClip::CCommandClip(IXEditor *pEditor, CEditable *pEditable):
 			else if(m_clipPlaneState == CPS_ONESIDE)
 			{
 				add_ref(pObj);
-				m_aObjectsToRemove.push_back(pObj);
+				CEditorModel *pMdl = pObj->getModel();
+				add_ref(pMdl);
+				m_aObjectsToRemove.push_back({pObj, pMdl});
 			}
 		}
 	}
@@ -42,7 +45,8 @@ CCommandClip::~CCommandClip()
 {
 	for(UINT i = 0, l = m_aObjectsToRemove.size(); i < l; ++i)
 	{
-		mem_release(m_aObjectsToRemove[i]);
+		mem_release(m_aObjectsToRemove[i].pObj);
+		mem_release(m_aObjectsToRemove[i].pMdl);
 	}
 	for(UINT i = 0, l = m_aClippedObjects.size(); i < l; ++i)
 	{
@@ -59,10 +63,11 @@ bool XMETHODCALLTYPE CCommandClip::exec()
 	}
 	for(UINT i = 0, l = m_aObjectsToRemove.size(); i < l; ++i)
 	{
-		CEditorObject *pObj = m_aObjectsToRemove[i];
-		pObj->setSelected(false);
-		pObj->remove();
-		m_pEditor->removeObject(pObj);
+		ObjToRemove &obj = m_aObjectsToRemove[i];
+		SAFE_CALL(obj.pObj->getModel(), onObjectRemoved, obj.pObj);
+		obj.pObj->setSelected(false);
+		obj.pObj->remove();
+		m_pEditor->removeObject(obj.pObj);
 	}
 
 	if(m_clipPlaneState == CPS_TWOSIDE)
@@ -75,7 +80,7 @@ bool XMETHODCALLTYPE CCommandClip::exec()
 				co.pDstObj = new CEditorObject(m_pEditable);
 				co.pDstObj->setPos(co.pSrcObj->getPos());
 				co.pDstObj->setOrient(co.pSrcObj->getOrient());
-
+				//co.pDstObj->setModel(co.pSrcObj->getModel());
 				for(UINT j = 0, jl = co.pSrcObj->getProperyCount(); j < jl; ++j)
 				{
 					const X_PROP_FIELD *pField = co.pSrcObj->getPropertyMeta(j);
@@ -83,15 +88,11 @@ bool XMETHODCALLTYPE CCommandClip::exec()
 				}
 
 				co.pDstObj->clip(-m_clipPlane);
-
-				co.pDstObj->setSelected(true);
-			}
-			else
-			{
-				co.pDstObj->create();
-				co.pDstObj->setSelected(true);
 			}
 			m_pEditor->addObject(co.pDstObj);
+			co.pDstObj->create();
+			co.pDstObj->setSelected(true);
+			SAFE_CALL(co.pSrcObj->getModel(), onObjectAdded, co.pDstObj);
 		}
 	}
 
@@ -114,18 +115,21 @@ bool XMETHODCALLTYPE CCommandClip::undo()
 		for(UINT i = 0, l = m_aClippedObjects.size(); i < l; ++i)
 		{
 			clip_obj_t &co = m_aClippedObjects[i];
-			m_pEditor->removeObject(co.pDstObj);
+			SAFE_CALL(co.pDstObj->getModel(), onObjectRemoved, co.pDstObj);
 			co.pDstObj->remove();
 			co.pDstObj->setSelected(false);
+			m_pEditor->removeObject(co.pDstObj);
 		}
 	}
 
 	for(UINT i = 0, l = m_aObjectsToRemove.size(); i < l; ++i)
 	{
-		CEditorObject *pObj = m_aObjectsToRemove[i];
-		pObj->create();
-		pObj->setSelected(true);
-		m_pEditor->addObject(pObj);
+		ObjToRemove &obj = m_aObjectsToRemove[i];
+		m_pEditor->addObject(obj.pObj);
+		//obj.pObj->setModel(obj.pMdl);
+		obj.pObj->create();
+		obj.pObj->setSelected(true);
+		SAFE_CALL(obj.pMdl, onObjectAdded, obj.pObj);
 	}
 
 	return(true);

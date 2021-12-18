@@ -1,17 +1,17 @@
 
 /***********************************************************
-Copyright © Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
+Copyright В© Vitaliy Buturlin, Evgeny Danilovich, 2017, 2018
 See the license in LICENSE
 ***********************************************************/
 
 #include "PropDynamic.h"
 
 /*! \skydocent prop_dynamic
-Модель
+РњРѕРґРµР»СЊ
 */
 
 BEGIN_PROPTABLE(CPropDynamic)
 	//empty
 END_PROPTABLE()
 
-REGISTER_ENTITY(CPropDynamic, prop_dynamic);
+REGISTER_ENTITY(CPropDynamic, prop_dynamic, REC_MODEL_FIELD("model"));

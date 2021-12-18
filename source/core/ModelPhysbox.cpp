@@ -5,7 +5,12 @@ XPHYSBOXTYPE XMETHODCALLTYPE CModelPhysboxBox::getType() const
 	return(XPBT_BOX);
 }
 
-const IModelPhysboxBox * XMETHODCALLTYPE CModelPhysboxBox::asBox() const
+const IModelPhysboxBox* XMETHODCALLTYPE CModelPhysboxBox::asBox() const
+{
+	return(this);
+}
+
+IModelPhysboxBox* XMETHODCALLTYPE CModelPhysboxBox::asBox()
 {
 	return(this);
 }
@@ -26,7 +31,12 @@ XPHYSBOXTYPE XMETHODCALLTYPE CModelPhysboxSphere::getType() const
 	return(XPBT_SPHERE);
 }
 
-const IModelPhysboxSphere * XMETHODCALLTYPE CModelPhysboxSphere::asSphere() const
+const IModelPhysboxSphere* XMETHODCALLTYPE CModelPhysboxSphere::asSphere() const
+{
+	return(this);
+}
+
+IModelPhysboxSphere* XMETHODCALLTYPE CModelPhysboxSphere::asSphere()
 {
 	return(this);
 }
@@ -52,7 +62,12 @@ XPHYSBOXTYPE XMETHODCALLTYPE CModelPhysboxConvex::getType() const
 	return(XPBT_CONVEX);
 }
 
-const IModelPhysboxConvex * XMETHODCALLTYPE CModelPhysboxConvex::asConvex() const
+const IModelPhysboxConvex* XMETHODCALLTYPE CModelPhysboxConvex::asConvex() const
+{
+	return(this);
+}
+
+IModelPhysboxConvex* XMETHODCALLTYPE CModelPhysboxConvex::asConvex()
 {
 	return(this);
 }
@@ -89,7 +104,12 @@ XPHYSBOXTYPE XMETHODCALLTYPE CModelPhysboxCylinder::getType() const
 	return(XPBT_CYLINDER);
 }
 
-const IModelPhysboxCylinder * XMETHODCALLTYPE CModelPhysboxCylinder::asCylinder() const
+const IModelPhysboxCylinder* XMETHODCALLTYPE CModelPhysboxCylinder::asCylinder() const
+{
+	return(this);
+}
+
+IModelPhysboxCylinder* XMETHODCALLTYPE CModelPhysboxCylinder::asCylinder()
 {
 	return(this);
 }
@@ -119,7 +139,12 @@ XPHYSBOXTYPE XMETHODCALLTYPE CModelPhysboxCapsule::getType() const
 	return(XPBT_CAPSULE);
 }
 
-const IModelPhysboxCapsule * XMETHODCALLTYPE CModelPhysboxCapsule::asCapsule() const
+const IModelPhysboxCapsule* XMETHODCALLTYPE CModelPhysboxCapsule::asCapsule() const
+{
+	return(this);
+}
+
+IModelPhysboxCapsule* XMETHODCALLTYPE CModelPhysboxCapsule::asCapsule()
 {
 	return(this);
 }

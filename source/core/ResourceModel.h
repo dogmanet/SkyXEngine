@@ -12,7 +12,8 @@ public:
 	~CResourceModel();
 
 	UINT XMETHODCALLTYPE getPhysboxCount() const override;
-	const IModelPhysbox * XMETHODCALLTYPE getPhysbox(UINT uPart) const override;
+	const IModelPhysbox* XMETHODCALLTYPE getPhysbox(UINT uPart) const override;
+	IModelPhysbox* XMETHODCALLTYPE getPhysbox(UINT uPart) override;
 	int XMETHODCALLTYPE getPhysboxBone(UINT uPart) const override;
 	void XMETHODCALLTYPE addPhysbox(IModelPhysbox *pPhysbox, int iBone = -1) override;
 

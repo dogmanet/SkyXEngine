@@ -76,6 +76,11 @@ bool CDynamicModelShared::init(IXResourceModelStatic *pResource)
 		m_uMaterialCount = pResource->getMaterialCount();
 		m_uSkinCount = pResource->getSkinCount();
 
+		if(!m_uMaterialCount || !m_uSkinCount || !pResource->getLodCount() || !pResource->getSubsetCount(0))
+		{
+			return(false);
+		}
+
 		m_bmFeatures = new XMODEL_FEATURE[m_uSkinCount];
 
 		m_ppMaterialsBlob = new void*[m_uMaterialCount * m_uSkinCount + m_uSkinCount];

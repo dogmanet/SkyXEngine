@@ -132,6 +132,21 @@
     <ClCompile Include="..\..\..\source\terrax\EditorMaterialBrowser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\ProxyObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\CommandBuildModel.cpp">
+      <Filter>Source Files\cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\common\guid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\CommandDestroyModel.cpp">
+      <Filter>Source Files\cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\CommandModifyModel.cpp">
+      <Filter>Source Files\cmd</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\terrax\terrax.rc">
@@ -246,6 +261,18 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\terrax\EditorMaterialBrowser.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\ProxyObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\CommandBuildModel.h">
+      <Filter>Header Files\cmd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\CommandDestroyModel.h">
+      <Filter>Header Files\cmd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\CommandModifyModel.h">
+      <Filter>Header Files\cmd</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

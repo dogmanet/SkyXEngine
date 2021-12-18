@@ -196,6 +196,7 @@ private:
 #define REC_NOLISTING() REC_KV("show_in_listing", "0")
 #define REC_ICON(s) REC_KV("icon", s)
 #define REC_MODEL(s) REC_KV("model", s)
+#define REC_MODEL_FIELD(s) REC_KV("model_field", s)
 
 #define REGISTER_ENTITY(cls, name, ...) \
 	CEntityFactory<cls> ent_ ## name ## _factory(#name, {__VA_ARGS__})

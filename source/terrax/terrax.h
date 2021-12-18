@@ -7,6 +7,7 @@
 #include <xcommon/editor/IXEditorObject.h>
 #include <common/assotiativearray.h>
 #include <xEngine/IXEngine.h>
+#include <xcommon/editor/IXEditable.h>
 
 #define MAIN_WINDOW_TITLE      "TerraX"
 #define MAIN_WINDOW_CLASS      "X Main Window"
@@ -33,6 +34,7 @@
 #include "Grid.h"
 #include "MaterialBrowser.h"
 #include "Editor.h"
+#include "ProxyObject.h"
 
 enum X_VIEWPORT_LAYOUT
 {
@@ -87,6 +89,7 @@ struct CTerraXConfig
 	bool m_bSnapGrid = true;
 	bool m_bDottedGrid = false;
 	float m_fGridOpacity = 0.5f;
+	bool m_bIgnoreGroups = false;
 
 	X_VIEWPORT_LAYOUT m_xViewportLayout = XVIEW_2X2;
 };
@@ -197,10 +200,55 @@ struct XBorderVertex
 };
 
 extern Array<IXEditorObject*> g_pLevelObjects;
+extern Map<XGUID, IXEditorModel*> g_apLevelModels;
+extern Map<IXEditorObject*, CProxyObject*> g_mObjectsLocation;
+extern Array<CProxyObject*> g_apProxies;
+
+template<typename T, class L>
+void XEnumerateObjects(const T &Func, L *pWhere)
+{
+	void *isProxy;
+	if(pWhere)
+	{
+		for(UINT i = 0, l = pWhere->getObjectCount(); i < l; ++i)
+		{
+			IXEditorObject *pObj = pWhere->getObject(i);
+			isProxy = NULL;
+			pObj->getInternalData(&X_IS_PROXY_GUID, &isProxy);
+			Func(pObj, isProxy ? true : false, pWhere);
+			if(isProxy)
+			{
+				XEnumerateObjects(Func, (CProxyObject*)pObj);
+			}
+		}
+	}
+	else
+	{
+
+		fora(i, g_pLevelObjects)
+		{
+			IXEditorObject *pObj = g_pLevelObjects[i];
+			isProxy = NULL;
+			pObj->getInternalData(&X_IS_PROXY_GUID, &isProxy);
+			Func(pObj, isProxy ? true : false, pWhere);
+			if(isProxy)
+			{
+				XEnumerateObjects(Func, (CProxyObject*)pObj);
+			}
+		}
+	}
+}
+
+template<typename T>
+void XEnumerateObjects(const T &Func)
+{
+	XEnumerateObjects(Func, (CProxyObject*)NULL);
+}
 
 void XDrawBorder(GXCOLOR color, const float3_t &vA, const float3_t &vB, const float3_t &vC, const float3_t &vD, float fViewportScale = 0.01f);
 
 bool XExecCommand(IXEditorCommand *pCommand);
+void XAttachCommand(IXEditorCommand *pCommand);
 
 void XUpdateSelectionBound();
 
@@ -220,6 +268,12 @@ void XInitCustomAccel();
 void XSetXformType(X_2DXFORM_TYPE type);
 
 bool XIsKeyPressed(UINT uKey);
+
+CProxyObject* XTakeObject(IXEditorObject *pObject, CProxyObject *pWhere);
+IXEditorObject* XFindObjectByGUID(const XGUID &guid);
+CProxyObject* XGetObjectParent(IXEditorObject *pObject);
+
+void CheckToolbarButton(int iCmd, BOOL isChecked);
 
 extern IXEngine *g_pEngine;
 

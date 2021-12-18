@@ -229,13 +229,16 @@ CConvexHullShape::CConvexHullShape(UINT uPoints, const float3_t *pPoints, byte u
 		btShapeHull tmpHull(&tmpShape);
 		tmpHull.buildHull(0);
 
-		m_pShape = new btConvexHullShape((float*)tmpHull.getVertexPointer(), tmpHull.numVertices(), sizeof(btVector3));
-	}
-	else
-	{
-		m_pShape = new btConvexHullShape((float*)pPoints, uPoints, u8Stride);
+		if(tmpHull.numVertices())
+		{
+			m_pShape = new btConvexHullShape((float*)tmpHull.getVertexPointer(), tmpHull.numVertices(), sizeof(btVector3));
+			setShape(m_pShape);
+			return;
+		}
 	}
 
+	m_pShape = new btConvexHullShape((float*)pPoints, uPoints, u8Stride);
+	
 	setShape(m_pShape);
 }
 CConvexHullShape::~CConvexHullShape()

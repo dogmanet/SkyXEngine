@@ -3,7 +3,7 @@
 
 extern AssotiativeArray<AAString, IXEditable*> g_mEditableSystems;
 
-CCommandCreate::CCommandCreate(const float3_t vPos, const char *szTypeName, const char *szClassName, bool useRandomScaleYaw)
+CCommandCreate::CCommandCreate(const float3_t &vPos, const char *szTypeName, const char *szClassName, bool useRandomScaleYaw)
 {
 	m_vPos = vPos;
 	m_sClassName = szClassName;
@@ -31,6 +31,10 @@ CCommandCreate::~CCommandCreate()
 
 bool XMETHODCALLTYPE CCommandCreate::exec()
 {
+	if(!m_pEditable)
+	{
+		return(false);
+	}
 	if(!m_pObject)
 	{
 		m_pObject = m_pEditable->newObject(m_sClassName.c_str());
@@ -42,8 +46,7 @@ bool XMETHODCALLTYPE CCommandCreate::exec()
 	m_pObject->setSelected(true);
 	m_pObject->create();
 
-	g_pLevelObjects.push_back(m_pObject);
-	add_ref(m_pObject);
+	g_pEditor->addObject(m_pObject);
 
 	XUpdatePropWindow();
 	return(true);
@@ -51,12 +54,9 @@ bool XMETHODCALLTYPE CCommandCreate::exec()
 bool XMETHODCALLTYPE CCommandCreate::undo()
 {
 	m_pObject->remove();
-	int idx = g_pLevelObjects.indexOf(m_pObject);
-	if(idx >= 0)
-	{
-		mem_release(g_pLevelObjects[idx]);
-		g_pLevelObjects.erase(idx);
-	}
+	g_pEditor->removeObject(m_pObject);
+
+	m_pObject->setSelected(false);
 
 	XUpdatePropWindow();
 	return(true);

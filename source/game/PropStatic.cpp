@@ -18,7 +18,7 @@ BEGIN_PROPTABLE(CPropStatic)
 	EDITOR_COMBO_END()
 END_PROPTABLE()
 
-REGISTER_ENTITY(CPropStatic, prop_static);
+REGISTER_ENTITY(CPropStatic, prop_static, REC_MODEL_FIELD("model"));
 
 CPropStatic::CPropStatic()
 {

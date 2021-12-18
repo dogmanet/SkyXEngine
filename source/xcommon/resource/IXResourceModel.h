@@ -199,11 +199,16 @@ class IModelPhysbox: public IXUnknown
 public:
 	virtual XPHYSBOXTYPE XMETHODCALLTYPE getType() const = 0;
 
-	virtual const IModelPhysboxBox * XMETHODCALLTYPE asBox() const = 0;
-	virtual const IModelPhysboxSphere * XMETHODCALLTYPE asSphere() const = 0;
-	virtual const IModelPhysboxConvex * XMETHODCALLTYPE asConvex() const = 0;
-	virtual const IModelPhysboxCylinder * XMETHODCALLTYPE asCylinder() const = 0;
-	virtual const IModelPhysboxCapsule * XMETHODCALLTYPE asCapsule() const = 0;
+	virtual const IModelPhysboxBox* XMETHODCALLTYPE asBox() const = 0;
+	virtual IModelPhysboxBox* XMETHODCALLTYPE asBox() = 0;
+	virtual const IModelPhysboxSphere* XMETHODCALLTYPE asSphere() const = 0;
+	virtual IModelPhysboxSphere* XMETHODCALLTYPE asSphere() = 0;
+	virtual const IModelPhysboxConvex* XMETHODCALLTYPE asConvex() const = 0;
+	virtual IModelPhysboxConvex* XMETHODCALLTYPE asConvex() = 0;
+	virtual const IModelPhysboxCylinder* XMETHODCALLTYPE asCylinder() const = 0;
+	virtual IModelPhysboxCylinder* XMETHODCALLTYPE asCylinder() = 0;
+	virtual const IModelPhysboxCapsule* XMETHODCALLTYPE asCapsule() const = 0;
+	virtual IModelPhysboxCapsule* XMETHODCALLTYPE asCapsule() = 0;
 
 	virtual float3 XMETHODCALLTYPE getPosition() const = 0;
 	virtual void XMETHODCALLTYPE setPosition(const float3 &vPos) = 0;
@@ -266,6 +271,7 @@ class IXResourceModel: public IXUnknown
 public:
 	virtual UINT XMETHODCALLTYPE getPhysboxCount() const = 0;
 	virtual const IModelPhysbox * XMETHODCALLTYPE getPhysbox(UINT uPart) const = 0;
+	virtual IModelPhysbox* XMETHODCALLTYPE getPhysbox(UINT uPart) = 0;
 	virtual int XMETHODCALLTYPE getPhysboxBone(UINT uPart) const = 0;
 	virtual void XMETHODCALLTYPE addPhysbox(IModelPhysbox *pPhysbox, int iBone = -1) = 0;
 

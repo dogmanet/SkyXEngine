@@ -9,19 +9,18 @@ bool XMETHODCALLTYPE CCommandPaste::exec()
 	{
 		m_pCommandSelect = new CCommandSelect();
 		
-		for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-		{
-			if(g_pLevelObjects[i]->isSelected())
+		XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+			if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
 			{
-				m_pCommandSelect->addDeselected(g_pLevelObjects[i]);
+				m_pCommandSelect->addDeselected(pObj);
 			}
-		}
+		});
 	}
 
 	m_pCommandSelect->exec();
 
 	_paste_obj *pObj;
-	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
+	fora(i, m_aObjects)
 	{
 		pObj = &m_aObjects[i];
 
@@ -37,26 +36,66 @@ bool XMETHODCALLTYPE CCommandPaste::exec()
 			pObj->pObject->setKV(i.first->c_str(), i.second->c_str());
 		}
 		pObj->pObject->postSetup();
-		add_ref(pObj->pObject);
-		g_pLevelObjects.push_back(pObj->pObject);
+		//add_ref(pObj->pObject);
+		g_pEditor->addObject(pObj->pObject);
 	}
+
+	fora(i, m_aProxies)
+	{
+		_proxy_obj &po = m_aProxies[i];
+
+		po.pProxy->setDstObject(m_mapGuids[po.guid]);
+		fora(j, po.aObjects)
+		{
+			IXEditorObject *pObj = XFindObjectByGUID(m_mapGuids[po.aObjects[j]]);
+			if(pObj)
+			{
+				po.pProxy->addChildObject(pObj);
+			}
+		}
+		
+		po.pProxy->build();
+		g_pEditor->addObject(po.pProxy);
+		po.pProxy->setSelected(true);
+		add_ref(po.pProxy);
+		g_apProxies.push_back(po.pProxy);
+	}
+
 	XUpdatePropWindow();
-	return(m_aObjects.size());
+	return(m_aObjects.size() != 0);
 }
 bool XMETHODCALLTYPE CCommandPaste::undo()
 {
+	forar(i, m_aProxies)
+	{
+		CProxyObject *pProxy = m_aProxies[i].pProxy;
+
+		int idx = g_apProxies.indexOf(pProxy);
+		assert(idx >= 0);
+		if(idx >= 0)
+		{
+			mem_release(g_apProxies[idx]);
+			g_apProxies.erase(idx);
+		}
+
+		g_pEditor->removeObject(pProxy);
+
+		while(pProxy->getObjectCount())
+		{
+			pProxy->removeChildObject(pProxy->getObject(0));
+		}
+
+		pProxy->reset();
+	}
+
+
 	_paste_obj *pObj;
-	for(int i = m_aObjects.size() - 1; i >= 0; --i)
+	forar(i, m_aObjects)
 	{
 		pObj = &m_aObjects[i];
 
 		pObj->pObject->remove();
-		int idx = g_pLevelObjects.indexOf(pObj->pObject);
-		if(idx >= 0)
-		{
-			mem_release(g_pLevelObjects[idx]);
-			g_pLevelObjects.erase(idx);
-		}
+		g_pEditor->removeObject(pObj->pObject);
 	}
 
 	m_pCommandSelect->undo();
@@ -67,14 +106,19 @@ bool XMETHODCALLTYPE CCommandPaste::undo()
 
 CCommandPaste::~CCommandPaste()
 {
-	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
+	fora(i, m_aObjects)
 	{
 		mem_release(m_aObjects[i].pObject);
 	}
-	mem_delete(m_pCommandSelect);
+	mem_release(m_pCommandSelect);
+
+	fora(i, m_aProxies)
+	{
+		mem_release(m_aProxies[i].pProxy);
+	}
 }
 
-UINT CCommandPaste::addObject(const char *szTypeName, const char *szClassName, const float3 &vPos, const float3 &vScale, const SMQuaternion &qRotate)
+UINT CCommandPaste::addObject(const char *szTypeName, const char *szClassName, const float3 &vPos, const float3 &vScale, const SMQuaternion &qRotate, const XGUID &oldGUID)
 {
 	const AssotiativeArray<AAString, IXEditable*>::Node *pNode;
 	if(!g_mEditableSystems.KeyExists(AAString(szTypeName), &pNode))
@@ -94,6 +138,8 @@ UINT CCommandPaste::addObject(const char *szTypeName, const char *szClassName, c
 	obj.vScale = vScale;
 	obj.qRotate = qRotate;
 
+	m_mapGuids[oldGUID] = *obj.pObject->getGUID();
+
 	m_aObjects.push_back(obj);
 
 	return(m_aObjects.size() - 1);
@@ -103,4 +149,18 @@ void CCommandPaste::setKV(UINT uId, const char *szKey, const char *szValue)
 	assert(uId < m_aObjects.size());
 
 	m_aObjects[uId].mKeyValues[szKey] = szValue;
+}
+
+UINT CCommandPaste::addProxy(const XGUID &guid)
+{
+	m_aProxies.push_back({guid, new CProxyObject()});
+
+	return(m_aProxies.size() - 1);
+}
+
+void CCommandPaste::addProxyObject(UINT uProxy, const XGUID &guid)
+{
+	assert(uProxy < m_aProxies.size());
+	
+	m_aProxies[uProxy].aObjects.push_back(guid);
 }

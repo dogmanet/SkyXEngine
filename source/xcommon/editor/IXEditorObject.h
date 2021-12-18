@@ -66,6 +66,8 @@ public:
 	virtual void XMETHODCALLTYPE setSimulationMode(bool set) = 0;
 
 	virtual bool XMETHODCALLTYPE hasVisualModel() = 0;
+
+	virtual const XGUID* XMETHODCALLTYPE getGUID() = 0;
 };
 
 

@@ -19,7 +19,7 @@ BEGIN_PROPTABLE(CTriggerHurt)
 	DEFINE_FIELD_FLOAT(m_fHurtInterval, PDFF_NONE, "hurt_interval", "Hurt interval", EDITOR_TEXTFIELD)
 END_PROPTABLE()
 
-REGISTER_ENTITY(CTriggerHurt, trigger_hurt);
+REGISTER_ENTITY(CTriggerHurt, trigger_hurt, REC_MODEL_FIELD("model"));
 
 CTriggerHurt::~CTriggerHurt()
 {

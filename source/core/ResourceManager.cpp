@@ -331,7 +331,8 @@ bool XMETHODCALLTYPE CResourceManager::getModelInfo(const char *szName, XModelIn
 
 void CResourceManager::onResourceModelRelease(CResourceModel *pResource)
 {
-	if(pResource->getFileName())
+	const Map<String, IXResourceModel*>::Node *pNode;
+	if(pResource->getFileName() && m_mpModels.KeyExists(pResource->getFileName(), &pNode) && *pNode->Val == pResource)
 	{
 		m_mpModels.erase(pResource->getFileName());
 	}

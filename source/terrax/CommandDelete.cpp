@@ -2,7 +2,7 @@
 
 CCommandDelete::~CCommandDelete()
 {
-	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
+	fora(i, m_aObjects)
 	{
 		mem_release(m_aObjects[i].pObject);
 	}
@@ -11,18 +11,19 @@ CCommandDelete::~CCommandDelete()
 bool XMETHODCALLTYPE CCommandDelete::exec()
 {
 	_del_obj *pObj;
-	for(int i = m_aObjects.size() - 1; i >= 0; --i)
+	forar(i, m_aObjects)
 	{
 		pObj = &m_aObjects[i];
+
+		if(pObj->pLocation)
+		{
+			pObj->pLocation->removeChildObject(pObj->pObject);
+		}
+
 		pObj->pObject->setSelected(false);
 		pObj->pObject->remove();
 
-		int idx = g_pLevelObjects.indexOf(pObj->pObject);
-		if(idx >= 0)
-		{
-			mem_release(g_pLevelObjects[idx]);
-			g_pLevelObjects.erase(idx);
-		}
+		g_pEditor->removeObject(pObj->pObject);
 	}
 	XUpdatePropWindow();
 	return(m_aObjects.size());
@@ -30,7 +31,7 @@ bool XMETHODCALLTYPE CCommandDelete::exec()
 bool XMETHODCALLTYPE CCommandDelete::undo()
 {
 	_del_obj *pObj;
-	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
+	fora(i, m_aObjects)
 	{
 		pObj = &m_aObjects[i];
 
@@ -47,10 +48,14 @@ bool XMETHODCALLTYPE CCommandDelete::undo()
 		}
 		pObj->pObject->postSetup();
 
-		add_ref(pObj->pObject);
-		g_pLevelObjects.push_back(pObj->pObject);
+		g_pEditor->addObject(pObj->pObject);
 
 		pObj->pObject->setSelected(pObj->wasSelected);
+
+		if(pObj->pLocation)
+		{
+			pObj->pLocation->addChildObject(pObj->pObject);
+		}
 	}
 	XUpdatePropWindow();
 	return(true);
@@ -62,6 +67,7 @@ void CCommandDelete::addObject(IXEditorObject *pObj)
 	add_ref(pObj);
 	obj.pObject = pObj;
 	obj.wasSelected = obj.pObject->isSelected();
+	obj.pLocation = XGetObjectParent(obj.pObject);
 
 	UINT uKeyCount = obj.pObject->getProperyCount();
 	for(UINT i = 0; i < uKeyCount; ++i)

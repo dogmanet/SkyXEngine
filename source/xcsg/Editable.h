@@ -6,6 +6,8 @@
 #include <xcommon/IXCore.h>
 #include "EditorExtension.h"
 
+class CEditorModel;
+
 class CEditable final: public IXUnknownImplementation<IXEditable>
 {
 	friend class CEditorObject;
@@ -36,10 +38,15 @@ public:
 
 	void XMETHODCALLTYPE startup(IGXDevice *pDevice) override;
 	void XMETHODCALLTYPE shutdown() override;
-	
+
 	IXEditorExtension* XMETHODCALLTYPE getEditorExtension() override
 	{
 		return(m_pEditorExtension);
+	}
+
+	bool XMETHODCALLTYPE canUseModel(const char *szClass) override
+	{
+		return(false);
 	}
 
 	//void resync();
@@ -85,9 +92,23 @@ public:
 		return(m_clipPlane);
 	}
 
+	bool XMETHODCALLTYPE canProduceModel() override
+	{
+		return(true);
+	}
+	bool XMETHODCALLTYPE buildModelFromSelection(IXEditorModel **ppOut) override;
+	UINT XMETHODCALLTYPE getModelCount() override;
+	bool XMETHODCALLTYPE getModel(UINT id, IXEditorModel **ppOut) override;
+	bool XMETHODCALLTYPE newModel(IXEditorModel **ppOut) override;
+	void onModelDestroy(CEditorModel *pModel);
+	void onModelRestored(CEditorModel *pModel);
+
 	SX_ALIGNED_OP_MEM();
 
-protected:
+private:
+	CEditorObject* getObjectByGUID(const XGUID &guid);
+
+private:
 	IGXDevice *m_pDevice = NULL;
 	IXCore *m_pCore = NULL;
 	//IXMaterialSystem *m_pMaterialSystem = NULL;
@@ -97,6 +118,8 @@ protected:
 	//IXTexture *m_pWhiteTexture = NULL;
 
 	Array<CEditorObject*> m_aObjects;
+
+	Array<CEditorModel*> m_aModels;
 
 	void removeObject(CEditorObject *pObject);
 

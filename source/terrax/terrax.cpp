@@ -23,12 +23,16 @@ See the license in LICENSE
 #include <xcommon/IXRenderable.h>
 #include <xcommon/resource/IXResourceManager.h>
 #include <xcommon/render/IXRenderUtils.h>
+#include <xcommon/IXJSON.h>
 #include <mtrl/IXMaterialSystem.h>
 #include "UndoManager.h"
 #include "Tools.h"
 
 #include <xEngine/IXEngine.h>
 #include "Editor.h"
+
+#include "ProxyObject.h"
+
 #ifdef _DEBUG
 #	pragma comment(lib, "xEngine_d.lib")
 #else
@@ -53,7 +57,10 @@ BOOL XInitInstance(HINSTANCE, int);
 
 Array<IXEditable*> g_pEditableSystems;
 Array<IXEditorObject*> g_pLevelObjects;
-AssotiativeArray<AAString, IXEditable*> g_mEditableSystems;
+Map<AAString, IXEditable*> g_mEditableSystems;
+Map<XGUID, IXEditorModel*> g_apLevelModels;
+Map<IXEditorObject*, CProxyObject*> g_mObjectsLocation;
+Array<CProxyObject*> g_apProxies;
 //SGeom_GetCountModels()
 
 Array<IXEditorExtension*> g_apExtensions;
@@ -1006,6 +1013,8 @@ public:
 
 				ShowCursor(TRUE);
 
+				SetForegroundWindow(g_hWndMain);
+
 				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 				{
 					g_pLevelObjects[i]->setSimulationMode(false);
@@ -1135,7 +1144,10 @@ int main(int argc, char **argv)
 			g_pEditableSystems.push_back(pEditable);
 			pEditable->startup(SGCore_GetDXDevice());
 
-			ComboBox_AddString(g_hComboTypesWnd, pEditable->getName());
+			if(pEditable->getClassCount() != 0)
+			{
+				ComboBox_AddString(g_hComboTypesWnd, pEditable->getName());
+			}
 
 			IXEditorExtension *pExt = pEditable->getEditorExtension();
 			if(pExt)
@@ -1159,6 +1171,7 @@ int main(int argc, char **argv)
 			g_mEditableSystems[AAString(pEditable->getName())] = pEditable;
 		}
 	}
+	SetForegroundWindow(g_hWndMain);
 	XInitCustomAccel();
 	if(g_pEditableSystems.size() > 0)
 	{
@@ -1267,14 +1280,27 @@ int main(int argc, char **argv)
 			break;
 		case XEventLevel::TYPE_UNLOAD:
 
+			SendMessage(g_hWndMain, WM_COMMAND, MAKEWPARAM(ID_EDIT_CLEARSELECTION, 0), (LPARAM)0);
+
 			g_sLevelName = "";
 
-			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+			fora(i, g_pLevelObjects)
 			{
 				mem_release(g_pLevelObjects[i]);
 			}
 			g_pLevelObjects.clear();
 
+			fora(i, g_apProxies)
+			{
+				mem_release(g_apProxies[i]);
+			}
+			g_apProxies.clear();
+			
+			for(Map<XGUID, IXEditorModel*>::Iterator i = g_apLevelModels.begin(); i; ++i)
+			{
+				mem_release(*(i.second))
+			}
+			g_apLevelModels.clear();
 
 			SAFE_CALL(g_pUndoManager, reset);
 
@@ -1287,6 +1313,8 @@ int main(int argc, char **argv)
 			{
 				char szPathLevel[1024], szKey[64], szVal[1024];
 				sprintf(szPathLevel, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pData->szLevelName, pData->szLevelName);
+
+				IFileSystem *pFS = Core_GetIXCore()->getFileSystem();
 
 				ISXConfig *pCfg = Core_OpConfig(szPathLevel);
 				
@@ -1332,18 +1360,198 @@ int main(int argc, char **argv)
 
 				pCfg->save();
 				mem_release(pCfg);
+
+				// save proxies
+				sprintf(szPathLevel, "levels/%s/editor/proxies.json", pData->szLevelName);
+				
+				IFile *pFile = pFS->openFile(szPathLevel, FILE_MODE_WRITE);
+				if(!pFile)
+				{
+					LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to save data '%s'\n", szPathLevel);
+					return;
+				}
+
+				pFile->writeText("[\n");
+
+				sprintf(szPathLevel, "levels/%s/models", pData->szLevelName);
+				pFS->deleteDirectory(szPathLevel);
+				//IFileIterator *pIter = pFS->getFileList(szPathLevel, "dse");
+				//const char *szFile;
+				//while((szFile = pIter->next()))
+				//{
+				//	//printf("%s\n", szFile);
+				//	pFS->deleteFile(szFile);
+				//}
+
+				bool isFirst = true;
+				char tmp[64];
+				fora(i, g_apProxies)
+				{
+					CProxyObject *pProxy = g_apProxies[i];
+					if(pProxy->isRemoved())
+					{
+						continue;
+					}
+					pFile->writeText("\t%s{\n", isFirst ? "" : ",");
+					isFirst = false;
+
+					XGUIDToSting(*pProxy->getGUID(), tmp, sizeof(tmp));
+					pFile->writeText("\t\t\"guid\": \"%s\"\n", tmp);
+					XGUIDToSting(*pProxy->getTargetObject()->getGUID(), tmp, sizeof(tmp));
+					pFile->writeText("\t\t,\"t\": \"%s\"\n", tmp);
+					pFile->writeText("\t\t,\"s\": [\n", tmp);
+
+					// TODO don't save empty models!
+
+					for(UINT j = 0, jl = pProxy->getModelCount(); j < jl; ++j)
+					{
+						XGUIDToSting(*pProxy->getModel(j)->getGUID(), tmp, sizeof(tmp));
+						pFile->writeText("\t\t\t%s\"%s\"\n", j == 0 ? "" : ",", tmp);
+					}
+
+					pFile->writeText("\t\t]\n\t\t,\"o\": [\n", tmp);
+
+					for(UINT j = 0, jl = pProxy->getObjectCount(); j < jl; ++j)
+					{
+						XGUIDToSting(*pProxy->getObject(j)->getGUID(), tmp, sizeof(tmp));
+						pFile->writeText("\t\t\t%s\"%s\"\n", j == 0 ? "" : ",", tmp);
+					}
+
+					pFile->writeText("\t\t]\n", tmp);
+
+					pFile->writeText("\t}\n");
+
+					pProxy->saveModel();
+				}
+
+				pFile->writeText("\n]\n");
+
+				mem_release(pFile);
 			}
 			break;
 
+		case XEventLevel::TYPE_LOAD_BEGIN:
+			EnableWindow(g_hWndMain, FALSE);
+			break;
+
 		case XEventLevel::TYPE_LOAD_END:
-			for(UINT ic = 0, il = g_pEditableSystems.size(); ic < il; ++ic)
+			fora(ic, g_pEditableSystems)
 			{
 				IXEditable *pEditable = g_pEditableSystems[ic];
 				for(ID i = 0, l = pEditable->getObjectCount(); i < l; ++i)
 				{
 					g_pLevelObjects.push_back(pEditable->getObject(i));
 				}
+
+				for(ID i = 0, l = pEditable->getModelCount(); i < l; ++i)
+				{
+					IXEditorModel *pMdl;
+					if(pEditable->getModel(i, &pMdl))
+					{
+						g_apLevelModels[*pMdl->getGUID()] = pMdl;
+					}
+				}
 			}
+
+			char szFile[1024];
+			sprintf(szFile, "levels/%s/editor/proxies.json", pData->szLevelName);
+
+			IFile *pFile = Core_GetIXCore()->getFileSystem()->openFile(szFile, FILE_MODE_READ);
+			if(pFile)
+			{
+				size_t sizeFile = pFile->getSize();
+				char *szJSON = new char[sizeFile + 1];
+				pFile->readBin(szJSON, sizeFile);
+				szJSON[sizeFile] = 0;
+
+				bool isLoaded = false;
+
+				IXJSON *pJSON = (IXJSON*)Core_GetIXCore()->getPluginManager()->getInterface(IXJSON_GUID);
+				IXJSONItem *pRoot;
+				if(pJSON->parse(szJSON, &pRoot))
+				{
+					IXJSONArray *pArr = pRoot->asArray();
+					if(pArr)
+					{
+						for(UINT j = 0, jl = pArr->size(); j < jl; ++j)
+						{
+							IXJSONObject *pProxyObj = pArr->at(j)->asObject();
+							if(pProxyObj)
+							{
+								// guid, t, s
+
+								const char *szGUID = NULL;
+								XGUID guid, guidTarget;
+								IXJSONItem *pGuidItem = pProxyObj->getItem("guid");
+								if(!pGuidItem || !(szGUID = pGuidItem->getString()) || !XGUIDFromString(&guid, szGUID))
+								{
+									LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid proxy '%u' in '%s'. Invalid GUID\n", j, szFile);
+									continue;
+								}
+
+								pGuidItem = pProxyObj->getItem("t");
+								if(!pGuidItem || !(szGUID = pGuidItem->getString()) || !XGUIDFromString(&guidTarget, szGUID))
+								{
+									LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid proxy '%u' in '%s'. Invalid target GUID\n", j, szFile);
+									continue;
+								}
+
+								IXJSONItem *pSItem = pProxyObj->getItem("s");
+								IXJSONArray *pSArr = NULL;
+								if(!pSItem || !(pSArr = pSItem->asArray()))
+								{
+									LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid proxy '%u' in '%s'. Missing 's' key\n", j, szFile);
+									continue;
+								}
+
+								if(!pSArr->size())
+								{
+									LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid proxy '%u' in '%s'. No child models\n", j, szFile);
+									continue;
+								}
+
+								CProxyObject *pProxy = new CProxyObject(guid);
+								pProxy->setDstObject(guidTarget);
+
+								for(UINT k = 0, kl = pSArr->size(); k < kl; ++k)
+								{
+									szGUID = pSArr->at(k)->getString();
+									if(!szGUID || !XGUIDFromString(&guid, szGUID))
+									{
+										LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid model '%u' guid in proxy '%u' in '%s'. '%s'\n", k, j, szFile, szGUID ? szGUID : "");
+										continue;
+									}
+
+									pProxy->addSrcModel(guid);
+								}
+
+								g_apProxies.push_back(pProxy);
+
+								//pProxy->build();
+
+								add_ref(pProxy);
+								g_pLevelObjects.push_back(pProxy);
+
+								isLoaded = true;
+							}
+						}
+					}
+
+					mem_release(pRoot);
+				}
+
+				mem_delete_a(szJSON);
+				mem_release(pFile);
+
+				if(!isLoaded)
+				{
+					LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to load '%s'\n", szFile);
+				}
+			}
+
+			EnableWindow(g_hWndMain, TRUE);
+
+			// g_apLevelModels
 			break;
 		}
 	});
@@ -1633,14 +1841,12 @@ void XRender3D()
 	{
 		g_pSelectionRenderer->reset();
 
-
-		for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-		{
-			if(g_pLevelObjects[i]->isSelected())
+		XEnumerateObjects([](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+			if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
 			{
-				g_pLevelObjects[i]->renderSelection(true, g_pSelectionRenderer);
+				pObj->renderSelection(true, g_pSelectionRenderer);
 			}
-		}
+		});
 
 		g_pSelectionRenderer->render(false, false);
 	}
@@ -1816,14 +2022,13 @@ void XRender3D()
 			};
 			Array<Icon> aIcons;
 			Icon icon;
-			for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-			{
-				if((icon.pTexture = g_pLevelObjects[i]->getIcon()))
+			XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+				if((icon.pTexture = pObj->getIcon()))
 				{
-					icon.vPos = g_pLevelObjects[i]->getPos();
+					icon.vPos = pObj->getPos();
 					aIcons.push_back(icon);
 				}
-			}
+			});
 			aIcons.quickSort([](const Icon &a, const Icon &b){
 				return(a.pTexture < b.pTexture);
 			});
@@ -1924,13 +2129,12 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			{
 				g_pSelectionRenderer->reset();
 
-				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-				{
-					if(g_pLevelObjects[i]->isSelected())
+				XEnumerateObjects([](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+					if(pObj->isSelected() && !(g_xConfig.m_bIgnoreGroups && isProxy))
 					{
-						g_pLevelObjects[i]->renderSelection(false, g_pSelectionRenderer);
+						pObj->renderSelection(false, g_pSelectionRenderer);
 					}
-				}
+				});
 
 				g_isRenderedSelection3D = false;
 			}
@@ -1938,7 +2142,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 		}
 
 		// Draw handlers
-		if(g_pLevelObjects.size())
+		if(g_pLevelObjects.size() || g_apProxies.size())
 		{
 			pCtx->setPSConstant(s_pColorBuffer);
 
@@ -1972,21 +2176,25 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			{
 				UINT uHandlerCount = 0;
 				pvData = NULL;
-				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-				{
-					float3_t vPos = g_pLevelObjects[i]->getPos();
+				XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+					float3_t vPos = pObj->getPos();
 					//@TODO: Add visibility check
 					/*if(fViewportBorders.x > vPos.x || fViewportBorders.z < vPos.x || fViewportBorders.y < vPos.z) // not visible
 					{
-						continue;
+					continue;
 					}*/
-					if(isSelected != g_pLevelObjects[i]->isSelected())
+					if(isSelected != pObj->isSelected())
 					{
-						continue;
+						return;
 					}
+					if(isProxy)
+					{
+						return;
+					}
+
 					if(!pvData && !g_xRenderStates.pHandlerInstanceVB->lock((void**)&pvData, GXBL_WRITE))
 					{
-						break;
+						return;
 					}
 
 					pvData[uHandlerCount++] = vPos;
@@ -1997,7 +2205,8 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 						pvData = NULL;
 						uHandlerCount = 0;
 					}
-				}
+				});
+
 				if(pvData)
 				{
 					g_xRenderStates.pHandlerInstanceVB->unlock();
@@ -2273,6 +2482,13 @@ bool XSaveLevel(const char *szNewName, bool bForcePrompt)
 			FileCreateDir(szPathDirLevel);
 		}
 
+		g_sLevelName = szNewName;
+
+		fora(i, g_apProxies)
+		{
+			g_apProxies[i]->build();
+		}
+
 		XEventLevel ev;
 		ev.type = XEventLevel::TYPE_SAVE;
 		ev.szLevelName = szNewName;
@@ -2365,16 +2581,20 @@ bool XExecCommand(IXEditorCommand *pCommand)
 	return(false);
 }
 
+void XAttachCommand(IXEditorCommand *pCommand)
+{
+	g_pUndoManager->attachCommand(pCommand);
+}
+
 void XUpdateSelectionBound()
 {
 	g_xState.bHasSelection = false;
 	float3 vMin, vMax;
 
-	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-	{
-		if(g_pLevelObjects[i]->isSelected())
+	XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+		if(pObj->isSelected() && !(g_xConfig.m_bIgnoreGroups && isProxy))
 		{
-			g_pLevelObjects[i]->getBound(&vMin, &vMax);
+			pObj->getBound(&vMin, &vMax);
 			if(!g_xState.bHasSelection)
 			{
 				g_xState.bHasSelection = true;
@@ -2387,7 +2607,7 @@ void XUpdateSelectionBound()
 				g_xState.vSelectionBoundMin = (float3)SMVectorMin(g_xState.vSelectionBoundMin, vMin);
 			}
 		}
-	}
+	});
 }
 
 bool XRayCast(X_WINDOW_POS wnd)
@@ -2416,13 +2636,14 @@ bool XRayCast(X_WINDOW_POS wnd)
 		break;
 	}
 	vEnd += vStart;
-	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-	{
-		if(g_pLevelObjects[i]->isSelected() && g_pLevelObjects[i]->rayTest(vStart, vEnd, &vPos, NULL))
+
+	bool res = false;
+	XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+		if(!res && pObj->isSelected() && !(g_xConfig.m_bIgnoreGroups && isProxy) && pObj->rayTest(vStart, vEnd, &vPos, NULL))
 		{
-			return(true);
+			res = true;
 		}
-	}
+	});
 	return(false);
 }
 
@@ -2510,8 +2731,8 @@ void XExportToObj(const char *szMdl)
 			auto &v = pSubset->pVertices[j];
 
 			pObjFile->writeText("v %f %f %f\nvt %f %f\nvn %f %f %f\n", 
-				v.vPos.x, v.vPos.y, v.vPos.z,
-				v.vTex.x, v.vTex.y,
+				v.vPos.x, v.vPos.y, -v.vPos.z,
+				v.vTex.x, 1.0f - v.vTex.y,
 				v.vNorm.x, v.vNorm.y, v.vNorm.z
 				);
 		}
@@ -2534,8 +2755,8 @@ void XExportToObj(const char *szMdl)
 				UINT c = pSubset->pIndices[j + 2] + uFaceOffset;
 				pObjFile->writeText("f %u/%u/%u %u/%u/%u %u/%u/%u\n",
 					a, a, a,
-					b, b, b,
-					c, c, c
+					c, c, c,
+					b, b, b
 					);
 			}
 		}
@@ -2548,8 +2769,8 @@ void XExportToObj(const char *szMdl)
 				UINT c = pSubset->pIndices[j + 2] + uFaceOffset;
 				pObjFile->writeText("f %u/%u/%u %u/%u/%u %u/%u/%u\n",
 					a, a, a,
-					b, b, b,
-					c, c, c
+					c, c, c,
+					b, b, b
 					);
 			}
 		}
@@ -2581,4 +2802,58 @@ void XExportToObj(const char *szMdl)
 	mem_release(pResource);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "%s was written\n", buf);
+}
+
+CProxyObject* XTakeObject(IXEditorObject *pObject, CProxyObject *pWhere)
+{
+	int idx = g_pLevelObjects.indexOf(pObject);
+	assert((idx >= 0) != (pWhere == NULL));
+	if(idx >= 0)
+	{
+		g_pLevelObjects.erase(idx);
+		g_mObjectsLocation[pObject] = pWhere;
+		return(NULL);
+	}
+
+	const Map<IXEditorObject*, CProxyObject*>::Node *pNode;
+	if(g_mObjectsLocation.KeyExists(pObject, &pNode))
+	{
+		CProxyObject *pProxy = *pNode->Val;
+		//pProxy->removeChildObject(pObject);
+		if(pWhere)
+		{
+			g_mObjectsLocation[pObject] = pWhere;
+		}
+		else
+		{
+			g_mObjectsLocation.erase(pObject);
+			g_pLevelObjects.push_back(pObject);
+		}
+		return(pProxy);
+	}
+	assert(!"Something is wrong!");
+	return(NULL);
+}
+
+CProxyObject* XGetObjectParent(IXEditorObject *pObject)
+{
+	const Map<IXEditorObject*, CProxyObject*>::Node *pNode;
+	if(g_mObjectsLocation.KeyExists(pObject, &pNode))
+	{
+		return(*pNode->Val);
+	}
+	return(NULL);
+}
+
+IXEditorObject* XFindObjectByGUID(const XGUID &guid)
+{
+	fora(i, g_pLevelObjects)
+	{
+		if(*g_pLevelObjects[i]->getGUID() == guid)
+		{
+			return(g_pLevelObjects[i]);
+		}
+	}
+
+	return(NULL);
 }

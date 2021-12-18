@@ -1,39 +1,34 @@
 #include "CommandSelect.h"
+#include "resource.h"
 
 CCommandSelect::~CCommandSelect()
 {
-	for(UINT i = 0, l = m_aidSelected.size(); i < l; ++i)
+	fora(i, m_aObjects)
 	{
-		mem_release(m_aidSelected[i]);
-	}
-	for(UINT i = 0, l = m_aidDeselected.size(); i < l; ++i)
-	{
-		mem_release(m_aidDeselected[i]);
+		mem_release(m_aObjects[i].pObj);
 	}
 }
 
 bool XMETHODCALLTYPE CCommandSelect::exec()
 {
-	for(UINT i = 0, l = m_aidSelected.size(); i < l; ++i)
+	fora(i, m_aObjects)
 	{
-		m_aidSelected[i]->setSelected(true);
-	}
-	for(UINT i = 0, l = m_aidDeselected.size(); i < l; ++i)
-	{
-		m_aidDeselected[i]->setSelected(false);
+		m_aObjects[i].pObj->setSelected(m_aObjects[i].bToSelect);
 	}
 	XUpdatePropWindow();
 	return(true);
 }
 bool XMETHODCALLTYPE CCommandSelect::undo()
 {
-	for(UINT i = 0, l = m_aidSelected.size(); i < l; ++i)
+	if(m_igmode != IGM_NONE)
 	{
-		m_aidSelected[i]->setSelected(false);
+		g_xConfig.m_bIgnoreGroups = m_igmode == IGM_ENABLE;
+		CheckToolbarButton(ID_IGNORE_GROUPS, g_xConfig.m_bIgnoreGroups);
 	}
-	for(UINT i = 0, l = m_aidDeselected.size(); i < l; ++i)
+
+	forar(i, m_aObjects)
 	{
-		m_aidDeselected[i]->setSelected(true);
+		m_aObjects[i].pObj->setSelected(!m_aObjects[i].bToSelect);
 	}
 
 	XUpdatePropWindow();
@@ -47,35 +42,36 @@ const char* CCommandSelect::getText()
 
 void CCommandSelect::addSelected(IXEditorObject *pObj)
 {
-	add_ref(pObj);
-
-	int idx = m_aidDeselected.indexOf(pObj);
+	int idx = m_aObjects.indexOf(pObj, [](const SelObj &a, IXEditorObject *b){
+		return(a.pObj == b);
+	});
 	if(idx >= 0)
 	{
-		mem_release(m_aidDeselected[idx]);
-		m_aidDeselected.erase(idx);
+		m_aObjects[idx].bToSelect = true;
 	}
-	
-	idx = m_aidSelected.indexOf(pObj);
-	if(idx < 0)
+	else
 	{
-		m_aidSelected.push_back(pObj);
+		add_ref(pObj);
+		m_aObjects.push_back({pObj, true});
 	}
 }
 void CCommandSelect::addDeselected(IXEditorObject *pObj)
 {
-	add_ref(pObj);
-
-	int idx = m_aidSelected.indexOf(pObj);
+	int idx = m_aObjects.indexOf(pObj, [](const SelObj &a, IXEditorObject *b){
+		return(a.pObj == b);
+	});
 	if(idx >= 0)
 	{
-		mem_release(m_aidSelected[idx]);
-		m_aidSelected.erase(idx);
+		m_aObjects[idx].bToSelect = false;
 	}
-
-	idx = m_aidDeselected.indexOf(pObj);
-	if(idx < 0)
+	else
 	{
-		m_aidDeselected.push_back(pObj);
+		add_ref(pObj);
+		m_aObjects.push_back({pObj, false});
 	}
+}
+
+bool XMETHODCALLTYPE CCommandSelect::isEmpty()
+{
+	return(m_aObjects.size() == 0 && m_igmode == IGM_NONE);
 }

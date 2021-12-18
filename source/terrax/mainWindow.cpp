@@ -38,6 +38,9 @@
 #include "CommandCreate.h"
 #include "CommandProperties.h"
 #include "CommandPaste.h"
+#include "CommandBuildModel.h"
+#include "CommandDestroyModel.h"
+#include "CommandModifyModel.h"
 
 #include "PropertyWindow.h"
 
@@ -62,12 +65,15 @@ HWND g_hStatusWnd = NULL;
 HWND g_hStaticCurrentMatWnd = NULL;
 HWND g_hStaticCurrentMatSizeWnd = NULL;
 HWND g_hButtonCurrentMatBrowseWnd = NULL;
+HWND g_hButtonToWorldWnd = NULL;
+HWND g_hButtonToEntityWnd = NULL;
 //HWND g_hObjectTreeWnd = NULL;
 HWND g_hComboTypesWnd = NULL;
 HWND g_hComboCurrentMatWnd = NULL;
 HWND g_hStaticTypesWnd = NULL;
 HWND g_hComboClassesWnd = NULL;
 HWND g_hStaticClassesWnd = NULL;
+HWND g_hStaticMoveSelectedToWnd = NULL;
 HWND g_hCheckboxRandomScaleYawWnd = NULL;
 HWND g_hCurMatWnd = NULL;
 
@@ -169,15 +175,13 @@ public:
 		onApply();
 		
 		m_pPropsCmd = new CCommandProperties();
-		for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-		{
-			IXEditorObject *pObj = g_pLevelObjects[i];
-			if(pObj->isSelected())
+		XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+			if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
 			{
 				m_pPropsCmd->addObject(pObj);
 			}
-		}
-
+		});
+		
 		for(UINT i = 0, l = g_pPropWindow->getCustomTabCount(); i < l; ++i)
 		{
 			auto *pTab = g_pPropWindow->getCustomTab(i);
@@ -497,14 +501,77 @@ LRESULT CALLBACK StatusBarWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 static void DeleteSelection()
 {
 	CCommandDelete *pDelCmd = new CCommandDelete();
-	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-	{
-		if(g_pLevelObjects[i]->isSelected())
+	XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+		if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
 		{
-			pDelCmd->addObject(g_pLevelObjects[i]);
+			pDelCmd->addObject(pObj);
+		}
+	});
+	XExecCommand(pDelCmd);
+}
+
+static void ExportObject(IXConfig *pConfig, IXEditorObject *pObj, UINT &uCount)
+{
+	char szSection[64], szTmp[64];
+
+	sprintf(szSection, "obj_%u_type", uCount);
+	pConfig->set("meta", szSection, pObj->getTypeName());
+
+	sprintf(szSection, "obj_%u_class", uCount);
+	pConfig->set("meta", szSection, pObj->getClassName());
+
+	float3_t vTmp = pObj->getPos();
+	sprintf(szSection, "obj_%u_pos", uCount);
+	sprintf(szTmp, "%f %f %f", vTmp.x, vTmp.y, vTmp.z);
+	pConfig->set("meta", szSection, szTmp);
+
+	float3 vMin, vMax;
+	pObj->getBound(&vMin, &vMax);
+	vTmp = (float3)(vMax - vMin);
+	sprintf(szSection, "obj_%u_size", uCount);
+	sprintf(szTmp, "%f %f %f", vTmp.x, vTmp.y, vTmp.z);
+	pConfig->set("meta", szSection, szTmp);
+
+	// vTmp = pObj->getScale();
+	// sprintf(szSection, "obj_%u_scale", uCount);
+	// sprintf(szTmp, "%f %f %f", vTmp.x, vTmp.y, vTmp.z);
+	// pConfig->set("meta", szSection, szTmp);
+
+	SMQuaternion qTmp = pObj->getOrient();
+	sprintf(szSection, "obj_%u_orient", uCount);
+	sprintf(szTmp, "%f %f %f %f", qTmp.x, qTmp.y, qTmp.z, qTmp.w);
+	pConfig->set("meta", szSection, szTmp);
+
+	sprintf(szSection, "obj_%u_guid", uCount);
+	XGUIDToSting(*pObj->getGUID(), szTmp, sizeof(szTmp));
+	pConfig->set("meta", szSection, szTmp);
+
+	sprintf(szSection, "obj_%u", uCount);
+
+
+	for(UINT i = 0, l = pObj->getProperyCount(); i < l; ++i)
+	{
+		const X_PROP_FIELD *pField = pObj->getPropertyMeta(i);
+
+		if(!pField->isGeneric)
+		{
+			pConfig->set(szSection, pField->szKey, pObj->getKV(pField->szKey));
 		}
 	}
-	XExecCommand(pDelCmd);
+
+	++uCount;
+
+	void *isProxy = NULL;
+	pObj->getInternalData(&X_IS_PROXY_GUID, &isProxy);
+	if(isProxy)
+	{
+		// export nested objects
+		CProxyObject *pProxy = (CProxyObject*)pObj;
+		for(UINT i = 0, l = pProxy->getObjectCount(); i < l; ++i)
+		{
+			ExportObject(pConfig, pProxy->getObject(i), uCount);
+		}
+	}
 }
 
 static void ToClipboard(bool isCut = false)
@@ -514,52 +581,42 @@ static void ToClipboard(bool isCut = false)
 	pConfig->clear();
 
 	UINT uCount = 0;
-	char szSection[64], szTmp[64];
+	char szSection[64], szTmp[64], szKey[64];
 
 	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
 	{
 		IXEditorObject *pObj = g_pLevelObjects[i];
 		if(pObj->isSelected())
 		{
-			sprintf(szSection, "obj_%u_type", uCount);
-			pConfig->set("meta", szSection, pObj->getTypeName());
+			ExportObject(pConfig, pObj, uCount);
+		}
+	}
 
-			sprintf(szSection, "obj_%u_class", uCount);
-			pConfig->set("meta", szSection, pObj->getClassName());
-
-			float3_t vTmp = pObj->getPos();
-			sprintf(szSection, "obj_%u_pos", uCount);
-			sprintf(szTmp, "%f %f %f", vTmp.x, vTmp.y, vTmp.z);
-			pConfig->set("meta", szSection, szTmp);
-
-			float3 vMin, vMax;
-			pObj->getBound(&vMin, &vMax);
-			vTmp = (float3)(vMax - vMin);
-			sprintf(szSection, "obj_%u_size", uCount);
-			sprintf(szTmp, "%f %f %f", vTmp.x, vTmp.y, vTmp.z);
-			pConfig->set("meta", szSection, szTmp);
-
-			// vTmp = pObj->getScale();
-			// sprintf(szSection, "obj_%u_scale", uCount);
-			// sprintf(szTmp, "%f %f %f", vTmp.x, vTmp.y, vTmp.z);
-			// pConfig->set("meta", szSection, szTmp);
-
-			SMQuaternion qTmp = pObj->getOrient();
-			sprintf(szSection, "obj_%u_orient", uCount);
-			sprintf(szTmp, "%f %f %f %f", qTmp.x, qTmp.y, qTmp.z, qTmp.w);
-			pConfig->set("meta", szSection, szTmp);
-
-			sprintf(szSection, "obj_%u", uCount);
+	sprintf(szSection, "%u", uCount);
+	pConfig->set("meta", "count", szSection);
 
 
-			for(UINT i = 0, l = pObj->getProperyCount(); i < l; ++i)
+	uCount = 0;
+	for(UINT i = 0, l = g_apProxies.size(); i < l; ++i)
+	{
+		CProxyObject *pObj = g_apProxies[i];
+		if(pObj->isSelected())
+		{
+			sprintf(szSection, "proxy_%u", uCount);
+
+			XGUIDToSting(*pObj->getGUID(), szTmp, sizeof(szTmp));
+			pConfig->set(szSection, "guid", szTmp);
+
+			UINT uObjCount = 0;
+			sprintf(szTmp, "%u", pObj->getObjectCount());
+			pConfig->set(szSection, "o_count", szTmp);
+
+			for(UINT i = 0, l = pObj->getObjectCount(); i < l; ++i)
 			{
-				const X_PROP_FIELD *pField = pObj->getPropertyMeta(i);
-
-				if(!pField->isGeneric)
-				{
-					pConfig->set(szSection, pField->szKey, pObj->getKV(pField->szKey));
-				}
+				XGUIDToSting(*pObj->getObject(i)->getGUID(), szTmp, sizeof(szTmp));
+				sprintf(szKey, "o_%u", uObjCount);
+				pConfig->set(szSection, szKey, szTmp);
+				++uObjCount;
 			}
 
 			++uCount;
@@ -567,7 +624,8 @@ static void ToClipboard(bool isCut = false)
 	}
 
 	sprintf(szSection, "%u", uCount);
-	pConfig->set("meta", "count", szSection);
+	pConfig->set("meta", "proxy_count", szSection);
+
 
 	sprintf(szSection, "%f %f %f", g_xState.vSelectionBoundMin.x, g_xState.vSelectionBoundMin.y, g_xState.vSelectionBoundMin.z);
 	pConfig->set("meta", "aabb_min", szSection);
@@ -693,6 +751,9 @@ static void FromClipboard()
 
 			CCommandPaste *pCmd = new CCommandPaste();
 
+			//
+			XGUID guid;
+
 			char szSection[64];
 			for(UINT i = 0; i < uCount; ++i)
 			{
@@ -734,10 +795,17 @@ static void FromClipboard()
 					sscanf(szTmp, "%f %f %f %f", &qRot.x, &qRot.y, &qRot.z, &qRot.w);
 				}
 
+				sprintf(szSection, "obj_%u_guid", i);
+				szTmp = pConfig->getKey("meta", szSection);
+				if(!szTmp || !XGUIDFromString(&guid, szTmp))
+				{
+					guid = XGUID();
+				}
+
 				sprintf(szSection, "obj_%u", i);
 
 
-				UINT uObj = pCmd->addObject(szTypeName, szClassName, vPos + vDelta, vScale, qRot);
+				UINT uObj = pCmd->addObject(szTypeName, szClassName, vPos + vDelta, vScale, qRot, guid);
 				if(uObj != UINT_MAX)
 				{
 					for(UINT j = 0, jl = pConfig->getKeyCount(szSection); j < jl; ++j)
@@ -747,6 +815,44 @@ static void FromClipboard()
 
 						pCmd->setKV(uObj, szKey, szValue);
 					}
+				}
+			}
+
+			szVal = pConfig->getKey("meta", "proxy_count");
+			if(szVal)
+			{
+				sscanf(szVal, "%u", &uCount);
+				for(UINT i = 0; i < uCount; ++i)
+				{
+					sprintf(szSection, "proxy_%u", i);
+					const char *szTmp;
+					XGUID guid;
+					UINT uObjCount;
+					if(
+						(szTmp = pConfig->getKey(szSection, "guid")) && XGUIDFromString(&guid, szTmp)
+						&& (szTmp = pConfig->getKey(szSection, "o_count")) && sscanf(szTmp, "%u", &uObjCount)
+						)
+					{
+						char szKey[64];
+						//szTmp = pConfig->getKey(szSection, "o_count");
+						UINT uProxy = pCmd->addProxy(guid);
+						for(UINT j = 0; j < uObjCount; ++j)
+						{
+							sprintf(szKey, "o_%u", j);
+							if((szTmp = pConfig->getKey(szSection, szKey)) && XGUIDFromString(&guid, szTmp))
+							{
+								pCmd->addProxyObject(uProxy, guid);
+							}
+						}
+					}
+					/*
+					[proxy_0]
+o_count = 2
+o_1 = {4307AD0F-A496-4960-B1C8-0595380483E3}
+o_0 = {4F36E63D-DC90-4F5A-B6B4-DB3ECB48E3FF}
+guid = {9D7D2E62-24C7-42B7-8D83-8448FC4604F0}
+					*/
+
 				}
 			}
 
@@ -773,16 +879,7 @@ static CCommandCreate* CreateObjectAtPosition(const float3 &vPos, bool bDeselect
 
 	if(bDeselectAll)
 	{
-		CCommandSelect *pCmdUnselect = new CCommandSelect();
-		for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-		{
-			IXEditorObject *pObj = g_pLevelObjects[i];
-			if(pObj->isSelected())
-			{
-				pCmdUnselect->addDeselected(pObj);
-			}
-		}
-		g_pUndoManager->execCommand(pCmdUnselect);
+		SendMessage(g_hWndMain, WM_COMMAND, MAKEWPARAM(ID_EDIT_CLEARSELECTION, 0), (LPARAM)0);
 	}
 
 	CCommandCreate *pCmd = new CCommandCreate(vPos, szTypeName, szClassName, Button_GetCheck(g_hCheckboxRandomScaleYawWnd));
@@ -980,6 +1077,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			SetWindowFont(g_hCheckboxRandomScaleYawWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
 		}
 
+		g_hStaticMoveSelectedToWnd = CreateWindowExA(0, WC_STATIC, "Move selected", WS_VISIBLE | WS_CHILD, rect.right, rect.top + 15 + 25 + MARGIN_RIGHT + 15 + 25 + 10 + 15 + 15 + 25 + 25 + 25, MARGIN_RIGHT, 15, hWnd, 0, hInst, NULL);
+		{
+			SetWindowFont(g_hStaticMoveSelectedToWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
+		}
+
+		g_hButtonToWorldWnd = CreateWindowExA(0, WC_BUTTON, "To World", WS_VISIBLE | WS_CHILD, rect.right, rect.top + 15 + 25 + MARGIN_RIGHT + 15 + 25 + 10 + 15 + 15 + 25 + 25 + 25 + 15, MARGIN_RIGHT / 2, 25, hWnd, (HMENU)IDC_BACK_TO_WORLD, hInst, NULL);
+		{
+			SetWindowFont(g_hButtonToWorldWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
+		}
+
+		g_hButtonToEntityWnd = CreateWindowExA(0, WC_BUTTON, "To Object", WS_VISIBLE | WS_CHILD, rect.right + MARGIN_RIGHT / 2, rect.top + 15 + 25 + MARGIN_RIGHT + 15 + 25 + 10 + 15 + 15 + 25 + 25 + 25 + 15, MARGIN_RIGHT / 2, 25, hWnd, (HMENU)IDC_TIE_TO_OBJECT, hInst, NULL);
+		{
+			SetWindowFont(g_hButtonToEntityWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
+			EnableWindow(g_hButtonToEntityWnd, FALSE);
+		}
+
 		/*{
 			TV_INSERTSTRUCT tvis;
 			memset(&tvis, 0, sizeof(tvis));
@@ -1088,6 +1201,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		MoveWindow(g_hStaticClassesWnd, rect.right, rect.top + 15 + 25 + MARGIN_RIGHT + 15 + 25 + 10 + 15 + 25, MARGIN_RIGHT, 15, FALSE);
 		MoveWindow(g_hComboClassesWnd, rect.right, rect.top + 15 + 25 + MARGIN_RIGHT + 15 + 25 + 10 + 15 + 15 + 25, MARGIN_RIGHT, OBJECT_TREE_HEIGHT, FALSE);
 		MoveWindow(g_hCheckboxRandomScaleYawWnd, rect.right, rect.top + 15 + 25 + MARGIN_RIGHT + 15 + 25 + 10 + 15 + 15 + 25 + 25, MARGIN_RIGHT, 15, FALSE);
+		MoveWindow(g_hStaticMoveSelectedToWnd, rect.right, rect.top + 15 + 25 + MARGIN_RIGHT + 15 + 25 + 10 + 15 + 15 + 25 + 25 + 25, MARGIN_RIGHT, 15, FALSE);
+		MoveWindow(g_hButtonToWorldWnd, rect.right, rect.top + 15 + 25 + MARGIN_RIGHT + 15 + 25 + 10 + 15 + 15 + 25 + 25 + 25 + 15, MARGIN_RIGHT / 2, 25, FALSE);
+		MoveWindow(g_hButtonToEntityWnd, rect.right + MARGIN_RIGHT / 2, rect.top + 15 + 25 + MARGIN_RIGHT + 15 + 25 + 10 + 15 + 15 + 25 + 25 + 25 + 15, MARGIN_RIGHT / 2, 25, FALSE);
 		
 		InvalidateRect(hWnd, &rect, TRUE);
 
@@ -1460,7 +1576,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					}
 					ComboBox_Enable(g_hComboClassesWnd, uClassCount > 1);
 					ComboBox_SetCurSel(g_hComboClassesWnd, 0);
+					SendMessage(GetParent(g_hComboClassesWnd), WM_COMMAND, MAKEWPARAM(IDC_CMB_CLASS, CBN_SELCHANGE), (LPARAM)g_hComboClassesWnd);
 				}
+			}
+			break;
+
+		case IDC_CMB_CLASS:
+			{
+				int iSel = ComboBox_GetCurSel(g_hComboTypesWnd);
+				int iLen = ComboBox_GetLBTextLen(g_hComboTypesWnd, iSel);
+				char *szTypeName = (char*)alloca(sizeof(char)* (iLen + 1));
+				ComboBox_GetLBText(g_hComboTypesWnd, iSel, szTypeName);
+
+				iSel = ComboBox_GetCurSel(g_hComboClassesWnd);
+				iLen = ComboBox_GetLBTextLen(g_hComboClassesWnd, iSel);
+				char *szClassName = (char*)alloca(sizeof(char)* (iLen + 1));
+				ComboBox_GetLBText(g_hComboClassesWnd, iSel, szClassName);
+
+				bool can = false;
+
+				const AssotiativeArray<AAString, IXEditable*>::Node *pNode;
+				if(g_mEditableSystems.KeyExists(AAString(szTypeName), &pNode))
+				{
+					IXEditable *pEditable = *pNode->Val;
+					can = pEditable->canUseModel(szClassName);
+				}
+				EnableWindow(g_hButtonToEntityWnd, can);
 			}
 			break;
 
@@ -1515,14 +1656,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case ID_EDIT_CLEARSELECTION:
 			{
 				CCommandSelect *pCmdUnselect = new CCommandSelect();
-				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-				{
-					IXEditorObject *pObj = g_pLevelObjects[i];
-					if(pObj->isSelected())
+				XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+					if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
 					{
 						pCmdUnselect->addDeselected(pObj);
 					}
-				}
+				});
 				g_pUndoManager->execCommand(pCmdUnselect);
 			}
 			break;
@@ -1530,14 +1669,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case ID_EDIT_SELECTALL:
 			{
 				CCommandSelect *pCmdSelect = new CCommandSelect();
-				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-				{
-					IXEditorObject *pObj = g_pLevelObjects[i];
-					if(!pObj->isSelected())
+				XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+					if(!pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
 					{
 						pCmdSelect->addSelected(pObj);
 					}
-				}
+				});
 				g_pUndoManager->execCommand(pCmdSelect);
 			}
 			break;
@@ -1553,6 +1690,195 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case ID_XFORM_ROTATE:
 			XSetXformType(X2DXF_ROTATE);
+			break;
+
+		case IDC_TIE_TO_OBJECT:
+			if(IsWindowEnabled(g_hButtonToEntityWnd))
+			{
+				// TODO check for selected proxies!
+
+				Array<CProxyObject*> aProxies;
+
+				fora(i, g_apProxies)
+				{
+					if(g_apProxies[i]->isSelected())
+					{
+						aProxies.push_back(g_apProxies[i]);
+					}
+				}
+
+				if(aProxies.size() > 1)
+				{
+					MessageBoxA(g_hWndMain, "You have selected several existing objects.\n"
+						"It's not allowed", "TerraX", MB_OK | MB_ICONSTOP);
+					break;
+				}
+
+				int resp = IDNO;
+				if(aProxies.size() != 0)
+				{
+					char tmp[256];
+					sprintf(tmp, "You have selected an existing object (%s/%s)\n"
+						"Would you like to add the selected brushed to the existing object?\n"
+						"If you select 'No', a new object will be created.", aProxies[0]->getTypeName(), aProxies[0]->getClassName());
+					resp = MessageBoxA(g_hWndMain, tmp, "TerraX", MB_YESNOCANCEL | MB_ICONEXCLAMATION);
+					if(resp == IDCANCEL)
+					{
+						break;
+					}
+				}
+
+				IXEditorCommand *pCmd;
+				if(resp == IDNO)
+				{
+					int iSel = ComboBox_GetCurSel(g_hComboTypesWnd);
+					int iLen = ComboBox_GetLBTextLen(g_hComboTypesWnd, iSel);
+					char *szTypeName = (char*)alloca(sizeof(char) * (iLen + 1));
+					ComboBox_GetLBText(g_hComboTypesWnd, iSel, szTypeName);
+
+					iSel = ComboBox_GetCurSel(g_hComboClassesWnd);
+					iLen = ComboBox_GetLBTextLen(g_hComboClassesWnd, iSel);
+					char *szClassName = (char*)alloca(sizeof(char) * (iLen + 1));
+					ComboBox_GetLBText(g_hComboClassesWnd, iSel, szClassName);
+
+					pCmd = new CCommandBuildModel(szTypeName, szClassName);
+				}
+				else
+				{
+					pCmd = new CCommandModifyModel(aProxies[0]);
+				}
+				if(XExecCommand(pCmd))
+				{
+					SendMessage(g_hWndMain, WM_COMMAND, MAKEWPARAM(ID_EDIT_PROPERTIES, 0), NULL);
+				}
+			}
+			break;
+
+		case IDC_BACK_TO_WORLD:
+			if(IsWindowEnabled(g_hButtonToWorldWnd) && !g_xConfig.m_bIgnoreGroups)
+			{
+				CCommandContainer *pContainer = NULL;
+				fora(i, g_apProxies)
+				{
+					CProxyObject *pProxy = g_apProxies[i];
+					if(pProxy->isSelected())
+					{
+						if(!pContainer)
+						{
+							pContainer = new CCommandContainer();
+						}
+						pContainer->addCommand(new CCommandDestroyModel(pProxy));
+					}
+				}
+				if(pContainer)
+				{
+					XExecCommand(pContainer);
+				}
+			}
+			break;
+
+		case ID_IGNORE_GROUPS:
+			g_xConfig.m_bIgnoreGroups = !g_xConfig.m_bIgnoreGroups;
+			CheckToolbarButton(ID_IGNORE_GROUPS, g_xConfig.m_bIgnoreGroups);
+			CCommandSelect *pCmdUnselect = new CCommandSelect();
+			if(!g_xConfig.m_bIgnoreGroups)
+			{
+				//! Deselect partially selected groups
+				XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+					if(isProxy && !pParent)
+					{
+						bool hasUnselectedChild = false;
+						bool hasUnselectedProxies = false;
+						XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+							if(!pObj->isSelected())
+							{
+								if(isProxy)
+								{
+									hasUnselectedProxies = true;
+								}
+								else
+								{
+									hasUnselectedChild = true;
+								}
+							}
+						}, (CProxyObject*)pObj);
+						if(hasUnselectedChild)
+						{
+							XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+								if(!isProxy)
+								{
+									bool hasSelectedParent = pParent->isSelected();
+									CProxyObject *pCur = pParent;
+									while(!hasSelectedParent && (pCur = XGetObjectParent(pCur)))
+									{
+										hasSelectedParent = pCur->isSelected();
+									}
+									if(hasSelectedParent)
+									{
+										if(!pObj->isSelected())
+										{
+											pCmdUnselect->addSelected(pObj);
+										}
+									}
+									else if(pObj->isSelected())
+									{
+										pCmdUnselect->addDeselected(pObj);
+									}
+								}
+							}, (CProxyObject*)pObj);
+							if(pObj->isSelected())
+							{
+								pCmdUnselect->addDeselected(pObj);
+							}
+							else
+							{
+								XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+									if(isProxy)
+									{
+										bool hasSelectedParent = pParent->isSelected();
+										CProxyObject *pCur = pParent;
+										while((pCur = XGetObjectParent(pCur)))
+										{
+											if(pCur->isSelected())
+											{
+												hasSelectedParent = true;
+												pParent = pCur;
+											}
+										}
+										if(hasSelectedParent)
+										{
+											pCmdUnselect->addDeselected(pParent);
+										}
+									}
+								}, (CProxyObject*)pObj);
+							}
+						}
+						else
+						{
+							if(!pObj->isSelected() || hasUnselectedProxies)
+							{
+								// deselect leaves, select root
+								XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+									if(!isProxy)
+									{
+										pCmdUnselect->addDeselected(pObj);
+									}
+								}, (CProxyObject*)pObj);
+								pCmdUnselect->addSelected(pObj);
+							}
+							
+						}
+					}
+				});
+				
+				pCmdUnselect->setIGMode(CCommandSelect::IGM_ENABLE);
+			}
+			else
+			{
+				pCmdUnselect->setIGMode(CCommandSelect::IGM_DISABLE);
+			}
+			g_pUndoManager->execCommand(pCmdUnselect);
+			XUpdatePropWindow();
 			break;
 		}
 		break;
@@ -1879,7 +2205,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 struct SelectItem
 {
 	float fDist2;
-	UINT uObj;
+	IXEditorObject *pObj;
 };
 Array<SelectItem> g_aRaytracedItems;
 CCommandSelect *g_pSelectCmd = NULL;
@@ -2039,6 +2365,52 @@ void XDisableCurrentTool()
 	XUpdateGizmos();
 }
 
+static bool XIsInSelection(const float3 &vPos)
+{
+	X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+	bool sel = false;
+	switch(xCurView)
+	{
+	case X2D_TOP:
+		sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
+			&& ((vPos.z > g_xState.vWorldMousePos.y && vPos.z <= g_xState.vFrameSelectStart.y) || (vPos.z < g_xState.vWorldMousePos.y && vPos.z >= g_xState.vFrameSelectStart.y));
+		break;
+	case X2D_FRONT:
+		sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
+			&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
+		break;
+	case X2D_SIDE:
+		sel = ((vPos.z > g_xState.vWorldMousePos.x && vPos.z <= g_xState.vFrameSelectStart.x) || (vPos.z < g_xState.vWorldMousePos.x && vPos.z >= g_xState.vFrameSelectStart.x))
+			&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
+		break;
+	}
+	return(sel);
+}
+
+static bool XIsClicked(const float3 &vPos)
+{
+	X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+	float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
+
+	const float fWorldSize = 3.5f * fViewScale;
+
+	bool sel = false;
+	switch(xCurView)
+	{
+	case X2D_TOP:
+		sel = fabsf(vPos.x - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.z - g_xState.vWorldMousePos.y) < fWorldSize;
+		break;
+	case X2D_FRONT:
+		sel = fabsf(vPos.x - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.y - g_xState.vWorldMousePos.y) < fWorldSize;
+		break;
+	case X2D_SIDE:
+		sel = fabsf(vPos.z - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.y - g_xState.vWorldMousePos.y) < fWorldSize;
+		break;
+	}
+
+	return(sel);
+}
+
 LRESULT CALLBACK RenderNoninteractiveWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	//return(DefWindowProc(hWnd, message, wParam, lParam));
@@ -2130,58 +2502,53 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		{
 			g_xState.isFrameSelect = false;
 			ReleaseCapture();
-
-			if(memcmp(&g_xState.vWorldMousePos, &g_xState.vFrameSelectStart, sizeof(float2_t)))
+			
+			if(!SMIsZero(SMVector2Length(g_xState.vWorldMousePos - g_xState.vFrameSelectStart)))
 			{
 				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
 
 				CCommandSelect *pCmd = new CCommandSelect();
 				bool bUse = false;
-				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-				{
-					IXEditorObject *pObj = g_pLevelObjects[i];
-					float3_t vPos = pObj->getPos();
-					bool sel = false;
-					switch(xCurView)
+				XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+					if(!(g_xConfig.m_bIgnoreGroups && isProxy))
 					{
-					case X2D_TOP:
-						sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
-							&& ((vPos.z > g_xState.vWorldMousePos.y && vPos.z <= g_xState.vFrameSelectStart.y) || (vPos.z < g_xState.vWorldMousePos.y && vPos.z >= g_xState.vFrameSelectStart.y));
-						break;
-					case X2D_FRONT:
-						sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
-							&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
-						break;
-					case X2D_SIDE:
-						sel = ((vPos.z > g_xState.vWorldMousePos.x && vPos.z <= g_xState.vFrameSelectStart.x) || (vPos.z < g_xState.vWorldMousePos.x && vPos.z >= g_xState.vFrameSelectStart.x))
-							&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
-						break;
-					}
-					if(wParam & MK_CONTROL)
-					{
-						if(sel && !pObj->isSelected())
+						float3_t vPos = pObj->getPos();
+						bool sel = XIsInSelection(vPos);
+						if(!g_xConfig.m_bIgnoreGroups && pParent)
 						{
-							//pObj->setSelected(true);
-							bUse = true;
-							pCmd->addSelected(pObj);
+							CProxyObject *pCur;
+							while((pCur = XGetObjectParent(pParent)))
+							{
+								pParent = pCur;
+							}
+							pObj = pParent;
+						}
+						if(wParam & MK_CONTROL)
+						{
+							if(sel && !pObj->isSelected())
+							{
+								//pObj->setSelected(true);
+								bUse = true;
+								pCmd->addSelected(pObj);
+							}
+						}
+						else
+						{
+							if(!pObj->isSelected() && sel)
+							{
+								bUse = true;
+								pCmd->addSelected(pObj);
+								//pObj->setSelected(sel);
+							}
+							else if(pObj->isSelected() && !sel)
+							{
+								bUse = true;
+								pCmd->addDeselected(pObj);
+								//pObj->setSelected(sel);
+							}
 						}
 					}
-					else
-					{
-						if(!pObj->isSelected() && sel)
-						{
-							bUse = true;
-							pCmd->addSelected(pObj);
-							//pObj->setSelected(sel);
-						}
-						else if(pObj->isSelected() && !sel)
-						{
-							bUse = true;
-							pCmd->addDeselected(pObj);
-							//pObj->setSelected(sel);
-						}
-					}
-				}
+				});
 
 				if(bUse)
 				{
@@ -2337,27 +2704,44 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				}
 
 				g_aRaytracedItems.clearFast();
-				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-				{
-					if(!g_pLevelObjects[i]->hasVisualModel())
+				XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+					if(g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent)
 					{
-						float3 vPos = g_pLevelObjects[i]->getPos();
-						float fDist2 = SMDistancePointBeam2(vPos, vRayStart, vRayDir);
-						if(fDist2 < 0.1f * 0.1f)
+						float fDist2 = -1.0f;
+						if(!pObj->hasVisualModel())
 						{
-							g_aRaytracedItems.push_back({SMVector3Length2(vRayStart - vPos), i});
+							float3 vPos = pObj->getPos();
+							if(SMDistancePointBeam2(vPos, vRayStart, vRayDir) < 0.1f * 0.1f)
+							{
+								fDist2 = SMVector3Length2(vRayStart - vPos);
+							}
 						}
-					}
-					else
-					{
-						float3 vPos;
-						if(g_pLevelObjects[i]->rayTest(vRayStart, vRayEnd, &vPos))
+						else
 						{
-							g_aRaytracedItems.push_back({SMVector3Length2(vRayStart - vPos), i});
+							float3 vPos;
+							if(pObj->rayTest(vRayStart, vRayEnd, &vPos))
+							{
+								fDist2 = SMVector3Length2(vRayStart - vPos);
+							}
 						}
-					}
-				}
 
+						if(fDist2 >= 0.0f)
+						{
+							if(!g_xConfig.m_bIgnoreGroups && pParent)
+							{
+								CProxyObject *pCur;
+								while((pCur = XGetObjectParent(pParent)))
+								{
+									pParent = pCur;
+								}
+								pObj = pParent;
+							}
+
+							g_aRaytracedItems.push_back({fDist2, pObj});
+						}
+					}
+				});
+				
 				g_aRaytracedItems.quickSort([](const SelectItem &a, const SelectItem &b){
 					return(a.fDist2 < b.fDist2);
 				});
@@ -2381,17 +2765,19 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				static Array<SelectItem2> s_aRaytracedItems;
 
 				float3 vPos, vNorm;
-				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-				{
-					if(g_pLevelObjects[i]->hasVisualModel())
+				XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+					if(g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent)
 					{
-						if(g_pLevelObjects[i]->rayTest(vRayStart, vRayEnd, &vPos, &vNorm, NULL, true))
+						if(pObj->hasVisualModel())
 						{
-							s_aRaytracedItems.push_back({SMVector3Length2(vRayStart - vPos), vPos, vNorm});
+							if(pObj->rayTest(vRayStart, vRayEnd, &vPos, &vNorm, NULL, true))
+							{
+								s_aRaytracedItems.push_back({SMVector3Length2(vRayStart - vPos), vPos, vNorm});
+							}
 						}
 					}
-				}
-
+				});
+				
 				s_aRaytracedItems.quickSort([](const SelectItem2 &a, const SelectItem2 &b){
 					return(a.fDist2 < b.fDist2);
 				});
@@ -2415,13 +2801,13 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						float3(vMax.x, vMax.y, vMin.z),
 						float3(vMax),
 					};
-					printf("%.2f, %.2f, %.2f\n", vNorm.x, vNorm.y, vNorm.z);
+					//printf("%.2f, %.2f, %.2f\n", vNorm.x, vNorm.y, vNorm.z);
 
 					float fProj = FLT_MAX;
 					for(UINT i = 0, l = ARRAYSIZE(avPoints); i < l; ++i)
 					{
 						float fTmp = SMVector3Dot(avPoints[i], vNorm);
-						printf("%.2f\n", fTmp);
+						//printf("%.2f\n", fTmp);
 						if(fTmp < fProj)
 						{
 							fProj = fTmp;
@@ -2429,7 +2815,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					}
 
 					fProj = SMVector3Dot(vPos, vNorm) - fProj;
-					printf("%.2f, %.2f, %.2f\n%.2f, %.2f, %.2f\n%.2f, %.2f, %.2f\n%f\n\n", vPos.x, vPos.y, vPos.z, vMin.x, vMin.y, vMin.z, vMax.x, vMax.y, vMax.z, fProj);
+					//printf("%.2f, %.2f, %.2f\n%.2f, %.2f, %.2f\n%.2f, %.2f, %.2f\n%f\n\n", vPos.x, vPos.y, vPos.z, vMin.x, vMin.y, vMin.z, vMax.x, vMax.y, vMax.z, fProj);
 					if(fProj > 0)
 					{
 						pObj->setPos((float3)(vPos + vNorm * fProj));
@@ -2449,9 +2835,6 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			if(Button_GetCheck(g_hABArrowButton))
 			{
 				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
-				float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
-
-				const float fWorldSize = 3.5f * fViewScale;
 
 				if(g_xState.bHasSelection)
 				{
@@ -2529,13 +2912,12 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 								s_pScaleCmd->setStartAABB(g_xState.vSelectionBoundMin, g_xState.vSelectionBoundMax);
 								s_pScaleCmd->setTransformDir(dirs[g_xConfig.m_x2DView[g_xState.activeWindow]][i]);
 								s_pScaleCmd->setStartPos(vStartPos);
-								for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-								{
-									if(g_pLevelObjects[i]->isSelected())
+								XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+									if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
 									{
-										s_pScaleCmd->addObject(g_pLevelObjects[i]);
+										s_pScaleCmd->addObject(pObj);
 									}
-								}
+								});
 							}
 							else if(g_xState.xformType == X2DXF_ROTATE)
 							{
@@ -2543,13 +2925,12 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 								s_pRotateCmd = new CCommandRotate();
 								s_pRotateCmd->setStartOrigin((g_xState.vSelectionBoundMax + g_xState.vSelectionBoundMin) * 0.5f * vMask, float3(1.0f) - vMask);
 								s_pRotateCmd->setStartPos(vStartPos);
-								for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-								{
-									if(g_pLevelObjects[i]->isSelected())
+								XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+									if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
 									{
-										s_pRotateCmd->addObject(g_pLevelObjects[i]);
+										s_pRotateCmd->addObject(pObj);
 									}
-								}
+								});
 							}
 							bHandled = true;
 							break;
@@ -2571,54 +2952,54 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					CCommandSelect *pCmd = new CCommandSelect();
 					bool bUse = false;
 					bool wasSel = false;
-					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-					{
-						IXEditorObject *pObj = g_pLevelObjects[i];
-						float3_t vPos = pObj->getPos();
-						bool sel = false;
-						switch(xCurView)
+
+					XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+						if(!(g_xConfig.m_bIgnoreGroups && isProxy))
 						{
-						case X2D_TOP:
-							sel = fabsf(vPos.x - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.z - g_xState.vWorldMousePos.y) < fWorldSize;
-							break;
-						case X2D_FRONT:
-							sel = fabsf(vPos.x - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.y - g_xState.vWorldMousePos.y) < fWorldSize;
-							break;
-						case X2D_SIDE:
-							sel = fabsf(vPos.z - g_xState.vWorldMousePos.x) < fWorldSize && fabsf(vPos.y - g_xState.vWorldMousePos.y) < fWorldSize;
-							break;
-						}
-						if(wParam & MK_CONTROL)
-						{
-							if(sel && !wasSel)
+							bool sel = XIsClicked(pObj->getPos());
+
+							if(!g_xConfig.m_bIgnoreGroups && pParent)
 							{
-								if(pObj->isSelected())
+								CProxyObject *pCur;
+								while((pCur = XGetObjectParent(pParent)))
+								{
+									pParent = pCur;
+								}
+								pObj = pParent;
+							}
+
+							if(wParam & MK_CONTROL)
+							{
+								if(sel && !wasSel)
+								{
+									if(pObj->isSelected())
+									{
+										pCmd->addDeselected(pObj);
+									}
+									else
+									{
+										pCmd->addSelected(pObj);
+									}
+									bUse = true;
+									wasSel = true;
+								}
+							}
+							else
+							{
+								if(pObj->isSelected() && !sel)
 								{
 									pCmd->addDeselected(pObj);
+									bUse = true;
 								}
-								else
+								else if(!pObj->isSelected() && sel && !wasSel)
 								{
 									pCmd->addSelected(pObj);
+									bUse = true;
+									wasSel = true;
 								}
-								bUse = true;
-								wasSel = true;
 							}
 						}
-						else
-						{
-							if(pObj->isSelected() && !sel)
-							{
-								pCmd->addDeselected(pObj);
-								bUse = true;
-							}
-							else if(!pObj->isSelected() && sel && !wasSel)
-							{
-								pCmd->addSelected(pObj);
-								bUse = true;
-								wasSel = true;
-							}
-						}
-					}
+					});
 
 					if(bUse)
 					{
@@ -2647,13 +3028,13 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 						break;
 					}
 					s_pMoveCmd->setStartPos(XSnapToGrid(vStartPos));
-					for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-					{
-						if(g_pLevelObjects[i]->isSelected())
+
+					XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+						if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
 						{
-							s_pMoveCmd->addObject(g_pLevelObjects[i]);
+							s_pMoveCmd->addObject(pObj);
 						}
-					}
+					});
 					// if mouse in selected object
 					// start move
 				}
@@ -3053,44 +3434,43 @@ void XFrameRun(float fDeltaTime)
 
 			if(g_uSelectedIndex == ~0 && !g_isSelectionCtrl)
 			{
-				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-				{
-					if(g_pLevelObjects[i]->isSelected())
+				XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+					if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
 					{
-						g_pLevelObjects[i]->setSelected(false);
-						g_pSelectCmd->addDeselected(g_pLevelObjects[i]);
+						pObj->setSelected(false);
+						g_pSelectCmd->addDeselected(pObj);
 					}
-				}
+				});
 			}
 
 			if(g_aRaytracedItems.size())
 			{
 				if(g_uSelectedIndex != ~0)
 				{
-					if(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->isSelected())
+					if(g_aRaytracedItems[g_uSelectedIndex].pObj->isSelected())
 					{
-						g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(false);
-						g_pSelectCmd->addDeselected(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]);
+						g_aRaytracedItems[g_uSelectedIndex].pObj->setSelected(false);
+						g_pSelectCmd->addDeselected(g_aRaytracedItems[g_uSelectedIndex].pObj);
 					}
 					else
 					{
-						g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(true);
-						g_pSelectCmd->addSelected(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]);
+						g_aRaytracedItems[g_uSelectedIndex].pObj->setSelected(true);
+						g_pSelectCmd->addSelected(g_aRaytracedItems[g_uSelectedIndex].pObj);
 					}
 				}
 
 				++g_uSelectedIndex;
 				g_uSelectedIndex %= g_aRaytracedItems.size();
 
-				if(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->isSelected())
+				if(g_aRaytracedItems[g_uSelectedIndex].pObj->isSelected())
 				{
-					g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(false);
-					g_pSelectCmd->addDeselected(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]);
+					g_aRaytracedItems[g_uSelectedIndex].pObj->setSelected(false);
+					g_pSelectCmd->addDeselected(g_aRaytracedItems[g_uSelectedIndex].pObj);
 				}
 				else
 				{
-					g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]->setSelected(true);
-					g_pSelectCmd->addSelected(g_pLevelObjects[g_aRaytracedItems[g_uSelectedIndex].uObj]);
+					g_aRaytracedItems[g_uSelectedIndex].pObj->setSelected(true);
+					g_pSelectCmd->addSelected(g_aRaytracedItems[g_uSelectedIndex].pObj);
 				}
 			}
 		}
@@ -3400,11 +3780,13 @@ void XUpdatePropWindow()
 	AssotiativeArray<AAString, prop_item_s> mProps;
 	g_pPropWindow->clearClassList();
 	g_pPropWindow->clearProps();
-	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-	{
-		IXEditorObject *pObj = g_pLevelObjects[i];
-		if(pObj->isSelected())
+
+	UINT uSelectedCount = 0;
+
+	XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+		if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
 		{
+			++uSelectedCount;
 			if(!szFirstType)
 			{
 				szFirstType = pObj->getTypeName();
@@ -3458,14 +3840,17 @@ void XUpdatePropWindow()
 				}
 			}
 		}
-	}
+	});
 
 	// Nothing selected
 	if(!szFirstType)
 	{
+		SendMessage(g_hStatusWnd, SB_SETTEXT, MAKEWPARAM(1, 0), (LPARAM)"no selection");
 		return;
 	}
 
+	char szStatus[256];
+	szStatus[0] = 0;
 	if(!bDifferentTypes)
 	{
 		// add classes for type
@@ -3483,6 +3868,15 @@ void XUpdatePropWindow()
 			//@TODO: uncomment this
 			g_pPropWindow->allowClassChange(true);
 			g_pPropWindow->setClassName(szFirstClass);
+
+			if(uSelectedCount > 1)
+			{
+				sprintf(szStatus, "%ux %s", uSelectedCount, szFirstClass);
+			}
+			else
+			{
+				sprintf(szStatus, "%s", szFirstClass);
+			}
 		}
 		else
 		{
@@ -3495,6 +3889,13 @@ void XUpdatePropWindow()
 		g_pPropWindow->allowClassChange(false);
 		g_pPropWindow->setClassName("");
 	}
+
+	if(!szStatus[0])
+	{
+		sprintf(szStatus, "%u objects selected", uSelectedCount);
+	}
+
+	SendMessage(g_hStatusWnd, SB_SETTEXT, MAKEWPARAM(1, 0), (LPARAM)szStatus);
 
 	for(AssotiativeArray<AAString, prop_item_s>::Iterator i = mProps.begin(); i; ++i)
 	{
@@ -3524,8 +3925,7 @@ void XUpdateGizmos()
 	}
 }
 
-
-
+//#############################################################################
 
 void XMETHODCALLTYPE CGizmoMoveCallback::moveTo(const float3 &vNewPos, IXEditorGizmoMove *pGizmo)
 {
@@ -3536,19 +3936,20 @@ void XMETHODCALLTYPE CGizmoMoveCallback::onStart(IXEditorGizmoMove *pGizmo)
 {
 	m_pCmd = new CCommandMove();
 	m_pCmd->setStartPos(pGizmo->getPos());
-	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-	{
-		if(g_pLevelObjects[i]->isSelected())
+	XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+		if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
 		{
-			m_pCmd->addObject(g_pLevelObjects[i]);
+			m_pCmd->addObject(pObj);
 		}
-	}
+	});
 }
 void XMETHODCALLTYPE CGizmoMoveCallback::onEnd(IXEditorGizmoMove *pGizmo)
 {
 	XExecCommand(m_pCmd);
 	m_pCmd = NULL;
 }
+
+//#############################################################################
 
 void XMETHODCALLTYPE CGizmoRotateCallback::onRotate(const float3_t &vAxis, float fAngle, IXEditorGizmoRotate *pGizmo)
 {
@@ -3571,13 +3972,12 @@ void XMETHODCALLTYPE CGizmoRotateCallback::onStart(const float3_t &vAxis, IXEdit
 	m_pCmd = new CCommandRotate();
 	m_pCmd->setStartOrigin(pGizmo->getPos(), vAxis);
 	m_pCmd->setStartPos(pGizmo->getPos() + vStartOffset);
-	for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
-	{
-		if(g_pLevelObjects[i]->isSelected())
+	XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+		if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
 		{
-			m_pCmd->addObject(g_pLevelObjects[i]);
+			m_pCmd->addObject(pObj);
 		}
-	}
+	});
 
 	pGizmo->setOrient(SMQuaternion());
 }
@@ -3586,6 +3986,8 @@ void XMETHODCALLTYPE CGizmoRotateCallback::onEnd(IXEditorGizmoRotate *pGizmo)
 	XExecCommand(m_pCmd);
 	m_pCmd = NULL;
 }
+
+//#############################################################################
 
 HIMAGELIST g_hImageList = NULL;
 
@@ -3624,7 +4026,7 @@ HWND CreateToolbar(HWND hWndParent)
 
 	// Create the toolbar.
 	HWND hWndToolbar = CreateWindowEx(0, TOOLBARCLASSNAME, NULL,
-		WS_CHILD | TBSTYLE_WRAPABLE | TBSTYLE_LIST | TBSTYLE_FLAT, 0, 0, 0, 0,
+		WS_CHILD | TBSTYLE_WRAPABLE | TBSTYLE_LIST | TBSTYLE_FLAT | TBSTYLE_TOOLTIPS, 0, 0, 0, 0,
 		hWndParent, NULL, hInst, NULL);
 
 	//SetWindowLong(hWndToolbar, GWL_EXSTYLE, GetWindowLong(hWndToolbar, GWL_EXSTYLE) | TBSTYLE_EX_MIXEDBUTTONS);
@@ -3655,11 +4057,13 @@ HWND CreateToolbar(HWND hWndParent)
 
 	TBBUTTON tbButtons[] =
 	{
-		{MAKELONG(0, ImageListID), ID_XFORM_NONE, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Handle (Q)"},
-		{MAKELONG(1, ImageListID), ID_XFORM_TRANSLATE, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Move (W)"},
-		{MAKELONG(2, ImageListID), ID_XFORM_ROTATE, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Rotate (R)"},
+		{MAKELONG(0, ImageListID), ID_XFORM_NONE, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Handle [Q]"},
+		{MAKELONG(1, ImageListID), ID_XFORM_TRANSLATE, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Move [W]"},
+		{MAKELONG(2, ImageListID), ID_XFORM_ROTATE, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Rotate [R]"},
 		{0, 0, TBSTATE_ENABLED, BTNS_SEP, 0L, 0},
-		{MAKELONG(3, ImageListID), ID_LEVEL_RUN, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Run (F5)"}
+		{MAKELONG(5, ImageListID), ID_IGNORE_GROUPS, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Toggle group ignore [Ctrl+W]"},
+		{0, 0, TBSTATE_ENABLED, BTNS_SEP, 0L, 0},
+		{MAKELONG(3, ImageListID), ID_LEVEL_RUN, TBSTATE_ENABLED, buttonStyles, {0}, 0, (INT_PTR)"Run [F5]"}
 	};
 
 	// Add buttons.

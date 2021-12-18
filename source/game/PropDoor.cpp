@@ -66,7 +66,7 @@ BEGIN_PROPTABLE(CPropDoor)
 	DEFINE_FLAG(DOOR_FORCE, "Force close")
 END_PROPTABLE()
 
-REGISTER_ENTITY(CPropDoor, prop_door);
+REGISTER_ENTITY(CPropDoor, prop_door, REC_MODEL_FIELD("model"));
 
 CPropDoor::~CPropDoor()
 {

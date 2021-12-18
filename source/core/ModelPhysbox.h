@@ -28,6 +28,27 @@ public:
 		return(NULL);
 	}
 
+	IModelPhysboxBox * XMETHODCALLTYPE asBox() override
+	{
+		return(NULL);
+	}
+	IModelPhysboxSphere * XMETHODCALLTYPE asSphere() override
+	{
+		return(NULL);
+	}
+	IModelPhysboxConvex * XMETHODCALLTYPE asConvex() override
+	{
+		return(NULL);
+	}
+	IModelPhysboxCylinder * XMETHODCALLTYPE asCylinder() override
+	{
+		return(NULL);
+	}
+	IModelPhysboxCapsule * XMETHODCALLTYPE asCapsule() override
+	{
+		return(NULL);
+	}
+
 	float3 XMETHODCALLTYPE getPosition() const override
 	{
 		return(m_vPos);
@@ -56,7 +77,8 @@ class CModelPhysboxBox: public IModelPhysboxImplementation<IModelPhysboxBox>
 public:
 	XPHYSBOXTYPE XMETHODCALLTYPE getType() const override;
 
-	const IModelPhysboxBox * XMETHODCALLTYPE asBox() const override;
+	const IModelPhysboxBox* XMETHODCALLTYPE asBox() const override;
+	IModelPhysboxBox* XMETHODCALLTYPE asBox() override;
 
 	float3 XMETHODCALLTYPE getSize() const override;
 	void XMETHODCALLTYPE setSize(const float3 &vSize) override;
@@ -70,7 +92,8 @@ class CModelPhysboxSphere: public IModelPhysboxImplementation<IModelPhysboxSpher
 public:
 	XPHYSBOXTYPE XMETHODCALLTYPE getType() const override;
 
-	const IModelPhysboxSphere * XMETHODCALLTYPE asSphere() const override;
+	const IModelPhysboxSphere* XMETHODCALLTYPE asSphere() const override;
+	IModelPhysboxSphere* XMETHODCALLTYPE asSphere() override;
 
 	float XMETHODCALLTYPE getRadius() const override;
 	void XMETHODCALLTYPE setRadius(float fRadius) override;
@@ -86,7 +109,8 @@ public:
 
 	XPHYSBOXTYPE XMETHODCALLTYPE getType() const override;
 
-	const IModelPhysboxConvex * XMETHODCALLTYPE asConvex() const override;
+	const IModelPhysboxConvex* XMETHODCALLTYPE asConvex() const override;
+	IModelPhysboxConvex* XMETHODCALLTYPE asConvex() override;
 
 	UINT XMETHODCALLTYPE getVertexCount() const override;
 	const float3_t * XMETHODCALLTYPE getData() const override;
@@ -104,7 +128,8 @@ class CModelPhysboxCylinder: public IModelPhysboxImplementation<IModelPhysboxCyl
 public:
 	XPHYSBOXTYPE XMETHODCALLTYPE getType() const override;
 
-	const IModelPhysboxCylinder * XMETHODCALLTYPE asCylinder() const override;
+	const IModelPhysboxCylinder* XMETHODCALLTYPE asCylinder() const override;
+	IModelPhysboxCylinder* XMETHODCALLTYPE asCylinder() override;
 
 	float XMETHODCALLTYPE getRadius() const override;
 	void XMETHODCALLTYPE setRadius(float fRadius) override;
@@ -122,7 +147,8 @@ class CModelPhysboxCapsule: public IModelPhysboxImplementation<IModelPhysboxCaps
 public:
 	XPHYSBOXTYPE XMETHODCALLTYPE getType() const override;
 
-	const IModelPhysboxCapsule * XMETHODCALLTYPE asCapsule() const override;
+	const IModelPhysboxCapsule* XMETHODCALLTYPE asCapsule() const override;
+	IModelPhysboxCapsule* XMETHODCALLTYPE asCapsule() override;
 
 	float XMETHODCALLTYPE getRadius() const override;
 	void XMETHODCALLTYPE setRadius(float fRadius) override;

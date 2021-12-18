@@ -73,15 +73,18 @@ void CFileSystem::getAllvariantsCanonizePath(const char *szPath, Array<String> &
 
 void CFileSystem::getNormalPath(const char *szPath, char *outBuff, int iOutMax)
 {
+	if(szPath != outBuff)
+	{
     size_t len = strlen(szPath) + 1;
 
-    if (iOutMax < len)
+		if(iOutMax < len)
     {
         MEMCCPY_ERROR(outBuff);
         return;
     }
 
     memcpy(outBuff, szPath, len);
+	}
 
     do
     {
@@ -269,7 +272,7 @@ bool CFileSystem::resolvePath(const char *szPath, char *szOut, size_t iOutMax)
         int id = m_priorityArray[i].pathId;
         buff = (m_filePaths[id] + '/' + szPath);
 
-        if (fileExists(buff.c_str()) && isFile(buff.c_str()))
+        if (fileExists(buff.c_str())/* && isFile(buff.c_str())*/)
         {
             CHECK_SIZE(len, iOutMax);
 
@@ -396,7 +399,8 @@ bool CFileSystem::createDirectory(const char *szPath)
 bool CFileSystem::deleteDirectory(const char *szPath)
 {
     char path[SIZE_PATH];
-    getNormalPath(szPath, path, SIZE_PATH);
+	getAbsoluteCanonizePath(szPath, path, SIZE_PATH);
+	getNormalPath(path, path, SIZE_PATH);
 
     SHFILEOPSTRUCTW file_op = {
         NULL,

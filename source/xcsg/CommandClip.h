@@ -36,8 +36,14 @@ protected:
 	CLIP_PLANE_STATE m_clipPlaneState = CPS_NONE;
 	SMPLANE m_clipPlane;
 
+	struct ObjToRemove
+	{
+		CEditorObject *pObj;
+		CEditorModel *pMdl;
+	};
+
 	//Array<CEditorObject*> m_aObjectsToClip;
-	Array<CEditorObject*> m_aObjectsToRemove;
+	Array<ObjToRemove> m_aObjectsToRemove;
 	//CEditorObject *m_pObject = NULL;
 
 	struct clip_obj_t

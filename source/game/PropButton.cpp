@@ -43,7 +43,7 @@ BEGIN_PROPTABLE(CPropButton)
 	DEFINE_FLAG(BUTTON_START_PRESSED, "Start pressed")
 END_PROPTABLE()
 
-REGISTER_ENTITY(CPropButton, prop_button);
+REGISTER_ENTITY(CPropButton, prop_button, REC_MODEL_FIELD("model"));
 
 void CPropButton::turnOn(inputdata_t * pInputdata)
 {

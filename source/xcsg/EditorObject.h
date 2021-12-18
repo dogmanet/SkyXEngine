@@ -9,6 +9,7 @@
 
 
 class CEditable;
+class CEditorModel;
 //class IXDynamicModel;
 class CEditorObject final: public IXUnknownImplementation<IXEditorObject>
 {
@@ -37,6 +38,7 @@ public:
 	void setKV(const char *szKey, const char *szValue, bool bSkipFixPos);
 	void setKV(const char *szKey, IXJSONItem *pValue, bool bSkipFixPos = false);
 	const char* XMETHODCALLTYPE getKV(const char *szKey) override;
+	const char* getKV(const char *szKey, bool forJSON);
 	const X_PROP_FIELD* XMETHODCALLTYPE getPropertyMeta(UINT uKey) override;
 	UINT XMETHODCALLTYPE getProperyCount() override;
 
@@ -64,6 +66,11 @@ public:
 
 	bool XMETHODCALLTYPE hasVisualModel() override;
 
+	const XGUID* XMETHODCALLTYPE getGUID() override
+	{
+		return(&m_guid);
+	}
+
 	void addBrush(CBrushMesh *pBrushMesh);
 
 
@@ -89,11 +96,32 @@ public:
 
 	bool clip(const SMPLANE &plane);
 
+	void setModel(CEditorModel *pModel);
+
+	CEditorModel* getModel()
+	{
+		return(m_pModel);
+	}
+
+	void buildMesh(CMeshBuilder *pBuilder);
+	void buildPhysbox(IXResourceModel *pResource);
+
+	bool isRemoved()
+	{
+		return(m_isRemoved);
+	}
+
 private:
 	void removeBrush(UINT idx);
 
 private:
 	CEditable *m_pEditable;
+
+	CEditorModel *m_pModel = NULL;
+
+	XGUID m_guid;
+
+	String m_sGUID;
 
 	Array<CBrushMesh*> m_aBrushes;
 
@@ -105,6 +133,8 @@ private:
 	Array<char> m_aSerializedState;
 
 	bool m_isVisible = true;
+
+	bool m_isRemoved = false;
 };
 
 #endif

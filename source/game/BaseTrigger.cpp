@@ -28,7 +28,7 @@ BEGIN_PROPTABLE(CBaseTrigger)
 	DEFINE_INPUT(inToggle, "toggle", "Toggle", PDF_NONE)
 END_PROPTABLE()
 
-REGISTER_ENTITY(CBaseTrigger, trigger);
+REGISTER_ENTITY(CBaseTrigger, trigger, REC_MODEL_FIELD("model"));
 
 IEventChannel<XEventPhysicsStep> *CBaseTrigger::m_pTickEventChannel = NULL;
 

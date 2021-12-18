@@ -27,8 +27,11 @@ public:
 		return(m_aObjects.size() == 0);
 	}
 
-	UINT addObject(const char *szTypeName, const char *szClassName, const float3 &vPos, const float3 &vScale, const SMQuaternion &qRotate);
+	UINT addObject(const char *szTypeName, const char *szClassName, const float3 &vPos, const float3 &vScale, const SMQuaternion &qRotate, const XGUID &oldGUID);
 	void setKV(UINT uId, const char *szKey, const char *szValue);
+
+	UINT addProxy(const XGUID &guid);
+	void addProxyObject(UINT uProxy, const XGUID &guid);
 
 protected:
 	struct _paste_obj
@@ -44,6 +47,16 @@ protected:
 	Array<_paste_obj> m_aObjects;
 
 	CCommandSelect *m_pCommandSelect = NULL;
+
+	struct _proxy_obj
+	{
+		XGUID guid;
+		CProxyObject *pProxy;
+		Array<XGUID> aObjects;
+	};
+	Array<_proxy_obj> m_aProxies;
+
+	Map<XGUID, XGUID> m_mapGuids;
 };
 
 #endif

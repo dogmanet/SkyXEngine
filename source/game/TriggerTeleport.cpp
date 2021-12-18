@@ -19,7 +19,7 @@ BEGIN_PROPTABLE(CTriggerTeleport)
 	DEFINE_FIELD_ENTITY(CBaseEntity, m_pDestination, PDFF_NONE, "destination", "Destination landmark object", EDITOR_TEXTFIELD)
 END_PROPTABLE()
 
-REGISTER_ENTITY(CTriggerTeleport, trigger_teleport);
+REGISTER_ENTITY(CTriggerTeleport, trigger_teleport, REC_MODEL_FIELD("model"));
 
 void CTriggerTeleport::onTouchStart(CBaseEntity *pActivator)
 {

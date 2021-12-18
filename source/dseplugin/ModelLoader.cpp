@@ -158,6 +158,10 @@ bool XMETHODCALLTYPE CModelLoader::open(IFile *pFile)
 		pFile->setPos((size_t)m_hdr.iSecondHeaderOffset);
 		pFile->readBin(&m_hdr2, sizeof(m_hdr2));
 	}
+	else
+	{
+		m_hdr2 = {};
+	}
 
 	return(true);
 }

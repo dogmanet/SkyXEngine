@@ -21,11 +21,13 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\source\dseplugin\dllmain.cpp" />
     <ClCompile Include="..\..\..\source\dseplugin\ModelLoader.cpp" />
+    <ClCompile Include="..\..\..\source\dseplugin\ModelWriter.cpp" />
     <ClCompile Include="..\..\..\source\dseplugin\plugin_main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\dseplugin\ModelFile.h" />
     <ClInclude Include="..\..\..\source\dseplugin\ModelLoader.h" />
+    <ClInclude Include="..\..\..\source\dseplugin\ModelWriter.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5145958A-F75F-4F6D-9793-7384B616CF76}</ProjectGuid>

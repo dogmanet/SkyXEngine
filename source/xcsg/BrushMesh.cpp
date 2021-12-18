@@ -64,16 +64,15 @@ void CBrushMesh::enable(bool yesNo)
 	}
 }
 
-void CBrushMesh::buildModel(bool bBuildPhysbox)
+void CBrushMesh::buildMesh(CMeshBuilder *pBuilder)
 {
-	struct Subset
+	Array<UINT> aSubsets(m_aMaterials.size());
+	fora(i, m_aMaterials)
 	{
-		Array<XResourceModelStaticVertex> aVertices;
-		Array<UINT> aIndices;
-	};
-	Array<Subset> aSubsets(m_aMaterials.size());
+		aSubsets[i] = pBuilder->getSubsetIndexForMaterial(m_aMaterials[i].c_str());
+	}
 
-	for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
+	fora(i, m_aFaces)
 	{
 		Face &face = m_aFaces[i];
 		if(face.isInternal)
@@ -81,7 +80,7 @@ void CBrushMesh::buildModel(bool bBuildPhysbox)
 			continue;
 		}
 		TextureInfo &texInfo = face.texInfo;
-		Subset &subset = aSubsets[texInfo.uMatId];
+		Subset &subset = pBuilder->getSubset(aSubsets[texInfo.uMatId]);
 
 		bool isFirst = true;
 		UINT uFirstIdx;
@@ -149,60 +148,27 @@ void CBrushMesh::buildModel(bool bBuildPhysbox)
 		}
 	}
 
+}
+
+void CBrushMesh::buildModel(bool bBuildPhysbox)
+{
+	mem_release(m_pModel);
+
+	if(m_isFinalized)
+	{
+		enable(false);
+		return;
+	}
+
+	CMeshBuilder meshBuilder;
+	buildMesh(&meshBuilder);
 
 	// create model
 	IXResourceManager *pRM = m_pCore->getResourceManager();
 	IXResourceModelStatic *pResource = pRM->newResourceModelStatic();
 
-	UINT uSubsets = 0;
-	pResource->setMaterialCount(m_aMaterials.size(), 1);
-	for(UINT i = 0, l = m_aMaterials.size(); i < l; ++i)
-	{
-		if(aSubsets[i].aIndices.size())
-		{
-			pResource->setMaterial(i, 0, m_aMaterials[i].c_str());
-			++uSubsets;
-		}
-	}
+	meshBuilder.buildResource(pResource);
 
-	UINT *puVtxCount = (UINT*)alloca(sizeof(UINT) * uSubsets);
-	UINT *puIdxCount = (UINT*)alloca(sizeof(UINT) * uSubsets);
-
-	uSubsets = 0;
-	for(UINT i = 0, l = m_aMaterials.size(); i < l; ++i)
-	{
-		Subset &subset = aSubsets[i];
-		if(subset.aIndices.size())
-		{
-			puVtxCount[uSubsets] = subset.aVertices.size();
-			puIdxCount[uSubsets] = subset.aIndices.size();
-
-			++uSubsets;
-		}
-	}
-
-	pResource->addLod(uSubsets, puVtxCount, puIdxCount);
-	uSubsets = 0;
-	for(UINT i = 0, l = m_aMaterials.size(); i < l; ++i)
-	{
-		Subset &subset = aSubsets[i];
-		if(subset.aIndices.size())
-		{
-			XResourceModelStaticSubset *pSubset = pResource->getSubset(0, uSubsets);
-
-			pSubset->iMaterialID = i;
-			pSubset->iIndexCount = subset.aIndices.size();
-			pSubset->iVertexCount = subset.aVertices.size();
-
-			memcpy(pSubset->pIndices, subset.aIndices, sizeof(UINT) * pSubset->iIndexCount);
-			memcpy(pSubset->pVertices, subset.aVertices, sizeof(XResourceModelStaticVertex) * pSubset->iVertexCount);
-
-			++uSubsets;
-		}
-	}
-
-
-	mem_release(m_pModel);
 	IXModelProvider *pProvider = (IXModelProvider*)m_pCore->getPluginManager()->getInterface(IXMODELPROVIDER_GUID);
 	pProvider->createStaticModel(pResource, &m_pModel);
 	mem_release(pResource);
@@ -406,10 +372,10 @@ void CBrushMesh::move(const float3 &vOffset)
 	for(UINT i = 0, l = m_aFaces.size(); i < l; ++i)
 	{
 		Face &f = m_aFaces[i];
-		f.texInfo.fSShift -= SMVector3Dot(f.texInfo.vS, vOffset);
-		f.texInfo.fTShift -= SMVector3Dot(f.texInfo.vT, vOffset);
+		f.texInfo.fSShift -= SMVector3Dot(f.texInfo.vS, vOffset) / f.texInfo.fSScale;
+		f.texInfo.fTShift -= SMVector3Dot(f.texInfo.vT, vOffset) / f.texInfo.fTScale;
 	}
-
+	
 	m_aabb = m_aabb + vOffset;
 }
 
@@ -476,11 +442,44 @@ void CBrushMesh::resize(const float3 &vOrigin, const float3 &vRelativeSize)
 
 bool CBrushMesh::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, float3 *pvNormal, bool isRayInWorldSpace, bool bReturnNearestPoint)
 {
-	if(m_pModel)
+	float3 vPos;
+	fora(i, m_aFaces)
 	{
-		return(m_pModel->rayTest(vStart, vEnd, pvOut, pvNormal, isRayInWorldSpace, bReturnNearestPoint));
+		Face &f = m_aFaces[i];
+		SMPLANE plane(f.vNormal, m_aVertices[m_aEdges[f.aEdges[0]].uVertex[0]]);
+		
+		if(SMVector4Dot(float4(vStart, 1.0f), plane) >= 0.0f && plane.intersectLine(&vPos, vStart, vEnd))
+		{
+			bool isInternal = true;
+			fora(j, m_aFaces)
+			{
+				if(i != j)
+				{
+					Face &f2 = m_aFaces[j];
+					SMPLANE plane2(f2.vNormal, m_aVertices[m_aEdges[f2.aEdges[0]].uVertex[0]]);
+					if(SMVector4Dot(float4(vPos, 1.0f), plane2) > 0.0f)
+					{
+						isInternal = false;
+						break;
+					}
+				}
+			}
+			if(isInternal)
+			{
+				if(pvOut)
+				{
+					//! Found point is always nearest!
+					*pvOut = vPos;
+				}
+				if(pvNormal)
+				{
+					*pvNormal = f.vNormal;
+				}
+				return(true);
+			}
+		}
+		
 	}
-	assert(!"Check me!");
 	return(false);
 }
 
@@ -1762,3 +1761,104 @@ bool CBrushMesh::clip(const SMPLANE &plane)
 
 	return(true);
 }
+
+void CBrushMesh::setFinalized(bool set)
+{
+	m_isFinalized = set;
+	buildModel();
+}
+
+void CBrushMesh::buildPhysbox(IXResourceModel *pResource)
+{
+	IModelPhysboxConvex *pConvex = pResource->newPhysboxConvex();
+
+	pConvex->initData(m_aVertices.size(), m_aVertices);
+
+	pResource->addPhysbox(pConvex);
+}
+
+//##########################################################################
+
+Subset& CMeshBuilder::getSubset(UINT id)
+{
+	assert(id < m_aSubsets.size());
+	return(m_aSubsets[id]);
+}
+UINT CMeshBuilder::getSubsetIndexForMaterial(const char *szMat)
+{
+	int idx = m_aMaterials.indexOf(szMat, [](const String &a, const char *b){
+		return(!strcmp(a.c_str(), b));
+	});
+	if(idx < 0)
+	{
+		idx = m_aMaterials.size();
+		m_aMaterials.push_back(szMat);
+	}
+
+	m_aSubsets.resizeFast(m_aMaterials.size());
+
+	return(idx);
+}
+
+UINT CMeshBuilder::getSubsetCount()
+{
+	return(m_aMaterials.size());
+}
+
+const char* CMeshBuilder::getMaterial(UINT id)
+{
+	assert(id < m_aMaterials.size());
+	return(m_aMaterials[id].c_str());
+}
+
+void CMeshBuilder::buildResource(IXResourceModelStatic *pResource)
+{
+	
+	UINT uSubsets = 0;
+	pResource->setMaterialCount(getSubsetCount(), 1);
+	for(UINT i = 0, l = getSubsetCount(); i < l; ++i)
+	{
+		if(getSubset(i).aIndices.size())
+		{
+			pResource->setMaterial(i, 0, getMaterial(i));
+			++uSubsets;
+		}
+	}
+
+	UINT *puVtxCount = (UINT*)alloca(sizeof(UINT) * uSubsets);
+	UINT *puIdxCount = (UINT*)alloca(sizeof(UINT) * uSubsets);
+
+	uSubsets = 0;
+	for(UINT i = 0, l = getSubsetCount(); i < l; ++i)
+	{
+		Subset &subset = getSubset(i);
+		if(subset.aIndices.size())
+		{
+			puVtxCount[uSubsets] = subset.aVertices.size();
+			puIdxCount[uSubsets] = subset.aIndices.size();
+
+			++uSubsets;
+		}
+	}
+
+	pResource->addLod(uSubsets, puVtxCount, puIdxCount);
+	uSubsets = 0;
+	for(UINT i = 0, l = getSubsetCount(); i < l; ++i)
+	{
+		Subset &subset = getSubset(i);
+		if(subset.aIndices.size())
+		{
+			XResourceModelStaticSubset *pSubset = pResource->getSubset(0, uSubsets);
+
+			pSubset->iMaterialID = i;
+			pSubset->iIndexCount = subset.aIndices.size();
+			pSubset->iVertexCount = subset.aVertices.size();
+
+			memcpy(pSubset->pIndices, subset.aIndices, sizeof(UINT) * pSubset->iIndexCount);
+			memcpy(pSubset->pVertices, subset.aVertices, sizeof(XResourceModelStaticVertex) * pSubset->iVertexCount);
+
+			++uSubsets;
+		}
+	}
+}
+

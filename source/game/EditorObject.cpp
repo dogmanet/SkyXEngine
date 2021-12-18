@@ -27,6 +27,8 @@ CEditorObject::CEditorObject(CEditable *pEditable, const char *szClassName):
 	m_szClassName = CEntityFactoryMap::GetInstance()->getClassNamePtr(szClassName);
 	assert(m_szClassName);
 
+	XCreateGUID(&m_guidEnt);
+
 	_iniFieldList();
 }
 
@@ -53,6 +55,7 @@ void CEditorObject::_iniFieldList()
 		xField.szHelp = "";
 		xField.szKey = "guid";
 		xField.szName = "GUID";
+		xField.isGeneric = true;
 
 		m_aFields.push_back(xField);
 	}

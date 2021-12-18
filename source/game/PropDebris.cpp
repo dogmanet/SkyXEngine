@@ -13,7 +13,7 @@ See the license in LICENSE
 BEGIN_PROPTABLE(CPropDebris)
 END_PROPTABLE()
 
-REGISTER_ENTITY(CPropDebris, prop_debris);
+REGISTER_ENTITY(CPropDebris, prop_debris, REC_MODEL_FIELD("model"));
 
 CPropDebris::CPropDebris()
 {

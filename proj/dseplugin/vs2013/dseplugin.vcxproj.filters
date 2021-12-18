@@ -22,12 +22,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\dseplugin\plugin_main.cpp" />
+    <ClCompile Include="..\..\..\source\dseplugin\ModelWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\dseplugin\ModelLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\dseplugin\ModelFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\dseplugin\ModelWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

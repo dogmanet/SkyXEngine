@@ -38,7 +38,13 @@ UINT XMETHODCALLTYPE CResourceModel::getPhysboxCount() const
 {
 	return(m_aPhysBoxes.size());
 }
-const IModelPhysbox * XMETHODCALLTYPE CResourceModel::getPhysbox(UINT uPart) const
+const IModelPhysbox* XMETHODCALLTYPE CResourceModel::getPhysbox(UINT uPart) const
+{
+	assert(uPart < m_aPhysBoxes.size());
+
+	return(m_aPhysBoxes[uPart].pPhysbox);
+}
+IModelPhysbox* XMETHODCALLTYPE CResourceModel::getPhysbox(UINT uPart)
 {
 	assert(uPart < m_aPhysBoxes.size());
 

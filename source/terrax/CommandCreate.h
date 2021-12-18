@@ -11,7 +11,7 @@
 class CCommandCreate final: public IXUnknownImplementation<IXEditorCommand>
 {
 public:
-	CCommandCreate(const float3_t vPos, const char *szTypeName, const char *szClassName, bool useRandomScaleYaw=false);
+	CCommandCreate(const float3_t &vPos, const char *szTypeName, const char *szClassName, bool useRandomScaleYaw=false);
 	~CCommandCreate();
 
 	bool XMETHODCALLTYPE exec() override;

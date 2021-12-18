@@ -5,10 +5,12 @@
 #include <xcommon/resource/IXResourceManager.h>
 
 #include "Editable.h"
+#include "EditorModel.h"
 
 CEditorObject::CEditorObject(CEditable *pEditable):
 	m_pEditable(pEditable)
 {
+	XCreateGUID(&m_guid);
 	pEditable->onObjectCreated(this);
 	//m_szClassName = CEntityFactoryMap::GetInstance()->getClassNamePtr(szClassName);
 	//assert(m_szClassName);
@@ -35,6 +37,8 @@ void XMETHODCALLTYPE CEditorObject::setPos(const float3_t &pos)
 		m_aBrushes[i]->move(vOffset);
 	}
 	m_vPos = pos;
+
+	SAFE_CALL(m_pModel, onObjectChanged, this);
 }
 
 void CEditorObject::fixPos()
@@ -57,6 +61,8 @@ void XMETHODCALLTYPE CEditorObject::setSize(const float3_t &vSize)
 
 		m_aBrushes[i]->resize(m_vPos, /*(aabb.vMax - aabb.vMin) * */vRelativeSize);
 	}
+
+	SAFE_CALL(m_pModel, onObjectChanged, this);
 }
 
 void XMETHODCALLTYPE CEditorObject::setOrient(const SMQuaternion &orient)
@@ -71,6 +77,8 @@ void XMETHODCALLTYPE CEditorObject::setOrient(const SMQuaternion &orient)
 	}
 
 	m_qRot = orient;
+
+	SAFE_CALL(m_pModel, onObjectChanged, this);
 }
 
 float3_t XMETHODCALLTYPE CEditorObject::getPos()
@@ -212,6 +220,8 @@ bool XMETHODCALLTYPE CEditorObject::rayTest(const float3 &vStart, const float3 &
 
 void XMETHODCALLTYPE CEditorObject::remove()
 {
+	m_isRemoved = true;
+	//SAFE_CALL(m_pModel, onObjectRemoved, this);
 	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
 	{
 		m_aBrushes[i]->enable(false);
@@ -223,16 +233,17 @@ void XMETHODCALLTYPE CEditorObject::preSetup()
 }
 void XMETHODCALLTYPE CEditorObject::postSetup()
 {
-	
 }
 
 void XMETHODCALLTYPE CEditorObject::create()
 {
+	m_isRemoved = false;
 	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
 	{
 		m_aBrushes[i]->enable(true);
 	}
 	m_isVisible = true;
+	//SAFE_CALL(m_pModel, onObjectAdded, this);
 }
 
 void XMETHODCALLTYPE CEditorObject::setKV(const char *szKey, const char *szValue)
@@ -253,6 +264,10 @@ void CEditorObject::setKV(const char *szKey, const char *szValue, bool bSkipFixP
 		}
 
 		fixPos();
+	}
+	else if(!fstrcmp(szKey, "guid"))
+	{
+		XGUIDFromString(&m_guid, szValue);
 	}
 	//if(m_pEntity)
 	//{
@@ -303,10 +318,24 @@ void CEditorObject::setKV(const char *szKey, IXJSONItem *pValue, bool bSkipFixPo
 		{
 			setPos(vOldPos);
 		}
+
+		SAFE_CALL(m_pModel, onObjectChanged, this);
+	}
+	else if(!fstrcmp(szKey, "guid"))
+	{
+		if(pValue->getType() == XJI_STRING)
+		{
+			setKV(szKey, pValue->getString());
+		}
 	}
 }
 
 const char* XMETHODCALLTYPE CEditorObject::getKV(const char *szKey)
+{
+	return(getKV(szKey, false));
+}
+
+const char* CEditorObject::getKV(const char *szKey, bool forJSON)
 {
 	if(!fstrcmp(szKey, "brush"))
 	{
@@ -326,7 +355,29 @@ const char* XMETHODCALLTYPE CEditorObject::getKV(const char *szKey)
 
 		return(m_aSerializedState);
 	}
-
+	else if(!fstrcmp(szKey, "guid"))
+	{
+		char tmp[64];
+		if(forJSON)
+		{
+			tmp[0] = '"';
+			XGUIDToSting(m_guid, tmp + 1, sizeof(tmp) - 1);
+			char *cur = tmp;
+			while(*cur)
+			{
+				++cur;
+			}
+			*cur = '"';
+			++cur;
+			*cur = 0;
+		}
+		else
+		{
+			XGUIDToSting(m_guid, tmp, sizeof(tmp));
+		}
+		m_sGUID = tmp;
+		return(m_sGUID.c_str());
+	}
 
 	//if(!m_pEntity)
 	{
@@ -350,17 +401,20 @@ const char* XMETHODCALLTYPE CEditorObject::getKV(const char *szKey)
 }
 const X_PROP_FIELD* XMETHODCALLTYPE CEditorObject::getPropertyMeta(UINT uKey)
 {
-	static X_PROP_FIELD s_prop0 = {"brush", "brush", XPET_TEXT};
+	static X_PROP_FIELD s_prop0 = {"brush", "brush", XPET_TEXT, NULL, ""};
+	static X_PROP_FIELD s_prop1 = {"guid", "GUID", XPET_TEXT, NULL, "", true};
 	switch(uKey)
 	{
 	case 0:
 		return(&s_prop0);
+	case 1:
+		return(&s_prop1);
 	}
 	return(NULL);
 }
 UINT XMETHODCALLTYPE CEditorObject::getProperyCount()
 {
-	return(1);
+	return(2);
 }
 
 const char* XMETHODCALLTYPE CEditorObject::getTypeName()
@@ -497,6 +551,8 @@ void CEditorObject::setFaceInfo(UINT uFace, const BrushFace &brushFace)
 		pBrush->setFaceInfo(uFace, brushFace);
 		break;
 	}
+
+	SAFE_CALL(m_pModel, onObjectChanged, this);
 }
 
 void CEditorObject::getFaceExtents(UINT uFace, Extents extents)
@@ -549,7 +605,7 @@ bool CEditorObject::clip(const SMPLANE &plane)
 {
 	int cls;
 	CBrushMesh *pBrush;
-	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	fora(i, m_aBrushes)
 	{
 		pBrush = m_aBrushes[i];
 		cls = pBrush->classify(plane);
@@ -558,11 +614,11 @@ bool CEditorObject::clip(const SMPLANE &plane)
 		{
 			removeBrush(i);
 			--i;
-			--l;
+			--il;
 		}
 	}
 
-	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	fora(i, m_aBrushes)
 	{
 		pBrush = m_aBrushes[i];
 		cls = pBrush->classify(plane);
@@ -575,6 +631,11 @@ bool CEditorObject::clip(const SMPLANE &plane)
 
 	fixPos();
 
+	if(m_aBrushes.size() != 0)
+	{
+		SAFE_CALL(m_pModel, onObjectChanged, this);
+	}
+
 	return(m_aBrushes.size() != 0);
 }
 
@@ -586,7 +647,7 @@ void CEditorObject::removeBrush(UINT idx)
 
 	while(pBrush->findInternalFace(aVertices))
 	{
-		for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+		fora(i, m_aBrushes)
 		{
 			if(i != idx && m_aBrushes[i]->fillInternalFace(aVertices))
 			{
@@ -598,4 +659,31 @@ void CEditorObject::removeBrush(UINT idx)
 
 	mem_delete(m_aBrushes[idx]);
 	m_aBrushes.erase(idx);
+}
+
+void CEditorObject::buildMesh(CMeshBuilder *pBuilder)
+{
+	fora(i, m_aBrushes)
+	{
+		m_aBrushes[i]->buildMesh(pBuilder);
+	}
+}
+
+void CEditorObject::setModel(CEditorModel *pModel)
+{
+	m_pModel = pModel;
+	// destroy model and physics
+
+	fora(i, m_aBrushes)
+	{
+		m_aBrushes[i]->setFinalized(pModel != NULL);
+	}
+}
+
+void CEditorObject::buildPhysbox(IXResourceModel *pResource)
+{
+	fora(i, m_aBrushes)
+	{
+		m_aBrushes[i]->buildPhysbox(pResource);
+	}
 }

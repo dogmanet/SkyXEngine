@@ -107,3 +107,17 @@ void CEditable::onSelectionChanged(CEditorObject *pObject)
 {
 	m_pEditorExtension->onSelectionChanged(pObject);
 }
+
+bool XMETHODCALLTYPE CEditable::canUseModel(const char *szClass)
+{
+	IEntityFactory *pFactory = CEntityFactoryMap::GetInstance()->getFactory(szClass);
+	if(pFactory)
+	{
+		const char *szModelField = pFactory->getKV("model_field");
+		if(szModelField)
+		{
+			return(true);
+		}
+	}
+	return(false);
+}

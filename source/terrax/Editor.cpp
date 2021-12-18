@@ -51,6 +51,10 @@ void CEditor::onGizmoRemoved(CGizmo##gt *pGizmo)\
 	if(idx >= 0){\
 		m_aGizmos##gt.erase(idx);\
 	}\
+	if(pGizmo == m_pSelected##gt)\
+	{\
+		m_pSelected##gt = NULL;\
+	}\
 }
 GIZMO_TYPES()
 #undef GTO

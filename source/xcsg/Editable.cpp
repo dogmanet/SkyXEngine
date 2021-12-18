@@ -1,5 +1,6 @@
 #include "Editable.h"
 #include "EditorObject.h"
+#include "EditorModel.h"
 #include <xcommon/IPluginManager.h>
 
 CEditable::CEditable(IXCore *pCore):
@@ -100,17 +101,75 @@ void CEditable::save(const char *szLevelName)
 
 	pFile->writeText("{\"brushes\":[\n");
 
-	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
+	bool isFirst = true;
+
+	fora(i, m_aObjects)
 	{
 		CEditorObject *pObj = m_aObjects[i];
-		pFile->writeText("\t%s{\n", i == 0 ? "" : ",");
+		if(pObj->isRemoved())
+		{
+			continue;
+		}
+		pFile->writeText("\t%s{\n", isFirst ? "" : ",");
+		isFirst = false;
 		//float3_t vPos = pObj->getPos();
 		//pFile->writeText("\t\t\"_origin\": [%g,%g,%g]\n", vPos.x, vPos.y, vPos.z);
 		for(UINT j = 0, jl = pObj->getProperyCount(); j < jl; ++j)
 		{
 			const char *pKey = pObj->getPropertyMeta(j)->szKey;
-			pFile->writeText("\t\t%s\"%s\": %s\n", j == 0 ? "" : ",", pKey, pObj->getKV(pKey));
+			pFile->writeText("\t\t%s\"%s\": %s\n", j == 0 ? "" : ",", pKey, pObj->getKV(pKey, true));
 		}
+		pFile->writeText("\t}\n");
+	}
+
+	pFile->writeText("\n]\n,\"models\":[\n");
+
+	char tmp[64];
+	isFirst = true;
+	fora(i, m_aModels)
+	{
+		CEditorModel *pMdl = m_aModels[i];
+		if(!pMdl->getObjectCount())
+		{
+			continue;
+		}
+		bool isValid = false;
+		for(UINT j = 0, jl = pMdl->getObjectCount(); j < jl && !isValid; ++j)
+		{
+			IXEditorObject *pObj;
+			if(pMdl->getObject(j, &pObj))
+			{
+				if(!((CEditorObject*)pObj)->isRemoved())
+				{
+					isValid = true;
+				}
+				mem_release(pObj);
+			}
+		}
+		if(!isValid)
+		{
+			continue;
+		}
+		pFile->writeText("\t%s{\n", isFirst ? "" : ",");
+		isFirst = false;
+
+		XGUIDToSting(*pMdl->getGUID(), tmp, sizeof(tmp));
+		pFile->writeText("\t\t\"guid\": \"%s\"\n", tmp);
+		pFile->writeText("\t\t,\"o\": [\n", tmp);
+
+		for(UINT j = 0, jl = pMdl->getObjectCount(); j < jl; ++j)
+		{
+			IXEditorObject *pObj;
+			if(pMdl->getObject(j, &pObj))
+			{
+				XGUIDToSting(*pObj->getGUID(), tmp, sizeof(tmp));
+				pFile->writeText("\t\t\t%s\"%s\"\n", j == 0 ? "" : ",", tmp);
+				mem_release(pObj);
+			}
+		}
+
+		pFile->writeText("\t\t]\n", tmp);
+
 		pFile->writeText("\t}\n");
 	}
 
@@ -179,6 +238,71 @@ void CEditable::load(const char *szLevelName, ID idPlugin)
 						isLoaded = true;
 					}
 				}
+				else if(!strcmp(szKey, "models"))
+				{
+					IXJSONArray *pArr = pRootObj->at(i)->asArray();
+					if(pArr)
+					{
+						for(UINT j = 0, jl = pArr->size(); j < jl; ++j)
+						{
+							IXJSONObject *pModelObj = pArr->at(j)->asObject();
+							if(pModelObj)
+							{
+								IXJSONItem *pGuidItem = pModelObj->getItem("guid");
+								const char *szGUID = NULL;
+								XGUID guid;
+								if(!pGuidItem || !(szGUID = pGuidItem->getString()) || !XGUIDFromString(&guid, szGUID))
+								{
+									LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid model '%u' in '%s'. Invalid GUID\n", j, szFile);
+									continue;
+								}
+								IXJSONItem *pOItem = pModelObj->getItem("o");
+								IXJSONArray *pOArr = NULL;
+								if(!pOItem || !(pOArr = pOItem->asArray()))
+								{
+									LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid model '%u' in '%s'. Missing 'o' key\n", j, szFile);
+									continue;
+								}
+
+								if(!pOArr->size())
+								{
+									LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid model '%u' in '%s'. No child objects\n", j, szFile);
+									continue;
+								}
+
+								CEditorModel *pMdl = new CEditorModel(this, m_pCore, guid);
+								m_aModels.push_back(pMdl);
+
+								for(UINT k = 0, kl = pOArr->size(); k < kl; ++k)
+								{
+									szGUID = pOArr->at(k)->getString();
+									if(!szGUID || !XGUIDFromString(&guid, szGUID))
+									{
+										LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid object '%u' guid in model '%u' in '%s'. '%s'\n", k, j, szFile, szGUID ? szGUID : "");
+										continue;
+									}
+
+									CEditorObject *pObj = getObjectByGUID(guid);
+
+									if(!pObj)
+									{
+										LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid object '%s' in model '%u' in '%s'. The object is not found\n", szGUID, j, szFile);
+										continue;
+									}
+
+									pMdl->addObject(pObj);
+								}
+
+								if(!pMdl->getObjectCount())
+								{
+									mem_release(pMdl);
+									LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid model '%u' in '%s'. No child object found\n", j, szFile);
+									continue;
+								}
+							}
+						}
+					}
+				}
 			}
 
 		}
@@ -201,11 +325,104 @@ void CEditable::load(const char *szLevelName, ID idPlugin)
 	mem_release(pFile);
 }
 
+CEditorObject* CEditable::getObjectByGUID(const XGUID &guid)
+{
+	fora(i, m_aObjects)
+	{
+		if(*m_aObjects[i]->getGUID() == guid)
+		{
+			return(m_aObjects[i]);
+		}
+	}
+
+	return(NULL);
+}
+
 void CEditable::unload()
 {
-	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
+	for(int i = m_aModels.size() - 1; i >= 0; --i)
+	{
+		mem_release(m_aModels[i]);
+	}
+	m_aModels.clearFast();
+
+	for(int i = m_aObjects.size() - 1; i >= 0; --i)
 	{
 		mem_release(m_aObjects[i]);
 	}
 	m_aObjects.clearFast();
+}
+
+bool XMETHODCALLTYPE CEditable::buildModelFromSelection(IXEditorModel **ppOut)
+{
+	bool hasSelection = false;
+	fora(i, m_aObjects)
+	{
+		CEditorObject *pObj = m_aObjects[i];
+		if(pObj->isSelected())
+		{
+			hasSelection = true;
+			break;
+		}
+	}
+	if(!hasSelection)
+	{
+		return(false);
+	}
+
+	CEditorModel *pMdl = new CEditorModel(this, m_pCore);
+	m_aModels.push_back(pMdl);
+	*ppOut = pMdl;
+	add_ref(pMdl);
+
+	return(true);
+}
+bool XMETHODCALLTYPE CEditable::newModel(IXEditorModel **ppOut)
+{
+	XGUID guid;
+	XCreateGUID(&guid);
+	CEditorModel *pMdl = new CEditorModel(this, m_pCore, guid);
+	m_aModels.push_back(pMdl);
+	*ppOut = pMdl;
+	add_ref(pMdl);
+
+	return(true);
+}
+UINT XMETHODCALLTYPE CEditable::getModelCount()
+{
+	return(m_aModels.size());
+}
+bool XMETHODCALLTYPE CEditable::getModel(UINT id, IXEditorModel **ppOut)
+{
+	assert(id < m_aModels.size());
+
+	if(id < m_aModels.size())
+	{
+		*ppOut = m_aModels[id];
+		add_ref(*ppOut);
+		return(true);
+	}
+
+	return(false);
+}
+
+void CEditable::onModelDestroy(CEditorModel *pModel)
+{
+	int idx = m_aModels.indexOf(pModel);
+	if(idx >= 0)
+	{
+		m_aModels.erase(idx);
+		mem_release(pModel);
+	}
+}
+
+void CEditable::onModelRestored(CEditorModel *pModel)
+{
+	int idx = m_aModels.indexOf(pModel);
+	assert(idx < 0);
+	if(idx < 0)
+	{
+		add_ref(pModel);
+		m_aModels.push_back(pModel);
+	}
 }

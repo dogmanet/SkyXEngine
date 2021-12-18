@@ -30,6 +30,31 @@ enum CLIP_PLANE_STATE
 	CPS_TWOSIDE
 };
 
+struct Subset
+{
+	Array<XResourceModelStaticVertex> aVertices;
+	Array<UINT> aIndices;
+};
+
+class CMeshBuilder
+{
+public:
+	Subset& getSubset(UINT id);
+	UINT getSubsetIndexForMaterial(const char *szMat);
+
+	UINT getSubsetCount();
+
+	const char* getMaterial(UINT id);
+
+	void buildResource(IXResourceModelStatic *pResource);
+
+private:
+	Array<Subset> m_aSubsets;
+	Array<String> m_aMaterials;
+};
+
+//##########################################################################
+
 class CBrushMesh
 {
 public:
@@ -75,6 +100,11 @@ public:
 
 	bool findInternalFace(Array<float3_t> &aDest);
 	bool fillInternalFace(const Array<float3_t> &aSrc);
+
+	void buildMesh(CMeshBuilder *pBuilder);
+	void buildPhysbox(IXResourceModel *pResource);
+
+	void setFinalized(bool set);
 
 private:
 	void buildModel(bool bBuildPhysbox = true);

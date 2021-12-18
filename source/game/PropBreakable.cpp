@@ -27,7 +27,7 @@ BEGIN_PROPTABLE(CPropBreakable)
 	EDITOR_FILE_END()
 END_PROPTABLE()
 
-REGISTER_ENTITY(CPropBreakable, prop_breakable);
+REGISTER_ENTITY(CPropBreakable, prop_breakable, REC_MODEL_FIELD("model"));
 
 CPropBreakable::~CPropBreakable()
 {
