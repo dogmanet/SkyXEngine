@@ -193,7 +193,7 @@ void CPlayer::updateInput(float dt)
 	{
 		if(m_uMoveDir & PM_RUN)
 		{
-			dt *= 5.0f;
+			//dt *= 5.0f;
 		}
 		dt *= 10.0f;
 		float3 dir;
@@ -249,7 +249,15 @@ void CPlayer::updateInput(float dt)
 		{
 			dir = SMQuaternion(m_vPitchYawRoll.y, 'y') * (SMVector3Normalize(dir)/* * dt*/);
 			dir *= 3.5f;
-			if(m_uMoveDir & PM_RUN)
+			if(m_uMoveDir & PM_CROUCH)
+			{
+				dir *= 0.3f;
+			}
+			else if(m_uMoveDir & PM_CRAWL)
+			{
+				dir *= 0.05f;
+			}
+			else if(m_uMoveDir & PM_RUN)
 			{
 				dir *= 2.0f;
 			}
@@ -274,35 +282,63 @@ void CPlayer::updateInput(float dt)
 				m_canJump = true;
 			}
 			// m_pCharacter->setWalkDirection(F3_BTVEC(dir));
-			m_pCharacter->setVelocityForTimeInterval(dir, dt);
-			
+			m_vTargetSpeed = dir;
 
-			static const bool * cl_bob = GET_PCVAR_BOOL("cl_bob");
-			static const float * cl_bob_walk_y = GET_PCVAR_FLOAT("cl_bob_walk_y");
-			static const float * cl_bob_walk_x = GET_PCVAR_FLOAT("cl_bob_walk_x");
-			static const float * cl_bob_run_x = GET_PCVAR_FLOAT("cl_bob_run_x");
-			static const float * cl_bob_run_y = GET_PCVAR_FLOAT("cl_bob_run_y");
-			static const float * cl_bob_run = GET_PCVAR_FLOAT("cl_bob_run");
-			static const float * cl_bob_walk = GET_PCVAR_FLOAT("cl_bob_walk");
+
+			static const bool* cl_bob = GET_PCVAR_BOOL("cl_bob");
+			static const float* cl_bob_y = GET_PCVAR_FLOAT("cl_bob_y");
+			static const float* cl_bob_x = GET_PCVAR_FLOAT("cl_bob_x");
+			static const float* cl_bob_period = GET_PCVAR_FLOAT("cl_bob_period");
+			static const float* cl_acceleration = GET_PCVAR_FLOAT("cl_acceleration");
+
+			if(onGround())
+			{
+				const float c_fSpeedThreshold = 0.01f; // 1cm/s
+				float fAccel = *cl_acceleration;
+				float3 fAccelDir = m_vTargetSpeed - m_vCurrentSpeed;
+				if(SMVector3Length2(fAccelDir) < (c_fSpeedThreshold * c_fSpeedThreshold))
+				{
+					m_vCurrentSpeed = m_vTargetSpeed;
+				}
+				else
+				{
+					m_vCurrentSpeed = (float3)(m_vCurrentSpeed + SMVector3Normalize(fAccelDir) * fAccel * dt);
+
+					if(SMVector3Dot(m_vCurrentSpeed, m_vTargetSpeed) > SM_PIDIV2 && SMVector3Length2(m_vCurrentSpeed) > SMVector3Length2(m_vTargetSpeed))
+					{
+						m_vCurrentSpeed = m_vTargetSpeed;
+					}
+				}
+			}
+
+			m_pCharacter->setVelocityForTimeInterval(m_vCurrentSpeed, dt);
+			
 
 			
 
 			if(*cl_bob)
 			{
+				float fBobCoeff = SMVector3Length(m_vCurrentSpeed) / 3.5f;
 				if(mov && m_pCharacter->onGround())
 				{
 					const float fFS1 = SM_PIDIV2;
 					const float fFS2 = SM_PI + SM_PIDIV2;
 					bool bFS1 = m_fViewbobStep < fFS1;
 					bool bFS2 = m_fViewbobStep < fFS2;
-					if(m_uMoveDir & PM_RUN)
+
+					
+
+					m_fViewbobStep += dt * *cl_bob_period * fBobCoeff;
+					
+
+					/*if(m_uMoveDir & PM_RUN)
 					{
 						m_fViewbobStep += dt * *cl_bob_run * 0.2f;
 					}
 					else
 					{
 						m_fViewbobStep += dt * *cl_bob_walk;
-					}
+					}*/
 					if((bFS1 && m_fViewbobStep > fFS1) || (bFS2 && m_fViewbobStep > fFS2))
 					{
 						playFootstepsSound();
@@ -331,11 +367,8 @@ void CPlayer::updateInput(float dt)
 				}
 				float sin = cosf(m_fViewbobStep * 2.0f);
 				float sin2 = sinf(m_fViewbobStep);
-				float3 vec(1.0f, 0.0f, 0.0f);
-				vec = getOrient() * vec;
-				m_fViewbobY = (sin * ((m_uMoveDir & PM_RUN) ? *cl_bob_run_y : *cl_bob_walk_y));
-				m_fViewbobStrafe = (float3)(vec * sin2 * ((m_uMoveDir & PM_RUN) ? *cl_bob_run_x : *cl_bob_walk_x));
-				//m_vOrientation = SMQuaternion(SMToRadian(10) * sinf(m_fViewbobStep), 'z') * m_vOrientation;
+				m_fViewbobY = (sin * (*cl_bob_y * fBobCoeff));
+				m_fViewbobStrafe = sin2 * (*cl_bob_x * fBobCoeff);
 			}
 
 
@@ -395,7 +428,7 @@ float3 CPlayer::getHeadOffset()
 	if(!(m_uMoveDir & PM_OBSERVER))
 	{
 		vOffset.y += m_fViewbobY;
-		vOffset += m_fViewbobStrafe;
+		vOffset.x += m_fViewbobStrafe;
 	}
 
 	return(vOffset);

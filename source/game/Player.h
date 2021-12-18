@@ -90,7 +90,7 @@ protected:
 	//! Для качания камеры @{
 	float m_fViewbobStep = 0.0f;
 	float m_fViewbobY = 0.0f;
-	float3_t m_fViewbobStrafe = float3_t(0.0f, 0.0f, 0.0f);
+	float m_fViewbobStrafe = 0.0f;
 	float3_t m_vWpnShakeAngles = float3_t(0.0f, 0.0f, 0.0f);
 	//! @}
 
@@ -107,6 +107,10 @@ protected:
 	bool m_bCanRespawn = false;
 
 	float3 getHeadOffset() override;
+
+private:
+	float3_t m_vTargetSpeed;
+	float3_t m_vCurrentSpeed;
 };
 
 #endif
