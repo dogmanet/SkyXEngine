@@ -3723,17 +3723,32 @@ float3 XSnapToGrid(const float3 &vPos)
 				fmodf(vPos.y, fGridStep),
 				fmodf(vPos.z, fGridStep)
 				);
-			if(vDelta.x > 0.5f)
+			float fHalfStep = fGridStep * 0.5f;
+			if(vDelta.x > fHalfStep)
 			{
 				vDelta.x -= fGridStep;
 			}
-			if(vDelta.y > 0.5f)
+			else if(vDelta.x < -fHalfStep)
+			{
+				vDelta.x += fGridStep;
+			}
+
+			if(vDelta.y > fHalfStep)
 			{
 				vDelta.y -= fGridStep;
 			}
-			if(vDelta.z > 0.5f)
+			else if(vDelta.y < -fHalfStep)
+			{
+				vDelta.y += fGridStep;
+			}
+
+			if(vDelta.z > fHalfStep)
 			{
 				vDelta.z -= fGridStep;
+			}
+			else if(vDelta.z < -fHalfStep)
+			{
+				vDelta.z += fGridStep;
 			}
 
 			return(vPos - vDelta);
