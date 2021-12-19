@@ -297,7 +297,7 @@ namespace gui
 				releaseBuffer(&tr);
 				releaseBuffer(&tl);
 				releaseBuffer(&br);
-				releaseBuffer(&tl);
+				releaseBuffer(&bl);
 
 				USHORT * pInx;
 				USHORT px;
