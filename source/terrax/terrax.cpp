@@ -1143,12 +1143,7 @@ int main(int argc, char **argv)
 		{
 			g_pEditableSystems.push_back(pEditable);
 			pEditable->startup(SGCore_GetDXDevice());
-
-			if(pEditable->getClassCount() != 0)
-			{
-				ComboBox_AddString(g_hComboTypesWnd, pEditable->getName());
-			}
-
+			
 			IXEditorExtension *pExt = pEditable->getEditorExtension();
 			if(pExt)
 			{
@@ -1163,7 +1158,7 @@ int main(int argc, char **argv)
 				{
 					if(pExt->getTool(i, &pTool))
 					{
-						XInitTool(pTool);
+						XInitTool(pTool, pEditable);
 					}
 				}
 			}
@@ -1173,15 +1168,8 @@ int main(int argc, char **argv)
 	}
 	SetForegroundWindow(g_hWndMain);
 	XInitCustomAccel();
-	if(g_pEditableSystems.size() > 0)
-	{
-		ComboBox_SetCurSel(g_hComboTypesWnd, 0);
-		SendMessage(GetParent(g_hComboTypesWnd), WM_COMMAND, MAKEWPARAM(IDC_CMB_TYPE, CBN_SELCHANGE), (LPARAM)g_hComboTypesWnd);
-		if(g_pEditableSystems.size() == 1)
-		{
-			ComboBox_Enable(g_hComboTypesWnd, FALSE);
-		}
-	}
+
+	XInitTypesCombo();
 	
 	Core_GetIXCore()->getEventChannel<XEventLevel>(EVENT_LEVEL_GUID)->addListener([](const XEventLevel *pData)
 	{

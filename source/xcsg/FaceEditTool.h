@@ -42,6 +42,27 @@ public:
 	{
 	}
 
+	bool XMETHODCALLTYPE wantUseClassSelector() override
+	{
+		return(false);
+	}
+	bool XMETHODCALLTYPE isRandomScaleOrYawSupported() override
+	{
+		return(false);
+	}
+	UINT XMETHODCALLTYPE getClassCount() override
+	{
+		return(0);
+	}
+	const char* XMETHODCALLTYPE getClassAt(UINT idx) override
+	{
+		return(NULL);
+	}
+	bool XMETHODCALLTYPE useClass(const char *szClassName) override
+	{
+		return(false);
+	}
+
 private:
 	CEditable *m_pEditable;
 	IXEditor *m_pEditor;

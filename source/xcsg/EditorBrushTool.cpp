@@ -194,3 +194,28 @@ void CEditorBrushTool::render(bool is3D)
 		SAFE_CALL(m_pNewOutline, render, is3D);
 	}
 }
+
+UINT XMETHODCALLTYPE CEditorBrushTool::getClassCount()
+{
+	return(1);
+}
+
+const char* XMETHODCALLTYPE CEditorBrushTool::getClassAt(UINT idx)
+{
+	switch(idx)
+	{
+	//case 0:
+	//	return("Block");
+	//case 1:
+	//	return("Cylinder");
+	case 0:
+		return("Free draw");
+	}
+	assert(!"Invalid class idx");
+	return(NULL);
+}
+
+bool XMETHODCALLTYPE CEditorBrushTool::useClass(const char *szClassName)
+{
+	return(true);
+}

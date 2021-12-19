@@ -116,7 +116,16 @@ extern Array<IXEditable*> g_pEditableSystems;
 
 extern String g_sLevelName;
 
-Array<IXEditorTool*> g_apTools;
+struct CustomTool
+{
+	IXEditorTool *pTool;
+	XAccelItem accel;
+	IXEditable *pEditable;
+	String sSelectedClass;
+};
+Array<CustomTool> g_aTools;
+String g_sSelectedType;
+String g_sSelectedClass;
 IXEditorTool *g_pCurrentTool = NULL;
 UINT g_uCurrentTool = IDC_AB_ARROW;
 
@@ -1244,11 +1253,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_COMMAND:
-		if(LOWORD(wParam) >= IDC_AB_FIRST && LOWORD(wParam) < IDC_AB_FIRST + g_apTools.size() && !g_is3DRotating && !g_is3DPanning)
+		if(LOWORD(wParam) >= IDC_AB_FIRST && LOWORD(wParam) < IDC_AB_FIRST + g_aTools.size() && !g_is3DRotating && !g_is3DPanning)
 		{
 			Button_SetCheck(g_hABCameraButton, BST_UNCHECKED);
 
-			IXEditorTool *pNewTool = g_apTools[LOWORD(wParam) - IDC_AB_FIRST];
+			IXEditorTool *pNewTool = g_aTools[LOWORD(wParam) - IDC_AB_FIRST].pTool;
 			if(pNewTool != g_pCurrentTool)
 			{
 				SAFE_CALL(g_pCurrentTool, deactivate);
@@ -1263,6 +1272,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				g_xState.bCreateMode = false;
 				XUpdateGizmos();
+
+				XInitTypesCombo();
 			}
 			else
 			{
@@ -1428,6 +1439,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
 					g_xState.bCreateMode = false;
 					XUpdateGizmos();
+					XInitTypesCombo();
 				}
 			}
 			break;
@@ -1465,6 +1477,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					g_uCurrentTool = IDC_AB_CREATE;
 					CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
 					XUpdateGizmos();
+					XInitTypesCombo();
 				}
 			}
 			break;
@@ -1565,18 +1578,51 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				ComboBox_ResetContent(g_hComboClassesWnd);
 
-				const AssotiativeArray<AAString, IXEditable*>::Node *pNode;
-				if(g_mEditableSystems.KeyExists(AAString(szTypeName), &pNode))
+				if(g_pCurrentTool && g_pCurrentTool->wantUseClassSelector())
 				{
-					IXEditable *pEditable = *pNode->Val;
-					UINT uClassCount = pEditable->getClassCount();
+					UINT uClassCount = g_pCurrentTool->getClassCount();
 					for(UINT i = 0; i < uClassCount; ++i)
 					{
-						ComboBox_AddString(g_hComboClassesWnd, pEditable->getClass(i));
+						ComboBox_AddString(g_hComboClassesWnd, g_pCurrentTool->getClassAt(i));
 					}
 					ComboBox_Enable(g_hComboClassesWnd, uClassCount > 1);
-					ComboBox_SetCurSel(g_hComboClassesWnd, 0);
+
+					int idx = g_aTools.indexOf(g_pCurrentTool, [](const CustomTool &a, IXEditorTool *b){
+						return(a.pTool == b);
+					});
+					assert(idx >= 0);
+					if(idx >= 0)
+					{
+						iSel = ComboBox_FindStringExact(g_hComboClassesWnd, -1, g_aTools[idx].sSelectedClass.c_str());
+					}
+					else
+					{
+						iSel = -1;
+					}
+
+					ComboBox_SetCurSel(g_hComboClassesWnd, iSel >= 0 ? iSel : 0);
 					SendMessage(GetParent(g_hComboClassesWnd), WM_COMMAND, MAKEWPARAM(IDC_CMB_CLASS, CBN_SELCHANGE), (LPARAM)g_hComboClassesWnd);
+				}
+				else
+				{
+					g_sSelectedType = szTypeName;
+
+					const AssotiativeArray<AAString, IXEditable*>::Node *pNode;
+					if(g_mEditableSystems.KeyExists(AAString(szTypeName), &pNode))
+					{
+						IXEditable *pEditable = *pNode->Val;
+						UINT uClassCount = pEditable->getClassCount();
+						for(UINT i = 0; i < uClassCount; ++i)
+						{
+							ComboBox_AddString(g_hComboClassesWnd, pEditable->getClass(i));
+						}
+						ComboBox_Enable(g_hComboClassesWnd, uClassCount > 1);
+
+						iSel = ComboBox_FindStringExact(g_hComboClassesWnd, -1, g_sSelectedClass.c_str());
+
+						ComboBox_SetCurSel(g_hComboClassesWnd, iSel >= 0 ? iSel : 0);
+						SendMessage(GetParent(g_hComboClassesWnd), WM_COMMAND, MAKEWPARAM(IDC_CMB_CLASS, CBN_SELCHANGE), (LPARAM)g_hComboClassesWnd);
+					}
 				}
 			}
 			break;
@@ -1602,6 +1648,40 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					can = pEditable->canUseModel(szClassName);
 				}
 				EnableWindow(g_hButtonToEntityWnd, can);
+
+				if(g_pCurrentTool && g_pCurrentTool->wantUseClassSelector())
+				{
+					int idx = g_aTools.indexOf(g_pCurrentTool, [](const CustomTool &a, IXEditorTool *b){
+						return(a.pTool == b);
+					});
+					assert(idx >= 0);
+					if(g_pCurrentTool->useClass(szClassName))
+					{
+						if(idx >= 0)
+						{
+							g_aTools[idx].sSelectedClass = szClassName;
+						}
+					}
+					else
+					{
+						if(idx >= 0)
+						{
+							iSel = ComboBox_FindStringExact(g_hComboClassesWnd, -1, g_aTools[idx].sSelectedClass.c_str());
+							if(iSel >= 0)
+							{
+								ComboBox_SetCurSel(g_hComboClassesWnd, iSel);
+							}
+							else
+							{
+								ComboBox_SetText(g_hComboClassesWnd, "");
+							}
+						}
+					}
+				}
+				else
+				{
+					g_sSelectedClass = szClassName;
+				}
 			}
 			break;
 
@@ -2363,6 +2443,7 @@ void XDisableCurrentTool()
 	CheckDlgButton(g_hWndMain, g_uCurrentTool, TRUE);
 	g_xState.bCreateMode = false;
 	XUpdateGizmos();
+	XInitTypesCombo();
 }
 
 static bool XIsInSelection(const float3 &vPos)
@@ -4092,11 +4173,10 @@ void XSetXformType(X_2DXFORM_TYPE type)
 	XUpdateGizmos();
 }
 
-Array<XAccelItem> g_aAccel;
-void XInitTool(IXEditorTool *pTool)
+void XInitTool(IXEditorTool *pTool, IXEditable *pEditable)
 {
 	HWND hBtn = CreateWindow("Button", "", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_PUSHBUTTON | BS_BITMAP | BS_PUSHLIKE | BS_CHECKBOX,
-		g_uABNextLeft, g_uABNextTop, AB_BUTTON_WIDTH, AB_BUTTON_HEIGHT, g_hWndMain, (HMENU)(IDC_AB_FIRST + g_apTools.size()), hInst, NULL
+		g_uABNextLeft, g_uABNextTop, AB_BUTTON_WIDTH, AB_BUTTON_HEIGHT, g_hWndMain, (HMENU)(IDC_AB_FIRST + g_aTools.size()), hInst, NULL
 	);
 	{
 		SetWindowTheme(hBtn, L" ", L" ");
@@ -4106,14 +4186,13 @@ void XInitTool(IXEditorTool *pTool)
 			SendMessage(hBtn, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
 		}
 	}
-	g_aAccel.push_back(pTool->getAccel());
-	g_apTools.push_back(pTool);
+	g_aTools.push_back({pTool, pTool->getAccel(), pEditable});
 	g_uABNextTop += AB_BUTTON_HEIGHT;
 }
 
 void XInitCustomAccel()
 {
-	if(!g_aAccel.size())
+	if(!g_aTools.size())
 	{
 		return;
 	}
@@ -4122,10 +4201,10 @@ void XInitCustomAccel()
 	aAccel.resize(nAccel);
 	CopyAcceleratorTable(g_hAccelTableMain, aAccel, nAccel);
 
-	for(UINT i = 0, l = g_aAccel.size(); i < l; ++i)
+	fora(i, g_aTools)
 	{
 		ACCEL a = {};
-		XAccelItem &itm = g_aAccel[i];
+		XAccelItem &itm = g_aTools[i].accel;
 		if(itm.flags & XAF_ALT)
 		{
 			a.fVirt |= FALT;
@@ -4150,4 +4229,68 @@ void XInitCustomAccel()
 
 	DestroyAcceleratorTable(g_hAccelTableMain);
 	g_hAccelTableMain = CreateAcceleratorTable(aAccel, aAccel.size());
+}
+
+void XInitTypesCombo()
+{
+	static bool s_isCustomList = true;
+
+	if(g_pCurrentTool && g_pCurrentTool->wantUseClassSelector())
+	{
+		if(s_isCustomList)
+		{
+			return;
+		}
+		s_isCustomList = true;
+	}
+	else
+	{
+		if(!s_isCustomList)
+		{
+			return;
+		}
+		s_isCustomList = false;
+	}
+		
+	ComboBox_ResetContent(g_hComboTypesWnd);
+
+	int iTypes = 0;
+
+	if(g_pCurrentTool && g_pCurrentTool->wantUseClassSelector())
+	{
+		int idx = g_aTools.indexOf(g_pCurrentTool, [](const CustomTool &a, IXEditorTool *b){
+			return(a.pTool == b);
+		});
+		assert(idx >= 0);
+		if(idx >= 0)
+		{
+			ComboBox_AddString(g_hComboTypesWnd, g_aTools[idx].pEditable->getName());
+			++iTypes;
+		}
+
+		EnableWindow(g_hCheckboxRandomScaleYawWnd, g_pCurrentTool->isRandomScaleOrYawSupported());
+	}
+	else
+	{
+		IXEditable *pEditable;
+		fora(i, g_pEditableSystems)
+		{
+			pEditable = g_pEditableSystems[i];
+			if(pEditable->getClassCount() != 0)
+			{
+				ComboBox_AddString(g_hComboTypesWnd, pEditable->getName());
+				++iTypes;
+			}
+		}
+		EnableWindow(g_hCheckboxRandomScaleYawWnd, TRUE);
+	}
+
+	if(iTypes > 0)
+	{
+		int iSel = ComboBox_FindStringExact(g_hComboTypesWnd, -1, g_sSelectedType.c_str());
+		ComboBox_SetCurSel(g_hComboTypesWnd, iSel >= 0 ? iSel : 0);
+		SendMessage(GetParent(g_hComboTypesWnd), WM_COMMAND, MAKEWPARAM(IDC_CMB_TYPE, CBN_SELCHANGE), (LPARAM)g_hComboTypesWnd);
+	}
+
+	ComboBox_Enable(g_hComboTypesWnd, iTypes > 1);
 }

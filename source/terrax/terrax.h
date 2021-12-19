@@ -258,10 +258,12 @@ bool XIsMouseInSelection(X_WINDOW_POS wnd);
 void XUpdatePropWindow();
 void XUpdateGizmos();
 
+void XInitTypesCombo();
+
 float XGetGridStep();
 float3 XSnapToGrid(const float3 &vPos);
 
-void XInitTool(IXEditorTool *pTool);
+void XInitTool(IXEditorTool *pTool, IXEditable *pEditable);
 
 void XInitCustomAccel();
 

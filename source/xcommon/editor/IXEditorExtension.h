@@ -81,7 +81,11 @@ public:
 
 	virtual bool XMETHODCALLTYPE wantDrawSelection(bool is3D) = 0;
 
-	// virtual bool XMETHODCALLTYPE onMouseEvent(UINT msg, WPARAM wParam, LPARAM lParam, ) = 0;
+	virtual bool XMETHODCALLTYPE wantUseClassSelector() = 0;
+	virtual bool XMETHODCALLTYPE isRandomScaleOrYawSupported() = 0;
+	virtual UINT XMETHODCALLTYPE getClassCount() = 0;
+	virtual const char* XMETHODCALLTYPE getClassAt(UINT idx) = 0;
+	virtual bool XMETHODCALLTYPE useClass(const char *szClassName) = 0;
 };
 
 //##########################################################################
