@@ -4,8 +4,8 @@ sky_box.vs
 Рендер SkyBox
 */
 
-#include "../struct.h"
-#include "../const.h"
+#include <struct.h>
+#include <const.h>
 
 
 //##########################################################################

@@ -4,8 +4,8 @@ mtrlgreen_tree_base.ps
 Базовый рендер деревьев/кустов
 */
 
-#include <../struct.h>
-#include <../green.h>
+#include <struct.h>
+#include <green.h>
 
 //##########################################################################
 

@@ -4,8 +4,8 @@ mtrlgeom_water.vs
 Рендер воды (геометрии)
 */
 
-#include <../struct.h>
-#include <../mtrl.h>
+#include <struct.h>
+#include <mtrl.h>
 
 //##########################################################################
 

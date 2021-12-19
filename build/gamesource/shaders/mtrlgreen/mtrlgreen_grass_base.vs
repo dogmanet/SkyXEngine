@@ -4,8 +4,8 @@ mtrlgreen_grass_base.ps
 Базовый рендер травы
 */
 
-#include <../struct.h>
-#include <../green.h>
+#include <struct.h>
+#include <green.h>
 
 //##########################################################################
 

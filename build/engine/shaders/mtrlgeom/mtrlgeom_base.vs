@@ -4,8 +4,8 @@ mtrlgeom_base.vs
 Базовый рендер геометрии
 */
 
-#include "../struct.h"
-#include "../const.h"
+#include <struct.h>
+#include <const.h>
 
 //##########################################################################
 

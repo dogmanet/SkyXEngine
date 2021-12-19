@@ -4,9 +4,9 @@ mtrlskin_base.vs
 Базовый рендер анимационных моделей
 */
 
-#include "../struct.h"
-#include "../skin.h"
-#include "../const.h"
+#include <struct.h>
+#include <skin.h>
+#include <const.h>
 
 //##########################################################################
 

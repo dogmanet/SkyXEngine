@@ -4,7 +4,7 @@ gui_main_textransform.vs
 
 */
 
-#include <../struct.h>
+#include <struct.h>
 
 //##########################################################################
 
