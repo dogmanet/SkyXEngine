@@ -12,6 +12,8 @@ CBrushCreatorBox::CBrushCreatorBox(CEditable *pEditable, IXEditor *pEditor, IXGi
 	m_pRenderer(pRenderer)
 {
 	add_ref(pRenderer);
+
+	m_pEditable->getCore()->getConsole()->registerCVar("csg_block_auto_create", false, "Finish block without ENTER");
 }
 CBrushCreatorBox::~CBrushCreatorBox()
 {
@@ -100,6 +102,12 @@ void CBrushCreatorBox::onMouseUp(bool isPrimary)
 		else
 		{
 			m_isBoxBuilt = true;
+
+			static const bool *csg_block_auto_create = m_pEditable->getCore()->getConsole()->getPCVarBool("csg_block_auto_create");
+			if(*csg_block_auto_create)
+			{
+				onKeyDown(SIK_ENTER);
+			}
 		}
 	}
 }

@@ -12,6 +12,8 @@ CBrushCreatorFree::CBrushCreatorFree(CEditable *pEditable, IXEditor *pEditor, IX
 	m_pRenderer(pRenderer)
 {
 	add_ref(pRenderer);
+
+	m_pEditable->getCore()->getConsole()->registerCVar("csg_free_auto_create", false, "Finish free contour creation without ENTER");
 }
 CBrushCreatorFree::~CBrushCreatorFree()
 {
@@ -55,6 +57,14 @@ bool CBrushCreatorFree::onMouseDown(bool isPrimary)
 	if(!isPrimary)
 	{
 		SAFE_CALL(m_pNewOutline, closePath);
+
+		static const bool *csg_free_auto_create = m_pEditable->getCore()->getConsole()->getPCVarBool("csg_free_auto_create");
+		if(*csg_free_auto_create)
+		{
+			m_pNewOutline->buildContours();
+			onKeyDown(SIK_ENTER);
+		}
+
 		return(false);
 	}
 	
