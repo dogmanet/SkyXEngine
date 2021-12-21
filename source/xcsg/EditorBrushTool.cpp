@@ -12,6 +12,9 @@
 
 #include <xcommon/IPluginManager.h>
 
+#include "BrushCreatorBox.h"
+#include "BrushCreatorFree.h"
+
 extern HINSTANCE g_hInstance;
 
 //##########################################################################
@@ -24,6 +27,9 @@ CEditorBrushTool::CEditorBrushTool(CEditable *pEditable, IXEditor *pEditor):
 
 	IXRenderUtils *pUtils = (IXRenderUtils*)pEditable->getCore()->getPluginManager()->getInterface(IXRENDERUTILS_GUID);
 	pUtils->newGizmoRenderer(&m_pRenderer);
+
+	registerCreator(new CBrushCreatorBox(pEditable, pEditor, m_pRenderer));
+	registerCreator(new CBrushCreatorFree(pEditable, pEditor, m_pRenderer));
 }
 CEditorBrushTool::~CEditorBrushTool()
 {
@@ -31,17 +37,11 @@ CEditorBrushTool::~CEditorBrushTool()
 	//mem_release(m_pCurrentCommand);
 
 	mem_release(m_pRenderer);
-	mem_delete(m_pNewOutline);
 
-	//if(m_hDlg)
-	//{
-	//	DestroyWindow(m_hDlg);
-	//}
-
-	//if(m_pCallback)
-	//{
-	//	m_pCallback->onRemove();
-	//}
+	fora(i, m_aCreators)
+	{
+		mem_release(m_aCreators[i].pCreator);
+	}
 }
 
 void* XMETHODCALLTYPE CEditorBrushTool::getIcon()
@@ -61,12 +61,12 @@ XAccelItem XMETHODCALLTYPE CEditorBrushTool::getAccel()
 void XMETHODCALLTYPE CEditorBrushTool::activate()
 {
 	m_isActive = true;
-	SAFE_CALL(m_pNewOutline, activate);
+	m_pCreator->activate();
 }
 void XMETHODCALLTYPE CEditorBrushTool::deactivate()
 {
 	m_isActive = false;
-	SAFE_CALL(m_pNewOutline, deactivate);
+	m_pCreator->deactivate();
 }
 
 
@@ -74,141 +74,60 @@ void XMETHODCALLTYPE CEditorBrushTool::deactivate()
 
 bool XMETHODCALLTYPE CEditorBrushTool::onMouseDown(bool isPrimary)
 {
-	if(m_pEditor->getViewForWindow(m_pEditor->getState()->activeWindow) == X2D_NONE)
+	if(!m_pCreator->isInitiated())
 	{
-		return(false);
+		m_pCreator->init(m_pEditor->getState()->vBestPlaneNormal);
 	}
-	if(!isPrimary)
-	{
-		if(m_pNewOutline)
-		{
-			m_pNewOutline->closePath();
-		}
-		return(false);
-	}
-	if(!m_pNewOutline)
-	{
-		m_pNewOutline = new COutline(m_pEditor, m_pRenderer);
-		m_pNewOutline->setPlane(m_pEditor->getState()->vBestPlaneNormal);
-	}
-
-	m_isMouseDown = true;
-
-	return(true);
+	return(m_pCreator->onMouseDown(isPrimary));
 }
 bool XMETHODCALLTYPE CEditorBrushTool::onMouseMove()
 {
-	if(m_pEditor->getViewForWindow(m_pEditor->getState()->activeWindow) == X2D_NONE)
-	{
-		return(false);
-	}
-
-	if(m_pNewOutline)
-	{
-		m_pNewOutline->setMouse(m_pEditor->getState()->vResolvedWorldMousePos);
-
-		return(true);
-	}
-	return(false);
+	return(m_pCreator->onMouseMove());
 }
 void XMETHODCALLTYPE CEditorBrushTool::onMouseUp(bool isPrimary)
 {
-	if(m_isMouseDown)
-	{
-		m_isMouseDown = false;
-
-		m_pNewOutline->setMouse(m_pEditor->getState()->vResolvedWorldMousePos);
-
-		m_pNewOutline->addPoint();
-	}
+	m_pCreator->onMouseUp(isPrimary);
 }
 
 bool XMETHODCALLTYPE CEditorBrushTool::onKeyDown(UINT uKey)
 {
-	if(uKey == SIK_DELETE)
-	{
-		if(m_pNewOutline)
-		{
-			m_pNewOutline->deleteSelected();
-			return(true);
-		}
-	}
-	else if(uKey == SIK_ESCAPE)
-	{
-		if(m_pNewOutline)
-		{
-			if(!m_pNewOutline->isClosed())
-			{
-				m_pNewOutline->closePath();
-				if(!m_pNewOutline->isClosed())
-				{
-					mem_delete(m_pNewOutline);
-				}
-			}
-			else
-			{
-				mem_delete(m_pNewOutline);
-			}
-			return(true);
-		}
-	}
-	else if(uKey == SIK_ENTER || uKey == SIK_NUMPADENTER)
-	{
-		if(m_pNewOutline && m_pNewOutline->isClosed() && m_pNewOutline->isValid())
-		{
-			const char *szMat = m_pEditor->getMaterialBrowser()->getCurrentMaterial();
-			// create brush with default height
-
-			float fHeight = m_pEditor->getGridStep();
-			if(fHeight <= 0.0f)
-			{
-				fHeight = 0.2f;
-			}
-
-			CEditorObject *pObject = new CEditorObject(m_pEditable);
-			for(UINT i = 0, l = m_pNewOutline->getContourCount(); i < l; ++i)
-			{
-				pObject->addBrush(new CBrushMesh(m_pEditable->getCore(), m_pNewOutline, i, szMat, fHeight));
-			}
-			mem_delete(m_pNewOutline);
-			
-			pObject->fixPos();
-
-			CCommandCreate *pCmd = new CCommandCreate(m_pEditor, pObject);
-			m_pEditor->execCommand(pCmd);
-
-			return(true);
-		}
-	}
-
-	return(false);
+	return(m_pCreator->onKeyDown(uKey));
 }
 void XMETHODCALLTYPE CEditorBrushTool::onKeyUp(UINT uKey)
 {
+	m_pCreator->onKeyUp(uKey);
 }
 
 void CEditorBrushTool::render(bool is3D)
 {
 	if(m_isActive)
 	{
-		SAFE_CALL(m_pNewOutline, render, is3D);
+		m_pCreator->render(is3D);
 	}
 }
 
 UINT XMETHODCALLTYPE CEditorBrushTool::getClassCount()
 {
-	return(1);
+	return(m_aCreators.size());
 }
 
 const char* XMETHODCALLTYPE CEditorBrushTool::getClassAt(UINT idx)
 {
+	assert(idx < m_aCreators.size());
+	if(idx < m_aCreators.size())
+	{
+		return(m_aCreators[idx].szClassName);
+	}
+	return(NULL);
 	switch(idx)
 	{
-	//case 0:
-	//	return("Block");
-	//case 1:
-	//	return("Cylinder");
 	case 0:
+		return("Block");
+	case 1:
+		return("Cylinder");
+	case 2:
+		return("Spike");
+	case 3:
 		return("Free draw");
 	}
 	assert(!"Invalid class idx");
@@ -217,5 +136,30 @@ const char* XMETHODCALLTYPE CEditorBrushTool::getClassAt(UINT idx)
 
 bool XMETHODCALLTYPE CEditorBrushTool::useClass(const char *szClassName)
 {
-	return(true);
+	int idx = m_aCreators.indexOf(szClassName, [](const Creator &a, const char *b){
+		return(!strcmp(a.szClassName, b));
+	});
+
+	if(idx >= 0)
+	{
+		IBrushCreator *pNewCreator = m_aCreators[idx].pCreator;
+
+		if(!m_pCreator || m_pCreator == pNewCreator || !m_pCreator->isInitiated())
+		{
+			m_pCreator = pNewCreator;
+			return(m_pCreator->useClass(szClassName));
+		}
+	}
+
+	return(false);
+}
+
+void CEditorBrushTool::registerCreator(IBrushCreator *pCreator)
+{
+	for(UINT i = 0, l = pCreator->getClassCount(); i < l; ++i)
+	{
+		add_ref(pCreator);
+		m_aCreators.push_back({pCreator, pCreator->getClassAt(i)});
+	}
+	mem_release(pCreator);
 }

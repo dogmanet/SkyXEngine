@@ -136,20 +136,18 @@ bool XMETHODCALLTYPE CModelLoader::open(IFile *pFile)
 		return(false);
 	}
 
-	m_pCurrentFile = pFile;
-
 	memset(&m_hdr, 0, sizeof(m_hdr));
 	pFile->readBin(&m_hdr, sizeof(m_hdr));
 
 	if(m_hdr.Magick != SX_MODEL_MAGICK)
 	{
-		//LibReport(REPORT_MSG_LEVEL_ERROR, "Corrupt model \"%s\"\n", pFile->getName());
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid DSE magick\n");
 		return(false);
 	}
 
 	if(m_hdr.iVersion != SX_MODEL_VERSION)
 	{
-		 //LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid version %d file \"%s\"\n", m_hdr.iVersion, pFile->getName());
+		 LibReport(REPORT_MSG_LEVEL_ERROR, "Unsupported DSE version %d\n", m_hdr.iVersion);
 		return(false);
 	}
 
@@ -163,6 +161,7 @@ bool XMETHODCALLTYPE CModelLoader::open(IFile *pFile)
 		m_hdr2 = {};
 	}
 
+	m_pCurrentFile = pFile;
 	return(true);
 }
 XMODELTYPE XMETHODCALLTYPE CModelLoader::getType() const

@@ -21,6 +21,8 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\source\common\guid.cpp" />
     <ClCompile Include="..\..\..\source\common\string.cpp" />
+    <ClCompile Include="..\..\..\source\xcsg\BrushCreatorBox.cpp" />
+    <ClCompile Include="..\..\..\source\xcsg\BrushCreatorFree.cpp" />
     <ClCompile Include="..\..\..\source\xcsg\BrushMesh.cpp" />
     <ClCompile Include="..\..\..\source\xcsg\ClipTool.cpp" />
     <ClCompile Include="..\..\..\source\xcsg\CommandClip.cpp" />
@@ -40,6 +42,8 @@
     <ClCompile Include="..\..\..\source\xCSG\plugin_main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\xcsg\BrushCreatorBox.h" />
+    <ClInclude Include="..\..\..\source\xcsg\BrushCreatorFree.h" />
     <ClInclude Include="..\..\..\source\xcsg\BrushMesh.h" />
     <ClInclude Include="..\..\..\source\xcsg\ClipTool.h" />
     <ClInclude Include="..\..\..\source\xcsg\CommandClip.h" />
@@ -52,6 +56,7 @@
     <ClInclude Include="..\..\..\source\xcsg\EditorBrushTool.h" />
     <ClInclude Include="..\..\..\source\xcsg\FaceEdit.h" />
     <ClInclude Include="..\..\..\source\xcsg\FaceEditTool.h" />
+    <ClInclude Include="..\..\..\source\xcsg\IBrushCreator.h" />
     <ClInclude Include="..\..\..\source\xcsg\Outline.h" />
     <ClInclude Include="..\..\..\source\xcsg\resource.h" />
   </ItemGroup>

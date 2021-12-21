@@ -70,6 +70,12 @@
     <ClCompile Include="..\..\..\source\xcsg\EditorModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\xcsg\BrushCreatorFree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\xcsg\BrushCreatorBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\xcsg\EditorExtension.h">
@@ -112,6 +118,15 @@
       <Filter>Header Files\cmd</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcsg\EditorModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcsg\IBrushCreator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcsg\BrushCreatorFree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcsg\BrushCreatorBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

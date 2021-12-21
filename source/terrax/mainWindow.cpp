@@ -1264,6 +1264,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				mem_release(g_pCurrentTool);
 				add_ref(pNewTool);
 				g_pCurrentTool = pNewTool;
+				XInitTypesCombo();
 				SAFE_CALL(g_pCurrentTool, activate);
 
 				CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
@@ -1273,7 +1274,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				g_xState.bCreateMode = false;
 				XUpdateGizmos();
 
-				XInitTypesCombo();
 			}
 			else
 			{

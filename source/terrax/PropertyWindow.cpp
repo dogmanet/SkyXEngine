@@ -338,17 +338,20 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 					const char *szValue = (const char*)ComboBox_GetItemData(hCombo, iSel);
 
 					int iSelLB = ListView_GetNextItem(m_hPropListWnd, -1, LVNI_SELECTED);
-					LVITEM lvItem;
-					memset(&lvItem, 0, sizeof(lvItem));
-					lvItem.iItem = iSelLB;
-					lvItem.mask = LVIF_PARAM;
-					ListView_GetItem(m_hPropListWnd, &lvItem);
-					prop_s *pField = &m_aPropFields[AAString((char*)lvItem.lParam)];
-
-					setPropFieldValue(pField->field.szKey, szValue);
-					if(m_pCallback)
+					if(iSelLB >= 0)
 					{
-						m_pCallback->onPropertyChanged(pField->field.szKey, szValue);
+						LVITEM lvItem;
+						memset(&lvItem, 0, sizeof(lvItem));
+						lvItem.iItem = iSelLB;
+						lvItem.mask = LVIF_PARAM;
+						ListView_GetItem(m_hPropListWnd, &lvItem);
+						prop_s *pField = &m_aPropFields[AAString((char*)lvItem.lParam)];
+
+						setPropFieldValue(pField->field.szKey, szValue);
+						if(m_pCallback)
+						{
+							m_pCallback->onPropertyChanged(pField->field.szKey, szValue);
+						}
 					}
 				}
 			}
@@ -381,17 +384,20 @@ INT_PTR CALLBACK CPropertyWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LP
 					Edit_GetText(hEdit, szValue, iValLen);
 
 					int iSel = ListView_GetNextItem(m_hPropListWnd, -1, LVNI_SELECTED);
-					LVITEM lvItem;
-					memset(&lvItem, 0, sizeof(lvItem));
-					lvItem.iItem = iSel;
-					lvItem.mask = LVIF_PARAM;
-					ListView_GetItem(m_hPropListWnd, &lvItem);
-					prop_s *pField = &m_aPropFields[AAString((char*)lvItem.lParam)];
-
-					setPropFieldValue(pField->field.szKey, szValue);
-					if(m_pCallback)
+					if(iSel >= 0)
 					{
-						m_pCallback->onPropertyChanged(pField->field.szKey, szValue);
+						LVITEM lvItem;
+						memset(&lvItem, 0, sizeof(lvItem));
+						lvItem.iItem = iSel;
+						lvItem.mask = LVIF_PARAM;
+						ListView_GetItem(m_hPropListWnd, &lvItem);
+						prop_s *pField = &m_aPropFields[AAString((char*)lvItem.lParam)];
+
+						setPropFieldValue(pField->field.szKey, szValue);
+						if(m_pCallback)
+						{
+							m_pCallback->onPropertyChanged(pField->field.szKey, szValue);
+						}
 					}
 				}
 			}
@@ -585,16 +591,19 @@ void CPropertyWindow::onPropListChanged()
 	if(ListView_GetSelectedCount(m_hPropListWnd))
 	{
 		int iSel = ListView_GetNextItem(m_hPropListWnd, -1, LVNI_SELECTED);
-		LVITEM lvItem;
-		memset(&lvItem, 0, sizeof(lvItem));
-		lvItem.iItem = iSel;
-		lvItem.mask = LVIF_PARAM;
-		ListView_GetItem(m_hPropListWnd, &lvItem);
-		prop_s *pField = &m_aPropFields[AAString((char*)lvItem.lParam)];
-		
-		SetDlgItemTextW(m_hPropTabs[0], IDC_OP_HELP, pField->field.szHelp ? CMB2WC(pField->field.szHelp): L"");
+		if(iSel >= 0)
+		{
+			LVITEM lvItem;
+			memset(&lvItem, 0, sizeof(lvItem));
+			lvItem.iItem = iSel;
+			lvItem.mask = LVIF_PARAM;
+			ListView_GetItem(m_hPropListWnd, &lvItem);
+			prop_s *pField = &m_aPropFields[AAString((char*)lvItem.lParam)];
 
-		initEditor(pField->field.editorType, pField->field.pEditorData, pField->sValue.c_str());
+			SetDlgItemTextW(m_hPropTabs[0], IDC_OP_HELP, pField->field.szHelp ? CMB2WC(pField->field.szHelp) : L"");
+
+			initEditor(pField->field.editorType, pField->field.pEditorData, pField->sValue.c_str());
+		}
 	}
 }
 

@@ -93,10 +93,10 @@ public:
 
 	const float3_t& getNormal() const;
 
+	void buildContours();
 private:
 
 
-	void buildContours();
 	void buildContoursRecursive(const Array<UINT> &aIn);
 
 	void fixVertexOrder();

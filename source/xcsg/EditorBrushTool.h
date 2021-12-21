@@ -6,6 +6,7 @@
 #include <xcommon/IXCore.h>
 #include "Outline.h"
 #include "BrushMesh.h"
+#include "IBrushCreator.h"
 
 class CEditable;
 //class CEditorObject;
@@ -54,6 +55,8 @@ public:
 	const char* XMETHODCALLTYPE getClassAt(UINT idx) override;
 	bool XMETHODCALLTYPE useClass(const char *szClassName) override;
 
+	void registerCreator(IBrushCreator *pCreator);
+
 private:
 	CEditable *m_pEditable;
 	IXEditor *m_pEditor;
@@ -61,11 +64,17 @@ private:
 	HBITMAP m_hBitmap;
 
 	IXGizmoRenderer *m_pRenderer = NULL;
-	COutline *m_pNewOutline = NULL;
 
 	bool m_isActive = false;
 
-	bool m_isMouseDown = false;
+	IBrushCreator *m_pCreator = NULL;
+
+	struct Creator
+	{
+		IBrushCreator *pCreator;
+		const char *szClassName;
+	};
+	Array<Creator> m_aCreators;
 };
 
 #endif
