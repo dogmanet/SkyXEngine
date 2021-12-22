@@ -46,7 +46,7 @@ public:
 
 	const char* getMaterial(UINT id);
 
-	void buildResource(IXResourceModelStatic *pResource);
+	void buildResource(IXResourceModelStatic *pResource, UINT idx = UINT_MAX);
 
 private:
 	Array<Subset> m_aSubsets;

@@ -1,5 +1,12 @@
 #include <xcommon/IXPlugin.h>
 #include "Editable.h"
+#include <game/sxgame.h>
+
+#if defined(_DEBUG)
+#pragma comment(lib, "sxgame_d.lib")
+#else
+#pragma comment(lib, "sxgame.lib")
+#endif
 
 class CCSGPlugin;
 class CLevelLoadListener: public IEventListener<XEventLevel>
@@ -78,15 +85,32 @@ public:
 
 	void onLevelEvent(const XEventLevel *pData)
 	{
-		//! TODO Do not create CEditable in game mode!
-		if(!m_pEditable)
-		{
-			m_pEditable = new CEditable(m_pCore);
-		}
 		switch(pData->type)
 		{
 		case XEventLevel::TYPE_LOAD:
-			SAFE_CALL(m_pEditable, load, pData->szLevelName, getID());
+			SAFE_CALL(m_pEditable, load, pData->szLevelName, getID())
+			else
+			{
+				char szFile[1024];
+				sprintf(szFile, "levels/%s/xcsg/", pData->szLevelName);
+				IFileIterator *pIter = m_pCore->getFileSystem()->getFileList(szFile, "dse");
+				if(pIter)
+				{
+					const char *szModel;
+					while((szModel = pIter->next()))
+					{
+						// TODO Use more clean way to insert object!
+						CBaseEntity *pEntity = SGame_CreateEntity("prop_static");
+						pEntity->setKV("auto_physbox", "0");
+						pEntity->setKV("model", szModel);
+
+						pEntity->setFlags(pEntity->getFlags() | EF_LEVEL);
+					}
+
+					mem_release(pIter);
+				}
+			}
+
 			break;
 		case XEventLevel::TYPE_UNLOAD:
 			SAFE_CALL(m_pEditable, unload);

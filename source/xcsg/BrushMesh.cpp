@@ -1811,54 +1811,53 @@ const char* CMeshBuilder::getMaterial(UINT id)
 	return(m_aMaterials[id].c_str());
 }
 
-void CMeshBuilder::buildResource(IXResourceModelStatic *pResource)
+void CMeshBuilder::buildResource(IXResourceModelStatic *pResource, UINT idx)
 {
-	
-	UINT uSubsets = 0;
-	pResource->setMaterialCount(getSubsetCount(), 1);
-	for(UINT i = 0, l = getSubsetCount(); i < l; ++i)
+	Array<UINT> aSubsetIdxs;
+	if(idx != UINT_MAX)
 	{
-		if(getSubset(i).aIndices.size())
+		pResource->setMaterialCount(1, 1);
+		pResource->setMaterial(0, 0, getMaterial(idx));
+		aSubsetIdxs.push_back(idx);
+	}
+	else
+	{
+		pResource->setMaterialCount(getSubsetCount(), 1);
+		for(UINT i = 0, l = getSubsetCount(); i < l; ++i)
 		{
-			pResource->setMaterial(i, 0, getMaterial(i));
-			++uSubsets;
+			if(getSubset(i).aIndices.size())
+			{
+				pResource->setMaterial(aSubsetIdxs.size(), 0, getMaterial(i));
+				aSubsetIdxs.push_back(i);
+			}
 		}
 	}
 
-	UINT *puVtxCount = (UINT*)alloca(sizeof(UINT) * uSubsets);
-	UINT *puIdxCount = (UINT*)alloca(sizeof(UINT) * uSubsets);
+	UINT *puVtxCount = (UINT*)alloca(sizeof(UINT) * aSubsetIdxs.size());
+	UINT *puIdxCount = (UINT*)alloca(sizeof(UINT) * aSubsetIdxs.size());
 
-	uSubsets = 0;
-	for(UINT i = 0, l = getSubsetCount(); i < l; ++i)
+	fora(i, aSubsetIdxs)
 	{
-		Subset &subset = getSubset(i);
-		if(subset.aIndices.size())
-		{
-			puVtxCount[uSubsets] = subset.aVertices.size();
-			puIdxCount[uSubsets] = subset.aIndices.size();
+		Subset &subset = getSubset(aSubsetIdxs[i]);
 
-			++uSubsets;
-		}
+		puVtxCount[i] = subset.aVertices.size();
+		puIdxCount[i] = subset.aIndices.size();
 	}
 
-	pResource->addLod(uSubsets, puVtxCount, puIdxCount);
-	uSubsets = 0;
-	for(UINT i = 0, l = getSubsetCount(); i < l; ++i)
+	pResource->addLod(aSubsetIdxs.size(), puVtxCount, puIdxCount);
+	fora(i, aSubsetIdxs)
 	{
-		Subset &subset = getSubset(i);
-		if(subset.aIndices.size())
-		{
-			XResourceModelStaticSubset *pSubset = pResource->getSubset(0, uSubsets);
+		Subset &subset = getSubset(aSubsetIdxs[i]);
 
-			pSubset->iMaterialID = i;
-			pSubset->iIndexCount = subset.aIndices.size();
-			pSubset->iVertexCount = subset.aVertices.size();
+		XResourceModelStaticSubset *pSubset = pResource->getSubset(0, i);
 
-			memcpy(pSubset->pIndices, subset.aIndices, sizeof(UINT) * pSubset->iIndexCount);
-			memcpy(pSubset->pVertices, subset.aVertices, sizeof(XResourceModelStaticVertex) * pSubset->iVertexCount);
+		pSubset->iMaterialID = i;
+		pSubset->iIndexCount = subset.aIndices.size();
+		pSubset->iVertexCount = subset.aVertices.size();
 
-			++uSubsets;
-		}
+		memcpy(pSubset->pIndices, subset.aIndices, sizeof(UINT) * pSubset->iIndexCount);
+		memcpy(pSubset->pVertices, subset.aVertices, sizeof(XResourceModelStaticVertex) * pSubset->iVertexCount);
+
 	}
 }
 

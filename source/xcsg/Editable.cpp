@@ -2,6 +2,8 @@
 #include "EditorObject.h"
 #include "EditorModel.h"
 #include <xcommon/IPluginManager.h>
+#include <xcommon/IXModelWriter.h>
+#include "Combiner.h"
 
 CEditable::CEditable(IXCore *pCore):
 	m_pCore(pCore)
@@ -92,7 +94,9 @@ void CEditable::save(const char *szLevelName)
 	char szFile[1024];
 	sprintf(szFile, "levels/%s/editor/xcsg.json", szLevelName);
 
-	IFile *pFile = m_pCore->getFileSystem()->openFile(szFile, FILE_MODE_WRITE);
+	IFileSystem *pFS = m_pCore->getFileSystem();
+
+	IFile *pFile = pFS->openFile(szFile, FILE_MODE_WRITE);
 	if(!pFile)
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to save data '%s'\n", szFile);
@@ -176,6 +180,38 @@ void CEditable::save(const char *szLevelName)
 	pFile->writeText("\n]}\n");
 
 	mem_release(pFile);
+
+	sprintf(szFile, "levels/%s/xcsg", szLevelName);
+	pFS->deleteDirectory(szFile);
+
+	IXModelWriter *pWriter = (IXModelWriter*)m_pCore->getPluginManager()->getInterface(IXMODELWRITER_GUID);
+	if(pWriter)
+	{
+		CCombiner combiner(this);
+		combiner.build();
+		IXResourceModel *pResource;
+		for(UINT i = 0, l = combiner.getResourceCount(); i < l; ++i)
+		{
+			combiner.getResourceAt(i, &pResource);
+			sprintf(szFile, "levels/%s/xcsg/%u.dse", szLevelName, i);
+			IFile *pFile = pFS->openFile(szFile, FILE_MODE_WRITE);
+			if(pFile)
+			{
+				pWriter->writeModel(pResource, pFile);
+				mem_release(pFile);
+			}
+			else
+			{
+				LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to save data '%s'\n", szFile);
+			}
+			
+			mem_release(pResource);
+		}
+	}
+	else
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to save world models! No writer available\n");
+	}
 }
 
 void CEditable::load(const char *szLevelName, ID idPlugin)

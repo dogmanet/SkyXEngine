@@ -25,6 +25,7 @@
     <ClCompile Include="..\..\..\source\xcsg\BrushCreatorFree.cpp" />
     <ClCompile Include="..\..\..\source\xcsg\BrushMesh.cpp" />
     <ClCompile Include="..\..\..\source\xcsg\ClipTool.cpp" />
+    <ClCompile Include="..\..\..\source\xcsg\Combiner.cpp" />
     <ClCompile Include="..\..\..\source\xcsg\CommandClip.cpp" />
     <ClCompile Include="..\..\..\source\xcsg\CommandCreate.cpp" />
     <ClCompile Include="..\..\..\source\xcsg\CommandFaceEdit.cpp" />
@@ -46,6 +47,7 @@
     <ClInclude Include="..\..\..\source\xcsg\BrushCreatorFree.h" />
     <ClInclude Include="..\..\..\source\xcsg\BrushMesh.h" />
     <ClInclude Include="..\..\..\source\xcsg\ClipTool.h" />
+    <ClInclude Include="..\..\..\source\xcsg\Combiner.h" />
     <ClInclude Include="..\..\..\source\xcsg\CommandClip.h" />
     <ClInclude Include="..\..\..\source\xcsg\CommandCreate.h" />
     <ClInclude Include="..\..\..\source\xcsg\CommandFaceEdit.h" />
