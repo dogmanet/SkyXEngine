@@ -83,6 +83,11 @@ bool CJSONArray::loadArr(const char **str)
 {
 	m_type = XJI_ARRAY;
 	++*str;
+	while(**str && isspace((byte)**str))
+	{
+		++*str;
+	}
+
 	IXJSONItem *pItem = NULL;
 	while(**str && **str != ']')
 	{
@@ -167,6 +172,11 @@ bool CJSONObject::loadObj(const char **str)
 {
 	m_type = XJI_OBJECT;
 	++*str;
+
+	while(**str && isspace((byte)**str))
+	{
+		++*str;
+	}
 
 	CJSONValue key;
 	IXJSONItem *pItem = NULL;
