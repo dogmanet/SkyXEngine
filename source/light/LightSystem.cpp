@@ -872,6 +872,8 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 	bool isFirstRun[3] = {true, true, true};
 	while(iCascades && (uShadowCount = m_pShadowCache->processNextRSMBunch()))
 	{
+		pCtx->addTimestamp("rsm -");
+
 		pCtx->setVSConstant(m_pLPVcurrentCascadeShaderData, 10);
 		pCtx->setPSConstant(m_pLPVcurrentCascadeShaderData, 10);
 
@@ -922,6 +924,8 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 			pCtx->setColorTarget(NULL, 2);
 		}
 
+		pCtx->addTimestamp("lpv_inject -");
+
 		const bool *dev_lpv_points = GET_PCVAR_BOOL("dev_lpv_points");
 		if(*dev_lpv_points)
 		{
@@ -941,7 +945,7 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 
 		//break;
 	}
-	pCtx->addTimestamp("rsm -");
+	//pCtx->addTimestamp("rsm -");
 
 	bool isClean[3] = {0};
 	if(iCascades)

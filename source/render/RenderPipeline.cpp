@@ -73,8 +73,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			{"Normal", "vNormal", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
 			{"AO", "fAO", GXDECLTYPE_FLOAT1, "0.0f"},
 			{"f0", "f0", GXDECLTYPE_FLOAT1, "0.04f"},
-			{"Roughness", "fRoughness", GXDECLTYPE_FLOAT1, "0.5f"},
-			{"Metallic", "fMetallic", GXDECLTYPE_FLOAT1, "0.5f"},
+			{"Roughness", "fRoughness", GXDECLTYPE_FLOAT1, "0.95f"},
+			{"Metallic", "fMetallic", GXDECLTYPE_FLOAT1, "0.0f"},
 			{"Thickness", "fThickness", GXDECLTYPE_FLOAT1, "1.0f"},
 			{"Lighting Coefficient", "fLightCoeff", GXDECLTYPE_FLOAT1, "1.0f"},
 
@@ -120,8 +120,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			{"Normal", "vNormal", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
 			{"AO", "fAO", GXDECLTYPE_FLOAT1, "0.0f"},
 			{"f0", "f0", GXDECLTYPE_FLOAT1, "0.04f"},
-			{"Roughness", "fRoughness", GXDECLTYPE_FLOAT1, "0.5f"},
-			{"Metallic", "fMetallic", GXDECLTYPE_FLOAT1, "0.5f"},
+			{"Roughness", "fRoughness", GXDECLTYPE_FLOAT1, "0.95f"},
+			{"Metallic", "fMetallic", GXDECLTYPE_FLOAT1, "0.0f"},
 			{"Thickness", "fThickness", GXDECLTYPE_FLOAT1, "1.0f"},
 			{"Lighting Coefficient", "fLightCoeff", GXDECLTYPE_FLOAT1, "1.0f"},
 			{"Emissive color", "fEmissiveColor", GXDECLTYPE_FLOAT3, "float3(0.0f, 0.0f, 0.0f)"},
@@ -262,7 +262,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XMATERIAL_PARAM_GROUP_END(),
 			XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP"),
 				// name, min, max, material parameter name
-				XMATERIAL_PARAM_RANGE("Roughness", "pbr_roughness", 0.0f, 1.0f, 0.5f),
+				XMATERIAL_PARAM_RANGE("Roughness", "pbr_roughness", 0.0f, 1.0f, 0.95f),
 				XMATERIAL_PARAM_RANGE("Metallic", "pbr_metallic", 0.0f, 1.0f, 0.0f),
 				XMATERIAL_PARAM_RANGE("Thickness", "pbr_thickness", 0.0f, 1.0f, 1.0f),
 				XMATERIAL_PARAM_RANGE("AO", "pbr_ao", 0.0f, 1.0f, 1.0f),
@@ -327,7 +327,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		//	XMATERIAL_PARAM_GROUP_END(),
 		//	XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP"),
 				// name, min, max, material parameter name
-				XMATERIAL_PARAM_RANGE("Roughness", "pbr_roughness", 0.0f, 1.0f, 0.9f),
+				XMATERIAL_PARAM_RANGE("Roughness", "pbr_roughness", 0.0f, 1.0f, 0.95f),
 				XMATERIAL_PARAM_RANGE("Metallic", "pbr_metallic", 0.0f, 1.0f, 0.0f),
 				XMATERIAL_PARAM_RANGE("Thickness", "pbr_thickness", 0.0f, 1.0f, 1.0f),
 				XMATERIAL_PARAM_RANGE("AO", "pbr_ao", 0.0f, 1.0f, 1.0f),
@@ -347,7 +347,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		//	XMATERIAL_PARAM_GROUP_END(),
 		//	XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP_0"),
 				// name, min, max, material parameter name
-				XMATERIAL_PARAM_RANGE("Roughness 0", "pbr_roughness_0", 0.0f, 1.0f, 0.9f),
+				XMATERIAL_PARAM_RANGE("Roughness 0", "pbr_roughness_0", 0.0f, 1.0f, 0.95f),
 				XMATERIAL_PARAM_RANGE("Metallic 0", "pbr_metallic_0", 0.0f, 1.0f, 0.0f),
 				XMATERIAL_PARAM_RANGE("Thickness 0", "pbr_thickness_0", 0.0f, 1.0f, 1.0f),
 				XMATERIAL_PARAM_RANGE("AO 0", "pbr_ao_0", 0.0f, 1.0f, 1.0f),
@@ -367,7 +367,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		//	XMATERIAL_PARAM_GROUP_END(),
 		//	XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP_1"),
 				// name, min, max, material parameter name
-				XMATERIAL_PARAM_RANGE("Roughness 1", "pbr_roughness_1", 0.0f, 1.0f, 0.9f),
+				XMATERIAL_PARAM_RANGE("Roughness 1", "pbr_roughness_1", 0.0f, 1.0f, 0.95f),
 				XMATERIAL_PARAM_RANGE("Metallic 1", "pbr_metallic_1", 0.0f, 1.0f, 0.0f),
 				XMATERIAL_PARAM_RANGE("Thickness 1", "pbr_thickness_1", 0.0f, 1.0f, 1.0f),
 				XMATERIAL_PARAM_RANGE("AO 1", "pbr_ao_1", 0.0f, 1.0f, 1.0f),
@@ -388,7 +388,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		//	XMATERIAL_PARAM_GROUP_END(),
 		//	XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP_2"),
 				// name, min, max, material parameter name
-				XMATERIAL_PARAM_RANGE("Roughness 2", "pbr_roughness_2", 0.0f, 1.0f, 0.9f),
+				XMATERIAL_PARAM_RANGE("Roughness 2", "pbr_roughness_2", 0.0f, 1.0f, 0.95f),
 				XMATERIAL_PARAM_RANGE("Metallic 2", "pbr_metallic_2", 0.0f, 1.0f, 0.0f),
 				XMATERIAL_PARAM_RANGE("Thickness 2", "pbr_thickness_2", 0.0f, 1.0f, 1.0f),
 				XMATERIAL_PARAM_RANGE("AO 2", "pbr_ao_2", 0.0f, 1.0f, 1.0f),
@@ -408,7 +408,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		//	XMATERIAL_PARAM_GROUP_END(),
 		//	XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP_3"),
 				// name, min, max, material parameter name
-				XMATERIAL_PARAM_RANGE("Roughness 3", "pbr_roughness_3", 0.0f, 1.0f, 0.9f),
+				XMATERIAL_PARAM_RANGE("Roughness 3", "pbr_roughness_3", 0.0f, 1.0f, 0.95f),
 				XMATERIAL_PARAM_RANGE("Metallic 3", "pbr_metallic_3", 0.0f, 1.0f, 0.0f),
 				XMATERIAL_PARAM_RANGE("Thickness 3", "pbr_thickness_3", 0.0f, 1.0f, 1.0f),
 				XMATERIAL_PARAM_RANGE("AO 3", "pbr_ao_3", 0.0f, 1.0f, 1.0f),
@@ -469,7 +469,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XMATERIAL_PARAM_GROUP_END(),
 			XMATERIAL_PARAM_GROUP(NULL, "!HAS_PARAMMAP"),
 				// name, min, max, material parameter name
-				XMATERIAL_PARAM_RANGE("Roughness", "pbr_roughness", 0.0f, 1.0f, 0.5f),
+				XMATERIAL_PARAM_RANGE("Roughness", "pbr_roughness", 0.0f, 1.0f, 0.95f),
 				XMATERIAL_PARAM_RANGE("Metallic", "pbr_metallic", 0.0f, 1.0f, 0.0f),
 				XMATERIAL_PARAM_RANGE("Thickness", "pbr_thickness", 0.0f, 1.0f, 1.0f),
 				XMATERIAL_PARAM_RANGE("AO", "pbr_ao", 0.0f, 1.0f, 1.0f),
