@@ -21,7 +21,7 @@ BOOL GetLastWriteTime(const char *szFile, LPTSTR lpszString)
 	SYSTEMTIME stUTC, stLocal;
 	DWORD dwRet;
 
-	HANDLE hFile = CreateFile(szFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	HANDLE hFile = CreateFileW(CMB2WC(szFile), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	if(hFile == INVALID_HANDLE_VALUE)
 	{
 		return(FALSE);
@@ -211,13 +211,17 @@ INT_PTR CALLBACK CLevelOpenDialog::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, L
 		case IDOK:
 			{
 				int iSel = ListView_GetNextItem(m_hListWnd, -1, LVNI_SELECTED);
-				LVITEM lvItem;
+				LVITEMW lvItem;
 				memset(&lvItem, 0, sizeof(lvItem));
 				lvItem.iItem = iSel;
 				lvItem.mask = LVIF_TEXT;
-				lvItem.pszText = m_szLevelName;
+				WCHAR tmp[MAX_LEVEL_STRING];
+				tmp[0] = 0;
+				lvItem.pszText = tmp;
 				lvItem.cchTextMax = MAX_LEVEL_STRING;
-				ListView_GetItem(m_hListWnd, &lvItem);
+				//ListView_GetItem(m_hListWnd, &lvItem);
+				SNDMSG(m_hListWnd, LVM_GETITEMW, 0, (LPARAM)(LV_ITEMW*)(&lvItem));
+				strcpy(m_szLevelName, CWC2MB(tmp));
 				EndDialog(m_hDlgWnd, 1);
 			}
 			break;
@@ -247,7 +251,7 @@ void CLevelOpenDialog::loadLevels()
 {
 	CLevelInfo levelInfo;
 
-	LVITEMA lvItem;
+	LVITEMW lvItem;
 	memset(&lvItem, 0, sizeof(lvItem));
 	lvItem.mask = LVIF_TEXT | LVIF_PARAM;
 	
@@ -259,10 +263,12 @@ void CLevelOpenDialog::loadLevels()
 
 	while(EnumLevels(&levelInfo))
 	{
-		lvItem.pszText = (LPSTR)levelInfo.m_szName;
-		lvItem.cchTextMax = strlen(lvItem.pszText);
+		StringW tmp2(CMB2WC(levelInfo.m_szName));
+
+		lvItem.pszText = (LPWSTR)tmp2.c_str();
+		lvItem.cchTextMax = tmp2.length();
 		lvItem.lParam = (LPARAM)uIndex;
-		ListView_InsertItem(m_hListWnd, &lvItem);
+		SNDMSG(m_hListWnd, LVM_INSERTITEMW, 0, (LPARAM)(const LV_ITEMW *)(&lvItem));
 
 		
 		lvFindInfo.lParam = (LPARAM)uIndex;
@@ -273,7 +279,7 @@ void CLevelOpenDialog::loadLevels()
 		ListView_SetItemText(m_hListWnd, iID, 3, (LPSTR)(levelInfo.m_isIndoor ? "Indoor" : "Outdoor"));
 
 
-		StringW tmp(String(levelInfo.m_szLocalName));
+		StringW tmp(CMB2WC(levelInfo.m_szLocalName));
 		LV_ITEMW _macro_lvi;
 		_macro_lvi.iSubItem = 1;
 		_macro_lvi.pszText = (LPWSTR)tmp.c_str();
