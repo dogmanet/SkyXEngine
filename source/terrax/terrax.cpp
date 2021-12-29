@@ -23,6 +23,7 @@ See the license in LICENSE
 #include <xcommon/IXRenderable.h>
 #include <xcommon/resource/IXResourceManager.h>
 #include <xcommon/render/IXRenderUtils.h>
+#include <xcommon/IXModelWriter.h>
 #include <xcommon/IXJSON.h>
 #include <mtrl/IXMaterialSystem.h>
 #include "UndoManager.h"
@@ -105,6 +106,7 @@ void XReleaseViewports();
 void XInitViewports();
 void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
 void XExportToObj(const char *szMdl);
+void XExportToDSE(const char *szMdl);
 bool IsEditMessage();
 bool IsButtonMessage();
 
@@ -1082,6 +1084,16 @@ int main(int argc, char **argv)
 		XExportToObj(argv[1]);
 	}, "Export model to obj format");
 
+	pEngine->getCore()->getConsole()->registerCommand("dse_dump", [](int argc, const char **argv){
+		if(argc != 2)
+		{
+			printf("Usage: dse_dump <model>");
+			return;
+		}
+
+		XExportToDSE(argv[1]);
+	}, "Export model to dse format");
+	
 	CRenderPipeline *pPipeline = new CRenderPipeline(Core_GetIXCore());
 	g_pEditor = new CEditor(Core_GetIXCore());
 	Core_GetIXCore()->getPluginManager()->registerInterface(IXEDITOR_GUID, g_pEditor);
@@ -2787,6 +2799,50 @@ void XExportToObj(const char *szMdl)
 
 	mem_release(pMatFile);
 	mem_release(pObjFile);
+	mem_release(pResource);
+
+	LibReport(REPORT_MSG_LEVEL_NOTICE, "%s was written\n", buf);
+}
+
+void XExportToDSE(const char *szMdl)
+{
+	IXCore *pCore = g_pEngine->getCore();
+	IXResourceManager *pResourceManager = pCore->getResourceManager();
+	IFileSystem *pFileSystem = pCore->getFileSystem();
+
+	IXResourceModel *pResource;
+	//IXResourceModelStatic *pResourceStatic;
+	if(!pResourceManager->getModel(szMdl, &pResource))
+	{
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to load model '%s'!\n", szMdl);
+		return;
+	}
+	//if(!(pResourceStatic = pResource->asStatic()))
+	//{
+	//	LibReport(REPORT_MSG_LEVEL_ERROR, "Model '%s' is not a static model. Cannot export!\n", szMdl);
+	//	mem_release(pResource);
+	//	return;
+	//}
+
+	const char *szBasename = basename(szMdl);
+	char buf[128];
+
+	sprintf(buf, "export/%s.dse", szBasename);
+	IFile *pFile = pFileSystem->openFile(buf, FILE_MODE_WRITE);
+	if(!pFile)
+	{
+		mem_release(pResource);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to write file '%s'!\n", buf);
+		return;
+	}
+
+	IXModelWriter *pWriter = (IXModelWriter*)Core_GetIXCore()->getPluginManager()->getInterface(IXMODELWRITER_GUID);
+	if(pWriter)
+	{
+		pWriter->writeModel(pResource, pFile);
+	}
+
+	mem_release(pFile);
 	mem_release(pResource);
 
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "%s was written\n", buf);
