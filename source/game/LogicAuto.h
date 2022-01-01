@@ -17,7 +17,7 @@ protected:
 
 	output_t m_onTrigger;
 
-	float m_fDelay = 1.0f;
+	float m_fDelay = 0.0f;
 };
 
 #endif

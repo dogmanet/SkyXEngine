@@ -343,12 +343,7 @@ void XMETHODCALLTYPE CLevelLoadTask::onFinished()
 	{
 		Core_0ConsoleExecCmd("gmode ingame");
 		Core_0ConsoleExecCmd("spawn");
-	}
-
-	CBaseEntity *pEnt = NULL;
-	while((pEnt = GameData::m_pMgr->findEntityByClass("logic_auto", pEnt)))
-	{
-		((CLogicAuto*)pEnt)->activate();
+		Core_0ConsoleExecCmd("start_logic_auto");
 	}
 
 	mem_release(g_pLevelLoadTask);
@@ -374,7 +369,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 	IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
 	m_pGameLayer = pSound->findLayer("xGame");
 	m_pGuiLayer = pSound->findLayer("xGUI");
-	if (m_pGuiLayer)
+	if(m_pGuiLayer)
 	{
 		m_pSoundPlayer = m_pGuiLayer->newSoundPlayer("sounds/dip.wav", SOUND_SPACE_2D);
 		m_pSoundPlayer->setLoop(SOUND_LOOP_SIMPLE);
@@ -383,7 +378,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 	loadFoostepsSounds();
 	isGame = true;
 	m_isGame = isGame;
-	
+
 	HMODULE hDLL = LoadLibrary("sxgui"
 #ifdef _DEBUG
 		"_d"
@@ -510,17 +505,17 @@ GameData::GameData(HWND hWnd, bool isGame):
 	Core_0RegisterConcmd("+use", ccmd_use_on);
 	Core_0RegisterConcmd("-use", ccmd_use_off);
 	Core_0RegisterConcmdArg("send_camera", [](int argc, const char ** argv){
-		if (argc < 2)
+		if(argc < 2)
 		{
 			printf("cmd send_camera requires one argument");
 			return;
 		}
 
 		CBaseEntity *pEnt = m_pMgr->findEntityByName(argv[1]);
-		if (pEnt)
+		if(pEnt)
 		{
 			CFuncTrain *pTrain = (CFuncTrain*)pEnt->getParent();
-			if (pTrain)
+			if(pTrain)
 			{
 				m_pActiveCamera = (CPointCamera*)pEnt;
 				pTrain->start();
@@ -531,7 +526,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		else
 			printf("cmd send_camera not found '%s' camera", argv[1]);
 	});
-		
+
 
 	Core_0RegisterConcmdArg("gui_load", [](int argc, const char ** argv){
 		if(argc != 3)
@@ -557,7 +552,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 			return;
 		}
 		GameData::m_pGUIStack->pushDesktop(dp);
-	}); 
+	});
 	Core_0RegisterConcmd("gui_pop", [](){
 		GameData::m_pGUIStack->popDesktop();
 	});
@@ -565,7 +560,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 	{
 		UpdateSettingsDesktop();
 	});
-	
+
 	Core_0RegisterConcmdArg("ent_save_level", [](int argc, const char ** argv){
 		if(argc != 2)
 		{
@@ -591,7 +586,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 			LibReport(REPORT_MSG_LEVEL_WARNING, "Ent: guid:%s; cls:'%s'; name:'%s'\n", tmp, pEnt->getClassName(), pEnt->getName());
 		}
 	});
-	
+
 	Core_0RegisterConcmdArg("map", [](int argc, const char ** argv)
 	{
 		if(argc != 2)
@@ -603,7 +598,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		EndMap();
 
 		LibReport(REPORT_MSG_LEVEL_NOTICE, "Loading level '" COLOR_LGREEN "%s" COLOR_RESET "'\n", argv[1]);
-		
+
 		static gui::IDesktop *pLoadingDesktop = GameData::m_pGUIStack->createDesktopA("loading", "menu/loading.html");
 		gui::dom::IDOMnode *pNode = pLoadingDesktop->getDocument()->getElementById(L"engine_version");
 		static const char **pszVersion = GET_PCVAR_STRING("engine_version");
@@ -643,6 +638,14 @@ GameData::GameData(HWND hWnd, bool isGame):
 		IXScene *pScene = (IXScene*)Core_GetIXCore()->getPluginManager()->getInterface(IXSCENE_GUID);
 		UINT uDepth = pScene->getTreeHeight();
 		printf("BVH tree height: %u\n", uDepth);
+	});
+
+	Core_0RegisterConcmd("start_logic_auto", [](){
+		CBaseEntity *pEnt = NULL;
+		while((pEnt = GameData::m_pMgr->findEntityByClass("logic_auto", pEnt)))
+		{
+			((CLogicAuto*)pEnt)->activate();
+		}
 	});
 
 	//Core_0RegisterCVarFloat("r_default_fov", 45.0f, "Default FOV value");
