@@ -4,7 +4,6 @@
 #include "IXCollisionShape.h"
 #include "IXCollisionObject.h"
 #include "IXCharacterController.h"
-#include "IXCharacterController.h"
 #include "IXMutationObserver.h"
 
 /*
