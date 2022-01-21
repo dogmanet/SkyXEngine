@@ -28,7 +28,7 @@ IGXVertexDeclaration *g_pStaticVertexDecl = 0;
 CShaderManager *g_pManagerShaders = 0;
 IGXRenderBuffer *g_pScreenTextureRB = 0;
 
-
+DECLARE_PROFILER_INTERNAL();
 
 //##########################################################################
 
@@ -65,6 +65,7 @@ void GCoreInit(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 SX_LIB_API void SGCore_0Create(const char *szName, SXWINDOW hWnd, int iWidth, int iHeigth, bool isWindowed, bool isUnic)
 {
 	Core_SetOutPtr();
+	INIT_PROFILER_INTERNAL();
 	if (szName && strlen(szName) > 1)
 	{
 		if (isUnic)
@@ -149,6 +150,7 @@ SX_LIB_API ID SGCore_ShaderLoad(SHADER_TYPE type_shader, const char *szPath, con
 SX_LIB_API void SGCore_ShaderAllLoad()
 {
 	SG_PRECOND(_VOID);
+	XPROFILE_FUNCTION();
 
 	return g_pManagerShaders->allLoad();
 }

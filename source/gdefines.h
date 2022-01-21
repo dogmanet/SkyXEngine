@@ -177,6 +177,9 @@ public:
 #define MACRO_TEXT_(x) #x
 #define MACRO_TEXT(x) MACRO_TEXT_(x)
 
+#define MACRO_CAT_(a, b) a ## b
+#define MACRO_CAT(a, b)  MACRO_CAT_(a, b)
+
 //! Формирование строки вида file_name:string_num
 #define GEN_MSG_LOCATION __FILE__ ## ": " ## MACRO_TEXT(__LINE__)
 
@@ -340,5 +343,7 @@ inline void LibReport(int iLevel, const char *szFormat, ...)
 
 
 #define SX_MAX_THREAD_COUNT 64
+
+#include <xcommon/IXProfiler.h>
 
 #endif

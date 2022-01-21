@@ -13,7 +13,7 @@ CMaterialSystem *g_pMaterialSystem = NULL;
 
 //##########################################################################
 
-
+DECLARE_PROFILER_INTERNAL();
 
 SX_LIB_API void SMtrl_0Create(const char *szName, bool isUnic, bool isServerMode)
 {
@@ -35,6 +35,7 @@ SX_LIB_API void SMtrl_0Create(const char *szName, bool isUnic, bool isServerMode
 		}*/
 
 		INIT_OUTPUT_STREAM(Core_GetIXCore());
+		INIT_PROFILER_INTERNAL();
 
 		g_pMaterialSystem = new CMaterialSystem();
 		Core_GetIXCore()->getPluginManager()->registerInterface(IXMATERIALSYSTEM_GUID, g_pMaterialSystem);
@@ -51,5 +52,6 @@ SX_LIB_API void SMtrl_AKill()
 
 SX_LIB_API void SMtrl_Update(DWORD timeDelta)
 {
+	XPROFILE_FUNCTION();
 	g_pMaterialSystem->update(0.016f);
 }

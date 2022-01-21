@@ -8,7 +8,6 @@
 #include "concmd.h"
 #include "TaskManager.h"
 
-#include "PerfMon.h"
 #include "time.h"
 
 #include <GRegisterIndex.h>
@@ -21,7 +20,8 @@
 #include "Buffer.h"
 
 extern CTimeManager *g_pTimers;
-extern CPerfMon *g_pPerfMon;
+CProfiler *g_pProfilerInternal;
+DECLARE_PROFILER_INTERNAL();
 extern CCore *g_pCore;
 extern CTaskManager *g_pTaskManager;
 
@@ -94,7 +94,6 @@ CCore::CCore(const char *szName)
 	m_pJSON = new CJSON();
 	m_pPluginManager->registerInterface(IXJSON_GUID, m_pJSON);
 
-	g_pPerfMon = m_pPerfMon = new CPerfMon();
 	g_pTimers = m_pTimers = new CTimeManager();
 
 	ID idTimerRender = Core_TimeAdd();
@@ -123,6 +122,9 @@ CCore::CCore(const char *szName)
 	}
 
 	loadPlugins();
+
+	loadProfiler();
+
 #if 0
 	IXTextureLoader *pLoader = (IXTextureLoader*)m_pPluginManager->getInterface(IXTEXTURELOADER_GUID);
 	/*if(pLoader->open("textures/tp/tp_sga_window_center_up.dds", ""))
@@ -221,6 +223,7 @@ CCore::~CCore()
 	mem_delete(m_pModelProvider);
 	mem_delete(m_pResourceManager);
 	mem_delete(m_pFileSystem);
+	//mem_delete(m_pProfiler);
 	mem_delete(m_pPluginManager);
 	for(AssotiativeArray<XGUID, IBaseEventChannel*>::Iterator i = m_mEventChannels.begin(); i; ++i)
 	{
@@ -350,6 +353,8 @@ void CCore::initUpdatable()
 
 void CCore::runUpdate()
 {
+	XPROFILE_FUNCTION();
+
 	static Array<ID> s_aIdToWait;
 	ID idTask;
 	time_point tNow = std::chrono::high_resolution_clock::now();
@@ -428,6 +433,12 @@ void XMETHODCALLTYPE CCore::addTask(ITask *pTask)
 IXConsole* XMETHODCALLTYPE CCore::getConsole()
 {
 	return(m_pConsole);
+}
+
+void CCore::loadProfiler()
+{
+	g_pProfiler = g_pProfilerInternal = m_pProfiler = new CProfiler(this, Core_0GetCommandLineArg("profiler"), Core_0GetCommandLineArg("start-profiling") != NULL);
+	m_pPluginManager->registerInterface(IXPROFILER_GUID, m_pProfiler);
 }
 
 //##########################################################################

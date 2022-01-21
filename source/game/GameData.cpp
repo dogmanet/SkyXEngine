@@ -206,6 +206,7 @@ void EndMap()
 	//{
 	//	return;
 	//}
+	XPROFILE_FUNCTION();
 
 	if(!GameData::m_pMgr->isEditorMode())
 	{
@@ -320,6 +321,8 @@ CLevelLoadProgressListener g_levelProgressListener;
 
 void XMETHODCALLTYPE CLevelLoadTask::exec()
 {
+	XPROFILE_FUNCTION();
+
 	XEventLevel evLevel;
 	evLevel.szLevelName = m_szLevelName;
 

@@ -38,6 +38,8 @@ See the license in LICENSE
 report_func g_fnReportf = DefReport;
 #endif
 
+DECLARE_PROFILER_INTERNAL();
+
 CPhyWorld *g_pWorld = NULL;
 CPhysics *g_pPhysics = NULL;
 
@@ -66,6 +68,7 @@ SX_LIB_API void SPhysics_DumpStats()
 
 SX_LIB_API void SPhysics_0Create()
 {
+	INIT_PROFILER_INTERNAL();
 	if(g_pWorld)
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxphysics double init", GEN_MSG_LOCATION);

@@ -49,8 +49,8 @@
     <ClCompile Include="..\..\..\source\core\JSON.cpp" />
     <ClCompile Include="..\..\..\source\core\ModelPhysbox.cpp" />
     <ClCompile Include="..\..\..\source\core\ModelProvider.cpp" />
-    <ClCompile Include="..\..\..\source\core\PerfMon.cpp" />
     <ClCompile Include="..\..\..\source\core\PluginManager.cpp" />
+    <ClCompile Include="..\..\..\source\core\Profiler.cpp" />
     <ClCompile Include="..\..\..\source\core\ResourceManager.cpp" />
     <ClCompile Include="..\..\..\source\core\ResourceModel.cpp" />
     <ClCompile Include="..\..\..\source\core\ResourceModelAnimated.cpp" />
@@ -95,8 +95,8 @@
     <ClInclude Include="..\..\..\source\core\JSON.h" />
     <ClInclude Include="..\..\..\source\core\ModelPhysbox.h" />
     <ClInclude Include="..\..\..\source\core\ModelProvider.h" />
-    <ClInclude Include="..\..\..\source\core\PerfMon.h" />
     <ClInclude Include="..\..\..\source\core\PluginManager.h" />
+    <ClInclude Include="..\..\..\source\core\Profiler.h" />
     <ClInclude Include="..\..\..\source\core\ResourceManager.h" />
     <ClInclude Include="..\..\..\source\core\ResourceModel.h" />
     <ClInclude Include="..\..\..\source\core\ResourceModelAnimated.h" />

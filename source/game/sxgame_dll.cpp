@@ -38,6 +38,7 @@ report_func g_fnReportf = DefReport;
 
 GameData * g_pGameData = NULL;
 IMesh* g_pFigureBox = 0;
+DECLARE_PROFILER_INTERNAL();
 
 HINSTANCE g_hInstance = NULL;
 
@@ -103,6 +104,7 @@ SX_LIB_API void SGame_0Create(HWND hWnd, bool isGame)
 		return;
 	}
 	Core_SetOutPtr();
+	INIT_PROFILER_INTERNAL();
 
 	g_pGameData = new GameData(hWnd, isGame);
 
@@ -123,6 +125,7 @@ SX_LIB_API void SGame_AKill()
 SX_LIB_API void SGame_Update(int thread)
 {
 	SG_PRECOND(_VOID);
+	XPROFILE_FUNCTION();
 	GameData::m_pMgr->update(thread);
 	if(thread == 0)
 	{
@@ -137,6 +140,7 @@ SX_LIB_API void SGame_UpdateSetThreadNum(int num)
 SX_LIB_API void SGame_Sync()
 {
 	SG_PRECOND(_VOID);
+	XPROFILE_FUNCTION();
 	GameData::m_pMgr->sync();
 	g_pGameData->sync();
 }

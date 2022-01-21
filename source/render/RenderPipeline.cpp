@@ -651,6 +651,8 @@ void CRenderPipeline::resize(UINT uWidth, UINT uHeight, bool isWindowed)
 
 void CRenderPipeline::renderFrame(float fDeltaTime)
 {
+	XPROFILE_FUNCTION();
+
 	static const int *r_final_image = GET_PCVAR_INT("r_final_image");
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
@@ -683,10 +685,8 @@ void CRenderPipeline::renderFrame(float fDeltaTime)
 	
 	renderPrepare();
 
-	Core_PStartSection(PERF_SECTION_MRT);
 	renderGBuffer();
 	pCtx->addTimestamp("gbuffer");
-	Core_PEndSection(PERF_SECTION_MRT);
 
 	switch(*r_final_image)
 	{
@@ -763,11 +763,9 @@ end:
 		pCtx->addTimestamp("debug");
 	}
 
-	Core_PStartSection(PERF_SECTION_RENDER_INFO);
 	//@FIXME: пока так
 	SGame_RenderHUD();
 	pCtx->addTimestamp("hud");
-	Core_PEndSection(PERF_SECTION_RENDER_INFO);
 	
 	showFrameStats();
 
@@ -776,12 +774,14 @@ end:
 }
 void CRenderPipeline::endFrame()
 {
+	XPROFILE_FUNCTION();
 	m_pDevice->swapBuffers();
 	getXUI()->present();
 }
 
 void CRenderPipeline::updateVisibility()
 {
+	XPROFILE_FUNCTION();
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
@@ -838,6 +838,7 @@ void CRenderPipeline::renderPrepare()
 }
 void CRenderPipeline::renderGBuffer()
 {
+	XPROFILE_FUNCTION();
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	static const bool *r_clear_color = GET_PCVAR_BOOL("r_clear_color");
@@ -1617,8 +1618,7 @@ void CRenderPipeline::showTexture(IGXTexture2D *pTexture)
 
 void CRenderPipeline::showFrameStats()
 {
-	Core_PStartSection(PERF_SECTION_RENDER_INFO);
+	XPROFILE_FUNCTION();
 	//@FIXME: Пока так
 	SGame_Render();
-	Core_PEndSection(PERF_SECTION_RENDER_INFO);
 }

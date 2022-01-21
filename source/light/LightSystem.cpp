@@ -549,6 +549,7 @@ IMesh* CLightSystem::getShapeCone()
 
 void XMETHODCALLTYPE CLightSystem::updateVisibility()
 {
+	XPROFILE_FUNCTION();
 	assert(m_pMainCamera);
 
 	if(!m_isEnabled)
@@ -1152,7 +1153,8 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 }
 void XMETHODCALLTYPE CLightSystem::renderToneMapping(IGXTexture2D *pSourceLight)
 {
-	Core_PStartSection(PERF_SECTION_TONEMAPPING);
+	XPROFILE_FUNCTION();
+
 	static const float *hdr_adapted_coef = GET_PCVAR_FLOAT("hdr_adapted_coef");
 	static const float *hdr_base_value = GET_PCVAR_FLOAT("hdr_base_value");
 
@@ -1237,8 +1239,6 @@ void XMETHODCALLTYPE CLightSystem::renderToneMapping(IGXTexture2D *pSourceLight)
 
 	pCtx->setDepthStencilSurface(pDSSurface);
 	m_uCurrAdaptedLuminanceTarget = !m_uCurrAdaptedLuminanceTarget;
-
-	Core_PEndSection(PERF_SECTION_TONEMAPPING);
 }
 void XMETHODCALLTYPE CLightSystem::renderDebug()
 {

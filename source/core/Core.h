@@ -9,6 +9,7 @@
 #include "ResourceManager.h"
 #include "Console.h"
 #include "JSON.h"
+#include "Profiler.h"
 
 class CModelProvider;
 class CPerfMon;
@@ -32,6 +33,8 @@ public:
 	void XMETHODCALLTYPE setRenderPipeline(IXRenderPipeline *pRenderPipeline) override;
 
 	void loadPlugins();
+
+	void loadProfiler();
 
 	void initUpdatable() override;
 	void shutdownUpdatable();
@@ -59,7 +62,7 @@ public:
 	void XMETHODCALLTYPE addTask(ITask *pTask) override;
 	
 	IBaseEventChannel* getEventChannelInternal(const XGUID &guid) override;
-protected:
+private:
 
 	CPluginManager *m_pPluginManager = NULL;
 	CFileSystem *m_pFileSystem = NULL;
@@ -79,13 +82,14 @@ protected:
 
 
 	CPerfMon *m_pPerfMon = NULL;
+	CProfiler *m_pProfiler = NULL;
 	CTimeManager *m_pTimers = NULL;
 	CTaskManager *m_pTaskManager = NULL;
 
 	CJSON *m_pJSON = NULL;
 
 	CConsole *m_pConsole = NULL;
-
+	
 	std::chrono::high_resolution_clock::time_point m_tLastUpdateTime;
 };
 

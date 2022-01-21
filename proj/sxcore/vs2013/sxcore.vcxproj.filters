@@ -34,9 +34,6 @@
     <ClCompile Include="..\..\..\source\common\string_utils.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\core\PerfMon.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\core\PluginManager.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
@@ -97,6 +94,9 @@
     <ClCompile Include="..\..\..\source\core\BaseFileIterator.cpp">
       <Filter>Sources\FileSystem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\core\Profiler.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers">
@@ -156,9 +156,6 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\ConcurrentQueue.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\core\PerfMon.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xcommon\IXPlugin.h">
@@ -292,6 +289,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\core\BaseFileIterator.h">
       <Filter>Headers\FileSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\core\Profiler.h">
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -22,8 +22,6 @@ See the license in LICENSE
 
 #include <shellapi.h>
 
-#include "PerfMon.h"
-
 #include <common/file_utils.h>
 
 #include "GRegisterIndex.h"
@@ -40,7 +38,6 @@ report_func g_fnReportf = DefReport;
 //**************************************************************************
 
 CTaskManager *g_pTaskManager = 0;
-CPerfMon *g_pPerfMon = 0;
 
 #define SXCORE_PRECOND(retval) if(!g_pTaskManager){LibReport(REPORT_MSG_LEVEL_ERROR, "%s - sxcore is not init", GEN_MSG_LOCATION); return retval;}
 
@@ -154,70 +151,7 @@ bool Core_0IsProcessRun(const char* process)
 		if(!Process32Next(hSnapshot, &pe)) return false;
 	}
 }
-#if 0
-void Core_0Create(const char* name, const char *szNameConsole, bool is_unic)
-{
-		if(name && strlen(name) > 1)
-		{
-				if(is_unic)
-				{
-					HANDLE hMutex = CreateMutex(NULL, FALSE, name);
-						if(GetLastError() == ERROR_ALREADY_EXISTS)
-						{
-							CloseHandle(hMutex);
-							LibReport(REPORT_MSG_LEVEL_ERROR, "%s - none unic name", GEN_MSG_LOCATION);
-							return;
-						}
-				}
-			g_pCore = new CCore();
-			strcpy(g_szCoreName, name);
-			ConsoleConnect(szNameConsole);
-			ConsoleRegisterCmds();
 
-			g_pPerfMon = new CPerfMon();
-
-			int iThreadNum = 0;
-			if(!sscanf(Core_0GetCommandLineArg("threads", "0"), "%d", &iThreadNum) || iThreadNum < 0)
-			{
-				LibReport(REPORT_MSG_LEVEL_WARNING, "Invalid -threads value! Defaulting to 0\n");
-			}
-
-			g_pTaskManager = new CTaskManager(iThreadNum);
-			if(strcasecmp(Core_0GetCommandLineArg("no-threads", "no"), "no"))
-			{
-				g_pTaskManager->forceSinglethreaded();
-			}
-			g_pTimers = new CTimeManager();
-
-			g_pCore->loadPlugins();
-		}
-		else
-			LibReport(REPORT_MSG_LEVEL_ERROR, "%s - not init argument [name]", GEN_MSG_LOCATION);
-}
-
-void Core_AKill()
-{
-	mem_delete(g_pCore);
-
-	SXCORE_PRECOND(_VOID);
-
-	mem_delete(g_pTaskManager);
-	mem_delete(g_pTimers);
-	ConsoleDisconnect();
-}
-#endif
-
-#if 0
-void Core_AGetName(char* name)
-{
-	SXCORE_PRECOND(_VOID);
-
-	if(name)
-		strcpy(name, g_szCoreName);
-	else
-		LibReport(REPORT_MSG_LEVEL_ERROR, "%s - invalid argument", GEN_MSG_LOCATION);
-}
-#endif
 
 SX_LIB_API XDEPRECATED IXCore *Core_GetIXCore()
 {
@@ -361,26 +295,6 @@ SX_LIB_API int Core_MGetThreadCount()
 	SXCORE_PRECOND(1);
 	int iTC = g_pTaskManager->getThreadCount();
 	return(max(iTC, 1));
-}
-
-//##########################################################################
-
-void Core_PStartSection(ID idSection)
-{
-	SXCORE_PRECOND(_VOID);
-	g_pPerfMon->startSection(idSection);
-}
-
-void Core_PEndSection(ID idSection)
-{
-	SXCORE_PRECOND(_VOID);
-	g_pPerfMon->endSection(idSection);
-}
-
-const CPerfRecord *Core_PGetRecords(ID idThread, int *piRecordCount)
-{
-	SXCORE_PRECOND(NULL);
-	return(g_pPerfMon->getRecords(idThread, piRecordCount));
 }
 
 //##########################################################################

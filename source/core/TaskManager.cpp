@@ -7,9 +7,9 @@ See the license in LICENSE
 #include <functional>
 
 #include "TaskManager.h"
-#include "PerfMon.h"
+#include "Profiler.h"
 
-extern CPerfMon *g_pPerfMon;
+extern CProfiler *g_pProfilerInternal;
 
 #if defined(_WINDOWS)
 static void SetThreadName(HANDLE hThread, const char *threadName)
@@ -239,7 +239,8 @@ void CTaskManager::synchronize()
 	{
 		execute(m_OnSyncTasks.pop());
 	}
-	g_pPerfMon->syncBegin();
+	XPROFILE_EVENT("Sync");
+	//g_pPerfMon->syncBegin();
 	/*std::unique_lock<std::mutex> lock(m_mutexSync);
 
 	while(m_iNumTasksToWaitFor > 0)
@@ -268,7 +269,7 @@ void CTaskManager::sheduleNextBunch()
 		m_Condition.wait(lock);
 	}
 
-	g_pPerfMon->endFrame();
+	SAFE_CALL(g_pProfilerInternal->getAPI(), onFrameStart);
 
 	while(!m_SyncTasks.empty())
 	{
@@ -341,18 +342,25 @@ void CTaskManager::execute(TaskPtr t)
 void CTaskManager::workerMain()
 {
 	srand((UINT)time(0));
+	SAFE_CALL(g_pProfilerInternal->getAPI(), registerThread, "Worker");
 	worker(false);
+	SAFE_CALL(g_pProfilerInternal->getAPI(), unregisterThread);
 }
 
 void CTaskManager::workerIOMain()
 {
 	srand((UINT)time(0));
+	SAFE_CALL(g_pProfilerInternal->getAPI(), registerThread, "Worker IO");
 	workerIO();
+	SAFE_CALL(g_pProfilerInternal->getAPI(), unregisterThread);
 }
 
 void CTaskManager::schedulerMain()
 {
 	srand((UINT)time(0));
+
+	SAFE_CALL(g_pProfilerInternal->getAPI(), registerThread, "Scheduler");
+
 	//TaskPtr task;
 
 	ScheduledTask *pScheduledTask = NULL;
@@ -388,6 +396,8 @@ void CTaskManager::schedulerMain()
 			m_ConditionSchedulerThread.wait(lock);
 		}
 	}
+
+	SAFE_CALL(g_pProfilerInternal->getAPI(), unregisterThread);
 }
 
 void CTaskManager::worker(bool bOneRun)

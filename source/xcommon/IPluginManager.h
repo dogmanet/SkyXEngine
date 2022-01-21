@@ -6,7 +6,7 @@
 
 // Интерфейс для работы с плагинами движка
 
-
+class IXPlugin;
 class IPluginManager: public IXUnknown
 {
 public:

@@ -161,112 +161,6 @@ SX_LIB_API void Core_MWaitFor(ID id);
 
 //##########################################################################
 
-/*! @name Менеджер производительности
-@{*/
-
-struct CPerfRecord
-{
-	int m_iDepth;
-	std::chrono::high_resolution_clock::time_point m_time;
-	ID m_idSection;
-	bool m_isEntry;
-};
-
-enum PERF_SECTION
-{
-	PERF_SECTION_GAME_UPDATE, // 0
-	PERF_SECTION_GAME_SYNC, // 1
-	PERF_SECTION_ANIM_UPDATE, // 2
-	PERF_SECTION_ANIM_SYNC, // 3
-	PERF_SECTION_PHYS_UPDATE, // 4
-	PERF_SECTION_PHYS_SYNC, // 5
-	PERF_SECTION_RENDER_PRESENT, // 6
-	PERF_SECTION_WEATHER_UPDATE, // 7
-	PERF_SECTION_AMBIENT_SND_UPDATE, // 8
-	PERF_SECTION_MATSORT_UPDATE, // 9
-	PERF_SECTION_OC_REPROJECTION, // A
-	PERF_SECTION_VIS_ALL, // B
-	PERF_SECTION_RENDER, // C
-	PERF_SECTION_CORE_UPDATE, // D
-	PERF_SECTION_SHADOW_UPDATE, // E
-	PERF_SECTION_MRT, // F
-	PERF_SECTION_LIGHTING, // G
-	PERF_SECTION_SKYBOX, // H
-	PERF_SECTION_TONEMAPPING, // I
-	PERF_SECTION_RENDER_PARTICLES, // J
-	PERF_SECTION_RENDER_POSTPROCESS, // K
-	PERF_SECTION_RENDER_HUD, // L
-	PERF_SECTION_RENDER_INFO, // M
-	PERF_SECTION_RENDER_GAME, // N
-	PERF_SECTION_OC_UPDATE, // O
-	PERF_SECTION_VIS_REFLECTION, // P
-	PERF_SECTION_VIS_LIGHT, // Q
-	PERF_SECTION_VIS_PARTICLES, // R
-	PERF_SECTION_AI_PATH, // S
-	PERF_SECTION_CVAR_UPDATE, // T
-	PERF_SECTION_WMSG_PROC, // U
-	PERF_SECTION_PREFRAME, // V
-
-	PERF_SECTION_PF_W, // W
-	PERF_SECTION_PF_X, // X
-	PERF_SECTION_PF_Y, // Y
-	PERF_SECTION_PF_Z, // Z
-
-	PERF_SECTION_COUNT
-};
-
-static const char *g_szPerfSectionName[] = {
-	"Game update",
-	"Game sync",
-	"Anim update",
-	"Anim sync",
-	"Phys update",
-	"Phys sync",
-	"Render present",
-	"Weather update",
-	"Ambient sound update",
-	"Matsort update",
-	"OC reprojection",
-	"Vis all",
-	"Render overall",
-	"Core update",
-	"Shadow update",
-	"Render MRT",
-	"Render lighting",
-	"Render skybox",
-	"Render tonemapping",
-	"Render particles",
-	"Render postprocess",
-	"Render HUD",
-	"Render INFO",
-	"Render game",
-	"OC update",
-	"Vis reflection",
-	"Vis light",
-	"Vis particles",
-	"AI path",
-	"CVars update",
-	"WMsg process",
-	"Pre frame",
-	"Pre frame shaders/texs",
-	"Pre frame times/console",
-	"Pre frame input",
-	"Pre frame sound"
-};
-
-//! Начало секции измерения
-SX_LIB_API void Core_PStartSection(ID idSection);
-
-//! Конец секции измерения
-SX_LIB_API void Core_PEndSection(ID idSection);
-
-//! Получить данные за предыдущий кадр
-SX_LIB_API const CPerfRecord *Core_PGetRecords(ID idThread, int *piRecordCount);
-
-//! @}
-
-//##########################################################################
-
 /*! @name Регистры
 Массивы данных, определенных типов, доступные в любой библиотеке включающей в себя ядро
 @{*/
@@ -538,6 +432,9 @@ __inline void Core_SetOutPtr()
 }
 
 //!@}
+
+#define DECLARE_PROFILER_INTERNAL() IXProfiler *g_pProfiler = NULL
+#define INIT_PROFILER_INTERNAL() g_pProfiler = (IXProfiler*)Core_GetIXCore()->getPluginManager()->getInterface(IXPROFILER_GUID)
 
 /*! \name Работа с реестром конфигурации (cvars) 
 !@{*/

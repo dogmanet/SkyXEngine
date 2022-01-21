@@ -20,6 +20,8 @@
 #	pragma comment(lib, "common.lib")
 #endif
 
+DECLARE_PROFILER_INTERNAL();
+
 class CMainLoopTask: public ITaskImpl<ITask>
 {
 public:
@@ -124,6 +126,7 @@ CEngine::CEngine(int argc, char **argv, const char *szName)
 
 	m_pCore = XCoreInit(szName);
 	INIT_OUTPUT_STREAM(m_pCore);
+	INIT_PROFILER_INTERNAL();
 	LibReport(REPORT_MSG_LEVEL_NOTICE, "LIB core initialized\n");
 
 	printf(CONSOLE_TITLE "SkyXEngine %s version " SKYXENGINE_VERSION CONSOLE_TITLE_END, szName);
@@ -161,6 +164,8 @@ CEngine::~CEngine()
 
 bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCallback *pCallback)
 {
+	XPROFILE_FUNCTION();
+
 	m_pCallback = pCallback;
 
 	// init input
@@ -299,6 +304,8 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 }
 bool XMETHODCALLTYPE CEngine::initServer()
 {
+	XPROFILE_FUNCTION();
+
 #if 1
 	// init mtrl
 	SMtrl_0Create("sxml", false, true);
@@ -354,6 +361,7 @@ int XMETHODCALLTYPE CEngine::start()
 
 bool CEngine::runFrame()
 {
+	XPROFILE_FUNCTION();
 	Core_0ConsoleUpdate();
 
 	if(m_pCallback && !m_pCallback->processWindowMessages())
@@ -378,27 +386,17 @@ bool CEngine::runFrame()
 
 		//#############################################################################
 
-		Core_PStartSection(PERF_SECTION_GAME_UPDATE);
 		SGame_Update();
-		Core_PEndSection(PERF_SECTION_GAME_UPDATE);
 
-		Core_PStartSection(PERF_SECTION_PHYS_UPDATE);
 		SPhysics_Update();
-		Core_PEndSection(PERF_SECTION_PHYS_UPDATE);
 
 		//#############################################################################
 		
-		Core_PStartSection(PERF_SECTION_GAME_SYNC);
 		SGame_Sync();
-		Core_PEndSection(PERF_SECTION_GAME_SYNC);
 
-		Core_PStartSection(PERF_SECTION_MATSORT_UPDATE);
 		SMtrl_Update(0);
-		Core_PEndSection(PERF_SECTION_MATSORT_UPDATE);
 
-		Core_PStartSection(PERF_SECTION_CORE_UPDATE);
 		m_pCore->runUpdate();
-		Core_PEndSection(PERF_SECTION_CORE_UPDATE);
 		
 		//#############################################################################
 
@@ -418,24 +416,18 @@ bool CEngine::runFrame()
 			IXRenderPipeline *pRenderPipeline;
 			m_pCore->getRenderPipeline(&pRenderPipeline);
 
-			Core_PStartSection(PERF_SECTION_VIS_ALL);
 			pRenderPipeline->updateVisibility();
-			Core_PEndSection(PERF_SECTION_VIS_ALL);
 
-			Core_PStartSection(PERF_SECTION_RENDER_PRESENT);
 			pRenderPipeline->endFrame();
-			Core_PEndSection(PERF_SECTION_RENDER_PRESENT);
 
 			showProfile();
 
-			Core_PStartSection(PERF_SECTION_RENDER);
 			pCtx->beginFrame();
 			pCtx->addTimestamp("begin");
 			//! @todo use actual value
 			pRenderPipeline->renderFrame(0.016f);
 			pCtx->addTimestamp("end");
 			pCtx->endFrame();
-			Core_PEndSection(PERF_SECTION_RENDER);
 
 			mem_release(pRenderPipeline);
 		}
