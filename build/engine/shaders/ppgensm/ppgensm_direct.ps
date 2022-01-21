@@ -109,15 +109,15 @@ float4 main(VSO_ResPos IN, float fThickness):COLOR0
 	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy, fCompareTo);
 	
 // #ifdef _UNDEF
-	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(0, vPixelMapSizeBias.x), fCompareTo - fBiasY);
-	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(vPixelMapSizeBias.x, 0), fCompareTo - fBiasX);
-	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(vPixelMapSizeBias.x, vPixelMapSizeBias.x), fCompareTo - fBiasX - fBiasY);
+	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(0, vPixelMapSizeBias.x * 2.0f), fCompareTo - fBiasY);
+	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(vPixelMapSizeBias.x * 2.0f, 0), fCompareTo - fBiasX);
+	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(vPixelMapSizeBias.x * 2.0f, vPixelMapSizeBias.x * 2.0f), fCompareTo - fBiasX - fBiasY);
 #ifdef GSD_9
-	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(-vPixelMapSizeBias.x, 0), fCompareTo + fBiasX);
-	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(vPixelMapSizeBias.x, -vPixelMapSizeBias.x), fCompareTo - fBiasX + fBiasY);
-	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(-vPixelMapSizeBias.x, vPixelMapSizeBias.x), fCompareTo + fBiasX - fBiasY);
-	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(0, -vPixelMapSizeBias.x), fCompareTo + fBiasY);
-	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(-vPixelMapSizeBias.x, -vPixelMapSizeBias.x), fCompareTo + fBiasX + fBiasY);
+	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(-vPixelMapSizeBias.x * 2.0f, 0), fCompareTo + fBiasX);
+	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(vPixelMapSizeBias.x * 2.0f, -vPixelMapSizeBias.x * 2.0f), fCompareTo - fBiasX + fBiasY);
+	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(-vPixelMapSizeBias.x * 2.0f, vPixelMapSizeBias.x * 2.0f), fCompareTo + fBiasX - fBiasY);
+	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(0, -vPixelMapSizeBias.x * 2.0f), fCompareTo + fBiasY);
+	fShadow += g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexCoord.xy + float2(-vPixelMapSizeBias.x * 2.0f, -vPixelMapSizeBias.x * 2.0f), fCompareTo + fBiasX + fBiasY);
 
 	fShadow *= 0.111;
 #else
