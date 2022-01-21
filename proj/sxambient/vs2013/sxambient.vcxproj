@@ -72,10 +72,8 @@
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../libs</LibraryPath>
     <SourcePath>$(VC_SourcePath);../../../source;../../../sdks/bullet3/src</SourcePath>
     <OutDir>../../../build/bin/plugins/</OutDir>
-    <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>$(ProjectName)_d</TargetName>
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(VC_IncludePath);../../../sdks/;$(WindowsSDK_IncludePath);../../../source;</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);../../../libs64</LibraryPath>

@@ -69,11 +69,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin/plugins/</OutDir>
-    <TargetName>$(ProjectName)_d</TargetName>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source;</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>$(ProjectName)_d</TargetName>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source;</IncludePath>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>../../../build/bin64/plugins/</OutDir>

@@ -70,11 +70,9 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../sdks/;../../../source;../../../sdks/mital/source/;</IncludePath>
     <OutDir>../../../build/bin/plugins/</OutDir>
-    <TargetName>$(ProjectName)_d</TargetName>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);../../../libs;../../../sdks/mital/lib/;</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>$(ProjectName)_d</TargetName>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);../../../libs64;../../../sdks/mital/lib64/;</LibraryPath>
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);../../../source;../../../sdks/mital/source/;../../../sdks/;</IncludePath>
