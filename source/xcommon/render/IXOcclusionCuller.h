@@ -14,14 +14,14 @@ public:
 	//! видна ли точка
 	virtual bool XMETHODCALLTYPE isPointVisible(const float3 &vPoint) const = 0;
 
+	//! находится ли параллелепипед во фрустуме
+	virtual bool XMETHODCALLTYPE isAABBvisible(const SMAABB &aabb, bool *pisFullyVisible = NULL) const = 0;
+
 	//! виден ли треугольник
-	virtual bool XMETHODCALLTYPE isPolyVisible(const float3 &vPoint1, const float3 &vPoint2, const float3 &vPoint3) const = 0;
+	//virtual bool XMETHODCALLTYPE isPolyVisible(const float3 &vPoint1, const float3 &vPoint2, const float3 &vPoint3) const = 0;
 
 	//! видна ли сфера
-	virtual bool XMETHODCALLTYPE isSphereVisible(const float3 &vOrigin, float fRadius) const = 0;
-
-	//! находится ли параллелепипед во фрустуме
-	virtual bool XMETHODCALLTYPE isAABBvisible(const SMAABB &aabb) const = 0;
+	//virtual bool XMETHODCALLTYPE isSphereVisible(const float3 &vOrigin, float fRadius) const = 0;
 };
 
 #endif

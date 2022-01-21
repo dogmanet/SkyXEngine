@@ -227,6 +227,8 @@ void CAnimatedModelProvider::computeVisibility(const IXFrustum *pFrustum, CRende
 {
 	pVisibility->setItemCount(m_apModels.size());
 
+	IXOcclusionCuller *pCuller = pVisibility->getCuller();
+
 	CAnimatedModel *pMdl;
 	for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
 	{
@@ -235,7 +237,7 @@ void CAnimatedModelProvider::computeVisibility(const IXFrustum *pFrustum, CRende
 		{
 			float3 vDelta = pMdl->getPosition();
 			pVisibility->getItem(i)->isVisible = (pReference ? pReference->getItem(i)->isVisible : true)
-				&& pFrustum->boxInFrustum(pMdl->getLocalBound() + vDelta);
+				&& (pCuller ? pCuller->isAABBvisible(pMdl->getLocalBound() + vDelta) : pFrustum->boxInFrustum(pMdl->getLocalBound() + vDelta));
 		}
 		else
 		{

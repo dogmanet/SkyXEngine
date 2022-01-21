@@ -10,6 +10,7 @@ class CRenderableVisibility final: public IXUnknownImplementation<IXRenderableVi
 {
 public:
 	CRenderableVisibility(ID idPlugin, CAnimatedModelProvider *m_pProviderAnimated, CDynamicModelProvider *m_pProviderDynamic);
+	~CRenderableVisibility();
 
 	ID getPluginId() const override;
 
@@ -57,10 +58,16 @@ public:
 	Array<CDynamicModel*>& getTransparentList();
 	Array<CDynamicModel*>& getSelfillumList();
 
+	IXOcclusionCuller* getCuller()
+	{
+		return(m_pOcclusionCuller);
+	}
+
 protected:
 	ID m_idPlugin;
-	CAnimatedModelProvider* m_pProviderAnimated;
-	CDynamicModelProvider* m_pProviderDynamic;
+	CAnimatedModelProvider *m_pProviderAnimated;
+	CDynamicModelProvider *m_pProviderDynamic;
+	IXOcclusionCuller *m_pOcclusionCuller = NULL;
 
 	Array<item_s> m_aItems;
 	Array<TransparentModel> m_aItemsDynamicTransparent;

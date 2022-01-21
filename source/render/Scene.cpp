@@ -123,13 +123,15 @@ UINT XMETHODCALLTYPE CSceneQuery::execute(const IXFrustum *pFrustum, const float
 
 UINT XMETHODCALLTYPE CSceneQuery::execute(const IXFrustum *pFrustum, void ***pppObjects, IXOcclusionCuller *pOcclusionCuller)
 {
+	XPROFILE_FUNCTION();
+
 	if(!pOrder)
 	{
 		pOrder = gcs_puOrders[0];
 	}
 	m_aQueryResponse.clearFast();
 
-	queryObjectsInternal(m_pScene->m_pRootNode, pFrustum);
+	queryObjectsInternal(m_pScene->m_pRootNode, pFrustum, false, pOcclusionCuller);
 
 	if(m_aQueryResponse.size())
 	{
@@ -149,6 +151,8 @@ void CSceneQuery::queryObjectsInternal(CSceneNode *pNode, const IXFrustum *pFrus
 		return;
 	}
 
+	XPROFILE_FUNCTION();
+
 	if((pNode->getTypes() & m_bmType) == 0 || !testFeatures(pNode->getFeatures(), false))
 	{
 		return;
@@ -163,14 +167,14 @@ void CSceneQuery::queryObjectsInternal(CSceneNode *pNode, const IXFrustum *pFrus
 
 		isFullyVisible = pFrustum->boxInFrustum(pNode->getAABB(), true);
 	}*/
-	if(!isFullyVisible && (!pFrustum->boxInFrustum(pNode->getAABB(), &isFullyVisible) || !(!pOcclusionCuller || pOcclusionCuller->isAABBvisible(pNode->getAABB()))))
+	if(!isFullyVisible && !(pOcclusionCuller ? pOcclusionCuller->isAABBvisible(pNode->getAABB(), &isFullyVisible) : pFrustum->boxInFrustum(pNode->getAABB(), &isFullyVisible)))
 	{
 		return;
 	}
 
 	for(UINT i = 0; i < BVH_CHILD_COUNT; ++i)
 	{
-		queryObjectsInternal(pNode->getChild(pOrder[i], false), pFrustum, isFullyVisible);
+		queryObjectsInternal(pNode->getChild(pOrder[i], false), pFrustum, isFullyVisible, pOcclusionCuller);
 	}
 
 	auto &aObjects = pNode->getObjects();
@@ -183,7 +187,7 @@ void CSceneQuery::queryObjectsInternal(CSceneNode *pNode, const IXFrustum *pFrus
 			continue;
 		}
 
-		if(pObj->getType() == m_bmType && testFeatures(pObj->getFeatures()) && (isFullyVisible || (pFrustum->boxInFrustum(pObj->getAABB()) && (!pOcclusionCuller || pOcclusionCuller->isAABBvisible(pNode->getAABB())))))
+		if(pObj->getType() == m_bmType && testFeatures(pObj->getFeatures()) && (isFullyVisible || (pOcclusionCuller ? pOcclusionCuller->isAABBvisible(pObj->getAABB()) : pFrustum->boxInFrustum(pObj->getAABB()))))
 		{
 			m_aQueryResponse.push_back(pObj->getUserData());
 		}

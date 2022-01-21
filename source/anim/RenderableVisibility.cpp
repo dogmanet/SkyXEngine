@@ -10,6 +10,11 @@ CRenderableVisibility::CRenderableVisibility(ID idPlugin, CAnimatedModelProvider
 {
 }
 
+CRenderableVisibility::~CRenderableVisibility()
+{
+	mem_release(m_pOcclusionCuller);
+}
+
 ID CRenderableVisibility::getPluginId() const
 {
 	return(m_idPlugin);
@@ -17,7 +22,9 @@ ID CRenderableVisibility::getPluginId() const
 
 void CRenderableVisibility::setOcclusionCuller(IXOcclusionCuller *pOcclusionCuller)
 {
-	assert(!"Not implemented!");
+	mem_release(m_pOcclusionCuller);
+	add_ref(pOcclusionCuller);
+	m_pOcclusionCuller = pOcclusionCuller;
 }
 
 void CRenderableVisibility::updateForCamera(ICamera *pCamera, const IXRenderableVisibility *pReference)
