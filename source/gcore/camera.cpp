@@ -16,45 +16,47 @@ void CFrustum::update(const float4x4 &mView, const float4x4 &mProj)
 	float4x4 matComb = mView *mProj;
 
 	// right (-x)
-	m_aFrustumPlanes[0].m_vNormal.x = matComb._14 - matComb._11;
-	m_aFrustumPlanes[0].m_vNormal.y = matComb._24 - matComb._21;
-	m_aFrustumPlanes[0].m_vNormal.z = matComb._34 - matComb._31;
-	m_aFrustumPlanes[0].m_fDistance = matComb._44 - matComb._41;
+	m_aFrustumPlanes[0].x = matComb._14 - matComb._11;
+	m_aFrustumPlanes[0].y = matComb._24 - matComb._21;
+	m_aFrustumPlanes[0].z = matComb._34 - matComb._31;
+	m_aFrustumPlanes[0].w = matComb._44 - matComb._41;
 
 	// left (+x)
-	m_aFrustumPlanes[1].m_vNormal.x = matComb._14 + matComb._11;
-	m_aFrustumPlanes[1].m_vNormal.y = matComb._24 + matComb._21;
-	m_aFrustumPlanes[1].m_vNormal.z = matComb._34 + matComb._31;
-	m_aFrustumPlanes[1].m_fDistance = matComb._44 + matComb._41;
+	m_aFrustumPlanes[1].x = matComb._14 + matComb._11;
+	m_aFrustumPlanes[1].y = matComb._24 + matComb._21;
+	m_aFrustumPlanes[1].z = matComb._34 + matComb._31;
+	m_aFrustumPlanes[1].w = matComb._44 + matComb._41;
 
 	// top (-y)
-	m_aFrustumPlanes[2].m_vNormal.x = matComb._14 - matComb._12;
-	m_aFrustumPlanes[2].m_vNormal.y = matComb._24 - matComb._22;
-	m_aFrustumPlanes[2].m_vNormal.z = matComb._34 - matComb._32;
-	m_aFrustumPlanes[2].m_fDistance = matComb._44 - matComb._42;
+	m_aFrustumPlanes[2].x = matComb._14 - matComb._12;
+	m_aFrustumPlanes[2].y = matComb._24 - matComb._22;
+	m_aFrustumPlanes[2].z = matComb._34 - matComb._32;
+	m_aFrustumPlanes[2].w = matComb._44 - matComb._42;
 
 	// bottom (+y)
-	m_aFrustumPlanes[3].m_vNormal.x = matComb._14 + matComb._12;
-	m_aFrustumPlanes[3].m_vNormal.y = matComb._24 + matComb._22;
-	m_aFrustumPlanes[3].m_vNormal.z = matComb._34 + matComb._32;
-	m_aFrustumPlanes[3].m_fDistance = matComb._44 + matComb._42;
+	m_aFrustumPlanes[3].x = matComb._14 + matComb._12;
+	m_aFrustumPlanes[3].y = matComb._24 + matComb._22;
+	m_aFrustumPlanes[3].z = matComb._34 + matComb._32;
+	m_aFrustumPlanes[3].w = matComb._44 + matComb._42;
 	
 	// near (-z)
-	m_aFrustumPlanes[4].m_vNormal.x = matComb._14 - matComb._13;
-	m_aFrustumPlanes[4].m_vNormal.y = matComb._24 - matComb._23;
-	m_aFrustumPlanes[4].m_vNormal.z = matComb._34 - matComb._33;
-	m_aFrustumPlanes[4].m_fDistance = matComb._44 - matComb._43;
+	m_aFrustumPlanes[4].x = /*matComb._14 - */matComb._13;
+	m_aFrustumPlanes[4].y = /*matComb._24 - */matComb._23;
+	m_aFrustumPlanes[4].z = /*matComb._34 - */matComb._33;
+	m_aFrustumPlanes[4].w = /*matComb._44 - */matComb._43;
 
 	// far (+z)
-	m_aFrustumPlanes[5].m_vNormal.x = matComb._14 + matComb._13;
-	m_aFrustumPlanes[5].m_vNormal.y = matComb._24 + matComb._23;
-	m_aFrustumPlanes[5].m_vNormal.z = matComb._34 + matComb._33;
-	m_aFrustumPlanes[5].m_fDistance = matComb._44 + matComb._43;
+	m_aFrustumPlanes[5].x = matComb._14 - matComb._13;
+	m_aFrustumPlanes[5].y = matComb._24 - matComb._23;
+	m_aFrustumPlanes[5].z = matComb._34 - matComb._33;
+	m_aFrustumPlanes[5].w = matComb._44 - matComb._43;
 
 	//Нормализация плоскостей
 	for(int i = 0; i < 6; ++i)
-		m_aFrustumPlanes[i].normalize();
-
+	{
+		m_aFrustumPlanes[i] = SMPlaneNormalize(m_aFrustumPlanes[i]);
+	}
+	
 	// printf("%.2f, %.2f, %.2f, %.2f\n", m_aFrustumPlanes[4].m_vNormal.x, m_aFrustumPlanes[4].m_vNormal.y, m_aFrustumPlanes[4].m_vNormal.z, m_aFrustumPlanes[4].m_fDistance);
 
 	memset(m_isPointValid, 0, sizeof(m_isPointValid));
@@ -64,10 +66,10 @@ void CFrustum::update(const SMPLANE *pPlanes, bool isNormalized)
 {
 	for(int i = 0; i < 6; ++i)
 	{
-		m_aFrustumPlanes[i] = CFrustumPlane(pPlanes[i]);
+		m_aFrustumPlanes[i] = pPlanes[i];
 		if(!isNormalized)
 		{
-			m_aFrustumPlanes[i].normalize();
+			m_aFrustumPlanes[i] = SMPlaneNormalize(m_aFrustumPlanes[i]);
 		}
 	}
 
@@ -78,13 +80,12 @@ bool CFrustum::pointInFrustum(const float3 &vPoint) const
 {
 	for(int i = 0; i < 6; ++i)
 	{
-		float tmp = SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, vPoint) + m_aFrustumPlanes[i].m_fDistance;
-		if(int(tmp * 1000.0f) <= 0)
+		if(SMVector4Dot(m_aFrustumPlanes[i], float4(vPoint, 1.0f)) <= 0.0f)
 		{
-			return false;
+			return(false);
 		}
 	}
-	return true;
+	return(true);
 }
 
 bool CFrustum::polyInFrustum(const float3 &p1, const float3 &p2, const float3 &p3) const
@@ -94,12 +95,12 @@ bool CFrustum::polyInFrustum(const float3 &p1, const float3 &p2, const float3 &p
 
 	for(int i = 0; i < 6; i++)
 	{
-		if(int((SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, p1) + m_aFrustumPlanes[i].m_fDistance) * 1000.f) > 0) continue;
-		if(int((SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, p2) + m_aFrustumPlanes[i].m_fDistance) * 1000.f) > 0) continue;
-		if(int((SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, p3) + m_aFrustumPlanes[i].m_fDistance) * 1000.f) > 0) continue;
-		return false;
+		if(SMVector4Dot(m_aFrustumPlanes[i], float4(p1, 1.0f)) >= 0.0f) continue;
+		if(SMVector4Dot(m_aFrustumPlanes[i], float4(p2, 1.0f)) >= 0.0f) continue;
+		if(SMVector4Dot(m_aFrustumPlanes[i], float4(p3, 1.0f)) >= 0.0f) continue;
+		return(false);
 	}
-	return true;
+	return(true);
 }
 
 bool CFrustum::polyInFrustumAbs(const float3 &p1, const float3 &p2, const float3 &p3) const
@@ -114,45 +115,51 @@ bool CFrustum::sphereInFrustum(const float3 &vPoint, float radius) const
 {
 	for(int i = 0; i<6; ++i)
 	{
-		if(SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, vPoint) + m_aFrustumPlanes[i].m_fDistance <= -radius)
-			return false;
+		if(SMVector4Dot(m_aFrustumPlanes[i], float4(vPoint, 1.0f)) <= -radius)
+		{
+			return(false);
+		}
 	}
-	return true;
+	return(true);
 }
 
 bool CFrustum::sphereInFrustumAbs(const float3 &vPoint, float radius) const
 {
 	for(int i = 0; i<6; i++)
 	{
-		if(SMVector3Dot(m_aFrustumPlanes[i].m_vNormal, vPoint) + m_aFrustumPlanes[i].m_fDistance > -radius)
-			return false;
+		if(SMVector4Dot(m_aFrustumPlanes[i], float4(vPoint, 1.0f)) > -radius)
+		{
+			return(false);
+		}
 	}
-	return true;
+	return(true);
 }
 
 bool CFrustum::boxInFrustum(const SMAABB &aabb, bool *pIsStrict) const
 {
 	return(boxInFrustum(aabb.vMin, aabb.vMax, pIsStrict));
 }
+
 #if 0
-static bool BoxInFrustum1(const CFrustumPlane *m_aFrustumPlanes, const float3 &vMin, const float3 &vMax)
+static bool BoxInFrustum1(const SMPLANE *m_aFrustumPlanes, const float3 &vMin, const float3 &vMax)
 {
 	for(register int p = 0; p < 6; ++p)
 	{
 		auto &plane = m_aFrustumPlanes[p];
-		if(SMVector3Dot(plane.m_vNormal, vMin) + plane.m_fDistance > 0) continue;
-		if(SMVector3Dot(plane.m_vNormal, float3(vMin.x, vMin.y, vMax.z)) + plane.m_fDistance > 0) continue;
-		if(SMVector3Dot(plane.m_vNormal, float3(vMin.x, vMax.y, vMin.z)) + plane.m_fDistance > 0) continue;
-		if(SMVector3Dot(plane.m_vNormal, float3(vMin.x, vMax.y, vMax.z)) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane, vMin) + plane.w > 0) continue;
+		if(SMVector3Dot(plane, float3(vMin.x, vMin.y, vMax.z)) + plane.w > 0) continue;
+		if(SMVector3Dot(plane, float3(vMin.x, vMax.y, vMin.z)) + plane.w > 0) continue;
+		if(SMVector3Dot(plane, float3(vMin.x, vMax.y, vMax.z)) + plane.w > 0) continue;
 
-		if(SMVector3Dot(plane.m_vNormal, float3(vMax.x, vMin.y, vMin.z)) + plane.m_fDistance > 0) continue;
-		if(SMVector3Dot(plane.m_vNormal, float3(vMax.x, vMin.y, vMax.z)) + plane.m_fDistance > 0) continue;
-		if(SMVector3Dot(plane.m_vNormal, float3(vMax.x, vMax.y, vMin.z)) + plane.m_fDistance > 0) continue;
-		if(SMVector3Dot(plane.m_vNormal, vMax) + plane.m_fDistance > 0) continue;
+		if(SMVector3Dot(plane, float3(vMax.x, vMin.y, vMin.z)) + plane.w > 0) continue;
+		if(SMVector3Dot(plane, float3(vMax.x, vMin.y, vMax.z)) + plane.w > 0) continue;
+		if(SMVector3Dot(plane, float3(vMax.x, vMax.y, vMin.z)) + plane.w > 0) continue;
+		if(SMVector3Dot(plane, vMax) + plane.w > 0) continue;
 		return(false);
 	}
 	return(true);
 }
+
 static bool BoxInFrustum2(const CFrustumPlane *m_aFrustumPlanes, const float3 &vMin, const float3 &vMax)
 {
 	bool inside = true;
@@ -250,15 +257,15 @@ bool CFrustum::boxInFrustum(const float3 &vMin, const float3 &vMax, bool *pIsStr
 		auto &plane = m_aFrustumPlanes[p];
 		//находим ближайшую к плоскости вершину
 		//проверяем, если она находится за плоскостью, то объект вне врустума
-		float3 vTmpMin = vMin * plane.m_vNormal;
-		float3 vTmpMax = vMax * plane.m_vNormal;
-		float d = SMVector3Sum(SMVectorMax(vTmpMin, vTmpMax)) + plane.m_fDistance;
+		float3 vTmpMin = vMin * plane;
+		float3 vTmpMax = vMax * plane;
+		float d = SMVector4Dot(float4(1.0f, 1.0f, 1.0f, plane.w), float4(SMVectorMax(vTmpMin, vTmpMax), 1.0f));
 
 		isVisible &= d > 0.0f;
 
 		if(isVisible && pIsStrict)
 		{
-			d = SMVector3Sum(SMVectorMin(vTmpMin, vTmpMax)) + plane.m_fDistance;
+			d = SMVector4Dot(float4(1.0f, 1.0f, 1.0f, plane.w), float4(SMVectorMin(vTmpMin, vTmpMax), 1.0f));
 			isVisibleStrict &= d > 0.0f;
 		}
 	}
@@ -283,7 +290,7 @@ bool CFrustum::frustumInFrustum(const IXFrustum *pOther) const
 		bool isFound = false;
 		for(register int j = 0; j < 8; ++j)
 		{
-			if(SMVector3Dot(plane.m_vNormal, pOther->getPoint(j)) + plane.m_fDistance > 0)
+			if(SMVector4Dot(plane, float4(pOther->getPoint(j), 1.0f)) > 0.0f)
 			{
 				isFound = true;
 				break;
@@ -311,28 +318,28 @@ float3 CFrustum::getPoint(int iPoint) const
 			int p2 = (iPoint & 4) ? 4 : 5;
 
 			float fDet = SMMatrix3x3Determinant(SMMATRIX(
-				float4(m_aFrustumPlanes[p0].m_vNormal, 0.0f),
-				float4(m_aFrustumPlanes[p1].m_vNormal, 0.0f),
-				float4(m_aFrustumPlanes[p2].m_vNormal, 0.0f),
+				float4(m_aFrustumPlanes[p0], 0.0f),
+				float4(m_aFrustumPlanes[p1], 0.0f),
+				float4(m_aFrustumPlanes[p2], 0.0f),
 				float4(0.0f, 0.0f, 0.0f, 1.0f)
 				));
 			float3 &vPoint = m_aPoints[iPoint];
 			vPoint.x = SMMatrix3x3Determinant(SMMATRIX(
-				float4(-m_aFrustumPlanes[p0].m_fDistance, m_aFrustumPlanes[p0].m_vNormal.y, m_aFrustumPlanes[p0].m_vNormal.z, 0.0f),
-				float4(-m_aFrustumPlanes[p1].m_fDistance, m_aFrustumPlanes[p1].m_vNormal.y, m_aFrustumPlanes[p1].m_vNormal.z, 0.0f),
-				float4(-m_aFrustumPlanes[p2].m_fDistance, m_aFrustumPlanes[p2].m_vNormal.y, m_aFrustumPlanes[p2].m_vNormal.z, 0.0f),
+				float4(-m_aFrustumPlanes[p0].w, m_aFrustumPlanes[p0].y, m_aFrustumPlanes[p0].z, 0.0f),
+				float4(-m_aFrustumPlanes[p1].w, m_aFrustumPlanes[p1].y, m_aFrustumPlanes[p1].z, 0.0f),
+				float4(-m_aFrustumPlanes[p2].w, m_aFrustumPlanes[p2].y, m_aFrustumPlanes[p2].z, 0.0f),
 				float4(0.0f, 0.0f, 0.0f, 1.0f)
 				));
 			vPoint.y = SMMatrix3x3Determinant(SMMATRIX(
-				float4(m_aFrustumPlanes[p0].m_vNormal.x, -m_aFrustumPlanes[p0].m_fDistance, m_aFrustumPlanes[p0].m_vNormal.z, 0.0f),
-				float4(m_aFrustumPlanes[p1].m_vNormal.x, -m_aFrustumPlanes[p1].m_fDistance, m_aFrustumPlanes[p1].m_vNormal.z, 0.0f),
-				float4(m_aFrustumPlanes[p2].m_vNormal.x, -m_aFrustumPlanes[p2].m_fDistance, m_aFrustumPlanes[p2].m_vNormal.z, 0.0f),
+				float4(m_aFrustumPlanes[p0].x, -m_aFrustumPlanes[p0].w, m_aFrustumPlanes[p0].z, 0.0f),
+				float4(m_aFrustumPlanes[p1].x, -m_aFrustumPlanes[p1].w, m_aFrustumPlanes[p1].z, 0.0f),
+				float4(m_aFrustumPlanes[p2].x, -m_aFrustumPlanes[p2].w, m_aFrustumPlanes[p2].z, 0.0f),
 				float4(0.0f, 0.0f, 0.0f, 1.0f)
 				));
 			vPoint.z = SMMatrix3x3Determinant(SMMATRIX(
-				float4(m_aFrustumPlanes[p0].m_vNormal.x, m_aFrustumPlanes[p0].m_vNormal.y, -m_aFrustumPlanes[p0].m_fDistance, 0.0f),
-				float4(m_aFrustumPlanes[p1].m_vNormal.x, m_aFrustumPlanes[p1].m_vNormal.y, -m_aFrustumPlanes[p1].m_fDistance, 0.0f),
-				float4(m_aFrustumPlanes[p2].m_vNormal.x, m_aFrustumPlanes[p2].m_vNormal.y, -m_aFrustumPlanes[p2].m_fDistance, 0.0f),
+				float4(m_aFrustumPlanes[p0].x, m_aFrustumPlanes[p0].y, -m_aFrustumPlanes[p0].w, 0.0f),
+				float4(m_aFrustumPlanes[p1].x, m_aFrustumPlanes[p1].y, -m_aFrustumPlanes[p1].w, 0.0f),
+				float4(m_aFrustumPlanes[p2].x, m_aFrustumPlanes[p2].y, -m_aFrustumPlanes[p2].w, 0.0f),
 				float4(0.0f, 0.0f, 0.0f, 1.0f)
 				));
 
@@ -350,6 +357,15 @@ float3 CFrustum::getCenter() const
 {
 	assert(!"Not implemented!");
 	return m_vCenter;
+}
+
+UINT CFrustum::getPlaneCount() const
+{
+	return(6);
+}
+const SMPLANE& CFrustum::getPlaneAt(UINT idx) const
+{
+	return(m_aFrustumPlanes[idx]);
 }
 
 //void CFrustum::setPoint(int iNumPoint, const float3 *pPoint)

@@ -325,80 +325,13 @@ SX_LIB_API void SGCore_FCreateSphere(
 //! создание меша (ID3DXMesh) ограничивающего объема
 SX_LIB_API void SGCore_FCreateBoundingBoxMesh(const float3* min, const float3* max, IMesh** bbmesh);
 
-//##########################################################################
-
-/*! \defgroup sxgcore_bb_intersect Функции просчета попаданий точек в объемы и деление объемов
- \ingroup sxgcore
-@{*/
-
-struct CTriangle
-{
-	float3_t m_vA;
-	float3_t m_vB;
-	float3_t m_vC;
-
-	CTriangle()
-	{
-	};
-	CTriangle(float3_t vA, float3_t vB, float3_t vC) :m_vA(vA), m_vB(vB), m_vC(vC)
-	{
-	};
-
-	//Проверкка пересечения треугольника и отрезка
-	bool IntersectLine(const float3 & l1, const float3 &l2, float3 * p)
-	{
-		float3 n = SMVector3Normalize(SMVector3Cross((m_vB - m_vA), (m_vC - m_vB)));
-		float d1 = SMVector3Dot((l1 - m_vA), n) / SMVector3Length(n);
-		float d2 = SMVector3Dot((l2 - m_vA), n) / SMVector3Length(n);
-
-		if ((d1 > 0 && d2 > 0) || (d1 < 0 && d2 < 0))
-			return(false);
-
-		*p = l1 + (l2 - l1) * (-d1 / (d2 - d1));
-		if (SMVector3Dot(SMVector3Cross((m_vB - m_vA), (*p - m_vA)), n) <= 0) return(false);
-		if (SMVector3Dot(SMVector3Cross((m_vC - m_vB), (*p - m_vB)), n) <= 0) return(false);
-		if (SMVector3Dot(SMVector3Cross((m_vA - m_vC), (*p - m_vC)), n) <= 0) return(false);
-		return(true);
-	}
-};
-
-
-//!@} sxgcore_bb_intersect
-
 //#############################################################################
 
 /*! \defgroup sxgcore_camera Камера
  \ingroup sxgcore
- \todo Добавить в библиотеку математики плоскости и операции с ними, заменить dx плоскости на свои
  \todo Возможно надо расширить возможности и абстракцию класса камеры, к примеру матрицу проекции хранить тоже в камере, и сделать отдельные функции для ее модификации
 @{
 */
-
-//@TODO: поменять на SMPLANE
-//! структура описание плоскости
-struct CFrustumPlane
-{
-	float3_t m_vNormal;
-	float m_fDistance;
-
-	SX_ALIGNED_OP_MEM();
-
-	CFrustumPlane() = default;
-	CFrustumPlane(const SMPLANE &pPlane)
-	{
-		m_vNormal.x = pPlane.x;
-		m_vNormal.y = pPlane.y;
-		m_vNormal.z = pPlane.z;
-		m_fDistance = pPlane.w;
-	}
-
-	void normalize()
-	{
-		float fDenom = SMVector3Length(m_vNormal);
-		m_vNormal = (float3)(m_vNormal / fDenom);
-		m_fDistance = m_fDistance / fDenom;
-	}
-};
 
 #include <xcommon/render/IXFrustum.h>
 

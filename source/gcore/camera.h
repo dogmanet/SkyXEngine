@@ -35,12 +35,15 @@ public:
 	float3 getPoint(int iNumPoint) const override;
 	float3 getCenter() const override;
 
+	UINT getPlaneCount() const override;
+	const SMPLANE& getPlaneAt(UINT idx) const override;
+
 	/*void setPoint(int iNumPoint, const float3 *pPoint);
 	void setCenter(const float3 *pCenter);*/
 
 private:
 
-	CFrustumPlane m_aFrustumPlanes[6];
+	SMPLANE m_aFrustumPlanes[6];
 
 	mutable float3 m_aPoints[8];
 	float3 m_vCenter;
