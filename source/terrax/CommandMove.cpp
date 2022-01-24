@@ -18,6 +18,7 @@ bool XMETHODCALLTYPE CCommandMove::exec()
 		pObj->pObj->setPos(pObj->vEndPos);
 		moved = moved || memcmp(&pObj->vEndPos, &pObj->vStartPos, sizeof(pObj->vStartPos));
 	}
+	XUpdatePropWindow();
 	return(moved);
 }
 bool XMETHODCALLTYPE CCommandMove::undo()
@@ -28,6 +29,7 @@ bool XMETHODCALLTYPE CCommandMove::undo()
 		pObj = &m_aObjects[i];
 		pObj->pObj->setPos(pObj->vStartPos);
 	}
+	XUpdatePropWindow();
 	return(true);
 }
 
@@ -57,4 +59,5 @@ void CCommandMove::setCurrentPos(const float3 &vPos)
 		pObj->vEndPos = (float3)(pObj->vStartPos + vDelta);
 		pObj->pObj->setPos(pObj->vEndPos);
 	}
+	//XUpdatePropWindow();
 }

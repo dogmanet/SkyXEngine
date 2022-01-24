@@ -19,6 +19,7 @@ bool XMETHODCALLTYPE CCommandScale::exec()
 		pObj->pObj->setSize(pObj->vEndScale);
 		moved = moved || memcmp(&pObj->vEndPos, &pObj->vStartPos, sizeof(pObj->vStartPos)) || memcmp(&pObj->vEndScale, &pObj->vStartScale, sizeof(pObj->vStartScale));
 	}
+	XUpdatePropWindow();
 	return(moved);
 }
 bool XMETHODCALLTYPE CCommandScale::undo()
@@ -30,6 +31,7 @@ bool XMETHODCALLTYPE CCommandScale::undo()
 		pObj->pObj->setPos(pObj->vStartPos);
 		pObj->pObj->setSize(pObj->vStartScale);
 	}
+	XUpdatePropWindow();
 	return(true);
 }
 

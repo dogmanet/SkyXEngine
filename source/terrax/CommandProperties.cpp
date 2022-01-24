@@ -112,11 +112,15 @@ void CCommandProperties::setKV(const char *szKey, const char *szValue)
 		pKV->sNew = szValue;
 		pKV->isChanged = pKV->sOld != pKV->sNew;
 
-		m_aObjects[i].pObject->setKV(szKey, szValue);
+		if(pKV->isChanged || !m_isEmpty)
+		{
+			m_aObjects[i].pObject->setKV(szKey, szValue);
+			m_isEmpty = false;
+		}
 	}
 
-	if(m_aObjects.size())
+	/*if(m_aObjects.size())
 	{
 		m_isEmpty = false;
-	}
+	}*/
 }

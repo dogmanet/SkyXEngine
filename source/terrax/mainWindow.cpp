@@ -3859,6 +3859,140 @@ void XUpdateUndoRedo()
 	SetMenuItemInfoA(g_hMenu, ID_EDIT_REDO, FALSE, &mii);
 }
 
+//##########################################################################
+
+#define XDECLARE_PROP_GIZMO(gizmo_type, callback, init) 						         \
+class CPropGizmo##gizmo_type##Callback final: public IXEditorGizmo##gizmo_type##Callback \
+{																				         \
+public:																			         \
+	CPropGizmo##gizmo_type##Callback()											         \
+	{																			         \
+		g_pEditor->newGizmo##gizmo_type(&m_pGizmo);								         \
+		m_pGizmo->setCallback(this);											         \
+	}																			         \
+	~CPropGizmo##gizmo_type##Callback()											         \
+	{																			         \
+		mem_release(m_pGizmo);													         \
+	}																			         \
+																				         \
+	callback																	         \
+	init																	             \
+																				         \
+	void XMETHODCALLTYPE onStart(IXEditorGizmo##gizmo_type *pGizmo) override	         \
+	{																			         \
+		m_pCommand = new CCommandProperties();									         \
+		m_pCommand->addObject(m_pObj);											         \
+	}																			         \
+	void XMETHODCALLTYPE onEnd(IXEditorGizmo##gizmo_type *pGizmo) override		         \
+	{																			         \
+		XExecCommand(m_pCommand);												         \
+		m_pCommand = NULL;														         \
+	}																			         \
+																				         \
+	IXEditorObject *m_pObj;														         \
+	X_PROP_FIELD m_field;														         \
+	UINT m_uUpdateRevision;														         \
+																				         \
+private:																		         \
+	IXEditorGizmo##gizmo_type *m_pGizmo;										         \
+	CCommandProperties *m_pCommand = NULL;										         \
+};																						 \
+Array<CPropGizmo##gizmo_type##Callback*> g_aPropGizmo##gizmo_type##Items;				 \
+MemAlloc<CPropGizmo##gizmo_type##Callback> g_poolPropGizmo##gizmo_type##Items;
+
+#define XCREATE_PROP_GIZMO(editor_type, gizmo)                                           \
+case editor_type:                                                                        \
+	for(UINT i = 0, l = g_aPropGizmo##gizmo##Items.size(); i < l; ++i)                   \
+	{                                                                                    \
+		auto *pItem = g_aPropGizmo##gizmo##Items[i];                                     \
+		if(pItem->m_pObj == pObj && !fstrcmp(pItem->m_field.szKey, pField->szKey))       \
+		{                                                                                \
+			pItem->m_uUpdateRevision = g_uPropGizmoUpdateRevision;                       \
+			pItem->init();                                                               \
+			return;                                                                      \
+		}                                                                                \
+	}                                                                                    \
+	{                                                                                    \
+		auto *pCb = g_poolPropGizmo##gizmo##Items.Alloc();                               \
+		pCb->m_pObj = pObj;                                                              \
+		pCb->m_field = *pField;                                                          \
+		pCb->m_uUpdateRevision = g_uPropGizmoUpdateRevision;                             \
+		pCb->init();                                                                     \
+		g_aPropGizmo##gizmo##Items.push_back(pCb);                                       \
+	}                                                                                    \
+	break
+
+#define XCLEANUP_PROP_GIZMO(gizmo)                                                       \
+	for(UINT i = 0, l = g_aPropGizmo##gizmo##Items.size(); i < l; ++i)                   \
+	{                                                                                    \
+		auto *pItem = g_aPropGizmo##gizmo##Items[i];                                     \
+		if(pItem->m_uUpdateRevision != g_uPropGizmoUpdateRevision)                       \
+		{                                                                                \
+			g_aPropGizmo##gizmo##Items.erase(i); --i; --l;                               \
+			g_poolPropGizmo##gizmo##Items.Delete(pItem);                                 \
+		}                                                                                \
+	}
+
+
+XDECLARE_PROP_GIZMO(Radius, void XMETHODCALLTYPE onChange(float fNewRadius, IXEditorGizmoRadius *pGizmo) override
+{
+	pGizmo->setRadius(fNewRadius);
+	char tmp[16];
+	sprintf(tmp, "%f", fNewRadius);
+	m_pCommand->setKV(m_field.szKey, tmp);
+}, void init()
+{
+	m_pGizmo->setPos(m_pObj->getPos());
+	float fRadius;
+	if(sscanf(m_pObj->getKV(m_field.szKey), "%f", &fRadius))
+	{
+		m_pGizmo->setRadius(fRadius);
+	}
+});
+
+XDECLARE_PROP_GIZMO(Handle, void XMETHODCALLTYPE moveTo(const float3 &vNewPos, IXEditorGizmoHandle *pGizmo) override
+{
+	pGizmo->setPos(vNewPos);
+	char tmp[64];
+	sprintf(tmp, "%f %f %f", vNewPos.x, vNewPos.y, vNewPos.z);
+	m_pCommand->setKV(m_field.szKey, tmp);
+}, void init()
+{
+	float3_t vec;
+	if(sscanf(m_pObj->getKV(m_field.szKey), "%f %f %f", &vec.x, &vec.y, &vec.z))
+	{
+		m_pGizmo->setPos(vec);
+	}
+});
+
+UINT g_uPropGizmoUpdateRevision = 0;
+
+void XInitPropGizmo(IXEditorObject *pObj, const X_PROP_FIELD *pField)
+{
+	assert(pField->useGizmo);
+
+	switch(pField->editorType)
+	{
+		XCREATE_PROP_GIZMO(XPET_POINTCOORD, Handle);
+		XCREATE_PROP_GIZMO(XPET_RADIUS, Radius);
+
+	default:
+		return;
+	}
+}
+
+void XCleanupUnreferencedPropGizmos()
+{
+	XCLEANUP_PROP_GIZMO(Handle);
+	XCLEANUP_PROP_GIZMO(Radius);
+	++g_uPropGizmoUpdateRevision;
+}
+
+#undef XCREATE_PROP_GIZMO
+#undef XCLEANUP_PROP_GIZMO
+
+//##########################################################################
+
 void XUpdatePropWindow()
 {
 	g_propertyCallback.start();
@@ -3904,6 +4038,11 @@ void XUpdatePropWindow()
 			{
 				const X_PROP_FIELD *pField = pObj->getPropertyMeta(i);
 
+				if(pField->useGizmo)
+				{
+					XInitPropGizmo(pObj, pField);
+				}
+
 				const AssotiativeArray<AAString, prop_item_s>::Node *pNode;
 				if(mProps.KeyExists(AAString(pField->szKey), &pNode))
 				{
@@ -3937,6 +4076,8 @@ void XUpdatePropWindow()
 			}
 		}
 	});
+
+	XCleanupUnreferencedPropGizmos();
 
 	// Nothing selected
 	if(!szFirstType)

@@ -19,6 +19,7 @@ bool XMETHODCALLTYPE CCommandRotate::exec()
 		pObj->pObj->setOrient(pObj->vEndOrient);
 		moved = moved || memcmp(&pObj->vEndPos, &pObj->vStartPos, sizeof(pObj->vStartPos)) || memcmp(&pObj->vEndOrient, &pObj->vStartOrient, sizeof(pObj->vStartOrient));
 	}
+	XUpdatePropWindow();
 	return(moved);
 }
 bool XMETHODCALLTYPE CCommandRotate::undo()
@@ -30,6 +31,7 @@ bool XMETHODCALLTYPE CCommandRotate::undo()
 		pObj->pObj->setPos(pObj->vStartPos);
 		pObj->pObj->setOrient(pObj->vStartOrient);
 	}
+	XUpdatePropWindow();
 	return(true);
 }
 

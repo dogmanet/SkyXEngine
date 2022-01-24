@@ -66,7 +66,14 @@ enum PDE_TYPE
 	PDE_TEXTFIELD,
 	PDE_COMBOBOX,
 	PDE_FILEFIELD,
-	PDE_FLAGS
+	PDE_FLAGS,
+
+	PDE_TIME,
+	PDE_ANGLES,
+	PDE_POINTCOORD,
+	PDE_RADIUS,
+	PDE_COLOR,
+	PDE_HDRCOLOR
 };
 
 enum PDF_FLAG
@@ -77,6 +84,7 @@ enum PDF_FLAG
 	PDFF_INPUT      = 0x04, //!< Поле входа
 	PDFF_OUTPUT     = 0x08, //!< Поле выхода
 	PDFF_MESSAGE    = 0x10, //!< Поле сообщения
+	PDFF_USE_GIZMO  = 0x20, //!< Использовать гизмо для редактирования
 };
 
 enum ENT_FLAG
@@ -440,9 +448,13 @@ const char * GetEmptyString();
 
 #define EDITOR_NONE {PDE_NONE, NULL}}
 #define EDITOR_TEXTFIELD {PDE_TEXTFIELD, NULL}}
-#define EDITOR_TIMEFIELD EDITOR_TEXTFIELD
-#define EDITOR_ANGLES EDITOR_TEXTFIELD
+#define EDITOR_TIMEFIELD {PDE_TIME, NULL}}
+#define EDITOR_ANGLES {PDE_ANGLES, NULL}}
+#define EDITOR_POINTCOORD {PDE_POINTCOORD, NULL}}
+#define EDITOR_RADIUS {PDE_RADIUS, NULL}}
 #define EDITOR_FLAGS {PDE_FLAGS, NULL}}
+#define EDITOR_COLOR {PDE_COLOR, NULL}}
+#define EDITOR_HDRCOLOR {PDE_HDRCOLOR, NULL}}
 
 #define EDITOR_COMBOBOX _GetEditorCombobox(0
 #define COMBO_OPTION(name, value) , name, value

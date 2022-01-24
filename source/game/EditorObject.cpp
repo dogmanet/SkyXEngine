@@ -108,11 +108,30 @@ void CEditorObject::_iniFieldList()
 				case PDE_TEXTFIELD:
 					xField.editorType = XPET_TEXT; 
 					break;
+				case PDE_TIME:
+					xField.editorType = XPET_TIME;
+					break;
+				case PDE_ANGLES:
+					xField.editorType = XPET_ANGLES;
+					break;
+				case PDE_POINTCOORD:
+					xField.editorType = XPET_POINTCOORD;
+					break;
+				case PDE_RADIUS:
+					xField.editorType = XPET_RADIUS;
+					break;
+				case PDE_COLOR:
+					xField.editorType = XPET_COLOR;
+					break;
+				case PDE_HDRCOLOR:
+					xField.editorType = XPET_HDRCOLOR;
+					break;
 				}
 				xField.szHelp = "";
 				xField.szKey = pField->szKey;
 				xField.szName = pField->szEdName;
 				xField.isGeneric = !fstrcmp(pField->szKey, "origin") || !fstrcmp(pField->szKey, "rotation") || !fstrcmp(pField->szKey, "scale");
+				xField.useGizmo = pField->flags & PDFF_USE_GIZMO;
 
 				m_aFields.push_back(xField);
 			}

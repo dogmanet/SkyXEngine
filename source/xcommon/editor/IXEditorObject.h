@@ -10,6 +10,12 @@ enum X_PROP_EDITOR_TYPE
 	XPET_FILE,
 	XPET_COMBO,
 	XPET_FLAGS,
+	XPET_TIME,
+	XPET_ANGLES,
+	XPET_POINTCOORD,
+	XPET_RADIUS,
+	XPET_COLOR,
+	XPET_HDRCOLOR,
 	//XPET_YESNO,
 
 	XPET__LAST
@@ -23,6 +29,7 @@ struct X_PROP_FIELD
 	const void *pEditorData;
 	const char *szHelp;
 	bool isGeneric;
+	bool useGizmo;
 };
 
 class IXTexture;

@@ -18,7 +18,7 @@ BEGIN_PROPTABLE(CSoundEmitter)
 	DEFINE_FIELD_FLOATFN(m_fVolume, 0, "volume", "Volume", setVolume, EDITOR_TEXTFIELD)
 
 	//! Дистанция слышимости
-	DEFINE_FIELD_FLOATFN(m_fDist, 0, "distance", "Hearing distance", setDistance, EDITOR_TEXTFIELD)
+	DEFINE_FIELD_FLOATFN(m_fDist, PDFF_USE_GIZMO, "distance", "Hearing distance", setDistance, EDITOR_RADIUS)
 	
 	//! Включить
 	DEFINE_INPUT(play, "play", "Play", PDF_NONE)
