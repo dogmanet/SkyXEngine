@@ -1195,90 +1195,93 @@ int main(int argc, char **argv)
 			XUpdateWindowTitle();
 			{
 				char szPathLevel[1024], szKey[64];
-				sprintf(szPathLevel, "%s%s/%s.lvl", Core_RStringGet(G_RI_STRING_PATH_GS_LEVELS), pData->szLevelName, pData->szLevelName);
-
-				ISXConfig *pCfg = Core_OpConfig(szPathLevel);
-				const char *szVal;
-
-				szVal = pCfg->getKey("terrax", "vp_layout");
-				if(szVal)
+				sprintf(szPathLevel, "levels/%s/%s.lvl", pData->szLevelName, pData->szLevelName);
+				if(Core_GetIXCore()->getFileSystem()->resolvePath(szPathLevel, szPathLevel, sizeof(szPathLevel)))
 				{
-					int iVal = 0;
-					if(sscanf(szVal, "%d", &iVal) && iVal >= 0 && iVal <= 3)
-					{
-						XInitViewportLayout((X_VIEWPORT_LAYOUT)iVal);
-					}
-				}
 
-				szVal = pCfg->getKey("terrax", "grid_step");
-				if(szVal)
-				{
-					int iVal = 0;
-					if(sscanf(szVal, "%d", &iVal) && iVal >= GRID_STEP_MINIMAL && iVal <= GRID_STEP_MAXIMAL)
-					{
-						g_xConfig.m_gridStep = (GRID_STEP)iVal;
-					}
-				}
+					ISXConfig *pCfg = Core_OpConfig(szPathLevel);
+					const char *szVal;
 
-				szVal = pCfg->getKey("terrax", "grid_show");
-				if(szVal)
-				{
-					int iVal = 0;
-					if(sscanf(szVal, "%d", &iVal))
-					{
-						g_xConfig.m_bShowGrid = iVal != 0;
-					}
-				}
-
-				for(UINT i = 0; i < 4; ++i)
-				{
-					float3 vec;
-					sprintf_s(szKey, "cam%u_pos", i);
-					szVal = pCfg->getKey("terrax", szKey);
-					if(szVal)
-					{
-						if(sscanf(szVal, "%f %f %f", &vec.x, &vec.y, &vec.z) == 3)
-						{
-							g_xConfig.m_pViewportCamera[i]->setPosition(vec);
-						}
-					}
-
-					SMQuaternion q;
-					sprintf_s(szKey, "cam%u_rot", i);
-					szVal = pCfg->getKey("terrax", szKey);
-					if(szVal)
-					{
-						if(sscanf(szVal, "%f %f %f %f", &q.x, &q.y, &q.z, &q.w) == 4)
-						{
-							g_xConfig.m_pViewportCamera[i]->setOrientation(q);
-						}
-					}
-
-					sprintf_s(szKey, "cam%u_scale", i);
-					szVal = pCfg->getKey("terrax", szKey);
-					if(szVal)
-					{
-						float fVal = 0.0;
-						if(sscanf(szVal, "%f", &fVal) && fVal > 0.0f)
-						{
-							g_xConfig.m_fViewportScale[i] = fVal;
-						}
-					}
-
-					sprintf_s(szKey, "cam%u_view", i);
-					szVal = pCfg->getKey("terrax", szKey);
+					szVal = pCfg->getKey("terrax", "vp_layout");
 					if(szVal)
 					{
 						int iVal = 0;
-						if(sscanf(szVal, "%d", &iVal) && iVal >= -1 && iVal <= 2)
+						if(sscanf(szVal, "%d", &iVal) && iVal >= 0 && iVal <= 3)
 						{
-							g_bViewportCaptionDirty[i] = true;
-							g_xConfig.m_x2DView[i] = (X_2D_VIEW)iVal;
+							XInitViewportLayout((X_VIEWPORT_LAYOUT)iVal);
 						}
 					}
-				}
 
-				mem_release(pCfg);
+					szVal = pCfg->getKey("terrax", "grid_step");
+					if(szVal)
+					{
+						int iVal = 0;
+						if(sscanf(szVal, "%d", &iVal) && iVal >= GRID_STEP_MINIMAL && iVal <= GRID_STEP_MAXIMAL)
+						{
+							g_xConfig.m_gridStep = (GRID_STEP)iVal;
+						}
+					}
+
+					szVal = pCfg->getKey("terrax", "grid_show");
+					if(szVal)
+					{
+						int iVal = 0;
+						if(sscanf(szVal, "%d", &iVal))
+						{
+							g_xConfig.m_bShowGrid = iVal != 0;
+						}
+					}
+
+					for(UINT i = 0; i < 4; ++i)
+					{
+						float3 vec;
+						sprintf_s(szKey, "cam%u_pos", i);
+						szVal = pCfg->getKey("terrax", szKey);
+						if(szVal)
+						{
+							if(sscanf(szVal, "%f %f %f", &vec.x, &vec.y, &vec.z) == 3)
+							{
+								g_xConfig.m_pViewportCamera[i]->setPosition(vec);
+							}
+						}
+
+						SMQuaternion q;
+						sprintf_s(szKey, "cam%u_rot", i);
+						szVal = pCfg->getKey("terrax", szKey);
+						if(szVal)
+						{
+							if(sscanf(szVal, "%f %f %f %f", &q.x, &q.y, &q.z, &q.w) == 4)
+							{
+								g_xConfig.m_pViewportCamera[i]->setOrientation(q);
+							}
+						}
+
+						sprintf_s(szKey, "cam%u_scale", i);
+						szVal = pCfg->getKey("terrax", szKey);
+						if(szVal)
+						{
+							float fVal = 0.0;
+							if(sscanf(szVal, "%f", &fVal) && fVal > 0.0f)
+							{
+								g_xConfig.m_fViewportScale[i] = fVal;
+							}
+						}
+
+						sprintf_s(szKey, "cam%u_view", i);
+						szVal = pCfg->getKey("terrax", szKey);
+						if(szVal)
+						{
+							int iVal = 0;
+							if(sscanf(szVal, "%d", &iVal) && iVal >= -1 && iVal <= 2)
+							{
+								g_bViewportCaptionDirty[i] = true;
+								g_xConfig.m_x2DView[i] = (X_2D_VIEW)iVal;
+							}
+						}
+					}
+
+					mem_release(pCfg);
+				}
 			}
 			break;
 		case XEventLevel::TYPE_UNLOAD:
