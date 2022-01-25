@@ -25,7 +25,7 @@ public:
 
 	void XMETHODCALLTYPE getBound(float3 *pvMin, float3 *pvMax) override;
 
-	void XMETHODCALLTYPE renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer) override;
+	void XMETHODCALLTYPE render(bool is3D, bool bRenderSelection, IXGizmoRenderer *pGizmoRenderer) override;
 
 	bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, float3 *pvNormal = NULL, ID *pidMtrl = NULL, bool bReturnNearestPoint = false) override;
 

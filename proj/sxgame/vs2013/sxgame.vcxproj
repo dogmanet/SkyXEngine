@@ -198,6 +198,7 @@
     <ClCompile Include="..\..\..\source\game\EntityList.cpp" />
     <ClCompile Include="..\..\..\source\game\EntityManager.cpp" />
     <ClCompile Include="..\..\..\source\game\EnvSkybox.cpp" />
+    <ClCompile Include="..\..\..\source\game\FuncLadder.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncRotating.cpp" />
     <ClCompile Include="..\..\..\source\game\FuncTrain.cpp" />
     <ClCompile Include="..\..\..\source\game\GameData.cpp" />
@@ -271,6 +272,7 @@
     <ClInclude Include="..\..\..\source\game\EntityList.h" />
     <ClInclude Include="..\..\..\source\game\EntityPointer.h" />
     <ClInclude Include="..\..\..\source\game\EnvSkybox.h" />
+    <ClInclude Include="..\..\..\source\game\FuncLadder.h" />
     <ClInclude Include="..\..\..\source\game\FuncRotating.h" />
     <ClInclude Include="..\..\..\source\game\GameStateManager.h" />
     <ClInclude Include="..\..\..\source\game\CharacterInventory.h" />

@@ -23,6 +23,7 @@ See the license in LICENSE
 #include <core/sxcore.h>
 #include <xcommon/physics/IXPhysics.h>
 #include <xcommon/IXSoundSystem.h>
+#include <xcommon/render/IXRenderUtils.h>
 #include "physics_util.h"
 #include "EntityFactory.h"
 #include "EntityManager.h"
@@ -38,7 +39,7 @@ See the license in LICENSE
 #pragma warning(push)
 #pragma warning(disable:4251)
 
-//! Базовый объект, от которого наследуются все остальные классы объектов.
+//! Базовый класс, от которого наследуются все остальные классы объектов.
 class SXGAME_EXPORT CBaseEntity
 {
 	DECLARE_CLASS_NOBASE(CBaseEntity);
@@ -63,9 +64,6 @@ public:
 	//! Возвращает баунд объекта
 	virtual void getMinMax(float3 *min, float3 *max);
 	
-	//! Возвращает баунд сферу объекта
-	virtual void getSphere(float3 *center, float *radius);
-
 	//! Устанавливает мировую позицию объекта
 	virtual void setPos(const float3 &pos);
 	//! Устанавливает относительное смещение объекта
@@ -80,7 +78,7 @@ public:
 	void setFlags(UINT f);
 
 	//! Получает мировую матрицу трансформации для объекта
-	SMMATRIX getWorldTM();
+	XDEPRECATED SMMATRIX getWorldTM();
 
 	//! Устанавливает вращение объекта
 	virtual void setOrient(const SMQuaternion &q);
@@ -140,7 +138,7 @@ public:
 	//! Обновляет действие флагов в режиме редактора уровня
 	virtual void updateFlags(){}
 
-	virtual void renderEditor(bool is3D);
+	virtual void renderEditor(bool is3D, bool bRenderSelection, IXGizmoRenderer *pRenderer);
 
 
 	CBaseEntity* getEntByName(const char *szName, CBaseEntity *pStartFrom);

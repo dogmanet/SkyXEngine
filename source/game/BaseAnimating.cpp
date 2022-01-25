@@ -107,15 +107,6 @@ void CBaseAnimating::getMinMax(float3 * min, float3 * max)
 	}
 }
 
-/*void CBaseAnimating::getSphere(float3 * center, float * radius)
-{
-	if(m_pAnimPlayer)
-	{
-		const ISXBound * bound = m_pAnimPlayer->getBound();
-		bound->getSphere(center, radius);
-	}
-}*/
-
 void CBaseAnimating::onSetUseAutoPhysbox(bool use)
 {
 	if(m_useAutoPhysbox != use)
@@ -599,19 +590,12 @@ void CBaseAnimating::setSkin(int iSkin)
 	m_iSkin = iSkin;
 }
 
-void CBaseAnimating::_initEditorBoxes()
+void CBaseAnimating::renderEditor(bool is3D, bool bRenderSelection, IXGizmoRenderer *pRenderer)
 {
-	// do nothing
-}
-
-void CBaseAnimating::_releaseEditorBoxes()
-{
-	// do nothing
-}
-
-void CBaseAnimating::renderEditor(bool is3D)
-{
-	SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
+	if(bRenderSelection)
+	{
+		SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
+	}
 }
 
 bool CBaseAnimating::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, float3 *pvNormal, bool isRayInWorldSpace, bool bReturnNearestPoint)

@@ -51,7 +51,7 @@ public:
 	virtual bool XMETHODCALLTYPE isSelected() = 0;
 	virtual void XMETHODCALLTYPE setSelected(bool set) = 0;
 
-	virtual void XMETHODCALLTYPE renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer) = 0;
+	virtual void XMETHODCALLTYPE render(bool is3D, bool bRenderSelection, IXGizmoRenderer *pGizmoRenderer) = 0;
 
 	virtual bool XMETHODCALLTYPE rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, float3 *pvNormal = NULL, ID *pidMtrl = NULL, bool bReturnNearestPoint = false) = 0;
 

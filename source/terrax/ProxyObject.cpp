@@ -113,11 +113,11 @@ void XMETHODCALLTYPE CProxyObject::getBound(float3 *pvMin, float3 *pvMax)
 	m_pTargetObject->getBound(pvMin, pvMax);
 }
 
-void XMETHODCALLTYPE CProxyObject::renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer)
+void XMETHODCALLTYPE CProxyObject::render(bool is3D, bool bRenderSelection, IXGizmoRenderer *pGizmoRenderer)
 {
 	fora(i, m_aObjects)
 	{
-		m_aObjects[i].pObj->renderSelection(is3D, pGizmoRenderer);
+		m_aObjects[i].pObj->render(is3D, bRenderSelection, pGizmoRenderer);
 	}
 }
 

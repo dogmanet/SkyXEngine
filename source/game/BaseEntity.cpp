@@ -143,15 +143,6 @@ void CBaseEntity::getMinMax(float3 * min, float3 * max)
 		max->x = max->y = max->z = 0;
 }
 
-void CBaseEntity::getSphere(float3 * center, float * radius)
-{
-	if (center)
-		center->x = center->y = center->z = 0;
-
-	if (radius)
-		radius = 0;
-}
-
 void CBaseEntity::setPos(const float3 &pos)
 {
 	m_vPosition = pos;
@@ -838,7 +829,7 @@ void CBaseEntity::onUse(CBaseEntity *pUser)
 {
 }
 
-void CBaseEntity::renderEditor(bool is3D)
+void CBaseEntity::renderEditor(bool is3D, bool bRenderSelection, IXGizmoRenderer *pRenderer)
 {
 
 }

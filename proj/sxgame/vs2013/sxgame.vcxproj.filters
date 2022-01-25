@@ -315,6 +315,9 @@
     <ClCompile Include="..\..\..\source\game\EntityList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\FuncLadder.cpp">
+      <Filter>Source Files\ents\func</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -550,6 +553,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\physics_util.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\FuncLadder.h">
+      <Filter>Header Files\ents\func</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

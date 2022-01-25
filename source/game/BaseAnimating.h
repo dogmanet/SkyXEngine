@@ -55,7 +55,6 @@ public:
 	~CBaseAnimating();
 
 	void getMinMax(float3 *min, float3 *max);
-	// void getSphere(float3 * center, float * radius);
 
 	virtual void setModel(const char *szMdl);
 	virtual void setScale(float fScale);
@@ -80,14 +79,11 @@ public:
 	void setCollisionGroup(COLLISION_GROUP group, COLLISION_GROUP mask = CG_ALL);
 	COLLISION_GROUP getCollisionGroup();
 
-	void renderEditor(bool is3D) override;
+	void renderEditor(bool is3D, bool bRenderSelection, IXGizmoRenderer *pRenderer) override;
 
 	bool rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut = NULL, float3 *pvNormal = NULL, bool isRayInWorldSpace = true, bool bReturnNearestPoint = false) override;
 
 protected:
-	virtual void _initEditorBoxes();
-	virtual void _releaseEditorBoxes();
-
 	void inputPlayAnim(inputdata_t *pInputdata);
 	void inputPlayAnimNext(inputdata_t *pInputdata);
 
@@ -113,7 +109,7 @@ protected:
 	IXCollisionShape *m_pCollideShape = NULL;
 	IXRigidBody *m_pRigidBody = NULL;
 
-	virtual void _cleanup();
+	void _cleanup() override;
 
 	virtual void onAnimationStart(UINT uLayer);
 	virtual void onAnimationStop(UINT uLayer);

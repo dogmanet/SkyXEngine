@@ -299,40 +299,47 @@ void XMETHODCALLTYPE CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 	*pvMax += m_vPos;
 }
 
-void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer)
+void XMETHODCALLTYPE CEditorObject::render(bool is3D, bool bRenderSelection, IXGizmoRenderer *pGizmoRenderer)
 {
 	if(!m_pEntity)
 	{
 		return;
 	}
 
-	IGXDevice *pDevice = SGCore_GetDXDevice();
-	IGXContext *pCtx = pDevice->getThreadContext();
-
-	IGXBlendState *pOldBlendState = pCtx->getBlendState();
-	IGXRasterizerState *pOldRS = pCtx->getRasterizerState();
-
-	m_pEditable->m_pMaterialSystem->bindTexture(m_pEditable->m_pWhiteTexture);
-	//pDevice->setTexture(m_pEditable->m_pWhiteTexture);
-	pCtx->setBlendState(m_pEditable->m_pBlendColorFactor);
-
-	if(is3D)
+	if(bRenderSelection)
 	{
-		pCtx->setBlendFactor(GX_COLOR_ARGB(70, 255, 0, 0));
-		m_pEntity->renderEditor(is3D);
+		IGXDevice *pDevice = SGCore_GetDXDevice();
+		IGXContext *pCtx = pDevice->getThreadContext();
 
+		IGXBlendState *pOldBlendState = pCtx->getBlendState();
+		IGXRasterizerState *pOldRS = pCtx->getRasterizerState();
+
+		m_pEditable->m_pMaterialSystem->bindTexture(m_pEditable->m_pWhiteTexture);
+		//pDevice->setTexture(m_pEditable->m_pWhiteTexture);
+		pCtx->setBlendState(m_pEditable->m_pBlendColorFactor);
+
+		if(is3D)
+		{
+			pCtx->setBlendFactor(GX_COLOR_ARGB(70, 255, 0, 0));
+			m_pEntity->renderEditor(is3D, bRenderSelection, NULL);
+
+			SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
+		}
+
+		pCtx->setRasterizerState(m_pEditable->m_pRSWireframe);
+		pCtx->setBlendFactor(GX_COLOR_ARGB(255, 255, 255, 0));
+		m_pEntity->renderEditor(is3D, bRenderSelection, pGizmoRenderer);
 		SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
+
+		pCtx->setBlendState(pOldBlendState);
+		pCtx->setRasterizerState(pOldRS);
+		mem_release(pOldBlendState);
+		mem_release(pOldRS);
 	}
-
-	pCtx->setRasterizerState(m_pEditable->m_pRSWireframe);
-	pCtx->setBlendFactor(GX_COLOR_ARGB(255, 255, 255, 0));
-	m_pEntity->renderEditor(is3D);
-	SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
-
-	pCtx->setBlendState(pOldBlendState);
-	pCtx->setRasterizerState(pOldRS);
-	mem_release(pOldBlendState);
-	mem_release(pOldRS);
+	else
+	{
+		m_pEntity->renderEditor(is3D, bRenderSelection, pGizmoRenderer);
+	}
 }
 
 bool XMETHODCALLTYPE CEditorObject::rayTest(const float3 &vStart, const float3 &vEnd, float3 *pvOut, float3 *pvNormal, ID *pidMtrl, bool bReturnNearestPoint)

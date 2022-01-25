@@ -1,0 +1,141 @@
+
+[{00679DF8-011E-4158-BA6D-9037FD4BF5F9}]
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = 12.176783 5.000000 9.193360
+name = 
+flags = 0
+classname = info_ladder_dismount
+
+[{4197490C-971E-4476-8ADB-28B412C954E5}]
+skybox = 
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = 16.500000 0.000000 15.000000
+name = 
+flags = 65536
+classname = env_skybox
+
+[{4F4DFD8F-7D53-421E-BB29-CF7A0ECFF47B}]
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = 11.711528 5.000000 10.014788
+name = 
+flags = 0
+classname = info_ladder_dismount
+
+[{5969302C-27C0-416B-B39C-530C6BFE7D9C}]
+team = -1163005939
+rotation = 0.000000 -0.715721 0.000000 -0.698386
+parent = 
+origin = 18.616339 1.000000 9.995441
+name = 
+flags = 0
+classname = info_player_spawn
+
+[{643F1A93-97DB-4DB5-910B-AFAFEFCDDEB7}]
+type_shadow = 1
+shadow_intensity = 1.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = 13.500000 9.500000 15.000000
+name = 
+inner_angle = 0.879646
+flags = 65536
+dist = 10.000000
+color = 1.000000 1.000000 1.000000 1.000000
+classname = light_directional
+angle = 1.256637
+OnTurnOn = 
+OnTurnOff = 
+
+[{6567EA20-FA50-4579-B6E5-02F2FB67B0CD}]
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = 13.326619 1.000000 10.914355
+name = 
+flags = 0
+classname = info_ladder_dismount
+
+[{77ACCF60-1355-4831-AF1E-DC750245D4E2}]
+use_trimesh = 0
+skin = 0
+scale = 1.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = 12.186222 4.214797 1.000000
+name = 
+model = 
+is_static = 1
+glow_color_ref = 
+glow_color = 0.000000 0.000000 0.000000
+flags = 0
+classname = prop_static
+auto_physbox = 1
+
+[{89D076E0-0180-4C4D-AB49-AE425FB9C432}]
+type_shadow = 1
+shadow_intensity = 1.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = 13.499999 9.500000 10.000001
+name = 
+inner_angle = 0.879646
+flags = 0
+dist = 10.000000
+color = 1.000000 1.000000 1.000000 1.000000
+classname = light_directional
+angle = 1.256637
+OnTurnOn = 
+OnTurnOff = 
+
+[{90A33E76-0284-41B7-9E4B-2EC2A31A9E4A}]
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = 12.159086 5.000000 10.915974
+name = 
+flags = 0
+classname = info_ladder_dismount
+
+[{C8D6A959-AA9B-4D69-A401-B7CA39154DCA}]
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = 13.333129 1.000000 9.205495
+name = 
+flags = 0
+classname = info_ladder_dismount
+
+[{D1A04F48-76E1-4355-A482-5C160CD8BA05}]
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = 13.796009 1.000000 9.999233
+name = 
+flags = 0
+classname = info_ladder_dismount
+
+[{F040204E-1271-47EB-B040-3197B21470BC}]
+type_shadow = 1
+shadow_intensity = 1.000000
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = 13.500000 9.500000 5.000000
+name = 
+inner_angle = 0.879646
+flags = 65536
+dist = 10.000000
+color = 1.000000 1.000000 1.000000 1.000000
+classname = light_directional
+angle = 1.256637
+OnTurnOn = 
+OnTurnOff = 
+
+[{F7FAD41B-4168-41D2-9E82-51DA455F22B6}]
+up_point = 12.860000 5.000000 10.004517
+rotation = 0.000000 0.000000 0.000000 1.000000
+parent = 
+origin = 12.858377 1.000000 10.004519
+name = 
+flags = 0
+classname = func_ladder
+OnPlayerGetOn = 
+OnPlayerGetOff = 

@@ -101,6 +101,7 @@ IGXDepthStencilState *g_pDSDefault;
 IGXTexture2D *g_pDashedMaterial = NULL;
 
 IXGizmoRenderer *g_pSelectionRenderer = NULL;
+IXGizmoRenderer *g_pUnselectedRenderer = NULL;
 
 void XReleaseViewports();
 void XInitViewports();
@@ -486,6 +487,7 @@ public:
 
 		IXRenderUtils *pUtils = (IXRenderUtils*)pPluginManager->getInterface(IXRENDERUTILS_GUID);
 		pUtils->newGizmoRenderer(&g_pSelectionRenderer);
+		pUtils->newGizmoRenderer(&g_pUnselectedRenderer);
 		pUtils->newGizmoRenderer(&m_pAxesRenderer);
 
 		IXTexture *pLineTexture;
@@ -543,8 +545,9 @@ public:
 	}
 	~CRenderPipeline()
 	{
-		//mem_release(m_pTestRenderer);
+		mem_release(m_pAxesRenderer);
 		mem_release(g_pSelectionRenderer);
+		mem_release(g_pUnselectedRenderer);
 
 		for(UINT i = 0; i < 3; ++i)
 		{
@@ -1829,6 +1832,7 @@ void XReleaseViewports()
 
 
 bool g_isRenderedSelection3D = false;
+bool g_isRenderedUnselected3D = false;
 
 void XRender3D()
 {
@@ -1836,6 +1840,7 @@ void XRender3D()
 	IGXContext *pCtx = pDevice->getThreadContext();
 
 	g_isRenderedSelection3D = true;
+	g_isRenderedUnselected3D = true;
 
 	if(!g_pCurrentTool || !g_pCurrentTool->wantDrawSelection(true))
 	{
@@ -1844,11 +1849,24 @@ void XRender3D()
 		XEnumerateObjects([](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
 			if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
 			{
-				pObj->renderSelection(true, g_pSelectionRenderer);
+				pObj->render(true, true, g_pSelectionRenderer);
 			}
 		});
 
 		g_pSelectionRenderer->render(false, false);
+	}
+
+	{
+		g_pUnselectedRenderer->reset();
+
+		XEnumerateObjects([](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+			if(!pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
+			{
+				pObj->render(true, false, g_pUnselectedRenderer);
+			}
+		});
+
+		g_pUnselectedRenderer->render(false, false);
 	}
 
 	if(g_xState.isFrameSelect)
@@ -2132,7 +2150,7 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 				XEnumerateObjects([](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
 					if(pObj->isSelected() && !(g_xConfig.m_bIgnoreGroups && isProxy))
 					{
-						pObj->renderSelection(false, g_pSelectionRenderer);
+						pObj->render(false, true, g_pSelectionRenderer);
 					}
 				});
 
@@ -2140,6 +2158,21 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			}
 			g_pSelectionRenderer->render(true);
 		}
+
+		if(g_isRenderedUnselected3D)
+		{
+			g_pUnselectedRenderer->reset();
+
+			XEnumerateObjects([](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+				if(!pObj->isSelected() && !(g_xConfig.m_bIgnoreGroups && isProxy))
+				{
+					pObj->render(false, false, g_pUnselectedRenderer);
+				}
+			});
+
+			g_isRenderedUnselected3D = false;
+		}
+		g_pUnselectedRenderer->render(true);
 
 		// Draw handlers
 		if(g_pLevelObjects.size() || g_apProxies.size())

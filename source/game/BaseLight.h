@@ -85,7 +85,7 @@ public:
 
 	bool getMainColor(float3_t *pOut);
 
-	void updateFlags();
+	void updateFlags() override;
 
 	void setPos(const float3 &pos) override;
 

@@ -120,11 +120,14 @@ void XMETHODCALLTYPE CEditorObject::getBound(float3 *pvMin, float3 *pvMax)
 	*pvMax = aabb.vMax;
 }
 
-void XMETHODCALLTYPE CEditorObject::renderSelection(bool is3D, IXGizmoRenderer *pGizmoRenderer)
+void XMETHODCALLTYPE CEditorObject::render(bool is3D, bool bRenderSelection, IXGizmoRenderer *pGizmoRenderer)
 {
-	for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+	if(bRenderSelection)
 	{
-		m_aBrushes[i]->renderSelection(is3D, pGizmoRenderer, m_pEditable->getClipPlaneState(), m_pEditable->getClipPlane());
+		for(UINT i = 0, l = m_aBrushes.size(); i < l; ++i)
+		{
+			m_aBrushes[i]->renderSelection(is3D, pGizmoRenderer, m_pEditable->getClipPlaneState(), m_pEditable->getClipPlane());
+		}
 	}
 
 #if 0
