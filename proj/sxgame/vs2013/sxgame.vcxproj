@@ -216,6 +216,7 @@
     <ClCompile Include="..\..\..\source\game\NPCBase.cpp" />
     <ClCompile Include="..\..\..\source\game\NPCZombie.cpp" />
     <ClCompile Include="..\..\..\source\game\PathCorner.cpp" />
+    <ClCompile Include="..\..\..\source\game\PointChangelevel.cpp" />
     <ClCompile Include="..\..\..\source\game\PropBreakable.cpp" />
     <ClCompile Include="..\..\..\source\game\PropButton.cpp" />
     <ClCompile Include="..\..\..\source\game\PropDebris.cpp" />
@@ -286,6 +287,7 @@
     <ClInclude Include="..\..\..\source\game\LogicRelay.h" />
     <ClInclude Include="..\..\..\source\game\LogicStringbuilder.h" />
     <ClInclude Include="..\..\..\source\game\physics_util.h" />
+    <ClInclude Include="..\..\..\source\game\PointChangelevel.h" />
     <ClInclude Include="..\..\..\source\game\PropBreakable.h" />
     <ClInclude Include="..\..\..\source\game\PropButton.h" />
     <ClInclude Include="..\..\..\source\game\PropDebris.h" />

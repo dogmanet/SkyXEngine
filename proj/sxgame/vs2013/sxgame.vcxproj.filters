@@ -103,6 +103,18 @@
     <Filter Include="Source Files\ents\env">
       <UniqueIdentifier>{760364fe-2f6b-4ae1-b2d5-be66133d9184}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ents\point">
+      <UniqueIdentifier>{1e92b456-d510-4f21-9110-d885b694baad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ents\info">
+      <UniqueIdentifier>{efb039e1-ca23-4086-bc5e-ee339c0c18ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ents\point">
+      <UniqueIdentifier>{9822b6c5-a1c1-4878-90b4-290d18d8e76c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ents\info">
+      <UniqueIdentifier>{93ee5d69-dabd-4584-8e15-0acd713e614f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\game\sxgame_dll.cpp">
@@ -119,9 +131,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\EntityManager.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\game\PathCorner.cpp">
-      <Filter>Source Files\ents</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\GameData.cpp">
       <Filter>Source Files</Filter>
@@ -165,15 +174,6 @@
     <ClCompile Include="..\..\..\source\game\BaseAnimating.cpp">
       <Filter>Source Files\ents</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\source\game\PlayerSpawn.cpp">
-      <Filter>Source Files\ents</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\game\PointCamera.cpp">
-      <Filter>Source Files\ents</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\game\PointEntity.cpp">
-      <Filter>Source Files\ents</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\source\game\BaseTool.cpp">
       <Filter>Source Files\ents\items\tools</Filter>
     </ClCompile>
@@ -203,9 +203,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\Tracer.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\game\CharacterInventory.cpp">
-      <Filter>Source Files\ents</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\game\HUDcontroller.cpp">
       <Filter>Source Files</Filter>
@@ -318,6 +315,24 @@
     <ClCompile Include="..\..\..\source\game\FuncLadder.cpp">
       <Filter>Source Files\ents\func</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\PointCamera.cpp">
+      <Filter>Source Files\ents\point</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\PathCorner.cpp">
+      <Filter>Source Files\ents\point</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\PointEntity.cpp">
+      <Filter>Source Files\ents\point</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\PlayerSpawn.cpp">
+      <Filter>Source Files\ents\info</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\CharacterInventory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\game\PointChangelevel.cpp">
+      <Filter>Source Files\ents\point</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -331,9 +346,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\proptable.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\game\PathCorner.h">
-      <Filter>Header Files\ents</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\GameData.h">
       <Filter>Header Files</Filter>
@@ -380,15 +392,6 @@
     <ClInclude Include="..\..\..\source\game\BaseAnimating.h">
       <Filter>Header Files\ents</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\source\game\PlayerSpawn.h">
-      <Filter>Header Files\ents</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\game\PointCamera.h">
-      <Filter>Header Files\ents</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\game\PointEntity.h">
-      <Filter>Header Files\ents</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\source\game\BaseTool.h">
       <Filter>Header Files\ents\items\tools</Filter>
     </ClInclude>
@@ -427,9 +430,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\TakeDamageInfo.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\game\CharacterInventory.h">
-      <Filter>Header Files\ents</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\HUDcontroller.h">
       <Filter>Header Files</Filter>
@@ -556,6 +556,24 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\FuncLadder.h">
       <Filter>Header Files\ents\func</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\PlayerSpawn.h">
+      <Filter>Header Files\ents\info</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\PointCamera.h">
+      <Filter>Header Files\ents\point</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\PointEntity.h">
+      <Filter>Header Files\ents\point</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\PathCorner.h">
+      <Filter>Header Files\ents\point</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\CharacterInventory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\PointChangelevel.h">
+      <Filter>Header Files\ents\point</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
