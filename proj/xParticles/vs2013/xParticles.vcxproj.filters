@@ -13,13 +13,52 @@
       <UniqueIdentifier>{3255D19D-8869-4119-B06C-DDFE569119C4}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\xcommon">
+      <UniqueIdentifier>{f296e230-1bb3-4852-936c-ab372b662300}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\xcommon\particles">
+      <UniqueIdentifier>{e26be3d6-f6f6-485e-948d-caec635883a5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\xParticles\dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\xParticles\plugin_main.cpp" />
+    <ClCompile Include="..\..\..\source\xParticles\ParticleEffect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\xParticles\ParticleEffectEmitter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\xParticles\ParticlePlayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\xParticles\ParticleSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\xParticles\EffectLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\source\xcommon\particles\IXParticleSystem.h">
+      <Filter>Header Files\xcommon\particles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xParticles\ParticleSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xParticles\ParticleEffect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xParticles\ParticleEffectEmitter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xParticles\ParticlePlayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xParticles\EffectLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

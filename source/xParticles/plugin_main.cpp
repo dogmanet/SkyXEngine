@@ -1,10 +1,8 @@
 #include <xcommon/IXPlugin.h>
-#include "TextureProxy.h"
-#include "MaterialProxy.h"
-#include "MaterialLoader.h"
+#include "ParticleSystem.h"
 
 
-class CSXEPlugin: public IXUnknownImplementation<IXPlugin>
+class CEFFPlugin: public IXUnknownImplementation<IXPlugin>
 {
 public:
 	void XMETHODCALLTYPE startup(IXCore *pCore) override
@@ -18,7 +16,7 @@ public:
 
 	UINT XMETHODCALLTYPE getInterfaceCount() override
 	{
-		return(3);
+		return(1);
 	}
 	const XGUID* XMETHODCALLTYPE getInterfaceGUID(UINT id) override
 	{
@@ -26,13 +24,7 @@ public:
 		switch(id)
 		{
 		case 0:
-			s_guid = IXTEXTUREPROXY_GUID;
-			break;
-		case 1:
-			s_guid = IXMATERIALPROXY_GUID;
-			break;
-		case 2:
-			s_guid = IXMATERIALLOADER_GUID;
+			s_guid = IXPARTICLESYSTEM_GUID;
 			break;
 		default:
 			return(NULL);
@@ -41,17 +33,9 @@ public:
 	}
 	IXUnknown* XMETHODCALLTYPE getInterface(const XGUID &guid) override
 	{
-		if(guid == IXTEXTUREPROXY_GUID)
+		if(guid == IXPARTICLESYSTEM_GUID)
 		{
-			return(new CTextureProxy(m_pCore->getFileSystem()));
-		}
-		if(guid == IXMATERIALPROXY_GUID)
-		{
-			return(new CMaterialProxy(m_pCore->getFileSystem()));
-		}
-		if(guid == IXMATERIALLOADER_GUID)
-		{
-			return(new CMaterialLoader(m_pCore));
+			return(new CParticleSystem(m_pCore->getFileSystem()));
 		}
 		return(NULL);
 	}
@@ -60,4 +44,4 @@ protected:
 	IXCore *m_pCore;
 };
 
-DECLARE_XPLUGIN(CSXEPlugin);
+DECLARE_XPLUGIN(CEFFPlugin);
