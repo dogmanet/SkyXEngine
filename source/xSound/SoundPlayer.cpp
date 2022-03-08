@@ -51,6 +51,7 @@ CSoundBase* CSoundPlayer::newInstance()
 	pPlayer->m_state = SOUND_STATE_STOP;
 	pPlayer->m_sName = this->m_sName;
 	pPlayer->m_pLayer = this->m_pLayer;
+	add_ref(pPlayer->m_pLayer);
 	pPlayer->m_fDist = this->m_fDist;
 	pPlayer->m_vWorldPos = this->m_vWorldPos;
 	pPlayer->m_sName = this->m_sName;
@@ -107,7 +108,7 @@ bool CSoundPlayer::create(const char* szName, CSoundLayer *pLayer, IXAudioCodecT
 
 	m_pAB->play(false);
 	_setTime(0);
-	pLayer->AddRef();
+	add_ref(pLayer);
 
 	return true;
 }

@@ -43,6 +43,7 @@ CSoundBase* CSoundEmitter::newInstance()
 	pEmitter->m_state = SOUND_STATE_STOP;
 	pEmitter->m_sName = m_sName;
 	pEmitter->m_pLayer = m_pLayer;
+	add_ref(pEmitter->m_pLayer);
 	pEmitter->m_fDist = m_fDist;
 	pEmitter->m_vWorldPos = m_vWorldPos;
 	return pEmitter;
@@ -106,7 +107,7 @@ bool CSoundEmitter::create(const char* szName, CSoundLayer *pLayer, IXAudioCodec
 	pAB->setLoop(AB_LOOP_NONE);
 
 	m_aInstances.push_back(new Instance(pAB));
-	pLayer->AddRef();
+	add_ref(pLayer);
 
 	return true;
 }
