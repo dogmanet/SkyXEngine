@@ -4,10 +4,13 @@
 #include <xcommon/particles/IXParticleSystem.h>
 #include "ParticleEffectEmitter.h"
 
+class CParticleSystem;
 class CParticleEffect final: public IXUnknownImplementation<IXParticleEffect>
 {
 public:
-	CParticleEffect();
+	CParticleEffect() = default;
+	CParticleEffect(CParticleSystem *pSystem);
+	~CParticleEffect();
 
 	UINT XMETHODCALLTYPE getEmitterCount() override;
 	void XMETHODCALLTYPE setEmitterCount(UINT uCount) override;
@@ -15,8 +18,14 @@ public:
 
 	bool XMETHODCALLTYPE save() override;
 
+	CParticleEffectEmitter* getEmitterAtInternal(UINT uIdx);
+
+	void setName(const char *szName);
+	const char* getName();
 private:
-	Array<CParticleEffectEmitter> m_aEmitters;
+	CParticleSystem *m_pSystem = NULL;
+	const char *m_szName = NULL;
+	Array<CParticleEffectEmitter*> m_apEmitters;
 };
 
 #endif

@@ -1,118 +1,277 @@
-#include "MaterialProxy.h"
+#include "ParticlePlayer.h"
 
-CMaterialProxy::CMaterialProxy(IFileSystem *pFileSystem):
-	m_pFileSystem(pFileSystem)
+CParticlePlayer::CParticlePlayer(CParticleEffect *pEffect):
+	m_pEffect(pEffect)
+{
+	add_ref(pEffect);
+}
+CParticlePlayer::~CParticlePlayer()
+{
+	mem_release(m_pEffect);
+}
+
+void XMETHODCALLTYPE CParticlePlayer::play()
+{
+}
+void XMETHODCALLTYPE CParticlePlayer::pause()
+{
+}
+void XMETHODCALLTYPE CParticlePlayer::stop(bool bClear)
+{
+}
+void XMETHODCALLTYPE CParticlePlayer::clear()
 {
 }
 
-const char* XMETHODCALLTYPE CMaterialProxy::getDescription() const
+void XMETHODCALLTYPE CParticlePlayer::simulate(float fTime, bool bRestart)
 {
-	return("SkyXEngine material naming system");
 }
 
-bool XMETHODCALLTYPE CMaterialProxy::resolveName(const char *szName, char *szOutput, UINT *puBufSize, bool isForce)
+bool XMETHODCALLTYPE CParticlePlayer::isEmitting()
 {
-	const char *szUPos = strstr(szName, "_");
-	if(!szUPos)
-	{
-		return(false);
-	}
-	size_t sizeTexDir = szUPos - szName;
-
-	const char *szDirName = "materials/";
-	size_t sizeBuf = sizeTexDir + strlen(szDirName) + 1 + strlen(szName) + 4 + 1; // "/", ".mtl", "\0"
-
-	char *szTexDir = (char*)alloca(sizeof(char) * (sizeTexDir + 1));
-	memcpy(szTexDir, szName, sizeof(char) * sizeTexDir);
-	szTexDir[sizeTexDir] = 0;
-
-	char *szFullPath = (char*)alloca(sizeof(char) * sizeBuf);
-	sprintf(szFullPath, "%s%s/%s.mtl", szDirName, szTexDir, szName);
-	if(isForce || m_pFileSystem->fileExists(szFullPath))
-	{
-		if(szOutput)
-		{
-			strncpy(szOutput, szFullPath, *puBufSize);
-			szOutput[*puBufSize - 1] = 0;
-		}
-		else
-		{
-			*puBufSize = (UINT)sizeBuf + 1;
-		}
-		return(true);
-	}
-
+	assert(!"Not implemented");
+	return(false);
+}
+bool XMETHODCALLTYPE CParticlePlayer::isPaused()
+{
+	assert(!"Not implemented");
+	return(false);
+}
+bool XMETHODCALLTYPE CParticlePlayer::isPlaying()
+{
+	assert(!"Not implemented");
+	return(false);
+}
+bool XMETHODCALLTYPE CParticlePlayer::isStopped()
+{
+	assert(!"Not implemented");
+	return(false);
+}
+bool XMETHODCALLTYPE CParticlePlayer::isAlive()
+{
+	assert(!"Not implemented");
 	return(false);
 }
 
-bool XMETHODCALLTYPE CMaterialProxy::scanForMaterials(IXMaterialProxyScanList **ppOut)
+UINT XMETHODCALLTYPE CParticlePlayer::getParticleCount()
 {
-	*ppOut = new CMaterialProxyScanList(m_pFileSystem);
-	return(true);
+	assert(!"Not implemented");
+	return(0);
+}
+float XMETHODCALLTYPE CParticlePlayer::getTime()
+{
+	assert(!"Not implemented");
+	return(0.0f);
+}
+
+float3_t XMETHODCALLTYPE CParticlePlayer::getPos()
+{
+	assert(!"Not implemented");
+	return(0.0f);
+}
+void XMETHODCALLTYPE CParticlePlayer::setPos(const float3_t &vPos)
+{
+}
+
+SMQuaternion XMETHODCALLTYPE CParticlePlayer::getOrient()
+{
+	assert(!"Not implemented");
+	return(SMQuaternion());
+}
+void XMETHODCALLTYPE CParticlePlayer::setOrient(const SMQuaternion &qRot)
+{
+}
+
+void CParticlePlayer::update(float fDelta)
+{
+	UINT uEmCount = m_pEffect->getEmitterCount();
+	if(uEmCount != m_aEmitters.size())
+	{
+		m_aEmitters.resize(uEmCount);
+	}
+
+	for(UINT i = 0; i < uEmCount; ++i)
+	{
+		m_aEmitters[i].setData(m_pEffect->getEmitterAtInternal(i));
+	}
+
+	for(UINT i = 0; i < uEmCount; ++i)
+	{
+		m_aEmitters[i].update(fDelta);
+	}
+}
+
+float CParticlePlayer::getDeltaPos()
+{
+	assert(!"Not implemented");
+	return(0.0f);
 }
 
 //#############################################################################
 
-CMaterialProxyScanList::CMaterialProxyScanList(IFileSystem *pFileSystem):
-	m_pFileSystem(pFileSystem)
+CParticlePlayerEmitter::~CParticlePlayerEmitter()
 {
-	const char *szFullDir, *szDir;
+	mem_release(m_pData);
+}
 
-	IFileIterator *pIterator = m_pFileSystem->getFolderList("materials");
-	if(pIterator)
+void CParticlePlayerEmitter::setPlayer(CParticlePlayer *pPlayer)
+{
+	m_pPlayer = pPlayer;
+}
+
+void CParticlePlayerEmitter::setData(CParticleEffectEmitter *pData)
+{
+	if(m_pData != pData)
 	{
-		while((szFullDir = pIterator->next()))
+		mem_release(m_pData);
+		m_pData = pData;
+		add_ref(m_pData);
+	}
+}
+
+void CParticlePlayerEmitter::update(float fDt)
+{
+	m_fTime += fDt;
+	if(m_fTime < m_pData->m_dataGeneric.m_fStartDelay)
+	{
+		return;
+	}
+
+	m_aParticles.reserve(m_pData->m_dataGeneric.getMaxParticles());
+
+	// collect dead particles
+	fora(i, m_aParticles)
+	{
+		Particle &p = m_aParticles[i];
+		p.fRemainingLifetime -= fDt;
+
+		if(p.fRemainingLifetime <= 0.0f)
 		{
-			// printf("%s\n", szFullDir);
-			szDir = basename(szFullDir);
-
-			size_t uLen1 = strlen(szDir);
-
-			IFileIterator *pIter = m_pFileSystem->getFileList(szFullDir, "mtl");
-			const char *szFile, *szBasename;
-			if(pIter)
-			{
-				while((szFile = pIter->next()))
-				{
-					// printf("=%s\n", szFile);
-					szBasename = basename(szFile);
-
-					size_t uLen2 = strlen(szBasename);
-
-					if(uLen1 < uLen2 && memcmp(szDir, szBasename, uLen1) == 0 && szBasename[uLen1] == '_')
-					{
-						auto &item = m_aItems[m_aItems.size()];
-
-						item.sFile = szFile;
-						item.sName = szBasename;
-						item.sName[uLen2 - 4] = 0;
-					}
-				}
-			}
-			mem_release(pIter);
+			p = m_aParticles[il - 1];
+			m_aParticles.erase(il - 1);
+			--i; --il;
 		}
 	}
-	mem_release(pIterator);
-}
-CMaterialProxyScanList::~CMaterialProxyScanList()
-{
-}
 
-UINT XMETHODCALLTYPE CMaterialProxyScanList::getCount() const
-{
-	return(m_aItems.size());
-}
-const char* XMETHODCALLTYPE CMaterialProxyScanList::getItem(UINT uIdx, const char **pszFileName) const
-{
-	assert(uIdx < m_aItems.size());
-
-	const Item &item = m_aItems[uIdx];
-
-	if(pszFileName)
+	// emission controlled by emission module
+	CParticleEffectEmitterEmissionData &dataEmission = m_pData->m_dataEmission;
+	float fEmitCount = evalCurve(dataEmission.m_curveRatePerSecond) * fDt;
+	float fDeltaPos = m_pPlayer->getDeltaPos();
+	if(fDeltaPos > SM_EPSILON)
 	{
-		*pszFileName = item.sFile.c_str();
+		fEmitCount += evalCurve(dataEmission.m_curveRatePerMeter) * fDeltaPos;
 	}
 
-	return(item.sName.c_str());
+	fora(i, m_aBursts)
+	{
+		CParticleBurst &burst = m_aBursts[i];
+		burst.m_fTime -= fDt;
+		if(burst.m_fTime < 0)
+		{
+			if(randf(0.0f, 1.0f) <= burst.m_fProbability)
+			{
+				fEmitCount += evalCurve(burst.m_curveCount);
+			}
+
+			if(burst.m_uCycles > 1)
+			{
+				--burst.m_uCycles;
+				burst.m_fTime += evalCurve(burst.m_curveInterval);
+			}
+			else
+			{
+				burst = m_aBursts[il - 1];
+				m_aBursts.erase(il - 1);
+				--i; --il;
+			}
+		}
+	}
+		
+	emit(fEmitCount);
 }
 
+float CParticlePlayerEmitter::getTime()
+{
+	return(m_fTime - m_pData->m_dataGeneric.m_fStartDelay);
+}
+
+void CParticlePlayerEmitter::restart()
+{
+	m_fTime = 0.0f;
+	m_fEmitFrac = 0.0f;
+
+	m_aBursts = m_pData->m_dataEmission.m_aBursts;
+}
+
+void CParticlePlayerEmitter::clear()
+{
+	m_aParticles.clearFast();
+}
+
+void CParticlePlayerEmitter::emit(float fCount)
+{
+	m_fEmitFrac += fCount;
+	if(m_fEmitFrac >= 1.0f)
+	{
+		UINT uCount = (UINT)m_fEmitFrac;
+		m_fEmitFrac -= (float)uCount;
+
+		for(UINT i = 0; i < uCount; ++i)
+		{
+			emitOne(uCount, i);
+		}
+	}
+}
+
+void CParticlePlayerEmitter::emitOne(UINT uCountInGen, UINT uIdInGen)
+{
+	if(m_aParticles.size() == m_aParticles.GetAllocSize())
+	{
+		// limit is reached
+		return;
+	}
+
+	CParticleEffectEmitterGenericData &dataGeneric = m_pData->m_dataGeneric;
+
+	Particle &newParticle = m_aParticles[m_aParticles.size()];
+	newParticle.fRemainingLifetime = evalCurve(dataGeneric.m_curveStartLifetime);
+	newParticle.vColor = dataGeneric.m_vStartColor;
+
+	float3 vBasePos, vBaseDir;
+	m_pData->m_dataShape.evaluate(getTime() / m_pData->m_dataGeneric.m_fDuration, &vBasePos, &vBaseDir, uCountInGen, uIdInGen);
+	if(dataGeneric.m_simulationSpace == XPSS_WORLD)
+	{
+		// add player pos and orient
+		vBasePos = m_pPlayer->getOrient() * vBasePos + m_pPlayer->getPos();
+		vBaseDir = m_pPlayer->getOrient() * vBaseDir;
+	}
+	newParticle.vPos = vBasePos;
+	newParticle.vSpeed = (float3)(vBaseDir * evalCurve(dataGeneric.m_curveStartSpeed));
+
+	// m_fFlipRotation          //! Makes some particles spin in the opposite direction
+	// m_curveStartRotationX    //! The initial rotation of particles around the x-axis when emitted.
+	// m_bStartRotationSeparate //! A flag to enable 3D particle rotation.
+
+	// set other properties
+	//+ speed
+	// size
+	// rotation
+	// spin
+	// space
+	// pos
+
+	// shape mod:
+	// pos
+	// velocity dir
+	// rotation
+}
+
+float CParticlePlayerEmitter::evalCurve(const CMinMaxCurve &curve)
+{
+	float fLerpFactor = 1.0f;
+	if(curve.getMode() == XMCM_TWO_CONSTANTS || curve.getMode() == XMCM_TWO_CURVES)
+	{
+		fLerpFactor = randf(0.0f, 1.0f);
+	}
+	return(curve.evaluate(getTime() / m_pData->m_dataGeneric.m_fDuration, fLerpFactor));
+}

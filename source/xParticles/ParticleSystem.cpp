@@ -1,147 +1,152 @@
-#include "TextureProxy.h"
+#include "ParticleSystem.h"
+#include "EffectLoader.h"
 
-CTextureProxy::CTextureProxy(IFileSystem *pFileSystem):
-	m_pFileSystem(pFileSystem)
+CParticleSystem::CParticleSystem(IXCore *pCore):
+	m_pCore(pCore)
 {
 }
 
-UINT XMETHODCALLTYPE CTextureProxy::getVersion()
+bool XMETHODCALLTYPE CParticleSystem::newEffect(const char *szName, IXParticleEffect **ppOut)
 {
-	return(IXTEXTUREPROXY_VERSION);
-}
-
-const char* XMETHODCALLTYPE CTextureProxy::getDescription() const
-{
-	return("SkyXEngine texture naming system");
-}
-
-bool XMETHODCALLTYPE CTextureProxy::resolveName(const char *szName, char *szOutput, UINT *puBufSize, bool *pbWantLoad)
-{
-	if(pbWantLoad)
+	CParticleEffect *pEffect;
+	if(newEffect(szName, &pEffect))
 	{
-		*pbWantLoad = false;
+		*ppOut = pEffect;
+		return(true);
 	}
 
-	const char *szUPos = strstr(szName, "_");
-	if(!szUPos)
+	return(false);
+}
+bool CParticleSystem::newEffect(const char *szName, CParticleEffect **ppOut)
+{
+	assert(szName && szName[0]);
+
+	String key(szName);
+
+	if(m_mapEffects.KeyExists(key))
 	{
 		return(false);
 	}
-	size_t sizeTexDir = szUPos - szName;
 
-	const char *szDirName = "textures/";
-	size_t sizeBuf = sizeTexDir + strlen(szDirName) + 1 + strlen(szName) + 4 + 1; // "/", ".dds", "\0"
+	const Map<String, CParticleEffect>::Node *pNode = m_mapEffects.insert(key, this);
+	CParticleEffect *pEffect = pNode->Val;
+	pEffect->setName(pNode->Key.c_str());
+	*ppOut = pEffect;
 
-	char *szTexDir = (char*)alloca(sizeof(char) * (sizeTexDir + 1));
-	memcpy(szTexDir, szName, sizeof(char) * sizeTexDir);
-	szTexDir[sizeTexDir] = 0;
-
-	char *szFullPath = (char*)alloca(sizeof(char) * sizeBuf);
-	sprintf(szFullPath, "%s%s/%s.dds", szDirName, szTexDir, szName);
-	if(m_pFileSystem->fileExists(szFullPath))
-	{
-		if(szOutput)
-		{
-			strncpy(szOutput, szFullPath, *puBufSize);
-			szOutput[*puBufSize - 1] = 0;
-		}
-		else
-		{
-			*puBufSize = (UINT)sizeBuf + 1;
-		}
-		return(true);
-	}
-
-	sprintf(szFullPath, "%s%s/%s", szDirName, szTexDir, szName);
-	if(m_pFileSystem->fileExists(szFullPath))
-	{
-		if(szOutput)
-		{
-			strncpy(szOutput, szFullPath, *puBufSize);
-			szOutput[*puBufSize - 1] = 0;
-		}
-		else
-		{
-			*puBufSize = (UINT)sizeBuf + 1;
-		}
-		return(true);
-	}
-
-	return(false);
-}
-
-bool XMETHODCALLTYPE CTextureProxy::loadTexture(const char *szName, IXResourceTexture **ppOut)
-{
-	return(false);
-}
-
-bool XMETHODCALLTYPE CTextureProxy::scanForTextures(IXTextureProxyScanList **ppOut)
-{
-	*ppOut = new CTextureProxyScanList(m_pFileSystem);
 	return(true);
 }
-
-//#############################################################################
-
-CTextureProxyScanList::CTextureProxyScanList(IFileSystem *pFileSystem):
-	m_pFileSystem(pFileSystem)
+bool XMETHODCALLTYPE CParticleSystem::getEffect(const char *szName, IXParticleEffect **ppOut)
 {
-	const char *szFullDir, *szDir;
+	String key(szName);
 
-	IFileIterator *pIterator = m_pFileSystem->getFolderList("textures");
-	if(pIterator)
+	CParticleEffect *pEffect;
+
+	const Map<String, CParticleEffect>::Node *pNode;
+	if(m_mapEffects.KeyExists(key, &pNode))
 	{
-		while((szFullDir = pIterator->next()))
+		pEffect = pNode->Val;
+		add_ref(pEffect);
+		*ppOut = pEffect;
+		return(true);
+	}
+	
+	if(!newEffect(szName, &pEffect))
+	{
+		return(false);
+	}
+
+	char szFile[MAX_PATH];
+
+	sprintf(szFile, "effects/%s.eff", szName);
+
+	CEffectLoader loader(m_pCore);
+	if(loader.loadFromFile(szFile, pEffect))
+	{
+		*ppOut = pEffect;
+		return(true);
+	}
+
+	mem_release(pEffect);
+
+	return(false);
+}
+
+void XMETHODCALLTYPE CParticleSystem::newEffectPlayer(IXParticleEffect *pEffect, IXParticlePlayer **ppOut)
+{
+	CParticlePlayer *pPlayer;
+	{
+		ScopedSpinLock lock(m_slPlayerPool);
+		pPlayer = m_poolPlayers.Alloc((CParticleEffect*)pEffect);
+		*ppOut = pPlayer;
+	}
+	m_queuePlayers.emplace({PlayerQueueItem::PQI_ADD, pPlayer});
+}
+
+void CParticleSystem::onEffectReleased(const char *szName)
+{
+	m_mapEffects.erase(szName);
+}
+
+void CParticleSystem::onEffectPlayerReleased(CParticlePlayer *pPlayer)
+{
+	m_queuePlayers.emplace({PlayerQueueItem::PQI_REMOVE, pPlayer});
+}
+
+bool CParticleSystem::saveEffect(CParticleEffect *pEffect)
+{
+	char szFile[MAX_PATH];
+
+	sprintf(szFile, "effects/%s.eff", pEffect->getName());
+
+	CEffectLoader loader(m_pCore);
+	return(loader.saveToFile(szFile, pEffect));
+}
+
+void CParticleSystem::update(float fDelta)
+{
+	fora(i, m_aPlayers)
+	{
+		m_aPlayers[i]->update(fDelta);
+	}
+}
+
+void CParticleSystem::sync()
+{
+
+	PlayerQueueItem item;
+	while(m_queuePlayers.pop(&item))
+	{
+		switch(item.cmd)
 		{
-			// printf("%s\n", szFullDir);
-			szDir = basename(szFullDir);
+		case PlayerQueueItem::PQI_ADD:
+			m_aPlayers.push_back(item.pPlayer);
+			break;
 
-			size_t uLen1 = strlen(szDir);
-
-			IFileIterator *pIter = m_pFileSystem->getFileList(szFullDir, "dds");
-			const char *szFile, *szBasename;
-			if(pIter)
+		case PlayerQueueItem::PQI_REMOVE:
+			int idx = m_aPlayers.indexOf(item.pPlayer);
+			assert(idx >= 0);
+			if(idx >= 0)
 			{
-				while((szFile = pIter->next()))
-				{
-					// printf("=%s\n", szFile);
-					szBasename = basename(szFile);
-
-					size_t uLen2 = strlen(szBasename);
-
-					if(uLen1 < uLen2 && memcmp(szDir, szBasename, uLen1) == 0 && szBasename[uLen1] == '_')
-					{
-						auto &item = m_aItems[m_aItems.size()];
-
-						item.sFile = szFile;
-						item.sName = szBasename;
-						item.sName[uLen2 - 4] = 0;
-					}
-				}
+				m_aPlayers.erase(idx);
 			}
-			mem_release(pIter);
+
+			{
+				ScopedSpinLock lock(m_slPlayerPool);
+				m_poolPlayers.Delete(item.pPlayer);
+			}
+			break;
 		}
 	}
-	mem_release(pIterator);
-}
-CTextureProxyScanList::~CTextureProxyScanList()
-{
 }
 
-UINT XMETHODCALLTYPE CTextureProxyScanList::getCount() const
+void CParticleSystem::onEmitterReleased(CParticleEffectEmitter *pEmitter)
 {
-	return(m_aItems.size());
+	ScopedSpinLock lock(m_slEmittersPool);
+	m_poolEmitters.Delete(pEmitter);
 }
-const char* XMETHODCALLTYPE CTextureProxyScanList::getItem(UINT uIdx, const char **pszFileName) const
+
+CParticleEffectEmitter* CParticleSystem::allocEmitter()
 {
-	assert(uIdx < m_aItems.size());
-
-	const Item &item = m_aItems[uIdx];
-
-	if(pszFileName)
-	{
-		*pszFileName = item.sFile.c_str();
-	}
-
-	return(item.sName.c_str());
+	ScopedSpinLock lock(m_slEmittersPool);
+	return(m_poolEmitters.Alloc(this));
 }
