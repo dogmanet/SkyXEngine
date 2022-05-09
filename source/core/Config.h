@@ -173,6 +173,25 @@ public:
 	bool XMETHODCALLTYPE sectionExists(const char *szSection) override;
 	bool XMETHODCALLTYPE keyExists(const char *szSection, const char *szKey) override;
 
+	bool XMETHODCALLTYPE tryGetBool(const char *szSection, const char *szKey, bool *pbOut) override;
+	bool XMETHODCALLTYPE tryGetInt(const char *szSection, const char *szKey, int *piOut) override;
+	bool XMETHODCALLTYPE tryGetUint(const char *szSection, const char *szKey, UINT *puOut) override;
+	bool XMETHODCALLTYPE tryGetFloat(const char *szSection, const char *szKey, float *pfOut) override;
+	bool XMETHODCALLTYPE tryGetVector2(const char *szSection, const char *szKey, float2_t *pvOut) override;
+	bool XMETHODCALLTYPE tryGetVector3(const char *szSection, const char *szKey, float3_t *pvOut) override;
+	bool XMETHODCALLTYPE tryGetVector4(const char *szSection, const char *szKey, float4_t *pvOut) override;
+	bool XMETHODCALLTYPE tryGetJsonItem(const char *szSection, const char *szKey, IXJSONItem **ppOut) override;
+	bool XMETHODCALLTYPE tryGetJsonObject(const char *szSection, const char *szKey, IXJSONObject **ppOut) override;
+	bool XMETHODCALLTYPE tryGetJsonArray(const char *szSection, const char *szKey, IXJSONArray **ppOut) override;
+
+	void XMETHODCALLTYPE setBool(const char *szSection, const char *szKey, bool bValue) override;
+	void XMETHODCALLTYPE setInt(const char *szSection, const char *szKey, int iValue) override;
+	void XMETHODCALLTYPE setUint(const char *szSection, const char *szKey, UINT uValue) override;
+	void XMETHODCALLTYPE setFloat(const char *szSection, const char *szKey, float fValue) override;
+	void XMETHODCALLTYPE setVector2(const char *szSection, const char *szKey, const float2_t &vValue) override;
+	void XMETHODCALLTYPE setVector3(const char *szSection, const char *szKey, const float3_t &vValue) override;
+	void XMETHODCALLTYPE setVector4(const char *szSection, const char *szKey, const float4_t &vValue) override;
+
 protected:
 	CConfig *m_pConfig = NULL;
 };

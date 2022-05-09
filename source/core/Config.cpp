@@ -904,3 +904,172 @@ bool XMETHODCALLTYPE CXConfig::keyExists(const char *szSection, const char *szKe
 {
 	return(m_pConfig->keyExists(szSection, szKey));
 }
+
+bool XMETHODCALLTYPE CXConfig::tryGetBool(const char *szSection, const char *szKey, bool *pbOut)
+{
+	const char *szVal = getKey(szSection, szKey);
+	if(!szVal)
+	{
+		return(false);
+	}
+
+	if(!strcasecmp(szVal, "true") || !strcasecmp(szVal, "on") || !strcasecmp(szVal, "yes") || !strcmp(szVal, "1"))
+	{
+		*pbOut = true;
+		return(true);
+	}
+
+	if(!strcasecmp(szVal, "false") || !strcasecmp(szVal, "off") || !strcasecmp(szVal, "no") || !strcmp(szVal, "0"))
+	{
+		*pbOut = false;
+		return(true);
+	}
+
+	return(false);
+}
+bool XMETHODCALLTYPE CXConfig::tryGetInt(const char *szSection, const char *szKey, int *piOut)
+{
+	const char *szVal = getKey(szSection, szKey);
+	return(szVal && sscanf(szVal, "%d", piOut));
+}
+bool XMETHODCALLTYPE CXConfig::tryGetUint(const char *szSection, const char *szKey, UINT *puOut)
+{
+	const char *szVal = getKey(szSection, szKey);
+	return(szVal && sscanf(szVal, "%u", puOut));
+}
+bool XMETHODCALLTYPE CXConfig::tryGetFloat(const char *szSection, const char *szKey, float *pfOut)
+{
+	const char *szVal = getKey(szSection, szKey);
+	return(szVal && sscanf(szVal, "%g", pfOut));
+}
+bool XMETHODCALLTYPE CXConfig::tryGetVector2(const char *szSection, const char *szKey, float2_t *pvOut)
+{
+	const char *szVal = getKey(szSection, szKey);
+	float2_t vec;
+	if(szVal && (sscanf(szVal, "%g %g", &vec.x, &vec.y) == 2 || sscanf(szVal, "%g, %g", &vec.x, &vec.y) == 2))
+	{
+		*pvOut = vec;
+		return(true);
+	}
+	return(false);
+}
+bool XMETHODCALLTYPE CXConfig::tryGetVector3(const char *szSection, const char *szKey, float3_t *pvOut)
+{
+	const char *szVal = getKey(szSection, szKey);
+	float3_t vec;
+	if(szVal && (sscanf(szVal, "%g %g %g", &vec.x, &vec.y, &vec.z) == 3 || sscanf(szVal, "%g, %g, %g", &vec.x, &vec.y, &vec.z) == 3))
+	{
+		*pvOut = vec;
+		return(true);
+	}
+	return(false);
+}
+bool XMETHODCALLTYPE CXConfig::tryGetVector4(const char *szSection, const char *szKey, float4_t *pvOut)
+{
+	const char *szVal = getKey(szSection, szKey);
+	float4_t vec;
+	if(szVal && (sscanf(szVal, "%g %g %g %g", &vec.x, &vec.y, &vec.z, &vec.w) == 4 || sscanf(szVal, "%g, %g, %g, %g", &vec.x, &vec.y, &vec.z, &vec.w) == 4))
+	{
+		*pvOut = vec;
+		return(true);
+	}
+	return(false);
+}
+
+bool XMETHODCALLTYPE CXConfig::tryGetJsonItem(const char *szSection, const char *szKey, IXJSONItem **ppOut)
+{
+	const char *szVal = getKey(szSection, szKey);
+	if(!szVal)
+	{
+		return(false);
+	}
+
+	static IXJSON *s_pJSON = (IXJSON*)Core_GetIXCore()->getPluginManager()->getInterface(IXJSON_GUID);
+	IXJSONItem *pRoot;
+	if(!s_pJSON->parse(szVal, &pRoot))
+	{
+		return(false);
+	}
+
+	*ppOut = pRoot;
+	return(true);
+}
+
+bool XMETHODCALLTYPE CXConfig::tryGetJsonObject(const char *szSection, const char *szKey, IXJSONObject **ppOut)
+{
+	IXJSONItem *pRoot;
+	if(!tryGetJsonItem(szSection, szKey, &pRoot))
+	{
+		return(false);
+	}
+
+	IXJSONObject *pObj = pRoot->asObject();
+	if(pObj)
+	{
+		*ppOut = pObj;
+		return(true);
+	}
+
+	mem_release(pRoot);
+	return(false);
+}
+bool XMETHODCALLTYPE CXConfig::tryGetJsonArray(const char *szSection, const char *szKey, IXJSONArray **ppOut)
+{
+	IXJSONItem *pRoot;
+	if(!tryGetJsonItem(szSection, szKey, &pRoot))
+	{
+		return(false);
+	}
+
+	IXJSONArray *pArr = pRoot->asArray();
+	if(pArr)
+	{
+		*ppOut = pArr;
+		return(true);
+	}
+
+	mem_release(pRoot);
+	return(false);
+}
+
+
+void XMETHODCALLTYPE CXConfig::setBool(const char *szSection, const char *szKey, bool bValue)
+{
+	set(szSection, szKey, bValue ? "true" : "false");
+}
+void XMETHODCALLTYPE CXConfig::setInt(const char *szSection, const char *szKey, int iValue)
+{
+	char tmp[32];
+	sprintf(tmp, "%d", iValue);
+	set(szSection, szKey, tmp);
+}
+void XMETHODCALLTYPE CXConfig::setUint(const char *szSection, const char *szKey, UINT uValue)
+{
+	char tmp[32];
+	sprintf(tmp, "%u", uValue);
+	set(szSection, szKey, tmp);
+}
+void XMETHODCALLTYPE CXConfig::setFloat(const char *szSection, const char *szKey, float fValue)
+{
+	char tmp[64];
+	sprintf(tmp, "%g", fValue);
+	set(szSection, szKey, tmp);
+}
+void XMETHODCALLTYPE CXConfig::setVector2(const char *szSection, const char *szKey, const float2_t &vValue)
+{
+	char tmp[128];
+	sprintf(tmp, "%g %g", vValue.x, vValue.y);
+	set(szSection, szKey, tmp);
+}
+void XMETHODCALLTYPE CXConfig::setVector3(const char *szSection, const char *szKey, const float3_t &vValue)
+{
+	char tmp[192];
+	sprintf(tmp, "%g %g %g", vValue.x, vValue.y, vValue.z);
+	set(szSection, szKey, tmp);
+}
+void XMETHODCALLTYPE CXConfig::setVector4(const char *szSection, const char *szKey, const float4_t &vValue)
+{
+	char tmp[256];
+	sprintf(tmp, "%g %g %g %g", vValue.x, vValue.y, vValue.z, vValue.w);
+	set(szSection, szKey, tmp);
+}
