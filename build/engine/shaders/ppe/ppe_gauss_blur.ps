@@ -1,0 +1,51 @@
+
+/*
+ppe_gauss_blur.ps
+Размытие по Гауссу. Если указано макроопределение _H_ то будет размытие по горизонтали, иначе по вертикали.
+*/
+
+#include <struct.h>
+
+//##########################################################################
+
+cbuffer b8: register(b8)
+{
+	float2 g_vSizeMapInv;
+	float g_fCoefBlur;
+};
+
+//##########################################################################
+
+SamplerState g_sLinearClamp: register(s0);
+Texture2D g_txDiffuse: register(t0);
+
+//##########################################################################
+
+half4 main(VSO_PP IN):SV_TARGET
+{
+#ifdef _H_
+    half2 vPixelOffset = half2(0.0f, g_vSizeMapInv.y) * g_fCoefBlur;
+#else
+    half2 vPixelOffset = half2(g_vSizeMapInv.x, 0.0f) * g_fCoefBlur;
+#endif
+	
+	half2 vOffset = vPixelOffset;
+	
+    half4 vColor = g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV) * 0.134598;
+    vColor += (g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV + vOffset) + g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV - vOffset)) * 0.127325;
+    vOffset += vPixelOffset;
+    vColor += (g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV + vOffset) + g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV - vOffset)) * 0.107778;
+    vOffset += vPixelOffset;
+    vColor += (g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV + vOffset) + g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV - vOffset)) * 0.081638;
+    vOffset += vPixelOffset;
+    vColor += (g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV + vOffset) + g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV - vOffset)) * 0.055335;
+    vOffset += vPixelOffset;
+    vColor += (g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV + vOffset) + g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV - vOffset)) * 0.033562;
+    vOffset += vPixelOffset;
+    vColor += (g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV + vOffset) + g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV - vOffset)) * 0.018216;
+    vOffset += vPixelOffset;
+    vColor += (g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV + vOffset) + g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV - vOffset)) * 0.008847;
+    vOffset += vPixelOffset;
+	
+	return vColor;
+}

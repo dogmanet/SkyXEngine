@@ -15,15 +15,16 @@ Texture2D g_txDiffuse : register(t0);		// basetexture
 
 float CalcLuminance(float3 color)
 {
-    return max(dot(color, float3(0.298f, 0.585f, 0.117f)), 0.00001f);
+    return(dot(color, float3(0.2126f, 0.7152f, 0.0722f)));
 }
 
 float4 main(VSO_PP IN):SV_TARGET
 {
 	float4 vColor = g_txDiffuse.Sample(g_sLinearClamp, IN.vTexUV);
 	
-	float fLuminance = log(CalcLuminance(vColor.xyz));
+	float fLuminance = CalcLuminance(vColor.xyz);
+	float fW = 1.0f - exp(-fLuminance);
+	float fNumerator = fW * log(fLuminance + 0.000001f);
 
-    return(float4(fLuminance, 1.0f, 1.0f, 1.0f));
-    // return(float4(-10, 1.0f, 1.0f, 1.0f));
+    return(float4(fLuminance, fLuminance, fNumerator, fW));
 }

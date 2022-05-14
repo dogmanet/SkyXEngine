@@ -8,9 +8,11 @@ hdr_tonemapping
 //##########################################################################
 
 SamplerState g_sPointClamp: register(s0);
+SamplerState g_sLinearClamp: register(s1);
 Texture2D g_txScene: register(t0);
 Texture2D g_txLuminance: register(t1);
 Texture2D g_txLuminance2: register(t2);
+Texture2D g_txBoom: register(t3);
 
 //##########################################################################
 
@@ -24,51 +26,50 @@ cbuffer b8: register(b8)
 
 float CalcLuminance(float3 color)
 {
-    return max(dot(color, float3(0.298f, 0.585f, 0.117f)), 0.00001f);
+    return(dot(color, float3(0.2126f, 0.7152f, 0.0722f)));
 }
 
-// Applies the filmic curve from John Hable's presentation
-float3 ToneMapFilmicALU(float3 color)
+float CalcLScaled(float fLmax, float fLmin, float fLavr, float fLhdr)
 {
-    color = max(0, color - 0.004f);
-    color = (color * (6.2f * color + 0.5f)) / (color * (6.2f * color + 1.7f)+ 0.06f);
-
-    // result has 1/2.2 baked in
-    return pow(color, 2.2f);
+	float A = fLmax - fLavr;
+	float B = fLavr - fLmin;
+	float a = (0.18f * pow(2, 2 * (B - A)/(A + B)));
+	return(a * (fLhdr / fLavr));
 }
 
-// Determines the color based on exposure settings
-float3 CalcExposedColor(float3 color, float avgLuminance, float threshold, out float exposure)
+float CalcLldr(float fLscaled, float fLwhite)
 {
-	// Use geometric mean
-	avgLuminance = max(avgLuminance, 0.001f);
-	float linearExposure = (g_fBaseValue / avgLuminance);
-	exposure = log2(max(linearExposure, 0.0001f));
-    exposure -= threshold;
-    return exp2(exposure) * color;
-}
-
-// Applies exposure and tone mapping to the specific color, and applies
-// the threshold to the exposure value.
-float3 ToneMap(float3 color, float avgLuminance, float threshold, out float exposure)
-{
-    float pixelLuminance = CalcLuminance(color);
-    color = CalcExposedColor(color, avgLuminance, threshold, exposure);
-	color = ToneMapFilmicALU(color);
-    return color;
+	float fNumerator = fLscaled * (1 + (fLscaled / pow(fLwhite, 2)));
+	float fDenominator = 1 + fLscaled;
+	return(fNumerator / fDenominator);
 }
 
 //##########################################################################
 
-
 float4 main(VSO_PP IN):SV_TARGET
 {
 	float4 vColor = g_txScene.Sample(g_sPointClamp, IN.vTexUV);
-	float fLuminance = g_txLuminance.Load(uint3(0, 0, 0)).x;
-	float fLuminance2 = exp(g_txLuminance2.Load(uint3(0, 0, 0)).x);
+	float4 vParams = g_txLuminance2.Load(uint3(0, 0, 0));
+	float4 vBloomColor = g_txBoom.Sample(g_sLinearClamp, IN.vTexUV);
+	float fLmin = vParams.x;
+	float fLmax = vParams.y; 
+	float flnLhdr = vParams.z;
+	float fW = vParams.w;
 
-	float fExposure = 0;
-	vColor.xyz = ToneMap(vColor.xyz, fLuminance, 0, fExposure);
+	float fLavr = exp(flnLhdr / fW);
+	float fLhdr = CalcLuminance(vColor.xyz);
+	float fLscaled = CalcLScaled(fLmax, fLmin, fLavr, fLhdr);
+	float fLwhite = CalcLScaled(fLmax, fLmin, fLavr, fLmax);
+	float fLldr = CalcLldr(fLscaled, fLwhite);
+	
+	float3 vCtone = (fLldr / fLhdr) * vColor.xyz;
+	float3 vCldr = vCtone + (vBloomColor.xyz * 1.0f);
+	
+	//float fLuminance = g_txLuminance.Load(uint3(0, 0, 0)).x;
+	//float fLuminance2 = exp(g_txLuminance2.Load(uint3(0, 0, 0)).x);
+
+	//float fExposure = 0;
+	//vColor.xyz = ToneMap(vColor.xyz, fLuminance, 0, fExposure);
 	
 	/* if(IN.vTexUV.x > 0.9 && IN.vTexUV.y > 0.9)
 	{
@@ -79,5 +80,5 @@ float4 main(VSO_PP IN):SV_TARGET
 		vColor.xyz = fLuminance2;
 	} */
 	
-    return(vColor);
+    return(float4(vCldr, 1.0f));
 }

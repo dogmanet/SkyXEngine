@@ -155,6 +155,8 @@ protected:
 	ID m_idLightBoundShader = -1;
 	ID m_idLPVPropagateShader = -1;
 	ID m_idLuminanceReductionShader = -1;
+	ID m_idBloomShader = -1;
+	ID m_idGaussShader[2];
 	struct
 	{
 		struct
@@ -192,10 +194,19 @@ protected:
 	IGXTexture2D *m_pLightLuminance = NULL;
 	IGXTexture2D *m_pLightLuminance32 = NULL;
 	IGXTexture2D *m_pLightLuminance1 = NULL;
+	IGXTexture2D *m_pBloom[2];
 	IGXTexture2D *m_pAdaptedLuminance[2];
 	UINT m_uCurrAdaptedLuminanceTarget = 0;
 
 	bool m_isEnabled = true;
+
+	struct
+	{
+		float2_t vSizeMapInv;
+		float fCoefBlur;
+		UINT uWidth = 0;
+	} m_gaussBlurShaderData;
+	IGXConstantBuffer *m_pGaussBlurShaderData = NULL;
 
 	//###################################
 

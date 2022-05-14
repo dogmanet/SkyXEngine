@@ -31,5 +31,6 @@ float4 main(VSO_PP IN):SV_TARGET
     // Pattanaik's technique
     float fAdapted = fPrevLuminance + (fNewLuminance - fPrevLuminance) * (1 - exp(-g_fFrameTime * g_fAdaptationSpeed));
 
-    return(float4(fAdapted, 1.0f, 1.0f, 1.0f));
+	return (g_txPrevLuminance.Load(uint3(0,0,0)));
+    //return(float4(fAdapted, 1.0f, 1.0f, 1.0f));
 }
