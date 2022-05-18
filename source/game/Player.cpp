@@ -8,6 +8,7 @@ See the license in LICENSE
 #include "Player.h"
 #include "LightDirectional.h"
 #include "BaseAmmo.h"
+#include "FuncLadder.h"
 
 #include "BaseWeapon.h"
 
@@ -195,7 +196,7 @@ void CPlayer::updateInput(float dt)
 		{
 			//dt *= 5.0f;
 		}
-		dt *= 10.0f;
+		//dt *= 10.0f;
 		float3 dir;
 		bool mov = false;
 		if(m_uMoveDir & PM_FORWARD)
@@ -224,7 +225,7 @@ void CPlayer::updateInput(float dt)
 
 		if(m_uMoveDir & PM_CROUCH || (m_fCurrentHeight < 0.99f && !m_pCharacter->canStandUp((m_fCapsHeight - m_fCapsRadius * 2.0f) * (1.0f - m_fCurrentHeight))))
 		{
-			m_fCurrentHeight -= dt;
+			m_fCurrentHeight -= dt * 10.0f;
 			float fMinHeight = (m_fCapsHeightCrouch - m_fCapsRadius * 2.0f) / (m_fCapsHeight - m_fCapsRadius * 2.0f);
 			if(m_fCurrentHeight < fMinHeight)
 			{
@@ -233,7 +234,7 @@ void CPlayer::updateInput(float dt)
 		}
 		else
 		{
-			m_fCurrentHeight += dt;
+			m_fCurrentHeight += dt* 10.0f;
 			if(m_fCurrentHeight > 1.0f)
 			{
 				m_fCurrentHeight = 1.0f;
@@ -243,7 +244,37 @@ void CPlayer::updateInput(float dt)
 
 		if(m_uMoveDir & PM_OBSERVER)
 		{
-			setPos(getPos() + m_pHeadEnt->getOrient() * (SMVector3Normalize(dir) * dt));
+			setPos(getPos() + m_pHeadEnt->getOrient() * (SMVector3Normalize(dir) * dt * 10.0f));
+		}
+		else if(m_uMoveDir & PM_LADDER)
+		{
+			if(m_uMoveDir & PM_FORWARD)
+			{
+				float3 vSpeed(0.0f, 3.0f, 0.0f);
+				float3 fNewPos = getPos() + vSpeed * dt;
+				if(m_pLadder->getUpPos().y >= fNewPos.y)
+				{
+					setPos(fNewPos);
+				}
+				else
+				{
+					setPos(m_pLadder->getUpPos());
+				}
+			}
+			else if(m_uMoveDir & PM_BACKWARD)
+			{
+				float3 vSpeed(0.0f, -3.0f, 0.0f);
+				float3 fNewPos = getPos() + vSpeed * dt;
+				if(m_pLadder->getPos().y <= fNewPos.y)
+				{
+					setPos(fNewPos);
+				}
+				else
+				{
+					setPos(m_pLadder->getPos());
+				}
+			}
+			m_vCurrentSpeed = {0.0f, 0.0f, 0.0f};
 		}
 		else
 		{
@@ -302,7 +333,7 @@ void CPlayer::updateInput(float dt)
 				}
 				else
 				{
-					m_vCurrentSpeed = (float3)(m_vCurrentSpeed + SMVector3Normalize(fAccelDir) * fAccel * dt);
+					m_vCurrentSpeed = (float3)(m_vCurrentSpeed + SMVector3Normalize(fAccelDir) * fAccel * dt * 10.0f);
 
 					if(SMVector3Dot(m_vCurrentSpeed, m_vTargetSpeed) > SM_PIDIV2 && SMVector3Length2(m_vCurrentSpeed) > SMVector3Length2(m_vTargetSpeed))
 					{
@@ -328,7 +359,7 @@ void CPlayer::updateInput(float dt)
 
 					
 
-					m_fViewbobStep += dt * *cl_bob_period * fBobCoeff;
+					m_fViewbobStep += dt * 10.0f * *cl_bob_period * fBobCoeff;
 					
 
 					/*if(m_uMoveDir & PM_RUN)

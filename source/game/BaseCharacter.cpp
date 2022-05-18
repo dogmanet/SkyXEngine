@@ -8,6 +8,7 @@ See the license in LICENSE
 #include "GameData.h"
 #include "BaseTool.h"
 #include "BaseWeapon.h"
+#include "FuncLadder.h"
 
 #include <aigrid/sxaigrid.h>
 
@@ -128,6 +129,26 @@ CBaseCharacter::~CBaseCharacter()
 	}
 }
 
+void CBaseCharacter::mountToLadder(CFuncLadder *pLadder)
+{
+	if(m_pLadder == pLadder)
+	{
+		return;
+	}
+	m_pLadder = pLadder;
+	float3 vStart = m_pLadder->getPos(), vEnd = m_pLadder->getUpPos();
+
+	float3 vPointOnLadder = SMProjectPointOnLine(getPos(), vEnd, vEnd - vStart);
+	setPos(vPointOnLadder);
+	m_uMoveDir |= PM_LADDER;
+	m_pCharacter->setGravity({0, 0, 0});
+	m_pCharacter->setVelocityForTimeInterval({0, 0, 0}, 0);
+}
+
+void CBaseCharacter::dismountFromLadder()
+{
+	m_pLadder = NULL;
+}
 
 void CBaseCharacter::attack(BOOL state)
 {
@@ -528,7 +549,7 @@ void CBaseCharacter::use(bool start)
 		float3 end = start + dir * 2.0f;
 
 		CClosestNotMeRayResultCallback cb(m_pGhostObject);
-		GetPhysWorld()->rayTest(start, end, &cb);
+		GetPhysWorld()->rayTest(start, end, &cb, CG_CHARACTER, CG_ALL ^ (CG_HITBOX | CG_STATIC | CG_TRIGGER | CG_WATER));
 
 		if(cb.hasHit() && cb.m_result.pCollisionObject->getUserPointer() && cb.m_result.pCollisionObject->getUserTypeId() == 1)
 		{

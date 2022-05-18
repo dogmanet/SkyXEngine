@@ -36,10 +36,12 @@ enum PLAYER_MOVE
 	PM_RUN = 0x40,       //!< бежать
 	PM_CRAWL = 0x80,     //!< лежать
 	PM_OBSERVER = 0x100, //!< наблюдатель
+	PM_LADDER = 0x200,   //!< лестница
 
 	PM_STOP = 0xFFFF
 };
 
+class CFuncLadder;
 class CHUDcontroller;
 
 class CBaseCharacter;
@@ -134,6 +136,10 @@ public:
 
 	void onPostLoad() override;
 
+	void mountToLadder(CFuncLadder *pLadder);
+
+	void dismountFromLadder();
+
 protected:
 	//! Фонарик
 	CLightDirectional* m_flashlight;
@@ -184,6 +190,7 @@ protected:
 
 	virtual float3 getHeadOffset();
 
+	CFuncLadder *m_pLadder = NULL;
 private:
 	static IEventChannel<XEventPhysicsStep> *m_pTickEventChannel;
 	CCharacterPhysicsTickEventListener m_physicsTicker;
