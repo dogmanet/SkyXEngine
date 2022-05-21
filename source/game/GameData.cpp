@@ -32,6 +32,8 @@ See the license in LICENSE
 
 #include <xUI/IXUI.h>
 
+#include <xcommon/particles/IXParticleSystem.h>
+
 CPlayer* GameData::m_pPlayer;
 CPointCamera* GameData::m_pActiveCamera;
 gui::IGUI* GameData::m_pGUI = NULL;
@@ -367,7 +369,7 @@ const char* XMETHODCALLTYPE CLevelLoadTask::getName()
 //##########################################################################
 
 GameData::GameData(HWND hWnd, bool isGame):
-	m_hWnd(hWnd)
+m_hWnd(hWnd)
 {
 	IXSoundSystem *pSound = (IXSoundSystem*)(Core_GetIXCore()->getPluginManager()->getInterface(IXSOUNDSYSTEM_GUID));
 	m_pGameLayer = pSound->findLayer("xGame");
@@ -427,36 +429,36 @@ GameData::GameData(HWND hWnd, bool isGame):
 		switch(pData->type)
 		{
 		case XEventLevel::TYPE_LOAD:
-			{
-				auto pEventChannel = Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID);
-				XEventLevelProgress ev;
-				ev.szLoadingText = "Загрузка объектов игрового мира";
-				ev.idPlugin = -3;
-				ev.type = XEventLevelProgress::TYPE_PROGRESS_BEGIN;
-				ev.fProgress = 0.0f;
-				pEventChannel->broadcastEvent(&ev);
+		{
+			auto pEventChannel = Core_GetIXCore()->getEventChannel<XEventLevelProgress>(EVENT_LEVEL_PROGRESS_GUID);
+			XEventLevelProgress ev;
+			ev.szLoadingText = "Загрузка объектов игрового мира";
+			ev.idPlugin = -3;
+			ev.type = XEventLevelProgress::TYPE_PROGRESS_BEGIN;
+			ev.fProgress = 0.0f;
+			pEventChannel->broadcastEvent(&ev);
 
-				char szPath[256];
-				sprintf(szPath, "levels/%s/%s.ent", pData->szLevelName, pData->szLevelName);
-				LibReport(REPORT_MSG_LEVEL_NOTICE, "loading entities\n");
-				GameData::m_pMgr->import(szPath, true);
+			char szPath[256];
+			sprintf(szPath, "levels/%s/%s.ent", pData->szLevelName, pData->szLevelName);
+			LibReport(REPORT_MSG_LEVEL_NOTICE, "loading entities\n");
+			GameData::m_pMgr->import(szPath, true);
 
-				ev.type = XEventLevelProgress::TYPE_PROGRESS_END;
-				ev.fProgress = 1.0f;
-				pEventChannel->broadcastEvent(&ev);
-			}
-			break;
+			ev.type = XEventLevelProgress::TYPE_PROGRESS_END;
+			ev.fProgress = 1.0f;
+			pEventChannel->broadcastEvent(&ev);
+		}
+		break;
 
 		case XEventLevel::TYPE_UNLOAD:
 			GameData::m_pMgr->unloadObjLevel();
 			break;
 		case XEventLevel::TYPE_SAVE:
-			{
-				char szPath[256];
-				sprintf(szPath, "levels/%s/%s.ent", pData->szLevelName, pData->szLevelName);
-				GameData::m_pMgr->exportList(szPath);
-			}
-			break;
+		{
+			char szPath[256];
+			sprintf(szPath, "levels/%s/%s.ent", pData->szLevelName, pData->szLevelName);
+			GameData::m_pMgr->exportList(szPath);
+		}
+		break;
 
 		case XEventLevel::TYPE_LOAD_END:
 			GameData::m_isLevelLoaded = true;
@@ -632,12 +634,12 @@ GameData::GameData(HWND hWnd, bool isGame):
 	//Core_0RegisterCVarFloat("r_default_fov", 45.0f, "Default FOV value");
 	Core_0RegisterCVarBool("cl_mode_editor", false, "Editor control mode");
 	Core_0RegisterCVarBool("cl_grab_cursor", false, "Grab cursor on move");
-	
+
 	Core_0RegisterCVarFloat("cl_mousesense", 2.0f, "Mouse sense value");
 	Core_0RegisterCVarBool("cl_invert_y", false, "Invert Y axis");
 
 	Core_0RegisterCVarBool("dev_reset_world_on_run", false, "Reset world on level run");
-		
+
 
 	Core_0RegisterCVarBool("cl_bob", true, "View bobbing");
 	Core_0RegisterCVarFloat("cl_bob_y", 0.1f, "View bobbing base y amplitude");
@@ -803,7 +805,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		{
 			pNode->removeChild((*(pNode->getChilds()))[1]);
 		}
-		
+
 		int iModesCount = 0;
 		const DEVMODE * pModes = SGCore_GetModes(&iModesCount);
 
@@ -825,7 +827,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 	m_pGUIStack->registerCallback("settings_commit", [](gui::IEvent * ev){
 
 		bool isNewExists = Core_GetIXCore()->getFileSystem()->fileExists("user_settings.cfg");
-		
+
 		CSettingsWriter settingsWriter(Core_GetIXCore()->getFileSystem());
 		settingsWriter.loadFile(isNewExists ? "user_settings.cfg" : "../config_game_user_auto.cfg");
 
@@ -862,7 +864,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 		}
 
 		settingsWriter.saveFile("user_settings.cfg");
-		
+
 		GameData::m_pGUIStack->popDesktop();
 	});
 	m_pGUIStack->registerCallback("controls_commit", [](gui::IEvent * ev){
@@ -871,7 +873,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 
 		CSettingsWriter settingsWriter(Core_GetIXCore()->getFileSystem());
 		settingsWriter.loadFile(isNewExists ? "user_settings.cfg" : "../config_game_user_auto.cfg");
-		
+
 		gui::IDesktop * pSettingsDesktop = GameData::m_pGUIStack->getActiveDesktop();
 		gui::dom::IDOMdocument * doc = pSettingsDesktop->getDocument();
 		auto pItems = doc->getElementsByClass(L"cctable_row");
@@ -1025,7 +1027,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 			GameData::m_pGUIStack->popDesktop();
 		}
 	});
-	
+
 	m_pGUIStack->registerCallback("settings_ctl_key", [](gui::IEvent * ev){
 		if(ev->key != KEY_LBUTTON)
 		{
@@ -1040,7 +1042,7 @@ GameData::GameData(HWND hWnd, bool isGame):
 			(const wchar_t*)CMB2WC("Отмена"),
 			L"bind_cancel",
 			NULL
-		);
+			);
 
 		GameData::m_pCell = ev->target;
 
@@ -1181,6 +1183,28 @@ GameData::GameData(HWND hWnd, bool isGame):
 	else
 	{
 		m_pMgr->setEditorMode(true);
+	}
+
+	IXParticleSystem *pPS = (IXParticleSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXPARTICLESYSTEM_GUID);
+	if(pPS)
+	{
+		IXParticleEffect *pEffect;
+		if(pPS->getEffect("test", &pEffect) || pPS->newEffect("test", &pEffect))
+		{
+			if(!pEffect->getEmitterCount())
+			{
+				pEffect->setEmitterCount(1);
+				pEffect->save();
+			}
+
+			IXParticlePlayer *pPlayer;
+			pPS->newEffectPlayer(pEffect, &pPlayer);
+
+			pPlayer->play();
+
+			//mem_release(pPlayer);
+			//mem_release(pEffect);
+		}
 	}
 }
 GameData::~GameData()

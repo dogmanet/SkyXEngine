@@ -119,6 +119,10 @@ void CParticleSystem::sync()
 		switch(item.cmd)
 		{
 		case PlayerQueueItem::PQI_ADD:
+			if(m_pDevice)
+			{
+				item.pPlayer->setDevice(m_pDevice);
+			}
 			m_aPlayers.push_back(item.pPlayer);
 			break;
 
@@ -149,4 +153,50 @@ CParticleEffectEmitter* CParticleSystem::allocEmitter()
 {
 	ScopedSpinLock lock(m_slEmittersPool);
 	return(m_poolEmitters.Alloc(this));
+}
+
+void CParticleSystem::setDevice(IGXDevice *pDevice)
+{
+	m_pDevice = pDevice;
+
+	if(pDevice)
+	{
+		fora(i, m_aPlayers)
+		{
+			m_aPlayers[i]->setDevice(pDevice);
+		}
+	}
+}
+void CParticleSystem::setMaterialSystem(IXMaterialSystem *pMaterialSystem)
+{
+	m_pMaterialSystem = pMaterialSystem;
+	XVertexFormatHandler *pFormat = pMaterialSystem->getVertexFormat("xSceneGeneric");
+	m_pVertexShaderHandler = pMaterialSystem->registerVertexShader(pFormat, "base/particles.vs");
+}
+
+void CParticleSystem::newVisData(IXRenderableVisibility **ppVisibility)
+{
+	*ppVisibility = NULL;
+}
+void CParticleSystem::render(IXRenderableVisibility *pVisibility)
+{
+	// TODO Use pVisibility
+
+	if(m_pMaterialSystem)
+	{
+		static IXMaterial *s_pMat = NULL;
+		if(!s_pMat)
+		{
+			m_pMaterialSystem->loadMaterial("dev_white", &s_pMat);
+		}
+
+		m_pMaterialSystem->bindVS(m_pVertexShaderHandler);
+
+		m_pMaterialSystem->bindMaterial(s_pMat);
+
+		fora(i, m_aPlayers)
+		{
+			m_aPlayers[i]->render();
+		}
+	}
 }

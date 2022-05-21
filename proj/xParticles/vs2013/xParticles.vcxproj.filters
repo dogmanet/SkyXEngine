@@ -49,6 +49,9 @@
     <ClCompile Include="..\..\..\source\xParticles\ParticleEffectEmitterShapeData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\xParticles\Renderable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\xcommon\particles\IXParticleSystem.h">
@@ -88,6 +91,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\xParticles\Updatable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xParticles\Renderable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -104,7 +104,7 @@ private:
 	IGXRenderBuffer *m_pTrisRB = NULL;
 	IGXVertexBuffer *m_pTrisVB = NULL;
 
-	IGXConstantBuffer *m_pRightVecCB = NULL;
+	//IGXConstantBuffer *m_pRightVecCB = NULL;
 	static bool s_isShadersLoaded;
 	static ID s_idShaders[2][2][2]; // [isTextured][is3D][isFixed]
 

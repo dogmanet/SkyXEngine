@@ -82,12 +82,12 @@ CGizmoRenderer::CGizmoRenderer(CRenderUtils *pRenderUtils, IGXDevice *pDev):
 	}
 
 
-	m_pRightVecCB = pDev->createConstantBuffer(sizeof(float3));
+	//m_pRightVecCB = pDev->createConstantBuffer(sizeof(float3));
 }
 CGizmoRenderer::~CGizmoRenderer()
 {
 	mem_release(m_pRenderUtils);
-	mem_release(m_pRightVecCB);
+	//mem_release(m_pRightVecCB);
 
 	if(--s_uResRefCount)
 	{
@@ -239,9 +239,9 @@ void XMETHODCALLTYPE CGizmoRenderer::render(bool isOrtho, bool useConstantSize, 
 	IGXDepthStencilState *pDS = pCtx->getDepthStencilState();
 	pCtx->setDepthStencilState(isOrtho ? s_pDSState2D : s_pDSState3D);
 	
-	float3 vRight = gdata::pCamera->getRight();
-	m_pRightVecCB->update(&vRight);
-	pCtx->setVSConstant(m_pRightVecCB, 6);
+	//float3 vRight = gdata::pCamera->getRight();
+	//m_pRightVecCB->update(&vRight);
+	//pCtx->setVSConstant(m_pRightVecCB, 6);
 
 	pCtx->setRenderBuffer(m_pPointsRB);
 	pCtx->setIndexBuffer(m_pPointsIB);

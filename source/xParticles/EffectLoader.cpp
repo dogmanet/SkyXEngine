@@ -13,7 +13,7 @@ static char* WriteCurve(char* szCur, IXAnimationCurve *pCurve)
 	for(UINT i = 0, l = pCurve->getKeyframeCount(); i < l; ++i)
 	{
 		pFrame = pCurve->getKeyAt(i);
-		szCur += sprintf(szCur, "%s[%g,%g,%g,%g]", i == 0 ? "" : ",", pFrame->fTime, pFrame->fValue, pFrame->fInTangent, pFrame->fOutTangent);
+		szCur += sprintf(szCur, "%s[%g,%g,%g,%g,%u,%g,%g]", i == 0 ? "" : ",", pFrame->fTime, pFrame->fValue, pFrame->fInTangent, pFrame->fOutTangent, pFrame->weightedMode, pFrame->fInWeight, pFrame->fOutWeight);
 	}
 	szCur += sprintf(szCur, "],\"pre\":%d,\"post\":%d}", pCurve->getPreWrapMode(), pCurve->getPostWrapMode());
 
@@ -47,6 +47,11 @@ void ReadCurve(IXJSONObject *pObj, IXAnimationCurve *pCurve)
 						pKeyArr->at(1) && pKeyArr->at(1)->getFloat(&keyFrame.fValue);
 						pKeyArr->at(2) && pKeyArr->at(2)->getFloat(&keyFrame.fInTangent);
 						pKeyArr->at(3) && pKeyArr->at(3)->getFloat(&keyFrame.fOutTangent);
+						int64_t i64WeightedMode = 0;
+						pKeyArr->at(4) && pKeyArr->at(4)->getInt64(&i64WeightedMode);
+						keyFrame.weightedMode = (XKEYFRAME_WEIGHTED_MODE)i64WeightedMode;
+						pKeyArr->at(5) && pKeyArr->at(5)->getFloat(&keyFrame.fInWeight);
+						pKeyArr->at(6) && pKeyArr->at(6)->getFloat(&keyFrame.fOutWeight);
 
 						pCurve->setKey(j, keyFrame);
 					}
@@ -183,6 +188,7 @@ bool CEffectLoader::loadFromFile(const char *szFile, CParticleEffect *pEffect)
 			int iVal;
 			UINT uVal;
 			bool bVal;
+			float3_t v3Val;
 			float4_t vVal;
 
 #define READ_VAL(mod, what, data, type, var, etype) if(pConfig->tryGet##type(szSection, mod "." #what, &var)){data->set##what(etype var);}
@@ -190,10 +196,13 @@ bool CEffectLoader::loadFromFile(const char *szFile, CParticleEffect *pEffect)
 #define READ_INT(mod, what, data, type) READ_VAL(mod, what, data, Int, iVal, (type))
 #define READ_UINT(mod, what, data) READ_VAL(mod, what, data, Uint, uVal, _VOID)
 #define READ_BOOL(mod, what, data) READ_VAL(mod, what, data, Bool, bVal, _VOID)
+#define READ_V3(mod, what, data) READ_VAL(mod, what, data, Vector3, v3Val, _VOID)
 #define READ_V4(mod, what, data) READ_VAL(mod, what, data, Vector4, vVal, _VOID)
 
 			for(UINT i = 0; i < uEmitterCount; ++i)
 			{
+				sprintf(szSection, "emitter_%u", i);
+
 				IXParticleEffectEmitter *pEmitter = pEffect->getEmitterAt(i);
 
 				auto *pGenericData = pEmitter->getGenericData();
@@ -265,6 +274,7 @@ bool CEffectLoader::loadFromFile(const char *szFile, CParticleEffect *pEffect)
 				READ_FLOAT("shape", RandomizeDirection, pShapeData);
 				READ_FLOAT("shape", SpherizeDirection, pShapeData);
 				READ_FLOAT("shape", RandomizePosition, pShapeData);
+				READ_V3("shape", Size, pShapeData);
 
 				auto *pVelocityLifetimeData = pEmitter->getVelocityLifetimeData();
 				if(pConfig->tryGetBool(szSection, "velocityLifetime.Enabled", &bVal))
@@ -295,6 +305,8 @@ bool CEffectLoader::loadFromFile(const char *szFile, CParticleEffect *pEffect)
 				ReadMinMaxCurve(pConfig, szSection, "limitVelocityLifetime.DragCurve", pLimitVelocityLifetimeData->getDragCurve());
 				READ_BOOL("limitVelocityLifetime", MultiplyBySize, pLimitVelocityLifetimeData);
 				READ_BOOL("limitVelocityLifetime", MultiplyByVelocity, pLimitVelocityLifetimeData);
+
+				isLoaded = true;
 			}
 
 #undef READ_V4
@@ -320,112 +332,111 @@ bool CEffectLoader::saveToFile(const char *szFile, CParticleEffect *pEffect)
 
 	bool isSaved = false;
 
-	if(pConfig->open(szFile))
+	pConfig->open(szFile);
+	/*
+	[effect]
+	emitters = <int>
+
+	[emitter_<n>]
+	<module>.<key> = <val>
+	*/
+	pConfig->setUint("effect", "emitters", pEffect->getEmitterCount());
+
+	char szSection[64], szKey[64];
+	for(UINT i = 0, l = pEffect->getEmitterCount(); i < l; ++i)
 	{
-		/*
-		[effect]
-		emitters = <int>
+		sprintf(szSection, "emitter_%u", i);
 
-		[emitter_<n>]
-		<module>.<key> = <val>
-		*/
-		pConfig->setUint("effect", "emitters", pEffect->getEmitterCount());
+		IXParticleEffectEmitter *pEmitter = pEffect->getEmitterAt(i);
 
-		char szSection[64], szKey[64];
-		for(UINT i = 0, l = pEffect->getEmitterCount(); i < l; ++i)
+		auto *pGenericData = pEmitter->getGenericData();
+		pConfig->setFloat(szSection, "generic.Duration", pGenericData->getDuration());
+		pConfig->setBool(szSection, "generic.Looping", pGenericData->getLooping());
+		pConfig->setBool(szSection, "generic.Prewarm", pGenericData->getPrewarm());
+		pConfig->setFloat(szSection, "generic.StartDelay", pGenericData->getStartDelay());
+		SaveMinMaxCurve(pConfig, szSection, "generic.StartLifetimeCurve", pGenericData->getStartLifetimeCurve());
+		SaveMinMaxCurve(pConfig, szSection, "generic.StartSpeedCurve", pGenericData->getStartSpeedCurve());
+		SaveMinMaxCurve(pConfig, szSection, "generic.StartSizeCurve", pGenericData->getStartSizeCurve());
+		pConfig->setFloat(szSection, "generic.FlipRotation", pGenericData->getFlipRotation());
+		pConfig->setInt(szSection, "generic.CullingMode", pGenericData->getCullingMode());
+		pConfig->setFloat(szSection, "generic.GravityModifier", pGenericData->getGravityModifier());
+		pConfig->setUint(szSection, "generic.MaxParticles", pGenericData->getMaxParticles());
+		pConfig->setInt(szSection, "generic.RingBufferMode", pGenericData->getRingBufferMode());
+		SaveMinMaxCurve(pConfig, szSection, "generic.RingBufferLoopRangeCurve", pGenericData->getRingBufferLoopRangeCurve());
+		pConfig->setInt(szSection, "generic.SimulationSpace", pGenericData->getSimulationSpace());
+		pConfig->setVector4(szSection, "generic.StartColor", pGenericData->getStartColor());
+		SaveMinMaxCurve(pConfig, szSection, "generic.StartRotationCurve", pGenericData->getStartRotationCurve());
+		pConfig->setBool(szSection, "generic.StartRotationSeparate", pGenericData->getStartRotationSeparate());
+		SaveMinMaxCurve(pConfig, szSection, "generic.StartRotationXCurve", pGenericData->getStartRotationXCurve());
+		SaveMinMaxCurve(pConfig, szSection, "generic.StartRotationYCurve", pGenericData->getStartRotationYCurve());
+		SaveMinMaxCurve(pConfig, szSection, "generic.StartRotationZCurve", pGenericData->getStartRotationZCurve());
+		pConfig->setBool(szSection, "generic.StartSizeSeparate", pGenericData->getStartSizeSeparate());
+		SaveMinMaxCurve(pConfig, szSection, "generic.StartSizeXCurve", pGenericData->getStartSizeXCurve());
+		SaveMinMaxCurve(pConfig, szSection, "generic.StartSizeYCurve", pGenericData->getStartSizeYCurve());
+		SaveMinMaxCurve(pConfig, szSection, "generic.StartSizeZCurve", pGenericData->getStartSizeZCurve());
+
+		auto *pEmissionData = pEmitter->getEmissionData();
+		SaveMinMaxCurve(pConfig, szSection, "emission.RatePerSecondCurve", pEmissionData->getRatePerSecondCurve());
+		SaveMinMaxCurve(pConfig, szSection, "emission.RatePerMeterCurve", pEmissionData->getRatePerMeterCurve());
+		pConfig->setUint(szSection, "emission.BurstsCount", pEmissionData->getBurstsCount());
+		for(UINT j = 0, jl = pEmissionData->getBurstsCount(); j < jl; ++j)
 		{
-			sprintf(szSection, "emitter_%u", i);
-
-			IXParticleEffectEmitter *pEmitter = pEffect->getEmitterAt(i);
-
-			auto *pGenericData = pEmitter->getGenericData();
-			pConfig->setFloat(szSection, "generic.Duration", pGenericData->getDuration());
-			pConfig->setBool(szSection, "generic.Looping", pGenericData->getLooping());
-			pConfig->setBool(szSection, "generic.Prewarm", pGenericData->getPrewarm());
-			pConfig->setFloat(szSection, "generic.StartDelay", pGenericData->getStartDelay());
-			SaveMinMaxCurve(pConfig, szSection, "generic.StartLifetimeCurve", pGenericData->getStartLifetimeCurve());
-			SaveMinMaxCurve(pConfig, szSection, "generic.StartSpeedCurve", pGenericData->getStartSpeedCurve());
-			SaveMinMaxCurve(pConfig, szSection, "generic.StartSizeCurve", pGenericData->getStartSizeCurve());
-			pConfig->setFloat(szSection, "generic.FlipRotation", pGenericData->getFlipRotation());
-			pConfig->setInt(szSection, "generic.CullingMode", pGenericData->getCullingMode());
-			pConfig->setFloat(szSection, "generic.GravityModifier", pGenericData->getGravityModifier());
-			pConfig->setUint(szSection, "generic.MaxParticles", pGenericData->getMaxParticles());
-			pConfig->setInt(szSection, "generic.RingBufferMode", pGenericData->getRingBufferMode());
-			SaveMinMaxCurve(pConfig, szSection, "generic.RingBufferLoopRangeCurve", pGenericData->getRingBufferLoopRangeCurve());
-			pConfig->setInt(szSection, "generic.SimulationSpace", pGenericData->getSimulationSpace());
-			pConfig->setVector4(szSection, "generic.StartColor", pGenericData->getStartColor());
-			SaveMinMaxCurve(pConfig, szSection, "generic.StartRotationCurve", pGenericData->getStartRotationCurve());
-			pConfig->setBool(szSection, "generic.StartRotationSeparate", pGenericData->getStartRotationSeparate());
-			SaveMinMaxCurve(pConfig, szSection, "generic.StartRotationXCurve", pGenericData->getStartRotationXCurve());
-			SaveMinMaxCurve(pConfig, szSection, "generic.StartRotationYCurve", pGenericData->getStartRotationYCurve());
-			SaveMinMaxCurve(pConfig, szSection, "generic.StartRotationZCurve", pGenericData->getStartRotationZCurve());
-			pConfig->setBool(szSection, "generic.StartSizeSeparate", pGenericData->getStartSizeSeparate());
-			SaveMinMaxCurve(pConfig, szSection, "generic.StartSizeXCurve", pGenericData->getStartSizeXCurve());
-			SaveMinMaxCurve(pConfig, szSection, "generic.StartSizeYCurve", pGenericData->getStartSizeYCurve());
-			SaveMinMaxCurve(pConfig, szSection, "generic.StartSizeZCurve", pGenericData->getStartSizeZCurve());
-
-			auto *pEmissionData = pEmitter->getEmissionData();
-			SaveMinMaxCurve(pConfig, szSection, "emission.RatePerSecondCurve", pEmissionData->getRatePerSecondCurve());
-			SaveMinMaxCurve(pConfig, szSection, "emission.RatePerMeterCurve", pEmissionData->getRatePerMeterCurve());
-			pConfig->setUint(szSection, "emission.BurstsCount", pEmissionData->getBurstsCount());
-			for(UINT j = 0, jl = pEmissionData->getBurstsCount(); j < jl; ++j)
-			{
-				IXParticleBurst *pBurst = pEmissionData->getBurstAt(j);
-				sprintf(szKey, "emission.Burst_%u.Time", j);
-				pConfig->setFloat(szSection, szKey, pBurst->getTime());
-				sprintf(szKey, "emission.Burst_%u.Cycles", j);
-				pConfig->setUint(szSection, szKey, pBurst->getCycles());
-				sprintf(szKey, "emission.Burst_%u.Probability", j);
-				pConfig->setFloat(szSection, szKey, pBurst->getProbability());
-				sprintf(szKey, "emission.Burst_%u.IntervalCurve", j);
-				SaveMinMaxCurve(pConfig, szSection, szKey, pBurst->getIntervalCurve());
-			}
-
-			auto *pShapeData = pEmitter->getShapeData();
-			pConfig->setInt(szSection, "shape.Shape", pShapeData->getShape());
-			pConfig->setFloat(szSection, "shape.Radius", pShapeData->getRadius());
-			pConfig->setFloat(szSection, "shape.RadiusThickness", pShapeData->getRadiusThickness());
-			pConfig->setFloat(szSection, "shape.Angle", pShapeData->getAngle());
-			pConfig->setFloat(szSection, "shape.Arc", pShapeData->getArc());
-			pConfig->setInt(szSection, "shape.ArcMode", pShapeData->getArcMode());
-			pConfig->setFloat(szSection, "shape.ArcSpread", pShapeData->getArcSpread());
-			SaveMinMaxCurve(pConfig, szSection, "shape.ArcSpeedCurve", pShapeData->getArcSpeedCurve());
-			pConfig->setFloat(szSection, "shape.Length", pShapeData->getLength());
-			pConfig->setInt(szSection, "shape.ConeEmitFrom", pShapeData->getConeEmitFrom());
-			pConfig->setInt(szSection, "shape.BoxEmitFrom", pShapeData->getBoxEmitFrom());
-			pConfig->setFloat(szSection, "shape.DonutRadius", pShapeData->getDonutRadius());
-			pConfig->setBool(szSection, "shape.AlignToDirection", pShapeData->getAlignToDirection());
-			pConfig->setFloat(szSection, "shape.RandomizeDirection", pShapeData->getRandomizeDirection());
-			pConfig->setFloat(szSection, "shape.SpherizeDirection", pShapeData->getSpherizeDirection());
-			pConfig->setFloat(szSection, "shape.RandomizePosition", pShapeData->getRandomizePosition());
-
-			auto *pVelocityLifetimeData = pEmitter->getVelocityLifetimeData();
-			pConfig->setBool(szSection, "velocityLifetime.Enabled", pVelocityLifetimeData->isEnabled());
-			SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.LinearXCurve", pVelocityLifetimeData->getLinearXCurve());
-			SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.LinearYCurve", pVelocityLifetimeData->getLinearYCurve());
-			SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.LinearZCurve", pVelocityLifetimeData->getLinearZCurve());
-			pConfig->setInt(szSection, "velocityLifetime.SimulationSpace", pVelocityLifetimeData->getSimulationSpace());
-			SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.OrbitalXCurve", pVelocityLifetimeData->getOrbitalXCurve());
-			SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.OrbitalYCurve", pVelocityLifetimeData->getOrbitalYCurve());
-			SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.OrbitalZCurve", pVelocityLifetimeData->getOrbitalZCurve());
-			SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.OffsetXCurve", pVelocityLifetimeData->getOffsetXCurve());
-			SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.OffsetYCurve", pVelocityLifetimeData->getOffsetYCurve());
-			SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.OffsetZCurve", pVelocityLifetimeData->getOffsetZCurve());
-			SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.RadialCurve", pVelocityLifetimeData->getRadialCurve());
-			SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.SpeedModifierCurve", pVelocityLifetimeData->getSpeedModifierCurve());
-
-			auto *pLimitVelocityLifetimeData = pEmitter->getLimitVelocityLifetimeData();
-			pConfig->setBool(szSection, "limitVelocityLifetime.Enabled", pLimitVelocityLifetimeData->isEnabled());
-			pConfig->setBool(szSection, "limitVelocityLifetime.SeparateAxes", pLimitVelocityLifetimeData->getSeparateAxes());
-			SaveMinMaxCurve(pConfig, szSection, "limitVelocityLifetime.SpeedCurve", pLimitVelocityLifetimeData->getSpeedCurve());
-			SaveMinMaxCurve(pConfig, szSection, "limitVelocityLifetime.DampenCurve", pLimitVelocityLifetimeData->getDampenCurve());
-			SaveMinMaxCurve(pConfig, szSection, "limitVelocityLifetime.DragCurve", pLimitVelocityLifetimeData->getDragCurve());
-			pConfig->setBool(szSection, "limitVelocityLifetime.MultiplyBySize", pLimitVelocityLifetimeData->getMultiplyBySize());
-			pConfig->setBool(szSection, "limitVelocityLifetime.MultiplyByVelocity", pLimitVelocityLifetimeData->getMultiplyByVelocity());
+			IXParticleBurst *pBurst = pEmissionData->getBurstAt(j);
+			sprintf(szKey, "emission.Burst_%u.Time", j);
+			pConfig->setFloat(szSection, szKey, pBurst->getTime());
+			sprintf(szKey, "emission.Burst_%u.Cycles", j);
+			pConfig->setUint(szSection, szKey, pBurst->getCycles());
+			sprintf(szKey, "emission.Burst_%u.Probability", j);
+			pConfig->setFloat(szSection, szKey, pBurst->getProbability());
+			sprintf(szKey, "emission.Burst_%u.IntervalCurve", j);
+			SaveMinMaxCurve(pConfig, szSection, szKey, pBurst->getIntervalCurve());
 		}
 
-		isSaved = pConfig->save();
+		auto *pShapeData = pEmitter->getShapeData();
+		pConfig->setInt(szSection, "shape.Shape", pShapeData->getShape());
+		pConfig->setFloat(szSection, "shape.Radius", pShapeData->getRadius());
+		pConfig->setFloat(szSection, "shape.RadiusThickness", pShapeData->getRadiusThickness());
+		pConfig->setFloat(szSection, "shape.Angle", pShapeData->getAngle());
+		pConfig->setFloat(szSection, "shape.Arc", pShapeData->getArc());
+		pConfig->setInt(szSection, "shape.ArcMode", pShapeData->getArcMode());
+		pConfig->setFloat(szSection, "shape.ArcSpread", pShapeData->getArcSpread());
+		SaveMinMaxCurve(pConfig, szSection, "shape.ArcSpeedCurve", pShapeData->getArcSpeedCurve());
+		pConfig->setFloat(szSection, "shape.Length", pShapeData->getLength());
+		pConfig->setInt(szSection, "shape.ConeEmitFrom", pShapeData->getConeEmitFrom());
+		pConfig->setInt(szSection, "shape.BoxEmitFrom", pShapeData->getBoxEmitFrom());
+		pConfig->setFloat(szSection, "shape.DonutRadius", pShapeData->getDonutRadius());
+		pConfig->setBool(szSection, "shape.AlignToDirection", pShapeData->getAlignToDirection());
+		pConfig->setFloat(szSection, "shape.RandomizeDirection", pShapeData->getRandomizeDirection());
+		pConfig->setFloat(szSection, "shape.SpherizeDirection", pShapeData->getSpherizeDirection());
+		pConfig->setFloat(szSection, "shape.RandomizePosition", pShapeData->getRandomizePosition());
+		pConfig->setVector3(szSection, "shape.Size", pShapeData->getSize());
+
+		auto *pVelocityLifetimeData = pEmitter->getVelocityLifetimeData();
+		pConfig->setBool(szSection, "velocityLifetime.Enabled", pVelocityLifetimeData->isEnabled());
+		SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.LinearXCurve", pVelocityLifetimeData->getLinearXCurve());
+		SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.LinearYCurve", pVelocityLifetimeData->getLinearYCurve());
+		SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.LinearZCurve", pVelocityLifetimeData->getLinearZCurve());
+		pConfig->setInt(szSection, "velocityLifetime.SimulationSpace", pVelocityLifetimeData->getSimulationSpace());
+		SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.OrbitalXCurve", pVelocityLifetimeData->getOrbitalXCurve());
+		SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.OrbitalYCurve", pVelocityLifetimeData->getOrbitalYCurve());
+		SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.OrbitalZCurve", pVelocityLifetimeData->getOrbitalZCurve());
+		SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.OffsetXCurve", pVelocityLifetimeData->getOffsetXCurve());
+		SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.OffsetYCurve", pVelocityLifetimeData->getOffsetYCurve());
+		SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.OffsetZCurve", pVelocityLifetimeData->getOffsetZCurve());
+		SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.RadialCurve", pVelocityLifetimeData->getRadialCurve());
+		SaveMinMaxCurve(pConfig, szSection, "velocityLifetime.SpeedModifierCurve", pVelocityLifetimeData->getSpeedModifierCurve());
+
+		auto *pLimitVelocityLifetimeData = pEmitter->getLimitVelocityLifetimeData();
+		pConfig->setBool(szSection, "limitVelocityLifetime.Enabled", pLimitVelocityLifetimeData->isEnabled());
+		pConfig->setBool(szSection, "limitVelocityLifetime.SeparateAxes", pLimitVelocityLifetimeData->getSeparateAxes());
+		SaveMinMaxCurve(pConfig, szSection, "limitVelocityLifetime.SpeedCurve", pLimitVelocityLifetimeData->getSpeedCurve());
+		SaveMinMaxCurve(pConfig, szSection, "limitVelocityLifetime.DampenCurve", pLimitVelocityLifetimeData->getDampenCurve());
+		SaveMinMaxCurve(pConfig, szSection, "limitVelocityLifetime.DragCurve", pLimitVelocityLifetimeData->getDragCurve());
+		pConfig->setBool(szSection, "limitVelocityLifetime.MultiplyBySize", pLimitVelocityLifetimeData->getMultiplyBySize());
+		pConfig->setBool(szSection, "limitVelocityLifetime.MultiplyByVelocity", pLimitVelocityLifetimeData->getMultiplyByVelocity());
 	}
+
+	isSaved = pConfig->save();
 
 	mem_release(pConfig);
 

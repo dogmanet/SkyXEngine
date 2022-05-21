@@ -86,6 +86,18 @@ struct VSI_Animation
 };
 
 
+//! частицы
+struct VSI_Particle
+{
+	float2 vTexUV    :TEXCOORD0;
+	
+	float4 vColor    :COLOR0;
+	float4 qRotation :TEXCOORD1;
+	float3 vPosition :POSITION0;
+	float3 vSize     :TEXCOORD2;
+};
+
+
 //! вода
 struct VSO_WaterPlane
 {

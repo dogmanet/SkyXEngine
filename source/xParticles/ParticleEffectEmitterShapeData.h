@@ -34,8 +34,6 @@ private:
 	float evalArc(float fMaxAngle, float fTime, UINT uCountInGen, UINT uIdInGen);
 
 private:
-	bool m_isEnabled = false;
-
 	XPARTICLE_SHAPE m_shape = XPS_SPHERE;
 	float m_fRadius = 1.0f;
 	float m_fRadiusThickness = 1.0f;
@@ -52,7 +50,7 @@ private:
 	float m_fRandomizeDirection = 0.0f;
 	float m_fSpherizeDirection = 0.0f;
 	float m_fRandomizePosition = 0.0f;
-	float3_t m_vSize;
+	float3_t m_vSize = 1.0f;
 };
 
 #endif

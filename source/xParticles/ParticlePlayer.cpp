@@ -93,6 +93,11 @@ void CParticlePlayer::update(float fDelta)
 	for(UINT i = 0; i < uEmCount; ++i)
 	{
 		m_aEmitters[i].setData(m_pEffect->getEmitterAtInternal(i));
+
+		if(m_pDevice)
+		{
+			m_aEmitters[i].setDevice(m_pDevice);
+		}
 	}
 
 	for(UINT i = 0; i < uEmCount; ++i)
@@ -103,8 +108,26 @@ void CParticlePlayer::update(float fDelta)
 
 float CParticlePlayer::getDeltaPos()
 {
-	assert(!"Not implemented");
+	//assert(!"Not implemented");
 	return(0.0f);
+}
+
+void CParticlePlayer::setDevice(IGXDevice *pDevice)
+{
+	m_pDevice = pDevice;
+
+	fora(i, m_aEmitters)
+	{
+		m_aEmitters[i].setDevice(pDevice);
+	}
+}
+
+void CParticlePlayer::render()
+{
+	fora(i, m_aEmitters)
+	{
+		m_aEmitters[i].render();
+	}
 }
 
 //#############################################################################
@@ -112,11 +135,25 @@ float CParticlePlayer::getDeltaPos()
 CParticlePlayerEmitter::~CParticlePlayerEmitter()
 {
 	mem_release(m_pData);
+
+	mem_release(m_pRenderBuffer);
+	mem_release(m_pVertexBuffer);
+
+	if(m_pDevice)
+	{
+		ReleaseSharedData();
+	}
 }
 
 void CParticlePlayerEmitter::setPlayer(CParticlePlayer *pPlayer)
 {
 	m_pPlayer = pPlayer;
+}
+
+void CParticlePlayerEmitter::setDevice(IGXDevice *pDevice)
+{
+	m_pDevice = pDevice;
+	InitSharedData(m_pDevice);
 }
 
 void CParticlePlayerEmitter::setData(CParticleEffectEmitter *pData)
@@ -151,6 +188,13 @@ void CParticlePlayerEmitter::update(float fDt)
 			m_aParticles.erase(il - 1);
 			--i; --il;
 		}
+	}
+
+	// update movement
+	fora(i, m_aParticles)
+	{
+		Particle &p = m_aParticles[i];
+		p.vPos = p.vPos + p.vSpeed * fDt;
 	}
 
 	// emission controlled by emission module
@@ -248,17 +292,44 @@ void CParticlePlayerEmitter::emitOne(UINT uCountInGen, UINT uIdInGen)
 	newParticle.vPos = vBasePos;
 	newParticle.vSpeed = (float3)(vBaseDir * evalCurve(dataGeneric.m_curveStartSpeed));
 
+	if(dataGeneric.m_bStartSizeSeparate)
+	{
+		newParticle.vSize.x = evalCurve(dataGeneric.m_curveStartSizeX);
+		newParticle.vSize.y = evalCurve(dataGeneric.m_curveStartSizeY);
+		newParticle.vSize.z = evalCurve(dataGeneric.m_curveStartSizeZ);
+	}
+	else
+	{
+		newParticle.vSize = (float3)evalCurve(dataGeneric.m_curveStartSizeX);
+	}
+
+	if(dataGeneric.m_bStartRotationSeparate)
+	{
+		newParticle.qRot = SMQuaternion(SMToRadian(evalCurve(dataGeneric.m_curveStartRotationX)), 'x') *
+			SMQuaternion(SMToRadian(evalCurve(dataGeneric.m_curveStartRotationY)), 'y') *
+			SMQuaternion(SMToRadian(evalCurve(dataGeneric.m_curveStartRotationZ)), 'z');
+	}
+	else
+	{
+		newParticle.qRot = SMQuaternion(SMToRadian(evalCurve(dataGeneric.m_curveStartRotationX)), 'z');
+	}
+
+	if(dataGeneric.m_fFlipRotation > 0.0f && randf(0.0f, 1.0f) <= dataGeneric.m_fFlipRotation)
+	{
+		newParticle.qRot.w *= -1.0f;
+	}
+
 	// m_fFlipRotation          //! Makes some particles spin in the opposite direction
 	// m_curveStartRotationX    //! The initial rotation of particles around the x-axis when emitted.
 	// m_bStartRotationSeparate //! A flag to enable 3D particle rotation.
 
 	// set other properties
 	//+ speed
-	// size
-	// rotation
+	//+ size
+	//+ rotation
 	// spin
 	// space
-	// pos
+	//+ pos
 
 	// shape mod:
 	// pos
@@ -274,4 +345,100 @@ float CParticlePlayerEmitter::evalCurve(const CMinMaxCurve &curve)
 		fLerpFactor = randf(0.0f, 1.0f);
 	}
 	return(curve.evaluate(getTime() / m_pData->m_dataGeneric.m_fDuration, fLerpFactor));
+}
+
+void CParticlePlayerEmitter::updateRenderBuffer()
+{
+	if(m_pDevice && m_uAllocatedInstanceCount != m_aParticles.size())
+	{
+		m_uAllocatedInstanceCount = m_aParticles.size();
+		
+		mem_release(m_pRenderBuffer);
+		mem_release(m_pVertexBuffer);
+
+		m_pVertexBuffer = m_pDevice->createVertexBuffer(sizeof(GpuParticle) * m_uAllocatedInstanceCount, GXBUFFER_USAGE_STREAM);
+
+		IGXVertexBuffer *ppVBs[] = {ms_pVertexBuffer, m_pVertexBuffer};
+		m_pRenderBuffer = m_pDevice->createRenderBuffer(2, ppVBs, ms_pVertexDeclaration);
+	}
+}
+
+UINT CParticlePlayerEmitter::ms_uSharedDataRefCount = 0;
+IGXVertexDeclaration *CParticlePlayerEmitter::ms_pVertexDeclaration = NULL;
+IGXIndexBuffer *CParticlePlayerEmitter::ms_pIndexBuffer = NULL;
+IGXVertexBuffer *CParticlePlayerEmitter::ms_pVertexBuffer = NULL;
+
+void CParticlePlayerEmitter::InitSharedData(IGXDevice *pDev)
+{
+	if(!ms_uSharedDataRefCount)
+	{
+		GXVertexElement oLayout[] =
+		{
+			{0, 0, GXDECLTYPE_FLOAT2, GXDECLUSAGE_TEXCOORD, GXDECLSPEC_PER_VERTEX_DATA},
+
+			{1, 0, GXDECLTYPE_FLOAT4, GXDECLUSAGE_COLOR, GXDECLSPEC_PER_INSTANCE_DATA},
+			{1, 16, GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD1, GXDECLSPEC_PER_INSTANCE_DATA},
+			{1, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_INSTANCE_DATA},
+			{1, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD2, GXDECLSPEC_PER_INSTANCE_DATA},
+			GX_DECL_END()
+		};
+
+		float2_t aVertexData[] = {
+			float2_t(0.0f, 1.0f),
+			float2_t(0.0f, 0.0f),
+			float2_t(1.0f, 0.0f),
+			float2_t(1.0f, 1.0f)
+		};
+
+		ms_pVertexDeclaration = pDev->createVertexDeclaration(oLayout);
+		ms_pVertexBuffer = pDev->createVertexBuffer(sizeof(aVertexData), GXBUFFER_USAGE_STATIC, aVertexData);
+		
+		USHORT pIndices[] = {0, 2, 1, 0, 3, 2};
+		ms_pIndexBuffer = pDev->createIndexBuffer(sizeof(USHORT) * 6, GXBUFFER_USAGE_STATIC, GXIT_UINT16, pIndices);
+	}
+	++ms_uSharedDataRefCount;
+}
+void CParticlePlayerEmitter::ReleaseSharedData()
+{
+	if(--ms_uSharedDataRefCount == 0)
+	{
+		mem_release(ms_pIndexBuffer);
+		mem_release(ms_pVertexDeclaration);
+		mem_release(ms_pVertexBuffer);
+	}
+}
+
+void CParticlePlayerEmitter::render()
+{
+	if(!m_pDevice || !m_aParticles.size())
+	{
+		return;
+	}
+
+	updateRenderBuffer();
+	
+	GpuParticle *pvData;
+	if(m_pVertexBuffer->lock((void**)&pvData, GXBL_WRITE))
+	{
+		fora(i, m_aParticles)
+		{
+			GpuParticle &gp = pvData[i];
+			Particle &p = m_aParticles[i];
+
+			gp.vPos = p.vPos;
+			gp.vSize = p.vSize;
+			gp.vColor = p.vColor;
+			gp.qRotation = p.qRot;
+		}
+		m_pVertexBuffer->unlock();
+	}
+
+	IGXContext *pCtx = m_pDevice->getThreadContext();
+
+	pCtx->setIndexBuffer(ms_pIndexBuffer);
+	pCtx->setRenderBuffer(m_pRenderBuffer);
+
+	// setMaterial
+	
+	pCtx->drawIndexedInstanced(m_aParticles.size(), 4, 2);
 }

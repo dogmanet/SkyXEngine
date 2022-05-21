@@ -12,12 +12,25 @@ enum XCURVE_WRAP_MODE
 	XCWM_PING_PONG
 };
 
+enum XKEYFRAME_WEIGHTED_MODE
+{
+	XKWM_NONE,
+	XKWM_IN,
+	XKWM_OUT,
+	XKWM_BOTH
+};
+
 struct XKeyframe
 {
 	float fTime = 0.0f;
 	float fValue = 0.0f;
 	float fInTangent = 0.0f;
 	float fOutTangent = 0.0f;
+
+	float fInWeight = 0.0f;
+	float fOutWeight = 0.0f;
+
+	XKEYFRAME_WEIGHTED_MODE weightedMode = XKWM_NONE;
 };
 
 class IXAnimationCurve

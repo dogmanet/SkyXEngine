@@ -2,12 +2,6 @@
 
 void CParticleEffectEmitterShapeData::evaluate(float fTime, float3 *pvPos, float3 *pvDir, UINT uCountInGen, UINT uIdInGen)
 {
-	if(!m_isEnabled)
-	{
-		evalSphere(0.1f, 1.0f, false, pvPos, pvDir);
-		return;
-	}
-
 	switch(m_shape)
 	{
 	case XPS_SPHERE:
@@ -108,10 +102,10 @@ void CParticleEffectEmitterShapeData::evaluate(float fTime, float3 *pvPos, float
 				case 0: // x
 					*pvPos = float3(randf(-m_vSize.x, m_vSize.x), (i & 1) ? m_vSize.y : -m_vSize.y, (i & 2) ? m_vSize.z : -m_vSize.z) * 0.5f;
 					break;
-				case 2: // y
+				case 4: // y
 					*pvPos = float3((i & 1) ? m_vSize.x : -m_vSize.x, randf(-m_vSize.y, m_vSize.y), (i & 2) ? m_vSize.z : -m_vSize.z) * 0.5f;
 					break;
-				case 4: // z
+				case 8: // z
 					*pvPos = float3((i & 1) ? m_vSize.x : -m_vSize.x, (i & 2) ? m_vSize.y : -m_vSize.y, randf(-m_vSize.z, m_vSize.z)) * 0.5f;
 					break;
 				}

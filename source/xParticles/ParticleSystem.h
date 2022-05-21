@@ -6,6 +6,7 @@
 #include "ParticleEffect.h"
 #include "ParticlePlayer.h"
 #include <common/queue.h>
+#include <mtrl/IXMaterialSystem.h>
 
 class CParticleSystem final: public IXUnknownImplementation<IXParticleSystem>
 {
@@ -31,6 +32,13 @@ public:
 
 	CParticleEffectEmitter* allocEmitter();
 
+
+	void setDevice(IGXDevice *pDevice);
+	void setMaterialSystem(IXMaterialSystem *pMaterialSystem);
+
+	void newVisData(IXRenderableVisibility **ppVisibility);
+	void render(IXRenderableVisibility *pVisibility);
+
 protected:
 	IXCore *m_pCore;
 
@@ -52,6 +60,10 @@ protected:
 
 	SpinLock m_slEmittersPool;
 	MemAlloc<CParticleEffectEmitter> m_poolEmitters;
+
+	XVertexShaderHandler *m_pVertexShaderHandler = NULL;
+	IGXDevice *m_pDevice = NULL;
+	IXMaterialSystem *m_pMaterialSystem = NULL;
 };
 
 #endif

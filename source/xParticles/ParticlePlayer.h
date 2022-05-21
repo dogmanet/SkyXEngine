@@ -3,6 +3,9 @@
 
 #include <xcommon/particles/IXParticleSystem.h>
 #include "ParticleEffect.h"
+#include <gcore/sxgcore.h>
+
+class IXMaterialSystem;
 
 class CParticlePlayer;
 class CParticlePlayerEmitter final
@@ -12,6 +15,7 @@ public:
 
 	void setPlayer(CParticlePlayer *pPlayer);
 	void setData(CParticleEffectEmitter *pData);
+	void setDevice(IGXDevice *pDevice);
 	//bool isEmitting();
 
 	//void reset();
@@ -23,15 +27,23 @@ public:
 	void restart();
 	void clear();
 
+	void render();
+
 private:
 	void emit(float fCount);
 	void emitOne(UINT uCountInGen = 1, UINT uIdInGen = 0);
 
 	float evalCurve(const CMinMaxCurve &curve);
 
+	void updateRenderBuffer();
+
+	static void InitSharedData(IGXDevice *pDev);
+	static void ReleaseSharedData();
+
 private:
 	CParticleEffectEmitter *m_pData = NULL;
 	CParticlePlayer *m_pPlayer = NULL;
+	IGXDevice *m_pDevice = NULL;
 
 	float m_fEmitFrac = 0.0f;
 
@@ -43,10 +55,30 @@ private:
 		float3_t vPos;
 		float3_t vSpeed;
 		float4_t vColor;
+		float3_t vSize;
+		SMQuaternion qRot;
+		float3_t vSpin;
 	};
 	Array<Particle> m_aParticles;
 
 	Array<CParticleBurst> m_aBursts;
+
+	struct GpuParticle
+	{
+		float4_t vColor;
+		SMQuaternion qRotation;
+		float3_t vPos;
+		float3_t vSize;
+	};
+
+	static UINT ms_uSharedDataRefCount;
+	static IGXVertexDeclaration *ms_pVertexDeclaration;
+	static IGXIndexBuffer *ms_pIndexBuffer;
+	static IGXVertexBuffer *ms_pVertexBuffer;
+
+	IGXRenderBuffer *m_pRenderBuffer = NULL;
+	IGXVertexBuffer *m_pVertexBuffer = NULL;
+	UINT m_uAllocatedInstanceCount = 0;
 };
 
 //#############################################################################
@@ -83,6 +115,10 @@ public:
 
 	float getDeltaPos();
 
+	void setDevice(IGXDevice *pDevice);
+
+	void render();
+
 private:
 	//void simulateEmitter(UINT i, float fTime)
 
@@ -90,6 +126,9 @@ private:
 	CParticleEffect *m_pEffect;
 
 	Array<CParticlePlayerEmitter> m_aEmitters;
+
+	IGXDevice *m_pDevice = NULL;
+	//IXMaterialSystem *m_pMaterialSystem = NULL;
 };
 
 #endif
