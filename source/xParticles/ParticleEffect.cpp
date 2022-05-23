@@ -61,3 +61,8 @@ const char* CParticleEffect::getName()
 {
 	return(m_szName);
 }
+
+void XMETHODCALLTYPE CParticleEffect::FinalRelease()
+{
+	m_pSystem->onEffectReleased(m_szName);
+}

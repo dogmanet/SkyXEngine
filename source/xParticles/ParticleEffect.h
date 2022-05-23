@@ -22,6 +22,10 @@ public:
 
 	void setName(const char *szName);
 	const char* getName();
+
+private:
+	void XMETHODCALLTYPE FinalRelease() override;
+
 private:
 	CParticleSystem *m_pSystem = NULL;
 	const char *m_szName = NULL;
