@@ -255,6 +255,8 @@ bool CEffectLoader::loadFromFile(const char *szFile, CParticleEffect *pEffect)
 					}
 					sprintf(szKey, "emission.Burst_%u.IntervalCurve", j);
 					ReadMinMaxCurve(pConfig, szSection, szKey, pBurst->getIntervalCurve());
+					sprintf(szKey, "emission.Burst_%u.CountCurve", j);
+					ReadMinMaxCurve(pConfig, szSection, szKey, pBurst->getCountCurve());
 				}
 
 				auto *pShapeData = pEmitter->getShapeData();
@@ -390,6 +392,8 @@ bool CEffectLoader::saveToFile(const char *szFile, CParticleEffect *pEffect)
 			pConfig->setFloat(szSection, szKey, pBurst->getProbability());
 			sprintf(szKey, "emission.Burst_%u.IntervalCurve", j);
 			SaveMinMaxCurve(pConfig, szSection, szKey, pBurst->getIntervalCurve());
+			sprintf(szKey, "emission.Burst_%u.CountCurve", j);
+			SaveMinMaxCurve(pConfig, szSection, szKey, pBurst->getCountCurve());
 		}
 
 		auto *pShapeData = pEmitter->getShapeData();
