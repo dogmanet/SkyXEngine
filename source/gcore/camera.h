@@ -35,6 +35,9 @@ public:
 	float3 getPoint(int iNumPoint) const override;
 	float3 getCenter() const override;
 
+	UINT getPlaneCount() const override;
+	const SMPLANE& getPlaneAt(UINT idx) const override;
+
 	/*void setPoint(int iNumPoint, const float3 *pPoint);
 	void setCenter(const float3 *pCenter);*/
 

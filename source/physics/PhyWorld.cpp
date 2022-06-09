@@ -42,7 +42,7 @@ struct XRayResultCallback: public btCollisionWorld::RayResultCallback
 		//caller already does the filter on the m_closestHitFraction
 		btAssert(rayResult.m_hitFraction <= m_closestHitFraction);
 
-		m_closestHitFraction = rayResult.m_hitFraction;
+		//m_closestHitFraction = rayResult.m_hitFraction;
 		m_collisionObject = rayResult.m_collisionObject;
 		if(normalInWorldSpace)
 		{
@@ -60,7 +60,10 @@ struct XRayResultCallback: public btCollisionWorld::RayResultCallback
 		m_result.pCollisionObject = m_collisionObject->getUserIndex() == 2 ? (IXCollisionObject*)m_collisionObject->getUserPointer() : NULL;
 		m_result.fHitFraction = rayResult.m_hitFraction;
 
-		return(m_pCallback->addSingleResult(m_result));
+
+		m_closestHitFraction = m_pCallback->addSingleResult(m_result);
+
+		return(m_closestHitFraction);
 	}
 };
 

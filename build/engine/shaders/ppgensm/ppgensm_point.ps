@@ -107,11 +107,11 @@ float4 main(VSO_ResPos IN, float fThickness):COLOR0
 	// float fCompareTo = fDistance - fBias * 200.0f;
 	float fCompareTo = fDistance - (1.0f - fThickness) * 20.0f/*  - fBias */;
 	
-	fShadow = g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexUV, fCompareTo);
 	
 	
 // #undef GSC_6
 #ifdef GSC_6
+	fShadow = 0.0f;
 	for(int x=0;x<=1;++x)
 	{
 		for(int y=0;y<=1;++y)
@@ -125,7 +125,9 @@ float4 main(VSO_ResPos IN, float fThickness):COLOR0
 	}
 	
 	// fShadow *= 0.125;
-	fShadow *= 1.0 / 7.0;
+	fShadow *= 1.0 / 6.0;
+#else
+	fShadow = g_txDepthShadow.SampleCmpLevelZero(g_sComparisonLinearClamp, vTexUV, fCompareTo);
 #endif
 
 	return saturate(fShadow);

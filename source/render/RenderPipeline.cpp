@@ -284,6 +284,24 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		m_pMaterialSystem->registerMaterialShader("Default", pVertexFormatSceneGeneric, pPasses, pGenericProperties);
 	}
 
+	/*{
+		XMaterialShaderPass pPasses[] = {
+			{m_pRenderPassIllumination, "default/default.ps", "MainIllimination", NULL, NULL, NULL},
+			XMATERIAL_SHADER_PASS_LIST_END()
+		};
+
+		XMaterialProperty pGenericProperties[] = {
+			// parameter name, texture name
+			XMATERIAL_PARAM_TEXTURE("Base texture", "txBase"),
+			XMATERIAL_STATIC_FLAG("emissive", true),
+			XMATERIAL_PARAM_TEXTURE_OPT("Emissive map", "txEmissive", "HAS_EMISSIVE_MAP"),
+			XMATERIAL_PARAM_RANGE("Emissive multiplier", "em_multiplier", 0.0f, 1000.0f, 16.0f),
+			XMATERIAL_PROPERTY_LIST_END()
+		};
+
+		m_pMaterialSystem->registerMaterialShader("Emissive", pVertexFormatSceneGeneric, pPasses, pGenericProperties);
+	}*/
+
 	{
 		XMaterialShaderSampler pSamplers[] = {
 			{"sDefault", GXSamplerDesc()},
@@ -786,7 +804,7 @@ void CRenderPipeline::updateVisibility()
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
-	// m_pMainCameraOcclusionCuller->update(gdata::pCamera, gdata::fProjFov, (float)*r_win_width / (float)*r_win_height, *r_far);
+	m_pMainCameraOcclusionCuller->update(gdata::pCamera, gdata::fProjFov, (float)*r_win_width / (float)*r_win_height, *r_far);
 	m_pMainCameraVisibility->updateForCamera(gdata::pCamera);
 
 	if(m_pLightSystem)

@@ -46,6 +46,10 @@ public:
 	//! возвращает координаты центра фрустума
 	virtual float3 getCenter() const = 0;
 
+	virtual UINT getPlaneCount() const = 0;
+
+	virtual const SMPLANE& getPlaneAt(UINT idx) const = 0;
+
 	////! устанавливает координаты точки фрустума, iNumPoint = [0,7]
 	//virtual void setPoint(int iNumPoint, const float3 *pPoint) = 0;
 

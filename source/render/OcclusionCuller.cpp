@@ -1,8 +1,9 @@
 #include "OcclusionCuller.h"
-#include <physics/sxphysics.h>
+//#include <physics/sxphysics.h>
+
 #include <gcore/sxgcore.h>
 
-struct CAllHitsResultCallback: public btCollisionWorld::RayResultCallback
+/*struct CAllHitsResultCallback: public btCollisionWorld::RayResultCallback
 {
 	btAlignedObjectArray<const btCollisionObject*>		m_collisionObjects;
 
@@ -26,13 +27,16 @@ struct CAllHitsResultCallback: public btCollisionWorld::RayResultCallback
 		}
 		return m_closestHitFraction;
 	}
-};
+};*/
 
 //##########################################################################
 
 COcclusionCuller::COcclusionCuller()
 {
 	m_pLightSystem = (IXLightSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXLIGHTSYSTEM_GUID);
+
+	IXPhysics *pPhysics = (IXPhysics*)Core_GetIXCore()->getPluginManager()->getInterface(IXPHYSICS_GUID);
+	m_pPhysWorld = pPhysics->getWorld();
 
 	Core_0RegisterConcmdCls("oprint", this, (SXCONCMDCLS)&COcclusionCuller::_print);
 }
@@ -68,20 +72,20 @@ void XMETHODCALLTYPE COcclusionCuller::update(ICamera *pCamera, float fFOV, floa
 
 bool XMETHODCALLTYPE COcclusionCuller::isPointVisible(const float3 &vPoint) const
 {
-	return(true);
+	return(classifyPoint(vPoint) >= 0);
 }
 
-bool XMETHODCALLTYPE COcclusionCuller::isPolyVisible(const float3 &vPoint1, const float3 &vPoint2, const float3 &vPoint3) const
-{
-	return(true);
-}
+//bool XMETHODCALLTYPE COcclusionCuller::isPolyVisible(const float3 &vPoint1, const float3 &vPoint2, const float3 &vPoint3) const
+//{
+//	return(true);
+//}
+//
+//bool XMETHODCALLTYPE COcclusionCuller::isSphereVisible(const float3 &vOrigin, float fRadius) const
+//{
+//	return(true);
+//}
 
-bool XMETHODCALLTYPE COcclusionCuller::isSphereVisible(const float3 &vOrigin, float fRadius) const
-{
-	return(true);
-}
-
-bool XMETHODCALLTYPE COcclusionCuller::isAABBvisible(const SMAABB &aabb) const
+bool XMETHODCALLTYPE COcclusionCuller::isAABBvisible(const SMAABB &aabb, bool *pisFullyVisible) const
 {
 	return(true);
 }
@@ -115,17 +119,40 @@ void COcclusionCuller::_update()
 //	btCollisionWorld::AllHitsRayResultCallback cb(F3_BTVEC(vStart), F3_BTVEC(vEnd));
 //	SPhysics_GetDynWorld()->rayTest(F3_BTVEC(vStart), F3_BTVEC(vEnd), cb);
 
-	btVector3 btvStart(F3_BTVEC(vStart));
-	CAllHitsResultCallback cbs[OCCLUSION_BUFFER_WIDTH + 1][OCCLUSION_BUFFER_HEIGHT + 1];
+	
 	for(UINT x = 0; x <= OCCLUSION_BUFFER_WIDTH; ++x)
 	{
 		float3 vTmp = vCenter + vRight * lerpf(-fHalfWidth, fHalfWidth, (float)x / OCCLUSION_BUFFER_WIDTH);
 		for(UINT y = 0; y <= OCCLUSION_BUFFER_HEIGHT; ++y)
 		{
-			CAllHitsResultCallback &cb = cbs[x][y];
+			CAllHitsRayResultCallback &cb = cbs[x][y];
+			cb.m_aResults.clearFast();
 			cb.m_rayToWorld = vTmp + vUp * lerpf(fHalfHeight, -fHalfHeight, (float)y / OCCLUSION_BUFFER_HEIGHT);
 
-			SPhysics_GetDynWorld()->rayTest(btvStart, F3_BTVEC(cb.m_rayToWorld), cb);
+			m_pPhysWorld->rayTest(vStart, cb.m_rayToWorld, &cb);
+
+			if(x != OCCLUSION_BUFFER_WIDTH && y != OCCLUSION_BUFFER_HEIGHT)
+			{
+				m_ppPolyhedra[x][y].isValid = false;
+			}
+
+			if(x != OCCLUSION_BUFFER_WIDTH)
+			{
+				m_ppPolyhedra[x][y].planes[PLANE_LEFT] = SMPLANE(vStart, cb.m_rayToWorld, cb.m_rayToWorld + vUp);
+			}
+			if(x != 0)
+			{
+				m_ppPolyhedra[x - 1][y].planes[PLANE_RIGHT] = -m_ppPolyhedra[x][y].planes[PLANE_LEFT];
+			}
+
+			if(x != OCCLUSION_BUFFER_HEIGHT)
+			{
+				m_ppPolyhedra[x][y].planes[PLANE_TOP] = SMPLANE(vStart, cb.m_rayToWorld, cb.m_rayToWorld + vRight);
+			}
+			if(y != 0)
+			{
+				m_ppPolyhedra[x][y - 1].planes[PLANE_BOTTOM] = -m_ppPolyhedra[x][y].planes[PLANE_TOP];
+			}
 
 #if 0
 			if(m_pLightSystem && false)
@@ -170,32 +197,38 @@ void COcclusionCuller::_update()
 	{
 		for(UINT y = 0; y < OCCLUSION_BUFFER_HEIGHT; ++y)
 		{
-			CAllHitsResultCallback &cb0 = cbs[x][y];
-			CAllHitsResultCallback &cb1 = cbs[x + 1][y];
-			CAllHitsResultCallback &cb2 = cbs[x][y + 1];
-			CAllHitsResultCallback &cb3 = cbs[x + 1][y + 1];
+			CAllHitsRayResultCallback &cb0 = cbs[x][y];
+			CAllHitsRayResultCallback &cb1 = cbs[x + 1][y];
+			CAllHitsRayResultCallback &cb2 = cbs[x][y + 1];
+			CAllHitsRayResultCallback &cb3 = cbs[x + 1][y + 1];
 			if(!cb0.hasHit() || !cb1.hasHit() || !cb2.hasHit() || !cb3.hasHit())
 			{
 				continue;
 			}
 
-			for(int idx0 = 0, l = cb0.m_collisionObjects.size(); idx0 < l; ++idx0)
+			fora(idx0, cb0.m_aResults)
 			{
-				auto &obj = cb0.m_collisionObjects[idx0];
+				auto &obj = cb0.m_aResults[idx0];
 
-				int idx1 = cb1.m_collisionObjects.findLinearSearch2(obj);
+				int idx1 = cb1.m_aResults.indexOf(obj, [](const XRayResult &a, const XRayResult &b){
+					return(a.pCollisionObject == b.pCollisionObject);
+				});
 				if(idx1 < 0)
 				{
 					continue;
 				}
 
-				int idx2 = cb2.m_collisionObjects.findLinearSearch2(obj);
+				int idx2 = cb2.m_aResults.indexOf(obj, [](const XRayResult &a, const XRayResult &b){
+					return(a.pCollisionObject == b.pCollisionObject);
+				});
 				if(idx2 < 0)
 				{
 					continue;
 				}
 
-				int idx3 = cb3.m_collisionObjects.findLinearSearch2(obj);
+				int idx3 = cb3.m_aResults.indexOf(obj, [](const XRayResult &a, const XRayResult &b){
+					return(a.pCollisionObject == b.pCollisionObject);
+				});
 				if(idx3 < 0)
 				{
 					continue;
@@ -204,15 +237,15 @@ void COcclusionCuller::_update()
 				// something found!
 				
 				float z[] = {
-					fabs(SMVector3Dot(vDir, (cb0.m_rayToWorld - vStart) * cb0.m_hitFractions[idx0])),
-					fabs(SMVector3Dot(vDir, (cb1.m_rayToWorld - vStart) * cb1.m_hitFractions[idx1])),
-					fabs(SMVector3Dot(vDir, (cb2.m_rayToWorld - vStart) * cb2.m_hitFractions[idx2])),
-					fabs(SMVector3Dot(vDir, (cb3.m_rayToWorld - vStart) * cb3.m_hitFractions[idx3]))
+					fabs(SMVector3Dot(vDir, (cb0.m_rayToWorld - vStart) * cb0.m_aResults[idx0].fHitFraction)),
+					fabs(SMVector3Dot(vDir, (cb1.m_rayToWorld - vStart) * cb1.m_aResults[idx1].fHitFraction)),
+					fabs(SMVector3Dot(vDir, (cb2.m_rayToWorld - vStart) * cb2.m_aResults[idx2].fHitFraction)),
+					fabs(SMVector3Dot(vDir, (cb3.m_rayToWorld - vStart) * cb3.m_aResults[idx3].fHitFraction))
 				};
 
-				int maxIdx = -1;
-				float maxZ = -FLT_MAX;
-				for(int i = 0; i < 4; ++i)
+				int maxIdx = 0;
+				float maxZ = z[maxIdx];
+				for(int i = 1; i < 4; ++i)
 				{
 					if(maxZ < z[i])
 					{
@@ -221,9 +254,18 @@ void COcclusionCuller::_update()
 					}
 				}
 
+				float3_t zPos[] = {
+					cb0.m_aResults[idx0].vHitPoint,
+					cb1.m_aResults[idx1].vHitPoint,
+					cb2.m_aResults[idx2].vHitPoint,
+					cb3.m_aResults[idx3].vHitPoint
+				};
+
 				if(m_ppfOcclusionBuffer[x][y] > maxZ)
 				{
 					m_ppfOcclusionBuffer[x][y] = maxZ;
+					m_ppPolyhedra[x][y].isValid = true;
+					m_ppPolyhedra[x][y].planes[PLANE_FRONT] = SMPLANE(zPos[maxIdx], zPos[maxIdx] + vUp, zPos[maxIdx] + vRight);
 				}
 			}
 		}
@@ -253,4 +295,74 @@ void COcclusionCuller::_print()
 		printf("\n");
 	}
 	printf("\n");
+}
+
+int COcclusionCuller::classifyPoint(const float3 &vPoint, bool *pisCulledByFrustum) const
+{
+	IXFrustum *pFrustum = m_pCamera->getFrustum();
+
+	bool isOnSurface = false;
+	
+	for(UINT i = 0, l = pFrustum->getPlaneCount(); i < l; ++i)
+	{
+		float f = SMVector4Dot(float4(vPoint, 1.0f), pFrustum->getPlaneAt(i));
+		if(SMIsZero(f))
+		{
+			isOnSurface = true;
+			continue;
+		}
+		if(f < 0.0f)
+		{
+			if(pisCulledByFrustum)
+			{
+				*pisCulledByFrustum = true;
+			}
+			return(-1);
+		}
+	}
+	mem_release(pFrustum);
+	if(pisCulledByFrustum)
+	{
+		*pisCulledByFrustum = false;
+	}
+
+
+	for(UINT x = 0; x < OCCLUSION_BUFFER_WIDTH; ++x)
+	{
+		for(UINT y = 0; y < OCCLUSION_BUFFER_HEIGHT; ++y)
+		{
+			auto &ph = m_ppPolyhedra[x][y];
+			if(ph.isValid)
+			{
+				bool isInside = true;
+				bool isOnSurfaceLocal = false;
+				for(UINT i = 0; i < 5; ++i)
+				{
+					float f = SMVector4Dot(float4(vPoint, 1.0f), ph.planes[i]);
+					if(SMIsZero(f))
+					{
+						isOnSurfaceLocal = true;
+						continue;
+					}
+					if(f > 0.0f)
+					{
+						isInside = false;
+						break;
+					}
+				}
+				if(isInside)
+				{
+					if(isOnSurfaceLocal)
+					{
+						isOnSurface = true;
+					}
+					else
+					{
+						return(-1);
+					}
+				}
+			}
+		}
+	}
+	return(isOnSurface ? 0 : 1);
 }

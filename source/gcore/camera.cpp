@@ -352,6 +352,15 @@ float3 CFrustum::getCenter() const
 	return m_vCenter;
 }
 
+UINT CFrustum::getPlaneCount() const
+{
+	return(6);
+}
+const SMPLANE& CFrustum::getPlaneAt(UINT idx) const
+{
+	return(m_aFrustumPlanes[idx]);
+}
+
 //void CFrustum::setPoint(int iNumPoint, const float3 *pPoint)
 //{
 //	if(iNumPoint >= 0 && iNumPoint < 8)

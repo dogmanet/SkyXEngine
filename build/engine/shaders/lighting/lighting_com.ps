@@ -7,6 +7,7 @@ lighting_blend.ps
 #include <struct.h>
 #include <mtrl.h>
 #include <const.h>
+#include <shadow.h>
 
 //##########################################################################
 
@@ -121,48 +122,10 @@ float4 GetSpecular(float fRoughness, float4 fF0, float fNdotL, float3 vV, float3
 	*/
 }
 
-
-//#############################################################################
-
-#define main GenShadow
-
-#ifdef IS_PSSM
-#include <ppgensm/ppgensm_pssm.ps>
-#else
-#ifdef IS_SPOT
-#include <ppgensm/ppgensm_direct.ps>
-#else
-#include <ppgensm/ppgensm_point.ps>
-#endif
-#endif
-#undef main
-
-//#############################################################################
-
-//IS_SPOT
-float4 main(VSO_ResPos IN):SV_TARGET
+float4 ComputeDirectLight(float3 vPosition, float4 vAlbedo, float3 vNormal, float fF0, float fRoughness, float fMetallic, float fThickness,
+	IShadow shadow)
 {
 	float4 OUT;
-
-	float4 vAlbedo = g_txScene.Sample(g_sPointClamp, IN.vTexUV);
-	float4 vNormals = g_txNormals.Sample(g_sPointClamp, IN.vTexUV);
-	float4 vParam = g_txParameters.Sample(g_sPointClamp, IN.vTexUV);
-	float fDepth = g_txDepthView.Sample(g_sPointClamp, IN.vTexUV).r;
-	
-	float4 vPosition = float4(g_vObserverPosCam.xyz + IN.vWorldRay * fDepth, 1.0);
-	float3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
-	
-	// return(float4(g_vObserverPosCam.xyz, 1.0f));
-	// return(float4(frac(vPosition.zzz), 1.0f));
-	// return(float4((float3)fDepth, 1.0f));
-	// return(float4(frac(IN.vWorldRay), 1.0f));
-	
-	float fF0 = vNormals.w;
-	// float fRoughness = lerp(PARAM_LIGHTING_ROUGHNESS_MIN, PARAM_LIGHTING_ROUGHNESS_MAX, vParam.x);
-	float fRoughness = vParam.x;
-	float fMetallic = vParam.y;
-	float fThickness = vParam.z;
-	float fAO = vParam.w;
 	
 #ifdef IS_PSSM
 	float fAttenuation = 1.0f;
@@ -184,7 +147,8 @@ float4 main(VSO_ResPos IN):SV_TARGET
 
 	float fShadow = 1.0;
 #ifdef IS_SHADOWED
-	fShadow *= GenShadow(IN, fThickness).x;
+	// float3 vWorldPos, float3 vLightPos, uint uIdx, float fThickness
+	fShadow *= shadow.genShadow(vPosition, g_vLightPosShadow.xyz, 0, fThickness).x;
 #endif
 
 #ifdef IS_SPOT
@@ -194,13 +158,13 @@ float4 main(VSO_ResPos IN):SV_TARGET
 	
 	float3 vVertexToEye = normalize(g_vObserverPosCam.xyz - vPosition.xyz);
 	
-	float fNdotL = dot(vNormalPixel, vLigth);
+	float fNdotL = dot(vNormal, vLigth);
 	
 	float4 vSpecular = (float4)0;
 	float fDiffuse = 0;
 		
 		
-	vSpecular = max(0.0f, GetSpecular(fRoughness, float4(vAlbedo.xyz, fF0), fNdotL, vVertexToEye, vLigth, vNormalPixel));
+	vSpecular = max(0.0f, GetSpecular(fRoughness, float4(vAlbedo.xyz, fF0), fNdotL, vVertexToEye, vLigth, vNormal));
 	
 	
 	[branch]if(fNdotL < 0.0f)
@@ -216,7 +180,7 @@ float4 main(VSO_ResPos IN):SV_TARGET
 			float _Scale = 1.0f;
 			float _Distortion = 0.2f;
 			
-			float3 vLTLight = normalize(vLigth + vNormalPixel * _Distortion);
+			float3 vLTLight = normalize(vLigth + vNormal * _Distortion);
 			float fLTDot = pow(saturate(dot(vVertexToEye, -vLTLight)), _Power) * _Scale;
 			fDiffuse *= fLTDot;
 		// }
@@ -256,6 +220,63 @@ float4 main(VSO_ResPos IN):SV_TARGET
 	
 	OUT.w = 1.0f;
 	return OUT;
+}
+
+
+//#############################################################################
+
+// #define main GenShadow
+// 
+// #ifdef IS_PSSM
+// #include <ppgensm/ppgensm_pssm.ps>
+// #else
+// #ifdef IS_SPOT
+// #include <ppgensm/ppgensm_direct.ps>
+// #else
+// #include <ppgensm/ppgensm_point.ps>
+// #endif
+// #endif
+// #undef main
+
+//#############################################################################
+
+//IS_SPOT
+float4 main(VSO_ResPos IN):SV_TARGET
+{
+	float4 OUT;
+
+	float4 vAlbedo = g_txScene.Sample(g_sPointClamp, IN.vTexUV);
+	float4 vNormals = g_txNormals.Sample(g_sPointClamp, IN.vTexUV);
+	float4 vParam = g_txParameters.Sample(g_sPointClamp, IN.vTexUV);
+	float fDepth = g_txDepthView.Sample(g_sPointClamp, IN.vTexUV).r;
+	
+	float4 vPosition = float4(g_vObserverPosCam.xyz + IN.vWorldRay * fDepth, 1.0);
+	float3 vNormalPixel = normalize(NormalDecode(vNormals.xyz).xyz);
+	
+	// return(float4(g_vObserverPosCam.xyz, 1.0f));
+	// return(float4(frac(vPosition.zzz), 1.0f));
+	// return(float4((float3)fDepth, 1.0f));
+	// return(float4(frac(IN.vWorldRay), 1.0f));
+	
+	float fF0 = vNormals.w;
+	// float fRoughness = lerp(PARAM_LIGHTING_ROUGHNESS_MIN, PARAM_LIGHTING_ROUGHNESS_MAX, vParam.x);
+	float fRoughness = vParam.x;
+	float fMetallic = vParam.y;
+	float fThickness = vParam.z;
+	float fAO = vParam.w;
+	
+	
+#ifdef IS_PSSM
+	CShadowPSSM shadow;
+#else
+#ifdef IS_SPOT
+	CShadowDirect shadow;
+#else
+	CShadowPoint shadow;
+#endif
+#endif
+		
+	return(ComputeDirectLight(vPosition, vAlbedo, vNormalPixel, fF0, fRoughness, fMetallic, fThickness, shadow));
 }
 
 
