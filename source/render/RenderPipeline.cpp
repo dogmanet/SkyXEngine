@@ -659,101 +659,104 @@ void CRenderPipeline::renderFrame(float fDeltaTime)
 	IGXSurface *pBackBuf = pCtx->getColorTarget();
 	IGXSurface *pSceneBuf = NULL;
 
-	m_frameShaderData.fFrameTime = fDeltaTime;
-	m_pFrameShaderData->update(&m_frameShaderData);
+	const auto& renderFunc = [&](){
+		m_frameShaderData.fFrameTime = fDeltaTime;
+		m_pFrameShaderData->update(&m_frameShaderData);
 
-	pCtx->setVSConstant(m_pFrameShaderData, SCR_FRAME);
-	pCtx->setPSConstant(m_pFrameShaderData, SCR_FRAME);
+		pCtx->setVSConstant(m_pFrameShaderData, SCR_FRAME);
+		pCtx->setPSConstant(m_pFrameShaderData, SCR_FRAME);
 
-	m_sceneShaderData.vNearFarInvWinSize = float4(gdata::vNearFar, 1.0f / (float)m_uOutWidth, 1.0f / (float)m_uOutHeight);
-	m_pSceneShaderDataPS->update(&m_sceneShaderData);
-	//m_pDevice->setVertexShaderConstant(m_pSceneShaderDataVS, SCR_SCENE);
-	pCtx->setPSConstant(m_pSceneShaderDataPS, SCR_SCENE);
+		m_sceneShaderData.vNearFarInvWinSize = float4(gdata::vNearFar, 1.0f / (float)m_uOutWidth, 1.0f / (float)m_uOutHeight);
+		m_pSceneShaderDataPS->update(&m_sceneShaderData);
+		//m_pDevice->setVertexShaderConstant(m_pSceneShaderDataVS, SCR_SCENE);
+		pCtx->setPSConstant(m_pSceneShaderDataPS, SCR_SCENE);
 
-	m_cameraShaderData.mVP = SMMatrixTranspose(gdata::mCamView * gdata::mCamProj);
-	m_cameraShaderData.mInvVP = SMMatrixInverse(NULL, m_cameraShaderData.mVP);
-	m_cameraShaderData.mInvV = SMMatrixTranspose(SMMatrixInverse(NULL, gdata::mCamView));
-	m_cameraShaderData.vPosCam = gdata::vConstCurrCamPos;
-	m_cameraShaderData.vNearFarInvWinSize = float4(gdata::vNearFar, 1.0f / (float)m_uOutWidth, 1.0f / (float)m_uOutHeight);
-	m_cameraShaderData.vParamProj = float3_t((float)m_uOutWidth, (float)m_uOutHeight, gdata::fProjFov);
-	m_pCameraShaderData->update(&m_cameraShaderData);
-	pCtx->setVSConstant(m_pCameraShaderData, SCR_CAMERA);
-	pCtx->setPSConstant(m_pCameraShaderData, SCR_CAMERA);
-	pCtx->setVSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
-	pCtx->setGSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
-	pCtx->setPSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
-	
-	renderPrepare();
+		m_cameraShaderData.mVP = SMMatrixTranspose(gdata::mCamView * gdata::mCamProj);
+		m_cameraShaderData.mInvVP = SMMatrixInverse(NULL, m_cameraShaderData.mVP);
+		m_cameraShaderData.mInvV = SMMatrixTranspose(SMMatrixInverse(NULL, gdata::mCamView));
+		m_cameraShaderData.vPosCam = gdata::vConstCurrCamPos;
+		m_cameraShaderData.vNearFarInvWinSize = float4(gdata::vNearFar, 1.0f / (float)m_uOutWidth, 1.0f / (float)m_uOutHeight);
+		m_cameraShaderData.vParamProj = float3_t((float)m_uOutWidth, (float)m_uOutHeight, gdata::fProjFov);
+		m_pCameraShaderData->update(&m_cameraShaderData);
+		pCtx->setVSConstant(m_pCameraShaderData, SCR_CAMERA);
+		pCtx->setPSConstant(m_pCameraShaderData, SCR_CAMERA);
+		pCtx->setVSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
+		pCtx->setGSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
+		pCtx->setPSConstant(m_pCameraShaderData, SCR_OBSERVER_CAMERA);
 
-	renderGBuffer();
-	pCtx->addTimestamp("gbuffer");
+		renderPrepare();
 
-	switch(*r_final_image)
-	{
-	case DS_RT_COLOR:
-		showTexture(m_pGBufferColor);
-		goto end;
-	case DS_RT_NORMAL:
-		showTexture(m_pGBufferNormals);
-		goto end;
-	case DS_RT_PARAM:
-		showTexture(m_pGBufferParams);
-		goto end;
-	case DS_RT_DEPTH:
-		showTexture(m_pGBufferDepth);
-		goto end;
-	}
+		renderGBuffer();
+		pCtx->addTimestamp("gbuffer");
 
-	if(m_pLightSystem)
-	{
-		m_pLightSystem->renderGI(m_pLightTotal, m_pLightAmbientDiffuse);
-
-		if(*r_final_image == DS_RT_AMBIENTDIFF)
+		switch(*r_final_image)
 		{
-			showTexture(m_pLightAmbientDiffuse);
-			goto end;
+		case DS_RT_COLOR:
+			showTexture(m_pGBufferColor);
+			return;
+		case DS_RT_NORMAL:
+			showTexture(m_pGBufferNormals);
+			return;
+		case DS_RT_PARAM:
+			showTexture(m_pGBufferParams);
+			return;
+		case DS_RT_DEPTH:
+			showTexture(m_pGBufferDepth);
+			return;
 		}
-		
-		//m_pSceneTexture = m_pLightAmbientDiffuse;
-		m_pSceneTexture = m_pLightTotal;
 
-		pSceneBuf = m_pLightAmbientDiffuse->asRenderTarget();
-		pCtx->setColorTarget(pSceneBuf);
-		pCtx->addTimestamp("gi");
-	}
-	else
-	{
-		m_pSceneTexture = m_pGBufferColor;
-	}
+		if(m_pLightSystem)
+		{
+			m_pLightSystem->renderGI(m_pLightTotal, m_pLightAmbientDiffuse);
 
-	showTexture(m_pSceneTexture);
+			if(*r_final_image == DS_RT_AMBIENTDIFF)
+			{
+				showTexture(m_pLightAmbientDiffuse);
+				return;
+			}
 
-	renderPostprocessMain();
-	pCtx->addTimestamp("post_main");
-	renderTransparent();
-	pCtx->addTimestamp("transparency");
-	renderPostprocessFinal();
-	pCtx->addTimestamp("post_final");
+			//m_pSceneTexture = m_pLightAmbientDiffuse;
+			m_pSceneTexture = m_pLightTotal;
 
-	if(m_pLightSystem)
-	{
-		pCtx->setColorTarget(pBackBuf);
+			pSceneBuf = m_pLightAmbientDiffuse->asRenderTarget();
+			pCtx->setColorTarget(pSceneBuf);
+			pCtx->addTimestamp("gi");
+		}
+		else
+		{
+			m_pSceneTexture = m_pGBufferColor;
+		}
 
-		m_pLightSystem->renderToneMapping(m_pLightAmbientDiffuse);
-		pCtx->addTimestamp("tonemapping");
+		showTexture(m_pSceneTexture);
 
-	//! @todo reimplement me!
-	//	if(*r_final_image == DS_RT_LUMINANCE)
-	//	{
-	//		showTexture(m_pLightLuminance);
-	//		// showTexture(m_pLightLuminance32);
-	//		goto end;
-	//	}
+		renderPostprocessMain();
+		pCtx->addTimestamp("post_main");
+		renderTransparent();
+		pCtx->addTimestamp("transparency");
+		renderPostprocessFinal();
+		pCtx->addTimestamp("post_final");
 
-		//showTexture(m_pLightAmbientDiffuse);
-	}
+		if(m_pLightSystem)
+		{
+			pCtx->setColorTarget(pBackBuf);
 
-end:
+			m_pLightSystem->renderToneMapping(m_pLightAmbientDiffuse);
+			pCtx->addTimestamp("tonemapping");
+
+			//! @todo reimplement me!
+			//	if(*r_final_image == DS_RT_LUMINANCE)
+			//	{
+			//		showTexture(m_pLightLuminance);
+			//		// showTexture(m_pLightLuminance32);
+			//		goto end;
+			//	}
+
+			//showTexture(m_pLightAmbientDiffuse);
+		}
+	};
+
+	renderFunc();
+
 	mem_release(pBackBuf);
 	mem_release(pSceneBuf);
 

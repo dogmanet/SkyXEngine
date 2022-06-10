@@ -49,14 +49,15 @@ float CalcLldr(float fLscaled, float fLwhite)
 float4 main(VSO_PP IN):SV_TARGET
 {
 	float4 vColor = g_txScene.Sample(g_sPointClamp, IN.vTexUV);
-	float4 vParams = g_txLuminance2.Load(uint3(0, 0, 0));
+	float4 vParams = g_txLuminance.Load(uint3(0, 0, 0));
 	float4 vBloomColor = g_txBoom.Sample(g_sLinearClamp, IN.vTexUV);
 	float fLmin = vParams.x;
 	float fLmax = vParams.y; 
-	float flnLhdr = vParams.z;
-	float fW = vParams.w;
+	// float flnLhdr = vParams.z;
+	float fLavr = vParams.z;
+	// float fW = vParams.w;
 
-	float fLavr = exp(flnLhdr / fW);
+	// float fLavr = exp(flnLhdr / fW);
 	float fLhdr = CalcLuminance(vColor.xyz);
 	float fLscaled = CalcLScaled(fLmax, fLmin, fLavr, fLhdr);
 	float fLwhite = CalcLScaled(fLmax, fLmin, fLavr, fLmax);

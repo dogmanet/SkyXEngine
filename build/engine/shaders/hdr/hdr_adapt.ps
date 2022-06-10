@@ -25,12 +25,14 @@ cbuffer b8: register(b8)
 
 float4 main(VSO_PP IN):SV_TARGET
 {
-	float fPrevLuminance = g_txPrevLuminance.Load(uint3(0, 0, 0)).x;
-	float fNewLuminance = max(exp(g_txNewLuminance.Load(uint3(0, 0, 0)).x), 0.005f); //  0.03f
+	float4 vPrevLuminance = g_txPrevLuminance.Load(uint3(0, 0, 0));
+	float4 vNewLuminance = g_txNewLuminance.Load(uint3(0, 0, 0));
+	vNewLuminance.z = exp(vNewLuminance.z / (vNewLuminance.w + 0.000001f));
 	
     // Pattanaik's technique
-    float fAdapted = fPrevLuminance + (fNewLuminance - fPrevLuminance) * (1 - exp(-g_fFrameTime * g_fAdaptationSpeed));
+    float4 vAdapted = vPrevLuminance + (vNewLuminance - vPrevLuminance) * (1 - exp(-g_fFrameTime * g_fAdaptationSpeed));
 
-	return (g_txPrevLuminance.Load(uint3(0,0,0)));
-    //return(float4(fAdapted, 1.0f, 1.0f, 1.0f));
+	// vAdapted.xyzw = 1.0f;
+
+	return(vAdapted);
 }

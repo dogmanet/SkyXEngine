@@ -127,8 +127,8 @@ CLightSystem::CLightSystem(IXCore *pCore):
 
 		m_pLightLuminance32 = m_pDevice->createTexture2D(32, 32, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A16B16G16R16F);
 		m_pLightLuminance1 = m_pDevice->createTexture2D(1, 1, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_A16B16G16R16F);
-		m_pAdaptedLuminance[0] = m_pDevice->createTexture2D(1, 1, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_R16F);
-		m_pAdaptedLuminance[1] = m_pDevice->createTexture2D(1, 1, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_UNORDERED_ACCESS, GXFMT_R16F);
+		m_pAdaptedLuminance[0] = m_pDevice->createTexture2D(1, 1, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A16B16G16R16F);
+		m_pAdaptedLuminance[1] = m_pDevice->createTexture2D(1, 1, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A16B16G16R16F);
 		m_pBloom[0] = m_pDevice->createTexture2D(*r_win_width / 2, *r_win_height / 2, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8B8G8R8);
 		m_pBloom[1] = m_pDevice->createTexture2D(*r_win_width / 2, *r_win_height / 2, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_A8B8G8R8);
 		
@@ -1232,7 +1232,7 @@ void XMETHODCALLTYPE CLightSystem::renderToneMapping(IGXTexture2D *pSourceLight)
 			m_gaussBlurShaderData.uWidth = m_pBloom[0]->getWidth();
 			m_gaussBlurShaderData.vSizeMapInv.x = 1.0f / (float)m_pBloom[0]->getWidth();
 			m_gaussBlurShaderData.vSizeMapInv.y = 1.0f / (float)m_pBloom[0]->getHeight();
-			m_gaussBlurShaderData.fCoefBlur = 3.0f;
+			m_gaussBlurShaderData.fCoefBlur = 1.0f;
 			m_pGaussBlurShaderData->update(&m_gaussBlurShaderData);
 		}
 		pCtx->setPSConstant(m_pGaussBlurShaderData, 8);
@@ -1245,9 +1245,16 @@ void XMETHODCALLTYPE CLightSystem::renderToneMapping(IGXTexture2D *pSourceLight)
 		SGCore_ScreenQuadDraw();
 
 
-		SGCore_ShaderBind(m_idGaussShader[1]);
+		SGCore_ShaderBind(m_idGaussShader[0]);
 		pCtx->setPSTexture(m_pBloom[1], 0);
 		pRT = m_pBloom[0]->asRenderTarget();
+		pCtx->setColorTarget(pRT);
+		mem_release(pRT);
+		SGCore_ScreenQuadDraw();
+
+		SGCore_ShaderBind(m_idGaussShader[1]);
+		pCtx->setPSTexture(m_pBloom[0], 0);
+		pRT = m_pBloom[1]->asRenderTarget();
 		pCtx->setColorTarget(pRT);
 		mem_release(pRT);
 		SGCore_ScreenQuadDraw();
@@ -1285,7 +1292,7 @@ void XMETHODCALLTYPE CLightSystem::renderToneMapping(IGXTexture2D *pSourceLight)
 		pCtx->setPSTexture(pSourceLight);
 		pCtx->setPSTexture(m_pAdaptedLuminance[m_uCurrAdaptedLuminanceTarget], 1);
 		pCtx->setPSTexture(m_pLightLuminance1, 2);
-		pCtx->setPSTexture(m_pBloom[0], 3);
+		pCtx->setPSTexture(m_pBloom[1], 3);
 		SGCore_ShaderBind(m_idHDRToneMapping);
 
 		SGCore_ScreenQuadDraw();
