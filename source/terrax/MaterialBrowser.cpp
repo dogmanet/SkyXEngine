@@ -536,7 +536,7 @@ void CMaterialBrowser::render()
 
 				if(item.pTexture)
 				{
-					if(!item.isTransparent)
+					if(!item.isTransparent && !item.isTexture)
 					{
 						pCtx->setBlendState(NULL);
 					}
@@ -607,7 +607,7 @@ void CMaterialBrowser::initViewport()
 	mem_release(m_pSwapChain);
 	mem_release(m_pSurface);
 	m_pSwapChain = m_pDev->createSwapChain(m_uPanelWidth, m_uPanelHeight, m_hBrowserWnd);
-	m_pSurface = m_pDev->createColorTarget(m_uPanelWidth, m_uPanelHeight, GXFMT_A8B8G8R8, GXMULTISAMPLE_4_SAMPLES, false);
+	m_pSurface = m_pDev->createColorTarget(m_uPanelWidth, m_uPanelHeight, GXFMT_A8B8G8R8_SRGB, GXMULTISAMPLE_4_SAMPLES, false);
 	//m_pDepthStencilSurface = pDev->createDepthStencilSurface(m_uPanelWidth, m_uPanelHeight, GXFMT_D24S8, GXMULTISAMPLE_NONE);
 
 
@@ -1185,7 +1185,7 @@ void CMaterialBrowser::preload()
 				}
 				else
 				{
-					m_pMaterialSystem->loadTexture(item.sName.c_str(), &item.pTexture);
+					m_pMaterialSystem->loadTexture((item.sName + "|from_srgb").c_str(), &item.pTexture);
 				}
 
 				item.uCurrentFrame = 0;
