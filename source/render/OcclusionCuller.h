@@ -37,6 +37,8 @@ public:
 	COcclusionCuller();
 	~COcclusionCuller();
 
+	SX_ALIGNED_OP_MEM();
+
 	void XMETHODCALLTYPE update(ICamera *pCamera, float fFOV, float fAspectRatio, float fFarPlane) override;
 
 	bool XMETHODCALLTYPE isPointVisible(const float3 &vPoint) const override;

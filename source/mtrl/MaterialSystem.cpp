@@ -130,7 +130,7 @@ void XMETHODCALLTYPE CMaterialSystem::loadMaterial(const char *szName, IXMateria
 	if(!loadMaterial(szName, pNewMaterial))
 	{
 		pNewMaterial->setShader(szDefaultShader ? szDefaultShader : "Default");
-		pNewMaterial->setTexture("txBase", szName);
+		pNewMaterial->setTexture("txBase", (sName + "|from_srgb").c_str());
 	}
 }
 bool XMETHODCALLTYPE CMaterialSystem::getMaterial(const char *szName, IXMaterial **ppMaterial)
