@@ -5,7 +5,7 @@
 #include <xcommon/IFileSystem.h>
 #include <libpng/png.h>
 
-class CTextureLoader: public IXUnknownImplementation<IXTextureLoader>
+class CTextureLoader final: public IXUnknownImplementation<IXTextureLoader>
 {
 public:
 	CTextureLoader(IFileSystem *pFileSystem);
@@ -26,11 +26,7 @@ public:
 	void XMETHODCALLTYPE getInfo(XTextureInfo *pTextureInfo) override;
 	void XMETHODCALLTYPE close() override;
 
-	GXFORMAT getFormat();
-
-	bool isBlockCompressed(GXFORMAT format);
-	
-protected:
+private:
 	IFileSystem *m_pFileSystem;
 
 	IFile *m_pCurrentFile = NULL;

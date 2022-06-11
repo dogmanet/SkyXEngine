@@ -1,6 +1,13 @@
 #include <xcommon/IXPlugin.h>
 #include "TextureLoader.h"
 
+#ifdef _DEBUG
+#	pragma comment(lib, "libpng16_d.lib")
+#	pragma comment(lib, "zlib_d.lib")
+#else
+#	pragma comment(lib, "libpng16.lib")
+#	pragma comment(lib, "zlib.lib")
+#endif
 
 class CDDSPlugin: public IXUnknownImplementation<IXPlugin>
 {
