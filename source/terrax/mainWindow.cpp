@@ -1734,6 +1734,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case ID_EDIT_CLEARSELECTION:
+			if(g_pUndoManager)
 			{
 				CCommandSelect *pCmdUnselect = new CCommandSelect();
 				XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){

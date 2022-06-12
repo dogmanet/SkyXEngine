@@ -21,7 +21,7 @@ namespace gui
 
 		void render(float fTimeDelta, bool bPresent = true);
 
-		CPITexture getTexture();
+		IXTexture* getTexture() override;
 
 		void dispatchEvent(IEvent ev);
 
@@ -46,7 +46,7 @@ namespace gui
 		UINT m_iWidth;
 		UINT m_iHeight;
 
-		CPITexture m_txFinal = NULL;
+		IXTexture *m_txFinal = NULL;
 
 		bool m_bShowSimulatedCursor;
 		bool m_bShowSystemCursor;

@@ -111,9 +111,6 @@ public:
 	//! Запрашивает текстуру, если не существует - вернет false
 	virtual bool XMETHODCALLTYPE getTexture(const char *szName, IXTexture **ppTexture) = 0;
 
-	//! Добавить текстуру
-	//virtual void XMETHODCALLTYPE addTexture(const char *szName, IGXTexture2D *pTexture) = 0;
-
 	//! Установить материал для отрисовки
 	virtual bool XMETHODCALLTYPE bindMaterial(IXMaterial *pMaterial) = 0;
 
@@ -157,6 +154,9 @@ public:
 	virtual const char* XMETHODCALLTYPE getScannedMaterial(UINT uIdx, IXMaterial **ppOut, bool *pisTexture = NULL, bool *pisTranslated = NULL) = 0;
 
 	virtual bool XMETHODCALLTYPE isMaterialLoaded(const char *szName) = 0;
+
+	//! Добавить текстуру
+	virtual void XMETHODCALLTYPE addTexture(const char *szName, IGXBaseTexture *pGXTexture, IXTexture **ppTexture) = 0;
 };
 
 #endif

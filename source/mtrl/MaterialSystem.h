@@ -19,7 +19,8 @@ class CMaterialSystem;
 class CTexture: public IXUnknownImplementation<IXTexture>
 {
 public:
-	CTexture(CMaterialSystem *pMaterialSystem, IXResourceTexture *m_pResource);
+	CTexture(CMaterialSystem *pMaterialSystem, IXResourceTexture *pResource);
+	CTexture(CMaterialSystem *pMaterialSystem, IGXBaseTexture *pGXTexture);
 	~CTexture();
 	void XMETHODCALLTYPE getAPITexture(IGXBaseTexture **ppTexture, UINT uFrame = 0) override;
 	bool XMETHODCALLTYPE isReady() const override;
@@ -36,10 +37,12 @@ public:
 	void setName(const char *szName);
 	const char* getName() const;
 
+	void replace(IGXBaseTexture *pGXTexture);
+
 	void initGPUresources();
 protected:
 	CMaterialSystem *m_pMaterialSystem;
-	IXResourceTexture *m_pResource;
+	IXResourceTexture *m_pResource = NULL;
 
 	IGXBaseTexture **m_ppGXTexture = NULL;
 	const char *m_szName = NULL;
@@ -387,6 +390,8 @@ public:
 	const char* XMETHODCALLTYPE getScannedMaterial(UINT uIdx, IXMaterial **ppOut, bool *pisTexture = NULL, bool *pisTranslated = NULL) override;
 
 	bool XMETHODCALLTYPE isMaterialLoaded(const char *szName) override;
+
+	void XMETHODCALLTYPE addTexture(const char *szName, IGXBaseTexture *pGXTexture, IXTexture **ppTexture) override;
 
 protected:
 	struct CObjectData

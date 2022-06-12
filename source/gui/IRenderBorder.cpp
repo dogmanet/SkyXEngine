@@ -115,12 +115,7 @@ namespace gui
 				{
 					return;
 				}
-				static CPITexture texWhite = NULL;
-				if(!texWhite)
-				{
-					
-					texWhite = m_pTextureManager->getTexture(TEX_WHITE);
-				}
+				static IXTexture *texWhite = m_pTextureManager->getWhite();
 
 				IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
 

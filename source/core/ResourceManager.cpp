@@ -432,6 +432,7 @@ bool XMETHODCALLTYPE CResourceManager::getTexture(const char *szName, IXResource
 						CResourceTexture2D *pTexture = new CResourceTexture2D(this);
 						if(pLoader->loadAs2D(pTexture))
 						{
+							pTexture->genMipmaps();
 							pResource = pTexture;
 						}
 						else

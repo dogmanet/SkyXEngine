@@ -193,7 +193,7 @@ BOOL EnumLevels(CLevelInfo *pInfo)
 			mem_release(pConfig);
 		}
 
-		sprintf(szFullPath, "levels/%s/preview.bmp", pInfo->m_szName);
+		sprintf(szFullPath, "levels/%s/preview.png", pInfo->m_szName);
 		pInfo->m_bHasPreview = FileExistsFile(szFullPath);
 	}
 
@@ -412,7 +412,7 @@ m_hWnd(hWnd)
 		static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
 		m_pGUI = pfnGUIInit(SGCore_GetDXDevice(), (IXMaterialSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID), Core_GetIXCore()->getFileSystem());
-		m_pGUIStack = m_pGUI->newDesktopStack("./gui/", *r_win_width, *r_win_height);
+		m_pGUIStack = m_pGUI->newDesktopStack("gui/", *r_win_width, *r_win_height);
 		m_pHUDcontroller = new CHUDcontroller();
 	}
 
@@ -751,7 +751,7 @@ m_hWnd(hWnd)
 			StringW sLevelName = ev->target->getAttribute(L"level_name");
 			if(ev->target->getAttribute(L"has_preview")[0] == L'1')
 			{
-				StringW sPreview = StringW(L"../../levels/") + sLevelName + L"/preview.bmp";
+				StringW sPreview = StringW(L"../../levels/") + sLevelName + L"/preview.png";
 				pNode->getStyleSelf()->background_image->set(sPreview);
 			}
 			else

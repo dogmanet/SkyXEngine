@@ -26,7 +26,7 @@ namespace gui
 
 		virtual void render(float fTimeDelta, bool bPresent=true) = 0;
 
-		virtual const CTexture* getTexture() = 0;
+		virtual IXTexture* getTexture() = 0;
 
 		virtual void dispatchEvent(IEvent ev) = 0;
 

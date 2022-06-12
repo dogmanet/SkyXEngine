@@ -230,6 +230,8 @@ namespace gui
 				mem_delete(m_pScrollBarHorz);
 
 				mem_release(m_pSamplerState);
+
+				mem_release(m_pBackgroundImage);
 			}
 
 			UINT IRenderFrame::getTopPosMax()
@@ -1146,7 +1148,17 @@ namespace gui
 
 				if(m_bHasBackgroundImage)
 				{
-					m_pBackgroundImage = m_pDoc->getDesktopStack()->getTextureManager()->getTexture(pStyle->background_image->getString());
+					IXTexture *pTex;
+					m_pDoc->getDesktopStack()->getTextureManager()->getTexture(pStyle->background_image->getString(), &pTex);
+					if(pTex != m_pBackgroundImage)
+					{
+						mem_release(m_pBackgroundImage);
+						m_pBackgroundImage = pTex;
+					}
+					else
+					{
+						mem_release(pTex);
+					}
 					UINT tw = m_pBackgroundImage->getWidth();
 					UINT th = m_pBackgroundImage->getHeight();
 
@@ -1246,7 +1258,7 @@ namespace gui
 				{
 					return;
 				}
-				static CPITexture texWhite = m_pDoc->getDesktopStack()->getTextureManager()->getTexture(TEX_WHITE);
+				static IXTexture *texWhite = m_pDoc->getDesktopStack()->getTextureManager()->getWhite();
 			//	static CSHADER shText = CTextureManager::loadShader(L"text");
 
 				IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
@@ -2371,12 +2383,7 @@ namespace gui
 				IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
 
 				pCtx->setStencilRef(lvl);
-				static CPITexture texWhite = NULL;
-			//	static CSHADER shText = NULL;
-				if(!texWhite)
-				{
-					texWhite = m_pDoc->getDesktopStack()->getTextureManager()->getTexture(TEX_WHITE);
-				}
+				static IXTexture *texWhite = m_pDoc->getDesktopStack()->getTextureManager()->getWhite();
 			/*	if(!shText)
 				{
 					shText = CTextureManager::loadShader(L"text");
@@ -2408,7 +2415,7 @@ namespace gui
 					if(pShadowFont && el->m_pNextREl)
 					{
 						m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(el->m_pNextREl->m_iLeftOffset, el->m_pNextREl->m_iTopOffset, 0.0f));
-						m_pDoc->getDesktopStack()->getTextureManager()->bindTexture(pShadowFont->getTexture(0));
+						pCtx->setPSTexture(pShadowFont->getAPITexture(0));
 						s_pColorConstant->update(&vShadowColor);
 
 						pCtx->setRenderBuffer(el->m_pNextREl->m_pRenderBuffer);
@@ -2419,7 +2426,7 @@ namespace gui
 						m_pDoc->getTranslationManager()->popMatrix();
 					}
 
-					m_pDoc->getDesktopStack()->getTextureManager()->bindTexture(pFont->getTexture(0));
+					pCtx->setPSTexture(pFont->getAPITexture(0));
 					pCtx->setRenderBuffer(el->m_pRenderBuffer);
 					pCtx->setIndexBuffer(el->m_pIndexBuffer);
 					if(el->m_iIndexBaseCount)
@@ -3050,10 +3057,13 @@ namespace gui
 				style->background_attachment->set(css::ICSSproperty::BACKGROUND_ATTACHMENT_LOCAL);
 				style->background_position_x->set(0);
 				style->background_position_y->set(0);
-				CPITexture tex = m_pDoc->getDesktopStack()->getTextureManager()->getTexture(style->background_image->getString());
+				IXTexture *tex;
+				m_pDoc->getDesktopStack()->getTextureManager()->getTexture(style->background_image->getString(), &tex);
 
 				int _w = tex->getWidth();
 				int _h = tex->getHeight();
+
+				mem_release(tex);
 
 				StringW a = m_pNode->getAttribute(L"width");
 				if(a.length())
@@ -3135,10 +3145,13 @@ namespace gui
 				style->background_attachment->set(css::ICSSproperty::BACKGROUND_ATTACHMENT_LOCAL);
 				style->background_position_x->set(0);
 				style->background_position_y->set(0);
-				CPITexture tex = m_pDoc->getDesktopStack()->getTextureManager()->getTexture(style->background_image->getString());
+				IXTexture *tex;
+				m_pDoc->getDesktopStack()->getTextureManager()->getTexture(style->background_image->getString(), &tex);
 
 				int _w = tex->getWidth();
 				int _h = tex->getHeight();
+
+				mem_release(tex);
 
 				StringW a = m_pNode->getAttribute(L"width");
 				if(a.length())
