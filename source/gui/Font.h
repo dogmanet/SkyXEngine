@@ -64,8 +64,7 @@ namespace gui
 		const CharDesc* getChar(UINT id);
 
 
-		CPITexture getTexture(UINT i);
-		const IGXTexture2D *getAPITexture(UINT i);
+		IGXTexture2D* getAPITexture(UINT i) override;
 
 		void getStringMetrics(const StringW &str, UINT *width, UINT *height, UINT *vertexCount, UINT *indexCount, UINT *strCount, char_rects *pcr = NULL);
 
@@ -132,7 +131,7 @@ namespace gui
 
 		UINT m_iFontSize;
 
-		Array<CTexture*> m_vpTextures;
+		Array<IGXTexture2D*> m_vpTextures;
 		Array<byte*> m_ppTextures;
 
 		bool m_bHasBeenChanged = false;

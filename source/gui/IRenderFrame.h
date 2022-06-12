@@ -233,7 +233,7 @@ namespace gui
 				int m_iBackgroundOffsetX = 0;
 				int m_iBackgroundOffsetY = 0;
 
-				CPITexture m_pBackgroundImage = NULL;
+				IXTexture *m_pBackgroundImage = NULL;
 
 				CDOMnode *m_pNode;
 				css::CCSSstyle m_ComputedStyle;

@@ -65,7 +65,12 @@ namespace gui
 		m_pRenderSurface = GetGUI()->getDevice()->createColorTarget(m_iWidth, m_iHeight, GXFMT_A8B8G8R8, GXMULTISAMPLE_4_SAMPLES, false);
 		m_pDepthStencilSurface = GetGUI()->getDevice()->createDepthStencilSurface(m_iWidth, m_iHeight, GXFMT_D24S8, GXMULTISAMPLE_4_SAMPLES, false);
 
-		m_txFinal = m_pDesktopStack->getTextureManager()->createTexture(StringW(L"@") + m_sName, m_iWidth, m_iHeight, 32, true, NULL, false);
+
+		GetGUI()->getMaterialSystem()->addTexture(
+			(String("@gui/") + String(m_sName)).c_str(), 
+			GetGUI()->getDevice()->createTexture2D(m_iWidth, m_iHeight, 1, GX_TEXFLAG_RENDERTARGET, GXFMT_A8B8G8R8), 
+			&m_txFinal
+		);
 
 		struct point
 		{
@@ -93,10 +98,7 @@ namespace gui
 
 		mem_release(m_pRenderSurface);
 		mem_release(m_pDepthStencilSurface);
-		if(m_txFinal)
-		{
-			m_pDesktopStack->getTextureManager()->unloadTexture(m_txFinal);
-		}
+		mem_release(m_txFinal);
 	}
 	void CDesktop::setDirty()
 	{
@@ -143,8 +145,10 @@ namespace gui
 
 			//D3DXSaveSurfaceToFileA("../screenshots/gui.png", D3DXIFF_PNG, m_pRenderSurface, NULL, NULL);
 			
-			
-			IGXSurface *pNewSurface = m_txFinal->getAPItexture()->getMipmap();
+			IGXBaseTexture *pGXTexture;
+			m_txFinal->getAPITexture(&pGXTexture);
+			IGXSurface *pNewSurface = ((IGXTexture2D*)pGXTexture)->getMipmap();
+			mem_release(pGXTexture);
 			pCtx->downsampleColorTarget(m_pRenderSurface, pNewSurface);
 			mem_release(pNewSurface);
 
@@ -157,7 +161,7 @@ namespace gui
 		if(bPresent)
 		{
 			//const CPITexture def_w = CTextureManager::getTexture(L"/img/map.jpg");
-			m_pDesktopStack->getTextureManager()->bindTexture(m_txFinal);
+			GetGUI()->getMaterialSystem()->bindTexture(m_txFinal);
 
 
 			/*if(GetAsyncKeyState('L'))
@@ -233,7 +237,7 @@ namespace gui
 		}
 	}
 
-	CPITexture CDesktop::getTexture()
+	IXTexture* CDesktop::getTexture()
 	{
 		return(m_txFinal);
 	}

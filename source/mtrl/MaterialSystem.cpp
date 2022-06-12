@@ -421,12 +421,35 @@ bool XMETHODCALLTYPE CMaterialSystem::getTexture(const char *szName, IXTexture *
 	if(m_mpTextures.KeyExists(szName, &pNode))
 	{
 		*ppTexture = *(pNode->Val);
-		(*ppTexture)->AddRef();
+		add_ref(*ppTexture);
 		return(true);
 	}
 
 	return(false);
 }
+
+void XMETHODCALLTYPE CMaterialSystem::addTexture(const char *szName, IGXBaseTexture *pGXTexture, IXTexture **ppTexture)
+{
+	String sName(szName);
+
+	const AssotiativeArray<String, CTexture*>::Node *pNode;
+	if(m_mpTextures.KeyExists(sName, &pNode))
+	{
+		(*(pNode->Val))->replace(pGXTexture);
+		*ppTexture = *(pNode->Val);
+		add_ref(*ppTexture);
+	}
+	else
+	{
+		CTexture *pTex = m_poolTextures.Alloc(this, pGXTexture);
+
+		m_mpTextures[sName] = pTex;
+		pTex->setName(m_mpTextures.TmpNode->Key.c_str());
+
+		*ppTexture = pTex;
+	}
+}
+
 //void XMETHODCALLTYPE CMaterialSystem::addTexture(const char *szName, IGXTexture2D *pTexture)
 //{
 //	pTexture->AddRef();
@@ -2134,9 +2157,9 @@ bool XMETHODCALLTYPE CMaterialSystem::isMaterialLoaded(const char *szName)
 
 //#############################################################################
 
-CTexture::CTexture(CMaterialSystem *pMaterialSystem, IXResourceTexture *m_pResource):
+CTexture::CTexture(CMaterialSystem *pMaterialSystem, IXResourceTexture *pResource):
 	m_pMaterialSystem(pMaterialSystem),
-	m_pResource(m_pResource)
+	m_pResource(pResource)
 {
 	m_uFrameCount = m_pResource->getFrameCount();
 	m_fFrameTime = m_pResource->getFrameTime();
@@ -2171,6 +2194,12 @@ CTexture::CTexture(CMaterialSystem *pMaterialSystem, IXResourceTexture *m_pResou
 		AddRef();
 		m_pMaterialSystem->queueTextureUpload(this);
 	}
+}
+
+CTexture::CTexture(CMaterialSystem *pMaterialSystem, IGXBaseTexture *pGXTexture):
+	m_pMaterialSystem(pMaterialSystem)
+{
+	replace(pGXTexture);
 }
 
 CTexture::~CTexture()
@@ -2314,6 +2343,51 @@ UINT XMETHODCALLTYPE CTexture::getHeight() const
 UINT XMETHODCALLTYPE CTexture::getDepth() const
 {
 	return(m_uDepth);
+}
+
+void CTexture::replace(IGXBaseTexture *pGXTexture)
+{
+	mem_release(m_pResource);
+
+	for(UINT i = 0; i < m_uFrameCount; ++i)
+	{
+		mem_release(m_ppGXTexture[i]);
+	}
+
+	if(m_uFrameCount != 1)
+	{
+		mem_delete_a(m_ppGXTexture);
+	}
+
+	m_uFrameCount = 1;
+
+	m_type = pGXTexture->getType();
+
+	switch(m_type)
+	{
+	case GXTEXTURE_TYPE_2D:
+		{
+			IGXTexture2D *pTex2D = (IGXTexture2D*)pGXTexture;
+			m_uWidth = pTex2D->getWidth();
+			m_uHeight = pTex2D->getHeight();
+		}
+		break;
+	case GXTEXTURE_TYPE_CUBE:
+		{
+			IGXTextureCube *pTexCube = (IGXTextureCube*)pGXTexture;
+			m_uWidth = m_uHeight = pTexCube->getSize();
+		}
+		break;
+	default:
+		assert(!"Unknown texture type!");
+	}
+
+	if(!m_ppGXTexture)
+	{
+		m_ppGXTexture = new IGXBaseTexture*[m_uFrameCount];
+	}
+	m_ppGXTexture[0] = pGXTexture;
+	add_ref(pGXTexture);
 }
 
 //#############################################################################

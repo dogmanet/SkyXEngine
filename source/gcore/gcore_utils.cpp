@@ -38,7 +38,7 @@ void InitDevice(SXWINDOW hWnd, int iWidth, int iHeight, bool isWindowed)
 		const char *szMsg = "";
 		if(GetLastError() == ERROR_MOD_NOT_FOUND && !fstrcmp(szModuleName, "gxgapidx11.dll"))
 		{
-			szMsg = "Please check you have d3dx11_43.dll and D3DCompiler_47.dll in your system!\n";
+			szMsg = "Please check you have D3DCompiler_47.dll in your system!\n";
 		}
 		LibReport(REPORT_MSG_LEVEL_FATAL, "%s - unable to load GX: %s; Error: %lu\n%s", GEN_MSG_LOCATION, szModuleName, GetLastError(), szMsg);
 		return;

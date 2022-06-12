@@ -29,7 +29,7 @@ namespace gui
 			void CScrollBarSimple::render()
 			{
 				
-				static CPITexture texWhite = m_pParent->getNode()->getDocument()->getDesktopStack()->getTextureManager()->getTexture(TEX_WHITE);
+				static IXTexture *texWhite = m_pParent->getNode()->getDocument()->getDesktopStack()->getTextureManager()->getWhite();
 			//	static CSHADER shText = CTextureManager::loadShader(L"text");
 			//	GetGUI()->getDevice()->SetFVF(D3DFVF_XYZ | D3DFVF_TEX1);
 

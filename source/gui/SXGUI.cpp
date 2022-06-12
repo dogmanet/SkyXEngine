@@ -28,7 +28,8 @@ namespace gui
 	}
 
 	CGUI::CGUI(IGXDevice *pDev, IXMaterialSystem *pMaterialSystem, IFileSystem *pFileSystem):
-		m_pDevice(pDev)
+		m_pDevice(pDev),
+		m_pMaterialSystem(pMaterialSystem)
 	{
 		g_pGUI = this;
 
@@ -161,7 +162,7 @@ namespace gui
 		m_pTextureManager = new CTextureManager(m_szResourceDir);
 		m_pFontManager = new IFontManager(m_szResourceDir, m_pTextureManager);
 
-		m_pDefaultWhite = m_pTextureManager->getTexture(L"/dev/white.png");
+		m_pDefaultWhite = m_pTextureManager->getWhite();
 	}
 
 	CDesktopStack::~CDesktopStack()

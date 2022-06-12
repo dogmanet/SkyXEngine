@@ -164,9 +164,10 @@ namespace gui
 			data = new byte[w * h * 4];
 			fread(data, sizeof(byte), w * h * 4, pF);
 			m_ppTextures.push_back(data);
+			
+			IGXTexture2D *pTex = GetGUI()->getDevice()->createTexture2D(w, h, 0, 0, GXFMT_A8B8G8R8, data);
 
-			CTexture * tex = m_pTextureManager->createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size())), w, h, 4, false, data);
-			m_vpTextures.push_back(tex);
+			m_vpTextures.push_back(pTex);
 		}
 		//LoadFTfontFace();
 		fclose(pF);
@@ -187,7 +188,7 @@ namespace gui
 		//printf("_heapchk() = %d\n", _heapchk());
 		for(UINT i = 0; i < m_vpTextures.size(); i++)
 		{
-			m_pTextureManager->unloadTexture(m_vpTextures[i]);
+			mem_release(m_vpTextures[i]);
 		}
 		for(UINT i = 0; i < m_ppTextures.size(); i++)
 		{
@@ -551,14 +552,15 @@ namespace gui
 
 		//printf("_heapchk() = %d\n", _heapchk());
 
-		CTexture * tex = m_pTextureManager->createTexture(StringW(L"!") + m_szFontName + L"_" + StringW((int)m_iFontSize) + L"+" + StringW((int)m_style) + L"-" + StringW(m_iBlurRadius) + L"#" + StringW((int)(m_vpTextures.size() - 1)), width, height, 4, false, image);
+		IGXTexture2D *pTex = GetGUI()->getDevice()->createTexture2D(width, height, 0, 0, GXFMT_A8B8G8R8, image);
+
 		//SX_SAFE_DELETE_A(image);
 		for(UINT i = 0; i < list.size(); i++)
 		{
 			mem_delete_a(list[i].data);
 		}
 
-		m_vpTextures.push_back(tex);
+		m_vpTextures.push_back(pTex);
 		m_ppTextures.push_back(image);
 		m_header.texCount = 1; // FIXME: allow multiple textures
 		m_header.charCount = list.size();
@@ -639,22 +641,13 @@ namespace gui
 		regen();
 	}
 
-	CPITexture CFont::getTexture(UINT i)
+	IGXTexture2D* CFont::getAPITexture(UINT i)
 	{
 		if(m_vpTextures.size() <= i)
 		{
 			return(NULL);
 		}
 		return(m_vpTextures[i]);
-	}
-	const IGXTexture2D *CFont::getAPITexture(UINT i)
-	{
-		CPITexture pTex = getTexture(i);
-		if(!pTex)
-		{
-			return(NULL);
-		}
-		return(pTex->getAPItexture());
 	}
 
 	void CFont::addChar(WCHAR c, bool full)
@@ -679,6 +672,14 @@ namespace gui
 	CFont::~CFont()
 	{
 		freeFTfontFace();
+		for(UINT i = 0; i < m_vpTextures.size(); i++)
+		{
+			mem_release(m_vpTextures[i]);
+		}
+		for(UINT i = 0; i < m_ppTextures.size(); i++)
+		{
+			mem_delete_a(m_ppTextures[i]);
+		}
 	}
 
 	void CFont::freeFTfontFace()

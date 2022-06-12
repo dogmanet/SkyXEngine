@@ -118,7 +118,7 @@ namespace gui
 		SMMATRIX m_mTransformWorld;
 		SMMATRIX m_mTransformViewProj;
 
-		const CTexture *m_pDefaultWhite;
+		IXTexture *m_pDefaultWhite;
 
 		CGUI *m_pGUI;
 		IGXDevice *m_pDevice;
@@ -250,6 +250,11 @@ namespace gui
 
 		IDesktopStack* newDesktopStack(const char *szResPath, UINT uWidth, UINT uHeight) override;
 
+		IXMaterialSystem* getMaterialSystem()
+		{
+			return(m_pMaterialSystem);
+		}
+
 	protected:
 		IGXDevice *m_pDevice;
 
@@ -261,6 +266,8 @@ namespace gui
 
 		IGXIndexBuffer *m_pQuadIndexes;
 		IGXSamplerState *m_pDefaultSamplerState;
+
+		IXMaterialSystem *m_pMaterialSystem;
 	};
 
 	CGUI* GetGUI();
