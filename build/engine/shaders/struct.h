@@ -92,9 +92,10 @@ struct VSI_Particle
 	float2 vTexUV    :TEXCOORD0;
 	
 	float4 vColor    :COLOR0;
-	float4 qRotation :TEXCOORD1;
+	float4 qRotLocal :TEXCOORD1;
+	float4 qRotGlobal:TEXCOORD2;
 	float3 vPosition :POSITION0;
-	float3 vSize     :TEXCOORD2;
+	float3 vSize     :TEXCOORD3;
 };
 
 

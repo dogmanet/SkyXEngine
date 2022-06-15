@@ -84,13 +84,13 @@ class IXParticleEffectEmitterGenericData
 {
 public:
 	//! The length of time the emitter runs
-	XMETHOD_GETSET(Duration, float, fValue);
+	/*-*/XMETHOD_GETSET(Duration, float, fValue);
 
 	//! If enabled, the emitter starts again at the end of its duration time and continues to repeat the cycle
-	XMETHOD_GETSET(Looping, bool, yesNo);
+	/*-*/XMETHOD_GETSET(Looping, bool, yesNo);
 
 	//! If enabled, the emitter is initialized as though it had already completed a full cycle (only works if Looping is also enabled).
-	XMETHOD_GETSET(Prewarm, bool, yesNo);
+	/*-*/XMETHOD_GETSET(Prewarm, bool, yesNo);
 
 	//! Delay in seconds before the emitter starts emitting once enabled
 	XMETHOD_GETSET(StartDelay, float, fValue);
@@ -108,22 +108,22 @@ public:
 	XMETHOD_GETSET(FlipRotation, float, fValue);
 
 	//! Configure whether the Particle System will still be simulated each frame, when it is offscreen
-	XMETHOD_GETSET(CullingMode, XPARTICLE_CULLING_MODE, mode);
+	/*-*/XMETHOD_GETSET(CullingMode, XPARTICLE_CULLING_MODE, mode);
 
 	//! A scale that this Particle System applies to gravity, defined by Physics.gravity.
-	XMETHOD_GETSET(GravityModifier, float, fValue);
+	/*-*/XMETHOD_GETSET(GravityModifier, float, fValue);
 
 	//! The maximum number of particles to emit.
 	XMETHOD_GETSET(MaxParticles, UINT, uCount);
 
 	//! Configure the Particle System to not kill its particles when their lifetimes are exceeded
-	XMETHOD_GETSET(RingBufferMode, XPARTICLE_RING_BUFFER_MODE, mode);
+	/*-*/XMETHOD_GETSET(RingBufferMode, XPARTICLE_RING_BUFFER_MODE, mode);
 
 	//! When ParticleSystem.MainModule.ringBufferMode is set to loop, this value defines the proportion of the particle life that loops.
-	XMETHOD_2CONST(IXMinMaxCurve*, getRingBufferLoopRangeCurve);
+	/*-*/XMETHOD_2CONST(IXMinMaxCurve*, getRingBufferLoopRangeCurve);
 
 	//! This selects the space in which to simulate particles. It can be either world or local space.
-	XMETHOD_GETSET(SimulationSpace, XPARTICLE_SIMULATION_SPACE, simulationSpace);
+	/*!*/XMETHOD_GETSET(SimulationSpace, XPARTICLE_SIMULATION_SPACE, simulationSpace);
 
 	//! The initial color of particles when the Particle System first spawns them.
 	XMETHOD_GETSET_REF(StartColor, float4_t, vColor);
@@ -292,7 +292,7 @@ public:
 	XMETHOD_GETSET(DonutRadius, float, fValue);
 
 	//! Orient particles based on their initial direction of travel. This can be useful if you want to simulate, for example, chunks of car paint flying off a car’s bodywork during a collision. If the orientation is not satisfactory, you can also override it by applying a Start Rotation value in the Main module.
-	XMETHOD_GETSET(AlignToDirection, bool, yesNo);
+	/*!*/XMETHOD_GETSET(AlignToDirection, bool, yesNo);
 
 	//! Blend particle directions towards a random direction. When set to 0, this setting has no effect. When set to 1, the particle direction is completely random.
 	XMETHOD_GETSET(RandomizeDirection, float, fValue);
@@ -369,25 +369,25 @@ public:
 	virtual void XMETHODCALLTYPE enable(bool yesNo) = 0;
 
 	//! Splits the axes up into separate X, Y and Z components.
-	XMETHOD_GETSET(SeparateAxes, bool, yesNo);
+	/*-*/XMETHOD_GETSET(SeparateAxes, bool, yesNo);
 
 	//! Selects whether the speed limitation refers to local or world space. This option is only available when Separate Axes is enabled.
-	XMETHOD_GETSET(SimulationSpace, XPARTICLE_SIMULATION_SPACE, simulationSpace);
+	/*-*/XMETHOD_GETSET(SimulationSpace, XPARTICLE_SIMULATION_SPACE, simulationSpace);
 
 	//! Sets the speed limit of the particles.
-	XMETHOD_2CONST(IXMinMaxCurve*, getSpeedCurve);
+	/*-*/XMETHOD_2CONST(IXMinMaxCurve*, getSpeedCurve);
 
 	//! The fraction by which a particle’s speed is reduced when it exceeds the speed limit.
-	XMETHOD_2CONST(IXMinMaxCurve*, getDampenCurve);
+	/*-*/XMETHOD_2CONST(IXMinMaxCurve*, getDampenCurve);
 
 	//! Applies linear drag to the particle velocities.
-	XMETHOD_2CONST(IXMinMaxCurve*, getDragCurve);
+	/*-*/XMETHOD_2CONST(IXMinMaxCurve*, getDragCurve);
 
 	//! When enabled, larger particles are affected more by the drag coefficient.
-	XMETHOD_GETSET(MultiplyBySize, bool, yesNo);
+	/*-*/XMETHOD_GETSET(MultiplyBySize, bool, yesNo);
 
 	//! When enabled, faster particles are affected more by the drag coefficient.
-	XMETHOD_GETSET(MultiplyByVelocity, bool, yesNo);
+	/*-*/XMETHOD_GETSET(MultiplyByVelocity, bool, yesNo);
 };
 
 

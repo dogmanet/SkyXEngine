@@ -25,6 +25,16 @@ float3 RotateVec(float4 q, float3 p)
 	return(oout);
 }
 
+// Quaternion multiplication
+// http://mathworld.wolfram.com/Quaternion.html
+float4 QMul(float4 q1, float4 q2)
+{
+	return float4(
+		q2.xyz * q1.w + q1.xyz * q2.w + cross(q1.xyz, q2.xyz),
+		q1.w * q2.w - dot(q1.xyz, q2.xyz)
+	);
+}
+
 //##########################################################################
 
 VSO_SceneCommon main(VSI_Particle IN)
@@ -35,11 +45,13 @@ VSO_SceneCommon main(VSI_Particle IN)
 	float3 vUp = normalize(g_mInvV._m10_m11_m12);
 	float3 vForward = normalize(g_mInvV._m20_m21_m22);
 		
-	IN.qRotation.xyz = mul(IN.qRotation.xyz, float3x3(vRight, vUp, vForward));
+	IN.qRotLocal.xyz = mul(IN.qRotLocal.xyz, float3x3(vRight, vUp, vForward));
 	
-	vRight = RotateVec(IN.qRotation, vRight);
-	vUp = RotateVec(IN.qRotation, vUp);
-	vForward = RotateVec(IN.qRotation, vForward);
+	float4 qResult = QMul(IN.qRotGlobal, IN.qRotLocal);
+	
+	vRight = RotateVec(qResult, vRight);
+	vUp = RotateVec(qResult, vUp);
+	vForward = RotateVec(qResult, vForward);
 	
 	float2 vOffset = IN.vSize.xy * (IN.vTexUV - 0.5f);
 

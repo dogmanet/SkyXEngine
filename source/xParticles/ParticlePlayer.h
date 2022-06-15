@@ -57,6 +57,7 @@ private:
 		float4_t vColor;
 		float3_t vSize;
 		SMQuaternion qRot;
+		SMQuaternion qRotWorld;
 		float3_t vSpin;
 	};
 	Array<Particle> m_aParticles;
@@ -66,7 +67,8 @@ private:
 	struct GpuParticle
 	{
 		float4_t vColor;
-		SMQuaternion qRotation;
+		SMQuaternion qRotLocal;
+		SMQuaternion qRotGlobal;
 		float3_t vPos;
 		float3_t vSize;
 	};

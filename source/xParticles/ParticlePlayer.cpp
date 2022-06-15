@@ -163,6 +163,8 @@ void CParticlePlayerEmitter::setData(CParticleEffectEmitter *pData)
 		mem_release(m_pData);
 		m_pData = pData;
 		add_ref(m_pData);
+
+		restart();
 	}
 }
 
@@ -194,6 +196,7 @@ void CParticlePlayerEmitter::update(float fDt)
 	fora(i, m_aParticles)
 	{
 		Particle &p = m_aParticles[i];
+		p.vSpeed.y -= fDt * 9.8f * m_pData->m_dataGeneric.getGravityModifier();
 		p.vPos = p.vPos + p.vSpeed * fDt;
 	}
 
@@ -217,12 +220,12 @@ void CParticlePlayerEmitter::update(float fDt)
 				fEmitCount += evalCurve(burst.m_curveCount);
 			}
 
+			burst.m_fTime += evalCurve(burst.m_curveInterval);
 			if(burst.m_uCycles > 1)
 			{
 				--burst.m_uCycles;
-				burst.m_fTime += evalCurve(burst.m_curveInterval);
 			}
-			else
+			else if(burst.m_uCycles == 1)
 			{
 				burst = m_aBursts[il - 1];
 				m_aBursts.erase(il - 1);
@@ -230,7 +233,7 @@ void CParticlePlayerEmitter::update(float fDt)
 			}
 		}
 	}
-		
+	
 	emit(fEmitCount);
 }
 
@@ -281,16 +284,20 @@ void CParticlePlayerEmitter::emitOne(UINT uCountInGen, UINT uIdInGen)
 	newParticle.fRemainingLifetime = evalCurve(dataGeneric.m_curveStartLifetime);
 	newParticle.vColor = dataGeneric.m_vStartColor;
 
-	float3 vBasePos, vBaseDir;
+	float3 vBasePos, vBaseDir, vDir;
 	m_pData->m_dataShape.evaluate(getTime() / m_pData->m_dataGeneric.m_fDuration, &vBasePos, &vBaseDir, uCountInGen, uIdInGen);
 	if(dataGeneric.m_simulationSpace == XPSS_WORLD)
 	{
 		// add player pos and orient
 		vBasePos = m_pPlayer->getOrient() * vBasePos + m_pPlayer->getPos();
-		vBaseDir = m_pPlayer->getOrient() * vBaseDir;
+		vDir = m_pPlayer->getOrient() * vBaseDir;
+	}
+	else
+	{
+		vDir = vBaseDir;
 	}
 	newParticle.vPos = vBasePos;
-	newParticle.vSpeed = (float3)(vBaseDir * evalCurve(dataGeneric.m_curveStartSpeed));
+	newParticle.vSpeed = (float3)(vDir * evalCurve(dataGeneric.m_curveStartSpeed));
 
 	if(dataGeneric.m_bStartSizeSeparate)
 	{
@@ -319,7 +326,11 @@ void CParticlePlayerEmitter::emitOne(UINT uCountInGen, UINT uIdInGen)
 		newParticle.qRot.w *= -1.0f;
 	}
 
-	// m_fFlipRotation          //! Makes some particles spin in the opposite direction
+	if(m_pData->m_dataShape.getAlignToDirection())
+	{
+		newParticle.qRotWorld = SMQuaternion(float3(0.0f, 1.0f, 0.0f), vBaseDir);
+	}
+
 	// m_curveStartRotationX    //! The initial rotation of particles around the x-axis when emitted.
 	// m_bStartRotationSeparate //! A flag to enable 3D particle rotation.
 
@@ -378,8 +389,9 @@ void CParticlePlayerEmitter::InitSharedData(IGXDevice *pDev)
 
 			{1, 0, GXDECLTYPE_FLOAT4, GXDECLUSAGE_COLOR, GXDECLSPEC_PER_INSTANCE_DATA},
 			{1, 16, GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD1, GXDECLSPEC_PER_INSTANCE_DATA},
-			{1, 32, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_INSTANCE_DATA},
-			{1, 44, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD2, GXDECLSPEC_PER_INSTANCE_DATA},
+			{1, 32, GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD2, GXDECLSPEC_PER_INSTANCE_DATA},
+			{1, 48, GXDECLTYPE_FLOAT3, GXDECLUSAGE_POSITION, GXDECLSPEC_PER_INSTANCE_DATA},
+			{1, 60, GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD3, GXDECLSPEC_PER_INSTANCE_DATA},
 			GX_DECL_END()
 		};
 
@@ -428,7 +440,8 @@ void CParticlePlayerEmitter::render()
 			gp.vPos = p.vPos;
 			gp.vSize = p.vSize;
 			gp.vColor = p.vColor;
-			gp.qRotation = p.qRot;
+			gp.qRotLocal = p.qRot;
+			gp.qRotGlobal = p.qRotWorld;
 		}
 		m_pVertexBuffer->unlock();
 	}
