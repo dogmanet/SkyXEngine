@@ -1081,7 +1081,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 
 		//g_hCheckboxRandomScaleYawWnd
-		g_hCheckboxRandomScaleYawWnd = CreateWindowExA(0, WC_BUTTON, "Random scale and yaw", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX, rect.right, rect.top + 15 + 25 + MARGIN_RIGHT + 15 + 25 + 10 + 15 + 15 + 25 + 25, MARGIN_RIGHT, 15, hWnd, (HMENU)0, hInst, NULL);
+		g_hCheckboxRandomScaleYawWnd = CreateWindowExA(0, WC_BUTTON, "Random scale and yaw", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX, rect.right, rect.top + 15 + 25 + MARGIN_RIGHT + 15 + 25 + 10 + 15 + 15 + 25 + 25, MARGIN_RIGHT, 15, hWnd, (HMENU)IDC_RAND_SCALE_YAW, hInst, NULL);
 		{
 			SetWindowFont(g_hCheckboxRandomScaleYawWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
 		}
@@ -1253,31 +1253,39 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_COMMAND:
-		if(LOWORD(wParam) >= IDC_AB_FIRST && LOWORD(wParam) < IDC_AB_FIRST + g_aTools.size() && !g_is3DRotating && !g_is3DPanning)
+		if(LOWORD(wParam) >= IDC_AB_FIRST && LOWORD(wParam) < IDC_AB_FIRST + g_aTools.size())
 		{
-			Button_SetCheck(g_hABCameraButton, BST_UNCHECKED);
-
-			IXEditorTool *pNewTool = g_aTools[LOWORD(wParam) - IDC_AB_FIRST].pTool;
-			if(pNewTool != g_pCurrentTool)
+			if(!g_is3DRotating && !g_is3DPanning)
 			{
-				SAFE_CALL(g_pCurrentTool, deactivate);
-				mem_release(g_pCurrentTool);
-				add_ref(pNewTool);
-				g_pCurrentTool = pNewTool;
-				XInitTypesCombo();
-				SAFE_CALL(g_pCurrentTool, activate);
+				Button_SetCheck(g_hABCameraButton, BST_UNCHECKED);
 
-				CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
-				g_uCurrentTool = LOWORD(wParam);
-				CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
+				IXEditorTool *pNewTool = g_aTools[LOWORD(wParam) - IDC_AB_FIRST].pTool;
+				if(pNewTool != g_pCurrentTool)
+				{
+					SAFE_CALL(g_pCurrentTool, deactivate);
+					mem_release(g_pCurrentTool);
+					add_ref(pNewTool);
+					g_pCurrentTool = pNewTool;
+					XInitTypesCombo();
+					SAFE_CALL(g_pCurrentTool, activate);
 
-				g_xState.bCreateMode = false;
-				XUpdateGizmos();
+					CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
+					g_uCurrentTool = LOWORD(wParam);
+					CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
 
+					g_xState.bCreateMode = false;
+					XUpdateGizmos();
+
+				}
+				else
+				{
+					SAFE_CALL(g_pCurrentTool, onNextMode);
+				}
 			}
-			else
+
+			if(GetFocus() == (HWND)lParam)
 			{
-				SAFE_CALL(g_pCurrentTool, onNextMode);
+				SetFocus(g_hWndMain);
 			}
 		}
 		switch(LOWORD(wParam))
@@ -1442,11 +1450,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					XInitTypesCombo();
 				}
 			}
+			if(GetFocus() == (HWND)lParam)
+			{
+				SetFocus(g_hWndMain);
+			}
 			break;
 		case IDC_AB_CAMERA:
 			if(!g_is3DRotating && !g_is3DPanning && g_uCurrentTool != IDC_AB_CAMERA)
 			{
-				if(g_uCurrentTool == IDC_AB_ARROW)
+				if(g_pCurrentTool && g_pCurrentTool->allowUseCamera())
+				{
+					// toggle camera
+					bool isCamera = Button_GetCheck(g_hABCameraButton) == BST_CHECKED;
+					Button_SetCheck(g_hABCameraButton, isCamera ? BST_UNCHECKED : BST_CHECKED);
+				}
+				else
 				{
 					SAFE_CALL(g_pCurrentTool, deactivate);
 					mem_release(g_pCurrentTool);
@@ -1455,14 +1473,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					CheckDlgButton(hWnd, g_uCurrentTool, BST_CHECKED);
 					g_xState.bCreateMode = false;
 					XUpdateGizmos();
-				}
-				else
-				{
-					// toggle camera
-					bool isCamera = Button_GetCheck(g_hABCameraButton) == BST_CHECKED;
-					Button_SetCheck(g_hABCameraButton, isCamera ? BST_UNCHECKED : BST_CHECKED);
-				}
-				
+				}				
+			}
+			if(GetFocus() == (HWND)lParam)
+			{
+				SetFocus(g_hWndMain);
 			}
 			break;
 		case IDC_AB_CREATE:
@@ -1479,6 +1494,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					XUpdateGizmos();
 					XInitTypesCombo();
 				}
+			}
+			if(GetFocus() == (HWND)lParam)
+			{
+				SetFocus(g_hWndMain);
 			}
 			break;
 
@@ -1539,6 +1558,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		case ID_MAT_BROWSER:
 			g_pMaterialBrowser->browse(&g_matBrowserCallback);
+			if(GetFocus() == (HWND)lParam)
+			{
+				SetFocus(g_hWndMain);
+			}
 			break;
 
 
@@ -1832,29 +1855,49 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				{
 					SendMessage(g_hWndMain, WM_COMMAND, MAKEWPARAM(ID_EDIT_PROPERTIES, 0), NULL);
 				}
+
+				if(GetFocus() == (HWND)lParam)
+				{
+					SetFocus(g_hWndMain);
+				}
 			}
 			break;
 
 		case IDC_BACK_TO_WORLD:
-			if(IsWindowEnabled(g_hButtonToWorldWnd) && !g_xConfig.m_bIgnoreGroups)
+			if(IsWindowEnabled(g_hButtonToWorldWnd))
 			{
-				CCommandContainer *pContainer = NULL;
-				fora(i, g_apProxies)
+				if(!g_xConfig.m_bIgnoreGroups)
 				{
-					CProxyObject *pProxy = g_apProxies[i];
-					if(pProxy->isSelected())
+					CCommandContainer *pContainer = NULL;
+					fora(i, g_apProxies)
 					{
-						if(!pContainer)
+						CProxyObject *pProxy = g_apProxies[i];
+						if(pProxy->isSelected())
 						{
-							pContainer = new CCommandContainer();
+							if(!pContainer)
+							{
+								pContainer = new CCommandContainer();
+							}
+							pContainer->addCommand(new CCommandDestroyModel(pProxy));
 						}
-						pContainer->addCommand(new CCommandDestroyModel(pProxy));
+					}
+					if(pContainer)
+					{
+						XExecCommand(pContainer);
 					}
 				}
-				if(pContainer)
+				if(GetFocus() == (HWND)lParam)
 				{
-					XExecCommand(pContainer);
+					SetFocus(g_hWndMain);
 				}
+			}
+			
+			break;
+
+		case IDC_RAND_SCALE_YAW:
+			if(GetFocus() == (HWND)lParam)
+			{
+				SetFocus(g_hWndMain);
 			}
 			break;
 
@@ -2493,6 +2536,12 @@ static bool XIsClicked(const float3 &vPos)
 	return(sel);
 }
 
+static bool XIsCameraActive()
+{
+	printf("VK_SPACE: %d\n", GetKeyState(VK_SPACE));
+	return(Button_GetCheck(g_hABCameraButton) || GetKeyState(VK_SPACE) < 0);
+}
+
 LRESULT CALLBACK RenderNoninteractiveWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	//return(DefWindowProc(hWnd, message, wParam, lParam));
@@ -2571,6 +2620,13 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 	case WM_LBUTTONUP:
 	{
+		if(g_is2DPanning)
+		{
+			g_is2DPanning = FALSE;
+			SSInput_SetEnable(false);
+			ReleaseCapture();
+			break;
+		}
 		SAFE_CALL(g_pCurrentTool, onMouseUp, true);
 
 		if(g_is3DRotating)
@@ -2778,7 +2834,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			float3 vRayEnd = vRayStart + vRayDir * 1000.0f;
 
 
-			if(Button_GetCheck(g_hABArrowButton))
+			if(Button_GetCheck(g_hABArrowButton) && !XIsCameraActive())
 			{
 				if(g_pEditor->onMouseDown())
 				{
@@ -2836,7 +2892,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 				XFrameRun(0.0f);
 			}
-			else if(Button_GetCheck(g_hABCreateButton))
+			else if(Button_GetCheck(g_hABCreateButton) && !XIsCameraActive())
 			{
 				struct SelectItem2
 				{
@@ -2907,14 +2963,20 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				}
 			}
 
-			if(!Button_GetCheck(g_hABCameraButton) && g_pEditor->onMouseDown())
+			if(!XIsCameraActive() && g_pEditor->onMouseDown())
 			{
 				break;
 			}
 		}
 		else
 		{
-			if(Button_GetCheck(g_hABArrowButton))
+			if(XIsCameraActive())
+			{
+				g_is2DPanning = TRUE;
+				SetCapture(hWnd);
+				SSInput_SetEnable(true);
+			}
+			else if(Button_GetCheck(g_hABArrowButton))
 			{
 				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
 
@@ -3155,7 +3217,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			//break;
 		}
 
-		if(!Button_GetCheck(g_hABCameraButton) && g_pCurrentTool && g_pCurrentTool->onMouseDown(true))
+		if(!XIsCameraActive() && g_pCurrentTool && g_pCurrentTool->onMouseDown(true))
 		{
 			break;
 		}
@@ -3166,7 +3228,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			{
 				break;
 			}
-			if(Button_GetCheck(g_hABCameraButton))
+			if(XIsCameraActive())
 			{
 				g_is3DRotating = TRUE;
 				SetCapture(hWnd);
@@ -3180,7 +3242,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 	case WM_RBUTTONDOWN:
 	{
-		if(!Button_GetCheck(g_hABCameraButton) && g_pCurrentTool && g_pCurrentTool->onMouseDown(false))
+		if(!XIsCameraActive() && g_pCurrentTool && g_pCurrentTool->onMouseDown(false))
 		{
 			break;
 		}
@@ -3189,7 +3251,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		{
 			break;
 		}
-		if(Button_GetCheck(g_hABCameraButton))
+		if(XIsCameraActive())
 		{
 			g_is3DPanning = TRUE;
 			SetCapture(hWnd);

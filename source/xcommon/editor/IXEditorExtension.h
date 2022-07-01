@@ -86,6 +86,8 @@ public:
 	virtual UINT XMETHODCALLTYPE getClassCount() = 0;
 	virtual const char* XMETHODCALLTYPE getClassAt(UINT idx) = 0;
 	virtual bool XMETHODCALLTYPE useClass(const char *szClassName) = 0;
+
+	virtual bool XMETHODCALLTYPE allowUseCamera() = 0;
 };
 
 //##########################################################################
