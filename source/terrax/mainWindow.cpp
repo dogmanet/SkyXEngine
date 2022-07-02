@@ -1901,6 +1901,46 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 
+		case ID_ROTATE_90:
+		case ID_ROTATE_M90:
+			{
+				CCommandRotate *pCmd = new CCommandRotate();
+				XEnumerateObjects([pCmd](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+					if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
+					{
+						pCmd->addObject(pObj);
+					}
+				});
+
+				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+				float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
+
+				float3 vCenter = (g_xState.vSelectionBoundMax + g_xState.vSelectionBoundMin) * 0.5f;
+
+				float fTo = LOWORD(wParam) == ID_ROTATE_90 ? 1.0f : -1.0f;
+				switch(xCurView)
+				{
+				case X2D_TOP:
+					pCmd->setStartOrigin(vCenter, float3(0.0f, 1.0f, 0.0f));
+					pCmd->setStartPos(vCenter + float3(0.0f, 0.0f, 1.0f));
+					pCmd->setCurrentPos(vCenter + float3(fTo, 0.0f, 0.0f));
+					break;
+				case X2D_FRONT:
+					pCmd->setStartOrigin(vCenter, float3(0.0f, 0.0f, 1.0f));
+					pCmd->setStartPos(vCenter + float3(0.0f, 1.0f, 0.0f));
+					pCmd->setCurrentPos(vCenter + float3(fTo, 0.0f, 0.0f));
+					break;
+				case X2D_SIDE:
+					pCmd->setStartOrigin(vCenter, float3(1.0f, 0.0f, 0.0f));
+					pCmd->setStartPos(vCenter + float3(0.0f, 1.0f, 0.0f));
+					pCmd->setCurrentPos(vCenter + float3(0.0f, 0.0f, fTo));
+					break;
+				}
+
+				XExecCommand(pCmd);
+			}
+			break;
+
 		case ID_IGNORE_GROUPS:
 			g_xConfig.m_bIgnoreGroups = !g_xConfig.m_bIgnoreGroups;
 			CheckToolbarButton(ID_IGNORE_GROUPS, g_xConfig.m_bIgnoreGroups);
