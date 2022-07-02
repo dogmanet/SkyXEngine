@@ -9,14 +9,33 @@
 CBrushCreatorBox::CBrushCreatorBox(CEditable *pEditable, IXEditor *pEditor, IXGizmoRenderer *pRenderer):
 	m_pEditable(pEditable),
 	m_pEditor(pEditor),
-	m_pRenderer(pRenderer)
+	m_pRenderer(pRenderer),
+	m_handlerCallback(this)
 {
 	add_ref(pRenderer);
 
 	m_pEditable->getCore()->getConsole()->registerCVar("csg_block_auto_create", false, "Finish block without ENTER");
+
+	for(UINT i = 0, l = ARRAYSIZE(m_apHandlers); i < l; ++i)
+	{
+		pEditor->newGizmoHandle(&m_apHandlers[i]);
+		m_apHandlers[i]->enable(false);
+		m_apHandlers[i]->setCallback(&m_handlerCallback);
+	}
+
+	m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Y]->lockInDir(float3(0.0f, 1.0f, 0.0f));
+	m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Y]->lockInDir(float3(0.0f, 1.0f, 0.0f));
+	m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X]->lockInDir(float3(1.0f, 0.0f, 0.0f));
+	m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X]->lockInDir(float3(1.0f, 0.0f, 0.0f));
+	m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Z]->lockInDir(float3(0.0f, 0.0f, 1.0f));
+	m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Z]->lockInDir(float3(0.0f, 0.0f, 1.0f));
 }
 CBrushCreatorBox::~CBrushCreatorBox()
 {
+	for(UINT i = 0, l = ARRAYSIZE(m_apHandlers); i < l; ++i)
+	{
+		mem_release(m_apHandlers[i]);
+	}
 	mem_release(m_pRenderer);
 }
 
@@ -46,9 +65,23 @@ void CBrushCreatorBox::init(const float3 &vNormal)
 
 void CBrushCreatorBox::activate()
 {
+	if(m_isBoxBuilt)
+	{
+		for(UINT i = 0, l = ARRAYSIZE(m_apHandlers); i < l; ++i)
+		{
+			m_apHandlers[i]->enable(true);
+		}
+	}
 }
 void CBrushCreatorBox::deactivate()
 {
+	if(m_isBoxBuilt)
+	{
+		for(UINT i = 0, l = ARRAYSIZE(m_apHandlers); i < l; ++i)
+		{
+			m_apHandlers[i]->enable(false);
+		}
+	}
 }
 
 bool CBrushCreatorBox::onMouseDown(bool isPrimary)
@@ -108,8 +141,28 @@ void CBrushCreatorBox::onMouseUp(bool isPrimary)
 			{
 				onKeyDown(SIK_ENTER);
 			}
+			else
+			{
+				// init resize gizmo
+				for(UINT i = 0, l = ARRAYSIZE(m_apHandlers); i < l; ++i)
+				{
+					m_apHandlers[i]->enable(true);
+				}
+				placeHandlers();
+			}
 		}
 	}
+}
+
+void CBrushCreatorBox::placeHandlers()
+{
+	float3 vCenter = (m_vPos0 + m_vPos1 + m_vUp * m_fHeight) * 0.5f;
+	m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Y]->setPos(float3(vCenter.x, m_vPos0.y, vCenter.z));
+	m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Y]->setPos(float3(vCenter.x, m_vPos0.y + m_fHeight, vCenter.z));
+	m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X]->setPos(float3(m_vPos1.x, vCenter.y, vCenter.z));
+	m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X]->setPos(float3(m_vPos0.x, vCenter.y, vCenter.z));
+	m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Z]->setPos(float3(vCenter.x, vCenter.y, m_vPos1.z));
+	m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Z]->setPos(float3(vCenter.x, vCenter.y, m_vPos0.z));
 }
 
 bool CBrushCreatorBox::onKeyDown(UINT uKey)
@@ -126,6 +179,12 @@ bool CBrushCreatorBox::onKeyDown(UINT uKey)
 	{
 		if(m_isInitiated)
 		{
+			// release resize gizmo
+			for(UINT i = 0, l = ARRAYSIZE(m_apHandlers); i < l; ++i)
+			{
+				m_apHandlers[i]->enable(false);
+			}
+
 			m_isInitiated = false;
 			const char *szMat = m_pEditor->getMaterialBrowser()->getCurrentMaterial();
 			// create brush with default height
@@ -232,4 +291,122 @@ bool CBrushCreatorBox::useClass(const char *szClassName)
 bool CBrushCreatorBox::isValid()
 {
 	return(!SMIsZero(SMAABBVolume(SMAABB(m_vPos0, m_vPos1 + m_vUp * m_fHeight))));
+}
+
+void CBrushCreatorBox::onHandleMove(const float3 &vNewPos, IXEditorGizmoHandle *pHandle)
+{
+	if(pHandle == m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Y])
+	{
+		float fY = vNewPos.y;
+
+		m_fHeight = fY - m_vPos0.y;
+
+		if(SMIsZero(m_fHeight))
+		{
+			m_fHeight = 0.001f;
+		}
+
+		if(m_fHeight < 0.0f)
+		{
+			m_vPos0.y = m_vPos1.y = fY;
+			m_fHeight = -m_fHeight;
+
+			std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Y], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Y]);
+		}
+	}
+	else if(pHandle == m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Y])
+	{
+		float fY = vNewPos.y;
+
+		m_fHeight -= fY - m_vPos0.y;
+		m_vPos0.y = m_vPos1.y = fY;
+
+		if(SMIsZero(m_fHeight))
+		{
+			m_fHeight = 0.001f;
+		}
+
+		if(m_fHeight < 0.0f)
+		{
+			m_vPos0.y = m_vPos1.y = m_vPos0.y + m_fHeight;
+			m_fHeight = -m_fHeight;
+
+			std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Y], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Y]);
+		}
+	}
+	else if(pHandle == m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X])
+	{
+		m_vPos1.x = vNewPos.x;
+
+		if(SMIsZero(m_vPos1.x - m_vPos0.x))
+		{
+			m_vPos1.x += 0.001f;
+		}
+
+		if(m_vPos1.x < m_vPos0.x)
+		{
+			std::swap(m_vPos1.x, m_vPos0.x);
+			std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X]);
+		}
+	}
+	else if(pHandle == m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X])
+	{
+		m_vPos0.x = vNewPos.x;
+
+		if(SMIsZero(m_vPos1.x - m_vPos0.x))
+		{
+			m_vPos0.x -= 0.001f;
+		}
+
+		if(m_vPos1.x < m_vPos0.x)
+		{
+			std::swap(m_vPos1.x, m_vPos0.x);
+			std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X]);
+		}
+	}
+	else if(pHandle == m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Z])
+	{
+		m_vPos1.z = vNewPos.z;
+
+		if(SMIsZero(m_vPos1.z - m_vPos0.z))
+		{
+			m_vPos1.z += 0.001f;
+		}
+
+		if(m_vPos1.z < m_vPos0.z)
+		{
+			std::swap(m_vPos1.z, m_vPos0.z);
+			std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Z], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Z]);
+		}
+	}
+	else if(pHandle == m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Z])
+	{
+		m_vPos0.z = vNewPos.z;
+
+		if(SMIsZero(m_vPos1.z - m_vPos0.z))
+		{
+			m_vPos0.z -= 0.001f;
+		}
+
+		if(m_vPos1.z < m_vPos0.z)
+		{
+			std::swap(m_vPos1.z, m_vPos0.z);
+			std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Z], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Z]);
+		}
+	}
+
+	placeHandlers();
+}
+
+//##########################################################################
+
+void XMETHODCALLTYPE CBrushCreatorHandleCallback::moveTo(const float3 &vNewPos, IXEditorGizmoHandle *pGizmo)
+{
+	m_pBrushCreator->onHandleMove(vNewPos, pGizmo);
+}
+void XMETHODCALLTYPE CBrushCreatorHandleCallback::onStart(IXEditorGizmoHandle *pGizmo)
+{
+}
+void XMETHODCALLTYPE CBrushCreatorHandleCallback::onEnd(IXEditorGizmoHandle *pGizmo)
+{
 }

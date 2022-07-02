@@ -2538,7 +2538,6 @@ static bool XIsClicked(const float3 &vPos)
 
 static bool XIsCameraActive()
 {
-	printf("VK_SPACE: %d\n", GetKeyState(VK_SPACE));
 	return(Button_GetCheck(g_hABCameraButton) || GetKeyState(VK_SPACE) < 0);
 }
 
