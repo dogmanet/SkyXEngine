@@ -101,6 +101,7 @@ extern HACCEL g_hAccelTableMain;
 extern HACCEL g_hAccelTableEdit;
 
 HMENU g_hMenu = NULL;
+HMENU g_hMenu2 = NULL;
 
 HWND g_pGuiWnd = NULL;
 gui::IGUI *g_pGUI = NULL;
@@ -138,7 +139,7 @@ CGizmoRotateCallback g_gizmoRotateCallback;
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK RenderWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK RenderNoninteractiveWndProc(HWND, UINT, WPARAM, LPARAM);
-void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheckItem = -1);
+void DisplayContextMenu(HWND hwnd, POINT pt, HMENU hMenu, int iSubmenu, int iCheckItem = -1);
 void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
 BOOL XCheckMenuItem(HMENU hMenu, UINT uIDCheckItem, bool bCheck);
 void XUpdateStatusGrid();
@@ -383,6 +384,8 @@ BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
 	UINT ny_pos = (ny_size - WINDOW_HEIGHT) / 2;
 
 	g_hWndMain = CreateWindowA(MAIN_WINDOW_CLASS, MAIN_WINDOW_TITLE " | " SKYXENGINE_VERSION4EDITORS, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_OVERLAPPEDWINDOW, nx_pos, ny_pos, WINDOW_WIDTH, WINDOW_HEIGHT, NULL, g_hMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_MENU1)), hInstance, NULL);
+
+	g_hMenu2 = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_MENU2));
 
 	if(!g_hWndMain)
 	{
@@ -2655,6 +2658,13 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 		SAFE_CALL(g_pCurrentTool, onMouseUp, false);
 
+		if(hWnd != g_hTopLeftWnd && XIsMouseInSelection(g_xState.activeWindow))
+		{
+			POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+			MapWindowPoints(hWnd, g_hWndMain, &pt, 1);
+			DisplayContextMenu(g_hWndMain, pt, g_hMenu2, 2);
+		}
+
 		break;
 
 	case WM_LBUTTONUP:
@@ -2816,7 +2826,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					break;
 				}
 			}
-			DisplayContextMenu(hWnd, pt, IDR_MENU2, hWnd == g_hTopLeftWnd ? 0 : 1, iActiveMenu);
+			DisplayContextMenu(hWnd, pt, g_hMenu2, hWnd == g_hTopLeftWnd ? 0 : 1, iActiveMenu);
 		}
 	}
 	break;
@@ -3662,16 +3672,16 @@ void XFrameRun(float fDeltaTime)
 	g_pMaterialBrowser->update(fDeltaTime);
 }
 
-void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheckItem)
+void DisplayContextMenu(HWND hwnd, POINT pt, HMENU hMenu, int iSubmenu, int iCheckItem)
 {
-	HMENU hmenu;            // top-level menu 
+	//HMENU hmenu;            // top-level menu 
 	HMENU hmenuTrackPopup;  // shortcut menu 
 
 	// Load the menu resource. 
 
-	if((hmenu = LoadMenu(hInst, MAKEINTRESOURCE(iMenu))) == NULL)
-		return;
-	hmenuTrackPopup = GetSubMenu(hmenu, iSubmenu);
+	//if((hmenu = LoadMenu(hInst, MAKEINTRESOURCE(iMenu))) == NULL)
+	//	return;
+	hmenuTrackPopup = GetSubMenu(hMenu, iSubmenu);
 
 	MENUITEMINFOA mii;
 	memset(&mii, 0, sizeof(mii));
@@ -3682,7 +3692,7 @@ void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheck
 	{
 		SetMenuItemInfoA(hmenuTrackPopup, i, TRUE, &mii);
 	}
-	if(iCheckItem)
+	if(iCheckItem > 0)
 	{
 		mii.fState = MFS_CHECKED;
 		SetMenuItemInfoA(hmenuTrackPopup, iCheckItem, FALSE, &mii);
@@ -3698,7 +3708,7 @@ void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheck
 
 	// Destroy the menu. 
 
-	DestroyMenu(hmenu);
+	//DestroyMenu(hmenu);
 }
 
 void XInitViewportLayout(X_VIEWPORT_LAYOUT layout)
@@ -3948,6 +3958,7 @@ void XUpdateUndoRedo()
 		mii.cch = sprintf(str, "Can't undo\tCtrl+Z");
 	}
 	SetMenuItemInfoA(g_hMenu, ID_EDIT_UNDO, FALSE, &mii);
+	SetMenuItemInfoA(g_hMenu2, ID_EDIT_UNDO, FALSE, &mii);
 
 	mii.fState = g_pUndoManager->canRedo() ? MFS_ENABLED : MFS_DISABLED;
 	if(g_pUndoManager->canRedo())
@@ -3959,6 +3970,7 @@ void XUpdateUndoRedo()
 		mii.cch = sprintf(str, "Can't redo\tCtrl+Y");
 	}
 	SetMenuItemInfoA(g_hMenu, ID_EDIT_REDO, FALSE, &mii);
+	SetMenuItemInfoA(g_hMenu2, ID_EDIT_REDO, FALSE, &mii);
 }
 
 //##########################################################################
