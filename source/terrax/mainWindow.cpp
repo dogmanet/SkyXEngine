@@ -3533,7 +3533,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				g_xState.vCreateOrigin = XSnapToGrid(g_xState.vCreateOrigin);
 			}
 
-			g_pEditor->onMouseMove();
+			SAFE_CALL(g_pEditor, onMouseMove);
 
 			if(g_pCurrentTool && g_pCurrentTool->onMouseMove())
 			{
