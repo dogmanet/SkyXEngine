@@ -108,7 +108,9 @@ CEngine::CEngine(int argc, char **argv, const char *szName)
 		{
 			szPath[iLastPos + 1] = 0;
 		}
-		wcscat(szPath, L"crashreporter.exe +release " LTEXT(SKYXENGINE_VERSION) L"+" LTEXT(SKYXENGINE_BUILD_NUMBER) L" -dumpid "); // Keep last space!
+		wcscat(szPath, L"crashreporter.exe +release ");
+		wcscat(szPath, CMB2WC(szName));
+		wcscat(szPath, L"@" LTEXT(SKYXENGINE_VERSION) L"+" LTEXT(SKYXENGINE_BUILD_NUMBER) L" -dumpid "); // Keep last space!
 		
 		CreateDirectoryA("../crashdmp", NULL);
 		m_pBreakpadHandler = new google_breakpad::ExceptionHandler(
