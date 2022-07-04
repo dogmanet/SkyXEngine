@@ -296,7 +296,7 @@ QT стиль документирования (!) и QT_AUTOBRIEF - корот�
 
 #define SKYXENGINE_BUILD_NUMBER "$BUILD_NO$"
 
-#define SKYXENGINE_VERSION4EDITORS "SkyXEngine version " ## SKYXENGINE_VERSION ## " build " ## SKYXENGINE_BUILD_NUMBER
+#define SKYXENGINE_VERSION4EDITORS "SkyXEngine version " ## SKYXENGINE_VERSION ## "+" ## SKYXENGINE_BUILD_NUMBER
 
 #define SKYXENGINE_PREVIEW_SIZE 256
 
