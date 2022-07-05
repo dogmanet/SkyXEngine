@@ -227,6 +227,7 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	Core_0RegisterCVarInt("r_win_height", 600, "Размер окна по вертикали (в пикселях)", FCVAR_NOTIFY_OLD);
 	Core_0RegisterCVarBool("r_win_windowed", true, "Режим рендера true - оконный, false - полноэкранный", FCVAR_NOTIFY_OLD);
 	Core_0RegisterCVarBool("r_win_borderless", false, "Режим без рамки", FCVAR_NOTIFY_OLD);
+	Core_0RegisterCVarBool("r_vsync", false, "Включить вертикальную синхронизацию", FCVAR_NOTIFY_OLD);
 	Core_0RegisterCVarFloat("r_default_fov", SM_PI * 0.25f, "Дефолтный fov в радианах");
 	Core_0RegisterCVarFloat("r_near", 0.025f, "Ближняя плоскость отсчечения", FCVAR_NOTIFY);
 	Core_0RegisterCVarFloat("r_far", 800.0f, "Дальняя плоскость отсечения (дальность видимости)", FCVAR_NOTIFY);
@@ -238,6 +239,7 @@ bool XMETHODCALLTYPE CEngine::initGraphics(XWINDOW_OS_HANDLE hWindow, IXEngineCa
 	Core_0RegisterConcmdCls("on_r_win_height_change", this, (SXCONCMDCLS)&CEngine::onRWinHeightChanged);
 	Core_0RegisterConcmdCls("on_r_win_windowed_change", this, (SXCONCMDCLS)&CEngine::onRWinWindowedChanged);
 	Core_0RegisterConcmdCls("on_r_win_borderless_change", this, (SXCONCMDCLS)&CEngine::onRWinBorderlessChanged);
+	Core_0RegisterConcmdCls("on_r_vsync_change", this, (SXCONCMDCLS)&CEngine::onRVSyncChanged);
 
 	static int *r_win_width = (int*)GET_PCVAR_INT("r_win_width");
 	static int *r_win_height = (int*)GET_PCVAR_INT("r_win_height");
@@ -584,6 +586,12 @@ bool CEngine::checkResize()
 	static const bool *r_win_borderless = GET_PCVAR_BOOL("r_win_borderless");
 	static int *r_win_width = const_cast<int*>(GET_PCVAR_INT("r_win_width"));
 	static int *r_win_height = const_cast<int*>(GET_PCVAR_INT("r_win_height"));
+	static const bool *r_vsync = GET_PCVAR_BOOL("r_vsync");
+
+	if(m_wantResize & WR_VSYNC)
+	{
+		SGCore_GetDXDevice()->enableVSync(*r_vsync);
+	}
 
 	int iModeCount = 0;
 	const DEVMODE *pModes = SGCore_GetModes(&iModeCount);
@@ -737,6 +745,10 @@ void CEngine::onRWinWindowedChanged()
 void CEngine::onRWinBorderlessChanged()
 {
 	m_wantResize |= WR_BORDERLESS;
+}
+void CEngine::onRVSyncChanged()
+{
+	m_wantResize |= WR_VSYNC;
 }
 
 //##########################################################################
