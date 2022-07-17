@@ -84,10 +84,10 @@ void CEditable::removeObject(CEditorObject *pObject)
 //	}
 //}
 
-//void CEditable::onSelectionChanged(CEditorObject *pObject)
-//{
-//	m_pEditorExtension->onSelectionChanged(pObject);
-//}
+void CEditable::onSelectionChanged(CEditorObject *pObject)
+{
+	m_pEditorExtension->onSelectionChanged(pObject);
+}
 
 void CEditable::save(const char *szLevelName)
 {

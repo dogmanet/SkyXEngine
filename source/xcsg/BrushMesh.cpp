@@ -1466,6 +1466,11 @@ UINT CBrushMesh::findOrAddEdge(const float3 &vA, const float3 &vB)
 	UINT u0 = findOrAddVertex(vA);
 	UINT u1 = findOrAddVertex(vB);
 
+	return(findOrAddEdge(u0, u1));
+}
+
+UINT CBrushMesh::findOrAddEdge(UINT u0, UINT u1, bool isInternal)
+{
 	for(UINT i = 0, l = m_aEdges.size(); i < l; ++i)
 	{
 		Edge &e = m_aEdges[i];
@@ -1475,7 +1480,7 @@ UINT CBrushMesh::findOrAddEdge(const float3 &vA, const float3 &vB)
 		}
 	}
 
-	m_aEdges.push_back({{u0, u1}});
+	m_aEdges.push_back({{u0, u1}, isInternal});
 	return(m_aEdges.size() - 1);
 }
 
@@ -1501,7 +1506,7 @@ void CBrushMesh::cleanupUnreferencedEdges()
 				Face &f = m_aFaces[j];
 				fora(k, f.aEdges)
 				{
-					if(f.aEdges[k] > i)
+					if(f.aEdges[k] > (UINT)i)
 					{
 						--f.aEdges[k];
 					}
@@ -1529,11 +1534,11 @@ void CBrushMesh::cleanupUnreferencedVertices()
 			fora(j, m_aEdges)
 			{
 				Edge &e = m_aEdges[j];
-				if(e.uVertex[0] > i)
+				if(e.uVertex[0] > (UINT)i)
 				{
 					--e.uVertex[0];
 				}
-				if(e.uVertex[1] > i)
+				if(e.uVertex[1] > (UINT)i)
 				{
 					--e.uVertex[1];
 				}
@@ -1775,6 +1780,241 @@ void CBrushMesh::buildPhysbox(IXResourceModel *pResource)
 	pConvex->initData(m_aVertices.size(), m_aVertices);
 
 	pResource->addPhysbox(pConvex);
+}
+
+void CBrushMesh::moveVertices(UINT *puAffectedVertices, UINT uVertexCount, const float3 &vDeltaPos)
+{
+	for(UINT i = 0; i < uVertexCount; ++i)
+	{
+		m_aVertices[puAffectedVertices[i]] = (float3)(m_aVertices[puAffectedVertices[i]] + vDeltaPos);
+	}
+	
+	//UINT *puVerts = (UINT*)alloca(sizeof(UINT) * m_aVertices.size());
+	Array<UINT> puVerts(m_aVertices.size());
+
+	// merge coplanar faces
+	{
+		float3 vNormal0, vNormal1;
+		fora(uFace, m_aFaces)
+		{
+			Face &face0 = m_aFaces[uFace];
+			vNormal0 = calcFaceNormal(uFace);
+
+			for(UINT uFace1 = uFace + 1; uFace1 < uFacel; ++uFace1)
+			{
+				Face &face1 = m_aFaces[uFace1];
+				vNormal1 = calcFaceNormal(uFace1);
+
+				//face0.isInternal && face1.isInternal
+
+				if(fabsf(1.0f - SMVector3Dot(vNormal0, vNormal1)) < 0.001f && isFacesSibling(uFace, uFace1))
+				{
+					
+				}
+			}
+		}
+	}
+
+	// fix broken faces
+	// found affected faces
+	// fix it
+	fora(uFace, m_aFaces)
+	{
+		Face &face = m_aFaces[uFace];
+
+		if(face.aEdges.size() == 3 || fabsf(SMVector3Dot(face.vNormal, vDeltaPos)) < 0.001f)
+		{
+			// moved in the face plane, skipping
+			continue;
+		}
+
+		bool hasAffected = false, isFullAffected = true;
+		fora(j, face.aEdges)
+		{
+			Edge edge = m_aEdges[face.aEdges[j]];
+
+			for(UINT v = 0; v < 2; ++v)
+			{
+				bool isFound = false;
+				for(UINT i = 0; i < uVertexCount; ++i)
+				{
+					if(puAffectedVertices[i] == edge.uVertex[v])
+					{
+						isFound = true;
+						break;
+					}
+				}
+
+				if(isFound)
+				{
+					hasAffected = true;
+				}
+				else
+				{
+					isFullAffected = false;
+				}
+			}
+		}
+
+		if(hasAffected && !isFullAffected)
+		{
+			// potentially broken face
+			UINT uCurVec = 0;
+			puVerts.clearFast();
+
+			{
+				Edge &e0 = m_aEdges[face.aEdges[0]];
+				Edge &e1 = m_aEdges[face.aEdges[1]];
+				if(e0.uVertex[0] == e1.uVertex[0] || e0.uVertex[0] == e1.uVertex[1])
+				{
+					std::swap(e0.uVertex[0], e0.uVertex[1]);
+				}
+			}
+
+			UINT uLastVtx = UINT_MAX;
+			bool isFirst = true;
+			for(UINT j = 0, jl = face.aEdges.size() - 1; j < jl; ++j)
+			{
+				Edge edge = m_aEdges[face.aEdges[j]];
+				if(edge.uVertex[0] != uLastVtx && uLastVtx != UINT_MAX)
+				{
+					std::swap(edge.uVertex[0], edge.uVertex[1]);
+				}
+				uLastVtx = edge.uVertex[1];
+
+				if(isFirst)
+				{
+					isFirst = false;
+
+					puVerts[uCurVec++] = edge.uVertex[0];
+				}
+
+				puVerts[uCurVec++] = edge.uVertex[1];
+			}
+
+			UINT uMaxVec = uCurVec;
+			UINT uFaceVerts;
+			uCurVec = 0;
+			float fDist;
+			bool isFirstPass = true;
+			while(uMaxVec >= 3)
+			{
+				uCurVec %= uMaxVec;
+				SMPLANE plane(
+					m_aVertices[puVerts[uCurVec]],
+					m_aVertices[puVerts[(uCurVec + 1) % uMaxVec]],
+					m_aVertices[puVerts[(uCurVec + 2) % uMaxVec]]
+					);
+
+				bool isConvex = true;
+				uFaceVerts = 3;
+				for(UINT i = uCurVec + 3, l = uCurVec + uMaxVec; i < l; ++i)
+				{
+					fDist = SMVector4Dot(float4(m_aVertices[puVerts[i % uMaxVec]], 1.0f), plane);
+
+					if(SMIsZero(fDist))
+					{
+						++uFaceVerts;
+					}
+					else if(fDist > 0.0f)
+					{
+						isConvex = false;
+						break;
+					}
+				}
+
+				if(!isConvex)
+				{
+					++uCurVec;
+					continue;
+				}
+				
+				if(isFirstPass)
+				{
+					isFirstPass = false;
+					uCurVec += uFaceVerts - 1;
+					continue;
+				}
+
+				Face &newFace = m_aFaces[m_aFaces.size()];
+				Face &srcFace = m_aFaces[uFace];
+
+				newFace.texInfo = srcFace.texInfo;
+				newFace.vNormal = SMVector3Normalize(SMVector3Cross(
+					m_aVertices[puVerts[uCurVec]] - m_aVertices[puVerts[(uCurVec + 1) % uMaxVec]],
+					m_aVertices[puVerts[uCurVec]] - m_aVertices[puVerts[(uCurVec + 2) % uMaxVec]]
+					));
+				newFace.isInternal = srcFace.isInternal;
+				newFace.aEdges.reserve(uFaceVerts);
+				newFace.aEdges.push_back(findOrAddEdge(puVerts[(uCurVec + uFaceVerts - 1) % uMaxVec], puVerts[uCurVec], newFace.isInternal));
+				for(UINT i = uCurVec, l = uCurVec + uFaceVerts - 1; i < l; ++i)
+				{
+					newFace.aEdges.push_back(findOrAddEdge(puVerts[i % uMaxVec], puVerts[(i + 1) % uMaxVec]));
+				}
+
+				//puVerts.erase(uCurVec + 1);
+
+				UINT uS = (uCurVec + 1) % uMaxVec;
+				UINT uE = uS + uFaceVerts - 3;
+
+				if(uE >= uMaxVec)
+				{
+					uE %= uMaxVec;
+					for(UINT i = uMaxVec; uS < i; --i)
+					{
+						puVerts.erase(i - 1);
+					}
+					for(int i = (int)uE; i >= 0; --i)
+					{
+						puVerts.erase(i);
+					}
+					uCurVec = 0;
+				}
+				else
+				{
+					for(int i = (int)uE; (int)uS <= i; --i)
+					{
+						puVerts.erase(i);
+					}
+					++uCurVec;
+				}
+				
+				uMaxVec -= uFaceVerts - 2;
+			}
+
+			m_aFaces.erase(uFace);
+			--uFacel;
+			--uFace;
+		}
+	}
+
+	m_isBoundDirty = true;
+	buildModel();
+}
+
+float3 CBrushMesh::calcFaceNormal(UINT uFace)
+{
+	float3 vNormal;
+	triangulateFace(uFace, [&vNormal](const float3 &vA, const float3 &vB, const float3 &vC){
+		vNormal = SMVector3Normalize(SMVector3Cross(vA - vB, vA - vC));
+		return(false);
+	});
+
+	return(vNormal);
+}
+bool CBrushMesh::isFacesSibling(UINT uFace0, UINT uFace1)
+{
+	Face &face0 = m_aFaces[uFace0];
+	Face &face1 = m_aFaces[uFace1];
+	fora(uEdge, face0.aEdges)
+	{
+		if(face1.aEdges.indexOf(face0.aEdges[uEdge]) >= 0)
+		{
+			return(true);
+		}
+	}
+
+	return(false);
 }
 
 //##########################################################################

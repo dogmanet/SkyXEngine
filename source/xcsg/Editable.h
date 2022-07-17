@@ -51,7 +51,7 @@ public:
 
 	//void resync();
 
-	//void onSelectionChanged(CEditorObject *pObject);
+	void onSelectionChanged(CEditorObject *pObject);
 
 	const Array<CEditorObject*>& getObjects() const
 	{

@@ -7,6 +7,7 @@
 #include "EditorBrushTool.h"
 #include "FaceEditTool.h"
 #include "ClipTool.h"
+#include "VertexTool.h"
 
 class CEditorExtension final: public IXUnknownImplementation<IXEditorExtension>
 {
@@ -22,12 +23,13 @@ public:
 
 	void XMETHODCALLTYPE render(bool is3D) override;
 
-	//void onSelectionChanged(CEditorObject *pObject);
+	void onSelectionChanged(CEditorObject *pObject);
 
 private:
 	CEditorBrushTool *m_pBrushTool = NULL;
 	CFaceEditTool *m_pFaceEditTool = NULL;
 	CClipTool *m_pClipTool = NULL;
+	CVertexTool *m_pVertexTool = NULL;
 
 	CEditable *m_pEditable = NULL;
 };
