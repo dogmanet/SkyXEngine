@@ -2290,7 +2290,8 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 		}
 
 		static IGXConstantBuffer *s_mConstW = pDevice->createConstantBuffer(sizeof(SMMATRIX));
-		if(g_xState.bHasSelection)
+		extern HWND g_hABArrowButton;
+		if(g_xState.bHasSelection && Button_GetCheck(g_hABArrowButton))
 		{
 			float3_t va, vb, vc, vd;
 			float4 vBorder;

@@ -65,7 +65,7 @@ void CBrushCreatorBox::init(const float3 &vNormal)
 
 void CBrushCreatorBox::activate()
 {
-	if(m_isBoxBuilt)
+	if(m_isBoxBuilt && m_isInitiated)
 	{
 		for(UINT i = 0, l = ARRAYSIZE(m_apHandlers); i < l; ++i)
 		{

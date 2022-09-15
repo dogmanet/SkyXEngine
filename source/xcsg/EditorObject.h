@@ -111,6 +111,12 @@ public:
 		return(m_isRemoved);
 	}
 
+	UINT getVertexCount();
+	const float3_t& getVertexAt(UINT uVertex);
+
+	//! сдвигает выбранные вертексы, возвращает количество удаленных вертексов и их прежние индексы в порядке убывания в puAffectedVertices
+	UINT moveVertices(UINT *puAffectedVertices, UINT uVertexCount, const float3 &vDeltaPos);
+
 private:
 	void removeBrush(UINT idx);
 
