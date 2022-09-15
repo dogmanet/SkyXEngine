@@ -61,6 +61,15 @@ void CBrushCreatorBox::init(const float3 &vNormal)
 	m_vUp = SMVector3Normalize(vNormal);
 	m_isInitiated = true;
 	m_isBoxBuilt = false;
+
+	m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Y]->lockInDir(m_vUp);
+	m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Y]->lockInDir(m_vUp);
+	float3 vDir = SMQuaternion(float3(0.0f, 1.0f, 0.0f), m_vUp) * float3(1.0f, 0.0f, 0.0f);
+	m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X]->lockInDir(vDir);
+	m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X]->lockInDir(vDir);
+	vDir = SMQuaternion(float3(0.0f, 1.0f, 0.0f), m_vUp) * float3(0.0f, 0.0f, 1.0f);
+	m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Z]->lockInDir(vDir);
+	m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Z]->lockInDir(vDir);
 }
 
 void CBrushCreatorBox::activate()
@@ -157,12 +166,20 @@ void CBrushCreatorBox::onMouseUp(bool isPrimary)
 void CBrushCreatorBox::placeHandlers()
 {
 	float3 vCenter = (m_vPos0 + m_vPos1 + m_vUp * m_fHeight) * 0.5f;
-	m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Y]->setPos(float3(vCenter.x, m_vPos0.y, vCenter.z));
-	m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Y]->setPos(float3(vCenter.x, m_vPos0.y + m_fHeight, vCenter.z));
-	m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X]->setPos(float3(m_vPos1.x, vCenter.y, vCenter.z));
-	m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X]->setPos(float3(m_vPos0.x, vCenter.y, vCenter.z));
-	m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Z]->setPos(float3(vCenter.x, vCenter.y, m_vPos1.z));
-	m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Z]->setPos(float3(vCenter.x, vCenter.y, m_vPos0.z));
+	m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Y]->setPos(vCenter - m_vUp * m_fHeight * 0.5f);
+	m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Y]->setPos(vCenter + m_vUp * m_fHeight * 0.5f);
+
+	SMQuaternion qRot(float3(0.0f, 1.0f, 0.0f), m_vUp);
+
+	float3 vDir = qRot * float3(1.0f, 0.0f, 0.0f);
+	float3 vOffset = fabsf(SMVector3Dot(m_vPos1 - m_vPos0, vDir)) * 0.5f * vDir;
+	m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X]->setPos(vCenter + vOffset);
+	m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X]->setPos(vCenter - vOffset);
+	
+	vDir = qRot * float3(0.0f, 0.0f, 1.0f);
+	vOffset = fabsf(SMVector3Dot(m_vPos1 - m_vPos0, vDir)) * 0.5f * vDir;
+	m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Z]->setPos(vCenter + vOffset);
+	m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Z]->setPos(vCenter - vOffset);
 }
 
 bool CBrushCreatorBox::onKeyDown(UINT uKey)
@@ -172,6 +189,10 @@ bool CBrushCreatorBox::onKeyDown(UINT uKey)
 		if(m_isInitiated)
 		{
 			m_isInitiated = false;
+			for(UINT i = 0, l = ARRAYSIZE(m_apHandlers); i < l; ++i)
+			{
+				m_apHandlers[i]->enable(false);
+			}
 			return(true);
 		}
 	}
@@ -295,11 +316,21 @@ bool CBrushCreatorBox::isValid()
 
 void CBrushCreatorBox::onHandleMove(const float3 &vNewPos, IXEditorGizmoHandle *pHandle)
 {
-	if(pHandle == m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Y])
+	if(pHandle == m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Y] || pHandle == m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Y])
 	{
-		float fY = vNewPos.y;
+		float fDist = SMVector4Dot(SMPLANE(m_vUp, m_vPos0), float4(vNewPos, 1.0f));
 
-		m_fHeight = fY - m_vPos0.y;
+		if(pHandle == m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Y])
+		{
+			m_fHeight = fDist;
+		}
+		else
+		{
+			m_fHeight -= fDist;
+			float3 vOffset = m_vUp * fDist;
+			m_vPos0 += vOffset;
+			m_vPos1 += vOffset;
+		}
 
 		if(SMIsZero(m_fHeight))
 		{
@@ -308,90 +339,74 @@ void CBrushCreatorBox::onHandleMove(const float3 &vNewPos, IXEditorGizmoHandle *
 
 		if(m_fHeight < 0.0f)
 		{
-			m_vPos0.y = m_vPos1.y = fY;
+			float3 vOffset = m_vUp * m_fHeight;
+			m_vPos0 += vOffset;
+			m_vPos1 += vOffset;
 			m_fHeight = -m_fHeight;
 
 			std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Y], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Y]);
 		}
 	}
-	else if(pHandle == m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Y])
+	else if(pHandle == m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X] || pHandle == m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Z])
 	{
-		float fY = vNewPos.y;
+		float3 vDir = SMQuaternion(float3(0.0f, 1.0f, 0.0f), m_vUp) * (pHandle == m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X] ? 
+			float3(1.0f, 0.0f, 0.0f) : 
+			float3(0.0f, 0.0f, 1.0f)
+			);
 
-		m_fHeight -= fY - m_vPos0.y;
-		m_vPos0.y = m_vPos1.y = fY;
+		float3 &vPos = SMVector3Dot(m_vPos1 - m_vPos0, vDir) > 0.0f ? m_vPos1 : m_vPos0;
+		float fDist = SMVector4Dot(SMPLANE(vDir, vPos), float4(vNewPos, 1.0f));
 
-		if(SMIsZero(m_fHeight))
+		vPos += vDir * fDist;
+
+		float fProj = SMVector3Dot(vPos - (&vPos == &m_vPos0 ? m_vPos1 : m_vPos0), vDir);
+
+		if(SMIsZero(fProj))
 		{
-			m_fHeight = 0.001f;
+			vPos += 0.001f * vDir;
 		}
 
-		if(m_fHeight < 0.0f)
+		if(fProj < 0.0f)
 		{
-			m_vPos0.y = m_vPos1.y = m_vPos0.y + m_fHeight;
-			m_fHeight = -m_fHeight;
-
-			std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Y], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Y]);
+			if(pHandle == m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X])
+			{
+				std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X]);
+			}
+			else
+			{
+				std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Z], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Z]);
+			}
 		}
 	}
-	else if(pHandle == m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X])
+	else if(pHandle == m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X] || pHandle == m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Z])
 	{
-		m_vPos1.x = vNewPos.x;
+		float3 vDir = SMQuaternion(float3(0.0f, 1.0f, 0.0f), m_vUp) * (pHandle == m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X] ?
+			float3(1.0f, 0.0f, 0.0f) :
+			float3(0.0f, 0.0f, 1.0f)
+			);
 
-		if(SMIsZero(m_vPos1.x - m_vPos0.x))
+		float3 &vPos = SMVector3Dot(m_vPos1 - m_vPos0, vDir) < 0.0f ? m_vPos1 : m_vPos0;
+		float fDist = SMVector4Dot(SMPLANE(vDir, vPos), float4(vNewPos, 1.0f));
+
+		vPos += vDir * fDist;
+
+		float fProj = SMVector3Dot((&vPos == &m_vPos0 ? m_vPos1 : m_vPos0) - vPos, vDir);
+
+		if(SMIsZero(fProj))
 		{
-			m_vPos1.x += 0.001f;
+			vPos -= 0.001f * vDir;
 		}
 
-		if(m_vPos1.x < m_vPos0.x)
+		if(fProj < 0.0f)
 		{
-			std::swap(m_vPos1.x, m_vPos0.x);
-			std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X]);
-		}
-	}
-	else if(pHandle == m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X])
-	{
-		m_vPos0.x = vNewPos.x;
-
-		if(SMIsZero(m_vPos1.x - m_vPos0.x))
-		{
-			m_vPos0.x -= 0.001f;
-		}
-
-		if(m_vPos1.x < m_vPos0.x)
-		{
-			std::swap(m_vPos1.x, m_vPos0.x);
-			std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X]);
-		}
-	}
-	else if(pHandle == m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Z])
-	{
-		m_vPos1.z = vNewPos.z;
-
-		if(SMIsZero(m_vPos1.z - m_vPos0.z))
-		{
-			m_vPos1.z += 0.001f;
-		}
-
-		if(m_vPos1.z < m_vPos0.z)
-		{
-			std::swap(m_vPos1.z, m_vPos0.z);
-			std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Z], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Z]);
-		}
-	}
-	else if(pHandle == m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Z])
-	{
-		m_vPos0.z = vNewPos.z;
-
-		if(SMIsZero(m_vPos1.z - m_vPos0.z))
-		{
-			m_vPos0.z -= 0.001f;
-		}
-
-		if(m_vPos1.z < m_vPos0.z)
-		{
-			std::swap(m_vPos1.z, m_vPos0.z);
-			std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Z], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Z]);
+			if(pHandle == m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X])
+			{
+				std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_X], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_X]);
+			}
+			else
+			{
+				std::swap(m_apHandlers[GXCUBEMAP_FACE_POSITIVE_Z], m_apHandlers[GXCUBEMAP_FACE_NEGATIVE_Z]);
+			}
 		}
 	}
 
