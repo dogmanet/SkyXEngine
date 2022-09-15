@@ -100,6 +100,7 @@ struct CTerraXState: public TerraXState
 	float4_t m_vViewportBorders[4];
 
 	bool isFrameSelect = false;
+	bool isFrameSelectInternal = false;
 	float2_t vFrameSelectStart;
 
 	bool bHasSelection = false;

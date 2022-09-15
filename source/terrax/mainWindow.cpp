@@ -2533,28 +2533,6 @@ void XDisableCurrentTool()
 	XInitTypesCombo();
 }
 
-static bool XIsInSelection(const float3 &vPos)
-{
-	X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
-	bool sel = false;
-	switch(xCurView)
-	{
-	case X2D_TOP:
-		sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
-			&& ((vPos.z > g_xState.vWorldMousePos.y && vPos.z <= g_xState.vFrameSelectStart.y) || (vPos.z < g_xState.vWorldMousePos.y && vPos.z >= g_xState.vFrameSelectStart.y));
-		break;
-	case X2D_FRONT:
-		sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
-			&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
-		break;
-	case X2D_SIDE:
-		sel = ((vPos.z > g_xState.vWorldMousePos.x && vPos.z <= g_xState.vFrameSelectStart.x) || (vPos.z < g_xState.vWorldMousePos.x && vPos.z >= g_xState.vFrameSelectStart.x))
-			&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
-		break;
-	}
-	return(sel);
-}
-
 static bool XIsClicked(const float3 &vPos)
 {
 	X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
@@ -2685,22 +2663,22 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			ReleaseCapture();
 			break;
 		}
-		if(g_xState.isFrameSelect)
+		if(g_xState.isFrameSelectInternal)
 		{
-			g_xState.isFrameSelect = false;
-			ReleaseCapture();
-			
-			if(!SMIsZero(SMVector2Length(g_xState.vWorldMousePos - g_xState.vFrameSelectStart)))
-			{
-				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+			float2_t vSelectStartPos, vSelectEndPos;
+			X_2D_VIEW xCurView;
+			g_pEditor->endFrameSelect(&xCurView, &vSelectStartPos, &vSelectEndPos);
+			g_xState.isFrameSelectInternal = false;
 
+			if(!SMIsZero(SMVector2Length(vSelectEndPos - vSelectStartPos)))
+			{
 				CCommandSelect *pCmd = new CCommandSelect();
 				bool bUse = false;
 				XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
 					if(!(g_xConfig.m_bIgnoreGroups && isProxy))
 					{
 						float3_t vPos = pObj->getPos();
-						bool sel = XIsInSelection(vPos);
+						bool sel = g_pEditor->isPointInFrame(vPos, vSelectStartPos, vSelectEndPos, xCurView);
 						if(!g_xConfig.m_bIgnoreGroups && pParent)
 						{
 							CProxyObject *pCur;
@@ -3233,9 +3211,8 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				}
 				else
 				{ // start frame select
-					g_xState.isFrameSelect = true;
-					SetCapture(hWnd);
-					g_xState.vFrameSelectStart = g_xState.vWorldMousePos;
+					g_xState.isFrameSelectInternal = true;
+					g_pEditor->beginFrameSelect();
 				}
 			}
 			else if(Button_GetCheck(g_hABCreateButton))

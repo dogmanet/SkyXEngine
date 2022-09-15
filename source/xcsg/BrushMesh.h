@@ -106,6 +106,19 @@ public:
 
 	void setFinalized(bool set);
 
+	UINT getVertexCount()
+	{
+		return(m_aVertices.size());
+	}
+	const float3_t& getVertexAt(UINT uVertex)
+	{
+		assert(m_aVertices.size() > uVertex);
+		return(m_aVertices[uVertex]);
+	}
+
+	bool couldMoveVertices(const UINT *puAffectedVertices, UINT uVertexCount, UINT uVertexOffset, const float3 &vDeltaPos);
+	UINT moveVertices(const UINT *puAffectedVertices, UINT uVertexCount, const float3 &vDeltaPos, UINT *puRemovedVertices);
+
 private:
 	void buildModel(bool bBuildPhysbox = true);
 	void setupFromOutline(COutline *pOutline, UINT uContour, float fHeight);
@@ -169,12 +182,16 @@ private:
 	int classifyEdge(UINT uEdge, const SMPLANE &plane);
 
 	UINT findOrAddEdge(const float3 &vA, const float3 &vB);
+	UINT findOrAddEdge(UINT uVert0, UINT uVert1, bool isInternal = false);
 	UINT findOrAddVertex(const float3 &v);
 
 	void cleanupUnreferencedEdges();
-	void cleanupUnreferencedVertices();
+	UINT cleanupUnreferencedVertices(UINT *puRemovedVertices = NULL);
 
 	void dropFace(UINT uFace);
+
+	float3 calcFaceNormal(UINT uFace);
+	bool isFacesSibling(UINT uFace0, UINT uFace1, UINT *puCommonEdge = NULL);
 
 private:
 	//IXEditorGizmoHandle *m_pHandle[2];
