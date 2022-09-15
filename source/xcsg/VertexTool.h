@@ -10,6 +10,7 @@
 
 class CEditable;
 class CVertexTool;
+class CCommandMorph;
 //class CEditorObject;
 
 class CVertexGizmoCallback: public IXEditorGizmoHandleCallback
@@ -90,8 +91,13 @@ public:
 
 	void onHandleMoved(const float3 &vNewPos, IXEditorGizmoHandle *pHandle);
 	void onHandleClick(IXEditorGizmoHandle *pHandle);
+	void onHandleReleased();
 
 	void onSelectionChanged(CEditorObject *pObject);
+
+	void setSelectedVerticesForObject(CEditorObject *pObj, const Array<UINT> &aSelectedVertices);
+
+	void onObjectTopologyChanged(CEditorObject *pObj);
 
 private:
 	void addObject(CEditorObject *pObj);
@@ -148,6 +154,8 @@ private:
 	};
 
 	Array<ObjData> m_aObjects;
+
+	CCommandMorph *m_pCommand = NULL;
 
 	//int m_iMode = 0;
 };

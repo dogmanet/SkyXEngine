@@ -105,6 +105,8 @@ public:
 
 	SX_ALIGNED_OP_MEM();
 
+	CVertexTool* getVertexTool();
+
 private:
 	CEditorObject* getObjectByGUID(const XGUID &guid);
 

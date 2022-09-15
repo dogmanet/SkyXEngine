@@ -462,3 +462,8 @@ void CEditable::onModelRestored(CEditorModel *pModel)
 		m_aModels.push_back(pModel);
 	}
 }
+
+CVertexTool* CEditable::getVertexTool()
+{
+	return(m_pEditorExtension->getVertexTool());
+}

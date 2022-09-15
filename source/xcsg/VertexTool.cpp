@@ -18,6 +18,8 @@
 
 #include "EditorObject.h"
 
+#include "CommandMorph.h"
+
 extern HINSTANCE g_hInstance;
 
 // box selection of vertices
@@ -156,6 +158,39 @@ void CVertexTool::onSelectionChanged(CEditorObject *pObj)
 	}
 }
 
+void CVertexTool::onObjectTopologyChanged(CEditorObject *pObj)
+{
+	if(m_isActive && pObj->isSelected() && pObj->isVisible())
+	{
+		addObject(pObj);
+	}
+}
+
+void CVertexTool::setSelectedVerticesForObject(CEditorObject *pObj, const Array<UINT> &aSelectedVertices)
+{
+	if(m_isActive)
+	{
+		int idx = m_aObjects.indexOf(pObj, [](const ObjData &a, CEditorObject *b){
+			return(a.pObj == b);
+		});
+		assert(idx >= 0);
+		if(idx >= 0)
+		{
+			ObjData &od = m_aObjects[idx];
+
+			fora(i, aSelectedVertices)
+			{
+				UINT vtx = aSelectedVertices[i];
+				assert(vtx < od.aHandles.size());
+				if(vtx < od.aHandles.size())
+				{
+					od.aHandles[vtx].select(true);
+				}
+			}
+		}
+	}
+}
+
 void CVertexTool::render(bool is3D)
 {
 	if(m_isActive)
@@ -244,6 +279,13 @@ void CVertexTool::onHandleMoved(const float3 &vNewPos, IXEditorGizmoHandle *pHan
 
 	float3 vDeltaPos = vNewPos - pHandle->getPos();
 
+	bool bCaptureState = false;
+	if(!m_pCommand)
+	{
+		m_pCommand = new CCommandMorph(m_pEditor, m_pEditable);
+		bCaptureState = true;
+	}
+
 	fora(i, m_aObjects)
 	{
 		ObjData &od = m_aObjects[i];
@@ -260,7 +302,18 @@ void CVertexTool::onHandleMoved(const float3 &vNewPos, IXEditorGizmoHandle *pHan
 
 		if(uCurVertex)
 		{
+			if(bCaptureState)
+			{
+				m_pCommand->addObject(od.pObj, puAffectedVertices, uCurVertex);
+			}
+
 			UINT uRemovedVertexCount = od.pObj->moveVertices(puAffectedVertices, uCurVertex, vDeltaPos);
+
+			for(int iVtx = (int)uRemovedVertexCount - 1; iVtx >= 0; --iVtx)
+			{
+				mem_release(od.aHandles[puAffectedVertices[iVtx]].pHandle);
+				od.aHandles.erase(puAffectedVertices[iVtx]);
+			}
 
 			fora(j, od.aHandles)
 			{
@@ -301,12 +354,17 @@ void CVertexTool::onHandleClick(IXEditorGizmoHandle *pHandle)
 		float2 v2Pos1;	
 		const float3_t &vPos1 = pHandle->getPos();
 
+		UINT idSelectedObject;
+		UINT idSelectedHandle;
+
 		switch(x2dView)
 		{
 		case X2D_NONE:
-			enumHandles([pHandle, &isSelected](UINT idObject, UINT idHandle, const ObjData &od, HandleData &hd){
+			enumHandles([pHandle, &isSelected, &idSelectedObject, &idSelectedHandle](UINT idObject, UINT idHandle, const ObjData &od, HandleData &hd){
 				if(hd.isSelected && SMIsZero(SMVector3Length2(hd.pHandle->getPos() - pHandle->getPos())))
 				{
+					idSelectedObject = idObject;
+					idSelectedHandle = idHandle;
 					isSelected = true;
 				}
 			});
@@ -314,10 +372,12 @@ void CVertexTool::onHandleClick(IXEditorGizmoHandle *pHandle)
 
 		case X2D_TOP: // x/z
 			v2Pos1 = float2(vPos1.x, vPos1.z);
-			enumHandles([pHandle, &isSelected, &v2Pos1](UINT idObject, UINT idHandle, const ObjData &od, HandleData &hd){
+			enumHandles([pHandle, &isSelected, &v2Pos1, &idSelectedObject, &idSelectedHandle](UINT idObject, UINT idHandle, const ObjData &od, HandleData &hd){
 				const float3_t &vPos0 = hd.pHandle->getPos();
 				if(hd.isSelected && SMIsZero(SMVector2Length(float2(vPos0.x, vPos0.z) - v2Pos1)))
 				{
+					idSelectedObject = idObject;
+					idSelectedHandle = idHandle;
 					isSelected = true;
 				}
 			});
@@ -325,10 +385,12 @@ void CVertexTool::onHandleClick(IXEditorGizmoHandle *pHandle)
 
 		case X2D_FRONT: // x/y
 			v2Pos1 = float2(vPos1.x, vPos1.y);
-			enumHandles([pHandle, &isSelected, &v2Pos1](UINT idObject, UINT idHandle, const ObjData &od, HandleData &hd){
+			enumHandles([pHandle, &isSelected, &v2Pos1, &idSelectedObject, &idSelectedHandle](UINT idObject, UINT idHandle, const ObjData &od, HandleData &hd){
 				const float3_t &vPos0 = hd.pHandle->getPos();
 				if(hd.isSelected && SMIsZero(SMVector2Length(float2(vPos0.x, vPos0.y) - v2Pos1)))
 				{
+					idSelectedObject = idObject;
+					idSelectedHandle = idHandle;
 					isSelected = true;
 				}
 			});
@@ -336,10 +398,12 @@ void CVertexTool::onHandleClick(IXEditorGizmoHandle *pHandle)
 
 		case X2D_SIDE: // z/y
 			v2Pos1 = float2(vPos1.z, vPos1.y);
-			enumHandles([pHandle, &isSelected, &v2Pos1](UINT idObject, UINT idHandle, const ObjData &od, HandleData &hd){
+			enumHandles([pHandle, &isSelected, &v2Pos1, &idSelectedObject, &idSelectedHandle](UINT idObject, UINT idHandle, const ObjData &od, HandleData &hd){
 				const float3_t &vPos0 = hd.pHandle->getPos();
 				if(hd.isSelected && SMIsZero(SMVector2Length(float2(vPos0.z, vPos0.y) - v2Pos1)))
 				{
+					idSelectedObject = idObject;
+					idSelectedHandle = idHandle;
 					isSelected = true;
 				}
 			});
@@ -348,6 +412,18 @@ void CVertexTool::onHandleClick(IXEditorGizmoHandle *pHandle)
 
 		if(isSelected)
 		{
+			// swap two handles
+
+			IXEditorGizmoHandle *pHandle0 = m_aObjects[idObject].aHandles[idHandle].pHandle;
+			IXEditorGizmoHandle *pHandle1 = m_aObjects[idSelectedObject].aHandles[idSelectedHandle].pHandle;
+
+			float3 vPos = pHandle0->getPos();
+			pHandle0->setPos(pHandle1->getPos());
+			pHandle1->setPos(vPos);
+
+			std::swap(m_aObjects[idObject].aHandles[idHandle].pHandle, m_aObjects[idSelectedObject].aHandles[idSelectedHandle].pHandle);
+			m_aObjects[idObject].aHandles[idHandle].select(false);
+			m_aObjects[idSelectedObject].aHandles[idSelectedHandle].select(true);
 			return;
 		}
 	}
@@ -418,6 +494,49 @@ void CVertexTool::onHandleClick(IXEditorGizmoHandle *pHandle)
 	}
 }
 
+void CVertexTool::onHandleReleased()
+{
+	if(m_pCommand)
+	{
+		UINT uMaxVertices = 0, uCurVertex;
+		fora(i, m_aObjects)
+		{
+			ObjData &od = m_aObjects[i];
+			uCurVertex = od.aHandles.size();
+			if(uCurVertex > uMaxVertices)
+			{
+				uMaxVertices = uCurVertex;
+			}
+		}
+		assert(uMaxVertices);
+
+		UINT *puAffectedVertices = (UINT*)alloca(sizeof(UINT) * uMaxVertices);
+		
+		fora(i, m_aObjects)
+		{
+			ObjData &od = m_aObjects[i];
+			uCurVertex = 0;
+			fora(j, od.aHandles)
+			{
+				HandleData &hd = od.aHandles[j];
+
+				if(hd.isSelected)
+				{
+					puAffectedVertices[uCurVertex++] = j;
+				}
+			}
+
+			if(uCurVertex)
+			{
+				m_pCommand->finalizeObject(od.pObj, puAffectedVertices, uCurVertex);
+			}
+		}
+
+		m_pEditor->execCommand(m_pCommand);
+		m_pCommand = NULL;
+	}
+}
+
 //##########################################################################
 
 void XMETHODCALLTYPE CVertexGizmoCallback::moveTo(const float3 &vNewPos, IXEditorGizmoHandle *pGizmo)
@@ -440,6 +559,7 @@ void XMETHODCALLTYPE CVertexGizmoCallback::onStart(IXEditorGizmoHandle *pGizmo)
 }
 void XMETHODCALLTYPE CVertexGizmoCallback::onEnd(IXEditorGizmoHandle *pGizmo)
 {
+	m_pTool->onHandleReleased();
 	if(!m_isMoved)
 	{
 		//m_pTool->onHandleClick(pGizmo);

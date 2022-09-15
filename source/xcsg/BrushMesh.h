@@ -116,7 +116,8 @@ public:
 		return(m_aVertices[uVertex]);
 	}
 
-	void moveVertices(UINT *puAffectedVertices, UINT uVertexCount, const float3 &vDeltaPos);
+	bool couldMoveVertices(const UINT *puAffectedVertices, UINT uVertexCount, UINT uVertexOffset, const float3 &vDeltaPos);
+	UINT moveVertices(const UINT *puAffectedVertices, UINT uVertexCount, const float3 &vDeltaPos, UINT *puRemovedVertices);
 
 private:
 	void buildModel(bool bBuildPhysbox = true);
@@ -185,12 +186,12 @@ private:
 	UINT findOrAddVertex(const float3 &v);
 
 	void cleanupUnreferencedEdges();
-	void cleanupUnreferencedVertices();
+	UINT cleanupUnreferencedVertices(UINT *puRemovedVertices = NULL);
 
 	void dropFace(UINT uFace);
 
 	float3 calcFaceNormal(UINT uFace);
-	bool isFacesSibling(UINT uFace0, UINT uFace1);
+	bool isFacesSibling(UINT uFace0, UINT uFace1, UINT *puCommonEdge = NULL);
 
 private:
 	//IXEditorGizmoHandle *m_pHandle[2];

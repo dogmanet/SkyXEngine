@@ -195,6 +195,8 @@ void XMETHODCALLTYPE CEditorObject::remove()
 		m_aBrushes[i]->enable(false);
 	}
 	m_isVisible = false;
+
+	m_pEditable->onSelectionChanged(this);
 }
 void XMETHODCALLTYPE CEditorObject::preSetup()
 {
@@ -230,6 +232,8 @@ void CEditorObject::setKV(const char *szKey, const char *szValue, bool bSkipFixP
 			
 			mem_release(pRoot);
 		}
+
+		m_pEditable->getVertexTool()->onObjectTopologyChanged(this);
 
 		fixPos();
 	}
@@ -710,39 +714,93 @@ UINT CEditorObject::moveVertices(UINT *puAffectedVertices, UINT uVertexCount, co
 		return(0);
 	}
 
-	UINT uStart = 0;
-	UINT uCount;
-	UINT uBrush = 0;
-	UINT uBrushVC;
-	while(uStart < uVertexCount && uBrush < m_aBrushes.size())
 	{
-		uBrushVC = m_aBrushes[uBrush]->getVertexCount();
-
-		uCount = 0;
-		for(UINT i = uStart; i < uVertexCount; ++i)
+		UINT uStart = 0;
+		UINT uBrush = 0;
+		UINT uBrushVC;
+		UINT uCount;
+		UINT uOffset = 0;
+		while(uStart < uVertexCount && uBrush < m_aBrushes.size())
 		{
-			if(puAffectedVertices[i] < uBrushVC)
-			{
-				++uCount;
-			}
-			else
-			{
-				puAffectedVertices[i] -= uBrushVC;
-			}
-		}
+			uBrushVC = m_aBrushes[uBrush]->getVertexCount();
 
-		if(uCount)
-		{
-			m_aBrushes[uBrush]->moveVertices(puAffectedVertices + uStart, uCount, vDeltaPos);
-			uStart += uCount;
-		}
+			uCount = 0;
+			for(UINT i = uStart; i < uVertexCount; ++i)
+			{
+				if(puAffectedVertices[i] < uBrushVC + uOffset)
+				{
+					++uCount;
+				}
+				else
+				{
+					break;
+				}
+			}
 
-		++uBrush;
+			if(uCount)
+			{
+				if(!m_aBrushes[uBrush]->couldMoveVertices(puAffectedVertices + uStart, uCount, uOffset, vDeltaPos))
+				{
+					// couldn't move
+					return(0);
+				}
+				uStart += uCount;
+			}
+
+			++uBrush;
+			uOffset += uBrushVC;
+		}
 	}
 
+	UINT uTotalRemoved = 0;
+	{
+		UINT uStart = 0;
+		UINT uCount;
+		UINT uBrush = 0;
+		UINT uBrushVC;
+		UINT uWriteStart = 0;
+		UINT uRemoved;
+		UINT uOffset = 0;
+		while(uStart < uVertexCount && uBrush < m_aBrushes.size())
+		{
+			uBrushVC = m_aBrushes[uBrush]->getVertexCount();
+
+			uCount = 0;
+			for(UINT i = uStart; i < uVertexCount; ++i)
+			{
+				if(puAffectedVertices[i] < uBrushVC)
+				{
+					++uCount;
+				}
+				else
+				{
+					puAffectedVertices[i] -= uBrushVC;
+				}
+			}
+
+			if(uCount)
+			{
+				uRemoved = m_aBrushes[uBrush]->moveVertices(puAffectedVertices + uStart, uCount, vDeltaPos, puAffectedVertices + uWriteStart);
+				if(uRemoved)
+				{
+					uTotalRemoved += uRemoved;
+					for(UINT i = uWriteStart, l = uWriteStart + uRemoved; i < l; ++i)
+					{
+						puAffectedVertices[i] += uOffset;
+					}
+					uWriteStart += uRemoved;
+				}
+				uStart += uCount;
+			}
+
+			uOffset += uBrushVC;
+			++uBrush;
+		}
+	}
+	
 	fixPos();
 
 	SAFE_CALL(m_pModel, onObjectChanged, this);
 
-	return(0);
+	return(uTotalRemoved);
 }

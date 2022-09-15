@@ -25,6 +25,11 @@ public:
 
 	void onSelectionChanged(CEditorObject *pObject);
 
+	CVertexTool* getVertexTool()
+	{
+		return(m_pVertexTool);
+	}
+	
 private:
 	CEditorBrushTool *m_pBrushTool = NULL;
 	CFaceEditTool *m_pFaceEditTool = NULL;
