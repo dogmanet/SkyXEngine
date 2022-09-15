@@ -74,7 +74,8 @@ void CBaseCharacter::onPostLoad()
 	//m_pCharacter->setJumpSpeed(3.5f);
 	m_pCharacter->setGravity(float3(0, -10.0f, 0));
 	//m_pCharacter->setGravity(1.0f);
-	m_pCharacter->setFallSpeed(300.0f);
+	// Для парашютистов, например, предельная скорость составляет от 190 км/ч при максимальном сопротивлении воздуха, когда они падают плашмя, раскинув руки, до 240 км/ч при нырянии «рыбкой» или «солдатиком».
+	m_pCharacter->setFallSpeed(53.0f);
 	//m_pCharacter->setFallSpeed(30.0f);
 	m_pCharacter->setMaxPenetrationDepth(0.1f);
 	//m_pGhostObject->setWorldTransform(startTransform);
