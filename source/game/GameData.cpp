@@ -585,9 +585,10 @@ m_hWnd(hWnd)
 		static gui::IDesktop *pLoadingDesktop = GameData::m_pGUIStack->createDesktopA("loading", "menu/loading.html");
 		gui::dom::IDOMnode *pNode = pLoadingDesktop->getDocument()->getElementById(L"engine_version");
 		static const char **pszVersion = GET_PCVAR_STRING("engine_version");
+		static const char **pszBuild = GET_PCVAR_STRING("engine_build");
 		if(pNode && pszVersion)
 		{
-			pNode->setText(StringW(L"SkyXEngine ") + StringW(String(*pszVersion)), TRUE);
+			pNode->setText(StringW(L"SkyXEngine ") + StringW(String(*pszVersion)) + StringW(pszBuild ? (StringW(L"+") + String(*pszBuild)) : L""), TRUE);
 		}
 		GameData::m_pGUIStack->pushDesktop(pLoadingDesktop);
 

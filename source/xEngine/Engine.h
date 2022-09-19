@@ -16,7 +16,8 @@ enum WANT_RESIZE
 	WR_WIDTH = 0x0001,
 	WR_HEIGHT = 0x0002,
 	WR_WINDOWED = 0x0004,
-	WR_BORDERLESS = 0x0008
+	WR_BORDERLESS = 0x0008,
+	WR_VSYNC = 0x0010
 };
 
 class CEngine: public IXUnknownImplementation<IXEngine>
@@ -44,6 +45,7 @@ protected:
 	void onRWinHeightChanged();
 	void onRWinWindowedChanged();
 	void onRWinBorderlessChanged();
+	void onRVSyncChanged();
 
 	bool checkResize();
 

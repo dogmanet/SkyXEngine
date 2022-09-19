@@ -687,6 +687,7 @@ namespace gui
 		if(m_pFTfontFace)
 		{
 			FT_Done_Face(m_pFTfontFace);
+			m_pFTfontFace = NULL;
 		}
 	}
 
@@ -1290,6 +1291,7 @@ namespace gui
 	{
 		if(m_pFT)
 		{
+			m_mFonts.clear();
 			FT_Done_FreeType(m_pFT);
 			m_pFT = NULL;
 		}

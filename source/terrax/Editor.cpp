@@ -349,3 +349,58 @@ bool XMETHODCALLTYPE CEditor::isKeyPressed(UINT uKey)
 {
 	return(XIsKeyPressed(uKey));
 }
+
+void XMETHODCALLTYPE CEditor::beginFrameSelect()
+{
+	g_xState.isFrameSelect = true;
+	SetCapture(g_xState.hActiveWnd);
+	g_xState.vFrameSelectStart = g_xState.vWorldMousePos;
+}
+bool XMETHODCALLTYPE CEditor::endFrameSelect(X_2D_VIEW *pxCurView, float2_t *pvStartPos, float2_t *pvEndPos)
+{
+	if(!g_xState.isFrameSelect)
+	{
+		return(false);
+	}
+
+	g_xState.isFrameSelect = false;
+	ReleaseCapture();
+
+	if(pvStartPos)
+	{
+		*pvStartPos = g_xState.vFrameSelectStart;
+	}
+
+	if(pvEndPos)
+	{
+		*pvEndPos = g_xState.vWorldMousePos;
+	}
+
+	if(pxCurView)
+	{
+		*pxCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+	}
+
+	return(true);
+}
+
+bool XMETHODCALLTYPE CEditor::isPointInFrame(const float3 &vPos, const float2_t &vFrameStart, const float2_t &vFrameEnd, X_2D_VIEW xCurView)
+{
+	bool sel = false;
+	switch(xCurView)
+	{
+	case X2D_TOP:
+		sel = ((vPos.x > vFrameEnd.x && vPos.x <= vFrameStart.x) || (vPos.x < vFrameEnd.x && vPos.x >= vFrameStart.x))
+			&& ((vPos.z > vFrameEnd.y && vPos.z <= vFrameStart.y) || (vPos.z < vFrameEnd.y && vPos.z >= vFrameStart.y));
+		break;
+	case X2D_FRONT:
+		sel = ((vPos.x > vFrameEnd.x && vPos.x <= vFrameStart.x) || (vPos.x < vFrameEnd.x && vPos.x >= vFrameStart.x))
+			&& ((vPos.y > vFrameEnd.y && vPos.y <= vFrameStart.y) || (vPos.y < vFrameEnd.y && vPos.y >= vFrameStart.y));
+		break;
+	case X2D_SIDE:
+		sel = ((vPos.z > vFrameEnd.x && vPos.z <= vFrameStart.x) || (vPos.z < vFrameEnd.x && vPos.z >= vFrameStart.x))
+			&& ((vPos.y > vFrameEnd.y && vPos.y <= vFrameStart.y) || (vPos.y < vFrameEnd.y && vPos.y >= vFrameStart.y));
+		break;
+	}
+	return(sel);
+}

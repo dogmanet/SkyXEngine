@@ -976,7 +976,6 @@ void CFaceEdit::justify(int how, bool isAllAsOne)
 
 		if(!isAllAsOne)
 		{
-			GXCUBEMAP_FACE_NEGATIVE_X;
 			fd.pObject->getFaceExtents(fd.uFace, extents);
 		}
 
@@ -1030,8 +1029,8 @@ void CFaceEdit::justify(int how, bool isAllAsOne)
 			break;
 
 		case IDC_JUSTIFY_C:
-			oldFace.fSShift = (vTopLeft.x + vBottomRight.x) * 0.5f;
-			oldFace.fTShift = (vTopLeft.y + vBottomRight.y) * 0.5f;
+			oldFace.fSShift = -(vTopLeft.x + vBottomRight.x) * 0.5f - 0.5f;
+			oldFace.fTShift = -(vTopLeft.y + vBottomRight.y) * 0.5f - 0.5f;
 			break;
 
 		case IDC_JUSTIFY_R:

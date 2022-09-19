@@ -101,6 +101,7 @@ extern HACCEL g_hAccelTableMain;
 extern HACCEL g_hAccelTableEdit;
 
 HMENU g_hMenu = NULL;
+HMENU g_hMenu2 = NULL;
 
 HWND g_pGuiWnd = NULL;
 gui::IGUI *g_pGUI = NULL;
@@ -138,7 +139,7 @@ CGizmoRotateCallback g_gizmoRotateCallback;
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK RenderWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK RenderNoninteractiveWndProc(HWND, UINT, WPARAM, LPARAM);
-void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheckItem = -1);
+void DisplayContextMenu(HWND hwnd, POINT pt, HMENU hMenu, int iSubmenu, int iCheckItem = -1);
 void XInitViewportLayout(X_VIEWPORT_LAYOUT layout);
 BOOL XCheckMenuItem(HMENU hMenu, UINT uIDCheckItem, bool bCheck);
 void XUpdateStatusGrid();
@@ -383,6 +384,8 @@ BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
 	UINT ny_pos = (ny_size - WINDOW_HEIGHT) / 2;
 
 	g_hWndMain = CreateWindowA(MAIN_WINDOW_CLASS, MAIN_WINDOW_TITLE " | " SKYXENGINE_VERSION4EDITORS, WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_OVERLAPPEDWINDOW, nx_pos, ny_pos, WINDOW_WIDTH, WINDOW_HEIGHT, NULL, g_hMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_MENU1)), hInstance, NULL);
+
+	g_hMenu2 = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_MENU2));
 
 	if(!g_hWndMain)
 	{
@@ -1081,7 +1084,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 
 		//g_hCheckboxRandomScaleYawWnd
-		g_hCheckboxRandomScaleYawWnd = CreateWindowExA(0, WC_BUTTON, "Random scale and yaw", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX, rect.right, rect.top + 15 + 25 + MARGIN_RIGHT + 15 + 25 + 10 + 15 + 15 + 25 + 25, MARGIN_RIGHT, 15, hWnd, (HMENU)0, hInst, NULL);
+		g_hCheckboxRandomScaleYawWnd = CreateWindowExA(0, WC_BUTTON, "Random scale and yaw", WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX, rect.right, rect.top + 15 + 25 + MARGIN_RIGHT + 15 + 25 + 10 + 15 + 15 + 25 + 25, MARGIN_RIGHT, 15, hWnd, (HMENU)IDC_RAND_SCALE_YAW, hInst, NULL);
 		{
 			SetWindowFont(g_hCheckboxRandomScaleYawWnd, GetStockObject(DEFAULT_GUI_FONT), FALSE);
 		}
@@ -1253,31 +1256,39 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_COMMAND:
-		if(LOWORD(wParam) >= IDC_AB_FIRST && LOWORD(wParam) < IDC_AB_FIRST + g_aTools.size() && !g_is3DRotating && !g_is3DPanning)
+		if(LOWORD(wParam) >= IDC_AB_FIRST && LOWORD(wParam) < IDC_AB_FIRST + g_aTools.size())
 		{
-			Button_SetCheck(g_hABCameraButton, BST_UNCHECKED);
-
-			IXEditorTool *pNewTool = g_aTools[LOWORD(wParam) - IDC_AB_FIRST].pTool;
-			if(pNewTool != g_pCurrentTool)
+			if(!g_is3DRotating && !g_is3DPanning)
 			{
-				SAFE_CALL(g_pCurrentTool, deactivate);
-				mem_release(g_pCurrentTool);
-				add_ref(pNewTool);
-				g_pCurrentTool = pNewTool;
-				XInitTypesCombo();
-				SAFE_CALL(g_pCurrentTool, activate);
+				Button_SetCheck(g_hABCameraButton, BST_UNCHECKED);
 
-				CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
-				g_uCurrentTool = LOWORD(wParam);
-				CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
+				IXEditorTool *pNewTool = g_aTools[LOWORD(wParam) - IDC_AB_FIRST].pTool;
+				if(pNewTool != g_pCurrentTool)
+				{
+					SAFE_CALL(g_pCurrentTool, deactivate);
+					mem_release(g_pCurrentTool);
+					add_ref(pNewTool);
+					g_pCurrentTool = pNewTool;
+					XInitTypesCombo();
+					SAFE_CALL(g_pCurrentTool, activate);
 
-				g_xState.bCreateMode = false;
-				XUpdateGizmos();
+					CheckDlgButton(hWnd, g_uCurrentTool, FALSE);
+					g_uCurrentTool = LOWORD(wParam);
+					CheckDlgButton(hWnd, g_uCurrentTool, TRUE);
 
+					g_xState.bCreateMode = false;
+					XUpdateGizmos();
+
+				}
+				else
+				{
+					SAFE_CALL(g_pCurrentTool, onNextMode);
+				}
 			}
-			else
+
+			if(GetFocus() == (HWND)lParam)
 			{
-				SAFE_CALL(g_pCurrentTool, onNextMode);
+				SetFocus(g_hWndMain);
 			}
 		}
 		switch(LOWORD(wParam))
@@ -1442,11 +1453,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					XInitTypesCombo();
 				}
 			}
+			if(GetFocus() == (HWND)lParam)
+			{
+				SetFocus(g_hWndMain);
+			}
 			break;
 		case IDC_AB_CAMERA:
 			if(!g_is3DRotating && !g_is3DPanning && g_uCurrentTool != IDC_AB_CAMERA)
 			{
-				if(g_uCurrentTool == IDC_AB_ARROW)
+				if(g_pCurrentTool && g_pCurrentTool->allowUseCamera())
+				{
+					// toggle camera
+					bool isCamera = Button_GetCheck(g_hABCameraButton) == BST_CHECKED;
+					Button_SetCheck(g_hABCameraButton, isCamera ? BST_UNCHECKED : BST_CHECKED);
+				}
+				else
 				{
 					SAFE_CALL(g_pCurrentTool, deactivate);
 					mem_release(g_pCurrentTool);
@@ -1455,14 +1476,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					CheckDlgButton(hWnd, g_uCurrentTool, BST_CHECKED);
 					g_xState.bCreateMode = false;
 					XUpdateGizmos();
-				}
-				else
-				{
-					// toggle camera
-					bool isCamera = Button_GetCheck(g_hABCameraButton) == BST_CHECKED;
-					Button_SetCheck(g_hABCameraButton, isCamera ? BST_UNCHECKED : BST_CHECKED);
-				}
-				
+				}				
+			}
+			if(GetFocus() == (HWND)lParam)
+			{
+				SetFocus(g_hWndMain);
 			}
 			break;
 		case IDC_AB_CREATE:
@@ -1479,6 +1497,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					XUpdateGizmos();
 					XInitTypesCombo();
 				}
+			}
+			if(GetFocus() == (HWND)lParam)
+			{
+				SetFocus(g_hWndMain);
 			}
 			break;
 
@@ -1539,6 +1561,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		case ID_MAT_BROWSER:
 			g_pMaterialBrowser->browse(&g_matBrowserCallback);
+			if(GetFocus() == (HWND)lParam)
+			{
+				SetFocus(g_hWndMain);
+			}
 			break;
 
 
@@ -1832,29 +1858,89 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				{
 					SendMessage(g_hWndMain, WM_COMMAND, MAKEWPARAM(ID_EDIT_PROPERTIES, 0), NULL);
 				}
+
+				if(GetFocus() == (HWND)lParam)
+				{
+					SetFocus(g_hWndMain);
+				}
 			}
 			break;
 
 		case IDC_BACK_TO_WORLD:
-			if(IsWindowEnabled(g_hButtonToWorldWnd) && !g_xConfig.m_bIgnoreGroups)
+			if(IsWindowEnabled(g_hButtonToWorldWnd))
 			{
-				CCommandContainer *pContainer = NULL;
-				fora(i, g_apProxies)
+				if(!g_xConfig.m_bIgnoreGroups)
 				{
-					CProxyObject *pProxy = g_apProxies[i];
-					if(pProxy->isSelected())
+					CCommandContainer *pContainer = NULL;
+					fora(i, g_apProxies)
 					{
-						if(!pContainer)
+						CProxyObject *pProxy = g_apProxies[i];
+						if(pProxy->isSelected())
 						{
-							pContainer = new CCommandContainer();
+							if(!pContainer)
+							{
+								pContainer = new CCommandContainer();
+							}
+							pContainer->addCommand(new CCommandDestroyModel(pProxy));
 						}
-						pContainer->addCommand(new CCommandDestroyModel(pProxy));
+					}
+					if(pContainer)
+					{
+						XExecCommand(pContainer);
 					}
 				}
-				if(pContainer)
+				if(GetFocus() == (HWND)lParam)
 				{
-					XExecCommand(pContainer);
+					SetFocus(g_hWndMain);
 				}
+			}
+			
+			break;
+
+		case IDC_RAND_SCALE_YAW:
+			if(GetFocus() == (HWND)lParam)
+			{
+				SetFocus(g_hWndMain);
+			}
+			break;
+
+		case ID_ROTATE_90:
+		case ID_ROTATE_M90:
+			{
+				CCommandRotate *pCmd = new CCommandRotate();
+				XEnumerateObjects([pCmd](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+					if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
+					{
+						pCmd->addObject(pObj);
+					}
+				});
+
+				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+				float fViewScale = g_xConfig.m_fViewportScale[g_xState.activeWindow];
+
+				float3 vCenter = (g_xState.vSelectionBoundMax + g_xState.vSelectionBoundMin) * 0.5f;
+
+				float fTo = LOWORD(wParam) == ID_ROTATE_90 ? 1.0f : -1.0f;
+				switch(xCurView)
+				{
+				case X2D_TOP:
+					pCmd->setStartOrigin(vCenter, float3(0.0f, 1.0f, 0.0f));
+					pCmd->setStartPos(vCenter + float3(0.0f, 0.0f, 1.0f));
+					pCmd->setCurrentPos(vCenter + float3(fTo, 0.0f, 0.0f));
+					break;
+				case X2D_FRONT:
+					pCmd->setStartOrigin(vCenter, float3(0.0f, 0.0f, 1.0f));
+					pCmd->setStartPos(vCenter + float3(0.0f, 1.0f, 0.0f));
+					pCmd->setCurrentPos(vCenter + float3(fTo, 0.0f, 0.0f));
+					break;
+				case X2D_SIDE:
+					pCmd->setStartOrigin(vCenter, float3(1.0f, 0.0f, 0.0f));
+					pCmd->setStartPos(vCenter + float3(0.0f, 1.0f, 0.0f));
+					pCmd->setCurrentPos(vCenter + float3(0.0f, 0.0f, fTo));
+					break;
+				}
+
+				XExecCommand(pCmd);
 			}
 			break;
 
@@ -2447,28 +2533,6 @@ void XDisableCurrentTool()
 	XInitTypesCombo();
 }
 
-static bool XIsInSelection(const float3 &vPos)
-{
-	X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
-	bool sel = false;
-	switch(xCurView)
-	{
-	case X2D_TOP:
-		sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
-			&& ((vPos.z > g_xState.vWorldMousePos.y && vPos.z <= g_xState.vFrameSelectStart.y) || (vPos.z < g_xState.vWorldMousePos.y && vPos.z >= g_xState.vFrameSelectStart.y));
-		break;
-	case X2D_FRONT:
-		sel = ((vPos.x > g_xState.vWorldMousePos.x && vPos.x <= g_xState.vFrameSelectStart.x) || (vPos.x < g_xState.vWorldMousePos.x && vPos.x >= g_xState.vFrameSelectStart.x))
-			&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
-		break;
-	case X2D_SIDE:
-		sel = ((vPos.z > g_xState.vWorldMousePos.x && vPos.z <= g_xState.vFrameSelectStart.x) || (vPos.z < g_xState.vWorldMousePos.x && vPos.z >= g_xState.vFrameSelectStart.x))
-			&& ((vPos.y > g_xState.vWorldMousePos.y && vPos.y <= g_xState.vFrameSelectStart.y) || (vPos.y < g_xState.vWorldMousePos.y && vPos.y >= g_xState.vFrameSelectStart.y));
-		break;
-	}
-	return(sel);
-}
-
 static bool XIsClicked(const float3 &vPos)
 {
 	X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
@@ -2491,6 +2555,11 @@ static bool XIsClicked(const float3 &vPos)
 	}
 
 	return(sel);
+}
+
+static bool XIsCameraActive()
+{
+	return(Button_GetCheck(g_hABCameraButton) || GetKeyState(VK_SPACE) < 0);
 }
 
 LRESULT CALLBACK RenderNoninteractiveWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -2567,10 +2636,24 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 		SAFE_CALL(g_pCurrentTool, onMouseUp, false);
 
+		if(hWnd != g_hTopLeftWnd && XIsMouseInSelection(g_xState.activeWindow))
+		{
+			POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+			MapWindowPoints(hWnd, g_hWndMain, &pt, 1);
+			DisplayContextMenu(g_hWndMain, pt, g_hMenu2, 2);
+		}
+
 		break;
 
 	case WM_LBUTTONUP:
 	{
+		if(g_is2DPanning)
+		{
+			g_is2DPanning = FALSE;
+			SSInput_SetEnable(false);
+			ReleaseCapture();
+			break;
+		}
 		SAFE_CALL(g_pCurrentTool, onMouseUp, true);
 
 		if(g_is3DRotating)
@@ -2580,22 +2663,22 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			ReleaseCapture();
 			break;
 		}
-		if(g_xState.isFrameSelect)
+		if(g_xState.isFrameSelectInternal)
 		{
-			g_xState.isFrameSelect = false;
-			ReleaseCapture();
-			
-			if(!SMIsZero(SMVector2Length(g_xState.vWorldMousePos - g_xState.vFrameSelectStart)))
-			{
-				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
+			float2_t vSelectStartPos, vSelectEndPos;
+			X_2D_VIEW xCurView;
+			g_pEditor->endFrameSelect(&xCurView, &vSelectStartPos, &vSelectEndPos);
+			g_xState.isFrameSelectInternal = false;
 
+			if(!SMIsZero(SMVector2Length(vSelectEndPos - vSelectStartPos)))
+			{
 				CCommandSelect *pCmd = new CCommandSelect();
 				bool bUse = false;
 				XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
 					if(!(g_xConfig.m_bIgnoreGroups && isProxy))
 					{
 						float3_t vPos = pObj->getPos();
-						bool sel = XIsInSelection(vPos);
+						bool sel = g_pEditor->isPointInFrame(vPos, vSelectStartPos, vSelectEndPos, xCurView);
 						if(!g_xConfig.m_bIgnoreGroups && pParent)
 						{
 							CProxyObject *pCur;
@@ -2721,7 +2804,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 					break;
 				}
 			}
-			DisplayContextMenu(hWnd, pt, IDR_MENU2, hWnd == g_hTopLeftWnd ? 0 : 1, iActiveMenu);
+			DisplayContextMenu(hWnd, pt, g_hMenu2, hWnd == g_hTopLeftWnd ? 0 : 1, iActiveMenu);
 		}
 	}
 	break;
@@ -2778,7 +2861,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			float3 vRayEnd = vRayStart + vRayDir * 1000.0f;
 
 
-			if(Button_GetCheck(g_hABArrowButton))
+			if(Button_GetCheck(g_hABArrowButton) && !XIsCameraActive())
 			{
 				if(g_pEditor->onMouseDown())
 				{
@@ -2836,7 +2919,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 				XFrameRun(0.0f);
 			}
-			else if(Button_GetCheck(g_hABCreateButton))
+			else if(Button_GetCheck(g_hABCreateButton) && !XIsCameraActive())
 			{
 				struct SelectItem2
 				{
@@ -2907,14 +2990,20 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				}
 			}
 
-			if(!Button_GetCheck(g_hABCameraButton) && g_pEditor->onMouseDown())
+			if(!XIsCameraActive() && g_pEditor->onMouseDown())
 			{
 				break;
 			}
 		}
 		else
 		{
-			if(Button_GetCheck(g_hABArrowButton))
+			if(XIsCameraActive())
+			{
+				g_is2DPanning = TRUE;
+				SetCapture(hWnd);
+				SSInput_SetEnable(true);
+			}
+			else if(Button_GetCheck(g_hABArrowButton))
 			{
 				X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
 
@@ -3122,9 +3211,8 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				}
 				else
 				{ // start frame select
-					g_xState.isFrameSelect = true;
-					SetCapture(hWnd);
-					g_xState.vFrameSelectStart = g_xState.vWorldMousePos;
+					g_xState.isFrameSelectInternal = true;
+					g_pEditor->beginFrameSelect();
 				}
 			}
 			else if(Button_GetCheck(g_hABCreateButton))
@@ -3155,7 +3243,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			//break;
 		}
 
-		if(!Button_GetCheck(g_hABCameraButton) && g_pCurrentTool && g_pCurrentTool->onMouseDown(true))
+		if(!XIsCameraActive() && g_pCurrentTool && g_pCurrentTool->onMouseDown(true))
 		{
 			break;
 		}
@@ -3166,7 +3254,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			{
 				break;
 			}
-			if(Button_GetCheck(g_hABCameraButton))
+			if(XIsCameraActive())
 			{
 				g_is3DRotating = TRUE;
 				SetCapture(hWnd);
@@ -3180,7 +3268,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 
 	case WM_RBUTTONDOWN:
 	{
-		if(!Button_GetCheck(g_hABCameraButton) && g_pCurrentTool && g_pCurrentTool->onMouseDown(false))
+		if(!XIsCameraActive() && g_pCurrentTool && g_pCurrentTool->onMouseDown(false))
 		{
 			break;
 		}
@@ -3189,7 +3277,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 		{
 			break;
 		}
-		if(Button_GetCheck(g_hABCameraButton))
+		if(XIsCameraActive())
 		{
 			g_is3DPanning = TRUE;
 			SetCapture(hWnd);
@@ -3422,7 +3510,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				g_xState.vCreateOrigin = XSnapToGrid(g_xState.vCreateOrigin);
 			}
 
-			g_pEditor->onMouseMove();
+			SAFE_CALL(g_pEditor, onMouseMove);
 
 			if(g_pCurrentTool && g_pCurrentTool->onMouseMove())
 			{
@@ -3561,16 +3649,16 @@ void XFrameRun(float fDeltaTime)
 	g_pMaterialBrowser->update(fDeltaTime);
 }
 
-void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheckItem)
+void DisplayContextMenu(HWND hwnd, POINT pt, HMENU hMenu, int iSubmenu, int iCheckItem)
 {
-	HMENU hmenu;            // top-level menu 
+	//HMENU hmenu;            // top-level menu 
 	HMENU hmenuTrackPopup;  // shortcut menu 
 
 	// Load the menu resource. 
 
-	if((hmenu = LoadMenu(hInst, MAKEINTRESOURCE(iMenu))) == NULL)
-		return;
-	hmenuTrackPopup = GetSubMenu(hmenu, iSubmenu);
+	//if((hmenu = LoadMenu(hInst, MAKEINTRESOURCE(iMenu))) == NULL)
+	//	return;
+	hmenuTrackPopup = GetSubMenu(hMenu, iSubmenu);
 
 	MENUITEMINFOA mii;
 	memset(&mii, 0, sizeof(mii));
@@ -3581,7 +3669,7 @@ void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheck
 	{
 		SetMenuItemInfoA(hmenuTrackPopup, i, TRUE, &mii);
 	}
-	if(iCheckItem)
+	if(iCheckItem > 0)
 	{
 		mii.fState = MFS_CHECKED;
 		SetMenuItemInfoA(hmenuTrackPopup, iCheckItem, FALSE, &mii);
@@ -3597,7 +3685,7 @@ void DisplayContextMenu(HWND hwnd, POINT pt, int iMenu, int iSubmenu, int iCheck
 
 	// Destroy the menu. 
 
-	DestroyMenu(hmenu);
+	//DestroyMenu(hmenu);
 }
 
 void XInitViewportLayout(X_VIEWPORT_LAYOUT layout)
@@ -3847,6 +3935,7 @@ void XUpdateUndoRedo()
 		mii.cch = sprintf(str, "Can't undo\tCtrl+Z");
 	}
 	SetMenuItemInfoA(g_hMenu, ID_EDIT_UNDO, FALSE, &mii);
+	SetMenuItemInfoA(g_hMenu2, ID_EDIT_UNDO, FALSE, &mii);
 
 	mii.fState = g_pUndoManager->canRedo() ? MFS_ENABLED : MFS_DISABLED;
 	if(g_pUndoManager->canRedo())
@@ -3858,6 +3947,7 @@ void XUpdateUndoRedo()
 		mii.cch = sprintf(str, "Can't redo\tCtrl+Y");
 	}
 	SetMenuItemInfoA(g_hMenu, ID_EDIT_REDO, FALSE, &mii);
+	SetMenuItemInfoA(g_hMenu2, ID_EDIT_REDO, FALSE, &mii);
 }
 
 //##########################################################################

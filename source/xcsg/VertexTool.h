@@ -1,5 +1,5 @@
-#ifndef __CLIP_TOOL_H
-#define __CLIP_TOOL_H
+#ifndef __VERTEX_TOOL_H
+#define __VERTEX_TOOL_H
 
 #include <xcommon/editor/IXEditable.h>
 #include <mtrl/IXMaterialSystem.h>
@@ -9,35 +9,34 @@
 //#include "FaceEdit.h"
 
 class CEditable;
-class CClipTool;
+class CVertexTool;
+class CCommandMorph;
 //class CEditorObject;
 
-class CGizmoCallback: public IXEditorGizmoHandleCallback
+class CVertexGizmoCallback: public IXEditorGizmoHandleCallback
 {
 public:
-	CGizmoCallback(CClipTool *pTool):
+	CVertexGizmoCallback(CVertexTool *pTool):
 		m_pTool(pTool)
 	{
 	}
 	void XMETHODCALLTYPE moveTo(const float3 &vNewPos, IXEditorGizmoHandle *pGizmo) override;
-	void XMETHODCALLTYPE onStart(IXEditorGizmoHandle *pGizmo) override
-	{
-	}
-	void XMETHODCALLTYPE onEnd(IXEditorGizmoHandle *pGizmo) override
-	{
-	}
-
+	void XMETHODCALLTYPE onStart(IXEditorGizmoHandle *pGizmo) override;
+	void XMETHODCALLTYPE onEnd(IXEditorGizmoHandle *pGizmo) override;
+	
 private:
-	CClipTool *m_pTool;
+	CVertexTool *m_pTool;
+	bool m_isMoved = false;
+	bool m_isFirstMov = false;
 };
 
 //##########################################################################
 
-class CClipTool final: public IXUnknownImplementation<IXEditorTool>
+class CVertexTool final: public IXUnknownImplementation<IXEditorTool>
 {
 public:
-	CClipTool(CEditable *pEditable, IXEditor *pEditor);
-	~CClipTool();
+	CVertexTool(CEditable *pEditable, IXEditor *pEditor);
+	~CVertexTool();
 
 	void* XMETHODCALLTYPE getIcon() override;
 	const char* XMETHODCALLTYPE getTitle() override;
@@ -88,37 +87,77 @@ public:
 		return(false);
 	}
 
-	void onPosChanged();
-
 	SX_ALIGNED_OP_MEM();
+
+	void onHandleMoved(const float3 &vNewPos, IXEditorGizmoHandle *pHandle);
+	void onHandleClick(IXEditorGizmoHandle *pHandle);
+	void onHandleReleased();
+
+	void onSelectionChanged(CEditorObject *pObject);
+
+	void setSelectedVerticesForObject(CEditorObject *pObj, const Array<UINT> &aSelectedVertices);
+
+	void onObjectTopologyChanged(CEditorObject *pObj);
+
+private:
+	void addObject(CEditorObject *pObj);
+	void removeObject(CEditorObject *pObj);
+
+	template<typename T>
+	void enumHandles(const T &callback)
+	{
+		fora(i, m_aObjects)
+		{
+			ObjData &od = m_aObjects[i];
+			fora(j, od.aHandles)
+			{
+				callback(i, j, od, od.aHandles[j]);
+			}
+		}
+	}
 
 private:
 	CEditable *m_pEditable;
 	IXEditor *m_pEditor;
 
-	//CFaceEdit *m_pFaceEdit;
-
 	HBITMAP m_hBitmap;
+
 
 	IXGizmoRenderer *m_pRenderer = NULL;
 
 	bool m_isActive = false;
 
-	IXEditorGizmoHandle *m_pGizmos[3];
+	CVertexGizmoCallback m_gizmoCallback;
 
-	bool m_isInitiated = false;
+	struct HandleData
+	{
+		IXEditorGizmoHandle *pHandle = NULL;
+		bool isSelected = false;
+		void select(bool yesNo)
+		{
+			isSelected = yesNo;
+			if(yesNo)
+			{
+				pHandle->setColor(float4_t(1.0f, 0.0f, 0.0f, 1.0f));
+			}
+			else
+			{
+				pHandle->setColor(float4_t(1.0f, 1.0f, 1.0f, 1.0f));
+			}
+		}
+	};
 
-	bool m_isMouseDown = false;
+	struct ObjData
+	{
+		CEditorObject *pObj = NULL;
+		Array<HandleData> aHandles;
+	};
 
-	bool m_isValid = false;
+	Array<ObjData> m_aObjects;
 
-	bool m_isDirty = false;
+	CCommandMorph *m_pCommand = NULL;
 
-	SMPLANE m_clipPlane;
-
-	CGizmoCallback m_gizmoCallback;
-
-	int m_iMode = -1;
+	//int m_iMode = 0;
 };
 
 #endif
