@@ -87,16 +87,17 @@ void CParticlePlayer::update(float fDelta)
 	UINT uEmCount = m_pEffect->getEmitterCount();
 	if(uEmCount != m_aEmitters.size())
 	{
+		UINT i = m_aEmitters.size();
 		m_aEmitters.resize(uEmCount);
-	}
 
-	for(UINT i = 0; i < uEmCount; ++i)
-	{
-		m_aEmitters[i].setData(m_pEffect->getEmitterAtInternal(i));
-
-		if(m_pDevice)
+		for(; i < uEmCount; ++i)
 		{
-			m_aEmitters[i].setDevice(m_pDevice);
+			m_aEmitters[i].setData(m_pEffect->getEmitterAtInternal(i));
+
+			if(m_pDevice)
+			{
+				m_aEmitters[i].setDevice(m_pDevice);
+			}
 		}
 	}
 
