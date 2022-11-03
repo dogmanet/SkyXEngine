@@ -1932,6 +1932,10 @@ bool CExporter::addBone(int iProviderParent, UINT uProviderId, bool bOverwriteBi
 			if(m_aBones[i].bone.pid == iParent)
 			{
 				m_aSkeletonRemap[uProviderId] = i;
+				for(UINT j = m_aSkeletonRemapInv.size(); j < i; ++j)
+				{
+					m_aSkeletonRemapInv[j] = -1;
+				}
 				m_aSkeletonRemapInv[i] = uProviderId;
 
 				if(bOverwriteBindPose)
@@ -1972,7 +1976,7 @@ int CExporter::getOldBoneId(int iId)
 {
 	if(iId >= 0)
 	{
-		assert(m_aSkeletonRemapInv.size() > (UINT)iId && m_aSkeletonRemapInv[iId] >= 0);
+		assert(m_aSkeletonRemapInv.size() > (UINT)iId/* && m_aSkeletonRemapInv[iId] >= 0*/);
 		return(m_aSkeletonRemapInv[iId]);
 	}
 	return(-1);
@@ -2058,8 +2062,18 @@ void CExporter::prepareAnimation()
 		{
 			ms.m_vmAnimData[j][i] = m_aBones[i].bone;
 			
-			ms.m_vmAnimData[j][i].position = (float3)(m_pCallback->getBonePositionAtFrame(getOldBoneId(i), j) * m_fScale);
-			ms.m_vmAnimData[j][i].orient = m_pCallback->getBoneRotationAtFrame(getOldBoneId(i), j);
+			int iOldBoneId = getOldBoneId(i);
+
+			if(iOldBoneId >= 0)
+			{
+				ms.m_vmAnimData[j][i].position = (float3)(m_pCallback->getBonePositionAtFrame(iOldBoneId, j) * m_fScale);
+				ms.m_vmAnimData[j][i].orient = m_pCallback->getBoneRotationAtFrame(iOldBoneId, j);
+			}
+			else
+			{
+				ms.m_vmAnimData[j][i].position = m_aBones[i].bone.position;
+				ms.m_vmAnimData[j][i].orient = m_aBones[i].bone.orient;
+			}
 		}
 	}
 	ms.act_chance = m_uActivityChance;
