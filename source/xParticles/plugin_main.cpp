@@ -2,6 +2,7 @@
 #include "ParticleSystem.h"
 #include "Updatable.h"
 #include "Renderable.h"
+#include "Editable.h"
 
 
 class CEFFPlugin: public IXUnknownImplementation<IXPlugin>
@@ -18,7 +19,7 @@ public:
 
 	UINT XMETHODCALLTYPE getInterfaceCount() override
 	{
-		return(3);
+		return(4);
 	}
 	const XGUID* XMETHODCALLTYPE getInterfaceGUID(UINT id) override
 	{
@@ -33,6 +34,9 @@ public:
 			break;
 		case 2:
 			s_guid = IXRENDERABLE_GUID;
+			break;
+		case 3:
+			s_guid = IXEDITABLE_GUID;
 			break;
 		default:
 			return(NULL);
@@ -75,6 +79,15 @@ public:
 			}
 			return(m_pRenderable);
 		}
+
+		if(guid == IXEDITABLE_GUID)
+		{
+			if(!m_pEditable)
+			{
+				m_pEditable = new CEditable(m_pCore);
+			}
+			return(m_pEditable);
+		}
 		return(NULL);
 	}
 
@@ -83,6 +96,7 @@ protected:
 	CParticleSystem *m_pParticleSystem = NULL;
 	CUpdatable *m_pUpdatable = NULL;
 	CRenderable *m_pRenderable = NULL;
+	CEditable *m_pEditable = NULL;
 };
 
 DECLARE_XPLUGIN(CEFFPlugin);

@@ -21,6 +21,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\xParticles\dllmain.cpp" />
+    <ClCompile Include="..\..\..\source\xParticles\Editable.cpp" />
+    <ClCompile Include="..\..\..\source\xParticles\EditorExtension.cpp" />
+    <ClCompile Include="..\..\..\source\xParticles\EffectBrowserWindow.cpp" />
     <ClCompile Include="..\..\..\source\xParticles\EffectLoader.cpp" />
     <ClCompile Include="..\..\..\source\xParticles\ParticleEffect.cpp" />
     <ClCompile Include="..\..\..\source\xParticles\ParticleEffectEmitter.cpp" />
@@ -33,6 +36,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\xcommon\particles\IXParticleSystem.h" />
+    <ClInclude Include="..\..\..\source\xParticles\Editable.h" />
+    <ClInclude Include="..\..\..\source\xParticles\EditorExtension.h" />
+    <ClInclude Include="..\..\..\source\xParticles\EffectBrowserWindow.h" />
     <ClInclude Include="..\..\..\source\xParticles\EffectLoader.h" />
     <ClInclude Include="..\..\..\source\xParticles\ParticleBurst.h" />
     <ClInclude Include="..\..\..\source\xParticles\ParticleEffect.h" />
@@ -46,6 +52,10 @@
     <ClInclude Include="..\..\..\source\xParticles\ParticleSystem.h" />
     <ClInclude Include="..\..\..\source\xParticles\Renderable.h" />
     <ClInclude Include="..\..\..\source\xParticles\Updatable.h" />
+    <ClInclude Include="..\..\..\source\xParticles\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\source\xParticles\xParticles.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6CB8C7D4-F3F9-418D-8939-BB07C488FF01}</ProjectGuid>

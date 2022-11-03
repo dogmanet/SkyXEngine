@@ -19,6 +19,12 @@
     <Filter Include="Header Files\xcommon\particles">
       <UniqueIdentifier>{e26be3d6-f6f6-485e-948d-caec635883a5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\editor">
+      <UniqueIdentifier>{dd74610f-9258-47f2-8c61-b3650e4454d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\editor">
+      <UniqueIdentifier>{3284b333-5c3f-4bcb-9d23-c045da83d91c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\xParticles\dllmain.cpp">
@@ -51,6 +57,15 @@
     </ClCompile>
     <ClCompile Include="..\..\..\source\xParticles\Renderable.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\xParticles\EffectBrowserWindow.cpp">
+      <Filter>Source Files\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\xParticles\Editable.cpp">
+      <Filter>Source Files\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\xParticles\EditorExtension.cpp">
+      <Filter>Source Files\editor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -96,5 +111,22 @@
     <ClInclude Include="..\..\..\source\xParticles\Renderable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\xParticles\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xParticles\EffectBrowserWindow.h">
+      <Filter>Header Files\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xParticles\Editable.h">
+      <Filter>Header Files\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xParticles\EditorExtension.h">
+      <Filter>Header Files\editor</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\source\xParticles\xParticles.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
