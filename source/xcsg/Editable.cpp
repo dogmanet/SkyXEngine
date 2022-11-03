@@ -40,7 +40,7 @@ void XMETHODCALLTYPE CEditable::startup(IGXDevice *pDevice)
 
 	//pMaterialSystem->getTexture("dev_white", &m_pWhiteTexture);
 }
-void CEditable::shutdown()
+void XMETHODCALLTYPE CEditable::shutdown()
 {
 	//mem_release(m_pWhiteTexture);
 	//mem_release(m_pBlendColorFactor);
