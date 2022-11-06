@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include <exporter_base/stdafx.h>
 #include "Plugin.h"
 #include <msLib/msLib.h>
 
@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <process.h>
 
-#include "Exporter.h"
+#include <exporter_base/Exporter.h>
 #include "Provider.h"
 
 cMsPlugIn* CreatePlugIn()

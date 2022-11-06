@@ -52,7 +52,7 @@ class IExporterProvider
 public:
 	virtual bool canExportTB() = 0;
 
-	virtual bool prepare(IProgress *pProgress, bool forStaticExport) = 0;
+	virtual bool prepare(IProgress *pProgress, bool forStaticExport, bool bPrepareMesh, bool bPrepareTB) = 0;
 	virtual bool preapareAnimationTrack(IProgress *pProgress, UINT uStartFrame, UINT uFrameCount) = 0;
 
 	virtual UINT getLayerCount() = 0;
@@ -108,6 +108,10 @@ public:
 	void setFramerate(int iFramerate)
 	{
 		m_iFramerate = iFramerate;
+	}
+	void setStartFrame(UINT uFrame)
+	{
+		m_uStartFrame = uFrame;
 	}
 	void setEndFrame(UINT uFrame)
 	{

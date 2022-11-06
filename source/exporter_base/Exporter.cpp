@@ -80,7 +80,7 @@ CExporter::~CExporter()
 
 int CExporter::execute()
 {
-	return(DialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG1), GetActiveWindow(), DlgProc, (LPARAM)this));
+	return((int)DialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_DIALOG1), GetActiveWindow(), DlgProc, (LPARAM)this));
 }
 
 INT_PTR CALLBACK CExporter::DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -127,6 +127,11 @@ INT_PTR CALLBACK CExporter::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM l
 		m_pExtended->addCustomTab(m_pExtLods);
 
 		loadDefaults();
+
+		if(m_bSuppressPrompts)
+		{
+			startExport();
+		}
 
 		break;
 
@@ -648,6 +653,8 @@ void CExporter::ProcessThread(void *p)
 void CExporter::doExport()
 {
 	bool isStatic = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_STATIC) == BST_CHECKED;
+	bool bExportMesh = IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_MESH) == BST_CHECKED;
+	bool includeTB = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_TBN) == BST_CHECKED;
 
 	if(!isStatic && IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_ANIMATION) == BST_CHECKED)
 	{
@@ -658,7 +665,7 @@ void CExporter::doExport()
 		m_pProgress->setRange(0.0f, 0.9f);
 	}
 
-	if(!m_pCallback->prepare(m_pProgress, isStatic))
+	if(!m_pCallback->prepare(m_pProgress, isStatic, bExportMesh, includeTB))
 	{
 		if(!m_bSuppressPrompts)
 		{
@@ -669,7 +676,7 @@ void CExporter::doExport()
 		return;
 	}
 
-	if(!isStatic && (IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_MESH) == BST_CHECKED || IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_ANIMATION) == BST_CHECKED))
+	if(!isStatic && (bExportMesh || IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_ANIMATION) == BST_CHECKED))
 	{
 		if(!prepareSkeleton(IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_MESH) == BST_CHECKED))
 		{
@@ -683,12 +690,11 @@ void CExporter::doExport()
 		}
 	}
 
-	if(IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_MESH) == BST_CHECKED)
+	if(bExportMesh)
 	{
 		performRetopology();
 		m_hdr2.topology = MDLPT_TRIANGLELIST;
 
-		bool includeTB = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_TBN) == BST_CHECKED;
 		bool isFullExport = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_FULL) == BST_CHECKED;
 
 		if(isFullExport)
@@ -728,7 +734,7 @@ void CExporter::doExport()
 	if(!isStatic && IsDlgButtonChecked(m_hDlgWnd, IDC_EXPORT_ANIMATION) == BST_CHECKED)
 	{
 		m_pProgress->setRange(0.9f);
-		if(!m_pCallback->preapareAnimationTrack(m_pProgress, m_uStartFrame, m_uEndFrame - m_uStartFrame))
+		if(!m_pCallback->preapareAnimationTrack(m_pProgress, m_uStartFrame, m_uEndFrame - m_uStartFrame + 1))
 		{
 			if(!m_bSuppressPrompts)
 			{
@@ -1026,6 +1032,16 @@ void CExporter::writeLoDs(FILE *pf)
 }
 void CExporter::writeDeps(FILE *pf)
 {
+#if 0
+	ModelPart &p = m_aParts[0];
+	p.uImportFlags = MI_ANIMATIONS | MI_HITBOXES | MI_CONTROLLERS;
+	p.uFlags = MP_IMPORTED;
+	p.attachDesc.type = MA_SKIN;
+	p.attachDesc.v3Offs = float3(0.0f);
+	p.attachDesc.szBone[0] = 0;
+	strcpy(p.name, "AnimationsLibrary");
+	strcpy(p.file, "models/animlib/human.dse");
+#endif
 	m_hdr2.iDependensiesOffset = _ftelli64(pf);
 	m_hdr2.iDepsCount = m_aParts.size();
 
@@ -1114,7 +1130,7 @@ UINT CExporter::addTexture(const char *szName)
 	{
 		if(*tmp == '.')
 		{
-			iDotPos = tmp - mapName;
+			iDotPos = (int)(tmp - mapName);
 		}
 		++tmp;
 	}
@@ -1320,7 +1336,7 @@ bool CExporter::checkSettings()
 			return(false);
 		}
 		m_uEndFrame = GetDlgItemInt(m_hDlgWnd, IDC_ANIMATION_TO, &isFound, FALSE);
-		if(!isFound || m_uEndFrame <= m_uStartFrame)
+		if(!isFound || m_uEndFrame < m_uStartFrame)
 		{
 			MessageBox(m_hDlgWnd, "Invalid end frame", "Error", MB_OK | MB_ICONSTOP);
 			return(false);
@@ -1554,7 +1570,8 @@ void CExporter::preparePhysMesh(bool bIgnoreLayers)
 					{
 						SMQuaternion q = m_pCallback->getObjectRotation(i, j);
 						physPart.rot = float4(q.x, q.y, q.z, q.w);
-						physPart.pos = m_pCallback->getObjectPosition(i, j);
+						//TODO Check that
+						physPart.pos = physPart.pos + m_pCallback->getObjectPosition(i, j);
 					}
 
 					if(isStatic)
@@ -1790,7 +1807,7 @@ void CExporter::prepareLodMesh(int iTargetLod)
 					memcpy(pDstVtx, pSrcVtx, sizeSrcEl);
 					memset(MovePtr(pDstVtx, sizeSrcEl), 0, sizeDstEl - sizeSrcEl);
 
-					if(!isStatic)
+					if(!isStatic && includeTB && !isTBSupported)
 					{
 						for(UINT t = 0; t < 4; ++t)
 						{
@@ -1924,6 +1941,20 @@ bool CExporter::addBone(int iProviderParent, UINT uProviderId, bool bOverwriteBi
 	}
 
 	const char *szBoneName = m_pCallback->getBoneName(uProviderId);
+	{
+		int iLastColonPos = -1;
+		for(int i = 0; szBoneName[i]; ++i)
+		{
+			if(szBoneName[i] == ':' && szBoneName[i + 1])
+			{
+				iLastColonPos = i;
+			}
+		}
+		if(iLastColonPos >= 0)
+		{
+			szBoneName += iLastColonPos + 1;
+		}
+	}
 
 	for(UINT i = 0, l = m_aBones.size(); i < l; ++i)
 	{
@@ -2052,7 +2083,7 @@ void CExporter::prepareAnimation()
 {
 	ModelSequence ms;
 
-	ms.iNumFrames = m_uEndFrame - m_uStartFrame;
+	ms.iNumFrames = m_uEndFrame - m_uStartFrame + 1;
 	ms.m_vmAnimData = new ModelBone*[ms.iNumFrames];
 	for(UINT j = 0; j < ms.iNumFrames; ++j)
 	{
@@ -2084,7 +2115,7 @@ void CExporter::prepareAnimation()
 	auto &aActivities = m_pExtActs->getList();
 	ms.activity = aActivities.indexOf(m_szAnimationActivity, [](const String &a, const char *b){
 		return(!strcmp(a.c_str(), b));
-	});
+	}) + 1;
 
 	m_pExtAnim->addSequence(ms);
 }

@@ -41,15 +41,15 @@ INT_PTR CALLBACK CExtendedLods::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			lvColumn.mask = LVCF_WIDTH | LVCF_TEXT;
 			lvColumn.cx = iWidth / 3;
 			lvColumn.pszText = "#";
-			lvColumn.cchTextMax = strlen(lvColumn.pszText);
+			lvColumn.cchTextMax = (int)strlen(lvColumn.pszText);
 			ListView_InsertColumn(m_hListWnd, 0, &lvColumn);
 
 			lvColumn.pszText = "Polys";
-			lvColumn.cchTextMax = strlen(lvColumn.pszText);
+			lvColumn.cchTextMax = (int)strlen(lvColumn.pszText);
 			ListView_InsertColumn(m_hListWnd, 1, &lvColumn);
 
 			lvColumn.pszText = "Subsets";
-			lvColumn.cchTextMax = strlen(lvColumn.pszText);
+			lvColumn.cchTextMax = (int)strlen(lvColumn.pszText);
 			ListView_InsertColumn(m_hListWnd, 2, &lvColumn);
 
 			loadDefaults();

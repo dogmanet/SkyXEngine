@@ -40,9 +40,12 @@
     <ClCompile Include="..\..\..\source\exporter_base\ExtendedPhys.cpp" />
     <ClCompile Include="..\..\..\source\exporter_base\ExtendedSkin.cpp" />
     <ClCompile Include="..\..\..\source\exporter_base\GeomDetector.cpp" />
-    <ClCompile Include="..\..\..\source\exporter_base\stdafx.cpp" />
-    <ClCompile Include="..\..\..\source\msDSEExporter\Plugin.cpp" />
-    <ClCompile Include="..\..\..\source\msDSEExporter\Provider.cpp" />
+    <ClCompile Include="..\..\..\source\exporter_base\stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\exporter_base\Exporter.h" />
@@ -57,40 +60,41 @@
     <ClInclude Include="..\..\..\source\exporter_base\IExtendedTab.h" />
     <ClInclude Include="..\..\..\source\exporter_base\resource.h" />
     <ClInclude Include="..\..\..\source\exporter_base\stdafx.h" />
-    <ClInclude Include="..\..\..\source\msDSEExporter\Plugin.h" />
-    <ClInclude Include="..\..\..\source\msDSEExporter\Provider.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\exporter_base\exporter_base.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\source\exporter_base\logo.bmp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{BE42C295-1262-4499-9CD8-7C3B0044EC3D}</ProjectGuid>
+    <ProjectGuid>{8127AA9A-F051-4D26-A254-1D8F8F9C692D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>msDSEExporter</RootNamespace>
-    <ProjectName>msDSEExporter</ProjectName>
+    <RootNamespace>exporter_base</RootNamespace>
+    <ProjectName>exporter_base</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -114,7 +118,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>C:\Program Files (x86)\MilkShape 3D 1.8.4\</OutDir>
+    <OutDir>../../../libs/</OutDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source;</IncludePath>
     <LibraryPath>;../../../libs;$(LibraryPath)</LibraryPath>
@@ -126,11 +130,11 @@
     <LibraryPath>;../../../libs64;$(LibraryPath)</LibraryPath>
     <SourcePath>../../../source;$(SourcePath)</SourcePath>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/extras/x64/MilkShape3D/</OutDir>
+    <OutDir>../../../libs64/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/extras/x86/MilkShape3D/</OutDir>
+    <OutDir>../../../libs/</OutDir>
     <IncludePath>$(IncludePath);../../../sdks/;$(WindowsSdk_IncludePath);../../../source;</IncludePath>
     <LibraryPath>;../../../libs;$(LibraryPath)</LibraryPath>
     <SourcePath>../../../source;$(SourcePath)</SourcePath>
@@ -140,11 +144,11 @@
     <LibraryPath>;../../../libs64;$(LibraryPath)</LibraryPath>
     <SourcePath>../../../source;$(SourcePath)</SourcePath>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>../../../build/extras/x64/MilkShape3D/</OutDir>
+    <OutDir>../../../libs64/</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -158,12 +162,11 @@
       <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb/$(TargetName).pdb</ProgramDatabaseFile>
       <Profile>true</Profile>
-      <ModuleDefinitionFile>..\..\..\source\msDSEExporter\msDSEExporter.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN64;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -177,13 +180,12 @@
       <ImportLibrary>../../../libs64/$(TargetName).lib</ImportLibrary>
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb64/$(TargetName).pdb</ProgramDatabaseFile>
       <Profile>true</Profile>
-      <ModuleDefinitionFile>..\..\..\source\msDSEExporter\msDSEExporter.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -198,13 +200,12 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb/$(TargetName).pdb</ProgramDatabaseFile>
       <ImportLibrary>../../../libs/$(TargetName).lib</ImportLibrary>
-      <ModuleDefinitionFile>..\..\..\source\msDSEExporter\msDSEExporter.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -219,7 +220,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <ProgramDatabaseFile>$(ProjectDir)../../../pdb64/$(TargetName).pdb</ProgramDatabaseFile>
       <ImportLibrary>../../../libs64/$(TargetName).lib</ImportLibrary>
-      <ModuleDefinitionFile>..\..\..\source\msDSEExporter\msDSEExporter.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

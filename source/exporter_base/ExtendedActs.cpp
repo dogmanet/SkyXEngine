@@ -40,7 +40,7 @@ INT_PTR CALLBACK CExtendedActs::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			lvColumn.mask = LVCF_WIDTH | LVCF_TEXT;
 			lvColumn.cx = iWidth / 1;
 			lvColumn.pszText = "Name";
-			lvColumn.cchTextMax = strlen(lvColumn.pszText);
+			lvColumn.cchTextMax = (int)strlen(lvColumn.pszText);
 			ListView_InsertColumn(m_hListWnd, 0, &lvColumn);
 
 			//lvColumn.pszText = "Looped";

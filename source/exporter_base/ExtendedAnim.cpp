@@ -53,31 +53,31 @@ INT_PTR CALLBACK CExtendedAnim::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 			lvColumn.mask = LVCF_WIDTH | LVCF_TEXT;
 			lvColumn.cx = iWidth / 7;
 			lvColumn.pszText = "#";
-			lvColumn.cchTextMax = strlen(lvColumn.pszText);
+			lvColumn.cchTextMax = (int)strlen(lvColumn.pszText);
 			ListView_InsertColumn(m_hListWnd, 0, &lvColumn);
 
 			lvColumn.pszText = "Name";
-			lvColumn.cchTextMax = strlen(lvColumn.pszText);
+			lvColumn.cchTextMax = (int)strlen(lvColumn.pszText);
 			ListView_InsertColumn(m_hListWnd, 1, &lvColumn);
 
 			lvColumn.pszText = "Frames";
-			lvColumn.cchTextMax = strlen(lvColumn.pszText);
+			lvColumn.cchTextMax = (int)strlen(lvColumn.pszText);
 			ListView_InsertColumn(m_hListWnd, 2, &lvColumn);
 
 			lvColumn.pszText = "Looped";
-			lvColumn.cchTextMax = strlen(lvColumn.pszText);
+			lvColumn.cchTextMax = (int)strlen(lvColumn.pszText);
 			ListView_InsertColumn(m_hListWnd, 3, &lvColumn);
 
 			lvColumn.pszText = "Speed";
-			lvColumn.cchTextMax = strlen(lvColumn.pszText);
+			lvColumn.cchTextMax = (int)strlen(lvColumn.pszText);
 			ListView_InsertColumn(m_hListWnd, 4, &lvColumn);
 
 			lvColumn.pszText = "Activity";
-			lvColumn.cchTextMax = strlen(lvColumn.pszText);
+			lvColumn.cchTextMax = (int)strlen(lvColumn.pszText);
 			ListView_InsertColumn(m_hListWnd, 5, &lvColumn);
 
 			lvColumn.pszText = "Chance";
-			lvColumn.cchTextMax = strlen(lvColumn.pszText);
+			lvColumn.cchTextMax = (int)strlen(lvColumn.pszText);
 			ListView_InsertColumn(m_hListWnd, 6, &lvColumn);
 
 			loadDefaults();
