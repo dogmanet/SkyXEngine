@@ -443,6 +443,19 @@ SMQuaternion XMETHODCALLTYPE CAnimatedModel::getBoneTransformRot(UINT id)
 	
 	return(m_pRenderFrameBones[id].orient * getOrientation());
 }
+
+int XMETHODCALLTYPE CAnimatedModel::getBoneParent(UINT id)
+{
+	if(id >= m_pShared->getBoneCount())
+	{
+		assert(!"Invalid ID supplied");
+		LibReport(REPORT_MSG_LEVEL_WARNING, "CAnimatedModel::getBoneParent() Invalid bone id requested");
+		return(-1);
+	}
+
+	return(m_pShared->getBoneParent(id));
+}
+
 SMMATRIX XMETHODCALLTYPE CAnimatedModel::getBoneTransform(UINT id)
 {
 	//@TODO: Implement me

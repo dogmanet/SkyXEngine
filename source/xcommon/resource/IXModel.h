@@ -184,6 +184,8 @@ public:
 	// Коллбек на изменение состояния анимации!
 
 	virtual void XMETHODCALLTYPE setCallback(IAnimationCallback *pCallback) = 0;
+
+	virtual int XMETHODCALLTYPE getBoneParent(UINT id) = 0;
 };
 
 #endif

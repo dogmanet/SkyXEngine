@@ -128,7 +128,7 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 	Array<IXResourceModelAnimated*> aResources;
 	for(UINT i = 0; i < uResourceCount; ++i)
 	{
-		aResources.push_back(ppResources[i]);
+		//aResources.push_back(ppResources[i]);
 		_collectResources(ppResources[i], aResources);
 	}
 
@@ -680,7 +680,7 @@ bool CAnimatedModelShared::init(UINT uResourceCount, IXResourceModelAnimated **p
 
 				for(UINT k = 0; k < pNewSequence->uNumFrames; ++k)
 				{
-					for(UINT m = 0, ml = uBoneCount; m< ml; ++m)
+					for(UINT m = 0, ml = uBoneCount; m < ml; ++m)
 					{
 						pNewSequence->m_ppSequenceData[k][uBoneMap[m]] = pSequence->m_ppSequenceData[k][m];
 					}

@@ -187,6 +187,7 @@ bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceMo
 				if(getModel(pResource->getGibName(i), &pGibResource, bForceReload))
 				{
 					pResource->setGib(i, pGibResource);
+					mem_release(pGibResource);
 				}
 				else
 				{
@@ -205,6 +206,7 @@ bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceMo
 					if(getModel(pModel->getImportName(i), &pImportResource, bForceReload))
 					{
 						pModel->setImport(i, pImportResource);
+						mem_release(pImportResource);
 					}
 					else
 					{
@@ -217,13 +219,14 @@ bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceMo
 				for(UINT i = 0, l = pModel->getPartsCount(); i < l; ++i)
 				{
 					IXResourceModel *pPartResource;
-					if(getModel(pModel->getPartName(i), &pPartResource, bForceReload))
+					if(getModel(pModel->getPartFileName(i), &pPartResource, bForceReload))
 					{
 						pModel->setPart(i, pPartResource);
+						mem_release(pPartResource);
 					}
 					else
 					{
-						LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to load part #%u for model '%s'\n", i, szName);
+						LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to load part #%u (%s: %s) for model '%s'\n", i, pModel->getPartName(i), pModel->getPartFileName(i), szName);
 						mem_release(pResource);
 						return(false);
 					}

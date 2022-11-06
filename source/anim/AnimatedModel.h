@@ -79,6 +79,8 @@ public:
 
 	void XMETHODCALLTYPE setCallback(IAnimationCallback *pCallback) override;
 
+	int XMETHODCALLTYPE getBoneParent(UINT id) override;
+
 	void update(float fDT);
 
 	UINT addLayer();

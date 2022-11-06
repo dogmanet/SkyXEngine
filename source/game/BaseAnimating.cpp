@@ -323,7 +323,7 @@ void CBaseAnimating::initPhysics()
 		}
 		{
 			auto pResource = m_pModel->getResource()->asAnimated();
-			if(pResource)
+			if(pResource && pResource->getLodCount())
 			{
 				UINT uUsedLod = pResource->getLodCount() - 1;
 				for(UINT i = 0, l = pResource->getSubsetCount(uUsedLod); i < l; ++i)
@@ -595,6 +595,33 @@ void CBaseAnimating::renderEditor(bool is3D, bool bRenderSelection, IXGizmoRende
 	if(bRenderSelection)
 	{
 		SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
+
+		IXAnimatedModel *pAnim;
+		if(m_pModel && pRenderer && (pAnim = m_pModel->asAnimatedModel()))
+		{
+			pRenderer->setPointMode(XGPM_ROUND);
+			pRenderer->setPointSize(is3D ? 0.02f : 3.0f);
+			pRenderer->setLineWidth(is3D ? 0.01f : 1.5f);
+
+			float3 vPos;
+			int iParent;
+			UINT uBoneCount = pAnim->getBoneCount();
+			for(UINT i = 0; i < uBoneCount; ++i)
+			{
+				vPos = pAnim->getBoneTransformPos(i);
+				pRenderer->setColor(float4(1.0f, 1.0f, 1.0f, 1.0f));
+				pRenderer->drawPoint(vPos);
+				iParent = pAnim->getBoneParent(i);
+				if(iParent >= 0)
+				{
+					pRenderer->setColor(float4(0.0f, 1.0f, 0.0f, 0.1f));
+					pRenderer->jumpTo(pAnim->getBoneTransformPos(iParent));
+					pRenderer->setColor(float4(0.0f, 1.0f, 0.0f, 1.0f));
+					pRenderer->lineTo(vPos);
+				}
+			}
+			// render skeleton
+		}
 	}
 }
 
