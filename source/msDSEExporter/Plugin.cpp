@@ -56,7 +56,7 @@ int CPlugin::Execute(msModel *pModel)
 
 	char szFile[MS_MAX_PATH];
 	char szFileTitle[MS_MAX_PATH];
-	char szDefExt[32] = "txt";
+	char szDefExt[32] = "dse";
 	char szFilter[128] = "SkyXEngine Model (*.dse)\0*.dse\0\0";
 	szFile[0] = '\0';
 	szFileTitle[0] = '\0';
