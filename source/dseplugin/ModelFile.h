@@ -163,6 +163,26 @@ struct ModelHeader2
 	uint64_t iThirdHeaderOffset; //!< Смещение до третьего заголовка
 };
 
+/*! Третий заголовок файла модели
+*/
+struct ModelHeader3
+{
+	uint32_t uChunksCount; //!< Количество чанков
+	uint64_t uChunksOffset; //!< Смещение до списка чанков
+
+	uint64_t uFourthHeaderOffset; //!< Смещение до четвертого заголовка
+};
+
+/*! Заголовок чанка
+*/
+struct ModelChunkHeader
+{
+	XGUID guidType; //!< Идентификатор типа чанка
+	uint64_t uDataSize; //!< Размер данных чанка
+	uint64_t uDataOffset; //!< Смещение до данных чанка
+};
+
+
 /*! Структура сабсета лода модели
 */
 struct ModelLoDSubset
@@ -358,8 +378,7 @@ enum HITBOX_TYPE
 
 /*! Типы частей тела для хитбоксов
 */
-enum HITBOX_BODYPART
-{
+XENUM(HITBOX_BODYPART,
 	HBP_DEFAULT = 0, /*!< нет */
 	HBP_HEAD,        /*!< Голова */
 	HBP_CHEST,       /*!< Грудь */
@@ -368,9 +387,9 @@ enum HITBOX_BODYPART
 	HBP_RIGHTARM,    /*!< Правая рука */
 	HBP_LEFTLEG,     /*!< Левая нога */
 	HBP_RIGHTLEG     /*!< Правая нога */
-};
+);
 
-/*! Дескриптор хитбокса
+/*! Дескриптор хитбокса (устарел, не использовать)
 */
 struct ModelHitbox
 {
@@ -383,9 +402,6 @@ struct ModelHitbox
 	int bone_id;                    /*!< Идентификатор кости */
 	char name[MODEL_MAX_NAME];      /*!< Имя хитбокса */
 };
-
-
-
 
 
 
@@ -432,6 +448,26 @@ struct ModelPhysData
 };
 #pragma pack(pop)
 #define MODEL_PHYSDATA_STRUCT_SIZE (sizeof(ModelPhysData) - sizeof(ModelPhyspart*))
+
+
+
+// {A373CAED-1B4C-4055-AA6E-E74348A40842}
+#define DSE_CHUNK_HITBOXES_EX_GUID DEFINE_XGUID(0xa373caed, 0x1b4c, 0x4055, 0xaa, 0x6e, 0xe7, 0x43, 0x48, 0xa4, 0x8, 0x42)
+
+struct ModelHitboxExChunk
+{
+	uint32_t uVersion = 1;
+	uint32_t uHitboxExCount;
+};
+
+#pragma pack(push, 1)
+struct ModelHitboxEx
+{
+	HITBOX_BODYPART part;           /*!< Часть тела */
+	ModelPhyspart hitbox;
+};
+#pragma pack(pop)
+#define MODEL_HITBOXEX_STRUCT_SIZE (sizeof(ModelHitboxEx) - sizeof(ModelPhyspartData*))
 
 /*! @} sxgcore_mdl_defs */
 

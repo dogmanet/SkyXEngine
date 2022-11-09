@@ -3,6 +3,12 @@
 
 bool CGeomDetector::IsBox(float3_t *pMesh, UINT uVertexCount, size_t uStride, float3_t *pCenter, float3_t *pLWH)
 {
+	if(uVertexCount != 8)
+	{
+		return(false);
+	}
+	return(false);
+
 	float3 pt;
 	float3 ptMin, ptMax;
 	float3_t *pCur = pMesh;

@@ -48,6 +48,7 @@ CExporter::CExporter(const char *szFile, bool bSuppressPrompts, IExporterProvide
 
 	memset(&m_hdr, 0, sizeof(m_hdr));
 	memset(&m_hdr2, 0, sizeof(m_hdr2));
+	memset(&m_hdr3, 0, sizeof(m_hdr3));
 	tryLoadModel();
 
 	m_hdr.iFlags |= MODEL_FLAG_COMPILED;
@@ -74,6 +75,7 @@ CExporter::~CExporter()
 	mem_delete(m_pExtended);
 
 	clearPhysparts();
+	clearHitboxes();
 
 	clearLods();
 }
@@ -307,8 +309,9 @@ void CExporter::loadDefaults()
 	}
 
 	char tmp[32];
+	sprintf(tmp, "%u", m_uStartFrame);
+	SetDlgItemText(m_hDlgWnd, IDC_ANIMATION_FROM, tmp);
 	sprintf(tmp, "%d", m_iFramerate);
-	SetDlgItemText(m_hDlgWnd, IDC_ANIMATION_FROM, "0");
 	SetDlgItemText(m_hDlgWnd, IDC_ANIMATION_SPEED, tmp);
 	sprintf(tmp, "%u", m_uEndFrame);
 	SetDlgItemText(m_hDlgWnd, IDC_ANIMATION_TO, tmp);
@@ -359,7 +362,13 @@ void CExporter::tryLoadModel()
 		_fseeki64(pf, m_hdr.iSecondHeaderOffset, SEEK_SET);
 		fread(&m_hdr2, sizeof(m_hdr2), 1, pf);
 	}
+	if(m_hdr2.iThirdHeaderOffset)
+	{
+		_fseeki64(pf, m_hdr2.iThirdHeaderOffset, SEEK_SET);
+		fread(&m_hdr3, sizeof(m_hdr3), 1, pf);
+	}
 
+	loadChunks(pf);
 	loadPhysdata(pf);
 	loadMaterials(pf);
 	loadLoDs(pf);
@@ -627,6 +636,59 @@ void CExporter::loadHitboxes(FILE *pf)
 		fread(m_aHitboxes, sizeof(ModelHitbox), m_hdr2.iHitboxCount, pf);
 	}
 }
+void CExporter::loadChunks(FILE *pf)
+{
+	if(m_hdr3.uChunksCount && m_hdr3.uChunksOffset)
+	{
+		_fseeki64(pf, m_hdr3.uChunksOffset, SEEK_SET);
+		m_aChunks.resize(m_hdr3.uChunksCount);
+		fora(i, m_aChunks)
+		{
+			fread(&m_aChunks[i], sizeof(ModelChunkHeader), 1, pf);
+		}
+
+		fora(i, m_aChunks)
+		{
+			ModelChunkRaw &chunk = m_aChunks[i];
+			_fseeki64(pf, chunk.hdr.uDataOffset, SEEK_SET);
+			if(chunk.hdr.guidType == DSE_CHUNK_HITBOXES_EX_GUID)
+			{
+				// load ex hitboxes
+				ModelHitboxExChunk chunkData = {};
+				fread(&chunkData, sizeof(ModelHitboxExChunk), 1, pf);
+				if(chunkData.uHitboxExCount)
+				{
+					m_aHitboxesEx.resize(chunkData.uHitboxExCount);
+					for(UINT j = 0; j < chunkData.uHitboxExCount; ++j)
+					{
+						fread(&m_aHitboxesEx[j], MODEL_HITBOXEX_STRUCT_SIZE, 1, pf);
+					}
+
+					fora(j, m_aHitboxesEx)
+					{
+						if(m_aHitboxesEx[j].hitbox.type == HT_CONVEX)
+						{
+							_fseeki64(pf, m_aHitboxesEx[i].hitbox.iDataOffset, SEEK_SET);
+
+							ModelPhyspartDataConvex *pData = new ModelPhyspartDataConvex();
+							m_aHitboxesEx[i].hitbox.pData = pData;
+							fread(m_aHitboxesEx[i].hitbox.pData, MODEL_PHYSPART_DATA_CONVEX_STRUCT_SIZE, 1, pf);
+
+							pData->pVerts = new float3_t[pData->iVertCount];
+							fread(pData->pVerts, sizeof(float3_t), pData->iVertCount, pf);
+						}
+					}
+				}
+			}
+			else
+			{
+				chunk.aData.resize((UINT)chunk.hdr.uDataSize);
+				fread(chunk.aData, sizeof(byte), chunk.hdr.uDataSize, pf);
+			}
+		}
+	}
+}
+
 
 void CExporter::startExport()
 {
@@ -699,7 +761,8 @@ void CExporter::doExport()
 
 		if(isFullExport)
 		{
-			preparePhysMesh(false);
+			preparePhysMesh();
+			preparePhysMesh(false, true);
 			prepareLodMesh();
 
 			if(includeTB)
@@ -718,6 +781,10 @@ void CExporter::doExport()
 			if(!strcmp(tmp, "Physbox"))
 			{
 				preparePhysMesh(true);
+			}
+			else if(!strcmp(tmp, "Hitbox"))
+			{
+				preparePhysMesh(true, true);
 			}
 			else
 			{
@@ -884,6 +951,9 @@ bool CExporter::writeFile(const char *szFile, bool isForGib)
 	m_hdr.iSecondHeaderOffset = _ftelli64(pf);
 	fwrite(&m_hdr2, sizeof(m_hdr2), 1, pf);
 
+	m_hdr2.iThirdHeaderOffset = _ftelli64(pf);
+	fwrite(&m_hdr3, sizeof(m_hdr3), 1, pf);
+
 	if(isForGib)
 	{
 		//writePhysdata(pf); //?
@@ -901,11 +971,13 @@ bool CExporter::writeFile(const char *szFile, bool isForGib)
 		writeControllers(pf);
 		writeAnimations(pf);
 		writeHitboxes(pf);
+		writeChunks(pf);
 	}
 
 	_fseeki64(pf, 0, SEEK_SET);
 	fwrite(&m_hdr, sizeof(m_hdr), 1, pf);
 	fwrite(&m_hdr2, sizeof(m_hdr2), 1, pf);
+	fwrite(&m_hdr3, sizeof(m_hdr3), 1, pf);
 
 	fclose(pf);
 
@@ -1099,6 +1171,75 @@ void CExporter::writeHitboxes(FILE *pf)
 	m_hdr2.iHitboxCount = m_aHitboxes.size();
 	fwrite(m_aHitboxes, sizeof(ModelHitbox), m_hdr2.iHitboxCount, pf);
 }
+void CExporter::writeChunks(FILE *pf)
+{
+	enableChunk(DSE_CHUNK_HITBOXES_EX_GUID, m_aHitboxesEx.size() != 0);
+
+	m_hdr3.uChunksOffset = _ftelli64(pf);
+	m_hdr3.uChunksCount = m_aChunks.size();
+
+	fora(i, m_aChunks)
+	{
+		fwrite(&m_aChunks[i], sizeof(ModelChunkHeader), 1, pf);
+	}
+
+	fora(i, m_aChunks)
+	{
+		ModelChunkRaw &chunk = m_aChunks[i];
+		chunk.hdr.uDataOffset = _ftelli64(pf);
+		if(chunk.hdr.guidType == DSE_CHUNK_HITBOXES_EX_GUID)
+		{
+			// write ex hitboxes
+			ModelHitboxExChunk chunkData = {};
+			chunkData.uHitboxExCount = m_aHitboxesEx.size();
+			fwrite(&chunkData, sizeof(ModelHitboxExChunk), 1, pf);
+			uint64_t uBaseOffset = _ftelli64(pf) + MODEL_HITBOXEX_STRUCT_SIZE * chunkData.uHitboxExCount;
+
+			fora(j, m_aHitboxesEx)
+			{
+				if(m_aHitboxesEx[j].hitbox.type == HT_CONVEX)
+				{
+					m_aHitboxesEx[j].hitbox.iDataOffset = uBaseOffset;
+					uBaseOffset += MODEL_PHYSPART_DATA_CONVEX_STRUCT_SIZE;
+					ModelPhyspartDataConvex *pData = (ModelPhyspartDataConvex*)m_aHitboxesEx[j].hitbox.pData;
+					uBaseOffset += sizeof(float3_t) * pData->iVertCount;
+				}
+			}
+
+			fora(j, m_aHitboxesEx)
+			{
+				fwrite(&m_aHitboxesEx[j], MODEL_HITBOXEX_STRUCT_SIZE, 1, pf);
+			}
+
+			fora(j, m_aHitboxesEx)
+			{
+				if(m_aHitboxesEx[j].hitbox.type == HT_CONVEX)
+				{
+					fwrite(m_aHitboxesEx[j].hitbox.pData, MODEL_PHYSPART_DATA_CONVEX_STRUCT_SIZE, 1, pf);
+
+					ModelPhyspartDataConvex *pData = (ModelPhyspartDataConvex*)m_aHitboxesEx[j].hitbox.pData;
+
+					fwrite(pData->pVerts, sizeof(float3_t), pData->iVertCount, pf);
+				}
+			}
+		}
+		else
+		{
+			fwrite(chunk.aData, sizeof(byte), chunk.aData.size(), pf);
+		}
+
+		chunk.hdr.uDataSize = _ftelli64(pf) - chunk.hdr.uDataOffset;
+	}
+
+	uint64_t uLastOffset = _ftelli64(pf);
+	_fseeki64(pf, m_hdr3.uChunksOffset, SEEK_SET);
+	fora(i, m_aChunks)
+	{
+		fwrite(&m_aChunks[i], sizeof(ModelChunkHeader), 1, pf);
+	}
+
+	_fseeki64(pf, uLastOffset, SEEK_SET);
+}
 
 static TCHAR* FixName(const TCHAR* name)
 {
@@ -1224,6 +1365,7 @@ void CExporter::updateLodList()
 	ComboBox_ResetContent(hCombo);
 
 	ComboBox_AddString(hCombo, "Physbox");
+	ComboBox_AddString(hCombo, "Hitbox");
 	char tmp[32];
 	for(UINT i = 0, l = m_aLods.size(); i < l; ++i)
 	{
@@ -1310,6 +1452,41 @@ void CExporter::clearPhysparts()
 		}
 	}
 	m_aPhysParts.clearFast();
+}
+
+void CExporter::clearHitboxes()
+{
+	fora(i, m_aHitboxesEx)
+	{
+		switch(m_aHitboxesEx[i].hitbox.type)
+		{
+		case HT_CONVEX:
+		{
+			ModelPhyspartDataConvex *pData = (ModelPhyspartDataConvex*)m_aHitboxesEx[i].hitbox.pData;
+			mem_delete_a(pData->pVerts);
+			mem_delete(pData);
+		}
+		break;
+		}
+	}
+	m_aHitboxesEx.clearFast();
+	//m_aHitboxes.clearFast();
+}
+
+void CExporter::enableChunk(const XGUID &guid, bool yesNo)
+{
+	int idx = m_aChunks.indexOf(guid, [](const ModelChunkRaw &chunk, const XGUID &guid){
+		return(chunk.hdr.guidType == guid);
+	});
+
+	if(yesNo && idx < 0)
+	{
+		m_aChunks[m_aChunks.size()].hdr.guidType = guid;
+	}
+	else if(!yesNo && idx >= 0)
+	{
+		m_aChunks.erase(idx);
+	}
 }
 
 bool CExporter::checkSettings()
@@ -1484,9 +1661,16 @@ static bool GetBoneId(T *pVertices, UINT uVertexCount, int *pOut)
 	return(true);
 }
 
-void CExporter::preparePhysMesh(bool bIgnoreLayers)
+void CExporter::preparePhysMesh(bool bIgnoreLayers, bool bHitbox)
 {
-	clearPhysparts();
+	if(bHitbox)
+	{
+		clearHitboxes();
+	}
+	else
+	{
+		clearPhysparts();
+	}
 
 	bool isStatic = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_STATIC) == BST_CHECKED;
 	bool includeTB = IsDlgButtonChecked(m_hDlgWnd, IDC_MESH_TBN) == BST_CHECKED;
@@ -1499,7 +1683,7 @@ void CExporter::preparePhysMesh(bool bIgnoreLayers)
 		const char *szLayer = m_pCallback->getLayerName(i);
 		UINT uObjectCount = m_pCallback->getLayerObjectCount(i);
 
-		if(bIgnoreLayers || !strcmp(szLayer, "#physbox"))
+		if(bIgnoreLayers || !strcmp(szLayer, bHitbox ? "#hitbox" : "#physbox"))
 		{
 			// process physbox
 			for(UINT j = 0; j < uObjectCount; ++j)
@@ -1521,24 +1705,73 @@ void CExporter::preparePhysMesh(bool bIgnoreLayers)
 					size_t uStride = 0;
 					if(isStatic)
 					{
-						pVertices = m_pCallback->getObjectSubsetStaticVertices(i, j, k);
-						uStride = sizeof(vertex_static);
+						if(includeTB && isTBSupported)
+						{
+							pVertices = m_pCallback->getObjectSubsetStaticExVertices(i, j, k);
+							uStride = sizeof(vertex_static_ex);
+						}
+						else
+						{
+							pVertices = m_pCallback->getObjectSubsetStaticVertices(i, j, k);
+							uStride = sizeof(vertex_static);
+						}
 					}
 					else
 					{
-						pVertices = m_pCallback->getObjectSubsetAnimatedVertices(i, j, k);
-						uStride = sizeof(vertex_animated);
+						if(includeTB && isTBSupported)
+						{
+							pVertices = m_pCallback->getObjectSubsetAnimatedExVertices(i, j, k);
+							uStride = sizeof(vertex_animated_ex);
+						}
+						else
+						{
+							pVertices = m_pCallback->getObjectSubsetAnimatedVertices(i, j, k);
+							uStride = sizeof(vertex_animated);
+						}
 					}
 
-					aVertices.push_back((float3)(pVertices->Pos * m_fScale));
-					MOVE_PTR(pVertices, uStride);
+					for(UINT s = 0, sl = m_pCallback->getObjectSubsetVertexCount(i, j, k); s < sl; ++s)
+					{
+						float3 pt = pVertices->Pos * m_fScale;
+						if(aVertices.indexOf(pt, [](const float3 &a, const float3 &b){
+							return(fabsf(SMVector3Length2(a - b)) < 0.0001f);
+						}) < 0)
+						{
+							aVertices.push_back(pt);
+						}
+						
+						MOVE_PTR(pVertices, uStride);
+					}
 				}
 
 				{
 					float3_t vCenter;
 					float3_t vLWH;
 
+					const char *szName = m_pCallback->getObjectName(i, j);
+
 					ModelPhyspart physPart = {};
+
+					for(UINT k = 0; k < MODEL_MAX_NAME; ++k)
+					{
+						if(szName[k] && szName[k] != ':')
+						{
+							physPart.name[k] = szName[k];
+						}
+						else
+						{
+							physPart.name[k] = 0;
+
+							if(szName[k] == ':')
+							{
+								szName += k + 1;
+							}
+
+							break;
+						}
+					}
+					physPart.name[MODEL_MAX_NAME - 1] = 0;
+
 					if(CGeomDetector::IsBox(aVertices, aVertices.size(), sizeof(float3_t), &vCenter, &vLWH))
 					{ // HT_BOX
 						physPart.type = HT_BOX;
@@ -1613,6 +1846,35 @@ void CExporter::preparePhysMesh(bool bIgnoreLayers)
 							}
 						}
 						physPart.bone_id = getNewBoneId(physPart.bone_id);
+					}
+
+					if(physPart.bone_id >= 0)
+					{
+						strcpy(physPart.bone, m_aBones[physPart.bone_id].szName);
+					}
+					else
+					{
+						physPart.bone[0] = 0;
+					}
+
+					if(bHitbox)
+					{
+						ModelHitboxEx &hbex = m_aHitboxesEx[m_aHitboxesEx.size()];
+						hbex.hitbox = physPart;
+						hbex.part = HBP_DEFAULT;
+						if(szName)
+						{
+							const auto &reflector = EnumReflector::Get<HITBOX_BODYPART>();
+							auto val = reflector.find(szName);
+							if(val.isValid())
+							{
+								hbex.part = (HITBOX_BODYPART)val.getValue();
+							}
+						}
+					}
+					else
+					{
+						m_aPhysParts.push_back(physPart);
 					}
 				}
 			}

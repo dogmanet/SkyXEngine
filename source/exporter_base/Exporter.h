@@ -163,6 +163,7 @@ private:
 	void loadControllers(FILE *pf);
 	void loadAnimations(FILE *pf);
 	void loadHitboxes(FILE *pf);
+	void loadChunks(FILE *pf);
 
 	void writePhysdata(FILE *pf);
 	void writeMaterials(FILE *pf);
@@ -173,6 +174,7 @@ private:
 	void writeControllers(FILE *pf);
 	void writeAnimations(FILE *pf);
 	void writeHitboxes(FILE *pf);
+	void writeChunks(FILE *pf);
 
 	void startExport();
 
@@ -187,10 +189,11 @@ private:
 
 	void clearLods(int iTargetLod = -1);
 	void clearPhysparts();
+	void clearHitboxes();
 
 	bool checkSettings();
 
-	void preparePhysMesh(bool bIgnoreLayers = false);
+	void preparePhysMesh(bool bIgnoreLayers = false, bool bHitbox = false);
 	void prepareLodMesh(int iTargetLod = -1);
 
 	bool prepareSkeleton(bool bOverwriteBindPose);
@@ -244,6 +247,8 @@ private:
 //	float3 getBonePosForFrame(UINT uBone, UINT uFrame);
 //	SMQuaternion getBoneRotForFrame(UINT uBone, UINT uFrame);
 
+	void enableChunk(const XGUID &guid, bool yesNo);
+
 private:
 	HWND m_hDlgWnd = NULL;
 	CExtended *m_pExtended = NULL;
@@ -296,6 +301,7 @@ private:
 private:
 	ModelHeader m_hdr;
 	ModelHeader2 m_hdr2;
+	ModelHeader3 m_hdr3;
 
 	bool m_isLoaded = false;
 
@@ -310,8 +316,18 @@ private:
 	Array<ModelBoneController> m_aControllers;
 
 	Array<ModelHitbox> m_aHitboxes;
+	Array<ModelHitboxEx> m_aHitboxesEx;
 
 	Array<ModelPart> m_aParts;
+
+	struct ModelChunkRaw
+	{
+		ModelChunkHeader hdr;
+		Array<byte> aData;
+	};
+
+	Array<ModelChunkRaw> m_aChunks;
+
 };
 
 #endif
