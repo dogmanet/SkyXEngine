@@ -74,6 +74,21 @@ static bool HandleCrashDump(const wchar_t *wszDumpPath, const wchar_t* wszMinidu
 #define __LTEXT(text) L##text
 #define LTEXT(text) __LTEXT(text)
 
+static const wchar_t* dirnameW(wchar_t *str)
+{
+	wchar_t *pos = str, *ret = str;
+	while(*str)
+	{
+		if((*str == '/' || *str == '\\') && *(str + 1))
+		{
+			pos = str + 1;
+		}
+		++str;
+	}
+	*pos = 0;
+	return(ret);
+}
+
 CEngine::CEngine(int argc, char **argv, const char *szName)
 {
 	srand((UINT)time(0));
@@ -83,13 +98,12 @@ CEngine::CEngine(int argc, char **argv, const char *szName)
 	initPaths();
 
 	{
-		char szPath[MAX_PATH];
-		GetModuleFileNameA(NULL, szPath, MAX_PATH);
-		canonize_path(szPath);
-		dirname(szPath);
-		dirname(szPath);
-		strcat(szPath, "gamesource/");
-		BOOL ret = SetCurrentDirectoryA(szPath);
+		wchar_t szPath[MAX_PATH];
+		GetModuleFileNameW(NULL, szPath, MAX_PATH);
+		dirnameW(szPath);
+		dirnameW(szPath);
+		wcscat(szPath, L"gamesource/");
+		SetCurrentDirectoryW(szPath);
 	}
 
 #ifdef USE_BREAKPAD
