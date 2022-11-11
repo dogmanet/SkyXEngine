@@ -19,7 +19,7 @@ BEGIN_PROPTABLE(CNPCZombie)
 	DEFINE_MESSAGE(msgFiringHere, "firingHere", "Firing Here", PDF_VECTOR)
 END_PROPTABLE()
 
-- REGISTER_ENTITY_NOLISTING(CNPCZombie, npc_zombie);
+REGISTER_ENTITY_NOLISTING(CNPCZombie, npc_zombie);
 
 CNPCZombie::CNPCZombie():
 	m_stateDanger(NPC_STATE_DANGER_CALM),
