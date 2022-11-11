@@ -13,6 +13,13 @@ enum XMODEL_FEATURE
 };
 DEFINE_ENUM_FLAG_OPERATORS(XMODEL_FEATURE);
 
+enum XMODEL_BONE_TRANSFORM
+{
+	XMBT_WORLD,
+	XMBT_RENDER,
+	// XMBT_BIND
+};
+
 class IXStaticModel;
 class IXDynamicModel;
 class IXAnimatedModel;
@@ -90,7 +97,9 @@ public:
 	virtual void XMETHODCALLTYPE enablePart(UINT uIndex, bool yesNo) = 0;
 
 	virtual UINT XMETHODCALLTYPE getHitboxCount(UINT uPartIndex = 0) const = 0;
-	virtual const XResourceModelHitbox* XMETHODCALLTYPE getHitbox(UINT id, UINT uPartIndex = 0) const = 0;
+	virtual const IModelPhysbox* XMETHODCALLTYPE getHitbox(UINT id, UINT uPartIndex = 0) const = 0;
+	virtual int XMETHODCALLTYPE getHitboxBone(UINT id, UINT uPartIndex = 0) const = 0;
+	virtual XHITBOXBODYPART XMETHODCALLTYPE getHitboxBodyPart(UINT id, UINT uPartIndex = 0) const = 0;
 
 	/*! Запускает воспроизведения анимации
 		@param[in] szName Имя анимации
@@ -128,13 +137,13 @@ public:
 		@param[in] id Номер кости
 		@return Смещение кости
 	*/
-	virtual float3 XMETHODCALLTYPE getBoneTransformPos(UINT id) = 0;
+	virtual float3 XMETHODCALLTYPE getBoneTransformPos(UINT id, XMODEL_BONE_TRANSFORM boneTranform = XMBT_WORLD) = 0;
 
 	/*! Возвращает вращение указанной кости
 		@param[in] id Номер кости
 		@return Вращение кости
 	*/
-	virtual SMQuaternion XMETHODCALLTYPE getBoneTransformRot(UINT id) = 0;
+	virtual SMQuaternion XMETHODCALLTYPE getBoneTransformRot(UINT id, XMODEL_BONE_TRANSFORM boneTranform = XMBT_WORLD) = 0;
 
 	/*! Возвращает трансформацию указанной кости
 		@param[in] id Номер кости

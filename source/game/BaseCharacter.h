@@ -97,7 +97,7 @@ public:
 	}
 	void initHitboxes();
 	void releaseHitboxes();
-	void updateHitboxes();
+	void updateHitboxes(bool bForceUpdate = false);
 
 	void initPhysics();
 	void releasePhysics();
@@ -133,6 +133,8 @@ public:
 	}
 
 	void onPostLoad() override;
+
+	void renderEditor(bool is3D, bool bRenderSelection, IXGizmoRenderer *pRenderer) override;
 
 protected:
 	//! Фонарик

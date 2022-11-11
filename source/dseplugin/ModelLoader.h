@@ -31,6 +31,7 @@ protected:
 
 	ModelHeader m_hdr;
 	ModelHeader2 m_hdr2;
+	ModelHeader3 m_hdr3;
 };
 
 #endif

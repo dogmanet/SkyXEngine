@@ -161,6 +161,16 @@ bool XMETHODCALLTYPE CModelLoader::open(IFile *pFile)
 		m_hdr2 = {};
 	}
 
+	if(m_hdr2.iThirdHeaderOffset)
+	{
+		pFile->setPos((size_t)m_hdr2.iThirdHeaderOffset);
+		pFile->readBin(&m_hdr3, sizeof(m_hdr3));
+	}
+	else
+	{
+		m_hdr3 = {};
+	}
+
 	m_pCurrentFile = pFile;
 	return(true);
 }
@@ -563,7 +573,8 @@ bool XMETHODCALLTYPE CModelLoader::loadAsAnimated(IXResourceModelAnimated *pReso
 		}
 	}
 
-	if(m_hdr2.iHitboxCount && m_hdr2.iHitboxesOffset)
+#if 0
+	if(m_hdr2.iHitboxCount && m_hdr2.iHitboxesOffset && false)
 	{
 		m_pCurrentFile->setPos((size_t)m_hdr2.iHitboxesOffset);
 
@@ -575,7 +586,7 @@ bool XMETHODCALLTYPE CModelLoader::loadAsAnimated(IXResourceModelAnimated *pReso
 			m_pCurrentFile->readBin(&mh, sizeof(ModelHitbox));
 			XResourceModelHitbox *pHitbox = pResource->getHitbox(i);
 
-			assert(!"Check bone_id");
+			//assert(!"Check bone_id");
 			pHitbox->bone_id = mh.bone_id;
 			pHitbox->lwh = mh.lwh;
 			pHitbox->part = (XHITBOXBODYPART)mh.part;
@@ -595,7 +606,80 @@ bool XMETHODCALLTYPE CModelLoader::loadAsAnimated(IXResourceModelAnimated *pReso
 			assert(sizeof(pHitbox->szName) == sizeof(mh.name));
 			memcpy(pHitbox->szName, mh.name, MODEL_MAX_NAME);
 		}
+	}
+#endif
 
+	if(m_hdr3.uChunksCount && m_hdr3.uChunksOffset)
+	{
+		m_pCurrentFile->setPos((size_t)m_hdr3.uChunksOffset);
+		ModelChunkHeader chunk;
+		for(UINT uChunk = 0; uChunk < m_hdr3.uChunksCount; ++uChunk)
+		{
+			if(m_pCurrentFile->readBin(&chunk, sizeof(chunk)) == sizeof(chunk))
+			{
+				if(chunk.guidType == DSE_CHUNK_HITBOXES_EX_GUID)
+				{
+					ModelHitboxExChunk chunkData;
+					if(m_pCurrentFile->readBin(&chunkData, sizeof(chunkData)) == sizeof(chunkData) && chunkData.uHitboxExCount)
+					{
+						pResource->setHitboxCount(chunkData.uHitboxExCount);
+
+						ModelHitboxEx *pHitboxes = (ModelHitboxEx*)alloca(sizeof(ModelHitboxEx) * chunkData.uHitboxExCount);
+						memset(pHitboxes, 0, sizeof(ModelHitboxEx) *chunkData.uHitboxExCount);
+						for(UINT i = 0; i < chunkData.uHitboxExCount; ++i)
+						{
+							m_pCurrentFile->readBin(&pHitboxes[i], MODEL_HITBOXEX_STRUCT_SIZE);
+						}
+
+						for(UINT i = 0; i < chunkData.uHitboxExCount; ++i)
+						{
+							IModelPhysbox *pPhysbox = NULL;
+							switch(pHitboxes[i].hitbox.type)
+							{
+							case HT_BOX:
+								{
+									IModelPhysboxBox *pBox = pResource->newPhysboxBox();
+									pBox->setSize(pHitboxes[i].hitbox.lwh);
+									pPhysbox = pBox;
+								}
+								break;
+							case HT_ELIPSOID:
+								{
+									IModelPhysboxSphere *pSphere = pResource->newPhysboxSphere();
+									pSphere->setRadius(pHitboxes[i].hitbox.lwh.x);
+									pPhysbox = pSphere;
+								}
+								break;
+							case HT_CONVEX:
+								{
+									IModelPhysboxConvex *pConvex = pResource->newPhysboxConvex();
+
+									m_pCurrentFile->setPos((size_t)pHitboxes[i].hitbox.iDataOffset);
+									ModelPhyspartDataConvex *pData = (ModelPhyspartDataConvex *)alloca(sizeof(ModelPhyspartDataConvex));
+									m_pCurrentFile->readBin(pData, MODEL_PHYSPART_DATA_CONVEX_STRUCT_SIZE);
+
+									pConvex->initData(pData->iVertCount);
+									m_pCurrentFile->readBin(pConvex->getData(), sizeof(float3_t) * pData->iVertCount);
+
+									pPhysbox = pConvex;
+								}
+								break;
+								//default:
+									//LibReport(REPORT_MSG_LEVEL_WARNING, "Unknown physbox type");
+							}
+
+							if(pPhysbox)
+							{
+								pPhysbox->setPosition(pHitboxes[i].hitbox.pos);
+								pPhysbox->setOrientation(SMQuaternion(pHitboxes[i].hitbox.rot));
+								pResource->setHitbox(i, pPhysbox, pHitboxes[i].hitbox.bone_id, pHitboxes[i].hitbox.name, (XHITBOXBODYPART)pHitboxes[i].part);
+								mem_release(pPhysbox);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 	return(true);

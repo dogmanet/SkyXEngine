@@ -796,7 +796,14 @@ void CAnimatedModelShared::_initPart(Array<IXResourceModelAnimated*> &aPart, par
 		{
 			for(UINT m = 0, ml = aPart[k]->getHitboxCount(); m < ml; ++m)
 			{
-				pPart->aHitboxes.push_back(aPart[k]->getHitbox(m));
+				Hitbox &hb = pPart->aHitboxes[pPart->aHitboxes.size()];
+				hb.part = aPart[k]->getHitboxBodyPart(m);
+				//hb.iBone = aPart[k]->getHitboxBone(m);
+				hb.iBone = getBoneId(aPart[k]->getBoneName(aPart[k]->getHitboxBone(m)));
+				hb.pPhysbox = aPart[k]->getHitbox(m);
+
+				//				ctl.pBones[k] = getBoneId(pResource->getBoneName(pController->pBones[k]));
+
 			}
 		}
 
@@ -965,11 +972,23 @@ UINT CAnimatedModelShared::getHitboxCount(UINT uPartIndex) const
 
 	return(m_aParts[uPartIndex].aHitboxes.size());
 }
-const XResourceModelHitbox *CAnimatedModelShared::getHitbox(UINT id, UINT uPartIndex) const
+const IModelPhysbox* CAnimatedModelShared::getHitbox(UINT id, UINT uPartIndex) const
 {
 	assert(uPartIndex < m_aParts.size() && id < m_aParts[uPartIndex].aHitboxes.size());
 
-	return(m_aParts[uPartIndex].aHitboxes[id]);
+	return(m_aParts[uPartIndex].aHitboxes[id].pPhysbox);
+}
+int CAnimatedModelShared::getHitboxBone(UINT id, UINT uPartIndex) const
+{
+	assert(uPartIndex < m_aParts.size() && id < m_aParts[uPartIndex].aHitboxes.size());
+
+	return(m_aParts[uPartIndex].aHitboxes[id].iBone);
+}
+XHITBOXBODYPART CAnimatedModelShared::getHitboxBodyPart(UINT id, UINT uPartIndex) const
+{
+	assert(uPartIndex < m_aParts.size() && id < m_aParts[uPartIndex].aHitboxes.size());
+
+	return(m_aParts[uPartIndex].aHitboxes[id].part);
 }
 
 

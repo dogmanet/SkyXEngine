@@ -244,9 +244,17 @@ UINT XMETHODCALLTYPE CAnimatedModel::getHitboxCount(UINT uPartIndex) const
 {
 	return(m_pShared->getHitboxCount(uPartIndex));
 }
-const XResourceModelHitbox * XMETHODCALLTYPE CAnimatedModel::getHitbox(UINT id, UINT uPartIndex) const
+const IModelPhysbox* XMETHODCALLTYPE CAnimatedModel::getHitbox(UINT id, UINT uPartIndex) const
 {
 	return(m_pShared->getHitbox(id, uPartIndex));
+}
+int XMETHODCALLTYPE CAnimatedModel::getHitboxBone(UINT id, UINT uPartIndex) const
+{
+	return(m_pShared->getHitboxBone(id, uPartIndex));
+}
+XHITBOXBODYPART XMETHODCALLTYPE CAnimatedModel::getHitboxBodyPart(UINT id, UINT uPartIndex) const
+{
+	return(m_pShared->getHitboxBodyPart(id, uPartIndex));
 }
 
 void XMETHODCALLTYPE CAnimatedModel::play(const char *szName, UINT uFadeTime, UINT uLayer, bool bReplaceActivity)
@@ -421,7 +429,7 @@ void CAnimatedModel::playActivityNext(UINT uLayer)
 	}
 }
 
-float3 XMETHODCALLTYPE CAnimatedModel::getBoneTransformPos(UINT id)
+float3 XMETHODCALLTYPE CAnimatedModel::getBoneTransformPos(UINT id, XMODEL_BONE_TRANSFORM boneTranform)
 {
 	if(id >= m_pShared->getBoneCount())
 	{
@@ -429,10 +437,17 @@ float3 XMETHODCALLTYPE CAnimatedModel::getBoneTransformPos(UINT id)
 		LibReport(REPORT_MSG_LEVEL_WARNING, "CAnimatedModel::getBoneTransformPos() Invalid bone id requested");
 		return(0);
 	}
+	switch(boneTranform)
+	{
+	case XMBT_WORLD:
+		return(getOrientation() * ((m_pRenderFrameBones[id].position - m_pRenderFrameBones[id].orient * (float3)m_pShared->getInvertedBindPose()[id].position)) * m_fScale + getPosition());
+	case XMBT_RENDER:
+		return(getOrientation() * m_pRenderFrameBones[id].position * m_fScale + getPosition());
+	}
 
-	return(getOrientation() * ((m_pRenderFrameBones[id].position - m_pRenderFrameBones[id].orient * (float3)m_pShared->getInvertedBindPose()[id].position)) * m_fScale + getPosition());
+	return(0);
 }
-SMQuaternion XMETHODCALLTYPE CAnimatedModel::getBoneTransformRot(UINT id)
+SMQuaternion XMETHODCALLTYPE CAnimatedModel::getBoneTransformRot(UINT id, XMODEL_BONE_TRANSFORM boneTranform)
 {
 	if(id >= m_pShared->getBoneCount())
 	{
@@ -440,8 +455,15 @@ SMQuaternion XMETHODCALLTYPE CAnimatedModel::getBoneTransformRot(UINT id)
 		LibReport(REPORT_MSG_LEVEL_WARNING, "CAnimatedModel::getBoneTransformRot() Invalid bone id requested");
 		return(SMQuaternion());
 	}
+
+	switch(boneTranform)
+	{
+	case XMBT_WORLD:
+	case XMBT_RENDER:
+		return(m_pRenderFrameBones[id].orient * getOrientation());
+	}
 	
-	return(m_pRenderFrameBones[id].orient * getOrientation());
+	return(SMQuaternion());
 }
 
 int XMETHODCALLTYPE CAnimatedModel::getBoneParent(UINT id)

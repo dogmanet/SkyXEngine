@@ -51,7 +51,9 @@ public:
 	void XMETHODCALLTYPE enablePart(UINT uIndex, bool yesNo) override;
 
 	UINT XMETHODCALLTYPE getHitboxCount(UINT uPartIndex = 0) const override;
-	const XResourceModelHitbox* XMETHODCALLTYPE getHitbox(UINT id, UINT uPartIndex = 0) const override;
+	const IModelPhysbox* XMETHODCALLTYPE getHitbox(UINT id, UINT uPartIndex = 0) const override;
+	int XMETHODCALLTYPE getHitboxBone(UINT id, UINT uPartIndex = 0) const override;
+	XHITBOXBODYPART XMETHODCALLTYPE getHitboxBodyPart(UINT id, UINT uPartIndex = 0) const override;
 
 	void XMETHODCALLTYPE play(const char *szName, UINT uFadeTime = 0, UINT uSlot = 0, bool bReplaceActivity = true) override;
 	void XMETHODCALLTYPE stop(UINT uSlot = 0) override;
@@ -60,8 +62,8 @@ public:
 	void XMETHODCALLTYPE startActivity(const char *szName, UINT uFadeTime = 0, UINT uSlot = 0) override;
 	void XMETHODCALLTYPE stopAll() override;
 
-	float3 XMETHODCALLTYPE getBoneTransformPos(UINT id) override;
-	SMQuaternion XMETHODCALLTYPE getBoneTransformRot(UINT id) override;
+	float3 XMETHODCALLTYPE getBoneTransformPos(UINT id, XMODEL_BONE_TRANSFORM boneTranform = XMBT_WORLD) override;
+	SMQuaternion XMETHODCALLTYPE getBoneTransformRot(UINT id, XMODEL_BONE_TRANSFORM boneTranform = XMBT_WORLD) override;
 	SMMATRIX XMETHODCALLTYPE getBoneTransform(UINT id) override;
 
 	UINT XMETHODCALLTYPE getBoneId(const char *szName) override;
