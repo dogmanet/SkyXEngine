@@ -668,11 +668,11 @@ void CExporter::loadChunks(FILE *pf)
 					{
 						if(m_aHitboxesEx[j].hitbox.type == HT_CONVEX)
 						{
-							_fseeki64(pf, m_aHitboxesEx[i].hitbox.iDataOffset, SEEK_SET);
+							_fseeki64(pf, m_aHitboxesEx[j].hitbox.iDataOffset, SEEK_SET);
 
 							ModelPhyspartDataConvex *pData = new ModelPhyspartDataConvex();
-							m_aHitboxesEx[i].hitbox.pData = pData;
-							fread(m_aHitboxesEx[i].hitbox.pData, MODEL_PHYSPART_DATA_CONVEX_STRUCT_SIZE, 1, pf);
+							m_aHitboxesEx[j].hitbox.pData = pData;
+							fread(m_aHitboxesEx[j].hitbox.pData, MODEL_PHYSPART_DATA_CONVEX_STRUCT_SIZE, 1, pf);
 
 							pData->pVerts = new float3_t[pData->iVertCount];
 							fread(pData->pVerts, sizeof(float3_t), pData->iVertCount, pf);
