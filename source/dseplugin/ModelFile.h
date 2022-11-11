@@ -26,7 +26,6 @@ See the license in LICENSE
 #define MODEL_CTRL_MAX_BONES 64 /*!< Максимальное количество костей, затрагиваемых контроллером */
 
 #define MODEL_MAX_FILE	128 /*!< Максимальная длина имени файла модели */
-#define BLEND_MAX 3 /*!< Количество слотов смешения анимации */
 
 struct model_vertex
 {

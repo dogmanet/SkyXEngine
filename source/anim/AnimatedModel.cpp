@@ -70,15 +70,24 @@ UINT CAnimatedModel::addLayer()
 	return(m_aLayers.size() - 1);
 }
 
-IXAnimatedModel * XMETHODCALLTYPE CAnimatedModel::asAnimatedModel()
+void CAnimatedModel::delLayer()
+{
+	layer_s *pLayer = &m_aLayers[m_aLayers.size() - 1];
+
+	mem_delete_a(pLayer->pCurrentBones);
+
+	m_aLayers.erase(m_aLayers.size() - 1);
+}
+
+IXAnimatedModel* XMETHODCALLTYPE CAnimatedModel::asAnimatedModel()
 {
 	return(this);
 }
-IXDynamicModel * XMETHODCALLTYPE CAnimatedModel::asDynamicModel()
+IXDynamicModel* XMETHODCALLTYPE CAnimatedModel::asDynamicModel()
 {
 	return(NULL);
 }
-IXStaticModel * XMETHODCALLTYPE CAnimatedModel::asStaticModel()
+IXStaticModel* XMETHODCALLTYPE CAnimatedModel::asStaticModel()
 {
 	return(NULL);
 }
@@ -531,7 +540,7 @@ UINT XMETHODCALLTYPE CAnimatedModel::getControllersCount() const
 {
 	return(m_pShared->getControllersCount());
 }
-const char * XMETHODCALLTYPE CAnimatedModel::getControllerName(UINT id)
+const char* XMETHODCALLTYPE CAnimatedModel::getControllerName(UINT id)
 {
 	return(m_pShared->getControllerName(id));
 }
@@ -722,7 +731,7 @@ void CAnimatedModel::update(float fDT)
 	fillBoneMatrix();
 }
 
-bool CAnimatedModel::validateLayer(UINT uLayer)
+bool CAnimatedModel::validateLayer(UINT uLayer) const
 {
 	if(uLayer < m_aLayers.size())
 	{
@@ -751,11 +760,11 @@ void CAnimatedModel::fillBoneMatrix()
 
 		for(UINT i = 0, l = m_pShared->getBoneCount(); i < l; ++i)
 		{
-			if(j == 0/* || !m_pIsBoneWorld[0][i]*/)
+			//if(j == 0/* || !m_pIsBoneWorld[0][i]*/)
 			{
 				auto bineBind = m_pShared->getBone(i);
-				m_pNextFrameBones[i].position = (float4)(m_pNextFrameBones[i].position + (pLayer->pCurrentBones[i].position - bineBind->position));
-				m_pNextFrameBones[i].orient = m_pNextFrameBones[i].orient * (pLayer->pCurrentBones[i].orient * bineBind->orient.Conjugate());
+				m_pNextFrameBones[i].position = (float4)(m_pNextFrameBones[i].position + (pLayer->pCurrentBones[i].position - bineBind->position)) * pLayer->fWeight;
+				m_pNextFrameBones[i].orient = SMquaternionSlerp(SMQuaternion(), m_pNextFrameBones[i].orient * (pLayer->pCurrentBones[i].orient * bineBind->orient.Conjugate()), pLayer->fWeight);
 			}
 		}
 	}
@@ -856,4 +865,43 @@ bool XMETHODCALLTYPE CAnimatedModel::rayTest(const float3 &vStart, const float3 
 	}
 
 	return(false);
+}
+
+UINT XMETHODCALLTYPE CAnimatedModel::getLayersCount() const
+{
+	return(m_aLayers.size());
+}
+void XMETHODCALLTYPE CAnimatedModel::setLayersCount(UINT uCount)
+{
+	for(UINT i = m_aLayers.size(); i < uCount; ++i)
+	{
+		addLayer();
+	}
+	
+	for(UINT i = uCount, l = m_aLayers.size(); i < l; ++i)
+	{
+		delLayer();
+	}
+}
+float XMETHODCALLTYPE CAnimatedModel::getLayerBlendWeight(UINT uLayer) const
+{
+	if(!validateLayer(uLayer))
+	{
+		return(0.0f);
+	}
+
+	const layer_s *pLayer = &m_aLayers[uLayer];
+
+	return(pLayer->fWeight);
+}
+void XMETHODCALLTYPE CAnimatedModel::setLayerBlendWeight(UINT uLayer, float fWeight)
+{
+	if(!validateLayer(uLayer))
+	{
+		return;
+	}
+
+	layer_s *pLayer = &m_aLayers[uLayer];
+
+	pLayer->fWeight = fWeight;
 }
