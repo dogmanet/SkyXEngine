@@ -402,6 +402,8 @@ protected:
 	} m_objectData;
 	IGXConstantBuffer *m_pObjectConstantBuffer = NULL;
 
+	float m_fCurrentTime = 0.0f;
+
 	MemAlloc<CTexture> m_poolTextures;
 	Array<IXTextureProxy*> m_aTextureProxies;
 	AssotiativeArray<String, IXTextureFilter*> m_mapTextureFilters;

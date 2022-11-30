@@ -50,8 +50,8 @@ SX_LIB_API void SMtrl_AKill()
 }
 
 
-SX_LIB_API void SMtrl_Update(DWORD timeDelta)
+SX_LIB_API void SMtrl_Update(float fTimeDelta)
 {
 	XPROFILE_FUNCTION();
-	g_pMaterialSystem->update(0.016f);
+	g_pMaterialSystem->update(fTimeDelta);
 }

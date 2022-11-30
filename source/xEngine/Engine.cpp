@@ -388,7 +388,6 @@ bool CEngine::runFrame()
 		return(false);
 	}
 	
-
 	SGCore_ShaderAllLoad();
 
 	Core_TimesUpdate();
@@ -413,7 +412,7 @@ bool CEngine::runFrame()
 		
 		SGame_Sync();
 
-		SMtrl_Update(0);
+		SMtrl_Update(m_fDeltaTime);
 
 		m_pCore->runUpdate();
 		
@@ -441,10 +440,13 @@ bool CEngine::runFrame()
 
 			showProfile();
 
+			std::chrono::high_resolution_clock::time_point tNow = std::chrono::high_resolution_clock::now();
+			m_fDeltaTime = (float)std::chrono::duration_cast<std::chrono::microseconds>(tNow - m_fPrevTime).count() / 1000000.0f;
+			m_fPrevTime = tNow;
+
 			pCtx->beginFrame();
 			pCtx->addTimestamp("begin");
-			//! @todo use actual value
-			pRenderPipeline->renderFrame(0.016f);
+			pRenderPipeline->renderFrame(m_fDeltaTime);
 			pCtx->addTimestamp("end");
 			pCtx->endFrame();
 

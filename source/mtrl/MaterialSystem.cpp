@@ -682,7 +682,14 @@ void XMETHODCALLTYPE CMaterialSystem::bindTexture(IXTexture *pTexture, UINT slot
 	if(pTexture)
 	{
 		IGXBaseTexture *pTex;
-		pTexture->getAPITexture(&pTex);
+		UINT uFrames = pTexture->getNumFrames();
+		UINT uFrame = 0;
+		if(uFrames != 1)
+		{
+			float fFrameTime = pTexture->getFrameTime();
+			uFrame = (UINT)(fmodf(m_fCurrentTime, fFrameTime * (float)uFrames) / fFrameTime);
+		}
+		pTexture->getAPITexture(&pTex, uFrame);
 		SGCore_GetDXDevice()->getThreadContext()->setPSTexture(pTex, slot);
 		mem_release(pTex);
 	}
@@ -720,6 +727,12 @@ void CMaterialSystem::update(float fDT)
 		CTexture *pTexture = m_queueTextureToLoad.pop();
 		pTexture->initGPUresources();
 		mem_release(pTexture);
+	}
+
+	m_fCurrentTime += fDT;
+	if(m_fCurrentTime > 604800.0f)
+	{
+		m_fCurrentTime -= 604800.0f;
 	}
 }
 

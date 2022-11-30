@@ -61,6 +61,9 @@ protected:
 
 	IEventChannel<XEventObserverChanged> *m_pObserverChangedEventChannel = NULL;
 
+	std::chrono::high_resolution_clock::time_point m_fPrevTime = std::chrono::high_resolution_clock::now();
+	float m_fDeltaTime = 0.0f;
+
 #ifdef USE_BREAKPAD
 	google_breakpad::ExceptionHandler *m_pBreakpadHandler = NULL;
 #endif
