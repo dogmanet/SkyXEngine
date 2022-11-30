@@ -83,9 +83,15 @@ public:
 
 	int XMETHODCALLTYPE getBoneParent(UINT id) override;
 
+	UINT XMETHODCALLTYPE getLayersCount() const override;
+	void XMETHODCALLTYPE setLayersCount(UINT uCount) override;
+	float XMETHODCALLTYPE getLayerBlendWeight(UINT uLayer) const override;
+	void XMETHODCALLTYPE setLayerBlendWeight(UINT uLayer, float fWeight) override;
+
 	void update(float fDT);
 
 	UINT addLayer();
+	void delLayer();
 
 	void XMETHODCALLTYPE render(UINT uLod, XMODEL_FEATURE bmFeatures) override;
 	void sync();
@@ -150,12 +156,14 @@ protected:
 		UINT uActivityFadeTime = 0;
 
 		bool isDirty = true;
+
+		float fWeight = 1.0f;
 	};
 	Array<layer_s, 1> m_aLayers;
 
 
 	void playActivityNext(UINT uLayer);
-	bool validateLayer(UINT uLayer);
+	bool validateLayer(UINT uLayer) const;
 	void fillBoneMatrix();
 
 	mutable bool m_isLocalAABBvalid = false;

@@ -104,32 +104,32 @@ public:
 	/*! Запускает воспроизведения анимации
 		@param[in] szName Имя анимации
 		@param[in] uFadeTime Время перехода от предыдущей анимации к новой в ms
-		@param[in] uSlot Слот для воспроизведения. От 0 до BLEND_MAX
+		@param[in] uSlot Слот для воспроизведения. От 0 до getLayersCount()
 		@param[in] bReplaceActivity Остановить ли активность в заданном слоте?
 	*/
 	virtual void XMETHODCALLTYPE play(const char *szName, UINT uFadeTime = 0, UINT uSlot = 0, bool bReplaceActivity = true) = 0;
 
 	/*! Останавливает воспроизведения для указанного слота
-		@param[in] uSlot Слот для остановки. От 0 до BLEND_MAX
+		@param[in] uSlot Слот для остановки. От 0 до getLayersCount()
 	*/
 	virtual void XMETHODCALLTYPE stop(UINT uSlot = 0) = 0;
 
 	/*! Возобновляет воспроизведения для указанного слота
-		@param[in] uSlot Слот для возобновления. От 0 до BLEND_MAX
+		@param[in] uSlot Слот для возобновления. От 0 до getLayersCount()
 	*/
 	virtual void XMETHODCALLTYPE resume(UINT uSlot = 0) = 0;
 
 	/*! Устанавливает прогресс воспроизведения в конкретном слоте
 		@warning Если в конкретном слоте не происходит воспроизведения, не будет эффекта
 		@param[in] fProgress Значение прогресса. От 0 до 1
-		@param[in] uSlot Слот. От 0 до BLEND_MAX
+		@param[in] uSlot Слот. От 0 до getLayersCount()
 	*/
 	virtual void XMETHODCALLTYPE setProgress(float fProgress, UINT uSlot = 0) = 0;
 
 	/*! Запускает воспроизведение указанной активности в заданном слоте
 		@param[in] szName Имя анимации
 		@param[in] uFadeTime Время перехода от предыдущей анимации к новой в ms
-		@param[in] uSlot Слот для воспроизведения. От 0 до BLEND_MAX
+		@param[in] uSlot Слот для воспроизведения. От 0 до getLayersCount()
 	*/
 	virtual void XMETHODCALLTYPE startActivity(const char *szName, UINT uFadeTime = 0, UINT uSlot = 0) = 0;
 
@@ -190,11 +190,27 @@ public:
 	virtual const char* XMETHODCALLTYPE getControllerName(UINT id) = 0;
 	virtual UINT XMETHODCALLTYPE getControllerId(const char *szName) = 0;
 
-	// Коллбек на изменение состояния анимации!
-
+	//! Коллбек на изменение состояния анимации
 	virtual void XMETHODCALLTYPE setCallback(IAnimationCallback *pCallback) = 0;
 
+	//! получение идентификатора родительской кости
 	virtual int XMETHODCALLTYPE getBoneParent(UINT id) = 0;
+
+	/*! Получает количество слоев анимации
+	*/
+	virtual UINT XMETHODCALLTYPE getLayersCount() const = 0;
+
+	/*! Устанавливает количество слоев анимации
+	*/
+	virtual void XMETHODCALLTYPE setLayersCount(UINT uCount) = 0;
+
+	/*! Получает вес слоя при смешении анимации.
+	*/
+	virtual float XMETHODCALLTYPE getLayerBlendWeight(UINT uLayer) const = 0;
+
+	/*! Устанавливает вес слоя при смешении анимации. Суммарный вес активных слоев должен равняться 1.0f
+	*/
+	virtual void XMETHODCALLTYPE setLayerBlendWeight(UINT uLayer, float fWeight) = 0;
 };
 
 #endif
