@@ -623,7 +623,8 @@ public:
 			pDXDevice->setDepthStencilSurface(p2DDepthStencilSurfaces[i]);
 			pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL);
 
-			pDXDevice->setRasterizerState(g_xRenderStates.pRSWireframe);
+			m_pMaterialSystem->setFillMode(GXFILL_WIREFRAME);
+//			pDXDevice->setRasterizerState(g_xRenderStates.pRSWireframe);
 			pDXDevice->setDepthStencilState(g_pDSNoZ);
  			pDXDevice->setBlendState(NULL);
 			SMMATRIX mProj = SMMatrixOrthographicLH((float)pBackBuffer->getWidth() * fScales[i], (float)pBackBuffer->getHeight() * fScales[i], 1.0f, 2000.0f);

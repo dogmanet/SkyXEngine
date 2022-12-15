@@ -312,7 +312,7 @@ void XMETHODCALLTYPE CEditorObject::render(bool is3D, bool bRenderSelection, IXG
 		IGXContext *pCtx = pDevice->getThreadContext();
 
 		IGXBlendState *pOldBlendState = pCtx->getBlendState();
-		IGXRasterizerState *pOldRS = pCtx->getRasterizerState();
+//		IGXRasterizerState *pOldRS = pCtx->getRasterizerState();
 
 		m_pEditable->m_pMaterialSystem->bindTexture(m_pEditable->m_pWhiteTexture);
 		//pDevice->setTexture(m_pEditable->m_pWhiteTexture);
@@ -326,15 +326,19 @@ void XMETHODCALLTYPE CEditorObject::render(bool is3D, bool bRenderSelection, IXG
 			SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
 		}
 
-		pCtx->setRasterizerState(m_pEditable->m_pRSWireframe);
+		GXFILL_MODE oldFillMode = m_pEditable->m_pMaterialSystem->getFillMode();
+		m_pEditable->m_pMaterialSystem->setFillMode(GXFILL_WIREFRAME);
+
+//		pCtx->setRasterizerState(m_pEditable->m_pRSWireframe);
 		pCtx->setBlendFactor(GX_COLOR_ARGB(255, 255, 255, 0));
 		m_pEntity->renderEditor(is3D, bRenderSelection, pGizmoRenderer);
 		SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
 
+		m_pEditable->m_pMaterialSystem->setFillMode(oldFillMode);
 		pCtx->setBlendState(pOldBlendState);
-		pCtx->setRasterizerState(pOldRS);
+//		pCtx->setRasterizerState(pOldRS);
 		mem_release(pOldBlendState);
-		mem_release(pOldRS);
+//		mem_release(pOldRS);
 	}
 	else
 	{

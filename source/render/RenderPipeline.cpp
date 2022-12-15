@@ -845,7 +845,10 @@ void CRenderPipeline::renderGBuffer()
 
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassGBuffer);
 
-	pCtx->setRasterizerState(NULL);
+	m_pMaterialSystem->setFillMode(GXFILL_SOLID);
+	m_pMaterialSystem->setCullMode(GXCULL_BACK);
+
+//	pCtx->setRasterizerState(NULL);
 	pCtx->setDepthStencilState(m_pDepthStencilStateDefault);
 	pCtx->setBlendState(NULL);
 	rfunc::SetRenderSceneFilter();
@@ -1608,6 +1611,8 @@ void CRenderPipeline::showTexture(IGXTexture2D *pTexture)
 	IGXDepthStencilState *pOldState = pCtx->getDepthStencilState();
 	pCtx->setDepthStencilState(m_pDepthStencilStateNoZ);
 	
+	pCtx->setRasterizerState(NULL);
+
 	pCtx->setPSTexture(pTexture);
 	SGCore_ShaderBind(gdata::shaders_id::kit::idScreenOut);
 	SGCore_ScreenQuadDraw();

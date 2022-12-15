@@ -26,9 +26,25 @@ public:
 
 CMaterialSystem::CMaterialSystem()
 {
-	if(SGCore_GetDXDevice())
+	IGXDevice *pDev = SGCore_GetDXDevice();
+	if(pDev)
 	{
-		m_pObjectConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(CObjectData));
+		m_pObjectConstantBuffer = pDev->createConstantBuffer(sizeof(CObjectData));
+
+		GXRasterizerDesc rsDesc;
+		for(UINT i = 0; i < ARRAYSIZE(m_aapRasterizerStates); ++i)
+		{
+			rsDesc.fillMode = (GXFILL_MODE)i;
+			for(UINT j = 0; j < ARRAYSIZE(m_aapRasterizerStates[i]); ++j)
+			{
+				rsDesc.cullMode = (GXCULL_MODE)j;
+				m_aapRasterizerStates[i][j] = pDev->createRasterizerState(&rsDesc);
+			}
+		}
+	}
+	else
+	{
+		memset(m_aapRasterizerStates, 0, sizeof(m_aapRasterizerStates));
 	}
 
 	auto pPluginManager = Core_GetIXCore()->getPluginManager();
@@ -99,6 +115,14 @@ CMaterialSystem::CMaterialSystem()
 }
 CMaterialSystem::~CMaterialSystem()
 {
+	for(UINT i = 0; i < ARRAYSIZE(m_aapRasterizerStates); ++i)
+	{
+		for(UINT j = 0; j < ARRAYSIZE(m_aapRasterizerStates[i]); ++j)
+		{
+			mem_release(m_aapRasterizerStates[i][j]);
+		}
+	}
+
 	mem_release(m_pObjectConstantBuffer);
 	mem_release(m_pDefaultTexture);
 
@@ -480,6 +504,11 @@ bool XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 		return(false);
 	}
 
+	auto *pCtx = SGCore_GetDXDevice()->getThreadContext();
+
+	bool isTwoSided = pMat && pMat->isTwoSided();
+	pCtx->setRasterizerState(m_aapRasterizerStates[m_fillMode][isTwoSided ? 0 : m_cullMode]);
+
 	if(m_pCurrentRP && m_pCurrentRP->bSkipMaterialShader)
 	{
 		if(!m_pCurrentVS)
@@ -629,7 +658,6 @@ bool XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 
 					// pVariant->
 
-					auto *pCtx = SGCore_GetDXDevice()->getThreadContext();
 
 					for(UINT j = 0, jl = pPass->aTotalSamplers.size(); j < jl; ++j)
 					{
@@ -2584,6 +2612,7 @@ CMaterial::CMaterial(CMaterialSystem *pMaterialSystem, const char *szName):
 	m_pBlurred = createFlag("blurred", XEventMaterialChanged::TYPE_BLURRED);
 	m_pEmissive = createFlag("emissive", XEventMaterialChanged::TYPE_EMISSIVITY);
 	m_pEditorial = createFlag("editorial", XEventMaterialChanged::TYPE_EDITORIAL);
+	m_pTwoSided = createFlag("twosided");
 
 	setShader("Default");
 }
@@ -2656,6 +2685,15 @@ void XMETHODCALLTYPE CMaterial::setEditorial(bool bValue)
 bool XMETHODCALLTYPE CMaterial::isEditorial() const
 {
 	return(m_pEditorial->get());
+}
+
+void XMETHODCALLTYPE CMaterial::setTwoSided(bool bValue)
+{
+	m_pTwoSided->set(bValue);
+}
+bool XMETHODCALLTYPE CMaterial::isTwoSided() const
+{
+	return(m_pTwoSided->get());
 }
 
 void XMETHODCALLTYPE CMaterial::setBlurred(bool bValue)

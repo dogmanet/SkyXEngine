@@ -775,8 +775,8 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 	static const float *r_near = GET_PCVAR_FLOAT("r_near");
 	static const float *r_far = GET_PCVAR_FLOAT("r_far");
 
-
-	pCtx->setRasterizerState(m_pRasterizerConservative);
+	m_pMaterialSystem->setCullMode(GXCULL_BACK);
+//	pCtx->setRasterizerState(m_pRasterizerConservative);
 
 	UINT uShadowCount = 0;
 	while((uShadowCount = m_pShadowCache->processNextBunch()))
