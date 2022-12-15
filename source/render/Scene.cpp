@@ -748,7 +748,7 @@ void CSceneNode::doSplit()
 		CSceneNode *cn = getChild(lc);
 
 		
-		for(int i = cn->m_aObjects.size(); i >= 0; --i)
+		forar(i, cn->m_aObjects)
 		{
 			CSceneObject *n = cn->m_aObjects[i];
 			cn->removeObject(n);
