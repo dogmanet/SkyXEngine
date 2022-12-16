@@ -114,11 +114,13 @@ void CPlayer::setOrient(const SMQuaternion &q)
 	//m_vPitchYawRoll = SMMatrixToEuler(q.GetMatrix());
 	BaseClass::setOrient(SMQuaternion(m_vPitchYawRoll.y, 'y'));
 	m_pHeadEnt->setOffsetOrient(SMQuaternion(m_vPitchYawRoll.x, 'x') * SMQuaternion(m_vPitchYawRoll.z, 'z'));
+
+	SAFE_CALL(m_pModel, setOrientation, q * SMQuaternion(SM_PI, 'y'));
 }
 
 SMQuaternion CPlayer::getOrient()
 {
-	return(m_pHeadEnt->getOrient());
+	return(m_pHeadEnt ? m_pHeadEnt->getOrient() : BaseClass::getOrient());
 }
 
 void CPlayer::updateInput(float dt)
@@ -183,6 +185,8 @@ void CPlayer::updateInput(float dt)
 			//	* SMQuaternion(m_vPitchYawRoll.y, 'y')
 			//	* SMQuaternion(m_vPitchYawRoll.z, 'z');
 			BaseClass::setOrient(SMQuaternion(m_vPitchYawRoll.y, 'y'));
+			SAFE_CALL(m_pModel, setOrientation, SMQuaternion(m_vPitchYawRoll.y + SM_PI, 'y'));
+
 			m_pHeadEnt->setOffsetOrient(SMQuaternion(m_vPitchYawRoll.x, 'x') * SMQuaternion(m_vPitchYawRoll.z, 'z'));
 			
 			GameData::m_pHUDcontroller->setPlayerRot(m_vPitchYawRoll);
@@ -293,22 +297,11 @@ void CPlayer::updateInput(float dt)
 
 			if(onGround())
 			{
-				const float c_fSpeedThreshold = 0.01f; // 1cm/s
-				float fAccel = *cl_acceleration;
+				float fAccel = *cl_acceleration * dt;
 				float3 fAccelDir = m_vTargetSpeed - m_vCurrentSpeed;
-				if(SMVector3Length2(fAccelDir) < (c_fSpeedThreshold * c_fSpeedThreshold))
-				{
-					m_vCurrentSpeed = m_vTargetSpeed;
-				}
-				else
-				{
-					m_vCurrentSpeed = (float3)(m_vCurrentSpeed + SMVector3Normalize(fAccelDir) * fAccel * dt);
+				float fMaxAccel = SMVector3Length(fAccelDir);
 
-					if(SMVector3Dot(m_vCurrentSpeed, m_vTargetSpeed) > SM_PIDIV2 && SMVector3Length2(m_vCurrentSpeed) > SMVector3Length2(m_vTargetSpeed))
-					{
-						m_vCurrentSpeed = m_vTargetSpeed;
-					}
-				}
+				m_vCurrentSpeed = (float3)(m_vCurrentSpeed + SMVector3Normalize(fAccelDir) * min(fAccel, fMaxAccel));
 			}
 
 			m_pCharacter->setVelocityForTimeInterval(m_vCurrentSpeed, dt);
