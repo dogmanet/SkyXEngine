@@ -733,7 +733,8 @@ void CRenderPipeline::renderFrame(float fDeltaTime)
 
 		if(*r_final_image == DS_RT_AMBIENTDIFF)
 		{
-			showTexture(m_pLightAmbientDiffuse); // -> pBackBuf
+			//pCtx->setColorTarget(pBackBuf);
+			showTexture(m_pLightTotal); // -> pBackBuf
 			goto end;
 		}
 		

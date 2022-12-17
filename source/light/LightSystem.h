@@ -228,9 +228,11 @@ protected:
 	//###################################
 
 	ID m_idSSAOShader[3];
+	ID m_idSSAOBlendShader = -1;
 
 	IGXTexture2D *m_pRndTexture = NULL;
 	IGXTexture2D *m_pSSAOTexture = NULL;
+	IGXTexture2D *m_pSSAOTextureBlur = NULL;
 
 	IGXConstantBuffer *m_pSSAOrndCB = NULL;
 };

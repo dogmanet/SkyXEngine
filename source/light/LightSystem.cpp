@@ -292,28 +292,32 @@ CLightSystem::CLightSystem(IXCore *pCore):
 		GXMacro Defines_SSAO_Q_1[] = {{"SSAO_Q_1", ""}, GX_MACRO_END()};
 		m_idSSAOShader[0] = SGCore_ShaderCreateKit(idResPos, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao.ps", "ppe_ssao_q_1.ps", Defines_SSAO_Q_1));
 
+		m_idSSAOBlendShader = SGCore_ShaderCreateKit(idScreenOut, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_ssao_blur.ps"));
+
 		float3 rnd[24];
 		for(int i = 0; i < 24; i++)
 		{
-			rnd[i] = SMVector3Normalize(float3(randf(-1.0f, 1.0f), randf(-1.0f, 1.0f), randf(-1.0f, 1.0f))) * vlerp(0.1f, 1.0f, (float)i / 24.0f);
+			rnd[i] = SMVector3Normalize(float3(randf(-1.0f, 1.0f), randf(-1.0f, 1.0f), randf(0.0f, 1.0f))) * vlerp(0.1f, 1.0f, (float)i / 24.0f);
 		}
 
 		m_pSSAOrndCB = m_pDevice->createConstantBuffer(sizeof(rnd));
 		m_pSSAOrndCB->update(&rnd);
 
 
-		GXCOLOR aRandomTexture[32 * 32];
+		GXCOLOR aRandomTexture[4 * 4];
 		float4 vRnd;
-		for(UINT i = 0; i < 32 * 32; ++i)
+		for(UINT i = 0; i < 4 * 4; ++i)
 		{
-			vRnd = float4(SMVector3Normalize(float3(randf(0.0f, 1.0f), randf(0.0f, 1.0f), randf(0.0f, 1.0f))), 1.0f);
+			vRnd = float4(SMVector3Normalize(float3(randf(0.0f, 1.0f), randf(0.0f, 1.0f), 0.0f)), 1.0f);
 
 			aRandomTexture[i] = GX_COLOR_F4_TO_COLOR(vRnd);
 		}
 
-		m_pRndTexture = m_pDevice->createTexture2D(32, 32, 1, 0, GXFMT_A8B8G8R8, aRandomTexture);
+		//m_pRndTexture = m_pDevice->createTexture2D(32, 32, 1, 0, GXFMT_A8B8G8R8, aRandomTexture);
+		m_pRndTexture = m_pDevice->createTexture2D(4, 4, 1, 0, GXFMT_A8B8G8R8, aRandomTexture);
 
 		m_pSSAOTexture = m_pDevice->createTexture2D(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R16F);
+		m_pSSAOTextureBlur = m_pDevice->createTexture2D(*r_win_width, *r_win_height, 1, GX_TEXFLAG_RENDERTARGET | GX_TEXFLAG_AUTORESIZE, GXFMT_R16F);
 
 		m_pSkyLightGenCB = m_pDevice->createConstantBuffer(sizeof(SkyLightGenSHParam));
 
@@ -431,6 +435,7 @@ CLightSystem::~CLightSystem()
 
 	mem_release(m_pRndTexture);
 	mem_release(m_pSSAOTexture);
+	mem_release(m_pSSAOTextureBlur);
 }
 
 void CLightSystem::setLevelSize(const float3 &vMin, const float3 &vMax)
@@ -734,12 +739,23 @@ void XMETHODCALLTYPE CLightSystem::renderGI(IGXTexture2D *pLightTotal, IGXTextur
 			pCtx->setPSTexture(m_pGBufferNormals, 3);
 			pCtx->setPSTexture(m_pGBufferDepth, 4);
 
+			pCtx->setSamplerState(m_pSamplerPointClamp, 0);
 			pCtx->setSamplerState(m_pSamplerLinearWrap, 2);
 
 			m_pDevice->getThreadContext()->setPSConstant(m_pSSAOrndCB, 7);
 
 			SGCore_ShaderBind(m_idSSAOShader[iSSAO - 1]);
 			SGCore_ScreenQuadDraw();
+
+			pSurf = m_pSSAOTextureBlur->getMipmap();
+			pCtx->setColorTarget(pSurf);
+			mem_release(pSurf);
+			pCtx->setPSTexture(m_pSSAOTexture, 0);
+
+			SGCore_ShaderBind(m_idSSAOBlendShader);
+			SGCore_ScreenQuadDraw();
+
+			std::swap(m_pSSAOTexture, m_pSSAOTextureBlur);
 
 			useAO = true;
 
