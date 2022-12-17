@@ -162,7 +162,9 @@ CLightSystem::CLightSystem(IXCore *pCore):
 
 		m_idLPVPropagateShader = SGCore_ShaderCreateKit(-1, -1, -1, SGCore_ShaderLoad(SHADER_TYPE_COMPUTE, "gi_propagation.cs"));
 
+		GXMacro aMaskedReductionMacro[] = {{"APPLY_MASK", ""}, GX_MACRO_END()};
 		m_idLuminanceReductionShader = SGCore_ShaderCreateKit(-1, -1, -1, SGCore_ShaderLoad(SHADER_TYPE_COMPUTE, "hdr_reduction.cs"));
+		m_idLuminanceReductionMaskedShader = SGCore_ShaderCreateKit(-1, -1, -1, SGCore_ShaderLoad(SHADER_TYPE_COMPUTE, "hdr_reduction.cs", "hdr_reduction_masked.cs", aMaskedReductionMacro));
 
 		m_idSkylightGenGridShader = SGCore_ShaderCreateKit(-1, -1, -1, SGCore_ShaderLoad(SHADER_TYPE_COMPUTE, "gi_skylight_grid.cs"));
 		
@@ -1212,6 +1214,7 @@ void XMETHODCALLTYPE CLightSystem::renderToneMapping(IGXTexture2D *pSourceLight)
 		pCtx->setCSUnorderedAccessView(NULL, 0);
 		pCtx->setCSTexture(NULL, 0);
 
+		SGCore_ShaderBind(m_idLuminanceReductionMaskedShader);
 		pCtx->setCSTexture(m_pLightLuminance32, 0);
 		pCtx->setCSUnorderedAccessView(m_pLightLuminance1, 0);
 		pCtx->computeDispatch(1, 1, 1);

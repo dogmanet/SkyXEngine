@@ -155,6 +155,7 @@ protected:
 	ID m_idLightBoundShader = -1;
 	ID m_idLPVPropagateShader = -1;
 	ID m_idLuminanceReductionShader = -1;
+	ID m_idLuminanceReductionMaskedShader = -1;
 	struct
 	{
 		struct
