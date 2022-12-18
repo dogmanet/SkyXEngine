@@ -278,7 +278,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XMATERIAL_PARAM_FLAG("Emissive", "emissive", "HAS_EMISSION"),
 			XMATERIAL_PARAM_GROUP(NULL, "HAS_EMISSION"),
 				XMATERIAL_PARAM_TEXTURE_OPT("Emissive map", "txEmissive", "HAS_EMISSIVE_MAP"),
-				XMATERIAL_PARAM_RANGE("Emissive multiplier", "em_multiplier", 0.0f, 1000.0f, 16.0f),
+				XMATERIAL_PARAM_RANGE("Emissive multiplier", "em_multiplier", 0.0f, 1000.0f, 2.0f),
 			XMATERIAL_PARAM_GROUP_END(),
 			XMATERIAL_PROPERTY_LIST_END()
 		};
