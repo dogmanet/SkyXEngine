@@ -73,18 +73,10 @@ float4 main(VSO_PP IN):SV_TARGET
 	// return(vBloomColor);
 
 	float fExposure = 0;
-	vColor.xyz = ToneMap(vColor.xyz, fLuminance, 0, fExposure);
-	vColor.xyz += vBloomColor.xyz * (1.0 - CalcLuminance(vColor.xyz));
-	// vColor.xyz += vBloomColor.xyz * (float3(1.0, 1.0, 1.0) - vColor.xyz);
-	
-	/* if(IN.vTexUV.x > 0.9 && IN.vTexUV.y > 0.9)
-	{
-		vColor.xyz = fLuminance;
-	}
-	if(IN.vTexUV.x > 0.9 && IN.vTexUV.y > 0.8 && IN.vTexUV.y < 0.9)
-	{
-		vColor.xyz = fLuminance2;
-	} */
-	
+	vColor.xyz = ToneMap(vColor.xyz * 0.95f + vBloomColor.xyz * 0.05f, fLuminance, 0, fExposure);
+	// vColor.xyz = ToneMap(vColor.xyz, fLuminance, 0, fExposure);
+	// vColor.xyz += vBloomColor.xyz * (1.0 - CalcLuminance(vColor.xyz));
+	// vColor.xyz = vColor.xyz * 0.9f + vBloomColor.xyz * 0.1f;
+
     return(vColor);
 }
