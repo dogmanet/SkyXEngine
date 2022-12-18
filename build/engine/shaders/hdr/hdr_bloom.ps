@@ -6,9 +6,6 @@ hdr_bloom
 #include <struct.h>
 #include <const.h>
 
-static const float BRIGHT_PASS_THRESHOLD = 5.0f;  // Threshold for BrightPass filter
-static const float BRIGHT_PASS_OFFSET    = 10.0f; // Offset for BrightPass filter
-
 //##########################################################################
 
 SamplerState g_sLinearClamp: register(s0);
@@ -36,46 +33,4 @@ float4 main(VSO_PP IN):SV_TARGET
 		return(vColor);
 	}
 	return(0.0f);
-	
-	
-	// float4 vColor = g_txScene.Sample(g_sLinearClamp, IN.vTexUV);
-	return(vColor);
-	float fAdaptedLum = g_txLuminance.Load(uint3(0, 0, 0)).x;
-
-	// Determine what the pixel's value will be after tone-mapping occurs
-	vColor.rgb *= 0.18f / (fAdaptedLum + 0.001f);
-	
-	// Subtract out dark pixels
-	vColor.rgb -= BRIGHT_PASS_THRESHOLD;
-	
-	// Clamp to 0
-	vColor = max(vColor, 0.0f);
-	
-	// Map the resulting value into the 0 to 1 range. Higher values for
-	// BRIGHT_PASS_OFFSET will isolate lights from illuminated scene 
-	// objects.
-	vColor.rgb /= (BRIGHT_PASS_OFFSET + vColor.rgb);
-    
-	return(vColor);
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	/* float fLmax = g_txLuminance.Load(uint3(0, 0, 0)).x;
-	float fLhdr = CalcLuminance(vColor.xyz);
-	float fLr = 1.0f;
-	
-	if(fLhdr > fLr)
-	{
-		return(vColor * (fLhdr / fLmax));
-	}
-	return(0.0f); */
 }
