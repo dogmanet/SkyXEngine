@@ -1873,6 +1873,8 @@ void XRender3D()
 		g_pUnselectedRenderer->render(false, false);
 	}
 
+	pCtx->setRasterizerState(NULL);
+
 	if(g_xState.isFrameSelect)
 	{
 		X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
