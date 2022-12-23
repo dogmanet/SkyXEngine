@@ -2277,6 +2277,85 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene, bool bRenderSelectio
 			SGCore_ShaderUnBind();
 		}
 
+		// Draw entity boxes
+		if(g_pLevelObjects.size())
+		{
+			IGXRasterizerState *pOldRS = pCtx->getRasterizerState();
+			pCtx->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
+
+			pCtx->setPSConstant(s_pColorBuffer);
+
+			pCtx->setPrimitiveTopology(GXPT_LINELIST);
+			SGCore_ShaderBind(g_xRenderStates.idBoundShaderKit);
+			//SGCore_ShaderBind(g_xRenderStates.idHandlerShaderKit);
+			pCtx->setIndexBuffer(g_xRenderStates.pHandler3DIB);
+
+			s_pColorBuffer->update(&float4(1.0f, 0.0f, 1.0f, 1.0f));
+
+			struct BoundVertex
+			{
+				float3_t vPos;
+				float3_t vSize;
+			};
+
+			BoundVertex *pvData;
+
+			pCtx->setRenderBuffer(g_xRenderStates.pHandler3DRB);
+			for(bool isSelected = false;; isSelected = true)
+			{
+				UINT uHandlerCount = 0;
+				pvData = NULL;
+				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+				{
+					float3_t vPos = g_pLevelObjects[i]->getPos();
+					//@TODO: Add visibility check
+					/*if(fViewportBorders.x > vPos.x || fViewportBorders.z < vPos.x || fViewportBorders.y < vPos.z) // not visible
+					{
+					continue;
+					}*/
+					//if(isSelected != g_pLevelObjects[i]->isSelected() || (!isSelected && (g_pLevelObjects[i]->hasVisualModel() || g_pLevelObjects[i]->getIcon())))
+					if(g_pLevelObjects[i]->hasVisualModel() || isSelected != g_pLevelObjects[i]->isSelected())
+					{
+						continue;
+					}
+					if(!pvData && !g_xRenderStates.pHandlerInstanceVB->lock((void**)&pvData, GXBL_WRITE))
+					{
+						break;
+					}
+					float3 vMin, vMax;
+					g_pLevelObjects[i]->getBound(&vMin, &vMax);
+
+					pvData[uHandlerCount++] = {(float3)((vMax + vMin) * 0.5f), (float3)(vMax - vMin)};
+					if(uHandlerCount == X_MAX_HANDLERS_PER_DIP)
+					{
+						g_xRenderStates.pHandlerInstanceVB->unlock();
+						pCtx->drawIndexedInstanced(uHandlerCount, 8, 12, 0, 0);
+						pvData = NULL;
+						uHandlerCount = 0;
+					}
+				}
+				if(pvData)
+				{
+					g_xRenderStates.pHandlerInstanceVB->unlock();
+					pvData = NULL;
+				}
+				if(uHandlerCount)
+				{
+					pCtx->drawIndexedInstanced(uHandlerCount, 8, 12, 0, 0);
+				}
+				if(isSelected)
+				{
+					break;
+				}
+				s_pColorBuffer->update(&float4(1.0f, 0.0f, 0.0f, 1.0f));
+			}
+
+			SGCore_ShaderUnBind();
+
+			pCtx->setRasterizerState(pOldRS);
+			mem_release(pOldRS);
+		}
+
 		if(g_xState.isFrameSelect)
 		{
 			X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
