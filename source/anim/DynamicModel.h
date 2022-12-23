@@ -64,6 +64,9 @@ protected:
 	IGXConstantBuffer *m_pWorldBuffer = NULL;
 	bool m_isWorldDirty = true;
 
+	IGXConstantBuffer *m_pColorBuffer = NULL;
+	bool m_isColorDirty = true;
+
 	float3_t m_vPosition;
 	SMQuaternion m_qRotation;
 	UINT m_uSkin = 0;

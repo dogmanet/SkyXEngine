@@ -116,6 +116,7 @@ struct VSO_SceneCommon
 	float4 vPos		:TEXCOORD2;
 	float3 vTangent	:TEXCOORD3;
 	float3 vBinormal	:TEXCOORD4;
+	uint4 uInstanceId	:BLENDINDICES0;
 };
 
 struct GSO_SceneShadows

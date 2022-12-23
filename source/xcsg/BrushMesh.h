@@ -119,6 +119,8 @@ public:
 	bool couldMoveVertices(const UINT *puAffectedVertices, UINT uVertexCount, UINT uVertexOffset, const float3 &vDeltaPos);
 	UINT moveVertices(const UINT *puAffectedVertices, UINT uVertexCount, const float3 &vDeltaPos, UINT *puRemovedVertices);
 
+	void setColor(const float3_t &vColor);
+
 private:
 	void buildModel(bool bBuildPhysbox = true);
 	void setupFromOutline(COutline *pOutline, UINT uContour, float fHeight);
@@ -237,6 +239,8 @@ private:
 	SMAABB m_aabb;
 	bool m_isBoundDirty = true;
 	bool m_isPhysicsLoaded = false;
+
+	float3_t m_vColor;
 };
 
 #endif

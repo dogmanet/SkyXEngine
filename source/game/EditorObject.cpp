@@ -181,6 +181,7 @@ void CEditorObject::_iniFieldList()
 					m_pModel = pModel;
 					m_pModel->setPosition(getPos());
 					m_pModel->setOrientation(getOrient());
+					m_pModel->setColor(float4(0.71647654f, 0.013f, 0.71647654f, 1.0f));
 				}
 				mem_release(pResource);
 			}

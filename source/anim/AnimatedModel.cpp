@@ -31,6 +31,7 @@ CAnimatedModel::~CAnimatedModel()
 	mem_release(m_pShared);
 	mem_release(m_pBoneConstantBuffer);
 	mem_release(m_pWorldBuffer);
+	mem_release(m_pColorBuffer);
 
 	for(UINT i = 0, l = m_aLayers.size(); i < l; ++i)
 	{
@@ -49,6 +50,7 @@ void CAnimatedModel::initGPUresources()
 	}
 	m_pBoneConstantBuffer = m_pDevice->createConstantBuffer(sizeof(ModelBoneShader) * m_pShared->getBoneCount());
 	m_pWorldBuffer = m_pDevice->createConstantBuffer(sizeof(SMMATRIX));
+	m_pColorBuffer = m_pDevice->createConstantBuffer(sizeof(float4));
 }
 
 bool XMETHODCALLTYPE CAnimatedModel::isEnabled() const
@@ -204,6 +206,7 @@ float4 XMETHODCALLTYPE CAnimatedModel::getColor() const
 void XMETHODCALLTYPE CAnimatedModel::setColor(const float4 &vColor)
 {
 	m_vColor = vColor;
+	m_isColorDirty = true;
 }
 
 UINT XMETHODCALLTYPE CAnimatedModel::getPhysboxCount(UINT uPartIndex) const
@@ -820,14 +823,21 @@ void XMETHODCALLTYPE CAnimatedModel::render(UINT uLod, XMODEL_FEATURE bmFeatures
 		m_isWorldDirty = false;
 	}
 
+	if(m_isColorDirty)
+	{
+		m_pColorBuffer->update(&m_vColor);
+		m_isColorDirty = false;
+	}
+
 	m_pProvider->bindVertexFormat();
 
 	IGXContext *pCtx = m_pDevice->getThreadContext();
 
 	pCtx->setVSConstant(m_pWorldBuffer, 1 /* SCR_OBJECT */);
+	m_pDevice->getThreadContext()->setPSConstant(m_pColorBuffer, 8);
 	pCtx->setVSConstant(m_pBoneConstantBuffer, 10);
 
-	m_pShared->render(m_uSkin, uLod, m_vColor);
+	m_pShared->render(m_uSkin, uLod);
 }
 
 void CAnimatedModel::sync()

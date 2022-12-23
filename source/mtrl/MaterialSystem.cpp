@@ -949,7 +949,10 @@ XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::registerRenderPass(const ch
 		++pOutput;
 		isFirst = false;
 	}
-	pass.aDefines.push_back({"XMATERIAL_OUTPUT_STRUCT()", strdup(sOutStruct.c_str())});
+	if(sOutStruct.length() != 0)
+	{
+		pass.aDefines.push_back({"XMATERIAL_OUTPUT_STRUCT()", strdup(sOutStruct.c_str())});
+	}
 	pass.aDefines.push_back({"XMATERIAL_DEFAULT_LOADER()", strdup((String("XMaterial XMATERIAL_LOAD_DEFAULTS(){XMaterial OUT = (XMaterial)0; ") + sDefaultInitializer + "; return(OUT);}").c_str())});
 	// pass.aDefines.push_back({"XMATERIAL_LOAD_DEFAULTS()", strdup("")});
 	// aDefines
@@ -1618,13 +1621,38 @@ void CMaterialSystem::updateReferences()
 
 			UINT uOldSize = aVariantDefines.size();
 
-			for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; ++i)
+			Array<String> asNames;
+			for(AssotiativeArray<String, VertexFormatData>::Iterator ii = m_mVertexFormats.begin(); ii; ++ii)
 			{
-				VertexFormatData *pFormat = i.second;
+				VertexFormatData *pFormat = ii.second;
 				pRP->aPassFormats[pFormat->uID].aPassVariants.clearFast();
+
+				aVariantDefines.resizeFast(uOldSize);
+				asNames.clearFast();
+
+				String sVSOstruct;
+				for(UINT k = 0, kl = pFormat->aDecl.size(); k < kl; ++k)
+				{
+					XVertexOutputElement *el = &pFormat->aDecl[k];
+					if(k != 0)
+					{
+						sVSOstruct += "; ";
+					}
+					sVSOstruct += String(getHLSLType(el->type)) + " " + el->szName + ": " + getHLSLSemantic(el->usage);
+					asNames.push_back(String("IN_") + el->szName);
+				}
+				fora(j, asNames)
+				{
+					aVariantDefines.push_back({asNames[j].c_str(), ""});
+				}
+
+
+				aVariantDefines.push_back({"XMAT_PS_STRUCT()", sVSOstruct.c_str()});
+				UINT uOldSize2 = aVariantDefines.size();
+
 				for(UINT uPassVariant = 0, uPassVariantl = pRP->aVariants.size(); uPassVariant < uPassVariantl; ++uPassVariant)
 				{
-					aVariantDefines.resizeFast(uOldSize);
+					aVariantDefines.resizeFast(uOldSize2);
 
 					auto &aPassVariants = pRP->aVariants[uPassVariant];
 					for(UINT m = 0, ml = aPassVariants.size(); m < ml; ++m)

@@ -39,6 +39,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		{"vPos", GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD2},
 		{"vTangent", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD3},
 		{"vBinormal", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD4},
+		{"uInstanceId", GXDECLTYPE_UBYTE4, GXDECLUSAGE_BLENDINDICES},
 		XVERTEX_OUTPUT_DECL_END()
 	};
 	XVertexFormatHandler *pVertexFormatSceneGeneric = m_pMaterialSystem->registerVertexFormat("xSceneGeneric", voelGeneric);

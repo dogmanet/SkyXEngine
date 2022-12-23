@@ -628,6 +628,8 @@ protected:
 			return("float3");
 		case GXDECLTYPE_FLOAT4:
 			return("float4");
+		case GXDECLTYPE_UBYTE4:
+			return("uint4");
 		}
 		assert(!"Unknown type");
 		return("");
@@ -643,6 +645,8 @@ protected:
 		case GXDECLTYPE_FLOAT3:
 			return(3);
 		case GXDECLTYPE_FLOAT4:
+			return(4);
+		case GXDECLTYPE_UBYTE4:
 			return(4);
 		}
 		assert(!"Unknown type");

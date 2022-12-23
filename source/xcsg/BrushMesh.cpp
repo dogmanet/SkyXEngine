@@ -173,6 +173,8 @@ void CBrushMesh::buildModel(bool bBuildPhysbox)
 	pProvider->createStaticModel(pResource, &m_pModel);
 	mem_release(pResource);
 
+	SAFE_CALL(m_pModel, setColor, (float4)m_vColor);
+
 	if(bBuildPhysbox)
 	{
 		if(m_pRigidBody && m_isPhysicsLoaded)
@@ -2366,6 +2368,12 @@ bool CBrushMesh::isFacesSibling(UINT uFace0, UINT uFace1, UINT *puCommonEdge)
 	}
 
 	return(false);
+}
+
+void CBrushMesh::setColor(const float3_t &vColor)
+{
+	m_vColor = vColor;
+	SAFE_CALL(m_pModel, setColor, (float4)vColor);
 }
 
 //##########################################################################

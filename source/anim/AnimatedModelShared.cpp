@@ -1114,7 +1114,7 @@ SMAABB CAnimatedModelShared::getLocalBound() const
 	return(SMAABB(m_vLocalMin, m_vLocalMax));
 }
 
-void CAnimatedModelShared::render(UINT uSkin, UINT uLod, const float4_t &vColor)
+void CAnimatedModelShared::render(UINT uSkin, UINT uLod)
 {
 	if(!m_pDevice)
 	{

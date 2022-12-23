@@ -62,7 +62,7 @@ public:
 	float3 getLocalBoundMax() const;
 	SMAABB getLocalBound() const;
 
-	void render(UINT uSkin, UINT uLod, const float4_t &vColor);
+	void render(UINT uSkin, UINT uLod);
 
 	void initGPUresources();
 

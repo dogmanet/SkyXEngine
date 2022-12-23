@@ -116,7 +116,7 @@ public:
 
 	//! сдвигает выбранные вертексы, возвращает количество удаленных вертексов и их прежние индексы в порядке убывания в puAffectedVertices
 	UINT moveVertices(UINT *puAffectedVertices, UINT uVertexCount, const float3 &vDeltaPos);
-
+	
 private:
 	void removeBrush(UINT idx);
 
@@ -141,6 +141,9 @@ private:
 	bool m_isVisible = true;
 
 	bool m_isRemoved = false;
+
+	float3_t m_vColor;
+	char m_szColor[48];
 };
 
 #endif

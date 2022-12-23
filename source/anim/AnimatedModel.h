@@ -115,6 +115,9 @@ protected:
 	bool m_isWorldDirty = true;
 	IGXConstantBuffer *m_pBoneConstantBuffer = NULL;
 
+	IGXConstantBuffer *m_pColorBuffer = NULL;
+	bool m_isColorDirty = true;
+
 	IAnimationCallback *m_pCallback = NULL;
 
 	struct ModelBoneShader
