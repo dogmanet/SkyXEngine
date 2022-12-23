@@ -241,6 +241,8 @@ bool CProxyObject::setDstObject(const XGUID &guid)
 			g_pLevelObjects.erase(idx);
 		}
 
+		m_qOrient = pObj->getOrient();
+		pObj->setOrient(SMQuaternion());
 		m_vPos = pObj->getPos();
 
 		return(true);
