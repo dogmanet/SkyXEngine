@@ -322,7 +322,6 @@ public:
 
 			if(g_is3DRotating)
 			{
-				static float3 m_vPitchYawRoll;
 				m_vPitchYawRoll.y -= dx;
 				m_vPitchYawRoll.x -= dy;
 				m_vPitchYawRoll.x = clampf(m_vPitchYawRoll.x, -SM_PIDIV2, SM_PIDIV2);
@@ -454,10 +453,17 @@ public:
 		return(m_aKeyStates[key]);
 	}
 
-protected:
+	void setCameraRotation(const float3 &vPitchYawRoll)
+	{
+		m_vPitchYawRoll = vPitchYawRoll;
+	}
+
+private:
 	IXCore *m_pCore = NULL;
 
 	bool m_aKeyStates[SXI_KEYMAP_SIZE];
+
+	float3 m_vPitchYawRoll;
 };
 
 class CRenderPipeline: public IXUnknownImplementation<IXRenderPipeline>
@@ -1286,6 +1292,10 @@ int main(int argc, char **argv)
 							{
 								g_bViewportCaptionDirty[i] = true;
 								g_xConfig.m_x2DView[i] = (X_2D_VIEW)iVal;
+								if(g_xConfig.m_x2DView[i] == X2D_NONE)
+								{
+									g_pEngineCallback->setCameraRotation(g_xConfig.m_pViewportCamera[i]->getRotation());
+								}
 							}
 						}
 					}
