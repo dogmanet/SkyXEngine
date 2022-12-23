@@ -413,7 +413,7 @@ void CDynamicModelProvider::render(bool isTransparent, CRenderableVisibility *pV
 
 	if(isTransparent)
 	{
-		render(pVisibility->getSelfillumList(), MF_TRANSPARENT);
+		render(pVisibility->getTransparentList(), MF_TRANSPARENT);
 	}
 
 #if 0
