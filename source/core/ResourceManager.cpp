@@ -119,8 +119,7 @@ bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceMo
 	if(m_mapModelLoaders.KeyExists(AAString(szLowcaseExt), &pNode))
 	{
 		auto &aLoaders = *pNode->Val;
-		IFile *pFile = m_pCore->getFileSystem()->openFile(szName);
-		if(!pFile)
+		if(!m_pCore->getFileSystem()->fileExists(szName))
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "File not found '%s'\n", szName);
 			return(false);
@@ -128,7 +127,7 @@ bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceMo
 		for(UINT i = 0, l = aLoaders.size(); i < l; ++i)
 		{
 			IXModelLoader *pLoader = aLoaders[i];
-			if(pLoader->open(pFile))
+			if(pLoader->open(szName))
 			{
 				switch(pLoader->getType())
 				{
@@ -166,10 +165,7 @@ bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceMo
 					break;
 				}
 			}
-			pFile->setPos(0);
 		}
-
-		mem_release(pFile);
 
 		if(pResource)
 		{
@@ -294,8 +290,7 @@ bool XMETHODCALLTYPE CResourceManager::getModelInfo(const char *szName, XModelIn
 	if(m_mapModelLoaders.KeyExists(AAString(szLowcaseExt), &pNode))
 	{
 		auto &aLoaders = *pNode->Val;
-		IFile *pFile = m_pCore->getFileSystem()->openFile(szName);
-		if(!pFile)
+		if(!m_pCore->getFileSystem()->fileExists(szName))
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "File not found '%s'\n", szName);
 			return(false);
@@ -305,7 +300,7 @@ bool XMETHODCALLTYPE CResourceManager::getModelInfo(const char *szName, XModelIn
 		for(UINT i = 0, l = aLoaders.size(); i < l; ++i)
 		{
 			IXModelLoader *pLoader = aLoaders[i];
-			if(pLoader->open(pFile))
+			if(pLoader->open(szName))
 			{
 				pLoader->getInfo(pInfo);
 
@@ -314,10 +309,7 @@ bool XMETHODCALLTYPE CResourceManager::getModelInfo(const char *szName, XModelIn
 				pLoader->close();
 				break;
 			}
-			pFile->setPos(0);
 		}
-
-		mem_release(pFile);
 
 		if(isSuccess)
 		{

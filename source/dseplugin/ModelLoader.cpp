@@ -1,9 +1,9 @@
 #include "ModelLoader.h"
 #include "ModelFile.h"
 
-UINT XMETHODCALLTYPE CModelLoader::getVersion()
+CModelLoader::CModelLoader(IFileSystem *pFileSystem):
+m_pFileSystem(pFileSystem)
 {
-	return(IXMODELLOADER_VERSION);
 }
 
 UINT XMETHODCALLTYPE CModelLoader::getExtCount() const
@@ -128,7 +128,7 @@ void XMETHODCALLTYPE CModelLoader::getInfo(XModelInfo *pModelInfo)
 	}
 }
 
-bool XMETHODCALLTYPE CModelLoader::open(IFile *pFile)
+bool XMETHODCALLTYPE CModelLoader::open(const char *szFileName)
 {
 	assert(!m_pCurrentFile && "File already opened!");
 	if(m_pCurrentFile)
@@ -136,25 +136,33 @@ bool XMETHODCALLTYPE CModelLoader::open(IFile *pFile)
 		return(false);
 	}
 
+	m_pCurrentFile = m_pFileSystem->openFile(szFileName);
+	if(!m_pCurrentFile)
+	{
+		return(false);
+	}
+
 	memset(&m_hdr, 0, sizeof(m_hdr));
-	pFile->readBin(&m_hdr, sizeof(m_hdr));
+	m_pCurrentFile->readBin(&m_hdr, sizeof(m_hdr));
 
 	if(m_hdr.Magick != SX_MODEL_MAGICK)
 	{
 		LibReport(REPORT_MSG_LEVEL_ERROR, "Invalid DSE magick\n");
+		mem_release(m_pCurrentFile);
 		return(false);
 	}
 
 	if(m_hdr.iVersion != SX_MODEL_VERSION)
 	{
-		 LibReport(REPORT_MSG_LEVEL_ERROR, "Unsupported DSE version %d\n", m_hdr.iVersion);
+		LibReport(REPORT_MSG_LEVEL_ERROR, "Unsupported DSE version %d\n", m_hdr.iVersion);
+		mem_release(m_pCurrentFile);
 		return(false);
 	}
 
 	if(m_hdr.iSecondHeaderOffset)
 	{
-		pFile->setPos((size_t)m_hdr.iSecondHeaderOffset);
-		pFile->readBin(&m_hdr2, sizeof(m_hdr2));
+		m_pCurrentFile->setPos((size_t)m_hdr.iSecondHeaderOffset);
+		m_pCurrentFile->readBin(&m_hdr2, sizeof(m_hdr2));
 	}
 	else
 	{
@@ -163,15 +171,14 @@ bool XMETHODCALLTYPE CModelLoader::open(IFile *pFile)
 
 	if(m_hdr2.iThirdHeaderOffset)
 	{
-		pFile->setPos((size_t)m_hdr2.iThirdHeaderOffset);
-		pFile->readBin(&m_hdr3, sizeof(m_hdr3));
+		m_pCurrentFile->setPos((size_t)m_hdr2.iThirdHeaderOffset);
+		m_pCurrentFile->readBin(&m_hdr3, sizeof(m_hdr3));
 	}
 	else
 	{
 		m_hdr3 = {};
 	}
 
-	m_pCurrentFile = pFile;
 	return(true);
 }
 XMODELTYPE XMETHODCALLTYPE CModelLoader::getType() const
@@ -687,7 +694,7 @@ bool XMETHODCALLTYPE CModelLoader::loadAsAnimated(IXResourceModelAnimated *pReso
 
 void XMETHODCALLTYPE CModelLoader::close()
 {
-	m_pCurrentFile = NULL;
+	mem_release(m_pCurrentFile);
 }
 
 bool CModelLoader::loadGeneric(IXResourceModel *pResource)
