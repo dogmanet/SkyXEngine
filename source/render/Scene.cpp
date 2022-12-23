@@ -421,17 +421,18 @@ bool CSceneNode::updateObject(CSceneObject *pObject, const SMAABB &aabbOld)
 
 const SMAABB& CSceneNode::getAABB(bool shouldSplit)
 {
-	if(shouldSplit)
+	if(!m_isExtentsCorrect)
 	{
+		ScopedSpinLock lock(m_lock);
+
 		if(!m_isExtentsCorrect)
 		{
-			ScopedSpinLock lock(m_lock);
-
-			if(!m_isExtentsCorrect)
-			{
-				updateExtents();
-			}
+			updateExtents();
 		}
+	}
+
+	if(shouldSplit)
+	{
 
 		if(!m_isSplit && m_aObjects.size() >= (UINT)s_splitval)
 		{
@@ -640,7 +641,7 @@ void CSceneNode::updateExtents()
 	{
 		const SMAABB &aabb = m_aObjects[i]->getAABB();
 
-		if (!set)
+		if(!set)
 		{
 			m_aabb = aabb;
 			set = true;
@@ -655,7 +656,7 @@ void CSceneNode::updateExtents()
 
 	for(UINT i = 0; i < BVH_CHILD_COUNT; ++i)
 	{
-		if (m_pChildren[i])
+		if(m_pChildren[i])
 		{
 			const SMAABB &aabb = m_pChildren[i]->getAABB(false);
 
@@ -787,6 +788,38 @@ Array<CSceneObject*>& CSceneNode::getObjects()
 	return(m_aObjects);
 }
 
+bool CSceneNode::validate()
+{
+	const SMAABB &aabb = getAABB();
+	fora(i, m_aObjects)
+	{
+		if(!SMIsAABBInsideAABB(m_aObjects[i]->getAABB(), aabb))
+		{
+			assert(!"Object's bound outside node's bound!");
+			return(false);
+		}
+	}
+
+	for(UINT i = 0; i < BVH_CHILD_COUNT; ++i)
+	{
+		if(m_pChildren[i])
+		{
+			if(!SMIsAABBInsideAABB(m_pChildren[i]->getAABB(), aabb))
+			{
+				assert(!"Child node's bound outside node's bound!");
+				return(false);
+			}
+
+			if(!m_pChildren[i]->validate())
+			{
+				return(false);
+			}
+		}
+	}
+
+	return(true);
+}
+
 //##########################################################################
 
 class CDevBVHrenderInc final: public IXConsoleCommand
@@ -828,6 +861,23 @@ private:
 	IXCore *m_pCore;
 };
 
+class CDevBVHValidate final: public IXConsoleCommand
+{
+public:
+	CDevBVHValidate(CScene *pScene):
+		m_pScene(pScene)
+	{
+	}
+	void XMETHODCALLTYPE execute(int argc, const char **argv) override
+	{
+		bool isValid = m_pScene->validate();
+		LogInfo("Scene is %s" COLOR_RESET "\n", isValid ? COLOR_GREEN "valid" : COLOR_LRED "invalid");
+	}
+
+private:
+	CScene *m_pScene;
+};
+
 class CCvarListener final: public IEventListener<XEventCvarChanged>
 {
 public:
@@ -858,12 +908,14 @@ CScene::CScene(IXCore *pCore):
 {
 	m_pDevBVHrenderInc = new CDevBVHrenderInc(pCore);
 	m_pDevBVHrenderDec = new CDevBVHrenderDec(pCore);
+	m_pDevBVHValidate = new CDevBVHValidate(this);
 	m_pCvarListener = new CCvarListener(pCore, this);
 
 	auto pConsole = m_pCore->getConsole();
 
 	pConsole->registerCommand("dev_bvh_render_inc", m_pDevBVHrenderInc, "Увеличивает квар dev_bvh_render_level на 1");
 	pConsole->registerCommand("dev_bvh_render_dec", m_pDevBVHrenderDec, "Уменьшает квар dev_bvh_render_level на 1");
+	pConsole->registerCommand("dev_bvh_validate", m_pDevBVHValidate, "Осуществляет валидацию дерева сцены");
 	pConsole->registerCVar("dev_bvh_render_level", -1, "", FCVAR_NOTIFY);
 
 	m_pCore->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID)->addListener(m_pCvarListener);
@@ -877,11 +929,13 @@ CScene::~CScene()
 	auto pConsole = m_pCore->getConsole();
 	pConsole->removeCommand("dev_bvh_render_inc");
 	pConsole->removeCommand("dev_bvh_render_dec");
+	pConsole->removeCommand("dev_bvh_validate");
 
 	m_pCore->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID)->removeListener(m_pCvarListener);
 	mem_delete(m_pCvarListener);
 	mem_delete(m_pDevBVHrenderInc);
 	mem_delete(m_pDevBVHrenderDec);
+	mem_delete(m_pDevBVHValidate);
 }
 
 IXSceneObjectType* XMETHODCALLTYPE CScene::registerObjectType(const char *szName)
@@ -1218,4 +1272,9 @@ void CScene::sync()
 			break;
 		}
 	}
+}
+
+bool CScene::validate()
+{
+	return(m_pRootNode->validate());
 }
