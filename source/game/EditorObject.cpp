@@ -130,7 +130,7 @@ void CEditorObject::_iniFieldList()
 				xField.szHelp = "";
 				xField.szKey = pField->szKey;
 				xField.szName = pField->szEdName;
-				xField.isGeneric = !fstrcmp(pField->szKey, "origin") || !fstrcmp(pField->szKey, "rotation") || !fstrcmp(pField->szKey, "scale");
+				xField.isGeneric = !fstrcmp(pField->szKey, "origin") || !fstrcmp(pField->szKey, "rotation")/* || !fstrcmp(pField->szKey, "scale")*/;
 				xField.useGizmo = pField->flags & PDFF_USE_GIZMO;
 
 				m_aFields.push_back(xField);
