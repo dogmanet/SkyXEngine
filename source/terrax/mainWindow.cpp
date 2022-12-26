@@ -1907,7 +1907,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case ID_ROTATE_90:
 		case ID_ROTATE_M90:
 			{
-				CCommandRotate *pCmd = new CCommandRotate();
+				CCommandRotate *pCmd = new CCommandRotate(GetKeyState(VK_SHIFT) < 0);
 				XEnumerateObjects([pCmd](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
 					if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
 					{
@@ -3093,7 +3093,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 							else if(g_xState.xformType == X2DXF_ROTATE)
 							{
 								// create rotate command
-								s_pRotateCmd = new CCommandRotate();
+								s_pRotateCmd = new CCommandRotate(GetKeyState(VK_SHIFT) < 0);
 								s_pRotateCmd->setStartOrigin((g_xState.vSelectionBoundMax + g_xState.vSelectionBoundMin) * 0.5f * vMask, float3(1.0f) - vMask);
 								s_pRotateCmd->setStartPos(vStartPos);
 								XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
@@ -3184,7 +3184,7 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 				{
 					SetCapture(hWnd);
 					SetCursor(hcPtr);
-					s_pMoveCmd = new CCommandMove();
+					s_pMoveCmd = new CCommandMove(GetKeyState(VK_SHIFT) < 0);
 					float3 vStartPos;
 					switch(xCurView)
 					{
@@ -3303,9 +3303,9 @@ LRESULT CALLBACK RenderWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
 			ReleaseCapture();
 		}
 		break;
-
+		
 	case WM_MOUSEMOVE:
-		//SetFocus(g_hWndMain);
+		SetFocus(g_hWndMain);
 
 		if(!g_is3DRotating && !g_is3DPanning && !g_is2DPanning)
 		{
@@ -4262,7 +4262,7 @@ void XMETHODCALLTYPE CGizmoMoveCallback::moveTo(const float3 &vNewPos, IXEditorG
 }
 void XMETHODCALLTYPE CGizmoMoveCallback::onStart(IXEditorGizmoMove *pGizmo)
 {
-	m_pCmd = new CCommandMove();
+	m_pCmd = new CCommandMove(GetKeyState(VK_SHIFT) < 0);
 	m_pCmd->setStartPos(pGizmo->getPos());
 	XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
 		if(pObj->isSelected() && (g_xConfig.m_bIgnoreGroups ? !isProxy : !pParent))
@@ -4297,7 +4297,7 @@ void XMETHODCALLTYPE CGizmoRotateCallback::onStart(const float3_t &vAxis, IXEdit
 	}
 	m_vOffset = vStartOffset = SMVector3Normalize(SMVector3Cross(vAxis, vStartOffset));
 
-	m_pCmd = new CCommandRotate();
+	m_pCmd = new CCommandRotate(GetKeyState(VK_SHIFT) < 0);
 	m_pCmd->setStartOrigin(pGizmo->getPos(), vAxis);
 	m_pCmd->setStartPos(pGizmo->getPos() + vStartOffset);
 	XEnumerateObjects([&](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
