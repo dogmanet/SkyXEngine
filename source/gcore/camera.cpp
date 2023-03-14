@@ -392,11 +392,18 @@ CCamera::~CCamera()
 void CCamera::setOrientation(const SMQuaternion &q)
 {
 	m_qRotation = q;
-	m_vPitchYawRoll = SMMatrixToEuler(q.GetMatrix());
 
 	m_vRight = q * float3(1.0f, 0.0f, 0.0f);
 	m_vUp = q * float3(0.0f, 1.0f, 0.0f);
 	m_vLook = q * float3(0.0f, 0.0f, 1.0f);
+
+	m_vPitchYawRoll.x = SMRightAngleBetweenVectors(m_vLook, SMVector3Normalize(float3(1.0f, 0.0f, 1.0f) * m_vLook), m_vRight);
+	if(m_vPitchYawRoll.x >= SM_PI)
+	{
+		m_vPitchYawRoll.x -= SM_2PI;
+	}
+	m_vPitchYawRoll.y = -SMRightAngleBetweenVectors(float3(0.0f, 0.0f, 1.0f), SMVector3Normalize(float3(1.0f, 0.0f, 1.0f) * m_vLook), float3(0.0f, 1.0f, 0.0f));
+	m_vPitchYawRoll.z = 0.0f;
 }
 
 const SMQuaternion& CCamera::getOrientation()

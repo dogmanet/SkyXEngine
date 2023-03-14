@@ -3,10 +3,12 @@
 
 #include <xcommon/editor/IXEditorExtension.h>
 #include "terrax.h"
+#include "CommandDuplicate.h"
 
 class CCommandMove final: public IXUnknownImplementation<IXEditorCommand>
 {
 public:
+	CCommandMove(bool bClone = false);
 	~CCommandMove();
 
 	bool XMETHODCALLTYPE exec() override;
@@ -33,6 +35,8 @@ protected:
 	};
 	Array<_move_obj> m_aObjects;
 	float3_t m_vStartPos;
+
+	CCommandDuplicate *m_pDuplicateCommand = NULL;
 };
 
 #endif

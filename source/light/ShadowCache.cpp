@@ -252,7 +252,8 @@ UINT CShadowCache::processNextBunch()
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mOldProj);
 
 	m_pRenderPipeline->getDevice()->getThreadContext()->setDepthStencilState(NULL);
-	m_pRenderPipeline->getDevice()->getThreadContext()->setRasterizerState(m_pRasterizerCullFront);
+	m_pMaterialSystem->setCullMode(GXCULL_FRONT);
+//	m_pRenderPipeline->getDevice()->getThreadContext()->setRasterizerState(m_pRasterizerCullFront);
 
 	bool isSomeFound = false;
 	if(m_isFirstBunch)
@@ -357,6 +358,8 @@ UINT CShadowCache::processNextBunch()
 	Core_RMatrixSet(G_RI_MATRIX_VIEW, &mOldView);
 	Core_RMatrixSet(G_RI_MATRIX_PROJECTION, &mOldProj);
 
+	m_pMaterialSystem->setCullMode(GXCULL_BACK);
+
 	return(m_aReadyMaps.size());
 }
 
@@ -372,7 +375,8 @@ UINT CShadowCache::processNextRSMBunch()
 	Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mOldProj);
 
 	m_pRenderPipeline->getDevice()->getThreadContext()->setDepthStencilState(NULL);
-	m_pRenderPipeline->getDevice()->getThreadContext()->setRasterizerState(m_pRasterizerConservative);
+	m_pMaterialSystem->setCullMode(GXCULL_BACK);
+//	m_pRenderPipeline->getDevice()->getThreadContext()->setRasterizerState(m_pRasterizerConservative);
 
 	bool isSomeFound = false;
 	if(m_isFirstRSMBunch)

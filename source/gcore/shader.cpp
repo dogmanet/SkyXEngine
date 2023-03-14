@@ -166,7 +166,6 @@ static int LoadShader(CShaderPreprocessor *pPreprocessor, IFileSystem *pFileSyst
 								if(tMod != pFileSystem->getFileModifyTime(szName))
 								{
 									isValid = false;
-									break;
 								}
 							}
 

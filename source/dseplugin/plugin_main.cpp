@@ -8,6 +8,7 @@ class CDSEPlugin: public IXUnknownImplementation<IXPlugin>
 public:
 	void XMETHODCALLTYPE startup(IXCore *pCore) override
 	{
+		m_pCore = pCore;
 	}
 
 	void XMETHODCALLTYPE shutdown() override
@@ -38,7 +39,7 @@ public:
 	{
 		if(guid == IXMODELLOADER_GUID)
 		{
-			return(new CModelLoader());
+			return(new CModelLoader(m_pCore->getFileSystem()));
 		}
 		else if(guid == IXMODELWRITER_GUID)
 		{
@@ -46,6 +47,9 @@ public:
 		}
 		return(NULL);
 	}
+
+private:
+	IXCore *m_pCore = NULL;
 };
 
 DECLARE_XPLUGIN(CDSEPlugin);

@@ -26,9 +26,25 @@ public:
 
 CMaterialSystem::CMaterialSystem()
 {
-	if(SGCore_GetDXDevice())
+	IGXDevice *pDev = SGCore_GetDXDevice();
+	if(pDev)
 	{
-		m_pObjectConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(CObjectData));
+		m_pObjectConstantBuffer = pDev->createConstantBuffer(sizeof(CObjectData));
+
+		GXRasterizerDesc rsDesc;
+		for(UINT i = 0; i < ARRAYSIZE(m_aapRasterizerStates); ++i)
+		{
+			rsDesc.fillMode = (GXFILL_MODE)i;
+			for(UINT j = 0; j < ARRAYSIZE(m_aapRasterizerStates[i]); ++j)
+			{
+				rsDesc.cullMode = (GXCULL_MODE)j;
+				m_aapRasterizerStates[i][j] = pDev->createRasterizerState(&rsDesc);
+			}
+		}
+	}
+	else
+	{
+		memset(m_aapRasterizerStates, 0, sizeof(m_aapRasterizerStates));
 	}
 
 	auto pPluginManager = Core_GetIXCore()->getPluginManager();
@@ -99,6 +115,14 @@ CMaterialSystem::CMaterialSystem()
 }
 CMaterialSystem::~CMaterialSystem()
 {
+	for(UINT i = 0; i < ARRAYSIZE(m_aapRasterizerStates); ++i)
+	{
+		for(UINT j = 0; j < ARRAYSIZE(m_aapRasterizerStates[i]); ++j)
+		{
+			mem_release(m_aapRasterizerStates[i][j]);
+		}
+	}
+
 	mem_release(m_pObjectConstantBuffer);
 	mem_release(m_pDefaultTexture);
 
@@ -480,6 +504,11 @@ bool XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 		return(false);
 	}
 
+	auto *pCtx = SGCore_GetDXDevice()->getThreadContext();
+
+	bool isTwoSided = pMat && pMat->isTwoSided();
+	pCtx->setRasterizerState(m_aapRasterizerStates[m_fillMode][isTwoSided ? 0 : m_cullMode]);
+
 	if(m_pCurrentRP && m_pCurrentRP->bSkipMaterialShader)
 	{
 		if(!m_pCurrentVS)
@@ -629,7 +658,6 @@ bool XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 
 					// pVariant->
 
-					auto *pCtx = SGCore_GetDXDevice()->getThreadContext();
 
 					for(UINT j = 0, jl = pPass->aTotalSamplers.size(); j < jl; ++j)
 					{
@@ -682,7 +710,14 @@ void XMETHODCALLTYPE CMaterialSystem::bindTexture(IXTexture *pTexture, UINT slot
 	if(pTexture)
 	{
 		IGXBaseTexture *pTex;
-		pTexture->getAPITexture(&pTex);
+		UINT uFrames = pTexture->getNumFrames();
+		UINT uFrame = 0;
+		if(uFrames != 1)
+		{
+			float fFrameTime = pTexture->getFrameTime();
+			uFrame = (UINT)(fmodf(m_fCurrentTime, fFrameTime * (float)uFrames) / fFrameTime);
+		}
+		pTexture->getAPITexture(&pTex, uFrame);
 		SGCore_GetDXDevice()->getThreadContext()->setPSTexture(pTex, slot);
 		mem_release(pTex);
 	}
@@ -720,6 +755,12 @@ void CMaterialSystem::update(float fDT)
 		CTexture *pTexture = m_queueTextureToLoad.pop();
 		pTexture->initGPUresources();
 		mem_release(pTexture);
+	}
+
+	m_fCurrentTime += fDT;
+	if(m_fCurrentTime > 604800.0f)
+	{
+		m_fCurrentTime -= 604800.0f;
 	}
 }
 
@@ -908,7 +949,10 @@ XRenderPassHandler* XMETHODCALLTYPE CMaterialSystem::registerRenderPass(const ch
 		++pOutput;
 		isFirst = false;
 	}
-	pass.aDefines.push_back({"XMATERIAL_OUTPUT_STRUCT()", strdup(sOutStruct.c_str())});
+	if(sOutStruct.length() != 0)
+	{
+		pass.aDefines.push_back({"XMATERIAL_OUTPUT_STRUCT()", strdup(sOutStruct.c_str())});
+	}
 	pass.aDefines.push_back({"XMATERIAL_DEFAULT_LOADER()", strdup((String("XMaterial XMATERIAL_LOAD_DEFAULTS(){XMaterial OUT = (XMaterial)0; ") + sDefaultInitializer + "; return(OUT);}").c_str())});
 	// pass.aDefines.push_back({"XMATERIAL_LOAD_DEFAULTS()", strdup("")});
 	// aDefines
@@ -1577,13 +1621,38 @@ void CMaterialSystem::updateReferences()
 
 			UINT uOldSize = aVariantDefines.size();
 
-			for(AssotiativeArray<String, VertexFormatData>::Iterator i = m_mVertexFormats.begin(); i; ++i)
+			Array<String> asNames;
+			for(AssotiativeArray<String, VertexFormatData>::Iterator ii = m_mVertexFormats.begin(); ii; ++ii)
 			{
-				VertexFormatData *pFormat = i.second;
+				VertexFormatData *pFormat = ii.second;
 				pRP->aPassFormats[pFormat->uID].aPassVariants.clearFast();
+
+				aVariantDefines.resizeFast(uOldSize);
+				asNames.clearFast();
+
+				String sVSOstruct;
+				for(UINT k = 0, kl = pFormat->aDecl.size(); k < kl; ++k)
+				{
+					XVertexOutputElement *el = &pFormat->aDecl[k];
+					if(k != 0)
+					{
+						sVSOstruct += "; ";
+					}
+					sVSOstruct += String(getHLSLType(el->type)) + " " + el->szName + ": " + getHLSLSemantic(el->usage);
+					asNames.push_back(String("IN_") + el->szName);
+				}
+				fora(j, asNames)
+				{
+					aVariantDefines.push_back({asNames[j].c_str(), ""});
+				}
+
+
+				aVariantDefines.push_back({"XMAT_PS_STRUCT()", sVSOstruct.c_str()});
+				UINT uOldSize2 = aVariantDefines.size();
+
 				for(UINT uPassVariant = 0, uPassVariantl = pRP->aVariants.size(); uPassVariant < uPassVariantl; ++uPassVariant)
 				{
-					aVariantDefines.resizeFast(uOldSize);
+					aVariantDefines.resizeFast(uOldSize2);
 
 					auto &aPassVariants = pRP->aVariants[uPassVariant];
 					for(UINT m = 0, ml = aPassVariants.size(); m < ml; ++m)
@@ -2571,6 +2640,7 @@ CMaterial::CMaterial(CMaterialSystem *pMaterialSystem, const char *szName):
 	m_pBlurred = createFlag("blurred", XEventMaterialChanged::TYPE_BLURRED);
 	m_pEmissive = createFlag("emissive", XEventMaterialChanged::TYPE_EMISSIVITY);
 	m_pEditorial = createFlag("editorial", XEventMaterialChanged::TYPE_EDITORIAL);
+	m_pTwoSided = createFlag("twosided");
 
 	setShader("Default");
 }
@@ -2643,6 +2713,15 @@ void XMETHODCALLTYPE CMaterial::setEditorial(bool bValue)
 bool XMETHODCALLTYPE CMaterial::isEditorial() const
 {
 	return(m_pEditorial->get());
+}
+
+void XMETHODCALLTYPE CMaterial::setTwoSided(bool bValue)
+{
+	m_pTwoSided->set(bValue);
+}
+bool XMETHODCALLTYPE CMaterial::isTwoSided() const
+{
+	return(m_pTwoSided->get());
 }
 
 void XMETHODCALLTYPE CMaterial::setBlurred(bool bValue)

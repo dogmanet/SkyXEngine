@@ -69,7 +69,11 @@ public:
 	{
 		if(guid == IXEDITABLE_GUID)
 		{
-			return(m_pEditable = new CEditable(m_pCore));
+			if(!m_pEditable)
+			{
+				m_pEditable = new CEditable(m_pCore);
+			}
+			return(m_pEditable);
 		}
 		//if(guid == IXMATERIALPROXY_GUID)
 		//{

@@ -157,6 +157,14 @@ public:
 
 	//! Добавить текстуру
 	virtual void XMETHODCALLTYPE addTexture(const char *szName, IGXBaseTexture *pGXTexture, IXTexture **ppTexture) = 0;
+
+	//! Установить режим заполнения
+	virtual void XMETHODCALLTYPE setFillMode(GXFILL_MODE fillMode) = 0;
+	virtual GXFILL_MODE XMETHODCALLTYPE getFillMode() const = 0;
+
+	//! Установить режим отсечения
+	virtual void XMETHODCALLTYPE setCullMode(GXCULL_MODE cullMode = GXCULL_BACK) = 0;
+	virtual GXCULL_MODE XMETHODCALLTYPE getCullMode() const = 0;
 };
 
 #endif

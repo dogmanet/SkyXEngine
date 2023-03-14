@@ -119,8 +119,7 @@ bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceMo
 	if(m_mapModelLoaders.KeyExists(AAString(szLowcaseExt), &pNode))
 	{
 		auto &aLoaders = *pNode->Val;
-		IFile *pFile = m_pCore->getFileSystem()->openFile(szName);
-		if(!pFile)
+		if(!m_pCore->getFileSystem()->fileExists(szName))
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "File not found '%s'\n", szName);
 			return(false);
@@ -128,7 +127,7 @@ bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceMo
 		for(UINT i = 0, l = aLoaders.size(); i < l; ++i)
 		{
 			IXModelLoader *pLoader = aLoaders[i];
-			if(pLoader->open(pFile))
+			if(pLoader->open(szName))
 			{
 				switch(pLoader->getType())
 				{
@@ -166,10 +165,7 @@ bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceMo
 					break;
 				}
 			}
-			pFile->setPos(0);
 		}
-
-		mem_release(pFile);
 
 		if(pResource)
 		{
@@ -187,6 +183,7 @@ bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceMo
 				if(getModel(pResource->getGibName(i), &pGibResource, bForceReload))
 				{
 					pResource->setGib(i, pGibResource);
+					mem_release(pGibResource);
 				}
 				else
 				{
@@ -205,6 +202,7 @@ bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceMo
 					if(getModel(pModel->getImportName(i), &pImportResource, bForceReload))
 					{
 						pModel->setImport(i, pImportResource);
+						mem_release(pImportResource);
 					}
 					else
 					{
@@ -217,13 +215,14 @@ bool XMETHODCALLTYPE CResourceManager::getModel(const char *szName, IXResourceMo
 				for(UINT i = 0, l = pModel->getPartsCount(); i < l; ++i)
 				{
 					IXResourceModel *pPartResource;
-					if(getModel(pModel->getPartName(i), &pPartResource, bForceReload))
+					if(getModel(pModel->getPartFileName(i), &pPartResource, bForceReload))
 					{
 						pModel->setPart(i, pPartResource);
+						mem_release(pPartResource);
 					}
 					else
 					{
-						LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to load part #%u for model '%s'\n", i, szName);
+						LibReport(REPORT_MSG_LEVEL_ERROR, "Unable to load part #%u (%s: %s) for model '%s'\n", i, pModel->getPartName(i), pModel->getPartFileName(i), szName);
 						mem_release(pResource);
 						return(false);
 					}
@@ -291,8 +290,7 @@ bool XMETHODCALLTYPE CResourceManager::getModelInfo(const char *szName, XModelIn
 	if(m_mapModelLoaders.KeyExists(AAString(szLowcaseExt), &pNode))
 	{
 		auto &aLoaders = *pNode->Val;
-		IFile *pFile = m_pCore->getFileSystem()->openFile(szName);
-		if(!pFile)
+		if(!m_pCore->getFileSystem()->fileExists(szName))
 		{
 			LibReport(REPORT_MSG_LEVEL_ERROR, "File not found '%s'\n", szName);
 			return(false);
@@ -302,7 +300,7 @@ bool XMETHODCALLTYPE CResourceManager::getModelInfo(const char *szName, XModelIn
 		for(UINT i = 0, l = aLoaders.size(); i < l; ++i)
 		{
 			IXModelLoader *pLoader = aLoaders[i];
-			if(pLoader->open(pFile))
+			if(pLoader->open(szName))
 			{
 				pLoader->getInfo(pInfo);
 
@@ -311,10 +309,7 @@ bool XMETHODCALLTYPE CResourceManager::getModelInfo(const char *szName, XModelIn
 				pLoader->close();
 				break;
 			}
-			pFile->setPos(0);
 		}
-
-		mem_release(pFile);
 
 		if(isSuccess)
 		{

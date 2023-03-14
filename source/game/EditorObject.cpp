@@ -130,7 +130,7 @@ void CEditorObject::_iniFieldList()
 				xField.szHelp = "";
 				xField.szKey = pField->szKey;
 				xField.szName = pField->szEdName;
-				xField.isGeneric = !fstrcmp(pField->szKey, "origin") || !fstrcmp(pField->szKey, "rotation") || !fstrcmp(pField->szKey, "scale");
+				xField.isGeneric = !fstrcmp(pField->szKey, "origin") || !fstrcmp(pField->szKey, "rotation")/* || !fstrcmp(pField->szKey, "scale")*/;
 				xField.useGizmo = pField->flags & PDFF_USE_GIZMO;
 
 				m_aFields.push_back(xField);
@@ -181,6 +181,7 @@ void CEditorObject::_iniFieldList()
 					m_pModel = pModel;
 					m_pModel->setPosition(getPos());
 					m_pModel->setOrientation(getOrient());
+					m_pModel->setColor(float4(0.71647654f, 0.013f, 0.71647654f, 1.0f));
 				}
 				mem_release(pResource);
 			}
@@ -312,7 +313,7 @@ void XMETHODCALLTYPE CEditorObject::render(bool is3D, bool bRenderSelection, IXG
 		IGXContext *pCtx = pDevice->getThreadContext();
 
 		IGXBlendState *pOldBlendState = pCtx->getBlendState();
-		IGXRasterizerState *pOldRS = pCtx->getRasterizerState();
+//		IGXRasterizerState *pOldRS = pCtx->getRasterizerState();
 
 		m_pEditable->m_pMaterialSystem->bindTexture(m_pEditable->m_pWhiteTexture);
 		//pDevice->setTexture(m_pEditable->m_pWhiteTexture);
@@ -326,15 +327,19 @@ void XMETHODCALLTYPE CEditorObject::render(bool is3D, bool bRenderSelection, IXG
 			SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
 		}
 
-		pCtx->setRasterizerState(m_pEditable->m_pRSWireframe);
+		GXFILL_MODE oldFillMode = m_pEditable->m_pMaterialSystem->getFillMode();
+		m_pEditable->m_pMaterialSystem->setFillMode(GXFILL_WIREFRAME);
+
+//		pCtx->setRasterizerState(m_pEditable->m_pRSWireframe);
 		pCtx->setBlendFactor(GX_COLOR_ARGB(255, 255, 255, 0));
 		m_pEntity->renderEditor(is3D, bRenderSelection, pGizmoRenderer);
 		SAFE_CALL(m_pModel, render, 0, MF_OPAQUE | MF_TRANSPARENT);
 
+		m_pEditable->m_pMaterialSystem->setFillMode(oldFillMode);
 		pCtx->setBlendState(pOldBlendState);
-		pCtx->setRasterizerState(pOldRS);
+//		pCtx->setRasterizerState(pOldRS);
 		mem_release(pOldBlendState);
-		mem_release(pOldRS);
+//		mem_release(pOldRS);
 	}
 	else
 	{

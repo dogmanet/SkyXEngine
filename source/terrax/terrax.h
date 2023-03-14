@@ -188,7 +188,7 @@ void XResetLevel();
 bool XSaveLevel(const char *szNewName=NULL, bool bForcePrompt = false);
 void XLoadLevel(const char *szName);
 void XRender3D();
-void XRender2D(X_2D_VIEW view, float fScale, bool preScene);
+void XRender2D(X_2D_VIEW view, float fScale, bool preScene, bool bRenderSelection);
 
 void XFrameRun(float fDeltaTime);
 

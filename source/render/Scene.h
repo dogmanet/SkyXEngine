@@ -163,6 +163,8 @@ public:
 		return(m_bmTypes);
 	}
 
+	bool validate();
+
 protected:
 	int selectChild(const SMAABB &aabb);
 	CSceneNode* findNode(const SMAABB &aabb);
@@ -205,6 +207,7 @@ protected:
 
 class CDevBVHrenderInc;
 class CDevBVHrenderDec;
+class CDevBVHValidate;
 class CCvarListener;
 class CScene final: public IXUnknownImplementation<IXScene>
 {
@@ -235,6 +238,8 @@ public:
 
 	void sync();
 	
+	bool validate();
+
 protected:
 	void addObject(CSceneObject *pObject);
 	void removeObject(CSceneObject *pObject);
@@ -265,6 +270,7 @@ private:
 
 	CDevBVHrenderInc *m_pDevBVHrenderInc = NULL;
 	CDevBVHrenderDec *m_pDevBVHrenderDec = NULL;
+	CDevBVHValidate *m_pDevBVHValidate = NULL;
 
 	CCvarListener *m_pCvarListener = NULL;
 

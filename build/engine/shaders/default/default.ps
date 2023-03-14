@@ -48,11 +48,20 @@ XMaterial MainIllimination(PSI_XMaterial IN)
 {
 	XMaterial OUT = XMATERIAL_LOAD_DEFAULTS();
 #ifdef HAS_EMISSION
+	float4 fColor = (float4)0;
 	
+#ifdef HAS_ALPHATEST
+	fColor = g_txBase.Sample(g_sScene, IN.vTexUV);
+	clip(fColor.a - g_xMaterialConstants.pbr_alphatest_threshold);
+	// clip(fColor.a - 0.03);
+#endif
+
 #ifdef HAS_EMISSIVE_MAP
-	float4 fColor = g_txEmissive.Sample(g_sScene, IN.vTexUV);
+	fColor = g_txEmissive.Sample(g_sScene, IN.vTexUV);
 #else
-	float4 fColor = g_txBase.Sample(g_sScene, IN.vTexUV);
+#ifndef HAS_ALPHATEST
+	fColor = g_txBase.Sample(g_sScene, IN.vTexUV);
+#endif
 #endif
 
 	OUT.vEmissiveColor = fColor.xyz * fColor.w * g_xMaterialConstants.em_multiplier;

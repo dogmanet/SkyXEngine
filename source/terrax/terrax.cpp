@@ -322,7 +322,6 @@ public:
 
 			if(g_is3DRotating)
 			{
-				static float3 m_vPitchYawRoll;
 				m_vPitchYawRoll.y -= dx;
 				m_vPitchYawRoll.x -= dy;
 				m_vPitchYawRoll.x = clampf(m_vPitchYawRoll.x, -SM_PIDIV2, SM_PIDIV2);
@@ -454,10 +453,17 @@ public:
 		return(m_aKeyStates[key]);
 	}
 
-protected:
+	void setCameraRotation(const float3 &vPitchYawRoll)
+	{
+		m_vPitchYawRoll = vPitchYawRoll;
+	}
+
+private:
 	IXCore *m_pCore = NULL;
 
 	bool m_aKeyStates[SXI_KEYMAP_SIZE];
+
+	float3 m_vPitchYawRoll;
 };
 
 class CRenderPipeline: public IXUnknownImplementation<IXRenderPipeline>
@@ -477,6 +483,7 @@ public:
 		{
 			//m_pRenderPassGeometry2D = m_pMaterialSystem->getRenderPass("xGBuffer");
 			m_pRenderPassGeometry2D = m_pMaterialSystem->registerRenderPass("xEditor2D", "terrax/geom2d.ps", NULL, NULL, NULL, NULL, true);
+			m_pRenderPassGeometry3D = m_pMaterialSystem->registerRenderPass("xEditor3DWhite", "terrax/white.ps", NULL, NULL, NULL, NULL, true);
 		}
 
 		m_pCameraVisibility[0] = NULL;
@@ -585,9 +592,10 @@ public:
 		IGXContext *pDXDevice = getDevice()->getThreadContext();
 		pDXDevice->setDepthStencilState(g_pDSDefault);
 
-		m_pMaterialSystem->bindRenderPass(m_pRenderPassGeometry2D);
+		m_pMaterialSystem->bindRenderPass(m_pRenderPassGeometry3D);
 
 		XRender3D();
+
 
 		g_pEditor->render(true);
 
@@ -611,6 +619,7 @@ public:
 		XUpdateSelectionBound();
 		XUpdateGizmos();
 
+
 		for(int i = 0; i < 3; ++i)
 		{
 			if(!IsWindowVisible(hWnds[i]))
@@ -623,7 +632,8 @@ public:
 			pDXDevice->setDepthStencilSurface(p2DDepthStencilSurfaces[i]);
 			pDXDevice->clear(GX_CLEAR_COLOR | GX_CLEAR_DEPTH | GX_CLEAR_STENCIL);
 
-			pDXDevice->setRasterizerState(g_xRenderStates.pRSWireframe);
+			m_pMaterialSystem->setFillMode(GXFILL_WIREFRAME);
+//			pDXDevice->setRasterizerState(g_xRenderStates.pRSWireframe);
 			pDXDevice->setDepthStencilState(g_pDSNoZ);
  			pDXDevice->setBlendState(NULL);
 			SMMATRIX mProj = SMMatrixOrthographicLH((float)pBackBuffer->getWidth() * fScales[i], (float)pBackBuffer->getHeight() * fScales[i], 1.0f, 2000.0f);
@@ -642,13 +652,18 @@ public:
 			Core_RMatrixSet(G_RI_MATRIX_WORLD, &SMMatrixIdentity());
 			Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_FREE);
 
-			XRender2D(views[i], fScales[i], true);
+			m_pMaterialSystem->bindRenderPass(m_pRenderPassGeometry2D);
+
+			XRender2D(views[i], fScales[i], true, false);
 
 			renderEditor2D(pCameraVisibility[i]);
 
 			Core_RIntSet(G_RI_INT_RENDERSTATE, RENDER_STATE_MATERIAL);
 			pDXDevice->setVSConstant(g_pCameraConstantBuffer, SCR_OBJECT);
-			XRender2D(views[i], fScales[i], false);
+			XRender2D(views[i], fScales[i], false, false);
+
+			m_pMaterialSystem->bindRenderPass(m_pRenderPassGeometry3D);
+			XRender2D(views[i], fScales[i], false, true);
 
 			g_pEditor->render(false);
 			m_pAxesRenderer->render(true);
@@ -949,6 +964,7 @@ public:
 	IXMaterialSystem *m_pMaterialSystem = NULL;
 
 	XRenderPassHandler *m_pRenderPassGeometry2D = NULL;
+	XRenderPassHandler *m_pRenderPassGeometry3D = NULL;
 
 	IXRenderableVisibility *m_pCameraVisibility[4];
 
@@ -1276,6 +1292,10 @@ int main(int argc, char **argv)
 							{
 								g_bViewportCaptionDirty[i] = true;
 								g_xConfig.m_x2DView[i] = (X_2D_VIEW)iVal;
+								if(g_xConfig.m_x2DView[i] == X2D_NONE)
+								{
+									g_pEngineCallback->setCameraRotation(g_xConfig.m_pViewportCamera[i]->getRotation());
+								}
 							}
 						}
 					}
@@ -1872,6 +1892,8 @@ void XRender3D()
 		g_pUnselectedRenderer->render(false, false);
 	}
 
+	pCtx->setRasterizerState(NULL);
+
 	if(g_xState.isFrameSelect)
 	{
 		X_2D_VIEW xCurView = g_xConfig.m_x2DView[g_xState.activeWindow];
@@ -2108,7 +2130,7 @@ void XRender3D()
 	}
 }
 
-void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
+void XRender2D(X_2D_VIEW view, float fScale, bool preScene, bool bRenderSelection)
 {
 	IGXDevice *pDevice = SGCore_GetDXDevice();
 	IGXContext *pCtx = pDevice->getThreadContext();
@@ -2144,22 +2166,26 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 	{
 		static IGXConstantBuffer *s_pColorBuffer = pDevice->createConstantBuffer(sizeof(float4));
 
-		if(!g_pCurrentTool || !g_pCurrentTool->wantDrawSelection(false))
+		if(bRenderSelection)
 		{
-			if(g_isRenderedSelection3D)
+			if(!g_pCurrentTool || !g_pCurrentTool->wantDrawSelection(false))
 			{
-				g_pSelectionRenderer->reset();
+				if(g_isRenderedSelection3D)
+				{
+					g_pSelectionRenderer->reset();
 
-				XEnumerateObjects([](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
-					if(pObj->isSelected() && !(g_xConfig.m_bIgnoreGroups && isProxy))
-					{
-						pObj->render(false, true, g_pSelectionRenderer);
-					}
-				});
+					XEnumerateObjects([](IXEditorObject *pObj, bool isProxy, CProxyObject *pParent){
+						if(pObj->isSelected() && !(g_xConfig.m_bIgnoreGroups && isProxy))
+						{
+							pObj->render(false, true, g_pSelectionRenderer);
+						}
+					});
 
-				g_isRenderedSelection3D = false;
+					g_isRenderedSelection3D = false;
+				}
+				g_pSelectionRenderer->render(true);
 			}
-			g_pSelectionRenderer->render(true);
+			return;
 		}
 
 		if(g_isRenderedUnselected3D)
@@ -2259,6 +2285,85 @@ void XRender2D(X_2D_VIEW view, float fScale, bool preScene)
 			}
 
 			SGCore_ShaderUnBind();
+		}
+
+		// Draw entity boxes
+		if(g_pLevelObjects.size())
+		{
+			IGXRasterizerState *pOldRS = pCtx->getRasterizerState();
+			pCtx->setRasterizerState(g_xRenderStates.pRSSolidNoCull);
+
+			pCtx->setPSConstant(s_pColorBuffer);
+
+			pCtx->setPrimitiveTopology(GXPT_LINELIST);
+			SGCore_ShaderBind(g_xRenderStates.idBoundShaderKit);
+			//SGCore_ShaderBind(g_xRenderStates.idHandlerShaderKit);
+			pCtx->setIndexBuffer(g_xRenderStates.pHandler3DIB);
+
+			s_pColorBuffer->update(&float4(1.0f, 0.0f, 1.0f, 1.0f));
+
+			struct BoundVertex
+			{
+				float3_t vPos;
+				float3_t vSize;
+			};
+
+			BoundVertex *pvData;
+
+			pCtx->setRenderBuffer(g_xRenderStates.pHandler3DRB);
+			for(bool isSelected = false;; isSelected = true)
+			{
+				UINT uHandlerCount = 0;
+				pvData = NULL;
+				for(UINT i = 0, l = g_pLevelObjects.size(); i < l; ++i)
+				{
+					float3_t vPos = g_pLevelObjects[i]->getPos();
+					//@TODO: Add visibility check
+					/*if(fViewportBorders.x > vPos.x || fViewportBorders.z < vPos.x || fViewportBorders.y < vPos.z) // not visible
+					{
+					continue;
+					}*/
+					//if(isSelected != g_pLevelObjects[i]->isSelected() || (!isSelected && (g_pLevelObjects[i]->hasVisualModel() || g_pLevelObjects[i]->getIcon())))
+					if(g_pLevelObjects[i]->hasVisualModel() || isSelected != g_pLevelObjects[i]->isSelected())
+					{
+						continue;
+					}
+					if(!pvData && !g_xRenderStates.pHandlerInstanceVB->lock((void**)&pvData, GXBL_WRITE))
+					{
+						break;
+					}
+					float3 vMin, vMax;
+					g_pLevelObjects[i]->getBound(&vMin, &vMax);
+
+					pvData[uHandlerCount++] = {(float3)((vMax + vMin) * 0.5f), (float3)(vMax - vMin)};
+					if(uHandlerCount == X_MAX_HANDLERS_PER_DIP)
+					{
+						g_xRenderStates.pHandlerInstanceVB->unlock();
+						pCtx->drawIndexedInstanced(uHandlerCount, 8, 12, 0, 0);
+						pvData = NULL;
+						uHandlerCount = 0;
+					}
+				}
+				if(pvData)
+				{
+					g_xRenderStates.pHandlerInstanceVB->unlock();
+					pvData = NULL;
+				}
+				if(uHandlerCount)
+				{
+					pCtx->drawIndexedInstanced(uHandlerCount, 8, 12, 0, 0);
+				}
+				if(isSelected)
+				{
+					break;
+				}
+				s_pColorBuffer->update(&float4(1.0f, 0.0f, 0.0f, 1.0f));
+			}
+
+			SGCore_ShaderUnBind();
+
+			pCtx->setRasterizerState(pOldRS);
+			mem_release(pOldRS);
 		}
 
 		if(g_xState.isFrameSelect)

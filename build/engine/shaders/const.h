@@ -80,7 +80,10 @@ cbuffer CSkyBoxLight: register(b7)
 };	
 #endif
 
-
+cbuffer CObjectColors: register(b8)
+{
+	float4 g_avColors[128];
+};
 
 
 

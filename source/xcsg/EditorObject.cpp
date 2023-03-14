@@ -14,6 +14,10 @@ CEditorObject::CEditorObject(CEditable *pEditable):
 	pEditable->onObjectCreated(this);
 	//m_szClassName = CEntityFactoryMap::GetInstance()->getClassNamePtr(szClassName);
 	//assert(m_szClassName);
+
+	m_vColor.x = 0.0f;
+	m_vColor.y = randf(0.1f, 1.0f);
+	m_vColor.z = randf(0.1f, 1.0f);
 }
 
 CEditorObject::~CEditorObject()
@@ -241,6 +245,14 @@ void CEditorObject::setKV(const char *szKey, const char *szValue, bool bSkipFixP
 	{
 		XGUIDFromString(&m_guid, szValue);
 	}
+	else if(!fstrcmp(szKey, "color"))
+	{
+		sscanf(szValue, "%f %f %f", &m_vColor.x, &m_vColor.y, &m_vColor.z);
+		fora(i, m_aBrushes)
+		{
+			m_aBrushes[i]->setColor(m_vColor);
+		}
+	}
 	//if(m_pEntity)
 	//{
 	//	m_pEntity->setKV(szKey, szValue);
@@ -257,6 +269,7 @@ void CEditorObject::setKV(const char *szKey, IXJSONItem *pValue, bool bSkipFixPo
 			for(UINT i = m_aBrushes.size(), l = pArray->size(); i < l; ++i)
 			{
 				m_aBrushes[i] = new CBrushMesh(m_pEditable->getCore());
+				m_aBrushes[i]->setColor(m_vColor);
 			}
 
 			for(UINT i = pArray->size(), l = m_aBrushes.size(); i < l; ++i)
@@ -294,6 +307,13 @@ void CEditorObject::setKV(const char *szKey, IXJSONItem *pValue, bool bSkipFixPo
 		SAFE_CALL(m_pModel, onObjectChanged, this);
 	}
 	else if(!fstrcmp(szKey, "guid"))
+	{
+		if(pValue->getType() == XJI_STRING)
+		{
+			setKV(szKey, pValue->getString());
+		}
+	}
+	else if(!fstrcmp(szKey, "color"))
 	{
 		if(pValue->getType() == XJI_STRING)
 		{
@@ -350,7 +370,18 @@ const char* CEditorObject::getKV(const char *szKey, bool forJSON)
 		m_sGUID = tmp;
 		return(m_sGUID.c_str());
 	}
-
+	else if(!fstrcmp(szKey, "color"))
+	{
+		if(forJSON)
+		{
+			sprintf_s(m_szColor, "\"%f %f %f\"", m_vColor.x, m_vColor.y, m_vColor.z);
+		}
+		else
+		{
+			sprintf_s(m_szColor, "%f %f %f", m_vColor.x, m_vColor.y, m_vColor.z);
+		}
+		return(m_szColor);
+	}
 	//if(!m_pEntity)
 	{
 		return(NULL);
@@ -375,18 +406,21 @@ const X_PROP_FIELD* XMETHODCALLTYPE CEditorObject::getPropertyMeta(UINT uKey)
 {
 	static X_PROP_FIELD s_prop0 = {"brush", "brush", XPET_TEXT, NULL, ""};
 	static X_PROP_FIELD s_prop1 = {"guid", "GUID", XPET_TEXT, NULL, "", true};
+	static X_PROP_FIELD s_prop2 = {"color", "color", XPET_TEXT, NULL, ""};
 	switch(uKey)
 	{
 	case 0:
 		return(&s_prop0);
 	case 1:
 		return(&s_prop1);
+	case 2:
+		return(&s_prop2);
 	}
 	return(NULL);
 }
 UINT XMETHODCALLTYPE CEditorObject::getProperyCount()
 {
-	return(2);
+	return(3);
 }
 
 const char* XMETHODCALLTYPE CEditorObject::getTypeName()
@@ -417,6 +451,7 @@ bool XMETHODCALLTYPE CEditorObject::hasVisualModel()
 
 void CEditorObject::addBrush(CBrushMesh *pBrushMesh)
 {
+	pBrushMesh->setColor(m_vColor);
 	m_aBrushes.push_back(pBrushMesh);
 }
 

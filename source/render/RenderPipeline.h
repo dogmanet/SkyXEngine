@@ -84,10 +84,10 @@ protected:
 	IGXTexture2D *m_pGBufferParams = NULL;
 	IGXTexture2D *m_pGBufferDepth = NULL;
 
-	//! Буфер освещения
+	//! Буфер освещения (GXFMT_A16B16G16R16F, full size)
 	IGXTexture2D *m_pLightAmbientDiffuse = NULL;
 	
-	//! Буфер освещения
+	//! Буфер освещения (GXFMT_A16B16G16R16F, full size)
 	IGXTexture2D *m_pLightTotal = NULL;
 
 	//! Буфер тени
@@ -200,6 +200,9 @@ protected:
 	XRenderPassHandler *m_pRenderPassIllumination = NULL;
 	XRenderPassHandler *m_pRenderPassPostprocess = NULL;
 	XRenderPassHandler *m_pRenderPassShadow = NULL;
+
+	ID m_aidFXAAShader[3];
+	IGXSamplerState *m_pAnisotropicFXAA = NULL;
 };
 
 #endif

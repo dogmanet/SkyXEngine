@@ -29,6 +29,8 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 
 	Core_0RegisterCVarFloat("hdr_adapted_coef", 0.3f, "Коэфициент привыкания к освещению (0,1] (медлено, быстро)");
 	Core_0RegisterCVarFloat("hdr_base_value", 0.2f, "Базовое значение для тонмаппинга  (0,0.5] (темно, ярко)");
+
+	Core_0RegisterCVarInt("pp_fxaa", 2, "Рисовать ли эффект fxaa? 0 - нет, 1 - на низком качестве, 2 - на среднем, 3 - на высоком");
 	
 	XVertexOutputElement voelGeneric[] = {
 		{"vPosition", GXDECLTYPE_FLOAT4, GXDECLUSAGE_POSITION},
@@ -37,6 +39,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 		{"vPos", GXDECLTYPE_FLOAT4, GXDECLUSAGE_TEXCOORD2},
 		{"vTangent", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD3},
 		{"vBinormal", GXDECLTYPE_FLOAT3, GXDECLUSAGE_TEXCOORD4},
+		{"uInstanceId", GXDECLTYPE_UBYTE4, GXDECLUSAGE_BLENDINDICES},
 		XVERTEX_OUTPUT_DECL_END()
 	};
 	XVertexFormatHandler *pVertexFormatSceneGeneric = m_pMaterialSystem->registerVertexFormat("xSceneGeneric", voelGeneric);
@@ -276,7 +279,7 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 			XMATERIAL_PARAM_FLAG("Emissive", "emissive", "HAS_EMISSION"),
 			XMATERIAL_PARAM_GROUP(NULL, "HAS_EMISSION"),
 				XMATERIAL_PARAM_TEXTURE_OPT("Emissive map", "txEmissive", "HAS_EMISSIVE_MAP"),
-				XMATERIAL_PARAM_RANGE("Emissive multiplier", "em_multiplier", 0.0f, 1000.0f, 16.0f),
+				XMATERIAL_PARAM_RANGE("Emissive multiplier", "em_multiplier", 0.0f, 1000.0f, 2.0f),
 			XMATERIAL_PARAM_GROUP_END(),
 			XMATERIAL_PROPERTY_LIST_END()
 		};
@@ -600,6 +603,25 @@ CRenderPipeline::CRenderPipeline(IGXDevice *pDevice):
 	sampDesc.addressU = sampDesc.addressV = sampDesc.addressW = GXTEXTURE_ADDRESS_CLAMP;
 	sampDesc.filter = GXFILTER_MIN_MAG_MIP_POINT;
 	m_pRefractionScene = m_pDevice->createSamplerState(&sampDesc);
+
+	sampDesc.filter = GXFILTER_ANISOTROPIC;
+	sampDesc.uMaxAnisotropy = 4;
+	sampDesc.comparisonFunc = GXCMP_ALWAYS;
+	sampDesc.fMaxLOD = 0;
+	m_pAnisotropicFXAA = m_pDevice->createSamplerState(&sampDesc);
+
+
+	// "FXAA_PRESET", "1"
+	ID idQuadRenderVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "pp_quad_render.vs");
+
+	GXMacro aFXAAPreset1[] = {{"FXAA_PRESET", "1"}, GX_MACRO_END()};
+	GXMacro aFXAAPreset3[] = {{"FXAA_PRESET", "3"}, GX_MACRO_END()};
+	GXMacro aFXAAPreset5[] = {{"FXAA_PRESET", "5"}, GX_MACRO_END()};
+
+	m_aidFXAAShader[0] = SGCore_ShaderCreateKit(idQuadRenderVS, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_fxaa.ps", NULL, aFXAAPreset1));
+	m_aidFXAAShader[1] = SGCore_ShaderCreateKit(idQuadRenderVS, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_fxaa.ps", NULL, aFXAAPreset3));
+	m_aidFXAAShader[2] = SGCore_ShaderCreateKit(idQuadRenderVS, SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "ppe_fxaa.ps", NULL, aFXAAPreset5));
+
 }
 CRenderPipeline::~CRenderPipeline()
 {
@@ -607,6 +629,8 @@ CRenderPipeline::~CRenderPipeline()
 	{
 		m_apRenderables[i]->shutdown();
 	}
+
+	mem_release(m_pAnisotropicFXAA);
 
 	mem_release(m_pRefractiveTextures[0]);
 	mem_release(m_pRefractiveTextures[1]);
@@ -706,11 +730,12 @@ void CRenderPipeline::renderFrame(float fDeltaTime)
 
 	if(m_pLightSystem)
 	{
-		m_pLightSystem->renderGI(m_pLightTotal, m_pLightAmbientDiffuse);
+		m_pLightSystem->renderGI(m_pLightTotal, m_pLightAmbientDiffuse); // -> m_pLightTotal
 
 		if(*r_final_image == DS_RT_AMBIENTDIFF)
 		{
-			showTexture(m_pLightAmbientDiffuse);
+			//pCtx->setColorTarget(pBackBuf);
+			showTexture(m_pLightTotal); // -> pBackBuf
 			goto end;
 		}
 		
@@ -726,21 +751,62 @@ void CRenderPipeline::renderFrame(float fDeltaTime)
 		m_pSceneTexture = m_pGBufferColor;
 	}
 
-	showTexture(m_pSceneTexture);
+	//showTexture(m_pSceneTexture); // -> m_pLightAmbientDiffuse
 
-	renderPostprocessMain();
-	pCtx->addTimestamp("post_main");
-	renderTransparent();
+//	renderPostprocessMain();
+//	pCtx->addTimestamp("post_main");
+	renderTransparent(); // +> m_pSceneTexture -> m_pLightAmbientDiffuse
 	pCtx->addTimestamp("transparency");
 	renderPostprocessFinal();
 	pCtx->addTimestamp("post_final");
 
+	static const int *pp_fxaa = GET_PCVAR_INT("pp_fxaa");
+	int iFXAA = *pp_fxaa;
+	if(iFXAA < 0)
+	{
+		iFXAA = 0;
+	}
+	else if(iFXAA > 3)
+	{
+		iFXAA = 3;
+	}
+
 	if(m_pLightSystem)
 	{
-		pCtx->setColorTarget(pBackBuf);
+		if(iFXAA)
+		{
+			IGXSurface *pColor = m_pGBufferColor->asRenderTarget();
+			pCtx->setColorTarget(pColor);
+			mem_release(pColor);
+		}
+		else
+		{
+			pCtx->setColorTarget(pBackBuf);
+		}
 
-		m_pLightSystem->renderToneMapping(m_pLightAmbientDiffuse);
+		m_pLightSystem->renderToneMapping(m_pLightAmbientDiffuse); // -> m_pGBufferColor
 		pCtx->addTimestamp("tonemapping");
+
+		if(iFXAA)
+		{
+			pCtx->setColorTarget(pBackBuf);
+			// render FXAA
+			IGXDepthStencilState *pOldState = pCtx->getDepthStencilState();
+			pCtx->setDepthStencilState(m_pDepthStencilStateNoZ);
+
+			pCtx->setRasterizerState(NULL);
+
+			pCtx->setSamplerState(m_pAnisotropicFXAA, 3);
+
+			pCtx->setPSTexture(m_pGBufferColor);
+			SGCore_ShaderBind(m_aidFXAAShader[iFXAA - 1]);
+			SGCore_ScreenQuadDraw();
+
+			pCtx->setDepthStencilState(pOldState);
+			mem_release(pOldState);
+
+			pCtx->addTimestamp("fxaa");
+		}
 
 	//! @todo reimplement me!
 	//	if(*r_final_image == DS_RT_LUMINANCE)
@@ -752,6 +818,11 @@ void CRenderPipeline::renderFrame(float fDeltaTime)
 
 		//showTexture(m_pLightAmbientDiffuse);
 	}
+	else
+	{
+		// TODO: Rendef FXAA
+	}
+
 
 end:
 	mem_release(pBackBuf);
@@ -845,7 +916,10 @@ void CRenderPipeline::renderGBuffer()
 
 	m_pMaterialSystem->bindRenderPass(m_pRenderPassGBuffer);
 
-	pCtx->setRasterizerState(NULL);
+	m_pMaterialSystem->setFillMode(GXFILL_SOLID);
+	m_pMaterialSystem->setCullMode(GXCULL_BACK);
+
+//	pCtx->setRasterizerState(NULL);
 	pCtx->setDepthStencilState(m_pDepthStencilStateDefault);
 	pCtx->setBlendState(NULL);
 	rfunc::SetRenderSceneFilter();
@@ -1608,6 +1682,8 @@ void CRenderPipeline::showTexture(IGXTexture2D *pTexture)
 	IGXDepthStencilState *pOldState = pCtx->getDepthStencilState();
 	pCtx->setDepthStencilState(m_pDepthStencilStateNoZ);
 	
+	pCtx->setRasterizerState(NULL);
+
 	pCtx->setPSTexture(pTexture);
 	SGCore_ShaderBind(gdata::shaders_id::kit::idScreenOut);
 	SGCore_ScreenQuadDraw();
