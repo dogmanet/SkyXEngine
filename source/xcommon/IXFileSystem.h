@@ -41,16 +41,9 @@ public:
 	virtual const char* XMETHODCALLTYPE next() = 0;
 };
 
-class IXMountableFileSystem: public IXUnknown
+class IXBaseFileSystem: public IXUnknown
 {
 public:
-	//! Получить имя файловой системы
-	virtual const char* XMETHODCALLTYPE getName() = 0;
-
-	//! Истина, если эта файловая система поддерживает только чтение
-	virtual bool XMETHODCALLTYPE isReadOnly() = 0;
-
-
 	//! Проверяет наличие файла или каталога по указанному пути
 	virtual bool XMETHODCALLTYPE fileExists(const char *szPath) = 0;
 	//! Получает размер файла в байтах, либо FILE_NOT_FOUND в случае, если файл не существует, либо не является файлом
@@ -64,11 +57,15 @@ public:
 
 	//! возвращает массив со всеми данными находящимися по пути szPath
 	virtual IXFileIterator* XMETHODCALLTYPE getDirEntries(const char *szPath) = 0;
-	
-	//! Создает директорию по указанному пути
-	virtual bool XMETHODCALLTYPE mkdir(const char *szPath) = 0;
-	//! Удаляет пустую директорую
-	virtual bool XMETHODCALLTYPE rmdir(const char *szPath) = 0;
+};
+
+class IXMountableFileSystem: public IXBaseFileSystem
+{
+	//! Получить имя файловой системы
+	virtual const char* XMETHODCALLTYPE getName() = 0;
+
+	//! Истина, если эта файловая система поддерживает только чтение
+	virtual bool XMETHODCALLTYPE isReadOnly() = 0;
 
 	//! Открыть файл.
 	virtual IXFile* XMETHODCALLTYPE openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ) = 0;
@@ -76,6 +73,11 @@ public:
 	virtual bool XMETHODCALLTYPE unlink(const char *szPath) = 0;
 	//! Перемещает файл или каталог
 	virtual bool XMETHODCALLTYPE rename(const char *szPath, const char *szNewPath) = 0;
+	
+	//! Создает директорию по указанному пути
+	virtual bool XMETHODCALLTYPE mkdir(const char *szPath) = 0;
+	//! Удаляет пустую директорую
+	virtual bool XMETHODCALLTYPE rmdir(const char *szPath) = 0;
 };
 
 struct XFileSystemMountInfo
@@ -86,7 +88,7 @@ struct XFileSystemMountInfo
 	int iPriority;
 };
 
-class IXFileSystem: public IXMountableFileSystem
+class IXFileSystem: public IXBaseFileSystem
 {
 public:
 	/*! Смонтировать файловую систему в указанный каталог
@@ -96,9 +98,16 @@ public:
 		@param iPriority приоритет для данной точки монтирования. 
 		
 		При наличии нескольких смонтированных в одну точку ФС, работают как overlay.
-		Просмотр путей идет в порядке возрастания приоритета.
-		Запись осуществляется через ФС с наибольшим приоритетом. 
-		Если ФС с наибольшим приоритетом смонтирована только для чтения, то запись невозможна.
+		Просмотр путей идет в порядке убывания приоритета. Таким образом, 
+		при наличии нескольких версий одного файла,	доступ будет осуществлен к тому, 
+		который находится в корне с большим приоритетом.
+		Запись файлов:
+			- при указании подсказок, руководствоваться ими;
+			- если записываемый файл существует и находится в корне с поддержкой записи, записать в него:
+			- иначе найти новый корень с наибольшим приоритетом и поддержкой записи:
+				- если приоритет нового корня меньше, чем у того корня, 
+				  в котором находится файл, то запись невозможна;
+				- иначе записать в него;
 		При монтировании в существующий непустой каталог, он считается ФС с наименьшим приоритетом в данной точке монтирования.
 	*/
 	virtual bool XMETHODCALLTYPE mount(const char *szPath, IXMountableFileSystem *pMFS, bool isWritable = false, int iPriority = -1) = 0;
@@ -109,6 +118,7 @@ public:
 	virtual UINT XMETHODCALLTYPE getMountsCount() = 0;
 	virtual const XFileSystemMountInfo* XMETHODCALLTYPE getMountInfo(UINT uIdx) = 0;
 
+	//! Создать новую монтируемую файловую систему в стандартной реализации (основана на API операционной системы)
 	virtual bool XMETHODCALLTYPE newDefaultMountableFileSystem(const char *szRootPath, IXMountableFileSystem **ppOut) = 0;
 
 	//! Возвращает список всех папок
@@ -127,10 +137,28 @@ public:
 	//! То же, что предыдущая, только позволяет использовать массив расширений для поиска. Последний элемент массива NULL
 	virtual IXFileIterator* XMETHODCALLTYPE getFileListRecursive(const char *szPath, const char **szExts, int extsCount) = 0;
 
+	//! Открыть файл.
+	virtual IXFile* XMETHODCALLTYPE openFile(const char *szPath, FILE_OPEN_MODE mode = FILE_MODE_READ, XFileSystemWriteHints *pHints = NULL) = 0;
+
+	/*! Удаляет файл
+		При попытке удаления файла, у которого есть версии в корнях, смонтированных в режиме "только для чтения", 
+		необходимо создать файл-метку, которая будет свидетельствовать о необходимости игнорирования наличия этого файла
+	*/
+	virtual bool XMETHODCALLTYPE unlink(const char *szPath, XFileSystemWriteHints *pHints = NULL) = 0;
+
+	/*! Перемещает файл или каталог
+		При попытке перемещения файла, у которого есть версии в корнях, смонтированных в режиме "только для чтения", 
+		необходимо создать файл-метку, которая будет свидетельствовать о необходимости игнорирования наличия этого файла
+	*/
+	virtual bool XMETHODCALLTYPE rename(const char *szPath, const char *szNewPath, XFileSystemWriteHints *pHints = NULL) = 0;
 
 	//! Создает директорию по указанному пути, рекурсивно
-	virtual bool XMETHODCALLTYPE createDirectory(const char *szPath) = 0;
-	//! Удаляет директорую со всеми вложенными файлами/папками
+	virtual bool XMETHODCALLTYPE createDirectory(const char *szPath, XFileSystemWriteHints *pHints = NULL) = 0;
+
+	/*! Удаляет директорую со всеми вложенными файлами/папками
+		При невозможности удаления директории из-за наличия корней , смонтированных в режиме "только для чтения", 
+		необходимо создать файл-метку, которая будет свидетельствовать о необходимости игнорирования наличия этой директории
+	*/
 	virtual bool XMETHODCALLTYPE deleteDirectory(const char *szPath) = 0;
 };
 
