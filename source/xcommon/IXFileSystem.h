@@ -88,12 +88,20 @@ struct XFileSystemMountInfo
 	int iPriority;
 };
 
+struct XFileSystemWriteHints
+{
+	const char *szTarget = NULL; // семантика желаемой точки монтирования
+	bool bFailIfReadOnly = false; // вернуть ошибку в случае невозможности прямой записи, иначе использовать другой корень
+	void *pReserved; // I don't know yet, must be null
+};
+
 class IXFileSystem: public IXBaseFileSystem
 {
 public:
 	/*! Смонтировать файловую систему в указанный каталог
 		@param szPath путь к точке монтирования
 		@param pMFS указатель на объект реализации файловой системы
+		@param szTargetSemantics семантика данной точки монтирования, используется при указании XFileSystemWriteHints
 		@param isWritable монтирование в режиме с поддержкой записи
 		@param iPriority приоритет для данной точки монтирования. 
 		
@@ -110,7 +118,7 @@ public:
 				- иначе записать в него;
 		При монтировании в существующий непустой каталог, он считается ФС с наименьшим приоритетом в данной точке монтирования.
 	*/
-	virtual bool XMETHODCALLTYPE mount(const char *szPath, IXMountableFileSystem *pMFS, bool isWritable = false, int iPriority = -1) = 0;
+	virtual bool XMETHODCALLTYPE mount(const char *szPath, IXMountableFileSystem *pMFS, const char *szTargetSemantics = NULL, bool isWritable = false, int iPriority = -1) = 0;
 	//! Отключает ФС от точки монтирования
 	virtual bool XMETHODCALLTYPE umount(IXMountableFileSystem *pMFS) = 0;
 
@@ -144,7 +152,7 @@ public:
 		При попытке удаления файла, у которого есть версии в корнях, смонтированных в режиме "только для чтения", 
 		необходимо создать файл-метку, которая будет свидетельствовать о необходимости игнорирования наличия этого файла
 	*/
-	virtual bool XMETHODCALLTYPE unlink(const char *szPath, XFileSystemWriteHints *pHints = NULL) = 0;
+	virtual bool XMETHODCALLTYPE unlink(const char *szPath) = 0;
 
 	/*! Перемещает файл или каталог
 		При попытке перемещения файла, у которого есть версии в корнях, смонтированных в режиме "только для чтения", 
@@ -156,7 +164,7 @@ public:
 	virtual bool XMETHODCALLTYPE createDirectory(const char *szPath, XFileSystemWriteHints *pHints = NULL) = 0;
 
 	/*! Удаляет директорую со всеми вложенными файлами/папками
-		При невозможности удаления директории из-за наличия корней , смонтированных в режиме "только для чтения", 
+		При невозможности удаления директории из-за наличия корней, смонтированных в режиме "только для чтения", 
 		необходимо создать файл-метку, которая будет свидетельствовать о необходимости игнорирования наличия этой директории
 	*/
 	virtual bool XMETHODCALLTYPE deleteDirectory(const char *szPath) = 0;
