@@ -69,6 +69,51 @@ struct XRayResultCallback: public btCollisionWorld::RayResultCallback
 
 //#############################################################################
 
+struct XConvexResultCallback: public btCollisionWorld::ConvexResultCallback
+{
+	XConvexResultCallback(IXConvexCallback *pCallback):
+		m_pCallback(pCallback)
+	{
+		m_result._reserved = NULL;
+	}
+
+	IXConvexCallback *m_pCallback;
+
+	btVector3 m_hitNormalWorld;
+
+	XConvexResult m_result;
+
+	btScalar addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace) override
+	{
+		//caller already does the filter on the m_closestHitFraction
+		btAssert(convexResult.m_hitFraction <= m_closestHitFraction);
+
+		//m_closestHitFraction = rayResult.m_hitFraction;
+		// m_hitCollisionObject = convexResult.m_hitCollisionObject;
+		if(normalInWorldSpace)
+		{
+			m_hitNormalWorld = convexResult.m_hitNormalLocal;
+		}
+		else
+		{
+			///need to transform normal into worldspace
+			m_hitNormalWorld = convexResult.m_hitCollisionObject->getWorldTransform().getBasis() * convexResult.m_hitNormalLocal;
+		}
+
+		m_result.vHitPoint = BTVEC_F3(convexResult.m_hitPointLocal);
+		m_result.vHitNormal = BTVEC_F3(m_hitNormalWorld);
+		m_result.pCollisionObject = convexResult.m_hitCollisionObject->getUserIndex() == 2 ? (IXCollisionObject*)convexResult.m_hitCollisionObject->getUserPointer() : NULL;
+		m_result.fHitFraction = convexResult.m_hitFraction;
+
+
+		m_closestHitFraction = m_pCallback->addSingleResult(m_result);
+
+		return(m_closestHitFraction);
+	}
+};
+
+//#############################################################################
+
 class CTaskScheduler: public btITaskScheduler
 {
 public:
@@ -358,8 +403,6 @@ void XMETHODCALLTYPE CPhyWorld::addCollisionObject(IXCollisionObject *pCollision
 	add_ref(pCollisionObject);
 	add_ref(pCollisionObject);
 	enqueue({QIT_ADD_COLLISION_OBJECT, pCollisionObject, collisionGroup, collisionMask});
-
-	
 }
 void XMETHODCALLTYPE CPhyWorld::removeCollisionObject(IXCollisionObject *pCollisionObject)
 {
@@ -382,6 +425,23 @@ void XMETHODCALLTYPE CPhyWorld::rayTest(const float3 &vFrom, const float3 &vTo, 
 	cb.m_collisionFilterMask = collisionMask;
 
 	m_pDynamicsWorld->rayTest(from, to, cb);
+}
+
+void XMETHODCALLTYPE CPhyWorld::convexSweepTest(IXConvexShape *pShape, const transform_t &xfFrom, const transform_t &xfTo, IXConvexCallback *pCallback, COLLISION_GROUP collisionGroup, COLLISION_GROUP collisionMask)
+{
+	btTransform xFormFrom;
+	xFormFrom.setOrigin(F3_BTVEC(xfFrom.vPos));
+	xFormFrom.getBasis().setRotation(Q4_BTQUAT(xfFrom.qRot));
+	btTransform xFormTo;
+	xFormTo.setOrigin(F3_BTVEC(xfTo.vPos));
+	xFormTo.getBasis().setRotation(Q4_BTQUAT(xfTo.qRot));
+
+	XConvexResultCallback cb(pCallback);
+
+	cb.m_collisionFilterGroup = collisionGroup;
+	cb.m_collisionFilterMask = collisionMask;
+
+	m_pDynamicsWorld->convexSweepTest((btConvexShape*)GetCollisionShape(pShape), xFormFrom, xFormTo, cb);
 }
 
 void CPhyWorld::updateSingleAABB(IXCollisionObject *pObj, btCollisionObject *pBtObj)

@@ -160,6 +160,8 @@ public:
 
 	void XMETHODCALLTYPE rayTest(const float3 &vFrom, const float3 &vTo, IXRayCallback *pCallback, COLLISION_GROUP collisionGroup = CG_DEFAULT, COLLISION_GROUP collisionMask = CG_ALL) override;
 
+	void XMETHODCALLTYPE convexSweepTest(IXConvexShape *pShape, const transform_t &xfFrom, const transform_t &xfTo, IXConvexCallback *pCallback, COLLISION_GROUP collisionGroup = CG_DEFAULT, COLLISION_GROUP collisionMask = CG_ALL) override;
+
 	template<class T>
 	void updateSingleAABB(T *pObj)
 	{
