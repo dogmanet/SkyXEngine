@@ -150,6 +150,9 @@
     <ClCompile Include="..\..\..\source\terrax\CommandDuplicate.cpp">
       <Filter>Source Files\cmd</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\MaterialEditor.cpp">
+      <Filter>Source Files\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\terrax\terrax.rc">
@@ -279,6 +282,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\terrax\CommandDuplicate.h">
       <Filter>Header Files\cmd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\MaterialEditor.h">
+      <Filter>Header Files\windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

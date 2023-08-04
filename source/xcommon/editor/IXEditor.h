@@ -80,6 +80,8 @@ public:
 	virtual void XMETHODCALLTYPE beginFrameSelect() = 0;
 	virtual bool XMETHODCALLTYPE endFrameSelect(X_2D_VIEW *pxCurView, float2_t *pvStartPos, float2_t *pvEndPos) = 0;
 	virtual bool XMETHODCALLTYPE isPointInFrame(const float3 &vPos, const float2_t &vFrameStart, const float2_t &vFrameEnd, X_2D_VIEW xCurView) = 0;
+
+	virtual void XMETHODCALLTYPE editMaterial(const char *szMatName) = 0;
 };
 
 

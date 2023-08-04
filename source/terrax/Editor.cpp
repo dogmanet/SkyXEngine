@@ -404,3 +404,8 @@ bool XMETHODCALLTYPE CEditor::isPointInFrame(const float3 &vPos, const float2_t 
 	}
 	return(sel);
 }
+
+void XMETHODCALLTYPE CEditor::editMaterial(const char *szMatName)
+{
+	BeginMaterialEdit(szMatName);
+}

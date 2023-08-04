@@ -132,6 +132,7 @@ INT_PTR CALLBACK CMaterialBrowser::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, L
 			Button_SetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_TRANSLATED), BST_CHECKED);
 			Button_SetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_RAWFILES), BST_CHECKED);
 
+			SetWindowLong(hWnd, GWL_EXSTYLE, GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_DLGMODALFRAME);
 			break;
 		}
 
@@ -179,6 +180,12 @@ INT_PTR CALLBACK CMaterialBrowser::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, L
 			break;
 
 		case IDC_MAT_EDIT:
+			if(m_uSelectedItem != ~0)
+			{
+				IXMaterial *pMat;
+				m_pMaterialSystem->loadMaterial(m_aMaterials[m_uSelectedItem].sName.c_str(), &pMat);
+				new CMaterialEditor(m_hInstance, m_hMainWnd, pMat);
+			}
 			break;
 
 		case IDC_MAT_KEYWORD:
@@ -318,9 +325,37 @@ INT_PTR CALLBACK CMaterialBrowser::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, L
 	return(TRUE);
 }
 
-void CMaterialBrowser::browse(IMaterialBrowserCallback *pCallback)
+void CMaterialBrowser::browse(IMaterialBrowserCallback *pCallback, bool bTextureOnly)
 {
 	m_pCallback = pCallback;
+
+	bool isDirty = false;
+	if(bTextureOnly)
+	{
+		Button_Enable(GetDlgItem(m_hDlgWnd, IDC_MAT_OPAQUE), FALSE);
+		Button_Enable(GetDlgItem(m_hDlgWnd, IDC_MAT_TRANSPARENT), FALSE);
+		Button_Enable(GetDlgItem(m_hDlgWnd, IDC_MAT_SELFILLUM), FALSE);
+		isDirty |= Button_GetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_MATERIALS)) != BST_UNCHECKED;
+		Button_SetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_MATERIALS), BST_UNCHECKED);
+		Button_Enable(GetDlgItem(m_hDlgWnd, IDC_MAT_MATERIALS), FALSE);
+		Button_Enable(GetDlgItem(m_hDlgWnd, IDC_MAT_EDIT), FALSE);
+	}
+	else
+	{
+		Button_Enable(GetDlgItem(m_hDlgWnd, IDC_MAT_OPAQUE), TRUE);
+		Button_Enable(GetDlgItem(m_hDlgWnd, IDC_MAT_TRANSPARENT), TRUE);
+		Button_Enable(GetDlgItem(m_hDlgWnd, IDC_MAT_SELFILLUM), TRUE);
+		isDirty |= Button_GetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_MATERIALS)) != BST_CHECKED;
+		Button_SetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_MATERIALS), BST_CHECKED);
+		Button_Enable(GetDlgItem(m_hDlgWnd, IDC_MAT_MATERIALS), TRUE);
+		Button_Enable(GetDlgItem(m_hDlgWnd, IDC_MAT_EDIT), TRUE);
+	}
+
+	if(isDirty)
+	{
+		filter();
+	}
+
 	ShowWindow(m_hDlgWnd, SW_SHOWNA);
 	SetFocus(m_hDlgWnd);
 }
@@ -961,7 +996,7 @@ void CMaterialBrowser::filter()
 	UINT uListSize = m_pMaterialSystem->getScannedMaterialsCount();
 
 	IXMaterial *pMat;
-	bool isTexture, isTranslated;
+	bool isTexture, isTranslated, isMaterial;
 	const char *szName; 
 	
 
@@ -979,11 +1014,11 @@ void CMaterialBrowser::filter()
 	GetDlgItemText(m_hDlgWnd, IDC_MAT_FILTER, szFilter, sizeof(szFilter));
 	szFilter[sizeof(szFilter) - 1] = 0;
 
-	bool isIncludeTransparent = Button_GetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_TRANSPARENT)) == BST_CHECKED;
-	bool isIncludeOpaque = Button_GetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_OPAQUE)) == BST_CHECKED;
-	bool isIncludeSelfillum = Button_GetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_SELFILLUM)) == BST_CHECKED;
+	bool isIncludeTransparent = !IsWindowEnabled(GetDlgItem(m_hDlgWnd, IDC_MAT_TRANSPARENT)) || Button_GetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_TRANSPARENT)) == BST_CHECKED;
+	bool isIncludeOpaque = !IsWindowEnabled(GetDlgItem(m_hDlgWnd, IDC_MAT_OPAQUE)) || Button_GetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_OPAQUE)) == BST_CHECKED;
+	bool isIncludeSelfillum = !IsWindowEnabled(GetDlgItem(m_hDlgWnd, IDC_MAT_SELFILLUM)) || Button_GetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_SELFILLUM)) == BST_CHECKED;
 
-	bool isMaterial = Button_GetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_MATERIALS)) == BST_CHECKED;
+	bool isMaterialF = Button_GetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_MATERIALS)) == BST_CHECKED;
 	bool isTextureF = Button_GetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_TEXTURES)) == BST_CHECKED;
 	bool isTranslatedF = Button_GetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_TRANSLATED)) == BST_CHECKED;
 	bool isRawfile = Button_GetCheck(GetDlgItem(m_hDlgWnd, IDC_MAT_RAWFILES)) == BST_CHECKED;
@@ -991,7 +1026,7 @@ void CMaterialBrowser::filter()
 
 	for(UINT i = 0; i < uListSize; ++i)
 	{
-		szName = m_pMaterialSystem->getScannedMaterial(i, &pMat, &isTexture, &isTranslated);
+		szName = m_pMaterialSystem->getScannedMaterial(i, &pMat, &isTexture, &isTranslated, &isMaterial);
 
 		if(strcasestr(szName, szFilter))
 		{
@@ -1000,7 +1035,7 @@ void CMaterialBrowser::filter()
 
 			if(
 				(
-					isMaterial && !isTexture ||
+					isMaterialF && isMaterial ||
 					isTextureF && isTexture
 				) &&
 				(
@@ -1019,6 +1054,7 @@ void CMaterialBrowser::filter()
 				MaterialItem &item = m_aMaterials[m_aMaterials.size()];
 				item.sName = szName;
 				item.isTexture = isTexture;
+				item.isMaterial = isMaterial;
 				item.isTranslated = isTranslated;
 				item.pMaterial = pMat;
 				item.pTexture = NULL;

@@ -44,6 +44,8 @@
 
 #include "PropertyWindow.h"
 
+#include "Tools.h"
+
 #define CLIPBOARD_FILE "TerraX.clipboard"
 char g_szClipboardFile[MAX_PATH + sizeof(CLIPBOARD_FILE)];
 
@@ -394,7 +396,17 @@ BOOL XInitInstance(HINSTANCE hInstance, int nCmdShow)
 		ret_val = GetLastError();
 		return FALSE;
 	}
-	ShowWindow(g_hWndMain, nCmdShow == SW_SHOWDEFAULT ? SW_MAXIMIZE : nCmdShow);
+
+	WINDOWPLACEMENT wp = {sizeof(wp)};
+	DWORD dwKeyLen = wp.length;
+	if(ERROR_SUCCESS == RegGetValueA(HKEY_CURRENT_USER, "SOFTWARE\\DogmaNet\\TerraX", "WinPos", RRF_RT_REG_BINARY, NULL, (BYTE*)&wp, &dwKeyLen) && wp.length == sizeof(wp))
+	{
+		SetWindowPlacement(g_hWndMain, &wp);
+	}
+	else
+	{
+		ShowWindow(g_hWndMain, nCmdShow == SW_SHOWDEFAULT ? SW_MAXIMIZE : nCmdShow);
+	}
 
 	UpdateWindow(g_hWndMain);
 
@@ -1133,7 +1145,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		g_pPropWindow->setCallback(&g_propertyCallback);
 
 		g_pMaterialBrowser = new CMaterialBrowser(hInst, hWnd);
-
+		
 		return FALSE;
 	}
 		break;
@@ -1751,6 +1763,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			g_pEngine->getCore()->getConsole()->execCommand("mtl_reload");
 			break;
 
+		case ID_TOOLS_NEWMATERIAL:
+			{
+				IXMaterialSystem *pMS = (IXMaterialSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID);
+				char tmp[1024];
+				tmp[0] = 0;
+				int iMaxLen = sizeof(tmp);
+				IXMaterial *pMat;
+				while(Tools::DlgPrompt(tmp, &iMaxLen, "Material name", "Edit material", tmp))
+				{
+					if(pMS->testMaterialName(tmp))
+					{
+						pMS->loadMaterial(tmp, &pMat);
+						new CMaterialEditor(hInst, g_hWndMain, pMat);
+						break;
+					}
+					else
+					{
+						MessageBoxA(hWnd, "Cannot save material with that name!", "Edit material", MB_OK | MB_ICONERROR);
+					}
+					iMaxLen = sizeof(tmp);
+				}
+			}
+			break;
+
 		case ID_HELP_SKYXENGINEWIKI:
 			ShellExecute(0, 0, "https://wiki.skyxengine.com", 0, 0, SW_SHOW);
 			break;
@@ -2326,6 +2362,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 
 	case WM_DESTROY:
+		{
+			WINDOWPLACEMENT wp = {sizeof(wp)};
+			BOOL res = GetWindowPlacement(hWnd, &wp);
+
+			HKEY hKey;
+			if(ERROR_SUCCESS == RegCreateKeyExA(HKEY_CURRENT_USER, "SOFTWARE\\DogmaNet\\TerraX", 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE | KEY_QUERY_VALUE, NULL, &hKey, NULL))
+			{
+				RegSetValueExA(hKey, "WinPos", 0, REG_BINARY, (BYTE*)&wp, wp.length);
+			}
+			RegCloseKey(hKey);
+		}
+
 		mem_delete(g_pPropWindow);
 		DestroyMenu(g_hMenu);
 		DeleteObject(hcSizeEW);

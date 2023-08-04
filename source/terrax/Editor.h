@@ -70,6 +70,8 @@ public:
 	bool XMETHODCALLTYPE endFrameSelect(X_2D_VIEW *pxCurView, float2_t *pvStartPos, float2_t *pvEndPos) override;
 	bool XMETHODCALLTYPE isPointInFrame(const float3 &vPos, const float2_t &vFrameStart, const float2_t &vFrameEnd, X_2D_VIEW xCurView) override;
 
+	void XMETHODCALLTYPE editMaterial(const char *szMatName) override;
+
 private:
 #define GTO(gt) Array<CGizmo##gt*> m_aGizmos##gt; CGizmo##gt *m_pSelected##gt = NULL;
 	GIZMO_TYPES();

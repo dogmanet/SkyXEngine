@@ -33,6 +33,7 @@
 
 #include "Grid.h"
 #include "MaterialBrowser.h"
+#include "MaterialEditor.h"
 #include "Editor.h"
 #include "ProxyObject.h"
 
@@ -271,6 +272,8 @@ void XInitCustomAccel();
 void XSetXformType(X_2DXFORM_TYPE type);
 
 bool XIsKeyPressed(UINT uKey);
+
+void BeginMaterialEdit(const char *szMaterialName);
 
 CProxyObject* XTakeObject(IXEditorObject *pObject, CProxyObject *pWhere);
 IXEditorObject* XFindObjectByGUID(const XGUID &guid);

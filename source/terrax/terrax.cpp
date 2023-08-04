@@ -210,6 +210,7 @@ public:
 			{
 				return(false);
 			}
+
 			if(IsEditMessage())
 			{
 				if(TranslateAccelerator(GetParent((HWND)SGCore_GetHWND()), g_hAccelTableEdit, &msg))
@@ -3042,4 +3043,13 @@ IXEditorObject* XFindObjectByGUID(const XGUID &guid)
 	}
 
 	return(NULL);
+}
+
+void BeginMaterialEdit(const char *szMaterialName)
+{
+	extern HINSTANCE hInst;
+
+	IXMaterial *pMat;
+	((IXMaterialSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID))->loadMaterial(szMaterialName, &pMat);
+	new CMaterialEditor(hInst, g_hWndMain, pMat);
 }
