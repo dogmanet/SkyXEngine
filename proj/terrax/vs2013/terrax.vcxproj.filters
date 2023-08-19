@@ -286,6 +286,9 @@
     <ClInclude Include="..\..\..\source\terrax\MaterialEditor.h">
       <Filter>Header Files\windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorImporter.h">
+      <Filter>Header Files\xcommon\editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\source\terrax\resource\new.bmp">

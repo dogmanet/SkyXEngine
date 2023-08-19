@@ -8,6 +8,7 @@
 #include <common/assotiativearray.h>
 #include <xEngine/IXEngine.h>
 #include <xcommon/editor/IXEditable.h>
+#include <xcommon/editor/IXEditorImporter.h>
 
 #define MAIN_WINDOW_TITLE      "TerraX"
 #define MAIN_WINDOW_CLASS      "X Main Window"
@@ -184,6 +185,8 @@ extern BOOL g_is3DPanning;
 extern BOOL g_is2DPanning;
 
 extern IXEditorTool *g_pCurrentTool;
+
+extern Array<IXEditorImporter*> g_pEditorImporters;
 
 void XResetLevel();
 bool XSaveLevel(const char *szNewName=NULL, bool bForcePrompt = false);

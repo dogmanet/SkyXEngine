@@ -1303,6 +1303,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				SetFocus(g_hWndMain);
 			}
 		}
+		if(LOWORD(wParam) >= IDC_FILE_IMPORT_FIRST && LOWORD(wParam) < IDC_FILE_IMPORT_FIRST + g_pEditorImporters.size())
+		{
+			IXEditorImporter *pImporter = g_pEditorImporters[LOWORD(wParam) - IDC_FILE_IMPORT_FIRST];
+			pImporter->startImport();
+		}
 		switch(LOWORD(wParam))
 		{
 		case ID_FILE_OPEN:
