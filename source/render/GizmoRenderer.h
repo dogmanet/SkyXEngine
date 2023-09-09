@@ -2,6 +2,7 @@
 #define __GIZMORENDERER_H
 
 #include <xcommon/render/IXRenderUtils.h>
+#include <xcommon/render/IXRender.h>
 #include "LineRenderer.h"
 
 class CRenderUtils;
@@ -9,7 +10,7 @@ class CRenderUtils;
 class CGizmoRenderer final: public IXUnknownImplementation<IXGizmoRenderer>
 {
 public:
-	CGizmoRenderer(CRenderUtils *pRenderUtils, IGXDevice *pDev);
+	CGizmoRenderer(CRenderUtils *pRenderUtils, IXRender *pRender);
 	~CGizmoRenderer();
 
 	void XMETHODCALLTYPE reset() override;
@@ -46,6 +47,7 @@ public:
 		const float4_t &vColorC) override;
 
 private:
+	IXRender *m_pRender;
 	IGXDevice *m_pDev;
 	CRenderUtils *m_pRenderUtils;
 

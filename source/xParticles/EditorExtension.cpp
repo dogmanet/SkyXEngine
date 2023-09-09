@@ -10,7 +10,7 @@ CEditorExtension::CEditorExtension(CEditable *pEditable, IXEditor *pEditor, IXCo
 }
 CEditorExtension::~CEditorExtension()
 {
-	mem_delete(m_pEffectBrowserWindow);
+	mem_release(m_pEffectBrowserWindow);
 }
 
 UINT XMETHODCALLTYPE CEditorExtension::getPropertyTabCount()
@@ -33,4 +33,19 @@ bool XMETHODCALLTYPE CEditorExtension::getTool(UINT uId, IXEditorTool **ppOut)
 
 void XMETHODCALLTYPE CEditorExtension::render(bool is3D)
 {
+}
+
+UINT XMETHODCALLTYPE CEditorExtension::getResourceBrowserCount()
+{
+	return(1);
+}
+bool XMETHODCALLTYPE CEditorExtension::getResourceBrowser(UINT uId, IXEditorResourceBrowser **ppOut)
+{
+	if(uId == 0)
+	{
+		add_ref(m_pEffectBrowserWindow);
+		*ppOut = m_pEffectBrowserWindow;
+		return(true);
+	}
+	return(false);
 }

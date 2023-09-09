@@ -51,12 +51,12 @@ void XMETHODCALLTYPE CRenderable::renderTransparentObject(IXRenderableVisibility
 {
 }
 
-void XMETHODCALLTYPE CRenderable::startup(IGXDevice *pDevice, IXMaterialSystem *pMaterialSystem)
+void XMETHODCALLTYPE CRenderable::startup(IXRender *pRender, IXMaterialSystem *pMaterialSystem)
 {
-	m_pDevice = pDevice;
+	m_pDevice = pRender->getDevice();
 	m_pMaterialSystem = pMaterialSystem;
 
-	m_pParticleSystem->setDevice(pDevice);
+	m_pParticleSystem->setDevice(m_pDevice);
 	m_pParticleSystem->setMaterialSystem(pMaterialSystem);
 }
 void XMETHODCALLTYPE CRenderable::shutdown()

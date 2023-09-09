@@ -13,7 +13,8 @@ See the license in LICENSE
 */
 
 
-CConfig::CConfig()
+CConfig::CConfig(IFileSystem *pFS):
+	m_pFS(pFS)
 {
 	ErrorFile = "";
 	BaseFile = "";
@@ -64,8 +65,8 @@ int CConfig::parse(const char* file)
 {
 	clear();
 	BaseFile = CConfigString(file);
-	FILE * fp = fopen(file, "rb");
-	if(!fp)
+	IFile *pFile = m_pFS->openFile(file, FILE_MODE_READ);
+	if(!pFile)
 	{
 		return -1;
 	}
@@ -104,8 +105,8 @@ int CConfig::parse(const char* file)
 		}
 		else
 		{
-			c = fgetc(fp);
-			if(feof(fp))
+			c = pFile->readChar();
+			if(pFile->isEOF())
 			{
 				c = '\n';
 				isRunning = false;
@@ -223,7 +224,7 @@ int CConfig::parse(const char* file)
 		}
 		else if(c == '/')
 		{
-			if((cn = getc(fp)) == '/')
+			if((cn = pFile->readChar()) == '/')
 			{
 				bComment = true;
 				continue;
@@ -323,7 +324,7 @@ int CConfig::parse(const char* file)
 		bFirstChar = false;
 	}
 
-	fclose(fp);
+	mem_release(pFile);
 	return 0;
 }
 
@@ -352,16 +353,15 @@ void CConfig::modify(AssotiativeArray<CConfigString, CSection> & sections, Assot
 int CConfig::parseInclude(CConfigString & file, const CConfigString & dir)
 {
 	//printf("Parsing include %s fromdir = %s\n", file.c_str(), dir.c_str());
-	FILE * pF = fopen((dir + file).c_str(), "r");
-	if(pF)
+	String sFile = dir + file;
+	if(m_pFS->fileExists(sFile.c_str()))
 	{
-		fclose(pF);
 		CInclude inc;
 
-		inc.pParser = new CConfig(/*(dir + file).c_str()*/);
-		inc.pParser->open((dir + file).c_str());
+		inc.pParser = new CConfig(m_pFS/*(dir + file).c_str()*/);
+		inc.pParser->open(sFile.c_str());
 
-		inc.name = baseName(dir + file);
+		inc.name = baseName(sFile);
 		/*		if(inc.name == "gl.ltx")
 		{
 		_asm
@@ -369,13 +369,13 @@ int CConfig::parseInclude(CConfigString & file, const CConfigString & dir)
 		int 3;
 		};
 		}*/
-		inc.pParser->modify(m_mSections, m_mFinalValues, dir + file);
+		inc.pParser->modify(m_mSections, m_mFinalValues, sFile);
 		m_vIncludes.push_back(inc);
 		return(0);
 	}
 	else
 	{
-		//printf("[Error]: Unable to open include \"%s\"", (dir + file).c_str());
+		LogError("Unable to open include \"%s%s\"", dir.c_str(), file.c_str());
 		ErrorFile = (dir + file);
 		return -2;
 	}
@@ -750,14 +750,7 @@ int CConfig::writeFile(const CConfigString & name, CConfigString section, CConfi
 
 int CConfig::getSectionCount()
 {
-	int c = m_mSections.Size();
-	int size = m_vIncludes.size();
-	for(int i = 0; i < size; ++i)
-	{
-		//m_vIncludes
-		c += m_vIncludes[i].pParser->getSectionCount();
-	}
-	return(c);
+	return(m_mSections.Size());
 }
 
 int CConfig::getKeyCount()
@@ -823,11 +816,8 @@ void CConfig::clear2()
 	auto tmp = BaseFile;
 	clear();
 	BaseFile = tmp;
-	FILE *pF = fopen(BaseFile.c_str(), "wb");
-	if(pF)
-	{
-		fclose(pF);
-	}
+	IFile *pFile = m_pFS->openFile(BaseFile.c_str(), FILE_MODE_WRITE);
+	mem_release(pFile);
 }
 
 AssotiativeArray<CConfigString, CConfig::CSection> * CConfig::getSections()
@@ -846,9 +836,9 @@ CConfigString CConfig::getIncludeName(int i)
 
 //#############################################################################
 
-CXConfig::CXConfig()
+CXConfig::CXConfig(IFileSystem *pFS)
 {
-	m_pConfig = new CConfig();
+	m_pConfig = new CConfig(pFS);
 }
 CXConfig::~CXConfig()
 {

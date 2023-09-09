@@ -2,9 +2,11 @@
 #define __PHYSICS_UTIL_H
 
 #include <xcommon/physics/IXPhysics.h>
+#include <xcommon/render/IXRender.h>
 
 IXPhysics* GetPhysics();
 IXPhysicsWorld* GetPhysWorld();
+IXRender* GetRender();
 
 class CClosestRayResultCallback: public IXRayCallback
 {

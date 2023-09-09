@@ -4,6 +4,9 @@
 #include <xcommon/resource/IXModelProvider.h>
 #include <xcommon/IPluginManager.h>
 #include <xcommon/render/IXOcclusionCuller.h>
+#include <xcommon/editor/IXEditorExtension.h>
+#include <xcommon/editor/IXEditable.h>
+#include <xcommon/render/IXRenderUtils.h>
 #include <queue>
 
 CSceneObject::CSceneObject(CScene *pScene, const SMAABB &aabb, void *pUserData, NodeType bmType, NodeFeature bmFeatures):
@@ -86,6 +89,7 @@ void XMETHODCALLTYPE CSceneObject::setFeatures(IXSceneFeature **ppFeatures)
 
 //##########################################################################
 
+#if BVH_CHILD_COUNT == 27
 static const UINT gcs_puOrders[][BVH_CHILD_COUNT] = {
 	// +x +y +z
 	{13, 4, 10, 12, 1, 3, 9, 14, 16, 22, 0, 5, 7, 11, 15, 19, 21, 2, 6, 17, 18, 23, 25, 8, 20, 24, 26},
@@ -104,6 +108,28 @@ static const UINT gcs_puOrders[][BVH_CHILD_COUNT] = {
 	// -x -y -z
 	{26, 8, 20, 24, 2, 6, 17, 18, 23, 25, 0, 5, 7, 11, 15, 19, 21, 1, 3, 9, 14, 16, 22, 4, 10, 12, 13}
 };
+#elif BVH_CHILD_COUNT == 8
+static const UINT gcs_puOrders[][BVH_CHILD_COUNT] = {
+	// +x +y +z
+	{0, 1, 2, 4, 3, 5, 6, 7},
+	// +x +y -z
+	{4, 0, 5, 6, 1, 2, 7, 3},
+	// +x -y +z
+	{2, 0, 3, 6, 1, 4, 7, 5},
+	// +x -y -z
+	{6, 2, 4, 7, 0, 3, 5, 1},
+	// -x +y +z
+	{1, 0, 3, 5, 2, 4, 7, 6},
+	// -x +y -z
+	{5, 1, 4, 7, 0, 3, 6, 2},
+	// -x -y +z
+	{3, 1, 2, 7, 0, 5, 6, 4},
+	// -x -y -z
+	{7, 3, 5, 6, 1, 2, 4, 0}
+};
+#else
+#error errro
+#endif
 
 CSceneQuery::CSceneQuery(CScene *pScene, CSceneObjectType *pObjectType):
 	m_pScene(pScene),
@@ -144,6 +170,38 @@ UINT XMETHODCALLTYPE CSceneQuery::execute(const IXFrustum *pFrustum, void ***ppp
 	return(m_aQueryResponse.size());
 }
 
+void CSceneQuery::queryObjectsLeaf(CSceneNode *pNode, const IXFrustum *pFrustum, bool isFullyVisible, IXOcclusionCuller *pOcclusionCuller)
+{
+	if(!pNode)
+	{
+		return;
+	}
+
+	XPROFILE_FUNCTION();
+
+	auto &aObjects = pNode->getObjects();
+	for(UINT i = 0, l = aObjects.size(); i < l; ++i)
+	{
+		auto &pObj = aObjects[i];
+
+		//if(!(pObj->getType() == m_bmType && testFeatures(pObj->getFeatures())))
+		//{
+		//	continue;
+		//}
+
+		if(
+			pObj->getType() == m_bmType && 
+			testFeatures(pObj->getFeatures()) && 
+			(isFullyVisible || (pOcclusionCuller ? pOcclusionCuller->isAABBvisible(pObj->getAABB()) : pFrustum->boxInFrustum(pObj->getAABB()))) &&
+			testSize(pObj->getAABB())
+		)
+		{
+			m_aQueryResponse.push_back(pObj->getUserData());
+		}
+	}
+}
+
+
 void CSceneQuery::queryObjectsInternal(CSceneNode *pNode, const IXFrustum *pFrustum, bool isFullyVisible, IXOcclusionCuller *pOcclusionCuller)
 {
 	if(!pNode)
@@ -172,26 +230,17 @@ void CSceneQuery::queryObjectsInternal(CSceneNode *pNode, const IXFrustum *pFrus
 		return;
 	}
 
+	if(!testSize(pNode->getAABB()))
+	{
+		return;
+	}
+
 	for(UINT i = 0; i < BVH_CHILD_COUNT; ++i)
 	{
 		queryObjectsInternal(pNode->getChild(pOrder[i], false), pFrustum, isFullyVisible, pOcclusionCuller);
 	}
 
-	auto &aObjects = pNode->getObjects();
-	for(UINT i = 0, l = aObjects.size(); i < l; ++i)
-	{
-		auto &pObj = aObjects[i];
-
-		if(!(pObj->getType() == m_bmType && testFeatures(pObj->getFeatures())))
-		{
-			continue;
-		}
-
-		if(pObj->getType() == m_bmType && testFeatures(pObj->getFeatures()) && (isFullyVisible || (pOcclusionCuller ? pOcclusionCuller->isAABBvisible(pObj->getAABB()) : pFrustum->boxInFrustum(pObj->getAABB()))))
-		{
-			m_aQueryResponse.push_back(pObj->getUserData());
-		}
-	}
+	queryObjectsLeaf(pNode, pFrustum, isFullyVisible, pOcclusionCuller);
 }
 
 void XMETHODCALLTYPE CSceneQuery::setOP(XSCENE_QUERY_OP op)
@@ -221,6 +270,23 @@ void XMETHODCALLTYPE CSceneQuery::setFeature(IXSceneFeature *pFeat, XSCENE_QUERY
 		break;
 	}
 }
+
+void XMETHODCALLTYPE CSceneQuery::setScreenSizeCulling(const float3 &vCamPos, float fFov, float fScreenHeightPx, float fThresholdPx)
+{
+	m_useScreenSizeCulling = true;
+	m_vCamPos = vCamPos;
+	m_fThresholdPx = fThresholdPx;
+
+	float fTan = tanf(fFov * 0.5f);
+	m_fScreenSizeCoeff = 0.5f * fScreenHeightPx * fTan;
+	m_fScreenSizeCoeff *= m_fScreenSizeCoeff;
+}
+
+void XMETHODCALLTYPE CSceneQuery::unsetScreenSizeCulling()
+{
+	m_useScreenSizeCulling = false;
+}
+
 
 bool CSceneQuery::testFeatures(NodeFeature bmFeatures, bool isStrict)
 {
@@ -254,6 +320,22 @@ bool CSceneQuery::testFeatures(NodeFeature bmFeatures, bool isStrict)
 	}
 
 	return(isPassed);
+}
+
+bool CSceneQuery::testSize(const SMAABB &aabb)
+{
+	if(!m_useScreenSizeCulling)
+	{
+		return(true);
+	}
+
+	float3 vPos = (aabb.vMax + aabb.vMin) * 0.5f; // use any point?
+	float fD2 = SMVector3Length2(vPos - m_vCamPos);
+	float3 vSize = aabb.vMax - aabb.vMin;
+	float fS0 = 0.5f * (vSize.x * vSize.y + vSize.y * vSize.z + vSize.x * vSize.z);
+	float fS = fS0 * m_fScreenSizeCoeff / fD2;
+
+	return(fS > m_fThresholdPx);
 }
 
 //##########################################################################
@@ -427,7 +509,7 @@ const SMAABB& CSceneNode::getAABB(bool shouldSplit)
 
 		if(!m_isExtentsCorrect)
 		{
-			updateExtents();
+			updateExtents(shouldSplit);
 		}
 	}
 
@@ -495,6 +577,7 @@ int CSceneNode::selectChild(const SMAABB &aabb)
 		return(-1);
 	}
 
+#if BVH_CHILD_COUNT == 27
 	if(aabb.vMax.x < m_vSplit.x)
 	{
 		c += 1;
@@ -521,6 +604,37 @@ int CSceneNode::selectChild(const SMAABB &aabb)
 	{
 		c += 18;
 	}
+#elif BVH_CHILD_COUNT == 8
+	float3 vCenter = (aabb.vMax + aabb.vMin) * 0.5f;
+	if(aabb.vMax.x < m_vSplit.x)
+	{
+		c += 0;
+	}
+	else if(aabb.vMin.x > m_vSplit.x || vCenter.x > m_vSplit.x)
+	{
+		c += 1;
+	}
+
+	if(aabb.vMax.y < m_vSplit.y)
+	{
+		c += 0;
+	}
+	else if(aabb.vMin.y > m_vSplit.y || vCenter.y > m_vSplit.y)
+	{
+		c += 2;
+	}
+
+	if(aabb.vMax.z < m_vSplit.z)
+	{
+		c += 0;
+	}
+	else if(aabb.vMin.z > m_vSplit.z || vCenter.z > m_vSplit.z)
+	{
+		c += 4;
+	}
+#else
+#error errro
+#endif
 
 	assert(c < BVH_CHILD_COUNT);
 	//{
@@ -630,7 +744,37 @@ void CSceneNode::unsplit()
 	}
 }
 
-void CSceneNode::updateExtents()
+static bool IsPointInsideAABB(const float3 &vPoint, const SMAABB &aabb)
+{
+	return(
+		vPoint.x > aabb.vMin.x &&
+		vPoint.y > aabb.vMin.y &&
+		vPoint.z > aabb.vMin.z &&
+		vPoint.x < aabb.vMax.x &&
+		vPoint.y < aabb.vMax.y &&
+		vPoint.z < aabb.vMax.z
+	);
+}
+
+void CSceneNode::takeChildren(CSceneNode *pNode)
+{
+	for(UINT i = 0; i < BVH_CHILD_COUNT; ++i)
+	{
+		if(pNode->m_pChildren[i])
+		{
+			takeChildren(pNode->m_pChildren[i]);
+		}
+	}
+
+	forar(i, pNode->m_aObjects)
+	{
+		CSceneObject *n = pNode->m_aObjects[i];
+		insertObject(n);
+		pNode->removeObject(n, n->getAABB());
+	}
+}
+
+void CSceneNode::updateExtents(bool shouldRebalance)
 {
 	bool set = false;
 
@@ -677,6 +821,28 @@ void CSceneNode::updateExtents()
 
 	m_vSplit = vNewSplit / (float)ct;
 
+	if(shouldRebalance)
+	{
+		for(UINT i = 0; i < BVH_CHILD_COUNT; ++i)
+		{
+			if(m_pChildren[i])
+			{
+				if(IsPointInsideAABB(m_vSplit, m_pChildren[i]->getAABB(false)))
+				{
+					// unsplit all
+					for(i = 0; i < BVH_CHILD_COUNT; ++i)
+					{
+						if(m_pChildren[i])
+						{
+							takeChildren(m_pChildren[i]);
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
+
 	m_isExtentsCorrect = true;
 }
 
@@ -689,14 +855,17 @@ void CSceneNode::doSplit()
 	m_vSplit = float3();
 	float ttl = 0.0f;
 
+	float3 vMinSum;
 	for(UINT i = 0, l = m_aObjects.size(); i < l; ++i)
 	// for (Nodes::iterator iter = m_nodes.begin(); iter != m_nodes.end(); ++iter)
 	{
+		vMinSum += m_aObjects[i]->getAABB().vMin;
 		m_vSplit += m_aObjects[i]->getAABB().vMax;
 		ttl += 1.0f;
 	}
 
-	m_vSplit /= ttl;
+	m_vSplit += vMinSum;
+	m_vSplit /= ttl * 2.0f;
 	m_isSplit = true;
 
 	bool safe = false, first = true;
@@ -820,6 +989,39 @@ bool CSceneNode::validate()
 	return(true);
 }
 
+void CSceneNode::print(UINT uLvl, UINT *puNodesCount, UINT *puObjectsCount, UINT *puMaxDepth)
+{
+	for(UINT i = 0; i < uLvl; ++i)
+	{
+		//	printf("-");
+	}
+
+	//printf("O: %u\n", m_aObjects.size());
+
+	if(puNodesCount)
+	{
+		*puNodesCount += 1;
+	}
+
+	if(puObjectsCount)
+	{
+		*puObjectsCount += m_aObjects.size();
+	}
+
+	if(puMaxDepth && *puMaxDepth < uLvl)
+	{
+		*puMaxDepth = uLvl;
+	}
+
+	for(UINT i = 0; i < BVH_CHILD_COUNT; ++i)
+	{
+		if(m_pChildren[i])
+		{
+			m_pChildren[i]->print(uLvl + 1, puNodesCount, puObjectsCount, puMaxDepth);
+		}
+	}
+}
+
 //##########################################################################
 
 class CDevBVHrenderInc final: public IXConsoleCommand
@@ -872,6 +1074,7 @@ public:
 	{
 		bool isValid = m_pScene->validate();
 		LogInfo("Scene is %s" COLOR_RESET "\n", isValid ? COLOR_GREEN "valid" : COLOR_LRED "invalid");
+		m_pScene->print();
 	}
 
 private:
@@ -901,6 +1104,160 @@ private:
 	CScene *m_pScene;
 };
 
+class CEditorExt final: public IXUnknownImplementation<IXEditorExtension>
+{
+public:
+	CEditorExt(CScene *pScene, IXCore *pCore)
+	{
+		m_pCore = pCore;
+		m_pScene = pScene;
+	}
+	~CEditorExt()
+	{
+		mem_release(m_pRenderer);
+	}
+	UINT XMETHODCALLTYPE getPropertyTabCount() override
+	{
+		return(0);
+	}
+	IXEditorPropertyTab* XMETHODCALLTYPE getPropertyTab(UINT uId) override
+	{
+		return(NULL);
+	}
+
+	UINT XMETHODCALLTYPE getToolCount() override
+	{
+		return(0);
+	}
+	bool XMETHODCALLTYPE getTool(UINT uId, IXEditorTool **ppOut) override
+	{
+		return(false);
+	}
+
+	void XMETHODCALLTYPE render(bool is3D) override
+	{
+		if(!m_pRenderer)
+		{
+			IXRenderUtils *pUtils = (IXRenderUtils*)m_pCore->getPluginManager()->getInterface(IXRENDERUTILS_GUID);
+			pUtils->newGizmoRenderer(&m_pRenderer);
+		}
+
+		if(is3D)
+		{
+			static const int *dev_bvh_render_inc = m_pCore->getConsole()->getPCVarInt("dev_bvh_render_level");
+
+			m_pScene->drawLevel(*dev_bvh_render_inc);
+		}
+
+		m_pRenderer->render(!is3D, true);
+	}
+
+	UINT XMETHODCALLTYPE getResourceBrowserCount() override
+	{
+		return(0);
+	}
+	bool XMETHODCALLTYPE getResourceBrowser(UINT uId, IXEditorResourceBrowser **ppOut) override
+	{
+		return(false);
+	}
+
+	IXGizmoRenderer* getRenderer()
+	{
+		return(m_pRenderer);
+	}
+
+private:
+	IXGizmoRenderer *m_pRenderer = NULL;
+	IXCore *m_pCore = NULL;
+	CScene *m_pScene = NULL;
+};
+
+class CEditable final: public IXUnknownImplementation<IXEditable>
+{
+public:
+	CEditable(CScene *pScene, IXCore *pCore)
+	{
+		m_pEditorExt = new CEditorExt(pScene, pCore);
+	}
+
+	XIMPLEMENT_VERSION(IXEDITABLE_VERSION);
+
+	~CEditable()
+	{
+		mem_release(m_pEditorExt);
+	}
+
+	UINT XMETHODCALLTYPE getObjectCount() override
+	{
+		return(0);
+	}
+	IXEditorObject* XMETHODCALLTYPE getObject(UINT id) override
+	{
+		return(NULL);
+	}
+	IXEditorObject* XMETHODCALLTYPE newObject(const char *szClassName) override
+	{
+		return(NULL);
+	}
+
+	const char* XMETHODCALLTYPE getName() override
+	{
+		return("Scene");
+	}
+	UINT XMETHODCALLTYPE getClassCount() override
+	{
+		return(0);
+	}
+	const char* XMETHODCALLTYPE getClass(UINT id) override
+	{
+		return(NULL);
+	}
+
+	void XMETHODCALLTYPE startup(IGXDevice *pDevice) override
+	{}
+	void XMETHODCALLTYPE shutdown() override
+	{}
+
+	IXEditorExtension* XMETHODCALLTYPE getEditorExtension() override
+	{
+		return(m_pEditorExt);
+	}
+
+	bool XMETHODCALLTYPE canProduceModel() override
+	{
+		return(false);
+	}
+	bool XMETHODCALLTYPE buildModelFromSelection(IXEditorModel **ppOut) override
+	{
+		return(false);
+	}
+	bool XMETHODCALLTYPE newModel(IXEditorModel **ppOut) override
+	{
+		return(false);
+	}
+	UINT XMETHODCALLTYPE getModelCount() override
+	{
+		return(0);
+	}
+	bool XMETHODCALLTYPE getModel(UINT id, IXEditorModel **ppOut) override
+	{
+		return(false);
+	}
+
+	bool XMETHODCALLTYPE canUseModel(const char *szClass) override
+	{
+		return(false);
+	}
+
+	IXGizmoRenderer* getRenderer()
+	{
+		return(m_pEditorExt->getRenderer());
+	}
+
+private:
+	CEditorExt *m_pEditorExt = NULL;
+};
+
 //##########################################################################
 
 CScene::CScene(IXCore *pCore):
@@ -919,6 +1276,8 @@ CScene::CScene(IXCore *pCore):
 	pConsole->registerCVar("dev_bvh_render_level", -1, "", FCVAR_NOTIFY);
 
 	m_pCore->getEventChannel<XEventCvarChanged>(EVENT_CVAR_CHANGED_GUID)->addListener(m_pCvarListener);
+
+	m_pCore->getPluginManager()->registerInterface(IXEDITABLE_GUID, m_pEditable = new CEditable(this, m_pCore));
 
 	m_pRootNode = newNode(NULL);
 }
@@ -1147,78 +1506,83 @@ void CScene::removeObject(CSceneObject *pObject)
 	pNode->removeObject(pObject);
 }
 
+static UINT CountChildren(CSceneNode *pNode)
+{
+	UINT uCount = 1;
+	for(UINT i = 0; i < BVH_CHILD_COUNT; ++i)
+	{
+		CSceneNode *pChildNode = pNode->getChild(i, false);
+
+		if(pChildNode)
+		{
+			uCount += CountChildren(pChildNode);
+		}
+	}
+	return(uCount);
+}
+
 void CScene::drawLevel(int iLvl)
 {
-	for(UINT i = 0, l = m_aModels.size(); i < l; ++i)
+	if(!m_pRenderer)
 	{
-		mem_release(m_aModels[i]);
+		m_pRenderer = m_pEditable->getRenderer();
+		if(!m_pRenderer)
+		{
+			return;
+		}
 	}
-	m_aModels.clearFast();
+	m_pRenderer->reset();
+	m_pRenderer->setLineWidth(2.0f);
+	m_pRenderer->setColor(float4(1.0, 0.7f, 0.0f, 1.0f));
 
 	if(iLvl >= 0)
 	{
-		drawLevelInternal(m_pRootNode, iLvl);
+		drawLevelInternal(m_pRootNode, NULL, iLvl);
 	}
 }
 
-void CScene::drawLevelInternal(CSceneNode *pNode, int iLvl, int iCurLvl)
+void CScene::drawLevelInternal(CSceneNode *pNode, CSceneNode *pParent, int iLvl, int iCurLvl)
 {
 	if(!pNode)
 	{
 		return;
 	}
 
-	if(iLvl == iCurLvl)
+	/*if(iLvl == iCurLvl)
 	{
-		IXResourceManager *pRM = m_pCore->getResourceManager();
-		IXResourceModelStatic *pResouce = pRM->newResourceModelStatic();
+		m_pRenderer->setColor(float4(pParent ? (((UINT)pParent >> 4 & 0xf) << 4) / 255.0f : 1.0f, 0.7f, (((UINT)pParent >> 8 & 0xf) << 4) / 255.0f, 1.0f));
 
-		pResouce->setMaterialCount(1, 1);
-		pResouce->setMaterial(0, 0, "dev_trigger");
-
-		UINT uVtxCount = 8;
-		UINT uIdxCount = 36;
-		pResouce->addLod(1, &uVtxCount, &uIdxCount);
-		XResourceModelStaticSubset *pSubset = pResouce->getSubset(0, 0);
-
-		SMAABB aabb = pNode->getAABB();
-
-		UINT pIndices[] = {
-			0, 3, 1, 0, 2, 3,
-			0, 4, 6, 0, 6, 2,
-			1, 7, 5, 1, 3, 7, 
-			4, 5, 7, 4, 7, 6, 
-			2, 6, 7, 2, 7, 3, 
-			0, 1, 4, 4, 1, 5
-		};
-		memcpy(pSubset->pIndices, pIndices, sizeof(pIndices));
-		XResourceModelStaticVertex pVertices[] = {
-			{float3_t(aabb.vMin.x, aabb.vMin.y, aabb.vMin.z)},
-			{float3_t(aabb.vMin.x, aabb.vMin.y, aabb.vMax.z)},
-			{float3_t(aabb.vMin.x, aabb.vMax.y, aabb.vMin.z)},
-			{float3_t(aabb.vMin.x, aabb.vMax.y, aabb.vMax.z)},
-			{float3_t(aabb.vMax.x, aabb.vMin.y, aabb.vMin.z)},
-			{float3_t(aabb.vMax.x, aabb.vMin.y, aabb.vMax.z)},
-			{float3_t(aabb.vMax.x, aabb.vMax.y, aabb.vMin.z)},
-			{float3_t(aabb.vMax.x, aabb.vMax.y, aabb.vMax.z)}
-		};
-
-		memcpy(pSubset->pVertices, pVertices, sizeof(pVertices));
-
-		IXModelProvider *pProvider = (IXModelProvider*)m_pCore->getPluginManager()->getInterface(IXMODELPROVIDER_GUID);
-		IXDynamicModel *pModel;
-		if(pProvider->createDynamicModel(pResouce, &pModel))
-		{
-			m_aModels.push_back(pModel);
-			//pModel->setPosition((aabb.vMax + aabb.vMin) * 0.5f);
-		}
-		mem_release(pResouce);
+		m_pRenderer->drawAABB(pNode->getAABB());
 	}
-	else
+	else*/
 	{
+		if(iLvl == iCurLvl)
+		{
+			m_pRenderer->setPointSize(10.0f);
+			m_pRenderer->setColor(float3(0.0f, 0.0f, 1.0f));
+			m_pRenderer->drawPoint(pNode->m_vSplit);
+			m_pRenderer->drawAABB(pNode->getAABB());
+
+			m_pRenderer->setLineWidth(1.0f);
+			fora(i, pNode->m_aObjects)
+			{
+				m_pRenderer->setColor(float3(1.0f, 0.0f, 0.0f));
+
+				m_pRenderer->drawAABB(pNode->m_aObjects[i]->getAABB());
+			}
+
+			m_pRenderer->setLineWidth(2.0f);
+		}
 		for(UINT i = 0; i < BVH_CHILD_COUNT; ++i)
 		{
-			drawLevelInternal(pNode->getChild(i, false), iLvl, iCurLvl + 1);
+			if(iLvl == iCurLvl && pNode->getChild(i, false))
+			{
+				m_pRenderer->setColor(float4(1.0f, 0.5f, CountChildren(pNode->getChild(i, false)) == 1 ? 0.5f : 0.0f, 1.0f));
+
+				m_pRenderer->drawAABB(pNode->getChild(i, false)->getAABB());
+			}
+
+			drawLevelInternal(pNode->getChild(i, false), pNode, iLvl, iCurLvl + 1);
 		}
 	}
 }
@@ -1277,4 +1641,13 @@ void CScene::sync()
 bool CScene::validate()
 {
 	return(m_pRootNode->validate());
+}
+
+void CScene::print()
+{
+	UINT uNodesCount = 0;
+	UINT uObjectsCount = 0;
+	UINT uMaxDepth = 0;
+	m_pRootNode->print(0, &uNodesCount, &uObjectsCount, &uMaxDepth);
+	printf("Total objects: %u, Total nodes: %u, Max depth: %u, avg objects per node: %f\n", uObjectsCount, uNodesCount, uMaxDepth, (float)uObjectsCount / (float)uNodesCount);
 }

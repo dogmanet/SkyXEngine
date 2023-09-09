@@ -88,7 +88,7 @@ public:
 		CConfigString Include;
 		bool isModified = false;
 	};
-	CConfig();
+	CConfig(IFileSystem *pFS);
 	//SXLoaderConfig(const char* file);
 	int open(const char* path);
 	void New(const char* path);
@@ -118,6 +118,7 @@ public:
 	const char* getErrorFile();
 
 protected:
+	IFileSystem *m_pFS;
 
 	CConfigString ErrorFile;
 	
@@ -156,7 +157,7 @@ protected:
 class CXConfig: public IXUnknownImplementation<IXConfig>
 {
 public:
-	CXConfig();
+	CXConfig(IFileSystem *pFS);
 	~CXConfig();
 
 	bool XMETHODCALLTYPE open(const char *szPath) override;

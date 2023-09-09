@@ -47,7 +47,7 @@ void XMETHODCALLTYPE CXUI::render()
 	IGXSurface *pOldSurface = pCtx->getColorTarget();
 	IGXDepthStencilSurface *pOldDS = pCtx->getDepthStencilSurface();
 
-	pCtx->unsetDepthStencilSurface();
+	pCtx->setDepthStencilSurface(NULL);
 
 	for(UINT i = 0, l = m_pWindows.size(); i < l; ++i)
 	{

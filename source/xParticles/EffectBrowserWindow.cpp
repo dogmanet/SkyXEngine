@@ -2,6 +2,8 @@
 #include "resource.h"
 
 #include <windowsx.h>
+#include <shellapi.h>
+#include <commoncontrols.h>
 
 #if 0
 BOOL EnumLevels(CLevelInfo *pInfo)
@@ -74,14 +76,75 @@ CEffectBrowserWindow::CEffectBrowserWindow(HINSTANCE hInstance, HWND hMainWnd, I
 	m_pFS(pFS)
 {
 	registerClass();
+	m_hContextMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_MENU1));
+	HMENU hSubMenu = GetSubMenu(m_hContextMenu, 1);
+	SetMenuDefaultItem(hSubMenu, IDOK, FALSE);
 
-	CreateDialogParamA(hInstance, MAKEINTRESOURCE(IDD_EFFECT_BROWSER), hMainWnd, DlgProc, (LPARAM)this);
-	ShowWindow(m_hDlgWnd, SW_SHOW);
+	CreateDialogParamW(hInstance, MAKEINTRESOURCEW(IDD_EFFECT_BROWSER), hMainWnd, DlgProc, (LPARAM)this);
+	//ShowWindow(m_hDlgWnd, SW_SHOW);
 }
 
 CEffectBrowserWindow::~CEffectBrowserWindow()
 {
 	DestroyWindow(m_hDlgWnd);
+	DestroyMenu(m_hContextMenu);
+}
+
+UINT XMETHODCALLTYPE CEffectBrowserWindow::getResourceTypeCount()
+{
+	return(1);
+}
+const char* XMETHODCALLTYPE CEffectBrowserWindow::getResourceType(UINT uId)
+{
+	if(uId == 0)
+	{
+		return("effect");
+	}
+	return(NULL);
+}
+
+void XMETHODCALLTYPE CEffectBrowserWindow::browse(const char *szType, const char *szOldValue, IXEditorResourceBrowserCallback *pCallback)
+{
+	if(m_pCallback)
+	{
+		m_pCallback->onCancelled();
+	}
+	m_pCallback = pCallback;
+	ShowWindow(m_hDlgWnd, SW_SHOW);
+}
+
+void XMETHODCALLTYPE CEffectBrowserWindow::cancel()
+{
+	SendMessage(m_hDlgWnd, WM_COMMAND, MAKEWPARAM(IDCANCEL, 0), NULL);
+}
+
+void DisplayContextMenu(HWND hwnd, POINT pt, HMENU hMenu, int iSubmenu, int iCheckItem = -1)
+{
+	HMENU hmenuTrackPopup = GetSubMenu(hMenu, iSubmenu);
+
+	MENUITEMINFOA mii;
+	memset(&mii, 0, sizeof(mii));
+	mii.cbSize = sizeof(mii);
+	mii.fMask = MIIM_STATE;
+	mii.fState = MFS_UNCHECKED;
+	for(UINT i = 0, l = GetMenuItemCount(hmenuTrackPopup); i < l; ++i)
+	{
+		SetMenuItemInfoA(hmenuTrackPopup, i, TRUE, &mii);
+	}
+	if(iCheckItem > 0)
+	{
+		mii.fState = MFS_CHECKED;
+		SetMenuItemInfoA(hmenuTrackPopup, iCheckItem, FALSE, &mii);
+	}
+
+	//ClientToScreen(hwnd, (LPPOINT)&pt);
+	// Display the shortcut menu. Track the right mouse 
+	// button. 
+
+	TrackPopupMenu(hmenuTrackPopup,
+		TPM_LEFTALIGN | TPM_RIGHTBUTTON,
+		pt.x, pt.y, 0, hwnd, NULL
+	);
 }
 
 INT_PTR CALLBACK CEffectBrowserWindow::DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -111,92 +174,312 @@ INT_PTR CALLBACK CEffectBrowserWindow::dlgProc(HWND hWnd, UINT msg, WPARAM wPara
 
 			m_hTreeWnd = GetDlgItem(m_hDlgWnd, IDC_TREE);
 
+			SetWindowLongPtr(m_hTreeWnd, GWLP_USERDATA, (LONG_PTR)this);
+			m_pTreeViewPrevWndProc = (WNDPROC)GetWindowLongPtrW(m_hTreeWnd, GWLP_WNDPROC);
+			SetWindowLongPtrW(m_hTreeWnd, GWLP_WNDPROC, (LONG_PTR)TreeViewCtl_SubclassProc);
+
+			HIMAGELIST himg;
+			if(SUCCEEDED(SHGetImageList(SHIL_SMALL, IID_IImageList, reinterpret_cast<void**>(&himg))))
+			{
+				TreeView_SetImageList(m_hTreeWnd, himg, TVSIL_NORMAL);
+			}
+
+			scanFileSystem();
 			createTree();
-			
-
-
-			//IFileIterator *pIter = m_pFS->getFileList("effects/", "eff");
-
-#if 0
-			m_hListWnd = GetDlgItem(m_hDlgWnd, IDC_LIST1);
-			ListView_SetExtendedListViewStyle(m_hListWnd, ListView_GetExtendedListViewStyle(m_hListWnd) | LVS_EX_FULLROWSELECT);
-
-			LV_COLUMNA lvColumn;
-			memset(&lvColumn, 0, sizeof(lvColumn));
-
-			RECT rc;
-			GetClientRect(m_hListWnd, &rc);
-
-			lvColumn.mask = LVCF_WIDTH | LVCF_TEXT;
-			lvColumn.cx = (rc.right - rc.left) / 4;
-			lvColumn.pszText = "Name";
-			lvColumn.cchTextMax = strlen(lvColumn.pszText);
-			ListView_InsertColumn(m_hListWnd, 0, &lvColumn);
-
-			lvColumn.pszText = "Local name";
-			lvColumn.cchTextMax = strlen(lvColumn.pszText);
-			ListView_InsertColumn(m_hListWnd, 1, &lvColumn);
-
-			lvColumn.pszText = "Last edit";
-			lvColumn.cchTextMax = strlen(lvColumn.pszText);
-			ListView_InsertColumn(m_hListWnd, 2, &lvColumn);
-
-			lvColumn.pszText = "Type";
-			lvColumn.cchTextMax = strlen(lvColumn.pszText);
-			ListView_InsertColumn(m_hListWnd, 3, &lvColumn);
-
-			loadLevels();
-#endif
-			break;
 		}
+		break;
+
 	case WM_NOTIFY:
 		switch(((LPNMHDR)lParam)->code)
 		{
-		case LVN_ITEMCHANGED:
-#if 0
-			if(((LPNMHDR)lParam)->idFrom == IDC_LIST1)
-			{
-				int iSel = ListView_GetNextItem(m_hListWnd, -1, LVNI_SELECTED);
-				Button_Enable(m_hOkButtonWnd, iSel >= 0);
-			}
-#endif
-			break;
 		case NM_DBLCLK:
 			{
-				LPNMITEMACTIVATE lpnmitem = (LPNMITEMACTIVATE)lParam;
-				if(lpnmitem->iItem >= 0)
+				LPNMHDR lpnmh = (LPNMHDR)lParam;;
+				if(lpnmh->idFrom == IDC_TREE)
 				{
 					SendMessage(m_hDlgWnd, WM_COMMAND, MAKEWPARAM(IDOK, 0), NULL);
+				}
+			}
+			break;
+
+		case TVN_SELCHANGEDW:
+			{
+				LPNMTREEVIEW pnmtv = (LPNMTREEVIEW)lParam;
+				if(pnmtv->hdr.idFrom == IDC_TREE)
+				{
+					Record *pRec = getRecordByHandle(pnmtv->itemNew.hItem);
+
+					Button_Enable(m_hOkButtonWnd, pRec && !pRec->isDir);
+				}
+			}
+			break;
+
+		case TVN_ITEMEXPANDED:
+			{
+				LPNMTREEVIEW lpnmtv = (LPNMTREEVIEW)lParam;
+				if(lpnmtv->hdr.idFrom == IDC_TREE)
+				{
+					Record *pRec = getRecordByHandle(lpnmtv->itemNew.hItem);
+
+					assert(pRec);
+					if(pRec)
+					{
+						pRec->isUserInteracted = true;
+						pRec->isUserCollapsed = lpnmtv->action != TVE_EXPAND;
+					}
+				}
+			}
+			break;
+
+		case TVN_BEGINLABELEDITW:
+			{
+				LPNMTVDISPINFOW lpnmtvinfo = (LPNMTVDISPINFOW)lParam;
+				if(lpnmtvinfo->hdr.idFrom == IDC_TREE)
+				{
+					HWND hEditBoxWnd = TreeView_GetEditControl(m_hTreeWnd);
+
+					SetWindowLongPtr(hEditBoxWnd, GWLP_USERDATA, (LONG_PTR)this);
+					m_pEditBoxPrevWndProc = (WNDPROC)GetWindowLongPtrW(hEditBoxWnd, GWLP_WNDPROC);
+					SetWindowLongPtrW(hEditBoxWnd, GWLP_WNDPROC, (LONG_PTR)EditBoxCtl_SubclassProc);
+				}
+			}
+			break;
+
+		case TVN_ENDLABELEDITW:
+			{
+				LPNMTVDISPINFOW lpnmtvinfo = (LPNMTVDISPINFOW)lParam;
+				if(lpnmtvinfo->hdr.idFrom == IDC_TREE)
+				{
+					BOOL isRenamed = lpnmtvinfo->item.pszText != NULL && renameItem(lpnmtvinfo->item.hItem, CWC2MB(lpnmtvinfo->item.pszText));
+					SetWindowLongPtr(hWnd, DWLP_MSGRESULT, isRenamed);
+					return(TRUE);
 				}
 			}
 			break;
 		}
 		break;
 
+	case WM_CONTEXTMENU:
+		if((HWND)wParam == m_hTreeWnd)
+		{
+			POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
+			bool useMenu = true;
+			if(pt.x == -1 && pt.y == -1)
+			{
+				HTREEITEM hSelItem = TreeView_GetSelection(m_hTreeWnd);
+				if(hSelItem)
+				{
+					RECT tvRect; // The tv window coordinates relative to the client area
+					GetWindowRect(m_hTreeWnd, &tvRect);
+
+					RECT nodeRect; // The TREEITEM coordinates relative to the tv
+					if(TreeView_GetItemRect(m_hTreeWnd, hSelItem, &nodeRect, 1))
+					{
+						int a = 0;
+					}
+
+					pt.x = tvRect.left + nodeRect.left;
+					pt.y = tvRect.top + nodeRect.bottom;
+
+					if(nodeRect.right && tvRect.right) // We have rectangles
+					{
+						
+					}
+				}
+			}
+			else
+			{
+				RECT rcTree;
+				HTREEITEM htvItem;
+				TVHITTESTINFO htInfo = {0};
+
+				GetWindowRect(m_hTreeWnd, &rcTree);              // get its window coordinates
+				htInfo.pt.x = pt.x - rcTree.left;              // convert to client coordinates
+				htInfo.pt.y = pt.y - rcTree.top;
+
+				if((htvItem = TreeView_HitTest(m_hTreeWnd, &htInfo)))
+				{    // hit test
+					TreeView_SelectItem(m_hTreeWnd, htvItem);           // success; select the item
+					/* display your context menu */
+				}
+				else
+				{
+					useMenu = false;
+				}
+			}
+
+			if(useMenu)
+			{
+				HTREEITEM hItem = TreeView_GetSelection(m_hTreeWnd);
+				if(hItem)
+				{
+					Record *pRec = getRecordByHandle(hItem);
+					assert(pRec);
+					if(pRec)
+					{
+						DisplayContextMenu(m_hDlgWnd, pt, m_hContextMenu, pRec->isDir ? 0 : 1);
+					}
+				}
+			}
+		}
+		break;
+
 	case WM_COMMAND:
 		switch(LOWORD(wParam))
 		{
+		case IDC_EDIT_FILTER:
+			if(HIWORD(wParam) == EN_CHANGE)
+			{
+				//scheduleFilterIn(1.0f);
+				filter();
+			}
+			break;
+
+		case ID_ADD_NEWFOLDER:
+		case ID_ADD_NEWEFFECT:
+			{
+				bool isFolder = LOWORD(wParam) == ID_ADD_NEWFOLDER;
+				HTREEITEM hItem = TreeView_GetSelection(m_hTreeWnd);
+				UINT uIndex;
+				Record *pRec = getRecordByHandle(hItem, &uIndex);
+				if(hItem && pRec)
+				{
+					char szName[MAX_PATH];
+					strcpy(szName, isFolder ? "New folder" : "New effect");
+					size_t len = strlen(szName);
+					int iIndex = 1;
+					while(hasChildWithName(uIndex, szName))
+					{
+						szName[len] = 0;
+						sprintf(szName + len, " (%i)", ++iIndex);
+					}
+
+					m_aRecords.push_back({szName, uIndex, isFolder});
+
+					Record *pNewRec = &m_aRecords[m_aRecords.size() - 1];
+
+					szName[0] = 0;
+					makePath(szName, pNewRec);
+
+					bool isFailed = false;
+					if(isFolder)
+					{
+						if(!m_pFS->createDirectory(szName))
+						{
+							isFailed = true;
+						}
+					}
+					else
+					{
+						strcat(szName, ".eff");
+						IFile *pFile = m_pFS->openFile(szName, FILE_MODE_WRITE);
+						if(!pFile)
+						{
+							isFailed = true;
+						}
+						mem_release(pFile);
+					}
+
+					if(isFailed)
+					{
+						m_aRecords.erase(m_aRecords.size() - 1);
+					}
+					else
+					{
+						createTree(m_aRecords.size() - 1);
+
+						TreeView_Expand(m_hTreeWnd, hItem, TVE_EXPAND);
+
+						TreeView_SelectItem(m_hTreeWnd, pNewRec->hTreeItem);
+						TreeView_EditLabel(m_hTreeWnd, pNewRec->hTreeItem);
+					}
+				}
+			}
+			break;
+
+		case ID_FOLDER_RENAME:
+		case ID_EFFECT_RENAME:
+			TreeView_EditLabel(m_hTreeWnd, TreeView_GetSelection(m_hTreeWnd));
+			break;
+
+		case ID_FOLDER_DELETE:
+			{
+				HTREEITEM hItem = TreeView_GetSelection(m_hTreeWnd);
+				UINT uIndex;
+				Record *pRec = getRecordByHandle(hItem, &uIndex);
+				if(hItem && pRec && pRec->isDir && uIndex && MessageBox(hWnd, "Are you sure want to permanently delete this folder with all it's contents?", "Delete folder", MB_YESNO) == IDYES)
+				{
+					char szDir[MAX_PATH];
+					szDir[0] = 0;
+					makePath(szDir, pRec);
+					if(m_pFS->deleteDirectory(szDir))
+					{
+						removeRecord(uIndex);
+						TreeView_DeleteItem(m_hTreeWnd, hItem);
+					}
+				}
+			}
+			break;
+
+		case ID_EFFECT_DELETE:
+			{
+				HTREEITEM hItem = TreeView_GetSelection(m_hTreeWnd);
+				UINT uIndex;
+				Record *pRec = getRecordByHandle(hItem, &uIndex);
+				if(hItem && pRec && !pRec->isDir && uIndex && MessageBox(hWnd, "Are you sure want to permanently delete this effect?", "Delete effect", MB_YESNO) == IDYES)
+				{
+					char szFile[MAX_PATH];
+					szFile[0] = 0;
+					makePath(szFile, pRec);
+					strcat(szFile, ".eff");
+
+					// TODO Uncomment me!
+				//	if(m_pFS->unlink(szFile))
+				//	{
+				//		m_aRecords.erase(uIndex);
+				//		for(UINT i = uIndex, l = m_aRecords.size(); i < l; ++i)
+				//		{
+				//			Record &rec = m_aRecords[i];
+				//			if(rec.uParent >= uIndex)
+				//			{
+				//				--rec.uParent;
+				//			}
+				//		}
+				//		TreeView_DeleteItem(m_hTreeWnd, hItem);
+				//	}
+				}
+			}
+			break;
+
+		case ID_EFFECT_EDIT:
+			// open edit dialog
+			break;
+
 		case IDOK:
 			{
-#if 0
-				int iSel = ListView_GetNextItem(m_hListWnd, -1, LVNI_SELECTED);
-				LVITEMW lvItem;
-				memset(&lvItem, 0, sizeof(lvItem));
-				lvItem.iItem = iSel;
-				lvItem.mask = LVIF_TEXT;
-				WCHAR tmp[MAX_LEVEL_STRING];
-				tmp[0] = 0;
-				lvItem.pszText = tmp;
-				lvItem.cchTextMax = MAX_LEVEL_STRING;
-				//ListView_GetItem(m_hListWnd, &lvItem);
-				SNDMSG(m_hListWnd, LVM_GETITEMW, 0, (LPARAM)(LV_ITEMW*)(&lvItem));
-				strcpy(m_szLevelName, CWC2MB(tmp));
-#endif
+				HTREEITEM hItem = TreeView_GetSelection(m_hTreeWnd);
+				Record *pRec = getRecordByHandle(hItem);
+				if(hItem && pRec && !pRec->isDir)
+				{
+					if(m_pCallback)
+					{
+						char szFile[MAX_PATH];
+						szFile[0] = 0;
+						makePath(szFile, pRec);
+						strcat(szFile, ".eff");
+						m_pCallback->onSelected(szFile);
+						m_pCallback = NULL;
+					}
+					ShowWindow(m_hDlgWnd, SW_HIDE);
+				}
 				//EndDialog(m_hDlgWnd, 1);
 			}
 			break;
 		case IDCANCEL:
 			//EndDialog(m_hDlgWnd, 0);
+			SAFE_CALL(m_pCallback, onCancelled);
+			m_pCallback = NULL;
+			ShowWindow(m_hDlgWnd, SW_HIDE);
 			break;
 		}
 		
@@ -306,7 +589,7 @@ LRESULT CALLBACK CEffectBrowserWindow::WndProc(HWND hWnd, UINT msg, WPARAM wPara
 
 LRESULT CALLBACK CEffectBrowserWindow::wndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	int xPos;
+	//int xPos;
 	switch(msg)
 	{
 #if 0
@@ -418,32 +701,68 @@ LRESULT CALLBACK CEffectBrowserWindow::wndProc(HWND hWnd, UINT msg, WPARAM wPara
 	return(0);
 }
 
-void CEffectBrowserWindow::createTree()
+LRESULT CALLBACK CEffectBrowserWindow::EditBoxCtl_SubclassProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	TreeView_DeleteAllItems(m_hTreeWnd);
+	CEffectBrowserWindow *pThis = (CEffectBrowserWindow*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 
-	createTreeLevel("effects", TVI_ROOT);
+	LRESULT ret = CallWindowProcW(pThis->m_pEditBoxPrevWndProc, hWnd, message, wParam, lParam);
+	if(message == WM_GETDLGCODE)
+	{
+		MSG *lpmsg = (MSG*)lParam;
+		if(lpmsg && lpmsg->message == WM_KEYDOWN &&
+			(lpmsg->wParam == VK_ESCAPE || lpmsg->wParam == VK_RETURN)
+		)
+		{
+			ret |= DLGC_WANTALLKEYS;
+		}
+	}
+
+	return(ret);
 }
 
-static HTREEITEM InsertItem(HWND hWnd, const wchar_t *wszText, TVINSERTSTRUCTW &tvins)
+LRESULT CALLBACK CEffectBrowserWindow::TreeViewCtl_SubclassProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	tvins.item.pszText = (LPWSTR)wszText;
-	tvins.item.cchTextMax = wcslen(tvins.item.pszText);
+	CEffectBrowserWindow *pThis = (CEffectBrowserWindow*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 
-	return((HTREEITEM)SNDMSG((hWnd), TVM_INSERTITEMW, 0, (LPARAM)(LPTV_INSERTSTRUCTW)(&tvins)));
+	LRESULT ret = CallWindowProcW(pThis->m_pTreeViewPrevWndProc, hWnd, message, wParam, lParam);
+	switch(message)
+	{
+	case WM_GETDLGCODE:
+		{
+			MSG *lpmsg = (MSG*)lParam;
+			if(lpmsg && lpmsg->message == WM_KEYDOWN && lpmsg->wParam == VK_F2)
+			{
+				ret |= DLGC_WANTALLKEYS;
+			}
+		}
+		break;
+
+	case WM_KEYUP:
+		if(wParam == VK_F2)
+		{
+			HTREEITEM hItem = TreeView_GetSelection(hWnd);
+			if(hItem)
+			{
+				TreeView_EditLabel(hWnd, hItem);
+			}
+		}
+		break;
+	}
+
+	return(ret);
 }
 
-void CEffectBrowserWindow::createTreeLevel(const char *szCurrentFolder, HTREEITEM hParent)
+void CEffectBrowserWindow::scanFileSystem()
 {
-	TVINSERTSTRUCTW tvins;
+	m_aRecords.clearFast();
+	char szTemp[MAX_PATH];
+	scanFileSystemLevel("effects", 0, szTemp);
+}
+void CEffectBrowserWindow::scanFileSystemLevel(const char *szCurrentFolder, UINT uParent, char *szTempBuf)
+{
+	m_aRecords.push_back({basename(szCurrentFolder), uParent, true});
 
-	tvins.item.mask = TVIF_TEXT;
-
-	tvins.hInsertAfter = TVI_LAST;
-
-	tvins.hParent = hParent;
-
-	HTREEITEM hCurrent = InsertItem(m_hTreeWnd, CMB2WC(basename(szCurrentFolder)), tvins);
+	uParent = m_aRecords.size() - 1;
 
 	IFileIterator *pIter = m_pFS->getFolderList(szCurrentFolder);
 	if(pIter)
@@ -451,7 +770,7 @@ void CEffectBrowserWindow::createTreeLevel(const char *szCurrentFolder, HTREEITE
 		const char *szDirName;
 		while((szDirName = pIter->next()))
 		{
-			createTreeLevel(szDirName, hCurrent);
+			scanFileSystemLevel(szDirName, uParent, szTempBuf);
 		}
 		mem_release(pIter);
 	}
@@ -459,12 +778,252 @@ void CEffectBrowserWindow::createTreeLevel(const char *szCurrentFolder, HTREEITE
 	pIter = m_pFS->getFileList(szCurrentFolder, "eff");
 	if(pIter)
 	{
-		tvins.hParent = hCurrent;
 		const char *szFileName;
 		while((szFileName = pIter->next()))
 		{
-			InsertItem(m_hTreeWnd, CMB2WC(basename(szFileName)), tvins);
+			strcpy_s(szTempBuf, MAX_PATH, basename(szFileName));
+			szTempBuf[strlen(szTempBuf) - 4] = 0;
+			m_aRecords.push_back({szTempBuf, uParent, false});
 		}
 		mem_release(pIter);
+	}
+}
+
+static HTREEITEM InsertItem(HWND hWnd, const wchar_t *wszText, TVINSERTSTRUCTW &tvins)
+{
+	tvins.item.pszText = (LPWSTR)wszText;
+	tvins.item.cchTextMax = (int)wcslen(tvins.item.pszText);
+
+	return((HTREEITEM)SNDMSG((hWnd), TVM_INSERTITEMW, 0, (LPARAM)(LPTV_INSERTSTRUCTW)(&tvins)));
+}
+
+void CEffectBrowserWindow::createTree(UINT uStartFrom)
+{
+	if(!uStartFrom)
+	{
+		TreeView_DeleteAllItems(m_hTreeWnd);
+	}
+
+	TVINSERTSTRUCTW tvins;
+
+	tvins.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_STATE;
+	tvins.hInsertAfter = TVI_LAST;
+
+	//m_aRecords[0].hTreeItem = TVI_ROOT;
+
+	for(UINT i = uStartFrom, l = m_aRecords.size(); i < l; ++i)
+	{
+		Record &rec = m_aRecords[i];
+		if(rec.isVisible || !i)
+		{
+			if(i)
+			{
+				Record &parent = m_aRecords[rec.uParent];
+				tvins.hParent = parent.hTreeItem;
+			}
+			else
+			{
+				tvins.hParent = TVI_ROOT;
+			}
+
+			tvins.item.iImage = tvins.item.iSelectedImage = rec.isDir ? SIID_FOLDER : SIID_DOCNOASSOC;
+
+			tvins.item.stateMask = TVIS_EXPANDED;
+			tvins.item.state = (rec.isUserInteracted && !rec.isUserCollapsed || m_hasFilter && rec.hasVisibleChild) || !i ? TVIS_EXPANDED : 0;
+
+			//if(rec.hTreeItem)
+			//{
+			//	TreeView_SetItemState(m_hTreeWnd, rec.hTreeItem, tvins.item.state, tvins.item.stateMask);
+			//}
+			//else
+			{
+				//UINT uPrev = i - 1;
+				//while(uPrev > 0)
+				//{
+				//	Record &prev = m_aRecords[uPrev];
+				//	if(prev.uParent != rec.uParent)
+				//	{
+				//		tvins.hInsertAfter = TVI_LAST;
+				//		break;
+				//	}
+				//	if(prev.hTreeItem)
+				//	{
+				//		tvins.hInsertAfter = prev.hTreeItem;
+				//		break;
+				//	}
+				//	--uPrev;
+				//}
+				
+				rec.hTreeItem = InsertItem(m_hTreeWnd, CMB2WC(rec.sName.c_str()), tvins);
+			}
+		}
+		//else if(rec.hTreeItem)
+		//{
+		//	TreeView_DeleteItem(m_hTreeWnd, rec.hTreeItem);
+		//	rec.hTreeItem = NULL;
+		//}
+	}
+}
+
+void CEffectBrowserWindow::filter()
+{
+	char szFilter[256];
+	GetDlgItemText(m_hDlgWnd, IDC_EDIT_FILTER, szFilter, sizeof(szFilter));
+	szFilter[sizeof(szFilter) - 1] = 0;
+
+	m_hasFilter = szFilter[0] != 0;
+
+	if(!szFilter[0])
+	{
+		for(UINT i = 1, l = m_aRecords.size(); i < l; ++i)
+		{
+			Record &rec = m_aRecords[i];
+
+			rec.isFilterPassed = true;
+			rec.isVisible = true;
+		}
+	}
+	else
+	{
+		for(UINT i = 1, l = m_aRecords.size(); i < l; ++i)
+		{
+			Record &rec = m_aRecords[i];
+
+			rec.hasVisibleChild = false;
+			rec.isVisible = rec.isFilterPassed = strcasestr(rec.sName.c_str(), szFilter) != NULL;
+
+			if(rec.isFilterPassed)
+			{
+				UINT uParent = rec.uParent;
+				while(uParent)
+				{
+					Record &parent = m_aRecords[uParent];
+					parent.isVisible = true;
+					parent.hasVisibleChild = true;
+					uParent = parent.uParent;
+				}
+			}
+			else
+			{
+				UINT uParent = rec.uParent;
+				while(uParent)
+				{
+					Record &parent = m_aRecords[uParent];
+					if(parent.isFilterPassed)
+					{
+						rec.isVisible = true;
+						break;
+					}
+					uParent = parent.uParent;
+				}
+			}
+		}
+	}
+
+	createTree();
+}
+
+CEffectBrowserWindow::Record* CEffectBrowserWindow::getRecordByHandle(HTREEITEM hItem, _out UINT *puIndex)
+{
+	int idx = m_aRecords.indexOf(hItem, [](const Record &r, HTREEITEM h){
+		return(r.hTreeItem == h);
+	});
+	
+	if(idx >= 0)
+	{
+		if(puIndex)
+		{
+			*puIndex = (UINT)idx;
+		}
+		return(&m_aRecords[idx]);
+	}
+
+	return(NULL);
+}
+
+bool CEffectBrowserWindow::renameItem(HTREEITEM hItem, const char *szName)
+{
+	Record *pRec = getRecordByHandle(hItem);
+	if(pRec)
+	{
+		if(hasChildWithName(pRec->uParent, szName))
+		{
+			MessageBoxW(m_hDlgWnd, L"Can't rename because a file or folder with that name already exists", L"File and Folder Rename", MB_OK | MB_ICONSTOP);
+			/*{
+				TreeView_EditLabel(m_hTreeWnd, lpnmtvinfo->item.hItem);
+				HWND hEditBoxWnd = TreeView_GetEditControl(m_hTreeWnd);
+				SetWindowTextW(hEditBoxWnd, lpnmtvinfo->item.pszText);
+			}*/
+			return(false);
+		}
+
+		// call FS to rename file
+		// rescan dir level
+		// update tree level
+		char szPrevName[MAX_PATH], szNewName[MAX_PATH];
+		szPrevName[0] = szNewName[0] = 0;
+		makePath(szPrevName, pRec);
+
+		strcpy(szNewName, szPrevName);
+		dirname(szNewName);
+		strcat(szNewName, szName);
+
+		// TODO Uncomment me!
+	//	if(m_pFS->rename(szPrevName, szNewName))
+	//	{
+	//		pRec->sName = szName;
+	//		return(true);
+	//	}
+
+	}
+	return(false);
+}
+
+void CEffectBrowserWindow::makePath(char *szBuf, Record *pRec)
+{
+	UINT uParent = pRec->uParent;
+	Record *pParent = &m_aRecords[uParent];
+	if(pParent != pRec)
+	{
+		makePath(szBuf, pParent);
+		strcat(szBuf, "/");
+	}
+	strcat(szBuf, pRec->sName.c_str());
+}
+
+bool CEffectBrowserWindow::hasChildWithName(UINT uParent, const char *szName)
+{
+	for(UINT i = 1, l = m_aRecords.size(); i < l; ++i)
+	{
+		Record *pCur = &m_aRecords[i];
+		if(pCur->uParent == uParent && !strcmp(szName, pCur->sName.c_str()))
+		{
+			return(true);
+		}
+	}
+
+	return(false);
+}
+
+void CEffectBrowserWindow::removeRecord(UINT uIndex)
+{
+	for(UINT i = uIndex + 1, l = m_aRecords.size(); i < l; ++i)
+	{
+		Record &rec = m_aRecords[i];
+		if(rec.uParent == uIndex)
+		{
+			removeRecord(i);
+		}
+	}
+
+	m_aRecords.erase(uIndex);
+
+	for(UINT i = uIndex, l = m_aRecords.size(); i < l; ++i)
+	{
+		Record &rec = m_aRecords[i];
+		if(rec.uParent >= uIndex)
+		{
+			--rec.uParent;
+		}
 	}
 }

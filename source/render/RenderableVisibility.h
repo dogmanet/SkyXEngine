@@ -13,7 +13,7 @@ public:
 
 	void setOcclusionCuller(IXOcclusionCuller *pOcclusionCuller) override;
 
-	void updateForCamera(ICamera *pCamera, const IXRenderableVisibility *pReference = NULL) override;
+	void updateForCamera(IXCamera *pCamera, const IXRenderableVisibility *pReference = NULL) override;
 
 	void updateForFrustum(const IXFrustum *pFrustum, const IXRenderableVisibility *pReference = NULL) override;
 

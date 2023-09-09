@@ -24,11 +24,11 @@ XMaterial MainTransparency(PSI_XMaterial IN)
 	
 	// vDuDv = float2(0.3,0.3);
 	
-	float2 vSceneUV = (vPos.xy * float2(1.0, -1.0) + g_vNearFarInvWinSize.zw * 0.5) * 0.5 + 0.5;
+	float2 vSceneUV = (vPos.xy * float2(1.0, -1.0) + g_vNearFar.zw * 0.5) * 0.5 + 0.5;
 	float2 vSceneUVrefract = vSceneUV + vNormal.xy; // (vDuDv - 0.5) * 0.3; // 0.035
 	
 	float3 vSceneColor;
-	if(g_txGBufferD1.Sample(g_sPointClamp, vSceneUVrefract).x < ComDepthByPos(IN.vPos, g_vNearFarInvWinSize.xy))
+	if(g_txGBufferD1.Sample(g_sPointClamp, vSceneUVrefract).x < ComDepthByPos(IN.vPos, g_vNearFar.xy))
 	{
 		vSceneUVrefract = vSceneUV;
 	}

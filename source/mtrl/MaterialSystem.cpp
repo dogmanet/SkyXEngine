@@ -1,7 +1,9 @@
 #include "MaterialSystem.h"
-#include "sxmtrl.h"
+#include <xcommon/IPluginManager.h>
+#include <core/sxcore.h>
 #include <xcommon/resource/IXResourceManager.h>
 #include <xcommon/resource/IXResourceTexture.h>
+#include <xcommon/render/IXRender.h>
 
 class CTextureSRGBFilter: public IXUnknownImplementation<IXTextureFilter>
 {
@@ -24,12 +26,14 @@ public:
 	}
 };
 
-CMaterialSystem::CMaterialSystem()
+CMaterialSystem::CMaterialSystem(IXCore *pCore)
 {
-	IGXDevice *pDev = SGCore_GetDXDevice();
-	if(pDev)
+	auto pPluginManager = pCore->getPluginManager();
+	m_pRender = (IXRender*)pPluginManager->getInterface(IXRENDER_GUID);
+	m_pDevice = m_pRender->getDevice();
+	if(m_pDevice)
 	{
-		m_pObjectConstantBuffer = pDev->createConstantBuffer(sizeof(CObjectData));
+		m_pObjectConstantBuffer = m_pDevice->createConstantBuffer(sizeof(CObjectData));
 
 		GXRasterizerDesc rsDesc;
 		for(UINT i = 0; i < ARRAYSIZE(m_aapRasterizerStates); ++i)
@@ -38,7 +42,7 @@ CMaterialSystem::CMaterialSystem()
 			for(UINT j = 0; j < ARRAYSIZE(m_aapRasterizerStates[i]); ++j)
 			{
 				rsDesc.cullMode = (GXCULL_MODE)j;
-				m_aapRasterizerStates[i][j] = pDev->createRasterizerState(&rsDesc);
+				m_aapRasterizerStates[i][j] = m_pDevice->createRasterizerState(&rsDesc);
 			}
 		}
 	}
@@ -47,7 +51,6 @@ CMaterialSystem::CMaterialSystem()
 		memset(m_aapRasterizerStates, 0, sizeof(m_aapRasterizerStates));
 	}
 
-	auto pPluginManager = Core_GetIXCore()->getPluginManager();
 
 	{
 		IXTextureProxy *pProxy;
@@ -109,7 +112,7 @@ CMaterialSystem::CMaterialSystem()
 	Core_0RegisterConcmdCls("mtl_reload", this, (SXCONCMDCLS)&CMaterialSystem::reloadAll, "Перезагружает все материалы");
 	Core_0RegisterCVarBool("mat_editorial", false, "Render editorial materials");
 
-	m_pNotifyChannel = Core_GetIXCore()->getEventChannel<XEventMaterialChanged>(EVENT_MATERIAL_CHANGED_GUID);
+	m_pNotifyChannel = pCore->getEventChannel<XEventMaterialChanged>(EVENT_MATERIAL_CHANGED_GUID);
 
 	loadTexture("textures/dev/dev_null.dds", &m_pDefaultTexture);
 }
@@ -129,7 +132,6 @@ CMaterialSystem::~CMaterialSystem()
 	cleanData();
 
 	clearScanCache();
-
 }
 
 void XMETHODCALLTYPE CMaterialSystem::loadMaterial(const char *szName, IXMaterial **ppMaterial, const char *szDefaultShader)
@@ -483,15 +485,13 @@ void XMETHODCALLTYPE CMaterialSystem::addTexture(const char *szName, IGXBaseText
 void XMETHODCALLTYPE CMaterialSystem::setWorld(const SMMATRIX &mWorld)
 {
 	//SMMATRIX mV, mP;
-	//Core_RMatrixGet(G_RI_MATRIX_VIEW, &mV);
-	//Core_RMatrixGet(G_RI_MATRIX_PROJECTION, &mP);
 	m_objectData.m_mW = SMMatrixTranspose(mWorld);
 	// m_objectData.m_mWV = SMMatrixTranspose(mV) * m_objectData.m_mW;
 	// m_objectData.m_mWVP = SMMatrixTranspose(mP) * m_objectData.m_mWV;
 	
 
 	m_pObjectConstantBuffer->update(&m_objectData);
-	SGCore_GetDXDevice()->getThreadContext()->setVSConstant(m_pObjectConstantBuffer, SCR_OBJECT);
+	m_pDevice->getThreadContext()->setVSConstant(m_pObjectConstantBuffer, SCR_OBJECT);
 	//SGCore_GetDXDevice()->setPixelShaderConstant(m_pObjectConstantBuffer, SCR_OBJECT);
 }
 bool XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
@@ -504,7 +504,7 @@ bool XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 		return(false);
 	}
 
-	auto *pCtx = SGCore_GetDXDevice()->getThreadContext();
+	auto *pCtx = m_pDevice->getThreadContext();
 
 	bool isTwoSided = pMat && pMat->isTwoSided();
 	pCtx->setRasterizerState(m_aapRasterizerStates[m_fillMode][isTwoSided ? 0 : m_cullMode]);
@@ -527,7 +527,7 @@ bool XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 			idShaderSet = pVS->idSet;
 		}
 
-		SGCore_ShaderBind(idShaderSet);
+		m_pRender->bindShader(pCtx, idShaderSet);
 
 		return(true);
 	}
@@ -678,7 +678,7 @@ bool XMETHODCALLTYPE CMaterialSystem::bindMaterial(IXMaterial *pMaterial)
 						idShaderSet = pVS->idSet;
 					}
 
-					SGCore_ShaderBind(idShaderSet);
+					m_pRender->bindShader(pCtx, idShaderSet);
 
 					IXTexture *pTex = NULL;
 					for(UINT j = 0, jl = pVariant->aTextureMap.size(); j < jl; ++j)
@@ -718,12 +718,12 @@ void XMETHODCALLTYPE CMaterialSystem::bindTexture(IXTexture *pTexture, UINT slot
 			uFrame = (UINT)(fmodf(m_fCurrentTime, fFrameTime * (float)uFrames) / fFrameTime);
 		}
 		pTexture->getAPITexture(&pTex, uFrame);
-		SGCore_GetDXDevice()->getThreadContext()->setPSTexture(pTex, slot);
+		m_pDevice->getThreadContext()->setPSTexture(pTex, slot);
 		mem_release(pTex);
 	}
 	else
 	{
-		SGCore_GetDXDevice()->getThreadContext()->setPSTexture(NULL, slot);
+		m_pDevice->getThreadContext()->setPSTexture(NULL, slot);
 	}
 }
 
@@ -750,6 +750,8 @@ void CMaterialSystem::queueTextureUpload(CTexture *pTexture)
 
 void CMaterialSystem::update(float fDT)
 {
+	XPROFILE_FUNCTION();
+
 	for(UINT i = 0, l = m_queueTextureToLoad.size(); i < l; ++i)
 	{
 		CTexture *pTexture = m_queueTextureToLoad.pop();
@@ -825,7 +827,7 @@ XVertexShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerVertexShader(XVer
 
 	VertexShaderData *vsData = m_poolVSdata.Alloc();
 	vsData->pVertexFormat = pVertexFormatData;
-	vsData->idShader = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, szShaderFile, NULL, pDefines);
+	vsData->idShader = m_pRender->loadShader(SHADER_TYPE_VERTEX, szShaderFile, pDefines);
 	vsData->szShaderFile = strdup(szShaderFile);
 
 	while(pDefines && pDefines->szName)
@@ -1123,15 +1125,13 @@ XMaterialShaderHandler* XMETHODCALLTYPE CMaterialSystem::registerMaterialShader(
 		}
 
 		{
-			IGXDevice *pDevice = SGCore_GetDXDevice();
-
 			XMaterialShaderSampler *pTmp = pPasses->pSamplers;
 			while(pTmp && pTmp->szKey)
 			{
 				MaterialShaderSamplerData tmp;
 				tmp.szKey = strdup(pTmp->szKey);
-				tmp.pSampler = pDevice ? pDevice->createSamplerState(&pTmp->samplerDesc) : NULL;
-				assert(tmp.pSampler || !pDevice);
+				tmp.pSampler = m_pDevice ? m_pDevice->createSamplerState(&pTmp->samplerDesc) : NULL;
+				assert(tmp.pSampler || !m_pDevice);
 
 				pPass->aSamplers.push_back(tmp);
 				++pTmp;
@@ -1316,7 +1316,7 @@ void CMaterialSystem::updateReferences()
 				gsData->aDefines.push_back({"XMAT_GS_PASS(dst, src)", strdup(sPass.c_str())});
 				gsData->aDefines.push_back({NULL, NULL});
 
-				gsData->idShader = SGCore_ShaderLoad(SHADER_TYPE_GEOMETRY, pGS->szShaderFile, NULL, &gsData->aDefines[0]);
+				gsData->idShader = m_pRender->loadShader(SHADER_TYPE_GEOMETRY, pGS->szShaderFile, &gsData->aDefines[0]);
 			}
 		}
 	}
@@ -1581,7 +1581,7 @@ void CMaterialSystem::updateReferences()
 
 							aVariantDefines.push_back({NULL, NULL});
 
-							ID idShader = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, pMetaPass->szShaderFile, NULL, &aVariantDefines[0]);
+							ID idShader = m_pRender->loadShader(SHADER_TYPE_PIXEL, pMetaPass->szShaderFile, &aVariantDefines[0]);
 							pVariant->aPassVariants[uPassVariant].idShader = idShader;
 
 
@@ -1590,12 +1590,12 @@ void CMaterialSystem::updateReferences()
 							{
 								VertexShaderData *pVS = pShader->pVertexFormat->aVS[j];
 								MaterialVariantVS &vs = pVariant->aPassVariants[uPassVariant].aVertexShaders[j];
-								vs.idSet = SGCore_ShaderCreateKit(pVS->idShader, idShader);
+								vs.idSet = m_pRender->createShaderKit(pVS->idShader, idShader);
 
 								for(UINT k = 0, kl = pShader->pVertexFormat->aGS.size(); k < kl; ++k)
 								{
 									GeometryShaderData *pGS = pShader->pVertexFormat->aGS[k];
-									vs.aGeometryShaders[k] = SGCore_ShaderCreateKit(pVS->idShader, idShader, pGS->idShader);
+									vs.aGeometryShaders[k] = m_pRender->createShaderKit(pVS->idShader, idShader, pGS->idShader);
 								}
 							}
 						}
@@ -1662,7 +1662,7 @@ void CMaterialSystem::updateReferences()
 
 					aVariantDefines.push_back({NULL, NULL});
 
-					ID idShader = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, pRP->szShaderFile, NULL, &aVariantDefines[0]);
+					ID idShader = m_pRender->loadShader(SHADER_TYPE_PIXEL, pRP->szShaderFile, &aVariantDefines[0]);
 					pRP->aPassFormats[pFormat->uID].aPassVariants[uPassVariant].idShader = idShader;
 
 
@@ -1673,12 +1673,12 @@ void CMaterialSystem::updateReferences()
 					{
 						VertexShaderData *pVS = pFormat->aVS[j];
 						MaterialVariantVS &vs = pRP->aPassFormats[pFormat->uID].aPassVariants[uPassVariant].aVertexShaders[j];
-						vs.idSet = SGCore_ShaderCreateKit(pVS->idShader, idShader);
+						vs.idSet = m_pRender->createShaderKit(pVS->idShader, idShader);
 
 						for(UINT k = 0, kl = pFormat->aGS.size(); k < kl; ++k)
 						{
 							GeometryShaderData *pGS = pFormat->aGS[k];
-							vs.aGeometryShaders[k] = SGCore_ShaderCreateKit(pVS->idShader, idShader, pGS->idShader);
+							vs.aGeometryShaders[k] = m_pRender->createShaderKit(pVS->idShader, idShader, pGS->idShader);
 						}
 					}
 				}
@@ -2314,7 +2314,7 @@ void CTexture::initGPUresources()
 		return;
 	}
 
-	IGXDevice *pDevice = SGCore_GetDXDevice();
+	IGXDevice *pDevice = m_pMaterialSystem->getDevice();
 	if(!pDevice)
 	{
 		return;
@@ -3048,7 +3048,7 @@ void CMaterial::initConstantsBindings(UINT uSize)
 
 		m_pCurrentPass->pConstantsBlob = new byte[m_pCurrentPass->uConstantSize];
 		memset(m_pCurrentPass->pConstantsBlob, 0, m_pCurrentPass->uConstantSize);
-		m_pCurrentPass->pConstants = SGCore_GetDXDevice()->createConstantBuffer(m_pCurrentPass->uConstantSize);
+		m_pCurrentPass->pConstants = m_pMaterialSystem->getDevice()->createConstantBuffer(m_pCurrentPass->uConstantSize);
 	}
 	m_pCurrentPass->isConstantsDirty = true;
 

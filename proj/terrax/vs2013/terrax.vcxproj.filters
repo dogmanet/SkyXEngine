@@ -43,15 +43,18 @@
     <Filter Include="Source Files\windows">
       <UniqueIdentifier>{2d94b0eb-3675-4281-b388-3b96f0e630e9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\pipeline">
+      <UniqueIdentifier>{4da2cd33-67b5-48d5-a3e4-512863798c10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\pipeline">
+      <UniqueIdentifier>{6c250de0-68b4-4857-baa2-4b198b6b6890}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\terrax\terrax.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\skyxengine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\source\editors_utils\axes_helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\source\common\string.cpp">
@@ -150,6 +153,33 @@
     <ClCompile Include="..\..\..\source\terrax\CommandDuplicate.cpp">
       <Filter>Source Files\cmd</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\TextureWindow.cpp">
+      <Filter>Source Files\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\2DGraphNodeData.cpp">
+      <Filter>Source Files\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\MaterialBrowserGraphNodeData.cpp">
+      <Filter>Source Files\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\TextureViewGraphNodeData.cpp">
+      <Filter>Source Files\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\2DGraphNode.cpp">
+      <Filter>Source Files\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\3DOverlayGraphNode.cpp">
+      <Filter>Source Files\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\3DOverlayGraphNodeData.cpp">
+      <Filter>Source Files\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\MaterialBrowserGraphNode.cpp">
+      <Filter>Source Files\pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\TextureViewGraphNode.cpp">
+      <Filter>Source Files\pipeline</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\terrax\terrax.rc">
@@ -164,9 +194,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\gdefines.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\source\editors_utils\axes_helper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\source\common\string.h">
@@ -279,6 +306,33 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\terrax\CommandDuplicate.h">
       <Filter>Header Files\cmd</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\TextureWindow.h">
+      <Filter>Header Files\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\2DGraphNodeData.h">
+      <Filter>Header Files\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\3DOverlayGraphNodeData.h">
+      <Filter>Header Files\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\MaterialBrowserGraphNodeData.h">
+      <Filter>Header Files\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\TextureViewGraphNodeData.h">
+      <Filter>Header Files\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\2DGraphNode.h">
+      <Filter>Header Files\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\3DOverlayGraphNode.h">
+      <Filter>Header Files\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\MaterialBrowserGraphNode.h">
+      <Filter>Header Files\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\TextureViewGraphNode.h">
+      <Filter>Header Files\pipeline</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

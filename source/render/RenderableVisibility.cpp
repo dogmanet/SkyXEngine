@@ -33,7 +33,7 @@ void CRenderableVisibility::setOcclusionCuller(IXOcclusionCuller *pOcclusionCull
 	}
 }
 
-void CRenderableVisibility::updateForCamera(ICamera *pCamera, const IXRenderableVisibility *pReference)
+void CRenderableVisibility::updateForCamera(IXCamera *pCamera, const IXRenderableVisibility *pReference)
 {
 	XPROFILE_FUNCTION();
 	CRenderableVisibility *pRef = NULL;

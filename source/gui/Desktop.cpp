@@ -62,8 +62,8 @@ namespace gui
 
 	void CDesktop::createRenderTarget()
 	{
-		m_pRenderSurface = GetGUI()->getDevice()->createColorTarget(m_iWidth, m_iHeight, GXFMT_A8B8G8R8, GXMULTISAMPLE_4_SAMPLES, false);
-		m_pDepthStencilSurface = GetGUI()->getDevice()->createDepthStencilSurface(m_iWidth, m_iHeight, GXFMT_D24S8, GXMULTISAMPLE_4_SAMPLES, false);
+		m_pRenderSurface = GetGUI()->getDevice()->createColorTarget(m_iWidth, m_iHeight, GXFMT_A8B8G8R8, GXMULTISAMPLE_4_SAMPLES);
+		m_pDepthStencilSurface = GetGUI()->getDevice()->createDepthStencilSurface(m_iWidth, m_iHeight, GXFMT_D24S8, GXMULTISAMPLE_4_SAMPLES);
 
 
 		GetGUI()->getMaterialSystem()->addTexture(
@@ -210,7 +210,7 @@ namespace gui
 			};*/
 
 			auto shader = GetGUI()->getShaders()->m_baseTexturedColored;
-			SGCore_ShaderBind(shader.m_idShaderKit);
+			GetGUI()->getRender()->bindShader(pCtx, shader.m_idShaderKit);
 
 		//	static CSHADER def_sh = CTextureManager::loadShader(L"text");
 

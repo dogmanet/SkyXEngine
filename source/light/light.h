@@ -15,7 +15,8 @@ See the license in LICENSE
 #include <graphix/graphix.h>
 #include <xcommon/physics/IXMutationObserver.h>
 
-#include <gcore/sxgcore.h>
+#include <xcommon/render/IXRenderUtils.h>
+#include <xcommon/IXCamera.h>
 
 #include "IXLight.h"
 
@@ -58,7 +59,7 @@ public:
 
 	float getMaxDistance();
 
-	virtual void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV);
+	virtual void updateVisibility(IXCamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV);
 	IXRenderableVisibility *getVisibility() override;
 	LIGHT_RENDER_TYPE getRenderType()
 	{
@@ -102,7 +103,7 @@ protected:
 	float m_fShadowIntensity = 1.0f;
 	bool m_isShadowDynamic = true;
 
-	IMesh *m_pShape = NULL;
+	IXMesh *m_pShape = NULL;
 
 	struct _base_light_data_ps
 	{
@@ -135,7 +136,7 @@ public:
 
 	void updateFrustum() override;
 
-	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV) override;
+	void updateVisibility(IXCamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV) override;
 
 protected:
 	void updatePSConstants(IGXDevice *pDevice);
@@ -158,11 +159,11 @@ public:
 	float getMaxDistance();
 	void setMaxDistance(float fMax);
 
-	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV) override;
+	void updateVisibility(IXCamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV) override;
 
 	void updateFrustum() override;
 
-	void setCamera(ICamera *pCamera);
+	void setCamera(IXCamera *pCamera);
 
 	const SMMATRIX* getPSSMVPs() const;
 	void getReflectiveVP(SMMATRIX *pView, SMMATRIX *pProj) const;
@@ -188,7 +189,7 @@ protected:
 
 	float m_fMaxDistance = 1000.0f;
 
-	ICamera *m_pCamera = NULL;
+	IXCamera *m_pCamera = NULL;
 
 	Split m_splits[PSSM_MAX_SPLITS];
 
@@ -216,7 +217,7 @@ public:
 
 	SMMATRIX getWorldTM();
 
-	void updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV) override;
+	void updateVisibility(IXCamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV) override;
 protected:
 	void updatePSConstants(IGXDevice *pDevice);
 	void updateFrustum() override;

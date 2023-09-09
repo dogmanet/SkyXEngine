@@ -1,6 +1,4 @@
 #include "GizmoRenderer.h"
-#include <gcore/sxgcore.h>
-#include "gdata.h"
 #include "RenderUtils.h"
 
 std::atomic_uint CGizmoRenderer::s_uResRefCount{0};
@@ -12,10 +10,11 @@ IGXDepthStencilState *CGizmoRenderer::s_pDSStateNoZ = NULL;
 bool CGizmoRenderer::s_isShadersLoaded = false;
 ID CGizmoRenderer::s_idShaders[2][2][2]; // [isTextured][is3D][isFixed]
 
-CGizmoRenderer::CGizmoRenderer(CRenderUtils *pRenderUtils, IGXDevice *pDev):
+CGizmoRenderer::CGizmoRenderer(CRenderUtils *pRenderUtils, IXRender *pRender):
 	m_pRenderUtils(pRenderUtils),
-	m_pDev(pDev),
-	m_lineRenderer(pDev)
+	m_pRender(pRender),
+	m_pDev(pRender->getDevice()),
+	m_lineRenderer(pRender)
 {
 	add_ref(m_pRenderUtils);
 
@@ -34,17 +33,17 @@ CGizmoRenderer::CGizmoRenderer(CRenderUtils *pRenderUtils, IGXDevice *pDev):
 		blendDesc.renderTarget[0].useBlend = true;
 		blendDesc.renderTarget[0].blendSrcColor = blendDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
 		blendDesc.renderTarget[0].blendDestColor = blendDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
-		s_pBlendAlpha = pDev->createBlendState(&blendDesc);
+		s_pBlendAlpha = m_pDev->createBlendState(&blendDesc);
 
 		GXDepthStencilDesc dsDesc;
 		dsDesc.useDepthWrite = false;
-		s_pDSState2D = pDev->createDepthStencilState(&dsDesc);
+		s_pDSState2D = m_pDev->createDepthStencilState(&dsDesc);
 
 		dsDesc.cmpFuncDepth = GXCMP_GREATER_EQUAL;
-		s_pDSState3D = pDev->createDepthStencilState(&dsDesc);
+		s_pDSState3D = m_pDev->createDepthStencilState(&dsDesc);
 
 		dsDesc.useDepthTest = false;
-		s_pDSStateNoZ = pDev->createDepthStencilState(&dsDesc);
+		s_pDSStateNoZ = m_pDev->createDepthStencilState(&dsDesc);
 	}
 
 	++s_uResRefCount;
@@ -66,19 +65,19 @@ CGizmoRenderer::CGizmoRenderer(CRenderUtils *pRenderUtils, IGXDevice *pDev):
 			{"IS_FIXED", "1"},
 			GX_MACRO_END()
 		};
-		s_idShaders[0][1][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs"), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps"));
-		s_idShaders[0][1][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs", 0, aMacro2), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps"));
-		s_idShaders[0][0][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs", 0, aMacro1), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps"));
-		s_idShaders[0][0][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs", 0, aMacro3), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps"));
+		s_idShaders[0][1][0] = m_pRender->createShaderKit(m_pRender->loadShader(SHADER_TYPE_VERTEX, "dev_points.vs"), m_pRender->loadShader(SHADER_TYPE_PIXEL, "dev_points.ps"));
+		s_idShaders[0][1][1] = m_pRender->createShaderKit(m_pRender->loadShader(SHADER_TYPE_VERTEX, "dev_points.vs", aMacro2), m_pRender->loadShader(SHADER_TYPE_PIXEL, "dev_points.ps"));
+		s_idShaders[0][0][0] = m_pRender->createShaderKit(m_pRender->loadShader(SHADER_TYPE_VERTEX, "dev_points.vs", aMacro1), m_pRender->loadShader(SHADER_TYPE_PIXEL, "dev_points.ps"));
+		s_idShaders[0][0][1] = m_pRender->createShaderKit(m_pRender->loadShader(SHADER_TYPE_VERTEX, "dev_points.vs", aMacro3), m_pRender->loadShader(SHADER_TYPE_PIXEL, "dev_points.ps"));
 
 		GXMacro aMacro[] = {
 			{"USE_TEXTURE", "1"},
 			GX_MACRO_END()
 		};
-		s_idShaders[1][1][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs"), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps", NULL, aMacro));
-		s_idShaders[1][1][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs", 0, aMacro2), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps", NULL, aMacro));
-		s_idShaders[1][0][0] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs", 0, aMacro1), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps", NULL, aMacro));
-		s_idShaders[1][0][1] = SGCore_ShaderCreateKit(SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "dev_points.vs", 0, aMacro3), SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "dev_points.ps", NULL, aMacro));
+		s_idShaders[1][1][0] = m_pRender->createShaderKit(m_pRender->loadShader(SHADER_TYPE_VERTEX, "dev_points.vs"), m_pRender->loadShader(SHADER_TYPE_PIXEL, "dev_points.ps", aMacro));
+		s_idShaders[1][1][1] = m_pRender->createShaderKit(m_pRender->loadShader(SHADER_TYPE_VERTEX, "dev_points.vs", aMacro2), m_pRender->loadShader(SHADER_TYPE_PIXEL, "dev_points.ps", aMacro));
+		s_idShaders[1][0][0] = m_pRender->createShaderKit(m_pRender->loadShader(SHADER_TYPE_VERTEX, "dev_points.vs", aMacro1), m_pRender->loadShader(SHADER_TYPE_PIXEL, "dev_points.ps", aMacro));
+		s_idShaders[1][0][1] = m_pRender->createShaderKit(m_pRender->loadShader(SHADER_TYPE_VERTEX, "dev_points.vs", aMacro3), m_pRender->loadShader(SHADER_TYPE_PIXEL, "dev_points.ps", aMacro));
 	}
 
 
@@ -250,7 +249,7 @@ void XMETHODCALLTYPE CGizmoRenderer::render(bool isOrtho, bool useConstantSize, 
 	for(UINT i = 0, l = m_aPointRanges.size(); i < l; ++i)
 	{
 		PointRange &lr = m_aPointRanges[i];
-		SGCore_ShaderBind(s_idShaders[lr.u8Texture != 0xFF ? 1 : 0][isOrtho ? 0 : 1][useConstantSize ? 1 : 0]);
+		m_pRender->bindShader(pCtx, s_idShaders[lr.u8Texture != 0xFF ? 1 : 0][isOrtho ? 0 : 1][useConstantSize ? 1 : 0]);
 
 		if(lr.u8Texture != 0xFF)
 		{
@@ -262,10 +261,10 @@ void XMETHODCALLTYPE CGizmoRenderer::render(bool isOrtho, bool useConstantSize, 
 	if(m_aPolyVertices.size())
 	{
 		pCtx->setRenderBuffer(m_pTrisRB);
-		SGCore_ShaderBind(s_idShaders[0][isOrtho ? 0 : 1][/*useConstantSize ? 1 : */0]);
+		m_pRender->bindShader(pCtx, s_idShaders[0][isOrtho ? 0 : 1][/*useConstantSize ? 1 : */0]);
 		pCtx->drawPrimitive(0, m_aPolyVertices.size() / 3);
 	}
-	SGCore_ShaderUnBind();
+	m_pRender->unbindShader(pCtx);
 
 	pCtx->setRasterizerState(pRS);
 	mem_release(pRS);

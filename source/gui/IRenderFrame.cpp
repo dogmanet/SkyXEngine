@@ -1333,7 +1333,7 @@ namespace gui
 					
 				}
 
-				SGCore_ShaderBind(shader.m_idShaderKit);
+				GetGUI()->getRender()->bindShader(pCtx, shader.m_idShaderKit);
 
 				pCtx->setStencilRef(lvl);
 			
@@ -1832,7 +1832,7 @@ namespace gui
 					if(m_bNeedCut)
 					{
 						auto shader = GetGUI()->getShaders()->m_baseColored;
-						SGCore_ShaderBind(shader.m_idShaderKit);
+						GetGUI()->getRender()->bindShader(pCtx, shader.m_idShaderKit);
 
 						pCtx->setDepthStencilState(GetGUI()->getDepthStencilStates()->m_pStencilDecr);
 					//	pCtx->SetRenderState(D3DRS_COLORWRITEENABLE, FALSE);
@@ -2394,7 +2394,7 @@ namespace gui
 				//GetGUI()->getDevice()->SetTransform(D3DTS_WORLD, reinterpret_cast<D3DMATRIX*>(&m));
 				
 				auto shader = GetGUI()->getShaders()->m_baseTexturedColored;
-				SGCore_ShaderBind(shader.m_idShaderKit);
+				GetGUI()->getRender()->bindShader(pCtx, shader.m_idShaderKit);
 			//	CTextureManager::bindShader(shText);
 				m_pDoc->getDesktopStack()->getTextureManager()->bindTexture(texWhite);
 				renderSelection();
@@ -2836,7 +2836,7 @@ namespace gui
 					}
 
 					auto shader = GetGUI()->getShaders()->m_baseColored;
-					SGCore_ShaderBind(shader.m_idShaderKit);
+					GetGUI()->getRender()->bindShader(pCtx, shader.m_idShaderKit);
 
 					//float op = sinf((float)GetTickCount() * 0.007f);
 					float op = sinf((float)GetTickCount() * 0.003f);
@@ -2999,7 +2999,7 @@ namespace gui
 					}
 
 					auto shader = GetGUI()->getShaders()->m_baseColored;
-					SGCore_ShaderBind(shader.m_idShaderKit);
+					GetGUI()->getRender()->bindShader(pCtx, shader.m_idShaderKit);
 
 					SGCore_ShaderSetVRF(SHADER_TYPE_PIXEL, shader.m_idPS, "g_vColor", (float*)&color, 1);
 				//	DX_CALL(GetGUI()->getDevice()->SetPixelShaderConstantF(0, (float*)&color, 1));

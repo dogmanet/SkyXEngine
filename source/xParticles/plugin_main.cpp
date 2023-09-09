@@ -43,52 +43,55 @@ public:
 		}
 		return(&s_guid);
 	}
-	IXUnknown* XMETHODCALLTYPE getInterface(const XGUID &guid) override
+	void XMETHODCALLTYPE getInterface(UINT id, void **ppOut) override
 	{
-		if(guid == IXPARTICLESYSTEM_GUID)
+		switch(id)
 		{
+		case 0:
 			if(!m_pParticleSystem)
 			{
 				m_pParticleSystem = new CParticleSystem(m_pCore);
 			}
-			return(m_pParticleSystem);
-		}
+			*ppOut = m_pParticleSystem;
+			break;
 
-		if(guid == IXUPDATABLE_GUID)
-		{
+		case 1:
 			if(!m_pUpdatable)
 			{
 				if(!m_pParticleSystem)
 				{
-					getInterface(IXPARTICLESYSTEM_GUID);
+					void *ptr;
+					getInterface(0, &ptr);
 				}
 				m_pUpdatable = new CUpdatable(m_pParticleSystem);
 			}
-			return(m_pUpdatable);
-		}
+			*ppOut = m_pUpdatable;
+			break;
 
-		if(guid == IXRENDERABLE_GUID)
-		{
+		case 2:
 			if(!m_pRenderable)
 			{
 				if(!m_pParticleSystem)
 				{
-					getInterface(IXPARTICLESYSTEM_GUID);
+					void *ptr;
+					getInterface(0, &ptr);
 				}
 				m_pRenderable = new CRenderable(getID(), m_pParticleSystem);
 			}
-			return(m_pRenderable);
-		}
+			*ppOut = m_pRenderable;
+			break;
 
-		if(guid == IXEDITABLE_GUID)
-		{
+		case 3:
 			if(!m_pEditable)
 			{
 				m_pEditable = new CEditable(m_pCore);
 			}
-			return(m_pEditable);
+			*ppOut = m_pEditable;
+			break;
+		
+		default:
+			*ppOut = NULL;
 		}
-		return(NULL);
 	}
 
 protected:

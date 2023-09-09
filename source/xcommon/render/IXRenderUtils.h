@@ -62,6 +62,8 @@ public:
 		const float4_t &vColorC) = 0;
 };
 
+//#############################################################################
+
 //! 
 class IXLineRenderer: public IXUnknown
 {
@@ -86,6 +88,19 @@ public:
 	virtual void XMETHODCALLTYPE lineTo(const float3 &vPos) = 0;
 };
 
+//#############################################################################
+
+/*! ћеш
+*/
+class IXMesh: public IXUnknown
+{
+public:
+	virtual void XMETHODCALLTYPE draw(IGXContext *pCtx = NULL) = 0;
+	virtual IGXVertexBuffer* XMETHODCALLTYPE getVertexBuffer() = 0;
+	virtual IGXIndexBuffer* XMETHODCALLTYPE getIndexBuffer() = 0;
+};
+
+//#############################################################################
 
 // {D4025713-43EC-4A55-8989-0639379F981F}
 #define IXRENDERUTILS_GUID DEFINE_XGUID(0xd4025713, 0x43ec, 0x4a55, 0x89, 0x89, 0x6, 0x39, 0x37, 0x9f, 0x98, 0x1f)
@@ -100,6 +115,26 @@ public:
 	virtual void XMETHODCALLTYPE newLineRenderer(IXLineRenderer **ppOut) = 0;
 
 	virtual void XMETHODCALLTYPE getQuadIndexBuffer(UINT uQuads, IGXIndexBuffer **ppIndexBuffer) = 0;
+
+	//! создание меша (ID3DXMesh) конуса 
+	virtual void XMETHODCALLTYPE createConeMesh(
+		float fTopRadius,       //!< верхний радиус
+		float fBottomRadius,    //!< нижний радиус
+		float fHeight,          //!< длина
+		IXMesh **ppMesh,        //!< выходной меш
+		UINT uSideCount         //!< количество боковых сторон
+		) = 0;
+
+	//! создание меша (ID3DXMesh) сферы 
+	virtual void XMETHODCALLTYPE createSphereMesh(
+		float fRadius,      //!< радиус
+		UINT uSideCount,    //!< количество боковых сторон
+		UINT uStackCount,   //!< количество горизонтальных слоев
+		IXMesh **ppMesh     //!< выходной меш
+		) = 0;
+
+	//! создание меша (ID3DXMesh) ограничивающего объема
+	virtual void XMETHODCALLTYPE createBoundingBoxMesh(const float3 &vMin, const float3 &vMax, IXMesh **ppMesh) = 0;
 };
 
 

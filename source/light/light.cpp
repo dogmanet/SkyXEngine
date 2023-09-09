@@ -8,6 +8,7 @@ See the license in LICENSE
 #include "LightSystem.h"
 #include <xcommon/IXRenderable.h>
 #include <xcommon/physics/IXPhysics.h>
+#include <core/sxcore.h>
 
 
 //##########################################################################
@@ -16,12 +17,10 @@ See the license in LICENSE
 CXLight::CXLight(CLightSystem *pLightSystem):
 	m_pLightSystem(pLightSystem)
 {
-	IXRenderPipeline *pPipeline;
-	Core_GetIXCore()->getRenderPipeline(&pPipeline);
-	pPipeline->newVisData(&m_pVisibility);
-	mem_release(pPipeline);
+	IXRender *pRender = m_pLightSystem->getRender();
+	pRender->newVisData(&m_pVisibility);
+	pRender->newFrustum(&m_pFrustum);
 
-	m_pFrustum = SGCore_CrFrustum();
 	((IXPhysics*)Core_GetIXCore()->getPluginManager()->getInterface(IXPHYSICS_GUID))->newMutationObserver(&m_pMutationObserver);
 }
 CXLight::~CXLight()
@@ -184,7 +183,7 @@ float CXLight::getMaxDistance()
 	return(sqrtf(fLum / fEps - 1.0f));
 }
 
-void CXLight::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV)
+void CXLight::updateVisibility(IXCamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV)
 {
 	updateFrustum();
 
@@ -249,7 +248,7 @@ void CXLightPoint::updateFrustum()
 	m_pFrustum->update(planes, true);
 }
 
-void CXLightPoint::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV)
+void CXLightPoint::updateVisibility(IXCamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV)
 {
 	m_renderType = LRT_NONE;
 	
@@ -271,17 +270,15 @@ CXLightSun::CXLightSun(CLightSystem *pLightSystem):
 {
 	m_type = LIGHT_TYPE_SUN;
 
-	IXRenderPipeline *pPipeline;
-	Core_GetIXCore()->getRenderPipeline(&pPipeline);
-	pPipeline->newVisData(&m_pReflectiveVisibility);
-	pPipeline->newVisData(&m_pTempVisibility);
-	mem_release(pPipeline);
 
-	m_pReflectiveFrustum = SGCore_CrFrustum();
+	IXRender *pRender = m_pLightSystem->getRender();
+	pRender->newVisData(&m_pReflectiveVisibility);
+	pRender->newVisData(&m_pTempVisibility);
+	pRender->newFrustum(&m_pReflectiveFrustum);
 
 	for(UINT i = 0; i < PSSM_MAX_SPLITS; ++i)
 	{
-		m_pPSSMFrustum[i] = SGCore_CrFrustum();
+		pRender->newFrustum(&m_pPSSMFrustum[i]);
 	}
 }
 
@@ -336,7 +333,7 @@ void CXLightSun::setMaxDistance(float fMax)
 	m_fMaxDistance = fMax;
 }
 
-void CXLightSun::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV)
+void CXLightSun::updateVisibility(IXCamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV)
 {
 	m_renderType = LRT_LIGHT | LRT_LPV;
 
@@ -372,10 +369,10 @@ void CXLightSun::updateFrustum()
 
 	static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 	static const int *r_win_height = GET_PCVAR_INT("r_win_height");
-	static const float *r_effective_fov = GET_PCVAR_FLOAT("r_default_fov");
+	//static const float *r_effective_fov = GET_PCVAR_FLOAT("r_default_fov");
 
 	float fAspectRatio = (float)*r_win_width / (float)*r_win_height;
-	float fFovTan = tanf(*r_effective_fov * 0.5f);
+	float fFovTan = tanf(m_pCamera->getEffectiveFOV() * 0.5f);
 
 	{
 		static const float *s_pfRPSSMQuality = GET_PCVAR_FLOAT("r_pssm_quality");
@@ -383,8 +380,8 @@ void CXLightSun::updateFrustum()
 
 
 		
-		static const float *r_near = GET_PCVAR_FLOAT("r_near");
-		static const float *r_far = GET_PCVAR_FLOAT("r_far");
+		float r_near = m_pCamera->getNear();
+		float r_far = m_pCamera->getFar();
 		static const float *r_pssm_max_distance = GET_PCVAR_FLOAT("r_pssm_max_distance");
 
 		static const int *r_pssm_splits = GET_PCVAR_INT("r_pssm_splits");
@@ -398,7 +395,7 @@ void CXLightSun::updateFrustum()
 		}
 
 		float fSplitWeight = 0.8f;
-		float fShadowDistance = min(*r_pssm_max_distance, *r_far);
+		float fShadowDistance = min(*r_pssm_max_distance, r_far);
 
 		float fMaxDistanceSun = getMaxDistance();
 		if(fShadowDistance > fMaxDistanceSun)
@@ -410,13 +407,13 @@ void CXLightSun::updateFrustum()
 		for(int i = 0; i < *r_pssm_splits; ++i)
 		{
 			float f = (i + 1.0f) / *r_pssm_splits;
-			float fLogDistance = *r_near * pow(fShadowDistance / *r_near, f);
-			float fUniformDistance = *r_near + (fShadowDistance - *r_near) * f;
+			float fLogDistance = r_near * pow(fShadowDistance / r_near, f);
+			float fUniformDistance = r_near + (fShadowDistance - r_near) * f;
 			aSplitDistances[i] = lerpf(fUniformDistance, fLogDistance, fSplitWeight);
 
 			if(i == 0)
 			{
-				m_splits[i].vNearFar = float2(*r_near, aSplitDistances[i]);
+				m_splits[i].vNearFar = float2(r_near, aSplitDistances[i]);
 			}
 			else
 			{
@@ -526,7 +523,7 @@ void CXLightSun::updateFrustum()
 	}
 }
 
-void CXLightSun::setCamera(ICamera *pCamera)
+void CXLightSun::setCamera(IXCamera *pCamera)
 {
 	m_pCamera = pCamera;
 }
@@ -642,7 +639,7 @@ void CXLightSpot::updateFrustum()
 	m_pFrustum->update(mView, mProj);
 }
 
-void CXLightSpot::updateVisibility(ICamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV)
+void CXLightSpot::updateVisibility(IXCamera *pMainCamera, const float3 &vLPVmin, const float3 &vLPVmax, bool useLPV)
 {
 	m_renderType = LRT_NONE;
 

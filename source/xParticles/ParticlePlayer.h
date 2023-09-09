@@ -3,7 +3,7 @@
 
 #include <xcommon/particles/IXParticleSystem.h>
 #include "ParticleEffect.h"
-#include <gcore/sxgcore.h>
+#include <xcommon/render/IXRender.h>
 
 class IXMaterialSystem;
 

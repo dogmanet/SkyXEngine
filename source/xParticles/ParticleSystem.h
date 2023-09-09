@@ -7,6 +7,7 @@
 #include "ParticlePlayer.h"
 #include <common/queue.h>
 #include <mtrl/IXMaterialSystem.h>
+#include <xcommon/IXRenderable.h>
 
 class CParticleSystem final: public IXUnknownImplementation<IXParticleSystem>
 {

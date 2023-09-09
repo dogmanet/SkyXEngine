@@ -85,6 +85,13 @@ public:
 		@threadsafe none
 	*/
 	virtual void XMETHODCALLTYPE setFeature(IXSceneFeature *pFeat, XSCENE_QUERY_FEATURE mode) = 0;
+
+	/*!
+		Устанавливает отсечение по экранному размеру
+		@threadsafe none
+	*/
+	virtual void XMETHODCALLTYPE setScreenSizeCulling(const float3 &vCamPos, float fFov, float fScreenHeightPx, float fThresholdPx = 4.0f) = 0;
+	virtual void XMETHODCALLTYPE unsetScreenSizeCulling() = 0;
 };
 
 //##########################################################################

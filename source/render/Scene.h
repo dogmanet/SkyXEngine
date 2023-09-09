@@ -5,8 +5,9 @@
 #include <xcommon/IXCore.h>
 #include <common/aastring.h>
 #include <common/queue.h>
+#include <xcommon/render/IXRenderUtils.h>
 
-#define BVH_CHILD_COUNT 27
+#define BVH_CHILD_COUNT 8 /*27*/
 
 typedef UINT NodeFeature;
 typedef UINT NodeType;
@@ -87,12 +88,17 @@ public:
 	CSceneQuery(CScene *pScene, CSceneObjectType *pObjectType);
 	~CSceneQuery();
 
+	SX_ALIGNED_OP_MEM();
+
 	UINT XMETHODCALLTYPE execute(const IXFrustum *pFrustum, void ***pppObjects, IXOcclusionCuller *pOcclusionCuller = NULL) override;
 	UINT XMETHODCALLTYPE execute(const IXFrustum *pFrustum, const float3 &vDir, void ***pppObjects, IXOcclusionCuller *pOcclusionCuller = NULL) override;
 
 	void XMETHODCALLTYPE setOP(XSCENE_QUERY_OP op) override;
 
 	void XMETHODCALLTYPE setFeature(IXSceneFeature *pFeat, XSCENE_QUERY_FEATURE mode) override;
+
+	void XMETHODCALLTYPE setScreenSizeCulling(const float3 &vCamPos, float fFov, float fScreenHeightPx, float fThresholdPx = 4.0f) override;
+	void XMETHODCALLTYPE unsetScreenSizeCulling() override;
 
 private:
 	CScene *m_pScene;
@@ -105,8 +111,16 @@ private:
 
 	const UINT *pOrder = NULL;
 
+	bool m_useScreenSizeCulling = false;
+	float m_fScreenSizeCoeff;
+	float3 m_vCamPos;
+	float m_fThresholdPx;
+
+private:
 	void queryObjectsInternal(CSceneNode *pNode, const IXFrustum *pFrustum, bool isFullyVisible = false, IXOcclusionCuller *pOcclusionCuller = NULL);
+	void queryObjectsLeaf(CSceneNode *pNode, const IXFrustum *pFrustum, bool isFullyVisible = false, IXOcclusionCuller *pOcclusionCuller = NULL);
 	bool testFeatures(NodeFeature bmFeatures, bool isStrict = true);
+	bool testSize(const SMAABB &aabb);
 };
 
 //##########################################################################
@@ -164,6 +178,7 @@ public:
 	}
 
 	bool validate();
+	void print(UINT uLvl = 0, UINT *puNodesCount = NULL, UINT *puObjectsCount = NULL, UINT *puMaxDepth = NULL);
 
 protected:
 	int selectChild(const SMAABB &aabb);
@@ -173,7 +188,8 @@ protected:
 
 	void growExtents(const SMAABB &aabb);
 	void shrinkExtents(const SMAABB &aabb);
-	void updateExtents();
+	void updateExtents(bool shouldRebalance = false);
+	void takeChildren(CSceneNode *pNode);
 
 	void testSuicide();
 	void unsplit();
@@ -209,6 +225,7 @@ class CDevBVHrenderInc;
 class CDevBVHrenderDec;
 class CDevBVHValidate;
 class CCvarListener;
+class CEditable;
 class CScene final: public IXUnknownImplementation<IXScene>
 {
 	friend class CSceneObject;
@@ -239,6 +256,7 @@ public:
 	void sync();
 	
 	bool validate();
+	void print();
 
 protected:
 	void addObject(CSceneObject *pObject);
@@ -274,12 +292,13 @@ private:
 
 	CCvarListener *m_pCvarListener = NULL;
 
-	Array<IXModel*> m_aModels;
+	CEditable *m_pEditable = NULL;
+	IXGizmoRenderer *m_pRenderer = NULL;
 
 	AssotiativeArray<AAString, CSceneObjectType*> m_mapTypes;
 	AssotiativeArray<AAString, CSceneFeature*> m_mapFeatures;
 
-	void drawLevelInternal(CSceneNode *pNode, int iLvl, int iCurLvl = 0);
+	void drawLevelInternal(CSceneNode *pNode, CSceneNode *pParent, int iLvl, int iCurLvl = 0);
 };
 
 #endif

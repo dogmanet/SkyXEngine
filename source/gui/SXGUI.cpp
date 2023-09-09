@@ -27,25 +27,26 @@ namespace gui
 		return(g_pGUI);
 	}
 
-	CGUI::CGUI(IGXDevice *pDev, IXMaterialSystem *pMaterialSystem, IFileSystem *pFileSystem):
-		m_pDevice(pDev),
+	CGUI::CGUI(IXRender *pRender, IXMaterialSystem *pMaterialSystem, IFileSystem *pFileSystem):
+		m_pRender(pRender),
+		m_pDevice(pRender->getDevice()),
 		m_pMaterialSystem(pMaterialSystem)
 	{
 		g_pGUI = this;
 
 		gui::CKeyMap::init();
 
-		m_shaders.m_baseTexturedColored.m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_main.vs");
-		m_shaders.m_baseTexturedColored.m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_main.ps");
-		m_shaders.m_baseTexturedColored.m_idShaderKit = SGCore_ShaderCreateKit(m_shaders.m_baseTexturedColored.m_idVS, m_shaders.m_baseTexturedColored.m_idPS);
+		m_shaders.m_baseTexturedColored.m_idVS = m_pRender->loadShader(SHADER_TYPE_VERTEX, "gui_main.vs");
+		m_shaders.m_baseTexturedColored.m_idPS = m_pRender->loadShader(SHADER_TYPE_PIXEL, "gui_main.ps");
+		m_shaders.m_baseTexturedColored.m_idShaderKit = m_pRender->createShaderKit(m_shaders.m_baseTexturedColored.m_idVS, m_shaders.m_baseTexturedColored.m_idPS);
 
-		m_shaders.m_baseColored.m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_simple.vs");
-		m_shaders.m_baseColored.m_idPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_simple.ps");
-		m_shaders.m_baseColored.m_idShaderKit = SGCore_ShaderCreateKit(m_shaders.m_baseColored.m_idVS, m_shaders.m_baseColored.m_idPS);
+		m_shaders.m_baseColored.m_idVS = m_pRender->loadShader(SHADER_TYPE_VERTEX, "gui_simple.vs");
+		m_shaders.m_baseColored.m_idPS = m_pRender->loadShader(SHADER_TYPE_PIXEL, "gui_simple.ps");
+		m_shaders.m_baseColored.m_idShaderKit = m_pRender->createShaderKit(m_shaders.m_baseColored.m_idVS, m_shaders.m_baseColored.m_idPS);
 
-		m_shaders.m_baseTexturedTextransformColored.m_idVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_main_textransform.vs");
+		m_shaders.m_baseTexturedTextransformColored.m_idVS = m_pRender->loadShader(SHADER_TYPE_VERTEX, "gui_main_textransform.vs");
 		m_shaders.m_baseTexturedTextransformColored.m_idPS = m_shaders.m_baseTexturedColored.m_idPS;
-		m_shaders.m_baseTexturedTextransformColored.m_idShaderKit = SGCore_ShaderCreateKit(m_shaders.m_baseTexturedTextransformColored.m_idVS, m_shaders.m_baseTexturedTextransformColored.m_idPS);
+		m_shaders.m_baseTexturedTextransformColored.m_idShaderKit = m_pRender->createShaderKit(m_shaders.m_baseTexturedTextransformColored.m_idVS, m_shaders.m_baseTexturedTextransformColored.m_idPS);
 
 		GXDepthStencilDesc depthStencilDesc;
 		depthStencilDesc.useDepthTest = false;
@@ -130,19 +131,25 @@ namespace gui
 		return(m_pDevice);
 	}
 
+	IXRender* CGUI::getRender()
+	{
+		return(m_pRender);
+	}
+
 	IDesktopStack* CGUI::newDesktopStack(const char *szResPath, UINT uWidth, UINT uHeight)
 	{
-		CDesktopStack *pStack = new CDesktopStack(this, m_pDevice, szResPath, uWidth, uHeight);
+		CDesktopStack *pStack = new CDesktopStack(this, m_pRender, szResPath, uWidth, uHeight);
 		return(pStack);
 	}
 
 //##########################################################################
 
-	CDesktopStack::CDesktopStack(CGUI *pGUI, IGXDevice *pDev, const char *szResPath, UINT uWidth, UINT uHeight):
+	CDesktopStack::CDesktopStack(CGUI *pGUI, IXRender *pRender, const char *szResPath, UINT uWidth, UINT uHeight):
 		m_pGUI(pGUI),
-		m_pDevice(pDev)
+		m_pRender(pRender),
+		m_pDevice(pRender->getDevice())
 	{
-		pGUI->AddRef();
+		add_ref(pGUI);
 		updateScreenSize(uWidth, uHeight);
 
 		StringW srp = String(szResPath);
@@ -448,7 +455,7 @@ namespace gui
 		pCtx->setBlendState(m_pGUI->getBlendStates()->m_pDefault);
 		m_pTextureManager->bindTexture(m_pDefaultWhite);
 
-		SGCore_ShaderBind(m_pGUI->getShaders()->m_baseTexturedColored.m_idShaderKit);
+		m_pRender->bindShader(pCtx, m_pGUI->getShaders()->m_baseTexturedColored.m_idShaderKit);
 /*
 		SMMATRIX m(
 			2.0f / (float)m_iScreenWidth, 0.0f, 0.0f, 0.0f,
@@ -856,7 +863,7 @@ namespace gui
 };
 
 
-gui::IGUI* InitInstance(IGXDevice *pDev, IXMaterialSystem *pMaterialSystem, IFileSystem *pFileSystem)
+gui::IGUI* InitInstance(IXRender *pRender, IXMaterialSystem *pMaterialSystem, IFileSystem *pFileSystem)
 {
 	if(gui::g_pGUI)
 	{
@@ -865,7 +872,7 @@ gui::IGUI* InitInstance(IGXDevice *pDev, IXMaterialSystem *pMaterialSystem, IFil
 
 	Core_SetOutPtr();
 
-	gui::CGUI *pGui = new gui::CGUI(pDev, pMaterialSystem, pFileSystem);
+	gui::CGUI *pGui = new gui::CGUI(pRender, pMaterialSystem, pFileSystem);
 
 	return(pGui);
 }

@@ -74,6 +74,7 @@ static UINT g_uFrameCount = 0;
 static UINT g_uFPS = 0;
 static IXPhysics *g_pPhysics = NULL;
 static IXPhysicsWorld *g_pPhysWorld = NULL;
+static IXRender *g_pRender = NULL;
 
 //##########################################################################
 
@@ -100,6 +101,10 @@ IXPhysics* GetPhysics()
 IXPhysicsWorld* GetPhysWorld()
 {
 	return(g_pPhysWorld);
+}
+IXRender* GetRender()
+{
+	return(g_pRender);
 }
 
 //##########################################################################
@@ -406,12 +411,14 @@ m_hWnd(hWnd)
 		LibReport(REPORT_MSG_LEVEL_ERROR, "The procedure entry point InitInstance could not be located in the dynamic link library sxgui.dll");
 	}
 
+	g_pRender = (IXRender*)Core_GetIXCore()->getPluginManager()->getInterface(IXRENDER_GUID);
+
 	if(hWnd)
 	{
 		static const int *r_win_width = GET_PCVAR_INT("r_win_width");
 		static const int *r_win_height = GET_PCVAR_INT("r_win_height");
 
-		m_pGUI = pfnGUIInit(SGCore_GetDXDevice(), (IXMaterialSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID), Core_GetIXCore()->getFileSystem());
+		m_pGUI = pfnGUIInit(g_pRender, (IXMaterialSystem*)Core_GetIXCore()->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID), Core_GetIXCore()->getFileSystem());
 		m_pGUIStack = m_pGUI->newDesktopStack("gui/", *r_win_width, *r_win_height);
 		m_pHUDcontroller = new CHUDcontroller();
 	}
@@ -807,13 +814,22 @@ m_hWnd(hWnd)
 			pNode->removeChild((*(pNode->getChilds()))[1]);
 		}
 
-		int iModesCount = 0;
-		const DEVMODE * pModes = SGCore_GetModes(&iModesCount);
 
-		for(int i = 0; i < iModesCount; ++i)
+		UINT uModesCount = 0;
+		const GXModeDesc *pModes = g_pRender->getModes(&uModesCount);
+		Array<GXModeDesc> aUsed;
+		wchar_t str[64];
+		for(int i = 0; i < uModesCount; ++i)
 		{
-			wchar_t str[64];
-			wsprintfW(str, L"<option value=\"%u|%u\">%ux%u</option>", pModes[i].dmPelsWidth, pModes[i].dmPelsHeight, pModes[i].dmPelsWidth, pModes[i].dmPelsHeight);
+			if(aUsed.indexOf(pModes[i], [](const GXModeDesc &a, const GXModeDesc &b){
+				return(a.uWidth == b.uWidth && a.uHeight == b.uHeight);
+			}) >= 0)
+			{
+				continue;
+			}
+			aUsed.push_back(pModes[i]);
+
+			wsprintfW(str, L"<option value=\"%u|%u\">%ux%u</option>", pModes[i].uWidth, pModes[i].uHeight, pModes[i].uWidth, pModes[i].uHeight);
 
 			gui::dom::IDOMnodeCollection newItems = pLoadLevelDesktop->createFromText(str);
 			for(UINT i = 0, l = newItems.size(); i < l; i++)
@@ -1134,26 +1150,26 @@ m_hWnd(hWnd)
 	//g_pRagdoll = new CRagdoll(pl);
 	//pl->setRagdoll(g_pRagdoll);
 
-	g_idTextVS = SGCore_ShaderLoad(SHADER_TYPE_VERTEX, "gui_main.vs");
-	g_idTextPS = SGCore_ShaderLoad(SHADER_TYPE_PIXEL, "gui_main.ps");
-	g_idTextKit = SGCore_ShaderCreateKit(g_idTextVS, g_idTextPS);
+	g_idTextVS = g_pRender->loadShader(SHADER_TYPE_VERTEX, "gui_main.vs");
+	g_idTextPS = g_pRender->loadShader(SHADER_TYPE_PIXEL, "gui_main.ps");
+	g_idTextKit = g_pRender->createShaderKit(g_idTextVS, g_idTextPS);
 
 	GXBlendDesc bsDesc;
 	bsDesc.renderTarget[0].useBlend = true;
 	bsDesc.renderTarget[0].blendSrcColor = bsDesc.renderTarget[0].blendSrcAlpha = GXBLEND_SRC_ALPHA;
 	bsDesc.renderTarget[0].blendDestColor = bsDesc.renderTarget[0].blendDestAlpha = GXBLEND_INV_SRC_ALPHA;
-	g_pTextBlendState = SGCore_GetDXDevice()->createBlendState(&bsDesc);
+	g_pTextBlendState = g_pRender->getDevice()->createBlendState(&bsDesc);
 
 	GXSamplerDesc sampDesc;
 	sampDesc.filter = GXFILTER_MIN_MAG_MIP_LINEAR;
-	g_pTextSamplerState = SGCore_GetDXDevice()->createSamplerState(&sampDesc);
+	g_pTextSamplerState = g_pRender->getDevice()->createSamplerState(&sampDesc);
 
-	g_pTextVSConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(SMMATRIX));
-	g_pTextPSConstantBuffer = SGCore_GetDXDevice()->createConstantBuffer(sizeof(float4));
+	g_pTextVSConstantBuffer = g_pRender->getDevice()->createConstantBuffer(sizeof(SMMATRIX));
+	g_pTextPSConstantBuffer = g_pRender->getDevice()->createConstantBuffer(sizeof(float4));
 
 	GXDepthStencilDesc dsDesc;
 	dsDesc.useDepthTest = dsDesc.useDepthWrite = false;
-	g_pTextDepthState = SGCore_GetDXDevice()->createDepthStencilState(&dsDesc);
+	g_pTextDepthState = g_pRender->getDevice()->createDepthStencilState(&dsDesc);
 
 	//m_pStatsUI = m_pGUI->createDesktopA("stats", "sys/stats.html");
 
@@ -1295,7 +1311,7 @@ void GameData::render()
 	//g_pTracer2->render();
 	
 	//m_pStatsUI->render(0.1f);
-	IGXDevice *pDev = SGCore_GetDXDevice();
+	IGXDevice *pDev = g_pRender->getDevice();
 	++g_uFrameCount;
 	
 	static const int *r_stats = GET_PCVAR_INT("r_stats");
@@ -1396,7 +1412,7 @@ void GameData::render()
 			g_pTextVSConstantBuffer->update(&SMMatrixTranspose(SMMatrixTranslation(float3(1.0f, 1.0f, 0.0f)) * m));
 			g_pTextPSConstantBuffer->update(&float4_t(0, 0, 0, 1.0f));
 
-			SGCore_ShaderBind(g_idTextKit);
+			g_pRender->bindShader(pContext, g_idTextKit);
 			pContext->setRenderBuffer(g_pTextRenderBuffer);
 			pContext->setIndexBuffer(g_pTextIndexBuffer);
 			pContext->setPSTexture((IGXTexture2D*)g_pFont->getAPITexture(0));
@@ -1408,7 +1424,7 @@ void GameData::render()
 			g_pTextVSConstantBuffer->update(&SMMatrixTranspose(m));
 			g_pTextPSConstantBuffer->update(&float4_t(0.3f, 1.0f, 0.3f, 1.0f));
 			pContext->drawIndexed(g_uVertexCount, g_uIndexCount / 3, 0, 0);
-			SGCore_ShaderUnBind();
+			g_pRender->unbindShader(pContext);
 		}
 	}
 }

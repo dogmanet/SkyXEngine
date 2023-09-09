@@ -197,13 +197,16 @@
     <ClCompile Include="..\..\..\source\common\guid.cpp" />
     <ClCompile Include="..\..\..\source\common\string.cpp" />
     <ClCompile Include="..\..\..\source\common\string_utils.cpp" />
-    <ClCompile Include="..\..\..\source\editors_utils\axes_helper.cpp" />
     <ClCompile Include="..\..\..\source\skyxengine.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\2DGraphNode.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\2DGraphNodeData.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\3DOverlayGraphNode.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\3DOverlayGraphNodeData.cpp" />
     <ClCompile Include="..\..\..\source\terrax\CommandBuildModel.cpp" />
     <ClCompile Include="..\..\..\source\terrax\CommandCreate.cpp" />
     <ClCompile Include="..\..\..\source\terrax\CommandDelete.cpp" />
@@ -227,10 +230,15 @@
     <ClCompile Include="..\..\..\source\terrax\LevelOpenDialog.cpp" />
     <ClCompile Include="..\..\..\source\terrax\mainWindow.cpp" />
     <ClCompile Include="..\..\..\source\terrax\MaterialBrowser.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\MaterialBrowserGraphNode.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\MaterialBrowserGraphNodeData.cpp" />
     <ClCompile Include="..\..\..\source\terrax\PropertyWindow.cpp" />
     <ClCompile Include="..\..\..\source\terrax\ProxyObject.cpp" />
     <ClCompile Include="..\..\..\source\terrax\ScrollBar.cpp" />
     <ClCompile Include="..\..\..\source\terrax\terrax.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\TextureViewGraphNode.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\TextureViewGraphNodeData.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\TextureWindow.cpp" />
     <ClCompile Include="..\..\..\source\terrax\Tools.cpp" />
     <ClCompile Include="..\..\..\source\terrax\UndoManager.cpp" />
   </ItemGroup>
@@ -241,9 +249,12 @@
     <ClInclude Include="..\..\..\source\common\file_utils.h" />
     <ClInclude Include="..\..\..\source\common\string.h" />
     <ClInclude Include="..\..\..\source\common\string_utils.h" />
-    <ClInclude Include="..\..\..\source\editors_utils\axes_helper.h" />
     <ClInclude Include="..\..\..\source\gdefines.h" />
     <ClInclude Include="..\..\..\source\SkyXEngine.h" />
+    <ClInclude Include="..\..\..\source\terrax\2DGraphNode.h" />
+    <ClInclude Include="..\..\..\source\terrax\2DGraphNodeData.h" />
+    <ClInclude Include="..\..\..\source\terrax\3DOverlayGraphNode.h" />
+    <ClInclude Include="..\..\..\source\terrax\3DOverlayGraphNodeData.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandBuildModel.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandCreate.h" />
     <ClInclude Include="..\..\..\source\terrax\CommandDelete.h" />
@@ -265,9 +276,14 @@
     <ClInclude Include="..\..\..\source\terrax\GizmoScale.h" />
     <ClInclude Include="..\..\..\source\terrax\LevelOpenDialog.h" />
     <ClInclude Include="..\..\..\source\terrax\MaterialBrowser.h" />
+    <ClInclude Include="..\..\..\source\terrax\MaterialBrowserGraphNode.h" />
+    <ClInclude Include="..\..\..\source\terrax\MaterialBrowserGraphNodeData.h" />
     <ClInclude Include="..\..\..\source\terrax\PropertyWindow.h" />
     <ClInclude Include="..\..\..\source\terrax\ProxyObject.h" />
     <ClInclude Include="..\..\..\source\terrax\ScrollBar.h" />
+    <ClInclude Include="..\..\..\source\terrax\TextureViewGraphNode.h" />
+    <ClInclude Include="..\..\..\source\terrax\TextureViewGraphNodeData.h" />
+    <ClInclude Include="..\..\..\source\terrax\TextureWindow.h" />
     <ClInclude Include="..\..\..\source\terrax\Tools.h" />
     <ClInclude Include="..\..\..\source\terrax\UndoManager.h" />
     <ClInclude Include="..\..\..\source\terrax\Grid.h" />

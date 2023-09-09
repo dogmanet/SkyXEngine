@@ -160,7 +160,6 @@ See the license in LICENSE
 
 #undef SX_LIB_API
 #define SX_LIB_API extern "C" __declspec (dllimport)
-#include <gcore/sxgcore.h>
 
 #ifdef SX_DLL
 #undef SX_LIB_API
@@ -207,7 +206,7 @@ SX_LIB_API void SGame_RenderHUD();
 
 SX_LIB_API void SGame_EditorRender(ID id, ID id_sel_tex, const float3 *pvRenderPos=NULL);
 
-SX_LIB_API ICamera * SGame_GetActiveCamera();
+SX_LIB_API IXCamera * SGame_GetActiveCamera();
 
 /*! Получает количество зарегистрированных классов entity
 */

@@ -109,7 +109,7 @@ public:
 		return(m_pWindowSystem->processMessages());
 	}
 
-	ICamera* XMETHODCALLTYPE getCameraForFrame() override
+	IXCamera* XMETHODCALLTYPE getCameraForFrame() override
 	{
 		return(SGame_GetActiveCamera());
 	}

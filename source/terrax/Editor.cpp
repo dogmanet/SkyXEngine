@@ -1,6 +1,7 @@
 #include "Editor.h"
 #include "terrax.h"
 #include "UndoManager.h"
+#include <core/sxcore.h>
 
 CEditor::CEditor(IXCore *pCore)
 {
@@ -31,9 +32,14 @@ CEditor::~CEditor()
 	mem_release(m_pGizmoRendererBoth);
 	mem_release(m_pGizmoRenderer2D);
 	mem_release(m_pGizmoRenderer3D);
+
+	for(Map<AAString, IXEditorResourceBrowser*>::Iterator i = m_mapResourceBrowsers.begin(); i; ++i)
+	{
+		mem_release(*(i.second));
+	}
 }
 
-void XMETHODCALLTYPE CEditor::getCameraForView(X_WINDOW_POS winPos, ICamera **ppCamera)
+void XMETHODCALLTYPE CEditor::getCameraForView(X_WINDOW_POS winPos, IXCamera **ppCamera)
 {
 	*ppCamera = g_xConfig.m_pViewportCamera[winPos];
 }
@@ -91,7 +97,7 @@ void CEditor::render(bool is3D)
 	{
 		m_pGizmoRenderer3D->render(false);
 
-		ICamera *pCamera;
+		IXCamera *pCamera;
 		getCameraForView(XWP_TOP_LEFT, &pCamera);
 		if(SMVector3Length2(pCamera->getPosition() - m_vOldCamPos) > 0.1f)
 		{
@@ -200,8 +206,7 @@ void CEditor::onMouseMove()
 	{
 		if(g_xState.activeWindow == XWP_TOP_LEFT)
 		{
-			SMMATRIX mViewProj;
-			Core_RMatrixGet(G_RI_MATRIX_OBSERVER_VIEWPROJ, &mViewProj);
+			SMMATRIX mViewProj = g_xConfig.m_pViewportCamera[XWP_TOP_LEFT]->getViewMatrix() * g_xConfig.m_pViewportCamera[XWP_TOP_LEFT]->getProjMatrix();
 
 			float3 vScreenPos = pSelectedGizmo->getPos() * mViewProj;
 			vScreenPos /= vScreenPos.w;
@@ -403,4 +408,35 @@ bool XMETHODCALLTYPE CEditor::isPointInFrame(const float3 &vPos, const float2_t 
 		break;
 	}
 	return(sel);
+}
+
+void CEditor::registerResourceBrowser(IXEditorResourceBrowser *pResourceBrowser)
+{
+	for(UINT i = 0, l = pResourceBrowser->getResourceTypeCount(); i < l; ++i)
+	{
+		AAString key;
+		key.setName(pResourceBrowser->getResourceType(i));
+		if(m_mapResourceBrowsers.KeyExists(key))
+		{
+			LogWarning("Resource browser for type '%s' already registered. Skipping.\n", key.getName());
+		}
+		else
+		{
+			add_ref(pResourceBrowser);
+			m_mapResourceBrowsers[key] = pResourceBrowser;
+		}
+	}
+}
+
+bool CEditor::getResourceBrowserForType(const char *szType, IXEditorResourceBrowser **ppResourceBrowser)
+{
+	AAString key(szType);
+	const Map<AAString, IXEditorResourceBrowser*>::Node *pNode;
+	if(m_mapResourceBrowsers.KeyExists(key, &pNode))
+	{
+		*ppResourceBrowser = *(pNode->Val);
+		add_ref(*ppResourceBrowser);
+		return(true);
+	}
+	return(false);
 }

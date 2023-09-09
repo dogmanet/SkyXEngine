@@ -333,6 +333,9 @@
     <ClCompile Include="..\..\..\source\game\PointChangelevel.cpp">
       <Filter>Source Files\ents\point</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\game\InfoParticlePlayer.cpp">
+      <Filter>Source Files\ents\info</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\source\game\sxgame.h">
@@ -574,6 +577,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\game\PointChangelevel.h">
       <Filter>Header Files\ents\point</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\game\InfoParticlePlayer.h">
+      <Filter>Header Files\ents\info</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

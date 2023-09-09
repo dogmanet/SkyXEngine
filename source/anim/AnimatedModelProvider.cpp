@@ -204,6 +204,8 @@ void CAnimatedModelProvider::bindVertexFormat()
 
 void CAnimatedModelProvider::render(CRenderableVisibility *pVisibility)
 {
+	XPROFILE_FUNCTION();
+
 	m_pMaterialSystem->bindVS(m_pVertexShaderHandler);
 	for(UINT i = 0, l = m_apModels.size(); i < l; ++i)
 	{
@@ -225,6 +227,7 @@ void CAnimatedModelProvider::render(CRenderableVisibility *pVisibility)
 
 void CAnimatedModelProvider::computeVisibility(const IXFrustum *pFrustum, CRenderableVisibility *pVisibility, CRenderableVisibility *pReference)
 {
+	XPROFILE_FUNCTION();
 	pVisibility->setItemCount(m_apModels.size());
 
 	IXOcclusionCuller *pCuller = pVisibility->getCuller();
