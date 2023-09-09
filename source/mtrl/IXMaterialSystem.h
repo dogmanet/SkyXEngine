@@ -151,7 +151,7 @@ public:
 	virtual void XMETHODCALLTYPE scanMaterials() = 0;
 
 	virtual UINT XMETHODCALLTYPE getScannedMaterialsCount() = 0;
-	virtual const char* XMETHODCALLTYPE getScannedMaterial(UINT uIdx, IXMaterial **ppOut, bool *pisTexture = NULL, bool *pisTranslated = NULL) = 0;
+	virtual const char* XMETHODCALLTYPE getScannedMaterial(UINT uIdx, IXMaterial **ppOut, bool *pisTexture = NULL, bool *pisTranslated = NULL, bool *pisMaterial = NULL) = 0;
 
 	virtual bool XMETHODCALLTYPE isMaterialLoaded(const char *szName) = 0;
 
@@ -165,6 +165,17 @@ public:
 	//! Установить режим отсечения
 	virtual void XMETHODCALLTYPE setCullMode(GXCULL_MODE cullMode = GXCULL_BACK) = 0;
 	virtual GXCULL_MODE XMETHODCALLTYPE getCullMode() const = 0;
+
+	//! Получить количество свойств шейдера материала
+	virtual UINT XMETHODCALLTYPE getMaterialPropertyCount(IXMaterial *pMat) const = 0;
+	//! Получить свойства шейдера материала. Буфер pOut должен быть достаточного размера, получить размер можно с помощью getMaterialPropertyCount
+	virtual UINT XMETHODCALLTYPE getMaterialProperties(XMaterialProperty *pOut, IXMaterial *pMat, bool bSkipInactive = false) const = 0;
+
+	//! Получить итератор материал-шейдеров
+	virtual void XMETHODCALLTYPE getMaterialShadersIterator(IKeyIterator **ppOut) = 0;
+
+	//! Проверка возможности использования имени материала
+	virtual bool XMETHODCALLTYPE testMaterialName(const char *szName) = 0;
 };
 
 #endif

@@ -40,6 +40,8 @@ See the license in LICENSE
 #include "TextureWindow.h"
 #include "MaterialBrowserGraphNode.h"
 
+#include <xcommon/editor/IXEditorImporter.h>
+
 #ifdef _DEBUG
 #	pragma comment(lib, "xEngine_d.lib")
 #else
@@ -69,6 +71,7 @@ Map<XGUID, IXEditorModel*> g_apLevelModels;
 Map<IXEditorObject*, CProxyObject*> g_mObjectsLocation;
 Array<CProxyObject*> g_apProxies;
 //SGeom_GetCountModels()
+Array<IXEditorImporter*> g_pEditorImporters;
 
 Array<IXEditorExtension*> g_apExtensions;
 
@@ -218,6 +221,7 @@ public:
 			{
 				return(false);
 			}
+
 			if(IsEditMessage())
 			{
 				if(TranslateAccelerator(/*GetParent((HWND)SGCore_GetHWND())*/g_hWndMain, g_hAccelTableEdit, &msg))
@@ -770,13 +774,44 @@ int main(int argc, char **argv)
 						g_pEditor->registerResourceBrowser(pResourceBrowser);
 						mem_release(pResourceBrowser);
 						// XInitTool(pResourceBrowser, pEditable);
-					}
+			}
 				}
 			}
 
 			g_mEditableSystems[AAString(pEditable->getName())] = pEditable;
 		}
 	}
+
+	HMENU hImportersMenu = NULL;
+	IXEditorImporter *pImporter;
+	ic = 0;
+	while((pImporter = (IXEditorImporter*)pPluginManager->getInterface(IXEDITORIMPORTER_GUID, ic++)))
+	{
+		if(pImporter->getVersion() == IXEDITORIMPORTER_VERSION)
+		{
+			pImporter->startup(g_pEditor);
+
+			if(!hImportersMenu)
+			{
+				hImportersMenu = CreatePopupMenu();
+			}
+
+			AppendMenuW(hImportersMenu, MF_STRING, IDC_FILE_IMPORT_FIRST + g_pEditorImporters.size(), CMB2WC(pImporter->getName()));
+
+			g_pEditorImporters.push_back(pImporter);
+		}
+	}
+	if(hImportersMenu)
+	{
+		HMENU hFileMenu = GetSubMenu(GetMenu(g_hWndMain), 0);
+		MENUITEMINFOW mii = {sizeof(mii)};
+		mii.fMask = MIIM_SUBMENU | MIIM_STATE;
+		mii.fState = MFS_ENABLED;
+		mii.hSubMenu = hImportersMenu;
+
+		SetMenuItemInfoW(hFileMenu, ID_FILE_IMPORT, FALSE, &mii);
+	}
+
 	SetForegroundWindow(g_hWndMain);
 	XInitCustomAccel();
 
@@ -1388,9 +1423,14 @@ int main(int argc, char **argv)
 
 	int result = pEngine->start();
 
-	for(UINT ic = 0, il = g_pEditableSystems.size(); ic < il; ++ic)
+	fora(i, g_pEditorImporters)
 	{
-		g_pEditableSystems[ic]->shutdown();
+		g_pEditorImporters[i]->shutdown();
+	}
+
+	fora(i, g_pEditableSystems)
+	{
+		g_pEditableSystems[i]->shutdown();
 	}
 	XReleaseViewports();
 
@@ -2629,4 +2669,15 @@ IXEditorObject* XFindObjectByGUID(const XGUID &guid)
 	}
 
 	return(NULL);
+}
+
+void BeginMaterialEdit(const char *szMaterialName)
+{
+	extern HINSTANCE hInst;
+
+	IXCore *pCore = g_pEngine->getCore();
+
+	IXMaterial *pMat;
+	((IXMaterialSystem*)pCore->getPluginManager()->getInterface(IXMATERIALSYSTEM_GUID))->loadMaterial(szMaterialName, &pMat);
+	new CMaterialEditor(hInst, g_hWndMain, pCore, pMat);
 }

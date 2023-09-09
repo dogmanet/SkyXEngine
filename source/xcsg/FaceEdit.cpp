@@ -161,6 +161,10 @@ INT_PTR CFaceEdit::dlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_REPLACE:
 			break;
 
+		case IDC_MAT_EDIT:
+			m_pEditor->editMaterial(m_sCurrentMat.c_str());
+			break;
+
 		case IDC_APPLY:
 			{
 				CCommandFaceEdit *pCmd = new CCommandFaceEdit();

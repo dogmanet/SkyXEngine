@@ -50,7 +50,7 @@ public:
 	CMaterialBrowser(HINSTANCE hInstance, HWND hMainWnd);
 	~CMaterialBrowser();
 
-	void browse(IMaterialBrowserCallback *pCallback);
+	void browse(IMaterialBrowserCallback *pCallback, bool bTextureOnly = false);
 
 	void initGraphics(IXRender *pRender);
 	void render();
@@ -130,6 +130,7 @@ private:
 		IXMaterial *pMaterial;
 		IXTexture *pTexture;
 		bool isTexture;
+		bool isMaterial;
 		bool isTranslated;
 		bool isTransparent;
 

@@ -36,7 +36,7 @@ CEditor::~CEditor()
 	for(Map<AAString, IXEditorResourceBrowser*>::Iterator i = m_mapResourceBrowsers.begin(); i; ++i)
 	{
 		mem_release(*(i.second));
-	}
+}
 }
 
 void XMETHODCALLTYPE CEditor::getCameraForView(X_WINDOW_POS winPos, IXCamera **ppCamera)
@@ -439,4 +439,9 @@ bool CEditor::getResourceBrowserForType(const char *szType, IXEditorResourceBrow
 		return(true);
 	}
 	return(false);
+}
+
+void XMETHODCALLTYPE CEditor::editMaterial(const char *szMatName)
+{
+	BeginMaterialEdit(szMatName);
 }

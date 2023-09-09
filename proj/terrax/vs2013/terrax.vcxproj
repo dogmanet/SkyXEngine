@@ -232,6 +232,7 @@
     <ClCompile Include="..\..\..\source\terrax\MaterialBrowser.cpp" />
     <ClCompile Include="..\..\..\source\terrax\MaterialBrowserGraphNode.cpp" />
     <ClCompile Include="..\..\..\source\terrax\MaterialBrowserGraphNodeData.cpp" />
+    <ClCompile Include="..\..\..\source\terrax\MaterialEditor.cpp" />
     <ClCompile Include="..\..\..\source\terrax\PropertyWindow.cpp" />
     <ClCompile Include="..\..\..\source\terrax\ProxyObject.cpp" />
     <ClCompile Include="..\..\..\source\terrax\ScrollBar.cpp" />
@@ -278,6 +279,7 @@
     <ClInclude Include="..\..\..\source\terrax\MaterialBrowser.h" />
     <ClInclude Include="..\..\..\source\terrax\MaterialBrowserGraphNode.h" />
     <ClInclude Include="..\..\..\source\terrax\MaterialBrowserGraphNodeData.h" />
+    <ClInclude Include="..\..\..\source\terrax\MaterialEditor.h" />
     <ClInclude Include="..\..\..\source\terrax\PropertyWindow.h" />
     <ClInclude Include="..\..\..\source\terrax\ProxyObject.h" />
     <ClInclude Include="..\..\..\source\terrax\ScrollBar.h" />
@@ -293,6 +295,7 @@
     <ClInclude Include="..\..\..\source\xcommon\editor\IXEditor.h" />
     <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorExtension.h" />
     <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorGizmo.h" />
+    <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorImporter.h" />
     <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorMaterialBrowser.h" />
     <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorObject.h" />
   </ItemGroup>

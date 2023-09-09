@@ -7,6 +7,7 @@
 #include <common/assotiativearray.h>
 #include <xEngine/IXEngine.h>
 #include <xcommon/editor/IXEditable.h>
+#include <xcommon/editor/IXEditorImporter.h>
 
 #define MAIN_WINDOW_TITLE      "TerraX"
 #define MAIN_WINDOW_CLASS      "X Main Window"
@@ -32,6 +33,7 @@
 
 #include "Grid.h"
 #include "MaterialBrowser.h"
+#include "MaterialEditor.h"
 #include "Editor.h"
 #include "ProxyObject.h"
 
@@ -183,6 +185,8 @@ extern BOOL g_is2DPanning;
 
 extern IXEditorTool *g_pCurrentTool;
 
+extern Array<IXEditorImporter*> g_pEditorImporters;
+
 void XResetLevel();
 bool XSaveLevel(const char *szNewName=NULL, bool bForcePrompt = false);
 void XLoadLevel(const char *szName);
@@ -270,6 +274,8 @@ void XInitCustomAccel();
 void XSetXformType(X_2DXFORM_TYPE type);
 
 bool XIsKeyPressed(UINT uKey);
+
+void BeginMaterialEdit(const char *szMaterialName);
 
 CProxyObject* XTakeObject(IXEditorObject *pObject, CProxyObject *pWhere);
 IXEditorObject* XFindObjectByGUID(const XGUID &guid);

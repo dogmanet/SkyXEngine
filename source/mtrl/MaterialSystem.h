@@ -393,7 +393,7 @@ public:
 	void XMETHODCALLTYPE scanMaterials() override;
 
 	UINT XMETHODCALLTYPE getScannedMaterialsCount() override;
-	const char* XMETHODCALLTYPE getScannedMaterial(UINT uIdx, IXMaterial **ppOut, bool *pisTexture = NULL, bool *pisTranslated = NULL) override;
+	const char* XMETHODCALLTYPE getScannedMaterial(UINT uIdx, IXMaterial **ppOut, bool *pisTexture = NULL, bool *pisTranslated = NULL, bool *pisMaterial = NULL) override;
 
 	bool XMETHODCALLTYPE isMaterialLoaded(const char *szName) override;
 
@@ -415,6 +415,13 @@ public:
 	{
 		return(m_cullMode);
 	}
+
+	UINT XMETHODCALLTYPE getMaterialPropertyCount(IXMaterial *pMat) const override;
+	UINT XMETHODCALLTYPE getMaterialProperties(XMaterialProperty *pOut, IXMaterial *pMat, bool bSkipInactive = false) const override;
+
+	void XMETHODCALLTYPE getMaterialShadersIterator(IKeyIterator **ppOut) override;
+
+	bool XMETHODCALLTYPE testMaterialName(const char *szName) override;
 
 	IGXDevice* getDevice()
 	{
@@ -710,7 +717,29 @@ private:
 		String sName;
 		bool isTranslated;
 		bool isTexture;
+		bool isMaterial;
 		CMaterialInfo *pMatInfo;
+
+		ScanItem() = default;
+
+		ScanItem(ScanItem &&other):
+			sName(std::move(other.sName)),
+			isTranslated(other.isTranslated),
+			isTexture(other.isTexture),
+			isMaterial(other.isMaterial),
+			pMatInfo(other.pMatInfo)
+		{
+		}
+
+		ScanItem& operator=(ScanItem &&other)
+		{
+			sName = std::move(other.sName);
+			isTranslated = other.isTranslated;
+			isTexture = other.isTexture;
+			isMaterial = other.isMaterial;
+			pMatInfo = other.pMatInfo;
+			return(*this);
+		}
 	};
 
 	Array<ScanItem> m_aScanCache;

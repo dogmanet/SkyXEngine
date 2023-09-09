@@ -74,6 +74,8 @@ public:
 	void registerResourceBrowser(IXEditorResourceBrowser *pResourceBrowser);
 	bool getResourceBrowserForType(const char *szType, IXEditorResourceBrowser **ppResourceBrowser);
 
+	void XMETHODCALLTYPE editMaterial(const char *szMatName) override;
+
 private:
 #define GTO(gt) Array<CGizmo##gt*> m_aGizmos##gt; CGizmo##gt *m_pSelected##gt = NULL;
 	GIZMO_TYPES();

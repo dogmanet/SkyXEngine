@@ -180,6 +180,9 @@
     <ClCompile Include="..\..\..\source\terrax\TextureViewGraphNode.cpp">
       <Filter>Source Files\pipeline</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\terrax\MaterialEditor.cpp">
+      <Filter>Source Files\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\source\terrax\terrax.rc">
@@ -333,6 +336,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\source\terrax\TextureViewGraphNode.h">
       <Filter>Header Files\pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\terrax\MaterialEditor.h">
+      <Filter>Header Files\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\xcommon\editor\IXEditorImporter.h">
+      <Filter>Header Files\xcommon\editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
