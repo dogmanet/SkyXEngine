@@ -141,15 +141,29 @@ bool Core_0IsProcessRun(const char* process)
 {
 	HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
+	if(hSnapshot == INVALID_HANDLE_VALUE)
+	{
+		return(false);
+	}
+
 	PROCESSENTRY32 pe;
 	pe.dwSize = sizeof(PROCESSENTRY32);
 	Process32First(hSnapshot, &pe);
 
-	while(1)
+	bool isFound = false;
+	do
 	{
-		if(strcasecmp(pe.szExeFile, process) == 0) return true;
-		if(!Process32Next(hSnapshot, &pe)) return false;
+		if(strcasecmp(pe.szExeFile, process) == 0)
+		{
+			isFound = true;
+			break;
+		}
 	}
+	while(Process32Next(hSnapshot, &pe));
+
+	CloseHandle(hSnapshot);
+
+	return(isFound);
 }
 
 

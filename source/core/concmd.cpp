@@ -759,6 +759,11 @@ bool ConsoleConnect(const char *szName, bool bNewInstance)
 	}
 
 	g_iSendSocket = Connect(g_szServerAddr, CONSOLE_PORT);
+	if(g_iSendSocket == INVALID_SOCKET)
+	{
+		Sleep(1000);
+	}
+	g_iSendSocket = Connect(g_szServerAddr, CONSOLE_PORT);
 
 	if(g_iSendSocket == INVALID_SOCKET)
 	{
