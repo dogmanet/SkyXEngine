@@ -88,7 +88,7 @@ namespace gui
 				return(m_pTranslationManager);
 			}
 
-			void loadStyles();
+			void loadStyles(dom::IDOMnode *pNode);
 
 			void calculateStyles();
 

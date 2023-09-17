@@ -31,7 +31,7 @@ namespace gui
 			m_pRootNode = pNode;
 			IndexSetNode((CDOMnode*)pNode);
 			//	IndexBuild();
-			loadStyles();
+			loadStyles(m_pRootNode);
 			//	GetCSS()->DebugDumpStyles();
 			calculateStyles();
 			buildRenderThree();
@@ -232,8 +232,47 @@ namespace gui
 			return(m_pCSS);
 		}
 
-		void CDOMdocument::loadStyles()
+		void CDOMdocument::loadStyles(dom::IDOMnode *pNode)
 		{
+			static int s_idNodeLink = CDOMnode::getNodeIdByName(L"link");
+			static int s_idNodeStyle = CDOMnode::getNodeIdByName(L"style");
+
+			const IDOMnodeCollection *pChildren = pNode->getChilds();
+
+			if(((CDOMnode*)pNode)->m_iNodeId == s_idNodeLink)
+			{
+				if(pNode->getAttribute(L"rel") == L"stylesheet")
+				{
+					const StringW &wsMaxWidth = pNode->getAttribute(L"max-width");
+					int iMaxWidth = -1;
+					if(wsMaxWidth.length() > 0)
+					{
+						iMaxWidth = wsMaxWidth.toInt();
+					}
+					m_pCSS->addFile(pNode->getAttribute(L"href").c_str(), iMaxWidth);
+				}
+			}
+			else if(((CDOMnode*)pNode)->m_iNodeId == s_idNodeStyle)
+			{
+				const StringW &wsMaxWidth = pNode->getAttribute(L"max-width");
+				int iMaxWidth = -1;
+				if(wsMaxWidth.length() > 0)
+				{
+					iMaxWidth = wsMaxWidth.toInt();
+				}
+
+				const StringW &wsText = pNode->getText();
+				m_pCSS->addStyle(wsText.c_str(), iMaxWidth);
+			}
+			else
+			{
+				fora(i, *pChildren)
+				{
+					loadStyles((*pChildren)[i]);
+				}
+			}
+
+#if 0
 			const IDOMnodeCollection *nodes = getElementsByTag(CDOMnode::getNodeIdByName(L"link"));
 			if(nodes)
 			{
@@ -253,6 +292,7 @@ namespace gui
 					}
 				}
 			}
+#endif
 		}
 
 		void CDOMdocument::calculateStyles()

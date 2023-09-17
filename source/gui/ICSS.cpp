@@ -337,8 +337,18 @@ namespace gui
 			css.loadFromString(str);
 			m_styleSets[szFile] = css;
 			m_styleOrder.push_back(&m_styleSets[szFile]);
-			mem_delete_a(str);
-			
+			mem_delete_a(str);	
+		}
+
+		void ICSS::addStyle(const WCHAR *wszText, int iMaxWidth)
+		{
+			wchar_t wszFile[64];
+			swprintf(wszFile, L"!inline:%u", m_styleSets.Size());
+			ICSSstyleSet css(this);
+			css.setMaxWidth(iMaxWidth);
+			css.loadFromString(wszText);
+			m_styleSets[wszFile] = css;
+			m_styleOrder.push_back(&m_styleSets[wszFile]);
 		}
 
 		void ICSS::dropStyles()
