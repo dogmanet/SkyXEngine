@@ -39,6 +39,8 @@ namespace gui
 		virtual const dom::IDOMnodeCollection& createFromText(const StringW &html) = 0;
 
 		virtual float getParallaxFactor() = 0;
+
+		virtual void reload() = 0;
 	};
 };
 

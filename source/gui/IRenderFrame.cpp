@@ -405,39 +405,39 @@ namespace gui
 
 			void IRenderFrame::setScrollSpeedX(int x)
 			{
-				m_iScrollSpeedX = x;
+				m_fScrollSpeedX = x;
 			}
 			void IRenderFrame::setScrollSpeedY(int x)
 			{
-				m_iScrollSpeedY = x;
+				m_fScrollSpeedY = x;
 			}
-			void IRenderFrame::updateScroll()
+			void IRenderFrame::updateScroll(float fDT)
 			{
-				int accell = 5;
-				if(m_iScrollSpeedX != 0)
+				float accell = 25.0 * fDT;
+				if(!SMIsZero(m_fScrollSpeedX))
 				{
-					setScrollLeft(m_iScrollLeft + m_iScrollSpeedX);
-					int sign = m_iScrollSpeedX > 0 ? 1 : -1;
+					setScrollLeft(m_iScrollLeft + (int)m_fScrollSpeedX);
+					int sign = m_fScrollSpeedX > 0.0f ? 1 : -1;
 
-					m_iScrollSpeedX -= accell * sign;
-					if(m_iScrollSpeedX != 0 && (m_iScrollSpeedX > 0 ? 1 : -1) != sign)
+					m_fScrollSpeedX -= accell * sign;
+					if(m_fScrollSpeedX != 0 && (m_fScrollSpeedX > 0 ? 1 : -1) != sign)
 					{
-						m_iScrollSpeedX = 0;
+						m_fScrollSpeedX = 0;
 					}
 				}
-				if(m_iScrollSpeedY != 0)
+				if(!SMIsZero(m_fScrollSpeedY))
 				{
-					setScrollTop(m_iScrollTop + m_iScrollSpeedY, true);
-					int sign = m_iScrollSpeedY > 0 ? 1 : -1;
+					setScrollTop(m_iScrollTop + (int)m_fScrollSpeedY, true);
+					int sign = m_fScrollSpeedY > 0 ? 1 : -1;
 
-					m_iScrollSpeedY -= accell * sign;
-					if(m_iScrollSpeedY != 0 && (m_iScrollSpeedY > 0 ? 1 : -1) != sign)
+					m_fScrollSpeedY -= accell * sign;
+					if(m_fScrollSpeedY != 0 && (m_fScrollSpeedY > 0 ? 1 : -1) != sign)
 					{
-						m_iScrollSpeedY = 0;
+						m_fScrollSpeedY = 0;
 					}
 				}
 
-				if(m_iScrollSpeedX || m_iScrollSpeedY)
+				if(!SMIsZero(m_fScrollSpeedY) || !SMIsZero(m_fScrollSpeedX))
 				{
 					m_pDoc->markDirty();
 				}
@@ -625,29 +625,29 @@ namespace gui
 					+ pStyle->border_top_width->getPX(m_iHeight));
 			}
 
-			void IRenderFrame::render(UINT lvl)
+			void IRenderFrame::render(UINT lvl, float fDT)
 			{
 				//UpdateScroll();
 				for(UINT i = 0; i < m_pChilds.size(); i++)
 				{
 					if(m_pChilds[i]->getNode() && (m_pChilds[i]->getNode()->isTextNode() || m_pChilds[i]->getNode()->getStyle()->display->getInt() == css::ICSSproperty::DISPLAY_INLINE))
 					{
-						m_pChilds[i]->render(lvl);
+						m_pChilds[i]->render(lvl, fDT);
 					}
 					else
 					{
-						m_pChilds[i]->updateScroll();
+						m_pChilds[i]->updateScroll(fDT);
 						RECT rc = m_pChilds[i]->getVisibleRect();
 						if(rc.top < rc.bottom)
 						{
-							m_pChilds[i]->render(lvl);
+							m_pChilds[i]->render(lvl, fDT);
 						}
 					}
 				}
 				for(UINT i = 0; i < m_pChildsOutFlow.size(); i++)
 				{
-					m_pChildsOutFlow[i]->updateScroll();
-					m_pChildsOutFlow[i]->render(lvl);
+					m_pChildsOutFlow[i]->updateScroll(fDT);
+					m_pChildsOutFlow[i]->render(lvl, fDT);
 				}
 			}
 
@@ -703,15 +703,15 @@ namespace gui
 			UINT IRenderFrame::getInnerTop()
 			{
 				css::ICSSstyle * style = m_pNode ? m_pNode->getStyle() : NULL;
-				return(m_pNode ? style->margin_top->getPX(m_iHeight)
-					+ style->border_top_width->getPX(m_iHeight)
+				return(m_pNode ? /*style->margin_top->getPX(m_iHeight)
+					+ */style->border_top_width->getPX(m_iHeight)
 						: 0);
 			}
 			UINT IRenderFrame::getInnerLeft()
 			{
 				css::ICSSstyle * style = m_pNode ? m_pNode->getStyle() : NULL;
-				return(m_pNode ? style->margin_left->getPX(m_iWidth)
-					+ style->border_left_width->getPX(m_iWidth) : 0);
+				return(m_pNode ? /*style->margin_left->getPX(m_iWidth)
+					+ */style->border_left_width->getPX(m_iWidth) : 0);
 			}
 
 			UINT IRenderFrame::getLeftPos()
@@ -1698,7 +1698,7 @@ namespace gui
 				return(bReturnHeight ? m_iHeight : 0);
 			}
 
-			void IRenderBlock::render(UINT lvl)
+			void IRenderBlock::render(UINT lvl, float fDT)
 			{
 				IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
 
@@ -1827,7 +1827,7 @@ namespace gui
 
 
 					m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(-m_iScrollLeft, -m_iScrollTop, 0.0f));
-					BaseClass::render(lvl + (m_bNeedCut ? 1 : 0));
+					BaseClass::render(lvl + (m_bNeedCut ? 1 : 0), fDT);
 					m_pDoc->getTranslationManager()->popMatrix();
 					if(m_bNeedCut)
 					{
@@ -1881,11 +1881,11 @@ namespace gui
 				return(m_iHeight);
 			}
 
-			void IRenderAnonymousBlock::render(UINT lvl)
+			void IRenderAnonymousBlock::render(UINT lvl, float fDT)
 			{
 				GetGUI()->getDevice()->getThreadContext()->setStencilRef(lvl);
 				m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(m_iXpos, m_iYpos, 0.0f));
-				BaseClass::render(lvl);
+				BaseClass::render(lvl, fDT);
 				m_pDoc->getTranslationManager()->popMatrix();
 			}
 
@@ -2149,13 +2149,13 @@ namespace gui
 				return(m_iHeight);
 			}
 
-			void IRenderInline::render(UINT lvl)
+			void IRenderInline::render(UINT lvl, float fDT)
 			{
 				GetGUI()->getDevice()->getThreadContext()->setStencilRef(lvl);
 				m_pDoc->getTranslationManager()->pushMatrix(SMMatrixTranslation(m_iXpos, m_iYpos, 0.0f));
 				m_border.render();
 				renderBackground(lvl);
-				BaseClass::render(lvl);
+				BaseClass::render(lvl, fDT);
 				m_pDoc->getTranslationManager()->popMatrix();
 			}
 
@@ -2378,7 +2378,7 @@ namespace gui
 					}
 				}
 			}
-			void IRenderTextNew::render(UINT lvl)
+			void IRenderTextNew::render(UINT lvl, float fDT)
 			{
 				IGXContext *pCtx = GetGUI()->getDevice()->getThreadContext();
 
@@ -3111,9 +3111,9 @@ namespace gui
 				return(BaseClass::layout());
 			}
 
-			void IRenderImageBlock::render(UINT lvl)
+			void IRenderImageBlock::render(UINT lvl, float fDT)
 			{
-				BaseClass::render(lvl);
+				BaseClass::render(lvl, fDT);
 			}
 
 			//##########################################################################
@@ -3200,9 +3200,9 @@ namespace gui
 				return(BaseClass::layout());
 			}
 
-			void IRenderImageInlineBlock::render(UINT lvl)
+			void IRenderImageInlineBlock::render(UINT lvl, float fDT)
 			{
-				BaseClass::render(lvl);
+				BaseClass::render(lvl, fDT);
 			}
 
 			//##########################################################################
@@ -3305,13 +3305,13 @@ namespace gui
 				return(m_iHeight);
 			}
 
-			void IRenderSelectOptionsBlock::render(UINT lvl)
+			void IRenderSelectOptionsBlock::render(UINT lvl, float fDT)
 			{
 				/*if(!m_pSelectFrame->getNode()->pseudoclassExists(css::ICSSrule::PSEUDOCLASS_CHECKED))
 				{
 					return;
 				}*/
-				BaseClass::render(lvl);
+				BaseClass::render(lvl, fDT);
 			}
 		};
 	};

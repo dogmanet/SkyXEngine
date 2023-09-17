@@ -30,7 +30,7 @@ namespace gui
 			{
 				IDOMnode * pNode = m_vChilds[0];
 				removeChild(pNode);
-				mem_delete(pNode);
+				//mem_delete(pNode);
 			}
 		}
 		

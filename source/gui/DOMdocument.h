@@ -56,6 +56,7 @@ namespace gui
 			IDOMnode* getElementById(UINT iid);
 
 			void indexBuild();
+			void indexReset();
 			void indexAdd(IDOMnode *pNode);
 			void indexRemove(IDOMnode *pNode);
 
@@ -111,7 +112,7 @@ namespace gui
 			void buildRenderThree();
 
 			void update(float fTimeDelta);
-			void render();
+			void render(float fTimeDelta);
 
 			IDOMnode* getElementByXY(int x, int y, bool sendEnterLeave = false);
 
@@ -136,6 +137,8 @@ namespace gui
 			void markDirty();
 
 			const IDOMnodeCollection& createFromText(const StringW &html);
+
+			void cleanup();
 
 		protected:
 			CDesktopStack *m_pDesktopStack;

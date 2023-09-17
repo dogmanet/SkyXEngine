@@ -30,6 +30,8 @@ namespace gui
 
 	void CDesktop::loadFromFile(const WCHAR * str)
 	{
+		m_pDoc->cleanup();
+
 		StringW file = StringW(m_pDesktopStack->getResourceDir()) + L"/" + str;
 		dom::IHTMLparser p;
 		p.setDocument(m_pDoc);
@@ -44,6 +46,10 @@ namespace gui
 		m_pFocusedNode = root;
 
 		swscanf(root->getAttribute(L"parallax").c_str(), L"%f", &m_fParallaxFactor);
+
+		m_pDoc->markDirty();
+
+		m_wsFile = str;
 	}
 
 	void CDesktop::setWidth(UINT w)
@@ -133,7 +139,7 @@ namespace gui
 		//	GetGUI()->getDevice()->SetRenderState(D3DRS_BLENDOPALPHA, D3DBLENDOP_MAX);
 			pCtx->setBlendState(GetGUI()->getBlendStates()->m_pDesktop);
 			
-			m_pDoc->render();
+			m_pDoc->render(fTimeDelta);
 
 			pCtx->setBlendState(GetGUI()->getBlendStates()->m_pDefault);
 		//	GetGUI()->getDevice()->SetRenderState(D3DRS_SEPARATEALPHABLENDENABLE, FALSE);
@@ -453,5 +459,10 @@ namespace gui
 	float CDesktop::getParallaxFactor()
 	{
 		return(m_fParallaxFactor);
+	}
+
+	void CDesktop::reload()
+	{
+		loadFromFile(m_wsFile.c_str());
 	}
 };

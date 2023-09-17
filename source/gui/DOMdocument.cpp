@@ -8,8 +8,8 @@
 
 //#include "CSSstyle.h"
 
-#define SCROLL_SPEED 32
-#define SCROLL_SPEED_MAX 64
+#define SCROLL_SPEED 3.20f
+#define SCROLL_SPEED_MAX 6.40f
 
 namespace gui
 {
@@ -47,6 +47,16 @@ namespace gui
 			//@@TODO:Invalidate CSS cache
 
 			CDOMdocument::buildIndexFunc(this, m_pRootNode);
+		}
+
+		void CDOMdocument::indexReset()
+		{
+			m_IndexStringById.clear();
+			m_IndexById.clearFast();
+			m_IndexStringByClass.clear();
+			m_IndexByTagName.clearFast();
+			m_IndexByClass.clearFast();
+			m_IndexByPseudoClass.clearFast();
 		}
 
 		void CDOMdocument::indexAdd(IDOMnode *pNode)
@@ -710,11 +720,11 @@ namespace gui
 			reflow();
 		}
 
-		void CDOMdocument::render()
+		void CDOMdocument::render(float fTimeDelta)
 		{
 			m_isDirty = false;
 			m_pDesktopStack->getTextureManager()->bindTexture(NULL);
-			m_pRTroot->render(0);
+			m_pRTroot->render(0, fTimeDelta);
 		}
 
 		IDOMnode * CDOMdocument::getElementByXY(int x, int y, bool sendEnterLeave)
@@ -889,6 +899,16 @@ namespace gui
 			return(m_cTmpNodes);
 		}
 
+		void CDOMdocument::cleanup()
+		{
+			mem_delete(m_pRootNode);
+			indexReset();
+			m_ReflowQueue.clearFast();
+			m_UpdateStyleQueue.clearFast();
+			m_aTransitionUpdateList.clearFast();
+			m_pCSS->dropStyles();
+		}
+
 //##########################################################################
 
 		void CDOMnode::setText(const StringW &text, BOOL build)
@@ -982,7 +1002,7 @@ namespace gui
 			{
 				return;
 			}
-			if(m_pRenderFrame->m_pScrollBarVert)
+			if(m_pRenderFrame && m_pRenderFrame->m_pScrollBarVert)
 			{
 				m_pRenderFrame->m_pScrollBarVert->dispatchEvent(ev);
 			}
@@ -1070,16 +1090,16 @@ namespace gui
 					}
 					//m_pRenderFrame->m_iScrollTop -= 32;
 							
-					if(m_pRenderFrame->m_iScrollSpeedY > 0)
+					if(m_pRenderFrame->m_fScrollSpeedY > 0)
 					{
-						m_pRenderFrame->m_iScrollSpeedY = -SCROLL_SPEED;
+						m_pRenderFrame->m_fScrollSpeedY = -SCROLL_SPEED;
 					}
 					else
 					{
-						m_pRenderFrame->m_iScrollSpeedY -= SCROLL_SPEED;
-						if(m_pRenderFrame->m_iScrollSpeedY < -SCROLL_SPEED_MAX)
+						m_pRenderFrame->m_fScrollSpeedY -= SCROLL_SPEED;
+						if(m_pRenderFrame->m_fScrollSpeedY < -SCROLL_SPEED_MAX)
 						{
-							m_pRenderFrame->m_iScrollSpeedY = -SCROLL_SPEED_MAX;
+							m_pRenderFrame->m_fScrollSpeedY = -SCROLL_SPEED_MAX;
 						}
 					}
 				}
@@ -1093,16 +1113,16 @@ namespace gui
 						m_pDocument->markDirty();
 					}
 					//m_pRenderFrame->m_iScrollTop += 32;
-					if(m_pRenderFrame->m_iScrollSpeedY < 0)
+					if(m_pRenderFrame->m_fScrollSpeedY < 0)
 					{
-						m_pRenderFrame->m_iScrollSpeedY = SCROLL_SPEED;
+						m_pRenderFrame->m_fScrollSpeedY = SCROLL_SPEED;
 					}
 					else
 					{
-						m_pRenderFrame->m_iScrollSpeedY += SCROLL_SPEED;
-						if(m_pRenderFrame->m_iScrollSpeedY > SCROLL_SPEED_MAX)
+						m_pRenderFrame->m_fScrollSpeedY += SCROLL_SPEED;
+						if(m_pRenderFrame->m_fScrollSpeedY > SCROLL_SPEED_MAX)
 						{
-							m_pRenderFrame->m_iScrollSpeedY = SCROLL_SPEED_MAX;
+							m_pRenderFrame->m_fScrollSpeedY = SCROLL_SPEED_MAX;
 						}
 					}
 					

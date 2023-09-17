@@ -344,6 +344,7 @@ namespace gui
 		void ICSS::dropStyles()
 		{
 			m_styleSets.clear();
+			m_styleOrder.clearFast();
 			addFile(L"system.css");
 		}
 

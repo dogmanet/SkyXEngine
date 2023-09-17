@@ -39,9 +39,12 @@ namespace gui
 
 		float getParallaxFactor();
 
-	protected:
+		void reload() override;
 
+	protected:
 		CDesktopStack *m_pDesktopStack;
+
+		StringW m_wsFile;
 
 		UINT m_iWidth;
 		UINT m_iHeight;

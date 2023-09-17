@@ -304,15 +304,21 @@ namespace gui
 		case WM_SYSKEYUP:
 			if(CKeyMap::keyUp(wParam))
 			{
-				ev.type = GUI_EVENT_TYPE_KEYUP;
-				ev.clientX = ev.clientY = 0;
-				ev.key = wParam;
-				m_pActiveDesktop->dispatchEvent(ev);
+				if(wParam == KEY_R && CKeyMap::keyState(KEY_CTRL) && CKeyMap::keyState(KEY_SHIFT))
+				{
+					m_pActiveDesktop->reload();
+				}
+				else
+				{
+					ev.type = GUI_EVENT_TYPE_KEYUP;
+					ev.clientX = ev.clientY = 0;
+					ev.key = wParam;
+					m_pActiveDesktop->dispatchEvent(ev);
+				}
 			}
 			break;
 
 		case WM_CHAR:
-
 			ev.type = GUI_EVENT_TYPE_KEYPRESS;
 			ev.clientX = ev.clientY = 0;
 
