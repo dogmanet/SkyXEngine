@@ -126,6 +126,10 @@ namespace gui
 
 	void CFont::load(IFontManager *pFontManager, CTextureManager *pTextureManager, const WCHAR * szFont, UINT size, STYLE style, int iBlurRadius)
 	{
+		if(size > 160)
+		{
+			size = 160;
+		}
 		m_pFontManager = pFontManager;
 		m_pTextureManager = pTextureManager;
 		m_style = style;
@@ -242,12 +246,12 @@ namespace gui
 			d.w = (g->bitmap.pixel_mode == FT_PIXEL_MODE_LCD ? (g->bitmap.width / 3) : g->bitmap.width) + m_iBlurRadius * 2 + iPadding * 2;
 			d.h = g->bitmap.rows + m_iBlurRadius * 2 + iPadding * 2;
 
-			if(d.w > 64 || d.h > 64)
+			/*if(d.w > 64 || d.h > 64)
 			{
 				char tmp[128];
 				sprintf_s(tmp, "-:%dx%d", d.w, d.h);
 				MessageBoxA(NULL, tmp, "", MB_OK);
-			}
+			}*/
 
 			d.xa = g->advance.x;
 			d.xo = g->bitmap_left;
@@ -335,7 +339,8 @@ namespace gui
 			list.push_back(d);
 		}
 		
-#define CHECK_0() if(list[0].w > 64 || list[0].h > 64){char tmp[128];sprintf_s(tmp, "#:%dx%d", list[0].w, list[0].h);MessageBoxA(NULL, tmp, GEN_MSG_LOCATION, MB_OK);}
+#define CHECK_0() 
+		//if(list[0].w > 64 || list[0].h > 64){char tmp[128];sprintf_s(tmp, "#:%dx%d", list[0].w, list[0].h);MessageBoxA(NULL, tmp, GEN_MSG_LOCATION, MB_OK);}
 
 		CHECK_0();
 		//
@@ -439,12 +444,12 @@ namespace gui
 		for(UINT i = 0; i < list.size(); i++)
 		{
 			//	wprintf(L"%d %d %d %d  %d %d\n", list[i].w, list[i].h, list[i].x, list[i].y, list[i].w + list[i].x, list[i].h + list[i].y);
-			if(list[i].w > 64 || list[i].h > 64)
+			/*if(list[i].w > 64 || list[i].h > 64)
 			{
 				char tmp[128];
 				sprintf_s(tmp, "%d:%dx%d", i, list[i].w, list[i].h);
 				MessageBoxA(NULL, tmp, "", MB_OK);
-			}
+			}*/
 			imageCopy(image, list[i].data, width, height, list[i].w, list[i].h, list[i].x, list[i].y, 4);
 			if(m_bEmulateBold)
 			{
