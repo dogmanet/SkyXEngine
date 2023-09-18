@@ -3593,7 +3593,7 @@ namespace gui
 		void CCSSstyle::parseValue(ICSSproperty * clr, const StringW & val)
 		{
 			float p;
-			WCHAR a = 0, b;
+			WCHAR a = 0, b = 0, c = 0, d = 0;
 			StringW _val = val;
 			UINT l = val.length();
 			UINT i;
@@ -3610,7 +3610,7 @@ namespace gui
 				}
 			}
 
-			int n = swscanf_s(_val.c_str(), L"%f%c%c", &p, &a, 1, &b, 1);
+			int n = swscanf_s(_val.c_str(), L"%f%c%c", &p, &a, 1, &b, 1, &c, 1, &d, 1);
 			clr->set(p);
 			if(n == 1)
 			{
@@ -3645,9 +3645,32 @@ namespace gui
 				{
 					clr->setDim(ICSSproperty::DIM_PX);
 				}
+				else if(a == L'v' && b == L'h')
+				{
+					clr->setDim(ICSSproperty::DIM_VH);
+				}
+				else if(a == L'v' && b == L'w')
+				{
+					clr->setDim(ICSSproperty::DIM_VW);
+				}
 				else
 				{
 					printf("[Error]: Unknown dimension '%c%c' in css string\n", (char)a, (char)b);
+				}
+			}
+			else if(n == 5)
+			{
+				if(a == L'v' && b == L'm' && c == L'i' && d == L'n')
+				{
+					clr->setDim(ICSSproperty::DIM_VMIN);
+				}
+				else if(a == L'v' && b == L'm' && c == L'a' && d == L'x')
+				{
+					clr->setDim(ICSSproperty::DIM_VMAX);
+				}
+				else
+				{
+					LogError("Unknown dimension '%c%c%c%c' in css string\n", (char)a, (char)b, (char)c, (char)d);
 				}
 			}
 		}
