@@ -1243,7 +1243,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			RECT rcTopLeft;
 			GetClientRect(g_hTopLeftWnd, &rcTopLeft);
-			g_pEngine->getCore()->getConsole()->execCommand2("r_win_width %d\nr_win_height %d", rcTopLeft.right - rcTopLeft.left, rcTopLeft.bottom - rcTopLeft.top);
+
+			if(rcTopLeft.right - rcTopLeft.left > 0 && rcTopLeft.bottom - rcTopLeft.top > 0)
+			{
+				g_pEngine->getCore()->getConsole()->execCommand2("r_win_width %d\nr_win_height %d", rcTopLeft.right - rcTopLeft.left, rcTopLeft.bottom - rcTopLeft.top);
+			}
 		}
 
 		SendMessage(g_hStatusWnd, WM_SIZE, wParam, lParam);

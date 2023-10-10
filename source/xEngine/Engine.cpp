@@ -727,6 +727,15 @@ bool CEngine::checkResize()
 		}
 	}
 
+	if(*r_win_width <= 0)
+	{
+		*r_win_width = 1;
+	}
+	if(*r_win_height <= 0)
+	{
+		*r_win_height = 1;
+	}
+
 	LibReport(REPORT_MSG_LEVEL_WARNING, "r_win_width %d, r_win_height %d, r_win_windowed %d\n", *r_win_width, *r_win_height, (int)*r_win_windowed);
 	if(m_pCallback)
 	{
