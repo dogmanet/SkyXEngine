@@ -1,17 +1,17 @@
 #include "UIPicture.h"
 
 CUIPicture::CUIPicture(ULONG uID) :
-	BaseClass(uID, L"img")
+	BaseClass(uID, "img")
 {
 
 }
 
-void XMETHODCALLTYPE CUIPicture::createNode(gui::dom::IDOMdocument *pDomDocument, gui::dom::IDOMnode *pParentNode)
+gui::dom::IDOMnode* CUIPicture::createNode(gui::dom::IDOMdocument *pDomDocument)
 {
-	m_pNode = pDomDocument->createNode(m_wsName.c_str());
+	m_pNode = pDomDocument->createNode(CMB2WC(m_sName.c_str()));
 	m_pNode->setAttribute(L"controld_id", StringW(m_id));
 	//m_pNode->setAttribute(L"onclick", m_wsName + m_id);
-	pParentNode->appendChild(m_pNode, true);
+	return(m_pNode);
 }
 
 void XMETHODCALLTYPE CUIPicture::setPicture(const wchar_t *szName, int sizeX, int sizeY)

@@ -10,11 +10,9 @@ private:
 	class BaseFunc
 	{
 	public:
-		BaseFunc() {}
+		virtual ~BaseFunc() = default;
 
-		virtual ~BaseFunc() {}
-
-		virtual void execute() = 0;
+		virtual void execute(IUIControl *pTarget) = 0;
 	};
 
 	template <typename FuncT, typename Class>
@@ -25,13 +23,14 @@ private:
 		Class *obj;
 
 	public:
-		DerivedFunc(FuncT f, Class *obj)
-			: BaseFunc(), function(f), obj(obj)
+		DerivedFunc(FuncT f, Class *obj): 
+			function(f), 
+			obj(obj)
 		{}
 
-		virtual void execute()
+		void execute(IUIControl *pTarget) override
 		{
-			return (obj->*function)();
+			(obj->*function)(pTarget);
 		}
 	};
 
@@ -40,12 +39,13 @@ private:
 public:
 
 	template <typename Class>
-	CUIClassCommand(void(Class::*fuction)(), Class *obj)
-		: func(new DerivedFunc<void(Class::*)(), Class>(fuction, obj)) {}
+	CUIClassCommand(void(Class::*fuction)(IUIControl*), Class *obj):
+		func(new DerivedFunc<void(Class::*)(IUIControl*), Class>(fuction, obj))
+	{}
 
-	void execute()
+	void execute(IUIControl *pTarget)
 	{
-		return func->execute();
+		func->execute(pTarget);
 	}
 
 	~CUIClassCommand()

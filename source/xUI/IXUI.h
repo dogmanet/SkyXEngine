@@ -2,10 +2,13 @@
 #define __IXUI_H
 
 #include "IUIWindow.h"
-#include "UIButton.h"
-#include "UITextBox.h"
-#include "UICheckbox.h"
-#include "UIPicture.h"
+#include "IUIButton.h"
+#include "IUITextBox.h"
+#include "IUIComboBox.h"
+#include "IUICheckbox.h"
+#include "IUIPicture.h"
+#include "IUIPanel.h"
+#include "IUISpoiler.h"
 #include <gui/guimain.h>
 
 // {D3FE7B60-BDE7-4A3F-95D8-2D6A102A42E2}
@@ -16,13 +19,19 @@ class IXUI: public IXUnknown
 public:
 	virtual IUIWindow* XMETHODCALLTYPE createWindow(const XWINDOW_DESC *pWindowDesc, IUIWindow *pParent = NULL) = 0;
 
-	virtual IUIButton* XMETHODCALLTYPE createButton(IUIWindow *pParent) = 0;
+	virtual IUIButton* XMETHODCALLTYPE createButton() = 0;
 
-	virtual IUITextBox* XMETHODCALLTYPE createTextBox(IUIWindow *pParent) = 0;
+	virtual IUITextBox* XMETHODCALLTYPE createTextBox() = 0;
 
-	virtual IUICheckbox* XMETHODCALLTYPE createCheckBox(IUIWindow *pParent) = 0;
+	virtual IUIComboBox* XMETHODCALLTYPE createComboBox() = 0;
 
-	virtual IUIPicture* XMETHODCALLTYPE createPicture(IUIWindow *pParent) = 0;
+	virtual IUICheckbox* XMETHODCALLTYPE createCheckBox() = 0;
+
+	//virtual IUIPicture* XMETHODCALLTYPE createPicture() = 0;
+
+	virtual IUIPanel* XMETHODCALLTYPE createPanel() = 0;
+
+	virtual IUISpoiler* XMETHODCALLTYPE createSpoiler() = 0;
 
 	virtual void XMETHODCALLTYPE render() = 0;
 	virtual void XMETHODCALLTYPE present() = 0;

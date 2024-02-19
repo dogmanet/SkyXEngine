@@ -5,10 +5,11 @@
 #include "IUIControl.h"
 #include <gui/guimain.h>
 
+typedef void(*XUIWINDOW_PROC)(void *pCtx, IUIControl *pControl, gui::IEvent *ev);
+
 class IUIWindow: public IXUnknown
 {
 public:
-
 	//! Скрывает окно (остается в таскбаре)
 	virtual void XMETHODCALLTYPE hide() = 0;
 
@@ -30,8 +31,14 @@ public:
 	//! 
 	virtual const XWINDOW_DESC* XMETHODCALLTYPE getDesc() = 0;
 
-	//!
-	virtual void XMETHODCALLTYPE addControl(IUIControl *pControl) = 0;
+
+	virtual UINT XMETHODCALLTYPE getChildrenCount() const = 0;
+	virtual IUIControl* XMETHODCALLTYPE getChild(UINT uIdx) const = 0;
+
+	virtual void XMETHODCALLTYPE insertChild(IUIControl *pChild, UINT uPos = UINT_MAX) = 0;
+	virtual void XMETHODCALLTYPE removeChild(IUIControl *pChild) = 0;
+
+	virtual void XMETHODCALLTYPE setCallback(XUIWINDOW_PROC pfnCallback, void *pCtx) = 0;
 };
 
 #endif

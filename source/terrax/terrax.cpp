@@ -28,10 +28,13 @@ See the license in LICENSE
 #include "Tools.h"
 
 #include <xEngine/IXEngine.h>
+#include <xWindow/IXWindowSystem.h>
 #include "Editor.h"
 #ifdef _DEBUG
+#	pragma comment(lib, "xWindow_d.lib")
 #	pragma comment(lib, "xEngine_d.lib")
 #else
+#	pragma comment(lib, "xWindow.lib")
 #	pragma comment(lib, "xEngine.lib")
 #endif
 
@@ -741,6 +744,10 @@ int main(int argc, char **argv)
 
 	//SkyXEngine_Init(g_hTopLeftWnd, g_hWndMain, lpCmdLine);
 	IXEngine *pEngine = XEngineInit(argc, argv, "TerraX");
+
+	IXWindowSystem *pWindowSystem = XWindowInit();
+	pEngine->getCore()->getPluginManager()->registerInterface(IXWINDOWSYSTEM_GUID, pWindowSystem);
+
 	g_pEngine = pEngine;
 	CEngineCallback engineCb;
 	pEngine->initGraphics((XWINDOW_OS_HANDLE)g_hTopLeftWnd, &engineCb);

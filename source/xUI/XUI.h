@@ -13,13 +13,19 @@ public:
 
 	IUIWindow* XMETHODCALLTYPE createWindow(const XWINDOW_DESC *pWindowDesc, IUIWindow *pParent = NULL) override;
 
-	IUIButton* XMETHODCALLTYPE createButton(IUIWindow *pParent) override;
+	IUIButton* XMETHODCALLTYPE createButton() override;
 
-	IUITextBox* XMETHODCALLTYPE createTextBox(IUIWindow *pParent) override;
+	IUITextBox* XMETHODCALLTYPE createTextBox() override;
 
-	IUICheckbox* XMETHODCALLTYPE createCheckBox(IUIWindow *pParent) override;
+	IUIComboBox* XMETHODCALLTYPE createComboBox() override;
 
-	IUIPicture* XMETHODCALLTYPE createPicture(IUIWindow *pParent) override;
+	IUICheckbox* XMETHODCALLTYPE createCheckBox() override;
+
+	//IUIPicture* XMETHODCALLTYPE createPicture() override;
+
+	IUIPanel* XMETHODCALLTYPE createPanel() override;
+
+	IUISpoiler* XMETHODCALLTYPE createSpoiler() override;
 
 	void onDestroyWindow(CUIWindow *pWindow);
 

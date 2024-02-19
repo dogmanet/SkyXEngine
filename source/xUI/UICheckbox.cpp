@@ -1,33 +1,50 @@
 #include "UICheckbox.h"
 
-CUICheckBox::CUICheckBox(ULONG uID) :
-	BaseClass(uID, L"checkbox")
+CUICheckBox::CUICheckBox(ULONG uID):
+	BaseClass(uID, "checkbox")
 {
 
 }
 
-void CUICheckBox::createNode(gui::dom::IDOMdocument *pDomDocument, gui::dom::IDOMnode *pParentNode)
+gui::dom::IDOMnode* CUICheckBox::createNode(gui::dom::IDOMdocument *pDomDocument)
 {
 	m_pNode = pDomDocument->createNode(L"div");
+	m_pNode->classAdd(L"checkbox-wrapper");
 	m_pText = pDomDocument->createNode(L"label");
-	m_pCheckBox = pDomDocument->createNode(m_wsName.c_str());
+	m_pInputNode = pDomDocument->createNode(CMB2WC(m_sName.c_str()));
+	m_pInputNode->setUserData(this);
 
-	m_pNode->setAttribute(L"controld_id", StringW(m_id));
-	m_pNode->setAttribute(L"onclick", m_wsName + m_id);
-	//m_pCheckBox->setAttribute(L"onclick", m_wsName + m_id);
+	StringW wsId = StringW(L"checkbox_") + StringW(m_id);
 
-	m_pNode->appendChild(m_pCheckBox, true);
+	m_pInputNode->setAttribute(L"id", StringW(m_id));
+	m_pText->setAttribute(L"for", StringW(m_id));
+	m_pInputNode->setAttribute(L"onclick", L"handler");
+	m_pInputNode->setAttribute(L"onchange", L"handler");
+
+	m_pNode->appendChild(m_pInputNode, true);
 	m_pNode->appendChild(m_pText, true);
-	pParentNode->appendChild(m_pNode, true);
+	return(m_pNode);
 }
 
-void CUICheckBox::setLabel(const wchar_t *szTitle)
+void XMETHODCALLTYPE CUICheckBox::setLabel(const char *szTitle)
 {
-	m_pText->setText(szTitle, true);
+	m_pText->setText(StringW(CMB2WC(szTitle)), true);
 }
 
-bool CUICheckBox::isChecked()
+bool XMETHODCALLTYPE CUICheckBox::isChecked()
 {
 	//! @fixme: добавить enum
-	return m_pCheckBox->pseudoclassExists(1);
+	return(m_pInputNode->pseudoclassExists(1));
 }
+
+void CUICheckBox::cleanupNodes()
+{
+	BaseClass::cleanupNodes();
+	m_pText = NULL;
+}
+
+void XMETHODCALLTYPE CUICheckBox::setChecked(bool set)
+{
+	m_pInputNode->setAttribute(L"checked", set ? L"1" : L"0");
+}
+

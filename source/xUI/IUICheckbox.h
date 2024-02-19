@@ -3,10 +3,11 @@
 
 #include "IUIControl.h"
 
-class IUICheckbox : public IUIControl
+class IUICheckbox: public IUIControl
 {
 public:
-	virtual bool isChecked() = 0;
+	virtual void XMETHODCALLTYPE setChecked(bool set) = 0;
+	virtual bool XMETHODCALLTYPE isChecked() = 0;
 };
 
 #endif

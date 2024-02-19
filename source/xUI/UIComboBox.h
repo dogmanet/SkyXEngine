@@ -1,17 +1,20 @@
-#ifndef __UITEXTBOX_H
-#define __UITEXTBOX_H
+#ifndef __UICOMBOBOXBOX_H
+#define __UICOMBOBOXBOX_H
 
 #include "UIControl.h"
-#include "IUITextBox.h"
+#include "IUIComboBox.h"
 
-class CUITextBox: public CUIControl<IUITextBox>
+class CUIComboBox: public CUIControl<IUIComboBox>
 {
 public:
-	CUITextBox(ULONG uID);
+	CUIComboBox(ULONG uID);
 
 	gui::dom::IDOMnode* createNode(gui::dom::IDOMdocument *pDomDocument) override;
 
 	void setLabel(const char *szTitle) override;
+
+	void XMETHODCALLTYPE addItem(const char *szName, const char *szValue) override;
+	void XMETHODCALLTYPE removeItems() override;
 
 	void XMETHODCALLTYPE setValue(const char *szValue) override;
 	const char* XMETHODCALLTYPE getValue() override;

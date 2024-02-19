@@ -1,6 +1,14 @@
 #include "XUI.h"
 #include "UIWindow.h"
 
+#include "UIButton.h"
+#include "UITextBox.h"
+#include "UIComboBox.h"
+#include "UICheckbox.h"
+#include "UIPicture.h"
+#include "UIPanel.h"
+#include "UISpoiler.h"
+
 CXUI::CXUI(IGXDevice *pDev, IXWindowSystem *pWindowSystem, gui::IGUI *pGUI):
 	m_pDev(pDev),
 	m_pWindowSystem(pWindowSystem),
@@ -15,32 +23,39 @@ IUIWindow* XMETHODCALLTYPE CXUI::createWindow(const XWINDOW_DESC *pWindowDesc, I
 	return(pWindow);
 }
 
-IUIButton* XMETHODCALLTYPE CXUI::createButton(IUIWindow *pParent)
+IUIButton* XMETHODCALLTYPE CXUI::createButton()
 {
-	CUIButton *pButton = new CUIButton(++m_elemendID);
-	pParent->addControl(pButton);
-	return pButton;
+	return(new CUIButton(++m_elemendID));
 }
 
-IUITextBox* XMETHODCALLTYPE CXUI::createTextBox(IUIWindow *pParent)
+IUITextBox* XMETHODCALLTYPE CXUI::createTextBox()
 {
-	CUITextBox *pInput = new CUITextBox(++m_elemendID);
-	pParent->addControl(pInput);
-	return pInput;
+	return(new CUITextBox(++m_elemendID));
 }
 
-IUICheckbox* XMETHODCALLTYPE CXUI::createCheckBox(IUIWindow *pParent)
+IUIComboBox* XMETHODCALLTYPE CXUI::createComboBox()
 {
-	IUICheckbox *pCheckBox = new CUICheckBox(++m_elemendID);
-	pParent->addControl(pCheckBox);
-	return pCheckBox;
+	return(new CUIComboBox(++m_elemendID));
 }
 
-IUIPicture* XMETHODCALLTYPE CXUI::createPicture(IUIWindow *pParent)
+IUICheckbox* XMETHODCALLTYPE CXUI::createCheckBox()
 {
-	CUIPicture *pPicture = new CUIPicture(++m_elemendID);
-	pParent->addControl(pPicture);
-	return pPicture;
+	return(new CUICheckBox(++m_elemendID));
+}
+
+/*IUIPicture* XMETHODCALLTYPE CXUI::createPicture()
+{
+	return(new CUIPicture(++m_elemendID));
+}*/
+
+IUIPanel* XMETHODCALLTYPE CXUI::createPanel()
+{
+	return(new CUIPanel(++m_elemendID));
+}
+
+IUISpoiler* XMETHODCALLTYPE CXUI::createSpoiler()
+{
+	return(new CUISpoiler(++m_elemendID));
 }
 
 void CXUI::onDestroyWindow(CUIWindow *pWindow)

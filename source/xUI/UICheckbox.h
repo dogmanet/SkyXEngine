@@ -4,20 +4,23 @@
 #include "UIControl.h"
 #include "IUICheckbox.h"
 
-class CUICheckBox : public CUIControl<IUICheckbox>
+class CUICheckBox: public CUIControl<IUICheckbox>
 {
 public:
 	CUICheckBox(ULONG uID);
 
-	void createNode(gui::dom::IDOMdocument *pDomDocument, gui::dom::IDOMnode *pParentNode) override;
+	gui::dom::IDOMnode* createNode(gui::dom::IDOMdocument *pDomDocument) override;
 
-	void setLabel(const wchar_t *szTitle) override;
+	void XMETHODCALLTYPE setLabel(const char *szTitle) override;
 
-	bool isChecked() override;
+	bool XMETHODCALLTYPE isChecked() override;
+
+	void XMETHODCALLTYPE setChecked(bool set) override;
 
 private:
-	gui::dom::IDOMnode *m_pText;
-	gui::dom::IDOMnode *m_pCheckBox;
+	gui::dom::IDOMnode *m_pText = NULL;
+
+	void cleanupNodes() override;
 };
 
 #endif

@@ -1,17 +1,20 @@
 #include "UIButton.h"
 
 CUIButton::CUIButton(ULONG uID): 
-	BaseClass(uID, L"button")
+	BaseClass(uID, "button")
 {
 
 }
 
-void XMETHODCALLTYPE CUIButton::createNode(gui::dom::IDOMdocument *pDomDocument, gui::dom::IDOMnode *pParentNode)
+gui::dom::IDOMnode* CUIButton::createNode(gui::dom::IDOMdocument *pDomDocument)
 {
-	m_pNode = pDomDocument->createNode(m_wsName.c_str());
+	m_pNode = pDomDocument->createNode(CMB2WC(m_sName.c_str()));
 	m_pNode->setAttribute(L"controld_id", StringW(m_id));
-	m_pNode->setAttribute(L"onclick", m_wsName + m_id);
-	pParentNode->appendChild(m_pNode, true);
+	m_pNode->setAttribute(L"onclick", L"handler");
+	m_pNode->setUserData(this);
+	m_pInputNode = m_pNode;
+
+	return(m_pNode);
 }
 
 void XMETHODCALLTYPE CUIButton::setPicture(const wchar_t *szName, int sizeX, int sizeY)

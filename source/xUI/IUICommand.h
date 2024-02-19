@@ -3,10 +3,11 @@
 
 #include <gdefines.h>
 
-class IUICommand : public IXUnknown
+class IUIControl;
+class IUICommand: public IXUnknown
 {
 public:
-	virtual void execute() = 0;
+	virtual void execute(IUIControl *pTarget) = 0;
 };
 
 #endif

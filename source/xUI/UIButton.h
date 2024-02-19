@@ -9,7 +9,7 @@ class CUIButton : public CUIControl<IUIButton>
 public:
 	CUIButton(ULONG uID);
 
-	void XMETHODCALLTYPE createNode(gui::dom::IDOMdocument *pDomDocument, gui::dom::IDOMnode *pParentNode) override;
+	gui::dom::IDOMnode* createNode(gui::dom::IDOMdocument *pDomDocument) override;
 
 	void XMETHODCALLTYPE setPicture(const wchar_t *szName, int sizeX, int sizeY) override;
 };
