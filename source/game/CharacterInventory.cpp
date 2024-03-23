@@ -25,6 +25,22 @@ CCharacterInventory::~CCharacterInventory()
 	mem_delete_a(m_ppSlots);
 }
 
+void CCharacterInventory::initEquipItems(UINT uCount, const EQUIP_ITEM_TYPE *pTypes)
+{
+	m_aEquipItems.resize(uCount);
+
+	auto &enumReflector = EnumReflector::Get<EQUIP_ITEM_TYPE>();
+
+	UINT *pTypeCounts = (UINT*)alloca(sizeof(UINT) * enumReflector.getCount());
+	memset(pTypeCounts, 0, sizeof(UINT) * enumReflector.getCount());
+
+	fora(i, m_aEquipItems)
+	{
+		m_aEquipItems[i].type = pTypes[i];
+		m_aEquipItems[i].uIndex = pTypeCounts[pTypes[i]]++;
+	}
+}
+
 bool CCharacterInventory::hasItems(const char * szClassName, int iCount)
 {
 	assert(iCount > 0);
@@ -59,6 +75,14 @@ int CCharacterInventory::consumeItems(const char *szClassName, int iCount)
 				m_ppSlots[i]->m_iInvStackCurSize -= iCount;
 				if(m_ppSlots[i]->m_iInvStackCurSize <= 0)
 				{
+					fora(j, m_aEquipItems)
+					{
+						if(m_aEquipItems[j].pItem == m_ppSlots[i])
+						{
+							m_aEquipItems[j].pItem = NULL;
+							break;
+						}
+					}
 					REMOVE_ENTITY(m_ppSlots[i]);
 					m_ppSlots[i] = 0;
 				}
@@ -69,6 +93,15 @@ int CCharacterInventory::consumeItems(const char *szClassName, int iCount)
 				iConsumed += m_ppSlots[i]->m_iInvStackCurSize;
 				iCount -= m_ppSlots[i]->m_iInvStackCurSize;
 				
+				fora(j, m_aEquipItems)
+				{
+					if(m_aEquipItems[j].pItem == m_ppSlots[i])
+					{
+						m_aEquipItems[j].pItem = NULL;
+						break;
+					}
+				}
+
 				REMOVE_ENTITY(m_ppSlots[i]);
 				m_ppSlots[i] = 0;
 			}
@@ -228,6 +261,79 @@ CBaseItem * CCharacterInventory::getSlot(int i) const
 	assert(i >= 0 && i < m_iSlotCount);
 
 	return(m_ppSlots[i]);
+}
+
+const EquipItem* CCharacterInventory::getEquipSlots() const
+{
+	return(m_aEquipItems);
+}
+
+UINT CCharacterInventory::getEquipSlotsCount() const
+{
+	return(m_aEquipItems.size());
+}
+
+const EquipItem* CCharacterInventory::getEquipSlot(CBaseItem *pItem) const
+{
+	int idx = m_aEquipItems.indexOf(pItem, [](const EquipItem &item, const CBaseItem *pItem)
+	{
+		return(item.pItem == pItem);
+	});
+
+	return(idx < 0 ? NULL : &m_aEquipItems[idx]);
+}
+
+void CCharacterInventory::equipItem(CBaseItem *pItem, EQUIP_ITEM_TYPE type, UINT uIndex)
+{
+	if(isEquipped(pItem))
+	{
+		fora(j, m_aEquipItems)
+		{
+			if(m_aEquipItems[j].pItem == pItem)
+			{
+				m_aEquipItems[j].pItem = NULL;
+				break;
+			}
+		}
+	}
+
+	fora(i, m_aEquipItems)
+	{
+		if(m_aEquipItems[i].type == type && uIndex == m_aEquipItems[i].uIndex)
+		{
+			SAFE_CALL(m_aEquipItems[i].pItem, setMode, IIM_INVENTORY);
+
+			m_aEquipItems[i].pItem = pItem;
+			SAFE_CALL(m_aEquipItems[i].pItem, setMode, IIM_EQUIPPED);
+			return;
+		}
+	}
+
+	EquipItem item;
+	item.pItem = pItem;
+	item.type = type;
+	item.uIndex = uIndex;
+
+	m_aEquipItems.push_back(item);
+	SAFE_CALL(pItem, setMode, IIM_EQUIPPED);
+}
+
+void CCharacterInventory::deequipItem(CBaseItem *pItem)
+{
+	fora(i, m_aEquipItems)
+	{
+		if(m_aEquipItems[i].pItem == pItem)
+		{
+			SAFE_CALL(m_aEquipItems[i].pItem, setMode, IIM_INVENTORY);
+			m_aEquipItems[i].pItem = NULL;
+			return;
+		}
+	}
+}
+
+bool CCharacterInventory::isEquipped(CBaseItem *pItem)
+{
+	return(pItem->getMode() == IIM_EQUIPPED || pItem->getMode() == IIM_IN_HANDS);
 }
 
 float CCharacterInventory::getTotalWeight() const

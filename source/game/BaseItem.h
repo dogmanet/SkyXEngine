@@ -23,7 +23,8 @@ enum INVENTORY_ITEM_MODE
 {
 	IIM_WORLD,     //! В мире
 	IIM_INVENTORY, //! В инвентаре
-	IIM_EQUIPPED   //! В руках
+	IIM_EQUIPPED,  //! В экипировке
+	IIM_IN_HANDS   //! В руках
 };
 
 class CTriggerItemUse;
@@ -44,10 +45,17 @@ public:
 
 	void setMode(INVENTORY_ITEM_MODE mode);
 
+	INVENTORY_ITEM_MODE getMode();
+
 	void setHandsResource(IXResourceModelAnimated *pResource);
 
 	void setPos(const float3 &pos) override;
 	void setOrient(const SMQuaternion &q) override;
+
+	int getStackCount();
+
+	const char* getIcon();
+	const char* getItemName();
 
 protected:
 	virtual void onModeChanged(INVENTORY_ITEM_MODE oldMode, INVENTORY_ITEM_MODE newMode);
@@ -58,6 +66,7 @@ protected:
 
 	void setScale(float fScale) override;
 	
+	const char *m_szInvIcon; //!< Иконка, отображаемая в инвентаре (только имя файла, без расширения и пути)
 	const char *m_szInvName; //!< Имя, отображаемое в инвентаре
 	bool m_bInvStackable = true; //!< Можно ли хранить несколько итемов в одной ячейке
 	int m_iInvStackCurSize = 0; //!< Количество итемов в стеке
