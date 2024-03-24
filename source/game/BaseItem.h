@@ -53,6 +53,7 @@ public:
 	void setOrient(const SMQuaternion &q) override;
 
 	int getStackCount();
+	bool isStackable();
 
 	const char* getIcon();
 	const char* getItemName();

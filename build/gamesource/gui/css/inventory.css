@@ -49,38 +49,6 @@
 	border-width: 1px;
 }	
 
-#icon {
-	background-image: /hud/wpn/ak74.png;
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 10vw; 
-	height: 5vw;
-	background-size-x: 10vw;
-	background-position-x: 50%;
-	background-position-y: 50%;
-	background-repeat: no-repeat;
-	background-color: #000000;
-	border-color: #C6F0FD;
-	border-width: 1px;
-}
-
-#icon2 {
-	background-image: /hud/items/ammo.png;
-	position: absolute;
-	top: 0;
-	left: 10vw;
-	width: 5vw; 
-	height: 5vw;
-	background-size-x: 100%;
-	background-position-x: 50%;
-	background-position-y: 50%;
-	background-repeat: no-repeat;
-	background-color: #000000;
-	border-color: #C6F0FD;
-	border-width: 1px;
-}
-
 .equip_unit_title {
 	margin-top: 0.5vh;
 	margin-bottom: 0.5vh;

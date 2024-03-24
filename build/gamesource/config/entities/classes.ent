@@ -43,6 +43,8 @@ inv_name = "Ключ-карта"
 inv_stackable = 0
 
 [weapon_ak74]
+inv_name = "AK-47"
+inv_icon = "ak74"
 base_class = base_riffle
 show_in_listing = 1
 model = "models/weapons/ak74/ak74.dse"

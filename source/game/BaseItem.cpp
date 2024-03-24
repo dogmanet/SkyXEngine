@@ -228,6 +228,11 @@ int CBaseItem::getStackCount()
 	return(m_iInvStackCurSize);
 }
 
+bool CBaseItem::isStackable()
+{
+	return(m_bInvStackable);
+}
+
 const char* CBaseItem::getItemName()
 {
 	return(m_szInvName);

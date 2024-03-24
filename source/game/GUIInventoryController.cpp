@@ -104,6 +104,9 @@ bool CGUIInventoryController::isActive()
 
 void CGUIInventoryController::update()
 {
+	char szBuffer[1024] = {0};
+	char szItemCount[128] = {0};
+
 	while(m_pItemContainerNode->getChilds()->size())
 	{
 		m_pItemContainerNode->removeChild((*(m_pItemContainerNode->getChilds()))[0]);
@@ -113,7 +116,7 @@ void CGUIInventoryController::update()
 	{
 		m_pEquipContainerNode->removeChild((*(m_pEquipContainerNode->getChilds()))[0]);
 	}
-	char szBuffer[1024];
+
 	for(int i = 0, l = m_pInventory->getSlotCount(); i < l; ++i)
 	{
 		CBaseItem *pItem = m_pInventory->getSlot(i);
@@ -161,8 +164,17 @@ void CGUIInventoryController::update()
 			const char *szIcon = pItem->getIcon();
 			const char *szDim = isEquipped ? "px" : "vw";
 
-			sprintf_s(szBuffer, "<div inventoryid=\"%i\" onmousedown=\"begin_drag\" onclick=\"open_menu\" class=\"icon\" style=\"background-image: /hud/items/%s.png; top: %i%s; left: %i%s; width: %ivw; height: %ivw;\"><div class=\"item_name\">%s</div><div class=\"item_count\">%i</div></div>",
-				i, szIcon, y, szDim, x, szDim, INV_CELL_SIZE, INV_CELL_SIZE, szName, iCount);
+			if(pItem->isStackable())
+			{
+				sprintf_s(szItemCount, "<div class=\"item_count\">%i</div>", iCount);
+			}
+			else
+			{
+				szItemCount[0] = 0;
+			}
+
+			sprintf_s(szBuffer, "<div inventoryid=\"%i\" onmousedown=\"begin_drag\" onclick=\"open_menu\" class=\"icon\" style=\"background-image: /hud/items/%s.png; top: %i%s; left: %i%s; width: %ivw; height: %ivw;\"><div class=\"item_name\">%s</div>%s</div>",
+				i, szIcon, y, szDim, x, szDim, INV_CELL_SIZE, INV_CELL_SIZE, szName, szItemCount);
 
 			gui::dom::IDOMnodeCollection newItems = m_pInventoryDesktop->createFromText(StringW(CMB2WC(szBuffer)));
 
