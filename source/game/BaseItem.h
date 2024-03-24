@@ -51,12 +51,16 @@ public:
 
 	void setPos(const float3 &pos) override;
 	void setOrient(const SMQuaternion &q) override;
+	
+	int getIconSizeX();
+	int getIconSizeY();
 
 	int getStackCount();
 	bool isStackable();
 
 	const char* getIcon();
 	const char* getItemName();
+
 
 protected:
 	virtual void onModeChanged(INVENTORY_ITEM_MODE oldMode, INVENTORY_ITEM_MODE newMode);
@@ -69,10 +73,12 @@ protected:
 	
 	const char *m_szInvIcon; //!< Иконка, отображаемая в инвентаре (только имя файла, без расширения и пути)
 	const char *m_szInvName; //!< Имя, отображаемое в инвентаре
-	bool m_bInvStackable = true; //!< Можно ли хранить несколько итемов в одной ячейке
 	int m_iInvStackCurSize = 0; //!< Количество итемов в стеке
 	int m_iInvStackMaxSize = 1; //!< Максимальное количество итемов в стеке
 	float m_iInvWeight = 0.0f; //!< Масса объекта
+	int m_iIconSizeX = 1; //!< Размер иконки по X
+	int m_iIconSizeY = 1; //!< Размер иконки по Y
+	bool m_bInvStackable = true; //!< Можно ли хранить несколько итемов в одной ячейке
 	bool m_bPickable = true; //!< Можно ли поднять объект
 
 	output_t m_onPickUp;

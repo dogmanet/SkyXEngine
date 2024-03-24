@@ -28,6 +28,10 @@ BEGIN_PROPTABLE(CBaseItem)
 	DEFINE_FIELD_FLOAT(m_iInvWeight, PDFF_NOEDIT | PDFF_NOEXPORT, "inv_weight", "", EDITOR_NONE)
 	//! Можно ли поднимать объект
 	DEFINE_FIELD_BOOLFN(m_bPickable, PDFF_NOEDIT | PDFF_NOEXPORT, "inv_pickable", "", onIsPickableChanged, EDITOR_NONE)
+	//! Размер иконки по X
+	DEFINE_FIELD_INT(m_iIconSizeX, PDFF_NOEDIT | PDFF_NOEXPORT, "inv_icon_size_x", "", EDITOR_NONE)
+	//! Размер иконки по Y
+	DEFINE_FIELD_INT(m_iIconSizeY, PDFF_NOEDIT | PDFF_NOEXPORT, "inv_icon_size_y", "", EDITOR_NONE)
 
 	DEFINE_OUTPUT(m_onPickUp, "OnPickUp", "On pickup")
 	DEFINE_OUTPUT(m_onDrop, "OnDrop", "On drop")
@@ -221,6 +225,16 @@ void CBaseItem::setOrient(const SMQuaternion &q)
 	BaseClass::setOrient(q);
 
 	SAFE_CALL(m_pViewModel, setOrientation, q);
+}
+
+int CBaseItem::getIconSizeX()
+{
+	return(m_iIconSizeX);
+}
+
+int CBaseItem::getIconSizeY()
+{
+	return(m_iIconSizeY);
 }
 
 int CBaseItem::getStackCount()

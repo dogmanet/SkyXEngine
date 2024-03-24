@@ -31,7 +31,10 @@ public:
 
 	void endDrag(gui::IEvent *ev);
 private:
+	POINT getPointsForMap(UINT uSizeX, UINT uSizeY);
 
+	void updateOcclusionMap(const POINT &pt, UINT uSizeX, UINT uSizeY);
+private:
 	struct EquipArea
 	{
 		gui::dom::IDOMnode *pNode = NULL;
@@ -50,6 +53,12 @@ private:
 	gui::dom::IDOMnode *m_pItemContainerNode = NULL;
 	gui::dom::IDOMnode *m_pEquipContainerNode = NULL;
 	gui::dom::IDOMnode *m_pOriginalContainerNode = NULL;
+	gui::dom::IDOMnode *m_pFrameNode = NULL;
+
+	Array<bool> m_aOcclussionMap;
+
+	UINT m_uRows = 0;
+	UINT m_uCells = 0;
 
 	int m_iOffsetY = 0;
 	int m_iOffsetX = 0;

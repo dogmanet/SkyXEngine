@@ -11,6 +11,12 @@ m_pInventory(pInventory)
 	m_pContextMenuNode = m_pInventoryDesktop->getDocument()->getElementById(L"context_menu");
 	m_pItemContainerNode = m_pInventoryDesktop->getDocument()->getElementById(L"item_container");
 	m_pEquipContainerNode = m_pInventoryDesktop->getDocument()->getElementById(L"equip_container");
+	m_pFrameNode = m_pInventoryDesktop->getDocument()->getElementById(L"frame");
+
+	m_uRows = m_pFrameNode->getChilds()->size() - 1;
+	m_uCells = m_pFrameNode->getChilds()[0][0]->getChilds()->size();
+
+	m_aOcclussionMap.resize(m_uRows * m_uCells);
 
 	const gui::dom::IDOMnodeCollection *pEquipAreasNodes = m_pInventoryDesktop->getDocument()->getElementsByClass(L"equip_unit_grid");
 
@@ -104,8 +110,13 @@ bool CGUIInventoryController::isActive()
 
 void CGUIInventoryController::update()
 {
-	char szBuffer[1024] = {0};
-	char szItemCount[128] = {0};
+	char szBuffer[1024];
+	char szItemCount[128];
+
+	fora(i, m_aOcclussionMap)
+	{
+		m_aOcclussionMap[i] = false;
+	}
 
 	while(m_pItemContainerNode->getChilds()->size())
 	{
@@ -155,8 +166,15 @@ void CGUIInventoryController::update()
 			else
 			{
 				pCurrentContainer = m_pItemContainerNode;
-				x = (i % INV_ROW_SIZE) * INV_CELL_SIZE;
-				y = (i / INV_ROW_SIZE) * INV_CELL_SIZE;
+
+				POINT pt = getPointsForMap(pItem->getIconSizeX(), pItem->getIconSizeY());
+				if(pt.x != -1)
+				{
+					updateOcclusionMap(pt, pItem->getIconSizeX(), pItem->getIconSizeY());
+				}
+
+				x = pt.x * INV_CELL_SIZE;
+				y = pt.y * INV_CELL_SIZE;
 			}
 
 			int iCount = pItem->getStackCount();
@@ -174,7 +192,7 @@ void CGUIInventoryController::update()
 			}
 
 			sprintf_s(szBuffer, "<div inventoryid=\"%i\" onmousedown=\"begin_drag\" onclick=\"open_menu\" class=\"icon\" style=\"background-image: /hud/items/%s.png; top: %i%s; left: %i%s; width: %ivw; height: %ivw;\"><div class=\"item_name\">%s</div>%s</div>",
-				i, szIcon, y, szDim, x, szDim, INV_CELL_SIZE, INV_CELL_SIZE, szName, szItemCount);
+				i, szIcon, y, szDim, x, szDim, INV_CELL_SIZE * pItem->getIconSizeX(), INV_CELL_SIZE * pItem->getIconSizeY(), szName, szItemCount);
 
 			gui::dom::IDOMnodeCollection newItems = m_pInventoryDesktop->createFromText(StringW(CMB2WC(szBuffer)));
 
@@ -275,6 +293,55 @@ void CGUIInventoryController::dragMove(gui::IEvent *ev)
 	}
 }
 
+POINT CGUIInventoryController::getPointsForMap(UINT uSizeX, UINT uSizeY)
+{
+#define INDEX(x,y) ((x)+(y)*m_uCells)
+	bool bSkip = false;
+	if(uSizeX > m_uCells || uSizeY > m_uRows)
+	{
+		assert(!"Invalid item size");
+		return(POINT{-1, -1});
+	}
+	for(UINT i = 0; i < m_uRows - uSizeY + 1; ++i)
+	{
+		for(UINT j = 0; j < m_uCells - uSizeX + 1; ++j)
+		{
+			if(!m_aOcclussionMap[INDEX(j, i)])
+			{
+				bSkip = false;
+				for(UINT k = 0; k < uSizeX && !bSkip; ++k)
+				{
+					for(UINT s = 0; s < uSizeY && !bSkip; ++s)
+					{
+						if(m_aOcclussionMap[INDEX(k + j, s + i)])
+						{
+							bSkip = true;
+						}
+					}
+				}
+				if(!bSkip)
+				{
+					return(POINT{j, i});
+				}
+			}
+		}
+	}
+	return(POINT{-1, -1});
+}
+
+void CGUIInventoryController::updateOcclusionMap(const POINT &pt, UINT uSizeX, UINT uSizeY)
+{
+	for(UINT i = 0; i < uSizeX; ++i)
+	{
+		for(UINT j = 0; j < uSizeY; ++j)
+		{
+			assert(!m_aOcclussionMap[INDEX(i + pt.x, j + pt.y)]);
+			m_aOcclussionMap[INDEX(i + pt.x, j + pt.y)] = true;
+		}
+	}
+#undef INDEX
+}
+
 //FIXME: убрать с глаз долой 
 static bool IsPointInRect(const RECT &rect, int iX, int iY)
 {
@@ -313,7 +380,7 @@ void CGUIInventoryController::endDrag(gui::IEvent *ev)
 	gui::dom::IDOMnode *pEquipArea = m_pInventoryDesktop->getDocument()->getElementById(L"equip_area"); 
 
 
-	RECT frameRect = m_pInventoryDesktop->getDocument()->getElementById(L"frame")->getClientRect();
+	RECT frameRect = m_pFrameNode->getClientRect();
 	RECT euqipAreaRect = pEquipArea->getClientRect();
 
 	gui::css::ICSSstyle *pStyle = m_pDragNode->getStyleSelf();
@@ -336,6 +403,17 @@ void CGUIInventoryController::endDrag(gui::IEvent *ev)
 	{
 		pCurrentContainer = m_pItemContainerNode;
 		m_pInventory->deequipItem(pItem);
+
+		if(pCell)
+		{
+			int idx = pCell->parentNode()->getChilds()->indexOf(pCell);
+			int idy = pCell->parentNode()->parentNode()->getChilds()->indexOf(pCell->parentNode());
+			
+			if(idx + pItem->getIconSizeX() > m_uCells || idy + pItem->getIconSizeY() > m_uRows)
+			{
+				pCell = NULL;
+			}
+		}
 	}
 	else
 	{
