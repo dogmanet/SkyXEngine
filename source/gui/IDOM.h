@@ -54,7 +54,7 @@ namespace gui
 			virtual void dispatchEvent(IEvent & ev) = 0;
 			virtual void dispatchClientEvent(IEvent ev, bool * preventDefault) = 0;
 
-			virtual void updateStyles() = 0;
+			virtual void updateStyles(bool forceUpdate = false) = 0;
 
 			virtual void classAdd(const StringW & cls) = 0;
 

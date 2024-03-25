@@ -1027,9 +1027,13 @@ namespace gui
 			//GetGUI()->
 		//}
 
-		void CDOMnode::updateStyles()
+		void CDOMnode::updateStyles(bool forceUpdate)
 		{
 			m_pDocument->updateStyleSubtree(this);
+			if(forceUpdate)
+			{
+				m_pDocument->updateStyles(0.0f);
+			}
 		}
 
 		void CDOMnode::dispatchEvent(IEvent & ev)

@@ -236,6 +236,8 @@ void CGUIInventoryController::openContextMenu(gui::IEvent *ev)
 		pStyle->left->set(ev->clientX);
 		pStyle->left->setDim(gui::css::ICSSproperty::DIM_PX);
 
+		m_pSelectedNode = ev->currentTarget;;
+
 		m_pContextMenuNode->updateStyles();
 	}
 }
@@ -247,6 +249,8 @@ void CGUIInventoryController::closeContextMenu(gui::IEvent *ev)
 		gui::css::ICSSstyle *pStyle = m_pContextMenuNode->getStyleSelf();
 
 		pStyle->visibility->set(gui::css::ICSSproperty::VISIBILITY_HIDDEN);
+
+		m_pSelectedNode = NULL;
 
 		m_pContextMenuNode->updateStyles();
 	}
@@ -375,6 +379,8 @@ void CGUIInventoryController::endDrag(gui::IEvent *ev)
 		return;
 	}
 
+	bool bIsDrop = false;
+
 	gui::dom::IDOMnode *pCurrentContainer = NULL;
 
 	gui::dom::IDOMnode *pEquipArea = m_pInventoryDesktop->getDocument()->getElementById(L"equip_area"); 
@@ -415,7 +421,7 @@ void CGUIInventoryController::endDrag(gui::IEvent *ev)
 			}
 		}
 	}
-	else
+	else if(IsPointInRect(euqipAreaRect, ev->clientX, ev->clientY))
 	{
 		pCurrentContainer = m_pEquipContainerNode;
 		gui::dom::IDOMnode *pParentNode = NULL;
@@ -459,6 +465,11 @@ void CGUIInventoryController::endDrag(gui::IEvent *ev)
 				pCell = NULL;
 			}
 		}
+	}
+	else
+	{
+		pCell = NULL;
+		bIsDrop = true;
 	}
 
 	if(pCell)
@@ -507,6 +518,27 @@ void CGUIInventoryController::endDrag(gui::IEvent *ev)
 	m_pDragNode->parentNode()->takeChild(m_pDragNode);
 	pCurrentContainer->appendChild(m_pDragNode);
 
+	if(bIsDrop)
+	{
+		//ev->preventDefault = false;
+		//ev->stopPropagation();
+
+		//pCurrentContainer->removeChild(m_pDragNode);
+		//pCurrentContainer->updateStyles(true);
+		m_pInventory->getOwner()->dropItem(pItem);
+	}
+
 	m_pOriginalContainerNode = NULL;
 	m_pDragNode = NULL;
+}
+
+void CGUIInventoryController::dropItem(gui::IEvent *ev)
+{
+	assert(m_pSelectedNode);
+
+	int idx = m_pSelectedNode->getAttribute(L"inventoryid").toInt();
+	CBaseItem *pItem = m_pInventory->getSlot(idx);
+	m_pInventory->getOwner()->dropItem(pItem);
+	update();
+
 }

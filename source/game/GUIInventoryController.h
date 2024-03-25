@@ -30,6 +30,8 @@ public:
 	void dragMove(gui::IEvent *ev);
 
 	void endDrag(gui::IEvent *ev);
+
+	void dropItem(gui::IEvent *ev);
 private:
 	POINT getPointsForMap(UINT uSizeX, UINT uSizeY);
 
@@ -50,6 +52,7 @@ private:
 	gui::IDesktop *m_pInventoryDesktop = NULL;
 	gui::dom::IDOMnode *m_pContextMenuNode = NULL;
 	gui::dom::IDOMnode *m_pDragNode = NULL;
+	gui::dom::IDOMnode *m_pSelectedNode = NULL;
 	gui::dom::IDOMnode *m_pItemContainerNode = NULL;
 	gui::dom::IDOMnode *m_pEquipContainerNode = NULL;
 	gui::dom::IDOMnode *m_pOriginalContainerNode = NULL;

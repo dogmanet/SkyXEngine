@@ -144,6 +144,7 @@ void CCharacterInventory::putItems(const char *szClassName, int iCount)
 			{
 				if((m_ppSlots[i] = (CBaseItem*)CREATE_ENTITY(szClassName, m_pOwner->getManager())))
 				{
+					m_ppSlots[i]->m_iInvStackCurSize = 0;
 					m_ppSlots[i]->setMode(IIM_INVENTORY);
 					int iCanAdd = m_ppSlots[i]->m_iInvStackMaxSize - m_ppSlots[i]->m_iInvStackCurSize;
 					if(iCanAdd > 0)
@@ -207,8 +208,9 @@ void CCharacterInventory::putItem(CBaseItem *pItem)
 				{
 					if((m_ppSlots[i] = (CBaseItem*)CREATE_ENTITY(pItem->getClassName(), m_pOwner->getManager())))
 					{
+						m_ppSlots[i]->m_iInvStackCurSize = 0;
 						m_ppSlots[i]->setMode(IIM_INVENTORY);
-						int iCanAdd = m_ppSlots[i]->m_iInvStackMaxSize - m_ppSlots[i]->m_iInvStackCurSize;
+						int iCanAdd = m_ppSlots[i]->m_iInvStackMaxSize - pItem->m_iInvStackCurSize;
 						if(iCanAdd > 0)
 						{
 							if(iCanAdd >= pItem->m_iInvStackCurSize)
@@ -246,6 +248,25 @@ void CCharacterInventory::putItem(CBaseItem *pItem)
 		char str[128];
 		sprintf(str, "Найден предмет: %s", pItem->m_szInvName);
 		pHUD->chatMsg(str);
+	}
+
+	m_pOwner->onInventoryChanged();
+}
+
+void CCharacterInventory::takeItem(CBaseItem *pItem)
+{
+	if(isEquipped(pItem))
+	{
+		deequipItem(pItem);
+	}
+
+	for(UINT i = 0; i < m_iSlotCount; ++i)
+	{
+		if(m_ppSlots[i] == pItem)
+		{
+			m_ppSlots[i] = NULL;
+			break;
+		}
 	}
 
 	m_pOwner->onInventoryChanged();
@@ -349,6 +370,11 @@ float CCharacterInventory::getTotalWeight() const
 	}
 
 	return(fTotal);
+}
+
+CBaseCharacter* CCharacterInventory::getOwner()
+{
+	return(m_pOwner);
 }
 
 int CCharacterInventory::getItemCount(const char * szClassName)

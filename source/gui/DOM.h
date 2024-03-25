@@ -180,7 +180,7 @@ namespace gui
 			{
 				m_pRenderFrame = prf;
 			}
-			void updateStyles();
+			void updateStyles(bool forceUpdate = false) override;
 			void updateLayout(bool bForce=false);
 
 

@@ -34,6 +34,8 @@ public:
 	void putItem(CBaseItem *pItem);
 	//void putItems(CBaseItem *pItem);
 	
+	void takeItem(CBaseItem *pItem);
+
 	int getSlotCount() const;
 	CBaseItem* getSlot(int i) const;
 
@@ -49,6 +51,8 @@ public:
 	bool isEquipped(CBaseItem *pItem);
 
 	float getTotalWeight() const;
+
+	CBaseCharacter* getOwner();
 
 private:
 	CBaseCharacter *m_pOwner = NULL;

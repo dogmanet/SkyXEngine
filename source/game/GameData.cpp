@@ -1131,6 +1131,10 @@ GameData::GameData(HWND hWnd, bool isGame):
 		m_pGuiInventory->endDrag(ev);
 	});
 
+	m_pGUIStack->registerCallback("drop_item", [](gui::IEvent * ev){
+		m_pGuiInventory->dropItem(ev);
+	});
+
 	Core_0RegisterConcmdArg("text", [](int argc, const char ** argv)
 	{
 		if(argc != 2)
