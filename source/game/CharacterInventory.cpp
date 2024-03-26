@@ -118,7 +118,7 @@ void CCharacterInventory::putItems(const char *szClassName, int iCount)
 	{
 		if(m_ppSlots[i] && !fstrcmp(m_ppSlots[i]->getClassName(), szClassName) && m_ppSlots[i]->m_bInvStackable)
 		{
-			int iCanAdd = m_ppSlots[i]->m_iInvStackMaxSize - m_ppSlots[i]->m_iInvStackCurSize;
+			int iCanAdd = m_ppSlots[i]->m_iInvStackMaxSize;
 			if(iCanAdd > 0)
 			{
 				if(iCanAdd >= iCount)
@@ -210,7 +210,7 @@ void CCharacterInventory::putItem(CBaseItem *pItem)
 					{
 						m_ppSlots[i]->m_iInvStackCurSize = 0;
 						m_ppSlots[i]->setMode(IIM_INVENTORY);
-						int iCanAdd = m_ppSlots[i]->m_iInvStackMaxSize - pItem->m_iInvStackCurSize;
+						int iCanAdd = m_ppSlots[i]->m_iInvStackMaxSize;
 						if(iCanAdd > 0)
 						{
 							if(iCanAdd >= pItem->m_iInvStackCurSize)
